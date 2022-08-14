@@ -31,6 +31,7 @@ use hdl4fpga.profiles.all;
 use hdl4fpga.sdr_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
+use hdl4fpga.app_profiles.all;
 
 library ecp5u;
 use ecp5u.components.all;
@@ -126,31 +127,21 @@ architecture graphics of ulx3s is
 		clkos3_div : natural;
 	end record;
 
-	type video_modes is (
-		mode480p24,
-		mode600p16,
-		mode600p24,
-		mode900p24,
-		modedebug);
-
-	type pixel_types is (
-		rgb565,
-		rgb888);
-
 	type video_params is record
+		mode  : video_modes;
 		pll   : pll_params;
-		mode  : videotiming_ids;
+		timing : videotiming_ids;
 		pixel : pixel_types;
 	end record;
 
-	type videoparams_vector is array (video_modes) of video_params;
+	type videoparams_vector is array (natural range <>) of video_params;
 	constant v_r : natural := 5; -- video ratio
 	constant video_tab : videoparams_vector := (
-		modedebug  => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 10), pixel => rgb888, mode => pclk_debug),
-		mode480p24 => (pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, mode => pclk25_00m640x480at60),
-		mode600p16 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb565, mode => pclk40_00m800x600at60),
-		mode600p24 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb888, mode => pclk40_00m800x600at60),
-		mode900p24 => (pll => (clkos_div => 2, clkop_div => 22,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 14), pixel => rgb888, mode => pclk108_00m1600x900at60)); -- 30 Hz
+		(mode => modedebug    , pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 10), pixel => rgb888, timing => pclk_debug),
+		(mode => mode480p24bpp, pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, timing => pclk25_00m640x480at60),
+		(mode => mode600p16bpp, pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb565, timing => pclk40_00m800x600at60),
+		(mode => mode600p24bpp, pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb888, timing => pclk40_00m800x600at60),
+		(mode => mode900p24bpp, pll => (clkos_div => 2, clkop_div => 22,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 14), pixel => rgb888, timing => pclk108_00m1600x900at60)); -- 30 Hz
 
 	signal video_clk      : std_logic;
 	signal videoio_clk    : std_logic;
@@ -217,23 +208,23 @@ architecture graphics of ulx3s is
 
 	type app_vector is array (apps) of app_record;
 	constant app_tab : app_vector := (
-		uart_133MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram133MHz),
-		uart_200MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24, speed => sdram200MHz),
+		uart_133MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24bpp, speed => sdram133MHz),
+		uart_200MHz_480p24bpp => (iface => io_hdlc, mode => mode480p24bpp, speed => sdram200MHz),
 
-		uart_133MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram133MHz),
-		uart_166MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16, speed => sdram166MHz),
+		uart_133MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16bpp, speed => sdram133MHz),
+		uart_166MHz_600p16bpp => (iface => io_hdlc, mode => mode600p16bpp, speed => sdram166MHz),
 
-		uart_200MHz_600p24bpp => (iface => io_hdlc, mode => mode600p24, speed => sdram200MHz),
-		uart_225MHz_600p24bpp => (iface => io_hdlc, mode => mode600p24, speed => sdram225MHz),
-		uart_250MHz_600p24bpp => (iface => io_hdlc, mode => mode600p24, speed => sdram250MHz),
+		uart_200MHz_600p24bpp => (iface => io_hdlc, mode => mode600p24bpp, speed => sdram200MHz),
+		uart_225MHz_600p24bpp => (iface => io_hdlc, mode => mode600p24bpp, speed => sdram225MHz),
+		uart_250MHz_600p24bpp => (iface => io_hdlc, mode => mode600p24bpp, speed => sdram250MHz),
 
-		uart_275MHz_600p24bpp => (iface => io_hdlc, mode => mode600p24, speed => sdram275MHz),
+		uart_275MHz_600p24bpp => (iface => io_hdlc, mode => mode600p24bpp, speed => sdram275MHz),
 
-		uart_200MHz_900p24bpp => (iface => io_hdlc, mode => mode900p24, speed => sdram200MHz),
+		uart_200MHz_900p24bpp => (iface => io_hdlc, mode => mode900p24bpp, speed => sdram200MHz),
 
-		mii_166MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24, speed => sdram166MHz),
-		mii_200MHz_600p24bpp  => (iface => io_ipoe, mode => mode600p24, speed => sdram200MHz),
-		mii_250MHz_600p24bpp  => (iface => io_ipoe, mode => mode600p24, speed => sdram250MHz));
+		mii_166MHz_480p24bpp  => (iface => io_ipoe, mode => mode480p24bpp, speed => sdram166MHz),
+		mii_200MHz_600p24bpp  => (iface => io_ipoe, mode => mode600p24bpp, speed => sdram200MHz),
+		mii_250MHz_600p24bpp  => (iface => io_ipoe, mode => mode600p24bpp, speed => sdram250MHz));
 
 	constant nodebug_videomode : video_modes := app_tab(app).mode;
 	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
@@ -627,7 +618,7 @@ begin
 		word_size    => word_size,
 		byte_size    => byte_size,
 
-		timing_id    => video_tab(video_mode).mode,
+		timing_id    => video_tab(video_mode).timing,
 		red_length   => setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb888, 8, 0)),
 		green_length => setif(video_tab(video_mode).pixel=rgb565, 6, setif(video_tab(video_mode).pixel=rgb888, 8, 0)),
 		blue_length  => setif(video_tab(video_mode).pixel=rgb565, 5, setif(video_tab(video_mode).pixel=rgb888, 8, 0)),
