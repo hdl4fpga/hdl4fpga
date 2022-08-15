@@ -27,27 +27,116 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.profiles.all;
 use hdl4fpga.sdr_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
+use hdl4fpga.profiles.all;
+use hdl4fpga.app_profiles.all;
 
 library unisim;
 use unisim.vcomponents.all;
 
 architecture graphics of nuhs3adsp is
 
-	type profiles is (
-		mode480p_ddr166mhz,
-		mode600p_ddr145mhz,
-		mode600p_ddr150mhz,
-		mode600p_ddr166mhz,
-		mode720p_ddr133mhz,
-		mode900p_ddr166mhz,
-		mode1080p_ddr166mhz,
-		mode1080p_ddr200mhz);
+	type app_profiles is (
+		sdr166mhz_480p24bpp,
+		sdr145mhz_600p24bpp,
+		sdr150mhz_600p24bpp,
+		sdr166mhz_600p24bpp,
+		sdr133mhz_720p24bpp,
+		sdr166mhz_900p24bpp,
+		sdr166mhz_1080p24bpp,
+		sdr200mhz_1080p24bpp);
 
-	constant profile     : profiles := mode1080p_ddr166mhz;
+	constant app_profile : app_profiles := sdr166mhz_1080p24bpp;
+
+	type pll_params is record
+		dcm_mul : natural;
+		dcm_div : natural;
+	end record;
+
+	type video_params is record
+		id   : video_modes;
+		pll    : pll_params;
+		timing : videotiming_ids;
+	end record;
+
+	type videoparams_vector is array (natural range <>) of video_params;
+	constant video_tab : videoparams_vector := (
+		(id => modedebug,      timing => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
+		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    pll => (dcm_mul =>  5, dcm_div => 4)),
+		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    pll => (dcm_mul =>  2, dcm_div => 1)),
+		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   pll => (dcm_mul => 15, dcm_div => 4)),
+		(id => mode900p24bpp,  timing => pclk108_00m1600x900at60,  pll => (dcm_mul => 27, dcm_div => 5)),
+		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)));
+
+	function videoparam (
+		constant id  : video_modes)
+		return video_params is
+		constant tab : videoparams_vector := video_tab;
+	begin
+		for i in tab'range loop
+			if id=tab(i).id then
+				return tab(i);
+			end if;
+		end loop;
+
+		assert false 
+		report ">>>videoparam<<< : video id not available"
+		severity failure;
+
+		return tab(tab'left);
+	end;
+
+	type sdramparams_record is record
+		id  : sdram_speeds;
+		pll : pll_params;
+		cas : std_logic_vector(0 to 3-1);
+	end record;
+
+	type sdramparams_vector is array (natural range <>) of sdramparams_record;
+	constant sdram_tab : sdramparams_vector := (
+		(id => sdram133MHz, pll => (dcm_mul => 20, dcm_div => 3), cas => "010"),
+		(id => sdram145MHz, pll => (dcm_mul => 29, dcm_div => 4), cas => "110"),
+		(id => sdram150MHz, pll => (dcm_mul => 15, dcm_div => 2), cas => "110"),
+		(id => sdram166MHz, pll => (dcm_mul => 25, dcm_div => 3), cas => "110"),
+		(id => sdram200MHz, pll => (dcm_mul => 10, dcm_div => 1), cas => "011"));
+
+	function sdramparams (
+		constant id  : sdram_speeds)
+		return sdramparams_record is
+		constant tab : sdramparams_vector := sdram_tab;
+	begin
+		for i in tab'range loop
+			if id=tab(i).id then
+				return tab(i);
+			end if;
+		end loop;
+
+		assert false 
+		report ">>>sdramparams<<< : sdram speed not enabled"
+		severity failure;
+
+		return tab(tab'left);
+	end;
+
+	type profile_param is record
+		comms      : io_comms;
+		sdr_speed  : sdram_speeds;
+		video_mode : video_modes;
+		profile    : natural;
+	end record;
+
+	type profileparam_vector is array (app_profiles) of profile_param;
+	constant profile_tab : profileparam_vector := (
+		sdr166mhz_480p24bpp  => (io_ipoe, sdram166MHz, mode480p24bpp,  1),
+		sdr145mhz_600p24bpp  => (io_ipoe, sdram166MHz, mode600p24bpp,  1),
+		sdr150mhz_600p24bpp  => (io_ipoe, sdram145MHz, mode600p24bpp,  1),
+		sdr166mhz_600p24bpp  => (io_ipoe, sdram150MHz, mode600p24bpp,  1),
+		sdr133mhz_720p24bpp  => (io_ipoe, sdram166MHz, mode900p24bpp,  1),
+		sdr166mhz_900p24bpp  => (io_ipoe, sdram133MHz, mode720p24bpp,  1),
+		sdr166mhz_1080p24bpp => (io_ipoe, sdram166MHz, mode1080p24bpp, 1),
+		sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp, 1));
 
 	signal sys_rst       : std_logic;
 	signal sys_clk       : std_logic;
@@ -63,133 +152,62 @@ architecture graphics of nuhs3adsp is
 	signal so_trdy       : std_logic;
 	signal so_data       : std_logic_vector(0 to 8-1);
 
-	constant sys_per       : real    := 50.0e-9;
+	constant sys_per     : real    := 50.0e-9;
 
-	constant sclk_phases   : natural := 4;
-	constant sclk_edges    : natural := 2;
-	constant cmmd_gear     : natural := 1;
-	constant data_phases   : natural := 2;
-	constant data_edges    : natural := 2;
-	constant data_gear     : natural := 2;
-	constant bank_size     : natural := ddr_ba'length;
-	constant addr_size     : natural := ddr_a'length;
-	constant coln_size     : natural := 9;
-	constant word_size     : natural := ddr_dq'length;
-	constant byte_size     : natural := 8;
+	constant sclk_phases : natural := 4;
+	constant sclk_edges  : natural := 2;
+	constant cmmd_gear   : natural := 1;
+	constant data_phases : natural := 2;
+	constant data_edges  : natural := 2;
+	constant data_gear   : natural := 2;
+	constant bank_size   : natural := ddr_ba'length;
+	constant addr_size   : natural := ddr_a'length;
+	constant coln_size   : natural := 9;
+	constant word_size   : natural := ddr_dq'length;
+	constant byte_size   : natural := 8;
 
-	signal ddrsys_lckd     : std_logic;
-	signal ddrsys_rst      : std_logic;
+	signal ddrsys_lckd   : std_logic;
+	signal ddrsys_rst    : std_logic;
 
-	signal clk0            : std_logic;
-	signal clk90           : std_logic;
+	signal clk0          : std_logic;
+	signal clk90         : std_logic;
 
-	signal ctlrphy_rst     : std_logic;
-	signal ctlrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_cs      : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_ras     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_cas     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_we      : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_odt     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_b       : std_logic_vector(cmmd_gear*ddr_ba'length-1 downto 0);
-	signal ctlrphy_a       : std_logic_vector(cmmd_gear*ddr_a'length-1 downto 0);
-	signal ctlrphy_dqsi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmi     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqi     : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_rst   : std_logic;
+	signal ctlrphy_cke   : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_cs    : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_ras   : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_cas   : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_we    : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_odt   : std_logic_vector(cmmd_gear-1 downto 0);
+	signal ctlrphy_b     : std_logic_vector(cmmd_gear*ddr_ba'length-1 downto 0);
+	signal ctlrphy_a     : std_logic_vector(cmmd_gear*ddr_a'length-1 downto 0);
+	signal ctlrphy_dqsi  : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqst  : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqso  : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmt   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ddr_st_dqs_open : std_logic;
 
-	signal ddr_clk         : std_logic_vector(0 downto 0);
-	signal ddr_dqst        : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqso        : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqt         : std_logic_vector(ddr_dq'range);
-	signal ddr_dqo         : std_logic_vector(ddr_dq'range);
+	signal ddr_clk       : std_logic_vector(0 downto 0);
+	signal ddr_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dqt       : std_logic_vector(ddr_dq'range);
+	signal ddr_dqo       : std_logic_vector(ddr_dq'range);
 
-	signal mii_clk         : std_logic;
-	signal video_clk       : std_logic;
-	signal video_hzsync    : std_logic;
-    signal video_vtsync    : std_logic;
-    signal video_blank     : std_logic;
-    signal video_pixel     : std_logic_vector(0 to 32-1);
+	signal mii_clk       : std_logic;
+	signal video_clk     : std_logic;
+	signal video_hzsync  : std_logic;
+    signal video_vtsync  : std_logic;
+    signal video_blank   : std_logic;
+    signal video_pixel   : std_logic_vector(0 to 32-1);
 
-	type pll_params is record
-		dcm_mul : natural;
-		dcm_div : natural;
-	end record;
-
-	type video_params is record
-		pll  : pll_params;
-		mode : videotiming_ids;
-	end record;
-
-	type video_modes is (
-		modedebug,
-		mode480p,
-		mode600p,
-		mode720p,
-		mode900p,
-		mode1080p);
-
-	type videoparams_vector is array (video_modes) of video_params;
-	constant video_tab : videoparams_vector := (
-		modedebug   => (mode => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
-		mode480p    => (mode => pclk25_00m640x480at60,    pll => (dcm_mul =>  5, dcm_div => 4)),
-		mode600p    => (mode => pclk40_00m800x600at60,    pll => (dcm_mul =>  2, dcm_div => 1)),
-		mode720p    => (mode => pclk75_00m1280x720at60,   pll => (dcm_mul => 15, dcm_div => 4)),
-		mode900p    => (mode => pclk108_00m1600x900at60,  pll => (dcm_mul => 27, dcm_div => 5)),
-		mode1080p   => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)));
-
-	type ddr_params is record
-		pll : pll_params;
-		cas : std_logic_vector(0 to 3-1);
-	end record;
-
-	type ddr_speeds is (
-		ddr133MHz,
-		ddr145MHz,
-		ddr150MHz,
-		ddr166MHz,
-		ddr200MHz);
-
-	type ddram_vector is array (ddr_speeds) of ddr_params;
-	
-	--------------------------------------------------
-	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
-	-- Multiply by --  20     --  25     --  10     --
-	-- Divide by   --   3     --   3     --   1     --
-	--------------------------------------------------
-
-	constant ddr_tab : ddram_vector := (
-		ddr133MHz => (pll => (dcm_mul => 20, dcm_div => 3), cas => "010"),
-		ddr145MHz => (pll => (dcm_mul => 29, dcm_div => 4), cas => "110"),
-		ddr150MHz => (pll => (dcm_mul => 15, dcm_div => 2), cas => "110"),
-		ddr166MHz => (pll => (dcm_mul => 25, dcm_div => 3), cas => "110"),
-		ddr200MHz => (pll => (dcm_mul => 10, dcm_div => 1), cas => "011"));
-
-	type profile_param is record
-		ddr_speed  : ddr_speeds;
-		video_mode : video_modes;
-		profile    : natural;
-	end record;
-
-	type profileparam_vector is array (profiles) of profile_param;
-	constant profile_tab : profileparam_vector := (
-		mode480p_ddr166mhz  => (ddr166MHz, mode480p,  1),
-		mode600p_ddr166mhz  => (ddr166MHz, mode600p,  1),
-		mode600p_ddr145mhz  => (ddr145MHz, mode600p,  1),
-		mode600p_ddr150mhz  => (ddr150MHz, mode600p,  1),
-		mode900p_ddr166mhz  => (ddr166MHz, mode900p,  1),
-		mode720p_ddr133mhz  => (ddr133MHz, mode720p,  1),
-		mode1080p_ddr166mhz => (ddr166MHz, mode1080p, 1),
-		mode1080p_ddr200mhz => (ddr200MHz, mode1080p, 1));
-
-	constant ddr_speed  : ddr_speeds  := profile_tab(profile).ddr_speed;
+	constant sdr_speed   : sdram_speeds  := profile_tab(app_profile).sdr_speed;
 
 	function setif (
 		constant expr  : boolean;
@@ -202,11 +220,11 @@ architecture graphics of nuhs3adsp is
 		end if;
 		return false;
 	end;
-	constant video_mode : video_modes := setif(debug, modedebug, profile_tab(profile).video_mode);
+	constant video_mode : video_modes := setif(debug, modedebug, profile_tab(app_profile).video_mode);
 
-	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
+	constant sdram_params : sdramparams_record := sdramparams(sdr_speed);
 
-	constant ddr_tcp   : real := real(ddr_param.pll.dcm_div)*sys_per/real(ddr_param.pll.dcm_mul);
+	constant sdr_tcp   : real := real(sdram_params.pll.dcm_div)*sys_per/real(sdram_params.pll.dcm_mul);
 
 	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
 	alias sio_clk : std_logic is mii_txc;
@@ -238,8 +256,8 @@ begin
 		videodcm_e : entity hdl4fpga.dfs
 		generic map (
 			dcm_per => sys_per,
-			dfs_mul => video_tab(video_mode).pll.dcm_mul,
-			dfs_div => video_tab(video_mode).pll.dcm_div)
+			dfs_mul => videoparam(video_mode).pll.dcm_mul,
+			dfs_div => videoparam(video_mode).pll.dcm_div)
 		port map(
 			dcm_rst => rst,
 			dcm_clk => sys_clk,
@@ -268,8 +286,8 @@ begin
 	ddrdcm_e : entity hdl4fpga.dfsdcm
 	generic map (
 		dcm_per => sys_per,
-		dfs_mul => ddr_param.pll.dcm_mul,
-		dfs_div => ddr_param.pll.dcm_div)
+		dfs_mul => sdram_params.pll.dcm_mul,
+		dfs_div => sdram_params.pll.dcm_div)
 	port map (
 		dfsdcm_rst   => sys_rst,
 		dfsdcm_clkin => sys_clk,
@@ -402,8 +420,8 @@ begin
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		debug        => debug,
-		profile      => profile_tab(profile).profile,
-		sdr_tcp      => ddr_tcp,
+		profile      => profile_tab(app_profile).profile,
+		sdr_tcp      => sdr_tcp,
 		fpga         => xc3s,
 		mark         => MT46V256M6T,
 		sclk_phases  => sclk_phases,
@@ -422,7 +440,7 @@ begin
 --		burst_length => 2,
 --		burst_length => 4,
 		burst_length => 8,
-		timing_id    => video_tab(video_mode).mode,
+		timing_id    => videoparam(video_mode).timing,
 		red_length   => 8,
 		green_length => 8,
 		blue_length  => 8,
@@ -454,7 +472,7 @@ begin
 --		ctlr_bl      => "001",				-- Busrt length 2
 --		ctlr_bl      => "010",				-- Busrt length 4
 		ctlr_bl      => "011",				-- Busrt length 8
-		ctlr_cl      => ddr_param.cas,
+		ctlr_cl      => sdram_params.cas,
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),
