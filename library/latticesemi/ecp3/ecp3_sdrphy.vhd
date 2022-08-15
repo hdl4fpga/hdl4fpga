@@ -322,12 +322,12 @@ begin
 
 	begin
 		dqclk1bar_ff_d <= not dqclk1bar_ff_q;
-		dqclk1bar_ff_i : entity hdl4fpga.aff
-		port map(
-			ar => dqsbuf_rst,
-			clk => eclksynca_clk,
-			d => dqclk1bar_ff_d,
-			q => dqclk1bar_ff_q);
+		dqclk1bar_ff_i : fd1p3dx
+		port map (
+			cd => dqsbuf_rst,
+			ck => eclksynca_clk,
+			d  => dqclk1bar_ff_d,
+			q  => dqclk1bar_ff_q);
 
 		phase_ff_1_i : entity hdl4fpga.ff
 		port map(

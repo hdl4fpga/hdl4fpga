@@ -24,18 +24,51 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity ddr3iob is
+entity sff is
 	port (
-		di : out std_logic_vector;
-		dt : in  std_logic_vector;
-		do : in  std_logic_vector;
-		io : inout std_logic_vector);
+		clk : in  std_logic;
+		ena : in  std_logic := '1';
+		sr  : in  std_logic := '0';
+		d   : in  std_logic;
+		q   : out std_logic);
 end;
 
-architecture ecp3 of ddr3iob is
+library ecp3;
+use ecp3.components.all;
+
+architecture ecp3 of sff is
 begin
-	iob_g : for i in io'range generate
-		io(i) <= do(i) when dt(i)='0' else 'Z';
-		di(i) <= io(i);
-	end generate;
+	ffd_i : fd1p3ix
+	port map (
+		ck => clk,
+		sp => ena,
+		cd => sr,
+		d  => d,
+		q  => q);
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity aff is
+	port (
+		ar  : in  std_logic := '0';
+		clk : in  std_logic;
+		ena : in  std_logic := '1';
+		d   : in  std_logic;
+		q   : out std_logic);
+end;
+
+library ecp3;
+use ecp3.components.all;
+
+architecture ecp3 of aff is
+begin
+	ffd_i : fd1p3dx
+	port map (
+		cd => ar,
+		ck => clk,
+		sp => ena,
+		d  => d,
+		q  => q);
 end;

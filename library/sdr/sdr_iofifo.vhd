@@ -48,6 +48,35 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture mix of iofifo is
+	component sff
+		port (
+			clk : in  std_logic;
+			sr  : in  std_logic;
+			d   : in  std_logic;
+			q   : out std_logic);
+	end component;
+
+	component aff is
+		port (
+			ar  : in  std_logic;
+			clk : in  std_logic;
+			ena : in  std_logic := '1';
+			d   : in  std_logic;
+			q   : out std_logic);
+	end component;
+
+	component dbram
+	generic (
+		n : natural);
+	port (
+		clk : in  std_logic;
+		we  : in  std_logic;
+		wa  : in  std_logic_vector(4-1 downto 0);
+		di  : in  std_logic_vector(n-1 downto 0);
+		ra  : in  std_logic_vector(4-1 downto 0);
+		do  : out  std_logic_vector(n-1 downto 0));
+	end component;
+
 	subtype byte is std_logic_vector(WORD_SIZE/DATA_PHASES-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
@@ -95,7 +124,7 @@ begin
 		signal apll_set : std_logic;
 	begin
 		apll_set <= not pll_req;
-		ffd_i : entity hdl4fpga.aff
+		ffd_i : aff
 		port map (
 			clk => pll_clk,
 			ar  => apll_set,
@@ -123,7 +152,7 @@ begin
 			begin
 				aser_set <= not ser_ena(l);
 
-				ffd_i : entity hdl4fpga.sff
+				ffd_i : sff
 				port map (
 					clk => ser_clk(l),
 					sr  => aser_set,
@@ -134,7 +163,7 @@ begin
 
 		ar_g : if not pll2ser generate
 			gcntr_g: for k in aser_q'range  generate
-				ffd_i : entity hdl4fpga.aff
+				ffd_i : aff
 				port map (
 					ar  => ser_ar(l),
 					clk => ser_clk(l),
@@ -156,7 +185,7 @@ begin
 			pll_req when pll2ser else
 			ser_ena(l);
 
-		ram_b : entity hdl4fpga.dbram
+		ram_i : dbram
 		generic map (
 			n => byte'length)
 		port map (

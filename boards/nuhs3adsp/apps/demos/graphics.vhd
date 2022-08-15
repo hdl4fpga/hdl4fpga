@@ -264,16 +264,47 @@ begin
 			dfs_clk => video_clk);
 	end block;
 
-	nodebug_g : if not debug generate
-		mii_dfs_e : entity hdl4fpga.dfs
-		generic map (
-			dcm_per => sys_per,
-			dfs_mul => 5,
-			dfs_div => 4)
+	
+	dcm_g : if not debug generate
+	   signal dcm_clkfb  : std_logic;
+	   signal dcm_clk0   : std_logic;
+	begin
+	
+		bug_i : bufg
 		port map (
-			dcm_rst => '0',
-			dcm_clk => sys_clk,
-			dfs_clk => mii_clk);
+			I => dcm_clk0,
+			O => dcm_clkfb);
+	
+		dcm_i : dcm
+		generic map(
+			clk_feedback   => "1x",
+			clkdv_divide   => 2.0,
+			clkfx_divide   => 4,
+			clkfx_multiply => 5,
+			clkin_divide_by_2 => false,
+			clkin_period   => sys_per,
+			clkout_phase_shift => "none",
+			deskew_adjust  => "system_synchronous",
+			dfs_frequency_mode => "LOW",
+			duty_cycle_correction => true,
+			factory_jf   => x"c080",
+			phase_shift  => 0,
+			startup_wait => false)
+		port map (
+			rst      => '0',
+			dssen    => '0',
+			psclk    => '0',
+			psen     => '0',
+			psincdec => '0',
+			clkfb    => dcm_clkfb,
+			clkin    => sys_clk,
+			clkfx    => mii_clk,
+			clkfx180 => open,
+			clk0     => dcm_clk0,
+			locked   => open,
+			psdone   => open,
+			status   => open);
+
 	end generate;
 
 	debug_g : if debug generate
