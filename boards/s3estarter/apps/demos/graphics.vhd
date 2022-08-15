@@ -123,13 +123,6 @@ architecture graphics of s3estarter is
 		mode : videotiming_ids;
 	end record;
 
-	type video_modes is (
-		modedebug,
-		mode480p,
-		mode600p,
-		mode720p,
-		mode1080p);
-
 	type displayparam_vector is array (video_modes) of display_param;
 	constant video_tab : displayparam_vector := (
 		modedebug   => (mode => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
@@ -214,28 +207,138 @@ begin
 		end if;
 	end process;
 
-	videodcm_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => sys_per,
-		dfs_mul => video_tab(video_mode).pll.dcm_mul,
-		dfs_div => video_tab(video_mode).pll.dcm_div)
-	port map(
-		dcm_rst => sys_rst,
-		dcm_clk => sys_clk,
-		dfs_clk => video_clk);
+	videodcm_b : if not debug generate
+	   signal dcm_clkfb  : std_logic;
+	   signal dcm_clk0   : std_logic;
+	begin
+	
+		bug_i : bufg
+		port map (
+			I => dcm_clk0,
+			O => dcm_clkfb);
+	
+		dcm_i : dcm
+		generic map(
+			clk_feedback   => "1x",
+			clkdv_divide   => 2.0,
+			clkfx_divide   => video_tab(video_mode).pll.dcm_div,
+			clkfx_multiply => video_tab(video_mode).pll.dcm_mul,
+			clkin_divide_by_2 => false,
+			clkin_period   => sys_per,
+			clkout_phase_shift => "none",
+			deskew_adjust  => "system_synchronous",
+			dfs_frequency_mode => "LOW",
+			duty_cycle_correction => true,
+			factory_jf   => x"c080",
+			phase_shift  => 0,
+			startup_wait => false)
+		port map (
+			rst      => sys_rst ,
+			dssen    => '0',
+			psclk    => '0',
+			psen     => '0',
+			psincdec => '0',
+			clkfb    => dcm_clkfb,
+			clkin    => sys_clk,
+			clkfx    => video_clk,
+			clkfx180 => open,
+			clk0     => dcm_clk0,
+			locked   => open,
+			psdone   => open,
+			status   => open);
 
-	ddrdcm_e : entity hdl4fpga.dfsdcm
-	generic map (
-		dcm_per => sys_per,
-		dfs_mul => sdr_param.pll.dcm_mul,
-		dfs_div => sdr_param.pll.dcm_div)
-	port map (
-		dfsdcm_rst   => sys_rst,
-		dfsdcm_clkin => sys_clk,
-		dfsdcm_clk0  => clk0,
-		dfsdcm_clk90 => clk90,
-		dfsdcm_lckd  => ddrsys_lckd);
-	ddrsys_rst <= not ddrsys_lckd;
+	end generate;
+
+	ddrdcm_b : block
+		signal dfs_lckd  : std_logic;
+		signal dfs_clkfb : std_logic;
+		
+		signal dcm_rst   : std_logic;
+		signal dcm_clkin : std_logic;
+		signal dcm_clk0  : std_logic;
+		signal dcm_clk90 : std_logic;
+		signal dcm_lckd  : std_logic;
+
+	begin
+
+		dfs_i : dcm_sp
+		generic map(
+			clk_feedback  => "1X",
+			clkin_period  => sys_per,
+			clkdv_divide  => 2.0,
+			clkin_divide_by_2 => FALSE,
+			clkfx_divide  => sdram_params.pll.dcm_div,
+			clkfx_multiply => sdram_params.pll.dcm_mul,
+			clkout_phase_shift => "NONE",
+			deskew_adjust => "SYSTEM_SYNCHRONOUS",
+			dfs_frequency_mode => "HIGH",
+			duty_cycle_correction => TRUE,
+			factory_jf   => X"C080",
+			phase_shift  => 0,
+			startup_wait => FALSE)
+		port map (
+			dssen    => '0',
+			psclk    => '0',
+			psen     => '0',
+			psincdec => '0',
+	
+			rst      => sys_rst,
+			clkin    => sys_clk,
+			clkfb    => dfs_clkfb,
+			clk0     => dfs_clkfb,
+			clkfx    => dcm_clkin,
+			locked   => dfs_lckd);
+
+		process (sys_rst, sys_clk)
+		begin
+			if sys_rst='1' then
+				dcm_rst <= '1';
+			elsif rising_edge(sys_clk) then
+				dcm_rst <= not dfs_lckd;
+			end if;
+		end process;
+
+		dcm_dll : dcm_sp
+		generic map(
+			clk_feedback => "1X",
+			clkdv_divide => 2.0,
+			clkfx_divide => 1,
+			clkfx_multiply => 2,
+			clkin_divide_by_2 => FALSE,
+			clkin_period => (sys_per*real(sdram_params.pll.dcm_div))/real( sdram_params.pll.dcm_mul),
+			clkout_phase_shift => "NONE",
+			deskew_adjust => "SYSTEM_SYNCHRONOUS",
+			dfs_frequency_mode => "HIGH",
+			duty_cycle_correction => TRUE,
+			factory_jf => x"C080",
+			phase_shift => 0,
+			startup_wait => FALSE)
+		port map (
+			dssen    => '0',
+			psclk    => '0',
+			psen     => '0',
+			psincdec => '0',
+	
+			rst      => dcm_rst,
+			clkin    => dcm_clkin,
+			clkfb    => clk0,
+			clk0     => dcm_clk0,
+			clk90    => dcm_clk90,
+			locked   => dcm_lckd);
+
+		clk0_bufg_i : bufg
+		port map (
+			i => dcm_clk0,
+			o => clk0);
+	
+		clk90_bufg_i : bufg
+		port map (
+			i => dcm_clk90,
+			o => clk90);
+	
+		ddrsys_rst <= not dcm_lckd;
+
+	end block;
 
 	ipoe_b : block
 
