@@ -27,22 +27,104 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.profiles.all;
 use hdl4fpga.sdr_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
+use hdl4fpga.profiles.all;
+use hdl4fpga.app_profiles.all;
 
 library unisim;
 use unisim.vcomponents.all;
 
 architecture graphics of s3estarter is
 
-	type apps is (
-		mode480p_ddr133mhz,
-		mode600p_ddr166mhz,
-		mode1080p_ddr200mhz);
+	type app_profiles is (
+		sdr133mhz_480p24bpp,
+		sdr166mhz_600p24bpp,
+		sdr200mhz_1080p24bpp);
 
-	constant app         : apps := mode600p_ddr166mhz;
+	constant app_profile : app_profiles := sdr133mhz_480p24bpp;
+
+	type pll_params is record
+		dcm_mul : natural;
+		dcm_div : natural;
+	end record;
+
+	type video_params is record
+		id   : video_modes;
+		pll    : pll_params;
+		timing : videotiming_ids;
+	end record;
+
+	type videoparams_vector is array (natural range <>) of video_params;
+	constant video_tab : videoparams_vector := (
+		(id => modedebug,      timing => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
+		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    pll => (dcm_mul =>  2, dcm_div => 4)),
+		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    pll => (dcm_mul =>  4, dcm_div => 5)),
+		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   pll => (dcm_mul =>  3, dcm_div => 2)),
+		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, pll => (dcm_mul =>  3, dcm_div => 1)));
+
+
+	function videoparam (
+		constant id  : video_modes)
+		return video_params is
+		constant tab : videoparams_vector := video_tab;
+	begin
+		for i in tab'range loop
+			if id=tab(i).id then
+				return tab(i);
+			end if;
+		end loop;
+
+		assert false 
+		report ">>>videoparam<<< : video id not available"
+		severity failure;
+
+		return tab(tab'left);
+	end;
+
+	type sdramparams_record is record
+		id  : sdram_speeds;
+		pll : pll_params;
+		cas : std_logic_vector(0 to 3-1);
+	end record;
+
+	type sdramparams_vector is array (natural range <>) of sdramparams_record;
+	constant sdram_tab : sdramparams_vector := (
+		(id => sdram133MHz, pll => (dcm_mul =>  8, dcm_div => 3), cas => "010"),
+		(id => sdram166MHz, pll => (dcm_mul => 10, dcm_div => 3), cas => "110"),
+		(id => sdram200MHz, pll => (dcm_mul =>  4, dcm_div => 1), cas => "011"));
+
+	function sdramparams (
+		constant id  : sdram_speeds)
+		return sdramparams_record is
+		constant tab : sdramparams_vector := sdram_tab;
+	begin
+		for i in tab'range loop
+			if id=tab(i).id then
+				return tab(i);
+			end if;
+		end loop;
+
+		assert false 
+		report ">>>sdramparams<<< : sdram speed not enabled"
+		severity failure;
+
+		return tab(tab'left);
+	end;
+
+	type profile_param is record
+		comms      : io_comms;
+		sdr_speed  : sdram_speeds;
+		video_mode : video_modes;
+		profile    : natural;
+	end record;
+
+	type profileparam_vector is array (app_profiles) of profile_param;
+	constant profile_tab : profileparam_vector := (
+		sdr133mhz_480p24bpp  => (io_ipoe, sdram166MHz, mode480p24bpp,  1),
+		sdr166mhz_600p24bpp  => (io_ipoe, sdram150MHz, mode600p24bpp,  1),
+		sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp, 1));
 
 	signal sys_rst       : std_logic;
 	signal sys_clk       : std_logic;
@@ -113,59 +195,7 @@ architecture graphics of s3estarter is
     signal video_blank     : std_logic;
     signal video_pixel     : std_logic_vector(0 to 32-1);
 
-	type pll_params is record
-		dcm_mul : natural;
-		dcm_div : natural;
-	end record;
-
-	type display_param is record
-		pll  : pll_params;
-		mode : videotiming_ids;
-	end record;
-
-	type displayparam_vector is array (video_modes) of display_param;
-	constant video_tab : displayparam_vector := (
-		modedebug   => (mode => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
-		mode480p    => (mode => pclk25_00m640x480at60,    pll => (dcm_mul =>  2, dcm_div => 4)),
-		mode600p    => (mode => pclk40_00m800x600at60,    pll => (dcm_mul =>  4, dcm_div => 5)),
-		mode720p    => (mode => pclk75_00m1280x720at60,   pll => (dcm_mul =>  3, dcm_div => 2)),
-		mode1080p   => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul =>  3, dcm_div => 1)));
-
-	type sdr_params is record
-		pll : pll_params;
-		cas : std_logic_vector(0 to 3-1);
-	end record;
-
-	type sdr_speeds is (
-		sdr_133MHz,
-		sdr_166MHz,
-		sdr_200MHz);
-
-	--------------------------------------------------
-	-- Frequency   -- 133 Mhz -- 166 Mhz -- 200 Mhz --
-	-- Multiply by --   8     --  10     --   4     --
-	-- Divide by   --   3     --   3     --   1     --
-	--------------------------------------------------
-
-	type ddram_vector is array (sdr_speeds) of sdr_params;
-	constant sdr_tab : ddram_vector := (
-		sdr_133MHz => (pll => (dcm_mul =>  8, dcm_div => 3), cas => "010"),
-		sdr_166MHz => (pll => (dcm_mul => 10, dcm_div => 3), cas => "110"),
-		sdr_200MHz => (pll => (dcm_mul =>  4, dcm_div => 1), cas => "011"));
-
-	type app_param is record
-		sdr_speed  : sdr_speeds;
-		video_mode : video_modes;
-	end record;
-
-	type apparam_vector is array (apps) of app_param;
-	constant app_tab : apparam_vector := (
-		mode480p_ddr133mhz  => (sdr_133MHz, mode480p),
-		mode600p_ddr166mhz  => (sdr_166MHz, mode600p),
-		mode1080p_ddr200mhz => (sdr_200MHz, mode1080p));
-
-	constant sdr_speed  : sdr_speeds  := app_tab(app).sdr_speed;
-
+	constant sdr_speed   : sdram_speeds  := profile_tab(app_profile).sdr_speed;
 	function setif (
 		constant expr  : boolean;
 		constant true  : video_modes;
@@ -177,11 +207,11 @@ architecture graphics of s3estarter is
 		end if;
 		return false;
 	end;
-	constant video_mode : video_modes := setif(debug, modedebug, app_tab(app).video_mode);
+	constant video_mode   : video_modes := setif(debug, modedebug, profile_tab(app_profile).video_mode);
 
-	constant sdr_param : sdr_params := sdr_tab(sdr_speed);
+	constant sdram_params : sdramparams_record := sdramparams(sdr_speed);
 
-	constant sdr_tcp   : real := real(sdr_param.pll.dcm_div)*sys_per/real(sdr_param.pll.dcm_mul);
+	constant sdr_tcp   : real := real(sdram_params.pll.dcm_div)*sys_per/real(sdram_params.pll.dcm_mul);
 
 	alias ctlr_clk   : std_logic is clk0;
 
@@ -221,8 +251,8 @@ begin
 		generic map(
 			clk_feedback   => "1x",
 			clkdv_divide   => 2.0,
-			clkfx_divide   => video_tab(video_mode).pll.dcm_div,
-			clkfx_multiply => video_tab(video_mode).pll.dcm_mul,
+			clkfx_divide   => videoparam(video_mode).pll.dcm_div,
+			clkfx_multiply => videoparam(video_mode).pll.dcm_mul,
 			clkin_divide_by_2 => false,
 			clkin_period   => sys_per,
 			clkout_phase_shift => "none",
@@ -493,7 +523,7 @@ begin
 		word_size    => word_size,
 		byte_size    => byte_size,
 
-		timing_id    => video_tab(video_mode).mode,
+		timing_id    => videoparam(video_mode).timing,
 		red_length   => 8,
 		green_length => 8,
 		blue_length  => 8,
@@ -522,7 +552,7 @@ begin
 		ctlr_clks(1) => clk90,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "001",
-		ctlr_cl      => sdr_param.cas,
+		ctlr_cl      => sdram_params.cas,
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),

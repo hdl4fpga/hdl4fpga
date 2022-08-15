@@ -32,27 +32,146 @@ use hdl4fpga.profiles.all;
 use hdl4fpga.sdr_db.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
+use hdl4fpga.app_profiles.all;
 
 library unisim;
 use unisim.vcomponents.all;
 
 architecture graphics of arty is
 
-	type apps is (
-		mode900p_ddr333MHz,
-		mode900p_ddr350MHz,
-		mode900p_ddr375MHz,
-		mode900p_ddr400MHz,
-		mode900p_ddr425MHz,
-		mode900p_ddr450MHz,
-		mode900p_ddr475MHz,
-		mode900p_ddr500MHz,
-		mode900p_ddr525MHz,
-		mode900p_ddr550MHz,
-		mode900p_ddr575MHz,
-		mode900p_ddr600MHz);
+	type app_profiles is (
+		sdr333MHz_900p24bpp,
+		sdr350MHz_900p24bpp,
+		sdr375MHz_900p24bpp,
+		sdr400MHz_900p24bpp,
+		sdr425MHz_900p24bpp,
+		sdr450MHz_900p24bpp,
+		sdr475MHz_900p24bpp,
+		sdr500MHz_900p24bpp,
+		sdr525MHz_900p24bpp,
+		sdr550MHz_900p24bpp,
+		sdr575MHz_900p24bpp,
+		sdr600MHz_900p24bpp);
 
-	constant app : apps := mode900p_ddr500MHz;
+	constant app_profile : app_profiles := sdr500mhz_900p24bpp;
+
+	type pll_params is record
+		dcm_mul : natural;
+		dcm_div : natural;
+	end record;
+
+	type video_params is record
+		id     : video_modes;
+		pll    : pll_params;
+		timing : videotiming_ids;
+	end record;
+
+	type videoparams_vector is array (natural range <>) of video_params;
+	constant video_tab : videoparams_vector := (
+		(id => modedebug,      timing => pclk_debug,              pll => (dcm_mul => 4, dcm_div => 2)),
+		(id => mode900p24bpp,  timing => pclk108_00m1600x900at60, pll => (dcm_mul => 1, dcm_div => 11)));
+
+	function videoparam (
+		constant id  : video_modes)
+		return video_params is
+		constant tab : videoparams_vector := video_tab;
+	begin
+		for i in tab'range loop
+			if id=tab(i).id then
+				return tab(i);
+			end if;
+		end loop;
+
+		assert false 
+		report ">>>videoparam<<< : video id not available"
+		severity failure;
+
+		return tab(tab'left);
+	end;
+
+	type sdramparams_record is record
+		id  : sdram_speeds;
+		pll : pll_params;
+		cl : std_logic_vector(0 to 3-1);
+		cwl : std_logic_vector(0 to 3-1);
+	end record;
+
+	type sdramparams_vector is array (natural range <>) of sdramparams_record;
+	constant sdram_tab : sdramparams_vector := (
+
+		------------------------------------------------------------------------
+		-- Frequency   -- 333 Mhz -- 350 Mhz -- 375 Mhz -- 400 Mhz -- 425 Mhz --
+		-- Multiply by --  10     --   7     --  15     --   4     --  17     --
+		-- Divide by   --   3     --   2     --   4     --   1     --   4     --
+		------------------------------------------------------------------------
+
+		(id => sdram333MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "001", cwl => "000"),
+		(id => sdram350MHz, pll => (dcm_mul =>  7, dcm_div => 2), cl => "010", cwl => "000"),
+		(id => sdram375MHz, pll => (dcm_mul => 15, dcm_div => 4), cl => "010", cwl => "000"),
+		(id => sdram400MHz, pll => (dcm_mul =>  4, dcm_div => 1), cl => "010", cwl => "000"),
+		(id => sdram425MHz, pll => (dcm_mul => 17, dcm_div => 4), cl => "011", cwl => "001"),
+
+		------------------------------------------------------------------------
+		-- Frequency   -- 450 Mhz -- 475 Mhz -- 500 Mhz -- 525 Mhz -- 550 Mhz --
+		-- Multiply by --   9     --  19     --   5     --  21     --  22     --
+		-- Divide by   --   2     --   4     --   1     --   4     --   4     --
+		------------------------------------------------------------------------
+
+		(id => sdram450MHz, pll => (dcm_mul =>  9, dcm_div => 2), cl => "011", cwl => "001"),
+		(id => sdram475MHz, pll => (dcm_mul => 19, dcm_div => 4), cl => "011", cwl => "001"),
+		(id => sdram500MHz, pll => (dcm_mul =>  5, dcm_div => 1), cl => "011", cwl => "001"),
+		(id => sdram525MHz, pll => (dcm_mul => 21, dcm_div => 4), cl => "011", cwl => "001"),
+		(id => sdram550MHz, pll => (dcm_mul => 11, dcm_div => 2), cl => "101", cwl => "010"),  -- latency 9
+		-- 
+		---------------------------------------
+		-- Frequency   -- 575 Mhz -- 600 Mhz --
+		-- Multiply by --  23     --   6     --
+		-- Divide by   --   4     --   1     --
+		---------------------------------------
+
+		(id => sdram575MHz, pll => (dcm_mul => 23, dcm_div => 4), cl => "101", cwl => "010"),  -- latency 9
+		(id => sdram600MHz, pll => (dcm_mul =>  6, dcm_div => 1), cl => "101", cwl => "010")); -- latency 9
+
+	function sdramparams (
+		constant id  : sdram_speeds)
+		return sdramparams_record is
+		constant tab : sdramparams_vector := sdram_tab;
+	begin
+		for i in tab'range loop
+			if id=tab(i).id then
+				return tab(i);
+			end if;
+		end loop;
+
+		assert false 
+		report ">>>sdramparams<<< : sdram speed not enabled"
+		severity failure;
+
+		return tab(tab'left);
+	end;
+
+	type profile_param is record
+		comms      : io_comms;
+		sdr_speed  : sdram_speeds;
+		video_mode : video_modes;
+		profile    : natural;
+	end record;
+
+	type profileparam_vector is array (app_profiles) of profile_param;
+	constant profile_tab : profileparam_vector := (
+		sdr333MHz_900p24bpp => (io_ipoe, sdram333MHz, mode900p24bpp, 1),
+		sdr350MHz_900p24bpp => (io_ipoe, sdram350MHz, mode900p24bpp, 1),
+		sdr375MHz_900p24bpp => (io_ipoe, sdram375MHz, mode900p24bpp, 1),
+		sdr400MHz_900p24bpp => (io_ipoe, sdram400MHz, mode900p24bpp, 1),
+		sdr425MHz_900p24bpp => (io_ipoe, sdram425MHz, mode900p24bpp, 1),
+		sdr450MHz_900p24bpp => (io_ipoe, sdram450MHz, mode900p24bpp, 1),
+		sdr475MHz_900p24bpp => (io_ipoe, sdram475MHz, mode900p24bpp, 1),
+		sdr500MHz_900p24bpp => (io_ipoe, sdram500MHz, mode900p24bpp, 1),
+		sdr525MHz_900p24bpp => (io_ipoe, sdram525MHz, mode900p24bpp, 1),
+		sdr550MHz_900p24bpp => (io_ipoe, sdram550MHz, mode900p24bpp, 1),
+		sdr575MHz_900p24bpp => (io_ipoe, sdram575MHz, mode900p24bpp, 1),
+		sdr600MHz_900p24bpp => (io_ipoe, sdram600MHz, mode900p24bpp, 1));
+
 
 	signal sys_rst : std_logic;
 
@@ -69,11 +188,6 @@ architecture graphics of arty is
 
 	constant sys_per  : real := 10.0e-9;
 	constant sys_freq : real := 1.0/(sys_per);
-
-	type pll_params is record
-		dcm_mul : natural;
-		dcm_div : natural;
-	end record;
 
 	type ddr_params is record
 		pll : pll_params;
@@ -191,51 +305,22 @@ architecture graphics of arty is
 	signal ddr3_dqo       : std_logic_vector(word_size-1 downto 0);
 	signal ddr3_dqt       : std_logic_vector(word_size-1 downto 0);
 
-	type video_modes is (
-		modedebug,
-		mode900p);
+	constant sdr_speed   : sdram_speeds  := profile_tab(app_profile).sdr_speed;
+	function setif (
+		constant expr  : boolean;
+		constant true  : video_modes;
+		constant false : video_modes)
+		return video_modes is
+	begin
+		if expr then
+			return true;
+		end if;
+		return false;
+	end;
+	constant video_mode   : video_modes := setif(debug, modedebug, profile_tab(app_profile).video_mode);
+	constant sdram_params : sdramparams_record := sdramparams(sdr_speed);
 
-	type io_iface is (
-		io_hdlc,
-		io_ipoe);
-
-	type app_record is record
-		iface      : io_iface;
-		ddr_speed  : ddr_speeds;
-		video_mode : video_modes;
-	end record;
-
-	type app_vector is array (apps) of app_record;
-	constant app_tap : app_vector := (
-		mode900p_ddr333MHz => (io_ipoe, ddr333MHz, mode900p),
-		mode900p_ddr350MHz => (io_ipoe, ddr350MHz, mode900p),
-		mode900p_ddr375MHz => (io_ipoe, ddr375MHz, mode900p),
-		mode900p_ddr400MHz => (io_ipoe, ddr400MHz, mode900p),
-		mode900p_ddr425MHz => (io_ipoe, ddr425MHz, mode900p),
-		mode900p_ddr450MHz => (io_ipoe, ddr450MHz, mode900p),
-		mode900p_ddr475MHz => (io_ipoe, ddr475MHz, mode900p),
-		mode900p_ddr500MHz => (io_ipoe, ddr500MHz, mode900p),
-		mode900p_ddr525MHz => (io_ipoe, ddr525MHz, mode900p),
-		mode900p_ddr550MHz => (io_ipoe, ddr550MHz, mode900p),
-		mode900p_ddr575MHz => (io_ipoe, ddr575MHz, mode900p),
-		mode900p_ddr600MHz => (io_ipoe, ddr600MHz, mode900p));
-
-	type video_params is record
-		pll  : pll_params;
-		mode : videotiming_ids;
-	end record;
-
-	type videoparams_vector is array (video_modes) of video_params;
-	constant video_tab : videoparams_vector := (
-		modedebug => (mode => pclk_debug,              pll => (dcm_mul => 1, dcm_div => 32)),
-		mode900p  => (mode => pclk108_00m1600x900at60, pll => (dcm_mul => 1, dcm_div => 11)));
-
-	constant video_mode : video_modes := video_modes'val(
-		setif(debug, video_modes'pos(modedebug), video_modes'pos(app_tap(app).video_mode)));
-
-	constant ddr_speed : ddr_speeds := app_tap(app).ddr_speed;
-	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
-	constant ddr_tcp   : real := (sys_per*real(ddr_param.pll.dcm_div))/real(ddr_param.pll.dcm_mul); -- 1 ns /1ps
+	constant sdr_tcp   : real := (sys_per*real(sdram_params.pll.dcm_div))/real(sdram_params.pll.dcm_mul); -- 1 ns /1ps
 
 	alias  sys_clk        : std_logic is gclk100;
 	alias  ctlr_clk       : std_logic is ddr_clk0;
@@ -267,7 +352,7 @@ architecture graphics of arty is
 	-- Select link --
 	-----------------
 
-	constant io_link  : io_iface := io_ipoe;
+	constant io_link     : io_comms := profile_tab(app_profile).comms;
 
 	constant mem_size : natural := 8*(1024*8);
 
@@ -356,8 +441,8 @@ begin
 		begin
 			ddr_i : mmcme2_base
 			generic map (
-				divclk_divide    => ddr_param.pll.dcm_div,
-				clkfbout_mult_f  => real(2*ddr_param.pll.dcm_mul),
+				divclk_divide    => sdram_params.pll.dcm_div,
+				clkfbout_mult_f  => real(2*sdram_params.pll.dcm_mul),
 				clkin1_period    => sys_per*1.0e9,
 				clkout0_divide_f => real(data_gear/2),
 				clkout1_divide   => data_gear/2,
@@ -421,8 +506,8 @@ begin
 	hdlc_g : if io_link=io_hdlc generate
 
 		constant uart_xtal : real := 
-			real(video_tab(video_mode).pll.dcm_mul)*sys_freq/
-			real(video_tab(video_mode).pll.dcm_div);
+			real(videoparam(video_mode).pll.dcm_mul)*sys_freq/
+			real(videoparam(video_mode).pll.dcm_div);
 
 		constant baudrate : natural := setif(
 			uart_xtal >= 32.0e6, 3000000, setif(
@@ -673,7 +758,7 @@ begin
 	generic map (
 		debug        => debug,
 		profile      => 1,
-		sdr_tcp      => 2.0*ddr_tcp,
+		sdr_tcp      => 2.0*sdr_tcp,
 		fpga         => xc7a,
 		mark         => MT41K2G125,
 		sclk_phases  => sclk_phases,
@@ -689,7 +774,7 @@ begin
 		word_size    => word_size,
 		byte_size    => byte_size,
 
-		timing_id    => video_tab(video_mode).mode,
+		timing_id    => videoparam(video_mode).timing,
 		red_length   => 8,
 		green_length => 8,
 		blue_length  => 8,
@@ -719,8 +804,8 @@ begin
 		ctlr_clks(0) => ctlr_clk,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "000",
-		ctlr_cl      => ddr_param.cl,
-		ctlr_cwl     => ddr_param.cwl,
+		ctlr_cl      => sdram_params.cl,
+		ctlr_cwl     => sdram_params.cwl,
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
 
@@ -784,7 +869,7 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc7a_sdrphy
 	generic map (
-		taps      => natural(floor(ddr_tcp*(32.0*2.0)/(sys_per/2.0)))-1,
+		taps      => natural(floor(sdr_tcp*(32.0*2.0)/(sys_per/2.0)))-1,
 		bank_size => bank_size,
         addr_size => addr_size,
 		cmmd_gear => cmmd_gear,

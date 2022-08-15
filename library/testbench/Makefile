@@ -183,6 +183,8 @@ HDL4FPGA__graphics__def = $(LIB_HDL4FPGA)/graphics/def.dat
 HDL4FPGA__graphics = $(LIB_HDL4FPGA)/graphics/_primary.dat
 HDL4FPGA__fifo__def = $(LIB_HDL4FPGA)/fifo/def.dat
 HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
+HDL4FPGA__ff__beh = $(LIB_HDL4FPGA)/ff/beh.dat
+HDL4FPGA__ff = $(LIB_HDL4FPGA)/ff/_primary.dat
 HDL4FPGA__ethpkg__body = $(LIB_HDL4FPGA)/ethpkg/body.dat
 HDL4FPGA__ethpkg = $(LIB_HDL4FPGA)/ethpkg/_primary.dat
 HDL4FPGA__eth_tx__def = $(LIB_HDL4FPGA)/eth_tx/def.dat
@@ -225,14 +227,12 @@ HDL4FPGA__dhcpc_offer__def = $(LIB_HDL4FPGA)/dhcpc_offer/def.dat
 HDL4FPGA__dhcpc_offer = $(LIB_HDL4FPGA)/dhcpc_offer/_primary.dat
 HDL4FPGA__dhcpc_dscb__def = $(LIB_HDL4FPGA)/dhcpc_dscb/def.dat
 HDL4FPGA__dhcpc_dscb = $(LIB_HDL4FPGA)/dhcpc_dscb/_primary.dat
-HDL4FPGA__dfsdcm__spartan3 = $(LIB_HDL4FPGA)/dfsdcm/spartan3.dat
-HDL4FPGA__dfsdcm = $(LIB_HDL4FPGA)/dfsdcm/_primary.dat
-HDL4FPGA__dfs__xilinx = $(LIB_HDL4FPGA)/dfs/xilinx.dat
-HDL4FPGA__dfs = $(LIB_HDL4FPGA)/dfs/_primary.dat
 HDL4FPGA__desser__mux = $(LIB_HDL4FPGA)/desser/mux.dat
 HDL4FPGA__desser = $(LIB_HDL4FPGA)/desser/_primary.dat
 HDL4FPGA__demo_graphics__mix = $(LIB_HDL4FPGA)/demo_graphics/mix.dat
 HDL4FPGA__demo_graphics = $(LIB_HDL4FPGA)/demo_graphics/_primary.dat
+HDL4FPGA__dbram__xilinx = $(LIB_HDL4FPGA)/dbram/xilinx.dat
+HDL4FPGA__dbram = $(LIB_HDL4FPGA)/dbram/_primary.dat
 HDL4FPGA__crc__def = $(LIB_HDL4FPGA)/crc/def.dat
 HDL4FPGA__crc = $(LIB_HDL4FPGA)/crc/_primary.dat
 HDL4FPGA__cp850x8x8x128to255 = $(LIB_HDL4FPGA)/cp850x8x8x128to255/_primary.dat
@@ -446,6 +446,8 @@ whole_library :     $(HDL4FPGA__xc7a_sdrphy__xc7a) \
     $(HDL4FPGA__graphics) \
     $(HDL4FPGA__fifo__def) \
     $(HDL4FPGA__fifo) \
+    $(HDL4FPGA__ff__beh) \
+    $(HDL4FPGA__ff) \
     $(HDL4FPGA__ethpkg__body) \
     $(HDL4FPGA__ethpkg) \
     $(HDL4FPGA__eth_tx__def) \
@@ -488,14 +490,12 @@ whole_library :     $(HDL4FPGA__xc7a_sdrphy__xc7a) \
     $(HDL4FPGA__dhcpc_offer) \
     $(HDL4FPGA__dhcpc_dscb__def) \
     $(HDL4FPGA__dhcpc_dscb) \
-    $(HDL4FPGA__dfsdcm__spartan3) \
-    $(HDL4FPGA__dfsdcm) \
-    $(HDL4FPGA__dfs__xilinx) \
-    $(HDL4FPGA__dfs) \
     $(HDL4FPGA__desser__mux) \
     $(HDL4FPGA__desser) \
     $(HDL4FPGA__demo_graphics__mix) \
     $(HDL4FPGA__demo_graphics) \
+    $(HDL4FPGA__dbram__xilinx) \
+    $(HDL4FPGA__dbram) \
     $(HDL4FPGA__crc__def) \
     $(HDL4FPGA__crc) \
     $(HDL4FPGA__cp850x8x8x128to255) \
@@ -759,6 +759,14 @@ $(HDL4FPGA__crc__def) : ../common/crc.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/crc.vhd
 
+$(HDL4FPGA__dbram) \
+$(HDL4FPGA__dbram__xilinx) : ../xilinx/dbram.vhd \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(UNISIM__vcomponents)
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/dbram.vhd
+
 $(HDL4FPGA__demo_graphics) \
 $(HDL4FPGA__demo_graphics__mix) : ../demos/demo_graphics.vhd \
 		$(HDL4FPGA__sdr_ctlr) \
@@ -797,24 +805,6 @@ $(HDL4FPGA__desser__mux) : ../common/desser.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/desser.vhd
-
-$(HDL4FPGA__dfs) \
-$(HDL4FPGA__dfs__xilinx) : ../xilinx/dfs.vhd \
-		$(UNISIM__vcomponents) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/dfs.vhd
-
-$(HDL4FPGA__dfsdcm) \
-$(HDL4FPGA__dfsdcm__spartan3) : ../xilinx/dfsdcm.vhd \
-		$(IEEE__std_logic_textio) \
-		$(IEEE__numeric_std) \
-		$(HDL4FPGA__std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164) \
-		$(UNISIM__vcomponents)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/dfsdcm.vhd
 
 $(HDL4FPGA__dhcpc_dscb) \
 $(HDL4FPGA__dhcpc_dscb__def) : ../mii/dhcp_dscb.vhd \
@@ -929,7 +919,6 @@ $(HDL4FPGA__ecp3_sdrphy) \
 $(HDL4FPGA__ecp3_sdrphy__ecp3) : ../latticesemi/ecp3/ecp3_sdrphy.vhd \
 		$(HDL4FPGA__ecp3_sdrdqphy) \
 		$(HDL4FPGA__ff) \
-		$(HDL4FPGA__aff) \
 		$(HDL4FPGA__clk_start) \
 		$(HDL4FPGA__ecp3_sdrbaphy) \
 		$(HDL4FPGA__sdr_param) \
@@ -1028,6 +1017,12 @@ $(HDL4FPGA__ethpkg__body) : ../mii/ethpkg.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/ethpkg.vhd
+
+$(HDL4FPGA__ff) \
+$(HDL4FPGA__ff__beh) : ../common/ff.vhd \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../common/ff.vhd
 
 $(HDL4FPGA__fifo) \
 $(HDL4FPGA__fifo__def) : ../common/fifo.vhd \
@@ -1154,9 +1149,6 @@ $(HDL4FPGA__imdr__beh) : ../xilinx/imdr.vhd \
 
 $(HDL4FPGA__iofifo) \
 $(HDL4FPGA__iofifo__mix) : ../sdr/sdr_iofifo.vhd \
-		$(HDL4FPGA__dbram) \
-		$(HDL4FPGA__sff) \
-		$(HDL4FPGA__aff) \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \

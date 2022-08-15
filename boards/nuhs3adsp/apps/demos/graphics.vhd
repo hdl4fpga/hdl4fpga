@@ -249,21 +249,6 @@ begin
 		end if;
 	end process;
 
-	videodcm_b : block
-		signal rst : std_logic;
-	begin
-		videodcm_e : entity hdl4fpga.dfs
-		generic map (
-			dcm_per => sys_per,
-			dfs_mul => videoparam(video_mode).pll.dcm_mul,
-			dfs_div => videoparam(video_mode).pll.dcm_div)
-		port map(
-			dcm_rst => rst,
-			dcm_clk => sys_clk,
-			dfs_clk => video_clk);
-	end block;
-
-	
 	videodcm_b : if not debug generate
 	   signal dcm_rst   : std_logic;
 	   signal dcm_clkfb : std_logic;
@@ -280,8 +265,8 @@ begin
 		generic map(
 			clk_feedback   => "1x",
 			clkdv_divide   => 2.0,
-			clkfx_divide   => video_tab(video_mode).pll.dcm_div,
-			clkfx_multiply => video_tab(video_mode).pll.dcm_mul,
+			clkfx_divide   => videoparam(video_mode).pll.dcm_div,
+			clkfx_multiply => videoparam(video_mode).pll.dcm_mul,
 			clkin_divide_by_2 => false,
 			clkin_period   => sys_per,
 			clkout_phase_shift => "none",
