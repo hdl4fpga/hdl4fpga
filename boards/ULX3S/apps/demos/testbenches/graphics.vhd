@@ -489,7 +489,7 @@ begin
 
 	du_e : ulx3s
 	generic map (
-		debug => true)
+		debug => false)
 	port map (
 		clk_25mhz  => xtal,
 		ftdi_txd   => ftdi_txd,

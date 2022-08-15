@@ -64,7 +64,7 @@ architecture graphics of ulx3s is
 
 	---------------------------------------------
 	--         Set your profile here           --
-	constant app : apps := uart_225MHz_600p24bpp;
+	constant app : apps := uart_250MHz_600p24bpp;
     --                                         --
 	---------------------------------------------
 
@@ -176,7 +176,7 @@ architecture graphics of ulx3s is
 
 	constant nodebug_videomode : video_modes := app_tab(app).mode;
 	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
-		video_modes'POS(nodebug_videomode),
+		video_modes'POS(modedebug),
 		video_modes'POS(nodebug_videomode)));
 	constant video_record : videoparam_record := videoparam(video_mode);
 
@@ -193,7 +193,7 @@ architecture graphics of ulx3s is
 		real(sdram_record.pll.clki_div*sdram_record.pll.clkos2_div)/
 		(real(sdram_record.pll.clkfb_div*sdram_record.pll.clkop_div)*sys_freq);
 
-	constant io_link : io_comms := app_tab(app).comms;
+	constant io_link     : io_comms := app_tab(app).comms;
 
 	constant sclk_phases : natural := 1;
 	constant sclk_edges  : natural := 1;
@@ -244,34 +244,35 @@ architecture graphics of ulx3s is
 	signal sdram_dqt     : std_logic_vector(sdram_d'range);
 	signal sdram_do      : std_logic_vector(sdram_d'range);
 
-	signal video_clk      : std_logic;
-	signal videoio_clk    : std_logic;
-	signal video_lck      : std_logic;
-	signal video_shf_clk  : std_logic;
-	signal video_hzsync   : std_logic;
-    signal video_vtsync   : std_logic;
-    signal video_blank    : std_logic;
-    signal video_on       : std_logic;
-    signal video_dot      : std_logic;
-	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
+	signal video_clk     : std_logic;
+	signal videoio_clk   : std_logic;
+	signal video_lck     : std_logic;
+	signal video_shf_clk : std_logic;
+	signal video_hzsync  : std_logic;
+    signal video_vtsyn   : std_logic;
+    signal video_blank   : std_logic;
+    signal video_on      : std_logic;
+    signal video_dot     : std_logic;
+	signal dvid_crgb     : std_logic_vector(8-1 downto 0);
 
-	alias ctlr_clk     : std_logic is ddrsys_clks(0);
+	alias ctlr_clk       : std_logic is ddrsys_clks(0);
 
-	constant mem_size : natural := 8*(1024*8);
-	signal so_frm     : std_logic;
-	signal so_irdy    : std_logic;
-	signal so_trdy    : std_logic;
-	signal so_data    : std_logic_vector(0 to 8-1);
-	signal si_frm     : std_logic;
-	signal si_irdy    : std_logic;
-	signal si_trdy    : std_logic;
-	signal si_end     : std_logic;
-	signal si_data    : std_logic_vector(0 to 8-1);
+	constant mem_size    : natural := 8*(1024*8);
+	signal so_frm        : std_logic;
+	signal so_irdy       : std_logic;
+	signal so_trdy       : std_logic;
+	signal so_data       : std_logic_vector(0 to 8-1);
+	signal si_frm        : std_logic;
+	signal si_irdy       : std_logic;
+	signal si_trdy       : std_logic;
+	signal si_end        : std_logic;
+	signal si_data       : std_logic_vector(0 to 8-1);
 
-	signal sio_clk    : std_logic;
-	alias uart_clk    : std_logic is sio_clk;
+	signal sio_clk       : std_logic;
+	alias uart_clk       : std_logic is sio_clk;
 
-	constant hdplx : std_logic := setif(debug, '0', '1');
+	constant hdplx       : std_logic := setif(debug, '0', '1');
+
 begin
 
 	sys_rst <= '0';
@@ -631,7 +632,7 @@ begin
 
 		sdr_tcp      => sdr_tcp,
 		fpga         => xc3s,
-		mark         => MT46V256M6T,
+		mark         => MT48LC256MA27E ,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		data_phases  => data_phases,

@@ -243,7 +243,7 @@ architecture arch of sdr_mpu is
 		return val;
 	end;
 
-	impure function select_lat (
+	function select_lat (
 		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
 		constant lat_tab : natural_vector)
@@ -265,7 +265,7 @@ architecture arch of sdr_mpu is
 			return val;
 		end;
 
-		impure function select_latword (
+		function select_latword (
 			constant lat_val : std_logic_vector;
 			constant lat_cod : latword_vector;
 			constant lat_tab : natural_vector)
@@ -276,9 +276,12 @@ architecture arch of sdr_mpu is
 			for i in lat_cod'range loop
 				if lat_cod(i)=lat_val then
 					val := to_signed((lat_tab(i)+gear-1)/gear-2, lat_timer'length);
-					exit;
+					return val;
 				end if;
 			end loop;
+			assert false
+			report ">>>select_latword<<< latency register is invalid"
+			severity failure;
 			return val;
 		end;
 
@@ -292,7 +295,8 @@ begin
 	sdr_mpu_blat <= std_logic_vector(resize(unsigned(signed'(select_lat(sdr_mpu_bl, bl_cod, bl_tab))), sdr_mpu_blat'length));
 	sdr_mpu_p: process (sdr_mpu_clk)
 		variable state_set : boolean;
-		variable id :lat_id ;
+		variable lat_id :lat_id ;
+		variable timer  : signed(lat_timer'range);
 	begin
 		if rising_edge(sdr_mpu_clk) then
 			if sdr_mpu_rst='0' then
@@ -332,23 +336,25 @@ begin
 								sdr_rdy_ena  <= sdr_state_tab(i).sdr_rdy;
 								sdr_rdy_fch  <= sdr_state_tab(i).sdr_fch;
 
-								id := sdr_state_tab(i).sdr_lat;
-								case sdr_state_tab(i).sdr_lat is
+								lat_id := sdr_state_tab(i).sdr_lat;
+								timer  := lat_timer;
+								case lat_id is
 								when id_bl =>
-									lat_timer <= select_lat(sdr_mpu_bl, bl_cod, bl_tab);
+									timer := select_lat(sdr_mpu_bl, bl_cod, bl_tab);
 								when id_cl =>
-									lat_timer <= select_lat(sdr_mpu_cl, cl_cod, cl_tab);
+									timer := select_lat(sdr_mpu_cl, cl_cod, cl_tab);
 								when id_cwl =>
-									lat_timer <= select_lat(sdr_mpu_cwl, cwl_cod, cwl_tab+gear*lwr);
+									timer := select_lat(sdr_mpu_cwl, cwl_cod, cwl_tab+gear*lwr);
 								when id_rcd =>
-									lat_timer <= to_signed(lrcd-2, lat_timer'length);
+									timer := to_signed(lrcd-2, lat_timer'length);
 								when id_rfc =>
-									lat_timer <= to_signed(lrfc-2, lat_timer'length);
+									timer := to_signed(lrfc-2, lat_timer'length);
 								when id_rp =>
-									lat_timer <= to_signed(lrp-2, lat_timer'length);
+									timer := to_signed(lrp-2, lat_timer'length);
 								when id_idle =>
-									lat_timer <= (others => '1');
+									timer := (others => '1');
 								end case;
+								lat_timer <= timer;
 								exit;
 							end if;
 						end if;

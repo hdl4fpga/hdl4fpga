@@ -951,6 +951,7 @@ package body std is
 			else
 				retval(i) := '0';
 			end if;
+--			retval(i) := std_logic'image(aux(0))(2);
 			aux := aux sll 1;
 		end loop;
 		return retval;

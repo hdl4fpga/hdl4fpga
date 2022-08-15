@@ -193,7 +193,7 @@ package sdr_param is
 
 	function sdr_latcod (
 		constant stdr : sdr_standards;
-		constant rgtr  : sdram_latency_rgtr)
+		constant rgtr : sdram_latency_rgtr)
 		return std_logic_vector;
 
 	function sdr_selcwl (
@@ -274,11 +274,11 @@ package body sdr_param is
 
 	function sdr_latcod (
 		constant stdr : sdr_standards;
-		constant rgtr  : sdram_latency_rgtr)
+		constant rgtr : sdram_latency_rgtr)
 		return std_logic_vector is
 		constant query_size : natural := sdr_query_size(stdr, rgtr);
 		constant query_data : cfglat_vector(0 to query_size-1) := sdr_query_data(stdr, rgtr);
-		variable latcode : unsigned(0 to code_size*query_size-1);
+		variable latcode    : unsigned(0 to code_size*query_size-1);
 	begin
 		for i in query_data'reverse_range loop
 			latcode := latcode srl code_size;
