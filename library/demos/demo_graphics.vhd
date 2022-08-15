@@ -910,11 +910,11 @@ begin
 
 	end block;
 
-	ddrctlr_b : block
+	sdrctlr_b : block
 		signal inirdy    : std_logic;
 	begin
 		ctlr_dm <= (others => '0');
-		ddrctlr_e : entity hdl4fpga.sdr_ctlr
+		sdrctlr_e : entity hdl4fpga.sdr_ctlr
 		generic map (
 			debug        => debug,
 			fpga         => fpga,

@@ -246,7 +246,8 @@ architecture arch of sdr_mpu is
 	function select_lat (
 		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
-		constant lat_tab : natural_vector)
+		constant lat_tab : natural_vector;
+		constant lat_len : natural :=lat_timer'length)
 		return signed is
 		subtype latword is std_logic_vector(0 to lat_cod'length/lat_tab'length-1);
 		type latword_vector is array (natural range <>) of latword;
@@ -270,12 +271,12 @@ architecture arch of sdr_mpu is
 			constant lat_cod : latword_vector;
 			constant lat_tab : natural_vector)
 			return signed is
-			variable val : signed(lat_timer'range);
+			variable val : signed(0 to lat_len-1);
 		begin
 			val := (others => '-');
 			for i in lat_cod'range loop
 				if lat_cod(i)=lat_val then
-					val := to_signed((lat_tab(i)+gear-1)/gear-2, lat_timer'length);
+					val := to_signed((lat_tab(i)+gear-1)/gear-2, lat_len);
 					return val;
 				end if;
 			end loop;
