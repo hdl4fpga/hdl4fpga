@@ -98,6 +98,8 @@ HDL4FPGA__sio_dayhdlc__beh = $(LIB_HDL4FPGA)/sio_dayhdlc/beh.dat
 HDL4FPGA__sio_dayhdlc = $(LIB_HDL4FPGA)/sio_dayhdlc/_primary.dat
 HDL4FPGA__sio_cmp__def = $(LIB_HDL4FPGA)/sio_cmp/def.dat
 HDL4FPGA__sio_cmp = $(LIB_HDL4FPGA)/sio_cmp/_primary.dat
+HDL4FPGA__sff__xilinx = $(LIB_HDL4FPGA)/sff/xilinx.dat
+HDL4FPGA__sff = $(LIB_HDL4FPGA)/sff/_primary.dat
 HDL4FPGA__serdes__def = $(LIB_HDL4FPGA)/serdes/def.dat
 HDL4FPGA__serdes = $(LIB_HDL4FPGA)/serdes/_primary.dat
 HDL4FPGA__ser_display__def = $(LIB_HDL4FPGA)/ser_display/def.dat
@@ -266,6 +268,8 @@ HDL4FPGA__app_profiles__body = $(LIB_HDL4FPGA)/app_profiles/body.dat
 HDL4FPGA__app_profiles = $(LIB_HDL4FPGA)/app_profiles/_primary.dat
 HDL4FPGA__align__arch = $(LIB_HDL4FPGA)/align/arch.dat
 HDL4FPGA__align = $(LIB_HDL4FPGA)/align/_primary.dat
+HDL4FPGA__aff__xilinx = $(LIB_HDL4FPGA)/aff/xilinx.dat
+HDL4FPGA__aff = $(LIB_HDL4FPGA)/aff/_primary.dat
 HDL4FPGA__adjsto__def = $(LIB_HDL4FPGA)/adjsto/def.dat
 HDL4FPGA__adjsto = $(LIB_HDL4FPGA)/adjsto/_primary.dat
 HDL4FPGA__adjser__beh = $(LIB_HDL4FPGA)/adjser/beh.dat
@@ -361,6 +365,8 @@ whole_library :     $(HDL4FPGA__xc7a_sdrphy__xc7a) \
     $(HDL4FPGA__sio_dayhdlc) \
     $(HDL4FPGA__sio_cmp__def) \
     $(HDL4FPGA__sio_cmp) \
+    $(HDL4FPGA__sff__xilinx) \
+    $(HDL4FPGA__sff) \
     $(HDL4FPGA__serdes__def) \
     $(HDL4FPGA__serdes) \
     $(HDL4FPGA__ser_display__def) \
@@ -529,6 +535,8 @@ whole_library :     $(HDL4FPGA__xc7a_sdrphy__xc7a) \
     $(HDL4FPGA__app_profiles) \
     $(HDL4FPGA__align__arch) \
     $(HDL4FPGA__align) \
+    $(HDL4FPGA__aff__xilinx) \
+    $(HDL4FPGA__aff) \
     $(HDL4FPGA__adjsto__def) \
     $(HDL4FPGA__adjsto) \
     $(HDL4FPGA__adjser__beh) \
@@ -1519,6 +1527,15 @@ $(HDL4FPGA__serdes__def) : ../common/serdes.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../common/serdes.vhd
+
+$(HDL4FPGA__aff) \
+$(HDL4FPGA__aff__xilinx) \
+$(HDL4FPGA__sff) \
+$(HDL4FPGA__sff__xilinx) : ../xilinx/ff.vhd \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(UNISIM__vcomponents)
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/ff.vhd
 
 $(HDL4FPGA__sio_cmp) \
 $(HDL4FPGA__sio_cmp__def) : ../sio/sio_cmp.vhd \

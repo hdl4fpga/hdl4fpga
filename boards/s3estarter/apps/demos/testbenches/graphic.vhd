@@ -182,21 +182,18 @@ begin
 	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
 
 	rst <= '0', '1' after 300 ns;
-
---	mii_req  <= '0', '1' after 200 us, '0' after 206 us, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
-	mii_req  <= '0', '1' after 10 us,  '0' after 240 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
-	mii_req1 <= '0', '1' after 360 us; -- '0' after 19.0 us; --, '1' after 19.5 us; --, '0' after 219 us, '1' after 220 us;
+	mii_req  <= '0', '1' after 10 us,  '0' after 90 us;
 	process
 		variable x : natural := 0;
 	begin
-		wait for 100 us;
+		wait for 130 us;
 		loop
 			if rep_req='1' then
-				if x > 4 then
+				if x > 1 then
 					wait;
 				end if;
-				rep_req <= '0' after 6 us;
-	wait;
+				rep_req <= '0' after 60 us;
+				wait;
 				x := x + 1;
 			else
 				rep_req <= '1' after 80 ns;
@@ -204,7 +201,7 @@ begin
 		wait on rep_req;
 		end loop;
 	end process;
---	mii_req1  <= '0'; --rep_req;
+	mii_req1  <= rep_req;
 	ping_req <= '0';
 
 	htb_e : entity hdl4fpga.eth_tb
