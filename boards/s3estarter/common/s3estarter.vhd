@@ -137,28 +137,34 @@ entity s3estarter is
 
 	attribute loc : string;
 	attribute iostandard : string;
-	attribute fast : string;
-	attribute slew : string;
-	attribute nodelay : string;
-	attribute drive : string;
-	attribute pulldown : string;
-	attribute pullup : string;
+	attribute fast       : string;
+	attribute slew       : string;
+	attribute nodelay    : string;
+	attribute drive      : string;
+	attribute pulldown   : string;
+	attribute pullup     : string;
 
-	attribute loc of xtal : signal is "C9";
-	attribute loc of sw0  : signal is "L13";
-	attribute loc of btn_north  : signal is "V4";
-	attribute loc of btn_east   : signal is "H3";
-	attribute loc of btn_west   : signal is "D18";
+	attribute loc of xtal             : signal is "C9";
+	attribute loc of sw0              : signal is "L13";
+	attribute loc of btn_north        : signal is "V4";
+	attribute loc of btn_east         : signal is "H3";
+	attribute loc of btn_west         : signal is "D18";
 
-	attribute iostandard of xtal : signal is "LVCMOS33";
-	attribute iostandard of sw0 : signal is "LVCMOS33";
+	attribute iostandard of xtal      : signal is "LVCMOS33";
+	attribute iostandard of sw0       : signal is "LVCMOS33";
 	attribute iostandard of btn_north : signal is "LVCMOS33";
 	attribute iostandard of btn_east  : signal is "LVCMOS33";
 	attribute iostandard of btn_west  : signal is "LVCMOS33";
 
+	attribute pulldown   of xtal      : signal is "YES";
+	attribute pulldown   of sw0       : signal is "YES";
+	attribute pulldown   of btn_north : signal is "YES";
+	attribute pulldown   of btn_east  : signal is "YES";
+	attribute pulldown   of btn_west  : signal is "YES";
+
 	attribute drive of xtal : signal is "4";
 
-	attribute slew of xtal : signal is "slow";
+	attribute slew of xtal : signal is "fast";
 
 	attribute loc of led0 : signal is "F12";
 	attribute loc of led1 : signal is "E12";
@@ -169,7 +175,6 @@ entity s3estarter is
 	attribute loc of led6 : signal is "E9";
 	attribute loc of led7 : signal is "F9";
 
-	attribute pulldown of led0 : signal is "YES";
 	attribute iostandard of led0 : signal is "LVCMOS25";
 	attribute iostandard of led1 : signal is "LVCMOS25";
 	attribute iostandard of led2 : signal is "LVCMOS25";

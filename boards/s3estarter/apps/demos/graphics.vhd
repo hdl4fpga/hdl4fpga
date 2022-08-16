@@ -45,6 +45,19 @@ architecture graphics of s3estarter is
 
 	constant app_profile : app_profiles := sdr133mhz_480p24bpp;
 
+	type profile_param is record
+		comms      : io_comms;
+		sdr_speed  : sdram_speeds;
+		video_mode : video_modes;
+		profile    : natural;
+	end record;
+
+	type profileparam_vector is array (app_profiles) of profile_param;
+	constant profile_tab : profileparam_vector := (
+		sdr133mhz_480p24bpp  => (io_ipoe, sdram133MHz, mode480p24bpp,  1),
+		sdr166mhz_600p24bpp  => (io_ipoe, sdram166MHz, mode600p24bpp,  1),
+		sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp, 1));
+
 	type pll_params is record
 		dcm_mul : natural;
 		dcm_div : natural;
@@ -112,19 +125,6 @@ architecture graphics of s3estarter is
 
 		return tab(tab'left);
 	end;
-
-	type profile_param is record
-		comms      : io_comms;
-		sdr_speed  : sdram_speeds;
-		video_mode : video_modes;
-		profile    : natural;
-	end record;
-
-	type profileparam_vector is array (app_profiles) of profile_param;
-	constant profile_tab : profileparam_vector := (
-		sdr133mhz_480p24bpp  => (io_ipoe, sdram166MHz, mode480p24bpp,  1),
-		sdr166mhz_600p24bpp  => (io_ipoe, sdram150MHz, mode600p24bpp,  1),
-		sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp, 1));
 
 	signal sys_rst       : std_logic;
 	signal sys_clk       : std_logic;
@@ -219,7 +219,6 @@ architecture graphics of s3estarter is
 	alias sio_clk : std_logic is e_tx_clk;
 
 	constant baudrate  : natural := 1000000;
---	constant baudrate  : natural := 115200;
 
 	signal dmavideotrans_cnl : std_logic;
 	signal tp : std_logic_vector(1 to 32);
@@ -488,6 +487,15 @@ begin
 			so_trdy    => so_trdy,
 			so_data    => so_data);
 
+		led0 <= tp(1); --si_frm;
+		led1 <= tp(2); --si_irdy;
+		led2 <= tp(3); --si_trdy;
+		led3 <= tp(4); --si_end;
+		led4 <= tp(5); --'0';
+		led5 <= tp(6); --'0';
+		led6 <= tp(7); --'0';
+		led7 <= tp(8); --'0';
+
 		desser_e: entity hdl4fpga.desser
 		port map (
 			desser_clk => e_tx_clk,
@@ -663,14 +671,14 @@ begin
 	-- LEDs --
 	----------
 
-	led0 <= sys_rst;
-	led1 <= '0';
-	led2 <= '0';
-	led3 <= '0';
-	led4 <= '0';
-	led5 <= '0';
-	led6 <= '0';
-	led7 <= '0';
+	-- led0 <= sys_rst;
+	-- led1 <= '0';
+	-- led2 <= '0';
+	-- led3 <= '0';
+	-- led4 <= '0';
+	-- led5 <= '0';
+	-- led6 <= '0';
+	-- led7 <= '0';
 
 	-- RS232 Transceiver --
 	-----------------------

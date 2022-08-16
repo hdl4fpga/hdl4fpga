@@ -663,10 +663,14 @@ begin
 --			tp(2) <= meta_trdy;
 --			tp(1) <= meta_end;
 
-			tp(4) <= tp_meta(4);
-			tp(3) <= tp_meta(3);
-			tp(2) <= tp_meta(2);
-			tp(1) <= tp_meta(1);
+			tp(1) <= sout_frm; --meta_trdy;
+			tp(2) <= siodmaio_trdy;
+			tp(3) <= status_rw;
+			tp(4) <= sodata_irdy;
+			tp(5) <= meta_end;
+			tp(6) <= siodmaio_end;
+			tp(7) <= status_rw;
+			tp(8) <= meta_avail;
 
 			sout_end  <=
 				'0' when meta_end='0'     else
