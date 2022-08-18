@@ -232,7 +232,7 @@ begin
 		mii_txd  => mii_rxd);
 
 
-	mii_refclk <= not mii_refclk after 50 ns;
+	mii_refclk <= not mii_refclk after 20 ns;
 	mii_rxc <= mii_refclk;
 	mii_txc <= mii_refclk;
 	du_e : s3estarter
