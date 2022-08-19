@@ -573,10 +573,9 @@ begin
 		word_size    => word_size,
 		byte_size    => byte_size,
 
---		burst_length => 0,
---		burst_length => 2,
---		burst_length => 4,
-		burst_length => 8,
+		burst_length => 2,
+		-- burst_length => 4,
+		-- burst_length => 8,
 		timing_id    => videoparam(video_mode).timing,
 		red_length   => 8,
 		green_length => 8,
@@ -606,9 +605,9 @@ begin
 		ctlr_clks(0) => clk0,
 		ctlr_clks(1) => clk90,
 		ctlr_rst     => ddrsys_rst,
---		ctlr_bl      => "001",				-- Busrt length 2
---		ctlr_bl      => "010",				-- Busrt length 4
-		ctlr_bl      => "011",				-- Busrt length 8
+		ctlr_bl      => "001",				-- Busrt length 2
+		-- ctlr_bl      => "010",				-- Busrt length 4
+		-- ctlr_bl      => "011",				-- Busrt length 8
 		ctlr_cl      => sdram_params.cas,
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke(0),

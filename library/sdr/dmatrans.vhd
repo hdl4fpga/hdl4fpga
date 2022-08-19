@@ -178,6 +178,9 @@ begin
 				case state is
 				when activate =>
 					cntr := resize(unsigned(ctlr_alat)-3, cntr'length);
+					assert unsigned(ctlr_alat) >= 2
+					report ">>>dmatrans<<< : ctlr_alat " & to_string(ctlr_alat) & " lower than 3"
+					severity failure;
 				when bursting =>
 					if cntr(0)='0' then
 						cntr := cntr - 1;
@@ -189,7 +192,12 @@ begin
 				reload <= state_pre and ctlr_fch;
 			end if;
 
-			ena <= (cntr(0) and not ceoc and not refreq) or (cntr(0) and restart);
+			case state is
+			when activate =>
+				ena <= '0';
+			when bursting =>
+				ena <= (cntr(0) and not ceoc and not refreq) or (cntr(0) and restart);
+			end case;
 		end process;
 
 		ilen  <= std_logic_vector(resize(shift_right(unsigned(dmatrans_ilen),  burst_bits-coln_align), ilen'length));
@@ -223,9 +231,9 @@ begin
 		col_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => 8,
-			-- sync_read => false, -- for ecp5
-			sync_read => true,
-			latency   => 1,
+			sync_read => false, -- for ecp5
+			-- sync_read => true,
+			latency   => 0,
 			check_sov => false,
 			check_dov => true,
 			gray_code => false)

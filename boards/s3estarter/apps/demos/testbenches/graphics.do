@@ -43,9 +43,9 @@ add wave -noupdate -expand -group ddr /testbench/du_e/sd_ras
 add wave -noupdate -expand -group ddr /testbench/du_e/sd_cas
 add wave -noupdate -expand -group ddr /testbench/du_e/sd_we
 add wave -noupdate -expand -group ddr /testbench/du_e/sd_ba
-add wave -noupdate -expand -group ddr /testbench/du_e/sd_a
+add wave -noupdate -expand -group ddr -radix hexadecimal /testbench/du_e/sd_a
 add wave -noupdate -expand -group ddr /testbench/du_e/sd_dqs
-add wave -noupdate -expand -group ddr /testbench/du_e/sd_dq
+add wave -noupdate -expand -group ddr -radix hexadecimal /testbench/du_e/sd_dq
 add wave -noupdate -expand -group ddr /testbench/du_e/sd_dm
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/clk0
@@ -102,7 +102,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {164001297 ps} 0}
+WaveRestoreCursors {{Cursor 1} {49130000 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 218
 configure wave -valuecolwidth 186
@@ -118,4 +118,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {163507681 ps} {164532005 ps}
+WaveRestoreZoom {49113994 ps} {49151021 ps}
