@@ -59,6 +59,7 @@ architecture graphics of s3estarter is
 		sdr166mhz_600p24bpp  => (io_ipoe, sdram166MHz, mode600p24bpp,  1),
 		sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp, 1));
 
+
 	type pll_params is record
 		dcm_mul : natural;
 		dcm_div : natural;
@@ -97,6 +98,20 @@ architecture graphics of s3estarter is
 		return tab(tab'left);
 	end;
 
+	function setif (
+		constant expr  : boolean;
+		constant true  : video_modes;
+		constant false : video_modes)
+		return video_modes is
+	begin
+		if expr then
+			return true;
+		end if;
+		return false;
+	end;
+
+	constant video_mode   : video_modes := setif(debug, modedebug, profile_tab(app_profile).video_mode);
+
 	type sdramparams_record is record
 		id  : sdram_speeds;
 		pll : pll_params;
@@ -127,21 +142,27 @@ architecture graphics of s3estarter is
 		return tab(tab'left);
 	end;
 
-	signal sys_rst       : std_logic;
-	signal sys_clk       : std_logic;
+	constant sdr_speed     : sdram_speeds  := profile_tab(app_profile).sdr_speed;
 
-	signal si_frm        : std_logic;
-	signal si_irdy       : std_logic;
-	signal si_trdy       : std_logic;
-	signal si_end        : std_logic;
-	signal si_data       : std_logic_vector(0 to 8-1);
+	constant sdram_params  : sdramparams_record := sdramparams(sdr_speed);
 
-	signal so_frm        : std_logic;
-	signal so_irdy       : std_logic;
-	signal so_trdy       : std_logic;
-	signal so_data       : std_logic_vector(0 to 8-1);
+	constant sdr_tcp       : real := real(sdram_params.pll.dcm_div)*sys_per/real(sdram_params.pll.dcm_mul);
 
-	constant sys_per       : real    := 20.0e-9;
+	constant sdr_clk_fb    :  boolean := false;
+
+	signal sys_rst         : std_logic;
+	signal sys_clk         : std_logic;
+
+	signal si_frm          : std_logic;
+	signal si_irdy         : std_logic;
+	signal si_trdy         : std_logic;
+	signal si_end          : std_logic;
+	signal si_data         : std_logic_vector(0 to 8-1);
+
+	signal so_frm          : std_logic;
+	signal so_irdy         : std_logic;
+	signal so_trdy         : std_logic;
+	signal so_data         : std_logic_vector(0 to 8-1);
 
 	constant sclk_phases   : natural := 4;
 	constant sclk_edges    : natural := 2;
@@ -155,11 +176,13 @@ architecture graphics of s3estarter is
 	constant word_size     : natural := sd_dq'length;
 	constant byte_size     : natural := 8;
 
-	signal ddrsys_lckd     : std_logic;
-	signal ddrsys_rst      : std_logic;
+	signal sdrsys_rst      : std_logic;
+	signal sdram_clk       : std_logic;
+	signal sdrphy_clk      : std_logic_vector(0 to 0);
 
-	signal clk0          : std_logic;
-	signal clk90         : std_logic;
+	signal clk0            : std_logic;
+	signal clk90           : std_logic;
+	signal clk180          : std_logic;
 
 	signal ctlrphy_rst     : std_logic;
 	signal ctlrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
@@ -196,24 +219,6 @@ architecture graphics of s3estarter is
     signal video_blank     : std_logic;
     signal video_pixel     : std_logic_vector(0 to 32-1);
 
-	constant sdr_speed   : sdram_speeds  := profile_tab(app_profile).sdr_speed;
-	function setif (
-		constant expr  : boolean;
-		constant true  : video_modes;
-		constant false : video_modes)
-		return video_modes is
-	begin
-		if expr then
-			return true;
-		end if;
-		return false;
-	end;
-	constant video_mode   : video_modes := setif(debug, modedebug, profile_tab(app_profile).video_mode);
-
-	constant sdram_params : sdramparams_record := sdramparams(sdr_speed);
-
-	constant sdr_tcp   : real := real(sdram_params.pll.dcm_div)*sys_per/real(sdram_params.pll.dcm_mul);
-
 	alias ctlr_clk   : std_logic is clk0;
 
 	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
@@ -238,8 +243,8 @@ begin
 	end process;
 
 	videodcm_b : if not debug generate
-	   signal dcm_clkfb  : std_logic;
-	   signal dcm_clk0   : std_logic;
+		signal dcm_clkfb : std_logic;
+		signal dcm_clk0  : std_logic;
 	begin
 	
 		bug_i : bufg
@@ -282,22 +287,26 @@ begin
 	ddrdcm_b : block
 		signal dfs_lckd  : std_logic;
 		signal dfs_clkfb : std_logic;
+		signal dfs_clkfx : std_logic;
+		signal dfs_clkfx180 : std_logic;
 		
 		signal dcm_rst   : std_logic;
 		signal dcm_clkin : std_logic;
+		signal dcm_clkfb : std_logic;
 		signal dcm_clk0  : std_logic;
 		signal dcm_clk90 : std_logic;
+		signal dcm_clk180 : std_logic;
 		signal dcm_lckd  : std_logic;
 
 	begin
 
 		dfs_i : dcm_sp
 		generic map(
-			clk_feedback  => "1X",
-			clkin_period  => sys_per,
-			clkdv_divide  => 2.0,
+			clk_feedback => "1X",
+			clkin_period => sys_per,
+			clkdv_divide => 2.0,
 			clkin_divide_by_2 => FALSE,
-			clkfx_divide  => sdram_params.pll.dcm_div,
+			clkfx_divide => sdram_params.pll.dcm_div,
 			clkfx_multiply => sdram_params.pll.dcm_mul,
 			clkout_phase_shift => "NONE",
 			deskew_adjust => "SYSTEM_SYNCHRONOUS",
@@ -316,26 +325,82 @@ begin
 			clkin    => sys_clk,
 			clkfb    => dfs_clkfb,
 			clk0     => dfs_clkfb,
-			clkfx    => dcm_clkin,
+			clkfx    => dfs_clkfx,
+			clkfx180 => dfs_clkfx180,
 			locked   => dfs_lckd);
 
-		process (sys_rst, sys_clk)
+		sdr_feedback_g : if sdr_clk_fb generate
+			signal sdram_clk  : std_logic;
+			signal sd_ck_fb_n : std_logic;
 		begin
-			if sys_rst='1' then
-				dcm_rst <= '1';
-			elsif rising_edge(sys_clk) then
-				dcm_rst <= not dfs_lckd;
-			end if;
-		end process;
+			oddr_i : oddr2
+			port map (
+				c0 => dfs_clkfx,
+				c1 => dfs_clkfx180,
+				ce => '1',
+				r  => '0',
+				s  => '0',
+				d0 => '0',
+				d1 => '1',
+				q  => sdram_clk);
+
+			sdr_clk_i : obufds
+			generic map (
+				iostandard => "DIFF_SSTL2_I")
+			port map (
+				i  => sdram_clk,
+				o  => sd_ck_p,
+				ob => sd_ck_n);
+
+			dcm_clkin <= sd_ck_fb;
+			sd_ck_fb_n <= not sd_ck_fb;
+			bug_i : bufg
+			port map (
+				I => sd_ck_fb_n,
+				O => dcm_clkfb);
+
+			process (sys_rst, dcm_clkin)
+			begin
+				if sys_rst='1' then
+					dcm_rst <= '1';
+				elsif rising_edge(dcm_clkin) then
+					dcm_rst <= '0';
+				end if;
+			end process;
+
+		end generate;
+	
+		no_sdr_feedback_g : if not sdr_clk_fb generate
+			dcm_clkfb <= clk0;
+			dcm_clkin <= dfs_clkfx;
+	
+			process (sys_rst, sys_clk)
+			begin
+				if sys_rst='1' then
+					dcm_rst <= '1';
+				elsif rising_edge(sys_clk) then
+					dcm_rst <= not dfs_lckd;
+				end if;
+			end process;
+
+			sdr_clk_i : obufds
+			generic map (
+				iostandard => "DIFF_SSTL2_I")
+			port map (
+				i  => sdrphy_clk(0),
+				o  => sd_ck_p,
+				ob => sd_ck_n);
+
+		end generate;
 
 		dcm_dll : dcm_sp
 		generic map(
 			clk_feedback => "1X",
+			clkin_period => (sys_per*real(sdram_params.pll.dcm_div))/real( sdram_params.pll.dcm_mul),
 			clkdv_divide => 2.0,
+			clkin_divide_by_2 => FALSE,
 			clkfx_divide => 1,
 			clkfx_multiply => 2,
-			clkin_divide_by_2 => FALSE,
-			clkin_period => (sys_per*real(sdram_params.pll.dcm_div))/real( sdram_params.pll.dcm_mul),
 			clkout_phase_shift => "NONE",
 			deskew_adjust => "SYSTEM_SYNCHRONOUS",
 			dfs_frequency_mode => "HIGH",
@@ -351,9 +416,10 @@ begin
 	
 			rst      => dcm_rst,
 			clkin    => dcm_clkin,
-			clkfb    => clk0,
+			clkfb    => dcm_clkfb,
 			clk0     => dcm_clk0,
 			clk90    => dcm_clk90,
+			clk180   => dcm_clk180,
 			locked   => dcm_lckd);
 
 		clk0_bufg_i : bufg
@@ -366,7 +432,12 @@ begin
 			i => dcm_clk90,
 			o => clk90);
 	
-		ddrsys_rst <= not dcm_lckd;
+		cl1k80_bufg_i : bufg
+		port map (
+			i => dcm_clk180,
+			o => clk180);
+	
+		sdrsys_rst <= not dcm_lckd;
 
 	end block;
 
@@ -560,7 +631,7 @@ begin
 
 		ctlr_clks(0) => clk0,
 		ctlr_clks(1) => clk90,
-		ctlr_rst     => ddrsys_rst,
+		ctlr_rst     => sdrsys_rst,
 		ctlr_bl      => "001",
 		ctlr_cl      => sdram_params.cas,
 		ctlrphy_rst  => ctlrphy_rst,
@@ -609,7 +680,7 @@ begin
 	port map (
 		clk0        => clk0,
 		clk90       => clk90,
-		sys_rst     => ddrsys_rst,
+		sys_rst     => sdrsys_rst,
 
 		phy_cke     => ctlrphy_cke,
 		phy_cs      => ctlrphy_cs,
@@ -631,7 +702,7 @@ begin
 		phy_sti     => ctlrphy_sto,
 		phy_sto     => ctlrphy_sti,
 
-		sdr_clk     => sdr_clk,
+		sdr_clk     => sdrphy_clk,
 		sdr_cke     => sd_cke,
 		sdr_cs      => sd_cs,
 		sdr_ras     => sd_ras,
@@ -661,14 +732,6 @@ begin
 			end if;
 		end loop;
 	end process;
-
-	sdr_clk_i : obufds
-	generic map (
-		iostandard => "DIFF_SSTL2_I")
-	port map (
-		i  => sdr_clk(0),
-		o  => sd_ck_p,
-		ob => sd_ck_n);
 
 	-- LEDs --
 	----------

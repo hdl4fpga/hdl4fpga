@@ -90,34 +90,40 @@ architecture def of dmatrans is
 	signal refreq       : std_logic;
 begin
 
-	process (dmatrans_clk)
-		variable q : std_logic;
+	process (restart, ceoc, leoc, dmatrans_clk)
+		variable q   : std_logic;
+		variable frm : std_logic;
 	begin
 		if rising_edge(dmatrans_clk) then
 			if ctlr_inirdy='0' then
 				dmatrans_rdy <= to_stdulogic(to_bit(dmatrans_req));
-				ctlr_frm <= '0';
+				frm := '0';
 			elsif (to_bit(dmatrans_rdy) xor to_bit(dmatrans_req))='1' then
 				if leoc='1' then
-					ctlr_frm <= '0';
+					frm := '0';
 					if (ctlr_trdy and state_pre)='1' then
 						dmatrans_rdy <= to_stdulogic(to_bit(dmatrans_req));
 					end if;
 				elsif state_nop='1' then
-					ctlr_frm <= '1';
+					frm := '1';
 				elsif refreq='1' then
-					ctlr_frm <= '0';
+					frm := '0';
 				elsif ceoc='1' and restart='0' then
-					ctlr_frm <= '0';
+					frm := '0';
 				else
-					ctlr_frm <= '1';
+					frm := '1';
 				end if;
 				loaded <= load;
 			else
-				ctlr_frm <= '0';
+				frm := '0';
 				loaded   <= '0';
 			end if;
 			load <= not to_stdulogic(to_bit(dmatrans_rdy) xor to_bit(dmatrans_req));
+		end if;
+		if unsigned(ctlr_alat) > 2 then
+			ctlr_frm <= frm;
+		else
+			ctlr_frm <= frm and not leoc and not (ceoc and not restart);
 		end if;
 	end process;
 
@@ -177,7 +183,11 @@ begin
 
 				case state is
 				when activate =>
-					cntr := resize(unsigned(ctlr_alat)-3, cntr'length);
+					if unsigned(ctlr_alat) > 2 then
+						cntr := resize(unsigned(ctlr_alat)-3, cntr'length);
+					else
+						cntr := resize(unsigned(ctlr_alat)-2, cntr'length);
+					end if;
 					assert unsigned(ctlr_alat) >= 2
 					report ">>>dmatrans<<< : ctlr_alat " & to_string(ctlr_alat) & " lower than 3"
 					severity failure;
@@ -192,12 +202,16 @@ begin
 				reload <= state_pre and ctlr_fch;
 			end if;
 
-			case state is
-			when activate =>
-				ena <= '0';
-			when bursting =>
+			if unsigned(ctlr_alat) > 2 then
 				ena <= (cntr(0) and not ceoc and not refreq) or (cntr(0) and restart);
-			end case;
+			else
+				case state is
+				when activate =>
+					ena <= '0';
+				when bursting =>
+					ena <= (cntr(0) and not ceoc and not refreq) or (cntr(0) and restart);
+				end case;
+			end if;
 		end process;
 
 		ilen  <= std_logic_vector(resize(shift_right(unsigned(dmatrans_ilen),  burst_bits-coln_align), ilen'length));
@@ -231,9 +245,9 @@ begin
 		col_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => 8,
-			sync_read => false, -- for ecp5
-			-- sync_read => true,
-			latency   => 0,
+			-- sync_read => false, -- for ecp5
+			sync_read => true,
+			latency   => 1,
 			check_sov => false,
 			check_dov => true,
 			gray_code => false)
