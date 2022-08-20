@@ -64,7 +64,7 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := hdlc_sdr133MHz_600p16bpp;
+	constant app_profile : app_profiles := hdlc_sdr250MHz_600p24bpp;
     --                                  --
 	--------------------------------------
 
@@ -336,9 +336,9 @@ begin
 			ENCLKOS2  => '0',
             ENCLKOS3  => '0',
 			CLKOP     => clkfb,
-			CLKOS     => open, --video_shf_clk,
-			CLKOS2    => open, --video_clk,
-			CLKOS3    => open, --videoio_clk,
+			CLKOS     => video_shf_clk,
+			CLKOS2    => video_clk,
+			CLKOS3    => videoio_clk,
 			LOCK      => video_lck,
             INTLOCK   => open,
 			REFCLK    => open,
