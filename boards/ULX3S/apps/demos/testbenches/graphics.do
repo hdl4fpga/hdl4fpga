@@ -14,33 +14,14 @@ add wave -noupdate -expand -group uart /testbench/du_e/ftdi_txd
 add wave -noupdate -expand -group uart /testbench/du_e/ftdi_rxd
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/ctlr_alat
-add wave -noupdate /testbench/du_e/debug
-add wave -noupdate /testbench/du_e/grahics_e/sdrctlr_b/sdrctlr_e/debug
-add wave -noupdate /testbench/du_e/grahics_e/debug
-add wave -noupdate /testbench/hdlc_b/uartrx_e/baudrate
-add wave -noupdate /testbench/hdlc_b/uartrx_e/uart_rxc
-add wave -noupdate /testbench/hdlc_b/uarttx_e/uart_txc
-add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/uart_rxc
-add wave -noupdate /testbench/du_e/hdlc_g/uarttx_e/uart_txc
-add wave -noupdate /testbench/hdlc_b/uarttx_e/debug_txen
-add wave -noupdate -radix hexadecimal /testbench/hdlc_b/uarttx_e/debug_txd
-add wave -noupdate -radix hexadecimal /testbench/du_e/hdlc_g/uartrx_e/debug_rxd
-add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/debug_rxdv
-add wave -noupdate /testbench/du_e/hdlc_g/uartrx_e/baudrate
 add wave -noupdate /testbench/du_e/grahics_e/sin_frm
 add wave -noupdate /testbench/du_e/grahics_e/sin_irdy
 add wave -noupdate /testbench/du_e/grahics_e/sin_trdy
 add wave -noupdate /testbench/du_e/grahics_e/sin_data
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/sync_e/video_clk
-add wave -noupdate -radix unsigned /testbench/du_e/grahics_e/adapter_b/sync_e/video_hzcntr
-add wave -noupdate -radix unsigned /testbench/du_e/grahics_e/adapter_b/sync_e/video_vtcntr
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/sync_e/video_hzon
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/sync_e/video_vton
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/sync_e/video_hzsync
-add wave -noupdate /testbench/du_e/grahics_e/adapter_b/sync_e/video_vtsync
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/ctlr_refreq
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {23363182120 fs} 0} {{Cursor 2} {58056155510 fs} 0}
+WaveRestoreCursors {{Cursor 1} {31065000000 fs} 0} {{Cursor 2} {30821250000 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 130
@@ -56,4 +37,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {25805175770 fs} {26010253910 fs}
+WaveRestoreZoom {30835445300 fs} {31122554700 fs}
