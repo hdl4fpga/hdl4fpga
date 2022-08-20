@@ -64,9 +64,30 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := hdlc_sdr250MHz_600p24bpp;
+	constant app_profile : app_profiles := hdlc_sdr133MHz_600p16bpp;
     --                                  --
 	--------------------------------------
+
+	type profile_params is record
+		comms      : io_comms;
+		sdr_speed  : sdram_speeds;
+		video_mode : video_modes;
+	end record;
+
+	type profileparams_vector is array (app_profiles) of profile_params;
+	constant profile_tab : profileparams_vector := (
+		hdlc_sdr133MHz_480p24bpp => (io_hdlc, sdram133MHz, mode480p24bpp),
+		hdlc_sdr200MHz_480p24bpp => (io_hdlc, sdram200MHz, mode480p24bpp),
+		hdlc_sdr133MHz_600p16bpp => (io_hdlc, sdram133MHz, mode600p16bpp),
+		hdlc_sdr166MHz_600p16bpp => (io_hdlc, sdram166MHz, mode600p16bpp),
+		hdlc_sdr200MHz_600p24bpp => (io_hdlc, sdram200MHz, mode600p24bpp),
+		hdlc_sdr225MHz_600p24bpp => (io_hdlc, sdram225MHz, mode600p24bpp),
+		hdlc_sdr250MHz_600p24bpp => (io_hdlc, sdram250MHz, mode600p24bpp),
+		hdlc_sdr275MHz_600p24bpp => (io_hdlc, sdram275MHz, mode600p24bpp),
+		hdlc_sdr200MHz_900p24bpp => (io_hdlc, sdram200MHz, mode900p24bpp),
+		ipoe_sdr166MHz_480p24bpp => (io_ipoe, sdram166MHz, mode480p24bpp),
+		ipoe_sdr200MHz_600p24bpp => (io_ipoe, sdram200MHz, mode600p24bpp),
+		ipoe_sdr250MHz_600p24bpp => (io_ipoe, sdram250MHz, mode600p24bpp));
 
 	type pll_params is record
 		clkos_div  : natural;
@@ -111,6 +132,12 @@ architecture graphics of ulx3s is
 		return tab(tab'left);
 	end;
 
+	constant nodebug_videomode : video_modes := profile_tab(app_profile).video_mode;
+	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
+		video_modes'POS(modedebug),
+		video_modes'POS(nodebug_videomode)));
+	constant video_record : video_params := videoparam(video_mode);
+
 	type sdramparams_record is record
 		id  : sdram_speeds;
 		pll : pll_params;
@@ -145,35 +172,6 @@ architecture graphics of ulx3s is
 
 		return tab(tab'left);
 	end;
-
-	type profile_params is record
-		comms      : io_comms;
-		sdr_speed  : sdram_speeds;
-		video_mode : video_modes;
-	end record;
-
-	type profileparams_vector is array (app_profiles) of profile_params;
-	constant profile_tab : profileparams_vector := (
-		hdlc_sdr133MHz_480p24bpp => (io_hdlc, sdram133MHz, mode480p24bpp),
-		hdlc_sdr200MHz_480p24bpp => (io_hdlc, sdram200MHz, mode480p24bpp),
-		hdlc_sdr133MHz_600p16bpp => (io_hdlc, sdram133MHz, mode600p16bpp),
-		hdlc_sdr166MHz_600p16bpp => (io_hdlc, sdram166MHz, mode600p16bpp),
-		hdlc_sdr200MHz_600p24bpp => (io_hdlc, sdram200MHz, mode600p24bpp),
-		hdlc_sdr225MHz_600p24bpp => (io_hdlc, sdram225MHz, mode600p24bpp),
-		hdlc_sdr250MHz_600p24bpp => (io_hdlc, sdram250MHz, mode600p24bpp),
-		hdlc_sdr275MHz_600p24bpp => (io_hdlc, sdram275MHz, mode600p24bpp),
-		hdlc_sdr200MHz_900p24bpp => (io_hdlc, sdram200MHz, mode900p24bpp),
-		ipoe_sdr166MHz_480p24bpp => (io_ipoe, sdram166MHz, mode480p24bpp),
-		ipoe_sdr200MHz_600p24bpp => (io_ipoe, sdram200MHz, mode600p24bpp),
-		ipoe_sdr250MHz_600p24bpp => (io_ipoe, sdram250MHz, mode600p24bpp));
-
-	constant sys_freq    : real    := 25.0e6;
-
-	constant nodebug_videomode : video_modes := profile_tab(app_profile).video_mode;
-	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
-		video_modes'POS(modedebug),
-		video_modes'POS(nodebug_videomode)));
-	constant video_record : video_params := videoparam(video_mode);
 
     signal video_pixel : std_logic_vector(0 to setif(
 		videoparam(profile_tab(app_profile).video_mode).pixel=rgb565, 16, setif(
@@ -338,9 +336,9 @@ begin
 			ENCLKOS2  => '0',
             ENCLKOS3  => '0',
 			CLKOP     => clkfb,
-			CLKOS     => video_shf_clk,
-            CLKOS2    => video_clk,
-            CLKOS3    => videoio_clk,
+			CLKOS     => open, --video_shf_clk,
+			CLKOS2    => open, --video_clk,
+			CLKOS3    => open, --videoio_clk,
 			LOCK      => video_lck,
             INTLOCK   => open,
 			REFCLK    => open,
@@ -445,8 +443,6 @@ begin
 		signal tp         : std_logic_vector(1 to 32);
 
 	begin
-
-		sio_clk <= videoio_clk;
 
 		nodebug_g : if not debug generate
 			uart_clk <= videoio_clk;
@@ -623,6 +619,7 @@ begin
 
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
+		debug => debug,
 		profile      => 0,
 
 		sdr_tcp      => sdr_tcp,

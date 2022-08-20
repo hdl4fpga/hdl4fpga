@@ -35,8 +35,6 @@ use ecp5u.components.all;
 
 architecture miiipoe_debug of ulx3s is
 
-	constant sys_freq   : real    := 25.0e6;
-
 	type video_modes is (
 		mode600p,
 		modedebug);

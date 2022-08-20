@@ -122,6 +122,8 @@ entity ulx3s is
 		gp_i           : in    std_logic_vector(12 downto 9);
 
 		user_programn  : out   std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
-		shutdown       : out   std_logic := '0' -- '1' power off the board, 10uA sleep
-	);
+		shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep
+
+	constant clk25mhz_freq : real := 25.0e6;
+	constant sys_freq      : real := clk25mhz_freq;
 end;

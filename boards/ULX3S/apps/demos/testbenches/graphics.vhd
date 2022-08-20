@@ -200,23 +200,27 @@ architecture ulx3s_graphics of testbench is
 		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_0000ff_1603_0007_3000";
+		x"1702_0000ff_1603_0007_3302";
 	constant req_data  : std_logic_vector :=
-		x"010008_1702_00001f_1603_8007_3000";
+		x"010008_1702_0000ff_1603_8007_3302";
 
 	signal pl_frm : std_logic;
 	signal nrst : std_logic;
+	signal uart_clk : std_logic := '0';
+
+	constant debug : boolean := true;
 begin
 
-	rst <= '1', '0' after 100 us; --, '1' after 30 us, '0' after 31 us;
+	rst <= '1', '0' after 10 us; --, '1' after 30 us, '0' after 31 us;
 	nrst <= not rst;
 	xtal <= not xtal after 20 ns;
+	uart_clk <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
 
 	hdlc_b : block
 
 		generic (
 			baudrate  : natural := 3_000_000;
-			uart_xtal : real := 25.0e6;
+			uart_xtal : real := 40.0e6;
 			xxx : natural_vector;
 			payload   : std_logic_vector);
 		generic map (
@@ -229,7 +233,7 @@ begin
 			uart_sout : out std_logic);
 		port map (
 			rst       => rst,
-			uart_clk  => xtal,
+			uart_clk  => uart_clk,
 			uart_sout => ftdi_txd);
 
 		signal uart_trdy   : std_logic;
@@ -255,6 +259,8 @@ begin
 
 	begin
 
+
+		nrst <= not rst;
 		process 
 			variable i     : natural;
 			variable total : natural;
@@ -281,7 +287,11 @@ begin
 					end if;
 				elsif i < xxx'length then
 					if i > 0 then
-						wait for 100 us;
+						if debug then
+							wait for 5 us;
+						else
+							wait for 100 us;
+						end if;
 						hdlctx_frm <= '0';
 						hdlctx_end <= '0';
 					end if;
@@ -489,7 +499,7 @@ begin
 
 	du_e : ulx3s
 	generic map (
-		debug => true)
+		debug => debug)
 	port map (
 		clk_25mhz  => xtal,
 		ftdi_txd   => ftdi_txd,
