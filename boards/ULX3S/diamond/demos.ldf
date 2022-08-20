@@ -239,9 +239,6 @@
         <Source name="../../../library/latticesemi/ecp3/dbram.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/latticesemi/ecp3/ff.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/common/cntrcs.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -513,6 +510,9 @@
             <Options/>
         </Source>
         <Source name="../../../library/demos/app_profiles.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ff.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="constraints/ulx3s_demos.lpf" type="Logic Preference" type_short="LPF">
