@@ -113,7 +113,7 @@ begin
 
 		fifo_e : entity hdl4fpga.txn_buffer
 		generic map (
-			m => 11)
+			m => unsigned_num_bits(mem_size/hdlcrx_data'length-1))
 		port map (
 			src_clk  => uart_clk,
 			src_frm  => hdlcrx_frm,

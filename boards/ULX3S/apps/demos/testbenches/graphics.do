@@ -18,11 +18,19 @@ add wave -noupdate /testbench/du_e/grahics_e/sin_frm
 add wave -noupdate /testbench/du_e/grahics_e/sin_irdy
 add wave -noupdate /testbench/du_e/grahics_e/sin_trdy
 add wave -noupdate /testbench/du_e/grahics_e/sin_data
+add wave -noupdate /testbench/du_e/hdlc_g/siodaahdlc_e/siohdlc_e/hdlc_b/hdlcdll_rx_e/fcs_sb
+add wave -noupdate /testbench/du_e/hdlc_g/siodaahdlc_e/siohdlc_e/hdlc_b/hdlcdll_rx_e/fcs_vld
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/ctlr_refreq
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/sync_e/video_hzcntr
+add wave -noupdate /testbench/du_e/grahics_e/adapter_b/sync_e/video_hzsync
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/sync_e/video_vtcntr
+add wave -noupdate /testbench/du_e/grahics_e/adapter_b/sync_e/video_vtsync
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_req
+add wave -noupdate /testbench/du_e/grahics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {31065000000 fs} 0} {{Cursor 2} {30821250000 fs} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {190009845840 fs} 0} {{Cursor 2} {190121400330 fs} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 130
 configure wave -justifyvalue left
@@ -37,4 +45,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {30835445300 fs} {31122554700 fs}
+WaveRestoreZoom {189872565520 fs} {190385260840 fs}
