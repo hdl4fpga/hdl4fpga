@@ -264,9 +264,9 @@ architecture ulx3s_graphics of testbench is
 		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_0007ff_1603_007f_0000";
+		x"1702_0007ff_1603_0000_0000";
 	constant req_data  : std_logic_vector :=
-		x"010008_1702_0007ff_1603_807f_0000";
+		x"010008_1702_0007ff_1603_8000_0000";
 
 	signal pl_frm : std_logic;
 	signal nrst : std_logic;
