@@ -137,10 +137,24 @@ begin
 			end if;
 		end process;
 
+		-- ctlr_p : process(ctlr_clk)
+		-- begin
+			-- if rising_edge(ctlr_clk) then
+				-- serdes_frm <= ctlr_inirdy;
+				-- dma_req <= creq;
+			-- end if;
+		-- end process;
+
 		ctlr_p : process(ctlr_clk)
 		begin
 			if rising_edge(ctlr_clk) then
-				serdes_frm <= ctlr_inirdy;
+				if (dma_req xor dma_rdy)='1' then
+					serdes_frm <= '1';
+				elsif ctlr_di_dv='1' then
+					serdes_frm <= '1';
+				else
+					serdes_frm <= '0';
+				end if;
 				dma_req <= creq;
 			end if;
 		end process;
@@ -198,7 +212,7 @@ begin
 		end if;
 	end process;
 
-	serdes_g : if ctlr_di'length <= video_pixel'length generate
+	serdes_g : if ctlr_di'length < video_pixel'length generate
 		signal des_irdy : std_logic;
 		signal des_data : std_logic_vector(0 to video_pixel'length-1);
 	begin
@@ -216,7 +230,7 @@ begin
 			vram_data <= reverse(reverse(des_data), ctlr_di'length);
 	end generate;
 
-	bypass_input_g : if ctlr_di'length > video_pixel'length generate
+	bypass_input_g : if ctlr_di'length >= video_pixel'length generate
 		vram_irdy <= ctlr_di_dv;
 		vram_data <= ctlr_di;
 	end generate;
