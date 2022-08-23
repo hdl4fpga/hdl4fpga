@@ -115,7 +115,7 @@ begin
 
 		src_trdy <=
 			setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0)) when not async_mode else
-			setif(wr_cntr(addr_range) /= unsigned(rd_cmp(addr_range))  or wr_cntr(0) = rd_cmp(0));
+			setif(wr_cntr(addr_range) /= unsigned(to_stdlogicvector(to_bitvector(rd_cmp(addr_range))))  or wr_cntr(0) = to_stdulogic(to_bit(rd_cmp(0))));
 
 		dst_ini <= not to_stdulogic(to_bit(dst_frm)) or not to_stdulogic(to_bit(src_frm));
 
@@ -313,7 +313,7 @@ begin
 			if src_frm='0' then
 				if src_mode='0' then
 					if async_mode then
-						wr_cntr <= unsigned(rd_cmp);
+						wr_cntr <= unsigned(to_stdlogicvector(to_bitvector(rd_cmp)));
 					else
 						wr_cntr <= rd_cntr;
 					end if;
@@ -356,14 +356,14 @@ begin
 
 	dst_irdy1 <=
 		setif(wr_ptr /= rd_cntr) when not async_mode else
-		setif(unsigned(wr_cmp) /= rd_cntr);
+		setif(unsigned(to_stdlogicvector(to_bitvector(wr_cmp))) /= rd_cntr);
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then
 			if dst_frm='0' then
 				if dst_mode='0' then
 					if async_mode then
-						rd_cntr <= unsigned(wr_cmp);
+						rd_cntr <= unsigned(to_stdlogicvector(to_bitvector(wr_cmp)));
 					else
 						rd_cntr <= wr_ptr;
 					end if;

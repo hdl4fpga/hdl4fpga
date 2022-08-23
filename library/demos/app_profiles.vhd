@@ -25,6 +25,7 @@ package app_profiles is
 
 	type video_modes is (
 		modedebug,
+		mode480p16bpp,
 		mode480p24bpp,
 		mode600p16bpp,
 		mode600p24bpp,

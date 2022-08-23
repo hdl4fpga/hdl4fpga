@@ -39,6 +39,8 @@ use unisim.vcomponents.all;
 architecture graphics of nuhs3adsp is
 
 	type app_profiles is (
+		sdr133mhz_480p24bpp,
+		sdr133mhz_600p24bpp,
 		sdr166mhz_480p24bpp,
 		sdr145mhz_600p24bpp,
 		sdr150mhz_600p24bpp,
@@ -49,6 +51,26 @@ architecture graphics of nuhs3adsp is
 		sdr200mhz_1080p24bpp);
 
 	constant app_profile : app_profiles := sdr166mhz_1080p24bpp;
+
+	type profile_param is record
+		comms      : io_comms;
+		sdr_speed  : sdram_speeds;
+		video_mode : video_modes;
+		profile    : natural;
+	end record;
+
+	type profileparam_vector is array (app_profiles) of profile_param;
+	constant profile_tab : profileparam_vector := (
+		sdr133mhz_480p24bpp  => (io_ipoe, sdram133MHz, mode480p24bpp,  1),
+		sdr133mhz_600p24bpp  => (io_ipoe, sdram133MHz, mode600p24bpp,  1),
+		sdr166mhz_480p24bpp  => (io_ipoe, sdram166MHz, mode480p24bpp,  1),
+		sdr145mhz_600p24bpp  => (io_ipoe, sdram166MHz, mode600p24bpp,  1),
+		sdr150mhz_600p24bpp  => (io_ipoe, sdram145MHz, mode600p24bpp,  1),
+		sdr166mhz_600p24bpp  => (io_ipoe, sdram150MHz, mode600p24bpp,  1),
+		sdr133mhz_720p24bpp  => (io_ipoe, sdram166MHz, mode900p24bpp,  1),
+		sdr166mhz_900p24bpp  => (io_ipoe, sdram133MHz, mode720p24bpp,  1),
+		sdr166mhz_1080p24bpp => (io_ipoe, sdram166MHz, mode1080p24bpp, 1),
+		sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp, 1));
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -119,24 +141,6 @@ architecture graphics of nuhs3adsp is
 
 		return tab(tab'left);
 	end;
-
-	type profile_param is record
-		comms      : io_comms;
-		sdr_speed  : sdram_speeds;
-		video_mode : video_modes;
-		profile    : natural;
-	end record;
-
-	type profileparam_vector is array (app_profiles) of profile_param;
-	constant profile_tab : profileparam_vector := (
-		sdr166mhz_480p24bpp  => (io_ipoe, sdram166MHz, mode480p24bpp,  1),
-		sdr145mhz_600p24bpp  => (io_ipoe, sdram166MHz, mode600p24bpp,  1),
-		sdr150mhz_600p24bpp  => (io_ipoe, sdram145MHz, mode600p24bpp,  1),
-		sdr166mhz_600p24bpp  => (io_ipoe, sdram150MHz, mode600p24bpp,  1),
-		sdr133mhz_720p24bpp  => (io_ipoe, sdram166MHz, mode900p24bpp,  1),
-		sdr166mhz_900p24bpp  => (io_ipoe, sdram133MHz, mode720p24bpp,  1),
-		sdr166mhz_1080p24bpp => (io_ipoe, sdram166MHz, mode1080p24bpp, 1),
-		sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp, 1));
 
 	signal sys_rst       : std_logic;
 	signal sys_clk       : std_logic;

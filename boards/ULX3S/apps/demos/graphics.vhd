@@ -43,6 +43,7 @@ architecture graphics of ulx3s is
 	type app_profiles is (
 	--	Interface_SdramSpeed_PixelFormat --
 
+		hdlc_sdr133MHz_480p16bpp,        --
 		hdlc_sdr133MHz_480p24bpp,        --
 		hdlc_sdr200MHz_480p24bpp,        --
 
@@ -50,6 +51,7 @@ architecture graphics of ulx3s is
 		hdlc_sdr166MHz_600p16bpp,        --
 
 		hdlc_sdr200MHz_600p24bpp,        --
+		hdlc_sdr200MHz_600p16bpp,        --
 		hdlc_sdr225MHz_600p24bpp,        --
 		hdlc_sdr250MHz_600p24bpp,        --
 
@@ -64,7 +66,7 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := hdlc_sdr133MHz_600p16bpp;
+	constant app_profile : app_profiles := hdlc_sdr133MHz_480p16bpp;
     --                                  --
 	--------------------------------------
 
@@ -76,10 +78,12 @@ architecture graphics of ulx3s is
 
 	type profileparams_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparams_vector := (
+		hdlc_sdr133MHz_480p16bpp => (io_hdlc, sdram133MHz, mode480p16bpp),
 		hdlc_sdr133MHz_480p24bpp => (io_hdlc, sdram133MHz, mode480p24bpp),
 		hdlc_sdr200MHz_480p24bpp => (io_hdlc, sdram200MHz, mode480p24bpp),
 		hdlc_sdr133MHz_600p16bpp => (io_hdlc, sdram133MHz, mode600p16bpp),
 		hdlc_sdr166MHz_600p16bpp => (io_hdlc, sdram166MHz, mode600p16bpp),
+		hdlc_sdr200MHz_600p16bpp => (io_hdlc, sdram200MHz, mode600p16bpp),
 		hdlc_sdr200MHz_600p24bpp => (io_hdlc, sdram200MHz, mode600p24bpp),
 		hdlc_sdr225MHz_600p24bpp => (io_hdlc, sdram225MHz, mode600p24bpp),
 		hdlc_sdr250MHz_600p24bpp => (io_hdlc, sdram250MHz, mode600p24bpp),
@@ -109,6 +113,7 @@ architecture graphics of ulx3s is
 	constant v_r : natural := 5; -- video ratio
 	constant video_tab : videoparams_vector := (
 		(id => modedebug    , pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 10), pixel => rgb888, timing => pclk_debug),
+		(id => mode480p16bpp, pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb565, timing => pclk25_00m640x480at60),
 		(id => mode480p24bpp, pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, timing => pclk25_00m640x480at60),
 		(id => mode600p16bpp, pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb565, timing => pclk40_00m800x600at60),
 		(id => mode600p24bpp, pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb888, timing => pclk40_00m800x600at60),

@@ -68,8 +68,6 @@ end;
 
 architecture def of dmatrans is
 
-	constant latency    : natural := 2;
-
 	signal ddrdma_bnk   : std_logic_vector(ctlr_b'range);
 	signal ddrdma_row   : std_logic_vector(ctlr_a'range);
 	signal ddrdma_col   : std_logic_vector(coln_size-1 downto burst_bits);
