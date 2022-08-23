@@ -221,7 +221,6 @@ architecture graphics of s3estarter is
 
 	alias ctlr_clk   : std_logic is clk0;
 
-	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
 	alias sio_clk : std_logic is e_tx_clk;
 
 	constant baudrate  : natural := 1000000;
@@ -259,7 +258,7 @@ begin
 			clkfx_divide   => videoparam(video_mode).pll.dcm_div,
 			clkfx_multiply => videoparam(video_mode).pll.dcm_mul,
 			clkin_divide_by_2 => false,
-			clkin_period   => sys_per,
+			clkin_period   => sys_per*1.0e9,
 			clkout_phase_shift => "none",
 			deskew_adjust  => "system_synchronous",
 			dfs_frequency_mode => "LOW",
@@ -303,7 +302,7 @@ begin
 		dfs_i : dcm_sp
 		generic map(
 			clk_feedback => "1X",
-			clkin_period => sys_per,
+			clkin_period => sys_per*1.0e9,
 			clkdv_divide => 2.0,
 			clkin_divide_by_2 => FALSE,
 			clkfx_divide => sdram_params.pll.dcm_div,
@@ -396,7 +395,7 @@ begin
 		dcm_dll : dcm_sp
 		generic map(
 			clk_feedback => "1X",
-			clkin_period => (sys_per*real(sdram_params.pll.dcm_div))/real( sdram_params.pll.dcm_mul),
+			clkin_period => (sys_per*real(sdram_params.pll.dcm_div))/real( sdram_params.pll.dcm_mul)*1.0e9,
 			clkdv_divide => 2.0,
 			clkin_divide_by_2 => FALSE,
 			clkfx_divide => 1,
@@ -623,7 +622,7 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => '0', --video_clk,
+		video_clk    => video_clk,
 		video_hzsync => video_hzsync,
 		video_vtsync => video_vtsync,
 		video_blank  => video_blank,
