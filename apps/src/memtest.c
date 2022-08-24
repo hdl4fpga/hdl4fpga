@@ -165,7 +165,7 @@ int main (int argc, char *argv[])
 	int  address;
 	int  length;
 
-	length  = 1024;
+	length  = 1*1024;
 	for(int pass = 1;;pass++) {
 		seq_init();
 		for (address = 0; address < MAX_ADDRESS; address += length) {
