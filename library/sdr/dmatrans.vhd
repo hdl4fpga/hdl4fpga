@@ -88,8 +88,17 @@ architecture def of dmatrans is
 	signal refreq       : std_logic;
 begin
 
-	process (restart, ceoc, leoc, dmatrans_clk)
-		variable q   : std_logic;
+	process (
+		ctlr_alat,
+		ctlr_inirdy,
+		dmatrans_rdy, 
+		dmatrans_req, 
+		leoc, 
+		state_nop, 
+		refreq, 
+		ceoc, 
+		restart, 
+		dmatrans_clk)
 		variable frm : std_logic;
 	begin
 		if rising_edge(dmatrans_clk) then
@@ -120,8 +129,22 @@ begin
 		end if;
 		if unsigned(ctlr_alat) > 2 then
 			ctlr_frm <= frm;
+		elsif ctlr_inirdy='0' then
+			ctlr_frm <= '0';
+		elsif (to_bit(dmatrans_rdy) xor to_bit(dmatrans_req))='1' then
+			if leoc='1' then
+				ctlr_frm <= '0';
+			elsif refreq='1' then
+				ctlr_frm <= '0';
+			elsif state_nop='1' then
+				ctlr_frm <= '1';
+			elsif ceoc='1' and restart='0' then
+				ctlr_frm <= '0';
+			else
+				ctlr_frm <='1';
+			end if;
 		else
-			ctlr_frm <= frm and not leoc and not (ceoc and not restart) and not refreq;
+			ctlr_frm <= '0';
 		end if;
 	end process;
 
