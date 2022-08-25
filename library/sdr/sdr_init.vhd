@@ -894,7 +894,7 @@ begin
 					(tddr_rpa, to_sdrlatency(tCP, chip, tRP)),
 					(tddr_rfc, to_sdrlatency(tCP, chip, tRFC)),
 					(tddr_dll, 200),
-					(tddr_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 100)));
+					(tddr_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 137597)));
 			when ddr2 =>
 				return (
 					(tsdr_rst,  to_sdrlatency(tcp, chip, tPreRST)/setif(debug, 100, 1)),

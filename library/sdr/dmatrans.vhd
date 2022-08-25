@@ -127,6 +127,7 @@ begin
 			end if;
 			load <= not to_stdulogic(to_bit(dmatrans_rdy) xor to_bit(dmatrans_req));
 		end if;
+
 		if unsigned(ctlr_alat) > 2 then
 			ctlr_frm <= frm;
 		elsif ctlr_inirdy='0' then
