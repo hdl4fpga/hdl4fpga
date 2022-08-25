@@ -451,13 +451,13 @@ begin
 
 	begin
 
-		nodebug_g : if not debug generate
+		-- nodebug_g : if not debug generate
 			uart_clk <= videoio_clk;
-		end generate;
+		-- end generate;
 
-		debug_g : if debug generate
-			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
-		end generate;
+		-- debug_g : if debug generate
+			-- uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
+		-- end generate;
 
 		assert FALSE
 			report "BAUDRATE : " & " " & integer'image(baudrate)
