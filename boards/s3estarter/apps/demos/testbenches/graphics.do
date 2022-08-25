@@ -49,49 +49,14 @@ add wave -noupdate -expand -group ddr -radix hexadecimal /testbench/du_e/sd_dq
 add wave -noupdate -expand -group ddr /testbench/du_e/sd_dm
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/clk0
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(0)
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sdrctlr_b/sdrctlr_e/ctlr_do
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sout_frm
-add wave -noupdate /testbench/du_e/grahics_e/sout_irdy
-add wave -noupdate /testbench/du_e/grahics_e/sout_trdy
-add wave -noupdate /testbench/du_e/grahics_e/sout_end
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sout_data
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/acktx_e/dst_clk
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/acktx_e/dst_frm
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/acktx_e/dst_irdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/acktx_e/dst_trdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/tp(1)
-add wave -noupdate /testbench/du_e/grahics_e/tp(2)
-add wave -noupdate /testbench/du_e/grahics_e/tp(3)
-add wave -noupdate /testbench/du_e/grahics_e/tp(4)
-add wave -noupdate /testbench/du_e/grahics_e/tp(5)
-add wave -noupdate /testbench/du_e/grahics_e/tp(6)
-add wave -noupdate /testbench/du_e/grahics_e/tp(7)
-add wave -noupdate /testbench/du_e/grahics_e/tp(8)
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/meta_trdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/meta_end
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/siodmaio_end
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/siodmaio_trdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/acktx_trdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_irdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_trdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_end
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/status_rw
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/sodata_e/si_frm
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/sodata_e/si_irdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/sodata_e/si_trdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/sodata_e/si_end
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/sodata_e/dessero_e/des_frm
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/sodata_e/dessero_e/des_irdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/sodata_e/dessero_e/des_trdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/sodata_e/dessero_e/ser_irdy
-add wave -noupdate /testbench/du_e/grahics_e/sio_b/tx_b/sodata_b/sodata_e/dessero_e/ser_trdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -102,7 +67,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {49130000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {138582500 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 218
 configure wave -valuecolwidth 186
@@ -118,4 +83,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {49113994 ps} {49151021 ps}
+WaveRestoreZoom {138449273 ps} {139638727 ps}
