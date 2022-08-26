@@ -137,14 +137,6 @@ begin
 			end if;
 		end process;
 
-		-- ctlr_p : process(ctlr_clk)
-		-- begin
-			-- if rising_edge(ctlr_clk) then
-				-- serdes_frm <= ctlr_inirdy;
-				-- dma_req <= creq;
-			-- end if;
-		-- end process;
-
 		ctlr_p : process(ctlr_clk)
 		begin
 			if rising_edge(ctlr_clk) then

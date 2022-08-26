@@ -704,6 +704,7 @@ begin
 		signal pixel       : std_logic_vector(video_pixel'range);
 
 		signal ctlrvideo_irdy : std_logic;
+		signal dma_rdy : std_logic;
 
 		constant pixel_width : natural := pixel'length; -- Xilinx ISE's complaint
 
@@ -738,6 +739,16 @@ begin
 			clk => ctlr_clk,
 			di  => dma_do,
 			do  => graphics_di);
+
+		dmao_rdy_e : entity hdl4fpga.align
+		generic map (
+			n => 1,
+			-- d => (0 to 0 => 0))
+			d => (0 to 1-1 => dma_lat))
+		port map (
+			clk   => ctlr_clk,
+			di(0) => dmavideo_rdy,
+			do(0) => dma_rdy);
 
 		graphics_e : entity hdl4fpga.graphics
 		generic map (
@@ -854,6 +865,7 @@ begin
 	dmactlr_b : block
 		constant buffdo_lat : natural := latencies_tab(profile).ddro;
 		signal   dev_do_dv  : std_logic_vector(dev_gnt'range);
+		signal   dma_rdy    : std_logic_vector(dev_rdy'range);
 	begin
 		dmactlr_e : entity hdl4fpga.dmactlr
 		generic map (
@@ -872,7 +884,7 @@ begin
 
 			dev_req      => dev_req,
 			dev_gnt      => dev_gnt,
-			dev_rdy      => dev_rdy,
+			dev_rdy      => dma_rdy,
 			dev_do_dv    => dev_do_dv,
 
 			ctlr_clk     => ctlr_clk,
@@ -901,6 +913,17 @@ begin
 			clk   => ctlr_clk,
 			di => dev_do_dv,
 			do => dma_do_dv);
+
+		dma_rdy_e : entity hdl4fpga.align
+		generic map (
+			style => "register",
+			n => 2,
+			-- d => (0 to 2-1 => 0))
+			d => (0 to 2-1 => buffdo_lat))
+		port map (
+			clk   => ctlr_clk,
+			di => dma_rdy,
+			do => dev_rdy);
 
 		dmado_e : entity hdl4fpga.align
 		generic map (
