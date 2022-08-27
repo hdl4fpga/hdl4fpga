@@ -82,15 +82,13 @@ architecture def of graphics is
 	signal video_word : std_logic_vector(0 to setif(video_pixel'length < ctlr_di'length, ctlr_di'length, video_pixel'length)-1);
 	signal vram_irdy  : std_logic;
 	signal vram_data  : std_logic_vector(video_word'range);
-	signal serdes_frm : std_logic;
 
 begin
 
 	assert ctlr_di'length mod video_pixel'length=0 or video_pixel'length mod ctlr_di'length=0
 	report
-		"video_pixel " & natural'image(video_pixel'length) &
-		" is not multiple of " &
-		"ctlr_di "     & natural'image(ctlr_di'length) &
+		"video_pixel " & natural'image(video_pixel'length) & 
+		" is not multiple of " & "ctlr_di " & natural'image(ctlr_di'length) &
 		" or viceversa"
 	severity FAILURE;
 	debug_dmacfg_req <= dmacfg_req xor  to_stdulogic(to_bit(dmacfg_rdy));
@@ -140,13 +138,6 @@ begin
 		ctlr_p : process(ctlr_clk)
 		begin
 			if rising_edge(ctlr_clk) then
-				if (dma_req xor dma_rdy)='1' then
-					serdes_frm <= '1';
-				elsif ctlr_di_dv='1' then
-					serdes_frm <= '1';
-				else
-					serdes_frm <= '0';
-				end if;
 				dma_req <= creq;
 			end if;
 		end process;
@@ -205,13 +196,16 @@ begin
 	end process;
 
 	serdes_g : if ctlr_di'length < video_pixel'length generate
+		signal ser_frm : std_logic;
 		signal des_irdy : std_logic;
 		signal des_data : std_logic_vector(0 to video_pixel'length-1);
 	begin
+		ser_frm <= (dma_req xor dma_rdy);
+
 		serdes_e : entity hdl4fpga.serdes
 		port map (
 			serdes_clk => ctlr_clk,
-			serdes_frm => serdes_frm,
+			serdes_frm => ser_frm,
 			ser_irdy   => ctlr_di_dv,
 			ser_data   => ctlr_di,
 

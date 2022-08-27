@@ -45,9 +45,12 @@ architecture graphics of ulx3s is
 
 		hdlc_sdr133MHz_480p16bpp,        --
 		hdlc_sdr133MHz_480p24bpp,        --
+		hdlc_sdr133MHz_600p16bpp,        --
+		hdlc_sdr133MHz_600p24bpp,        --
 		hdlc_sdr200MHz_480p24bpp,        --
 
-		hdlc_sdr133MHz_600p16bpp,        --
+		hdlc_sdr166MHz_480p16bpp,        --
+		hdlc_sdr166MHz_480p24bpp,        --
 		hdlc_sdr166MHz_600p16bpp,        --
 		hdlc_sdr166MHz_600p24bpp,        --
 
@@ -82,10 +85,13 @@ architecture graphics of ulx3s is
 	constant profile_tab : profileparams_vector := (
 		hdlc_sdr133MHz_480p16bpp => (io_hdlc, sdram133MHz, mode480p16bpp),
 		hdlc_sdr133MHz_480p24bpp => (io_hdlc, sdram133MHz, mode480p24bpp),
-		hdlc_sdr200MHz_480p24bpp => (io_hdlc, sdram200MHz, mode480p24bpp),
 		hdlc_sdr133MHz_600p16bpp => (io_hdlc, sdram133MHz, mode600p16bpp),
+		hdlc_sdr133MHz_600p24bpp => (io_hdlc, sdram133MHz, mode600p16bpp),
+		hdlc_sdr166MHz_480p16bpp => (io_hdlc, sdram166MHz, mode480p16bpp),
+		hdlc_sdr166MHz_480p24bpp => (io_hdlc, sdram166MHz, mode480p24bpp),
 		hdlc_sdr166MHz_600p16bpp => (io_hdlc, sdram166MHz, mode600p16bpp),
 		hdlc_sdr166MHz_600p24bpp => (io_hdlc, sdram166MHz, mode600p24bpp),
+		hdlc_sdr200MHz_480p24bpp => (io_hdlc, sdram200MHz, mode480p24bpp),
 		hdlc_sdr200MHz_600p16bpp => (io_hdlc, sdram200MHz, mode600p16bpp),
 		hdlc_sdr200MHz_600p24bpp => (io_hdlc, sdram200MHz, mode600p24bpp),
 		hdlc_sdr225MHz_600p24bpp => (io_hdlc, sdram225MHz, mode600p24bpp),
@@ -116,7 +122,7 @@ architecture graphics of ulx3s is
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant v_r : natural := 5; -- video ratio
 	constant video_tab : videoparams_vector := (
-		(id => modedebug    , pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, timing => pclk_debug),
+		(id => modedebug    , pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb565, timing => pclk_debug),
 		(id => mode480p16bpp, pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb565, timing => pclk25_00m640x480at60),
 		(id => mode480p24bpp, pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, timing => pclk25_00m640x480at60),
 		(id => mode600p16bpp, pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb565, timing => pclk40_00m800x600at60),
@@ -694,58 +700,83 @@ begin
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
 
-	sdram_sti : entity hdl4fpga.align
-	generic map (
-		n => sdrphy_sti'length,
-		d => (0 to sdrphy_sti'length-1 => setif(sdram_mode/=sdram133MHz, 1, 0)))
-	port map (
-		clk => ctlr_clk,
-		di  => ctlrphy_sto,
-		do  => sdrphy_sti);
+	sdrphy_b : block
+		constant phy_debug : boolean := debug;
+		signal phy_do : std_logic_vector(ctlrphy_dqi'range);
+	begin
+		debug_g : if phy_debug generate
+			signal do : std_logic_vector(ctlrphy_dqi'range);
+		begin
 
-	sdrphy_e : entity hdl4fpga.sdrphy
-	generic map (
-		cmmd_latency  => false,
-		read_latency  => true,
-		write_latency => true,
-		bank_size     => sdram_ba'length,
-		addr_size     => sdram_a'length,
-		word_size     => word_size,
-		byte_size     => byte_size)
-	port map (
-		sys_clk       => ctlr_clk,
-		sys_rst       => ddrsys_rst,
+			do <= std_logic_vector(resize(unsigned(ctlrphy_a), do'length));
+			delay_e : entity hdl4fpga.align
+			generic map (
+				n => do'length,
+				d => (0 to do'length-1=> 4))
+			port map (
+				clk => ctlr_clk,
+				di  => do,
+				do  => ctlrphy_dqi);
+		end generate;
+	
+		nodebug_g : if not phy_debug generate
+			ctlrphy_dqi <= phy_do;
+		end generate;
 
-		phy_cs        => ctlrphy_cs,
-		phy_cke       => ctlrphy_cke,
-		phy_ras       => ctlrphy_ras,
-		phy_cas       => ctlrphy_cas,
-		phy_we        => ctlrphy_we,
-		phy_b         => ctlrphy_b,
-		phy_a         => ctlrphy_a,
-		phy_dsi       => ctlrphy_dso,
-		phy_dst       => ctlrphy_dst,
-		phy_dso       => ctlrphy_dsi,
-		phy_dmi       => ctlrphy_dmo,
-		phy_dmt       => ctlrphy_dmt,
-		phy_dmo       => ctlrphy_dmi,
-		phy_dqi       => ctlrphy_dqo,
-		phy_dqt       => ctlrphy_dqt,
-		phy_dqo       => ctlrphy_dqi,
-		phy_sti       => sdrphy_sti,
-		phy_sto       => ctlrphy_sti,
+		sdrphy_e : entity hdl4fpga.sdrphy
+		generic map (
+			cmmd_latency  => false,
+			read_latency  => true,
+			write_latency => true,
+			bank_size     => sdram_ba'length,
+			addr_size     => sdram_a'length,
+			word_size     => word_size,
+			byte_size     => byte_size)
+		port map (
+			sys_clk       => ctlr_clk,
+			sys_rst       => ddrsys_rst,
+	
+			phy_cs        => ctlrphy_cs,
+			phy_cke       => ctlrphy_cke,
+			phy_ras       => ctlrphy_ras,
+			phy_cas       => ctlrphy_cas,
+			phy_we        => ctlrphy_we,
+			phy_b         => ctlrphy_b,
+			phy_a         => ctlrphy_a,
+			phy_dsi       => ctlrphy_dso,
+			phy_dst       => ctlrphy_dst,
+			phy_dso       => ctlrphy_dsi,
+			phy_dmi       => ctlrphy_dmo,
+			phy_dmt       => ctlrphy_dmt,
+			phy_dmo       => ctlrphy_dmi,
+			phy_dqi       => ctlrphy_dqo,
+			phy_dqt       => ctlrphy_dqt,
+			phy_dqo       => phy_do,
+			phy_sti       => sdrphy_sti,
+			phy_sto       => ctlrphy_sti,
+	
+			sdr_clk       => sdram_clk,
+			sdr_cke       => sdram_cke,
+			sdr_cs        => sdram_csn,
+			sdr_ras       => sdram_rasn,
+			sdr_cas       => sdram_casn,
+			sdr_we        => sdram_wen,
+			sdr_b         => sdram_ba,
+			sdr_a         => sdram_a,
+	
+			sdr_dm        => sdram_dqm,
+			sdr_dq        => sdram_d);
 
-		sdr_clk       => sdram_clk,
-		sdr_cke       => sdram_cke,
-		sdr_cs        => sdram_csn,
-		sdr_ras       => sdram_rasn,
-		sdr_cas       => sdram_casn,
-		sdr_we        => sdram_wen,
-		sdr_b         => sdram_ba,
-		sdr_a         => sdram_a,
-
-		sdr_dm        => sdram_dqm,
-		sdr_dq        => sdram_d);
+		sdram_sti : entity hdl4fpga.align
+		generic map (
+			n => sdrphy_sti'length,
+			d => (0 to sdrphy_sti'length-1 => setif(sdram_mode/=sdram133MHz, 1, 0)))
+		port map (
+			clk => ctlr_clk,
+			di  => ctlrphy_sto,
+			do  => sdrphy_sti);
+		
+	end block;
 
 	-- VGA --
 	---------
