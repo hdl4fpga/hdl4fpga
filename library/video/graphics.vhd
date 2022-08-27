@@ -164,7 +164,7 @@ begin
 					dma_addr   <= to_stdlogicvector(to_bitvector(base_addr));
 					dma_step   <= to_unsigned(dpage_size, dma_step'length);
 					video_req  <= not to_stdulogic(vrdy);
-				elsif hz_req='1' then
+				elsif hz_req='1' and false then
 					vt_req     <= '0';
 					hz_req     <= '0';
 					level      <= level + to_unsigned(pslice_size, level'length);
