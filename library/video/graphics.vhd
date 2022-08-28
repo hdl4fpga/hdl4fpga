@@ -153,6 +153,7 @@ begin
 		variable hzon_lat  : std_logic;
 		variable vton_lat2 : std_logic;
 		variable vton_lat  : std_logic;
+		variable xxx  : unsigned(0 to 1);
 	begin
 		if rising_edge(video_clk) then
 			if (to_bit(video_req) xor vrdy)='0' then
@@ -164,7 +165,8 @@ begin
 					dma_addr   <= to_stdlogicvector(to_bitvector(base_addr));
 					dma_step   <= to_unsigned(dpage_size, dma_step'length);
 					video_req  <= not to_stdulogic(vrdy);
-				elsif hz_req='1' and false then
+					xxx := (others => '0');
+				elsif hz_req='1' then
 					vt_req     <= '0';
 					hz_req     <= '0';
 					level      <= level + to_unsigned(pslice_size, level'length);
@@ -183,7 +185,8 @@ begin
 			elsif video_vton='1' and hzon_lat='0' and video_hzon='1' then
 				level <= level - to_unsigned(video_width, level'length);
 			elsif level <= to_unsigned(pwater_mark, level'length) then
-				if hz_req='0' then
+				if hz_req='0' and xxx(0)='0' then
+					xxx := xxx + 1;
 					hz_req <= '1';
 				end if;
 			end if;

@@ -701,7 +701,7 @@ begin
 		ctlrphy_sti  => ctlrphy_sti);
 
 	sdrphy_b : block
-		constant phy_debug : boolean := debug;
+		constant phy_debug : boolean := false;
 		signal phy_do : std_logic_vector(ctlrphy_dqi'range);
 	begin
 		debug_g : if phy_debug generate
@@ -715,7 +715,7 @@ begin
 				d => (0 to do'length-1=> 4))
 			port map (
 				clk => ctlr_clk,
-				di  => do,
+				di  => (do'range => '1'),
 				do  => ctlrphy_dqi);
 		end generate;
 	
