@@ -185,9 +185,11 @@ begin
 			elsif video_vton='1' and hzon_lat='0' and video_hzon='1' then
 				level <= level - to_unsigned(video_width, level'length);
 			elsif level <= to_unsigned(pwater_mark, level'length) then
-				if hz_req='0' and xxx(0)='0' then
-					xxx := xxx + 1;
-					hz_req <= '1';
+				if hz_req='0' then
+					-- if  xxx(0)='0' then
+						xxx := xxx + 1;
+						hz_req <= '1';
+					-- end if;
 				end if;
 			end if;
 

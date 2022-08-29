@@ -47,16 +47,22 @@ architecture graphics of ulx3s is
 		hdlc_sdr133MHz_480p24bpp,        --
 		hdlc_sdr133MHz_600p16bpp,        --
 		hdlc_sdr133MHz_600p24bpp,        --
-		hdlc_sdr200MHz_480p24bpp,        --
 
 		hdlc_sdr166MHz_480p16bpp,        --
 		hdlc_sdr166MHz_480p24bpp,        --
 		hdlc_sdr166MHz_600p16bpp,        --
 		hdlc_sdr166MHz_600p24bpp,        --
 
+		hdlc_sdr200MHz_480p16bpp,        --
+		hdlc_sdr200MHz_480p24bpp,        --
 		hdlc_sdr200MHz_600p24bpp,        --
 		hdlc_sdr200MHz_600p16bpp,        --
+
+		hdlc_sdr225MHz_480p16bpp,        --
+		hdlc_sdr225MHz_600p16bpp,        --
 		hdlc_sdr225MHz_600p24bpp,        --
+
+		hdlc_sdr250MHz_480p16bpp,        --
 		hdlc_sdr250MHz_600p16bpp,        --
 		hdlc_sdr250MHz_600p24bpp,        --
 
@@ -71,7 +77,7 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := hdlc_sdr133MHz_600p16bpp;
+	constant app_profile : app_profiles := hdlc_sdr225MHz_600p16bpp;
     --                                  --
 	--------------------------------------
 
@@ -87,18 +93,28 @@ architecture graphics of ulx3s is
 		hdlc_sdr133MHz_480p24bpp => (io_hdlc, sdram133MHz, mode480p24bpp),
 		hdlc_sdr133MHz_600p16bpp => (io_hdlc, sdram133MHz, mode600p16bpp),
 		hdlc_sdr133MHz_600p24bpp => (io_hdlc, sdram133MHz, mode600p16bpp),
+
 		hdlc_sdr166MHz_480p16bpp => (io_hdlc, sdram166MHz, mode480p16bpp),
 		hdlc_sdr166MHz_480p24bpp => (io_hdlc, sdram166MHz, mode480p24bpp),
 		hdlc_sdr166MHz_600p16bpp => (io_hdlc, sdram166MHz, mode600p16bpp),
 		hdlc_sdr166MHz_600p24bpp => (io_hdlc, sdram166MHz, mode600p24bpp),
+
+		hdlc_sdr200MHz_480p16bpp => (io_hdlc, sdram200MHz, mode480p16bpp),
 		hdlc_sdr200MHz_480p24bpp => (io_hdlc, sdram200MHz, mode480p24bpp),
 		hdlc_sdr200MHz_600p16bpp => (io_hdlc, sdram200MHz, mode600p16bpp),
 		hdlc_sdr200MHz_600p24bpp => (io_hdlc, sdram200MHz, mode600p24bpp),
+
+		hdlc_sdr225MHz_480p16bpp => (io_hdlc, sdram225MHz, mode480p16bpp),
+		hdlc_sdr225MHz_600p16bpp => (io_hdlc, sdram225MHz, mode600p16bpp),
 		hdlc_sdr225MHz_600p24bpp => (io_hdlc, sdram225MHz, mode600p24bpp),
+
+		hdlc_sdr250MHz_480p16bpp => (io_hdlc, sdram250MHz, mode480p16bpp),
 		hdlc_sdr250MHz_600p16bpp => (io_hdlc, sdram250MHz, mode600p16bpp),
 		hdlc_sdr250MHz_600p24bpp => (io_hdlc, sdram250MHz, mode600p24bpp),
+
 		hdlc_sdr275MHz_600p24bpp => (io_hdlc, sdram275MHz, mode600p24bpp),
 		hdlc_sdr200MHz_900p24bpp => (io_hdlc, sdram200MHz, mode900p24bpp),
+
 		ipoe_sdr166MHz_480p24bpp => (io_ipoe, sdram166MHz, mode480p24bpp),
 		ipoe_sdr200MHz_600p24bpp => (io_ipoe, sdram200MHz, mode600p24bpp),
 		ipoe_sdr250MHz_600p24bpp => (io_ipoe, sdram250MHz, mode600p24bpp));
@@ -701,7 +717,8 @@ begin
 		ctlrphy_sti  => ctlrphy_sti);
 
 	sdrphy_b : block
-		constant phy_debug : boolean := false;
+		constant phy_debug : boolean := debug;
+		-- constant phy_debug : boolean := true;
 		signal phy_do : std_logic_vector(ctlrphy_dqi'range);
 	begin
 		debug_g : if phy_debug generate
@@ -715,7 +732,8 @@ begin
 				d => (0 to do'length-1=> 4))
 			port map (
 				clk => ctlr_clk,
-				di  => (do'range => '1'),
+				-- di  => (do'range => '1'),
+				di  => do,
 				do  => ctlrphy_dqi);
 		end generate;
 	

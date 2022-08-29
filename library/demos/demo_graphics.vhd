@@ -763,7 +763,7 @@ begin
 			dmacfg_req   => dmacfgvideo_req,
 			dmacfg_rdy   => dmacfgvideo_rdy,
 			dma_req      => dmavideo_req,
-			dma_rdy      => dmavideo_rdy,
+			dma_rdy      => dma_rdy,
 			dma_len      => dmavideo_len,
 			dma_addr     => dmavideo_addr,
 			video_clk    => video_clk,
