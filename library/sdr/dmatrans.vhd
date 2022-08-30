@@ -268,9 +268,10 @@ begin
 		generic map (
 			max_depth => 8,
 
-			sync_read => false, -- for ecp5
-			latency   => 2, -- ecp5 higher than 133Mhz, RCD latency greater than 2
-			-- latency   => 1, -- ecp5 lower than 133Mhz, RCD latency lower than 3
+			-- ecp 5
+			sync_read => false, 
+			latency   => 1, -- RCD latency lower than 3,
+			-- latency   => 2, -- RCD latency greater than 2
 
 			-- sync_read => true, -- Xilinx 
 			-- latency   => 1, -- Xilinx 
