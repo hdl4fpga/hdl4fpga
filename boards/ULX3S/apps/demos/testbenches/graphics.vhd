@@ -205,7 +205,7 @@ architecture ulx3s_graphics of testbench is
 	constant req_data  : std_logic_vector :=
 		x"010008_1702_0007ff_1603_8000_0000";
 
-	signal pl_frm : std_logic;
+	signal pl_frm : std_logic := '0';
 	signal nrst : std_logic;
 	signal uart_clk : std_logic := '0';
 

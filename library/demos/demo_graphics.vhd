@@ -752,7 +752,7 @@ begin
 
 		graphics_e : entity hdl4fpga.graphics
 		generic map (
-			video_width => 1*modeline_tab(timing_id)(0))
+			video_width => modeline_tab(timing_id)(0))
 		port map (
 			ctlr_inirdy  => ctlr_inirdy,
 			ctlr_clk     => ctlr_clk,
