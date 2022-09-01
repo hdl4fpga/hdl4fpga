@@ -329,13 +329,10 @@ begin
 					if src_trdy='1' or not check_sov then
 						if gray_code and addr_length > 1 then
 							if wr_cntr(1 to addr_length)=to_unsigned(2**(addr_length-1), addr_length) then
---								wr_cntr(0) <= not wr_cntr(0);
 								succ(0) := not succ(0);
 							end if;
---							wr_cntr(1 to addr_length) <= unsigned(inc(gray(wr_cntr(1 to addr_length))));
 							succ(1 to addr_length) := unsigned(inc(gray(succ(1 to addr_length))));
 						else
---							wr_cntr <= wr_cntr + 1;
 							succ := succ + 1;
 						end if;
 					end if;

@@ -743,7 +743,6 @@ begin
 		dmao_rdy_e : entity hdl4fpga.align
 		generic map (
 			n => 1,
-			-- d => (0 to 0 => 0))
 			d => (0 to 1-1 => dma_lat))
 		port map (
 			clk   => ctlr_clk,
@@ -918,7 +917,6 @@ begin
 		generic map (
 			style => "register",
 			n => 2,
-			-- d => (0 to 2-1 => 0))
 			d => (0 to 2-1 => buffdo_lat))
 		port map (
 			clk   => ctlr_clk,
@@ -1027,7 +1025,7 @@ begin
 			n => 1,
 			d => (0 to 0 => 0))
 		port map (
-			clk => sio_clk,
+			clk => ctlr_clk,
 			di(0) => inirdy,
 			do(0) => ctlr_inirdy);
 

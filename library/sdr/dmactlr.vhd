@@ -95,19 +95,6 @@ architecture def of dmactlr is
 
 begin
 
-	process (ctlr_do_dv, ctlr_clk)
-		variable gnt_dv : std_logic_vector(dev_gnt'range);
-	begin
-		if rising_edge(ctlr_clk) then
-			if gnt_dv=(dev_gnt'range => '0') then
-				gnt_dv := dev_gnt;
-			elsif ctlr_do_dv='0' then
-				gnt_dv := dev_gnt;
-			end if;
-		end if;
-		dev_do_dv <= (dev_gnt'range => ctlr_do_dv) and gnt_dv;
-	end process;
-
 	dmacfg_b : block
 		signal req  : std_logic_vector(dev_req'range);
 	begin
@@ -199,32 +186,44 @@ begin
 			variable gnt : std_logic_vector(dev_gnt'range);
 		begin
 			if rising_edge(ctlr_clk) then
-				gnt := dev_gnt;
 				if ctlr_inirdy='0' then
 					dev_rdy <= to_stdlogicvector(to_bitvector(dev_req));
 				elsif (dmatrans_rdy xor to_stdulogic(to_bit(dmatrans_req)))='0' then
-					case state is
-					when s_idle =>
-						if gnt/=(dev_gnt'range => '0') then
-							dmatrans_req <= not dmatrans_rdy;
-							state := s_trans;
-						end if;
-					when s_trans =>
-						for i in dev_gnt'range loop
-							if gnt(i)='1' then
-								dev_rdy(i) <= to_stdulogic(to_bit(dev_req(i)));
+					for i in dev_gnt'range loop
+						case state is
+						when s_idle =>
+							if dev_gnt(i)='1' then
+								dmatrans_req <= not dmatrans_rdy;
+								state := s_trans;
 							end if;
-						end loop;
-						state := s_idle;
-					end case;
+						when s_trans =>
+							if dev_gnt(i)='1' then
+								dev_rdy(i) <= to_stdulogic(to_bit(dev_req(i)));
+								state := s_idle;
+							end if;
+						end case;
+					end loop;
 				end if;
 			end if;
+		end process;
+
+		process (ctlr_do_dv, ctlr_clk)
+			variable gnt_dv : std_logic_vector(dev_gnt'range);
+		begin
+			if rising_edge(ctlr_clk) then
+				if gnt_dv=(dev_gnt'range => '0') then
+					gnt_dv := dev_gnt;
+				elsif ctlr_do_dv='0' then
+					gnt_dv := dev_gnt;
+				end if;
+			end if;
+			dev_do_dv <= (dev_gnt'range => ctlr_do_dv) and gnt_dv;
 		end process;
 
 	end block;
 
 	dmatrans_rid <= encoder(dev_gnt);
-	dmatrans_we  <= trans_we(0) and ctlr_frm;
+	dmatrans_we  <= trans_we(0); -- and ctlr_frm;
 
 	dmatrans_e : entity hdl4fpga.dmatrans
 	generic map (

@@ -94,8 +94,8 @@ begin
 		dmatrans_rdy, 
 		dmatrans_req, 
 		leoc, 
-		state_nop, 
 		refreq, 
+		state_nop, 
 		ceoc, 
 		restart, 
 		dmatrans_clk)
@@ -166,7 +166,7 @@ begin
 
 	begin
 
-		cas_p : process(ceoc, refreq, restart, dmatrans_clk)
+		cas_p : process(ctlr_alat, ceoc, refreq, restart, dmatrans_clk)
 			type states is (activate, bursting);
 			variable state : states;
 --			variable cntr  : unsigned(0 to unsigned_num_bits(setif(burst_length=0,1,burst_length/data_gear-1)));
