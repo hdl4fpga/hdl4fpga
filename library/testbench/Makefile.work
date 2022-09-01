@@ -72,8 +72,6 @@ WORK__ulx4mld_graphic_structure_md = $(LIB_WORK)/ulx4mld_graphic_structure_md/_p
 WORK__ulx4mld_graphic_md = $(LIB_WORK)/ulx4mld_graphic_md/_primary.dat
 WORK__ulx4m_ld__graphics = $(LIB_WORK)/ulx4m_ld/graphics.dat
 WORK__ulx4m_ld = $(LIB_WORK)/ulx4m_ld/_primary.dat
-WORK__ulx3s_miiipoedebug_structure_md = $(LIB_WORK)/ulx3s_miiipoedebug_structure_md/_primary.dat
-WORK__ulx3s_miiipoedebug_md = $(LIB_WORK)/ulx3s_miiipoedebug_md/_primary.dat
 WORK__ulx3s_graphic_structure_md = $(LIB_WORK)/ulx3s_graphic_structure_md/_primary.dat
 WORK__ulx3s_graphic_md = $(LIB_WORK)/ulx3s_graphic_md/_primary.dat
 WORK__ulx3s__ser_debug = $(LIB_WORK)/ulx3s/ser_debug.dat
@@ -81,24 +79,22 @@ WORK__ulx3s__miiipoe_debug = $(LIB_WORK)/ulx3s/miiipoe_debug.dat
 WORK__ulx3s__hdlc_debug = $(LIB_WORK)/ulx3s/hdlc_debug.dat
 WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
-WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
 WORK__testbench__ulx3s_miiipoedebug = $(LIB_WORK)/testbench/ulx3s_miiipoedebug.dat
-WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
 WORK__testbench__arty_miiipoedebug = $(LIB_WORK)/testbench/arty_miiipoedebug.dat
 WORK__testbench__nuhs3debug_miiipoedebug = $(LIB_WORK)/testbench/nuhs3debug_miiipoedebug.dat
 WORK__testbench__nuhs3adsp_serdebug = $(LIB_WORK)/testbench/nuhs3adsp_serdebug.dat
+WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench__s3estarter_graphics = $(LIB_WORK)/testbench/s3estarter_graphics.dat
 WORK__testbench__ml509_graphics = $(LIB_WORK)/testbench/ml509_graphics.dat
 WORK__testbench__ecp3versa_graphics = $(LIB_WORK)/testbench/ecp3versa_graphics.dat
 WORK__testbench__arty_graphics = $(LIB_WORK)/testbench/arty_graphics.dat
+WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__s3estarter_structure_md = $(LIB_WORK)/s3estarter_structure_md/_primary.dat
 WORK__s3estarter_graphics_md = $(LIB_WORK)/s3estarter_graphics_md/_primary.dat
 WORK__s3estarter__graphics = $(LIB_WORK)/s3estarter/graphics.dat
 WORK__s3estarter = $(LIB_WORK)/s3estarter/_primary.dat
-WORK__nuhs3adsp_miiipoedebug_structure_md = $(LIB_WORK)/nuhs3adsp_miiipoedebug_structure_md/_primary.dat
-WORK__nuhs3adsp_miiipoedebug_md = $(LIB_WORK)/nuhs3adsp_miiipoedebug_md/_primary.dat
 WORK__nuhs3adsp_graphics_md = $(LIB_WORK)/nuhs3adsp_graphics_md/_primary.dat
 WORK__nuhs3adsp_graphic_structure_md = $(LIB_WORK)/nuhs3adsp_graphic_structure_md/_primary.dat
 WORK__nuhs3adsp__graphics = $(LIB_WORK)/nuhs3adsp/graphics.dat
@@ -129,8 +125,6 @@ whole_library :     $(WORK__ulx4mld_graphic_structure_md) \
     $(WORK__ulx4mld_graphic_md) \
     $(WORK__ulx4m_ld__graphics) \
     $(WORK__ulx4m_ld) \
-    $(WORK__ulx3s_miiipoedebug_structure_md) \
-    $(WORK__ulx3s_miiipoedebug_md) \
     $(WORK__ulx3s_graphic_structure_md) \
     $(WORK__ulx3s_graphic_md) \
     $(WORK__ulx3s__ser_debug) \
@@ -138,24 +132,22 @@ whole_library :     $(WORK__ulx4mld_graphic_structure_md) \
     $(WORK__ulx3s__hdlc_debug) \
     $(WORK__ulx3s__graphics) \
     $(WORK__ulx3s) \
-    $(WORK__testbench__ulx4mld_graphics) \
     $(WORK__testbench__ulx3s_miiipoedebug) \
-    $(WORK__testbench__ulx3s_graphics) \
     $(WORK__testbench__arty_miiipoedebug) \
     $(WORK__testbench__nuhs3debug_miiipoedebug) \
     $(WORK__testbench__nuhs3adsp_serdebug) \
+    $(WORK__testbench__ulx4mld_graphics) \
     $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench__s3estarter_graphics) \
     $(WORK__testbench__ml509_graphics) \
     $(WORK__testbench__ecp3versa_graphics) \
     $(WORK__testbench__arty_graphics) \
+    $(WORK__testbench__ulx3s_graphics) \
     $(WORK__testbench) \
     $(WORK__s3estarter_structure_md) \
     $(WORK__s3estarter_graphics_md) \
     $(WORK__s3estarter__graphics) \
     $(WORK__s3estarter) \
-    $(WORK__nuhs3adsp_miiipoedebug_structure_md) \
-    $(WORK__nuhs3adsp_miiipoedebug_md) \
     $(WORK__nuhs3adsp_graphics_md) \
     $(WORK__nuhs3adsp_graphic_structure_md) \
     $(WORK__nuhs3adsp__graphics) \
@@ -245,7 +237,7 @@ $(WORK__dbram__xilinx) : ../xilinx/dbram.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents)
-	$(VCOM) -2002  ../xilinx/dbram.vhd
+	$(VCOM) -2002 ../xilinx/dbram.vhd
 
 $(WORK__ecp3versa) : ../../boards/ecp3versa/common/ecp3versa.vhd \
 		$(STD__textio) \
@@ -482,10 +474,7 @@ $(WORK__testbench__nuhs3adsp_serdebug) : ../../boards/nuhs3adsp/apps/demos/testb
 		$(HDL4FPGA__std)
 	$(VCOM) -2002 ../../boards/nuhs3adsp/apps/demos/testbenches/ser_debug.vhd
 
-$(WORK__nuhs3adsp_miiipoedebug_md) \
-$(WORK__nuhs3adsp_miiipoedebug_structure_md) \
 $(WORK__testbench__nuhs3debug_miiipoedebug) : ../../boards/nuhs3adsp/apps/demos/testbenches/miiipoe_debug.vhd \
-		$(WORK__nuhs3adsp) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__eth_rx) \
 		$(HDL4FPGA__eth_tb) \
@@ -509,6 +498,20 @@ $(WORK__testbench__arty_miiipoedebug) : ../../boards/arty/apps/demos/testbenches
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
 	$(VCOM) -2002 ../../boards/arty/apps/demos/testbenches/miiipoe_debug.vhd
+
+$(WORK__testbench__ulx3s_miiipoedebug) : ../../boards/ULX3S/apps/demos/testbenches/miiipoe_debug.vhd \
+		$(HDL4FPGA__eth_rx) \
+		$(HDL4FPGA__eth_tx) \
+		$(HDL4FPGA__sio_mux) \
+		$(WORK__testbench) \
+		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__std) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002 ../../boards/ULX3S/apps/demos/testbenches/miiipoe_debug.vhd
 
 $(WORK__ulx3s) : ../../boards/ULX3S/common/ulx3s.vhd \
 		$(IEEE__std_logic_arith) \
@@ -622,25 +625,6 @@ $(WORK__ulx3s_graphic_structure_md) : ../../boards/ULX3S/apps/demos/testbenches/
 		$(IEEE__std_logic_1164) \
 		$(WORK__testbench)
 	$(VCOM) -2002 ../../boards/ULX3S/apps/demos/testbenches/graphics.vhd
-
-$(WORK__testbench__ulx3s_miiipoedebug) \
-$(WORK__ulx3s_miiipoedebug_md) \
-$(WORK__ulx3s_miiipoedebug_structure_md) : ../../boards/ULX3S/apps/demos/testbenches/miiipoe_debug.vhd \
-		$(HDL4FPGA__eth_rx) \
-		$(HDL4FPGA__eth_tx) \
-		$(HDL4FPGA__sio_mux) \
-		$(IEEE__std_logic_arith) \
-		$(ECP5U__components) \
-		$(WORK__ulx3s) \
-		$(HDL4FPGA__ethpkg) \
-		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__std) \
-		$(IEEE__std_logic_textio) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164) \
-		$(WORK__testbench)
-	$(VCOM) -2002 ../../boards/ULX3S/apps/demos/testbenches/miiipoe_debug.vhd
 
 $(WORK__ulx4m_ld) : ../../boards/ULX4M/common/ulx4m_ld.vhd \
 		$(IEEE__std_logic_arith) \

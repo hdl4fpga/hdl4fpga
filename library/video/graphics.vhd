@@ -239,8 +239,8 @@ begin
 	vram_e : entity hdl4fpga.fifo
 	generic map (
 		max_depth  => ppage_size,
-		async_mode => true,
-		latency    => 2,
+		async_mode => false, --true,
+		latency    => 0,
 		check_sov  => false,
 		check_dov  => false, --true,
 		gray_code  => false)

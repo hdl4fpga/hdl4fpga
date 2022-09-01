@@ -186,7 +186,7 @@ begin
 	dmatrans_b : block
 		signal req  : std_logic_vector(dev_req'range);
 	begin
-		req <= to_stdlogicvector(to_bitvector(dev_req)) xor dev_rdy;
+		req <= dev_rdy xor to_stdlogicvector(to_bitvector(dev_req));
 		dmacfg_e : entity hdl4fpga.arbiter
 		port map (
 			clk  => ctlr_clk,
@@ -194,27 +194,29 @@ begin
 			gnt  => dev_gnt);
 
 		process (ctlr_clk)
-			variable  busy : std_logic;
+			type states is (s_idle, s_trans);
+			variable state : states;
+			variable gnt : std_logic_vector(dev_gnt'range);
 		begin
 			if rising_edge(ctlr_clk) then
+				gnt := dev_gnt;
 				if ctlr_inirdy='0' then
 					dev_rdy <= to_stdlogicvector(to_bitvector(dev_req));
-				elsif dev_gnt/=(dev_gnt'range => '0') then
-					if (dmatrans_rdy xor to_stdulogic(to_bit(dmatrans_req)))='0' then
-						if busy='1' then
-							for i in dev_gnt'range loop
-								if dev_gnt(i)='1' then
-									dev_rdy(i) <= to_stdulogic(to_bit(dev_req(i)));
-								end if;
-							end loop;
-							busy := '0';
-						else
+				elsif (dmatrans_rdy xor to_stdulogic(to_bit(dmatrans_req)))='0' then
+					case state is
+					when s_idle =>
+						if gnt/=(dev_gnt'range => '0') then
 							dmatrans_req <= not dmatrans_rdy;
-							busy := '1';
+							state := s_trans;
 						end if;
-					end if;
-				else
-					busy := '0';
+					when s_trans =>
+						for i in dev_gnt'range loop
+							if gnt(i)='1' then
+								dev_rdy(i) <= to_stdulogic(to_bit(dev_req(i)));
+							end if;
+						end loop;
+						state := s_idle;
+					end case;
 				end if;
 			end if;
 		end process;

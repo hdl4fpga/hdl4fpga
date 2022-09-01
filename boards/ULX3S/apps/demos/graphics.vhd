@@ -59,6 +59,7 @@ architecture graphics of ulx3s is
 		hdlc_sdr200MHz_600p16bpp,        --
 
 		hdlc_sdr225MHz_480p16bpp,        --
+		hdlc_sdr225MHz_480p24bpp,        --
 		hdlc_sdr225MHz_600p16bpp,        --
 		hdlc_sdr225MHz_600p24bpp,        --
 
@@ -105,6 +106,7 @@ architecture graphics of ulx3s is
 		hdlc_sdr200MHz_600p24bpp => (io_hdlc, sdram200MHz, mode600p24bpp),
 
 		hdlc_sdr225MHz_480p16bpp => (io_hdlc, sdram225MHz, mode480p16bpp),
+		hdlc_sdr225MHz_480p24bpp => (io_hdlc, sdram225MHz, mode480p24bpp),
 		hdlc_sdr225MHz_600p16bpp => (io_hdlc, sdram225MHz, mode600p16bpp),
 		hdlc_sdr225MHz_600p24bpp => (io_hdlc, sdram225MHz, mode600p24bpp),
 
@@ -205,8 +207,8 @@ architecture graphics of ulx3s is
 	end;
 
     signal video_pixel : std_logic_vector(0 to setif(
-		videoparam(profile_tab(app_profile).video_mode).pixel=rgb565, 16, setif(
-		videoparam(profile_tab(app_profile).video_mode).pixel=rgb888, 32, 0))-1);
+		video_record.pixel=rgb565, 16, setif(
+		video_record.pixel=rgb888, 32, 0))-1);
 
 	constant sdram_mode : sdram_speeds := sdram_speeds'VAL(setif(not debug,
 		sdram_speeds'POS(profile_tab(app_profile).sdr_speed),

@@ -270,8 +270,8 @@ begin
 
 			-- ecp 5
 			sync_read => false, 
-			latency   => 1, -- RCD latency lower than 3,
-			-- latency   => 2, -- RCD latency greater than 2
+			-- latency   => 1, -- RCD latency lower than 3,
+			latency   => 1, -- RCD latency greater than 2
 
 			-- sync_read => true, -- Xilinx 
 			-- latency   => 1, -- Xilinx 
