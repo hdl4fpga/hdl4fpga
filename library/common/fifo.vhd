@@ -204,7 +204,7 @@ begin
 					dst_irdy <= q(0);
 					dst_data <= std_logic_vector(data(rdata'range));
 
-					-- Copy the following variables to signals for them not to be confused by XST for latches
+					-- Copy the following variables to signals for them not to be confused for latches by XST
 					q_reg    <= q;
 					v_reg    <= v;
 				end if;

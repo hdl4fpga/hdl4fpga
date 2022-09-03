@@ -63,7 +63,6 @@ add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/vram_e/src_frm
 add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/vram_e/src_irdy
 add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/vram_e/src_trdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/vram_e/wr_ptr
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/vram_e/wr_cntr
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/adapter_b/graphics_e/vram_e/max_depthgt1_g/mem_e/wr_addr
@@ -94,8 +93,8 @@ add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_hzon
 add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_on
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(0) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(1) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(2) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(3) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(4) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(5) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(6) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(7) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(8) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(9) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(10) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(11) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(12) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(13) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(14) -radix hexadecimal} {/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(15) -radix hexadecimal}} -subitemconfig {/testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(0) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(1) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(2) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(3) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(4) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(5) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(6) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(7) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(8) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(9) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(10) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(11) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(12) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(13) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(14) {-height 29 -radix hexadecimal} /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel(15) {-height 29 -radix hexadecimal}} /testbench/du_e/grahics_e/adapter_b/graphics_e/video_pixel
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {306037257680 fs} 0} {{Cursor 2} {314656616110 fs} 0} {{Cursor 3} {314778582930 fs} 0}
-quietly wave cursor active 3
+WaveRestoreCursors {{Cursor 1} {16700001581970 fs} 0} {{Cursor 2} {15781052315230 fs} 0} {{Cursor 3} {314778582930 fs} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 199
 configure wave -valuecolwidth 87
 configure wave -justifyvalue left
@@ -110,4 +109,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {315734695990 fs} {316013963370 fs}
+WaveRestoreZoom {16527553296190 fs} {16732631421310 fs}
