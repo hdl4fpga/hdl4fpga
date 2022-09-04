@@ -169,7 +169,7 @@ begin
 		cas_p : process(ctlr_alat, ceoc, refreq, restart, dmatrans_clk)
 			type states is (activate, bursting);
 			variable state : states;
---			variable cntr  : unsigned(0 to unsigned_num_bits(setif(burst_length=0,1,burst_length/data_gear-1)));
+			-- variable cntr  : unsigned(0 to unsigned_num_bits(setif(burst_length=0,1,burst_length/data_gear-1)));
 			variable cntr  : unsigned(0 to unsigned_num_bits(setif(burst_length=0,1,burst_length/data_gear)));
 		begin
 			if rising_edge(dmatrans_clk) then

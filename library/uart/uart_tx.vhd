@@ -49,7 +49,6 @@ architecture def of uart_tx is
 	type uart_states is (idle_s, start_s, data_s, stop_s);
 	signal uart_state : uart_states;
 
-	signal sample_rxd : std_logic;
 	signal init_cntr  : std_logic;
 	signal full_count : std_logic;
 
@@ -58,7 +57,7 @@ architecture def of uart_tx is
 
 begin
 
-	debug_p : process (uart_txc, sample_rxd)
+	debug_p : process (uart_txc)
 	begin
 		if rising_edge(uart_txc) then
 			debug_txen <= '0';

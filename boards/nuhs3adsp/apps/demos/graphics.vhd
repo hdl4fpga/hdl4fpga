@@ -42,18 +42,23 @@ architecture graphics of nuhs3adsp is
 		sdr133mhz_480p24bpp,
 		sdr133mhz_600p24bpp,
 		sdr133mhz_720p24bpp,
+		sdr133mhz_900p24bpp,
 
+		sdr150mhz_480p24bpp,
 		sdr150mhz_600p24bpp,
+		sdr150mhz_720p24bpp,
+		sdr150mhz_900p24bpp,
 
 		sdr166mhz_480p24bpp,
 		sdr166mhz_600p24bpp,
+		sdr166mhz_720p24bpp,
 		sdr166mhz_900p24bpp,
 		sdr166mhz_1080p24bpp,
 
 		sdr200mhz_1080p24bpp);
 
 	-- constant app_profile : app_profiles := sdr166mhz_1080p24bpp;
-	constant app_profile : app_profiles := sdr133mhz_600p24bpp;
+	constant app_profile : app_profiles := sdr133mhz_900p24bpp;
 
 	type profile_param is record
 		comms      : io_comms;
@@ -67,11 +72,16 @@ architecture graphics of nuhs3adsp is
 		sdr133mhz_480p24bpp  => (io_ipoe, sdram133MHz, mode480p24bpp,  1),
 		sdr133mhz_600p24bpp  => (io_ipoe, sdram133MHz, mode600p24bpp,  1),
 		sdr133mhz_720p24bpp  => (io_ipoe, sdram133MHz, mode720p24bpp,  1),
+		sdr133mhz_900p24bpp  => (io_ipoe, sdram133MHz, mode900p24bpp,  1),
 		
+		sdr150mhz_480p24bpp  => (io_ipoe, sdram150MHz, mode480p24bpp,  1),
 		sdr150mhz_600p24bpp  => (io_ipoe, sdram150MHz, mode600p24bpp,  1),
+		sdr150mhz_720p24bpp  => (io_ipoe, sdram150MHz, mode720p24bpp,  1),
+		sdr150mhz_900p24bpp  => (io_ipoe, sdram150MHz, mode900p24bpp,  1),
 
 		sdr166mhz_480p24bpp  => (io_ipoe, sdram166MHz, mode480p24bpp,  1),
 		sdr166mhz_600p24bpp  => (io_ipoe, sdram166MHz, mode600p24bpp,  1),
+		sdr166mhz_720p24bpp  => (io_ipoe, sdram166MHz, mode720p24bpp,  1),
 		sdr166mhz_900p24bpp  => (io_ipoe, sdram166MHz, mode900p24bpp,  1),
 		sdr166mhz_1080p24bpp => (io_ipoe, sdram166MHz, mode1080p24bpp, 1),
 

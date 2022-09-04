@@ -248,8 +248,6 @@ architecture mix of sdr_ctlr is
 	signal sdr_mpu_sel    : std_logic;
 	signal init_rdy       : std_logic;
 
-
-	signal refreq : std_logic;
 	signal fifo_bypass : std_logic;
 begin
 

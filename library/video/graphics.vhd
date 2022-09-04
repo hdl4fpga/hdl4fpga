@@ -166,6 +166,7 @@ begin
 				when s_frm =>
 					if video_frm='1' then
 						level     <= to_unsigned(ppage_size, level'length);
+						new_level := to_unsigned(ppage_size, level'length);
 						dma_len   <= std_logic_vector(to_unsigned(dpage_size-1, dma_len'length));
 						dma_addr  <= to_stdlogicvector(to_bitvector(base_addr));
 						dma_step  <= to_unsigned(dpage_size, dma_step'length);
@@ -181,30 +182,29 @@ begin
 						end if;
 					end if;
 				when s_hzpoll  =>
-					if (to_bit(video_rdy) xor to_bit(video_req))='0' then
-						if video_vton='1' then
-							if video_hzon='0' then
-								if new_level <= to_unsigned(pwater_mark, level'length) then
-									state := s_line;
-								end if;
+					if video_vton='1' then
+						if video_hzon='1' then
+							if new_level <= to_unsigned(pwater_mark, level'length) then
+								new_level := new_level + to_unsigned(pslice_size, level'length);
+								level     <= new_level + to_unsigned(pslice_size, level'length);
+								state := s_line;
+							else
 								level <= new_level;
 							end if;
-						elsif video_hzon='0' then
-							video_frm <= '0';
-							state     := s_frm;
+						else
+							new_level := level - to_unsigned(video_width, level'length);
 						end if;
+					elsif (to_bit(video_rdy) xor to_bit(video_req))='0' then
+						video_frm <= '0';
+						state     := s_frm;
 					end if;
 				when s_line =>
-					level     <= level + to_unsigned(pslice_size, level'length);
 					dma_len   <= std_logic_vector(to_unsigned(dslice_size-1, dma_len'length));
 					dma_addr  <= std_logic_vector(unsigned(dma_addr) + dma_step);
 					dma_step  <= to_unsigned(dslice_size, dma_step'length);
 					video_req <= not  to_stdulogic(to_bit(video_rdy));
 					state     := s_hzpoll;
 				end case;
-				if video_hzon='1' then
-					new_level := level - to_unsigned(video_width, level'length);
-				end if;
 			end if;
 		end process;
 	end block;
@@ -239,10 +239,10 @@ begin
 	vram_e : entity hdl4fpga.fifo
 	generic map (
 		max_depth  => ppage_size,
-		async_mode => false,
+		async_mode => true,
 		latency    => 1,
 		check_sov  => false,
-		check_dov  => true,
+		check_dov  => false,
 		gray_code  => false)
 	port map (
 		src_clk  => ctlr_clk,
