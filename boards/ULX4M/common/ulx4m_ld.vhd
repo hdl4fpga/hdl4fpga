@@ -101,4 +101,6 @@ entity ulx4m_ld is
 		user_programn   : out std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
 		shutdown        : out std_logic := '0'); -- '1' power off the board, 10uA sleep
 
+
+	constant sys_freq    : real    := 25.0e6;
 end;
