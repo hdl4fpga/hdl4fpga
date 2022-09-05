@@ -27,7 +27,6 @@ MICRON__ddr_model = $(LIB_MICRON)/ddr_model/_primary.dat
 MICRON__ddr2 = $(LIB_MICRON)/ddr2/_primary.dat
 HDL4FPGA__align = $(LIB_HDL4FPGA)/align/_primary.dat
 HDL4FPGA__sdrphy = $(LIB_HDL4FPGA)/sdrphy/_primary.dat
-HDL4FPGA__ser_debug = $(LIB_HDL4FPGA)/ser_debug/_primary.dat
 MICRON__mt48lc32m16a2 = $(LIB_MICRON)/mt48lc32m16a2/_primary.dat
 HDL4FPGA__sio_mux = $(LIB_HDL4FPGA)/sio_mux/_primary.dat
 HDL4FPGA__eth_tx = $(LIB_HDL4FPGA)/eth_tx/_primary.dat
@@ -66,7 +65,6 @@ WORK__ulx4m_ld__graphics = $(LIB_WORK)/ulx4m_ld/graphics.dat
 WORK__ulx4m_ld = $(LIB_WORK)/ulx4m_ld/_primary.dat
 WORK__ulx3s_graphic_structure_md = $(LIB_WORK)/ulx3s_graphic_structure_md/_primary.dat
 WORK__ulx3s_graphic_md = $(LIB_WORK)/ulx3s_graphic_md/_primary.dat
-WORK__ulx3s__ser_debug = $(LIB_WORK)/ulx3s/ser_debug.dat
 WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
 WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
@@ -108,7 +106,6 @@ whole_library :     $(WORK__ulx4mld_graphic_structure_md) \
     $(WORK__ulx4m_ld) \
     $(WORK__ulx3s_graphic_structure_md) \
     $(WORK__ulx3s_graphic_md) \
-    $(WORK__ulx3s__ser_debug) \
     $(WORK__ulx3s__graphics) \
     $(WORK__ulx3s) \
     $(WORK__testbench__ulx4mld_graphics) \
@@ -423,22 +420,6 @@ $(WORK__ulx3s__graphics) : ../../boards/ULX3S/apps/demos/graphics.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ../../boards/ULX3S/apps/demos/graphics.vhd
-
-$(WORK__ulx3s__ser_debug) : ../../boards/ULX3S/apps/demos/ser_debug.vhd \
-		$(HDL4FPGA__ser_debug) \
-		$(IEEE__math_real) \
-		$(HDL4FPGA__uart_rx) \
-		$(WORK__ulx3s) \
-		$(IEEE__std_logic_arith) \
-		$(ECP5U__components) \
-		$(HDL4FPGA__modeline_calculator) \
-		$(HDL4FPGA__videopkg) \
-		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__std) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ULX3S/apps/demos/ser_debug.vhd
 
 $(WORK__testbench__ulx3s_graphics) \
 $(WORK__ulx3s_graphic_md) \
