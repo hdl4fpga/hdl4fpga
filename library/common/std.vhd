@@ -20,18 +20,15 @@
 -- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
-use std.textio.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
 
 package std is
 
 	type natural_vector is array (natural range <>) of natural;
 	type integer_vector is array (natural range <>) of integer;
-	type real_vector    is array (natural range <>) of real;
 
 	function signed_num_bits (arg: integer) return natural;
 	function unsigned_num_bits (arg: natural) return natural;

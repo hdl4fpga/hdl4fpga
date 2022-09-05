@@ -80,9 +80,9 @@ add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/pslice_size
 add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/pwater_mark
 add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_width
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_b/line__141/new_level
 add wave -noupdate -radix unsigned /testbench/du_e/grahics_e/adapter_b/graphics_e/video_b/level
-add wave -noupdate -radix unsigned /testbench/du_e/grahics_e/adapter_b/graphics_e/video_b/line__154/new_level
-add wave -noupdate -radix unsigned /testbench/du_e/grahics_e/adapter_b/graphics_e/video_b/line__154/state
+add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_b/line__141/state
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/grahics_e/adapter_b/graphics_e/video_hzon
 add wave -noupdate -divider {New Divider}
@@ -109,4 +109,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {16527553296190 fs} {16732631421310 fs}
+WaveRestoreZoom {16527553296190 fs} {16668630529910 fs}

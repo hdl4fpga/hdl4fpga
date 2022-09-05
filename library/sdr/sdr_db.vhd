@@ -75,7 +75,7 @@ package sdr_db is
 		(mark => MT48LC256MA27E, param => tRCD,    value =>  15.0e-9),
 		(mark => MT48LC256MA27E, param => tRFC,    value =>  66.0e-9),
 		(mark => MT48LC256MA27E, param => tMRD,    value =>  15.0e-9),
-		(mark => MT48LC256MA27E, param => tREFI,   value =>  64.0e-3/8192),
+		(mark => MT48LC256MA27E, param => tREFI,   value =>  64.0e-3/8192.0), -- Serious Lattice diamond bug
 
 		(mark => MT46V256M6T,    param => tPreRST, value => 200.0e-6),
 		(mark => MT46V256M6T,    param => tWR,     value =>  15.0e-9),
@@ -83,7 +83,7 @@ package sdr_db is
 		(mark => MT46V256M6T,    param => tRCD,    value =>  15.0e-9),
 		(mark => MT46V256M6T,    param => tRFC,    value =>  72.0e-9),
 		(mark => MT46V256M6T,    param => tMRD,    value =>  12.0e-9),
-		(mark => MT46V256M6T,    param => tREFI,   value =>  64.0e-3/8192),
+		(mark => MT46V256M6T,    param => tREFI,   value =>  64.0e-3/8192.0),
 
 		(mark => MT47H512M3,     param => tPreRST, value => 200.0e-6),
 		(mark => MT47H512M3,     param => tXPR,    value => 400.0e-6),
@@ -92,7 +92,7 @@ package sdr_db is
 		(mark => MT47H512M3,     param => tRCD,    value =>  15.0e-9),
 		(mark => MT47H512M3,     param => tRFC,    value => 130.0e-9),
 		(mark => MT47H512M3,     param => tRPA,    value =>  15.0e-9),
-		(mark => MT47H512M3,     param => tREFI,   value =>  64.0e-3/8192),
+		(mark => MT47H512M3,     param => tREFI,   value =>  64.0e-3/8192.0),
 
 		(mark => MT41J1G15E,     param => tPreRST, value => 200.00e-6),
 		(mark => MT41J1G15E,     param => tPstRST, value => 500.00e-6),
@@ -102,7 +102,7 @@ package sdr_db is
 		(mark => MT41J1G15E,     param => tMRD,    value =>  15.00e-9),
 		(mark => MT41J1G15E,     param => tRFC,    value => 110.00e-9),
 		(mark => MT41J1G15E,     param => tXPR,    value => 110.00e-9 + 10.0e-9),
-		(mark => MT41J1G15E,     param => tREFI,   value =>  64.00e-3/8192),
+		(mark => MT41J1G15E,     param => tREFI,   value =>  64.00e-3/8192.0),
 
 		(mark => MT41K2G125,     param => tPreRST, value => 200.00e-6),
 		(mark => MT41K2G125,     param => tPstRST, value => 500.00e-6),
@@ -112,7 +112,7 @@ package sdr_db is
 		(mark => MT41K2G125,     param => tMRD,    value =>  15.00e-9),
 		(mark => MT41K2G125,     param => tRFC,    value => 160.00e-9),
 		(mark => MT41K2G125,     param => tXPR,    value => 160.00e-9 + 10.0e-9),
-		(mark => MT41K2G125,     param => tREFI,   value =>  64.00e-3/8192),
+		(mark => MT41K2G125,     param => tREFI,   value =>  64.00e-3/8192.0),
 
 		(mark => MT41K4G107,     param => tPreRST, value => 200.00e-6),
 		(mark => MT41K4G107,     param => tPstRST, value => 500.00e-6),
@@ -122,7 +122,7 @@ package sdr_db is
 		(mark => MT41K4G107,     param => tMRD,    value =>  20.00e-9),
 		(mark => MT41K4G107,     param => tRFC,    value => 260.00e-9),
 		(mark => MT41K4G107,     param => tXPR,    value => 260.00e-9 + 10.0e-9),
-		(mark => MT41K4G107,     param => tREFI,   value =>  64.00e-3/8192),
+		(mark => MT41K4G107,     param => tREFI,   value =>  64.00e-3/8192.0),
 
 		(mark => AS4CD3LC12,     param => tPreRST, value => 200.00e-6),
 		(mark => AS4CD3LC12,     param => tPstRST, value => 500.00e-6),
@@ -132,7 +132,7 @@ package sdr_db is
 		(mark => AS4CD3LC12,     param => tMRD,    value =>  15.00e-9),
 		(mark => AS4CD3LC12,     param => tRFC,    value => 260.00e-9),
 		(mark => AS4CD3LC12,     param => tXPR,    value => 260.00e-9 + 10.0e-9),
-		(mark => AS4CD3LC12,     param => tREFI,   value =>  64.00e-3/8192));
+		(mark => AS4CD3LC12,     param => tREFI,   value =>  64.00e-3/8192.0));
 
 	constant sdram_latency_tab : sdram_latency_vector := (
 		(stdr => ddr,  param => cDLL,       value => 200),
