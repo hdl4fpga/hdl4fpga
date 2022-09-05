@@ -123,7 +123,7 @@ begin
 				loaded <= load;
 			else
 				frm := '0';
-				loaded   <= '0';
+				loaded <= '0';
 			end if;
 			load <= not to_stdulogic(to_bit(dmatrans_rdy) xor to_bit(dmatrans_req));
 		end if;
