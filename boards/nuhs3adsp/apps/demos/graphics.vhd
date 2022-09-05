@@ -53,12 +53,12 @@ architecture graphics of nuhs3adsp is
 		sdr166mhz_600p24bpp,
 		sdr166mhz_720p24bpp,
 		sdr166mhz_900p24bpp,
+		sdr166mhz_1080r24bpp,
 		sdr166mhz_1080p24bpp,
 
 		sdr200mhz_1080p24bpp);
 
-	-- constant app_profile : app_profiles := sdr166mhz_1080p24bpp;
-	constant app_profile : app_profiles := sdr133mhz_900p24bpp;
+	constant app_profile : app_profiles := sdr166mhz_1080r24bpp;
 
 	type profile_param is record
 		comms      : io_comms;
@@ -84,6 +84,7 @@ architecture graphics of nuhs3adsp is
 		sdr166mhz_720p24bpp  => (io_ipoe, sdram166MHz, mode720p24bpp,  1),
 		sdr166mhz_900p24bpp  => (io_ipoe, sdram166MHz, mode900p24bpp,  1),
 		sdr166mhz_1080p24bpp => (io_ipoe, sdram166MHz, mode1080p24bpp, 1),
+		sdr166mhz_1080r24bpp => (io_ipoe, sdram166MHz, mode1080r24bpp, 1),
 
 		sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp, 1));
 
@@ -105,7 +106,8 @@ architecture graphics of nuhs3adsp is
 		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    pll => (dcm_mul =>  2, dcm_div => 1)),
 		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   pll => (dcm_mul => 15, dcm_div => 4)),
 		(id => mode900p24bpp,  timing => pclk108_00m1600x900at60,  pll => (dcm_mul => 27, dcm_div => 5)),
-		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)));
+		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)),
+		(id => mode1080r24bpp, timing => pclk140_00m1920x1080at60, pll => (dcm_mul =>  7, dcm_div => 1)));
 
 	function videoparam (
 		constant id  : video_modes)

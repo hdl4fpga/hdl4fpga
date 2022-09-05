@@ -31,24 +31,24 @@ use hdl4fpga.videopkg.all;
 
 entity graphics is
 	generic (
-		video_width  : natural);
+		video_width : natural);
 	port (
-		ctlr_inirdy  : in  std_logic;
-		ctlr_clk     : in  std_logic;
-		ctlr_di_dv   : in  std_logic;
-		ctlr_di      : in  std_logic_vector;
-		base_addr    : in  std_logic_vector;
-		dmacfg_clk   : in   std_logic;
-		dmacfg_req   : buffer std_logic;
-		dmacfg_rdy   : in  std_logic;
-		dma_req      : buffer std_logic;
-		dma_rdy      : in  std_logic;
-		dma_len      : out std_logic_vector;
-		dma_addr     : buffer std_logic_vector;
-		video_clk    : in  std_logic;
-		video_hzon   : in  std_logic;
-		video_vton   : in  std_logic;
-		video_pixel  : out std_logic_vector);
+		ctlr_inirdy : in  std_logic;
+		ctlr_clk    : in  std_logic;
+		ctlr_di_dv  : in  std_logic;
+		ctlr_di     : in  std_logic_vector;
+		base_addr   : in  std_logic_vector;
+		dmacfg_clk  : in  std_logic;
+		dmacfg_req  : buffer std_logic;
+		dmacfg_rdy  : in  std_logic;
+		dma_req     : buffer std_logic;
+		dma_rdy     : in  std_logic;
+		dma_len     : out std_logic_vector;
+		dma_addr    : buffer std_logic_vector;
+		video_clk   : in  std_logic;
+		video_hzon  : in  std_logic;
+		video_vton  : in  std_logic;
+		video_pixel : out std_logic_vector);
 end;
 
 architecture def of graphics is
@@ -56,7 +56,6 @@ architecture def of graphics is
 	constant pslice_size : natural := 2**(unsigned_num_bits(video_width-1));
 	constant ppage_size  : natural := 2*pslice_size;
 	constant pwater_mark : natural := ppage_size-pslice_size;
-
 
 	signal video_frm     : std_logic;
 	signal video_on      : std_logic;
@@ -67,14 +66,6 @@ architecture def of graphics is
 	signal src_data      : std_logic_vector(ctlr_di'range);
 
 	signal dma_step      : unsigned(dma_addr'range);
-
-	signal debug_dmacfg_req : std_logic;
-	signal debug_dmacfg_rdy : std_logic;
-	signal debug_dma_req    : std_logic;
-	signal debug_dma_rdy    : std_logic;
-
-	signal dmaddr_req : std_logic;
-	signal dmaddr_rdy : std_logic;
 
 	signal video_word : std_logic_vector(0 to setif(video_pixel'length < ctlr_di'length, ctlr_di'length, video_pixel'length)-1);
 	signal vram_irdy  : std_logic;
@@ -88,10 +79,6 @@ begin
 		" is not multiple of " & "ctlr_di " & natural'image(ctlr_di'length) &
 		" or viceversa"
 	severity FAILURE;
-	debug_dmacfg_req <= dmacfg_req xor  to_stdulogic(to_bit(dmacfg_rdy));
-	debug_dmacfg_rdy <= dmacfg_req xnor to_stdulogic(to_bit(dmacfg_rdy));
-	debug_dma_req    <= dma_req    xor  to_stdulogic(to_bit(dma_rdy));
-	debug_dma_rdy    <= dma_req    xnor to_stdulogic(to_bit(dma_rdy));
 
 	dma_b : block
 		signal trdy : std_logic;
@@ -158,7 +145,8 @@ begin
 			constant dslice_size  : natural := setif(dataperpixel/=0, pslice_size*dataperpixel, pslice_size/pixelperdata);
 	
 			type states is (s_frm, s_vtpoll, s_hzpoll, s_line);
-			variable state  : states;
+			variable state : states;
+
 			variable new_level : unsigned(level'range);
 		begin
 			if rising_edge(video_clk) then
@@ -167,8 +155,8 @@ begin
 					if video_frm='1' then
 						level     <= to_unsigned(ppage_size, level'length);
 						new_level := to_unsigned(ppage_size, level'length);
-						dma_len   <= std_logic_vector(to_unsigned(dpage_size-1, dma_len'length));
 						dma_addr  <= to_stdlogicvector(to_bitvector(base_addr));
+						dma_len   <= std_logic_vector(to_unsigned(dpage_size-1, dma_len'length));
 						dma_step  <= to_unsigned(dpage_size, dma_step'length);
 						video_req <= not to_stdulogic(to_bit(video_rdy));
 						state     := s_vtpoll;
@@ -199,10 +187,10 @@ begin
 						state     := s_frm;
 					end if;
 				when s_line =>
-					dma_len   <= std_logic_vector(to_unsigned(dslice_size-1, dma_len'length));
 					dma_addr  <= std_logic_vector(unsigned(dma_addr) + dma_step);
+					dma_len   <= std_logic_vector(to_unsigned(dslice_size-1, dma_len'length));
 					dma_step  <= to_unsigned(dslice_size, dma_step'length);
-					video_req <= not  to_stdulogic(to_bit(video_rdy));
+					video_req <= not to_stdulogic(to_bit(video_rdy));
 					state     := s_hzpoll;
 				end case;
 			end if;

@@ -84,8 +84,7 @@ architecture def of dmactlr is
 	signal dmatrans_rid   : std_logic_vector(dmargtr_id'range);
 	signal dmatrans_iaddr : std_logic_vector(dmargtr_addr'range);
 	signal dmatrans_ilen  : std_logic_vector(dmargtr_len'range);
-	signal dmatrans_we    : std_logic;
-	signal trans_we       : std_logic_vector(0 to 0);
+	signal dmatrans_we    : std_logic_vector(0 to 0);
 	signal dmatrans_taddr : std_logic_vector(dmargtr_addr'range);
 	signal dmatrans_tlen  : std_logic_vector(dmargtr_len'range);
 
@@ -127,48 +126,6 @@ begin
 	dmargtr_len  <= wirebus (dev_len,  dmacfg_gnt);
 	dmargtr_we   <= wirebus (dev_we,   dmacfg_gnt);
 	dmargtr_dv   <= setif(dmacfg_gnt/=(dmacfg_gnt'range => '0'));
-
-	dmaaddr_rgtr_e : entity hdl4fpga.dpram
-	generic map (
-		synchronous_rdaddr => true,
-		synchronous_rddata => false)
-	port map (
-		wr_clk  => devcfg_clk,
-		wr_ena  => dmargtr_dv,
-		wr_addr => dmargtr_id,
-		wr_data => dmargtr_addr,
-
-		rd_clk  => ctlr_clk,
-		rd_addr => dmatrans_rid,
-		rd_data => dmatrans_iaddr);
-
-	dmalen_rgtr_e : entity hdl4fpga.dpram
-	generic map (
-		synchronous_rdaddr => true,
-		synchronous_rddata => false)
-	port map (
-		wr_clk  => devcfg_clk,
-		wr_addr => dmargtr_id,
-		wr_ena  => dmargtr_dv,
-		wr_data => dmargtr_len,
-
-		rd_clk  => ctlr_clk,
-		rd_addr => dmatrans_rid,
-		rd_data => dmatrans_ilen);
-
-	dmawe_rgtr_e : entity hdl4fpga.dpram
-	generic map (
-		synchronous_rdaddr => true,
-		synchronous_rddata => false)
-	port map (
-		wr_clk  => devcfg_clk,
-		wr_addr => dmargtr_id,
-		wr_ena  => dmargtr_dv,
-		wr_data => dmargtr_we,
-
-		rd_clk  => ctlr_clk,
-		rd_addr => dmatrans_rid,
-		rd_data => trans_we);
 
 	dmatrans_b : block
 		signal req  : std_logic_vector(dev_req'range);
@@ -223,7 +180,47 @@ begin
 	end block;
 
 	dmatrans_rid <= encoder(dev_gnt);
-	dmatrans_we  <= trans_we(0); -- and ctlr_frm;
+	dmaaddr_rgtr_e : entity hdl4fpga.dpram
+	generic map (
+		synchronous_rdaddr => true,
+		synchronous_rddata => false)
+	port map (
+		wr_clk  => devcfg_clk,
+		wr_ena  => dmargtr_dv,
+		wr_addr => dmargtr_id,
+		wr_data => dmargtr_addr,
+
+		rd_clk  => ctlr_clk,
+		rd_addr => dmatrans_rid,
+		rd_data => dmatrans_iaddr);
+
+	dmalen_rgtr_e : entity hdl4fpga.dpram
+	generic map (
+		synchronous_rdaddr => true,
+		synchronous_rddata => false)
+	port map (
+		wr_clk  => devcfg_clk,
+		wr_addr => dmargtr_id,
+		wr_ena  => dmargtr_dv,
+		wr_data => dmargtr_len,
+
+		rd_clk  => ctlr_clk,
+		rd_addr => dmatrans_rid,
+		rd_data => dmatrans_ilen);
+
+	dmawe_rgtr_e : entity hdl4fpga.dpram
+	generic map (
+		synchronous_rdaddr => true,
+		synchronous_rddata => false)
+	port map (
+		wr_clk  => devcfg_clk,
+		wr_addr => dmargtr_id,
+		wr_ena  => dmargtr_dv,
+		wr_data => dmargtr_we,
+
+		rd_clk  => ctlr_clk,
+		rd_addr => dmatrans_rid,
+		rd_data => dmatrans_we);
 
 	dmatrans_e : entity hdl4fpga.dmatrans
 	generic map (
@@ -236,7 +233,7 @@ begin
 		dmatrans_clk   => ctlr_clk,
 		dmatrans_req   => dmatrans_req,
 		dmatrans_rdy   => dmatrans_rdy,
-		dmatrans_we    => dmatrans_we,
+		dmatrans_we    => dmatrans_we(0),
 		dmatrans_iaddr => dmatrans_iaddr,
 		dmatrans_ilen  => dmatrans_ilen,
 		dmatrans_taddr => dmatrans_taddr,

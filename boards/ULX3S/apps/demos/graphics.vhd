@@ -78,7 +78,7 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := hdlc_sdr166MHz_480p24bpp;
+	constant app_profile : app_profiles := hdlc_sdr133MHz_480p16bpp;
     --                                  --
 	--------------------------------------
 
@@ -93,7 +93,7 @@ architecture graphics of ulx3s is
 		hdlc_sdr133MHz_480p16bpp => (io_hdlc, sdram133MHz, mode480p16bpp),
 		hdlc_sdr133MHz_480p24bpp => (io_hdlc, sdram133MHz, mode480p24bpp),
 		hdlc_sdr133MHz_600p16bpp => (io_hdlc, sdram133MHz, mode600p16bpp),
-		hdlc_sdr133MHz_600p24bpp => (io_hdlc, sdram133MHz, mode600p16bpp),
+		hdlc_sdr133MHz_600p24bpp => (io_hdlc, sdram133MHz, mode600p24bpp),
 
 		hdlc_sdr166MHz_480p16bpp => (io_hdlc, sdram166MHz, mode480p16bpp),
 		hdlc_sdr166MHz_480p24bpp => (io_hdlc, sdram166MHz, mode480p24bpp),
