@@ -37,6 +37,7 @@ package videopkg is
 		pclk25_00m640x400at60,    -- pclk  25 MHz
 		pclk25_00m640x480at60,    -- pclk  25 MHz
 		pclk40_00m800x600at60,    -- pclk  40.00MHz
+		pclk65_00m1024x768at60,   -- pclk  65.00MHz
 		pclk75_00m1280x720at60,   -- pclk  75.00MHz
 		pclk108_00m1600x900at60,  -- pclk 100.00MHz
 		pclk120_00m1920x1080at50, -- pclk 116.66MHz
@@ -44,8 +45,6 @@ package videopkg is
 		pclk150_00m1920x1080at60, -- pclk 148.50MHz
 
 		pclk25_00m480x272at135,   -- pclk  25.00MHz 	Added by emard@github.com for ULX3S kit
-		pclk75_00m1280x768at60,   -- pclk  75.00MHz 	Added by emard@github.com for ULX3S kit
-		pclk75_00m1920x1080at30,  -- pclk  75.00MHz 	Added by emard@github.com for ULX3S kit
 		pclk40_00m96x64at60,      -- pclk  40.00MHz 	Added by emard@github.com for ULX3S kit
 		pclk25_00m800x480at60,    -- pclk  25.00MHz 	Added by emard@github.com for ULX3S kit
 		pclk50_00m1024x600at60);  -- pclk  50.00MHz 	Added by emard@github.com for ULX3S kit
@@ -61,6 +60,7 @@ package videopkg is
 		pclk25_00m640x400at60    => ( 640,  672,  736,  832,  400,  401,  404,  445,   25000000),
 		pclk25_00m640x480at60    => ( 640,  656,  752,  800,  480,  490,  492,  525,   25000000),
 		pclk40_00m800x600at60    => ( 800,  840,  968, 1056,  600,  601,  605,  628,   40000000),
+		pclk65_00m1024x768at60   => (1024, 1048, 1184, 1344,  768,  771,  777,  806,   75000000),
 		pclk75_00m1280x720at60   => (1280, 1390, 1430, 1650,  720,  725,  730,  750,   75000000),
 		pclk108_00m1600x900at60  => (1600, 1624, 1704, 1800,  900,  901,  904, 1000,  108000000),
 		pclk120_00m1920x1080at50 => (1920, 1976, 2040, 2104, 1080, 1083, 1088, 1111,  120000000),
@@ -70,10 +70,7 @@ package videopkg is
 		pclk40_00m96x64at60      => (  96, 1999, 2000, 4000,   64,   65,   66,   67,   40000000), -- pclk  40.00MHz
 		pclk25_00m480x272at135   => ( 480,  504,  552,  624,  272,  273,  276,  295,   25000000), -- pclk  25.00MHz
 		pclk25_00m800x480at60    => F_modeline(800,480,60),                                       -- pclk  25.00MHz
-		pclk50_00m1024x600at60   => F_modeline(1024,600,60),                                      -- pclk  50.00MHz
-		pclk75_00m1280x768at60   => F_modeline(1280,768,60),                                      -- pclk  75.00MHz
-		pclk75_00m1920x1080at30  => F_modeline(1920,1080,30)                                      -- pclk  75.00MHz
-	);
+		pclk50_00m1024x600at60   => F_modeline(1024,600,60));                                     -- pclk  50.00MHz
 
 	function to_edges (
 		constant data : natural_vector)

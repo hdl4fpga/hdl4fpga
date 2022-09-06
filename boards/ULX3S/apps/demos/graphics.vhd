@@ -47,29 +47,40 @@ architecture graphics of ulx3s is
 		hdlc_sdr133MHz_480p24bpp,        --
 		hdlc_sdr133MHz_600p16bpp,        --
 		hdlc_sdr133MHz_600p24bpp,        --
+		hdlc_sdr133MHz_768p24bpp,        --
+		hdlc_sdr133MHz_720p16bpp,        --
+		hdlc_sdr133MHz_1080i16bpp,       --
 
 		hdlc_sdr166MHz_480p16bpp,        --
 		hdlc_sdr166MHz_480p24bpp,        --
 		hdlc_sdr166MHz_600p16bpp,        --
 		hdlc_sdr166MHz_600p24bpp,        --
+		hdlc_sdr166MHz_720p24bpp,        --
+		hdlc_sdr166MHz_1080i16bpp,       --
+		hdlc_sdr166MHz_1080i24bpp,       --
 
 		hdlc_sdr200MHz_480p16bpp,        --
 		hdlc_sdr200MHz_480p24bpp,        --
 		hdlc_sdr200MHz_600p24bpp,        --
 		hdlc_sdr200MHz_600p16bpp,        --
+		hdlc_sdr200MHz_720p24bpp,        --
+		hdlc_sdr200MHz_1080i16bpp,       --
+		hdlc_sdr200MHz_1080i24bpp,       --
 
 		hdlc_sdr225MHz_480p16bpp,        --
 		hdlc_sdr225MHz_480p24bpp,        --
 		hdlc_sdr225MHz_600p16bpp,        --
 		hdlc_sdr225MHz_600p24bpp,        --
+		hdlc_sdr225MHz_720p24bpp,        --
+		hdlc_sdr225MHz_1080i16bpp,       --
+		hdlc_sdr225MHz_1080i24bpp,       --
 
 		hdlc_sdr250MHz_480p16bpp,        --
 		hdlc_sdr250MHz_600p16bpp,        --
 		hdlc_sdr250MHz_600p24bpp,        --
-
-		hdlc_sdr275MHz_600p24bpp,        --
-
-		hdlc_sdr200MHz_900p24bpp,        --
+		hdlc_sdr250MHz_720p24bpp,        --
+		hdlc_sdr250MHz_1080i16bpp,       --
+		hdlc_sdr250MHz_1080i24bpp,       --
 
 		ipoe_sdr166MHz_480p24bpp,         --
 		ipoe_sdr200MHz_600p24bpp,         --
@@ -78,7 +89,7 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := hdlc_sdr250MHz_600p24bpp;
+	constant app_profile : app_profiles := hdlc_sdr200MHz_720p24bpp;
     --                                  --
 	--------------------------------------
 
@@ -94,28 +105,40 @@ architecture graphics of ulx3s is
 		hdlc_sdr133MHz_480p24bpp => (io_hdlc, sdram133MHz, mode480p24bpp),
 		hdlc_sdr133MHz_600p16bpp => (io_hdlc, sdram133MHz, mode600p16bpp),
 		hdlc_sdr133MHz_600p24bpp => (io_hdlc, sdram133MHz, mode600p24bpp),
+		hdlc_sdr133MHz_768p24bpp => (io_hdlc, sdram133MHz, mode768p24bpp),
+		hdlc_sdr133MHz_720p16bpp => (io_hdlc, sdram133MHz, mode720p16bpp),
+		hdlc_sdr133MHz_1080i16bpp => (io_hdlc, sdram133MHz, mode1080i16bpp),
 
 		hdlc_sdr166MHz_480p16bpp => (io_hdlc, sdram166MHz, mode480p16bpp),
 		hdlc_sdr166MHz_480p24bpp => (io_hdlc, sdram166MHz, mode480p24bpp),
 		hdlc_sdr166MHz_600p16bpp => (io_hdlc, sdram166MHz, mode600p16bpp),
 		hdlc_sdr166MHz_600p24bpp => (io_hdlc, sdram166MHz, mode600p24bpp),
+		hdlc_sdr166MHz_720p24bpp => (io_hdlc, sdram166MHz, mode720p24bpp),
+		hdlc_sdr166MHz_1080i16bpp => (io_hdlc, sdram166MHz, mode1080i16bpp),
+		hdlc_sdr166MHz_1080i24bpp => (io_hdlc, sdram166MHz, mode1080i24bpp),
 
 		hdlc_sdr200MHz_480p16bpp => (io_hdlc, sdram200MHz, mode480p16bpp),
 		hdlc_sdr200MHz_480p24bpp => (io_hdlc, sdram200MHz, mode480p24bpp),
 		hdlc_sdr200MHz_600p16bpp => (io_hdlc, sdram200MHz, mode600p16bpp),
 		hdlc_sdr200MHz_600p24bpp => (io_hdlc, sdram200MHz, mode600p24bpp),
+		hdlc_sdr200MHz_720p24bpp => (io_hdlc, sdram200MHz, mode720p24bpp),
+		hdlc_sdr200MHz_1080i16bpp => (io_hdlc, sdram200MHz, mode1080i16bpp),
+		hdlc_sdr200MHz_1080i24bpp => (io_hdlc, sdram200MHz, mode1080i24bpp),
 
 		hdlc_sdr225MHz_480p16bpp => (io_hdlc, sdram225MHz, mode480p16bpp),
 		hdlc_sdr225MHz_480p24bpp => (io_hdlc, sdram225MHz, mode480p24bpp),
 		hdlc_sdr225MHz_600p16bpp => (io_hdlc, sdram225MHz, mode600p16bpp),
 		hdlc_sdr225MHz_600p24bpp => (io_hdlc, sdram225MHz, mode600p24bpp),
+		hdlc_sdr225MHz_720p24bpp => (io_hdlc, sdram225MHz, mode720p24bpp),
+		hdlc_sdr225MHz_1080i16bpp => (io_hdlc, sdram225MHz, mode1080i16bpp),
+		hdlc_sdr225MHz_1080i24bpp => (io_hdlc, sdram225MHz, mode1080i24bpp),
 
 		hdlc_sdr250MHz_480p16bpp => (io_hdlc, sdram250MHz, mode480p16bpp),
 		hdlc_sdr250MHz_600p16bpp => (io_hdlc, sdram250MHz, mode600p16bpp),
 		hdlc_sdr250MHz_600p24bpp => (io_hdlc, sdram250MHz, mode600p24bpp),
-
-		hdlc_sdr275MHz_600p24bpp => (io_hdlc, sdram275MHz, mode600p24bpp),
-		hdlc_sdr200MHz_900p24bpp => (io_hdlc, sdram200MHz, mode900p24bpp),
+		hdlc_sdr250MHz_720p24bpp => (io_hdlc, sdram250MHz, mode720p24bpp),
+		hdlc_sdr250MHz_1080i16bpp => (io_hdlc, sdram250MHz, mode1080i16bpp),
+		hdlc_sdr250MHz_1080i24bpp => (io_hdlc, sdram250MHz, mode1080i24bpp),
 
 		ipoe_sdr166MHz_480p24bpp => (io_ipoe, sdram166MHz, mode480p24bpp),
 		ipoe_sdr200MHz_600p24bpp => (io_ipoe, sdram200MHz, mode600p24bpp),
@@ -145,7 +168,11 @@ architecture graphics of ulx3s is
 		(id => mode480p24bpp, pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, timing => pclk25_00m640x480at60),
 		(id => mode600p16bpp, pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb565, timing => pclk40_00m800x600at60),
 		(id => mode600p24bpp, pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb888, timing => pclk40_00m800x600at60),
-		(id => mode900p24bpp, pll => (clkos_div => 2, clkop_div => 22,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 14), pixel => rgb888, timing => pclk108_00m1600x900at60)); -- 30 Hz
+		(id => mode768p24bpp, pll => (clkos_div => 2, clkop_div => 26,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 16), pixel => rgb888, timing => pclk40_00m800x600at60),
+		(id => mode720p16bpp, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb565, timing => pclk75_00m1280x720at60),
+		(id => mode720p24bpp, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb888, timing => pclk75_00m1280x720at60),
+		(id => mode1080i16bpp, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb565, timing => pclk150_00m1920x1080at60),
+		(id => mode1080i24bpp, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb888, timing => pclk150_00m1920x1080at60));
 
 	function videoparam (
 		constant id  : video_modes)
