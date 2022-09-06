@@ -241,9 +241,9 @@ begin
 		signal uart_irdy   : std_logic;
 		signal uart_txd    : std_logic_vector(0 to 8-1);
 
-		signal uartrx_trdy   : std_logic;
-		signal uartrx_irdy   : std_logic;
-		signal uartrx_data   : std_logic_vector(0 to 8-1);
+		signal uartrx_trdy : std_logic;
+		signal uartrx_irdy : std_logic;
+		signal uartrx_data : std_logic_vector(0 to 8-1);
 
 		signal hdlctx_frm  : std_logic;
 		signal hdlctx_end  : std_logic;
@@ -259,7 +259,6 @@ begin
 		signal hdlcfcsrx_vld : std_logic;
 
 	begin
-
 
 		nrst <= not rst;
 		process 
