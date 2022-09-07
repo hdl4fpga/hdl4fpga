@@ -188,10 +188,10 @@ begin
 						new_level := to_unsigned(ppage_size, level'length);
 						state     := s_frm;
 					end if;
+					dma_len  <= std_logic_vector(to_unsigned(dslice_size-1, dma_len'length));
 				when s_line =>
 					if (to_bit(video_rdy) xor to_bit(video_req))='0' then
 						dma_addr  <= std_logic_vector(unsigned(dma_addr) + dma_step);
-						dma_len   <= std_logic_vector(to_unsigned(dslice_size-1, dma_len'length));
 						dma_step  <= to_unsigned(dslice_size, dma_step'length);
 						video_req <= not to_stdulogic(to_bit(video_rdy));
 						state     := s_hzpoll;
@@ -234,7 +234,7 @@ begin
 		async_mode => true,
 		latency    => 1,
 		check_sov  => false,
-		check_dov  => false,
+		check_dov  => true,
 		gray_code  => false)
 	port map (
 		src_clk  => ctlr_clk,
