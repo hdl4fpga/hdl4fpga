@@ -152,16 +152,17 @@ begin
 			if rising_edge(video_clk) then
 				case state is
 				when s_frm =>
-					if video_frm='1' then
-						level     <= to_unsigned(ppage_size, level'length);
-						new_level := to_unsigned(ppage_size, level'length);
-						dma_addr  <= to_stdlogicvector(to_bitvector(base_addr));
-						dma_len   <= std_logic_vector(to_unsigned(dpage_size-1, dma_len'length));
-						dma_step  <= to_unsigned(dpage_size, dma_step'length);
-						video_req <= not to_stdulogic(to_bit(video_rdy));
-						state     := s_vtpoll;
-					else
-						video_frm <= '1';
+					dma_addr <= to_stdlogicvector(to_bitvector(base_addr));
+					dma_len  <= std_logic_vector(to_unsigned(dpage_size-1, dma_len'length));
+					dma_step <= to_unsigned(dpage_size, dma_step'length);
+					if (to_bit(video_rdy) xor to_bit(video_req))='0' then
+						if video_frm='1' then
+							video_frm <= '0';
+						else
+							video_req <= not to_stdulogic(to_bit(video_rdy));
+							video_frm <= '1';
+							state     := s_vtpoll;
+						end if;
 					end if;
 				when s_vtpoll =>
 					if (to_bit(video_rdy) xor to_bit(video_req))='0' then
@@ -173,8 +174,8 @@ begin
 					if video_vton='1' then
 						if video_hzon='1' then
 							if new_level <= to_unsigned(pwater_mark, level'length) then
-								new_level := new_level + to_unsigned(pslice_size, level'length);
 								level     <= new_level + to_unsigned(pslice_size, level'length);
+								new_level := new_level + to_unsigned(pslice_size, level'length);
 								state := s_line;
 							else
 								level <= new_level;
@@ -182,16 +183,19 @@ begin
 						else
 							new_level := level - to_unsigned(video_width, level'length);
 						end if;
-					elsif (to_bit(video_rdy) xor to_bit(video_req))='0' then
-						video_frm <= '0';
+					else
+						level     <= to_unsigned(ppage_size, level'length);
+						new_level := to_unsigned(ppage_size, level'length);
 						state     := s_frm;
 					end if;
 				when s_line =>
-					dma_addr  <= std_logic_vector(unsigned(dma_addr) + dma_step);
-					dma_len   <= std_logic_vector(to_unsigned(dslice_size-1, dma_len'length));
-					dma_step  <= to_unsigned(dslice_size, dma_step'length);
-					video_req <= not to_stdulogic(to_bit(video_rdy));
-					state     := s_hzpoll;
+					if (to_bit(video_rdy) xor to_bit(video_req))='0' then
+						dma_addr  <= std_logic_vector(unsigned(dma_addr) + dma_step);
+						dma_len   <= std_logic_vector(to_unsigned(dslice_size-1, dma_len'length));
+						dma_step  <= to_unsigned(dslice_size, dma_step'length);
+						video_req <= not to_stdulogic(to_bit(video_rdy));
+						state     := s_hzpoll;
+					end if;
 				end case;
 			end if;
 		end process;
