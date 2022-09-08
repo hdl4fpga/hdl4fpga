@@ -189,7 +189,8 @@ architecture mix of sdr_ctlr is
 
 	constant bl_cod  : std_logic_vector := sdr_latcod(stdr, bl);
 	constant cl_cod  : std_logic_vector := sdr_latcod(stdr, cl);
-	constant cwl_cod : std_logic_vector := sdr_latcod(stdr, cwl); --sdr_selcwl(stdr));
+	-- constant cwl_cod : std_logic_vector := sdr_latcod(stdr, cwl); --sdr_selcwl(stdr));
+	constant cwl_cod : std_logic_vector := sdr_latcod(stdr, sdr_selcwl(stdr));
 
 
 	subtype byte is std_logic_vector(0 to byte_size-1);

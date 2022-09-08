@@ -78,7 +78,8 @@ architecture arch of sdr_mpu is
 	constant lrp     : natural          := to_sdrlatency(tcp, chip, trp);
 	constant bl_tab  : natural_vector   := sdr_lattab(stdr, bl);
 	constant cl_tab  : natural_vector   := sdr_lattab(stdr, cl);
-	constant cwl_tab : natural_vector   := sdr_lattab(stdr, cwl);
+	-- constant cwl_tab : natural_vector   := sdr_lattab(stdr, cwl);
+	constant cwl_tab : natural_vector   := sdr_lattab(stdr, sdr_selcwl(stdr));
 
 	constant ras  : natural := 0;
 	constant cas  : natural := 1;

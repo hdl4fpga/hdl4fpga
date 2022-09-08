@@ -28,11 +28,11 @@ NET "iod_clk" TNM_NET = iod_clk;
 TIMESPEC ts_iod_clk = PERIOD "iod_clk" 5 ns HIGH 50%;
 
 NET "phy_rxclk_bufg" TNM_NET = phy_rxclk_bufg;
-TIMESPEC ts_phy_rxclk = PERIOD "phy_rxclk_bufg" 40 ns HIGH 50%;
+TIMESPEC ts_phy_rxclk = PERIOD "phy_rxclk_bufg" 8 ns HIGH 50%;
 OFFSET = IN 4 ns VALID 8 ns BEFORE  phy_rxclk_bufg falling;
 
 NET "phy_txclk" TNM_NET = phy_txclk;
-TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 40 ns HIGH 50%;
+TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 8 ns HIGH 50%;
 
 
 # ###################### #

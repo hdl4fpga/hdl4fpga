@@ -250,6 +250,11 @@ package body sdr_param is
 				end if;
 			end if;
 		end loop;
+
+		assert val /= 0
+		report sdram_latency_rgtr'image(rgtr) & " : " & natural'image(val)
+		severity failure;
+
 		return val;
 	end;
 
