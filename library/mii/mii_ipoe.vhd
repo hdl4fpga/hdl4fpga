@@ -75,7 +75,6 @@ architecture def of mii_ipoe is
 	signal pream_vld     : std_logic;
 	signal dllrx_frm     : std_logic;
 	signal dllrx_irdy    : std_logic;
-	signal dllrx_trdy    : std_logic;
 	signal dllrx_data    : std_logic_vector(plrx_data'range);
 	signal metarx_frm    : std_logic;
 	signal metarx_irdy   : std_logic;
@@ -225,25 +224,41 @@ begin
 		end if;
 	end process;
 
-	ethrx_e : entity hdl4fpga.eth_rx
-	port map (
-		mii_clk    => mii_clk,
-		mii_frm    => miirx_frm,
-		mii_irdy   => miirx_irdy,
-		mii_data   => miirx_data,
+	ethrrx_b : block
+		signal frm  : std_logic;
+		signal irdy : std_logic;
+		signal data : std_logic_vector(dllrx_data'range);
+	begin
+		ethrx_e : entity hdl4fpga.eth_rx
+		port map (
+			mii_clk    => mii_clk,
+			mii_frm    => miirx_frm,
+			mii_irdy   => miirx_irdy,
+			mii_data   => miirx_data,
+	
+			dll_frm    => frm,
+			dll_irdy   => irdy,
+			dll_trdy   => open,
+			dll_data   => data,
+	
+			hwda_irdy  => hwdarx_irdy,
+			hwda_end   => hwda_end,
+			hwsa_irdy  => hwsarx_irdy,
+			hwtyp_irdy => hwtyprx_irdy,
+			pl_irdy    => ethplrx_irdy,
+			fcs_sb     => fcs_sb,
+			fcs_vld    => fcs_vld);
 
-		dll_frm    => dllrx_frm,
-		dll_irdy   => dllrx_irdy,
-		dll_trdy   => dllrx_trdy,
-		dll_data   => dllrx_data,
+		process(mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				dllrx_frm  <= frm;
+				dllrx_irdy <= irdy;
+				dllrx_data <= data;
+			end if;
+		end process;
 
-		hwda_irdy  => hwdarx_irdy,
-		hwda_end   => hwda_end,
-		hwsa_irdy  => hwsarx_irdy,
-		hwtyp_irdy => hwtyprx_irdy,
-		pl_irdy    => ethplrx_irdy,
-		fcs_sb     => fcs_sb,
-		fcs_vld    => fcs_vld);
+	end block;
 
 	tp(9 to 16) <= dllrx_data;
 	tp(17) <= dllrx_frm;

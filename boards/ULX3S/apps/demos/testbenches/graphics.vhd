@@ -209,7 +209,7 @@ architecture ulx3s_graphics of testbench is
 	signal nrst : std_logic;
 	signal uart_clk : std_logic := '0';
 
-	constant debug : boolean := false;
+	constant debug : boolean := true;
 begin
 
 	rst <= '1', '0' after 10 us; --, '1' after 30 us, '0' after 31 us;

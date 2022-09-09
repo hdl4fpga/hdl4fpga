@@ -52,7 +52,7 @@ package videopkg is
 
 	type modeline_vector is array (videotiming_ids) of natural_vector(0 to 9-1);
 
-	constant xxx : natural := 800;
+	constant xxx : natural := 1000;
 	constant yyy : natural := 9;
 	constant modeline_tab : modeline_vector := (
 		pclk_fallback            => (   0,    0,   0,     0,    0,    0,    0,    0,          0),
