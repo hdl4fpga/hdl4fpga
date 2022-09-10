@@ -27,7 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.sdr_db.all;
+use hdl4fpga.sdram_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.profiles.all;
@@ -131,9 +131,9 @@ architecture graphics of s3estarter is
 	constant sdram_speed   : sdram_speeds  := profile_tab(app_profile).sdram_speed;
 	constant sdram_params  : sdramparams_record := sdramparams(sdram_speed);
 
-	constant sdr_tcp       : real := real(sdram_params.pll.dcm_div)*sys_per/real(sdram_params.pll.dcm_mul);
+	constant sdram_tcp       : real := real(sdram_params.pll.dcm_div)*sys_per/real(sdram_params.pll.dcm_mul);
 
-	constant sdr_clk_fb    :  boolean := false;
+	constant sdram_clk_fb    :  boolean := false;
 
 	signal sys_rst         : std_logic;
 	signal sys_clk         : std_logic;
@@ -162,7 +162,6 @@ architecture graphics of s3estarter is
 	constant byte_size     : natural := 8;
 
 	signal sdrsys_rst      : std_logic;
-	signal sdram_clk       : std_logic;
 	signal sdrphy_clk      : std_logic_vector(0 to 0);
 
 	signal clk0            : std_logic;
@@ -189,13 +188,13 @@ architecture graphics of s3estarter is
 	signal ctlrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal sdr_st_dqs_open : std_logic;
+	signal sdram_st_dqs_open : std_logic;
 
-	signal sdr_clk         : std_logic_vector(0 downto 0);
-	signal sdr_dqst        : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal sdr_dqso        : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal sdr_dqt         : std_logic_vector(sd_dq'range);
-	signal sdr_dqo         : std_logic_vector(sd_dq'range);
+	signal sdram_clk         : std_logic_vector(0 downto 0);
+	signal sdram_dqst        : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_dqso        : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_dqt         : std_logic_vector(sd_dq'range);
+	signal sdram_dqo         : std_logic_vector(sd_dq'range);
 
 	signal mii_clk         : std_logic;
 	signal video_clk       : std_logic;
@@ -313,7 +312,7 @@ begin
 			clkfx180 => dfs_clkfx180,
 			locked   => dfs_lckd);
 
-		sdr_feedback_g : if sdr_clk_fb generate
+		sdram_feedback_g : if sdram_clk_fb generate
 			signal sdram_clk  : std_logic;
 			signal sd_ck_fb_n : std_logic;
 		begin
@@ -328,7 +327,7 @@ begin
 				d1 => '1',
 				q  => sdram_clk);
 
-			sdr_clk_i : obufds
+			sdram_clk_i : obufds
 			generic map (
 				iostandard => "DIFF_SSTL2_I")
 			port map (
@@ -354,7 +353,7 @@ begin
 
 		end generate;
 	
-		no_sdr_feedback_g : if not sdr_clk_fb generate
+		no_sdram_feedback_g : if not sdram_clk_fb generate
 			dcm_clkfb <= clk0;
 			dcm_clkin <= dfs_clkfx;
 	
@@ -367,7 +366,7 @@ begin
 				end if;
 			end process;
 
-			sdr_clk_i : obufds
+			sdram_clk_i : obufds
 			generic map (
 				iostandard => "DIFF_SSTL2_I")
 			port map (
@@ -572,7 +571,7 @@ begin
 	generic map (
 		debug        => debug,
 		profile      => 1,
-		sdr_tcp      => sdr_tcp,
+		sdram_tcp      => sdram_tcp,
 		fpga         => xc3s,
 		mark         => MT46V256M6T,
 		sclk_phases  => sclk_phases,
@@ -696,23 +695,23 @@ begin
 		sdr_a       => sd_a,
 
 		sdr_dm      => sd_dm,
-		sdr_dqt     => sdr_dqt,
+		sdr_dqt     => sdram_dqt,
 		sdr_dqi     => sd_dq,
-		sdr_dqo     => sdr_dqo,
-		sdr_dqst    => sdr_dqst,
+		sdr_dqo     => sdram_dqo,
+		sdr_dqst    => sdram_dqst,
 		sdr_dqsi    => sd_dqs,
-		sdr_dqso    => sdr_dqso);
+		sdr_dqso    => sdram_dqso);
 
-	sdr_dqs_g : for i in sd_dqs'range generate
-		sd_dqs(i) <= sdr_dqso(i) when sdr_dqst(i)='0' else 'Z';
+	sdram_dqs_g : for i in sd_dqs'range generate
+		sd_dqs(i) <= sdram_dqso(i) when sdram_dqst(i)='0' else 'Z';
 	end generate;
 
-	process (sdr_dqt, sdr_dqo)
+	process (sdram_dqt, sdram_dqo)
 	begin
 		for i in sd_dq'range loop
 			sd_dq(i) <= 'Z';
-			if sdr_dqt(i)='0' then
-				sd_dq(i) <= sdr_dqo(i);
+			if sdram_dqt(i)='0' then
+				sd_dq(i) <= sdram_dqo(i);
 			end if;
 		end loop;
 	end process;

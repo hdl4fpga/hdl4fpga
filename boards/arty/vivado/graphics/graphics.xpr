@@ -584,97 +584,97 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/sdr/phy_rl.vhd">
+      <File Path="$PPRDIR/../../../../library/sdram/phy_rl.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/sdr/phy_memcycle.vhd">
+      <File Path="$PPRDIR/../../../../library/sdram/phy_memcycle.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/sdr/sdr_rdfifo.vhd">
+      <File Path="$PPRDIR/../../../../library/sdram/sdram_rdfifo.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/sdr/dmacntr.vhd">
+      <File Path="$PPRDIR/../../../../library/sdram/dmacntr.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/sdr/sdr_ph.vhd">
+      <File Path="$PPRDIR/../../../../library/sdram/sdram_ph.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/sdr/sdr_wrfifo.vhd">
+      <File Path="$PPRDIR/../../../../library/sdram/sdram_wrfifo.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/sdr/sdr_param.vhd">
+      <File Path="$PPRDIR/../../../../library/sdram/sdram_param.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/sdr/sdr_mpu.vhd">
+      <File Path="$PPRDIR/../../../../library/sdram/sdram_mpu.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/sdr/sdr_ctlr.vhd">
+      <File Path="$PPRDIR/../../../../library/sdram/sdram_ctlr.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/sdr/sdr_init.vhd">
+      <File Path="$PPRDIR/../../../../library/sdram/sdram_init.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/sdr/sdr_sch.vhd">
+      <File Path="$PPRDIR/../../../../library/sdram/sdram_sch.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/sdr/sdr_pgm.vhd">
+      <File Path="$PPRDIR/../../../../library/sdram/sdram_pgm.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/sdr/sdr_iofifo.vhd">
+      <File Path="$PPRDIR/../../../../library/sdram/sdram_iofifo.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/sdr/sdr_db.vhd">
+      <File Path="$PPRDIR/../../../../library/sdram/sdram_db.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/sdr/dmactlr.vhd">
+      <File Path="$PPRDIR/../../../../library/sdram/dmactlr.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/sdr/dmatrans.vhd">
+      <File Path="$PPRDIR/../../../../library/sdram/dmatrans.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>

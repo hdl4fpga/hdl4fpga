@@ -211,7 +211,7 @@
         </Source>
     </Implementation>
     <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.phy_rl" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.sdram_ctlr" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
@@ -458,52 +458,52 @@
         <Source name="../../../library/common/sync_transfer.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdr/dmacntr.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/dmacntr.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdr/dmactlr.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/dmactlr.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdr/dmatrans.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/dmatrans.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdr/phy_memcycle.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/phy_memcycle.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdr/phy_rl.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/phy_rl.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdr/sdr_ctlr.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/sdram_ctlr.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdr/sdr_db.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/sdram_db.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdr/sdr_init.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/sdram_init.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdr/sdr_iofifo.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/sdram_iofifo.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdr/sdr_mpu.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/sdram_mpu.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdr/sdr_param.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/sdram_param.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdr/sdr_pgm.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/sdram_pgm.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdr/sdr_ph.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/sdram_ph.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdr/sdr_rdfifo.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/sdram_rdfifo.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdr/sdr_sch.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/sdram_sch.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdr/sdr_wrfifo.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/sdram_wrfifo.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/common/profiles.vhd" type="VHDL" type_short="VHDL">

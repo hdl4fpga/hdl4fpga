@@ -361,82 +361,82 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="37"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdr/dmacntr.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/sdram/dmacntr.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="100"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="45"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdr/dmactlr.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/sdram/dmactlr.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="101"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="76"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdr/dmatrans.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/sdram/dmatrans.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="102"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="61"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdr/phy_memcycle.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/sdram/phy_memcycle.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="103"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdr/phy_rl.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/sdram/phy_rl.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="104"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdr/sdr_ctlr.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/sdram/sdram_ctlr.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="105"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="75"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdr/sdr_db.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/sdram/sdram_db.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="106"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="44"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdr/sdr_init.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/sdram/sdram_init.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="107"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="60"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdr/sdr_iofifo.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/sdram/sdram_iofifo.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="108"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="43"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdr/sdr_mpu.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/sdram/sdram_mpu.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="109"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="59"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdr/sdr_param.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/sdram/sdram_param.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="110"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="27"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdr/sdr_pgm.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/sdram/sdram_pgm.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="111"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="58"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdr/sdr_ph.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/sdram/sdram_ph.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="112"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="42"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdr/sdr_rdfifo.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/sdram/sdram_rdfifo.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="113"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="57"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdr/sdr_sch.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/sdram/sdram_sch.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="114"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="56"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdr/sdr_wrfifo.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/sdram/sdram_wrfifo.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="115"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="55"/>
       <library xil_pn:name="hdl4fpga"/>

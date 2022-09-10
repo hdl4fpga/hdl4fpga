@@ -30,7 +30,7 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.profiles.all;
 use hdl4fpga.app_profiles.all;
-use hdl4fpga.sdr_db.all;
+use hdl4fpga.sdram_db.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
 
@@ -576,7 +576,7 @@ begin
 	generic map (
 		debug => debug,
 		profile      => 1,
-		sdr_tcp      => sdram_tcp,
+		sdram_tcp      => sdram_tcp,
 		fpga         => xc5v,
 		mark         => MT47H512M3,
 		sclk_phases  => sclk_phases,

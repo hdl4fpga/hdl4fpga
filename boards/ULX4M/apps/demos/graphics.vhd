@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.profiles.all;
-use hdl4fpga.sdr_db.all;
+use hdl4fpga.sdram_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.app_profiles.all;
@@ -65,7 +65,7 @@ architecture graphics of ulx4m_ld is
 
 	type profile_params is record
 		comms      : io_comms;
-		sdr_speed  : sdram_speeds;
+		sdram_speed  : sdram_speeds;
 		video_mode : video_modes;
 	end record;
 
@@ -167,11 +167,11 @@ architecture graphics of ulx4m_ld is
 	end;
 
 	constant sdram_mode : sdram_speeds := sdram_speeds'VAL(setif(not debug,
-		sdram_speeds'POS(profile_tab(app_profile).sdr_speed),
+		sdram_speeds'POS(profile_tab(app_profile).sdram_speed),
 		sdram_speeds'POS(sdram400Mhz)));
 	constant sdram_params : sdramparams_record := sdramparams(sdram_mode);
 
-	constant sdr_tcp : real := 
+	constant sdram_tcp : real := 
 		real(sdram_params.pll.clki_div)/
 		(real(sdram_params.pll.clkos_div*sdram_params.pll.clkfb_div)*sys_freq);
 
@@ -350,7 +350,7 @@ begin
 		attribute FREQUENCY_PIN_CLKI   : string;
 		attribute FREQUENCY_PIN_CLKOP  : string;
 
-		constant ddram_mhz : real := 1.0e-6/sdr_tcp;
+		constant ddram_mhz : real := 1.0e-6/sdram_tcp;
 
 
 		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_mhz, 10);
@@ -649,7 +649,7 @@ begin
 		debug        => debug,
 		profile      => 2,
 
-		sdr_tcp      => 2.0*sdr_tcp,
+		sdram_tcp      => 2.0*sdram_tcp,
 		fpga         => ecp5,
 		mark         => MT41K4G107,
 		sclk_phases  => sclk_phases,
@@ -805,7 +805,7 @@ begin
 
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
-		sdr_tcp       => sdr_tcp,
+		sdr_tcp       => sdram_tcp,
 		cmmd_gear     => cmmd_gear,
 		data_gear     => data_gear,
 		bank_size     => ddram_ba'length,

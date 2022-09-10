@@ -29,7 +29,7 @@ use ieee.math_real.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.profiles.all;
-use hdl4fpga.sdr_db.all;
+use hdl4fpga.sdram_db.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.app_profiles.all;
@@ -92,7 +92,7 @@ architecture graphics of arty is
 	type sdramparams_record is record
 		id  : sdram_speeds;
 		pll : pll_params;
-		cl : std_logic_vector(0 to 3-1);
+		cl  : std_logic_vector(0 to 3-1);
 		cwl : std_logic_vector(0 to 3-1);
 	end record;
 
@@ -150,27 +150,20 @@ architecture graphics of arty is
 		return tab(tab'left);
 	end;
 
-	type profile_param is record
-		comms      : io_comms;
-		sdr_speed  : sdram_speeds;
-		video_mode : video_modes;
-		profile    : natural;
-	end record;
-
-	type profileparam_vector is array (app_profiles) of profile_param;
+	type profileparam_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparam_vector := (
-		sdr333MHz_900p24bpp => (io_ipoe, sdram333MHz, mode900p24bpp, 1),
-		sdr350MHz_900p24bpp => (io_ipoe, sdram350MHz, mode900p24bpp, 1),
-		sdr375MHz_900p24bpp => (io_ipoe, sdram375MHz, mode900p24bpp, 1),
-		sdr400MHz_900p24bpp => (io_ipoe, sdram400MHz, mode900p24bpp, 1),
-		sdr425MHz_900p24bpp => (io_ipoe, sdram425MHz, mode900p24bpp, 1),
-		sdr450MHz_900p24bpp => (io_ipoe, sdram450MHz, mode900p24bpp, 1),
-		sdr475MHz_900p24bpp => (io_ipoe, sdram475MHz, mode900p24bpp, 1),
-		sdr500MHz_900p24bpp => (io_ipoe, sdram500MHz, mode900p24bpp, 1),
-		sdr525MHz_900p24bpp => (io_ipoe, sdram525MHz, mode900p24bpp, 1),
-		sdr550MHz_900p24bpp => (io_ipoe, sdram550MHz, mode900p24bpp, 1),
-		sdr575MHz_900p24bpp => (io_ipoe, sdram575MHz, mode900p24bpp, 1),
-		sdr600MHz_900p24bpp => (io_ipoe, sdram600MHz, mode900p24bpp, 1));
+		sdr333MHz_900p24bpp => (io_ipoe, sdram333MHz, mode900p24bpp),
+		sdr350MHz_900p24bpp => (io_ipoe, sdram350MHz, mode900p24bpp),
+		sdr375MHz_900p24bpp => (io_ipoe, sdram375MHz, mode900p24bpp),
+		sdr400MHz_900p24bpp => (io_ipoe, sdram400MHz, mode900p24bpp),
+		sdr425MHz_900p24bpp => (io_ipoe, sdram425MHz, mode900p24bpp),
+		sdr450MHz_900p24bpp => (io_ipoe, sdram450MHz, mode900p24bpp),
+		sdr475MHz_900p24bpp => (io_ipoe, sdram475MHz, mode900p24bpp),
+		sdr500MHz_900p24bpp => (io_ipoe, sdram500MHz, mode900p24bpp),
+		sdr525MHz_900p24bpp => (io_ipoe, sdram525MHz, mode900p24bpp),
+		sdr550MHz_900p24bpp => (io_ipoe, sdram550MHz, mode900p24bpp),
+		sdr575MHz_900p24bpp => (io_ipoe, sdram575MHz, mode900p24bpp),
+		sdr600MHz_900p24bpp => (io_ipoe, sdram600MHz, mode900p24bpp));
 
 
 	signal sys_rst : std_logic;
@@ -305,22 +298,11 @@ architecture graphics of arty is
 	signal ddr3_dqo       : std_logic_vector(word_size-1 downto 0);
 	signal ddr3_dqt       : std_logic_vector(word_size-1 downto 0);
 
-	constant sdr_speed   : sdram_speeds  := profile_tab(app_profile).sdr_speed;
-	function setif (
-		constant expr  : boolean;
-		constant true  : video_modes;
-		constant false : video_modes)
-		return video_modes is
-	begin
-		if expr then
-			return true;
-		end if;
-		return false;
-	end;
-	constant video_mode   : video_modes := setif(debug, modedebug, profile_tab(app_profile).video_mode);
-	constant sdram_params : sdramparams_record := sdramparams(sdr_speed);
+	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
+	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
+	constant video_mode   : video_modes :=setdebug(debug, profile_tab(app_profile).video_mode);
 
-	constant sdr_tcp   : real := (sys_per*real(sdram_params.pll.dcm_div))/real(sdram_params.pll.dcm_mul); -- 1 ns /1ps
+	constant sdram_tcp   : real := (sys_per*real(sdram_params.pll.dcm_div))/real(sdram_params.pll.dcm_mul); -- 1 ns /1ps
 
 	alias  sys_clk        : std_logic is gclk100;
 	alias  ctlr_clk       : std_logic is ddr_clk0;
@@ -758,7 +740,7 @@ begin
 	generic map (
 		debug        => debug,
 		profile      => 1,
-		sdr_tcp      => 2.0*sdr_tcp,
+		sdram_tcp      => 2.0*sdram_tcp,
 		fpga         => xc7a,
 		mark         => MT41K2G125,
 		sclk_phases  => sclk_phases,
@@ -869,7 +851,7 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc7a_sdrphy
 	generic map (
-		taps      => natural(floor(sdr_tcp*(32.0*2.0)/(sys_per/2.0)))-1,
+		taps      => natural(floor(sdram_tcp*(32.0*2.0)/(sys_per/2.0)))-1,
 		bank_size => bank_size,
         addr_size => addr_size,
 		cmmd_gear => cmmd_gear,

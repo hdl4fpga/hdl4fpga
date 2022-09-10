@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.profiles.all;
-use hdl4fpga.sdr_db.all;
+use hdl4fpga.sdram_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.app_profiles.all;
@@ -91,7 +91,7 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := hdlc_sdr133MHz_720p24bpp;
+	constant app_profile : app_profiles := hdlc_sdr166MHz_720p24bpp;
     --                                  --
 	--------------------------------------
 
@@ -238,7 +238,7 @@ architecture graphics of ulx3s is
 		sdram_speeds'POS(sdram133Mhz)));
 	constant sdram_params : sdramparams_record := sdramparams(sdram_mode);
 
-	constant sdr_tcp : real := 
+	constant sdram_tcp : real := 
 		real(sdram_params.pll.clki_div*sdram_params.pll.clkos2_div)/
 		(real(sdram_params.pll.clkfb_div*sdram_params.pll.clkop_div)*sys_freq);
 
@@ -678,7 +678,7 @@ begin
 		debug => debug,
 		profile      => 0,
 
-		sdr_tcp      => sdr_tcp,
+		sdram_tcp    => sdram_tcp,
 		fpga         => xc3s,
 		mark         => MT48LC256MA27E ,
 		sclk_phases  => sclk_phases,

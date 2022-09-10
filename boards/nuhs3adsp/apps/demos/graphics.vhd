@@ -27,7 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
-use hdl4fpga.sdr_db.all;
+use hdl4fpga.sdram_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.profiles.all;
@@ -157,7 +157,7 @@ architecture graphics of nuhs3adsp is
 	constant sdram_speed  : sdram_speeds  := profile_tab(app_profile).sdram_speed;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 
-	constant sdr_tcp   : real := real(sdram_params.pll.dcm_div)*sys_per/real(sdram_params.pll.dcm_mul);
+	constant sdram_tcp   : real := real(sdram_params.pll.dcm_div)*sys_per/real(sdram_params.pll.dcm_mul);
 
 	signal sys_rst       : std_logic;
 	signal sys_clk       : std_logic;
@@ -559,7 +559,7 @@ begin
 	generic map (
 		debug        => debug,
 		profile      => 1,
-		sdr_tcp      => sdr_tcp,
+		sdram_tcp      => sdram_tcp,
 		fpga         => xc3s,
 		mark         => MT46V256M6T,
 		sclk_phases  => sclk_phases,
