@@ -1,3 +1,0 @@
-#include $NC_INST_DIR/sun4v/tools/inca/files/hdl.var
-#define NCSIMRC  ./sim/waveform.com
-define WORK work
