@@ -495,59 +495,80 @@ begin
 			end if;
 		end process;
 
-		udpdaisy_e : entity hdl4fpga.sio_dayudp
-		generic map (
-			debug         => false,
-			my_mac        => x"00_40_00_01_02_03",
-			default_ipv4a => aton("192.168.0.14"))
-		port map (
-			tp         => open,
-
-			sio_clk    => sio_clk,
-			dhcpcd_req => dhcpcd_req,
-			dhcpcd_rdy => dhcpcd_rdy,
-			miirx_frm  => miirx_frm,
-			miirx_irdy => '1', --miirx_irdy,
-			miirx_trdy => open,
-			miirx_data => miirx_data,
-
-			miitx_frm  => miitx_frm,
-			miitx_irdy => miitx_irdy,
-			miitx_trdy => miitx_trdy,
-			miitx_end  => miitx_end,
-			miitx_data => miitx_data,
-
-			si_frm     => si_frm,
-			si_irdy    => si_irdy,
-			si_trdy    => si_trdy,
-			si_end     => si_end,
-			si_data    => si_data,
-
-			so_frm     => so_frm,
-			so_irdy    => so_irdy,
-			so_trdy    => so_trdy,
-			so_data    => so_data);
-
-		desser_e: entity hdl4fpga.desser
-		port map (
-			desser_clk => mii_txc,
-
-			des_frm    => miitx_frm,
-			des_irdy   => miitx_irdy,
-			des_trdy   => miitx_trdy,
-			des_data   => miitx_data,
-
-			ser_irdy   => open,
-			ser_data   => mii_txd);
-
-		mii_txen <= miitx_frm and not miitx_end;
-		process (mii_txc)
+		udpdaisy_b : block
+			signal udpsi_frm  : std_logic;
+			signal udpsi_irdy : std_logic;
+			signal udpsi_trdy : std_logic;
+			signal udpsi_end  : std_logic;
+			signal udpsi_data : std_logic_vector(si_data'range);
 		begin
-			if rising_edge(mii_txc) then
-				phy_txctl_txen <= mii_txen;
-				phy_txd  <= mii_txd;
-			end if;
-		end process;
+
+			process (sio_clk)
+			begin
+				if rising_edge(sio_clk) then
+					udpsi_frm  <= udpsi_frm;
+					udpsi_irdy <= udpsi_irdy;
+					udpsi_trdy <= '1';
+					udpsi_end  <= udpsi_end;
+					udpsi_data <= udpsi_data;
+				end if;
+			end process;
+
+			udpdaisy_e : entity hdl4fpga.sio_dayudp
+			generic map (
+				debug         => false,
+				my_mac        => x"00_40_00_01_02_03",
+				default_ipv4a => aton("192.168.0.14"))
+			port map (
+				tp         => open,
+	
+				sio_clk    => sio_clk,
+				dhcpcd_req => dhcpcd_req,
+				dhcpcd_rdy => dhcpcd_rdy,
+				miirx_frm  => miirx_frm,
+				miirx_irdy => '1', --miirx_irdy,
+				miirx_trdy => open,
+				miirx_data => miirx_data,
+	
+				miitx_frm  => miitx_frm,
+				miitx_irdy => miitx_irdy,
+				miitx_trdy => miitx_trdy,
+				miitx_end  => miitx_end,
+				miitx_data => miitx_data,
+	
+				si_frm     => udpsi_frm,
+				si_irdy    => udpsi_irdy,
+				si_trdy    => open,
+				si_end     => udpsi_end,
+				si_data    => udpsi_data,
+	
+				so_frm     => so_frm,
+				so_irdy    => so_irdy,
+				so_trdy    => so_trdy,
+				so_data    => so_data);
+	
+			desser_e: entity hdl4fpga.desser
+			port map (
+				desser_clk => mii_txc,
+	
+				des_frm    => miitx_frm,
+				des_irdy   => miitx_irdy,
+				des_trdy   => miitx_trdy,
+				des_data   => miitx_data,
+	
+				ser_irdy   => open,
+				ser_data   => mii_txd);
+	
+			mii_txen <= miitx_frm and not miitx_end;
+			process (mii_txc)
+			begin
+				if rising_edge(mii_txc) then
+					phy_txctl_txen <= mii_txen;
+					phy_txd  <= mii_txd;
+				end if;
+			end process;
+
+		end block;
 
 	end block;
 
