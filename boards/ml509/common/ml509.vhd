@@ -130,6 +130,8 @@ entity ml509 is
 --		vga_in_red     : std_logic_vector(8-1 downto 0)
 		user_clk       : in std_logic);
 
+	constant sys_per   : real := 10.0e-9;
+
 	attribute loc : string;
 	attribute iostandard : string;
 	attribute nodelay : string;

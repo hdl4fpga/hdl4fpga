@@ -71,8 +71,25 @@ package app_profiles is
 		io_hdlc,
 		io_ipoe);
 
+	function setif (
+		constant expr  : boolean;
+		constant true  : video_modes;
+		constant false : video_modes)
+		return video_modes;
 end package;
 
 package body app_profiles is
+
+	function setif (
+		constant expr  : boolean;
+		constant true  : video_modes;
+		constant false : video_modes)
+		return video_modes is
+	begin
+		if expr then
+			return true;
+		end if;
+		return false;
+	end;
 
 end package body;

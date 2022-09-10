@@ -96,9 +96,9 @@ architecture graphics of ulx3s is
 	--------------------------------------
 
 	type profile_params is record
-		comms      : io_comms;
-		sdr_speed  : sdram_speeds;
-		video_mode : video_modes;
+		comms       : io_comms;
+		sdram_speed : sdram_speeds;
+		video_mode  : video_modes;
 	end record;
 
 	type profileparams_vector is array (app_profiles) of profile_params;
@@ -196,29 +196,26 @@ architecture graphics of ulx3s is
 		return tab(tab'left);
 	end;
 
-	constant nodebug_videomode : video_modes := profile_tab(app_profile).video_mode;
-	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
-		video_modes'POS(modedebug),
-		video_modes'POS(nodebug_videomode)));
+	constant video_mode   : video_modes := setif(debug, modedebug, profile_tab(app_profile).video_mode);
 	constant video_record : video_params := videoparam(video_mode);
 
 	type sdramparams_record is record
 		id  : sdram_speeds;
 		pll : pll_params;
-		cas : std_logic_vector(0 to 3-1);
+		cl  : std_logic_vector(0 to 3-1);
 	end record;
 
 	type sdramparams_vector is array (natural range <>) of sdramparams_record;
 	constant sdram_tab : sdramparams_vector := (
-		(id => sdram133MHz, pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cas => "010"),
-		(id => sdram150MHz, pll => (clkos_div => 2, clkop_div => 18, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cas => "011"),
-		(id => sdram166MHz, pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cas => "011"),
-		(id => sdram200MHz, pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011"),
-		(id => sdram225MHz, pll => (clkos_div => 2, clkop_div => 27, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cas => "011"),
-		(id => sdram233MHz, pll => (clkos_div => 2, clkop_div => 28, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cas => "011"),
-		(id => sdram250MHz, pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011"),
-		(id => sdram262MHz, pll => (clkos_div => 2, clkop_div => 21, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011"), -- Doesn't pass the LFSR test
-		(id => sdram275MHz, pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cas => "011")); -- Doesn't pass the LFSR test
+		(id => sdram133MHz, pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cl => "010"),
+		(id => sdram150MHz, pll => (clkos_div => 2, clkop_div => 18, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cl => "011"),
+		(id => sdram166MHz, pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cl => "011"),
+		(id => sdram200MHz, pll => (clkos_div => 2, clkop_div => 16, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cl => "011"),
+		(id => sdram225MHz, pll => (clkos_div => 2, clkop_div => 27, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cl => "011"),
+		(id => sdram233MHz, pll => (clkos_div => 2, clkop_div => 28, clkfb_div => 1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cl => "011"),
+		(id => sdram250MHz, pll => (clkos_div => 2, clkop_div => 20, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cl => "011"),
+		(id => sdram262MHz, pll => (clkos_div => 2, clkop_div => 21, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cl => "011"), -- Doesn't pass the LFSR test
+		(id => sdram275MHz, pll => (clkos_div => 2, clkop_div => 22, clkfb_div => 1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cl => "011")); -- Doesn't pass the LFSR test
 
 	function sdramparams (
 		constant id  : sdram_speeds)
@@ -243,7 +240,7 @@ architecture graphics of ulx3s is
 		video_record.pixel=rgb888, 32, 0))-1);
 
 	constant sdram_mode : sdram_speeds := sdram_speeds'VAL(setif(not debug,
-		sdram_speeds'POS(profile_tab(app_profile).sdr_speed),
+		sdram_speeds'POS(profile_tab(app_profile).sdram_speed),
 		sdram_speeds'POS(sdram133Mhz)));
 	constant sdram_params : sdramparams_record := sdramparams(sdram_mode);
 
@@ -728,7 +725,7 @@ begin
 		ctlr_clks(0) => ctlr_clk,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "000",
-		ctlr_cl      => sdram_params.cas,
+		ctlr_cl      => sdram_params.cl,
 
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke,

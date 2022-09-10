@@ -134,6 +134,8 @@ entity nuhs3adsp is
 		lcd_data : inout std_logic_vector(0 to 7);
 		lcd_backlight : out std_logic);
 
+	constant sys_per     : real    := 50.0e-9;
+
 	attribute loc : string;
 	attribute iostandard : string;
 	attribute fast : string;

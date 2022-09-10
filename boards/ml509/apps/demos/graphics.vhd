@@ -29,6 +29,7 @@ use ieee.math_real.all;
 library hdl4fpga;
 use hdl4fpga.std.all;
 use hdl4fpga.profiles.all;
+use hdl4fpga.app_profiles.all;
 use hdl4fpga.sdr_db.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
@@ -38,60 +39,76 @@ use unisim.vcomponents.all;
 
 architecture graphics of ml509 is
 
-	type profiles is (
-		mode1080p_ddr200MHz,
-		mode1080p_ddr225MHz,
-		mode1080p_ddr250MHz,
-		mode1080p_ddr275MHz,
-		mode1080p_ddr300MHz,
-		mode1080p_ddr333MHz,
-		mode1080p_ddr350MHz,
-		mode1080p_ddr375MHz,
-		mode1080p_ddr400MHz,
-		mode1080p_ddr425MHz,
-		mode1080p_ddr450MHz,
-		mode1080p_ddr475MHz,
-		mode1080p_ddr500MHz,
-		mode1080p_ddr525MHz,
-		mode1080p_ddr550MHz,
-		mode1080p_ddr575MHz,
-		mode1080p_ddr600MHz);
+	type app_profiles is (
+		sdr200MHz_1080p,
+		sdr225MHz_1080p,
+		sdr250MHz_1080p,
+		sdr275MHz_1080p,
+		sdr300MHz_1080p,
+		sdr333MHz_1080p);
 
-	constant profile : profiles := mode1080p_ddr200MHz;
+	constant app_profile : app_profiles := sdr200Mhz_1080p;
+
+	type profile_param is record
+		comms       : io_comms;
+		sdram_speed : sdram_speeds;
+		video_mode  : video_modes;
+		profile     : natural;
+	end record;
+
+	type profileparam_vector is array (app_profiles) of profile_param;
+	constant profile_tab : profileparam_vector := (
+		sdr200MHz_1080p => (io_ipoe, sdram200MHz, mode1080p24bpp, 1),
+		sdr225MHz_1080p => (io_ipoe, sdram225MHz, mode1080p24bpp, 1),
+		sdr250MHz_1080p => (io_ipoe, sdram250MHz, mode1080p24bpp, 1),
+		sdr275MHz_1080p => (io_ipoe, sdram275MHz, mode1080p24bpp, 1),
+		sdr300MHz_1080p => (io_ipoe, sdram300MHz, mode1080p24bpp, 1),
+		sdr333MHz_1080p => (io_ipoe, sdram333MHz, mode1080p24bpp, 1));
 
 	type pll_params is record
 		dcm_mul : natural;
 		dcm_div : natural;
 	end record;
 
-	type ddr_params is record
-		pll : pll_params;
-		cl  : std_logic_vector(0 to 3-1);
-		cwl : std_logic_vector(0 to 3-1);
+	type video_params is record
+		id   : video_modes;
+		pll    : pll_params;
+		timing : videotiming_ids;
 	end record;
 
-	type ddr_speeds is (
-		ddr200MHz,
-		ddr225MHz,
-		ddr250MHz,
-		ddr275MHz,
-		ddr300MHz,
-		ddr333MHz,
-		ddr350MHz,
-		ddr375MHz,
-		ddr400MHz,
-		ddr425MHz,
-		ddr450MHz,
-		ddr475MHz,
-		ddr500MHz,
-		ddr525MHz,
-		ddr550MHz,
-		ddr575MHz,
-		ddr600MHz);
+	type videoparams_vector is array (natural range <>) of video_params;
+	constant video_tab : videoparams_vector := (
+		(id => modedebug,      timing => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
+		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)));
 
-	type ddram_vector is array (ddr_speeds) of ddr_params;
+	function videoparam (
+		constant id  : video_modes)
+		return video_params is
+		constant tab : videoparams_vector := video_tab;
+	begin
+		for i in tab'range loop
+			if id=tab(i).id then
+				return tab(i);
+			end if;
+		end loop;
 
-	constant ddr_tab : ddram_vector := (
+		assert false 
+		report ">>>videoparam<<< : video id not available"
+		severity failure;
+
+		return tab(tab'left);
+	end;
+
+	constant video_mode : video_modes := setif(debug, modedebug, profile_tab(app_profile).video_mode);
+
+	type sdramparams_record is record
+		id  : sdram_speeds;
+		pll : pll_params;
+		cl  : std_logic_vector(0 to 3-1);
+	end record;
+
+	type sdramparams_vector is array (natural range <>) of sdramparams_record;
+	constant sdram_tab : sdramparams_vector := (
 
 		------------------------------------------------------------------------
 		-- Frequency   -- 300 Mhz -- 275 Mhz -- 250 Mhz -- 225 Mhz -- 200 Mhz --
@@ -99,11 +116,11 @@ architecture graphics of ml509 is
 		-- Divide by   --   1     --   4     --   4     --   1     --   4     --
 		------------------------------------------------------------------------
 
-		ddr200MHz => (pll => (dcm_mul =>  2, dcm_div => 1), cl => "001", cwl => "000"),
-		ddr225MHz => (pll => (dcm_mul =>  9, dcm_div => 4), cl => "010", cwl => "000"),
-		ddr250MHz => (pll => (dcm_mul =>  5, dcm_div => 2), cl => "010", cwl => "000"),
-		ddr275MHz => (pll => (dcm_mul => 11, dcm_div => 4), cl => "010", cwl => "000"),
-		ddr300MHz => (pll => (dcm_mul =>  3, dcm_div => 1), cl => "011", cwl => "001"),
+		(sdram200MHz, pll => (dcm_mul =>  2, dcm_div => 1), cl => "001"),
+		(sdram225MHz, pll => (dcm_mul =>  9, dcm_div => 4), cl => "010"),
+		(sdram250MHz, pll => (dcm_mul =>  5, dcm_div => 2), cl => "010"),
+		(sdram275MHz, pll => (dcm_mul => 11, dcm_div => 4), cl => "010"),
+		(sdram300MHz, pll => (dcm_mul =>  3, dcm_div => 1), cl => "011"),
 
 		------------------------------------------------------------------------
 		-- Frequency   -- 333 Mhz -- 350 Mhz -- 375 Mhz -- 400 Mhz -- 425 Mhz --
@@ -111,89 +128,30 @@ architecture graphics of ml509 is
 		-- Divide by   --   3     --   2     --   4     --   1     --   4     --
 		------------------------------------------------------------------------
 
-		ddr333MHz => (pll => (dcm_mul => 10, dcm_div => 3), cl => "001", cwl => "000"),
-		ddr350MHz => (pll => (dcm_mul =>  7, dcm_div => 2), cl => "010", cwl => "000"),
-		ddr375MHz => (pll => (dcm_mul => 15, dcm_div => 4), cl => "010", cwl => "000"),
-		ddr400MHz => (pll => (dcm_mul =>  4, dcm_div => 1), cl => "010", cwl => "000"),
-		ddr425MHz => (pll => (dcm_mul => 17, dcm_div => 4), cl => "011", cwl => "001"),
+		(sdram333MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "001"));
 
-		------------------------------------------------------------------------
-		-- Frequency   -- 450 Mhz -- 475 Mhz -- 500 Mhz -- 525 Mhz -- 550 Mhz --
-		-- Multiply by --   9     --  19     --   5     --  21     --  22     --
-		-- Divide by   --   2     --   4     --   1     --   4     --   4     --
-		------------------------------------------------------------------------
+	function sdramparams (
+		constant id  : sdram_speeds)
+		return sdramparams_record is
+		constant tab : sdramparams_vector := sdram_tab;
+	begin
+		for i in tab'range loop
+			if id=tab(i).id then
+				return tab(i);
+			end if;
+		end loop;
 
-		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "011", cwl => "001"),
-		ddr475MHz => (pll => (dcm_mul => 19, dcm_div => 4), cl => "011", cwl => "001"),
-		ddr500MHz => (pll => (dcm_mul =>  5, dcm_div => 1), cl => "011", cwl => "001"),
-		ddr525MHz => (pll => (dcm_mul => 21, dcm_div => 4), cl => "011", cwl => "001"),
-		ddr550MHz => (pll => (dcm_mul => 11, dcm_div => 2), cl => "101", cwl => "010"),  -- latency 9
-		
-		---------------------------------------
-		-- Frequency   -- 575 Mhz -- 600 Mhz --
-		-- Multiply by --  23     --   6     --
-		-- Divide by   --   4     --   1     --
-		---------------------------------------
+		assert false 
+		report ">>>sdramparams<<< : sdram speed not enabled"
+		severity failure;
 
-		ddr575MHz => (pll => (dcm_mul => 23, dcm_div => 4), cl => "101", cwl => "010"),  -- latency 9
-		ddr600MHz => (pll => (dcm_mul =>  6, dcm_div => 1), cl => "101", cwl => "010")); -- latency 9
+		return tab(tab'left);
+	end;
 
-	type video_modes is (
-		modedebug,
-		mode480p,
-		mode600p,
-		mode720p,
-		mode900p,
-		mode1080p);
+	constant sdram_speed    : sdram_speeds  := profile_tab(app_profile).sdram_speed;
+	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
+	constant sdram_tcp    : real := (real(sdram_params.pll.dcm_div)*sys_per)/real(sdram_params.pll.dcm_mul);
 
-	type profile_param is record
-		ddr_speed  : ddr_speeds;
-		video_mode : video_modes;
-		profile    : natural;
-	end record;
-
-	type profileparam_vector is array (profiles) of profile_param;
-	constant profile_tab : profileparam_vector := (
-		mode1080p_ddr200MHz => (ddr200MHz, mode1080p, 1),
-		mode1080p_ddr225MHz => (ddr225MHz, mode1080p, 1),
-		mode1080p_ddr250MHz => (ddr250MHz, mode1080p, 1),
-		mode1080p_ddr275MHz => (ddr275MHz, mode1080p, 1),
-		mode1080p_ddr300MHz => (ddr300MHz, mode1080p, 1),
-		mode1080p_ddr333MHz => (ddr333MHz, mode1080p, 1),
-		mode1080p_ddr350MHz => (ddr350MHz, mode1080p, 1),
-		mode1080p_ddr375MHz => (ddr375MHz, mode1080p, 1),
-		mode1080p_ddr400MHz => (ddr400MHz, mode1080p, 1),
-		mode1080p_ddr425MHz => (ddr425MHz, mode1080p, 1),
-		mode1080p_ddr450MHz => (ddr450MHz, mode1080p, 1),
-		mode1080p_ddr475MHz => (ddr475MHz, mode1080p, 1),
-		mode1080p_ddr500MHz => (ddr500MHz, mode1080p, 1),
-		mode1080p_ddr525MHz => (ddr525MHz, mode1080p, 1),
-		mode1080p_ddr550MHz => (ddr550MHz, mode1080p, 1),
-		mode1080p_ddr575MHz => (ddr575MHz, mode1080p, 1),
-		mode1080p_ddr600MHz => (ddr600MHz, mode1080p, 1));
-
-	type video_params is record
-		pll  : pll_params;
-		mode : videotiming_ids;
-	end record;
-
-	type videoparams_vector is array (video_modes) of video_params;
-	constant video_tab : videoparams_vector := (
-		modedebug   => (mode => pclk_debug,               pll => (dcm_mul =>  1, dcm_div => 32)),
-		mode480p    => (mode => pclk25_00m640x480at60,    pll => (dcm_mul =>  5, dcm_div => 20)),
-		mode600p    => (mode => pclk40_00m800x600at60,    pll => (dcm_mul =>  2, dcm_div => 5)),
-		mode720p    => (mode => pclk75_00m1280x720at60,   pll => (dcm_mul => 15, dcm_div => 20)),
-		mode900p    => (mode => pclk108_00m1600x900at60,  pll => (dcm_mul => 27, dcm_div => 25)),
-		mode1080p   => (mode => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 10)));
-
-	constant ddr_speed : ddr_speeds := profile_tab(profile).ddr_speed;
-	constant ddr_param : ddr_params := ddr_tab(ddr_speed);
-
-	constant sys_per   : real := 10.0e-9;
-	constant ddr_tcp   : real := (real(ddr_param.pll.dcm_div)*sys_per)/real(ddr_param.pll.dcm_mul);
-
-	constant video_mode : video_modes :=profile_tab(profile).video_mode; --'val(
---		setif(debug, video_modes'pos(modedebug), video_modes'pos(profile_tab(profile).video_mode)));
 	signal video_clk      : std_logic;
 	signal videoio_clk    : std_logic;
 	signal video_lck      : std_logic;
@@ -205,7 +163,6 @@ architecture graphics of ml509 is
     signal video_dot      : std_logic;
     signal video_pixel    : std_logic_vector(0 to 32-1);
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
-
 
 	constant sclk_phases  : natural := 4;
 	constant sclk_edges   : natural := 2;
@@ -391,8 +348,8 @@ begin
 				generic map (
 					clk_feedback   => "NONE",
 					clkin_period   => sys_per*1.0e9,
-					clkfx_divide   => ddr_param.pll.dcm_div,
-					clkfx_multiply => ddr_param.pll.dcm_mul,
+					clkfx_divide   => sdram_params.pll.dcm_div,
+					clkfx_multiply => sdram_params.pll.dcm_mul,
 					dfs_frequency_mode => "HIGH")
 				port map (
 					rst    => '0',
@@ -428,7 +385,7 @@ begin
 				dcm_i : dcm_base
 				generic map (
 					clk_feedback       => "NONE",
-					clkin_period       => ddr_tcp*1.0e9,
+					clkin_period       => sdram_tcp*1.0e9,
 					dll_frequency_mode => "HIGH")
 				port map (
 					rst    => dcm_rst,
@@ -603,8 +560,8 @@ begin
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		debug => debug,
-		profile      => profile_tab(profile).profile,
-		sdr_tcp      => ddr_tcp,
+		profile      => profile_tab(app_profile).profile,
+		sdr_tcp      => sdram_tcp,
 		fpga         => xc5v,
 		mark         => MT47H512M3,
 		sclk_phases  => sclk_phases,
@@ -619,7 +576,7 @@ begin
 		word_size    => word_size,
 		byte_size    => byte_size,
 
-		timing_id    => video_tab(video_mode).mode,
+		timing_id    => videoparam(video_mode).timing,
 		red_length   => 8,
 		green_length => 8,
 		blue_length  => 8,
@@ -716,7 +673,7 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc5v_sdrphy
 	generic map (
-		taps        => natural(floor(ddr_tcp*(64.0*200.0e6)))-1,
+		taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
 		data_edge   => true,
 		BANK_SIZE   => BANK_SIZE,
 		ADDR_SIZE   => ADDR_SIZE,

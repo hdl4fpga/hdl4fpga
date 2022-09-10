@@ -685,8 +685,8 @@ begin
 
 	adapter_b : block
 
-		constant sync_lat : natural := 4;
-		constant dma_lat  : natural := latencies_tab(profile).adapter;
+		constant sync_lat  : natural := 4;
+		constant dma_lat   : natural := latencies_tab(profile).adapter;
 
 		signal hzcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(3)-1)-1 downto 0);
 		signal vtcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(7)-1)-1 downto 0);
@@ -712,13 +712,13 @@ begin
 		generic map (
 			timing_id => timing_id)
 		port map (
-			video_clk     => video_clk,
-			video_hzcntr  => hzcntr,
-			video_vtcntr  => vtcntr,
-			video_hzsync  => hzsync,
-			video_vtsync  => vtsync,
-			video_hzon    => hzon,
-			video_vton    => vton);
+			video_clk    => video_clk,
+			video_hzcntr => hzcntr,
+			video_vtcntr => vtcntr,
+			video_hzsync => hzsync,
+			video_vtsync => vtsync,
+			video_hzon   => hzon,
+			video_vton   => vton);
 
 		dmao_dv_e : entity hdl4fpga.align
 		generic map (
@@ -751,22 +751,22 @@ begin
 		generic map (
 			video_width => modeline_tab(timing_id)(0))
 		port map (
-			ctlr_inirdy  => ctlr_inirdy,
-			ctlr_clk     => ctlr_clk,
-			ctlr_di_dv   => graphics_dv,
-			ctlr_di      => graphics_di,
-			base_addr    => base_addr,
-			dmacfg_clk   => sio_clk,
-			dmacfg_req   => dmacfgvideo_req,
-			dmacfg_rdy   => dmacfgvideo_rdy,
-			dma_req      => dmavideo_req,
-			dma_rdy      => dma_rdy,
-			dma_len      => dmavideo_len,
-			dma_addr     => dmavideo_addr,
-			video_clk    => video_clk,
-			video_hzon   => hzon,
-			video_vton   => vton,
-			video_pixel  => pixel);
+			ctlr_inirdy => ctlr_inirdy,
+			ctlr_clk    => ctlr_clk,
+			ctlr_di_dv  => graphics_dv,
+			ctlr_di     => graphics_di,
+			base_addr   => base_addr,
+			dmacfg_clk  => sio_clk,
+			dmacfg_req  => dmacfgvideo_req,
+			dmacfg_rdy  => dmacfgvideo_rdy,
+			dma_req     => dmavideo_req,
+			dma_rdy     => dma_rdy,
+			dma_len     => dmavideo_len,
+			dma_addr    => dmavideo_addr,
+			video_clk   => video_clk,
+			video_hzon  => hzon,
+			video_vton  => vton,
+			video_pixel => pixel);
 
 		topixel_e : entity hdl4fpga.align
 		generic map (

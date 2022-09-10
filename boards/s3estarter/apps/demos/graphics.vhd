@@ -47,10 +47,10 @@ architecture graphics of s3estarter is
 	-- constant app_profile : app_profiles := sdr166mhz_600p24bpp;
 
 	type profile_param is record
-		comms      : io_comms;
-		sdr_speed  : sdram_speeds;
-		video_mode : video_modes;
-		profile    : natural;
+		comms       : io_comms;
+		sdram_speed : sdram_speeds;
+		video_mode  : video_modes;
+		profile     : natural;
 	end record;
 
 	type profileparam_vector is array (app_profiles) of profile_param;
@@ -98,31 +98,19 @@ architecture graphics of s3estarter is
 		return tab(tab'left);
 	end;
 
-	function setif (
-		constant expr  : boolean;
-		constant true  : video_modes;
-		constant false : video_modes)
-		return video_modes is
-	begin
-		if expr then
-			return true;
-		end if;
-		return false;
-	end;
-
 	constant video_mode   : video_modes := setif(debug, modedebug, profile_tab(app_profile).video_mode);
 
 	type sdramparams_record is record
 		id  : sdram_speeds;
 		pll : pll_params;
-		cas : std_logic_vector(0 to 3-1);
+		cl  : std_logic_vector(0 to 3-1);
 	end record;
 
 	type sdramparams_vector is array (natural range <>) of sdramparams_record;
 	constant sdram_tab : sdramparams_vector := (
-		(id => sdram133MHz, pll => (dcm_mul =>  8, dcm_div => 3), cas => "110"),
-		(id => sdram166MHz, pll => (dcm_mul => 10, dcm_div => 3), cas => "110"),
-		(id => sdram200MHz, pll => (dcm_mul =>  4, dcm_div => 1), cas => "011"));
+		(id => sdram133MHz, pll => (dcm_mul =>  8, dcm_div => 3), cl => "110"),
+		(id => sdram166MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "110"),
+		(id => sdram200MHz, pll => (dcm_mul =>  4, dcm_div => 1), cl => "011"));
 
 	function sdramparams (
 		constant id  : sdram_speeds)
@@ -142,9 +130,8 @@ architecture graphics of s3estarter is
 		return tab(tab'left);
 	end;
 
-	constant sdr_speed     : sdram_speeds  := profile_tab(app_profile).sdr_speed;
-
-	constant sdram_params  : sdramparams_record := sdramparams(sdr_speed);
+	constant sdram_speed   : sdram_speeds  := profile_tab(app_profile).sdram_speed;
+	constant sdram_params  : sdramparams_record := sdramparams(sdram_speed);
 
 	constant sdr_tcp       : real := real(sdram_params.pll.dcm_div)*sys_per/real(sdram_params.pll.dcm_mul);
 
@@ -632,7 +619,7 @@ begin
 		ctlr_clks(1) => clk90,
 		ctlr_rst     => sdrsys_rst,
 		ctlr_bl      => "001",
-		ctlr_cl      => sdram_params.cas,
+		ctlr_cl      => sdram_params.cl,
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),
