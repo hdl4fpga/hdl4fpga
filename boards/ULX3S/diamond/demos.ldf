@@ -211,7 +211,7 @@
         </Source>
     </Implementation>
     <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.sdram_ctlr" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.phy_rl" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>

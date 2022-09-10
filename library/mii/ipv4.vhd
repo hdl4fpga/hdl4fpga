@@ -553,28 +553,48 @@ begin
 	icmprx_irdy <= icmprx_frm   and ipv4rx_irdy;
 
 	icmpnetrx_irdy <= ipv4lenrx_irdy or ipv4rxsa_irdy;
-	icmpd_e : entity hdl4fpga.icmpd
-	port map (
-		tp => tp1,
-		mii_clk     => mii_clk,
-		dll_frm     => dll_frm,
-		dll_irdy    => dll_irdy,
-		fcs_sb      => fcs_sb,
-		fcs_vld     => fcs_vld,
-		net_irdy    => icmpnetrx_irdy,
+	icmpd_b : block
+		signal tx_frm  : std_logic;
+		signal tx_irdy : std_logic;
+		signal tx_trdy : std_logic;
+		signal tx_end  : std_logic;
+		signal tx_data : std_logic_vector(icmptx_data'range);
+	begin
+		icmpd_e : entity hdl4fpga.icmpd
+		port map (
+			tp => tp1,
+			mii_clk     => mii_clk,
+			dll_frm     => dll_frm,
+			dll_irdy    => dll_irdy,
+			fcs_sb      => fcs_sb,
+			fcs_vld     => fcs_vld,
+			net_irdy    => icmpnetrx_irdy,
+	
+			icmprx_frm  => icmprx_frm,
+			icmprx_irdy => icmprx_irdy,
+			icmprx_data => ipv4rx_data,
+	
+			metatx_end  => ipv4datx_full,
+			metatx_trdy => icmpmactx_trdy,
+	
+			icmptx_frm  => tx_frm,
+			icmptx_irdy => tx_irdy,
+			icmptx_trdy => tx_trdy,
+			icmptx_end  => tx_end,
+			icmptx_data => tx_data);
 
-		icmprx_frm  => icmprx_frm,
-		icmprx_irdy => icmprx_irdy,
-		icmprx_data => ipv4rx_data,
+			process (mii_clk)
+			begin
+				if rising_edge(mii_clk) then
+					icmptx_frm  <= tx_frm;
+					icmptx_irdy <= tx_irdy;
+					tx_trdy <= icmptx_trdy;
+					icmptx_end  <= tx_end;
+					icmptx_data <= tx_data;
+				end if;
+			end process;
 
-		metatx_end  => ipv4datx_full,
-		metatx_trdy => icmpmactx_trdy,
-
-		icmptx_frm  => icmptx_frm,
-		icmptx_irdy => icmptx_irdy,
-		icmptx_trdy => icmptx_trdy,
-		icmptx_end  => icmptx_end,
-		icmptx_data => icmptx_data);
+		end block;
 
 	udp_e : entity hdl4fpga.udp
 	port map (

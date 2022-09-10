@@ -215,7 +215,7 @@ begin
 		generic map (
 			m => 8)
 		port map (
-		tp => tp1,
+			tp => tp1,
 			src_clk  => mii_clk,
 			src_frm  => icmpdata_frm,
 			src_irdy => icmpdata_irdy,
