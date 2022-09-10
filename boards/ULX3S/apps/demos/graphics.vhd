@@ -95,12 +95,6 @@ architecture graphics of ulx3s is
     --                                  --
 	--------------------------------------
 
-	type profile_params is record
-		comms       : io_comms;
-		sdram_speed : sdram_speeds;
-		video_mode  : video_modes;
-	end record;
-
 	type profileparams_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparams_vector := (
 		hdlc_sdr133MHz_480p16bpp => (io_hdlc, sdram133MHz, mode480p16bpp),
@@ -196,7 +190,7 @@ architecture graphics of ulx3s is
 		return tab(tab'left);
 	end;
 
-	constant video_mode   : video_modes := setif(debug, modedebug, profile_tab(app_profile).video_mode);
+	constant video_mode   : video_modes := setdebug(debug, profile_tab(app_profile).video_mode);
 	constant video_record : video_params := videoparam(video_mode);
 
 	type sdramparams_record is record

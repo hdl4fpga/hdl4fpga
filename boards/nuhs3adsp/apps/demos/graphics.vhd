@@ -60,33 +60,26 @@ architecture graphics of nuhs3adsp is
 
 	constant app_profile : app_profiles := sdr166mhz_1080r24bpp;
 
-	type profile_param is record
-		comms       : io_comms;
-		sdram_speed : sdram_speeds;
-		video_mode  : video_modes;
-		profile     : natural;
-	end record;
-
-	type profileparam_vector is array (app_profiles) of profile_param;
+	type profileparam_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparam_vector := (
-		sdr133mhz_480p24bpp  => (io_ipoe, sdram133MHz, mode480p24bpp,  1),
-		sdr133mhz_600p24bpp  => (io_ipoe, sdram133MHz, mode600p24bpp,  1),
-		sdr133mhz_720p24bpp  => (io_ipoe, sdram133MHz, mode720p24bpp,  1),
-		sdr133mhz_900p24bpp  => (io_ipoe, sdram133MHz, mode900p24bpp,  1),
+		sdr133mhz_480p24bpp  => (io_ipoe, sdram133MHz, mode480p24bpp),
+		sdr133mhz_600p24bpp  => (io_ipoe, sdram133MHz, mode600p24bpp),
+		sdr133mhz_720p24bpp  => (io_ipoe, sdram133MHz, mode720p24bpp),
+		sdr133mhz_900p24bpp  => (io_ipoe, sdram133MHz, mode900p24bpp),
 		
-		sdr150mhz_480p24bpp  => (io_ipoe, sdram150MHz, mode480p24bpp,  1),
-		sdr150mhz_600p24bpp  => (io_ipoe, sdram150MHz, mode600p24bpp,  1),
-		sdr150mhz_720p24bpp  => (io_ipoe, sdram150MHz, mode720p24bpp,  1),
-		sdr150mhz_900p24bpp  => (io_ipoe, sdram150MHz, mode900p24bpp,  1),
+		sdr150mhz_480p24bpp  => (io_ipoe, sdram150MHz, mode480p24bpp),
+		sdr150mhz_600p24bpp  => (io_ipoe, sdram150MHz, mode600p24bpp),
+		sdr150mhz_720p24bpp  => (io_ipoe, sdram150MHz, mode720p24bpp),
+		sdr150mhz_900p24bpp  => (io_ipoe, sdram150MHz, mode900p24bpp),
 
-		sdr166mhz_480p24bpp  => (io_ipoe, sdram166MHz, mode480p24bpp,  1),
-		sdr166mhz_600p24bpp  => (io_ipoe, sdram166MHz, mode600p24bpp,  1),
-		sdr166mhz_720p24bpp  => (io_ipoe, sdram166MHz, mode720p24bpp,  1),
-		sdr166mhz_900p24bpp  => (io_ipoe, sdram166MHz, mode900p24bpp,  1),
-		sdr166mhz_1080p24bpp => (io_ipoe, sdram166MHz, mode1080p24bpp, 1),
-		sdr166mhz_1080r24bpp => (io_ipoe, sdram166MHz, mode1080r24bpp, 1),
+		sdr166mhz_480p24bpp  => (io_ipoe, sdram166MHz, mode480p24bpp),
+		sdr166mhz_600p24bpp  => (io_ipoe, sdram166MHz, mode600p24bpp),
+		sdr166mhz_720p24bpp  => (io_ipoe, sdram166MHz, mode720p24bpp),
+		sdr166mhz_900p24bpp  => (io_ipoe, sdram166MHz, mode900p24bpp),
+		sdr166mhz_1080p24bpp => (io_ipoe, sdram166MHz, mode1080p24bpp),
+		sdr166mhz_1080r24bpp => (io_ipoe, sdram166MHz, mode1080r24bpp),
 
-		sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp, 1));
+		sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp));
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -127,7 +120,7 @@ architecture graphics of nuhs3adsp is
 		return tab(tab'left);
 	end;
 
-	constant video_mode : video_modes := setif(debug, modedebug, profile_tab(app_profile).video_mode);
+	constant video_mode : video_modes := setdebug(debug, profile_tab(app_profile).video_mode);
 
 	type sdramparams_record is record
 		id  : sdram_speeds;
@@ -565,7 +558,7 @@ begin
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		debug        => debug,
-		profile      => profile_tab(app_profile).profile,
+		profile      => 1,
 		sdr_tcp      => sdr_tcp,
 		fpga         => xc3s,
 		mark         => MT46V256M6T,

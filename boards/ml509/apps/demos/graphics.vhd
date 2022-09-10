@@ -49,21 +49,14 @@ architecture graphics of ml509 is
 
 	constant app_profile : app_profiles := sdr200Mhz_1080p;
 
-	type profile_param is record
-		comms       : io_comms;
-		sdram_speed : sdram_speeds;
-		video_mode  : video_modes;
-		profile     : natural;
-	end record;
-
-	type profileparam_vector is array (app_profiles) of profile_param;
+	type profileparam_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparam_vector := (
-		sdr200MHz_1080p => (io_ipoe, sdram200MHz, mode1080p24bpp, 1),
-		sdr225MHz_1080p => (io_ipoe, sdram225MHz, mode1080p24bpp, 1),
-		sdr250MHz_1080p => (io_ipoe, sdram250MHz, mode1080p24bpp, 1),
-		sdr275MHz_1080p => (io_ipoe, sdram275MHz, mode1080p24bpp, 1),
-		sdr300MHz_1080p => (io_ipoe, sdram300MHz, mode1080p24bpp, 1),
-		sdr333MHz_1080p => (io_ipoe, sdram333MHz, mode1080p24bpp, 1));
+		sdr200MHz_1080p => (io_ipoe, sdram200MHz, mode1080p24bpp),
+		sdr225MHz_1080p => (io_ipoe, sdram225MHz, mode1080p24bpp),
+		sdr250MHz_1080p => (io_ipoe, sdram250MHz, mode1080p24bpp),
+		sdr275MHz_1080p => (io_ipoe, sdram275MHz, mode1080p24bpp),
+		sdr300MHz_1080p => (io_ipoe, sdram300MHz, mode1080p24bpp),
+		sdr333MHz_1080p => (io_ipoe, sdram333MHz, mode1080p24bpp));
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -99,7 +92,7 @@ architecture graphics of ml509 is
 		return tab(tab'left);
 	end;
 
-	constant video_mode : video_modes := setif(debug, modedebug, profile_tab(app_profile).video_mode);
+	constant video_mode : video_modes := setdebug(debug, profile_tab(app_profile).video_mode);
 
 	type sdramparams_record is record
 		id  : sdram_speeds;
@@ -148,9 +141,11 @@ architecture graphics of ml509 is
 		return tab(tab'left);
 	end;
 
-	constant sdram_speed    : sdram_speeds  := profile_tab(app_profile).sdram_speed;
+	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (real(sdram_params.pll.dcm_div)*sys_per)/real(sdram_params.pll.dcm_mul);
+
+	signal sys_clk        : std_logic;
 
 	signal video_clk      : std_logic;
 	signal videoio_clk    : std_logic;
@@ -201,8 +196,8 @@ architecture graphics of ml509 is
 	signal ctlrphy_rlcal  : std_logic;
 	signal ctlrphy_rlseq  : std_logic;
 
-	signal ddr_clk0  : std_logic;
-	signal ddr_clk90 : std_logic;
+	signal ddr_clk0       : std_logic;
+	signal ddr_clk90      : std_logic;
 	signal ddr_ba         : std_logic_vector(ddr2_ba'range);
 	signal ddr_a          : std_logic_vector(ddr2_a'range);
 	signal ctlrphy_rst    : std_logic_vector(0 to cmmd_gear-1);
@@ -227,7 +222,6 @@ architecture graphics of ml509 is
 	signal ctlrphy_sto    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
 	signal ctlrphy_sti    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
 
-	signal sys_clk        : std_logic;
 
 	signal ddr2_clk       : std_logic_vector(ddr2_clk_p'range);
 	signal ddr2_dqst      : std_logic_vector(ddr2_dqs_p'range);
@@ -560,7 +554,7 @@ begin
 	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		debug => debug,
-		profile      => profile_tab(app_profile).profile,
+		profile      => 1,
 		sdr_tcp      => sdram_tcp,
 		fpga         => xc5v,
 		mark         => MT47H512M3,

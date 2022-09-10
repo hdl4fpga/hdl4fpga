@@ -50,15 +50,13 @@ architecture graphics of s3estarter is
 		comms       : io_comms;
 		sdram_speed : sdram_speeds;
 		video_mode  : video_modes;
-		profile     : natural;
 	end record;
 
 	type profileparam_vector is array (app_profiles) of profile_param;
 	constant profile_tab : profileparam_vector := (
-		sdr133mhz_480p24bpp  => (io_ipoe, sdram133MHz, mode480p24bpp,  1),
-		sdr166mhz_600p24bpp  => (io_ipoe, sdram166MHz, mode600p24bpp,  1),
-		sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp, 1));
-
+		sdr133mhz_480p24bpp  => (io_ipoe, sdram133MHz, mode480p24bpp),
+		sdr166mhz_600p24bpp  => (io_ipoe, sdram166MHz, mode600p24bpp),
+		sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp));
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -98,7 +96,7 @@ architecture graphics of s3estarter is
 		return tab(tab'left);
 	end;
 
-	constant video_mode   : video_modes := setif(debug, modedebug, profile_tab(app_profile).video_mode);
+	constant video_mode   : video_modes := setdebug(debug, profile_tab(app_profile).video_mode);
 
 	type sdramparams_record is record
 		id  : sdram_speeds;
