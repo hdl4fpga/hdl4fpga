@@ -64,15 +64,15 @@ entity xc7a_sdrdqphy is
 		sys_dqso  : in  std_logic_vector(0 to DATA_GEAR-1);
 		sys_dqst  : in  std_logic_vector(0 to DATA_GEAR-1);
 
-		sdr_dmt   : out std_logic;
-		sdr_dmo   : out std_logic;
-		sdr_dqsi  : in  std_logic;
-		sdr_dqi   : in  std_logic_vector(BYTE_SIZE-1 downto 0);
-		sdr_dqt   : out std_logic_vector(BYTE_SIZE-1 downto 0);
-		sdr_dqo   : out std_logic_vector(BYTE_SIZE-1 downto 0);
+		sdram_dmt   : out std_logic;
+		sdram_dmo   : out std_logic;
+		sdram_dqsi  : in  std_logic;
+		sdram_dqi   : in  std_logic_vector(BYTE_SIZE-1 downto 0);
+		sdram_dqt   : out std_logic_vector(BYTE_SIZE-1 downto 0);
+		sdram_dqo   : out std_logic_vector(BYTE_SIZE-1 downto 0);
 
-		sdr_dqst  : out std_logic;
-		sdr_dqso  : out std_logic);
+		sdram_dqst  : out std_logic;
+		sdram_dqso  : out std_logic);
 
 end;
 
@@ -85,7 +85,7 @@ architecture xc7a of xc7a_sdrdqphy is
 	signal adjdqs_req  : std_logic;
 	signal adjdqs_rdy  : std_logic;
 	signal adjdqi_req  : std_logic;
-	signal adjdqi_rdy  : std_logic_vector(sdr_dqi'range);
+	signal adjdqi_rdy  : std_logic_vector(sdram_dqi'range);
 	signal adjsto_req  : std_logic;
 	signal adjsto_rdy  : std_logic;
 
@@ -96,12 +96,12 @@ architecture xc7a of xc7a_sdrdqphy is
 	signal dqs180      : std_logic;
 	signal dqspre      : std_logic;
 	signal dq          : std_logic_vector(sys_dqo'range);
-	signal dqi         : std_logic_vector(sdr_dqi'range);
+	signal dqi         : std_logic_vector(sdram_dqi'range);
 	signal dqh         : std_logic_vector(dq'range);
 	signal dqf         : std_logic_vector(dq'range);
 
-	signal dqipau_req  : std_logic_vector(sdr_dqi'range);
-	signal dqipau_rdy  : std_logic_vector(sdr_dqi'range);
+	signal dqipau_req  : std_logic_vector(sdram_dqi'range);
+	signal dqipau_rdy  : std_logic_vector(sdram_dqi'range);
 	signal dqipause_req : std_logic;
 	signal dqipause_rdy : std_logic;
 	signal dqspau_req  : std_logic;
@@ -261,7 +261,7 @@ begin
 			ph180    => dqs180,
 			delay    => delay);
 
-		ddqsi <= transport sdr_dqsi after dqs_linedelay;
+		ddqsi <= transport sdram_dqsi after dqs_linedelay;
 		dqsidelay_i : idelaye2
 		generic map (
 			DELAY_SRC      => "IDATAIN",
@@ -300,10 +300,10 @@ begin
 			GEAR => DATA_GEAR)
 		port map (
 			tp       => tp_dqssel,
-			sdr_clk  => clk0,
+			sdram_clk  => clk0,
 			edge     => std_logic'('0'),
-			sdr_sti  => sys_sti(0),
-			sdr_sto  => sto,
+			sdram_sti  => sys_sti(0),
+			sdram_sto  => sto,
 			dqs_smp  => smp,
 			dqs_pre  => dqspre,
 			sys_req  => adjsto_req,
@@ -326,7 +326,7 @@ begin
 
 	end block;
 
-	iddr_g : for i in sdr_dqi'range generate
+	iddr_g : for i in sdram_dqi'range generate
 		signal imdr_clk  : std_logic_vector(0 to 5-1);
 		signal adjdqi_st : std_logic;
 	begin
@@ -362,7 +362,7 @@ begin
 				tp_dqidly <= delay;
 			end generate;
 
-			ddqi <= transport sdr_dqi(i) after dqi_linedelay;
+			ddqi <= transport sdram_dqi(i) after dqi_linedelay;
 			dqi_i : idelaye2
 			generic map (
 				DELAY_SRC    => "IDATAIN",
@@ -493,9 +493,9 @@ begin
 			rst   => rst,
 			clk   => dqclk,
 			t     => dqt,
-			tq(0) => sdr_dqt(i),
+			tq(0) => sdram_dqt(i),
 			d     => dqo,
-			q(0)  => sdr_dqo(i));
+			q(0)  => sdram_dqo(i));
 
 	end generate;
 
@@ -531,9 +531,9 @@ begin
 			rst   => rst,
 			clk   => dqclk,
 			t     => (others => '0'),
-			tq(0) => sdr_dmt,
+			tq(0) => sdram_dmt,
 			d     => dmi,
-			q(0)  => sdr_dmo);
+			q(0)  => sdram_dmo);
 
 	end block;
 
@@ -564,9 +564,9 @@ begin
 			rst  => rst,
 			clk  => dqsclk,
 			t    => dqst,
-			tq(0)=> sdr_dqst,
+			tq(0)=> sdram_dqst,
 			d    => dqso,
-			q(0) => sdr_dqso);
+			q(0) => sdram_dqso);
 
 	end block;
 end;

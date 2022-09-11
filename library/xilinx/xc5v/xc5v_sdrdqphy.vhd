@@ -62,16 +62,16 @@ entity xc5v_sdrdqphy is
 		sys_dqsi   : in  std_logic_vector(0 to data_gear-1);
 		sys_dqst   : in  std_logic_vector(0 to data_gear-1);
 
-		sdr_dmt    : out std_logic;
-		sdr_dmo    : out std_logic;
-		sdr_dqsi   : in  std_logic;
-		sdr_sto    : out std_logic;
-		sdr_dqi    : in  std_logic_vector(byte_size-1 downto 0);
-		sdr_dqt    : out std_logic_vector(byte_size-1 downto 0);
-		sdr_dqo    : out std_logic_vector(byte_size-1 downto 0);
+		sdram_dmt    : out std_logic;
+		sdram_dmo    : out std_logic;
+		sdram_dqsi   : in  std_logic;
+		sdram_sto    : out std_logic;
+		sdram_dqi    : in  std_logic_vector(byte_size-1 downto 0);
+		sdram_dqt    : out std_logic_vector(byte_size-1 downto 0);
+		sdram_dqo    : out std_logic_vector(byte_size-1 downto 0);
 
-		sdr_dqst   : out std_logic;
-		sdr_dqso   : out std_logic);
+		sdram_dqst   : out std_logic;
+		sdram_dqso   : out std_logic);
 
 end;
 
@@ -83,7 +83,7 @@ architecture xc5v of xc5v_sdrdqphy is
 	signal adjdqs_req : std_logic;
 	signal adjdqs_rdy : std_logic;
 	signal adjdqi_req : std_logic;
-	signal adjdqi_rdy : std_logic_vector(sdr_dqi'range);
+	signal adjdqi_rdy : std_logic_vector(sdram_dqi'range);
 	signal adjsto_req : bit;
 	signal adjsto_rdy : bit;
 	signal adjbrt_req : std_logic;
@@ -95,12 +95,12 @@ architecture xc5v of xc5v_sdrdqphy is
 	signal dqs180     : std_logic;
 	signal dqspre     : std_logic;
 	signal dq         : std_logic_vector(sys_dqo'range);
-	signal dqi        : std_logic_vector(sdr_dqi'range);
+	signal dqi        : std_logic_vector(sdram_dqi'range);
 	signal dqh        : std_logic_vector(dq'range);
 	signal dqf        : std_logic_vector(dq'range);
 
-	signal dqipau_req : std_logic_vector(sdr_dqi'range);
-	signal dqipau_rdy : std_logic_vector(sdr_dqi'range);
+	signal dqipau_req : std_logic_vector(sdram_dqi'range);
+	signal dqipau_rdy : std_logic_vector(sdram_dqi'range);
 	signal dqspau_req : std_logic;
 	signal dqspau_rdy : std_logic;
 
@@ -242,7 +242,7 @@ begin
 			ph180    => dqs180,
 			delay    => delay);
 
-		dqsi <= transport sdr_dqsi after dqs_linedelay;
+		dqsi <= transport sdram_dqsi after dqs_linedelay;
 		dqsidelay_i : entity hdl4fpga.xc5v_idelay
 		port map(
 			clk     => iod_clk,
@@ -284,10 +284,10 @@ begin
 			GEAR => data_gear)
 		port map (
 			tp       => tp_dqssel,
-			sdr_clk  => clk0,
+			sdram_clk  => clk0,
 			edge     => '0',
-			sdr_sti  => sys_sti(0),
-			sdr_sto  => sto,
+			sdram_sti  => sys_sti(0),
+			sdram_sto  => sto,
 			dqs_smp  => smp,
 			dqs_pre  => dqspre,
 			sys_req  => adjbrt_req,
@@ -352,7 +352,7 @@ begin
 				tp_dqidly <= delay;
 			end generate;
 
-			ddqi <= transport sdr_dqi(i) after dqi_linedelay;
+			ddqi <= transport sdram_dqi(i) after dqi_linedelay;
 			dqi_p : for j in dqii'range generate
 				dq(j*BYTE_SIZE+i) <= dqii(j);
 			end generate;
@@ -445,9 +445,9 @@ begin
 				rst   => omdr_rst,
 				clk   => dqclk,
 				t     => dqt,
-				tq(0) => sdr_dqt(i),
+				tq(0) => sdram_dqt(i),
 				d     => dqo,
-				q(0)  => sdr_dqo(i));
+				q(0)  => sdram_dqo(i));
 	
 		end generate;
 	
@@ -476,9 +476,9 @@ begin
 			port map (
 				rst   => omdr_rst,
 				clk   => dqclk,
-				tq(0) => sdr_dmt,
+				tq(0) => sdram_dmt,
 				d     => dmi,
-				q(0)  => sdr_dmo);
+				q(0)  => sdram_dmo);
 	
 		end block;
 	end block;
@@ -518,9 +518,9 @@ begin
 			rst  => omdr_rst,
 			clk  => dqsclk,
 			t    => dqst,
-			tq(0)=> sdr_dqst,
+			tq(0)=> sdram_dqst,
 			d    => dqso,
-			q(0) => sdr_dqso);
+			q(0) => sdram_dqso);
 
 	end block;
 	sys_dqo <= dq;

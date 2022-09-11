@@ -9,15 +9,15 @@ entity adjsto is
 		GEAR     : natural);
 	port (
 		tp       : out std_logic_vector(1 to 3);
-		sdr_clk  : in  std_logic;
+		sdram_clk  : in  std_logic;
 		inv      : in  std_logic := '0';
 		edge     : in  std_logic;
 		sys_req  : in  std_logic;
 		sys_rdy  : buffer std_logic;
 		dqs_smp  : in  std_logic_vector;
 		dqs_pre  : out std_logic;
-		sdr_sti  : in  std_logic;
-		sdr_sto  : buffer std_logic);
+		sdram_sti  : in  std_logic;
+		sdram_sto  : buffer std_logic);
 end;
 
 library hdl4fpga;
@@ -37,14 +37,14 @@ architecture def of adjsto is
 begin
 
 	tp(1 to 3) <= std_logic_vector(sel);
-	process (sdr_sti, sel, sdr_clk)
+	process (sdram_sti, sel, sdram_clk)
 		variable delay : unsigned(0 to bl-1);
 	begin
-		if rising_edge(sdr_clk) then
-			delay(0) := sdr_sti;
+		if rising_edge(sdram_clk) then
+			delay(0) := sdram_sti;
 			delay    := rotate_left(delay,1);
 		end if;
-		sdr_sto <= word2byte(reverse(std_logic_vector(delay)), std_logic_vector(resize(sel,sel'length-1)));
+		sdram_sto <= word2byte(reverse(std_logic_vector(delay)), std_logic_vector(resize(sel,sel'length-1)));
 	end process;
 
 	process (edge)
@@ -65,18 +65,18 @@ begin
 		pre(0) <= '0';
 	end process;
 
-	 process (sdr_clk)
+	 process (sdram_clk)
 		variable start : std_logic;
 		variable cntr  : unsigned(0 to unsigned_num_bits(GEAR/2-1));
 		variable sto   : unsigned(0 to lat+1);
 	begin
-		if rising_edge(sdr_clk) then
-			sto(0) := sdr_sto;
+		if rising_edge(sdram_clk) then
+			sto(0) := sdram_sto;
 			if to_bit(step_req xor step_rdy)='1' then
 				if start='0' then
 					sync    <= '1';
 					cntr := to_unsigned(GEAR/2-1, cntr'length);
-					if sdr_sto='0' then
+					if sdram_sto='0' then
 						start := '1';
 					end if;
 				else
@@ -111,10 +111,10 @@ begin
 		end if;
 	end process;
 
-	process (sdr_clk)
+	process (sdram_clk)
 		variable start : std_logic;
 	begin
-		if rising_edge(sdr_clk) then
+		if rising_edge(sdram_clk) then
 			if to_bit(sys_req xor sys_rdy)='1' then
 				if start='0' then
 					sel      <= (others => '0');

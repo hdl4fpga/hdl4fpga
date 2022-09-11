@@ -85,24 +85,24 @@ entity xc7a_sdrphy is
 		sys_sti      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		sys_sto      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
-		sdr_rst      : out std_logic := '0';
-		sdr_cs       : out std_logic := '0';
-		sdr_cke      : out std_logic := '1';
-		sdr_clk      : out std_logic_vector;
-		sdr_odt      : out std_logic;
-		sdr_ras      : out std_logic;
-		sdr_cas      : out std_logic;
-		sdr_we       : out std_logic;
-		sdr_b        : out std_logic_vector(bank_size-1 downto 0);
-		sdr_a        : out std_logic_vector(addr_size-1 downto 0);
+		sdram_rst      : out std_logic := '0';
+		sdram_cs       : out std_logic := '0';
+		sdram_cke      : out std_logic := '1';
+		sdram_clk      : out std_logic_vector;
+		sdram_odt      : out std_logic;
+		sdram_ras      : out std_logic;
+		sdram_cas      : out std_logic;
+		sdram_we       : out std_logic;
+		sdram_b        : out std_logic_vector(bank_size-1 downto 0);
+		sdram_a        : out std_logic_vector(addr_size-1 downto 0);
 
-		sdr_dm       : inout std_logic_vector(word_size/byte_size-1 downto 0);
-		sdr_dqt      : out std_logic_vector(word_size-1 downto 0);
-		sdr_dqi      : in  std_logic_vector(word_size-1 downto 0);
-		sdr_dqo      : out std_logic_vector(word_size-1 downto 0);
-		sdr_dqst     : out std_logic_vector(word_size/byte_size-1 downto 0);
-		sdr_dqsi     : in  std_logic_vector(word_size/byte_size-1 downto 0);
-		sdr_dqso     : out std_logic_vector(word_size/byte_size-1 downto 0));
+		sdram_dm       : inout std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dqt      : out std_logic_vector(word_size-1 downto 0);
+		sdram_dqi      : in  std_logic_vector(word_size-1 downto 0);
+		sdram_dqo      : out std_logic_vector(word_size-1 downto 0);
+		sdram_dqst     : out std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dqsi     : in  std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dqso     : out std_logic_vector(word_size/byte_size-1 downto 0));
 
 end;
 
@@ -289,17 +289,17 @@ architecture xc7a of xc7a_sdrphy is
 	signal ddqt      : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqo      : byte_vector(word_size/byte_size-1 downto 0);
 
-	signal wl_rdy    : std_logic_vector(sdr_dqsi'range);
-	signal rl_req    : std_logic_vector(sdr_dqsi'range);
-	signal rl_rdy    : std_logic_vector(sdr_dqsi'range);
-	signal wr_req    : std_logic_vector(sdr_dqsi'range);
+	signal wl_rdy    : std_logic_vector(sdram_dqsi'range);
+	signal rl_req    : std_logic_vector(sdram_dqsi'range);
+	signal rl_rdy    : std_logic_vector(sdram_dqsi'range);
+	signal wr_req    : std_logic_vector(sdram_dqsi'range);
 	signal wr_rdy    : std_logic_vector(rl_req'range);
 
 	signal write_req : std_logic;
 	signal write_rdy : std_logic;
-	signal read_req  : std_logic_vector(sdr_dqsi'range);
-	signal read_rdy  : std_logic_vector(sdr_dqsi'range);
-	signal read_brst : std_logic_vector(sdr_dqsi'range);
+	signal read_req  : std_logic_vector(sdram_dqsi'range);
+	signal read_rdy  : std_logic_vector(sdram_dqsi'range);
+	signal read_brst : std_logic_vector(sdram_dqsi'range);
 
 	signal ddrphy_ba : std_logic_vector(sys_ba'range);
 	signal ddrphy_a  : std_logic_vector(sys_a'range);
@@ -310,14 +310,14 @@ architecture xc7a of xc7a_sdrphy is
 
 begin
 
-	sdr_clk_g : for i in sdr_clk'range generate
+	sdram_clk_g : for i in sdram_clk'range generate
 		ck_i :  oddr
 		port map (
 			c => clk0x2,
 			ce => '1',
 			d1 => '0' xor clkinv,
 			d2 => '1' xor clkinv,
-			q  => sdr_clk(i));
+			q  => sdram_clk(i));
 	end generate;
 
 	sdrbaphy_i : entity hdl4fpga.xc7a_sdrbaphy
@@ -339,15 +339,15 @@ begin
 		sys_we  => sys_we,
 		sys_odt => sys_odt,
 
-		sdr_rst => sdr_rst,
-		sdr_cke => sdr_cke,
-		sdr_odt => sdr_odt,
-		sdr_cs  => sdr_cs,
-		sdr_ras => sdr_ras,
-		sdr_cas => sdr_cas,
-		sdr_we  => sdr_we,
-		sdr_b   => sdr_b,
-		sdr_a   => sdr_a);
+		sdram_rst => sdram_rst,
+		sdram_cke => sdram_cke,
+		sdram_odt => sdram_odt,
+		sdram_cs  => sdram_cs,
+		sdram_ras => sdram_ras,
+		sdram_cas => sdram_cas,
+		sdram_we  => sdram_we,
+		sdram_b   => sdram_b,
+		sdram_a   => sdram_a);
 
 	write_leveling_p : process (phy_wlreq, wl_rdy)
 		variable z : std_logic;
@@ -362,8 +362,8 @@ begin
 	read_leveling_l_b : block
 		signal leveling : std_logic;
 
-		signal sdr_act  : std_logic;
-		signal sdr_idle : std_logic;
+		signal sdram_act  : std_logic;
+		signal sdram_idle : std_logic;
 
 	begin
 
@@ -375,16 +375,16 @@ begin
 		begin
 			if rising_edge(clk0) then
 				if phy_trdy='1' then
-					sdr_idle <= s_pre;
+					sdram_idle <= s_pre;
 					case phy_cmd is
 					when mpu_pre =>
-						sdr_act <= '0';
+						sdram_act <= '0';
 						s_pre := '1';
 					when mpu_act =>
-						sdr_act <= '1';
+						sdram_act <= '1';
 						s_pre := '0';
 					when others =>
-						sdr_act <= '0';
+						sdram_act <= '0';
 						s_pre := '0';
 					end case;
 				end if;
@@ -408,14 +408,14 @@ begin
 					when s_start =>
 						phy_frm  <= '1';
 						leveling <= '1';
-						if sdr_act='1' then
+						if sdram_act='1' then
 							if burst='0' then
 								phy_frm <= '0';
 							end if;
 							state   := s_run;
 						end if;
 					when s_run =>
-						if sdr_idle='1' then
+						if sdram_idle='1' then
 							leveling  <= '0';
 							wr_rdy    <= to_stdlogicvector(to_bitvector(wr_req));
 							read_rdy  <= to_stdlogicvector(to_bitvector(read_req));
@@ -495,11 +495,11 @@ begin
 	sdmt  <= to_blinevector(not sys_dmt);
 	sdqt  <= to_blinevector(not sys_dqt);
 	sdqi  <= shuffle_dlinevector(sys_dqi);
-	ddqi  <= to_bytevector(sdr_dqi);
+	ddqi  <= to_bytevector(sdram_dqi);
 	sdqsi <= to_blinevector(sys_dqso);
 	sdqst <= to_blinevector(sys_dqst);
 
-	byte_g : for i in sdr_dqsi'range generate
+	byte_g : for i in sdram_dqsi'range generate
 		sdrdqphy_i : entity hdl4fpga.xc7a_sdrdqphy
 		generic map (
 			taps       => taps,
@@ -539,30 +539,30 @@ begin
 
 			sys_sto    => ssto(i),
 
-			sdr_dqsi   => sdr_dqsi(i),
-			sdr_dqi    => ddqi(i),
-			sdr_dqt    => ddqt(i),
-			sdr_dqo    => ddqo(i),
+			sdram_dqsi   => sdram_dqsi(i),
+			sdram_dqi    => ddqi(i),
+			sdram_dqt    => ddqt(i),
+			sdram_dqo    => ddqo(i),
 
-			sdr_dmt    => ddmt(i),
-			sdr_dmo    => ddmo(i),
+			sdram_dmt    => ddmt(i),
+			sdram_dmo    => ddmo(i),
 
-			sdr_dqst   => sdr_dqst(i),
-			sdr_dqso   => sdr_dqso(i));
+			sdram_dqst   => sdram_dqst(i),
+			sdram_dqso   => sdram_dqso(i));
 
 		sys_sto((i+1)*data_gear-1 downto i*data_gear) <= ssto(i);
 	end generate;
 
-	sdr_dqt <= to_stdlogicvector(ddqt);
-	sdr_dqo <= to_stdlogicvector(ddqo);
+	sdram_dqt <= to_stdlogicvector(ddqt);
+	sdram_dqo <= to_stdlogicvector(ddqo);
 
 	process (ddmo, ddmt)
 	begin
 		for i in ddmo'range loop
 			if ddmt(i)='1' then
-				sdr_dm(i) <= 'Z';
+				sdram_dm(i) <= 'Z';
 			else
-				sdr_dm(i) <= ddmo(i);
+				sdram_dm(i) <= ddmo(i);
 			end if;
 		end loop;
 	end process;
