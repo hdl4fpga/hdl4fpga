@@ -95,7 +95,6 @@ architecture def of mii_ipoe is
 	signal hwsarx_trdy   : std_logic;
 	signal hwtyprx_irdy  : std_logic;
 	signal hwtyprx_trdy  : std_logic;
-	signal ethplrx_irdy  : std_logic;
 	signal ethplrx_trdy  : std_logic;
 	signal llc_last      : std_logic;
 	signal arprx_equ     : std_logic;
@@ -228,6 +227,8 @@ begin
 		signal frm  : std_logic;
 		signal irdy : std_logic;
 		signal data : std_logic_vector(dllrx_data'range);
+		signal sb   : std_logic;
+		signal vld  : std_logic;
 	begin
 		ethrx_e : entity hdl4fpga.eth_rx
 		port map (
@@ -245,9 +246,10 @@ begin
 			hwda_end   => hwda_end,
 			hwsa_irdy  => hwsarx_irdy,
 			hwtyp_irdy => hwtyprx_irdy,
-			pl_irdy    => ethplrx_irdy,
-			fcs_sb     => fcs_sb,
-			fcs_vld    => fcs_vld);
+			pl_irdy    => open,
+			pl_trdy    => open,
+			fcs_sb     => sb,
+			fcs_vld    => vld);
 
 		process(mii_clk)
 		begin
@@ -255,6 +257,8 @@ begin
 				dllrx_frm  <= frm;
 				dllrx_irdy <= irdy;
 				dllrx_data <= data;
+				fcs_sb     <= sb;
+				fcs_vld    <= vld;
 			end if;
 		end process;
 
