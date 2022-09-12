@@ -224,6 +224,9 @@ begin
 	end process;
 
 	ethrrx_b : block
+		signal hwtyp_irdy : std_logic;
+		signal hwda_irdy  : std_logic;
+		signal hwsa_irdy  : std_logic;
 		signal frm  : std_logic;
 		signal irdy : std_logic;
 		signal data : std_logic_vector(dllrx_data'range);
@@ -242,10 +245,10 @@ begin
 			dll_trdy   => open,
 			dll_data   => data,
 	
-			hwda_irdy  => hwdarx_irdy,
+			hwda_irdy  => hwda_irdy,
 			hwda_end   => hwda_end,
-			hwsa_irdy  => hwsarx_irdy,
-			hwtyp_irdy => hwtyprx_irdy,
+			hwsa_irdy  => hwsa_irdy,
+			hwtyp_irdy => hwtyp_irdy,
 			pl_irdy    => open,
 			pl_trdy    => open,
 			fcs_sb     => sb,
@@ -254,6 +257,9 @@ begin
 		process(mii_clk)
 		begin
 			if rising_edge(mii_clk) then
+				hwtyprx_irdy <= hwtyp_irdy;
+				hwdarx_irdy <= hwda_irdy;
+				hwsarx_irdy <= hwsa_irdy;
 				dllrx_frm  <= frm;
 				dllrx_irdy <= irdy;
 				dllrx_data <= data;
