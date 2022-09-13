@@ -595,7 +595,7 @@ begin
 					max_depth => 1)
 				port map (
 					src_clk  => mii_clk,
-					src_frm  => icmp_frm,
+					src_frm  => tx_frm,
 					src_irdy => tx_irdy,
 					src_trdy => tx_trdy,
 					src_data => src_data,

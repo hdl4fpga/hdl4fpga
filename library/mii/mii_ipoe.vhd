@@ -254,43 +254,33 @@ begin
 			fcs_sb     => dll_sb,
 			fcs_vld    => dll_vld);
 
+		hwtyprx_irdy <= hwtyp_irdy;
+		hwdarx_irdy <= hwda_irdy;
+		hwsarx_irdy <= hwsa_irdy;
+
 		buffer_b : block
-			signal src_data : std_logic_vector(0 to icmptx_data'length+1);
+			signal src_data : std_logic_vector(0 to dllrx_data'length+1);
 			signal dst_data : std_logic_vector(src_data'range);
 		begin
 				
-			src_data <= tx_data & tx_sb & dllrx_vld;
+			src_data <= dll_data & dll_sb & dll_vld;
 			buffer_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth => 1)
 			port map (
 				src_clk  => mii_clk,
-				src_irdy => tx_irdy,
-				src_trdy => tx_trdy,
+				src_irdy => dll_irdy,
+				src_trdy => open,
 				src_data => src_data,
 				dst_clk  => mii_clk,
-				dst_irdy => tx_irdy,
-				dst_trdy => tx_trdy,
+				dst_irdy => dllrx_irdy,
+				dst_trdy => open,
 				dst_data => dst_data);
 
-			dllrx_data <= dst_data(0 to icmptx_data'length-1);
-			dllrx_sb   <= dst_data(icmptx_data'length);
-			dllrx_vld  <= dst_data(icmptx_data'length+1);
+			dllrx_data <= dst_data(0 to dllrx_data'length-1);
+			fcs_sb   <= dst_data(dllrx_data'length);
+			fcs_vld  <= dst_data(dllrx_data'length+1);
 		end block;
-
-		process(mii_clk)
-		begin
-			if rising_edge(mii_clk) then
-				hwtyprx_irdy <= hwtyp_irdy;
-				hwdarx_irdy <= hwda_irdy;
-				hwsarx_irdy <= hwsa_irdy;
-				dllrx_frm  <= frm;
-				dllrx_irdy <= irdy;
-				dllrx_data <= data;
-				fcs_sb     <= sb;
-				fcs_vld    <= vld;
-			end if;
-		end process;
 
 	end block;
 
