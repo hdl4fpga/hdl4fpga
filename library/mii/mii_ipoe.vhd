@@ -227,11 +227,11 @@ begin
 		signal hwtyp_irdy : std_logic;
 		signal hwda_irdy  : std_logic;
 		signal hwsa_irdy  : std_logic;
-		signal frm  : std_logic;
-		signal irdy : std_logic;
-		signal data : std_logic_vector(dllrx_data'range);
-		signal sb   : std_logic;
-		signal vld  : std_logic;
+		signal dll_frm  : std_logic;
+		signal dll_irdy : std_logic;
+		signal dll_data : std_logic_vector(dllrx_data'range);
+		signal dll_sb   : std_logic;
+		signal dll_vld  : std_logic;
 	begin
 		ethrx_e : entity hdl4fpga.eth_rx
 		port map (
@@ -240,10 +240,10 @@ begin
 			mii_irdy   => miirx_irdy,
 			mii_data   => miirx_data,
 	
-			dll_frm    => frm,
-			dll_irdy   => irdy,
+			dll_frm    => dll_frm,
+			dll_irdy   => dll_irdy,
 			dll_trdy   => open,
-			dll_data   => data,
+			dll_data   => dll_data,
 	
 			hwda_irdy  => hwda_irdy,
 			hwda_end   => hwda_end,
@@ -251,31 +251,32 @@ begin
 			hwtyp_irdy => hwtyp_irdy,
 			pl_irdy    => open,
 			pl_trdy    => open,
-			fcs_sb     => sb,
-			fcs_vld    => vld);
+			fcs_sb     => dll_sb,
+			fcs_vld    => dll_vld);
 
---		buffer_b : block
---			signal src_data : std_logic_vector(0 to icmptx_data'length);
---			signal dst_data : std_logic_vector(src_data'range);
---		begin
---				
---			src_data <= tx_data & tx_end;
---			buffer_e : entity hdl4fpga.fifo
---			generic map (
---				max_depth => 1)
---			port map (
---				src_clk  => mii_clk,
---				src_irdy => tx_irdy,
---				src_trdy => tx_trdy,
---				src_data => src_data,
---				dst_clk  => mii_clk,
---				dst_irdy => icmptx_irdy,
---				dst_trdy => icmptx_trdy,
---				dst_data => dst_data);
---
---			icmptx_data <= dst_data(0 to icmptx_data'length-1);
---			icmptx_end  <= dst_data(icmptx_data'length);
---		end block;
+		buffer_b : block
+			signal src_data : std_logic_vector(0 to icmptx_data'length+1);
+			signal dst_data : std_logic_vector(src_data'range);
+		begin
+				
+			src_data <= tx_data & tx_sb & dllrx_vld;
+			buffer_e : entity hdl4fpga.fifo
+			generic map (
+				max_depth => 1)
+			port map (
+				src_clk  => mii_clk,
+				src_irdy => tx_irdy,
+				src_trdy => tx_trdy,
+				src_data => src_data,
+				dst_clk  => mii_clk,
+				dst_irdy => tx_irdy,
+				dst_trdy => tx_trdy,
+				dst_data => dst_data);
+
+			dllrx_data <= dst_data(0 to icmptx_data'length-1);
+			dllrx_sb   <= dst_data(icmptx_data'length);
+			dllrx_vld  <= dst_data(icmptx_data'length+1);
+		end block;
 
 		process(mii_clk)
 		begin
