@@ -35,28 +35,28 @@ architecture nuhs3adsp_graphics of testbench is
 	constant timer_200u : natural := 9;
 	constant data_bits  : natural := byte_bits*data_bytes;
 
-	signal rst   : std_logic;
-	signal clk   : std_logic := '0';
-	signal led7  : std_logic;
-	signal sw1   : std_logic := '1';
+	signal rst      : std_logic;
+	signal clk      : std_logic := '0';
+	signal led7     : std_logic;
+	signal sw1      : std_logic := '1';
 
-	signal dq    : std_logic_vector (data_bits - 1 downto 0) := (others => 'Z');
-	signal dqs   : std_logic_vector (1 downto 0) := "00";
-	signal addr  : std_logic_vector (addr_bits - 1 downto 0);
-	signal ba    : std_logic_vector (1 downto 0);
-	signal clk_p : std_logic := '0';
-	signal clk_n : std_logic := '0';
-	signal cke   : std_logic := '1';
-	signal cs_n  : std_logic := '1';
-	signal ras_n : std_logic;
-	signal cas_n : std_logic;
-	signal we_n  : std_logic;
-	signal dm    : std_logic_vector(1 downto 0);
+	signal dq       : std_logic_vector (data_bits - 1 downto 0) := (others => 'Z');
+	signal dqs      : std_logic_vector (1 downto 0) := "00";
+	signal addr     : std_logic_vector (addr_bits - 1 downto 0);
+	signal ba       : std_logic_vector (1 downto 0);
+	signal clk_p    : std_logic := '0';
+	signal clk_n    : std_logic := '0';
+	signal cke      : std_logic := '1';
+	signal cs_n     : std_logic := '1';
+	signal ras_n    : std_logic;
+	signal cas_n    : std_logic;
+	signal we_n     : std_logic;
+	signal dm       : std_logic_vector(1 downto 0);
 
 	signal mii_refclk : std_logic;
-	signal mii_req : std_logic := '0';
+	signal mii_req  : std_logic := '0';
 	signal mii_req1 : std_logic := '0';
-	signal rep_req : std_logic := '0';
+	signal rep_req  : std_logic := '0';
 	signal ping_req : std_logic := '0';
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(0 to 4-1);
@@ -200,28 +200,29 @@ begin
 	rst <= '0', '1' after 300 ns;
 
 --	mii_req  <= '0', '1' after 200 us, '0' after 206 us, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
-	mii_req  <= '0', '1' after 10 us,  '0' after 100 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
+	ping_req  <= '0', '1' after 10 us,  '0' after 100 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
 --	mii_req1 <= '0', '1' after 14.6 us, '0' after 19.0 us; --, '1' after 19.5 us; --, '0' after 219 us, '1' after 220 us;
-	process
-		variable x : natural := 0;
-	begin
-		wait for 145 us;
-		loop
-			if rep_req='1' then
-				if x > 1 then
-					wait;
-				end if;
-				rep_req <= '0' after 6 us;
-	wait;
-				x := x + 1;
-			else
-				rep_req <= '1' after 80 ns;
-			end if;
-		wait on rep_req;
-		end loop;
-	end process;
-	mii_req1  <= rep_req;
-	ping_req <= '0';
+--	process
+--		variable x : natural := 0;
+--	begin
+--		wait for 145 us;
+--		loop
+--			if rep_req='1' then
+--				if x > 1 then
+--					wait;
+--				end if;
+--				rep_req <= '0' after 6 us;
+--				wait;
+--				x := x + 1;
+--			else
+--				rep_req <= '1' after 80 ns;
+--			end if;
+--		wait on rep_req;
+--		end loop;
+--	end process;
+--	mii_req1  <= rep_req;
+	mii_req   <= '0';
+	mii_req1  <= '0';
 
 	htb_e : entity hdl4fpga.eth_tb
 	generic map (

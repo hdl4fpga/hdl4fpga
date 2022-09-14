@@ -63,7 +63,7 @@ entity eth_rx is
 end;
 
 architecture def of eth_rx is
-	signal pream_vld     : std_logic;
+	signal pream_vld : std_logic;
 begin
 	mii_pre_e : entity hdl4fpga.mii_rxpre
 	port map (
@@ -83,7 +83,7 @@ begin
 
 		des_frm    => dll_frm,
 		des_irdy   => dll_irdy,
-		des_trdy   => open,
+		des_trdy   => dll_trdy,
 		des_data   => dll_data);
 
 	dllrx_e : entity hdl4fpga.dll_rx

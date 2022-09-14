@@ -224,14 +224,14 @@ begin
 	end process;
 
 	ethrrx_b : block
+		signal dll_frm    : std_logic;
 		signal hwtyp_irdy : std_logic;
 		signal hwda_irdy  : std_logic;
 		signal hwsa_irdy  : std_logic;
-		signal dll_frm  : std_logic;
-		signal dll_irdy : std_logic;
-		signal dll_data : std_logic_vector(dllrx_data'range);
-		signal dll_sb   : std_logic;
-		signal dll_vld  : std_logic;
+		signal dll_irdy   : std_logic;
+		signal dll_data   : std_logic_vector(dllrx_data'range);
+		signal dll_sb     : std_logic;
+		signal dll_vld    : std_logic;
 	begin
 		ethrx_e : entity hdl4fpga.eth_rx
 		port map (
@@ -254,33 +254,20 @@ begin
 			fcs_sb     => dll_sb,
 			fcs_vld    => dll_vld);
 
-		hwtyprx_irdy <= hwtyp_irdy;
-		hwdarx_irdy <= hwda_irdy;
-		hwsarx_irdy <= hwsa_irdy;
 
-		buffer_b : block
-			signal src_data : std_logic_vector(0 to dllrx_data'length+1);
-			signal dst_data : std_logic_vector(src_data'range);
+		buffer_p : process (mii_clk)
 		begin
-				
-			src_data <= dll_data & dll_sb & dll_vld;
-			buffer_e : entity hdl4fpga.fifo
-			generic map (
-				max_depth => 1)
-			port map (
-				src_clk  => mii_clk,
-				src_irdy => dll_irdy,
-				src_trdy => open,
-				src_data => src_data,
-				dst_clk  => mii_clk,
-				dst_irdy => dllrx_irdy,
-				dst_trdy => open,
-				dst_data => dst_data);
-
-			dllrx_data <= dst_data(0 to dllrx_data'length-1);
-			fcs_sb   <= dst_data(dllrx_data'length);
-			fcs_vld  <= dst_data(dllrx_data'length+1);
-		end block;
+			if rising_edge(mii_clk) then
+				dllrx_frm    <= dll_frm;
+				dllrx_irdy   <= dll_irdy;
+				dllrx_data   <= dll_data;
+				hwtyprx_irdy <= hwtyp_irdy;
+				hwdarx_irdy  <= hwda_irdy;
+				hwsarx_irdy  <= hwsa_irdy;
+				fcs_sb       <= dll_sb;
+				fcs_vld      <= dll_vld;
+			end if;
+		end process;
 
 	end block;
 
