@@ -58,7 +58,7 @@ architecture graphics of nuhs3adsp is
 
 		sdr200mhz_1080p24bpp);
 
-	constant app_profile : app_profiles := sdr166mhz_1080p24bpp;
+	constant app_profile : app_profiles := sdr166mhz_720p24bpp;
 
 	type profileparam_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparam_vector := (
