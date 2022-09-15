@@ -583,30 +583,16 @@ begin
 			icmptx_end  => tx_end,
 			icmptx_data => tx_data);
 
-			fifo_b : block
-				signal src_data : std_logic_vector(0 to icmptx_data'length);
-				signal dst_data : std_logic_vector(src_data'range);
+			buffer_p : process (mii_clk)
 			begin
-				
-				icmptx_frm  <= tx_frm;
-				src_data <= tx_data & tx_end;
-				fifo_e : entity hdl4fpga.fifo
-				generic map (
-					max_depth => 1)
-				port map (
-					src_clk  => mii_clk,
-					src_frm  => tx_frm,
-					src_irdy => tx_irdy,
-					src_trdy => tx_trdy,
-					src_data => src_data,
-					dst_clk  => mii_clk,
-					dst_irdy => icmptx_irdy,
-					dst_trdy => icmptx_trdy,
-					dst_data => dst_data);
-
-				icmptx_data <= dst_data(0 to icmptx_data'length-1);
-				icmptx_end  <= dst_data(icmptx_data'length);
-			end block;
+				if rising_edge(mii_clk) then
+					icmptx_frm  <= tx_frm;
+					icmptx_irdy <= tx_irdy;
+					icmptx_data <= tx_data;
+					icmptx_end  <= tx_end;
+			tx_trdy <= icmptx_trdy;
+				end if;
+			end process;
 
 		end block;
 
