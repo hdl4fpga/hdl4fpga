@@ -587,10 +587,22 @@ begin
 			begin
 				if rising_edge(mii_clk) then
 					icmptx_frm  <= tx_frm;
-					icmptx_irdy <= tx_irdy;
-					icmptx_data <= tx_data;
-					icmptx_end  <= tx_end;
-			tx_trdy <= icmptx_trdy;
+					if icmptx_frm='0' then
+						if icmptx_trdy='1' then
+							icmptx_irdy <= '0';
+							icmptx_end  <= tx_end;
+						end if;
+					elsif icmptx_irdy='0' then
+						if tx_irdy='1' then
+							icmptx_irdy <= tx_irdy;
+							icmptx_data <= tx_data;
+							icmptx_end  <= tx_end;
+						end if;
+					else icmptx_trdy='1' then
+						icmptx_irdy <= tx_irdy;
+						icmptx_data <= tx_data;
+						icmptx_end  <= tx_end;
+					end if;
 				end if;
 			end process;
 
