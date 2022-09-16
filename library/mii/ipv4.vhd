@@ -588,30 +588,19 @@ begin
 			-- tx_trdy <= icmptx_trdy;
 			-- icmptx_data <= tx_data;
 			-- icmptx_end  <= tx_end;
-			tx_trdy <= icmptx_trdy when icmptx_irdy='1' else '1';
-			buffer_p : process (mii_clk)
-			begin
-				if rising_edge(mii_clk) then
-					if tx_frm='0' then
-						if icmptx_trdy='1' then
-							icmptx_frm  <= '0';
-							icmptx_irdy <= '0';
-							icmptx_end  <= tx_end;
-						end if;
-					else
-						icmptx_frm  <= '1';
-						if icmptx_irdy='0' then
-							icmptx_irdy <= tx_irdy;
-							icmptx_data <= tx_data;
-							icmptx_end  <= tx_end;
-						elsif icmptx_trdy='1' then
-							icmptx_irdy <= tx_irdy;
-							icmptx_data <= tx_data;
-							icmptx_end  <= tx_end;
-						end if;
-					end if;
-				end if;
-			end process;
+			miibuffer_e : entity hdl4fpga.mii_buffer
+			port map(
+				io_clk => mii_clk,
+				i_frm  => tx_frm,
+				i_irdy => tx_irdy,
+				i_trdy => tx_trdy,
+				i_data => tx_data,
+				i_end  => tx_end,
+				o_frm  => icmptx_frm,
+				o_irdy => icmptx_irdy,
+				o_trdy => icmptx_trdy,
+				o_data => icmptx_data,
+				o_end  => icmptx_end);
 
 		end block;
 

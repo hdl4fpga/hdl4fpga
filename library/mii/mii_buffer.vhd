@@ -40,15 +40,14 @@ entity mii_buffer is
 		o_irdy : out std_logic;
 		o_trdy : in  std_logic;
 		o_data : out std_logic_vector;
-		o_end  : out std_logic);
+		o_end  : buffer std_logic);
 end;
 
 architecture def of mii_buffer is
 
-	signal src_frm  : std_logic;
 	signal src_irdy : std_logic;
-	signal src_trdy : std_logic;
 	signal src_data : std_logic_vector(0 to i_data'length+2-1);
+	signal dst_frm  : std_logic;
 	signal dst_data : std_logic_vector(src_data'range);
 
 begin
@@ -57,6 +56,7 @@ begin
 	src_data <= i_frm & i_data & i_end;
 	buffer_e : entity hdl4fpga.fifo
 	generic map (
+		latency => 1,
 		max_depth => 2,
 		check_sov => false,
 		check_dov => true)
@@ -65,11 +65,13 @@ begin
 		src_irdy => src_irdy,
 		src_trdy => i_trdy,
 		src_data => src_data,
+		dst_frm  => dst_frm,
 		dst_clk  => io_clk,
 		dst_irdy => o_irdy,
 		dst_trdy => o_trdy,
 		dst_data => dst_data);
 
+	dst_frm <= o_trdy and o_end;
 	process (dst_data)
 		variable data : unsigned(dst_data'range);
 	begin
