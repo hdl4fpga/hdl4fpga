@@ -114,34 +114,57 @@ begin
 		miitx_end  => miitx_end,
 		miitx_data => miitx_data);
 
-	sio_flow_e : entity hdl4fpga.sio_flow
-	generic map (
-		debug   => debug)
-	port map (
-		tp => tp,
-		sio_clk => sio_clk,
+	sio_flow_b : block
+		signal tx_frm  : std_logic;
+		signal tx_irdy : std_logic;
+		signal tx_trdy : std_logic;
+		signal tx_end  : std_logic;
+		signal tx_data : std_logic_vector(pltx_data'range);
+	begin
+		sio_flow_e : entity hdl4fpga.sio_flow
+		generic map (
+			debug   => debug)
+		port map (
+			tp => tp,
+			sio_clk => sio_clk,
+	
+			rx_frm  => plrx_frm,
+			rx_irdy => plrx_irdy,
+			rx_trdy => plrx_trdy,
+			rx_end  => plrx_end,
+			rx_data => plrx_data,
+	
+			so_frm  => so_frm,
+			so_irdy => so_irdy,
+			so_trdy => so_trdy,
+			so_data => so_data,
+	
+			si_frm  => si_frm,
+			si_irdy => si_irdy,
+			si_trdy => si_trdy,
+			si_end  => si_end,
+			si_data => si_data,
+	
+			tx_frm  => pltx_frm,
+			tx_irdy => pltx_irdy,
+			tx_trdy => pltx_trdy,
+			tx_end  => pltx_end,
+			tx_data => pltx_data);
 
-		rx_frm  => plrx_frm,
-		rx_irdy => plrx_irdy,
-		rx_trdy => plrx_trdy,
-		rx_end  => plrx_end,
-		rx_data => plrx_data,
+		miibuffer_e : entity hdl4fpga.mii_buffer
+		port map(
+			io_clk => sio_clk,
+			i_frm  => tx_frm,
+			i_irdy => tx_irdy,
+			i_trdy => tx_trdy,
+			i_data => tx_data,
+			i_end  => tx_end,
+			o_frm  => pltx_frm,
+			o_irdy => pltx_irdy,
+			o_trdy => pltx_trdy,
+			o_data => pltx_data,
+			o_end  => pltx_end);
 
-		so_frm  => so_frm,
-		so_irdy => so_irdy,
-		so_trdy => so_trdy,
-		so_data => so_data,
-
-		si_frm  => si_frm,
-		si_irdy => si_irdy,
-		si_trdy => si_trdy,
-		si_end  => si_end,
-		si_data => si_data,
-
-		tx_frm  => pltx_frm,
-		tx_irdy => pltx_irdy,
-		tx_trdy => pltx_trdy,
-		tx_end  => pltx_end,
-		tx_data => pltx_data);
+	end block;
 
 end;

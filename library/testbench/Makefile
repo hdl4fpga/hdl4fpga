@@ -151,6 +151,8 @@ HDL4FPGA__mii_rxpre__def = $(LIB_HDL4FPGA)/mii_rxpre/def.dat
 HDL4FPGA__mii_rxpre = $(LIB_HDL4FPGA)/mii_rxpre/_primary.dat
 HDL4FPGA__mii_ipoe__def = $(LIB_HDL4FPGA)/mii_ipoe/def.dat
 HDL4FPGA__mii_ipoe = $(LIB_HDL4FPGA)/mii_ipoe/_primary.dat
+HDL4FPGA__mii_buffer__def = $(LIB_HDL4FPGA)/mii_buffer/def.dat
+HDL4FPGA__mii_buffer = $(LIB_HDL4FPGA)/mii_buffer/_primary.dat
 HDL4FPGA__mii_1cksm__beh = $(LIB_HDL4FPGA)/mii_1cksm/beh.dat
 HDL4FPGA__mii_1cksm = $(LIB_HDL4FPGA)/mii_1cksm/_primary.dat
 HDL4FPGA__ipv4_tx__def = $(LIB_HDL4FPGA)/ipv4_tx/def.dat
@@ -418,6 +420,8 @@ whole_library :     $(HDL4FPGA__xc7a_sdrphy__xc7a) \
     $(HDL4FPGA__mii_rxpre) \
     $(HDL4FPGA__mii_ipoe__def) \
     $(HDL4FPGA__mii_ipoe) \
+    $(HDL4FPGA__mii_buffer__def) \
+    $(HDL4FPGA__mii_buffer) \
     $(HDL4FPGA__mii_1cksm__beh) \
     $(HDL4FPGA__mii_1cksm) \
     $(HDL4FPGA__ipv4_tx__def) \
@@ -1186,6 +1190,15 @@ $(HDL4FPGA__mii_1cksm__beh) : ../mii/mii_1cksm.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/mii_1cksm.vhd
 
+$(HDL4FPGA__mii_buffer) \
+$(HDL4FPGA__mii_buffer__def) : ../mii/mii_buffer.vhd \
+		$(HDL4FPGA__fifo) \
+		$(HDL4FPGA__std) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/mii_buffer.vhd
+
 $(HDL4FPGA__mii_ipoe) \
 $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
 		$(HDL4FPGA__txn_buffer) \
@@ -1589,6 +1602,7 @@ $(HDL4FPGA__sio_sin__beh) : ../sio/sio_sin.vhd \
 
 $(HDL4FPGA__sio_udp) \
 $(HDL4FPGA__sio_udp__struct) : ../sio/sio_udp.vhd \
+		$(HDL4FPGA__mii_buffer) \
 		$(HDL4FPGA__sio_flow) \
 		$(HDL4FPGA__mii_ipoe) \
 		$(HDL4FPGA__ipoepkg) \

@@ -583,35 +583,35 @@ begin
 			icmptx_end  => tx_end,
 			icmptx_data => tx_data);
 
-			icmptx_frm  <= tx_frm;
-			icmptx_irdy <= tx_irdy;
-			tx_trdy <= icmptx_trdy;
-			icmptx_data <= tx_data;
-			icmptx_end  <= tx_end;
-			-- tx_trdy <= icmptx_trdy when icmptx_irdy='1' else '1';
-			-- buffer_p : process (mii_clk)
-			-- begin
-			-- 	if rising_edge(mii_clk) then
-			-- 		if tx_frm='0' then
-			-- 			if icmptx_trdy='1' then
-			-- 				icmptx_frm  <= '0';
-			-- 				icmptx_irdy <= '0';
-			-- 				icmptx_end  <= tx_end;
-			-- 			end if;
-			-- 		else
-			-- 			icmptx_frm  <= '1';
-			-- 			if icmptx_irdy='0' then
-			-- 				icmptx_irdy <= tx_irdy;
-			-- 				icmptx_data <= tx_data;
-			-- 				icmptx_end  <= tx_end;
-			-- 			elsif icmptx_trdy='1' then
-			-- 				icmptx_irdy <= tx_irdy;
-			-- 				icmptx_data <= tx_data;
-			-- 				icmptx_end  <= tx_end;
-			-- 			end if;
-			-- 		end if;
-			-- 	end if;
-			-- end process;
+			-- icmptx_frm  <= tx_frm;
+			-- icmptx_irdy <= tx_irdy;
+			-- tx_trdy <= icmptx_trdy;
+			-- icmptx_data <= tx_data;
+			-- icmptx_end  <= tx_end;
+			tx_trdy <= icmptx_trdy when icmptx_irdy='1' else '1';
+			buffer_p : process (mii_clk)
+			begin
+				if rising_edge(mii_clk) then
+					if tx_frm='0' then
+						if icmptx_trdy='1' then
+							icmptx_frm  <= '0';
+							icmptx_irdy <= '0';
+							icmptx_end  <= tx_end;
+						end if;
+					else
+						icmptx_frm  <= '1';
+						if icmptx_irdy='0' then
+							icmptx_irdy <= tx_irdy;
+							icmptx_data <= tx_data;
+							icmptx_end  <= tx_end;
+						elsif icmptx_trdy='1' then
+							icmptx_irdy <= tx_irdy;
+							icmptx_data <= tx_data;
+							icmptx_end  <= tx_end;
+						end if;
+					end if;
+				end if;
+			end process;
 
 		end block;
 
