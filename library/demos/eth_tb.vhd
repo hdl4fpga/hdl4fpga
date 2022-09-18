@@ -69,8 +69,8 @@ architecture def of eth_tb is
 		x"279c"                 &    -- IP Header Checksum
 		x"c0a80008"             &    -- IP Source IP address
 		x"c0a8000e"             &    -- IP Destiantion IP Address
-		x"080048c7" &
-		x"d048deef";
+		reverse(x"00000000") &
+		reverse(x"12345678",8);
 	constant payload : std_logic_vector :=
 			x"01010600"  &    -- OP, HTYPE, HLEN,  HOPS
 			x"3903f326"  &    -- XID

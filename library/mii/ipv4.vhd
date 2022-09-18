@@ -185,14 +185,8 @@ architecture def of ipv4 is
 	signal udpmactx_trdy    : std_logic;
 
 	signal ipv4sanll_vld    : std_logic := '0';
-	signal tp1              : std_logic_vector(1 to 32);
 
 begin
-
-	process (tp1)
-	begin
---		tp <= tp1;
-	end process;
 
 	plrx_frm  <= ipv4rx_frm;
 	plrx_irdy <= to_stdulogic(to_bit(plrx_frm and (ipv4rxsa_irdy or udpplrx_irdy)));
@@ -349,6 +343,7 @@ begin
 	arbiter_b : block
 		signal dev_req          : std_logic_vector(0 to 2-1);
 		signal dev_gnt          : std_logic_vector(0 to 2-1);
+		signal gnt          : std_logic_vector(0 to 2-1);
 
 		signal udpipdatx_irdy   : std_logic;
 		signal icmpipdatx_irdy  : std_logic;
@@ -361,7 +356,14 @@ begin
 		port map (
 			clk => mii_clk,
 			req => dev_req,
-			gnt => dev_gnt);
+			gnt => gnt);
+
+			process (mii_clk)
+			begin
+				if rising_edge(mii_clk) then
+					dev_gnt <= gnt;
+				end if;
+			end process;
 
 		(icmp_gnt, udp_gnt) <= dev_gnt;
 		tp(1 to 2) <= dev_gnt;
@@ -562,7 +564,6 @@ begin
 	begin
 		icmpd_e : entity hdl4fpga.icmpd
 		port map (
-			tp => tp1,
 			mii_clk     => mii_clk,
 			dll_frm     => dll_frm,
 			dll_irdy    => dll_irdy,
@@ -574,39 +575,30 @@ begin
 			icmprx_irdy => icmprx_irdy,
 			icmprx_data => ipv4rx_data,
 	
-			metatx_end  => ipv4datx_full,
-			metatx_trdy => icmpmactx_trdy,
-	
 			icmptx_frm  => tx_frm,
 			icmptx_irdy => tx_irdy,
 			icmptx_trdy => tx_trdy,
 			icmptx_end  => tx_end,
 			icmptx_data => tx_data);
 
-			-- icmptx_frm  <= tx_frm;
-			-- icmptx_irdy <= tx_irdy;
-			-- tx_trdy <= icmptx_trdy;
-			-- icmptx_data <= tx_data;
-			-- icmptx_end  <= tx_end;
-			miibuffer_e : entity hdl4fpga.mii_buffer
-			port map(
-				io_clk => mii_clk,
-				i_frm  => tx_frm,
-				i_irdy => tx_irdy,
-				i_trdy => tx_trdy,
-				i_data => tx_data,
-				i_end  => tx_end,
-				o_frm  => icmptx_frm,
-				o_irdy => icmptx_irdy,
-				o_trdy => icmptx_trdy,
-				o_data => icmptx_data,
-				o_end  => icmptx_end);
+		miibuffer_e : entity hdl4fpga.mii_buffer
+		port map (
+			io_clk => mii_clk,
+			i_frm  => tx_frm,
+			i_irdy => tx_irdy,
+			i_trdy => tx_trdy,
+			i_data => tx_data,
+			i_end  => tx_end,
+			o_frm  => icmptx_frm,
+			o_irdy => icmptx_irdy,
+			o_trdy => icmptx_trdy,
+			o_data => icmptx_data,
+			o_end  => icmptx_end);
 
 		end block;
 
 	udp_e : entity hdl4fpga.udp
 	port map (
-		tp => open, --tp1,
 		mii_clk      => mii_clk,
 		dhcpcd_req   => dhcpcd_req,
 		dhcpcd_rdy   => dhcpcd_rdy,

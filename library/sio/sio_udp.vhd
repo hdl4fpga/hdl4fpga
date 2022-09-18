@@ -145,11 +145,11 @@ begin
 			si_end  => si_end,
 			si_data => si_data,
 	
-			tx_frm  => pltx_frm,
-			tx_irdy => pltx_irdy,
-			tx_trdy => pltx_trdy,
-			tx_end  => pltx_end,
-			tx_data => pltx_data);
+			tx_frm  => tx_frm,
+			tx_irdy => tx_irdy,
+			tx_trdy => tx_trdy,
+			tx_end  => tx_end,
+			tx_data => tx_data);
 
 		miibuffer_e : entity hdl4fpga.mii_buffer
 		port map(

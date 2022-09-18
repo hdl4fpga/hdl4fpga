@@ -36,8 +36,8 @@ entity mii_buffer is
 		i_trdy : out std_logic;
 		i_data : in  std_logic_vector;
 		i_end  : in  std_logic;
-		o_frm  : out std_logic;
-		o_irdy : out std_logic;
+		o_frm  : buffer std_logic;
+		o_irdy : buffer std_logic;
 		o_trdy : in  std_logic;
 		o_data : out std_logic_vector;
 		o_end  : buffer std_logic);
@@ -46,42 +46,38 @@ end;
 architecture def of mii_buffer is
 
 	signal src_irdy : std_logic;
-	signal src_data : std_logic_vector(0 to i_data'length+2-1);
-	signal dst_frm  : std_logic;
+	signal src_data : std_logic_vector(0 to i_data'length+1-1);
 	signal dst_data : std_logic_vector(src_data'range);
 
 begin
 
 	src_irdy <= i_frm and i_irdy;
-	src_data <= i_frm & i_data & i_end;
+	src_data <= i_end & i_data;
 	buffer_e : entity hdl4fpga.fifo
 	generic map (
 		latency => 1,
 		max_depth => 2,
-		check_sov => false,
+		check_sov => true,
 		check_dov => true)
 	port map(
 		src_clk  => io_clk,
 		src_irdy => src_irdy,
 		src_trdy => i_trdy,
 		src_data => src_data,
-		dst_frm  => dst_frm,
 		dst_clk  => io_clk,
 		dst_irdy => o_irdy,
 		dst_trdy => o_trdy,
 		dst_data => dst_data);
 
-	dst_frm <= o_trdy and o_end;
+	o_frm <= o_irdy;
 	process (dst_data)
 		variable data : unsigned(dst_data'range);
 	begin
 		data := unsigned(dst_data);
-		o_frm <= data(0);
+		o_end <= data(0);
 		data := data sll 1;
 		o_data <= std_logic_vector(data(0 to o_data'length-1));
 		data := data sll o_data'length;
-		o_end <= data(0);
-		data := data sll 1;
 	end process;
 
 end;

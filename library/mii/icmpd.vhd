@@ -44,13 +44,10 @@ entity icmpd is
 		icmprx_irdy : in  std_logic;
 		icmprx_data : in  std_logic_vector;
 		icmptx_frm  : buffer std_logic;
-		metatx_trdy : in  std_logic := '1';
-		metatx_end  : in  std_logic;
 		icmptx_irdy : buffer std_logic;
 		icmptx_trdy : in  std_logic := '1';
 		icmptx_end  : buffer std_logic;
-		icmptx_data : out std_logic_vector;
-		tp : out std_logic_vector(1 to 32));
+		icmptx_data : out std_logic_vector);
 end;
 
 architecture def of icmpd is
@@ -80,15 +77,20 @@ architecture def of icmpd is
 	signal icmppltx_data   : std_logic_vector(icmptx_data'range);
 
 	signal cksmrx_data     : std_logic_vector(icmprx_data'range);
-	signal rx_cy           : std_logic_vector(0 to 0);
-	signal tx_cy           : std_logic_vector(0 to 0);
+	signal src_data        : std_logic_vector(0 to icmprx_data'length);
+	signal dst_data        : std_logic_vector(0 to icmptx_data'length);
+	signal src_tag         : std_logic_vector(0 to 0);
+	signal dst_tag         : std_logic_vector(0 to 0);
+	alias rx_cy            : std_logic is src_tag(0);
+	alias tx_cy            : std_logic is dst_tag(0);
 
 	signal miirx_frm       : std_logic;
 
 	signal memrx_frm       : std_logic;
-	signal memrx_data      : std_logic_vector(icmprx_data'range);
-	signal memtx_data      : std_logic_vector(icmptx_data'range);
-	signal tp1             : std_logic_vector(1 to 32);
+	alias rx_meta          : std_logic is src_data(0);
+	alias tx_meta          : std_logic is dst_data(0);
+	alias memrx_data       : std_logic_vector(icmprx_data'range) is src_data(1 to icmprx_data'length);
+	alias memtx_data       : std_logic_vector(icmptx_data'range) is dst_data(1 to icmptx_data'length);
 	signal tx_irdy         : std_logic;
 begin
 
@@ -130,7 +132,7 @@ begin
 					ci <= '0';
 				elsif icmpcksmrx_irdy='1' then
 					ci <= co;
-					rx_cy(0) <= co;
+					rx_cy <= co;
 				end if;
 			end if;
 		end process;
@@ -152,12 +154,10 @@ begin
 		cksmrx_data                when icmpcksmrx_frm='1' else
 		icmprx_data;
 
-	icmpdata_irdy   <= dll_irdy or net_irdy or icmprx_irdy;
-	icmpdatatx_trdy <=
-		metatx_trdy when metatx_end='0' else
-		icmppltx_trdy;
+	icmpdata_irdy <= dll_irdy or net_irdy or icmprx_irdy;
+	rx_meta       <= icmprx_irdy;
 
-	buffer_e : block
+	buffer_b : block
 		signal miirx_end : std_logic;
 		signal commit    : std_logic;
 		signal rollback  : std_logic;
@@ -215,31 +215,30 @@ begin
 		generic map (
 			m => 8)
 		port map (
-			tp => tp1,
 			src_clk  => mii_clk,
 			src_frm  => icmpdata_frm,
 			src_irdy => icmpdata_irdy,
 			src_trdy => icmpdata_trdy,
 			src_end  => open,
-			src_tag  => rx_cy,
-			src_data => memrx_data,
+			src_tag  => src_tag,
+			src_data => src_data,
 
 			rollback => rollback,
 			commit   => commit,
 			avail    => tx_irdy,
 
 			dst_frm  => icmppltx_frm,
-			dst_irdy => icmpdatatx_trdy,
+			dst_irdy => icmppltx_trdy,
 			dst_trdy => icmppltx_irdy,
 			dst_end  => icmppltx_end,
-			dst_tag  => tx_cy,
-			dst_data => memtx_data);
+			dst_tag  => dst_tag,
+			dst_data => dst_data);
 
 	end block;
 
 	cksmtx_b : block
-		signal ci : std_logic;
-		signal co : std_logic;
+		signal ci   : std_logic;
+		signal co   : std_logic;
 		signal data : std_logic_vector(icmptx_data'range);
 		constant kk : std_logic_vector := (0 to icmptx_data'length-1 => '0');
 	begin
@@ -248,7 +247,7 @@ begin
 		begin
 			if rising_edge(mii_clk) then
 				if icmpcksmtx_frm='0' then
-					cy := tx_cy(0);
+					cy := tx_cy;
 				elsif icmpcksmtx_frm='1' then
 					if (icmppltx_irdy and icmptx_trdy)='1' then
 						cy := co;
@@ -279,20 +278,11 @@ begin
 		pl_data   => icmppltx_data,
 
 		icmpcksm_frm => icmpcksmtx_frm,
-		metatx_end => metatx_end,
+		metatx_end => tx_meta,
 		icmp_frm  => icmptx_frm,
 		icmp_irdy => icmptx_irdy,
 		icmp_trdy => icmptx_trdy,
 		icmp_end  => icmptx_end,
 		icmp_data => icmptx_data);
-
-	tp(2) <= icmppltx_frm;
-	tp(3) <= icmppltx_irdy;
-	tp(4) <= icmppltx_trdy;
-	tp(5) <= icmppltx_end;
-	tp(6) <= metatx_end;
-	tp(7) <=tp1(1);
-	tp(8) <=tp1(2);
-	tp(9) <=tp1(3);
 
 end;

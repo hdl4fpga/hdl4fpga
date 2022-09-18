@@ -34,7 +34,7 @@ entity fifo is
 		debug      : boolean := false;
 		async_mode : boolean := false;
 		max_depth  : natural;
-		mem_data   : std_logic_vector := (0 to 0 => '-');
+		mem_data   : std_logic_vector := (0 to 0 => '0');
 		latency    : natural := 1;
 		dst_offset : natural := 0;
 		src_offset : natural := 0;

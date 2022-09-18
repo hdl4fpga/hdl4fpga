@@ -55,9 +55,6 @@ architecture nuhs3adsp_graphics of testbench is
 
 	signal mii_refclk : std_logic;
 	signal mii_req  : std_logic := '0';
-	signal mii_req1 : std_logic := '0';
-	signal rep_req  : std_logic := '0';
-	signal ping_req : std_logic := '0';
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(0 to 4-1);
 	signal mii_txd  : std_logic_vector(0 to 4-1);
@@ -199,30 +196,28 @@ begin
 
 	rst <= '0', '1' after 300 ns;
 
---	mii_req  <= '0', '1' after 200 us, '0' after 206 us, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
-	ping_req  <= '0', '1' after 10 us,  '0' after 100 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
---	mii_req1 <= '0', '1' after 14.6 us, '0' after 19.0 us; --, '1' after 19.5 us; --, '0' after 219 us, '1' after 220 us;
---	process
---		variable x : natural := 0;
---	begin
---		wait for 145 us;
---		loop
---			if rep_req='1' then
---				if x > 1 then
---					wait;
---				end if;
---				rep_req <= '0' after 6 us;
---				wait;
---				x := x + 1;
---			else
---				rep_req <= '1' after 80 ns;
---			end if;
---		wait on rep_req;
---		end loop;
---	end process;
---	mii_req1  <= rep_req;
-	mii_req   <= '0';
-	mii_req1  <= '0';
+	process
+		variable x : natural := 0;
+	begin
+		mii_req <= '0';
+		wait for 10 us;
+		loop
+			if mii_req='1' then
+				wait on mii_rxdv;
+				if falling_edge(mii_rxdv) then
+					mii_req <= '0';
+					x := x + 1;
+					wait for 30 us;
+				end if;
+			else
+				if x > 1 then
+					wait;
+				end if;
+				mii_req <= '1';
+				wait on mii_req;
+			end if;
+		end loop;
+	end process;
 
 	htb_e : entity hdl4fpga.eth_tb
 	generic map (
@@ -242,10 +237,10 @@ begin
 		x"1702_0000ff_1603_0000_0000",
 		mii_data5 => x"0100" & x"00" & x"1702_0000ff_1603_8000_0000",
 		mii_frm1 => '0',
-		mii_frm2 => ping_req,
+		mii_frm2 => mii_req,
 		mii_frm3 => '0',
-		mii_frm4 => mii_req,
-		mii_frm5 => mii_req1,
+		mii_frm4 => '0',
+		mii_frm5 => '0',
 
 		mii_txc  => mii_rxc,
 		mii_txen => mii_rxdv,
