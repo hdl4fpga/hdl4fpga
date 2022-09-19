@@ -31,8 +31,8 @@ entity ml509 is
 	port (
 		user_clk       : in std_logic;
 
---		cfg_addr_out : in std_logic_vector(2-1 downto 0);
---		cpld_io_1 : in std_logic;
+		-- cfg_addr_out : in std_logic_vector(2-1 downto 0);
+		-- cpld_io_1 : in std_logic;
 
 		clk_27mhz_fpga : in std_logic := '-';
 		clk_33mhz_fpga : in std_logic := '-';
@@ -98,6 +98,8 @@ entity ml509 is
 		phy_txd        : out std_logic_vector(0 to 8-1);
 		phy_txer       : out std_logic;
 
+		iic_sda_video  : inout std_logic;
+		iic_scl_video  : out std_logic;
 		dvi_xclk_n     : out std_logic;
 		dvi_xclk_p     : out std_logic;
 		dvi_reset      : out std_logic;
@@ -191,6 +193,8 @@ entity ml509 is
 
 	attribute nodelay of ddr2_odt : signal is "true";
 
+	attribute loc of iic_sda_video  : signal is "T29";
+	attribute loc of iic_scl_video  : signal is "U27";
 	attribute loc of dvi_xclk_p : signal is "AL11";
 	attribute loc of dvi_xclk_n : signal is "AL10";
 	attribute loc of dvi_gpio1  : signal is "N30";

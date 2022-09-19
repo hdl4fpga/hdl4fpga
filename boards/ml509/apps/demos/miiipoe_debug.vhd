@@ -53,8 +53,9 @@ architecture miiipoe_debug of ml509 is
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
 		(id => modedebug,      timing => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
-		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    pll => (dcm_mul =>  1, dcm_div => 4)),
-		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    pll => (dcm_mul =>  2, dcm_div => 5)));
+		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    pll => (dcm_mul =>  2, dcm_div => 8)),
+		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    pll => (dcm_mul =>  2, dcm_div => 5)),
+		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   pll => (dcm_mul =>  3, dcm_div => 4)));
 
 	function videoparam (
 		constant id  : video_modes)
@@ -74,8 +75,9 @@ architecture miiipoe_debug of ml509 is
 		return tab(tab'left);
 	end;
 
-	constant video_mode : video_modes :=mode600p24bpp;
+	constant video_mode : video_modes :=mode720p24bpp;
 
+	signal sys_clk        : std_logic;
 	signal gtx_rst        : std_logic;
 	signal gtx_clk        : std_logic;
 	signal phy_rxclk_bufg : std_logic;
@@ -104,30 +106,21 @@ architecture miiipoe_debug of ml509 is
 	signal sin_irdy       : std_logic;
 	signal sin_data       : std_logic_vector(so_data'range);
 
-	signal tp  : std_logic_vector(1 to 32);
-	alias data : std_logic_vector(0 to 8-1) is tp(3 to 3+8-1);
+	signal tp             : std_logic_vector(1 to 32);
+	signal led : std_logic;
 
-	-----------------
-	-- Select link --
-	-----------------
+	constant mem_size     : natural := 8*(1024*8);
 
-	constant io_hdlc : natural := 0;
-	constant io_ipoe : natural := 1;
-
-	constant io_link : natural := io_hdlc;
-
-	constant mem_size  : natural := 8*(1024*8);
-
-	signal sys_clk : std_logic;
 begin
 
 	clkin_ibufg : ibufg
 	port map (
-		I => user_clk ,
+		I => user_clk,
 		O => sys_clk);
 
 	videodcm_b : block
-		signal clkfx_bufg : std_logic;
+		signal clk_fx : std_logic;
+		signal locked : std_logic;
 	begin
 	
 		dfs_i : dcm_base
@@ -138,14 +131,17 @@ begin
 			clkfx_multiply => videoparam(video_mode).pll.dcm_mul,
 			dfs_frequency_mode => "LOW")
 		port map (
-			rst    => '0',
+			rst    => gpio_sw_s,
 			clkfb  => '0',
 			clkin  => sys_clk,
-			clkfx  => clkfx_bufg);
+			clkfx  => clk_fx,
+			locked => locked);
 
+		gpio_led_c <= locked;
+		dvi_reset <= locked;
 		bufg_i : bufg
 		port map (
-			i => clkfx_bufg,
+			i => clk_fx,
 			o => video_clk);
 
 	end block;
@@ -154,14 +150,14 @@ begin
 		signal clk_fx : std_logic;
 		signal locked : std_logic;
 	begin
-		gtx_i : dcm_base
+		dfs_i : dcm_base
 		generic map  (
 			CLK_FEEDBACK   => "NONE",
 			clkin_period   => user_per*1.0e9,
 			clkfx_multiply => 5,
 			clkfx_divide   => 4)
 		port map (
-			rst    => '0',
+			rst    => gpio_sw_n,
 			clkin  => sys_clk,
 			clkfb  => '0',
 			clkfx  => clk_fx,
@@ -209,7 +205,7 @@ begin
 		signal miitx_end  : std_logic;
 		signal miitx_data : std_logic_vector(plrx_data'range);
 
-		signal pltx_frm   : std_logic;
+		signal pltx_frm   : std_logic := '0';
 		signal pltx_irdy  : std_logic;
 		signal pltx_trdy  : std_ulogic;
 		signal pltx_end   : std_logic;
@@ -223,8 +219,6 @@ begin
 
 		signal hxdv       : std_logic;
 		signal hxd        : std_logic_vector(mii_rxd'range);
-
-		signal htb_btn    : std_logic;
 
 	begin
 
@@ -264,18 +258,13 @@ begin
 			signal dst_trdy : std_logic;
 		begin
 
-			process (gpio_sw_c, hxdv, hxd, mii_rxc)
+			process (mii_rxc)
 				variable q : std_logic_vector(rxc_rxbus'range);
 			begin
 				if rising_edge(mii_rxc) then
 					q := mii_rxdv & mii_rxd;
-				end if;
-				case not gpio_sw_c is
-				when '1' =>
-					rxc_rxbus <= hxdv & hxd;
-				when others =>
 					rxc_rxbus <= q;
-				end case;
+				end if;
 			end process;
 
 			rxc2txc_e : entity hdl4fpga.fifo
@@ -294,7 +283,6 @@ begin
 				dst_irdy => dst_irdy,
 				dst_trdy => dst_trdy,
 				dst_data => txc_rxbus);
-
 			process (mii_txc)
 			begin
 				if rising_edge(mii_txc) then
@@ -303,7 +291,16 @@ begin
 					miirx_data <= txc_rxbus(1 to mii_rxd'length);
 				end if;
 			end process;
+			-- tp(1) <= miirx_frm;
 
+			process (tp(1))
+				variable q : std_logic := '0';
+			begin
+				if rising_edge(tp(1)) then
+					led <= q;
+					q := not q;
+				end if;
+			end process;
 
 		end block;
 
@@ -311,7 +308,7 @@ begin
 		begin
 			if rising_edge(mii_txc) then
 				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-					dhcpcd_req <= dhcpcd_rdy xor not gpio_sw_c;
+					-- dhcpcd_req <= dhcpcd_rdy xor not gpio_sw_c;
 				end if;
 			end if;
 		end process;
@@ -392,7 +389,6 @@ begin
 		video_vtsync => video_vs,
 		video_pixel  => video_pixel);
 
-
 	videoio_b : block
 		signal xclk : std_logic;
 	begin
@@ -400,8 +396,8 @@ begin
 		begin
 			if rising_edge(video_clk) then
 				dvi_de <= not video_blank;
-				dvi_h  <= video_hs;
-				dvi_v  <= video_vs;
+				dvi_h  <= not video_hs;
+				dvi_v  <= not video_vs;
 			end if;
 		end process;
 
@@ -413,9 +409,16 @@ begin
 			r  => '0',
 			d1 => '1',
 			d2 => '0',
-			q  => dvi_xclk_p);
+			q  => xclk);
 	
-		dvi_xclk_n <= '0';
+		diff_i: obufds
+		generic map (
+			iostandard => "LVDS_25")
+		port map (
+			i  => xclk,
+			o  => dvi_xclk_p,
+			ob => dvi_xclk_n);
+
 	
 		d_g : for i in dvi_d'range generate
 		begin
@@ -426,11 +429,14 @@ begin
 				s  => '0',
 				r  => '0',
 				d1 => '1', --video_pixel(i),
-				d2 => '1', --video_pixel(i+dvi_d'length),
+				d2 => '0', --video_pixel(i+dvi_d'length),
 				q  => dvi_d(i));
 	
 		end generate;
 
+		dvi_gpio1     <= '0';
+		iic_sda_video <= '0';
+		iic_scl_video <= '0';
 	end block;
 
 	phy_txc_gtxclk_i : oddr
@@ -462,14 +468,12 @@ begin
 	ddr2_dm    <= (others => 'Z');
 	ddr2_d     <= (others => 'Z');
 	ddr2_odt   <= (others => 'Z');
-	dvi_gpio1  <= '1';
-	dvi_reset  <= '0';
-	gpio_led_c <= '0';
+	-- gpio_led_c <= '0';
 	gpio_led_e <= '0';
 	gpio_led_n <= '0';
 	gpio_led_s <= '0';
 	gpio_led_w <= '0';
-	gpio_led <= (others => '0');
+	gpio_led <= (others => led);
 	bus_error <= (others => '0');
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';

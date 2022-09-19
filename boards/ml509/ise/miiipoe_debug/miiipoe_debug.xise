@@ -405,7 +405,7 @@
     <property xil_pn:name="DSP Utilization Ratio" xil_pn:value="100" xil_pn:valueState="default"/>
     <property xil_pn:name="Decoder Extraction" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Delay Values To Be Read from SDF" xil_pn:value="Setup Time" xil_pn:valueState="default"/>
-    <property xil_pn:name="Device" xil_pn:value="xc5vfx100t" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Device" xil_pn:value="xc5vlx110t" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Device Family" xil_pn:value="Virtex5" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Device Speed Grade/Select ABS Minimum" xil_pn:value="-1" xil_pn:valueState="default"/>
     <property xil_pn:name="Disable Detailed Package Model Insertion" xil_pn:value="false" xil_pn:valueState="default"/>
@@ -530,7 +530,7 @@
     <property xil_pn:name="Overwrite Compiled Libraries" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Pack I/O Registers into IOBs" xil_pn:value="Auto" xil_pn:valueState="default"/>
     <property xil_pn:name="Pack I/O Registers/Latches into IOBs" xil_pn:value="For Inputs and Outputs" xil_pn:valueState="non-default"/>
-    <property xil_pn:name="Package" xil_pn:value="ff1136" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Package" xil_pn:value="ff1136" xil_pn:valueState="default"/>
     <property xil_pn:name="Perform Advanced Analysis" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Perform Advanced Analysis Post Trace" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Perform Timing-Driven Packing and Placement" xil_pn:value="true" xil_pn:valueState="non-default"/>
@@ -661,6 +661,7 @@
     <property xil_pn:name="Working Directory" xil_pn:value="." xil_pn:valueState="non-default"/>
     <property xil_pn:name="Write Timing Constraints" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="XOR Collapsing" xil_pn:value="true" xil_pn:valueState="default"/>
+    <property xil_pn:name="iMPACT Project File" xil_pn:value="miiipoe_debug.ipf" xil_pn:valueState="non-default"/>
     <!--                                                                                  -->
     <!-- The following properties are for internal use only. These should not be modified.-->
     <!--                                                                                  -->

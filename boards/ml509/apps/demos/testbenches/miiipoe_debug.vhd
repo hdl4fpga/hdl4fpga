@@ -23,32 +23,59 @@
 
 use std.textio.all;
 
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-use ieee.std_logic_textio.all;
-
 library hdl4fpga;
 use hdl4fpga.std.all;
 
-architecture ml509_miiipoedebug of testbench is
+library ieee;
+use ieee.std_logic_textio.all;
 
-	signal rst      : std_logic := '1';
-	signal clk      : std_logic := '1';
+library micron;
 
-	signal led7     : std_logic;
-	signal sw1      : std_logic;
+architecture ml509_miiipoe_debug of testbench is
+	constant ddr_std  : positive := 1;
+
+	constant ddr_period : time := 6 ns;
+	constant bank_bits  : natural := 3;
+	constant addr_bits  : natural := 14;
+	constant cols_bits  : natural := 9;
+	constant data_bytes : natural := 8;
+	constant byte_bits  : natural := 8;
+	constant timer_dll  : natural := 9;
+	constant timer_200u : natural := 9;
+	constant data_bits  : natural := byte_bits*data_bytes;
+
+	signal reset_n    : std_logic;
+	signal rst        : std_logic;
+	signal led7       : std_logic;
+
+
+	signal clk_p : std_logic_vector(2-1 downto 0) := (others => '1');
+	signal clk_n : std_logic_vector(2-1 downto 0) := (others => '1');
+	signal cke   : std_logic_vector (2-1 downto 0) := (others => '1');
+	signal cs_n  : std_logic_vector (2-1 downto 0) := (others => '1');
+	signal ras_n : std_logic;
+	signal cas_n : std_logic;
+	signal we_n  : std_logic;
+	signal ba    : std_logic_vector (bank_bits-1 downto 0);
+	signal addr  : std_logic_vector (addr_bits-1 downto 0);
+	signal dm    : std_logic_vector(data_bytes-1 downto 0);
+	signal dq    : std_logic_vector (data_bytes*byte_bits-1 downto 0) := (others => 'Z');
+	signal dqs   : std_logic_vector (data_bytes-1 downto 0) := (others => '1');
+	signal dqs_n : std_logic_vector (data_bytes-1 downto 0) := (others => '1');
+	signal rdqs_n : std_logic_vector(dqs'range);
+	signal odt   : std_logic_vector(2-1 downto 0);
+
+	signal scl   : std_logic;
+	signal sda   : std_logic;
 
 	signal mii_refclk : std_logic;
-	signal mii_req  : std_logic := '0';
-
-	signal mii_rxc  : std_logic;
-	signal mii_rxdv : std_logic;
-	signal mii_rxd  : std_logic_vector(0 to 4-1);
-
-	signal mii_txc  : std_logic;
-	signal mii_txen : std_logic;
-	signal mii_txd  : std_logic_vector(0 to 4-1);
+	signal mii_req    : std_logic;
+	signal mii_rxdv   : std_logic;
+	signal mii_rxd    : std_logic_vector(0 to 8-1);
+	signal mii_txd    : std_logic_vector(0 to 8-1);
+	signal mii_txc    : std_logic;
+	signal mii_rxc    : std_logic;
+	signal mii_txen   : std_logic;
 
 	component ml509 is
 		generic (
@@ -107,11 +134,11 @@ architecture ml509_miiipoedebug of testbench is
 			gpio_led_n     : out std_logic;
 			gpio_led_s     : out std_logic;
 			gpio_led_w     : out std_logic;
-			gpio_sw_c      : in std_logic := 'Z';
-			gpio_sw_e      : in std_logic := 'Z';
-			gpio_sw_n      : in std_logic := 'Z';
-			gpio_sw_s      : in std_logic := 'Z';
-			gpio_sw_w      : in std_logic := 'Z';
+			gpio_sw_c      : in std_logic := '0';
+			gpio_sw_e      : in std_logic := '0';
+			gpio_sw_n      : in std_logic := '0';
+			gpio_sw_s      : in std_logic := '0';
+			gpio_sw_w      : in std_logic := '0';
 	
 --			hdr1           : std_logic_vector(1 to 32):= (others => '-');
 --			hdr2_diff_p    : std_logic_vector(0 to 4-1) := (others => 'Z');
@@ -157,8 +184,27 @@ architecture ml509_miiipoedebug of testbench is
 
 	end component;
 
+	component ddr2_model is
+		port (
+			ck    : in std_logic;
+			ck_n  : in std_logic;
+			cke   : in std_logic;
+			cs_n  : in std_logic;
+			ras_n : in std_logic;
+			cas_n : in std_logic;
+			we_n  : in std_logic;
+			ba    : in std_logic_vector(1 downto 0);
+			addr  : in std_logic_vector(addr_bits-1 downto 0);
+			dm_rdqs : in std_logic_vector(2-1 downto 0);
+			dq    : inout std_logic_vector(16-1 downto 0);
+			dqs   : inout std_logic_vector(2-1 downto 0);
+			dqs_n : inout std_logic_vector(2-1 downto 0);
+			rdqs_n : inout std_logic_vector(2-1 downto 0);
+			odt   : in std_logic);
+	end component;
 
-	signal datarx_null :  std_logic_vector(mii_rxd'range);
+	constant delay : time := 1 ns;
+
 	signal xtal   : std_logic := '0';
 	signal xtal_n : std_logic := '0';
 	signal xtal_p : std_logic := '0';
@@ -167,22 +213,98 @@ architecture ml509_miiipoedebug of testbench is
 	signal clk_fpga_n : std_logic := '0';
 	signal clk_fpga_p : std_logic := '0';
 
+	signal datarx_null :  std_logic_vector(mii_rxd'range);
+	signal sw : std_logic;
 begin
+
+	rst   <= '1', '0' after 1.1 us;
+	sw <= '0', '1' after 10 us, '0' after 15 us, '1' after 20 us;
+	reset_n <= not rst;
+
+	xtal   <= not xtal after 5 ns;
+	xtal_p <= not xtal after 5 ns;
+	xtal_n <=     xtal after 5 ns;
+
+	clk_fpga <= not clk_fpga after 2.5 ns;
+	clk_fpga_p <= clk_fpga;
+	clk_fpga_n <= not clk_fpga;
 
 	mii_rxc <= mii_refclk;
 	mii_txc <= mii_refclk;
 
-	clk <= not clk after 25 ns;
+	process
+		variable x : natural := 0;
+	begin
+		mii_req <= '0';
+		wait for 10 us;
+		loop
+			if mii_req='1' then
+				wait on mii_rxdv;
+				if falling_edge(mii_rxdv) then
+					mii_req <= '0';
+					x := x + 1;
+					wait for 30 us;
+				end if;
+			else
+				if x > 1 then
+					wait;
+				end if;
+				mii_req <= '1';
+				wait on mii_req;
+			end if;
+		end loop;
+	end process;
 
-	rst <= '0', '1' after 300 ns;
-
-	mii_req <= '0', '1' after 1 us;
 	htb_e : entity hdl4fpga.eth_tb
+	generic map (
+		debug =>false)
 	port map (
-		mii_frm1 => '0',
+		mii_data4 =>
+		x"01007e" &
+		x"18ff"   &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"18ff" &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"18ff" &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"18ff" &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"1702_0003ff_1603_0007_3000",
+		mii_data5 => x"010000_1702_0003ff_1603_8007_3000",
+--		mii_data4 => x"01007e_1702_000030_1603_8000_07d0",
+		mii_frm1 => mii_req,
 		mii_frm2 => '0',
 		mii_frm3 => '0',
-		mii_frm4 => mii_req,
+		mii_frm4 => '0',
+		mii_frm5 => '0',
 
 		mii_txc  => mii_rxc,
 		mii_txen => mii_rxdv,
@@ -231,19 +353,18 @@ begin
 
 end;
 
-configuration nuhs3adsp_miiipoedebug_structure_md of testbench is
-	for nuhs3debug_miiipoedebug
-		for all : nuhs3adsp
-			use entity work.nuhs3adsp(structure);
+configuration ml509_miiipoedebug_structure_md of testbench is
+	for ml509_miiipoe_debug
+		for all: ml509
+			use entity work.ml509(structure);
 		end for;
 	end for;
 end;
 
-configuration nuhs3adsp_miiipoedebug_md of testbench is
-	for nuhs3debug_miiipoedebug
-		for all : nuhs3adsp
-			use entity work.nuhs3adsp(miiipoe_debug);
+configuration ml509_miiipoedebug_md of testbench is
+	for ml509_miiipoe_debug
+		for all: ml509
+			use entity work.ml509(miiipoe_debug);
 		end for;
 	end for;
 end;
-

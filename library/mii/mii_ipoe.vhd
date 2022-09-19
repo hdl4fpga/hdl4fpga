@@ -195,7 +195,6 @@ architecture def of mii_ipoe is
 	signal arp_req       : std_logic;
 	signal arp_rdy       : std_logic;
 
-	signal	tp1            : std_logic_vector(1 to 32);
 begin
 
 	process (pltx_frm, pltx_irdy, tagtx_trdy, mii_clk)
@@ -253,6 +252,7 @@ begin
 			pl_trdy    => open,
 			fcs_sb     => dll_sb,
 			fcs_vld    => dll_vld);
+	tp(1) <= dll_frm;
 
 
 		buffer_p : process (mii_clk)
@@ -271,8 +271,6 @@ begin
 
 	end block;
 
-	tp(9 to 16) <= dllrx_data;
-	tp(17) <= dllrx_frm;
 
 	bcstcmp_b : block
 		constant all1s : std_logic_vector := (0 to dllrx_data'length-1 => '1');
@@ -378,8 +376,6 @@ begin
 		signal dev_csc : std_logic;
 	begin
 
-		tp(5 to 6) <= tp1(1 to 2);
---		tp(7) <= dev_csc;
 		dev_csc <= not miirx_frm when hdplx='1' else '1';
 		dev_req <= arptx_frm & ipv4tx_frm;
 		arbiter_e : entity hdl4fpga.arbiter
@@ -527,7 +523,6 @@ begin
 	generic map (
 		default_ipv4a => default_ipv4a)
 	port map (
-		tp => tp1,
 		mii_clk       => mii_clk,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
@@ -622,9 +617,6 @@ begin
 		dst_trdy  => fifoo_trdy,
 		dst_end   => fifoo_end,
 		dst_data  => fifo_data);
-	tp(2) <= tag_frm;
-	tp(3) <= fifoo_trdy;
-	tp(4) <= fifoo_end;
 
 	tag_frm_p : process (mii_clk)
 		variable frm : bit;

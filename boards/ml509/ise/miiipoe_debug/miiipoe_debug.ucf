@@ -31,8 +31,40 @@ OFFSET = IN 4 ns VALID 8 ns BEFORE  phy_rxclk_bufg falling;
 NET "phy_txclk" TNM_NET = phy_txclk;
 TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 8 ns HIGH 50%;
 
+NET "gpio_led[0]"    IOSTANDARD = LVCMOS25;
+NET "gpio_led[1]"    IOSTANDARD = LVCMOS25;
+NET "gpio_led[2]"    IOSTANDARD = LVCMOS25;
+NET "gpio_led[4]"    IOSTANDARD = LVCMOS25;
+NET "gpio_sw_c"      IOSTANDARD = LVCMOS25;
+NET "gpio_sw_n"      IOSTANDARD = LVCMOS25;
+NET "gpio_sw_s"      IOSTANDARD = LVCMOS25;
+NET "gpio_sw_e"      IOSTANDARD = LVCMOS25;
+NET "gpio_sw_w"      IOSTANDARD = LVCMOS25;
 
-#NET "gpio_led[3]" IOSTANDARD = SSTL18_II;
-#NET "gpio_led[5]" IOSTANDARD = SSTL18_II;
-#NET "gpio_led[6]" IOSTANDARD = SSTL18_II;
-#NET "gpio_led[7]" IOSTANDARD = SSTL18_II;
+# NET "clk_fpga_p"     IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
+# NET "clk_fpga_n"     IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
+NET "phy_col"        IOSTANDARD = LVCMOS25;
+NET "phy_crs"        IOSTANDARD = LVCMOS25;
+NET "phy_int"        IOSTANDARD = LVCMOS25;
+NET "phy_mdc"        IOSTANDARD = LVCMOS25;
+NET "phy_mdio"       IOSTANDARD = LVCMOS25;
+NET "phy_reset"      IOSTANDARD = LVCMOS25;
+NET "phy_rxclk"      IOSTANDARD = LVCMOS25;
+NET "phy_rxctl_rxdv" IOSTANDARD = LVCMOS25;
+NET "phy_rxd[*]"     IOSTANDARD = LVCMOS25;
+NET "phy_rxer"       IOSTANDARD = LVCMOS25;
+NET "phy_txc_gtxclk" IOSTANDARD = LVCMOS25;
+NET "phy_txclk"      IOSTANDARD = LVCMOS25;
+NET "phy_txctl_txen" IOSTANDARD = LVCMOS25;
+NET "phy_txd[*]"     IOSTANDARD = LVCMOS25;
+NET "phy_txer"       IOSTANDARD = LVCMOS25;
+
+
+NET "dvi_xclk_p"     IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
+NET "dvi_xclk_n"     IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
+NET "dvi_gpio1"      IOSTANDARD = LVCMOS25;
+NET "dvi_reset"      IOSTANDARD = LVCMOS25;
+NET "dvi_d[*]"       IOSTANDARD = LVCMOS25;
+NET "dvi_de"         IOSTANDARD = LVCMOS25;
+NET "dvi_v"          IOSTANDARD = LVCMOS25;
+NET "dvi_h"          IOSTANDARD = LVCMOS25;
