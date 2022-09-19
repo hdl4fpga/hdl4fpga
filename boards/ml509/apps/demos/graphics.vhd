@@ -40,23 +40,23 @@ use unisim.vcomponents.all;
 architecture graphics of ml509 is
 
 	type app_profiles is (
-		sdr200MHz_1080p,
-		sdr225MHz_1080p,
-		sdr250MHz_1080p,
-		sdr275MHz_1080p,
-		sdr300MHz_1080p,
-		sdr333MHz_1080p);
+		sdr200MHz_600p,
+		sdr225MHz_600p,
+		sdr250MHz_600p,
+		sdr275MHz_600p,
+		sdr300MHz_600p,
+		sdr333MHz_600p);
 
-	constant app_profile : app_profiles := sdr200Mhz_1080p;
+	constant app_profile : app_profiles := sdr200Mhz_600p;
 
 	type profileparam_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparam_vector := (
-		sdr200MHz_1080p => (io_ipoe, sdram200MHz, mode1080p24bpp),
-		sdr225MHz_1080p => (io_ipoe, sdram225MHz, mode1080p24bpp),
-		sdr250MHz_1080p => (io_ipoe, sdram250MHz, mode1080p24bpp),
-		sdr275MHz_1080p => (io_ipoe, sdram275MHz, mode1080p24bpp),
-		sdr300MHz_1080p => (io_ipoe, sdram300MHz, mode1080p24bpp),
-		sdr333MHz_1080p => (io_ipoe, sdram333MHz, mode1080p24bpp));
+		sdr200MHz_600p => (io_ipoe, sdram200MHz, mode600p24bpp),
+		sdr225MHz_600p => (io_ipoe, sdram225MHz, mode600p24bpp),
+		sdr250MHz_600p => (io_ipoe, sdram250MHz, mode600p24bpp),
+		sdr275MHz_600p => (io_ipoe, sdram275MHz, mode600p24bpp),
+		sdr300MHz_600p => (io_ipoe, sdram300MHz, mode600p24bpp),
+		sdr333MHz_600p => (io_ipoe, sdram333MHz, mode600p24bpp));
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -72,7 +72,8 @@ architecture graphics of ml509 is
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
 		(id => modedebug,      timing => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
-		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)));
+		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    pll => (dcm_mul =>  1, dcm_div => 4)),
+		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    pll => (dcm_mul =>  2, dcm_div => 5)));
 
 	function videoparam (
 		constant id  : video_modes)
@@ -143,7 +144,7 @@ architecture graphics of ml509 is
 
 	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
-	constant sdram_tcp    : real := (real(sdram_params.pll.dcm_div)*sys_per)/real(sdram_params.pll.dcm_mul);
+	constant sdram_tcp    : real := (real(sdram_params.pll.dcm_div)*user_per)/real(sdram_params.pll.dcm_mul);
 
 	signal sys_clk        : std_logic;
 
@@ -281,10 +282,10 @@ begin
 			IB => clk_fpga_n,
 			O  => iod_clk);
 	
-		process (gpio_sw_c, iod_clk)
+		process (gpio_sw_n, iod_clk)
 			variable tmr : unsigned(0 to 8-1) := (others => '0');
 		begin
-			if gpio_sw_c='1' then
+			if gpio_sw_n='1' then
 				tmr := (others => '0');
 			elsif rising_edge(iod_clk) then
 				if tmr(0)='0' then
@@ -303,23 +304,50 @@ begin
 		sys_rst <= not iod_rdy;
 	end block;
 
+	videodcm_b : block
+		signal clkfx_bufg : std_logic;
+	begin
+	
+		dfs_i : dcm_base
+		generic map (
+			clk_feedback   => "NONE",
+			clkin_period   => user_per*1.0e9,
+			clkfx_divide   => videoparam(video_mode).pll.dcm_div,
+			clkfx_multiply => videoparam(video_mode).pll.dcm_mul,
+			dfs_frequency_mode => "LOW")
+		port map (
+			rst    => '0',
+			clkfb  => '0',
+			clkin  => sys_clk,
+			clkfx  => clkfx_bufg);
+
+		bufg_i : bufg
+		port map (
+			i => clkfx_bufg,
+			o => video_clk);
+
+	end block;
+
 	dcm_b : block
 	begin
 
 		gtx_b : block
 			signal gtx_clk_bufg : std_logic;
+			signal gtx_lck : std_logic;
 		begin
 			gtx_i : dcm_base
 			generic map  (
 				CLK_FEEDBACK   => "NONE",
-				clkin_period   => sys_per*1.0e9,
+				clkin_period   => user_per*1.0e9,
 				clkfx_multiply => 5,
 				clkfx_divide   => 4)
 			port map (
 				rst    => '0',
 				clkin  => sys_clk,
 				clkfb  => '0',
-				clkfx  => gtx_clk_bufg);
+				clkfx  => gtx_clk_bufg, 
+				locked => gtx_lck);
+			gtx_rst <= not gtx_lck;
 
 			bufg_i : bufg
 			port map (
@@ -341,7 +369,7 @@ begin
 				dfs_i : dcm_base
 				generic map (
 					clk_feedback   => "NONE",
-					clkin_period   => sys_per*1.0e9,
+					clkin_period   => user_per*1.0e9,
 					clkfx_divide   => sdram_params.pll.dcm_div,
 					clkfx_multiply => sdram_params.pll.dcm_mul,
 					dfs_frequency_mode => "HIGH")
@@ -487,13 +515,18 @@ begin
 		end block;
 
 		dhcp_p : process(mii_txc)
+			variable q : std_logic;
 		begin
 			if rising_edge(mii_txc) then
 				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-			--		dhcpcd_req <= dhcpcd_rdy xor not sw1;
+					if q='0' and gpio_sw_c='1' then
+						dhcpcd_req <= not dhcpcd_rdy;
+					end if;
 				end if;
+				q := gpio_sw_c;
 			end if;
 		end process;
+		gpio_led_c<= gpio_sw_c;
 
 		udpdaisy_b : block
 			signal udpsi_frm  : std_logic;
@@ -612,6 +645,9 @@ begin
 
 		video_clk     => video_clk,
 		video_shift_clk => video_shf_clk,
+		video_hzsync => video_hzsync,
+		video_vtsync => video_vtsync,
+		video_blank  => video_blank,
 		video_pixel   => video_pixel,
 		dvid_crgb     => dvid_crgb,
 
@@ -649,6 +685,55 @@ begin
 		ctlrphy_sto   => ctlrphy_sto,
 		ctlrphy_sti   => ctlrphy_sti,
 		tp => open);
+
+	videoio_b : block
+		signal xclk : std_logic;
+	begin
+		process (video_clk)
+		begin
+			if rising_edge(video_clk) then
+				dvi_de <= not video_blank;
+				dvi_h  <= video_hzsync;
+				dvi_v  <= video_vtsync;
+			end if;
+		end process;
+
+		xclkp_i : oddr
+		port map (
+			c => video_clk,
+			ce => '1',
+			s  => '0',
+			r  => '0',
+			d1 => '1',
+			d2 => '0',
+			q  => dvi_xclk_p);
+	
+		-- xclkn_i : oddr
+		-- port map (
+		-- 	c => video_clk,
+		-- 	ce => '1',
+		-- 	s  => '0',
+		-- 	r  => '0',
+		-- 	d1 => '0',
+		-- 	d2 => '1',
+		-- 	q  => dvi_xclk_n);
+		dvi_xclk_n <= '0';
+	
+		d_g : for i in dvi_d'range generate
+		begin
+			oddr_i : oddr
+			port map (
+				c => video_clk,
+				ce => '1',
+				s  => '0',
+				r  => '0',
+				d1 => '1', --video_pixel(i),
+				d2 => '1', --video_pixel(i+dvi_d'length),
+				q  => dvi_d(i));
+	
+		end generate;
+
+	end block;
 
 	gear_g : for i in 1 to CMMD_GEAR-1 generate
 		ctlrphy_cke(i) <= ctlrphy_cke(0);
@@ -766,7 +851,7 @@ begin
 		d2 => '1',
 		q  => phy_txc_gtxclk);
 	
-	ddriob_b : block
+	ddrio_b : block
 	begin
 
 --		ddr2_scl <= '0';
@@ -808,15 +893,20 @@ begin
 
 	dvi_gpio1  <= '1';
 	dvi_reset  <= '0';
-	dvi_xclk_p <= 'Z';
-	dvi_xclk_n <= 'Z';
-	dvi_v      <= 'Z';
-	dvi_h      <= 'Z';
-	dvi_de     <= 'Z';
-	dvi_d      <= (others => 'Z');
+	-- dvi_xclk_p <= 'Z';
+	-- dvi_xclk_n <= 'Z';
+	-- dvi_v      <= 'Z';
+	-- dvi_h      <= 'Z';
+	-- dvi_de     <= 'Z';
+	-- dvi_d      <= (others => 'Z');
 
+	-- gpio_led_c <= '0';
+	gpio_led_e <= '0';
+	gpio_led_n <= '0';
+	gpio_led_s <= '0';
+	gpio_led_w <= '0';
 	gpio_led <= (others => '0');
-	bus_error <= (others => 'Z');
+	bus_error <= (others => '0');
 	fpga_diff_clk_out_p <= 'Z';
 	fpga_diff_clk_out_n <= 'Z';
 
