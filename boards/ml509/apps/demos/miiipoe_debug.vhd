@@ -80,14 +80,14 @@ architecture miiipoe_debug of ml509 is
 		return tab(tab'left);
 	end;
 
-	constant video_mode : video_modes :=mode1080p24bpp;
+	constant video_mode : video_modes :=mode600p24bpp;
 
 	signal sys_clk        : std_logic;
 	signal gtx_rst        : std_logic;
 	signal gtx_clk        : std_logic;
 	signal phy_rxclk_bufg : std_logic;
 	signal phy_txclk_bufg : std_logic;
-	alias  mii_txc        : std_logic is phy_txclk_bufg;
+	alias  mii_txc        : std_logic is gtx_clk;
 
 	signal video_clk      : std_logic;
 	signal video_hs       : std_logic;
@@ -181,10 +181,10 @@ begin
 		i => phy_rxclk,
 		o => phy_rxclk_bufg);
 
-	phy_txclk_bufg_i : bufg
-	port map (
-		i => phy_txclk,
-		o => phy_txclk_bufg);
+	-- phy_txclk_bufg_i : bufg
+	-- port map (
+	-- 	i => phy_txclk,
+	-- 	o => phy_txclk_bufg);
 
 	ipoe_b : block
 
@@ -288,6 +288,7 @@ begin
 				dst_irdy => dst_irdy,
 				dst_trdy => dst_trdy,
 				dst_data => txc_rxbus);
+
 			process (mii_txc)
 			begin
 				if rising_edge(mii_txc) then
@@ -296,7 +297,6 @@ begin
 					miirx_data <= txc_rxbus(1 to mii_rxd'length);
 				end if;
 			end process;
-			-- tp(1) <= miirx_frm;
 
 			process (tp(1))
 				variable q : std_logic := '0';
@@ -370,10 +370,21 @@ begin
 			end if;
 		end process;
 
+		-- sin_clk   <= mii_txc;
+		-- sin_frm   <= miitx_frm;
+		-- sin_irdy  <= miitx_irdy and miitx_trdy;
+		-- sin_data  <= miitx_data;
+
 		sin_clk   <= mii_txc;
-		sin_frm   <= miitx_frm;
-		sin_irdy  <= miitx_irdy and miitx_trdy;
-		sin_data  <= miitx_data;
+		sin_frm   <= miirx_frm;
+		sin_irdy  <= '1';
+		sin_data  <= miirx_data;
+
+		-- sin_clk   <= mii_rxc;
+		-- sin_frm   <= mii_rxdv;
+		-- sin_irdy  <= '1';
+		-- sin_data  <= mii_rxd;
+
 	end block;
 
 	ser_debug_e : entity hdl4fpga.ser_debug

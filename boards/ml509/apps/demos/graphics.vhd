@@ -243,11 +243,11 @@ architecture graphics of ml509 is
 	signal iod_rst        : std_logic;
 
 	signal phy_rxclk_bufg : std_logic;
-	signal phy_txclk_bufg : std_logic;
+	-- signal phy_txclk_bufg : std_logic;
 
-	alias  mii_txc        : std_logic is phy_txclk_bufg;
-	alias  sio_clk        : std_logic is phy_txclk_bufg;
-	alias  dmacfg_clk     : std_logic is phy_txclk_bufg;
+	alias  mii_txc        : std_logic is gtx_clk;
+	alias  sio_clk        : std_logic is gtx_clk;
+	alias  dmacfg_clk     : std_logic is gtx_clk;
 
 	signal tp_delay       : std_logic_vector(WORD_SIZE/BYTE_SIZE*6-1 downto 0);
 	signal tp_bit         : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
@@ -441,10 +441,10 @@ begin
 		i => phy_rxclk,
 		o => phy_rxclk_bufg);
 
-	phy_txclk_bufg_i : bufg
-	port map (
-		i => phy_txclk,
-		o => phy_txclk_bufg);
+	-- phy_txclk_bufg_i : bufg
+	-- port map (
+	-- 	i => phy_txclk,
+	-- 	o => phy_txclk_bufg);
 
 	ipoe_b : block
 
