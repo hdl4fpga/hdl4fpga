@@ -454,8 +454,8 @@ begin
 		end generate;
 
 		dvi_gpio1     <= 'Z';
-		iic_sda_video <= 'Z';
-		iic_scl_video <= '0';
+		-- iic_sda_video <= 'Z';
+		-- iic_scl_video <= '0';
 	end block;
 
 	phy_txc_gtxclk_i : oddr

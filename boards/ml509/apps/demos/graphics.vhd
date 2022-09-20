@@ -907,5 +907,8 @@ begin
 	gpio_led_w <= '0';
 	gpio_led <= (others => '0');
 	bus_error <= (others => '0');
+	hdr1 <= (others => 'Z');
+	-- iic_sda_video <= 'Z';
+	-- iic_scl_video <= 'Z';
 
 end;

@@ -52,6 +52,9 @@ TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 8 ns HIGH 50%;
 # TIMESPEC TS_r2f_ddr2ddr    = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
 # TIMESPEC TS_f2f_ddr2gtx    = FROM FFS_ddrsclk0  TO FFS_gtxclk     TIG;
 
+# NET "iic_sda_video" IOB=TRUE | IOSTANDARD = SSTL18_II;
+# NET "iic_scl_video" IOB=TRUE | IOSTANDARD = SSTL18_II;
+
 NET "clk_fpga_p"    IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
 NET "clk_fpga_n"    IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
 NET "ddr2_clk_p[*]" IOB=TRUE | IOSTANDARD = DIFF_SSTL18_II;
