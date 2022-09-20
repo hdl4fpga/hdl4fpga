@@ -37,7 +37,11 @@ use unisim.vcomponents.all;
 
 architecture miiipoe_debug of ml509 is
 
-	constant sys_freq : real := 100.0e6;
+	alias red   : std_logic is hdr1(0);
+	alias green : std_logic is hdr1(1);
+	alias blue  : std_logic is hdr1(2);
+	alias vs    : std_logic is hdr1(3);
+	alias hs    : std_logic is hdr1(4);
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -52,11 +56,11 @@ architecture miiipoe_debug of ml509 is
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,     timing => pclk_debug,             pll => (dcm_mul => 4, dcm_div => 2)),
-		(id => mode480p24bpp, timing => pclk25_00m640x480at60,  pll => (dcm_mul => 2, dcm_div => 8)),
-		(id => mode600p24bpp, timing => pclk40_00m800x600at60,  pll => (dcm_mul => 2, dcm_div => 5)),
-		(id => mode720p24bpp, timing => pclk75_00m1280x720at60, pll => (dcm_mul => 3, dcm_div => 4)),
-		(id => mode1080r24bpp, timing => pclk140_00m1920x1080at60, pll => (dcm_mul => 7, dcm_div => 5)));
+		(id => modedebug,      timing => pclk_debug,               pll => (dcm_mul => 4, dcm_div => 2)),
+		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    pll => (dcm_mul => 2, dcm_div => 8)),
+		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    pll => (dcm_mul => 2, dcm_div => 5)),
+		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   pll => (dcm_mul => 3, dcm_div => 4)),
+		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, pll => (dcm_mul => 3, dcm_div => 2)));
 
 	function videoparam (
 		constant id  : video_modes)
@@ -76,7 +80,7 @@ architecture miiipoe_debug of ml509 is
 		return tab(tab'left);
 	end;
 
-	constant video_mode : video_modes :=mode1080r24bpp;
+	constant video_mode : video_modes :=mode1080p24bpp;
 
 	signal sys_clk        : std_logic;
 	signal gtx_rst        : std_logic;
@@ -396,6 +400,9 @@ begin
 		process (video_clk)
 		begin
 			if rising_edge(video_clk) then
+				hs <= video_hs;
+				vs <= video_vs;
+				(red, green, blue) <= video_pixel;
 				dvi_de <= not video_blank;
 				dvi_h  <= not video_hs;
 				dvi_v  <= not video_vs;
@@ -476,8 +483,6 @@ begin
 	gpio_led_w <= '0';
 	gpio_led <= (others => led);
 	bus_error <= (others => '0');
-	fpga_diff_clk_out_p <= 'Z';
-	fpga_diff_clk_out_n <= 'Z';
 
 end;
 

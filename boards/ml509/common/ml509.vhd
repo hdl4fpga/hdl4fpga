@@ -56,17 +56,6 @@ entity ml509 is
 		-- ddr2_scl       : out std_logic;
 		-- ddr2_sda       : in  std_logic;
 
-		-- fan_alert      : out std_logic;
-
-		fpga_diff_clk_out_p : out std_logic;
-		fpga_diff_clk_out_n : out std_logic;
-		-- fpga_rotary_inca : in std_logic;
-		-- fpga_rotary_incb : in std_logic;
-		-- fpga_rotary_push : in std_logic;
-		fpga_serial_rx : in  std_logic_vector(1 to 2);
-		-- fpga_serial_tx : out std_logic_vector(1 to 2);
-
-		-- gpio_dip_sw    : in std_logic_vector(8 downto 1);
 		bus_error      : out std_logic_vector(2 downto 1);
 		gpio_led       : out std_logic_vector(8-1 downto 0);
 		gpio_led_c     : out std_logic;
@@ -98,6 +87,8 @@ entity ml509 is
 		phy_txd        : out std_logic_vector(0 to 8-1);
 		phy_txer       : out std_logic;
 
+		hdr1           : inout std_logic_vector(0 to 5-1) := (others => 'Z');
+
 		iic_sda_video  : inout std_logic;
 		iic_scl_video  : out std_logic;
 		dvi_xclk_n     : out std_logic;
@@ -108,30 +99,6 @@ entity ml509 is
 		dvi_d          : out std_logic_vector(12-1 downto 0);
 		dvi_v          : inout std_logic;
 		dvi_h          : inout std_logic);
-
-		-- hdr1           : std_logic_vector(1 to 32):= (others => '-');
-		-- hdr2_diff_p    : std_logic_vector(0 to 4-1);
-		-- hdr2_diff_n    : std_logic_vector(0 to 4-1);
-		-- hdr2_sm_p      : std_logic_vector(4 to 16-1);
-		-- hdr2_sm_n      : std_logic_vector(4 to 16-1);
-
-		-- lcd_fpga_db    : std_logic_vector(8-1 downto 4);
-
-		-- sram_bw        : std_logic_vector(4-1 downto 0);
-		-- sram_d         : std_logic_vector(32-1 downto 16);
-		-- sram_dqp       : std_logic_vector(4-1 downto 0);
-		-- sram_flash_a   : std_logic_vector(22-1 downto 0);
-		-- sram_flash_d   : std_logic_vector(16-1 downto 0);
-
-		-- sysace_mpa     : std_logic_vector(7-1 downto 0);
-		-- sysace_usb_d   : std_logic_vector(16-1 downto 0);
-
-		-- trc_ts         : std_logic_vector(6 downto 3);
-
-		-- vga_in_blue    : in std_logic_vector(8-1 downto 0);
-		-- vga_in_green   : in std_logic_vector(8-1 downto 0);
-		-- vga_in_red     : in std_logic_vector(8-1 downto 0);
-	
 
 	constant user_per   : real := 10.0e-9;
 
@@ -174,6 +141,8 @@ entity ml509 is
 	attribute loc of phy_txd    : signal is "AF11 AE11 AH9 AH10 AG8 AH8 AG10 AG11";
 	attribute loc of phy_txer   : signal is "AJ9";
 
+	attribute loc of hdr1       : signal is "H33 F34 H34 G33 G32 H32 J32 J34";
+
 	attribute loc of ddr2_clk_p : signal is "E28 AK29";
 	attribute loc of ddr2_clk_n : signal is "F28 AJ29";
 	attribute loc of ddr2_cs    : signal is "J29 L29";
@@ -204,81 +173,4 @@ entity ml509 is
 	attribute loc of dvi_v          : signal is "AM11";
 	attribute loc of dvi_h          : signal is "AM12";
 
-	-- attribute loc of cfg_addr_out   : signal is "AE13 AE12";
-	-- attribute loc of cpld_io_1      : signal is "W10";
-
-	-- attribute iostandard of ddr2_clk_p : signal is "DIFF_SSTL18_II";
-	-- attribute iostandard of ddr2_clk_n : signal is "DIFF_SSTL18_II";
-	-- attribute iostandard of ddr2_dqs_p : signal is "DIFF_SSTL18_II_DCI";
-	-- attribute iostandard of ddr2_dqs_n : signal is "DIFF_SSTL18_II_DCI";
-	-- attribute iostandard of ddr2_d     : signal is "SSTL18_II_DCI";
-	-- attribute iostandard of ddr2_dm    : signal is "SSTL18_II";
-	-- attribute iostandard of ddr2_we    : signal is "SSTL18_II";
-	-- attribute iostandard of ddr2_cas   : signal is "SSTL18_II";
-	-- attribute iostandard of ddr2_ras   : signal is "SSTL18_II";
-	-- attribute iostandard of ddr2_cs    : signal is "SSTL18_II";
-	-- attribute iostandard of ddr2_cke   : signal is "SSTL18_II";
-	-- attribute iostandard of ddr2_ba    : signal is "SSTL18_II";
-	-- attribute iostandard of ddr2_a     : signal is "SSTL18_II";
-	-- attribute iostandard of ddr2_odt   : signal is "SSTL18_II";
-	-- attribute iostandard of ddr2_sda   : signal is "SSTL18_II";
-	-- attribute iostandard of ddr2_scl   : signal is "SSTL18_II";
-
-	-- attribute nodelay of ddr2_clk_p : signal is "true";
-	-- attribute nodelay of ddr2_clk_n : signal is "true";
-	-- attribute nodelay of ddr2_cke   : signal is "true";
-	-- attribute nodelay of ddr2_cs    : signal is "true";
-	-- attribute nodelay of ddr2_ras   : signal is "true";
-	-- attribute nodelay of ddr2_cas   : signal is "true";
-	-- attribute nodelay of ddr2_we    : signal is "true";
-	-- attribute nodelay of ddr2_ba    : signal is "true";
-	-- attribute nodelay of ddr2_a     : signal is "true";
-	-- attribute nodelay of ddr2_dm    : signal is "true";
-	-- attribute nodelay of ddr2_dqs_p : signal is "true";
-	-- attribute nodelay of ddr2_dqs_n : signal is "true";
-
-	attribute loc of fpga_diff_clk_out_n : signal is "J21";
-	attribute loc of fpga_diff_clk_out_p : signal is "J20";
-	-- attribute loc of fpga_rotary_inca : signal is "AH30";
-	-- attribute loc of fpga_rotary_incb : signal is "AG30";
-	-- attribute loc of fpga_rotary_push : signal is "AH29";
-	attribute loc of fpga_serial_rx : signal is "AG15 G10";
-	-- attribute loc of fpga_serial_tx : signal is "AG20 F10";
-
-	-- attribute iostandard of dvi_gpio1  : signal is "SSTL18_II";
-
-	-- attribute loc of fan_alert : signal is "T30";
-	-- attribute iostandard of fan_alert : signal is "SSTL18_II_DCI";
-
-	-- attribute loc of gpio_dip_sw : signal is "AC24 AC25 AE26 AE27 AF26 AF25 AG27 U25";
-
-	-- attribute iostandard of fpga_rotary_inca  : signal is "SSTL18_II_DCI";
-	-- attribute iostandard of fpga_rotary_incb  : signal is "SSTL18_II_DCI";
-	-- attribute iostandard of fpga_rotary_push  : signal is "SSTL18_II_DCI";
-
-	-- attribute iostandard of gpio_dip_sw : signal is "SSTL18_II_DCI";
-	-- attribute loc of hdr1 : signal is "AN33 AN34 AM32 AJ34 AM33 AL33 AL34 AK32 AJ32 AK33 AK34 AH32 AG32 AE32 AH34 W32 Y32 Y34 AD32 AA34 N34 P34 M32 L33 J34 J32 H32 G32 G33 H34 F34 H33";
-
-	-- attribute loc of hdr2_sm_p   : signal is "AC33 AC34 Y33  K33 L34 AN32 U33 U32 AF33 AC32 AF34 W34";
-	-- attribute loc of hdr2_sm_n   : signal is "AB33 AD34 AA33 K32 K34 AP32 T34 U31 AE33 AB32 AE34 V34";
-
-	-- attribute loc of hdr2_diff_p : signal is "P32 T33 R33 V32";
-	-- attribute loc of hdr2_diff_n : signal is "N32 R34 R32 V33";
-
-	-- attribute loc of lcd_fpga_db : signal is "T11 G6 G7 T9";
-
-	-- attribute loc of sram_bw      : signal is "K11 J11 D11 D10";
-	-- attribute loc of sram_d       : signal is "J9 K8 K9 B13 C13 G11 G12 M8 L8 F11 E11 M10 L9 E12 E13 N10";
-	-- attribute loc of sram_dqp     : signal is "H9 H10 C12 D12";
-	-- attribute loc of sram_flash_a : signal is "AE22 AE23 L21 L20 L15 L16 J22 K21 K16 J15 G22 H22 L14 K14 K23 K22 J12 H12 G23 H23 K13 K12";
-	-- attribute loc of sram_flash_d : signal is "AG22 AH22 AH12 AG13 AH20 AH19 AH14 AH13 AF15 AE16 AE21 AD20 AF16 AE17 AE19 AD19";
-
-	-- attribute loc of sysace_mpa   : signal is "L6 M6 R6 P5 N7 N5 G5";
-	-- attribute loc of sysace_usb_d : signal is "J6 K7 T6 J5 K6 L4 L5 R8 P6 P7 U7 R7 H7 J7 T8 P9";
-
-	-- attribute loc of trc_ts : signal is "AD10 AD11 AK11 AJ11";
-
-	-- attribute loc of vga_in_blue  : signal is "AD7 AC7 AB5 AA5 AB7 AB6 AC5 AC4";
-	-- attribute loc of vga_in_green : signal is "AE6 AD6 Y7 AA6 AD5 AD4 Y9 Y8";
-	-- attribute loc of vga_in_red   : signal is "W11 Y11 AG6 AH5 V7 W7 AF5 AG5";
 end;

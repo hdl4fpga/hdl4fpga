@@ -907,7 +907,5 @@ begin
 	gpio_led_w <= '0';
 	gpio_led <= (others => '0');
 	bus_error <= (others => '0');
-	fpga_diff_clk_out_p <= 'Z';
-	fpga_diff_clk_out_n <= 'Z';
 
 end;

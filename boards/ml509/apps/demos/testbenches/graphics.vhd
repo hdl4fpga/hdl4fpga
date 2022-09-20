@@ -120,17 +120,6 @@ architecture ml509_graphics of testbench is
 			dvi_v          : inout std_logic;
 			dvi_h          : inout std_logic;
 	
---			fan_alert      : out std_logic;
-	
-			fpga_diff_clk_out_p : out std_logic;
-			fpga_diff_clk_out_n : out std_logic;
---			fpga_rotary_inca : in std_logic;
---			fpga_rotary_incb : in std_logic;
---			fpga_rotary_push : in std_logic;
-			fpga_serial_rx : in std_logic_vector(1 to 2) := (others => 'Z');
---			fpga_serial_tx : out std_logic_vector(1 to 2);
-	
---			gpio_dip_sw    : in std_logic_vector(8 downto 1);
 			gpio_led       : out std_logic_vector(8-1 downto 0);
 			gpio_led_c     : out std_logic;
 			gpio_led_e     : out std_logic;
@@ -142,14 +131,6 @@ architecture ml509_graphics of testbench is
 			gpio_sw_n      : in std_logic := 'Z';
 			gpio_sw_s      : in std_logic := 'Z';
 			gpio_sw_w      : in std_logic := 'Z';
-	
---			hdr1           : std_logic_vector(1 to 32):= (others => '-');
---			hdr2_diff_p    : std_logic_vector(0 to 4-1) := (others => 'Z');
---			hdr2_diff_n    : std_logic_vector(0 to 4-1) := (others => 'Z');
---			hdr2_sm_p      : std_logic_vector(4 to 16-1) := (others => 'Z');
---			hdr2_sm_n      : std_logic_vector(4 to 16-1) := (others => 'Z');
-	
---			lcd_fpga_db    : std_logic_vector(8-1 downto 4);
 	
 			phy_reset      : out std_logic;
 			phy_col        : in std_logic := 'Z';
@@ -169,20 +150,6 @@ architecture ml509_graphics of testbench is
 			phy_txd        : out std_logic_vector(0 to 8-1);
 			phy_txer       : out std_logic;
 
---			sram_bw        : std_logic_vector(4-1 downto 0);
---			sram_d         : std_logic_vector(32-1 downto 16);
---			sram_dqp       : std_logic_vector(4-1 downto 0);
---			sram_flash_a   : std_logic_vector(22-1 downto 0);
---			sram_flash_d   : std_logic_vector(16-1 downto 0);
---
---			sysace_mpa     : std_logic_vector(7-1 downto 0);
---			sysace_usb_d   : std_logic_vector(16-1 downto 0);
---
---			trc_ts         : std_logic_vector(6 downto 3);
---
---			vga_in_blue    : std_logic_vector(8-1 downto 0);
---			vga_in_green   : std_logic_vector(8-1 downto 0);
---			vga_in_red     : std_logic_vector(8-1 downto 0)
 			user_clk       : in std_logic);
 
 	end component;
