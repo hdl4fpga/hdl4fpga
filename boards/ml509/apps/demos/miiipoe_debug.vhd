@@ -52,10 +52,11 @@ architecture miiipoe_debug of ml509 is
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,      timing => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
-		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    pll => (dcm_mul =>  2, dcm_div => 8)),
-		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    pll => (dcm_mul =>  2, dcm_div => 5)),
-		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   pll => (dcm_mul =>  3, dcm_div => 4)));
+		(id => modedebug,     timing => pclk_debug,             pll => (dcm_mul => 4, dcm_div => 2)),
+		(id => mode480p24bpp, timing => pclk25_00m640x480at60,  pll => (dcm_mul => 2, dcm_div => 8)),
+		(id => mode600p24bpp, timing => pclk40_00m800x600at60,  pll => (dcm_mul => 2, dcm_div => 5)),
+		(id => mode720p24bpp, timing => pclk75_00m1280x720at60, pll => (dcm_mul => 3, dcm_div => 4)),
+		(id => mode1080r24bpp, timing => pclk140_00m1920x1080at60, pll => (dcm_mul => 7, dcm_div => 5)));
 
 	function videoparam (
 		constant id  : video_modes)
@@ -75,7 +76,7 @@ architecture miiipoe_debug of ml509 is
 		return tab(tab'left);
 	end;
 
-	constant video_mode : video_modes :=mode720p24bpp;
+	constant video_mode : video_modes :=mode600p24bpp;
 
 	signal sys_clk        : std_logic;
 	signal gtx_rst        : std_logic;
@@ -138,7 +139,7 @@ begin
 			locked => locked);
 
 		gpio_led_c <= locked;
-		dvi_reset <= locked;
+		dvi_reset_b <= locked;
 		bufg_i : bufg
 		port map (
 			i => clk_fx,
@@ -434,8 +435,8 @@ begin
 	
 		end generate;
 
-		dvi_gpio1     <= '0';
-		iic_sda_video <= '0';
+		dvi_gpio1     <= 'Z';
+		iic_sda_video <= 'Z';
 		iic_scl_video <= '0';
 	end block;
 

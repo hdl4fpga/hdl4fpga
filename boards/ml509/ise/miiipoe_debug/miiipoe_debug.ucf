@@ -63,7 +63,7 @@ NET "phy_txer"       IOSTANDARD = LVCMOS25;
 NET "dvi_xclk_p"     IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
 NET "dvi_xclk_n"     IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
 NET "dvi_gpio1"      IOSTANDARD = LVCMOS25;
-NET "dvi_reset"      IOSTANDARD = LVCMOS25;
+NET "dvi_reset_b"    IOSTANDARD = LVCMOS25;
 NET "dvi_d[*]"       IOSTANDARD = LVCMOS25;
 NET "dvi_de"         IOSTANDARD = LVCMOS25;
 NET "dvi_v"          IOSTANDARD = LVCMOS25;
