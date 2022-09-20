@@ -113,8 +113,8 @@ architecture ml509_graphics of testbench is
 	
 			dvi_xclk_n     : out std_logic;
 			dvi_xclk_p     : out std_logic;
-			dvi_reset      : out std_logic;
-			dvi_gpio1      : out std_logic;
+			dvi_reset_b    : out std_logic;
+			dvi_gpio1      : inout std_logic;
 			dvi_de         : out std_logic;
 			dvi_d          : out std_logic_vector(12-1 downto 0);
 			dvi_v          : inout std_logic;

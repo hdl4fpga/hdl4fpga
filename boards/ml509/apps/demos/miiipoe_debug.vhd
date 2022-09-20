@@ -76,7 +76,7 @@ architecture miiipoe_debug of ml509 is
 		return tab(tab'left);
 	end;
 
-	constant video_mode : video_modes :=mode600p24bpp;
+	constant video_mode : video_modes :=mode1080r24bpp;
 
 	signal sys_clk        : std_logic;
 	signal gtx_rst        : std_logic;

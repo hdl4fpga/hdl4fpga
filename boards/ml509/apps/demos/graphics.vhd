@@ -892,7 +892,7 @@ begin
 	phy_mdio   <= '0';
 
 	dvi_gpio1  <= '1';
-	dvi_reset  <= '0';
+	dvi_reset_b  <= '1';
 	-- dvi_xclk_p <= 'Z';
 	-- dvi_xclk_n <= 'Z';
 	-- dvi_v      <= 'Z';
