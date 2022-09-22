@@ -282,7 +282,7 @@ begin
 
 	du_e : ml509
 	generic map (
-		debug => false)
+		debug => true)
 	port map (
 		clk_fpga_p     => clk_fpga_p,
 		clk_fpga_n     => clk_fpga_n,
@@ -301,7 +301,7 @@ begin
 		ddr2_dqs_n     => dqs_n,
 		ddr2_odt       => odt,
 
-		gpio_sw_c      => sw,
+		gpio_sw_c      => '0',
 		phy_rxclk      => mii_rxc,
 		phy_rxctl_rxdv => mii_rxdv,
 		phy_rxd        => mii_rxd,

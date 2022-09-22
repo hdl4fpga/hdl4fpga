@@ -158,7 +158,7 @@ begin
 	-- MEMORY REGISTER --
 	---------------------
 
-	mr_p : process (sdram_init_clk)
+	mr_p : process (sdram_init_clk, timer_rdy)
 
 		-- Mode Register Field Descriptor --
 		------------------------------------
@@ -611,7 +611,7 @@ begin
 	-- DDR PROGRAM --
 	-----------------
 
-	program_p : process (sdram_init_clk)
+	program_p : process (sdram_init_clk, timer_req)
 
 		subtype ddrmr_id is std_logic_vector(3-1 downto 0);
 		constant sdram_mrx   : ddrmr_id := (others => '1');
@@ -686,13 +686,13 @@ begin
 		constant sc2_wai  : s_code := "1011";
 	
 	
-									--    +------< rst
-									--    |+-----< cke
-									--    ||+----< rdy
-									--    |||+---< wlq
-									--    ||||+--< odt
-									--    |||||
-									--    vvvvv
+									--      +------< rst
+									--      |+-----< cke
+									--      ||+----< rdy
+									--      |||+---< wlq
+									--      ||||+--< odt
+									--      |||||
+									--      vvvvv
 		constant ddr2_pgm : s_table := (
 			(sc_rst,   sc2_cke,  "0", "0", "11000", sdram_nop, ddrmr_mrx,      sdram_mrx, tddr2_CKE),
 			(sc2_cke,  sc2_pre1, "0", "0", "11000", sdram_pre, ddr2mr_preall,  sdram_mrx, tddr2_RPA),
@@ -899,7 +899,7 @@ begin
 			when ddr2 =>
 				return (
 					(tsdr_rst,  to_sdrlatency(tcp, chip, tPreRST)/setif(debug, 100, 1)),
-					(tddr2_cke, to_sdrlatency(tcp, chip, tXPR)),
+					(tddr2_cke, to_sdrlatency(tcp, chip, tXPR)/setif(debug, 100, 1)),
 					(tddr2_mrd, sdram_latency(stdr, mrd)),
 					(tddr2_rpa, to_sdrlatency(tcp, chip, tRPA)),
 					(tddr2_rfc, to_sdrlatency(tcp, chip, tRFC)),

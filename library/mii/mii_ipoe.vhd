@@ -374,6 +374,7 @@ begin
 		signal dev_req : std_logic_vector(0 to 2-1);
 		signal dev_gnt : std_logic_vector(0 to 2-1);
 		signal dev_csc : std_logic;
+		signal gnt     : std_logic_vector(dev_gnt'range);
 	begin
 
 		dev_csc <= not miirx_frm when hdplx='1' else '1';
@@ -383,7 +384,14 @@ begin
 			clk => mii_clk,
 			csc => dev_csc,
 			req => dev_req,
-			gnt => dev_gnt);
+			gnt => gnt);
+
+		dev_gnt <= gnt;
+		process (mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+			end if;
+		end process;
 
 		ethtx_frm    <= wirebus(arptx_frm  & ipv4tx_frm,  dev_gnt);
 		ethtx_irdy   <= wirebus(arptx_irdy & ipv4tx_irdy, dev_gnt);

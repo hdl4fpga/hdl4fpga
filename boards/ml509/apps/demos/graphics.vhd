@@ -71,9 +71,9 @@ architecture graphics of ml509 is
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,      timing => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
-		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    pll => (dcm_mul =>  1, dcm_div => 4)),
-		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    pll => (dcm_mul =>  2, dcm_div => 5)));
+		(id => modedebug,     timing => pclk_debug,            pll => (dcm_mul => 4, dcm_div => 2)),
+		(id => mode480p24bpp, timing => pclk25_00m640x480at60, pll => (dcm_mul => 1, dcm_div => 4)),
+		(id => mode600p24bpp, timing => pclk40_00m800x600at60, pll => (dcm_mul => 2, dcm_div => 5)));
 
 	function videoparam (
 		constant id  : video_modes)
@@ -223,7 +223,6 @@ architecture graphics of ml509 is
 	signal ctlrphy_sto    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
 	signal ctlrphy_sti    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
 
-
 	signal ddr2_clk       : std_logic_vector(ddr2_clk_p'range);
 	signal ddr2_dqst      : std_logic_vector(ddr2_dqs_p'range);
 	signal ddr2_dqso      : std_logic_vector(ddr2_dqs_p'range);
@@ -243,7 +242,7 @@ architecture graphics of ml509 is
 	signal iod_rst        : std_logic;
 
 	signal phy_rxclk_bufg : std_logic;
-	-- signal phy_txclk_bufg : std_logic;
+	signal phy_txclk_bufg : std_logic;
 
 	alias  mii_txc        : std_logic is gtx_clk;
 	alias  sio_clk        : std_logic is gtx_clk;
@@ -328,123 +327,120 @@ begin
 
 	end block;
 
-	dcm_b : block
-	begin
 
-		gtx_b : block
-			signal gtx_clk_bufg : std_logic;
-			signal gtx_lck : std_logic;
+	gtx_b : block
+		signal gtx_clk_bufg : std_logic;
+		signal gtx_lck : std_logic;
+	begin
+		gtx_i : dcm_base
+		generic map  (
+			CLK_FEEDBACK   => "NONE",
+			clkin_period   => user_per*1.0e9,
+			clkfx_multiply => 5,
+			clkfx_divide   => 4)
+		port map (
+			rst    => gpio_sw_c,
+			clkin  => sys_clk,
+			clkfb  => '0',
+			clkfx  => gtx_clk_bufg, 
+			locked => gtx_lck);
+			gtx_rst <= not gtx_lck;
+
+		bufg_i : bufg
+		port map (
+			i => gtx_clk_bufg,
+			o => gtx_clk);
+
+	end block;
+	
+	ddr_b : block
+
+		signal ddr_clk   : std_logic;
+		signal locked    : std_logic;
+		signal dcm_rst   : std_logic;
+		signal ddr_locked : std_logic;
+	begin
+		dfs_b : block
+			signal ddr_clkfx_bufg : std_logic;
 		begin
-			gtx_i : dcm_base
-			generic map  (
-				CLK_FEEDBACK   => "NONE",
+			dfs_i : dcm_base
+			generic map (
+				clk_feedback   => "NONE",
 				clkin_period   => user_per*1.0e9,
-				clkfx_multiply => 5,
-				clkfx_divide   => 4)
+				clkfx_divide   => sdram_params.pll.dcm_div,
+				clkfx_multiply => sdram_params.pll.dcm_mul,
+				dfs_frequency_mode => "HIGH")
 			port map (
 				rst    => '0',
+				clkfb  => sys_clk,
 				clkin  => sys_clk,
-				clkfb  => '0',
-				clkfx  => gtx_clk_bufg, 
-				locked => gtx_lck);
-			gtx_rst <= not gtx_lck;
+				clkfx  => ddr_clkfx_bufg,
+				locked => locked);
 
 			bufg_i : bufg
 			port map (
-				i => gtx_clk_bufg,
-				o => gtx_clk);
+				i => ddr_clkfx_bufg,
+				o => ddr_clk);
 
 		end block;
-	
-		ddr_b : block
 
-			signal ddr_clk   : std_logic;
-			signal locked    : std_logic;
-			signal dcm_rst   : std_logic;
-			signal ddr_locked : std_logic;
+		process (sys_clk, locked)
+			variable cntr : unsigned(0 to 2);
 		begin
-			dfs_b : block
-				signal ddr_clkfx_bufg : std_logic;
-			begin
-				dfs_i : dcm_base
-				generic map (
-					clk_feedback   => "NONE",
-					clkin_period   => user_per*1.0e9,
-					clkfx_divide   => sdram_params.pll.dcm_div,
-					clkfx_multiply => sdram_params.pll.dcm_mul,
-					dfs_frequency_mode => "HIGH")
-				port map (
-					rst    => '0',
-					clkfb  => sys_clk,
-					clkin  => sys_clk,
-					clkfx  => ddr_clkfx_bufg,
-					locked => locked);
-
-				bufg_i : bufg
-				port map (
-					i => ddr_clkfx_bufg,
-					o => ddr_clk);
-
-			end block;
-
-			process (sys_clk, locked)
-				variable cntr : unsigned(0 to 2);
-			begin
-				if locked='0' then
-					cntr := (others => '0');
-				elsif rising_edge(sys_clk) then
-					if cntr(0)='0' then
-						cntr := cntr + 1;
-					end if;
+			if locked='0' then
+				cntr := (others => '0');
+			elsif rising_edge(sys_clk) then
+				if cntr(0)='0' then
+					cntr := cntr + 1;
 				end if;
-				dcm_rst <= not cntr(0);
-			end process;
+			end if;
+			dcm_rst <= not cntr(0);
+		end process;
 
-			dcm_b : block
-				signal ddr_clk0_bufg  : std_logic;
-				signal ddr_clk90_bufg : std_logic;
-			begin
-				dcm_i : dcm_base
-				generic map (
-					clk_feedback       => "NONE",
-					clkin_period       => sdram_tcp*1.0e9,
-					dll_frequency_mode => "HIGH")
-				port map (
-					rst    => dcm_rst,
-					clkin  => ddr_clk,
-					clkfb  => ddr_clk,
-					clk0   => ddr_clk0_bufg,
-					clk90  => ddr_clk90_bufg,
-					locked => ddr_locked);
-   
-				bufg0_i : bufg
-				port map (
-					i => ddr_clk0_bufg,
-					o => ddr_clk0);
+		dcm_b : block
+			signal ddr_clk0_bufg  : std_logic;
+			signal ddr_clk90_bufg : std_logic;
+		begin
+			dcm_i : dcm_base
+			generic map (
+				clk_feedback       => "NONE",
+				clkin_period       => sdram_tcp*1.0e9,
+				dll_frequency_mode => "HIGH")
+			port map (
+				rst    => dcm_rst,
+				clkin  => ddr_clk,
+				clkfb  => ddr_clk,
+				clk0   => ddr_clk0_bufg,
+				clk90  => ddr_clk90_bufg,
+				locked => ddr_locked);
+  
+			bufg0_i : bufg
+			port map (
+				i => ddr_clk0_bufg,
+				o => ddr_clk0);
 
-				bufg90_i : bufg
-				port map (
-					i => ddr_clk90_bufg,
-					o => ddr_clk90);
-
-			end block;
-
-			ctlrphy_dqsi <= (others => ddr_clk0);
-			ddrsys_rst   <= not ddr_locked or iod_rst;
+			bufg90_i : bufg
+			port map (
+				i => ddr_clk90_bufg,
+				o => ddr_clk90);
 
 		end block;
+
+		ctlrphy_dqsi <= (others => ddr_clk0);
+		ddrsys_rst   <= not ddr_locked or iod_rst;
 
 	end block;
+
 
 	phy_rxclk_bufg_i : bufg
 	port map (
 		i => phy_rxclk,
 		o => phy_rxclk_bufg);
 
-	-- phy_txclk_bufg_i : bufg
-	-- port map (
-	-- 	i => phy_txclk,
-	-- 	o => phy_txclk_bufg);
+	phy_txclk_bufg_i : bufg
+	port map (
+		i => phy_txclk,
+		o => phy_txclk_bufg);
 
 	ipoe_b : block
 
@@ -452,8 +448,6 @@ begin
 		alias  mii_rxdv   : std_logic is phy_rxctl_rxdv;
 		alias  mii_rxd    : std_logic_vector(phy_rxd'range) is phy_rxd;
 
-		signal mii_txd    : std_logic_vector(phy_txd'range);
-		signal mii_txen   : std_logic;
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
 
@@ -463,7 +457,6 @@ begin
 
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
-		signal miitx_trdy : std_logic;
 		signal miitx_end  : std_logic;
 		signal miitx_data : std_logic_vector(si_data'range);
 
@@ -481,9 +474,11 @@ begin
 		begin
 
 			process (mii_rxc)
+				variable q : std_logic_vector(rxc_rxbus'range);
 			begin
 				if rising_edge(mii_rxc) then
-					rxc_rxbus <= mii_rxdv & mii_rxd;
+					rxc_rxbus <= q;
+					q := mii_rxdv & mii_rxd;
 				end if;
 			end process;
 
@@ -519,89 +514,76 @@ begin
 		begin
 			if rising_edge(mii_txc) then
 				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-					if q='0' and gpio_sw_c='1' then
-						dhcpcd_req <= not dhcpcd_rdy;
-					end if;
+					-- dhcpcd_req <= not dhcpcd_rdy;
 				end if;
-				q := gpio_sw_c;
 			end if;
 		end process;
 		gpio_led_c<= gpio_sw_c;
 
-		udpdaisy_b : block
-			signal udpsi_frm  : std_logic;
-			signal udpsi_irdy : std_logic;
-			signal udpsi_trdy : std_logic;
-			signal udpsi_end  : std_logic;
-			signal udpsi_data : std_logic_vector(si_data'range);
+		udpdaisy_e : entity hdl4fpga.sio_dayudp
+		generic map (
+			debug         => false,
+			my_mac        => x"00_40_00_01_02_03",
+			default_ipv4a => aton("192.168.0.14"))
+		port map (
+			tp         => open,
+
+			sio_clk    => sio_clk,
+			dhcpcd_req => dhcpcd_req,
+			dhcpcd_rdy => dhcpcd_rdy,
+			miirx_frm  => miirx_frm,
+			miirx_irdy => '1', --miirx_irdy,
+			miirx_trdy => open,
+			miirx_data => miirx_data,
+
+			miitx_frm  => miitx_frm,
+			miitx_irdy => miitx_irdy,
+			miitx_trdy => '1',
+			miitx_end  => miitx_end,
+			miitx_data => miitx_data,
+
+			si_frm     => si_frm,
+			si_irdy    => si_irdy,
+			si_trdy    => si_trdy,
+			si_end     => si_end,
+			si_data    => si_data,
+
+			so_frm     => so_frm,
+			so_irdy    => so_irdy,
+			so_trdy    => so_trdy,
+			so_data    => so_data);
+
+		process (mii_txc)
+			variable txen : std_logic;
+			variable txd  : std_logic_vector(phy_txd'range);
 		begin
+			if rising_edge(mii_txc) then
+				phy_txctl_txen <= txen;
+				phy_txd  <= txd;
+				txen := miitx_frm and not miitx_end;
+				txd  := miitx_data;
+			end if;
+		end process;
 
-			process (sio_clk)
-			begin
-				if rising_edge(sio_clk) then
-					udpsi_frm  <= udpsi_frm;
-					udpsi_irdy <= udpsi_irdy;
-					udpsi_trdy <= '1';
-					udpsi_end  <= udpsi_end;
-					udpsi_data <= udpsi_data;
-				end if;
-			end process;
+		gpio_led(8-1 downto 2) <= (others => '0');
+		process (so_frm)
+			variable q : std_logic;
+		begin
+			if rising_edge(so_frm) then
+				gpio_led(0) <= q;
+				q := not q;
+			end if;
+		end process;
 
-			udpdaisy_e : entity hdl4fpga.sio_dayudp
-			generic map (
-				debug         => false,
-				my_mac        => x"00_40_00_01_02_03",
-				default_ipv4a => aton("192.168.0.14"))
-			port map (
-				tp         => open,
-	
-				sio_clk    => sio_clk,
-				dhcpcd_req => dhcpcd_req,
-				dhcpcd_rdy => dhcpcd_rdy,
-				miirx_frm  => miirx_frm,
-				miirx_irdy => '1', --miirx_irdy,
-				miirx_trdy => open,
-				miirx_data => miirx_data,
-	
-				miitx_frm  => miitx_frm,
-				miitx_irdy => miitx_irdy,
-				miitx_trdy => miitx_trdy,
-				miitx_end  => miitx_end,
-				miitx_data => miitx_data,
-	
-				si_frm     => udpsi_frm,
-				si_irdy    => udpsi_irdy,
-				si_trdy    => open,
-				si_end     => udpsi_end,
-				si_data    => udpsi_data,
-	
-				so_frm     => so_frm,
-				so_irdy    => so_irdy,
-				so_trdy    => so_trdy,
-				so_data    => so_data);
-	
-			desser_e: entity hdl4fpga.desser
-			port map (
-				desser_clk => mii_txc,
-	
-				des_frm    => miitx_frm,
-				des_irdy   => miitx_irdy,
-				des_trdy   => miitx_trdy,
-				des_data   => miitx_data,
-	
-				ser_irdy   => open,
-				ser_data   => mii_txd);
-	
-			mii_txen <= miitx_frm and not miitx_end;
-			process (mii_txc)
-			begin
-				if rising_edge(mii_txc) then
-					phy_txctl_txen <= mii_txen;
-					phy_txd  <= mii_txd;
-				end if;
-			end process;
+		process (si_frm)
+			variable q : std_logic;
+		begin
+			if rising_edge(si_frm) then
+				gpio_led(1) <= q;
+				q := not q;
+			end if;
+		end process;
 
-		end block;
 
 	end block;
 
@@ -643,11 +625,11 @@ begin
 		sout_end      => si_end,
 		sout_data     => si_data,
 
-		video_clk     => video_clk,
-		video_shift_clk => video_shf_clk,
-		video_hzsync => video_hzsync,
-		video_vtsync => video_vtsync,
-		video_blank  => video_blank,
+		video_clk     => '0', --video_clk,
+		video_shift_clk => '0', --video_shf_clk,
+		video_hzsync  => video_hzsync,
+		video_vtsync  => video_vtsync,
+		video_blank   => video_blank,
 		video_pixel   => video_pixel,
 		dvid_crgb     => dvid_crgb,
 
@@ -706,18 +688,16 @@ begin
 			r  => '0',
 			d1 => '1',
 			d2 => '0',
-			q  => dvi_xclk_p);
+			q  => xclk);
 	
-		-- xclkn_i : oddr
-		-- port map (
-		-- 	c => video_clk,
-		-- 	ce => '1',
-		-- 	s  => '0',
-		-- 	r  => '0',
-		-- 	d1 => '0',
-		-- 	d2 => '1',
-		-- 	q  => dvi_xclk_n);
-		dvi_xclk_n <= '0';
+		diff_i: obufds
+		generic map (
+			iostandard => "LVDS_25")
+		port map (
+			i  => xclk,
+			o  => dvi_xclk_p,
+			ob => dvi_xclk_n);
+	
 	
 		d_g : for i in dvi_d'range generate
 		begin
@@ -838,6 +818,8 @@ begin
 	ddr2_cke <= (others => ddr_cke);
 	ddr2_odt <= (others => ddr_odt);
 
+	ddr2_scl <= '0';
+
 	phy_mdc  <= '0';
 	phy_mdio <= '0';
 
@@ -854,7 +836,6 @@ begin
 	ddrio_b : block
 	begin
 
---		ddr2_scl <= '0';
 		ddr_clks_g : for i in ddr2_clk'range generate
 			ddr_ck_obufds : obufds
 			generic map (
@@ -905,10 +886,9 @@ begin
 	gpio_led_n <= '0';
 	gpio_led_s <= '0';
 	gpio_led_w <= '0';
-	gpio_led <= (others => '0');
 	bus_error <= (others => '0');
 	hdr1 <= (others => 'Z');
-	-- iic_sda_video <= 'Z';
-	-- iic_scl_video <= 'Z';
+	iic_sda_video <= 'Z';
+	iic_scl_video <= 'Z';
 
 end;

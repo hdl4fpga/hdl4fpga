@@ -437,7 +437,6 @@ begin
 			i  => xclk,
 			o  => dvi_xclk_p,
 			ob => dvi_xclk_n);
-
 	
 		d_g : for i in dvi_d'range generate
 		begin
@@ -454,8 +453,8 @@ begin
 		end generate;
 
 		dvi_gpio1     <= 'Z';
-		-- iic_sda_video <= 'Z';
-		-- iic_scl_video <= '0';
+		iic_sda_video <= 'Z';
+		iic_scl_video <= '0';
 	end block;
 
 	phy_txc_gtxclk_i : oddr
@@ -473,6 +472,7 @@ begin
 	phy_mdc    <= '0';
 	phy_mdio   <= '0';
 
+	ddr2_scl   <= 'Z';
 	ddr2_clk_p <= (others => 'Z');
 	ddr2_clk_n <= (others => 'Z');
 	ddr2_cs    <= (others => 'Z');

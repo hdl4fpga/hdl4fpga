@@ -29,11 +29,10 @@ TIMESPEC ts_iod_clk = PERIOD "iod_clk" 5 ns HIGH 50%;
 
 NET "phy_rxclk_bufg" TNM_NET = phy_rxclk_bufg;
 TIMESPEC ts_phy_rxclk = PERIOD "phy_rxclk_bufg" 8 ns HIGH 50%;
-OFFSET = IN 4 ns VALID 8 ns BEFORE  phy_rxclk_bufg falling;
+OFFSET = IN 0 ns VALID 8 ns BEFORE phy_rxclk_bufg rising;
 
 NET "phy_txclk" TNM_NET = phy_txclk;
 TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 8 ns HIGH 50%;
-
 
 # ###################### #
 # Ignore crossclock time #
@@ -52,17 +51,17 @@ TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 8 ns HIGH 50%;
 # TIMESPEC TS_r2f_ddr2ddr    = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
 # TIMESPEC TS_f2f_ddr2gtx    = FROM FFS_ddrsclk0  TO FFS_gtxclk     TIG;
 
-# NET "iic_sda_video" IOB=TRUE | IOSTANDARD = SSTL18_II;
-# NET "iic_scl_video" IOB=TRUE | IOSTANDARD = SSTL18_II;
+NET "iic_sda_video" IOB=TRUE | IOSTANDARD = LVCMOS18;
+NET "iic_scl_video" IOB=TRUE | IOSTANDARD = LVCMOS18;
 
-NET "clk_fpga_p"    IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
-NET "clk_fpga_n"    IOSTANDARD = LVDS_25 | DIFF_TERM = TRUE;
+NET "clk_fpga_p"    IOSTANDARD = LVPECL_25 | DIFF_TERM = TRUE;
+NET "clk_fpga_n"    IOSTANDARD = LVPECL_25 | DIFF_TERM = TRUE;
 NET "ddr2_clk_p[*]" IOB=TRUE | IOSTANDARD = DIFF_SSTL18_II;
 NET "ddr2_clk_n[*]" IOB=TRUE | IOSTANDARD = DIFF_SSTL18_II;
 NET "ddr2_dqs_p[*]" IOB=TRUE | IOSTANDARD = DIFF_SSTL18_II_DCI;
 NET "ddr2_dqs_n[*]" IOB=TRUE | IOSTANDARD = DIFF_SSTL18_II_DCI;
 NET "ddr2_d[*]"     IOB=TRUE | IOSTANDARD = SSTL18_II_DCI;
-NET "ddr2_dm[*]"    IOB=TRUE | IOSTANDARD = SSTL18_II;
+NET "ddr2_dm[*]"    IOB=TRUE | IOSTANDARD = SSTL18_II_DCI;
 NET "ddr2_we"       IOB=TRUE | IOSTANDARD = SSTL18_II;
 NET "ddr2_cas"      IOB=TRUE | IOSTANDARD = SSTL18_II;
 NET "ddr2_ras"      IOB=TRUE | IOSTANDARD = SSTL18_II;
@@ -73,11 +72,11 @@ NET "ddr2_a[*]"     IOB=TRUE | IOSTANDARD = SSTL18_II;
 NET "ddr2_odt[*]"   IOB=TRUE | IOSTANDARD = SSTL18_II;
 NET "dvi_gpio1"     IOSTANDARD = SSTL18_II;
 
-#NET "ddr2_scl"       IOSTANDARD = SSTL18_II;
-#NET "ddr2_sda"       IOSTANDARD = SSTL18_II;
+NET "ddr2_scl"       IOSTANDARD = LVCMOS18;
+NET "ddr2_sda"       IOSTANDARD = LVCMOS18;
 #NET "gpio_dip_sw[1]" IOSTANDARD = SSTL18_II;
 
-NET "gpio_led[3]" IOSTANDARD = SSTL18_II;
-NET "gpio_led[5]" IOSTANDARD = SSTL18_II;
-NET "gpio_led[6]" IOSTANDARD = SSTL18_II;
-NET "gpio_led[7]" IOSTANDARD = SSTL18_II;
+NET "gpio_led[3]" IOSTANDARD = LVCMOS18;
+NET "gpio_led[5]" IOSTANDARD = LVCMOS18;
+NET "gpio_led[6]" IOSTANDARD = LVCMOS18;
+NET "gpio_led[7]" IOSTANDARD = LVCMOS18;

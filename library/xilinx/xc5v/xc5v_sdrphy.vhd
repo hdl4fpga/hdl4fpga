@@ -408,6 +408,7 @@ begin
 			if rising_edge(clk0) then
 				if iod_rst='1' then
 					phy_ini <= '0';
+					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 				elsif (to_bit(phy_rlrdy) xor to_bit(phy_rlreq))='1' then
 					if z='0' then
 						phy_ini   <= '1';
