@@ -57,7 +57,7 @@ entity ml509 is
 		ddr2_sda       : in  std_logic := 'Z';
 
 		bus_error      : out std_logic_vector(2 downto 1);
-		gpio_led       : out std_logic_vector(8-1 downto 0);
+		gpio_led       : out std_logic_vector(0 to 8-1);
 		gpio_led_c     : out std_logic;
 		gpio_led_e     : out std_logic;
 		gpio_led_n     : out std_logic;
@@ -113,7 +113,7 @@ entity ml509 is
 	attribute loc of clk_fpga_p : signal is "L19";
 
 	attribute loc of bus_error  : signal is "T10 F6";
-	attribute loc of gpio_led   : signal is "AE24 AD24 AD25 G16 AD26 G15 L18 H18";
+	attribute loc of gpio_led   : signal is "H18 L18 G15 AD26 G16 AD25 AD24 AE24";
 	attribute loc of gpio_led_c : signal is "E8";
 	attribute loc of gpio_led_e : signal is "AG23";
 	attribute loc of gpio_led_n : signal is "AF13";

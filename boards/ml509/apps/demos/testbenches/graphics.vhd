@@ -206,7 +206,7 @@ begin
 		variable x : natural := 0;
 	begin
 		mii_req <= '0';
-		wait for 10 us;
+		wait for 30 us;
 		loop
 			if mii_req='1' then
 				wait on mii_rxdv;
@@ -216,7 +216,7 @@ begin
 					wait for 30 us;
 				end if;
 			else
-				if x > 1 then
+				if x > 0 then
 					wait;
 				end if;
 				mii_req <= '1';
@@ -273,7 +273,7 @@ begin
 		mii_frm1 => '0', --mii_req,
 		mii_frm2 => '0',
 		mii_frm3 => '0',
-		mii_frm4 => '0',
+		mii_frm4 => mii_req,
 		mii_frm5 => '0',
 
 		mii_txc  => mii_rxc,

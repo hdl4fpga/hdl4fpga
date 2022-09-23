@@ -42,6 +42,7 @@ entity xc5v_sdrphy is
 		byte_size  : natural := 8;
 		clkinv     : std_logic := '0');
 	port (
+		tp        : out std_logic_vector(1 to 32);
 		iod_rst   : in  std_logic;
 		iod_clk   : in  std_logic;
 		clk0      : in  std_logic := '-';
@@ -464,7 +465,12 @@ begin
 	sdqst <= to_blinevector(sys_dqst);
 
 	byte_g : for i in sdram_dqsi'range  generate
+		signal tp_byte : std_logic_vector(tp'range);
 	begin
+
+		tp_g : if i=0 generate
+			tp <= tp_byte;
+		end generate;
 
 		sdrdqphy_i : entity hdl4fpga.xc5v_sdrdqphy
 		generic map (
@@ -473,6 +479,7 @@ begin
 			data_gear => data_gear,
 			byte_size => byte_size)
 		port map (
+			tp        => tp_byte,
 			iod_rst   => iod_rst,
 			sys_rlreq => rl_req(i),
 			sys_rlrdy => rl_rdy(i),

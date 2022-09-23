@@ -24,8 +24,8 @@
 NET "user_clk" TNM_NET = user_clk;
 TIMESPEC ts_user_clk = PERIOD "user_clk" 10 ns HIGH 50%;
 
-NET "iod_clk" TNM_NET = iod_clk;
-TIMESPEC ts_iod_clk = PERIOD "iod_clk" 5 ns HIGH 50%;
+NET "clk_fpga" TNM_NET = clk_fpga;
+TIMESPEC ts_clk_fpga = PERIOD "clk_fpga" 5 ns HIGH 50%;
 
 NET "phy_rxclk_bufg" TNM_NET = phy_rxclk_bufg;
 TIMESPEC ts_phy_rxclk = PERIOD "phy_rxclk_bufg" 8 ns HIGH 50%;

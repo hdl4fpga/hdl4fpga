@@ -39,12 +39,13 @@ entity xc5v_sdrdqphy is
 		data_edge  : boolean;
 		byte_size  : natural);
 	port (
+		tp         : out std_logic_vector(1 to 32);
 		iod_rst    : in  std_logic;
-		iod_clk   : in  std_logic;
-		clk0      : in  std_logic := '-';
-		clk90     : in  std_logic := '-';
-		clk0x2    : in  std_logic := '-';
-		clk90x2   : in  std_logic := '-';
+		iod_clk    : in  std_logic;
+		clk0       : in  std_logic := '-';
+		clk90      : in  std_logic := '-';
+		clk0x2     : in  std_logic := '-';
+		clk90x2    : in  std_logic := '-';
 		sys_rlreq  : in  std_logic;
 		sys_rlrdy  : buffer std_logic;
 		read_rdy   : in  std_logic;
@@ -120,6 +121,7 @@ architecture xc5v of xc5v_sdrdqphy is
 
 begin
 
+	tp(1 to 3) <= tp_dqssel;
 	rl_b : block
 	begin
 
@@ -188,8 +190,8 @@ begin
 		begin
 			if rising_edge(iod_clk) then
 				if (pause_rdy xor pause_req)='0' then
-					dqspau_rdy <= dqspau_req;
-					dqipau_rdy <= dqipau_req;
+					dqspau_rdy <= to_stdulogic(to_bit(dqspau_req));
+					dqipau_rdy <= to_stdlogicvector(to_bitvector(dqipau_req));
 				end if;
 			end if;
 		end process;
@@ -232,6 +234,7 @@ begin
 		generic map (
 			taps    => setif(taps > 0, taps, 2**delay'length-1))
 		port map (
+			rst      => iod_rst,
 			edge     => std_logic'('1'),
 			clk      => iod_clk,
 			req      => adjdqs_req,
@@ -283,15 +286,15 @@ begin
 			lat  => 0,
 			GEAR => data_gear)
 		port map (
-			tp       => tp_dqssel,
-			sdram_clk  => clk0,
-			edge     => '0',
-			sdram_sti  => sys_sti(0),
-			sdram_sto  => sto,
-			dqs_smp  => smp,
-			dqs_pre  => dqspre,
-			sys_req  => adjbrt_req,
-			sys_rdy  => adjbrt_rdy);
+			tp        => tp_dqssel,
+			sdram_clk => clk0,
+			edge      => '0',
+			sdram_sti => sys_sti(0),
+			sdram_sto => sto,
+			dqs_smp   => smp,
+			dqs_pre   => dqspre,
+			sys_req   => adjbrt_req,
+			sys_rdy   => adjbrt_rdy);
 		adjsto_rdy <= to_bit(adjbrt_rdy);
 
 --		process (clk90)
@@ -339,6 +342,7 @@ begin
 			generic map (
 				taps     => taps)
 			port map (
+				rst      => iod_rst,
 				edge     => std_logic'('1'),
 				clk      => iod_clk,
 				req      => adjdqi_req,
