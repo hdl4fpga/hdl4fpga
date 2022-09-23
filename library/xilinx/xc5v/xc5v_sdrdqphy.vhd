@@ -121,7 +121,7 @@ architecture xc5v of xc5v_sdrdqphy is
 
 begin
 
-	tp(1 to 3) <= tp_dqssel;
+	tp(1 to 3+6) <= tp_dqssel & tp_dqsdly;
 	rl_b : block
 	begin
 

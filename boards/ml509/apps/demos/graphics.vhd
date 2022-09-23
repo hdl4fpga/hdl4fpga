@@ -235,11 +235,11 @@ architecture graphics of ml509 is
 	signal gtx_clk        : std_logic;
 	signal gtx_rst        : std_logic;
 
+	signal sys_rst        : std_logic;
 	signal sys_clks       : std_logic_vector(0 to 5-1);
 	signal phy_rsts       : std_logic_vector(0 to 3-1);
-	signal phy_iodrst     : std_logic;
+	signal sdrphy_rst     : std_logic;
 
-	signal iod_rst        : std_logic;
 	signal iod_rdy        : std_logic;
 
 	signal phy_rxclk_bufg : std_logic;
@@ -273,6 +273,20 @@ begin
 		I => user_clk,
 		O => sys_clk);
 
+	gpio_led_c <= gpio_sw_c;
+	process (gpio_sw_c, sys_clk)
+		variable tmr : unsigned(0 to 8-1);
+	begin
+		if gpio_sw_c='1' then
+			tmr := (others => '0');
+		elsif rising_edge(sys_clk) then
+			if tmr(0)='0' then
+				tmr := tmr + 1;
+			end if;
+		end if;
+		sys_rst <= not tmr(0);
+	end process;
+	
 	iod_b : block
 		signal clk_fpga : std_logic;
 	begin
@@ -283,22 +297,9 @@ begin
 			IB => clk_fpga_n,
 			O  => clk_fpga);
 	
-		process (gpio_sw_c, clk_fpga)
-			variable tmr : unsigned(0 to 8-1) := (others => '0');
-		begin
-			if gpio_sw_c='1' then
-				tmr := (others => '0');
-			elsif rising_edge(clk_fpga) then
-				if tmr(0)='0' then
-					tmr := tmr + 1;
-				end if;
-			end if;
-			iod_rst <= not tmr(0);
-		end process;
-	
 		idelayctrl_i : idelayctrl
 		port map (
-			rst    => iod_rst,
+			rst    => sys_rst,
 			refclk => clk_fpga,
 			rdy    => iod_rdy);
 	
@@ -322,7 +323,7 @@ begin
 				clkfx_multiply => sdram_params.pll.dcm_mul,
 				dfs_frequency_mode => "HIGH")
 			port map (
-				rst    => gpio_sw_c,
+				rst    => sys_rst,
 				clkfb  => '0',
 				clkin  => sys_clk,
 				clkfx  => clk_fx,
@@ -378,7 +379,7 @@ begin
 		end block;
 
 		ctlrphy_dqsi <= (others => ddr_clk0);
-		ddrsys_rst   <= not ddr_locked or iod_rst or not iod_rdy;
+		ddrsys_rst   <= not ddr_locked or sys_rst or not iod_rdy;
 
 	end block;
 
@@ -395,7 +396,7 @@ begin
 			clkfx_multiply => videoparam(video_mode).pll.dcm_mul,
 			dfs_frequency_mode => "LOW")
 		port map (
-			rst    => '0',
+			rst    => sys_rst,
 			clkfb  => '0',
 			clkin  => sys_clk,
 			clkfx  => clk_fx,
@@ -419,7 +420,7 @@ begin
 			clkfx_multiply => 5,
 			clkfx_divide   => 4)
 		port map (
-			rst    => gpio_sw_c,
+			rst    => sys_rst,
 			clkin  => sys_clk,
 			clkfb  => '0',
 			clkfx  => gtx_clk_bufg, 
@@ -519,7 +520,6 @@ begin
 				end if;
 			end if;
 		end process;
-		gpio_led_c <= gpio_sw_c;
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
@@ -566,31 +566,36 @@ begin
 			end if;
 		end process;
 
-		-- gpio_led(8-1 downto 2) <= (others => '0');
-		-- process (so_frm)
-		-- 	variable q : std_logic;
-		-- begin
-		-- 	if rising_edge(so_frm) then
-		-- 		gpio_led(0) <= q;
-		-- 		q := not q;
-		-- 	end if;
-		-- end process;
-
-		-- process (si_frm)
-		-- 	variable q : std_logic;
-		-- begin
-		-- 	if rising_edge(si_frm) then
-		-- 		gpio_led(1) <= q;
-		-- 		q := not q;
-		-- 	end if;
-		-- end process;
+		toggle_b : block
+			alias clk_w : std_logic is miirx_frm;
+			alias clk_e : std_logic is miitx_frm;
+		begin
+			process (clk_e)
+				variable q : std_logic;
+			begin
+				if rising_edge(clk_e) then
+					-- gpio_led_e <= q;
+					q := not q;
+				end if;
+			end process;
+			gpio_led_e <= miitx_frm;
+	
+			process (clk_w)
+				variable q : std_logic;
+			begin
+				if rising_edge(clk_w) then
+					gpio_led_w <= q;
+					q := not q;
+				end if;
+			end process;
+		end block;
 
 		process (phy_rxclk_bufg)
 			variable q : std_logic;
 		begin
 			if rising_edge(phy_rxclk_bufg) then
-				-- gpio_led <= b"0000" & ctlr_inirdy & ctlrphy_ini & ddr_fxlocked  & iod_rst;
-				gpio_led <= tp(1 to 4) & (ctlrphy_rlreq xor ctlrphy_rlrdy) & ctlr_inirdy & ctlrphy_ini & ddrsys_rst;
+				gpio_led <= (others => '0');
+				gpio_led(2 to 8-1) <= tp(4 to 9);
 			end if;
 		end process;
 
@@ -756,9 +761,9 @@ begin
 	process (ddrsys_rst, sys_clk)
 	begin
 		if ddrsys_rst='1' then
-			phy_iodrst <= '1';
+			sdrphy_rst <= '1';
 		elsif rising_edge(sys_clk) then
-			phy_iodrst <= ddrsys_rst;
+			sdrphy_rst <= ddrsys_rst;
 		end if;
 	end process;
 
@@ -773,7 +778,7 @@ begin
 		BYTE_SIZE   => BYTE_SIZE)
 	port map (
 		tp          => tp,
-		iod_rst     => phy_iodrst,
+		iod_rst     => sdrphy_rst,
 		iod_clk     => sys_clk,
 		clk0        => ddr_clk0,
 		clk90       => ddr_clk90,
@@ -829,6 +834,9 @@ begin
 	ddr2_cs  <= (others => ddr_cs);
 	ddr2_cke <= (others => ddr_cke);
 	ddr2_odt <= (others => ddr_odt);
+
+	gpio_led_n <= ctlrphy_ini;
+	gpio_led_s <= ctlr_inirdy;
 
 	ddr2_scl <= '0';
 
@@ -887,11 +895,6 @@ begin
 	dvi_gpio1  <= '1';
 	dvi_reset_b <= video_lckd;
 
-	-- gpio_led_c <= '0';
-	gpio_led_e <= '0';
-	gpio_led_n <= '0';
-	gpio_led_s <= '0';
-	gpio_led_w <= '0';
 	bus_error <= (others => '0');
 	hdr1 <= (others => 'Z');
 	iic_sda_video <= 'Z';

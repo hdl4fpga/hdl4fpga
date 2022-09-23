@@ -111,6 +111,7 @@ begin
 		if rising_edge(clk) then
 			if rst='1' then
 				edge_rdy <= to_stdulogic(to_bit(edge_req));
+				phase <= (others => '1');
 			elsif (rdy xor to_stdulogic(to_bit(req)))='1' then
 				if (edge_rdy xor  to_stdulogic(to_bit(edge_req)))='1' then
 					if start='0' then
@@ -166,6 +167,7 @@ begin
 			if rising_edge(clk) then
 				if rst='1' then
 					rdy   <=  to_stdulogic(to_bit(req));
+					avrge <= (others => '1');
 					start := '0';
 				elsif (rdy xor to_stdulogic(to_bit(req)))='1' then
 					if start='0' then
