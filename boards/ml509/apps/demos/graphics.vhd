@@ -147,6 +147,7 @@ architecture graphics of ml509 is
 	constant sdram_tcp    : real := (real(sdram_params.pll.dcm_div)*user_per)/real(sdram_params.pll.dcm_mul);
 
 	signal sys_clk        : std_logic;
+	signal clk_fpga       : std_logic;
 
 	signal video_clk      : std_logic;
 	signal video_lckd     : std_logic;
@@ -275,7 +276,7 @@ begin
 
 	gpio_led_c <= gpio_sw_c;
 	process (gpio_sw_c, sys_clk)
-		variable tmr : unsigned(0 to 8-1);
+		variable tmr : unsigned(0 to 8-1) := (others => '0');
 	begin
 		if gpio_sw_c='1' then
 			tmr := (others => '0');
@@ -287,16 +288,15 @@ begin
 		sys_rst <= not tmr(0);
 	end process;
 	
+	idelay_ibufg_i : IBUFGDS_LVPECL_25
+	port map (
+		I  => clk_fpga_p,
+		IB => clk_fpga_n,
+		O  => clk_fpga);
+	
 	iod_b : block
-		signal clk_fpga : std_logic;
 	begin
 
-		idelay_ibufg_i : IBUFGDS_LVPECL_25
-		port map (
-			I  => clk_fpga_p,
-			IB => clk_fpga_n,
-			O  => clk_fpga);
-	
 		idelayctrl_i : idelayctrl
 		port map (
 			rst    => sys_rst,
@@ -410,7 +410,7 @@ begin
 	end block;
 
 	gtx_b : block
-		signal gtx_clk_bufg : std_logic;
+		signal gtx_clk_dcm : std_logic;
 		signal gtx_lck : std_logic;
 	begin
 		gtx_i : dcm_base
@@ -423,13 +423,13 @@ begin
 			rst    => sys_rst,
 			clkin  => sys_clk,
 			clkfb  => '0',
-			clkfx  => gtx_clk_bufg, 
+			clkfx  => gtx_clk_dcm, 
 			locked => gtx_lck);
 			gtx_rst <= not gtx_lck;
 
 		bufg_i : bufg
 		port map (
-			i => gtx_clk_bufg,
+			i => gtx_clk_dcm,
 			o => gtx_clk);
 
 	end block;
@@ -758,11 +758,11 @@ begin
 		end loop;
 	end process;
 
-	process (ddrsys_rst, sys_clk)
+	process (ddrsys_rst, clk_fpga)
 	begin
 		if ddrsys_rst='1' then
 			sdrphy_rst <= '1';
-		elsif rising_edge(sys_clk) then
+		elsif rising_edge(clk_fpga) then
 			sdrphy_rst <= ddrsys_rst;
 		end if;
 	end process;
@@ -779,7 +779,7 @@ begin
 	port map (
 		tp          => tp,
 		iod_rst     => sdrphy_rst,
-		iod_clk     => sys_clk,
+		iod_clk     => clk_fpga,
 		clk0        => ddr_clk0,
 		clk90       => ddr_clk90,
 		phy_frm     => ctlrphy_frm,

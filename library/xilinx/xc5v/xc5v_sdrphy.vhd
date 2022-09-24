@@ -104,10 +104,6 @@ entity xc5v_sdrphy is
 		sdram_dqsi : in std_logic_vector(word_size/byte_size-1 downto 0);
 		sdram_dqso : out std_logic_vector(word_size/byte_size-1 downto 0));
 
---	alias clk0_rst  : std_logic is phy_rsts(0);
---	alias clk90_rst : std_logic is phy_rsts(1);
---	alias iod_rst   : std_logic is phy_rsts(2);
-
 
 end;
 

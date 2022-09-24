@@ -63,17 +63,16 @@ entity xc5v_sdrdqphy is
 		sys_dqsi   : in  std_logic_vector(0 to data_gear-1);
 		sys_dqst   : in  std_logic_vector(0 to data_gear-1);
 
-		sdram_dmt    : out std_logic;
-		sdram_dmo    : out std_logic;
-		sdram_dqsi   : in  std_logic;
-		sdram_sto    : out std_logic;
-		sdram_dqi    : in  std_logic_vector(byte_size-1 downto 0);
-		sdram_dqt    : out std_logic_vector(byte_size-1 downto 0);
-		sdram_dqo    : out std_logic_vector(byte_size-1 downto 0);
+		sdram_dmt  : out std_logic;
+		sdram_dmo  : out std_logic;
+		sdram_dqsi : in  std_logic;
+		sdram_sto  : out std_logic;
+		sdram_dqi  : in  std_logic_vector(byte_size-1 downto 0);
+		sdram_dqt  : out std_logic_vector(byte_size-1 downto 0);
+		sdram_dqo  : out std_logic_vector(byte_size-1 downto 0);
 
-		sdram_dqst   : out std_logic;
-		sdram_dqso   : out std_logic);
-
+		sdram_dqst : out std_logic;
+		sdram_dqso : out std_logic);
 end;
 
 library hdl4fpga;
@@ -125,13 +124,15 @@ begin
 	rl_b : block
 	begin
 
-		process (pause_req, clk0)
+		process (pause_req, iod_rst, clk0)
 			type states is (s_start, s_write, s_dqs, s_dqi, s_sto);
 			variable state : states;
 			variable aux : std_logic;
 		begin
 			if rising_edge(clk0) then
-				if (to_bit(sys_rlreq) xor to_bit(sys_rlrdy))='0' then
+				if iod_rst='1' then
+					sys_rlrdy <= to_stdulogic(to_bit(sys_rlreq));
+				elsif (sys_rlrdy xor to_stdulogic(to_bit(sys_rlreq)))='0' then
 					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
 					adjdqi_req <= to_stdulogic(adjsto_rdy);
 					adjsto_req <= adjsto_rdy;
@@ -172,7 +173,7 @@ begin
 					when s_sto =>
 						if (read_req xor read_rdy)='0' then
 							if (adjsto_req xor adjsto_rdy)='0' then
-								sys_rlrdy <= sys_rlreq;
+								sys_rlrdy <= to_stdulogic(to_bit(sys_rlreq));
 								state := s_start;
 							else
 								read_req <= not read_rdy;
@@ -417,7 +418,7 @@ begin
 				process (iod_clk)
 				begin
 					if rising_edge(iod_clk) then
-						sw <= to_stdulogic(to_bit(sys_rlrdy) xor to_bit(sys_rlreq));
+						sw <= sys_rlrdy xor to_stdulogic(to_bit(sys_rlreq));
 					end if;
 				end process;
 	
