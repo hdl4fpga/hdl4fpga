@@ -282,11 +282,11 @@ architecture xc5v of xc5v_sdrphy is
 	signal wr_rdy     : std_logic_vector(rl_req'range);
 	signal rd_req     : std_logic_vector(sdram_dqsi'range);
 	signal rd_rdy     : std_logic_vector(rd_req'range);
-	signal read_req   : bit;
-	signal read_rdy   : bit;
+	signal read_req   : std_logic;
+	signal read_rdy   : std_logic;
 	signal read_brst  : std_logic_vector(rd_req'range);
-	signal write_req  : bit;
-	signal write_rdy  : bit;
+	signal write_req  : std_logic;
+	signal write_rdy  : std_logic;
 	signal ddrphy_b   : std_logic_vector(sys_b'range);
 	signal ddrphy_a   : std_logic_vector(sys_a'range);
 
@@ -340,84 +340,90 @@ begin
 			variable burst : std_logic;
 		begin
 			if rising_edge(clk0) then
-				case state is
-				when s_start =>
-					phy_frm  <= '1';
-					leveling <= '1';
-					if sdram_act='1' then
+				if iod_rst='1' then
+					write_rdy <= to_stdulogic(to_bit(write_req));
+					read_rdy  <= to_stdulogic(to_bit(read_req));
+					wr_rdy    <= to_stdlogicvector(to_bitvector(wr_req));
+					rd_rdy    <= to_stdlogicvector(to_bitvector(rd_req));
+				else
+					case state is
+					when s_start =>
+						phy_frm  <= '1';
+						leveling <= '1';
+						if sdram_act='1' then
+							if burst='0' then
+								phy_frm <= '0';
+							end if;
+							state   := s_run;
+						end if;
+					when s_run =>
+						if sdram_idle='1' then
+							leveling  <= '0';
+							rd_rdy    <= to_stdlogicvector(to_bitvector(rd_req));
+							wr_rdy    <= to_stdlogicvector(to_bitvector(wr_req));
+							read_rdy  <= to_stdulogic(to_bit(read_req));
+							write_rdy <= to_stdulogic(to_bit(write_req));
+							state    := s_idle;
+						end if;
 						if burst='0' then
 							phy_frm <= '0';
 						end if;
-						state   := s_run;
-					end if;
-				when s_run =>
-					if sdram_idle='1' then
-						leveling  <= '0';
-						rd_rdy    <= rd_req;
-						wr_rdy    <= wr_req;
-						read_rdy  <= read_req;
-						write_rdy <= write_req;
-						state    := s_idle;
-					end if;
-					if burst='0' then
-						phy_frm <= '0';
-					end if;
-				when s_idle =>
-					leveling <= '0';
-					phy_frm  <= '0';
-					if (read_req xor read_rdy)='1' then
-						phy_frm  <= '1';
-						phy_rw   <= '1';
-						leveling <= '1';
-						state    := s_start;
-					elsif (write_req xor write_rdy)='1' then
-						phy_frm  <= '1';
-						phy_rw   <= '0';
-						leveling <= '1';
-						state    := s_start;
-					end if;
-				end case;
+					when s_idle =>
+						leveling <= '0';
+						phy_frm  <= '0';
+						if (read_rdy xor to_stdulogic(to_bit(read_req)))='1' then
+							phy_frm  <= '1';
+							phy_rw   <= '1';
+							leveling <= '1';
+							state    := s_start;
+						elsif (write_rdy xor to_stdulogic(to_bit(write_req)))='1' then
+							phy_frm  <= '1';
+							phy_rw   <= '0';
+							leveling <= '1';
+							state    := s_start;
+						end if;
+					end case;
 
-				if read_brst=(read_brst'range  => '0') then
-					burst := '0';
-				else
-					burst := '1';
-				end if;
-
-				if (read_req xor read_rdy)='0' then
-					if to_stdlogicvector(to_bitvector(rd_req)) = not rd_rdy then
-						read_req <= not read_rdy;
+					if read_brst=(read_brst'range  => '0') then
+						burst := '0';
+					else
+						burst := '1';
+					end if;
+	
+					if (to_stdulogic(to_bit(read_req)) xor read_rdy)='0' then
+						if to_stdlogicvector(to_bitvector(rd_req)) = not rd_rdy then
+							read_req <= not read_rdy;
+						end if;
+					end if;
+	
+					if (to_stdulogic(to_bit(write_req)) xor write_rdy)='0' then
+						if to_stdlogicvector(to_bitvector(wr_req)) = not wr_rdy then
+							write_req <= not write_rdy;
+						end if;
 					end if;
 				end if;
-
-				if (write_req xor write_rdy)='0' then
-					if to_stdlogicvector(to_bitvector(wr_req)) = not wr_rdy then
-						write_req <= not write_rdy;
-					end if;
-				end if;
-
 			end if;
 		end process;
 
 		process (iod_rst, clk0)
-			variable z : std_logic;
+			variable z : std_logic := '0';
 		begin
 			if rising_edge(clk0) then
 				if iod_rst='1' then
 					phy_ini <= '0';
 					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
-					if z='0' then
-						phy_ini   <= '1';
-						phy_rlrdy <= phy_rlreq;
-					end if;
 					z := '0';
 					for i in rl_req'reverse_range loop
-						if (rl_rdy(i) xor to_stdulogic(1to_bit(phy_rlreq)))='1' then
+						if (rl_rdy(i) xor to_stdulogic(to_bit(phy_rlreq)))='1' then
 							z := '1';
 							rl_req(i) <= phy_rlreq;
 						end if;
 					end loop;
+					if z='0' then
+						phy_ini   <= '1';
+						phy_rlrdy <= phy_rlreq;
+					end if;
 				end if;
 			end if;
 		end process;

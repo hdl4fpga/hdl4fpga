@@ -147,7 +147,6 @@ architecture graphics of ml509 is
 	constant sdram_tcp    : real := (real(sdram_params.pll.dcm_div)*user_per)/real(sdram_params.pll.dcm_mul);
 
 	signal sys_clk        : std_logic;
-	signal clk_fpga       : std_logic;
 
 	signal video_clk      : std_logic;
 	signal video_lckd     : std_logic;
@@ -288,19 +287,26 @@ begin
 		sys_rst <= not tmr(0);
 	end process;
 	
-	idelay_ibufg_i : IBUFGDS_LVPECL_25
-	port map (
-		I  => clk_fpga_p,
-		IB => clk_fpga_n,
-		O  => clk_fpga);
-	
 	iod_b : block
+		signal iod_clk  : std_logic;
+		signal clk_fpga : std_logic;
 	begin
+
+		idelay_ibufg_i : IBUFGDS_LVPECL_25
+		port map (
+			I  => clk_fpga_p,
+			IB => clk_fpga_n,
+			O  => clk_fpga);
+	
+		bufg_i : bufg
+		port map (
+			i => clk_fpga,
+			o => iod_clk);
 
 		idelayctrl_i : idelayctrl
 		port map (
 			rst    => sys_rst,
-			refclk => clk_fpga,
+			refclk => iod_clk,
 			rdy    => iod_rdy);
 	
 	end block;
@@ -595,7 +601,7 @@ begin
 		begin
 			if rising_edge(phy_rxclk_bufg) then
 				gpio_led <= (others => '0');
-				gpio_led(2 to 8-1) <= tp(4 to 9);
+				gpio_led(1 to 8-1) <= tp(1 to 7);
 			end if;
 		end process;
 
@@ -758,11 +764,11 @@ begin
 		end loop;
 	end process;
 
-	process (ddrsys_rst, clk_fpga)
+	process (ddrsys_rst, sys_clk)
 	begin
 		if ddrsys_rst='1' then
 			sdrphy_rst <= '1';
-		elsif rising_edge(clk_fpga) then
+		elsif rising_edge(sys_clk) then
 			sdrphy_rst <= ddrsys_rst;
 		end if;
 	end process;
@@ -779,7 +785,7 @@ begin
 	port map (
 		tp          => tp,
 		iod_rst     => sdrphy_rst,
-		iod_clk     => clk_fpga,
+		iod_clk     => sys_clk,
 		clk0        => ddr_clk0,
 		clk90       => ddr_clk90,
 		phy_frm     => ctlrphy_frm,

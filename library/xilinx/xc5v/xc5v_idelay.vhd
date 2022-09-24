@@ -49,8 +49,8 @@ begin
 
 	del <= to_stdlogicvector(to_bitvector(delay));
 	adjser_i : entity hdl4fpga.adjser
---	generic map (
---		tap_value => 48)
+	generic map (
+		tap_value => 0)
 	port map (
 		clk   => clk,
 		rst   => rst,
@@ -59,9 +59,9 @@ begin
 		inc   => inc);
 
 	idelay_i : idelay
---	generic map (
---		IOBDELAY_VALUE => 48,
---		IOBDELAY_TYPE => "VARIABLE")
+	generic map (
+		IOBDELAY_VALUE => 0,
+		IOBDELAY_TYPE => "VARIABLE")
 	port map (
 		c    => clk,
 		rst  => rst,

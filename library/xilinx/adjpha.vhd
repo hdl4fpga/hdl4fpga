@@ -36,6 +36,7 @@ entity adjpha is
 		dtaps    : natural := 0;
 		taps     : natural);
 	port (
+		tp       : out std_logic_vector(1 to 32);
 		clk      : in  std_logic;
 		rst      : in  std_logic := '0';
 		req      : in  std_logic;
@@ -57,7 +58,6 @@ architecture beh of adjpha is
 	signal rledge   : std_logic;
 	signal phase    : gap_word;
 	signal avrge    : gap_word;
-	signal avrge1    : gap_word;
 	signal saved    : gap_word;
 	signal seq      : std_logic_vector(0 to smp'length-1);
 
@@ -111,7 +111,6 @@ begin
 		if rising_edge(clk) then
 			if rst='1' then
 				edge_rdy <= to_stdulogic(to_bit(edge_req));
-				phase <= (others => '1');
 			elsif (rdy xor to_stdulogic(to_bit(req)))='1' then
 				if (edge_rdy xor  to_stdulogic(to_bit(edge_req)))='1' then
 					if start='0' then
@@ -167,8 +166,9 @@ begin
 			if rising_edge(clk) then
 				if rst='1' then
 					rdy   <=  to_stdulogic(to_bit(req));
-					avrge <= (others => '1');
+					avrge <= b"0011001";
 					start := '0';
+					tp(1 to sum'length) <= (others => '0');
 				elsif (rdy xor to_stdulogic(to_bit(req)))='1' then
 					if start='0' then
 						rledge   <= '0';
@@ -186,7 +186,6 @@ begin
 								if sum <= (taps+1)/2 then
 									sum := sum + (taps+0)/2;
 								else
-							avrge1 <= sum;
 									sum := sum - (taps+1)/2;
 								end if;
 							end if;
@@ -196,6 +195,7 @@ begin
 							start := '0';
 						end if;
 					end if;
+					tp(1 to sum'length) <= b"110_1111";
 				else
 					start := '0';
 				end if;
