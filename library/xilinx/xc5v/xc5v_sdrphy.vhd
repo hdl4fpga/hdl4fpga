@@ -385,13 +385,13 @@ begin
 				end if;
 
 				if (read_req xor read_rdy)='0' then
-					if to_bitvector(rd_req) = not to_bitvector(rd_rdy) then
+					if to_stdlogicvector(to_bitvector(rd_req)) = not rd_rdy then
 						read_req <= not read_rdy;
 					end if;
 				end if;
 
 				if (write_req xor write_rdy)='0' then
-					if to_bitvector(wr_req) = not to_bitvector(wr_rdy) then
+					if to_stdlogicvector(to_bitvector(wr_req)) = not wr_rdy then
 						write_req <= not write_rdy;
 					end if;
 				end if;
@@ -406,14 +406,14 @@ begin
 				if iod_rst='1' then
 					phy_ini <= '0';
 					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
-				elsif (to_bit(phy_rlrdy) xor to_bit(phy_rlreq))='1' then
+				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
 					if z='0' then
 						phy_ini   <= '1';
 						phy_rlrdy <= phy_rlreq;
 					end if;
 					z := '0';
 					for i in rl_req'reverse_range loop
-						if (to_bit(phy_rlreq) xor to_bit(rl_rdy(i)))='1' then
+						if (rl_rdy(i) xor to_stdulogic(1to_bit(phy_rlreq)))='1' then
 							z := '1';
 							rl_req(i) <= phy_rlreq;
 						end if;

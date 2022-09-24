@@ -475,7 +475,7 @@ begin
 				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
 					z := '0';
 					for i in rl_req'range loop
-						if (phy_rlreq xor to_stdulogic(to_bit(rl_rdy(i))))='1' then
+						if (rl_rdy(i) xor to_stdulogic(to_bit(phy_rlreq)))='1' then
 							z := '1';
 							rl_req(i) <= phy_rlreq;
 						end if;
