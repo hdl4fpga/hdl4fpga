@@ -120,7 +120,7 @@ architecture xc5v of xc5v_sdrdqphy is
 
 begin
 
-	-- tp(1 to 6) <= tp_dqsdly;
+	tp(1 to 7) <= '0' & tp_dqsdly;
 	rl_b : block
 	begin
 
@@ -132,14 +132,12 @@ begin
 			if rising_edge(clk0) then
 				if iod_rst='1' then
 					sys_rlrdy <= to_stdulogic(to_bit(sys_rlreq));
-					tp <= (others => '0');
 				elsif (sys_rlrdy xor to_stdulogic(to_bit(sys_rlreq)))='0' then
 					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
 					adjdqi_req <= to_stdulogic(adjsto_rdy);
 					adjsto_req <= adjsto_rdy;
 					state := s_start;
 				else
-								tp <= (others => '1');
 					case state is
 					when s_start =>
 						write_req <= not to_stdulogic(to_bit(write_rdy));

@@ -166,9 +166,7 @@ begin
 			if rising_edge(clk) then
 				if rst='1' then
 					rdy   <=  to_stdulogic(to_bit(req));
-					avrge <= b"0011001";
 					start := '0';
-					tp(1 to sum'length) <= (others => '0');
 				elsif (rdy xor to_stdulogic(to_bit(req)))='1' then
 					if start='0' then
 						rledge   <= '0';
@@ -195,7 +193,6 @@ begin
 							start := '0';
 						end if;
 					end if;
-					tp(1 to sum'length) <= b"110_1111";
 				else
 					start := '0';
 				end if;

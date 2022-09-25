@@ -188,7 +188,7 @@ architecture ml509_graphics of testbench is
 begin
 
 	rst   <= '1', '0' after 1.1 us;
-	sw <= '0', '1' after 29 us, '0' after 30 us;
+	sw <= '0'; --, '1' after 29 us, '0' after 30 us;
 	reset_n <= not rst;
 
 	xtal   <= not xtal after 5 ns;
@@ -270,7 +270,7 @@ begin
 		x"1702_0003ff_1603_0007_3000",
 		mii_data5 => x"010000_1702_0003ff_1603_8007_3000",
 --		mii_data4 => x"01007e_1702_000030_1603_8000_07d0",
-		mii_frm1 => '0', --mii_req,
+		mii_frm1 => mii_req,
 		mii_frm2 => '0',
 		mii_frm3 => '0',
 		mii_frm4 => '0', --mii_req,
