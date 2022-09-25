@@ -156,10 +156,20 @@ architecture graphics of ml509 is
 	signal video_hzsync   : std_logic;
     signal video_vtsync   : std_logic;
     signal video_blank    : std_logic;
+    signal video_vs       : std_logic;
+	signal video_hs       : std_logic;
+    signal video_bk       : std_logic;
     signal video_on       : std_logic;
     signal video_dot      : std_logic;
     signal video_pixel    : std_logic_vector(0 to 32-1);
+    signal video_spixel   : std_logic_vector(0 to 3-1);
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
+
+	alias red             : std_logic is hdr1(0);
+	alias green           : std_logic is hdr1(1);
+	alias blue            : std_logic is hdr1(2);
+	alias vs              : std_logic is hdr1(3);
+	alias hs              : std_logic is hdr1(4);
 
 	constant sclk_phases  : natural := 4;
 	constant sclk_edges   : natural := 2;
@@ -266,6 +276,7 @@ architecture graphics of ml509 is
 	signal ddr_dqso       : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 
 	signal tp             : std_logic_vector(1 to 32);
+	signal mii_tp             : std_logic_vector(1 to 32);
 begin
 
 	clkin_ibufg : ibufg
@@ -533,7 +544,7 @@ begin
 			my_mac        => x"00_40_00_01_02_03",
 			default_ipv4a => aton("192.168.0.14"))
 		port map (
-			tp         => open,
+			tp         => mii_tp,
 
 			sio_clk    => sio_clk,
 			dhcpcd_req => dhcpcd_req,
@@ -737,6 +748,34 @@ begin
 
 	end block;
 
+	ser_debug_e : entity hdl4fpga.ser_debug
+	generic map (
+		timing_id    => videoparam(video_mode).timing,
+		red_length   => 1,
+		green_length => 1,
+		blue_length  => 1)
+	port map (
+		ser_clk      => phy_rxclk_bufg,
+		ser_frm      => mii_tp(1),
+		ser_irdy     => '1',
+		ser_data     => phy_rxd,
+
+		video_clk    => video_clk,
+		video_hzsync => video_hs,
+		video_blank  => video_bk,
+		video_vtsync => video_vs,
+		video_pixel  => video_spixel);
+
+	process (video_clk)
+	begin
+		if rising_edge(video_clk) then
+			hs <= video_hs;
+			vs <= video_vs;
+			(red, green, blue) <= video_spixel;
+		end if;
+	end process;
+
+
 	gear_g : for i in 1 to CMMD_GEAR-1 generate
 		ctlrphy_cke(i) <= ctlrphy_cke(0);
 		ctlrphy_cs(i)  <= ctlrphy_cs(0);
@@ -902,7 +941,6 @@ begin
 	dvi_reset_b <= video_lckd;
 
 	bus_error <= (others => '0');
-	hdr1 <= (others => 'Z');
 	iic_sda_video <= 'Z';
 	iic_scl_video <= 'Z';
 

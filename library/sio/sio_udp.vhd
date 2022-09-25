@@ -87,6 +87,7 @@ begin
 		default_ipv4a => default_ipv4a,
 		my_mac        => my_mac)
 	port map (
+		tp => tp,
 		hdplx      => hdplx,
 		mii_clk    => sio_clk,
 		dhcpcd_req => dhcpcd_req,
@@ -125,7 +126,7 @@ begin
 		generic map (
 			debug   => debug)
 		port map (
-			tp => tp,
+			-- tp => tp,
 			sio_clk => sio_clk,
 	
 			rx_frm  => plrx_frm,

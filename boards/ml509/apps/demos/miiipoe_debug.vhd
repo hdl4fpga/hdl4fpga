@@ -87,7 +87,8 @@ architecture miiipoe_debug of ml509 is
 	signal gtx_clk        : std_logic;
 	signal phy_rxclk_bufg : std_logic;
 	signal phy_txclk_bufg : std_logic;
-	alias  mii_txc        : std_logic is gtx_clk;
+	-- alias  mii_txc        : std_logic is gtx_clk;
+	alias  mii_txc        : std_logic is phy_rxclk_bufg;
 
 	signal video_clk      : std_logic;
 	signal video_hs       : std_logic;

@@ -466,27 +466,61 @@ begin
 		end process;
 
 		process (rst, clk0)
+			type states is (s_start, s_idle);
+			variable state : states;
 			variable z : std_logic;
 		begin
 			if rising_edge(clk0) then
 				if rst='1' then
 					phy_ini <= '0';
 					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
+					z := '1';
+					state := s_idle;
 				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
-					z := '0';
-					for i in rl_req'range loop
-						if (rl_rdy(i) xor to_stdulogic(to_bit(phy_rlreq)))='1' then
-							z := '1';
-							rl_req(i) <= phy_rlreq;
+					case state  is
+					when s_start =>
+						rl_req <= not to_stdlogicvector(to_bitvector(rl_rdy));
+						state := s_idle;
+					when s_idle =>
+						z := '0';
+						for i in rl_req'reverse_range loop
+							if (rl_rdy(i) xor to_stdulogic(to_bit(rl_req(i))))='1' then
+								z := '1';
+							end if;
+						end loop;
+						if z='0' then
+							phy_ini   <= '1';
+							phy_rlrdy <= phy_rlreq;
 						end if;
-					end loop;
-					if z='0' then
-						phy_ini   <= '1';
-						phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
-					end if;
+					end case;
+				else
+					state := s_start;
 				end if;
 			end if;
 		end process;
+
+		-- process (rst, clk0)
+		-- 	variable z : std_logic;
+		-- begin
+		-- 	if rising_edge(clk0) then
+		-- 		if rst='1' then
+		-- 			phy_ini <= '0';
+		-- 			phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
+		-- 		elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
+		-- 			z := '0';
+		-- 			for i in rl_req'range loop
+		-- 				if (rl_rdy(i) xor to_stdulogic(to_bit(phy_rlreq)))='1' then
+		-- 					z := '1';
+		-- 					rl_req(i) <= phy_rlreq;
+		-- 				end if;
+		-- 			end loop;
+		-- 			if z='0' then
+		-- 				phy_ini   <= '1';
+		-- 				phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
+		-- 			end if;
+		-- 		end if;
+		-- 	end if;
+		-- end process;
 
 	end block;
 

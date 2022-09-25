@@ -252,7 +252,6 @@ begin
 			pl_trdy    => open,
 			fcs_sb     => dll_sb,
 			fcs_vld    => dll_vld);
-	tp(1) <= dll_frm;
 
 
 		buffer_p : process (mii_clk)
@@ -357,6 +356,7 @@ begin
 		end if;
 	end process;
 	arprx_frm <= dllrx_frm and arprx_vld and hwdarx_vld;
+	tp(1) <= arprx_frm;
 
 	process (mii_clk)
 	begin
