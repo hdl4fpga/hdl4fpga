@@ -276,7 +276,7 @@ architecture graphics of ml509 is
 	signal ddr_dqso       : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
 
 	signal tp             : std_logic_vector(1 to 32);
-	signal mii_tp             : std_logic_vector(1 to 32);
+	signal mii_tp         : std_logic_vector(1 to 32);
 begin
 
 	clkin_ibufg : ibufg
@@ -285,6 +285,7 @@ begin
 		O => sys_clk);
 
 	gpio_led_c <= gpio_sw_c;
+	(gpio_led_w, gpio_led_n, gpio_led_e, gpio_led_s) <= mii_tp(2 to 5);
 	process (gpio_sw_c, sys_clk)
 		variable tmr : unsigned(0 to 8-1) := (others => '0');
 	begin
@@ -607,13 +608,13 @@ begin
 					q := not q;
 				end if;
 			end process;
-			gpio_led_e <= miitx_frm;
+			-- gpio_led_e <= miitx_frm;
 	
 			process (clk_w)
 				variable q : std_logic;
 			begin
 				if rising_edge(clk_w) then
-					gpio_led_w <= q;
+					-- gpio_led_w <= q;
 					q := not q;
 				end if;
 			end process;
@@ -768,7 +769,8 @@ begin
 		blue_length  => 1)
 	port map (
 		ser_clk      => phy_rxclk_bufg,
-		ser_frm      => mii_tp(1),
+		-- ser_frm      => mii_tp(1),
+		ser_frm      => phy_rxctl_rxdv,
 		ser_irdy     => '1',
 		ser_data     => phy_rxd,
 
@@ -892,8 +894,8 @@ begin
 	ddr2_cke <= (others => ddr_cke);
 	ddr2_odt <= (others => ddr_odt);
 
-	gpio_led_n <= ctlrphy_ini;
-	gpio_led_s <= ctlr_inirdy;
+	-- gpio_led_n <= ctlrphy_ini;
+	-- gpio_led_s <= ctlr_inirdy;
 
 	ddr2_scl <= '0';
 

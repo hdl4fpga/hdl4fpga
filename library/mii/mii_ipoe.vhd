@@ -195,6 +195,7 @@ architecture def of mii_ipoe is
 	signal arp_req       : std_logic;
 	signal arp_rdy       : std_logic;
 
+	signal ipv4_tp : std_logic_vector(1 to 32);
 begin
 
 	process (pltx_frm, pltx_irdy, tagtx_trdy, mii_clk)
@@ -386,6 +387,7 @@ begin
 			req => dev_req,
 			gnt => gnt);
 
+		tp(2 to 3) <= dev_gnt;
 		dev_gnt <= gnt;
 		process (mii_clk)
 		begin
@@ -527,10 +529,12 @@ begin
 		arpdtx_end  => arptx_end,
 		arpdtx_data => arptx_data);
 
+		tp(4 to 5 ) <= ipv4_tp(1 to 2);
 	ipv4_e : entity hdl4fpga.ipv4
 	generic map (
 		default_ipv4a => default_ipv4a)
 	port map (
+		tp => ipv4_tp,
 		mii_clk       => mii_clk,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
