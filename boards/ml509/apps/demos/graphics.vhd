@@ -529,11 +529,23 @@ begin
 		end block;
 
 		dhcp_p : process(mii_txc)
-			variable q : std_logic;
+			type states is (north, south);
+			variable state : states;
 		begin
 			if rising_edge(mii_txc) then
 				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-					-- dhcpcd_req <= not dhcpcd_rdy;
+					case state is
+					when north =>
+						if gpio_sw_n='1' then 
+							dhcpcd_req <= not dhcpcd_rdy;
+							state := south;
+						end if;
+					when south =>
+						if gpio_sw_s='1' then 
+							dhcpcd_req <= not dhcpcd_rdy;
+							state := north;
+						end if;
+					end case;
 				end if;
 			end if;
 		end process;
