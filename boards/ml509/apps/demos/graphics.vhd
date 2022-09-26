@@ -287,7 +287,7 @@ begin
 		I => user_clk,
 		O => sys_clk);
 
-	gpio_led_c <= gpio_sw_c;
+	-- gpio_led_c <= gpio_sw_c;
 	(gpio_led_w, gpio_led_n, gpio_led_e, gpio_led_s) <= mii_tp(2 to 5);
 	process (gpio_sw_c, sys_clk)
 		variable tmr : unsigned(0 to 8-1) := (others => '0');
@@ -929,7 +929,7 @@ begin
 	ddr2_odt <= (others => ddr_odt);
 
 	-- gpio_led_n <= ctlrphy_ini;
-	-- gpio_led_s <= ctlr_inirdy;
+	gpio_led_c <= ctlr_inirdy;
 
 	ddr2_scl <= '0';
 
