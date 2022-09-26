@@ -232,6 +232,13 @@ begin
 		signal dll_data   : std_logic_vector(dllrx_data'range);
 		signal dll_sb     : std_logic;
 		signal dll_vld    : std_logic;
+
+		-- signal rx_frm  : std_logic;
+		-- signal rx_irdy : std_logic;
+		-- signal rx_trdy : std_logic;
+		-- signal rx_end  : std_logic;
+		-- signal rx_data : std_logic_vector(icmptx_data'range);
+
 	begin
 		ethrx_e : entity hdl4fpga.eth_rx
 		port map (
@@ -240,20 +247,34 @@ begin
 			mii_irdy   => miirx_irdy,
 			mii_data   => miirx_data,
 	
-			dll_frm    => dll_frm,
-			dll_irdy   => dll_irdy,
+			dll_frm    => dllrx_frm,
+			dll_irdy   => dllrx_irdy,
 			dll_trdy   => open,
-			dll_data   => dll_data,
+			dll_data   => dllrx_data,
 	
-			hwda_irdy  => hwda_irdy,
+			hwda_irdy  => hwdarx_irdy,
 			hwda_end   => hwda_end,
-			hwsa_irdy  => hwsa_irdy,
-			hwtyp_irdy => hwtyp_irdy,
+			hwsa_irdy  => hwsarx_irdy,
+			hwtyp_irdy => hwtyprx_irdy,
 			pl_irdy    => open,
 			pl_trdy    => open,
 			fcs_sb     => dll_sb,
 			fcs_vld    => dll_vld);
 
+
+		miibuffer_e : entity hdl4fpga.mii_buffer
+		port map (
+			io_clk => mii_clk,
+			i_frm  => dll_frm,
+			i_irdy => dll_irdy,
+			i_trdy => open,
+			i_data => dll_data,
+			i_end  => '-',
+			o_frm  => dllrx_frm,
+			o_irdy => icmptx_irdy,
+			o_trdy => icmptx_trdy,
+			o_data => dlltx_data,
+			o_end  => icmptx_end);
 
 		buffer_p : process (mii_clk)
 		begin

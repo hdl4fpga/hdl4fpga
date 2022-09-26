@@ -485,6 +485,7 @@ begin
 
 		signal mii_txcrxd : std_logic_vector(mii_rxd'range);
 
+		signal ser_pause : std_logic := '1';
 	begin
 
 		sync_b : block
@@ -588,8 +589,31 @@ begin
 			so_data    => so_data);
 
 		ser_clk  <= gtx_clk;
-		ser_frm  <= miitx_frm or mii_tp(1);
+		ser_frm  <= (miitx_frm or mii_tp(1)) and ser_pause;
 		ser_data <= wirebus(miitx_data & miirx_data, miitx_frm & mii_tp(1));
+
+		pause_p : process(mii_txc)
+			type states is (west, east);
+			variable state : states;
+		begin
+			if rising_edge(mii_txc) then
+				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+					case state is
+					when west =>
+						if gpio_sw_w='1' then 
+							ser_pause <= '0';
+							state := east;
+						end if;
+					when east =>
+						if gpio_sw_e='1' then 
+							ser_pause <= '1';
+							state := west;
+						end if;
+					end case;
+				end if;
+			end if;
+		end process;
+
 		process (mii_txc)
 			variable txen : std_logic;
 			variable txd  : std_logic_vector(phy_txd'range);
@@ -769,7 +793,7 @@ begin
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
-		timing_id    => videoparam(video_mode).timing,
+		timing_id    => videoparam(mode600p24bpp).timing,
 		red_length   => 1,
 		green_length => 1,
 		blue_length  => 1)
