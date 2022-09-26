@@ -330,7 +330,7 @@ begin
 		end if;
 	end process;
 	myhwa_vld <= hwda_vld;
-
+	tp(1) <= hwdarx_vld;
 
 	llc_e : entity hdl4fpga.sio_muxcmp
 	generic map (
@@ -357,7 +357,6 @@ begin
 		end if;
 	end process;
 	arprx_frm <= dllrx_frm and arprx_vld and hwdarx_vld;
-	tp(1) <= arprx_frm;
 
 	process (mii_clk)
 	begin
@@ -529,12 +528,12 @@ begin
 		arpdtx_end  => arptx_end,
 		arpdtx_data => arptx_data);
 
-		tp(4 to 5 ) <= ipv4_tp(1 to 2);
+	tp(4 to 5 ) <= ipv4_tp(1 to 2);
 	ipv4_e : entity hdl4fpga.ipv4
 	generic map (
 		default_ipv4a => default_ipv4a)
 	port map (
-		tp => ipv4_tp,
+		tp            => ipv4_tp,
 		mii_clk       => mii_clk,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,

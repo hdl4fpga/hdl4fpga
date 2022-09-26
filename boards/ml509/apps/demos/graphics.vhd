@@ -277,6 +277,9 @@ architecture graphics of ml509 is
 
 	signal tp             : std_logic_vector(1 to 32);
 	signal mii_tp         : std_logic_vector(1 to 32);
+	signal ser_clk      : std_logic;
+	signal ser_frm      : std_logic;
+	signal ser_data     : std_logic_vector(0 to 8-1);
 begin
 
 	clkin_ibufg : ibufg
@@ -498,6 +501,8 @@ begin
 			begin
 				if rising_edge(mii_rxc) then
 					rxc_rxbus <= q;
+				end if;
+				if falling_edge(mii_rxc) then
 					q := mii_rxdv & mii_rxd;
 				end if;
 			end process;
@@ -584,6 +589,9 @@ begin
 			so_trdy    => so_trdy,
 			so_data    => so_data);
 
+		ser_clk  <= gtx_clk;
+		ser_frm  <= miitx_frm or miirx_frm;
+		ser_data <= wirebus(miitx_data & miirx_data, miitx_frm & miirx_frm);
 		process (mii_txc)
 			variable txen : std_logic;
 			variable txd  : std_logic_vector(phy_txd'range);
@@ -768,11 +776,15 @@ begin
 		green_length => 1,
 		blue_length  => 1)
 	port map (
-		ser_clk      => phy_rxclk_bufg,
+		-- ser_clk      => phy_rxclk_bufg,
 		-- ser_frm      => mii_tp(1),
-		ser_frm      => phy_rxctl_rxdv,
+		-- ser_data     => phy_rxd,
+		ser_clk      => ser_clk,
+		ser_frm      => ser_frm,
+		ser_data     => ser_data,
+
+
 		ser_irdy     => '1',
-		ser_data     => phy_rxd,
 
 		video_clk    => video_clk,
 		video_hzsync => video_hs,
