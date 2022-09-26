@@ -501,8 +501,6 @@ begin
 			begin
 				if rising_edge(mii_rxc) then
 					rxc_rxbus <= q;
-				end if;
-				if falling_edge(mii_rxc) then
 					q := mii_rxdv & mii_rxd;
 				end if;
 			end process;
@@ -590,8 +588,8 @@ begin
 			so_data    => so_data);
 
 		ser_clk  <= gtx_clk;
-		ser_frm  <= miitx_frm or miirx_frm;
-		ser_data <= wirebus(miitx_data & miirx_data, miitx_frm & miirx_frm);
+		ser_frm  <= miitx_frm or mii_tp(1);
+		ser_data <= wirebus(miitx_data & miirx_data, miitx_frm & mii_tp(1));
 		process (mii_txc)
 			variable txen : std_logic;
 			variable txd  : std_logic_vector(phy_txd'range);
@@ -913,6 +911,7 @@ begin
 
 	phy_mdc  <= '0';
 	phy_mdio <= '0';
+	phy_col <= '0';
 
 	phy_txc_gtxclk_i : oddr
 	port map (

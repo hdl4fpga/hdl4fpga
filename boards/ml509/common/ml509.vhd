@@ -70,7 +70,7 @@ entity ml509 is
 		gpio_sw_w      : in std_logic;
 
 		phy_reset      : out std_logic;
-		phy_col        : in std_logic;
+		phy_col        : out std_logic;
 		phy_crs        : in std_logic;
 		phy_int        : in std_logic;		-- open drain
 		phy_mdc        : out std_logic;
