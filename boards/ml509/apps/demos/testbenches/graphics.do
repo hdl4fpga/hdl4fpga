@@ -26,28 +26,8 @@ add wave -noupdate /testbench/du_e/sdrphy_e/phy_rlrdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/rl_req
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/rl_rdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/dtaps
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/taps
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/clk
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/rst
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/req
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/rdy
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/step_req
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/step_rdy
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/edge
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/smp
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/ph180
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/inv
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/delay
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/edge_req
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/edge_rdy
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/rledge
-add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/phase
-add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/avrge
-add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/saved
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(7)/sdrdqphy_i/dqsi_b/adjdqs_e/seq
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {38880835 ps} 0}
+WaveRestoreCursors {{Cursor 1} {10297600 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 282
 configure wave -valuecolwidth 314
@@ -63,4 +43,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {38838984 ps} {38921016 ps}
+WaveRestoreZoom {0 ps} {31500 ns}

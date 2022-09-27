@@ -181,8 +181,10 @@ architecture graphics of ml509 is
 	constant bank_size    : natural := ddr2_ba'length;
 	constant addr_size    : natural := ddr2_a'length;
 	constant coln_size    : natural := 7;
-	constant word_size    : natural := ddr2_d'length;
-	constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
+	-- constant word_size    : natural := ddr2_d'length;
+	-- constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
+	constant word_size    : natural := 16;
+	constant byte_size    : natural := 8;
 
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
@@ -236,12 +238,12 @@ architecture graphics of ml509 is
 	signal ctlrphy_sto    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
 	signal ctlrphy_sti    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
 
-	signal ddr2_clk       : std_logic_vector(ddr2_clk_p'range);
-	signal ddr2_dqst      : std_logic_vector(ddr2_dqs_p'range);
-	signal ddr2_dqso      : std_logic_vector(ddr2_dqs_p'range);
-	signal ddr2_dqsi      : std_logic_vector(ddr2_dqs_p'range);
-	signal ddr2_dqo       : std_logic_vector(WORD_SIZE-1 downto 0);
-	signal ddr2_dqt       : std_logic_vector(WORD_SIZE-1 downto 0);
+	signal ddr2_clk       : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr2_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr2_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr2_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr2_dqo       : std_logic_vector(word_size-1 downto 0);
+	signal ddr2_dqt       : std_logic_vector(word_size-1 downto 0);
 
 	signal gtx_clk        : std_logic;
 	signal gtx_rst        : std_logic;
@@ -260,27 +262,27 @@ architecture graphics of ml509 is
 	alias  sio_clk        : std_logic is gtx_clk;
 	alias  dmacfg_clk     : std_logic is gtx_clk;
 
-	signal tp_delay       : std_logic_vector(WORD_SIZE/BYTE_SIZE*6-1 downto 0);
-	signal tp_bit         : std_logic_vector(WORD_SIZE/BYTE_SIZE*5-1 downto 0);
+	signal tp_delay       : std_logic_vector(word_size/byte_size*6-1 downto 0);
+	signal tp_bit         : std_logic_vector(word_size/byte_size*5-1 downto 0);
 	signal tst            : std_logic;
 	signal tp_sel         : std_logic_vector(0 to unsigned_num_bits(WORD_SIZE/BYTE_SIZE-1)-1);
 
-	constant ddr_bytes    : std_logic_vector(ddr2_d'length/BYTE_SIZE-1 downto 0) := (0 => '1', 7 => '1', others => '0');
 	signal ddr_cs         : std_logic;
 	signal ddr_cke        : std_logic;
 	signal ddr_odt        : std_logic;
-	signal ddr_d          : std_logic_vector(WORD_SIZE-1 downto 0);
-	signal ddr_dmi        : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddr_dmo        : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddr_dmt        : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddr_dqst       : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
-	signal ddr_dqso       : std_logic_vector(WORD_SIZE/BYTE_SIZE-1 downto 0);
+	signal ddr_d          : std_logic_vector(word_size-1 downto 0);
+	signal ddr_dmi        : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dmo        : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dmt        : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dqst       : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dqso       : std_logic_vector(word_size/byte_size-1 downto 0);
 
 	signal tp             : std_logic_vector(1 to 32);
 	signal mii_tp         : std_logic_vector(1 to 32);
-	signal ser_clk      : std_logic;
-	signal ser_frm      : std_logic;
-	signal ser_data     : std_logic_vector(0 to 8-1);
+	signal ser_clk        : std_logic;
+	signal ser_frm        : std_logic;
+	signal ser_data       : std_logic_vector(0 to 8-1);
+
 begin
 
 	clkin_ibufg : ibufg
@@ -921,7 +923,7 @@ begin
 		sdram_dmi  => ddr_dmi,
 		sdram_dmo  => ddr_dmo,
 		sdram_dqo  => ddr2_dqo,
-		sdram_dqi  => ddr2_d,
+		sdram_dqi  => ddr2_d(word_size-1 downto 0),
 		sdram_dqt  => ddr2_dqt,
 		sdram_dqst => ddr2_dqst,
 		sdram_dqsi => ddr2_dqsi,
@@ -966,20 +968,46 @@ begin
 		begin
 			ddr2_dm(i) <= '0'; --ddr_dmo(i) when ddr_dmt(i)='0' else 'Z';
 
-			dqsiobuf_i : iobufds
-			generic map (
-				iostandard => "DIFF_SSTL18_II_DCI")
-			port map (
-				t   => ddr2_dqst(i),
-				i   => ddr2_dqso(i),
-				o   => ddr2_dqsi(i),
-				io  => ddr2_dqs_p(i),
-				iob => ddr2_dqs_n(i));
+			true_g : if i < word_size/byte_size generate
+				dqsiobuf_i : iobufds
+				generic map (
+					iostandard => "DIFF_SSTL18_II_DCI")
+				port map (
+					t   => ddr2_dqst(i),
+					i   => ddr2_dqso(i),
+					o   => ddr2_dqsi(i),
+					io  => ddr2_dqs_p(i),
+					iob => ddr2_dqs_n(i));
+			end generate;
+
+			false_g : if not (i < word_size/byte_size) generate
+				dqsiobuf_i : iobufds
+				generic map (
+					iostandard => "DIFF_SSTL18_II_DCI")
+				port map (
+					t   => '1',
+					i   => '-',
+					o   => open,
+					io  => ddr2_dqs_p(i),
+					iob => ddr2_dqs_n(i));
+			end generate;
 
 		end generate;
 
 		ddr_d_g : for i in ddr2_d'range generate
-			ddr2_d(i) <= ddr2_dqo(i) when ddr2_dqt(i)='0' else 'Z';
+			process (ddr2_dqo, ddr2_dqt)
+			begin
+				if i < word_size then
+					if ddr2_dqt(i)='0' then
+						ddr2_d(i) <= ddr2_dqo(i);
+					else
+						ddr2_d(i) <= 'Z';
+					end if;
+				else
+					ddr2_d(i) <= 'Z';
+				end if;
+			end process;
+
 		end generate;
 
 	end block;

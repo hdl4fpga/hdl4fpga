@@ -34,11 +34,10 @@ library micron;
 architecture ml509_graphics of testbench is
 	constant ddr_std  : positive := 1;
 
-	constant ddr_period : time := 6 ns;
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 14;
 	constant cols_bits  : natural := 9;
-	constant data_bytes : natural := 8;
+	constant data_bytes : natural := 2;
 	constant byte_bits  : natural := 8;
 	constant timer_dll  : natural := 9;
 	constant timer_200u : natural := 9;
@@ -58,10 +57,10 @@ architecture ml509_graphics of testbench is
 	signal we_n  : std_logic;
 	signal ba    : std_logic_vector (bank_bits-1 downto 0);
 	signal addr  : std_logic_vector (addr_bits-1 downto 0);
-	signal dm    : std_logic_vector(data_bytes-1 downto 0);
-	signal dq    : std_logic_vector (data_bytes*byte_bits-1 downto 0) := (others => 'Z');
-	signal dqs   : std_logic_vector (data_bytes-1 downto 0) := (others => '1');
-	signal dqs_n : std_logic_vector (data_bytes-1 downto 0) := (others => '1');
+	signal dm    : std_logic_vector(8-1 downto 0);
+	signal dq    : std_logic_vector (8*byte_bits-1 downto 0) := (others => 'Z');
+	signal dqs   : std_logic_vector (dq'length/byte_bits-1 downto 0) := (others => '1');
+	signal dqs_n : std_logic_vector (dq'length/byte_bits-1 downto 0) := (others => '1');
 	signal rdqs_n : std_logic_vector(dqs'range);
 	signal odt   : std_logic_vector(2-1 downto 0);
 
@@ -321,7 +320,7 @@ begin
 		mii_irdy   => mii_txen,
 		mii_data   => mii_txd);
 
-	simm_g : for i in 0 to dqs'length/2-1 generate
+	simm_g : for i in 0 to data_bytes/2-1 generate
 		mt_u : 	entity micron.ddr2
 		port map (
 			Ck      => clk_p(0),
