@@ -200,6 +200,7 @@ architecture graphics of ml509 is
 	signal ctlrphy_frm    : std_logic;
 	signal ctlrphy_trdy   : std_logic;
 	signal ctlr_inirdy    : std_logic;
+	signal ctlrphy_synced : std_logic;
 	signal ctlrphy_ini    : std_logic;
 	signal ctlrphy_rw     : std_logic;
 	signal ctlrphy_wlreq  : std_logic;
@@ -655,7 +656,8 @@ begin
 		begin
 			if rising_edge(phy_rxclk_bufg) then
 				gpio_led <= (others => '0');
-				gpio_led(1 to 8-1) <= tp(1 to 7);
+				gpio_led(0) <= ctlrphy_synced;
+				gpio_led(1 to 8-1) <= tp(2 to 8);
 			end if;
 		end process;
 
@@ -870,65 +872,65 @@ begin
 		WORD_SIZE   => WORD_SIZE,
 		BYTE_SIZE   => BYTE_SIZE)
 	port map (
-		tp          => tp,
-		iod_rst     => sdrphy_rst,
-		iod_clk     => sys_clk,
-		clk0        => ddr_clk0,
-		clk90       => ddr_clk90,
-		phy_frm     => ctlrphy_frm,
-		phy_trdy    => ctlrphy_trdy,
-		phy_rw      => ctlrphy_rw,
-		phy_ini     => ctlrphy_ini,
+		tp         => tp,
+		iod_rst    => sdrphy_rst,
+		iod_clk    => sys_clk,
+		clk0       => ddr_clk0,
+		clk90      => ddr_clk90,
+		phy_frm    => ctlrphy_frm,
+		phy_trdy   => ctlrphy_trdy,
+		phy_rw     => ctlrphy_rw,
+		phy_ini    => ctlrphy_ini,
+		phy_synced => ctlrphy_synced,
 
-		phy_cmd     => ctlrphy_cmd,
-		phy_rlreq   => ctlrphy_rlreq,
-		phy_rlrdy   => ctlrphy_rlrdy,
+		phy_cmd    => ctlrphy_cmd,
+		phy_rlreq  => ctlrphy_rlreq,
+		phy_rlrdy  => ctlrphy_rlrdy,
 
-		sys_cke     => ctlrphy_cke,
-		sys_cs      => ctlrphy_cs,
-		sys_ras     => ctlrphy_ras,
-		sys_cas     => ctlrphy_cas,
-		sys_we      => ctlrphy_we,
-		sys_b       => ctlrphy_ba,
-		sys_a       => ctlrphy_a,
+		sys_cke    => ctlrphy_cke,
+		sys_cs     => ctlrphy_cs,
+		sys_ras    => ctlrphy_ras,
+		sys_cas    => ctlrphy_cas,
+		sys_we     => ctlrphy_we,
+		sys_b      => ctlrphy_ba,
+		sys_a      => ctlrphy_a,
 
-		sys_dqst    => ctlrphy_dqst,
-		sys_dqsi    => ctlrphy_dqso,
-		sys_dqso    => ctlrphy_dqsi,
-		sys_dmi     => ctlrphy_dmo,
-		sys_dmt     => ctlrphy_dmt,
-		sys_dmo     => ctlrphy_dmi,
-		sys_dqi     => ctlrphy_dqo,
-		sys_dqt     => ctlrphy_dqt,
-		sys_dqo     => ctlrphy_dqi,
-		sys_odt     => ctlrphy_odt,
-		sys_sti     => ctlrphy_sto,
-		sys_sto     => ctlrphy_sti,
-		sdram_clk   => ddr2_clk,
-		sdram_cke   => ddr_cke,
-		sdram_cs    => ddr_cs,
-		sdram_ras   => ddr2_ras,
-		sdram_cas   => ddr2_cas,
-		sdram_we    => ddr2_we,
-		sdram_b     => ddr2_ba,
-		sdram_a     => ddr2_a,
-		sdram_odt   => ddr_odt,
+		sys_dqst   => ctlrphy_dqst,
+		sys_dqsi   => ctlrphy_dqso,
+		sys_dqso   => ctlrphy_dqsi,
+		sys_dmi    => ctlrphy_dmo,
+		sys_dmt    => ctlrphy_dmt,
+		sys_dmo    => ctlrphy_dmi,
+		sys_dqi    => ctlrphy_dqo,
+		sys_dqt    => ctlrphy_dqt,
+		sys_dqo    => ctlrphy_dqi,
+		sys_odt    => ctlrphy_odt,
+		sys_sti    => ctlrphy_sto,
+		sys_sto    => ctlrphy_sti,
+		sdram_clk  => ddr2_clk,
+		sdram_cke  => ddr_cke,
+		sdram_cs   => ddr_cs,
+		sdram_ras  => ddr2_ras,
+		sdram_cas  => ddr2_cas,
+		sdram_we   => ddr2_we,
+		sdram_b    => ddr2_ba,
+		sdram_a    => ddr2_a,
+		sdram_odt  => ddr_odt,
 
-		sdram_dmt   => ddr_dmt,
-		sdram_dmi   => ddr_dmi,
-		sdram_dmo   => ddr_dmo,
-		sdram_dqo   => ddr2_dqo,
-		sdram_dqi   => ddr2_d,
-		sdram_dqt   => ddr2_dqt,
-		sdram_dqst  => ddr2_dqst,
-		sdram_dqsi  => ddr2_dqsi,
-		sdram_dqso  => ddr2_dqso);
+		sdram_dmt  => ddr_dmt,
+		sdram_dmi  => ddr_dmi,
+		sdram_dmo  => ddr_dmo,
+		sdram_dqo  => ddr2_dqo,
+		sdram_dqi  => ddr2_d,
+		sdram_dqt  => ddr2_dqt,
+		sdram_dqst => ddr2_dqst,
+		sdram_dqsi => ddr2_dqsi,
+		sdram_dqso => ddr2_dqso);
 
 	ddr2_cs  <= (others => ddr_cs);
 	ddr2_cke <= (others => ddr_cke);
 	ddr2_odt <= (others => ddr_odt);
 
-	-- gpio_led_n <= ctlrphy_ini;
 	gpio_led_c <= ctlr_inirdy;
 
 	ddr2_scl <= '0';

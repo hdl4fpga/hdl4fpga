@@ -64,6 +64,7 @@ entity xc5v_sdrdqphy is
 		sys_dqo    : out std_logic_vector(data_gear*byte_size-1 downto 0);
 		sys_dqsi   : in  std_logic_vector(0 to data_gear-1);
 		sys_dqst   : in  std_logic_vector(0 to data_gear-1);
+		sto_synced : out std_logic;
 
 		sdram_dmt  : out std_logic;
 		sdram_dmo  : out std_logic;
@@ -120,7 +121,8 @@ architecture xc5v of xc5v_sdrdqphy is
 
 begin
 
-	tp(1 to 7) <= '0' & tp_dqsdly;
+	-- tp(1 to 8) <= "00" & tp_dqsdly;
+	tp(1 to 8) <= "00000" & tp_dqssel;
 	rl_b : block
 	begin
 
@@ -295,10 +297,12 @@ begin
 			sdram_sto => sto,
 			dqs_smp   => smp,
 			dqs_pre   => dqspre,
+			synced    => sto_synced,
 			sys_req   => adjbrt_req,
 			sys_rdy   => adjbrt_rdy);
 		adjsto_rdy <= to_bit(adjbrt_rdy);
 
+		-- sto_synced <= '1';
 --		process (clk90)
 --			variable q : std_logic;
 --		begin

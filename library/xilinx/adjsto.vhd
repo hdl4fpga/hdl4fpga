@@ -16,6 +16,7 @@ entity adjsto is
 		sys_rdy  : buffer std_logic;
 		dqs_smp  : in  std_logic_vector;
 		dqs_pre  : out std_logic;
+		synced   : out std_logic;
 		sdram_sti  : in  std_logic;
 		sdram_sto  : buffer std_logic);
 end;
@@ -33,7 +34,7 @@ architecture def of adjsto is
 	signal step_rdy : std_logic;
 
 	signal seq   : std_logic_vector(0 to dqs_smp'length-1);
-		signal pre   : unsigned(seq'range);
+	signal pre   : unsigned(seq'range);
 begin
 
 	tp(1 to 3) <= std_logic_vector(sel);
@@ -89,8 +90,8 @@ begin
 								sync <= sync;
 								dqs_pre <= '0';
 							elsif shift_left(unsigned(dqs_smp),1)=pre and (inv='1' or both) then
-								dqs_pre <= '1';
 								sync <= sync;
+								dqs_pre <= '1';
 							else
 								sync <= '0';
 							end if;
@@ -119,24 +120,28 @@ begin
 				if start='0' then
 					sel      <= (others => '0');
 					start    := '1';
+					synced   <= '0';
 					step_req <= not to_stdulogic(to_bit(step_rdy));
 				elsif start='1' then
 					if sel(0)='0' then
 						if to_bit(step_req xor step_rdy)='0' then
 							if sync ='0' then
+								synced   <= '0';
 								sel      <= sel + 1;
 								step_req <= not step_rdy;
 							else
+								synced <= '1';
 								sys_rdy <= to_stdulogic(to_bit(sys_req));
 							end if;
 						end if;
 					else
+						synced   <= '0';
 						step_req <= to_stdulogic(to_bit(step_rdy));
 						sys_rdy  <= to_stdulogic(to_bit(sys_req));
 					end if;
 				end if;
 			else
-				start   := '0';
+				start    := '0';
 				step_req <= to_stdulogic(to_bit(step_rdy));
 				sys_rdy  <= to_stdulogic(to_bit(sys_req));
 			end if;
