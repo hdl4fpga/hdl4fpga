@@ -68,6 +68,7 @@ architecture ml509_graphics of testbench is
 	signal sda   : std_logic;
 
 	signal mii_refclk : std_logic;
+	signal req    : std_logic := '0';
 	signal mii_req    : std_logic := '0';
 	signal mii_req1   : std_logic := '0';
 	signal ping_req   : std_logic := '0';
@@ -184,6 +185,7 @@ architecture ml509_graphics of testbench is
 
 	signal datarx_null :  std_logic_vector(mii_rxd'range);
 	signal sw : std_logic;
+		signal x : natural := 0;
 begin
 
 	rst   <= '1', '0' after 1.1 us;
@@ -202,27 +204,28 @@ begin
 	mii_txc <= mii_refclk;
 
 	process
-		variable x : natural := 0;
 	begin
-		mii_req <= '0';
+		req <= '0';
 		wait for 30 us;
 		loop
-			if mii_req='1' then
+			if req='1' then
 				wait on mii_rxdv;
 				if falling_edge(mii_rxdv) then
-					mii_req <= '0';
-					x := x + 1;
+					req <= '0';
+					x <= x + 1;
 					wait for 30 us;
 				end if;
 			else
-				if x > 0 then
+				if x > 1 then
 					wait;
 				end if;
-				mii_req <= '1';
-				wait on mii_req;
+				req <= '1';
+				wait on req;
 			end if;
 		end loop;
 	end process;
+	mii_req <= req when x=0 else '0';
+	mii_req1 <= req when x=1 else '0';
 
 	htb_e : entity hdl4fpga.eth_tb
 	generic map (
@@ -266,14 +269,14 @@ begin
 		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_0003ff_1603_0007_3000",
-		mii_data5 => x"010000_1702_0003ff_1603_8007_3000",
+		x"1702_0003ff_1603_0000_0000",
+		mii_data5 => x"010000_1702_0003ff_1603_8000_0000",
 --		mii_data4 => x"01007e_1702_000030_1603_8000_07d0",
-		mii_frm1 => mii_req,
+		mii_frm1 => '0', --mii_req,
 		mii_frm2 => '0',
 		mii_frm3 => '0',
-		mii_frm4 => '0', --mii_req,
-		mii_frm5 => '0',
+		mii_frm4 => mii_req,
+		mii_frm5 => mii_req1,
 
 		mii_txc  => mii_rxc,
 		mii_txen => mii_rxdv,
