@@ -181,10 +181,10 @@ architecture graphics of ml509 is
 	constant bank_size    : natural := ddr2_ba'length;
 	constant addr_size    : natural := ddr2_a'length;
 	constant coln_size    : natural := 7;
-	-- constant word_size    : natural := ddr2_d'length;
-	-- constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
-	constant word_size    : natural := 16;
-	constant byte_size    : natural := 8;
+	constant word_size    : natural := ddr2_d'length;
+	constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
+	-- constant word_size    : natural := 16;
+	-- constant byte_size    : natural := 8;
 
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
@@ -238,7 +238,7 @@ architecture graphics of ml509 is
 	signal ctlrphy_sto    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
 	signal ctlrphy_sti    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
 
-	signal ddr2_clk       : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr2_clk       : std_logic_vector(ddr2_clk_p'range);
 	signal ddr2_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr2_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr2_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -670,7 +670,7 @@ begin
 	generic map (
 		debug => debug,
 		profile      => 1,
-		sdram_tcp      => sdram_tcp,
+		sdram_tcp    => sdram_tcp,
 		fpga         => xc5v,
 		mark         => MT47H512M3,
 		sclk_phases  => sclk_phases,
@@ -684,6 +684,7 @@ begin
 		coln_size    => coln_size,
 		word_size    => word_size,
 		byte_size    => byte_size,
+		burst_length => 4,
 
 		timing_id    => videoparam(video_mode).timing,
 		red_length   => 8,
@@ -717,7 +718,7 @@ begin
 		ctlr_rst      => ddrsys_rst,
 		ctlr_cwl      => b"0_11",
 		ctlr_rtt      => b"0_11",
-		ctlr_bl       => "011", --"001",
+		ctlr_bl       => "010", --"001",
 		ctlr_cl       => "101", --ddr_param.cl,
 		ctlr_cmd      => ctlrphy_cmd,
 		ctlr_inirdy   => ctlr_inirdy,

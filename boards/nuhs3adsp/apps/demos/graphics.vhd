@@ -558,7 +558,7 @@ begin
 	generic map (
 		debug        => debug,
 		profile      => 1,
-		sdram_tcp      => sdram_tcp,
+		sdram_tcp    => sdram_tcp,
 		fpga         => xc3s,
 		mark         => MT46V256M6T,
 		sclk_phases  => sclk_phases,
