@@ -64,7 +64,7 @@ architecture graphics of ml509 is
 	end record;
 
 	type video_params is record
-		id   : video_modes;
+		id     : video_modes;
 		pll    : pll_params;
 		timing : videotiming_ids;
 	end record;
