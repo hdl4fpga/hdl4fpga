@@ -395,8 +395,11 @@ begin
 				rst    => dcm_rst,
 				clkin  => ddr_clk,
 				clkfb  => '0',
-				clk0   => ddr_clk0_bufg,
-				clk90  => ddr_clk90_bufg,
+				-- clk0   => ddr_clk0_bufg,
+				-- clk90  => ddr_clk90_bufg,
+				clk0   => ddr_clk0x2_bufg,
+				clk90  => ddr_clk90x2_bufg,
+				clkdv  => ddr_clk0_bufg,
 				locked => ddr_locked);
   
 			bufg0_i : bufg
