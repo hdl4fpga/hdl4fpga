@@ -389,6 +389,7 @@ begin
 			generic map (
 				clk_feedback       => "NONE",
 				clkin_period       => sdram_tcp*1.0e9,
+				clkdv_divide       => 2.0,
 				dll_frequency_mode => "HIGH")
 			port map (
 				rst    => dcm_rst,
