@@ -171,12 +171,19 @@ architecture graphics of ml509 is
 	alias vs              : std_logic is hdr1(3);
 	alias hs              : std_logic is hdr1(4);
 
-	constant sclk_phases  : natural := 4;
-	constant sclk_edges   : natural := 2;
-	constant cmmd_gear    : natural := 1;
-	constant data_phases  : natural := 2;
-	constant data_edges   : natural := 2;
-	constant data_gear    : natural := 2;
+	constant sclk_phases  : natural := 1;
+	constant sclk_edges   : natural := 1;
+	constant data_edges   : natural := 1;
+	constant cmmd_gear    : natural := 2;
+	constant data_gear    : natural := 4;
+	constant data_phases  : natural := data_gear;
+
+	-- constant sclk_phases  : natural := 4;
+	-- constant sclk_edges   : natural := 2;
+	-- constant data_edges   : natural := 2;
+	-- constant cmmd_gear    : natural := 1;
+	-- constant data_gear    : natural := 2;
+	-- constant data_phases  : natural := 2;
 
 	constant bank_size    : natural := ddr2_ba'length;
 	constant addr_size    : natural := ddr2_a'length;
@@ -258,6 +265,7 @@ architecture graphics of ml509 is
 	signal phy_rxclk_bufg : std_logic;
 	signal phy_txclk_bufg : std_logic;
 
+	alias  ctlr_clk       : std_logic is ddr_clk0;
 	alias  mii_txc        : std_logic is gtx_clk;
 	alias  sio_clk        : std_logic is gtx_clk;
 	alias  dmacfg_clk     : std_logic is gtx_clk;
@@ -670,7 +678,8 @@ begin
 	generic map (
 		debug => debug,
 		profile      => 1,
-		sdram_tcp    => sdram_tcp,
+		sdram_tcp    => 2.0*sdram_tcp,
+		-- sdram_tcp    => sdram_tcp,
 		fpga         => xc5v,
 		mark         => MT47H512M3,
 		sclk_phases  => sclk_phases,
@@ -713,7 +722,7 @@ begin
 		video_pixel   => video_pixel,
 		dvid_crgb     => dvid_crgb,
 
-		ctlr_clks(0)  => ddr_clk0,
+		ctlr_clks(0)  => ctlr_clk,
 		ctlr_clks(1)  => ddr_clk90,
 		ctlr_rst      => ddrsys_rst,
 		ctlr_cwl      => b"0_11",

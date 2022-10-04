@@ -165,6 +165,9 @@ architecture graphics of arty is
 		sdr575MHz_900p24bpp => (io_ipoe, sdram575MHz, mode900p24bpp),
 		sdr600MHz_900p24bpp => (io_ipoe, sdram600MHz, mode900p24bpp));
 
+	constant video_mode   : video_modes :=setdebug(debug, profile_tab(app_profile).video_mode);
+	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
+	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 
 	signal sys_rst : std_logic;
 
@@ -182,62 +185,7 @@ architecture graphics of arty is
 	constant sys_per  : real := 10.0e-9;
 	constant sys_freq : real := 1.0/(sys_per);
 
-	type ddr_params is record
-		pll : pll_params;
-		cl  : std_logic_vector(0 to 3-1);
-		cwl : std_logic_vector(0 to 3-1);
-	end record;
-
-	type ddr_speeds is (
-		ddr333MHz,
-		ddr350MHz,
-		ddr375MHz,
-		ddr400MHz,
-		ddr425MHz,
-		ddr450MHz,
-		ddr475MHz,
-		ddr500MHz,
-		ddr525MHz,
-		ddr550MHz,
-		ddr575MHz,
-		ddr600MHz);
-
-	type ddram_vector is array (ddr_speeds) of ddr_params;
-
-	constant ddr_tab : ddram_vector := (
-
-		------------------------------------------------------------------------
-		-- Frequency   -- 333 Mhz -- 350 Mhz -- 375 Mhz -- 400 Mhz -- 425 Mhz --
-		-- Multiply by --  10     --   7     --  15     --   4     --  17     --
-		-- Divide by   --   3     --   2     --   4     --   1     --   4     --
-		------------------------------------------------------------------------
-
-		ddr333MHz => (pll => (dcm_mul => 10, dcm_div => 3), cl => "001", cwl => "000"),
-		ddr350MHz => (pll => (dcm_mul =>  7, dcm_div => 2), cl => "010", cwl => "000"),
-		ddr375MHz => (pll => (dcm_mul => 15, dcm_div => 4), cl => "010", cwl => "000"),
-		ddr400MHz => (pll => (dcm_mul =>  4, dcm_div => 1), cl => "010", cwl => "000"),
-		ddr425MHz => (pll => (dcm_mul => 17, dcm_div => 4), cl => "011", cwl => "001"),
-
-		------------------------------------------------------------------------
-		-- Frequency   -- 450 Mhz -- 475 Mhz -- 500 Mhz -- 525 Mhz -- 550 Mhz --
-		-- Multiply by --   9     --  19     --   5     --  21     --  22     --
-		-- Divide by   --   2     --   4     --   1     --   4     --   4     --
-		------------------------------------------------------------------------
-
-		ddr450MHz => (pll => (dcm_mul =>  9, dcm_div => 2), cl => "011", cwl => "001"),
-		ddr475MHz => (pll => (dcm_mul => 19, dcm_div => 4), cl => "011", cwl => "001"),
-		ddr500MHz => (pll => (dcm_mul =>  5, dcm_div => 1), cl => "011", cwl => "001"),
-		ddr525MHz => (pll => (dcm_mul => 21, dcm_div => 4), cl => "011", cwl => "001"),
-		ddr550MHz => (pll => (dcm_mul => 11, dcm_div => 2), cl => "101", cwl => "010"),  -- latency 9
-		
-		---------------------------------------
-		-- Frequency   -- 575 Mhz -- 600 Mhz --
-		-- Multiply by --  23     --   6     --
-		-- Divide by   --   4     --   1     --
-		---------------------------------------
-
-		ddr575MHz => (pll => (dcm_mul => 23, dcm_div => 4), cl => "101", cwl => "010"),  -- latency 9
-		ddr600MHz => (pll => (dcm_mul =>  6, dcm_div => 1), cl => "101", cwl => "010")); -- latency 9
+	constant sdram_tcp   : real := (sys_per*real(sdram_params.pll.dcm_div))/real(sdram_params.pll.dcm_mul); -- 1 ns /1ps
 
 	constant sclk_phases  : natural := 1;
 	constant sclk_edges   : natural := 1;
@@ -250,7 +198,6 @@ architecture graphics of arty is
 	constant coln_size    : natural := 10;
 	constant word_size    : natural := ddr3_dq'length;
 	constant byte_size    : natural := ddr3_dq'length/ddr3_dqs_p'length;
-
 
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk0x2     : std_logic;
@@ -297,12 +244,6 @@ architecture graphics of arty is
 	signal ddr3_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr3_dqo       : std_logic_vector(word_size-1 downto 0);
 	signal ddr3_dqt       : std_logic_vector(word_size-1 downto 0);
-
-	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
-	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
-	constant video_mode   : video_modes :=setdebug(debug, profile_tab(app_profile).video_mode);
-
-	constant sdram_tcp   : real := (sys_per*real(sdram_params.pll.dcm_div))/real(sdram_params.pll.dcm_mul); -- 1 ns /1ps
 
 	alias  sys_clk        : std_logic is gclk100;
 	alias  ctlr_clk       : std_logic is ddr_clk0;
@@ -740,7 +681,7 @@ begin
 	generic map (
 		debug        => debug,
 		profile      => 1,
-		sdram_tcp      => 2.0*sdram_tcp,
+		sdram_tcp    => 2.0*sdram_tcp,
 		fpga         => xc7a,
 		mark         => MT41K2G125,
 		sclk_phases  => sclk_phases,

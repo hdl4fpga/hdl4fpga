@@ -107,8 +107,6 @@ architecture xc5v of xc5v_sdrdqphy is
 	signal dqspau_req : std_logic;
 	signal dqspau_rdy : std_logic;
 
-	signal imdr_rst   : std_logic;
-	signal omdr_rst   : std_logic;
 	signal tp_dqidly  : std_logic_vector(0 to 6-1);
 	signal tp_dqsdly  : std_logic_vector(0 to 6-1);
 	signal tp_dqssel  : std_logic_vector(0 to 3-1);
@@ -216,21 +214,13 @@ begin
 		end if;
 	end process;
 
-	process (clk0)
-	begin
-		if rising_edge(clk0) then
-			imdr_rst <= iod_rst;
-			omdr_rst <= iod_rst;
-		end if;
-	end process;
-
 	dqsi_b : block
 		signal delay    : std_logic_vector(0 to 6-1);
 		signal dqsi     : std_logic;
 		signal dqsi_buf : std_logic;
 		signal smp      : std_logic_vector(data_gear-1 downto 0);
 		signal sto      : std_logic;
-		signal imdr_clk : std_logic_vector(0 to 5-1);
+		signal igbx_clk : std_logic_vector(0 to 5-1);
 	begin
 
 		adjdqs_e : entity hdl4fpga.adjpha
@@ -259,30 +249,24 @@ begin
 			dataout => dqsi_buf);
 
 		data_gear2_g : if data_gear=2 generate
-			imdr_clk(0 to 2-1) <= (0 => clk0, 1 => clk0);
+			igbx_clk(0 to 2-1) <= (0 => clk0, 1 => clk0);
 		end generate;
 
 		data_gear4_g : if data_gear=4 generate
-			imdr_clk <= (0 => clk0, 1 => clk0x2, 2 => not clk90x2, 3 => not clk0x2, 4 => clk90x2);
+			igbx_clk <= (0 => clk0, 1 => clk0x2, 2 => not clk90x2, 3 => not clk0x2, 4 => clk90x2);
 		end generate;
 
-		imdr_i : entity hdl4fpga.imdr
+		igbx_i : entity hdl4fpga.igbx
 		generic map (
 			SIZE => 1,
 			GEAR => data_gear)
 		port map (
-			rst  => imdr_rst,
-			clk  => imdr_clk,
+			rst  => iod_rst,
+			clk  => igbx_clk,
 			d(0) => dqsi_buf,
 			q    => smp);
 
 		tp_dqsdly <= delay;
-		process (clk0)
-		begin
-			if rising_edge(clk0) then
-				imdr_rst <= iod_rst;
-			end if;
-		end process;
 
 		adjbrt_req <= to_stdulogic(adjsto_req);
 		adjsto_e : entity hdl4fpga.adjsto
@@ -328,7 +312,7 @@ begin
 	end block;
 
 	iddr_g : for i in 0 to byte_size-1 generate
-		signal imdr_clk  : std_logic_vector(0 to 5-1);
+		signal igbx_clk  : std_logic_vector(0 to 5-1);
 		signal dqii      : std_logic_vector(data_gear-1 downto 0);
 	begin
 		adjdqi_b : block
@@ -378,20 +362,20 @@ begin
 		end block;
 
 		data_gear2_g : if data_gear=2 generate
-			imdr_clk(0 to 2-1) <= (0 => clk0, 1 => clk0);
+			igbx_clk(0 to 2-1) <= (0 => clk0, 1 => clk0);
 		end generate;
 
 		data_gear4_g : if data_gear=4 generate
-			imdr_clk <= (0 => clk90, 1 => clk90x2, 2 => clk90x2, 3 => not clk90x2, 4 => not clk90x2);
+			igbx_clk <= (0 => clk90, 1 => clk90x2, 2 => clk90x2, 3 => not clk90x2, 4 => not clk90x2);
 		end generate;
 
-		imdr_i : entity hdl4fpga.imdr
+		igbx_i : entity hdl4fpga.igbx
 		generic map (
 			SIZE => 1,
 			GEAR => data_gear)
 		port map (
-			rst  => imdr_rst,
-			clk  => imdr_clk,
+			rst  => iod_rst,
+			clk  => igbx_clk,
 			d(0) => dqi(i),
 			q    => dqii);
 
@@ -446,13 +430,13 @@ begin
 				end generate;
 			end generate;
 	
-			omdr_i : entity hdl4fpga.omdr
+			ogbx_i : entity hdl4fpga.ogbx
 			generic map (
 				SIZE => 1,
 				DATA_EDGE => setif(data_edge, "OPPOSITE_EDGE", "SAME_EDGE"),
 				GEAR => data_gear)
 			port map (
-				rst   => omdr_rst,
+				rst   => iod_rst,
 				clk   => dqclk,
 				t     => dqt,
 				tq(0) => sdram_dqt(i),
@@ -462,9 +446,8 @@ begin
 		end generate;
 	
 		dmo_g : block
-			signal dmt   : std_logic_vector(sys_dmt'range);
-			signal dmi   : std_logic_vector(sys_dmi'range);
-			signal omdr_rst  : std_logic;
+			signal dmt : std_logic_vector(sys_dmt'range);
+			signal dmi : std_logic_vector(sys_dmi'range);
 		begin
 	
 			registered_g : for i in clks'range generate
@@ -478,13 +461,13 @@ begin
 				end generate;
 			end generate;
 	
-			omdr_i : entity hdl4fpga.omdr
+			ogbx_i : entity hdl4fpga.ogbx
 			generic map (
 				SIZE => 1,
 				DATA_EDGE => setif(data_edge, "OPPOSITE_EDGE", "SAME_EDGE"),
 				GEAR => data_gear)
 			port map (
-				rst   => omdr_rst,
+				rst   => iod_rst,
 				clk   => dqclk,
 				tq(0) => sdram_dmt,
 				d     => dmi,
@@ -519,13 +502,13 @@ begin
 			dqsclk <= (0 => clk0, 1 => clk0x2);
 		end generate;
 
-		omdr_i : entity hdl4fpga.omdr
+		ogbx_i : entity hdl4fpga.ogbx
 		generic map (
 			SIZE => 1,
 			DATA_EDGE => setif(data_edge, "OPPOSITE_EDGE", "SAME_EDGE"),
 			GEAR => data_gear)
 		port map (
-			rst  => omdr_rst,
+			rst  => iod_rst,
 			clk  => dqsclk,
 			t    => dqst,
 			tq(0)=> sdram_dqst,

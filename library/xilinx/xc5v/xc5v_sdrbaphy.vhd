@@ -26,10 +26,10 @@ use ieee.std_logic_1164.all;
 
 entity xc5v_sdrbaphy is
 	generic (
-		DATA_EDGE  : string  := "OPPOSITE_EDGE";
-		GEAR       : natural := 2;
-		BANK_SIZE  : natural := 2;
-		ADDR_SIZE  : natural := 13);
+		data_edge  : string  := "SAME_EDGE";
+		gear       : natural := 2;
+		bank_size  : natural := 2;
+		addr_size  : natural := 13);
 	port (
 		sys_clks  : in  std_logic_vector(0 to 2-1);
 
@@ -61,9 +61,9 @@ architecture xc5v of xc5v_sdrbaphy is
 
 begin
 
-	rst_i : entity hdl4fpga.omdr
+	rst_i : entity hdl4fpga.ogbx
 	generic map (
-		DATA_EDGE => DATA_EDGE,
+		data_edge => data_edge,
 		size => 1,
 		gear => gear)
 	port map (
@@ -72,9 +72,9 @@ begin
 		d    => sys_rst,
 		q(0) => sdram_rst);
 
-	cke_i : entity hdl4fpga.omdr
+	cke_i : entity hdl4fpga.ogbx
 	generic map (
-		DATA_EDGE => DATA_EDGE,
+		data_edge => data_edge,
 		size => 1,
 		gear => gear)
 	port map (
@@ -83,9 +83,9 @@ begin
 		d    => sys_cke,
 		q(0) => sdram_cke);
 
-	cs_i : entity hdl4fpga.omdr
+	cs_i : entity hdl4fpga.ogbx
 	generic map (
-		DATA_EDGE => DATA_EDGE,
+		data_edge => data_edge,
 		size => 1,
 		gear => gear)
 	port map (
@@ -94,9 +94,9 @@ begin
 		d    => sys_cs,
 		q(0) => sdram_cs);
 
-	ras_i : entity hdl4fpga.omdr
+	ras_i : entity hdl4fpga.ogbx
 	generic map (
-		DATA_EDGE => DATA_EDGE,
+		data_edge => data_edge,
 		size => 1,
 		gear => gear)
 	port map (
@@ -105,9 +105,9 @@ begin
 		d    => sys_ras,
 		q(0) => sdram_ras);
 
-	cas_i : entity hdl4fpga.omdr
+	cas_i : entity hdl4fpga.ogbx
 	generic map (
-		DATA_EDGE => DATA_EDGE,
+		data_edge => data_edge,
 		size => 1,
 		gear => gear)
 	port map (
@@ -116,9 +116,9 @@ begin
 		d    => sys_cas,
 		q(0) => sdram_cas);
 
-	we_i : entity hdl4fpga.omdr
+	we_i : entity hdl4fpga.ogbx
 	generic map (
-		DATA_EDGE => DATA_EDGE,
+		data_edge => data_edge,
 		size => 1,
 		gear => gear)
 	port map (
@@ -127,9 +127,9 @@ begin
 		d    => sys_we,
 		q(0) => sdram_we);
 
-	odt_i : entity hdl4fpga.omdr
+	odt_i : entity hdl4fpga.ogbx
 	generic map (
-		DATA_EDGE => DATA_EDGE,
+		data_edge => data_edge,
 		size => 1,
 		gear => gear)
 	port map (
@@ -138,9 +138,9 @@ begin
 		d    => sys_odt,
 		q(0) => sdram_odt);
 
-	ba_i : entity hdl4fpga.omdr
+	ba_i : entity hdl4fpga.ogbx
 	generic map (
-		DATA_EDGE => DATA_EDGE,
+		data_edge => data_edge,
 		size => sdram_b'length,
 		gear => gear)
 	port map (
@@ -149,9 +149,9 @@ begin
 		d   => sys_b,
 		q   => sdram_b);
 
-	a_i : entity hdl4fpga.omdr
+	a_i : entity hdl4fpga.ogbx
 	generic map (
-		DATA_EDGE => DATA_EDGE,
+		data_edge => data_edge,
 		size => sdram_a'length,
 		gear => gear)
 	port map (

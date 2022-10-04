@@ -33,7 +33,7 @@ entity xc5v_sdrphy is
 	generic (
 		taps       : natural;
 		gate_delay : natural := 1;
-		CMMD_GEAR  : natural := 1;
+		cmmd_gear  : natural := 1;
 		data_gear  : natural := 2;
 		data_edge  : boolean := true;
 		bank_size  : natural := 2;
@@ -59,15 +59,15 @@ entity xc5v_sdrphy is
 		phy_ini    : out std_logic;
 		phy_synced : out std_logic;
 
-		sys_rst    : in  std_logic_vector(CMMD_GEAR-1 downto 0) := (others => '1');
-		sys_cs     : in  std_logic_vector(CMMD_GEAR-1 downto 0) := (others => '0');
-		sys_cke    : in  std_logic_vector(CMMD_GEAR-1 downto 0);
-		sys_ras    : in  std_logic_vector(CMMD_GEAR-1 downto 0);
-		sys_cas    : in  std_logic_vector(CMMD_GEAR-1 downto 0);
-		sys_we     : in  std_logic_vector(CMMD_GEAR-1 downto 0);
-		sys_b      : in  std_logic_vector(CMMD_GEAR*bank_size-1 downto 0);
-		sys_a      : in  std_logic_vector(CMMD_GEAR*addr_size-1 downto 0);
-		sys_odt    : in  std_logic_vector(CMMD_GEAR-1 downto 0);
+		sys_rst    : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '1');
+		sys_cs     : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '0');
+		sys_cke    : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_ras    : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_cas    : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_we     : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_b      : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
+		sys_a      : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
+		sys_odt    : in  std_logic_vector(cmmd_gear-1 downto 0);
 
 		sys_dmt    : in  std_logic_vector(0 to data_gear*word_size/byte_size-1);
 		sys_dmi    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -104,7 +104,6 @@ entity xc5v_sdrphy is
 		sdram_dqst : out std_logic_vector(word_size/byte_size-1 downto 0);
 		sdram_dqsi : in std_logic_vector(word_size/byte_size-1 downto 0);
 		sdram_dqso : out std_logic_vector(word_size/byte_size-1 downto 0));
-
 
 end;
 
@@ -443,7 +442,7 @@ begin
 
 	sdrbaphy_i : entity hdl4fpga.xc5v_sdrbaphy
 	generic map (
-		GEAR      => CMMD_GEAR,
+		gear      => cmmd_gear,
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
