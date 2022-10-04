@@ -220,7 +220,9 @@ architecture graphics of ml509 is
 	signal ctlrphy_rlseq  : std_logic;
 
 	signal ddr_clk0       : std_logic;
+	signal ddr_clk0x2     : std_logic;
 	signal ddr_clk90      : std_logic;
+	signal ddr_clk90x2    : std_logic;
 	signal ddr_ba         : std_logic_vector(ddr2_ba'range);
 	signal ddr_a          : std_logic_vector(ddr2_a'range);
 	signal ctlrphy_rst    : std_logic_vector(0 to cmmd_gear-1);
@@ -390,6 +392,8 @@ begin
 		end process;
 
 		dcm_b : block
+			signal ddr_clk0_bufg    : std_logic;
+			signal ddr_clk90_bufg   : std_logic;
 			signal ddr_clk0x2_bufg  : std_logic;
 			signal ddr_clk90x2_bufg : std_logic;
 		begin
@@ -403,7 +407,7 @@ begin
 			port map (
 				rst    => dcm_rst,
 				clkin  => ddr_clk,
-				clkfb  => ddr_clk0,
+				clkfb  => ddr_clk,
 				-- clk0   => ddr_clk0_bufg,
 				-- clk90  => ddr_clk90_bufg,
 				clk0   => ddr_clk0x2_bufg,
@@ -434,8 +438,8 @@ begin
 				dll_frequency_mode => "HIGH")
 			port map (
 				rst    => dcm_rst,
-				clkin  => ddr_clk,
-				clkfb  => ddr_clk90,
+				clkin  => ddr_clk180,
+				clkfb  => ddr_clk180,
 				clkdv  => ddr_clk90_bufg,
 				locked => ddr_locked);
   
@@ -914,17 +918,19 @@ begin
 	generic map (
 		taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
 		data_edge   => true,
-		BANK_SIZE   => BANK_SIZE,
-		ADDR_SIZE   => ADDR_SIZE,
-		DATA_GEAR   => DATA_GEAR,
-		WORD_SIZE   => WORD_SIZE,
-		BYTE_SIZE   => BYTE_SIZE)
+		bank_size   => bank_size,
+		addr_size   => addr_size,
+		data_gear   => data_gear,
+		word_size   => word_size,
+		byte_size   => byte_size)
 	port map (
 		tp         => tp,
 		iod_rst    => sdrphy_rst,
 		iod_clk    => sys_clk,
 		clk0       => ddr_clk0,
 		clk90      => ddr_clk90,
+		clk0x2     => ddr_clk0x2,
+		clk90x2    => ddr_clk90x2,
 		phy_frm    => ctlrphy_frm,
 		phy_trdy   => ctlrphy_trdy,
 		phy_rw     => ctlrphy_rw,
