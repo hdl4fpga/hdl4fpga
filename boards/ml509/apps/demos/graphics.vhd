@@ -398,55 +398,82 @@ begin
 			signal ddr_clk90x2_bufg : std_logic;
 		begin
 
-			dcm_i : dcm_base
-			generic map (
-				clk_feedback => "1X",
-				clkin_period => sdram_tcp*1.0e9,
-				clkdv_divide => 2.0,
-				dll_frequency_mode => "HIGH")
-			port map (
-				rst    => dcm_rst,
-				clkin  => ddr_clk,
-				clkfb  => ddr_clk,
-				-- clk0   => ddr_clk0_bufg,
-				-- clk90  => ddr_clk90_bufg,
-				clk0   => ddr_clk0x2_bufg,
-				clk90  => ddr_clk90x2_bufg,
-				clkdv  => ddr_clk0_bufg,
-				locked => ddr_locked);
-  
-			bufg0x2_i : bufg
-			port map (
-				i => ddr_clk0x2_bufg,
-				o => ddr_clk0x2);
+			dcm1_g : if sclk_phases/sclk_edges > 1 generate 
+				dcm_i : dcm_base
+				generic map (
+					clk_feedback => "1X",
+					clkin_period => sdram_tcp*1.0e9,
+					dll_frequency_mode => "HIGH")
+				port map (
+					rst    => dcm_rst,
+					clkin  => ddr_clk,
+					clkfb  => ddr_clk,
+					clk0   => ddr_clk0_bufg,
+					clk90  => ddr_clk90_bufg,
+					locked => ddr_locked);
+	
+				bufg0_i : bufg
+				port map (
+					i => ddr_clk0_bufg,
+					o => ddr_clk0);
+	
+				bufg90_i : bufg
+				port map (
+					i => ddr_clk90_bufg,
+					o => ddr_clk90);
+			end generate;
 
-			bufg90x2_i : bufg
-			port map (
-				i => ddr_clk90x2_bufg,
-				o => ddr_clk90x2);
-
-			bufg0_i : bufg
-			port map (
-				i => ddr_clk0_bufg,
-				o => ddr_clk0);
-
-			dcm90_i : dcm_base
-			generic map (
-				clk_feedback => "1X",
-				clkin_period => sdram_tcp*1.0e9,
-				clkdv_divide => 2.0,
-				dll_frequency_mode => "HIGH")
-			port map (
-				rst    => dcm_rst,
-				clkin  => ddr_clk180,
-				clkfb  => ddr_clk180,
-				clkdv  => ddr_clk90_bufg,
-				locked => ddr_locked);
-  
-			bufg90_i : bufg
-			port map (
-				i => ddr_clk90_bufg,
-				o => ddr_clk90);
+			dcm2_g : if sclk_phases/sclk_edges < 2 generate 
+				dcm_i : dcm_base
+				generic map (
+					clk_feedback => "1X",
+					clkin_period => sdram_tcp*1.0e9,
+					clkdv_divide => 2.0,
+					dll_frequency_mode => "HIGH")
+				port map (
+					rst    => dcm_rst,
+					clkin  => ddr_clk,
+					clkfb  => ddr_clk,
+					-- clk0   => ddr_clk0_bufg,
+					-- clk90  => ddr_clk90_bufg,
+					clk0   => ddr_clk0x2_bufg,
+					clk90  => ddr_clk90x2_bufg,
+					clkdv  => ddr_clk0_bufg,
+					locked => ddr_locked);
+	
+				bufg0x2_i : bufg
+				port map (
+					i => ddr_clk0x2_bufg,
+					o => ddr_clk0x2);
+	
+				bufg90x2_i : bufg
+				port map (
+					i => ddr_clk90x2_bufg,
+					o => ddr_clk90x2);
+	
+				bufg0_i : bufg
+				port map (
+					i => ddr_clk0_bufg,
+					o => ddr_clk0);
+	
+				dcm90_i : dcm_base
+				generic map (
+					clk_feedback => "1X",
+					clkin_period => sdram_tcp*1.0e9,
+					clkdv_divide => 2.0,
+					dll_frequency_mode => "HIGH")
+				port map (
+					rst    => dcm_rst,
+					clkin  => ddr_clk180,
+					clkfb  => ddr_clk180,
+					clkdv  => ddr_clk90_bufg,
+					locked => ddr_locked);
+	
+				bufg90_i : bufg
+				port map (
+					i => ddr_clk90_bufg,
+					o => ddr_clk90);
+			end generate;
 
 		end block;
 
