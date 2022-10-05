@@ -2,12 +2,12 @@ onerror {resume}
 quietly virtual signal -install /testbench/du_e { /testbench/du_e/ddr2_d(15 downto 0)} chip_dq0
 quietly virtual signal -install /testbench/du_e { /testbench/du_e/ddr2_d(15 downto 0)} dq16
 quietly WaveActivateNextPane {} 0
-add wave -noupdate -expand -group phy_rx /testbench/du_e/phy_rxclk
-add wave -noupdate -expand -group phy_rx /testbench/du_e/phy_rxctl_rxdv
-add wave -noupdate -expand -group phy_rx -radix hexadecimal /testbench/du_e/phy_rxd
-add wave -noupdate -expand -group phy_tx /testbench/du_e/phy_txclk
-add wave -noupdate -expand -group phy_tx /testbench/du_e/phy_txctl_txen
-add wave -noupdate -expand -group phy_tx -radix hexadecimal /testbench/du_e/phy_txd
+add wave -noupdate -group phy_rx /testbench/du_e/phy_rxclk
+add wave -noupdate -group phy_rx /testbench/du_e/phy_rxctl_rxdv
+add wave -noupdate -group phy_rx -radix hexadecimal /testbench/du_e/phy_rxd
+add wave -noupdate -group phy_tx /testbench/du_e/phy_txclk
+add wave -noupdate -group phy_tx /testbench/du_e/phy_txctl_txen
+add wave -noupdate -group phy_tx -radix hexadecimal /testbench/du_e/phy_txd
 add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_clk_p(0)
 add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_cs(0)
 add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_cke(0)
@@ -31,14 +31,10 @@ add wave -noupdate /testbench/du_e/sdrphy_e/phy_rlrdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/rl_req
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/rl_rdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/req
-add wave -noupdate /testbench/mii_req
-add wave -noupdate /testbench/mii_req1
-add wave -noupdate /testbench/x
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {70460100 ps} 1} {{Cursor 2} {70442536 ps} 0}
-quietly wave cursor active 2
-configure wave -namecolwidth 139
+WaveRestoreCursors {{Cursor 1} {8481682 ps} 0}
+quietly wave cursor active 1
+configure wave -namecolwidth 200
 configure wave -valuecolwidth 94
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -52,4 +48,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {70350317 ps} {70613142 ps}
+WaveRestoreZoom {0 ps} {21 us}

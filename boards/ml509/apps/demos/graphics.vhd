@@ -396,9 +396,11 @@ begin
 			signal ddr_clk90_bufg   : std_logic;
 			signal ddr_clk0x2_bufg  : std_logic;
 			signal ddr_clk90x2_bufg : std_logic;
+			signal ddr0_locked      : std_logic;
+			signal ddr90_locked     : std_logic;
 		begin
 
-			dcm1_g : if sclk_phases/sclk_edges > 1 generate 
+			gbx2_g : if sclk_phases/sclk_edges > 1 generate 
 				dcm_i : dcm_base
 				generic map (
 					clk_feedback => "1X",
@@ -423,7 +425,7 @@ begin
 					o => ddr_clk90);
 			end generate;
 
-			dcm2_g : if sclk_phases/sclk_edges < 2 generate 
+			gbx4_g : if sclk_phases/sclk_edges < 2 generate 
 				dcm_i : dcm_base
 				generic map (
 					clk_feedback => "1X",
@@ -434,12 +436,10 @@ begin
 					rst    => dcm_rst,
 					clkin  => ddr_clk,
 					clkfb  => ddr_clk,
-					-- clk0   => ddr_clk0_bufg,
-					-- clk90  => ddr_clk90_bufg,
 					clk0   => ddr_clk0x2_bufg,
 					clk90  => ddr_clk90x2_bufg,
 					clkdv  => ddr_clk0_bufg,
-					locked => ddr_locked);
+					locked => ddr0_locked);
 	
 				bufg0x2_i : bufg
 				port map (
@@ -467,12 +467,28 @@ begin
 					clkin  => ddr_clk180,
 					clkfb  => ddr_clk180,
 					clkdv  => ddr_clk90_bufg,
-					locked => ddr_locked);
+					locked => ddr90_locked);
 	
 				bufg90_i : bufg
 				port map (
 					i => ddr_clk90_bufg,
 					o => ddr_clk90);
+
+				process (sys_clk, ddr0_locked, ddr90_locked)
+					variable cntr : unsigned(0 to 2);
+				begin
+					if ddr0_locked='0' then
+						cntr := (others => '0');
+					elsif ddr90_locked='0' then
+						cntr := (others => '0');
+					elsif rising_edge(sys_clk) then
+						if cntr(0)='0' then
+							cntr := cntr + 1;
+						end if;
+					end if;
+					ddr_locked <= cntr(0);
+				end process;
+
 			end generate;
 
 		end block;
@@ -940,12 +956,21 @@ begin
 		end if;
 	end process;
 
+	ctlrphy_rst(1) <= ctlrphy_rst(0);
+	ctlrphy_cke(1) <= ctlrphy_cke(0);
+	ctlrphy_cs(1)  <= ctlrphy_cs(0);
+	ctlrphy_ras(1) <= '1';
+	ctlrphy_cas(1) <= '1';
+	ctlrphy_we(1)  <= '1';
+	ctlrphy_odt(1) <= ctlrphy_odt(0);
+
 	sdrphy_e : entity hdl4fpga.xc5v_sdrphy
 	generic map (
 		taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
 		data_edge   => true,
 		bank_size   => bank_size,
 		addr_size   => addr_size,
+		cmmd_gear   => cmmd_gear,
 		data_gear   => data_gear,
 		word_size   => word_size,
 		byte_size   => byte_size)

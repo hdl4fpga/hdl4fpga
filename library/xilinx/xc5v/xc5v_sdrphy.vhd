@@ -295,7 +295,7 @@ begin
 	sdram_clk_g : for i in sdram_clk'range generate
 		ck_i : oddr
 		port map (
-			c => clk0,
+			c => clk0x2,
 			ce => '1',
 			d1 => '0' xor clkinv,
 			d2 => '1' xor clkinv,
