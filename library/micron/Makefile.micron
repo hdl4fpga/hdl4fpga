@@ -6,85 +6,29 @@ LIB_MICRON = micron
 
 # Define path to each design unit
 SV_STD__std = $(LIB_SV_STD)/std/_primary.dat
-MICRON__VolatileEnhancedConfigurationRegister = $(LIB_MICRON)/@volatile@enhanced@configuration@register/_primary.dat
-MICRON__VolatileConfigurationRegister = $(LIB_MICRON)/@volatile@configuration@register/_primary.dat
-MICRON__UtilFunctions = $(LIB_MICRON)/@util@functions/_primary.dat
-MICRON__TimingCheck = $(LIB_MICRON)/@timing@check/_primary.dat
 MICRON__tb = $(LIB_MICRON)/tb/_primary.dat
-MICRON__StatusRegister = $(LIB_MICRON)/@status@register/_primary.dat
-MICRON__Read = $(LIB_MICRON)/@read/_primary.dat
-MICRON__ProtectionManagementRegister = $(LIB_MICRON)/@protection@management@register/_primary.dat
-MICRON__Program = $(LIB_MICRON)/@program/_primary.dat
-MICRON__PPBManager = $(LIB_MICRON)/@p@p@b@manager/_primary.dat
-MICRON__PPBLockBitRegister = $(LIB_MICRON)/@p@p@b@lock@bit@register/_primary.dat
-MICRON__PLRSpart2Detect = $(LIB_MICRON)/@p@l@r@spart2@detect/_primary.dat
-MICRON__PLRSpart1Detect = $(LIB_MICRON)/@p@l@r@spart1@detect/_primary.dat
-MICRON__PasswordRegister = $(LIB_MICRON)/@password@register/_primary.dat
-MICRON__paramConfig = $(LIB_MICRON)/param@config/_primary.dat
-MICRON__OTP_memory = $(LIB_MICRON)/@o@t@p_memory/_primary.dat
-MICRON__NonVolatileConfigurationRegister = $(LIB_MICRON)/@non@volatile@configuration@register/_primary.dat
-MICRON__N25Qxxx = $(LIB_MICRON)/@n25@qxxx/_primary.dat
 MICRON__mt48lc32m16a2 = $(LIB_MICRON)/mt48lc32m16a2/_primary.dat
-MICRON__Memory = $(LIB_MICRON)/@memory/_primary.dat
-MICRON__LockManager4KB = $(LIB_MICRON)/@lock@manager4@k@b/_primary.dat
-MICRON__LockManager = $(LIB_MICRON)/@lock@manager/_primary.dat
 MICRON__glbl = $(LIB_MICRON)/glbl/_primary.dat
-MICRON__GeneralPurposeRegister = $(LIB_MICRON)/@general@purpose@register/_primary.dat
-MICRON__FlashDiscoveryParameter = $(LIB_MICRON)/@flash@discovery@parameter/_primary.dat
-MICRON__FlagStatusRegister = $(LIB_MICRON)/@flag@status@register/_primary.dat
-MICRON__DualQuadOps = $(LIB_MICRON)/@dual@quad@ops/_primary.dat
 MICRON__dqrx = $(LIB_MICRON)/dqrx/_primary.dat
-MICRON__DebugModule = $(LIB_MICRON)/@debug@module/_primary.dat
 MICRON__ddr_model = $(LIB_MICRON)/ddr_model/_primary.dat
 MICRON__ddr3 = $(LIB_MICRON)/ddr3/_primary.dat
 MICRON__ddr2_module = $(LIB_MICRON)/ddr2_module/_primary.dat
 MICRON__ddr2_mcp = $(LIB_MICRON)/ddr2_mcp/_primary.dat
 MICRON__ddr2 = $(LIB_MICRON)/ddr2/_primary.dat
-MICRON__CUIdecoderEFI_MSE = $(LIB_MICRON)/@c@u@idecoder@e@f@i_@m@s@e/_primary.dat
-MICRON__CUIdecoder = $(LIB_MICRON)/@c@u@idecoder/_primary.dat
-MICRON__ASPRegister = $(LIB_MICRON)/@a@s@p@register/_primary.dat
 VCOM = vcom
 VLOG = vlog
 VOPT = vopt
 SCCOM = sccom
 
-whole_library :     $(MICRON__VolatileEnhancedConfigurationRegister) \
-    $(MICRON__VolatileConfigurationRegister) \
-    $(MICRON__UtilFunctions) \
-    $(MICRON__TimingCheck) \
-    $(MICRON__tb) \
-    $(MICRON__StatusRegister) \
-    $(MICRON__Read) \
-    $(MICRON__ProtectionManagementRegister) \
-    $(MICRON__Program) \
-    $(MICRON__PPBManager) \
-    $(MICRON__PPBLockBitRegister) \
-    $(MICRON__PLRSpart2Detect) \
-    $(MICRON__PLRSpart1Detect) \
-    $(MICRON__PasswordRegister) \
-    $(MICRON__paramConfig) \
-    $(MICRON__OTP_memory) \
-    $(MICRON__NonVolatileConfigurationRegister) \
-    $(MICRON__N25Qxxx) \
+whole_library :     $(MICRON__tb) \
     $(MICRON__mt48lc32m16a2) \
-    $(MICRON__Memory) \
-    $(MICRON__LockManager4KB) \
-    $(MICRON__LockManager) \
     $(MICRON__glbl) \
-    $(MICRON__GeneralPurposeRegister) \
-    $(MICRON__FlashDiscoveryParameter) \
-    $(MICRON__FlagStatusRegister) \
-    $(MICRON__DualQuadOps) \
     $(MICRON__dqrx) \
-    $(MICRON__DebugModule) \
     $(MICRON__ddr_model) \
     $(MICRON__ddr3) \
     $(MICRON__ddr2_module) \
     $(MICRON__ddr2_mcp) \
-    $(MICRON__ddr2) \
-    $(MICRON__CUIdecoderEFI_MSE) \
-    $(MICRON__CUIdecoder) \
-    $(MICRON__ASPRegister)
+    $(MICRON__ddr2)
 
 $(MICRON__ddr3) : ../micron/ddr3/ddr3.v ../micron/ddr3/4096Mb_ddr3_parameters.vh \
 		$(SV_STD__std)
@@ -119,41 +63,4 @@ $(MICRON__tb) : ../micron/ddr2/tb.v ../micron/ddr2/ddr2_parameters.vh \
 		 +define+sg3 +define+x16 -L mtiAvm -L mtiOvm \
 		 -L mtiUvm -L mtiUPF ../micron/ddr2/tb.v ../micron/ddr2/ddr2_module.v \
 		 ../micron/ddr2/ddr2_mcp.v ../micron/ddr2/ddr2.v
-
-$(MICRON__ASPRegister) \
-$(MICRON__CUIdecoder) \
-$(MICRON__CUIdecoderEFI_MSE) \
-$(MICRON__DebugModule) \
-$(MICRON__DualQuadOps) \
-$(MICRON__FlagStatusRegister) \
-$(MICRON__FlashDiscoveryParameter) \
-$(MICRON__GeneralPurposeRegister) \
-$(MICRON__LockManager) \
-$(MICRON__LockManager4KB) \
-$(MICRON__Memory) \
-$(MICRON__N25Qxxx) \
-$(MICRON__NonVolatileConfigurationRegister) \
-$(MICRON__OTP_memory) \
-$(MICRON__paramConfig) \
-$(MICRON__PasswordRegister) \
-$(MICRON__PLRSpart1Detect) \
-$(MICRON__PLRSpart2Detect) \
-$(MICRON__PPBLockBitRegister) \
-$(MICRON__PPBManager) \
-$(MICRON__Program) \
-$(MICRON__ProtectionManagementRegister) \
-$(MICRON__Read) \
-$(MICRON__StatusRegister) \
-$(MICRON__TimingCheck) \
-$(MICRON__UtilFunctions) \
-$(MICRON__VolatileConfigurationRegister) \
-$(MICRON__VolatileEnhancedConfigurationRegister) : ../micron/spi_flash/MT25QL128ABA1E0_VG13/code/N25Qxxx.v \
-		 ../micron/spi_flash/MT25QL128ABA1E0_VG13/include/DevParam.h \
-		 ../micron/spi_flash/MT25QL128ABA1E0_VG13/include/UserData.h \
-		 ../micron/spi_flash/MT25QL128ABA1E0_VG13/include/TimingData.h \
-		 ../micron/spi_flash/MT25QL128ABA1E0_VG13/include/Decoders.h \
-		 ../micron/spi_flash/MT25QL128ABA1E0_VG13/include/PLRSDetectors.h
-	$(VLOG) -work micron +define+MT25QL128ABA8E \
-		 +incdir+../micron/spi_flash/MT25QL128ABA1E0_VG13 \
-		 -L mtiAvm -L mtiOvm -L mtiUvm -L mtiUPF ../micron/spi_flash/MT25QL128ABA1E0_VG13/code/N25Qxxx.v
 

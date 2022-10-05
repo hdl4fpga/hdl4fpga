@@ -219,9 +219,10 @@ architecture graphics of ml509 is
 	signal ctlrphy_rlcal  : std_logic;
 	signal ctlrphy_rlseq  : std_logic;
 
-	signal ddr_clk0       : std_logic;
+	signal ctlr_clks      : std_logic_vector(0 to 2-1);
+	alias  ddr_clk0       : std_logic is ctlr_clks(0);
+	alias  ddr_clk90      : std_logic is ctlr_clks(1);
 	signal ddr_clk0x2     : std_logic;
-	signal ddr_clk90      : std_logic;
 	signal ddr_clk90x2    : std_logic;
 	signal ddr_ba         : std_logic_vector(ddr2_ba'range);
 	signal ddr_a          : std_logic_vector(ddr2_a'range);
@@ -267,7 +268,6 @@ architecture graphics of ml509 is
 	signal phy_rxclk_bufg : std_logic;
 	signal phy_txclk_bufg : std_logic;
 
-	alias  ctlr_clk       : std_logic is ddr_clk0;
 	alias  mii_txc        : std_logic is gtx_clk;
 	alias  sio_clk        : std_logic is gtx_clk;
 	alias  dmacfg_clk     : std_logic is gtx_clk;
@@ -762,8 +762,7 @@ begin
 		video_pixel   => video_pixel,
 		dvid_crgb     => dvid_crgb,
 
-		ctlr_clks(0)  => ctlr_clk,
-		ctlr_clks(1)  => ddr_clk90,
+		ctlr_clks     => ctlr_clks(0 to sclk_phases/sclk_edges-1),
 		ctlr_rst      => ddrsys_rst,
 		ctlr_cwl      => b"0_11",
 		ctlr_rtt      => b"0_11",
