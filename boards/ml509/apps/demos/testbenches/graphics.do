@@ -2,12 +2,12 @@ onerror {resume}
 quietly virtual signal -install /testbench/du_e { /testbench/du_e/ddr2_d(15 downto 0)} chip_dq0
 quietly virtual signal -install /testbench/du_e { /testbench/du_e/ddr2_d(15 downto 0)} dq16
 quietly WaveActivateNextPane {} 0
-add wave -noupdate -group phy_rx /testbench/du_e/phy_rxclk
-add wave -noupdate -group phy_rx /testbench/du_e/phy_rxctl_rxdv
-add wave -noupdate -group phy_rx -radix hexadecimal /testbench/du_e/phy_rxd
-add wave -noupdate -group phy_tx /testbench/du_e/phy_txclk
-add wave -noupdate -group phy_tx /testbench/du_e/phy_txctl_txen
-add wave -noupdate -group phy_tx -radix hexadecimal /testbench/du_e/phy_txd
+add wave -noupdate -expand -group phy_rx /testbench/du_e/phy_rxclk
+add wave -noupdate -expand -group phy_rx /testbench/du_e/phy_rxctl_rxdv
+add wave -noupdate -expand -group phy_rx -radix hexadecimal /testbench/du_e/phy_rxd
+add wave -noupdate -expand -group phy_tx /testbench/du_e/phy_txclk
+add wave -noupdate -expand -group phy_tx /testbench/du_e/phy_txctl_txen
+add wave -noupdate -expand -group phy_tx -radix hexadecimal /testbench/du_e/phy_txd
 add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_clk_p(0)
 add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_cs(0)
 add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_cke(0)
@@ -29,7 +29,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e/phy_rlreq
 add wave -noupdate /testbench/du_e/sdrphy_e/phy_rlrdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/rl_req
-add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/rl_rdy
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/sdrphy_e/rl_rdy(1) -radix hexadecimal} {/testbench/du_e/sdrphy_e/rl_rdy(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/sdrphy_e/rl_rdy(1) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/rl_rdy(0) {-height 29 -radix hexadecimal}} /testbench/du_e/sdrphy_e/rl_rdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/read_rdy
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/read_req
@@ -37,11 +37,24 @@ add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/write_rdy
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/write_req
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/pause_req
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/pause_rdy
+add wave -noupdate /testbench/du_e/sdrphy_e/sys_sto(0)
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/sys_dqo
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/clk90
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/iddr_g(7)/dqii
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/iddr_g(6)/dqii
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/iddr_g(5)/dqii
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/iddr_g(4)/dqii
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/iddr_g(3)/dqii
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/iddr_g(1)/dqii
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/iddr_g(0)/dqii
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/iddr_g(2)/dqii
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqh
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqf
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {29482600 ps} 0}
+WaveRestoreCursors {{Cursor 1} {70024683 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 200
-configure wave -valuecolwidth 94
+configure wave -valuecolwidth 334
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -54,4 +67,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {2075 ns} {33575 ns}
+WaveRestoreZoom {70007127 ps} {70077783 ps}
