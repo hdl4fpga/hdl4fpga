@@ -231,7 +231,7 @@ begin
 			-- tp => tp,
 			rst      => iod_rst,
 			edge     => std_logic'('1'),
-			clk      => iod_clk,
+			clk      => clk0,
 			req      => adjdqs_req,
 			rdy      => adjdqs_rdy,
 			step_req => dqspau_req,
@@ -244,7 +244,6 @@ begin
 		dqsidelay_i : entity hdl4fpga.xc5v_idelay
 		port map(
 			rst     => iod_rst,
-			-- clk     => iod_clk,
 			clk     => clk0,
 			delay   => delay,
 			idatain => dqsi,
@@ -289,26 +288,25 @@ begin
 			sys_rdy   => adjbrt_rdy);
 		adjsto_rdy <= to_bit(adjbrt_rdy);
 
-		-- sto_synced <= '1';
---		process (clk90)
---			variable q : std_logic;
---		begin
---			if rising_edge(clk90) then
---				if (not dqspre and dqs180)='1' then
---					sys_sto <= (others => sto);
---				elsif (not dqspre and not dqs180)='1' then
---					sys_sto <= (others => sto);
---				else
---					sys_sto <= (others => q);
---				end if;
---				q := sto;
---			end if;
---		end process;
+		-- process (clk0)
+		-- begin
+		-- 	if rising_edge(clk0) then
+		-- 		sys_sto <= (others => sto);
+		-- 	end if;
+		-- end process;
 
-		process (clk0)
+		process (clk90)
+			variable q : std_logic;
 		begin
-			if rising_edge(clk0) then
-				sys_sto <= (others => sto);
+			if rising_edge(clk90) then
+				if (not dqspre and dqs180)='1' then
+					sys_sto <= (others => sto);
+				elsif (not dqspre and not dqs180)='1' then
+					sys_sto <= (others => sto);
+				else
+					sys_sto <= (others => q);
+				end if;
+				q := sto;
 			end if;
 		end process;
 
@@ -337,7 +335,7 @@ begin
 			port map (
 				rst      => iod_rst,
 				edge     => std_logic'('1'),
-				clk      => iod_clk,
+				clk      => clk90,
 				req      => adjdqi_req,
 				rdy      => adjdqi_rdy(i),
 				step_req => dqipau_req(i),
@@ -350,13 +348,8 @@ begin
 			end generate;
 
 			ddqi <= transport sdram_dqi(i) after dqi_linedelay;
-			dqi_p : for j in dqii'range generate
-				dq(j*BYTE_SIZE+i) <= dqii(j);
-			end generate;
-
 			dqi_i : entity hdl4fpga.xc5v_idelay
 			port map(
-				-- clk     => iod_clk,
 				clk     => clk90,
 				rst     => iod_rst,
 				delay   => delay,
@@ -384,7 +377,53 @@ begin
 			d(0) => dqi(i),
 			q    => dqii);
 
+		-- dly_b : for j in dqii'range generate
+		-- 	dq(j*BYTE_SIZE+i) <= dqii(j);
+		-- end generate;
+
+		dly_b : block
+		begin
+			dly0_g : entity hdl4fpga.align
+			generic map (
+				n => 4,
+				d => (0, 0, 1, 1))
+			port map (
+				clk => clk90,
+				di    => dqii,
+				do(0) => dqh(2*BYTE_SIZE+i),
+				do(1) => dqh(3*BYTE_SIZE+i),
+				do(2) => dqh(0*BYTE_SIZE+i),
+				do(3) => dqh(1*BYTE_SIZE+i));
+
+			dly1_g : entity hdl4fpga.align
+			generic map (
+				n => 4,
+				d => (1, 1, 1, 1))
+			port map (
+				clk => clk90,
+				di    => dqii,
+				do(0) => dqf(0*BYTE_SIZE+i),
+				do(1) => dqf(1*BYTE_SIZE+i),
+				do(2) => dqf(2*BYTE_SIZE+i),
+				do(3) => dqf(3*BYTE_SIZE+i));
+
+		end block;
+
 	end generate;
+
+	process(iod_clk, dqh, dqf) 
+		variable q : std_logic;
+	begin
+		if rising_edge(iod_clk) then
+			q := (dqspre xor dqs180);
+		end if;
+		if q='0' then
+			sys_dqo <= dqh;
+		else
+			sys_dqo <= dqf;
+		end if;
+	end process;
+--	sys_dqo <= dq;
 
 	datao_b : block
 		signal clks  : std_logic_vector(0 to 2-1);
@@ -524,5 +563,4 @@ begin
 			q(0) => sdram_dqso);
 
 	end block;
-	sys_dqo <= dq;
 end;
