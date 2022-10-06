@@ -46,9 +46,10 @@ architecture graphics of ml509 is
 		sdr275MHz_600p,
 		sdr300MHz_600p,
 		sdr333MHz_600p,
-		sdr350MHz_600p);
+		sdr350MHz_600p,
+		sdr400MHz_600p);
 
-	constant app_profile : app_profiles := sdr350Mhz_600p;
+	constant app_profile : app_profiles := sdr400Mhz_600p;
 
 	type profileparam_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparam_vector := (
@@ -58,7 +59,8 @@ architecture graphics of ml509 is
 		sdr275MHz_600p => (io_ipoe, sdram275MHz, mode600p24bpp),
 		sdr300MHz_600p => (io_ipoe, sdram300MHz, mode600p24bpp),
 		sdr333MHz_600p => (io_ipoe, sdram333MHz, mode600p24bpp),
-		sdr350MHz_600p => (io_ipoe, sdram350MHz, mode600p24bpp));
+		sdr350MHz_600p => (io_ipoe, sdram350MHz, mode600p24bpp),
+		sdr400MHz_600p => (io_ipoe, sdram400MHz, mode600p24bpp));
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -125,7 +127,8 @@ architecture graphics of ml509 is
 		------------------------------------------------------------------------
 
 		(sdram333MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "001"),
-		(sdram350MHz, pll => (dcm_mul => 14, dcm_div => 4), cl => "001"));
+		(sdram350MHz, pll => (dcm_mul =>  7, dcm_div => 2), cl => "001"),
+		(sdram400MHz, pll => (dcm_mul =>  4, dcm_div => 1), cl => "001"));
 
 	function sdramparams (
 		constant id  : sdram_speeds)
