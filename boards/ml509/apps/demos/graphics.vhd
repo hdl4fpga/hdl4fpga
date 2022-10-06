@@ -45,9 +45,10 @@ architecture graphics of ml509 is
 		sdr250MHz_600p,
 		sdr275MHz_600p,
 		sdr300MHz_600p,
-		sdr333MHz_600p);
+		sdr333MHz_600p,
+		sdr350MHz_600p);
 
-	constant app_profile : app_profiles := sdr200Mhz_600p;
+	constant app_profile : app_profiles := sdr350Mhz_600p;
 
 	type profileparam_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparam_vector := (
@@ -56,7 +57,8 @@ architecture graphics of ml509 is
 		sdr250MHz_600p => (io_ipoe, sdram250MHz, mode600p24bpp),
 		sdr275MHz_600p => (io_ipoe, sdram275MHz, mode600p24bpp),
 		sdr300MHz_600p => (io_ipoe, sdram300MHz, mode600p24bpp),
-		sdr333MHz_600p => (io_ipoe, sdram333MHz, mode600p24bpp));
+		sdr333MHz_600p => (io_ipoe, sdram333MHz, mode600p24bpp),
+		sdr350MHz_600p => (io_ipoe, sdram350MHz, mode600p24bpp));
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -122,7 +124,8 @@ architecture graphics of ml509 is
 		-- Divide by   --   3     --   2     --   4     --   1     --   4     --
 		------------------------------------------------------------------------
 
-		(sdram333MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "001"));
+		(sdram333MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "001"),
+		(sdram350MHz, pll => (dcm_mul => 14, dcm_div => 4), cl => "001"));
 
 	function sdramparams (
 		constant id  : sdram_speeds)
@@ -1013,14 +1016,14 @@ begin
 		sys_sti    => ctlrphy_sto,
 		sys_sto    => ctlrphy_sti,
 		sdram_clk  => ddr2_clk,
-		sdram_cke  => ddr_cke,
-		sdram_cs   => ddr_cs,
+		sdram_cke  => ddr2_cke,
+		sdram_cs   => ddr2_cs,
 		sdram_ras  => ddr2_ras,
 		sdram_cas  => ddr2_cas,
 		sdram_we   => ddr2_we,
 		sdram_b    => ddr2_ba,
 		sdram_a    => ddr2_a,
-		sdram_odt  => ddr_odt,
+		sdram_odt  => ddr2_odt,
 
 		sdram_dmt  => ddr_dmt,
 		sdram_dmi  => ddr_dmi,
@@ -1032,9 +1035,9 @@ begin
 		sdram_dqsi => ddr2_dqsi,
 		sdram_dqso => ddr2_dqso);
 
-	ddr2_cs  <= (others => ddr_cs);
-	ddr2_cke <= (others => ddr_cke);
-	ddr2_odt <= (others => ddr_odt);
+	-- ddr2_cs  <= (others => ddr_cs);
+	-- ddr2_cke <= (others => ddr_cke);
+	-- ddr2_odt <= (others => ddr_odt);
 
 	gpio_led_c <= ctlr_inirdy;
 

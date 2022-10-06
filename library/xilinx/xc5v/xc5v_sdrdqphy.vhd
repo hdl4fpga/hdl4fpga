@@ -31,6 +31,7 @@ use unisim.vcomponents.all;
 
 library hdl4fpga;
 use hdl4fpga.std.all;
+use hdl4fpga.profiles.all;
 
 entity xc5v_sdrdqphy is
 	generic (
@@ -242,8 +243,9 @@ begin
 		dqsi <= transport sdram_dqsi after dqs_linedelay;
 		dqsidelay_i : entity hdl4fpga.xc5v_idelay
 		port map(
-			clk     => iod_clk,
 			rst     => iod_rst,
+			-- clk     => iod_clk,
+			clk     => clk0,
 			delay   => delay,
 			idatain => dqsi,
 			dataout => dqsi_buf);
@@ -258,8 +260,9 @@ begin
 
 		igbx_i : entity hdl4fpga.igbx
 		generic map (
-			SIZE => 1,
-			GEAR => data_gear)
+			device => hdl4fpga.profiles.xc5v,
+			size => 1,
+			gear => data_gear)
 		port map (
 			rst  => iod_rst,
 			clk  => igbx_clk,
@@ -353,7 +356,8 @@ begin
 
 			dqi_i : entity hdl4fpga.xc5v_idelay
 			port map(
-				clk     => iod_clk,
+				-- clk     => iod_clk,
+				clk     => clk90,
 				rst     => iod_rst,
 				delay   => delay,
 				idatain => ddqi,
@@ -371,6 +375,7 @@ begin
 
 		igbx_i : entity hdl4fpga.igbx
 		generic map (
+			device => hdl4fpga.profiles.xc5v,
 			SIZE => 1,
 			GEAR => data_gear)
 		port map (
@@ -432,9 +437,10 @@ begin
 	
 			ogbx_i : entity hdl4fpga.ogbx
 			generic map (
-				SIZE => 1,
-				DATA_EDGE => setif(data_edge, "OPPOSITE_EDGE", "SAME_EDGE"),
-				GEAR => data_gear)
+				device => hdl4fpga.profiles.xc5v,
+				size => 1,
+				data_edge => setif(data_edge, "opposite_edge", "same_edge"),
+				gear => data_gear)
 			port map (
 				rst   => iod_rst,
 				clk   => dqclk,
@@ -463,9 +469,10 @@ begin
 	
 			ogbx_i : entity hdl4fpga.ogbx
 			generic map (
-				SIZE => 1,
-				DATA_EDGE => setif(data_edge, "OPPOSITE_EDGE", "SAME_EDGE"),
-				GEAR => data_gear)
+				device => hdl4fpga.profiles.xc5v,
+				size => 1,
+				data_edge => setif(data_edge, "opposite_edge", "same_edge"),
+				gear => data_gear)
 			port map (
 				rst   => iod_rst,
 				clk   => dqclk,
@@ -504,9 +511,10 @@ begin
 
 		ogbx_i : entity hdl4fpga.ogbx
 		generic map (
-			SIZE => 1,
-			DATA_EDGE => setif(data_edge, "OPPOSITE_EDGE", "SAME_EDGE"),
-			GEAR => data_gear)
+			device => hdl4fpga.profiles.xc5v,
+			size => 1,
+			data_edge => setif(data_edge, "opposite_edge", "same_edge"),
+			gear => data_gear)
 		port map (
 			rst  => iod_rst,
 			clk  => dqsclk,

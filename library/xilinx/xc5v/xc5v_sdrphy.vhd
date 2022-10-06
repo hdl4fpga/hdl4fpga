@@ -82,10 +82,10 @@ entity xc5v_sdrphy is
 		sys_sti    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		sys_sto    : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
-		sdram_cs   : out std_logic := '0';
-		sdram_cke  : out std_logic := '1';
+		sdram_cs   : out std_logic_vector;
+		sdram_cke  : out std_logic_vector;
 		sdram_clk  : out std_logic_vector;
-		sdram_odt  : out std_logic;
+		sdram_odt  : out std_logic_vector;
 		sdram_ras  : out std_logic;
 		sdram_cas  : out std_logic;
 		sdram_we   : out std_logic;

@@ -45,9 +45,9 @@ entity xc5v_sdrbaphy is
 		sys_odt  : in  std_logic_vector(gear-1 downto 0);
 
 		sdram_rst  : out std_logic;
-		sdram_cs   : out std_logic;
-		sdram_cke  : out std_logic;
-		sdram_odt  : out std_logic;
+		sdram_cs   : out std_logic_vector;
+		sdram_cke  : out std_logic_vector;
+		sdram_odt  : out std_logic_vector;
 		sdram_ras  : out std_logic;
 		sdram_cas  : out std_logic;
 		sdram_we   : out std_logic;
@@ -63,6 +63,7 @@ begin
 
 	rst_i : entity hdl4fpga.ogbx
 	generic map (
+		device => hdl4fpga.profiles.xc5v,
 		data_edge => data_edge,
 		size => 1,
 		gear => gear)
@@ -72,30 +73,37 @@ begin
 		d    => sys_rst,
 		q(0) => sdram_rst);
 
-	cke_i : entity hdl4fpga.ogbx
-	generic map (
-		data_edge => data_edge,
-		size => 1,
-		gear => gear)
-	port map (
-		rst  => phy_rst,
-		clk  => sys_clks,
-		d    => sys_cke,
-		q(0) => sdram_cke);
+	cke_g : for i in sdram_cke'range generate
+		cke_i : entity hdl4fpga.ogbx
+		generic map (
+			device => hdl4fpga.profiles.xc5v,
+			data_edge => data_edge,
+			size => 1,
+			gear => gear)
+		port map (
+			rst  => phy_rst,
+			clk  => sys_clks,
+			d    => sys_cke,
+			q(0) => sdram_cke(i));
+	end generate;
 
-	cs_i : entity hdl4fpga.ogbx
-	generic map (
-		data_edge => data_edge,
-		size => 1,
-		gear => gear)
-	port map (
-		rst  => phy_rst,
-		clk  => sys_clks,
-		d    => sys_cs,
-		q(0) => sdram_cs);
+	cs_g : for i in sdram_cs'range generate
+		cs_i : entity hdl4fpga.ogbx
+		generic map (
+			device => hdl4fpga.profiles.xc5v,
+			data_edge => data_edge,
+			size => 1,
+			gear => gear)
+		port map (
+			rst  => phy_rst,
+			clk  => sys_clks,
+			d    => sys_cs,
+			q(0) => sdram_cs(i));
+	end generate;
 
 	ras_i : entity hdl4fpga.ogbx
 	generic map (
+		device => hdl4fpga.profiles.xc5v,
 		data_edge => data_edge,
 		size => 1,
 		gear => gear)
@@ -107,6 +115,7 @@ begin
 
 	cas_i : entity hdl4fpga.ogbx
 	generic map (
+		device => hdl4fpga.profiles.xc5v,
 		data_edge => data_edge,
 		size => 1,
 		gear => gear)
@@ -118,6 +127,7 @@ begin
 
 	we_i : entity hdl4fpga.ogbx
 	generic map (
+		device => hdl4fpga.profiles.xc5v,
 		data_edge => data_edge,
 		size => 1,
 		gear => gear)
@@ -127,19 +137,23 @@ begin
 		d    => sys_we,
 		q(0) => sdram_we);
 
-	odt_i : entity hdl4fpga.ogbx
-	generic map (
-		data_edge => data_edge,
-		size => 1,
-		gear => gear)
-	port map (
-		rst  => phy_rst,
-		clk  => sys_clks,
-		d    => sys_odt,
-		q(0) => sdram_odt);
+	odt_g : for i in sdram_odt'range generate
+		odt_i : entity hdl4fpga.ogbx
+		generic map (
+			device => hdl4fpga.profiles.xc5v,
+			data_edge => data_edge,
+			size => 1,
+			gear => gear)
+		port map (
+			rst  => phy_rst,
+			clk  => sys_clks,
+			d    => sys_odt,
+			q(0) => sdram_odt(i));
+	end generate;
 
 	ba_i : entity hdl4fpga.ogbx
 	generic map (
+		device => hdl4fpga.profiles.xc5v,
 		data_edge => data_edge,
 		size => sdram_b'length,
 		gear => gear)
@@ -151,6 +165,7 @@ begin
 
 	a_i : entity hdl4fpga.ogbx
 	generic map (
+		device => hdl4fpga.profiles.xc5v,
 		data_edge => data_edge,
 		size => sdram_a'length,
 		gear => gear)
