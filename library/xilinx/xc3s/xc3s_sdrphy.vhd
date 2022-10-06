@@ -354,15 +354,18 @@ begin
 			sdr_dqso => sdr_dqso(i));
 
 
-		dqs_delayed_e : entity hdl4fpga.pgm_delay
-		generic map(
-			n => gate_delay)
-		port map (
-			xi  => sdr_dqsi(i),
-			x_p => dqso(0),
-			x_n => dqso(1));
-		phy_dqso(data_gear*i+0) <= dqso(0) after 1 ns;
-		phy_dqso(data_gear*i+1) <= dqso(1) after 1 ns;
+		-- dqs_delayed_e : entity hdl4fpga.pgm_delay
+		-- generic map(
+		-- 	n => gate_delay)
+		-- port map (
+		-- 	xi  => sdr_dqsi(i),
+		-- 	x_p => dqso(0),
+		-- 	x_n => dqso(1));
+		-- phy_dqso(data_gear*i+0) <= dqso(0) after 1 ns;
+		-- phy_dqso(data_gear*i+1) <= dqso(1) after 1 ns;
+
+	phy_dqso(data_gear*i+0) <= clk90;
+	phy_dqso(data_gear*i+1) <= clk90;
 
 	end generate;
 

@@ -282,7 +282,7 @@ entity s3estarter is
 	attribute iostandard of sd_a     : signal is "SSTL2_I";
 	attribute iostandard of sd_ck_p  : signal is "SSTL2_I";
 	attribute iostandard of sd_ck_n  : signal is "SSTL2_I";
-	attribute iostandard of sd_ck_fb : signal is "LVCMOS33";
+	attribute iostandard of sd_ck_fb : signal is "SSTL2_I";
 
 	attribute nodelay    of sd_ck_p  : signal is "true";
 	attribute nodelay    of sd_ck_n  : signal is "true";

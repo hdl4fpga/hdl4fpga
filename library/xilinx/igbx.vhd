@@ -31,8 +31,8 @@ use hdl4fpga.profiles.all;
 entity igbx is
 	generic (
 		device    : fpga_devices := xc7a;
-		size      : natural;
-		gear      : natural;
+		size      : natural := 1;
+		gear      : natural := 2;
 		data_edge : string := "SAME_EDGE");
 	port (
 		rst  : in  std_logic := '0';
@@ -64,15 +64,31 @@ begin
 		end generate;
 
 		gear2_g : if gear=2 generate
-			iddr_i : iddr
-			generic map (
-				DDR_CLK_EDGE => data_edge)
-			port map (
-				c  => clk(0),
-				ce => '1',
-				d  => d(i),
-				q1 => po(0),
-				q2 => po(1));
+			xc3s_g : if device=xc3s generate
+				signal clk_n : std_logic;
+			begin
+				clk_n <= not clk(0);
+				iddr_i : iddr2
+				port map (
+					c0  => clk(0),
+					c1  => clk_n,
+					ce => '1',
+					d  => d(i),
+					q0 => po(0),
+					q1 => po(1));
+			end generate;
+
+			xv5_g : if device=xc5v generate
+				iddr_i : iddr
+				generic map (
+					DDR_CLK_EDGE => data_edge)
+				port map (
+					c  => clk(0),
+					ce => '1',
+					d  => d(i),
+					q1 => po(0),
+					q2 => po(1));
+			end generate;
 
 		end generate;
 

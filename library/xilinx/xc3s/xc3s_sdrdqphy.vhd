@@ -72,9 +72,23 @@ begin
 	clk0_n  <= not clk0;
 	clk90_n <= not clk90;
 	iddr_g : for i in 0 to byte_size-1 generate
-		phase_g : for j in  gear-1 downto 0 generate
-			phy_dqo(j*byte_size+i) <= sdr_dqi(i);
-		end generate;
+		signal igbx_clk : std_logic_vector(0 to 0);
+	begin
+
+		igbx_clk(0) <= clk90;
+		igbx_i : entity hdl4fpga.igbx
+		generic map (
+			device => hdl4fpga.profiles.xc3s,
+			gear   => 2)
+		port map (
+			clk  => igbx_clk,
+			d(0) => sdr_dqi(i),
+			q(0) => phy_dqo(0*byte_size+i),
+			q(1) => phy_dqo(1*byte_size+i));
+
+		-- phase_g : for j in  gear-1 downto 0 generate
+			-- phy_dqo(j*byte_size+i) <= sdr_dqi(i);
+		-- end generate;
 	end generate;
 
 	oddr_g : for i in 0 to byte_size-1 generate

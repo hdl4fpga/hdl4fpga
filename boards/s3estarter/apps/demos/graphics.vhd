@@ -43,7 +43,7 @@ architecture graphics of s3estarter is
 		sdr166mhz_600p24bpp,
 		sdr200mhz_1080p24bpp);
 
-	constant app_profile : app_profiles := sdr133mhz_480p24bpp;
+	constant app_profile : app_profiles := sdr166mhz_600p24bpp;
 	-- constant app_profile : app_profiles := sdr166mhz_600p24bpp;
 
 	type profile_param is record
@@ -133,8 +133,6 @@ architecture graphics of s3estarter is
 
 	constant sdram_tcp       : real := real(sdram_params.pll.dcm_div)*sys_per/real(sdram_params.pll.dcm_mul);
 
-	constant sdram_clk_fb    :  boolean := false;
-
 	signal sys_rst         : std_logic;
 	signal sys_clk         : std_logic;
 
@@ -166,7 +164,6 @@ architecture graphics of s3estarter is
 
 	signal clk0            : std_logic;
 	signal clk90           : std_logic;
-	signal clk180          : std_logic;
 
 	signal ctlrphy_rst     : std_logic;
 	signal ctlrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
@@ -281,6 +278,7 @@ begin
 		signal dcm_clk180 : std_logic;
 		signal dcm_lckd  : std_logic;
 
+		signal sdram_clk  : std_logic;
 	begin
 
 		dfs_i : dcm_sp
@@ -312,29 +310,28 @@ begin
 			clkfx180 => dfs_clkfx180,
 			locked   => dfs_lckd);
 
-		sdram_feedback_g : if sdram_clk_fb generate
-			signal sdram_clk  : std_logic;
+		oddr_i : oddr2
+		port map (
+			c0 => dfs_clkfx,
+			c1 => dfs_clkfx180,
+			ce => '1',
+			r  => '0',
+			s  => '0',
+			d0 => '0',
+			d1 => '1',
+			q  => sdram_clk);
+
+		sdram_clk_i : obufds
+		generic map (
+			iostandard => "DIFF_SSTL2_I")
+		port map (
+			i  => sdram_clk,
+			o  => sd_ck_p,
+			ob => sd_ck_n);
+
+		sdram_feedback_g : block
 			signal sd_ck_fb_n : std_logic;
 		begin
-			oddr_i : oddr2
-			port map (
-				c0 => dfs_clkfx,
-				c1 => dfs_clkfx180,
-				ce => '1',
-				r  => '0',
-				s  => '0',
-				d0 => '0',
-				d1 => '1',
-				q  => sdram_clk);
-
-			sdram_clk_i : obufds
-			generic map (
-				iostandard => "DIFF_SSTL2_I")
-			port map (
-				i  => sdram_clk,
-				o  => sd_ck_p,
-				ob => sd_ck_n);
-
 			dcm_clkin <= sd_ck_fb;
 			sd_ck_fb_n <= not sd_ck_fb;
 			bug_i : bufg
@@ -351,31 +348,8 @@ begin
 				end if;
 			end process;
 
-		end generate;
+		end block;
 	
-		no_sdram_feedback_g : if not sdram_clk_fb generate
-			dcm_clkfb <= clk0;
-			dcm_clkin <= dfs_clkfx;
-	
-			process (sys_rst, sys_clk)
-			begin
-				if sys_rst='1' then
-					dcm_rst <= '1';
-				elsif rising_edge(sys_clk) then
-					dcm_rst <= not dfs_lckd;
-				end if;
-			end process;
-
-			sdram_clk_i : obufds
-			generic map (
-				iostandard => "DIFF_SSTL2_I")
-			port map (
-				i  => sdrphy_clk(0),
-				o  => sd_ck_p,
-				ob => sd_ck_n);
-
-		end generate;
-
 		dcm_dll : dcm_sp
 		generic map(
 			clk_feedback => "1X",
@@ -397,12 +371,11 @@ begin
 			psen     => '0',
 			psincdec => '0',
 	
-			rst      => dcm_rst,
-			clkin    => dcm_clkin,
+			rst      => '0',
+			clkin    => dfs_clkfx,
 			clkfb    => dcm_clkfb,
 			clk0     => dcm_clk0,
 			clk90    => dcm_clk90,
-			clk180   => dcm_clk180,
 			locked   => dcm_lckd);
 
 		clk0_bufg_i : bufg
@@ -414,11 +387,6 @@ begin
 		port map (
 			i => dcm_clk90,
 			o => clk90);
-	
-		cl1k80_bufg_i : bufg
-		port map (
-			i => dcm_clk180,
-			o => clk180);
 	
 		sdrsys_rst <= not dcm_lckd;
 

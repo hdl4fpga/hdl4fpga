@@ -55,6 +55,7 @@ architecture s3estarter_graphics of testbench is
 	signal dm    : std_logic_vector(1 downto 0);
 
 	signal mii_refclk : std_logic := '0';
+	signal req    : std_logic := '0';
 	signal mii_req  : std_logic := '0';
 	signal mii_req1 : std_logic := '0';
 	signal rep_req  : std_logic := '0';
@@ -179,33 +180,37 @@ architecture s3estarter_graphics of testbench is
 	signal datarx_null :  std_logic_vector(mii_rxd'range);
 
 	constant fb_delay : time := 0 ns;
+		signal x : natural := 0;
 begin
 
 	clk      <= not clk after 10 ns;
 	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
 
 	rst <= '0', '1' after 300 ns;
-	mii_req  <= '0', '1' after 10 us,  '0' after 90 us;
+
 	process
-		variable x : natural := 0;
 	begin
-		wait for 130 us;
+		req <= '0';
+		wait for 30 us;
 		loop
-			if rep_req='1' then
+			if req='1' then
+				wait on mii_rxdv;
+				if falling_edge(mii_rxdv) then
+					req <= '0';
+					x <= x + 1;
+					wait for 30 us;
+				end if;
+			else
 				if x > 1 then
 					wait;
 				end if;
-				rep_req <= '0' after 60 us;
-				wait;
-				x := x + 1;
-			else
-				rep_req <= '1' after 80 ns;
+				req <= '1';
+				wait on req;
 			end if;
-		wait on rep_req;
 		end loop;
 	end process;
-	mii_req1  <= rep_req;
-	ping_req <= '0';
+	mii_req <= req when x=0 else '0';
+	mii_req1 <= req when x=1 else '0';
 
 	htb_e : entity hdl4fpga.eth_tb
 	generic map (
@@ -225,7 +230,7 @@ begin
 		x"1702_0000ff_1603_0000_0000",
 		mii_data5 => x"0100" & x"00" & x"1702_0000ff_1603_8000_0000",
 		mii_frm1 => '0',
-		mii_frm2 => ping_req,
+		mii_frm2 => '0',
 		mii_frm3 => '0',
 		mii_frm4 => mii_req,
 		mii_frm5 => mii_req1,
