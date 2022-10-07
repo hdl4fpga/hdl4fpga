@@ -332,6 +332,7 @@ begin
 			clk90     => clk90,
 
 			phy_sti  => ssti(i),
+			phy_sto  => phy_sto(data_gear*(i+1)-1 downto data_gear*i),
 			phy_dmt  => sdmt(i),
 			phy_dmi  => sdmi(i),
 
@@ -348,6 +349,7 @@ begin
 			sdr_sto  => sdr_sto(i),
 
 			sdr_dmt  => ddmt(i),
+			sdr_dmi  => sdr_dm(i),
 			sdr_dmo  => ddmo(i),
 
 			sdr_dqst => sdr_dqst(i),
@@ -364,8 +366,8 @@ begin
 		-- phy_dqso(data_gear*i+0) <= dqso(0) after 1 ns;
 		-- phy_dqso(data_gear*i+1) <= dqso(1) after 1 ns;
 
-	phy_dqso(data_gear*i+0) <= clk90;
-	phy_dqso(data_gear*i+1) <= clk90;
+		phy_dqso(data_gear*i+0) <= not clk90;
+		phy_dqso(data_gear*i+1) <= clk90;
 
 	end generate;
 
@@ -374,9 +376,9 @@ begin
 		for i in 0 to word_size/byte_size-1 loop
 			for j in 0 to data_gear-1 loop
 				if loopback then
-					phy_sto(data_gear*i+j) <= sdr_sti(i);
+--					phy_sto(data_gear*i+j) <= sdr_sti(i);
 				else
-					phy_sto(data_gear*i+j) <= sdr_dm(i);
+--					phy_sto(data_gear*i+j) <= sdr_dm(i);
 				end if;
 			end loop;
 		end loop;

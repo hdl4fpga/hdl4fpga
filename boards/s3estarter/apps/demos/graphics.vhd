@@ -43,7 +43,7 @@ architecture graphics of s3estarter is
 		sdr166mhz_600p24bpp,
 		sdr200mhz_1080p24bpp);
 
-	constant app_profile : app_profiles := sdr166mhz_600p24bpp;
+	constant app_profile : app_profiles := sdr133mhz_480p24bpp;
 	-- constant app_profile : app_profiles := sdr166mhz_600p24bpp;
 
 	type profile_param is record
@@ -106,7 +106,7 @@ architecture graphics of s3estarter is
 
 	type sdramparams_vector is array (natural range <>) of sdramparams_record;
 	constant sdram_tab : sdramparams_vector := (
-		(id => sdram133MHz, pll => (dcm_mul =>  8, dcm_div => 3), cl => "110"),
+		(id => sdram133MHz, pll => (dcm_mul =>  8, dcm_div => 3), cl => "010"),
 		(id => sdram166MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "110"),
 		(id => sdram200MHz, pll => (dcm_mul =>  4, dcm_div => 1), cl => "011"));
 

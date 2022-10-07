@@ -587,7 +587,7 @@ begin
 				dmadataout_e : entity hdl4fpga.fifo
 				generic map (
 					max_depth  => (dataout_size/(ctlr_di'length/siobyte_size)),
-					async_mode => true,
+					-- async_mode => true,
 					latency    => 2,
 					gray_code  => false,
 					check_sov  => true,

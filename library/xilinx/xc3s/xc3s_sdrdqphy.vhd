@@ -51,6 +51,7 @@ entity xc3s_sdrdqphy is
 
 		sdr_dmt     : out std_logic;
 		sdr_dmo     : out std_logic;
+		sdr_dmi     : in  std_logic;
 		sdr_sto     : out std_logic;
 		sdr_dqi     : in  std_logic_vector(byte_size-1 downto 0);
 		sdr_dqt     : out std_logic_vector(byte_size-1 downto 0);
@@ -65,17 +66,17 @@ library hdl4fpga;
 use hdl4fpga.std.all;
 
 architecture xilinx of xc3s_sdrdqphy is
-	signal clk0_n  : std_logic;
-	signal clk90_n : std_logic;
+	signal clk0_n   : std_logic;
+	signal clk90_n  : std_logic;
+	signal igbx_clk : std_logic_vector(0 to 0);
 begin
 
 	clk0_n  <= not clk0;
 	clk90_n <= not clk90;
+	igbx_clk(0) <= not clk90;
 	iddr_g : for i in 0 to byte_size-1 generate
-		signal igbx_clk : std_logic_vector(0 to 0);
 	begin
 
-		igbx_clk(0) <= clk90;
 		igbx_i : entity hdl4fpga.igbx
 		generic map (
 			device => hdl4fpga.profiles.xc3s,
@@ -90,6 +91,15 @@ begin
 			-- phy_dqo(j*byte_size+i) <= sdr_dqi(i);
 		-- end generate;
 	end generate;
+
+	sto_i : entity hdl4fpga.igbx
+	generic map (
+		device => hdl4fpga.profiles.xc3s,
+		gear   => 2)
+	port map (
+		clk  => igbx_clk,
+		d(0) => sdr_dmi,
+		q => phy_sto);
 
 	oddr_g : for i in 0 to byte_size-1 generate
 		signal dqo  : std_logic_vector(0 to gear-1);

@@ -69,6 +69,8 @@ begin
 			begin
 				clk_n <= not clk(0);
 				iddr_i : iddr2
+				generic map (
+					ddr_alignment => "NONE")
 				port map (
 					c0  => clk(0),
 					c1  => clk_n,
