@@ -44,10 +44,11 @@ entity xc3s_sdrphy is
 		byte_size  : natural   := 8;
 		clkinv     : std_logic := '0');
 	port (
-		clk0 : in std_logic;
-		clk90 : in std_logic;
+		clk0     : in std_logic;
+		clk90    : in std_logic;
 		sys_rst  : in std_logic;
 
+		dqsi_inv : in  std_logic := '0';
 		phy_rst  : in  std_logic_vector(CMMD_GEAR-1 downto 0) := (others => '1');
 		phy_cs   : in  std_logic_vector(CMMD_GEAR-1 downto 0) := (others => '0');
 		phy_cke  : in  std_logic_vector(CMMD_GEAR-1 downto 0);
@@ -329,7 +330,8 @@ begin
 			byte_size => byte_size)
 		port map (
 			clk0     => clk0,
-			clk90     => clk90,
+			clk90    => clk90,
+			dqsi_inv => dqsi_inv,
 
 			phy_sti  => ssti(i),
 			phy_sto  => phy_sto(data_gear*(i+1)-1 downto data_gear*i),
@@ -346,6 +348,7 @@ begin
 			sdr_dqi  => ddqi(i),
 			sdr_dqt  => ddqt(i),
 			sdr_dqo  => ddqo(i),
+			sdr_sti  => sdr_sti(i),
 			sdr_sto  => sdr_sto(i),
 
 			sdr_dmt  => ddmt(i),
@@ -366,23 +369,10 @@ begin
 		-- phy_dqso(data_gear*i+0) <= dqso(0) after 1 ns;
 		-- phy_dqso(data_gear*i+1) <= dqso(1) after 1 ns;
 
-		phy_dqso(data_gear*i+0) <= not clk90;
-		phy_dqso(data_gear*i+1) <= clk90;
+		phy_dqso(data_gear*i+0) <= dqsi_inv xnor clk90;
+		phy_dqso(data_gear*i+1) <= dqsi_inv xor  clk90;
 
 	end generate;
-
-	process(sdr_dm, sdr_sti)
-	begin
-		for i in 0 to word_size/byte_size-1 loop
-			for j in 0 to data_gear-1 loop
-				if loopback then
---					phy_sto(data_gear*i+j) <= sdr_sti(i);
-				else
---					phy_sto(data_gear*i+j) <= sdr_dm(i);
-				end if;
-			end loop;
-		end loop;
-	end process;
 
 	sdr_dqt <= to_stdlogicvector(ddqt);
 	sdr_dqo <= to_stdlogicvector(ddqo);

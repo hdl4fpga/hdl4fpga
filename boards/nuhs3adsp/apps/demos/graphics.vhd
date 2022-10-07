@@ -212,6 +212,7 @@ architecture graphics of nuhs3adsp is
 	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal dqsi_inv        : std_logic;
 	signal ddr_st_dqs_open : std_logic;
 
 	signal ddr_clk       : std_logic_vector(0 downto 0);
@@ -643,6 +644,7 @@ begin
 		end if;
 	end process;
 
+	dqsi_inv <= '1' when sdram_params.cl="110" else '0';	-- 2.5 cas latency;
 	sdrphy_e : entity hdl4fpga.xc3s_sdrphy
 	generic map (
 		gate_delay  => 2,
@@ -656,8 +658,9 @@ begin
 		byte_size   => byte_size)
 	port map (
 		sys_rst     => ddrsys_rst,
-		clk0 => clk0,
-		clk90 => clk90,
+		clk0        => clk0,
+		clk90       => clk90,
+		dqsi_inv    => dqsi_inv,
 
 		phy_cke     => ctlrphy_cke,
 		phy_cs      => ctlrphy_cs,
@@ -682,7 +685,7 @@ begin
 		sdr_sto(0)  => ddr_st_dqs,
 		sdr_sto(1)  => ddr_st_dqs_open,
 		sdr_sti(0)  => ddr_st_lp_dqs,
-		sdr_sti(1)  => ddr_st_lp_dqs,
+		sdr_sti(1)  => ddr_st_dqs_open,
 		sdr_clk     => ddr_clk,
 		sdr_cke     => ddr_cke,
 		sdr_cs      => ddr_cs,

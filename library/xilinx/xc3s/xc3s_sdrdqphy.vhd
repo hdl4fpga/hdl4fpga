@@ -38,6 +38,7 @@ entity xc3s_sdrdqphy is
 	port (
 		clk0        : in std_logic;
 		clk90       : in std_logic;
+		dqsi_inv    : in  std_logic;
 		phy_calreq  : in std_logic := '0';
 		phy_dmt     : in  std_logic_vector(0 to gear-1) := (others => '-');
 		phy_dmi     : in  std_logic_vector(gear-1 downto 0) := (others => '-');
@@ -52,6 +53,7 @@ entity xc3s_sdrdqphy is
 		sdr_dmt     : out std_logic;
 		sdr_dmo     : out std_logic;
 		sdr_dmi     : in  std_logic;
+		sdr_sti     : in  std_logic := '-';
 		sdr_sto     : out std_logic;
 		sdr_dqi     : in  std_logic_vector(byte_size-1 downto 0);
 		sdr_dqt     : out std_logic_vector(byte_size-1 downto 0);
@@ -68,15 +70,17 @@ use hdl4fpga.std.all;
 architecture xilinx of xc3s_sdrdqphy is
 	signal clk0_n   : std_logic;
 	signal clk90_n  : std_logic;
-	signal igbx_clk : std_logic_vector(0 to 0);
+	signal igbx_clk1 : std_logic_vector(0 to 0);
 begin
 
 	clk0_n  <= not clk0;
 	clk90_n <= not clk90;
-	igbx_clk(0) <= not clk90;
+
 	iddr_g : for i in 0 to byte_size-1 generate
+		signal igbx_clk : std_logic_vector(0 to 0);
 	begin
 
+		igbx_clk(0) <= dqsi_inv xnor clk90;
 		igbx_i : entity hdl4fpga.igbx
 		generic map (
 			device => hdl4fpga.profiles.xc3s,
@@ -92,14 +96,21 @@ begin
 		-- end generate;
 	end generate;
 
-	sto_i : entity hdl4fpga.igbx
-	generic map (
-		device => hdl4fpga.profiles.xc3s,
-		gear   => 2)
-	port map (
-		clk  => igbx_clk,
-		d(0) => sdr_dmi,
-		q => phy_sto);
+	sto_b : block
+		signal igbx_clk : std_logic_vector(0 to 0);
+		signal sti      : std_logic;
+	begin
+		igbx_clk(0) <= dqsi_inv xor clk90;
+		sti <= sdr_sti when loopback else sdr_dmi;
+		sto_i : entity hdl4fpga.igbx
+		generic map (
+			device => hdl4fpga.profiles.xc3s,
+			gear   => 2)
+		port map (
+			clk  => igbx_clk,
+			d(0) => sti,
+			q    => phy_sto);
+	end block;
 
 	oddr_g : for i in 0 to byte_size-1 generate
 		signal dqo  : std_logic_vector(0 to gear-1);
@@ -110,19 +121,11 @@ begin
 
 		registered_g : for j in clks'range generate
 		begin
---			process (clks(j))
---			begin
---				if rising_edge(clks(j)) then
---					rdqo(j) <= phy_dqi(j*byte_size+i);
---				end if;
---			end process;
---			dqo(j) <= rdqo(j) when rgtr_dout else phy_dqi(j*byte_size+i);
-
 			lat_e : entity hdl4fpga.align
 			generic map (
 				style => "register",
 				n     => 1,
-				d     => (0 to 0 => LATENCY))
+				d     => (0 to 0 => latency))
 			port map (
 				clk   => clks(j),
 				di(0) => phy_dqi(j*byte_size+i),

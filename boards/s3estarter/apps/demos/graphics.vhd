@@ -41,6 +41,7 @@ architecture graphics of s3estarter is
 	type app_profiles is (
 		sdr133mhz_480p24bpp,
 		sdr166mhz_600p24bpp,
+		sdr170mhz_600p24bpp,
 		sdr200mhz_1080p24bpp);
 
 	-- constant app_profile : app_profiles := sdr133mhz_480p24bpp;
@@ -56,6 +57,7 @@ architecture graphics of s3estarter is
 	constant profile_tab : profileparam_vector := (
 		sdr133mhz_480p24bpp  => (io_ipoe, sdram133MHz, mode480p24bpp),
 		sdr166mhz_600p24bpp  => (io_ipoe, sdram166MHz, mode600p24bpp),
+		sdr170mhz_600p24bpp  => (io_ipoe, sdram170MHz, mode600p24bpp),
 		sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp));
 
 	type pll_params is record
@@ -108,6 +110,7 @@ architecture graphics of s3estarter is
 	constant sdram_tab : sdramparams_vector := (
 		(id => sdram133MHz, pll => (dcm_mul =>  8, dcm_div => 3), cl => "010"),
 		(id => sdram166MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "110"),
+		(id => sdram170MHz, pll => (dcm_mul => 17, dcm_div => 5), cl => "110"),
 		(id => sdram200MHz, pll => (dcm_mul =>  4, dcm_div => 1), cl => "011"));
 
 	function sdramparams (
@@ -185,13 +188,13 @@ architecture graphics of s3estarter is
 	signal ctlrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal sdram_st_dqs_open : std_logic;
+	signal dqsi_inv        : std_logic;
 
-	signal sdram_clk         : std_logic_vector(0 downto 0);
-	signal sdram_dqst        : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal sdram_dqso        : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal sdram_dqt         : std_logic_vector(sd_dq'range);
-	signal sdram_dqo         : std_logic_vector(sd_dq'range);
+	signal sdram_clk       : std_logic_vector(0 downto 0);
+	signal sdram_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_dqt       : std_logic_vector(sd_dq'range);
+	signal sdram_dqo       : std_logic_vector(sd_dq'range);
 
 	signal mii_clk         : std_logic;
 	signal video_clk       : std_logic;
@@ -617,6 +620,8 @@ begin
 		end if;
 	end process;
 
+	dqsi_inv <= '1' when sdram_params.cl="110" else '0';	-- 2.5 cas latency;
+
 	sdrphy_e : entity hdl4fpga.xc3s_sdrphy
 	generic map (
 		gate_delay  => 2,
@@ -632,6 +637,7 @@ begin
 		clk0        => clk0,
 		clk90       => clk90,
 		sys_rst     => sdrsys_rst,
+		dqsi_inv    => dqsi_inv,
 
 		phy_cke     => ctlrphy_cke,
 		phy_cs      => ctlrphy_cs,

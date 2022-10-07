@@ -147,8 +147,8 @@ package sdram_db is
 		(stdr => ddr3, param => XPR,        value =>   5));
 
 	constant device_latency_tab : device_latency_vector := (
-		(fpga => xc3s, param => STRL,       value =>   1),
-		(fpga => xc3s, param => RWNL,       value =>   0),
+		(fpga => xc3s, param => STRL,       value =>   0),
+		(fpga => xc3s, param => RWNL,       value =>   1),
 		(fpga => xc3s, param => DQSZL,      value =>   0),
 		(fpga => xc3s, param => DQSL,       value =>   1),
 		(fpga => xc3s, param => DQZL,       value =>   0),
