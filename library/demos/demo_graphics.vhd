@@ -346,8 +346,10 @@ begin
 				generic map (
 					max_depth  => 4,
 					latency    => 0, --setif(profile=0, 0, 2),
-					check_sov  => true,
-					check_dov  => true)
+					-- check_sov  => true,
+					-- check_dov  => true)
+					check_sov  => false,
+					check_dov  => false)
 				port map (
 					src_clk    => sio_clk,
 					src_irdy   => dmaaddr_irdy,
@@ -590,8 +592,10 @@ begin
 					-- async_mode => true,
 					latency    => 2,
 					gray_code  => false,
-					check_sov  => true,
-					check_dov  => true)
+					-- check_sov  => true,
+					-- check_dov  => true)
+					check_sov  => false,
+					check_dov  => false)
 				port map (
 					src_clk  => ctlr_clk,
 					src_irdy => dmaso_irdy,
