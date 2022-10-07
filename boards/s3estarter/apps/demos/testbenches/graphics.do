@@ -35,8 +35,8 @@ add wave -noupdate -expand -group ddr /testbench/du_e/sd_cas
 add wave -noupdate -expand -group ddr /testbench/du_e/sd_we
 add wave -noupdate -expand -group ddr /testbench/du_e/sd_ba
 add wave -noupdate -expand -group ddr -radix hexadecimal /testbench/du_e/sd_a
-add wave -noupdate -expand -group ddr /testbench/du_e/sd_dqs
-add wave -noupdate -expand -group ddr -radix hexadecimal /testbench/du_e/sd_dq
+add wave -noupdate -expand -group ddr -expand /testbench/du_e/sd_dqs
+add wave -noupdate -expand -group ddr -radix hexadecimal -childformat {{/testbench/du_e/sd_dq(15) -radix hexadecimal} {/testbench/du_e/sd_dq(14) -radix hexadecimal} {/testbench/du_e/sd_dq(13) -radix hexadecimal} {/testbench/du_e/sd_dq(12) -radix hexadecimal} {/testbench/du_e/sd_dq(11) -radix hexadecimal} {/testbench/du_e/sd_dq(10) -radix hexadecimal} {/testbench/du_e/sd_dq(9) -radix hexadecimal} {/testbench/du_e/sd_dq(8) -radix hexadecimal} {/testbench/du_e/sd_dq(7) -radix hexadecimal} {/testbench/du_e/sd_dq(6) -radix hexadecimal} {/testbench/du_e/sd_dq(5) -radix hexadecimal} {/testbench/du_e/sd_dq(4) -radix hexadecimal} {/testbench/du_e/sd_dq(3) -radix hexadecimal} {/testbench/du_e/sd_dq(2) -radix hexadecimal} {/testbench/du_e/sd_dq(1) -radix hexadecimal} {/testbench/du_e/sd_dq(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/sd_dq(15) {-height 29 -radix hexadecimal} /testbench/du_e/sd_dq(14) {-height 29 -radix hexadecimal} /testbench/du_e/sd_dq(13) {-height 29 -radix hexadecimal} /testbench/du_e/sd_dq(12) {-height 29 -radix hexadecimal} /testbench/du_e/sd_dq(11) {-height 29 -radix hexadecimal} /testbench/du_e/sd_dq(10) {-height 29 -radix hexadecimal} /testbench/du_e/sd_dq(9) {-height 29 -radix hexadecimal} /testbench/du_e/sd_dq(8) {-height 29 -radix hexadecimal} /testbench/du_e/sd_dq(7) {-height 29 -radix hexadecimal} /testbench/du_e/sd_dq(6) {-height 29 -radix hexadecimal} /testbench/du_e/sd_dq(5) {-height 29 -radix hexadecimal} /testbench/du_e/sd_dq(4) {-height 29 -radix hexadecimal} /testbench/du_e/sd_dq(3) {-height 29 -radix hexadecimal} /testbench/du_e/sd_dq(2) {-height 29 -radix hexadecimal} /testbench/du_e/sd_dq(1) {-height 29 -radix hexadecimal} /testbench/du_e/sd_dq(0) {-height 29 -radix hexadecimal}} /testbench/du_e/sd_dq
 add wave -noupdate -expand -group ddr /testbench/du_e/sd_dm
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/clk0
@@ -46,12 +46,12 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sd_ck_p
 add wave -noupdate /testbench/du_e/sd_ck_fb
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ddrdcm_b/clk0_bufg_i/O
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/igbx_i/clk(0)
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/igbx_i/d(0)
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/igbx_i/q
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/igbx_i/q(0) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/igbx_i/q(1) -radix hexadecimal}} -expand -subitemconfig {/testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/igbx_i/q(0) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/igbx_i/q(1) {-height 29 -radix hexadecimal}} /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/igbx_i/q
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/sdrphy_e/phy_sto(3) -radix hexadecimal} {/testbench/du_e/sdrphy_e/phy_sto(2) -radix hexadecimal} {/testbench/du_e/sdrphy_e/phy_sto(1) -radix hexadecimal} {/testbench/du_e/sdrphy_e/phy_sto(0) -radix hexadecimal}} -expand -subitemconfig {/testbench/du_e/sdrphy_e/phy_sto(3) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/phy_sto(2) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/phy_sto(1) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/phy_sto(0) {-height 29 -radix hexadecimal}} /testbench/du_e/sdrphy_e/phy_sto
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/phy_dqo
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/phy_dqo
 add wave -noupdate -divider {New Divider}
@@ -67,10 +67,10 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {94625600 ps} 0}
+WaveRestoreCursors {{Cursor 1} {94585021 ps} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 143
-configure wave -valuecolwidth 86
+configure wave -namecolwidth 209
+configure wave -valuecolwidth 160
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -83,4 +83,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {94600242 ps} {94702782 ps}
+WaveRestoreZoom {94567098 ps} {94664152 ps}
