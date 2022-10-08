@@ -58,7 +58,8 @@ architecture graphics of nuhs3adsp is
 
 		sdr200mhz_1080p24bpp);
 
-	constant app_profile : app_profiles := sdr166mhz_1080p24bpp;
+	-- constant app_profile : app_profiles := sdr166mhz_1080p24bpp;
+	constant app_profile : app_profiles := sdr133mhz_720p24bpp;
 
 	type profileparam_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparam_vector := (
@@ -212,11 +213,13 @@ architecture graphics of nuhs3adsp is
 	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal phyctlr_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal dqsi_inv        : std_logic;
 	signal ddr_st_dqs_open : std_logic;
 
 	signal ddr_clk       : std_logic_vector(0 downto 0);
 	signal ddr_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqt       : std_logic_vector(ddr_dq'range);
 	signal ddr_dqo       : std_logic_vector(ddr_dq'range);
@@ -250,6 +253,106 @@ begin
 			sys_rst <= not sw1;
 		end if;
 	end process;
+
+	ddrdcm_b : block
+		signal dfs_lckd  : std_logic;
+		
+		signal dcm_rst   : std_logic;
+		signal dcm_clkin : std_logic;
+		signal dcm_clkin_n : std_logic;
+		signal dcm_clk0  : std_logic;
+		signal dcm_clk90 : std_logic;
+		signal dcm_lckd  : std_logic;
+
+		signal ddr_lp_ck : std_logic;
+
+	begin
+
+		dfs_i : dcm_sp
+		generic map(
+			clk_feedback  => "NONE",
+			clkin_period  => sys_per*1.0e9,
+			clkdv_divide  => 2.0,
+			clkin_divide_by_2 => FALSE,
+			clkfx_divide  => sdram_params.pll.dcm_div,
+			clkfx_multiply => sdram_params.pll.dcm_mul,
+			clkout_phase_shift => "NONE",
+			deskew_adjust => "SYSTEM_SYNCHRONOUS",
+			dfs_frequency_mode => "HIGH",
+			duty_cycle_correction => TRUE,
+			factory_jf   => X"C080",
+			phase_shift  => 0,
+			startup_wait => FALSE)
+		port map (
+			dssen    => '0',
+			psclk    => '0',
+			psen     => '0',
+			psincdec => '0',
+	
+			rst      => sys_rst,
+			clkin    => sys_clk,
+			clkfb    => '0',
+			clkfx    => dcm_clkin,
+			locked   => dfs_lckd);
+
+		process (sys_rst, sys_clk)
+		begin
+			if sys_rst='1' then
+				dcm_rst <= '1';
+			elsif rising_edge(sys_clk) then
+				dcm_rst <= not dfs_lckd;
+			end if;
+		end process;
+
+		ddr_lp_ck_i : ibufgds
+		generic map (
+			iostandard => "DIFF_SSTL2_I")
+		port map (
+			i  => ddr_lp_ckp,
+			ib => ddr_lp_ckn,
+			o  => ddr_lp_ck);
+
+		dcm_dll : dcm_sp
+		generic map(
+			clk_feedback  => "1X",
+			clkdv_divide  => 2.0,
+			clkfx_divide  => 1,
+			clkfx_multiply => 2,
+			clkin_divide_by_2 => FALSE,
+			clkin_period  => (real(sdram_params.pll.dcm_div)*sys_per*1.0e9)/real( sdram_params.pll.dcm_mul),
+			clkout_phase_shift => "NONE",
+			deskew_adjust => "SYSTEM_SYNCHRONOUS",
+			dfs_frequency_mode => "HIGH",
+			duty_cycle_correction => TRUE,
+			factory_jf    => x"C080",
+			phase_shift   => 0,
+			startup_wait  => FALSE)
+		port map (
+			dssen    => '0',
+			psclk    => '0',
+			psen     => '0',
+			psincdec => '0',
+	
+			rst      => dcm_rst,
+			clkin    => dcm_clkin,
+			clkfb    => clk0,
+			clk0     => dcm_clk0,
+			clk90    => dcm_clk90,
+			locked   => dcm_lckd);
+
+		clk0_bufg_i : bufg
+		port map (
+			i => dcm_clk0,
+			o => clk0);
+	
+		clk90_bufg_i : bufg
+		port map (
+			i => dcm_clk90,
+			o => clk90);
+	
+		ddrsys_rst <= not dcm_lckd;
+
+	end block;
 
 	videodcm_b : if not debug generate
 	   signal dcm_rst   : std_logic;
@@ -343,97 +446,6 @@ begin
 		q <= not q after 20 ns;
 		mii_clk <= to_stdulogic(q);
 	end generate;
-
-	ddrdcm_b : block
-		signal dfs_lckd  : std_logic;
-		signal dfs_clkfb : std_logic;
-		
-		signal dcm_rst   : std_logic;
-		signal dcm_clkin : std_logic;
-		signal dcm_clk0  : std_logic;
-		signal dcm_clk90 : std_logic;
-		signal dcm_lckd  : std_logic;
-
-	begin
-
-		dfs_i : dcm_sp
-		generic map(
-			clk_feedback  => "1X",
-			clkin_period  => sys_per*1.0e9,
-			clkdv_divide  => 2.0,
-			clkin_divide_by_2 => FALSE,
-			clkfx_divide  => sdram_params.pll.dcm_div,
-			clkfx_multiply => sdram_params.pll.dcm_mul,
-			clkout_phase_shift => "NONE",
-			deskew_adjust => "SYSTEM_SYNCHRONOUS",
-			dfs_frequency_mode => "HIGH",
-			duty_cycle_correction => TRUE,
-			factory_jf   => X"C080",
-			phase_shift  => 0,
-			startup_wait => FALSE)
-		port map (
-			dssen    => '0',
-			psclk    => '0',
-			psen     => '0',
-			psincdec => '0',
-	
-			rst      => sys_rst,
-			clkin    => sys_clk,
-			clkfb    => dfs_clkfb,
-			clk0     => dfs_clkfb,
-			clkfx    => dcm_clkin,
-			locked   => dfs_lckd);
-
-		process (sys_rst, sys_clk)
-		begin
-			if sys_rst='1' then
-				dcm_rst <= '1';
-			elsif rising_edge(sys_clk) then
-				dcm_rst <= not dfs_lckd;
-			end if;
-		end process;
-
-		dcm_dll : dcm_sp
-		generic map(
-			clk_feedback => "1X",
-			clkdv_divide => 2.0,
-			clkfx_divide => 1,
-			clkfx_multiply => 2,
-			clkin_divide_by_2 => FALSE,
-			clkin_period => (real(sdram_params.pll.dcm_div)*sys_per*1.0e9)/real( sdram_params.pll.dcm_mul),
-			clkout_phase_shift => "NONE",
-			deskew_adjust => "SYSTEM_SYNCHRONOUS",
-			dfs_frequency_mode => "HIGH",
-			duty_cycle_correction => TRUE,
-			factory_jf => x"C080",
-			phase_shift => 0,
-			startup_wait => FALSE)
-		port map (
-			dssen    => '0',
-			psclk    => '0',
-			psen     => '0',
-			psincdec => '0',
-	
-			rst      => dcm_rst,
-			clkin    => dcm_clkin,
-			clkfb    => clk0,
-			clk0     => dcm_clk0,
-			clk90    => dcm_clk90,
-			locked   => dcm_lckd);
-
-		clk0_bufg_i : bufg
-		port map (
-			i => dcm_clk0,
-			o => clk0);
-	
-		clk90_bufg_i : bufg
-		port map (
-			i => dcm_clk90,
-			o => clk90);
-	
-		ddrsys_rst <= not dcm_lckd;
-
-	end block;
 
 	ipoe_b : block
 
@@ -644,10 +656,20 @@ begin
 		end if;
 	end process;
 
-	dqsi_inv <= '1' when sdram_params.cl="110" else '0';	-- 2.5 cas latency;
+	-- dqsi_inv <= '1' when sdram_params.cl="110" else '0';	-- 2.5 cas latency;
+	-- ddr_dqsi <= (others => clk90 xor dqsi_inv);
+	dqs_delayed_e : entity hdl4fpga.pgm_delay
+	generic map(
+		n => gate_delay)
+	port map (
+		xi  => sdr_dqsi(i),
+		x_p => ddr_dqsi(0),
+		x_n => ddr_dqsi(1));
+	-- phy_dqso(data_gear*i+0) <= dqso(0) after 1 ns;
+	-- phy_dqso(data_gear*i+1) <= dqso(1) after 1 ns;
+
 	sdrphy_e : entity hdl4fpga.xc3s_sdrphy
 	generic map (
-		gate_delay  => 2,
 		loopback    => true,
 		rgtr_dout   => false,
 		bank_size   => ddr_ba'length,
@@ -660,7 +682,6 @@ begin
 		sys_rst     => ddrsys_rst,
 		clk0        => clk0,
 		clk90       => clk90,
-		dqsi_inv    => dqsi_inv,
 
 		phy_cke     => ctlrphy_cke,
 		phy_cs      => ctlrphy_cs,
@@ -680,7 +701,8 @@ begin
 		phy_dqo     => ctlrphy_dqi,
 		phy_odt     => ctlrphy_odt,
 		phy_sti     => ctlrphy_sto,
-		phy_sto     => ctlrphy_sti,
+		-- phy_sto     => ctlrphy_sti,
+		phy_sto     => phyctlr_sto,
 
 		sdr_sto(0)  => ddr_st_dqs,
 		sdr_sto(1)  => ddr_st_dqs_open,
@@ -700,8 +722,18 @@ begin
 		sdr_dqi     => ddr_dq,
 		sdr_dqo     => ddr_dqo,
 		sdr_dqst    => ddr_dqst,
-		sdr_dqsi    => ddr_dqs,
+		sdr_dqsi    => ddr_dqsi,
 		sdr_dqso    => ddr_dqso);
+
+	ctlrphy_sti <= phyctlr_sto(data_gear-1 downto 0) & phyctlr_sto(data_gear-1 downto 0);
+
+	ddr_clk_i : obufds
+	generic map (
+		iostandard => "DIFF_SSTL2_I")
+	port map (
+		i  => ddr_clk(0),
+		o  => ddr_ckp,
+		ob => ddr_ckn);
 
 	ddr_dqs_g : for i in ddr_dqs'range generate
 		ddr_dqs(i) <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
@@ -716,14 +748,6 @@ begin
 			end if;
 		end loop;
 	end process;
-
-	ddr_clk_i : obufds
-	generic map (
-		iostandard => "DIFF_SSTL2_I")
-	port map (
-		i  => ddr_clk(0),
-		o  => ddr_ckp,
-		ob => ddr_ckn);
 
 	psave <= '1';
 --	adcclkab_e : entity hdl4fpga.ddro

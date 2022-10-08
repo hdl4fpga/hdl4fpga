@@ -38,7 +38,6 @@ entity xc3s_sdrdqphy is
 	port (
 		clk0        : in std_logic;
 		clk90       : in std_logic;
-		dqsi_inv    : in  std_logic;
 		phy_calreq  : in std_logic := '0';
 		phy_dmt     : in  std_logic_vector(0 to gear-1) := (others => '-');
 		phy_dmi     : in  std_logic_vector(gear-1 downto 0) := (others => '-');
@@ -60,6 +59,7 @@ entity xc3s_sdrdqphy is
 		sdr_dqo     : out std_logic_vector(byte_size-1 downto 0);
 
 		sdr_dqst    : out std_logic;
+		sdr_dqsi    : in  std_logic;
 		sdr_dqso    : out std_logic);
 
 end;
@@ -80,7 +80,7 @@ begin
 		signal igbx_clk : std_logic_vector(0 to 0);
 	begin
 
-		igbx_clk(0) <= dqsi_inv xnor clk90;
+		igbx_clk(0) <= not sdr_dqsi;
 		igbx_i : entity hdl4fpga.igbx
 		generic map (
 			device => hdl4fpga.profiles.xc3s,
@@ -100,7 +100,7 @@ begin
 		signal igbx_clk : std_logic_vector(0 to 0);
 		signal sti      : std_logic;
 	begin
-		igbx_clk(0) <= dqsi_inv xor clk90;
+		igbx_clk(0) <= sdr_dqsi;
 		sti <= sdr_sti when loopback else sdr_dmi;
 		sto_i : entity hdl4fpga.igbx
 		generic map (

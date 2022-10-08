@@ -192,6 +192,7 @@ architecture graphics of s3estarter is
 
 	signal sdram_clk       : std_logic_vector(0 downto 0);
 	signal sdram_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal sdram_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal sdram_dqt       : std_logic_vector(sd_dq'range);
 	signal sdram_dqo       : std_logic_vector(sd_dq'range);
@@ -621,10 +622,10 @@ begin
 	end process;
 
 	dqsi_inv <= '1' when sdram_params.cl="110" else '0';	-- 2.5 cas latency;
+	sdram_dqsi <= (others => clk90 xor dqsi_inv);
 
 	sdrphy_e : entity hdl4fpga.xc3s_sdrphy
 	generic map (
-		gate_delay  => 2,
 		loopback    => false,
 		rgtr_dout   => false,
 		bank_size   => sd_ba'length,
@@ -637,7 +638,6 @@ begin
 		clk0        => clk0,
 		clk90       => clk90,
 		sys_rst     => sdrsys_rst,
-		dqsi_inv    => dqsi_inv,
 
 		phy_cke     => ctlrphy_cke,
 		phy_cs      => ctlrphy_cs,
@@ -673,7 +673,7 @@ begin
 		sdr_dqi     => sd_dq,
 		sdr_dqo     => sdram_dqo,
 		sdr_dqst    => sdram_dqst,
-		sdr_dqsi    => sd_dqs,
+		sdr_dqsi    => sdram_dqsi,
 		sdr_dqso    => sdram_dqso);
 
 	sdram_dqs_g : for i in sd_dqs'range generate

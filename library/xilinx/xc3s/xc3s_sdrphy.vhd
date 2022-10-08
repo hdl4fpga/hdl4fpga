@@ -35,8 +35,7 @@ entity xc3s_sdrphy is
 		latencydq  : natural   := 0;
 		iddron     : boolean   := false;
 		rgtr_dout  : boolean   := true;
-		gate_delay : natural   := 1;
-		CMMD_GEAR  : natural   := 1;
+		cmmd_gear  : natural   := 1;
 		data_gear  : natural   := 2;
 		bank_size  : natural   := 2;
 		addr_size  : natural   := 13;
@@ -48,16 +47,15 @@ entity xc3s_sdrphy is
 		clk90    : in std_logic;
 		sys_rst  : in std_logic;
 
-		dqsi_inv : in  std_logic := '0';
-		phy_rst  : in  std_logic_vector(CMMD_GEAR-1 downto 0) := (others => '1');
-		phy_cs   : in  std_logic_vector(CMMD_GEAR-1 downto 0) := (others => '0');
-		phy_cke  : in  std_logic_vector(CMMD_GEAR-1 downto 0);
-		phy_ras  : in  std_logic_vector(CMMD_GEAR-1 downto 0);
-		phy_cas  : in  std_logic_vector(CMMD_GEAR-1 downto 0);
-		phy_we   : in  std_logic_vector(CMMD_GEAR-1 downto 0);
-		phy_b    : in  std_logic_vector(CMMD_GEAR*bank_size-1 downto 0);
-		phy_a    : in  std_logic_vector(CMMD_GEAR*addr_size-1 downto 0);
-		phy_odt  : in  std_logic_vector(CMMD_GEAR-1 downto 0);
+		phy_rst  : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '1');
+		phy_cs   : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '0');
+		phy_cke  : in  std_logic_vector(cmmd_gear-1 downto 0);
+		phy_ras  : in  std_logic_vector(cmmd_gear-1 downto 0);
+		phy_cas  : in  std_logic_vector(cmmd_gear-1 downto 0);
+		phy_we   : in  std_logic_vector(cmmd_gear-1 downto 0);
+		phy_b    : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
+		phy_a    : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
+		phy_odt  : in  std_logic_vector(cmmd_gear-1 downto 0);
 
 		phy_dmt  : in  std_logic_vector(0 to data_gear*word_size/byte_size-1);
 		phy_dmi  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -331,7 +329,6 @@ begin
 		port map (
 			clk0     => clk0,
 			clk90    => clk90,
-			dqsi_inv => dqsi_inv,
 
 			phy_sti  => ssti(i),
 			phy_sto  => phy_sto(data_gear*(i+1)-1 downto data_gear*i),
@@ -356,21 +353,12 @@ begin
 			sdr_dmo  => ddmo(i),
 
 			sdr_dqst => sdr_dqst(i),
+			sdr_dqsi => sdr_dqsi(i),
 			sdr_dqso => sdr_dqso(i));
 
 
-		-- dqs_delayed_e : entity hdl4fpga.pgm_delay
-		-- generic map(
-		-- 	n => gate_delay)
-		-- port map (
-		-- 	xi  => sdr_dqsi(i),
-		-- 	x_p => dqso(0),
-		-- 	x_n => dqso(1));
-		-- phy_dqso(data_gear*i+0) <= dqso(0) after 1 ns;
-		-- phy_dqso(data_gear*i+1) <= dqso(1) after 1 ns;
-
-		phy_dqso(data_gear*i+0) <= dqsi_inv xnor clk90;
-		phy_dqso(data_gear*i+1) <= dqsi_inv xor  clk90;
+		phy_dqso(data_gear*i+0) <= not sdr_dqsi(i);
+		phy_dqso(data_gear*i+1) <= sdr_dqsi(i);
 
 	end generate;
 
