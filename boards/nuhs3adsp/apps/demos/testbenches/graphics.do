@@ -88,13 +88,10 @@ add wave -noupdate /testbench/du_e/grahics_e/sdrctlr_b/sdrctlr_e/ctlr_clks(0)
 add wave -noupdate /testbench/du_e/grahics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(0)
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sdrctlr_b/sdrctlr_e/ctlr_do
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/igbx_i/clk(0)
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/igbx_i/d(0)
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/phy_sto(0)
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/igbx_i/q(0)
+add wave -noupdate -expand /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/phy_sto
+add wave -noupdate -expand /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/phy_dqso
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/phy_dqo
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/phy_sto(1)
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/iddr_g(1)/igbx_i/q(1)
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -102,7 +99,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {94597611 ps} 0} {{Cursor 2} {69810662 ps} 0}
+WaveRestoreCursors {{Cursor 1} {94566428 ps} 0} {{Cursor 2} {94945100 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 269
 configure wave -valuecolwidth 219
@@ -118,4 +115,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {94557799 ps} {94654853 ps}
+WaveRestoreZoom {94727635 ps} {95014335 ps}

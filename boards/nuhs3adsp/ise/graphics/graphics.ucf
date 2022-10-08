@@ -39,9 +39,9 @@ NET "ddr_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
 NET "ddr_dqs[1]" TNM_NET = dqs1;
 NET "ddr_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
 
-NET "ctlrphy_dqsi[*]" MAXDELAY = 2.000 ns;
+#NET "ctlrphy_dqsi[*]" MAXDELAY = 2.000 ns;
+#NET "ddr_dq[*]"       MAXDELAY = 2.000 ns;
 NET "ctlrphy_dqsi[*]" MAXSKEW  = 0.500 ns;
-NET "ddr_dq[*]"       MAXDELAY = 2.000 ns;
 NET "ddr_dq[*]"       MAXSKEW  = 0.500 ns;
 
 # ###################### #

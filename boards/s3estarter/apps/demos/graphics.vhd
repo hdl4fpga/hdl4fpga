@@ -622,10 +622,11 @@ begin
 	end process;
 
 	dqsi_inv <= '1' when sdram_params.cl="110" else '0';	-- 2.5 cas latency;
-	sdram_dqsi <= (others => clk90 xor dqsi_inv);
+	sdram_dqsi <= (others => not clk90 xor dqsi_inv);
 
 	sdrphy_e : entity hdl4fpga.xc3s_sdrphy
 	generic map (
+		iddr        => true,
 		loopback    => false,
 		rgtr_dout   => false,
 		bank_size   => sd_ba'length,
