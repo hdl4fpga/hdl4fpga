@@ -31,7 +31,7 @@ use unisim.vcomponents.all;
 entity xc3s_sdrdqphy is
 	generic (
 		latency     : natural := 0;
---		rgtr_dout   : boolean;
+		iddr        : boolean := false;
 		loopback    : boolean;
 		gear        : natural;
 		byte_size   : natural);
@@ -47,6 +47,7 @@ entity xc3s_sdrdqphy is
 		phy_dqt     : in  std_logic_vector(gear-1 downto 0);
 		phy_dqo     : out std_logic_vector(gear*byte_size-1 downto 0);
 		phy_dqsi    : in  std_logic_vector(0 to gear-1);
+		phy_dqso    : out std_logic_vector(0 to gear-1);
 		phy_dqst    : in  std_logic_vector(0 to gear-1);
 
 		sdr_dmt     : out std_logic;
@@ -79,38 +80,58 @@ begin
 	iddr_g : for i in 0 to byte_size-1 generate
 		signal igbx_clk : std_logic_vector(0 to 0);
 	begin
+		iddr_g : if iddr generate
+			igbx_clk(0) <= sdr_dqsi;
+			igbx_i : entity hdl4fpga.igbx
+			generic map (
+				device => hdl4fpga.profiles.xc3s,
+				gear   => 2)
+			port map (
+				clk  => igbx_clk,
+				d(0) => sdr_dqi(i),
+				q(0) => phy_dqo(0*byte_size+i),
+				q(1) => phy_dqo(1*byte_size+i));
+		end generate;
 
-		igbx_clk(0) <= not sdr_dqsi;
-		igbx_i : entity hdl4fpga.igbx
-		generic map (
-			device => hdl4fpga.profiles.xc3s,
-			gear   => 2)
-		port map (
-			clk  => igbx_clk,
-			d(0) => sdr_dqi(i),
-			q(0) => phy_dqo(0*byte_size+i),
-			q(1) => phy_dqo(1*byte_size+i));
-
-		-- phase_g : for j in  gear-1 downto 0 generate
-			-- phy_dqo(j*byte_size+i) <= sdr_dqi(i);
-		-- end generate;
+		noiddr_g : if not iddr generate
+			phases_g : for j in gear-1 downto 0 generate
+				phy_dqo(j*byte_size+i) <= sdr_dqi(i);
+			end generate;
+		end generate;
 	end generate;
 
 	sto_b : block
 		signal igbx_clk : std_logic_vector(0 to 0);
 		signal sti      : std_logic;
 	begin
-		igbx_clk(0) <= sdr_dqsi;
-		sti <= sdr_sti when loopback else sdr_dmi;
-		sto_i : entity hdl4fpga.igbx
-		generic map (
-			device => hdl4fpga.profiles.xc3s,
-			gear   => 2)
-		port map (
-			clk  => igbx_clk,
-			d(0) => sti,
-			q    => phy_sto);
+		iddr_g : if iddr generate
+			igbx_clk(0) <= not sdr_dqsi;
+			sti <= sdr_sti when loopback else sdr_dmi;
+			sto_i : entity hdl4fpga.igbx
+			generic map (
+				device => hdl4fpga.profiles.xc3s,
+				gear   => 2)
+			port map (
+				clk  => igbx_clk,
+				d(0) => sti,
+				q    => phy_sto);
+		end generate;
+
+		noiddr_g : if not iddr generate
+			phases_g : for j in gear-1 downto 0 generate
+				phy_sto(j) <= sdr_sti when loopback else sdr_dmi;
+			end generate;
+		end generate;
+
 	end block;
+
+	dqs_delayed_e : entity hdl4fpga.pgm_delay
+	generic map(
+		n => 2) --gate_delay)
+	port map (
+		xi  => sdr_dqsi,
+		x_p => phy_dqso(1),
+		x_n => phy_dqso(0));
 
 	oddr_g : for i in 0 to byte_size-1 generate
 		signal dqo  : std_logic_vector(0 to gear-1);
@@ -150,8 +171,6 @@ begin
 			d0 => dqo(0),
 			d1 => dqo(1),
 			q  => sdr_dqo(i));
-
-
 	end generate;
 
 	dmo_g : block
@@ -171,7 +190,7 @@ begin
 			generic map (
 				style => "register",
 				n     => 3,
-				d     => (0 to 3-1 => LATENCY))
+				d     => (0 to 3-1 => latency))
 			port map (
 				clk   => clks(i),
 				di(0) => phy_dmt(i),
@@ -217,7 +236,6 @@ begin
 			d1 => dmi(1),
 			q  => sdr_dmo);
 
-
 	end block;
 
 	oddr_i : oddr2
@@ -230,7 +248,6 @@ begin
 		d0 => phy_sti(0),
 		d1 => phy_sti(1),
 		q  => sdr_sto);
-
 
 	dqso_b : block
 		signal dt     : std_logic;

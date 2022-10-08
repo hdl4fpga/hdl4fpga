@@ -33,7 +33,7 @@ entity xc3s_sdrphy is
 		loopback   : boolean;
 		latencyba  : natural   := 0;
 		latencydq  : natural   := 0;
-		iddron     : boolean   := false;
+		iddr     : boolean   := false;
 		rgtr_dout  : boolean   := true;
 		cmmd_gear  : natural   := 1;
 		data_gear  : natural   := 2;
@@ -323,6 +323,7 @@ begin
 		ddrdqphy_i : entity hdl4fpga.xc3s_sdrdqphy
 		generic map (
 			latency   => setif(latencydq=0, setif(rgtr_dout, 1, 0), latencydq),
+			iddr      => iddr, 
 			loopback  => loopback,
 			gear      => data_gear,
 			byte_size => byte_size)
@@ -340,6 +341,7 @@ begin
 			phy_dqo  => sdqo(i),
 
 			phy_dqsi => sdqsi(i),
+			phy_dqso => phy_dqso(data_gear*(i+1)-1 downto data_gear*i),
 			phy_dqst => sdqst(i),
 
 			sdr_dqi  => ddqi(i),
@@ -357,8 +359,6 @@ begin
 			sdr_dqso => sdr_dqso(i));
 
 
-		phy_dqso(data_gear*i+0) <= not sdr_dqsi(i);
-		phy_dqso(data_gear*i+1) <= sdr_dqsi(i);
 
 	end generate;
 

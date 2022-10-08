@@ -58,8 +58,8 @@ architecture graphics of nuhs3adsp is
 
 		sdr200mhz_1080p24bpp);
 
-	-- constant app_profile : app_profiles := sdr166mhz_1080p24bpp;
-	constant app_profile : app_profiles := sdr133mhz_720p24bpp;
+	constant app_profile : app_profiles := sdr166mhz_1080p24bpp;
+	-- constant app_profile : app_profiles := sdr133mhz_600p24bpp;
 
 	type profileparam_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparam_vector := (
@@ -217,6 +217,7 @@ architecture graphics of nuhs3adsp is
 	signal dqsi_inv        : std_logic;
 	signal ddr_st_dqs_open : std_logic;
 
+	signal ddr_lp_ck : std_logic;
 	signal ddr_clk       : std_logic_vector(0 downto 0);
 	signal ddr_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -247,6 +248,14 @@ begin
 		I => xtal ,
 		O => sys_clk);
 
+	ddr_lp_ck_i : ibufgds
+	generic map (
+		iostandard => "DIFF_SSTL2_I")
+	port map (
+		i  => ddr_lp_ckp,
+		ib => ddr_lp_ckn,
+		o  => ddr_lp_ck);
+
 	process(sys_clk)
 	begin
 		if rising_edge(sys_clk) then
@@ -255,16 +264,14 @@ begin
 	end process;
 
 	ddrdcm_b : block
+		signal dfs_clkfx : std_logic;
 		signal dfs_lckd  : std_logic;
 		
 		signal dcm_rst   : std_logic;
-		signal dcm_clkin : std_logic;
-		signal dcm_clkin_n : std_logic;
 		signal dcm_clk0  : std_logic;
 		signal dcm_clk90 : std_logic;
 		signal dcm_lckd  : std_logic;
 
-		signal ddr_lp_ck : std_logic;
 
 	begin
 
@@ -292,7 +299,7 @@ begin
 			rst      => sys_rst,
 			clkin    => sys_clk,
 			clkfb    => '0',
-			clkfx    => dcm_clkin,
+			clkfx    => dfs_clkfx,
 			locked   => dfs_lckd);
 
 		process (sys_rst, sys_clk)
@@ -303,14 +310,6 @@ begin
 				dcm_rst <= not dfs_lckd;
 			end if;
 		end process;
-
-		ddr_lp_ck_i : ibufgds
-		generic map (
-			iostandard => "DIFF_SSTL2_I")
-		port map (
-			i  => ddr_lp_ckp,
-			ib => ddr_lp_ckn,
-			o  => ddr_lp_ck);
 
 		dcm_dll : dcm_sp
 		generic map(
@@ -334,7 +333,7 @@ begin
 			psincdec => '0',
 	
 			rst      => dcm_rst,
-			clkin    => dcm_clkin,
+			clkin    => dfs_clkfx,
 			clkfb    => clk0,
 			clk0     => dcm_clk0,
 			clk90    => dcm_clk90,
@@ -656,18 +655,6 @@ begin
 		end if;
 	end process;
 
-	-- dqsi_inv <= '1' when sdram_params.cl="110" else '0';	-- 2.5 cas latency;
-	-- ddr_dqsi <= (others => clk90 xor dqsi_inv);
-	dqs_delayed_e : entity hdl4fpga.pgm_delay
-	generic map(
-		n => gate_delay)
-	port map (
-		xi  => sdr_dqsi(i),
-		x_p => ddr_dqsi(0),
-		x_n => ddr_dqsi(1));
-	-- phy_dqso(data_gear*i+0) <= dqso(0) after 1 ns;
-	-- phy_dqso(data_gear*i+1) <= dqso(1) after 1 ns;
-
 	sdrphy_e : entity hdl4fpga.xc3s_sdrphy
 	generic map (
 		loopback    => true,
@@ -736,7 +723,10 @@ begin
 		ob => ddr_ckn);
 
 	ddr_dqs_g : for i in ddr_dqs'range generate
-		ddr_dqs(i) <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
+		signal dqsi : std_logic;
+	begin
+		ddr_dqsi(i) <= ddr_dqs(i) after natural(sdram_tcp/5.0*1.0e12) * 1 ps;
+		ddr_dqs(i)  <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
 	end generate;
 
 	process (ddr_dqt, ddr_dqo)

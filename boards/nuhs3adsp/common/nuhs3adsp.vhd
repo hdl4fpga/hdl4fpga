@@ -359,6 +359,7 @@ entity nuhs3adsp is
 	attribute loc of ddr_dm  : signal is "R6 U1";
 	attribute loc of ddr_dqs : signal is "N1 V1";
 	attribute loc of ddr_dq  : signal is "M2 L3 N7 M6 N5 P1 P2 P6 T5 T6 R5 T1 T4 R3 W1 Y1";
+	-- attribute buffer_type of ddr_dqs : signal is "none";
 
 	attribute iostandard of ddr_st_dqs : signal is "SSTL2_I";
 	attribute iostandard of ddr_st_lp_dqs : signal is "SSTL2_I";
