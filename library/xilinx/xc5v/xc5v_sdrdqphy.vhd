@@ -334,7 +334,8 @@ begin
 				taps     => taps)
 			port map (
 				rst      => iod_rst,
-				edge     => std_logic'('1'),
+				edge     => std_logic'('1'), --IDDR
+				-- edge     => std_logic'('0'),
 				clk      => clk90,
 				req      => adjdqi_req,
 				rdy      => adjdqi_rdy(i),
@@ -377,9 +378,9 @@ begin
 			d(0) => dqi(i),
 			q    => dqii);
 
-		-- dly_b : for j in dqii'range generate
-		-- 	dq(j*BYTE_SIZE+i) <= dqii(j);
-		-- end generate;
+		dly_b1 : for j in dqii'range generate
+			dq(j*BYTE_SIZE+i) <= dqii(j);
+		end generate;
 
 		dly_b : block
 		begin
@@ -423,7 +424,6 @@ begin
 			sys_dqo <= dqf;
 		end if;
 	end process;
---	sys_dqo <= dq;
 
 	datao_b : block
 		signal clks  : std_logic_vector(0 to 2-1);

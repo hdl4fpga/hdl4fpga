@@ -348,8 +348,8 @@ begin
 			generic map (
 				taps     => taps)
 			port map (
-				edge     => std_logic'('0'),
 				rst      => rst,
+				edge     => std_logic'('0'),
 				clk      => iod_clk,
 				req      => adjdqi_req,
 				rdy      => adjdqi_rdy(i),

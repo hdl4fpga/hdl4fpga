@@ -194,10 +194,10 @@ architecture graphics of ml509 is
 	constant bank_size    : natural := ddr2_ba'length;
 	constant addr_size    : natural := ddr2_a'length;
 	constant coln_size    : natural := 7;
-	-- constant word_size    : natural := 16;
-	-- constant byte_size    : natural := 8;
-	constant word_size    : natural := ddr2_d'length;
-	constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
+	-- constant word_size    : natural := ddr2_d'length;
+	-- constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
+	constant word_size    : natural := 16;
+	constant byte_size    : natural := 8;
 
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
@@ -283,9 +283,6 @@ architecture graphics of ml509 is
 	signal tst            : std_logic;
 	signal tp_sel         : std_logic_vector(0 to unsigned_num_bits(WORD_SIZE/BYTE_SIZE-1)-1);
 
-	signal ddr_cs         : std_logic;
-	signal ddr_cke        : std_logic;
-	signal ddr_odt        : std_logic;
 	signal ddr_d          : std_logic_vector(word_size-1 downto 0);
 	signal ddr_dmi        : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dmo        : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -432,6 +429,8 @@ begin
 			end generate;
 
 			gbx4_g : if sclk_phases/sclk_edges < 2 generate 
+				signal dcm90_rst : std_logic;
+			begin
 				dcm_i : dcm_base
 				generic map (
 					clk_feedback => "1X",
@@ -462,6 +461,19 @@ begin
 					i => ddr_clk0_bufg,
 					o => ddr_clk0);
 	
+				process (sys_clk, ddr0_locked)
+					variable cntr : unsigned(0 to 2);
+				begin
+					if ddr0_locked='0' then
+						cntr := (others => '0');
+					elsif rising_edge(sys_clk) then
+						if cntr(0)='0' then
+							cntr := cntr + 1;
+						end if;
+					end if;
+					dcm90_rst <= not cntr(0);
+				end process;
+
 				dcm90_i : dcm_base
 				generic map (
 					clk_feedback => "1X",
@@ -469,9 +481,9 @@ begin
 					clkdv_divide => 2.0,
 					dll_frequency_mode => "HIGH")
 				port map (
-					rst    => dcm_rst,
-					clkin  => ddr_clk180,
-					clkfb  => ddr_clk180,
+					rst    => dcm90_rst,
+					clkin  => ddr_clk90x2,
+					clkfb  => ddr_clk90x2,
 					clkdv  => ddr_clk90_bufg,
 					locked => ddr90_locked);
 	
@@ -1038,21 +1050,17 @@ begin
 		sdram_dqsi => ddr2_dqsi,
 		sdram_dqso => ddr2_dqso);
 
-	-- ddr2_cs  <= (others => ddr_cs);
-	-- ddr2_cke <= (others => ddr_cke);
-	-- ddr2_odt <= (others => ddr_odt);
-
 	gpio_led_c <= ctlr_inirdy;
 
-	ddr2_scl <= '0';
+	ddr2_scl   <= '0';
 
-	phy_mdc  <= '0';
-	phy_mdio <= '0';
-	phy_col <= '0';
+	phy_mdc    <= '0';
+	phy_mdio   <= '0';
+	phy_col    <= '0';
 
 	phy_txc_gtxclk_i : oddr
 	port map (
-		c => gtx_clk,
+		c  => gtx_clk,
 		ce => '1',
 		s  => '0',
 		r  => '0',
