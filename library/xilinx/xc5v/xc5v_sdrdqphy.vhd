@@ -523,18 +523,17 @@ begin
 	end block;
 
 	dqso_b : block
-		signal dqso      : std_logic_vector(sys_dqsi'range);
+		signal dqsi      : std_logic_vector(sys_dqsi'range);
 		signal dqst      : std_logic_vector(sys_dqst'range);
 		signal dqsclk    : std_logic_vector(0 to 2-1);
-		signal adjdqs_st : std_logic;
 	begin
 
 		process (sys_dqsi)
 		begin
-			dqso <= (others => '0');
-			for i in dqso'range loop
+			dqsi <= (others => '0');
+			for i in dqsi'range loop
 				if i mod 2 = 1 then
-					dqso(i) <= reverse(sys_dqsi)(i);
+					dqsi(i) <= reverse(sys_dqsi)(i);
 				end if;
 			end loop;
 		end process;
@@ -559,7 +558,7 @@ begin
 			clk  => dqsclk,
 			t    => dqst,
 			tq(0)=> sdram_dqst,
-			d    => dqso,
+			d    => dqsi,
 			q(0) => sdram_dqso);
 
 	end block;

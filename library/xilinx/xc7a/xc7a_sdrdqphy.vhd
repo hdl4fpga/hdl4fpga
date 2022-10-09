@@ -541,7 +541,6 @@ begin
 		signal dqso      : std_logic_vector(sys_dqso'range);
 		signal dqst      : std_logic_vector(sys_dqst'range);
 		signal dqsclk    : std_logic_vector(0 to 2-1);
-		signal adjdqs_st : std_logic;
 	begin
 
 		process (sys_dqso)
