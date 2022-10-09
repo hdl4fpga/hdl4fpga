@@ -30,7 +30,6 @@ use unisim.vcomponents.all;
 
 entity xc3s_sdrdqphy is
 	generic (
-		latency     : natural := 0;
 		iddr        : boolean := false;
 		loopback    : boolean;
 		gear        : natural;
@@ -62,7 +61,6 @@ entity xc3s_sdrdqphy is
 		sdr_dqst    : out std_logic;
 		sdr_dqsi    : in  std_logic;
 		sdr_dqso    : out std_logic);
-
 end;
 
 library hdl4fpga;
@@ -140,18 +138,12 @@ begin
 	begin
 		clks <= (0 => clk90, 1 => not clk90);
 
-		registered_g : for j in clks'range generate
+		process (phy_dqi)
 		begin
-			lat_e : entity hdl4fpga.align
-			generic map (
-				style => "register",
-				n     => 1,
-				d     => (0 to 0 => latency))
-			port map (
-				clk   => clks(j),
-				di(0) => phy_dqi(j*byte_size+i),
-				do(0) => dqo(j));
-		end generate;
+			for j in dqo'range loop
+				dqo(j) <= phy_dqi(j*byte_size+i);
+			end loop;
+		end process;
 
 		ddrto_i : fdce
 		port map (
@@ -176,46 +168,20 @@ begin
 	dmo_g : block
 		signal dmt  : std_logic_vector(phy_dmt'range);
 		signal dmi  : std_logic_vector(phy_dmi'range);
-		signal rdmi : std_logic_vector(phy_dmi'range);
 		signal clks : std_logic_vector(0 to gear-1);
 	begin
 
 		clks <= (0 => clk90, 1 => not clk90);
-		registered_g : for i in clks'range generate
-			signal d, t, s : std_logic;
+		process (phy_sti, phy_dmt, phy_dmi)
 		begin
-			dmt(i) <= '0';
-
-			lat_e : entity hdl4fpga.align
-			generic map (
-				style => "register",
-				n     => 3,
-				d     => (0 to 3-1 => latency))
-			port map (
-				clk   => clks(i),
-				di(0) => phy_dmt(i),
-				di(1) => phy_dmi(i),
-				di(2) => phy_sti(i),
-				do(0) => t,
-				do(1) => d,
-				do(2) => s);
-
---			process (clks(i))
---			begin
---				if rising_edge(clks(i)) then
---					t <= phy_dmt(i);
---					d <= phy_dmi(i);
---					s <= phy_sti(i);
---				end if;
---			end process;
---			rdmi(i) <= s when t='1' and not loopback else d;
-
-			dmi(i) <=
-				rdmi(i)    when latency/=0 else
-				phy_sti(i) when phy_dmt(i)='1' and not loopback else
-				phy_dmi(i);
-
-		end generate;
+			for i in dmi'range loop
+				if loopback then
+					dmi(i) <= phy_dmi(i);
+				elsif phy_dmt(i)='1' then
+					dmi(i) <= phy_sti(i);
+				end if;
+			end loop;
+		end process;
 
 		ddrto_i : fdce
 		port map (

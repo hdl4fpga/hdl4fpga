@@ -39,8 +39,6 @@ NET "ddr_dqs[0]" CLOCK_DEDICATED_ROUTE = false;
 NET "ddr_dqs[1]" TNM_NET = dqs1;
 NET "ddr_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
 
-#NET "ctlrphy_dqsi[*]" MAXDELAY = 2.000 ns;
-#NET "ddr_dq[*]"       MAXDELAY = 2.000 ns;
 NET "ctlrphy_dqsi[*]" MAXSKEW  = 0.500 ns;
 NET "ddr_dq[*]"       MAXSKEW  = 0.500 ns;
 
@@ -116,3 +114,10 @@ INST "sdrphy_e/byte_g[1].ddrdqphy_i/dqs_delayed_e/lutn" LOC = SLICE_X2Y82;
 INST "sdrphy_e/byte_g[1].ddrdqphy_i/dqs_delayed_e/lutn" BEL = G;
 INST "sdrphy_e/byte_g[1].ddrdqphy_i/dqs_delayed_e/lutp" LOC = SLICE_X2Y82;
 INST "sdrphy_e/byte_g[1].ddrdqphy_i/dqs_delayed_e/lutp" BEL = F;
+
+# NET "ddr_lp_ck" TNM_NET = ddr_lp_ck;
+# TIMESPEC TS_ddr_lp_ck = PERIOD "ddr_lp_ck" 6 ns HIGH 50%;
+# NET "ddr_lp_ck" CLOCK_DEDICATED_ROUTE = FALSE;
+
+# NET "ddr_st_lp_dqs" OFFSET = IN 0.900 ns VALID 4.800 ns BEFORE ddr_lp_ck FALLING;
+# OFFSET = IN -0.450 ns VALID 1.900 ns BEFORE ddr_lp_ck FALLING;

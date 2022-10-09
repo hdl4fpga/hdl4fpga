@@ -628,7 +628,6 @@ begin
 	generic map (
 		iddr        => true,
 		loopback    => false,
-		rgtr_dout   => false,
 		bank_size   => sd_ba'length,
 		addr_size   => sd_a'length,
 		cmmd_gear   => cmmd_gear,

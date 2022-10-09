@@ -214,16 +214,17 @@ architecture graphics of nuhs3adsp is
 	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal phyctlr_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal dqsi_inv        : std_logic;
-	signal ddr_st_dqs_open : std_logic;
 
-	signal ddr_lp_ck : std_logic;
+	constant iddr        : boolean := false;
+	signal dqsi_inv      : std_logic;
+	signal ddr_st_dqs_open : std_logic;
 	signal ddr_clk       : std_logic_vector(0 downto 0);
 	signal ddr_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqt       : std_logic_vector(ddr_dq'range);
 	signal ddr_dqo       : std_logic_vector(ddr_dq'range);
+	signal ddr_lp_ck     : std_logic;
 
 	signal mii_clk       : std_logic;
 	signal video_clk     : std_logic;
@@ -271,7 +272,6 @@ begin
 		signal dcm_clk0  : std_logic;
 		signal dcm_clk90 : std_logic;
 		signal dcm_lckd  : std_logic;
-
 
 	begin
 
@@ -657,8 +657,8 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc3s_sdrphy
 	generic map (
+		iddr        => iddr,
 		loopback    => true,
-		rgtr_dout   => false,
 		bank_size   => ddr_ba'length,
 		addr_size   => ddr_a'length,
 		cmmd_gear   => cmmd_gear,
@@ -722,10 +722,14 @@ begin
 		o  => ddr_ckp,
 		ob => ddr_ckn);
 
+	dqsi_inv <= '1' when sdram_params.cl="110" else '0';	-- 2.5 cas latency; 
 	ddr_dqs_g : for i in ddr_dqs'range generate
 		signal dqsi : std_logic;
 	begin
-		ddr_dqsi(i) <= ddr_dqs(i) after natural(sdram_tcp/5.0*1.0e12) * 1 ps;
+		ddr_dqsi(i) <= 
+			(not ddr_lp_ck xor dqsi_inv) when iddr else
+			ddr_dqs(i) after natural(sdram_tcp/5.0*1.0e12)*1 ps;
+
 		ddr_dqs(i)  <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
 	end generate;
 
