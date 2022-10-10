@@ -986,7 +986,8 @@ begin
 	sdrphy_e : entity hdl4fpga.xc5v_sdrphy
 	generic map (
 		taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
-		data_edge   => true,
+		-- data_edge   => true,
+		data_edge   => false,
 		bank_size   => bank_size,
 		addr_size   => addr_size,
 		cmmd_gear   => cmmd_gear,
