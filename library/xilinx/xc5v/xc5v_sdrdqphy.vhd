@@ -43,7 +43,7 @@ entity xc5v_sdrdqphy is
 		byte_size  : natural);
 	port (
 		tp         : out std_logic_vector(1 to 32);
-		iod_rst    : in  std_logic;
+		rst        : in  std_logic;
 		iod_clk    : in  std_logic;
 		clk0       : in  std_logic := '-';
 		clk90      : in  std_logic := '-';
@@ -125,13 +125,13 @@ begin
 	rl_b : block
 	begin
 
-		process (pause_req, iod_rst, clk0)
+		process (pause_req, rst, clk0)
 			type states is (s_start, s_write, s_dqs, s_dqi, s_sto);
 			variable state : states;
 			variable aux : std_logic;
 		begin
 			if rising_edge(clk0) then
-				if iod_rst='1' then
+				if rst='1' then
 					sys_rlrdy <= to_stdulogic(to_bit(sys_rlreq));
 				elsif (sys_rlrdy xor to_stdulogic(to_bit(sys_rlreq)))='0' then
 					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
@@ -229,7 +229,7 @@ begin
 			taps    => setif(taps > 0, taps, 2**delay'length-1))
 		port map (
 			-- tp => tp,
-			rst      => iod_rst,
+			rst      => rst,
 			edge     => std_logic'('1'),
 			clk      => clk0,
 			req      => adjdqs_req,
@@ -243,7 +243,7 @@ begin
 		dqsi <= transport sdram_dqsi after dqs_linedelay;
 		dqsidelay_i : entity hdl4fpga.xc5v_idelay
 		port map(
-			rst     => iod_rst,
+			rst     => rst,
 			clk     => clk0,
 			delay   => delay,
 			idatain => dqsi,
@@ -263,7 +263,7 @@ begin
 			size => 1,
 			gear => data_gear)
 		port map (
-			rst  => iod_rst,
+			rst  => rst,
 			clk  => igbx_clk,
 			d(0) => dqsi_buf,
 			q    => smp);
@@ -333,7 +333,7 @@ begin
 			generic map (
 				taps     => taps)
 			port map (
-				rst      => iod_rst,
+				rst      => rst,
 				edge     => std_logic'('1'), --IDDR
 				-- edge     => std_logic'('0'),
 				clk      => clk90,
@@ -352,7 +352,7 @@ begin
 			dqi_i : entity hdl4fpga.xc5v_idelay
 			port map(
 				clk     => clk90,
-				rst     => iod_rst,
+				rst     => rst,
 				delay   => delay,
 				idatain => ddqi,
 				dataout => dqi(i));
@@ -373,7 +373,7 @@ begin
 			SIZE => 1,
 			GEAR => data_gear)
 		port map (
-			rst  => iod_rst,
+			rst  => rst,
 			clk  => igbx_clk,
 			d(0) => dqi(i),
 			q    => dqii);
@@ -481,7 +481,7 @@ begin
 				data_edge => setif(data_edge, "opposite_edge", "same_edge"),
 				gear => data_gear)
 			port map (
-				rst   => iod_rst,
+				rst   => rst,
 				clk   => dqclk,
 				t     => dqt,
 				tq(0) => sdram_dqt(i),
@@ -513,7 +513,7 @@ begin
 				data_edge => setif(data_edge, "opposite_edge", "same_edge"),
 				gear => data_gear)
 			port map (
-				rst   => iod_rst,
+				rst   => rst,
 				clk   => dqclk,
 				tq(0) => sdram_dmt,
 				d     => dmi,
@@ -554,7 +554,7 @@ begin
 			data_edge => setif(data_edge, "opposite_edge", "same_edge"),
 			gear => data_gear)
 		port map (
-			rst  => iod_rst,
+			rst  => rst,
 			clk  => dqsclk,
 			t    => dqst,
 			tq(0)=> sdram_dqst,

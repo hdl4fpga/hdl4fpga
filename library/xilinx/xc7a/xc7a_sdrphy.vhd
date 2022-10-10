@@ -80,7 +80,7 @@ entity xc7a_sdrphy is
 		sys_dqi      : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		sys_dqo      : out std_logic_vector(data_gear*word_size-1 downto 0);
 
-		sys_dqso     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqsi     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dqst     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_sti      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		sys_sto      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -530,7 +530,7 @@ begin
 	sdqt  <= to_blinevector(not sys_dqt);
 	sdqi  <= shuffle_dlinevector(sys_dqi);
 	ddqi  <= to_bytevector(sdram_dqi);
-	sdqsi <= to_blinevector(sys_dqso);
+	sdqsi <= to_blinevector(sys_dqsi);
 	sdqst <= to_blinevector(sys_dqst);
 
 	byte_g : for i in sdram_dqsi'range generate
@@ -568,7 +568,7 @@ begin
 			sys_dqt    => sdqt(i),
 			sys_dqo    => sdqo(i),
 
-			sys_dqso   => sdqsi(i),
+			sys_dqsi   => sdqsi(i),
 			sys_dqst   => sdqst(i),
 
 			sys_sto    => ssto(i),

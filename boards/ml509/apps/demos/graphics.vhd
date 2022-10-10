@@ -511,7 +511,8 @@ begin
 
 		end block;
 
-		ctlrphy_dqsi <= (others => ddr_clk0);
+		-- ctlrphy_dqsi <= (others => ddr_clk0); --IDDR
+		ctlrphy_dqsi <= (others => ddr_clk90);
 		ddrsys_rst   <= not ddr_locked or sys_rst or not iod_rdy;
 
 	end block;
@@ -994,7 +995,7 @@ begin
 		byte_size   => byte_size)
 	port map (
 		tp         => tp,
-		iod_rst    => sdrphy_rst,
+		rst        => sdrphy_rst,
 		iod_clk    => sys_clk,
 		clk0       => ddr_clk0,
 		clk90      => ddr_clk90,

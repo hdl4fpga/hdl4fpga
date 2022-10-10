@@ -61,7 +61,7 @@ entity xc7a_sdrdqphy is
 		sys_dqi   : in  std_logic_vector(DATA_GEAR*BYTE_SIZE-1 downto 0);
 		sys_dqt   : in  std_logic_vector(DATA_GEAR-1 downto 0);
 		sys_dqo   : out std_logic_vector(DATA_GEAR*BYTE_SIZE-1 downto 0);
-		sys_dqso  : in  std_logic_vector(0 to DATA_GEAR-1);
+		sys_dqsi  : in  std_logic_vector(0 to DATA_GEAR-1);
 		sys_dqst  : in  std_logic_vector(0 to DATA_GEAR-1);
 
 		sdram_dmt   : out std_logic;
@@ -538,17 +538,17 @@ begin
 	end block;
 
 	dqso_b : block
-		signal dqso      : std_logic_vector(sys_dqso'range);
-		signal dqst      : std_logic_vector(sys_dqst'range);
-		signal dqsclk    : std_logic_vector(0 to 2-1);
+		signal dqsi   : std_logic_vector(sys_dqsi'range);
+		signal dqst   : std_logic_vector(sys_dqst'range);
+		signal dqsclk : std_logic_vector(0 to 2-1);
 	begin
 
-		process (sys_dqso)
+		process (sys_dqsi)
 		begin
-			dqso <= (others => '0');
-			for i in dqso'range loop
+			dqsi <= (others => '0');
+			for i in dqsi'range loop
 				if i mod 2 = 1 then
-					dqso(i) <= reverse(sys_dqso)(i);
+					dqsi(i) <= reverse(sys_dqsi)(i);
 				end if;
 			end loop;
 		end process;
@@ -564,7 +564,7 @@ begin
 			clk  => dqsclk,
 			t    => dqst,
 			tq(0)=> sdram_dqst,
-			d    => dqso,
+			d    => dqsi,
 			q(0) => sdram_dqso);
 
 	end block;

@@ -834,7 +834,7 @@ begin
 		sys_a     => ctlrphy_a,
 
 		sys_dqst  => ctlrphy_dqst,
-		sys_dqso  => ctlrphy_dqso,
+		sys_dqsi  => ctlrphy_dqso,
 		sys_dmi   => ctlrphy_dmo,
 		sys_dmt   => ctlrphy_dmt,
 		sys_dmo   => ctlrphy_dmi,
