@@ -23,8 +23,8 @@ add wave -noupdate -expand -group ddr2 -radix hexadecimal -childformat {{/testbe
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e/sys_sto(0)
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/sys_dqo
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sdrctlr_b/sdrctlr_e/ctlr_do
 add wave -noupdate /testbench/du_e/grahics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(0)
+add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sdrctlr_b/sdrctlr_e/ctlr_do
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/iddr_g(0)/adjdqi_b/adjdqi_e/req
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/iddr_g(0)/adjdqi_b/adjdqi_e/rdy
@@ -37,22 +37,15 @@ add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/write_req
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/pause_req
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/pause_rdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -expand /testbench/du_e/grahics_e/ctlrphy_dqt
-add wave -noupdate /testbench/du_e/sdrphy_e/clk90x2
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/oddr_g(1)/ogbx_i/reg_g(0)/oserdese_g/xc5v_g/oser_i/CLK
-add wave -noupdate /testbench/du_e/sdrphy_e/clk0
-add wave -noupdate /testbench/du_e/sdrphy_e/clk90
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/oddr_g(1)/ogbx_i/reg_g(0)/oserdese_g/xc5v_g/oser_i/CLKDIV
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/oddr_g(1)/ogbx_i/reg_g(0)/oserdese_g/xc5v_g/oser_i/T1
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/oddr_g(1)/ogbx_i/reg_g(0)/oserdese_g/xc5v_g/oser_i/T2
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/oddr_g(1)/ogbx_i/reg_g(0)/oserdese_g/xc5v_g/oser_i/T3
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/oddr_g(1)/ogbx_i/reg_g(0)/oserdese_g/xc5v_g/oser_i/T4
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/oddr_g(1)/ogbx_i/reg_g(0)/oserdese_g/xc5v_g/oser_i/TQ
+add wave -noupdate /testbench/du_e/sdrphy_e/sys_sti
+add wave -noupdate /testbench/du_e/grahics_e/ctlrphy_sto
+add wave -noupdate /testbench/du_e/ddr_clk0
+add wave -noupdate /testbench/du_e/ddr_clk90
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {47666635 ps} 0} {{Cursor 2} {9467601 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {70839196 ps} 0} {{Cursor 2} {70838332 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 200
-configure wave -valuecolwidth 153
+configure wave -valuecolwidth 353
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -65,4 +58,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {9425615 ps} {9482863 ps}
+WaveRestoreZoom {70833850 ps} {70881130 ps}

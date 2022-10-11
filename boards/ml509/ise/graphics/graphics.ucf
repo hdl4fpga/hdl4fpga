@@ -38,18 +38,20 @@ TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 8 ns HIGH 50%;
 # Ignore crossclock time #
 # ###################### #
 
-# NET sys_clk    TNM_NET = FFS  FFS_sysclk;
-#NET gtx_clk    TNM_NET = FFS  FFS_gtxclk;
-#NET gtx_clk    TNM_NET = RAMS RAMS_gtxclk;
+NET sys_clk      TNM_NET = FFS  FFS_sysclk;
+NET gtx_clk      TNM_NET = FFS  FFS_gtxclk;
+NET gtx_clk      TNM_NET = RAMS RAMS_gtxclk;
+NET ctlr_clks<0> TNM_NET = FFS  FFS_clk0;
+NET ctlr_clks<0> TNM_NET = RAMS RAMS_clk0;
+NET ctlr_clks<1> TNM_NET = FFS  FFS_clk90;
+NET ctlr_clks<1> TNM_NET = RAMS RAMS_clk90;
 
-# NET ddrs_clk0  TNM_NET = FFS  FFS_ddrsclk0;
-# NET ddrs_clk0  TNM_NET = RAMS RAMS_ddrsclk0;
-# NET ddrs_clk90 TNM_NET = FFS  FFS_ddrsclk90;
-# NET ddrs_clk90 TNM_NET = RAMS RAMS_ddrsclk90;
-
+TIMESPEC TS_ddr2clk = FROM FFS_clk0   TO FFS_sysclk TIG;
+TIMESPEC TS_sys2ddr = FROM FFS_sysclk TO FFS_clk0   TIG;
 # TIMESPEC TS_r2r_ddr2sys    = FROM FFS_ddrsclk0 TO FFS_sysclk TIG;
 # TIMESPEC TS_r2f_ddr2ddr    = FROM RAMS_ddrsclk0 TO FFS_ddrsclk90  TIG;
 # TIMESPEC TS_f2f_ddr2gtx    = FROM FFS_ddrsclk0  TO FFS_gtxclk     TIG;
+TIMESPEC TS_ram2ff = FROM RAMS_clk90 TO FFS_clk0 TIG;
 
 NET "iic_sda_video" IOB=TRUE | IOSTANDARD = LVCMOS18;
 NET "iic_scl_video" IOB=TRUE | IOSTANDARD = LVCMOS18;

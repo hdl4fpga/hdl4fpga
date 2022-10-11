@@ -60,6 +60,7 @@ architecture beh of adjpha is
 	signal avrge    : gap_word;
 	signal saved    : gap_word;
 	signal seq      : std_logic_vector(0 to smp'length-1);
+	signal sel      : std_logic;
 
 begin
 
@@ -232,8 +233,14 @@ begin
 
 	inv   <= phase(0);
 	ph180 <= '0' when unsigned(delay) < (taps+1)/2 else '1';
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			sel <= to_stdulogic(to_bit(rdy xor req));
+		end if;
+	end process;
 	delay <=
-		std_logic_vector(phase(1 to delay'length)) when to_bit(rdy xor req)='1' else
+		std_logic_vector(phase(1 to delay'length)) when sel='1' else
 		std_logic_vector(avrge(1 to delay'length));
 
 end;

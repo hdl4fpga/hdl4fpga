@@ -231,7 +231,7 @@ begin
 			-- tp => tp,
 			rst      => rst,
 			edge     => std_logic'('1'),
-			clk      => clk0,
+			clk      => iod_clk,
 			req      => adjdqs_req,
 			rdy      => adjdqs_rdy,
 			step_req => dqspau_req,
@@ -336,7 +336,7 @@ begin
 				rst      => rst,
 				edge     => std_logic'('1'), --IDDR
 				-- edge     => std_logic'('0'),
-				clk      => clk90,
+				clk      => iod_clk,
 				req      => adjdqi_req,
 				rdy      => adjdqi_rdy(i),
 				step_req => dqipau_req(i),

@@ -512,7 +512,7 @@ begin
 		end block;
 
 		-- ctlrphy_dqsi <= (others => ddr_clk0); --IDDR
-		ctlrphy_dqsi <= (others => ddr_clk90);
+		-- ctlrphy_dqsi <= (others => ddr_clk90);
 		ddrsys_rst   <= not ddr_locked or sys_rst or not iod_rdy;
 
 	end block;
