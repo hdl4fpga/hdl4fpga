@@ -39,11 +39,13 @@ entity sdram_mpu is
 		chip          : sdram_chips;
 		gear          : natural;
 		bl_cod        : std_logic_vector;
+		al_cod        : std_logic_vector;
 		cl_cod        : std_logic_vector;
 		cwl_cod       : std_logic_vector);
 	port (
 		sdram_mpu_alat  : out std_logic_vector(2 downto 0);
 		sdram_mpu_blat  : out std_logic_vector;
+		sdram_mpu_al    : in std_logic_vector;
 		sdram_mpu_bl    : in std_logic_vector;
 		sdram_mpu_cl    : in std_logic_vector;
 		sdram_mpu_cwl   : in std_logic_vector;
@@ -72,13 +74,12 @@ architecture arch of sdram_mpu is
 	constant stdr    : sdram_standards := sdrmark_standard(chip);
 
 	constant lwr     : natural          := natural(ceil((sdram_timing(chip, twr)+tcp*real(sdram_latency(fpga, dqsxl)))/tcp));
-	-- constant lwr     : natural          := natural(ceil(sdram_timing(chip, twr)/tcp))+sdram_latency(fpga, dqsxl);
 	constant lrcd    : natural          := to_sdrlatency(tcp, chip, trcd);
 	constant lrfc    : natural          := to_sdrlatency(tcp, chip, trfc);
 	constant lrp     : natural          := to_sdrlatency(tcp, chip, trp);
 	constant bl_tab  : natural_vector   := sdram_lattab(stdr, bl);
+	constant al_tab  : natural_vector   := sdram_lattab(stdr, al);
 	constant cl_tab  : natural_vector   := sdram_lattab(stdr, cl);
-	-- constant cwl_tab : natural_vector   := sdram_lattab(stdr, cwl);
 	constant cwl_tab : natural_vector   := sdram_lattab(stdr, sdram_selcwl(stdr));
 
 	constant ras  : natural := 0;
@@ -245,6 +246,22 @@ architecture arch of sdram_mpu is
 		return val;
 	end;
 
+	function "-" (
+		constant off : natural;
+		constant tab : natural_vector)
+		return natural_vector is
+		variable val : natural_vector(tab'range);
+	begin
+		for i in tab'range loop
+			if off > tab(i) then
+				val(i) := off-tab(i);
+			else
+				val(i) := 0;
+			end if;
+		end loop;
+		return val;
+	end;
+
 	function select_lat (
 		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
@@ -349,7 +366,8 @@ begin
 								when id_cwl =>
 									timer := select_lat(sdram_mpu_cwl, cwl_cod, cwl_tab+gear*lwr);
 								when id_rcd =>
-									timer := to_signed(lrcd-2, lat_timer'length);
+									-- timer := to_signed(lrcd-2, lat_timer'length);
+									timer := select_lat(sdram_mpu_al, al_cod, gear*lrcd-al_tab);
 								when id_rfc =>
 									timer := to_signed(lrfc-2, lat_timer'length);
 								when id_rp =>

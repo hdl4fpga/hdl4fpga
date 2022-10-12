@@ -31,7 +31,7 @@ use hdl4fpga.std.all;
 package sdram_param is
 
 	type sdram_parameters   is (tPreRST, tPstRST, tXPR, tWR, tRP, tRCD, tRFC, tMRD, tREFI, tRPA);
-	type sdram_latency_rgtr is (CL, BL, WRL, CWL);
+	type sdram_latency_rgtr is (AL, CL, BL, WRL, CWL);
 	type sdram_latencies    is (cDLL, MRD, MODu, XPR, ZQINIT);
 	type device_latencies   is (
 		strl,   rwnl,  dqszl, dqsl,  dqzl, wwnl, strxl, rwnxl,
@@ -62,25 +62,36 @@ package sdram_param is
 		-- stdr standard --
 		--------------------
 
+		-- SDR standard --
+		------------------
+
+		-- AL register --
+
+		(stdr => SDR, rgtr => AL,  lat =>  0*2, code => "000"),
+
 		-- CL register --
 
-		(stdr => sdr, rgtr => CL,  lat =>  1, code => "001"),
-		(stdr => sdr, rgtr => CL,  lat =>  2, code => "010"),
-		(stdr => sdr, rgtr => CL,  lat =>  3, code => "011"),
+		(stdr => SDR, rgtr => CL,  lat =>  1, code => "001"),
+		(stdr => SDR, rgtr => CL,  lat =>  2, code => "010"),
+		(stdr => SDR, rgtr => CL,  lat =>  3, code => "011"),
 
 		-- BL register --
 
-		(stdr => sdr, rgtr => BL,  lat =>  0, code => "000"),
-		(stdr => sdr, rgtr => BL,  lat =>  1, code => "001"),
-		(stdr => sdr, rgtr => BL,  lat =>  2, code => "010"),
-		(stdr => sdr, rgtr => BL,  lat =>  4, code => "011"),
+		(stdr => SDR, rgtr => BL,  lat =>  0, code => "000"),
+		(stdr => SDR, rgtr => BL,  lat =>  1, code => "001"),
+		(stdr => SDR, rgtr => BL,  lat =>  2, code => "010"),
+		(stdr => SDR, rgtr => BL,  lat =>  4, code => "011"),
 
 		-- CWL register --
 
-		(stdr => sdr, rgtr => CWL, lat =>  0, code => "000"),
+		(stdr => SDR, rgtr => CWL, lat =>  0, code => "000"),
 
 		-- DDR1 standard --
 		-------------------
+
+		-- AL register --
+
+		(stdr => ddr, rgtr => AL,  lat =>  0*2, code => "000"),
 
 		-- CL register --
 
@@ -100,6 +111,16 @@ package sdram_param is
 
 		-- DDR2 standard --
 		-------------------
+
+		-- AL register --
+
+		(stdr => DDR2, rgtr => AL,  lat =>  0*2, code => "000"),
+		(stdr => DDR2, rgtr => AL,  lat =>  1*2, code => "001"),
+		(stdr => DDR2, rgtr => AL,  lat =>  2*2, code => "010"),
+		(stdr => DDR2, rgtr => AL,  lat =>  3*2, code => "011"),
+		(stdr => DDR2, rgtr => AL,  lat =>  4*2, code => "100"),
+		(stdr => DDR2, rgtr => AL,  lat =>  5*2, code => "101"),
+		(stdr => DDR2, rgtr => AL,  lat =>  6*2, code => "110"),
 
 		-- CL register --
 
@@ -126,6 +147,12 @@ package sdram_param is
 
 		-- DDR3 standard --
 		-------------------
+
+		-- AL register --
+
+		(stdr => DDR3, rgtr => AL,  lat =>  0*2, code => "000"),
+		(stdr => DDR3, rgtr => AL,  lat =>  1*2, code => "001"),
+		(stdr => DDR3, rgtr => AL,  lat =>  2*2, code => "010"),
 
 		-- CL register --
 
@@ -304,7 +331,7 @@ package body sdram_param is
 
 	function sdram_lattab (
 		constant stdr : sdram_standards;
-		constant rgtr  : sdram_latency_rgtr)
+		constant rgtr : sdram_latency_rgtr)
 		return natural_vector is
 		constant query_size : natural := sdram_query_size(stdr, rgtr);
 		constant query_data : cfglat_vector(0 to query_size-1) := sdram_query_data(stdr, rgtr);

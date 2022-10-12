@@ -47,7 +47,7 @@ entity sdram_init is
 		sdram_init_ods  : in  std_logic_vector;
 
 		sdram_init_wb   : in  std_logic_vector(1-1 downto 0) := (others => '0');
-		sdram_init_al   : in  std_logic_vector(2-1 downto 0) := (others => '0');
+		sdram_init_al   : in  std_logic_vector(3-1 downto 0) := (others => '0');
 		sdram_init_asr  : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		sdram_init_cwl  : in  std_logic_vector(3-1 downto 0) := (others => '0');
 		sdram_init_drtt : in  std_logic_vector(2-1 downto 0) := (others => '0');

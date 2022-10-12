@@ -118,7 +118,7 @@ architecture graphics of ml509 is
 		(sdram225MHz, pll => (dcm_mul =>  9, dcm_div => 4), cl => "010"),
 		(sdram250MHz, pll => (dcm_mul =>  5, dcm_div => 2), cl => "010"),
 		(sdram275MHz, pll => (dcm_mul => 11, dcm_div => 4), cl => "010"),
-		(sdram300MHz, pll => (dcm_mul =>  3, dcm_div => 1), cl => "011"),
+		(sdram300MHz, pll => (dcm_mul =>  3, dcm_div => 1), cl => "110"),
 
 		------------------------------------------------------------------------
 		-- Frequency   -- 333 Mhz -- 350 Mhz -- 375 Mhz -- 400 Mhz -- 425 Mhz --
@@ -351,7 +351,7 @@ begin
 		signal ddr_locked : std_logic;
 	begin
 
-		gbx4_g : if sclk_phases/sclk_edges < 2 generate 
+		gbx4_g : if data_gear=4 generate 
 			signal ddr_clkfb         : std_logic;
 			signal ddr_clk0x2_mmce2  : std_logic;
 			signal ddr_clk90x2_mmce2 : std_logic;
@@ -404,7 +404,7 @@ begin
 
 		end generate;
 
-		gbx2_g : if sclk_phases/sclk_edges > 1 generate 
+		gbx2_g : if  data_gear=2 generate 
 
 			dfs_b : block
 				signal clk_fx    : std_logic;
@@ -480,9 +480,9 @@ begin
 
 			-- ctlrphy_dqsi <= (others => ddr_clk0); --IDDR
 			-- ctlrphy_dqsi <= (others => ddr_clk90);
-			ddrsys_rst <= not ddr_locked or sys_rst or not iod_rdy;
 		end generate;
 
+		ddrsys_rst <= not ddr_locked or sys_rst or not iod_rdy;
 	end block;
 
 	videodcm_b : block
@@ -796,8 +796,9 @@ begin
 		ctlr_rst      => ddrsys_rst,
 		ctlr_cwl      => b"0_11",
 		ctlr_rtt      => b"0_11",
+		ctlr_al       => "001",
 		ctlr_bl       => "010", --"001",
-		ctlr_cl       => "101", --ddr_param.cl,
+		ctlr_cl       => sdram_params.cl,
 		ctlr_cmd      => ctlrphy_cmd,
 		ctlr_inirdy   => ctlr_inirdy,
 		ctlrphy_ini   => ctlrphy_ini,

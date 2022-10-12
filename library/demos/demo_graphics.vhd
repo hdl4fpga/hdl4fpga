@@ -81,6 +81,7 @@ entity demo_graphics is
 
 		ctlr_clks     : in  std_logic_vector(0 to sclk_phases/sclk_edges-1);
 		ctlr_rst      : in  std_logic;
+		ctlr_al       : in  std_logic_vector(3-1 downto 0) := (others => '0');
 		ctlr_bl       : in  std_logic_vector(0 to 3-1);
 		ctlr_cl       : in  std_logic_vector(0 to 3-1);
 		ctlr_cwl      : in  std_logic_vector(0 to 3-1) := "000";
@@ -958,6 +959,7 @@ begin
 --			tpin => tpin,
 			ctlr_alat    => ctlr_alat,
 			ctlr_blat    => ctlr_blat,
+			ctlr_al      => ctlr_al,
 			ctlr_bl      => ctlr_bl,
 			ctlr_cl      => ctlr_cl,
 

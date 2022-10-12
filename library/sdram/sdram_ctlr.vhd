@@ -52,6 +52,7 @@ entity sdram_ctlr is
 	port (
 		ctlr_alat    : out std_logic_vector(2 downto 0);
 		ctlr_blat    : out std_logic_vector(2 downto 0);
+		ctlr_al      : in  std_logic_vector(3-1 downto 0) := (others => '0');
 		ctlr_bl      : in std_logic_vector(2 downto 0);
 		ctlr_cl      : in std_logic_vector(2 downto 0);
 		ctlr_cwl     : in std_logic_vector(2 downto 0);
@@ -188,6 +189,7 @@ architecture mix of sdram_ctlr is
 	constant stdr    : sdram_standards    := sdrmark_standard(chip);
 
 	constant bl_cod  : std_logic_vector := sdram_latcod(stdr, bl);
+	constant al_cod  : std_logic_vector := sdram_latcod(stdr, al);
 	constant cl_cod  : std_logic_vector := sdram_latcod(stdr, cl);
 	-- constant cwl_cod : std_logic_vector := sdram_latcod(stdr, cwl); --sdram_selcwl(stdr));
 	constant cwl_cod : std_logic_vector := sdram_latcod(stdr, sdram_selcwl(stdr));
@@ -269,6 +271,7 @@ begin
 		addr_size      => addr_size,
 		bank_size      => bank_size)
 	port map (
+		sdram_init_al    => ctlr_al,
 		sdram_init_bl    => ctlr_bl,
 		sdram_init_cl    => ctlr_cl,
 		sdram_init_cwl   => sdram_cwl,
@@ -332,10 +335,12 @@ begin
 
 		gear          => data_gear,
 		bl_cod        => bl_cod,
+		al_cod        => al_cod,
 		cl_cod        => cl_cod,
 		cwl_cod       => cwl_cod)
 	port map (
 		sdram_mpu_bl    => ctlr_bl,
+		sdram_mpu_al    => ctlr_al,
 		sdram_mpu_cl    => ctlr_cl,
 		sdram_mpu_cwl   => sdram_cwl,
 

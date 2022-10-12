@@ -226,7 +226,7 @@ begin
 		end loop;
 	end process;
 
-	stpho <= rpho0 when fpga=xc7a or fpga=xc5v else rpho90;
+	stpho <= rpho0 when fpga=xc7a else rpho90;
 --	stpho <= rpho90;
 
 	sdram_st <= sdram_task (
