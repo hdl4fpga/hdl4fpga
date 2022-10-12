@@ -358,21 +358,20 @@ begin
 			signal ddr_clk0_mmce2    : std_logic;
 			signal ddr_clk90_mmce2   : std_logic;
 		begin
-			ddr_i : mmcme2_base
+			ddr_i : pll_base
 			generic map (
-				divclk_divide    => sdram_params.pll.dcm_div,
-				clkfbout_mult_f  => real(2*sdram_params.pll.dcm_mul),
-				clkin1_period    =>  user_per*1.0e9,
-				clkout0_divide_f => real(data_gear/2),
-				clkout1_divide   => data_gear/2,
-				clkout1_phase    => 90.0+180.0,
-				clkout2_divide   => data_gear,
-				clkout3_divide   => data_gear,
-				clkout3_phase    => 90.0/real((data_gear/2))+270.0)
+				divclk_divide  => sdram_params.pll.dcm_div,
+				clkfbout_mult  => 2*sdram_params.pll.dcm_mul,
+				clkin_period   =>  user_per*1.0e9,
+				clkout0_divide => data_gear/2,
+				clkout1_divide => data_gear/2,
+				clkout1_phase  => 90.0+180.0,
+				clkout2_divide => data_gear,
+				clkout3_divide => data_gear,
+				clkout3_phase  => 90.0/real((data_gear/2))+270.0)
 			port map (
-				pwrdwn   => '0',
 				rst      => sys_rst,
-				clkin1   => sys_clk,
+				clkin    => sys_clk,
 				clkfbin  => ddr_clkfb,
 				clkfbout => ddr_clkfb,
 				clkout0  => ddr_clk0x2_mmce2,
@@ -451,6 +450,8 @@ begin
 			end process;
 	
 			dcm_b : block
+				signal ddr_clk0_bufg  : std_logic;
+				signal ddr_clk90_bufg : std_logic;
 			begin
 				dcm_i : dcm_base
 				generic map (
