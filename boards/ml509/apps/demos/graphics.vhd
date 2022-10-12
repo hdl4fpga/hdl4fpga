@@ -380,12 +380,12 @@ begin
 				clkout3  => ddr_clk90_mmce2,
 				locked   => ddr_locked);
 
-			ddr_clk0_bufg : bufio
+			ddr_clk0_bufg : bufg
 			port map (
 				i => ddr_clk0x2_mmce2,
 				o => ddr_clk0x2);
 
-			ddr_clk90_bufg : bufio
+			ddr_clk90_bufg : bufg
 			port map (
 				i => ddr_clk90x2_mmce2,
 				o => ddr_clk90x2);
