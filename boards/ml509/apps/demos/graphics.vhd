@@ -350,60 +350,108 @@ begin
 		signal locked     : std_logic;
 		signal ddr_locked : std_logic;
 	begin
-		dfs_b : block
-			signal clk_fx    : std_logic;
-			signal clk_fx180 : std_logic;
+
+		gbx4_g : if sclk_phases/sclk_edges < 2 generate 
+			signal ddr_clkfb         : std_logic;
+			signal ddr_clk0x2_mmce2  : std_logic;
+			signal ddr_clk90x2_mmce2 : std_logic;
+			signal ddr_clk0_mmce2    : std_logic;
+			signal ddr_clk90_mmce2   : std_logic;
 		begin
-			dfs_i : dcm_base
+			ddr_i : mmcme2_base
 			generic map (
-				clk_feedback   => "NONE",
-				clkin_period   => user_per*1.0e9,
-				clkfx_divide   => sdram_params.pll.dcm_div,
-				clkfx_multiply => sdram_params.pll.dcm_mul,
-				dfs_frequency_mode => "HIGH")
+				divclk_divide    => sdram_params.pll.dcm_div,
+				clkfbout_mult_f  => real(2*sdram_params.pll.dcm_mul),
+				clkin1_period    =>  user_per*1.0e9,
+				clkout0_divide_f => real(data_gear/2),
+				clkout1_divide   => data_gear/2,
+				clkout1_phase    => 90.0+180.0,
+				clkout2_divide   => data_gear,
+				clkout3_divide   => data_gear,
+				clkout3_phase    => 90.0/real((data_gear/2))+270.0)
 			port map (
+				pwrdwn   => '0',
 				rst      => sys_rst,
-				clkfb    => '0',
-				clkin    => sys_clk,
-				clkfx    => clk_fx,
-				clkfx180 => clk_fx180,
-				locked   => locked);
+				clkin1   => sys_clk,
+				clkfbin  => ddr_clkfb,
+				clkfbout => ddr_clkfb,
+				clkout0  => ddr_clk0x2_mmce2,
+				clkout1  => ddr_clk90x2_mmce2,
+				clkout2  => ddr_clk0_mmce2,
+				clkout3  => ddr_clk90_mmce2,
+				locked   => ddr_locked);
 
-			bufg0_i : bufg
+			ddr_clk0_bufg : bufio
 			port map (
-				i => clk_fx,
-				o => ddr_clk);
+				i => ddr_clk0x2_mmce2,
+				o => ddr_clk0x2);
 
-			bufg180_i : bufg
+			ddr_clk90_bufg : bufio
 			port map (
-				i => clk_fx180,
-				o => ddr_clk180);
+				i => ddr_clk90x2_mmce2,
+				o => ddr_clk90x2);
 
-		end block;
+			ddr_clk0div_bufg : bufg
+			port map (
+				i => ddr_clk0_mmce2,
+				o => ddr_clk0);
 
-		process (sys_clk, locked)
-			variable cntr : unsigned(0 to 2);
-		begin
-			if locked='0' then
-				cntr := (others => '0');
-			elsif rising_edge(sys_clk) then
-				if cntr(0)='0' then
-					cntr := cntr + 1;
+			ddr_clk90div_bufg : bufg
+			port map (
+				i => ddr_clk90_mmce2,
+				o => ddr_clk90);
+
+			ctlrphy_dqsi <= (others => ddr_clk90);
+
+		end generate;
+
+		gbx2_g : if sclk_phases/sclk_edges > 1 generate 
+
+			dfs_b : block
+				signal clk_fx    : std_logic;
+				signal clk_fx180 : std_logic;
+			begin
+				dfs_i : dcm_base
+				generic map (
+					clk_feedback   => "NONE",
+					clkin_period   => user_per*1.0e9,
+					clkfx_divide   => sdram_params.pll.dcm_div,
+					clkfx_multiply => sdram_params.pll.dcm_mul,
+					dfs_frequency_mode => "HIGH")
+				port map (
+					rst      => sys_rst,
+					clkfb    => '0',
+					clkin    => sys_clk,
+					clkfx    => clk_fx,
+					clkfx180 => clk_fx180,
+					locked   => locked);
+	
+				bufg0_i : bufg
+				port map (
+					i => clk_fx,
+					o => ddr_clk);
+	
+				bufg180_i : bufg
+				port map (
+					i => clk_fx180,
+					o => ddr_clk180);
+			end block;
+
+			process (sys_clk, locked)
+				variable cntr : unsigned(0 to 2);
+			begin
+				if locked='0' then
+					cntr := (others => '0');
+				elsif rising_edge(sys_clk) then
+					if cntr(0)='0' then
+						cntr := cntr + 1;
+					end if;
 				end if;
-			end if;
-			dcm_rst <= not cntr(0);
-		end process;
-
-		dcm_b : block
-			signal ddr_clk0_bufg    : std_logic;
-			signal ddr_clk90_bufg   : std_logic;
-			signal ddr_clk0x2_bufg  : std_logic;
-			signal ddr_clk90x2_bufg : std_logic;
-			signal ddr0_locked      : std_logic;
-			signal ddr90_locked     : std_logic;
-		begin
-
-			gbx2_g : if sclk_phases/sclk_edges > 1 generate 
+				dcm_rst <= not cntr(0);
+			end process;
+	
+			dcm_b : block
+			begin
 				dcm_i : dcm_base
 				generic map (
 					clk_feedback => "1X",
@@ -426,94 +474,13 @@ begin
 				port map (
 					i => ddr_clk90_bufg,
 					o => ddr_clk90);
-			end generate;
 
-			gbx4_g : if sclk_phases/sclk_edges < 2 generate 
-				signal dcm90_rst : std_logic;
-			begin
-				dcm_i : dcm_base
-				generic map (
-					clk_feedback => "1X",
-					clkin_period => sdram_tcp*1.0e9,
-					clkdv_divide => 2.0,
-					dll_frequency_mode => "HIGH")
-				port map (
-					rst    => dcm_rst,
-					clkin  => ddr_clk,
-					clkfb  => ddr_clk,
-					clk0   => ddr_clk0x2_bufg,
-					clk90  => ddr_clk90x2_bufg,
-					clkdv  => ddr_clk0_bufg,
-					locked => ddr0_locked);
-	
-				bufg0x2_i : bufg
-				port map (
-					i => ddr_clk0x2_bufg,
-					o => ddr_clk0x2);
-	
-				bufg90x2_i : bufg
-				port map (
-					i => ddr_clk90x2_bufg,
-					o => ddr_clk90x2);
-	
-				bufg0_i : bufg
-				port map (
-					i => ddr_clk0_bufg,
-					o => ddr_clk0);
-	
-				process (sys_clk, ddr0_locked)
-					variable cntr : unsigned(0 to 2);
-				begin
-					if ddr0_locked='0' then
-						cntr := (others => '0');
-					elsif rising_edge(sys_clk) then
-						if cntr(0)='0' then
-							cntr := cntr + 1;
-						end if;
-					end if;
-					dcm90_rst <= not cntr(0);
-				end process;
+			end block;
 
-				dcm90_i : dcm_base
-				generic map (
-					clk_feedback => "1X",
-					clkin_period => sdram_tcp*1.0e9,
-					clkdv_divide => 2.0,
-					dll_frequency_mode => "HIGH")
-				port map (
-					rst    => dcm90_rst,
-					clkin  => ddr_clk90x2,
-					clkfb  => ddr_clk90x2,
-					clkdv  => ddr_clk90_bufg,
-					locked => ddr90_locked);
-	
-				bufg90_i : bufg
-				port map (
-					i => ddr_clk90_bufg,
-					o => ddr_clk90);
-
-				process (sys_clk, ddr0_locked, ddr90_locked)
-					variable cntr : unsigned(0 to 2);
-				begin
-					if ddr0_locked='0' then
-						cntr := (others => '0');
-					elsif ddr90_locked='0' then
-						cntr := (others => '0');
-					elsif rising_edge(sys_clk) then
-						if cntr(0)='0' then
-							cntr := cntr + 1;
-						end if;
-					end if;
-					ddr_locked <= cntr(0);
-				end process;
-
-			end generate;
-
-		end block;
-
-		-- ctlrphy_dqsi <= (others => ddr_clk0); --IDDR
-		-- ctlrphy_dqsi <= (others => ddr_clk90);
-		ddrsys_rst   <= not ddr_locked or sys_rst or not iod_rdy;
+			-- ctlrphy_dqsi <= (others => ddr_clk0); --IDDR
+			-- ctlrphy_dqsi <= (others => ddr_clk90);
+			ddrsys_rst <= not ddr_locked or sys_rst or not iod_rdy;
+		end generate;
 
 	end block;
 
