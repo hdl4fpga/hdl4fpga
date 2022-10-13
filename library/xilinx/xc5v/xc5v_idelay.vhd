@@ -41,9 +41,10 @@ use unisim.vcomponents.all;
 
 architecture def of xc5v_idelay is
 
-	signal ce    : std_logic;
-	signal inc   : std_logic;
-	signal del   : std_logic_vector(delay'range);
+	signal ce   : std_logic;
+	signal inc  : std_logic;
+	signal irst : std_logic;
+	signal del  : std_logic_vector(delay'range);
 	
 begin
 
@@ -58,13 +59,20 @@ begin
 		ce    => ce,
 		inc   => inc);
 
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			irst <= rst;
+		end if;
+	end process;
+
 	idelay_i : idelay
 	generic map (
 		IOBDELAY_VALUE => 0,
 		IOBDELAY_TYPE => "VARIABLE")
 	port map (
 		c    => clk,
-		rst  => rst,
+		rst  => irst,
 		ce   => ce,
 		inc  => inc,
 		i    => idatain,

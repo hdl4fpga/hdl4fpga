@@ -118,7 +118,7 @@ architecture graphics of ml509 is
 		(sdram225MHz, pll => (dcm_mul =>  9, dcm_div => 4), cl => "010"),
 		(sdram250MHz, pll => (dcm_mul =>  5, dcm_div => 2), cl => "010"),
 		(sdram275MHz, pll => (dcm_mul => 11, dcm_div => 4), cl => "010"),
-		(sdram300MHz, pll => (dcm_mul =>  3, dcm_div => 1), cl => "110"),
+		(sdram300MHz, pll => (dcm_mul =>  3, dcm_div => 1), cl => "101"),
 
 		------------------------------------------------------------------------
 		-- Frequency   -- 333 Mhz -- 350 Mhz -- 375 Mhz -- 400 Mhz -- 425 Mhz --
@@ -126,9 +126,9 @@ architecture graphics of ml509 is
 		-- Divide by   --   3     --   2     --   4     --   1     --   4     --
 		------------------------------------------------------------------------
 
-		(sdram333MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "001"),
-		(sdram350MHz, pll => (dcm_mul =>  7, dcm_div => 2), cl => "001"),
-		(sdram400MHz, pll => (dcm_mul =>  4, dcm_div => 1), cl => "001"));
+		(sdram333MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "101"),
+		(sdram350MHz, pll => (dcm_mul =>  7, dcm_div => 2), cl => "110"),
+		(sdram400MHz, pll => (dcm_mul =>  4, dcm_div => 1), cl => "110"));
 
 	function sdramparams (
 		constant id  : sdram_speeds)
@@ -935,12 +935,14 @@ begin
 		end loop;
 	end process;
 
-	process (ddrsys_rst, sys_clk)
+	process (sys_clk)
 	begin
-		if ddrsys_rst='1' then
-			sdrphy_rst <= '1';
-		elsif rising_edge(sys_clk) then
-			sdrphy_rst <= ddrsys_rst;
+		if rising_edge(sys_clk) then
+			if ddrsys_rst='1' then
+				sdrphy_rst <= '1';
+			else
+				sdrphy_rst <= ddrsys_rst;
+			end if;
 		end if;
 	end process;
 

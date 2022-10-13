@@ -262,6 +262,30 @@ architecture arch of sdram_mpu is
 		return val;
 	end;
 
+	function "*" (
+		constant off : natural;
+		constant tab : natural_vector)
+		return natural_vector is
+		variable val : natural_vector(tab'range);
+	begin
+		for i in tab'range loop
+			val(i) := tab(i)*off;
+		end loop;
+		return val;
+	end;
+
+	function "/" (
+		constant tab : natural_vector;
+		constant off : natural)
+		return natural_vector is
+		variable val : natural_vector(tab'range);
+	begin
+		for i in tab'range loop
+			val(i) := tab(i)/off;
+		end loop;
+		return val;
+	end;
+
 	function select_lat (
 		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
@@ -309,14 +333,17 @@ architecture arch of sdram_mpu is
 		return select_latword(lat_val, to_latwordvector(lat_cod), lat_tab);
 	end;
 
+	signal xx : signed(0 to 8);
 begin
 
-	sdram_mpu_alat <= std_logic_vector(to_unsigned(lrcd, sdram_mpu_alat'length));
+	-- sdram_mpu_alat <= std_logic_vector(to_unsigned(lrcd, sdram_mpu_alat'length));
+	sdram_mpu_alat <= std_logic_vector(select_lat(sdram_mpu_al, al_cod, (gear*lrcd+2*gear)-(gear/2)*al_tab, sdram_mpu_alat'length));
 	sdram_mpu_blat <= std_logic_vector(resize(unsigned(signed'(select_lat(sdram_mpu_bl, bl_cod, bl_tab))), sdram_mpu_blat'length));
 	sdram_mpu_p: process (sdram_mpu_clk)
 		variable state_set : boolean;
 		variable lat_id :lat_id ;
 		variable timer  : signed(lat_timer'range);
+		variable xxx  : signed(lat_timer'range);
 	begin
 		if rising_edge(sdram_mpu_clk) then
 			if sdram_mpu_rst='0' then
@@ -367,7 +394,9 @@ begin
 									timer := select_lat(sdram_mpu_cwl, cwl_cod, cwl_tab+gear*lwr);
 								when id_rcd =>
 									-- timer := to_signed(lrcd-2, lat_timer'length);
-									timer := select_lat(sdram_mpu_al, al_cod, gear*lrcd-al_tab);
+									-- timer := select_lat(sdram_mpu_al, al_cod, gear*lrcd-al_tab);
+									timer := select_lat(sdram_mpu_al, al_cod, (gear*lrcd)-(gear/2)*al_tab, timer'length);
+									xxx:= timer;
 								when id_rfc =>
 									timer := to_signed(lrfc-2, lat_timer'length);
 								when id_rp =>
