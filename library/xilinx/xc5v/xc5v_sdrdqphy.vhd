@@ -288,13 +288,6 @@ begin
 			sys_rdy   => adjbrt_rdy);
 		adjsto_rdy <= to_bit(adjbrt_rdy);
 
-		-- process (clk0)
-		-- begin
-		-- 	if rising_edge(clk0) then
-		-- 		sys_sto <= (others => sto);
-		-- 	end if;
-		-- end process;
-
 		process (clk90)
 			variable q : std_logic;
 		begin
@@ -334,8 +327,7 @@ begin
 				taps     => taps)
 			port map (
 				rst      => rst,
-				edge     => std_logic'('1'), --IDDR
-				-- edge     => std_logic'('0'),
+				edge     => std_logic'('0'),
 				clk      => iod_clk,
 				req      => adjdqi_req,
 				rdy      => adjdqi_rdy(i),
@@ -376,11 +368,14 @@ begin
 			rst  => rst,
 			clk  => igbx_clk,
 			d(0) => dqi(i),
-			q    => dqii);
+			q(0) => dq(0*BYTE_SIZE+i),
+			q(1) => dq(1*BYTE_SIZE+i),
+			q(2) => dq(2*BYTE_SIZE+i),
+			q(3) => dq(3*BYTE_SIZE+i));
 
-		dly_b1 : for j in dqii'range generate
-			dq(j*BYTE_SIZE+i) <= dqii(j);
-		end generate;
+		-- dly_b1 : for j in dqii'range generate
+		-- 	dq(j*BYTE_SIZE+i) <= dqii(j);
+		-- end generate;
 
 		dly_b : block
 		begin
@@ -390,7 +385,10 @@ begin
 				d => (0, 0, 1, 1))
 			port map (
 				clk => clk90,
-				di    => dqii,
+				di(0) => dq(0*BYTE_SIZE+i),
+				di(1) => dq(1*BYTE_SIZE+i),
+				di(2) => dq(2*BYTE_SIZE+i),
+				di(3) => dq(3*BYTE_SIZE+i),
 				do(0) => dqh(2*BYTE_SIZE+i),
 				do(1) => dqh(3*BYTE_SIZE+i),
 				do(2) => dqh(0*BYTE_SIZE+i),
@@ -402,7 +400,10 @@ begin
 				d => (1, 1, 1, 1))
 			port map (
 				clk => clk90,
-				di    => dqii,
+				di(0) => dq(0*BYTE_SIZE+i),
+				di(1) => dq(1*BYTE_SIZE+i),
+				di(2) => dq(2*BYTE_SIZE+i),
+				di(3) => dq(3*BYTE_SIZE+i),
 				do(0) => dqf(0*BYTE_SIZE+i),
 				do(1) => dqf(1*BYTE_SIZE+i),
 				do(2) => dqf(2*BYTE_SIZE+i),

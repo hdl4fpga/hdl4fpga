@@ -97,6 +97,10 @@ begin
 		iserdese_g : if gear=4 generate
 			xv5_g : if device=xc5v generate
 				iser_i : iserdes_nodelay
+				generic map (
+					INTERFACE_TYPE => "MEMORY",
+					DATA_RATE      => "DDR",
+					DATA_WIDTH     => 4)
 				port map (
 					rst          => rst,
 					clk          => clk(2),
