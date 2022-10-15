@@ -26,6 +26,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity xc5v_idelay is
+	generic (
+		delay_src      : string := "I";
+		signal_pattern : string := "DATA");
 	port (
 		clk     : in  std_logic;
 		rst     : in  std_logic;
@@ -66,15 +69,20 @@ begin
 		end if;
 	end process;
 
-	idelay_i : idelay
+	idelay_i : iodelay
 	generic map (
-		IOBDELAY_VALUE => 0,
-		IOBDELAY_TYPE => "VARIABLE")
+		delay_src      => delay_src,
+		signal_pattern => signal_pattern,
+		idelay_value => 0,
+		idelay_type  => "VARIABLE")
 	port map (
 		c    => clk,
 		rst  => irst,
 		ce   => ce,
 		inc  => inc,
-		i    => idatain,
-		o    => dataout);
+		t => '1',
+		odatain => '0',
+		datain  => '0',
+		idatain => idatain,
+		dataout => dataout);
 end;

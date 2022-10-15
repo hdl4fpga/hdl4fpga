@@ -264,9 +264,9 @@ begin
 		ddqsi <= transport sdram_dqsi after dqs_linedelay;
 		dqsidelay_i : idelaye2
 		generic map (
-			DELAY_SRC      => "IDATAIN",
-			IDELAY_TYPE    => "VAR_LOAD",
-			SIGNAL_PATTERN => "CLOCK")
+			idelay_type    => "VAR_LOAD",
+			delay_src      => "IDATAIN",
+			signal_pattern => "CLOCK")
 		port map (
 			regrst     => rst,
 			c          => iod_clk,
@@ -297,7 +297,7 @@ begin
 
 		adjsto_e : entity hdl4fpga.adjsto
 		generic map (
-			GEAR => DATA_GEAR)
+			gear => data_gear)
 		port map (
 			tp       => tp_dqssel,
 			sdram_clk  => clk0,
@@ -307,7 +307,8 @@ begin
 			dqs_smp  => smp,
 			dqs_pre  => dqspre,
 			sys_req  => adjsto_req,
-			sys_rdy  => adjsto_rdy);
+			sys_rdy  => adjsto_rdy,
+			synced    => open);
 
 		process (clk90)
 			variable q : std_logic;
@@ -365,8 +366,8 @@ begin
 			ddqi <= transport sdram_dqi(i) after dqi_linedelay;
 			dqi_i : idelaye2
 			generic map (
-				DELAY_SRC    => "IDATAIN",
-				IDELAY_TYPE  => "VAR_LOAD")
+				idelay_type  => "VAR_LOAD",
+				delay_src    => "IDATAIN")
 			port map (
 				regrst      => rst,
 				c           => iod_clk,

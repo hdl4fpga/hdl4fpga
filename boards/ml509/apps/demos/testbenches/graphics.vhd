@@ -133,7 +133,7 @@ architecture ml509_graphics of testbench is
 			gpio_sw_w      : in std_logic := 'Z';
 	
 			phy_reset      : out std_logic;
-			phy_col        : out std_logic := 'Z';
+			phy_col        : in std_logic := 'Z';
 			phy_crs        : in std_logic := 'Z';
 			phy_int        : in std_logic := 'Z';		-- open drain
 			phy_mdc        : out std_logic;

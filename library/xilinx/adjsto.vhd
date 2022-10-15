@@ -6,7 +6,7 @@ entity adjsto is
 	generic (
 		both     : boolean := true;
 		lat      : natural := 0;
-		GEAR     : natural);
+		gear     : natural);
 	port (
 		tp       : out std_logic_vector(1 to 3);
 		sdram_clk  : in  std_logic;
@@ -68,7 +68,7 @@ begin
 
 	 process (sdram_clk)
 		variable start : std_logic;
-		variable cntr  : unsigned(0 to unsigned_num_bits(GEAR/2-1));
+		variable cntr  : unsigned(0 to unsigned_num_bits(gear/2-1));
 		variable sto   : unsigned(0 to lat+1);
 	begin
 		if rising_edge(sdram_clk) then
@@ -76,7 +76,7 @@ begin
 			if to_bit(step_req xor step_rdy)='1' then
 				if start='0' then
 					sync    <= '1';
-					cntr := to_unsigned(GEAR/2-1, cntr'length);
+					cntr := to_unsigned(gear/2-1, cntr'length);
 					if sdram_sto='0' then
 						start := '1';
 					end if;

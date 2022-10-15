@@ -380,22 +380,22 @@ begin
 				clkout3  => ddr_clk90_mmce2,
 				locked   => ddr_locked);
 
-			ddr_clk0_bufg : bufg
+			ddr_clk0x2_bufg : bufg
 			port map (
 				i => ddr_clk0x2_mmce2,
 				o => ddr_clk0x2);
 
-			ddr_clk90_bufg : bufg
+			ddr_clk90x2_bufg : bufg
 			port map (
 				i => ddr_clk90x2_mmce2,
 				o => ddr_clk90x2);
 
-			ddr_clk0div_bufg : bufg
+			ddr_clk0_bufg : bufg
 			port map (
 				i => ddr_clk0_mmce2,
 				o => ddr_clk0);
 
-			ddr_clk90div_bufg : bufg
+			ddr_clk90_bufg : bufg
 			port map (
 				i => ddr_clk90_mmce2,
 				o => ddr_clk90);
@@ -548,19 +548,23 @@ begin
 
 	ipoe_b : block
 
-		alias  mii_rxc    : std_logic is phy_rxclk_bufg;
+		signal mii_rxc    : std_logic;
 		alias  mii_rxdv   : std_logic is phy_rxctl_rxdv;
 		alias  mii_rxd    : std_logic_vector(phy_rxd'range) is phy_rxd;
+		-- alias  mii_rxd    : std_logic_vector(0 to 4-1) is phy_rxd(0 to 4-1);
 
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
 
+		signal mii_txen   : std_logic;
+		signal mii_txd    : std_logic_vector(mii_rxd'range);
 		signal miirx_frm  : std_logic;
 		signal miirx_irdy : std_logic;
 		signal miirx_data : std_logic_vector(mii_rxd'range);
 
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
+		signal miitx_trdy : std_logic;
 		signal miitx_end  : std_logic;
 		signal miitx_data : std_logic_vector(si_data'range);
 
@@ -569,6 +573,7 @@ begin
 		signal ser_pause : std_logic := '1';
 	begin
 
+		mii_rxc  <= gtx_clk; --phy_rxclk_bufg;
 		sync_b : block
 
 			signal rxc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
@@ -578,14 +583,30 @@ begin
 
 		begin
 
-			process (mii_rxc)
-				variable q : std_logic_vector(rxc_rxbus'range);
-			begin
-				if rising_edge(mii_rxc) then
-					rxc_rxbus <= q;
-					q := mii_rxdv & mii_rxd;
-				end if;
-			end process;
+			rxd_g : for i in mii_rxd'range generate 
+				iddr_i : iddr 
+				port map (
+					c => phy_rxclk_bufg,
+					ce => '1',
+					q1 => rxc_rxbus(i+1),
+					d => phy_rxd(i));
+			end generate;
+
+			rxdv_i : iddr 
+			port map (
+				c  => phy_rxclk,
+				ce => '1',
+				q1 => rxc_rxbus(0),
+				d  => mii_rxdv);
+
+			-- process (mii_rxc)
+				-- variable q : std_logic_vector(rxc_rxbus'range);
+			-- begin
+				-- if rising_edge(mii_rxc) then
+					-- rxc_rxbus <= q;
+					-- q := mii_rxdv & mii_rxd;
+				-- end if;
+			-- end process;
 
 			rxc2txc_e : entity hdl4fpga.fifo
 			generic map (
@@ -654,7 +675,7 @@ begin
 
 			miitx_frm  => miitx_frm,
 			miitx_irdy => miitx_irdy,
-			miitx_trdy => '1',
+			miitx_trdy => miitx_trdy,
 			miitx_end  => miitx_end,
 			miitx_data => miitx_data,
 
@@ -670,8 +691,8 @@ begin
 			so_data    => so_data);
 
 		ser_clk  <= gtx_clk;
-		ser_frm  <= (miitx_frm or mii_tp(1)) and ser_pause;
-		ser_data <= wirebus(miitx_data & miirx_data, miitx_frm & mii_tp(1));
+		ser_frm  <= ('0' or miirx_frm) and ser_pause;
+		ser_data <= word2byte(miitx_data & miirx_data, miirx_frm);
 
 		pause_p : process(mii_txc)
 			type states is (west, east);
@@ -695,15 +716,24 @@ begin
 			end if;
 		end process;
 
+		desser_e: entity hdl4fpga.desser
+		port map (
+			desser_clk => mii_txc,
+
+			des_frm    => miitx_frm,
+			des_irdy   => miitx_irdy,
+			des_trdy   => miitx_trdy,
+			des_data   => miitx_data,
+
+			ser_irdy   => open,
+			ser_data   => mii_txd);
+
+		mii_txen <= miitx_frm and not miitx_end;
 		process (mii_txc)
-			variable txen : std_logic;
-			variable txd  : std_logic_vector(phy_txd'range);
 		begin
 			if rising_edge(mii_txc) then
-				phy_txctl_txen <= txen;
-				phy_txd  <= txd;
-				txen := miitx_frm and not miitx_end;
-				txd  := miitx_data;
+				phy_txctl_txen<= mii_txen;
+				phy_txd(mii_rxd'range) <= mii_txd;
 			end if;
 		end process;
 
@@ -1023,13 +1053,12 @@ begin
 		sdram_dqsi => ddr2_dqsi,
 		sdram_dqso => ddr2_dqso);
 
-	gpio_led_c <= ctlr_inirdy;
+	gpio_led_c <= ctlrphy_synced; -- ctlr_inirdy;
 
 	ddr2_scl   <= '0';
 
 	phy_mdc    <= '0';
 	phy_mdio   <= '0';
-	phy_col    <= '0';
 
 	phy_txc_gtxclk_i : oddr
 	port map (

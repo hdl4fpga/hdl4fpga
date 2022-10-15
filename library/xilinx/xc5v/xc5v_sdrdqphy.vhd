@@ -242,6 +242,9 @@ begin
 
 		dqsi <= transport sdram_dqsi after dqs_linedelay;
 		dqsidelay_i : entity hdl4fpga.xc5v_idelay
+		generic map (
+			delay_src      => "I",
+			signal_pattern => "CLOCK")
 		port map(
 			rst     => rst,
 			clk     => clk0,
@@ -273,8 +276,7 @@ begin
 		adjbrt_req <= to_stdulogic(adjsto_req);
 		adjsto_e : entity hdl4fpga.adjsto
 		generic map (
-			lat  => 0,
-			GEAR => data_gear)
+			gear => data_gear)
 		port map (
 			tp        => tp_dqssel,
 			sdram_clk => clk0,
@@ -283,9 +285,9 @@ begin
 			sdram_sto => sto,
 			dqs_smp   => smp,
 			dqs_pre   => dqspre,
-			synced    => sto_synced,
 			sys_req   => adjbrt_req,
-			sys_rdy   => adjbrt_rdy);
+			sys_rdy   => adjbrt_rdy,
+			synced    => sto_synced);
 		adjsto_rdy <= to_bit(adjbrt_rdy);
 
 		process (clk90)
@@ -342,6 +344,8 @@ begin
 
 			ddqi <= transport sdram_dqi(i) after dqi_linedelay;
 			dqi_i : entity hdl4fpga.xc5v_idelay
+			generic map (
+				delay_src    => "I")
 			port map(
 				clk     => clk90,
 				rst     => rst,
@@ -418,6 +422,7 @@ begin
 	begin
 		if rising_edge(iod_clk) then
 			q := (dqspre xor dqs180);
+			q := dqspre;
 		end if;
 		if q='0' then
 			sys_dqo <= dqh;

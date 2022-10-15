@@ -488,6 +488,8 @@ begin
 
 		sdrdqphy_i : entity hdl4fpga.xc5v_sdrdqphy
 		generic map (
+			dqs_linedelay => 3 ns/2,
+			dqi_linedelay => 3 ns/2,
 			taps       => taps,
 			data_edge  => data_edge,
 			data_gear  => data_gear,
