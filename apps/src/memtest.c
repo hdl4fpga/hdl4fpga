@@ -55,7 +55,7 @@ void test_fill (char *buffer, int length)
 	}
 }
 
-static short p = 0;
+static char p = 0;
 void seq_init ()
 {
 	p = 0;

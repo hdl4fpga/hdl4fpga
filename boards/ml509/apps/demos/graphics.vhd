@@ -766,8 +766,7 @@ begin
 		begin
 			if rising_edge(phy_rxclk_bufg) then
 				gpio_led <= (others => '0');
-				gpio_led(0) <= ctlrphy_synced;
-				gpio_led(1 to 8-1) <= tp(2 to 8);
+				gpio_led(0 to 8-1) <= tp(1 to 8);
 			end if;
 		end process;
 
@@ -825,7 +824,7 @@ begin
 		ctlr_clks     => ctlr_clks(0 to sclk_phases/sclk_edges-1),
 		ctlr_rst      => ddrsys_rst,
 		ctlr_cwl      => b"0_11",
-		ctlr_rtt      => b"0_11",
+		ctlr_rtt      => b"11",
 		ctlr_al       => "001",
 		ctlr_bl       => "010", --"001",
 		ctlr_cl       => sdram_params.cl,
@@ -1053,7 +1052,7 @@ begin
 		sdram_dqsi => ddr2_dqsi,
 		sdram_dqso => ddr2_dqso);
 
-	gpio_led_c <= ctlrphy_synced; -- ctlr_inirdy;
+	gpio_led_c <= ctlr_inirdy;
 
 	ddr2_scl   <= '0';
 

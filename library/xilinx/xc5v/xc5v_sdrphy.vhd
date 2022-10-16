@@ -57,7 +57,7 @@ entity xc5v_sdrphy is
 		phy_rw     : out std_logic := '1';
 		phy_cmd    : in  std_logic_vector(0 to 3-1) := (others => 'U');
 		phy_ini    : out std_logic;
-		phy_synced : out std_logic;
+		phy_synced : buffer std_logic;
 
 		sys_rst    : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '1');
 		sys_cs     : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '0');
@@ -428,7 +428,7 @@ begin
 							end if;
 						end loop;
 						if z='0' then
-							phy_ini   <= '1';
+							phy_ini   <= phy_synced; -- '1';
 							phy_rlrdy <= phy_rlreq;
 						end if;
 					end case;

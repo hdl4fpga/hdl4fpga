@@ -86,7 +86,7 @@ entity demo_graphics is
 		ctlr_cl       : in  std_logic_vector(0 to 3-1);
 		ctlr_cwl      : in  std_logic_vector(0 to 3-1) := "000";
 		ctlr_wrl      : in  std_logic_vector(0 to 3-1) := "101";
-		ctlr_rtt      : in  std_logic_vector(0 to 3-1) := "---";
+		ctlr_rtt      : in  std_logic_vector := "---";
 		ctlr_cmd      : buffer std_logic_vector(0 to 3-1);
 		ctlr_inirdy   : buffer std_logic;
 

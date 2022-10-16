@@ -66,7 +66,7 @@ begin
 		pre(0) <= '0';
 	end process;
 
-	 process (sdram_clk)
+	 process (sdram_clk, step_rdy)
 		variable start : std_logic;
 		variable cntr  : unsigned(0 to unsigned_num_bits(gear/2-1));
 		variable sto   : unsigned(0 to lat+1);
@@ -75,11 +75,12 @@ begin
 			sto(0) := sdram_sto;
 			if to_bit(step_req xor step_rdy)='1' then
 				if start='0' then
-					sync    <= '1';
+					sync <= '1';
 					cntr := to_unsigned(gear/2-1, cntr'length);
 					if sdram_sto='0' then
 						start := '1';
 					end if;
+					dqs_pre <= '-';
 				else
 					if cntr(0)='1' then
 						start    := '0';
@@ -112,7 +113,7 @@ begin
 		end if;
 	end process;
 
-	process (sdram_clk)
+	process (sdram_clk, step_req)
 		variable start : std_logic;
 	begin
 		if rising_edge(sdram_clk) then

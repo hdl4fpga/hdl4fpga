@@ -121,7 +121,8 @@ architecture xc5v of xc5v_sdrdqphy is
 begin
 
 	-- tp(1 to 8) <= "00" & tp_dqsdly;
-	tp(1 to 8) <= "00000" & tp_dqssel;
+	tp(1 to 8) <= "0" & dqspre & dqs180 & "00" & tp_dqssel;
+
 	rl_b : block
 	begin
 
@@ -219,7 +220,7 @@ begin
 		signal delay    : std_logic_vector(0 to 6-1);
 		signal dqsi     : std_logic;
 		signal dqsi_buf : std_logic;
-		signal smp      : std_logic_vector(data_gear-1 downto 0);
+		signal smp      : std_logic_vector(0 to data_gear-1);
 		signal sto      : std_logic;
 		signal igbx_clk : std_logic_vector(0 to 5-1);
 	begin

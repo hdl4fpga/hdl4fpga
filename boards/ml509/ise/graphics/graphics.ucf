@@ -48,7 +48,7 @@ NET ctlr_clks[1] TNM_NET = RAMS RAMS_clk90;
 
 TIMESPEC TS_sys2ffclk0  = FROM FFS_sysclk TO FFS_clk0   TIG;
 TIMESPEC TS_sys2ffclk90 = FROM FFS_sysclk TO FFS_clk90  TIG;
-TIMESPEC TS_sys2ram90   = FROM FFS_sysclk TO RAMS_clk90 TIG;
+#TIMESPEC TS_sys2ram90   = FROM FFS_sysclk TO RAMS_clk90 TIG;
 TIMESPEC TS_ddr2clk     = FROM FFS_clk0   TO FFS_sysclk TIG;
 TIMESPEC TS_clk902sys   = FROM FFS_clk90  TO FFS_sysclk TIG;
 TIMESPEC TS_ram2ff      = FROM RAMS_clk90 TO FFS_clk0 TIG;
