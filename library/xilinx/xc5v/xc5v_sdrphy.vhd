@@ -412,7 +412,7 @@ begin
 		begin
 			if rising_edge(clk0) then
 				if rst='1' then
-					phy_ini <= '0';
+					phy_ini   <= '0';
 					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 					state := s_idle;
 				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
@@ -446,7 +446,7 @@ begin
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
-		phy_rst => rst,
+		phy_rst     => '0',
 		sys_clks(0) => clk0,
 		sys_clks(1) => clk90,
 		sys_cs  => sys_cs,
@@ -488,8 +488,8 @@ begin
 
 		sdrdqphy_i : entity hdl4fpga.xc5v_sdrdqphy
 		generic map (
-			dqs_linedelay => 3 ns/2,
-			dqi_linedelay => 3 ns/2,
+			dqs_linedelay => 2.4 ns/2,
+			dqi_linedelay => 2.4 ns/2,
 			taps       => taps,
 			data_edge  => data_edge,
 			data_gear  => data_gear,

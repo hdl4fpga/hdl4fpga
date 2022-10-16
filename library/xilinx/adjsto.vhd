@@ -80,7 +80,7 @@ begin
 					if sdram_sto='0' then
 						start := '1';
 					end if;
-					dqs_pre <= '-';
+					dqs_pre <= '0';
 				else
 					if cntr(0)='1' then
 						start    := '0';
@@ -88,10 +88,10 @@ begin
 					elsif sto(lat)='1' then
 						if sto(lat+1)='0' then
 							if dqs_smp=seq and (inv='0' or both) then
-								sync <= sync;
+								sync    <= sync;
 								dqs_pre <= '0';
 							elsif shift_left(unsigned(dqs_smp),1)=pre and (inv='1' or both) then
-								sync <= sync;
+								sync    <= sync;
 								dqs_pre <= '1';
 							else
 								sync <= '0';

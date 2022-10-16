@@ -120,8 +120,8 @@ architecture xc5v of xc5v_sdrdqphy is
 
 begin
 
-	-- tp(1 to 8) <= "00" & tp_dqsdly;
-	tp(1 to 8) <= "0" & dqspre & dqs180 & "00" & tp_dqssel;
+	tp(1 to 8) <= dqspre & dqs180 & tp_dqsdly;
+	-- tp(1 to 8) <= "0" & dqspre & dqs180 & "00" & tp_dqssel;
 
 	rl_b : block
 	begin
@@ -227,7 +227,7 @@ begin
 
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
-			taps    => setif(taps > 0, taps, 2**delay'length-1))
+			taps    => taps)
 		port map (
 			-- tp => tp,
 			rst      => rst,
@@ -277,7 +277,7 @@ begin
 		adjbrt_req <= to_stdulogic(adjsto_req);
 		adjsto_e : entity hdl4fpga.adjsto
 		generic map (
-			gear => data_gear)
+			gear      => data_gear)
 		port map (
 			tp        => tp_dqssel,
 			sdram_clk => clk0,

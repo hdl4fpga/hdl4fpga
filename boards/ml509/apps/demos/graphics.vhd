@@ -336,7 +336,7 @@ begin
 
 		idelayctrl_i : idelayctrl
 		port map (
-			rst    => sys_rst,
+			rst    => gpio_sw_c,
 			refclk => iod_clk,
 			rdy    => iod_rdy);
 	
@@ -362,7 +362,7 @@ begin
 			generic map (
 				divclk_divide  => sdram_params.pll.dcm_div,
 				clkfbout_mult  => 2*sdram_params.pll.dcm_mul,
-				clkin_period   =>  user_per*1.0e9,
+				clkin_period   => user_per*1.0e9,
 				clkout0_divide => data_gear/2,
 				clkout1_divide => data_gear/2,
 				clkout1_phase  => 90.0+180.0,
@@ -370,7 +370,7 @@ begin
 				clkout3_divide => data_gear,
 				clkout3_phase  => 90.0/real((data_gear/2))+270.0)
 			port map (
-				rst      => sys_rst,
+				rst      => '0', --sys_rst,
 				clkin    => sys_clk,
 				clkfbin  => ddr_clkfb,
 				clkfbout => ddr_clkfb,

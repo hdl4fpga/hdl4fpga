@@ -51,23 +51,23 @@ architecture def of xc5v_idelay is
 	
 begin
 
-	del <= to_stdlogicvector(to_bitvector(delay));
-	adjser_i : entity hdl4fpga.adjser
-	generic map (
-		tap_value => 0)
-	port map (
-		clk   => clk,
-		rst   => rst,
-		delay => del,
-		ce    => ce,
-		inc   => inc);
-
 	process(clk)
 	begin
 		if rising_edge(clk) then
 			irst <= rst;
 		end if;
 	end process;
+
+	del <= to_stdlogicvector(to_bitvector(delay));
+	adjser_i : entity hdl4fpga.adjser
+	generic map (
+		tap_value => 0)
+	port map (
+		clk   => clk,
+		rst   => irst,
+		delay => del,
+		ce    => ce,
+		inc   => inc);
 
 	idelay_i : iodelay
 	generic map (

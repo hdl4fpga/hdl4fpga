@@ -104,9 +104,9 @@ begin
 				port map (
 					rst          => rst,
 					clk          => clk(2),
+					clkb         => clk(4),
 					oclk         => clk(1),
 					clkdiv       => clk(0),
-					clkb         => clk(4),
 					d            => d(i),
 					q1           => po(3),
 					q2           => po(2),
