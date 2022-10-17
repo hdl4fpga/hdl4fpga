@@ -345,6 +345,7 @@ begin
 					read_rdy  <= to_stdulogic(to_bit(read_req));
 					wr_rdy    <= to_stdlogicvector(to_bitvector(wr_req));
 					rd_rdy    <= to_stdlogicvector(to_bitvector(rd_req));
+					leveling  <= '0';
 				else
 					case state is
 					when s_start =>
@@ -446,7 +447,6 @@ begin
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
-		phy_rst     => '0',
 		sys_clks(0) => clk0,
 		sys_clks(1) => clk90,
 		sys_cs  => sys_cs,

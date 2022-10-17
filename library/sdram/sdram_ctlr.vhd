@@ -300,12 +300,12 @@ begin
 	init_rdy    <= sdram_init_rdy;
 	phy_rst     <= sdram_init_rst;
 	phy_cke     <= sdram_init_cke;
-	phy_cs      <= '0'          when sdram_mpu_sel='1' else sdram_init_cs;
+	phy_cs      <= '0'            when sdram_mpu_sel='1' else sdram_init_cs;
 	phy_ras     <= sdram_mpu_ras  when sdram_mpu_sel='1' else sdram_init_ras;
 	phy_cas     <= sdram_mpu_cas  when sdram_mpu_sel='1' else sdram_init_cas;
 	phy_we      <= sdram_mpu_we   when sdram_mpu_sel='1' else sdram_init_we;
-	phy_a       <= ctlr_a       when sdram_mpu_sel='1' else sdram_init_a;
-	phy_b       <= ctlr_b       when sdram_mpu_sel='1' else sdram_init_b;
+	phy_a       <= ctlr_a         when sdram_mpu_sel='1' else sdram_init_a;
+	phy_b       <= ctlr_b         when sdram_mpu_sel='1' else sdram_init_b;
 	phy_odt     <= sdram_init_odt when sdram_mpu_sel='0' else sdram_sch_odt(0) when stdr=ddr3 else '1';
 	phy_rlreq   <= init_rdy;
 	ctlr_cfgrdy <= init_rdy;

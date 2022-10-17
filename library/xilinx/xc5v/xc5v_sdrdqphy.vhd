@@ -105,6 +105,8 @@ architecture xc5v of xc5v_sdrdqphy is
 
 	signal dqipau_req : std_logic_vector(sdram_dqi'range);
 	signal dqipau_rdy : std_logic_vector(sdram_dqi'range);
+	signal dqipause_req : std_logic;
+	signal dqipause_rdy : std_logic;
 	signal dqspau_req : std_logic;
 	signal dqspau_rdy : std_logic;
 
@@ -112,10 +114,10 @@ architecture xc5v of xc5v_sdrdqphy is
 	signal tp_dqsdly  : std_logic_vector(0 to 6-1);
 	signal tp_dqssel  : std_logic_vector(0 to 3-1);
 
-	signal rlpause_req : bit;
-	signal rlpause_rdy : bit;
-	signal pause_req   : bit;
-	signal pause_rdy   : bit;
+	signal rlpause_req : std_logic;
+	signal rlpause_rdy : std_logic;
+	signal pause_req   : std_logic;
+	signal pause_rdy   : std_logic;
 
 
 begin
@@ -138,26 +140,26 @@ begin
 					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
 					adjdqi_req <= to_stdulogic(adjsto_rdy);
 					adjsto_req <= adjsto_rdy;
-					state := s_start;
+					state      := s_start;
 				else
 					case state is
 					when s_start =>
 						write_req <= not to_stdulogic(to_bit(write_rdy));
 						read_brst <= '0';
-						state := s_write;
+						state     := s_write;
 					when s_write =>
 						if (to_bit(write_req) xor to_bit(write_rdy))='0' then
 							read_req <= not to_stdulogic(to_bit(read_rdy));
 							read_brst <= '1';
 							if sys_sti(0)='1' then
 								adjdqs_req <= not to_stdulogic(to_bit(adjdqs_rdy));
-								state := s_dqs;
+								state      := s_dqs;
 							end if;
 						end if;
 					when s_dqs =>
 						if (to_bit(adjdqs_req) xor to_bit(adjdqs_rdy))='0' then
 							adjdqi_req <= not to_stdulogic(adjsto_req);
-							state := s_dqi;
+							state      := s_dqi;
 						end if;
 					when s_dqi =>
 						aux := '0';
@@ -169,14 +171,14 @@ begin
 							if (to_bit(read_req) xor to_bit(read_rdy))='0' then
 								read_req   <= not read_rdy;
 								adjsto_req <= not adjsto_rdy;
-								state := s_sto;
+								state      := s_sto;
 							end if;
 						end if;
 					when s_sto =>
 						if (read_req xor read_rdy)='0' then
 							if (adjsto_req xor adjsto_rdy)='0' then
 								sys_rlrdy <= to_stdulogic(to_bit(sys_rlreq));
-								state := s_start;
+								state     := s_start;
 							else
 								read_req <= not read_rdy;
 							end if;
@@ -187,17 +189,46 @@ begin
 			end if;
 		end process;
 
-		rlpause_req <= to_bit(dqspau_req) xor setif((dqipau_req)=(dqipau_req'range => '1'));
-
 		process (iod_clk)
+			variable z : std_logic;
 		begin
 			if rising_edge(iod_clk) then
-				if (pause_rdy xor pause_req)='0' then
-					dqspau_rdy <= to_stdulogic(to_bit(dqspau_req));
-					dqipau_rdy <= to_stdlogicvector(to_bitvector(dqipau_req));
+				if rst='1' then
+					dqspau_rdy   <= to_stdulogic(to_bit(dqspau_req));
+					dqipause_rdy <= to_stdulogic(to_bit(dqipause_req));
+					dqipau_rdy   <= to_stdlogicvector(to_bitvector(dqipau_req));
+				elsif (pause_rdy xor pause_req)='0' then
+					dqspau_rdy   <= to_stdulogic(to_bit(dqspau_req));
+					dqipause_rdy <= to_stdulogic(to_bit(dqipause_req));
+					dqipau_rdy   <= to_stdlogicvector(to_bitvector(dqipau_req));
 				end if;
 			end if;
+
+			z := '1';
+			for i in dqipau_req'range loop
+				z := z and (dqipau_rdy(i) xor to_stdulogic(to_bit(dqipau_req(i))));
+			end loop;
+		
+			if rising_edge(iod_clk) then
+				if (dqipause_rdy xor to_stdulogic(to_bit(dqipause_req)))='0' then
+					dqipause_req <= dqipause_rdy xor z;
+				end if;
+			end if;
+
 		end process;
+		rlpause_req <= to_stdulogic(to_bit(dqspau_req)) xor dqipause_req;
+
+		-- rlpause_req <= to_bit(dqspau_req) xor setif((dqipau_req)=(dqipau_req'range => '1'));
+
+		-- process (iod_clk)
+		-- begin
+		-- 	if rising_edge(iod_clk) then
+		-- 		if (pause_rdy xor pause_req)='0' then
+		-- 			dqspau_rdy <= to_stdulogic(to_bit(dqspau_req));
+		-- 			dqipau_rdy <= to_stdlogicvector(to_bitvector(dqipau_req));
+		-- 		end if;
+		-- 	end if;
+		-- end process;
 
 	end block;
 

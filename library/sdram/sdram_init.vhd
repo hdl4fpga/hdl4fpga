@@ -141,14 +141,14 @@ architecture def of sdram_init is
 		tddr3_zqinit,
 		tddr3_ref);
 
-	constant stdr : sdram_standards := sdrmark_standard(chip);
+	constant stdr    : sdram_standards := sdrmark_standard(chip);
 
-	signal init_rdy : std_logic;
+	signal init_rdy  : std_logic;
 
-	signal timer_rdy    : std_logic;
-	signal timer_req    : std_logic;
+	signal timer_rdy : std_logic;
+	signal timer_req : std_logic;
 
-	signal input        : std_logic_vector(0 to 0);
+	signal input     : std_logic_vector(0 to 0);
 	signal sdram_mr_addr  : ddrmr_addr;
 	signal sdram_timer_id : tids;
 
@@ -528,7 +528,7 @@ begin
 					sdram_mr_cl   => sdram_mr_cl,
 					sdram_mr_wb   => sdram_mr_wb);
 	
-			when DDR =>
+			when ddr =>
 				return ddr1_mrfile(
 					sdram_mr_addr => sdram_mr_addr,
 					sdram_mr_bl   => sdram_mr_bl,
@@ -536,7 +536,7 @@ begin
 					sdram_mr_cl   => sdram_mr_cl,
 					sdram_mr_ods  => sdram_mr_ods);
 	
-			when DDR2 =>
+			when ddr2 =>
 				return ddr2_mrfile(
 					sdram_mr_addr => sdram_mr_addr,
 					sdram_mr_srt  => sdram_mr_srt,
@@ -790,7 +790,7 @@ begin
 
 		constant pgm : s_table := select_pgm(stdr);
 		variable row : s_row;
-		variable sdram_init_pc   : s_code;
+		variable sdram_init_pc : s_code;
 
 	begin
 		if rising_edge(sdram_init_clk) then
@@ -824,7 +824,7 @@ begin
 				if timer_rdy='1' then
 					sdram_init_pc   := row.state_n;
 					sdram_init_rst  <= to_sout(row.output).rst;
-					init_rdy      <= to_sout(row.output).rdy;
+					init_rdy        <= to_sout(row.output).rdy;
 					sdram_init_cke  <= to_sout(row.output).cke;
 					sdram_init_wlreq<= to_sout(row.output).wlq;
 					sdram_init_cs   <= row.cmd.cs;
@@ -846,7 +846,7 @@ begin
 				sdram_timer_id   <= tsdr_rst;
 				sdram_init_rst   <= '0';
 				sdram_init_cke   <= '0';
-				init_rdy       <= '0';
+				init_rdy         <= '0';
 				sdram_init_cs    <= '0';
 				sdram_init_ras   <= '1';
 				sdram_init_cas   <= '1';

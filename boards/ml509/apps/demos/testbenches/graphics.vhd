@@ -188,8 +188,8 @@ architecture ml509_graphics of testbench is
 		signal x : natural := 0;
 begin
 
-	rst   <= '1', '0' after 1.1 us;
-	sw <= '0'; --, '1' after 29 us, '0' after 30 us;
+	rst   <= '1', '0' after 1.1 us, '1' after 20 us, '0' after 21 us;
+	sw <= rst; --'0'; --, '1' after 29 us, '0' after 30 us;
 	reset_n <= not rst;
 
 	xtal   <= not xtal after 5 ns;
