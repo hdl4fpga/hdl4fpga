@@ -49,7 +49,7 @@ architecture graphics of ml509 is
 		sdr350MHz_600p,
 		sdr400MHz_600p);
 
-	constant app_profile : app_profiles := sdr300Mhz_600p;
+	constant app_profile : app_profiles := sdr400Mhz_600p;
 
 	type profileparam_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparam_vector := (
@@ -194,10 +194,10 @@ architecture graphics of ml509 is
 	constant bank_size    : natural := ddr2_ba'length;
 	constant addr_size    : natural := ddr2_a'length;
 	constant coln_size    : natural := 7;
-	-- constant word_size    : natural := ddr2_d'length;
-	-- constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
-	constant word_size    : natural := 16;
-	constant byte_size    : natural := 8;
+	constant word_size    : natural := ddr2_d'length;
+	constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
+	-- constant word_size    : natural := 16;
+	-- constant byte_size    : natural := 8;
 
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
@@ -336,7 +336,7 @@ begin
 
 		idelayctrl_i : idelayctrl
 		port map (
-			rst    => gpio_sw_c,
+			rst    => sys_rst,
 			refclk => iod_clk,
 			rdy    => iod_rdy);
 	
@@ -370,7 +370,7 @@ begin
 				clkout3_divide => data_gear,
 				clkout3_phase  => 90.0/real((data_gear/2))+270.0)
 			port map (
-				rst      => '0', --sys_rst,
+				rst      => sys_rst,
 				clkin    => sys_clk,
 				clkfbin  => ddr_clkfb,
 				clkfbout => ddr_clkfb,
@@ -482,7 +482,19 @@ begin
 			-- ctlrphy_dqsi <= (others => ddr_clk90);
 		end generate;
 
-		ddrsys_rst <= not ddr_locked or sys_rst or not iod_rdy;
+		process (sys_clk)
+			variable tmr : unsigned(0 to 8-1) := (others => '0');
+		begin
+			if rising_edge(sys_clk) then
+				if (not ddr_locked or sys_rst or not iod_rdy)='1' then
+					tmr := (others => '0');
+				elsif tmr(0)='0' then
+					tmr := tmr + 1;
+				end if;
+			end if;
+			ddrsys_rst <= not tmr(0);
+		end process;
+	
 	end block;
 
 	videodcm_b : block

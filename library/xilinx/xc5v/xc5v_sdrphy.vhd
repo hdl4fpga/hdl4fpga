@@ -345,6 +345,7 @@ begin
 					read_rdy  <= to_stdulogic(to_bit(read_req));
 					wr_rdy    <= to_stdlogicvector(to_bitvector(wr_req));
 					rd_rdy    <= to_stdlogicvector(to_bitvector(rd_req));
+					state    := s_idle;
 					leveling  <= '0';
 				else
 					case state is

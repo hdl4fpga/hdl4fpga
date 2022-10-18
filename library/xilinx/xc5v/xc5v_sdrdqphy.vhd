@@ -107,6 +107,7 @@ architecture xc5v of xc5v_sdrdqphy is
 	signal dqipau_rdy : std_logic_vector(sdram_dqi'range);
 	signal dqipause_req : std_logic;
 	signal dqipause_rdy : std_logic;
+
 	signal dqspau_req : std_logic;
 	signal dqspau_rdy : std_logic;
 
@@ -114,10 +115,10 @@ architecture xc5v of xc5v_sdrdqphy is
 	signal tp_dqsdly  : std_logic_vector(0 to 6-1);
 	signal tp_dqssel  : std_logic_vector(0 to 3-1);
 
-	signal rlpause_req : std_logic;
-	signal rlpause_rdy : std_logic;
 	signal pause_req   : std_logic;
 	signal pause_rdy   : std_logic;
+	signal rlpause_req : std_logic;
+	signal rlpause_rdy : std_logic;
 
 
 begin
@@ -189,60 +190,92 @@ begin
 			end if;
 		end process;
 
-		process (iod_clk)
-			variable z : std_logic;
+		dqipause_p : process (iod_clk)
+			type states is (s_start, s_wait);
+			variable state : states;
+			variable z     : std_logic;
 		begin
 			if rising_edge(iod_clk) then
 				if rst='1' then
-					dqspau_rdy   <= to_stdulogic(to_bit(dqspau_req));
-					dqipause_rdy <= to_stdulogic(to_bit(dqipause_req));
-					dqipau_rdy   <= to_stdlogicvector(to_bitvector(dqipau_req));
-				elsif (pause_rdy xor pause_req)='0' then
-					dqspau_rdy   <= to_stdulogic(to_bit(dqspau_req));
-					dqipause_rdy <= to_stdulogic(to_bit(dqipause_req));
-					dqipau_rdy   <= to_stdlogicvector(to_bitvector(dqipau_req));
+					dqipau_rdy <= to_stdlogicvector(to_bitvector(dqipau_req));
+					z     := '0';
+					state := s_start;
+				elsif z='1' then
+					case state is
+					when s_start =>
+						if (dqipause_rdy xor to_stdulogic(to_bit(dqipause_req)))='0' then
+							dqipause_req <= not dqipause_rdy;
+							state := s_wait;
+						end if;
+					when s_wait =>
+						if (dqipause_rdy xor to_stdulogic(to_bit(dqipause_req)))='0' then
+							dqipau_rdy <= to_stdlogicvector(to_bitvector(dqipau_req));
+							z      := '0';
+							state := s_start;
+						end if;
+					end case;
+				else 
+					z := '1';
+					for i in dqipau_req'range loop
+						z := z and (dqipau_rdy(i) xor to_stdulogic(to_bit(dqipau_req(i))));
+					end loop;
+					state := s_start;
 				end if;
 			end if;
-
-			z := '1';
-			for i in dqipau_req'range loop
-				z := z and (dqipau_rdy(i) xor to_stdulogic(to_bit(dqipau_req(i))));
-			end loop;
-		
-			if rising_edge(iod_clk) then
-				if (dqipause_rdy xor to_stdulogic(to_bit(dqipause_req)))='0' then
-					dqipause_req <= dqipause_rdy xor z;
-				end if;
-			end if;
-
 		end process;
-		rlpause_req <= to_stdulogic(to_bit(dqspau_req)) xor dqipause_req;
-
-		-- rlpause_req <= to_bit(dqspau_req) xor setif((dqipau_req)=(dqipau_req'range => '1'));
-
-		-- process (iod_clk)
-		-- begin
-		-- 	if rising_edge(iod_clk) then
-		-- 		if (pause_rdy xor pause_req)='0' then
-		-- 			dqspau_rdy <= to_stdulogic(to_bit(dqspau_req));
-		-- 			dqipau_rdy <= to_stdlogicvector(to_bitvector(dqipau_req));
-		-- 		end if;
-		-- 	end if;
-		-- end process;
 
 	end block;
 
-	pause_req <= rlpause_req;
 	process (iod_clk, pause_rdy)
+		type states is (s_start, s_wait);
+		variable state : states;
+		variable z     : std_logic;
+		variable cntr  : unsigned(0 to unsigned_num_bits(63));
+	begin
+		if rising_edge(iod_clk) then
+			if rst='1' then
+				dqipause_rdy <= to_stdulogic(to_bit(dqipause_req));
+				dqspau_rdy   <= to_stdulogic(to_bit(dqspau_req));
+				z     := '0';
+				state := s_start;
+			elsif z='1' then
+				case state is
+				when s_start =>
+					if (pause_rdy xor to_stdulogic(to_bit(pause_req)))='0' then
+						pause_req <= not pause_rdy;
+						state := s_wait;
+					end if;
+				when s_wait =>
+					if (pause_rdy xor to_stdulogic(to_bit(pause_req)))='0' then
+						z := '0';
+						dqipause_rdy <= to_stdulogic(to_bit(dqipause_req));
+						dqspau_rdy   <= to_stdulogic(to_bit(dqspau_req));
+						state        := s_start;
+					end if;
+				end case;
+			else
+				z := '0';
+				z := z or (dqipause_rdy xor to_stdulogic(to_bit(dqipause_req)));
+				z := z or (dqspau_rdy xor to_stdulogic(to_bit(dqspau_req)));
+				state := s_start;
+			end if;
+		end if;
+	end process;
+
+	process (iod_clk, pause_req)
 		variable cntr : unsigned(0 to unsigned_num_bits(63));
 	begin
 		if rising_edge(iod_clk) then
-			if (pause_rdy xor pause_req)='0' then
+			if rst='1' then
+				pause_rdy <= to_stdulogic(to_bit(pause_req));
 				cntr := (others => '0');
-			elsif cntr(0)='0' then
-				cntr := cntr + 1;
-			else
-				pause_rdy <= pause_req;
+			elsif (pause_rdy xor to_stdulogic(to_bit(pause_req)))='1' then
+				if cntr(0)='0' then
+					cntr := cntr + 1;
+				else
+					pause_rdy <= to_stdulogic(to_bit(pause_req));
+					cntr := (others => '0');
+				end if;
 			end if;
 		end if;
 	end process;

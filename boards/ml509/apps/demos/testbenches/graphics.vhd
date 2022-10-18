@@ -188,7 +188,7 @@ architecture ml509_graphics of testbench is
 		signal x : natural := 0;
 begin
 
-	rst   <= '1', '0' after 1.1 us, '1' after 20 us, '0' after 21 us;
+	rst   <= '1', '0' after 1.1 us, '1' after 22 us, '0' after 23 us;
 	sw <= rst; --'0'; --, '1' after 29 us, '0' after 30 us;
 	reset_n <= not rst;
 
@@ -206,7 +206,7 @@ begin
 	process
 	begin
 		req <= '0';
-		wait for 30 us;
+		wait for 46 us;
 		loop
 			if req='1' then
 				wait on mii_rxdv;
