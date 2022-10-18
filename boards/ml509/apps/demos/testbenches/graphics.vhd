@@ -189,7 +189,7 @@ architecture ml509_graphics of testbench is
 begin
 
 	rst   <= '1', '0' after 1.1 us, '1' after 22 us, '0' after 23 us;
-	sw <= rst; --'0'; --, '1' after 29 us, '0' after 30 us;
+	sw <= '1' after 1 us, '0' after 1.2 us;
 	reset_n <= not rst;
 
 	xtal   <= not xtal after 5 ns;
@@ -206,7 +206,7 @@ begin
 	process
 	begin
 		req <= '0';
-		wait for 46 us;
+		wait for 30 us;
 		loop
 			if req='1' then
 				wait on mii_rxdv;
