@@ -49,7 +49,7 @@ architecture graphics of ml509 is
 		sdr350MHz_600p,
 		sdr400MHz_600p);
 
-	constant app_profile : app_profiles := sdr300Mhz_600p;
+	constant app_profile : app_profiles := sdr333Mhz_600p;
 
 	type profileparam_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparam_vector := (

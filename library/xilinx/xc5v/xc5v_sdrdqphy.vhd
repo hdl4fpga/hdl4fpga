@@ -113,7 +113,7 @@ architecture xc5v of xc5v_sdrdqphy is
 
 	signal tp_dqidly  : std_logic_vector(0 to 6-1);
 	signal tp_dqsdly  : std_logic_vector(0 to 6-1);
-	signal tp_dqssel  : std_logic_vector(0 to 3-1);
+	signal tp_dqssel  : std_logic_vector(0 to 4-1);
 
 	signal pause_req   : std_logic;
 	signal pause_rdy   : std_logic;

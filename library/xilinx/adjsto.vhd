@@ -8,7 +8,7 @@ entity adjsto is
 		lat      : natural := 0;
 		gear     : natural);
 	port (
-		tp       : out std_logic_vector(1 to 3);
+		tp       : out std_logic_vector;
 		sdram_clk  : in  std_logic;
 		inv      : in  std_logic := '0';
 		edge     : in  std_logic;
@@ -26,9 +26,8 @@ use hdl4fpga.std.all;
 
 architecture def of adjsto is
 
-	constant bl     : natural := 8/2;
 	signal sync     : std_logic;
-	signal sel      : unsigned(0 to unsigned_num_bits(bl-1));
+	signal sel      : unsigned(0 to tp'length-1);
 
 	signal step_req : std_logic;
 	signal step_rdy : std_logic;
@@ -37,9 +36,9 @@ architecture def of adjsto is
 	signal pre   : unsigned(seq'range);
 begin
 
-	tp(1 to 3) <= std_logic_vector(sel);
+	tp <= std_logic_vector(sel);
 	process (sdram_sti, sel, sdram_clk)
-		variable delay : unsigned(0 to bl-1);
+		variable delay : unsigned(0 to 2**(sel'length-1)-1);
 	begin
 		if rising_edge(sdram_clk) then
 			delay(0) := sdram_sti;
