@@ -49,7 +49,7 @@ architecture graphics of ml509 is
 		sdr350MHz_600p,
 		sdr400MHz_600p);
 
-	constant app_profile : app_profiles := sdr333Mhz_600p;
+	constant app_profile : app_profiles := sdr300Mhz_600p;
 
 	type profileparam_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparam_vector := (
@@ -196,7 +196,7 @@ architecture graphics of ml509 is
 	constant coln_size    : natural := 7;
 	-- constant word_size    : natural := ddr2_d'length;
 	-- constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
-	constant word_size    : natural := 16;
+	constant word_size    : natural := 8;
 	constant byte_size    : natural := 8;
 
 	signal si_frm         : std_logic;
@@ -284,9 +284,6 @@ architecture graphics of ml509 is
 	signal tp_sel         : std_logic_vector(0 to unsigned_num_bits(WORD_SIZE/BYTE_SIZE-1)-1);
 
 	signal ddr_d          : std_logic_vector(word_size-1 downto 0);
-	signal ddr_dmi        : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dmo        : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dmt        : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqst       : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqso       : std_logic_vector(word_size/byte_size-1 downto 0);
 
@@ -997,6 +994,7 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc5v_sdrphy
 	generic map (
+		device      => xc5v,
 		taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
 		-- data_edge   => true,
 		data_edge   => false,
@@ -1034,7 +1032,6 @@ begin
 
 		sys_dqst   => ctlrphy_dqst,
 		sys_dqsi   => ctlrphy_dqso,
-		sys_dqso   => ctlrphy_dqsi,
 		sys_dmi    => ctlrphy_dmo,
 		sys_dmt    => ctlrphy_dmt,
 		sys_dmo    => ctlrphy_dmi,
@@ -1054,9 +1051,7 @@ begin
 		sdram_a    => ddr2_a,
 		sdram_odt  => ddr2_odt,
 
-		sdram_dmt  => ddr_dmt,
-		sdram_dmi  => ddr_dmi,
-		sdram_dmo  => ddr_dmo,
+		sdram_dm   => ddr2_dm(word_size/byte_size-1 downto 0),
 		sdram_dqo  => ddr2_dqo,
 		sdram_dqi  => ddr2_d(word_size-1 downto 0),
 		sdram_dqt  => ddr2_dqt,
@@ -1096,7 +1091,6 @@ begin
 
 		ddr_dqs_g : for i in ddr2_dqs_p'range generate
 		begin
-			ddr2_dm(i) <= '0'; --ddr_dmo(i) when ddr_dmt(i)='0' else 'Z';
 
 			true_g : if i < word_size/byte_size generate
 				dqsiobuf_i : iobufds

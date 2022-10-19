@@ -37,7 +37,7 @@ use hdl4fpga.app_profiles.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture graphics of arty is
+architecture graphics of de10_nano is
 
 	type app_profiles is (
 		sdr333MHz_900p24bpp,

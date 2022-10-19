@@ -216,6 +216,9 @@ architecture graphics of arty is
 
 	signal ddr_ba         : std_logic_vector(ddr3_ba'range);
 	signal ddr_a          : std_logic_vector(ddr3_a'range);
+	signal ddr_cke        : std_logic_vector(0 to 0);
+	signal ddr_cs         : std_logic_vector(0 to 0);
+	signal ddr_odt        : std_logic_vector(0 to 0);
 	signal ctlrphy_rst    : std_logic_vector(0 to cmmd_gear-1);
 	signal ctlrphy_cke    : std_logic_vector(0 to cmmd_gear-1);
 	signal ctlrphy_cs     : std_logic_vector(0 to cmmd_gear-1);
@@ -285,8 +288,7 @@ architecture graphics of arty is
 	signal ioctrl_clk : std_logic;
 	signal ioctrl_rdy : std_logic;
 
-	signal tp_delay   : std_logic_vector(word_size/byte_size*8-1 downto 0);
-	signal tp1        : std_logic_vector(1 to 32);
+	signal tp_delay   : std_logic_vector(1 to 32);
 
 begin
 
@@ -792,6 +794,7 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc7a_sdrphy
 	generic map (
+		device    => xc7a,
 		taps      => natural(floor(sdram_tcp*(32.0*2.0)/(sys_per/2.0)))-1,
 		bank_size => bank_size,
         addr_size => addr_size,
@@ -802,8 +805,7 @@ begin
 	port map (
 
 		tp_sel    => btn(3),
-		tp_delay  => tp_delay,
-		tp1       => tp1(1 to 6),
+		tp        => tp_delay,
 
 		rst       => ddrsys_rst,
 		iod_clk   => sys_clk,
@@ -830,7 +832,7 @@ begin
 		sys_ras   => ctlrphy_ras,
 		sys_cas   => ctlrphy_cas,
 		sys_we    => ctlrphy_we,
-		sys_ba    => ctlrphy_ba,
+		sys_b     => ctlrphy_ba,
 		sys_a     => ctlrphy_a,
 
 		sys_dqst  => ctlrphy_dqst,
@@ -847,14 +849,14 @@ begin
 
 		sdram_rst   => ddr3_reset,
 		sdram_clk   => ddr3_clk,
-		sdram_cke   => ddr3_cke,
-		sdram_cs    => ddr3_cs,
+		sdram_cke   => ddr_cke,
+		sdram_cs    => ddr_cs,
 		sdram_ras   => ddr3_ras,
 		sdram_cas   => ddr3_cas,
 		sdram_we    => ddr3_we,
 		sdram_b     => ddr3_ba,
 		sdram_a     => ddr3_a,
-		sdram_odt   => ddr3_odt,
+		sdram_odt   => ddr_odt,
 --		sdram_dm    => ddr3_dm,
 		sdram_dqo   => ddr3_dqo,
 		sdram_dqi   => ddr3_dq,
@@ -865,6 +867,11 @@ begin
 
 	ddriob_b : block
 	begin
+
+
+		ddr3_cke <= ddr_cke(0);
+		ddr3_cs  <= ddr_cs(0);
+		ddr3_odt <= ddr_odt(0);
 
 		ddr_clks_g : for i in ddr3_clk'range generate
 			ddr_ck_obufds : obufds
