@@ -32,7 +32,7 @@ use hdl4fpga.profiles.all;
 library unisim;
 use unisim.vcomponents.all;
 
-entity xc5v_sdrdqphy is
+entity xc_sdrdqphy is
 	generic (
 		dqs_linedelay : time := 1000 ns/300;
 		dqi_linedelay : time := 1000 ns/300;
@@ -85,7 +85,7 @@ entity xc5v_sdrdqphy is
 		sdram_dqso : out std_logic);
 end;
 
-architecture xc5v of xc5v_sdrdqphy is
+architecture xilinx of xc_sdrdqphy is
 
 	signal adjdqs_req   : std_logic;
 	signal adjdqs_rdy   : std_logic;

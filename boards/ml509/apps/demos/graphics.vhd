@@ -992,7 +992,7 @@ begin
 	ctlrphy_we(1)  <= '1';
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
 
-	sdrphy_e : entity hdl4fpga.xc5v_sdrphy
+	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
 		device      => xc5v,
 		taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
