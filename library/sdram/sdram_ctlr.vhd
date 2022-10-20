@@ -409,8 +409,8 @@ begin
 	begin
 		for i in 0 to word_size/byte_size-1 loop
 			for j in 0 to data_gear-1 loop
-				phy_dqt(i*data_gear+j)  <= sdram_sch_dqz(j);
-				phy_dmt(i*data_gear+j)  <= reverse(sdram_sch_dqz)(j);
+				phy_dqt(i*data_gear+j)  <= not sdram_sch_dqz(j);
+				phy_dmt(i*data_gear+j)  <= not reverse(sdram_sch_dqz)(j);
 				phy_dqso(i*data_gear+j) <= sdram_sch_dqs(j);
 				phy_dqst(i*data_gear+j) <= not sdram_sch_dqsz(j);
 				phy_sto(i*data_gear+j)  <= reverse(sdram_sch_st)(j);

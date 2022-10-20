@@ -44,7 +44,7 @@ entity xc_sdrdqphy is
 		byte_size  : natural);
 	port (
 		tp_sel     : in  std_logic;
-		tp_delay   : out std_logic_vector(8-1 downto 0);
+		tp_delay   : out std_logic_vector(1 to 8);
 
 		rst        : in  std_logic;
 		iod_clk    : in  std_logic;
@@ -114,7 +114,7 @@ architecture xilinx of xc_sdrdqphy is
 
 	signal tp_dqidly    : std_logic_vector(6-1 downto 0);
 	signal tp_dqsdly    : std_logic_vector(6-1 downto 0);
-	signal tp_dqssel    : std_logic_vector(4-1 downto 0);
+	signal tp_dqssel    : std_logic_vector(3-1 downto 0);
 
 begin
 
@@ -285,7 +285,7 @@ begin
 	end process;
 
 	dqsi_b : block
-		signal delay    : std_logic_vector(0 to 6-1);
+		signal delay    : std_logic_vector(0 to setif(device=xc7a,5,6)-1);
 		signal dqsi     : std_logic;
 		signal dqsi_buf : std_logic;
 		signal dqs_smp  : std_logic_vector(0 to data_gear-1);
@@ -339,7 +339,7 @@ begin
 			d(0)   => dqsi_buf,
 			q      => dqs_smp);
 
-		tp_dqsdly <= delay;
+		tp_dqsdly(delay'length-1 downto 0) <= delay;
 
 		adjsto_e : entity hdl4fpga.adjsto
 		generic map (
@@ -377,7 +377,7 @@ begin
 		signal igbx_clk : std_logic_vector(0 to 5-1);
 	begin
 		adjdqi_b : block
-			signal delay  : std_logic_vector(0 to 6-1);
+			signal delay  : std_logic_vector(0 to setif(device=xc7a,5,6)-1);
 			signal dq_smp : std_logic_vector(0 to data_gear-1);
 			signal ddqi   : std_logic;
 		begin
@@ -385,7 +385,7 @@ begin
 			dqismp_p : process (dq)
 			begin
 				for j in dq_smp'range loop
-					dq_smp(j) <= dq(j*BYTE_SIZE+i);
+					dq_smp(j) <= dq(j*byte_size+i);
 				end loop;
 			end process;
 
@@ -404,7 +404,7 @@ begin
 				delay    => delay);
 
 			tp_g : if i=0 generate
-				tp_dqidly <= delay;
+				tp_dqidly(delay'length-1 downto 0) <= delay;
 			end generate;
 
 			ddqi <= transport sdram_dqi(i) after dqi_linedelay;
@@ -413,12 +413,11 @@ begin
 				device => device,
 				signal_pattern => "CLOCK")
 			port map(
-				clk       => clk90,
-				rst       => rst,
-				delay     => delay,
-				idatain   => ddqi,
-				dataout   => dqi(i));
-
+				clk     => clk90,
+				rst     => rst,
+				delay   => delay,
+				idatain => ddqi,
+				dataout => dqi(i));
 		end block;
 
 		data_gear2_g : if data_gear=2 generate
@@ -509,45 +508,44 @@ begin
 		end generate;
 
 		oddr_g : for i in sdram_dqo'range generate
-			signal dqo   : std_logic_vector(0 to data_gear-1);
-			signal dqt   : std_logic_vector(sys_dqt'reverse_range);
+			signal dqo : std_logic_vector(0 to data_gear-1);
+			signal dqt : std_logic_vector(sys_dqt'range);
+			signal sw  : std_logic;
 		begin
-	
-			registered_g : for j in clks'range generate
-				signal sw : std_logic;
+			process (iod_clk)
 			begin
-	
-				process (iod_clk)
-				begin
-					if rising_edge(iod_clk) then
-						sw <= sys_rlrdy xor to_stdulogic(to_bit(sys_rlreq));
+				if rising_edge(iod_clk) then
+					sw <= sys_rlrdy xor to_stdulogic(to_bit(sys_rlreq));
+				end if;
+			end process;
+
+			process (sw, clk90)
+			begin
+				for j in 0 to data_gear-1 loop
+					if sw='1' then
+						if j mod 2=0 then
+							dqo(j) <= '1';
+						else
+							dqo(j) <= '0';
+						end if;
+					elsif rising_edge(clk90) then
+						dqo(j) <= sys_dqi(byte_size*j+i);
 					end if;
-				end process;
-	
-				gear_g : for l in 0 to data_gear/clks'length-1 generate
-					process (sw, clks(j))
-					begin
-						if sw='1' then
-							if j mod 2=1 then
-								dqo(l*data_gear/clks'length+j) <= '1';
-							else
-								dqo(l*data_gear/clks'length+j) <= '0';
-							end if;
-						elsif rising_edge(clks(j)) then
-							dqo(l*data_gear/clks'length+j) <= sys_dqi((l*data_gear/clks'length+j)*byte_size+i);
-						end if;
-						if rising_edge(clks(j)) then
-							dqt(l*data_gear/clks'length+j) <= sys_dqt(l*data_gear/clks'length+j);
-						end if;
-					end process;
-				end generate;
-			end generate;
+				end loop;
+			end process;
+
+			process (clk90)
+			begin
+				if rising_edge(clk90) then
+					dqt <= reverse(sys_dqt);
+				end if;
+			end process;
 	
 			ogbx_i : entity hdl4fpga.ogbx
 			generic map (
 				device => device,
 				size => 1,
-				data_edge => setif(data_edge, "opposite_edge", "same_edge"),
+				data_edge => setif(data_edge, "OPPOSITE_EDGE", "SAME_EDGE"),
 				gear => data_gear)
 			port map (
 				rst   => rst,
@@ -579,7 +577,7 @@ begin
 			generic map (
 				device => device,
 				size => 1,
-				data_edge => setif(data_edge, "opposite_edge", "same_edge"),
+				data_edge => setif(data_edge, "OPPOSITE_EDGE", "SAME_EDGE"),
 				gear => data_gear)
 			port map (
 				rst   => rst,
@@ -620,7 +618,7 @@ begin
 		generic map (
 			device => device,
 			size => 1,
-			data_edge => setif(data_edge, "opposite_edge", "same_edge"),
+			data_edge => setif(data_edge, "OPPOSITE_EDGE", "SAME_EDGE"),
 			gear => data_gear)
 		port map (
 			rst  => rst,

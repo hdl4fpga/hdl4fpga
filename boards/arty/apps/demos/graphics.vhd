@@ -792,7 +792,7 @@ begin
 	ctlrphy_we(1)  <= '1';
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
 
-	sdrphy_e : entity hdl4fpga.xc7a_sdrphy
+	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
 		device    => xc7a,
 		taps      => natural(floor(sdram_tcp*(32.0*2.0)/(sys_per/2.0)))-1,
@@ -919,7 +919,6 @@ begin
 	end process;
 
 	ddr3_dm <= (others => '0');
-
 
 	-- VGA --
 	---------

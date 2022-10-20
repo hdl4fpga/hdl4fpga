@@ -483,8 +483,8 @@ begin
 
 	sdmi  <= to_blinevector(shuffle_stdlogicvector(sys_dmi));
 	ssti  <= to_blinevector(sys_sti);
-	sdmt  <= to_blinevector(not sys_dmt);
-	sdqt  <= to_blinevector(not sys_dqt);
+	sdmt  <= to_blinevector(sys_dmt);
+	sdqt  <= to_blinevector(sys_dqt);
 	sdqi  <= shuffle_dlinevector(sys_dqi);
 	ddqi  <= to_bytevector(sdram_dqi);
 	sdqsi <= to_blinevector(sys_dqsi);

@@ -523,8 +523,8 @@ begin
 		end generate;
 
 		oddr_g : for i in sdram_dqo'range generate
-			signal dqo   : std_logic_vector(0 to data_gear-1);
-			signal dqt   : std_logic_vector(sys_dqt'range);
+			signal dqo : std_logic_vector(0 to data_gear-1);
+			signal dqt : std_logic_vector(sys_dqt'range);
 		begin
 
 			registered_g : for j in clks'range generate

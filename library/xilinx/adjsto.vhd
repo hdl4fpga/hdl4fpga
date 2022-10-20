@@ -4,21 +4,21 @@ use ieee.numeric_std.all;
 
 entity adjsto is
 	generic (
-		both     : boolean := true;
-		lat      : natural := 0;
-		gear     : natural);
+		both      : boolean := true;
+		lat       : natural := 0;
+		gear      : natural);
 	port (
-		tp       : out std_logic_vector;
-		sdram_clk  : in  std_logic;
-		inv      : in  std_logic := '0';
-		edge     : in  std_logic;
-		sys_req  : in  std_logic;
-		sys_rdy  : buffer std_logic;
-		dqs_smp  : in  std_logic_vector;
-		dqs_pre  : out std_logic;
-		synced   : out std_logic;
-		sdram_sti  : in  std_logic;
-		sdram_sto  : buffer std_logic);
+		tp        : out std_logic_vector;
+		sdram_clk : in  std_logic;
+		inv       : in  std_logic := '0';
+		edge      : in  std_logic;
+		sys_req   : in  std_logic;
+		sys_rdy   : buffer std_logic;
+		dqs_smp   : in  std_logic_vector;
+		dqs_pre   : out std_logic;
+		synced    : out std_logic;
+		sdram_sti : in  std_logic;
+		sdram_sto : buffer std_logic);
 end;
 
 library hdl4fpga;
@@ -28,12 +28,12 @@ architecture def of adjsto is
 
 	signal sync     : std_logic;
 	signal sel      : unsigned(0 to tp'length-1);
+	signal seq      : std_logic_vector(0 to dqs_smp'length-1);
+	signal pre      : unsigned(seq'range);
 
 	signal step_req : std_logic;
 	signal step_rdy : std_logic;
 
-	signal seq   : std_logic_vector(0 to dqs_smp'length-1);
-	signal pre   : unsigned(seq'range);
 begin
 
 	tp <= std_logic_vector(sel);
