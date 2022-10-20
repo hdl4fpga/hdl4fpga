@@ -112,16 +112,16 @@ architecture xilinx of xc_sdrdqphy is
 	signal pause_req    : std_logic;
 	signal pause_rdy    : std_logic;
 
-	signal tp_dqidly    : std_logic_vector(0 to 6-1);
-	signal tp_dqsdly    : std_logic_vector(0 to 6-1);
-	signal tp_dqssel    : std_logic_vector(0 to 4-1);
+	signal tp_dqidly    : std_logic_vector(6-1 downto 0);
+	signal tp_dqsdly    : std_logic_vector(6-1 downto 0);
+	signal tp_dqssel    : std_logic_vector(4-1 downto 0);
 
 begin
 
-	-- with tp_sel select
-	-- tp_delay <=
-	-- 	'0' & dqs180 & dqspre & tp_dqidly when '1',
-	-- 	tp_dqssel    & tp_dqsdly          when others;
+	with tp_sel select
+	tp_delay <=
+		dqs180 & dqspre       & tp_dqidly when '1',
+		tp_dqssel(1 downto 0) & tp_dqsdly when others;
 
 	sys_wlrdy <= to_stdulogic(to_bit(sys_wlreq));
 	rl_b : block
