@@ -33,6 +33,7 @@ use hdl4fpga.sdram_param.all;
 entity xc_sdrphy is
 	generic (
 		device     : fpga_devices;
+		bufio      : boolean   := false;
 		taps       : natural;
 		cmmd_gear  : natural   := 1;
 		data_gear  : natural   := 2;
@@ -501,6 +502,7 @@ begin
 
 		sdrdqphy_i : entity hdl4fpga.xc_sdrdqphy
 		generic map (
+			bufio      => bufio,
 			device     => device,
 			taps       => taps,
 			data_edge  => data_edge,

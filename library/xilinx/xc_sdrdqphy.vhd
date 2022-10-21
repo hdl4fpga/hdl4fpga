@@ -39,6 +39,7 @@ entity xc_sdrdqphy is
 		dqs_linedelay : time := 1000 ns/300;
 		dqi_linedelay : time := 1000 ns/300;
 
+		bufio      : boolean;
 		device     : fpga_devices;
 		taps       : natural;
 		data_gear  : natural;
@@ -487,9 +488,17 @@ begin
 			q := (dqspre xor dqs180);
 		end if;
 		if q='0' then
-			sys_dqo <= dqh;
+			if bufio then
+				sys_dqo <= dqh;
+			else
+				sys_dqo <= dqf;
+			end if;
 		else
-			sys_dqo <= dqf;
+			if bufio then
+				sys_dqo <= dqf;
+			else
+				sys_dqo <= dqh;
+			end if;
 		end if;
 	end process;
 

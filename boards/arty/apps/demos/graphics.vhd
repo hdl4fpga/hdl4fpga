@@ -373,6 +373,7 @@ begin
 				clkout1_divide   => data_gear/2,
 				clkout1_phase    => 90.0+180.0,
 				clkout2_divide   => data_gear,
+				clkout2_phase   => 0.0,
 				clkout3_divide   => data_gear,
 				clkout3_phase    => 90.0/real((data_gear/2))+270.0)
 			port map (
@@ -794,6 +795,7 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
+		bufio     => true,
 		device    => xc7a,
 		taps      => natural(floor(sdram_tcp*(32.0*2.0)/(sys_per/2.0)))-1,
 		bank_size => bank_size,

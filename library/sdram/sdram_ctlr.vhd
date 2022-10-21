@@ -386,14 +386,14 @@ begin
 		sys_rea     => sdram_mpu_rwin,
 		sys_wri     => sdram_mpu_wwin,
 
-		sdram_rwn     => sdram_sch_rwn,
-		sdram_st      => sdram_sch_st,
+		sdram_rwn   => sdram_sch_rwn,
+		sdram_st    => sdram_sch_st,
 
-		sdram_dqsz    => sdram_sch_dqsz,
-		sdram_dqs     => sdram_sch_dqs,
-		sdram_dqz     => sdram_sch_dqz,
-		sdram_odt     => sdram_sch_odt,
-		sdram_wwn     => sdram_sch_wwn);
+		sdram_dqsz  => sdram_sch_dqsz,
+		sdram_dqs   => sdram_sch_dqs,
+		sdram_dqz   => sdram_sch_dqz,
+		sdram_odt   => sdram_sch_odt,
+		sdram_wwn   => sdram_sch_wwn);
 
 	sdram_win_dqs <= phy_sti;
 	sdram_win_dq  <= (others => sdram_sch_rwn(0));
@@ -424,16 +424,16 @@ begin
 
 	rdfifo_i : entity hdl4fpga.sdram_rdfifo
 	generic map (
-		data_phases => data_phases,
-		data_gear   => data_gear,
-		word_size   => word_size,
-		byte_size   => byte_size,
-		data_delay  => sdram_latency(fpga, rdfifo_lat))
+		data_phases   => data_phases,
+		data_gear     => data_gear,
+		word_size     => word_size,
+		byte_size     => byte_size,
+		data_delay    => sdram_latency(fpga, rdfifo_lat))
 	port map (
-		sys_clk     => ctlr_clks(0),
-		sys_rdy     => ctlr_do_dv,
-		sys_rea     => sdram_mpu_rea,
-		sys_do      => ctlr_do,
+		sys_clk       => ctlr_clks(0),
+		sys_rdy       => ctlr_do_dv,
+		sys_rea       => sdram_mpu_rea,
+		sys_do        => ctlr_do,
 		sdram_win_dq  => sdram_win_dq,
 		sdram_win_dqs => sdram_win_dqs,
 		sdram_dqsi    => phy_dqsi,
