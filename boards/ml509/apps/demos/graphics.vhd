@@ -49,7 +49,7 @@ architecture graphics of ml509 is
 		sdr350MHz_600p,
 		sdr400MHz_600p);
 
-	constant app_profile : app_profiles := sdr300Mhz_600p;
+	constant app_profile : app_profiles := sdr333Mhz_600p;
 
 	type profileparam_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparam_vector := (
@@ -560,7 +560,6 @@ begin
 		signal mii_rxc    : std_logic;
 		alias  mii_rxdv   : std_logic is phy_rxctl_rxdv;
 		alias  mii_rxd    : std_logic_vector(phy_rxd'range) is phy_rxd;
-		-- alias  mii_rxd    : std_logic_vector(0 to 4-1) is phy_rxd(0 to 4-1);
 
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
