@@ -53,7 +53,7 @@ architecture graphics of arty is
 		sdr575MHz_900p24bpp,
 		sdr600MHz_900p24bpp);
 
-	constant app_profile : app_profiles := sdr500mhz_900p24bpp;
+	constant app_profile : app_profiles := sdr525mhz_900p24bpp;
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -928,13 +928,13 @@ begin
 		signal p : std_logic_vector(q'range);
 		signal n : std_logic_vector(p'range);
 	begin
-		oddr_i : entity hdl4fpga.omdr
+		oddr_i : entity hdl4fpga.ogbx
 		generic map (
 			SIZE => 4,
 			GEAR => 2)
 		port map (
 			clk(0) => video_shf_clk,
-			clk(1) => '-',
+			clk(1) => std_ulogic'('-'),
 			d      => dvid_crgb,
 			q      => q);
 

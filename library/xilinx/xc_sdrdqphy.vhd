@@ -34,6 +34,8 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
+		-- dqs_linedelay : time := 1.35 ns;
+		-- dqi_linedelay : time := 0 ns; --1.35 ns;
 		dqs_linedelay : time := 1000 ns/300;
 		dqi_linedelay : time := 1000 ns/300;
 
@@ -411,7 +413,7 @@ begin
 			dqi_i : entity hdl4fpga.xc_idelay
 			generic map (
 				device => device,
-				signal_pattern => "CLOCK")
+				signal_pattern => "DATA")
 			port map(
 				clk     => clk90,
 				rst     => rst,
@@ -524,9 +526,9 @@ begin
 				for j in 0 to data_gear-1 loop
 					if sw='1' then
 						if j mod 2=0 then
-							dqo(j) <= '1';
-						else
 							dqo(j) <= '0';
+						else
+							dqo(j) <= '1';
 						end if;
 					elsif rising_edge(clk90) then
 						dqo(j) <= sys_dqi(byte_size*j+i);
@@ -545,7 +547,7 @@ begin
 			generic map (
 				device => device,
 				size => 1,
-				data_edge => setif(data_edge, "OPPOSITE_EDGE", "SAME_EDGE"),
+				data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 				gear => data_gear)
 			port map (
 				rst   => rst,
@@ -577,7 +579,7 @@ begin
 			generic map (
 				device => device,
 				size => 1,
-				data_edge => setif(data_edge, "OPPOSITE_EDGE", "SAME_EDGE"),
+				data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 				gear => data_gear)
 			port map (
 				rst   => rst,
@@ -618,7 +620,7 @@ begin
 		generic map (
 			device => device,
 			size => 1,
-			data_edge => setif(data_edge, "OPPOSITE_EDGE", "SAME_EDGE"),
+			data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 			gear => data_gear)
 		port map (
 			rst  => rst,

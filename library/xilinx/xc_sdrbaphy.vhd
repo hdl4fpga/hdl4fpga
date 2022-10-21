@@ -70,7 +70,7 @@ begin
 	port map (
 		rst       => rst,
 		clk(0)    => clk0,
-		clk(1)    => '-',
+		clk(1)    => std_ulogic'('-'),
 		d         => sys_rst,
 		q(0)      => sdram_rst);
 
@@ -84,7 +84,7 @@ begin
 		port map (
 			rst       => rst,
 			clk(0)    => clk0,
-			clk(1)    => '-',
+			clk(1)    => std_ulogic'('-'),
 			d         => sys_cke,
 			q(0)      => sdram_cke(i));
 	end generate;
@@ -99,7 +99,7 @@ begin
 		port map (
 			rst       => rst,
 			clk(0)    => clk0,
-			clk(1)    => '-',
+			clk(1)    => std_ulogic'('-'),
 			d         => sys_cs,
 			q(0)      => sdram_cs(i));
 	end generate;
@@ -113,7 +113,7 @@ begin
 	port map (
 		rst       => rst,
 		clk(0)    => clk0,
-		clk(1)    => '-',
+		clk(1)    => std_ulogic'('-'),
 		d         => sys_ras,
 		q(0)      => sdram_ras);
 
@@ -126,7 +126,7 @@ begin
 	port map (
 		rst       => rst,
 		clk(0)    => clk0,
-		clk(1)    => '-',
+		clk(1)    => std_ulogic'('-'),
 		d         => sys_cas,
 		q(0)      => sdram_cas);
 
@@ -139,7 +139,7 @@ begin
 	port map (
 		rst       => rst,
 		clk(0)    => clk0,
-		clk(1)    => '-',
+		clk(1)    => std_ulogic'('-'),
 		d         => sys_we,
 		q(0)      => sdram_we);
 
@@ -153,7 +153,7 @@ begin
 		port map (
 			rst       => rst,
 			clk(0)    => clk0,
-			clk(1)    => '-',
+			clk(1)    => std_ulogic'('-'),
 			d         => sys_odt,
 			q(0)      => sdram_odt(i));
 	end generate;
@@ -167,7 +167,7 @@ begin
 	port map (
 		rst       => rst,
 		clk(0)    => clk0,
-		clk(1)    => '-',
+		clk(1)    => std_ulogic'('-'),
 		d         => sys_b,
 		q         => sdram_b);
 
@@ -180,7 +180,7 @@ begin
 	port map (
 		rst       => rst,
 		clk(0)    => clk0,
-		clk(1)    => '-',
+		clk(1)    => std_ulogic'('-'),
 		d         => sys_a,
 		q         => sdram_a);
 

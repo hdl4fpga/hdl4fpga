@@ -48,7 +48,7 @@ begin
 	xc5v_g : if device=xc5v generate
 		idelay_i : entity hdl4fpga.xc5v_idelay
 		generic map (
-			delay_src      => "I",
+			delay_src      => string'("I"),
 			signal_pattern => signal_pattern)
 		port map (
 			rst     => rst,
