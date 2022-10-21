@@ -54,11 +54,26 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e/clk90
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/ctlrphy_dqi
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/ctlrphy_sti
+add wave -noupdate /testbench/du_e/sdrphy_e/clk0x2
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e/clk0
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqsi_b/dqsi_buf
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqsi_b/adjsto_e/dqs_smp
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqsi_b/adjsto_e/synced
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqh
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqf
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e/clk90
+add wave -noupdate /testbench/du_e/sdrphy_e/clk90x2
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/iddr_g(1)/igbx_i/d(0)
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/iddr_g(1)/igbx_i/reg_g(0)/iserdese_g/xv7_g/iser_i/ISERDESE2_INST/CLKDIVP
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/iddr_g(1)/igbx_i/reg_g(0)/iserdese_g/xv7_g/iser_i/ISERDESE2_INST/CLK
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/iddr_g(1)/igbx_i/reg_g(0)/iserdese_g/xv7_g/iser_i/ISERDESE2_INST/OCLK
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/iddr_g(1)/igbx_i/reg_g(0)/iserdese_g/xv7_g/iser_i/ISERDESE2_INST/D
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/iddr_g(1)/igbx_i/q
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -67,7 +82,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8754100 ps} 0} {{Cursor 2} {701577100 ps} 0}
+WaveRestoreCursors {{Cursor 1} {37289263 ps} 0} {{Cursor 2} {701577100 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 221
 configure wave -valuecolwidth 202
@@ -83,4 +98,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {8731540 ps} {8776660 ps}
+WaveRestoreZoom {37258526 ps} {37296764 ps}

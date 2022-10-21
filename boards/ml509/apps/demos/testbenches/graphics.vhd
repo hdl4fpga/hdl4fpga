@@ -189,7 +189,7 @@ architecture ml509_graphics of testbench is
 begin
 
 	rst   <= '1', '0' after 1.1 us, '1' after 42 us, '0' after 43 us;
-	sw <= rst; --'1' after 1 us, '0' after 1.2 us;
+	sw <= '1' after 1 us, '0' after 1.2 us;
 	reset_n <= not rst;
 
 	xtal   <= not xtal after 5 ns;
