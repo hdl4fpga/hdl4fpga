@@ -485,7 +485,6 @@ begin
 	begin
 		if rising_edge(iod_clk) then
 			q := (dqspre xor dqs180);
-			q := dqspre;
 		end if;
 		if q='0' then
 			sys_dqo <= dqh;
