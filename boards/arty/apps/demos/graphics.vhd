@@ -388,22 +388,22 @@ begin
 				clkout3  => ddr_clk90_mmce2,
 				locked   => ddr_lkd);
 
-			ddr_clk0_bufg : bufio
+			ddr_clk0x2_bufg : bufio
 			port map (
 				i => ddr_clk0x2_mmce2,
 				o => ddr_clk0x2);
 
-			ddr_clk90_bufg : bufio
+			ddr_clk90x2_bufg : bufio
 			port map (
 				i => ddr_clk90x2_mmce2,
 				o => ddr_clk90x2);
 
-			ddr_clk0div_bufg : bufg
+			ddr_clk0_bufg : bufg
 			port map (
 				i => ddr_clk0_mmce2,
 				o => ddr_clk0);
 
-			ddr_clk90div_bufg : bufg
+			ddr_clk90_bufg : bufg
 			port map (
 				i => ddr_clk90_mmce2,
 				o => ddr_clk90);
