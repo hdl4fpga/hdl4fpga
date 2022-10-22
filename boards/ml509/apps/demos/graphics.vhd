@@ -800,7 +800,7 @@ begin
 		coln_size    => coln_size,
 		word_size    => word_size,
 		byte_size    => byte_size,
-		burst_length => 8,
+		burst_length => 4,
 
 		timing_id    => videoparam(video_mode).timing,
 		red_length   => 8,
@@ -834,7 +834,7 @@ begin
 		ctlr_cwl      => b"0_11",
 		ctlr_rtt      => b"11",
 		ctlr_al       => "001",
-		ctlr_bl       => "011", --"001",
+		ctlr_bl       => "010", --"001",
 		ctlr_cl       => sdram_params.cl,
 		ctlr_cmd      => ctlrphy_cmd,
 		ctlr_inirdy   => ctlr_inirdy,
@@ -995,9 +995,8 @@ begin
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
 		device      => xc5v,
+		bufio       => false,
 		taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
-		-- data_edge   => true,
-		data_edge   => false,
 		bank_size   => bank_size,
 		addr_size   => addr_size,
 		cmmd_gear   => cmmd_gear,

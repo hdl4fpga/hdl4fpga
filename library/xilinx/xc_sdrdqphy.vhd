@@ -503,18 +503,15 @@ begin
 	end process;
 
 	datao_b : block
-		signal clks  : std_logic_vector(0 to 2-1);
 		signal dqclk : std_logic_vector(0 to 2-1);
 	begin
 
 		data_gear2_g : if data_gear=2 generate
 			dqclk <= (0 => clk90, 1 => clk90);
-			clks  <= (0 => clk90, 1 => not clk90) when data_edge else (0 => clk90, 1 => clk90);
 		end generate;
 
 		data_gear4_g : if data_gear=4 generate
 			dqclk <= (0 => clk90, 1 => clk90x2);
-			clks  <= (0 => clk90, 1 => not clk90) when data_edge else (0 => clk90, 1 => clk90);
 		end generate;
 
 		oddr_g : for i in sdram_dqo'range generate
@@ -572,16 +569,12 @@ begin
 			signal dmi : std_logic_vector(sys_dmi'range);
 		begin
 	
-			registered_g : for i in clks'range generate
-				gear_g : for l in 0 to data_gear/clks'length-1 generate
-					process (clks(i))
-					begin
-						if rising_edge(clks(i)) then
-							dmi(l*data_gear/clks'length+i) <= sys_dmi(l*data_gear/clks'length+i);
-						end if;
-					end process;
-				end generate;
-			end generate;
+			process (clk90)
+			begin
+				if rising_edge(clk0) then
+					dmi <= sys_dmi;
+				end if;
+			end process;
 	
 			ogbx_i : entity hdl4fpga.ogbx
 			generic map (

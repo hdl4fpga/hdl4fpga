@@ -373,7 +373,6 @@ begin
 				clkout1_divide   => data_gear/2,
 				clkout1_phase    => 90.0+180.0,
 				clkout2_divide   => data_gear,
-				clkout2_phase   => 0.0,
 				clkout3_divide   => data_gear,
 				clkout3_phase    => 90.0/real((data_gear/2))+270.0)
 			port map (
