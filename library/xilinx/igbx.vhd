@@ -35,10 +35,12 @@ entity igbx is
 		gear      : natural := 2;
 		data_edge : string := "SAME_EDGE");
 	port (
-		rst  : in  std_logic := '0';
-		clk  : in  std_logic_vector;
-		d    : in  std_logic_vector(0 to size-1);
-		q    : out std_logic_vector(0 to size*gear-1));
+		rst       : in  std_logic := '0';
+		sclk      : in std_logic := 'U';
+		clkx2     : in std_logic := 'U';
+		clk       : in std_logic;
+		d         : in  std_logic_vector(0 to size-1);
+		q         : out std_logic_vector(0 to size*gear-1));
 end;
 
 library unisim;
@@ -54,7 +56,7 @@ begin
 		gear1_g : if gear=1 generate
 			ffd_i : fdrse
 			port map (
-				c  => clk(0),
+				c  => clk,
 				ce => '1',
 				s  => '0',
 				r  => '0',
@@ -67,12 +69,12 @@ begin
 			xc3s_g : if device=xc3s generate
 				signal clk_n : std_logic;
 			begin
-				clk_n <= not clk(0);
+				clk_n <= not clk;
 				iddr_i : iddr2
 				generic map (
 					ddr_alignment => "NONE")
 				port map (
-					c0  => clk(0),
+					c0  => clk,
 					c1  => clk_n,
 					ce => '1',
 					d  => d(i),
@@ -85,7 +87,7 @@ begin
 				generic map (
 					DDR_CLK_EDGE => data_edge)
 				port map (
-					c  => clk(0),
+					c  => clk,
 					ce => '1',
 					d  => d(i),
 					q1 => po(0),
@@ -96,31 +98,40 @@ begin
 
 		iserdese_g : if gear=4 generate
 			xv5_g : if device=xc5v generate
+				signal clkb  : std_logic;
+				signal oclkb : std_logic;
+			begin
+				clkb  <= not sclk;
 				iser_i : iserdes_nodelay
 				generic map (
 					INTERFACE_TYPE => "MEMORY",
 					DATA_RATE      => "DDR",
 					DATA_WIDTH     => 4)
 				port map (
-					rst          => rst,
-					clk          => clk(2),
-					clkb         => clk(4),
-					oclk         => clk(1),
-					clkdiv       => clk(0),
-					d            => d(i),
-					q1           => po(3),
-					q2           => po(2),
-					q3           => po(1),
-					q4           => po(0),
+					rst      => rst,
+					clk      => sclk,
+					clkb     => clkb,
+					oclk     => clkx2,
+					clkdiv   => clk,
+					d        => d(i),
+					q1       => po(3),
+					q2       => po(2),
+					q3       => po(1),
+					q4       => po(0),
 	
-					bitslip      => '0',
-					ce1          => '1',
-					ce2          => '1',
-					shiftin1     => '0',
-					shiftin2     => '0');
+					bitslip  => '0',
+					ce1      => '1',
+					ce2      => '1',
+					shiftin1 => '0',
+					shiftin2 => '0');
 			end generate;
 
 			xv7_g : if device=xc7a generate
+				signal clkb  : std_logic;
+				signal oclkb : std_logic;
+			begin
+				clkb  <= not sclk;
+				oclkb <= not clkx2;
 				iser_i : iserdese2
 				generic map (
 					INTERFACE_TYPE => "MEMORY_DDR3",
@@ -128,11 +139,11 @@ begin
 					IOBDELAY       => "BOTH")
 				port map (
 					rst          => rst,
-					clk          => clk(2),
-					oclk         => clk(1),
-					clkdivp      => clk(0),
-					oclkb        => clk(3),
-					clkb         => clk(4),
+					clk          => sclk,
+					clkb         => clkb,
+					oclk         => clkx2,
+					oclkb        => oclkb,
+					clkdivp      => clk,
 					ddly         => d(i),
 					q1           => po(3),
 					q2           => po(2),

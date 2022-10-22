@@ -216,6 +216,9 @@ architecture graphics of nuhs3adsp is
 	signal phyctlr_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
 	constant iddr        : boolean := false;
+	signal sdram_cke       : std_logic_vector(0 to 0);
+	signal sdram_cs        : std_logic_vector(0 to 0);
+	signal sdram_odt       : std_logic_vector(0 to 0);
 	signal dqsi_inv      : std_logic;
 	signal ddr_st_dqs_open : std_logic;
 	signal ddr_clk       : std_logic_vector(0 downto 0);
@@ -655,9 +658,10 @@ begin
 		end if;
 	end process;
 
-	sdrphy_e : entity hdl4fpga.xc3s_sdrphy
+	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
-		iddr        => iddr,
+		device      => xc3s,
+		bypass      => not iddr,
 		loopback    => true,
 		bank_size   => ddr_ba'length,
 		addr_size   => ddr_a'length,
@@ -666,52 +670,56 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
-		sys_rst     => ddrsys_rst,
+		rst     => ddrsys_rst,
+		iod_clk     => clk0,
 		clk0        => clk0,
 		clk90       => clk90,
 
-		phy_cke     => ctlrphy_cke,
-		phy_cs      => ctlrphy_cs,
-		phy_ras     => ctlrphy_ras,
-		phy_cas     => ctlrphy_cas,
-		phy_we      => ctlrphy_we,
-		phy_b       => ctlrphy_b,
-		phy_a       => ctlrphy_a,
-		phy_dqsi    => ctlrphy_dqso,
-		phy_dqst    => ctlrphy_dqst,
-		phy_dqso    => ctlrphy_dqsi,
-		phy_dmi     => ctlrphy_dmo,
-		phy_dmt     => ctlrphy_dmt,
-		phy_dmo     => ctlrphy_dmi,
-		phy_dqi     => ctlrphy_dqo,
-		phy_dqt     => ctlrphy_dqt,
-		phy_dqo     => ctlrphy_dqi,
-		phy_odt     => ctlrphy_odt,
-		phy_sti     => ctlrphy_sto,
+		sys_cke     => ctlrphy_cke,
+		sys_cs      => ctlrphy_cs,
+		sys_ras     => ctlrphy_ras,
+		sys_cas     => ctlrphy_cas,
+		sys_we      => ctlrphy_we,
+		sys_b       => ctlrphy_b,
+		sys_a       => ctlrphy_a,
+		sys_dqsi    => ctlrphy_dqso,
+		sys_dqst    => ctlrphy_dqst,
+		sys_dqso    => ctlrphy_dqsi,
+		sys_dmi     => ctlrphy_dmo,
+		sys_dmt     => ctlrphy_dmt,
+		sys_dmo     => ctlrphy_dmi,
+		sys_dqi     => ctlrphy_dqo,
+		sys_dqt     => ctlrphy_dqt,
+		sys_dqo     => ctlrphy_dqi,
+		sys_odt     => ctlrphy_odt,
+		sys_sti     => ctlrphy_sto,
 		-- phy_sto     => ctlrphy_sti,
-		phy_sto     => phyctlr_sto,
+		sys_sto     => phyctlr_sto,
 
-		sdr_sto(0)  => ddr_st_dqs,
-		sdr_sto(1)  => ddr_st_dqs_open,
-		sdr_sti(0)  => ddr_st_lp_dqs,
-		sdr_sti(1)  => ddr_st_dqs_open,
-		sdr_clk     => ddr_clk,
-		sdr_cke     => ddr_cke,
-		sdr_cs      => ddr_cs,
-		sdr_ras     => ddr_ras,
-		sdr_cas     => ddr_cas,
-		sdr_we      => ddr_we,
-		sdr_b       => ddr_ba,
-		sdr_a       => ddr_a,
+		sdram_sto(0)  => ddr_st_dqs,
+		sdram_sto(1)  => ddr_st_dqs_open,
+		sdram_sti(0)  => ddr_st_lp_dqs,
+		sdram_sti(1)  => ddr_st_dqs_open,
+		sdram_clk     => ddr_clk,
+		sdram_cke     => sdram_cke,
+		sdram_cs      => sdram_cs,
+		sdram_odt     => sdram_odt,
+		sdram_ras     => ddr_ras,
+		sdram_cas     => ddr_cas,
+		sdram_we      => ddr_we,
+		sdram_b       => ddr_ba,
+		sdram_a       => ddr_a,
 
-		sdr_dm      => ddr_dm,
-		sdr_dqt     => ddr_dqt,
-		sdr_dqi     => ddr_dq,
-		sdr_dqo     => ddr_dqo,
-		sdr_dqst    => ddr_dqst,
-		sdr_dqsi    => ddr_dqsi,
-		sdr_dqso    => ddr_dqso);
+		sdram_dm      => ddr_dm,
+		sdram_dqt     => ddr_dqt,
+		sdram_dqi     => ddr_dq,
+		sdram_dqo     => ddr_dqo,
+		sdram_dqst    => ddr_dqst,
+		sdram_dqsi    => ddr_dqsi,
+		sdram_dqso    => ddr_dqso);
 
+	ddr_cke <= sdram_odt(0);
+	ddr_cs  <= sdram_cs(0);
 	ctlrphy_sti <= phyctlr_sto(data_gear-1 downto 0) & phyctlr_sto(data_gear-1 downto 0);
 
 	ddr_clk_i : obufds

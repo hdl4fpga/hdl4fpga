@@ -34,10 +34,6 @@ HDL4FPGA__xc5v_idelay__def = $(LIB_HDL4FPGA)/xc5v_idelay/def.dat
 HDL4FPGA__xc5v_idelay = $(LIB_HDL4FPGA)/xc5v_idelay/_primary.dat
 HDL4FPGA__xc3s_sdrphy__xnlx = $(LIB_HDL4FPGA)/xc3s_sdrphy/xnlx.dat
 HDL4FPGA__xc3s_sdrphy = $(LIB_HDL4FPGA)/xc3s_sdrphy/_primary.dat
-HDL4FPGA__xc3s_sdrdqphy__xilinx = $(LIB_HDL4FPGA)/xc3s_sdrdqphy/xilinx.dat
-HDL4FPGA__xc3s_sdrdqphy = $(LIB_HDL4FPGA)/xc3s_sdrdqphy/_primary.dat
-HDL4FPGA__xc3s_sdrbaphy__xilnix = $(LIB_HDL4FPGA)/xc3s_sdrbaphy/xilnix.dat
-HDL4FPGA__xc3s_sdrbaphy = $(LIB_HDL4FPGA)/xc3s_sdrbaphy/_primary.dat
 HDL4FPGA__videopkg__body = $(LIB_HDL4FPGA)/videopkg/body.dat
 HDL4FPGA__videopkg = $(LIB_HDL4FPGA)/videopkg/_primary.dat
 HDL4FPGA__videobox_layout__def = $(LIB_HDL4FPGA)/videobox_layout/def.dat
@@ -301,10 +297,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__xc5v_idelay) \
     $(HDL4FPGA__xc3s_sdrphy__xnlx) \
     $(HDL4FPGA__xc3s_sdrphy) \
-    $(HDL4FPGA__xc3s_sdrdqphy__xilinx) \
-    $(HDL4FPGA__xc3s_sdrdqphy) \
-    $(HDL4FPGA__xc3s_sdrbaphy__xilnix) \
-    $(HDL4FPGA__xc3s_sdrbaphy) \
     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__videopkg) \
     $(HDL4FPGA__videobox_layout__def) \
@@ -1762,30 +1754,11 @@ $(HDL4FPGA__videopkg__body) : ../video/videopkg.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../video/videopkg.vhd
 
-$(HDL4FPGA__xc3s_sdrbaphy) \
-$(HDL4FPGA__xc3s_sdrbaphy__xilnix) : ../xilinx/xc3s/xc3s_sdrbaphy.vhd \
-		$(IEEE__numeric_std) \
-		$(HDL4FPGA__omdr) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc3s/xc3s_sdrbaphy.vhd
-
-$(HDL4FPGA__xc3s_sdrdqphy) \
-$(HDL4FPGA__xc3s_sdrdqphy__xilinx) : ../xilinx/xc3s/xc3s_sdrdqphy.vhd \
-		$(HDL4FPGA__pgm_delay) \
-		$(HDL4FPGA__profiles) \
-		$(HDL4FPGA__igbx) \
-		$(UNISIM__vcomponents) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164) \
-		$(HDL4FPGA__std)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc3s/xc3s_sdrdqphy.vhd
-
 $(HDL4FPGA__xc3s_sdrphy) \
 $(HDL4FPGA__xc3s_sdrphy__xnlx) : ../xilinx/xc3s/xc3s_sdrphy.vhd \
 		$(HDL4FPGA__xc3s_sdrdqphy) \
-		$(HDL4FPGA__xc3s_sdrbaphy) \
+		$(HDL4FPGA__xc_sdrbaphy) \
+		$(HDL4FPGA__profiles) \
 		$(UNISIM__vcomponents) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \

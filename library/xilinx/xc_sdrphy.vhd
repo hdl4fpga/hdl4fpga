@@ -33,8 +33,10 @@ use hdl4fpga.sdram_param.all;
 entity xc_sdrphy is
 	generic (
 		device     : fpga_devices;
+		loopback   : boolean := false;
+		bypass     : boolean := true;
 		bufio      : boolean   := false;
-		taps       : natural;
+		taps       : natural := 0;
 		cmmd_gear  : natural   := 1;
 		data_gear  : natural   := 2;
 		data_edge  : boolean   := true;
@@ -55,15 +57,15 @@ entity xc_sdrphy is
 		clk90x2    : in  std_logic := '-';
 
 		phy_frm    : buffer std_logic;
-		phy_trdy   : in  std_logic;
+		phy_trdy   : in  std_logic := 'U';
 		phy_rw     : out std_logic;
-		phy_cmd    : in  std_logic_vector(0 to 3-1);
+		phy_cmd    : in  std_logic_vector(0 to 3-1) := (others => 'U');
 		phy_ini    : out std_logic;
 		phy_synced : buffer std_logic;
 
-		phy_wlreq  : in  std_logic := '-';
+		phy_wlreq  : in  std_logic := 'U';
 		phy_wlrdy  : out std_logic;
-		phy_rlreq  : in  std_logic;
+		phy_rlreq  : in  std_logic := 'U';
 		phy_rlrdy  : buffer std_logic;
 
 		sys_rst    : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '-');
@@ -83,6 +85,7 @@ entity xc_sdrphy is
 		sys_dqi    : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		sys_dqo    : out std_logic_vector(data_gear*word_size-1 downto 0);
 
+		sys_dqso   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dqsi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dqst   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_sti    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
@@ -99,6 +102,8 @@ entity xc_sdrphy is
 		sdram_b    : out std_logic_vector(bank_size-1 downto 0);
 		sdram_a    : out std_logic_vector(addr_size-1 downto 0);
 
+		sdram_sti  : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
+		sdram_sto  : out std_logic_vector(word_size/byte_size-1 downto 0);
 		sdram_dm   : inout std_logic_vector(word_size/byte_size-1 downto 0);
 		sdram_dqt  : out std_logic_vector(word_size-1 downto 0);
 		sdram_dqi  : in  std_logic_vector(word_size-1 downto 0);
@@ -542,6 +547,8 @@ begin
 			sys_dqst   => sdqst(i),
 			sto_synced => sto_synced(i),
 
+			sdram_sti  => sdram_sti(i),
+			sdram_sto  => sdram_sto(i),
 			sdram_dqi  => ddqi(i),
 			sdram_dqt  => ddqt(i),
 			sdram_dqo  => ddqo(i),

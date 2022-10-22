@@ -39,6 +39,8 @@ entity xc_sdrdqphy is
 		dqs_linedelay : time := 1000 ns/300;
 		dqi_linedelay : time := 1000 ns/300;
 
+		loopback   : boolean := false;
+		bypass     : boolean := false;
 		bufio      : boolean;
 		device     : fpga_devices;
 		taps       : natural;
@@ -46,7 +48,7 @@ entity xc_sdrdqphy is
 		data_edge  : boolean;
 		byte_size  : natural);
 	port (
-		tp_sel     : in  std_logic;
+		tp_sel     : in  std_logic := 'U';
 		tp_delay   : out std_logic_vector(1 to 8);
 
 		rst        : in  std_logic;
@@ -74,9 +76,13 @@ entity xc_sdrdqphy is
 		sys_dqt    : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dqo    : out std_logic_vector(data_gear*byte_size-1 downto 0);
 		sys_dqsi   : in  std_logic_vector(0 to data_gear-1);
+		sys_dqso   : out std_logic_vector(0 to data_gear-1);
 		sys_dqst   : in  std_logic_vector(0 to data_gear-1);
 		sto_synced : out std_logic;
 
+		sdram_dmi  : in  std_logic := 'U';
+		sdram_sti  : in  std_logic := 'U';
+		sdram_sto  : out std_logic;
 		sdram_dmt  : out std_logic;
 		sdram_dmo  : out std_logic;
 		sdram_dqsi : in  std_logic;
@@ -293,7 +299,7 @@ begin
 		signal dqsi_buf : std_logic;
 		signal dqs_smp  : std_logic_vector(0 to data_gear-1);
 		signal sto      : std_logic;
-		signal igbx_clk : std_logic_vector(0 to 5-1);
+		signal sclk     : std_logic;
 	begin
 
 		adjdqs_e : entity hdl4fpga.adjpha
@@ -323,24 +329,30 @@ begin
 			idatain => dqsi,
 			dataout => dqsi_buf);
 
-		data_gear2_g : if data_gear=2 generate
-			igbx_clk(0 to 2-1) <= (0 => clk0, 1 => clk0);
-		end generate;
+		dqs_delayed_e : entity hdl4fpga.pgm_delay
+		generic map(
+			n => 2) --gate_delay)
+		port map (
+			xi  => sdram_dqsi,
+			x_p => sys_dqso(1),
+			x_n => sys_dqso(0));
 
 		data_gear4_g : if data_gear=4 generate
-			igbx_clk <= (0 => clk0, 1 => clk0x2, 2 => not clk90x2, 3 => not clk0x2, 4 => clk90x2);
 		end generate;
 
+		sclk  <= not clk90x2;
 		igbx_i : entity hdl4fpga.igbx
 		generic map (
 			device => device,
 			size   => 1,
 			gear   => data_gear)
 		port map (
-			rst    => rst,
-			clk    => igbx_clk,
-			d(0)   => dqsi_buf,
-			q      => dqs_smp);
+			rst   => rst,
+			sclk  => sclk,
+			clkx2 => clk0x2,
+			clk   => clk0,
+			d(0)  => dqsi_buf,
+			q     => dqs_smp);
 
 		tp_dqsdly(delay'length-1 downto 0) <= delay;
 
@@ -424,30 +436,78 @@ begin
 		end block;
 
 		data_gear2_g : if data_gear=2 generate
-			igbx_clk(0 to 2-1) <= (0 => clk0, 1 => clk0);
+
+			bypass_g : if bypass generate
+				phases_g : for j in 0 to data_gear-1 generate
+					sys_dqo(j*byte_size+i) <= sdram_dqi(i);
+				end generate;
+			end generate;
+
+			igbx_g : if not bypass generate
+				igbx_i : entity hdl4fpga.igbx
+				generic map (
+					device => device,
+					size => 1,
+					gear => data_gear)
+				port map (
+					rst  => rst,
+					clk  => clk0,
+					d(0) => dqi(i),
+					q(0) => dq(0*byte_size+i),
+					q(1) => dq(1*byte_size+i));
+			end generate;
+	
 		end generate;
+
+		sto_b : block
+			signal igbx_clk : std_logic_vector(0 to 0);
+			signal sti      : std_logic;
+		begin
+			igbx_g : if not bypass generate
+				signal clk : std_logic;
+			begin
+				clk <= not sdram_dqsi;
+				sti <= sdram_sti when loopback else sdram_dmi;
+				sto_i : entity hdl4fpga.igbx
+				generic map (
+					device => hdl4fpga.profiles.xc3s,
+					gear   => data_gear)
+				port map (
+					clk   => clk,
+					sclk  => clk90x2,
+					clkx2 => clk90x2,
+					d(0)  => sti,
+					q     => sys_sto);
+			end generate;
+	
+			bypass_g : if bypass generate
+				phases_g : for j in 0 to data_gear-1 generate
+					sys_sto(j) <= sdram_sti when loopback else sdram_dmi;
+				end generate;
+			end generate;
+
+		end block;
 
 		data_gear4_g : if data_gear=4 generate
 			igbx_clk <= (0 => clk90, 1 => clk90x2, 2 => clk90x2, 3 => not clk90x2, 4 => not clk90x2);
-		end generate;
 
-		igbx_i : entity hdl4fpga.igbx
-		generic map (
-			device => device,
-			size => 1,
-			gear => data_gear)
-		port map (
-			rst  => rst,
-			clk  => igbx_clk,
-			d(0) => dqi(i),
-			q(0) => dq(0*byte_size+i),
-			q(1) => dq(1*byte_size+i),
-			q(2) => dq(2*byte_size+i),
-			q(3) => dq(3*byte_size+i));
-
-		dly_b : block
-		begin
-			dly0_g : entity hdl4fpga.align
+			igbx_i : entity hdl4fpga.igbx
+			generic map (
+				device => device,
+				size => 1,
+				gear => data_gear)
+			port map (
+				rst  => rst,
+				sclk => clk90x2,
+				clkx2 => clk90x2,
+				clk  => clk90,
+				d(0) => dqi(i),
+				q(0) => dq(0*byte_size+i),
+				q(1) => dq(1*byte_size+i),
+				q(2) => dq(2*byte_size+i),
+				q(3) => dq(3*byte_size+i));
+	
+			lath_g : entity hdl4fpga.align
 			generic map (
 				n => 4,
 				d => (0, 0, 1, 1))
@@ -461,8 +521,8 @@ begin
 				do(1) => dqh(3*byte_size+i),
 				do(2) => dqh(0*byte_size+i),
 				do(3) => dqh(1*byte_size+i));
-
-			dly1_g : entity hdl4fpga.align
+	
+			latf_g : entity hdl4fpga.align
 			generic map (
 				n => 4,
 				d => (1, 1, 1, 1))
@@ -476,31 +536,33 @@ begin
 				do(1) => dqf(1*byte_size+i),
 				do(2) => dqf(2*byte_size+i),
 				do(3) => dqf(3*byte_size+i));
+		end generate;
 
-		end block;
 
 	end generate;
 
-	process(iod_clk, dqh, dqf) 
-		variable q : std_logic;
-	begin
-		if rising_edge(iod_clk) then
-			q := (dqspre xor dqs180);
-		end if;
-		if q='0' then
-			if bufio then
-				sys_dqo <= dqh;
-			else
-				sys_dqo <= dqf;
+	gbx4_g : if data_gear=4 generate
+		process(iod_clk, dqh, dqf) 
+			variable q : std_logic;
+		begin
+			if rising_edge(iod_clk) then
+				q := (dqspre xor dqs180);
 			end if;
-		else
-			if bufio then
-				sys_dqo <= dqf;
+			if q='0' then
+				if bufio then
+					sys_dqo <= dqh;
+				else
+					sys_dqo <= dqf;
+				end if;
 			else
-				sys_dqo <= dqh;
+				if bufio then
+					sys_dqo <= dqf;
+				else
+					sys_dqo <= dqh;
+				end if;
 			end if;
-		end if;
-	end process;
+		end process;
+	end generate;
 
 	datao_b : block
 		signal dqclk : std_logic_vector(0 to 2-1);
@@ -569,6 +631,17 @@ begin
 			signal dmi : std_logic_vector(sys_dmi'range);
 		begin
 	
+			-- process (phy_sti, phy_dmt, phy_dmi)
+			-- begin
+				-- for i in dmi'range loop
+					-- if loopback then
+						-- dmi(i) <= sys_dmi(i);
+					-- elsif phy_dmt(i)='1' then
+						-- dmi(i) <= sys_sti(i);
+					-- end if;
+				-- end loop;
+			-- end process;
+
 			process (clk90)
 			begin
 				if rising_edge(clk0) then

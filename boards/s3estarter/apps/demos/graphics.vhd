@@ -197,6 +197,10 @@ architecture graphics of s3estarter is
 	signal sdram_dqt       : std_logic_vector(sd_dq'range);
 	signal sdram_dqo       : std_logic_vector(sd_dq'range);
 
+	signal sdram_cke       : std_logic_vector(0 to 0);
+	signal sdram_cs        : std_logic_vector(0 to 0);
+	signal sdram_odt       : std_logic_vector(0 to 0);
+
 	signal mii_clk         : std_logic;
 	signal video_clk       : std_logic;
 	signal video_hzsync    : std_logic;
@@ -624,9 +628,10 @@ begin
 	dqsi_inv <= '1' when sdram_params.cl="110" else '0';	-- 2.5 cas latency;
 	sdram_dqsi <= (others => not clk90 xor dqsi_inv);
 
-	sdrphy_e : entity hdl4fpga.xc3s_sdrphy
+	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
-		iddr        => true,
+		device      => xc3s,
+		bypass      => true,
 		loopback    => false,
 		bank_size   => sd_ba'length,
 		addr_size   => sd_a'length,
@@ -635,46 +640,51 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
+		iod_clk   => clk0,
 		clk0        => clk0,
 		clk90       => clk90,
-		sys_rst     => sdrsys_rst,
+		rst     => sdrsys_rst,
 
-		phy_cke     => ctlrphy_cke,
-		phy_cs      => ctlrphy_cs,
-		phy_ras     => ctlrphy_ras,
-		phy_cas     => ctlrphy_cas,
-		phy_we      => ctlrphy_we,
-		phy_b       => ctlrphy_b,
-		phy_a       => ctlrphy_a,
-		phy_dqsi    => ctlrphy_dqso,
-		phy_dqst    => ctlrphy_dqst,
-		phy_dqso    => ctlrphy_dqsi,
-		phy_dmi     => ctlrphy_dmo,
-		phy_dmt     => ctlrphy_dmt,
-		phy_dmo     => ctlrphy_dmi,
-		phy_dqi     => ctlrphy_dqo,
-		phy_dqt     => ctlrphy_dqt,
-		phy_dqo     => ctlrphy_dqi,
-		phy_odt     => ctlrphy_odt,
-		phy_sti     => ctlrphy_sto,
-		phy_sto     => ctlrphy_sti,
+		sys_cke     => ctlrphy_cke,
+		sys_cs      => ctlrphy_cs,
+		sys_ras     => ctlrphy_ras,
+		sys_cas     => ctlrphy_cas,
+		sys_we      => ctlrphy_we,
+		sys_b       => ctlrphy_b,
+		sys_a       => ctlrphy_a,
+		sys_dqsi    => ctlrphy_dqso,
+		sys_dqst    => ctlrphy_dqst,
+		sys_dqso    => ctlrphy_dqsi,
+		sys_dmi     => ctlrphy_dmo,
+		sys_dmt     => ctlrphy_dmt,
+		sys_dmo     => ctlrphy_dmi,
+		sys_dqi     => ctlrphy_dqo,
+		sys_dqt     => ctlrphy_dqt,
+		sys_dqo     => ctlrphy_dqi,
+		sys_odt     => ctlrphy_odt,
+		sys_sti     => ctlrphy_sto,
+		sys_sto     => ctlrphy_sti,
 
-		sdr_clk     => sdrphy_clk,
-		sdr_cke     => sd_cke,
-		sdr_cs      => sd_cs,
-		sdr_ras     => sd_ras,
-		sdr_cas     => sd_cas,
-		sdr_we      => sd_we,
-		sdr_b       => sd_ba,
-		sdr_a       => sd_a,
+		sdram_clk     => sdrphy_clk,
+		sdram_cke     => sdram_cke,
+		sdram_cs      => sdram_cs,
+		sdram_odt     => sdram_odt,
+		sdram_ras     => sd_ras,
+		sdram_cas     => sd_cas,
+		sdram_we      => sd_we,
+		sdram_b       => sd_ba,
+		sdram_a       => sd_a,
 
-		sdr_dm      => sd_dm,
-		sdr_dqt     => sdram_dqt,
-		sdr_dqi     => sd_dq,
-		sdr_dqo     => sdram_dqo,
-		sdr_dqst    => sdram_dqst,
-		sdr_dqsi    => sdram_dqsi,
-		sdr_dqso    => sdram_dqso);
+		sdram_dm      => sd_dm,
+		sdram_dqt     => sdram_dqt,
+		sdram_dqi     => sd_dq,
+		sdram_dqo     => sdram_dqo,
+		sdram_dqst    => sdram_dqst,
+		sdram_dqsi    => sdram_dqsi,
+		sdram_dqso    => sdram_dqso);
+
+	sd_cke <= sdram_odt(0);
+	sd_cs  <= sdram_cs(0);
 
 	sdram_dqs_g : for i in sd_dqs'range generate
 		sd_dqs(i) <= sdram_dqso(i) when sdram_dqst(i)='0' else 'Z';
