@@ -215,10 +215,15 @@ architecture graphics of nuhs3adsp is
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal phyctlr_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
+	signal phy_wlreq     : std_logic;
+	signal phy_wlrdy     : std_logic;
+	signal phy_rlreq     : std_logic;
+	signal phy_rlrdy     : std_logic;
+
 	constant iddr        : boolean := false;
-	signal sdram_cke       : std_logic_vector(0 to 0);
-	signal sdram_cs        : std_logic_vector(0 to 0);
-	signal sdram_odt       : std_logic_vector(0 to 0);
+	signal sdram_cke     : std_logic_vector(0 to 0);
+	signal sdram_cs      : std_logic_vector(0 to 0);
+	signal sdram_odt     : std_logic_vector(0 to 0);
 	signal dqsi_inv      : std_logic;
 	signal ddr_st_dqs_open : std_logic;
 	signal ddr_clk       : std_logic_vector(0 downto 0);
@@ -658,10 +663,13 @@ begin
 		end if;
 	end process;
 
+	phy_wlreq <= to_stdulogic(to_bit(phy_wlrdy));
+	phy_rlreq <= to_stdulogic(to_bit(phy_rlrdy));
+
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
 		device      => xc3s,
-		bypass      => not iddr,
+		bypass      => true,
 		loopback    => true,
 		bank_size   => ddr_ba'length,
 		addr_size   => ddr_a'length,
@@ -670,11 +678,16 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
-		rst     => ddrsys_rst,
+		rst         => ddrsys_rst,
 		iod_clk     => clk0,
 		clk0        => clk0,
 		clk90       => clk90,
+		clk0x2      => clk0,
 
+		phy_wlreq   => phy_wlreq,
+		phy_wlrdy   => phy_wlrdy,
+		phy_rlreq   => phy_rlreq,
+		phy_rlrdy   => phy_rlrdy,
 		sys_cke     => ctlrphy_cke,
 		sys_cs      => ctlrphy_cs,
 		sys_ras     => ctlrphy_ras,
@@ -718,7 +731,7 @@ begin
 		sdram_dqsi    => ddr_dqsi,
 		sdram_dqso    => ddr_dqso);
 
-	ddr_cke <= sdram_odt(0);
+	ddr_cke <= sdram_cke(0);
 	ddr_cs  <= sdram_cs(0);
 	ctlrphy_sti <= phyctlr_sto(data_gear-1 downto 0) & phyctlr_sto(data_gear-1 downto 0);
 

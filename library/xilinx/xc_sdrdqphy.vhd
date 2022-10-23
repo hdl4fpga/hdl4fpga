@@ -107,6 +107,7 @@ architecture xilinx of xc_sdrdqphy is
 	signal dqspau_rdy   : std_logic;
 	signal dqs180       : std_logic;
 	signal dqspre       : std_logic;
+	signal dqssto       : std_logic;
 
 	signal dq           : std_logic_vector(sys_dqo'range);
 	signal dqi          : std_logic_vector(sdram_dqi'range);
@@ -298,7 +299,6 @@ begin
 		signal dqsi     : std_logic;
 		signal dqsi_buf : std_logic;
 		signal dqs_smp  : std_logic_vector(0 to data_gear-1);
-		signal sto      : std_logic;
 		signal sclk     : std_logic;
 	begin
 
@@ -354,33 +354,18 @@ begin
 			sdram_clk => clk0,
 			edge      => std_logic'('0'),
 			sdram_sti => sys_sti(0),
-			sdram_sto => sto,
+			sdram_sto => dqssto,
 			dqs_smp   => dqs_smp,
 			dqs_pre   => dqspre,
 			sys_req   => adjsto_req,
 			sys_rdy   => adjsto_rdy,
 			synced    => sto_synced);
 
-		process (clk90)
-			variable q : std_logic;
-		begin
-			if rising_edge(clk90) then
-				if (not dqspre and dqs180)='1' then
-					sys_sto <= (others => sto);
-				elsif (not dqspre and not dqs180)='1' then
-					sys_sto <= (others => sto);
-				else
-					sys_sto <= (others => q);
-				end if;
-				q := sto;
-			end if;
-		end process;
-
 	end block;
 
 	datai_b : block
 	begin
-		iddr_g : for i in sdram_dqi'range generate
+		i_igbx : for i in sdram_dqi'range generate
 		begin
 			adjdqi_b : block
 				signal delay  : std_logic_vector(0 to setif(device=xc7a,5,6)-1);
@@ -429,7 +414,6 @@ begin
 			bypass_g : if bypass generate
 				phases_g : for j in 0 to data_gear-1 generate
 					sys_dqo(j*byte_size+i) <= sdram_dqi(i);
-					sys_sto(j) <= sdram_sti when loopback else sdram_dmi;
 				end generate;
 			end generate;
 	
@@ -496,57 +480,81 @@ begin
 						do(3) => dqf(3*byte_size+i));
 				end generate;
 	
-				sto_b : block
-					signal sti      : std_logic;
-				begin
-					igbx_g : if not bypass generate
-						signal clk : std_logic;
+				gbx2_g : if data_gear=2 generate
+					sys_dqo <= dq;
+				end generate;
+		
+				gbx4_g : if data_gear=4 generate
+					process(iod_clk, dqh, dqf) 
+						variable q : std_logic;
 					begin
-						clk <= not sdram_dqsi;
-						sti <= sdram_sti when loopback else sdram_dmi;
-						sto_i : entity hdl4fpga.igbx
-						generic map (
-							device => hdl4fpga.profiles.xc3s,
-							gear   => data_gear)
-						port map (
-							clk   => clk,
-							sclk  => clk90x2,
-							clkx2 => clk90x2,
-							d(0)  => sti,
-							q     => sys_sto);
-					end generate;
-				end block;
+						if rising_edge(iod_clk) then
+							q := (dqspre xor dqs180);
+						end if;
+						if q='0' then
+							if bufio then
+								sys_dqo <= dqh;
+							else
+								sys_dqo <= dqf;
+							end if;
+						else
+							if bufio then
+								sys_dqo <= dqf;
+							else
+								sys_dqo <= dqh;
+							end if;
+						end if;
+					end process;
+				end generate;
+
 			end generate;
 	
 		end generate;
 	
-		gbx2_g : if data_gear=2 generate
-			sys_dqo <= dq;
-		end generate;
+		sto_b : block
+			signal sti : std_logic;
+		begin
+			gbx4_g : if data_gear=4 generate
+				process (clk90)
+					variable q : std_logic;
+				begin
+					if rising_edge(clk90) then
+						if (not dqspre and dqs180)='1' then
+							sys_sto <= (others => dqssto);
+						elsif (not dqspre and not dqs180)='1' then
+							sys_sto <= (others => dqssto);
+						else
+							sys_sto <= (others => q);
+						end if;
+						q := dqssto;
+					end if;
+				end process;
+			end generate;
 
-		gbx4_g : if data_gear=4 generate
-			process(iod_clk, dqh, dqf) 
-				variable q : std_logic;
+			igbx_g : if not bypass generate
+				signal clk : std_logic;
 			begin
-				if rising_edge(iod_clk) then
-					q := (dqspre xor dqs180);
-				end if;
-				if q='0' then
-					if bufio then
-						sys_dqo <= dqh;
-					else
-						sys_dqo <= dqf;
-					end if;
-				else
-					if bufio then
-						sys_dqo <= dqf;
-					else
-						sys_dqo <= dqh;
-					end if;
-				end if;
-			end process;
-		end generate;
+				clk <= not sdram_dqsi;
+				sti <= sdram_sti when loopback else sdram_dmi;
+				sto_i : entity hdl4fpga.igbx
+				generic map (
+					device => hdl4fpga.profiles.xc3s,
+					gear   => data_gear)
+				port map (
+					clk   => clk,
+					sclk  => clk90x2,
+					clkx2 => clk90x2,
+					d(0)  => sti,
+					q     => sys_sto);
+			end generate;
 
+			bypass_g : if bypass generate
+				phases_g : for j in 0 to data_gear-1 generate
+					sys_sto(j) <= sdram_sti when loopback else sdram_dmi;
+				end generate;
+			end generate;
+		end block;
+	
 	end block;
 
 	datao_b : block
@@ -648,6 +656,24 @@ begin
 				q(0)  => sdram_dmo);
 	
 		end block;
+
+		sto_g : block
+		begin
+	
+			ogbx_i : entity hdl4fpga.ogbx
+			generic map (
+				device => device,
+				size => 1,
+				data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
+				gear => data_gear)
+			port map (
+				rst   => rst,
+				clk   => dqclk,
+				d     => sys_sti,
+				q(0)  => sdram_sto);
+	
+		end block;
+
 	end block;
 
 	dqso_b : block

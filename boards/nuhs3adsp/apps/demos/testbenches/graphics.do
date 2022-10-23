@@ -41,14 +41,14 @@ add wave -noupdate -group ethrx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mi
 add wave -noupdate -group ethrx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/miirx_irdy
 add wave -noupdate -group ethrx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/miirx_trdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -group mii_rx /testbench/du_e/mii_rxc
-add wave -noupdate -group mii_rx /testbench/du_e/mii_rxdv
-add wave -noupdate -group mii_rx -radix hexadecimal /testbench/du_e/mii_rxd
-add wave -noupdate -group mii_rx -divider {New Divider}
-add wave -noupdate -group mii_rx /testbench/du_e/mii_rxc
-add wave -noupdate -group mii_rx /testbench/du_e/mii_rxdv
-add wave -noupdate -group mii_rx -radix hexadecimal /testbench/du_e/mii_rxd
-add wave -noupdate -group mii_rx -divider {New Divider}
+add wave -noupdate -expand -group mii_rx /testbench/du_e/mii_rxc
+add wave -noupdate -expand -group mii_rx /testbench/du_e/mii_rxdv
+add wave -noupdate -expand -group mii_rx -radix hexadecimal /testbench/du_e/mii_rxd
+add wave -noupdate -expand -group mii_rx -divider {New Divider}
+add wave -noupdate -expand -group mii_rx /testbench/du_e/mii_rxc
+add wave -noupdate -expand -group mii_rx /testbench/du_e/mii_rxdv
+add wave -noupdate -expand -group mii_rx -radix hexadecimal /testbench/du_e/mii_rxd
+add wave -noupdate -expand -group mii_rx -divider {New Divider}
 add wave -noupdate -group mii_tx /testbench/du_e/mii_txc
 add wave -noupdate -group mii_tx /testbench/du_e/mii_txen
 add wave -noupdate -group mii_tx -radix hexadecimal -childformat {{/testbench/du_e/mii_txd(0) -radix hexadecimal} {/testbench/du_e/mii_txd(1) -radix hexadecimal} {/testbench/du_e/mii_txd(2) -radix hexadecimal} {/testbench/du_e/mii_txd(3) -radix hexadecimal}} -subitemconfig {/testbench/du_e/mii_txd(0) {-height 29 -radix hexadecimal} /testbench/du_e/mii_txd(1) {-height 29 -radix hexadecimal} /testbench/du_e/mii_txd(2) {-height 29 -radix hexadecimal} /testbench/du_e/mii_txd(3) {-height 29 -radix hexadecimal}} /testbench/du_e/mii_txd
@@ -88,19 +88,24 @@ add wave -noupdate /testbench/du_e/grahics_e/sdrctlr_b/sdrctlr_e/ctlr_clks(0)
 add wave -noupdate /testbench/du_e/grahics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(0)
 add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sdrctlr_b/sdrctlr_e/ctlr_do
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -expand /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/phy_sto
-add wave -noupdate -expand /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/phy_dqso
-add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/ddrdqphy_i/phy_dqo
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_sti
+add wave -noupdate -expand /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_sto
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqsi_b/dqsidelay_i/xc3s_g/idelay_i/delayed_e/d
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqsi_b/dqsidelay_i/xc3s_g/idelay_i/delayed_e/ena
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqsi_b/dqsidelay_i/xc3s_g/idelay_i/delayed_e/blut
+add wave -noupdate /testbench/du_e/sdrphy_e/sys_dqso
+add wave -noupdate /testbench/du_e/sdrphy_e/sdram_sti
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqsi_b/dqsi_buf
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {94566428 ps} 0} {{Cursor 2} {94945100 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {11858824 ps} 0} {{Cursor 2} {94574733 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 269
 configure wave -valuecolwidth 219
 configure wave -justifyvalue left
@@ -115,4 +120,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {94727635 ps} {95014335 ps}
+WaveRestoreZoom {94907457 ps} {95004871 ps}

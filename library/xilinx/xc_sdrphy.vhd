@@ -33,10 +33,10 @@ use hdl4fpga.sdram_param.all;
 entity xc_sdrphy is
 	generic (
 		device     : fpga_devices;
-		loopback   : boolean := false;
-		bypass     : boolean := true;
+		loopback   : boolean   := false;
+		bypass     : boolean   := true;
 		bufio      : boolean   := false;
-		taps       : natural := 0;
+		taps       : natural   := 0;
 		cmmd_gear  : natural   := 1;
 		data_gear  : natural   := 2;
 		data_edge  : boolean   := true;
@@ -301,7 +301,7 @@ begin
 	sdram_clk_g : for i in sdram_clk'range generate
 		ck_i : oddr
 		port map (
-			c => clk0x2,
+			c  => clk0x2,
 			ce => '1',
 			d1 => '0' xor clkinv,
 			d2 => '1' xor clkinv,
@@ -507,6 +507,8 @@ begin
 
 		sdrdqphy_i : entity hdl4fpga.xc_sdrdqphy
 		generic map (
+			loopback   => loopback,
+			bypass     => bypass,
 			bufio      => bufio,
 			device     => device,
 			taps       => taps,
@@ -535,6 +537,7 @@ begin
 			read_brst  => read_brst(i),
 
 			sys_sti    => ssti(i),
+			-- sys_sto    => sys_sto(data_gear*(i+1)-1 downto data_gear*i),
 			sys_sto    => ssto(i),
 			sys_dmt    => sdmt(i),
 			sys_dmi    => sdmi(i),
@@ -545,6 +548,7 @@ begin
 
 			sys_dqsi   => sdqsi(i),
 			sys_dqst   => sdqst(i),
+			sys_dqso   => sys_dqso(data_gear*(i+1)-1 downto data_gear*i),
 			sto_synced => sto_synced(i),
 
 			sdram_sti  => sdram_sti(i),
