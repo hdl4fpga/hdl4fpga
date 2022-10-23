@@ -95,15 +95,16 @@ begin
 		end generate;
 
 		gear2_g : if gear = 2 generate
-			fft_i : fdrse
-			port map (
-				c  => clk(0),
-				ce => '1',
-				s  => '0',
-				r  => '0',
-				d  => pit(0),
-				q  => tq(i));
+			-- fft_i : fdrse
+			-- port map (
+				-- c  => clk(0),
+				-- ce => '1',
+				-- s  => '0',
+				-- r  => '0',
+				-- d  => pit(0),
+				-- q  => tq(i));
 
+			tq(i) <= pit(0);
 			oddr_i : oddr
 			generic map (
 				ddr_clk_edge => data_edge)

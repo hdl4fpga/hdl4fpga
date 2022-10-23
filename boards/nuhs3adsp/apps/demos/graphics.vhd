@@ -668,9 +668,12 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
+		dqs_delay   => 0 ns,
+		dqi_delay   => 0 ns,
 		device      => xc3s,
 		bypass      => true,
 		loopback    => true,
+		data_edge   => true,
 		bank_size   => ddr_ba'length,
 		addr_size   => ddr_a'length,
 		cmmd_gear   => cmmd_gear,

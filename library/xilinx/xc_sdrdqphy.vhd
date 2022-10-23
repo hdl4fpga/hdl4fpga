@@ -34,10 +34,8 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		-- dqs_linedelay : time := 1.35 ns;
-		-- dqi_linedelay : time := 0 ns; --1.35 ns;
-		dqs_linedelay : time := 1000 ns/300;
-		dqi_linedelay : time := 1000 ns/300;
+		dqs_delay  : time := 1000 ns/300;
+		dqi_delay  : time := 1000 ns/300;
 
 		loopback   : boolean := false;
 		bypass     : boolean := false;
@@ -317,7 +315,7 @@ begin
 			ph180    => dqs180,
 			delay    => delay);
 
-		dqsi <= transport sdram_dqsi after dqs_linedelay;
+		dqsi <= transport sdram_dqsi after dqs_delay;
 		dqsidelay_i : entity hdl4fpga.xc_dqsdelay 
 		generic map (
 			device => device)
@@ -398,7 +396,7 @@ begin
 					tp_dqidly(delay'length-1 downto 0) <= delay;
 				end generate;
 	
-				ddqi <= transport sdram_dqi(i) after dqi_linedelay;
+				ddqi <= transport sdram_dqi(i) after dqi_delay;
 				dqi_i : entity hdl4fpga.xc_idelay
 				generic map (
 					device => device,
@@ -430,24 +428,30 @@ begin
 						d(0) => dqi(i),
 						q(0) => dq(0*byte_size+i),
 						q(1) => dq(1*byte_size+i));
+
+					shuffle_g : for j in 0 to data_gear-1 generate
+						sys_dqo(j*byte_size+i) <= dq(j*byte_size+i);
+					end generate;
 				end generate;
 	
 				data_gear4_g : if data_gear=4 generate
+					signal sel : std_logic;
+				begin
 					igbx_i : entity hdl4fpga.igbx
 					generic map (
 						device => device,
 						size => 1,
 						gear => data_gear)
 					port map (
-						rst  => rst,
-						sclk => clk90x2,
+						rst   => rst,
+						sclk  => clk90x2,
 						clkx2 => clk90x2,
-						clk  => clk90,
-						d(0) => dqi(i),
-						q(0) => dq(0*byte_size+i),
-						q(1) => dq(1*byte_size+i),
-						q(2) => dq(2*byte_size+i),
-						q(3) => dq(3*byte_size+i));
+						clk   => clk90,
+						d(0)  => dqi(i),
+						q(0)  => dq(0*byte_size+i),
+						q(1)  => dq(1*byte_size+i),
+						q(2)  => dq(2*byte_size+i),
+						q(3)  => dq(3*byte_size+i));
 			
 					lath_g : entity hdl4fpga.align
 					generic map (
@@ -478,37 +482,22 @@ begin
 						do(1) => dqf(1*byte_size+i),
 						do(2) => dqf(2*byte_size+i),
 						do(3) => dqf(3*byte_size+i));
-				end generate;
-	
-				gbx2_g : if data_gear=2 generate
-					sys_dqo <= dq;
-				end generate;
-		
-				gbx4_g : if data_gear=4 generate
-					process(iod_clk, dqh, dqf) 
-						variable q : std_logic;
+
+					process(iod_clk) 
 					begin
 						if rising_edge(iod_clk) then
-							q := (dqspre xor dqs180);
-						end if;
-						if q='0' then
-							if bufio then
-								sys_dqo <= dqh;
-							else
-								sys_dqo <= dqf;
-							end if;
-						else
-							if bufio then
-								sys_dqo <= dqf;
-							else
-								sys_dqo <= dqh;
-							end if;
+							sel <= (dqspre xor dqs180);
 						end if;
 					end process;
-				end generate;
 
+					shuffle_g : for j in 0 to data_gear-1 generate
+						sys_dqo(j*byte_size+i) <= 
+							word2byte(dqh(j*byte_size+i) & dqf(j*byte_size+i), sel) when bufio else
+							word2byte(dqf(j*byte_size+i) & dqh(j*byte_size+i), sel);
+					end generate;
+
+				end generate;
 			end generate;
-	
 		end generate;
 	
 		sto_b : block
@@ -667,10 +656,10 @@ begin
 				data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 				gear => data_gear)
 			port map (
-				rst   => rst,
-				clk   => dqclk,
-				d     => sys_sti,
-				q(0)  => sdram_sto);
+				rst  => rst,
+				clk  => dqclk,
+				d    => sys_sti,
+				q(0) => sdram_sto);
 	
 		end block;
 
