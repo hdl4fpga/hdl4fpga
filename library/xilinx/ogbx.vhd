@@ -96,7 +96,7 @@ begin
 		end generate;
 
 		gear2_g : if gear = 2 generate
-			xc3s_g : if device/=xc3s generate
+			xc3s_g : if device=xc3s generate
 				signal clk_n : std_logic;
 			begin
 				ddrto_i : fdce
@@ -120,7 +120,7 @@ begin
 					q  => q(i));
 			end generate;
 
-			xcother_g : if device=xc3s generate
+			xcother_g : if device/=xc3s generate
 				fft_i : fdrse
 				port map (
 					c  => clk,

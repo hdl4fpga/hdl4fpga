@@ -543,7 +543,6 @@ begin
 			read_brst  => read_brst(i),
 
 			sys_sti    => ssti(i),
-			-- sys_sto    => sys_sto(data_gear*(i+1)-1 downto data_gear*i),
 			sys_sto    => ssto(i),
 			sys_dmt    => sdmt(i),
 			sys_dmi    => sdmi(i),
