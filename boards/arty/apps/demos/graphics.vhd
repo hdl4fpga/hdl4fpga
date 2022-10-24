@@ -934,10 +934,9 @@ begin
 			SIZE => 4,
 			GEAR => 2)
 		port map (
-			clk(0) => video_shf_clk,
-			clk(1) => std_ulogic'('-'),
-			d      => dvid_crgb,
-			q      => q);
+			clk => video_shf_clk,
+			d   => dvid_crgb,
+			q   => q);
 
 		hdmi_g : for i in q'range generate
 			obufds_i : obufds

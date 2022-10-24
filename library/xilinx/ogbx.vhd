@@ -35,12 +35,13 @@ entity ogbx is
 		gear      : natural;
 		data_edge : string := "SAME_EDGE");
 	port (
-		rst : in  std_logic := '0';
-		clk : in  std_logic_vector(0 to 2-1);
-		t   : in  std_logic_vector(0 to gear*size-1) := (others => '0');
-		tq  : out std_logic_vector(0 to size-1);
-		d   : in  std_logic_vector(0 to gear*size-1);
-		q   : out std_logic_vector(0 to size-1));
+		rst   : in  std_logic := '0';
+		clk   : in  std_logic;
+		clkx2 : in std_logic := 'U';
+		t     : in  std_logic_vector(0 to gear*size-1) := (others => '0');
+		tq    : out std_logic_vector(0 to size-1);
+		d     : in  std_logic_vector(0 to gear*size-1);
+		q     : out std_logic_vector(0 to size-1));
 end;
 
 library unisim;
@@ -76,7 +77,7 @@ begin
 		gear1_g : if gear = 1 generate
 			fft_i : fdrse
 			port map (
-				c  => clk(0),
+				c  => clk,
 				ce => '1',
 				s  => '0',
 				r  => '0',
@@ -85,7 +86,7 @@ begin
 
 			ffd_i : fdrse
 			port map (
-				c  => clk(0),
+				c  => clk,
 				ce => '1',
 				s  => '0',
 				r  => '0',
@@ -95,25 +96,51 @@ begin
 		end generate;
 
 		gear2_g : if gear = 2 generate
-			-- fft_i : fdrse
-			-- port map (
-				-- c  => clk(0),
-				-- ce => '1',
-				-- s  => '0',
-				-- r  => '0',
-				-- d  => pit(0),
-				-- q  => tq(i));
+			xc3s_g : if device/=xc3s generate
+				signal clk_n : std_logic;
+			begin
+				ddrto_i : fdce
+				port map (
+					clr => '0',
+					c   => clk,
+					ce  => '1',
+					d   => pit(0),
+					q   => tq(i));
+		
+				clk_n <= not clk;
+				oddr_i : oddr2
+				port map (
+					c0 => clk,
+					c1 => clk_n,
+					ce => '1',
+					r  => '0',
+					s  => '0',
+					d0 => pi(0),
+					d1 => pi(1),
+					q  => q(i));
+			end generate;
 
-			tq(i) <= pit(0);
-			oddr_i : oddr
-			generic map (
-				ddr_clk_edge => data_edge)
-			port map (
-				c  => clk(0),
-				ce => '1',
-				d1 => pi(0),
-				d2 => pi(1),
-				q  => q(i));
+			xcother_g : if device=xc3s generate
+				fft_i : fdrse
+				port map (
+					c  => clk,
+					ce => '1',
+					s  => '0',
+					r  => '0',
+					d  => pit(0),
+					q  => tq(i));
+
+				oddr_i : oddr
+				generic map (
+					ddr_clk_edge => data_edge)
+				port map (
+					c  => clk,
+					ce => '1',
+					d1 => pi(0),
+					d2 => pi(1),
+					q  => q(i));
+			end generate;
+
 		end generate;
 
 		oserdese_g : if gear > 2 generate
@@ -126,8 +153,8 @@ begin
 					data_width => gear)
 				port map (
 					sr       => rst,
-					clk      => clk(1),
-					clkdiv   => clk(0),
+					clk      => clkx2,
+					clkdiv   => clk,
 					d1       => pi(0),
 					d2       => pi(1),
 					d3       => pi(2),
@@ -154,8 +181,8 @@ begin
 					data_width => gear)
 				port map (
 					rst      => rst,
-					clk      => clk(1),
-					clkdiv   => clk(0),
+					clk      => clkx2,
+					clkdiv   => clk,
 					d1       => pi(0),
 					d2       => pi(1),
 					d3       => pi(2),

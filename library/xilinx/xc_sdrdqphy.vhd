@@ -67,14 +67,14 @@ entity xc_sdrdqphy is
 		write_rdy  : in  std_logic;
 		write_req  : buffer std_logic;
 		sys_dmt    : in  std_logic_vector(0 to data_gear-1) := (others => '-');
-		sys_dmi    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_sti    : in  std_logic_vector(0 to data_gear-1) := (others => '-');
 		sys_sto    : out std_logic_vector(0 to data_gear-1);
+		sys_dmi    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_dqi    : in  std_logic_vector(data_gear*byte_size-1 downto 0);
 		sys_dqt    : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dqo    : out std_logic_vector(data_gear*byte_size-1 downto 0);
 		sys_dqsi   : in  std_logic_vector(0 to data_gear-1);
-		sys_dqso   : out std_logic_vector(0 to data_gear-1);
+		sys_dqso   : buffer std_logic_vector(0 to data_gear-1);
 		sys_dqst   : in  std_logic_vector(0 to data_gear-1);
 		sto_synced : out std_logic;
 
@@ -318,15 +318,15 @@ begin
 		dqsi <= transport sdram_dqsi after dqs_delay;
 		dqsidelay_i : entity hdl4fpga.xc_dqsdelay 
 		generic map (
-			device => device)
+			device => device,
+			data_gear => data_gear)
 		port map (
 			rst    => rst,
 			clk    => clk0,
 			delay  => delay,
 			dqsi   => dqsi,
-			dqso_p => dqsi_buf,
-			dqso_n => sys_dqso(1));
-		sys_dqso(0) <= dqsi_buf;
+			dqso   => sys_dqso);
+		dqsi_buf <= sys_dqso(0);
 
 		sclk  <= not clk90x2;
 		igbx_i : entity hdl4fpga.igbx
@@ -547,22 +547,15 @@ begin
 	end block;
 
 	datao_b : block
-		signal dqclk : std_logic_vector(0 to 2-1);
 	begin
-
-		data_gear2_g : if data_gear=2 generate
-			dqclk <= (0 => clk90, 1 => clk90);
-		end generate;
-
-		data_gear4_g : if data_gear=4 generate
-			dqclk <= (0 => clk90, 1 => clk90x2);
-		end generate;
-
 		oddr_g : for i in sdram_dqo'range generate
+			constant register_on : boolean := device=xc5v or device=xc7a;
+
 			signal dqo : std_logic_vector(0 to data_gear-1);
 			signal dqt : std_logic_vector(sys_dqt'range);
 			signal sw  : std_logic;
 		begin
+
 			process (iod_clk)
 			begin
 				if rising_edge(iod_clk) then
@@ -579,15 +572,19 @@ begin
 						else
 							dqo(j) <= '1';
 						end if;
+					elsif not register_on then
+						dqo(j) <= sys_dqi(byte_size*j+i);
 					elsif rising_edge(clk90) then
 						dqo(j) <= sys_dqi(byte_size*j+i);
 					end if;
 				end loop;
 			end process;
 
-			process (clk90)
+			process (sys_dqt, clk90)
 			begin
-				if rising_edge(clk90) then
+				if not register_on then
+					dqt <= reverse(sys_dqt);
+				elsif rising_edge(clk90) then
 					dqt <= reverse(sys_dqt);
 				end if;
 			end process;
@@ -600,7 +597,7 @@ begin
 				gear => data_gear)
 			port map (
 				rst   => rst,
-				clk   => dqclk,
+				clk   => clk90,
 				t     => dqt,
 				tq(0) => sdram_dqt(i),
 				d     => dqo,
@@ -639,7 +636,8 @@ begin
 				gear => data_gear)
 			port map (
 				rst   => rst,
-				clk   => dqclk,
+				clk   => clk90,
+				clkx2 => clk90x2,
 				tq(0) => sdram_dmt,
 				d     => dmi,
 				q(0)  => sdram_dmo);
@@ -656,10 +654,11 @@ begin
 				data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 				gear => data_gear)
 			port map (
-				rst  => rst,
-				clk  => dqclk,
-				d    => sys_sti,
-				q(0) => sdram_sto);
+				rst   => rst,
+				clk   => clk90,
+				clkx2 => clk90x2,
+				d     => sys_sti,
+				q(0)  => sdram_sto);
 	
 		end block;
 
@@ -682,14 +681,6 @@ begin
 		end process;
 		dqst <= reverse(sys_dqst);
 
-		data_gear2_g : if data_gear=2 generate
-			dqsclk <= (0 => clk0, 1 => not clk0);
-		end generate;
-
-		data_gear4_g : if data_gear=4 generate
-			dqsclk <= (0 => clk0, 1 => clk0x2);
-		end generate;
-
 		ogbx_i : entity hdl4fpga.ogbx
 		generic map (
 			device => device,
@@ -698,7 +689,8 @@ begin
 			gear => data_gear)
 		port map (
 			rst  => rst,
-			clk  => dqsclk,
+			clk  => clk0,
+			clkx2 => clk0x2,
 			t    => dqst,
 			tq(0)=> sdram_dqst,
 			d    => dqsi,

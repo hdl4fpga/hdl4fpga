@@ -82,18 +82,18 @@ entity xc_sdrphy is
 		sys_a      : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
 		sys_odt    : in  std_logic_vector(cmmd_gear-1 downto 0);
 
-		sys_dmt    : in  std_logic_vector(0 to data_gear*word_size/byte_size-1);
+		sys_dmt    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dmi    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dmo    : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dqt    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dqi    : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		sys_dqo    : out std_logic_vector(data_gear*word_size-1 downto 0);
 
-		sys_dqso   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqsi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqst   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_sti    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
-		sys_sto    : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqso   : out std_logic_vector(0 to data_gear*word_size/byte_size-1);
+		sys_dqsi   : in  std_logic_vector(0 to data_gear*word_size/byte_size-1);
+		sys_dqst   : in  std_logic_vector(0 to data_gear*word_size/byte_size-1);
+		sys_sti    : in  std_logic_vector(0 to data_gear*word_size/byte_size-1) := (others => '-');
+		sys_sto    : out std_logic_vector(0 to data_gear*word_size/byte_size-1);
 
 		sdram_rst  : out std_logic := '0';
 		sdram_cs   : out std_logic_vector;
@@ -554,7 +554,7 @@ begin
 
 			sys_dqsi   => sdqsi(i),
 			sys_dqst   => sdqst(i),
-			sys_dqso   => sys_dqso(data_gear*(i+1)-1 downto data_gear*i),
+			sys_dqso   => sys_dqso(data_gear*i to data_gear*(i+1)-1 ),
 			sto_synced => sto_synced(i),
 
 			sdram_sti  => sdram_sti(i),
@@ -571,7 +571,7 @@ begin
 			sdram_dqso => sdram_dqso(i));
 
 
-		sys_sto((i+1)*data_gear-1 downto i*data_gear) <= ssto(i);
+		sys_sto(i*data_gear to (i+1)*data_gear-1 ) <= ssto(i);
 	end generate;
 
 	sdram_dqt <= to_stdlogicvector(ddqt);

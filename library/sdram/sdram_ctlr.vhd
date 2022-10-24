@@ -107,12 +107,12 @@ entity sdram_ctlr is
 		phy_dqi      : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		phy_dqt      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dqo      : out std_logic_vector(data_gear*word_size-1 downto 0);
-		phy_sti      : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-		phy_sto      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		phy_sti      : in  std_logic_vector(0 to data_phases*word_size/byte_size-1);
+		phy_sto      : out std_logic_vector(0 to data_gear*word_size/byte_size-1);
 
-		phy_dqsi     : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-		phy_dqso     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dqst     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0));
+		phy_dqsi     : in  std_logic_vector(0 to data_phases*word_size/byte_size-1);
+		phy_dqso     : out std_logic_vector(0 to data_gear*word_size/byte_size-1);
+		phy_dqst     : out std_logic_vector(0 to data_gear*word_size/byte_size-1));
 
 end;
 

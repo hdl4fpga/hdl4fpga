@@ -30,14 +30,14 @@ use hdl4fpga.profiles.all;
 
 entity xc_dqsdelay is
 	generic (
-		device : fpga_devices);
+		device : fpga_devices;
+		data_gear : natural);
 	port (
 		clk    : in  std_logic;
 		rst    : in  std_logic;
 		delay  : in  std_logic_vector;
 		dqsi   : in  std_logic;
-		dqso_p : out std_logic;
-		dqso_n : out std_logic);
+		dqso   : out std_logic_vector(0 to data_gear-1));
 end;
 
 library unisim;
@@ -46,6 +46,9 @@ use unisim.vcomponents.all;
 architecture xilinx of xc_dqsdelay is
 begin
 	xc3s_g : if device=xc3s generate
+		signal dqso_p : std_logic;
+		signal dqso_n : std_logic;
+	begin
 		idelay_i : entity hdl4fpga.xc3s_dqsdelay
 		port map (
 			rst    => rst,
@@ -54,9 +57,13 @@ begin
 			dqsi   => dqsi,
 			dqso_p => dqso_p,
 			dqso_n => dqso_n);
+		dqso(0) <= dqso_n;
+		dqso(1) <= dqso_p;
 	end generate;
 
 	xc5v_g : if device=xc5v generate
+		signal dataout : std_logic;
+	begin
 		idelay_i : entity hdl4fpga.xc5v_idelay
 		generic map (
 			delay_src      => string'("I"),
@@ -66,10 +73,13 @@ begin
 			clk     => clk,
 			delay   => delay,
 			idatain => dqsi,
-			dataout => dqso_p);
+			dataout => dataout);
+		dqso <= (others => dataout);
 	end generate;
 
 	xc7a_g : if device=xc7a generate
+		signal dataout : std_logic;
+	begin
 		idelay_i : entity hdl4fpga.xc7a_idelay
 		generic map (
 			delay_src      => "IDATAIN",
@@ -79,6 +89,7 @@ begin
 			clk     => clk,
 			delay   => delay,
 			idatain => dqsi,
-			dataout => dqso_p);
+			dataout => dataout);
+		dqso <= (others => dataout);
 	end generate;
 end;

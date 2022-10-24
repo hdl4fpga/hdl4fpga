@@ -69,8 +69,7 @@ begin
 		gear      => gear)
 	port map (
 		rst       => rst,
-		clk(0)    => clk0,
-		clk(1)    => std_ulogic'('-'),
+		clk       => clk0,
 		d         => sys_rst,
 		q(0)      => sdram_rst);
 
@@ -83,8 +82,7 @@ begin
 			gear      => gear)
 		port map (
 			rst       => rst,
-			clk(0)    => clk0,
-			clk(1)    => std_ulogic'('-'),
+			clk       => clk0,
 			d         => sys_cke,
 			q(0)      => sdram_cke(i));
 	end generate;
@@ -98,8 +96,7 @@ begin
 			gear      => gear)
 		port map (
 			rst       => rst,
-			clk(0)    => clk0,
-			clk(1)    => std_ulogic'('-'),
+			clk       => clk0,
 			d         => sys_cs,
 			q(0)      => sdram_cs(i));
 	end generate;
@@ -112,8 +109,7 @@ begin
 		gear      => gear)
 	port map (
 		rst       => rst,
-		clk(0)    => clk0,
-		clk(1)    => std_ulogic'('-'),
+		clk       => clk0,
 		d         => sys_ras,
 		q(0)      => sdram_ras);
 
@@ -125,8 +121,7 @@ begin
 		gear      => gear)
 	port map (
 		rst       => rst,
-		clk(0)    => clk0,
-		clk(1)    => std_ulogic'('-'),
+		clk       => clk0,
 		d         => sys_cas,
 		q(0)      => sdram_cas);
 
@@ -138,8 +133,7 @@ begin
 		gear      => gear)
 	port map (
 		rst       => rst,
-		clk(0)    => clk0,
-		clk(1)    => std_ulogic'('-'),
+		clk       => clk0,
 		d         => sys_we,
 		q(0)      => sdram_we);
 
@@ -152,8 +146,7 @@ begin
 			gear      => gear)
 		port map (
 			rst       => rst,
-			clk(0)    => clk0,
-			clk(1)    => std_ulogic'('-'),
+			clk       => clk0,
 			d         => sys_odt,
 			q(0)      => sdram_odt(i));
 	end generate;
@@ -166,8 +159,7 @@ begin
 		gear      => gear)
 	port map (
 		rst       => rst,
-		clk(0)    => clk0,
-		clk(1)    => std_ulogic'('-'),
+		clk       => clk0,
 		d         => sys_b,
 		q         => sdram_b);
 
@@ -179,8 +171,7 @@ begin
 		gear      => gear)
 	port map (
 		rst       => rst,
-		clk(0)    => clk0,
-		clk(1)    => std_ulogic'('-'),
+		clk       => clk0,
 		d         => sys_a,
 		q         => sdram_a);
 
