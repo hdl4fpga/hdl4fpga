@@ -61,15 +61,15 @@ entity xc_sdrphy is
 		clk90x2    : in  std_logic := '-';
 
 		phy_frm    : buffer std_logic;
-		phy_trdy   : in  std_logic := 'U';
+		phy_trdy   : in  std_logic := '-';
 		phy_rw     : out std_logic;
-		phy_cmd    : in  std_logic_vector(0 to 3-1) := (others => 'U');
+		phy_cmd    : in  std_logic_vector(0 to 3-1) := (others => '-');
 		phy_ini    : out std_logic;
 		phy_synced : buffer std_logic;
 
-		phy_wlreq  : in  std_logic := 'U';
+		phy_wlreq  : in  std_logic := '-';
 		phy_wlrdy  : out std_logic;
-		phy_rlreq  : in  std_logic := 'U';
+		phy_rlreq  : in  std_logic := '-';
 		phy_rlrdy  : buffer std_logic;
 
 		sys_rst    : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '-');
@@ -92,8 +92,8 @@ entity xc_sdrphy is
 		sys_dqso   : out std_logic_vector(0 to data_gear*word_size/byte_size-1);
 		sys_dqsi   : in  std_logic_vector(0 to data_gear*word_size/byte_size-1);
 		sys_dqst   : in  std_logic_vector(0 to data_gear*word_size/byte_size-1);
-		sys_sti    : in  std_logic_vector(0 to data_gear*word_size/byte_size-1) := (others => '-');
-		sys_sto    : out std_logic_vector(0 to data_gear*word_size/byte_size-1);
+		sys_sti    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
+		sys_sto    : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
 		sdram_rst  : out std_logic := '0';
 		sdram_cs   : out std_logic_vector;
@@ -303,13 +303,16 @@ architecture xilinx of xc_sdrphy is
 begin
 
 	sdram_clk_g : for i in sdram_clk'range generate
-		ck_i : oddr
+		clk_i : entity hdl4fpga.ogbx
+		generic map (
+			device => device,
+			size => 1,
+			gear => data_gear)
 		port map (
-			c  => clk0x2,
-			ce => '1',
-			d1 => '0' xor clkinv,
-			d2 => '1' xor clkinv,
-			q  => sdram_clk(i));
+			clk  => clk0x2,
+			d(0) => '0' xor clkinv,
+			d(1) => '1' xor clkinv,
+			q(0) => sdram_clk(i));
 	end generate;
 
 	sdrbaphy_i : entity hdl4fpga.xc_sdrbaphy
@@ -570,7 +573,7 @@ begin
 			sdram_dqso => sdram_dqso(i));
 
 
-		sys_sto(i*data_gear to (i+1)*data_gear-1 ) <= ssto(i);
+		sys_sto((i+1)*data_gear-1 downto i*data_gear) <= ssto(i);
 	end generate;
 
 	sdram_dqt <= to_stdlogicvector(ddqt);

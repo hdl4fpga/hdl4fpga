@@ -225,7 +225,6 @@ architecture graphics of nuhs3adsp is
 	signal sdram_cs      : std_logic_vector(0 to 0);
 	signal sdram_odt     : std_logic_vector(0 to 0);
 	signal dqsi_inv      : std_logic;
-	signal ddr_st_dqs_open : std_logic;
 	signal ddr_clk       : std_logic_vector(0 downto 0);
 	signal ddr_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -233,6 +232,7 @@ architecture graphics of nuhs3adsp is
 	signal ddr_dqt       : std_logic_vector(ddr_dq'range);
 	signal ddr_dqo       : std_logic_vector(ddr_dq'range);
 	signal ddr_lp_ck     : std_logic;
+	signal st_dqs_open   : std_logic;
 
 	signal mii_clk       : std_logic;
 	signal video_clk     : std_logic;
@@ -649,7 +649,7 @@ begin
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
-		tp => tp);
+		tp           => tp);
 
 	process (video_clk)
 	begin
@@ -667,73 +667,72 @@ begin
 	phy_wlreq <= to_stdulogic(to_bit(phy_wlrdy));
 	phy_rlreq <= to_stdulogic(to_bit(phy_rlrdy));
 
-	-- sdrphy_e : entity hdl4fpga.xc_sdrphy
-	-- generic map (
-	-- 	dqs_delay   => 0 ns,
-	-- 	dqi_delay   => 0 ns,
-	-- 	device      => xc3s,
-	-- 	bypass      => true,
-	-- 	loopback    => true,
-	-- 	data_edge   => true,
-	-- 	bank_size   => ddr_ba'length,
-	-- 	addr_size   => ddr_a'length,
-	-- 	cmmd_gear   => cmmd_gear,
-	-- 	data_gear   => data_gear,
-	-- 	word_size   => word_size,
-	-- 	byte_size   => byte_size)
-	-- port map (
-	-- 	rst         => ddrsys_rst,
-	-- 	iod_clk     => clk0,
-	-- 	clk0        => clk0,
-	-- 	clk90       => clk90,
-	-- 	clk0x2      => clk0,
+	sdrphy_e : entity hdl4fpga.xc_sdrphy
+	generic map (
+		dqs_delay   => 0 ns,
+		dqi_delay   => 0 ns,
+		device      => xc3s,
+		bypass      => true,
+		loopback    => true,
+		data_edge   => true,
+		bank_size   => ddr_ba'length,
+		addr_size   => ddr_a'length,
+		cmmd_gear   => cmmd_gear,
+		data_gear   => data_gear,
+		word_size   => word_size,
+		byte_size   => byte_size)
+	port map (
+		rst         => ddrsys_rst,
+		iod_clk     => clk0,
+		clk0        => clk0,
+		clk90       => clk90,
+		clk0x2      => clk0,
 
-	-- 	phy_wlreq   => phy_wlreq,
-	-- 	phy_wlrdy   => phy_wlrdy,
-	-- 	phy_rlreq   => phy_rlreq,
-	-- 	phy_rlrdy   => phy_rlrdy,
-	-- 	sys_cke     => ctlrphy_cke,
-	-- 	sys_cs      => ctlrphy_cs,
-	-- 	sys_ras     => ctlrphy_ras,
-	-- 	sys_cas     => ctlrphy_cas,
-	-- 	sys_we      => ctlrphy_we,
-	-- 	sys_b       => ctlrphy_b,
-	-- 	sys_a       => ctlrphy_a,
-	-- 	sys_dqsi    => ctlrphy_dqso,
-	-- 	sys_dqst    => ctlrphy_dqst,
-	-- 	sys_dqso    => ctlrphy_dqsi,
-	-- 	sys_dmi     => ctlrphy_dmo,
-	-- 	sys_dmt     => ctlrphy_dmt,
-	-- 	sys_dmo     => ctlrphy_dmi,
-	-- 	sys_dqi     => ctlrphy_dqo,
-	-- 	sys_dqt     => ctlrphy_dqt,
-	-- 	sys_dqo     => ctlrphy_dqi,
-	-- 	sys_odt     => ctlrphy_odt,
-	-- 	sys_sti     => ctlrphy_sto,
-	-- 	-- phy_sto     => ctlrphy_sti,
-	-- 	sys_sto     => phyctlr_sto,
+		phy_wlreq   => phy_wlreq,
+		phy_wlrdy   => phy_wlrdy,
+		phy_rlreq   => phy_rlreq,
+		phy_rlrdy   => phy_rlrdy,
+		sys_cke     => ctlrphy_cke,
+		sys_cs      => ctlrphy_cs,
+		sys_ras     => ctlrphy_ras,
+		sys_cas     => ctlrphy_cas,
+		sys_we      => ctlrphy_we,
+		sys_b       => ctlrphy_b,
+		sys_a       => ctlrphy_a,
+		sys_dqsi    => ctlrphy_dqso,
+		sys_dqst    => ctlrphy_dqst,
+		sys_dqso    => ctlrphy_dqsi,
+		sys_dmi     => ctlrphy_dmo,
+		sys_dmt     => ctlrphy_dmt,
+		sys_dmo     => ctlrphy_dmi,
+		sys_dqi     => ctlrphy_dqo,
+		sys_dqt     => ctlrphy_dqt,
+		sys_dqo     => ctlrphy_dqi,
+		sys_odt     => ctlrphy_odt,
+		sys_sti     => ctlrphy_sto,
+		sys_sto     => phyctlr_sto,
 
-	-- 	sdram_sto(0)  => ddr_st_dqs,
-	-- 	sdram_sto(1)  => ddr_st_dqs_open,
-	-- 	sdram_sti(0)  => ddr_st_lp_dqs,
-	-- 	sdram_sti(1)  => ddr_st_dqs_open,
-	-- 	sdram_clk     => ddr_clk,
-	-- 	sdram_cke     => sdram_cke,
-	-- 	sdram_cs      => sdram_cs,
-	-- 	sdram_odt     => sdram_odt,
-	-- 	sdram_ras     => ddr_ras,
-	-- 	sdram_cas     => ddr_cas,
-	-- 	sdram_we      => ddr_we,
-	-- 	sdram_b       => ddr_ba,
-	-- 	sdram_a       => ddr_a,
+		sdram_sto(0)  => ddr_st_dqs,
+		sdram_sto(1)  => st_dqs_open,
+		sdram_sti(0)  => ddr_st_lp_dqs,
+		sdram_sti(1)  => '-',
+		sdram_clk     => ddr_clk,
+		sdram_cke     => sdram_cke,
+		sdram_cs      => sdram_cs,
+		sdram_odt     => sdram_odt,
+		sdram_ras     => ddr_ras,
+		sdram_cas     => ddr_cas,
+		sdram_we      => ddr_we,
+		sdram_b       => ddr_ba,
+		sdram_a       => ddr_a,
 
-	-- 	sdram_dm      => ddr_dm,
-	-- 	sdram_dqt     => ddr_dqt,
-	-- 	sdram_dqi     => ddr_dq,
-	-- 	sdram_dqo     => ddr_dqo,
-	-- 	sdram_dqst    => ddr_dqst,
-	-- 	sdram_dqsi    => ddr_dqsi,
-	-- 	sdram_dqso    => ddr_dqso);
+		sdram_dm      => ddr_dm,
+		sdram_dqt     => ddr_dqt,
+		sdram_dqi     => ddr_dq,
+		sdram_dqo     => ddr_dqo,
+		sdram_dqst    => ddr_dqst,
+		sdram_dqsi    => ddr_dqsi,
+		sdram_dqso    => ddr_dqso);
 
 	ddr_cke <= sdram_cke(0);
 	ddr_cs  <= sdram_cs(0);

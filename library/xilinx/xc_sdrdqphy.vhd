@@ -46,7 +46,7 @@ entity xc_sdrdqphy is
 		data_edge  : boolean;
 		byte_size  : natural);
 	port (
-		tp_sel     : in  std_logic := 'U';
+		tp_sel     : in  std_logic := '-';
 		tp_delay   : out std_logic_vector(1 to 8);
 
 		rst        : in  std_logic;
@@ -78,8 +78,8 @@ entity xc_sdrdqphy is
 		sys_dqst   : in  std_logic_vector(0 to data_gear-1);
 		sto_synced : out std_logic;
 
-		sdram_dmi  : in  std_logic := 'U';
-		sdram_sti  : in  std_logic := 'U';
+		sdram_dmi  : in  std_logic := '-';
+		sdram_sti  : in  std_logic := '-';
 		sdram_sto  : out std_logic;
 		sdram_dmt  : out std_logic;
 		sdram_dmo  : out std_logic;
@@ -623,7 +623,7 @@ begin
 
 			process (clk90)
 			begin
-				if rising_edge(clk0) then
+				if rising_edge(clk90) then
 					dmi <= sys_dmi;
 				end if;
 			end process;

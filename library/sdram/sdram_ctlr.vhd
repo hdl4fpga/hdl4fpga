@@ -551,10 +551,10 @@ begin
 			ctlr_ena    => ctlr_di_dv,
 			ctlr_req    => sdram_mpu_wri,
 			ctlr_dmi    => ctlr_dm,
-			sdram_clks    => sdram_wclks,
-			sdram_dmo     => dmo,
-			sdram_enas    => sdram_wenas,
-			sdram_dqo     => dqo);
+			sdram_clks  => sdram_wclks,
+			sdram_dmo   => dmo,
+			sdram_enas  => sdram_wenas,
+			sdram_dqo   => dqo);
 
 		phy_dqo   <= rot_di  when bypass='1' else dqo;
 		sdram_wr_dm <= ctlr_dm when bypass='1' else dmo;

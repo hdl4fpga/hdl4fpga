@@ -99,21 +99,21 @@ TIMESPEC TS_ff2ram     = FROM FFS_clk0     TO RAMS_clk90   TIG;
 # Read-FIFO DQS Delay Taps #
 # ######################## #
 
-## Data Byte 0 #
-## ########### #
-#
-#INST "sdrphy_e/byte_g[0].ddrdqphy_i/dqs_delayed_e/lutn" LOC = SLICE_X2Y60;
-#INST "sdrphy_e/byte_g[0].ddrdqphy_i/dqs_delayed_e/lutn" BEL = G;
-#INST "sdrphy_e/byte_g[0].ddrdqphy_i/dqs_delayed_e/lutp" LOC = SLICE_X2Y60;
-#INST "sdrphy_e/byte_g[0].ddrdqphy_i/dqs_delayed_e/lutp" BEL = F;
-#
-## Data Byte 1 #
-## ########### #
-#
-#INST "sdrphy_e/byte_g[1].ddrdqphy_i/dqs_delayed_e/lutn" LOC = SLICE_X2Y82;
-#INST "sdrphy_e/byte_g[1].ddrdqphy_i/dqs_delayed_e/lutn" BEL = G;
-#INST "sdrphy_e/byte_g[1].ddrdqphy_i/dqs_delayed_e/lutp" LOC = SLICE_X2Y82;
-#INST "sdrphy_e/byte_g[1].ddrdqphy_i/dqs_delayed_e/lutp" BEL = F;
+# Data Byte 0 #
+# ########### #
+
+INST "sdrphy_e/byte_g[0].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutn" LOC = SLICE_X2Y60;
+INST "sdrphy_e/byte_g[0].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutn" BEL = G;
+INST "sdrphy_e/byte_g[0].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutp" LOC = SLICE_X2Y60;
+INST "sdrphy_e/byte_g[0].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutp" BEL = F;
+
+# Data Byte 1 #
+# ########### #
+
+INST "sdrphy_e/byte_g[1].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutn" LOC = SLICE_X2Y82;
+INST "sdrphy_e/byte_g[1].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutn" BEL = G;
+INST "sdrphy_e/byte_g[1].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutp" LOC = SLICE_X2Y82;
+INST "sdrphy_e/byte_g[1].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutp" BEL = F;
 
 # NET "ddr_lp_ck" TNM_NET = ddr_lp_ck;
 # TIMESPEC TS_ddr_lp_ck = PERIOD "ddr_lp_ck" 6 ns HIGH 50%;

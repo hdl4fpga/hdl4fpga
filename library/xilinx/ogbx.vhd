@@ -37,7 +37,7 @@ entity ogbx is
 	port (
 		rst   : in  std_logic := '0';
 		clk   : in  std_logic;
-		clkx2 : in std_logic := 'U';
+		clkx2 : in std_logic := '0';
 		t     : in  std_logic_vector(0 to gear*size-1) := (others => '0');
 		tq    : out std_logic_vector(0 to size-1);
 		d     : in  std_logic_vector(0 to gear*size-1);

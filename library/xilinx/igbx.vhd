@@ -36,8 +36,8 @@ entity igbx is
 		data_edge : string := "SAME_EDGE");
 	port (
 		rst       : in  std_logic := '0';
-		sclk      : in std_logic := 'U';
-		clkx2     : in std_logic := 'U';
+		sclk      : in std_logic := '0';
+		clkx2     : in std_logic := '0';
 		clk       : in std_logic;
 		d         : in  std_logic_vector(0 to size-1);
 		q         : out std_logic_vector(0 to size*gear-1));
