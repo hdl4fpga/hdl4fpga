@@ -619,7 +619,7 @@ begin
 					elsif sys_dmt(i)='1' then
 						dmd(i) <= sys_sti(i);
 					else
-						dmd(i) <= '-';
+						dmd(i) <= sys_dmi(i);
 					end if;
 				end loop;
 			end process;
@@ -636,9 +636,17 @@ begin
 			process (sys_dmt, clk90)
 			begin
 				if not register_on then
-					dmt <= sys_dmt;
+					if loopback then
+						dmt <= sys_dmt;
+					else
+						dmt <= (others => '0');
+					end if;
 				elsif rising_edge(clk90) then
-					dmt <= sys_dmt;
+					if loopback then
+						dmt <= sys_dmt;
+					else
+						dmt <= (others => '0');
+					end if;
 				end if;
 			end process;
 	

@@ -566,6 +566,7 @@ begin
 			sdram_dqo  => ddqo(i),
 
 			sdram_dmt  => ddmt(i),
+			sdram_dmi  => sdram_dm(i),
 			sdram_dmo  => ddmo(i),
 
 			sdram_dqst => sdram_dqst(i),

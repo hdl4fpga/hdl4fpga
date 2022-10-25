@@ -45,8 +45,6 @@ architecture s3estarter_graphics of testbench is
 	signal ba    : std_logic_vector (1 downto 0);
 	signal clk_p : std_logic := '0';
 	signal clk_n : std_logic := '0';
-	signal sd_clk_p : std_logic := '0';
-	signal sd_clk_n : std_logic := '0';
 	signal cke   : std_logic := '1';
 	signal cs_n  : std_logic := '1';
 	signal ras_n : std_logic;
@@ -179,7 +177,6 @@ architecture s3estarter_graphics of testbench is
 
 	signal datarx_null :  std_logic_vector(mii_rxd'range);
 
-	constant fb_delay : time := 0 ns;
 		signal x : natural := 0;
 begin
 
@@ -243,8 +240,6 @@ begin
 	mii_refclk <= not mii_refclk after 20 ns;
 	mii_rxc <= mii_refclk;
 	mii_txc <= mii_refclk;
-	clk_p <= transport sd_clk_p after fb_delay;
-	clk_n <= transport sd_clk_n after fb_delay;
 	du_e : s3estarter
 	generic map (
 		debug => true)
@@ -262,8 +257,8 @@ begin
 		-------------
 		-- DDR RAM --
 
-		sd_ck_p => sd_clk_p,
-		sd_ck_n => sd_clk_n,
+		sd_ck_p => clk_p,
+		sd_ck_n => clk_n,
 		sd_ck_fb => clk_p,
 		sd_cke => cke,
 		sd_cs  => cs_n,

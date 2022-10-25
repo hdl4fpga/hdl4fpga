@@ -192,7 +192,6 @@ architecture graphics of s3estarter is
 
 	signal sdram_clk       : std_logic_vector(0 downto 0);
 	signal sdram_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal sdram_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal sdram_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal sdram_dqt       : std_logic_vector(sd_dq'range);
 	signal sdram_dqo       : std_logic_vector(sd_dq'range);
@@ -337,26 +336,6 @@ begin
 			o  => sd_ck_p,
 			ob => sd_ck_n);
 
-		sdram_feedback_g : block
-			signal sd_ck_fb_n : std_logic;
-		begin
-			dcm_clkin <= sd_ck_fb;
-			sd_ck_fb_n <= not sd_ck_fb;
-			bug_i : bufg
-			port map (
-				I => sd_ck_fb_n,
-				O => dcm_clkfb);
-
-			process (sys_rst, dcm_clkin)
-			begin
-				if sys_rst='1' then
-					dcm_rst <= '1';
-				elsif rising_edge(dcm_clkin) then
-					dcm_rst <= '0';
-				end if;
-			end process;
-
-		end block;
 	
 		dcm_dll : dcm_sp
 		generic map(
@@ -381,7 +360,7 @@ begin
 	
 			rst      => '0',
 			clkin    => dfs_clkfx,
-			clkfb    => dcm_clkfb,
+			clkfb    => dfs_clkfx,
 			clk0     => dcm_clk0,
 			clk90    => dcm_clk90,
 			locked   => dcm_lckd);
@@ -591,9 +570,9 @@ begin
 		ctlr_clks(0) => clk0,
 		ctlr_clks(1) => clk90,
 		ctlr_rst     => sdrsys_rst,
-		ctlr_rtt     => "--",
 		ctlr_bl      => "001",
 		ctlr_cl      => sdram_params.cl,
+		ctlr_rtt     => "-",
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),
@@ -627,7 +606,6 @@ begin
 	end process;
 
 	dqsi_inv <= '1' when sdram_params.cl="110" else '0';	-- 2.5 cas latency;
-	sdram_dqsi <= (others => not clk90 xor dqsi_inv);
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
@@ -681,7 +659,7 @@ begin
 		sdram_dqi     => sd_dq,
 		sdram_dqo     => sdram_dqo,
 		sdram_dqst    => sdram_dqst,
-		sdram_dqsi    => sdram_dqsi,
+		sdram_dqsi    => sd_dqs,
 		sdram_dqso    => sdram_dqso);
 
 	sd_cke <= sdram_odt(0);
