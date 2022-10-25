@@ -591,6 +591,7 @@ begin
 		ctlr_clks(0) => clk0,
 		ctlr_clks(1) => clk90,
 		ctlr_rst     => sdrsys_rst,
+		ctlr_rtt     => "--",
 		ctlr_bl      => "001",
 		ctlr_cl      => sdram_params.cl,
 		ctlrphy_rst  => ctlrphy_rst,

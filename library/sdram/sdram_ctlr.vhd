@@ -413,7 +413,7 @@ begin
 				phy_dmt(i*data_gear+j)  <= not reverse(sdram_sch_dqz)(j);
 				phy_dqso(i*data_gear+j) <= sdram_sch_dqs(j);
 				phy_dqst(i*data_gear+j) <= not sdram_sch_dqsz(j);
-				phy_sto(i*data_gear+j)  <= reverse(sdram_sch_st)(j);
+				phy_sto(i*data_gear+j)  <= sdram_sch_st(j);
 				phy_dmo(i*data_gear+j)  <= sdram_wr_dm(i*data_gear+j);
 			end loop;
 			for j in 0 to data_phases-1 loop

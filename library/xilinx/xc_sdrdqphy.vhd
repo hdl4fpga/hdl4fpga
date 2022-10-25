@@ -547,9 +547,9 @@ begin
 	end block;
 
 	datao_b : block
+		constant register_on : boolean := device=xc5v or device=xc7a;
 	begin
 		oddr_g : for i in sdram_dqo'range generate
-			constant register_on : boolean := device=xc5v or device=xc7a;
 
 			signal dqo : std_logic_vector(0 to data_gear-1);
 			signal dqt : std_logic_vector(sys_dqt'range);
@@ -607,24 +607,38 @@ begin
 	
 		dmo_g : block
 			signal dmt : std_logic_vector(sys_dmt'range);
+			signal dmd : std_logic_vector(sys_dmi'range);
 			signal dmi : std_logic_vector(sys_dmi'range);
 		begin
 	
-			-- process (phy_sti, phy_dmt, phy_dmi)
-			-- begin
-				-- for i in dmi'range loop
-					-- if loopback then
-						-- dmi(i) <= sys_dmi(i);
-					-- elsif phy_dmt(i)='1' then
-						-- dmi(i) <= sys_sti(i);
-					-- end if;
-				-- end loop;
-			-- end process;
+			process (sys_sti, sys_dmt, sys_dmi)
+			begin
+				for i in dmi'range loop
+					if loopback then
+						dmd(i) <= sys_dmi(i);
+					elsif sys_dmt(i)='1' then
+						dmd(i) <= sys_sti(i);
+					else
+						dmd(i) <= '-';
+					end if;
+				end loop;
+			end process;
 
 			process (clk90)
 			begin
-				if rising_edge(clk90) then
-					dmi <= sys_dmi;
+				if not register_on then
+					dmi <= reverse(dmd);
+				elsif rising_edge(clk90) then
+					dmi <= dmd;
+				end if;
+			end process;
+
+			process (sys_dmt, clk90)
+			begin
+				if not register_on then
+					dmt <= sys_dmt;
+				elsif rising_edge(clk90) then
+					dmt <= sys_dmt;
 				end if;
 			end process;
 	
@@ -638,6 +652,7 @@ begin
 				rst   => rst,
 				clk   => clk90,
 				clkx2 => clk90x2,
+				t     => dmt,
 				tq(0) => sdram_dmt,
 				d     => dmi,
 				q(0)  => sdram_dmo);
