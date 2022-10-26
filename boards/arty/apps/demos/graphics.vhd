@@ -348,11 +348,10 @@ begin
 				clkfbin  => ioctrl_clkfb,
 				clkfbout => ioctrl_clkfb,
 				clkout0  => ioctrl_clk,
-				clkout1  => open, -- video_clk,
-				clkout2  => open, -- video_shf_clk,
+				clkout1  => video_clk,
+				clkout2  => video_shf_clk,
 				locked   => ioctrl_lkd);
 			ioctrl_rst <= not ioctrl_lkd;
-			video_clk <= ioctrl_lkd;
 
 		end block;
 
@@ -719,7 +718,7 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => video_clk,
+		video_clk    => '0', --video_clk,
 		video_hzsync => video_hs,
 		video_vtsync => video_vs,
 		video_blank  => video_blank,
@@ -794,9 +793,13 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
+		dqs_delay => 1.35 ns,
+		dqi_delay => 0 ns,
 		bufio     => true,
 		device    => xc7a,
+		bypass    => false,
 		taps      => natural(floor(sdram_tcp*(32.0*2.0)/(sys_per/2.0)))-1,
+		data_edge => false,
 		bank_size => bank_size,
         addr_size => addr_size,
 		cmmd_gear => cmmd_gear,
@@ -868,8 +871,6 @@ begin
 
 	ddriob_b : block
 	begin
-
-
 		ddr3_cke <= ddr_cke(0);
 		ddr3_cs  <= ddr_cs(0);
 		ddr3_odt <= ddr_odt(0);
@@ -907,7 +908,7 @@ begin
 		variable data : std_logic_vector(8-1 downto 0);
 	begin
 		rgbled <= (others => '0');
-		data := word2byte(tp_delay, sw(2-1 downto 0), data'length);
+		data := tp_delay(1 to 8);
 		for i in 0 to 4-1 loop
 			if data(i)='1' then
 				rgbled(3*i+0) <= '1';

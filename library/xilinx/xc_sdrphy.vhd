@@ -302,13 +302,16 @@ architecture xilinx of xc_sdrphy is
 begin
 
 	sdram_clk_g : for i in sdram_clk'range generate
+		signal clk : std_logic;
+	begin
+		clk <= clk0 when data_gear=2 else clk0x2;
 		clk_i : entity hdl4fpga.ogbx
 		generic map (
 			device => device,
 			size => 1,
-			gear => data_gear)
+			gear => 2)
 		port map (
-			clk  => clk0x2,
+			clk  => clk,
 			d(0) => '0',
 			d(1) => '1',
 			q(0) => sdram_clk(i));

@@ -202,7 +202,7 @@ architecture mix of demo_graphics is
 	signal ctlr_cas       : std_logic;
 	signal ctlr_fch       : std_logic;
 
-	alias ctlr_clk : std_logic is ctlr_clks(0);
+	alias ctlr_clk        : std_logic is ctlr_clks(0);
 begin
 
 	sio_b : block

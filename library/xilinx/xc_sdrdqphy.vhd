@@ -129,7 +129,7 @@ begin
 	with tp_sel select
 	tp_delay <=
 		dqs180 & dqspre       & tp_dqidly when '1',
-		tp_dqssel(1 downto 0) & tp_dqsdly when others;
+		tp_dqssel(2 downto 0) & tp_dqsdly(4 downto 0) when others;
 
 	sys_wlrdy <= to_stdulogic(to_bit(sys_wlreq));
 	rl_b : block
@@ -503,38 +503,40 @@ begin
 		sto_b : block
 			signal sti : std_logic;
 		begin
-			gbx4_g : if data_gear=4 generate
-				process (clk90)
-					variable q : std_logic;
-				begin
-					if rising_edge(clk90) then
-						if (not dqspre and dqs180)='1' then
-							sys_sto <= (others => dqssto);
-						elsif (not dqspre and not dqs180)='1' then
-							sys_sto <= (others => dqssto);
-						else
-							sys_sto <= (others => q);
-						end if;
-						q := dqssto;
-					end if;
-				end process;
-			end generate;
-
 			igbx_g : if not bypass generate
-				signal clk : std_logic;
-			begin
-				clk <= not sdram_dqsi;
-				sti <= sdram_sti when loopback else sdram_dmi;
-				sto_i : entity hdl4fpga.igbx
-				generic map (
-					device => hdl4fpga.profiles.xc3s,
-					gear   => data_gear)
-				port map (
-					clk   => clk,
-					sclk  => clk90x2,
-					clkx2 => clk90x2,
-					d(0)  => sti,
-					q     => sys_sto);
+				gbx4_g : if data_gear=4 generate
+					process (clk90)
+						variable q : std_logic;
+					begin
+						if rising_edge(clk90) then
+							if (not dqspre and dqs180)='1' then
+								sys_sto <= (others => dqssto);
+							elsif (not dqspre and not dqs180)='1' then
+								sys_sto <= (others => dqssto);
+							else
+								sys_sto <= (others => q);
+							end if;
+							q := dqssto;
+						end if;
+					end process;
+				end generate;
+
+				gbx2_g : if data_gear=2 generate
+					signal clk : std_logic;
+				begin
+					clk <= not sdram_dqsi;
+					sti <= sdram_sti when loopback else sdram_dmi;
+					sto_i : entity hdl4fpga.igbx
+					generic map (
+						device => hdl4fpga.profiles.xc3s,
+						gear   => data_gear)
+					port map (
+						clk   => clk,
+						sclk  => clk90x2,
+						clkx2 => clk90x2,
+						d(0)  => sti,
+						q     => sys_sto);
+				end generate;
 			end generate;
 
 			bypass_g : if bypass generate
@@ -598,6 +600,7 @@ begin
 			port map (
 				rst   => rst,
 				clk   => clk90,
+				clkx2 => clk90x2,
 				t     => dqt,
 				tq(0) => sdram_dqt(i),
 				d     => dqo,
