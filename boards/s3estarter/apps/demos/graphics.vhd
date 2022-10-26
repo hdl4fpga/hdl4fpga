@@ -662,7 +662,7 @@ begin
 		sdram_dqsi    => sd_dqs,
 		sdram_dqso    => sdram_dqso);
 
-	sd_cke <= sdram_odt(0);
+	sd_cke <= sdram_cke(0);
 	sd_cs  <= sdram_cs(0);
 
 	sdram_dqs_g : for i in sd_dqs'range generate
