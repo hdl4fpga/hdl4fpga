@@ -188,7 +188,11 @@ architecture graphics of s3estarter is
 	signal ctlrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal dqsi_inv        : std_logic;
+
+	signal phy_wlreq     : std_logic;
+	signal phy_wlrdy     : std_logic;
+	signal phy_rlreq     : std_logic;
+	signal phy_rlrdy     : std_logic;
 
 	signal sdram_clk       : std_logic_vector(0 downto 0);
 	signal sdram_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -605,10 +609,10 @@ begin
 		end if;
 	end process;
 
-	dqsi_inv <= '1' when sdram_params.cl="110" else '0';	-- 2.5 cas latency;
-
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
+		dqs_delay   => natural(sdram_tcp/5.0*1.0e12)*1 ps,
+		dqi_delay   => 0 ns,
 		device      => xc3s,
 		bypass      => true,
 		loopback    => false,
@@ -619,11 +623,16 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
-		iod_clk   => clk0,
+		rst         => sdrsys_rst,
+		iod_clk     => clk0,
 		clk0        => clk0,
 		clk90       => clk90,
-		rst     => sdrsys_rst,
+		clk0x2      => clk0,
 
+		phy_wlreq   => phy_wlreq,
+		phy_wlrdy   => phy_wlrdy,
+		phy_rlreq   => phy_rlreq,
+		phy_rlrdy   => phy_rlrdy,
 		sys_cke     => ctlrphy_cke,
 		sys_cs      => ctlrphy_cs,
 		sys_ras     => ctlrphy_ras,

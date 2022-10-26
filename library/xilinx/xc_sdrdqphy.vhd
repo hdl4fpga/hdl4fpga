@@ -66,16 +66,16 @@ entity xc_sdrdqphy is
 		read_brst  : out std_logic;
 		write_rdy  : in  std_logic;
 		write_req  : buffer std_logic;
-		sys_dmt    : in  std_logic_vector(0 to data_gear-1) := (others => '-');
-		sys_sti    : in  std_logic_vector(0 to data_gear-1) := (others => '-');
-		sys_sto    : out std_logic_vector(0 to data_gear-1);
+		sys_dmt    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
+		sys_sti    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
+		sys_sto    : out std_logic_vector(data_gear-1 downto 0);
 		sys_dmi    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_dqi    : in  std_logic_vector(data_gear*byte_size-1 downto 0);
 		sys_dqt    : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dqo    : out std_logic_vector(data_gear*byte_size-1 downto 0);
-		sys_dqsi   : in  std_logic_vector(0 to data_gear-1);
-		sys_dqso   : buffer std_logic_vector(0 to data_gear-1);
-		sys_dqst   : in  std_logic_vector(0 to data_gear-1);
+		sys_dqsi   : in  std_logic_vector(data_gear-1 downto 0);
+		sys_dqso   : buffer std_logic_vector(data_gear-1 downto 0);
+		sys_dqst   : in  std_logic_vector(data_gear-1 downto 0);
 		sto_synced : out std_logic;
 
 		sdram_dmi  : in  std_logic := '-';
@@ -608,26 +608,26 @@ begin
 		dmo_g : block
 			signal dmt : std_logic_vector(sys_dmt'range);
 			signal dmd : std_logic_vector(sys_dmi'range);
-			signal dmi : std_logic_vector(sys_dmi'range);
+			signal dmi : std_logic_vector(dmd'range);
 		begin
 	
 			process (sys_sti, sys_dmt, sys_dmi)
 			begin
 				for i in dmi'range loop
 					if loopback then
-						dmd(i) <= sys_dmi(i);
+						dmd(i) <= reverse(sys_dmi)(i);
 					elsif sys_dmt(i)='1' then
-						dmd(i) <= sys_sti(i);
+						dmd(i) <= reverse(sys_sti)(i);
 					else
-						dmd(i) <= sys_dmi(i);
+						dmd(i) <= reverse(sys_dmi)(i);
 					end if;
 				end loop;
 			end process;
 
-			process (clk90)
+			process (dmd, clk90)
 			begin
 				if not register_on then
-					dmi <= reverse(dmd);
+					dmi <= dmd;
 				elsif rising_edge(clk90) then
 					dmi <= dmd;
 				end if;
@@ -668,8 +668,10 @@ begin
 		end block;
 
 		sto_g : block
+			signal d : std_logic_vector(0 to data_gear-1);
 		begin
 	
+			d <= reverse(sys_sti);
 			ogbx_i : entity hdl4fpga.ogbx
 			generic map (
 				device => device,
@@ -680,7 +682,7 @@ begin
 				rst   => rst,
 				clk   => clk90,
 				clkx2 => clk90x2,
-				d     => sys_sti,
+				d     => d,
 				q(0)  => sdram_sto);
 	
 		end block;
@@ -688,9 +690,8 @@ begin
 	end block;
 
 	dqso_b : block
-		signal dqsi   : std_logic_vector(sys_dqsi'range);
-		signal dqst   : std_logic_vector(sys_dqst'range);
-		signal dqsclk : std_logic_vector(0 to 2-1);
+		signal dqsi : std_logic_vector(sys_dqsi'reverse_range);
+		signal dqst : std_logic_vector(sys_dqst'range);
 	begin
 
 		process (sys_dqsi)
@@ -698,7 +699,7 @@ begin
 			dqsi <= (others => '0');
 			for i in dqsi'range loop
 				if i mod 2 = 1 then
-					dqsi(i) <= reverse(sys_dqsi)(i);
+					dqsi(i) <= sys_dqsi(i);
 				end if;
 			end loop;
 		end process;
@@ -711,13 +712,13 @@ begin
 			data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 			gear => data_gear)
 		port map (
-			rst  => rst,
-			clk  => clk0,
+			rst   => rst,
+			clk   => clk0,
 			clkx2 => clk0x2,
-			t    => dqst,
-			tq(0)=> sdram_dqst,
-			d    => dqsi,
-			q(0) => sdram_dqso);
+			t     => dqst,
+			tq(0) => sdram_dqst,
+			d     => dqsi,
+			q(0)  => sdram_dqso);
 
 	end block;
 end;

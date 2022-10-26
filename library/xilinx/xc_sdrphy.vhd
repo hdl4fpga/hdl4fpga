@@ -47,8 +47,7 @@ entity xc_sdrphy is
 		bank_size  : natural   := 2;
 		addr_size  : natural   := 13;
 		word_size  : natural   := 16;
-		byte_size  : natural   := 8;
-		clkinv     : std_logic := '0');
+		byte_size  : natural   := 8);
 	port (
 		tp_sel     : in  std_logic := '0';
 		tp         : out std_logic_vector(1 to 32);
@@ -89,9 +88,9 @@ entity xc_sdrphy is
 		sys_dqi    : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		sys_dqo    : out std_logic_vector(data_gear*word_size-1 downto 0);
 
-		sys_dqso   : out std_logic_vector(0 to data_gear*word_size/byte_size-1);
-		sys_dqsi   : in  std_logic_vector(0 to data_gear*word_size/byte_size-1);
-		sys_dqst   : in  std_logic_vector(0 to data_gear*word_size/byte_size-1);
+		sys_dqso   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqsi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqst   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_sti    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		sys_sto    : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
@@ -310,8 +309,8 @@ begin
 			gear => data_gear)
 		port map (
 			clk  => clk0x2,
-			d(0) => '0' xor clkinv,
-			d(1) => '1' xor clkinv,
+			d(0) => '0',
+			d(1) => '1',
 			q(0) => sdram_clk(i));
 	end generate;
 
@@ -556,7 +555,7 @@ begin
 
 			sys_dqsi   => sdqsi(i),
 			sys_dqst   => sdqst(i),
-			sys_dqso   => sys_dqso(data_gear*i to data_gear*(i+1)-1 ),
+			sys_dqso   => sys_dqso(data_gear*(i+1)-1 downto data_gear*i),
 			sto_synced => sto_synced(i),
 
 			sdram_sti  => sdram_sti(i),

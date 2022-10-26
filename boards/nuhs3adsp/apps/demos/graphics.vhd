@@ -220,7 +220,6 @@ architecture graphics of nuhs3adsp is
 	signal phy_rlreq     : std_logic;
 	signal phy_rlrdy     : std_logic;
 
-	constant iddr        : boolean := false;
 	signal sdram_cke     : std_logic_vector(0 to 0);
 	signal sdram_cs      : std_logic_vector(0 to 0);
 	signal sdram_odt     : std_logic_vector(0 to 0);
@@ -669,7 +668,7 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
-		dqs_delay   => 0 ns,
+		dqs_delay   => natural(sdram_tcp/5.0*1.0e12)*1 ps,
 		dqi_delay   => 0 ns,
 		device      => xc3s,
 		bypass      => true,
@@ -731,7 +730,7 @@ begin
 		sdram_dqi     => ddr_dq,
 		sdram_dqo     => ddr_dqo,
 		sdram_dqst    => ddr_dqst,
-		sdram_dqsi    => ddr_dqsi,
+		sdram_dqsi    => ddr_dqs,
 		sdram_dqso    => ddr_dqso);
 
 	ddr_cke <= sdram_cke(0);
@@ -746,14 +745,7 @@ begin
 		o  => ddr_ckp,
 		ob => ddr_ckn);
 
-	dqsi_inv <= '1' when sdram_params.cl="110" else '0';	-- 2.5 cas latency; 
-	ddr_dqs_g : for i in ddr_dqs'range generate
-		signal dqsi : std_logic;
-	begin
-		ddr_dqsi(i) <= 
-			(not ddr_lp_ck xor dqsi_inv) when iddr else
-			ddr_dqs(i) after natural(sdram_tcp/5.0*1.0e12)*1 ps;
-
+	sdram_dqs_g : for i in ddr_dqs'range generate
 		ddr_dqs(i)  <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
 	end generate;
 
