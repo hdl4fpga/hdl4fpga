@@ -760,12 +760,6 @@ begin
 	end process;
 
 	psave <= '1';
---	adcclkab_e : entity hdl4fpga.ddro
---	port map (
---		clk => '0', --adc_clk,
---		dr  => '1',
---		df  => '0',
---		q   => adc_clkab);
 	adc_clkab <= 'Z';
 
 	clk_videodac_b : block

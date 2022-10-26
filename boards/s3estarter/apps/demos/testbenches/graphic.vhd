@@ -53,7 +53,7 @@ architecture s3estarter_graphics of testbench is
 	signal dm    : std_logic_vector(1 downto 0);
 
 	signal mii_refclk : std_logic := '0';
-	signal req    : std_logic := '0';
+	signal req      : std_logic := '0';
 	signal mii_req  : std_logic := '0';
 	signal mii_req1 : std_logic := '0';
 	signal rep_req  : std_logic := '0';
@@ -259,7 +259,6 @@ begin
 
 		sd_ck_p => clk_p,
 		sd_ck_n => clk_n,
-		sd_ck_fb => clk_p,
 		sd_cke => cke,
 		sd_cs  => cs_n,
 		sd_ras => ras_n,

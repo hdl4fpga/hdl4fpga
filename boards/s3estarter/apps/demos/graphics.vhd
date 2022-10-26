@@ -163,7 +163,6 @@ architecture graphics of s3estarter is
 	constant byte_size     : natural := 8;
 
 	signal sdrsys_rst      : std_logic;
-	signal sdrphy_clk      : std_logic_vector(0 to 0);
 
 	signal clk0            : std_logic;
 	signal clk90           : std_logic;
@@ -194,7 +193,7 @@ architecture graphics of s3estarter is
 	signal phy_rlreq     : std_logic;
 	signal phy_rlrdy     : std_logic;
 
-	signal sdram_clk       : std_logic_vector(0 downto 0);
+	signal sd_clk          : std_logic_vector(0 downto 0);
 	signal sdram_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal sdram_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal sdram_dqt       : std_logic_vector(sd_dq'range);
@@ -278,35 +277,31 @@ begin
 	ddrdcm_b : block
 		signal dfs_lckd  : std_logic;
 		signal dfs_clkfb : std_logic;
-		signal dfs_clkfx : std_logic;
-		signal dfs_clkfx180 : std_logic;
 		
 		signal dcm_rst   : std_logic;
 		signal dcm_clkin : std_logic;
 		signal dcm_clkfb : std_logic;
 		signal dcm_clk0  : std_logic;
 		signal dcm_clk90 : std_logic;
-		signal dcm_clk180 : std_logic;
 		signal dcm_lckd  : std_logic;
 
-		signal sdram_clk  : std_logic;
 	begin
 
 		dfs_i : dcm_sp
 		generic map(
-			clk_feedback => "1X",
-			clkin_period => sys_per*1.0e9,
-			clkdv_divide => 2.0,
+			clk_feedback   => "NONE",
+			clkin_period   => sys_per*1.0e9,
+			clkdv_divide   => 2.0,
 			clkin_divide_by_2 => FALSE,
-			clkfx_divide => sdram_params.pll.dcm_div,
+			clkfx_divide   => sdram_params.pll.dcm_div,
 			clkfx_multiply => sdram_params.pll.dcm_mul,
 			clkout_phase_shift => "NONE",
-			deskew_adjust => "SYSTEM_SYNCHRONOUS",
+			deskew_adjust  => "SYSTEM_SYNCHRONOUS",
 			dfs_frequency_mode => "HIGH",
 			duty_cycle_correction => TRUE,
-			factory_jf   => X"C080",
-			phase_shift  => 0,
-			startup_wait => FALSE)
+			factory_jf     => X"C080",
+			phase_shift    => 0,
+			startup_wait   => FALSE)
 		port map (
 			dssen    => '0',
 			psclk    => '0',
@@ -315,47 +310,26 @@ begin
 	
 			rst      => sys_rst,
 			clkin    => sys_clk,
-			clkfb    => dfs_clkfb,
+			clkfb    => '0',
 			clk0     => dfs_clkfb,
-			clkfx    => dfs_clkfx,
-			clkfx180 => dfs_clkfx180,
+			clkfx    => dcm_clkin,
 			locked   => dfs_lckd);
-
-		oddr_i : oddr2
-		port map (
-			c0 => dfs_clkfx,
-			c1 => dfs_clkfx180,
-			ce => '1',
-			r  => '0',
-			s  => '0',
-			d0 => '0',
-			d1 => '1',
-			q  => sdram_clk);
-
-		sdram_clk_i : obufds
-		generic map (
-			iostandard => "DIFF_SSTL2_I")
-		port map (
-			i  => sdram_clk,
-			o  => sd_ck_p,
-			ob => sd_ck_n);
-
 	
 		dcm_dll : dcm_sp
 		generic map(
-			clk_feedback => "1X",
-			clkin_period => (sys_per*real(sdram_params.pll.dcm_div))/real( sdram_params.pll.dcm_mul)*1.0e9,
-			clkdv_divide => 2.0,
+			clk_feedback   => "1X",
+			clkin_period   => (sys_per*real(sdram_params.pll.dcm_div))/real( sdram_params.pll.dcm_mul)*1.0e9,
+			clkdv_divide   => 2.0,
 			clkin_divide_by_2 => FALSE,
-			clkfx_divide => 1,
+			clkfx_divide   => 1,
 			clkfx_multiply => 2,
 			clkout_phase_shift => "NONE",
 			deskew_adjust => "SYSTEM_SYNCHRONOUS",
 			dfs_frequency_mode => "HIGH",
 			duty_cycle_correction => TRUE,
-			factory_jf => x"C080",
-			phase_shift => 0,
-			startup_wait => FALSE)
+			factory_jf    => x"C080",
+			phase_shift   => 0,
+			startup_wait  => FALSE)
 		port map (
 			dssen    => '0',
 			psclk    => '0',
@@ -363,8 +337,8 @@ begin
 			psincdec => '0',
 	
 			rst      => '0',
-			clkin    => dfs_clkfx,
-			clkfb    => dfs_clkfx,
+			clkin    => dcm_clkin,
+			clkfb    => clk0,
 			clk0     => dcm_clk0,
 			clk90    => dcm_clk90,
 			locked   => dcm_lckd);
@@ -609,6 +583,9 @@ begin
 		end if;
 	end process;
 
+	phy_wlreq <= to_stdulogic(to_bit(phy_wlrdy));
+	phy_rlreq <= to_stdulogic(to_bit(phy_rlrdy));
+
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
 		dqs_delay   => natural(sdram_tcp/5.0*1.0e12)*1 ps,
@@ -616,6 +593,7 @@ begin
 		device      => xc3s,
 		bypass      => true,
 		loopback    => false,
+		data_edge   => true,
 		bank_size   => sd_ba'length,
 		addr_size   => sd_a'length,
 		cmmd_gear   => cmmd_gear,
@@ -653,7 +631,7 @@ begin
 		sys_sti     => ctlrphy_sto,
 		sys_sto     => ctlrphy_sti,
 
-		sdram_clk     => sdrphy_clk,
+		sdram_clk     => sd_clk,
 		sdram_cke     => sdram_cke,
 		sdram_cs      => sdram_cs,
 		sdram_odt     => sdram_odt,
@@ -670,6 +648,15 @@ begin
 		sdram_dqst    => sdram_dqst,
 		sdram_dqsi    => sd_dqs,
 		sdram_dqso    => sdram_dqso);
+
+
+	sdram_clk_i : obufds
+	generic map (
+		iostandard => "DIFF_SSTL2_I")
+	port map (
+		i  => sd_clk(0),
+		o  => sd_ck_p,
+		ob => sd_ck_n);
 
 	sd_cke <= sdram_cke(0);
 	sd_cs  <= sdram_cs(0);
