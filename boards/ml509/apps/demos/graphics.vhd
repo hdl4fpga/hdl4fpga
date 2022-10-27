@@ -196,7 +196,7 @@ architecture graphics of ml509 is
 	constant coln_size    : natural := 7;
 	-- constant word_size    : natural := ddr2_d'length;
 	-- constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
-	constant word_size    : natural := 16;
+	constant word_size    : natural := 8;
 	constant byte_size    : natural := 8;
 
 	signal si_frm         : std_logic;
@@ -251,8 +251,8 @@ architecture graphics of ml509 is
 	signal ctlrphy_dqi    : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_dqt    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqo    : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_sto    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
-	signal ctlrphy_sti    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
+	signal ctlrphy_sto    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
 	signal ddr2_clk       : std_logic_vector(ddr2_clk_p'range);
 	signal ddr2_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -800,7 +800,7 @@ begin
 		coln_size    => coln_size,
 		word_size    => word_size,
 		byte_size    => byte_size,
-		burst_length => 4,
+		burst_length => 8,
 
 		timing_id    => videoparam(video_mode).timing,
 		red_length   => 8,
@@ -834,7 +834,7 @@ begin
 		ctlr_cwl      => b"0_11",
 		ctlr_rtt      => b"11",
 		ctlr_al       => "001",
-		ctlr_bl       => "010", --"001",
+		ctlr_bl       => "011", --"001",
 		ctlr_cl       => sdram_params.cl,
 		ctlr_cmd      => ctlrphy_cmd,
 		ctlr_inirdy   => ctlr_inirdy,
@@ -994,8 +994,11 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
+		dqs_delay  => 2000 ns/300,
+		dqi_delay  => 2000 ns/300,
 		device      => xc5v,
 		bufio       => false,
+		bypass      => false,
 		taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
 		bank_size   => bank_size,
 		addr_size   => addr_size,

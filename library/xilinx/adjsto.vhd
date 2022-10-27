@@ -12,6 +12,8 @@ entity adjsto is
 		sdram_clk : in  std_logic;
 		inv       : in  std_logic := '0';
 		edge      : in  std_logic;
+		step_req  : buffer std_logic;
+		step_rdy  : buffer std_logic;
 		sys_req   : in  std_logic;
 		sys_rdy   : buffer std_logic;
 		dqs_smp   : in  std_logic_vector;
@@ -31,8 +33,8 @@ architecture def of adjsto is
 	signal seq      : std_logic_vector(0 to dqs_smp'length-1);
 	signal pre      : unsigned(seq'range);
 
-	signal step_req : std_logic;
-	signal step_rdy : std_logic;
+	-- signal step_req : std_logic;
+	-- signal step_rdy : std_logic;
 
 begin
 
@@ -116,7 +118,7 @@ begin
 		variable start : std_logic;
 	begin
 		if rising_edge(sdram_clk) then
-			if to_bit(sys_req xor sys_rdy)='1' then
+			if (sys_rdy xor to_stdulogic(to_bit(sys_req)))='1' then
 				if start='0' then
 					sel      <= (others => '0');
 					start    := '1';

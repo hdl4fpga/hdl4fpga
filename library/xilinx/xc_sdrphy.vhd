@@ -32,10 +32,8 @@ use hdl4fpga.sdram_param.all;
 
 entity xc_sdrphy is
 	generic (
-		-- dqs_delay : time := 1.35 ns;
-		-- dqi_delay : time := 0 ns; --1.35 ns;
-		dqs_delay  : time := 1000 ns/300;
-		dqi_delay  : time := 1000 ns/300;
+		dqs_delay  : time      := 0 ns;
+		dqi_delay  : time      := 0 ns;
 		device     : fpga_devices;
 		loopback   : boolean   := false;
 		bypass     : boolean   := true;

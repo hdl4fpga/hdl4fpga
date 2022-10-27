@@ -76,7 +76,7 @@ entity xc_sdrdqphy is
 		sys_dqsi   : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dqso   : buffer std_logic_vector(data_gear-1 downto 0);
 		sys_dqst   : in  std_logic_vector(data_gear-1 downto 0);
-		sto_synced : out std_logic;
+		sto_synced : buffer std_logic;
 
 		sdram_dmi  : in  std_logic := '-';
 		sdram_sti  : in  std_logic := '-';
@@ -124,14 +124,18 @@ architecture xilinx of xc_sdrdqphy is
 	signal tp_dqsdly    : std_logic_vector(6-1 downto 0);
 	signal tp_dqssel    : std_logic_vector(3-1 downto 0);
 
+	signal step_req : std_logic;
+	signal step_rdy : std_logic;
+
 begin
 
 	with tp_sel select
 	tp_delay <=
-		dqs180 & dqspre       & tp_dqidly when '1',
-		tp_dqssel(2 downto 0) & tp_dqsdly(4 downto 0) when others;
+		dqs180 & dqspre  & tp_dqidly when '1',
+		-- tp_dqssel & tp_dqsdly(4 downto 0) when others;
+		tp_dqssel & (adjsto_req xor adjsto_rdy) & (read_rdy xnor read_req)  & (read_rdy xor read_req) & "0" & sto_synced when others;
+		-- tp_dqssel & (adjsto_req xor adjsto_rdy) & (step_rdy xnor step_req)  & (step_rdy xor step_req) & "0" & sto_synced when others;
 
-	sys_wlrdy <= to_stdulogic(to_bit(sys_wlreq));
 	rl_b : block
 	begin
 
@@ -355,6 +359,8 @@ begin
 			sdram_sto => dqssto,
 			dqs_smp   => dqs_smp,
 			dqs_pre   => dqspre,
+			step_req   => step_req,
+			step_rdy   => step_rdy,
 			sys_req   => adjsto_req,
 			sys_rdy   => adjsto_rdy,
 			synced    => sto_synced);
