@@ -15,7 +15,7 @@
   <version xil_pn:ise_version="14.7" xil_pn:schema_version="2"/>
 
   <files>
-    <file xil_pn:name="../../common/s3starter.vhd" xil_pn:type="FILE_VHDL"/>
+    <file xil_pn:name="../..basic/s3starter.vhd" xil_pn:type="FILE_VHDL"/>
     <file xil_pn:name="../../testbench/uart.vhd" xil_pn:type="FILE_VHDL"/>
     <file xil_pn:name="../../../../library/uart/uart_rx.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="3"/>
@@ -27,17 +27,17 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="3"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/common/seg7.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../librarybasic/seg7.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="5"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="5"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/common/base.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../librarybasic/base.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="17"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="1"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../common/s3starter.ucf" xil_pn:type="FILE_UCF"/>
+    <file xil_pn:name="../..basic/s3starter.ucf" xil_pn:type="FILE_UCF"/>
   </files>
 
   <properties>
@@ -144,7 +144,7 @@
     <property xil_pn:name="Ignore User Timing Constraints Map" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Ignore User Timing Constraints Par" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Implementation Top" xil_pn:value="Architecture|seg7|mixed" xil_pn:valueState="non-default"/>
-    <property xil_pn:name="Implementation Top File" xil_pn:value="../../../../library/common/seg7.vhd" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Implementation Top File" xil_pn:value="../../../../librarybasic/seg7.vhd" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Implementation Top Instance Path" xil_pn:value="/seg7" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Include 'uselib Directive in Verilog File" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Include SIMPRIM Models in Verilog File" xil_pn:value="false" xil_pn:valueState="default"/>

@@ -1,45 +1,45 @@
 CONSTRAINTS = ./constraints/ulx3s_v20_lvds.lpf
 
 TOP_MODULE = ulx3s
-TOP_MODULE_FILE = ../common/ulx3s.vhd
+TOP_MODULE_FILE = ..basic/ulx3s.vhd
 
 VHDL_FILES = \
   $(TOP_MODULE_FILE) \
   ../scopeio/scopeio_top.vhd \
   ../scopeio/usbserial_rxd.vhd \
-  ../common/hdl/vga.vhd \
-  ../common/hdl/oled/oled_hex_decoder.vhd \
-  ../common/hdl/oled/oled_init_pack.vhd \
-  ../common/hdl/oled/oled_font_pack.vhd \
-  ../common/hdl/oled/vga/oled_vga.vhd \
-  ../common/hdl/oled/vga/oled_vga_init_pack.vhd \
-  ../common/hdl/spi_display/spi_display.vhd \
-  ../common/hdl/spi_display/spi_display_init_pack.vhd \
-  ../common/hdl/spi_display/st7789_init_pack.vhd \
-  ../common/hdl/spi_display/ssd1331_init_pack.vhd \
-  ../common/hdl/adc/max1112x_reader.vhd \
-  ../common/hdl/adc/max1112x_init_pack.vhd \
+  ..basic/hdl/vga.vhd \
+  ..basic/hdl/oled/oled_hex_decoder.vhd \
+  ..basic/hdl/oled/oled_init_pack.vhd \
+  ..basic/hdl/oled/oled_font_pack.vhd \
+  ..basic/hdl/oled/vga/oled_vga.vhd \
+  ..basic/hdl/oled/vga/oled_vga_init_pack.vhd \
+  ..basic/hdl/spi_display/spi_display.vhd \
+  ..basic/hdl/spi_display/spi_display_init_pack.vhd \
+  ..basic/hdl/spi_display/st7789_init_pack.vhd \
+  ..basic/hdl/spi_display/ssd1331_init_pack.vhd \
+  ..basic/hdl/adc/max1112x_reader.vhd \
+  ..basic/hdl/adc/max1112x_init_pack.vhd \
 
 
 VHDL_LIB_NAME = hdl4fpga
 VHDL_LIB_FILES = \
   ../../library/latticesemi/ecp5/ecp5pll.vhd \
-  ../../library/common/align.vhd \
-  ../../library/common/base.vhd \
-  ../../library/common/bram.vhd \
-  ../../library/common/dpram.vhd \
-  ../../library/common/bram_true2p_2clk.vhd \
-  ../../library/common/rom.vhd \
-  ../../library/common/bcddiv2e.vhd \
-  ../../library/common/vector.vhd \
-  ../../library/common/dbdbbl.vhd \
-  ../../library/common/stof.vhd \
-  ../../library/common/dtos.vhd \
-  ../../library/common/btod.vhd \
-  ../../library/common/btof.vhd \
-  ../../library/common/arbiter.vhd \
-  ../../library/common/serdes.vhd \
-  ../../library/common/fifo.vhd \
+  ../../librarybasic/align.vhd \
+  ../../librarybasic/base.vhd \
+  ../../librarybasic/bram.vhd \
+  ../../librarybasic/dpram.vhd \
+  ../../librarybasic/bram_true2p_2clk.vhd \
+  ../../librarybasic/rom.vhd \
+  ../../librarybasic/bcddiv2e.vhd \
+  ../../librarybasic/vector.vhd \
+  ../../librarybasic/dbdbbl.vhd \
+  ../../librarybasic/stof.vhd \
+  ../../librarybasic/dtos.vhd \
+  ../../librarybasic/btod.vhd \
+  ../../librarybasic/btof.vhd \
+  ../../librarybasic/arbiter.vhd \
+  ../../librarybasic/serdes.vhd \
+  ../../librarybasic/fifo.vhd \
   ../../library/scope/scopeio.vhd \
   ../../library/scope/scopeiopkg.vhd \
   ../../library/scope/scopeio_capture.vhd \

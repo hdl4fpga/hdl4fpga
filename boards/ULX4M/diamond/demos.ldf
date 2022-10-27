@@ -9,25 +9,25 @@
             <Option name="lib" value="hdl4fpga"/>
             <Option name="top" value="ulx4m_ld"/>
         </Options>
-        <Source name="../common/ulx4m_ld.vhd" type="VHDL" type_short="VHDL">
+        <Source name="..basic/ulx4m_ld.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx4m_ld"/>
         </Source>
-        <Source name="../../../library/common/align.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/align.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/common/base.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/base.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/common/bram.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/bram.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/common/dpram.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/dpram.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/common/rom.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/rom.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/common/arbiter.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/arbiter.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../../library/latticesemi/dbuf.vhd" type="VHDL" type_short="VHDL">
@@ -36,16 +36,16 @@
         <Source name="../../../library/latticesemi/ecp3/dbram.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/common/cntrcs.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/cntrcs.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/common/fifo.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/fifo.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/common/desser.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/desser.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/common/serdes.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/serdes.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/video/videopkg.vhd" type="VHDL" type_short="VHDL">
@@ -105,16 +105,16 @@
         <Source name="../../../library/sio/sio_mux.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/common/crc.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/crc.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/video/graphics.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/common/barrel.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/barrel.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/common/timer.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/timer.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/sio/so_data.vhd" type="VHDL" type_short="VHDL">
@@ -231,10 +231,10 @@
         <Source name="../../../library/sio/sio_ff.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/common/adder.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/adder.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/common/txn_buffer.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/txn_buffer.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/sio/sio_muxcmp.vhd" type="VHDL" type_short="VHDL">
@@ -243,7 +243,7 @@
         <Source name="../../../library/mii/dll_rx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/common/sync_transfer.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/sync_transfer.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/xilinx/adjpha.vhd" type="VHDL" type_short="VHDL">
@@ -312,7 +312,7 @@
         <Source name="../../../library/latticesemi/ecp5/ecp5_sdrphy.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/common/profiles.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../librarybasic/profiles.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../../../../../opt/diamond/3.11_x64/ispfpga/sa5p00/data/mem_sync.v" type="Verilog" type_short="Verilog">

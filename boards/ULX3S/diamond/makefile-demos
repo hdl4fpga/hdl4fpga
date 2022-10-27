@@ -23,7 +23,7 @@ OPENOCD_INTERFACE=$(SCRIPTS)/ft231x.ocd
 
 # ******* design files *******
 CLK0_NAME = clk_verilog_v
-CLK0_FILE_NAME = ../common/$(CLK0_NAME).v
+CLK0_FILE_NAME = ..basic/$(CLK0_NAME).v
 CLK0_OPTIONS = \
   --module=$(CLK0_NAME) \
   --clkin=25 \
@@ -33,7 +33,7 @@ CLK0_OPTIONS = \
   --clkout3=6 \
   --dynamic
 
-VERILOG_CLOCK_FILE = ../common/clk_25_200_40_66_6.v
+VERILOG_CLOCK_FILE = ..basic/clk_25_200_40_66_6.v
 
 include files-demos.mk
 #include files.mk
