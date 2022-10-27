@@ -1,7 +1,7 @@
 CONSTRAINTS = ./constraints/ulx3s_demos.lpf
 
 TOP_MODULE = ulx3s
-TOP_MODULE_FILE = ..basic/ulx3s.vhd
+TOP_MODULE_FILE = ../basic/ulx3s.vhd
 
 VHDL_FILES = \
   $(TOP_MODULE_FILE) \
@@ -9,13 +9,13 @@ VHDL_FILES = \
 
 VHDL_LIB_NAME = hdl4fpga
 VHDL_LIB_FILES = \
-../../librarybasic/align.vhd \
-../../librarybasic/base.vhd\
-../../librarybasic/bram.vhd \
-../../librarybasic/dpram.vhd \
-../../librarybasic/rom.vhd \
-../../librarybasic/arbiter.vhd \
-../../librarybasic/serdes.vhd \
+../../library/basic/align.vhd \
+../../library/basic/base.vhd\
+../../library/basic/bram.vhd \
+../../library/basic/dpram.vhd \
+../../library/basic/rom.vhd \
+../../library/basic/arbiter.vhd \
+../../library/basic/serdes.vhd \
 ../../library/scope/scopeiopkg.vhd \
 ../../library/scope/scopeio_istream.vhd \
 ../../library/scope/scopeio_istreamdaisy.vhd \
@@ -42,33 +42,33 @@ VHDL_LIB_FILES = \
 ../../library/ddr/ddrdma.vhd \
 ../../library/ddr/dmactlr.vhd \
 ../../library/ddr/dmatrans.vhd \
-../../librarybasic/timer.vhd \
-../../librarybasic/barrel.vhd \
+../../library/basic/timer.vhd \
+../../library/basic/barrel.vhd \
 ../../library/latticesemi/dbuf.vhd \
 ../../library/latticesemi/ecp3/dbram.vhd \
 ../../library/latticesemi/ecp3/ff.vhd \
-../../librarybasic/cntrcs.vhd \
+../../library/basic/cntrcs.vhd \
 ../../library/scope/scopeio_rgtr.vhd \
-../../librarybasic/fifo.vhd \
-../../librarybasic/grant.vhd \
+../../library/basic/fifo.vhd \
+../../library/basic/grant.vhd \
 ../../library/latticesemi/sdrbaphy.vhd \
 ../../library/latticesemi/sdrdqphy.vhd \
 ../../library/latticesemi/sdrphy.vhd \
 ../../library/ddr/ddr_ctlr.vhd \
-../../librarybasic/align.vhd \
-../../librarybasic/base.vhd \
-../../librarybasic/bram.vhd \
-../../librarybasic/dpram.vhd \
-../../librarybasic/bram_true2p_2clk.vhd \
-../../librarybasic/rom.vhd \
-../../librarybasic/bcddiv2e.vhd \
-../../librarybasic/vector.vhd \
-../../librarybasic/dbdbbl.vhd \
-../../librarybasic/stof.vhd \
-../../librarybasic/dtos.vhd \
-../../librarybasic/btod.vhd \
-../../librarybasic/btof.vhd \
-../../librarybasic/arbiter.vhd \
+../../library/basic/align.vhd \
+../../library/basic/base.vhd \
+../../library/basic/bram.vhd \
+../../library/basic/dpram.vhd \
+../../library/basic/bram_true2p_2clk.vhd \
+../../library/basic/rom.vhd \
+../../library/basic/bcddiv2e.vhd \
+../../library/basic/vector.vhd \
+../../library/basic/dbdbbl.vhd \
+../../library/basic/stof.vhd \
+../../library/basic/dtos.vhd \
+../../library/basic/btod.vhd \
+../../library/basic/btof.vhd \
+../../library/basic/arbiter.vhd \
 ../../library/scope/scopeio.vhd \
 ../../library/scope/scopeiopkg.vhd \
 ../../library/scope/scopeio_capture.vhd \

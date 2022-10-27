@@ -52,20 +52,20 @@ set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
-set_global_assignment -name VHDL_FILE ../../../../librarybasic/base.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../librarybasic/txn_buffer.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../librarybasic/timer.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../librarybasic/sync_transfer.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../librarybasic/rom.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../librarybasic/profiles.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../librarybasic/gray.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../librarybasic/fifo.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../librarybasic/dpram.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../librarybasic/desser.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../librarybasic/barrel.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../librarybasic/arbiter.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../librarybasic/align.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../librarybasic/adder.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/basic/base.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/basic/txn_buffer.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/basic/timer.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/basic/sync_transfer.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/basic/rom.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/basic/profiles.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/basic/gray.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/basic/fifo.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/basic/dpram.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/basic/desser.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/basic/barrel.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/basic/arbiter.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/basic/align.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/basic/adder.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/hdlc/hdlcsync_tx.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/hdlc/hdlcsync_rx.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/hdlc/hdlcfcs_rx.vhd -library hdl4fpga
@@ -88,7 +88,7 @@ set_global_assignment -name VHDL_FILE ../../../../library/sdram/dmatrans.vhd -li
 set_global_assignment -name VHDL_FILE ../../../../library/sdram/dmactlr.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/sdram/dmacntr.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../apps/demos/graphics.vhd
-set_global_assignment -name VHDL_FILE ../..basic/DE10_nano.vhd
+set_global_assignment -name VHDL_FILE ../../basic/DE10_nano.vhd
 set_global_assignment -name VHDL_FILE ../../../../library/demos/demo_graphics.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/demos/app_profiles.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/mii/udp_tx.vhd -library hdl4fpga

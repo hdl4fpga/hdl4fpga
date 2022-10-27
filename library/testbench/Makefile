@@ -547,11 +547,11 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__adder)
 
 $(HDL4FPGA__adder) \
-$(HDL4FPGA__adder__def) : ..basic/adder.vhd \
+$(HDL4FPGA__adder__def) : ../basic/adder.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ..basic/adder.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/adder.vhd
 
 $(HDL4FPGA__adjbrst) \
 $(HDL4FPGA__adjbrst__def) : ../latticesemi/ecp5/adjbrst.vhd \
@@ -600,26 +600,26 @@ $(HDL4FPGA__adjsto__def) : ../xilinx/adjsto.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/adjsto.vhd
 
 $(HDL4FPGA__align) \
-$(HDL4FPGA__align__arch) : ..basic/align.vhd \
+$(HDL4FPGA__align__arch) : ../basic/align.vhd \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
 		$(HDL4FPGA__std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ..basic/align.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/align.vhd
 
 $(HDL4FPGA__app_profiles) \
 $(HDL4FPGA__app_profiles__body) : ../demos/app_profiles.vhd
 	$(VCOM) -2002 -work hdl4fpga ../demos/app_profiles.vhd
 
 $(HDL4FPGA__arbiter) \
-$(HDL4FPGA__arbiter__mix) : ..basic/arbiter.vhd \
+$(HDL4FPGA__arbiter__mix) : ../basic/arbiter.vhd \
 		$(HDL4FPGA__std) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ..basic/arbiter.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/arbiter.vhd
 
 $(HDL4FPGA__arp_rx) \
 $(HDL4FPGA__arp_rx__def) : ../mii/arp_rx.vhd \
@@ -658,20 +658,20 @@ $(HDL4FPGA__arpd__def) : ../mii/arpd.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../mii/arpd.vhd
 
 $(HDL4FPGA__barrel) \
-$(HDL4FPGA__barrel__beh) : ..basic/barrel.vhd \
+$(HDL4FPGA__barrel__beh) : ../basic/barrel.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ..basic/barrel.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/barrel.vhd
 
 $(HDL4FPGA__base) \
-$(HDL4FPGA__base__body) : ..basic/base.vhd \
+$(HDL4FPGA__base__body) : ../basic/base.vhd \
 		$(IEEE__math_real) \
 		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ..basic/base.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/base.vhd
 
 $(HDL4FPGA__bcdfonts) : ../video/fonts/bcdfonts.vhd \
 		$(STD__textio) \
@@ -734,13 +734,13 @@ $(HDL4FPGA__clk_start__ecp3) : ../latticesemi/ecp3/clkstart.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/clkstart.vhd
 
 $(HDL4FPGA__cntrcs) \
-$(HDL4FPGA__cntrcs__def) : ..basic/cntrcs.vhd \
+$(HDL4FPGA__cntrcs__def) : ../basic/cntrcs.vhd \
 		$(HDL4FPGA__std) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ..basic/cntrcs.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/cntrcs.vhd
 
 $(HDL4FPGA__cp850x8x16x0to127) : ../video/fonts/cp850x8x16x0to127.vhd \
 		$(STD__textio) \
@@ -763,13 +763,13 @@ $(HDL4FPGA__cp850x8x8x128to255) : ../video/fonts/cp850x8x8x128to255.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../video/fonts/cp850x8x8x128to255.vhd
 
 $(HDL4FPGA__crc) \
-$(HDL4FPGA__crc__def) : ..basic/crc.vhd \
+$(HDL4FPGA__crc__def) : ../basic/crc.vhd \
 		$(HDL4FPGA__std) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ..basic/crc.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/crc.vhd
 
 $(HDL4FPGA__dbram) \
 $(HDL4FPGA__dbram__xilinx) : ../xilinx/dbram.vhd \
@@ -810,13 +810,13 @@ $(HDL4FPGA__demo_graphics__mix) : ../demos/demo_graphics.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../demos/demo_graphics.vhd
 
 $(HDL4FPGA__desser) \
-$(HDL4FPGA__desser__mux) : ..basic/desser.vhd \
+$(HDL4FPGA__desser__mux) : ../basic/desser.vhd \
 		$(HDL4FPGA__std) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ..basic/desser.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/desser.vhd
 
 $(HDL4FPGA__dhcpc_dscb) \
 $(HDL4FPGA__dhcpc_dscb__def) : ../mii/dhcp_dscb.vhd \
@@ -901,13 +901,13 @@ $(HDL4FPGA__dmatrans__def) : ../sdram/dmatrans.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../sdram/dmatrans.vhd
 
 $(HDL4FPGA__dpram) \
-$(HDL4FPGA__dpram__def) : ..basic/dpram.vhd \
+$(HDL4FPGA__dpram__def) : ../basic/dpram.vhd \
 		$(HDL4FPGA__std) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ..basic/dpram.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/dpram.vhd
 
 $(HDL4FPGA__ecp3_sdrbaphy) \
 $(HDL4FPGA__ecp3_sdrbaphy__ecp3) : ../latticesemi/ecp3/ecp3_sdrbaphy.vhd \
@@ -1031,13 +1031,13 @@ $(HDL4FPGA__ethpkg__body) : ../mii/ethpkg.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../mii/ethpkg.vhd
 
 $(HDL4FPGA__ff) \
-$(HDL4FPGA__ff__beh) : ..basic/ff.vhd \
+$(HDL4FPGA__ff__beh) : ../basic/ff.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ..basic/ff.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/ff.vhd
 
 $(HDL4FPGA__fifo) \
-$(HDL4FPGA__fifo__def) : ..basic/fifo.vhd \
+$(HDL4FPGA__fifo__def) : ../basic/fifo.vhd \
 		$(HDL4FPGA__std) \
 		$(HDL4FPGA__sync_transfer) \
 		$(HDL4FPGA__dpram) \
@@ -1045,7 +1045,7 @@ $(HDL4FPGA__fifo__def) : ..basic/fifo.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ..basic/fifo.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/fifo.vhd
 
 $(HDL4FPGA__graphics) \
 $(HDL4FPGA__graphics__def) : ../video/graphics.vhd \
@@ -1327,16 +1327,16 @@ $(HDL4FPGA__phy_rl__def) : ../sdram/phy_rl.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../sdram/phy_rl.vhd
 
-$(HDL4FPGA__profiles) : ..basic/profiles.vhd
-	$(VCOM) -2002 -work hdl4fpga ..basic/profiles.vhd
+$(HDL4FPGA__profiles) : ../basic/profiles.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/profiles.vhd
 
 $(HDL4FPGA__rom) \
-$(HDL4FPGA__rom__def) : ..basic/rom.vhd \
+$(HDL4FPGA__rom__def) : ../basic/rom.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__std)
-	$(VCOM) -2002 -work hdl4fpga ..basic/rom.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/rom.vhd
 
 $(HDL4FPGA__sdram_ctlr) \
 $(HDL4FPGA__sdram_ctlr__mix) : ../sdram/sdram_ctlr.vhd \
@@ -1531,13 +1531,13 @@ $(HDL4FPGA__ser_display__def) : ../video/ser_display.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../video/ser_display.vhd
 
 $(HDL4FPGA__serdes) \
-$(HDL4FPGA__serdes__def) : ..basic/serdes.vhd \
+$(HDL4FPGA__serdes__def) : ../basic/serdes.vhd \
 		$(HDL4FPGA__std) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ..basic/serdes.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/serdes.vhd
 
 $(HDL4FPGA__aff) \
 $(HDL4FPGA__aff__xilinx) \
@@ -1698,23 +1698,23 @@ $(HDL4FPGA__so_data__def) : ../sio/so_data.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../sio/so_data.vhd
 
 $(HDL4FPGA__sync_transfer) \
-$(HDL4FPGA__sync_transfer__def) : ..basic/sync_transfer.vhd \
+$(HDL4FPGA__sync_transfer__def) : ../basic/sync_transfer.vhd \
 		$(HDL4FPGA__std) \
 		$(HDL4FPGA__dpram) \
 		$(IEEE__numeric_std) \
 		$(HDL4FPGA__std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ..basic/sync_transfer.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/sync_transfer.vhd
 
 $(HDL4FPGA__timer) \
-$(HDL4FPGA__timer__def) : ..basic/timer.vhd \
+$(HDL4FPGA__timer__def) : ../basic/timer.vhd \
 		$(HDL4FPGA__std) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ..basic/timer.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/timer.vhd
 
 $(HDL4FPGA__tmds_encoder) \
 $(HDL4FPGA__tmds_encoder__behavioral) : ../video/tmds_encoder.vhd \
@@ -1725,14 +1725,14 @@ $(HDL4FPGA__tmds_encoder__behavioral) : ../video/tmds_encoder.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../video/tmds_encoder.vhd
 
 $(HDL4FPGA__txn_buffer) \
-$(HDL4FPGA__txn_buffer__def) : ..basic/txn_buffer.vhd \
+$(HDL4FPGA__txn_buffer__def) : ../basic/txn_buffer.vhd \
 		$(HDL4FPGA__std) \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__std) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ..basic/txn_buffer.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/txn_buffer.vhd
 
 $(HDL4FPGA__uart_rx) \
 $(HDL4FPGA__uart_rx__def) : ../uart/uart_rx.vhd \
