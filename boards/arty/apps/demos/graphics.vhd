@@ -718,7 +718,7 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => '0', --video_clk,
+		video_clk    => video_clk,
 		video_hzsync => video_hs,
 		video_vtsync => video_vs,
 		video_blank  => video_blank,
