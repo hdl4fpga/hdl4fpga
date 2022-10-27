@@ -1759,30 +1759,30 @@ $(HDL4FPGA__videopkg__body) : ../video/videopkg.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../video/videopkg.vhd
 
 $(HDL4FPGA__xc3s_dqsdelay) \
-$(HDL4FPGA__xc3s_dqsdelay__xilinx) : ../xilinx/xc3s/xc3s_dqsdelay.vhd \
+$(HDL4FPGA__xc3s_dqsdelay__xilinx) : ../xilinx/xc3s_dqsdelay.vhd \
 		$(IEEE__numeric_std) \
 		$(HDL4FPGA__pgm_delay) \
 		$(HDL4FPGA__profiles) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc3s/xc3s_dqsdelay.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc3s_dqsdelay.vhd
 
 $(HDL4FPGA__xc5v_idelay) \
-$(HDL4FPGA__xc5v_idelay__def) : ../xilinx/xc5v/xc5v_idelay.vhd \
+$(HDL4FPGA__xc5v_idelay__def) : ../xilinx/xc5v_idelay.vhd \
 		$(HDL4FPGA__adjser) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc5v/xc5v_idelay.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc5v_idelay.vhd
 
 $(HDL4FPGA__xc7a_idelay) \
-$(HDL4FPGA__xc7a_idelay__def) : ../xilinx/xc7a/xc7a_idelay.vhd \
+$(HDL4FPGA__xc7a_idelay__def) : ../xilinx/xc7a_idelay.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents)
-	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc7a/xc7a_idelay.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc7a_idelay.vhd
 
 $(HDL4FPGA__xc_dqsdelay) \
 $(HDL4FPGA__xc_dqsdelay__xilinx) : ../xilinx/xc_dqsdelay.vhd \
@@ -1838,6 +1838,7 @@ $(HDL4FPGA__xc_sdrphy) \
 $(HDL4FPGA__xc_sdrphy__xilinx) : ../xilinx/xc_sdrphy.vhd \
 		$(HDL4FPGA__xc_sdrdqphy) \
 		$(HDL4FPGA__xc_sdrbaphy) \
+		$(HDL4FPGA__ogbx) \
 		$(HDL4FPGA__sdram_param) \
 		$(HDL4FPGA__profiles) \
 		$(UNISIM__vcomponents) \
