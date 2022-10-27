@@ -8,7 +8,7 @@
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="work.ecp3versa"/>
         </Source>
-        <Source name="../../../library/common/std.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/common/base.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../../library/common/align.vhd" type="VHDL" type_short="VHDL">
@@ -188,7 +188,7 @@
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga" top_module="hdl4fpga.ecp3versa"/>
         </Source>
-        <Source name="../../../library/common/std.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/common/base.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../../library/common/align.vhd" type="VHDL" type_short="VHDL">
@@ -314,7 +314,7 @@
         <Source name="../../../library/common/rom.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/common/std.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/common/base.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../../library/mii/miirx_pre.vhd" type="VHDL" type_short="VHDL">
@@ -527,7 +527,7 @@
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga" top_module="hdl4fpga.ecp3versa"/>
         </Source>
-        <Source name="../../../library/common/std.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/common/base.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../../library/common/align.vhd" type="VHDL" type_short="VHDL">

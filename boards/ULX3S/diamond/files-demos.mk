@@ -10,7 +10,7 @@ VHDL_FILES = \
 VHDL_LIB_NAME = hdl4fpga
 VHDL_LIB_FILES = \
 ../../library/common/align.vhd \
-../../library/common/std.vhd\
+../../library/common/base.vhd\
 ../../library/common/bram.vhd \
 ../../library/common/dpram.vhd \
 ../../library/common/rom.vhd \
@@ -56,7 +56,7 @@ VHDL_LIB_FILES = \
 ../../library/latticesemi/sdrphy.vhd \
 ../../library/ddr/ddr_ctlr.vhd \
 ../../library/common/align.vhd \
-../../library/common/std.vhd \
+../../library/common/base.vhd \
 ../../library/common/bram.vhd \
 ../../library/common/dpram.vhd \
 ../../library/common/bram_true2p_2clk.vhd \

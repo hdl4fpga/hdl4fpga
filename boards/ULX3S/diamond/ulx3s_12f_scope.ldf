@@ -42,7 +42,7 @@
         <Source name="../../library/common/align.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../library/common/std.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/common/base.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/common/bram.vhd" type="VHDL" type_short="VHDL">
