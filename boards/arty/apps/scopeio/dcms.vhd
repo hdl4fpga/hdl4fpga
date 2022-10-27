@@ -29,7 +29,7 @@ library unisim;
 use unisim.vcomponents.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 entity dcms is
 	generic (

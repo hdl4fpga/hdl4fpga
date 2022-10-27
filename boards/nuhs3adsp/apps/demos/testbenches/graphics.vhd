@@ -22,7 +22,7 @@
 --                                                                            --
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 architecture nuhs3adsp_graphics of testbench is
 	constant ddr_period : time := 6 ns;

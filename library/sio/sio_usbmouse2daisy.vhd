@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 -- glued USB mouse -> GUI event -> daisy chain interface
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 use hdl4fpga.usbh_setup_pack.all;
 use hdl4fpga.scopeiopkg.all;
 

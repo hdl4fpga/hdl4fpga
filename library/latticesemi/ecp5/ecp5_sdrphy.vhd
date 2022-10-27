@@ -30,7 +30,7 @@ library ecp5u;
 use ecp5u.components.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 use hdl4fpga.sdram_param.all;
 
 entity ecp5_sdrphy is

@@ -22,7 +22,7 @@
 --                                                                            --
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
 architecture ecp3versa_graphics of testbench is

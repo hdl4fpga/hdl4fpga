@@ -30,7 +30,7 @@ library ecp3;
 use ecp3.components.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 use hdl4fpga.scopeiopkg.all;
 
 architecture beh of ecp3versa is

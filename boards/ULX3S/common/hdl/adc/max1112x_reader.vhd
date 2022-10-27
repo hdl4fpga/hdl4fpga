@@ -11,7 +11,7 @@ use IEEE.std_logic_unsigned.ALL;
 
 use work.max1112x_init_pack.all;
 library hdl4fpga;
-use hdl4fpga.std.all; -- for unsigned_num_bits()
+use hdl4fpga.base.all; -- for unsigned_num_bits()
 
 entity max1112x_reader is
 generic

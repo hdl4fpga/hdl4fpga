@@ -25,7 +25,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-package std is
+package base is
 
 	type natural_vector is array (natural range <>) of natural;
 	type integer_vector is array (natural range <>) of integer;
@@ -437,7 +437,7 @@ library ieee;
 use ieee.std_logic_textio.all;
 use ieee.math_real.all;
 
-package body std is
+package body base is
 
 	function strfill (
 		constant s    : string;

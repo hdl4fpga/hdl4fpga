@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 entity scopeio_downsampler is
 	generic (
@@ -123,8 +123,8 @@ begin
 						end if;
 					else
 						if start='1' then
-							maxx <= hdl4fpga.std.max(min0, sample);
-							minn <= hdl4fpga.std.min(max0, sample);
+							maxx <= hdl4fpga.base.max(min0, sample);
+							minn <= hdl4fpga.base.min(max0, sample);
 							max0 <= sample;
 							min0 <= sample;
 						else

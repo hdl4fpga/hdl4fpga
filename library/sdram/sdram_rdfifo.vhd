@@ -46,7 +46,7 @@ entity sdram_rdfifo is
 end;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 architecture struct of sdram_rdfifo is
 	subtype byte is std_logic_vector(BYTE_SIZE-1 downto 0);

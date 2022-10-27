@@ -37,7 +37,7 @@ entity adjser is
 end;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 architecture beh of adjser is
 begin

@@ -72,7 +72,7 @@ entity ecp5_sdrdqphy is
 end;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 architecture ecp5 of ecp5_sdrdqphy is
 

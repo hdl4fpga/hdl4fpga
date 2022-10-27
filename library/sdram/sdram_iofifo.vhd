@@ -45,7 +45,7 @@ entity iofifo is
 end;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 architecture mix of iofifo is
 	component sff

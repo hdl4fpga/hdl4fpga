@@ -6,7 +6,7 @@ use ieee.numeric_std.all;
 -- host mouse packets are sent over serial as 0x0F rgtr commands.
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity sio_hostmouse2daisy is

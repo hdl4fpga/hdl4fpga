@@ -29,7 +29,7 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.textboxpkg.all;
 

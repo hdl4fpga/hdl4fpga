@@ -22,7 +22,7 @@
 --                                                                            --
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 architecture nuhs3adsp_serdebug of testbench is
 	constant ddr_std  : positive := 1;

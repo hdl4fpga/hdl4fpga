@@ -51,7 +51,7 @@ library ecp3;
 use ecp3.components.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 architecture ecp3 of ddrpll is
 

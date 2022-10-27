@@ -29,7 +29,7 @@ library ecp5u;
 use ecp5u.components.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 entity sdrphy is
 	generic (
@@ -79,7 +79,7 @@ entity sdrphy is
 end;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 architecture ecp of sdrphy is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);

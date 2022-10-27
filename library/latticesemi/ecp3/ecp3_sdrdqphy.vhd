@@ -74,7 +74,7 @@ entity ecp3_sdrdqphy is
 end;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 architecture ecp3 of ecp3_sdrdqphy is
 	

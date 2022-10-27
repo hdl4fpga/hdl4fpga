@@ -26,7 +26,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 use hdl4fpga.profiles.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.videopkg.all;
@@ -802,7 +802,7 @@ begin
 
 		dvi_b : block
 
-			constant subpixel_length : natural := hdl4fpga.std.min(hdl4fpga.std.min(red_length, green_length), blue_length);
+			constant subpixel_length : natural := hdl4fpga.base.min(hdl4fpga.base.min(red_length, green_length), blue_length);
 
 			signal dvid_blank : std_logic;
 			signal in_red     : unsigned(0 to subpixel_length-1);

@@ -26,7 +26,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 use hdl4fpga.videopkg.all;
 
 entity box_edges is
@@ -93,7 +93,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 use hdl4fpga.videopkg.all;
 
 entity video_sync is
@@ -260,7 +260,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 entity videobox_layout is
 	generic (
@@ -400,10 +400,10 @@ entity draw_line is
 end;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 architecture def of draw_line is
-	constant min_len : natural := hdl4fpga.std.min(x'length, mask'length);
+	constant min_len : natural := hdl4fpga.base.min(x'length, mask'length);
 begin
 	dot <= ena when (resize(unsigned(x), min_len) and resize(unsigned(mask),min_len))=(0 to min_len-1 => '0') else '0';
 end;
@@ -413,7 +413,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 entity draw_vline is
 	generic (

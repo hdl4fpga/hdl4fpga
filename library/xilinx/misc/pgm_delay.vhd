@@ -39,7 +39,7 @@ library unisim;
 use unisim.vcomponents.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 architecture mix of pgm_delay is
 	constant ena             : std_logic_vector(n-1 downto 0) := (others => '1');

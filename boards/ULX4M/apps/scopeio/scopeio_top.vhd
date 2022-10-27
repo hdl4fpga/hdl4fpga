@@ -10,7 +10,7 @@ library ecp5u;
 use ecp5u.components.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.modeline_calculator.all;

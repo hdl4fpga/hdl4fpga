@@ -38,7 +38,7 @@ entity sdram_ph is
 end;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 use std.textio.all;
 

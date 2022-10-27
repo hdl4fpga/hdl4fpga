@@ -29,7 +29,7 @@ use ieee.numeric_std.all;
 use ieee.std_logic_textio.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 architecture arty_miiipoedebug of testbench is
 

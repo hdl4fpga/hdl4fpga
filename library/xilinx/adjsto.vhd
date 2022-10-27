@@ -24,7 +24,7 @@ entity adjsto is
 end;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
 architecture def of adjsto is
 

@@ -152,7 +152,7 @@ entity sdram_pgm is
 end;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 use hdl4fpga.sdram_param.all;
 
 architecture registered of sdram_pgm is

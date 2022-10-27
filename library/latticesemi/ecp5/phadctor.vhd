@@ -17,7 +17,7 @@ use ieee.numeric_std.all;
  end;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 
  architecture beh of phadctor is
 	subtype gap_word  is unsigned(0 to phase'length-1);
