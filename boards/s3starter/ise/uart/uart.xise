@@ -15,7 +15,7 @@
   <version xil_pn:ise_version="14.7" xil_pn:schema_version="2"/>
 
   <files>
-    <file xil_pn:name="../../basic/s3starter.vhd" xil_pn:type="FILE_VHDL"/>
+    <file xil_pn:name="../../common/s3starter.vhd" xil_pn:type="FILE_VHDL"/>
     <file xil_pn:name="../../testbench/uart.vhd" xil_pn:type="FILE_VHDL"/>
     <file xil_pn:name="../../../../library/uart/uart_rx.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="3"/>
@@ -37,7 +37,7 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="1"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../basic/s3starter.ucf" xil_pn:type="FILE_UCF"/>
+    <file xil_pn:name="../../common/s3starter.ucf" xil_pn:type="FILE_UCF"/>
   </files>
 
   <properties>

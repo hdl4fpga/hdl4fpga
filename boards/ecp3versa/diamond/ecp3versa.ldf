@@ -5,7 +5,7 @@
     </Options>
     <Implementation title="ddr" dir="ddr" description="ddr" synthesis="synplify" default_strategy="Strategy1">
         <Options def_top="ecp3versa" lib="hdl4fpga" top="work.ecp3versa"/>
-        <Source name="../basic/ecp3versa.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="work.ecp3versa"/>
         </Source>
         <Source name="../../../library/basic/base.vhd" type="VHDL" type_short="VHDL">
@@ -185,7 +185,7 @@
     </Implementation>
     <Implementation title="mii_debug" dir="mii_debug" description="mii_debug" synthesis="synplify" default_strategy="Area">
         <Options def_top="hdl4fpga.box_edges" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
-        <Source name="../basic/ecp3versa.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga" top_module="hdl4fpga.ecp3versa"/>
         </Source>
         <Source name="../../../library/basic/base.vhd" type="VHDL" type_short="VHDL">
@@ -299,7 +299,7 @@
     </Implementation>
     <Implementation title="scopeio" dir="scopeio" description="scopeio" synthesis="synplify" default_strategy="Timing">
         <Options def_top="hdl4fpga.scopeio_tds" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
-        <Source name="../basic/ecp3versa.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga" top_module="hdl4fpga.ecp3versa"/>
         </Source>
         <Source name="../scope/scopeio.vhd" type="VHDL" type_short="VHDL">
@@ -524,7 +524,7 @@
     </Implementation>
     <Implementation title="scopeio_debug" dir="scopeio_debug" description="scopeio_debug" synthesis="synplify" default_strategy="Area">
         <Options def_top="hdl4fpga.scopeio_axisticks" lib="hdl4fpga" top="hdl4fpga.ecp3versa"/>
-        <Source name="../basic/ecp3versa.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga" top_module="hdl4fpga.ecp3versa"/>
         </Source>
         <Source name="../../../library/basic/base.vhd" type="VHDL" type_short="VHDL">

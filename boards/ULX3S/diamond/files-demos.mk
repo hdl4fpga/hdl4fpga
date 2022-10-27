@@ -1,7 +1,7 @@
 CONSTRAINTS = ./constraints/ulx3s_demos.lpf
 
 TOP_MODULE = ulx3s
-TOP_MODULE_FILE = ../basic/ulx3s.vhd
+TOP_MODULE_FILE = ../common/ulx3s.vhd
 
 VHDL_FILES = \
   $(TOP_MODULE_FILE) \

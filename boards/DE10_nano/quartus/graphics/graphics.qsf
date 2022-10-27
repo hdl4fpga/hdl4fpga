@@ -88,7 +88,7 @@ set_global_assignment -name VHDL_FILE ../../../../library/sdram/dmatrans.vhd -li
 set_global_assignment -name VHDL_FILE ../../../../library/sdram/dmactlr.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/sdram/dmacntr.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../apps/demos/graphics.vhd
-set_global_assignment -name VHDL_FILE ../../basic/DE10_nano.vhd
+set_global_assignment -name VHDL_FILE ../../common/DE10_nano.vhd
 set_global_assignment -name VHDL_FILE ../../../../library/demos/demo_graphics.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/demos/app_profiles.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/mii/udp_tx.vhd -library hdl4fpga

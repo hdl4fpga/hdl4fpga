@@ -150,10 +150,10 @@ whole_library :     $(WORK__ulx4mld_graphic_structure_md) \
     $(WORK__arty__graphics) \
     $(WORK__arty)
 
-$(WORK__arty) : ../../boards/arty/basic/arty.vhd \
+$(WORK__arty) : ../../boards/arty/common/arty.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/arty/basic/arty.vhd
+	$(VCOM) -2002 ../../boards/arty/common/arty.vhd
 
 $(WORK__arty__graphics) : ../../boards/arty/apps/demos/graphics.vhd \
 		$(HDL4FPGA__ogbx) \
@@ -182,10 +182,10 @@ $(WORK__arty__graphics) : ../../boards/arty/apps/demos/graphics.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ../../boards/arty/apps/demos/graphics.vhd
 
-$(WORK__ecp3versa) : ../../boards/ecp3versa/basic/ecp3versa.vhd \
+$(WORK__ecp3versa) : ../../boards/ecp3versa/common/ecp3versa.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ecp3versa/basic/ecp3versa.vhd
+	$(VCOM) -2002 ../../boards/ecp3versa/common/ecp3versa.vhd
 
 $(WORK__ecp3versa__graphics) : ../../boards/ecp3versa/apps/demos/graphics.vhd \
 		$(HDL4FPGA__ecp3_sdrphy) \
@@ -214,11 +214,11 @@ $(WORK__ecp3versa__graphics) : ../../boards/ecp3versa/apps/demos/graphics.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ../../boards/ecp3versa/apps/demos/graphics.vhd
 
-$(WORK__ml509) : /home/msagre/work/hdl4fpga.dev/boards/ml509/basic/ml509.vhd \
+$(WORK__ml509) : /home/msagre/work/hdl4fpga.dev/boards/ml509/common/ml509.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga.dev/boards/ml509/basic/ml509.vhd
+	$(VCOM) -2002 /home/msagre/work/hdl4fpga.dev/boards/ml509/common/ml509.vhd
 
 $(WORK__ml509__graphics) : /home/msagre/work/hdl4fpga.dev/boards/ml509/apps/demos/graphics.vhd \
 		$(HDL4FPGA__xc_sdrphy) \
@@ -270,10 +270,10 @@ $(WORK__ml509__miiipoe_debug) : /home/msagre/work/hdl4fpga.dev/boards/ml509/apps
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 /home/msagre/work/hdl4fpga.dev/boards/ml509/apps/demos/miiipoe_debug.vhd
 
-$(WORK__nuhs3adsp) : ../../boards/nuhs3adsp/basic/nuhs3adsp.vhd \
+$(WORK__nuhs3adsp) : ../../boards/nuhs3adsp/common/nuhs3adsp.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/nuhs3adsp/basic/nuhs3adsp.vhd
+	$(VCOM) -2002 ../../boards/nuhs3adsp/common/nuhs3adsp.vhd
 
 $(WORK__nuhs3adsp__graphics) : ../../boards/nuhs3adsp/apps/demos/graphics.vhd \
 		$(HDL4FPGA__xc_sdrphy) \
@@ -298,10 +298,10 @@ $(WORK__nuhs3adsp__graphics) : ../../boards/nuhs3adsp/apps/demos/graphics.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ../../boards/nuhs3adsp/apps/demos/graphics.vhd
 
-$(WORK__s3estarter) : ../../boards/s3estarter/basic/s3estarter.vhd \
+$(WORK__s3estarter) : ../../boards/s3estarter/common/s3estarter.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/s3estarter/basic/s3estarter.vhd
+	$(VCOM) -2002 ../../boards/s3estarter/common/s3estarter.vhd
 
 $(WORK__s3estarter__graphics) : ../../boards/s3estarter/apps/demos/graphics.vhd \
 		$(HDL4FPGA__xc_sdrphy) \
@@ -446,12 +446,12 @@ $(WORK__testbench__ecp3versa_graphics) : ../../boards/ecp3versa/apps/demos/testb
 		$(HDL4FPGA__std)
 	$(VCOM) -2002 ../../boards/ecp3versa/apps/demos/testbenches/graphics.vhd
 
-$(WORK__ulx3s) : ../../boards/ULX3S/basic/ulx3s.vhd \
+$(WORK__ulx3s) : ../../boards/ULX3S/common/ulx3s.vhd \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ULX3S/basic/ulx3s.vhd
+	$(VCOM) -2002 ../../boards/ULX3S/common/ulx3s.vhd
 
 $(WORK__ulx3s__graphics) : ../../boards/ULX3S/apps/demos/graphics.vhd \
 		$(HDL4FPGA__sdrphy) \
@@ -507,12 +507,12 @@ $(WORK__ulx3s_graphic_structure_md) : ../../boards/ULX3S/apps/demos/testbenches/
 		$(WORK__testbench)
 	$(VCOM) -2002 ../../boards/ULX3S/apps/demos/testbenches/graphics.vhd
 
-$(WORK__ulx4m_ld) : ../../boards/ULX4M/basic/ulx4m_ld.vhd \
+$(WORK__ulx4m_ld) : ../../boards/ULX4M/common/ulx4m_ld.vhd \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ULX4M/basic/ulx4m_ld.vhd
+	$(VCOM) -2002 ../../boards/ULX4M/common/ulx4m_ld.vhd
 
 $(WORK__ulx4m_ld__graphics) : ../../boards/ULX4M/apps/demos/graphics.vhd \
 		$(HDL4FPGA__ecp5_sdrphy) \

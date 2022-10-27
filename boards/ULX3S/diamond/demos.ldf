@@ -5,7 +5,7 @@
     </Options>
     <Implementation title="eth_tb" dir="eth_tb" description="eth_tb" synthesis="synplify" default_strategy="Strategy1">
         <Options def_top="hdl4fpga.sio_tag" lib="hdl4fpga" top="ulx3s"/>
-        <Source name="../basic/ulx3s.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
         <Source name="../../../library/hdlc/hdlcdll_rx.vhd" type="VHDL" type_short="VHDL">
@@ -212,7 +212,7 @@
     </Implementation>
     <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="Strategy1">
         <Options def_top="hdl4fpga.phy_rl" lib="hdl4fpga" top="ulx3s"/>
-        <Source name="../basic/ulx3s.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
         <Source name="../../../library/basic/align.vhd" type="VHDL" type_short="VHDL">
@@ -521,7 +521,7 @@
     </Implementation>
     <Implementation title="hdlc_debug" dir="hdlc_debug" description="hdlc_debug" synthesis="synplify" default_strategy="Strategy1">
         <Options def_top="hdl4fpga.sio_ff" lib="hdl4fpga" top="ulx3s"/>
-        <Source name="../basic/ulx3s.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
         <Source name="../../../library/sio/sio_flow.vhd" type="VHDL" type_short="VHDL">
@@ -665,7 +665,7 @@
     </Implementation>
     <Implementation title="miiipoe_debug" dir="miiipoe_debug" description="miiipoe_debug" synthesis="synplify" default_strategy="Strategy1">
         <Options def_top="hdl4fpga.eth_tb" lib="hdl4fpga" top="ulx3s"/>
-        <Source name="../basic/ulx3s.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
         <Source name="../../../library/sio/sio_flow.vhd" type="VHDL" type_short="VHDL">
@@ -854,7 +854,7 @@
     </Implementation>
     <Implementation title="ser_debug" dir="ser_debug" description="ser_debug" synthesis="synplify" default_strategy="Strategy1">
         <Options def_top="hdl4fpga.sio_ram" lib="hdl4fpga" top="ulx3s"/>
-        <Source name="../basic/ulx3s.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
         <Source name="../apps/demos/ser_debug.vhd" type="VHDL" type_short="VHDL">
