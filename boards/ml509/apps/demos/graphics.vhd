@@ -997,7 +997,7 @@ begin
 		dqs_delay  => 2000 ns/300,
 		dqi_delay  => 2000 ns/300,
 		device      => xc5v,
-		bufio       => false,
+		bufio       => true,
 		bypass      => false,
 		taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
 		bank_size   => bank_size,
