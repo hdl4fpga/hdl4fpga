@@ -136,6 +136,7 @@ begin
 		tp_dqssel & (adjsto_req xor adjsto_rdy) & (read_rdy xnor read_req)  & (read_rdy xor read_req) & "0" & sto_synced when others;
 		-- tp_dqssel & (adjsto_req xor adjsto_rdy) & (step_rdy xnor step_req)  & (step_rdy xor step_req) & "0" & sto_synced when others;
 
+	sys_wlrdy <= to_stdulogic(to_bit(sys_wlreq));
 	rl_b : block
 	begin
 

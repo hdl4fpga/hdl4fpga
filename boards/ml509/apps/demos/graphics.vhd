@@ -992,6 +992,7 @@ begin
 	ctlrphy_we(1)  <= '1';
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
 
+	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
 		dqs_delay  => 2000 ns/300,
@@ -1021,6 +1022,8 @@ begin
 		phy_synced => ctlrphy_synced,
 
 		phy_cmd    => ctlrphy_cmd,
+		phy_wlreq  => ctlrphy_wlreq,
+		phy_wlrdy  => ctlrphy_wlrdy,
 		phy_rlreq  => ctlrphy_rlreq,
 		phy_rlrdy  => ctlrphy_rlrdy,
 
