@@ -567,7 +567,7 @@ begin
 
 			begin
 
-				dmao_dv_e : entity hdl4fpga.align
+				dmao_dv_e : entity hdl4fpga.latency
 				generic map (
 					n => 1,
 					d => (0 to 1-1 => dma_lat))
@@ -576,7 +576,7 @@ begin
 					di(0) => dmaio_do_dv,
 					do(0) => dmaso_irdy);
 
-				dmao_data_e : entity hdl4fpga.align
+				dmao_data_e : entity hdl4fpga.latency
 				generic map (
 					n => dmaso_data'length,
 					d => (0 to dmaso_data'length-1 => dma_lat))
@@ -721,7 +721,7 @@ begin
 			video_hzon   => hzon,
 			video_vton   => vton);
 
-		dmao_dv_e : entity hdl4fpga.align
+		dmao_dv_e : entity hdl4fpga.latency
 		generic map (
 			n => 1,
 			d => (0 to 1-1 => dma_lat))
@@ -730,7 +730,7 @@ begin
 			di(0) => dmavideo_do_dv,
 			do(0) => graphics_dv);
 
-		dmao_data_e : entity hdl4fpga.align
+		dmao_data_e : entity hdl4fpga.latency
 		generic map (
 			n => graphics_di'length,
 			d => (0 to graphics_di'length-1 => dma_lat))
@@ -739,7 +739,7 @@ begin
 			di  => dma_do,
 			do  => graphics_di);
 
-		dmao_rdy_e : entity hdl4fpga.align
+		dmao_rdy_e : entity hdl4fpga.latency
 		generic map (
 			n => 1,
 			d => (0 to 1-1 => dma_lat))
@@ -769,7 +769,7 @@ begin
 			video_vton  => vton,
 			video_pixel => pixel);
 
-		topixel_e : entity hdl4fpga.align
+		topixel_e : entity hdl4fpga.latency
 		generic map (
 			style => "register",
 			n => pixel_width,
@@ -779,7 +779,7 @@ begin
 			di  => pixel,
 			do  => video_pixel);
 
-		tosync_e : entity hdl4fpga.align
+		tosync_e : entity hdl4fpga.latency
 		generic map (
 			style => "register",
 			n => 4,
@@ -902,7 +902,7 @@ begin
 			ctlr_b       => ctlr_b,
 			ctlr_a       => ctlr_a);
 
-		dmadv_e : entity hdl4fpga.align
+		dmadv_e : entity hdl4fpga.latency
 		generic map (
 			style => "register",
 			n => 2,
@@ -912,7 +912,7 @@ begin
 			di => dev_do_dv,
 			do => dma_do_dv);
 
-		dma_rdy_e : entity hdl4fpga.align
+		dma_rdy_e : entity hdl4fpga.latency
 		generic map (
 			style => "register",
 			n => 2,
@@ -922,7 +922,7 @@ begin
 			di => dma_rdy,
 			do => dev_rdy);
 
-		dmado_e : entity hdl4fpga.align
+		dmado_e : entity hdl4fpga.latency
 		generic map (
 			style => "register",
 			n => ctlr_do'length,
@@ -1019,7 +1019,7 @@ begin
 			phy_dqso     => ctlrphy_dso,
 			phy_dqst     => ctlrphy_dst);
 
-		inirdy_e : entity hdl4fpga.align
+		inirdy_e : entity hdl4fpga.latency
 		generic map (
 			style => "register",
 			n => 1,

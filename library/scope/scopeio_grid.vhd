@@ -49,7 +49,7 @@ begin
 		dot  => vdot);
 
 	hvdot <= vdot or hdot;
-	align_e : entity hdl4fpga.align
+	align_e : entity hdl4fpga.latency
 	generic map (
 		n => 1,
 		d => (0 => latency))

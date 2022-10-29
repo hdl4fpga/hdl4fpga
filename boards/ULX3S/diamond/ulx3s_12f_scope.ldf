@@ -39,7 +39,7 @@
         <Source name="../../library/latticesemi/ecp5/ecp5pll.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../library/basic/align.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../library/basic/latency.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../library/basic/base.vhd" type="VHDL" type_short="VHDL">

@@ -179,7 +179,7 @@ begin
 			end if;
 		end process;
 
-		frm_delay_e : entity hdl4fpga.align
+		frm_delay_e : entity hdl4fpga.latency
 		generic map (
 			n => 1,
 			d => (0 => 2))

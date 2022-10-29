@@ -598,12 +598,12 @@ $(HDL4FPGA__adjsto__def) : ../xilinx/adjsto.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/adjsto.vhd
 
 $(HDL4FPGA__align) \
-$(HDL4FPGA__align__arch) : ../basic/align.vhd \
+$(HDL4FPGA__align__arch) : ../basic/latency.vhd \
 		$(IEEE__numeric_std) \
 		$(HDL4FPGA__base) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../basic/align.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/latency.vhd
 
 $(HDL4FPGA__app_profiles) \
 $(HDL4FPGA__app_profiles__body) : ../demos/app_profiles.vhd

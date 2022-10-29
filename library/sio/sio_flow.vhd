@@ -209,7 +209,7 @@ begin
 
 	begin
 
-		dly_e : entity hdl4fpga.align
+		dly_e : entity hdl4fpga.latency
 		generic map (
 			n => 1,
 			d => (0 to 0 => 2))

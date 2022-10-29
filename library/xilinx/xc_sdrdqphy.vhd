@@ -460,7 +460,7 @@ begin
 						q(2)  => dq(2*byte_size+i),
 						q(3)  => dq(3*byte_size+i));
 			
-					lath_g : entity hdl4fpga.align
+					lath_g : entity hdl4fpga.latency
 					generic map (
 						n => 4,
 						d => (0, 0, 1, 1))
@@ -475,7 +475,7 @@ begin
 						do(2) => dqh(0*byte_size+i),
 						do(3) => dqh(1*byte_size+i));
 			
-					latf_g : entity hdl4fpga.align
+					latf_g : entity hdl4fpga.latency
 					generic map (
 						n => 4,
 						d => (1, 1, 1, 1))

@@ -175,7 +175,7 @@ begin
 	   input_dv and mem_waddr(mem_waddr'left-1) and mem_waddr(mem_waddr'left-2) when capture_end='0' else
 	   input_dv and mem_waddr(mem_waddr'left-1) and mem_waddr(mem_waddr'left-2) and capture_shot;
 
-	data_e : entity hdl4fpga.align
+	data_e : entity hdl4fpga.latency
 	generic map (
 		n => wr_addr'length,
 		d => (0 to wr_addr'length-1 => 2))
@@ -184,7 +184,7 @@ begin
 		di  => std_logic_vector(mem_waddr(mem_raddr'range)),
 		do  => wr_addr);
 
-	wrena_e : entity hdl4fpga.align
+	wrena_e : entity hdl4fpga.latency
 	generic map (
 		n => 1,
 		d => (0 to 0 => 2))
@@ -247,7 +247,7 @@ begin
 		end if;
 	end process;
 
-	dv2_e : entity hdl4fpga.align
+	dv2_e : entity hdl4fpga.latency
 	generic map (
 		n => 1,
 		d => (0 to 0 => bram_latency))
@@ -257,7 +257,7 @@ begin
 		di(0) => valid,
 		do(0) => video_dv);
 
-	dv1_e : entity hdl4fpga.align
+	dv1_e : entity hdl4fpga.latency
 	generic map (
 		n => 1,
 		d => (0 to 0 => bram_latency))
@@ -266,7 +266,7 @@ begin
 		di(0) => dv1,
 		do(0) => dv2);
 
-	align_addr0_e : entity hdl4fpga.align
+	align_addr0_e : entity hdl4fpga.latency
 	generic map (
 		n => 1,
 		d => (0 => bram_latency))

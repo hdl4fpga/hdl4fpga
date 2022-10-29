@@ -27,7 +27,7 @@ use ieee.std_logic_1164.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity align is
+entity latency is
 	generic (
 		style : string := "srl";
 		n : natural := 1;
@@ -41,7 +41,7 @@ entity align is
 		do  : out std_logic_vector(0 to n-1));
 end;
 
-architecture arch of align is
+architecture def of latency is
 	constant dly : natural_vector(0 to d'length-1) := d;
 	constant val : std_logic_vector(0 to i'length) := i & '-';
 begin

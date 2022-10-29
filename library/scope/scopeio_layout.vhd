@@ -325,7 +325,7 @@ begin
 			end process;
 		end block;
 
-		decode_e : entity hdl4fpga.align
+		decode_e : entity hdl4fpga.latency
 		generic map (
 			n => sgmnt_decode'length,
 			d => (sgmnt_decode'range => mainrgtrout_latency+sgmntrgtrio_latency))

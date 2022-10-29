@@ -76,7 +76,7 @@ begin
 		end if;
 	end process;
 
-	latency_e : entity hdl4fpga.align
+	latency_e : entity hdl4fpga.latency
 	generic map (
 		n     => 1,
 		d     => (0 to 0 => latency-xbar_latency))

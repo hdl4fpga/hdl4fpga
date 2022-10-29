@@ -995,10 +995,10 @@ begin
 	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
-		dqs_delay  => 2000 ns/300,
-		dqi_delay  => 2000 ns/300,
+		dqs_delay  => 3.5 ns,
+		dqi_delay  => 3.5 ns,
 		device      => xc5v,
-		bufio       => true,
+		bufio       => false,
 		bypass      => false,
 		taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
 		bank_size   => bank_size,

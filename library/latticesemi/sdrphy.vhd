@@ -232,7 +232,7 @@ begin
 		end loop;
 	end process;
 
-	sto : entity hdl4fpga.align
+	sto : entity hdl4fpga.latency
 	generic map (
 		n => phy_sti'length,
 		d => (0 to phy_sti'length-1 => 2))

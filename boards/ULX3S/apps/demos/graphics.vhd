@@ -751,7 +751,7 @@ begin
 		begin
 
 			do <= std_logic_vector(resize(unsigned(ctlrphy_a), do'length));
-			delay_e : entity hdl4fpga.align
+			delay_e : entity hdl4fpga.latency
 			generic map (
 				n => do'length,
 				d => (0 to do'length-1=> 4))
@@ -810,7 +810,7 @@ begin
 			sdr_dm        => sdram_dqm,
 			sdr_dq        => sdram_d);
 
-		sdram_sti : entity hdl4fpga.align
+		sdram_sti : entity hdl4fpga.latency
 		generic map (
 			n => sdrphy_sti'length,
 			d => (0 to sdrphy_sti'length-1 => setif(sdram_mode/=sdram133MHz, 1, 0)))

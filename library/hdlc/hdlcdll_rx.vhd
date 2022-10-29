@@ -88,7 +88,7 @@ begin
 		hdlcrx_irdy <= hdlcsyncrx_irdy and to_stdulogic(to_bit(q(0)));
 	end process;
 
-	data_e : entity hdl4fpga.align
+	data_e : entity hdl4fpga.latency
 	generic map (
 		n => hdlcrx_data'length,
 		d => (hdlcrx_data'range => dly))

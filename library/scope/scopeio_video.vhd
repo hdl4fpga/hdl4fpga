@@ -275,7 +275,7 @@ begin
 
 	video_vld <= video_hzon and video_vton;
 
-	vgaio_e : entity hdl4fpga.align
+	vgaio_e : entity hdl4fpga.latency
 	generic map (
 		n => video_io'length,
 		d => (video_io'range => vgaio_latency))
@@ -433,7 +433,7 @@ begin
 		trigger_dot   => trigger_dot,
 		trace_dots    => trace_dots);
 
-	bg_e : entity hdl4fpga.align
+	bg_e : entity hdl4fpga.latency
 	generic map (
 		n => 5,
 		d => (

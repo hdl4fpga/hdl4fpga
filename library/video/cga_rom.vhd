@@ -40,7 +40,7 @@ begin
 		addr => font_addr,
 		data => font_line);
 
-	align_x : entity hdl4fpga.align
+	align_x : entity hdl4fpga.latency
 	generic map (
 		n => font_col'length,
 		d => (font_col'range => 2))

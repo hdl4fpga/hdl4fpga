@@ -24,7 +24,7 @@ VHDL_FILES = \
 VHDL_LIB_NAME = hdl4fpga
 VHDL_LIB_FILES = \
   ../../library/latticesemi/ecp5/ecp5pll.vhd \
-  ../../library/basic/align.vhd \
+  ../../library/basic/latency.vhd \
   ../../library/basic/base.vhd \
   ../../library/basic/bram.vhd \
   ../../library/basic/dpram.vhd \

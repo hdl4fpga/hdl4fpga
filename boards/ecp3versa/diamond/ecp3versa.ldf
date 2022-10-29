@@ -11,7 +11,7 @@
         <Source name="../../../library/basic/base.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/basic/align.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/basic/latency.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../../library/basic/rom.vhd" type="VHDL" type_short="VHDL">
@@ -191,7 +191,7 @@
         <Source name="../../../library/basic/base.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/basic/align.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/basic/latency.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/basic/rom.vhd" type="VHDL" type_short="VHDL">
@@ -305,7 +305,7 @@
         <Source name="../scope/scopeio.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/basic/align.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/basic/latency.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../../library/basic/dpram.vhd" type="VHDL" type_short="VHDL">
@@ -530,7 +530,7 @@
         <Source name="../../../library/basic/base.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/basic/align.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/basic/latency.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/basic/rom.vhd" type="VHDL" type_short="VHDL">

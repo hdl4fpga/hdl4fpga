@@ -64,7 +64,7 @@ set_global_assignment -name VHDL_FILE ../../../../library/basic/dpram.vhd -libra
 set_global_assignment -name VHDL_FILE ../../../../library/basic/desser.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/barrel.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/arbiter.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/basic/align.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/basic/latency.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/adder.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/hdlc/hdlcsync_tx.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/hdlc/hdlcsync_rx.vhd -library hdl4fpga

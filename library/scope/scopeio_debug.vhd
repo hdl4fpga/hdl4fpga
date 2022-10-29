@@ -101,7 +101,7 @@ begin
 		signal dv : std_logic;
 	begin
 
-		lat_vld_e : entity hdl4fpga.align
+		lat_vld_e : entity hdl4fpga.latency
 		generic map (
 			n => 1,
 			d => (0 => lat))
@@ -119,7 +119,7 @@ begin
 			end if;
 		end process;
 
-		lat_rxd_e : entity hdl4fpga.align
+		lat_rxd_e : entity hdl4fpga.latency
 		generic map (
 			n => mii_rxd'length,
 			d => (mii_rxd'range => lat+1))

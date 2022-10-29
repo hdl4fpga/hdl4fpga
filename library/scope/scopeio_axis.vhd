@@ -360,7 +360,7 @@ begin
 				end if;
 			end process;
 
-			col_e : entity hdl4fpga.align
+			col_e : entity hdl4fpga.latency
 			generic map (
 				n => vcol'length,
 				d => (vcol'range => 2))
@@ -369,7 +369,7 @@ begin
 				di  => std_logic_vector(x(vcol'range)),
 				do  => vcol);
 
-			crow_e : entity hdl4fpga.align
+			crow_e : entity hdl4fpga.latency
 			generic map (
 				n => hz_crow'length,
 				d => (hz_crow'range => 2))
@@ -378,7 +378,7 @@ begin
 				di  => video_vcntr(hz_crow'range),
 				do  => hz_crow);
 
-			ccol_e : entity hdl4fpga.align
+			ccol_e : entity hdl4fpga.latency
 			generic map (
 				n => hz_ccol'length,
 				d => (hz_ccol'range => 2))
@@ -387,7 +387,7 @@ begin
 				di  => std_logic_vector(x(hz_ccol'range)),
 				do  => hz_ccol);
 
-			on_e : entity hdl4fpga.align
+			on_e : entity hdl4fpga.latency
 			generic map (
 				n => 1,
 				d => (0 to 0 => 2))
@@ -468,7 +468,7 @@ begin
 				vaddr(vcol'range) when vtaxis_tickrotate(layout)=ccw270 else
 				not vaddr(vcol'range);
 
-			col_e : entity hdl4fpga.align
+			col_e : entity hdl4fpga.latency
 			generic map (
 				n => vcol'length,
 				d => (vcol'range => 2))
@@ -482,7 +482,7 @@ begin
 				not video_hcntr(vt_ccol'range) when vtaxis_tickrotate(layout)=ccw270 else
 				video_hcntr(vt_ccol'range);
 
-			crow_e : entity hdl4fpga.align
+			crow_e : entity hdl4fpga.latency
 			generic map (
 				n => vt_crow'length,
 				d => (vt_crow'range => 2))
@@ -496,7 +496,7 @@ begin
 				std_logic_vector(y(vt_crow'range)) when vtaxis_tickrotate(layout)=ccw270 else
 				not std_logic_vector(y(vt_crow'range));
 
-			ccol_e : entity hdl4fpga.align
+			ccol_e : entity hdl4fpga.latency
 			generic map (
 				n => hz_ccol'length,
 				d => (hz_ccol'range => 2))
@@ -509,7 +509,7 @@ begin
 				video_vton and setif(y(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1')) when vtaxis_tickrotate(layout)=ccw0 else
 				video_vton;
 
-			on_e : entity hdl4fpga.align
+			on_e : entity hdl4fpga.latency
 			generic map (
 				n => 1,
 				d => (0 to 0 => 2))
@@ -540,7 +540,7 @@ begin
 			char_code => char_code,
 			char_dot  => char_dot);
 
-		cgalat_e : entity hdl4fpga.align
+		cgalat_e : entity hdl4fpga.latency
 		generic map (
 			n => 2,
 			d => (0 to 1 => 2))
@@ -557,7 +557,7 @@ begin
 			dots(0) <= char_dot and hz_don;
 			dots(1) <= char_dot and vt_don;
 
-			lat_e : entity hdl4fpga.align
+			lat_e : entity hdl4fpga.latency
 			generic map (
 				n => dots'length,
 				d => (dots'range => latency-4))

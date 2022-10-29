@@ -239,7 +239,7 @@ begin
 			x     => x,
 			dot   => hdot);
 
-		align_e :entity hdl4fpga.align
+		align_e :entity hdl4fpga.latency
 		generic map (
 			n => 1,
 			d => (0 => latency))
@@ -258,7 +258,7 @@ begin
 		signal vline : std_logic_vector(y'range);
 	begin
 
-		delay_y_e :entity hdl4fpga.align
+		delay_y_e :entity hdl4fpga.latency
 		generic map (
 			n => y'length,
 			d => (0 to y'length-1 => input_latency))
@@ -278,7 +278,7 @@ begin
 			ys       => sample_data,
 			dots     => dots);
 
-		align_e :entity hdl4fpga.align
+		align_e :entity hdl4fpga.latency
 		generic map (
 			n => trace_dots'length,
 			d => (0 to trace_dots'length-1 => latency-(input_latency+drawvline_latency)))

@@ -83,7 +83,7 @@ begin
 	muxcode_g : if char_addr'length > cga_addr'length generate
 		signal sel : std_logic_vector(char_addr'length-cga_addr'length-1 downto 0);
 	begin
-		lat_e : entity hdl4fpga.align
+		lat_e : entity hdl4fpga.latency
 		generic map (
 			n => char_addr'length-cga_addr'length,
 			d => (0 to char_addr'length-cga_addr'length => 2))
@@ -96,7 +96,7 @@ begin
 	end generate;
 	cga_code <= mux_code when char_addr'length > cga_addr'length else cga_codes; 
 
-	vsync_e : entity hdl4fpga.align
+	vsync_e : entity hdl4fpga.latency
 	generic map (
 		n   => font_row'length,
 		d   => (font_row'range => 2))
@@ -105,7 +105,7 @@ begin
 		di  => font_vcntr,
 		do  => font_row);
 
-	hsync_e : entity hdl4fpga.align
+	hsync_e : entity hdl4fpga.latency
 	generic map (
 		n   => font_col'length,
 		d   => (font_col'range => 2))
@@ -126,7 +126,7 @@ begin
 		char_code   => cga_code,
 		char_dot    => char_dot);
 
-	don_e : entity hdl4fpga.align
+	don_e : entity hdl4fpga.latency
 	generic map (
 		n     => 1,
 		d     => (1 to 1 => 4))

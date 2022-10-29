@@ -84,7 +84,7 @@ begin
 			video_hs    => hzsync,
 			video_vs    => vtsync);
 
-		video_lat_e : entity hdl4fpga.align
+		video_lat_e : entity hdl4fpga.latency
 		generic map (
 			n => 3,
 			d => (0 to 3-1 => 4))

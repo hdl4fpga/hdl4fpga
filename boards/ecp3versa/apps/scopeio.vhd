@@ -195,7 +195,7 @@ begin
 		addr => std_logic_vector(input_addr),
 		data => sample);
 
-	ena_e : entity hdl4fpga.align
+	ena_e : entity hdl4fpga.latency
 	generic map (
 		n => 1,
 		d => (0 to 0 => 2))

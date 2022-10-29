@@ -83,7 +83,7 @@
         <Source name="../../../library/uart/uart_tx.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/basic/align.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/basic/latency.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../../library/basic/arbiter.vhd" type="VHDL" type_short="VHDL">
@@ -215,7 +215,7 @@
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
-        <Source name="../../../library/basic/align.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/basic/latency.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../../library/basic/base.vhd" type="VHDL" type_short="VHDL">
@@ -572,7 +572,7 @@
         <Source name="../../../library/video/fonts/cp850x8x16x128to255.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/basic/align.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/basic/latency.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../../library/basic/arbiter.vhd" type="VHDL" type_short="VHDL">
@@ -716,7 +716,7 @@
         <Source name="../../../library/video/fonts/cp850x8x16x128to255.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/basic/align.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/basic/latency.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../../library/basic/arbiter.vhd" type="VHDL" type_short="VHDL">
@@ -908,7 +908,7 @@
         <Source name="../../../library/uart/uart_rx.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/basic/align.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/basic/latency.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../../library/basic/arbiter.vhd" type="VHDL" type_short="VHDL">

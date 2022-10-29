@@ -602,7 +602,7 @@ begin
 		video_on     => cga_on,
 		video_dot    => char_dot);
 
-	lat_e : entity hdl4fpga.align
+	lat_e : entity hdl4fpga.latency
 	generic map (
 		n => 1,
 		d => (0 => latency-cgaadapter_latency))
@@ -611,7 +611,7 @@ begin
 		di(0) => char_dot,
 		do(0) => text_fgon);
 
-	latfg_e : entity hdl4fpga.align
+	latfg_e : entity hdl4fpga.latency
 	generic map (
 		n =>  text_fg'length,
 		d => (0 to text_fg'length-1 => latency-cgaadapter_latency+2))
@@ -620,7 +620,7 @@ begin
 		di => textfg,
 		do => text_fg);
 
-	latbg_e : entity hdl4fpga.align
+	latbg_e : entity hdl4fpga.latency
 	generic map (
 		n => text_bg'length,
 		d => (0 to text_bg'length-1 => latency-cgaadapter_latency+2))

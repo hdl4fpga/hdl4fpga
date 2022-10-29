@@ -44,7 +44,7 @@ begin
 	end process;
 	output_dv <= input_dv;
 
-	datalat_e : entity hdl4fpga.align
+	datalat_e : entity hdl4fpga.latency
 	generic map (
 		n => input_data'length,
 		d => (1 to input_data'length => 4))
