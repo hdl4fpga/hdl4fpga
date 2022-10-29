@@ -306,7 +306,7 @@ begin
 	phy_we      <= sdram_mpu_we   when sdram_mpu_sel='1' else sdram_init_we;
 	phy_a       <= ctlr_a         when sdram_mpu_sel='1' else sdram_init_a;
 	phy_b       <= ctlr_b         when sdram_mpu_sel='1' else sdram_init_b;
-	phy_odt     <= sdram_init_odt when sdram_mpu_sel='0' else sdram_sch_odt(0) when stdr=ddr3 else '1';
+	phy_odt     <= sdram_init_odt when sdram_mpu_sel='0' else sdram_sch_odt(0); -- when stdr=ddr3 else '1';
 	phy_rlreq   <= init_rdy;
 	ctlr_cfgrdy <= init_rdy;
 	ctlr_inirdy <= init_rdy when phy_inirdy='1' else '0';
