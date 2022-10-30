@@ -354,6 +354,7 @@ begin
 			gear      => data_gear)
 		port map (
 			tp        => tp_dqssel,
+			rst      => rst,
 			sdram_clk => clk0,
 			edge      => std_logic'('0'),
 			sdram_sti => sys_sti(0),

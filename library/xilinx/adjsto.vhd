@@ -9,6 +9,7 @@ entity adjsto is
 		gear      : natural);
 	port (
 		tp        : out std_logic_vector;
+		rst       : in  std_logic;
 		sdram_clk : in  std_logic;
 		inv       : in  std_logic := '0';
 		edge      : in  std_logic;
@@ -74,7 +75,9 @@ begin
 	begin
 		if rising_edge(sdram_clk) then
 			sto(0) := sdram_sto;
-			if to_bit(step_req xor step_rdy)='1' then
+			if rst='1' then
+				step_rdy <= to_stdulogic(to_bit(step_req));
+			elsif (step_rdy xor to_stdulogic(to_bit(step_req)))='1' then
 				if start='0' then
 					sync <= '1';
 					cntr := to_unsigned(gear/2-1, cntr'length);
@@ -85,7 +88,7 @@ begin
 				else
 					if cntr(0)='1' then
 						start    := '0';
-						step_rdy <= step_req;
+						step_rdy <= to_stdulogic(to_bit(step_req));
 					elsif sto(lat)='1' then
 						if sto(lat+1)='0' then
 							if dqs_smp=seq and (inv='0' or both) then
@@ -108,7 +111,6 @@ begin
 				end if;
 			else
 				start    := '0';
-				step_rdy <= to_stdulogic(to_bit(step_req));
 			end if;
 			sto := shift_right(sto,1);
 		end if;
@@ -118,7 +120,9 @@ begin
 		variable start : std_logic;
 	begin
 		if rising_edge(sdram_clk) then
-			if (sys_rdy xor to_stdulogic(to_bit(sys_req)))='1' then
+			if rst='1' then
+				sys_rdy <= to_stdulogic(to_bit(sys_req));
+			elsif (sys_rdy xor to_stdulogic(to_bit(sys_req)))='1' then
 				if start='0' then
 					sel      <= (others => '0');
 					start    := '1';
@@ -145,7 +149,6 @@ begin
 			else
 				start    := '0';
 				step_req <= to_stdulogic(to_bit(step_rdy));
-				sys_rdy  <= to_stdulogic(to_bit(sys_req));
 			end if;
 		end if;
 	end process;

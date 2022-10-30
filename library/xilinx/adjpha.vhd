@@ -147,7 +147,6 @@ begin
 					end if;
 				else
 					start := '0';
-					edge_rdy <= to_stdulogic(to_bit(edge_req));
 				end if;
 			else
 				start := '0';

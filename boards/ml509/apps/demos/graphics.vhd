@@ -479,10 +479,10 @@ begin
 			-- ctlrphy_dqsi <= (others => ddr_clk90);
 		end generate;
 
-		process (sys_clk)
+		process (ddr_clk0)
 			variable tmr : unsigned(0 to 8-1) := (others => '0');
 		begin
-			if rising_edge(sys_clk) then
+			if rising_edge(ddr_clk0) then
 				if (not ddr_locked or sys_rst or not iod_rdy)='1' then
 					tmr := (others => '0');
 				elsif tmr(0)='0' then
@@ -998,7 +998,7 @@ begin
 		dqs_delay  => 3.5 ns,
 		dqi_delay  => 3.5 ns,
 		device      => xc5v,
-		bufio       => false,
+		bufio       => true,
 		bypass      => false,
 		taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
 		bank_size   => bank_size,
