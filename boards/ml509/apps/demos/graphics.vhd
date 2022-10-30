@@ -433,12 +433,12 @@ begin
 					o => ddr_clk180);
 			end block;
 
-			process (sys_clk, locked)
+			process (ddr_clk0, locked)
 				variable cntr : unsigned(0 to 2);
 			begin
 				if locked='0' then
 					cntr := (others => '0');
-				elsif rising_edge(sys_clk) then
+				elsif rising_edge(ddr_clk0) then
 					if cntr(0)='0' then
 						cntr := cntr + 1;
 					end if;
