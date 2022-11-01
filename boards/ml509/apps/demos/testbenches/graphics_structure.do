@@ -166,6 +166,7 @@ add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_5
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqipau_rdy_5/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_5_adjdqi_b_adjdqi_e_start/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_5_adjdqi_b_adjdqi_e_start0/O
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_5_adjdqi_b_adjdqi_e_rledge/O
 
 add wave -noupdate -divider {DQI[6] delay}
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_6_adjdqi_b_dqi_i_xc5v_g_idelay_i_idelay_i/idelay_count
@@ -175,6 +176,7 @@ add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_6
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqipau_rdy_6/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_6_adjdqi_b_adjdqi_e_start/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_6_adjdqi_b_adjdqi_e_start0/O
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_6_adjdqi_b_adjdqi_e_rledge/O
 
 add wave -noupdate -divider {DQI[7] delay}
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_7_adjdqi_b_dqi_i_xc5v_g_idelay_i_idelay_i/idelay_count
@@ -184,6 +186,9 @@ add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_7
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqipau_rdy_7/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_7_adjdqi_b_adjdqi_e_start/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_7_adjdqi_b_adjdqi_e_start0/O
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_7_adjdqi_b_adjdqi_e_rledge/O
+    generic map(
+
 
 add wave -noupdate -divider {New Divider}
 
