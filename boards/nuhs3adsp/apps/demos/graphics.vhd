@@ -668,8 +668,8 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
-		dqs_delay   => natural(sdram_tcp/5.0*1.0e12)*1 ps,
-		dqi_delay   => 0 ns,
+		-- dqs_delay   => (0 to 0 => 0 ns),
+		-- dqi_delay   => (0 to 0 => 0 ns),
 		device      => xc3s,
 		bypass      => true,
 		loopback    => true,

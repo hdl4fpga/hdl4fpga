@@ -27,7 +27,7 @@ use ieee.numeric_std.all;
 
 entity ml509 is
 	generic (
-		debug : boolean := false);
+		debug : boolean := true);
 	port (
 		user_clk       : in std_logic;
 

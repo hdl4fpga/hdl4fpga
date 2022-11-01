@@ -196,7 +196,7 @@ architecture graphics of ml509 is
 	constant coln_size    : natural := 7;
 	-- constant word_size    : natural := ddr2_d'length;
 	-- constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
-	constant word_size    : natural := 8*1;
+	constant word_size    : natural := 8*2;
 	constant byte_size    : natural := 8;
 
 	signal si_frm         : std_logic;
@@ -479,10 +479,10 @@ begin
 			-- ctlrphy_dqsi <= (others => ddr_clk90);
 		end generate;
 
-		process (ddr_clk0)
+		process (sys_clk)
 			variable tmr : unsigned(0 to 8-1) := (others => '0');
 		begin
-			if rising_edge(ddr_clk0) then
+			if rising_edge(sys_clk) then
 				if (not ddr_locked or sys_rst or not iod_rdy)='1' then
 					tmr := (others => '0');
 				elsif tmr(0)='0' then
@@ -492,6 +492,17 @@ begin
 			ddrsys_rst <= not tmr(0);
 		end process;
 	
+		process (ddr_clk0)
+		begin
+			if rising_edge(ddr_clk0) then
+				if ddrsys_rst='1' then
+					sdrphy_rst <= '1';
+				else
+					sdrphy_rst <= ddrsys_rst;
+				end if;
+			end if;
+		end process;
+
 	end block;
 
 	videodcm_b : block
@@ -773,10 +784,10 @@ begin
 			variable q : std_logic;
 		begin
 			if rising_edge(phy_rxclk_bufg) then
-				gpio_led <= (others => '0');
-				gpio_led(0 to 8-1) <= tp(1 to 8);
+				-- gpio_led <= (others => '0');
 			end if;
 		end process;
+				gpio_led(0 to 8-1) <= tp(1 to 8);
 
 
 	end block;
@@ -830,7 +841,7 @@ begin
 		dvid_crgb     => dvid_crgb,
 
 		ctlr_clks     => ctlr_clks(0 to sclk_phases/sclk_edges-1),
-		ctlr_rst      => ddrsys_rst,
+		ctlr_rst      => sdrphy_rst, --ddrsys_rst,
 		ctlr_cwl      => b"0_11",
 		ctlr_rtt      => b"11",
 		ctlr_al       => "001",
@@ -973,17 +984,6 @@ begin
 		end loop;
 	end process;
 
-	process (sys_clk)
-	begin
-		if rising_edge(sys_clk) then
-			if ddrsys_rst='1' then
-				sdrphy_rst <= '1';
-			else
-				sdrphy_rst <= ddrsys_rst;
-			end if;
-		end if;
-	end process;
-
 	ctlrphy_rst(1) <= ctlrphy_rst(0);
 	ctlrphy_cke(1) <= ctlrphy_cke(0);
 	ctlrphy_cs(1)  <= ctlrphy_cs(0);
@@ -995,10 +995,10 @@ begin
 	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
-		dqs_delay  => 3.5 ns,
-		dqi_delay  => 3.5 ns,
+		-- dqs_delay   => (0 => 0.954 ns, 1 => 6.954 ns),
+		-- dqi_delay   => (0 => 0.937 ns, 1 => 6.937 ns),
 		device      => xc5v,
-		bufio       => true,
+		bufio       => false,
 		bypass      => false,
 		taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
 		bank_size   => bank_size,

@@ -533,7 +533,7 @@
     <property xil_pn:name="AES Initial Vector virtex5" xil_pn:value="" xil_pn:valueState="default"/>
     <property xil_pn:name="AES Key (Hex String)" xil_pn:value="" xil_pn:valueState="default"/>
     <property xil_pn:name="Add I/O Buffers" xil_pn:value="true" xil_pn:valueState="default"/>
-    <property xil_pn:name="Allow Logic Optimization Across Hierarchy" xil_pn:value="true" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Allow Logic Optimization Across Hierarchy" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Allow SelectMAP Pins to Persist" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Allow Unexpanded Blocks" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Allow Unmatched LOC Constraints" xil_pn:value="false" xil_pn:valueState="default"/>
@@ -555,7 +555,7 @@
     <property xil_pn:name="Case Implementation Style" xil_pn:value="None" xil_pn:valueState="default"/>
     <property xil_pn:name="Change Device Speed To" xil_pn:value="-2" xil_pn:valueState="default"/>
     <property xil_pn:name="Change Device Speed To Post Trace" xil_pn:value="-2" xil_pn:valueState="default"/>
-    <property xil_pn:name="Combinatorial Logic Optimization" xil_pn:value="true" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Combinatorial Logic Optimization" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Compile EDK Simulation Library" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Compile SIMPRIM (Timing) Simulation Library" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Compile UNISIM (Functional) Simulation Library" xil_pn:value="true" xil_pn:valueState="default"/>
@@ -604,17 +604,17 @@
     <property xil_pn:name="Enable Hardware Co-Simulation" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Enable Internal Done Pipe" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Enable Message Filtering" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Enable Multi-Threading" xil_pn:value="2" xil_pn:valueState="non-default"/>
-    <property xil_pn:name="Enable Multi-Threading par virtex5" xil_pn:value="4" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Enable Multi-Threading" xil_pn:value="Off" xil_pn:valueState="default"/>
+    <property xil_pn:name="Enable Multi-Threading par virtex5" xil_pn:value="Off" xil_pn:valueState="default"/>
     <property xil_pn:name="Enable Outputs (Output Events)" xil_pn:value="Default (5)" xil_pn:valueState="default"/>
     <property xil_pn:name="Encrypt Bitstream" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Equivalent Register Removal" xil_pn:value="false" xil_pn:valueState="non-default"/>
-    <property xil_pn:name="Equivalent Register Removal XST" xil_pn:value="false" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Equivalent Register Removal" xil_pn:value="true" xil_pn:valueState="default"/>
+    <property xil_pn:name="Equivalent Register Removal XST" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Essential Bits" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Evaluation Development Board" xil_pn:value="None Specified" xil_pn:valueState="default"/>
     <property xil_pn:name="Exclude Compilation of Deprecated EDK Cores" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Exclude Compilation of EDK Sub-Libraries" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Extra Effort (Highest PAR level only)" xil_pn:value="Normal" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Extra Effort (Highest PAR level only)" xil_pn:value="None" xil_pn:valueState="default"/>
     <property xil_pn:name="FPGA Start-Up Clock" xil_pn:value="CCLK" xil_pn:valueState="default"/>
     <property xil_pn:name="FSM Encoding Algorithm" xil_pn:value="Auto" xil_pn:valueState="default"/>
     <property xil_pn:name="FSM Style" xil_pn:value="LUT" xil_pn:valueState="default"/>
@@ -624,14 +624,14 @@
     <property xil_pn:name="Functional Model Target Language ArchWiz" xil_pn:value="VHDL" xil_pn:valueState="default"/>
     <property xil_pn:name="Functional Model Target Language Coregen" xil_pn:value="VHDL" xil_pn:valueState="default"/>
     <property xil_pn:name="Functional Model Target Language Schematic" xil_pn:value="VHDL" xil_pn:valueState="default"/>
-    <property xil_pn:name="Generate Architecture Only (No Entity Declaration)" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Generate Asynchronous Delay Report" xil_pn:value="true" xil_pn:valueState="non-default"/>
-    <property xil_pn:name="Generate Clock Region Report" xil_pn:value="true" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Generate Architecture Only (No Entity Declaration)" xil_pn:value="true" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Generate Asynchronous Delay Report" xil_pn:value="false" xil_pn:valueState="default"/>
+    <property xil_pn:name="Generate Clock Region Report" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Constraints Interaction Report" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Constraints Interaction Report Post Trace" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Datasheet Section" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Datasheet Section Post Trace" xil_pn:value="true" xil_pn:valueState="default"/>
-    <property xil_pn:name="Generate Detailed MAP Report" xil_pn:value="true" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Generate Detailed MAP Report" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Multiple Hierarchical Netlist Files" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Post-Place &amp; Route Power Report" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Generate Post-Place &amp; Route Simulation Model" xil_pn:value="true" xil_pn:valueState="non-default"/>
@@ -643,7 +643,7 @@
     <property xil_pn:name="Generate Verbose Library Compilation Messages" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Generics, Parameters" xil_pn:value="" xil_pn:valueState="default"/>
     <property xil_pn:name="Global Optimization Goal" xil_pn:value="AllClockNets" xil_pn:valueState="default"/>
-    <property xil_pn:name="Global Optimization map virtex5" xil_pn:value="Speed" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Global Optimization map virtex5" xil_pn:value="Off" xil_pn:valueState="default"/>
     <property xil_pn:name="Global Set/Reset Port Name" xil_pn:value="GSR_PORT" xil_pn:valueState="default"/>
     <property xil_pn:name="Global Tristate Port Name" xil_pn:value="GTS_PORT" xil_pn:valueState="default"/>
     <property xil_pn:name="Hierarchy Separator" xil_pn:value="/" xil_pn:valueState="default"/>
@@ -666,7 +666,7 @@
     <property xil_pn:name="JTAG Pin TMS" xil_pn:value="Pull Up" xil_pn:valueState="default"/>
     <property xil_pn:name="JTAG to System Monitor Connection" xil_pn:value="Enable" xil_pn:valueState="default"/>
     <property xil_pn:name="Keep Hierarchy" xil_pn:value="No" xil_pn:valueState="default"/>
-    <property xil_pn:name="LUT Combining Map" xil_pn:value="Auto" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="LUT Combining Map" xil_pn:value="Off" xil_pn:valueState="default"/>
     <property xil_pn:name="LUT Combining Xst" xil_pn:value="No" xil_pn:valueState="default"/>
     <property xil_pn:name="Language" xil_pn:value="VHDL" xil_pn:valueState="default"/>
     <property xil_pn:name="Last Applied Goal" xil_pn:value="Balanced" xil_pn:valueState="default"/>
@@ -725,7 +725,7 @@
     <property xil_pn:name="Place And Route Mode" xil_pn:value="Route Only" xil_pn:valueState="default"/>
     <property xil_pn:name="Placer Effort Level (Overrides Overall Level)" xil_pn:value="None" xil_pn:valueState="default"/>
     <property xil_pn:name="Placer Effort Level Map" xil_pn:value="High" xil_pn:valueState="default"/>
-    <property xil_pn:name="Placer Extra Effort Map" xil_pn:value="Normal" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Placer Extra Effort Map" xil_pn:value="None" xil_pn:valueState="default"/>
     <property xil_pn:name="Port to be used" xil_pn:value="Auto - default" xil_pn:valueState="default"/>
     <property xil_pn:name="Post Map Simulation Model Name" xil_pn:value="ml509_map.vhd" xil_pn:valueState="default"/>
     <property xil_pn:name="Post Place &amp; Route Simulation Model Name" xil_pn:value="ml509_timesim.vhd" xil_pn:valueState="default"/>
@@ -750,12 +750,12 @@
     <property xil_pn:name="Reduce Control Sets" xil_pn:value="No" xil_pn:valueState="default"/>
     <property xil_pn:name="Regenerate Core" xil_pn:value="Under Current Project Setting" xil_pn:valueState="default"/>
     <property xil_pn:name="Register Balancing" xil_pn:value="No" xil_pn:valueState="default"/>
-    <property xil_pn:name="Register Duplication Map" xil_pn:value="On" xil_pn:valueState="non-default"/>
-    <property xil_pn:name="Register Duplication Xst" xil_pn:value="true" xil_pn:valueState="default"/>
+    <property xil_pn:name="Register Duplication Map" xil_pn:value="Off" xil_pn:valueState="default"/>
+    <property xil_pn:name="Register Duplication Xst" xil_pn:value="false" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Release Write Enable (Output Events)" xil_pn:value="Default (6)" xil_pn:valueState="default"/>
     <property xil_pn:name="Rename Design Instance in Testbench File to" xil_pn:value="UUT" xil_pn:valueState="default"/>
     <property xil_pn:name="Rename Top Level Architecture To" xil_pn:value="Structure" xil_pn:valueState="default"/>
-    <property xil_pn:name="Rename Top Level Entity to" xil_pn:value="ml509" xil_pn:valueState="default"/>
+    <property xil_pn:name="Rename Top Level Entity to" xil_pn:value="ml509" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Rename Top Level Module To" xil_pn:value="" xil_pn:valueState="default"/>
     <property xil_pn:name="Report Fastest Path(s) in Each Constraint" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Report Fastest Path(s) in Each Constraint Post Trace" xil_pn:value="true" xil_pn:valueState="default"/>
@@ -767,7 +767,7 @@
     <property xil_pn:name="Report Unconstrained Paths Post Trace" xil_pn:value="" xil_pn:valueState="default"/>
     <property xil_pn:name="Reset On Configuration Pulse Width" xil_pn:value="100" xil_pn:valueState="default"/>
     <property xil_pn:name="Resource Sharing" xil_pn:value="true" xil_pn:valueState="default"/>
-    <property xil_pn:name="Retain Hierarchy" xil_pn:value="true" xil_pn:valueState="default"/>
+    <property xil_pn:name="Retain Hierarchy" xil_pn:value="false" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Router Effort Level (Overrides Overall Level)" xil_pn:value="None" xil_pn:valueState="default"/>
     <property xil_pn:name="Run Design Rules Checker (DRC)" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Safe Implementation" xil_pn:value="No" xil_pn:valueState="default"/>
@@ -787,7 +787,7 @@
     <property xil_pn:name="Source window" xil_pn:value="false" xil_pn:valueState="default"/>
     <property xil_pn:name="Specify 'define Macro Name and Value" xil_pn:value="" xil_pn:valueState="default"/>
     <property xil_pn:name="Specify Top Level Instance Names" xil_pn:value="" xil_pn:valueState="default"/>
-    <property xil_pn:name="Speed Grade" xil_pn:value="-2" xil_pn:valueState="default"/>
+    <property xil_pn:name="Speed Grade" xil_pn:value="-2" xil_pn:valueState="non-default"/>
     <property xil_pn:name="Starting Placer Cost Table (1-100)" xil_pn:value="1" xil_pn:valueState="default"/>
     <property xil_pn:name="Starting Placer Cost Table (1-100) Map" xil_pn:value="1" xil_pn:valueState="default"/>
     <property xil_pn:name="Starting Placer Cost Table (1-100) Par" xil_pn:value="1" xil_pn:valueState="default"/>

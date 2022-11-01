@@ -77,6 +77,7 @@ begin
 			sto(0) := sdram_sto;
 			if rst='1' then
 				step_rdy <= to_stdulogic(to_bit(step_req));
+				start    := '0';
 			elsif (step_rdy xor to_stdulogic(to_bit(step_req)))='1' then
 				if start='0' then
 					sync <= '1';
@@ -122,6 +123,7 @@ begin
 		if rising_edge(sdram_clk) then
 			if rst='1' then
 				sys_rdy <= to_stdulogic(to_bit(sys_req));
+				start    := '0';
 			elsif (sys_rdy xor to_stdulogic(to_bit(sys_req)))='1' then
 				if start='0' then
 					sel      <= (others => '0');

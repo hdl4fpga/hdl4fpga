@@ -793,8 +793,8 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
-		dqs_delay => 1.35 ns,
-		dqi_delay => 0 ns,
+		-- dqs_delay => (0 to 0 => 1.35 ns),
+		-- dqi_delay => (0 to 0 => 0 ns),
 		bufio     => true,
 		device    => xc7a,
 		bypass    => false,

@@ -324,6 +324,35 @@ begin
 		mii_data   => mii_txd);
 
 	simm_g : for i in 0 to data_bytes/2-1 generate
+		signal ds   : std_logic_vector(2*(i+1)-1 downto 2*i);
+		signal ds_n : std_logic_vector(2*(i+1)-1 downto 2*i);
+	begin
+		process (ds_n, dqs_n(2*(i+1)-1 downto 2*i))
+		begin
+			for i in ds_n'range loop
+				case ds_n(i) is
+				when '0'|'1' =>
+					dqs_n(i) <= ds_n(i);
+				when others =>
+					dqs_n(i) <= 'H';
+				end case;
+				ds_n(i) <= dqs_n(i);
+			end loop;
+		end process;
+
+		process (ds, dqs(2*(i+1)-1 downto 2*i))
+		begin
+			for i in ds'range loop
+				case ds(i) is
+				when '0'|'1' =>
+					dqs(i) <= ds(i);
+				when others =>
+					dqs(i) <= 'L';
+				end case;
+				ds(i) <= dqs(i);
+			end loop;
+		end process;
+
 		mt_u : 	entity micron.ddr2
 		port map (
 			Ck      => clk_p(0),
@@ -336,8 +365,8 @@ begin
 			Ba      => ba(2-1 downto 0),
 			Addr    => addr(13-1 downto 0),
 			Dm_rdqs => dm(2*(i+1)-1 downto 2*i),
-			Dqs     => dqs(2*(i+1)-1 downto 2*i),
-			Dqs_n   => dqs_n(2*(i+1)-1 downto 2*i),
+			Dqs     => ds, --dqs(2*(i+1)-1 downto 2*i),
+			Dqs_n   => ds_n, --dqs_n(2*(i+1)-1 downto 2*i),
 			rdqs_n  => rdqs_n(2*(i+1)-1 downto 2*i),
 			Dq      => dq(16*(i+1)-1 downto 16*i),
 			Odt     => odt(i/2));

@@ -32,8 +32,8 @@ use hdl4fpga.sdram_param.all;
 
 entity xc_sdrphy is
 	generic (
-		dqs_delay  : time      := 0 ns;
-		dqi_delay  : time      := 0 ns;
+		-- dqs_delay  : time_vector := (0 to 0 => 0 ns);
+		-- dqi_delay  : time_vector := (0 to 0 => 0 ns);
 		device     : fpga_devices;
 		loopback   : boolean   := false;
 		bypass     : boolean   := true;
@@ -348,9 +348,9 @@ begin
 	write_leveling_p : process (phy_wlreq, wl_rdy)
 		variable z : std_logic;
 	begin
-		z := '1';
+		z := '0';
 		for i in wl_rdy'range loop
-			z := z and (wl_rdy(i) xor to_stdulogic(to_bit(phy_wlreq)));
+			z := z or (wl_rdy(i) xor to_stdulogic(to_bit(phy_wlreq)));
 		end loop;
 		phy_wlrdy <= z xor to_stdulogic(to_bit(phy_wlreq));
 	end process;
@@ -445,7 +445,7 @@ begin
 					end if;
 
 					if (read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
-						if rd_rdy = not to_stdlogicvector(to_bitvector(rd_req)) then
+						if rd_rdy /= to_stdlogicvector(to_bitvector(rd_req)) then
 							read_req <= not read_rdy;
 						end if;
 					end if;
@@ -476,13 +476,13 @@ begin
 						state := s_idle;
 					when s_idle =>
 						z := '0';
-						for i in rl_req'reverse_range loop
+						for i in rl_req'range loop
 							if (rl_rdy(i) xor to_stdulogic(to_bit(rl_req(i))))='1' then
 								z := '1';
 							end if;
 						end loop;
 						if z='0' then
-							phy_ini   <= phy_synced; -- '1';
+							phy_ini   <= phy_synced;
 							phy_rlrdy <= phy_rlreq;
 						end if;
 					end case;
@@ -514,8 +514,8 @@ begin
 
 		sdrdqphy_i : entity hdl4fpga.xc_sdrdqphy
 		generic map (
-			dqs_delay  => dqs_delay,
-			dqi_delay  => dqi_delay,
+			-- dqs_delay  => dqs_delay(i mod dqi_delay'length),
+			-- dqi_delay  => dqi_delay(i mod dqi_delay'length),
 			loopback   => loopback,
 			bypass     => bypass,
 			bufio      => bufio,

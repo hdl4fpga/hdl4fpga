@@ -34,8 +34,8 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		dqs_delay  : time := 1000 ns/300;
-		dqi_delay  : time := 1000 ns/300;
+		dqs_delay  : time := 0 ns;
+		dqi_delay  : time := 0 ns;
 
 		loopback   : boolean := false;
 		bypass     : boolean := false;
@@ -130,17 +130,17 @@ architecture xilinx of xc_sdrdqphy is
 begin
 
 	with tp_sel select
-	tp_delay <=
-		dqs180 & dqspre & tp_dqidly when '1',
-		tp_dqssel & tp_dqsdly(4 downto 0) when others;
-		-- tp_dqssel & (adjsto_req xor adjsto_rdy) & (read_rdy xnor read_req)  & (read_rdy xor read_req) & "0" & sto_synced when others;
-		-- tp_dqssel & (adjsto_req xor adjsto_rdy) & (step_rdy xnor step_req)  & (step_rdy xor step_req) & "0" & sto_synced when others;
+	tp_delay <= (others => '0') when others;
+		-- "00" & tp_dqidly when '1',
+		-- tp_dqssel & tp_dqsdly(4 downto 0) when others;
+		-- sys_rlrdy & sys_rlreq & adjsto_req & adjsto_rdy & step_rdy & step_req & (read_rdy xor read_req) & sto_synced when others;
+		-- adjdqs_req & adjdqs_rdy & adjdqi_req(0) & adjdqi_rdy(0) & adjsto_req & adjsto_rdy & (read_rdy xor read_req) & sto_synced when others;
 
 	sys_wlrdy <= to_stdulogic(to_bit(sys_wlreq));
 	rl_b : block
 	begin
 
-		process (pause_req, iod_clk)
+		process (pause_rdy, pause_req, iod_clk)
 			type states is (s_start, s_write, s_dqs, s_dqi, s_sto);
 			variable state : states;
 			variable z     : std_logic;
@@ -180,7 +180,9 @@ begin
 					when s_dqi =>
 						z := '0';
 						for i in adjdqi_rdy'range loop
-							z := z or (adjdqi_rdy(i) xor adjdqi_req(i));
+							if (adjdqi_rdy(i) xor adjdqi_req(i))='1' then
+								z := '1';
+							end if;
 						end loop;
 						if z='0' then
 							read_brst <= '0';
@@ -194,7 +196,6 @@ begin
 						if (read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
 							if (adjsto_rdy xor to_stdulogic(to_bit(adjsto_req)))='0' then
 								sys_rlrdy <= to_stdulogic(to_bit(sys_rlreq));
-								state     := s_start;
 							else
 								read_req <= not read_rdy;
 							end if;
@@ -206,35 +207,36 @@ begin
 		end process;
 
 		dqipause_p : process (iod_clk)
-			type states is (s_start, s_wait);
+			type states is (s_start, s_wait, s_idle);
 			variable state : states;
-			variable z     : std_logic;
+			variable req   : std_logic_vector(dqipau_rdy'range);
 		begin
 			if rising_edge(iod_clk) then
 				if rst='1' then
 					dqipau_rdy <= to_stdlogicvector(to_bitvector(dqipau_req));
-					z     := '0';
-					state := s_start;
-				elsif z='1' then
+					state := s_idle;
+				else
 					case state is
 					when s_start =>
-						if (dqipause_rdy xor to_stdulogic(to_bit(dqipause_req)))='0' then
-							dqipause_req <= not dqipause_rdy;
-							state := s_wait;
-						end if;
+						req := dqipau_rdy xor to_stdlogicvector(to_bitvector(dqipau_req));
+						dqipause_req <= not dqipause_rdy;
+						state := s_wait;
 					when s_wait =>
 						if (dqipause_rdy xor to_stdulogic(to_bit(dqipause_req)))='0' then
-							dqipau_rdy <= to_stdlogicvector(to_bitvector(dqipau_req));
-							z      := '0';
-							state := s_start;
+							for i in req'range loop
+								if req(i)='1' then
+									dqipau_rdy(i) <= to_stdulogic(to_bit(dqipau_req(i)));
+								end if;
+							end loop;
+							state := s_idle;
 						end if;
+					when s_idle =>
+						for i in dqipau_req'range loop
+							if (dqipau_rdy(i) xor to_stdulogic(to_bit(dqipau_req(i))))='1' then
+								state := s_start;
+							end if;
+						end loop;
 					end case;
-				else 
-					z := '1';
-					for i in dqipau_req'range loop
-						z := z and (dqipau_rdy(i) xor to_stdulogic(to_bit(dqipau_req(i))));
-					end loop;
-					state := s_start;
 				end if;
 			end if;
 		end process;
@@ -311,7 +313,7 @@ begin
 		port map (
 			rst      => rst,
 			edge     => std_logic'('1'),
-			clk      => iod_clk,
+			clk      => clk0,
 			req      => adjdqs_req,
 			rdy      => adjdqs_rdy,
 			step_req => dqspau_req,
@@ -354,15 +356,15 @@ begin
 			gear      => data_gear)
 		port map (
 			tp        => tp_dqssel,
-			rst      => rst,
+			rst       => rst,
 			sdram_clk => clk0,
 			edge      => std_logic'('0'),
 			sdram_sti => sys_sti(0),
 			sdram_sto => dqssto,
 			dqs_smp   => dqs_smp,
 			dqs_pre   => dqspre,
-			step_req   => step_req,
-			step_rdy   => step_rdy,
+			step_req  => step_req,
+			step_rdy  => step_rdy,
 			sys_req   => adjsto_req,
 			sys_rdy   => adjsto_rdy,
 			synced    => sto_synced);
@@ -392,7 +394,7 @@ begin
 				port map (
 					rst      => rst,
 					edge     => std_logic'('0'),
-					clk      => iod_clk,
+					clk      => clk90,
 					req      => adjdqi_req(i),
 					rdy      => adjdqi_rdy(i),
 					step_req => dqipau_req(i),
