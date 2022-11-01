@@ -1,8 +1,4 @@
 onerror {resume}
-quietly virtual signal -install /testbench/du_e { /testbench/du_e/ddr2_d(15 downto 0)} chip_dq0
-quietly virtual signal -install /testbench/du_e { /testbench/du_e/ddr2_d(15 downto 0)} dq16
-quietly virtual signal -install /testbench/du_e { /testbench/du_e/ddr2_d(7 downto 0)} dq8
-quietly virtual signal -install /testbench/du_e { /testbench/du_e/gpio_led(2 to 7)} ppp
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -expand -group phy_rx /testbench/du_e/phy_rxclk
 add wave -noupdate -expand -group phy_rx /testbench/du_e/phy_rxctl_rxdv
@@ -24,22 +20,28 @@ add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_dqs_p(1)
 add wave -noupdate -expand -group ddr2 -radix hexadecimal /testbench/du_e/dq8
 
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_datai_b_i_igbx_1_adjdqi_b_dqi_i_xc5v_g_idelay_i_idelay_i/DATAOUT
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_datai_b_i_igbx_1_adjdqi_b_dqi_i_xc5v_g_idelay_i_idelay_i/IDATAIN
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_datai_b_i_igbx_1_adjdqi_b_dqi_i_xc5v_g_idelay_i_idelay_i/idelay_count
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_datai_b_i_igbx_1_igbx_g_data_gear4_g_igbx_i_reg_g_0_iserdese_g_xv5_g_iser_i/OCLK
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_dqsidelay_i_xc5v_g_idelay_i_idelay_i/DATAOUT
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_dqsidelay_i_xc5v_g_idelay_i_idelay_i/IDATAIN
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_dqsidelay_i_xc5v_g_idelay_i_idelay_i/idelay_count
 add wave -noupdate -divider {New Divider}
 
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_adjdqs_req/O
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_adjdqs_e_rdy/O
+
+#################################
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_pause_req/O
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_pause_rdy/O
 
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_adjdqs_e_step_req/O
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqspau_rdy/O
+
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqipause_req/O
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqipause_rdy/O
+
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqsi_b_dqsidelay_i_xc5v_g_idelay_i_idelay_i/DATAOUT
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqsi_b_dqsidelay_i_xc5v_g_idelay_i_idelay_i/IDATAIN
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqsi_b_dqsidelay_i_xc5v_g_idelay_i_idelay_i/idelay_count
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_adjdqs_req/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqsi_b_adjdqs_e_rdy/O
@@ -76,12 +78,6 @@ add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqipau_rdy_6/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_7_adjdqi_b_dqi_i_xc5v_g_idelay_i_idelay_i/idelay_count
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_adjdqi_req_7/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqipau_rdy_7/O
-
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqipause_req/O
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqipause_rdy/O
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_pause_req/O
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_pause_rdy/O
 
 
 add wave -noupdate -divider {New Divider}
