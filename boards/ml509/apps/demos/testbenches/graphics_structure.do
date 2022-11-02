@@ -20,13 +20,30 @@ add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_dqs_p(1)
 
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ctlr_clks(0)
+add wave -noupdate /testbench/du_e/ddr_clk0x2
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ctlr_clks(1)
+add wave -noupdate /testbench/du_e/ddr_clk90x2
 add wave -noupdate -divider {New Divider}
 
+add wave -noupdate -divider {sdrphy_e_phy_rlrdyDivider}
+add wave -noupdate /testbench/du_e/sdrphy_e_phy_rlrdy/O
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_adjsto_e_synced/O
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqsi_b_adjsto_e_synced/O
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ddr2_dqs_p_0_INBUF_DS
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_sys_dqso_0_Q
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_igbx_i_reg_g_0_iserdese_g_xv5_g_iser_i_O
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ddr2_dqs_p_1_INBUF_DS
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_sys_dqso_0_Q
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqsi_b_igbx_i_reg_g_0_iserdese_g_xv5_g_iser_i_O
 
 #################################
 add wave -noupdate -divider {BYTE 0}
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_sys_rlrdy/O
+
 add wave -noupdate -divider {Pause}
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_pause_req/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_pause_rdy/O
@@ -104,6 +121,8 @@ add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqipau_rdy_7/O
 
 #################################
 add wave -noupdate -divider {BYTE 1}
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_sys_rlrdy/O
+
 add wave -noupdate -divider {Pause}
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_pause_req/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_pause_rdy/O
@@ -164,9 +183,6 @@ add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_adjdqi_req_5/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_5_adjdqi_b_adjdqi_e_rdy/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_5_adjdqi_b_adjdqi_e_step_req/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqipau_rdy_5/O
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_5_adjdqi_b_adjdqi_e_start/O
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_5_adjdqi_b_adjdqi_e_start0/O
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_5_adjdqi_b_adjdqi_e_rledge/O
 
 add wave -noupdate -divider {DQI[6] delay}
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_6_adjdqi_b_dqi_i_xc5v_g_idelay_i_idelay_i/idelay_count
@@ -174,9 +190,6 @@ add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_adjdqi_req_6/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_6_adjdqi_b_adjdqi_e_rdy/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_6_adjdqi_b_adjdqi_e_step_req/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqipau_rdy_6/O
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_6_adjdqi_b_adjdqi_e_start/O
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_6_adjdqi_b_adjdqi_e_start0/O
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_6_adjdqi_b_adjdqi_e_rledge/O
 
 add wave -noupdate -divider {DQI[7] delay}
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_7_adjdqi_b_dqi_i_xc5v_g_idelay_i_idelay_i/idelay_count
@@ -184,9 +197,6 @@ add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_adjdqi_req_7/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_7_adjdqi_b_adjdqi_e_rdy/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_7_adjdqi_b_adjdqi_e_step_req/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqipau_rdy_7/O
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_7_adjdqi_b_adjdqi_e_start/O
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_7_adjdqi_b_adjdqi_e_start0/O
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_7_adjdqi_b_adjdqi_e_rledge/O
 
 
 add wave -noupdate -divider {New Divider}

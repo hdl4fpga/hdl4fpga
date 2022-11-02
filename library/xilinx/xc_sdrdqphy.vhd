@@ -34,8 +34,8 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		dqs_delay  : time := 0 ns;
-		dqi_delay  : time := 0 ns;
+		dqs_delay  : time := 2 ns;
+		dqi_delay  : time := 2 ns;
 
 		loopback   : boolean := false;
 		bypass     : boolean := false;
@@ -141,7 +141,7 @@ begin
 	begin
 
 		process (pause_rdy, pause_req, iod_clk)
-			type states is (s_start, s_write, s_dqs, s_dqi, s_sto);
+			type states is (s_init, s_write, s_dqs, s_dqi, s_sto);
 			variable state : states;
 			variable z     : std_logic;
 		begin
@@ -151,15 +151,15 @@ begin
 					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
 					adjdqi_req <= to_stdlogicvector(to_bitvector(adjdqi_rdy));
 					adjsto_req <= to_stdulogic(to_bit(adjsto_rdy));
-					state      := s_start;
+					state      := s_init;
 				elsif (sys_rlrdy xor to_stdulogic(to_bit(sys_rlreq)))='0' then
 					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
 					adjdqi_req <= to_stdlogicvector(to_bitvector(adjdqi_rdy));
 					adjsto_req <= to_stdulogic(to_bit(adjsto_rdy));
-					state      := s_start;
+					state      := s_init;
 				else
 					case state is
-					when s_start =>
+					when s_init =>
 						write_req <= not to_stdulogic(to_bit(write_rdy));
 						read_brst <= '0';
 						state     := s_write;
@@ -207,7 +207,7 @@ begin
 		end process;
 
 		dqipause_p : process (iod_clk)
-			type states is (s_start, s_wait, s_idle);
+			type states is (s_init, s_wait, s_idle);
 			variable state : states;
 		begin
 			if rising_edge(iod_clk) then
@@ -216,7 +216,7 @@ begin
 					state := s_idle;
 				else
 					case state is
-					when s_start =>
+					when s_init =>
 						dqipause_req <= not dqipause_rdy;
 						state := s_wait;
 					when s_wait =>
@@ -225,7 +225,7 @@ begin
 							state := s_idle;
 						end if;
 					when s_idle =>
-						state := s_start;
+						state := s_init;
 						for i in dqipau_req'range loop
 							if (dqipau_rdy(i) xor to_stdulogic(to_bit(dqipau_req(i))))='0' then
 								state := s_idle;
@@ -239,7 +239,7 @@ begin
 	end block;
 
 	process (iod_clk, pause_rdy)
-		type states is (s_start, s_wait);
+		type states is (s_init, s_wait);
 		variable state : states;
 		variable z     : std_logic;
 		variable cntr  : unsigned(0 to unsigned_num_bits(63));
@@ -249,10 +249,10 @@ begin
 				dqipause_rdy <= to_stdulogic(to_bit(dqipause_req));
 				dqspau_rdy   <= to_stdulogic(to_bit(dqspau_req));
 				z     := '0';
-				state := s_start;
+				state := s_init;
 			elsif z='1' then
 				case state is
-				when s_start =>
+				when s_init =>
 					if (pause_rdy xor to_stdulogic(to_bit(pause_req)))='0' then
 						pause_req <= not pause_rdy;
 						state := s_wait;
@@ -262,14 +262,14 @@ begin
 						z := '0';
 						dqipause_rdy <= to_stdulogic(to_bit(dqipause_req));
 						dqspau_rdy   <= to_stdulogic(to_bit(dqspau_req));
-						state        := s_start;
+						state        := s_init;
 					end if;
 				end case;
 			else
 				z := '0';
 				z := z or (dqipause_rdy xor to_stdulogic(to_bit(dqipause_req)));
 				z := z or (dqspau_rdy   xor to_stdulogic(to_bit(dqspau_req)));
-				state := s_start;
+				state := s_init;
 			end if;
 		end if;
 	end process;

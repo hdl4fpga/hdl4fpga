@@ -69,7 +69,8 @@ begin
 	end process;
 
 	 process (sdram_clk, step_rdy)
-		variable start : std_logic;
+		type states is (s_init, s_sync);
+		variable state : states;
 		variable cntr  : unsigned(0 to unsigned_num_bits(gear/2-1));
 		variable sto   : unsigned(0 to lat+1);
 	begin
@@ -77,18 +78,19 @@ begin
 			sto(0) := sdram_sto;
 			if rst='1' then
 				step_rdy <= to_stdulogic(to_bit(step_req));
-				start    := '0';
+				state := s_init;
 			elsif (step_rdy xor to_stdulogic(to_bit(step_req)))='1' then
-				if start='0' then
+				case state is
+				when s_init =>
 					sync <= '1';
 					cntr := to_unsigned(gear/2-1, cntr'length);
 					if sdram_sto='0' then
-						start := '1';
+						state := s_sync;
 					end if;
 					dqs_pre <= '0';
-				else
+				when s_sync =>
 					if cntr(0)='1' then
-						start    := '0';
+						state := s_init;
 						step_rdy <= to_stdulogic(to_bit(step_req));
 					elsif sto(lat)='1' then
 						if sto(lat+1)='0' then
@@ -109,30 +111,32 @@ begin
 					elsif sto(lat+1)='1' then
 						cntr := cntr - 1;
 					end if;
-				end if;
+				end case;
 			else
-				start    := '0';
+				state := s_init;
 			end if;
 			sto := shift_right(sto,1);
 		end if;
 	end process;
 
 	process (sdram_clk, step_req)
-		variable start : std_logic;
+		type states is (s_init, s_run);
+		variable state : states;
 	begin
 		if rising_edge(sdram_clk) then
 			if rst='1' then
 				sys_rdy <= to_stdulogic(to_bit(sys_req));
-				start    := '0';
+				state   := s_init;
 			elsif (sys_rdy xor to_stdulogic(to_bit(sys_req)))='1' then
-				if start='0' then
+				case state is
+				when s_init =>
 					sel      <= (others => '0');
-					start    := '1';
 					synced   <= '0';
 					step_req <= not to_stdulogic(to_bit(step_rdy));
-				elsif start='1' then
+					state    := s_run;
+				when s_run =>
 					if sel(0)='0' then
-						if to_bit(step_req xor step_rdy)='0' then
+						if (step_rdy xor to_stdulogic(to_bit(step_req)))='0' then
 							if sync ='0' then
 								synced   <= '0';
 								sel      <= sel + 1;
@@ -147,9 +151,9 @@ begin
 						step_req <= to_stdulogic(to_bit(step_rdy));
 						sys_rdy  <= to_stdulogic(to_bit(sys_req));
 					end if;
-				end if;
+				end case;
 			else
-				start    := '0';
+				state    := s_init;
 				step_req <= to_stdulogic(to_bit(step_rdy));
 			end if;
 		end if;
