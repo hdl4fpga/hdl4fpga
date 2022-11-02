@@ -209,7 +209,6 @@ begin
 		dqipause_p : process (iod_clk)
 			type states is (s_start, s_wait, s_idle);
 			variable state : states;
-			variable req   : std_logic_vector(dqipau_rdy'range);
 		begin
 			if rising_edge(iod_clk) then
 				if rst='1' then
@@ -218,22 +217,18 @@ begin
 				else
 					case state is
 					when s_start =>
-						req := dqipau_rdy xor to_stdlogicvector(to_bitvector(dqipau_req));
 						dqipause_req <= not dqipause_rdy;
 						state := s_wait;
 					when s_wait =>
 						if (dqipause_rdy xor to_stdulogic(to_bit(dqipause_req)))='0' then
-							for i in req'range loop
-								if req(i)='1' then
-									dqipau_rdy(i) <= to_stdulogic(to_bit(dqipau_req(i)));
-								end if;
-							end loop;
+							dqipau_rdy <= to_stdlogicvector(to_bitvector(dqipau_req));
 							state := s_idle;
 						end if;
 					when s_idle =>
+						state := s_start;
 						for i in dqipau_req'range loop
-							if (dqipau_rdy(i) xor to_stdulogic(to_bit(dqipau_req(i))))='1' then
-								state := s_start;
+							if (dqipau_rdy(i) xor to_stdulogic(to_bit(dqipau_req(i))))='0' then
+								state := s_idle;
 							end if;
 						end loop;
 					end case;

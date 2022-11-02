@@ -187,7 +187,6 @@ add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_dqipau_rdy_7/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_7_adjdqi_b_adjdqi_e_start/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_7_adjdqi_b_adjdqi_e_start0/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_1_sdrdqphy_i_datai_b_i_igbx_7_adjdqi_b_adjdqi_e_rledge/O
-    generic map(
 
 
 add wave -noupdate -divider {New Divider}
