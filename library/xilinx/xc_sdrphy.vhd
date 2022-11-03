@@ -390,6 +390,8 @@ begin
 			type states is (s_idle, s_start, s_run);
 			variable state : states;
 			variable burst : std_logic;
+			variable sy_wr_req : std_logic_vector(wr_req'range);
+			variable sy_rd_req : std_logic_vector(rd_req'range);
 		begin
 			if rising_edge(clk0) then
 				if rst='1' then
@@ -413,8 +415,8 @@ begin
 					when s_run =>
 						if sdram_idle='1' then
 							leveling  <= '0';
-							wr_rdy    <= to_stdlogicvector(to_bitvector(wr_req));
-							rd_rdy    <= to_stdlogicvector(to_bitvector(rd_req));
+							wr_rdy    <= to_stdlogicvector(to_bitvector(sy_wr_req));
+							rd_rdy    <= to_stdlogicvector(to_bitvector(sy_rd_req));
 							read_rdy  <= to_stdulogic(to_bit(read_req));
 							write_rdy <= to_stdulogic(to_bit(write_req));
 							state     := s_idle;
@@ -445,17 +447,19 @@ begin
 					end if;
 
 					if (read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
-						if rd_rdy /= to_stdlogicvector(to_bitvector(rd_req)) then
+						if rd_rdy /= to_stdlogicvector(to_bitvector(sy_rd_req)) then
 							read_req <= not read_rdy;
 						end if;
 					end if;
 
 					if (write_rdy xor to_stdulogic(to_bit(write_req)))='0' then
-						if wr_rdy = not to_stdlogicvector(to_bitvector(wr_req)) then
+						if wr_rdy = not to_stdlogicvector(to_bitvector(sy_wr_req)) then
 							write_req <= not write_rdy;
 						end if;
 					end if;
 				end if;
+				sy_wr_req := wr_req;
+				sy_rd_req := rd_req;
 			end if;
 		end process;
 

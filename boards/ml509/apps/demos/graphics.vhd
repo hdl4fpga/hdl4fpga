@@ -1008,6 +1008,7 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
+		tp_sel     => gpio_sw_w,
 		tp         => tp,
 		rst        => sdrphy_rst,
 		iod_clk    => sys_clk,

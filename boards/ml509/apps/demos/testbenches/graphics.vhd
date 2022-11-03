@@ -127,10 +127,10 @@ architecture ml509_graphics of testbench is
 			gpio_led_s     : out std_logic;
 			gpio_led_w     : out std_logic;
 			gpio_sw_c      : in std_logic := 'Z';
-			gpio_sw_e      : in std_logic := 'Z';
-			gpio_sw_n      : in std_logic := 'Z';
-			gpio_sw_s      : in std_logic := 'Z';
-			gpio_sw_w      : in std_logic := 'Z';
+			gpio_sw_e      : in std_logic := '0';
+			gpio_sw_n      : in std_logic := '0';
+			gpio_sw_s      : in std_logic := '0';
+			gpio_sw_w      : in std_logic := '0';
 	
 			phy_reset      : out std_logic;
 			phy_col        : in std_logic := 'Z';
@@ -304,6 +304,7 @@ begin
 		ddr2_odt       => odt,
 
 		gpio_sw_c      => sw,
+		gpio_sw_w      => '0',
 		phy_rxclk      => mii_rxc,
 		phy_rxctl_rxdv => mii_rxdv,
 		phy_rxd        => mii_rxd,

@@ -40,7 +40,7 @@ architecture def of adjsto is
 begin
 
 	tp <= std_logic_vector(sel);
-	process (sdram_sti, sel, sdram_clk)
+	process (sel, sdram_clk)
 		variable delay : unsigned(0 to 2**(sel'length-1)-1);
 	begin
 		if rising_edge(sdram_clk) then
@@ -122,12 +122,13 @@ begin
 	process (sdram_clk, step_req)
 		type states is (s_init, s_run);
 		variable state : states;
+		variable sy_sys_req : std_logic;
 	begin
 		if rising_edge(sdram_clk) then
 			if rst='1' then
 				sys_rdy <= to_stdulogic(to_bit(sys_req));
 				state   := s_init;
-			elsif (sys_rdy xor to_stdulogic(to_bit(sys_req)))='1' then
+			elsif (sys_rdy xor to_stdulogic(to_bit(sy_sys_req)))='1' then
 				case state is
 				when s_init =>
 					sel      <= (others => '0');
@@ -143,19 +144,20 @@ begin
 								step_req <= not step_rdy;
 							else
 								synced <= '1';
-								sys_rdy <= to_stdulogic(to_bit(sys_req));
+								sys_rdy <= to_stdulogic(to_bit(sy_sys_req));
 							end if;
 						end if;
 					else
 						synced   <= '0';
 						step_req <= to_stdulogic(to_bit(step_rdy));
-						sys_rdy  <= to_stdulogic(to_bit(sys_req));
+						sys_rdy  <= to_stdulogic(to_bit(sy_sys_req));
 					end if;
 				end case;
 			else
 				state    := s_init;
 				step_req <= to_stdulogic(to_bit(step_rdy));
 			end if;
+			sy_sys_req := sys_req;
 		end if;
 	end process;
 end;

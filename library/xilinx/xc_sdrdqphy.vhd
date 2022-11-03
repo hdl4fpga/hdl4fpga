@@ -34,8 +34,8 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		dqs_delay  : time := 2 ns;
-		dqi_delay  : time := 2 ns;
+		dqs_delay  : time := 4.65 ns;
+		dqi_delay  : time := 4.65 ns;
 
 		loopback   : boolean := false;
 		bypass     : boolean := false;
@@ -130,9 +130,9 @@ architecture xilinx of xc_sdrdqphy is
 begin
 
 	with tp_sel select
-	tp_delay <= (others => '0') when others;
-		-- "00" & tp_dqidly when '1',
-		-- tp_dqssel & tp_dqsdly(4 downto 0) when others;
+	tp_delay <= 
+		dqs180 & dqspre & tp_dqidly when '1',
+		tp_dqssel(1 downto 0) & tp_dqsdly(5 downto 0) when others;
 		-- sys_rlrdy & sys_rlreq & adjsto_req & adjsto_rdy & step_rdy & step_req & (read_rdy xor read_req) & sto_synced when others;
 		-- adjdqs_req & adjdqs_rdy & adjdqi_req(0) & adjdqi_rdy(0) & adjsto_req & adjsto_rdy & (read_rdy xor read_req) & sto_synced when others;
 
@@ -144,6 +144,8 @@ begin
 			type states is (s_init, s_write, s_dqs, s_dqi, s_sto);
 			variable state : states;
 			variable z     : std_logic;
+			variable sy_write_rdy : std_logic;
+			variable sy_read_rdy  : std_logic;
 		begin
 			if rising_edge(iod_clk) then
 				if rst='1' then
@@ -160,12 +162,12 @@ begin
 				else
 					case state is
 					when s_init =>
-						write_req <= not to_stdulogic(to_bit(write_rdy));
+						write_req <= not to_stdulogic(to_bit(sy_write_rdy));
 						read_brst <= '0';
 						state     := s_write;
 					when s_write =>
-						if (write_rdy xor to_stdulogic(to_bit(write_req)))='0' then
-							read_req <= not to_stdulogic(to_bit(read_rdy));
+						if (sy_write_rdy xor to_stdulogic(to_bit(write_req)))='0' then
+							read_req <= not to_stdulogic(to_bit(sy_read_rdy));
 							read_brst <= '1';
 							if sys_sti(0)='1' then
 								adjdqs_req <= not to_stdulogic(to_bit(adjdqs_rdy));
@@ -186,23 +188,25 @@ begin
 						end loop;
 						if z='0' then
 							read_brst <= '0';
-							if (read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
-								read_req   <= not read_rdy;
+							if (sy_read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
+								read_req   <= not sy_read_rdy;
 								adjsto_req <= not adjsto_rdy;
 								state      := s_sto;
 							end if;
 						end if;
 					when s_sto =>
-						if (read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
+						if (sy_read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
 							if (adjsto_rdy xor to_stdulogic(to_bit(adjsto_req)))='0' then
 								sys_rlrdy <= to_stdulogic(to_bit(sys_rlreq));
 							else
-								read_req <= not read_rdy;
+								read_req <= not sy_read_rdy;
 							end if;
 						end if;
 						read_brst <= '0';
 					end case;
 				end if;
+				sy_write_rdy := write_rdy;
+				sy_read_rdy  := read_rdy;
 			end if;
 		end process;
 

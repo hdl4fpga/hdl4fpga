@@ -19,6 +19,14 @@ add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_dqs_p(0)
 add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_dqs_p(1)
 
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqs180
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_adjsto_e_dqs_pre/O
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_sys_sto_0_Q
+add wave -noupdate /testbench/du_e/ctlrphy_dqi
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/grahics_e_dev_do_dv
+add wave -noupdate /testbench/du_e/grahics_e_ctlr_do
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ctlr_clks(0)
 add wave -noupdate /testbench/du_e/ddr_clk0x2
