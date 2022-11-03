@@ -37,7 +37,7 @@ architecture ml509_graphics of testbench is
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 14;
 	constant cols_bits  : natural := 9;
-	constant data_bytes : natural := 2;
+	constant data_bytes : natural := 8;
 	constant byte_bits  : natural := 8;
 	constant timer_dll  : natural := 9;
 	constant timer_200u : natural := 9;
@@ -330,27 +330,27 @@ begin
 	begin
 		process (ds_n, dqs_n(2*(i+1)-1 downto 2*i))
 		begin
-			for i in ds_n'range loop
-				case ds_n(i) is
+			for j in ds_n'range loop
+				case ds_n(j) is
 				when '0'|'1' =>
-					dqs_n(i) <= ds_n(i);
+					dqs_n(j) <= ds_n(j);
 				when others =>
-					dqs_n(i) <= 'H';
+					dqs_n(j) <= 'H';
 				end case;
-				ds_n(i) <= dqs_n(i);
+				ds_n(j) <= dqs_n(j);
 			end loop;
 		end process;
 
 		process (ds, dqs(2*(i+1)-1 downto 2*i))
 		begin
-			for i in ds'range loop
-				case ds(i) is
+			for j in ds'range loop
+				case ds(j) is
 				when '0'|'1' =>
-					dqs(i) <= ds(i);
+					dqs(j) <= ds(j);
 				when others =>
-					dqs(i) <= 'L';
+					dqs(j) <= 'L';
 				end case;
-				ds(i) <= dqs(i);
+				ds(j) <= dqs(j);
 			end loop;
 		end process;
 
@@ -366,8 +366,8 @@ begin
 			Ba      => ba(2-1 downto 0),
 			Addr    => addr(13-1 downto 0),
 			Dm_rdqs => dm(2*(i+1)-1 downto 2*i),
-			Dqs     => ds, --dqs(2*(i+1)-1 downto 2*i),
-			Dqs_n   => ds_n, --dqs_n(2*(i+1)-1 downto 2*i),
+			Dqs     => ds,
+			Dqs_n   => ds_n,
 			rdqs_n  => rdqs_n(2*(i+1)-1 downto 2*i),
 			Dq      => dq(16*(i+1)-1 downto 16*i),
 			Odt     => odt(i/2));

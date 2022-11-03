@@ -132,7 +132,7 @@ begin
 	with tp_sel select
 	tp_delay <= 
 		dqs180 & dqspre & tp_dqidly when '1',
-		tp_dqssel(1 downto 0) & tp_dqsdly(5 downto 0) when others;
+		tp_dqssel(2-1 downto 0) & tp_dqsdly(6-1 downto 0) when others;
 		-- sys_rlrdy & sys_rlreq & adjsto_req & adjsto_rdy & step_rdy & step_req & (read_rdy xor read_req) & sto_synced when others;
 		-- adjdqs_req & adjdqs_rdy & adjdqi_req(0) & adjdqi_rdy(0) & adjsto_req & adjsto_rdy & (read_rdy xor read_req) & sto_synced when others;
 
@@ -141,9 +141,8 @@ begin
 	begin
 
 		process (pause_rdy, pause_req, iod_clk)
-			type states is (s_init, s_write, s_dqs, s_dqi, s_sto);
+			type states is (s_init, s_write, s_dqs, s_w4dqi, s_dqi4rdy, s_sto);
 			variable state : states;
-			variable z     : std_logic;
 			variable sy_write_rdy : std_logic;
 			variable sy_read_rdy  : std_logic;
 		begin
@@ -177,22 +176,21 @@ begin
 					when s_dqs =>
 						if (adjdqs_rdy xor to_stdulogic(to_bit(adjdqs_req)))='0' then
 							adjdqi_req <= not adjdqi_rdy;
-							state      := s_dqi;
+							state      := s_w4dqi;
 						end if;
-					when s_dqi =>
-						z := '0';
+					when s_w4dqi =>
+						state := s_dqi4rdy;
 						for i in adjdqi_rdy'range loop
 							if (adjdqi_rdy(i) xor adjdqi_req(i))='1' then
-								z := '1';
+								state := s_w4dqi;
 							end if;
 						end loop;
-						if z='0' then
-							read_brst <= '0';
-							if (sy_read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
-								read_req   <= not sy_read_rdy;
-								adjsto_req <= not adjsto_rdy;
-								state      := s_sto;
-							end if;
+					when s_dqi4rdy =>
+						read_brst <= '0';
+						if (sy_read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
+							read_req   <= not sy_read_rdy;
+							adjsto_req <= not adjsto_rdy;
+							state      := s_sto;
 						end if;
 					when s_sto =>
 						if (sy_read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
@@ -243,18 +241,17 @@ begin
 	end block;
 
 	process (iod_clk, pause_rdy)
-		type states is (s_init, s_wait);
+		type states is (s_init, s_wait, s_idle);
 		variable state : states;
-		variable z     : std_logic;
 		variable cntr  : unsigned(0 to unsigned_num_bits(63));
+		variable sy_dqspau_req : std_logic;
 	begin
 		if rising_edge(iod_clk) then
 			if rst='1' then
 				dqipause_rdy <= to_stdulogic(to_bit(dqipause_req));
 				dqspau_rdy   <= to_stdulogic(to_bit(dqspau_req));
-				z     := '0';
-				state := s_init;
-			elsif z='1' then
+				state := s_idle;
+			else
 				case state is
 				when s_init =>
 					if (pause_rdy xor to_stdulogic(to_bit(pause_req)))='0' then
@@ -263,18 +260,19 @@ begin
 					end if;
 				when s_wait =>
 					if (pause_rdy xor to_stdulogic(to_bit(pause_req)))='0' then
-						z := '0';
 						dqipause_rdy <= to_stdulogic(to_bit(dqipause_req));
-						dqspau_rdy   <= to_stdulogic(to_bit(dqspau_req));
-						state        := s_init;
+						dqspau_rdy   <= to_stdulogic(to_bit(sy_dqspau_req));
+						state        := s_idle;
+					end if;
+				when s_idle =>
+					if (dqipause_rdy xor to_stdulogic(to_bit(dqipause_req)))='1' then
+						state := s_init;
+					elsif (dqspau_rdy xor to_stdulogic(to_bit(sy_dqspau_req)))='1' then
+						state := s_init;
 					end if;
 				end case;
-			else
-				z := '0';
-				z := z or (dqipause_rdy xor to_stdulogic(to_bit(dqipause_req)));
-				z := z or (dqspau_rdy   xor to_stdulogic(to_bit(dqspau_req)));
-				state := s_init;
 			end if;
+			sy_dqspau_req := dqspau_req;
 		end if;
 	end process;
 
@@ -518,9 +516,11 @@ begin
 						variable q : std_logic;
 					begin
 						if rising_edge(clk90) then
-							if (not dqspre and dqs180)='1' then
+							if    dqs180='0' and dqspre='0' then
 								sys_sto <= (others => dqssto);
-							elsif (not dqspre and not dqs180)='1' then
+							elsif dqs180='0' and dqspre='1' then  -- Xilinx Virtex5
+								sys_sto <= (others => dqssto);    -- Xilinx Virtex5
+							elsif dqs180='1' and dqspre='0' then
 								sys_sto <= (others => dqssto);
 							else
 								sys_sto <= (others => q);

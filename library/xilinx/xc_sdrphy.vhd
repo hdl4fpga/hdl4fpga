@@ -387,7 +387,7 @@ begin
 		end process;
 
 		readcycle_p : process (clk0, rd_rdy)
-			type states is (s_idle, s_start, s_run);
+			type states is (s_idle, s_init, s_run);
 			variable state : states;
 			variable burst : std_logic;
 			variable sy_wr_req : std_logic_vector(wr_req'range);
@@ -403,7 +403,7 @@ begin
 					leveling  <= '0';
 				else
 					case state is
-					when s_start =>
+					when s_init =>
 						phy_frm  <= '1';
 						leveling <= '1';
 						if sdram_act='1' then
@@ -431,12 +431,12 @@ begin
 							phy_frm  <= '1';
 							phy_rw   <= '1';
 							leveling <= '1';
-							state    := s_start;
+							state    := s_init;
 						elsif (write_rdy xor to_stdulogic(to_bit(write_req)))='1' then
 							phy_frm  <= '1';
 							phy_rw   <= '0';
 							leveling <= '1';
-							state    := s_start;
+							state    := s_init;
 						end if;
 					end case;
 
@@ -464,34 +464,32 @@ begin
 		end process;
 
 		process (clk0)
-			type states is (s_start, s_idle);
+			type states is (s_init, s_w4all, s_4rdy);
 			variable state : states;
-			variable z     : std_logic;
 		begin
 			if rising_edge(clk0) then
 				if rst='1' then
 					phy_ini   <= '0';
 					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
-					state := s_idle;
+					state := s_init;
 				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
 					case state  is
-					when s_start =>
+					when s_init =>
 						rl_req <= not to_stdlogicvector(to_bitvector(rl_rdy));
-						state := s_idle;
-					when s_idle =>
-						z := '0';
+						state := s_w4all;
+					when s_w4all =>
+						state := s_4rdy;
 						for i in rl_req'range loop
 							if (rl_rdy(i) xor to_stdulogic(to_bit(rl_req(i))))='1' then
-								z := '1';
+								state := s_w4all;
 							end if;
 						end loop;
-						if z='0' then
-							phy_ini   <= phy_synced;
-							phy_rlrdy <= phy_rlreq;
-						end if;
+					when s_4rdy =>
+						phy_ini   <= phy_synced;
+						phy_rlrdy <= phy_rlreq;
 					end case;
 				else
-					state := s_start;
+					state := s_init;
 				end if;
 			end if;
 		end process;

@@ -98,9 +98,20 @@ begin
 
 		iserdese_g : if gear=4 generate
 			xv5_g : if device=xc5v generate
-				signal clkb  : std_logic;
-				signal oclkb : std_logic;
+				signal sy_rst : std_logic;
+				signal clkb   : std_logic;
+				signal oclkb  : std_logic;
 			begin
+
+				process (rst, clk)
+				begin
+					if rst='1' then
+						sy_rst <= '1';
+					elsif rising_edge(clk) then
+						sy_rst <= '0';
+					end if;
+				end process;
+
 				clkb  <= not sclk;
 				iser_i : iserdes_nodelay
 				generic map (
@@ -108,7 +119,7 @@ begin
 					DATA_RATE      => "DDR",
 					DATA_WIDTH     => 4)
 				port map (
-					rst      => rst,
+					rst      => sy_rst,
 					clk      => sclk,
 					clkb     => clkb,
 					oclk     => clkx2,
