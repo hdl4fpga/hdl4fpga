@@ -573,7 +573,7 @@ begin
 
 	end block;
 
-	grahics_e : entity hdl4fpga.demo_graphics
+	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		debug        => debug,
 		profile      => 1,

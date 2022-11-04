@@ -64,6 +64,8 @@ architecture ml509_graphics of testbench is
 	signal rdqs_n : std_logic_vector(dqs'range);
 	signal odt   : std_logic_vector(2-1 downto 0);
 
+	signal ds   : std_logic_vector(dqs'length-1 downto 0);
+	signal ds_n : std_logic_vector(dqs_n'length-1 downto 0);
 	signal scl   : std_logic;
 	signal sda   : std_logic;
 
@@ -206,7 +208,7 @@ begin
 	process
 	begin
 		req <= '0';
-		wait for 30 us;
+		wait for 36 us;
 		loop
 			if req='1' then
 				wait on mii_rxdv;
@@ -231,47 +233,47 @@ begin
 	generic map (
 		debug =>false)
 	port map (
-		mii_data4 =>
-		x"01007e" &
-		x"18ff"   &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"18ff" &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"18ff" &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"18ff" &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_0003ff_1603_0000_0000",
+		-- mii_data4 =>
+		-- x"01007e" &
+		-- x"18ff"   &
+		-- x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		-- x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		-- x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		-- x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		-- x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		-- x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		-- x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		-- x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		-- x"18ff" &
+		-- x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		-- x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		-- x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		-- x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		-- x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		-- x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		-- x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		-- x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		-- x"18ff" &
+		-- x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		-- x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		-- x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		-- x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		-- x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		-- x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		-- x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		-- x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		-- x"18ff" &
+		-- x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		-- x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		-- x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		-- x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		-- x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		-- x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		-- x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		-- x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		-- x"1702_0003ff_1603_0000_0000",
 		mii_data5 => x"010000_1702_0003ff_1603_8000_0000",
---		mii_data4 => x"01007e_1702_000030_1603_8000_07d0",
+		mii_data4 => x"01007e_1702_00000f_1603_8000_0000",
 		mii_frm1 => '0', --mii_req,
 		mii_frm2 => '0',
 		mii_frm3 => '0',
@@ -324,36 +326,34 @@ begin
 		mii_irdy   => mii_txen,
 		mii_data   => mii_txd);
 
-	simm_g : for i in 0 to data_bytes/2-1 generate
-		signal ds   : std_logic_vector(2*(i+1)-1 downto 2*i);
-		signal ds_n : std_logic_vector(2*(i+1)-1 downto 2*i);
+	process (ds_n, dqs_n)
 	begin
-		process (ds_n, dqs_n(2*(i+1)-1 downto 2*i))
-		begin
-			for j in ds_n'range loop
-				case ds_n(j) is
-				when '0'|'1' =>
-					dqs_n(j) <= ds_n(j);
-				when others =>
-					dqs_n(j) <= 'H';
-				end case;
-				ds_n(j) <= dqs_n(j);
-			end loop;
-		end process;
+		for i in ds_n'range loop
+			case ds_n(i) is
+			when '0'|'1' =>
+				dqs_n(i) <= ds_n(i);
+			when others =>
+				dqs_n(i) <= 'H';
+			end case;
+			ds_n(i) <= dqs_n(i);
+		end loop;
+	end process;
 
-		process (ds, dqs(2*(i+1)-1 downto 2*i))
-		begin
-			for j in ds'range loop
-				case ds(j) is
-				when '0'|'1' =>
-					dqs(j) <= ds(j);
-				when others =>
-					dqs(j) <= 'L';
-				end case;
-				ds(j) <= dqs(j);
-			end loop;
-		end process;
+	process (ds, dqs)
+	begin
+		for i in ds'range loop
+			case ds(i) is
+			when '0'|'1' =>
+				dqs(i) <= ds(i);
+			when others =>
+				dqs(i) <= 'L';
+			end case;
+			ds(i) <= dqs(i);
+		end loop;
+	end process;
 
+	simm_g : for i in 0 to data_bytes/2-1 generate
+	begin
 		mt_u : 	entity micron.ddr2
 		port map (
 			Ck      => clk_p(0),
@@ -366,8 +366,8 @@ begin
 			Ba      => ba(2-1 downto 0),
 			Addr    => addr(13-1 downto 0),
 			Dm_rdqs => dm(2*(i+1)-1 downto 2*i),
-			Dqs     => ds,
-			Dqs_n   => ds_n,
+			Dqs     => ds(2*(i+1)-1 downto 2*i),
+			Dqs_n   => ds_n(2*(i+1)-1 downto 2*i),
 			rdqs_n  => rdqs_n(2*(i+1)-1 downto 2*i),
 			Dq      => dq(16*(i+1)-1 downto 16*i),
 			Odt     => odt(i/2));

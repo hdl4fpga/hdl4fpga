@@ -520,6 +520,7 @@ begin
 								sys_sto <= (others => dqssto);
 							elsif dqs180='0' and dqspre='1' then  -- Xilinx Virtex5
 								sys_sto <= (others => dqssto);    -- Xilinx Virtex5
+								-- sys_sto <= (others => q);
 							elsif dqs180='1' and dqspre='0' then
 								sys_sto <= (others => dqssto);
 							else

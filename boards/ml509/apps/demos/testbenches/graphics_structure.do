@@ -25,8 +25,9 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_sys_sto_0_Q
 add wave -noupdate /testbench/du_e/ctlrphy_dqi
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/grahics_e_dev_do_dv
-add wave -noupdate /testbench/du_e/grahics_e_ctlr_do
+add wave -noupdate /testbench/du_e/graphics_e_dmactlr_b_dmactlr_e_gnt_dv
+add wave -noupdate /testbench/du_e/graphics_e_dev_do_dv
+add wave -noupdate /testbench/du_e/graphics_e_ctlr_do
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ctlr_clks(0)
 add wave -noupdate /testbench/du_e/ddr_clk0x2

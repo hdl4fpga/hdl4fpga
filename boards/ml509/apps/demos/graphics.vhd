@@ -196,7 +196,7 @@ architecture graphics of ml509 is
 	constant coln_size    : natural := 7;
 	-- constant word_size    : natural := ddr2_d'length;
 	-- constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
-	constant word_size    : natural := 8*2;
+	constant word_size    : natural := 8*1;
 	constant byte_size    : natural := 8;
 
 	signal si_frm         : std_logic;
@@ -792,7 +792,7 @@ begin
 
 	end block;
 
-	grahics_e : entity hdl4fpga.demo_graphics
+	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		debug => debug,
 		profile      => 1,

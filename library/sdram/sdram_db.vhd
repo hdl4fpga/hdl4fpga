@@ -190,7 +190,7 @@ package sdram_db is
 		(fpga => xc5v, param => DQZXL,      value =>   0),
 		(fpga => xc5v, param => WWNXL,      value =>   2),
 		(fpga => xc5v, param => WIDL,       value =>   4),
-		(fpga => xc5v, param => RDFIFO_LAT, value =>   5),
+		(fpga => xc5v, param => RDFIFO_LAT, value =>   6),
 
 		(fpga => xc7a, param => STRL,       value =>   0),
 		(fpga => xc7a, param => RWNL,       value =>   4),
