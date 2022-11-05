@@ -57,7 +57,6 @@ entity dmactlr is
 		ctlr_alat    : in  std_logic_vector(2 downto 0);
 		ctlr_blat    : in  std_logic_vector(2 downto 0);
 		ctlr_do_dv   : in  std_logic;
-		dev_do_dv    : out std_logic_vector;
 
 		ctlr_frm     : buffer std_logic;
 		ctlr_trdy    : in  std_logic;
@@ -162,19 +161,6 @@ begin
 					end loop;
 				end if;
 			end if;
-		end process;
-
-		process (ctlr_do_dv, ctlr_clk)
-			variable gnt_dv : std_logic_vector(dev_gnt'range);
-		begin
-			if rising_edge(ctlr_clk) then
-				if gnt_dv=(dev_gnt'range => '0') then
-					gnt_dv := dev_gnt;
-				elsif ctlr_do_dv='0' then
-					gnt_dv := dev_gnt;
-				end if;
-			end if;
-			dev_do_dv <= (dev_gnt'range => ctlr_do_dv) and gnt_dv;
 		end process;
 
 	end block;

@@ -28,20 +28,21 @@ use ieee.numeric_std.all;
 entity sdram_rdfifo is
 	generic (
 		data_delay  : natural := 1;
-		DATA_PHASES : natural := 1;
-		DATA_GEAR   : natural := 64;
-		WORD_SIZE   : natural := 16;
-		BYTE_SIZE   : natural := 8);
+		data_phases : natural := 1;
+		data_gear   : natural := 64;
+		word_size   : natural := 16;
+		byte_size   : natural := 8);
 	port (
 		sys_clk : in  std_logic;
-		sys_rdy : out std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
+		sys_rdy : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		sys_rea : in  std_logic;
-		sys_do  : out std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0);
+		sys_do  : out std_logic_vector(data_gear*word_size-1 downto 0);
+		sys_win_dq : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 
-		sdram_win_dq  : in std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		sdram_win_dqs : in std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		sdram_dqsi    : in std_logic_vector(DATA_PHASES*WORD_SIZE/BYTE_SIZE-1 downto 0);
-		sdram_dqi     : in std_logic_vector(DATA_GEAR*WORD_SIZE-1 downto 0));
+		sdram_win_dq  : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		sdram_win_dqs : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		sdram_dqsi    : in std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		sdram_dqi     : in std_logic_vector(data_gear*word_size-1 downto 0));
 
 end;
 
@@ -107,9 +108,15 @@ begin
 	
 				process (sys_clk)
 					variable q : std_logic_vector(0 to data_delay);
+					variable x : std_logic;
 				begin 
 					if rising_edge(sys_clk) then
 						q := q(1 to q'right) & sdram_win_dq(i*DATA_PHASES+j);
+						x := '0';
+						for l in q'range loop
+							x := x or q(l);
+						end loop;
+						sys_win_dq(i*DATA_PHASES+j) <= x;
 						pll_req <= q(0);
 					end if;
 				end process;
@@ -143,6 +150,7 @@ begin
 				do(j*WORD_SIZE/BYTE_SIZE+i) <= di(i*DATA_PHASES+j);
 			end generate;
 		end generate;
+		sys_win_dq <= sdram_win_dq;
 	end generate;
 
 	

@@ -201,6 +201,7 @@ architecture mix of demo_graphics is
 	signal ctlr_ras       : std_logic;
 	signal ctlr_cas       : std_logic;
 	signal ctlr_fch       : std_logic;
+	signal ctlr_win_do    : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 
 	alias ctlr_clk        : std_logic is ctlr_clks(0);
 begin
@@ -883,7 +884,7 @@ begin
 			dev_req      => dev_req,
 			dev_gnt      => dev_gnt,
 			dev_rdy      => dma_rdy,
-			dev_do_dv    => dev_do_dv,
+			-- dev_do_dv    => dev_do_dv,
 
 			ctlr_clk     => ctlr_clk,
 			ctlr_cl      => ctlr_cl,
@@ -901,6 +902,19 @@ begin
 			ctlr_blat    => ctlr_blat,
 			ctlr_b       => ctlr_b,
 			ctlr_a       => ctlr_a);
+
+		process (ctlr_do_dv, ctlr_clk)
+			variable gnt_dv : std_logic_vector(dev_gnt'range);
+		begin
+			if rising_edge(ctlr_clk) then
+				if gnt_dv=(dev_gnt'range => '0') then
+					gnt_dv := dev_gnt;
+				elsif ctlr_win_do(0)='0' then
+					gnt_dv := dev_gnt;
+				end if;
+			end if;
+			dev_do_dv <= (dev_gnt'range => ctlr_do_dv(0)) and gnt_dv;
+		end process;
 
 		dmadv_e : entity hdl4fpga.latency
 		generic map (
@@ -987,6 +1001,7 @@ begin
 			ctlr_dm      => ctlr_dm,
 			ctlr_do_dv   => ctlr_do_dv,
 			ctlr_do      => ctlr_do,
+			ctlr_win_do  => ctlr_win_do,
 			ctlr_refreq  => ctlr_refreq,
 			phy_inirdy   => ctlrphy_ini,
 			phy_frm      => ctlrphy_irdy,

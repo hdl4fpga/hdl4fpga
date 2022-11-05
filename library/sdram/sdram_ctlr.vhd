@@ -82,6 +82,8 @@ entity sdram_ctlr is
 		ctlr_dm      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
 		ctlr_di      : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		ctlr_do      : out std_logic_vector(data_gear*word_size-1 downto 0);
+
+		ctlr_win_do  : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		ctlr_refreq  : out std_logic;
 		phy_frm      : in  std_logic := '0';
 		phy_trdy     : out std_logic;
@@ -434,6 +436,7 @@ begin
 		sys_rdy       => ctlr_do_dv,
 		sys_rea       => sdram_mpu_rea,
 		sys_do        => ctlr_do,
+		sys_win_dq    => ctlr_win_do,
 		sdram_win_dq  => sdram_win_dq,
 		sdram_win_dqs => sdram_win_dqs,
 		sdram_dqsi    => phy_dqsi,
