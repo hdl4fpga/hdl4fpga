@@ -27,10 +27,6 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/oddr_g(0)/dqo
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/adjdqs_req
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/adjdqs_rdy
-add wave -noupdate /testbench/du_e/grahics_e/sdrctlr_b/sdrctlr_e/ctlr_rst
-add wave -noupdate /testbench/du_e/grahics_e/ctlr_clks(0)
-add wave -noupdate /testbench/du_e/grahics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(0)
-add wave -noupdate -radix hexadecimal /testbench/du_e/grahics_e/sdrctlr_b/sdrctlr_e/ctlr_do
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqipau_req
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqipau_rdy
@@ -84,6 +80,8 @@ add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqsi_b/igbx_i/d
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqsi_b/igbx_i/q
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqs180
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqspre
+add wave -noupdate /testbench/du_e/graphics_e/ctlr_do_dv(0)
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/ctlr_do
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/adjdqs_req
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/adjdqs_rdy
@@ -94,8 +92,8 @@ add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/adjsto_rdy
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/rl_b/line__143/state
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {33682000 ps} 0} {{Cursor 2} {48740658 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {33682000 ps} 0} {{Cursor 2} {75990884 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 237
 configure wave -valuecolwidth 290
 configure wave -justifyvalue left
@@ -110,4 +108,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {15087500 ps} {51837500 ps}
+WaveRestoreZoom {75951881 ps} {76002452 ps}

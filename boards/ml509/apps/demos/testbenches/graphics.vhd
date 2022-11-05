@@ -37,7 +37,7 @@ architecture ml509_graphics of testbench is
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 14;
 	constant cols_bits  : natural := 9;
-	constant data_bytes : natural := 8;
+	constant data_bytes : natural := 2;
 	constant byte_bits  : natural := 8;
 	constant timer_dll  : natural := 9;
 	constant timer_200u : natural := 9;
@@ -272,8 +272,8 @@ begin
 		-- x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		-- x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
 		-- x"1702_0003ff_1603_0000_0000",
-		mii_data5 => x"010000_1702_0003ff_1603_8000_0000",
 		mii_data4 => x"01007e_1702_00000f_1603_8000_0000",
+		mii_data5 => x"010000_1702_0003ff_1603_8000_0000",
 		mii_frm1 => '0', --mii_req,
 		mii_frm2 => '0',
 		mii_frm3 => '0',

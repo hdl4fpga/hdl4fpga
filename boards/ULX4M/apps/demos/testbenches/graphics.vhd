@@ -59,6 +59,9 @@ architecture ulx4mld_graphics of testbench is
 			usb_fpga_bd_dn : inout std_logic := '-';
 			usb_fpga_pu_dp : inout std_logic := '-';
 			usb_fpga_pu_dn : inout std_logic := '-';
+			usb_fpga_otg_dp : inout std_logic := 'Z';
+			usb_fpga_otg_dn : inout std_logic := 'Z';
+			n_extrst        : inout std_logic := 'Z';
 
 			eth_reset      : out   std_logic;
 --			rgmii_ref_clk  : in    std_logic;
@@ -489,7 +492,7 @@ end;
 
 library micron;
 
-configuration ulx4mld_graphic_structure_md of testbench is
+configuration ulx4mld_graphics_structure_md of testbench is
 	for ulx4mld_graphics
 		for all : ulx4m_ld
 			use entity work.ulx4m_ld(structure);
@@ -519,7 +522,7 @@ end;
 
 library micron;
 
-configuration ulx4mld_graphic_md of testbench is
+configuration ulx4mld_graphics_md of testbench is
 	for ulx4mld_graphics
 		for all : ulx4m_ld
 			use entity work.ulx4m_ld(graphics);
