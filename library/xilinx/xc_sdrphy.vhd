@@ -477,14 +477,14 @@ begin
 					when s_init =>
 						rl_req <= not to_stdlogicvector(to_bitvector(rl_rdy));
 						state := s_w4all;
-					when s_w4all =>
+					when s_w4all =>	-- Wait for(4) All
 						state := s_4rdy;
 						for i in rl_req'range loop
 							if (rl_rdy(i) xor to_stdulogic(to_bit(rl_req(i))))='1' then
 								state := s_w4all;
 							end if;
 						end loop;
-					when s_4rdy =>
+					when s_4rdy => -- All(4) ready
 						phy_ini   <= phy_synced;
 						phy_rlrdy <= phy_rlreq;
 					end case;

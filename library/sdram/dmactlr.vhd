@@ -56,7 +56,6 @@ entity dmactlr is
 		ctlr_cl      : in  std_logic_vector;
 		ctlr_alat    : in  std_logic_vector(2 downto 0);
 		ctlr_blat    : in  std_logic_vector(2 downto 0);
-		ctlr_do_dv   : in  std_logic;
 
 		ctlr_frm     : buffer std_logic;
 		ctlr_trdy    : in  std_logic;

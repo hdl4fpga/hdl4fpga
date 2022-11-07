@@ -884,11 +884,9 @@ begin
 			dev_req      => dev_req,
 			dev_gnt      => dev_gnt,
 			dev_rdy      => dma_rdy,
-			-- dev_do_dv    => dev_do_dv,
 
 			ctlr_clk     => ctlr_clk,
 			ctlr_cl      => ctlr_cl,
-			ctlr_do_dv   => ctlr_do_dv(0),
 
 			ctlr_inirdy  => ctlr_inirdy,
 			ctlr_refreq  => ctlr_refreq,

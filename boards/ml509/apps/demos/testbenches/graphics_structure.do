@@ -21,6 +21,14 @@ add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_dqs_p(1)
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqs180
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_adjsto_e_dqs_pre/O
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqs_smp_0_Q 
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqs_smp_1_Q 
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqs_smp_2_Q 
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqs_smp_3_Q 
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_igbx_i_reg_g_0_iserdese_g_xv5_g_iser_i/CLK 
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_igbx_i_reg_g_0_iserdese_g_xv5_g_iser_i/OCLK 
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_igbx_i_reg_g_0_iserdese_g_xv5_g_iser_i/CLKDIV 
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_igbx_i_reg_g_0_iserdese_g_xv5_g_iser_i/DDLY 
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_sys_sto_0_Q
 add wave -noupdate /testbench/du_e/ctlrphy_dqi
@@ -63,8 +71,13 @@ add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqspau_rdy/O
 add wave -noupdate -divider {DQI Pause}
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqipause_req/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqipause_rdy/O
-
+add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {DQS delay}
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_datai_b_i_igbx_7_igbx_g_data_gear4_g_igbx_i_reg_g_0_iserdese_g_xv5_g_iser_i/CLKDIV 
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ddr2_dqs_p_0_INBUF_DS
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_dqsidelay_i_xc5v_g_idelay_i_idelay_i_DATAIN_INT
+add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_dqsidelay_i_xc5v_g_idelay_i_idelay_i/DATAOUT
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_dqsidelay_i_xc5v_g_idelay_i_idelay_i/IDATAIN
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_dqsidelay_i_xc5v_g_idelay_i_idelay_i/idelay_count

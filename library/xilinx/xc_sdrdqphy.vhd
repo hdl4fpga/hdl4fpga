@@ -34,8 +34,8 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		dqs_delay  : time := 1.5 ns;
-		dqi_delay  : time := 1.5 ns;
+		dqs_delay  : time := 3 ns;
+		dqi_delay  : time := 3 ns;
 
 		loopback   : boolean := false;
 		bypass     : boolean := false;
@@ -211,6 +211,7 @@ begin
 		dqipause_p : process (iod_clk)
 			type states is (s_init, s_wait, s_idle);
 			variable state : states;
+			variable sy_dqipau_req : std_logic_vector(dqipau_req'range);
 		begin
 			if rising_edge(iod_clk) then
 				if rst='1' then
@@ -223,18 +224,19 @@ begin
 						state := s_wait;
 					when s_wait =>
 						if (dqipause_rdy xor to_stdulogic(to_bit(dqipause_req)))='0' then
-							dqipau_rdy <= to_stdlogicvector(to_bitvector(dqipau_req));
+							dqipau_rdy <= to_stdlogicvector(to_bitvector(sy_dqipau_req));
 							state := s_idle;
 						end if;
 					when s_idle =>
 						state := s_init;
 						for i in dqipau_req'range loop
-							if (dqipau_rdy(i) xor to_stdulogic(to_bit(dqipau_req(i))))='0' then
+							if (dqipau_rdy(i) xor to_stdulogic(to_bit(sy_dqipau_req(i))))='0' then
 								state := s_idle;
 							end if;
 						end loop;
 					end case;
 				end if;
+				sy_dqipau_req := dqipau_req;
 			end if;
 		end process;
 
@@ -301,7 +303,7 @@ begin
 		signal dqsi     : std_logic;
 		signal dqsi_buf : std_logic;
 		signal dqs_smp  : std_logic_vector(0 to data_gear-1);
-		signal sclk     : std_logic;
+		signal clk90x2_n : std_logic;
 	begin
 
 		adjdqs_e : entity hdl4fpga.adjpha
@@ -332,7 +334,7 @@ begin
 			dqso   => sys_dqso);
 		dqsi_buf <= sys_dqso(0);
 
-		sclk  <= not clk90x2;
+		clk90x2_n <= not clk90x2;
 		igbx_i : entity hdl4fpga.igbx
 		generic map (
 			device => device,
@@ -340,7 +342,7 @@ begin
 			gear   => data_gear)
 		port map (
 			rst   => rst,
-			sclk  => sclk,
+			sclk  => clk90x2_n,
 			clkx2 => clk0x2,
 			clk   => clk0,
 			d(0)  => dqsi_buf,
@@ -451,7 +453,7 @@ begin
 						gear => data_gear)
 					port map (
 						rst   => rst,
-						sclk  => clk90x2,
+						sclk  => clk0x2,
 						clkx2 => clk90x2,
 						clk   => clk90,
 						d(0)  => dqi(i),
@@ -493,7 +495,7 @@ begin
 					process(iod_clk) 
 					begin
 						if rising_edge(iod_clk) then
-							sel <= (dqspre xor dqs180);
+							sel <= (dqspre xnor dqs180);
 						end if;
 					end process;
 
@@ -519,12 +521,11 @@ begin
 							if    dqs180='0' and dqspre='0' then
 								sys_sto <= (others => dqssto);
 							elsif dqs180='0' and dqspre='1' then  -- Xilinx Virtex5
-								sys_sto <= (others => dqssto);    -- Xilinx Virtex5
-								-- sys_sto <= (others => q);
+								sys_sto <= (others => q);
 							elsif dqs180='1' and dqspre='0' then
 								sys_sto <= (others => dqssto);
 							else
-								sys_sto <= (others => q);
+								sys_sto <= (others => dqssto);
 							end if;
 							q := dqssto;
 						end if;
