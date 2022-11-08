@@ -215,7 +215,7 @@ begin
 				if falling_edge(mii_rxdv) then
 					req <= '0';
 					x <= x + 1;
-					wait for 30 us;
+					wait for 12 us;
 				end if;
 			else
 				if x > 1 then

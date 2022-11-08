@@ -889,7 +889,7 @@ begin
 			ctlr_cl      => ctlr_cl,
 
 			ctlr_inirdy  => ctlr_inirdy,
-			ctlr_refreq  => '0', --ctlr_refreq,
+			ctlr_refreq  => ctlr_refreq,
 
 			ctlr_frm     => ctlr_frm,
 			ctlr_trdy    => ctlr_trdy,

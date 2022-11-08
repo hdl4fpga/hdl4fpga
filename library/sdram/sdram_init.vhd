@@ -904,7 +904,8 @@ begin
 					(tddr2_rpa, to_sdrlatency(tcp, chip, tRPA)),
 					(tddr2_rfc, to_sdrlatency(tcp, chip, tRFC)),
 					(tddr2_dll, 200),
-					(tddr2_ref, to_sdrlatency(tcp, chip, tREFI)));
+					-- (tddr2_ref, to_sdrlatency(tcp, chip, tREFI)));
+					(tddr2_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 124)));
 			when ddr3 =>
 				return (
 					(tsdr_rst,  to_sdrlatency(tCP, chip, tPreRST)/setif(debug, 100, 1)),
