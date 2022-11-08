@@ -34,8 +34,8 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		dqs_delay  : time := 3 ns;
-		dqi_delay  : time := 3 ns;
+		dqs_delay  : time := 0.9 ns;
+		dqi_delay  : time := 0.9 ns;
 
 		loopback   : boolean := false;
 		bypass     : boolean := false;
@@ -480,17 +480,17 @@ begin
 					latf_g : entity hdl4fpga.latency
 					generic map (
 						n => 4,
-						d => (1, 1, 1, 1))
+						d => (0, 1, 1, 1))
 					port map (
 						clk   => clk90,
 						di(0) => dq(0*byte_size+i),
 						di(1) => dq(1*byte_size+i),
 						di(2) => dq(2*byte_size+i),
 						di(3) => dq(3*byte_size+i),
-						do(0) => dqf(0*byte_size+i),
-						do(1) => dqf(1*byte_size+i),
-						do(2) => dqf(2*byte_size+i),
-						do(3) => dqf(3*byte_size+i));
+						do(0) => dqf(3*byte_size+i),
+						do(1) => dqf(0*byte_size+i),
+						do(2) => dqf(1*byte_size+i),
+						do(3) => dqf(2*byte_size+i));
 
 					process(iod_clk) 
 					begin

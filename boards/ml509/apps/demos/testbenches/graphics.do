@@ -90,7 +90,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/ctlr_do
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {75984231 ps} 0} {{Cursor 2} {75988330 ps} 0}
+WaveRestoreCursors {{Cursor 1} {75984231 ps} 0} {{Cursor 2} {76005368 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 353
 configure wave -valuecolwidth 170
@@ -106,4 +106,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {75960284 ps} {75999302 ps}
+WaveRestoreZoom {75921102 ps} {76077182 ps}
