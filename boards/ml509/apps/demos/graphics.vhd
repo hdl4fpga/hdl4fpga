@@ -49,7 +49,7 @@ architecture graphics of ml509 is
 		sdr350MHz_600p,
 		sdr400MHz_600p);
 
-	constant app_profile : app_profiles := sdr400Mhz_600p;
+	constant app_profile : app_profiles := sdr350Mhz_600p;
 
 	type profileparam_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparam_vector := (
@@ -194,10 +194,10 @@ architecture graphics of ml509 is
 	constant bank_size    : natural := ddr2_ba'length;
 	constant addr_size    : natural := ddr2_a'length;
 	constant coln_size    : natural := 7;
-	constant word_size    : natural := ddr2_d'length;
-	constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
-	-- constant word_size    : natural := 8*1;
-	-- constant byte_size    : natural := 8;
+	-- constant word_size    : natural := ddr2_d'length;
+	-- constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
+	constant word_size    : natural := 8*1;
+	constant byte_size    : natural := 8;
 
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
