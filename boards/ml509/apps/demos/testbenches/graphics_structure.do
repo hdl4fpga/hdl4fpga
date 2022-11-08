@@ -21,20 +21,24 @@ add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_dqs_p(1)
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqs180
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_adjsto_e_dqs_pre/O
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqs_smp_0_Q 
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqs_smp_1_Q 
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqs_smp_2_Q 
-add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqs_smp_3_Q 
+quietly virtual signal -install /testbench/du_e { 
+    (context /testbench/du_e ) (
+        sdrphy_e_byte_g_0_sdrdqphy_i_dqs_smp_0_Q & 
+        sdrphy_e_byte_g_0_sdrdqphy_i_dqs_smp_1_Q & 
+        sdrphy_e_byte_g_0_sdrdqphy_i_dqs_smp_2_Q & 
+        sdrphy_e_byte_g_0_sdrdqphy_i_dqs_smp_3_Q )} smp_dqs
+add wave -noupdate /testbench/du_e/smp_dqs     
+
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_igbx_i_reg_g_0_iserdese_g_xv5_g_iser_i/CLK 
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_igbx_i_reg_g_0_iserdese_g_xv5_g_iser_i/OCLK 
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_igbx_i_reg_g_0_iserdese_g_xv5_g_iser_i/CLKDIV 
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_igbx_i_reg_g_0_iserdese_g_xv5_g_iser_i/DDLY 
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_sys_sto_0_Q
-add wave -noupdate /testbench/du_e/ctlrphy_dqi
+add wave -noupdate  -radix hexadecimal /testbench/du_e/ctlrphy_dqi
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e_dev_do_dv(1)
-add wave -noupdate /testbench/du_e/graphics_e_ctlr_do
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e_ctlr_do
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ctlr_clks(0)
 add wave -noupdate /testbench/du_e/ddr_clk0x2
@@ -85,6 +89,17 @@ add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_adjdqs_req/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqsi_b_adjdqs_e_rdy/O
 
 add wave -noupdate -divider {DQI[0] delay}
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_datai_b_i_igbx_0_igbx_g_data_gear4_g_igbx_i_reg_g_0_iserdese_g_xv5_g_iser_i/CLK 
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_datai_b_i_igbx_0_igbx_g_data_gear4_g_igbx_i_reg_g_0_iserdese_g_xv5_g_iser_i/OCLK 
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_datai_b_i_igbx_0_igbx_g_data_gear4_g_igbx_i_reg_g_0_iserdese_g_xv5_g_iser_i/CLKDIV 
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_datai_b_i_igbx_0_igbx_g_data_gear4_g_igbx_i_reg_g_0_iserdese_g_xv5_g_iser_i/DDLY 
+add wave -noupdate /testbench/du_e/ddr2_d_0_IBUF
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dqi_0_Q
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dq_0_Q
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dq_8_Q
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dq_16_Q
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_dq_24_Q
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_datai_b_i_igbx_0_adjdqi_b_dqi_i_xc5v_g_idelay_i_idelay_i/idelay_count
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_adjdqi_req_0/O
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdrdqphy_i_datai_b_i_igbx_0_adjdqi_b_adjdqi_e_rdy/O
@@ -232,7 +247,7 @@ add wave -noupdate /testbench/du_e/gpio_led_s
 add wave -noupdate /testbench/du_e/gpio_led_w
 
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {37153680 ps} 0} {{Cursor 2} {37740658 ps} 0}
+WaveRestoreCursors {{Cursor 1} {37153680 ps} 0} {{Cursor 2} {76012469 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 237
 configure wave -valuecolwidth 172

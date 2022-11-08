@@ -392,7 +392,7 @@ begin
 					taps     => taps)
 				port map (
 					rst      => rst,
-					edge     => std_logic'('0'),
+					edge     => std_logic'('1'),
 					clk      => clk90,
 					req      => adjdqi_req(i),
 					rdy      => adjdqi_rdy(i),
@@ -465,17 +465,17 @@ begin
 					lath_g : entity hdl4fpga.latency
 					generic map (
 						n => 4,
-						d => (0, 0, 1, 1))
+						d => (0, 0, 0, 1))
 					port map (
 						clk   => clk90,
 						di(0) => dq(0*byte_size+i),
 						di(1) => dq(1*byte_size+i),
 						di(2) => dq(2*byte_size+i),
 						di(3) => dq(3*byte_size+i),
-						do(0) => dqh(2*byte_size+i),
-						do(1) => dqh(3*byte_size+i),
-						do(2) => dqh(0*byte_size+i),
-						do(3) => dqh(1*byte_size+i));
+						do(0) => dqh(1*byte_size+i),
+						do(1) => dqh(2*byte_size+i),
+						do(2) => dqh(3*byte_size+i),
+						do(3) => dqh(0*byte_size+i));
 			
 					latf_g : entity hdl4fpga.latency
 					generic map (
