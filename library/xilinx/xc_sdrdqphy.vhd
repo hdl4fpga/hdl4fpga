@@ -34,8 +34,8 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		dqs_delay  : time := 0.9 ns;
-		dqi_delay  : time := 0.9 ns;
+		dqs_delay  : time := 3*1.67 ns;
+		dqi_delay  : time := 3*1.67 ns;
 
 		loopback   : boolean := false;
 		bypass     : boolean := false;
@@ -495,7 +495,7 @@ begin
 					process(iod_clk) 
 					begin
 						if rising_edge(iod_clk) then
-							sel <= (dqspre xnor dqs180);
+							sel <= dqspre;
 						end if;
 					end process;
 
@@ -515,19 +515,9 @@ begin
 			igbx_g : if not bypass generate
 				gbx4_g : if data_gear=4 generate
 					process (clk90)
-						variable q : std_logic;
 					begin
 						if rising_edge(clk90) then
-							if    dqs180='0' and dqspre='0' then
-								sys_sto <= (others => dqssto);
-							elsif dqs180='0' and dqspre='1' then  -- Xilinx Virtex5
-								sys_sto <= (others => q);
-							elsif dqs180='1' and dqspre='0' then
-								sys_sto <= (others => dqssto);
-							else
-								sys_sto <= (others => dqssto);
-							end if;
-							q := dqssto;
+							sys_sto <= (others => dqssto);
 						end if;
 					end process;
 				end generate;
