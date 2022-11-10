@@ -49,7 +49,9 @@ architecture graphics of ml509 is
 		sdr350MHz_600p,
 		sdr400MHz_600p);
 
-	constant app_profile : app_profiles := sdr350Mhz_600p;
+	----------------------------------------------------------
+	constant app_profile : app_profiles := sdr333Mhz_600p;  --
+	----------------------------------------------------------
 
 	type profileparam_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparam_vector := (
@@ -301,7 +303,7 @@ begin
 		O => sys_clk);
 
 	-- gpio_led_c <= gpio_sw_c;
-	(gpio_led_w, gpio_led_n, gpio_led_e, gpio_led_s) <= mii_tp(2 to 5);
+	-- (gpio_led_w, gpio_led_n, gpio_led_e, gpio_led_s) <= mii_tp(2 to 5);
 	process (gpio_sw_c, sys_clk)
 		variable tmr : unsigned(0 to 8-1) := (others => '0');
 	begin
@@ -993,6 +995,16 @@ begin
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
 
 	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
+	process (sys_clk)
+	begin
+		if rising_edge(sys_clk) then
+			gpio_led_w <= 'Z'; --ctlrphy_rlreq;
+			gpio_led_e <= 'Z'; --ctlrphy_rlrdy;
+			gpio_led_n <= 'Z';
+			gpio_led_s <= 'Z';
+		end if;
+	end process;
+	
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
 		-- dqs_delay   => (0 => 0.954 ns, 1 => 6.954 ns),
