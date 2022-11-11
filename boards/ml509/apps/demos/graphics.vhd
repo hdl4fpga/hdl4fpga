@@ -813,7 +813,7 @@ begin
 		coln_size    => coln_size,
 		word_size    => word_size,
 		byte_size    => byte_size,
-		burst_length => 4,
+		-- burst_length => 4,
 		burst_length => 8,
 
 		timing_id    => videoparam(video_mode).timing,
@@ -848,8 +848,8 @@ begin
 		ctlr_cwl      => b"0_11",
 		ctlr_rtt      => b"11",
 		ctlr_al       => "001",
-		ctlr_bl       => "001", -- Busrt length 2
-		ctlr_bl       => "011", -- Busrt length 4
+		-- ctlr_bl       => "010", -- Busrt length 4
+		ctlr_bl       => "011", -- Busrt length 8
 		ctlr_cl       => sdram_params.cl,
 		ctlr_cmd      => ctlrphy_cmd,
 		ctlr_inirdy   => ctlr_inirdy,
