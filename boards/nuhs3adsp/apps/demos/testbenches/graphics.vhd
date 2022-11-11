@@ -239,7 +239,7 @@ begin
 		x"c3c2c1c0_c7c6c5c4_cbcac9c8_cfcecdcc_d3d2d1d0_d7d6d5d4_dbdad9d8_dfdedddc" &
 		x"e3e2e1e0_e7e6e5e4_ebeae9e8_efeeedec_f3f2f1f0_f7f6f5f4_fbfaf9f8_fffefdfc" &
 		x"1702_0000ff_1603_0000_0000",
-		mii_data5 => x"0100" & x"00" & x"1702_0000ff_1603_8000_0000",
+		mii_data5 => x"0100" & x"00" & x"1702_00003f_1603_8000_0000",
 		mii_frm1 => '0',
 		mii_frm2 => '0',
 		mii_frm3 => '0',

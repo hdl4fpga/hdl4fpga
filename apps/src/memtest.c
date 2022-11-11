@@ -170,8 +170,8 @@ int main (int argc, char *argv[])
 		seq_init();
 		for (address = 0; address < MAX_ADDRESS; address += length) {
 
-//			test_seq(wr_buffer, length);
-			test_fill(wr_buffer, length);
+			test_seq(wr_buffer, length);
+//			test_fill(wr_buffer, length);
 //			memset(wr_buffer, 0, length);
 			sio_memwrite(address, wr_buffer, length);
 			sio_memread(address,  rd_buffer, length);

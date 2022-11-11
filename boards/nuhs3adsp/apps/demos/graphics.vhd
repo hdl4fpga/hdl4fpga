@@ -624,7 +624,7 @@ begin
 		ctlr_clks(0) => clk0,
 		ctlr_clks(1) => clk90,
 		ctlr_rst     => ddrsys_rst,
-		ctlr_rtt     => "---",				-- Busrt length 2
+		ctlr_rtt     => "---",
 		ctlr_bl      => "001",				-- Busrt length 2
 		-- ctlr_bl      => "010",				-- Busrt length 4
 		-- ctlr_bl      => "011",				-- Busrt length 8

@@ -182,7 +182,7 @@ begin
 					restart <= '0';
 				end if;
 
-				sync_refresh_with_cas : if state_cas='1' and (ctlr_cas='0' or burst_length=0) then
+				sync_refresh_with_cas : if state_cas='1' and (ctlr_cas='0' or burst_length=0 or burst_length=data_gear) then
 					refreq <= ctlr_refreq;
 				elsif refreq='1' then
 					refreq <= ctlr_refreq;
@@ -211,7 +211,7 @@ begin
 						cntr := resize(unsigned(ctlr_alat)-2, cntr'length);
 					end if;
 					assert unsigned(ctlr_alat) >= 2
-					report ">>>dmatrans<<< : ctlr_alat " & to_string(ctlr_alat) & " lower than 3"
+					report ">>>dmatrans<<< : ctlr_alat " & to_string(ctlr_alat) & " lower than 2"
 					severity failure;
 				when bursting =>
 					if cntr(0)='0' then
@@ -226,12 +226,17 @@ begin
 
 			if unsigned(ctlr_alat) > 2 then
 				ena <= (cntr(0) and not ceoc and not refreq) or (cntr(0) and restart);
+				-- ena <= (cntr(0) and not ceoc) or (cntr(0) and restart);
 			else
 				case state is
 				when activate =>
 					ena <= '0';
 				when bursting =>
-					ena <= (cntr(0) and not ceoc and not refreq) or (cntr(0) and restart);
+					if ctlr_blat(ctlr_blat'left)='1' then
+						ena <= (cntr(0) and not ceoc and not refreq) or (cntr(0) and restart);
+					else
+						ena <= (cntr(0) and not ceoc) or (cntr(0) and restart);
+					end if;
 				end case;
 			end if;
 		end process;
@@ -267,14 +272,8 @@ begin
 		col_e : entity hdl4fpga.fifo
 		generic map (
 			max_depth => 8,
-
-			-- ecp 5
 			sync_read => false, 
-			-- latency   => 1, -- RCD latency lower than 3,
 			latency   => 1, -- RCD latency greater than 2
-
-			-- sync_read => true, -- Xilinx 
-			-- latency   => 1, -- Xilinx 
 			check_sov => false,
 			check_dov => true,
 			gray_code => false)
