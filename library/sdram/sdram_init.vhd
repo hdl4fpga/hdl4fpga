@@ -355,9 +355,9 @@ begin
 					mr_field(mask => ddr1_bl,   src => sdram_mr_bl, size => sdram_a_max) or
 					mr_field(mask => ddr1_bt,   src => sdram_mr_bt, size => sdram_a_max) or
 					mr_field(mask => ddr1_cl,   src => sdram_mr_cl, size => sdram_a_max) or
-					mr_field(mask => ddr1_rdll, src => "1",       size => sdram_a_max);
+					mr_field(mask => ddr1_rdll, src => "1",         size => sdram_a_max);
 			when ddr1mr_setmr =>
-				return mr_field(mask => ddr1_bl,   src => sdram_mr_bl, size => sdram_a_max) or
+				return mr_field(mask => ddr1_bl, src => sdram_mr_bl, size => sdram_a_max) or
 					mr_field(mask => ddr1_bt,   src => sdram_mr_bt, size => sdram_a_max) or
 					mr_field(mask => ddr1_cl,   src => sdram_mr_cl, size => sdram_a_max) or
 					mr_field(mask => ddr1_rdll, src => "0", size => sdram_a_max);
@@ -906,7 +906,7 @@ begin
 					(tddr2_rfc, to_sdrlatency(tcp, chip, tRFC)),
 					(tddr2_dll, 200),
 					-- (tddr2_ref, to_sdrlatency(tcp, chip, tREFI)));
-					(tddr2_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 13463/2+687)));
+					(tddr2_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 7418)));
 			when ddr3 =>
 				return (
 					(tsdr_rst,  to_sdrlatency(tCP, chip, tPreRST)/setif(debug, 100, 1)),

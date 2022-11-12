@@ -306,7 +306,7 @@ begin
 		ddr2_odt       => odt,
 
 		gpio_sw_c      => sw,
-		gpio_sw_w      => '0',
+		gpio_sw_w      => '1',
 		phy_rxclk      => mii_rxc,
 		phy_rxctl_rxdv => mii_rxdv,
 		phy_rxd        => mii_rxd,
