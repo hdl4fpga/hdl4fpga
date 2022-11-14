@@ -37,7 +37,7 @@ architecture ml509_graphics of testbench is
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 14;
 	constant cols_bits  : natural := 9;
-	constant data_bytes : natural := 2;
+	constant data_bytes : natural := 1;
 	constant byte_bits  : natural := 8;
 	constant timer_dll  : natural := 9;
 	constant timer_200u : natural := 9;
@@ -188,6 +188,7 @@ architecture ml509_graphics of testbench is
 	signal datarx_null :  std_logic_vector(mii_rxd'range);
 	signal sw : std_logic;
 		signal x : natural := 0;
+	signal dmi : std_logic_vector(dm'range);
 begin
 
 	rst   <= '1', '0' after 1.1 us, '1' after 42 us, '0' after 43 us;
@@ -284,6 +285,13 @@ begin
 		mii_txen => mii_rxdv,
 		mii_txd  => mii_rxd);
 
+	process (dm)
+	begin
+		dmi <= (others => '1');
+		for i in 0 to data_bytes-1 loop
+			dmi(i) <= dm(i);
+		end loop;
+	end process;
 	du_e : ml509
 	generic map (
 		debug => true)
@@ -335,7 +343,7 @@ begin
 			when others =>
 				dqs_n(i) <= 'H';
 			end case;
-			ds_n(i) <= dqs_n(i);
+			ds_n(i) <= dqs_n(0);
 		end loop;
 	end process;
 
@@ -348,11 +356,11 @@ begin
 			when others =>
 				dqs(i) <= 'L';
 			end case;
-			ds(i) <= dqs(i);
+			ds(i) <= dqs(0);
 		end loop;
 	end process;
 
-	simm_g : for i in 0 to data_bytes/2-1 generate
+	simm_g : for i in 0 to (data_bytes+1)/2-1 generate
 	begin
 		mt_u : 	entity micron.ddr2
 		port map (
@@ -365,7 +373,7 @@ begin
 			We_n    => we_n,
 			Ba      => ba(2-1 downto 0),
 			Addr    => addr(13-1 downto 0),
-			Dm_rdqs => dm(2*(i+1)-1 downto 2*i),
+			Dm_rdqs => dmi(2*(i+1)-1 downto 2*i),
 			Dqs     => ds(2*(i+1)-1 downto 2*i),
 			Dqs_n   => ds_n(2*(i+1)-1 downto 2*i),
 			rdqs_n  => rdqs_n(2*(i+1)-1 downto 2*i),
