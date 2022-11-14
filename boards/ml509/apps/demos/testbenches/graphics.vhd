@@ -285,13 +285,6 @@ begin
 		mii_txen => mii_rxdv,
 		mii_txd  => mii_rxd);
 
-	process (dm)
-	begin
-		dmi <= (others => '1');
-		for i in 0 to data_bytes-1 loop
-			dmi(i) <= dm(i);
-		end loop;
-	end process;
 	du_e : ml509
 	generic map (
 		debug => true)
@@ -357,6 +350,14 @@ begin
 				dqs(i) <= 'L';
 			end case;
 			ds(i) <= dqs(0);
+		end loop;
+	end process;
+
+	process (dm)
+	begin
+		dmi <= (others => '1');
+		for i in 0 to data_bytes-1 loop
+			dmi(i) <= dm(i);
 		end loop;
 	end process;
 

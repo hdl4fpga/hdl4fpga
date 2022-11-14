@@ -495,7 +495,7 @@ begin
 					process(iod_clk) 
 					begin
 						if rising_edge(iod_clk) then
-							sel <= dqspre;
+							sel <= dqspre xnor dqs180;
 						end if;
 					end process;
 
@@ -515,9 +515,15 @@ begin
 			igbx_g : if not bypass generate
 				gbx4_g : if data_gear=4 generate
 					process (clk90)
+						variable q : std_logic;
 					begin
 						if rising_edge(clk90) then
-							sys_sto <= (others => dqssto);
+							if dqs180='1' then
+								sys_sto <= (others => dqssto);
+							else
+								sys_sto <= (others => q);
+							end if;
+							q := dqssto;
 						end if;
 					end process;
 				end generate;
