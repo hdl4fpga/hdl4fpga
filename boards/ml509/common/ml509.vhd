@@ -42,7 +42,7 @@ entity ml509 is
 		ddr2_clk_p     : out std_logic_vector(2-1 downto 0);
 		ddr2_clk_n     : out std_logic_vector(2-1 downto 0);
 		ddr2_cs        : out std_logic_vector(2-1 downto 0);
-		ddr2_cke       : out std_logic_vector( 2-1 downto 0);
+		ddr2_cke       : out std_logic_vector(2-1 downto 0);
 		ddr2_ras       : out std_logic;
 		ddr2_cas       : out std_logic;
 		ddr2_we        : out std_logic;
@@ -50,7 +50,7 @@ entity ml509 is
 		ddr2_ba        : out std_logic_vector( 3-1 downto 0);
 		ddr2_dqs_p     : inout std_logic_vector(8-1 downto 0);
 		ddr2_dqs_n     : inout std_logic_vector(8-1 downto 0);
-		ddr2_dm        : inout std_logic_vector( 8-1 downto 0);
+		ddr2_dm        : inout std_logic_vector(8-1 downto 0);
 		ddr2_d         : inout std_logic_vector(64-1 downto 0);
 		ddr2_odt       : out std_logic_vector( 2-1 downto 0);
 		ddr2_scl       : out std_logic;

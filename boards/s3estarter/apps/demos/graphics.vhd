@@ -157,7 +157,7 @@ architecture graphics of s3estarter is
 	constant data_edges    : natural := 2;
 	constant bank_size     : natural := sd_ba'length;
 	constant addr_size     : natural := sd_a'length;
-	constant coln_size     : natural := 9;
+	constant coln_size     : natural := 10;
 	constant data_gear     : natural := 2;
 	constant word_size     : natural := sd_dq'length;
 	constant byte_size     : natural := 8;

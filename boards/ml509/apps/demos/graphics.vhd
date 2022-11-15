@@ -51,7 +51,7 @@ architecture graphics of ml509 is
 		sdr400MHz_600p);
 
 	----------------------------------------------------------
-	constant app_profile : app_profiles := sdr375Mhz_600p;  --
+	constant app_profile : app_profiles := sdr350Mhz_600p;  --
 	----------------------------------------------------------
 
 	type profileparam_vector is array (app_profiles) of profile_params;
@@ -196,11 +196,15 @@ architecture graphics of ml509 is
 	-- constant data_gear    : natural := 2;
 	-- constant data_phases  : natural := 2;
 
-	constant bank_size    : natural := ddr2_ba'length;
-	constant addr_size    : natural := ddr2_a'length;
-	constant coln_size    : natural := 7;
+	constant coln_size    : natural := 10;
+	constant bank_size    : natural := 2;
+	constant addr_size    : natural := 13;
+	-- constant bank_size    : natural := ddr2_ba'length;
+	-- constant addr_size    : natural := ddr2_a'length;
+
 	constant word_size    : natural := ddr2_d'length;
 	constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
+
 	-- constant word_size    : natural := 8*2;
 	-- constant byte_size    : natural := 8;
 
@@ -235,8 +239,8 @@ architecture graphics of ml509 is
 	alias  ddr_clk90      : std_logic is ctlr_clks(1);
 	signal ddr_clk0x2     : std_logic;
 	signal ddr_clk90x2    : std_logic;
-	signal ddr_ba         : std_logic_vector(ddr2_ba'range);
-	signal ddr_a          : std_logic_vector(ddr2_a'range);
+	signal ddr_ba         : std_logic_vector(bank_size-1 downto 0);
+	signal ddr_a          : std_logic_vector(addr_size-1 downto 0);
 	signal ctlrphy_rst    : std_logic_vector(0 to cmmd_gear-1);
 	signal ctlrphy_cke    : std_logic_vector(0 to cmmd_gear-1);
 	signal ctlrphy_cs     : std_logic_vector(0 to cmmd_gear-1);
@@ -245,8 +249,8 @@ architecture graphics of ml509 is
 	signal ctlrphy_we     : std_logic_vector(0 to cmmd_gear-1);
 	signal ctlrphy_odt    : std_logic_vector(0 to cmmd_gear-1);
 	signal ctlrphy_cmd    : std_logic_vector(0 to 3-1);
-	signal ctlrphy_ba     : std_logic_vector(cmmd_gear*ddr2_ba'length-1 downto 0);
-	signal ctlrphy_a      : std_logic_vector(cmmd_gear*ddr2_a'length-1 downto 0);
+	signal ctlrphy_ba     : std_logic_vector(cmmd_gear*ddr_ba'length-1 downto 0);
+	signal ctlrphy_a      : std_logic_vector(cmmd_gear*ddr_a'length-1 downto 0);
 	signal ctlrphy_dqsi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -1071,8 +1075,8 @@ begin
 		sdram_ras  => ddr2_ras,
 		sdram_cas  => ddr2_cas,
 		sdram_we   => ddr2_we,
-		sdram_b    => ddr2_ba,
-		sdram_a    => ddr2_a,
+		sdram_b    => ddr2_ba(bank_size-1 downto 0),
+		sdram_a    => ddr2_a(addr_size-1 downto 0),
 		sdram_odt  => ddr2_odt,
 
 		sdram_dm   => ddr2_dm(word_size/byte_size-1 downto 0),
@@ -1082,6 +1086,9 @@ begin
 		sdram_dqst => ddr2_dqst,
 		sdram_dqsi => ddr2_dqsi,
 		sdram_dqso => ddr2_dqso);
+
+	ddr2_ba(ddr2_ba'left downto bank_size) <= (others => '0');
+	ddr2_a(ddr2_a'left downto addr_size)   <= (others => '0');
 
 	gpio_led_c <= ctlr_inirdy;
 
