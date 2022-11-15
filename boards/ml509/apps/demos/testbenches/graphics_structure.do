@@ -17,6 +17,7 @@ add wave -noupdate -expand -group ddr2 -radix hexadecimal -childformat {{/testbe
 add wave -noupdate -expand -group ddr2 -radix hexadecimal -childformat {{/testbench/du_e/ddr2_ba(2) -radix hexadecimal} {/testbench/du_e/ddr2_ba(1) -radix hexadecimal} {/testbench/du_e/ddr2_ba(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ddr2_ba(2) {-height 29 -radix hexadecimal} /testbench/du_e/ddr2_ba(1) {-height 29 -radix hexadecimal} /testbench/du_e/ddr2_ba(0) {-height 29 -radix hexadecimal}} /testbench/du_e/ddr2_ba
 add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_dqs_p(0)
 add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_dqs_p(1)
+add wave -noupdate -expand -group ddr2 /testbench/du_e/ddr2_d
 
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e_phy_ini/O

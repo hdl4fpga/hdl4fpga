@@ -34,8 +34,8 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		dqs_delay  : time := 1.55*1.25 ns;
-		dqi_delay  : time := 1.55*1.25 ns;
+		dqs_delay  : time := 1.65*1.25 ns;
+		dqi_delay  : time := 1.65*1.25 ns;
 
 		loopback   : boolean := false;
 		bypass     : boolean := false;
@@ -120,6 +120,7 @@ architecture xilinx of xc_sdrdqphy is
 	signal pause_req    : std_logic;
 	signal pause_rdy    : std_logic;
 
+	signal dqsi_delay   : std_logic_vector(0 to setif(device=xc7a,5,6)-1);
 	signal tp_dqidly    : std_logic_vector(6-1 downto 0);
 	signal tp_dqsdly    : std_logic_vector(6-1 downto 0);
 	signal tp_dqssel    : std_logic_vector(3-1 downto 0);
@@ -299,7 +300,6 @@ begin
 	end process;
 
 	dqsi_b : block
-		signal delay    : std_logic_vector(0 to setif(device=xc7a,5,6)-1);
 		signal dqsi     : std_logic;
 		signal dqsi_buf : std_logic;
 		signal dqs_smp  : std_logic_vector(0 to data_gear-1);
@@ -319,7 +319,7 @@ begin
 			step_rdy => dqspau_rdy,
 			smp      => dqs_smp,
 			ph180    => dqs180,
-			delay    => delay);
+			delay    => dqsi_delay);
 
 		dqsi <= transport sdram_dqsi after dqs_delay;
 		dqsidelay_i : entity hdl4fpga.xc_dqsdelay 
@@ -329,7 +329,7 @@ begin
 		port map (
 			rst    => rst,
 			clk    => clk0,
-			delay  => delay,
+			delay  => dqsi_delay,
 			dqsi   => dqsi,
 			dqso   => sys_dqso);
 		dqsi_buf <= sys_dqso(0);
@@ -348,7 +348,7 @@ begin
 			d(0)  => dqsi_buf,
 			q     => dqs_smp);
 
-		tp_dqsdly(delay'length-1 downto 0) <= delay;
+		tp_dqsdly(dqsi_delay'length-1 downto 0) <= dqsi_delay;
 
 		adjsto_e : entity hdl4fpga.adjsto
 		generic map (
@@ -411,9 +411,10 @@ begin
 					device => device,
 					signal_pattern => "DATA")
 				port map(
-					clk     => clk90,
 					rst     => rst,
+					clk     => clk90,
 					delay   => delay,
+					-- delay   => dqsi_delay,
 					idatain => ddqi,
 					dataout => dqi(i));
 			end block;
@@ -445,7 +446,9 @@ begin
 	
 				data_gear4_g : if data_gear=4 generate
 					signal sel : std_logic;
+					signal clk90x2_n : std_logic;
 				begin
+					clk90x2_n <= not clk90x2;
 					igbx_i : entity hdl4fpga.igbx
 					generic map (
 						device => device,
@@ -453,7 +456,7 @@ begin
 						gear => data_gear)
 					port map (
 						rst   => rst,
-						sclk  => clk0x2,
+						sclk  => clk90x2_n,
 						clkx2 => clk90x2,
 						clk   => clk90,
 						d(0)  => dqi(i),
@@ -495,14 +498,13 @@ begin
 					process(iod_clk) 
 					begin
 						if rising_edge(iod_clk) then
-							sel <= dqspre xnor dqs180;
+							-- sel <= dqspre xnor dqs180;
+							sel <= dqspre;
 						end if;
 					end process;
 
 					shuffle_g : for j in 0 to data_gear-1 generate
-						sys_dqo(j*byte_size+i) <= 
-							word2byte(dqh(j*byte_size+i) & dqf(j*byte_size+i), sel) when bufio else
-							word2byte(dqf(j*byte_size+i) & dqh(j*byte_size+i), sel);
+						sys_dqo(j*byte_size+i) <= word2byte(dqf(j*byte_size+i) & dqh(j*byte_size+i), sel);
 					end generate;
 
 				end generate;
@@ -518,11 +520,11 @@ begin
 						variable q : std_logic;
 					begin
 						if rising_edge(clk90) then
-							if dqs180='1' then
+							-- if dqs180='1' then
 								sys_sto <= (others => dqssto);
-							else
-								sys_sto <= (others => q);
-							end if;
+							-- else
+								-- sys_sto <= (others => q);
+							-- end if;
 							q := dqssto;
 						end if;
 					end process;

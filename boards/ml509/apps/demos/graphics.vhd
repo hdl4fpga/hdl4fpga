@@ -47,10 +47,11 @@ architecture graphics of ml509 is
 		sdr300MHz_600p,
 		sdr333MHz_600p,
 		sdr350MHz_600p,
+		sdr375MHz_600p,
 		sdr400MHz_600p);
 
 	----------------------------------------------------------
-	constant app_profile : app_profiles := sdr400Mhz_600p;  --
+	constant app_profile : app_profiles := sdr375Mhz_600p;  --
 	----------------------------------------------------------
 
 	type profileparam_vector is array (app_profiles) of profile_params;
@@ -62,6 +63,7 @@ architecture graphics of ml509 is
 		sdr300MHz_600p => (io_ipoe, sdram300MHz, mode600p24bpp),
 		sdr333MHz_600p => (io_ipoe, sdram333MHz, mode600p24bpp),
 		sdr350MHz_600p => (io_ipoe, sdram350MHz, mode600p24bpp),
+		sdr375MHz_600p => (io_ipoe, sdram375MHz, mode600p24bpp),
 		sdr400MHz_600p => (io_ipoe, sdram400MHz, mode600p24bpp));
 
 	type pll_params is record
@@ -130,6 +132,7 @@ architecture graphics of ml509 is
 
 		(sdram333MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "101"),
 		(sdram350MHz, pll => (dcm_mul =>  7, dcm_div => 2), cl => "101"),
+		(sdram375MHz, pll => (dcm_mul => 15, dcm_div => 4), cl => "111"),
 		(sdram400MHz, pll => (dcm_mul =>  4, dcm_div => 1), cl => "111"));
 
 	function sdramparams (
@@ -196,10 +199,10 @@ architecture graphics of ml509 is
 	constant bank_size    : natural := ddr2_ba'length;
 	constant addr_size    : natural := ddr2_a'length;
 	constant coln_size    : natural := 7;
-	-- constant word_size    : natural := ddr2_d'length;
-	-- constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
-	constant word_size    : natural := 8*2;
-	constant byte_size    : natural := 8;
+	constant word_size    : natural := ddr2_d'length;
+	constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
+	-- constant word_size    : natural := 8*2;
+	-- constant byte_size    : natural := 8;
 
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
@@ -1001,8 +1004,8 @@ begin
 	process (sys_clk)
 	begin
 		if rising_edge(sys_clk) then
-			gpio_led_w <= 'Z'; --ctlrphy_rlreq;
-			gpio_led_e <= 'Z'; --ctlrphy_rlrdy;
+			gpio_led_w <= ctlrphy_rlreq;
+			gpio_led_e <= ctlrphy_rlrdy;
 			gpio_led_n <= 'Z';
 			gpio_led_s <= 'Z';
 		end if;
