@@ -135,7 +135,7 @@ begin
 					q(1 to q'right) <= q(0 to q'right-1);
 				end if;
 			end process;
-			read(1) <= word2byte(q(0 to q'right-1), lat, 1)(0);
+			read(1) <= multiplex(q(0 to q'right-1), lat, 1)(0);
 			read(0) <= read(1);
 		end block;
 

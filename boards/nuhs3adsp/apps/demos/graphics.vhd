@@ -653,9 +653,9 @@ begin
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			red    <= word2byte(video_pixel, std_logic_vector(to_unsigned(0,2)), 8);
-			green  <= word2byte(video_pixel, std_logic_vector(to_unsigned(1,2)), 8);
-			blue   <= word2byte(video_pixel, std_logic_vector(to_unsigned(2,2)), 8);
+			red    <= multiplex(video_pixel, std_logic_vector(to_unsigned(0,2)), 8);
+			green  <= multiplex(video_pixel, std_logic_vector(to_unsigned(1,2)), 8);
+			blue   <= multiplex(video_pixel, std_logic_vector(to_unsigned(2,2)), 8);
 			blankn <= not video_blank;
 			hsync  <= video_hzsync;
 			vsync  <= video_vtsync;

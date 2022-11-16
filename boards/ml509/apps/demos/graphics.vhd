@@ -720,7 +720,7 @@ begin
 
 		ser_clk  <= gtx_clk;
 		ser_frm  <= ('0' or miirx_frm) and ser_pause;
-		ser_data <= word2byte(miitx_data & miirx_data, miirx_frm);
+		ser_data <= multiplex(miitx_data & miirx_data, miirx_frm);
 
 		pause_p : process(mii_txc)
 			type states is (west, east);

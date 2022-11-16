@@ -49,6 +49,6 @@ begin
 		di  => char_col,
 		do  => font_col);
 
-	font_dot <= word2byte(font_line, font_col);
+	font_dot <= multiplex(font_line, font_col);
 	char_dot <= font_dot(0);
 end;

@@ -160,17 +160,17 @@ begin
 		v_dv       <= gain_dv or vt_dv;
 		axis_sel   <= v_sel;
 		axis_dv    <= v_dv or hz_dv;
-		vt_scale   <= word2byte(gain_ids, gain_cid, vt_scale'length);
-		axis_scale <= word2byte(hz_scale & std_logic_vector(resize(unsigned(vt_scale), axis_scale'length)), axis_sel);
+		vt_scale   <= multiplex(gain_ids, gain_cid, vt_scale'length);
+		axis_scale <= multiplex(hz_scale & std_logic_vector(resize(unsigned(vt_scale), axis_scale'length)), axis_sel);
 
-		g_offset <= word2byte(vt_offsets, gain_cid, vt_offset'length);
-		v_offset <= std_logic_vector(unsigned(word2byte(vt_offset & g_offset, gain_dv)) - bias);
+		g_offset <= multiplex(vt_offsets, gain_cid, vt_offset'length);
+		v_offset <= std_logic_vector(unsigned(multiplex(vt_offset & g_offset, gain_dv)) - bias);
 
 		process (axis_sel, hz_base, v_offset)
 			variable vt_base : std_logic_vector(v_offset'range);
 		begin
 			vt_base   := std_logic_vector(shift_right(signed(v_offset), vtstep_bits+axisy_backscale));
-			axis_base <= word2byte(hz_base & vt_base(axis_base'range), axis_sel);
+			axis_base <= multiplex(hz_base & vt_base(axis_base'range), axis_sel);
 		end process;
 
 		axis_e : entity hdl4fpga.scopeio_axis
@@ -225,7 +225,7 @@ begin
 		process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
-				offset <= vt_height/2-unsigned(word2byte(vt_offsets, trigger_chanid, offset'length));
+				offset <= vt_height/2-unsigned(multiplex(vt_offsets, trigger_chanid, offset'length));
 			end if;
 		end process;
 

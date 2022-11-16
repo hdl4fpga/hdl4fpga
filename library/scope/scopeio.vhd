@@ -235,8 +235,8 @@ begin
 			signal gain_id      : std_logic_vector(gainid_bits-1 downto 0);
 		begin
 
-			gain_id <= word2byte(gain_ids, i, gainid_bits);
-			input_sample <= word2byte(input_data, i, sample_size);
+			gain_id <= multiplex(gain_ids, i, gainid_bits);
+			input_sample <= multiplex(input_data, i, sample_size);
 			amp_e : entity hdl4fpga.scopeio_amp
 			generic map (
 				gains => gains)

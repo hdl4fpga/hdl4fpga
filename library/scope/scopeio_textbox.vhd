@@ -291,9 +291,9 @@ begin
 				end if;
 			end if;
 		end process;
-		vt_offset <= word2byte(vt_offsets, chan_id,        vt_offset'length);
-		vt_scale  <= word2byte(gain_ids,   chan_id,        vt_scale'length);
-		tgr_scale <= word2byte(gain_ids,   trigger_chanid, tgr_scale'length);
+		vt_offset <= multiplex(vt_offsets, chan_id,        vt_offset'length);
+		vt_scale  <= multiplex(gain_ids,   chan_id,        vt_scale'length);
+		tgr_scale <= multiplex(gain_ids,   trigger_chanid, tgr_scale'length);
 
 		process (rgtr_clk)
 			variable bcd_req  : std_logic_vector(cgabcd_req'range);
@@ -466,11 +466,11 @@ begin
 		tgr_multp <= std_logic_vector(to_unsigned(vt_multps(to_integer(unsigned(tgr_scale))),  tgr_multp'length));
 
 		chr_value <= wirebus(
-			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m "), hz_multp,       ascii'length) &
-			word2byte(x"1819",                                trigger_slope)                 &
-			word2byte(to_ascii(" *"),                         trigger_freeze)               &
-			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m "), tgr_multp,      ascii'length) &
-			word2byte(to_ascii("fpn") & x"e6" &to_ascii("m "), vt_multp,       ascii'length),
+			multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), hz_multp,       ascii'length) &
+			multiplex(x"1819",                                trigger_slope)                 &
+			multiplex(to_ascii(" *"),                         trigger_freeze)               &
+			multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), tgr_multp,      ascii'length) &
+			multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), vt_multp,       ascii'length),
 			cgachr_frm);
 
 		chr_memaddr <= wirebus (
@@ -572,8 +572,8 @@ begin
 		cga_av when cgachr_frm/=(cgachr_frm'range => '0') else
 		'0';
 
-	cga_code <= word2byte(
-		word2byte(to_ascii("0123456789 .+-  "), btof_bcddo, ascii'length) &
+	cga_code <= multiplex(
+		multiplex(to_ascii("0123456789 .+-  "), btof_bcddo, ascii'length) &
 		chr_value,
 		not bcd_type);
 

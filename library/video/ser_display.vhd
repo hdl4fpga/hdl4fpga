@@ -118,7 +118,7 @@ begin
 			for i in 0 to des_data'length/digit'length-1 loop
 				if phy_frm='1' then
 					if des_irdy='1' then
-						code(font_code'range) := word2byte(code_digits, reverse(std_logic_vector(data(digit'range))), font_code'length);
+						code(font_code'range) := multiplex(code_digits, reverse(std_logic_vector(data(digit'range))), font_code'length);
 					end if;
 				elsif we='1' then
 					code(font_code'range) := code_spce;

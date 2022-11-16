@@ -55,7 +55,7 @@ begin
 
 	begin
 
-		sio_data <= word2byte(mux_data, i, sio_data'length);
+		sio_data <= multiplex(mux_data, i, sio_data'length);
 		data_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => sio_data,

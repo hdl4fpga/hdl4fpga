@@ -47,7 +47,7 @@ begin
 			delay(0) := sdram_sti;
 			delay    := rotate_left(delay,1);
 		end if;
-		sdram_sto <= word2byte(reverse(std_logic_vector(delay)), std_logic_vector(resize(sel,sel'length-1)));
+		sdram_sto <= multiplex(reverse(std_logic_vector(delay)), std_logic_vector(resize(sel,sel'length-1)));
 	end process;
 
 	process (edge)

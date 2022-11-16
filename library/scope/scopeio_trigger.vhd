@@ -37,7 +37,7 @@ begin
 				lt     := not ge;
 				ge     := setif(sample >= signed(trigger_level));
 				edge   := not trigger_slope;
-				sample := signed(word2byte(input_data, trigger_chanid, sample'length));
+				sample := signed(multiplex(input_data, trigger_chanid, sample'length));
 			end if;
 			trigger_shot <= shot;
 		end if;

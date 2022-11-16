@@ -241,7 +241,7 @@ begin
 					sel := sel + 1;
 				end if;
 
-				btof_bindi <= word2byte(
+				btof_bindi <= multiplex(
 					std_logic_vector(neg(binvalue, binvalue(binvalue'left)) & exp),
 					std_logic_vector(sel), 
 					btof_bindi'length);
@@ -396,7 +396,7 @@ begin
 				di(0) => video_hzon,
 				do(0) => hz_on);
 
-			hz_bcd <= word2byte(tick, vcol, char_code'length);
+			hz_bcd <= multiplex(tick, vcol, char_code'length);
 		end block;
 
 		vt_b : block
@@ -519,14 +519,14 @@ begin
 				do(0) => vt_on);
 
 			vt_bcd <= 
-				word2byte(std_logic_vector(unsigned(tick) rol 2*char_code'length), vcol, char_code'length) when vtaxis_tickrotate(layout)=ccw0 else
-				word2byte(std_logic_vector(unsigned(tick) rol 0*char_code'length), vcol, char_code'length);
+				multiplex(std_logic_vector(unsigned(tick) rol 2*char_code'length), vcol, char_code'length) when vtaxis_tickrotate(layout)=ccw0 else
+				multiplex(std_logic_vector(unsigned(tick) rol 0*char_code'length), vcol, char_code'length);
 
 		end block;
 
-		char_code <= word2byte(vt_bcd  & hz_bcd,  not vt_on);
-		char_row  <= word2byte(vt_crow & hz_crow, not vt_on); 
-		char_col  <= word2byte(vt_ccol & hz_ccol, not vt_on); 
+		char_code <= multiplex(vt_bcd  & hz_bcd,  not vt_on);
+		char_row  <= multiplex(vt_crow & hz_crow, not vt_on); 
+		char_col  <= multiplex(vt_ccol & hz_ccol, not vt_on); 
 
 		cgarom_e : entity hdl4fpga.cga_rom
 		generic map (

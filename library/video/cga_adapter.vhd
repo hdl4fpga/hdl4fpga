@@ -92,7 +92,7 @@ begin
 			di  => char_addr(char_addr'length-cga_addr'length-1 downto 0),
 			do  => sel);
 
-		mux_code <= word2byte(cga_codes, sel);
+		mux_code <= multiplex(cga_codes, sel);
 	end generate;
 	cga_code <= mux_code when char_addr'length > cga_addr'length else cga_codes; 
 

@@ -72,6 +72,6 @@ begin
 
 	so_data <=
 		rdata when so_data'length=rdata'length else
-		word2byte(rdata, mux_sel, so_data'length);
+		multiplex(rdata, mux_sel, so_data'length);
 
 end;

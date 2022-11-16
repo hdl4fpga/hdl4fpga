@@ -244,64 +244,64 @@ package base is
 		constant def  : natural := 0)
 		return natural;
 
-	function word2byte (		-- Solve Xilinx XST bug
+	function multiplex (		-- Solve Xilinx XST bug
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
 		return std_logic;
 
-	function word2byte (		-- Solve Xilinx XST bug
+	function multiplex (		-- Solve Xilinx XST bug
 		constant word : unsigned;
 		constant addr : std_logic_vector)
 		return std_logic;
 
-	function word2byte (		-- Solve Xilinx XST bug
+	function multiplex (		-- Solve Xilinx XST bug
 		constant word : unsigned;
 		constant addr : unsigned)
 		return std_logic;
 
-	function word2byte (		-- Solve Xilinx XST bug
+	function multiplex (		-- Solve Xilinx XST bug
 		constant word : std_logic_vector;
 		constant addr : std_logic)
 		return std_logic;
 
-	function word2byte (
+	function multiplex (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
 		return std_logic_vector;
 
-	function word2byte (
+	function multiplex (
 		constant word : unsigned;
 		constant addr : unsigned)
 		return unsigned;
 
-	function word2byte (
+	function multiplex (
 		constant word : std_logic_vector;
 		constant addr : std_logic)
 		return std_logic_vector;
 
-	function word2byte (
+	function multiplex (
 		constant word : unsigned;
 		constant addr : std_logic)
 		return unsigned;
 	
-	function word2byte (
+	function multiplex (
 		constant word : signed;
 		constant addr : std_logic)
 		return signed;
 
-	function word2byte (
+	function multiplex (
 		constant word  : std_logic_vector;
 		constant addr  : std_logic_vector;
 		constant size  : natural)
 		return std_logic_vector;
 
-	function word2byte (
+	function multiplex (
 		constant word  : std_logic_vector;
 		constant addr  : natural;
 		constant size  : natural)
 		return std_logic_vector;
 
-	function word2byte (
+	function multiplex (
 		constant word  : natural_vector;
 		constant addr  : std_logic_vector)
 		return natural;
@@ -1325,51 +1325,51 @@ package body base is
 		return def;
 	end;
 
-	function word2byte (
+	function multiplex (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
 		return std_logic is
 		variable retval : std_logic_vector(0 to 0);
 	begin
-		retval := word2byte(word, addr, 1);
+		retval := multiplex(word, addr, 1);
 		return retval(0);
 	end;
 
-	function word2byte (
+	function multiplex (
 		constant word : unsigned;
 		constant addr : std_logic_vector)
 		return std_logic is
 	begin
-		return word2byte(std_logic_vector(word), addr);
+		return multiplex(std_logic_vector(word), addr);
 	end;
 
-	function word2byte (
+	function multiplex (
 		constant word : unsigned;
 		constant addr : unsigned)
 		return std_logic is
 	begin
-		return word2byte(std_logic_vector(word), std_logic_vector(addr));
+		return multiplex(std_logic_vector(word), std_logic_vector(addr));
 	end;
 
-	function word2byte (
+	function multiplex (
 		constant word : std_logic_vector;
 		constant addr : std_logic)
 		return std_logic is
 		variable retval : std_logic_vector(0 to 0);
 	begin
-		retval := word2byte(word, (0 to 0 => addr), 1);
+		retval := multiplex(word, (0 to 0 => addr), 1);
 		return retval(0);
 	end;
 
-	function word2byte (
+	function multiplex (
 		constant word : unsigned;
 		constant addr : std_logic)
 		return unsigned is
 	begin
-		return unsigned(std_logic_vector'(word2byte(std_logic_vector(word), addr)));
+		return unsigned(std_logic_vector'(multiplex(std_logic_vector(word), addr)));
 	end;
 
-	function word2byte (
+	function multiplex (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector)
 		return std_logic_vector is
@@ -1377,11 +1377,11 @@ package body base is
 		variable byte : std_logic_vector(0 to word'length/2**addr'length-1);
 	begin
 		assert word'length mod byte'length = 0
-			report "word2byte mod"
+			report "multiplex mod"
 			severity failure;
 
 		assert word'length mod 2**addr'length = 0
-			report "word2byte mod"
+			report "multiplex mod"
 			severity failure;
 
 		aux := word;
@@ -1391,43 +1391,43 @@ package body base is
 		return byte;
 	end;
 
-	function word2byte (
+	function multiplex (
 		constant word : unsigned;
 		constant addr : unsigned)
 		return unsigned is
 	begin
-		return unsigned(std_logic_vector'(word2byte(std_logic_vector(word), std_logic_vector(addr))));
+		return unsigned(std_logic_vector'(multiplex(std_logic_vector(word), std_logic_vector(addr))));
 	end;
 
-	function word2byte (
+	function multiplex (
 		constant word : std_logic_vector;
 		constant addr : std_logic)
 		return std_logic_vector is
 	begin
-		return word2byte(word, (0 to 0 => addr));
+		return multiplex(word, (0 to 0 => addr));
 	end;
 
-	function word2byte (
+	function multiplex (
 		constant word : signed;
 		constant addr : std_logic)
 		return signed is
 	begin
-		return signed(std_logic_vector'(word2byte(std_logic_vector(word), (0 to 0 => addr))));
+		return signed(std_logic_vector'(multiplex(std_logic_vector(word), (0 to 0 => addr))));
 	end;
 
-	function word2byte (
+	function multiplex (
 		constant word  : std_logic_vector;
 		constant addr  : std_logic_vector;
 		constant size  : natural)
 		return std_logic_vector is
 	begin
 		assert word'length mod size = 0
-			report "word2byte mod"
+			report "multiplex mod"
 			severity failure;
-		return word2byte(fill(data => word, size => size*(2**addr'length)), addr);
+		return multiplex(fill(data => word, size => size*(2**addr'length)), addr);
 	end;
 
-	function word2byte (
+	function multiplex (
 		constant word  : std_logic_vector;
 		constant addr  : natural;
 		constant size  : natural)
@@ -1435,14 +1435,14 @@ package body base is
 		variable aux : unsigned(0 to size*((word'length+size-1)/size)-1);
 	begin
 		assert word'length mod size = 0
-			report "word2byte mod"
+			report "multiplex mod"
 			severity failure;
 		aux(0 to word'length-1) := unsigned(word);
 		aux := aux rol ((addr*size) mod word'length);
 		return std_logic_vector(aux(0 to size-1));
 	end;
 
-	function word2byte (
+	function multiplex (
 		constant word  : natural_vector;
 		constant addr  : std_logic_vector)
 		return natural is

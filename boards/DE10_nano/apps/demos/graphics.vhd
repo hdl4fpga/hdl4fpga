@@ -899,7 +899,7 @@ begin
 		variable data : std_logic_vector(8-1 downto 0);
 	begin
 		rgbled <= (others => '0');
-		data := word2byte(tp_delay, sw(2-1 downto 0), data'length);
+		data := multiplex(tp_delay, sw(2-1 downto 0), data'length);
 		for i in 0 to 4-1 loop
 			if data(i)='1' then
 				rgbled(3*i+0) <= '1';

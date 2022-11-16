@@ -110,7 +110,7 @@ begin
 		signal max0   : signed(sample'range);
 		signal min0   : signed(sample'range);
 	begin
-		sample <= signed(word2byte(input_data, i, sample'length));
+		sample <= signed(multiplex(input_data, i, sample'length));
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then

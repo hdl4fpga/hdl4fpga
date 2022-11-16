@@ -251,9 +251,9 @@ begin
 		variable vga_blank1 : std_logic;
 	begin
 		if rising_edge(vga_clk) then
-			red        <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(0,2)), 8);
-			green      <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(1,2)), 8);
-			blue       <= word2byte(vga_rgb1, std_logic_vector(to_unsigned(2,2)), 8);
+			red        <= multiplex(vga_rgb1, std_logic_vector(to_unsigned(0,2)), 8);
+			green      <= multiplex(vga_rgb1, std_logic_vector(to_unsigned(1,2)), 8);
+			blue       <= multiplex(vga_rgb1, std_logic_vector(to_unsigned(2,2)), 8);
 			blankn     <= not vga_blank1;
 			hsync      <= vga_hsync1;
 			vsync      <= vga_vsync1;

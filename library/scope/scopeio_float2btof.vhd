@@ -30,7 +30,7 @@ begin
 			elsif bin_trdy='1' then
 				sel := sel + 1;
 			end if;
-			bin_di <= word2byte(
+			bin_di <= multiplex(
 				std_logic_vector(neg(frac, frac(frac'left)) & exp),
 				std_logic_vector(sel), 
 				bin_di'length);

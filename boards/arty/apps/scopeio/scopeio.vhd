@@ -530,9 +530,9 @@ begin
 	process (vga_clk)
 	begin
 		if rising_edge(vga_clk) then
-			ja(1)  <= word2byte(vga_rgb, std_logic_vector(to_unsigned(0,2)), 1)(0);
-			ja(2)  <= word2byte(vga_rgb, std_logic_vector(to_unsigned(1,2)), 1)(0);
-			ja(3)  <= word2byte(vga_rgb, std_logic_vector(to_unsigned(2,2)), 1)(0);
+			ja(1)  <= multiplex(vga_rgb, std_logic_vector(to_unsigned(0,2)), 1)(0);
+			ja(2)  <= multiplex(vga_rgb, std_logic_vector(to_unsigned(1,2)), 1)(0);
+			ja(3)  <= multiplex(vga_rgb, std_logic_vector(to_unsigned(2,2)), 1)(0);
 			ja(4)  <= vga_hsync;
 			ja(10) <= vga_vsync;
 		end if;

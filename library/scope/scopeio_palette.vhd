@@ -272,7 +272,7 @@ begin
 	palette_data <= std_logic_vector(resize(unsigned(palette_color), palette_data'length));
 	palette_addr <= std_logic_vector(resize(unsigned(palette_id),    palette_addr'length));
 
-	trigger_opacity <= word2byte(color_opacity(pltid_order'length to pltid_order'length+trace_dots'length-1), trigger_chanid);
+	trigger_opacity <= multiplex(color_opacity(pltid_order'length to pltid_order'length+trace_dots'length-1), trigger_chanid);
 	color_addr <= primux(
 		palette_ids,
 		shuffle((

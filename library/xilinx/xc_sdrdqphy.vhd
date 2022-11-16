@@ -505,7 +505,7 @@ begin
 					end process;
 
 					shuffle_g : for j in 0 to data_gear-1 generate
-						sys_dqo(j*byte_size+i) <= word2byte(dqf(j*byte_size+i) & dqh(j*byte_size+i), sel);
+						sys_dqo(j*byte_size+i) <= multiplex(dqf(j*byte_size+i) & dqh(j*byte_size+i), sel);
 					end generate;
 
 				end generate;

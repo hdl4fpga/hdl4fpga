@@ -163,9 +163,9 @@ begin
 
 	psave <= '1';
 	sync  <= 'Z';
-	red   <= word2byte(vga_pixel, std_logic_vector(to_unsigned(0,2)), 8);
-	green <= word2byte(vga_pixel, std_logic_vector(to_unsigned(1,2)), 8);
-	blue  <= word2byte(vga_pixel, std_logic_vector(to_unsigned(2,2)), 8);
+	red   <= multiplex(vga_pixel, std_logic_vector(to_unsigned(0,2)), 8);
+	green <= multiplex(vga_pixel, std_logic_vector(to_unsigned(1,2)), 8);
+	blue  <= multiplex(vga_pixel, std_logic_vector(to_unsigned(2,2)), 8);
 
 	clk_videodac_e : entity hdl4fpga.ddro
 	port map (

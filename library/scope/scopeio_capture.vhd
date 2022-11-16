@@ -278,12 +278,12 @@ begin
 	y0_p : process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			y0 <= word2byte(mem_data, hilw);
+			y0 <= multiplex(mem_data, hilw);
 		end if;
 	end process;
 
 	video_data <= 
-		word2byte(word2byte(mem_data, hilw) & y0, dv2) & word2byte(mem_data, hilw) when downsampling='0' else
+		multiplex(multiplex(mem_data, hilw) & y0, dv2) & multiplex(mem_data, hilw) when downsampling='0' else
 		mem_data;
 
 end;

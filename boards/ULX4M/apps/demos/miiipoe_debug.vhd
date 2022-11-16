@@ -312,9 +312,9 @@ begin
 		end process;
 		led(2) <= fltr_on;
 
-		ser_frm  <= word2byte(mii_txen & std_logic'(word2byte(tp(17) & myhwa_vld, fltr_on)), rxntx);
+		ser_frm  <= multiplex(mii_txen & std_logic'(multiplex(tp(17) & myhwa_vld, fltr_on)), rxntx);
 		ser_irdy <= '1';
-		ser_data <= word2byte(mii_txd  & mii_rxd,  rxntx);
+		ser_data <= multiplex(mii_txd  & mii_rxd,  rxntx);
 
 	end block;
 

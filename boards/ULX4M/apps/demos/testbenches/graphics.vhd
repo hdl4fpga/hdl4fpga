@@ -384,7 +384,7 @@ begin
 		end process;
 		mii_req1 <= rep_req;
 	
-		rgmii_rxd <= word2byte(mii_rxd, not rgmii_rxc);
+		rgmii_rxd <= multiplex(mii_rxd, not rgmii_rxc);
 
 		htb_e : entity hdl4fpga.eth_tb
 		generic map (

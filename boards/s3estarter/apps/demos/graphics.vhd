@@ -575,9 +575,9 @@ begin
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			vga_red    <= word2byte(video_pixel, std_logic_vector(to_unsigned(0,2)), 8)(0);
-			vga_green  <= word2byte(video_pixel, std_logic_vector(to_unsigned(1,2)), 8)(0);
-			vga_blue   <= word2byte(video_pixel, std_logic_vector(to_unsigned(2,2)), 8)(0);
+			vga_red    <= multiplex(video_pixel, std_logic_vector(to_unsigned(0,2)), 8)(0);
+			vga_green  <= multiplex(video_pixel, std_logic_vector(to_unsigned(1,2)), 8)(0);
+			vga_blue   <= multiplex(video_pixel, std_logic_vector(to_unsigned(2,2)), 8)(0);
 			vga_hsync  <= video_hzsync;
 			vga_vsync  <= video_vtsync;
 		end if;

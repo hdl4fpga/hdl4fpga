@@ -129,10 +129,10 @@ begin
 			if rising_edge(sclk) then
 				q      := shift_right(q, 1);
 				q(0)   := phy_sti;
-				read_r <= not word2byte(q, shift_right(lat, 1));
+				read_r <= not multiplex(q, shift_right(lat, 1));
 				prmb_r <= prmbdet;
-				phy_sto <= word2byte(
-					word2byte(shift_left(q,2) & shift_left(q,3), lat(0)),
+				phy_sto <= multiplex(
+					multiplex(shift_left(q,2) & shift_left(q,3), lat(0)),
 					shift_right(lat,1));
 			end if;
 		end process;
@@ -145,7 +145,7 @@ begin
 				prmb_f <= prmbdet;
 			end if;
 		end process;
-		read <= word2byte(read_r & read_f, lat(0));
+		read <= multiplex(read_r & read_f, lat(0));
 
 		adjsto_b : block
 			signal det     : std_logic;
