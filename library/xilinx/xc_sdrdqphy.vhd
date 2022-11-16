@@ -456,7 +456,8 @@ begin
 						gear => data_gear)
 					port map (
 						rst   => rst,
-						sclk  => clk90x2_n,
+						-- sclk  => clk90x2_n,
+						sclk  => clk0x2,
 						clkx2 => clk90x2,
 						clk   => clk90,
 						d(0)  => dqi(i),
