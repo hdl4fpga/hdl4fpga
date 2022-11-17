@@ -647,6 +647,7 @@ begin
 	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		debug        => debug,
+		-- debug        => true,
 		profile      => 2,
 
 		sdram_tcp      => 2.0*sdram_tcp,
