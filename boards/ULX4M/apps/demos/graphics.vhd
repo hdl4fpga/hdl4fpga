@@ -646,8 +646,8 @@ begin
 
 	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
-		debug        => debug,
-		-- debug        => true,
+		-- debug        => debug,
+		debug        => true,
 		profile      => 2,
 
 		sdram_tcp      => 2.0*sdram_tcp,
@@ -683,8 +683,8 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => video_clk,
-		video_shift_clk => video_shft_clk,
+		video_clk    => '0', --video_clk,
+		video_shift_clk => '0', --video_shft_clk,
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 

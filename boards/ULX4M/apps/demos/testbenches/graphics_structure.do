@@ -21,6 +21,9 @@ add wave -noupdate -expand -group ddram -radix hexadecimal -childformat {{/testb
 add wave -noupdate -expand -group ddram -radix hexadecimal /testbench/du_e/ddram_dm
 add wave -noupdate -expand -group ddram /testbench/du_e/ddram_dqs
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/gpio13
+add wave -noupdate /testbench/du_e/gpio23
+add wave -noupdate /testbench/du_e/gpio24
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/led
 add wave -noupdate -divider {New Divider}
@@ -41,9 +44,9 @@ add wave -noupdate /testbench/du_e/sdrphy_e_mem_sync_b_clkdivf_iI/RST
 add wave -noupdate /testbench/du_e/sdrphy_e_mem_sync_b_clkdivf_iI/CDIVX
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {18504642000 fs} 0} {{Cursor 2} {284921903670 fs} 0}
+WaveRestoreCursors {{Cursor 1} {64391543270 fs} 0} {{Cursor 2} {284921903670 fs} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 290
+configure wave -namecolwidth 220
 configure wave -valuecolwidth 164
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -57,4 +60,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {18491511560 fs} {18528787390 fs}
+WaveRestoreZoom {64228314130 fs} {64572251650 fs}

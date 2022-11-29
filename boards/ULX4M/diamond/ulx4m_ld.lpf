@@ -241,3 +241,5 @@ LOCATE COMP "n_extrst"        SITE "U16"; IOBUF  PORT "n_extrst"        PULLMODE
 # 
 # LOCATE COMP "shutdown" SITE "G16"; # FPGA receives
 # IOBUF  PORT "shutdown" PULLMODE=DOWN IO_TYPE=LVCMOS33 DRIVE=4;
+
+USE PRIMARY NET "ctlr_clk";

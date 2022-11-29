@@ -67,6 +67,7 @@ begin
 	begin
 		ck_i : oddrx2f
 		port map (
+			rst  => rst,
 			sclk => sclk,
 			eclk => eclk,
 			d0   => '0',
@@ -77,6 +78,7 @@ begin
 
 		delay_i : delayg
 		generic map (
+			del_value  => 0,
 			del_mode => "DQS_CMD_CLK")
 		port map (
 			a => ck,
