@@ -38,6 +38,7 @@ HDL4FPGA__xc_sdrphy = $(LIB_HDL4FPGA)/xc_sdrphy/_primary.dat
 MICRON__ddr_model = $(LIB_MICRON)/ddr_model/_primary.dat
 MICRON__ddr2 = $(LIB_MICRON)/ddr2/_primary.dat
 IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
+HDL4FPGA__latency = $(LIB_HDL4FPGA)/latency/_primary.dat
 HDL4FPGA__sdrphy = $(LIB_HDL4FPGA)/sdrphy/_primary.dat
 MICRON__mt48lc32m16a2 = $(LIB_MICRON)/mt48lc32m16a2/_primary.dat
 HDL4FPGA__sio_mux = $(LIB_HDL4FPGA)/sio_mux/_primary.dat
@@ -70,22 +71,22 @@ HDL4FPGA__uart_rx = $(LIB_HDL4FPGA)/uart_rx/_primary.dat
 HDL4FPGA__hdlcdll_rx = $(LIB_HDL4FPGA)/hdlcdll_rx/_primary.dat
 HDL4FPGA__eth_tb = $(LIB_HDL4FPGA)/eth_tb/_primary.dat
 HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
-WORK__ulx4mld_graphic_structure_md = $(LIB_WORK)/ulx4mld_graphic_structure_md/_primary.dat
-WORK__ulx4mld_graphic_md = $(LIB_WORK)/ulx4mld_graphic_md/_primary.dat
+WORK__ulx4mld_graphics_structure_md = $(LIB_WORK)/ulx4mld_graphics_structure_md/_primary.dat
+WORK__ulx4mld_graphics_md = $(LIB_WORK)/ulx4mld_graphics_md/_primary.dat
 WORK__ulx4m_ld__graphics = $(LIB_WORK)/ulx4m_ld/graphics.dat
 WORK__ulx4m_ld = $(LIB_WORK)/ulx4m_ld/_primary.dat
 WORK__ulx3s_graphic_structure_md = $(LIB_WORK)/ulx3s_graphic_structure_md/_primary.dat
 WORK__ulx3s_graphic_md = $(LIB_WORK)/ulx3s_graphic_md/_primary.dat
 WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
+WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
+WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
 WORK__testbench__ecp3versa_graphics = $(LIB_WORK)/testbench/ecp3versa_graphics.dat
 WORK__testbench__arty_graphics = $(LIB_WORK)/testbench/arty_graphics.dat
 WORK__testbench__ml509_miiipoe_debug = $(LIB_WORK)/testbench/ml509_miiipoe_debug.dat
 WORK__testbench__s3estarter_graphics = $(LIB_WORK)/testbench/s3estarter_graphics.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench__ml509_graphics = $(LIB_WORK)/testbench/ml509_graphics.dat
-WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
-WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__s3estarter_structure_md = $(LIB_WORK)/s3estarter_structure_md/_primary.dat
 WORK__s3estarter_graphics_md = $(LIB_WORK)/s3estarter_graphics_md/_primary.dat
@@ -116,22 +117,22 @@ VLOG = vlog
 VOPT = vopt
 SCCOM = sccom
 
-whole_library :     $(WORK__ulx4mld_graphic_structure_md) \
-    $(WORK__ulx4mld_graphic_md) \
+whole_library :     $(WORK__ulx4mld_graphics_structure_md) \
+    $(WORK__ulx4mld_graphics_md) \
     $(WORK__ulx4m_ld__graphics) \
     $(WORK__ulx4m_ld) \
     $(WORK__ulx3s_graphic_structure_md) \
     $(WORK__ulx3s_graphic_md) \
     $(WORK__ulx3s__graphics) \
     $(WORK__ulx3s) \
+    $(WORK__testbench__ulx4mld_graphics) \
+    $(WORK__testbench__ulx3s_graphics) \
     $(WORK__testbench__ecp3versa_graphics) \
     $(WORK__testbench__arty_graphics) \
     $(WORK__testbench__ml509_miiipoe_debug) \
     $(WORK__testbench__s3estarter_graphics) \
     $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench__ml509_graphics) \
-    $(WORK__testbench__ulx4mld_graphics) \
-    $(WORK__testbench__ulx3s_graphics) \
     $(WORK__testbench) \
     $(WORK__s3estarter_structure_md) \
     $(WORK__s3estarter_graphics_md) \
@@ -261,7 +262,7 @@ $(WORK__ml509__structure) : /home/msagre/work/hdl4fpga.dev/boards/ml509/ise/grap
 		$(SIMPRIM__vcomponents) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  /home/msagre/work/hdl4fpga.dev/boards/ml509/ise/graphics/netgen/par/ml509_timesim.vhd
+	$(VCOM) -2002 /home/msagre/work/hdl4fpga.dev/boards/ml509/ise/graphics/netgen/par/ml509_timesim.vhd
 
 $(WORK__ml509__miiipoe_debug) : /home/msagre/work/hdl4fpga.dev/boards/ml509/apps/demos/miiipoe_debug.vhd \
 		$(HDL4FPGA__ser_debug) \
@@ -462,7 +463,7 @@ $(WORK__ulx3s) : ../../boards/ULX3S/common/ulx3s.vhd \
 
 $(WORK__ulx3s__graphics) : ../../boards/ULX3S/apps/demos/graphics.vhd \
 		$(HDL4FPGA__sdrphy) \
-		$(HDL4FPGA__align) \
+		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__demo_graphics) \
 		$(HDL4FPGA__desser) \
 		$(HDL4FPGA__sio_dayudp) \
@@ -543,11 +544,11 @@ $(WORK__ulx4m_ld__graphics) : ../../boards/ULX4M/apps/demos/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ULX4M/apps/demos/graphics.vhd
+	$(VCOM) -2002  ../../boards/ULX4M/apps/demos/graphics.vhd
 
 $(WORK__testbench__ulx4mld_graphics) \
-$(WORK__ulx4mld_graphic_md) \
-$(WORK__ulx4mld_graphic_structure_md) : ../../boards/ULX4M/apps/demos/testbenches/graphics.vhd \
+$(WORK__ulx4mld_graphics_md) \
+$(WORK__ulx4mld_graphics_structure_md) : ../../boards/ULX4M/apps/demos/testbenches/graphics.vhd \
 		$(HDL4FPGA__eth_rx) \
 		$(HDL4FPGA__eth_tb) \
 		$(HDL4FPGA__hdlcdll_rx) \

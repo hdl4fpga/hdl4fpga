@@ -115,14 +115,14 @@ architecture ulx4mld_graphics of testbench is
 	constant snd_data : std_logic_vector := 
 		x"01007e" &
 		x"18ff"   &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"03020100_07060504_0b0a0908_0f0e0d0c_13121110_17161514_1b1a1918_1f1e1d1c" &
+		x"23222120_27262524_2b2a2928_2f2e2d2c_33323130_37363534_3b3a3938_3f3e3d3c" &
+		x"43424140_47464544_4b4a4948_4f4e4d4c_53525150_57565554_5b5a5958_5f5e5d5c" &
+		x"63626160_67666564_6b6a6968_6f6e6d6c_73727170_77767574_7b7a7978_7f7e7d7c" &
+		x"83828180_87868584_8b8a8988_8f8e8d8c_93929190_97969594_9b9a9998_9f9e9d9c" &
+		x"a3a2a1a0_a7a6a5a4_abaaa9a8_afaeadac_b3b2b1b0_b7b6b5b4_bbbab9b8_bfbebdbc" &
+		x"c3c2c1c0_c7c6c5c4_cbcac9c8_cfcecdcc_d3d2d1d0_d7d6d5d4_dbdad9d8_dfdedddc" &
+		x"e3e2e1e0_e7e6e5e4_ebeae9e8_efeeedec_f3f2f1f0_f7f6f5f4_fbfaf9f8_fffefdfc" &
 		x"1702_0000ff_1603_0007_3000";
 	constant req_data : std_logic_vector := x"010000_1702_00001f_1603_8007_3000";
 
@@ -166,13 +166,23 @@ architecture ulx4mld_graphics of testbench is
 			odt     : in std_logic);
 	end component;
 
+	signal gpio6  : std_logic;
+	signal gpio7  : std_logic;
+	signal gpio8  : std_logic;
+        
+	signal gpio9  : std_logic;
+	signal gpio11 : std_logic;
+	signal gpio17 : std_logic;
+
+	signal gpio19 : std_logic;
+
 	signal mii_req    : std_logic := '0';
 	signal mii_req1   : std_logic := '0';
 	signal ping_req   : std_logic := '0';
 	signal rep_req    : std_logic := '0';
-	signal mii_rxdv   : std_logic;
-	signal mii_rxd    : std_logic_vector(0 to 8-1);
-	signal mii_txd    : std_logic_vector(0 to 8-1);
+	alias  mii_rxdv   : std_logic is gpio17;
+	signal mii_rxd    : std_logic_vector(0 to 2-1);
+	signal mii_txd    : std_logic_vector(0 to 2-1);
 	signal mii_txc    : std_logic;
 	signal mii_rxc    : std_logic;
 	signal mii_txen   : std_logic;
@@ -191,6 +201,7 @@ architecture ulx4mld_graphics of testbench is
 	signal ftdi_rxd    : std_logic;
 
 	signal uart_clk : std_logic := '0';
+
 begin
 
 	rst      <= '1', '0' after 17 us when debug else '1', '0' after 4 us;
@@ -364,27 +375,53 @@ begin
 		signal hwllc_data : std_logic_vector(pl_data'range);
 		signal datarx_null :  std_logic_vector(mii_rxd'range);
 
+		alias rmii_tx_en  : std_logic is gpio6;
+		alias rmii_tx0    : std_logic is gpio7;
+		alias rmii_tx1    : std_logic is gpio8;
+
+		alias rmii_rx_dv  : std_logic is gpio17;
+		alias rmii_rx0    : std_logic is gpio9;
+		alias rmii_rx1    : std_logic is gpio11;
+
+		alias rmii_nint   : std_logic is gpio19;
+
 	begin
 
-		mii_req  <= '0', '1' after 20 us, '0' after 22 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
-	--	mii_req1 <= '0', '1' after 14.5 us, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
+		mii_txc <= not to_stdulogic(to_bit(mii_txc)) after 10 ns;
+		mii_rxc <= mii_txc;
+		rmii_nint <= mii_txc;
 
-		process
+		seq_b : block
+			signal x : natural := 0;
+			signal req : std_logic;
 		begin
-			wait for 23 us;
-			loop
-				if rep_req='1' then
-					wait;
-					rep_req <= '0' after 5.8 us;
-				else
-					rep_req <= '1' after 250 ns;
-				end if;
-				wait on rep_req;
-			end loop;
-		end process;
-		mii_req1 <= rep_req;
+			process
+			begin
+				req <= '0';
+				wait for 20 us;
+				loop
+					if req='1' then
+						wait on mii_rxdv;
+						if falling_edge(mii_rxdv) then
+							req <= '0';
+							x <= x + 1;
+							wait for 30 us;
+						end if;
+					else
+						if x > 1 then
+							wait;
+						end if;
+						req <= '1';
+						wait on req;
+					end if;
+				end loop;
+			end process;
+			mii_req  <= req when x=0 else '0';
+			mii_req1 <= req when x=1 else '0';
+		end block;
+
 	
-		rgmii_rxd <= multiplex(mii_rxd, not rgmii_rxc);
+		-- rgmii_rxd <= multiplex(mii_rxd, not rgmii_rxc);
 
 		htb_e : entity hdl4fpga.eth_tb
 		generic map (
@@ -396,11 +433,13 @@ begin
 			mii_frm2 => '0', --ping_req,
 			mii_frm3 => '0',
 			mii_frm4 => mii_req,
-			mii_frm5 => mii_req1,
+			mii_frm5 => '0', --mii_req1,
 	
 			mii_txc  => mii_rxc,
 			mii_txen => mii_rxdv,
 			mii_txd  => mii_rxd);
+		(0 => rmii_rx0, 1 => rmii_rx1) <= mii_rxd;
+		rmii_tx_en <= mii_rxdv;
 
 		ethrx_e : entity hdl4fpga.eth_rx
 		port map (
@@ -422,12 +461,20 @@ begin
 
 		eth_reset    => open,
 		eth_mdc      => open,
-		rgmii_tx_clk => rgmii_txc,
+		-- rgmii_tx_clk => rgmii_txc,
 		rgmii_tx_en  => rgmii_txen,
 		rgmii_txd    => rgmii_txd,
-		rgmii_rx_clk => '0', --rgmii_rxc,
+		rgmii_rx_clk => rgmii_rxc,
 		rgmii_rx_dv  => rgmii_rxdv,
 		rgmii_rxd    => rgmii_rxd,
+
+	    gpio6        => gpio6,
+	    gpio7        => gpio7,
+	    gpio8        => gpio8,
+	    gpio9        => gpio9,
+	    gpio11       => gpio11,
+	    gpio17       => gpio17,
+	    gpio19       => gpio19,
 
 		gpio23       => ftdi_txd,
 		gpio24       => ftdi_rxd,
@@ -445,17 +492,17 @@ begin
 		ddram_dm     => dm,
 		ddram_odt    => odt);
 
-	process (rgmii_txc)
-		variable en : std_logic;
-	begin
-		if rising_edge(rgmii_txc) then
-			mii_txen <= en;
-			en := rgmii_txen;
-			mii_txd(0 to 4-1) <= rgmii_txd;
-		elsif rising_edge(rgmii_txc) then
-			mii_txd(4 to 8-1) <= rgmii_txd;
-		end if;
-	end process;
+	-- process (rgmii_txc)
+		-- variable en : std_logic;
+	-- begin
+		-- if rising_edge(rgmii_txc) then
+			-- mii_txen <= en;
+			-- en := rgmii_txen;
+			-- mii_txd(0 to 4-1) <= rgmii_txd;
+		-- elsif rising_edge(rgmii_txc) then
+			-- mii_txd(4 to 8-1) <= rgmii_txd;
+		-- end if;
+	-- end process;
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
@@ -464,6 +511,7 @@ begin
 		mii_frm  => mii_txen,
 		mii_irdy => mii_txen,
 		mii_data => mii_txd);
+
 
 	ddr_clk_p <= ddr_clk;
 	ddr_clk_n <= not ddr_clk;

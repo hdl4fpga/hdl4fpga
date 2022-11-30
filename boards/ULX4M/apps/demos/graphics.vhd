@@ -60,7 +60,7 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app_profile  : app_profiles := uart_400MHz_480p24bpp;
+	constant app_profile  : app_profiles := mii_400MHz_480p24bpp;
 	---------------------------------------------
 
 	type profile_params is record
@@ -602,7 +602,7 @@ begin
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
 			my_mac        => x"00_40_00_01_02_03",
-			default_ipv4a => aton("192.168.1.1"))
+			default_ipv4a => aton("192.168.0.14"))
 		port map (
 			hdplx      => hdplx,
 			sio_clk    => mii_clk,
