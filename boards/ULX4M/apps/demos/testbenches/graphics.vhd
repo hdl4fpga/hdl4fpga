@@ -115,14 +115,14 @@ architecture ulx4mld_graphics of testbench is
 	constant snd_data : std_logic_vector := 
 		x"01007e" &
 		x"18ff"   &
-		x"03020100_07060504_0b0a0908_0f0e0d0c_13121110_17161514_1b1a1918_1f1e1d1c" &
-		x"23222120_27262524_2b2a2928_2f2e2d2c_33323130_37363534_3b3a3938_3f3e3d3c" &
-		x"43424140_47464544_4b4a4948_4f4e4d4c_53525150_57565554_5b5a5958_5f5e5d5c" &
-		x"63626160_67666564_6b6a6968_6f6e6d6c_73727170_77767574_7b7a7978_7f7e7d7c" &
-		x"83828180_87868584_8b8a8988_8f8e8d8c_93929190_97969594_9b9a9998_9f9e9d9c" &
-		x"a3a2a1a0_a7a6a5a4_abaaa9a8_afaeadac_b3b2b1b0_b7b6b5b4_bbbab9b8_bfbebdbc" &
-		x"c3c2c1c0_c7c6c5c4_cbcac9c8_cfcecdcc_d3d2d1d0_d7d6d5d4_dbdad9d8_dfdedddc" &
-		x"e3e2e1e0_e7e6e5e4_ebeae9e8_efeeedec_f3f2f1f0_f7f6f5f4_fbfaf9f8_fffefdfc" &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
 		x"1702_0000ff_1603_0007_3000";
 	constant req_data : std_logic_vector := x"010000_1702_00001f_1603_8007_3000";
 
@@ -405,7 +405,7 @@ begin
 						if falling_edge(mii_rxdv) then
 							req <= '0';
 							x <= x + 1;
-							wait for 30 us;
+							wait for 10 us;
 						end if;
 					else
 						if x > 1 then
@@ -433,7 +433,7 @@ begin
 			mii_frm2 => '0', --ping_req,
 			mii_frm3 => '0',
 			mii_frm4 => mii_req,
-			mii_frm5 => '0', --mii_req1,
+			mii_frm5 => mii_req1,
 	
 			mii_txc  => mii_rxc,
 			mii_txen => mii_rxdv,

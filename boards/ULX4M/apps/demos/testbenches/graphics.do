@@ -19,9 +19,11 @@ add wave -noupdate -expand -group ddram -radix hexadecimal /testbench/du_e/ddram
 add wave -noupdate -expand -group ddram -radix hexadecimal /testbench/du_e/ddram_ba
 add wave -noupdate -expand -group ddram -radix hexadecimal -childformat {{/testbench/du_e/ddram_dq(15) -radix hexadecimal} {/testbench/du_e/ddram_dq(14) -radix hexadecimal} {/testbench/du_e/ddram_dq(13) -radix hexadecimal} {/testbench/du_e/ddram_dq(12) -radix hexadecimal} {/testbench/du_e/ddram_dq(11) -radix hexadecimal} {/testbench/du_e/ddram_dq(10) -radix hexadecimal} {/testbench/du_e/ddram_dq(9) -radix hexadecimal} {/testbench/du_e/ddram_dq(8) -radix hexadecimal} {/testbench/du_e/ddram_dq(7) -radix hexadecimal} {/testbench/du_e/ddram_dq(6) -radix hexadecimal} {/testbench/du_e/ddram_dq(5) -radix hexadecimal} {/testbench/du_e/ddram_dq(4) -radix hexadecimal} {/testbench/du_e/ddram_dq(3) -radix hexadecimal} {/testbench/du_e/ddram_dq(2) -radix hexadecimal} {/testbench/du_e/ddram_dq(1) -radix hexadecimal} {/testbench/du_e/ddram_dq(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ddram_dq(15) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(14) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(13) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(12) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(11) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(10) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(9) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(8) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(7) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(6) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(5) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(4) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(3) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(2) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(1) {-height 29 -radix hexadecimal} /testbench/du_e/ddram_dq(0) {-height 29 -radix hexadecimal}} /testbench/du_e/ddram_dq
 add wave -noupdate -expand -group ddram -radix hexadecimal /testbench/du_e/ddram_dm
-add wave -noupdate -expand -group ddram /testbench/du_e/ddram_dqs
+add wave -noupdate -expand -group ddram -expand /testbench/du_e/ddram_dqs
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/led
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/ctlr_do
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/ctlr_do_dv
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ipoe_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethrx_e/dll_frm
 add wave -noupdate /testbench/du_e/ipoe_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethrx_e/dll_irdy
@@ -31,21 +33,16 @@ add wave -noupdate /testbench/du_e/graphics_e/sio_clk
 add wave -noupdate /testbench/du_e/graphics_e/sin_frm
 add wave -noupdate /testbench/du_e/graphics_e/sin_irdy
 add wave -noupdate /testbench/du_e/graphics_e/sin_trdy
-add wave -noupdate /testbench/du_e/graphics_e/sin_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sin_data
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/hwdarx_vld
-add wave -noupdate /testbench/du_e/ipoe_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/ipv4da_vld
-add wave -noupdate /testbench/du_e/ipoe_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/udprx_frm
-add wave -noupdate /testbench/du_e/ipoe_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/udp_e/udp_rx_e/udp_frm
+add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_di_dv
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_di
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/udp_e/udprx_frm
-add wave -noupdate /testbench/du_e/ipoe_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/udp_e/udprx_irdy
-add wave -noupdate /testbench/du_e/ipoe_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/udp_e/udprx_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {17513420250 fs} 0} {{Cursor 2} {47058761500 fs} 0}
+WaveRestoreCursors {{Cursor 1} {52529172920 fs} 0} {{Cursor 2} {11132153340 fs} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 290
-configure wave -valuecolwidth 164
+configure wave -namecolwidth 223
+configure wave -valuecolwidth 336
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -58,4 +55,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {105 us}
+WaveRestoreZoom {50429172920 fs} {54629172920 fs}

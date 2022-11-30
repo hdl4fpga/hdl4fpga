@@ -48,14 +48,14 @@ entity ecp5_sdrdqphy is
 		read_req  : buffer std_logic;
 		phy_sti   : in  std_logic;
 		phy_sto   : out std_logic;
-		phy_dmt   : in  std_logic_vector(0 to data_gear-1) := (others => '-');
+		phy_dmt   : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		phy_dmi   : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		phy_dmo   : out std_logic_vector(data_gear-1 downto 0);
 		phy_dqo   : out std_logic_vector(data_gear*byte_size-1 downto 0);
-		phy_dqt   : in  std_logic_vector(0 to data_gear-1);
+		phy_dqt   : in  std_logic_vector(data_gear-1 downto 0);
 		phy_dqi   : in  std_logic_vector(data_gear*byte_size-1 downto 0);
-		phy_dqso  : in  std_logic_vector(0 to data_gear-1);
-		phy_dqst  : in  std_logic_vector(0 to data_gear-1);
+		phy_dqso  : in  std_logic_vector(data_gear-1 downto 0);
+		phy_dqst  : in  std_logic_vector(data_gear-1 downto 0);
 
 		sdr_dmt   : out std_logic;
 		sdr_dmi   : in  std_logic := '-';
@@ -374,10 +374,10 @@ begin
 			wrpntr1 => wrpntr(1),
 			wrpntr0 => wrpntr(0),
 			d       => z,
-			q0      => phy_dqo(0*byte_size+i),
-			q1      => phy_dqo(1*byte_size+i),
-			q2      => phy_dqo(2*byte_size+i),
-			q3      => phy_dqo(3*byte_size+i));
+			q0      => phy_dqo(3*byte_size+i),
+			q1      => phy_dqo(2*byte_size+i),
+			q2      => phy_dqo(1*byte_size+i),
+			q3      => phy_dqo(0*byte_size+i));
 	end generate;
 
 	dmi_g : block
@@ -403,15 +403,15 @@ begin
 			wrpntr1 => wrpntr(1),
 			wrpntr2 => wrpntr(2),
 			d       => d,
-			q0      => phy_dmo(0),
-			q1      => phy_dmo(1),
-			q2      => phy_dmo(2),
-			q3      => phy_dmo(3));
+			q0      => phy_dmo(3),
+			q1      => phy_dmo(2),
+			q2      => phy_dmo(1),
+			q3      => phy_dmo(0));
 	end block;
 
 	wle <= to_stdulogic(to_bit(phy_wlrdy)) xor phy_wlreq;
 
-	dqt <= phy_dqt when wle='0' else (others => '1');
+	dqt <= not phy_dqt when wle='0' else (others => '0');
 	oddr_g : for i in 0 to byte_size-1 generate
 		tshx2dqa_i : tshx2dqa
 		port map (
@@ -429,10 +429,10 @@ begin
 			sclk => sclk,
 			eclk => eclk,
 			dqsw270 => dqsw270,
-			d0   => phy_dqi(0*byte_size+i),
-			d1   => phy_dqi(1*byte_size+i),
-			d2   => phy_dqi(2*byte_size+i),
-			d3   => phy_dqi(3*byte_size+i),
+			d0   => phy_dqi(3*byte_size+i),
+			d1   => phy_dqi(2*byte_size+i),
+			d2   => phy_dqi(1*byte_size+i),
+			d3   => phy_dqi(0*byte_size+i),
 			q    => sdr_dqo(i));
 	end generate;
 
@@ -444,8 +444,8 @@ begin
 			sclk => sclk,
 			eclk => eclk,
 			dqsw270 => dqsw270,
-			t0  => dqt(2*1),
-			t1  => dqt(2*0),
+			t0  => dqt(2*0),
+			t1  => dqt(2*1),
 			q   => sdr_dmt);
 
 		oddrx2dqa_i : oddrx2dqa
@@ -454,10 +454,10 @@ begin
 			sclk => sclk,
 			eclk => eclk,
 			dqsw270 => dqsw270,
-			d0   => phy_dmi(0),
-			d1   => phy_dmi(1),
-			d2   => phy_dmi(2),
-			d3   => phy_dmi(3),
+			d0   => phy_dmi(3),
+			d1   => phy_dmi(2),
+			d2   => phy_dmi(1),
+			d3   => phy_dmi(0),
 			q    => sdr_dmo);
 	end block;
 
@@ -473,8 +473,8 @@ begin
 			sclk => sclk,
 			eclk => eclk,
 			dqsw => dqsw,
-			t0   => dqst(2*1),
-			t1   => dqst(2*0),
+			t0   => dqst(2*0),
+			t1   => dqst(2*1),
 			q    => sdr_dqst);
 
 		oddrx2dqsb_i : oddrx2dqsb
@@ -484,9 +484,9 @@ begin
 			eclk => eclk,
 			dqsw => dqsw,
 			d0   => '0',
-			d1   => dqso(2*1),
+			d1   => dqso(2*0),
 			d2   => '0',
-			d3   => dqso(2*0),
+			d3   => dqso(2*1),
 			q    => sdr_dqso);
 
 	end block;
