@@ -249,7 +249,6 @@ architecture graphics of ulx4m_ld is
 	signal si_data    : std_logic_vector(0 to 8-1);
 
 	signal sio_clk    : std_logic;
-	alias uart_clk    : std_logic is sio_clk;
 
 
     signal video_pixel : std_logic_vector(0 to setif(
@@ -437,6 +436,7 @@ begin
 		alias ftdi_rxd    : std_logic is gpio24;
 
 		signal dummy_txd  : std_logic_vector(uart_rxd'range);
+		alias uart_clk    : std_logic is sio_clk;
 	begin
 
 		process (uart_clk)
@@ -588,14 +588,15 @@ begin
 		rmii_mdc  <= '0';
 		rmii_mdio <= '0';
 
-		dhcp_p : process(mii_clk)
-		begin
-			if rising_edge(mii_clk) then
-				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-					dhcpcd_req <= dhcpcd_rdy xor ((btn(1) and dhcpcd_rdy) or (btn(2) and not dhcpcd_rdy));
-				end if;
-			end if;
-		end process;
+		-- dhcp_p : process(mii_clk)
+		-- begin
+		-- 	if rising_edge(mii_clk) then
+		-- 		if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+		-- 			dhcpcd_req <= dhcpcd_rdy xor ((btn(1) and dhcpcd_rdy) or (btn(2) and not dhcpcd_rdy));
+		-- 		end if;
+		-- 	end if;
+		-- end process;
+				dhcpcd_req <= dhcpcd_rdy;
 		-- led(0) <= dhcpcd_rdy;
 		-- led(7) <= not dhcpcd_rdy;
 
