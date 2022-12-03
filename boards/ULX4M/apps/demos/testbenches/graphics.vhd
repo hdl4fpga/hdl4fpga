@@ -124,7 +124,7 @@ architecture ulx4mld_graphics of testbench is
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
 		x"1702_0000ff_1603_0007_3000";
-	constant req_data : std_logic_vector := x"010000_1702_00001f_1603_8007_3000";
+	constant req_data : std_logic_vector := x"010000_1702_00000f_1603_8007_3000";
 
 	signal rst_n     : std_logic;
 	signal cke       : std_logic;
@@ -202,6 +202,10 @@ architecture ulx4mld_graphics of testbench is
 
 	signal uart_clk : std_logic := '0';
 
+	signal ds   : std_logic_vector(dqs'length-1 downto 0);
+	signal dd   : std_logic_vector(dq'length-1 downto 0);
+	signal dmi  : std_logic_vector(dm'range);
+	signal ds_n : std_logic_vector(dqs_n'length-1 downto 0);
 begin
 
 	rst      <= '1', '0' after 17 us when debug else '1', '0' after 4 us;
@@ -517,6 +521,53 @@ begin
 	ddr_clk_n <= not ddr_clk;
 	dqs_n <= not dqs;
 
+	process (ds_n, dqs_n)
+	begin
+		for i in ds_n'range loop
+			case ds_n(i) is
+			when '0'|'1' =>
+				dqs_n(i) <= ds_n(i);
+			when others =>
+				dqs_n(i) <= 'H';
+			end case;
+			ds_n(i) <= dqs_n(0);
+		end loop;
+	end process;
+
+	process (ds, dqs)
+	begin
+		for i in ds'range loop
+			case ds(i) is
+			when '0'|'1' =>
+				dqs(i) <= ds(i);
+			when others =>
+				dqs(i) <= 'L';
+			end case;
+			ds(i) <= dqs(0);
+		end loop;
+	end process;
+
+	process (dd, dq)
+	begin
+		for i in dd'range loop
+			case dd(i) is
+			when '0'|'1' =>
+				dq(i) <= dd(i);
+			when others =>
+				dq(i) <= 'L';
+			end case;
+			dd(i) <= dq(i);
+		end loop;
+	end process;
+
+	process (dm)
+	begin
+		dmi <= (others => '1');
+		for i in 0 to data_bytes-1 loop
+			dmi(i) <= dm(i);
+		end loop;
+	end process;
+
 	mt_u : ddr3_model
 	port map (
 		rst_n => rst_n,
@@ -529,10 +580,10 @@ begin
 		We_n  => we_n,
 		Ba    => ba,
 		Addr  => addr,
-		Dm_tdqs => dm,
-		Dq    => dq,
-		Dqs   => dqs,
-		Dqs_n => dqs_n,
+		Dm_tdqs => dmi,
+		Dq    => dd,
+		Dqs   => ds,
+		Dqs_n => ds_n,
 		tdqs_n => tdqs_n,
 		Odt   => odt);
 

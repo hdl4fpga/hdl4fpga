@@ -93,13 +93,16 @@ add wave -noupdate /testbench/du_e/sdrphy_e_mem_sync_b_clkdivf_iI/RST
 add wave -noupdate /testbench/du_e/sdrphy_e_mem_sync_b_clkdivf_iI/CDIVX
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ctlr_clk
+add wave -noupdate /testbench/du_e/ctlrphy_sti_0
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdr3phy_i_burstdet
 add wave -noupdate /testbench/du_e/graphics_e_dmaso_irdy
+add wave -noupdate /testbench/du_e/graphics_e_gnt_dv_1
 add wave -noupdate -radix hexadecimal /testbench/du_e/data
 add wave -noupdate /testbench/du_e/graphics_e_q_Q_0_0
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {63230483300 fs} 0} {{Cursor 2} {63222766140 fs} 0}
+WaveRestoreCursors {{Cursor 1} {63174487050 fs} 0} {{Cursor 2} {63170208700 fs} 0}
 quietly wave cursor active 2
-configure wave -namecolwidth 1080
+configure wave -namecolwidth 537
 configure wave -valuecolwidth 164
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -113,4 +116,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {62656264420 fs} {63804702180 fs}
+WaveRestoreZoom {63131314570 fs} {63261026490 fs}

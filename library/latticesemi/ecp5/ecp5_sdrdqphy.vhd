@@ -233,7 +233,7 @@ begin
 			dtaps => 1,
 			taps     => taps)
 		port map (
-			edge     => std_logic'('0'),
+			edge     => std_logic'('1'),
 			clk      => sclk,
 			rst      => rst,
 			req      => phy_wlreq,

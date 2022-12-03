@@ -149,6 +149,8 @@ HDL4FPGA__mii_buffer__def = $(LIB_HDL4FPGA)/mii_buffer/def.dat
 HDL4FPGA__mii_buffer = $(LIB_HDL4FPGA)/mii_buffer/_primary.dat
 HDL4FPGA__mii_1cksm__beh = $(LIB_HDL4FPGA)/mii_1cksm/beh.dat
 HDL4FPGA__mii_1cksm = $(LIB_HDL4FPGA)/mii_1cksm/_primary.dat
+HDL4FPGA__latency__def = $(LIB_HDL4FPGA)/latency/def.dat
+HDL4FPGA__latency = $(LIB_HDL4FPGA)/latency/_primary.dat
 HDL4FPGA__ipv4_tx__def = $(LIB_HDL4FPGA)/ipv4_tx/def.dat
 HDL4FPGA__ipv4_tx = $(LIB_HDL4FPGA)/ipv4_tx/_primary.dat
 HDL4FPGA__ipv4_rx__def = $(LIB_HDL4FPGA)/ipv4_rx/def.dat
@@ -264,8 +266,6 @@ HDL4FPGA__arbiter__mix = $(LIB_HDL4FPGA)/arbiter/mix.dat
 HDL4FPGA__arbiter = $(LIB_HDL4FPGA)/arbiter/_primary.dat
 HDL4FPGA__app_profiles__body = $(LIB_HDL4FPGA)/app_profiles/body.dat
 HDL4FPGA__app_profiles = $(LIB_HDL4FPGA)/app_profiles/_primary.dat
-HDL4FPGA__align__arch = $(LIB_HDL4FPGA)/align/arch.dat
-HDL4FPGA__align = $(LIB_HDL4FPGA)/align/_primary.dat
 HDL4FPGA__aff__xilinx = $(LIB_HDL4FPGA)/aff/xilinx.dat
 HDL4FPGA__aff = $(LIB_HDL4FPGA)/aff/_primary.dat
 HDL4FPGA__adjsto__def = $(LIB_HDL4FPGA)/adjsto/def.dat
@@ -414,6 +414,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__mii_buffer) \
     $(HDL4FPGA__mii_1cksm__beh) \
     $(HDL4FPGA__mii_1cksm) \
+    $(HDL4FPGA__latency__def) \
+    $(HDL4FPGA__latency) \
     $(HDL4FPGA__ipv4_tx__def) \
     $(HDL4FPGA__ipv4_tx) \
     $(HDL4FPGA__ipv4_rx__def) \
@@ -529,8 +531,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__arbiter) \
     $(HDL4FPGA__app_profiles__body) \
     $(HDL4FPGA__app_profiles) \
-    $(HDL4FPGA__align__arch) \
-    $(HDL4FPGA__align) \
     $(HDL4FPGA__aff__xilinx) \
     $(HDL4FPGA__aff) \
     $(HDL4FPGA__adjsto__def) \
@@ -596,14 +596,6 @@ $(HDL4FPGA__adjsto__def) : ../xilinx/adjsto.vhd \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/adjsto.vhd
-
-$(HDL4FPGA__align) \
-$(HDL4FPGA__align__arch) : ../basic/latency.vhd \
-		$(IEEE__numeric_std) \
-		$(HDL4FPGA__base) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../basic/latency.vhd
 
 $(HDL4FPGA__app_profiles) \
 $(HDL4FPGA__app_profiles__body) : ../demos/app_profiles.vhd
@@ -674,7 +666,7 @@ $(HDL4FPGA__bcdfonts) : ../video/fonts/bcdfonts.vhd \
 $(HDL4FPGA__cga_adapter) \
 $(HDL4FPGA__cga_adapter__struct) : ../video/cga_adapter.vhd \
 		$(HDL4FPGA__cga_rom) \
-		$(HDL4FPGA__align) \
+		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__bcdfonts) \
 		$(HDL4FPGA__cp850x8x16x128to255) \
@@ -692,7 +684,7 @@ $(HDL4FPGA__cga_adapter__struct) : ../video/cga_adapter.vhd \
 
 $(HDL4FPGA__cga_rom) \
 $(HDL4FPGA__cga_rom__beh) : ../video/cga_rom.vhd \
-		$(HDL4FPGA__align) \
+		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__rom) \
 		$(HDL4FPGA__bcdfonts) \
 		$(HDL4FPGA__cp850x8x16x128to255) \
@@ -778,7 +770,7 @@ $(HDL4FPGA__demo_graphics__mix) : ../demos/demo_graphics.vhd \
 		$(HDL4FPGA__graphics) \
 		$(HDL4FPGA__video_sync) \
 		$(HDL4FPGA__so_data) \
-		$(HDL4FPGA__align) \
+		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__sio_dmahdsk) \
 		$(HDL4FPGA__fifo) \
@@ -1034,7 +1026,7 @@ $(HDL4FPGA__graphics__def) : ../video/graphics.vhd \
 
 $(HDL4FPGA__hdlcdll_rx) \
 $(HDL4FPGA__hdlcdll_rx__def) : ../hdlc/hdlcdll_rx.vhd \
-		$(HDL4FPGA__align) \
+		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__hdlcfcs_rx) \
 		$(HDL4FPGA__hdlcsync_rx) \
 		$(HDL4FPGA__base) \
@@ -1082,7 +1074,7 @@ $(HDL4FPGA__icmpd) \
 $(HDL4FPGA__icmpd__def) : ../mii/icmpd.vhd \
 		$(HDL4FPGA__icmprply_tx) \
 		$(HDL4FPGA__txn_buffer) \
-		$(HDL4FPGA__align) \
+		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__adder) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__icmprqst_rx) \
@@ -1183,6 +1175,14 @@ $(HDL4FPGA__ipv4_tx__def) : ../mii/ipv4_tx.vhd \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
 	$(VCOM) -2002 -work hdl4fpga ../mii/ipv4_tx.vhd
+
+$(HDL4FPGA__latency) \
+$(HDL4FPGA__latency__def) : ../basic/latency.vhd \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__base) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../basic/latency.vhd
 
 $(HDL4FPGA__mii_1cksm) \
 $(HDL4FPGA__mii_1cksm__beh) : ../mii/mii_1cksm.vhd \
@@ -1423,7 +1423,7 @@ $(HDL4FPGA__sdrdqphy__ecp) : ../latticesemi/sdrdqphy.vhd \
 
 $(HDL4FPGA__sdrphy) \
 $(HDL4FPGA__sdrphy__ecp) : ../latticesemi/sdrphy.vhd \
-		$(HDL4FPGA__align) \
+		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__sdrdqphy) \
 		$(HDL4FPGA__sdrbaphy) \
 		$(IEEE__std_logic_arith) \
@@ -1439,7 +1439,7 @@ $(HDL4FPGA__ser_debug__def) : ../demos/ser_debug.vhd \
 		$(IEEE__std_logic_unsigned) \
 		$(IEEE__std_logic_arith) \
 		$(HDL4FPGA__vga2dvid) \
-		$(HDL4FPGA__align) \
+		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__bcdfonts) \
 		$(HDL4FPGA__cp850x8x16x128to255) \
 		$(HDL4FPGA__cp850x8x16x0to127) \
@@ -1539,7 +1539,7 @@ $(HDL4FPGA__sio_flow) \
 $(HDL4FPGA__sio_flow__struct) : ../sio/sio_flow.vhd \
 		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__sio_mux) \
-		$(HDL4FPGA__align) \
+		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__sio_rgtr) \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__sio_sin) \
@@ -1819,7 +1819,7 @@ $(HDL4FPGA__xc_sdrbaphy__xilinx) : ../xilinx/xc_sdrbaphy.vhd \
 $(HDL4FPGA__xc_sdrdqphy) \
 $(HDL4FPGA__xc_sdrdqphy__xilinx) : ../xilinx/xc_sdrdqphy.vhd \
 		$(HDL4FPGA__ogbx) \
-		$(HDL4FPGA__align) \
+		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__xc_idelay) \
 		$(HDL4FPGA__adjsto) \
 		$(HDL4FPGA__igbx) \

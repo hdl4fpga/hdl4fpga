@@ -486,7 +486,7 @@ begin
 		end generate;
 		sdr3phy_i : entity hdl4fpga.ecp5_sdrdqphy
 		generic map (
-			taps => natural(floor(sdr_tcp/27.0e-12)),
+			taps => natural(floor(sdr_tcp/25.0e-12)),
 			data_gear => data_gear,
 			byte_size => byte_size)
 		port map (

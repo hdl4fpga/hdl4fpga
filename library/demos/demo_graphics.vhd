@@ -903,12 +903,29 @@ begin
 
 		process (ctlr_do_dv, ctlr_clk)
 			variable gnt_dv : std_logic_vector(dev_gnt'range);
+			type states is (idle, data, active);
+			variable state : states;
 		begin
 			if rising_edge(ctlr_clk) then
-				if gnt_dv=(dev_gnt'range => '0') then
+				if ctlr_inirdy='0' then
 					gnt_dv := dev_gnt;
-				elsif ctlr_win_do(0)='0' then
-					gnt_dv := dev_gnt;
+					state := idle;
+				else
+					case state is
+					when active =>
+						if ctlr_do_dv(0)='1' then
+							state  := data;
+						end if;
+					when data =>
+						if ctlr_do_dv(0)='0' then
+							gnt_dv := dev_gnt;
+						end if;
+					when idle =>
+						if dev_gnt/=(dev_gnt'range => '0') then
+							gnt_dv := dev_gnt;
+							state  := active;
+						end if;
+					end case;
 				end if;
 			end if;
 			dev_do_dv <= (dev_gnt'range => ctlr_do_dv(0)) and gnt_dv;
