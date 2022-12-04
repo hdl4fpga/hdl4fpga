@@ -109,7 +109,7 @@ architecture ecp5 of ecp5_sdrdqphy is
 	signal wlpause_req  : std_logic;
 	signal lv_pause     : std_logic;
 
-	constant delay      : time := 0.5 ns;
+	constant delay      : time := 3.5 ns;
 	signal dqsi         : std_logic;
 
 	signal wlstep_req   : std_logic;
@@ -230,10 +230,10 @@ begin
 		d(0) <= transport dqi0 after delay;
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
-			dtaps => 1,
+			dtaps => 0,
 			taps     => taps)
 		port map (
-			edge     => std_logic'('1'),
+			edge     => std_logic'('0'),
 			clk      => sclk,
 			rst      => rst,
 			req      => phy_wlreq,
