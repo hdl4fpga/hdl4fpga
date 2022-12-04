@@ -141,6 +141,7 @@ begin
 
 		adjbrst_e : entity hdl4fpga.adjbrst
 		port map (
+			rst        => rst,
 			sclk       => sclk,
 			adj_req    => adj_req,
 			adj_rdy    => adj_rdy,

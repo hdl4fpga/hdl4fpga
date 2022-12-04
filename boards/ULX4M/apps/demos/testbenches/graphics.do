@@ -39,15 +39,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/ctlr_do_dv
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/dmaso_irdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/dmaso_data
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethrx_e/dll_frm
-add wave -noupdate /testbench/du_e/ipoe_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethrx_e/dll_irdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethrx_e/dll_data
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/sio_clk
-add wave -noupdate /testbench/du_e/graphics_e/sin_frm
-add wave -noupdate /testbench/du_e/graphics_e/sin_irdy
-add wave -noupdate /testbench/du_e/graphics_e/sin_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sin_data
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_di_dv
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_di

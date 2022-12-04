@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 entity adjbrst is
 	port (
+		rst        : in  std_logic := '0';
 		sclk       : in  std_logic;
 		adj_req    : in  std_logic;
 		adj_rdy    : buffer std_logic;
@@ -21,18 +22,11 @@ use hdl4fpga.base.all;
 
 architecture def of adjbrst is
 
-
-	signal brst_rdy  : std_logic;
-	signal dtct_req  : std_logic;
-	signal dtct_rdy  : std_logic;
-
-	signal edge      : std_logic;
-
-	signal dcted     : std_logic;
-
-	signal phase     : std_logic_vector(readclksel'range);
-	signal base      : unsigned(lat'length+readclksel'length-1 downto 0);
-	signal input     : std_logic;
+	signal dtct_req : std_logic;
+	signal dtct_rdy : std_logic;
+	signal dcted    : std_logic;
+	signal phase    : unsigned(lat'length+readclksel'length-1 downto 0);
+	signal input    : std_logic_vector(0 to 0);
 
 begin
 
@@ -43,10 +37,10 @@ begin
 			if (step_rdy xor to_stdulogic(to_bit(step_req)))='1' then
 				if latch='0' then
 					if (burstdet and datavalid)='1' then
-						input <= '1';
+						input(0) <= '1';
 						latch := '1';
 					else
-						input <= '0';
+						input(0) <= '0';
 					end if;
 				end if;
 			else
@@ -55,20 +49,22 @@ begin
 		end if;
 	end process;
 
-	phadctor_i : entity hdl4fpga.phadctor
+	adjdqs_e : entity hdl4fpga.adjpha
 	generic map (
-		taps => 2**readclksel'length-1)
+		dtaps => 0,
+		taps  => 2**(readclksel'length-1)-1)
 	port map (
+		edge     => std_logic'('0'),
 		clk      => sclk,
-		dtct_req => dtct_req,
-		dtct_rdy => dtct_rdy,
+		rst      => rst,
+		req      => dtct_req,
+		rdy      => dtct_rdy,
 		step_req => step_req,
 		step_rdy => step_rdy,
-		edge     => edge,
-		input    => input,
-		phase    => phase);
+		smp      => input,
+		delay    => readclksel((readclksel'length-1)-1 downto 0));
 
-	brstdet_p : process(sclk,dtct_rdy)
+	brstdet_p : process(sclk, dtct_rdy)
 		variable valid : std_logic;
 	begin
 		if rising_edge(sclk) then
@@ -86,56 +82,46 @@ begin
 		end if;
 	end process;
 
-	process (sclk, dtct_req)
-		variable acc : unsigned(lat'length+readclksel'length-1 downto 0);
-	begin
-		if rising_edge(sclk) then
-			acc := base + unsigned(phase);
-			acc := rotate_left(acc, lat'length);
-			lat <= std_logic_vector(acc(lat'range));
-			acc := rotate_left(acc, readclksel'length);
-			readclksel <= std_logic_vector(acc(readclksel'range));
-		end if;
-	end process;
-
 	process(sclk, input)
-		type states is (s_start, s_lh, s_hl, s_finish);
+		type states is (s_init, s_burtsdet, s_ready);
 		variable state : states;
 	begin
 		if rising_edge(sclk) then
 			if (adj_rdy xor to_stdulogic(to_bit(adj_req)))='1' then
 				case state is
-				when s_start =>
+				when s_init =>
 					dtct_req <= not dtct_rdy;
-					base  <= (others => '0');
-					edge  <= '0';
-					state := s_lh;
-				when s_lh =>
+					phase    <= (others => '0');
+					state    := s_burtsdet;
+				when s_burtsdet =>
 					if (dtct_req xor dtct_rdy)='0' then
 						if dcted='1' then
-							base(readclksel'length-1 downto 0) <= unsigned(phase);
-							edge  <= '1';
-							state := s_hl;
-						elsif lat(lat'left)='0'  then
-							base <= base + 2**readclksel'length;
+							state := s_ready;
 						else
-							adj_rdy <= adj_req;
+							if lat(lat'left)='0'  then
+								phase <= phase + 2**(readclksel'length-1);
+							else
+								adj_rdy <= adj_req;
+							end if;
+							dtct_req <= not dtct_rdy;
 						end if;
-						dtct_req <= not dtct_rdy;
 					end if;
-				when s_hl =>
-					if (dtct_req xor dtct_rdy)='0' then
-						base  <= base - shift_right(resize(unsigned(phase), base'length), 1);
-						state := s_finish;
-					end if;
-				when s_finish =>
+				when s_ready =>
 					adj_rdy <= adj_req;
 				end case;
 			else
 				adj_rdy  <= to_stdulogic(to_bit(adj_req));
-				edge     <= '-';
-				state    := s_start;
+				state    := s_init;
 			end if;
 		end if;
+	end process;
+
+	process (phase)
+		variable temp : unsigned(phase'range);
+	begin
+		temp := shift_right(phase, readclksel'length-1);
+		readclksel(readclksel'left downto readclksel'left) <= std_logic_vector(temp(0 downto 0));
+		temp := shift_right(temp, 1);
+		lat  <= std_logic_vector(temp(lat'length-1 downto 0));
 	end process;
 end;
