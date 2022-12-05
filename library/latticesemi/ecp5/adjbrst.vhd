@@ -8,6 +8,7 @@ entity adjbrst is
 		sclk       : in  std_logic;
 		adj_req    : in  std_logic;
 		adj_rdy    : buffer std_logic;
+		pause      : in  std_logic;
 		step_req   : buffer std_logic;
 		step_rdy   : in  std_logic;
 		read       : in  std_logic;
@@ -68,6 +69,7 @@ begin
 	process(sclk, input)
 		type states is (s_init, s_burtsdet, s_ready);
 		variable state : states;
+		variable wailat : unsigned(0 to 4-1);
 	begin
 		if rising_edge(sclk) then
 			if (adj_rdy xor to_stdulogic(to_bit(adj_req)))='1' then
@@ -79,15 +81,20 @@ begin
 				when s_burtsdet =>
 					if (step_req xor step_rdy)='0' then
 						if dcted='1' then
-							phase <= phase - 1;
 							state := s_ready;
 						else
 							if lat(lat'left)='0'  then
-								phase <= phase + 1;
+								wailat := (others => '0');
 							else
-								adj_rdy <= adj_req;
+								adj_rdy  <= adj_req;
 							end if;
 							step_req <= not step_rdy;
+						end if;
+					else
+						if wailat(0)='1' then
+							phase <= phase + 1;
+						elsif pause='1' then
+							wailat := wailat + 1;
 						end if;
 					end if;
 				when s_ready =>

@@ -147,6 +147,7 @@ begin
 			adj_rdy    => adj_rdy,
 			step_req   => step_req,
 			step_rdy   => step_rdy,
+			pause      => dqs_pause,
 			read       => read(1),
 			datavalid  => datavalid,
 			burstdet   => burstdet,
