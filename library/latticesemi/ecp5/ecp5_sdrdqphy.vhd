@@ -109,7 +109,7 @@ architecture ecp5 of ecp5_sdrdqphy is
 	signal wlpause_req  : std_logic;
 	signal lv_pause     : std_logic;
 
-	constant delay      : time := 3.5 ns;
+	constant delay      : time := 3.25*0.625 ns;
 	signal dqsi         : std_logic;
 
 	signal wlstep_req   : std_logic;

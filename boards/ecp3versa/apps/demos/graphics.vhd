@@ -424,19 +424,19 @@ begin
 			end if;
 		end process;
 
-		phadctor_e : entity hdl4fpga.phadctor
-		generic map (
-			taps      => 2**eclk_rpha'length-1)
-		port map (
-			clk       => clk,
-			dtct_req  => dtct_req,
-			dtct_rdy  => dtct_rdy,
-			step_req  => step_req,
-			step_rdy  => step_rdy,
-			edge      => '0',
-			input     => phase_ff_q,
-			phase     => eclk_rpha);
-		rpha <= not eclk_rpha;
+		-- phadctor_e : entity hdl4fpga.phadctor
+		-- generic map (
+			-- taps      => 2**eclk_rpha'length-1)
+		-- port map (
+			-- clk       => clk,
+			-- dtct_req  => dtct_req,
+			-- dtct_rdy  => dtct_rdy,
+			-- step_req  => step_req,
+			-- step_rdy  => step_rdy,
+			-- edge      => '0',
+			-- input     => phase_ff_q,
+			-- phase     => eclk_rpha);
+		-- rpha <= not eclk_rpha;
 
 		eclk_smp <= transport ddr_eclk after 0 ns;
 		phase_ff_0_i : entity hdl4fpga.ff

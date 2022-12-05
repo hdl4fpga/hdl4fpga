@@ -133,8 +133,6 @@ HDL4FPGA__phy_rl__def = $(LIB_HDL4FPGA)/phy_rl/def.dat
 HDL4FPGA__phy_rl = $(LIB_HDL4FPGA)/phy_rl/_primary.dat
 HDL4FPGA__phy_memcycle__def = $(LIB_HDL4FPGA)/phy_memcycle/def.dat
 HDL4FPGA__phy_memcycle = $(LIB_HDL4FPGA)/phy_memcycle/_primary.dat
-HDL4FPGA__phadctor__beh = $(LIB_HDL4FPGA)/phadctor/beh.dat
-HDL4FPGA__phadctor = $(LIB_HDL4FPGA)/phadctor/_primary.dat
 HDL4FPGA__pgm_delay__mix = $(LIB_HDL4FPGA)/pgm_delay/mix.dat
 HDL4FPGA__pgm_delay = $(LIB_HDL4FPGA)/pgm_delay/_primary.dat
 HDL4FPGA__ogbx__beh = $(LIB_HDL4FPGA)/ogbx/beh.dat
@@ -398,8 +396,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__phy_rl) \
     $(HDL4FPGA__phy_memcycle__def) \
     $(HDL4FPGA__phy_memcycle) \
-    $(HDL4FPGA__phadctor__beh) \
-    $(HDL4FPGA__phadctor) \
     $(HDL4FPGA__pgm_delay__mix) \
     $(HDL4FPGA__pgm_delay) \
     $(HDL4FPGA__ogbx__beh) \
@@ -555,7 +551,6 @@ $(HDL4FPGA__adder__def) : ../basic/adder.vhd \
 
 $(HDL4FPGA__adjbrst) \
 $(HDL4FPGA__adjbrst__def) : ../latticesemi/ecp5/adjbrst.vhd \
-		$(HDL4FPGA__phadctor) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
@@ -1255,14 +1250,6 @@ $(HDL4FPGA__pgm_delay__mix) : ../xilinx/misc/pgm_delay.vhd \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/misc/pgm_delay.vhd
-
-$(HDL4FPGA__phadctor) \
-$(HDL4FPGA__phadctor__beh) : ../latticesemi/ecp5/phadctor.vhd \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164) \
-		$(HDL4FPGA__base)
-	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/phadctor.vhd
 
 $(HDL4FPGA__phy_memcycle) \
 $(HDL4FPGA__phy_memcycle__def) : ../sdram/phy_memcycle.vhd \
