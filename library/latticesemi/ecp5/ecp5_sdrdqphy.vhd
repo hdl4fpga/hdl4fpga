@@ -144,9 +144,10 @@ begin
 			sclk       => sclk,
 			adj_req    => adj_req,
 			adj_rdy    => adj_rdy,
+			pause_req  => rlpause_req,
+			pause_rdy  => rlpause_rdy,
 			step_req   => step_req,
 			step_rdy   => step_rdy,
-			pause      => dqs_pause,
 			read       => rd,
 			datavalid  => datavalid,
 			burstdet   => burstdet,
@@ -188,33 +189,26 @@ begin
 		end process;
 
 		process (sclk, read_req)
-			type states is (s_start, s_pause, s_read);
+			type states is (s_start, s_read);
 			variable state : states;
 		begin
 			if rising_edge(sclk) then
 				if rst='1' then
-					read_req <= '0';
 					state := s_start;
 					step_rdy <= to_stdulogic(to_bit(step_req));
---					rlpause_req <= '0';
 				elsif (adj_rdy xor to_stdulogic(to_bit(adj_req)))='1' then
-					if (step_rdy xor to_stdulogic(to_bit(step_req)))='1' then
-						case state is
-						when s_start =>
-							rlpause_req <= not rlpause_rdy;
-							state := s_pause;
-						when s_pause =>
-							if (rlpause_rdy xor to_stdulogic(to_bit(rlpause_req)))='0' then
-								read_req <= not read_rdy;
-								state    := s_read;
-							end if;
-						when s_read =>
-							if (read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
-								step_rdy <= step_req;
-								state    := s_start;
-							end if;
-						end case;
-					end if;
+					case state is
+					when s_start =>
+						if (step_rdy xor to_stdulogic(to_bit(step_req)))='1' then
+							read_req <= not read_rdy;
+							state    := s_read;
+						end if;
+					when s_read =>
+						if (read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
+							step_rdy <= step_req;
+							state    := s_start;
+						end if;
+					end case;
 				else
 					step_rdy <= to_stdulogic(to_bit(step_req));
 					state := s_start;
