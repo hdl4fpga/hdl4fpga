@@ -90,9 +90,9 @@ architecture ecp5 of ecp5_sdrdqphy is
 	signal rdpntr       : std_logic_vector(3-1 downto 0);
 	signal wrpntr       : std_logic_vector(3-1 downto 0);
 
-	signal read         : std_logic_vector(0 to 2-1);
+	signal rd           : std_logic;
 	signal lat          : std_logic_vector(3-1 downto 0);
-	signal readclksel   : std_logic_vector(3-1 downto 0);
+	signal rdclksel     : std_logic_vector(3-1 downto 0);
 	signal wlpha        : std_logic_vector(8-1 downto 0);
 	signal burstdet     : std_logic;
 	signal dqs_pause    : std_logic;
@@ -135,8 +135,7 @@ begin
 					q(1 to q'right) <= q(0 to q'right-1);
 				end if;
 			end process;
-			read(1) <= multiplex(q(0 to q'right-1), lat, 1)(0);
-			read(0) <= read(1);
+			rd <= multiplex(q(0 to q'right-1), lat, 1)(0);
 		end block;
 
 		adjbrst_e : entity hdl4fpga.adjbrst
@@ -148,13 +147,13 @@ begin
 			step_req   => step_req,
 			step_rdy   => step_rdy,
 			pause      => dqs_pause,
-			read       => read(1),
+			read       => rd,
 			datavalid  => datavalid,
 			burstdet   => burstdet,
 			lat        => lat,
-			readclksel => readclksel);
+			readclksel => rdclksel);
 		phy_sto <= datavalid;
-		tp(1 to 6) <= lat & readclksel;
+		tp(1 to 6) <= lat & rdclksel;
 
 		process (rst, sclk, read_req)
 			type states is (s_start, s_adj, s_paused);
@@ -299,54 +298,76 @@ begin
 
 	dqs_pause <= pause or lv_pause;
 	dqsi <= transport sdr_dqsi after delay;
-	dqsbufm_i : dqsbufm 
-	port map (
-		rst       => rst,
-		sclk      => sclk,
-		eclk      => eclk,
+	dqsbuf_b : block
+   		signal readclksel : std_logic_vector(2 downto 0);
+		signal dyndelay   : std_logic_vector(7 downto 0);
+	begin
+		process (sclk)
+			variable wlat : unsigned(0 to 4-1);
+		begin
+			if rising_edge(sclk) then
+				if dqs_pause='1' then
+					if wlat(0)='1' then
+						dyndelay   <= wlpha;
+						readclksel <= rdclksel;
+					else
+						wlat := wlat + 1;
+					end if;
+				else
+					wlat := (others => '0');
+				end if;
+			end if;
+		end process;
 
-		ddrdel    => ddrdel,
-		pause     => dqs_pause,
+    	dqsbufm_i : dqsbufm 
+    	port map (
+    		rst       => rst,
+    		sclk      => sclk,
+    		eclk      => eclk,
 
-		dqsi      => dqsi,
-		dqsr90    => dqsr90,
+    		ddrdel    => ddrdel,
+    		pause     => dqs_pause,
 
-		read1     => read(1),
-		read0     => read(0),
-		readclksel2 => readclksel(2),
-		readclksel1 => readclksel(1),
-		readclksel0 => readclksel(0),
+    		dqsi      => dqsi,
+    		dqsr90    => dqsr90,
 
-		rdpntr2   => rdpntr(2),
-		rdpntr1   => rdpntr(1),
-		rdpntr0   => rdpntr(0),
-		wrpntr2   => wrpntr(2),
-		wrpntr1   => wrpntr(1),
-		wrpntr0   => wrpntr(0),
+    		read1     => rd,
+    		read0     => rd,
+    		readclksel2 => readclksel(2),
+    		readclksel1 => readclksel(1),
+    		readclksel0 => readclksel(0),
 
-		burstdet  => burstdet,
-		datavalid => datavalid,
-		rdmove    => '0',
-		wrmove    => '0',
-		rdcflag   => open,
-		wrcflag   => open,
+    		rdpntr2   => rdpntr(2),
+    		rdpntr1   => rdpntr(1),
+    		rdpntr0   => rdpntr(0),
+    		wrpntr2   => wrpntr(2),
+    		wrpntr1   => wrpntr(1),
+    		wrpntr0   => wrpntr(0),
 
-		rdloadn   => '0',
-		rddirection => '0',
-		wrloadn   => '0',
-		wrdirection => '0',
+    		burstdet  => burstdet,
+    		datavalid => datavalid,
+    		rdmove    => '0',
+    		wrmove    => '0',
+    		rdcflag   => open,
+    		wrcflag   => open,
 
-		dyndelay0 => wlpha(0),
-		dyndelay1 => wlpha(1),
-		dyndelay2 => wlpha(2),
-		dyndelay3 => wlpha(3),
-		dyndelay4 => wlpha(4),
-		dyndelay5 => wlpha(5),
-		dyndelay6 => wlpha(6),
-		dyndelay7 => wlpha(7),
+    		rdloadn   => '0',
+    		rddirection => '0',
+    		wrloadn   => '0',
+    		wrdirection => '0',
 
-		dqsw      => dqsw,
-		dqsw270   => dqsw270);
+    		dyndelay0 => dyndelay(0),
+    		dyndelay1 => dyndelay(1),
+    		dyndelay2 => dyndelay(2),
+    		dyndelay3 => dyndelay(3),
+    		dyndelay4 => dyndelay(4),
+    		dyndelay5 => dyndelay(5),
+    		dyndelay6 => dyndelay(6),
+    		dyndelay7 => dyndelay(7),
+
+    		dqsw      => dqsw,
+    		dqsw270   => dqsw270);
+		end block;
 
 	iddr_g : for i in 0 to byte_size-1 generate
 		signal d : std_logic;

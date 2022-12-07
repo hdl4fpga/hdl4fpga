@@ -9,6 +9,8 @@ entity adjbrst is
 		adj_req    : in  std_logic;
 		adj_rdy    : buffer std_logic;
 		pause      : in  std_logic;
+		pause_req  : out std_logic;
+		pause_rdy  : in  std_logic;
 		step_req   : buffer std_logic;
 		step_rdy   : in  std_logic;
 		read       : in  std_logic;
@@ -69,33 +71,47 @@ begin
 	process(sclk, input)
 		type states is (s_init, s_burtsdet, s_ready);
 		variable state : states;
-		variable wailat : unsigned(0 to 4-1);
+		variable succ  : unsigned(phase'range);
+		variable wlat  : unsigned(0 to 4-1);
+		variable cntr  : unsigned(0 to 2);
 	begin
 		if rising_edge(sclk) then
 			if (adj_rdy xor to_stdulogic(to_bit(adj_req)))='1' then
 				case state is
 				when s_init =>
-					step_req <= not step_rdy;
+					step_req <= not to_stdulogic(to_bit(step_rdy));
+					pause_req <= not to_stdulogic(to_bit(pause_rdy));
+					succ     := (others => '0');
 					phase    <= (others => '0');
 					state    := s_burtsdet;
+					wlat     := (others => '0');
+					cntr     := (others => '0');
 				when s_burtsdet =>
 					if (step_req xor step_rdy)='0' then
-						if dcted='1' then
-							state := s_ready;
-						else
-							if lat(lat'left)='0'  then
-								wailat := (others => '0');
+						if wlat(0)='1' then
+							if cntr(0)='1' then
+								if dcted='1' then
+									state := s_ready;
+								else
+									succ := phase + 1;
+									wlat := (others => '0');
+									if lat(lat'left)='1'  then
+										adj_rdy <= adj_req;
+									end if;
+									cntr     := (others => '0');
+									step_req  <= not step_rdy;
+									pasue_req <= not pause_rdy;
+								end if;
 							else
-								adj_rdy  <= adj_req;
+								cntr := cntr + 1;
+								step_req <= not step_rdy;
 							end if;
-							step_req <= not step_rdy;
+						else
+							wlat := wlat + 1;
 						end if;
 					else
-						if wailat(0)='1' then
-							phase <= phase + 1;
-						elsif pause='1' then
-							wailat := wailat + 1;
-						end if;
+						wlat  := (others => '0');
+						phase <= succ;
 					end if;
 				when s_ready =>
 					adj_rdy <= adj_req;
