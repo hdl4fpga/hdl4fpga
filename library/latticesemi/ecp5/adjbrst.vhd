@@ -49,7 +49,7 @@ begin
 	end process;
 
 	process(sclk, input)
-		type states is (s_init, s_pause, s_step, s_ready);
+		type states is (s_init, s_pause, s_step);
 		variable state : states;
 		variable wlat  : unsigned(0 to 4-1);
 		variable cntr  : unsigned(0 to 2);
@@ -76,7 +76,8 @@ begin
 						if wlat(0)='1' then
 							if cntr(0)='1' then
 								if dtec(0)='1' then
-									state := s_ready;
+									adj_rdy <= adj_req;
+									state := s_init;
 								else
 									wlat := (others => '0');
 									if lat(lat'left)='1'  then
@@ -100,8 +101,6 @@ begin
 					else
 						wlat  := (others => '0');
 					end if;
-				when s_ready =>
-					adj_rdy <= adj_req;
 				end case;
 			else
 				adj_rdy  <= to_stdulogic(to_bit(adj_req));
