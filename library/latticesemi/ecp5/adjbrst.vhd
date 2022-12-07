@@ -29,25 +29,6 @@ architecture def of adjbrst is
 
 begin
 
-	input_p : process(sclk)
-		variable latch : std_logic;
-	begin
-		if rising_edge(sclk) then
-			if (step_rdy xor to_stdulogic(to_bit(step_req)))='1' then
-				if latch='0' then
-					if (burstdet and datavalid)='1' then
-						input <= '1';
-						latch := '1';
-					else
-						input <= '0';
-					end if;
-				end if;
-			else
-				latch := '0';
-			end if;
-		end if;
-	end process;
-
 	process(sclk, input)
 		type states is (s_init, s_pause, s_step);
 		variable state : states;
@@ -92,14 +73,18 @@ begin
 									dtec := dtec + 1;
 								end if;
 								cntr  := cntr + 1;
+								input <= '0';
 								step_req  <= not to_stdulogic(to_bit(step_rdy));
 								state := s_step;
 							end if;
 						else
+							if (burstdet and datavalid)='1' then
+								input <= '1';
+							end if;
 							wlat := wlat + 1;
 						end if;
 					else
-						wlat  := (others => '0');
+						wlat := (others => '0');
 					end if;
 				end case;
 			else
