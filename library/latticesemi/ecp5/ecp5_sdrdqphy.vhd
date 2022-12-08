@@ -109,7 +109,7 @@ architecture ecp5 of ecp5_sdrdqphy is
 	signal wlpause_req  : std_logic;
 	signal lv_pause     : std_logic;
 
-	constant delay      : time := 0.625 ns * (5+8);
+	constant delay      : time := 0*0.625 ns * (5+8);
 	signal dqsi         : std_logic;
 
 	signal wlstep_req   : std_logic;
@@ -251,7 +251,7 @@ begin
 
 		pause_req <= to_bit(rlpause_req) xor to_bit(rlpause1_req) xor to_bit(wlpause_req);
 		process (rst, sclk)
-			variable cntr : unsigned(0 to 6);
+			variable cntr : unsigned(0 to 4);
 		begin
 			if rising_edge(sclk) then
 				if rst='1' then
@@ -297,7 +297,7 @@ begin
 		signal dyndelay   : std_logic_vector(7 downto 0);
 	begin
 		process (sclk)
-			variable wlat : unsigned(0 to 4-1);
+			variable wlat : unsigned(0 to 2-1);
 		begin
 			if rising_edge(sclk) then
 				if dqs_pause='1' then
@@ -312,6 +312,9 @@ begin
 				end if;
 			end if;
 		end process;
+
+		-- dyndelay   <= wlpha;
+		-- readclksel <= rdclksel;
 
     	dqsbufm_i : dqsbufm 
     	port map (

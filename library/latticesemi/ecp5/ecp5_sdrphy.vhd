@@ -285,6 +285,9 @@ begin
 		signal update   : std_logic;
 		signal ready   : std_logic;
 
+		attribute FREQUENCY_PIN_ECLKO : string;
+		attribute FREQUENCY_PIN_ECLKO of  eclksyncb_i : label is ftoa(1.0e-6/sdr_tcp, 10);
+
 		attribute FREQUENCY_PIN_CDIVX : string;
 		attribute FREQUENCY_PIN_CDIVX of clkdivf_i : label is ftoa(1.0e-6/(sdr_tcp*2.0), 10);
 	begin
