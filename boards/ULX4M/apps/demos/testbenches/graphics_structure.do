@@ -94,6 +94,8 @@ add wave -noupdate /testbench/du_e/sdrphy_e_mem_sync_b_clkdivf_iI/CLKI
 add wave -noupdate /testbench/du_e/sdrphy_e_mem_sync_b_clkdivf_iI/RST
 add wave -noupdate /testbench/du_e/sdrphy_e_mem_sync_b_clkdivf_iI/CDIVX
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdr3phy_i_dqsbuf_b_dqsbufm_iI/sdrphy_e_byte_g_0_sdr3phy_i_dqsbuf_b_dqsbufm_i_DQSBUFM/INST10/wr_del
+add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdr3phy_i_dqsbuf_b_dqsbufm_iI/sdrphy_e_byte_g_0_sdr3phy_i_dqsbuf_b_dqsbufm_i_DQSBUFM/INST10/rd_del
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdr3phy_i_dqsbuf_b_dqsbufm_iI/PAUSE
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdr3phy_i_dqsbuf_b_dqsbufm_iI/ECLK
 add wave -noupdate /testbench/du_e/sdrphy_e_byte_g_0_sdr3phy_i_dqsbuf_b_dqsbufm_iI/SCLK
@@ -120,7 +122,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/data
 add wave -noupdate /testbench/du_e/graphics_e_q_Q_0_0
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {19053821660 fs} 0} {{Cursor 2} {43642327650 fs} 0} {{Cursor 3} {23504617830 fs} 0}
-quietly wave cursor active 1
+quietly wave cursor active 3
 configure wave -namecolwidth 237
 configure wave -valuecolwidth 164
 configure wave -justifyvalue left
@@ -135,4 +137,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {34650 ns}
+WaveRestoreZoom {0 fs} {55209 ns}

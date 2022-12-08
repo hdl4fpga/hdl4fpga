@@ -807,6 +807,7 @@ begin
 
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
+		debug         => true,
 		sdr_tcp       => sdram_tcp,
 		cmmd_gear     => cmmd_gear,
 		data_gear     => data_gear,

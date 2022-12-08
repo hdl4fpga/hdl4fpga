@@ -521,53 +521,53 @@ begin
 	ddr_clk_n <= not ddr_clk;
 	dqs_n <= not dqs;
 
-	process (ds_n, dqs_n)
-	begin
-		for i in ds_n'range loop
-			case ds_n(i) is
-			when '0'|'1' =>
-				dqs_n(i) <= ds_n(i);
-			when others =>
-				dqs_n(i) <= 'H';
-			end case;
-			ds_n(i) <= dqs_n(0);
-		end loop;
-	end process;
-
-	process (ds, dqs)
-	begin
-		for i in ds'range loop
-			case ds(i) is
-			when '0'|'1' =>
-				dqs(i) <= ds(i);
-			when others =>
-				dqs(i) <= 'L';
-			end case;
-			ds(i) <= dqs(0);
-		end loop;
-	end process;
-
-	process (dd, dq)
-	begin
-		for i in dd'range loop
-			case dd(i) is
-			when '0'|'1' =>
-				dq(i) <= dd(i);
-			when others =>
-				dq(i) <= 'L';
-			end case;
-			dd(i) <= dq(i);
-		end loop;
-	end process;
-
-	process (dm)
-	begin
-		dmi <= (others => '1');
-		for i in 0 to data_bytes-1 loop
-			dmi(i) <= dm(i);
-		end loop;
-	end process;
-
+	-- process (ds_n, dqs_n)
+	-- begin
+		-- for i in ds_n'range loop
+			-- case ds_n(i) is
+			-- when '0'|'1' =>
+				-- dqs_n(i) <= ds_n(i);
+			-- when others =>
+				-- dqs_n(i) <= 'H';
+			-- end case;
+			-- ds_n(i) <= dqs_n(0);
+		-- end loop;
+	-- end process;
+-- 
+	-- process (ds, dqs)
+	-- begin
+		-- for i in ds'range loop
+			-- case ds(i) is
+			-- when '0'|'1' =>
+				-- dqs(i) <= ds(i);
+			-- when others =>
+				-- dqs(i) <= 'L';
+			-- end case;
+			-- ds(i) <= dqs(0);
+		-- end loop;
+	-- end process;
+-- 
+	-- process (dd, dq)
+	-- begin
+		-- for i in dd'range loop
+			-- case dd(i) is
+			-- when '0'|'1' =>
+				-- dq(i) <= dd(i);
+			-- when others =>
+				-- dq(i) <= 'L';
+			-- end case;
+			-- dd(i) <= dq(i);
+		-- end loop;
+	-- end process;
+-- 
+	-- process (dm)
+	-- begin
+		-- dmi <= (others => '1');
+		-- for i in 0 to data_bytes-1 loop
+			-- dmi(i) <= dm(i);
+		-- end loop;
+	-- end process;
+-- 
 	mt_u : ddr3_model
 	port map (
 		rst_n => rst_n,
@@ -580,10 +580,15 @@ begin
 		We_n  => we_n,
 		Ba    => ba,
 		Addr  => addr,
-		Dm_tdqs => dmi,
-		Dq    => dd,
-		Dqs   => ds,
-		Dqs_n => ds_n,
+		-- Dm_tdqs => dmi,
+		-- Dq    => dd,
+		-- Dqs   => ds,
+		-- Dqs_n => ds_n,
+		-- tdqs_n => tdqs_n,
+		Dm_tdqs => dm,
+		Dq    => dq,
+		Dqs   => dqs,
+		Dqs_n => dqs_n,
 		tdqs_n => tdqs_n,
 		Odt   => odt);
 

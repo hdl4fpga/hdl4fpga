@@ -35,6 +35,7 @@ use hdl4fpga.sdram_param.all;
 
 entity ecp5_sdrphy is
 	generic (
+		debug     : boolean := false;
 		sdr_tcp   : real;
 		cmmd_gear : natural := 2;
 		bank_size : natural := 2;
@@ -489,7 +490,8 @@ begin
 		end generate;
 		sdr3phy_i : entity hdl4fpga.ecp5_sdrdqphy
 		generic map (
-			taps => natural(ceil((sdr_tcp-25.0e-12)/25.0e-12)), -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
+			debug     => debug,
+			taps      => natural(ceil((sdr_tcp-25.0e-12)/25.0e-12)), -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
 			data_gear => data_gear,
 			byte_size => byte_size)
 		port map (

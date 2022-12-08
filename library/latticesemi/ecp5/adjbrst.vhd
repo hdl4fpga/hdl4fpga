@@ -3,6 +3,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity adjbrst is
+	generic (
+		debug      : boolean := false);
 	port (
 		rst        : in  std_logic := '0';
 		sclk       : in  std_logic;
@@ -33,7 +35,7 @@ begin
 		type states is (s_init, s_pause, s_step);
 		variable state : states;
 		variable wlat  : unsigned(0 to 4-1);
-		variable cntr  : unsigned(0 to 2);
+		variable cntr  : unsigned(0 to setif(debug,2, 8));
 		variable dtec  : unsigned(cntr'range);
 	begin
 		if rising_edge(sclk) then

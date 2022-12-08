@@ -30,6 +30,7 @@ use ecp5u.components.all;
 
 entity ecp5_sdrdqphy is
 	generic (
+		debug     : boolean := false;
 		taps      : natural;
 		data_gear : natural;
 		byte_size : natural);
@@ -109,7 +110,7 @@ architecture ecp5 of ecp5_sdrdqphy is
 	signal wlpause_req  : std_logic;
 	signal lv_pause     : std_logic;
 
-	constant delay      : time := 0*0.625 ns * (5+8);
+	constant delay      : time := 0*0.625 ns;
 	signal dqsi         : std_logic;
 
 	signal wlstep_req   : std_logic;
@@ -139,6 +140,8 @@ begin
 		end block;
 
 		adjbrst_e : entity hdl4fpga.adjbrst
+		generic map (
+			debug      => debug)
 		port map (
 			rst        => rst,
 			sclk       => sclk,
@@ -222,10 +225,11 @@ begin
 		signal d : std_logic_vector(0 to 0);
 	begin
 
-		d(0) <= transport dqi0 after delay;
+		d(0) <= transport to_stdulogic(to_bit(dqi0)) after delay;
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
-			dtaps    => 1,
+			dtaps    => (taps+1)/16,
+			-- dtaps    => 0,
 			taps     => taps)
 		port map (
 			edge     => std_logic'('0'),
@@ -257,7 +261,7 @@ begin
 
 			pause_req <= to_bit(rlpause_req) xor to_bit(rlpause1_req) xor to_bit(wlpause_req);
 			process (rst, sclk)
-				variable cntr : unsigned(0 to 3);
+				variable cntr : unsigned(0 to 4);
 			begin
 				if rising_edge(sclk) then
 					if rst='1' then
@@ -427,7 +431,7 @@ begin
 
 	wle <= to_stdulogic(to_bit(phy_wlrdy)) xor phy_wlreq;
 
-	dqt <= not phy_dqt when wle='0' else (others => '0');
+	dqt <= not phy_dqt when wle='0' else (others => '1');
 	oddr_g : for i in 0 to byte_size-1 generate
 		tshx2dqa_i : tshx2dqa
 		port map (
