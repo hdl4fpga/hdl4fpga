@@ -225,7 +225,7 @@ begin
 		d(0) <= transport dqi0 after delay;
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
-			dtaps => 0,
+			dtaps    => 1,
 			taps     => taps)
 		port map (
 			edge     => std_logic'('0'),
@@ -242,80 +242,76 @@ begin
 	wlpause_req <= wlstep_req;
 	wlstep_rdy  <= wlpause_rdy;
 
-	pause_b : block
-
-		signal pause_req : bit;
-		signal pause_rdy : bit;
-
-	begin
-
-		pause_req <= to_bit(rlpause_req) xor to_bit(rlpause1_req) xor to_bit(wlpause_req);
-		process (rst, sclk)
-			variable cntr : unsigned(0 to 4);
-		begin
-			if rising_edge(sclk) then
-				if rst='1' then
-					pause_rdy <= pause_req;
-				elsif (pause_rdy xor pause_req)='0' then
-					lv_pause <= '0';
-					cntr := (others => '0');
-				elsif cntr(0)='0' then
-					if cntr(1)='0' then
-						lv_pause <= '1';
-					else
-						lv_pause <= '0';
-					end if;
-					cntr := cntr + 1;
-				else
-					lv_pause  <= '0';
-					pause_rdy <= pause_req;
-				end if;
-			end if;
-		end process;
-
-		process (rst, sclk, pause_rdy )
-		begin
-			if rising_edge(sclk) then
-				if rst='1' then
-					wlpause_rdy  <= to_stdulogic(to_bit(wlpause_req));
-					rlpause1_rdy <= to_stdulogic(to_bit(rlpause1_req));
-					rlpause_rdy  <= to_stdulogic(to_bit(rlpause_req));
-				elsif (pause_rdy xor pause_req)='0' then
-					wlpause_rdy  <= to_stdulogic(to_bit(wlpause_req));
-					rlpause1_rdy <= to_stdulogic(to_bit(rlpause1_req));
-					rlpause_rdy  <= to_stdulogic(to_bit(rlpause_req));
-				end if;
-			end if;
-		end process;
-
-	end block;
-
-	dqs_pause <= pause or lv_pause;
 	dqsi <= transport sdr_dqsi after delay;
 	dqsbuf_b : block
+		signal latch      : std_logic;
    		signal readclksel : std_logic_vector(2 downto 0);
 		signal dyndelay   : std_logic_vector(7 downto 0);
 	begin
+		pause_b : block
+	
+			signal pause_req : bit;
+			signal pause_rdy : bit;
+
+		begin
+
+			pause_req <= to_bit(rlpause_req) xor to_bit(rlpause1_req) xor to_bit(wlpause_req);
+			process (rst, sclk)
+				variable cntr : unsigned(0 to 3);
+			begin
+				if rising_edge(sclk) then
+					if rst='1' then
+						pause_rdy <= pause_req;
+					elsif (pause_rdy xor pause_req)='0' then
+						lv_pause <= '0';
+						cntr := (others => '0');
+					elsif cntr(0)='0' then
+						if cntr(1)='0' then
+							lv_pause <= '1';
+						else
+							lv_pause <= '0';
+						end if;
+						cntr := cntr + 1;
+					else
+						lv_pause  <= '0';
+						pause_rdy <= pause_req;
+					end if;
+					if cntr(0 to 2)="001" then
+						latch <= '1';
+					else 
+						latch <= '0';
+					end if;
+				end if;
+			end process;
+	
+			process (rst, sclk, pause_rdy )
+			begin
+				if rising_edge(sclk) then
+					if rst='1' then
+						wlpause_rdy  <= to_stdulogic(to_bit(wlpause_req));
+						rlpause1_rdy <= to_stdulogic(to_bit(rlpause1_req));
+						rlpause_rdy  <= to_stdulogic(to_bit(rlpause_req));
+					elsif (pause_rdy xor pause_req)='0' then
+						wlpause_rdy  <= to_stdulogic(to_bit(wlpause_req));
+						rlpause1_rdy <= to_stdulogic(to_bit(rlpause1_req));
+						rlpause_rdy  <= to_stdulogic(to_bit(rlpause_req));
+					end if;
+				end if;
+			end process;
+	
+		end block;
+
 		process (sclk)
-			variable wlat : unsigned(0 to 2-1);
 		begin
 			if rising_edge(sclk) then
-				if dqs_pause='1' then
-					if wlat(0)='1' then
-						dyndelay   <= wlpha;
-						readclksel <= rdclksel;
-					else
-						wlat := wlat + 1;
-					end if;
-				else
-					wlat := (others => '0');
+				if latch='1' then
+					dyndelay   <= wlpha;
+					readclksel <= rdclksel;
 				end if;
 			end if;
 		end process;
 
-		-- dyndelay   <= wlpha;
-		-- readclksel <= rdclksel;
-
+		dqs_pause <= pause or lv_pause;
     	dqsbufm_i : dqsbufm 
     	port map (
     		rst       => rst,

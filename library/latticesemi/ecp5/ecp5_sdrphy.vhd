@@ -257,21 +257,21 @@ architecture ecp5 of ecp5_sdrphy is
 	signal read_req   : std_logic_vector(sdr_dqs'range);
 	signal read_rdy   : std_logic_vector(sdr_dqs'range);
 
-		component mem_sync
-			port (
-				start_clk : in  std_logic;
-				rst       : in  std_logic;
-				dll_lock  : in  std_logic;
-				pll_lock  : in  std_logic;
-				update    : in  std_logic;
-				pause     : out std_logic;
-				stop      : out std_logic;
-				freeze    : out std_logic;
-				uddcntln  : out std_logic;
-				dll_rst   : out std_logic;
-				ddr_rst   : out std_logic;
-				ready     : out std_logic);
-		end component;
+	component mem_sync
+		port (
+			start_clk : in  std_logic;
+			rst       : in  std_logic;
+			dll_lock  : in  std_logic;
+			pll_lock  : in  std_logic;
+			update    : in  std_logic;
+			pause     : out std_logic;
+			stop      : out std_logic;
+			freeze    : out std_logic;
+			uddcntln  : out std_logic;
+			dll_rst   : out std_logic;
+			ddr_rst   : out std_logic;
+			ready     : out std_logic);
+	end component;
 
 begin
 
@@ -489,7 +489,7 @@ begin
 		end generate;
 		sdr3phy_i : entity hdl4fpga.ecp5_sdrdqphy
 		generic map (
-			taps => natural(floor(sdr_tcp/25.0e-12)), -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
+			taps => natural(ceil((sdr_tcp-25.0e-12)/25.0e-12)), -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
 			data_gear => data_gear,
 			byte_size => byte_size)
 		port map (
