@@ -909,8 +909,10 @@ begin
 					(tddr2_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 7418)));
 			when ddr3 =>
 				return (
-					(tsdr_rst,  to_sdrlatency(tCP, chip, tPreRST)/setif(debug, 100, 1)),
-					(tddr3_rstrdy, to_sdrlatency(tCP, chip, tPstRST)/setif(debug, 100, 1)),
+					-- (tsdr_rst,  to_sdrlatency(tCP, chip, tPreRST)/setif(debug, 100, 1)),
+					-- (tddr3_rstrdy, to_sdrlatency(tCP, chip, tPstRST)/setif(debug, 100, 1)),
+					(tsdr_rst,  to_sdrlatency(tCP, chip, tPreRST)),
+					(tddr3_rstrdy, to_sdrlatency(tCP, chip, tPstRST)),
 					(tddr3_wlc, sdram_latency(stdr, MODu)),
 					(tddr3_wldqsen, 25),
 					(tddr3_cke, to_sdrlatency(tCP, chip, tXPR)),
@@ -925,12 +927,18 @@ begin
 		function get_timerset (
 			constant tab : timer_vector)
 			return natural_vector is
-			variable rval : natural_vector(tab'range);
+			variable retval : natural_vector(tab'range);
 		begin
 			for i in tab'range loop
-				rval(i) := tab(i).value;
+				retval(i) := tab(i).value;
+				assert false
+				report "tid "           &
+					tids'image(tids'val(i)) & " is value  " &
+					natural'image(retval(i))
+				severity note;
+
 			end loop;
-			return rval;
+			return retval;
 		end;
 			
 		constant timer_tab : timer_vector := get_timertab(tcp, chip, debug);
@@ -999,6 +1007,17 @@ begin
 			signal value : std_logic_vector(timer_size-1 downto 0);
 
 		begin
+
+			assert false
+			report 
+				"timer_size is value " & natural'image(timer_size)
+			severity note;
+
+			assert false
+			report 
+				"stages      is value " & natural'image(stages)
+			severity note;
+
 
 			process (sys_clk)
 				variable timer : natural; 

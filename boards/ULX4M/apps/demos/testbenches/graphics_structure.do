@@ -120,6 +120,36 @@ add wave -noupdate /testbench/du_e/graphics_e_dmaso_irdy
 add wave -noupdate /testbench/du_e/graphics_e_gnt_dv_1
 add wave -noupdate -radix hexadecimal /testbench/du_e/data
 add wave -noupdate /testbench/du_e/graphics_e_q_Q_0_0
+
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_3
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_4
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_5
+
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_0
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_1
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_2
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_3
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_4
+
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1_0
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1_1
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1_2
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1_3
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1_4
+
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0_0
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0_1
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0_2
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0_3
+add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0_4
+
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {19053821660 fs} 0} {{Cursor 2} {43642327650 fs} 0} {{Cursor 3} {23504617830 fs} 0}
 quietly wave cursor active 3

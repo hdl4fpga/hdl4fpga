@@ -43,6 +43,8 @@ architecture graphics of ulx4m_ld is
 	type app_profiles is (
 	--	Interface_SdramSpeed_PixelFormat--
 
+		uart_350MHz_480p24bpp,
+		uart_375MHz_480p24bpp,
 		uart_400MHz_480p24bpp,
 		uart_425MHz_480p24bpp,
 		uart_450MHz_480p24bpp,
@@ -60,7 +62,7 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app_profile  : app_profiles := mii_400MHz_480p24bpp;
+	constant app_profile  : app_profiles := uart_350MHz_480p24bpp;
 	---------------------------------------------
 
 	type profile_params is record
@@ -71,6 +73,8 @@ architecture graphics of ulx4m_ld is
 
 	type profileparams_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparams_vector := (
+		uart_350MHz_480p24bpp => (io_hdlc, sdram350MHz, mode480p24bpp),
+		uart_375MHz_480p24bpp => (io_hdlc, sdram375MHz, mode480p24bpp),
 		uart_400MHz_480p24bpp => (io_hdlc, sdram400MHz, mode480p24bpp),
 		uart_400MHz_600p24bpp => (io_hdlc, sdram400MHz, mode600p24bpp),
 		uart_425MHz_480p24bpp => (io_hdlc, sdram425MHz, mode480p24bpp),
@@ -142,6 +146,8 @@ architecture graphics of ulx4m_ld is
 
 	type sdramparams_vector is array (natural range <>) of sdramparams_record;
 	constant sdram_tab : sdramparams_vector := (
+		(id => sdram350MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 14, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
+		(id => sdram375MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 15, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
 		(id => sdram400MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 16, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
 		(id => sdram425MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 17, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
 		(id => sdram450MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
@@ -647,8 +653,8 @@ begin
 
 	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
-		-- debug        => debug,
-		debug        => true,
+		-- debug        => true,
+		debug        => debug,
 		profile      => 2,
 
 		sdram_tcp      => 2.0*sdram_tcp,
@@ -807,7 +813,7 @@ begin
 
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
-		debug         => true,
+		debug         => debug,
 		sdr_tcp       => sdram_tcp,
 		cmmd_gear     => cmmd_gear,
 		data_gear     => data_gear,

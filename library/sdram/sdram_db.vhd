@@ -360,8 +360,18 @@ package body sdram_db is
 		constant mark   : sdram_chips;
 		constant param  : sdram_parameters)
 		return natural is
+		variable retval : natural;
 	begin
-		return natural(ceil(sdram_timing(mark, param)/period));
+		retval := natural(ceil(sdram_timing(mark, param)/period));
+
+		assert false
+		report "AC parameter of "         &
+			sdram_chips'image(mark)       & " named " &
+			sdram_parameters'image(param) & " is    " &
+			natural'image(retval)
+		severity note;
+
+		return retval;
 	end;
 
 	function sdram_schtab (
