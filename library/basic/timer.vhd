@@ -62,7 +62,7 @@ begin
 
 	cntr_g : for i in 0 to slices0'length-1 generate
 
-		impure function csize (
+		function csize (
 			constant i : natural)
 			return natural is
 		begin

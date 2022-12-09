@@ -3,6 +3,11 @@ quietly virtual signal -install /testbench/du_e { (context /testbench/du_e )(gra
 quietly virtual signal -install /testbench/du_e { (context /testbench/du_e )(sdrphy_e_byte_g_1_sdr3phy_i_readclksel_0 & sdrphy_e_byte_g_1_sdr3phy_i_readclksel_1 & sdrphy_e_byte_g_1_sdr3phy_i_readclksel_2 )} readselclk
 quietly virtual signal -install /testbench/du_e { (context /testbench/du_e )(sdrphy_e_byte_g_1_sdr3phy_i_readclksel_2 & sdrphy_e_byte_g_1_sdr3phy_i_readclksel_1 & sdrphy_e_byte_g_1_sdr3phy_i_readclksel_0 )} readclksel
 quietly virtual signal -install /testbench/du_e/sdrphy_e_byte_g_0_sdr3phy_i_dqsbuf_b_dqsbufm_iI { (context /testbench/du_e/sdrphy_e_byte_g_0_sdr3phy_i_dqsbuf_b_dqsbufm_iI )(READCLKSEL2 & READCLKSEL1 & READCLKSEL0 )} READCLKSEL
+quietly virtual signal -install /testbench/du_e { (context /testbench/du_e )(graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_3 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_4 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_5 )} timer_cntr0
+quietly virtual signal -install /testbench/du_e { (context /testbench/du_e )(graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_0 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_1 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_2 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_3 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_4 )} timer_cntr1
+quietly virtual signal -install /testbench/du_e { (context /testbench/du_e )(graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1_0 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1_1 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1_2 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1_3 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1_4 )} timer_cntr2
+quietly virtual signal -install /testbench/du_e { (context /testbench/du_e )(graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0_0 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0_1 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0_2 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0_3 & graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0_4 )} timer_cntr2001
+quietly virtual signal -install /testbench/du_e {/testbench/du_e/timer_cntr2001  } timer_cntr3
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/du_e/clk_25mhz
 add wave -noupdate -group rgmii /testbench/du_e/rgmii_rx_clk
@@ -48,11 +53,10 @@ add wave -noupdate /testbench/du_e/gpio17
 add wave -noupdate /testbench/du_e/gpio9
 add wave -noupdate /testbench/du_e/gpio11
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/gpio13
 add wave -noupdate /testbench/du_e/gpio23
 add wave -noupdate /testbench/du_e/gpio24
-add wave -noupdate /testbench/du_e/led
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/led
 add wave -noupdate /testbench/du_e/ddram_clk_MGIOLI/ECLK
 add wave -noupdate /testbench/du_e/ddram_clk_MGIOLI/CLK
 add wave -noupdate /testbench/du_e/ddram_clk_MGIOLI/IOLDO
@@ -120,40 +124,18 @@ add wave -noupdate /testbench/du_e/graphics_e_dmaso_irdy
 add wave -noupdate /testbench/du_e/graphics_e_gnt_dv_1
 add wave -noupdate -radix hexadecimal /testbench/du_e/data
 add wave -noupdate /testbench/du_e/graphics_e_q_Q_0_0
-
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_3
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_4
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_5
-
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/timer_cntr0(5) -radix hexadecimal} {/testbench/du_e/timer_cntr0(4) -radix hexadecimal} {/testbench/du_e/timer_cntr0(3) -radix hexadecimal} {/testbench/du_e/timer_cntr0(2) -radix hexadecimal} {/testbench/du_e/timer_cntr0(1) -radix hexadecimal} {/testbench/du_e/timer_cntr0(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0 {-radix hexadecimal} /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1 {-radix hexadecimal} /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2 {-radix hexadecimal} /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_3 {-radix hexadecimal} /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_4 {-radix hexadecimal} /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_5 {-radix hexadecimal}} /testbench/du_e/timer_cntr0
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_0
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_1
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_2
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_3
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_4
-
+add wave -noupdate -radix hexadecimal /testbench/du_e/timer_cntr3
+add wave -noupdate -radix hexadecimal /testbench/du_e/timer_cntr2
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/timer_cntr1(4) -radix hexadecimal} {/testbench/du_e/timer_cntr1(3) -radix hexadecimal} {/testbench/du_e/timer_cntr1(2) -radix hexadecimal} {/testbench/du_e/timer_cntr1(1) -radix hexadecimal} {/testbench/du_e/timer_cntr1(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_0 {-radix hexadecimal} /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_1 {-radix hexadecimal} /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_2 {-radix hexadecimal} /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_3 {-radix hexadecimal} /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_2_4 {-radix hexadecimal}} /testbench/du_e/timer_cntr1
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1_0
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1_1
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1_2
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1_3
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_1_4
-
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0_0
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0_1
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0_2
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0_3
-add wave -noupdate /testbench/du_e/graphics_e_sdrctlr_b_sdrctlr_e_sdram_init_e_sdram_timer_b_timer_b_timer_e_cntr_0_4
-
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {19053821660 fs} 0} {{Cursor 2} {43642327650 fs} 0} {{Cursor 3} {23504617830 fs} 0}
-quietly wave cursor active 3
-configure wave -namecolwidth 237
+WaveRestoreCursors {{Cursor 1} {3423163780 fs} 0} {{Cursor 2} {40441378130 fs} 0} {{Cursor 3} {23504617830 fs} 0}
+quietly wave cursor active 1
+configure wave -namecolwidth 205
 configure wave -valuecolwidth 164
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -167,4 +149,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {55209 ns}
+WaveRestoreZoom {0 fs} {11130 ns}

@@ -45,6 +45,7 @@ entity ecp5_sdrphy is
 		byte_size : natural := 8);
 	port (
 		rst       : in std_logic;
+		rdy       : out std_logic;
 		sync_clk  : in std_logic;
 		clkop     : in std_logic;
 		sclk      : buffer std_logic;
@@ -284,7 +285,7 @@ begin
 		signal dll_lock : std_logic;
 		signal pll_lock : std_logic;
 		signal update   : std_logic;
-		signal ready   : std_logic;
+		signal ready    : std_logic;
 
 		attribute FREQUENCY_PIN_ECLKO : string;
 		attribute FREQUENCY_PIN_ECLKO of  eclksyncb_i : label is ftoa(1.0e-6/sdr_tcp, 10);
@@ -310,6 +311,7 @@ begin
 			dll_rst   => dll_rst,
 			ddr_rst   => sdr_reset,
 			ready     => ready);
+		rdy <= ready;
 
 		eclksyncb_i : eclksyncb
 		port map (

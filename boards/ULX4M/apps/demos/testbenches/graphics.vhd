@@ -253,16 +253,17 @@ begin
 		signal hdlcfcsrx_sb : std_logic;
 		signal hdlcfcsrx_vld : std_logic;
 
-		signal nrst : std_logic;
+		signal nrst : std_logic := '0';
 	begin
 
-		nrst <= not rst;
+		nrst <= not rst after 200 us;
+		-- nrst <= not rst;
 		process 
 			variable i     : natural;
 			variable total : natural;
 			variable addr  : natural;
 		begin
-			if rst='1' then
+			if nrst='0' then
 				hdlctx_frm <= '0';
 				hdlctx_end <= '0';
 				addr       := 0;
@@ -298,7 +299,7 @@ begin
 				end if;
 
 			end if;
-			wait on rst, uart_clk;
+			wait on nrst, uart_clk;
 		end process;
 
 		hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
