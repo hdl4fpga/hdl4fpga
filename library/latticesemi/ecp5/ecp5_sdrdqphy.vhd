@@ -139,26 +139,6 @@ begin
 			rd <= multiplex(q(0 to q'right-1), lat, 1)(0);
 		end block;
 
-		adjbrst_e : entity hdl4fpga.adjbrst
-		generic map (
-			debug      => debug)
-		port map (
-			rst        => rst,
-			sclk       => sclk,
-			adj_req    => adj_req,
-			adj_rdy    => adj_rdy,
-			pause_req  => rlpause_req,
-			pause_rdy  => rlpause_rdy,
-			step_req   => step_req,
-			step_rdy   => step_rdy,
-			read       => rd,
-			datavalid  => datavalid,
-			burstdet   => burstdet,
-			lat        => lat,
-			readclksel => rdclksel);
-		phy_sto <= datavalid;
-		tp(1 to 6) <= lat & rdclksel;
-
 		process (rst, sclk, read_req)
 			type states is (s_start, s_adj, s_paused);
 			variable state : states;
@@ -190,6 +170,26 @@ begin
 				end if;
 			end if;
 		end process;
+
+		adjbrst_e : entity hdl4fpga.adjbrst
+		generic map (
+			debug      => debug)
+		port map (
+			rst        => rst,
+			sclk       => sclk,
+			adj_req    => adj_req,
+			adj_rdy    => adj_rdy,
+			pause_req  => rlpause_req,
+			pause_rdy  => rlpause_rdy,
+			step_req   => step_req,
+			step_rdy   => step_rdy,
+			read       => rd,
+			datavalid  => datavalid,
+			burstdet   => burstdet,
+			lat        => lat,
+			readclksel => rdclksel);
+		phy_sto <= datavalid;
+		tp(1 to 6) <= lat & rdclksel;
 
 		process (sclk, read_req)
 			type states is (s_start, s_read);
