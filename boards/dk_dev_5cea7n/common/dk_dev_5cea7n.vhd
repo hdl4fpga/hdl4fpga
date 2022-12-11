@@ -26,81 +26,88 @@ use ieee.std_logic_1164.all;
 
 entity dk_dev_5cea7n is
 	generic (
-		debug : boolean := false);
+		debug                : boolean := false);
 	port (
---		fpga_clk1_50     : in std_logic;
---		fpga_clk2_50     : in std_logic;
---		fpga_clk3_50     : in std_logic;
---		hps_clk1_25      : in std_logic;
---		hps_clk2_25      : in std_logic;
+		clkin_50_fpga_top    : in std_logic;
+		clkin_50_fpga_right  : in std_logic;
+		diff_clkin_top_125_p : in std_logic;
+		diff_clkin_top_125_n : in std_logic;
+		diff_clkin_bot_125_p : in std_logic;
+		diff_clkin_bot_125_n : in std_logic;
 
-		hps_uart_rx      : in std_logic;
-		hps_uart_tx      : out std_logic
+		uart_txd             : out std_logic
+		uart_rts             : out std_logic
+		uart_rxd             : in std_logic;
+		uart_cts             : in std_logic;
 
---		hps_enet_reset_n : in std_logic;
---		hps_enet_gtx_clk : in std_logic;
---		hps_enet_tx_en   : out std_logic;
---		hps_enet_tx_data : out std_logic_vector(0 to 4-1);
---		hps_enet_rx_dv   : in std_logic;
---		hps_enet_rx_data : in std_logic_vector(0 to 4-1);
---		hps_enet_rx_clk  : in std_logic;
---		hps_enet_mdio    : inout std_logic;
---		hps_enet_mdc     : in std_logic;
---		hps_enet_int_n   : in std_logic;
---
---		hps_ddr3_reset_n : out   std_logic := '0';
---		hps_ddr3_clk_p   : out   std_logic := '0';
---		hps_ddr3_clk_n   : out   std_logic := '0';
---		hps_ddr3_cke     : out   std_logic := '0';
---		hps_ddr3_cs_n    : out   std_logic := '1';
---		hps_ddr3_ras_n   : out   std_logic := '1';
---		hps_ddr3_cas_n   : out   std_logic := '1';
---		hps_ddr3_we_n    : out   std_logic := '1';
---		hps_ddr3_ba      : out   std_logic_vector( 3-1 downto 0) := (others => '1');
---		hps_ddr3_a       : out   std_logic_vector(14-1 downto 0) := (others => '1');
---		hps_ddr3_dm      : inout std_logic_vector( 4-1 downto 0) := (others => 'Z');
---		hps_ddr3_dqs_p   : inout std_logic_vector( 4-1 downto 0) := (others => 'Z');
---		hps_ddr3_dqs_n   : inout std_logic_vector( 4-1 downto 0) := (others => 'Z');
---		hps_ddr3_dq      : inout std_logic_vector(32-1 downto 0) := (others => 'Z');
---		hps_ddr3_odt     : out   std_logic := '1'
-		);
+		eneta_resetn         : in std_logic;
+		eneta_gtx_clk        : in std_logic;
+		eneta_tx_en          : out std_logic;
+		eneta_tx_data        : out std_logic_vector(0 to 4-1);
+		eneta_rx_dv          : in std_logic;
+		eneta_rx_data        : in std_logic_vector(0 to 4-1);
+		eneta_rx_clk         : in std_logic;
+		eneta_mdio           : inout std_logic;
+		eneta_mdc            : in std_logic;
+		eneta_intn           : in std_logic;
+
+		ddr3_resetn          : out   std_logic := '0';
+		ddr3_clk_p           : out   std_logic := '0';
+		ddr3_clk_n           : out   std_logic := '0';
+		ddr3_cke             : out   std_logic := '0';
+		ddr3_csn             : out   std_logic := '1';
+		ddr3_rasn            : out   std_logic := '1';
+		ddr3_casn            : out   std_logic := '1';
+		ddr3_wen             : out   std_logic := '1';
+		ddr3_ba              : out   std_logic_vector( 3-1 downto 0) := (others => '1');
+		ddr3_a               : out   std_logic_vector(14-1 downto 0) := (others => '1');
+		ddr3_dm              : inout std_logic_vector( 4-1 downto 0) := (others => 'Z');
+		ddr3_dqs_p           : inout std_logic_vector( 4-1 downto 0) := (others => 'Z');
+		ddr3_dqs_n           : inout std_logic_vector( 4-1 downto 0) := (others => 'Z');
+		ddr3_dq              : inout std_logic_vector(32-1 downto 0) := (others => 'Z');
+		ddr3_odt             : out   std_logic := '1');
 	
 	attribute chip_pin : string;
---
---	attribute chip_pin of fpga_clk1_50     : signal is "V11";
---	attribute chip_pin of fpga_clk2_50     : signal is "Y13";
---	attribute chip_pin of fpga_clk3_50     : signal is "E11";
---	attribute chip_pin of hps_clk1_25      : signal is "E20";
---	attribute chip_pin of hps_clk2_25      : signal is "D20";
 
-	attribute chip_pin of hps_uart_tx      : signal is "B21";
-	attribute chip_pin of hps_uart_rx      : signal is "A22";
+	attribute chip_pin of clkin_50_fpga_top    : signal is "L14";
+	attribute chip_pin of clkin_50_fpga_right  : signal is "P22";
+	attribute chip_pin of diff_clkin_top_125_p : signal is "L15";
+	attribute chip_pin of diff_clkin_top_125_n : signal is "K15";
+	attribute chip_pin of diff_clkin_bot_125_p : signal is "AB17";
+	attribute chip_pin of diff_clkin_bot_125_n : signal is "AB18";
+	
+	attribute chip_pin of uart_txd             : signal is "AB9";
+	attribute chip_pin of uart_rst             : signal is "AH6";
+	attribute chip_pin of uart_rxd             : signal is "AG6";
+	attribute chip_pin of uart_cts             : signal is "AF8";
 
---	attribute chip_pin of hps_enet_reset_n : signal is "B4";
---	attribute chip_pin of hps_enet_gtx_clk : signal is "J15";
---	attribute chip_pin of hps_enet_tx_en   : signal is "A12";
---	attribute chip_pin of hps_enet_tx_data : signal is "A16 J14 A15 D17";
---	attribute chip_pin of hps_enet_rx_dv   : signal is "J13";
---	attribute chip_pin of hps_enet_rx_data : signal is "A14 A11 C15 A9";
---	attribute chip_pin of hps_enet_rx_clk  : signal is "J12";
---	attribute chip_pin of hps_enet_mdio    : signal is "E16";
---	attribute chip_pin of hps_enet_mdc     : signal is "A13";
---	attribute chip_pin of hps_enet_int_n   : signal is "B14";
---
---	attribute chip_pin of hps_ddr3_reset_n : signal is "V28";
---	attribute chip_pin of hps_ddr3_clk_p   : signal is "N21";
---	attribute chip_pin of hps_ddr3_clk_n   : signal is "N20";
---	attribute chip_pin of hps_ddr3_cke     : signal is "L28";
---	attribute chip_pin of hps_ddr3_cs_n    : signal is "L21";
---	attribute chip_pin of hps_ddr3_ras_n   : signal is "A25";
---	attribute chip_pin of hps_ddr3_cas_n   : signal is "A26";
---	attribute chip_pin of hps_ddr3_we_n    : signal is "E25";
---	attribute chip_pin of hps_ddr3_ba      : signal is "G25 H25 A27";
---	attribute chip_pin of hps_ddr3_a       : signal is "G23 C24 D24 B24 A24 F25 F26 B26 C26 J20 J21 D26 E26 B28 C28";
---	attribute chip_pin of hps_ddr3_dm      : signal is "AB28 W28 P28 G28";
---	attribute chip_pin of hps_ddr3_dqs_p   : signal is "U19 T19 R19 R17";
---	attribute chip_pin of hps_ddr3_dqs_n   : signal is "T20 T18 R18 R16";
---	attribute chip_pin of hps_ddr3_dq      : signal is "AA27 Y27 T24 R24 W26 AA28 R25 R26 V27 R27 N27 N26 U28 T28 N25 N24 N28 M28 M26 M27 J28 J27 L25 K25 F28 G27 K26 J26 D27 E28 J24 J25";
---	attribute chip_pin of hps_ddr3_odt     : signal is "D28";
+	attribute chip_pin of eneta_resetn         : signal is "N22";
+	attribute chip_pin of eneta_gtx_clk        : signal is "H27";
+	attribute chip_pin of eneta_tx_en          : signal is "F30";
+	attribute chip_pin of eneta_tx_data        : signal is "J28 J29 H29 H30";
+	attribute chip_pin of eneta_rx_dv          : signal is "L26";
+	attribute chip_pin of eneta_rx_data        : signal is "N26 N27 N24 N25";
+	attribute chip_pin of eneta_rx_clk         : signal is "T23";
+	attribute chip_pin of eneta_mdio           : signal is "L25";
+	attribute chip_pin of eneta_mdc            : signal is "G29";
+	attribute chip_pin of eneta_intn           : signal is "J27";
+
+	attribute chip_pin of ddr3_resetn          : signal is "L19";
+	attribute chip_pin of ddr3_clk_p           : signal is "J20";
+	attribute chip_pin of ddr3_clk_n           : signal is "H20";
+	attribute chip_pin of ddr3_cke             : signal is "C11";
+	attribute chip_pin of ddr3_csn             : signal is "G17";
+	attribute chip_pin of ddr3_rasn            : signal is "A24";
+	attribute chip_pin of ddr3_casn            : signal is "L20";
+	attribute chip_pin of ddr3_wen             : signal is "B22";
+	
+	attribute chip_pin of ddr3_ba              : signal is "D19 F20 J18";
+	attribute chip_pin of ddr3_a               : signal is "B13 C25 E20 E23 D14 H17 B26 A15 A26 A20 E22 E21 G23 A16"
+
+	attribute chip_pin of ddr3_dm              : signal is "B14 A19 D18 D23";
+	attribute chip_pin of ddr3_dqs_p           : signal is "K17 K16 L18 K20";
+	attribute chip_pin of ddr3_dqs_n           : signal is "J17 L16 K18 J19";
+	attribute chip_pin of ddr3_dq              : signal is "A13 D12 A14 C16 E17 C12 D17 C15 B19 B17 C17 C14 F18 A18 B18 G18 A23 E18 B23 C24 F19 B21 A21 B24 D20 D25 C22 C20 C19 C21 D22 A25";
+	attribute chip_pin of ddr3_odt             : signal is "H19";
 
 end;

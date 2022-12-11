@@ -36,7 +36,7 @@ use hdl4fpga.app_profiles.all;
 library altera_mf;
 use altera_mf.altera_mf_components.all;
 
-architecture graphics of de10_nano is
+architecture graphics of dk_dev_5cea7n is
 
 	--------------------------------------
 	-- Set of profiles                  --
