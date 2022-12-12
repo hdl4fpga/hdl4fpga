@@ -35,8 +35,8 @@ entity dk_dev_5cea7n is
 		diff_clkin_bot_125_p : in std_logic;
 		diff_clkin_bot_125_n : in std_logic;
 
-		uart_txd             : out std_logic
-		uart_rts             : out std_logic
+		uart_txd             : out std_logic;
+		uart_rts             : out std_logic;
 		uart_rxd             : in std_logic;
 		uart_cts             : in std_logic;
 
@@ -67,6 +67,8 @@ entity dk_dev_5cea7n is
 		ddr3_dq              : inout std_logic_vector(32-1 downto 0) := (others => 'Z');
 		ddr3_odt             : out   std_logic := '1');
 	
+	constant sys_freq    : real    := 50.0e6;
+
 	attribute chip_pin : string;
 
 	attribute chip_pin of clkin_50_fpga_top    : signal is "L14";
@@ -77,7 +79,7 @@ entity dk_dev_5cea7n is
 	attribute chip_pin of diff_clkin_bot_125_n : signal is "AB18";
 	
 	attribute chip_pin of uart_txd             : signal is "AB9";
-	attribute chip_pin of uart_rst             : signal is "AH6";
+	attribute chip_pin of uart_rts             : signal is "AH6";
 	attribute chip_pin of uart_rxd             : signal is "AG6";
 	attribute chip_pin of uart_cts             : signal is "AF8";
 
@@ -102,7 +104,7 @@ entity dk_dev_5cea7n is
 	attribute chip_pin of ddr3_wen             : signal is "B22";
 	
 	attribute chip_pin of ddr3_ba              : signal is "D19 F20 J18";
-	attribute chip_pin of ddr3_a               : signal is "B13 C25 E20 E23 D14 H17 B26 A15 A26 A20 E22 E21 G23 A16"
+	attribute chip_pin of ddr3_a               : signal is "B13 C25 E20 E23 D14 H17 B26 A15 A26 A20 E22 E21 G23 A16";
 
 	attribute chip_pin of ddr3_dm              : signal is "B14 A19 D18 D23";
 	attribute chip_pin of ddr3_dqs_p           : signal is "K17 K16 L18 K20";

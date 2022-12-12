@@ -187,11 +187,11 @@ architecture graphics of dk_dev_5cea7n is
 	constant data_edges  : natural := 1;
 	constant data_gear   : natural := 4;
 
-	constant bank_size   : natural := ddram_ba'length;
-	constant addr_size   : natural := ddram_a'length;
+	constant bank_size   : natural := ddr3_ba'length;
+	constant addr_size   : natural := ddr3_a'length;
 	constant coln_size   : natural := 10;
-	constant word_size   : natural := ddram_dq'length;
-	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
+	constant word_size   : natural := ddr3_dq'length;
+	constant byte_size   : natural := ddr3_dq'length/ddr3_dqs_p'length;
 
 	signal sys_rst       : std_logic;
 
@@ -219,8 +219,8 @@ architecture graphics of dk_dev_5cea7n is
 	signal ctlrphy_we    : std_logic_vector(0 to 2-1);
 	signal ctlrphy_odt   : std_logic_vector(0 to 2-1);
 	signal ctlrphy_cmd   : std_logic_vector(0 to 3-1);
-	signal ctlrphy_ba    : std_logic_vector(cmmd_gear*ddram_ba'length-1 downto 0);
-	signal ctlrphy_a     : std_logic_vector(cmmd_gear*ddram_a'length-1 downto 0);
+	signal ctlrphy_ba    : std_logic_vector(cmmd_gear*ddr3_ba'length-1 downto 0);
+	signal ctlrphy_a     : std_logic_vector(cmmd_gear*ddr3_a'length-1 downto 0);
 	signal ctlrphy_dsi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -232,8 +232,8 @@ architecture graphics of dk_dev_5cea7n is
 	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal sdr_ba        : std_logic_vector(ddram_ba'length-1 downto 0);
-	signal sdr_a         : std_logic_vector(ddram_a'length-1 downto 0);
+	signal sdr_ba        : std_logic_vector(ddr3_ba'length-1 downto 0);
+	signal sdr_a         : std_logic_vector(ddr3_a'length-1 downto 0);
 
 	signal video_clk      : std_logic;
 	signal videoio_clk    : std_logic;
@@ -356,10 +356,10 @@ begin
 		attribute FREQUENCY_PIN_CLKI   : string;
 		attribute FREQUENCY_PIN_CLKOP  : string;
 
-		constant ddram_mhz : real := 1.0e-6/sdram_tcp;
+		constant ddr3_mhz : real := 1.0e-6/sdram_tcp;
 
 
-		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_mhz, 10);
+		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddr3_mhz, 10);
 		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
 
 		signal clkfb : std_logic;
@@ -367,7 +367,7 @@ begin
 	begin
 
 		assert false
-		report real'image(ddram_mhz)
+		report real'image(ddr3_mhz)
 		severity NOTE;
 
 		pll_i : EHXPLLL
@@ -820,8 +820,8 @@ begin
 		sdr_tcp       => sdram_tcp,
 		cmmd_gear     => cmmd_gear,
 		data_gear     => data_gear,
-		bank_size     => ddram_ba'length,
-		addr_size     => ddram_a'length,
+		bank_size     => ddr3_ba'length,
+		addr_size     => ddr3_a'length,
 		word_size     => word_size,
 		byte_size     => byte_size)
 	port map (
@@ -863,16 +863,16 @@ begin
 		phy_sti       => ctlrphy_sto,
 		phy_sto       => ctlrphy_sti,
 
-		sdr_rst       => ddram_reset_n,
-		sdr_ck        => ddram_clk,
-		sdr_cke       => ddram_cke,
-		sdr_cs        => ddram_cs_n,
-		sdr_ras       => ddram_ras_n,
-		sdr_cas       => ddram_cas_n,
-		sdr_we        => ddram_we_n,
-		sdr_odt       => ddram_odt,
-		sdr_b         => ddram_ba,
-		sdr_a         => ddram_a,
+		sdr_rst       => ddr3_resetn,
+		sdr_ck        => ddr3_clk,
+		sdr_cke       => ddr3_cke,
+		sdr_cs        => ddr3_csn,
+		sdr_ras       => ddr3_rasn,
+		sdr_cas       => ddr3_casn,
+		sdr_we        => ddr3_wen,
+		sdr_odt       => ddr3_odt,
+		sdr_b         => ddr3_ba,
+		sdr_a         => ddr3_a,
 
 		sdr_dm        => open,
 		sdr_dq        => ddram_dq,
