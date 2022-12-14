@@ -63,7 +63,7 @@ package ipoepkg is
 	constant ipv4_sa      : natural :=  eth_frame'right+9;
 	constant ipv4_da      : natural :=  eth_frame'right+10;
 
-	constant ipv4hdr_frame : natural_vector := (
+	constant ipv4hdr_frame : natural_vector(ipv4_verihl to ipv4_da) := ( -- Quartus Prime 22.1 bug cannot deal with unconstrains array
 		ipv4_verihl  => 1*octect_size,
 		ipv4_tos     => 1*octect_size,
 		ipv4_len     => 2*octect_size,
@@ -84,7 +84,7 @@ package ipoepkg is
 	constant icmp_id   : natural :=  ipv4hdr_frame'right+4;
 	constant icmp_seq  : natural :=  ipv4hdr_frame'right+5;
 
-	constant icmphdr_frame : natural_vector := (
+	constant icmphdr_frame : natural_vector(icmp_type to icmp_cksm) :=  ( -- Quartus Prime 22.1 bug cannot deal with unconstrains array
 		icmp_type => 1*octect_size,
 		icmp_code => 1*octect_size,
 		icmp_cksm => 2*octect_size);
@@ -130,7 +130,7 @@ package ipoepkg is
 	constant dhcp4_fbname   : natural := udp4hdr_frame'right+15;
 	constant dhcp4_cookie   : natural := udp4hdr_frame'right+16;
                                        
-	constant dhcp4hdr_frame : natural_vector := (
+	constant dhcp4hdr_frame : natural_vector(dhcp4_op to dhcp4_cookie) := ( -- Quartus Prime 22.1 bug cannot deal with unconstrains array
 		dhcp4_op     =>   1*octect_size,
 		dhcp4_htype  =>   1*octect_size,
 		dhcp4_hlen   =>   1*octect_size,

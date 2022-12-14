@@ -55,18 +55,20 @@ set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name DEVICE_FILTER_PIN_COUNT 896
+
+set_global_assignment -name VHDL_FILE ../../../../library/video/tmds_encoder.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/video/vga2dvid.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/video/graphics.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/video/video.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/basic/serdes.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/sio/so_data.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/sio/sio_usbmouse2daisy.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/sio/sio_udp.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/sio/sio_sin.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/sio/sio_rgtr2daisy.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/sio/sio_rgtr.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/sio/sio_ram.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/sio/sio_ps2mouse2daisy.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/sio/sio_muxcmp.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/sio/sio_mux.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/sio/sio_mouse2rgtr.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/sio/sio_hostmouse2daisy.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/sio/sio_hdlc.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/sio/sio_flow.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/sio/sio_ff.vhd -library hdl4fpga
