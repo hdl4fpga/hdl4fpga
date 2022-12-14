@@ -271,276 +271,218 @@ architecture graphics of dk_dev_5cea7n is
 begin
 
 	sys_rst <= '0';
-	videopll_b : block
-
-		attribute FREQUENCY_PIN_CLKOS  : string;
-		attribute FREQUENCY_PIN_CLKOS2 : string;
-		attribute FREQUENCY_PIN_CLKOS3 : string;
-		attribute FREQUENCY_PIN_CLKI   : string;
-		attribute FREQUENCY_PIN_CLKOP  : string;
-
-		constant video_freq  : real :=
-			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos2_div*1e6));
-
-		constant video_shift_freq  : real :=
-			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos_div*1e6));
-
-		constant videoio_freq  : real :=
-			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos3_div*1e6));
-
-		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(video_shift_freq, 10);
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(video_freq,       10);
-		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is ftoa(videoio_freq,     10);
-		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(sys_freq/1.0e6,   10);
-		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(sys_freq/1.0e6,   10);
-
-		signal clkfb : std_logic;
-
-	begin
-
-		pll_i : EHXPLLL
-        generic map (
-			PLLRST_ENA       => "DISABLED",
-			INTFB_WAKE       => "DISABLED",
-			STDBY_ENABLE     => "DISABLED",
-			DPHASE_SOURCE    => "DISABLED",
-			PLL_LOCK_MODE    =>  0,
-			FEEDBK_PATH      => "CLKOP",
-			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
-			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
-			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
-			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => video_record.pll.clkop_div-1,
-			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
-			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
-			OUTDIVIDER_MUXD  => "DIVD",
-			OUTDIVIDER_MUXC  => "DIVC",
-			OUTDIVIDER_MUXB  => "DIVB",
-			OUTDIVIDER_MUXA  => "DIVA",
-
-			CLKOS_DIV        => video_record.pll.clkos_div,
-			CLKOS2_DIV       => video_record.pll.clkos2_div,
-			CLKOS3_DIV       => video_record.pll.clkos3_div,
-			CLKOP_DIV        => video_record.pll.clkop_div,
-			CLKFB_DIV        => video_record.pll.clkfb_div,
-			CLKI_DIV         => video_record.pll.clki_div)
-        port map (
-			rst       => '0',
-			clki      => clk_25mhz,
-			CLKFB     => clkfb,
-            PHASESEL0 => '0', PHASESEL1 => '0',
-			PHASEDIR  => '0',
-            PHASESTEP => '0', PHASELOADREG => '0',
-            STDBY     => '0', PLLWAKESYNC  => '0',
-            ENCLKOP   => '0',
-			ENCLKOS   => '0',
-			ENCLKOS2  => '0',
-            ENCLKOS3  => '0',
-			CLKOP     => clkfb,
-			CLKOS     => video_shft_clk,
-			CLKOS2    => video_clk,
-            CLKOS3    => videoio_clk,
-			LOCK      => video_lck,
-            INTLOCK   => open,
-			REFCLK    => open,
-			CLKINTFB  => open);
-
-	end block;
 
 	ctlrpll_b : block
 
-		attribute FREQUENCY_PIN_CLKOS  : string;
-		attribute FREQUENCY_PIN_CLKOS2 : string;
-		attribute FREQUENCY_PIN_CLKOS3 : string;
-		attribute FREQUENCY_PIN_CLKI   : string;
-		attribute FREQUENCY_PIN_CLKOP  : string;
-
 		constant ddr3_mhz : real := 1.0e-6/sdram_tcp;
 
+		component altpll
+    	generic  (
+    		lpm_hint                    : string := "UNUSED";
+    		lpm_type                    : string := "altpll";
 
-		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddr3_mhz, 10);
-		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
+    		operation_mode              : string;
+    		compensate_clock            : string  := "CLK0";
+    		bandwidth                   : natural := 0;
+    		bandwidth_type              : string := "AUTO";
 
-		signal clkfb : std_logic;
+    		m                           : natural := 0;
+    		n                           : natural := 1;
+    		m_initial                   : natural := 0;
+    		m_ph                        : natural := 0;
+    		m_test_source               : natural := 5;
+    		m_time_delay                : natural := 0;
+    		n_time_delay                : natural := 0;
+    		m2                          : natural := 1;
+    		n2                          : natural := 1;
 
-	begin
-
-		assert false
-		report real'image(ddr3_mhz)
-		severity NOTE;
-
-		ddrpll_i :  altpll
-    	generic map (
-    		bandwidth :	natural := 0;
-    		bandwidth_type : string := "AUTO";
+    		pfd_max	                    : natural := 0;
+    		pfd_min	                    : natural := 0;
+    		pll_type                    : string := "AUTO";
 
     		vco_center                  : natural := 0;
     		vco_divide_by               : natural := 0;
-    		vco_frequency_control       : string := "AUTO";
+    		vco_frequency_control       : string  := "AUTO";
     		vco_max	                    : natural := 0;
     		vco_min	                    : natural := 0;
     		vco_multiply_by	            : natural := 0;
     		vco_phase_shift_step        : natural := 0;
     		vco_post_scale              : natural := 0;
     		vco_range_detector_high_bits : string := "UNUSED";
-    		vco_range_detector_low_bits : string := "UNUSED";
+    		vco_range_detector_low_bits : string  := "UNUSED";
+    		skip_vco                    : string := "OFF";
+    		spread_frequency            : natural := 0;
+    		down_spread                 : string  := "0";
+    		ss                          : natural := 1;
 
-    		port_clk0                   : string := "PORT_CONNECTIVITY";
+    		lock_high                   : natural := 1;
+    		lock_low                    : natural := 1;
+    		lock_window_ui              : string  := " 0.05";
+    		lock_window_ui_bits         : string  := "UNUSED";
+
+    		charge_pump_current	        : natural := 2;
+    		charge_pump_current_bits	: natural := 9999;
+
+    		loop_filter_c               : natural := 5;
+    		loop_filter_c_bits          : natural := 9999;
+    		loop_filter_r               : string := " 1.000000";
+    		loop_filter_r_bits          : natural := 9999;
+
+    		width_clock                 : natural := 6;
+    		port_clk0                   : string  := "PORT_CONNECTIVITY";
     		c0_high                     : natural := 0;
     		c0_initial                  : natural := 0;
     		c0_low                      : natural := 0;
-    		c0_mode                     : string := "BYPASS";
+    		c0_mode                     : string  := "BYPASS";
     		c0_ph                       : natural := 0;
     		c0_test_source              : natural := 5;
-    		clk0_counter                : string := "G0";
+    		clk0_counter                : string  := "G0";
     		clk0_divide_by              : natural := 1;
     		clk0_duty_cycle	            : natural := 50;
     		clk0_multiply_by            : natural := 1;
     		clk0_output_frequency       : natural := 0;
-    		clk0_phase_shift            : string := "0";
-    		clk0_time_delay             : string := "0";
-    		clk0_use_even_counter_mode  : string := "OFF";
-    		clk0_use_even_counter_value : string := "OFF";
+    		clk0_phase_shift            : string  := "0";
+    		clk0_time_delay             : string  := "0";
+    		clk0_use_even_counter_mode  : string  := "OFF";
+    		clk0_use_even_counter_value : string  := "OFF";
 
-    		port_clk1                   : string := "PORT_CONNECTIVITY";
+    		port_clk1                   : string  := "PORT_CONNECTIVITY";
     		c1_high                     : natural := 0;
     		c1_initial                  : natural := 0;
     		c1_low                      : natural := 0;
-    		c1_mode                     : string := "BYPASS";
+    		c1_mode                     : string  := "BYPASS";
     		c1_ph                       : natural := 0;
     		c1_test_source              : natural := 5;
-    		clk1_counter                : string := "G0";
+    		clk1_counter                : string  := "G0";
     		clk1_divide_by              : natural := 1;
     		clk1_duty_cycle	            : natural := 50;
     		clk1_multiply_by            : natural := 1;
     		clk1_output_frequency       : natural := 0;
-    		clk1_phase_shift            : string := "0";
-    		clk1_time_delay             : string := "0";
-    		clk1_use_even_counter_mode  : string := "OFF";
-    		clk1_use_even_counter_value : string := "OFF";
+    		clk1_phase_shift            : string  := "0";
+    		clk1_time_delay             : string  := "0";
+    		clk1_use_even_counter_mode  : string  := "OFF";
+    		clk1_use_even_counter_value : string  := "OFF";
 
-    		port_clk2                   : string := "PORT_CONNECTIVITY";
+    		port_clk2                   : string  := "PORT_CONNECTIVITY";
     		c2_high                     : natural := 0;
     		c2_initial                  : natural := 0;
     		c2_low                      : natural := 0;
-    		c2_mode                     : string := "BYPASS";
+    		c2_mode                     : string  := "BYPASS";
     		c2_ph                       : natural := 0;
     		c2_test_source              : natural := 5;
-    		clk2_counter                : string := "G0";
+    		clk2_counter                : string  := "G0";
     		clk2_divide_by              : natural := 1;
     		clk2_duty_cycle	            : natural := 50;
     		clk2_multiply_by            : natural := 1;
     		clk2_output_frequency       : natural := 0;
-    		clk2_phase_shift            : string := "0";
-    		clk2_time_delay             : string := "0";
-    		clk2_use_even_counter_mode  : string := "OFF";
-    		clk2_use_even_counter_value : string := "OFF";
+    		clk2_phase_shift            : string  := "0";
+    		clk2_time_delay             : string  := "0";
+    		clk2_use_even_counter_mode  : string  := "OFF";
+    		clk2_use_even_counter_value : string  := "OFF";
 
-    		port_clk3                   : string := "PORT_CONNECTIVITY";
+    		port_clk3                   : string  := "PORT_CONNECTIVITY";
     		c3_high                     : natural := 0;
     		c3_initial                  : natural := 0;
     		c3_low                      : natural := 0;
-    		c3_mode                     : string := "BYPASS";
+    		c3_mode                     : string  := "BYPASS";
     		c3_ph                       : natural := 0;
     		c3_test_source              : natural := 5;
-    		clk3_counter                : string := "G0";
+    		clk3_counter                : string  := "G0";
     		clk3_divide_by              : natural := 1;
     		clk3_duty_cycle	            : natural := 50;
     		clk3_multiply_by            : natural := 1;
     		clk3_output_frequency       : natural := 0;
-    		clk3_phase_shift            : string := "0";
-    		clk3_time_delay             : string := "0";
-    		clk3_use_even_counter_mode  : string := "OFF";
-    		clk3_use_even_counter_value : string := "OFF";
+    		clk3_phase_shift            : string  := "0";
+    		clk3_time_delay             : string  := "0";
+    		clk3_use_even_counter_mode  : string  := "OFF";
+    		clk3_use_even_counter_value : string  := "OFF";
 
-    		port_clk4                   : string := "PORT_CONNECTIVITY";
+    		port_clk4                   : string  := "PORT_CONNECTIVITY";
     		c4_high                     : natural := 0;
     		c4_initial                  : natural := 0;
     		c4_low                      : natural := 0;
-    		c4_mode                     : string := "BYPASS";
+    		c4_mode                     : string  := "BYPASS";
     		c4_ph                       : natural := 0;
     		c4_test_source              : natural := 5;
-    		clk4_counter                : string := "G0";
+    		clk4_counter                : string  := "G0";
     		clk4_divide_by              : natural := 1;
     		clk4_duty_cycle	            : natural := 50;
     		clk4_multiply_by            : natural := 1;
     		clk4_output_frequency       : natural := 0;
-    		clk4_phase_shift            : string := "0";
-    		clk4_time_delay             : string := "0";
-    		clk4_use_even_counter_mode  : string := "OFF";
-    		clk4_use_even_counter_value : string := "OFF";
+    		clk4_phase_shift            : string  := "0";
+    		clk4_time_delay             : string  := "0";
+    		clk4_use_even_counter_mode  : string  := "OFF";
+    		clk4_use_even_counter_value : string  := "OFF";
 
-    		port_clk5                   : string := "PORT_CONNECTIVITY";
+    		port_clk5                   : string  := "PORT_CONNECTIVITY";
     		c5_high                     : natural := 0;
     		c5_initial                  : natural := 0;
     		c5_low                      : natural := 0;
-    		c5_mode                     : string := "BYPASS";
+    		c5_mode                     : string  := "BYPASS";
     		c5_ph                       : natural := 0;
     		c5_test_source              : natural := 5;
-    		clk5_counter                : string := "G0";
+    		clk5_counter                : string  := "G0";
     		clk5_divide_by              : natural := 1;
     		clk5_duty_cycle	            : natural := 50;
     		clk5_multiply_by            : natural := 1;
     		clk5_output_frequency       : natural := 0;
-    		clk5_phase_shift            : string := "0";
-    		clk5_time_delay             : string := "0";
-    		clk5_use_even_counter_mode  : string := "OFF";
-    		clk5_use_even_counter_value : string := "OFF";
+    		clk5_phase_shift            : string  := "0";
+    		clk5_time_delay             : string  := "0";
+    		clk5_use_even_counter_mode  : string  := "OFF";
+    		clk5_use_even_counter_value : string  := "OFF";
 
-    		port_clk6                   : string := "PORT_UNUSED";
+    		port_clk6                   : string  := "PORT_UNUSED";
     		c6_high                     : natural := 0;
     		c6_initial                  : natural := 0;
     		c6_low                      : natural := 0;
-    		c6_mode                     : string := "BYPASS";
+    		c6_mode                     : string  := "BYPASS";
     		c6_ph                       : natural := 0;
     		c6_test_source              : natural := 5;
-    		clk6_counter                : string := "G0";
+    		clk6_counter                : string  := "G0";
     		clk6_divide_by              : natural := 1;
     		clk6_duty_cycle	            : natural := 50;
     		clk6_multiply_by            : natural := 1;
     		clk6_output_frequency       : natural := 0;
-    		clk6_phase_shift            : string := "0";
-    		clk6_time_delay             : string := "0";
-    		clk6_use_even_counter_mode  : string := "OFF";
-    		clk6_use_even_counter_value : string := "OFF";
+    		clk6_phase_shift            : string  := "0";
+    		clk6_time_delay             : string  := "0";
+    		clk6_use_even_counter_mode  : string  := "OFF";
+    		clk6_use_even_counter_value : string  := "OFF";
 
-    		port_clk7                   : string := "PORT_UNUSED";
+    		port_clk7                   : string  := "PORT_UNUSED";
     		c7_high                     : natural := 0;
     		c7_initial                  : natural := 0;
     		c7_low                      : natural := 0;
-    		c7_mode                     : string := "BYPASS";
+    		c7_mode                     : string  := "BYPASS";
     		c7_ph                       : natural := 0;
     		c7_test_source              : natural := 5;
-    		clk7_counter                : string := "G0";
+    		clk7_counter                : string  := "G0";
     		clk7_divide_by              : natural := 1;
     		clk7_duty_cycle	            : natural := 50;
     		clk7_multiply_by            : natural := 1;
     		clk7_output_frequency       : natural := 0;
-    		clk7_phase_shift            : string := "0";
-    		clk7_time_delay             : string := "0";
-    		clk7_use_even_counter_mode  : string := "OFF";
-    		clk7_use_even_counter_value : string := "OFF";
+    		clk7_phase_shift            : string  := "0";
+    		clk7_time_delay             : string  := "0";
+    		clk7_use_even_counter_mode  : string  := "OFF";
+    		clk7_use_even_counter_value : string  := "OFF";
 
-    		port_clk8                   : string := "PORT_UNUSED";
+    		port_clk8                   : string  := "PORT_UNUSED";
     		c8_high                     : natural := 0;
     		c8_initial                  : natural := 0;
     		c8_low                      : natural := 0;
-    		c8_mode                     : string := "BYPASS";
+    		c8_mode                     : string  := "BYPASS";
     		c8_ph                       : natural := 0;
     		c8_test_source              : natural := 5;
-    		clk8_counter                : string := "G0";
+    		clk8_counter                : string  := "G0";
     		clk8_divide_by              : natural := 1;
     		clk8_duty_cycle	            : natural := 50;
     		clk8_multiply_by            : natural := 1;
     		clk8_output_frequency       : natural := 0;
-    		clk8_phase_shift            : string := "0";
-    		clk8_time_delay             : string := "0";
-    		clk8_use_even_counter_mode  : string := "OFF";
-    		clk8_use_even_counter_value : string := "OFF";
+    		clk8_phase_shift            : string  := "0";
+    		clk8_time_delay             : string  := "0";
+    		clk8_use_even_counter_mode  : string  := "OFF";
+    		clk8_use_even_counter_value : string  := "OFF";
 
-    		port_clk9                   : string := "PORT_UNUSED";
+    		port_clk9                   : string  := "PORT_UNUSED";
     		c9_high                     : natural := 0;
     		c9_initial                  : natural := 0;
     		c9_low                      : natural := 0;
@@ -552,149 +494,137 @@ begin
     		clk9_duty_cycle	            : natural := 50;
     		clk9_multiply_by            : natural := 1;
     		clk9_output_frequency       : natural := 0;
-    		clk9_phase_shift            : string := "0";
-    		clk9_time_delay             : string := "0";
-    		clk9_use_even_counter_mode  : string := "OFF";
-    		clk9_use_even_counter_value : string := "OFF";
+    		clk9_phase_shift            : string  := "0";
+    		clk9_time_delay             : string  := "0";
+    		clk9_use_even_counter_mode  : string  := "OFF";
+    		clk9_use_even_counter_value : string  := "OFF";
 
-    		charge_pump_current	        : natural := 2;
-    		charge_pump_current_bits	: natural := 9999;
-
-    		compensate_clock            : string  := "CLK0";
-    		down_spread                 : string  := "0";
     		dpa_divide_by               : natural := 1;
     		dpa_divider                 : natural := 0;
     		dpa_multiply_by             : natural := 0;
 
+    		port_extclkena0             : string  := "PORT_CONNECTIVITY";
     		e0_high	                    : natural := 1;
     		e0_initial                  : natural := 1;
     		e0_low                      : natural := 1;
-    		e0_mode                     : string := "BYPASS";
+    		e0_mode                     : string  := "BYPASS";
     		e0_ph                       : natural := 0;
     		e0_time_delay               : natural := 0;
-    		extclk0_counter             : string := "E0";
+
+    		port_extclk0                : string  := "PORT_CONNECTIVITY";
+    		extclk0_counter             : string  := "E0";
     		extclk0_divide_by           : natural := 1;
     		extclk0_duty_cycle          : natural := 50;
     		extclk0_multiply_by         : natural := 1;
-    		extclk0_phase_shift         : string := "0";
-    		extclk0_time_delay          : string := "0";
+    		extclk0_phase_shift         : string  := "0";
+    		extclk0_time_delay          : string  := "0";
 
+    		port_extclkena1             : string  := "PORT_CONNECTIVITY";
     		e1_high	                    : natural := 1;
     		e1_initial                  : natural := 1;
     		e1_low                      : natural := 1;
-    		e1_mode                     : string := "BYPASS";
+    		e1_mode                     : string  := "BYPASS";
     		e1_ph                       : natural := 0;
     		e1_time_delay               : natural := 0;
-    		extclk1_counter             : string := "E0";
+
+    		port_extclk1                : string  := "PORT_CONNECTIVITY";
+    		extclk1_counter             : string  := "E1";
     		extclk1_divide_by           : natural := 1;
     		extclk1_duty_cycle          : natural := 50;
     		extclk1_multiply_by         : natural := 1;
-    		extclk1_phase_shift         : string := "0";
-    		extclk1_time_delay          : string := "0";
+    		extclk1_phase_shift         : string  := "0";
+    		extclk1_time_delay          : string  := "0";
 
+    		port_extclkena2             : string  := "PORT_CONNECTIVITY";
     		e2_high	                    : natural := 1;
     		e2_initial                  : natural := 1;
     		e2_low                      : natural := 1;
-    		e2_mode                     : string := "BYPASS";
+    		e2_mode                     : string  := "BYPASS";
     		e2_ph                       : natural := 0;
     		e2_time_delay               : natural := 0;
-    		extclk2_counter             : string := "E0";
+
+    		port_extclk2                : string  := "PORT_CONNECTIVITY";
+    		extclk2_counter             : string  := "E2";
     		extclk2_divide_by           : natural := 1;
     		extclk2_duty_cycle          : natural := 50;
     		extclk2_multiply_by         : natural := 1;
-    		extclk2_phase_shift         : string := "0";
-    		extclk2_time_delay          : string := "0";
+    		extclk2_phase_shift         : string  := "0";
+    		extclk2_time_delay          : string  := "0";
 
+    		port_extclkena3             : string  := "PORT_CONNECTIVITY";
     		e3_high	                    : natural := 1;
     		e3_initial                  : natural := 1;
     		e3_low                      : natural := 1;
-    		e3_mode                     : string := "BYPASS";
+    		e3_mode                     : string  := "BYPASS";
     		e3_ph                       : natural := 0;
     		e3_time_delay               : natural := 0;
-    		extclk3_counter             : string := "E0";
+
+    		port_extclk3                : string  := "PORT_CONNECTIVITY";
+    		extclk3_counter             : string  := "E3";
     		extclk3_divide_by           : natural := 1;
     		extclk3_duty_cycle          : natural := 50;
     		extclk3_multiply_by         : natural := 1;
-    		extclk3_phase_shift         : string := "0";
-    		extclk3_time_delay          : string := "0";
+    		extclk3_phase_shift         : string  := "0";
+    		extclk3_time_delay          : string  := "0";
 
-    		enable0_counter	:	string := "L0";
-    		enable1_counter	:	string := "L0";
-    		enable_switch_over_counter	:	string := "OFF";
+    		enable0_counter	            : string  := "L0";
+    		enable1_counter	            : string  := "L0";
+    		enable_switch_over_counter  : string  := "OFF";
 
-    		feedback_source	:	string := "EXTCLK0";
+    		feedback_source	            : string  := "EXTCLK0";
 
-    		g0_high	        :	natural := 1;
-    		g0_initial      :	natural := 1;
-    		g0_low          :	natural := 1;
-    		g0_mode         :	string := "BYPASS";
-    		g0_ph           :	natural := 0;
-    		g0_time_delay	:	natural := 0;
+    		g0_high	                    : natural := 1;
+    		g0_initial                  : natural := 1;
+    		g0_low                      : natural := 1;
+    		g0_mode                     : string  := "BYPASS";
+    		g0_ph                       : natural := 0;
+    		g0_time_delay               : natural := 0;
 
-    		g1_high	        :	natural := 1;
-    		g1_initial      :	natural := 1;
-    		g1_low          :	natural := 1;
-    		g1_mode         :	string := "BYPASS";
-    		g1_ph           :	natural := 0;
-    		g1_time_delay	:	natural := 0;
+    		g1_high	                    : natural := 1;
+    		g1_initial                  : natural := 1;
+    		g1_low                      : natural := 1;
+    		g1_mode                     : string  := "BYPASS";
+    		g1_ph                       : natural := 0;
+    		g1_time_delay               : natural := 0;
 
-    		g2_high	        :	natural := 1;
-    		g2_initial      :	natural := 1;
-    		g2_low          :	natural := 1;
-    		g2_mode         :	string := "BYPASS";
-    		g2_ph           :	natural := 0;
-    		g2_time_delay	:	natural := 0;
+    		g2_high	                    : natural := 1;
+    		g2_initial                  : natural := 1;
+    		g2_low                      : natural := 1;
+    		g2_mode                     : string  := "BYPASS";
+    		g2_ph                       : natural := 0;
+    		g2_time_delay               : natural := 0;
 
-    		g3_high	        :	natural := 1;
-    		g3_initial      :	natural := 1;
-    		g3_low          :	natural := 1;
-    		g3_mode         :	string := "BYPASS";
-    		g3_ph           :	natural := 0;
-    		g3_time_delay	:	natural := 0;
+    		g3_high	                    : natural := 1;
+    		g3_initial                  : natural := 1;
+    		g3_low                      : natural := 1;
+    		g3_mode                     : string  := "BYPASS";
+    		g3_ph                       : natural := 0;
+    		g3_time_delay               : natural := 0;
 
-    		gate_lock_counter :	natural := 0;
-    		gate_lock_signal : string := "NO";
-    		inclk0_input_frequency : natural;
-    		inclk1_input_frequency : natural := 0;
-    		intended_device_family : string := "NONE";
-    		invalid_lock_multiplier : natural := 5;
-    		l0_high	: natural := 1;
-    		l0_initial : natural := 1;
-    		l0_low : natural := 1;
-    		l0_mode : string := "BYPASS";
-    		l0_ph : natural := 0;
+    		gate_lock_counter           : natural := 0;
+    		gate_lock_signal            : string  := "NO";
+    		inclk0_input_frequency      : natural;
+    		inclk1_input_frequency      : natural := 0;
+    		intended_device_family      : string  := "NONE";
+    		invalid_lock_multiplier     : natural := 5;
+
+    		l0_high	      : natural := 1;
+    		l0_initial    : natural := 1;
+    		l0_low        : natural := 1;
+    		l0_mode       : string  := "BYPASS";
+    		l0_ph         : natural := 0;
     		l0_time_delay : natural := 0;
-    		l1_high : natural := 1;
-    		l1_initial : natural := 1;
-    		l1_low : natural := 1;
-    		l1_mode : string := "BYPASS";
-    		l1_ph : natural := 0;
+
+    		l1_high	      : natural := 1;
+    		l1_initial    : natural := 1;
+    		l1_low        : natural := 1;
+    		l1_mode       : string  := "BYPASS";
+    		l1_ph         : natural := 0;
     		l1_time_delay : natural := 0;
-    		lock_high : natural := 1;
-    		lock_low : natural := 1;
-    		lock_window_ui : string := " 0.05";
-    		lock_window_ui_bits : string := "UNUSED";
-    		loop_filter_c : natural := 5;
-    		loop_filter_c_bits : natural := 9999;
-    		loop_filter_r : string := " 1.000000";
-    		loop_filter_r_bits : natural := 9999;
-    		lpm_hint : string := "UNUSED";
-    		lpm_type : string := "altpll";
-    		m : natural := 0;
-    		m2 : natural := 1;
-    		m_initial : natural := 0;
-    		m_ph : natural := 0;
-    		m_test_source : natural := 5;
-    		m_time_delay : natural := 0;
-    		n : natural := 1;
-    		n2 : natural := 1;
-    		n_time_delay : natural := 0;
-    		operation_mode : string;
-    		pfd_max	    : natural := 0;
-    		pfd_min	    : natural := 0;
-    		pll_type    : string := "AUTO";
+
+
     		port_activeclock : string := "PORT_CONNECTIVITY";
-    		port_areset : string := "PORT_CONNECTIVITY";
+    		port_areset    : string := "PORT_CONNECTIVITY";
 
     		port_clkbad0 : string := "PORT_CONNECTIVITY";
     		port_clkbad1 : string := "PORT_CONNECTIVITY";
@@ -706,76 +636,67 @@ begin
     		port_clkena4 : string := "PORT_CONNECTIVITY";
     		port_clkena5 : string := "PORT_CONNECTIVITY";
 
-    		port_clkloss : string := "PORT_CONNECTIVITY";
-    		port_clkswitch : string := "PORT_CONNECTIVITY";
-    		port_configupdate : string := "PORT_CONNECTIVITY";
-    		port_enable0 : string := "PORT_CONNECTIVITY";
-    		port_enable1 : string := "PORT_CONNECTIVITY";
-    		port_extclk0 : string := "PORT_CONNECTIVITY";
-    		port_extclk1 : string := "PORT_CONNECTIVITY";
-    		port_extclk2 : string := "PORT_CONNECTIVITY";
-    		port_extclk3 : string := "PORT_CONNECTIVITY";
-    		port_extclkena0 : string := "PORT_CONNECTIVITY";
-    		port_extclkena1 : string := "PORT_CONNECTIVITY";
-    		port_extclkena2 : string := "PORT_CONNECTIVITY";
-    		port_extclkena3 : string := "PORT_CONNECTIVITY";
-    		port_fbin : string := "PORT_CONNECTIVITY";
-    		port_fbout : string := "PORT_CONNECTIVITY";
-    		port_inclk0	: string := "PORT_CONNECTIVITY";
-    		port_inclk1	: string := "PORT_CONNECTIVITY";
-    		port_locked	: string := "PORT_CONNECTIVITY";
-    		port_pfdena	: string := "PORT_CONNECTIVITY";
+    		port_clkloss        : string := "PORT_CONNECTIVITY";
+    		port_clkswitch      : string := "PORT_CONNECTIVITY";
+    		switch_over_counter : natural := 0;
+    		switch_over_on_gated_lock : string := "OFF";
+    		switch_over_on_lossclk : string := "OFF";
+    		switch_over_type    : string := "AUTO";
+
+    		port_configupdate   : string  := "PORT_CONNECTIVITY";
+    		port_enable0        : string  := "PORT_CONNECTIVITY";
+    		port_enable1        : string  := "PORT_CONNECTIVITY";
+    		port_fbin           : string  := "PORT_CONNECTIVITY";
+    		port_fbout          : string  := "PORT_CONNECTIVITY";
+    		port_inclk0	        : string  := "PORT_CONNECTIVITY";
+    		port_inclk1	        : string  := "PORT_CONNECTIVITY";
+    		port_locked	        : string  := "PORT_CONNECTIVITY";
+    		port_pfdena	        : string  := "PORT_CONNECTIVITY";
     		port_phasecounterselect : string := "PORT_CONNECTIVITY";
-    		port_phasedone : string := "PORT_CONNECTIVITY";
-    		port_phasestep : string := "PORT_CONNECTIVITY";
-    		port_phaseupdown : string := "PORT_CONNECTIVITY";
-    		port_pllena : string := "PORT_CONNECTIVITY";
-    		port_scanaclr :	string := "PORT_CONNECTIVITY";
-    		port_scanclk : string := "PORT_CONNECTIVITY";
-    		port_scanclkena : string := "PORT_CONNECTIVITY";
-    		port_scandata : string := "PORT_CONNECTIVITY";
-    		port_scandataout : string := "PORT_CONNECTIVITY";
-    		port_scandone : string := "PORT_CONNECTIVITY";
-    		port_scanread :	string := "PORT_CONNECTIVITY";
-    		port_scanwrite : string := "PORT_CONNECTIVITY";
-    		port_sclkout0 :	string := "PORT_CONNECTIVITY";
-    		port_sclkout1 : string := "PORT_CONNECTIVITY";
-    		port_vcooverrange : string := "PORT_CONNECTIVITY";
-    		port_vcounderrange : string := "PORT_CONNECTIVITY";
-    		primary_clock : string := "INCLK0";
-    		qualify_conf_done : string := "OFF";
-    		scan_chain : string := "LONG";
-    		scan_chain_mif_file : string := "UNUSED";
+    		port_phasedone      : string  := "PORT_CONNECTIVITY";
+    		port_phasestep      : string  := "PORT_CONNECTIVITY";
+    		port_phaseupdown    : string  := "PORT_CONNECTIVITY";
+    		port_pllena         : string  := "PORT_CONNECTIVITY";
+    		port_vcooverrange   : string  := "PORT_CONNECTIVITY";
+    		port_vcounderrange  : string  := "PORT_CONNECTIVITY";
+    		primary_clock       : string  := "INCLK0";
+    		qualify_conf_done   : string  := "OFF";
+
+    		port_scanaclr       : string  := "PORT_CONNECTIVITY";
+    		port_scanclk        : string  := "PORT_CONNECTIVITY";
+    		port_scanclkena     : string  := "PORT_CONNECTIVITY";
+    		port_scandata       : string  := "PORT_CONNECTIVITY";
+    		port_scandataout    : string  := "PORT_CONNECTIVITY";
+    		port_scandone       : string  := "PORT_CONNECTIVITY";
+    		port_scanread       : string  := "PORT_CONNECTIVITY";
+    		port_scanwrite      : string  := "PORT_CONNECTIVITY";
+    		port_sclkout0       : string  := "PORT_CONNECTIVITY";
+    		port_sclkout1       : string  := "PORT_CONNECTIVITY";
+    		scan_chain          : string  := "LONG";
+    		scan_chain_mif_file : string  := "UNUSED";
+
     		sclkout0_phase_shift : string := "0";
     		sclkout1_phase_shift : string := "0";
     		self_reset_on_gated_loss_lock :	string := "OFF";
     		self_reset_on_loss_lock : string := "OFF";
     		sim_gate_lock_device_behavior : string := "OFF";
-    		skip_vco : string := "OFF";
-    		spread_frequency : natural := 0;
-    		ss : natural := 1;
-    		switch_over_counter : natural := 0;
-    		switch_over_on_gated_lock : string := "OFF";
-    		switch_over_on_lossclk : string := "OFF";
-    		switch_over_type : string := "AUTO";
     		using_fbmimicbidir_port : string := "OFF";
     		valid_lock_multiplier : natural := 1;
 
-    		width_clock : natural := 6;
     		width_phasecounterselect : natural := 4);
-    	port map (
+    	port (
     		activeclock   : out std_logic;
     		areset        : in std_logic := '0';
     		clk           : out std_logic_vector(WIDTH_CLOCK-1 downto 0);
     		clkbad        : out std_logic_vector(1 downto 0);
     		clkena        : in std_logic_vector(5 downto 0) := (others => '1');
     		clkloss       : out std_logic;
-    		clkswitch     : in std_logic := '0';
-    		configupdate  : in std_logic := '0';
+    		clkswitch     : in  std_logic := '0';
+    		configupdate  : in  std_logic := '0';
     		enable0       : out std_logic;
     		enable1       : out std_logic;
     		extclk        : out std_logic_vector(3 downto 0);
-    		extclkena     : in std_logic_vector(3 downto 0) := (others => '1');
+    		extclkena     : in  std_logic_vector(3 downto 0) := (others => '1');
     		fbin          : in std_logic := '1';
     		fbmimicbidir  : inout std_logic;
     		fbout         : out std_logic;
@@ -789,6 +710,7 @@ begin
     		phasestep     : in std_logic := '1';
     		phaseupdown   : in std_logic := '1';
     		pllena        : in std_logic := '1';
+
     		scanaclr      : in std_logic := '0';
     		scanclk       : in std_logic := '0';
     		scanclkena    : in std_logic := '1';
@@ -801,566 +723,185 @@ begin
     		sclkout1      : out std_logic;
     		vcooverrange  : out std_logic;
     		vcounderrange : out std_logic);
-		pll_i : EHXPLLL
-        generic map (
-			PLLRST_ENA       => "DISABLED",
-			INTFB_WAKE       => "DISABLED",
-			STDBY_ENABLE     => "DISABLED",
-			DPHASE_SOURCE    => "DISABLED",
-			PLL_LOCK_MODE    =>  0,
-			FEEDBK_PATH      => "CLKOP",
-			CLKOS_ENABLE     => "DISABLED", CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
-			CLKOS2_ENABLE    => "DISABLED", CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
-			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
-			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => sdram_params.pll.clkop_div-1,
-			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
-			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
-			OUTDIVIDER_MUXD  => "DIVD",
-			OUTDIVIDER_MUXC  => "DIVC",
-			OUTDIVIDER_MUXB  => "DIVB",
-			OUTDIVIDER_MUXA  => "DIVA",
+		end component;
+	begin
 
---			CLKOS_DIV        => sdram_params.pll.clkos_div,
---			CLKOS2_DIV       => sdram_params.pll.clkos2_div,
---			CLKOS3_DIV       => sdram_params.pll.clkos3_div,
-			CLKOP_DIV        => sdram_params.pll.clkop_div,
-			CLKFB_DIV        => sdram_params.pll.clkfb_div,
-			CLKI_DIV         => sdram_params.pll.clki_div)
-        port map (
-			rst       => '0',
-			clki      => clk_25mhz,
-			CLKFB     => physys_clk,
-            PHASESEL0 => '0', PHASESEL1 => '0',
-			PHASEDIR  => '0',
-            PHASESTEP => '0', PHASELOADREG => '0',
-            STDBY     => '0', PLLWAKESYNC  => '0',
-            ENCLKOP   => '0',
-			ENCLKOS   => '0',
-			ENCLKOS2  => '0',
-            ENCLKOS3  => '0',
-			CLKOP     => physys_clk,
-			CLKOS     => open,
-			CLKOS2    => open,
-			CLKOS3    => open,
-			LOCK      => dramclk_lck,
-            INTLOCK   => open,
-			REFCLK    => open,
-			CLKINTFB  => open);
+		assert false
+		report real'image(ddr3_mhz)
+		severity NOTE;
 
+		ddrpll_i :  altpll
+    	generic map (
+    		operation_mode              => "NORMAL",
+
+			inclk0_input_frequency	    => 50,
+    		compensate_clock            => "CLK0",
+    		width_clock                 => 4,
+    		port_clk0                   => "PORT_CONNECTIVITY",
+    		c0_high                     => 0,
+    		c0_initial                  => 0,
+    		c0_low                      => 0,
+    		c0_mode                     => "BYPASS",
+    		c0_ph                       => 0,
+    		c0_test_source              => 5,
+    		clk0_counter                => "G0",
+    		clk0_divide_by              => 1,
+    		clk0_duty_cycle	            => 50,
+    		clk0_multiply_by            => 1,
+    		clk0_output_frequency       => 0,
+    		clk0_phase_shift            => "0",
+    		clk0_time_delay             => "0",
+    		clk0_use_even_counter_mode  => "OFF",
+    		clk0_use_even_counter_value => "OFF",
+
+    		port_clk1                   => "PORT_CONNECTIVITY",
+    		c1_high                     => 0,
+    		c1_initial                  => 0,
+    		c1_low                      => 0,
+    		c1_mode                     => "BYPASS",
+    		c1_ph                       => 0,
+    		c1_test_source              => 5,
+    		clk1_counter                => "G0",
+    		clk1_divide_by              => 1,
+    		clk1_duty_cycle	            => 50,
+    		clk1_multiply_by            => 1,
+    		clk1_output_frequency       => 0,
+    		clk1_phase_shift            => "0",
+    		clk1_time_delay             => "0",
+    		clk1_use_even_counter_mode  => "OFF",
+    		clk1_use_even_counter_value => "OFF",
+
+    		port_clk2                   => "PORT_CONNECTIVITY",
+    		c2_high                     => 0,
+    		c2_initial                  => 0,
+    		c2_low                      => 0,
+    		c2_mode                     => "BYPASS",
+    		c2_ph                       => 0,
+    		c2_test_source              => 5,
+    		clk2_counter                => "G0",
+    		clk2_divide_by              => 1,
+    		clk2_duty_cycle	            => 50,
+    		clk2_multiply_by            => 1,
+    		clk2_output_frequency       => 0,
+    		clk2_phase_shift            => "0",
+    		clk2_time_delay             => "0",
+    		clk2_use_even_counter_mode  => "OFF",
+    		clk2_use_even_counter_value => "OFF",
+
+    		port_clk3                   => "PORT_CONNECTIVITY",
+    		c3_high                     => 0,
+    		c3_initial                  => 0,
+    		c3_low                      => 0,
+    		c3_mode                     => "BYPASS",
+    		c3_ph                       => 0,
+    		c3_test_source              => 5,
+    		clk3_counter                => "G0",
+    		clk3_divide_by              => 1,
+    		clk3_duty_cycle	            => 50,
+    		clk3_multiply_by            => 1,
+    		clk3_output_frequency       => 0,
+    		clk3_phase_shift            => "0",
+    		clk3_time_delay             => "0",
+    		clk3_use_even_counter_mode  => "OFF",
+    		clk3_use_even_counter_value => "OFF",
+
+    		port_clk4                   => "PORT_CONNECTIVITY",
+    		c4_high                     => 0,
+    		c4_initial                  => 0,
+    		c4_low                      => 0,
+    		c4_mode                     => "BYPASS",
+    		c4_ph                       => 0,
+    		c4_test_source              => 5,
+    		clk4_counter                => "G0",
+    		clk4_divide_by              => 1,
+    		clk4_duty_cycle	            => 50,
+    		clk4_multiply_by            => 1,
+    		clk4_output_frequency       => 0,
+    		clk4_phase_shift            => "0",
+    		clk4_time_delay             => "0",
+    		clk4_use_even_counter_mode  => "OFF",
+    		clk4_use_even_counter_value => "OFF",
+
+    		port_clk5                   => "PORT_UNUSED",
+    		port_clk6                   => "PORT_UNUSED",
+    		port_clk7                   => "PORT_UNUSED",
+    		port_clk8                   => "PORT_UNUSED",
+    		port_clk9                   => "PORT_UNUSED",
+
+    		port_extclkena0             => "PORT_UNUSED",
+    		port_extclk0                => "PORT_UNUSED",
+    		port_extclkena1             => "PORT_UNUSED",
+    		port_extclk1                => "PORT_UNUSED",
+    		port_extclkena2             => "PORT_UNUSED",
+    		port_extclk2                => "PORT_UNUSED",
+    		port_extclkena3             => "PORT_UNUSED",
+    		port_extclk3                => "PORT_UNUSED",
+    		port_activeclock            => "PORT_UNUSED",
+    		port_areset                 => "PORT_UNUSED",
+
+    		port_clkbad0                => "PORT_UNUSED",
+    		port_clkbad1                => "PORT_UNUSED",
+
+    		port_clkena0                => "PORT_UNUSED",
+    		port_clkena1                => "PORT_UNUSED",
+    		port_clkena2                => "PORT_UNUSED",
+    		port_clkena3                => "PORT_UNUSED",
+    		port_clkena4                => "PORT_UNUSED",
+    		port_clkena5                => "PORT_UNUSED",
+
+    		port_clkloss                => "PORT_UNUSED",
+    		port_clkswitch              => "PORT_UNUSED",
+    		port_configupdate           => "PORT_UNUSED",
+    		port_enable0                => "PORT_UNUSED",
+    		port_enable1                => "PORT_UNUSED",
+    		port_fbin                   => "PORT_UNUSED",
+    		port_fbout                  => "PORT_UNUSED",
+    		port_inclk0	                => "PORT_UNUSED",
+    		port_inclk1	                => "PORT_UNUSED",
+    		port_locked	                => "PORT_UNUSED",
+    		port_pfdena	                => "PORT_UNUSED",
+    		port_phasecounterselect     => "PORT_UNUSED",
+    		port_phasedone              => "PORT_UNUSED",
+    		port_phasestep              => "PORT_UNUSED",
+    		port_phaseupdown            => "PORT_UNUSED",
+    		port_pllena                 => "PORT_UNUSED",
+    		port_vcooverrange           => "PORT_UNUSED",
+    		port_vcounderrange          => "PORT_UNUSED",
+
+    		port_scanaclr               => "PORT_UNUSED",
+    		port_scanclk                => "PORT_UNUSED",
+    		port_scanclkena             => "PORT_UNUSED",
+    		port_scandata               => "PORT_UNUSED",
+    		port_scandataout            => "PORT_UNUSED",
+    		port_scandone               => "PORT_UNUSED",
+    		port_scanread               => "PORT_UNUSED",
+    		port_scanwrite              => "PORT_UNUSED",
+    		port_sclkout0               => "PORT_UNUSED",
+    		port_sclkout1               => "PORT_UNUSED");
+    	-- port map (
+    	-- 	areset        : in  std_logic := '0';
+    	-- 	clk           : out std_logic_vector(WIDTH_CLOCK-1 downto 0);
+    	-- 	clkbad        : out std_logic_vector(1 downto 0);
+    	-- 	clkloss       : out std_logic;
+    	-- 	enable0       : out std_logic;
+    	-- 	enable1       : out std_logic;
+    	-- 	extclk        : out std_logic_vector(3 downto 0);
+    	-- 	fbmimicbidir  : inout std_logic;
+    	-- 	fbout         : out std_logic;
+    	-- 	fref          : out std_logic;
+    	-- 	icdrclk       : out std_logic;
+    	-- 	inclk         : in  std_logic_vector(1 downto 0) := (others => '0');
+    	-- 	locked        : out std_logic;
+    	-- 	pfdena        : in  std_logic := '1';
+    	-- 	phasedone     : out std_logic;
+
+    	-- 	scandataout   : out std_logic;
+    	-- 	scandone      : out std_logic;
+    	-- 	sclkout0      : out std_logic;
+    	-- 	sclkout1      : out std_logic;
+    	-- 	vcooverrange  : out std_logic;
+    	-- 	vcounderrange : out std_logic);
 	end block;
 
-	hdlc_g : if io_link=io_hdlc generate
-
-		constant uart_xtal : real := 
-			real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq/
-			real(video_record.pll.clki_div*video_record.pll.clkos3_div);
-
-		constant baudrate : natural := setif(
-			uart_xtal >= 32.0e6, 3000000, setif(
-			uart_xtal >= 25.0e6, 2000000,
-                                 115200));
-
-		signal uart_rxdv  : std_logic;
-		signal uart_rxd   : std_logic_vector(0 to 8-1);
-		signal uarttx_frm : std_logic;
-		signal uart_idle  : std_logic;
-		signal uart_txen  : std_logic;
-		signal uart_txd   : std_logic_vector(uart_rxd'range);
-
-		signal tp         : std_logic_vector(1 to 32);
-
-		alias ftdi_txd    : std_logic is gpio23;
-		alias ftdi_txen   : std_logic is gpio13;
-		alias ftdi_rxd    : std_logic is gpio24;
-
-		signal dummy_txd  : std_logic_vector(uart_rxd'range);
-		alias uart_clk    : std_logic is sio_clk;
-	begin
-
-		process (uart_clk)
-			variable q0 : std_logic := '0';
-			variable q1 : std_logic := '0';
-		begin
-			if rising_edge(uart_clk) then
-				-- led(1) <= q1;
-				-- led(7) <= q0;
-				if tp(1)='1' then
-					if tp(2)='1' then
-						q1 := not q1;
-					end if;
-				end if;
-				if uart_rxdv='1' then
-					q0 := not q0;
-				end if;
-			end if;
-		end process;
-
-		process (dummy_txd ,uart_clk)
-			variable q : std_logic := '0';
-			variable e : std_logic := '1';
-		begin
-			if rising_edge(uart_clk) then
-				-- led(5) <= q;
-				if (so_frm and not e)='1' then
-					q := not q;
-				end if;
-				-- led(4) <= so_frm;
-				e := so_frm;
-			end if;
-		end process;
-
-		ftdi_txen <= '1';
-		nodebug_g : if not debug generate
-			uart_clk <= videoio_clk;
-		end generate;
-
-		debug_g : if debug generate
-			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
-		end generate;
-
-		assert FALSE
-			report "BAUDRATE : " & " " & integer'image(baudrate)
-			severity NOTE;
-
-		uartrx_e : entity hdl4fpga.uart_rx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_rxc  => uart_clk,
-			uart_sin  => ftdi_txd,
-			uart_irdy => uart_rxdv,
-			uart_data => uart_rxd);
-
-		uarttx_e : entity hdl4fpga.uart_tx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_txc  => uart_clk,
-			uart_frm  => video_lck,
-			uart_irdy => uart_txen,
-			uart_trdy => uart_idle,
-			uart_data => uart_txd,
-			uart_sout => ftdi_rxd);
-
-		siodaahdlc_e : entity hdl4fpga.sio_dayhdlc
-		generic map (
-			mem_size    => mem_size)
-		port map (
-			uart_clk    => uart_clk,
-			uartrx_irdy => uart_rxdv,
-			uartrx_data => uart_rxd,
-			uarttx_frm  => uarttx_frm,
-			uarttx_trdy => uart_idle,
-			uarttx_data => uart_txd,
-			uarttx_irdy => uart_txen,
-			sio_clk     => sio_clk,
-			so_frm      => so_frm,
-			so_irdy     => so_irdy,
-			so_trdy     => so_trdy,
-			so_data     => so_data,
-
-			si_frm      => si_frm,
-			si_irdy     => si_irdy,
-			si_trdy     => si_trdy,
-			si_end      => si_end,
-			si_data     => si_data,
-			tp          => tp);
-
-	end generate;
-
-	ipoe_e : if io_link=io_ipoe generate
-		-- RMII pins as labeled on the board and connected to ULX3S with pins down and flat cable
-		alias rmii_crs    : std_logic is gpio17;
-
-		alias rmii_tx_en  : std_logic is gpio6;
-		alias rmii_tx0    : std_logic is gpio7;
-		alias rmii_tx1    : std_logic is gpio8;
-
-		alias rmii_rx_dv  : std_logic is rmii_crs;
-		alias rmii_rx0    : std_logic is gpio9;
-		alias rmii_rx1    : std_logic is gpio11;
-
-		alias rmii_nint   : std_logic is gpio19;
-		alias rmii_mdio   : std_logic is gpio22;
-		alias rmii_mdc    : std_logic is gpio25;
-		signal mii_clk    : std_logic;
-
-		signal mii_txen   : std_logic;
-		signal mii_txd    : std_logic_vector(0 to 2-1);
-
-		signal mii_rxdv   : std_logic;
-		signal mii_rxd    : std_logic_vector(0 to 2-1);
-
-		signal dhcpcd_req : std_logic := '0';
-		signal dhcpcd_rdy : std_logic := '0';
-
-		signal miitx_frm  : std_logic;
-		signal miitx_irdy : std_logic;
-		signal miitx_trdy : std_logic;
-		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(si_data'range);
-
-	begin
-
-		sio_clk <= rmii_nint;
-		mii_clk <= rmii_nint;
-
-		process (mii_clk)
-		begin
-			if rising_edge(mii_clk) then
-				rmii_tx_en <= mii_txen;
-				(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
-			end if;
-		end process;
-
-		process (mii_clk)
-		begin
-			if rising_edge(mii_clk) then
-				mii_rxdv <= rmii_rx_dv;
-				mii_rxd  <= rmii_rx0 & rmii_rx1;
-			end if;
-		end process;
-
-		rmii_mdc  <= '0';
-		rmii_mdio <= '0';
-
-		-- dhcp_p : process(mii_clk)
-		-- begin
-		-- 	if rising_edge(mii_clk) then
-		-- 		if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-		-- 			dhcpcd_req <= dhcpcd_rdy xor ((btn(1) and dhcpcd_rdy) or (btn(2) and not dhcpcd_rdy));
-		-- 		end if;
-		-- 	end if;
-		-- end process;
-				dhcpcd_req <= dhcpcd_rdy;
-		-- led(0) <= dhcpcd_rdy;
-		-- led(7) <= not dhcpcd_rdy;
-
-		udpdaisy_e : entity hdl4fpga.sio_dayudp
-		generic map (
-			my_mac        => x"00_40_00_01_02_03",
-			default_ipv4a => aton("192.168.0.14"))
-		port map (
-			hdplx      => hdplx,
-			sio_clk    => mii_clk,
-			dhcpcd_req => dhcpcd_req,
-			dhcpcd_rdy => dhcpcd_rdy,
-			miirx_frm  => mii_rxdv,
-			miirx_data => mii_rxd,
-
-			miitx_frm  => miitx_frm,
-			miitx_irdy => miitx_irdy,
-			miitx_trdy => miitx_trdy,
-			miitx_end  => miitx_end,
-			miitx_data => miitx_data,
-
-			si_frm     => si_frm,
-			si_irdy    => si_irdy,
-			si_trdy    => si_trdy,
-			si_end     => si_end,
-			si_data    => si_data,
-
-			so_frm     => so_frm,
-			so_irdy    => so_irdy,
-			so_trdy    => so_trdy,
-			so_data    => so_data);
-
-		desser_e: entity hdl4fpga.desser
-		port map (
-			desser_clk => mii_clk,
-
-			des_frm    => miitx_frm,
-			des_irdy   => miitx_irdy,
-			des_trdy   => miitx_trdy,
-			des_data   => miitx_data,
-
-			ser_irdy   => open,
-			ser_data   => mii_txd);
-
-		mii_txen <= miitx_frm and not miitx_end;
-
-	end generate;
-
-	graphics_e : entity hdl4fpga.demo_graphics
-	generic map (
-		-- debug        => true,
-		debug        => debug,
-		profile      => 2,
-
-		sdram_tcp      => 2.0*sdram_tcp,
-		fpga         => ecp5,
-		mark         => MT41K4G107,
-		sclk_phases  => sclk_phases,
-		sclk_edges   => sclk_edges,
-		burst_length => 8,
-		data_phases  => data_gear,
-		data_edges   => data_edges,
-		data_gear    => data_gear,
-		cmmd_gear    => cmmd_gear,
-		bank_size    => bank_size,
-		addr_size    => addr_size,
-		coln_size    => coln_size,
-		word_size    => word_size,
-		byte_size    => byte_size,
-
-		timing_id    => video_record.timing,
-		red_length   => setif(video_record.pixel=rgb565, 5, setif(video_record.pixel=rgb888, 8, 0)),
-		green_length => setif(video_record.pixel=rgb565, 6, setif(video_record.pixel=rgb888, 8, 0)),
-		blue_length  => setif(video_record.pixel=rgb565, 5, setif(video_record.pixel=rgb888, 8, 0)),
-		fifo_size    => mem_size)
-	port map (
-		sio_clk      => sio_clk,
-		sin_frm      => so_frm,
-		sin_irdy     => so_irdy,
-		sin_trdy     => so_trdy,
-		sin_data     => so_data,
-		sout_frm     => si_frm,
-		sout_irdy    => si_irdy,
-		sout_trdy    => si_trdy,
-		sout_end     => si_end,
-		sout_data    => si_data,
-
-		video_clk    => '0', --video_clk,
-		video_shift_clk => '0', --video_shft_clk,
-		video_pixel  => video_pixel,
-		dvid_crgb    => dvid_crgb,
-
-		ctlr_clks(0) => ctlr_clk,
-		ctlr_rst     => ddrsys_rst,
-		ctlr_bl      => "000",
-		ctlr_cl      => sdram_params.cl,
-		ctlr_cwl     => sdram_params.cwl,
-		ctlr_wrl     => "010",
-		ctlr_rtt     => "001",
-		ctlr_cmd     => ctlrphy_cmd,
-		ctlr_inirdy  => tp(1),
-
-		ctlrphy_wlreq => ctlrphy_wlreq,
-		ctlrphy_wlrdy => ctlrphy_wlrdy,
-		ctlrphy_rlreq => ctlrphy_rlreq,
-		ctlrphy_rlrdy => ctlrphy_rlrdy,
-
-		ctlrphy_irdy => ctlrphy_frm,
-		ctlrphy_trdy => ctlrphy_trdy,
-		ctlrphy_ini  => ctlrphy_ini,
-		ctlrphy_rw   => ctlrphy_rw,
-
-		ctlrphy_rst  => ctlrphy_rst(0),
-		ctlrphy_cke  => ctlrphy_cke(0),
-		ctlrphy_cs   => ctlrphy_cs(0),
-		ctlrphy_ras  => ctlrphy_ras(0),
-		ctlrphy_cas  => ctlrphy_cas(0),
-		ctlrphy_we   => ctlrphy_we(0),
-		ctlrphy_odt  => ctlrphy_odt(0),
-		ctlrphy_b    => sdr_ba,
-		ctlrphy_a    => sdr_a,
-		ctlrphy_dsi  => ctlrphy_dsi,
-		ctlrphy_dst  => ctlrphy_dst,
-		ctlrphy_dso  => ctlrphy_dso,
-		ctlrphy_dmi  => ctlrphy_dmi,
-		ctlrphy_dmt  => ctlrphy_dmt,
-		ctlrphy_dmo  => ctlrphy_dmo,
-		ctlrphy_dqi  => ctlrphy_dqi,
-		ctlrphy_dqt  => ctlrphy_dqt,
-		ctlrphy_dqo  => ctlrphy_dqo,
-		ctlrphy_sto  => ctlrphy_sto,
-		ctlrphy_sti  => ctlrphy_sti);
-
-	tp(2) <= not (ctlrphy_wlreq xor ctlrphy_wlrdy);
-	tp(3) <= not (ctlrphy_rlreq xor ctlrphy_rlrdy);
-	tp(4) <= ctlrphy_ini;
-
-	process (clk_25mhz)
-	begin
-		if rising_edge(clk_25mhz) then
-			led(0) <= tp(1);
-			led(7 downto 2) <= tp_phy(1 to 6);
-		end if;
-	end process;
-
-	process (sdr_ba)
-	begin
-		for i in sdr_ba'range loop
-			for j in 0 to cmmd_gear-1 loop
-				ctlrphy_ba(i*cmmd_gear+j) <= sdr_ba(i);
-			end loop;
-		end loop;
-	end process;
-
-	process (sdr_a)
-	begin
-		for i in sdr_a'range loop
-			for j in 0 to cmmd_gear-1 loop
-				ctlrphy_a(i*cmmd_gear+j) <= sdr_a(i);
-			end loop;
-		end loop;
-	end process;
-
-	ctlrphy_rst(1) <= ctlrphy_rst(0);
-	ctlrphy_cke(1) <= ctlrphy_cke(0);
-	ctlrphy_cs(1)  <= ctlrphy_cs(0);
-	ctlrphy_ras(1) <= '1';
-	ctlrphy_cas(1) <= '1';
-	ctlrphy_we(1)  <= '1';
-	ctlrphy_odt(1) <= ctlrphy_odt(0);
-
-	ddrphy_rst <= not dramclk_lck;
-	process (ddrphy_rst, ddrphy_rdy, ctlr_clk)
-	begin
-		if ddrphy_rst='1' then
-			ddrsys_rst <= '1';
-		elsif ddrphy_rdy='0' then
-			ddrsys_rst <= '1';
-		elsif rising_edge(ctlr_clk) then
-			ddrsys_rst <= not dramclk_lck;
-		end if;
-	end process;
-	
-	tp_b : block
-		signal tp_dv : std_logic;
-	begin
-		process (ctlr_clk)
-			variable q : std_logic;
-			variable q1 : std_logic := '0';
-		begin
-			if rising_edge(ctlr_clk) then
-				if ctlrphy_sti(0)='1' then
-					if q='0' then
-						q1 := not q1;
-					end if;
-				end if;
-				q := ctlrphy_sti(0);
-			tp_dv <= q1;
-			end if;
-		end process;
-		
-		process (clk_25mhz)
-		begin
-			if rising_edge(clk_25mhz) then
-				led(1) <= tp_dv;
-			end if;
-		end process;
-		
-	end block;
-
-	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
-	generic map (
-		debug         => debug,
-		sdr_tcp       => sdram_tcp,
-		cmmd_gear     => cmmd_gear,
-		data_gear     => data_gear,
-		bank_size     => ddr3_ba'length,
-		addr_size     => ddr3_a'length,
-		word_size     => word_size,
-		byte_size     => byte_size)
-	port map (
-		rst           => ddrphy_rst,
-		sync_clk      => clk_25mhz,
-		clkop         => physys_clk,
-		sclk          => ctlr_clk,
-		rdy           => ddrphy_rdy,
-		phy_frm       => ctlrphy_frm,
-		phy_trdy      => ctlrphy_trdy,
-		phy_cmd       => ctlrphy_cmd,
-		phy_rw        => ctlrphy_rw,
-		phy_ini       => ctlrphy_ini,
-
-		phy_wlreq     => ctlrphy_wlreq,
-		phy_wlrdy     => ctlrphy_wlrdy,
-
-		phy_rlreq     => ctlrphy_rlreq,
-		phy_rlrdy     => ctlrphy_rlrdy,
-
-		phy_rst       => ctlrphy_rst,
-		phy_cs        => ctlrphy_cs,
-		phy_cke       => ctlrphy_cke,
-		phy_ras       => ctlrphy_ras,
-		phy_cas       => ctlrphy_cas,
-		phy_we        => ctlrphy_we,
-		phy_odt       => ctlrphy_odt,
-		phy_b         => ctlrphy_ba,
-		phy_a         => ctlrphy_a,
-		phy_dqsi      => ctlrphy_dso,
-		phy_dqst      => ctlrphy_dst,
-		phy_dqso      => ctlrphy_dsi,
-		phy_dmi       => ctlrphy_dmo,
-		phy_dmt       => ctlrphy_dmt,
-		phy_dmo       => ctlrphy_dmi,
-		phy_dqi       => ctlrphy_dqo,
-		phy_dqt       => ctlrphy_dqt,
-		phy_dqo       => ctlrphy_dqi,
-		phy_sti       => ctlrphy_sto,
-		phy_sto       => ctlrphy_sti,
-
-		sdr_rst       => ddr3_resetn,
-		sdr_ck        => ddr3_clk,
-		sdr_cke       => ddr3_cke,
-		sdr_cs        => ddr3_csn,
-		sdr_ras       => ddr3_rasn,
-		sdr_cas       => ddr3_casn,
-		sdr_we        => ddr3_wen,
-		sdr_odt       => ddr3_odt,
-		sdr_b         => ddr3_ba,
-		sdr_a         => ddr3_a,
-
-		sdr_dm        => open,
-		sdr_dq        => ddram_dq,
-		sdr_dqs       => ddram_dqs,
-		tp => tp_phy);
-	ddram_dm <= (others => '0');
-
-	-- VGA --
-	---------
-
-	debug_q : if debug generate
-		signal q : bit;
-	begin
-		q <= not q after 1 ns;
-		rgmii_tx_clk <= to_stdulogic(q);
-	end generate;
-
-	nodebug_g : if not debug generate
-		rgmii_ref_clk_i : oddrx1f
-		port map(
-			sclk => rgmii_rx_clk,
-			rst  => '0',
-			d0   => '1',
-			d1   => '0',
-			q    => rgmii_tx_clk);
-	end generate;
-
-	fpdi_clk_i : oddrx1f
-	port map(
-		sclk => video_shft_clk,
-		rst  => '0',
-		d0   => dvid_crgb(2*0),
-		d1   => dvid_crgb(2*0+1),
-		q    => fpdi_clk);
- 
-	fpdi_d0_i : oddrx1f
-	port map(
-		sclk => video_shft_clk,
-		rst  => '0',
-		d0   => dvid_crgb(2*1),
-		d1   => dvid_crgb(2*1+1),
-		q    => fpdi_d0);
- 
-	fpdi_d1_i : oddrx1f
-	port map(
-		sclk => video_shft_clk,
-		rst  => '0',
-		d0   => dvid_crgb(2*2),
-		d1   => dvid_crgb(2*2+1),
-		q    => fpdi_d1);
- 
-	fpdi_d2_i : oddrx1f
-	port map(
-		sclk => video_shft_clk,
-		rst  => '0',
-		d0   => dvid_crgb(2*3),
-		d1   => dvid_crgb(2*3+1),
-		q    => fpdi_d2);
  
 end;
