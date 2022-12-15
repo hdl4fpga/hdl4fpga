@@ -33,7 +33,7 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio is
 	generic (
-		timing_id   : videotiming_ids := pclk_fallback;
+		timing_id   : videotiming_ids := user_videotiming;
 		modeline    : natural_vector(0 to 9-1) := (others => 0);
 		width       : natural         := 0;
 		height      : natural         := 0;

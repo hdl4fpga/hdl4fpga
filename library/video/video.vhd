@@ -133,38 +133,18 @@ architecture mix of video_sync is
 
 	signal extern_vton : std_logic;
 
-	function select_modeline (
-		constant timing_id : videotiming_ids;
-		constant modeline  : natural_vector;
-		constant width     : natural;
-		constant height    : natural;
-		constant fps       : real;
-		constant pclk      : real)
+	function user_fallback (
+		timing_id : videotiming_ids;
+		modeline  : natural_vector)
 		return natural_vector is
 	begin
-		if timing_id /= pclk_fallback then
-			return modeline_tab(timing_id);
-		else
-			for i in modeline'range loop
-				if modeline(i)=0 then 
-					return auto_modeline (
-						width  => width,
-						height => height,
-						fps    => fps,
-						pclk   => pclk);
-				end if;
-			end loop;
+		if timing_id=user_videotiming then
 			return modeline;
 		end if;
+		return modeline_tab(timing_id);
 	end;
-		
-	constant modeline_data : natural_vector := select_modeline (
-		timing_id => timing_id,
-		modeline  => modeline,
-		width     => width,
-		height    => height,
-		fps       => fps,
-		pclk      => pclk);
+
+	constant modeline_data : natural_vector := user_fallback(timing_id, modeline);
 begin
 
 	hz_ini  <= hz_edge and setif(hz_div="11");

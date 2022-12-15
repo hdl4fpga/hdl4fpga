@@ -1702,6 +1702,7 @@ begin
 	        --pclk             => 0.0, -- Hz, 0 to auto-select from fps
 	        --timing_id        => timing_id,
 		layout           => layout,
+		modeline         => F_modeline(width,height,fps),
 	        inputs           => inputs, -- number of input channels
 		min_storage      => 4096, -- samples
 		vt_steps         => (0 to inputs-1 => vt_step),
