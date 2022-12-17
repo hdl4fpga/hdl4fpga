@@ -34,6 +34,9 @@ use hdl4fpga.sdram_db.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
 
+library altera_mf;
+use altera_mf.altera_mf_components.all;
+
 architecture graphics of dk_dev_5cea7n is
 
 	type app_profiles is (
@@ -248,6 +251,8 @@ begin
 
 		begin
 
+			ddr_clk0 <= sys_clk;
+			ddr_clk90 <= sys_clk;
 			-- ctlrphy_dqsi <= (others => ddr_clk0); --IDDR
 			-- ctlrphy_dqsi <= (others => ddr_clk90);
 		end generate;
@@ -282,66 +287,67 @@ begin
 	begin
 	end block;
 
-	-- ipoe_b : block
--- 
-		-- signal mii_rxc    : std_logic;
-		-- alias  mii_rxdv   : std_logic is eneta_rx_dv;
-		-- alias  mii_rxd    : std_logic_vector(eneta_rx_data'range) is eneta_rx_data;
--- 
-		-- signal dhcpcd_req : std_logic := '0';
-		-- signal dhcpcd_rdy : std_logic := '0';
--- 
-		-- signal mii_txen   : std_logic;
-		-- signal mii_txd    : std_logic_vector(mii_rxd'range);
-		-- signal miirx_frm  : std_logic;
-		-- signal miirx_irdy : std_logic;
-		-- signal miirx_data : std_logic_vector(mii_rxd'range);
--- 
-		-- signal miitx_frm  : std_logic;
-		-- signal miitx_irdy : std_logic;
-		-- signal miitx_trdy : std_logic;
-		-- signal miitx_end  : std_logic;
-		-- signal miitx_data : std_logic_vector(si_data'range);
--- 
-		-- signal mii_txcrxd : std_logic_vector(mii_rxd'range);
--- 
-	-- begin
--- 
-		-- mii_rxc  <= gtx_clk;
-		-- sync_b : block
--- 
-			-- signal rxc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
-			-- signal txc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
-			-- signal dst_irdy  : std_logic;
-			-- signal dst_trdy  : std_logic;
--- 
-		-- begin
--- 
-			-- rxd_g : for i in mii_rxd'range generate 
-				-- iddr_i : iddr 
-				-- port map (
-					-- c => eneta_rx_clk,
-					-- ce => '1',
-					-- q1 => rxc_rxbus(i+1),
-					-- d => eneta_rx_data(i));
-			-- end generate;
--- 
-			-- rxdv_i : iddr 
-			-- port map (
-				-- c  => eneta_rx_clk,
-				-- ce => '1',
-				-- q1 => rxc_rxbus(0),
-				-- d  => mii_rxdv);
--- 
-			-- process (mii_rxc)
-				-- variable q : std_logic_vector(rxc_rxbus'range);
-			-- begin
-				-- if rising_edge(mii_rxc) then
-					-- rxc_rxbus <= q;
-					-- q := mii_rxdv & mii_rxd;
-				-- end if;
-			-- end process;
--- 
+	ipoe_b : block
+
+		signal mii_rxc    : std_logic;
+		signal mii_rxdv   : std_logic;
+		signal mii_rxd    : std_logic_vector(0 to 2*eneta_rx_data'length-1);
+
+		signal dhcpcd_req : std_logic := '0';
+		signal dhcpcd_rdy : std_logic := '0';
+
+		signal mii_txen   : std_logic;
+		signal mii_txd    : std_logic_vector(mii_rxd'range);
+		signal miirx_frm  : std_logic;
+		signal miirx_irdy : std_logic;
+		signal miirx_data : std_logic_vector(mii_rxd'range);
+
+		signal miitx_frm  : std_logic;
+		signal miitx_irdy : std_logic;
+		signal miitx_trdy : std_logic;
+		signal miitx_end  : std_logic;
+		signal miitx_data : std_logic_vector(si_data'range);
+
+		signal mii_txcrxd : std_logic_vector(mii_rxd'range);
+
+	begin
+
+		mii_rxc  <= gtx_clk;
+        rxd_i : altddio_in
+		generic map (
+			width	=> eneta_rx_data'length)
+		port map (
+            inclock   => eneta_rx_clk,
+            datain	  => eneta_rx_data,
+            dataout_h => mii_rxd(0 to eneta_rx_data'length-1),
+            dataout_l => mii_rxd(eneta_rx_data'length to 2*eneta_rx_data'length-1));
+
+		rxdv_i : altddio_in
+		generic map (
+			width	=> 1)
+		port map (
+			inclock      => eneta_rx_clk,
+			datain(0)    => eneta_rx_dv,
+			dataout_h(0) => mii_rxdv);
+
+		sync_b : block
+
+			signal rxc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
+			signal txc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
+			signal dst_irdy  : std_logic;
+			signal dst_trdy  : std_logic;
+
+		begin
+
+			process (mii_rxc)
+				variable q : std_logic_vector(rxc_rxbus'range);
+			begin
+				if rising_edge(mii_rxc) then
+					q := mii_rxdv & mii_rxd;
+					rxc_rxbus <= q;
+				end if;
+			end process;
+
 			-- rxc2txc_e : entity hdl4fpga.fifo
 			-- generic map (
 				-- max_depth  => 4,
@@ -367,7 +373,7 @@ begin
 					-- miirx_data <= txc_rxbus(1 to mii_txcrxd'length);
 				-- end if;
 			-- end process;
-		-- end block;
+		end block;
 -- 
 		-- dhcp_p : process(mii_txc)
 			-- type states is (north, south);
@@ -445,7 +451,7 @@ begin
 			-- end if;
 		-- end process;
 -- 
-	-- end block;
+	end block;
 
 	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
