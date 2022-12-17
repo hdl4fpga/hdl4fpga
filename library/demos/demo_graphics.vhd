@@ -707,6 +707,7 @@ begin
 		signal dma_rdy : std_logic;
 
 		constant pixel_width : natural := pixel'length; -- Xilinx ISE's complaint
+		constant video_width : natural := modeline_tab(timing_id)(0);
 
 	begin
 

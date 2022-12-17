@@ -27,7 +27,6 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.modeline_calculator.all;
 
 package videopkg is
 	type videotiming_ids is (

@@ -35,21 +35,25 @@ entity dk_dev_5cea7n is
 		diff_clkin_bot_125_p : in std_logic;
 		diff_clkin_bot_125_n : in std_logic;
 
+		user_pbs             : in  std_logic_vector(4-1 downto 0) := (others => 'Z');
+		user_dipsws          : in  std_logic_vector(4-1 downto 0) := (others => 'Z');
+		leds                 : out std_logic_vector(6-1 downto 0);
+
 		uart_txd             : out std_logic;
 		uart_rts             : out std_logic;
-		uart_rxd             : in std_logic;
-		uart_cts             : in std_logic;
+		uart_rxd             : in  std_logic := '0';
+		uart_cts             : in  std_logic := '0';
 
-		eneta_resetn         : in std_logic;
-		eneta_gtx_clk        : in std_logic;
+		eneta_resetn         : out std_logic;
+		eneta_gtx_clk        : out std_logic;
 		eneta_tx_en          : out std_logic;
 		eneta_tx_data        : out std_logic_vector(0 to 4-1);
-		eneta_rx_dv          : in std_logic;
-		eneta_rx_data        : in std_logic_vector(0 to 4-1);
-		eneta_rx_clk         : in std_logic;
-		eneta_mdio           : inout std_logic;
-		eneta_mdc            : in std_logic;
-		eneta_intn           : in std_logic;
+		eneta_rx_dv          : in  std_logic;
+		eneta_rx_data        : in  std_logic_vector(0 to 4-1);
+		eneta_rx_clk         : in  std_logic;
+		eneta_mdio           : inout std_logic := '0';
+		eneta_mdc            : out std_logic   := '0';
+		eneta_intn           : in  std_logic   := '0';
 
 		ddr3_resetn          : out   std_logic := '0';
 		ddr3_clk_p           : out   std_logic := '0';
@@ -67,6 +71,33 @@ entity dk_dev_5cea7n is
 		ddr3_dq              : inout std_logic_vector(32-1 downto 0) := (others => 'Z');
 		ddr3_odt             : out   std_logic := '1');
 	
+	alias user_pb0    : std_logic is user_pbs(0);
+	alias user_pb1    : std_logic is user_pbs(1);
+	alias user_pb2    : std_logic is user_pbs(2);
+	alias user_pb3    : std_logic is user_pbs(3);
+
+	alias s5          : std_logic is user_pbs(0);
+	alias s6          : std_logic is user_pbs(1);
+	alias s7          : std_logic is user_pbs(2);
+	alias s8          : std_logic is user_pbs(3);
+
+	alias user_dipsw0 : std_logic is user_dipsws(0);
+	alias user_dipsw1 : std_logic is user_dipsws(1);
+	alias user_dipsw2 : std_logic is user_dipsws(2);
+	alias user_dipsw3 : std_logic is user_dipsws(3);
+
+	alias d28         : std_logic is leds(0);
+	alias d29         : std_logic is leds(1);
+	alias d30         : std_logic is leds(2);
+	alias d31         : std_logic is leds(3);
+	alias user_led0   : std_logic is leds(0);
+	alias user_led1   : std_logic is leds(1);
+	alias user_led2   : std_logic is leds(2);
+	alias user_led3   : std_logic is leds(3);
+	alias user_leds   : std_logic_vector(4-1 downto 0) is leds(4-1 downto 0);
+	alias hsmc_rx_led : std_logic is leds(4);
+	alias hsmc_tx_led : std_logic is leds(5);
+
 	constant sys_freq    : real    := 50.0e6;
 
 	attribute chip_pin : string;
@@ -78,6 +109,10 @@ entity dk_dev_5cea7n is
 	attribute chip_pin of diff_clkin_bot_125_p : signal is "AB17";
 	attribute chip_pin of diff_clkin_bot_125_n : signal is "AB18";
 	
+	attribute chip_pin of user_pbs             : signal is "AG12 AF13 AB13 AB12";
+	attribute chip_pin of user_dipsws          : signal is "AG11 AF11 Aa13 Y12";
+	attribute chip_pin of leds                 : signal is "AH11 AH12 AK6 AJ5 AJ4 AK3";
+
 	attribute chip_pin of uart_txd             : signal is "AB9";
 	attribute chip_pin of uart_rts             : signal is "AH6";
 	attribute chip_pin of uart_rxd             : signal is "AG6";
