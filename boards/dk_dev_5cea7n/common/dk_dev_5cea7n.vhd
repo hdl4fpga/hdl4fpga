@@ -55,22 +55,26 @@ entity dk_dev_5cea7n is
 		eneta_mdc            : out std_logic   := '0';
 		eneta_intn           : in  std_logic   := '0';
 
-		ddr3_resetn          : out   std_logic := '0';
-		ddr3_clk_p           : out   std_logic := '0';
-		ddr3_clk_n           : out   std_logic := '0';
-		ddr3_cke             : out   std_logic := '0';
-		ddr3_csn             : out   std_logic := '1';
-		ddr3_rasn            : out   std_logic := '1';
-		ddr3_casn            : out   std_logic := '1';
-		ddr3_wen             : out   std_logic := '1';
-		ddr3_ba              : out   std_logic_vector( 3-1 downto 0) := (others => '1');
-		ddr3_a               : out   std_logic_vector(14-1 downto 0) := (others => '1');
+		hsmc                 : inout std_logic_vector(0 to 86-1) := (others => 'Z');
+
+		ddr3_resetn          : out std_logic := '0';
+		ddr3_clk_p           : out std_logic := '0';
+		ddr3_clk_n           : out std_logic := '0';
+		ddr3_cke             : out std_logic := '0';
+		ddr3_csn             : out std_logic := '1';
+		ddr3_rasn            : out std_logic := '1';
+		ddr3_casn            : out std_logic := '1';
+		ddr3_wen             : out std_logic := '1';
+		ddr3_ba              : out std_logic_vector( 3-1 downto 0) := (others => '1');
+		ddr3_a               : out std_logic_vector(14-1 downto 0) := (others => '1');
 		ddr3_dm              : inout std_logic_vector( 4-1 downto 0) := (others => 'Z');
 		ddr3_dqs_p           : inout std_logic_vector( 4-1 downto 0) := (others => 'Z');
 		ddr3_dqs_n           : inout std_logic_vector( 4-1 downto 0) := (others => 'Z');
 		ddr3_dq              : inout std_logic_vector(32-1 downto 0) := (others => 'Z');
-		ddr3_odt             : out   std_logic := '1');
+		ddr3_odt             : out std_logic := '1');
 	
+	constant sys_freq : real    := 50.0e6;
+
 	alias user_pb0    : std_logic is user_pbs(0);
 	alias user_pb1    : std_logic is user_pbs(1);
 	alias user_pb2    : std_logic is user_pbs(2);
@@ -98,10 +102,23 @@ entity dk_dev_5cea7n is
 	alias hsmc_rx_led : std_logic is leds(4);
 	alias hsmc_tx_led : std_logic is leds(5);
 
-	constant sys_freq    : real    := 50.0e6;
-
+	alias hsmc_clk_out_p : std_logic_vector( 2-1 downto 0) is hsmc( 0 to 2-1);
+	alias hsmc_clk_out_n : std_logic_vector( 2-1 downto 0) is hsmc( 2 to 4-1);
+	alias hsmc_tx_d_p    : std_logic_vector(17-1 downto 0) is hsmc( 4 to 21-1); 
+	alias hsmc_tx_d_n    : std_logic_vector(17-1 downto 0) is hsmc(21 to 38-1); 
+	alias hsmc_clk_in_p  : std_logic_vector( 2-1 downto 0) is hsmc(38 to 40-1);
+	alias hsmc_clk_in_n  : std_logic_vector( 2-1 downto 0) is hsmc(40 to 42-1);
+	alias hsmc_rx_d_p    : std_logic_vector(17-1 downto 0) is hsmc(42 to 59-1); 
+	alias hsmc_rx_d_n    : std_logic_vector(17-1 downto 0) is hsmc(59 to 76-1); 
+	alias hsmc_clk_out   : std_logic_vector(0 downto 0)    is hsmc(76 to 77-1); 
+	alias hsmc_clk_in    : std_logic_vector(0 downto 0)    is hsmc(77 to 78-1); 
+	alias hsmc_d         : std_logic_vector(4-1 downto 0)  is hsmc(78 to 82-1); 
+	alias hsmc_rstn      : std_logic                       is hsmc(82); 
+	alias hsmc_sda       : std_logic                       is hsmc(83); 
+	alias hsmc_sdl       : std_logic                       is hsmc(84); 
+	alias hsmc_jtag_tck  : std_logic                       is hsmc(85); 
+	
 	attribute chip_pin : string;
-
 	attribute chip_pin of clkin_50_fpga_top    : signal is "L14";
 	attribute chip_pin of clkin_50_fpga_right  : signal is "P22";
 	attribute chip_pin of diff_clkin_top_125_p : signal is "L15";
@@ -128,6 +145,21 @@ entity dk_dev_5cea7n is
 	attribute chip_pin of eneta_mdio           : signal is "L25";
 	attribute chip_pin of eneta_mdc            : signal is "G29";
 	attribute chip_pin of eneta_intn           : signal is "J27";
+
+	attribute chip_pin of hsmc                 : signal is 
+		"AG23 AH22 AE22 AF23" & -- clk_out
+		"AE15 AF14 AH14 AH15 AJ15 AK15 AG17 AH17 AH19 AH20 AK25 AG24 AJ17 AJ18 AJ19 AK18" &
+		"AJ20 AK20 AK21 AK22 AJ23 AK23 AH21 AJ22 AH24 AJ24 AJ25 AK25 AG26 AH26 AJ27 AK26" &
+		"AK27 AK28"           & -- tx
+		"Y15  AA15 AB14 AC14" & -- clk_in
+		"AD18 AE18 AD17 AE17 AE16 AF15 AF16 AG16 AK16 AK17 AG18 AG19 AF18 AF19 AF20 AG21" &
+		"AF21 AG22 AD19 AE20 AC21 AD20 B19  AC19 AA21 AB21 Y20  AA20 AA18 AA19 Y17  Y18" &
+		"Y16  AA26"           & --rx
+		"AJ14 AB16"           & -- clkout,clkin
+		"AA14 Y13 AJ10 AH10"  & --d(3 downto 0)
+		"AK5"                 & --rstn
+		"AB22 AC22"           & -- sda, sdl
+		"AC7";                  -- jtag_tck
 
 	attribute chip_pin of ddr3_resetn          : signal is "L19";
 	attribute chip_pin of ddr3_clk_p           : signal is "J20";

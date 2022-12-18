@@ -69,6 +69,7 @@ architecture graphics of dk_dev_5cea7n is
 	signal sys_clk        : std_logic;
 
 	signal video_clk      : std_logic;
+	signal video_shift_clk : std_logic;
 	signal video_lckd     : std_logic;
 	signal videoio_clk    : std_logic;
 	signal video_lck      : std_logic;
@@ -271,6 +272,8 @@ begin
 			-- video_clk       => video_clk,
 			-- video_shift_clk => video_shift_clk);
 	begin
+		video_clk <= sys_clk;
+		video_shift_clk <= sys_clk;
 	end block;
 	
 	gtx_b : block
@@ -283,8 +286,9 @@ begin
 			-- sys_rst  => sys_rst,
 			-- sys_clk  => sys_clk,
 			-- gtx_clk  => gtx_clk,
-			-- gtx_rst  => video_shift_clk);
+			-- gtx_rst  => gtx_rst);
 	begin
+		gtx_clk <= sys_clk;
 	end block;
 
 	ipoe_b : block
@@ -348,109 +352,128 @@ begin
 				end if;
 			end process;
 
-			-- rxc2txc_e : entity hdl4fpga.fifo
-			-- generic map (
-				-- max_depth  => 4,
-				-- latency    => 0,
-				-- dst_offset => 0,
-				-- src_offset => 2,
-				-- check_sov  => false,
-				-- check_dov  => true,
-				-- gray_code  => false)
-			-- port map (
-				-- src_clk  => mii_rxc,
-				-- src_data => rxc_rxbus,
-				-- dst_clk  => mii_txc,
-				-- dst_irdy => dst_irdy,
-				-- dst_trdy => dst_trdy,
-				-- dst_data => txc_rxbus);
--- 
-			-- process (mii_txc)
-			-- begin
-				-- if rising_edge(mii_txc) then
-					-- dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
-					-- miirx_frm  <= txc_rxbus(0);
-					-- miirx_data <= txc_rxbus(1 to mii_txcrxd'length);
-				-- end if;
-			-- end process;
+			rxc2txc_e : entity hdl4fpga.fifo
+			generic map (
+				max_depth  => 4,
+				latency    => 0,
+				dst_offset => 0,
+				src_offset => 2,
+				check_sov  => false,
+				check_dov  => true,
+				gray_code  => false)
+			port map (
+				src_clk  => mii_rxc,
+				src_data => rxc_rxbus,
+				dst_clk  => mii_txc,
+				dst_irdy => dst_irdy,
+				dst_trdy => dst_trdy,
+				dst_data => txc_rxbus);
+
+			process (mii_txc)
+			begin
+				if rising_edge(mii_txc) then
+					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
+					miirx_frm  <= txc_rxbus(0);
+					miirx_data <= txc_rxbus(1 to mii_txcrxd'length);
+				end if;
+			end process;
 		end block;
--- 
-		-- dhcp_p : process(mii_txc)
-			-- type states is (north, south);
-			-- variable state : states;
-		-- begin
-			-- if rising_edge(mii_txc) then
-				-- if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-					-- case state is
-					-- when north =>
-						-- if s5='1' then 
-							-- dhcpcd_req <= not dhcpcd_rdy;
-							-- state := south;
-						-- end if;
-					-- when south =>
-						-- if s6='1' then 
-							-- dhcpcd_req <= not dhcpcd_rdy;
-							-- state := north;
-						-- end if;
-					-- end case;
-				-- end if;
-			-- end if;
-		-- end process;
--- 
-		-- udpdaisy_e : entity hdl4fpga.sio_dayudp
-		-- generic map (
-			-- debug         => false,
-			-- my_mac        => x"00_40_00_01_02_03",
-			-- default_ipv4a => aton("192.168.0.14"))
-		-- port map (
-			-- tp         => mii_tp,
--- 
-			-- sio_clk    => sio_clk,
-			-- dhcpcd_req => dhcpcd_req,
-			-- dhcpcd_rdy => dhcpcd_rdy,
-			-- miirx_frm  => miirx_frm,
-			-- miirx_irdy => '1', --miirx_irdy,
-			-- miirx_trdy => open,
-			-- miirx_data => miirx_data,
--- 
-			-- miitx_frm  => miitx_frm,
-			-- miitx_irdy => miitx_irdy,
-			-- miitx_trdy => miitx_trdy,
-			-- miitx_end  => miitx_end,
-			-- miitx_data => miitx_data,
--- 
-			-- si_frm     => si_frm,
-			-- si_irdy    => si_irdy,
-			-- si_trdy    => si_trdy,
-			-- si_end     => si_end,
-			-- si_data    => si_data,
--- 
-			-- so_frm     => so_frm,
-			-- so_irdy    => so_irdy,
-			-- so_trdy    => so_trdy,
-			-- so_data    => so_data);
--- 
-		-- desser_e: entity hdl4fpga.desser
-		-- port map (
-			-- desser_clk => mii_txc,
--- 
-			-- des_frm    => miitx_frm,
-			-- des_irdy   => miitx_irdy,
-			-- des_trdy   => miitx_trdy,
-			-- des_data   => miitx_data,
--- 
-			-- ser_irdy   => open,
-			-- ser_data   => mii_txd);
--- 
-		-- mii_txen <= miitx_frm and not miitx_end;
-		-- process (mii_txc)
-		-- begin
-			-- if rising_edge(mii_txc) then
-				-- eneta_tx_en <= mii_txen;
-				-- eneta_tx_data(mii_rxd'range) <= mii_txd;
-			-- end if;
-		-- end process;
--- 
+
+		dhcp_p : process(mii_txc)
+			type states is (north, south);
+			variable state : states;
+		begin
+			if rising_edge(mii_txc) then
+				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+					case state is
+					when north =>
+						if s5='1' then 
+							dhcpcd_req <= not dhcpcd_rdy;
+							state := south;
+						end if;
+					when south =>
+						if s6='1' then 
+							dhcpcd_req <= not dhcpcd_rdy;
+							state := north;
+						end if;
+					end case;
+				end if;
+			end if;
+		end process;
+
+		udpdaisy_e : entity hdl4fpga.sio_dayudp
+		generic map (
+			debug         => false,
+			my_mac        => x"00_40_00_01_02_03",
+			default_ipv4a => aton("192.168.0.14"))
+		port map (
+			tp         => mii_tp,
+
+			sio_clk    => sio_clk,
+			dhcpcd_req => dhcpcd_req,
+			dhcpcd_rdy => dhcpcd_rdy,
+			miirx_frm  => miirx_frm,
+			miirx_irdy => '1', --miirx_irdy,
+			miirx_trdy => open,
+			miirx_data => miirx_data,
+
+			miitx_frm  => miitx_frm,
+			miitx_irdy => miitx_irdy,
+			miitx_trdy => miitx_trdy,
+			miitx_end  => miitx_end,
+			miitx_data => miitx_data,
+
+			si_frm     => si_frm,
+			si_irdy    => si_irdy,
+			si_trdy    => si_trdy,
+			si_end     => si_end,
+			si_data    => si_data,
+
+			so_frm     => so_frm,
+			so_irdy    => so_irdy,
+			so_trdy    => so_trdy,
+			so_data    => so_data);
+
+		desser_e: entity hdl4fpga.desser
+		port map (
+			desser_clk => mii_txc,
+
+			des_frm    => miitx_frm,
+			des_irdy   => miitx_irdy,
+			des_trdy   => miitx_trdy,
+			des_data   => miitx_data,
+
+			ser_irdy   => open,
+			ser_data   => mii_txd);
+
+		eneta_resetn  <= not gtx_rst;
+        gtxclk_i : altddio_out
+		generic map (
+			width	=> 1)
+		port map (
+			outclock    => mii_txc,
+			datain_h(0) => '1',
+			datain_l(0) => '0',
+			dataout(0)	=> eneta_gtx_clk);
+
+        txen_i : altddio_out
+		generic map (
+			width	=> 1)
+		port map (
+			outclock => mii_txc,
+			datain_h(0) => mii_txen,
+			datain_l(0) => mii_txen,
+			dataout(0)	=> eneta_tx_en);
+
+        txd_i : altddio_out
+		generic map (
+			width	=> eneta_tx_data'length)
+		port map (
+			outclock => mii_txc,
+			datain_h => mii_txd(0 to eneta_tx_data'length-1),
+			datain_l => mii_txd(eneta_tx_data'length to 2*eneta_tx_data'length-1),
+			dataout	 => eneta_tx_data);
+
 	end block;
 
 	graphics_e : entity hdl4fpga.demo_graphics
@@ -589,6 +612,7 @@ begin
 	end block;
 
 	gear_g : for i in 1 to CMMD_GEAR-1 generate
+		ctlrphy_rst(1) <= ctlrphy_rst(0);
 		ctlrphy_cke(i) <= ctlrphy_cke(0);
 		ctlrphy_cs(i)  <= ctlrphy_cs(0);
 		ctlrphy_ras(i) <= '1';
@@ -614,14 +638,6 @@ begin
 			end loop;
 		end loop;
 	end process;
-
-	-- ctlrphy_rst(1) <= ctlrphy_rst(0);
-	-- ctlrphy_cke(1) <= ctlrphy_cke(0);
-	-- ctlrphy_cs(1)  <= ctlrphy_cs(0);
-	-- ctlrphy_ras(1) <= '1';
-	-- ctlrphy_cas(1) <= '1';
-	-- ctlrphy_we(1)  <= '1';
-	-- ctlrphy_odt(1) <= ctlrphy_odt(0);
 
 	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
 	
@@ -677,98 +693,22 @@ begin
 		-- sys_odt    => ctlrphy_odt,
 		-- sys_sti    => ctlrphy_sto,
 		-- sys_sto    => ctlrphy_sti,
+
 		-- sdram_clk  => ddr3_clk,
+		-- sdram_rst  => ddr3_resetn,
 		-- sdram_cke  => ddr3_cke,
 		-- sdram_cs   => ddr3_cs,
 		-- sdram_ras  => ddr3_ras,
 		-- sdram_cas  => ddr3_cas,
 		-- sdram_we   => ddr3_we,
-		-- sdram_b    => ddr3_ba(bank_size-1 downto 0),
-		-- sdram_a    => ddr3_a(addr_size-1 downto 0),
+		-- sdram_b    => ddr3_ba,
+		-- sdram_a    => ddr3_a,
 		-- sdram_odt  => ddr3_odt,
 -- 
-		-- sdram_dm   => ddr3_dm(word_size/byte_size-1 downto 0),
-		-- sdram_dqo  => ddr3_dqo,
-		-- sdram_dqi  => ddr3_dq(word_size-1 downto 0),
-		-- sdram_dqt  => ddr3_dqt,
-		-- sdram_dqst => ddr3_dqst,
-		-- sdram_dqsi => ddr3_dqsi,
-		-- sdram_dqso => ddr3_dqso);
-
-	ddr3_ba(ddr3_ba'left downto bank_size) <= (others => '0');
-	ddr3_a(ddr3_a'left downto addr_size)   <= (others => '0');
+		-- sdram_dm   => ddr3_dm,
+		-- sdram_dq   => ddr3_dq,
+		-- sdram_dqs  => ddr3_dqs_p);
 
 	d28 <= ctlr_inirdy;
-
-	-- eneta_gtxclk_i : oddr
-	-- port map (
-		-- c  => gtx_clk,
-		-- ce => '1',
-		-- s  => '0',
-		-- r  => '0',
-		-- d1 => '1',
-		-- d2 => '0',
-		-- q  => eneta_gtx_clk);
-	
-	-- ddrio_b : block
-	-- begin
--- 
-		-- ddr_clks_g : for i in ddr3_clk'range generate
-			-- ddr_ck_obufds : obufds
-			-- generic map (
-				-- iostandard => "DIFF_SSTL18_II")
-			-- port map (
-				-- i  => ddr3_clk(i),
-				-- o  => ddr3_clk_p(i),
-				-- ob => ddr3_clk_n(i));
-		-- end generate;
--- 
-		-- ddr_dqs_g : for i in ddr3_dqs_p'range generate
-		-- begin
--- 
-			-- true_g : if i < word_size/byte_size generate
-				-- dqsiobuf_i : iobufds
-				-- generic map (
-					-- iostandard => "DIFF_SSTL18_II_DCI")
-				-- port map (
-					-- t   => ddr3_dqst(i),
-					-- i   => ddr3_dqso(i),
-					-- o   => ddr3_dqsi(i),
-					-- io  => ddr3_dqs_p(i),
-					-- iob => ddr3_dqs_n(i));
-			-- end generate;
--- 
-			-- false_g : if not (i < word_size/byte_size) generate
-				-- dqsiobuf_i : iobufds
-				-- generic map (
-					-- iostandard => "DIFF_SSTL18_II_DCI")
-				-- port map (
-					-- t   => '1',
-					-- i   => '-',
-					-- o   => open,
-					-- io  => ddr3_dqs_p(i),
-					-- iob => ddr3_dqs_n(i));
-			-- end generate;
--- 
-		-- end generate;
--- 
-		-- ddr_d_g : for i in ddr3_dq'range generate
-			-- process (ddr3_dqo, ddr3_dqt)
-			-- begin
-				-- if i < word_size then
-					-- if ddr3_dqt(i)='0' then
-						-- ddr3_dq(i) <= ddr3_dqo(i);
-					-- else
-						-- ddr3_dq(i) <= 'Z';
-					-- end if;
-				-- else
-					-- ddr3_dq(i) <= 'Z';
-				-- end if;
-			-- end process;
--- 
-		-- end generate;
--- 
-	-- end block;
-	eneta_resetn  <= not gtx_rst;
 
 end;
