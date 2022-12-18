@@ -564,53 +564,6 @@ begin
 		ctlrphy_sti   => ctlrphy_sti,
 		tp => open);
 
-	videoio_b : block
-		signal xclk : std_logic;
-	begin
-		-- process (video_clk)
-		-- begin
-			-- if rising_edge(video_clk) then
-				-- dvi_de <= not video_blank;
-				-- dvi_h  <= video_hzsync;
-				-- dvi_v  <= video_vtsync;
-			-- end if;
-		-- end process;
-
-		-- xclkp_i : oddr
-		-- port map (
-			-- c => video_clk,
-			-- ce => '1',
-			-- s  => '0',
-			-- r  => '0',
-			-- d1 => '1',
-			-- d2 => '0',
-			-- q  => xclk);
-	-- 
-		-- diff_i: obufds
-		-- generic map (
-			-- iostandard => "LVDS_25")
-		-- port map (
-			-- i  => xclk,
-			-- o  => dvi_xclk_p,
-			-- ob => dvi_xclk_n);
-	-- 
-	-- 
-		-- d_g : for i in dvi_d'range generate
-		-- begin
-			-- oddr_i : oddr
-			-- port map (
-				-- c => video_clk,
-				-- ce => '1',
-				-- s  => '0',
-				-- r  => '0',
-				-- d1 => '1', --video_pixel(i),
-				-- d2 => '1', --video_pixel(i+dvi_d'length),
-				-- q  => dvi_d(i));
-	-- 
-		-- end generate;
-
-	end block;
-
 	gear_g : for i in 1 to CMMD_GEAR-1 generate
 		ctlrphy_rst(1) <= ctlrphy_rst(0);
 		ctlrphy_cke(i) <= ctlrphy_cke(0);
@@ -708,6 +661,21 @@ begin
 		-- sdram_dm   => ddr3_dm,
 		-- sdram_dq   => ddr3_dq,
 		-- sdram_dqs  => ddr3_dqs_p);
+
+    video_i : altddio_out
+	generic map (
+		width => 4)
+	port map (
+		outclock => video_shift_clk,
+		datain_h(0) => dvid_crgb(2*0),
+		datain_h(1) => dvid_crgb(2*1),
+		datain_h(2) => dvid_crgb(2*2),
+		datain_h(3) => dvid_crgb(2*3),
+		datain_l(0) => dvid_crgb(2*0+1),
+		datain_l(1) => dvid_crgb(2*1+1),
+		datain_l(2) => dvid_crgb(2*2+1),
+		datain_l(3) => dvid_crgb(2*3+1),
+		dataout	 => hsmc_tx_d_p(4-1 downto 0));
 
 	d28 <= ctlr_inirdy;
 
