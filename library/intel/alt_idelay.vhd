@@ -21,17 +21,28 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-package profiles is
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
-	type fpga_devices is (
-		-- Xilinx-AMD
-		ecp3,
-		ecp5,
-		xc3s,
-		xc5v,
-		xc7a,
+library hdl4fpga;
+use hdl4fpga.profiles.all;
 
-		-- Altera-Intel
-		cyclonev);
+entity xc_idelay is
+	generic (
+		device         : fpga_devices;
+		signal_pattern : string);
+	port (
+		clk     : in  std_logic;
+		rst     : in  std_logic;
+		delay   : in  std_logic_vector;
+		idatain : in std_logic;
+		dataout : out std_logic);
+end;
 
-end package;
+library altera_mf;
+use altera_mf.altera_mf_components.all;
+
+architecture def of xc_idelay is
+begin
+end;

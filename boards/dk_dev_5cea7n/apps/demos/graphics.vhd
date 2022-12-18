@@ -101,16 +101,10 @@ architecture graphics of dk_dev_5cea7n is
 	constant data_phases  : natural := 2;
 
 	constant coln_size    : natural := 10;
-	constant bank_size    : natural := 2;
-	constant addr_size    : natural := 13;
-	-- constant bank_size    : natural := ddr3_ba'length;
-	-- constant addr_size    : natural := ddr3_a'length;
-
+	constant bank_size    : natural := ddr3_ba'length;
+	constant addr_size    : natural := ddr3_a'length;
 	constant word_size    : natural := ddr3_dq'length;
 	constant byte_size    : natural := ddr3_dq'length/ddr3_dqs_p'length;
-
-	-- constant word_size    : natural := 8*2;
-	-- constant byte_size    : natural := 8;
 
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
@@ -317,6 +311,14 @@ begin
 	begin
 
 		mii_rxc  <= gtx_clk;
+		rxdv_i : altddio_in
+		generic map (
+			width	=> 1)
+		port map (
+			inclock      => eneta_rx_clk,
+			datain(0)    => eneta_rx_dv,
+			dataout_h(0) => mii_rxdv);
+
         rxd_i : altddio_in
 		generic map (
 			width	=> eneta_rx_data'length)
@@ -325,14 +327,6 @@ begin
             datain	  => eneta_rx_data,
             dataout_h => mii_rxd(0 to eneta_rx_data'length-1),
             dataout_l => mii_rxd(eneta_rx_data'length to 2*eneta_rx_data'length-1));
-
-		rxdv_i : altddio_in
-		generic map (
-			width	=> 1)
-		port map (
-			inclock      => eneta_rx_clk,
-			datain(0)    => eneta_rx_dv,
-			dataout_h(0) => mii_rxdv);
 
 		sync_b : block
 
@@ -594,73 +588,73 @@ begin
 
 	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
 	
-	-- sdrphy_e : entity hdl4fpga.xc_sdrphy
-	-- generic map (
+	sdrphy_e : entity hdl4fpga.alt_sdrphy
+	generic map (
 		-- dqs_delay   => (0 => 0.954 ns, 1 => 6.954 ns),
 		-- dqi_delay   => (0 => 0.937 ns, 1 => 6.937 ns),
-		-- device      => xc5v,
-		-- bufio       => false,
-		-- bypass      => false,
-		-- taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
-		-- bank_size   => bank_size,
-		-- addr_size   => addr_size,
-		-- cmmd_gear   => cmmd_gear,
-		-- data_gear   => data_gear,
-		-- word_size   => word_size,
-		-- byte_size   => byte_size)
-	-- port map (
-		-- rst        => sdrphy_rst,
-		-- iod_clk    => sys_clk,
-		-- clk0       => ddr_clk0,
-		-- clk90      => ddr_clk90,
-		-- clk0x2     => ddr_clk0x2,
-		-- clk90x2    => ddr_clk90x2,
-		-- phy_frm    => ctlrphy_frm,
-		-- phy_trdy   => ctlrphy_trdy,
-		-- phy_rw     => ctlrphy_rw,
-		-- phy_ini    => ctlrphy_ini,
-		-- phy_synced => ctlrphy_synced,
--- 
-		-- phy_cmd    => ctlrphy_cmd,
-		-- phy_wlreq  => ctlrphy_wlreq,
-		-- phy_wlrdy  => ctlrphy_wlrdy,
-		-- phy_rlreq  => ctlrphy_rlreq,
-		-- phy_rlrdy  => ctlrphy_rlrdy,
--- 
-		-- sys_cke    => ctlrphy_cke,
-		-- sys_cs     => ctlrphy_cs,
-		-- sys_ras    => ctlrphy_ras,
-		-- sys_cas    => ctlrphy_cas,
-		-- sys_we     => ctlrphy_we,
-		-- sys_b      => ctlrphy_ba,
-		-- sys_a      => ctlrphy_a,
--- 
-		-- sys_dqst   => ctlrphy_dqst,
-		-- sys_dqsi   => ctlrphy_dqso,
-		-- sys_dmi    => ctlrphy_dmo,
-		-- sys_dmt    => ctlrphy_dmt,
-		-- sys_dmo    => ctlrphy_dmi,
-		-- sys_dqi    => ctlrphy_dqo,
-		-- sys_dqt    => ctlrphy_dqt,
-		-- sys_dqo    => ctlrphy_dqi,
-		-- sys_odt    => ctlrphy_odt,
-		-- sys_sti    => ctlrphy_sto,
-		-- sys_sto    => ctlrphy_sti,
+		device      => xc5v,
+		bufio       => false,
+		bypass      => false,
+		taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
+		bank_size   => bank_size,
+		addr_size   => addr_size,
+		cmmd_gear   => cmmd_gear,
+		data_gear   => data_gear,
+		word_size   => word_size,
+		byte_size   => byte_size)
+	port map (
+		rst        => sdrphy_rst,
+		iod_clk    => sys_clk,
+		clk0       => ddr_clk0,
+		clk90      => ddr_clk90,
+		clk0x2     => ddr_clk0x2,
+		clk90x2    => ddr_clk90x2,
+		phy_frm    => ctlrphy_frm,
+		phy_trdy   => ctlrphy_trdy,
+		phy_rw     => ctlrphy_rw,
+		phy_ini    => ctlrphy_ini,
+		phy_synced => ctlrphy_synced,
 
-		-- sdram_clk  => ddr3_clk,
-		-- sdram_rst  => ddr3_resetn,
-		-- sdram_cke  => ddr3_cke,
-		-- sdram_cs   => ddr3_cs,
-		-- sdram_ras  => ddr3_ras,
-		-- sdram_cas  => ddr3_cas,
-		-- sdram_we   => ddr3_we,
-		-- sdram_b    => ddr3_ba,
-		-- sdram_a    => ddr3_a,
-		-- sdram_odt  => ddr3_odt,
--- 
-		-- sdram_dm   => ddr3_dm,
-		-- sdram_dq   => ddr3_dq,
-		-- sdram_dqs  => ddr3_dqs_p);
+		phy_cmd    => ctlrphy_cmd,
+		phy_wlreq  => ctlrphy_wlreq,
+		phy_wlrdy  => ctlrphy_wlrdy,
+		phy_rlreq  => ctlrphy_rlreq,
+		phy_rlrdy  => ctlrphy_rlrdy,
+
+		sys_cke    => ctlrphy_cke,
+		sys_cs     => ctlrphy_cs,
+		sys_ras    => ctlrphy_ras,
+		sys_cas    => ctlrphy_cas,
+		sys_we     => ctlrphy_we,
+		sys_b      => ctlrphy_ba,
+		sys_a      => ctlrphy_a,
+
+		sys_dqst   => ctlrphy_dqst,
+		sys_dqsi   => ctlrphy_dqso,
+		sys_dmi    => ctlrphy_dmo,
+		sys_dmt    => ctlrphy_dmt,
+		sys_dmo    => ctlrphy_dmi,
+		sys_dqi    => ctlrphy_dqo,
+		sys_dqt    => ctlrphy_dqt,
+		sys_dqo    => ctlrphy_dqi,
+		sys_odt    => ctlrphy_odt,
+		sys_sti    => ctlrphy_sto,
+		sys_sto    => ctlrphy_sti,
+
+		sdram_clk  => ddr3_clk,
+		sdram_rst  => ddr3_resetn,
+		sdram_cke(0)  => ddr3_cke,
+		sdram_cs(0)   => ddr3_csn,
+		sdram_ras  => ddr3_rasn,
+		sdram_cas  => ddr3_casn,
+		sdram_we   => ddr3_wen,
+		sdram_b    => ddr3_ba,
+		sdram_a    => ddr3_a,
+		sdram_odt(0)  => ddr3_odt,
+
+		sdram_dm   => ddr3_dm,
+		sdram_dqi  => ddr3_dq,
+		sdram_dqsi  => ddr3_dqs_p);
 
     video_i : altddio_out
 	generic map (

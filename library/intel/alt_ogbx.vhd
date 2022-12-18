@@ -21,17 +21,79 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-package profiles is
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
-	type fpga_devices is (
-		-- Xilinx-AMD
-		ecp3,
-		ecp5,
-		xc3s,
-		xc5v,
-		xc7a,
+library hdl4fpga;
+use hdl4fpga.profiles.all;
 
-		-- Altera-Intel
-		cyclonev);
+entity alt_ogbx is
+	generic (
+		device    : fpga_devices := cyclonev;
+		size      : natural;
+		gear      : natural;
+		data_edge : string := "SAME_EDGE");
+	port (
+		rst   : in  std_logic := '0';
+		clk   : in  std_logic;
+		clkx2 : in std_logic := '0';
+		t     : in  std_logic_vector(0 to gear*size-1) := (others => '0');
+		tq    : out std_logic_vector(0 to size-1);
+		d     : in  std_logic_vector(0 to gear*size-1);
+		q     : out std_logic_vector(0 to size-1));
+end;
 
-end package;
+library altera_mf;
+use altera_mf.altera_mf_components.all;
+
+architecture beh of alt_ogbx is
+
+begin
+
+	reg_g : for i in q'range generate
+		signal pi  : std_logic_vector(0 to 8-1);
+		signal pit : std_logic_vector(0 to 8-1);
+	begin
+
+		process (d)
+		begin
+			pi <= (others => '0');
+			for j in 0 to gear-1 loop
+				pi(j) <= d(gear*i+j);
+			end loop;
+		end process;
+
+		process (t)
+		begin
+			pit <= (others => '0');
+			for j in 0 to gear-1 loop
+				pit(j) <= t(gear*i+j);
+			end loop;
+		end process;
+
+		gear1_g : if gear = 1 generate
+			ffd_i : altddio_out
+			generic map (
+				width	=> 1)
+			port map (
+				outclock    => clk,
+				datain_h(0) => pi(0),
+				datain_l(0) => pi(0),
+				dataout(0)	=> q(i));
+		end generate;
+
+		gear2_g : if gear = 2 generate
+			ffd_i : altddio_out
+			generic map (
+				width	=> 1)
+			port map (
+				outclock    => clk,
+				datain_h(0) => pi(0),
+				datain_l(0) => pi(1),
+				dataout(0)	=> q(i));
+		end generate;
+
+	end generate;
+
+end;
