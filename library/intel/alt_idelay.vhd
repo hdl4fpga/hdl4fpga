@@ -45,4 +45,5 @@ use altera_mf.altera_mf_components.all;
 
 architecture def of xc_idelay is
 begin
+	dataout <= idatain;
 end;
