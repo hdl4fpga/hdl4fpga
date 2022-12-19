@@ -24,7 +24,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity dk_dev_5cea7n is
+entity dkdev5cea7n is
 	generic (
 		debug                : boolean := false);
 	port (
