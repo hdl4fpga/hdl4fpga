@@ -39,7 +39,7 @@ entity alt_ogbx is
 		clk   : in  std_logic;
 		clkx2 : in std_logic := '0';
 		t     : in  std_logic_vector(0 to gear*size-1) := (others => '0');
-		tq    : out std_logic_vector(0 to size-1);
+		tq    : out std_logic_vector(0 to size-1) := (others => 'Z');
 		d     : in  std_logic_vector(0 to gear*size-1);
 		q     : out std_logic_vector(0 to size-1));
 end;
@@ -48,52 +48,32 @@ library altera_mf;
 use altera_mf.altera_mf_components.all;
 
 architecture beh of alt_ogbx is
-
 begin
 
-	reg_g : for i in q'range generate
-		signal pi  : std_logic_vector(0 to 8-1);
-		signal pit : std_logic_vector(0 to 8-1);
-	begin
+	bus_g : for i in q'range generate 
+    	gear1_g : if gear = 1 generate
+    		ffd_i : altddio_out
+    		generic map (
+    			width	=> 1)
+    		port map (
+    			outclock    => clk,
+    			oe          => t(gear*i+0),
+    			datain_h(0) => d(gear*i+0),
+    			datain_l(0) => d(gear*i+0),
+    			dataout(0)	=> q(i));
+    	end generate;
 
-		process (d)
-		begin
-			pi <= (others => '0');
-			for j in 0 to gear-1 loop
-				pi(j) <= d(gear*i+j);
-			end loop;
-		end process;
-
-		process (t)
-		begin
-			pit <= (others => '0');
-			for j in 0 to gear-1 loop
-				pit(j) <= t(gear*i+j);
-			end loop;
-		end process;
-
-		gear1_g : if gear = 1 generate
-			ffd_i : altddio_out
-			generic map (
-				width	=> 1)
-			port map (
-				outclock    => clk,
-				datain_h(0) => pi(0),
-				datain_l(0) => pi(0),
-				dataout(0)	=> q(i));
-		end generate;
-
-		gear2_g : if gear = 2 generate
-			ffd_i : altddio_out
-			generic map (
-				width	=> 1)
-			port map (
-				outclock    => clk,
-				datain_h(0) => pi(0),
-				datain_l(0) => pi(1),
-				dataout(0)	=> q(i));
-		end generate;
-
+    	gear2_g : if gear = 2 generate
+    		ffd_i : altddio_out
+    		generic map (
+    			width	=> 1)
+    		port map (
+    			outclock    => clk,
+    			oe          => t(gear*i+0),
+    			datain_h(0) => d(gear*i+0),
+    			datain_l(0) => d(gear*i+1),
+    			dataout(0)	=> q(i));
+    	end generate;
 	end generate;
 
 end;

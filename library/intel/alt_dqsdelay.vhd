@@ -45,5 +45,14 @@ use altera_mf.altera_mf_components.all;
 
 architecture xilinx of xc_dqsdelay is
 begin
-	dqso <= (others => dqsi);
+	process (dqsi)
+	begin
+		for i in dqso'range loop
+			if i mod 2 = 0 then
+				dqso(i) <= dqsi;
+			else
+				dqso(i) <= not dqsi;
+			end if;
+		end loop;
+	end process;
 end;

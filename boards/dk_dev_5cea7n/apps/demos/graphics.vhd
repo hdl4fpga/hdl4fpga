@@ -653,8 +653,8 @@ begin
 		sdram_odt(0)  => ddr3_odt,
 
 		sdram_dm   => ddr3_dm,
-		sdram_dqi  => ddr3_dq,
-		sdram_dqsi  => ddr3_dqs_p);
+		sdram_dq   => ddr3_dq,
+		sdram_dqs  => ddr3_dqs_p);
 
     video_i : altddio_out
 	generic map (

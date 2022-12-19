@@ -81,23 +81,18 @@ entity alt_sdrdqphy is
 		sdram_dmi  : in  std_logic := '-';
 		sdram_sti  : in  std_logic := '-';
 		sdram_sto  : out std_logic;
-		sdram_dmt  : out std_logic;
-		sdram_dmo  : out std_logic;
-		sdram_dqsi : in  std_logic;
-		sdram_dqi  : in  std_logic_vector(byte_size-1 downto 0);
-		sdram_dqt  : out std_logic_vector(byte_size-1 downto 0);
-		sdram_dqo  : out std_logic_vector(byte_size-1 downto 0);
+		sdram_dm   : inout std_logic;
+		sdram_dq   : inout std_logic_vector(byte_size-1 downto 0);
+		sdram_dqs  : inout std_logic);
 
-		sdram_dqst : out std_logic;
-		sdram_dqso : out std_logic);
 end;
 
 architecture xilinx of alt_sdrdqphy is
 
 	signal adjdqs_req   : std_logic;
 	signal adjdqs_rdy   : std_logic;
-	signal adjdqi_req   : std_logic_vector(sdram_dqi'range);
-	signal adjdqi_rdy   : std_logic_vector(sdram_dqi'range);
+	signal adjdqi_req   : std_logic_vector(sdram_dq'range);
+	signal adjdqi_rdy   : std_logic_vector(sdram_dq'range);
 	signal adjsto_req   : std_logic;
 	signal adjsto_rdy   : std_logic;
 
@@ -108,14 +103,14 @@ architecture xilinx of alt_sdrdqphy is
 	signal dqssto       : std_logic;
 
 	signal dq           : std_logic_vector(sys_dqo'range);
-	signal dqi          : std_logic_vector(sdram_dqi'range);
+	signal dqi          : std_logic_vector(sdram_dq'range);
 	signal dqh          : std_logic_vector(dq'range);
 	signal dqf          : std_logic_vector(dq'range);
 
 	signal dqipause_req : std_logic;
 	signal dqipause_rdy : std_logic;
-	signal dqipau_req   : std_logic_vector(sdram_dqi'range);
-	signal dqipau_rdy   : std_logic_vector(sdram_dqi'range);
+	signal dqipau_req   : std_logic_vector(sdram_dq'range);
+	signal dqipau_rdy   : std_logic_vector(sdram_dq'range);
 
 	signal pause_req    : std_logic;
 	signal pause_rdy    : std_logic;
@@ -134,75 +129,6 @@ begin
 -- altdqs parameterized megafunction component declaration
 -- Generated with 'clearbox' loader - do not edit
 ------------------------------------------------------------------
--- component altdqs
-	-- generic (
-		-- delay_buffer_mode	:	string := "low";
-		-- delay_chain_mode	:	string := "static";
-		-- intended_device_family	:	string := "unused";
-		-- dll_delay_chain_length	:	natural := 12;
-		-- dll_delayctrl_mode	:	string := "normal";
-		-- dll_jitter_reduction	:	string := "true";
-		-- dll_offsetctrl_mode	:	string := "none";
-		-- dll_phase_shift	:	string := "unused";
-		-- dll_static_offset	:	string := "0";
-		-- dll_use_reset	:	string := "false";
-		-- dll_use_upndnin	:	string := "false";
-		-- dll_use_upndninclkena	:	string := "false";
-		-- dqs_ctrl_latches_enable	:	string := "true";
-		-- dqs_delay_chain_length	:	natural := 3;
-		-- dqs_delay_chain_setting	:	string := "0";
-		-- dqs_delay_requirement	:	string := "unused";
-		-- dqs_edge_detect_enable	:	string := "false";
-		-- dqs_oe_async_reset	:	string := "none";
-		-- dqs_oe_power_up	:	string := "low";
-		-- dqs_oe_register_mode	:	string := "register";
-		-- dqs_oe_sync_reset	:	string := "none";
-		-- dqs_open_drain_output	:	string := "false";
-		-- dqs_output_async_reset	:	string := "none";
-		-- dqs_output_power_up	:	string := "low";
-		-- dqs_output_sync_reset	:	string := "none";
-		-- dqs_use_dedicated_delayctrlin	:	string := "true";
-		-- dqsn_mode	:	string := "none";
-		-- extend_oe_disable	:	string := "true";
-		-- gated_dqs	:	string := "false";
-		-- has_dqs_delay_requirement	:	string := "true";
-		-- input_frequency	:	string;
-		-- invert_output	:	string := "false";
-		-- number_of_dqs	:	natural;
-		-- number_of_dqs_controls	:	natural := 1;
-		-- sim_invalid_lock	:	natural := 100000;
-		-- sim_valid_lock	:	natural := 1;
-		-- tie_off_dqs_oe_clock_enable	:	string := "false";
-		-- tie_off_dqs_output_clock_enable	:	string := "false";
-		-- lpm_hint	:	string := "UNUSED";
-		-- lpm_type	:	string := "altdqs"
-	-- );
-	-- port(
-		-- dll_addnsub	:	in std_logic := '0';
-		-- dll_delayctrlout	:	out std_logic_vector(5 downto 0);
-		-- dll_offset	:	in std_logic_vector(5 downto 0) := (others => '0');
-		-- dll_reset	:	in std_logic := '0';
-		-- dll_upndnin	:	in std_logic := '0';
-		-- dll_upndninclkena	:	in std_logic := '1';
-		-- dll_upndnout	:	out std_logic;
-		-- dqddioinclk	:	out std_logic_vector(number_of_dqs-1 downto 0);
-		-- dqinclk	:	out std_logic_vector(number_of_dqs-1 downto 0);
-		-- dqs_areset	:	in std_logic_vector(number_of_dqs_controls-1 downto 0) := (others => '0');
-		-- dqs_datain_h	:	in std_logic_vector(number_of_dqs-1 downto 0);
-		-- dqs_datain_l	:	in std_logic_vector(number_of_dqs-1 downto 0);
-		-- dqs_delayctrlin	:	in std_logic_vector(5 downto 0) := (others => '0');
-		-- dqs_padio	:	inout std_logic_vector(number_of_dqs-1 downto 0);
-		-- dqs_sreset	:	in std_logic_vector(number_of_dqs_controls-1 downto 0) := (others => '0');
-		-- dqsn_padio	:	inout std_logic_vector(number_of_dqs-1 downto 0);
-		-- dqsundelayedout	:	out std_logic_vector(number_of_dqs-1 downto 0);
-		-- enable_dqs	:	in std_logic_vector(number_of_dqs-1 downto 0) := (others => '1');
-		-- inclk	:	in std_logic := '0';
-		-- oe	:	in std_logic_vector(number_of_dqs_controls-1 downto 0) := (others => '1');
-		-- outclk	:	in std_logic_vector(number_of_dqs_controls-1 downto 0);
-		-- outclkena	:	in std_logic_vector(number_of_dqs_controls-1 downto 0) := (others => '1')
-	-- );
--- end component;
-
 	with tp_sel select
 	tp_delay <= 
 		dqs180 & dqspre & tp_dqidly when '1',
@@ -394,7 +320,7 @@ begin
 			ph180    => dqs180,
 			delay    => dqsi_delay);
 
-		dqsi <= transport sdram_dqsi after dqs_delay;
+		dqsi <= transport sdram_dqs after dqs_delay;
 		dqsidelay_i : entity hdl4fpga.xc_dqsdelay 
 		generic map (
 			device => device,
@@ -445,7 +371,7 @@ begin
 
 	datai_b : block
 	begin
-		i_igbx : for i in sdram_dqi'range generate
+		i_igbx : for i in sdram_dq'range generate
 		begin
 			adjdqi_b : block
 				signal delay  : std_logic_vector(0 to setif(device=xc7a,5,6)-1);
@@ -478,7 +404,7 @@ begin
 					tp_dqidly(delay'length-1 downto 0) <= delay;
 				end generate;
 	
-				ddqi <= transport sdram_dqi(i) after dqi_delay;
+				ddqi <= transport sdram_dq(i) after dqi_delay;
 				dqi_i : entity hdl4fpga.xc_idelay
 				generic map (
 					device => device,
@@ -494,7 +420,7 @@ begin
 	
 			bypass_g : if bypass generate
 				phases_g : for j in 0 to data_gear-1 generate
-					sys_dqo(j*byte_size+i) <= sdram_dqi(i);
+					sys_dqo(j*byte_size+i) <= sdram_dq(i);
 				end generate;
 			end generate;
 	
@@ -607,7 +533,7 @@ begin
 				gbx2_g : if data_gear=2 generate
 					signal clk : std_logic;
 				begin
-					clk <= not sdram_dqsi;
+					clk <= not sdram_dqs;
 					sti <= sdram_sti when loopback else sdram_dmi;
 					sto_i : entity hdl4fpga.igbx
 					generic map (
@@ -634,7 +560,7 @@ begin
 	datao_b : block
 		constant register_on : boolean := device=xc5v or device=xc7a;
 	begin
-		oddr_g : for i in sdram_dqo'range generate
+		oddr_g : for i in sdram_dq'range generate
 
 			signal dqo : std_logic_vector(0 to data_gear-1);
 			signal dqt : std_logic_vector(sys_dqt'range);
@@ -678,16 +604,14 @@ begin
 			generic map (
 				device => device,
 				size => 1,
-				data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 				gear => data_gear)
 			port map (
 				rst   => rst,
 				clk   => clk90,
 				clkx2 => clk90x2,
 				t     => dqt,
-				tq(0) => sdram_dqt(i),
 				d     => dqo,
-				q(0)  => sdram_dqo(i));
+				q(0)  => sdram_dq(i));
 	
 		end generate;
 	
@@ -740,16 +664,14 @@ begin
 			generic map (
 				device => device,
 				size => 1,
-				data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 				gear => data_gear)
 			port map (
 				rst   => rst,
 				clk   => clk90,
 				clkx2 => clk90x2,
 				t     => dmt,
-				tq(0) => sdram_dmt,
 				d     => dmi,
-				q(0)  => sdram_dmo);
+				q(0)  => sdram_dm);
 	
 		end block;
 
@@ -762,7 +684,6 @@ begin
 			generic map (
 				device => device,
 				size => 1,
-				data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 				gear => data_gear)
 			port map (
 				rst   => rst,
@@ -775,36 +696,25 @@ begin
 
 	end block;
 
-	dqso_b : block
-		signal dqsi : std_logic_vector(sys_dqsi'reverse_range);
-		signal dqst : std_logic_vector(sys_dqst'range);
+	xxx : block
+		signal xxxx : std_logic_vector(0 to 6-1);
 	begin
+	dll_i : altdll
+	generic map (
+		input_frequency => "303")
+	port map (
+		dll_delayctrlout => xxxx,
+		dll_clk(0)	=> clk0);
 
-		process (sys_dqsi)
-		begin
-			dqsi <= (others => '0');
-			for i in dqsi'range loop
-				if i mod 2 = 1 then
-					dqsi(i) <= sys_dqsi(i);
-				end if;
-			end loop;
-		end process;
-		dqst <= reverse(sys_dqst);
-
-		ogbx_i : entity hdl4fpga.alt_ogbx
-		generic map (
-			device => device,
-			size => 1,
-			data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
-			gear => data_gear)
-		port map (
-			rst   => rst,
-			clk   => clk0,
-			clkx2 => clk0x2,
-			t     => dqst,
-			tq(0) => sdram_dqst,
-			d     => dqsi,
-			q(0)  => sdram_dqso);
-
+	dqs_i : altdqs
+	generic map (
+		input_frequency => "300.0",
+		number_of_dqs	=> 1)
+	port map (
+		dqs_datain_h(0) => '0',
+		dqs_datain_l(0) => '1',
+		dqs_padio(0)	=> sdram_dqs,
+		inclk           => clk0,
+		outclk(0)	    => clk0);
 	end block;
 end;
