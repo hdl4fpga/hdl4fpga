@@ -697,10 +697,12 @@ begin
 	end block;
 
 	xxx : block
-		signal xxxx : std_logic_vector(0 to 6-1);
+		signal xxxx : std_logic_vector(0 to 6);
 	begin
 	dll_i : altdll
 	generic map (
+		intended_device_family	=> "CYCLONEV",
+		delayctrlout_width	=> 7,
 		input_frequency => "303")
 	port map (
 		dll_delayctrlout => xxxx,
@@ -708,9 +710,11 @@ begin
 
 	dqs_i : altdqs
 	generic map (
+		intended_device_family	=> "CYCLONEV",
 		input_frequency => "300.0",
 		number_of_dqs	=> 1)
 	port map (
+		dqs_delayctrlin => xxxx(0 to 6-1),
 		dqs_datain_h(0) => '0',
 		dqs_datain_l(0) => '1',
 		dqs_padio(0)	=> sdram_dqs,

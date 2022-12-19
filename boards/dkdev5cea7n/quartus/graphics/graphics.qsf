@@ -39,7 +39,7 @@
 
 set_global_assignment -name FAMILY "Cyclone V"
 set_global_assignment -name DEVICE 5CEFA7F31I7
-set_global_assignment -name TOP_LEVEL_ENTITY dk_dev_5cea7n
+set_global_assignment -name TOP_LEVEL_ENTITY dkdev5cea7n
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 21.1.1
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "16:01:35  OCTOBER 11, 2022"
 set_global_assignment -name LAST_QUARTUS_VERSION "22.1std.0 Lite Edition"
@@ -100,7 +100,7 @@ set_global_assignment -name VHDL_FILE ../../../../library/sio/sio_cmp.vhd -libra
 set_global_assignment -name VHDL_FILE ../../../../library/video/videopkg.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/cntrcs.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/crc.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../common/dk_dev_5cea7n.vhd
+set_global_assignment -name VHDL_FILE ../../common/dkdev5cea7n.vhd
 set_global_assignment -name VHDL_FILE ../../../../library/basic/base.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/txn_buffer.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/timer.vhd -library hdl4fpga
