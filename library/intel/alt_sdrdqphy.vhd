@@ -87,638 +87,92 @@ entity alt_sdrdqphy is
 
 end;
 
-architecture xilinx of alt_sdrdqphy is
+architecture intel of alt_sdrdqphy is
+	component altdq_dqs2
+		port (
+			reset_n_core_clock_in         : in    std_logic                     := '0';             --      memory_interface.export
+			extra_write_data_out          : out   std_logic;                                        --                      .export
+			read_write_data_io            : inout std_logic_vector(7 downto 0)  := (others => '0'); --                      .export
+			strobe_io                     : inout std_logic                     := '0';             --                      .export
+			write_strobe_clock_in         : in    std_logic                     := '0';             --                      .export
+			write_data_in                 : in    std_logic_vector(31 downto 0) := (others => '0'); --        data_interface.export
+			extra_write_data_in           : in    std_logic_vector(3 downto 0)  := (others => '0'); --                      .export
+			write_oe_in                   : in    std_logic_vector(15 downto 0) := (others => '0'); --                      .export
+			read_data_out                 : out   std_logic_vector(31 downto 0);                    --                      .export
+			output_strobe_ena             : in    std_logic_vector(1 downto 0)  := (others => '0'); --                      .export
+			parallelterminationcontrol_in : in    std_logic_vector(15 downto 0) := (others => '0'); --                  Misc.export
+			seriesterminationcontrol_in   : in    std_logic_vector(15 downto 0) := (others => '0'); --                      .export
+			dll_delayctrl_in              : in    std_logic_vector(6 downto 0)  := (others => '0'); --                      .export
+			capture_strobe_out            : out   std_logic;                                        --         Capture_clock.clk
+			fr_clock_in                   : in    std_logic                     := '0';             --              fr_clock.clk
+			core_clock_in                 : in    std_logic                     := '0';             --            core_clock.clk
+			hr_clock_in                   : in    std_logic                     := '0';             --              hr_clock.clk
+			config_dqs_ena                : in    std_logic                     := '0';             -- Dynamic_Configuration.export
+			config_io_ena                 : in    std_logic_vector(7 downto 0)  := (others => '0'); --                      .export
+			config_dqs_io_ena             : in    std_logic                     := '0';             --                      .export
+			config_update                 : in    std_logic                     := '0';             --                      .export
+			config_data_in                : in    std_logic                     := '0';             --                      .export
+			config_extra_io_ena           : in    std_logic                     := '0';             --                      .export
+			config_clock_in               : in    std_logic                     := '0';             --          config_clock.clk
+			lfifo_rdata_en_full           : in    std_logic_vector(1 downto 0)  := (others => '0'); --     hard_fifo_control.export
+			lfifo_rd_latency              : in    std_logic_vector(4 downto 0)  := (others => '0'); --                      .export
+			lfifo_reset_n                 : in    std_logic                     := '0';             --                      .export
+			vfifo_qvld                    : in    std_logic_vector(1 downto 0)  := (others => '0'); --                      .export
+			vfifo_inc_wr_ptr              : in    std_logic_vector(1 downto 0)  := (others => '0'); --                      .export
+			vfifo_reset_n                 : in    std_logic                     := '0';             --                      .export
+			rfifo_reset_n                 : in    std_logic                     := '0');            --                      .export
+	end component;
 
-	signal adjdqs_req   : std_logic;
-	signal adjdqs_rdy   : std_logic;
-	signal adjdqi_req   : std_logic_vector(sdram_dq'range);
-	signal adjdqi_rdy   : std_logic_vector(sdram_dq'range);
-	signal adjsto_req   : std_logic;
-	signal adjsto_rdy   : std_logic;
+	component  alt_oct_alt_oct_power_k4e is 
+		port ( 
+			rzqin                      : in  std_logic_vector( 0 downto 0) := (others => '0');
+			parallelterminationcontrol : out std_logic_vector(15 downto 0);
+			seriesterminationcontrol   : out std_logic_vector(15 downto 0)); 
+	end component;
 
-	signal dqspau_req   : std_logic;
-	signal dqspau_rdy   : std_logic;
-	signal dqs180       : std_logic;
-	signal dqspre       : std_logic;
-	signal dqssto       : std_logic;
-
-	signal dq           : std_logic_vector(sys_dqo'range);
-	signal dqi          : std_logic_vector(sdram_dq'range);
-	signal dqh          : std_logic_vector(dq'range);
-	signal dqf          : std_logic_vector(dq'range);
-
-	signal dqipause_req : std_logic;
-	signal dqipause_rdy : std_logic;
-	signal dqipau_req   : std_logic_vector(sdram_dq'range);
-	signal dqipau_rdy   : std_logic_vector(sdram_dq'range);
-
-	signal pause_req    : std_logic;
-	signal pause_rdy    : std_logic;
-
-	signal dqsi_delay   : std_logic_vector(0 to setif(device=xc7a,5,6)-1);
-	signal tp_dqidly    : std_logic_vector(6-1 downto 0);
-	signal tp_dqsdly    : std_logic_vector(6-1 downto 0);
-	signal tp_dqssel    : std_logic_vector(3-1 downto 0);
-
-	signal step_req : std_logic;
-	signal step_rdy : std_logic;
+	signal parallelterminationcontrol :	std_logic_vector (15 downto 0);
+	signal seriesterminationcontrol	  :	std_logic_vector (15 downto 0);
 
 begin
 
-------------------------------------------------------------------
--- altdqs parameterized megafunction component declaration
--- Generated with 'clearbox' loader - do not edit
-------------------------------------------------------------------
-	with tp_sel select
-	tp_delay <= 
-		dqs180 & dqspre & tp_dqidly when '1',
-		tp_dqssel(2-1 downto 0) & tp_dqsdly(6-1 downto 0) when others;
-		-- sys_rlrdy & sys_rlreq & adjsto_req & adjsto_rdy & step_rdy & step_req & (read_rdy xor read_req) & sto_synced when others;
-		-- adjdqs_req & adjdqs_rdy & adjdqi_req(0) & adjdqi_rdy(0) & adjsto_req & adjsto_rdy & (read_rdy xor read_req) & sto_synced when others;
-
-	sys_wlrdy <= to_stdulogic(to_bit(sys_wlreq));
-	rl_b : block
-	begin
-
-		process (pause_rdy, pause_req, iod_clk)
-			type states is (s_init, s_write, s_dqs, s_w4dqi, s_dqi4rdy, s_sto);
-			variable state : states;
-			variable sy_write_rdy : std_logic;
-			variable sy_read_rdy  : std_logic;
-		begin
-			if rising_edge(iod_clk) then
-				if rst='1' then
-					sys_rlrdy <= to_stdulogic(to_bit(sys_rlreq));
-					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
-					adjdqi_req <= to_stdlogicvector(to_bitvector(adjdqi_rdy));
-					adjsto_req <= to_stdulogic(to_bit(adjsto_rdy));
-					state      := s_init;
-				elsif (sys_rlrdy xor to_stdulogic(to_bit(sys_rlreq)))='0' then
-					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
-					adjdqi_req <= to_stdlogicvector(to_bitvector(adjdqi_rdy));
-					adjsto_req <= to_stdulogic(to_bit(adjsto_rdy));
-					state      := s_init;
-				else
-					case state is
-					when s_init =>
-						write_req <= not to_stdulogic(to_bit(sy_write_rdy));
-						read_brst <= '0';
-						state     := s_write;
-					when s_write =>
-						if (sy_write_rdy xor to_stdulogic(to_bit(write_req)))='0' then
-							read_req <= not to_stdulogic(to_bit(sy_read_rdy));
-							read_brst <= '1';
-							if sys_sti(0)='1' then
-								adjdqs_req <= not to_stdulogic(to_bit(adjdqs_rdy));
-								state      := s_dqs;
-							end if;
-						end if;
-					when s_dqs =>
-						if (adjdqs_rdy xor to_stdulogic(to_bit(adjdqs_req)))='0' then
-							adjdqi_req <= not adjdqi_rdy;
-							state      := s_w4dqi;
-						end if;
-					when s_w4dqi =>
-						state := s_dqi4rdy;
-						for i in adjdqi_rdy'range loop
-							if (adjdqi_rdy(i) xor adjdqi_req(i))='1' then
-								state := s_w4dqi;
-							end if;
-						end loop;
-					when s_dqi4rdy =>
-						read_brst <= '0';
-						if (sy_read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
-							read_req   <= not sy_read_rdy;
-							adjsto_req <= not adjsto_rdy;
-							state      := s_sto;
-						end if;
-					when s_sto =>
-						if (sy_read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
-							if (adjsto_rdy xor to_stdulogic(to_bit(adjsto_req)))='0' then
-								sys_rlrdy <= to_stdulogic(to_bit(sys_rlreq));
-							else
-								read_req <= not sy_read_rdy;
-							end if;
-						end if;
-						read_brst <= '0';
-					end case;
-				end if;
-				sy_write_rdy := write_rdy;
-				sy_read_rdy  := read_rdy;
-			end if;
-		end process;
-
-		dqipause_p : process (iod_clk)
-			type states is (s_init, s_wait, s_idle);
-			variable state : states;
-			variable sy_dqipau_req : std_logic_vector(dqipau_req'range);
-		begin
-			if rising_edge(iod_clk) then
-				if rst='1' then
-					dqipau_rdy <= to_stdlogicvector(to_bitvector(dqipau_req));
-					state := s_idle;
-				else
-					case state is
-					when s_init =>
-						dqipause_req <= not dqipause_rdy;
-						state := s_wait;
-					when s_wait =>
-						if (dqipause_rdy xor to_stdulogic(to_bit(dqipause_req)))='0' then
-							dqipau_rdy <= to_stdlogicvector(to_bitvector(sy_dqipau_req));
-							state := s_idle;
-						end if;
-					when s_idle =>
-						state := s_init;
-						for i in dqipau_req'range loop
-							if (dqipau_rdy(i) xor to_stdulogic(to_bit(sy_dqipau_req(i))))='0' then
-								state := s_idle;
-							end if;
-						end loop;
-					end case;
-				end if;
-				sy_dqipau_req := dqipau_req;
-			end if;
-		end process;
-
-	end block;
-
-	process (iod_clk, pause_rdy)
-		type states is (s_init, s_wait, s_idle);
-		variable state : states;
-		variable cntr  : unsigned(0 to unsigned_num_bits(63));
-		variable sy_dqspau_req : std_logic;
-	begin
-		if rising_edge(iod_clk) then
-			if rst='1' then
-				dqipause_rdy <= to_stdulogic(to_bit(dqipause_req));
-				dqspau_rdy   <= to_stdulogic(to_bit(dqspau_req));
-				state := s_idle;
-			else
-				case state is
-				when s_init =>
-					if (pause_rdy xor to_stdulogic(to_bit(pause_req)))='0' then
-						pause_req <= not pause_rdy;
-						state := s_wait;
-					end if;
-				when s_wait =>
-					if (pause_rdy xor to_stdulogic(to_bit(pause_req)))='0' then
-						dqipause_rdy <= to_stdulogic(to_bit(dqipause_req));
-						dqspau_rdy   <= to_stdulogic(to_bit(sy_dqspau_req));
-						state        := s_idle;
-					end if;
-				when s_idle =>
-					if (dqipause_rdy xor to_stdulogic(to_bit(dqipause_req)))='1' then
-						state := s_init;
-					elsif (dqspau_rdy xor to_stdulogic(to_bit(sy_dqspau_req)))='1' then
-						state := s_init;
-					end if;
-				end case;
-			end if;
-			sy_dqspau_req := dqspau_req;
-		end if;
-	end process;
-
-	process (iod_clk, pause_req)
-		variable cntr : unsigned(0 to unsigned_num_bits(64-1));
-	begin
-		if rising_edge(iod_clk) then
-			if rst='1' then
-				pause_rdy <= to_stdulogic(to_bit(pause_req));
-				cntr := (others => '0');
-			elsif (pause_rdy xor to_stdulogic(to_bit(pause_req)))='1' then
-				if cntr(0)='0' then
-					cntr := cntr + 1;
-				else
-					pause_rdy <= to_stdulogic(to_bit(pause_req));
-					cntr := (others => '0');
-				end if;
-			else
-				cntr := (others => '0');
-			end if;
-		end if;
-	end process;
-
-	dqsi_b : block
-		signal dqsi     : std_logic;
-		signal dqsi_buf : std_logic;
-		signal dqs_smp  : std_logic_vector(0 to data_gear-1);
-		signal clk90x2_n : std_logic;
-	begin
-
-		adjdqs_e : entity hdl4fpga.adjpha
-		generic map (
-			taps     => taps)
+		oct_i :  alt_oct_alt_oct_power_k4e
 		port map (
-			rst      => rst,
-			edge     => std_logic'('1'),
-			clk      => clk0,
-			req      => adjdqs_req,
-			rdy      => adjdqs_rdy,
-			step_req => dqspau_req,
-			step_rdy => dqspau_rdy,
-			smp      => dqs_smp,
-			ph180    => dqs180,
-			delay    => dqsi_delay);
-
-		dqsi <= transport sdram_dqs after dqs_delay;
-		dqsidelay_i : entity hdl4fpga.xc_dqsdelay 
-		generic map (
-			device => device,
-			data_gear => data_gear)
+			rzqin                      => (others => '0'),
+			parallelterminationcontrol => parallelterminationcontrol,
+			seriesterminationcontrol   =>seriesterminationcontrol); 
+	
+		dqs_i : altdq_dqs2
 		port map (
-			rst    => rst,
-			clk    => clk0,
-			delay  => dqsi_delay,
-			dqsi   => dqsi,
-			dqso   => sys_dqso);
-		dqsi_buf <= sys_dqso(0);
+			reset_n_core_clock_in         => '0',
+			extra_write_data_out          => open,
+			read_write_data_io            => sdram_dq,
+			strobe_io                     => '0',
+			write_strobe_clock_in         => '0',
+			write_data_in                 => sys_dqi,
+			extra_write_data_in           => sys_dmi,
+			write_oe_in                   => sys_dqt,
+			read_data_out                 => sys_dqo,
+			output_strobe_ena             => (others => '0'),
+			parallelterminationcontrol_in => parallelterminationcontrol,
+			seriesterminationcontrol_in   => seriesterminationcontrol,
+			dll_delayctrl_in              => (others => '0'),
+			capture_strobe_out            => open,
+			fr_clock_in                   => '0',
+			core_clock_in                 => '0',
+			hr_clock_in                   => '0',
+			config_dqs_ena                => '0',
+			config_io_ena                 => (others => '0'),
+			config_dqs_io_ena             => '0',
+			config_update                 => '0',
+			config_data_in                => '0',
+			config_extra_io_ena           => '0',
+			config_clock_in               => '0',
+			lfifo_rdata_en_full           => (others => '0'),
+			lfifo_rd_latency              => (others => '0'),
+			lfifo_reset_n                 => '0',
+			vfifo_qvld                    => (others => '0'),
+			vfifo_inc_wr_ptr              => (others => '0'),
+			vfifo_reset_n                 => '0',
+			rfifo_reset_n                 => '0');
 
-		clk90x2_n <= not clk90x2;
-		igbx_i : entity hdl4fpga.igbx
-		generic map (
-			device => device,
-			size   => 1,
-			gear   => data_gear)
-		port map (
-			rst   => rst,
-			sclk  => clk90x2_n,
-			clkx2 => clk0x2,
-			clk   => clk0,
-			d(0)  => dqsi_buf,
-			q     => dqs_smp);
-
-		tp_dqsdly(dqsi_delay'length-1 downto 0) <= dqsi_delay;
-
-		adjsto_e : entity hdl4fpga.adjsto
-		generic map (
-			gear      => data_gear)
-		port map (
-			tp        => tp_dqssel,
-			rst       => rst,
-			sdram_clk => clk0,
-			edge      => std_logic'('0'),
-			sdram_sti => sys_sti(0),
-			sdram_sto => dqssto,
-			dqs_smp   => dqs_smp,
-			dqs_pre   => dqspre,
-			step_req  => step_req,
-			step_rdy  => step_rdy,
-			sys_req   => adjsto_req,
-			sys_rdy   => adjsto_rdy,
-			synced    => sto_synced);
-
-	end block;
-
-	datai_b : block
-	begin
-		i_igbx : for i in sdram_dq'range generate
-		begin
-			adjdqi_b : block
-				signal delay  : std_logic_vector(0 to setif(device=xc7a,5,6)-1);
-				signal dq_smp : std_logic_vector(0 to data_gear-1);
-				signal ddqi   : std_logic;
-			begin
-	
-				dqismp_p : process (dq)
-				begin
-					for j in dq_smp'range loop
-						dq_smp(j) <= dq(j*byte_size+i);
-					end loop;
-				end process;
-	
-				adjdqi_e : entity hdl4fpga.adjpha
-				generic map (
-					taps     => taps)
-				port map (
-					rst      => rst,
-					edge     => std_logic'('1'),
-					clk      => clk90,
-					req      => adjdqi_req(i),
-					rdy      => adjdqi_rdy(i),
-					step_req => dqipau_req(i),
-					step_rdy => dqipau_rdy(i),
-					smp      => dq_smp,
-					delay    => delay);
-	
-				tp_g : if i=0 generate
-					tp_dqidly(delay'length-1 downto 0) <= delay;
-				end generate;
-	
-				ddqi <= transport sdram_dq(i) after dqi_delay;
-				dqi_i : entity hdl4fpga.xc_idelay
-				generic map (
-					device => device,
-					signal_pattern => "DATA")
-				port map(
-					rst     => rst,
-					clk     => clk90,
-					delay   => delay,
-					-- delay   => dqsi_delay,
-					idatain => ddqi,
-					dataout => dqi(i));
-			end block;
-	
-			bypass_g : if bypass generate
-				phases_g : for j in 0 to data_gear-1 generate
-					sys_dqo(j*byte_size+i) <= sdram_dq(i);
-				end generate;
-			end generate;
-	
-			igbx_g : if not bypass generate
-				data_gear2_g : if data_gear=2 generate
-					igbx_i : entity hdl4fpga.igbx
-					generic map (
-						device => device,
-						size => 1,
-						gear => data_gear)
-					port map (
-						rst  => rst,
-						clk  => clk0,
-						d(0) => dqi(i),
-						q(0) => dq(0*byte_size+i),
-						q(1) => dq(1*byte_size+i));
-
-					shuffle_g : for j in 0 to data_gear-1 generate
-						sys_dqo(j*byte_size+i) <= dq(j*byte_size+i);
-					end generate;
-				end generate;
-	
-				data_gear4_g : if data_gear=4 generate
-					signal sel : std_logic;
-					signal clk90x2_n : std_logic;
-				begin
-					clk90x2_n <= not clk90x2;
-					igbx_i : entity hdl4fpga.igbx
-					generic map (
-						device => device,
-						size => 1,
-						gear => data_gear)
-					port map (
-						rst   => rst,
-						-- sclk  => clk90x2_n,
-						sclk  => clk0x2,
-						clkx2 => clk90x2,
-						clk   => clk90,
-						d(0)  => dqi(i),
-						q(0)  => dq(0*byte_size+i),
-						q(1)  => dq(1*byte_size+i),
-						q(2)  => dq(2*byte_size+i),
-						q(3)  => dq(3*byte_size+i));
-			
-					lath_g : entity hdl4fpga.latency
-					generic map (
-						n => 4,
-						d => (0, 0, 0, 1))
-					port map (
-						clk   => clk90,
-						di(0) => dq(0*byte_size+i),
-						di(1) => dq(1*byte_size+i),
-						di(2) => dq(2*byte_size+i),
-						di(3) => dq(3*byte_size+i),
-						do(0) => dqh(1*byte_size+i),
-						do(1) => dqh(2*byte_size+i),
-						do(2) => dqh(3*byte_size+i),
-						do(3) => dqh(0*byte_size+i));
-			
-					latf_g : entity hdl4fpga.latency
-					generic map (
-						n => 4,
-						d => (0, 1, 1, 1))
-					port map (
-						clk   => clk90,
-						di(0) => dq(0*byte_size+i),
-						di(1) => dq(1*byte_size+i),
-						di(2) => dq(2*byte_size+i),
-						di(3) => dq(3*byte_size+i),
-						do(0) => dqf(3*byte_size+i),
-						do(1) => dqf(0*byte_size+i),
-						do(2) => dqf(1*byte_size+i),
-						do(3) => dqf(2*byte_size+i));
-
-					process(iod_clk) 
-					begin
-						if rising_edge(iod_clk) then
-							-- sel <= dqspre xnor dqs180;
-							sel <= dqspre;
-						end if;
-					end process;
-
-					shuffle_g : for j in 0 to data_gear-1 generate
-						sys_dqo(j*byte_size+i) <= multiplex(dqf(j*byte_size+i) & dqh(j*byte_size+i), sel);
-					end generate;
-
-				end generate;
-			end generate;
-		end generate;
-	
-		sto_b : block
-			signal sti : std_logic;
-		begin
-			igbx_g : if not bypass generate
-				gbx4_g : if data_gear=4 generate
-					process (clk90)
-						variable q : std_logic;
-					begin
-						if rising_edge(clk90) then
-							-- if dqs180='1' then
-								sys_sto <= (others => dqssto);
-							-- else
-								-- sys_sto <= (others => q);
-							-- end if;
-							q := dqssto;
-						end if;
-					end process;
-				end generate;
-
-				gbx2_g : if data_gear=2 generate
-					signal clk : std_logic;
-				begin
-					clk <= not sdram_dqs;
-					sti <= sdram_sti when loopback else sdram_dmi;
-					sto_i : entity hdl4fpga.igbx
-					generic map (
-						device => hdl4fpga.profiles.xc3s,
-						gear   => data_gear)
-					port map (
-						clk   => clk,
-						sclk  => clk90x2,
-						clkx2 => clk90x2,
-						d(0)  => sti,
-						q     => sys_sto);
-				end generate;
-			end generate;
-
-			bypass_g : if bypass generate
-				phases_g : for j in 0 to data_gear-1 generate
-					sys_sto(j) <= sdram_sti when loopback else sdram_dmi;
-				end generate;
-			end generate;
-		end block;
-	
-	end block;
-
-	datao_b : block
-		constant register_on : boolean := device=xc5v or device=xc7a;
-	begin
-		oddr_g : for i in sdram_dq'range generate
-
-			signal dqo : std_logic_vector(0 to data_gear-1);
-			signal dqt : std_logic_vector(sys_dqt'range);
-			signal sw  : std_logic;
-		begin
-
-			process (iod_clk)
-			begin
-				if rising_edge(iod_clk) then
-					sw <= sys_rlrdy xor to_stdulogic(to_bit(sys_rlreq));
-				end if;
-			end process;
-
-			process (sw, clk90)
-			begin
-				for j in 0 to data_gear-1 loop
-					if sw='1' then
-						if j mod 2=0 then
-							dqo(j) <= '0';
-						else
-							dqo(j) <= '1';
-						end if;
-					elsif not register_on then
-						dqo(j) <= sys_dqi(byte_size*j+i);
-					elsif rising_edge(clk90) then
-						dqo(j) <= sys_dqi(byte_size*j+i);
-					end if;
-				end loop;
-			end process;
-
-			process (sys_dqt, clk90)
-			begin
-				if not register_on then
-					dqt <= reverse(sys_dqt);
-				elsif rising_edge(clk90) then
-					dqt <= reverse(sys_dqt);
-				end if;
-			end process;
-	
-			ogbx_i : entity hdl4fpga.alt_ogbx
-			generic map (
-				device => device,
-				size => 1,
-				gear => data_gear)
-			port map (
-				rst   => rst,
-				clk   => clk90,
-				clkx2 => clk90x2,
-				t     => dqt,
-				d     => dqo,
-				q(0)  => sdram_dq(i));
-	
-		end generate;
-	
-		dmo_g : block
-			signal dmt : std_logic_vector(sys_dmt'range);
-			signal dmd : std_logic_vector(sys_dmi'range);
-			signal dmi : std_logic_vector(dmd'range);
-		begin
-	
-			process (sys_sti, sys_dmt, sys_dmi)
-			begin
-				for i in dmi'range loop
-					if loopback then
-						dmd(i) <= reverse(sys_dmi)(i);
-					elsif sys_dmt(i)='1' then
-						dmd(i) <= reverse(sys_sti)(i);
-					else
-						dmd(i) <= reverse(sys_dmi)(i);
-					end if;
-				end loop;
-			end process;
-
-			process (dmd, clk90)
-			begin
-				if not register_on then
-					dmi <= dmd;
-				elsif rising_edge(clk90) then
-					dmi <= dmd;
-				end if;
-			end process;
-
-			process (sys_dmt, clk90)
-			begin
-				if not register_on then
-					if loopback then
-						dmt <= sys_dmt;
-					else
-						dmt <= (others => '0');
-					end if;
-				elsif rising_edge(clk90) then
-					if loopback then
-						dmt <= sys_dmt;
-					else
-						dmt <= (others => '0');
-					end if;
-				end if;
-			end process;
-	
-			ogbx_i : entity hdl4fpga.alt_ogbx
-			generic map (
-				device => device,
-				size => 1,
-				gear => data_gear)
-			port map (
-				rst   => rst,
-				clk   => clk90,
-				clkx2 => clk90x2,
-				t     => dmt,
-				d     => dmi,
-				q(0)  => sdram_dm);
-	
-		end block;
-
-		sto_g : block
-			signal d : std_logic_vector(0 to data_gear-1);
-		begin
-	
-			d <= reverse(sys_sti);
-			ogbx_i : entity hdl4fpga.alt_ogbx
-			generic map (
-				device => device,
-				size => 1,
-				gear => data_gear)
-			port map (
-				rst   => rst,
-				clk   => clk90,
-				clkx2 => clk90x2,
-				d     => d,
-				q(0)  => sdram_sto);
-	
-		end block;
-
-	end block;
-
-	xxx : block
-		signal xxxx : std_logic_vector(0 to 6);
-	begin
-	dll_i : altdll
-	generic map (
-		intended_device_family	=> "CYCLONEV",
-		delayctrlout_width	=> 7,
-		input_frequency => "303")
-	port map (
-		dll_delayctrlout => xxxx,
-		dll_clk(0)	=> clk0);
-
-	dqs_i : altdqs
-	generic map (
-		intended_device_family	=> "CYCLONEV",
-		input_frequency => "300.0",
-		number_of_dqs	=> 1)
-	port map (
-		dqs_delayctrlin => xxxx(0 to 6-1),
-		dqs_datain_h(0) => '0',
-		dqs_datain_l(0) => '1',
-		dqs_padio(0)	=> sdram_dqs,
-		inclk           => clk0,
-		outclk(0)	    => clk0);
-	end block;
 end;

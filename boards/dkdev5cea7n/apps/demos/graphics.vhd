@@ -37,7 +37,7 @@ use hdl4fpga.ipoepkg.all;
 library altera_mf;
 use altera_mf.altera_mf_components.all;
 
-architecture graphics of dk_dev_5cea7n is
+architecture graphics of dkdev5cea7n is
 
 	type app_profiles is (
 		sdr200MHz_600p,
