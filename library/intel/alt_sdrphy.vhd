@@ -92,6 +92,7 @@ entity alt_sdrphy is
 		sys_sti    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		sys_sto    : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
+		sdram_rzqin : in std_logic;
 		sdram_rst  : out std_logic := '0';
 		sdram_cs   : out std_logic_vector;
 		sdram_cke  : out std_logic_vector;
@@ -549,6 +550,7 @@ begin
 			sys_dqso   => sys_dqso(data_gear*(i+1)-1 downto data_gear*i),
 			sto_synced => sto_synced(i),
 
+			sdram_rzqin => sdram_rzqin,
 			sdram_sti  => sdram_sti(i),
 			sdram_sto  => sdram_sto(i),
 			sdram_dq   => sdram_dq(sdram_dq'length/sdram_dqs'length*(i+1)-1 downto sdram_dq'length/sdram_dqs'length*i),

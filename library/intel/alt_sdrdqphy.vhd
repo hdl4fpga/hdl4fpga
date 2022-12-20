@@ -78,6 +78,7 @@ entity alt_sdrdqphy is
 		sys_dqst   : in  std_logic_vector(data_gear-1 downto 0);
 		sto_synced : buffer std_logic;
 
+		sdram_rzqin : in std_logic;
 		sdram_dmi  : in  std_logic := '-';
 		sdram_sti  : in  std_logic := '-';
 		sdram_sto  : out std_logic;
@@ -130,49 +131,61 @@ architecture intel of alt_sdrdqphy is
 			seriesterminationcontrol   : out std_logic_vector(15 downto 0)); 
 	end component;
 
+	component  alt_dll_altdll_sp51 IS 
+	 PORT ( 
+		 dll_clk	:	IN  STD_LOGIC_VECTOR (0 DOWNTO 0);
+		 dll_delayctrlout	:	OUT  STD_LOGIC_VECTOR (6 DOWNTO 0)); 
+	END component;
+
 	signal parallelterminationcontrol :	std_logic_vector (15 downto 0);
 	signal seriesterminationcontrol	  :	std_logic_vector (15 downto 0);
 
+	signal dll_delayctrlout	:	std_logic_vector (6 downto 0); 
 begin
 
-		oct_i :  alt_oct_alt_oct_power_k4e
-		port map (
-			rzqin                      => (others => '0'),
-			parallelterminationcontrol => parallelterminationcontrol,
-			seriesterminationcontrol   =>seriesterminationcontrol); 
-	
-		dqs_i : altdq_dqs2
-		port map (
-			reset_n_core_clock_in         => '0',
-			extra_write_data_out          => open,
-			read_write_data_io            => sdram_dq,
-			strobe_io                     => '0',
-			write_strobe_clock_in         => '0',
-			write_data_in                 => sys_dqi,
-			extra_write_data_in           => sys_dmi,
-			write_oe_in                   => sys_dqt,
-			read_data_out                 => sys_dqo,
-			output_strobe_ena             => (others => '0'),
-			parallelterminationcontrol_in => parallelterminationcontrol,
-			seriesterminationcontrol_in   => seriesterminationcontrol,
-			dll_delayctrl_in              => (others => '0'),
-			capture_strobe_out            => open,
-			fr_clock_in                   => '0',
-			core_clock_in                 => '0',
-			hr_clock_in                   => '0',
-			config_dqs_ena                => '0',
-			config_io_ena                 => (others => '0'),
-			config_dqs_io_ena             => '0',
-			config_update                 => '0',
-			config_data_in                => '0',
-			config_extra_io_ena           => '0',
-			config_clock_in               => '0',
-			lfifo_rdata_en_full           => (others => '0'),
-			lfifo_rd_latency              => (others => '0'),
-			lfifo_reset_n                 => '0',
-			vfifo_qvld                    => (others => '0'),
-			vfifo_inc_wr_ptr              => (others => '0'),
-			vfifo_reset_n                 => '0',
-			rfifo_reset_n                 => '0');
+	dll_i : alt_dll_altdll_sp51
+	port map ( 
+		 dll_clk(0) => clk0,
+		 dll_delayctrlout	=> dll_delayctrlout);
+
+	oct_i :  alt_oct_alt_oct_power_k4e
+	port map (
+		rzqin(0)                   => sdram_rzqin,
+		parallelterminationcontrol => parallelterminationcontrol,
+		seriesterminationcontrol   =>seriesterminationcontrol); 
+
+	dqs_i : altdq_dqs2
+	port map (
+		reset_n_core_clock_in         => '0',
+		extra_write_data_out          => open,
+		read_write_data_io            => sdram_dq,
+		strobe_io                     => sdram_dqs,
+		write_strobe_clock_in         => clk0,
+		write_data_in                 => sys_dqi,
+		extra_write_data_in           => sys_dmi,
+		-- write_oe_in                   => sys_dqt,
+		read_data_out                 => sys_dqo,
+		output_strobe_ena             => (others => '0'),
+		parallelterminationcontrol_in => parallelterminationcontrol,
+		seriesterminationcontrol_in   => seriesterminationcontrol,
+		dll_delayctrl_in              => dll_delayctrlout,
+		capture_strobe_out            => open,
+		fr_clock_in                   => clk0,
+		core_clock_in                 => clk0,
+		hr_clock_in                   => clk0,
+		config_dqs_ena                => '0',
+		config_io_ena                 => (others => '0'),
+		config_dqs_io_ena             => '0',
+		config_update                 => '0',
+		config_data_in                => '0',
+		config_extra_io_ena           => '0',
+		config_clock_in               => '0',
+		lfifo_rdata_en_full           => (others => '0'),
+		lfifo_rd_latency              => (others => '0'),
+		lfifo_reset_n                 => '0',
+		vfifo_qvld                    => (others => '0'),
+		vfifo_inc_wr_ptr              => (others => '0'),
+		vfifo_reset_n                 => '0',
+		rfifo_reset_n                 => '0');
 
 end;

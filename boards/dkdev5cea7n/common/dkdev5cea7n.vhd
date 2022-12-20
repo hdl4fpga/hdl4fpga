@@ -71,7 +71,8 @@ entity dkdev5cea7n is
 		ddr3_dqs_p           : inout std_logic_vector( 4-1 downto 0) := (others => 'Z');
 		ddr3_dqs_n           : inout std_logic_vector( 4-1 downto 0) := (others => 'Z');
 		ddr3_dq              : inout std_logic_vector(32-1 downto 0) := (others => 'Z');
-		ddr3_odt             : out std_logic := '1');
+		ddr3_odt             : out std_logic := '1';
+		ddr3_oct_rzq         : in  std_logic);
 	
 	constant sys_freq : real    := 50.0e6;
 
@@ -178,5 +179,6 @@ entity dkdev5cea7n is
 	attribute chip_pin of ddr3_dqs_n           : signal is "J17 L16 K18 J19";
 	attribute chip_pin of ddr3_dq              : signal is "A13 D12 A14 C16 E17 C12 D17 C15 B19 B17 C17 C14 F18 A18 B18 G18 A23 E18 B23 C24 F19 B21 A21 B24 D20 D25 C22 C20 C19 C21 D22 A25";
 	attribute chip_pin of ddr3_odt             : signal is "H19";
+	attribute chip_pin of ddr3_oct_rzq         : signal is "B12";
 
 end;

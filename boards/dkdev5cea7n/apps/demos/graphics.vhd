@@ -86,19 +86,19 @@ architecture graphics of dkdev5cea7n is
     signal video_spixel   : std_logic_vector(0 to 3-1);
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
-	-- constant sclk_phases  : natural := 1;
-	-- constant sclk_edges   : natural := 1;
-	-- constant data_edges   : natural := 1;
-	-- constant cmmd_gear    : natural := 2;
-	-- constant data_gear    : natural := 4;
-	-- constant data_phases  : natural := data_gear;
+	constant sclk_phases  : natural := 1;
+	constant sclk_edges   : natural := 1;
+	constant data_edges   : natural := 1;
+	constant cmmd_gear    : natural := 2;
+	constant data_gear    : natural := 4;
+	constant data_phases  : natural := data_gear;
 
-	constant sclk_phases  : natural := 4;
-	constant sclk_edges   : natural := 2;
-	constant data_edges   : natural := 2;
-	constant cmmd_gear    : natural := 1;
-	constant data_gear    : natural := 2;
-	constant data_phases  : natural := 2;
+	-- constant sclk_phases  : natural := 4;
+	-- constant sclk_edges   : natural := 2;
+	-- constant data_edges   : natural := 2;
+	-- constant cmmd_gear    : natural := 1;
+	-- constant data_gear    : natural := 2;
+	-- constant data_phases  : natural := 2;
 
 	constant coln_size    : natural := 10;
 	constant bank_size    : natural := ddr3_ba'length;
@@ -642,6 +642,7 @@ begin
 		sys_sto    => ctlrphy_sti,
 
 		sdram_clk  => ddr3_clk,
+		sdram_rzqin => ddr3_oct_rzq,
 		sdram_rst  => ddr3_resetn,
 		sdram_cke(0)  => ddr3_cke,
 		sdram_cs(0)   => ddr3_csn,
