@@ -137,6 +137,7 @@ architecture graphics of dkdev5cea7n is
 	signal ddr_clk90      : std_logic;
 	signal ddr_clk0x2     : std_logic;
 	signal ddr_clk90x2    : std_logic;
+	signal ddr_dll        : std_logic;
 	signal ddr_ba         : std_logic_vector(bank_size-1 downto 0);
 	signal ddr_a          : std_logic_vector(addr_size-1 downto 0);
 	signal ctlrphy_rst    : std_logic_vector(cmmd_gear-1 downto 0);
@@ -241,6 +242,7 @@ begin
 			outclk_3 : out std_logic;        -- clk
 			outclk_4 : out std_logic;        -- clk
 			outclk_5 : out std_logic;        -- clk
+			outclk_6 : out std_logic;        -- clk
                 locked   : out std_logic);       -- locked.export
             end component;
 
@@ -254,8 +256,9 @@ begin
 				outclk_1 => ddr_clk90x2,
 				outclk_2 => ddr_clk0,
 				outclk_3 => ddr_clk90,
-				outclk_4 => ctlr_clks(0),
-				outclk_5 => iod_clk,
+				outclk_4 => ddr_dll,
+				outclk_5 => ctlr_clks(0),
+				outclk_6 => iod_clk,
 				locked   => open);
 
 			-- ctlrphy_dqsi <= (others => ddr_clk90);
@@ -633,7 +636,7 @@ begin
 
 		dll_i : alt_dll_altdll_sp51
 		port map ( 
-			dll_clk(0)       => sys_clk,
+			dll_clk(0)       => ddr_dll,
 			dll_delayctrlout => dll_delayctrlout);
 
     	sdrphy_e : entity hdl4fpga.alt_sdrphy
