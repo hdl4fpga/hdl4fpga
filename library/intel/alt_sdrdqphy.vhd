@@ -56,6 +56,10 @@ entity alt_sdrdqphy is
 		clk0x2     : in  std_logic := '-';
 		clk90x2    : in  std_logic := '-';
 
+		parallelterminationcontrol : in	std_logic_vector (15 downto 0);
+		seriesterminationcontrol   : in std_logic_vector (15 downto 0);
+		dll_delayctrlout           : in  std_logic_vector (6 downto 0); 
+
 		sys_wlreq  : in  std_logic := '-';
 		sys_wlrdy  : out std_logic;
 
@@ -67,9 +71,6 @@ entity alt_sdrdqphy is
 		write_rdy  : in  std_logic;
 		write_req  : buffer std_logic;
 
-		parallelterminationcontrol : in	std_logic_vector (15 downto 0);
-		seriesterminationcontrol   : in std_logic_vector (15 downto 0);
-		dll_delayctrlout           : in  std_logic_vector (6 downto 0); 
 		sys_dmt    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_sti    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_sto    : out std_logic_vector(data_gear-1 downto 0);
@@ -91,6 +92,7 @@ entity alt_sdrdqphy is
 end;
 
 architecture intel of alt_sdrdqphy is
+
 	component altdq_dqs2
 		port (
             reset_n_core_clock_in         : in    std_logic                     := '0';             --  memory_interface.export
@@ -116,15 +118,19 @@ architecture intel of alt_sdrdqphy is
             vfifo_qvld                    : in    std_logic_vector(1 downto 0)  := (others => '0'); --                  .export
             vfifo_inc_wr_ptr              : in    std_logic_vector(1 downto 0)  := (others => '0'); --                  .export
             vfifo_reset_n                 : in    std_logic                     := '0';             --                  .export
-            rfifo_reset_n                 : in    std_logic                     := '0'              --                  .export
-		);
+            rfifo_reset_n                 : in    std_logic                     := '0');            --                  .export
 	end component;
 
 	signal write_oe_in         : std_logic_vector(15 downto 0);
 	signal lfifo_rdata_en_full : std_logic_vector( 1 downto 0);
-	signal dqso : std_logic;
+	signal dqso                : std_logic;
 
 begin
+
+	sys_wlrdy <= sys_wlreq;
+	sys_rlrdy <= sys_rlreq;
+	read_req  <= read_rdy;
+	write_req <= write_rdy;
 
 	lfifo_rdata_en_full <= (others => sys_sti(0));
 	write_oe_in         <= (others => sys_dqt(0));
@@ -156,4 +162,6 @@ begin
 		rfifo_reset_n                 => '0');
 
 	sys_dqso <= (others => dqso);
+	sys_sto <= sys_sti;
+
 end;

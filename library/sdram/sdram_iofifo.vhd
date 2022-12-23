@@ -89,10 +89,8 @@ architecture mix of iofifo is
 	function to_stdlogicvector (
 		arg : byte_vector)
 		return std_logic_vector is
-		variable dat : byte_vector(arg'length-1 downto 0);
 		variable val : unsigned(arg'length*byte'length-1 downto 0);
 	begin
-		dat := arg;
 		for i in arg'range loop
 			val := val sll byte'length;
 			val(byte'range) := unsigned(arg(i));

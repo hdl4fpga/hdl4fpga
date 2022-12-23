@@ -71,7 +71,6 @@ architecture def of eth_tx is
 	signal fcs_end  : std_logic;
 	signal fcs_crc  : std_logic_vector(0 to 32-1);
 
-		signal cntr1 : unsigned(0 to unsigned_num_bits(64*8/mii_data'length-1));
 begin
 
 	mii_frm <= pl_frm;
@@ -96,7 +95,6 @@ begin
 					cntr := cntr - 1;
 				end if;
 			end if;
-			cntr1  <= cntr;
 			minpkt <= cntr(0) or setif(debug);
 		end if;
 	end process;

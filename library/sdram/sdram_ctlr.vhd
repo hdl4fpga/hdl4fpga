@@ -77,8 +77,6 @@ entity sdram_ctlr is
 		ctlr_do_req  : out std_logic;
 		ctlr_dio_req : out std_logic;
 		ctlr_act     : out std_logic;
-		ctlr_ras     : out std_logic;
-		ctlr_cas     : out std_logic;
 		ctlr_dm      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
 		ctlr_di      : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		ctlr_do      : out std_logic_vector(data_gear*word_size-1 downto 0);

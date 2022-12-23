@@ -56,6 +56,7 @@ entity alt_sdrphy is
 		clk90      : in  std_logic := '-';
 		clk0x2     : in  std_logic := '-';
 		clk90x2    : in  std_logic := '-';
+		ctlr_clk   : in  std_logic := '-';
 
 		phy_frm    : buffer std_logic;
 		phy_trdy   : in  std_logic := '-';
@@ -295,48 +296,48 @@ begin
 	sdram_clk_g : for i in sdram_clk'range generate
 		signal clk : std_logic;
 	begin
-		-- clk <= clk0 when data_gear=2 else clk0x2;
-		-- clk_i : entity hdl4fpga.alt_ogbx
-		-- generic map (
-			-- device => device,
-			-- size => 1,
-			-- gear => 2)
-		-- port map (
-			-- clk  => clk,
-			-- d(0) => '0',
-			-- d(1) => '1',
-			-- q(0) => sdram_clk(i));
+		clk <= clk0 when data_gear=2 else clk0x2;
+		clk_i : entity hdl4fpga.alt_ogbx
+		generic map (
+			device => device,
+			size => 1,
+			gear => 2)
+		port map (
+			clk  => ctlr_clk,
+			d(0) => '0',
+			d(1) => '1',
+			q(0) => sdram_clk(i));
 	end generate;
 
-	-- sdrbaphy_i : entity hdl4fpga.alt_sdrbaphy
-	-- generic map (
-		-- device => device,
-		-- data_edge => "SAME_EDGE",
-		-- gear      => cmmd_gear,
-		-- bank_size => bank_size,
-		-- addr_size => addr_size)
-	-- port map (
-		-- clk0    => clk0,
-     	-- rst     => rst,
-		-- sys_rst => sys_rst,
-		-- sys_cs  => sys_cs,
-		-- sys_cke => sys_cke,
-		-- sys_b   => ddrphy_b,
-		-- sys_a   => ddrphy_a,
-		-- sys_ras => sys_ras,
-		-- sys_cas => sys_cas,
-		-- sys_we  => sys_we,
-		-- sys_odt => sys_odt,
--- 
-		-- sdram_rst => sdram_rst,
-		-- sdram_cke => sdram_cke,
-		-- sdram_odt => sdram_odt,
-		-- sdram_cs  => sdram_cs,
-		-- sdram_ras => sdram_ras,
-		-- sdram_cas => sdram_cas,
-		-- sdram_we  => sdram_we,
-		-- sdram_b   => sdram_b,
-		-- sdram_a   => sdram_a);
+	sdrbaphy_i : entity hdl4fpga.alt_sdrbaphy
+	generic map (
+		device => device,
+		data_edge => "SAME_EDGE",
+		gear      => cmmd_gear,
+		bank_size => bank_size,
+		addr_size => addr_size)
+	port map (
+		clk0    => ctlr_clk,
+     	rst     => rst,
+		sys_rst => sys_rst,
+		sys_cs  => sys_cs,
+		sys_cke => sys_cke,
+		sys_b   => ddrphy_b,
+		sys_a   => ddrphy_a,
+		sys_ras => sys_ras,
+		sys_cas => sys_cas,
+		sys_we  => sys_we,
+		sys_odt => sys_odt,
+
+		sdram_rst => sdram_rst,
+		sdram_cke => sdram_cke,
+		sdram_odt => sdram_odt,
+		sdram_cs  => sdram_cs,
+		sdram_ras => sdram_ras,
+		sdram_cas => sdram_cas,
+		sdram_we  => sdram_we,
+		sdram_b   => sdram_b,
+		sdram_a   => sdram_a);
 
 	write_leveling_p : process (phy_wlreq, wl_rdy)
 		variable z : std_logic;
@@ -348,146 +349,146 @@ begin
 		phy_wlrdy <= z xor to_stdulogic(to_bit(phy_wlreq));
 	end process;
 
-	-- read_leveling_l_b : block
-		-- signal leveling   : std_logic;
-		-- signal sdram_act  : std_logic;
-		-- signal sdram_idle : std_logic;
--- 
-	-- begin
--- 
-		-- ddrphy_b <= sys_b when leveling='0' else (others => '0');
-		-- ddrphy_a <= sys_a when leveling='0' else (others => '0');
--- 
-		-- process (phy_trdy, clk0)
-			-- variable s_pre : std_logic;
-		-- begin
-			-- if rising_edge(clk0) then
-				-- if phy_trdy='1' then
-					-- sdram_idle <= s_pre;
-					-- case phy_cmd is
-					-- when mpu_pre =>
-						-- sdram_act <= '0';
-						-- s_pre := '1';
-					-- when mpu_act =>
-						-- sdram_act <= '1';
-						-- s_pre := '0';
-					-- when others =>
-						-- sdram_act <= '0';
-						-- s_pre := '0';
-					-- end case;
-				-- end if;
-			-- end if;
-		-- end process;
+	read_leveling_l_b : block
+		signal leveling   : std_logic;
+		signal sdram_act  : std_logic;
+		signal sdram_idle : std_logic;
 
-		-- readcycle_p : process (clk0, rd_rdy)
-			-- type states is (s_idle, s_init, s_run);
-			-- variable state : states;
-			-- variable burst : std_logic;
-			-- variable sy_wr_req : std_logic_vector(wr_req'range);
-			-- variable sy_rd_req : std_logic_vector(rd_req'range);
-		-- begin
-			-- if rising_edge(clk0) then
-				-- if rst='1' then
-					-- write_rdy <= to_stdulogic(to_bit(write_req));
-					-- read_rdy  <= to_stdulogic(to_bit(read_req));
-					-- wr_rdy    <= to_stdlogicvector(to_bitvector(wr_req));
-					-- rd_rdy    <= to_stdlogicvector(to_bitvector(rd_req));
-					-- state     := s_idle;
-					-- leveling  <= '0';
-				-- else
-					-- case state is
-					-- when s_init =>
-						-- phy_frm  <= '1';
-						-- leveling <= '1';
-						-- if sdram_act='1' then
-							-- if burst='0' then
-								-- phy_frm <= '0';
-							-- end if;
-							-- state   := s_run;
-						-- end if;
-					-- when s_run =>
-						-- if sdram_idle='1' then
-							-- leveling  <= '0';
-							-- wr_rdy    <= to_stdlogicvector(to_bitvector(sy_wr_req));
-							-- rd_rdy    <= to_stdlogicvector(to_bitvector(sy_rd_req));
-							-- read_rdy  <= to_stdulogic(to_bit(read_req));
-							-- write_rdy <= to_stdulogic(to_bit(write_req));
-							-- state     := s_idle;
-						-- end if;
-						-- if burst='0' then
-							-- phy_frm <= '0';
-						-- end if;
-					-- when s_idle =>
-						-- leveling <= '0';
-						-- phy_frm  <= '0';
-						-- if (read_rdy xor to_stdulogic(to_bit(read_req)))='1' then
-							-- phy_frm  <= '1';
-							-- phy_rw   <= '1';
-							-- leveling <= '1';
-							-- state    := s_init;
-						-- elsif (write_rdy xor to_stdulogic(to_bit(write_req)))='1' then
-							-- phy_frm  <= '1';
-							-- phy_rw   <= '0';
-							-- leveling <= '1';
-							-- state    := s_init;
-						-- end if;
-					-- end case;
--- 
-					-- if read_brst=(read_brst'range  => '0') then
-						-- burst := '0';
-					-- else
-						-- burst := '1';
-					-- end if;
--- 
-					-- if (read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
-						-- if rd_rdy /= to_stdlogicvector(to_bitvector(sy_rd_req)) then
-							-- read_req <= not read_rdy;
-						-- end if;
-					-- end if;
--- 
-					-- if (write_rdy xor to_stdulogic(to_bit(write_req)))='0' then
-						-- if wr_rdy = not to_stdlogicvector(to_bitvector(sy_wr_req)) then
-							-- write_req <= not write_rdy;
-						-- end if;
-					-- end if;
-				-- end if;
-				-- sy_wr_req := wr_req;
-				-- sy_rd_req := rd_req;
-			-- end if;
-		-- end process;
+	begin
 
-		-- process (clk0)
-			-- type states is (s_init, s_w4all, s_4rdy);
-			-- variable state : states;
-		-- begin
-			-- if rising_edge(clk0) then
-				-- if rst='1' then
-					-- phy_ini   <= '0';
-					-- phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
-					-- state := s_init;
-				-- elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
-					-- case state  is
-					-- when s_init =>
-						-- rl_req <= not to_stdlogicvector(to_bitvector(rl_rdy));
-						-- state := s_w4all;
-					-- when s_w4all =>	-- Wait for(4) All
-						-- state := s_4rdy;
-						-- for i in rl_req'range loop
-							-- if (rl_rdy(i) xor to_stdulogic(to_bit(rl_req(i))))='1' then
-								-- state := s_w4all;
-							-- end if;
-						-- end loop;
-					-- when s_4rdy => -- All(4) ready
-						-- phy_ini   <= phy_synced;
-						-- phy_rlrdy <= phy_rlreq;
-					-- end case;
-				-- else
-					-- state := s_init;
-				-- end if;
-			-- end if;
-		-- end process;
+		ddrphy_b <= sys_b when leveling='0' else (others => '0');
+		ddrphy_a <= sys_a when leveling='0' else (others => '0');
 
-	-- end block;
+		process (phy_trdy, ctlr_clk)
+			variable s_pre : std_logic;
+		begin
+			if rising_edge(ctlr_clk) then
+				if phy_trdy='1' then
+					sdram_idle <= s_pre;
+					case phy_cmd is
+					when mpu_pre =>
+						sdram_act <= '0';
+						s_pre := '1';
+					when mpu_act =>
+						sdram_act <= '1';
+						s_pre := '0';
+					when others =>
+						sdram_act <= '0';
+						s_pre := '0';
+					end case;
+				end if;
+			end if;
+		end process;
+
+		readcycle_p : process (ctlr_clk, rd_rdy)
+			type states is (s_idle, s_init, s_run);
+			variable state : states;
+			variable burst : std_logic;
+			variable sy_wr_req : std_logic_vector(wr_req'range);
+			variable sy_rd_req : std_logic_vector(rd_req'range);
+		begin
+			if rising_edge(ctlr_clk) then
+				if rst='1' then
+					write_rdy <= to_stdulogic(to_bit(write_req));
+					read_rdy  <= to_stdulogic(to_bit(read_req));
+					wr_rdy    <= to_stdlogicvector(to_bitvector(wr_req));
+					rd_rdy    <= to_stdlogicvector(to_bitvector(rd_req));
+					state     := s_idle;
+					leveling  <= '0';
+				else
+					case state is
+					when s_init =>
+						phy_frm  <= '1';
+						leveling <= '1';
+						if sdram_act='1' then
+							if burst='0' then
+								phy_frm <= '0';
+							end if;
+							state   := s_run;
+						end if;
+					when s_run =>
+						if sdram_idle='1' then
+							leveling  <= '0';
+							wr_rdy    <= to_stdlogicvector(to_bitvector(sy_wr_req));
+							rd_rdy    <= to_stdlogicvector(to_bitvector(sy_rd_req));
+							read_rdy  <= to_stdulogic(to_bit(read_req));
+							write_rdy <= to_stdulogic(to_bit(write_req));
+							state     := s_idle;
+						end if;
+						if burst='0' then
+							phy_frm <= '0';
+						end if;
+					when s_idle =>
+						leveling <= '0';
+						phy_frm  <= '0';
+						if (read_rdy xor to_stdulogic(to_bit(read_req)))='1' then
+							phy_frm  <= '1';
+							phy_rw   <= '1';
+							leveling <= '1';
+							state    := s_init;
+						elsif (write_rdy xor to_stdulogic(to_bit(write_req)))='1' then
+							phy_frm  <= '1';
+							phy_rw   <= '0';
+							leveling <= '1';
+							state    := s_init;
+						end if;
+					end case;
+
+					if read_brst=(read_brst'range  => '0') then
+						burst := '0';
+					else
+						burst := '1';
+					end if;
+
+					if (read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
+						if rd_rdy /= to_stdlogicvector(to_bitvector(sy_rd_req)) then
+							read_req <= not read_rdy;
+						end if;
+					end if;
+
+					if (write_rdy xor to_stdulogic(to_bit(write_req)))='0' then
+						if wr_rdy = not to_stdlogicvector(to_bitvector(sy_wr_req)) then
+							write_req <= not write_rdy;
+						end if;
+					end if;
+				end if;
+				sy_wr_req := wr_req;
+				sy_rd_req := rd_req;
+			end if;
+		end process;
+
+		process (ctlr_clk)
+			type states is (s_init, s_w4all, s_4rdy);
+			variable state : states;
+		begin
+			if rising_edge(ctlr_clk) then
+				if rst='1' then
+					phy_ini   <= '0';
+					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
+					state := s_init;
+				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
+					case state  is
+					when s_init =>
+						rl_req <= not to_stdlogicvector(to_bitvector(rl_rdy));
+						state := s_w4all;
+					when s_w4all =>	-- Wait for(4) All
+						state := s_4rdy;
+						for i in rl_req'range loop
+							if (rl_rdy(i) xor to_stdulogic(to_bit(rl_req(i))))='1' then
+								state := s_w4all;
+							end if;
+						end loop;
+					when s_4rdy => -- All(4) ready
+						phy_ini   <= phy_synced;
+						phy_rlrdy <= phy_rlreq;
+					end case;
+				else
+					state := s_init;
+				end if;
+			end if;
+		end process;
+
+	end block;
 
 	sdmi  <= to_blinevector(shuffle_stdlogicvector(sys_dmi));
 	ssti  <= to_blinevector(sys_sti);
@@ -500,6 +501,7 @@ begin
 	phy_synced <= '1' when sto_synced=(sto_synced'range => '1') else '0';
 
 	-- byte_g : for i in sdram_dqs'range generate
+	-- byte_g : for i in 1 to sdram_dqs'length-1 generate
 	byte_g : for i in 0 to 0 generate
 		signal tp_byte : std_logic_vector(1 to 8);
 	begin

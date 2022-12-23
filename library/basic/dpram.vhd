@@ -101,9 +101,7 @@ begin
 	end generate;
 
 	process (async_rdaddr, ram)
-		variable addr : std_logic_vector(0 to async_rdaddr'length-1);
 	begin
-		addr := async_rdaddr;
 		async_rddata <= ram(to_integer(unsigned(async_rdaddr)));
 	end process;
 		

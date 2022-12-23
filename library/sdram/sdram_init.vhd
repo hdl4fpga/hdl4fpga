@@ -947,6 +947,7 @@ begin
 
 		timer_sel_p : process (sdram_timer_id)
 		begin
+			timer_sel <= (others => '-');
 			for i in timer_tab'range loop
 				if timer_tab(i).tid = sdram_timer_id then
 					timer_sel <= std_logic_vector(to_unsigned(i, timer_sel'length));

@@ -77,7 +77,6 @@ architecture def of dmatrans is
 	signal ctlr_ras     : std_logic;
 	signal ctlr_cas     : std_logic;
 	signal state_cas    : std_logic;
-	signal ctlr_pre     : std_logic;
 	signal state_pre    : std_logic;
 	signal state_nop    : std_logic;
 	signal ctlrdma_irdy : std_logic;
@@ -166,7 +165,7 @@ begin
 
 	begin
 
-		cas_p : process(ctlr_alat, ceoc, refreq, restart, dmatrans_clk)
+		cas_p : process(ctlr_alat, ctlr_blat, ceoc, refreq, restart, dmatrans_clk)
 			type states is (activate, bursting);
 			variable state : states;
 			-- variable cntr  : unsigned(0 to unsigned_num_bits(setif(burst_length=0,1,burst_length/data_gear-1)));
@@ -329,11 +328,9 @@ begin
 				end case;
 				ctlr_ras <= ras;
 				ctlr_cas <= cas;
-				ctlr_pre <= pre;
 			else
 				ctlr_ras <= '0';
 				ctlr_cas <= '0';
-				ctlr_pre <= '0';
 			end if;
 
 			state_cas <= cas;

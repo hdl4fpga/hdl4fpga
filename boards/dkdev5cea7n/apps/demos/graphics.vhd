@@ -73,7 +73,6 @@ architecture graphics of dkdev5cea7n is
 	signal video_lckd     : std_logic;
 	signal videoio_clk    : std_logic;
 	signal video_lck      : std_logic;
-	signal video_shf_clk  : std_logic;
 	signal video_hzsync   : std_logic;
     signal video_vtsync   : std_logic;
     signal video_blank    : std_logic;
@@ -236,16 +235,17 @@ begin
             port (
                 refclk   : in  std_logic := '0'; -- refclk.clk
                 rst      : in  std_logic := '0'; -- reset.reset
-			outclk_0 : out std_logic;        -- clk
-			outclk_1 : out std_logic;        -- clk
-			outclk_2 : out std_logic;        -- clk
-			outclk_3 : out std_logic;        -- clk
-			outclk_4 : out std_logic;        -- clk
-			outclk_5 : out std_logic;        -- clk
-			outclk_6 : out std_logic;        -- clk
+                outclk_0 : out std_logic;        -- clk
+                outclk_1 : out std_logic;        -- clk
+                outclk_2 : out std_logic;        -- clk
+                outclk_3 : out std_logic;        -- clk
+                outclk_4 : out std_logic;        -- clk
+                outclk_5 : out std_logic;        -- clk
+                outclk_6 : out std_logic;        -- clk
                 locked   : out std_logic);       -- locked.export
             end component;
 
+			signal locked : std_logic;
 		begin
 
 			pll_i : alt_pll
@@ -259,8 +259,9 @@ begin
 				outclk_4 => ddr_dll,
 				outclk_5 => ctlr_clks(0),
 				outclk_6 => iod_clk,
-				locked   => open);
+				locked   => locked);
 
+			sdrphy_rst <= not locked;
 			-- ctlrphy_dqsi <= (others => ddr_clk90);
 
 		end generate;
@@ -418,8 +419,8 @@ begin
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
-			debug         => false,
-			my_mac        => x"00_40_00_01_02_03",
+			debug      => false,
+			my_mac     => x"00_40_00_01_02_03",
 			default_ipv4a => aton("192.168.0.14"))
 		port map (
 			tp         => mii_tp,
@@ -532,8 +533,8 @@ begin
 		sout_end      => si_end,
 		sout_data     => si_data,
 
-		video_clk     => '0', --video_clk,
-		video_shift_clk => '0', --video_shf_clk,
+		video_clk     => video_clk,
+		video_shift_clk => video_shift_clk,
 		video_hzsync  => video_hzsync,
 		video_vtsync  => video_vtsync,
 		video_blank   => video_blank,
@@ -577,7 +578,7 @@ begin
 		ctlrphy_dqo   => ctlrphy_dqo,
 		ctlrphy_sto   => ctlrphy_sto,
 		ctlrphy_sti   => ctlrphy_sti,
-		tp => open);
+		tp            => open);
 
 	gear_g : for i in 1 to CMMD_GEAR-1 generate
 		ctlrphy_rst(1) <= ctlrphy_rst(0);
@@ -610,13 +611,14 @@ begin
 	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
 	
 	sdrphy_b : block
-		component  alt_dll_altdll_sp51 is 
+
+		component alt_dll_altdll_sp51
 		port ( 
 			dll_clk          : in  std_logic_vector (0 downto 0);
 			dll_delayctrlout : out  std_logic_vector (6 downto 0)); 
 		end component;
 
-		component  alt_oct_alt_oct_power_k4e is 
+		component alt_oct_alt_oct_power_k4e
 			port ( 
 				rzqin                      : in  std_logic_vector( 0 downto 0) := (others => '0');
 				parallelterminationcontrol : out std_logic_vector(15 downto 0);
@@ -625,7 +627,8 @@ begin
 
 		signal parallelterminationcontrol :	std_logic_vector (15 downto 0);
 		signal seriesterminationcontrol	  :	std_logic_vector (15 downto 0);
-		signal dll_delayctrlout	:	std_logic_vector (6 downto 0); 
+		signal dll_delayctrlout	          : std_logic_vector (6 downto 0); 
+
 	begin
 
     	oct_i :  alt_oct_alt_oct_power_k4e
@@ -641,8 +644,6 @@ begin
 
     	sdrphy_e : entity hdl4fpga.alt_sdrphy
     	generic map (
-    		-- dqs_delay   => (0 => 0.954 ns, 1 => 6.954 ns),
-    		-- dqi_delay   => (0 => 0.937 ns, 1 => 6.937 ns),
     		device      => xc5v,
     		bufio       => false,
     		bypass      => false,
@@ -660,9 +661,12 @@ begin
     		clk90      => ddr_clk90,
     		clk0x2     => ddr_clk0x2,
     		clk90x2    => ddr_clk90x2,
-			dll_delayctrlout => dll_delayctrlout,
+			ctlr_clk   => ctlr_clks(0),
+
+			dll_delayctrlout           => dll_delayctrlout,
 			parallelterminationcontrol => parallelterminationcontrol,
 			seriesterminationcontrol   => seriesterminationcontrol,
+
     		phy_frm    => ctlrphy_frm,
     		phy_trdy   => ctlrphy_trdy,
     		phy_rw     => ctlrphy_rw,
@@ -698,8 +702,8 @@ begin
 
     		sdram_clk  => ddr3_clk,
     		sdram_rst  => ddr3_resetn,
-    		sdram_cke(0)  => ddr3_cke,
-    		sdram_cs(0)   => ddr3_csn,
+    		sdram_cke(0) => ddr3_cke,
+    		sdram_cs(0)  => ddr3_csn,
     		sdram_ras  => ddr3_rasn,
     		sdram_cas  => ddr3_casn,
     		sdram_we   => ddr3_wen,
@@ -710,6 +714,9 @@ begin
     		sdram_dm   => ddr3_dm,
     		sdram_dq   => ddr3_dq,
     		sdram_dqs  => ddr3_dqs_p);
+
+		ddr3_clk_p <= ddr3_clk(0);
+
 	end block;
 
     video_i : altddio_out
