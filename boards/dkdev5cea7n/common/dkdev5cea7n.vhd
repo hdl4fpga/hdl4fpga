@@ -191,7 +191,12 @@ entity dkdev5cea7n is
 	attribute chip_pin of ddr3_dm              : signal is "B14, A19, D18, D23";
 	attribute chip_pin of ddr3_dqs_p           : signal is "K17, K16, L18, K20";
 	-- attribute chip_pin of ddr3_dqs_n           : signal is "J17, L16, K18, J19";
-	attribute chip_pin of ddr3_dq              : signal is "A13, D12, A14, C16, E17, C12, D17, C15, B19, B17, C17, C14, F18, A18, B18, G18, A23, E18, B23, C24, F19, B21, A21, B24, D20, D25, C22, C20, C19, C21, D22, A25";
+	attribute chip_pin of ddr3_dq              : signal is 
+		"A13, D12, A14, C16, E17, C12, D17, C15," &
+		"B19, B17, C17, C14, F18, A18, B18, G18," &
+		"A23, E18, B23, C24, F19, B21, A21, B24," &
+		"D20, D25, C22, C20, C19, C21, D22, A25";
+
 	attribute chip_pin of ddr3_odt             : signal is "H19";
 	attribute chip_pin of ddr3_oct_rzq         : signal is "B12";
 
@@ -210,6 +215,6 @@ entity dkdev5cea7n is
 	-- attribute altera_attribute of ddr3_dqs_n   : signal is " -name IO_STANDARD ""SSTL-15""";
 	attribute altera_attribute of ddr3_dq      : signal is " -name IO_STANDARD ""SSTL-15""";
 	attribute altera_attribute of ddr3_odt     : signal is " -name IO_STANDARD ""SSTL-15""";
-	-- attribute altera_attribute of ddr3_oct_rzq : signal is " -name IO_STANDARD ""SSTL-15""";
+	attribute altera_attribute of ddr3_oct_rzq : signal is " -name IO_STANDARD ""1.5V""";
 
 end;

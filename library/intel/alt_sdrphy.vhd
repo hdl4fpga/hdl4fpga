@@ -501,13 +501,13 @@ begin
 	phy_synced <= '1' when sto_synced=(sto_synced'range => '1') else '0';
 
 	-- byte_g : for i in sdram_dqs'range generate
-	-- byte_g : for i in 1 to sdram_dqs'length-1 generate
-	byte_g : for i in 0 to 0 generate
+	byte_g : for i in 1 to sdram_dqs'length-1 generate
+	-- byte_g : for i in 1 to 1 generate
 		signal tp_byte : std_logic_vector(1 to 8);
 	begin
-		tp_g : if i=0 generate
-			tp(tp_byte'range) <= tp_byte;
-		end generate;
+		-- tp_g : if i=0 generate
+		-- 	tp(tp_byte'range) <= tp_byte;
+		-- end generate;
 
 		sdrdqphy_i : entity hdl4fpga.alt_sdrdqphy
 		generic map (
@@ -562,7 +562,7 @@ begin
 
 			sdram_sti  => sdram_sti(i),
 			sdram_sto  => sdram_sto(i),
-			sdram_dq   => sdram_dq(sdram_dq'length/sdram_dqs'length*(i+1)-1 downto sdram_dq'length/sdram_dqs'length*i),
+			sdram_dq   => sdram_dq(byte_size*(i+1)-1 downto byte_size*i),
 
 			sdram_dm   => sdram_dm(i),
 
