@@ -51,13 +51,16 @@ architecture beh of alt_ogbx is
 begin
 
 	bus_g : for i in q'range generate 
+		signal oe : std_logic_vector(t'range);
+	begin
+		oe <= not t;
     	gear1_g : if gear = 1 generate
     		ffd_i : altddio_out
     		generic map (
     			width	=> 1)
     		port map (
     			outclock    => clk,
-    			oe          => t(gear*i+0),
+    			oe          => oe(gear*i+0),
     			datain_h(0) => d(gear*i+0),
     			datain_l(0) => d(gear*i+0),
     			dataout(0)	=> q(i));
@@ -69,7 +72,7 @@ begin
     			width	=> 1)
     		port map (
     			outclock    => clk,
-    			oe          => t(gear*i+0),
+    			oe          => oe(gear*i+0),
     			datain_h(0) => d(gear*i+0),
     			datain_l(0) => d(gear*i+1),
     			dataout(0)	=> q(i));

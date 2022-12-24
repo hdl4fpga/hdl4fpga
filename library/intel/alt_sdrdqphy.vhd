@@ -55,6 +55,7 @@ entity alt_sdrdqphy is
 		clk90      : in  std_logic := '-';
 		clk0x2     : in  std_logic := '-';
 		clk90x2    : in  std_logic := '-';
+		ctlr_clk   : in  std_logic := '-';
 
 		parallelterminationcontrol : in	std_logic_vector (15 downto 0);
 		seriesterminationcontrol   : in std_logic_vector (15 downto 0);
@@ -95,36 +96,40 @@ architecture intel of alt_sdrdqphy is
 
 	component altdq_dqs2
 		port (
-            reset_n_core_clock_in         : in    std_logic                     := '0';             --  memory_interface.export
-            extra_write_data_out          : out   std_logic;                                        --                  .export
-            read_write_data_io            : inout std_logic_vector(7 downto 0)  := (others => '0'); --                  .export
-            strobe_io                     : inout std_logic                     := '0';             --                  .export
-            write_strobe_clock_in         : in    std_logic                     := '0';             --                  .export
-            write_data_in                 : in    std_logic_vector(31 downto 0) := (others => '0'); --    data_interface.export
-            extra_write_data_in           : in    std_logic_vector(3 downto 0)  := (others => '0'); --                  .export
-            write_oe_in                   : in    std_logic_vector(15 downto 0) := (others => '0'); --                  .export
-            read_data_out                 : out   std_logic_vector(31 downto 0);                    --                  .export
-            output_strobe_ena             : in    std_logic_vector(1 downto 0)  := (others => '0'); --                  .export
-            parallelterminationcontrol_in : in    std_logic_vector(15 downto 0) := (others => '0'); --              Misc.export
-            seriesterminationcontrol_in   : in    std_logic_vector(15 downto 0) := (others => '0'); --                  .export
-            dll_delayctrl_in              : in    std_logic_vector(6 downto 0)  := (others => '0'); --                  .export
-            capture_strobe_out            : out   std_logic;                                        --     Capture_clock.clk
-            fr_clock_in                   : in    std_logic                     := '0';             --          fr_clock.clk
-            core_clock_in                 : in    std_logic                     := '0';             --        core_clock.clk
-            hr_clock_in                   : in    std_logic                     := '0';             --          hr_clock.clk
-            lfifo_rdata_en_full           : in    std_logic_vector(1 downto 0)  := (others => '0'); -- hard_fifo_control.export
-            lfifo_rd_latency              : in    std_logic_vector(4 downto 0)  := (others => '0'); --                  .export
-            lfifo_reset_n                 : in    std_logic                     := '0';             --                  .export
-            vfifo_qvld                    : in    std_logic_vector(1 downto 0)  := (others => '0'); --                  .export
-            vfifo_inc_wr_ptr              : in    std_logic_vector(1 downto 0)  := (others => '0'); --                  .export
-            vfifo_reset_n                 : in    std_logic                     := '0';             --                  .export
-            rfifo_reset_n                 : in    std_logic                     := '0');            --                  .export
+			reset_n_core_clock_in         : in    std_logic                     := '0';             --  memory_interface.export
+			extra_write_data_out          : out   std_logic;                                        --                  .export
+			read_write_data_io            : inout std_logic_vector(7 downto 0)  := (others => '0'); --                  .export
+			strobe_io                     : inout std_logic                     := '0';             --                  .export
+			write_strobe_clock_in         : in    std_logic                     := '0';             --                  .export
+			write_data_in                 : in    std_logic_vector(31 downto 0) := (others => '0'); --    data_interface.export
+			extra_write_data_in           : in    std_logic_vector(3 downto 0)  := (others => '0'); --                  .export
+			write_oe_in                   : in    std_logic_vector(15 downto 0) := (others => '0'); --                  .export
+			read_data_out                 : out   std_logic_vector(31 downto 0);                    --                  .export
+			output_strobe_ena             : in    std_logic_vector(1 downto 0)  := (others => '0'); --                  .export
+			parallelterminationcontrol_in : in    std_logic_vector(15 downto 0) := (others => '0'); --              Misc.export
+			seriesterminationcontrol_in   : in    std_logic_vector(15 downto 0) := (others => '0'); --                  .export
+			dll_delayctrl_in              : in    std_logic_vector(6 downto 0)  := (others => '0'); --                  .export
+			capture_strobe_out            : out   std_logic;                                        --     Capture_clock.clk
+			fr_clock_in                   : in    std_logic                     := '0';             --          fr_clock.clk
+			core_clock_in                 : in    std_logic                     := '0';             --        core_clock.clk
+			hr_clock_in                   : in    std_logic                     := '0';             --          hr_clock.clk
+			lfifo_rdata_en_full           : in    std_logic_vector(1 downto 0)  := (others => '0'); -- hard_fifo_control.export
+			lfifo_rd_latency              : in    std_logic_vector(4 downto 0)  := (others => '0'); --                  .export
+			lfifo_reset_n                 : in    std_logic                     := '0';             --                  .export
+			vfifo_qvld                    : in    std_logic_vector(1 downto 0)  := (others => '0'); --                  .export
+			vfifo_inc_wr_ptr              : in    std_logic_vector(1 downto 0)  := (others => '0'); --                  .export
+			vfifo_reset_n                 : in    std_logic                     := '0';             --                  .export
+			rfifo_reset_n                 : in    std_logic                     := '0'              --                  .export
+		);
 	end component;
 
 	signal write_oe_in         : std_logic_vector(15 downto 0);
 	signal lfifo_rdata_en_full : std_logic_vector( 1 downto 0);
+	signal lfifo_rd_latency    : std_logic_vector( 4 downto 0);
+	signal vfifo_inc_wr_ptr    : std_logic_vector( 1 downto 0);
 	signal dqso                : std_logic;
 
+	signal read_data_out                 : std_logic_vector(sys_dqo'range);
 begin
 
 	sys_wlrdy <= sys_wlreq;
@@ -134,6 +139,7 @@ begin
 
 	lfifo_rdata_en_full <= (others => sys_sti(0));
 	write_oe_in         <= (others => sys_dqt(0));
+	lfifo_rd_latency    <= (others => sys_sti(0));
 
 	dqs_i : altdq_dqs2
 	port map (
@@ -144,24 +150,24 @@ begin
 		write_data_in                 => sys_dqi,
 		extra_write_data_in           => sys_dmi,
 		write_oe_in                   => write_oe_in,
-		read_data_out                 => sys_dqo,
+		read_data_out                 => read_data_out,
 		output_strobe_ena             => lfifo_rdata_en_full,
 		parallelterminationcontrol_in => parallelterminationcontrol,
 		seriesterminationcontrol_in   => seriesterminationcontrol,
 		dll_delayctrl_in              => dll_delayctrlout,
 		capture_strobe_out            => dqso,
 		fr_clock_in                   => clk0x2,
-		core_clock_in                 => iod_clk,
 		hr_clock_in                   => clk0,
 		lfifo_rdata_en_full           => lfifo_rdata_en_full,
-		lfifo_rd_latency              => (others => sys_sti(0)),
-		lfifo_reset_n                 => '0',
+		lfifo_rd_latency              => lfifo_rd_latency,
+		lfifo_reset_n                 => sys_sti(0),
 		vfifo_qvld                    => lfifo_rdata_en_full,
-		vfifo_inc_wr_ptr              => (others => sys_sti(0)),
-		vfifo_reset_n                 => '0',
-		rfifo_reset_n                 => '0');
+		vfifo_inc_wr_ptr              => vfifo_inc_wr_ptr,
+		vfifo_reset_n                 => sys_sti(0),
+		rfifo_reset_n                 => sys_sti(0));
 
 	sys_dqso <= (others => dqso);
-	sys_sto <= sys_sti;
+	sys_sto  <= sys_sti;
+	sys_dqo  <= read_data_out;
 
 end;

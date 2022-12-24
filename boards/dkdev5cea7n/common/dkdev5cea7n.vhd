@@ -28,12 +28,12 @@ entity dkdev5cea7n is
 	generic (
 		debug                : boolean := false);
 	port (
-		clkin_50_fpga_top    : in std_logic;
-		clkin_50_fpga_right  : in std_logic;
-		diff_clkin_top_125_p : in std_logic;
-		diff_clkin_top_125_n : in std_logic;
-		diff_clkin_bot_125_p : in std_logic;
-		diff_clkin_bot_125_n : in std_logic;
+		clkin_50_fpga_top    : in std_logic := '0';
+		clkin_50_fpga_right  : in std_logic := '0';
+		diff_clkin_top_125_p : in std_logic := '0';
+		diff_clkin_top_125_n : in std_logic := '0';
+		diff_clkin_bot_125_p : in std_logic := '0';
+		diff_clkin_bot_125_n : in std_logic := '0';
 
 		user_pbs             : in  std_logic_vector(4-1 downto 0) := (others => 'Z');
 		user_dipsws          : in  std_logic_vector(4-1 downto 0) := (others => 'Z');
@@ -48,26 +48,26 @@ entity dkdev5cea7n is
 		eneta_gtx_clk        : out std_logic;
 		eneta_tx_en          : out std_logic;
 		eneta_tx_data        : out std_logic_vector(0 to 4-1);
-		eneta_rx_dv          : in  std_logic;
-		eneta_rx_data        : in  std_logic_vector(0 to 4-1);
-		eneta_rx_clk         : in  std_logic;
+		eneta_rx_dv          : in  std_logic := '0';
+		eneta_rx_data        : in  std_logic_vector(0 to 4-1) := (others => '0');
+		eneta_rx_clk         : in  std_logic := '0';
 		eneta_mdio           : inout std_logic := '0';
 		eneta_mdc            : out std_logic   := '0';
 		eneta_intn           : in  std_logic   := '0';
 
-		hsmc_prsntn          : inout std_logic;
-		hsmc_jtag_tck        : inout std_logic;
-		hsmc_sda             : inout std_logic;
-		hsmc_scl             : inout std_logic;
+		hsmc_prsntn          : inout std_logic := '0';
+		hsmc_jtag_tck        : inout std_logic := '0';
+		hsmc_sda             : inout std_logic := '0';
+		hsmc_scl             : inout std_logic := '0';
 
 		hsmc_clk_out         : out std_logic_vector(1-1 downto 0);
-		hsmc_clk_in          : in  std_logic_vector(1-1 downto 0);
-		hsmc_d               : inout std_logic_vector(4-1 downto 0);
+		hsmc_clk_in          : in  std_logic_vector(1-1 downto 0) := (others => '0');
+		hsmc_d               : inout std_logic_vector(4-1 downto 0) := (others => '0');
 
 		hsmc_clk_out_p       : out std_logic_vector( 2-1 downto 0);
 		hsmc_tx_d_p          : out std_logic_vector(17-1 downto 0);
-		hsmc_clk_in_p        : in  std_logic_vector( 2-1 downto 0);
-		hsmc_rx_d_p          : in  std_logic_vector(17-1 downto 0);
+		hsmc_clk_in_p        : in  std_logic_vector( 2-1 downto 0) := (others => '0');
+		hsmc_rx_d_p          : in  std_logic_vector(17-1 downto 0) := (others => '0');
 
 		-- hsmc_clk_out_n       : out std_logic_vector( 2-1 downto 0);
 		-- hsmc_tx_d_n          : out std_logic_vector(17-1 downto 0);
@@ -89,7 +89,7 @@ entity dkdev5cea7n is
 		-- ddr3_dqs_n           : inout std_logic_vector( 4-1 downto 0) := (others => 'Z');
 		ddr3_dq              : inout std_logic_vector(32-1 downto 0) := (others => 'Z');
 		ddr3_odt             : out std_logic := '1';
-		ddr3_oct_rzq         : in  std_logic);
+		ddr3_oct_rzq         : in  std_logic := 'Z');
 	
 	constant sys_freq : real    := 50.0e6;
 

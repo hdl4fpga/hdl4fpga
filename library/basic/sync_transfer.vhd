@@ -72,7 +72,7 @@ begin
 		end if;
 	end process;
 
-	mem_e : entity hdl4fpga.dpram(def)
+	mem_e : entity hdl4fpga.dpram
 	generic map (
 		synchronous_rdaddr => false,
 		synchronous_rddata => true)
