@@ -140,6 +140,7 @@ begin
 	lfifo_rdata_en_full <= (others => sys_sti(0));
 	write_oe_in         <= (others => sys_dqt(0));
 	lfifo_rd_latency    <= (others => sys_sti(0));
+	vfifo_inc_wr_ptr    <= (others => sys_sti(0));
 
 	dqs_i : altdq_dqs2
 	port map (
