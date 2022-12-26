@@ -500,8 +500,8 @@ begin
 
 	phy_synced <= '1' when sto_synced=(sto_synced'range => '1') else '0';
 
-	-- byte_g : for i in sdram_dqs'range generate
-	byte_g : for i in 0 to 0 generate
+	byte_g : for i in sdram_dqs'range generate
+	-- byte_g : for i in 0 to 0 generate
 		signal tp_byte : std_logic_vector(1 to 8);
 	begin
 		-- tp_g : if i=0 generate
