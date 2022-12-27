@@ -41,17 +41,29 @@ library hdl4fpga;
 
 architecture intel of dbram is
 begin
-	ram_e : entity hdl4fpga.dpram 
-	generic map (
-		synchronous_rdaddr => false,
-		synchronous_rddata => false)
-	port map (
-		rd_clk  => clk,
-		rd_addr => ra,
-		rd_data => do,
+	dram_p : process (ra, clk)
+		type ram16x4 is array(0 to 2**wa'length-1) of std_logic_vector(di'range);
+		variable ram : ram16x4;
+	begin
+		if rising_edge(clk) then
+			if we='1' then
+				ram(to_integer(unsigned(wa))) := di;
+			end if;
+		end if;
+		do <= ram(to_integer(unsigned(ra)));
+	end process;
 
-		wr_clk  => clk,
-		wr_ena  => we,
-		wr_addr => wa,
-		wr_data => di);
+	-- ram_e : entity hdl4fpga.dpram 
+	-- generic map (
+		-- synchronous_rdaddr => false,
+		-- synchronous_rddata => false)
+	-- port map (
+		-- rd_clk  => clk,
+		-- rd_addr => ra,
+		-- rd_data => do,
+-- 
+		-- wr_clk  => clk,
+		-- wr_ena  => we,
+		-- wr_addr => wa,
+		-- wr_data => di);
 end;

@@ -36,19 +36,17 @@ library altera;
 use altera.altera_primitives_components.all;
 
 architecture intel of sff is
-	signal s : std_logic;
-	signal r : std_logic;
 begin
-	s <= not sr and     d;
-	r <= sr     or  not d;
-	ffd_i : srff
-	port map (
-		clrn => '1',
-		prn  => '1',
-		clk  => clk,
-		s    => s,
-		r    => r,
-		q    => q);
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			if sr='1' then
+				q <= '0';
+			else
+				q <= d;
+			end if;
+		end if;
+	end process;
 end;
 
 library ieee;
@@ -67,15 +65,15 @@ library altera;
 use altera.altera_primitives_components.all;
 
 architecture intel of aff is
-	signal clrn : std_logic;
 begin
-	clrn <= not ar;
-	ffd_i : dffe
-	port map (
-		prn  => '1',
-		clrn => clrn,
-		clk  => clk,
-		ena  => ena,
-		d    => d,
-		q    => q);
+	process (ar, clk)
+	begin
+		if ar='1' then
+			q <= '0';
+		elsif rising_edge(clk) then
+			if ena='1' then
+				q <= d;
+			end if;
+		end if;
+	end process;
 end;

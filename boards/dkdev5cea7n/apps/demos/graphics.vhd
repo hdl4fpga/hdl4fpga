@@ -36,6 +36,8 @@ use hdl4fpga.ipoepkg.all;
 
 library altera_mf;
 use altera_mf.altera_mf_components.all;
+library altera_lnsim;
+use altera_lnsim.altera_lnsim_components.all;
 
 architecture graphics of dkdev5cea7n is
 
@@ -251,7 +253,7 @@ begin
 			pll_i : alt_pll
 			port map (
 				refclk   => clkin_50_fpga_top,
-				rst      => '0',
+				rst      => user_pbs(0),
 				outclk_0 => ddr_clk0x2,
 				outclk_1 => ddr_clk90x2,
 				outclk_2 => ddr_clk0,
@@ -612,32 +614,25 @@ begin
 	
 	sdrphy_b : block
 
-		component alt_dll_altdll_sp51
-		port ( 
-			dll_clk          : in  std_logic_vector (0 downto 0);
-			dll_delayctrlout : out  std_logic_vector (6 downto 0)); 
-		end component;
-
-		component alt_oct_alt_oct_power_k4e
-			port ( 
-				rzqin                      : in  std_logic_vector( 0 downto 0) := (others => '0');
-				parallelterminationcontrol : out std_logic_vector(15 downto 0);
-				seriesterminationcontrol   : out std_logic_vector(15 downto 0)); 
-		end component;
-
-		signal parallelterminationcontrol :	std_logic_vector (15 downto 0);
-		signal seriesterminationcontrol	  :	std_logic_vector (15 downto 0);
-		signal dll_delayctrlout	          : std_logic_vector (6 downto 0); 
+		signal parallelterminationcontrol :	std_logic_vector (16-1 downto 0);
+		signal seriesterminationcontrol	  :	std_logic_vector (16-1 downto 0);
+		signal dll_delayctrlout	          : std_logic_vector ( 7-1 downto 0); 
 
 	begin
 
-    	oct_i :  alt_oct_alt_oct_power_k4e
-    	port map (
+		oct_i : alt_oct_power
+		generic map (
+			width_ptc => 16,
+			width_stc => 16)
+		port map(
     		rzqin(0)                   => ddr3_oct_rzq,
     		parallelterminationcontrol => parallelterminationcontrol,
-    		seriesterminationcontrol   =>seriesterminationcontrol); 
+    		seriesterminationcontrol   => seriesterminationcontrol); 
 
-		dll_i : alt_dll_altdll_sp51
+		dll_i : altdll
+        generic map (
+			delayctrlout_width => 7,
+			input_frequency     => "3333")
 		port map ( 
 			dll_clk(0)       => ddr_dll,
 			dll_delayctrlout => dll_delayctrlout);

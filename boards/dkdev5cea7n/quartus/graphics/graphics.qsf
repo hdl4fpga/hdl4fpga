@@ -71,8 +71,11 @@ set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 
 
 
-set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
-set_global_assignment -name SDC_FILE graphics.sdc
+
+
+set_global_assignment -name PROJECT_IP_REGENERATION_POLICY ALWAYS_REGENERATE_IP
+set_global_assignment -name DEVICE_FILTER_SPEED_GRADE 7
+set_global_assignment -name SYSTEMVERILOG_FILE /opt/intelFPGA/lite/22.1std/ip/altera/altdq_dqs2/altdq_dqs2_acv_cyclonev.sv -library work
 set_global_assignment -name VHDL_FILE ../../../../library/demos/eth_tb.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/xilinx/adjsto.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/xilinx/adjpha.vhd -library hdl4fpga
@@ -174,9 +177,7 @@ set_global_assignment -name VHDL_FILE ../../../../library/mii/arp_rx.vhd -librar
 set_global_assignment -name VHDL_FILE ../../../../library/uart/uart_tx.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/uart/uart_rx.vhd -library hdl4fpga
 set_global_assignment -name SOURCE_FILE db/graphics.cmp.rdb
-set_global_assignment -name QIP_FILE altdq_dqs2.qip
-set_global_assignment -name SIP_FILE altdq_dqs2.sip
-set_global_assignment -name QIP_FILE alt_oct.qip
-set_global_assignment -name QIP_FILE alt_dll.qip
 set_global_assignment -name QIP_FILE alt_pll.qip
 set_global_assignment -name SIP_FILE alt_pll.sip
+set_global_assignment -name SDC_FILE graphics.sdc
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

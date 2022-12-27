@@ -162,7 +162,6 @@ architecture mix of demo_graphics is
 	signal ctlr_frm       : std_logic;
 	signal ctlr_trdy      : std_logic;
 	signal ctlr_rw        : std_logic;
-	signal ctlr_act       : std_logic;
 	signal ctlr_refreq    : std_logic;
 	signal ctlr_alat      : std_logic_vector(2 downto 0);
 	signal ctlr_blat      : std_logic_vector(2 downto 0);
@@ -199,7 +198,6 @@ architecture mix of demo_graphics is
 	alias  dmaio_do_dv    : std_logic is dma_do_dv(1);
 
 	signal ctlr_fch       : std_logic;
-	signal ctlr_win_do    : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 
 	alias ctlr_clk        : std_logic is ctlr_clks(0);
 begin
@@ -1007,12 +1005,10 @@ begin
 			ctlr_cmd     => ctlr_cmd,
 			ctlr_di_dv   => ctlr_di_dv,
 			ctlr_di_req  => ctlr_di_req,
-			ctlr_act     => ctlr_act,
 			ctlr_di      => ctlr_di,
 			ctlr_dm      => ctlr_dm,
 			ctlr_do_dv   => ctlr_do_dv,
 			ctlr_do      => ctlr_do,
-			ctlr_win_do  => ctlr_win_do,
 			ctlr_refreq  => ctlr_refreq,
 			phy_inirdy   => ctlrphy_ini,
 			phy_frm      => ctlrphy_irdy,

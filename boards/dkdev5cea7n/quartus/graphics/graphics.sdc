@@ -1,13 +1,15 @@
-create_clock           -name  refclk -period 10.000 [get_ports {refclk}
+create_clock           -name  refclk -period 10.000 [get_ports {clkin_50_fpga_top}
 derive_pll_clocks
 
 create_clock           -name  virtual_dqs_in -period 5.000
-create_clock           -name  dqs_in -period 5.000[get_ports {strobe_in}]
+for (set i 0) {$a < 2} {incr a} {
+    create_clock  -name  dqs_in$i -period 5.000 [get_ports {ddr3_dqs_p[$i]}]
+}
 
-set_input_delay        -clock {virtual_dqs_in} -max -add_delay 0.400 [get_ports {read_write_data_io[*]}]
-set_input_delay        -clock {virtual_dqs_in} -min -add_delay -0.400 [get_ports{read_write_data_io[*]}]
-set_input_delay        -clock {virtual_dqs_in} -clock_fall -max -add_delay 0.400 [get_ports {read_write_data_io[*]}]
-set_input_delay        -clock {virtual_dqs_in} -clock_fall -min -add_delay -0.400 [get_ports {read_write_data_data_io[*]}]
+set_input_delay        -clock {virtual_dqs_in} -max -add_delay 0.400 [get_ports {ddr3_dq[*]}]
+set_input_delay        -clock {virtual_dqs_in} -min -add_delay -0.400 [get_ports{ddr3_dq[*]}]
+set_input_delay        -clock {virtual_dqs_in} -clock_fall -max -add_delay 0.400 [get_ports {ddr3_dq[*]}]
+set_input_delay        -clock {virtual_dqs_in} -clock_fall -min -add_delay -0.400 [get_ports {dd3_dq[*]}]
 
 create_generated_clock -name dqs_out -source [get_pins{dqdqs2_inst| bidir_hardfifo_dqdqs2_inst|altdq_dqs2_inst|phy_clkbuf|outclk[1] }] -phase 0 [get_ports {strobe_io}] -add
 

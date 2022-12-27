@@ -94,42 +94,92 @@ end;
 
 architecture intel of alt_sdrdqphy is
 
-	component altdq_dqs2
-		port (
-			reset_n_core_clock_in         : in    std_logic                     := '0';             --  memory_interface.export
-			extra_write_data_out          : out   std_logic;                                        --                  .export
-			read_write_data_io            : inout std_logic_vector(7 downto 0)  := (others => '0'); --                  .export
-			strobe_io                     : inout std_logic                     := '0';             --                  .export
-			write_strobe_clock_in         : in    std_logic                     := '0';             --                  .export
-			write_data_in                 : in    std_logic_vector(31 downto 0) := (others => '0'); --    data_interface.export
-			extra_write_data_in           : in    std_logic_vector(3 downto 0)  := (others => '0'); --                  .export
-			write_oe_in                   : in    std_logic_vector(15 downto 0) := (others => '0'); --                  .export
-			read_data_out                 : out   std_logic_vector(31 downto 0);                    --                  .export
-			output_strobe_ena             : in    std_logic_vector(1 downto 0)  := (others => '0'); --                  .export
-			parallelterminationcontrol_in : in    std_logic_vector(15 downto 0) := (others => '0'); --              Misc.export
-			seriesterminationcontrol_in   : in    std_logic_vector(15 downto 0) := (others => '0'); --                  .export
-			dll_delayctrl_in              : in    std_logic_vector(6 downto 0)  := (others => '0'); --                  .export
-			capture_strobe_out            : out   std_logic;                                        --     Capture_clock.clk
-			fr_clock_in                   : in    std_logic                     := '0';             --          fr_clock.clk
-			core_clock_in                 : in    std_logic                     := '0';             --        core_clock.clk
-			hr_clock_in                   : in    std_logic                     := '0';             --          hr_clock.clk
-			lfifo_rdata_en_full           : in    std_logic_vector(1 downto 0)  := (others => '0'); -- hard_fifo_control.export
-			lfifo_rd_latency              : in    std_logic_vector(4 downto 0)  := (others => '0'); --                  .export
-			lfifo_reset_n                 : in    std_logic                     := '0';             --                  .export
-			vfifo_qvld                    : in    std_logic_vector(1 downto 0)  := (others => '0'); --                  .export
-			vfifo_inc_wr_ptr              : in    std_logic_vector(1 downto 0)  := (others => '0'); --                  .export
-			vfifo_reset_n                 : in    std_logic                     := '0';             --                  .export
-			rfifo_reset_n                 : in    std_logic                     := '0'              --                  .export
-		);
-	end component;
-
 	signal write_oe_in         : std_logic_vector(15 downto 0);
 	signal lfifo_rdata_en_full : std_logic_vector( 1 downto 0);
 	signal lfifo_rd_latency    : std_logic_vector( 4 downto 0);
 	signal vfifo_inc_wr_ptr    : std_logic_vector( 1 downto 0);
 	signal dqso                : std_logic;
 
-	signal read_data_out                 : std_logic_vector(sys_dqo'range);
+	component altdq_dqs2_acv_cyclonev
+		generic (
+			PIN_WIDTH                       : natural :=  8;
+			PIN_TYPE                        : string  := "bidir";
+			USE_INPUT_PHASE_ALIGNMENT       : string  :=  "false";
+			USE_OUTPUT_PHASE_ALIGNMENT      : string  :=  "false";
+			USE_LDC_AS_LOW_SKEW_CLOCK       : string  :=  "false";
+			USE_HALF_RATE_INPUT             : string  :=  "false";
+			USE_HALF_RATE_OUTPUT            : string  :=  "true";
+			DIFFERENTIAL_CAPTURE_STROBE     : string  :=  "false";
+			SEPARATE_CAPTURE_STROBE         : string  :=  "false";
+			INPUT_FREQ                      : real    :=  300.0;
+			INPUT_FREQ_PS                   : string  :=  "3333 ps";
+			DELAY_CHAIN_BUFFER_MODE         : string  :=  "high";
+			DQS_PHASE_SETTING               : natural :=  0;
+			DQS_PHASE_SHIFT                 : natural :=  0;
+			DQS_ENABLE_PHASE_SETTING        : natural :=  0;
+			USE_DYNAMIC_CONFIG              : string  :=  "false";
+			INVERT_CAPTURE_STROBE           : string  :=  "true";
+			SWAP_CAPTURE_STROBE_POLARITY    : string  :=  "false";
+			USE_TERMINATION_CONTROL         : string  :=  "true";
+			USE_DQS_ENABLE                  : string  :=  "false";
+			USE_OUTPUT_STROBE               : string  :=  "true";
+			USE_OUTPUT_STROBE_RESET         : string  :=  "false";
+			DIFFERENTIAL_OUTPUT_STROBE      : string  :=  "false";
+			USE_BIDIR_STROBE                : string  :=  "true";
+			REVERSE_READ_WORDS              : string  :=  "false";
+			EXTRA_OUTPUT_WIDTH              : natural :=  1;
+			DYNAMIC_MODE                    : string  :=  "false";
+			OCT_SERIES_TERM_CONTROL_WIDTH   : natural :=  16; 
+			OCT_PARALLEL_TERM_CONTROL_WIDTH : natural :=  16; 
+			DLL_WIDTH                       : natural :=  7;
+			USE_DATA_OE_FOR_OCT             : string  :=  "true";
+			DQS_ENABLE_WIDTH                : natural :=  1;
+			USE_OCT_ENA_IN_FOR_OCT          : string  :=  "false";
+			PREAMBLE_TYPE                   : string  :=  "high";
+			EMIF_UNALIGNED_PREAMBLE_SUPPORT : string  :=  "false";
+			EMIF_BYPASS_OCT_DDIO            : string  :=  "false";
+			USE_OFFSET_CTRL                 : string  :=  "false";
+			HR_DDIO_OUT_HAS_THREE_REGS      : string  :=  "false";
+			DQS_ENABLE_PHASECTRL            : string  :=  "false";
+			USE_2X_FF                       : string  :=  "false";
+			DLL_USE_2X_CLK                  : string  :=  "false";
+			USE_DQS_TRACKING                : string  :=  "false";
+			USE_HARD_FIFOS                  : string  :=  "true";
+			USE_DQSIN_FOR_VFIFO_READ        : string  :=  "false";
+			CALIBRATION_SUPPORT             : string  :=  "false";
+			NATURAL_ALIGNMENT               : string  :=  "false";
+			SEPERATE_LDC_FOR_WRITE_STROBE   : string  :=  "false";
+			HHP_HPS                         : string  :=  "false");
+		port (
+
+			core_clock_in          : in  std_logic := '0';
+			reset_n_core_clock_in  : in  std_logic := '0';
+			fr_clock_in            : in  std_logic := '0';
+			hr_clock_in            : in  std_logic := '0';
+			write_strobe_clock_in  : in  std_logic := '0';
+			read_write_data_io     : inout std_logic_vector(PIN_WIDTH-1 downto 0) := (others => '0');
+			write_oe_in            : in    std_logic_vector(2*PIN_WIDTH-1 downto 0)      := (others => '1');
+			strobe_io              : inout std_logic := '0';
+			output_strobe_ena      : in  std_logic_vector(2-1 downto 0) := (others => '0');
+			read_data_out          : out std_logic_vector(2*2*PIN_WIDTH-1 downto 0);
+			capture_strobe_out     : out std_logic;
+			write_data_in          : in  std_logic_vector(2*2*PIN_WIDTH-1 downto 0);
+			extra_write_data_in    : in  std_logic_vector(2*2*EXTRA_OUTPUT_WIDTH-1 downto 0) := (others => '0');
+			extra_write_data_out   : out std_logic_vector(EXTRA_OUTPUT_WIDTH-1 downto 0);
+			parallelterminationcontrol_in : in std_logic_vector(OCT_SERIES_TERM_CONTROL_WIDTH-1 downto 0);
+			seriesterminationcontrol_in   : in std_logic_vector(OCT_SERIES_TERM_CONTROL_WIDTH-1 downto 0);
+			lfifo_rdata_en         : in  std_logic_vector(2-1 downto 0) := (others => '0');
+			lfifo_rdata_en_full    : in  std_logic_vector(2-1 downto 0) := (others => '0');
+			lfifo_rd_latency       : in  std_logic_vector(5-1 downto 0) := (others => '0');
+			lfifo_reset_n          : in  std_logic := '0';
+			lfifo_rdata_valid      : out std_logic;
+			vfifo_qvld             : in  std_logic_vector(2-1 downto 0);
+			vfifo_inc_wr_ptr       : in  std_logic_vector(2-1 downto 0);
+			vfifo_reset_n          : in  std_logic := '0';
+			rfifo_reset_n          : in  std_logic := '0';
+			dll_delayctrl_in       : in  std_logic_vector(DLL_WIDTH-1 downto 0));
+	end component;
+   
 begin
 
 	sys_wlrdy <= sys_wlreq;
@@ -137,38 +187,83 @@ begin
 	read_req  <= read_rdy;
 	write_req <= write_rdy;
 
-	lfifo_rdata_en_full <= (others => sys_sti(0));
+	lfifo_rdata_en_full <= (others => sys_sti(1));
 	write_oe_in         <= (others => sys_dqt(0));
-	lfifo_rd_latency    <= (others => sys_sti(0));
-	vfifo_inc_wr_ptr    <= (others => sys_sti(0));
+	lfifo_rd_latency    <= (others => sys_sti(1));
+	vfifo_inc_wr_ptr    <= (others => sys_sti(1));
 
-	dqs_i : altdq_dqs2
+	altdq_dqs2_i : altdq_dqs2_acv_cyclonev
+	generic map (
+		PIN_WIDTH                       => 8,
+		PIN_TYPE                        =>"bidir",
+		USE_INPUT_PHASE_ALIGNMENT       => "false",
+		USE_OUTPUT_PHASE_ALIGNMENT      => "false",
+		USE_LDC_AS_LOW_SKEW_CLOCK       => "false",
+		USE_HALF_RATE_INPUT             => "false",
+		USE_HALF_RATE_OUTPUT            => "true",
+		DIFFERENTIAL_CAPTURE_STROBE     => "false",
+		SEPARATE_CAPTURE_STROBE         => "false",
+		INPUT_FREQ                      => 300.0,
+		INPUT_FREQ_PS                   => "3333 ps",
+		DELAY_CHAIN_BUFFER_MODE         => "high",
+		DQS_PHASE_SETTING               => 0,
+		DQS_PHASE_SHIFT                 => 0,
+		DQS_ENABLE_PHASE_SETTING        => 0,
+		USE_DYNAMIC_CONFIG              => "false",
+		INVERT_CAPTURE_STROBE           => "true",
+		SWAP_CAPTURE_STROBE_POLARITY    => "false",
+		USE_TERMINATION_CONTROL         => "true",
+		USE_DQS_ENABLE                  => "false",
+		USE_OUTPUT_STROBE               => "true",
+		USE_OUTPUT_STROBE_RESET         => "false",
+		DIFFERENTIAL_OUTPUT_STROBE      => "false",
+		USE_BIDIR_STROBE                => "true",
+		REVERSE_READ_WORDS              => "false",
+		EXTRA_OUTPUT_WIDTH              => 1,
+		DYNAMIC_MODE                    => "false",
+		OCT_SERIES_TERM_CONTROL_WIDTH   => 16, 
+		OCT_PARALLEL_TERM_CONTROL_WIDTH => 16, 
+		DLL_WIDTH                       => 7,
+		USE_DATA_OE_FOR_OCT             => "true",
+		DQS_ENABLE_WIDTH                => 1,
+		USE_OCT_ENA_IN_FOR_OCT          => "false",
+		PREAMBLE_TYPE                   => "high",
+		EMIF_UNALIGNED_PREAMBLE_SUPPORT => "false",
+		EMIF_BYPASS_OCT_DDIO            => "false",
+		USE_OFFSET_CTRL                 => "false",
+		HR_DDIO_OUT_HAS_THREE_REGS      => "false",
+		DQS_ENABLE_PHASECTRL            => "false",
+		USE_2X_FF                       => "false",
+		DLL_USE_2X_CLK                  => "false",
+		USE_DQS_TRACKING                => "false",
+		USE_HARD_FIFOS                  => "true",
+		USE_DQSIN_FOR_VFIFO_READ        => "false",
+		CALIBRATION_SUPPORT             => "false",
+		NATURAL_ALIGNMENT               => "false",
+		SEPERATE_LDC_FOR_WRITE_STROBE   => "false",
+		HHP_HPS                         => "false")
 	port map (
-		extra_write_data_out          => sdram_dm,
-		read_write_data_io            => sdram_dq,
 		strobe_io                     => sdram_dqs,
+		extra_write_data_out(0)       => sdram_dm,
+		read_write_data_io            => sdram_dq,
 		write_strobe_clock_in         => clk0x2,
-		write_data_in                 => sys_dqi,
 		extra_write_data_in           => sys_dmi,
+		write_data_in                 => sys_dqi,
 		write_oe_in                   => write_oe_in,
-		read_data_out                 => read_data_out,
+		capture_strobe_out            => dqso,
 		output_strobe_ena             => lfifo_rdata_en_full,
 		parallelterminationcontrol_in => parallelterminationcontrol,
 		seriesterminationcontrol_in   => seriesterminationcontrol,
 		dll_delayctrl_in              => dll_delayctrlout,
-		capture_strobe_out            => dqso,
 		fr_clock_in                   => clk0x2,
 		hr_clock_in                   => clk0,
+		read_data_out                 => sys_dqo,
 		lfifo_rdata_en_full           => lfifo_rdata_en_full,
 		lfifo_rd_latency              => lfifo_rd_latency,
-		lfifo_reset_n                 => sys_sti(0),
 		vfifo_qvld                    => lfifo_rdata_en_full,
-		vfifo_inc_wr_ptr              => vfifo_inc_wr_ptr,
-		vfifo_reset_n                 => sys_sti(0),
-		rfifo_reset_n                 => sys_sti(0));
-
+		vfifo_inc_wr_ptr              => vfifo_inc_wr_ptr);
+   
 	sys_dqso <= (others => dqso);
 	sys_sto  <= sys_sti;
-	sys_dqo  <= read_data_out;
 
 end;
