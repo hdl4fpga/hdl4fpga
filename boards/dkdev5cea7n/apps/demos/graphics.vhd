@@ -233,35 +233,46 @@ begin
 	begin
 
 		gbx4_g : if data_gear=4 generate 
-            component alt_pll
-            port (
-                refclk   : in  std_logic := '0'; -- refclk.clk
-                rst      : in  std_logic := '0'; -- reset.reset
-                outclk_0 : out std_logic;        -- clk
-                outclk_1 : out std_logic;        -- clk
-                outclk_2 : out std_logic;        -- clk
-                outclk_3 : out std_logic;        -- clk
-                outclk_4 : out std_logic;        -- clk
-                outclk_5 : out std_logic;        -- clk
-                outclk_6 : out std_logic;        -- clk
-                locked   : out std_logic);       -- locked.export
-            end component;
-
 			signal locked : std_logic;
 		begin
-
-			pll_i : alt_pll
+			pll_i : altera_pll
+			generic map (
+				fractional_vco_multiplier => "false",
+				reference_clock_frequency => "50.0 MHz",
+				operation_mode => "normal",
+				number_of_clocks => 7,
+				output_clock_frequency0 => "300.000000 MHz",
+				phase_shift0 => "0 ps",
+				duty_cycle0 => 50,
+				output_clock_frequency1 => "300.000000 MHz",
+				phase_shift1 => "2500 ps",
+				duty_cycle1 => 50,
+				output_clock_frequency2 => "150.000000 MHz",
+				phase_shift2 => "0 ps",
+				duty_cycle2 => 50,
+				output_clock_frequency3 => "150.000000 MHz",
+				phase_shift3 => "5000 ps",
+				duty_cycle3 => 50,
+				output_clock_frequency4 => "300.000000 MHz",
+				phase_shift4 => "0 ps",
+				duty_cycle4 => 50,
+				output_clock_frequency5 => "150.000000 MHz",
+				phase_shift5 => "0 ps",
+				duty_cycle5 => 50,
+				output_clock_frequency6 => "25.000000 MHz",
+				phase_shift6 => "0 ps",
+				duty_cycle6 => 50)
 			port map (
-				refclk   => clkin_50_fpga_top,
-				rst      => user_pbs(0),
-				outclk_0 => ddr_clk0x2,
-				outclk_1 => ddr_clk90x2,
-				outclk_2 => ddr_clk0,
-				outclk_3 => ddr_clk90,
-				outclk_4 => ddr_dll,
-				outclk_5 => ctlr_clks(0),
-				outclk_6 => iod_clk,
-				locked   => locked);
+				rst       => user_pbs(0),
+				refclk    => clkin_50_fpga_top,
+				outclk(0) => ddr_clk0x2,
+				outclk(1) => ddr_clk90x2,
+				outclk(2) => ddr_clk0,
+				outclk(3) => ddr_clk90,
+				outclk(4) => ddr_dll,
+				outclk(5) => ctlr_clks(0),
+				outclk(6) => iod_clk,
+				locked	  => locked);
 
 			sdrphy_rst <= not locked;
 			-- ctlrphy_dqsi <= (others => ddr_clk90);
