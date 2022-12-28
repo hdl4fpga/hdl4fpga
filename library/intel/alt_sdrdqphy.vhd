@@ -133,7 +133,7 @@ architecture intel of alt_sdrdqphy is
 			OCT_PARALLEL_TERM_CONTROL_WIDTH : natural :=  16; 
 			DLL_WIDTH                       : natural :=  7;
 			USE_DATA_OE_FOR_OCT             : string  :=  "true";
-			DQS_ENABLE_WIDTH                : natural :=  1;
+			DQS_ENABLE_WIDTH                : natural :=  2;
 			USE_OCT_ENA_IN_FOR_OCT          : string  :=  "false";
 			PREAMBLE_TYPE                   : string  :=  "high";
 			EMIF_UNALIGNED_PREAMBLE_SUPPORT : string  :=  "false";
@@ -162,6 +162,7 @@ architecture intel of alt_sdrdqphy is
 			strobe_io              : inout std_logic := '0';
 			output_strobe_ena      : in  std_logic_vector(2-1 downto 0) := (others => '0');
 			read_data_out          : out std_logic_vector(2*2*PIN_WIDTH-1 downto 0);
+			capture_strobe_ena     : in std_logic_vector(DQS_ENABLE_WIDTH-1 downto 0) := (others => '1');
 			capture_strobe_out     : out std_logic;
 			write_data_in          : in  std_logic_vector(2*2*PIN_WIDTH-1 downto 0);
 			extra_write_data_in    : in  std_logic_vector(2*2*EXTRA_OUTPUT_WIDTH-1 downto 0) := (others => '0');

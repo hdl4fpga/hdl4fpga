@@ -195,7 +195,7 @@ architecture graphics of dkdev5cea7n is
 	signal mii_tp         : std_logic_vector(1 to 32);
 	signal ser_data       : std_logic_vector(0 to 8-1);
 	constant sdram_tcp    : real := 1.0/300.0e6;
-	constant videotiming_id    : videotiming_ids := pclk40_00m800x600at60;
+	constant videotiming_id : videotiming_ids := pclk40_00m800x600at60;
 
 begin
 
@@ -214,22 +214,22 @@ begin
 	end process;
 	
 	ddr_b : block
-		-- port (
-			-- sys_rst     : in  std_logic;
-			-- sys_clk     : in  std_logic;
-			-- sdrphy_rst  : out std_logic;
-			-- ddr_clk0x2  : out std_logic;
-			-- ddr_clk90x2 : out std_logic;
-			-- ddr_clk0    : out std_logic;
-			-- ddr_clk90   : out std_logic)
-		-- port map (
-			-- sys_rst     => sys_rst,
-			-- sys_clk     => sys_clk,
-			-- sdrphy_rst  => sdrphy_rst,
-			-- ddr_clk0x2  => ddr_clk0x2,
-			-- ddr_clk90x2 => ddr_clk90x2,
-			-- ddr_clk0    => ddr_clk0,
-			-- ddr_clk90   => ddr_clk90);
+		port (
+			sys_rst     : in  std_logic;
+			sys_clk     : in  std_logic;
+			sdrphy_rst  : out std_logic;
+			ddr_clk0x2  : out std_logic;
+			ddr_clk90x2 : out std_logic;
+			ddr_clk0    : out std_logic;
+			ddr_clk90   : out std_logic);
+		port map (
+			sys_rst     => user_pbs(0),
+			sys_clk     => clkin_50_fpga_top,
+			sdrphy_rst  => sdrphy_rst,
+			ddr_clk0x2  => ddr_clk0x2,
+			ddr_clk90x2 => ddr_clk90x2,
+			ddr_clk0    => ddr_clk0,
+			ddr_clk90   => ddr_clk90);
 	begin
 
 		gbx4_g : if data_gear=4 generate 
@@ -263,8 +263,8 @@ begin
 				phase_shift6 => "0 ps",
 				duty_cycle6 => 50)
 			port map (
-				rst       => user_pbs(0),
-				refclk    => clkin_50_fpga_top,
+				rst       => sys_rst,
+				refclk    => sys_clk,
 				outclk(0) => ddr_clk0x2,
 				outclk(1) => ddr_clk90x2,
 				outclk(2) => ddr_clk0,
