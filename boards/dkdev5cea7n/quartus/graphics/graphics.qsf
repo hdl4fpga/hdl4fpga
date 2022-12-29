@@ -75,7 +75,7 @@ set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 
 set_global_assignment -name PROJECT_IP_REGENERATION_POLICY ALWAYS_REGENERATE_IP
 set_global_assignment -name DEVICE_FILTER_SPEED_GRADE 7
-set_global_assignment -name SYSTEMVERILOG_FILE /opt/intelFPGA/lite/22.1std/ip/altera/altdq_dqs2/altdq_dqs2_acv_cyclonev.sv -library work
+set_global_assignment -name SYSTEMVERILOG_FILE /opt/intelFPGA/lite/22.1std/ip/altera/altdq_dqs2/altdq_dqs2_acv_cyclonev.sv
 set_global_assignment -name VHDL_FILE ../../../../library/demos/eth_tb.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/xilinx/adjsto.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/xilinx/adjpha.vhd -library hdl4fpga

@@ -251,7 +251,6 @@ begin
 		extra_write_data_in           => sys_dmi,
 		write_data_in                 => sys_dqi,
 		write_oe_in                   => write_oe_in,
-		capture_strobe_out            => dqso,
 		output_strobe_ena             => lfifo_rdata_en_full,
 		parallelterminationcontrol_in => parallelterminationcontrol,
 		seriesterminationcontrol_in   => seriesterminationcontrol,
@@ -264,7 +263,7 @@ begin
 		vfifo_qvld                    => lfifo_rdata_en_full,
 		vfifo_inc_wr_ptr              => vfifo_inc_wr_ptr);
    
-	sys_dqso <= (others => dqso);
+	sys_dqso <= (others => ctlr_clk);
 	sys_sto  <= sys_sti;
 
 end;
