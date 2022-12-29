@@ -46,6 +46,8 @@ HDL4FPGA__video_sync__mix = $(LIB_HDL4FPGA)/video_sync/mix.dat
 HDL4FPGA__video_sync = $(LIB_HDL4FPGA)/video_sync/_primary.dat
 HDL4FPGA__vga2dvid__behavioral = $(LIB_HDL4FPGA)/vga2dvid/behavioral.dat
 HDL4FPGA__vga2dvid = $(LIB_HDL4FPGA)/vga2dvid/_primary.dat
+HDL4FPGA__vector__def = $(LIB_HDL4FPGA)/vector/def.dat
+HDL4FPGA__vector = $(LIB_HDL4FPGA)/vector/_primary.dat
 HDL4FPGA__udp_tx__def = $(LIB_HDL4FPGA)/udp_tx/def.dat
 HDL4FPGA__udp_tx = $(LIB_HDL4FPGA)/udp_tx/_primary.dat
 HDL4FPGA__udp_rx__def = $(LIB_HDL4FPGA)/udp_rx/def.dat
@@ -62,8 +64,12 @@ HDL4FPGA__tmds_encoder__behavioral = $(LIB_HDL4FPGA)/tmds_encoder/behavioral.dat
 HDL4FPGA__tmds_encoder = $(LIB_HDL4FPGA)/tmds_encoder/_primary.dat
 HDL4FPGA__timer__def = $(LIB_HDL4FPGA)/timer/def.dat
 HDL4FPGA__timer = $(LIB_HDL4FPGA)/timer/_primary.dat
+HDL4FPGA__textboxpkg__body = $(LIB_HDL4FPGA)/textboxpkg/body.dat
+HDL4FPGA__textboxpkg = $(LIB_HDL4FPGA)/textboxpkg/_primary.dat
 HDL4FPGA__sync_transfer__def = $(LIB_HDL4FPGA)/sync_transfer/def.dat
 HDL4FPGA__sync_transfer = $(LIB_HDL4FPGA)/sync_transfer/_primary.dat
+HDL4FPGA__stof__def = $(LIB_HDL4FPGA)/stof/def.dat
+HDL4FPGA__stof = $(LIB_HDL4FPGA)/stof/_primary.dat
 HDL4FPGA__so_data__def = $(LIB_HDL4FPGA)/so_data/def.dat
 HDL4FPGA__so_data = $(LIB_HDL4FPGA)/so_data/_primary.dat
 HDL4FPGA__sio_udp__struct = $(LIB_HDL4FPGA)/sio_udp/struct.dat
@@ -126,6 +132,27 @@ HDL4FPGA__sdram_db__body = $(LIB_HDL4FPGA)/sdram_db/body.dat
 HDL4FPGA__sdram_db = $(LIB_HDL4FPGA)/sdram_db/_primary.dat
 HDL4FPGA__sdram_ctlr__mix = $(LIB_HDL4FPGA)/sdram_ctlr/mix.dat
 HDL4FPGA__sdram_ctlr = $(LIB_HDL4FPGA)/sdram_ctlr/_primary.dat
+HDL4FPGA__scopeiopkg__body = $(LIB_HDL4FPGA)/scopeiopkg/body.dat
+HDL4FPGA__scopeiopkg = $(LIB_HDL4FPGA)/scopeiopkg/_primary.dat
+HDL4FPGA__scopeio_video = $(LIB_HDL4FPGA)/scopeio_video/_primary.dat
+HDL4FPGA__scopeio_textbox = $(LIB_HDL4FPGA)/scopeio_textbox/_primary.dat
+HDL4FPGA__scopeio_rgtrvtaxis__def = $(LIB_HDL4FPGA)/scopeio_rgtrvtaxis/def.dat
+HDL4FPGA__scopeio_rgtrvtaxis = $(LIB_HDL4FPGA)/scopeio_rgtrvtaxis/_primary.dat
+HDL4FPGA__scopeio_rgtrtrigger__def = $(LIB_HDL4FPGA)/scopeio_rgtrtrigger/def.dat
+HDL4FPGA__scopeio_rgtrtrigger = $(LIB_HDL4FPGA)/scopeio_rgtrtrigger/_primary.dat
+HDL4FPGA__scopeio_rgtrmyip__def = $(LIB_HDL4FPGA)/scopeio_rgtrmyip/def.dat
+HDL4FPGA__scopeio_rgtrmyip = $(LIB_HDL4FPGA)/scopeio_rgtrmyip/_primary.dat
+HDL4FPGA__scopeio_rgtrhzaxis__def = $(LIB_HDL4FPGA)/scopeio_rgtrhzaxis/def.dat
+HDL4FPGA__scopeio_rgtrhzaxis = $(LIB_HDL4FPGA)/scopeio_rgtrhzaxis/_primary.dat
+HDL4FPGA__scopeio_rgtrgain__def = $(LIB_HDL4FPGA)/scopeio_rgtrgain/def.dat
+HDL4FPGA__scopeio_rgtrgain = $(LIB_HDL4FPGA)/scopeio_rgtrgain/_primary.dat
+HDL4FPGA__scopeio_layout__beh = $(LIB_HDL4FPGA)/scopeio_layout/beh.dat
+HDL4FPGA__scopeio_layout = $(LIB_HDL4FPGA)/scopeio_layout/_primary.dat
+HDL4FPGA__scopeio_btof__def = $(LIB_HDL4FPGA)/scopeio_btof/def.dat
+HDL4FPGA__scopeio_btof = $(LIB_HDL4FPGA)/scopeio_btof/_primary.dat
+HDL4FPGA__scopeio_amp__beh = $(LIB_HDL4FPGA)/scopeio_amp/beh.dat
+HDL4FPGA__scopeio_amp = $(LIB_HDL4FPGA)/scopeio_amp/_primary.dat
+HDL4FPGA__scopeio = $(LIB_HDL4FPGA)/scopeio/_primary.dat
 HDL4FPGA__rom__def = $(LIB_HDL4FPGA)/rom/def.dat
 HDL4FPGA__rom = $(LIB_HDL4FPGA)/rom/_primary.dat
 HDL4FPGA__profiles = $(LIB_HDL4FPGA)/profiles/_primary.dat
@@ -205,6 +232,8 @@ HDL4FPGA__ecp3_sdrdqphy__ecp3 = $(LIB_HDL4FPGA)/ecp3_sdrdqphy/ecp3.dat
 HDL4FPGA__ecp3_sdrdqphy = $(LIB_HDL4FPGA)/ecp3_sdrdqphy/_primary.dat
 HDL4FPGA__ecp3_sdrbaphy__ecp3 = $(LIB_HDL4FPGA)/ecp3_sdrbaphy/ecp3.dat
 HDL4FPGA__ecp3_sdrbaphy = $(LIB_HDL4FPGA)/ecp3_sdrbaphy/_primary.dat
+HDL4FPGA__dtos__def = $(LIB_HDL4FPGA)/dtos/def.dat
+HDL4FPGA__dtos = $(LIB_HDL4FPGA)/dtos/_primary.dat
 HDL4FPGA__draw_vline__def = $(LIB_HDL4FPGA)/draw_vline/def.dat
 HDL4FPGA__draw_vline = $(LIB_HDL4FPGA)/draw_vline/_primary.dat
 HDL4FPGA__draw_line__def = $(LIB_HDL4FPGA)/draw_line/def.dat
@@ -231,6 +260,8 @@ HDL4FPGA__demo_graphics__mix = $(LIB_HDL4FPGA)/demo_graphics/mix.dat
 HDL4FPGA__demo_graphics = $(LIB_HDL4FPGA)/demo_graphics/_primary.dat
 HDL4FPGA__dbram__xilinx = $(LIB_HDL4FPGA)/dbram/xilinx.dat
 HDL4FPGA__dbram = $(LIB_HDL4FPGA)/dbram/_primary.dat
+HDL4FPGA__dbdbbl__def = $(LIB_HDL4FPGA)/dbdbbl/def.dat
+HDL4FPGA__dbdbbl = $(LIB_HDL4FPGA)/dbdbbl/_primary.dat
 HDL4FPGA__crc__def = $(LIB_HDL4FPGA)/crc/def.dat
 HDL4FPGA__crc = $(LIB_HDL4FPGA)/crc/_primary.dat
 HDL4FPGA__cp850x8x8x128to255 = $(LIB_HDL4FPGA)/cp850x8x8x128to255/_primary.dat
@@ -247,9 +278,15 @@ HDL4FPGA__cga_rom__beh = $(LIB_HDL4FPGA)/cga_rom/beh.dat
 HDL4FPGA__cga_rom = $(LIB_HDL4FPGA)/cga_rom/_primary.dat
 HDL4FPGA__cga_adapter__struct = $(LIB_HDL4FPGA)/cga_adapter/struct.dat
 HDL4FPGA__cga_adapter = $(LIB_HDL4FPGA)/cga_adapter/_primary.dat
+HDL4FPGA__btof__def = $(LIB_HDL4FPGA)/btof/def.dat
+HDL4FPGA__btof = $(LIB_HDL4FPGA)/btof/_primary.dat
+HDL4FPGA__btod__def = $(LIB_HDL4FPGA)/btod/def.dat
+HDL4FPGA__btod = $(LIB_HDL4FPGA)/btod/_primary.dat
 HDL4FPGA__box_edges__def = $(LIB_HDL4FPGA)/box_edges/def.dat
 HDL4FPGA__box_edges = $(LIB_HDL4FPGA)/box_edges/_primary.dat
 HDL4FPGA__bcdfonts = $(LIB_HDL4FPGA)/bcdfonts/_primary.dat
+HDL4FPGA__bcddiv2e__def = $(LIB_HDL4FPGA)/bcddiv2e/def.dat
+HDL4FPGA__bcddiv2e = $(LIB_HDL4FPGA)/bcddiv2e/_primary.dat
 HDL4FPGA__base__body = $(LIB_HDL4FPGA)/base/body.dat
 HDL4FPGA__base = $(LIB_HDL4FPGA)/base/_primary.dat
 HDL4FPGA__barrel__beh = $(LIB_HDL4FPGA)/barrel/beh.dat
@@ -309,6 +346,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__video_sync) \
     $(HDL4FPGA__vga2dvid__behavioral) \
     $(HDL4FPGA__vga2dvid) \
+    $(HDL4FPGA__vector__def) \
+    $(HDL4FPGA__vector) \
     $(HDL4FPGA__udp_tx__def) \
     $(HDL4FPGA__udp_tx) \
     $(HDL4FPGA__udp_rx__def) \
@@ -325,8 +364,12 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__tmds_encoder) \
     $(HDL4FPGA__timer__def) \
     $(HDL4FPGA__timer) \
+    $(HDL4FPGA__textboxpkg__body) \
+    $(HDL4FPGA__textboxpkg) \
     $(HDL4FPGA__sync_transfer__def) \
     $(HDL4FPGA__sync_transfer) \
+    $(HDL4FPGA__stof__def) \
+    $(HDL4FPGA__stof) \
     $(HDL4FPGA__so_data__def) \
     $(HDL4FPGA__so_data) \
     $(HDL4FPGA__sio_udp__struct) \
@@ -389,6 +432,27 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__sdram_db) \
     $(HDL4FPGA__sdram_ctlr__mix) \
     $(HDL4FPGA__sdram_ctlr) \
+    $(HDL4FPGA__scopeiopkg__body) \
+    $(HDL4FPGA__scopeiopkg) \
+    $(HDL4FPGA__scopeio_video) \
+    $(HDL4FPGA__scopeio_textbox) \
+    $(HDL4FPGA__scopeio_rgtrvtaxis__def) \
+    $(HDL4FPGA__scopeio_rgtrvtaxis) \
+    $(HDL4FPGA__scopeio_rgtrtrigger__def) \
+    $(HDL4FPGA__scopeio_rgtrtrigger) \
+    $(HDL4FPGA__scopeio_rgtrmyip__def) \
+    $(HDL4FPGA__scopeio_rgtrmyip) \
+    $(HDL4FPGA__scopeio_rgtrhzaxis__def) \
+    $(HDL4FPGA__scopeio_rgtrhzaxis) \
+    $(HDL4FPGA__scopeio_rgtrgain__def) \
+    $(HDL4FPGA__scopeio_rgtrgain) \
+    $(HDL4FPGA__scopeio_layout__beh) \
+    $(HDL4FPGA__scopeio_layout) \
+    $(HDL4FPGA__scopeio_btof__def) \
+    $(HDL4FPGA__scopeio_btof) \
+    $(HDL4FPGA__scopeio_amp__beh) \
+    $(HDL4FPGA__scopeio_amp) \
+    $(HDL4FPGA__scopeio) \
     $(HDL4FPGA__rom__def) \
     $(HDL4FPGA__rom) \
     $(HDL4FPGA__profiles) \
@@ -468,6 +532,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__ecp3_sdrdqphy) \
     $(HDL4FPGA__ecp3_sdrbaphy__ecp3) \
     $(HDL4FPGA__ecp3_sdrbaphy) \
+    $(HDL4FPGA__dtos__def) \
+    $(HDL4FPGA__dtos) \
     $(HDL4FPGA__draw_vline__def) \
     $(HDL4FPGA__draw_vline) \
     $(HDL4FPGA__draw_line__def) \
@@ -494,6 +560,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__demo_graphics) \
     $(HDL4FPGA__dbram__xilinx) \
     $(HDL4FPGA__dbram) \
+    $(HDL4FPGA__dbdbbl__def) \
+    $(HDL4FPGA__dbdbbl) \
     $(HDL4FPGA__crc__def) \
     $(HDL4FPGA__crc) \
     $(HDL4FPGA__cp850x8x8x128to255) \
@@ -510,9 +578,15 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__cga_rom) \
     $(HDL4FPGA__cga_adapter__struct) \
     $(HDL4FPGA__cga_adapter) \
+    $(HDL4FPGA__btof__def) \
+    $(HDL4FPGA__btof) \
+    $(HDL4FPGA__btod__def) \
+    $(HDL4FPGA__btod) \
     $(HDL4FPGA__box_edges__def) \
     $(HDL4FPGA__box_edges) \
     $(HDL4FPGA__bcdfonts) \
+    $(HDL4FPGA__bcddiv2e__def) \
+    $(HDL4FPGA__bcddiv2e) \
     $(HDL4FPGA__base__body) \
     $(HDL4FPGA__base) \
     $(HDL4FPGA__barrel__beh) \
@@ -653,10 +727,39 @@ $(HDL4FPGA__base__body) : ../basic/base.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/base.vhd
 
+$(HDL4FPGA__bcddiv2e) \
+$(HDL4FPGA__bcddiv2e__def) : ../basic/bcddiv2e.vhd \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(HDL4FPGA__base)
+	$(VCOM) -2002 -work hdl4fpga ../basic/bcddiv2e.vhd
+
 $(HDL4FPGA__bcdfonts) : ../video/fonts/bcdfonts.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../video/fonts/bcdfonts.vhd
+
+$(HDL4FPGA__btod) \
+$(HDL4FPGA__btod__def) : ../basic/btod.vhd \
+		$(HDL4FPGA__dbdbbl) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../basic/btod.vhd
+
+$(HDL4FPGA__btof) \
+$(HDL4FPGA__btof__def) : ../basic/btof.vhd \
+		$(HDL4FPGA__vector) \
+		$(HDL4FPGA__stof) \
+		$(HDL4FPGA__dtos) \
+		$(HDL4FPGA__btod) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../basic/btof.vhd
 
 $(HDL4FPGA__cga_adapter) \
 $(HDL4FPGA__cga_adapter__struct) : ../video/cga_adapter.vhd \
@@ -669,7 +772,6 @@ $(HDL4FPGA__cga_adapter__struct) : ../video/cga_adapter.vhd \
 		$(HDL4FPGA__cp850x8x8x128to255) \
 		$(HDL4FPGA__cp850x8x8x0to127) \
 		$(HDL4FPGA__cgafonts) \
-		$(HDL4FPGA__modeline_calculator) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -747,6 +849,14 @@ $(HDL4FPGA__crc__def) : ../basic/crc.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/crc.vhd
 
+$(HDL4FPGA__dbdbbl) \
+$(HDL4FPGA__dbdbbl__def) : ../basic/dbdbbl.vhd \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../basic/dbdbbl.vhd
+
 $(HDL4FPGA__dbram) \
 $(HDL4FPGA__dbram__xilinx) : ../xilinx/dbram.vhd \
 		$(IEEE__numeric_std) \
@@ -772,7 +882,6 @@ $(HDL4FPGA__demo_graphics__mix) : ../demos/demo_graphics.vhd \
 		$(HDL4FPGA__sio_rgtr) \
 		$(HDL4FPGA__txn_buffer) \
 		$(HDL4FPGA__sio_sin) \
-		$(HDL4FPGA__modeline_calculator) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__sdram_param) \
 		$(IEEE__math_real) \
@@ -874,6 +983,15 @@ $(HDL4FPGA__dpram__def) : ../basic/dpram.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/dpram.vhd
+
+$(HDL4FPGA__dtos) \
+$(HDL4FPGA__dtos__def) : ../basic/dtos.vhd \
+		$(HDL4FPGA__bcddiv2e) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../basic/dtos.vhd
 
 $(HDL4FPGA__ecp3_sdrbaphy) \
 $(HDL4FPGA__ecp3_sdrbaphy__ecp3) : ../latticesemi/ecp3/ecp3_sdrbaphy.vhd \
@@ -1011,7 +1129,6 @@ $(HDL4FPGA__graphics__def) : ../video/graphics.vhd \
 		$(HDL4FPGA__desser) \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__serdes) \
-		$(HDL4FPGA__modeline_calculator) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -1278,6 +1395,149 @@ $(HDL4FPGA__rom__def) : ../basic/rom.vhd \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../basic/rom.vhd
 
+$(HDL4FPGA__scopeio) : ../scope/scopeio.vhd \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio.vhd
+
+$(HDL4FPGA__scopeio_amp) \
+$(HDL4FPGA__scopeio_amp__beh) : ../scope/scopeio_amp.vhd \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_amp.vhd
+
+$(HDL4FPGA__scopeio_btof) \
+$(HDL4FPGA__scopeio_btof__def) : ../scope/scopeio_btof.vhd \
+		$(HDL4FPGA__btof) \
+		$(HDL4FPGA__arbiter) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_btof.vhd
+
+$(HDL4FPGA__scopeio_layout) \
+$(HDL4FPGA__scopeio_layout__beh) : ../scope/scopeio_layout.vhd \
+		$(HDL4FPGA__latency) \
+		$(HDL4FPGA__videobox) \
+		$(HDL4FPGA__videobox_layout) \
+		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_layout.vhd
+
+$(HDL4FPGA__scopeio_rgtrgain) \
+$(HDL4FPGA__scopeio_rgtrgain__def) : ../scope/scopeio_rgtrgain.vhd \
+		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_rgtrgain.vhd
+
+$(HDL4FPGA__scopeio_rgtrhzaxis) \
+$(HDL4FPGA__scopeio_rgtrhzaxis__def) : ../scope/scopeio_rgtrhzaxis.vhd \
+		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_rgtrhzaxis.vhd
+
+$(HDL4FPGA__scopeio_rgtrmyip) \
+$(HDL4FPGA__scopeio_rgtrmyip__def) : ../scope/scopeio_rgtrmyip.vhd \
+		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_rgtrmyip.vhd
+
+$(HDL4FPGA__scopeio_rgtrtrigger) \
+$(HDL4FPGA__scopeio_rgtrtrigger__def) : ../scope/scopeio_rgtrtrigger.vhd \
+		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_rgtrtrigger.vhd
+
+$(HDL4FPGA__scopeio_rgtrvtaxis) \
+$(HDL4FPGA__scopeio_rgtrvtaxis__def) : ../scope/scopeio_rgtrvtaxis.vhd \
+		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_rgtrvtaxis.vhd
+
+$(HDL4FPGA__scopeio_textbox) : ../scope/scopeio_textbox.vhd \
+		$(HDL4FPGA__bcdfonts) \
+		$(HDL4FPGA__cp850x8x16x128to255) \
+		$(HDL4FPGA__cp850x8x16x0to127) \
+		$(HDL4FPGA__cp850x8x8x128to255) \
+		$(HDL4FPGA__cp850x8x8x0to127) \
+		$(HDL4FPGA__cgafonts) \
+		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_textbox.vhd
+
+$(HDL4FPGA__scopeio_video) : ../scope/scopeio_video.vhd \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_video.vhd
+
+$(HDL4FPGA__scopeiopkg) \
+$(HDL4FPGA__scopeiopkg__body) : ../scope/scopeiopkg.vhd \
+		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeiopkg.vhd
+
 $(HDL4FPGA__sdram_ctlr) \
 $(HDL4FPGA__sdram_ctlr__mix) : ../sdram/sdram_ctlr.vhd \
 		$(IEEE__std_logic_textio) \
@@ -1434,7 +1694,6 @@ $(HDL4FPGA__ser_debug__def) : ../demos/ser_debug.vhd \
 		$(HDL4FPGA__cp850x8x8x0to127) \
 		$(HDL4FPGA__cgafonts) \
 		$(HDL4FPGA__ser_display) \
-		$(HDL4FPGA__modeline_calculator) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -1447,7 +1706,6 @@ $(HDL4FPGA__ser_display__def) : ../video/ser_display.vhd \
 		$(HDL4FPGA__cga_adapter) \
 		$(HDL4FPGA__serdes) \
 		$(HDL4FPGA__video_sync) \
-		$(HDL4FPGA__modeline_calculator) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__bcdfonts) \
 		$(HDL4FPGA__cp850x8x16x128to255) \
@@ -1613,6 +1871,14 @@ $(HDL4FPGA__so_data__def) : ../sio/so_data.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../sio/so_data.vhd
 
+$(HDL4FPGA__stof) \
+$(HDL4FPGA__stof__def) : ../basic/stof.vhd \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../basic/stof.vhd
+
 $(HDL4FPGA__sync_transfer) \
 $(HDL4FPGA__sync_transfer__def) : ../basic/sync_transfer.vhd \
 		$(HDL4FPGA__dpram) \
@@ -1621,6 +1887,14 @@ $(HDL4FPGA__sync_transfer__def) : ../basic/sync_transfer.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/sync_transfer.vhd
+
+$(HDL4FPGA__textboxpkg) \
+$(HDL4FPGA__textboxpkg__body) : ../scope/textboxpkg.vhd \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/textboxpkg.vhd
 
 $(HDL4FPGA__timer) \
 $(HDL4FPGA__timer__def) : ../basic/timer.vhd \
@@ -1704,6 +1978,15 @@ $(HDL4FPGA__udp_tx__def) : ../mii/udp_tx.vhd \
 		$(STD__textio)
 	$(VCOM) -2002 -work hdl4fpga ../mii/udp_tx.vhd
 
+$(HDL4FPGA__vector) \
+$(HDL4FPGA__vector__def) : ../basic/vector.vhd \
+		$(HDL4FPGA__dpram) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../basic/vector.vhd
+
 $(HDL4FPGA__vga2dvid) \
 $(HDL4FPGA__vga2dvid__behavioral) : ../video/vga2dvid.vhd \
 		$(HDL4FPGA__tmds_encoder) \
@@ -1728,7 +2011,6 @@ $(HDL4FPGA__videobox__def) \
 $(HDL4FPGA__videobox_layout) \
 $(HDL4FPGA__videobox_layout__def) : ../video/video.vhd \
 		$(HDL4FPGA__rom) \
-		$(HDL4FPGA__modeline_calculator) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -1738,7 +2020,6 @@ $(HDL4FPGA__videobox_layout__def) : ../video/video.vhd \
 
 $(HDL4FPGA__videopkg) \
 $(HDL4FPGA__videopkg__body) : ../video/videopkg.vhd \
-		$(HDL4FPGA__modeline_calculator) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \

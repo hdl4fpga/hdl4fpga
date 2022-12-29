@@ -31,7 +31,7 @@ use hdl4fpga.base.all;
 package videopkg is
 	type videotiming_ids is (
 
-		user_videotiming,         -- user timing
+		user_timingid,            -- user timing
 		pclk_debug,               -- For debugging porpouses
 		pclk25_00m640x400at60,    -- pclk  25 MHz
 		pclk25_00m640x480at60,    -- pclk  25 MHz
@@ -54,7 +54,7 @@ package videopkg is
 	constant xxx : natural := 1000;
 	constant yyy : natural := 9;
 	constant modeline_tab : modeline_vector := (
-		user_videotiming         => (   0,    0,   0,     0,    0,    0,    0,    0,          0),
+		user_timingid            => (   0,    0,   0,     0,    0,    0,    0,    0,          0),
 		pclk_debug               => ( xxx,  xxx+10,  xxx+20,  xxx+30,  yyy, yyy+1,   yyy+2,    yyy+3,   25000000),
 
 		pclk25_00m640x400at60    => ( 640,  672,  736,  832,  400,  401,  404,  445,   25000000),

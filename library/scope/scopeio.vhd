@@ -24,6 +24,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
@@ -33,29 +34,29 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio is
 	generic (
-		timing_id   : videotiming_ids := pclk_fallback;
-		modeline    : natural_vector(0 to 9-1) := (others => 0);
-		width       : natural         := 0;
-		height      : natural         := 0;
-		fps         : real            := 0.0;
-		pclk        : real            := 0.0;
-		layout      : display_layout  := displaylayout_tab(sd480);
-		max_delay   : natural         := 2**14;
-		vt_steps    : real_vector     := (1 to 0 => 0.0);
-		hz_step     : real            := 0.0;
-		hz_unit     : real            := 25.0;
-		vt_unit     : real            := 20.0;
-		min_storage : natural         := 256; -- samples, storage size will be equal or larger than this
+		videotiming_id : videotiming_ids;
+		modeline       : natural_vector(0 to 9-1) := (others => 0);
+		width          : natural         := 0;
+		height         : natural         := 0;
+		fps            : real            := 0.0;
+		pclk           : real            := 0.0;
+		layout         : display_layout  := displaylayout_tab(sd480);
+		max_delay      : natural         := 2**14;
+		vt_steps       : real_vector     := (1 to 0 => 0.0);
+		hz_step        : real            := 0.0;
+		hz_unit        : real            := 25.0;
+		vt_unit        : real            := 20.0;
+		min_storage    : natural         := 256; -- samples, storage size will be equal or larger than this
 
-		inputs      : natural;
+		inputs         : natural;
 
-		vt_gains    : natural_vector := (
+		vt_gains       : natural_vector := (
 			 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
 			 4 => 2**17/(2**(0+1)*5**(0+1)),  5 => 2**17/(2**(1+1)*5**(0+1)),  6 => 2**17/(2**(2+1)*5**(0+1)),  7 => 2**17/(2**(0+1)*5**(1+1)),
 			 8 => 2**17/(2**(0+2)*5**(0+2)),  9 => 2**17/(2**(1+2)*5**(0+2)), 10 => 2**17/(2**(2+2)*5**(0+2)), 11 => 2**17/(2**(0+2)*5**(1+2)),
 			12 => 2**17/(2**(0+3)*5**(0+3)), 13 => 2**17/(2**(1+3)*5**(0+3)), 14 => 2**17/(2**(2+3)*5**(0+3)), 15 => 2**17/(2**(0+3)*5**(1+3)));
 
-		hz_factors  : natural_vector := (
+		hz_factors     : natural_vector := (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(1+0)*5**(0+0),  2 => 2**(2+0)*5**(0+0),  3 => 2**(0+0)*5**(1+0),
 			 4 => 2**(0+1)*5**(0+1),  5 => 2**(1+1)*5**(0+1),  6 => 2**(2+1)*5**(0+1),  7 => 2**(0+1)*5**(1+1),
 			 8 => 2**(0+2)*5**(0+2),  9 => 2**(1+2)*5**(0+2), 10 => 2**(2+2)*5**(0+2), 11 => 2**(0+2)*5**(1+2),
@@ -74,10 +75,10 @@ entity scopeio is
 		default_sgmntbg  : std_logic_vector := b"1_011";
 		default_bg       : std_logic_vector := b"1_111");
 	port (
-		si_clk           : in  std_logic := '-';
-		si_frm           : in  std_logic := '0';
-		si_irdy          : in  std_logic := '0';
-		si_data          : in  std_logic_vector;
+		sio_clk           : in  std_logic := '-';
+		sin_frm           : in  std_logic := '0';
+		sin_irdy          : in  std_logic := '0';
+		sin_data          : in  std_logic_vector;
 		so_clk           : in  std_logic := '-';
 		so_frm           : out std_logic;
 		so_irdy          : out std_logic;
@@ -142,16 +143,35 @@ begin
 		report "inputs greater than max_inputs"
 		severity failure;
 
-	scopeio_sin_e : entity hdl4fpga.scopeio_sin
+	siosin_e : entity hdl4fpga.sio_sin
 	port map (
-		sin_clk   => si_clk,
-		sin_frm   => si_frm,
-		sin_irdy  => si_irdy,
-		sin_data  => si_data,
-
-		rgtr_dv   => rgtr_dv,
+		sin_clk   => sio_clk,
+		sin_frm   => sin_frm,
+		sin_irdy  => sin_irdy,
+		sin_data  => sin_data,
+		-- data_frm  => data_frm,
+		-- data_ptr  => data_ptr,
+		-- data_irdy => data_irdy,
+		-- rgtr_frm  => rgtr_frm,
+		-- rgtr_irdy => rgtr_irdy,
+		-- rgtr_idv  => rgtr_idv,
 		rgtr_id   => rgtr_id,
+		-- rgtr_lv   => rgtr_lv,
+		-- rgtr_len  => rgtr_len,
+		rgtr_dv   => rgtr_dv,
 		rgtr_data => rgtr_data);
+	-- rgtr_revs <= reverse(rgtr_data,8);
+
+	-- scopeio_sin_e : entity hdl4fpga.scopeio_sin
+	-- port map (
+	-- 	sin_clk   => sio_clk,
+	-- 	sin_frm   => sin_frm,
+	-- 	sin_irdy  => sin_irdy,
+	-- 	sin_data  => sin_data,
+
+	-- 	rgtr_dv   => rgtr_dv,
+	-- 	rgtr_id   => rgtr_id,
+	-- 	rgtr_data => rgtr_data);
 
 	amp_b : block
 
@@ -165,7 +185,7 @@ begin
 		generic map (
 			rgtr      => false)
 		port map (
-			rgtr_clk  => si_clk,
+			rgtr_clk  => sio_clk,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
@@ -175,9 +195,9 @@ begin
 			chan_id   => chan_id,
 			gain_id   => gain_id);
 		
-		process(si_clk)
+		process(sio_clk)
 		begin
-			if rising_edge(si_clk) then
+			if rising_edge(sio_clk) then
 				if gain_ena='1' then
 					gain_cid <= chan_id;
 					if trigger_freeze='0' then
@@ -259,7 +279,7 @@ begin
 		storageword_size => storage_word'length,
 		time_factors => hz_factors)
 	port map (
-		rgtr_clk     => si_clk,
+		rgtr_clk     => sio_clk,
 		rgtr_dv      => rgtr_dv,
 		rgtr_id      => rgtr_id,
 		rgtr_data    => rgtr_data,
@@ -280,7 +300,7 @@ begin
 
 	scopeio_video_e : entity hdl4fpga.scopeio_video
 	generic map (
-		timing_id      => timing_id,
+		timing_id      => videotiming_id,
 		modeline       => modeline,
 		width          => width,
 		height         => height,
@@ -303,7 +323,7 @@ begin
 		dflt_sgmntbg   => default_sgmntbg,
 		dflt_bg        => default_bg)
 	port map (
-		rgtr_clk       => si_clk,
+		rgtr_clk       => sio_clk,
 		rgtr_dv        => rgtr_dv,
 		rgtr_id        => rgtr_id,
 		rgtr_data      => rgtr_data,

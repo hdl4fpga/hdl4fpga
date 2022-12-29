@@ -138,7 +138,7 @@ architecture mix of video_sync is
 		modeline  : natural_vector)
 		return natural_vector is
 	begin
-		if timing_id=user_videotiming then
+		if timing_id=user_timingid then
 			return modeline;
 		end if;
 		return modeline_tab(timing_id);

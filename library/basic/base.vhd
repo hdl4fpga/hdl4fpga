@@ -29,6 +29,7 @@ package base is
 
 	type natural_vector is array (natural range <>) of natural;
 	type integer_vector is array (natural range <>) of integer;
+	type real_vector    is array (natural range <>) of real;
 	type time_vector    is array (natural range <>) of time;
 
 	function signed_num_bits (arg: integer) return natural;

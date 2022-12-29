@@ -60,9 +60,10 @@ architecture beh of arty is
 	signal txopacity_d     : std_logic_vector(si_data'range);
 
 	type display_param is record
-		layout : natural;
-		mul    : natural;
-		div    : natural;
+		layout_id : displaylayout_ids;
+		timing_id : videotiming_ids;
+		mul       : natural;
+		div       : natural;
 	end record;
 
 	type layout_mode is (
@@ -73,10 +74,10 @@ architecture beh of arty is
 
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
-		mode600p    => (layout => 1, mul => 4, div => 5),
-		mode1080p   => (layout => 0, mul => 3, div => 1),
-		mode480p    => (layout => 8, mul => 3, div => 5),
-		mode600px16 => (layout => 6, mul => 2, div => 4));
+		mode600p    => (timing_id => pclk40_00m800x600at60,    layout_id => sd600,    mul => 4, div => 5),
+		mode1080p   => (timing_id => pclk150_00m1920x1080at60, layout_id => hd1080,   mul => 3, div => 1),
+		mode480p    => (timing_id => pclk25_00m640x480at60,    layout_id => sd480,    mul => 3, div => 5),
+		mode600px16 => (timing_id => pclk40_00m800x600at60,    layout_id => sd600x16, mul => 2, div => 4));
 
 	constant video_mode : layout_mode := mode1080p;
 
@@ -472,6 +473,7 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
+		videotiming_id   => video_params(video_mode).timing_id,
 		hz_unit          => 31.25*micro,
 		vt_steps         => (0 to 3 => vt_step, 4 to inputs-1 => 3.32 * vt_step),
 		vt_unit          => 500.0*micro,
