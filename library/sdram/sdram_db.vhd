@@ -38,6 +38,7 @@ package sdram_db is
 		MT47H512M3,
 		MT41K2G125,
 		MT41K4G107,
+		MT41K8G125,
 		AS4CD3LC12,
 		MT48LC256MA27E);
 
@@ -50,6 +51,7 @@ package sdram_db is
 		MT41J1G15E     => ddr3,
 		MT41K2G125     => ddr3,
 		MT41K4G107     => ddr3,
+		MT41K8G125     => ddr3,
 		AS4CD3LC12     => ddr3);
 
 	type device_latency_record is record
@@ -123,6 +125,16 @@ package sdram_db is
 		(mark => MT41K4G107,     param => tRFC,    value => 260.00e-9),
 		(mark => MT41K4G107,     param => tXPR,    value => 260.00e-9 + 10.0e-9),  -- tMin : tRFC + 10 ps
 		(mark => MT41K4G107,     param => tREFI,   value =>  64.00e-3/8192.0),
+
+		(mark => MT41K8G125,     param => tPreRST, value => 200.00e-6),
+		(mark => MT41K8G125,     param => tPstRST, value => 500.00e-6),
+		(mark => MT41K8G125,     param => tWR,     value =>  15.00e-9),
+		(mark => MT41K8G125,     param => tRCD,    value =>  13.75e-9),
+		(mark => MT41K8G125,     param => tRP,     value =>  13.75e-9),
+		(mark => MT41K8G125,     param => tMRD,    value =>  20.00e-9),
+		(mark => MT41K8G125,     param => tRFC,    value => 350.00e-9),
+		(mark => MT41K8G125,     param => tXPR,    value => 350.00e-9 + 10.0e-9),  -- tMin : tRFC + 10 ps
+		(mark => MT41K8G125,     param => tREFI,   value =>  64.00e-3/8192.0),
 
 		(mark => AS4CD3LC12,     param => tPreRST, value => 200.00e-6),
 		(mark => AS4CD3LC12,     param => tPstRST, value => 500.00e-6),

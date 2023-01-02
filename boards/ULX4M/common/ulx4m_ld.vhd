@@ -73,7 +73,7 @@ entity ulx4m_ld is
 		ddram_cas_n     : out std_logic;
 		ddram_we_n      : out std_logic;
 		ddram_odt       : out std_logic;
-		ddram_a         : out std_logic_vector(15-1 downto 0);
+		ddram_a         : out std_logic_vector(16-1 downto 0);
 		ddram_ba        : out std_logic_vector(3-1 downto 0);
 		ddram_dm        : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 		ddram_dq        : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
