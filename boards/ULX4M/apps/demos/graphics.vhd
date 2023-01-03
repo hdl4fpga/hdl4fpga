@@ -660,7 +660,8 @@ begin
 
 		sdram_tcp      => 2.0*sdram_tcp,
 		fpga         => ecp5,
-		mark         => MT41K4G107,
+		-- mark         => MT41K4G107,
+		mark         => MT41K8G125,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		burst_length => 8,
