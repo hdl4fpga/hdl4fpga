@@ -41,7 +41,7 @@ entity ecp3versa is
 		ddr3_ras    : out std_logic := '1';
 		ddr3_cas    : out std_logic := '1';
 		ddr3_we     : out std_logic := '1';
-		ddr3_ba     : out std_logic_vector( 2 downto 0) := (others => '1');
+		ddr3_b      : out std_logic_vector( 2 downto 0) := (others => '1');
 		ddr3_a      : out std_logic_vector(12 downto 0) := (others => '1');
 		ddr3_dm     : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 		ddr3_dqs    : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
@@ -54,7 +54,7 @@ entity ecp3versa is
 		phy1_coma   : out   std_logic := 'Z';
 		phy1_mdio   : inout std_logic;
 		phy1_mdc    : out   std_logic;
-		phy1_gtxclk : buffer std_logic;
+		phy1_gtxclk : out   std_logic;
 		phy1_crs    : out   std_logic;
 		phy1_col    : out   std_logic;
 		phy1_txc    : in    std_logic := '-';

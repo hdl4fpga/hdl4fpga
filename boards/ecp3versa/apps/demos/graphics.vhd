@@ -63,7 +63,7 @@ architecture graphics of ecp3versa is
 	constant data_edges  : natural := 1;
 	constant data_gear   : natural := 4;
 
-	constant bank_size   : natural := ddr3_ba'length;
+	constant bank_size   : natural := ddr3_b'length;
 	constant addr_size   : natural := ddr3_a'length;
 	constant coln_size   : natural := 10;
 	constant word_size   : natural := ddr3_dq'length;
@@ -94,7 +94,7 @@ architecture graphics of ecp3versa is
 	signal ctlrphy_we    : std_logic_vector(0 to 2-1);
 	signal ctlrphy_odt   : std_logic_vector(0 to 2-1);
 	signal ctlrphy_cmd   : std_logic_vector(0 to 3-1);
-	signal ctlrphy_ba    : std_logic_vector(cmmd_gear*ddr3_ba'length-1 downto 0);
+	signal ctlrphy_ba    : std_logic_vector(cmmd_gear*ddr3_b'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(cmmd_gear*ddr3_a'length-1 downto 0);
 	signal ctlrphy_dsi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -107,7 +107,7 @@ architecture graphics of ecp3versa is
 	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ddr_ba        : std_logic_vector(ddr3_ba'length-1 downto 0);
+	signal ddr_ba        : std_logic_vector(ddr3_b'length-1 downto 0);
 	signal ddr_a         : std_logic_vector(ddr3_a'length-1 downto 0);
 
 	type pll_params is record
@@ -451,135 +451,6 @@ begin
 		
 	end block;
 
-	hdlc_g : if io_link=io_hdlc generate
-
---		block
---		port (
---			sio_clk : buffer std_logic);
---		port map (
---			sio_clk => sio_clk);
---		begin
---		end block;
-
-		constant uart_xtal : real := 
-			real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq/
-			real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkok_div);
-
-		constant baudrate : natural := setif(
-			uart_xtal >= 32.0e6, 3000000, setif(
-			uart_xtal >= 25.0e6, 2000000,
-                                 115200));
-
-		signal uart_rxdv  : std_logic;
-		signal uart_rxd   : std_logic_vector(0 to 8-1);
-		signal uarttx_frm : std_logic;
-		signal uart_idle  : std_logic;
-		signal uart_txen  : std_logic;
-		signal uart_txd   : std_logic_vector(uart_rxd'range);
-
-		signal tp         : std_logic_vector(1 to 32);
-
-		signal ftdi_txd   : std_logic;
-		signal ftdi_txen  : std_logic;
-		signal ftdi_rxd   : std_logic;
-
-		signal dummy_txd  : std_logic_vector(uart_rxd'range);
-	begin
-
-		process (uart_clk)
-			variable q0 : std_logic := '0';
-			variable q1 : std_logic := '0';
-		begin
-			if rising_edge(uart_clk) then
-				led(6) <= q1;
-				led(7) <= q0;
-				if tp(1)='1' then
-					if tp(2)='1' then
-						q1 := not q1;
-					end if;
-				end if;
-				if uart_rxdv='1' then
-					q0 := not q0;
-				end if;
-			end if;
-		end process;
-
-		process (dummy_txd ,uart_clk)
-			variable q : std_logic := '0';
-			variable e : std_logic := '1';
-		begin
-			if rising_edge(uart_clk) then
-				led(5) <= q;
-				if (so_frm and not e)='1' then
-					q := not q;
-				end if;
-				led(4) <= so_frm;
-				e := so_frm;
-			end if;
-		end process;
-
-		ftdi_txen <= '1';
-		nodebug_g : if not debug generate
-			uart_clk <= videoio_clk;
-		end generate;
-
-		debug_g : if debug generate
-			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
-		end generate;
-
-		assert FALSE
-			report "BAUDRATE : " & " " & integer'image(baudrate)
-			severity NOTE;
-
-		uartrx_e : entity hdl4fpga.uart_rx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_rxc  => uart_clk,
-			uart_sin  => ftdi_txd,
-			uart_irdy => uart_rxdv,
-			uart_data => uart_rxd);
-
-		uarttx_e : entity hdl4fpga.uart_tx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_txc  => uart_clk,
-			uart_frm  => video_lck,
-			uart_irdy => uart_txen,
-			uart_trdy => uart_idle,
-			uart_data => uart_txd,
-			uart_sout => ftdi_rxd);
-
-		siodaahdlc_e : entity hdl4fpga.sio_dayhdlc
-		generic map (
-			mem_size    => mem_size)
-		port map (
-			uart_clk    => uart_clk,
-			uartrx_irdy => uart_rxdv,
-			uartrx_data => uart_rxd,
-			uarttx_frm  => uarttx_frm,
-			uarttx_trdy => uart_idle,
-			uarttx_data => uart_txd,
-			uarttx_irdy => uart_txen,
-			sio_clk     => sio_clk,
-			so_frm      => so_frm,
-			so_irdy     => so_irdy,
-			so_trdy     => so_trdy,
-			so_data     => so_data,
-
-			si_frm      => si_frm,
-			si_irdy     => si_irdy,
-			si_trdy     => si_trdy,
-			si_end      => si_end,
-			si_data     => si_data,
-			tp          => tp);
-
-	end generate;
-
-
 	ipoe_b : block
 
 		port (
@@ -591,7 +462,7 @@ begin
 		alias  mii_rxdv   : std_logic is phy1_rx_dv;
 		alias  mii_rxd    : std_logic_vector(phy1_rx_d'range) is phy1_rx_d;
 
-		alias mii_txc    : std_logic is phy1_gtxclk;
+		alias  mii_txc    : std_logic is phy1_125clk;
 		signal mii_txd    : std_logic_vector(phy1_tx_d'range);
 		signal mii_txen   : std_logic;
 		signal dhcpcd_req : std_logic := '0';
@@ -725,7 +596,7 @@ begin
 		debug        => debug,
 		profile      => 2,
 
-		sdram_tcp      => 2.0*ddr_tcp,
+		sdram_tcp    => 2.0*ddr_tcp,
 		fpga         => hdl4fpga.profiles.ecp3,
 		mark         => MT41J1G15E,
 		sclk_phases  => sclk_phases,
@@ -850,67 +721,174 @@ begin
 		end if;
 	end process;
 	
-	sdrphy_e : entity hdl4fpga.ecp3_sdrphy
-	generic map (
-		taps          => natural(floor(ddr_tcp/26.0e-12)),
-		cmmd_gear     => cmmd_gear,
-		data_gear     => data_gear,
-		bank_size     => ddr3_ba'length,
-		addr_size     => ddr3_a'length,
-		word_size     => word_size,
-		byte_size     => byte_size)
-	port map (
-		rst           => ddrphy_rst,
-		sclk          => ddr_sclk,
-		sclk2x        => ddr_sclk2x,
-		eclk          => ddr_eclk,
-		phy_frm       => ctlrphy_frm,
-		phy_trdy      => ctlrphy_trdy,
-		phy_cmd       => ctlrphy_cmd,
-		phy_rw        => ctlrphy_rw,
-		phy_ini       => ctlrphy_ini,
+	sdrphy_b : block
+		port (
+			rst    : in  std_logic;
+			sclk   : in  std_logic;
+			sclk2x : in  std_logic;
+			eclk   : in  std_logic);
+		port map (
+    		rst    => ddrphy_rst,
+    		sclk   => ddr_sclk,
+    		sclk2x => ddr_sclk2x,
+    		eclk   => ddr_eclk);
+    	signal eclksynca_stop : std_logic;
+    	signal eclksynca_clk  : std_logic;
 
-		phy_wlreq     => ctlrphy_wlreq,
-		phy_wlrdy     => ctlrphy_wlrdy,
+    	attribute hgroup  : string;
+    	attribute pbbox   : string;
 
-		phy_rlreq     => ctlrphy_rlreq,
-		phy_rlrdy     => ctlrphy_rlrdy,
+    	attribute hgroup of clk_start_i : label is "clk_stop";
+    	attribute pbbox  of clk_start_i : label is "3,2";
 
-		phy_rst       => ctlrphy_rst,
-		phy_cs        => ctlrphy_cs,
-		phy_cke       => ctlrphy_cke,
-		phy_ras       => ctlrphy_ras,
-		phy_cas       => ctlrphy_cas,
-		phy_we        => ctlrphy_we,
-		phy_odt       => ctlrphy_odt,
-		phy_b         => ctlrphy_ba,
-		phy_a         => ctlrphy_a,
-		phy_dqsi      => ctlrphy_dso,
-		phy_dqst      => ctlrphy_dst,
-		phy_dqso      => ctlrphy_dsi,
-		phy_dmi       => ctlrphy_dmo,
-		phy_dmt       => ctlrphy_dmt,
-		phy_dmo       => ctlrphy_dmi,
-		phy_dqi       => ctlrphy_dqo,
-		phy_dqt       => ctlrphy_dqt,
-		phy_dqo       => ctlrphy_dqi,
-		phy_sti       => ctlrphy_sto,
-		phy_sto       => ctlrphy_sti,
+		signal clkstart_rst : std_logic;
+		signal dqsbuf_rst : std_logic;
+		signal dqsdel     : std_logic;
 
-		sdr_rst       => ddr3_rst,
-		sdr_ck        => ddr3_clk,
-		sdr_cke       => ddr3_cke,
-		sdr_cs        => ddr3_cs,
-		sdr_ras       => ddr3_ras,
-		sdr_cas       => ddr3_cas,
-		sdr_we        => ddr3_we,
-		sdr_odt       => ddr3_odt,
-		sdr_b         => ddr3_ba,
-		sdr_a         => ddr3_a,
+	begin
+    	clk_start_i : entity hdl4fpga.clk_start
+    	port map (
+    		rst        => clkstart_rst,
+    		sclk       => sclk,
+    		eclk       => eclk,
+    		eclk_stop  => eclksynca_stop,
+    		dqsbuf_rst => dqsbuf_rst);
 
-		sdr_dm        => ddr3_dm,
-		sdr_dq        => ddr3_dq,
-		sdr_dqs       => ddr3_dqs);
+    	eclksynca_i : eclksynca
+    	port map (
+    		stop  => eclksynca_stop,
+    		eclki => eclk,
+    		eclko => eclksynca_clk);
+
+    	dqclk_b : block
+    		attribute pbbox  of dqclk1bar_ff_i : label is "1,1";
+    		attribute hgroup of dqclk1bar_ff_i : label is "clk_phase1a";
+    		attribute pbbox  of phase_ff_1_i   : label is "1,1";
+    		attribute hgroup of phase_ff_1_i   : label is "clk_phase1b";
+
+    		signal dqclk1bar_ff_q : std_logic;
+    		signal dqclk1bar_ff_d : std_logic;
+    		signal phase_ff_1_q   : std_logic;
+
+    	begin
+    		dqclk1bar_ff_d <= not dqclk1bar_ff_q;
+    		dqclk1bar_ff_i : fd1p3dx
+    		port map (
+    			cd => dqsbuf_rst,
+    			ck => eclksynca_clk,
+    			d  => dqclk1bar_ff_d,
+    			q  => dqclk1bar_ff_q);
+
+    		phase_ff_1_i : entity hdl4fpga.ff
+    		port map(
+    			clk => sclk,
+    			d => dqclk1bar_ff_q,
+    			q => phase_ff_1_q);
+    	end block;
+    	
+    	dqsdll_b : block
+    		signal update   : std_logic;
+    		signal uddcntln   : std_logic;
+    		signal lock   : std_logic;
+    	begin
+
+    		process (sclk)
+    			variable q : std_logic_vector(0 to 4-1);
+    		begin
+    			if rising_edge(sclk) then
+    				if rst='1' then
+    					q := (others => '0');
+    				elsif q(0)='0' then
+    					if lock='1' then
+    						q := inc(gray(q));
+    					end if;
+    				end if;
+    				update       <= not q(0);
+    				clkstart_rst <= not q(1);
+    			end if;
+    		end process;
+
+    		process (sclk2x)
+    		begin
+    			if rising_edge(sclk2x) then
+    				uddcntln <= update;
+    			end if;
+    		end process;
+
+    		dqsdllb_i : dqsdllb
+    		port map (
+    			rst      => rst,
+    			clk      => sclk2x,
+    			uddcntln => uddcntln,
+    			dqsdel   => dqsdel,
+    			lock     => lock);
+    	end block;
+
+    	sdrphy_e : entity hdl4fpga.ecp3_sdrphy
+    	generic map (
+    		taps          => natural(floor(ddr_tcp/26.0e-12)),
+    		cmmd_gear     => cmmd_gear,
+    		data_gear     => data_gear,
+    		bank_size     => ddr3_b'length,
+    		addr_size     => ddr3_a'length,
+    		word_size     => word_size,
+    		byte_size     => byte_size)
+    	port map (
+    		rst           => rst,
+			dqsbuf_rst    => dqsbuf_rst,
+    		sclk          => ddr_sclk,
+    		sclk2x        => ddr_sclk2x,
+    		eclk          => eclksynca_clk,
+			dqsdel        => dqsdel,
+    		phy_frm       => ctlrphy_frm,
+    		phy_trdy      => ctlrphy_trdy,
+    		phy_cmd       => ctlrphy_cmd,
+    		phy_rw        => ctlrphy_rw,
+    		phy_ini       => ctlrphy_ini,
+
+    		phy_wlreq     => ctlrphy_wlreq,
+    		phy_wlrdy     => ctlrphy_wlrdy,
+
+    		phy_rlreq     => ctlrphy_rlreq,
+    		phy_rlrdy     => ctlrphy_rlrdy,
+
+    		phy_rst       => ctlrphy_rst,
+    		phy_cs        => ctlrphy_cs,
+    		phy_cke       => ctlrphy_cke,
+    		phy_ras       => ctlrphy_ras,
+    		phy_cas       => ctlrphy_cas,
+    		phy_we        => ctlrphy_we,
+    		phy_odt       => ctlrphy_odt,
+    		phy_b         => ctlrphy_ba,
+    		phy_a         => ctlrphy_a,
+    		phy_dqsi      => ctlrphy_dso,
+    		phy_dqst      => ctlrphy_dst,
+    		phy_dqso      => ctlrphy_dsi,
+    		phy_dmi       => ctlrphy_dmo,
+    		phy_dmt       => ctlrphy_dmt,
+    		phy_dmo       => ctlrphy_dmi,
+    		phy_dqi       => ctlrphy_dqo,
+    		phy_dqt       => ctlrphy_dqt,
+    		phy_dqo       => ctlrphy_dqi,
+    		phy_sti       => ctlrphy_sto,
+    		phy_sto       => ctlrphy_sti,
+
+    		sdr_rst       => ddr3_rst,
+    		sdr_ck        => ddr3_clk,
+    		sdr_cke       => ddr3_cke,
+    		sdr_cs        => ddr3_cs,
+    		sdr_ras       => ddr3_ras,
+    		sdr_cas       => ddr3_cas,
+    		sdr_we        => ddr3_we,
+    		sdr_odt       => ddr3_odt,
+    		sdr_b         => ddr3_b,
+    		sdr_a         => ddr3_a,
+
+    		sdr_dm        => ddr3_dm,
+    		sdr_dq        => ddr3_dq,
+    		sdr_dqs       => ddr3_dqs);
+
+	end block;
 
 	-- VGA --
 	---------

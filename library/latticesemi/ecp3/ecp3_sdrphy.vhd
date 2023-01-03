@@ -42,11 +42,13 @@ entity ecp3_sdrphy is
 		word_size : natural := 16;
 		byte_size : natural := 8);
 	port (
-		rst       : in std_logic;
+		rst       : in  std_logic;
+		dqsbuf_rst : in std_logic;
 
 		sclk      : in  std_logic;
-		sclk2x    : in std_logic;
+		sclk2x    : in  std_logic;
 		eclk      : in  std_logic;
+		dqsdel    : in  std_logic;
 
 		phy_rst   : in  std_logic_vector(cmmd_gear-1 downto 0);
 		phy_frm   : buffer std_logic;
@@ -251,19 +253,6 @@ architecture ecp3 of ecp3_sdrphy is
 	signal read_req  : std_logic_vector(sdr_dqs'range);
 	signal read_rdy  : std_logic_vector(sdr_dqs'range);
 
-	signal eclksynca_stop : std_logic;
-	signal eclksynca_clk  : std_logic;
-
-	signal clkstart_rst : std_logic;
-	signal dqsbuf_rst : std_logic;
-	signal dqsdel     : std_logic;
-
-	attribute hgroup  : string;
-	attribute pbbox   : string;
-
-	attribute hgroup of clk_start_i : label is "clk_stop";
-	attribute pbbox  of clk_start_i : label is "3,2";
-
 begin
 
 	sdr3baphy_i : entity hdl4fpga.ecp3_sdrbaphy
@@ -295,84 +284,6 @@ begin
 		sdr_we  => sdr_we,
 		sdr_b   => sdr_b,
 		sdr_a   => sdr_a);
-
-	clk_start_i : entity hdl4fpga.clk_start
-	port map (
-		rst        => clkstart_rst,
-		sclk       => sclk,
-		eclk       => eclk,
-		eclk_stop  => eclksynca_stop,
-		dqsbuf_rst => dqsbuf_rst);
-
-	eclksynca_i : eclksynca
-	port map (
-		stop  => eclksynca_stop,
-		eclki => eclk,
-		eclko => eclksynca_clk);
-
-	dqclk_b : block
-		attribute pbbox  of dqclk1bar_ff_i : label is "1,1";
-		attribute hgroup of dqclk1bar_ff_i : label is "clk_phase1a";
-		attribute pbbox  of phase_ff_1_i   : label is "1,1";
-		attribute hgroup of phase_ff_1_i   : label is "clk_phase1b";
-
-		signal dqclk1bar_ff_q : std_logic;
-		signal dqclk1bar_ff_d : std_logic;
-		signal phase_ff_1_q   : std_logic;
-
-	begin
-		dqclk1bar_ff_d <= not dqclk1bar_ff_q;
-		dqclk1bar_ff_i : fd1p3dx
-		port map (
-			cd => dqsbuf_rst,
-			ck => eclksynca_clk,
-			d  => dqclk1bar_ff_d,
-			q  => dqclk1bar_ff_q);
-
-		phase_ff_1_i : entity hdl4fpga.ff
-		port map(
-			clk => sclk,
-			d => dqclk1bar_ff_q,
-			q => phase_ff_1_q);
-	end block;
-	
-	dqsdll_b : block
-		signal update   : std_logic;
-		signal uddcntln   : std_logic;
-		signal lock   : std_logic;
-	begin
-
-		process (sclk)
-			variable q : std_logic_vector(0 to 4-1);
-		begin
-			if rising_edge(sclk) then
-				if rst='1' then
-					q := (others => '0');
-				elsif q(0)='0' then
-					if lock='1' then
-						q := inc(gray(q));
-					end if;
-				end if;
-				update       <= not q(0);
-				clkstart_rst <= not q(1);
-			end if;
-		end process;
-
-		process (sclk2x)
-		begin
-			if rising_edge(sclk2x) then
-				uddcntln <= update;
-			end if;
-		end process;
-
-		dqsdllb_i : dqsdllb
-		port map (
-			rst      => rst,
-			clk      => sclk2x,
-			uddcntln => uddcntln,
-			dqsdel   => dqsdel,
-			lock     => lock);
-	end block;
 
 	read_leveling_l_b : block
 		signal leveling : std_logic;
@@ -502,8 +413,8 @@ begin
 		port map (
 			rst       => dqsbuf_rst,
 			sclk      => sclk,
-			sclk2x      => sclk2x,
-			eclk      => eclksynca_clk,
+			sclk2x    => sclk2x,
+			eclk      => eclk,
 			dqsdel    => dqsdel,
 
 			pause     => ms_pause,
