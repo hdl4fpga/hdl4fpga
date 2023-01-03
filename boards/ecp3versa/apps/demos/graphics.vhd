@@ -26,15 +26,15 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
+library ecp3;
+use ecp3.components.all;
+
 library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.profiles.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
-
-library ecp3;
-use ecp3.components.all;
 
 architecture graphics of ecp3versa is
 
