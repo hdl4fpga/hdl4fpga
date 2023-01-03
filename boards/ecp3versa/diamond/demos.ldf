@@ -1,31 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="demos" device="LFE3-35EA-8FTN256C" default_implementation="graphics">
+<BaliProject version="3.2" title="demos" device="LFE3-35EA-8FN484C" default_implementation="graphics">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="strategy1">
-        <Options def_top="ecp3versa">
+        <Options def_top="hdl4fpga.adjdqs">
             <Option name="include path" value="../../../../../../../opt/diamond/3.11_x64/ispfpga/sa5p00/data"/>
             <Option name="lib" value="hdl4fpga"/>
             <Option name="top" value="ecp3versa"/>
         </Options>
+        <Source name="../apps/demos/graphics.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="work"/>
+        </Source>
         <Source name="../../../library/basic/latency.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
+            <Options/>
         </Source>
         <Source name="../../../library/basic/base.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
+            <Options/>
         </Source>
         <Source name="../../../library/basic/bram.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
+            <Options/>
         </Source>
         <Source name="../../../library/basic/dpram.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
+            <Options/>
         </Source>
         <Source name="../../../library/basic/rom.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
+            <Options/>
         </Source>
         <Source name="../../../library/basic/arbiter.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
+            <Options/>
         </Source>
         <Source name="../../../library/latticesemi/dbuf.vhd" type="VHDL" type_short="VHDL">
             <Options/>
@@ -119,9 +122,6 @@
         </Source>
         <Source name="../../../library/sio/sio_dmahdsk.vhd" type="VHDL" type_short="VHDL">
             <Options/>
-        </Source>
-        <Source name="../apps/demos/graphics.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
         </Source>
         <Source name="../../../library/demos/demo_graphics.vhd" type="VHDL" type_short="VHDL">
             <Options/>
@@ -312,9 +312,6 @@
         <Source name="../../../library/mii/mii_buffer.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work" top_module="ecp3versa"/>
-        </Source>
         <Source name="../../../library/latticesemi/ecp3/ecp3_sdrbaphy.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -332,6 +329,9 @@
         </Source>
         <Source name="../../../library/basic/ff.vhd" type="VHDL" type_short="VHDL">
             <Options/>
+        </Source>
+        <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="work" top_module="ecp3versa"/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
             <Options/>

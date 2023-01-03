@@ -40,35 +40,33 @@ LOCATE COMP "clk"  SITE "L5";
 IOBUF PORT "clk" IO_TYPE=LVDS25 DIFFRESISTOR=100 ;
 FREQUENCY PORT "clk" 100 MHZ;
 
-FREQUENCY NET "uart_rxc" 2.00 MHz ;
-
 LOCATE COMP "fpga_gsrn"  SITE "A21";
 IOBUF PORT "fpga_gsrn" IO_TYPE=LVCMOS33 DIFFRESISTOR=OFF ;
 
-LOCATE COMP "dcms_e/ddr_b.pll_i"	SITE "PLL_R35C5" ;
-MAXDELAY NET "ddr_eclk" 1.1 ns;
-
-USE EDGE NET "ddrphy_e/eclksynca_eclk";
-
-MAXDELAY NET "ddrphy_e/eclksynca_eclk"	1.2 ns;
-MAXDELAY NET "ddrphy_e/dqclk1bar_ff_q"	0.650 ns;
-
-LOCATE PGROUP "dcms_e/ddr_b.adjdll_e/seclk_b.phase_ff_0_i/clk_phase0"	SITE "R24C5D";
-
-LOCATE COMP   "ddrphy_e/eclksynca_i"									SITE "LECLKSYNC2" ;
-LOCATE PGROUP "ddrphy_e/dqclk_b.dqclk1bar_ff_i/clk_phase1a"			SITE "R34C2D";
-LOCATE PGROUP "ddrphy_e/dqclk_b.phase_ff_1_i/clk_phase1b"				SITE "R34C2D";
-LOCATE PGROUP "ddrphy_e/clk_start_i/clk_stop"							SITE "R34C2D";
-
-BLOCK PATH FROM CLKNET "clk_c"		TO CLKNET "ddr_sclk";
-BLOCK PATH FROM CLKNET "clk_c"		TO CLKNET "vga_clk";
-BLOCK PATH FROM CLKNET "ddr_sclk"	TO CLKNET "clk_c";
-BLOCK PATH FROM CLKNET "ddr_sclk"	TO CLKNET "ddr_eclk";
-BLOCK PATH FROM CLKNET "ddr_sclk"	TO CLKNET "ddrphy_e/eclksynca_eclk";
-BLOCK PATH FROM CLKNET "ddr_sclk2x"	TO CLKNET "ddr_sclk";
-BLOCK PATH FROM CLKNET "ddr_eclk"	TO CLKNET "ddr_sclk";
-BLOCK PATH FROM CLKNET "ddr_eclk"	TO CLKNET "ddrphy_e/eclksynca_eclk";
-BLOCK PATH FROM CLKNET "clk"	TO CLKNET "uart_rxc";
+#LOCATE COMP "dcms_e/ddr_b.pll_i"	SITE "PLL_R35C5" ;
+#MAXDELAY NET "ddr_eclk" 1.1 ns;
+#
+#USE EDGE NET "ddrphy_e/eclksynca_eclk";
+#
+#MAXDELAY NET "ddrphy_e/eclksynca_eclk"	1.2 ns;
+#MAXDELAY NET "ddrphy_e/dqclk1bar_ff_q"	0.650 ns;
+#
+#LOCATE PGROUP "dcms_e/ddr_b.adjdll_e/seclk_b.phase_ff_0_i/clk_phase0"	SITE "R24C5D";
+#
+#LOCATE COMP   "ddrphy_e/eclksynca_i"									SITE "LECLKSYNC2" ;
+#LOCATE PGROUP "ddrphy_e/dqclk_b.dqclk1bar_ff_i/clk_phase1a"			SITE "R34C2D";
+#LOCATE PGROUP "ddrphy_e/dqclk_b.phase_ff_1_i/clk_phase1b"				SITE "R34C2D";
+#LOCATE PGROUP "ddrphy_e/clk_start_i/clk_stop"							SITE "R34C2D";
+#
+#BLOCK PATH FROM CLKNET "clk_c"		TO CLKNET "ddr_sclk";
+#BLOCK PATH FROM CLKNET "clk_c"		TO CLKNET "vga_clk";
+#BLOCK PATH FROM CLKNET "ddr_sclk"	TO CLKNET "clk_c";
+#BLOCK PATH FROM CLKNET "ddr_sclk"	TO CLKNET "ddr_eclk";
+#BLOCK PATH FROM CLKNET "ddr_sclk"	TO CLKNET "ddrphy_e/eclksynca_eclk";
+#BLOCK PATH FROM CLKNET "ddr_sclk2x"	TO CLKNET "ddr_sclk";
+#BLOCK PATH FROM CLKNET "ddr_eclk"	TO CLKNET "ddr_sclk";
+#BLOCK PATH FROM CLKNET "ddr_eclk"	TO CLKNET "ddrphy_e/eclksynca_eclk";
+#BLOCK PATH FROM CLKNET "clk"	TO CLKNET "uart_rxc";
 
 
 LOCATE VREF "vref1_ddr3"  SITE "E1";
@@ -114,7 +112,7 @@ LOCATE COMP "ddr3_a[12]" SITE "F7";
 LOCATE COMP "ddr3_b[0]"  SITE "B4";
 LOCATE COMP "ddr3_b[1]"  SITE "E6";
 LOCATE COMP "ddr3_b[2]"  SITE "D5";
-DEFINE PORT GROUP "ddr3_ba" "ddr3_a[*]" "ddr3_b[*]";
+DEFINE PORT GROUP "ddr3_ba" "ddr3_a*" "ddr3_b*";
 IOBUF GROUP "ddr3_ba" IO_TYPE=SSTL15 vref=vref1_ddr3;
 
 LOCATE COMP "ddr3_clk"   SITE "K4";
@@ -176,7 +174,7 @@ LOCATE COMP "dip[4]" SITE "J3" ;
 LOCATE COMP "dip[5]" SITE "K3" ;
 LOCATE COMP "dip[6]" SITE "J2" ;
 LOCATE COMP "dip[7]" SITE "J1" ;
-DEFINE PORT GROUP "dips" "dip[*]";
+DEFINE PORT GROUP "dips" "dip*";
 IOBUF GROUP "dips" IO_TYPE=LVCMOS15; 
 
 LOCATE COMP "led[0]" SITE "Y20";

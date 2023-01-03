@@ -30,6 +30,7 @@ entity ecp3versa is
 	port (
 		clk         : in std_logic := 'Z';
 
+		dip         : in  std_logic_vector(8-1 downto 0) := (others => '0');
 		led         : out std_logic_vector(7 downto 0) := (others => 'Z');
 		seg         : out std_logic_vector(0 to 14) := (others => 'Z');
 		

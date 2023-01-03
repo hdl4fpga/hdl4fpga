@@ -218,17 +218,21 @@ architecture graphics of ecp3versa is
 		real(ddram_tab(ddram_mode).pll.clki_div)/
 		(real(ddram_tab(ddram_mode).pll.clkok_div*ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq);
 
-	constant io_link : io_iface := app_tab(app).iface;
+	constant io_link  : io_iface := app_tab(app).iface;
 
-	constant hdplx   : std_logic := setif(debug, '0', '1');
+	constant hdplx    : std_logic := setif(debug, '0', '1');
 
-	signal tp : std_logic_vector(1 to 32);
+	signal tp         : std_logic_vector(1 to 32);
 	signal ddr_sclk   : std_logic;
 	signal ddr_sclk2x : std_logic;
 	signal ddr_eclk   : std_logic;
 
-		signal  sio_clk    : std_logic;
-	alias ctlr_clk   : std_logic is ddr_sclk;
+	signal  sio_clk   : std_logic;
+	alias ctlr_clk    : std_logic is ddr_sclk;
+
+	attribute oddrapps : string;
+	attribute oddrapps of phy1_gtxclk_i : label is "SCLK_ALIGNED";
+
 begin
 
 	sys_rst <= '0';
