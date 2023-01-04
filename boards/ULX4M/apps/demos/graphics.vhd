@@ -43,6 +43,7 @@ architecture graphics of ulx4m_ld is
 	type app_profiles is (
 	--	Interface_SdramSpeed_PixelFormat--
 
+		uart_325MHz_480p24bpp,
 		uart_350MHz_480p24bpp,
 		uart_375MHz_480p24bpp,
 		uart_400MHz_480p24bpp,
@@ -62,7 +63,7 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app_profile  : app_profiles := uart_350MHz_480p24bpp;
+	constant app_profile  : app_profiles := uart_325MHz_480p24bpp;
 	---------------------------------------------
 
 	type profile_params is record
@@ -73,6 +74,7 @@ architecture graphics of ulx4m_ld is
 
 	type profileparams_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparams_vector := (
+		uart_325MHz_480p24bpp => (io_hdlc, sdram325MHz, mode480p24bpp),
 		uart_350MHz_480p24bpp => (io_hdlc, sdram350MHz, mode480p24bpp),
 		uart_375MHz_480p24bpp => (io_hdlc, sdram375MHz, mode480p24bpp),
 		uart_400MHz_480p24bpp => (io_hdlc, sdram400MHz, mode480p24bpp),
@@ -146,6 +148,7 @@ architecture graphics of ulx4m_ld is
 
 	type sdramparams_vector is array (natural range <>) of sdramparams_record;
 	constant sdram_tab : sdramparams_vector := (
+		(id => sdram325MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 13, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
 		(id => sdram350MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 14, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
 		(id => sdram375MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 15, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
 		(id => sdram400MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 16, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
@@ -268,6 +271,7 @@ architecture graphics of ulx4m_ld is
 
 	signal tp : std_logic_vector(1 to 32);
 	signal tp_phy : std_logic_vector(1 to 32);
+	signal sdrphy_locked : std_logic;
 begin
 
 	sys_rst <= '0';
@@ -745,8 +749,8 @@ begin
 	process (clk_25mhz)
 	begin
 		if rising_edge(clk_25mhz) then
-			led(0) <= tp(1);
-			led(7 downto 2) <= tp_phy(1 to 6);
+			led(0) <= setif(btn(1)='1', tp(1), sdrphy_locked);
+			led(7 downto 1) <= tp_phy(1 to 7);
 		end if;
 	end process;
 
@@ -809,7 +813,7 @@ begin
 		process (clk_25mhz)
 		begin
 			if rising_edge(clk_25mhz) then
-				led(1) <= tp_dv;
+				-- led(1) <= tp_dv;
 			end if;
 		end process;
 		
@@ -826,6 +830,7 @@ begin
 		word_size     => word_size,
 		byte_size     => byte_size)
 	port map (
+		tpin          => btn(1),
 		rst           => ddrphy_rst,
 		sync_clk      => clk_25mhz,
 		clkop         => physys_clk,
@@ -836,6 +841,7 @@ begin
 		phy_cmd       => ctlrphy_cmd,
 		phy_rw        => ctlrphy_rw,
 		phy_ini       => ctlrphy_ini,
+		phy_locked    => sdrphy_locked,
 
 		phy_wlreq     => ctlrphy_wlreq,
 		phy_wlrdy     => ctlrphy_wlrdy,

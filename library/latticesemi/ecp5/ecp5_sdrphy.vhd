@@ -44,6 +44,7 @@ entity ecp5_sdrphy is
 		word_size : natural := 16;
 		byte_size : natural := 8);
 	port (
+		tpin      : in std_logic;
 		rst       : in std_logic;
 		rdy       : out std_logic;
 		sync_clk  : in std_logic;
@@ -57,6 +58,7 @@ entity ecp5_sdrphy is
 		phy_rw    : out std_logic := '1';
 		phy_cmd   : in  std_logic_vector(0 to 3-1) := (others => 'U');
 		phy_ini   : out std_logic;
+		phy_locked : out std_logic;
 
 		phy_wlreq : in  std_logic := '0';
 		phy_wlrdy : buffer std_logic;
@@ -275,6 +277,8 @@ architecture ecp5 of ecp5_sdrphy is
 			ready     : out std_logic);
 	end component;
 
+	signal tp_dq : std_logic_vector(1 to 32*sdr_dqs'length);
+	signal dqs_locked : std_logic_vector(sdr_dqs'range);
 begin
 
 	mem_sync_b : block
@@ -482,14 +486,12 @@ begin
 	sdqsi <= to_blinevector(phy_dqsi);
 	sdqst <= to_blinevector(phy_dqst);
 
+	tp <= multiplex(tp_dq, tpin);
+	phy_locked <= '1' when dqs_locked=(dqs_locked'range => '1') else '0';
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		signal sto : std_logic;
-		signal tp_dq : std_logic_vector(1 to 32);
 	begin
 		phy_sto(data_gear*(i+1)-1 downto data_gear*i) <= (others => sto);
-		tp_g : if i=0 generate
-			tp <= tp_dq;
-		end generate;
 		sdr3phy_i : entity hdl4fpga.ecp5_sdrdqphy
 		generic map (
 			debug     => debug,
@@ -504,6 +506,7 @@ begin
 			pause     => ms_pause,
 			read_req  => read_req(i),
 			read_rdy  => read_rdy(i),
+			locked    => dqs_locked(i),
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wl_rdy(i),
 			phy_rlreq => rl_req(i),
@@ -531,7 +534,7 @@ begin
 			sdr_dqsi  => sdr_dqs(i),
 			sdr_dqst  => ddqst(i),
 			sdr_dqso  => ddqsi(i),
-			tp  => tp_dq);
+			tp  => tp_dq(i*32+1 to (i+1)*32));
 	end generate;
 
 	process (ddqsi, ddqst)

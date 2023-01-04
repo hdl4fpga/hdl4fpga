@@ -47,6 +47,7 @@ entity ecp5_sdrdqphy is
 		phy_rlrdy : buffer std_logic;
 		read_rdy  : in  std_logic;
 		read_req  : buffer std_logic;
+		locked    : buffer std_logic;
 		phy_sti   : in  std_logic;
 		phy_sto   : out std_logic;
 		phy_dmt   : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
@@ -68,7 +69,7 @@ entity ecp5_sdrdqphy is
 		sdr_dqsi  : in  std_logic;
 		sdr_dqst  : out std_logic;
 		sdr_dqso  : out std_logic;
-		tp : out std_logic_vector(1 to 32));
+		tp        : out std_logic_vector(1 to 32));
 
 end;
 
@@ -175,7 +176,6 @@ begin
 		generic map (
 			debug      => debug)
 		port map (
-			rst        => rst,
 			sclk       => sclk,
 			adj_req    => adj_req,
 			adj_rdy    => adj_rdy,
@@ -186,10 +186,11 @@ begin
 			read       => rd,
 			datavalid  => datavalid,
 			burstdet   => burstdet,
+			locked     => locked,
 			lat        => lat,
 			readclksel => rdclksel);
 		phy_sto <= datavalid;
-		tp(1 to 6) <= lat & rdclksel;
+		tp(1 to 7) <= lat & rdclksel & locked;
 
 		process (sclk, read_req)
 			type states is (s_start, s_read);

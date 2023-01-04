@@ -55,6 +55,7 @@ package app_profiles is
 		sdram262MHz,
 		sdram275MHz,
 		sdram300MHz,
+		sdram325MHz,
 		sdram333MHz,
 		sdram350MHz,
 		sdram375MHz,
