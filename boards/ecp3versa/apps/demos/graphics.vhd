@@ -164,11 +164,11 @@ architecture graphics of ecp3versa is
 
 	type ddramparams_vector is array (ddram_speed) of ddram_params;
 	constant ddram_tab : ddramparams_vector := (
-		ddram400MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  4, clki_div => 1), cl => "010", cwl => "000"),
-		ddram425MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 17, clki_div => 4), cl => "011", cwl => "001"),
-		ddram450MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  9, clki_div => 2), cl => "011", cwl => "001"),
-		ddram475MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 19, clki_div => 4), cl => "011", cwl => "001"),
-		ddram500MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  5, clki_div => 1), cl => "011", cwl => "001"));
+		ddram400MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  4, clki_div => 2*1), cl => "010", cwl => "000"),
+		ddram425MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 17, clki_div => 2*4), cl => "011", cwl => "001"),
+		ddram450MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  9, clki_div => 2*2), cl => "011", cwl => "001"),
+		ddram475MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 19, clki_div => 2*4), cl => "011", cwl => "001"),
+		ddram500MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  5, clki_div => 2*1), cl => "011", cwl => "001"));
 
 	constant mem_size : natural := 8*(1024*8);
 	signal so_frm     : std_logic;
@@ -340,7 +340,7 @@ begin
 	begin
 
 		assert false
-		report real'image(ddram_mhz)
+		report "SDRAM clock : " & real'image(ddram_mhz)
 		severity NOTE;
 
 		dfpa3 <= not rpha(3);

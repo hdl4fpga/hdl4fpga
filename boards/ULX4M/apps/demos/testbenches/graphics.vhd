@@ -30,7 +30,7 @@ architecture ulx4mld_graphics of testbench is
 	constant debug      : boolean := false;
 
 	constant bank_bits  : natural := 3;
-	constant addr_bits  : natural := 15;
+	constant addr_bits  : natural := 16;
 	constant cols_bits  : natural := 9;
 	constant data_bytes : natural := 2;
 	constant byte_bits  : natural := 8;
@@ -83,7 +83,7 @@ architecture ulx4mld_graphics of testbench is
 			ddram_cas_n    : out   std_logic;
 			ddram_we_n     : out   std_logic;
 			ddram_odt      : out   std_logic;
-			ddram_a        : out   std_logic_vector(15-1 downto 0);
+			ddram_a        : out   std_logic_vector(16-1 downto 0);
 			ddram_ba       : out   std_logic_vector( 3-1 downto 0);
 			ddram_dm       : inout std_logic_vector( 2-1 downto 0) := (others => 'Z');
 			ddram_dq       : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
@@ -157,7 +157,7 @@ architecture ulx4mld_graphics of testbench is
 			cas_n   : in std_logic;
 			we_n    : in std_logic;
 			ba      : in std_logic_vector(3-1 downto 0);
-			addr    : in std_logic_vector(15-1 downto 0);
+			addr    : in std_logic_vector(16-1 downto 0);
 			dm_tdqs : in std_logic_vector(2-1 downto 0);
 			dq      : inout std_logic_vector(16-1 downto 0);
 			dqs     : inout std_logic_vector(2-1 downto 0);
