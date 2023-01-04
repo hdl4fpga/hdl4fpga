@@ -961,7 +961,7 @@ begin
 		end process;
 
 		timer_b : block
-			-- Even block generics and ports were defined in VHDL 88, they stil are not
+			-- Even block's generic and port were defined in VHDL 88, they are stil not
 			-- implemented on Xilinx ISE and Vivado, likely others tools too
 
 			-- generic (
