@@ -175,9 +175,10 @@ architecture graphics of ulx4m_ld is
 		return tab(tab'left);
 	end;
 
-	constant sdram_mode : sdram_speeds := sdram_speeds'VAL(setif(not debug,
-		sdram_speeds'POS(profile_tab(app_profile).sdram_speed),
-		sdram_speeds'POS(sdram400Mhz)));
+	constant sdram_mode : sdram_speeds := profile_tab(app_profile).sdram_speed;
+	-- constant sdram_mode : sdram_speeds := sdram_speeds'VAL(setif(not debug,
+		-- sdram_speeds'POS(profile_tab(app_profile).sdram_speed),
+		-- sdram_speeds'POS(sdram400Mhz)));
 	constant sdram_params : sdramparams_record := sdramparams(sdram_mode);
 
 	constant sdram_tcp : real := 
@@ -658,8 +659,8 @@ begin
 
 	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
-		-- debug        => true,
-		debug        => debug,
+		debug        => true,
+		-- debug        => debug,
 		profile      => 2,
 
 		sdram_tcp      => 2.0*sdram_tcp,

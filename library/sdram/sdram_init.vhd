@@ -909,10 +909,10 @@ begin
 					(tddr2_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 7418)));
 			when ddr3 =>
 				return (
-					-- (tsdr_rst,  to_sdrlatency(tCP, chip, tPreRST)/setif(debug, 100, 1)),
-					-- (tddr3_rstrdy, to_sdrlatency(tCP, chip, tPstRST)/setif(debug, 100, 1)),
-					(tsdr_rst,  to_sdrlatency(tCP, chip, tPreRST)),
-					(tddr3_rstrdy, to_sdrlatency(tCP, chip, tPstRST)),
+					(tsdr_rst,  to_sdrlatency(tCP, chip, tPreRST)/setif(debug, 100, 1)),
+					(tddr3_rstrdy, to_sdrlatency(tCP, chip, tPstRST)/setif(debug, 100, 1)),
+					-- (tsdr_rst,  to_sdrlatency(tCP, chip, tPreRST)),
+					-- (tddr3_rstrdy, to_sdrlatency(tCP, chip, tPstRST)),
 					(tddr3_wlc, sdram_latency(stdr, MODu)),
 					(tddr3_wldqsen, 25),
 					(tddr3_cke, to_sdrlatency(tCP, chip, tXPR)),

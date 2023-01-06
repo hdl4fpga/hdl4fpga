@@ -333,7 +333,7 @@ begin
 
 		signal eclk_smp   : std_logic;
 		signal eclk_rpha  : std_logic_vector(4-1 downto 0) := (others => '0');
-		signal phase_ff_q : std_logic;
+		signal phase_ff_q : std_logic_vector(0 to 0);
 		signal rpha       : std_logic_vector(4-1 downto 0) := (others => '0');
 		signal dfpa3      : std_logic;
 
@@ -418,7 +418,7 @@ begin
 			variable cntr : unsigned(0 to 4-1);
 		begin
 			if rising_edge(clk) then
-				if (to_bit(step_rdy) xor to_bit(step_req))='0' then
+				if (step_req xor to_stdulogic(to_bit(step_req)))='0' then
 					cntr := (others => '0');
 				elsif cntr(0)='0' then
 					cntr := cntr + 1;
@@ -427,6 +427,20 @@ begin
 				end if;
 			end if;
 		end process;
+
+		phadctor_e : entity hdl4fpga.adjpha
+		generic map (
+			taps      => 2**eclk_rpha'length-1)
+		port map (
+			clk       => clk,
+			req       => dtct_req,
+			rdy       => dtct_rdy,
+			step_req  => step_req,
+			step_rdy  => step_rdy,
+			edge      => '0',
+			smp       => phase_ff_q,
+			delay     => eclk_rpha);
+		rpha <= not eclk_rpha;
 
 		-- phadctor_e : entity hdl4fpga.phadctor
 		-- generic map (
@@ -447,7 +461,7 @@ begin
 		port map (
 			clk => ddr_sclk,
 			d   => eclk_smp,
-			q   => phase_ff_q);
+			q   => phase_ff_q(0));
 		
 	end block;
 

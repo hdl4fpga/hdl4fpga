@@ -30,10 +30,10 @@ whole_library :     $(MICRON__tb) \
     $(MICRON__ddr2_mcp) \
     $(MICRON__ddr2)
 
-$(MICRON__ddr3) : ../micron/ddr3/ddr3.v  ../micron/ddr3/8192Mb_ddr3_parameters.vh ../micron/ddr3/4096Mb_ddr3_parameters.vh ../micron/ddr3/1024Mb_ddr3_parameters.vh \
+$(MICRON__ddr3) : ../micron/ddr3/ddr3.v  ../micron/ddr3/8192Mb_ddr3_parameters.vh ../micron/ddr3/4096Mb_ddr3_parameters.vh ../micron/ddr3/2048Mb_ddr3_parameters.vh ../micron/ddr3/1024Mb_ddr3_parameters.vh \
 		$(SV_STD__std)
 	$(VLOG) -work micron -sv +incdir+../micron/ddr3 \
-		 +define+sg15E +define+x16 +define+den1024Mb \
+		 +define+sg15E +define+x16 +define+den8192Mb \
 		 -L mtiAvm -L mtiOvm -L mtiUvm -L mtiUPF ../micron/ddr3/ddr3.v
 
 $(MICRON__ddr_model) : ../micron/ddr/ddr_model.v ../micron/ddr/ddr_model_parameters.vh

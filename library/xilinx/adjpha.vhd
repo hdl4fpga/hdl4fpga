@@ -158,7 +158,7 @@ begin
 				state := s_init;
 				edge_rdy <= to_stdulogic(to_bit(edge_req));
 			end if;
-			sy_step_rdy := step_rdy;
+			sy_step_rdy := to_stdulogic(to_bit(step_rdy));
 			sy_req      <= req;
 		end if;
 	end process;

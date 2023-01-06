@@ -27,7 +27,7 @@ use hdl4fpga.ipoepkg.all;
 
 architecture ulx4mld_graphics of testbench is
 
-	constant debug      : boolean := false;
+	constant debug      : boolean := true;
 
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 16;
