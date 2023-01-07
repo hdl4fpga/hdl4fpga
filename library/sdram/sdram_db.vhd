@@ -252,7 +252,7 @@ package sdram_db is
 		(fpga => ecp5, param => STRL,       value =>   0),
 		(fpga => ecp5, param => RWNL,       value =>   0),
 		(fpga => ecp5, param => DQSL,       value =>   0),
-		(fpga => ecp5, param => DQSZL,      value =>   0),
+		(fpga => ecp5, param => DQSZL,      value =>   2),
 		(fpga => ecp5, param => DQZL,       value =>   2),
 		(fpga => ecp5, param => WWNL,       value =>   2),
 		(fpga => ecp5, param => STRXL,      value =>   0),

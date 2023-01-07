@@ -123,8 +123,8 @@ architecture ulx4mld_graphics of testbench is
 		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_0000ff_1603_0007_3000";
-	constant req_data : std_logic_vector := x"010000_1702_00000f_1603_8007_3000";
+		x"1702_0000ff_1603_0007_3780";
+	constant req_data : std_logic_vector := x"010000_1702_0000ff_1603_8007_3780";
 
 	signal rst_n     : std_logic;
 	signal cke       : std_logic;
@@ -256,8 +256,8 @@ begin
 		signal nrst : std_logic := '0';
 	begin
 
-		nrst <= not rst after 200 us;
-		-- nrst <= not rst;
+		nrst <= not rst;
+
 		process 
 			variable i     : natural;
 			variable total : natural;
@@ -458,7 +458,8 @@ begin
 
 	du_e : ulx4m_ld
 	generic map (
-		debug => debug)
+		-- debug => debug)
+		debug => true)
 	port map (
 		clk_25mhz    => xtal,
 		btn(1)       => '0',

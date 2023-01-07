@@ -33,7 +33,7 @@ use hdl4fpga.base.all;
 
 entity adjpha is
 	generic (
-		dtaps    : natural := 0;
+		dtaps    : integer := 0;
 		taps     : natural);
 	port (
 		tp       : out std_logic_vector(1 to 32);
@@ -62,10 +62,6 @@ architecture beh of adjpha is
 	signal sy_req   : std_logic;
 
 begin
-
-	process (edge)
-	begin
-	end process;
 
 	process(clk)
 

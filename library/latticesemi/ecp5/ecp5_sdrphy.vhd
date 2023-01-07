@@ -296,6 +296,7 @@ begin
 
 		attribute FREQUENCY_PIN_CDIVX : string;
 		attribute FREQUENCY_PIN_CDIVX of clkdivf_i : label is ftoa(1.0e-6/(sdr_tcp*2.0), 10);
+		signal eclk_sync : std_logic;
 	begin
 
 		pll_lock <= '1';
@@ -321,13 +322,14 @@ begin
 		port map (
 			stop  => stop,
 			eclki => clkop,
-			eclko => eclk);
+			eclko => eclk_sync);
+		eclk <= transport eclk_sync after natural(sdr_tcp*1.0e9*3.0/4.0) * 1 ns;
 	
 		clkdivf_i : clkdivf
 		port map (
 			rst     => sdr_reset,
 			alignwd => '0',
-			clki    => eclk,
+			clki    => eclk_sync,
 			cdivx   => sclk);
 	
 		ddrdll_i : ddrdlla
