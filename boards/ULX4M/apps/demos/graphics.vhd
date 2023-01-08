@@ -63,7 +63,7 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app_profile  : app_profiles := uart_350MHz_480p24bpp;
+	constant app_profile  : app_profiles := uart_400MHz_480p24bpp;
 	---------------------------------------------
 
 	type profile_params is record
