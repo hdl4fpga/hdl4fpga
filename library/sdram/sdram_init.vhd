@@ -920,7 +920,7 @@ begin
 					(tddr3_mod, sdram_latency(stdr, MODu)),
 					(tddr3_dll, sdram_latency(stdr, cDLL)),
 					(tddr3_zqinit, sdram_latency(DDR3, ZQINIT)),
-					(tddr3_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 1725)));
+					(tddr3_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 1200-4)));
 			end case;
 		end;
 	
@@ -942,6 +942,7 @@ begin
 		end;
 			
 		constant timer_tab : timer_vector := get_timertab(tcp, chip, debug);
+		signal   timer_mem : timer_vector(timer_tab'range) := get_timertab(tcp, chip, debug);
 		signal   timer_sel : std_logic_vector(0 to  unsigned_num_bits(timer_tab'length-1));
 	begin
 

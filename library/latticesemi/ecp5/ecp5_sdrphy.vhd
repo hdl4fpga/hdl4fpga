@@ -323,7 +323,7 @@ begin
 			stop  => stop,
 			eclki => clkop,
 			eclko => eclk_sync);
-		eclk <= transport eclk_sync after natural(sdr_tcp*1.0e9*3.0/4.0) * 1 ns;
+		eclk <= transport eclk_sync after natural(sdr_tcp*1.0e14)*10fs-1ps;
 	
 		clkdivf_i : clkdivf
 		port map (

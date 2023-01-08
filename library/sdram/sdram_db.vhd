@@ -103,7 +103,7 @@ package sdram_db is
 		(mark => MT41J1G15E,     param => tRP,     value =>  13.91e-9),
 		(mark => MT41J1G15E,     param => tMRD,    value =>  15.00e-9),
 		(mark => MT41J1G15E,     param => tRFC,    value => 110.00e-9),
-		(mark => MT41J1G15E,     param => tXPR,    value => 110.00e-9 + 10.0e-9),  -- tMin : tRFC + 10 ps
+		(mark => MT41J1G15E,     param => tXPR,    value => 110.00e-9 + 10.0e-9),  -- tMin : tRFC + 10 ns
 		(mark => MT41J1G15E,     param => tREFI,   value =>  64.00e-3/8192.0),
 
 		(mark => MT41K2G125,     param => tPreRST, value => 200.00e-6),
@@ -113,7 +113,7 @@ package sdram_db is
 		(mark => MT41K2G125,     param => tRP,     value =>  13.75e-9),
 		(mark => MT41K2G125,     param => tMRD,    value =>  15.00e-9),
 		(mark => MT41K2G125,     param => tRFC,    value => 360.00e-9),
-		(mark => MT41K2G125,     param => tXPR,    value => 360.00e-9 + 10.0e-9),  -- tMin : tRFC + 10 ps
+		(mark => MT41K2G125,     param => tXPR,    value => 360.00e-9 + 10.0e-9),  -- tMin : tRFC + 10 ns
 		(mark => MT41K2G125,     param => tREFI,   value =>  64.00e-3/8192.0),
 
 		(mark => MT41K4G107,     param => tPreRST, value => 200.00e-6),
@@ -123,7 +123,7 @@ package sdram_db is
 		(mark => MT41K4G107,     param => tRP,     value =>  13.91e-9),
 		(mark => MT41K4G107,     param => tMRD,    value =>  20.00e-9),
 		(mark => MT41K4G107,     param => tRFC,    value => 260.00e-9),
-		(mark => MT41K4G107,     param => tXPR,    value => 260.00e-9 + 10.0e-9),  -- tMin : tRFC + 10 ps
+		(mark => MT41K4G107,     param => tXPR,    value => 260.00e-9 + 10.0e-9),  -- tMin : tRFC + 10 ns
 		(mark => MT41K4G107,     param => tREFI,   value =>  64.00e-3/8192.0),
 
 		(mark => MT41K8G125,     param => tPreRST, value => 200.00e-6),
@@ -133,7 +133,7 @@ package sdram_db is
 		(mark => MT41K8G125,     param => tRP,     value =>  13.75e-9),
 		(mark => MT41K8G125,     param => tMRD,    value =>  20.00e-9),
 		(mark => MT41K8G125,     param => tRFC,    value => 350.00e-9),
-		(mark => MT41K8G125,     param => tXPR,    value => 350.00e-9 + 10.0e-9),  -- tMin : tRFC + 10 ps
+		(mark => MT41K8G125,     param => tXPR,    value => 350.00e-9 + 10.0e-9),  -- tMin : tRFC + 10 ns
 		(mark => MT41K8G125,     param => tREFI,   value =>  64.00e-3/8192.0),
 
 		(mark => AS4CD3LC12,     param => tPreRST, value => 200.00e-6),
@@ -143,7 +143,7 @@ package sdram_db is
 		(mark => AS4CD3LC12,     param => tRP,     value =>  13.75e-9),
 		(mark => AS4CD3LC12,     param => tMRD,    value =>  15.00e-9),
 		(mark => AS4CD3LC12,     param => tRFC,    value => 260.00e-9),
-		(mark => AS4CD3LC12,     param => tXPR,    value => 260.00e-9 + 10.0e-9),  -- tMin : tRFC + 10 ps
+		(mark => AS4CD3LC12,     param => tXPR,    value => 260.00e-9 + 10.0e-9),  -- tMin : tRFC + 10 ns
 		(mark => AS4CD3LC12,     param => tREFI,   value =>  64.00e-3/8192.0));
 
 	constant sdram_latency_tab : sdram_latency_vector := (

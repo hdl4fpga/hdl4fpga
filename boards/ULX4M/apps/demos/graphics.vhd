@@ -63,7 +63,7 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app_profile  : app_profiles := uart_325MHz_480p24bpp;
+	constant app_profile  : app_profiles := uart_350MHz_480p24bpp;
 	---------------------------------------------
 
 	type profile_params is record
@@ -665,8 +665,8 @@ begin
 
 		sdram_tcp      => 2.0*sdram_tcp,
 		fpga         => ecp5,
-		mark         => MT41K4G107,
-		-- mark         => MT41K8G125,
+		-- mark         => MT41K8G107,
+		mark         => MT41K8G125,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		burst_length => 8,
