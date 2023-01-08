@@ -30,7 +30,7 @@ architecture ecp3versa_graphics of testbench is
 	constant debug      : boolean := true;
 
 	constant bank_bits  : natural := 3;
-	constant addr_bits  : natural := 15;
+	constant addr_bits  : natural := 16;
 	constant cols_bits  : natural := 9;
 	constant data_bytes : natural := 2;
 	constant byte_bits  : natural := 8;
@@ -146,7 +146,7 @@ architecture ecp3versa_graphics of testbench is
 			cas_n   : in std_logic;
 			we_n    : in std_logic;
 			ba      : in std_logic_vector(3-1 downto 0);
-			addr    : in std_logic_vector(13-1 downto 0);
+			addr    : in std_logic_vector(16-1 downto 0);
 			dm_tdqs : in std_logic_vector(2-1 downto 0);
 			dq      : inout std_logic_vector(16-1 downto 0);
 			dqs     : inout std_logic_vector(2-1 downto 0);
@@ -157,21 +157,14 @@ architecture ecp3versa_graphics of testbench is
 
 	signal phy1_125clk : std_logic := '0';
 
-	signal mii_req    : std_logic := '0';
-	signal mii_req1   : std_logic := '0';
-	signal ping_req   : std_logic := '0';
-	signal rep_req    : std_logic := '0';
-	signal mii_rxdv   : std_logic;
-	signal mii_rxd    : std_logic_vector(0 to 8-1);
-	signal mii_txd    : std_logic_vector(0 to 8-1);
-	signal mii_txc    : std_logic;
-	alias  mii_rxc    : std_logic is phy1_125clk;
-	signal mii_txen   : std_logic;
+   	alias  mii_rxc    : std_logic is phy1_125clk;
+   	signal mii_rxd    : std_logic_vector(0 to 8-1);
+   	signal mii_rxdv   : std_logic;
 
-	signal datarx_null :  std_logic_vector(mii_rxd'range);
+   	signal mii_txc    : std_logic;
+   	signal mii_txd    : std_logic_vector(0 to 8-1);
+   	signal mii_txen   : std_logic;
 
-	signal ftdi_txd    : std_logic;
-	signal ftdi_rxd    : std_logic;
 
 	signal uart_clk : std_logic := '0';
 
@@ -183,192 +176,47 @@ begin
 	uart_clk    <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
 	phy1_125clk <= not phy1_125clk after 4 ns;
 
-	hdlc_b : block
-
-		generic (
-			baudrate  : natural := 3e6;
-			uart_xtal : real := 40.0e6;
-			xxx : natural_vector;
-			payload   : std_logic_vector);
-		generic map (
-			xxx => (0 => snd_data'length, 1 => req_data'length),
-			payload   => snd_data & req_data);
-
-		port (
-			rst       : in  std_logic;
-			uart_clk  : in  std_logic;
-			uart_sout : out std_logic);
-		port map (
-			rst       => reset,
-			uart_clk  => uart_clk,
-			uart_sout => ftdi_txd);
-
-		signal uart_trdy   : std_logic;
-		signal uart_irdy   : std_logic;
-		signal uart_txd    : std_logic_vector(0 to 8-1);
-
-		signal uartrx_trdy   : std_logic;
-		signal uartrx_irdy   : std_logic;
-		signal uartrx_data   : std_logic_vector(0 to 8-1);
-
-		signal hdlctx_frm  : std_logic;
-		signal hdlctx_end  : std_logic;
-		signal hdlctx_trdy : std_logic;
-		signal hdlctx_data : std_logic_vector(0 to 8-1);
-
-		signal hdlcrx_frm  : std_logic;
-		signal hdlcrx_end  : std_logic;
-		signal hdlcrx_trdy : std_logic;
-		signal hdlcrx_irdy : std_logic;
-		signal hdlcrx_data : std_logic_vector(0 to 8-1);
-		signal hdlcfcsrx_sb : std_logic;
-		signal hdlcfcsrx_vld : std_logic;
-
-		signal rst_n : std_logic;
-	begin
-
-		rst_n <= not rst;
-		process 
-			variable i     : natural;
-			variable total : natural;
-			variable addr  : natural;
-		begin
-			if rst='1' then
-				hdlctx_frm <= '0';
-				hdlctx_end <= '0';
-				addr       := 0;
-				total      := 0;
-				i          := 0;
-			elsif rising_edge(uart_clk) then
-				if addr < total then
-					hdlctx_data <= reverse(payload(addr to addr+8-1));
-					if hdlctx_trdy='1' then
-						addr := addr + 8;
-					end if;
-					if addr < total then
-						hdlctx_frm <= '1';
-						hdlctx_end <= '0';
-					else
-						hdlctx_frm <= '1';
-						hdlctx_end <= '1';
-					end if;
-				elsif i < xxx'length then
-					if i > 0 then
-						if debug then
-							wait for 5 us;
-						else
-							wait for 100 us;
-						end if;
-						hdlctx_frm <= '0';
-						hdlctx_end <= '0';
-					end if;
-					total := total + xxx(i);
-					i     := i + 1;
-				else
-					hdlctx_data <= (others => '-');
-				end if;
-
-			end if;
-			wait on rst, uart_clk;
-		end process;
-
-		hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
-		port map (
-			hdlctx_frm  => hdlctx_frm,
-			hdlctx_irdy => '1',
-			hdlctx_trdy => hdlctx_trdy,
-			hdlctx_end  => hdlctx_end,
-			hdlctx_data => hdlctx_data,
-
-			uart_clk    => uart_clk,
-			uart_irdy   => uart_irdy,
-			uart_trdy   => uart_trdy,
-			uart_data   => uart_txd);
-
-		uarttx_e : entity hdl4fpga.uart_tx
-		generic map (
-			baudrate  => baudrate,
-			clk_rate  => uart_xtal)
-		port map (
-			uart_frm  => rst_n,
-			uart_txc  => uart_clk,
-			uart_sout => uart_sout,
-			uart_trdy => uart_trdy,
-			uart_irdy => uart_irdy,
-			uart_data => uart_txd);
-
-		uartrx_e : entity hdl4fpga.uart_rx
-		generic map (
-			baudrate  => baudrate,
-			clk_rate  => uart_xtal)
-		port map (
-			uart_rxc  => uart_clk,
-			uart_sin  => ftdi_rxd,
-			uart_irdy => uartrx_irdy,
-			uart_data => uartrx_data);
-
-		hdlcdll_rx_e : entity hdl4fpga.hdlcdll_rx
-		port map (
-			uart_clk    => uart_clk,
-			uartrx_irdy => uartrx_irdy,
-			uartrx_data => uartrx_data,
-
-			hdlcrx_frm  => hdlcrx_frm,
-			hdlcrx_irdy => hdlcrx_irdy,
-			hdlcrx_data => hdlcrx_data,
-			hdlcrx_end  => hdlcrx_end,
-			fcs_sb      => hdlcfcsrx_sb,
-			fcs_vld     => hdlcfcsrx_vld);
-
-	end block;
-
 	ipoe_b : block
 
-		signal eth_txen  : std_logic;
-		signal eth_txd   : std_logic_vector(mii_txd'range);
+		signal mii_req    : std_logic := '0';
+    	signal ping_req   : std_logic := '0';
+    	signal mii_rxdv   : std_logic;
+		signal mii_req1   : std_logic := '0';
+		signal req         : std_logic;
+		signal datarx_null :  std_logic_vector(mii_rxd'range);
+		signal x : natural := 0;
 
-		signal pl_trdy    : std_logic;
-		signal pl_end     : std_logic;
-		signal pl_data    : std_logic_vector(mii_txd'range);
-
-		signal miirx_frm  : std_logic;
-		signal miirx_end  : std_logic;
-		signal miirx_irdy : std_logic;
-		signal miirx_trdy : std_logic;
-		signal miirx_data : std_logic_vector(pl_data'range);
-
-		signal miitx_frm  : std_logic;
-		signal miitx_irdy : std_logic;
-		signal miitx_trdy : std_logic;
-		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(pl_data'range);
-
-		signal llc_data   : std_logic_vector(0 to 2*48+16-1);
-		signal hwllc_irdy : std_logic;
-		signal hwllc_trdy : std_logic;
-		signal hwllc_end  : std_logic;
-		signal hwllc_data : std_logic_vector(pl_data'range);
 
 	begin
 
 		mii_req  <= '0', '1' after 20 us, '0' after 23 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
 		mii_req1 <= '0', '1' after 26 us, '0' after 55 us;
 
-		process
-		begin
-			wait for 23 us;
-			loop
-				if rep_req='1' then
-					wait;
-					rep_req <= '0' after 5.8 us;
-				else
-					rep_req <= '1' after 250 ns;
-				end if;
-				wait on rep_req;
-			end loop;
-		end process;
---		mii_req1 <= rep_req;
-	
+    	process
+    	begin
+    		req <= '0';
+    		wait for 36 us;
+    		loop
+    			if req='1' then
+    				wait on mii_rxdv;
+    				if falling_edge(mii_rxdv) then
+    					req <= '0';
+    					x <= x + 1;
+    					wait for 12 us;
+    				end if;
+    			else
+    				if x > 1 then
+    					wait;
+    				end if;
+    				req <= '1';
+    				wait on req;
+    			end if;
+    		end loop;
+    	end process;
+    	mii_req <= req when x=0 else '0';
+    	mii_req1 <= req when x=1 else '0';
+
+
 		htb_e : entity hdl4fpga.eth_tb
 		generic map (
 			debug => false)
@@ -423,19 +271,11 @@ begin
 		ddr3_cas => cas_n,
 		ddr3_we  => we_n,
 		ddr3_b   => ba,
-		ddr3_a   => addr(12 downto 0),
+		ddr3_a   => addr(13-1 downto 0),
 		ddr3_dqs => dqs,
 		ddr3_dq  => dq,
 		ddr3_dm  => dm,
 		ddr3_odt => odt);
-
-	ethrx_e : entity hdl4fpga.eth_rx
-	port map (
-		dll_data => datarx_null,
-		mii_clk  => mii_txc,
-		mii_frm  => mii_txen,
-		mii_irdy => mii_txen,
-		mii_data => mii_txd);
 
 	ddr_clk_p <= ddr_clk;
 	ddr_clk_n <= not ddr_clk;
@@ -452,7 +292,7 @@ begin
 		Cas_n => cas_n,
 		We_n  => we_n,
 		Ba    => ba,
-		Addr  => addr(13-1 downto 0),
+		Addr  => addr,
 		Dm_tdqs => dm,
 		Dq    => dq,
 		Dqs   => dqs,

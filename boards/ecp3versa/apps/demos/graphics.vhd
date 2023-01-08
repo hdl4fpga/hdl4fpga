@@ -164,11 +164,11 @@ architecture graphics of ecp3versa is
 
 	type ddramparams_vector is array (ddram_speed) of ddram_params;
 	constant ddram_tab : ddramparams_vector := (
-		ddram400MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  4, clki_div => 2*1), cl => "010", cwl => "000"),
-		ddram425MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 17, clki_div => 2*4), cl => "011", cwl => "001"),
-		ddram450MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  9, clki_div => 2*2), cl => "011", cwl => "001"),
-		ddram475MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 19, clki_div => 2*4), cl => "011", cwl => "001"),
-		ddram500MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  5, clki_div => 2*1), cl => "011", cwl => "001"));
+		ddram400MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  4, clki_div => 1), cl => "010", cwl => "000"),
+		ddram425MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 17, clki_div => 4), cl => "011", cwl => "001"),
+		ddram450MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  9, clki_div => 2), cl => "011", cwl => "001"),
+		ddram475MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 19, clki_div => 4), cl => "011", cwl => "001"),
+		ddram500MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  5, clki_div => 1), cl => "011", cwl => "001"));
 
 	constant mem_size : natural := 8*(1024*8);
 	signal so_frm     : std_logic;
@@ -216,7 +216,7 @@ architecture graphics of ecp3versa is
 
 	constant ddr_tcp : real := 
 		real(ddram_tab(ddram_mode).pll.clki_div)/
-		(real(ddram_tab(ddram_mode).pll.clkok_div*ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq);
+		(real(ddram_tab(ddram_mode).pll.clkop_div*ddram_tab(ddram_mode).pll.clkfb_div)*sys_freq);
 
 	constant io_link  : io_iface := app_tab(app).iface;
 
@@ -432,6 +432,7 @@ begin
 		generic map (
 			taps      => 2**eclk_rpha'length-1)
 		port map (
+    		rst       => ddrphy_rst,
 			clk       => clk,
 			req       => dtct_req,
 			rdy       => dtct_rdy,
@@ -612,7 +613,8 @@ begin
 
 		sdram_tcp    => 2.0*ddr_tcp,
 		fpga         => hdl4fpga.profiles.ecp3,
-		mark         => MT41J1G15E,
+		-- mark         => MT41J1G15E,
+		mark         => MT41K8G125,
 		sclk_phases  => sclk_phases,
 		sclk_edges   => sclk_edges,
 		burst_length => 8,

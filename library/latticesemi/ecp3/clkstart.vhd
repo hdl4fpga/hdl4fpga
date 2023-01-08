@@ -39,7 +39,6 @@ architecture ecp3 of clk_start is
 begin
 
 	process (rst, sclk)
-		variable q : std_logic;
 	begin
 		if rst='1' then
 			sclk_q <= '0';
@@ -59,8 +58,8 @@ begin
 			q(0) := sclk_q;
 			q := rotate_left(q, 1); 
 		end if;
-		eclk_stop  <= not q(0);
-		dqsbuf_rst <= not q(1);
+		eclk_stop  <= not q(1);
+		dqsbuf_rst <= not q(0);
 	end process;
 
 end;

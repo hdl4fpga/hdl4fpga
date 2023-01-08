@@ -750,7 +750,7 @@ begin
 	process (clk_25mhz)
 	begin
 		if rising_edge(clk_25mhz) then
-			led(0) <= setif(btn(1)='1', tp(1), sdrphy_locked);
+			led(0) <= sdrphy_locked;
 			led(7 downto 1) <= tp_phy(1 to 7);
 		end if;
 	end process;

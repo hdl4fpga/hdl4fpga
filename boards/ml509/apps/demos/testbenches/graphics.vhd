@@ -187,7 +187,7 @@ architecture ml509_graphics of testbench is
 
 	signal datarx_null :  std_logic_vector(mii_rxd'range);
 	signal sw : std_logic;
-		signal x : natural := 0;
+	signal x : natural := 0;
 	signal dmi : std_logic_vector(dm'range);
 begin
 

@@ -37,9 +37,21 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ctlrpll_b/line__393/state
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ctlrpll_b/phadctor_e/line__70/sy_step_rdy
+add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/dqsbufd_i/sclk
+add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/dqsbufd_i/eclk
+add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/dqsbufd_i/eclkw
+add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/dqsbufd_i/rst
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_b/clk_start_i/rst
+add wave -noupdate /testbench/du_e/sdrphy_b/clk_start_i/sclk
+add wave -noupdate /testbench/du_e/sdrphy_b/clk_start_i/eclk
+add wave -noupdate /testbench/du_e/sdrphy_b/clk_start_i/eclk_stop
+add wave -noupdate /testbench/du_e/sdrphy_b/clk_start_i/dqsbuf_rst
+add wave -noupdate /testbench/du_e/sdrphy_b/clk_start_i/sclk_q
+add wave -noupdate /testbench/du_e/sdrphy_b/clk_start_i/line__41/q
+add wave -noupdate /testbench/du_e/sdrphy_b/clk_start_i/line__53/q
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {191583 ps} 0} {{Cursor 2} {25722515 ps} 0}
+WaveRestoreCursors {{Cursor 1} {281045 ps} 0} {{Cursor 2} {25722515 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 194
 configure wave -valuecolwidth 78
@@ -55,4 +67,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {1050 ns}
+WaveRestoreZoom {40625 ps} {303125 ps}
