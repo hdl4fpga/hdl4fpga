@@ -467,7 +467,7 @@ begin
 		dqt := to_stdlogicvector(ddqt);
 		dqo := to_stdlogicvector(ddqo);
 		for i in dqo'range loop
-			if dqt(i)='1' then
+			if dqt(i)='0' then
 				sdr_dq(i) <= 'Z';
 			else
 				sdr_dq(i) <= dqo(i);
@@ -478,7 +478,7 @@ begin
 	process (ddmo, ddmt)
 	begin
 		for i in ddmo'range loop
-			if ddmt(i)='1' then
+			if ddmt(i)='0' then
 				sdr_dm(i) <= 'Z';
 			else
 				sdr_dm(i) <= ddmo(i);

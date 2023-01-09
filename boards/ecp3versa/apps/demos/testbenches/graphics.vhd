@@ -137,17 +137,17 @@ architecture ecp3versa_graphics of testbench is
 
 	component ddr3_model is
 		port (
-			rst_n   : in std_logic;
-			ck      : in std_logic;
-			ck_n    : in std_logic;
-			cke     : in std_logic;
-			cs_n    : in std_logic;
-			ras_n   : in std_logic;
-			cas_n   : in std_logic;
-			we_n    : in std_logic;
-			ba      : in std_logic_vector(3-1 downto 0);
-			addr    : in std_logic_vector(16-1 downto 0);
-			dm_tdqs : in std_logic_vector(2-1 downto 0);
+			rst_n   : in    std_logic;
+			ck      : in    std_logic;
+			ck_n    : in    std_logic;
+			cke     : in    std_logic;
+			cs_n    : in    std_logic;
+			ras_n   : in    std_logic;
+			cas_n   : in    std_logic;
+			we_n    : in    std_logic;
+			ba      : in    std_logic_vector(3-1 downto 0);
+			addr    : in    std_logic_vector(16-1 downto 0);
+			dm_tdqs : in    std_logic_vector(2-1 downto 0);
 			dq      : inout std_logic_vector(16-1 downto 0);
 			dqs     : inout std_logic_vector(2-1 downto 0);
 			dqs_n   : inout std_logic_vector(2-1 downto 0);
@@ -157,13 +157,13 @@ architecture ecp3versa_graphics of testbench is
 
 	signal phy1_125clk : std_logic := '0';
 
-   	alias  mii_rxc    : std_logic is phy1_125clk;
-   	signal mii_rxd    : std_logic_vector(0 to 8-1);
-   	signal mii_rxdv   : std_logic;
+   	alias  mii_rxc  : std_logic is phy1_125clk;
+   	signal mii_rxd  : std_logic_vector(0 to 8-1);
+   	signal mii_rxdv : std_logic;
 
-   	signal mii_txc    : std_logic;
-   	signal mii_txd    : std_logic_vector(0 to 8-1);
-   	signal mii_txen   : std_logic;
+   	signal mii_txc  : std_logic;
+   	signal mii_txd  : std_logic_vector(0 to 8-1);
+   	signal mii_txen : std_logic;
 
 
 	signal uart_clk : std_logic := '0';
@@ -180,7 +180,6 @@ begin
 
 		signal mii_req    : std_logic := '0';
     	signal ping_req   : std_logic := '0';
-    	signal mii_rxdv   : std_logic;
 		signal mii_req1   : std_logic := '0';
 		signal req         : std_logic;
 		signal datarx_null :  std_logic_vector(mii_rxd'range);
@@ -188,9 +187,6 @@ begin
 
 
 	begin
-
-		mii_req  <= '0', '1' after 20 us, '0' after 23 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
-		mii_req1 <= '0', '1' after 26 us, '0' after 55 us;
 
     	process
     	begin
@@ -213,7 +209,7 @@ begin
     			end if;
     		end loop;
     	end process;
-    	mii_req <= req when x=0 else '0';
+    	mii_req  <= req when x=0 else '0';
     	mii_req1 <= req when x=1 else '0';
 
 

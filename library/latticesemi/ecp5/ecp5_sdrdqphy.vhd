@@ -229,9 +229,7 @@ begin
 		d(0) <= transport to_stdulogic(to_bit(dqi0)) after delay;
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
-			-- dtaps    => (taps+1)/16,
 			dtaps    => 1,
-			-- dtaps    => 0,
 			taps     => taps)
 		port map (
 			edge     => std_logic'('0'),

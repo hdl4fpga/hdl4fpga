@@ -171,21 +171,29 @@ begin
 			process (phy_rlrdy, sclk)
 				type states is (s_idle, s_prmb, s_wait);
 				variable state : states;
+				variable cntr  : unsigned(0 to 8);
 			begin
 				if rising_edge(sclk) then
 					if (to_bit(phy_rlrdy) xor to_bit(phy_rlreq))='1' then
 						case state is
 						when s_idle =>
 							lat      <= (others => '0');
+							cntr     := (others => '0');
 							read_req <= not to_stdulogic(to_bit(read_rdy));
 							state    := s_prmb;
 						when s_prmb =>
-							if det='1' then
-								state := s_wait;
-							elsif (read_req xor read_rdy)='0' then
-								lat      <= lat + 1;
+							if (read_req xor read_rdy)='0' then
+								if det='1' then
+									if cntr(0)='1' then
+										state := s_wait;
+									else
+										cntr := cntr + 1;
+									end if;
+								else
+									lat      <= lat + 1;
+									state    := s_prmb;
+								end if;
 								read_req <= not to_stdulogic(to_bit(read_rdy));
-								state    := s_prmb;
 							end if;
 						when s_wait =>
 							if (read_req xor read_rdy)='0' then
@@ -194,7 +202,8 @@ begin
 							end if;
 						end case;
 					else
-						state   := s_idle;
+						cntr  := (others => '0');
+						state := s_idle;
 					end if;
 				end if;
 			end process;
@@ -212,6 +221,7 @@ begin
 			dtaps    => 1,
 			taps     => taps)
 		port map (
+			rst      => rst,
 			edge     => std_logic'('0'),
 			clk      => sclk,
 			req      => phy_wlreq,

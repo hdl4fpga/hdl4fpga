@@ -336,6 +336,7 @@ begin
 		signal phase_ff_q : std_logic_vector(0 to 0);
 		signal rpha       : std_logic_vector(4-1 downto 0) := (others => '0');
 		signal dfpa3      : std_logic;
+		signal rst        : std_logic;
 
 	begin
 
@@ -390,15 +391,15 @@ begin
 			clkok2           => open,
 			lock             => lock);
 		
+		rst <= not lock;
 		process (clk, step_rdy)
 			type states is (s_request, s_ready);
 			variable state : states;
 		begin
 			if rising_edge(clk) then
-				if lock='0' then
-					dtct_req <= to_stdulogic(to_bit(dtct_rdy));
+				if rst='1' then
 					ctlr_lck <= '0';
-					state := s_request;
+					state    := s_request;
 				else
 					case state is
 					when s_request =>
@@ -418,12 +419,12 @@ begin
 			variable cntr : unsigned(0 to 4-1);
 		begin
 			if rising_edge(clk) then
-				if (step_req xor to_stdulogic(to_bit(step_req)))='0' then
+				if (step_req xor to_stdulogic(to_bit(step_rdy)))='0' then
 					cntr := (others => '0');
 				elsif cntr(0)='0' then
 					cntr := cntr + 1;
 				else
-					step_rdy <= step_req;
+					step_rdy <= to_stdulogic(to_bit(step_req));
 				end if;
 			end if;
 		end process;
@@ -432,7 +433,7 @@ begin
 		generic map (
 			taps      => 2**eclk_rpha'length-1)
 		port map (
-    		rst       => ddrphy_rst,
+    		rst       => rst,
 			clk       => clk,
 			req       => dtct_req,
 			rdy       => dtct_rdy,
@@ -442,20 +443,6 @@ begin
 			smp       => phase_ff_q,
 			delay     => eclk_rpha);
 		rpha <= not eclk_rpha;
-
-		-- phadctor_e : entity hdl4fpga.phadctor
-		-- generic map (
-			-- taps      => 2**eclk_rpha'length-1)
-		-- port map (
-			-- clk       => clk,
-			-- dtct_req  => dtct_req,
-			-- dtct_rdy  => dtct_rdy,
-			-- step_req  => step_req,
-			-- step_rdy  => step_rdy,
-			-- edge      => '0',
-			-- input     => phase_ff_q,
-			-- phase     => eclk_rpha);
-		-- rpha <= not eclk_rpha;
 
 		eclk_smp <= transport ddr_eclk after 0 ns;
 		phase_ff_0_i : entity hdl4fpga.ff
@@ -477,7 +464,7 @@ begin
 		alias  mii_rxdv   : std_logic is phy1_rx_dv;
 		alias  mii_rxd    : std_logic_vector(phy1_rx_d'range) is phy1_rx_d;
 
-		alias  mii_txc    : std_logic is phy1_125clk;
+		signal mii_txc   : std_logic;
 		signal mii_txd    : std_logic_vector(phy1_tx_d'range);
 		signal mii_txen   : std_logic;
 		signal dhcpcd_req : std_logic := '0';
@@ -497,6 +484,7 @@ begin
 
 	begin
 
+		mii_txc <= not phy1_125clk;
 		sio_clk <= phy1_rxc;
 		sync_b : block
 

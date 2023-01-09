@@ -659,6 +659,7 @@ begin
 
 	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
+		ena_burstref  => false,
 		-- debug        => true,
 		debug        => debug,
 		profile      => 2,

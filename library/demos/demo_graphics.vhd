@@ -36,6 +36,7 @@ entity demo_graphics is
 		debug        : boolean := false;
 		profile      : natural;
 		fifo_size    : natural := 8*8192;
+		ena_burstref : boolean := true;
 
 		sdram_tcp    : real;
 		fpga         : fpga_devices;
@@ -861,7 +862,9 @@ begin
 		constant buffdo_lat : natural := latencies_tab(profile).ddro;
 		signal   dev_do_dv  : std_logic_vector(dev_gnt'range);
 		signal   dma_rdy    : std_logic_vector(dev_rdy'range);
+		signal   burst_ref  : std_logic;
 	begin
+		burst_ref <= ctlr_refreq when ena_burstref else '0';
 		dmactlr_e : entity hdl4fpga.dmactlr
 		generic map (
 			burst_length => burst_length,
@@ -885,7 +888,8 @@ begin
 			ctlr_cl      => ctlr_cl,
 
 			ctlr_inirdy  => ctlr_inirdy,
-			ctlr_refreq  => '0', --ctlr_refreq,
+			-- ctlr_refreq  => ctlr_refreq,
+			ctlr_refreq  => burst_ref,
 
 			ctlr_frm     => ctlr_frm,
 			ctlr_trdy    => ctlr_trdy,
