@@ -31,12 +31,12 @@ use ecp3.components.all;
 entity ecp3_sdrdqphy is
 	generic (
 		taps      : natural := 0;
-		DATA_GEAR : natural;
+		data_gear : natural;
 		byte_size : natural);
 	port (
 		rst       : in  std_logic;
 		sclk      : in  std_logic;
-		sclk2x   : in  std_logic;
+		sclk2x    : in  std_logic;
 		eclk      : in  std_logic;
 		dqsdel    : in  std_logic;
 		pause     : in  std_logic;
@@ -50,14 +50,14 @@ entity ecp3_sdrdqphy is
 		burst     : out std_logic;
 		phy_sti   : in  std_logic;
 		phy_sto   : out std_logic;
-		phy_dmt   : in  std_logic_vector(0 to DATA_GEAR-1) := (others => '-');
-		phy_dmi   : in  std_logic_vector(DATA_GEAR-1 downto 0) := (others => '-');
-		phy_dmo   : out std_logic_vector(DATA_GEAR-1 downto 0);
-		phy_dqo   : out std_logic_vector(DATA_GEAR*BYTE_SIZE-1 downto 0);
-		phy_dqt   : in  std_logic_vector(0 to DATA_GEAR-1);
-		phy_dqi   : in  std_logic_vector(DATA_GEAR*BYTE_SIZE-1 downto 0);
-		phy_dqso  : in  std_logic_vector(0 to DATA_GEAR-1);
-		phy_dqst  : in  std_logic_vector(0 to DATA_GEAR-1);
+		phy_dmt   : in  std_logic_vector(0 to data_gear-1) := (others => '-');
+		phy_dmi   : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
+		phy_dmo   : out std_logic_vector(data_gear-1 downto 0);
+		phy_dqo   : out std_logic_vector(data_gear*byte_size-1 downto 0);
+		phy_dqt   : in  std_logic_vector(0 to data_gear-1);
+		phy_dqi   : in  std_logic_vector(data_gear*byte_size-1 downto 0);
+		phy_dqso  : in  std_logic_vector(0 to data_gear-1);
+		phy_dqst  : in  std_logic_vector(0 to data_gear-1);
 		phy_wlpha : out std_logic_vector(8-1 downto 0);
 
 		sdr_dmt   : out std_logic;
@@ -187,22 +187,24 @@ begin
 									if cntr(0)='1' then
 										state := s_wait;
 									else
-										cntr := cntr + 1;
+										cntr  := cntr + 1;
 									end if;
 								else
-									lat      <= lat + 1;
-									state    := s_prmb;
+									cntr  := (others => '0');
+									lat   <= lat + 1;
+									state := s_prmb;
 								end if;
 								read_req <= not to_stdulogic(to_bit(read_rdy));
 							end if;
 						when s_wait =>
+							cntr := (others => '-');
 							if (read_req xor read_rdy)='0' then
 								phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
-								state   := s_idle;
+								state     := s_idle;
 							end if;
 						end case;
 					else
-						cntr  := (others => '0');
+						cntr  := (others => '-');
 						state := s_idle;
 					end if;
 				end if;
@@ -272,7 +274,7 @@ begin
 	dqsi <= transport sdr_dqsi after delay;
 	dqsbufd_i : dqsbufd 
 --	generic map (
---		NRZMODE => "ENABLED")
+--		nrzmode => "ENABLED")
 	port map (
 		rst       => rst,
 		sclk      => sclk,

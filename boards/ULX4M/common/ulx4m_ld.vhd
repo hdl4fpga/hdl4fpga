@@ -98,6 +98,9 @@ entity ulx4m_ld is
 		gpio24          : buffer std_logic; 
 		gpio25          : inout std_logic := 'Z'; 
 
+		gpio_scl        : out std_logic;
+		cam_scl         : out std_logic;
+
 		user_programn   : out std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
 		shutdown        : out std_logic := '0'); -- '1' power off the board, 10uA sleep
 

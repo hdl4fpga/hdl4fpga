@@ -698,8 +698,8 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => '0', --video_clk,
-		video_shift_clk => '0', --video_shft_clk,
+		video_clk    => video_clk,
+		video_shift_clk => video_shft_clk,
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
@@ -821,6 +821,18 @@ begin
 		
 	end block;
 
+	process (ctlr_clk)
+		variable q0 : std_logic;
+		variable q1 : std_logic;
+	begin
+		if rising_edge(ctlr_clk) then
+			cam_scl  <= q0;
+			gpio_scl <= q1;
+			q0 := not q0;
+			q1 := not q1;
+		end if;
+	end process;
+
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
 		debug         => debug,
@@ -889,6 +901,22 @@ begin
 		tp => tp_phy);
 	ddram_dm <= (others => '0');
 
+	-- cam_scl_i : oddrx1f
+	-- port map(
+		-- sclk => ctlr_clk,
+		-- rst  => '0',
+		-- d0   => '0',
+		-- d1   => '1',
+		-- q    => cam_scl);
+--  
+	-- cam_scl_i : oddrx1f
+	-- port map(
+		-- sclk => ctlr_clk,
+		-- rst  => '0',
+		-- d0   => '0',
+		-- d1   => '1',
+		-- q    => gpio_scl);
+ 
 	-- VGA --
 	---------
 
