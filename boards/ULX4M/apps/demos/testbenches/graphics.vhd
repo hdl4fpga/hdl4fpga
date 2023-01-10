@@ -53,8 +53,7 @@ architecture ulx4mld_graphics of testbench is
 			sd_wp          : in    std_logic := '-';
 			sd_cdn         : in    std_logic := '-';
 
-			usb_fpga_dp    : inout std_logic := '-';
-			usb_fpga_dn    : inout std_logic := '-';
+			usb_fpga_d    : inout std_logic := '-';
 			usb_fpga_bd_dp : inout std_logic := '-';
 			usb_fpga_bd_dn : inout std_logic := '-';
 			usb_fpga_pu_dp : inout std_logic := '-';
@@ -89,24 +88,15 @@ architecture ulx4mld_graphics of testbench is
 			ddram_dq       : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
 			ddram_dqs      : inout std_logic_vector( 2-1 downto 0) := (others => 'Z');
 
-			gpio6          : inout std_logic := 'Z'; 
-			gpio7          : inout std_logic := 'Z'; 
-			gpio8          : inout std_logic := 'Z'; 
-			gpio9          : inout std_logic := 'Z'; 
-			gpio10         : inout std_logic := 'Z'; 
-			gpio11         : inout std_logic := 'Z'; 
-			gpio13         : inout std_logic := 'Z'; 
-			gpio17         : inout std_logic := 'Z'; 
-			gpio19         : inout std_logic := 'Z'; 
-			gpio22         : inout std_logic := 'Z'; 
-			gpio23         : inout std_logic := 'Z'; 
-			gpio24         : inout std_logic := 'Z'; 
-			gpio25         : inout std_logic := 'Z'; 
+    		ftdi_txd        : in std_logic;
+    		ftdi_txen       : out std_logic := 'Z';
+    		ftdi_rxd        : out std_logic := 'Z';
 
-			fpdi_clk       :  out std_logic; 
-			fpdi_d0        :  out std_logic;
-			fpdi_d1        :  out std_logic;
-			fpdi_d2        :  out std_logic;
+            gpdi_d          : out std_logic_Vector(4-1 downto 0) := (others => 'Z');
+            gpdi_cec        : out std_logic;
+
+    		gpio_scl        : out std_logic;
+    		cam_scl         : out std_logic;
 
 			user_programn  : out   std_logic := '1';
 			shutdown       : out   std_logic := '0');
@@ -474,16 +464,8 @@ begin
 		rgmii_rx_dv  => rgmii_rxdv,
 		rgmii_rxd    => rgmii_rxd,
 
-	    gpio6        => gpio6,
-	    gpio7        => gpio7,
-	    gpio8        => gpio8,
-	    gpio9        => gpio9,
-	    gpio11       => gpio11,
-	    gpio17       => gpio17,
-	    gpio19       => gpio19,
-
-		gpio23       => ftdi_txd,
-		gpio24       => ftdi_rxd,
+		ftdi_txd      => ftdi_txd,
+		ftdi_rxd      => ftdi_rxd,
 		ddram_reset_n => rst_n,
 		ddram_clk    => ddr_clk,
 		ddram_cke    => cke,

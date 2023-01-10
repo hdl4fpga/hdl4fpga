@@ -453,12 +453,9 @@ begin
 
 		signal tp         : std_logic_vector(1 to 32);
 
-		alias ftdi_txd    : std_logic is gpio23;
-		alias ftdi_txen   : std_logic is gpio13;
-		alias ftdi_rxd    : std_logic is gpio24;
-
 		signal dummy_txd  : std_logic_vector(uart_rxd'range);
 		alias uart_clk    : std_logic is sio_clk;
+
 	begin
 
 		process (uart_clk)
@@ -554,118 +551,10 @@ begin
 
 	end generate;
 
-	ipoe_e : if io_link=io_ipoe generate
-		-- RMII pins as labeled on the board and connected to ULX3S with pins down and flat cable
-		alias rmii_crs    : std_logic is gpio17;
-
-		alias rmii_tx_en  : std_logic is gpio6;
-		alias rmii_tx0    : std_logic is gpio7;
-		alias rmii_tx1    : std_logic is gpio8;
-
-		alias rmii_rx_dv  : std_logic is rmii_crs;
-		alias rmii_rx0    : std_logic is gpio9;
-		alias rmii_rx1    : std_logic is gpio11;
-
-		alias rmii_nint   : std_logic is gpio19;
-		alias rmii_mdio   : std_logic is gpio22;
-		alias rmii_mdc    : std_logic is gpio25;
-		signal mii_clk    : std_logic;
-
-		signal mii_txen   : std_logic;
-		signal mii_txd    : std_logic_vector(0 to 2-1);
-
-		signal mii_rxdv   : std_logic;
-		signal mii_rxd    : std_logic_vector(0 to 2-1);
-
-		signal dhcpcd_req : std_logic := '0';
-		signal dhcpcd_rdy : std_logic := '0';
-
-		signal miitx_frm  : std_logic;
-		signal miitx_irdy : std_logic;
-		signal miitx_trdy : std_logic;
-		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(si_data'range);
-
-	begin
-
-		sio_clk <= rmii_nint;
-		mii_clk <= rmii_nint;
-
-		process (mii_clk)
-		begin
-			if rising_edge(mii_clk) then
-				rmii_tx_en <= mii_txen;
-				(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
-			end if;
-		end process;
-
-		process (mii_clk)
-		begin
-			if rising_edge(mii_clk) then
-				mii_rxdv <= rmii_rx_dv;
-				mii_rxd  <= rmii_rx0 & rmii_rx1;
-			end if;
-		end process;
-
-		rmii_mdc  <= '0';
-		rmii_mdio <= '0';
-
-		-- dhcp_p : process(mii_clk)
-		-- begin
-		-- 	if rising_edge(mii_clk) then
-		-- 		if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-		-- 			dhcpcd_req <= dhcpcd_rdy xor ((btn(1) and dhcpcd_rdy) or (btn(2) and not dhcpcd_rdy));
-		-- 		end if;
-		-- 	end if;
-		-- end process;
-				dhcpcd_req <= dhcpcd_rdy;
-		-- led(0) <= dhcpcd_rdy;
-		-- led(7) <= not dhcpcd_rdy;
-
-		udpdaisy_e : entity hdl4fpga.sio_dayudp
-		generic map (
-			my_mac        => x"00_40_00_01_02_03",
-			default_ipv4a => aton("192.168.0.14"))
-		port map (
-			hdplx      => hdplx,
-			sio_clk    => mii_clk,
-			dhcpcd_req => dhcpcd_req,
-			dhcpcd_rdy => dhcpcd_rdy,
-			miirx_frm  => mii_rxdv,
-			miirx_data => mii_rxd,
-
-			miitx_frm  => miitx_frm,
-			miitx_irdy => miitx_irdy,
-			miitx_trdy => miitx_trdy,
-			miitx_end  => miitx_end,
-			miitx_data => miitx_data,
-
-			si_frm     => si_frm,
-			si_irdy    => si_irdy,
-			si_trdy    => si_trdy,
-			si_end     => si_end,
-			si_data    => si_data,
-
-			so_frm     => so_frm,
-			so_irdy    => so_irdy,
-			so_trdy    => so_trdy,
-			so_data    => so_data);
-
-		desser_e: entity hdl4fpga.desser
-		port map (
-			desser_clk => mii_clk,
-
-			des_frm    => miitx_frm,
-			des_irdy   => miitx_irdy,
-			des_trdy   => miitx_trdy,
-			des_data   => miitx_data,
-
-			ser_irdy   => open,
-			ser_data   => mii_txd);
-
-		mii_txen <= miitx_frm and not miitx_end;
-
-	end generate;
+	
+	assert io_link/=io_ipoe 
+	report "NO mii ready"
+	severity FAILURE;
 
 	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
@@ -947,36 +836,60 @@ begin
 			q    => rgmii_tx_clk);
 	end generate;
 
-	fpdi_clk_i : oddrx1f
+	hdmi0_blue_i : oddrx1f
 	port map(
 		sclk => video_shft_clk,
-		rst  => '0',
 		d0   => dvid_crgb(2*0),
 		d1   => dvid_crgb(2*0+1),
-		q    => fpdi_clk);
+		q    => hdmi0_blue);
  
-	fpdi_d0_i : oddrx1f
+	hdmi0_green_i : oddrx1f
 	port map(
 		sclk => video_shft_clk,
-		rst  => '0',
 		d0   => dvid_crgb(2*1),
 		d1   => dvid_crgb(2*1+1),
-		q    => fpdi_d0);
+		q    => hdmi0_green);
  
-	fpdi_d1_i : oddrx1f
+	hdmi0_red_i : oddrx1f
 	port map(
 		sclk => video_shft_clk,
-		rst  => '0',
 		d0   => dvid_crgb(2*2),
 		d1   => dvid_crgb(2*2+1),
-		q    => fpdi_d1);
+		q    => hdmi0_red);
  
-	fpdi_d2_i : oddrx1f
+	hdmi0_clock_i : oddrx1f
 	port map(
 		sclk => video_shft_clk,
-		rst  => '0',
 		d0   => dvid_crgb(2*3),
 		d1   => dvid_crgb(2*3+1),
-		q    => fpdi_d2);
+		q    => hdmi0_clock);
+ 
+	-- hdmi1_blue_i : oddrx1f
+	-- port map(
+		-- sclk => video_shft_clk,
+		-- d0   => dvid_crgb(2*0),
+		-- d1   => dvid_crgb(2*0+1),
+		-- q    => hdmi1_blue);
+--  
+	-- hdmi1_green_i : oddrx1f
+	-- port map(
+		-- sclk => video_shft_clk,
+		-- d0   => dvid_crgb(2*1),
+		-- d1   => dvid_crgb(2*1+1),
+		-- q    => hdmi1_green);
+--  
+	-- hdmi1_red_i : oddrx1f
+	-- port map(
+		-- sclk => video_shft_clk,
+		-- d0   => dvid_crgb(2*2),
+		-- d1   => dvid_crgb(2*2+1),
+		-- q    => hdmi1_red);
+--  
+	-- hdmi1_clock_i : oddrx1f
+	-- port map(
+		-- sclk => video_shft_clk,
+		-- d0   => dvid_crgb(2*3),
+		-- d1   => dvid_crgb(2*3+1),
+		-- q    => hdmi1_clock);
  
 end;

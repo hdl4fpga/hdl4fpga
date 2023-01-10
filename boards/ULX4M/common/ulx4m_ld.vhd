@@ -42,8 +42,7 @@ entity ulx4m_ld is
 		sd_wp           : in  std_logic := '-';
 		sd_cdn          : in  std_logic := '-'; -- card detect not connected
 
-		usb_fpga_dp     : inout std_logic := 'Z';
-		usb_fpga_dn     : inout std_logic := 'Z';
+		usb_fpga_d      : inout std_logic := 'Z';
 		usb_fpga_bd_dp  : inout std_logic := 'Z';
 		usb_fpga_bd_dn  : inout std_logic := 'Z';
 		usb_fpga_pu_dp  : inout std_logic := 'Z';
@@ -79,24 +78,12 @@ entity ulx4m_ld is
 		ddram_dq        : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
 		ddram_dqs       : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 
-		fpdi_clk        : out std_logic; 
-		fpdi_d0         : out std_logic;
-		fpdi_d1         : out std_logic;
-		fpdi_d2         : out std_logic;
+		ftdi_txd        : in std_logic;
+		ftdi_txen       : out std_logic;
+		ftdi_rxd        : out std_logic;
 
-		gpio6           : inout std_logic := 'Z'; 
-		gpio7           : inout std_logic := 'Z'; 
-		gpio8           : inout std_logic := 'Z'; 
-		gpio9           : inout std_logic := 'Z'; 
-		gpio10          : inout std_logic := 'Z'; 
-		gpio11          : inout std_logic := 'Z'; 
-		gpio13          : out std_logic := 'Z'; 
-		gpio17          : inout std_logic := 'Z'; 
-		gpio19          : inout std_logic := 'Z'; 
-		gpio22          : inout std_logic := 'Z'; 
-		gpio23          : in std_logic := 'Z'; 
-		gpio24          : buffer std_logic; 
-		gpio25          : inout std_logic := 'Z'; 
+        gpdi_d          : out std_logic_Vector(4-1 downto 0);
+        gpdi_cec        : out std_logic;
 
 		gpio_scl        : out std_logic;
 		cam_scl         : out std_logic;
@@ -105,5 +92,16 @@ entity ulx4m_ld is
 		shutdown        : out std_logic := '0'); -- '1' power off the board, 10uA sleep
 
 
-	constant sys_freq    : real    := 25.0e6;
+	constant sys_freq : real    := 25.0e6;
+
+	alias hdmi0_blue  : std_logic is gpdi_d(0);
+	alias hdmi0_green : std_logic is gpdi_d(1);
+	alias hdmi0_red   : std_logic is gpdi_d(2);
+	alias hdmi0_clock : std_logic is gpdi_d(3);
+
+	-- alias hdmi1_blue  : std_logic is gpdi_d(4);
+	-- alias hdmi1_green : std_logic is gpdi_d(5);
+	-- alias hdmi1_red   : std_logic is gpdi_d(6);
+	-- alias hdmi1_clock : std_logic is gpdi_d(7);
+
 end;
