@@ -58,6 +58,7 @@ architecture def of graphics is
 	constant pwater_mark : natural := ppage_size-pslice_size;
 
 	signal video_frm     : std_logic;
+	signal video_trdy    : std_logic;
 	signal video_on      : std_logic;
 	signal video_rdy     : std_logic;
 	signal video_req     : std_logic;
@@ -243,10 +244,11 @@ begin
 
 		dst_clk  => video_clk,
 		dst_frm  => video_frm,
-		dst_trdy => video_on,
+		dst_trdy => video_trdy,
 		dst_data => video_word);
 
 	bypass_output_g : if ctlr_di'length <= video_pixel'length generate
+		video_trdy  <= video_on;
 		video_pixel <= video_word;
 	end generate;
 
@@ -254,7 +256,8 @@ begin
 		desser_e : entity hdl4fpga.desser
 		port map (
 			desser_clk => video_clk,
-			des_frm    => video_frm,
+			des_frm    => video_on,
+			des_trdy   => video_trdy,
 			des_data   => video_word,
 			ser_data   => video_pixel);
 	end generate;

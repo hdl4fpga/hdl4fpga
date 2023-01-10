@@ -51,8 +51,11 @@ architecture graphics of ulx4m_ld is
 		uart_450MHz_480p24bpp,
 		uart_475MHz_480p24bpp,
 		uart_500MHz_480p24bpp,
+
+		uart_350MHz_600p24bpp,
 		uart_400MHz_600p24bpp,
 
+		uart_350MHz_1080p24bpp30,
 
 		mii_400MHz_480p24bpp,
 		mii_425MHz_480p24bpp,
@@ -78,12 +81,16 @@ architecture graphics of ulx4m_ld is
 		uart_350MHz_480p24bpp => (io_hdlc, sdram350MHz, mode480p24bpp),
 		uart_375MHz_480p24bpp => (io_hdlc, sdram375MHz, mode480p24bpp),
 		uart_400MHz_480p24bpp => (io_hdlc, sdram400MHz, mode480p24bpp),
-		uart_400MHz_600p24bpp => (io_hdlc, sdram400MHz, mode600p24bpp),
 		uart_425MHz_480p24bpp => (io_hdlc, sdram425MHz, mode480p24bpp),
 		uart_450MHz_480p24bpp => (io_hdlc, sdram450MHz, mode480p24bpp),
 		uart_475MHz_480p24bpp => (io_hdlc, sdram475MHz, mode480p24bpp),
 		uart_500MHz_480p24bpp => (io_hdlc, sdram500MHz, mode480p24bpp),
                                                 
+		uart_350MHz_600p24bpp => (io_hdlc, sdram350MHz, mode600p24bpp),
+		uart_400MHz_600p24bpp => (io_hdlc, sdram400MHz, mode600p24bpp),
+
+		uart_350MHz_1080p24bpp30 => (io_hdlc, sdram350MHz, mode1080p24bpp30),
+
 		mii_400MHz_480p24bpp  => (io_ipoe, sdram400MHz, mode480p24bpp),
 		mii_425MHz_480p24bpp  => (io_ipoe, sdram425MHz, mode480p24bpp),
 		mii_450MHz_480p24bpp  => (io_ipoe, sdram450MHz, mode480p24bpp),
@@ -109,11 +116,13 @@ architecture graphics of ulx4m_ld is
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant v_r : natural := 5; -- video ratio
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,     pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16,    clkos3_div => 10), pixel => rgb888, timing => pclk_debug),
-		(id => mode480p24bpp, pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, timing => pclk25_00m640x480at60),
-		(id => mode600p16bpp, pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb565, timing => pclk40_00m800x600at60),
-		(id => mode600p24bpp, pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb888, timing => pclk40_00m800x600at60),
-		(id => mode900p24bpp, pll => (clkos_div => 2, clkop_div => 22,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 14), pixel => rgb888, timing => pclk108_00m1600x900at60)); -- 30 Hz
+		-- (id => modedebug,        pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16,    clkos3_div => 10), pixel => rgb888, timing => pclk_debug),
+		(id => modedebug,    pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, timing => pclk_debug),
+		(id => mode480p24bpp,    pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, timing => pclk25_00m640x480at60),
+		(id => mode600p16bpp,    pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb565, timing => pclk40_00m800x600at60),
+		(id => mode600p24bpp,    pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb888, timing => pclk40_00m800x600at60),
+		(id => mode900p24bpp,    pll => (clkos_div => 2, clkop_div => 22,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 14), pixel => rgb888, timing => pclk108_00m1600x900at60), -- 30 Hz
+		(id => mode1080p24bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb888, timing => pclk150_00m1920x1080at60)); -- 30 Hz
 
 	function videoparam (
 		constant id  : video_modes)
@@ -137,6 +146,7 @@ architecture graphics of ulx4m_ld is
 	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
 		video_modes'POS(modedebug),
 		video_modes'POS(nodebug_videomode)));
+	-- constant video_mode   : video_modes := nodebug_videomode;
 	constant video_record : video_params := videoparam(video_mode);
 
 	type sdramparams_record is record

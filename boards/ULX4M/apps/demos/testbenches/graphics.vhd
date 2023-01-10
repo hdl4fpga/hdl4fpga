@@ -27,7 +27,7 @@ use hdl4fpga.ipoepkg.all;
 
 architecture ulx4mld_graphics of testbench is
 
-	constant debug      : boolean := false;
+	constant debug      : boolean := true;
 
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 16;
@@ -123,8 +123,8 @@ architecture ulx4mld_graphics of testbench is
 		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_0000ff_1603_0007_37ff";
-	constant req_data : std_logic_vector := x"010000_1702_0000ff_1603_8007_37ff";
+		x"1702_0000ff_1603_0000_0000";
+	constant req_data : std_logic_vector := x"010000_1702_0000ff_1603_8000_0000";
 
 	signal rst_n     : std_logic;
 	signal cke       : std_logic;

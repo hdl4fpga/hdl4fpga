@@ -1014,8 +1014,6 @@ $(HDL4FPGA__ecp3_sdrdqphy__ecp3) : ../latticesemi/ecp3/ecp3_sdrdqphy.vhd \
 $(HDL4FPGA__ecp3_sdrphy) \
 $(HDL4FPGA__ecp3_sdrphy__ecp3) : ../latticesemi/ecp3/ecp3_sdrphy.vhd \
 		$(HDL4FPGA__ecp3_sdrdqphy) \
-		$(HDL4FPGA__ff) \
-		$(HDL4FPGA__clk_start) \
 		$(HDL4FPGA__ecp3_sdrbaphy) \
 		$(HDL4FPGA__sdram_param) \
 		$(HDL4FPGA__base) \
