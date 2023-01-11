@@ -4,6 +4,8 @@
 `define status_filter_on
 `endif
 
+`uselib lib = ecp3
+
 module ecp3_csa(
 	reset, 
 	reset_datapath,
@@ -71,7 +73,7 @@ module ecp3_csa(
 			good <= good_out;   
 	end
 
-	defparam Inst4_DQSDLLB.LOCK_SENSITIVITY = "LOW" ;
+	//defparam Inst4_DQSDLLB.LOCK_SENSITIVITY = "LOW" ;
 	DQSDLLB Inst4_DQSDLLB (
 		.RST(reset), 
 		.CLK(sclk2x), 

@@ -680,6 +680,28 @@ begin
 		signal all_lock   : std_logic;
 		signal uddcntln   : std_logic;
 
+		-- component ecp3_csa
+		-- port  (
+			-- reset              : in  std_logic;
+			-- reset_datapath     : in  std_logic;
+			-- refclk             : in  std_logic;
+			-- clkop              : in  std_logic;
+			-- clkos              : in  std_logic;
+			-- clkok              : in  std_logic;
+			-- uddcntln           : in  std_logic;
+			-- pll_phase          : out std_logic_vector(4-1 downto 0);
+			-- pll_lock           : in std_logic;
+			-- eclk               : out std_logic;
+			-- sclk               : out std_logic;
+			-- sclk2x             : out std_logic;
+			-- reset_datapath_out : out std_logic;
+			-- dqsdel             : out std_logic;
+			-- all_lock           : out std_logic;
+			-- align_status       : out std_logic_vector(2-1 downto 0);
+			-- good               : out std_logic;
+			-- err                : out std_logic);
+		-- end component;
+
 	begin
 
     	dqsdll_uddcntln_b : block

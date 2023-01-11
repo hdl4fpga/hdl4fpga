@@ -10,6 +10,8 @@
  `define RTY_MAX_CNT 8'hff
 `endif
 
+`uselib lib = ecp3
+
 module pll_control (
 	reset, 
 	lock, 
