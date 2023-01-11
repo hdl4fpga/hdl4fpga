@@ -21,40 +21,39 @@
 //if any 1, stay at 1.
 //if all 0, goes to 0.
 //this way status will never go to 0 unless it is 100% out of jitter region.
-module jitter_filter(reset, in,sclk,out_q);
-input     reset;
-input     in;
-input     sclk;
-output    out_q;
-   reg [6:0] counter;
-   reg 	     any1;
+module jitter_filter (
+	reset,
+	in,
+	sclk,
+	out_q);
 
-reg       out_q;
+	input  reset;
+	input  in;
+	input  sclk;
+	output out_q;
 
+	reg[6:0] counter;
+	reg      any1;
+	reg      out_q;
 
+	always @(posedge sclk or posedge reset) begin
+		if(reset) begin
+			counter<=7'h00;
+			any1<=1'b0;	 
+			out_q<=0;
+		end
+		else begin
+			//counter continues to roll over per 128 cycles.
+			counter<=counter+1;
+			//0-126, check if any 1's
+			//127, latch results and start over again.
+			if(counter!=127 && in==1)
+				any1<=1'b1;
+			if(counter==127) begin
+				out_q<=any1;
+				any1<=1'b0;
+			end
+		end
+	end
 
-always @(posedge sclk or posedge reset) begin
-   if(reset) begin
-	 counter<=7'h00;
-	 any1<=1'b0;	 
-      out_q<=0;
-   end
-
-   else begin
-
-
-	 //counter continues to roll over per 128 cycles.
-          counter<=counter+1;
-	 //0-126, check if any 1's
-	 //127, latch results and start over again.
-	 if(counter!=127 && in==1) any1<=1'b1;
-	 if(counter==127) begin
-	    out_q<=any1;
-	    any1<=1'b0;
-	 end
-
-  end
-
-end
-   
 endmodule

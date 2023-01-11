@@ -10,7 +10,7 @@
  `define RTY_MAX_CNT 8'hff
 `endif
 
-module pll_control(
+module pll_control (
 	reset, 
 	lock, 
 	clk, 
@@ -146,8 +146,8 @@ module pll_control(
 			next_state = state_idle;
 		end   
 
-	endcase 
-end 
+		endcase 
+	end 
 
 	always @(posedge clk or posedge reset)
 	begin
