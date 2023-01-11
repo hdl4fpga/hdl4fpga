@@ -43,7 +43,6 @@ entity ecp3_sdrphy is
 		byte_size : natural := 8);
 	port (
 		rst       : in  std_logic;
-		dqsbuf_rst : in std_logic;
 
 		sclk      : in  std_logic;
 		sclk2x    : in  std_logic;
@@ -411,7 +410,7 @@ begin
 			data_gear => data_gear,
 			byte_size => byte_size)
 		port map (
-			rst       => dqsbuf_rst,
+			rst       => rst,
 			sclk      => sclk,
 			sclk2x    => sclk2x,
 			eclk      => eclk,

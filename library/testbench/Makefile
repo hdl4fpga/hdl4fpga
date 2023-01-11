@@ -152,10 +152,12 @@ HDL4FPGA__scopeio_btof__def = $(LIB_HDL4FPGA)/scopeio_btof/def.dat
 HDL4FPGA__scopeio_btof = $(LIB_HDL4FPGA)/scopeio_btof/_primary.dat
 HDL4FPGA__scopeio_amp__beh = $(LIB_HDL4FPGA)/scopeio_amp/beh.dat
 HDL4FPGA__scopeio_amp = $(LIB_HDL4FPGA)/scopeio_amp/_primary.dat
+HDL4FPGA__scopeio__beh = $(LIB_HDL4FPGA)/scopeio/beh.dat
 HDL4FPGA__scopeio = $(LIB_HDL4FPGA)/scopeio/_primary.dat
 HDL4FPGA__rom__def = $(LIB_HDL4FPGA)/rom/def.dat
 HDL4FPGA__rom = $(LIB_HDL4FPGA)/rom/_primary.dat
 HDL4FPGA__profiles = $(LIB_HDL4FPGA)/profiles/_primary.dat
+HDL4FPGA__pll_control = $(LIB_HDL4FPGA)/pll_control/_primary.dat
 HDL4FPGA__phy_rl__def = $(LIB_HDL4FPGA)/phy_rl/def.dat
 HDL4FPGA__phy_rl = $(LIB_HDL4FPGA)/phy_rl/_primary.dat
 HDL4FPGA__phy_memcycle__def = $(LIB_HDL4FPGA)/phy_memcycle/def.dat
@@ -176,6 +178,7 @@ HDL4FPGA__mii_1cksm__beh = $(LIB_HDL4FPGA)/mii_1cksm/beh.dat
 HDL4FPGA__mii_1cksm = $(LIB_HDL4FPGA)/mii_1cksm/_primary.dat
 HDL4FPGA__latency__def = $(LIB_HDL4FPGA)/latency/def.dat
 HDL4FPGA__latency = $(LIB_HDL4FPGA)/latency/_primary.dat
+HDL4FPGA__jitter_filter = $(LIB_HDL4FPGA)/jitter_filter/_primary.dat
 HDL4FPGA__ipv4_tx__def = $(LIB_HDL4FPGA)/ipv4_tx/def.dat
 HDL4FPGA__ipv4_tx = $(LIB_HDL4FPGA)/ipv4_tx/_primary.dat
 HDL4FPGA__ipv4_rx__def = $(LIB_HDL4FPGA)/ipv4_rx/def.dat
@@ -232,6 +235,7 @@ HDL4FPGA__ecp3_sdrdqphy__ecp3 = $(LIB_HDL4FPGA)/ecp3_sdrdqphy/ecp3.dat
 HDL4FPGA__ecp3_sdrdqphy = $(LIB_HDL4FPGA)/ecp3_sdrdqphy/_primary.dat
 HDL4FPGA__ecp3_sdrbaphy__ecp3 = $(LIB_HDL4FPGA)/ecp3_sdrbaphy/ecp3.dat
 HDL4FPGA__ecp3_sdrbaphy = $(LIB_HDL4FPGA)/ecp3_sdrbaphy/_primary.dat
+HDL4FPGA__ecp3_csa = $(LIB_HDL4FPGA)/ecp3_csa/_primary.dat
 HDL4FPGA__dtos__def = $(LIB_HDL4FPGA)/dtos/def.dat
 HDL4FPGA__dtos = $(LIB_HDL4FPGA)/dtos/_primary.dat
 HDL4FPGA__draw_vline__def = $(LIB_HDL4FPGA)/draw_vline/def.dat
@@ -270,8 +274,10 @@ HDL4FPGA__cp850x8x16x128to255 = $(LIB_HDL4FPGA)/cp850x8x16x128to255/_primary.dat
 HDL4FPGA__cp850x8x16x0to127 = $(LIB_HDL4FPGA)/cp850x8x16x0to127/_primary.dat
 HDL4FPGA__cntrcs__def = $(LIB_HDL4FPGA)/cntrcs/def.dat
 HDL4FPGA__cntrcs = $(LIB_HDL4FPGA)/cntrcs/_primary.dat
+HDL4FPGA__clk_stop = $(LIB_HDL4FPGA)/clk_stop/_primary.dat
 HDL4FPGA__clk_start__ecp3 = $(LIB_HDL4FPGA)/clk_start/ecp3.dat
 HDL4FPGA__clk_start = $(LIB_HDL4FPGA)/clk_start/_primary.dat
+HDL4FPGA__clk_phase = $(LIB_HDL4FPGA)/clk_phase/_primary.dat
 HDL4FPGA__cgafonts__body = $(LIB_HDL4FPGA)/cgafonts/body.dat
 HDL4FPGA__cgafonts = $(LIB_HDL4FPGA)/cgafonts/_primary.dat
 HDL4FPGA__cga_rom__beh = $(LIB_HDL4FPGA)/cga_rom/beh.dat
@@ -452,10 +458,12 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__scopeio_btof) \
     $(HDL4FPGA__scopeio_amp__beh) \
     $(HDL4FPGA__scopeio_amp) \
+    $(HDL4FPGA__scopeio__beh) \
     $(HDL4FPGA__scopeio) \
     $(HDL4FPGA__rom__def) \
     $(HDL4FPGA__rom) \
     $(HDL4FPGA__profiles) \
+    $(HDL4FPGA__pll_control) \
     $(HDL4FPGA__phy_rl__def) \
     $(HDL4FPGA__phy_rl) \
     $(HDL4FPGA__phy_memcycle__def) \
@@ -476,6 +484,7 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__mii_1cksm) \
     $(HDL4FPGA__latency__def) \
     $(HDL4FPGA__latency) \
+    $(HDL4FPGA__jitter_filter) \
     $(HDL4FPGA__ipv4_tx__def) \
     $(HDL4FPGA__ipv4_tx) \
     $(HDL4FPGA__ipv4_rx__def) \
@@ -532,6 +541,7 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__ecp3_sdrdqphy) \
     $(HDL4FPGA__ecp3_sdrbaphy__ecp3) \
     $(HDL4FPGA__ecp3_sdrbaphy) \
+    $(HDL4FPGA__ecp3_csa) \
     $(HDL4FPGA__dtos__def) \
     $(HDL4FPGA__dtos) \
     $(HDL4FPGA__draw_vline__def) \
@@ -570,8 +580,10 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__cp850x8x16x0to127) \
     $(HDL4FPGA__cntrcs__def) \
     $(HDL4FPGA__cntrcs) \
+    $(HDL4FPGA__clk_stop) \
     $(HDL4FPGA__clk_start__ecp3) \
     $(HDL4FPGA__clk_start) \
+    $(HDL4FPGA__clk_phase) \
     $(HDL4FPGA__cgafonts__body) \
     $(HDL4FPGA__cgafonts) \
     $(HDL4FPGA__cga_rom__beh) \
@@ -1382,6 +1394,18 @@ $(HDL4FPGA__phy_rl__def) : ../sdram/phy_rl.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../sdram/phy_rl.vhd
 
+$(HDL4FPGA__clk_phase) \
+$(HDL4FPGA__clk_stop) \
+$(HDL4FPGA__ecp3_csa) \
+$(HDL4FPGA__jitter_filter) \
+$(HDL4FPGA__pll_control) : ../latticesemi/ecp3/pll_control.v ../latticesemi/ecp3/jitter_filter.v \
+		 ../latticesemi/ecp3/ecp3_csa.v ../latticesemi/ecp3/clk_stop.v \
+		 ../latticesemi/ecp3/clk_phase.v
+	$(VLOG) -work hdl4fpga -L mtiAvm -L \
+		 mtiOvm -L mtiUvm -L mtiUPF ../latticesemi/ecp3/pll_control.v \
+		 ../latticesemi/ecp3/jitter_filter.v ../latticesemi/ecp3/ecp3_csa.v \
+		 ../latticesemi/ecp3/clk_stop.v ../latticesemi/ecp3/clk_phase.v
+
 $(HDL4FPGA__profiles) : ../basic/profiles.vhd
 	$(VCOM) -2002 -work hdl4fpga ../basic/profiles.vhd
 
@@ -1393,7 +1417,12 @@ $(HDL4FPGA__rom__def) : ../basic/rom.vhd \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../basic/rom.vhd
 
-$(HDL4FPGA__scopeio) : ../scope/scopeio.vhd \
+$(HDL4FPGA__scopeio) \
+$(HDL4FPGA__scopeio__beh) : ../scope/scopeio.vhd \
+		$(HDL4FPGA__scopeio_video) \
+		$(HDL4FPGA__scopeio_amp) \
+		$(HDL4FPGA__scopeio_rgtrgain) \
+		$(HDL4FPGA__sio_sin) \
 		$(HDL4FPGA__scopeiopkg) \
 		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__videopkg) \

@@ -66,7 +66,7 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app_profile  : app_profiles := uart_350MHz_480p24bpp;
+	constant app_profile  : app_profiles := uart_350MHz_1080p24bpp30;
 	---------------------------------------------
 
 	type profile_params is record
@@ -835,7 +835,7 @@ begin
 			d1   => '0',
 			q    => rgmii_tx_clk);
 	end generate;
-
+	
 	hdmi0_blue_i : oddrx1f
 	port map(
 		sclk => video_shft_clk,

@@ -222,13 +222,18 @@ architecture graphics of ecp3versa is
 
 	constant hdplx    : std_logic := setif(debug, '0', '1');
 
-	signal tp         : std_logic_vector(1 to 32);
-	signal ddr_sclk   : std_logic;
-	signal ddr_sclk2x : std_logic;
-	signal ddr_eclk   : std_logic;
+	signal tp             : std_logic_vector(1 to 32);
+	signal ctlrpll_clkok  : std_logic;
+	signal ctlrpll_clkop  : std_logic;
+	signal ctlrpll_clkos  : std_logic;
+	signal ctlrpll_lock   : std_logic;
+	signal ctlrpll_phase  : std_logic_vector(4-1 downto 0);
+	signal ctlrpll_eclk   : std_logic;
+	signal ctlrpll_sclk   : std_logic;
+	signal ctlrpll_sclk2x : std_logic;
+	alias ctlr_clk        : std_logic is ctlrpll_sclk;
 
 	signal  sio_clk   : std_logic;
-	alias ctlr_clk    : std_logic is ddr_sclk;
 
 	attribute oddrapps : string;
 	attribute oddrapps of phy1_gtxclk_i : label is "SCLK_ALIGNED";
@@ -317,12 +322,6 @@ begin
 		attribute FREQUENCY_PIN_CLKOS of pll_i : label is ftoa(ddram_mhz, 10);
 		attribute FREQUENCY_PIN_CLKOK of pll_i : label is ftoa(ddram_mhz/2.0, 10);
 
-		attribute hgroup : string;
-		attribute pbbox  : string;
-		
-		attribute pbbox  of phase_ff_0_i : label is "1,1";
-		attribute hgroup of phase_ff_0_i : label is "clk_phase0";
-		
 		signal clkfb      : std_logic;
 		signal lock       : std_logic;
 
@@ -331,10 +330,7 @@ begin
 		signal step_req   : std_logic;
 		signal step_rdy   : std_logic;
 
-		signal eclk_smp   : std_logic;
 		signal eclk_rpha  : std_logic_vector(4-1 downto 0) := (others => '0');
-		signal phase_ff_q : std_logic_vector(0 to 0);
-		signal rpha       : std_logic_vector(4-1 downto 0) := (others => '0');
 		signal dfpa3      : std_logic;
 		signal rst        : std_logic;
 
@@ -344,113 +340,54 @@ begin
 		report "SDRAM clock : " & real'image(ddram_mhz)
 		severity NOTE;
 
-		dfpa3 <= not rpha(3);
+		dfpa3 <= not ctlrpll_phase(3);
 		pll_i : ehxpllf
 		generic map (
-			CLKOS_TRIM_DELAY => 0,
-			CLKOS_TRIM_POL   => "RISING", 
+			CLKOK_BYPASS     => "DISABLED", 
 			CLKOS_BYPASS     => "DISABLED", 
-			CLKOP_TRIM_DELAY => 0,
-			CLKOP_TRIM_POL   => "RISING", 
 			CLKOP_BYPASS     => "DISABLED", 
 			CLKOK_INPUT      => "CLKOP",
-			CLKOK_BYPASS     => "DISABLED", 
 			DELAY_PWD        => "DISABLED",
 			DELAY_VAL        => 0, 
-			DUTY             => 8,
+			CLKOS_TRIM_DELAY => 0,
+			CLKOS_TRIM_POL   => "RISING", 
+			CLKOP_TRIM_DELAY => 0,
+			CLKOP_TRIM_POL   => "RISING", 
 			PHASE_DELAY_CNTL => "DYNAMIC",
+			DUTY             => 8,
 			PHASEADJ         => "0.0", 
 			CLKOK_DIV        => ddram_tab(ddram_mode).pll.clkok_div,
 			CLKOP_DIV        => ddram_tab(ddram_mode).pll.clkop_div,
 			CLKFB_DIV        => ddram_tab(ddram_mode).pll.clkfb_div,
 			CLKI_DIV         => ddram_tab(ddram_mode).pll.clki_div,
-
 			FEEDBK_PATH      => "INTERNAL")
 		port map (
-			rst              => '0', 
 			rstk             => '0',
 			clki             => clk,
-			drpai3           => rpha(3),
-			drpai2           => rpha(2), 
-			drpai1           => rpha(1), 
-			drpai0           => rpha(0), 
+			clkfb            => clkfb,
+			rst              => '0', 
+			drpai3           => ctlrpll_phase(3),
+			drpai2           => ctlrpll_phase(2), 
+			drpai1           => ctlrpll_phase(1), 
+			drpai0           => ctlrpll_phase(0), 
 			dfpai3           => dfpa3,
-			dfpai2           => rpha(2), 
-			dfpai1           => rpha(1), 
-			dfpai0           => rpha(0), 
+			dfpai2           => ctlrpll_phase(2), 
+			dfpai1           => ctlrpll_phase(1), 
+			dfpai0           => ctlrpll_phase(0), 
 			fda3             => '0',
 			fda2             => '0',
 			fda1             => '0',
 			fda0             => '0', 
 			wrdel            => '0',
 			clkintfb         => clkfb,
-			clkfb            => clkfb,
-			clkop            => ddr_sclk2x, 
-			clkos            => ddr_eclk,
-			clkok            => ddr_sclk,
+			clkop            => ctlrpll_clkop, 
+			clkos            => ctlrpll_clkos,
+			clkok            => ctlrpll_clkok,
 			clkok2           => open,
-			lock             => lock);
-		
+			lock             => ctlrpll_lock);
+	
 		rst <= not lock;
-		process (clk, step_rdy)
-			type states is (s_request, s_ready);
-			variable state : states;
-		begin
-			if rising_edge(clk) then
-				if rst='1' then
-					ctlr_lck <= '0';
-					state    := s_request;
-				else
-					case state is
-					when s_request =>
-						dtct_req <= not to_stdulogic(to_bit(dtct_rdy));
-						ctlr_lck <= '0';
-						state := s_ready;
-					when s_ready =>
-						if (dtct_req xor to_stdulogic(to_bit(dtct_rdy)))='0' then
-							ctlr_lck <= '1';
-						end if;
-					end case;
-				end if;
-			end if;
-		end process;
 
-		process (clk)
-			variable cntr : unsigned(0 to 4-1);
-		begin
-			if rising_edge(clk) then
-				if (step_req xor to_stdulogic(to_bit(step_rdy)))='0' then
-					cntr := (others => '0');
-				elsif cntr(0)='0' then
-					cntr := cntr + 1;
-				else
-					step_rdy <= to_stdulogic(to_bit(step_req));
-				end if;
-			end if;
-		end process;
-
-		phadctor_e : entity hdl4fpga.adjpha
-		generic map (
-			taps      => 2**eclk_rpha'length-1)
-		port map (
-    		rst       => rst,
-			clk       => clk,
-			req       => dtct_req,
-			rdy       => dtct_rdy,
-			step_req  => step_req,
-			step_rdy  => step_rdy,
-			edge      => '0',
-			smp       => phase_ff_q,
-			delay     => eclk_rpha);
-		rpha <= not eclk_rpha;
-
-		eclk_smp <= transport ddr_eclk after 0 ns;
-		phase_ff_0_i : entity hdl4fpga.ff
-		port map (
-			clk => ddr_sclk,
-			d   => eclk_smp,
-			q   => phase_ff_q(0));
-		
 	end block;
 
 	ipoe_b : block
@@ -733,164 +670,127 @@ begin
 			eclk   : in  std_logic);
 		port map (
     		rst    => ddrphy_rst,
-    		sclk   => ddr_sclk,
-    		sclk2x => ddr_sclk2x,
-    		eclk   => ddr_eclk);
-    	signal eclksynca_stop : std_logic;
+    		sclk   => ctlrpll_clkok,
+    		sclk2x => ctlrpll_clkop,
+    		eclk   => ctlrpll_clkos);
     	signal eclksynca_clk  : std_logic;
 
-    	attribute hgroup  : string;
-    	attribute pbbox   : string;
-
-    	attribute hgroup of clk_start_i : label is "clk_stop";
-    	attribute pbbox  of clk_start_i : label is "3,2";
-
-		signal clkstart_rst : std_logic;
 		signal dqsbuf_rst : std_logic;
 		signal dqsdel     : std_logic;
+		signal all_lock   : std_logic;
+		signal uddcntln   : std_logic;
 
 	begin
-    	clk_start_i : entity hdl4fpga.clk_start
-    	port map (
-    		rst        => clkstart_rst,
-    		sclk       => sclk,
-    		eclk       => eclk,
-    		eclk_stop  => eclksynca_stop,
-    		dqsbuf_rst => dqsbuf_rst);
 
-    	eclksynca_i : eclksynca
-    	port map (
-    		stop  => eclksynca_stop,
-    		eclki => eclk,
-    		eclko => eclksynca_clk);
-
-    	dqclk_b : block
-    		attribute pbbox  of dqclk1bar_ff_i : label is "1,1";
-    		attribute hgroup of dqclk1bar_ff_i : label is "clk_phase1a";
-    		attribute pbbox  of phase_ff_1_i   : label is "1,1";
-    		attribute hgroup of phase_ff_1_i   : label is "clk_phase1b";
-
-    		signal dqclk1bar_ff_q : std_logic;
-    		signal dqclk1bar_ff_d : std_logic;
-    		signal phase_ff_1_q   : std_logic;
-
+    	dqsdll_uddcntln_b : block
+        	signal update : std_logic;
     	begin
-    		dqclk1bar_ff_d <= not dqclk1bar_ff_q;
-    		dqclk1bar_ff_i : fd1p3dx
-    		port map (
-    			cd => dqsbuf_rst,
-    			ck => eclksynca_clk,
-    			d  => dqclk1bar_ff_d,
-    			q  => dqclk1bar_ff_q);
+        	process (sclk)
+        		variable q : std_logic_vector(0 to 4-1);
+        	begin
+        		if rising_edge(sclk) then
+        			if rst='1' then
+        				q := (others => '0');
+        			elsif q(0)='0' then
+        				if all_lock='1' then
+        					q := inc(gray(q));
+        				end if;
+        			end if;
+        			update <= not q(0);
+        		end if;
+        	end process;
 
-    		phase_ff_1_i : entity hdl4fpga.ff
-    		port map(
-    			clk => sclk,
-    			d => dqclk1bar_ff_q,
-    			q => phase_ff_1_q);
+        	process (sclk2x)
+        	begin
+        		if rising_edge(sclk2x) then
+        			uddcntln <= update;
+        		end if;
+        	end process;
     	end block;
-    	
-    	dqsdll_b : block
-    		signal update   : std_logic;
-    		signal uddcntln   : std_logic;
-    		signal lock   : std_logic;
-    	begin
 
-    		process (sclk)
-    			variable q : std_logic_vector(0 to 4-1);
-    		begin
-    			if rising_edge(sclk) then
-    				if rst='1' then
-    					q := (others => '0');
-    				elsif q(0)='0' then
-    					if lock='1' then
-    						q := inc(gray(q));
-    					end if;
-    				end if;
-    				update       <= not q(0);
-    				clkstart_rst <= not q(1);
-    			end if;
-    		end process;
-
-    		process (sclk2x)
-    		begin
-    			if rising_edge(sclk2x) then
-    				uddcntln <= update;
-    			end if;
-    		end process;
-
-    		dqsdllb_i : dqsdllb
-    		port map (
-    			rst      => rst,
-    			clk      => sclk2x,
-    			uddcntln => uddcntln,
-    			dqsdel   => dqsdel,
-    			lock     => lock);
-    	end block;
+		ecp3_csa_e : entity hdl4fpga.ecp3_csa
+		port map (
+			reset              => '0',
+			reset_datapath     => '0',
+			refclk             => clk, 
+			clkop              => ctlrpll_clkop,
+			clkos              => ctlrpll_clkos, 
+			clkok              => ctlrpll_clkok, 
+			uddcntln           => uddcntln,
+			pll_phase          => ctlrpll_phase, 
+			pll_lock           => ctlrpll_lock, 
+			eclk               => ctlrpll_eclk,
+			sclk               => ctlrpll_sclk,
+			sclk2x             => ctlrpll_sclk2x, 
+			reset_datapath_out => dqsbuf_rst,
+			dqsdel             => dqsdel,
+			all_lock           => all_lock,
+			align_status       => open, 
+			good               => open, 
+			err                => open);
 
     	sdrphy_e : entity hdl4fpga.ecp3_sdrphy
     	generic map (
-    		taps          => natural(floor(ddr_tcp/26.0e-12)),
-    		cmmd_gear     => cmmd_gear,
-    		data_gear     => data_gear,
-    		bank_size     => ddr3_b'length,
-    		addr_size     => ddr3_a'length,
-    		word_size     => word_size,
-    		byte_size     => byte_size)
+    		taps      => natural(floor(ddr_tcp/26.0e-12)),
+    		cmmd_gear => cmmd_gear,
+    		data_gear => data_gear,
+    		bank_size => ddr3_b'length,
+    		addr_size => ddr3_a'length,
+    		word_size => word_size,
+    		byte_size => byte_size)
     	port map (
-    		rst           => rst,
-			dqsbuf_rst    => dqsbuf_rst,
-    		sclk          => ddr_sclk,
-    		sclk2x        => ddr_sclk2x,
-    		eclk          => eclksynca_clk,
-			dqsdel        => dqsdel,
-    		phy_frm       => ctlrphy_frm,
-    		phy_trdy      => ctlrphy_trdy,
-    		phy_cmd       => ctlrphy_cmd,
-    		phy_rw        => ctlrphy_rw,
-    		phy_ini       => ctlrphy_ini,
+			rst       => dqsbuf_rst,
+    		sclk      => ctlrpll_clkok,
+    		sclk2x    => ctlrpll_clkop,
+    		eclk      => ctlrpll_eclk,
+			dqsdel    => dqsdel,
+    		phy_frm   => ctlrphy_frm,
+    		phy_trdy  => ctlrphy_trdy,
+    		phy_cmd   => ctlrphy_cmd,
+    		phy_rw    => ctlrphy_rw,
+    		phy_ini   => ctlrphy_ini,
 
-    		phy_wlreq     => ctlrphy_wlreq,
-    		phy_wlrdy     => ctlrphy_wlrdy,
+    		phy_wlreq => ctlrphy_wlreq,
+    		phy_wlrdy => ctlrphy_wlrdy,
 
-    		phy_rlreq     => ctlrphy_rlreq,
-    		phy_rlrdy     => ctlrphy_rlrdy,
+    		phy_rlreq => ctlrphy_rlreq,
+    		phy_rlrdy => ctlrphy_rlrdy,
 
-    		phy_rst       => ctlrphy_rst,
-    		phy_cs        => ctlrphy_cs,
-    		phy_cke       => ctlrphy_cke,
-    		phy_ras       => ctlrphy_ras,
-    		phy_cas       => ctlrphy_cas,
-    		phy_we        => ctlrphy_we,
-    		phy_odt       => ctlrphy_odt,
-    		phy_b         => ctlrphy_ba,
-    		phy_a         => ctlrphy_a,
-    		phy_dqsi      => ctlrphy_dso,
-    		phy_dqst      => ctlrphy_dst,
-    		phy_dqso      => ctlrphy_dsi,
-    		phy_dmi       => ctlrphy_dmo,
-    		phy_dmt       => ctlrphy_dmt,
-    		phy_dmo       => ctlrphy_dmi,
-    		phy_dqi       => ctlrphy_dqo,
-    		phy_dqt       => ctlrphy_dqt,
-    		phy_dqo       => ctlrphy_dqi,
-    		phy_sti       => ctlrphy_sto,
-    		phy_sto       => ctlrphy_sti,
+    		phy_rst   => ctlrphy_rst,
+    		phy_cs    => ctlrphy_cs,
+    		phy_cke   => ctlrphy_cke,
+    		phy_ras   => ctlrphy_ras,
+    		phy_cas   => ctlrphy_cas,
+    		phy_we    => ctlrphy_we,
+    		phy_odt   => ctlrphy_odt,
+    		phy_b     => ctlrphy_ba,
+    		phy_a     => ctlrphy_a,
+    		phy_dqsi  => ctlrphy_dso,
+    		phy_dqst  => ctlrphy_dst,
+    		phy_dqso  => ctlrphy_dsi,
+    		phy_dmi   => ctlrphy_dmo,
+    		phy_dmt   => ctlrphy_dmt,
+    		phy_dmo   => ctlrphy_dmi,
+    		phy_dqi   => ctlrphy_dqo,
+    		phy_dqt   => ctlrphy_dqt,
+    		phy_dqo   => ctlrphy_dqi,
+    		phy_sti   => ctlrphy_sto,
+    		phy_sto   => ctlrphy_sti,
 
-    		sdr_rst       => ddr3_rst,
-    		sdr_ck        => ddr3_clk,
-    		sdr_cke       => ddr3_cke,
-    		sdr_cs        => ddr3_cs,
-    		sdr_ras       => ddr3_ras,
-    		sdr_cas       => ddr3_cas,
-    		sdr_we        => ddr3_we,
-    		sdr_odt       => ddr3_odt,
-    		sdr_b         => ddr3_b,
-    		sdr_a         => ddr3_a,
+    		sdr_rst   => ddr3_rst,
+    		sdr_ck    => ddr3_clk,
+    		sdr_cke   => ddr3_cke,
+    		sdr_cs    => ddr3_cs,
+    		sdr_ras   => ddr3_ras,
+    		sdr_cas   => ddr3_cas,
+    		sdr_we    => ddr3_we,
+    		sdr_odt   => ddr3_odt,
+    		sdr_b     => ddr3_b,
+    		sdr_a     => ddr3_a,
 
-    		sdr_dm        => ddr3_dm,
-    		sdr_dq        => ddr3_dq,
-    		sdr_dqs       => ddr3_dqs);
+    		sdr_dm    => ddr3_dm,
+    		sdr_dq    => ddr3_dq,
+    		sdr_dqs   => ddr3_dqs);
 
 	end block;
 
