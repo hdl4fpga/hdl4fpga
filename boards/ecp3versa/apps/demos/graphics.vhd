@@ -52,7 +52,7 @@ architecture graphics of ecp3versa is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app : apps := mii_400MHz_480p24bpp;
+	constant app : apps := mii_425MHz_480p24bpp;
 	---------------------------------------------
 
 	constant sys_freq    : real    := 100.0e6;
@@ -210,7 +210,7 @@ architecture graphics of ecp3versa is
 		video_tab(app_tab(app).mode).pixel=rgb565, 16, setif(
 		video_tab(app_tab(app).mode).pixel=rgb888, 32, 0))-1);
 
-	constant ddram_mode : ddram_speed := ddram_speed'VAL(setif(not debug,
+	constant ddram_mode : ddram_speed := ddram_speed'VAL(setif(true or not debug,
 		ddram_speed'POS(app_tab(app).speed),
 		ddram_speed'POS(ddram400Mhz)));
 
@@ -680,28 +680,8 @@ begin
 		signal all_lock   : std_logic;
 		signal uddcntln   : std_logic;
 
-		-- component ecp3_csa
-		-- port  (
-			-- reset              : in  std_logic;
-			-- reset_datapath     : in  std_logic;
-			-- refclk             : in  std_logic;
-			-- clkop              : in  std_logic;
-			-- clkos              : in  std_logic;
-			-- clkok              : in  std_logic;
-			-- uddcntln           : in  std_logic;
-			-- pll_phase          : out std_logic_vector(4-1 downto 0);
-			-- pll_lock           : in std_logic;
-			-- eclk               : out std_logic;
-			-- sclk               : out std_logic;
-			-- sclk2x             : out std_logic;
-			-- reset_datapath_out : out std_logic;
-			-- dqsdel             : out std_logic;
-			-- all_lock           : out std_logic;
-			-- align_status       : out std_logic_vector(2-1 downto 0);
-			-- good               : out std_logic;
-			-- err                : out std_logic);
-		-- end component;
-
+		signal reset : std_logic;
+		signal reset_datapath : std_logic := '0';
 	begin
 
     	dqsdll_uddcntln_b : block
@@ -730,10 +710,13 @@ begin
         	end process;
     	end block;
 
+		reset <= not ctlrpll_lock;
 		ecp3_csa_e : entity hdl4fpga.ecp3_csa
+		generic map (
+			period_eclk => ddr_tcp)
 		port map (
-			reset              => '0',
-			reset_datapath     => '0',
+			reset              => reset,
+			reset_datapath     => reset_datapath,
 			refclk             => clk, 
 			clkop              => ctlrpll_clkop,
 			clkos              => ctlrpll_clkos, 

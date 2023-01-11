@@ -36,11 +36,31 @@ add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(1)/sdr3phy_i/dqsbufd
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/sclk
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(1)/sdr3phy_i/dqsbufd_i/eclkdqsr
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/reset
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/reset_datapath
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/refclk
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/eclk
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/sclk
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/sclk2x
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/all_lock
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_b/ecp3_csa_e/pll_control/retry_cnt
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_b/ecp3_csa_e/pll_control/timer
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/pll_control/state
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/clk_phase/reset
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/clk_phase/eclk
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/clk_phase/eclksync
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/clk_phase/sclk
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/clk_phase/align_status
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/clk_phase/dqclk1bar_ff
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/clk_phase/phase_ff_1
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/clk_phase/phase_ff_0
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/good
+add wave -noupdate /testbench/du_e/sdrphy_b/ecp3_csa_e/err
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {51799906 ps} 0} {{Cursor 2} {41154269 ps} 0}
+WaveRestoreCursors {{Cursor 1} {55017373180 fs} 0} {{Cursor 2} {92957750 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 227
 configure wave -valuecolwidth 171
@@ -56,4 +76,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {51738434 ps} {51840978 ps}
+WaveRestoreZoom {0 fs} {105 us}

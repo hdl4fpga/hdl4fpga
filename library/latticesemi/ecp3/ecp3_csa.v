@@ -6,6 +6,30 @@
 
 `uselib lib = ecp3
 
+// component ecp3_csa
+// 	generic (
+// 		period_eclk        : real);
+//     port  (
+//         reset              : in  std_logic;
+//         reset_datapath     : in  std_logic;
+//         refclk             : in  std_logic;
+//         clkop              : in  std_logic;
+//         clkos              : in  std_logic;
+//         clkok              : in  std_logic;
+//         uddcntln           : in  std_logic;
+//         pll_phase          : out std_logic_vector(4-1 downto 0);
+//         pll_lock           : in std_logic;
+//         eclk               : out std_logic;
+//         sclk               : out std_logic;
+//         sclk2x             : out std_logic;
+//         reset_datapath_out : out std_logic;
+//         dqsdel             : out std_logic;
+//         all_lock           : out std_logic;
+//         align_status       : out std_logic_vector(2-1 downto 0);
+//         good               : out std_logic;
+//         err                : out std_logic);
+// end component;
+
 module ecp3_csa(
 	reset, 
 	reset_datapath,
@@ -94,7 +118,8 @@ module ecp3_csa(
 `ifdef DEBUG_MARGIN
 		.margin_code(margin_code),
 `endif
-		.good_int(good_out), .err(err));
+		.good_int(good_out), 
+		.err(err));
 	//pragma attribute pll_control hierarchy preserve 
 
 	assign all_lock = pll_lock && ddrdll_lock;
