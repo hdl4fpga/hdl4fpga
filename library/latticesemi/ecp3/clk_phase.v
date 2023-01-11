@@ -2,8 +2,10 @@
 //expect to stop at 2'b00 transition to 2'b01 (going back to 2'b00)
 
 module clk_phase(
-	eclk,eclksync,
-	sclk,reset,
+	eclk,
+	eclksync,
+	sclk,
+	reset,
 	align_status);
 
 	input        eclk;//short eclk directly from pll, for bit0
