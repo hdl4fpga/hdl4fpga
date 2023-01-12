@@ -191,7 +191,7 @@ begin
     	process
     	begin
     		req <= '0';
-    		wait for 36 us;
+    		wait for 95 us;
     		loop
     			if req='1' then
     				wait on mii_rxdv;

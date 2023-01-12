@@ -52,7 +52,7 @@ architecture graphics of ecp3versa is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app : apps := mii_425MHz_480p24bpp;
+	constant app : apps := mii_400MHz_480p24bpp;
 	---------------------------------------------
 
 	constant sys_freq    : real    := 100.0e6;
@@ -731,7 +731,7 @@ begin
 			dqsdel             => dqsdel,
 			all_lock           => all_lock,
 			align_status       => open, 
-			good               => open, 
+			good               => ctlr_lck, 
 			err                => open);
 
     	sdrphy_e : entity hdl4fpga.ecp3_sdrphy
