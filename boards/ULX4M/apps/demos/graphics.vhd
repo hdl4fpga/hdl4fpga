@@ -56,6 +56,11 @@ architecture graphics of ulx4m_ld is
 		uart_400MHz_600p24bpp,
 
 		uart_350MHz_1080p24bpp30,
+		uart_375MHz_1080p24bpp30,
+		uart_400MHz_1080p24bpp30,
+		uart_425MHz_1080p24bpp30,
+		uart_450MHz_1080p24bpp30,
+		uart_500MHz_1080p24bpp30,
 
 		mii_400MHz_480p24bpp,
 		mii_425MHz_480p24bpp,
@@ -66,36 +71,42 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app_profile  : app_profiles := uart_350MHz_1080p24bpp30;
+	constant app_profile  : app_profiles := uart_375MHz_1080p24bpp30;
 	---------------------------------------------
 
 	type profile_params is record
-		comms      : io_comms;
-		sdram_speed  : sdram_speeds;
-		video_mode : video_modes;
+		comms       : io_comms;
+		sdram_speed : sdram_speeds;
+		video_mode  : video_modes;
+		cheat       : real;
 	end record;
 
 	type profileparams_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparams_vector := (
-		uart_325MHz_480p24bpp => (io_hdlc, sdram325MHz, mode480p24bpp),
-		uart_350MHz_480p24bpp => (io_hdlc, sdram350MHz, mode480p24bpp),
-		uart_375MHz_480p24bpp => (io_hdlc, sdram375MHz, mode480p24bpp),
-		uart_400MHz_480p24bpp => (io_hdlc, sdram400MHz, mode480p24bpp),
-		uart_425MHz_480p24bpp => (io_hdlc, sdram425MHz, mode480p24bpp),
-		uart_450MHz_480p24bpp => (io_hdlc, sdram450MHz, mode480p24bpp),
-		uart_475MHz_480p24bpp => (io_hdlc, sdram475MHz, mode480p24bpp),
-		uart_500MHz_480p24bpp => (io_hdlc, sdram500MHz, mode480p24bpp),
+		uart_325MHz_480p24bpp => (io_hdlc, sdram325MHz, mode480p24bpp, cheat => 1.0),
+		uart_350MHz_480p24bpp => (io_hdlc, sdram350MHz, mode480p24bpp, cheat => 1.0),
+		uart_375MHz_480p24bpp => (io_hdlc, sdram375MHz, mode480p24bpp, cheat => 1.0),
+		uart_400MHz_480p24bpp => (io_hdlc, sdram400MHz, mode480p24bpp, cheat => 1.0),
+		uart_425MHz_480p24bpp => (io_hdlc, sdram425MHz, mode480p24bpp, cheat => 1.0625),
+		uart_450MHz_480p24bpp => (io_hdlc, sdram450MHz, mode480p24bpp, cheat => 1.125),
+		uart_475MHz_480p24bpp => (io_hdlc, sdram475MHz, mode480p24bpp, cheat => 1.250),
+		uart_500MHz_480p24bpp => (io_hdlc, sdram500MHz, mode480p24bpp, cheat => 1.375),
                                                 
-		uart_350MHz_600p24bpp => (io_hdlc, sdram350MHz, mode600p24bpp),
-		uart_400MHz_600p24bpp => (io_hdlc, sdram400MHz, mode600p24bpp),
+		uart_350MHz_600p24bpp => (io_hdlc, sdram350MHz, mode600p24bpp, cheat => 1.0),
+		uart_400MHz_600p24bpp => (io_hdlc, sdram400MHz, mode600p24bpp, cheat => 1.0),
 
-		uart_350MHz_1080p24bpp30 => (io_hdlc, sdram350MHz, mode1080p24bpp30),
-
-		mii_400MHz_480p24bpp  => (io_ipoe, sdram400MHz, mode480p24bpp),
-		mii_425MHz_480p24bpp  => (io_ipoe, sdram425MHz, mode480p24bpp),
-		mii_450MHz_480p24bpp  => (io_ipoe, sdram450MHz, mode480p24bpp),
-		mii_475MHz_480p24bpp  => (io_ipoe, sdram475MHz, mode480p24bpp),
-		mii_500MHz_480p24bpp  => (io_ipoe, sdram500MHz, mode480p24bpp));
+		uart_350MHz_1080p24bpp30 => (io_hdlc, sdram350MHz, mode1080p24bpp30, cheat => 1.0),
+		uart_375MHz_1080p24bpp30 => (io_hdlc, sdram375MHz, mode1080p24bpp30, cheat => 1.0),
+		uart_400MHz_1080p24bpp30 => (io_hdlc, sdram400MHz, mode1080p24bpp30, cheat => 1.0),
+		uart_425MHz_1080p24bpp30 => (io_hdlc, sdram425MHz, mode1080p24bpp30, cheat => 1.0625),
+		uart_450MHz_1080p24bpp30 => (io_hdlc, sdram450MHz, mode1080p24bpp30, cheat => 1.125),
+		uart_500MHz_1080p24bpp30 => (io_hdlc, sdram500MHz, mode1080p24bpp30, cheat => 1.250),
+                                                                    
+		mii_400MHz_480p24bpp  => (io_ipoe, sdram400MHz, mode480p24bpp, cheat => 1.0),
+		mii_425MHz_480p24bpp  => (io_ipoe, sdram425MHz, mode480p24bpp, cheat => 1.0625),
+		mii_450MHz_480p24bpp  => (io_ipoe, sdram450MHz, mode480p24bpp, cheat => 1.125),
+		mii_475MHz_480p24bpp  => (io_ipoe, sdram475MHz, mode480p24bpp, cheat => 1.250),
+		mii_500MHz_480p24bpp  => (io_ipoe, sdram500MHz, mode480p24bpp, cheat => 1.375));
 
 	type pll_params is record
 		clkos_div  : natural;
@@ -166,7 +177,6 @@ architecture graphics of ulx4m_ld is
 		(id => sdram450MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
 		(id => sdram475MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
 		(id => sdram500MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 20, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"));
-
 	function sdramparams (
 		constant id  : sdram_speeds)
 		return sdramparams_record is
@@ -298,11 +308,11 @@ begin
 			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq)/
 			(real(video_record.pll.clki_div*video_record.pll.clkos2_div*1e6));
 
-		constant video_shift_freq  : real :=
+		constant video_shift_freq  : real := 
 			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq)/
 			(real(video_record.pll.clki_div*video_record.pll.clkos_div*1e6));
 
-		constant videoio_freq  : real :=
+		constant videoio_freq  : real := 
 			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq)/
 			(real(video_record.pll.clki_div*video_record.pll.clkos3_div*1e6));
 
@@ -372,10 +382,11 @@ begin
 		attribute FREQUENCY_PIN_CLKOP  : string;
 
 		constant ddram_mhz : real := 1.0e-6/sdram_tcp;
+		constant cheat     : real := profile_tab(app_profile).cheat;
 
 
-		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_mhz, 10);
-		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_mhz/cheat, 10);
+		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/cheat/1.0e6, 10);
 
 		signal clkfb : std_logic;
 
@@ -800,22 +811,6 @@ begin
 		tp => tp_phy);
 	ddram_dm <= (others => '0');
 
-	-- cam_scl_i : oddrx1f
-	-- port map(
-		-- sclk => ctlr_clk,
-		-- rst  => '0',
-		-- d0   => '0',
-		-- d1   => '1',
-		-- q    => cam_scl);
---  
-	-- cam_scl_i : oddrx1f
-	-- port map(
-		-- sclk => ctlr_clk,
-		-- rst  => '0',
-		-- d0   => '0',
-		-- d1   => '1',
-		-- q    => gpio_scl);
- 
 	-- VGA --
 	---------
 

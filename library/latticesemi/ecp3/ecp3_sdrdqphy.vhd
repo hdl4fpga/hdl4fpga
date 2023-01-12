@@ -50,15 +50,14 @@ entity ecp3_sdrdqphy is
 		burst     : out std_logic;
 		phy_sti   : in  std_logic;
 		phy_sto   : out std_logic;
-		phy_dmt   : in  std_logic_vector(0 to data_gear-1) := (others => '-');
+		phy_dmt   : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		phy_dmi   : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		phy_dmo   : out std_logic_vector(data_gear-1 downto 0);
 		phy_dqo   : out std_logic_vector(data_gear*byte_size-1 downto 0);
-		phy_dqt   : in  std_logic_vector(0 to data_gear-1);
+		phy_dqt   : in  std_logic_vector(data_gear-1 downto 0);
 		phy_dqi   : in  std_logic_vector(data_gear*byte_size-1 downto 0);
-		phy_dqso  : in  std_logic_vector(0 to data_gear-1);
-		phy_dqst  : in  std_logic_vector(0 to data_gear-1);
-		phy_wlpha : out std_logic_vector(8-1 downto 0);
+		phy_dqso  : in  std_logic_vector(data_gear-1 downto 0);
+		phy_dqst  : in  std_logic_vector(data_gear-1 downto 0);
 
 		sdr_dmt   : out std_logic;
 		sdr_dmi   : in  std_logic := '-';
