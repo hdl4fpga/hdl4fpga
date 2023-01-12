@@ -223,7 +223,7 @@ begin
 			taps     => taps)
 		port map (
 			rst      => rst,
-			edge     => std_logic'('0'),
+			edge     => std_logic'('1'),
 			clk      => sclk,
 			req      => phy_wlreq,
 			rdy      => phy_wlrdy,
@@ -351,7 +351,7 @@ begin
 		oddrtdqa_i : oddrtdqa
 		port map (
 			sclk   => sclk,
-			ta     => dqt(0),
+			ta     => dqt(3),
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
 			q      => sdr_dqt(i));
@@ -361,10 +361,10 @@ begin
 			sclk   => sclk,
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
-			da0    => phy_dqi(0*byte_size+i),
-			db0    => phy_dqi(1*byte_size+i),
-			da1    => phy_dqi(2*byte_size+i),
-			db1    => phy_dqi(3*byte_size+i),
+			da0    => phy_dqi(3*byte_size+i),
+			db0    => phy_dqi(2*byte_size+i),
+			da1    => phy_dqi(1*byte_size+i),
+			db1    => phy_dqi(0*byte_size+i),
 			q      => sdr_dqo(i));
 	end generate;
 
@@ -375,7 +375,7 @@ begin
 		oddrtdqa_i : oddrtdqa
 		port map (
 			sclk   => sclk,
-			ta     => phy_dmt(0),
+			ta     => phy_dmt(3),
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
 			q      => sdr_dmt);
@@ -385,10 +385,10 @@ begin
 			sclk   => sclk,
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
-			da0    => phy_dmi(0),
-			db0    => phy_dmi(1),
-			da1    => phy_dmi(2),
-			db1    => phy_dmi(3),
+			da0    => phy_dmi(3),
+			db0    => phy_dmi(2),
+			da1    => phy_dmi(1),
+			db1    => phy_dmi(0),
 			q      => sdr_dmo);
 	end block;
 
@@ -404,8 +404,8 @@ begin
 		oddrtdqsa_i : oddrtdqsa
 		port map (
 			sclk    => sclk,
-			db      => dqst(0),
-			ta      => dqst(2),
+			db      => dqst(2),
+			ta      => dqst(0),
 			dqstclk => dqstclk,
 			dqsw    => dqsw,
 			q       => sdr_dqst);
@@ -413,8 +413,8 @@ begin
 		oddrx2dqsa_i : oddrx2dqsa
 		port map (
 			sclk    => sclk,
-			db0     => dqso(2*0),
-			db1     => dqso(2*1),
+			db0     => dqso(0),
+			db1     => dqso(2),
 			dqsw    => dqsw,
 			dqclk0  => dqclk0,
 			dqclk1  => dqclk1,
