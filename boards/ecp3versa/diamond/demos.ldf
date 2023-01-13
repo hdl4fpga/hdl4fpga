@@ -4,11 +4,10 @@
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="strategy1">
-        <Options def_top="hdl4fpga.adjdqs">
-            <Option name="include path" value="../../../../../../../opt/diamond/3.11_x64/ispfpga/sa5p00/data"/>
-            <Option name="lib" value="hdl4fpga"/>
-            <Option name="top" value="ecp3versa"/>
-        </Options>
+        <Options def_top="hdl4fpga.adjdqs" lib="hdl4fpga" top="ecp3versa"/>
+        <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="work" top_module="ecp3versa"/>
+        </Source>
         <Source name="../apps/demos/graphics.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work"/>
         </Source>
@@ -300,9 +299,6 @@
         <Source name="../../../library/basic/profiles.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../../../../../opt/diamond/3.11_x64/ispfpga/sa5p00/data/mem_sync.v" type="Verilog" type_short="Verilog">
-            <Options/>
-        </Source>
         <Source name="../../../library/demos/app_profiles.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -321,17 +317,26 @@
         <Source name="../../../library/latticesemi/ecp3/ecp3_sdrphy.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/latticesemi/ecp3/clkstart.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/latticesemi/ecp3/adjdqs.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/basic/ff.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work" top_module="ecp3versa"/>
+        <Source name="../../../library/latticesemi/ecp3/ecp3_csa.v" type="Verilog" type_short="Verilog">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp3/clk_phase.v" type="Verilog" type_short="Verilog">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp3/clk_stop.v" type="Verilog" type_short="Verilog">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp3/jitter_filter.v" type="Verilog" type_short="Verilog">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp3/pll_control.v" type="Verilog" type_short="Verilog">
+            <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
