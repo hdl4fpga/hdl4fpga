@@ -47,14 +47,11 @@ add wave -noupdate -expand -group ddram -radix hexadecimal -childformat {{/testb
 add wave -noupdate -expand -group ddram -radix hexadecimal /testbench/du_e/ddram_dm
 add wave -noupdate -expand -group ddram /testbench/du_e/ddram_dqs
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -expand -group ftdi_uart /testbench/du_e/ftdi_txd
+add wave -noupdate -expand -group ftdi_uart /testbench/du_e/ftdi_rxd
 add wave -noupdate /testbench/du_e/sdrphy_e_tp_dq_7
 add wave -noupdate /testbench/du_e/sdrphy_e_tp_dq_39
-add wave -noupdate /testbench/du_e/gpio17
-add wave -noupdate /testbench/du_e/gpio9
-add wave -noupdate /testbench/du_e/gpio11
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/gpio23
-add wave -noupdate /testbench/du_e/gpio24
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/led
 add wave -noupdate /testbench/du_e/ddram_clk_MGIOLI/ECLK
@@ -75,13 +72,7 @@ add wave -noupdate /testbench/du_e/sdrphy_e_mem_sync_b_clkdivf_iI/CDIVX
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/clk_25mhz
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/gpio17
-add wave -noupdate /testbench/du_e/gpio9
-add wave -noupdate /testbench/du_e/gpio11
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/gpio13
-add wave -noupdate /testbench/du_e/gpio23
-add wave -noupdate /testbench/du_e/gpio24
 add wave -noupdate /testbench/du_e/led
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddram_clk_MGIOLI/ECLK
@@ -130,7 +121,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/timer_cntr3
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {3423163780 fs} 0} {{Cursor 2} {395579479470 fs} 0} {{Cursor 3} {23504617830 fs} 0}
+WaveRestoreCursors {{Cursor 1} {3423163780 fs} 0} {{Cursor 2} {543564888480 fs} 0} {{Cursor 3} {82678392820 fs} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 205
 configure wave -valuecolwidth 164
@@ -146,4 +137,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {377667476380 fs} {404606399580 fs}
+WaveRestoreZoom {0 fs} {577500 ns}

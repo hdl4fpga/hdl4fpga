@@ -29,6 +29,7 @@ use ecp5u.components.all;
 
 entity ecp5_sdrbaphy is
 	generic (
+		clk_inv   : std_logic := '0';
 		cmmd_gear : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13);
@@ -70,10 +71,10 @@ begin
 			rst  => rst,
 			sclk => sclk,
 			eclk => eclk,
-			d0   => '0',
-			d1   => '1',
-			d2   => '0',
-			d3   => '1',
+			d0   => '0' xor clk_inv,
+			d1   => '1' xor clk_inv,
+			d2   => '0' xor clk_inv,
+			d3   => '1' xor clk_inv,
 			q    => ck);
 
 		delay_i : delayg

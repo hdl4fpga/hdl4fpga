@@ -71,42 +71,42 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app_profile  : app_profiles := uart_375MHz_1080p24bpp30;
+	constant app_profile  : app_profiles := uart_425MHz_1080p24bpp30;
 	---------------------------------------------
 
 	type profile_params is record
 		comms       : io_comms;
 		sdram_speed : sdram_speeds;
 		video_mode  : video_modes;
-		cheat       : real;
+		hack        : real;
 	end record;
 
 	type profileparams_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparams_vector := (
-		uart_325MHz_480p24bpp => (io_hdlc, sdram325MHz, mode480p24bpp, cheat => 1.0),
-		uart_350MHz_480p24bpp => (io_hdlc, sdram350MHz, mode480p24bpp, cheat => 1.0),
-		uart_375MHz_480p24bpp => (io_hdlc, sdram375MHz, mode480p24bpp, cheat => 1.0),
-		uart_400MHz_480p24bpp => (io_hdlc, sdram400MHz, mode480p24bpp, cheat => 1.0),
-		uart_425MHz_480p24bpp => (io_hdlc, sdram425MHz, mode480p24bpp, cheat => 1.0625),
-		uart_450MHz_480p24bpp => (io_hdlc, sdram450MHz, mode480p24bpp, cheat => 1.125),
-		uart_475MHz_480p24bpp => (io_hdlc, sdram475MHz, mode480p24bpp, cheat => 1.250),
-		uart_500MHz_480p24bpp => (io_hdlc, sdram500MHz, mode480p24bpp, cheat => 1.375),
+		uart_325MHz_480p24bpp => (io_hdlc, sdram325MHz, mode480p24bpp, hack => 1.0),
+		uart_350MHz_480p24bpp => (io_hdlc, sdram350MHz, mode480p24bpp, hack => 1.0),
+		uart_375MHz_480p24bpp => (io_hdlc, sdram375MHz, mode480p24bpp, hack => 1.0),
+		uart_400MHz_480p24bpp => (io_hdlc, sdram400MHz, mode480p24bpp, hack => 1.0),
+		uart_425MHz_480p24bpp => (io_hdlc, sdram425MHz, mode480p24bpp, hack => 1.0625),
+		uart_450MHz_480p24bpp => (io_hdlc, sdram450MHz, mode480p24bpp, hack => 1.125),
+		uart_475MHz_480p24bpp => (io_hdlc, sdram475MHz, mode480p24bpp, hack => 1.250),
+		uart_500MHz_480p24bpp => (io_hdlc, sdram500MHz, mode480p24bpp, hack => 1.375),
                                                 
-		uart_350MHz_600p24bpp => (io_hdlc, sdram350MHz, mode600p24bpp, cheat => 1.0),
-		uart_400MHz_600p24bpp => (io_hdlc, sdram400MHz, mode600p24bpp, cheat => 1.0),
+		uart_350MHz_600p24bpp => (io_hdlc, sdram350MHz, mode600p24bpp, hack => 1.0),
+		uart_400MHz_600p24bpp => (io_hdlc, sdram400MHz, mode600p24bpp, hack => 1.0),
 
-		uart_350MHz_1080p24bpp30 => (io_hdlc, sdram350MHz, mode1080p24bpp30, cheat => 1.0),
-		uart_375MHz_1080p24bpp30 => (io_hdlc, sdram375MHz, mode1080p24bpp30, cheat => 1.0),
-		uart_400MHz_1080p24bpp30 => (io_hdlc, sdram400MHz, mode1080p24bpp30, cheat => 1.0),
-		uart_425MHz_1080p24bpp30 => (io_hdlc, sdram425MHz, mode1080p24bpp30, cheat => 1.0625),
-		uart_450MHz_1080p24bpp30 => (io_hdlc, sdram450MHz, mode1080p24bpp30, cheat => 1.125),
-		uart_500MHz_1080p24bpp30 => (io_hdlc, sdram500MHz, mode1080p24bpp30, cheat => 1.250),
+		uart_350MHz_1080p24bpp30 => (io_hdlc, sdram350MHz, mode1080p24bpp30, hack => 1.0),
+		uart_375MHz_1080p24bpp30 => (io_hdlc, sdram375MHz, mode1080p24bpp30, hack => 1.0),
+		uart_400MHz_1080p24bpp30 => (io_hdlc, sdram400MHz, mode1080p24bpp30, hack => 1.0),
+		uart_425MHz_1080p24bpp30 => (io_hdlc, sdram425MHz, mode1080p24bpp30, hack => 1.0625),
+		uart_450MHz_1080p24bpp30 => (io_hdlc, sdram450MHz, mode1080p24bpp30, hack => 1.125),
+		uart_500MHz_1080p24bpp30 => (io_hdlc, sdram500MHz, mode1080p24bpp30, hack => 1.250),
                                                                     
-		mii_400MHz_480p24bpp  => (io_ipoe, sdram400MHz, mode480p24bpp, cheat => 1.0),
-		mii_425MHz_480p24bpp  => (io_ipoe, sdram425MHz, mode480p24bpp, cheat => 1.0625),
-		mii_450MHz_480p24bpp  => (io_ipoe, sdram450MHz, mode480p24bpp, cheat => 1.125),
-		mii_475MHz_480p24bpp  => (io_ipoe, sdram475MHz, mode480p24bpp, cheat => 1.250),
-		mii_500MHz_480p24bpp  => (io_ipoe, sdram500MHz, mode480p24bpp, cheat => 1.375));
+		mii_400MHz_480p24bpp  => (io_ipoe, sdram400MHz, mode480p24bpp, hack => 1.0),
+		mii_425MHz_480p24bpp  => (io_ipoe, sdram425MHz, mode480p24bpp, hack => 1.0625),
+		mii_450MHz_480p24bpp  => (io_ipoe, sdram450MHz, mode480p24bpp, hack => 1.125),
+		mii_475MHz_480p24bpp  => (io_ipoe, sdram475MHz, mode480p24bpp, hack => 1.250),
+		mii_500MHz_480p24bpp  => (io_ipoe, sdram500MHz, mode480p24bpp, hack => 1.375));
 
 	type pll_params is record
 		clkos_div  : natural;
@@ -382,11 +382,11 @@ begin
 		attribute FREQUENCY_PIN_CLKOP  : string;
 
 		constant ddram_mhz : real := 1.0e-6/sdram_tcp;
-		constant cheat     : real := profile_tab(app_profile).cheat;
+		constant hack     : real := profile_tab(app_profile).hack;
 
 
-		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_mhz/cheat, 10);
-		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/cheat/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_mhz/hack, 10);
+		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/hack/1.0e6, 10);
 
 		signal clkfb : std_logic;
 
