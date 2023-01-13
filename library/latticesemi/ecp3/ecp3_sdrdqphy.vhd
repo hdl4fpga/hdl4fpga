@@ -36,7 +36,6 @@ entity ecp3_sdrdqphy is
 	port (
 		rst       : in  std_logic;
 		sclk      : in  std_logic;
-		sclk2x    : in  std_logic;
 		eclk      : in  std_logic;
 		dqsdel    : in  std_logic;
 		pause     : in  std_logic;

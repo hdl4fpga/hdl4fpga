@@ -412,7 +412,6 @@ begin
 		port map (
 			rst       => rst,
 			sclk      => sclk,
-			sclk2x    => sclk2x,
 			eclk      => eclk,
 			dqsdel    => dqsdel,
 
