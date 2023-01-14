@@ -275,8 +275,6 @@ HDL4FPGA__cp850x8x16x0to127 = $(LIB_HDL4FPGA)/cp850x8x16x0to127/_primary.dat
 HDL4FPGA__cntrcs__def = $(LIB_HDL4FPGA)/cntrcs/def.dat
 HDL4FPGA__cntrcs = $(LIB_HDL4FPGA)/cntrcs/_primary.dat
 HDL4FPGA__clk_stop = $(LIB_HDL4FPGA)/clk_stop/_primary.dat
-HDL4FPGA__clk_start__ecp3 = $(LIB_HDL4FPGA)/clk_start/ecp3.dat
-HDL4FPGA__clk_start = $(LIB_HDL4FPGA)/clk_start/_primary.dat
 HDL4FPGA__clk_phase = $(LIB_HDL4FPGA)/clk_phase/_primary.dat
 HDL4FPGA__cgafonts__body = $(LIB_HDL4FPGA)/cgafonts/body.dat
 HDL4FPGA__cgafonts = $(LIB_HDL4FPGA)/cgafonts/_primary.dat
@@ -581,8 +579,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__cntrcs__def) \
     $(HDL4FPGA__cntrcs) \
     $(HDL4FPGA__clk_stop) \
-    $(HDL4FPGA__clk_start__ecp3) \
-    $(HDL4FPGA__clk_start) \
     $(HDL4FPGA__clk_phase) \
     $(HDL4FPGA__cgafonts__body) \
     $(HDL4FPGA__cgafonts) \
@@ -817,13 +813,6 @@ $(HDL4FPGA__cgafonts__body) : ../video/cgafonts.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../video/cgafonts.vhd
-
-$(HDL4FPGA__clk_start) \
-$(HDL4FPGA__clk_start__ecp3) : ../latticesemi/ecp3/clkstart.vhd \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/clkstart.vhd
 
 $(HDL4FPGA__cntrcs) \
 $(HDL4FPGA__cntrcs__def) : ../basic/cntrcs.vhd \

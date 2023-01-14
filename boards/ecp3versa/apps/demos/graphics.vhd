@@ -35,12 +35,13 @@ use hdl4fpga.profiles.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
+use hdl4fpga.app_profiles.all;
 
 architecture graphics of ecp3versa is
 
 	--------------------------------------
 	-- Set of profiles                  --
-	type apps is (
+	type app_profiles is (
 	--	Interface_SdramSpeed_PixelFormat--
 
 		mii_350MHz_1080p24bpp30,
@@ -54,8 +55,24 @@ architecture graphics of ecp3versa is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app : apps  := mii_500MHz_1080p24bpp30;
+	constant app_profile  : app_profiles := mii_500MHz_1080p24bpp30;
 	---------------------------------------------
+
+	type profile_params is record
+		comms : io_comms;
+		mode  : video_modes;
+		speed : sdram_speeds;
+	end record;
+
+	type profileparams_vector is array (app_profiles) of profile_params;
+	constant profile_tab : profileparams_vector := (
+		mii_350MHz_1080p24bpp30 => (comms => io_ipoe, mode => mode1080p24bpp30, speed => sdram350MHz),
+		mii_375MHz_1080p24bpp30 => (comms => io_ipoe, mode => mode1080p24bpp30, speed => sdram375MHz),
+		mii_400MHz_1080p24bpp30 => (comms => io_ipoe, mode => mode1080p24bpp30, speed => sdram400MHz),
+		mii_425MHz_1080p24bpp30 => (comms => io_ipoe, mode => mode1080p24bpp30, speed => sdram425MHz),
+		mii_450MHz_1080p24bpp30 => (comms => io_ipoe, mode => mode1080p24bpp30, speed => sdram450MHz),
+		mii_475MHz_1080p24bpp30 => (comms => io_ipoe, mode => mode1080p24bpp30, speed => sdram475MHz),
+		mii_500MHz_1080p24bpp30 => (comms => io_ipoe, mode => mode1080p24bpp30, speed => sdram500MHz));
 
 	constant sclk_phases : natural := 1;
 	constant sclk_edges  : natural := 1;
@@ -111,18 +128,12 @@ architecture graphics of ecp3versa is
 	signal ddr_a         : std_logic_vector(ddr3_a'length-1 downto 0);
 
 	type pll_params is record
+		clkos_div  : natural;
 		clkok_div  : natural;
 		clkop_div  : natural;
 		clkfb_div  : natural;
 		clki_div   : natural;
 	end record;
-
-	type video_modes is (
-		mode480p24,
-		mode600p16,
-		mode600p24,
-		mode900p24,
-		modedebug);
 
 	type video_params is record
 		id     : video_modes;
@@ -130,7 +141,7 @@ architecture graphics of ecp3versa is
 		timing : videotiming_ids;
 	end record;
 
-	type videoparams_vector is array (video_modes) of video_params;
+	type videoparams_vector is array (natural range <>) of video_params;
 	constant v_r : natural := 5; -- video ratio
 	constant video_tab : videoparams_vector := (
 		(id => modedebug,        pll => (clkok_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos_div => v_r*5), timing => pclk_debug),
@@ -139,27 +150,77 @@ architecture graphics of ecp3versa is
 		(id => mode900p24bpp,    pll => (clkok_div => 2, clkop_div => 22,  clkfb_div => 1, clki_div => 1, clkos_div => v_r*2), timing => pclk108_00m1600x900at60), -- 30 Hz
 		(id => mode1080p24bpp30, pll => (clkok_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos_div => v_r*2), timing => pclk150_00m1920x1080at60)); -- 30 Hz
 
+	function videoparam (
+		constant id  : video_modes)
+		return video_params is
+		constant tab : videoparams_vector := video_tab;
+	begin
+		for i in tab'range loop
+			if id=tab(i).id then
+				return tab(i);
+			end if;
+		end loop;
+
+		assert false 
+		report ">>>videoparam<<< : video id not available"
+		severity failure;
+
+		return tab(tab'left);
+	end;
+
+	constant nodebug_videomode : video_modes := profile_tab(app_profile).mode;
+	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
+		video_modes'POS(modedebug),
+		video_modes'POS(nodebug_videomode)));
+	constant video_record : video_params := videoparam(video_mode);
+
 	signal video_clk      : std_logic := '0';
 	signal videoio_clk    : std_logic := '0';
 	signal video_lck      : std_logic := '0';
 	signal video_shift_clk : std_logic := '0';
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
-	type sdram_params is record
+	type sdramparams_record is record
+		id  : sdram_speeds;
 		pll : pll_params;
 		cl  : std_logic_vector(0 to 3-1);
 		cwl : std_logic_vector(0 to 3-1);
 	end record;
 
-	type sdramparams_vector is array (sdram_speed) of sdram_params;
+	type sdramparams_vector is array (natural range <>) of sdramparams_record;
 	constant sdram_tab : sdramparams_vector := (
-		sdram350MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  7, clki_div => 2), cl => "010", cwl => "000"),
-		sdram375MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 15, clki_div => 4), cl => "010", cwl => "000"),
-		sdram400MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  4, clki_div => 1), cl => "010", cwl => "000"),
-		sdram425MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 17, clki_div => 4), cl => "011", cwl => "001"),
-		sdram450MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  9, clki_div => 2), cl => "011", cwl => "001"),
-		sdram475MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 19, clki_div => 4), cl => "011", cwl => "001"),
-		sdram500MHz => (pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  5, clki_div => 1), cl => "011", cwl => "001"));
+		(id => sdram350MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  7, clki_div => 2), cl => "010", cwl => "000"),
+		(id => sdram375MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div => 15, clki_div => 4), cl => "010", cwl => "000"),
+		(id => sdram400MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  4, clki_div => 1), cl => "010", cwl => "000"),
+		(id => sdram425MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div => 17, clki_div => 4), cl => "011", cwl => "001"),
+		(id => sdram450MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  9, clki_div => 2), cl => "011", cwl => "001"),
+		(id => sdram475MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div => 19, clki_div => 4), cl => "011", cwl => "001"),
+		(id => sdram500MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  5, clki_div => 1), cl => "011", cwl => "001"));
+
+	function sdramparams (
+		constant id  : sdram_speeds)
+		return sdramparams_record is
+		constant tab : sdramparams_vector := sdram_tab;
+	begin
+		for i in tab'range loop
+			if id=tab(i).id then
+				return tab(i);
+			end if;
+		end loop;
+
+		assert false 
+		report ">>>sdramparams<<< : sdram speed not enabled"
+		severity failure;
+
+		return tab(tab'left);
+	end;
+
+	constant sdram_mode : sdram_speeds := profile_tab(app_profile).speed;
+	constant sdram_params : sdramparams_record := sdramparams(sdram_mode);
+
+	constant sdram_tcp : real := 
+		real(sdram_params.pll.clki_div)/
+		(real(sdram_params.pll.clkop_div*sdram_params.pll.clkfb_div)*sys_freq);
 
 	constant mem_size : natural := 8*(1024*8);
 	signal so_frm     : std_logic;
@@ -174,42 +235,9 @@ architecture graphics of ecp3versa is
 
 	signal uart_clk    : std_logic;
 
-	type io_iface is (
-		io_hdlc,
-		io_ipoe);
-
-	type app_record is record
-		iface : io_iface;
-		mode  : video_modes;
-		speed : sdram_speed;
-	end record;
-
-	type app_vector is array (apps) of app_record;
-	constant app_tab : app_vector := (
-		mii_350MHz_1080p24bpp30 => (iface => io_ipoe, mode => mode1080p24bpp30, speed => sdram350MHz),
-		mii_375MHz_1080p24bpp30 => (iface => io_ipoe, mode => mode1080p24bpp30, speed => sdram375MHz),
-		mii_400MHz_1080p24bpp30 => (iface => io_ipoe, mode => mode1080p24bpp30, speed => sdram400MHz),
-		mii_425MHz_1080p24bpp30 => (iface => io_ipoe, mode => mode1080p24bpp30, speed => sdram425MHz),
-		mii_450MHz_1080p24bpp30 => (iface => io_ipoe, mode => mode1080p24bpp30, speed => sdram450MHz),
-		mii_475MHz_1080p24bpp30 => (iface => io_ipoe, mode => mode1080p24bpp30, speed => sdram475MHz),
-		mii_500MHz_1080p24bpp30 => (iface => io_ipoe, mode => mode1080p24bpp30, speed => sdram500MHz));
-
-	constant nodebug_videomode : video_modes := app_tab(app).mode;
-	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
-		video_modes'POS(modedebug),
-		video_modes'POS(nodebug_videomode)));
-
     signal video_pixel    : std_logic_vector(0 to 32-1);
 
-	constant sdram_mode : sdram_speed := sdram_speed'VAL(setif(true or not debug,
-		sdram_speed'POS(app_tab(app).speed),
-		sdram_speed'POS(sdram400Mhz)));
-
-	constant ddr_tcp : real := 
-		real(sdram_tab(sdram_mode).pll.clki_div)/
-		(real(sdram_tab(sdram_mode).pll.clkop_div*sdram_tab(sdram_mode).pll.clkfb_div)*sys_freq);
-
-	constant io_link  : io_iface := app_tab(app).iface;
+	constant io_link  : io_comms := profile_tab(app_profile).comms;
 
 	constant hdplx    : std_logic := setif(debug, '0', '1');
 
@@ -240,16 +268,16 @@ begin
 		attribute FREQUENCY_PIN_CLKOP  : string;
 
 		constant video_freq  : real :=
-			(real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq)/
-			(real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkok_div*1e6));
+			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq)/
+			(real(video_record.pll.clki_div*video_record.pll.clkok_div*1e6));
 
 		constant video_shift_freq  : real :=
-			(real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq)/
-			(real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkok_div*1e6));
+			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq)/
+			(real(video_record.pll.clki_div*video_record.pll.clkok_div*1e6));
 
 		constant videoio_freq  : real :=
-			(real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq)/
-			(real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkok_div*1e6));
+			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq)/
+			(real(video_record.pll.clki_div*video_record.pll.clkok_div*1e6));
 
 		attribute FREQUENCY_PIN_CLKOS of pll_i : label is ftoa(video_shift_freq, 10);
 		attribute FREQUENCY_PIN_CLKOK of pll_i : label is ftoa(video_freq,       10);
@@ -275,11 +303,11 @@ begin
 			PHASE_DELAY_CNTL => "DYNAMIC",
 			PHASEADJ         => "0.0", 
 
-			CLKOS_DIV        => video_tab(video_mode).pll.clkos_div,
-			CLKOK_DIV        => video_tab(video_mode).pll.clkok_div,
-			CLKOP_DIV        => video_tab(video_mode).pll.clkop_div,
-			CLKFB_DIV        => video_tab(video_mode).pll.clkfb_div,
-			CLKI_DIV         => video_tab(video_mode).pll.clki_div)
+			-- CLKOS_DIV        => video_tab(video_mode).pll.clkos_div,
+			CLKOK_DIV        => video_record.pll.clkok_div,
+			CLKOP_DIV        => video_record.pll.clkop_div,
+			CLKFB_DIV        => video_record.pll.clkfb_div,
+			CLKI_DIV         => video_record.pll.clki_div)
         port map (
 			rst      => '0',
 			rstk     => '0',
@@ -305,7 +333,7 @@ begin
 		attribute FREQUENCY_PIN_CLKOP : string;
 		attribute FREQUENCY_PIN_CLKOK : string; 
 
-		constant sdram_mhz : real := 1.0e-6/ddr_tcp;
+		constant sdram_mhz : real := 1.0e-6/sdram_tcp;
 
 		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
 		attribute FREQUENCY_PIN_FIN   of pll_i : label is ftoa(sdram_mhz, 10);
@@ -347,10 +375,10 @@ begin
 			PHASE_DELAY_CNTL => "DYNAMIC",
 			DUTY             => 8,
 			PHASEADJ         => "0.0", 
-			CLKOK_DIV        => sdram_tab(sdram_mode).pll.clkok_div,
-			CLKOP_DIV        => sdram_tab(sdram_mode).pll.clkop_div,
-			CLKFB_DIV        => sdram_tab(sdram_mode).pll.clkfb_div,
-			CLKI_DIV         => sdram_tab(sdram_mode).pll.clki_div,
+			CLKOK_DIV        => sdram_params.pll.clkok_div,
+			CLKOP_DIV        => sdram_params.pll.clkop_div,
+			CLKFB_DIV        => sdram_params.pll.clkfb_div,
+			CLKI_DIV         => sdram_params.pll.clki_div,
 			FEEDBK_PATH      => "INTERNAL")
 		port map (
 			rstk             => '0',
@@ -527,7 +555,7 @@ begin
 		debug        => debug,
 		profile      => 2,
 
-		sdram_tcp    => 2.0*ddr_tcp,
+		sdram_tcp    => 2.0*sdram_tcp,
 		fpga         => hdl4fpga.profiles.ecp3,
 		-- mark         => MT41J1G15E,
 		mark         => MT41K8G125,
@@ -544,7 +572,7 @@ begin
 		word_size    => word_size,
 		byte_size    => byte_size,
 
-		timing_id    => video_tab(video_mode).mode,
+		timing_id    => video_record.timing,
 		fifo_size    => mem_size)
 	port map (
 		sio_clk      => sio_clk,
@@ -566,8 +594,8 @@ begin
 		ctlr_clks(0) => ctlr_clk,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "000",
-		ctlr_cl      => sdram_tab(sdram_mode).cl,
-		ctlr_cwl     => sdram_tab(sdram_mode).cwl,
+		ctlr_cl      => sdram_params.cl,
+		ctlr_cwl     => sdram_params.cwl,
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
 		ctlr_inirdy  => tp(1),
@@ -726,7 +754,7 @@ begin
 		reset <= not ctlrpll_lock;
 		ecp3_csa_e : ecp3_csa
 		generic map (
-			period_eclk => ddr_tcp)
+			period_eclk => sdram_tcp)
 		port map (
 			reset              => reset,
 			reset_datapath     => reset_datapath,
@@ -749,7 +777,7 @@ begin
 
     	sdrphy_e : entity hdl4fpga.ecp3_sdrphy
     	generic map (
-    		taps      => natural(floor(ddr_tcp/26.0e-12)),
+    		taps      => natural(floor(sdram_tcp/26.0e-12)),
     		cmmd_gear => cmmd_gear,
     		data_gear => data_gear,
     		bank_size => ddr3_b'length,

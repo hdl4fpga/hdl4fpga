@@ -175,6 +175,7 @@ architecture graphics of ulx4m_ld is
 		(id => sdram450MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
 		(id => sdram475MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
 		(id => sdram500MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 20, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"));
+
 	function sdramparams (
 		constant id  : sdram_speeds)
 		return sdramparams_record is
@@ -586,10 +587,10 @@ begin
 		word_size    => word_size,
 		byte_size    => byte_size,
 
+		red_length   => 8,
+		green_length => 8,
+		blue_length  => 8,
 		timing_id    => video_record.timing,
-		red_length   => setif(video_record.pixel=rgb565, 5, setif(video_record.pixel=rgb888, 8, 0)),
-		green_length => setif(video_record.pixel=rgb565, 6, setif(video_record.pixel=rgb888, 8, 0)),
-		blue_length  => setif(video_record.pixel=rgb565, 5, setif(video_record.pixel=rgb888, 8, 0)),
 		fifo_size    => mem_size)
 	port map (
 		sio_clk      => sio_clk,
