@@ -127,10 +127,8 @@ architecture graphics of ulx4m_ld is
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant v_r : natural := 5; -- video ratio
 	constant video_tab : videoparams_vector := (
-		-- (id => modedebug,        pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 16,    clkos3_div => 10), pixel => rgb888, timing => pclk_debug),
-		(id => modedebug,    pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, timing => pclk_debug),
+		(id => modedebug,        pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, timing => pclk_debug),
 		(id => mode480p24bpp,    pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, timing => pclk25_00m640x480at60),
-		(id => mode600p16bpp,    pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb565, timing => pclk40_00m800x600at60),
 		(id => mode600p24bpp,    pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb888, timing => pclk40_00m800x600at60),
 		(id => mode900p24bpp,    pll => (clkos_div => 2, clkop_div => 22,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 14), pixel => rgb888, timing => pclk108_00m1600x900at60), -- 30 Hz
 		(id => mode1080p24bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb888, timing => pclk150_00m1920x1080at60)); -- 30 Hz
@@ -262,7 +260,7 @@ architecture graphics of ulx4m_ld is
 	signal video_clk      : std_logic;
 	signal videoio_clk    : std_logic;
 	signal video_lck      : std_logic;
-	signal video_shft_clk : std_logic;
+	signal video_shift_clk : std_logic;
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
 
@@ -281,10 +279,7 @@ architecture graphics of ulx4m_ld is
 
 	signal sio_clk    : std_logic;
 
-
-    signal video_pixel : std_logic_vector(0 to setif(
-		video_record.pixel=rgb565, 16, setif(
-		video_record.pixel=rgb888, 32, 0))-1);
+    signal video_pixel : std_logic_vector(0 to 32-1);
 
 	constant io_link : io_comms := profile_tab(app_profile).comms;
 
@@ -363,7 +358,7 @@ begin
 			ENCLKOS2  => '0',
             ENCLKOS3  => '0',
 			CLKOP     => clkfb,
-			CLKOS     => video_shft_clk,
+			CLKOS     => video_shift_clk,
 			CLKOS2    => video_clk,
             CLKOS3    => videoio_clk,
 			LOCK      => video_lck,
@@ -609,7 +604,7 @@ begin
 		sout_data    => si_data,
 
 		video_clk    => video_clk,
-		video_shift_clk => video_shft_clk,
+		video_shift_clk => video_shift_clk,
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
@@ -833,56 +828,56 @@ begin
 	
 	hdmi0_blue_i : oddrx1f
 	port map(
-		sclk => video_shft_clk,
+		sclk => video_shift_clk,
 		d0   => dvid_crgb(2*0),
 		d1   => dvid_crgb(2*0+1),
 		q    => hdmi0_blue);
  
 	hdmi0_green_i : oddrx1f
 	port map(
-		sclk => video_shft_clk,
+		sclk => video_shift_clk,
 		d0   => dvid_crgb(2*1),
 		d1   => dvid_crgb(2*1+1),
 		q    => hdmi0_green);
  
 	hdmi0_red_i : oddrx1f
 	port map(
-		sclk => video_shft_clk,
+		sclk => video_shift_clk,
 		d0   => dvid_crgb(2*2),
 		d1   => dvid_crgb(2*2+1),
 		q    => hdmi0_red);
  
 	hdmi0_clock_i : oddrx1f
 	port map(
-		sclk => video_shft_clk,
+		sclk => video_shift_clk,
 		d0   => dvid_crgb(2*3),
 		d1   => dvid_crgb(2*3+1),
 		q    => hdmi0_clock);
  
 	-- hdmi1_blue_i : oddrx1f
 	-- port map(
-		-- sclk => video_shft_clk,
+		-- sclk => video_shift_clk,
 		-- d0   => dvid_crgb(2*0),
 		-- d1   => dvid_crgb(2*0+1),
 		-- q    => hdmi1_blue);
 --  
 	-- hdmi1_green_i : oddrx1f
 	-- port map(
-		-- sclk => video_shft_clk,
+		-- sclk => video_shift_clk,
 		-- d0   => dvid_crgb(2*1),
 		-- d1   => dvid_crgb(2*1+1),
 		-- q    => hdmi1_green);
 --  
 	-- hdmi1_red_i : oddrx1f
 	-- port map(
-		-- sclk => video_shft_clk,
+		-- sclk => video_shift_clk,
 		-- d0   => dvid_crgb(2*2),
 		-- d1   => dvid_crgb(2*2+1),
 		-- q    => hdmi1_red);
 --  
 	-- hdmi1_clock_i : oddrx1f
 	-- port map(
-		-- sclk => video_shft_clk,
+		-- sclk => video_shift_clk,
 		-- d0   => dvid_crgb(2*3),
 		-- d1   => dvid_crgb(2*3+1),
 		-- q    => hdmi1_clock);

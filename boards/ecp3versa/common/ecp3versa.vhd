@@ -84,4 +84,7 @@ entity ecp3versa is
 		expansionx4 : inout std_logic_vector(3 to 7);
 		expansionx3 : inout std_logic_vector(4 to 8);
 		fpga_gsrn   : in std_logic := '-');
+
+	constant sys_freq : real := 100.0e6;
+
 end;

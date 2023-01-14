@@ -55,9 +55,9 @@ entity demo_graphics is
 		burst_length : natural := 0;
 
 		timing_id    : videotiming_ids;
-		red_length   : natural := 5;
-		green_length : natural := 6;
-		blue_length  : natural := 5);
+		red_length   : natural := 8;
+		green_length : natural := 8;
+		blue_length  : natural := 8);
 
 	port (
 		tpin          : in  std_logic_vector(0 to 4-1) := (others => '0');
