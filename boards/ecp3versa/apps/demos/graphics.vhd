@@ -192,10 +192,10 @@ architecture graphics of ecp3versa is
 		(id => sdram350MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  7, clki_div => 2), cl => "010", cwl => "000"),
 		(id => sdram375MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div => 15, clki_div => 4), cl => "010", cwl => "000"),
 		(id => sdram400MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  4, clki_div => 1), cl => "010", cwl => "000"),
-		(id => sdram425MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div => 17, clki_div => 4), cl => "011", cwl => "001"),
+		(id => sdram425MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div => 17, clki_div => 4), cl => "011", cwl => "000"),
 		(id => sdram450MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  9, clki_div => 2), cl => "011", cwl => "001"),
 		(id => sdram475MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div => 19, clki_div => 4), cl => "011", cwl => "001"),
-		(id => sdram500MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  5, clki_div => 1), cl => "011", cwl => "001"));
+		(id => sdram500MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  5, clki_div => 1), cl => "010", cwl => "000"));
 
 	function sdramparams (
 		constant id  : sdram_speeds)
@@ -221,6 +221,7 @@ architecture graphics of ecp3versa is
 	constant sdram_tcp : real := 
 		real(sdram_params.pll.clki_div)/
 		(real(sdram_params.pll.clkop_div*sdram_params.pll.clkfb_div)*sys_freq);
+	signal xxxx : real := sdram_tcp;
 
 	constant mem_size : natural := 8*(1024*8);
 	signal so_frm     : std_logic;
@@ -586,8 +587,8 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => video_clk,
-		video_shift_clk => video_shift_clk,
+		video_clk    => '0', --video_clk,
+		video_shift_clk => '0', --video_shift_clk,
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 

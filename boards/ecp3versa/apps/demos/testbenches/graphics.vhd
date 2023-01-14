@@ -212,7 +212,6 @@ begin
     	mii_req  <= req when x=0 else '0';
     	mii_req1 <= req when x=1 else '0';
 
-
 		htb_e : entity hdl4fpga.eth_tb
 		generic map (
 			debug => false)

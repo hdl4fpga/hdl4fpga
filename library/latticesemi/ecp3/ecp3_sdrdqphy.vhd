@@ -216,6 +216,7 @@ begin
 		signal d : std_logic_vector(0 to 0);
 	begin
 
+		d(0) <= to_stdulogic(to_bit(dqi(0)));
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
 			dtaps    => 1,
@@ -228,7 +229,7 @@ begin
 			rdy      => phy_wlrdy,
 			step_req => wlstep_req,
 			step_rdy => wlstep_rdy,
-			smp      => dqi(0 downto 0),
+			smp      => d,
 			delay    => dyndelay);
 
 	end block;
@@ -374,7 +375,7 @@ begin
 		oddrtdqa_i : oddrtdqa
 		port map (
 			sclk   => sclk,
-			ta     => phy_dmt(3),
+			ta     => dqt(3),
 			dqclk0 => dqclk0,
 			dqclk1 => dqclk1,
 			q      => sdr_dmt);
