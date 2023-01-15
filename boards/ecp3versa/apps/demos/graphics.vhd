@@ -192,9 +192,9 @@ architecture graphics of ecp3versa is
 		(id => sdram350MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  7, clki_div => 2), cl => "010", cwl => "000"),
 		(id => sdram375MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div => 15, clki_div => 4), cl => "010", cwl => "000"),
 		(id => sdram400MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  4, clki_div => 1), cl => "010", cwl => "000"),
-		(id => sdram425MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div => 17, clki_div => 4), cl => "011", cwl => "000"),
-		(id => sdram450MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  9, clki_div => 2), cl => "011", cwl => "001"),
-		(id => sdram475MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div => 19, clki_div => 4), cl => "011", cwl => "001"),
+		(id => sdram425MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div => 17, clki_div => 4), cl => "010", cwl => "000"),
+		(id => sdram450MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  9, clki_div => 2), cl => "010", cwl => "000"),
+		(id => sdram475MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div => 19, clki_div => 4), cl => "010", cwl => "000"),
 		(id => sdram500MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  5, clki_div => 1), cl => "010", cwl => "000"));
 
 	function sdramparams (

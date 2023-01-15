@@ -33,7 +33,7 @@ use hdl4fpga.base.all;
 
 entity adjpha is
 	generic (
-		dtaps    : integer := 0;
+		dtaps    : integer := 0; --  ones' complement
 		taps     : natural);
 	port (
 		tp       : out std_logic_vector(1 to 32);
@@ -228,7 +228,12 @@ begin
 						trail <= '0';
 						state := s_lead;
 					when s_lead =>
-						sum := resize(phase(1 to delay'length), sum'length) + dtaps;
+						if dtaps > 0 then
+							sum := resize(phase(1 to delay'length), sum'length) + dtaps;
+						else
+							sum := resize(phase(1 to delay'length), sum'length) + (dtaps+1);
+						end if;
+
 						if sum > taps then
 							sum := sum - (taps+1);
 						end if;
