@@ -442,8 +442,8 @@ begin
 
 	sdram_rotval_p : process(ctlr_cwl)
 		function sdram_rotval (
-			constant LINE_SIZE : natural;
-			constant WORD_SIZE : natural;
+			constant line_size : natural;
+			constant word_size : natural;
 			constant lat_val : std_logic_vector;
 			constant lat_cod : std_logic_vector;
 			constant lat_tab : natural_vector)
