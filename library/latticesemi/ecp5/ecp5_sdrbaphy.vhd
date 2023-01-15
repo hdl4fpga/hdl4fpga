@@ -91,6 +91,7 @@ begin
 	begin
 		oddr_i : oddrx1f
 		port map (
+			rst  => rst,
 			sclk => sclk,
 			d0 => phy_b(cmmd_gear*i+0),
 			d1 => phy_b(cmmd_gear*i+1),
@@ -100,6 +101,7 @@ begin
 	a_g : for i in 0 to addr_size-1 generate
 		oddr_i : oddrx1f
 		port map (
+			rst  => rst,
 			sclk => sclk,
 			d0   => phy_a(cmmd_gear*i+0),
 			d1   => phy_a(cmmd_gear*i+1),
@@ -108,6 +110,7 @@ begin
 
 	ras_i : oddrx1f
 	port map (
+		rst  => rst,
 		sclk => sclk,
 		d0   => phy_ras(0),
 		d1   => phy_ras(1),
@@ -115,6 +118,7 @@ begin
 
 	cas_i :oddrx1f
 	port map (
+		rst  => rst,
 		sclk => sclk,
 		d0   => phy_cas(0),
 		d1   => phy_cas(1),
@@ -122,6 +126,7 @@ begin
 
 	we_i : oddrx1f
 	port map (
+		rst  => rst,
 		sclk => sclk,
 		d0   => phy_we(0),
 		d1   => phy_we(1),
@@ -151,6 +156,7 @@ begin
 
 	cke_i : oddrx1f
 	port map (
+		rst  => rst,
 		sclk => sclk,
 		d0   => phy_cke(0),
 		d1   => phy_cke(1),
@@ -158,6 +164,7 @@ begin
 
 	odt_i : oddrx1f
 	port map (
+		rst  => rst,
 		sclk => sclk,
 		d0   => phy_odt(0),
 		d1   => phy_odt(1),
@@ -165,6 +172,7 @@ begin
 
 	rst_i : oddrx1f
 	port map (
+		rst  => rst,
 		sclk => sclk,
 		d0   => phy_rst(0),
 		d1   => phy_rst(1),

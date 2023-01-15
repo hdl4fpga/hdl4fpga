@@ -226,40 +226,41 @@ architecture ecp5 of ecp5_sdrphy is
 --		return to_dlinevector(to_stdlogicvector(val));
 --	end;
 
+	signal srst      : std_logic;
 
-	signal sdmt   : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdmi   : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdmo   : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdmt      : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdmi      : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdmo      : bline_vector(word_size/byte_size-1 downto 0);
 
-	signal sdqt   : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdqi   : dline_vector(word_size/byte_size-1 downto 0);
-	signal sdqo   : dline_vector(word_size/byte_size-1 downto 0);
+	signal sdqt      : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdqi      : dline_vector(word_size/byte_size-1 downto 0);
+	signal sdqo      : dline_vector(word_size/byte_size-1 downto 0);
 
-	signal sdqsi  : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdqst  : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdqsi     : bline_vector(word_size/byte_size-1 downto 0);
+	signal sdqst     : bline_vector(word_size/byte_size-1 downto 0);
 
-	signal ddmo   : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddmt   : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddmo      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddmt      : std_logic_vector(word_size/byte_size-1 downto 0);
 
-	signal ddqst  : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddqsi  : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddqi   : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqt   : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqo   : byte_vector(word_size/byte_size-1 downto 0);
+	signal ddqst     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddqsi     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddqi      : byte_vector(word_size/byte_size-1 downto 0);
+	signal ddqt      : byte_vector(word_size/byte_size-1 downto 0);
+	signal ddqo      : byte_vector(word_size/byte_size-1 downto 0);
 
-	signal sdr_reset  : std_logic;
-	signal ddrdel     : std_logic;
+	signal sdr_reset : std_logic;
+	signal ddrdel    : std_logic;
 
-	signal rl_req     : std_logic_vector(sdr_dqs'range);
-	signal rl_rdy     : std_logic_vector(sdr_dqs'range);
-	signal wl_rdy     : std_logic_vector(0 to word_size/byte_size-1);
+	signal rl_req    : std_logic_vector(sdr_dqs'range);
+	signal rl_rdy    : std_logic_vector(sdr_dqs'range);
+	signal wl_rdy    : std_logic_vector(0 to word_size/byte_size-1);
 
-	signal ddrphy_b   : std_logic_vector(phy_b'range);
-	signal ddrphy_a   : std_logic_vector(phy_a'range);
-	signal ms_pause   : std_logic;
+	signal ddrphy_b  : std_logic_vector(phy_b'range);
+	signal ddrphy_a  : std_logic_vector(phy_a'range);
+	signal ms_pause  : std_logic;
 
-	signal read_req   : std_logic_vector(sdr_dqs'range);
-	signal read_rdy   : std_logic_vector(sdr_dqs'range);
+	signal read_req  : std_logic_vector(sdr_dqs'range);
+	signal read_rdy  : std_logic_vector(sdr_dqs'range);
 
 	component mem_sync
 		port (
@@ -296,7 +297,7 @@ begin
 
 		attribute FREQUENCY_PIN_CDIVX : string;
 		attribute FREQUENCY_PIN_CDIVX of clkdivf_i : label is ftoa(1.0e-6/(sdr_tcp*2.0), 10);
-		signal eclk_sync : std_logic;
+		signal cdivx : std_logic;
 	begin
 
 		pll_lock <= '1';
@@ -322,15 +323,15 @@ begin
 		port map (
 			stop  => stop,
 			eclki => clkop,
-			eclko => eclk_sync);
-		eclk <= transport eclk_sync after natural(sdr_tcp*1.0e14)*10fs-1ps;
+			eclko => eclk);
 	
 		clkdivf_i : clkdivf
 		port map (
 			rst     => sdr_reset,
 			alignwd => '0',
-			clki    => eclk_sync,
-			cdivx   => sclk);
+			clki    => eclk,
+			cdivx   => cdivx);
+		sclk <= transport cdivx;
 	
 		ddrdll_i : ddrdlla
 		port map (
@@ -340,7 +341,17 @@ begin
 			uddcntln => uddcntln,
 			ddrdel   => ddrdel,
 			lock     => dll_lock);
+
 	end block;
+
+	process (sdr_reset, sclk)
+	begin
+		if sdr_reset='1' then
+			srst <= '1';
+		elsif rising_edge(sclk) then
+			srst <= '0';
+		end if;
+	end process;
 
 	sdr3baphy_i : entity hdl4fpga.ecp5_sdrbaphy
 	generic map (
@@ -420,7 +431,7 @@ begin
 			variable state : states;
 		begin
 			if rising_edge(sclk) then
-				if rst='1' then
+				if srst='1' then
 					read_rdy <= to_stdlogicvector(to_bitvector(read_req));
 					state := s_idle;
 				else
@@ -455,11 +466,11 @@ begin
 			end if;
 		end process;
 
-		process (rst, sclk)
+		process (srst, sclk)
 			variable z : std_logic;
 		begin
 			if rising_edge(sclk) then
-				if rst='1' then
+				if srst='1' then
 					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 					phy_ini <= '0';
 				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then

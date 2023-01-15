@@ -78,6 +78,8 @@ use hdl4fpga.base.all;
 
 architecture ecp5 of ecp5_sdrdqphy is
 
+	signal srst         : std_logic;
+
 	signal dqsr90       : std_logic;
 	signal dqsw         : std_logic;
 	signal dqsw270      : std_logic;
@@ -117,7 +119,17 @@ architecture ecp5 of ecp5_sdrdqphy is
 	signal wlstep_req   : std_logic;
 	signal wlstep_rdy   : std_logic;
 	signal dqi0         : std_logic;
+
 begin
+
+	process (rst, sclk)
+	begin
+		if rst='1' then
+			srst <= '1';
+		elsif rising_edge(sclk) then
+			srst <= '0';
+		end if;
+	end process;
 
 	rl_b : block
 		signal step_req : std_logic;
@@ -140,12 +152,12 @@ begin
 			rd <= multiplex(q(0 to q'right-1), lat, 1)(0);
 		end block;
 
-		process (rst, sclk, read_req)
+		process (srst, sclk, read_req)
 			type states is (s_start, s_adj, s_paused);
 			variable state : states;
 		begin
 			if rising_edge(sclk) then
-				if rst='1' then
+				if srst='1' then
 					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 					state     := s_start;
 					adj_req <= '0';
@@ -197,7 +209,7 @@ begin
 			variable state : states;
 		begin
 			if rising_edge(sclk) then
-				if rst='1' then
+				if srst='1' then
 					state := s_start;
 					step_rdy <= to_stdulogic(to_bit(step_req));
 				elsif (adj_rdy xor to_stdulogic(to_bit(adj_req)))='1' then
@@ -229,12 +241,12 @@ begin
 		d(0) <= transport to_stdulogic(to_bit(dqi0)) after delay;
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
-			dtaps    => 1,
+			dtaps    => -1,
 			taps     => taps)
 		port map (
 			edge     => std_logic'('0'),
 			clk      => sclk,
-			rst      => rst,
+			rst      => srst,
 			req      => phy_wlreq,
 			rdy      => phy_wlrdy,
 			step_req => wlstep_req,
@@ -260,11 +272,11 @@ begin
 		begin
 
 			pause_req <= to_bit(rlpause_req) xor to_bit(rlpause1_req) xor to_bit(wlpause_req);
-			process (rst, sclk)
+			process (srst, sclk)
 				variable cntr : unsigned(0 to 4);
 			begin
 				if rising_edge(sclk) then
-					if rst='1' then
+					if srst='1' then
 						pause_rdy <= pause_req;
 					elsif (pause_rdy xor pause_req)='0' then
 						lv_pause <= '0';
@@ -288,10 +300,10 @@ begin
 				end if;
 			end process;
 	
-			process (rst, sclk, pause_rdy )
+			process (srst, sclk, pause_rdy )
 			begin
 				if rising_edge(sclk) then
-					if rst='1' then
+					if srst='1' then
 						wlpause_rdy  <= to_stdulogic(to_bit(wlpause_req));
 						rlpause1_rdy <= to_stdulogic(to_bit(rlpause1_req));
 						rlpause_rdy  <= to_stdulogic(to_bit(rlpause_req));
@@ -431,7 +443,7 @@ begin
 
 	wle <= to_stdulogic(to_bit(phy_wlrdy)) xor phy_wlreq;
 
-	dqt <= not phy_dqt when wle='0' else (others => '1');
+	dqt <= not reverse(phy_dqt) when wle='0' else (others => '1');
 	oddr_g : for i in 0 to byte_size-1 generate
 		tshx2dqa_i : tshx2dqa
 		port map (
@@ -445,7 +457,7 @@ begin
 
 		oddrx2dqa_i : oddrx2dqa
 		port map (
-			rst     => rst,
+			rst  => rst,
 			sclk => sclk,
 			eclk => eclk,
 			dqsw270 => dqsw270,
