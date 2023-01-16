@@ -24,20 +24,24 @@ add wave -noupdate -expand -group ddram -radix hexadecimal -childformat {{/testb
 add wave -noupdate -expand -group ddram -radix hexadecimal /testbench/du_e/ddram_dm
 add wave -noupdate -expand -group ddram -expand /testbench/du_e/ddram_dqs
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/sdrphy_e/sclk
-add wave -noupdate /testbench/du_e/sdrphy_e/eclk
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rst
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/sclk
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/eclk
 add wave -noupdate -expand /testbench/du_e/sdrphy_e/dqs_locked
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_refreq
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/phy_rlreq
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/phy_rlrdy
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/step_req
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/step_rdy
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adj_req
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adj_rdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/ctlrphy_sti
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_di
+add wave -noupdate -radix unsigned /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/rot_val
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/rot_di
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/phy_dqi
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/sdram_wclks
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/sdram_wenas
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/phy_sto
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/phy_dqo
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_refreq
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/ctlrphy_sti
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjbrst_e/adj_req
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjbrst_e/adj_rdy
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjbrst_e/step_req
@@ -54,7 +58,6 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/dqsbuf_b/dqsbufm_i/DATAVALID
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/dqsbuf_b/dqsbufm_i/BURSTDET
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/dqsbuf_b/dqsbufm_i/PAUSE
-add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/sync_e/video_hzcntr
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/sync_e/video_vtcntr
 add wave -noupdate /testbench/du_e/graphics_e/video_clk
@@ -98,10 +101,10 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/soda
 add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_di_dv
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_di
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {15182447809 fs} 0} {{Cursor 2} {192208514660 fs} 0}
-quietly wave cursor active 1
-configure wave -namecolwidth 373
-configure wave -valuecolwidth 319
+WaveRestoreCursors {{Cursor 1} {20699047909 fs} 0} {{Cursor 2} {20740730130 fs} 0}
+quietly wave cursor active 2
+configure wave -namecolwidth 214
+configure wave -valuecolwidth 99
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -114,4 +117,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {15181166070 fs} {15183729548 fs}
+WaveRestoreZoom {20721490489 fs} {20740974185 fs}

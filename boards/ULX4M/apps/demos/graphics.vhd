@@ -71,7 +71,7 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app_profile  : app_profiles := uart_425MHz_1080p24bpp30;
+	constant app_profile  : app_profiles := uart_400MHz_1080p24bpp30;
 	---------------------------------------------
 
 	type profile_params is record
@@ -83,17 +83,17 @@ architecture graphics of ulx4m_ld is
 
 	type profileparams_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparams_vector := (
-		uart_325MHz_480p24bpp => (io_hdlc, sdram325MHz, mode480p24bpp, hack => 1.0),
-		uart_350MHz_480p24bpp => (io_hdlc, sdram350MHz, mode480p24bpp, hack => 1.0),
-		uart_375MHz_480p24bpp => (io_hdlc, sdram375MHz, mode480p24bpp, hack => 1.0),
-		uart_400MHz_480p24bpp => (io_hdlc, sdram400MHz, mode480p24bpp, hack => 1.0),
-		uart_425MHz_480p24bpp => (io_hdlc, sdram425MHz, mode480p24bpp, hack => 1.0625),
-		uart_450MHz_480p24bpp => (io_hdlc, sdram450MHz, mode480p24bpp, hack => 1.125),
-		uart_475MHz_480p24bpp => (io_hdlc, sdram475MHz, mode480p24bpp, hack => 1.250),
-		uart_500MHz_480p24bpp => (io_hdlc, sdram500MHz, mode480p24bpp, hack => 1.375),
-                                                
-		uart_350MHz_600p24bpp => (io_hdlc, sdram350MHz, mode600p24bpp, hack => 1.0),
-		uart_400MHz_600p24bpp => (io_hdlc, sdram400MHz, mode600p24bpp, hack => 1.0),
+		uart_325MHz_480p24bpp    => (io_hdlc, sdram325MHz, mode480p24bpp,    hack => 1.0),
+		uart_350MHz_480p24bpp    => (io_hdlc, sdram350MHz, mode480p24bpp,    hack => 1.0),
+		uart_375MHz_480p24bpp    => (io_hdlc, sdram375MHz, mode480p24bpp,    hack => 1.0),
+		uart_400MHz_480p24bpp    => (io_hdlc, sdram400MHz, mode480p24bpp,    hack => 1.0),
+		uart_425MHz_480p24bpp    => (io_hdlc, sdram425MHz, mode480p24bpp,    hack => 1.0625),
+		uart_450MHz_480p24bpp    => (io_hdlc, sdram450MHz, mode480p24bpp,    hack => 1.125),
+		uart_475MHz_480p24bpp    => (io_hdlc, sdram475MHz, mode480p24bpp,    hack => 1.250),
+		uart_500MHz_480p24bpp    => (io_hdlc, sdram500MHz, mode480p24bpp,    hack => 1.375),
+                                                   
+		uart_350MHz_600p24bpp    => (io_hdlc, sdram350MHz, mode600p24bpp,    hack => 1.0),
+		uart_400MHz_600p24bpp    => (io_hdlc, sdram400MHz, mode600p24bpp,    hack => 1.0),
 
 		uart_350MHz_1080p24bpp30 => (io_hdlc, sdram350MHz, mode1080p24bpp30, hack => 1.0),
 		uart_375MHz_1080p24bpp30 => (io_hdlc, sdram375MHz, mode1080p24bpp30, hack => 1.0),
@@ -102,11 +102,11 @@ architecture graphics of ulx4m_ld is
 		uart_450MHz_1080p24bpp30 => (io_hdlc, sdram450MHz, mode1080p24bpp30, hack => 1.125),
 		uart_500MHz_1080p24bpp30 => (io_hdlc, sdram500MHz, mode1080p24bpp30, hack => 1.250),
                                                                     
-		mii_400MHz_480p24bpp  => (io_ipoe, sdram400MHz, mode480p24bpp, hack => 1.0),
-		mii_425MHz_480p24bpp  => (io_ipoe, sdram425MHz, mode480p24bpp, hack => 1.0625),
-		mii_450MHz_480p24bpp  => (io_ipoe, sdram450MHz, mode480p24bpp, hack => 1.125),
-		mii_475MHz_480p24bpp  => (io_ipoe, sdram475MHz, mode480p24bpp, hack => 1.250),
-		mii_500MHz_480p24bpp  => (io_ipoe, sdram500MHz, mode480p24bpp, hack => 1.375));
+		mii_400MHz_480p24bpp     => (io_ipoe, sdram400MHz, mode480p24bpp,    hack => 1.0),
+		mii_425MHz_480p24bpp     => (io_ipoe, sdram425MHz, mode480p24bpp,    hack => 1.0625),
+		mii_450MHz_480p24bpp     => (io_ipoe, sdram450MHz, mode480p24bpp,    hack => 1.125),
+		mii_475MHz_480p24bpp     => (io_ipoe, sdram475MHz, mode480p24bpp,    hack => 1.250),
+		mii_500MHz_480p24bpp     => (io_ipoe, sdram500MHz, mode480p24bpp,    hack => 1.375));
 
 	type pll_params is record
 		clkos_div  : natural;
@@ -168,10 +168,12 @@ architecture graphics of ulx4m_ld is
 	type sdramparams_vector is array (natural range <>) of sdramparams_record;
 	constant sdram_tab : sdramparams_vector := (
 		(id => sdram325MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 13, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
-		(id => sdram350MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 14, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
+
+		(id => sdram350MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 14, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "001"),
+
 		(id => sdram375MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 15, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
-		(id => sdram400MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 16, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
-		(id => sdram425MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 17, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
+		(id => sdram400MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 16, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "001"),
+		(id => sdram425MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 17, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
 		(id => sdram450MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
 		(id => sdram475MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
 		(id => sdram500MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 20, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"));
@@ -566,8 +568,8 @@ begin
 	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		ena_burstref  => false,
-		-- debug        => true,
-		debug        => debug,
+		debug        => true,
+		-- debug        => debug,
 		profile      => 2,
 
 		sdram_tcp      => 2.0*sdram_tcp,
@@ -604,8 +606,10 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => video_clk,
-		video_shift_clk => video_shift_clk,
+		-- video_clk    => video_clk,
+		-- video_shift_clk => video_shift_clk,
+		video_clk    => '0',
+		video_shift_clk => '0',
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
