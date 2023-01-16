@@ -60,6 +60,7 @@ architecture graphics of ulx4m_ld is
 		uart_400MHz_1080p24bpp30,
 		uart_425MHz_1080p24bpp30,
 		uart_450MHz_1080p24bpp30,
+		uart_475MHz_1080p24bpp30,
 		uart_500MHz_1080p24bpp30,
 
 		mii_400MHz_480p24bpp,
@@ -71,7 +72,7 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app_profile  : app_profiles := uart_400MHz_1080p24bpp30;
+	constant app_profile  : app_profiles := uart_500MHz_1080p24bpp30;
 	---------------------------------------------
 
 	type profile_params is record
@@ -100,6 +101,7 @@ architecture graphics of ulx4m_ld is
 		uart_400MHz_1080p24bpp30 => (io_hdlc, sdram400MHz, mode1080p24bpp30, hack => 1.0),
 		uart_425MHz_1080p24bpp30 => (io_hdlc, sdram425MHz, mode1080p24bpp30, hack => 1.0625),
 		uart_450MHz_1080p24bpp30 => (io_hdlc, sdram450MHz, mode1080p24bpp30, hack => 1.125),
+		uart_475MHz_1080p24bpp30 => (io_hdlc, sdram475MHz, mode1080p24bpp30, hack => 1.1875),
 		uart_500MHz_1080p24bpp30 => (io_hdlc, sdram500MHz, mode1080p24bpp30, hack => 1.250),
                                                                     
 		mii_400MHz_480p24bpp     => (io_ipoe, sdram400MHz, mode480p24bpp,    hack => 1.0),
@@ -163,20 +165,19 @@ architecture graphics of ulx4m_ld is
 		pll : pll_params;
 		cl  : std_logic_vector(0 to 3-1);
 		cwl : std_logic_vector(0 to 3-1);
+		wrl : std_logic_vector(0 to 3-1);
 	end record;
 
 	type sdramparams_vector is array (natural range <>) of sdramparams_record;
 	constant sdram_tab : sdramparams_vector := (
-		(id => sdram325MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 13, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
-
-		(id => sdram350MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 14, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "001"),
-
-		(id => sdram375MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 15, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
-		(id => sdram400MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 16, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "001"),
-		(id => sdram425MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 17, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000"),
-		(id => sdram450MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
-		(id => sdram475MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"),
-		(id => sdram500MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 20, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001"));
+		(id => sdram325MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 13, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
+		(id => sdram350MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 14, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
+		(id => sdram375MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 15, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
+		(id => sdram400MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 16, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
+		(id => sdram425MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 17, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001", wrl => "011"),
+		(id => sdram450MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001", wrl => "011"),
+		(id => sdram475MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001", wrl => "100"),
+		(id => sdram500MHz, pll => (clkos_div => 1, clkop_div => 1, clkfb_div => 20, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001", wrl => "100"));
 
 	function sdramparams (
 		constant id  : sdram_speeds)
@@ -260,37 +261,38 @@ architecture graphics of ulx4m_ld is
 	signal sdr_ba        : std_logic_vector(ddram_ba'length-1 downto 0);
 	signal sdr_a         : std_logic_vector(ddram_a'length-1 downto 0);
 
-	signal video_clk      : std_logic;
-	signal videoio_clk    : std_logic;
-	signal video_lck      : std_logic;
+	signal video_clk     : std_logic;
+	signal videoio_clk   : std_logic;
+	signal video_lck     : std_logic;
 	signal video_shift_clk : std_logic;
-	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
+	signal dvid_crgb     : std_logic_vector(8-1 downto 0);
 
 
-	signal ctlr_clk   : std_logic;
+	signal ctlr_clk      : std_logic;
 
-	constant mem_size : natural := 8*(1024*8);
-	signal so_frm     : std_logic;
-	signal so_irdy    : std_logic;
-	signal so_trdy    : std_logic;
-	signal so_data    : std_logic_vector(0 to 8-1);
-	signal si_frm     : std_logic;
-	signal si_irdy    : std_logic;
-	signal si_trdy    : std_logic;
-	signal si_end     : std_logic;
-	signal si_data    : std_logic_vector(0 to 8-1);
+	constant mem_size    : natural := 8*(1024*8);
+	signal so_frm        : std_logic;
+	signal so_irdy       : std_logic;
+	signal so_trdy       : std_logic;
+	signal so_data       : std_logic_vector(0 to 8-1);
+	signal si_frm        : std_logic;
+	signal si_irdy       : std_logic;
+	signal si_trdy       : std_logic;
+	signal si_end        : std_logic;
+	signal si_data       : std_logic_vector(0 to 8-1);
 
-	signal sio_clk    : std_logic;
+	signal sio_clk       : std_logic;
 
-    signal video_pixel : std_logic_vector(0 to 32-1);
+    signal video_pixel   : std_logic_vector(0 to 32-1);
 
-	constant io_link : io_comms := profile_tab(app_profile).comms;
+	constant io_link     : io_comms := profile_tab(app_profile).comms;
 
-	constant hdplx   : std_logic := setif(debug, '0', '1');
+	constant hdplx       : std_logic := setif(debug, '0', '1');
 
-	signal tp : std_logic_vector(1 to 32);
-	signal tp_phy : std_logic_vector(1 to 32);
+	signal tp            : std_logic_vector(1 to 32);
+	signal tp_phy        : std_logic_vector(1 to 32);
 	signal sdrphy_locked : std_logic;
+
 begin
 
 	sys_rst <= '0';
@@ -618,7 +620,7 @@ begin
 		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
 		ctlr_cwl     => sdram_params.cwl,
-		ctlr_wrl     => "010",
+		ctlr_wrl     => sdram_params.wrl, --"010",
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
 		ctlr_inirdy  => tp(1),

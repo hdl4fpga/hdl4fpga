@@ -27,79 +27,79 @@ use hdl4fpga.ipoepkg.all;
 
 architecture ulx4mld_graphics of testbench is
 
-	constant debug      : boolean := true;
+	constant debug          : boolean := false;
 
-	constant bank_bits  : natural := 3;
-	constant addr_bits  : natural := 16;
-	constant cols_bits  : natural := 9;
-	constant data_bytes : natural := 2;
-	constant byte_bits  : natural := 8;
-	constant data_bits  : natural := byte_bits*data_bytes;
+	constant bank_bits      : natural := 3;
+	constant addr_bits      : natural := 16;
+	constant cols_bits      : natural := 9;
+	constant data_bytes     : natural := 2;
+	constant byte_bits      : natural := 8;
+	constant data_bits      : natural := byte_bits*data_bytes;
 
-	signal rst         : std_logic;
-	signal xtal        : std_logic := '0';
+	signal rst              : std_logic;
+	signal xtal             : std_logic := '0';
 
 	component ulx4m_ld is
 		generic (
-			debug          : boolean := debug);
+			debug           : boolean := debug);
 		port (
-			clk_25mhz      : in    std_logic;
-			btn            : in    std_logic_vector(1 to 3) := (others => '-');
-			led            : out   std_logic_vector(0 to 8-1) := (others => 'Z');
+			clk_25mhz       : in    std_logic;
+			btn             : in    std_logic_vector(1 to 3) := (others => '-');
+			led             : out   std_logic_vector(0 to 8-1) := (others => 'Z');
 
-			sd_clk         : in    std_logic := '-';
-			sd_cmd         : out   std_logic; 
-			sd_d           : inout std_logic_vector(4-1 downto 0) := (others => '-');
-			sd_wp          : in    std_logic := '-';
-			sd_cdn         : in    std_logic := '-';
+			sd_clk          : in    std_logic := '-';
+			sd_cmd          : out   std_logic; 
+			sd_d            : inout std_logic_vector(4-1 downto 0) := (others => '-');
+			sd_wp           : in    std_logic := '-';
+			sd_cdn          : in    std_logic := '-';
 
-			usb_fpga_d    : inout std_logic := '-';
-			usb_fpga_bd_dp : inout std_logic := '-';
-			usb_fpga_bd_dn : inout std_logic := '-';
-			usb_fpga_pu_dp : inout std_logic := '-';
-			usb_fpga_pu_dn : inout std_logic := '-';
+			usb_fpga_d      : inout std_logic := '-';
+			usb_fpga_bd_dp  : inout std_logic := '-';
+			usb_fpga_bd_dn  : inout std_logic := '-';
+			usb_fpga_pu_dp  : inout std_logic := '-';
+			usb_fpga_pu_dn  : inout std_logic := '-';
 			usb_fpga_otg_dp : inout std_logic := 'Z';
 			usb_fpga_otg_dn : inout std_logic := 'Z';
 			n_extrst        : inout std_logic := 'Z';
 
-			eth_reset      : out   std_logic;
---			rgmii_ref_clk  : in    std_logic;
-			eth_mdio       : inout std_logic := '-';
-			eth_mdc        : out   std_logic;
+			eth_reset       : out   std_logic;
+			-- rgmii_ref_clk  : in    std_logic;
+			eth_mdio        : inout std_logic := '-';
+			eth_mdc         : out   std_logic;
 	
-			rgmii_tx_clk   : out    std_logic := '-';
-			rgmii_tx_en    : buffer std_logic;
-			rgmii_txd      : buffer std_logic_vector(0 to 4-1);
-			rgmii_rx_clk   : in    std_logic := '-';
-			rgmii_rx_dv    : in    std_logic := '-';
-			rgmii_rxd      : in    std_logic_vector(0 to 4-1) := (others => '-');
+			rgmii_tx_clk    : out    std_logic := '-';
+			rgmii_tx_en     : buffer std_logic;
+			rgmii_txd       : buffer std_logic_vector(0 to 4-1);
+			rgmii_rx_clk    : in    std_logic := '-';
+			rgmii_rx_dv     : in    std_logic := '-';
+			rgmii_rxd       : in    std_logic_vector(0 to 4-1) := (others => '-');
 
-			ddram_clk      : inout std_logic;
-			ddram_reset_n  : out   std_logic;
-			ddram_cke      : out   std_logic;
-			ddram_cs_n     : out   std_logic;
-			ddram_ras_n    : out   std_logic;
-			ddram_cas_n    : out   std_logic;
-			ddram_we_n     : out   std_logic;
-			ddram_odt      : out   std_logic;
-			ddram_a        : out   std_logic_vector(16-1 downto 0);
-			ddram_ba       : out   std_logic_vector( 3-1 downto 0);
-			ddram_dm       : inout std_logic_vector( 2-1 downto 0) := (others => 'Z');
-			ddram_dq       : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
-			ddram_dqs      : inout std_logic_vector( 2-1 downto 0) := (others => 'Z');
+			ddram_clk       : inout std_logic;
+			ddram_reset_n   : out   std_logic;
+			ddram_cke       : out   std_logic;
+			ddram_cs_n      : out   std_logic;
+			ddram_ras_n     : out   std_logic;
+			ddram_cas_n     : out   std_logic;
+			ddram_we_n      : out   std_logic;
+			ddram_odt       : out   std_logic;
+			ddram_a         : out   std_logic_vector(16-1 downto 0);
+			ddram_ba        : out   std_logic_vector( 3-1 downto 0);
+			ddram_dm        : inout std_logic_vector( 2-1 downto 0) := (others => 'Z');
+			ddram_dq        : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
+			ddram_dqs       : inout std_logic_vector( 2-1 downto 0) := (others => 'Z');
 
-    		ftdi_txd        : in std_logic;
-    		ftdi_txen       : out std_logic := 'Z';
-    		ftdi_rxd        : out std_logic := 'Z';
+    		ftdi_txd        : in    std_logic;
+    		ftdi_txen       : out   std_logic := 'Z';
+    		ftdi_rxd        : out   std_logic := 'Z';
 
-            gpdi_d          : out std_logic_Vector(4-1 downto 0) := (others => 'Z');
-            gpdi_cec        : out std_logic;
+            gpdi_d          : out   std_logic_Vector(4-1 downto 0) := (others => 'Z');
+            gpdi_cec        : out   std_logic;
 
-    		gpio_scl        : out std_logic;
-    		cam_scl         : out std_logic;
+            gpio_scl        : out   std_logic;
+            cam_scl         : out   std_logic;
 
-			user_programn  : out   std_logic := '1';
-			shutdown       : out   std_logic := '0');
+			user_programn   : out   std_logic := '1';
+			shutdown        : out   std_logic := '0');
 	end component;
 
 	constant snd_data : std_logic_vector := 

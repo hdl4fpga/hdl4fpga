@@ -327,6 +327,8 @@ begin
 			eclko => eclko);
 	
 		clkdivf_i : clkdivf
+		generic map (
+			div => "2.0")
 		port map (
 			rst     => sdr_reset,
 			alignwd => '0',
