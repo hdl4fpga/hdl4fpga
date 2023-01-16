@@ -121,10 +121,10 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/timer_cntr3
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {3423163780 fs} 0} {{Cursor 2} {543564888480 fs} 0} {{Cursor 3} {82678392820 fs} 0}
+WaveRestoreCursors {{Cursor 1} {525054000 fs} 0} {{Cursor 2} {1010869760000 fs} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 205
-configure wave -valuecolwidth 164
+configure wave -valuecolwidth 90
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -137,4 +137,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {577500 ns}
+WaveRestoreZoom {58346746890 fs} {1203244908060 fs}
