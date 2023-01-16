@@ -198,7 +198,7 @@ architecture ulx4mld_graphics of testbench is
 	signal ds_n : std_logic_vector(dqs_n'length-1 downto 0);
 begin
 
-	rst      <= '1', '0' after 17 us when debug else '1', '0' after 4 us;
+	rst      <= '1', '0' after 17 us when debug else '1', '0' after 100 us;
 	xtal     <= not xtal after 20 ns;
 	uart_clk <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
 

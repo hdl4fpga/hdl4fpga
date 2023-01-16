@@ -72,7 +72,7 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app_profile  : app_profiles := uart_500MHz_1080p24bpp30;
+	constant app_profile  : app_profiles := uart_400MHz_1080p24bpp30;
 	---------------------------------------------
 
 	type profile_params is record
@@ -382,8 +382,7 @@ begin
 		attribute FREQUENCY_PIN_CLKOP  : string;
 
 		constant ddram_mhz : real := 1.0e-6/sdram_tcp;
-		constant hack     : real := profile_tab(app_profile).hack;
-
+		constant hack      : real := profile_tab(app_profile).hack;
 
 		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_mhz/hack, 10);
 		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/hack/1.0e6, 10);
@@ -570,8 +569,8 @@ begin
 	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		ena_burstref  => false,
-		debug        => true,
-		-- debug        => debug,
+		-- debug        => true,
+		debug        => debug,
 		profile      => 2,
 
 		sdram_tcp      => 2.0*sdram_tcp,
@@ -608,10 +607,10 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		-- video_clk    => video_clk,
-		-- video_shift_clk => video_shift_clk,
-		video_clk    => '0',
-		video_shift_clk => '0',
+		video_clk    => video_clk,
+		video_shift_clk => video_shift_clk,
+		-- video_clk    => '0',
+		-- video_shift_clk => '0',
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
