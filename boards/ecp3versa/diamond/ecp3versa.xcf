@@ -20,7 +20,8 @@
 				<BScanVal>0</BScanVal>
 			</Bypass>
 			<File>/home/msagre/work/vm-hdl4fpga.dev/boards/ecp3versa/diamond/graphics/demos_graphics.bit</File>
-			<FileTime>01/17/23 23:27:37</FileTime>
+			<FileTime>01/18/23 13:47:56</FileTime>
+			<JedecChecksum>0xEAD6</JedecChecksum>
 			<Operation>Fast Program</Operation>
 			<Option>
 				<SVFVendor>JTAG STANDARD</SVFVendor>

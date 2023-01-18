@@ -638,13 +638,6 @@ begin
 	tp(3) <= not (ctlrphy_rlreq xor ctlrphy_rlrdy);
 	tp(4) <= ctlrphy_ini;
 
-	process (clk)
-	begin
-		if rising_edge(clk) then
-			led(0) <= tp(1);
-		end if;
-	end process;
-
 	process (ddr_ba)
 	begin
 		for i in ddr_ba'range loop
@@ -853,4 +846,7 @@ begin
 		db   => '1',
 		q    => phy1_gtxclk);
 
+	led <= (others => '0');
+	seg <= (others => '0');
+	phy1_rst <= '1';
 end;
