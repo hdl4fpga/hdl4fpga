@@ -130,7 +130,6 @@ architecture graphics of ecp3versa is
 	signal ddr_a         : std_logic_vector(ddr3_a'length-1 downto 0);
 
 	type pll_params is record
-		clkos_div  : natural;
 		clkok_div  : natural;
 		clkop_div  : natural;
 		clkfb_div  : natural;
@@ -146,11 +145,11 @@ architecture graphics of ecp3versa is
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant v_r : natural := 5; -- video ratio
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,        pll => (clkok_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos_div => v_r*5), timing => pclk_debug),
-		(id => mode480p24bpp,    pll => (clkok_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos_div => v_r*5), timing => pclk25_00m640x480at60),
-		(id => mode600p24bpp,    pll => (clkok_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos_div => v_r*2), timing => pclk40_00m800x600at60),
-		(id => mode900p24bpp,    pll => (clkok_div => 2, clkop_div => 22,  clkfb_div => 1, clki_div => 1, clkos_div => v_r*2), timing => pclk108_00m1600x900at60), -- 30 Hz
-		(id => mode1080p24bpp30, pll => (clkok_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos_div => v_r*2), timing => pclk150_00m1920x1080at60)); -- 30 Hz
+		(id => modedebug,        pll => (clki_div => 1, clkok_div => v_r,  clkfb_div => 1, clkop_div => 25), timing => pclk_debug),
+		(id => mode480p24bpp,    pll => (clki_div => 1, clkok_div => v_r,  clkfb_div => 1, clkop_div => 25), timing => pclk25_00m640x480at60),
+		(id => mode600p24bpp,    pll => (clki_div => 1, clkok_div => v_r,  clkfb_div => 1, clkop_div => 16), timing => pclk40_00m800x600at60),
+		(id => mode900p24bpp,    pll => (clki_div => 1, clkok_div => v_r,  clkfb_div => 1, clkop_div => 22), timing => pclk108_00m1600x900at60), -- 30 Hz
+		(id => mode1080p24bpp30, pll => (clki_div => 4, clkok_div => v_r,  clkfb_div => 3*v_r, clkop_div =>  2), timing => pclk150_00m1920x1080at60)); -- 30 Hz
 
 	function videoparam (
 		constant id  : video_modes)
@@ -171,15 +170,15 @@ architecture graphics of ecp3versa is
 	end;
 
 	constant nodebug_videomode : video_modes := profile_tab(app_profile).mode;
-	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
+	constant video_mode   : video_modes := video_modes'VAL(setif(debug and false,
 		video_modes'POS(modedebug),
 		video_modes'POS(nodebug_videomode)));
 	constant video_record : video_params := videoparam(video_mode);
 
 	signal video_clk      : std_logic := '0';
+	signal video_shift_clk : std_logic := '0';
 	signal videoio_clk    : std_logic := '0';
 	signal video_lck      : std_logic := '0';
-	signal video_shift_clk : std_logic := '0';
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
 	type sdramparams_record is record
@@ -192,14 +191,14 @@ architecture graphics of ecp3versa is
 
 	type sdramparams_vector is array (natural range <>) of sdramparams_record;
 	constant sdram_tab : sdramparams_vector := (
-		(id => sdram325MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div => 13, clki_div => 4), cl => "010", cwl => "000", wrl => "010"),
-		(id => sdram350MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  7, clki_div => 2), cl => "010", cwl => "000", wrl => "010"),
-		(id => sdram375MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div => 15, clki_div => 4), cl => "010", cwl => "000", wrl => "010"),
-		(id => sdram400MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  4, clki_div => 1), cl => "010", cwl => "000", wrl => "010"),
-		(id => sdram425MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div => 17, clki_div => 4), cl => "011", cwl => "001", wrl => "011"),
-		(id => sdram450MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  9, clki_div => 2), cl => "011", cwl => "001", wrl => "011"),
-		(id => sdram475MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div => 19, clki_div => 4), cl => "011", cwl => "001", wrl => "100"),
-		(id => sdram500MHz, pll => (clkok_div => 2, clkop_div => 1, clkos_div => 1, clkfb_div =>  5, clki_div => 1), cl => "011", cwl => "001", wrl => "100"));
+		(id => sdram325MHz, pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 13, clki_div => 4), cl => "010", cwl => "000", wrl => "010"),
+		(id => sdram350MHz, pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  7, clki_div => 2), cl => "010", cwl => "000", wrl => "010"),
+		(id => sdram375MHz, pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 15, clki_div => 4), cl => "010", cwl => "000", wrl => "010"),
+		(id => sdram400MHz, pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  4, clki_div => 1), cl => "010", cwl => "000", wrl => "010"),
+		(id => sdram425MHz, pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 17, clki_div => 4), cl => "011", cwl => "001", wrl => "011"),
+		(id => sdram450MHz, pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  9, clki_div => 2), cl => "011", cwl => "001", wrl => "011"),
+		(id => sdram475MHz, pll => (clkok_div => 2, clkop_div => 1, clkfb_div => 19, clki_div => 4), cl => "011", cwl => "001", wrl => "100"),
+		(id => sdram500MHz, pll => (clkok_div => 2, clkop_div => 1, clkfb_div =>  5, clki_div => 1), cl => "011", cwl => "001", wrl => "100"));
 
 	function sdramparams (
 		constant id  : sdram_speeds)
@@ -284,10 +283,10 @@ begin
 			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq)/
 			(real(video_record.pll.clki_div*video_record.pll.clkok_div*1e6));
 
-		attribute FREQUENCY_PIN_CLKOS of pll_i : label is ftoa(video_shift_freq, 10);
-		attribute FREQUENCY_PIN_CLKOK of pll_i : label is ftoa(video_freq,       10);
-		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(videoio_freq,     10);
 		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/1.0e6,   10);
+		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(video_shift_freq, 10);
+		attribute FREQUENCY_PIN_CLKOS of pll_i : label is ftoa(video_freq,       10);
+		attribute FREQUENCY_PIN_CLKOK of pll_i : label is ftoa(videoio_freq,     10);
 
 		signal clkfb : std_logic;
 
@@ -308,7 +307,6 @@ begin
 			PHASE_DELAY_CNTL => "DYNAMIC",
 			PHASEADJ         => "0.0", 
 
-			-- CLKOS_DIV        => video_tab(video_mode).pll.clkos_div,
 			CLKOK_DIV        => video_record.pll.clkok_div,
 			CLKOP_DIV        => video_record.pll.clkop_div,
 			CLKFB_DIV        => video_record.pll.clkfb_div,
@@ -322,11 +320,10 @@ begin
 			wrdel    => '0',
 			clki     => clk,
 			CLKFB    => clkfb,
-			CLKOS    => video_shift_clk,
-			CLKOP    => video_clk,
-			CLKOK    => videoio_clk,
+			CLKOP    => video_shift_clk,
+			CLKOK    => video_clk,
 			LOCK     => video_lck,
-			CLKINTFB => open);
+			clkintfb         => clkfb);
 
 	end block;
 
@@ -601,7 +598,7 @@ begin
 		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
 		ctlr_cwl     => sdram_params.cwl,
-		ctlr_wrl     => sdram_params.wrl, --"010",
+		ctlr_wrl     => sdram_params.wrl,
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
 		ctlr_inirdy  => tp(1),

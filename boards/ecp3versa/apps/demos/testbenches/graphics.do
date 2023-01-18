@@ -42,6 +42,8 @@ add wave -noupdate -group csa /testbench/du_e/sdrphy_b/ecp3_csa_e/err
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/phy_dmt
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/phy_dqt
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/videoio_clk
+add wave -noupdate /testbench/du_e/video_shift_clk
 add wave -noupdate /testbench/du_e/xxxx
 add wave -noupdate /testbench/du_e/xxxx
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/phy_wlreq
@@ -80,4 +82,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {100210685119 fs} {100262595521 fs}
+WaveRestoreZoom {9950685119 fs} {10002595521 fs}
