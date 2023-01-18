@@ -224,7 +224,6 @@ architecture graphics of ecp3versa is
 	constant sdram_tcp : real := 
 		real(sdram_params.pll.clki_div)/
 		(real(sdram_params.pll.clkop_div*sdram_params.pll.clkfb_div)*sys_freq);
-	signal xxxx : real := sdram_tcp;
 
 	constant mem_size : natural := 8*(1024*8);
 	signal so_frm     : std_logic;
@@ -442,8 +441,8 @@ begin
 
 	begin
 
-		mii_txc <= not phy1_125clk;
-		sio_clk <= phy1_rxc;
+		mii_txc <= phy1_125clk;
+		sio_clk <= phy1_125clk;
 		sync_b : block
 
 			signal rxc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
@@ -495,6 +494,7 @@ begin
 				end if;
 			end if;
 		end process;
+		dhcpcd_req <= dhcpcd_rdy:
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
