@@ -635,8 +635,8 @@ begin
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
 
-	tp(2) <= not (ctlrphy_wlreq xor ctlrphy_wlrdy);
-	tp(3) <= not (ctlrphy_rlreq xor ctlrphy_rlrdy);
+	tp(2) <= (ctlrphy_wlreq xor ctlrphy_wlrdy);
+	tp(3) <= (ctlrphy_rlreq xor ctlrphy_rlrdy);
 	tp(4) <= ctlrphy_ini;
 
 	process (ddr_ba)
@@ -847,7 +847,8 @@ begin
 		db   => '1',
 		q    => phy1_gtxclk);
 
-	led <= (others => '0');
-	seg <= (others => '0');
 	phy1_rst <= '1';
+
+	led <= not tp(1 to 8);
+	seg <= (others => '1');
 end;
