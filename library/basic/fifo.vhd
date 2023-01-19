@@ -51,9 +51,9 @@ entity fifo is
 		src_trdy   : buffer std_logic;
 		src_data   : in  std_logic_vector;
 
-		rollback : in  std_logic := '0';
-		commit   : in  std_logic := '1';
-		overflow : out std_logic := '0';
+		rollback   : in  std_logic := '0';
+		commit     : in  std_logic := '1';
+		overflow   : out std_logic := '0';
 
 		dst_clk    : in  std_logic;
 		dst_mode   : in  std_logic := '0';

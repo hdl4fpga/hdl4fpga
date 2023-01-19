@@ -55,7 +55,7 @@ begin
 	src_data <= i_end & i_data;
 	buffer_e : entity hdl4fpga.fifo
 	generic map (
-		latency => 1,
+		latency   => 1,
 		max_depth => 2,
 		check_sov => true,
 		check_dov => true)
@@ -73,11 +73,11 @@ begin
 	process (dst_data)
 		variable data : unsigned(dst_data'range);
 	begin
-		data := unsigned(dst_data);
-		o_end <= data(0);
-		data := data sll 1;
+		data   := unsigned(dst_data);
+		o_end  <= data(0);
+		data   := data sll 1;
 		o_data <= std_logic_vector(data(0 to o_data'length-1));
-		data := data sll o_data'length;
+		data   := data sll o_data'length;
 	end process;
 
 end;
