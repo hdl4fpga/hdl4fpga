@@ -411,41 +411,40 @@ begin
 	end block;
 
 	ipoe_b : block
-
 		port (
 			mii_rxc  : in std_logic;
 			mii_rxdv : in std_logic;
 			mii_rxd  : in std_logic_vector;
-			sio_clk  : buffer std_logic);
+			mii_txc  : in  std_logic;
+			mii_txd  : out std_logic_vector(phy1_tx_d'range);
+			mii_txen : out std_logic;
+			sio_clk  : in  std_logic);
 		port map (
-			sio_clk  => sio_clk;
-		    mii_rxc  => phy1_rxc;
-		    mii_rxdv => phy1_rx_dv;
-		    mii_rxd  => phy1_rx_d);
+		    mii_rxc  => phy1_rxc,
+		    mii_rxdv => phy1_rx_dv,
+		    mii_rxd  => phy1_rx_d,
+			mii_txc  => phy1_125clk,
+			mii_txen => phy1_tx_en,
+			mii_txd  => phy1_tx_d,
+			sio_clk  => phy1_125clk);
 
-
-		signal mii_txc    : std_logic;
-		signal mii_txd    : std_logic_vector(phy1_tx_d'range);
-		signal mii_txen   : std_logic;
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
 
 		signal miirx_frm  : std_logic;
 		signal miirx_irdy : std_logic;
 		signal miirx_data : std_logic_vector(mii_rxd'range);
+		signal mii_txcrxd : std_logic_vector(mii_rxd'range);
 
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
 		signal miitx_trdy : std_logic;
 		signal miitx_end  : std_logic;
 		signal miitx_data : std_logic_vector(si_data'range);
-
-		signal mii_txcrxd : std_logic_vector(mii_rxd'range);
+		signal ser_data   : std_logic_vector(mii_txd'range);
 
 	begin
 
-		mii_txc <= phy1_125clk;
-		sio_clk <= phy1_125clk;
 		sync_b : block
 
 			signal rxc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
@@ -472,12 +471,12 @@ begin
 				check_dov  => true,
 				gray_code  => false)
 			port map (
-				src_clk  => mii_rxc,
-				src_data => rxc_rxbus,
-				dst_clk  => mii_txc,
-				dst_irdy => dst_irdy,
-				dst_trdy => dst_trdy,
-				dst_data => txc_rxbus);
+				src_clk    => mii_rxc,
+				src_data   => rxc_rxbus,
+				dst_clk    => mii_txc,
+				dst_irdy   => dst_irdy,
+				dst_trdy   => dst_trdy,
+				dst_data   => txc_rxbus);
 
 			process (mii_txc)
 			begin
@@ -532,7 +531,7 @@ begin
 			so_trdy    => so_trdy,
 			so_data    => so_data);
 
-		desser_e: entity hdl4fpga.desser
+		desser_e : entity hdl4fpga.desser
 		port map (
 			desser_clk => mii_txc,
 
@@ -542,14 +541,13 @@ begin
 			des_data   => miitx_data,
 
 			ser_irdy   => open,
-			ser_data   => mii_txd);
+			ser_data   => ser_data);
 
-		mii_txen <= miitx_frm and not miitx_end;
 		process (mii_txc)
 		begin
 			if rising_edge(mii_txc) then
-				phy1_tx_en <= mii_txen;
-				phy1_tx_d  <= mii_txd;
+				mii_txen <= miitx_frm and not miitx_end;
+				mii_txd  <= ser_data;
 			end if;
 		end process;
 
