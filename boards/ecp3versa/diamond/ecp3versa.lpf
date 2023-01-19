@@ -130,6 +130,7 @@ LOCATE COMP "ddr3_rst" SITE "D4" ;
 IOBUF PORT "ddr3_rst" IO_TYPE=LVCMOS15;
 
 FREQUENCY PORT  "phy1_125clk" 125.00 MHz ;  // 125 MHz
+FREQUENCY PORT  "phy1_rxc" 125.00 MHz ;  // 125 MHz
 LOCATE COMP "phy1_125clk" SITE "T3";
 LOCATE COMP "phy1_rst"    SITE "L3";
 LOCATE COMP "phy1_coma"   SITE "R4";

@@ -56,7 +56,7 @@ architecture graphics of ecp3versa is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app_profile  : app_profiles := mii_500MHz_1080p24bpp30;
+	constant app_profile  : app_profiles := mii_400MHz_1080p24bpp30;
 	---------------------------------------------
 
 	type profile_params is record
@@ -413,15 +413,18 @@ begin
 	ipoe_b : block
 
 		port (
-			sio_clk : buffer std_logic);
+			mii_rxc  : in std_logic;
+			mii_rxdv : in std_logic;
+			mii_rxd  : in std_logic_vector;
+			sio_clk  : buffer std_logic);
 		port map (
-			sio_clk => sio_clk);
+			sio_clk  => sio_clk;
+		    mii_rxc  => phy1_rxc;
+		    mii_rxdv => phy1_rx_dv;
+		    mii_rxd  => phy1_rx_d);
 
-		alias  mii_rxc    : std_logic is phy1_rxc;
-		alias  mii_rxdv   : std_logic is phy1_rx_dv;
-		alias  mii_rxd    : std_logic_vector(phy1_rx_d'range) is phy1_rx_d;
 
-		signal mii_txc   : std_logic;
+		signal mii_txc    : std_logic;
 		signal mii_txd    : std_logic_vector(phy1_tx_d'range);
 		signal mii_txen   : std_logic;
 		signal dhcpcd_req : std_logic := '0';
@@ -494,7 +497,7 @@ begin
 				end if;
 			end if;
 		end process;
-		dhcpcd_req <= dhcpcd_rdy:
+		dhcpcd_req <= dhcpcd_rdy;
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
