@@ -168,14 +168,18 @@ begin
 			end process;
 	
 			process (phy_rlrdy, sclk)
-				type states is (s_idle, s_prmb, s_wait);
+				type states is (s_init, s_prmb, s_wait);
 				variable state : states;
 				variable cntr  : unsigned(0 to 8);
 			begin
 				if rising_edge(sclk) then
-					if (to_bit(phy_rlrdy) xor to_bit(phy_rlreq))='1' then
+					if rst='1' then
+						phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
+						locked    <= '0';
+						state     := s_init;
+					elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
 						case state is
-						when s_idle =>
+						when s_init =>
 							lat      <= (others => '0');
 							cntr     := (others => '0');
 							locked   <= '0';
@@ -201,12 +205,12 @@ begin
 							locked <= '1';
 							if (read_req xor read_rdy)='0' then
 								phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
-								state     := s_idle;
+								state     := s_init;
 							end if;
 						end case;
 					else
 						cntr  := (others => '-');
-						state := s_idle;
+						state := s_init;
 					end if;
 				end if;
 			end process;
