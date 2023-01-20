@@ -30,9 +30,9 @@ entity ecp3versa is
 	port (
 		clk         : in std_logic := 'Z';
 
-		dip         : in  std_logic_vector(8-1 downto 0) := (others => '0');
-		led         : out std_logic_vector(7 downto 0) := (others => 'Z');
-		seg         : out std_logic_vector(0 to 14) := (others => 'Z');
+		dip         : in  std_logic_vector(8-1 downto  0) := (others => '0');
+		led         : out std_logic_vector(  7 downto  0) := (others => 'Z');
+		seg         : out std_logic_vector(  0     to 14) := (others => 'Z');
 		
 		ddr3_clk    : out std_logic := '0';
 		ddr3_rst    : out std_logic := '0';
@@ -41,10 +41,10 @@ entity ecp3versa is
 		ddr3_ras    : out std_logic := '1';
 		ddr3_cas    : out std_logic := '1';
 		ddr3_we     : out std_logic := '1';
-		ddr3_b      : out std_logic_vector( 3-1 downto 0) := (others => '1');
-		ddr3_a      : out std_logic_vector(13-1 downto 0) := (others => '1');
-		ddr3_dm     : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
-		ddr3_dqs    : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
+		ddr3_b      : out std_logic_vector( 3-1 downto 0)   := (others => '1');
+		ddr3_a      : out std_logic_vector(13-1 downto 0)   := (others => '1');
+		ddr3_dm     : inout std_logic_vector( 2-1 downto 0) := (others => 'Z');
+		ddr3_dqs    : inout std_logic_vector( 2-1 downto 0) := (others => 'Z');
 		ddr3_dq     : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
 		ddr3_odt    : out std_logic := '1';
 
@@ -86,5 +86,31 @@ entity ecp3versa is
 		fpga_gsrn   : in std_logic := '-');
 
 	constant sys_freq : real := 100.0e6;
+
+	alias d29    : std_logic is led(7);
+	alias d28    : std_logic is led(6);
+	alias d27    : std_logic is led(5);
+	alias d26    : std_logic is led(4);
+	alias d21    : std_logic is led(3);
+	alias d22    : std_logic is led(2);
+	alias d24    : std_logic is led(1);
+	alias d25    : std_logic is led(0);
+
+	alias seg_a  : std_logic is seg(0);
+	alias seg_b  : std_logic is seg(1);
+	alias seg_c  : std_logic is seg(2);
+	alias seg_d  : std_logic is seg(3);
+	alias seg_e  : std_logic is seg(4);
+	alias seg_f  : std_logic is seg(5);
+	alias seg_g  : std_logic is seg(13);
+	alias seg_h  : std_logic is seg(6);
+
+	alias seg_j  : std_logic is seg(7);
+	alias seg_k  : std_logic is seg(8);
+	alias seg_l  : std_logic is seg(9);
+	alias seg_m  : std_logic is seg(10);
+	alias seg_n  : std_logic is seg(11);
+	alias seg_p  : std_logic is seg(12);
+	alias seg_dp : std_logic is seg(14);
 
 end;

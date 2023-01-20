@@ -56,7 +56,7 @@ architecture graphics of ecp3versa is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app_profile  : app_profiles := mii_400MHz_1080p24bpp30;
+	constant app_profile  : app_profiles := mii_350MHz_1080p24bpp30;
 	---------------------------------------------
 
 	type profile_params is record
@@ -218,10 +218,9 @@ architecture graphics of ecp3versa is
 		return tab(tab'left);
 	end;
 
-	constant sdram_mode : sdram_speeds := profile_tab(app_profile).speed;
+	constant sdram_mode   : sdram_speeds := profile_tab(app_profile).speed;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_mode);
-
-	constant sdram_tcp : real := 
+	constant sdram_tcp    : real := 
 		real(sdram_params.pll.clki_div)/
 		(real(sdram_params.pll.clkop_div*sdram_params.pll.clkfb_div)*sys_freq);
 
@@ -720,6 +719,7 @@ begin
                 err                : out std_logic);
         end component;
 
+		signal locked : std_logic_vector(ddr3_dqs'range);
 	begin
 
     	dqsdll_uddcntln_b : block
@@ -772,6 +772,9 @@ begin
 			good               => ctlr_lck, 
 			err                => open);
 
+		seg_a <= not setif(locked=(locked'range => '1'));
+		seg_b <= not locked(0);
+		seg_c <= not locked(1);
     	sdrphy_e : entity hdl4fpga.ecp3_sdrphy
     	generic map (
     		taps      => natural(floor(sdram_tcp/26.0e-12)),
@@ -787,6 +790,7 @@ begin
     		sclk2x    => ctlrpll_clkop,
     		eclk      => ctlrpll_eclk,
 			dqsdel    => dqsdel,
+			locked    => locked,
     		phy_frm   => ctlrphy_frm,
     		phy_trdy  => ctlrphy_trdy,
     		phy_cmd   => ctlrphy_cmd,
@@ -850,5 +854,4 @@ begin
 	phy1_rst <= '1';
 
 	led <= not tp(1 to 8);
-	seg <= (others => '1');
 end;

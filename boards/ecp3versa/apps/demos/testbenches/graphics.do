@@ -41,6 +41,10 @@ add wave -noupdate -group csa /testbench/du_e/sdrphy_b/ecp3_csa_e/good
 add wave -noupdate -group csa /testbench/du_e/sdrphy_b/ecp3_csa_e/err
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/phy_dmt
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/phy_dqt
+add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjsto_b/det
+add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/locked
+add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/locked
+add wave -noupdate /testbench/du_e/seg_a
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/videoio_clk
 add wave -noupdate /testbench/du_e/video_shift_clk
@@ -64,8 +68,8 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {100243968528 fs} 0} {{Cursor 2} {72158135750 fs} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {76376518219 fs} 0} {{Cursor 2} {101032388664 fs} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 237
 configure wave -valuecolwidth 171
 configure wave -justifyvalue left

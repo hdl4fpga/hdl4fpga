@@ -47,6 +47,7 @@ entity ecp3_sdrdqphy is
 		read_rdy  : in  std_logic;
 		read_req  : buffer std_logic;
 		burst     : out std_logic;
+		locked    : out std_logic;
 		phy_sti   : in  std_logic;
 		phy_sto   : out std_logic;
 		phy_dmt   : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
@@ -146,7 +147,7 @@ begin
 		read <= multiplex(read_r & read_f, lat(0));
 
 		adjsto_b : block
-			signal det     : std_logic;
+			signal det : std_logic;
 		begin
 			process (sclk)
 			begin
@@ -177,6 +178,7 @@ begin
 						when s_idle =>
 							lat      <= (others => '0');
 							cntr     := (others => '0');
+							locked   <= '0';
 							read_req <= not to_stdulogic(to_bit(read_rdy));
 							state    := s_prmb;
 						when s_prmb =>
@@ -196,6 +198,7 @@ begin
 							end if;
 						when s_wait =>
 							cntr := (others => '-');
+							locked <= '1';
 							if (read_req xor read_rdy)='0' then
 								phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 								state     := s_idle;

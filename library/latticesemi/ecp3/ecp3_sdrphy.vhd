@@ -48,6 +48,7 @@ entity ecp3_sdrphy is
 		sclk2x    : in  std_logic;
 		eclk      : in  std_logic;
 		dqsdel    : in  std_logic;
+		locked    : out std_logic_vector(word_size/byte_size-1 downto 0);
 
 		phy_rst   : in  std_logic_vector(cmmd_gear-1 downto 0);
 		phy_frm   : buffer std_logic;
@@ -416,6 +417,7 @@ begin
 			dqsdel    => dqsdel,
 
 			pause     => ms_pause,
+			locked    => locked(i),
 			read_req  => read_req(i),
 			read_rdy  => read_rdy(i),
 			phy_wlreq => phy_wlreq,
