@@ -39,21 +39,14 @@ add wave -noupdate -group csa /testbench/du_e/sdrphy_b/ecp3_csa_e/clk_phase/phas
 add wave -noupdate -group csa /testbench/du_e/sdrphy_b/ecp3_csa_e/clk_phase/phase_ff_0
 add wave -noupdate -group csa /testbench/du_e/sdrphy_b/ecp3_csa_e/good
 add wave -noupdate -group csa /testbench/du_e/sdrphy_b/ecp3_csa_e/err
-add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/phy_dmt
-add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/phy_dqt
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjsto_b/det
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/locked
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/locked
 add wave -noupdate /testbench/du_e/seg_a
+add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjsto_b/line__170/cntr
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/videoio_clk
 add wave -noupdate /testbench/du_e/video_shift_clk
-add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/phy_wlreq
-add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/phy_wlrdy
-add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/phy_rlreq
-add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/phy_rlrdy
-add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/read_rdy
-add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/read_req
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(1)/sdr3phy_i/dyndelay
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/dqclk1
@@ -68,8 +61,8 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {76376518219 fs} 0} {{Cursor 2} {101032388664 fs} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {17642276 ps} 0} {{Cursor 2} {101032388 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 237
 configure wave -valuecolwidth 171
 configure wave -justifyvalue left
@@ -84,4 +77,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {105 us}
+WaveRestoreZoom {0 ps} {105 us}
