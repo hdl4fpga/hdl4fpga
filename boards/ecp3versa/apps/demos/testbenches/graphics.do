@@ -19,6 +19,7 @@ add wave -noupdate -expand -group ddr3 -expand /testbench/du_e/ddr3_dqs
 add wave -noupdate -expand -group ddr3 -radix hexadecimal /testbench/du_e/ddr3_dq
 add wave -noupdate -expand -group ddr3 /testbench/du_e/ddr3_odt
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ctlrphy_ini
 add wave -noupdate -group csa /testbench/du_e/sdrphy_b/ecp3_csa_e/reset
 add wave -noupdate -group csa /testbench/du_e/sdrphy_b/ecp3_csa_e/reset_datapath
 add wave -noupdate -group csa /testbench/du_e/sdrphy_b/ecp3_csa_e/refclk
@@ -42,12 +43,17 @@ add wave -noupdate -group csa /testbench/du_e/sdrphy_b/ecp3_csa_e/err
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjsto_b/det
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/locked
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/locked
-add wave -noupdate /testbench/du_e/seg_a
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjsto_b/line__170/cntr
+add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/so_frm
+add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/so_irdy
+add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/so_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/udpdaisy_e/so_data
+add wave -noupdate /testbench/du_e/grahics_e/ctlr_inirdy
+add wave -noupdate /testbench/du_e/grahics_e/sio_clk
+add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/videoio_clk
 add wave -noupdate /testbench/du_e/video_shift_clk
-add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(1)/sdr3phy_i/dyndelay
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/dqclk1
 add wave -noupdate /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/dqclk0
@@ -61,8 +67,8 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {17642276 ps} 0} {{Cursor 2} {101032388 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {32891678157 fs} 0} {{Cursor 2} {98030875318 fs} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 237
 configure wave -valuecolwidth 171
 configure wave -justifyvalue left
@@ -77,4 +83,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {105 us}
+WaveRestoreZoom {0 fs} {115500 ns}

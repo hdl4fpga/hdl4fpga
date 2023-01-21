@@ -56,7 +56,7 @@ entity ecp3_sdrphy is
 		phy_rw    : out std_logic := '1';
 		phy_cmd   : in  std_logic_vector(0 to 3-1) := (others => 'U');
 		phy_ini   : out std_logic;
-		phy_wlreq : in  std_logic := '0';
+		phy_wlreq : in  std_logic;
 		phy_wlrdy : buffer std_logic;
 		phy_rlreq : in  std_logic := '0';
 		phy_rlrdy : buffer std_logic;
@@ -385,13 +385,13 @@ begin
 	end block;
 
 	process (phy_wlreq, wl_rdy)
-		variable aux : bit;
+		variable z : std_logic;
 	begin
-		aux := '1';
+		z := '1';
 		for i in wl_rdy'range loop
-			aux := aux and (to_bit(wl_rdy(i)) xor to_bit(phy_wlreq));
+			z := z and (wl_rdy(i) xor to_stdulogic(to_bit(phy_wlreq)));
 		end loop;
-		phy_wlrdy <= to_stdulogic(aux) xor phy_wlreq;
+		phy_wlrdy <= z xor to_stdulogic(to_bit(phy_wlreq));
 	end process;
 
 	sdmi  <= to_blinevector(phy_dmi);

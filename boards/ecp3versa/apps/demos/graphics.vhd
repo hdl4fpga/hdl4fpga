@@ -254,7 +254,7 @@ architecture graphics of ecp3versa is
 	signal ctlrpll_sclk2x : std_logic;
 	alias ctlr_clk        : std_logic is ctlrpll_sclk;
 
-	signal  sio_clk   : std_logic;
+	alias  sio_clk   : std_logic is phy1_125clk;
 
 	attribute oddrapps : string;
 	attribute oddrapps of phy1_gtxclk_i : label is "SCLK_ALIGNED";
