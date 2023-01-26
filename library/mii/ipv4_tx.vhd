@@ -96,7 +96,6 @@ architecture def of ipv4_tx is
 	signal chksum_rev    : std_logic_vector(16-1 downto 0);
 begin
 
-
 	pl_trdy <= 
 		mtdlltx_trdy when  mtdlltx_end='0' else
 		'0'          when ipv4chsm_end='0' else
