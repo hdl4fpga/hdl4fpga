@@ -111,10 +111,10 @@ begin
 				case state is
 				when s_ipv4a =>
 					if ipv4a_end='1' then
-						state := s_ipv4hdr;
+						state <= s_ipv4hdr;
 					end if;
 				when s_ipv4hdr =>
-					if ipv4q_end='0' then
+					if ipv4a_end='0' then
 						if cntr(0)='0' then
 							if (ipv4_trdy and pl_irdy)='1' then
 								cntr := cntr - 1;
@@ -125,7 +125,7 @@ begin
 				end case;
 			else
 				cntr  := to_unsigned(summation(ipv4hdr_frame)/ipv4_data'length-1, cntr'length);
-				state := s_ipv4a;
+				state <= s_ipv4a;
 			end if;
 			frm_ptr <= std_logic_vector(cntr);
 		end if;
@@ -138,7 +138,7 @@ begin
 			x"0000" &   -- Identification
 			x"0000" &   -- Fragmentation
 			x"05",      -- Time To Live
-			8);
+			8),
 		sio_clk  => mii_clk,
 		sio_frm  => pl_frm,
 		sio_irdy => ipv4shdr_irdy,
