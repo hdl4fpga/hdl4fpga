@@ -63,7 +63,7 @@ entity ipv4_tx is
 		mtdlltx_end    : in  std_logic;
 
 		nettx_irdy     : out std_logic;
-		nettx_trdy     : in  std_logic;
+		nettx_trdy     : in  std_logic := '1';
 		nettx_end      : in  std_logic;
 
 		ipv4_frm       : buffer std_logic;
@@ -98,6 +98,7 @@ begin
 
 	pl_trdy <= 
 		mtdlltx_trdy when  mtdlltx_end='0' else
+		nettx_trdy   when    nettx_end='0' else
 		'0'          when ipv4chsm_end='0' else
 		'0'          when    ipv4a_end='0' else
 		ipv4_trdy; 
@@ -171,10 +172,10 @@ begin
 		mii_data  => cksm_data,
 		mii_cksm  => ipv4chsm_data);
 
+	ipv4_frm <= pl_frm;
 	frm_p : process (pl_frm, frm_ptr, ipv4chsm_end, state)
 	begin
 		if pl_frm='1' then
-			ipv4_frm <= '1';
 			case state is
 			when s_ipv4a   =>
 				ipv4a_frm <= '1';
@@ -185,7 +186,6 @@ begin
 				ipv4len_frm   <= frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, ipv4_len);
 			end case;
 		else
-			ipv4_frm      <= '0';
 			ipv4a_frm     <= '0';
 			ipv4shdr_frm  <= '0';
 			ipv4proto_frm <= '0';
@@ -194,6 +194,9 @@ begin
 	end process;
 
 	mtdlltx_irdy <= pl_irdy;
+	nettx_irdy   <= 
+		pl_irdy when mtdlltx_end='1' else
+		'0';
 	ipv4a_irdy <= 
 		'0' when mtdlltx_end='0' else 
 		'1' when state=s_ipv4a   else
@@ -203,8 +206,8 @@ begin
 	ipv4proto_irdy <= ipv4_trdy when ipv4proto_frm='1' else '0';
 	ipv4len_irdy   <= ipv4_trdy when ipv4len_frm='1'   else '0';
 	ipv4_irdy <= 
-		pl_irdy        when   mtdlltx_end='0' else 
-		'0'            when   state=s_ipv4hdr else
+		'0'            when   mtdlltx_end='0' else 
+		'0'            when   state=s_ipv4a else
 		ipv4shdr_trdy  when  ipv4shdr_end='0' else
 		ipv4proto_trdy when ipv4proto_end='0' else
 		ipv4chsm_trdy  when  ipv4chsm_end='0' else
