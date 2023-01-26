@@ -450,7 +450,7 @@ begin
 		port map (
 			tp         => tp,
 
-			sio_clk    => sio_clk,
+			mii_clk    => sio_clk,
 			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
 			miirx_frm  => miirx_frm,
@@ -470,6 +470,7 @@ begin
 			si_end     => si_end,
 			si_data    => si_data,
 
+			so_clk    => sio_clk,
 			so_frm     => so_frm,
 			so_irdy    => so_irdy,
 			so_trdy    => so_trdy,
@@ -528,11 +529,12 @@ begin
 		fifo_size    => 8*2048)
 
 	port map (
-		sio_clk      => sio_clk,
+		sin_clk      => sio_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,
 		sin_trdy     => so_trdy,
 		sin_data     => so_data,
+		sout_clk     => sio_clk,
 		sout_frm     => si_frm,
 		sout_irdy    => si_irdy,
 		sout_trdy    => si_trdy,

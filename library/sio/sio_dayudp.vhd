@@ -35,8 +35,8 @@ entity sio_dayudp is
 		my_mac        : std_logic_vector(0 to 48-1));
 	port (
 		hdplx         : in  std_logic := '0';
-		sio_clk       : in  std_logic;
 		sio_addr      : in  std_logic := '0';
+		mii_clk       : in  std_logic;
 
 		dhcpcd_req    : in  std_logic := '0';
 		dhcpcd_rdy    : out std_logic := '0';
@@ -58,6 +58,7 @@ entity sio_dayudp is
 		si_end        : in  std_logic := '0';
 		si_data       : in  std_logic_vector;
 
+		so_clk        : in  std_logic;
 		so_frm        : out std_logic;
 		so_irdy       : out std_logic;
 		so_trdy       : in  std_logic := '1';
@@ -92,7 +93,7 @@ begin
 		my_mac        => my_mac)
 	port map (
 		hdplx      => hdplx,
-		sio_clk    => sio_clk,
+		mii_clk    => mii_clk,
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,
 		miirx_frm  => miirx_frm,
@@ -112,6 +113,7 @@ begin
 		si_end      => siudp_end,
 		si_data     => si_data,
 
+		so_clk      => so_clk,
 		so_frm      => soudp_frm,
 		so_irdy     => soudp_irdy,
 		so_trdy     => soudp_trdy,

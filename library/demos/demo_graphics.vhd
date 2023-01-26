@@ -61,11 +61,12 @@ entity demo_graphics is
 
 	port (
 		tpin          : in  std_logic_vector(0 to 4-1) := (others => '0');
-		sio_clk       : in  std_logic;
+		sin_clk       : in  std_logic;
 		sin_frm       : in  std_logic;
 		sin_irdy      : in  std_logic;
 		sin_trdy      : out std_logic := '1';
 		sin_data      : in  std_logic_vector;
+		sout_clk      : in  std_logic;
 		sout_frm      : buffer std_logic;
 		sout_irdy     : buffer std_logic;
 		sout_trdy     : in  std_logic;
@@ -270,7 +271,7 @@ begin
 
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
-			sin_clk   => sio_clk,
+			sin_clk   => sin_clk,
 			sin_frm   => sin_frm,
 			sin_irdy  => sin_irdy,
 			sin_data  => sin_data,
@@ -295,12 +296,13 @@ begin
 			m => 8)
 		port map (
 			tp => tp_meta,
-			src_clk  => sio_clk,
+			src_clk  => sin_clk,
 			src_frm  => rgtr_frm,
 			src_irdy => metaram_irdy,
 			src_data => metaram_data,
 
 			avail    => meta_avail,
+			dst_clk  => sout_clk,
 			dst_frm  => sout_frm,
 			dst_irdy => sout_trdy,
 			dst_trdy => meta_trdy,
@@ -324,7 +326,7 @@ begin
 				generic map (
 					rid       => rid_ack)
 				port map (
-					rgtr_clk  => sio_clk,
+					rgtr_clk  => sin_clk,
 					rgtr_dv   => rgtr_dv,
 					rgtr_id   => rgtr_id,
 					rgtr_data => rgtr_revs(rgtr_dmaack'length-1 downto 0),
@@ -334,7 +336,7 @@ begin
 				generic map (
 					rid       => rid_dmalen)
 				port map (
-					rgtr_clk  => sio_clk,
+					rgtr_clk  => sin_clk,
 					rgtr_dv   => rgtr_dv,
 					rgtr_id   => rgtr_id,
 					rgtr_data => rgtr_revs(rgtr_dmalen'range),
@@ -348,12 +350,12 @@ begin
 					check_sov  => false,
 					check_dov  => false)
 				port map (
-					src_clk    => sio_clk,
+					src_clk    => sin_clk,
 					src_irdy   => dmaaddr_irdy,
 					src_trdy   => dmaaddr_trdy,
 					src_data   => src_data,
 
-					dst_clk    => sio_clk,
+					dst_clk    => sin_clk,
 					dst_frm    => ctlr_inirdy,
 					dst_irdy   => dmaioaddr_irdy,
 					dst_trdy   => dmaio_next,
@@ -388,7 +390,7 @@ begin
 				check_dov  => true,
 				gray_code  => false)
 			port map (
-				src_clk    => sio_clk,
+				src_clk    => sin_clk,
 				src_frm    => ctlr_inirdy,
 				src_irdy   => dmadata_irdy,
 				src_trdy   => dmadata_trdy,
@@ -404,7 +406,7 @@ begin
 			generic map (
 				rid  => x"19")
 			port map (
-				rgtr_clk  => sio_clk,
+				rgtr_clk  => sin_clk,
 				rgtr_dv   => rgtr_dv,
 				rgtr_id   => rgtr_id,
 				rgtr_data => rgtr_data,
@@ -420,7 +422,7 @@ begin
 		dmasin_irdy <= to_stdulogic(to_bit(dmaioaddr_irdy));
 		sio_dmahdsk_e : entity hdl4fpga.sio_dmahdsk
 		port map (
-			dmacfg_clk  => sio_clk,
+			dmacfg_clk  => sin_clk,
 			ctlr_inirdy => ctlr_inirdy,
 			dmaio_irdy  => dmasin_irdy,
 			dmaio_trdy  => dmaio_trdy,
@@ -463,12 +465,12 @@ begin
 				check_sov  => true,
 				check_dov  => true)
 			port map (
-				src_clk    => sio_clk,
+				src_clk    => sin_clk,
 				src_irdy   => dmaio_next,
 				src_trdy   => open, --tp(6),
 				src_data   => src_data,
 
-				dst_clk    => sio_clk,
+				dst_clk    => sout_clk,
 				dst_frm    => ctlr_inirdy,
 				dst_irdy   => acktx_irdy,
 				dst_trdy   => acktx_trdy,
@@ -485,9 +487,9 @@ begin
 				status <= std_logic_vector(aux(0 to status'length-1));
 			end process;
 
-			process (sio_clk)
+			process (sout_clk)
 			begin
-				if rising_edge(sio_clk) then
+				if rising_edge(sout_clk) then
 					if ctlr_inirdy='0' then
 						sout_frm   <= '0';
 						acktx_trdy <= '0';
@@ -507,13 +509,13 @@ begin
 				end if;
 			end process;
 
-			process (sio_clk)
+			process (sout_clk)
 				constant pfix_size   : natural := sio_dmaio'length/siobyte_size-2;
 				variable pay_length  : unsigned(trans_length'range);
 				variable data_length : unsigned(pay_length'range);
 				variable hdr_length  : unsigned(pay_length'range);
 			begin
-				if rising_edge(sio_clk) then
+				if rising_edge(sout_clk) then
 					sio_dmaio <=
 						reverse(reverse(std_logic_vector(resize(pay_length,16))),8) & reverse(
 						rid_ack     & x"00" & acktx_data &
@@ -533,7 +535,6 @@ begin
 						data_length := unsigned(trans_length);
 						data_length := data_length sll word_bits;
 						data_length := data_length + (pfix_size + 2**word_bits);
-
 				end if;
 			end process;
 
@@ -541,7 +542,7 @@ begin
 			siodma_e : entity hdl4fpga.sio_mux
 			port map (
 				mux_data => sio_dmaio,
-				sio_clk  => sio_clk,
+				sio_clk  => sout_clk,
 				sio_frm  => sout_frm,
 				sio_irdy => siodmaio_irdy,
 				sio_trdy => siodmaio_trdy,
@@ -596,16 +597,16 @@ begin
 					src_irdy => dmaso_irdy,
 					src_data => dmaso_data,
 
-					dst_clk  => sio_clk,
+					dst_clk  => sout_clk,
 					dst_frm  => ctlr_inirdy,
 					dst_irdy => fifo_irdy,
 					dst_trdy => fifo_trdy,
 					dst_data => fifo_data);
 
-				process (sio_clk)
+				process (sout_clk)
 					variable length : unsigned(fifo_length'range);
 				begin
-					if rising_edge(sio_clk) then
+					if rising_edge(sout_clk) then
 						length := (others => '1');
 						length := length srl (length'length-unsigned_num_bits(fifo_data'length/sodata_data'length-1));
 						length := length or  (trans_length sll word_bits);
@@ -613,9 +614,9 @@ begin
 					end if;
 				end process;
 
-				process (sio_clk)
+				process (sout_clk)
 				begin
-					if rising_edge(sio_clk) then
+					if rising_edge(sout_clk) then
 						if acktx_irdy='1' then
 							if status_rw='1' then
 								fifo_req <= not fifo_rdy;
@@ -635,7 +636,7 @@ begin
 
 				sodata_e : entity hdl4fpga.so_data
 				port map (
-					sio_clk   => sio_clk,
+					sio_clk   => sout_clk,
 					si_frm    => fifo_frm,
 					si_irdy   => fifo_irdy,
 					si_trdy   => fifo_trdy,
@@ -755,7 +756,7 @@ begin
 			ctlr_di_dv  => graphics_dv,
 			ctlr_di     => graphics_di,
 			base_addr   => base_addr,
-			dmacfg_clk  => sio_clk,
+			dmacfg_clk  => sin_clk,
 			dmacfg_req  => dmacfgvideo_req,
 			dmacfg_rdy  => dmacfgvideo_rdy,
 			dma_req     => dmavideo_req,
@@ -873,7 +874,7 @@ begin
 			addr_size    => addr_size,
 			coln_size    => coln_size)
 		port map (
-			devcfg_clk   => sio_clk,
+			devcfg_clk   => sin_clk,
 			devcfg_req   => dmacfg_req,
 			devcfg_rdy   => dmacfg_rdy,
 			dev_len      => dev_len,

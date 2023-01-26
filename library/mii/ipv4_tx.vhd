@@ -42,21 +42,31 @@ entity ipv4_tx is
 		pl_end         : in  std_logic;
 		pl_data        : in  std_logic_vector;
 
+		ipv4len_frm    : buffer std_logic;
 		ipv4len_irdy   : buffer std_logic;
-		ipv4len_data   : in  std_logic_vector;
+		ipv4len_data   : in std_logic_vector;
+
+		ipv4proto_frm  : buffer std_logic;
 		ipv4proto_irdy : buffer std_logic;
-		ipv4proto_trdy : in  std_logic;
-		ipv4proto_end  : in  std_logic;
-		ipv4proto_data : in  std_logic_vector;
+		ipv4proto_trdy : in std_logic;
+		ipv4proto_end  : in std_logic;
+		ipv4proto_data : in std_logic_vector;
 
 		ipv4a_frm      : buffer std_logic;
 		ipv4a_irdy     : buffer std_logic;
-		ipv4a_end      : in  std_logic;
-		ipv4a_data     : in  std_logic_vector;
+		ipv4a_trdy     : in std_logic := '1';
+		ipv4a_end      : in std_logic;
+		ipv4a_data     : in std_logic_vector;
+
+		mtdlltx_irdy   : out std_logic;
+		mtdlltx_trdy   : in  std_logic;
+		mtdlltx_end    : in  std_logic;
+
+		nettx_irdy     : out std_logic;
+		nettx_trdy     : in  std_logic;
+		nettx_end      : in  std_logic;
 
 		ipv4_frm       : buffer std_logic;
-		metatx_end     : in std_logic := '1';
-		metatx_irdy    : in std_logic := '1';
 		ipv4_irdy      : buffer std_logic;
 		ipv4_trdy      : in  std_logic;
 		ipv4_end       : out std_logic;
@@ -64,85 +74,71 @@ entity ipv4_tx is
 end;
 
 architecture def of ipv4_tx is
+	type states is (s_ipv4a, s_ipv4hdr);
+	signal state         : states;
+	signal frm_ptr       : std_logic_vector(0 to unsigned_num_bits(summation(ipv4hdr_frame)/ipv4_data'length-1));
+
 	signal ipv4shdr_frm  : std_logic;
-	signal ipv4proto_frm : std_logic;
-	signal ipv4len_frm   : std_logic;
-
-	signal cksm_irdy     : std_logic;
-	signal cksm_data     : std_logic_vector(ipv4_data'range);
-	signal chksum        : std_logic_vector(0 to 16-1);
-	signal chksum_rev    : std_logic_vector(16-1 downto 0);
-
 	signal ipv4shdr_irdy : std_logic;
 	signal ipv4shdr_trdy : std_logic;
-	signal ipv4shdr_end  : std_logic;
-	signal ipv4shdr_mux  : std_logic_vector(0 to summation(
-		ipv4hdr_frame(ipv4_verihl to ipv4_ttl))-ipv4hdr_frame(ipv4_len)-1);
 	signal ipv4shdr_data : std_logic_vector(ipv4_data'range);
+	signal ipv4shdr_end  : std_logic;
+
 	signal ipv4hdr_data  : std_logic_vector(ipv4_data'range);
-
-	signal ipv4sel_irdy  : std_logic;
-	signal ipv4sel_trdy  : std_logic;
-	signal ipv4sel_end   : std_logic;
-	signal ipv4sel_data  : std_logic_vector(0 to 3-1);
-
-	signal ipv4a_trdy    : std_logic := '1';
-	signal ipv4a_last    : std_logic;
 
 	signal ipv4chsm_trdy : std_logic;
 	signal ipv4chsm_end  : std_logic;
 	signal ipv4chsm_data : std_logic_vector(ipv4_data'range);
 
-	signal post : std_logic;
-
-	signal frm_ptr : std_logic_vector(0 to unsigned_num_bits(summation(ipv4hdr_frame)/ipv4_data'length-1));
+	signal cksm_irdy     : std_logic;
+	signal cksm_data     : std_logic_vector(ipv4_data'range);
+	signal chksum        : std_logic_vector(0 to 16-1);
+	signal chksum_rev    : std_logic_vector(16-1 downto 0);
 begin
 
-	ipv4_frm <= pl_frm;
-	process(pl_frm, ipv4a_end, mii_clk)
-		variable q : std_logic;
-	begin
-		if rising_edge(mii_clk) then
-			if pl_frm='0' then
-				q := '0';
-			elsif ipv4a_end='1' then
-				q := '1';
-			end if;
-		end if;
-		post <= q or (pl_frm and ipv4a_end);
-	end process;
-	
+
+	pl_trdy <= 
+		mtdlltx_trdy when  mtdlltx_end='0' else
+		'0'          when ipv4chsm_end='0' else
+		'0'          when    ipv4a_end='0' else
+		ipv4_trdy; 
+
 	process (mii_clk)
 		variable cntr : unsigned(frm_ptr'range);
 	begin
 		if rising_edge(mii_clk) then
-			if pl_frm='0' then
-				cntr := to_unsigned(summation(ipv4hdr_frame)/ipv4_data'length-1, cntr'length);
-			elsif (post and not cntr(0) and ipv4_trdy and (pl_irdy or not ipv4a_end))='1' then
-				cntr := cntr - 1;
+			if pl_frm='1' then
+				case state is
+				when s_ipv4a =>
+					if ipv4a_end='1' then
+						state := s_ipv4hdr;
+					end if;
+				when s_ipv4hdr =>
+					if ipv4q_end='0' then
+						if cntr(0)='0' then
+							if (ipv4_trdy and pl_irdy)='1' then
+								cntr := cntr - 1;
+							end if;
+						end if;
+					else
+					end if;
+				end case;
+			else
+				cntr  := to_unsigned(summation(ipv4hdr_frame)/ipv4_data'length-1, cntr'length);
+				state := s_ipv4a;
 			end if;
 			frm_ptr <= std_logic_vector(cntr);
 		end if;
 	end process;
 
-	ipv4shdr_frm  <= post and frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, (ipv4_verihl, ipv4_tos, ipv4_ident, ipv4_flgsfrg, ipv4_ttl));
-	ipv4proto_frm <= post and frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, ipv4_proto);
-	ipv4len_frm   <= post and frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, ipv4_len);
-
-	ipv4shdr_irdy  <= ipv4shdr_frm  and ipv4_trdy;
-	ipv4proto_irdy <= ipv4proto_frm and ipv4_trdy;
-	ipv4len_irdy   <= ipv4len_frm   and ipv4_trdy;
-
-	ipv4shdr_mux <= reverse(
-		x"4500"            &   -- Version, TOS
-		x"0000"            &   -- Identification
-		x"0000"            &   -- Fragmentation
-		x"05",                 -- Time To Live
-		8);
-
 	ipv4shdr_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data => ipv4shdr_mux,
+		mux_data => reverse(
+			x"4500" &   -- Version, TOS
+			x"0000" &   -- Identification
+			x"0000" &   -- Fragmentation
+			x"05",      -- Time To Live
+			8);
 		sio_clk  => mii_clk,
 		sio_frm  => pl_frm,
 		sio_irdy => ipv4shdr_irdy,
@@ -150,19 +146,17 @@ begin
 		so_end   => ipv4shdr_end,
 		so_data  => ipv4shdr_data);
 
-	ipv4hdr_data <= wirebus(ipv4shdr_data & ipv4proto_data & reverse(ipv4len_data), ipv4shdr_frm & ipv4proto_frm & ipv4len_frm);
-
-	ipv4a_frm  <= pl_frm when post='0' else pl_frm and ipv4chsm_end;
-	ipv4a_irdy <= 
-		'0' when metatx_end='0' else 
-		'1' when post='0' else 
-		ipv4_trdy;
+	ipv4hdr_data <=
+		ipv4shdr_data         when ipv4shdr_frm ='1'  else
+		ipv4proto_data        when ipv4proto_frm ='1' else
+		reverse(ipv4len_data) when ipv4len_frm='1'    else
+		(others => '-');
 
 	cksm_data <= 
-		ipv4a_data   when post='0' else
+		ipv4a_data   when state=s_ipv4a else
 		ipv4hdr_data;
 	cksm_irdy <= 
-		ipv4a_trdy and ipv4a_irdy when post='0' else
+		ipv4a_trdy and ipv4a_irdy when state=s_ipv4a else
 	    ipv4_trdy;
 
 	mii_1cksm_e : entity hdl4fpga.mii_1cksm
@@ -178,34 +172,59 @@ begin
 		mii_data  => cksm_data,
 		mii_cksm  => ipv4chsm_data);
 
-	pl_trdy <= 
-		metatx_irdy when metatx_end='0'   else
-		'0'         when ipv4chsm_end='0' else
-		'0'         when ipv4a_end='0'    else
-		ipv4_trdy; 
+	frm_p : process (pl_frm, frm_ptr, ipv4chsm_end, state)
+	begin
+		if pl_frm='1' then
+			ipv4_frm <= '1';
+			case state is
+			when s_ipv4a   =>
+				ipv4a_frm <= '1';
+			when s_ipv4hdr =>
+				ipv4a_frm     <= ipv4chsm_end;
+				ipv4shdr_frm  <= frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, (ipv4_verihl, ipv4_tos, ipv4_ident, ipv4_flgsfrg, ipv4_ttl));
+				ipv4proto_frm <= frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, ipv4_proto);
+				ipv4len_frm   <= frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, ipv4_len);
+			end case;
+		else
+			ipv4_frm      <= '0';
+			ipv4a_frm     <= '0';
+			ipv4shdr_frm  <= '0';
+			ipv4proto_frm <= '0';
+			ipv4len_frm   <= '0';
+		end if;
+	end process;
 
+	mtdlltx_irdy <= pl_irdy;
+	ipv4a_irdy <= 
+		'0' when mtdlltx_end='0' else 
+		'1' when state=s_ipv4a   else
+		'1' when state=s_ipv4hdr else
+		ipv4_trdy;
+	ipv4shdr_irdy  <= ipv4_trdy when ipv4shdr_frm='1'  else '0';
+	ipv4proto_irdy <= ipv4_trdy when ipv4proto_frm='1' else '0';
+	ipv4len_irdy   <= ipv4_trdy when ipv4len_frm='1'   else '0';
 	ipv4_irdy <= 
-		pl_irdy        when metatx_end='0'    else 
-		'0'            when post='0'          else
-		ipv4shdr_trdy  when ipv4shdr_end='0'  else
+		pl_irdy        when   mtdlltx_end='0' else 
+		'0'            when   state=s_ipv4hdr else
+		ipv4shdr_trdy  when  ipv4shdr_end='0' else
 		ipv4proto_trdy when ipv4proto_end='0' else
-		ipv4chsm_trdy  when ipv4chsm_end='0'  else
-		ipv4a_trdy     when ipv4a_end='0'     else
+		ipv4chsm_trdy  when  ipv4chsm_end='0' else
+		ipv4a_trdy     when     ipv4a_end='0' else
 	    pl_irdy;
 
 	ipv4_data <=  
-		pl_data                    when metatx_end='0'    else 
-		ipv4hdr_data               when ipv4shdr_end='0'  else
+		pl_data                    when   mtdlltx_end='0' else 
+		ipv4hdr_data               when  ipv4shdr_end='0' else
 		ipv4proto_data             when ipv4proto_end='0' else
-		reverse(not ipv4chsm_data) when ipv4chsm_end='0'  else
-		ipv4a_data                 when ipv4a_end='0'     else
+		reverse(not ipv4chsm_data) when  ipv4chsm_end='0' else
+		ipv4a_data                 when     ipv4a_end='0' else
 		pl_data;
 
 	ipv4_end <= 
-		ipv4shdr_end  when ipv4shdr_end='0'  else
+		ipv4shdr_end  when  ipv4shdr_end='0' else
 		ipv4proto_end when ipv4proto_end='0' else
-		ipv4chsm_end  when ipv4chsm_end='0'  else
-		ipv4a_end     when ipv4a_end='0'     else
+		ipv4chsm_end  when  ipv4chsm_end='0' else
+		ipv4a_end     when     ipv4a_end='0' else
 	    pl_end;
 
 end;

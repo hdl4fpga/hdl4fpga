@@ -7,7 +7,7 @@ use hdl4fpga.base.all;
 
 entity sio_sin is
 	generic (
-		debug : boolean := false);
+		debug     : boolean := false);
 	port (
 		sin_clk   : in  std_logic;
 		sin_frm   : in  std_logic;
@@ -29,7 +29,7 @@ entity sio_sin is
 		rgtr_len  : buffer std_logic_vector(8-1 downto 0);
 		rgtr_dv   : out std_logic;
 		rgtr_data : out std_logic_vector;
-		tp : out std_logic_vector(1 to 32));
+		tp        : out std_logic_vector(1 to 32));
 end;
 
 architecture beh of sio_sin is
@@ -39,7 +39,7 @@ architecture beh of sio_sin is
 	signal rev8_data : std_logic_vector(des8_data'range); -- Xilinx ISE's bug
 
 	type states is (s_id, s_size, s_data);
-	signal stt       : states;
+	signal stt : states;
 
 begin
 

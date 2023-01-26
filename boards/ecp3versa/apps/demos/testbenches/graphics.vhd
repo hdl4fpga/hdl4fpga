@@ -64,21 +64,21 @@ architecture ecp3versa_graphics of testbench is
 			ddr3_odt    : out std_logic := '1';
 	
 	
-			phy1_125clk : in    std_logic := '-';
-			phy1_rst    : out   std_logic;
-			phy1_coma   : out   std_logic := 'Z';
+			phy1_125clk : in  std_logic := '-';
+			phy1_rst    : out std_logic;
+			phy1_coma   : out std_logic := 'Z';
 			phy1_mdio   : inout std_logic;
-			phy1_mdc    : out   std_logic;
-			phy1_gtxclk : buffer   std_logic;
-			phy1_crs    : out   std_logic;
-			phy1_col    : out   std_logic;
-			phy1_txc    : in    std_logic := '-';
-			phy1_tx_d   : out   std_logic_vector(0 to 8-1);
-			phy1_tx_en  : out   std_logic;
-			phy1_rxc    : in    std_logic := '-';
-			phy1_rx_er  : in    std_logic := '-';
-			phy1_rx_dv  : in    std_logic := '-';
-			phy1_rx_d   : in    std_logic_vector(0 to 8-1) := (others => '-');
+			phy1_mdc    : out std_logic;
+			phy1_gtxclk : buffer std_logic;
+			phy1_crs    : out std_logic;
+			phy1_col    : out std_logic;
+			phy1_txc    : out std_logic := '-';
+			phy1_tx_d   : out std_logic_vector(0 to 8-1);
+			phy1_tx_en  : out std_logic;
+			phy1_rxc    : in  std_logic := '-';
+			phy1_rx_er  : in  std_logic := '-';
+			phy1_rx_dv  : in  std_logic := '-';
+			phy1_rx_d   : in  std_logic_vector(0 to 8-1) := (others => '-');
 	--
 	--		phy2_125clk : in std_logic;
 	--		phy2_rst    : out std_logic;
@@ -218,11 +218,11 @@ begin
 		port map (
 			mii_data4 => snd_data,
 			mii_data5 => req_data,
-			mii_frm1 => '0',
-			mii_frm2 => '0', --mii_req, -- ping
+			mii_frm1 => '0', -- mii_req, -- arp
+			mii_frm2 => mii_req, -- ping
 			mii_frm3 => '0',
-			mii_frm4 => mii_req,
-			mii_frm5 => mii_req1,
+			mii_frm4 => '0', -- mii_req, -- write
+			mii_frm5 => '0', -- mii_req1, -- read
 	
 			mii_txc  => mii_rxc,
 			mii_txen => mii_rxdv,
@@ -231,10 +231,10 @@ begin
 		ethrx_e : entity hdl4fpga.eth_rx
 		port map (
 			dll_data   => datarx_null,
-			mii_clk    => mii_rxc,
-			mii_frm    => mii_rxdv,
-			mii_irdy   => mii_rxdv,
-			mii_data   => mii_rxd);
+			mii_clk    => mii_txc,
+			mii_frm    => mii_txen,
+			mii_irdy   => mii_txen,
+			mii_data   => mii_txd);
 
 	end block;
 
@@ -251,8 +251,9 @@ begin
 		phy1_rx_dv  => mii_rxdv,
 		phy1_rx_d   => mii_rxd,
 
-		phy1_txc   => open,
-		phy1_tx_en => mii_txen,
+		phy1_txc    => mii_txc,
+		phy1_tx_en  => mii_txen,
+		phy1_tx_d   => mii_txd,
 
 		--         --
 		-- DDR RAM --

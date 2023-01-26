@@ -254,10 +254,11 @@ architecture graphics of ecp3versa is
 	signal ctlrpll_sclk2x : std_logic;
 	alias ctlr_clk        : std_logic is ctlrpll_sclk;
 
-	alias  sio_clk   : std_logic is phy1_125clk;
+	alias  sin_clk        : std_logic is phy1_125clk;
 
 	attribute oddrapps : string;
 	attribute oddrapps of phy1_gtxclk_i : label is "SCLK_ALIGNED";
+	attribute oddrapps of phy1_txc_i : label is "SCLK_ALIGNED";
 
 begin
 
@@ -417,7 +418,7 @@ begin
 			mii_txc  : in  std_logic;
 			mii_txd  : out std_logic_vector(phy1_tx_d'range);
 			mii_txen : out std_logic;
-			sio_clk  : in  std_logic);
+			so_clk   : in  std_logic);
 		port map (
 		    mii_rxc  => phy1_rxc,
 		    mii_rxdv => phy1_rx_dv,
@@ -425,7 +426,7 @@ begin
 			mii_txc  => phy1_125clk,
 			mii_txen => phy1_tx_en,
 			mii_txd  => phy1_tx_d,
-			sio_clk  => phy1_125clk);
+			so_clk   => sin_clk);
 
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
@@ -441,6 +442,8 @@ begin
 		signal miitx_end  : std_logic;
 		signal miitx_data : std_logic_vector(si_data'range);
 		signal ser_data   : std_logic_vector(mii_txd'range);
+		signal txen       : std_logic;
+		signal txd        : std_logic_vector(mii_txd'range);
 
 	begin
 
@@ -505,7 +508,6 @@ begin
 		port map (
 			tp         => open,
 
-			sio_clk    => sio_clk,
 			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
 			miirx_frm  => miirx_frm,
@@ -513,6 +515,7 @@ begin
 			miirx_trdy => open,
 			miirx_data => miirx_data,
 
+			mii_clk    => mii_txc,
 			miitx_frm  => miitx_frm,
 			miitx_irdy => miitx_irdy,
 			miitx_trdy => miitx_trdy,
@@ -525,6 +528,7 @@ begin
 			si_end     => si_end,
 			si_data    => si_data,
 
+			so_clk     => so_clk,
 			so_frm     => so_frm,
 			so_irdy    => so_irdy,
 			so_trdy    => so_trdy,
@@ -542,13 +546,18 @@ begin
 			ser_irdy   => open,
 			ser_data   => ser_data);
 
-		process (mii_txc)
-		begin
-			if rising_edge(mii_txc) then
-				mii_txen <= miitx_frm and not miitx_end;
-				mii_txd  <= ser_data;
-			end if;
-		end process;
+		txen <= miitx_frm and not miitx_end;
+		txd  <= ser_data;
+		buffer_e : entity hdl4fpga.latency
+		generic map (
+			n => mii_txd'length+1,
+			d => (0 to mii_txd'length+1-1 => 4))
+		port map (
+			clk => mii_txc,
+			di(mii_txd'length) => txen,
+			di(mii_txd'range)  => txd,
+			do(mii_txd'length) => mii_txen,
+			do(mii_txd'range)  => mii_txd);
 
 	end block;
 
@@ -577,11 +586,12 @@ begin
 		timing_id    => video_record.timing,
 		fifo_size    => mem_size)
 	port map (
-		sio_clk      => sio_clk,
+		sin_clk      => sin_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,
 		sin_trdy     => so_trdy,
 		sin_data     => so_data,
+		sout_clk     => phy1_125clk,
 		sout_frm     => si_frm,
 		sout_irdy    => si_irdy,
 		sout_trdy    => si_trdy,
@@ -843,6 +853,13 @@ begin
 
 	-- VGA --
 	---------
+
+	phy1_txc_i : oddrxd1
+	port map (
+		sclk => phy1_rxc,
+		da   => '0',
+		db   => '1',
+		q    => phy1_txc);
 
 	phy1_gtxclk_i : oddrxd1
 	port map (

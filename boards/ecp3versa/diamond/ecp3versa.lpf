@@ -65,6 +65,9 @@ BLOCK PATH FROM CLKNET "ddr_sclk2x" TO CLKNET "ddr_sclk";
 BLOCK PATH FROM CLKNET "ddr_eclk"   TO CLKNET "ddr_sclk";
 BLOCK PATH FROM CLKNET "ddr_eclk"   TO CLKNET "ddrphy_e/eclksynca_eclk";
 BLOCK PATH FROM CLKNET "clk"        TO CLKNET "uart_rxc";
+BLOCK PATH FROM CLKNET "clk"        TO CLKNET "phy1_125clk";
+BLOCK PATH FROM CLKNET "phy1_125clk"        TO CLKNET "clk";
+
 
 
 LOCATE VREF "vref1_ddr3"  SITE "E1";

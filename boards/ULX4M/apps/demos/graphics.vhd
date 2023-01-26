@@ -597,11 +597,12 @@ begin
 		timing_id    => video_record.timing,
 		fifo_size    => mem_size)
 	port map (
-		sio_clk      => sio_clk,
+		sin_clk      => sio_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,
 		sin_trdy     => so_trdy,
 		sin_data     => so_data,
+		sout_clk     => sio_clk,
 		sout_frm     => si_frm,
 		sout_irdy    => si_irdy,
 		sout_trdy    => si_trdy,

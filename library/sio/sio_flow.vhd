@@ -30,17 +30,16 @@ use hdl4fpga.base.all;
 
 entity sio_flow is
 	generic (
-		debug : boolean := false);
+		debug   : boolean := false);
 	port (
-		tp : out std_logic_vector(1 to 32);
-		sio_clk : in std_logic;
-
+		rx_clk  : in std_logic;
 		rx_frm  : in std_logic;
 		rx_irdy : in std_logic;
 		rx_trdy : out std_logic;
 		rx_end  : in std_logic := '0';
 		rx_data : in std_logic_vector;
 
+		so_clk  : in std_logic;
 		so_frm  : out std_logic;
 		so_irdy : buffer std_logic;
 		so_trdy : in  std_logic := '1';
@@ -52,11 +51,13 @@ entity sio_flow is
 		si_end  : in  std_logic := '0';
 		si_data : in  std_logic_vector;
 
+		tx_clk  : in std_logic;
 		tx_frm  : buffer std_logic;
 		tx_irdy : buffer std_logic;
 		tx_trdy : in  std_logic := '1';
 		tx_end  : out std_logic;
-		tx_data : buffer std_logic_vector);
+		tx_data : buffer std_logic_vector;
+		tp      : out std_logic_vector(1 to 32));
 
 end;
 
@@ -105,7 +106,7 @@ begin
 	rx_trdy <= sin_trdy when rx_end='0' else not so_irdy;
 	siosin_e : entity hdl4fpga.sio_sin
 	port map (
-		sin_clk   => sio_clk,
+		sin_clk   => rx_clk,
 		sin_frm   => rx_frm,
 		sin_irdy  => rx_irdy,
 		sin_trdy  => sin_trdy,
@@ -129,7 +130,7 @@ begin
 		check_sov => true,
 		check_dov => true)
 	port map(
-		src_clk   => sio_clk,
+		src_clk   => rx_clk,
 		src_irdy  => rx_irdy,
 		src_trdy  => open,
 		src_data  => rx_data,
@@ -138,7 +139,7 @@ begin
 		commit    => buffer_cmmt,
 		overflow  => buffer_ovfl,
 
-		dst_clk   => sio_clk,
+		dst_clk   => so_clk,
 		dst_irdy  => so_irdy,
 		dst_trdy  => so_trdy,
 		dst_data  => so_data);
@@ -149,17 +150,17 @@ begin
 	generic map (
 		rid  => std_logic_vector'(x"01"))
 	port map (
-		rgtr_clk  => sio_clk,
+		rgtr_clk  => rx_clk,
 		rgtr_id   => rgtr_id,
 		rgtr_dv   => rgtr_dv,
 		rgtr_data => rgtr_data,
 		dv        => ackrx_dv,
 		data      => ackrx_data);
 
-	process (sio_clk)
+	process (rx_clk)
 		variable last : unsigned(ackrx_data'range) := (others => '0');
 	begin
-		if rising_edge(sio_clk) then
+		if rising_edge(rx_clk) then
 			if ackrx_dv='1' then
 				if to_bit(ackrx_data(ackrx_data'right))='1' then
 					buffer_rllbk <= '1';
@@ -181,9 +182,9 @@ begin
 		end if;
 	end process;
 
-	process (sio_clk)
+	process (tx_clk)
 	begin
-		if rising_edge(sio_clk) then
+		if rising_edge(tx_clk) then
 			if acktx_end='1' then
 				if tx_trdy='1' then
 					ackrply_rdy <= ackrply_req;
@@ -214,7 +215,7 @@ begin
 			n => 1,
 			d => (0 to 0 => 2))
 		port map (
-			clk => sio_clk,
+			clk => rx_clk,
 			di(0) => rx_frm,
 			do(0) => rx_dfrm);
 
@@ -227,7 +228,7 @@ begin
 			latency   => 1,
 			check_dov => true)
 		port map(
-			src_clk   => sio_clk,
+			src_clk   => rx_clk,
 			src_irdy  => metarx_irdy,
 			src_trdy  => open,
 			src_data  => metarx_data,
@@ -236,15 +237,15 @@ begin
 			commit    => meta_cmmt,
 			overflow  => meta_ovfl,
 
-			dst_clk   => sio_clk,
+			dst_clk   => tx_clk,
 			dst_irdy  => meta_irdy,
 			dst_trdy  => acktx_trdy,
 			dst_data  => meta_data);
 
-		wait_fifo_latency : process (acktx_frm, sio_clk)
+		wait_fifo_latency : process (acktx_frm, tx_clk)
 			variable q : unsigned(0 to 2-1);
 		begin
-			if rising_edge(sio_clk) then
+			if rising_edge(tx_clk) then
 				if acktx_frm='0' then
 					q := (others => '0');
 				else
@@ -258,7 +259,7 @@ begin
 		acktx_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => ackrply_data,
-			sio_clk  => sio_clk,
+			sio_clk  => tx_clk,
 			sio_frm  => tx_frm,
 			sio_irdy => ack_irdy,
 			sio_trdy => ack_trdy,
@@ -282,7 +283,7 @@ begin
 		req <= acktx_frm & si_frm;
 		arbiter_e : entity hdl4fpga.arbiter
 		port map (
-			clk => sio_clk,
+			clk => tx_clk,
 			req => req,
 			gnt => gnt);
 

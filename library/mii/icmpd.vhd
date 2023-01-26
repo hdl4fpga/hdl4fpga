@@ -227,6 +227,7 @@ begin
 			commit   => commit,
 			avail    => tx_irdy,
 
+			dst_clk  => mii_clk,
 			dst_frm  => icmppltx_frm,
 			dst_irdy => icmppltx_trdy,
 			dst_trdy => icmppltx_irdy,

@@ -49,6 +49,7 @@ entity txn_buffer is
 		avail    : buffer std_logic;
 
 
+		dst_clk  : in  std_logic;
 		dst_frm  : in  std_logic;
 		dst_irdy : in  std_logic;
 		dst_trdy : out std_logic;
@@ -129,7 +130,7 @@ begin
 		commit    => fifo_commit,
 		overflow  => open,
 
-		dst_clk   => src_clk,
+		dst_clk   => dst_clk,
 		dst_irdy  => do_irdy,
 		dst_trdy  => do_trdy,
 		dst_data  => dst_data);
@@ -148,7 +149,7 @@ begin
 		src_trdy   => rx_trdy,
 		src_data   => rx_data,
 
-		dst_clk    => src_clk,
+		dst_clk    => dst_clk,
 		dst_irdy   => tx_irdy,
 		dst_trdy   => tx_trdy,
 		dst_data   => tx_data);
@@ -157,11 +158,11 @@ begin
 		signal cntr : unsigned(0 to tx_data'length-dst_tag'length-1);
 	begin
 
-		process (dst_frm, src_clk)
+		process (dst_frm, dst_clk)
 			variable d, q : std_logic;
 		begin
 			d := dst_frm;
-			if rising_edge(src_clk) then
+			if rising_edge(dst_clk) then
 				if dst_frm='0' then
 					cntr <= (others => '0');
 				elsif tx_irdy='0' then

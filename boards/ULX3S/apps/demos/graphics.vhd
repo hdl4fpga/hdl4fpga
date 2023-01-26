@@ -634,7 +634,7 @@ begin
 			default_ipv4a => aton("192.168.1.1"))
 		port map (
 			hdplx      => hdplx,
-			sio_clk    => mii_clk,
+			mii_clk     => mii_clk,
 			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
 			miirx_frm  => mii_rxdv,
@@ -652,6 +652,7 @@ begin
 			si_end     => si_end,
 			si_data    => si_data,
 
+			so_clk     => mii_clk,
 			so_frm     => so_frm,
 			so_irdy    => so_irdy,
 			so_trdy    => so_trdy,
@@ -700,11 +701,12 @@ begin
 		fifo_size    => mem_size)
 
 	port map (
-		sio_clk      => sio_clk,
+		sin_clk      => sio_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,
 		sin_trdy     => so_trdy,
 		sin_data     => so_data,
+		sout_clk     => sio_clk,
 		sout_frm     => si_frm,
 		sout_irdy    => si_irdy,
 		sout_trdy    => si_trdy,

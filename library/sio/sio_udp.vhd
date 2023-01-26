@@ -37,9 +37,10 @@ entity sio_udp is
 		my_mac        : std_logic_vector(0 to 48-1));
 	port (
 		hdplx         : in  std_logic;
-		sio_clk       : in  std_logic;
+		mii_clk       : in  std_logic;
 		dhcpcd_req    : in  std_logic := '0';
 		dhcpcd_rdy    : out std_logic := '0';
+
 
 		miirx_frm     : in  std_logic;
 		miirx_irdy    : in  std_logic;
@@ -52,6 +53,7 @@ entity sio_udp is
 		miitx_end     : buffer std_logic;
 		miitx_data    : out std_logic_vector;
 
+		so_clk        : in  std_logic;
 		so_frm        : out std_logic;
 		so_irdy       : buffer std_logic;
 		so_trdy       : in  std_logic := '1';
@@ -89,7 +91,7 @@ begin
 	port map (
 		tp => tp,
 		hdplx      => hdplx,
-		mii_clk    => sio_clk,
+		mii_clk    => mii_clk,
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,
 		miirx_frm  => miirx_frm,
@@ -97,6 +99,7 @@ begin
 		miirx_trdy => miirx_trdy,
 		miirx_data => miirx_data,
 
+		plrx_clk   => so_clk,
 		plrx_frm   => plrx_frm,
 		plrx_irdy  => plrx_irdy,
 		plrx_trdy  => plrx_trdy,
@@ -127,14 +130,14 @@ begin
 			debug   => debug)
 		port map (
 			-- tp => tp,
-			sio_clk => sio_clk,
-	
+			rx_clk  => so_clk,
 			rx_frm  => plrx_frm,
 			rx_irdy => plrx_irdy,
 			rx_trdy => plrx_trdy,
 			rx_end  => plrx_end,
 			rx_data => plrx_data,
 	
+			so_clk  => so_clk,
 			so_frm  => so_frm,
 			so_irdy => so_irdy,
 			so_trdy => so_trdy,
@@ -146,6 +149,7 @@ begin
 			si_end  => si_end,
 			si_data => si_data,
 	
+			tx_clk  => mii_clk,
 			tx_frm  => tx_frm,
 			tx_irdy => tx_irdy,
 			tx_trdy => tx_trdy,
@@ -154,7 +158,7 @@ begin
 
 		miibuffer_e : entity hdl4fpga.mii_buffer
 		port map(
-			io_clk => sio_clk,
+			io_clk => mii_clk,
 			i_frm  => tx_frm,
 			i_irdy => tx_irdy,
 			i_trdy => tx_trdy,

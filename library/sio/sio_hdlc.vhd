@@ -125,6 +125,7 @@ begin
 			commit   => fifo_cmmt,
 			avail    => fifo_avail,
 
+			dst_clk  => uart_clk,
 			dst_frm  => rx_frm,
 			dst_irdy => rx_trdy,
 			dst_trdy => fifoo_trdy,
@@ -192,14 +193,15 @@ begin
 
 	flow_e : entity hdl4fpga.sio_flow
 	port map (
-		sio_clk => uart_clk,
 
+		rx_clk  => uart_clk,
 		rx_frm  => rx_frm,
 		rx_irdy => rx_irdy,
 		rx_trdy => rx_trdy,
 		rx_end  => rx_end,
 		rx_data => rx_data,
 
+		so_clk  => uart_clk,
 		so_frm  => so_frm,
 		so_irdy => so_irdy,
 		so_trdy => so_trdy,
@@ -211,6 +213,7 @@ begin
 		si_end  => si_end,
 		si_data => si_data,
 
+		tx_clk  => uart_clk,
 		tx_frm  => tx_frm,
 		tx_irdy => tx_irdy,
 		tx_trdy => tx_trdy,
