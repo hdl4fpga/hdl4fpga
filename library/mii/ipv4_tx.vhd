@@ -202,9 +202,9 @@ begin
 		'1' when state=s_ipv4a   else
 		'1' when state=s_ipv4hdr else
 		ipv4_trdy;
-	ipv4shdr_irdy  <= ipv4_trdy when ipv4shdr_frm='1'  else '0';
+	ipv4shdr_irdy  <= ipv4_trdy when  ipv4shdr_frm='1' else '0';
 	ipv4proto_irdy <= ipv4_trdy when ipv4proto_frm='1' else '0';
-	ipv4len_irdy   <= ipv4_trdy when ipv4len_frm='1'   else '0';
+	ipv4len_irdy   <= ipv4_trdy when   ipv4len_frm='1' else '0';
 	ipv4_irdy <= 
 		'0'            when   mtdlltx_end='0' else 
 		'0'            when   state=s_ipv4a else
