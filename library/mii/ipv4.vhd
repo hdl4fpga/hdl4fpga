@@ -445,7 +445,7 @@ begin
 -- 
 		-- end block;
 
-		protomux_e : entity hdl4fpga.sio_mux
+		ipv4proto_e : entity hdl4fpga.sio_mux
 		port map (
 			mux_data => ipv4proto_tx,
 			sio_clk  => mii_clk,
@@ -456,7 +456,7 @@ begin
 			so_data  => ipv4proto_data);
 
 		netlentx_irdy <= nettx_irdy;
-		len_e : entity hdl4fpga.sio_ram
+		ipv4len_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_length => 16)
 		port map (

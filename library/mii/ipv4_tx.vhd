@@ -172,7 +172,7 @@ begin
 		mii_cksm  => ipv4chsm_data);
 
 	ipv4_frm <= pl_frm;
-	frm_p : process (pl_frm, frm_ptr, ipv4chsm_end, state, ipv4a_end)
+	field_p : process (pl_frm, frm_ptr, ipv4chsm_end, state, ipv4a_end)
 	begin
 		if pl_frm='1' then
 			case state is

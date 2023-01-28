@@ -193,110 +193,157 @@ begin
 
 	begin
 
-		dprx_irdy <= '0' when sp_full='0' else pltx_irdy;
-		udpiplentx_irdy <= '0' when dp_full='0' else pltx_irdy;
-		udpdp_e : entity hdl4fpga.sio_ram
-		generic map (
-			mem_length => 16)
-		port map (
-			si_clk  => mii_clk,
-			si_frm  => pltx_frm,
-			si_irdy => dprx_irdy,
-			si_trdy => open,
-			si_full => dp_full,
-			si_data => pltx_data,
+		udpsp_irdy  <= udppltx_irdy;
+		udpdp_irdy  <= udppltx_irdy when udpsp_end='1' else '0';
+		udplen_irdy <= udppltx_irdy when udpdp_end='1' else '0';
 
-			so_clk  => mii_clk,
-			so_frm  => pltx_frm,
-			so_irdy => dptx_irdy,
-			so_trdy => open,
-			so_end  => dp_end,
-			so_data => dp_data);
-
-		sprx_irdy <= '0' when ipdatx_full='0' else pltx_irdy;
 		udpsp_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_length => 16)
 		port map (
 			si_clk   => mii_clk,
-			si_frm   => pltx_frm,
-			si_irdy  => sprx_irdy,
+			si_frm   => udppltx_frm,
+			si_irdy  => udpsp_irdy,
 			si_trdy  => open,
-			si_full  => sp_full,
-			si_data  => pltx_data,
+			si_full  => udpsp_end,
+			si_data  => udppltx_data,
 
 			so_clk   => mii_clk,
-			so_frm   => pltx_frm,
-			so_irdy  => sptx_irdy,
+			so_frm   => udppltx_frm,
+			so_irdy  => sp_irdy,
 			so_trdy  => open,
 			so_end   => sp_end,
 			so_data  => sp_data);
 
+		udpdp_e : entity hdl4fpga.sio_ram
+		generic map (
+			mem_length => 16)
+		port map (
+			si_clk  => mii_clk,
+			si_frm  => udppltx_frm,
+			si_irdy => udpdp_irdy,
+			si_trdy => open,
+			si_full => udpdp_end,
+			si_data => udppltx_data,
+
+			so_clk  => mii_clk,
+			so_frm  => udppltx_frm,
+			so_irdy => dp_irdy,
+			so_trdy => open,
+			so_end  => dp_end,
+			so_data => dp_data);
+
 		len_b : block
-			signal tx_ci      : std_logic;
-			signal tx_co      : std_logic;
-			signal crtn_data  : std_logic_vector(0 to pltx_data'length-1);
-			signal datao      : std_logic_vector(0 to 16-1);
-			signal datai      : std_logic_vector(0 to 16-1);
-			signal mux_data   : std_logic_vector(0 to 16-1) := reverse(reverse(std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16))), crtn_data'length);
+			-- port (
+				-- si_clk  : in  std_logic;
+				-- si_frm  : in  std_logic;
+				-- si_irdy : in  std_logic;
+				-- si_trdy : out std_logic;
+				-- si_full : out std_logic;
+				-- si_data : in  std_logic_vector;
+				-- 
+				-- so_clk  : in  std_logic;
+				-- so_frm  : in  std_logic;
+				-- so_irdy : in  std_logic;
+				-- so_trdy : out std_logic;
+				-- so_end  : out std_logic;
+				-- so_data : out std_logic_vector)
+			-- port map (
+				-- si_clk  => mii_clk,
+				-- si_frm  => udppltx_frm,
+				-- si_irdy => udplen_irdy,
+				-- si_trdy => open,
+				-- si_full => udplen_end,
+				-- si_data => udppltx_data,
+-- 
+			    -- so_clk  => mii_clk,
+			    -- so_frm  => udpltx_frm,
+			    -- so_irdy => len_irdy,
+			    -- so_trdy => open,
+			    -- so_end  => len_end,
+			    -- so_data => len_data);
+
+			alias si_frm  is udppltx_frm;
+			alias si_irdy is udplen_irdy;
+			alias si_end  is udplen_end;
+			alias si_data is udppltx_data;
+
+			alias so_frm  is udppltx_frm;
+			alias so_irdy is len_irdy;
+			alias so_end  is len_end;
+			alias so_data is len_data;
+
+			signal crtn_data : std_logic_vector(si_data'range);
+			signal si_ci     : std_logic;
+			signal si_co     : std_logic;
+			signal si_sum    : std_logic_vector(si_data'range);
+			signal so_ci     : std_logic;
+			signal so_co     : std_logic;
+			signal so_sum    : std_logic_vector(si_data'range);
+
 		begin
 
-			lenrx_irdy <= '0' when dp_full='0' else pltx_irdy;
 			crtnmux_e : entity hdl4fpga.sio_mux
 			port map (
-				mux_data => mux_data,
+				mux_data => reverse(reverse(std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16))), crtn_data'length),
 				sio_clk  => mii_clk,
-				sio_frm  => pltx_frm,
-				sio_irdy => lenrx_irdy,
+				sio_frm  => udppltx_frm,
+				sio_irdy => udplen_irdy,
 				sio_trdy => open,
 				so_data  => crtn_data);
 
-			adder_e : entity hdl4fpga.adder
+			si_adder_e : entity hdl4fpga.adder
 			port map (
-				ci  => tx_ci,
-				a   => pltx_data,
+				ci  => si_ci,
+				a   => si_data,
 				b   => crtn_data,
-				s   => len_datai,
-				co  => tx_co);
+				s   => si_sum,
+				co  => si_co);
 
-			cy_p : process (mii_clk)
+			si_cy_p : process (mii_clk)
 			begin
 				if rising_edge(mii_clk) then
-					if pltx_frm='0' then
-						tx_ci <= '0';
+					if si_frm='0' then
+						si_ci <= '0';
 					elsif pltx_irdy='1' then
-						tx_ci <= tx_co;
+						si_ci <= si_co;
 					end if;
 				end if;
 			end process;
 
-			rgtr_e : entity hdl4fpga.sio_ff
-			port map (
-				si_clk  => mii_clk,
-				si_frm  => pltx_frm,
-				si_irdy => lenrx_irdy,
-				si_trdy => open,
-				si_full => udplentx_full,
-				si_data => len_datai,
-				so_data => datai);
+    		ram_e : entity hdl4fpga.sio_ram
+    		generic map (
+    			mem_length => 2*10)
+    		port map (
+    			si_clk  => mii_clk,
+    			si_frm  => si_frm,
+    			si_irdy => si_irdy,
+    			si_trdy => open,
+    			si_full => open,
+    			si_data => si_co & si_sum & si_ci,
 
-			datao <= reverse(datai,8);
-			mux_e : entity hdl4fpga.sio_mux
+    			so_clk  => mii_clk,
+    			so_frm  => so_frm,
+    			so_irdy => so_irdy,
+    			so_trdy => open,
+    			so_end  => so_end,
+    			so_data => so_co & so_sum & so_ci);
+
+			so_adder_e : entity hdl4fpga.adder
 			port map (
-				mux_data => datao,
-				sio_clk  => mii_clk,
-				sio_frm  => pltx_frm,
-				sio_irdy => lentx_irdy,
-				sio_trdy => open,
-				so_end   => len_end,
-				so_data  => len_data);
+				ci  => so_ci,
+				a   => so_sum,
+				b   => (so_data'range => '0'),
+				s   => so_data,
+				co  => so_co);
+
+		end block;
 
 			ppltx_data <=
 				pltx_data when dp_full='0'  else
 				len_datai when udplentx_full='0' else
 				pltx_data;
 
-		end block;
 
 		dptx_irdy  <= udphdr_trdy;
 		sptx_irdy  <= '0' when dp_end='0'  else udphdr_trdy;
