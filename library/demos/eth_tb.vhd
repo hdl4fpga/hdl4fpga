@@ -62,12 +62,12 @@ architecture def of eth_tb is
 -- correct 0x347b
 	constant icmppkt : std_logic_vector :=
 		x"4500"                 &    -- IP Version, TOS
-		x"001c"                 &    -- IP Length
-		x"d1de"                 &    -- IP Identification
-		x"0000"                 &    -- IP Fragmentation
+		x"0054"                 &    -- IP Length
+		x"16b1"                 &    -- IP Identification
+		x"4000"                 &    -- IP Fragmentation
 		x"4001"                 &    -- IP TTL, protocol
-		x"279c"                 &    -- IP Header Checksum
-		x"a55a55aa"             &    -- IP Source IP address
+		x"a297"                 &    -- IP Header Checksum
+		x"c0a80002"             &    -- IP Source IP address
 		x"c0a8000e"             &    -- IP Destiantion IP Address
 		reverse(x"00000000") &
 		reverse(x"12345678",8);

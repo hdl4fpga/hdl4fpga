@@ -374,6 +374,10 @@ begin
 		signal ldatai       : std_logic_vector(pltx_data'range);
 		signal len          : std_logic_vector(0 to 16);
 
+		signal netlentx_irdy : std_logic;
+		signal netlentx_end  : std_logic;
+		signal netdatx_end   : std_logic;
+		signal netdatx_irdy  : std_logic;
 	begin
 
 		-- len_b : block
@@ -452,15 +456,16 @@ begin
 			so_end   => ipv4proto_end,
 			so_data  => ipv4proto_data);
 
+		netlentx_irdy <= nettx_irdy;
 		len_e : entity hdl4fpga.sio_ram
 		generic map (
-			mem_length => 32)
+			mem_length => 16)
 		port map (
 			si_clk   => mii_clk,
 			si_frm   => ipv4pltx_frm,
 			si_irdy  => nettx_irdy,
 			si_trdy  => open,
-			si_full  => nettx_end,
+			si_full  => netlentx_end,
 			si_data  => ipv4pltx_data,
 
 			so_clk   => mii_clk,
@@ -506,15 +511,16 @@ begin
 			ipv4satx_trdy <= ipv4sard_trdy;
 		end block;
 
+		netdatx_irdy <= nettx_irdy when netlentx_end='1' else '0';
 		ipv4da_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_length => 32)
 		port map (
 			si_clk   => mii_clk,
 			si_frm   => ipv4pltx_frm,
-			si_irdy  => nettx_irdy,
+			si_irdy  => netdatx_irdy,
 			si_trdy  => open,
-			si_full  => nettx_end,
+			si_full  => netdatx_end,
 			si_data  => ipv4pltx_data,
 
 			so_clk   => mii_clk,
@@ -524,6 +530,7 @@ begin
 			so_end   => ipv4atx_end,
 			so_data  => ipv4da_data);
 
+		nettx_end <= netdatx_end;
 		ipv4atx_trdy <= ipv4satx_trdy when ipv4satx_end='0' else ipv4da_trdy;
 		ipv4atx_data <= 
 			ipv4satx_data when ipv4satx_end='0' else

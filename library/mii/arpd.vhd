@@ -50,13 +50,15 @@ entity arpd is
 		spatx_end   : in  std_logic;
 		spatx_data  : in  std_logic_vector;
 
-		arpdtx_frm  : buffer std_logic := '0';
-		dlltx_trdy  : in  std_logic;
-		dlltx_full  : in  std_logic;
-		arpdtx_irdy : out std_logic;
-		arpdtx_trdy : in  std_logic;
-		arpdtx_end  : buffer std_logic;
-		arpdtx_data : out std_logic_vector;
+		mtdlltx_irdy : out  std_logic;
+		mtdlltx_trdy : in   std_logic;
+		mtdlltx_end  : in   std_logic;
+
+		arptx_frm   : buffer std_logic := '0';
+		arptx_irdy  : out std_logic;
+		arptx_trdy  : in  std_logic;
+		arptx_end   : buffer std_logic;
+		arptx_data  : out std_logic_vector;
 
 		tp          : out std_logic_vector(1 to 32));
 
@@ -66,11 +68,8 @@ architecture def of arpd is
 
 	signal tparx_frm  : std_logic;
 	signal tparx_vld  : std_logic;
-	signal arpd_rdy   : std_logic := '0';
-	signal arpd_req   : std_logic := '0';
-	signal arptx_irdy : std_logic;
-	signal arptx_trdy : std_logic;
-	signal arptx_data : std_logic_vector(arpdtx_data'range);
+	signal arpd_rdy   : std_logic;
+	signal arpd_req   : std_logic;
 
 begin
 
@@ -97,29 +96,12 @@ begin
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
-			if to_bit(arpd_req xor arpd_rdy)='0' then
+			if (to_bit(arpd_req) xor to_bit(arpd_rdy))='0' then
 				if arprx_frm='1' then
-					arpd_req <= arpd_rdy xor (tparx_vld and sparx_end);
+					arpd_req <= to_stdulogic(to_bit(arpd_rdy)) xor (tparx_vld and sparx_end);
 				elsif to_bit(arpdtx_req xor arpdtx_rdy)='1' then
-					arpd_req <= not arpd_rdy;
+					arpd_req <= not to_stdulogic(to_bit(arpd_rdy));
 				end if;
-			end if;
-		end if;
-	end process;
-
-	process (mii_clk)
-	begin
-		if rising_edge(mii_clk) then
-			if arpdtx_frm='1' then
-				if arpdtx_end='1' then
-					if arpdtx_trdy='1' then
-						arpdtx_frm <= '0';
-						arpd_rdy  <= arpd_req;
-						arpdtx_rdy <= arpdtx_req;
-					end if;
-				end if;
-			elsif (arpd_req xor arpd_rdy)='1' then
-				arpdtx_frm <= '1';
 			end if;
 		end if;
 	end process;
@@ -129,19 +111,21 @@ begin
 		hwsa     => hwsa)
 	port map (
 		mii_clk  => mii_clk,
+		arp_req  => arpd_req,
+		arp_rdy  => arpd_rdy,
 		pa_frm   => spatx_frm,
 		pa_irdy  => spatx_irdy,
 		pa_trdy  => spatx_trdy,
 		pa_end   => spatx_end,
 		pa_data  => spatx_data,
 
-		arp_frm  => arpdtx_frm,
+		mtdlltx_irdy => mtdlltx_irdy,
+		mtdlltx_trdy => mtdlltx_trdy,
+		mtdlltx_end  => mtdlltx_end,
+
+		arp_frm  => arptx_frm,
 		arp_irdy => arptx_irdy,
 		arp_trdy => arptx_trdy,
-		arp_end  => arpdtx_end,
+		arp_end  => arptx_end,
 		arp_data => arptx_data);
-
-	arpdtx_irdy <=  dlltx_trdy when dlltx_full='0' else arptx_trdy;
-	arptx_irdy  <= '0' when dlltx_full='0' else arpdtx_trdy;
-	arpdtx_data <= (arpdtx_data'range => '1') when dlltx_full='0' else arptx_data;
 end;

@@ -111,16 +111,14 @@ begin
 				case state is
 				when s_ipv4a =>
 					if ipv4a_end='1' then
+						cntr := cntr - 1;
 						state <= s_ipv4hdr;
 					end if;
 				when s_ipv4hdr =>
-					if ipv4a_end='0' then
-						if cntr(0)='0' then
-							if (ipv4_trdy and pl_irdy)='1' then
-								cntr := cntr - 1;
-							end if;
+					if cntr(0)='0' then
+						if (ipv4_trdy and pl_irdy)='1' then
+							cntr := cntr - 1;
 						end if;
-					else
 					end if;
 				end case;
 			else
@@ -147,13 +145,13 @@ begin
 		so_data  => ipv4shdr_data);
 
 	ipv4hdr_data <=
-		ipv4shdr_data         when ipv4shdr_frm ='1'  else
-		ipv4proto_data        when ipv4proto_frm ='1' else
-		reverse(ipv4len_data) when ipv4len_frm='1'    else
+		ipv4shdr_data  when  ipv4shdr_frm='1' else
+		ipv4proto_data when ipv4proto_frm='1' else
+		ipv4len_data   when   ipv4len_frm='1' else
 		(others => '-');
 
 	cksm_data <= 
-		ipv4a_data   when state=s_ipv4a else
+		ipv4a_data   when state=s_ipv4a and ipv4a_end='0' else
 		ipv4hdr_data;
 	cksm_irdy <= 
 		ipv4a_trdy and ipv4a_irdy when state=s_ipv4a else
@@ -173,12 +171,15 @@ begin
 		mii_cksm  => ipv4chsm_data);
 
 	ipv4_frm <= pl_frm;
-	frm_p : process (pl_frm, frm_ptr, ipv4chsm_end, state)
+	frm_p : process (pl_frm, frm_ptr, ipv4a_end, ipv4chsm_end, state)
 	begin
 		if pl_frm='1' then
 			case state is
 			when s_ipv4a   =>
 				ipv4a_frm <= '1';
+				if ipv4a_end='1' then
+					ipv4shdr_frm  <= frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, (ipv4_verihl, ipv4_tos, ipv4_ident, ipv4_flgsfrg, ipv4_ttl));
+				end if;
 			when s_ipv4hdr =>
 				ipv4a_frm     <= ipv4chsm_end;
 				ipv4shdr_frm  <= frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, (ipv4_verihl, ipv4_tos, ipv4_ident, ipv4_flgsfrg, ipv4_ttl));
@@ -207,7 +208,7 @@ begin
 	ipv4len_irdy   <= ipv4_trdy when   ipv4len_frm='1' else '0';
 	ipv4_irdy <= 
 		'0'            when   mtdlltx_end='0' else 
-		'0'            when   state=s_ipv4a else
+		'0'            when   state=s_ipv4a and ipv4a_end='0' else
 		ipv4shdr_trdy  when  ipv4shdr_end='0' else
 		ipv4proto_trdy when ipv4proto_end='0' else
 		ipv4chsm_trdy  when  ipv4chsm_end='0' else

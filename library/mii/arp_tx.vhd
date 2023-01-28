@@ -35,7 +35,8 @@ entity arp_tx is
 		hwsa     : std_logic_vector(0 to 48-1));
 	port (
 		mii_clk  : in  std_logic;
-		arp_frm  : in  std_logic;
+		arp_req  : in  std_logic;
+		arp_rdy  : buffer std_logic;
 		
 		pa_frm   : buffer std_logic;
 		pa_irdy  : out std_logic;
@@ -43,62 +44,90 @@ entity arp_tx is
 		pa_end   : in  std_logic;
 		pa_data  : in  std_logic_vector;
 
-		arp_irdy : in  std_logic;
-		arp_trdy : out std_logic;
-		arp_end  : out std_logic;
+		mtdlltx_irdy : out std_logic := '1';
+		mtdlltx_trdy : in  std_logic := '1';
+		mtdlltx_end  : in  std_logic;
 
+		arp_frm  : buffer std_logic;
+		arp_irdy : buffer std_logic;
+		arp_trdy : in  std_logic;
+		arp_end  : out std_logic;
 		arp_data : out std_logic_vector);
 
 end;
 
 architecture def of arp_tx is
-	constant sha : std_logic_vector := hwsa;
-	constant tha : std_logic_vector := x"ff_ff_ff_ff_ff_ff";
-
-	signal mux_data    : std_logic_vector(0 to summation(arp4_frame)-(arp4_frame(arp_spa)+arp4_frame(arp_tpa))-1);
 	signal frm_ptr     : std_logic_vector(0 to unsigned_num_bits(summation(arp4_frame)/arp_data'length-1));
 	signal arpmux_irdy : std_logic;
+	signal arpmux_trdy : std_logic;
 	signal arpmux_data : std_logic_vector(arp_data'range);
 
 begin
 
+	arp_frm <= to_stdulogic(to_bit(arp_rdy) xor to_bit(arp_req));
 	process (mii_clk)
 		variable cntr : unsigned(frm_ptr'range);
 	begin
 		if rising_edge(mii_clk) then
 			if arp_frm='0' then
 				cntr := to_unsigned(summation(arp4_frame)/arp_data'length-1, cntr'length);
-			elsif cntr(0)='0' and arp_irdy='1' then
-				cntr := cntr - 1;
+			elsif cntr(0)='0' then
+				if mtdlltx_end='1' then
+					if (arp_irdy and arp_trdy)='1' then
+						cntr := cntr - 1;
+					end if;
+				end if;
+			elsif (arp_irdy and arp_trdy)='1' then
+				arp_rdy <= to_stdulogic(to_bit(arp_req));
 			end if;
 			frm_ptr <= std_logic_vector(cntr);
 		end if;
 	end process;
 
-	pa_frm  <= arp_frm and (
-		frame_decode(frm_ptr, reverse(arp4_frame), arp_data'length, arp_spa) or
-		frame_decode(frm_ptr, reverse(arp4_frame), arp_data'length, arp_tpa));
+	process (arp_frm, mtdlltx_end, frm_ptr)
+	begin
+		if arp_frm='1' then
+			if frame_decode(frm_ptr, reverse(arp4_frame), arp_data'length, arp_spa)='1' then
+				pa_frm <= '1';
+			elsif frame_decode(frm_ptr, reverse(arp4_frame), arp_data'length, arp_tpa)='1' then
+				pa_frm <= '1';
+			else
+				pa_frm <= '0';
+			end if;
+		else
+			pa_frm <= '0';
+		end if;
+	end process;
 	pa_irdy <= pa_frm and arp_irdy;
 	
-	mux_data <= reverse(
-		x"0001"          & -- htype 
-		x"0800"          & -- ptype 
-		x"06"            & -- hlen  
-		x"04"            & -- plen  
-		x"0002"          & -- oper  
-	    sha              & -- Sender Hardware Address
-		tha,             8);    -- Target Hardware Address
-
-	arpmux_irdy <= '0' when pa_frm='1' else arp_irdy;
+	arpmux_irdy <= 
+		'0' when mtdlltx_end='0' else
+		'0' when      pa_frm='1' else
+		arp_trdy;
 	arpmux_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data => mux_data,
+		mux_data => reverse(
+			x"0001" &                 -- htype 
+			x"0800" &                 -- ptype 
+			x"06"   &                 -- hlen  
+			x"04"   &                 -- plen  
+			x"0002" &                 -- oper  
+			hwsa    &                 -- Sender Hardware Address
+			x"ff_ff_ff_ff_ff_ff", 8), -- Target Hardware Address
         sio_clk  => mii_clk,
 		sio_frm  => arp_frm,
 		sio_irdy => arpmux_irdy,
-        sio_trdy => arp_trdy,
+        sio_trdy => arpmux_trdy,
         so_data  => arpmux_data);
-	arp_data <= arpmux_data when pa_frm='0' else pa_data;
+
+	arp_irdy <= 
+		'0'     when mtdlltx_end='0' else
+		pa_trdy when      pa_frm='1' else
+		arpmux_trdy;
+	arp_data <= 
+		(arp_data'range => '1') when mtdlltx_end='0' else
+		arpmux_data             when      pa_frm='0' else 
+		pa_data;
 	arp_end  <= frm_ptr(0);
 
 end;

@@ -169,10 +169,11 @@ architecture def of mii_ipoe is
 	signal ipv4satx_data : std_logic_vector(miitx_data'range);
 
 	signal arptxmac_full  : std_logic;
+	signal arptxmac_irdy  : std_logic;
 	signal arptxmac_trdy  : std_logic;
 	signal ipv4dlltx_end : std_logic;
+	signal ipv4dlltx_irdy : std_logic;
 	signal ipv4dlltx_trdy : std_logic;
-	signal mactx_full    : std_logic;
 
 	signal fifo_frm      : std_logic;
 	signal fifo_irdy     : std_logic;
@@ -370,9 +371,9 @@ begin
 		ethpltx_end  <= wirebus(arptx_end  & ipv4tx_end,  dev_gnt);
 		dlltx_data <= wirebus(arptx_data & ipv4tx_data, dev_gnt);
 		(0 => arptx_trdy,    1 => ipv4tx_trdy)    <= dev_gnt and (dev_gnt'range => ethpltx_trdy);
-		(0 => arptxmac_full, 1 => ipv4dlltx_end)  <= dev_gnt and (dev_gnt'range => mactx_full);
+		(0 => arptxmac_full, 1 => ipv4dlltx_end)  <= dev_gnt and (dev_gnt'range => mtdlltx_end);
 		(0 => arptxmac_trdy, 1 => ipv4dlltx_trdy) <= dev_gnt;
-
+		mtdlltx_irdy <= wirebus(arptxmac_trdy & ipv4dlltx_irdy,  dev_gnt);
 		hwtyp_tx     <= wirebus(reverse(x"0806",8) & reverse(x"0800",8), dev_gnt);
 
 	end block;
@@ -522,13 +523,14 @@ begin
 		spatx_end  => ipv4satx_end,
 		spatx_data => ipv4satx_data,
 
-		arpdtx_frm  => arptx_frm,
-		dlltx_full  => arptxmac_full,
-		dlltx_trdy  => arptxmac_trdy,
-		arpdtx_irdy => arptx_irdy,
-		arpdtx_trdy => arptx_trdy,
-		arpdtx_end  => arptx_end,
-		arpdtx_data => arptx_data);
+		arptx_frm  => arptx_frm,
+		mtdlltx_end  => arptxmac_full,
+		mtdlltx_irdy  => arptxmac_irdy,
+		mtdlltx_trdy  => arptxmac_trdy,
+		arptx_irdy => arptx_irdy,
+		arptx_trdy => arptx_trdy,
+		arptx_end  => arptx_end,
+		arptx_data => arptx_data);
 
 	ipv4_e : entity hdl4fpga.ipv4
 	generic map (
@@ -582,7 +584,7 @@ begin
 		pltx_data     => pltx_data,
 
 		ipv4tx_frm   => ipv4tx_frm,
-		mtdlltx_irdy => mtdlltx_irdy,
+		mtdlltx_irdy => ipv4dlltx_irdy,
 		mtdlltx_trdy => ipv4dlltx_trdy,
 		mtdlltx_end  => mtdlltx_end,
 
