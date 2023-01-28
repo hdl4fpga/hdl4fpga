@@ -352,7 +352,6 @@ begin
 		ipv4pltx_data <= wirebus(icmptx_data & udptx_data, dev_gnt);
 
 		ipv4proto_tx  <= wirebus(reverse(ipv4proto_icmp & ipv4proto_udp,8), dev_gnt);
-		-- nettx_irdy    <= wirebus(icmpipdatx_irdy  & udpipdatx_irdy,  dev_gnt);
 		iplentx_irdy  <= wirebus(icmpiplentx_irdy & udpiplentx_irdy, dev_gnt);
 
 		(0 => icmptx_trdy,    1 => udptx_trdy)    <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy);
@@ -548,12 +547,13 @@ begin
 		pl_end         => ipv4pltx_end,
 		pl_data        => ipv4pltx_data,
 
-		mtdlltx_irdy   => mtdlltx_irdy,
-		mtdlltx_trdy   => mtdlltx_trdy,
-		mtdlltx_end    => mtdlltx_end,
+		ipv4_frm       => ipv4tx_frm,
+
+		dlltx_irdy     => mtdlltx_irdy,
+		dlltx_trdy     => mtdlltx_trdy,
+		dlltx_end      => mtdlltx_end,
 
 		nettx_irdy     => nettx_irdy,
-		nettx_trdy     => '1',
 		nettx_end      => nettx_end,
 
 		ipv4a_frm      => ipv4atx_frm,
@@ -563,12 +563,12 @@ begin
 
 		ipv4len_irdy   => ipv4len_irdy,
 		ipv4len_data   => ipv4len_data,
+
 		ipv4proto_irdy => ipv4proto_irdy,
 		ipv4proto_trdy => ipv4proto_trdy,
 		ipv4proto_end  => ipv4proto_end,
 		ipv4proto_data => ipv4proto_data,
 
-		ipv4_frm       => ipv4tx_frm,
 		ipv4_irdy      => ipv4tx_irdy,
 		ipv4_trdy      => ipv4tx_trdy,
 		ipv4_end       => ipv4tx_end,

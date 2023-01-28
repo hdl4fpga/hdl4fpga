@@ -108,25 +108,25 @@ begin
 
 	arptx_e : entity hdl4fpga.arp_tx
 	generic map (
-		hwsa     => hwsa)
+		hwsa       => hwsa)
 	port map (
-		mii_clk  => mii_clk,
-		arp_req  => arptx_req,
-		arp_rdy  => arptx_rdy,
-		pa_frm   => spatx_frm,
-		pa_irdy  => spatx_irdy,
-		pa_trdy  => spatx_trdy,
-		pa_end   => spatx_end,
-		pa_data  => spatx_data,
+		mii_clk    => mii_clk,
+		arp_req    => arptx_req,
+		arp_rdy    => arptx_rdy,
+		pa_frm     => spatx_frm,
+		pa_irdy    => spatx_irdy,
+		pa_trdy    => spatx_trdy,
+		pa_end     => spatx_end,
+		pa_data    => spatx_data,
 
 		dlltx_irdy => dlltx_irdy,
 		dlltx_trdy => dlltx_trdy,
 		dlltx_end  => dlltx_end,
 
-		arp_frm  => arptx_frm,
-		arp_irdy => arptx_irdy,
-		arp_trdy => arptx_trdy,
-		arp_end  => arptx_end,
-		arp_data => arptx_data);
+		arp_frm    => arptx_frm,
+		arp_irdy   => arptx_irdy,
+		arp_trdy   => arptx_trdy,
+		arp_end    => arptx_end,
+		arp_data   => arptx_data);
 
 end;

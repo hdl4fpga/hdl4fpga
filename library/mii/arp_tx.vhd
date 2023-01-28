@@ -57,6 +57,7 @@ entity arp_tx is
 end;
 
 architecture def of arp_tx is
+
 	signal frm_ptr     : std_logic_vector(0 to unsigned_num_bits(summation(arp4_frame)/arp_data'length-1));
 	signal arpmux_irdy : std_logic;
 	signal arpmux_trdy : std_logic;
@@ -125,7 +126,7 @@ begin
 		pa_trdy when    pa_frm='1' else
 		arpmux_trdy;
 	arp_data <= 
-		(arp_data'range => '1') when dlltx_end='0' else
+		(arp_data'range => '1') when dlltx_end='0' else -- Broadcast address
 		arpmux_data             when    pa_frm='0' else 
 		pa_data;
 	arp_end  <= frm_ptr(0);

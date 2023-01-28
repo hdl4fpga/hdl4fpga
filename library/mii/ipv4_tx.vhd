@@ -42,6 +42,22 @@ entity ipv4_tx is
 		pl_end         : in  std_logic;
 		pl_data        : in  std_logic_vector;
 
+		ipv4_frm       : buffer std_logic;
+
+		dlltx_irdy     : out std_logic;
+		dlltx_trdy     : in  std_logic;
+		dlltx_end      : in  std_logic;
+
+		nettx_irdy     : out std_logic;
+		nettx_trdy     : in  std_logic := '1';
+		nettx_end      : in  std_logic;
+
+		ipv4a_frm      : buffer std_logic;
+		ipv4a_irdy     : buffer std_logic;
+		ipv4a_trdy     : in std_logic := '1';
+		ipv4a_end      : in std_logic;
+		ipv4a_data     : in std_logic_vector;
+
 		ipv4len_frm    : buffer std_logic;
 		ipv4len_irdy   : buffer std_logic;
 		ipv4len_data   : in std_logic_vector;
@@ -52,21 +68,6 @@ entity ipv4_tx is
 		ipv4proto_end  : in std_logic;
 		ipv4proto_data : in std_logic_vector;
 
-		ipv4a_frm      : buffer std_logic;
-		ipv4a_irdy     : buffer std_logic;
-		ipv4a_trdy     : in std_logic := '1';
-		ipv4a_end      : in std_logic;
-		ipv4a_data     : in std_logic_vector;
-
-		mtdlltx_irdy   : out std_logic;
-		mtdlltx_trdy   : in  std_logic;
-		mtdlltx_end    : in  std_logic;
-
-		nettx_irdy     : out std_logic;
-		nettx_trdy     : in  std_logic := '1';
-		nettx_end      : in  std_logic;
-
-		ipv4_frm       : buffer std_logic;
 		ipv4_irdy      : buffer std_logic;
 		ipv4_trdy      : in  std_logic;
 		ipv4_end       : out std_logic;
@@ -97,10 +98,10 @@ architecture def of ipv4_tx is
 begin
 
 	pl_trdy <= 
-		mtdlltx_trdy when  mtdlltx_end='0' else
-		nettx_trdy   when    nettx_end='0' else
-		'0'          when ipv4chsm_end='0' else
-		'0'          when    ipv4a_end='0' else
+		dlltx_trdy when    dlltx_end='0' else
+		nettx_trdy when    nettx_end='0' else
+		'0'        when ipv4chsm_end='0' else
+		'0'        when    ipv4a_end='0' else
 		ipv4_trdy; 
 
 	process (mii_clk)
@@ -194,12 +195,12 @@ begin
 		end if;
 	end process;
 
-	mtdlltx_irdy <= pl_irdy;
-	nettx_irdy   <= 
-		pl_irdy when mtdlltx_end='1' else
+	dlltx_irdy <= pl_irdy;
+	nettx_irdy <= 
+		pl_irdy when dlltx_end='1' else
 		'0';
 	ipv4a_irdy <= 
-		'0' when mtdlltx_end='0' else 
+		'0' when dlltx_end='0' else 
 		'1' when (state=s_ipv4a and ipv4a_end='0') else
 		'1' when state=s_ipv4hdr else
 		ipv4_trdy;
@@ -207,7 +208,7 @@ begin
 	ipv4proto_irdy <= ipv4_trdy when ipv4proto_frm='1' else '0';
 	ipv4len_irdy   <= ipv4_trdy when   ipv4len_frm='1' else '0';
 	ipv4_irdy <= 
-		'0'            when   mtdlltx_end='0' else 
+		'0'            when     dlltx_end='0' else 
 		'0'            when (state=s_ipv4a and ipv4a_end='0') else
 		ipv4shdr_trdy  when  ipv4shdr_end='0' else
 		ipv4proto_trdy when ipv4proto_end='0' else
@@ -216,7 +217,7 @@ begin
 	    pl_irdy;
 
 	ipv4_data <=  
-		pl_data                    when   mtdlltx_end='0' else 
+		pl_data                    when     dlltx_end='0' else 
 		ipv4hdr_data               when  ipv4shdr_end='0' else
 		ipv4proto_data             when ipv4proto_end='0' else
 		reverse(not ipv4chsm_data) when  ipv4chsm_end='0' else
