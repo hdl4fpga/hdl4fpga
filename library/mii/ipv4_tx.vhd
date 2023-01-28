@@ -154,7 +154,7 @@ begin
 		ipv4a_data   when state=s_ipv4a and ipv4a_end='0' else
 		ipv4hdr_data;
 	cksm_irdy <= 
-		ipv4a_trdy and ipv4a_irdy when state=s_ipv4a else
+		ipv4a_trdy and ipv4a_irdy when state=s_ipv4a and ipv4a_end='0' else
 	    ipv4_trdy;
 
 	mii_1cksm_e : entity hdl4fpga.mii_1cksm
@@ -171,7 +171,7 @@ begin
 		mii_cksm  => ipv4chsm_data);
 
 	ipv4_frm <= pl_frm;
-	frm_p : process (pl_frm, frm_ptr, ipv4a_end, ipv4chsm_end, state)
+	frm_p : process (pl_frm, frm_ptr, ipv4chsm_end, state, ipv4a_end)
 	begin
 		if pl_frm='1' then
 			case state is
@@ -200,7 +200,7 @@ begin
 		'0';
 	ipv4a_irdy <= 
 		'0' when mtdlltx_end='0' else 
-		'1' when state=s_ipv4a   else
+		'1' when (state=s_ipv4a and ipv4a_end='0') else
 		'1' when state=s_ipv4hdr else
 		ipv4_trdy;
 	ipv4shdr_irdy  <= ipv4_trdy when  ipv4shdr_frm='1' else '0';
@@ -208,7 +208,7 @@ begin
 	ipv4len_irdy   <= ipv4_trdy when   ipv4len_frm='1' else '0';
 	ipv4_irdy <= 
 		'0'            when   mtdlltx_end='0' else 
-		'0'            when   state=s_ipv4a and ipv4a_end='0' else
+		'0'            when (state=s_ipv4a and ipv4a_end='0') else
 		ipv4shdr_trdy  when  ipv4shdr_end='0' else
 		ipv4proto_trdy when ipv4proto_end='0' else
 		ipv4chsm_trdy  when  ipv4chsm_end='0' else
