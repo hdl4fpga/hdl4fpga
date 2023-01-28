@@ -506,8 +506,9 @@ begin
 	port map (
 		mii_clk    => mii_clk,
 
-		arpdtx_req => arp_req,
-		arpdtx_rdy => arp_rdy,
+		arp_req    => arp_req,
+		arp_rdy    => arp_rdy,
+
 		arprx_frm  => arprx_frm,
 		arprx_irdy => dllrx_irdy,
 		arprx_data => dllrx_data,
@@ -524,9 +525,9 @@ begin
 		spatx_data => ipv4satx_data,
 
 		arptx_frm  => arptx_frm,
-		mtdlltx_end  => arptxmac_full,
-		mtdlltx_irdy  => arptxmac_irdy,
-		mtdlltx_trdy  => arptxmac_trdy,
+		dlltx_end  => arptxmac_full,
+		dlltx_irdy => arptxmac_irdy,
+		dlltx_trdy => arptxmac_trdy,
 		arptx_irdy => arptx_irdy,
 		arptx_trdy => arptx_trdy,
 		arptx_end  => arptx_end,

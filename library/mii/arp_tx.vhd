@@ -44,9 +44,9 @@ entity arp_tx is
 		pa_end   : in  std_logic;
 		pa_data  : in  std_logic_vector;
 
-		mtdlltx_irdy : out std_logic := '1';
-		mtdlltx_trdy : in  std_logic := '1';
-		mtdlltx_end  : in  std_logic;
+		dlltx_irdy : out std_logic := '1';
+		dlltx_trdy : in  std_logic := '1';
+		dlltx_end  : in  std_logic;
 
 		arp_frm  : buffer std_logic;
 		arp_irdy : buffer std_logic;
@@ -72,7 +72,7 @@ begin
 			if arp_frm='0' then
 				cntr := to_unsigned(summation(arp4_frame)/arp_data'length-1, cntr'length);
 			elsif cntr(0)='0' then
-				if mtdlltx_end='1' then
+				if dlltx_end='1' then
 					if (arp_irdy and arp_trdy)='1' then
 						cntr := cntr - 1;
 					end if;
@@ -84,7 +84,7 @@ begin
 		end if;
 	end process;
 
-	process (arp_frm, mtdlltx_end, frm_ptr)
+	process (arp_frm, dlltx_end, frm_ptr)
 	begin
 		if arp_frm='1' then
 			if frame_decode(frm_ptr, reverse(arp4_frame), arp_data'length, arp_spa)='1' then
@@ -101,8 +101,8 @@ begin
 	pa_irdy <= pa_frm and arp_irdy;
 	
 	arpmux_irdy <= 
-		'0' when mtdlltx_end='0' else
-		'0' when      pa_frm='1' else
+		'0' when dlltx_end='0' else
+		'0' when    pa_frm='1' else
 		arp_trdy;
 	arpmux_e : entity hdl4fpga.sio_mux
 	port map (
@@ -121,12 +121,12 @@ begin
         so_data  => arpmux_data);
 
 	arp_irdy <= 
-		'0'     when mtdlltx_end='0' else
-		pa_trdy when      pa_frm='1' else
+		'0'     when dlltx_end='0' else
+		pa_trdy when    pa_frm='1' else
 		arpmux_trdy;
 	arp_data <= 
-		(arp_data'range => '1') when mtdlltx_end='0' else
-		arpmux_data             when      pa_frm='0' else 
+		(arp_data'range => '1') when dlltx_end='0' else
+		arpmux_data             when    pa_frm='0' else 
 		pa_data;
 	arp_end  <= frm_ptr(0);
 

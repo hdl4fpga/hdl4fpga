@@ -32,12 +32,12 @@ entity arpd is
 		hwsa        : in std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		mii_clk     : in  std_logic;
+		arp_req     : in  std_logic;
+		arp_rdy     : buffer  std_logic;
+
 		arprx_frm   : in  std_logic;
 		arprx_irdy  : in  std_logic;
 		arprx_data  : in  std_logic_vector;
-
-		arpdtx_req  : in  std_logic;
-		arpdtx_rdy  : buffer  std_logic;
 
 		sparx_irdy  : out std_logic;
 		sparx_trdy  : in  std_logic;
@@ -50,9 +50,9 @@ entity arpd is
 		spatx_end   : in  std_logic;
 		spatx_data  : in  std_logic_vector;
 
-		mtdlltx_irdy : out  std_logic;
-		mtdlltx_trdy : in   std_logic;
-		mtdlltx_end  : in   std_logic;
+		dlltx_irdy  : out  std_logic;
+		dlltx_trdy  : in   std_logic;
+		dlltx_end   : in   std_logic;
 
 		arptx_frm   : buffer std_logic := '0';
 		arptx_irdy  : out std_logic;
@@ -66,12 +66,25 @@ end;
 
 architecture def of arpd is
 
-	signal tparx_frm  : std_logic;
-	signal tparx_vld  : std_logic;
-	signal arpd_rdy   : std_logic;
-	signal arpd_req   : std_logic;
+	signal tparx_frm : std_logic;
+	signal tparx_vld : std_logic;
+	signal arptx_rdy : std_logic;
+	signal arptx_req : std_logic;
 
 begin
+
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if (to_bit(arptx_req) xor to_bit(arptx_rdy))='0' then
+				if arprx_frm='1' then
+					arptx_req <= to_stdulogic(to_bit(arptx_rdy)) xor (tparx_vld and sparx_end);
+				elsif to_bit(arp_req xor arp_rdy)='1' then
+					arptx_req <= not to_stdulogic(to_bit(arptx_rdy));
+				end if;
+			end if;
+		end if;
+	end process;
 
 	arprx_e : entity hdl4fpga.arp_rx
 	port map (
@@ -93,39 +106,27 @@ begin
 		end if;
 	end process;
 
-	process (mii_clk)
-	begin
-		if rising_edge(mii_clk) then
-			if (to_bit(arpd_req) xor to_bit(arpd_rdy))='0' then
-				if arprx_frm='1' then
-					arpd_req <= to_stdulogic(to_bit(arpd_rdy)) xor (tparx_vld and sparx_end);
-				elsif to_bit(arpdtx_req xor arpdtx_rdy)='1' then
-					arpd_req <= not to_stdulogic(to_bit(arpd_rdy));
-				end if;
-			end if;
-		end if;
-	end process;
-
 	arptx_e : entity hdl4fpga.arp_tx
 	generic map (
 		hwsa     => hwsa)
 	port map (
 		mii_clk  => mii_clk,
-		arp_req  => arpd_req,
-		arp_rdy  => arpd_rdy,
+		arp_req  => arptx_req,
+		arp_rdy  => arptx_rdy,
 		pa_frm   => spatx_frm,
 		pa_irdy  => spatx_irdy,
 		pa_trdy  => spatx_trdy,
 		pa_end   => spatx_end,
 		pa_data  => spatx_data,
 
-		mtdlltx_irdy => mtdlltx_irdy,
-		mtdlltx_trdy => mtdlltx_trdy,
-		mtdlltx_end  => mtdlltx_end,
+		dlltx_irdy => dlltx_irdy,
+		dlltx_trdy => dlltx_trdy,
+		dlltx_end  => dlltx_end,
 
 		arp_frm  => arptx_frm,
 		arp_irdy => arptx_irdy,
 		arp_trdy => arptx_trdy,
 		arp_end  => arptx_end,
 		arp_data => arptx_data);
+
 end;
