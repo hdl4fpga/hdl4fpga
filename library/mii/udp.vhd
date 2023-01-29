@@ -75,7 +75,6 @@ entity udp is
 		nettx_trdy    : in  std_logic := '1';
 		nettx_end     : in  std_logic := '1';
 
-		mactx_full    : in  std_logic := '1';
 		metatx_trdy   : in  std_logic := '1';
 		ipsatx_full   : in  std_logic;
 		ipdatx_full   : in  std_logic;
@@ -125,9 +124,7 @@ architecture def of udp is
 	signal dhcplentx_end  : std_logic;
 
 	signal udplentx_full     : std_logic;
-	signal udpmetatx_trdy    : std_logic;
 	signal dhcpcdipdatx_irdy : std_logic;
-	signal dhcpmetatx_trdy    : std_logic;
 	signal udpmactx_irdy     : std_logic;
 	signal udpipdatx_irdy    : std_logic;
 	signal udpiplentx_irdy   : std_logic;
@@ -166,11 +163,10 @@ begin
 		udptx_end    <= wirebus(dhcpctx_end       & udppltx_end,  dev_gnt);
 		udptx_data   <= wirebus(dhcpctx_data      & udppltx_data, dev_gnt);
 		iplentx_irdy <= wirebus(dhcpciplentx_irdy & udpiplentx_irdy, dev_gnt);
-		(0 => dhcpctx_trdy,    1 => udppltx_trdy)   <= dev_gnt and (dev_gnt'range => udptx_trdy);
-		(0 => dhcpmetatx_trdy, 1 => udpmetatx_trdy) <= dev_gnt and (dev_gnt'range => metatx_trdy);
+		(dhcpctx_trdy, udppltx_trdy) <= dev_gnt and (dev_gnt'range => udptx_trdy);
 	end block;
 
-	tx_b : block
+	udptx_b : block
 
    		signal udpsp_irdy  : std_logic;
    		signal udpsp_end   : std_logic;
@@ -395,66 +391,72 @@ begin
 
 	end block;
 
-	udpc_e : entity hdl4fpga.sio_muxcmp
-    port map (
-		mux_data  => reverse(x"0044",8),
-        sio_clk   => mii_clk,
-        sio_frm   => udprx_frm,
-        sio_irdy  => udpdprx_irdy,
-        sio_trdy  => open,
-        si_data   => udprx_data,
-		so_last   => udpsprx_last,
-		so_equ(0) => udpsprx_equ);
-
-	process (mii_clk)
+	dhcpcd_b : block
 	begin
-		if rising_edge(mii_clk) then
-			if udprx_frm='0' then
-				udpsprx_vld <= '0';
-			elsif udpsprx_last='1' and udprx_irdy='1' then
-				udpsprx_vld <= udpsprx_equ;
-			end if;
-		end if;
-	end process;
-	dhcpcrx_frm <= udpplrx_frm and udpsprx_vld;
-	plrx_frm    <= udpplrx_frm and not udpsprx_vld;
-	plrx_rllbk  <= dhcpcrx_frm;
-	plrx_cmmt   <= plrx_frm;
-	plrx_irdy   <= (udprx_frm and (udpsprx_irdy or udpdprx_irdy)) or (udpplrx_frm and udprx_irdy);
-	plrx_data   <= udprx_data;
+    	udpc_e : entity hdl4fpga.sio_muxcmp
+        port map (
+    		mux_data  => reverse(x"0044",8),
+            sio_clk   => mii_clk,
+            sio_frm   => udprx_frm,
+            sio_irdy  => udpdprx_irdy,
+            sio_trdy  => open,
+            si_data   => udprx_data,
+    		so_last   => udpsprx_last,
+    		so_equ(0) => udpsprx_equ);
 
-	dhcpcd_e: entity hdl4fpga.dhcpcd
-	port map (
-		tp => tp,
-		mii_clk       => mii_clk,
-		dhcpcdrx_frm  => dhcpcrx_frm,
-		dhcpcdrx_irdy => udprx_irdy,
-		dhcpcdrx_data => udprx_data,
-		dhcpcd_req    => dhcpcd_req,
-		dhcpcd_rdy    => dhcpcd_rdy,
-		arp_req       => arp_req,
-		arp_rdy       => arp_rdy,
+    	process (mii_clk)
+    	begin
+    		if rising_edge(mii_clk) then
+    			if udprx_frm='0' then
+    				udpsprx_vld <= '0';
+    			elsif udpsprx_last='1' and udprx_irdy='1' then
+    				udpsprx_vld <= udpsprx_equ;
+    			end if;
+    		end if;
+    	end process;
 
-		hwda_frm      => hwda_frm,
-		hwda_irdy     => hwda_irdy,
-		hwda_trdy     => hwda_trdy,
-		hwda_last     => hwda_last,
-		hwda_equ      => hwda_equ,
-		hwdarx_vld    => hwdarx_vld,
+    	dhcpcrx_frm <= udpplrx_frm and udpsprx_vld;
+    	plrx_frm    <= udpplrx_frm and not udpsprx_vld;
+    	plrx_rllbk  <= dhcpcrx_frm;
+    	plrx_cmmt   <= plrx_frm;
+    	plrx_irdy   <= (udprx_frm and (udpsprx_irdy or udpdprx_irdy)) or (udpplrx_frm and udprx_irdy);
+    	plrx_data   <= udprx_data;
 
-		dhcpcdtx_frm  => dhcpctx_frm,
-		mactx_full    => mactx_full,
-		ipdatx_full   => ipdatx_full,
-		ipsatx_full   => ipsatx_full,
-		udplentx_full => iplentx_full,
-		ipv4sawr_frm  => ipv4sawr_frm,
-		ipv4sawr_irdy => ipv4sawr_irdy,
-		ipv4sawr_data => ipv4sawr_data,
+    	dhcpcd_e: entity hdl4fpga.dhcpcd
+    	port map (
+    		tp            => tp,
+    		mii_clk       => mii_clk,
+    		dhcpcdrx_frm  => dhcpcrx_frm,
+    		dhcpcdrx_irdy => udprx_irdy,
+    		dhcpcdrx_data => udprx_data,
+    		dhcpcd_req    => dhcpcd_req,
+    		dhcpcd_rdy    => dhcpcd_rdy,
+    		arp_req       => arp_req,
+    		arp_rdy       => arp_rdy,
 
-		dhcpcdtx_irdy => dhcpctx_irdy,
-		dhcpcdtx_trdy => dhcpctx_trdy,
-		dhcpcdtx_end  => dhcpctx_end,
-		dhcpcdtx_data => dhcpctx_data);
+    		hwda_frm      => hwda_frm,
+    		hwda_irdy     => hwda_irdy,
+    		hwda_trdy     => hwda_trdy,
+    		hwda_last     => hwda_last,
+    		hwda_equ      => hwda_equ,
+    		hwdarx_vld    => hwdarx_vld,
 
-	dhcpciplentx_irdy <= '0' when ipdatx_full='0' else dhcpctx_irdy;
+    		dhcpcdtx_frm  => dhcpctx_frm,
+    		mactx_full    => dlltx_end,
+    		ipdatx_full   => ipdatx_full,
+    		ipsatx_full   => ipsatx_full,
+    		udplentx_full => iplentx_full,
+    		ipv4sawr_frm  => ipv4sawr_frm,
+    		ipv4sawr_irdy => ipv4sawr_irdy,
+    		ipv4sawr_data => ipv4sawr_data,
+
+    		dhcpcdtx_irdy => dhcpctx_irdy,
+    		dhcpcdtx_trdy => dhcpctx_trdy,
+    		dhcpcdtx_end  => dhcpctx_end,
+    		dhcpcdtx_data => dhcpctx_data);
+
+    	dhcpciplentx_irdy <= '0' when ipdatx_full='0' else dhcpctx_irdy;
+
+	end block;
+
 end;
