@@ -38,27 +38,39 @@ entity udp_tx is
 
 		pl_frm      : in  std_logic;
 		pl_irdy     : in  std_logic;
-		pl_trdy     : out std_logic;
+		pl_trdy     : buffer std_logic;
 		pl_end      : in  std_logic;
 		pl_data     : in  std_logic_vector;
 
 		udp_frm     : buffer std_logic;
 
-		dlltx_irdy  : out std_logic;
-		dlltx_trdy  : in  std_logic;
-		dlltx_end   : in  std_logic;
+		dlltx_irdy  : out std_logic := '1';
+		dlltx_trdy  : in  std_logic := '1';
+		dlltx_end   : in  std_logic := '1';
 
-		nettx_irdy  : out std_logic;
+		nettx_irdy  : out std_logic := '1';
 		nettx_trdy  : in  std_logic := '1';
-		nettx_end   : in  std_logic;
+		nettx_end   : in  std_logic := '1';
 
-		hdr_irdy    : in  std_logic;
-		hdr_trdy    : out std_logic;
-		hdr_end     : in  std_logic;
-		hdr_data    : in  std_logic_vector;
+		tpttx_irdy  : out std_logic := '1';
+		tpttx_trdy  : in  std_logic := '1';
+		tpttx_end   : in  std_logic := '1';
 
-		metatx_end  : in std_logic := '1';
-		metatx_trdy : in std_logic := '1';
+		udpsp_irdy  : out std_logic;
+		udpsp_trdy  : in  std_logic := '1';
+		udpsp_end   : in  std_logic;
+		udpsp_data  : in  std_logic_vector;
+
+		udpdp_irdy  : out std_logic;
+		udpdp_trdy  : in  std_logic := '1';
+		udpdp_end   : in  std_logic;
+		udpdp_data  : in  std_logic_vector;
+
+		udplen_irdy : out std_logic;
+		udplen_trdy : in  std_logic := '1';
+		udplen_end  : in  std_logic;
+		udplen_data : in  std_logic_vector;
+
 		udp_irdy    : out std_logic;
 		udp_trdy    : in  std_logic;
 		udp_data    : out std_logic_vector;
@@ -68,6 +80,14 @@ end;
 
 architecture def of udp_tx is
 	signal frm_ptr : std_logic_vector(0 to unsigned_num_bits(summation(udp4hdr_frame)/udp_data'length-1));
+
+	signal cksm_irdy   : std_logic;
+	signal cksm_end    : std_logic;
+	signal cksm_data   : std_logic_vector(pl_data'range);
+
+	signal hdr_end  : std_logic;
+	signal hdr_data : std_logic_vector(pl_data'range);
+
 begin
 
 	process (mii_clk)
@@ -76,8 +96,9 @@ begin
 		if rising_edge(mii_clk) then
 			if pl_frm='1' then
 				if cntr(0)='0' then
-					if (ipv4_trdy and pl_irdy)='1' then
+					if (pl_trdy and pl_irdy)='1' then
 						cntr := cntr - 1;
+					end if;
 				end if;
 			else
 				cntr := to_unsigned(summation(udp4hdr_frame)/udp_data'length-1, cntr'length);
@@ -86,39 +107,46 @@ begin
 		end if;
 	end process;
 
-	field_p : process (pl_frm, frm_ptr)
-	begin
-		if pl_frm='1' then
-			udpsp_frm   <= frame_decode(frm_ptr, reverse(udp4hdr_frame), udp_data'length, udp4_sp);
-			udpdp_frm   <= frame_decode(frm_ptr, reverse(udp4hdr_frame), udp_data'length, udp4_dp);
-			udplen_frm  <= frame_decode(frm_ptr, reverse(udp4hdr_frame), udp_data'length, udp4_len);
-			udpcksm_frm <= frame_decode(frm_ptr, reverse(udp4hdr_frame), udp_data'length, udp4_cksm);
-		else
-			udpsp_frm   <= '0';
-			udpdp_frm   <= '0';
-			udplen_frm  <= '0';
-			udpcksm_frm <= '0';
-		end if;
-	end process;
+	udpcksm_e : entity hdl4fpga.sio_mux
+	port map (
+		mux_data => x"0000",
+		sio_clk  => mii_clk,
+		sio_frm  => pl_frm,
+		sio_irdy => cksm_irdy,
+		sio_trdy => open,
+		so_end   => cksm_end,
+		so_data  => cksm_data);
 
-	hdr_trdy <=
-		'0' when metatx_end='0' else
-		udp_trdy;
+	dlltx_irdy  <= pl_irdy;
+	nettx_irdy  <= pl_irdy  when  dlltx_end='1' else '0';
+	tpttx_irdy  <= pl_irdy  when  nettx_end='1' else '0';
+	udpsp_irdy  <= udp_trdy when  tpttx_end='1' else '0';
+	udpdp_irdy  <= udp_trdy when  udpsp_end='1' else '0';
+	udplen_irdy <= udp_trdy when  udpdp_end='1' else '0';
+	cksm_irdy   <= udp_trdy when udplen_end='1' else '0';
+
 	udp_irdy <=
-		metatx_trdy when metatx_end='0' else
-		hdr_irdy  when hdr_end='0'   else
+		'0'      when cksm_end='0' else
 		pl_irdy;
 	udp_data <=
-		pl_data  when metatx_end='0' else
-		hdr_data when hdr_end='0'   else
+		pl_data  when nettx_end='0' else
+		hdr_data when   hdr_end='0' else
 		pl_data;
 
 	pl_trdy <=
-		metatx_trdy when metatx_end='0' else
-		'0' when hdr_end='0' else
+		dlltx_trdy when dlltx_end='0' else
+		nettx_trdy when nettx_end='0' else
+		tpttx_trdy when tpttx_end='0' else
+		'0'        when   hdr_end='0' else
 		udp_trdy;
 	udp_end  <=
 		'0' when hdr_end='0' else
 		pl_end;
-end;
 
+	udp_data <=
+		udpdp_data  when   udpdp_end='0' else
+		udpsp_data  when   udpsp_end='0' else
+		udplen_data when  udplen_end='0' else
+		(udp_data'range => '-');
+
+end;

@@ -200,9 +200,9 @@ begin
 		pl_irdy when dlltx_end='1' else
 		'0';
 	ipv4a_irdy <= 
-		'0' when dlltx_end='0' else 
+		'0' when dlltx_end='0'    else 
 		'1' when (state=s_ipv4a and ipv4a_end='0') else
-		'1' when state=s_ipv4hdr else
+		'1' when  state=s_ipv4hdr else
 		ipv4_trdy;
 	ipv4shdr_irdy  <= ipv4_trdy when  ipv4shdr_frm='1' else '0';
 	ipv4proto_irdy <= ipv4_trdy when ipv4proto_frm='1' else '0';
@@ -225,10 +225,10 @@ begin
 		pl_data;
 
 	ipv4_end <= 
-		ipv4shdr_end  when  ipv4shdr_end='0' else
-		ipv4proto_end when ipv4proto_end='0' else
-		ipv4chsm_end  when  ipv4chsm_end='0' else
-		ipv4a_end     when     ipv4a_end='0' else
+		'0' when  ipv4shdr_end='0' else
+		'0' when ipv4proto_end='0' else
+		'0' when  ipv4chsm_end='0' else
+		'0' when     ipv4a_end='0' else
 	    pl_end;
 
 end;

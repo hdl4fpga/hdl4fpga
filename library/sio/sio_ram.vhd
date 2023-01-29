@@ -30,24 +30,25 @@ use hdl4fpga.base.all;
 
 entity sio_ram is
 	generic (
+		mode_fifo  : boolean := true;
 		mem_data   : std_logic_vector := (0 to 0 => '-');
 		mem_length : natural := 0;
 		mem_size   : natural := 0);
     port (
-		si_clk   : in  std_logic;
-        si_frm   : in  std_logic;
-        si_irdy  : in  std_logic;
-        si_trdy  : out std_logic;
-		si_full  : out std_logic;
-        si_data  : in  std_logic_vector;
+		si_clk     : in  std_logic;
+		si_frm     : in  std_logic;
+		si_irdy    : in  std_logic;
+		si_trdy    : out std_logic;
+		si_full    : out std_logic;
+		si_data    : in  std_logic_vector;
 
-		so_clk   : in  std_logic;
-        so_frm   : in  std_logic;
-        so_irdy  : in  std_logic;
-        so_trdy  : out std_logic;
-		so_empty : out std_logic;
-		so_end   : out std_logic;
-        so_data  : out std_logic_vector);
+		so_clk     : in  std_logic;
+		so_frm     : in  std_logic;
+		so_irdy    : in  std_logic;
+		so_trdy    : out std_logic;
+		so_empty   : out std_logic;
+		so_end     : out std_logic;
+		so_data    : out std_logic_vector);
 end;
 
 architecture def of sio_ram is
@@ -116,17 +117,31 @@ begin
 	begin
 		if rising_edge(so_clk) then
 			if so_frm='0' then
-				rd_addr <= (others => '0');
+				if mode_fifo then
+					rd_addr <= (others => '0');
+				else
+					rd_addr <= len;
+				end if;
 			elsif so_irdy='1' then
-				if rd_addr < len then
-					rd_addr <= rd_addr + 1;
+				if mode_fifo then
+					if rd_addr < len then
+						rd_addr <= rd_addr + 1;
+					end if;
+				else
+					if rd_addr(0)='0' then
+						rd_addr <= rd_addr - 1;
+					end if;
 				end if;
 			end if;
 		end if;
 	end process;
 
-	so_trdy  <= setif(rd_addr < len);
+	so_trdy  <= 
+		setif(rd_addr < len) when mode_fifo else
+		rd_addr(0);
 	so_empty <= setif(len=(len'range => '0'));
-	so_end   <= setif(rd_addr >= len);
+	so_end   <=
+		setif(rd_addr >= len) when mode_fifo else
+		rd_addr(0);
 
 end;
