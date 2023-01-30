@@ -125,9 +125,6 @@ begin
 	udp_irdy <=
 		'0'      when cksm_end='0' else
 		pl_irdy;
-	udp_data <=
-		pl_data  when nettx_end='0' else
-		pl_data;
 
 	pl_trdy <=
 		nettx_trdy when nettx_end='0' else
@@ -137,9 +134,10 @@ begin
 		pl_end;
 
 	udp_data <=
-		udpdp_data  when   udpdp_end='0' else
-		udpsp_data  when   udpsp_end='0' else
-		udplen_data when  udplen_end='0' else
+		udpdp_data  when  udpdp_end='0' else
+		udpsp_data  when  udpsp_end='0' else
+		udplen_data when udplen_end='0' else
+		pl_data     when  tpttx_end='0' else
 		(udp_data'range => '-');
 
 end;

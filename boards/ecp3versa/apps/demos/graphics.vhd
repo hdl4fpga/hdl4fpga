@@ -491,11 +491,23 @@ begin
 		end block;
 
 		dhcp_p : process(mii_txc)
+			type states is (s_request, s_wait);
+			variable state : states;
 		begin
 			if rising_edge(mii_txc) then
-				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-					dhcpcd_req <= dhcpcd_rdy xor not fpga_gsrn;
-				end if;
+				case state is
+				when s_request =>
+					if fpga_gsrn='0' then
+						dhcpcd_req <= not dhcpcd_rdy;
+						state := s_wait;
+					end if;
+				when s_wait =>
+					if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+						if fpga_gsrn='1' then
+							state := s_wait;
+						end if;
+					end if;
+				end case;
 			end if;
 		end process;
 		-- dhcpcd_req <= dhcpcd_rdy;

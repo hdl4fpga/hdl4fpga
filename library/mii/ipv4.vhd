@@ -158,7 +158,7 @@ architecture def of ipv4 is
 	signal ipv4sawr_data    : std_logic_vector(ipv4rx_data'range);
 
 	signal ipv4satx_full    : std_logic;
-	signal netlentx_end  : std_logic;
+	signal netlentx_end     : std_logic;
 	signal nettx_end        : std_logic;
 
 	signal ipv4len_irdy     : std_logic;

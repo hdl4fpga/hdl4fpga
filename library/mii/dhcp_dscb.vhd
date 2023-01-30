@@ -39,6 +39,12 @@ entity dhcpc_dscb is
 		mii_clk       : in  std_logic;
 		dhcpdscb_frm  : in  std_logic;
 
+		dlltx_end     : in  std_logic := '1';
+		netdatx_end   : in  std_logic := '1';
+		netdatx_irdy  : in  std_logic := '1';
+		netlentx_end  : in  std_logic := '1';
+		netlentx_irdy : in  std_logic := '1';
+
 		dhcpdscb_irdy : in  std_logic;
 		dhcpdscb_trdy : out std_logic;
 		dhcpdscb_end  : out std_logic;
@@ -91,7 +97,7 @@ begin
 		if rising_edge(mii_clk) then
 			if dhcpdscb_frm='0' then
 				cntr := (others => '0');
-			elsif dhcpdscb_irdy='1' then
+			elsif dhcpdscb_irdy='1' and netdatx_end='1' then
 				if cntr < (payload_size+8) then
 					cntr := cntr + 1;
 				end if;
@@ -107,12 +113,15 @@ begin
 		dhcp4_hops,   dhcp4_xid,   dhcp4_chaddr6, dhcp4_cookie, dhcp_vendor));
 
 	dhcppkt_irdy <=
+		'0'           when    dlltx_end='0' else
+		netlentx_irdy when netlentx_end='0' else
+		'0'           when  netdatx_end='0' else
 		dhcpdscb_irdy when  dhcppkt_ena='1' else
 		'0';
 
 	dhcppkt_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data => reverse(reverse(udp_size) & dhcp_pkt, 8),
+		mux_data => reverse(udp_size & dhcp_pkt, 8),
         sio_clk  => mii_clk,
 		sio_frm  => dhcpdscb_frm,
 		sio_irdy => dhcppkt_irdy,
@@ -120,8 +129,18 @@ begin
         so_end   => dhcppkt_end,
         so_data  => dhcppkt_data);
 
-    dhcpdscb_trdy <= dhcppkt_trdy;
-    dhcpdscb_end  <= dhcppkt_end;
-	dhcpdscb_data <= dhcppkt_data when dhcppkt_ena='1' else (dhcpdscb_data'range => '0');
-end;
+	dhcpdscb_trdy <=
+		netdatx_irdy when netdatx_end='0' else
+		dhcppkt_trdy;
 
+	dhcpdscb_end <=
+		'0' when netdatx_end='0' else
+		dhcppkt_end;
+
+	dhcpdscb_data <=
+		(dhcpdscb_data'range => '1') when    dlltx_end='0' else
+		dhcppkt_data                 when netlentx_end='0' else
+		(dhcpdscb_data'range => '1') when  netdatx_end='0' else
+		dhcppkt_data                 when  dhcppkt_ena='1' else
+		(dhcpdscb_data'range => '0');
+end;
