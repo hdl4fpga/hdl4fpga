@@ -494,11 +494,11 @@ begin
 		begin
 			if rising_edge(mii_txc) then
 				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-			--		dhcpcd_req <= dhcpcd_rdy xor not sw1;
+					dhcpcd_req <= dhcpcd_rdy xor not fpga_gsrn;
 				end if;
 			end if;
 		end process;
-		dhcpcd_req <= dhcpcd_rdy;
+		-- dhcpcd_req <= dhcpcd_rdy;
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (

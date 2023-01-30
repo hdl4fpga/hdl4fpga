@@ -52,13 +52,12 @@ entity dhcpcd is
 		hwda_equ      : in  std_logic;
 		hwdarx_vld    : in  std_logic;
 
-
-		dhcpcdtx_frm  : buffer std_logic;
-		mactx_full    : in  std_logic := '1';
-		ipdatx_full   : in  std_logic := '1';
-		ipsatx_full   : in  std_logic := '1';
-		udplentx_full : in  std_logic := '1';
-		udplentx_irdy : in  std_logic := '1';
+		dhcpdscb_frm  : buffer std_logic;
+		dlltx_end     : in  std_logic := '1';
+		netdatx_end   : in  std_logic := '1';
+		netsatx_end   : in  std_logic := '1';
+		netlentx_trdy : in  std_logic := '1';
+		netlentx_end  : in  std_logic := '1';
 
 		dhcpcdtx_irdy : buffer std_logic;
 		dhcpcdtx_trdy : in  std_logic;
@@ -84,16 +83,16 @@ begin
 
 	dhcpoffer_e : entity hdl4fpga.dhcpc_offer
 	port map (
-		mii_clk      => mii_clk,
-		dhcp_frm     => dhcpcdrx_frm,
-		dhcp_irdy    => dhcpcdrx_irdy,
-		dhcp_data    => dhcpcdrx_data,
+		mii_clk          => mii_clk,
+		dhcp_frm         => dhcpcdrx_frm,
+		dhcp_irdy        => dhcpcdrx_irdy,
+		dhcp_data        => dhcpcdrx_data,
 
-		dhcpop_irdy  => dhcpop_irdy,
+		dhcpop_irdy      => dhcpop_irdy,
 		dhcpchaddr6_frm  => dhcpchaddr6_frm,
 		dhcpchaddr6_irdy => dhcpchaddr6_irdy,
-		dhcpyia_frm  => dhcpyia_frm,
-		dhcpyia_irdy => dhcpyia_irdy);
+		dhcpyia_frm      => dhcpyia_frm,
+		dhcpyia_irdy     => dhcpyia_irdy);
 
 	process (mii_clk)
 		variable req : std_logic;
@@ -123,31 +122,46 @@ begin
 		end if;
 	end process;
 
-	dhcpcdtx_frm <= dhcpcd_req xor dhcpcd_rdy;
+	dhcpdscb_frm <= dhcpcd_req xor dhcpcd_rdy when nettx_end='1' else '0';
 	dhcpdscb_e : entity hdl4fpga.dhcpc_dscb
 	port map (
 		mii_clk       => mii_clk,
-		dhcpdscb_frm  => dhcpcdtx_frm,
-		mactx_full    => mactx_full,
-		ipdatx_full   => ipdatx_full,
-		udplentx_full => udplentx_full,
-		udplentx_irdy => udplentx_irdy,
-		dhcpdscb_irdy => dhcpcdtx_trdy,
-		dhcpdscb_trdy => dhcpcdtx_irdy,
-		dhcpdscb_end  => dhcpcdtx_end,
-		dhcpdscb_data => dhcpcdtx_data);
+		dhcpdscb_frm  => dhcpdscb_frm,
+		dlltx_end     => dlltx_end,
+		netdatx_end   => netdatx_end,
+		netlentx_end  => netlentx_end,
+		netlentx_irdy => netlentx_trdy,
+		dhcpdscb_irdy => dhcpdscb_irdy,
+		dhcpdscb_trdy => dhcpdscb_trdy,
+		dhcpdscb_end  => dhcpdscb_end,
+		dhcpdscb_data => dhcpdscb_data);
 
-	ipv4sawr_frm  <= dhcpcdtx_frm or (dhcpyia_frm and hwdarx_vld);
+	dhcpdscb_irdy <=
+		nettx_irdy    when netlentx_end='0' else
+		dhcpdscb_irdy;
+	dhcpcdtx_irdy <=
+		netdatx_irdy when netdatx_end='0' else
+		dhcpdscb_trdy;
+	dhcpcdtx_end <=
+		'0' when netdatx_end='0' else
+		dhcppkt_end;
+	dhcpcdtx_data <=
+		(dhcpdscb_data'range => '1') when   dlltx_end='0'  else
+		(dhcpdscb_data'range => '-') when netlentx_end='0' else
+		(dhcpdscb_data'range => '1') when  netdatx_end='0' else
+		dhcpdscb_data;
+
+	ipv4sawr_frm  <= 
+		'1' when dhcpdscb_frm='1'                 else
+		'1' when (dhcpyia_frm and hwdarx_vld)='1' else
+		'0';
 	ipv4sawr_irdy <=
-		'1'          when dhcpcdtx_frm='1' else
+		'1'          when dhcpdscb_frm='1'                  else
 		dhcpyia_irdy when (dhcpyia_frm and hwdarx_vld)='1'  else
 		'0';
 	ipv4sawr_data <=
-		(ipv4sawr_data'range => '0') when dhcpcdtx_frm='1' else
-		dhcpcdrx_data when dhcpyia_frm='1'  else
+		(ipv4sawr_data'range => '0') when dhcpdscb_frm='1' else
+		dhcpcdrx_data                when  dhcpyia_frm='1'  else
 		(ipv4sawr_data'range => '-');
-
-	tp(3) <= dhcpyia_frm; --dhcpcdrx_frm ;
-	tp(2) <= dhcpyia_irdy;
 
 end;

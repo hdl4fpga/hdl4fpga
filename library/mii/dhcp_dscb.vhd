@@ -39,12 +39,6 @@ entity dhcpc_dscb is
 		mii_clk       : in  std_logic;
 		dhcpdscb_frm  : in  std_logic;
 
-		mactx_full    : in  std_logic := '1';
-		ipdatx_full   : in  std_logic := '1';
-		ipdatx_irdy   : in  std_logic := '1';
-		udplentx_full : in  std_logic := '1';
-		udplentx_irdy : in  std_logic := '1';
-
 		dhcpdscb_irdy : in  std_logic;
 		dhcpdscb_trdy : out std_logic;
 		dhcpdscb_end  : out std_logic;
@@ -89,7 +83,6 @@ architecture def of dhcpc_dscb is
 
 	signal dhcpdscb_ptr  : std_logic_vector(0 to unsigned_num_bits((payload_size+8)*8/dhcpdscb_data'length-1));
 
-
 begin
 
 	process (mii_clk)
@@ -98,7 +91,7 @@ begin
 		if rising_edge(mii_clk) then
 			if dhcpdscb_frm='0' then
 				cntr := (others => '0');
-			elsif dhcpdscb_irdy='1' and ipdatx_full='1' then
+			elsif dhcpdscb_irdy='1' then
 				if cntr < (payload_size+8) then
 					cntr := cntr + 1;
 				end if;
@@ -114,9 +107,7 @@ begin
 		dhcp4_hops,   dhcp4_xid,   dhcp4_chaddr6, dhcp4_cookie, dhcp_vendor));
 
 	dhcppkt_irdy <=
-		'0'           when ipdatx_full='0'  else
-		udplentx_irdy when udplentx_full='0' else
-		dhcpdscb_irdy when dhcppkt_ena='1' else
+		dhcpdscb_irdy when  dhcppkt_ena='1' else
 		'0';
 
 	dhcppkt_e : entity hdl4fpga.sio_mux
@@ -129,18 +120,8 @@ begin
         so_end   => dhcppkt_end,
         so_data  => dhcppkt_data);
 
-	dhcpdscb_trdy <=
-		ipdatx_irdy when ipdatx_full='0' else
-		dhcppkt_trdy;
-
-	dhcpdscb_end <=
-		'0' when ipdatx_full='0' else
-		dhcppkt_end;
-
-	dhcpdscb_data <=
-		(dhcpdscb_data'range => '1') when mactx_full='0'  else
-		(dhcpdscb_data'range => '1') when ipdatx_full='0' else
-		dhcppkt_data                 when dhcppkt_ena='1' else
-		(dhcpdscb_data'range => '0');
+    dhcpdscb_trdy <= dhcppkt_trdy;
+    dhcpdscb_end  <= dhcppkt_end;
+	dhcpdscb_data <= dhcppkt_data when dhcppkt_ena='1' else (dhcpdscb_data'range => '0');
 end;
 

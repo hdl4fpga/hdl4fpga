@@ -37,7 +37,7 @@ architecture ecp3versa_graphics of testbench is
 	constant data_bits  : natural := byte_bits*data_bytes;
 
 	signal reset        : std_logic;
-	signal reset_n      : std_logic;
+	signal fpga_gsrn    : std_logic;
 	signal xtal         : std_logic := '0';
 
 	component ecp3versa
@@ -238,13 +238,13 @@ begin
 
 	end block;
 
-	reset_n <= not reset;
+	fpga_gsrn <= '1', '0' after 20 us;
 	du_e : ecp3versa
 	generic map (
 		debug => debug)
 	port map (
 		clk         => xtal,
-		fpga_gsrn   => reset_n,
+		fpga_gsrn   => fpga_gsrn,
 
 		phy1_125clk => phy1_125clk,
 		phy1_rxc    => mii_rxc,

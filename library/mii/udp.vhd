@@ -68,18 +68,16 @@ entity udp is
 		ipv4sawr_data : out std_logic_vector;
 
 		dlltx_irdy    : out std_logic := '1';
-		dlltx_trdy    : in  std_logic := '1';
 		dlltx_end     : in  std_logic := '1';
 
 		nettx_irdy    : out std_logic := '1';
 		nettx_trdy    : in  std_logic := '1';
 		nettx_end     : in  std_logic := '1';
 
-		metatx_trdy   : in  std_logic := '1';
-		ipsatx_full   : in  std_logic;
-		ipdatx_full   : in  std_logic;
-		iplentx_irdy  : out std_logic;
-		iplentx_full  : in  std_logic;
+		netsatx_end   : in  std_logic;
+		netdatx_end   : in  std_logic;
+		netlentx_irdy : out std_logic;
+		netlentx_end  : in  std_logic;
 
 		udptx_frm     : out std_logic;
 		udptx_irdy    : out std_logic;
@@ -87,15 +85,10 @@ entity udp is
 		udptx_end     : out std_logic;
 		udptx_data    : out std_logic_vector;
 
-		tp : out std_logic_vector(1 to 32)
-	);
+		tp : out std_logic_vector(1 to 32));
 end;
 
 architecture def of udp is
-
-	signal udpsprx_last   : std_logic;
-	signal udpsprx_equ    : std_logic;
-	signal udpsprx_vld    : std_logic;
 
 	signal udpsprx_irdy   : std_logic;
 	signal udpdprx_irdy   : std_logic;
@@ -128,6 +121,7 @@ architecture def of udp is
 	signal udpmactx_irdy     : std_logic;
 	signal udpipdatx_irdy    : std_logic;
 	signal udpiplentx_irdy   : std_logic;
+	signal dhcpcd_vld    : std_logic;
 	signal dhcpciplentx_irdy : std_logic;
 
 begin
@@ -162,7 +156,7 @@ begin
 		udptx_irdy   <= wirebus(dhcpctx_irdy      & pltx_irdy,    dev_gnt);
 		udptx_end    <= wirebus(dhcpctx_end       & udppltx_end,  dev_gnt);
 		udptx_data   <= wirebus(dhcpctx_data      & udppltx_data, dev_gnt);
-		iplentx_irdy <= wirebus(dhcpciplentx_irdy & udpiplentx_irdy, dev_gnt);
+		netlentx_irdy <= wirebus(dhcpciplentx_irdy & udpiplentx_irdy, dev_gnt);
 		(dhcpctx_trdy, udppltx_trdy) <= dev_gnt and (dev_gnt'range => udptx_trdy);
 	end block;
 
@@ -284,9 +278,9 @@ begin
     			signal crtn_data : std_logic_vector(si_data'range);
     			signal si_ci     : std_logic;
     			signal si_co     : std_logic;
-    			signal si_sum    : std_logic_vector(si_data'range);
+    			signal si_sum    : std_logic_vector(0 to si_data'length);
     			signal so_ci     : std_logic;
-    			signal so_sum    : std_logic_vector(0 to si_data'length);
+    			signal so_sum    : std_logic_vector(si_sum'range);
 
     		begin
 
@@ -361,8 +355,6 @@ begin
             pl_end     => pltx_end,
             pl_data    => pltx_data,
 
-			dlltx_irdy  => dlltx_irdy,
-			dlltx_trdy  => dlltx_trdy,
 			dlltx_end   => dlltx_end,
 
 			nettx_irdy  => nettx_irdy,
@@ -391,9 +383,22 @@ begin
 
 	end block;
 
+   	plrx_cmmt  <= plrx_frm;
+	plrx_rllbk <= udpplrx_frm when dhcpcd_vld='1' else '0';
+	plrx_frm   <= udpplrx_frm when dhcpcd_vld='0' else '0';
+   	plrx_irdy  <= 
+		udpsprx_irdy when   udprx_frm='1' else
+		udpdprx_irdy when   udprx_frm='1' else
+		udprx_irdy   when udpplrx_frm='1' else
+		'0';
+   	plrx_data  <= udprx_data;
+
 	dhcpcd_b : block
+		signal dp_last : std_logic;
+		signal dp_equ  : std_logic;
 	begin
-    	udpc_e : entity hdl4fpga.sio_muxcmp
+
+    	dhcp_dp_e : entity hdl4fpga.sio_muxcmp
         port map (
     		mux_data  => reverse(x"0044",8),
             sio_clk   => mii_clk,
@@ -401,27 +406,21 @@ begin
             sio_irdy  => udpdprx_irdy,
             sio_trdy  => open,
             si_data   => udprx_data,
-    		so_last   => udpsprx_last,
-    		so_equ(0) => udpsprx_equ);
+    		so_last   => dp_last,
+    		so_equ(0) => dp_equ);
 
     	process (mii_clk)
     	begin
     		if rising_edge(mii_clk) then
     			if udprx_frm='0' then
-    				udpsprx_vld <= '0';
-    			elsif udpsprx_last='1' and udprx_irdy='1' then
-    				udpsprx_vld <= udpsprx_equ;
+    				dhcpcd_vld <= '0';
+    			elsif dp_last='1' and udprx_irdy='1' then
+    				dhcpcd_vld <= dp_equ;
     			end if;
     		end if;
     	end process;
 
-    	dhcpcrx_frm <= udpplrx_frm and udpsprx_vld;
-    	plrx_frm    <= udpplrx_frm and not udpsprx_vld;
-    	plrx_rllbk  <= dhcpcrx_frm;
-    	plrx_cmmt   <= plrx_frm;
-    	plrx_irdy   <= (udprx_frm and (udpsprx_irdy or udpdprx_irdy)) or (udpplrx_frm and udprx_irdy);
-    	plrx_data   <= udprx_data;
-
+    	dhcpcrx_frm <= udpplrx_frm when dhcpcd_vld='1' else '0';
     	dhcpcd_e: entity hdl4fpga.dhcpcd
     	port map (
     		tp            => tp,
@@ -442,10 +441,10 @@ begin
     		hwdarx_vld    => hwdarx_vld,
 
     		dhcpcdtx_frm  => dhcpctx_frm,
-    		mactx_full    => dlltx_end,
-    		ipdatx_full   => ipdatx_full,
-    		ipsatx_full   => ipsatx_full,
-    		udplentx_full => iplentx_full,
+    		dlltx_end     => dlltx_end,
+    		netdatx_end   => netdatx_end,
+    		netsatx_end   => netsatx_end,
+    		netlentx_end  => netlentx_end,
     		ipv4sawr_frm  => ipv4sawr_frm,
     		ipv4sawr_irdy => ipv4sawr_irdy,
     		ipv4sawr_data => ipv4sawr_data,
@@ -455,7 +454,7 @@ begin
     		dhcpcdtx_end  => dhcpctx_end,
     		dhcpcdtx_data => dhcpctx_data);
 
-    	dhcpciplentx_irdy <= '0' when ipdatx_full='0' else dhcpctx_irdy;
+    	dhcpciplentx_irdy <= '0' when netdatx_end='0' else dhcpctx_irdy;
 
 	end block;
 

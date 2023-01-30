@@ -45,7 +45,6 @@ entity udp_tx is
 		udp_frm     : buffer std_logic;
 
 		dlltx_irdy  : out std_logic := '1';
-		dlltx_trdy  : in  std_logic := '1';
 		dlltx_end   : in  std_logic := '1';
 
 		nettx_irdy  : out std_logic := '1';
@@ -85,8 +84,6 @@ architecture def of udp_tx is
 	signal cksm_end    : std_logic;
 	signal cksm_data   : std_logic_vector(pl_data'range);
 
-	signal hdr_end  : std_logic;
-	signal hdr_data : std_logic_vector(pl_data'range);
 
 begin
 
@@ -130,17 +127,13 @@ begin
 		pl_irdy;
 	udp_data <=
 		pl_data  when nettx_end='0' else
-		hdr_data when   hdr_end='0' else
 		pl_data;
 
 	pl_trdy <=
-		dlltx_trdy when dlltx_end='0' else
 		nettx_trdy when nettx_end='0' else
 		tpttx_trdy when tpttx_end='0' else
-		'0'        when   hdr_end='0' else
 		udp_trdy;
 	udp_end  <=
-		'0' when hdr_end='0' else
 		pl_end;
 
 	udp_data <=

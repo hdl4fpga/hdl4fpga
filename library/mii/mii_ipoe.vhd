@@ -585,9 +585,8 @@ begin
 		pltx_data     => pltx_data,
 
 		ipv4tx_frm   => ipv4tx_frm,
-		mtdlltx_irdy => ipv4dlltx_irdy,
-		mtdlltx_trdy => ipv4dlltx_trdy,
-		mtdlltx_end  => mtdlltx_end,
+		dlltx_irdy   => ipv4dlltx_irdy,
+		dlltx_end    => mtdlltx_end,
 
 		ipv4tx_irdy   => ipv4tx_irdy,
 		ipv4tx_trdy   => ipv4tx_trdy,
