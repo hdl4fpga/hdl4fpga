@@ -95,19 +95,28 @@ begin
 		dhcpyia_irdy     => dhcpyia_irdy);
 
 	process (mii_clk)
-		variable req : std_logic;
+		type states is (s_idle, s_offer, s_arp);
+		variable state : states;
 	begin
 		if rising_edge(mii_clk) then
-			if to_bit(arp_req xor arp_rdy)='0' then
-				if (dhcpyia_frm and hwdarx_vld)='0' then
-					arp_req <= req xor arp_rdy;
-					req     := '0';
-				elsif (dhcpyia_frm and hwdarx_vld)='1' then
-					req := '1';
+			case state is
+			when s_idle =>
+				if (dhcpyia_frm and hwdarx_vld)='1' then
+					state := s_offer;
+				else
 				end if;
-			elsif (dhcpyia_frm and hwdarx_vld)='1' then
-				req := '1';
-			end if;
+			when s_offer =>
+				if (dhcpyia_frm and hwdarx_vld)='0' then
+					if (to_bit(arp_req) xor to_bit(arp_rdy))='0' then
+						arp_req <= not to_stdulogic(to_bit(arp_rdy));
+						state := s_arp;
+					end if;
+				end if;
+			when s_arp =>
+				if (to_bit(arp_req) xor to_bit(arp_rdy))='0' then
+					state := s_idle;
+				end if;
+			end case;
 		end if;
 	end process;
 

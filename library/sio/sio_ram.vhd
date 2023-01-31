@@ -39,7 +39,7 @@ entity sio_ram is
 		si_frm     : in  std_logic;
 		si_irdy    : in  std_logic;
 		si_trdy    : out std_logic;
-		si_full    : out std_logic;
+		si_full    : buffer std_logic;
 		si_data    : in  std_logic_vector;
 
 		so_clk     : in  std_logic;
@@ -116,21 +116,21 @@ begin
 	process(so_clk)
 	begin
 		if rising_edge(so_clk) then
-			if so_frm='0' then
-				if mode_fifo then
-					rd_addr <= (others => '0');
-				else
-					rd_addr <= len;
-				end if;
-			elsif so_irdy='1' then
-				if mode_fifo then
-					if rd_addr < len then
-						rd_addr <= rd_addr + 1;
-					end if;
-				else
+			if not mode_fifo then
+				if so_frm='0' then
+					rd_addr <= len-1;
+				elsif si_full='0' then
+					rd_addr <= len-1;
+				elsif so_irdy='1' then
 					if rd_addr(0)='0' then
 						rd_addr <= rd_addr - 1;
 					end if;
+				end if;
+			elsif so_frm='0' then
+				rd_addr <= (others => '0');
+			elsif so_irdy='1' then
+				if rd_addr < len then
+					rd_addr <= rd_addr + 1;
 				end if;
 			end if;
 		end if;
@@ -138,7 +138,7 @@ begin
 
 	so_trdy  <= 
 		setif(rd_addr < len) when mode_fifo else
-		rd_addr(0);
+		not rd_addr(0) and si_full;
 	so_empty <= setif(len=(len'range => '0'));
 	so_end   <=
 		setif(rd_addr >= len) when mode_fifo else

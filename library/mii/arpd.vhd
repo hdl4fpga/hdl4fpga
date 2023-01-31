@@ -79,8 +79,9 @@ begin
 			if (to_bit(arptx_req) xor to_bit(arptx_rdy))='0' then
 				if arprx_frm='1' then
 					arptx_req <= to_stdulogic(to_bit(arptx_rdy)) xor (tparx_vld and sparx_end);
-				elsif to_bit(arp_req xor arp_rdy)='1' then
+				elsif (to_bit(arp_req) xor to_bit(arp_rdy))='1' then
 					arptx_req <= not to_stdulogic(to_bit(arptx_rdy));
+					arp_rdy   <= arp_req;
 				end if;
 			end if;
 		end if;

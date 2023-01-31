@@ -121,7 +121,7 @@ begin
 
 	dhcppkt_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data => reverse(udp_size & dhcp_pkt, 8),
+		mux_data => reverse(reverse(udp_size) & dhcp_pkt, 8),
         sio_clk  => mii_clk,
 		sio_frm  => dhcpdscb_frm,
 		sio_irdy => dhcppkt_irdy,

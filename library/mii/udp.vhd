@@ -233,6 +233,8 @@ begin
     			so_data => udpdp_data);
 
 			adjlen_e : entity hdl4fpga.ip_adjlen
+			generic map (
+				adjust => std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16)))
 			port map (
 				si_clk  => mii_clk,
 				si_frm  => udppltx_frm,

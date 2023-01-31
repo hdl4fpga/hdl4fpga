@@ -510,10 +510,10 @@ begin
 				end case;
 			end if;
 		end process;
-		led(0) <= dhcpcd_rdy;
-		led(1) <= dhcpcd_rdy;
-		led(2) <= fpga_gsrn;
-		led(3) <= dhcpcd_req xor dhcpcd_rdy;
+		-- led(0) <= dhcpcd_rdy;
+		-- led(1) <= dhcpcd_rdy;
+		-- led(2) <= fpga_gsrn;
+		-- led(3) <= dhcpcd_req xor dhcpcd_rdy;
 
 		-- dhcpcd_req <= dhcpcd_rdy;
 
