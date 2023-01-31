@@ -68,8 +68,8 @@ WORK__ulx3s_graphic_structure_md = $(LIB_WORK)/ulx3s_graphic_structure_md/_prima
 WORK__ulx3s_graphic_md = $(LIB_WORK)/ulx3s_graphic_md/_primary.dat
 WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
-WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
 WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
+WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
 WORK__testbench__arty_graphics = $(LIB_WORK)/testbench/arty_graphics.dat
 WORK__testbench__ml509_miiipoe_debug = $(LIB_WORK)/testbench/ml509_miiipoe_debug.dat
 WORK__testbench__s3estarter_graphics = $(LIB_WORK)/testbench/s3estarter_graphics.dat
@@ -85,6 +85,8 @@ WORK__nuhs3adsp_graphics_md = $(LIB_WORK)/nuhs3adsp_graphics_md/_primary.dat
 WORK__nuhs3adsp_graphic_structure_md = $(LIB_WORK)/nuhs3adsp_graphic_structure_md/_primary.dat
 WORK__nuhs3adsp__graphics = $(LIB_WORK)/nuhs3adsp/graphics.dat
 WORK__nuhs3adsp = $(LIB_WORK)/nuhs3adsp/_primary.dat
+WORK__ml509_miiipoedebug_structure_md = $(LIB_WORK)/ml509_miiipoedebug_structure_md/_primary.dat
+WORK__ml509_miiipoedebug_md = $(LIB_WORK)/ml509_miiipoedebug_md/_primary.dat
 WORK__ml509_graphics_structure_md = $(LIB_WORK)/ml509_graphics_structure_md/_primary.dat
 WORK__ml509_graphics_md = $(LIB_WORK)/ml509_graphics_md/_primary.dat
 WORK__ml509__structure = $(LIB_WORK)/ml509/structure.dat
@@ -110,8 +112,8 @@ whole_library :     $(WORK__ulx4mld_graphics_structure_md) \
     $(WORK__ulx3s_graphic_md) \
     $(WORK__ulx3s__graphics) \
     $(WORK__ulx3s) \
-    $(WORK__testbench__ulx4mld_graphics) \
     $(WORK__testbench__ulx3s_graphics) \
+    $(WORK__testbench__ulx4mld_graphics) \
     $(WORK__testbench__arty_graphics) \
     $(WORK__testbench__ml509_miiipoe_debug) \
     $(WORK__testbench__s3estarter_graphics) \
@@ -127,6 +129,8 @@ whole_library :     $(WORK__ulx4mld_graphics_structure_md) \
     $(WORK__nuhs3adsp_graphic_structure_md) \
     $(WORK__nuhs3adsp__graphics) \
     $(WORK__nuhs3adsp) \
+    $(WORK__ml509_miiipoedebug_structure_md) \
+    $(WORK__ml509_miiipoedebug_md) \
     $(WORK__ml509_graphics_structure_md) \
     $(WORK__ml509_graphics_md) \
     $(WORK__ml509__structure) \
@@ -148,7 +152,7 @@ $(WORK__arty) : ../../boards/arty/common/arty.vhd \
 $(WORK__ecp3versa) : ../../boards/ecp3versa/common/ecp3versa.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ecp3versa/common/ecp3versa.vhd
+	$(VCOM) -2002  ../../boards/ecp3versa/common/ecp3versa.vhd
 
 $(WORK__ecp3versa__graphics) : ../../boards/ecp3versa/apps/demos/graphics.vhd \
 		$(HDL4FPGA__ecp3_sdrphy) \
@@ -338,7 +342,10 @@ $(WORK__testbench__s3estarter_graphics) : ../../boards/s3estarter/apps/demos/tes
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 ../../boards/s3estarter/apps/demos/testbenches/graphic.vhd
 
+$(WORK__ml509_miiipoedebug_md) \
+$(WORK__ml509_miiipoedebug_structure_md) \
 $(WORK__testbench__ml509_miiipoe_debug) : ../../boards/ml509/apps/demos/testbenches/miiipoe_debug.vhd \
+		$(WORK__ml509) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__eth_rx) \
 		$(HDL4FPGA__eth_tb) \

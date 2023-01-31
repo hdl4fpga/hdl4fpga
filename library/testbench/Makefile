@@ -187,6 +187,8 @@ HDL4FPGA__ipv4__def = $(LIB_HDL4FPGA)/ipv4/def.dat
 HDL4FPGA__ipv4 = $(LIB_HDL4FPGA)/ipv4/_primary.dat
 HDL4FPGA__ipoepkg__body = $(LIB_HDL4FPGA)/ipoepkg/body.dat
 HDL4FPGA__ipoepkg = $(LIB_HDL4FPGA)/ipoepkg/_primary.dat
+HDL4FPGA__ip_adjlen__def = $(LIB_HDL4FPGA)/ip_adjlen/def.dat
+HDL4FPGA__ip_adjlen = $(LIB_HDL4FPGA)/ip_adjlen/_primary.dat
 HDL4FPGA__iofifo__mix = $(LIB_HDL4FPGA)/iofifo/mix.dat
 HDL4FPGA__iofifo = $(LIB_HDL4FPGA)/iofifo/_primary.dat
 HDL4FPGA__igbx__beh = $(LIB_HDL4FPGA)/igbx/beh.dat
@@ -491,6 +493,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__ipv4) \
     $(HDL4FPGA__ipoepkg__body) \
     $(HDL4FPGA__ipoepkg) \
+    $(HDL4FPGA__ip_adjlen__def) \
+    $(HDL4FPGA__ip_adjlen) \
     $(HDL4FPGA__iofifo__mix) \
     $(HDL4FPGA__iofifo) \
     $(HDL4FPGA__igbx__beh) \
@@ -1234,6 +1238,19 @@ $(HDL4FPGA__iofifo__mix) : ../sdram/sdram_iofifo.vhd \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../sdram/sdram_iofifo.vhd
 
+$(HDL4FPGA__ip_adjlen) \
+$(HDL4FPGA__ip_adjlen__def) : ../mii/ip_adjlen.vhd \
+		$(HDL4FPGA__sio_ram) \
+		$(HDL4FPGA__adder) \
+		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/ip_adjlen.vhd
+
 $(HDL4FPGA__ipoepkg) \
 $(HDL4FPGA__ipoepkg__body) : ../mii/ipoepkg.vhd \
 		$(HDL4FPGA__ethpkg) \
@@ -1249,8 +1266,6 @@ $(HDL4FPGA__ipv4__def) : ../mii/ipv4.vhd \
 		$(HDL4FPGA__mii_buffer) \
 		$(HDL4FPGA__icmpd) \
 		$(HDL4FPGA__ipv4_tx) \
-		$(HDL4FPGA__sio_ff) \
-		$(HDL4FPGA__adder) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__sio_cmp) \
@@ -1319,6 +1334,7 @@ $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
 		$(HDL4FPGA__ipv4) \
 		$(HDL4FPGA__arpd) \
 		$(HDL4FPGA__eth_tx) \
+		$(HDL4FPGA__mii_buffer) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__sio_ram) \
 		$(HDL4FPGA__arbiter) \
@@ -1960,9 +1976,7 @@ $(HDL4FPGA__udp__def) : ../mii/udp.vhd \
 		$(HDL4FPGA__dhcpcd) \
 		$(HDL4FPGA__sio_muxcmp) \
 		$(HDL4FPGA__udp_tx) \
-		$(HDL4FPGA__sio_ff) \
-		$(HDL4FPGA__adder) \
-		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__ip_adjlen) \
 		$(HDL4FPGA__sio_ram) \
 		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__udp_rx) \
@@ -1986,6 +2000,7 @@ $(HDL4FPGA__udp_rx__def) : ../mii/udp_rx.vhd \
 
 $(HDL4FPGA__udp_tx) \
 $(HDL4FPGA__udp_tx__def) : ../mii/udp_tx.vhd \
+		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__base) \
