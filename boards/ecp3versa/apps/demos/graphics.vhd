@@ -504,12 +504,17 @@ begin
 				when s_wait =>
 					if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
 						if fpga_gsrn='1' then
-							state := s_wait;
+							state := s_request;
 						end if;
 					end if;
 				end case;
 			end if;
 		end process;
+		led(0) <= dhcpcd_rdy;
+		led(1) <= dhcpcd_rdy;
+		led(2) <= fpga_gsrn;
+		led(3) <= dhcpcd_req xor dhcpcd_rdy;
+
 		-- dhcpcd_req <= dhcpcd_rdy;
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
@@ -882,5 +887,4 @@ begin
 
 	phy1_rst <= '1';
 
-	led <= not tp(1 to 8);
 end;
