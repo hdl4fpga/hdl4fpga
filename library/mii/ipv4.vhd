@@ -633,6 +633,7 @@ begin
 
 		dlltx_irdy   => dlltx_irdy,
 		dlltx_end    => dlltx_end,
+		nettx_end    => nettx_end,
 
 		udptx_frm    => udptx_frm,
 		netsatx_end  => ipv4satx_full,
