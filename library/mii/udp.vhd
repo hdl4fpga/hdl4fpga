@@ -65,18 +65,17 @@ entity udp is
 
 		ipv4sawr_frm  : out std_logic := '0';
 		ipv4sawr_irdy : out std_logic := '0';
+		ipv4sawr_end  : in  std_logic;
 		ipv4sawr_data : out std_logic_vector;
 
 		dlltx_irdy    : out std_logic := '1';
 		dlltx_end     : in  std_logic := '1';
 
-		nettx_irdy    : out std_logic := '1';
-		nettx_trdy    : in  std_logic := '1';
-		nettx_end     : in  std_logic := '1';
-
-		netsatx_end   : in  std_logic;
 		netdatx_end   : in  std_logic;
+		netdatx_irdy  : out std_logic;
 		netlentx_end  : in  std_logic;
+		netlentx_irdy : out std_logic;
+		nettx_end     : in  std_logic;
 
 		udptx_frm     : out std_logic;
 		udptx_irdy    : out std_logic;
@@ -110,13 +109,19 @@ architecture def of udp is
 	signal udppltx_data   : std_logic_vector(udptx_data'range);
 
 	signal udpdlltx_irdy  : std_logic;
-	signal udplentx_trdy  : std_logic;
+	signal udpdlltx_end   : std_logic;
+	signal udplentx_irdy  : std_logic;
 	signal udplentx_end   : std_logic;
-	signal udplentx_data  : std_logic_vector(udptx_data'range);
-
+	signal udpdatx_irdy   : std_logic;
+	signal udpdatx_end    : std_logic;
 
 	signal dhcpdlltx_irdy  : std_logic;
+	signal dhcpdlltx_end   : std_logic;
+	signal dhcpdatx_irdy   : std_logic;
+	signal dhcpdatx_end    : std_logic;
+	signal dhcplentx_irdy  : std_logic;
 	signal dhcplentx_end   : std_logic;
+
 	signal dhcpipdatx_irdy : std_logic;
 	signal udpmactx_irdy   : std_logic;
 	signal udpipdatx_irdy  : std_logic;
@@ -151,12 +156,20 @@ begin
 			req => dev_req,
 			gnt => dev_gnt);
 
-		udptx_frm    <= wirebus(dhcptx_frm       & pltx_frm,     dev_gnt);
-		udptx_irdy   <= wirebus(dhcptx_irdy      & pltx_irdy,    dev_gnt);
-		udptx_end    <= wirebus(dhcptx_end       & udppltx_end,  dev_gnt);
-		udptx_data   <= wirebus(dhcptx_data      & udppltx_data, dev_gnt);
-		dlltx_irdy   <= wirebus(dhcpdlltx_irdy    & udpdlltx_irdy   , dev_gnt);
+		udptx_frm  <= wirebus(dhcptx_frm     & pltx_frm,     dev_gnt);
+		udptx_irdy <= wirebus(dhcptx_irdy    & pltx_irdy,    dev_gnt);
+		udptx_end  <= wirebus(dhcptx_end     & udppltx_end,  dev_gnt);
+		udptx_data <= wirebus(dhcptx_data    & udppltx_data, dev_gnt);
 		(dhcptx_trdy, udppltx_trdy) <= dev_gnt and (dev_gnt'range => udptx_trdy);
+
+		dlltx_irdy    <= wirebus(dhcpdlltx_irdy & udpdlltx_irdy, dev_gnt);
+		(dhcpdlltx_end, udpdlltx_end) <= dev_gnt and (dev_gnt'range => dlltx_end);
+
+		netlentx_irdy <= wirebus(dhcplentx_irdy & udplentx_irdy, dev_gnt);
+		(dhcplentx_end,  udplentx_end) <= dev_gnt and (dev_gnt'range => netdatx_end);
+
+		netdatx_irdy  <= wirebus(dhcpdatx_irdy & udpdatx_irdy, dev_gnt);
+		(dhcpdatx_end,  udpdatx_end)   <= dev_gnt and (dev_gnt'range => netdatx_end);
 	end block;
 
 	udptx_b : block
@@ -258,41 +271,41 @@ begin
 
     	udptx_e : entity hdl4fpga.udp_tx
     	port map (
-            mii_clk    => mii_clk,
+			mii_clk     => mii_clk,
 
-            pl_frm     => pltx_frm,
-            pl_irdy    => pltx_irdy,
-            pl_trdy    => pltx_trdy,
-            pl_end     => pltx_end,
-            pl_data    => pltx_data,
+			pl_frm        => pltx_frm,
+			pl_irdy       => pltx_irdy,
+			pl_trdy       => pltx_trdy,
+			pl_end        => pltx_end,
+			pl_data       => pltx_data,
 
-			dlltx_irdy  => udpdlltx_irdy,
-			dlltx_end   => dlltx_end,
+			dlltx_irdy    => udpdlltx_irdy,
+			dlltx_end     => dlltx_end,
+			netdatx_irdy  => udpdatx_irdy,
+			netdatx_end   => udpdatx_end,
+			netlentx_irdy => udplentx_irdy,
+			netlentx_end  => udplentx_end,
+			nettx_end     => nettx_end,
+			tpttx_irdy    => tpttx_irdy,
+			tpttx_end     => tpttx_end,
 
-			nettx_irdy  => nettx_irdy,
-			nettx_trdy  => nettx_trdy,
-			nettx_end   => nettx_end,
+			udpsp_irdy    => udpsp_irdy,
+			udpsp_end     => udpsp_end,
+			udpsp_data    => udpsp_data,
 
-            tpttx_irdy  => tpttx_irdy,
-            tpttx_end   => tpttx_end,
+			udpdp_irdy    => udpdp_irdy,
+			udpdp_end     => udpdp_end,
+			udpdp_data    => udpdp_data,
 
-            udpsp_irdy  => udpsp_irdy,
-            udpsp_end   => udpsp_end,
-            udpsp_data  => udpsp_data,
+			udplen_irdy   => udplen_irdy,
+			udplen_end    => udplen_end,
+			udplen_data   => udplen_data,
 
-            udpdp_irdy  => udpdp_irdy,
-            udpdp_end   => udpdp_end,
-            udpdp_data  => udpdp_data,
-
-            udplen_irdy => udplen_irdy,
-            udplen_end  => udplen_end,
-            udplen_data => udplen_data,
-
-            udp_frm     => udppltx_frm,
-            udp_irdy    => udppltx_irdy,
-            udp_trdy    => udppltx_trdy,
-            udp_end     => udppltx_end,
-            udp_data    => udppltx_data);
+			udp_frm       => udppltx_frm,
+			udp_irdy      => udppltx_irdy,
+			udp_trdy      => udppltx_trdy,
+			udp_end       => udppltx_end,
+			udp_data      => udppltx_data);
 
 	end block;
 
@@ -352,16 +365,18 @@ begin
     		hwda_equ      => hwda_equ,
     		hwdarx_vld    => hwdarx_vld,
 
-    		dhcpcdtx_frm  => dhcptx_frm,
-			dlltx_irdy    => dhcpdlltx_irdy,
-    		dlltx_end     => dlltx_end,
-    		netdatx_end   => netdatx_end,
-    		netsatx_end   => netsatx_end,
-    		netlentx_end  => netlentx_end,
     		ipv4sawr_frm  => ipv4sawr_frm,
     		ipv4sawr_irdy => ipv4sawr_irdy,
+    		ipv4sawr_end  => ipv4sawr_end,
     		ipv4sawr_data => ipv4sawr_data,
 
+    		dhcpcdtx_frm  => dhcptx_frm,
+			dlltx_irdy    => dhcpdlltx_irdy,
+    		dlltx_end     => dhcpdlltx_end,
+    		netdatx_irdy  => dhcpdatx_irdy,
+    		netdatx_end   => dhcpdatx_end,
+    		netlentx_irdy => dhcplentx_irdy,
+    		netlentx_end  => dhcplentx_end,
     		dhcpcdtx_irdy => dhcptx_irdy,
     		dhcpcdtx_trdy => dhcptx_trdy,
     		dhcpcdtx_end  => dhcptx_end,

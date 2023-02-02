@@ -43,6 +43,7 @@ entity dhcpcd is
 
 		ipv4sawr_frm  : out std_logic := '0';
 		ipv4sawr_irdy : out std_logic := '0';
+		ipv4sawr_end  : in  std_logic := '1';
 		ipv4sawr_data : out std_logic_vector;
 
 		hwda_frm      : out std_logic;
@@ -53,12 +54,12 @@ entity dhcpcd is
 		hwdarx_vld    : in  std_logic;
 
 		dhcpcdtx_frm  : buffer std_logic;
-		dlltx_end     : in  std_logic := '1';
-		dlltx_irdy    : out std_logic := '1';
-		netdatx_end   : in  std_logic := '1';
-		netsatx_end   : in  std_logic := '1';
-		netlentx_end  : in  std_logic := '1';
-		netlentx_irdy : in  std_logic := '1';
+		dlltx_end     : in  std_logic;
+		dlltx_irdy    : out std_logic;
+		netdatx_irdy  : out  std_logic;
+		netdatx_end   : in  std_logic;
+		netlentx_irdy : out  std_logic;
+		netlentx_end  : in  std_logic;
 
 		dhcpcdtx_irdy : buffer std_logic;
 		dhcpcdtx_trdy : in  std_logic;

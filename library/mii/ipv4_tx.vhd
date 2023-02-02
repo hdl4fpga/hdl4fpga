@@ -196,8 +196,7 @@ begin
 	end process;
 
 	dlltx_irdy <= pl_irdy;
-	nettx_irdy <= pl_irdy when dlltx_end='1' else
-		'0';
+	nettx_irdy <= pl_irdy when dlltx_end='1' else '0';
 	ipv4a_irdy <= 
 		'0' when dlltx_end='0'    else 
 		'1' when (state=s_ipv4a and ipv4a_end='0') else

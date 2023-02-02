@@ -41,9 +41,9 @@ entity dhcpc_dscb is
 
 		dlltx_end     : in  std_logic := '1';
 		netdatx_end   : in  std_logic := '1';
-		netdatx_irdy  : in  std_logic := '1';
+		netdatx_irdy  : buffer std_logic := '1';
 		netlentx_end  : in  std_logic := '1';
-		netlentx_irdy : in  std_logic := '1';
+		netlentx_irdy : buffer std_logic := '1';
 
 		dhcpdscb_irdy : in  std_logic;
 		dhcpdscb_trdy : out std_logic;

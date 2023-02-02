@@ -73,133 +73,132 @@ end;
 
 architecture def of mii_ipoe is
 
-	signal pream_vld     : std_logic;
-	signal dllrx_frm     : std_logic;
-	signal dllrx_irdy    : std_logic;
-	signal dllrx_trdy    : std_logic;
-	signal dllrx_data    : std_logic_vector(plrx_data'range);
-	signal metarx_frm    : std_logic;
-	signal metarx_irdy   : std_logic;
+	signal pream_vld      : std_logic;
+	signal dllrx_frm      : std_logic;
+	signal dllrx_irdy     : std_logic;
+	signal dllrx_trdy     : std_logic;
+	signal dllrx_data     : std_logic_vector(plrx_data'range);
+	signal metarx_frm     : std_logic;
+	signal metarx_irdy    : std_logic;
 
-	signal bcstrx_equ    : std_logic;
+	signal bcstrx_equ     : std_logic;
 
-	signal hwda_frm      : std_logic;
-	signal hwda_irdy     : std_logic;
-	signal hwda_trdy     : std_logic;
-	signal hwda_last     : std_logic;
-	signal hwda_end      : std_logic;
-	signal hwda_equ      : std_logic;
-	signal hwda_vld      : std_logic;
+	signal hwda_frm       : std_logic;
+	signal hwda_irdy      : std_logic;
+	signal hwda_trdy      : std_logic;
+	signal hwda_last      : std_logic;
+	signal hwda_end       : std_logic;
+	signal hwda_equ       : std_logic;
+	signal hwda_vld       : std_logic;
 
-	signal hwdarx_irdy   : std_logic;
-	signal hwdarx_vld    : std_logic;
-	signal hwsarx_irdy   : std_logic;
-	signal hwsarx_trdy   : std_logic;
-	signal hwtyprx_irdy  : std_logic;
-	signal hwtyprx_trdy  : std_logic;
-	signal ethplrx_irdy  : std_logic;
-	signal ethplrx_trdy  : std_logic;
-	signal llc_last      : std_logic;
-	signal arprx_equ     : std_logic;
-	signal arprx_vld     : std_logic;
-	signal iprx_equ      : std_logic;
-	signal iprx_vld      : std_logic;
-	signal fcs_sb        : std_logic;
-	signal fcs_vld       : std_logic;
+	signal hwdarx_irdy    : std_logic;
+	signal hwdarx_vld     : std_logic;
+	signal hwsarx_irdy    : std_logic;
+	signal hwsarx_trdy    : std_logic;
+	signal hwtyprx_irdy   : std_logic;
+	signal hwtyprx_trdy   : std_logic;
+	signal ethplrx_irdy   : std_logic;
+	signal ethplrx_trdy   : std_logic;
+	signal llc_last       : std_logic;
+	signal arprx_equ      : std_logic;
+	signal arprx_vld      : std_logic;
+	signal iprx_equ       : std_logic;
+	signal iprx_vld       : std_logic;
+	signal fcs_sb         : std_logic;
+	signal fcs_vld        : std_logic;
 
-	signal arprx_frm     : std_logic;
-	signal tparx_frm     : std_logic;
-	signal iprx_frm      : std_logic;
+	signal arprx_frm      : std_logic;
+	signal tparx_frm      : std_logic;
+	signal iprx_frm       : std_logic;
 
-	signal ethtx_frm     : std_logic;
-	signal ethtx_irdy    : std_logic;
-	signal ethpltx_irdy  : std_logic;
-	signal ethpltx_trdy  : std_logic;
-	signal ethpltx_end   : std_logic;
-	signal mtdlltx_irdy  : std_logic;
-	signal mtdlltx_trdy  : std_logic;
-	signal mtdlltx_end   : std_logic;
-	signal dlltx_data    : std_logic_vector(miitx_data'range);
+	signal ethtx_frm      : std_logic;
+	signal ethtx_irdy     : std_logic;
+	signal ethpltx_irdy   : std_logic;
+	signal ethpltx_trdy   : std_logic;
+	signal ethpltx_end    : std_logic;
+	signal mtdlltx_irdy   : std_logic;
+	signal mtdlltx_trdy   : std_logic;
+	signal mtdlltx_end    : std_logic;
+	signal dlltx_data     : std_logic_vector(miitx_data'range);
 
-	signal arptx_frm     : std_logic;
-	signal arptx_irdy    : std_logic;
-	signal arptx_trdy    : std_logic;
-	signal arptx_end     : std_logic;
-	signal arptx_data    : std_logic_vector(miitx_data'range);
+	signal arptx_frm      : std_logic;
+	signal arptx_irdy     : std_logic;
+	signal arptx_trdy     : std_logic;
+	signal arptx_end      : std_logic;
+	signal arptx_data     : std_logic_vector(miitx_data'range);
 
-	signal ipv4tx_frm    : std_logic;
-	signal ipv4tx_irdy   : std_logic;
-	signal ipv4tx_trdy   : std_logic;
-	signal ipv4tx_end    : std_logic;
-	signal ipv4tx_data   : std_logic_vector(miitx_data'range);
+	signal ipv4tx_frm     : std_logic;
+	signal ipv4tx_irdy    : std_logic;
+	signal ipv4tx_trdy    : std_logic;
+	signal ipv4tx_end     : std_logic;
+	signal ipv4tx_data    : std_logic_vector(miitx_data'range);
 
-	signal ipv4plrx_frm  : std_logic;
-	signal ipv4plrx_cmmt : std_logic;
+	signal ipv4plrx_frm   : std_logic;
+	signal ipv4plrx_cmmt  : std_logic;
 	signal ipv4plrx_rllbk : std_logic;
-	signal ipv4plrx_irdy : std_logic;
-	signal ipv4plrx_trdy : std_logic;
-	signal ipv4plrx_data : std_logic_vector(miitx_data'range);
+	signal ipv4plrx_irdy  : std_logic;
+	signal ipv4plrx_trdy  : std_logic;
+	signal ipv4plrx_data  : std_logic_vector(miitx_data'range);
 
-	signal hwtyp_tx      : std_logic_vector(0 to 16-1);
+	signal hwtyp_tx       : std_logic_vector(0 to 16-1);
 
-	signal hwllctx_irdy  : std_logic;
-	signal hwllctx_trdy  : std_logic;
-	signal hwllctx_end   : std_logic;
-	signal hwllctx_data  : std_logic_vector(pltx_data'range);
+	signal hwllctx_irdy   : std_logic;
+	signal hwllctx_trdy   : std_logic;
+	signal hwllctx_end    : std_logic;
+	signal hwllctx_data   : std_logic_vector(pltx_data'range);
 
-	signal ipv4hwda_frm  : std_logic;
-	signal ipv4hwda_irdy : std_logic;
+	signal ipv4hwda_frm   : std_logic;
+	signal ipv4hwda_irdy  : std_logic;
 
-	signal ipv4arx_trdy  : std_logic;
-	signal ipv4arx_equ   : std_logic;
-	signal ipv4arx_last  : std_logic;
-	signal ipv4darx_frm  : std_logic;
-	signal ipv4darx_irdy : std_logic;
+	signal ipv4arx_trdy   : std_logic;
+	signal ipv4arx_equ    : std_logic;
+	signal ipv4arx_last   : std_logic;
+	signal ipv4darx_frm   : std_logic;
+	signal ipv4darx_irdy  : std_logic;
 
-	signal ipv4sarx_frm  : std_logic;
-	signal ipv4sarx_irdy : std_logic;
-	signal ipv4sarx_trdy : std_logic;
-	signal ipv4sarx_end  : std_logic;
-	signal ipv4sarx_equ  : std_logic;
+	signal ipv4sarx_frm   : std_logic;
+	signal ipv4sarx_irdy  : std_logic;
+	signal ipv4sarx_trdy  : std_logic;
+	signal ipv4sarx_end   : std_logic;
+	signal ipv4sarx_equ   : std_logic;
 
-	signal ipv4satx_frm  : std_logic :='0';
-	signal ipv4satx_trdy : std_logic :='0';
-	signal ipv4satx_irdy : std_logic :='0';
-	signal ipv4satx_end  : std_logic :='1';
-	signal ipv4satx_data : std_logic_vector(miitx_data'range);
+	signal ipv4satx_frm   : std_logic :='0';
+	signal ipv4satx_trdy  : std_logic :='0';
+	signal ipv4satx_irdy  : std_logic :='0';
+	signal ipv4satx_end   : std_logic :='1';
+	signal ipv4satx_data  : std_logic_vector(miitx_data'range);
 
 	signal arptxmac_full  : std_logic;
 	signal arptxmac_irdy  : std_logic;
 	signal arptxmac_trdy  : std_logic;
-	signal ipv4dlltx_end : std_logic;
+	signal ipv4dlltx_end  : std_logic;
 	signal ipv4dlltx_irdy : std_logic;
 	signal ipv4dlltx_trdy : std_logic;
 
-	signal fifo_frm      : std_logic;
-	signal fifo_irdy     : std_logic;
-	signal fifo_trdy     : std_logic;
-	signal fifoo_end     : std_logic;
-	signal fifoo_irdy    : std_logic;
-	signal fifoo_trdy    : std_logic;
-	signal fifo_data     : std_logic_vector(miitx_data'range);
+	signal fifo_frm       : std_logic;
+	signal fifo_irdy      : std_logic;
+	signal fifo_trdy      : std_logic;
+	signal fifoo_end      : std_logic;
+	signal fifoo_irdy     : std_logic;
+	signal fifoo_trdy     : std_logic;
+	signal fifo_data      : std_logic_vector(miitx_data'range);
 
-	signal fifo_cmmt     : std_logic;
-	signal fifo_avail    : std_logic;
-	signal fifo_rllbk    : std_logic;
+	signal fifo_cmmt      : std_logic;
+	signal fifo_avail     : std_logic;
+	signal fifo_rllbk     : std_logic;
 
-	signal tagtx_irdy      : std_logic;
-	signal tagtx_trdy    : std_logic;
+	signal tagtx_irdy     : std_logic;
+	signal tagtx_trdy     : std_logic;
 
-	signal tag_frm       : std_logic;
-	signal tag_irdy      : std_logic;
-	signal tag_end       : std_logic;
-	signal tag_trdy      : std_logic;
-	signal tag_data      : std_logic_vector(miitx_data'range);
+	signal tag_frm        : std_logic;
+	signal tag_irdy       : std_logic;
+	signal tag_end        : std_logic;
+	signal tag_trdy       : std_logic;
+	signal tag_data       : std_logic_vector(miitx_data'range);
 
-	signal arp_req       : std_logic;
-	signal arp_rdy       : std_logic;
+	signal arp_req        : std_logic;
+	signal arp_rdy        : std_logic;
 
-	signal	tp1            : std_logic_vector(1 to 32);
 begin
 
 	process (pltx_frm, pltx_irdy, tagtx_trdy, mii_clk)
@@ -246,9 +245,6 @@ begin
 		pl_irdy    => ethplrx_irdy,
 		fcs_sb     => fcs_sb,
 		fcs_vld    => fcs_vld);
-
-	tp(9 to 16) <= dllrx_data;
-	tp(17) <= dllrx_frm;
 
 	bcstcmp_b : block
 		constant all1s : std_logic_vector := (0 to dllrx_data'length-1 => '1');
@@ -308,8 +304,6 @@ begin
 		end if;
 	end process;
 	myhwa_vld <= hwda_vld;
-	tp(1) <= hwda_vld;
-
 
 	llc_e : entity hdl4fpga.sio_muxcmp
 	generic map (
@@ -355,8 +349,6 @@ begin
 		signal dev_csc : std_logic;
 	begin
 
-		tp(5 to 6) <= tp1(1 to 2);
---		tp(7) <= dev_csc;
 		dev_csc <= not miirx_frm when hdplx='1' else '1';
 		dev_req <= arptx_frm & ipv4tx_frm;
 		arbiter_e : entity hdl4fpga.arbiter
@@ -399,7 +391,7 @@ begin
 	begin
 
 		hwdatx_irdy <= hwllctx_irdy;
-		macda_e : entity hdl4fpga.sio_ram
+		hwda_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_length => my_mac'length)
 		port map (
@@ -537,7 +529,6 @@ begin
 	generic map (
 		default_ipv4a => default_ipv4a)
 	port map (
-		tp => tp1,
 		mii_clk       => mii_clk,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
@@ -634,9 +625,6 @@ begin
 		dst_trdy  => fifoo_trdy,
 		dst_end   => fifoo_end,
 		dst_data  => fifo_data);
-	tp(2) <= tag_frm;
-	tp(3) <= fifoo_trdy;
-	tp(4) <= fifoo_end;
 
 	tag_frm_p : process (plrx_clk)
 		variable frm : bit;

@@ -47,12 +47,14 @@ entity udp_tx is
 		dlltx_irdy  : out std_logic := '1';
 		dlltx_end   : in  std_logic := '1';
 
+		netdatx_irdy  : out  std_logic;
+		netdatx_end   : in  std_logic;
+		netlentx_irdy : out  std_logic;
+		netlentx_end  : in  std_logic;
 		nettx_irdy  : out std_logic := '1';
-		nettx_trdy  : in  std_logic := '1';
 		nettx_end   : in  std_logic := '1';
 
 		tpttx_irdy  : out std_logic := '1';
-		tpttx_trdy  : in  std_logic := '1';
 		tpttx_end   : in  std_logic := '1';
 
 		udpsp_irdy  : out std_logic;
@@ -127,8 +129,8 @@ begin
 		pl_irdy;
 
 	pl_trdy <=
-		nettx_trdy when nettx_end='0' else
-		tpttx_trdy when tpttx_end='0' else
+		'1' when nettx_end='0' else
+		'1' when tpttx_end='0' else
 		udp_trdy;
 	udp_frm  <= pl_frm;
 	udp_end  <= pl_end;

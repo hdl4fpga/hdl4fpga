@@ -153,23 +153,35 @@ architecture def of ipv4 is
 
 	signal ipv4darx_frm     : std_logic;
 	signal ipv4darx_irdy    : std_logic;
+
 	signal ipv4sawr_frm     : std_logic;
 	signal ipv4sawr_irdy    : std_logic;
+	signal ipv4sawr_end     : std_logic;
 	signal ipv4sawr_data    : std_logic_vector(ipv4rx_data'range);
 
-	signal ipv4satx_full    : std_logic;
+	signal nettx_irdy       : std_logic;
 	signal nettx_end        : std_logic;
-
+	signal netdatx_end      : std_logic;
+	signal netdatx_irdy     : std_logic;
+	signal netlentx_irdy    : std_logic;
 	signal netlentx_end     : std_logic;
+
+	signal icmplentx_irdy   : std_logic;
+	signal icmplentx_end    : std_logic;
+	signal icmpdatx_irdy    : std_logic;
+
+	signal udplentx_irdy    : std_logic;
+	signal udplentx_end     : std_logic;
+	signal udpdatx_irdy     : std_logic;
+	signal udpdatx_end      : std_logic;
+
 	signal ipv4len_irdy     : std_logic;
 	signal ipv4len_end      : std_logic;
 	signal ipv4len_data     : std_logic_vector(ipv4rx_data'range);
 
-	signal udpnetlentx_end  : std_logic;
 	signal udpipv4len_end   : std_logic;
 	signal udpipv4len_data  : std_logic_vector(ipv4rx_data'range);
 
-	signal icmpnetlentx_end : std_logic;
 	signal icmpipv4len_end  : std_logic;
 	signal icmpipv4len_data : std_logic_vector(ipv4rx_data'range);
 
@@ -178,14 +190,9 @@ architecture def of ipv4 is
 	signal ipv4proto_end    : std_logic;
 	signal ipv4proto_data   : std_logic_vector(ipv4rx_data'range);
 
-	signal icmp_gnt         : std_logic;
-	signal udp_gnt          : std_logic;
-
 	signal udpmactx_irdy    : std_logic;
 	signal icmpnetrx_irdy   : std_logic;
-	signal nettx_irdy       : std_logic;
 
-	signal iplentx_irdy     : std_logic;
 
 	signal ipv4sanll_vld    : std_logic := '0';
 
@@ -256,7 +263,7 @@ begin
 		begin
 			if rising_edge(mii_clk) then
 				if ipv4sawr_frm='1' then
-					if ipv4satx_full='0' then
+					if ipv4sawr_end='0' then
 						if ipv4sawr_irdy='1' then
 							ipv4sanll_vld <= ipv4sanll_equ;
 						end if;
@@ -325,7 +332,6 @@ begin
 		signal dev_gnt          : std_logic_vector(0 to 2-1);
 		signal gnt          : std_logic_vector(0 to 2-1);
 
-		signal udpipdatx_irdy   : std_logic;
 		signal icmpiplentx_irdy : std_logic;
 
 	begin
@@ -344,25 +350,20 @@ begin
 				end if;
 			end process;
 
-		(icmp_gnt, udp_gnt) <= dev_gnt;
-		tp(1 to 2) <= dev_gnt;
-
+		ipv4proto_tx  <= wirebus(reverse(ipv4proto_icmp & ipv4proto_udp,8), dev_gnt);
 		ipv4pltx_frm  <= wirebus(icmptx_frm  & udptx_frm,  dev_gnt);
 		ipv4pltx_irdy <= wirebus(icmptx_irdy & udptx_irdy, dev_gnt);
 		ipv4pltx_end  <= wirebus(icmptx_end  & udptx_end,  dev_gnt);
 		ipv4pltx_data <= wirebus(icmptx_data & udptx_data, dev_gnt);
 
-		ipv4proto_tx  <= wirebus(reverse(ipv4proto_icmp & ipv4proto_udp,8), dev_gnt);
-		iplentx_irdy  <= wirebus(icmpiplentx_irdy & nettx_irdy, dev_gnt);
-
 		ipv4len_data  <= wirebus(icmpipv4len_data & udpipv4len_data, dev_gnt);
 		ipv4len_end   <= wirebus(icmpipv4len_end  & udpipv4len_end,  dev_gnt);
-		netlentx_end  <= wirebus(icmpnetlentx_end & udpnetlentx_end, dev_gnt);
 
-		(0 => icmptx_trdy,    1 => udptx_trdy)    <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy);
+		netlentx_irdy <= wirebus(icmplentx_irdy & udplentx_irdy, dev_gnt);
+		netlentx_end  <= wirebus(icmplentx_end  & udplentx_end,  dev_gnt);
+		netdatx_irdy  <= wirebus(icmpdatx_irdy  & udpdatx_irdy,  dev_gnt);
 
-		udpipdatx_irdy   <= '0' when dlltx_end='0'  else '1';
-		icmpiplentx_irdy <= '0' when dlltx_end='0'  else '1';
+		(0 => icmptx_trdy, 1 => udptx_trdy) <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy);
 
 	end block;
 
@@ -372,12 +373,6 @@ begin
 		signal ipv4da_trdy  : std_logic;
 		signal ipv4da_data  : std_logic_vector(ipv4rx_data'range);
 
-		signal len_datai    : std_logic_vector(pltx_data'range);
-		signal ldatai       : std_logic_vector(pltx_data'range);
-		signal len          : std_logic_vector(0 to 16);
-
-		signal netdatx_end   : std_logic;
-		signal netdatx_irdy  : std_logic;
 	begin
 		adjlen_e : entity hdl4fpga.ip_adjlen
 		generic map (
@@ -385,9 +380,9 @@ begin
 		port map (
 			si_clk  => mii_clk,
 			si_frm  => ipv4pltx_frm,
-			si_irdy => iplentx_irdy,
+			si_irdy => udplentx_irdy,
 			si_trdy => open,
-			si_full => udpnetlentx_end,
+			si_full => udplentx_end,
 			si_data => ipv4pltx_data,
 
 			so_clk  => mii_clk,
@@ -413,9 +408,9 @@ begin
 		port map (
 			si_clk   => mii_clk,
 			si_frm   => ipv4pltx_frm,
-			si_irdy  => nettx_irdy,
+			si_irdy  => icmplentx_irdy,
 			si_trdy  => open,
-			si_full  => icmpnetlentx_end,
+			si_full  => icmplentx_end,
 			si_data  => ipv4pltx_data,
 
 			so_clk   => mii_clk,
@@ -449,7 +444,7 @@ begin
 				si_frm  => ipv4sawr_frm,
 				si_irdy => ipv4sawr_irdy,
 				si_trdy => open,
-				si_full => ipv4satx_full,
+				si_full => ipv4sawr_end,
 				si_data => ipv4sawr_data,
 	
 				so_clk  => mii_clk,
@@ -461,7 +456,6 @@ begin
 			ipv4satx_trdy <= ipv4sard_trdy;
 		end block;
 
-		netdatx_irdy <= nettx_irdy when netlentx_end='1' else '0';
 		ipv4da_e : entity hdl4fpga.sio_ram
 		generic map (
 			mem_length => 32)
@@ -480,7 +474,7 @@ begin
 			so_end   => ipv4atx_end,
 			so_data  => ipv4da_data);
 
-		nettx_end <= netdatx_end;
+		nettx_end    <= netdatx_end and netlentx_end;
 		ipv4atx_trdy <= ipv4satx_trdy when ipv4satx_end='0' else ipv4da_trdy;
 		ipv4atx_data <= 
 			ipv4satx_data when ipv4satx_end='0' else
@@ -594,7 +588,9 @@ begin
 			o_data => icmptx_data,
 			o_end  => icmptx_end);
 
-		end block;
+		icmplentx_irdy <= icmptx_irdy;
+		icmpdatx_irdy  <= icmptx_irdy when icmplentx_end='1' else '0';
+	end block;
 
 	udp_e : entity hdl4fpga.udp
 	port map (
@@ -630,19 +626,21 @@ begin
 		ipv4sawr_frm  => ipv4sawr_frm,
 		ipv4sawr_irdy => ipv4sawr_irdy,
 		ipv4sawr_data => ipv4sawr_data,
+		ipv4sawr_end  => ipv4sawr_end,
 
-		dlltx_irdy   => dlltx_irdy,
-		dlltx_end    => dlltx_end,
-		nettx_end    => nettx_end,
+		dlltx_irdy    => dlltx_irdy,
+		dlltx_end     => dlltx_end,
+		netdatx_irdy  => udpdatx_irdy,
+		netdatx_end   => udpdatx_end,
+		netlentx_irdy => udplentx_irdy,
+		netlentx_end  => udplentx_end,
+		nettx_end     => nettx_end,
 
-		udptx_frm    => udptx_frm,
-		netsatx_end  => ipv4satx_full,
-		netdatx_end  => nettx_end,
-		netlentx_end => netlentx_end,
-		udptx_irdy   => udptx_irdy,
-		udptx_trdy   => udptx_trdy,
-		udptx_end    => udptx_end ,
-		udptx_data   => udptx_data);
+		udptx_frm     => udptx_frm,
+		udptx_irdy    => udptx_irdy,
+		udptx_trdy    => udptx_trdy,
+		udptx_end     => udptx_end ,
+		udptx_data    => udptx_data);
 
 	plrx_data <= udpplrx_data;
 end;
