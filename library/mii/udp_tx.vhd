@@ -51,10 +51,9 @@ entity udp_tx is
 		netdatx_end   : in  std_logic;
 		netlentx_irdy : out  std_logic;
 		netlentx_end  : in  std_logic;
-		nettx_irdy    : out std_logic := '1';
 		nettx_end     : in  std_logic := '1';
 
-		tpttx_irdy    : out std_logic := '1';
+		tpttx_irdy    : buffer std_logic := '1';
 		tpttx_end     : in  std_logic := '1';
 
 		udpsp_irdy    : out std_logic;
@@ -85,6 +84,7 @@ architecture def of udp_tx is
 	signal cksm_irdy   : std_logic;
 	signal cksm_end    : std_logic;
 	signal cksm_data   : std_logic_vector(pl_data'range);
+	signal so_sum   : std_logic_vector(pl_data'range);
 
 
 begin
@@ -116,9 +116,9 @@ begin
 		so_end   => cksm_end,
 		so_data  => cksm_data);
 
-	dlltx_irdy  <= pl_irdy;
-	nettx_irdy  <= pl_irdy  when  dlltx_end='1' else '0';
-	tpttx_irdy  <= pl_irdy  when  nettx_end='1' else '0';
+	dlltx_irdy   <= pl_irdy;
+	netdatx_irdy <= pl_irdy when  dlltx_end='1' else '0';
+	tpttx_irdy   <= pl_irdy when netdatx_end='1' else '0';
 	udpsp_irdy  <= udp_trdy when  tpttx_end='1' else '0';
 	udpdp_irdy  <= udp_trdy when  udpsp_end='1' else '0';
 	udplen_irdy <= udp_trdy when  udpdp_end='1' else '0';
@@ -129,16 +129,25 @@ begin
 		pl_irdy;
 
 	pl_trdy <=
-		'1' when nettx_end='0' else
 		'1' when tpttx_end='0' else
 		udp_trdy;
 	udp_frm  <= pl_frm;
 	udp_end  <= pl_end;
 
+	adjlen_e : entity hdl4fpga.udp_adjlen
+	generic map (
+		adjust => std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16)))
+	port map (
+		sio_clk  => mii_clk,
+		sio_frm  => pl_frm,
+		sio_irdy => tpttx_irdy,
+		sio_trdy => open,
+		si_data  => pl_data,
+		so_data  => so_sum);
+	
 	udp_data <=
 		pl_data     when  dlltx_end='0' else
-		pl_data     when  nettx_end='0' else
-		pl_data     when  tpttx_end='0' else
+		so_sum      when  tpttx_end='0' else
 		udpdp_data  when  udpdp_end='0' else
 		udpsp_data  when  udpsp_end='0' else
 		udplen_data when udplen_end='0' else
