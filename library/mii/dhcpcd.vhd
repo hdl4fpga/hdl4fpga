@@ -54,12 +54,13 @@ entity dhcpcd is
 		hwdarx_vld    : in  std_logic;
 
 		dhcpcdtx_frm  : buffer std_logic;
-		dlltx_end     : in  std_logic;
 		dlltx_irdy    : out std_logic;
-		netdatx_irdy  : out  std_logic;
+		dlltx_end     : in  std_logic;
 		netdatx_end   : in  std_logic;
-		netlentx_irdy : out  std_logic;
+		netdatx_irdy  : out std_logic;
 		netlentx_end  : in  std_logic;
+		netlentx_irdy : out std_logic;
+		nettx_end     : in  std_logic;
 
 		dhcpcdtx_irdy : buffer std_logic;
 		dhcpcdtx_trdy : in  std_logic;
@@ -138,12 +139,15 @@ begin
 	port map (
 		mii_clk       => mii_clk,
 		dhcpdscb_frm  => dhcpcdtx_frm,
+		dlltx_irdy    => dlltx_irdy,
 		dlltx_end     => dlltx_end,
+		netdatx_irdy  => netdatx_irdy,
 		netdatx_end   => netdatx_end,
-		netlentx_end  => netlentx_end,
 		netlentx_irdy => netlentx_irdy,
-		dhcpdscb_irdy => dhcpcdtx_trdy,
-		dhcpdscb_trdy => dhcpcdtx_irdy,
+		netlentx_end  => netlentx_end,
+		nettx_end     => nettx_end,
+		dhcpdscb_irdy => dhcpcdtx_irdy,
+		dhcpdscb_trdy => dhcpcdtx_trdy,
 		dhcpdscb_end  => dhcpcdtx_end,
 		dhcpdscb_data => dhcpcdtx_data);
 

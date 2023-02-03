@@ -45,7 +45,7 @@ entity ipv4_tx is
 		ipv4_frm       : buffer std_logic;
 
 		dlltx_irdy     : out std_logic;
-		dlltx_trdy     : in  std_logic;
+		dlltx_trdy     : in  std_logic := '1';
 		dlltx_end      : in  std_logic;
 
 		nettx_irdy     : out std_logic;

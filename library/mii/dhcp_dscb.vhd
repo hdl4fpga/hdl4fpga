@@ -39,14 +39,16 @@ entity dhcpc_dscb is
 		mii_clk       : in  std_logic;
 		dhcpdscb_frm  : in  std_logic;
 
+		dlltx_irdy    : out std_logic;
 		dlltx_end     : in  std_logic := '1';
-		netdatx_end   : in  std_logic := '1';
-		netdatx_irdy  : buffer std_logic := '1';
-		netlentx_end  : in  std_logic := '1';
-		netlentx_irdy : buffer std_logic := '1';
+		netdatx_irdy  : out std_logic := '1';
+		netdatx_end   : in  std_logic;
+		netlentx_irdy : out std_logic := '1';
+		netlentx_end  : in  std_logic;
+		nettx_end     : in  std_logic;
 
-		dhcpdscb_irdy : in  std_logic;
-		dhcpdscb_trdy : out std_logic;
+		dhcpdscb_irdy : out std_logic;
+		dhcpdscb_trdy : in  std_logic;
 		dhcpdscb_end  : out std_logic;
 		dhcpdscb_data : out std_logic_vector);
 end;
@@ -97,8 +99,8 @@ begin
 		if rising_edge(mii_clk) then
 			if dhcpdscb_frm='0' then
 				cntr := (others => '0');
-			elsif dhcpdscb_irdy='1' and netdatx_end='1' then
-				if cntr < (payload_size+8) then
+			elsif dhcpdscb_trdy='1' and nettx_end='1' then
+				if dhcppkt_end='1' then
 					cntr := cntr + 1;
 				end if;
 			end if;
@@ -113,10 +115,10 @@ begin
 		dhcp4_hops,   dhcp4_xid,   dhcp4_chaddr6, dhcp4_cookie, dhcp_vendor));
 
 	dhcppkt_irdy <=
-		'0'           when    dlltx_end='0' else
-		netlentx_irdy when netlentx_end='0' else
-		'0'           when  netdatx_end='0' else
-		dhcpdscb_irdy when  dhcppkt_ena='1' else
+		'0' when    dlltx_end='0' else
+		'1' when netlentx_end='0' else
+		'0' when  netdatx_end='0' else
+		'1' when  dhcppkt_ena='1' else
 		'0';
 
 	dhcppkt_e : entity hdl4fpga.sio_mux
@@ -129,9 +131,11 @@ begin
         so_end   => dhcppkt_end,
         so_data  => dhcppkt_data);
 
-	dhcpdscb_trdy <=
-		netdatx_irdy when netdatx_end='0' else
-		dhcppkt_trdy;
+	dlltx_irdy    <= dhcpdscb_frm;
+	netlentx_irdy <= dhcpdscb_frm when    dlltx_end='1' else '0';
+	netdatx_irdy  <= dhcpdscb_frm when netlentx_end='1' else '0';
+
+	dhcpdscb_irdy <= dhcppkt_trdy when netlentx_end='1' else '0';
 
 	dhcpdscb_end <=
 		'0' when netdatx_end='0' else

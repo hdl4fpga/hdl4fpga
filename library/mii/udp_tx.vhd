@@ -34,49 +34,49 @@ use hdl4fpga.ipoepkg.all;
 
 entity udp_tx is
 	port (
-		mii_clk     : in  std_logic;
+		mii_clk       : in  std_logic;
 
-		pl_frm      : in  std_logic;
-		pl_irdy     : in  std_logic;
-		pl_trdy     : buffer std_logic;
-		pl_end      : in  std_logic;
-		pl_data     : in  std_logic_vector;
+		pl_frm        : in  std_logic;
+		pl_irdy       : in  std_logic;
+		pl_trdy       : buffer std_logic;
+		pl_end        : in  std_logic;
+		pl_data       : in  std_logic_vector;
 
-		udp_frm     : buffer std_logic;
+		udp_frm       : buffer std_logic;
 
-		dlltx_irdy  : out std_logic := '1';
-		dlltx_end   : in  std_logic := '1';
+		dlltx_irdy    : out std_logic := '1';
+		dlltx_end     : in  std_logic := '1';
 
 		netdatx_irdy  : out  std_logic;
 		netdatx_end   : in  std_logic;
 		netlentx_irdy : out  std_logic;
 		netlentx_end  : in  std_logic;
-		nettx_irdy  : out std_logic := '1';
-		nettx_end   : in  std_logic := '1';
+		nettx_irdy    : out std_logic := '1';
+		nettx_end     : in  std_logic := '1';
 
-		tpttx_irdy  : out std_logic := '1';
-		tpttx_end   : in  std_logic := '1';
+		tpttx_irdy    : out std_logic := '1';
+		tpttx_end     : in  std_logic := '1';
 
-		udpsp_irdy  : out std_logic;
-		udpsp_trdy  : in  std_logic := '1';
-		udpsp_end   : in  std_logic;
-		udpsp_data  : in  std_logic_vector;
+		udpsp_irdy    : out std_logic;
+		udpsp_trdy    : in  std_logic := '1';
+		udpsp_end     : in  std_logic;
+		udpsp_data    : in  std_logic_vector;
 
-		udpdp_irdy  : out std_logic;
-		udpdp_trdy  : in  std_logic := '1';
-		udpdp_end   : in  std_logic;
-		udpdp_data  : in  std_logic_vector;
+		udpdp_irdy    : out std_logic;
+		udpdp_trdy    : in  std_logic := '1';
+		udpdp_end     : in  std_logic;
+		udpdp_data    : in  std_logic_vector;
 
-		udplen_irdy : out std_logic;
-		udplen_trdy : in  std_logic := '1';
-		udplen_end  : in  std_logic;
-		udplen_data : in  std_logic_vector;
+		udplen_irdy   : out std_logic;
+		udplen_trdy   : in  std_logic := '1';
+		udplen_end    : in  std_logic;
+		udplen_data   : in  std_logic_vector;
 
-		udp_irdy    : out std_logic;
-		udp_trdy    : in  std_logic;
-		udp_data    : out std_logic_vector;
-		udp_end     : out std_logic;
-		tp          : out std_logic_vector(1 to 32));
+		udp_irdy      : out std_logic;
+		udp_trdy      : in  std_logic;
+		udp_data      : out std_logic_vector;
+		udp_end       : out std_logic;
+		tp            : out std_logic_vector(1 to 32));
 end;
 
 architecture def of udp_tx is

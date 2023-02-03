@@ -169,6 +169,7 @@ architecture def of ipv4 is
 	signal icmplentx_irdy   : std_logic;
 	signal icmplentx_end    : std_logic;
 	signal icmpdatx_irdy    : std_logic;
+	signal icmpdatx_end     : std_logic;
 
 	signal udplentx_irdy    : std_logic;
 	signal udplentx_end     : std_logic;
@@ -363,7 +364,8 @@ begin
 		netlentx_end  <= wirebus(icmplentx_end  & udplentx_end,  dev_gnt);
 		netdatx_irdy  <= wirebus(icmpdatx_irdy  & udpdatx_irdy,  dev_gnt);
 
-		(0 => icmptx_trdy, 1 => udptx_trdy) <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy);
+		(icmptx_trdy,  udptx_trdy)  <= dev_gnt and (dev_gnt'range => ipv4pltx_trdy);
+		(icmpdatx_end, udpdatx_end) <= dev_gnt and (dev_gnt'range => netdatx_end);
 
 	end block;
 
