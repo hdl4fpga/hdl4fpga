@@ -42,32 +42,34 @@ entity udp_tx is
 		pl_end        : in  std_logic;
 		pl_data       : in  std_logic_vector;
 
-		udp_frm       : buffer std_logic;
+		udp_frm       : out std_logic;
 
-		dlltx_irdy    : out std_logic := '1';
-		dlltx_end     : in  std_logic := '1';
+		dlltx_irdy    : out std_logic;
+		dlltx_end     : in  std_logic := 'U';
 
 		netdatx_irdy  : out  std_logic;
 		netdatx_end   : in  std_logic;
 		netlentx_irdy : out  std_logic;
 		netlentx_end  : in  std_logic;
-		nettx_end     : in  std_logic := '1';
+		nettx_end     : in  std_logic := 'U';
 
-		tpttx_irdy    : buffer std_logic := '1';
-		tpttx_end     : in  std_logic := '1';
+		tptsp_irdy    : out std_logic;
+		tptsp_end     : in  std_logic;
+		tptdp_irdy    : out std_logic;
+		tptdp_end     : in  std_logic;
+		tptlen_irdy   : buffer std_logic;
+		tptlen_end    : in  std_logic;
+		tpttx_end     : in  std_logic := 'U';
 
 		udpsp_irdy    : out std_logic;
-		udpsp_trdy    : in  std_logic := '1';
 		udpsp_end     : in  std_logic;
 		udpsp_data    : in  std_logic_vector;
 
 		udpdp_irdy    : out std_logic;
-		udpdp_trdy    : in  std_logic := '1';
 		udpdp_end     : in  std_logic;
 		udpdp_data    : in  std_logic_vector;
 
 		udplen_irdy   : out std_logic;
-		udplen_trdy   : in  std_logic := '1';
 		udplen_end    : in  std_logic;
 		udplen_data   : in  std_logic_vector;
 
@@ -81,11 +83,10 @@ end;
 architecture def of udp_tx is
 	signal frm_ptr : std_logic_vector(0 to unsigned_num_bits(summation(udp4hdr_frame)/udp_data'length-1));
 
-	signal cksm_irdy   : std_logic;
-	signal cksm_end    : std_logic;
-	signal cksm_data   : std_logic_vector(pl_data'range);
-	signal so_sum   : std_logic_vector(pl_data'range);
-
+	signal cksm_irdy : std_logic;
+	signal cksm_end  : std_logic;
+	signal cksm_data : std_logic_vector(pl_data'range);
+	signal so_sum    : std_logic_vector(pl_data'range);
 
 begin
 
@@ -116,24 +117,20 @@ begin
 		so_end   => cksm_end,
 		so_data  => cksm_data);
 
-	dlltx_irdy   <= pl_irdy;
-	netdatx_irdy <= pl_irdy when  dlltx_end='1' else '0';
-	tpttx_irdy   <= pl_irdy when netdatx_end='1' else '0';
-	netlentx_irdy   <= pl_irdy when netdatx_end='1' else '0';
-	udpsp_irdy  <= udp_trdy when  tpttx_end='1' else '0';
-	udpdp_irdy  <= udp_trdy when  udpsp_end='1' else '0';
-	udplen_irdy <= udp_trdy when  udpdp_end='1' else '0';
-	cksm_irdy   <= udp_trdy when udplen_end='1' else '0';
-
-	udp_irdy <=
-		'0'      when cksm_end='0' else
-		pl_irdy;
-
-	pl_trdy <=
-		'1' when tpttx_end='0' else
-		udp_trdy;
-	udp_frm  <= pl_frm;
-	udp_end  <= pl_end;
+	dlltx_irdy    <= pl_irdy;
+	netdatx_irdy  <= pl_irdy  when   dlltx_end='1' else '0';
+	tptsp_irdy    <= pl_irdy  when netdatx_end='1' else '0';
+	tptdp_irdy    <= pl_irdy  when   tptsp_end='1' else '0';
+	tptlen_irdy   <= pl_irdy  when   tptdp_end='1' else '0';
+	udpsp_irdy    <= udp_trdy when  tptlen_end='1' else '0';
+	udpdp_irdy    <= udp_trdy when   udpsp_end='1' else '0';
+	udplen_irdy   <= udp_trdy when   udpdp_end='1' else '0';
+	cksm_irdy     <= udp_trdy when  udplen_end='1' else '0';
+	udp_irdy      <= pl_irdy  when    cksm_end='1' else '0';
+	pl_trdy       <= udp_trdy when  tptlen_end='1' else '1';
+	netlentx_irdy <= tptlen_irdy;
+	udp_frm       <= pl_frm;
+	udp_end       <= pl_end;
 
 	adjlen_e : entity hdl4fpga.ipv4_adjlen
 	generic map (
@@ -141,7 +138,7 @@ begin
 	port map (
 		sio_clk  => mii_clk,
 		sio_frm  => pl_frm,
-		sio_irdy => tpttx_irdy,
+		sio_irdy => tptlen_irdy,
 		sio_trdy => open,
 		si_data  => pl_data,
 		so_data  => so_sum);
@@ -149,7 +146,7 @@ begin
 	udp_data <=
 		pl_data     when   dlltx_end='0' else
 		pl_data     when netdatx_end='0' else
-		so_sum      when   tpttx_end='0' else
+		so_sum      when   tptdp_end='0' else
 		udpdp_data  when   udpdp_end='0' else
 		udpsp_data  when   udpsp_end='0' else
 		udplen_data when  udplen_end='0' else

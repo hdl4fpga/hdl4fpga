@@ -377,7 +377,8 @@ begin
 
 	begin
 		ipv4udplen_b : block
-			signal so_sum : std_logic_vector(ipv4pltx_data'range);
+			signal si_data : std_logic_vector(ipv4pltx_data'range);
+			signal so_sum  : std_logic_vector(ipv4pltx_data'range);
 		begin
     		adjlen_e : entity hdl4fpga.ipv4_adjlen
     		generic map (
@@ -385,11 +386,12 @@ begin
     		port map (
     			sio_clk  => mii_clk,
     			sio_frm  => ipv4pltx_frm,
-    			sio_irdy => netlentx_irdy,
+    			sio_irdy => udplentx_irdy,
     			sio_trdy => open,
 				si_data  => ipv4pltx_data,
     			so_data  => so_sum);
     	
+			si_data <= reverse(so_sum);
     		ipv4len_e : entity hdl4fpga.sio_ram
     		generic map (
     			mode_fifo => false,
@@ -400,7 +402,7 @@ begin
     			si_irdy => udplentx_irdy,
     			si_trdy => open,
     			si_full => udplentx_end,
-    			si_data => so_sum,
+    			si_data => si_data,
     		
     			so_clk  => mii_clk,
     			so_frm  => ipv4pltx_frm,

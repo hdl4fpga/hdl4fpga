@@ -190,30 +190,18 @@ begin
    		signal udplen_end  : std_logic;
    		signal udplen_data : std_logic_vector(pltx_data'range);
 
+		signal tptsp_irdy  : std_logic;
+		signal tptsp_end   : std_logic;
+		signal tptdp_irdy  : std_logic;
+		signal tptdp_end   : std_logic;
+		signal tptlen_irdy : std_logic;
+		signal tptlen_end  : std_logic;
 		signal tpttx_end   : std_logic;
-		signal tpttx_irdy  : std_logic;
 
 	begin
 
     	meta_b : block
-
-    		signal tptsp_irdy  : std_logic;
-    		signal tptsp_end   : std_logic;
-    		signal tptsp_data  : std_logic_vector(pltx_data'range);
-
-    		signal tptdp_irdy  : std_logic;
-    		signal tptdp_end   : std_logic;
-    		signal tptdp_data  : std_logic_vector(pltx_data'range);
-
-    		signal tptlen_irdy : std_logic;
-    		signal tptlen_end  : std_logic;
-    		signal tptlen_data : std_logic_vector(pltx_data'range);
-
     	begin
-
-    		tptsp_irdy  <= tpttx_irdy;
-    		tptdp_irdy  <= tpttx_irdy when tptsp_end='1' else '0';
-    		tptlen_irdy <= tpttx_irdy when tptdp_end='1' else '0';
 
     		udpsp_e : entity hdl4fpga.sio_ram
     		generic map (
@@ -270,45 +258,52 @@ begin
            		so_end  => udplen_end,
            		so_data => udplen_data);
 
-			tpttx_end <= tptlen_end;
+			tpttx_end <= tptsp_end and tptdp_end and tptlen_end;
 
     	end block;
 
     	udptx_e : entity hdl4fpga.udp_tx
     	port map (
-			mii_clk      => mii_clk,
+			mii_clk       => mii_clk,
 
-			pl_frm       => pltx_frm,
-			pl_irdy      => pltx_irdy,
-			pl_trdy      => pltx_trdy,
-			pl_end       => pltx_end,
-			pl_data      => pltx_data,
+			pl_frm        => pltx_frm,
+			pl_irdy       => pltx_irdy,
+			pl_trdy       => pltx_trdy,
+			pl_end        => pltx_end,
+			pl_data       => pltx_data,
 
-			dlltx_irdy   => udpdlltx_irdy,
-			dlltx_end    => dlltx_end,
-			netdatx_irdy => udpdatx_irdy,
-			netdatx_end  => udpdatx_end,
-			netlentx_end => udplentx_end,
-			tpttx_irdy   => tpttx_irdy,
-			tpttx_end    => tpttx_end,
+			dlltx_irdy    => udpdlltx_irdy,
+			dlltx_end     => dlltx_end,
+			netdatx_irdy  => udpdatx_irdy,
+			netdatx_end   => udpdatx_end,
+			netlentx_irdy => udplentx_irdy,
+			netlentx_end  => udplentx_end,
 
-			udpsp_irdy   => udpsp_irdy,
-			udpsp_end    => udpsp_end,
-			udpsp_data   => udpsp_data,
+			tptsp_irdy    => tptsp_irdy,
+			tptsp_end     => tptsp_end,
+			tptdp_irdy    => tptdp_irdy,
+			tptdp_end     => tptdp_end,
+			tptlen_irdy   => tptlen_irdy,
+			tptlen_end    => tptlen_end,
+			tpttx_end     => tpttx_end,
 
-			udpdp_irdy   => udpdp_irdy,
-			udpdp_end    => udpdp_end,
-			udpdp_data   => udpdp_data,
+			udpsp_irdy    => udpsp_irdy,
+			udpsp_end     => udpsp_end,
+			udpsp_data    => udpsp_data,
 
-			udplen_irdy  => udplen_irdy,
-			udplen_end   => udplen_end,
-			udplen_data  => udplen_data,
+			udpdp_irdy    => udpdp_irdy,
+			udpdp_end     => udpdp_end,
+			udpdp_data    => udpdp_data,
 
-			udp_frm      => udppltx_frm,
-			udp_irdy     => udppltx_irdy,
-			udp_trdy     => udppltx_trdy,
-			udp_end      => udppltx_end,
-			udp_data     => udppltx_data);
+			udplen_irdy   => udplen_irdy,
+			udplen_end    => udplen_end,
+			udplen_data   => udplen_data,
+
+			udp_frm       => udppltx_frm,
+			udp_irdy      => udppltx_irdy,
+			udp_trdy      => udppltx_trdy,
+			udp_end       => udppltx_end,
+			udp_data      => udppltx_data);
 
 	end block;
 
