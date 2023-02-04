@@ -376,23 +376,39 @@ begin
 		signal ipv4da_data  : std_logic_vector(ipv4rx_data'range);
 
 	begin
-		adjlen_e : entity hdl4fpga.ip_adjlen
-		generic map (
-			adjust => std_logic_vector(to_unsigned((summation(ipv4hdr_frame)/octect_size),16)))
-		port map (
-			si_clk  => mii_clk,
-			si_frm  => ipv4pltx_frm,
-			si_irdy => udplentx_irdy,
-			si_trdy => open,
-			si_full => udplentx_end,
-			si_data => ipv4pltx_data,
-
-			so_clk  => mii_clk,
-			so_frm  => ipv4pltx_frm,
-			so_irdy => ipv4len_irdy,
-			so_trdy => open,
-			so_end  => udpipv4len_end,
-			so_data => udpipv4len_data);
+		ipv4udplen_b : block
+			signal so_sum : std_logic_vector(ipv4pltx_data'range);
+		begin
+    		adjlen_e : entity hdl4fpga.ipv4_adjlen
+    		generic map (
+    			adjust => std_logic_vector(to_unsigned((summation(ipv4hdr_frame)/octect_size),16)))
+    		port map (
+    			sio_clk  => mii_clk,
+    			sio_frm  => ipv4pltx_frm,
+    			sio_irdy => netlentx_irdy,
+    			sio_trdy => open,
+				si_data  => ipv4pltx_data,
+    			so_data  => so_sum);
+    	
+    		ipv4len_e : entity hdl4fpga.sio_ram
+    		generic map (
+    			mode_fifo => false,
+    			mem_length => 16)
+    		port map (
+    			si_clk  => mii_clk,
+    			si_frm  => ipv4pltx_frm,
+    			si_irdy => udplentx_irdy,
+    			si_trdy => open,
+    			si_full => udplentx_end,
+    			si_data => so_sum,
+    		
+    			so_clk  => mii_clk,
+    			so_frm  => ipv4pltx_frm,
+    			so_irdy => ipv4len_irdy,
+    			so_trdy => open,
+    			so_end  => udpipv4len_end,
+    			so_data => udpipv4len_data);
+		end block;
 
 		ipv4proto_e : entity hdl4fpga.sio_mux
 		port map (

@@ -30,7 +30,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
-entity udp_adjlen is
+entity ipv4_adjlen is
 	generic (
 		adjust  : std_logic_vector);
 	port (
@@ -42,11 +42,10 @@ entity udp_adjlen is
 		so_data  : out std_logic_vector);
 end;
 
-architecture def of udp_adjlen is
+architecture def of ipv4_adjlen is
 	signal si_b      : std_logic_vector(si_data'range);
 	signal si_ci     : std_logic;
 	signal si_co     : std_logic;
-	signal si_sum    : std_logic_vector(si_data'range);
 	signal so_sum    : std_logic_vector(so_data'range);
 
 begin
@@ -65,7 +64,7 @@ begin
 		ci  => si_ci,
 		a   => si_data,
 		b   => si_b,
-		s   => si_sum,
+		s   => so_sum,
 		co  => si_co);
 
 	si_cy_p : process (sio_clk)

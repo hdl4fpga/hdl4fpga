@@ -95,6 +95,7 @@ architecture def of ipv4_tx is
 	signal cksm_data     : std_logic_vector(ipv4_data'range);
 	signal chksum        : std_logic_vector(0 to 16-1);
 	signal chksum_rev    : std_logic_vector(16-1 downto 0);
+
 begin
 
 	pl_trdy <= 

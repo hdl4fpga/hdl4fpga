@@ -119,6 +119,7 @@ begin
 	dlltx_irdy   <= pl_irdy;
 	netdatx_irdy <= pl_irdy when  dlltx_end='1' else '0';
 	tpttx_irdy   <= pl_irdy when netdatx_end='1' else '0';
+	netlentx_irdy   <= pl_irdy when netdatx_end='1' else '0';
 	udpsp_irdy  <= udp_trdy when  tpttx_end='1' else '0';
 	udpdp_irdy  <= udp_trdy when  udpsp_end='1' else '0';
 	udplen_irdy <= udp_trdy when  udpdp_end='1' else '0';
@@ -134,7 +135,7 @@ begin
 	udp_frm  <= pl_frm;
 	udp_end  <= pl_end;
 
-	adjlen_e : entity hdl4fpga.udp_adjlen
+	adjlen_e : entity hdl4fpga.ipv4_adjlen
 	generic map (
 		adjust => std_logic_vector(to_unsigned((summation(udp4hdr_frame)/octect_size),16)))
 	port map (
@@ -146,11 +147,12 @@ begin
 		so_data  => so_sum);
 	
 	udp_data <=
-		pl_data     when  dlltx_end='0' else
-		so_sum      when  tpttx_end='0' else
-		udpdp_data  when  udpdp_end='0' else
-		udpsp_data  when  udpsp_end='0' else
-		udplen_data when udplen_end='0' else
+		pl_data     when   dlltx_end='0' else
+		pl_data     when netdatx_end='0' else
+		so_sum      when   tpttx_end='0' else
+		udpdp_data  when   udpdp_end='0' else
+		udpsp_data  when   udpsp_end='0' else
+		udplen_data when  udplen_end='0' else
 		(udp_data'range => '-');
 
 end;
