@@ -128,12 +128,11 @@ begin
 	cksm_irdy     <= udp_trdy when  udplen_end='1' else '0';
 	udp_irdy      <= pl_irdy  when    cksm_end='1' else '0';
 	netlentx_irdy <= tptlen_irdy;
+
 	pl_trdy       <= 
 		udp_trdy when tptlen_end='0' else
 		'0'      when   cksm_end='0' else
 		udp_trdy;
-	udp_frm       <= pl_frm;
-	udp_end       <= pl_end;
 
 	adjlen_e : entity hdl4fpga.ipv4_adjlen
 	generic map (
@@ -146,9 +145,10 @@ begin
 		si_data  => pl_data,
 		so_data  => so_sum);
 	
+	udp_frm <= pl_frm;
 	udp_data <=
-		pl_data     when   dlltx_end='0' else
-		pl_data     when netdatx_end='0' else
+		-- pl_data     when   dlltx_end='0' else
+		-- pl_data     when netdatx_end='0' else
 		pl_data     when   tptdp_end='0' else
 		so_sum      when  tptlen_end='0' else
 		udpsp_data  when   udpsp_end='0' else
@@ -156,6 +156,6 @@ begin
 		udplen_data when  udplen_end='0' else
 		cksm_data   when    cksm_end='0' else
 		pl_data;
-		-- (udp_data'range => '-');
+	udp_end <= pl_end;
 
 end;
