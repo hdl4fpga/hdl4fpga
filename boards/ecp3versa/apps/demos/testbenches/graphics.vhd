@@ -238,7 +238,7 @@ begin
 
 	end block;
 
-	fpga_gsrn <= '1', '0' after 20 us;
+	fpga_gsrn <= '1', '1' after 20 us;
 	du_e : ecp3versa
 	generic map (
 		debug => debug)
