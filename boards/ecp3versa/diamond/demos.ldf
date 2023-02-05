@@ -338,7 +338,7 @@
         <Source name="../../../library/latticesemi/ecp3/pll_control.v" type="Verilog" type_short="Verilog">
             <Options/>
         </Source>
-        <Source name="../../../library/mii/ip_adjlen.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/mii/ipv4_adjlen.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">
