@@ -91,6 +91,8 @@ architecture def of dhcpc_dscb is
 
 	signal dhcpdscb_ptr  : std_logic_vector(0 to unsigned_num_bits((payload_size+8)*8/dhcpdscb_data'length-1));
 
+	alias net_end is netdatx_end;
+
 begin
 
 	process (mii_clk)
@@ -99,8 +101,8 @@ begin
 		if rising_edge(mii_clk) then
 			if dhcpdscb_frm='0' then
 				cntr := (others => '0');
-			elsif dhcpdscb_trdy='1' and nettx_end='1' then
-				if dhcppkt_end='1' then
+			elsif dhcpdscb_trdy='1' and net_end='1' then
+				if dhcppkt_end='0' then
 					cntr := cntr + 1;
 				end if;
 			end if;
@@ -115,10 +117,10 @@ begin
 		dhcp4_hops,   dhcp4_xid,   dhcp4_chaddr6, dhcp4_cookie, dhcp_vendor));
 
 	dhcppkt_irdy <=
-		'0' when    dlltx_end='0' else
-		'1' when netlentx_end='0' else
-		'0' when  netdatx_end='0' else
-		'1' when  dhcppkt_ena='1' else
+		'0'           when    dlltx_end='0' else
+		'1'           when netlentx_end='0' else
+		'0'           when  netdatx_end='0' else
+		dhcpdscb_trdy when  dhcppkt_ena='1' else
 		'0';
 
 	dhcppkt_e : entity hdl4fpga.sio_mux

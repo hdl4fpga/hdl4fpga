@@ -201,6 +201,7 @@ begin
 	begin
 
     	meta_b : block
+			signal rev_udpdata : std_logic_vector(udppltx_data'range);
     	begin
 
     		udpsp_e : entity hdl4fpga.sio_ram
@@ -239,7 +240,8 @@ begin
     			so_end  => udpdp_end,
     			so_data => udpdp_data);
 
-           	ram_e : entity hdl4fpga.sio_ram
+			rev_udpdata <= reverse(udppltx_data);
+           	udllen_e : entity hdl4fpga.sio_ram
            	generic map (
            		mode_fifo => false,
            		mem_length => 16)
@@ -249,7 +251,7 @@ begin
            		si_irdy => tptlen_irdy,
            		si_trdy => open,
            		si_full => tptlen_end,
-           		si_data => udppltx_data,
+           		si_data => rev_udpdata,
 
            		so_clk  => mii_clk,
            		so_frm  => udppltx_frm,

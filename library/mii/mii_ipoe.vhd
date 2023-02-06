@@ -113,7 +113,6 @@ architecture def of mii_ipoe is
 
 	signal ethtx_frm      : std_logic;
 	signal ethtx_irdy     : std_logic;
-	signal ethpltx_irdy   : std_logic;
 	signal ethpltx_trdy   : std_logic;
 	signal ethpltx_end    : std_logic;
 	signal mtdlltx_irdy   : std_logic;
@@ -439,57 +438,55 @@ begin
 		hwllctx_end <= hwtyptx_end;
 	end block;
 
-	xxx : block 
+	ethtx_b : block 
+
 		signal tx_frm  : std_logic;
 		signal tx_irdy : std_logic;
 		signal tx_trdy : std_logic;
 		signal tx_end  : std_logic;
-		signal tx_data  : std_logic_vector(pltx_data'range);
+		signal tx_data : std_logic_vector(pltx_data'range);
 		signal i_data  : std_logic_vector(0 to pltx_data'length);
 		signal o_data  : std_logic_vector(i_data'range);
-		signal metatx_end : std_logic;
 
 	begin
 
-	ethpltx_irdy <= ethtx_irdy;
 
-	i_data <= dlltx_data & hwllctx_end;
-	miibuffer_e : entity hdl4fpga.mii_buffer
-	port map(
-		io_clk => mii_clk,
-		i_frm  => ethtx_frm,
-		i_irdy => ethpltx_irdy,
-		i_trdy => ethpltx_trdy,
-		i_end  => ethpltx_end, 
-		i_data => i_data,
-		o_frm  => tx_frm,
-		o_irdy => tx_irdy,
-		o_trdy => tx_trdy,
-		o_data => o_data,
-		o_end  => tx_end);
+    	i_data <= dlltx_data & hwllctx_end;
+    	miibuffer_e : entity hdl4fpga.mii_buffer
+    	port map(
+    		io_clk => mii_clk,
+    		i_frm  => ethtx_frm,
+    		i_irdy => ethtx_irdy,
+    		i_trdy => ethpltx_trdy,
+    		i_end  => ethpltx_end, 
+    		i_data => i_data,
+    		o_frm  => tx_frm,
+    		o_irdy => tx_irdy,
+    		o_trdy => tx_trdy,
+    		o_data => o_data,
+    		o_end  => tx_end);
 
-	tx_data <= o_data(tx_data'range);
-	metatx_end <= o_data(pltx_data'length);
+    	tx_data <= o_data(tx_data'range);
 
-	ethtx_e : entity hdl4fpga.eth_tx
-	port map (
-		mii_clk     => mii_clk,
+    	ethtx_e : entity hdl4fpga.eth_tx
+    	port map (
+    		mii_clk     => mii_clk,
 
-		hwllc_irdy  => hwllctx_irdy,
-		hwllc_end   => hwllctx_end,
-		hwllc_data  => hwllctx_data,
+    		hwllc_irdy  => hwllctx_irdy,
+    		hwllc_end   => hwllctx_end,
+    		hwllc_data  => hwllctx_data,
 
-		pl_frm      => tx_frm,
-		pl_irdy     => tx_irdy,
-		pl_trdy     => tx_trdy,
-		pl_end      => tx_end,
-		pl_data     => tx_data,
+    		pl_frm      => tx_frm,
+    		pl_irdy     => tx_irdy,
+    		pl_trdy     => tx_trdy,
+    		pl_end      => tx_end,
+    		pl_data     => tx_data,
 
-		mii_frm     => miitx_frm,
-		mii_irdy    => miitx_irdy,
-		mii_trdy    => miitx_trdy,
-		mii_end     => miitx_end,
-		mii_data    => miitx_data);
+    		mii_frm     => miitx_frm,
+    		mii_irdy    => miitx_irdy,
+    		mii_trdy    => miitx_trdy,
+    		mii_end     => miitx_end,
+    		mii_data    => miitx_data);
 	end block;
 
 	arpd_e : entity hdl4fpga.arpd

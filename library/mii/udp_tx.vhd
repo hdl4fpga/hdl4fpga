@@ -147,8 +147,6 @@ begin
 	
 	udp_frm <= pl_frm;
 	udp_data <=
-		-- pl_data     when   dlltx_end='0' else
-		-- pl_data     when netdatx_end='0' else
 		pl_data     when   tptdp_end='0' else
 		so_sum      when  tptlen_end='0' else
 		udpsp_data  when   udpsp_end='0' else

@@ -82,7 +82,7 @@ entity ipv4 is
 		pltx_end      : in  std_logic;
 		pltx_data     : in  std_logic_vector;
 
-		dlltx_irdy    : out  std_logic := '1';
+		dlltx_irdy    : out  std_logic;
 		dlltx_trdy    : in   std_logic := '1';
 		dlltx_end     : in   std_logic;
 
@@ -166,11 +166,13 @@ architecture def of ipv4 is
 	signal netlentx_irdy    : std_logic;
 	signal netlentx_end     : std_logic;
 
+	signal icmpdlltx_irdy   : std_logic;
 	signal icmplentx_irdy   : std_logic;
 	signal icmplentx_end    : std_logic;
 	signal icmpdatx_irdy    : std_logic;
 	signal icmpdatx_end     : std_logic;
 
+	signal udpdlltx_irdy    : std_logic;
 	signal udplentx_irdy    : std_logic;
 	signal udplentx_end     : std_logic;
 	signal udpdatx_irdy     : std_logic;
@@ -351,15 +353,16 @@ begin
 				end if;
 			end process;
 
-		ipv4proto_tx  <= wirebus(reverse(ipv4proto_icmp & ipv4proto_udp,8), dev_gnt);
 		ipv4pltx_frm  <= wirebus(icmptx_frm  & udptx_frm,  dev_gnt);
 		ipv4pltx_irdy <= wirebus(icmptx_irdy & udptx_irdy, dev_gnt);
 		ipv4pltx_end  <= wirebus(icmptx_end  & udptx_end,  dev_gnt);
 		ipv4pltx_data <= wirebus(icmptx_data & udptx_data, dev_gnt);
 
+		ipv4proto_tx  <= wirebus(reverse(ipv4proto_icmp & ipv4proto_udp,8), dev_gnt);
 		ipv4len_data  <= wirebus(icmpipv4len_data & udpipv4len_data, dev_gnt);
 		ipv4len_end   <= wirebus(icmpipv4len_end  & udpipv4len_end,  dev_gnt);
 
+		dlltx_irdy    <= wirebus(icmpdlltx_irdy & udpdlltx_irdy, dev_gnt);
 		netlentx_irdy <= wirebus(icmplentx_irdy & udplentx_irdy, dev_gnt);
 		netlentx_end  <= wirebus(icmplentx_end  & udplentx_end,  dev_gnt);
 		netdatx_irdy  <= wirebus(icmpdatx_irdy  & udpdatx_irdy,  dev_gnt);
@@ -608,7 +611,8 @@ begin
 			o_data => icmptx_data,
 			o_end  => icmptx_end);
 
-		icmplentx_irdy <= icmptx_irdy;
+		icmpdlltx_irdy <= icmptx_irdy;
+		icmplentx_irdy <= icmptx_irdy when dlltx_end='1' else '0';
 		icmpdatx_irdy  <= icmptx_irdy when icmplentx_end='1' else '0';
 	end block;
 
@@ -648,7 +652,7 @@ begin
 		ipv4sawr_data => ipv4sawr_data,
 		ipv4sawr_end  => ipv4sawr_end,
 
-		dlltx_irdy    => dlltx_irdy,
+		dlltx_irdy    => udpdlltx_irdy,
 		dlltx_end     => dlltx_end,
 		netdatx_irdy  => udpdatx_irdy,
 		netdatx_end   => udpdatx_end,
