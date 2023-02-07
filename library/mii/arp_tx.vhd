@@ -44,8 +44,8 @@ entity arp_tx is
 		pa_end   : in  std_logic;
 		pa_data  : in  std_logic_vector;
 
-		dlltx_irdy : out std_logic := '1';
-		dlltx_trdy : in  std_logic := '1';
+		dlltx_irdy : out std_logic;
+		dlltx_data : buffer std_logic_vector;
 		dlltx_end  : in  std_logic;
 
 		arp_frm  : buffer std_logic;
@@ -121,14 +121,16 @@ begin
         sio_trdy => arpmux_trdy,
         so_data  => arpmux_data);
 
-	arp_irdy <= 
-		'0'     when dlltx_end='0' else
-		pa_trdy when    pa_frm='1' else
-		arpmux_trdy;
-	arp_data <= 
-		(arp_data'range => '1') when dlltx_end='0' else -- Broadcast address
-		arpmux_data             when    pa_frm='0' else 
+	dlltx_irdy <= arp_frm and arp_trdy;
+	dlltx_data <= (arp_data'range => '1');
+	arp_irdy   <= 
+		arp_frm     when dlltx_end='0' else
+		arpmux_trdy when    pa_frm='0' else 
+		pa_trdy;
+	arp_data   <= 
+		dlltx_data  when dlltx_end='0' else
+		arpmux_data when    pa_frm='0' else
 		pa_data;
-	arp_end  <= frm_ptr(0);
+	arp_end    <= frm_ptr(0);
 
 end;

@@ -51,8 +51,8 @@ entity arpd is
 		spatx_data  : in  std_logic_vector;
 
 		dlltx_irdy  : out  std_logic;
-		dlltx_trdy  : in   std_logic;
 		dlltx_end   : in   std_logic;
+		dlltx_data  : out std_logic_vector;
 
 		arptx_frm   : buffer std_logic := '0';
 		arptx_irdy  : out std_logic;
@@ -121,8 +121,8 @@ begin
 		pa_data    => spatx_data,
 
 		dlltx_irdy => dlltx_irdy,
-		dlltx_trdy => dlltx_trdy,
 		dlltx_end  => dlltx_end,
+		dlltx_data => dlltx_data,
 
 		arp_frm    => arptx_frm,
 		arp_irdy   => arptx_irdy,

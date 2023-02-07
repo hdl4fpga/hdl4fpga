@@ -84,6 +84,7 @@ entity ipv4 is
 
 		dlltx_irdy    : out  std_logic;
 		dlltx_trdy    : in   std_logic := '1';
+		dlltx_data    : out  std_logic_vector;
 		dlltx_end     : in   std_logic;
 
 		ipv4tx_frm    : out std_logic := '0';
@@ -167,12 +168,14 @@ architecture def of ipv4 is
 	signal netlentx_end     : std_logic;
 
 	signal icmpdlltx_irdy   : std_logic;
+	signal icmpdlltx_data   : std_logic_vector(dlltx_data'range);
 	signal icmplentx_irdy   : std_logic;
 	signal icmplentx_end    : std_logic;
 	signal icmpdatx_irdy    : std_logic;
 	signal icmpdatx_end     : std_logic;
 
 	signal udpdlltx_irdy    : std_logic;
+	signal udpdlltx_data    : std_logic_vector(dlltx_data'range);
 	signal udplentx_irdy    : std_logic;
 	signal udplentx_end     : std_logic;
 	signal udpdatx_irdy     : std_logic;
@@ -363,6 +366,7 @@ begin
 		ipv4len_end   <= wirebus(icmpipv4len_end  & udpipv4len_end,  dev_gnt);
 
 		dlltx_irdy    <= wirebus(icmpdlltx_irdy & udpdlltx_irdy, dev_gnt);
+		dlltx_data    <= wirebus(icmpdlltx_data & udpdlltx_data, dev_gnt);
 		netlentx_irdy <= wirebus(icmplentx_irdy & udplentx_irdy, dev_gnt);
 		netlentx_end  <= wirebus(icmplentx_end  & udplentx_end,  dev_gnt);
 		netdatx_irdy  <= wirebus(icmpdatx_irdy  & udpdatx_irdy,  dev_gnt);
@@ -612,6 +616,7 @@ begin
 			o_end  => icmptx_end);
 
 		icmpdlltx_irdy <= icmptx_irdy;
+		icmpdlltx_data <= icmptx_data;
 		icmplentx_irdy <= icmptx_irdy when dlltx_end='1' else '0';
 		icmpdatx_irdy  <= icmptx_irdy when icmplentx_end='1' else '0';
 	end block;
@@ -653,6 +658,7 @@ begin
 		ipv4sawr_end  => ipv4sawr_end,
 
 		dlltx_irdy    => udpdlltx_irdy,
+		dlltx_data    => udpdlltx_data,
 		dlltx_end     => dlltx_end,
 		netdatx_irdy  => udpdatx_irdy,
 		netdatx_end   => udpdatx_end,

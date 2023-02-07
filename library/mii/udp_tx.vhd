@@ -46,6 +46,7 @@ entity udp_tx is
 
 		dlltx_irdy    : out std_logic;
 		dlltx_end     : in  std_logic := 'U';
+		dlltx_data    : out std_logic_vector;
 
 		netdatx_irdy  : out  std_logic;
 		netdatx_end   : in  std_logic;
@@ -117,16 +118,15 @@ begin
 		so_end   => cksm_end,
 		so_data  => cksm_data);
 
-	dlltx_irdy    <= pl_irdy;
-	netdatx_irdy  <= pl_irdy  when   dlltx_end='1' else '0';
-	tptsp_irdy    <= pl_irdy  when netdatx_end='1' else '0';
-	tptdp_irdy    <= pl_irdy  when   tptsp_end='1' else '0';
-	tptlen_irdy   <= pl_irdy  when   tptdp_end='1' else '0';
-	udpsp_irdy    <= udp_trdy when  tptlen_end='1' else '0';
-	udpdp_irdy    <= udp_trdy when   udpsp_end='1' else '0';
-	udplen_irdy   <= udp_trdy when   udpdp_end='1' else '0';
-	cksm_irdy     <= udp_trdy when  udplen_end='1' else '0';
-	udp_irdy      <= pl_irdy  when    cksm_end='1' else '0';
+	netdatx_irdy  <= pl_irdy and udp_trdy when   dlltx_end='1' else '0';
+	tptsp_irdy    <= pl_irdy and udp_trdy when netdatx_end='1' else '0';
+	tptdp_irdy    <= pl_irdy and udp_trdy when   tptsp_end='1' else '0';
+	tptlen_irdy   <= pl_irdy and udp_trdy when   tptdp_end='1' else '0';
+	udpsp_irdy    <= pl_irdy and udp_trdy when  tptlen_end='1' else '0';
+	udpdp_irdy    <= pl_irdy and udp_trdy when   udpsp_end='1' else '0';
+	udplen_irdy   <= pl_irdy and udp_trdy when   udpdp_end='1' else '0';
+	cksm_irdy     <= pl_irdy and udp_trdy when  udplen_end='1' else '0';
+	udp_irdy      <= pl_irdy              when    cksm_end='1' else '0';
 	netlentx_irdy <= tptlen_irdy;
 
 	pl_trdy       <= 
@@ -145,6 +145,8 @@ begin
 		si_data  => pl_data,
 		so_data  => so_sum);
 	
+	dlltx_irdy    <= pl_irdy and udp_trdy;
+	dlltx_data    <= pl_data;
 	udp_frm <= pl_frm;
 	udp_data <=
 		pl_data     when   tptdp_end='0' else

@@ -113,11 +113,13 @@ architecture def of mii_ipoe is
 
 	signal ethtx_frm      : std_logic;
 	signal ethtx_irdy     : std_logic;
+	signal ethpltx_irdy   : std_logic;
 	signal ethpltx_trdy   : std_logic;
 	signal ethpltx_end    : std_logic;
-	signal mtdlltx_irdy   : std_logic;
-	signal mtdlltx_trdy   : std_logic;
-	signal mtdlltx_end    : std_logic;
+	signal ethpltx_data   : std_logic_vector(miitx_data'range);
+	signal dlltx_irdy     : std_logic;
+	signal dlltx_trdy     : std_logic;
+	signal dlltx_end      : std_logic;
 	signal dlltx_data     : std_logic_vector(miitx_data'range);
 
 	signal arptx_frm      : std_logic;
@@ -167,12 +169,12 @@ architecture def of mii_ipoe is
 	signal ipv4satx_end   : std_logic :='1';
 	signal ipv4satx_data  : std_logic_vector(miitx_data'range);
 
-	signal arptxmac_full  : std_logic;
-	signal arptxmac_irdy  : std_logic;
-	signal arptxmac_trdy  : std_logic;
-	signal ipv4dlltx_end  : std_logic;
+	signal arpdlltx_irdy  : std_logic;
+	signal arpdlltx_end   : std_logic;
+	signal arpdlltx_data  : std_logic_vector(miitx_data'range);
 	signal ipv4dlltx_irdy : std_logic;
-	signal ipv4dlltx_trdy : std_logic;
+	signal ipv4dlltx_data : std_logic_vector(miitx_data'range);
+	signal ipv4dlltx_end  : std_logic;
 
 	signal fifo_frm       : std_logic;
 	signal fifo_irdy      : std_logic;
@@ -359,13 +361,13 @@ begin
 
 		ethtx_frm    <= wirebus(arptx_frm  & ipv4tx_frm,  dev_gnt);
 		ethtx_irdy   <= wirebus(arptx_irdy & ipv4tx_irdy, dev_gnt);
-		ethpltx_end  <= wirebus(arptx_end  & ipv4tx_end,  dev_gnt);
-		dlltx_data <= wirebus(arptx_data & ipv4tx_data, dev_gnt);
-		(0 => arptx_trdy,    1 => ipv4tx_trdy)    <= dev_gnt and (dev_gnt'range => ethpltx_trdy);
-		(0 => arptxmac_full, 1 => ipv4dlltx_end)  <= dev_gnt and (dev_gnt'range => mtdlltx_end);
-		(0 => arptxmac_trdy, 1 => ipv4dlltx_trdy) <= dev_gnt;
-		mtdlltx_irdy <= wirebus(arptxmac_trdy & ipv4dlltx_irdy,  dev_gnt);
+		(0 => arptx_trdy,   1 => ipv4tx_trdy)   <= dev_gnt and (dev_gnt'range => ethpltx_trdy);
+		(0 => arpdlltx_end, 1 => ipv4dlltx_end) <= dev_gnt and (dev_gnt'range => dlltx_end);
+		dlltx_irdy   <= wirebus(arpdlltx_irdy & ipv4dlltx_irdy,  dev_gnt);
+		dlltx_data   <= wirebus(arpdlltx_data & ipv4dlltx_data,  dev_gnt);
 		hwtyp_tx     <= wirebus(reverse(x"0806",8) & reverse(x"0800",8), dev_gnt);
+		ethpltx_end  <= wirebus(arptx_end  & ipv4tx_end,  dev_gnt);
+		ethpltx_data <= wirebus(arptx_data & ipv4tx_data, dev_gnt);
 
 	end block;
 
@@ -396,9 +398,9 @@ begin
 		port map (
 			si_clk   => mii_clk,
 			si_frm   => ethtx_frm,
-			si_irdy  => mtdlltx_irdy,
-			si_trdy  => mtdlltx_trdy,
-			si_full  => mtdlltx_end,
+			si_irdy  => dlltx_irdy,
+			si_trdy  => dlltx_trdy,
+			si_full  => dlltx_end,
 			si_data  => dlltx_data,
 
 			so_clk   => mii_clk,
@@ -445,21 +447,19 @@ begin
 		signal tx_trdy : std_logic;
 		signal tx_end  : std_logic;
 		signal tx_data : std_logic_vector(pltx_data'range);
-		signal i_data  : std_logic_vector(0 to pltx_data'length);
+		signal i_data  : std_logic_vector(pltx_data'range);
 		signal o_data  : std_logic_vector(i_data'range);
 
 	begin
-
-
-    	i_data <= dlltx_data & hwllctx_end;
+		ethpltx_irdy <= ethtx_irdy when dlltx_end='1' else '0';
     	miibuffer_e : entity hdl4fpga.mii_buffer
     	port map(
     		io_clk => mii_clk,
     		i_frm  => ethtx_frm,
-    		i_irdy => ethtx_irdy,
+    		i_irdy => ethpltx_irdy,
     		i_trdy => ethpltx_trdy,
     		i_end  => ethpltx_end, 
-    		i_data => i_data,
+    		i_data => ethpltx_data,
     		o_frm  => tx_frm,
     		o_irdy => tx_irdy,
     		o_trdy => tx_trdy,
@@ -514,9 +514,9 @@ begin
 		spatx_data => ipv4satx_data,
 
 		arptx_frm  => arptx_frm,
-		dlltx_end  => arptxmac_full,
-		dlltx_irdy => arptxmac_irdy,
-		dlltx_trdy => arptxmac_trdy,
+		dlltx_irdy => arpdlltx_irdy,
+		dlltx_data => arpdlltx_data,
+		dlltx_end  => dlltx_end,
 		arptx_irdy => arptx_irdy,
 		arptx_trdy => arptx_trdy,
 		arptx_end  => arptx_end,
@@ -574,7 +574,8 @@ begin
 
 		ipv4tx_frm   => ipv4tx_frm,
 		dlltx_irdy   => ipv4dlltx_irdy,
-		dlltx_end    => mtdlltx_end,
+		dlltx_data   => ipv4dlltx_data,
+		dlltx_end    => dlltx_end,
 
 		ipv4tx_irdy   => ipv4tx_irdy,
 		ipv4tx_trdy   => ipv4tx_trdy,

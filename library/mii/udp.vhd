@@ -70,6 +70,7 @@ entity udp is
 
 		dlltx_irdy    : out std_logic := '1';
 		dlltx_end     : in  std_logic := '1';
+		dlltx_data    : out  std_logic_vector;
 
 		netdatx_end   : in  std_logic;
 		netdatx_irdy  : out std_logic;
@@ -88,41 +89,45 @@ end;
 
 architecture def of udp is
 
-	signal udpsprx_irdy   : std_logic;
-	signal udpdprx_irdy   : std_logic;
-	signal udplenrx_irdy  : std_logic;
-	signal udpcksmrx_irdy : std_logic;
-	signal udpplrx_frm    : std_logic;
-	signal udpplrx_irdy   : std_logic;
+	signal udpsprx_irdy    : std_logic;
+	signal udpdprx_irdy    : std_logic;
+	signal udplenrx_irdy   : std_logic;
+	signal udpcksmrx_irdy  : std_logic;
+	signal udpplrx_frm     : std_logic;
+	signal udpplrx_irdy    : std_logic;
 
-	signal dhcprx_frm    : std_logic;
-	signal dhcptx_frm    : std_logic;
-	signal dhcptx_irdy   : std_logic;
-	signal dhcptx_trdy   : std_logic;
-	signal dhcptx_end    : std_logic;
-	signal dhcptx_data   : std_logic_vector(udptx_data'range);
+	signal dhcprx_frm      : std_logic;
 
-	signal udppltx_frm    : std_logic;
-	signal udppltx_irdy   : std_logic;
-	signal udppltx_trdy   : std_logic;
-	signal udppltx_end    : std_logic;
-	signal udppltx_data   : std_logic_vector(udptx_data'range);
+	signal dhcptx_frm      : std_logic;
+	signal dhcptx_irdy     : std_logic;
+	signal dhcptx_trdy     : std_logic;
+	signal dhcptx_end      : std_logic;
+	signal dhcptx_data     : std_logic_vector(udptx_data'range);
 
-	signal udpdlltx_irdy  : std_logic;
-	signal udpdlltx_end   : std_logic;
-	signal udpdatx_irdy   : std_logic;
-	signal udpdatx_end    : std_logic;
-	signal udplentx_irdy  : std_logic;
-	signal udplentx_end   : std_logic;
+	signal udppltx_frm     : std_logic;
+	signal udppltx_irdy    : std_logic;
+	signal udppltx_trdy    : std_logic;
+	signal udppltx_end     : std_logic;
+	signal udppltx_data    : std_logic_vector(udptx_data'range);
+
+	signal udpdlltx_irdy   : std_logic;
+	signal udpdlltx_end    : std_logic;
+	signal udpdlltx_data   : std_logic_vector(udptx_data'range);
+
+	signal udpdatx_irdy    : std_logic;
+	signal udpdatx_end     : std_logic;
+	signal udplentx_irdy   : std_logic;
+	signal udplentx_end    : std_logic;
 	signal udpnettx_end    : std_logic;
 
 	signal dhcpdlltx_irdy  : std_logic;
+	signal dhcpdlltx_data  : std_logic_vector(udptx_data'range);
 	signal dhcpdlltx_end   : std_logic;
 	signal dhcpdatx_irdy   : std_logic;
 	signal dhcpdatx_end    : std_logic;
 	signal dhcplentx_irdy  : std_logic;
 	signal dhcplentx_end   : std_logic;
-	signal dhcpnettx_end      : std_logic;
+	signal dhcpnettx_end   : std_logic;
 
 	signal dhcpipdatx_irdy : std_logic;
 	signal udpmactx_irdy   : std_logic;
@@ -165,6 +170,7 @@ begin
 		(dhcptx_trdy, udppltx_trdy) <= dev_gnt and (dev_gnt'range => udptx_trdy);
 
 		dlltx_irdy <= wirebus(dhcpdlltx_irdy & udpdlltx_irdy, dev_gnt);
+		dlltx_data <= wirebus(dhcpdlltx_data & udpdlltx_data, dev_gnt);
 		(dhcpdlltx_end, udpdlltx_end) <= dev_gnt and (dev_gnt'range => dlltx_end);
 
 		netlentx_irdy <= wirebus(dhcplentx_irdy & udplentx_irdy, dev_gnt);
@@ -276,6 +282,7 @@ begin
 
 			dlltx_irdy    => udpdlltx_irdy,
 			dlltx_end     => dlltx_end,
+			dlltx_data    => udpdlltx_data,
 			netdatx_irdy  => udpdatx_irdy,
 			netdatx_end   => udpdatx_end,
 			netlentx_irdy => udplentx_irdy,
@@ -372,7 +379,8 @@ begin
 
     		dhcpcdtx_frm  => dhcptx_frm,
 			dlltx_irdy    => dhcpdlltx_irdy,
-    		dlltx_end     => dhcpdlltx_end,
+			dlltx_data    => dhcpdlltx_data,
+    		dlltx_end     => dlltx_end,
     		netdatx_irdy  => dhcpdatx_irdy,
     		netdatx_end   => dhcpdatx_end,
     		netlentx_irdy => dhcplentx_irdy,

@@ -42,8 +42,6 @@ entity eth_tx is
 		pl_end      : in  std_logic;
 		pl_data     : in  std_logic_vector;
 
-		metatx_end  : in  std_logic := '1';
-		metatx_irdy : in  std_logic := '1';
 		hwllc_irdy  : buffer std_logic;
 		hwllc_trdy  : in  std_logic := '1';
 		hwllc_end   : in  std_logic;
@@ -99,17 +97,16 @@ begin
 		end if;
 	end process;
 
-	hwllc_irdy <= mii_trdy and pre_end;
+	hwllc_irdy <= mii_trdy when pre_end='1' else '0';
 
 	pl_trdy  <=
-		metatx_irdy when metatx_end='0' else
-		'0'         when hwllc_end='0'  else
-		mii_trdy    when pl_end='0'     else
+		'0'      when hwllc_end='0' else
+		mii_trdy when    pl_end='0' else
 		fcs_end;
 
 	fcs_irdy <=
 		hwllc_irdy           when hwllc_end='0' else
-		pl_irdy and mii_trdy when pl_end='0'    else
+		pl_irdy and mii_trdy when    pl_end='0' else
 		mii_trdy;
 
 	fcs_data <=

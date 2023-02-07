@@ -56,6 +56,7 @@ entity dhcpcd is
 		dhcpcdtx_frm  : buffer std_logic;
 		dlltx_irdy    : out std_logic;
 		dlltx_end     : in  std_logic;
+		dlltx_data    : out std_logic_vector;
 		netdatx_end   : in  std_logic;
 		netdatx_irdy  : out std_logic;
 		netlentx_end  : in  std_logic;
@@ -141,6 +142,7 @@ begin
 		dhcpdscb_frm  => dhcpcdtx_frm,
 		dlltx_irdy    => dlltx_irdy,
 		dlltx_end     => dlltx_end,
+		dlltx_data    => dlltx_data,
 		netdatx_irdy  => netdatx_irdy,
 		netdatx_end   => netdatx_end,
 		netlentx_irdy => netlentx_irdy,
