@@ -121,6 +121,7 @@ architecture def of mii_ipoe is
 	signal dlltx_trdy     : std_logic;
 	signal dlltx_end      : std_logic;
 	signal dlltx_data     : std_logic_vector(miitx_data'range);
+		signal hwdatx_end   : std_logic;
 
 	signal arptx_frm      : std_logic;
 	signal arptx_irdy     : std_logic;
@@ -380,9 +381,9 @@ begin
 
 		signal hwdatx_irdy  : std_logic;
 		signal hwdatx_trdy  : std_logic;
-		signal hwdatx_end   : std_logic;
 		signal hwdatx_full  : std_logic;
 		signal hwdatx_data  : std_logic_vector(pltx_data'range);
+		signal dll_data  : std_logic_vector(pltx_data'range);
 
 		signal hwtyptx_irdy : std_logic;
 		signal hwtyptx_trdy : std_logic;
@@ -401,7 +402,7 @@ begin
 			si_irdy  => dlltx_irdy,
 			si_trdy  => dlltx_trdy,
 			si_full  => dlltx_end,
-			si_data  => dlltx_data,
+			si_data  => dll_data,
 
 			so_clk   => mii_clk,
 			so_frm   => ethtx_frm,
@@ -410,6 +411,7 @@ begin
 			so_end   => hwdatx_end,
 			so_data  => hwdatx_data);
 
+		-- hwsatx_irdy <= '0' when hwdatx_end='0' else hwllctx_irdy;
 		hwsatx_irdy <= '0' when hwdatx_end='0' else hwllctx_irdy;
 		hwsa_e : entity hdl4fpga.sio_mux
 		port map (
@@ -433,7 +435,7 @@ begin
 			so_data  => hwtyptx_data);
 
 		hwllctx_data <=
-			hwdatx_data when hwdatx_end='0' else
+			-- hwdatx_data when hwdatx_end='0' else
 			hwsatx_data when hwsatx_end='0' else
 			hwtyptx_data;
 
@@ -451,7 +453,7 @@ begin
 		signal o_data  : std_logic_vector(i_data'range);
 
 	begin
-		ethpltx_irdy <= ethtx_irdy when dlltx_end='1' else '0';
+		ethpltx_irdy <= ethtx_irdy; -- when dlltx_end='1' else '0';
     	miibuffer_e : entity hdl4fpga.mii_buffer
     	port map(
     		io_clk => mii_clk,
@@ -469,10 +471,12 @@ begin
     	tx_data <= o_data(tx_data'range);
 
     	ethtx_e : entity hdl4fpga.eth_tx
+		generic map (
+			tb => false)
     	port map (
     		mii_clk     => mii_clk,
-
     		hwllc_irdy  => hwllctx_irdy,
+    		hwda_end    => hwdatx_end,
     		hwllc_end   => hwllctx_end,
     		hwllc_data  => hwllctx_data,
 

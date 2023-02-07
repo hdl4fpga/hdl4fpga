@@ -32,6 +32,7 @@ use hdl4fpga.base.all;
 
 entity eth_tx is
 	generic (
+		tb : boolean := true;
 		debug : boolean := false);
 	port (
 		mii_clk     : in  std_logic;
@@ -44,6 +45,7 @@ entity eth_tx is
 
 		hwllc_irdy  : buffer std_logic;
 		hwllc_trdy  : in  std_logic := '1';
+		hwda_end    : in  std_logic := 'U';
 		hwllc_end   : in  std_logic;
 		hwllc_data  : in  std_logic_vector;
 
@@ -97,9 +99,13 @@ begin
 		end if;
 	end process;
 
-	hwllc_irdy <= mii_trdy when pre_end='1' else '0';
+	hwllc_irdy <= 
+		-- '0' when hwda_end='0' and tb=false else
+		mii_trdy when pre_end='1' else '0';
 
 	pl_trdy  <=
+	    '0'      when  pre_end='0' and tb=false else
+		mii_trdy when hwda_end='0' and tb=false else
 		'0'      when hwllc_end='0' else
 		mii_trdy when    pl_end='0' else
 		fcs_end;
@@ -110,6 +116,7 @@ begin
 		mii_trdy;
 
 	fcs_data <=
+	   pl_data    when hwda_end='0' and tb=false else
 	   hwllc_data when hwllc_end='0' else
 	   pl_data    when pl_end='0'    else
 	   (fcs_data'range => '0');
@@ -147,6 +154,7 @@ begin
 		'1';
 	mii_data <=
 		pre_data   when pre_end='0'   else
+	   pl_data    when hwda_end='0' and tb=false else
 		hwllc_data when hwllc_end='0' else
 		pl_data    when pl_end='0'    else
 		(mii_data'range => '0') when minpkt='0' else

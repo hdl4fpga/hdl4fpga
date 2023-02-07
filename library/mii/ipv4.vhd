@@ -169,12 +169,14 @@ architecture def of ipv4 is
 
 	signal icmpdlltx_irdy   : std_logic;
 	signal icmpdlltx_data   : std_logic_vector(dlltx_data'range);
+	signal icmpdlltx_end    : std_logic;
 	signal icmplentx_irdy   : std_logic;
 	signal icmplentx_end    : std_logic;
 	signal icmpdatx_irdy    : std_logic;
 	signal icmpdatx_end     : std_logic;
 
 	signal udpdlltx_irdy    : std_logic;
+	signal udpdlltx_end     : std_logic;
 	signal udpdlltx_data    : std_logic_vector(dlltx_data'range);
 	signal udplentx_irdy    : std_logic;
 	signal udplentx_end     : std_logic;
@@ -367,6 +369,7 @@ begin
 
 		dlltx_irdy    <= wirebus(icmpdlltx_irdy & udpdlltx_irdy, dev_gnt);
 		dlltx_data    <= wirebus(icmpdlltx_data & udpdlltx_data, dev_gnt);
+		(icmpdlltx_end, udpdlltx_end) <= dev_gnt and (dev_gnt'range => dlltx_end);
 		netlentx_irdy <= wirebus(icmplentx_irdy & udplentx_irdy, dev_gnt);
 		netlentx_end  <= wirebus(icmplentx_end  & udplentx_end,  dev_gnt);
 		netdatx_irdy  <= wirebus(icmpdatx_irdy  & udpdatx_irdy,  dev_gnt);
@@ -659,7 +662,7 @@ begin
 
 		dlltx_irdy    => udpdlltx_irdy,
 		dlltx_data    => udpdlltx_data,
-		dlltx_end     => dlltx_end,
+		dlltx_end     => udpdlltx_end,
 		netdatx_irdy  => udpdatx_irdy,
 		netdatx_end   => udpdatx_end,
 		netlentx_irdy => udplentx_irdy,
