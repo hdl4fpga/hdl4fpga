@@ -205,7 +205,6 @@ architecture ulx3s_graphics of testbench is
 	constant req_data  : std_logic_vector :=
 		x"010008_1702_0007ff_1603_8000_0000";
 
-	signal pl_frm : std_logic := '0';
 	signal nrst : std_logic;
 	signal uart_clk : std_logic := '0';
 
@@ -355,7 +354,6 @@ begin
 
 	end block;
 
-	pl_frm <= '0', '1' after 100 us;
 	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after 10 ns;
 	ipoe_b : block
 		generic (
@@ -365,8 +363,8 @@ begin
 
 		port (
 			rst       : in  std_logic;
-			pl_frm    : in  std_logic;
-			mii_clk   : in  std_logic;
+			mii_rxc   : in  std_logic;
+			mii_txc   : in  std_logic;
 			mii_rxdv  : in  std_logic;
 			mii_rxd   : in  std_logic_vector(0 to 2-1);
 
@@ -374,8 +372,8 @@ begin
 			mii_txd   : out std_logic_vector(0 to 2-1));
 		port map (
 			rst        => rst,
-			pl_frm     => pl_frm,
-			mii_clk    => mii_clk,
+			mii_rxc    => mii_clk,
+			mii_txc    => mii_clk,
 			mii_txen   => gp(12),
 			mii_txd(0) => gn(11),
 			mii_txd(1) => gp(11),
@@ -384,105 +382,41 @@ begin
 			mii_rxd(0) => gp(10),
 			mii_rxd(1) => gn(9));
 
-		constant arppkt : std_logic_vector :=
-			x"0000"                 & -- arp_htype
-			x"0000"                 & -- arp_ptype
-			x"00"                   & -- arp_hlen
-			x"00"                   & -- arp_plen
-			x"0000"                 & -- arp_oper
-			x"00_00_00_00_00_00"    & -- arp_sha
-			x"00_00_00_00"          & -- arp_spa
-			x"00_00_00_00_00_00"    & -- arp_tha
-			aton("192.168.1.1");     -- arp_tpa
-
-		constant packet : std_logic_vector :=
-			x"4500"                 &    -- IP Version, TOS
-			x"0000"                 &    -- IP Length
-			x"0000"                 &    -- IP Identification
-			x"0000"                 &    -- IP Fragmentation
-			x"0511"                 &    -- IP TTL, protocol
-			x"0000"                 &    -- IP Header Checksum
-			x"ffffffff"             &    -- IP Source IP address
-			aton("192.168.1.1")     &    -- IP Destiantion IP Address
-
-			udp_checksummed (
-				x"ffffffff",
-				aton("192.168.1.1"),
-				x"4444dea9"         & -- UDP Source port, Destination port
-				std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
-				x"0000" &              -- UPD checksum
-				payload);
-
 		signal eth_txen  : std_logic;
 		signal eth_txd   : std_logic_vector(mii_txd'range);
 
-		signal pl_trdy    : std_logic;
-		signal pl_end     : std_logic;
-		signal pl_data    : std_logic_vector(mii_txd'range);
 
-		signal miirx_frm  : std_logic;
-		signal miirx_end  : std_logic;
-		signal miirx_irdy : std_logic;
-		signal miirx_trdy : std_logic;
-		signal miirx_data : std_logic_vector(pl_data'range);
-
-		signal miitx_frm  : std_logic;
-		signal miitx_irdy : std_logic;
-		signal miitx_trdy : std_logic;
-		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(pl_data'range);
-
-		signal llc_data   : std_logic_vector(0 to 2*48+16-1);
-		signal hwllc_irdy : std_logic;
-		signal hwllc_trdy : std_logic;
-		signal hwllc_end  : std_logic;
-		signal hwllc_data : std_logic_vector(pl_data'range);
+		signal mii_req    : std_logic := '0';
+    	signal ping_req   : std_logic := '0';
+		signal mii_req1   : std_logic := '0';
+		signal req         : std_logic;
 		signal datarx_null :  std_logic_vector(mii_rxd'range);
+		signal x : natural := 0;
+
 
 	begin
 
-		eth4_e: entity hdl4fpga.sio_mux
+		assert false
+		report "not working"
+		severity failure;
+		htb_e : entity hdl4fpga.eth_tb
+		generic map (
+			debug => false)
 		port map (
-			mux_data => reverse(packet,8),
-			sio_clk  => mii_clk,
-			sio_frm  => pl_frm,
-			sio_irdy => pl_trdy,
-			so_end   => pl_end,
-			so_data  => pl_data);
+			mii_data4 => snd_data,
+			mii_data5 => req_data,
+			mii_frm1 => mii_req, -- arp
+			mii_frm2 => '0', --mii_req, -- ping
+			mii_frm3 => '0',
+			mii_frm4 =>  '0', --mii_req, -- write
+			mii_frm5 =>  '0', --mii_req1, -- read
+	
+			mii_txc  => mii_txc,
+			mii_txen => mii_txen,
+			mii_txd  => mii_txd);
 
-		llc_data <= reverse(x"00_40_00_01_02_03" & x"00_27_0e_0f_f5_95" & x"0800",8);
-		hwsa_e : entity hdl4fpga.sio_mux
-		port map (
-			mux_data => llc_data,
-			sio_clk  => mii_clk,
-			sio_frm  => pl_frm,
-			sio_irdy => hwllc_irdy,
-			sio_trdy => hwllc_trdy,
-			so_end   => hwllc_end,
-			so_data  => hwllc_data);
-
-		ethtx_e : entity hdl4fpga.eth_tx
-		port map (
-			mii_clk  => mii_clk,
-
-			pl_frm   => pl_frm,
-			pl_trdy  => pl_trdy,
-			pl_end   => pl_end,
-			pl_data  => pl_data,
-
-			hwllc_irdy => hwllc_irdy,
-			hwllc_trdy => open,
-			hwllc_end  => hwllc_end,
-			hwllc_data => hwllc_data,
-
-			mii_frm  => miirx_frm,
-			mii_irdy => miirx_irdy,
-			mii_trdy => '1', --miirx_trdy,
-			mii_end  => miirx_end,
-			mii_data => miirx_data);
-
-		mii_txen <= miirx_frm and not miirx_end;
-		mii_txd  <= miirx_data;
+		-- mii_txen <= miirx_frm and not miirx_end;
+		-- mii_txd  <= miirx_data;
 
 		ethrx_e : entity hdl4fpga.eth_rx
 		port map (

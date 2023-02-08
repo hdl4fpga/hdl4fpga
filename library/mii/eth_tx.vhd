@@ -32,8 +32,7 @@ use hdl4fpga.base.all;
 
 entity eth_tx is
 	generic (
-		tb : boolean := true;
-		debug : boolean := false);
+		debug       : boolean := false);
 	port (
 		mii_clk     : in  std_logic;
 
@@ -43,11 +42,17 @@ entity eth_tx is
 		pl_end      : in  std_logic;
 		pl_data     : in  std_logic_vector;
 
-		hwllc_irdy  : buffer std_logic;
-		hwllc_trdy  : in  std_logic := '1';
-		hwda_end    : in  std_logic := 'U';
-		hwllc_end   : in  std_logic;
-		hwllc_data  : in  std_logic_vector;
+		hwda_irdy   : out std_logic;
+		hwda_end    : in  std_logic := '1';
+		hwda_data   : in  std_logic_vector;
+
+		hwsa_irdy   : out std_logic;
+		hwsa_end    : in  std_logic := '1';
+		hwsa_data   : in  std_logic_vector;
+
+		hwtyp_irdy  : out std_logic;
+		hwtyp_end   : in  std_logic := '1';
+		hwtyp_data  : in  std_logic_vector;
 
 		mii_frm     : buffer std_logic;
 		mii_irdy    : buffer std_logic;
@@ -71,9 +76,61 @@ architecture def of eth_tx is
 	signal fcs_end  : std_logic;
 	signal fcs_crc  : std_logic_vector(0 to 32-1);
 
+	signal tx_irdy : std_logic;
+	signal tx_trdy : std_logic;
+	signal tx_end  : std_logic;
+	signal tx_data : std_logic_vector(pl_data'range);
+
 begin
 
-	mii_frm <= pl_frm;
+	buffer_b : block
+
+		signal i_irdy  : std_logic;
+		signal i_trdy  : std_logic;
+		signal i_data  : std_logic_vector(pl_data'range);
+
+	begin
+
+		pl_trdy <= 
+			i_trdy  when  hwda_end='0' else
+			'0'     when  hwsa_end='0' else
+			'0'     when hwtyp_end='0' else
+			i_trdy;
+
+		i_irdy <= 
+			-- hwda_irdy when hwda_end='0' else
+			pl_irdy when  hwda_end='0' else
+			'1'     when  hwsa_end='0' else
+			'1'     when hwtyp_end='0' else
+			pl_irdy;
+
+		i_data <= 
+			-- hwda_data when hwda_end='0' else
+			pl_data    when  hwda_end='0' else
+			hwsa_data  when  hwsa_end='0' else
+			hwtyp_data when hwtyp_end='0' else
+			pl_data;
+
+    	miibuffer_e : entity hdl4fpga.mii_buffer
+    	port map(
+    		io_clk => mii_clk,
+    		i_frm  => pl_frm,
+    		i_irdy => i_irdy,
+    		i_trdy => i_trdy,
+    		i_end  => pl_end, 
+    		i_data => i_data,
+			o_frm  => mii_frm,
+    		o_irdy => tx_irdy,
+    		o_trdy => tx_trdy,
+    		o_data => tx_data,
+    		o_end  => tx_end);
+
+		hwda_irdy  <= i_trdy;
+		hwsa_irdy  <= i_trdy when hwda_end='1' else '0';
+		hwtyp_irdy <= i_trdy when hwsa_end='1' else '0';
+
+	end block;
+
 	pre_e : entity hdl4fpga.sio_mux
 	port map (
 		mux_data => reverse(x"5555_5555_5555_55d5", 8),
@@ -99,27 +156,17 @@ begin
 		end if;
 	end process;
 
-	hwllc_irdy <= 
-		-- '0' when hwda_end='0' and tb=false else
-		mii_trdy when pre_end='1' else '0';
-
-	pl_trdy  <=
-	    '0'      when  pre_end='0' and tb=false else
-		mii_trdy when hwda_end='0' and tb=false else
-		'0'      when hwllc_end='0' else
-		mii_trdy when    pl_end='0' else
+	tx_trdy  <= 
+		'0'       when pre_end='0' else
+		mii_trdy  when  tx_end='0' else
 		fcs_end;
-
-	fcs_irdy <=
-		hwllc_irdy           when hwllc_end='0' else
-		pl_irdy and mii_trdy when    pl_end='0' else
+	fcs_irdy <= 
+		'0'                    when pre_end='0' else
+		(tx_irdy and mii_trdy) when  tx_end='0' else 
 		mii_trdy;
-
-	fcs_data <=
-	   pl_data    when hwda_end='0' and tb=false else
-	   hwllc_data when hwllc_end='0' else
-	   pl_data    when pl_end='0'    else
-	   (fcs_data'range => '0');
+	fcs_data <= 
+		tx_data                when  tx_end='0' else 
+		(fcs_data'range => '0');
 
 	process (mii_clk)
 		variable cntr : unsigned(0 to unsigned_num_bits(fcs_crc'length/mii_data'length-1));
@@ -127,7 +174,7 @@ begin
 		if rising_edge(mii_clk) then
 			if pl_frm='0' then
 				cntr := (others => '0');
-			elsif pl_end='1' and minpkt='1' and cntr(0)='0' then
+			elsif tx_end='1' and minpkt='1' and cntr(0)='0' then
 				if fcs_irdy='1' then
 					cntr := cntr + 1;
 				end if;
@@ -136,7 +183,7 @@ begin
 		end if;
 	end process;
 
-	fcs_mode <= pl_end and minpkt;
+	fcs_mode <= tx_end and minpkt;
 	fcs_e : entity hdl4fpga.crc
 	port map (
 		g    => x"04c11db7",
@@ -148,16 +195,14 @@ begin
 		crc  => fcs_crc);
 
 	mii_irdy <=
-		pre_trdy   when pre_end='0'   else
-		hwllc_trdy when hwllc_end='0' else
-		pl_irdy    when pl_end='0'    else
+		pre_trdy   when pre_end='0' else
+		tx_irdy    when  tx_end='0' else
 		'1';
+
 	mii_data <=
-		pre_data   when pre_end='0'   else
-	   pl_data    when hwda_end='0' and tb=false else
-		hwllc_data when hwllc_end='0' else
-		pl_data    when pl_end='0'    else
-		(mii_data'range => '0') when minpkt='0' else
+		pre_data                when pre_end='0' else
+		tx_data                 when  tx_end='0' else
+		(mii_data'range => '0') when  minpkt='0' else
 		fcs_crc(mii_data'range);
 	mii_end <= fcs_end;
 

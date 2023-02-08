@@ -48,6 +48,9 @@ end;
 architecture def of eth_tb is
 
 	constant arppkt : std_logic_vector :=
+		x"00_40_00_01_02_03" & 
+		x"00_27_0e_0f_f5_95" & 
+		x"0806" &
 		x"0000"                 & -- arp_htype
 		x"0000"                 & -- arp_ptype
 		x"00"                   & -- arp_hlen
@@ -61,6 +64,9 @@ architecture def of eth_tb is
 -- 00270e0ff59500400001020308004500_001c_0000_0000_0501_f531_c0a8000e_c0a80008_000050c7_d048deef_000000000000000000000000000000000000c88c7b58
 -- correct 0x347b
 	constant icmppkt : std_logic_vector :=
+		x"00_40_00_01_02_03" & 
+		x"00_27_0e_0f_f5_95" & 
+		x"0800" &
 		x"4500"                 &    -- IP Version, TOS
 		x"0054"                 &    -- IP Length
 		x"16b1"                 &    -- IP Identification
@@ -85,6 +91,9 @@ architecture def of eth_tb is
 			x"00000000"  &    -- CHADDR
 			(0 to 192*8-1 => '0') ;
 	constant packet : std_logic_vector :=
+		x"00_40_00_01_02_03" & 
+		x"00_27_0e_0f_f5_95" & 
+		x"0800" &
 		x"4500"                 &    -- IP Version, TOS
 		x"0000"                 &    -- IP Length
 		x"0000"                 &    -- IP Identification
@@ -104,8 +113,8 @@ architecture def of eth_tb is
 
 --	constant pyld1 : std_logic_vector := x"010009_170200003f_160380000000";
 --	constant pyld1 : std_logic_vector := x"01008b";
-	signal pkt1 : std_logic_vector (0 to 224+mii_data4'length-1);
-	signal pkt2 : std_logic_vector (0 to 224+mii_data5'length-1);
+	signal pkt1 : std_logic_vector (0 to 14*8+224+mii_data4'length-1);
+	signal pkt2 : std_logic_vector (0 to 14*8+224+mii_data5'length-1);
 
 	signal eth1_txd   : std_logic_vector(mii_txd'range);
 	signal eth1_end   : std_logic;
@@ -122,7 +131,6 @@ architecture def of eth_tb is
 	signal eth5_end   : std_logic;
 	signal eth5_txd   : std_logic_vector(mii_txd'range);
 
-	signal eth_llc    : std_logic_vector(0 to 16-1);
 
 	signal pl_frm     : std_logic;
 	signal pl_trdy    : std_logic;
@@ -141,10 +149,6 @@ architecture def of eth_tb is
 	signal miitx_end  : std_logic;
 	signal miitx_data : std_logic_vector(pl_data'range);
 
-	signal llc_data   : std_logic_vector(0 to 2*48+16-1);
-	signal hwllc_irdy : std_logic;
-	signal hwllc_trdy : std_logic;
-	signal hwllc_end  : std_logic;
 	signal hwllc_data : std_logic_vector(pl_data'range);
 
 begin
@@ -177,13 +181,15 @@ begin
         so_data  => eth3_txd);
 
 	pkt1 <= reverse(
+		x"00_40_00_01_02_03"    & 
+		x"00_27_0e_0f_f5_95"    & 
+		x"0800"                 &
 		x"4500"                 &    -- IP Version, TOS
 		x"0000"                 &    -- IP Length
 		x"0000"                 &    -- IP Identification
 		x"0000"                 &    -- IP Fragmentation
 		x"0511"                 &    -- IP TTL, protocol
 		x"0000"                 &    -- IP Header Checksum
-		-- x"55dd33bb"             &    -- IP Source IP address
 		x"ffffffff"             &    -- IP Source IP address
 		x"c0a8000e"             &    -- IP Destiantion IP Address
 
@@ -196,6 +202,9 @@ begin
 			mii_data4),8);
 
 	pkt2 <= reverse(
+		x"00_40_00_01_02_03" & 
+		x"00_27_0e_0f_f5_95" & 
+		x"0800" &
 		x"4500"                 &    -- IP Version, TOS
 		x"0000"                 &    -- IP Length
 		x"0000"                 &    -- IP Identification
@@ -233,7 +242,6 @@ begin
 
 	pl_end  <= wirebus(eth1_end & eth2_end & eth3_end & eth4_end & eth5_end, mii_frm1 & mii_frm2 & mii_frm3 & mii_frm4 & mii_frm5);
 	pl_data <= wirebus(eth1_txd & eth2_txd & eth3_txd & eth4_txd & eth5_txd, mii_frm1 & mii_frm2 & mii_frm3 & mii_frm4 & mii_frm5);
-	eth_llc <= wirebus(std_logic_vector'(x"0806" & x"0800" & x"0800" & x"0800" & x"0800"), mii_frm1 & mii_frm2 & mii_frm3 & mii_frm4 & mii_frm5); -- Qualified expression required by Latticesemi Diamond
 
 	process (miitx_end, mii_txc)
 		variable frm : std_logic := '0';
@@ -252,38 +260,27 @@ begin
 		pl_frm <= frm;
 	end process;
 
-	llc_data <= reverse(x"00_40_00_01_02_03" & x"00_27_0e_0f_f5_95" & eth_llc,8);
-	hwsa_e : entity hdl4fpga.sio_mux
-	port map (
-		mux_data => llc_data,
-		sio_clk  => mii_txc,
-		sio_frm  => pl_frm,
-		sio_irdy => hwllc_irdy,
-		sio_trdy => hwllc_trdy,
-		so_end   => hwllc_end,
-		so_data  => hwllc_data);
 
 	ethtx_e : entity hdl4fpga.eth_tx
 	generic map (
 		debug => debug)
 	port map (
-		mii_clk  => mii_txc,
+		mii_clk    => mii_txc,
 
-		pl_frm   => pl_frm,
-		pl_trdy  => pl_trdy,
-		pl_end   => pl_end,
-		pl_data  => pl_data,
+		hwsa_data  => hwllc_data,
+		hwda_data  => hwllc_data,
+		hwtyp_data => hwllc_data,
 
-		hwllc_irdy => hwllc_irdy,
-		hwllc_trdy => open,
-		hwllc_end  => hwllc_end,
-		hwllc_data => hwllc_data,
+		pl_frm     => pl_frm,
+		pl_trdy    => pl_trdy,
+		pl_end     => pl_end,
+		pl_data    => pl_data,
 
-		mii_frm  => miirx_frm,
-		mii_irdy => miirx_irdy,
-		mii_trdy => '1', --miirx_trdy,
-		mii_end  => miirx_end,
-		mii_data => miirx_data);
+		mii_frm    => miirx_frm,
+		mii_irdy   => miirx_irdy,
+		mii_trdy   => '1', --miirx_trdy,
+		mii_end    => miirx_end,
+		mii_data   => miirx_data);
 
 	mii_txen <= miirx_frm and not miirx_end;
 	mii_txd  <= miirx_data;
