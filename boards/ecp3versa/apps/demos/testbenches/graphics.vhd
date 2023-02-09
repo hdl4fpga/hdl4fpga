@@ -218,8 +218,8 @@ begin
 		port map (
 			mii_data4 => snd_data,
 			mii_data5 => req_data,
-			mii_frm1 => mii_req, -- arp
-			mii_frm2 => '0', --mii_req, -- ping
+			mii_frm1 => '0', --mii_req, -- arp
+			mii_frm2 => mii_req, -- ping
 			mii_frm3 => '0',
 			mii_frm4 =>  '0', --mii_req, -- write
 			mii_frm5 =>  '0', --mii_req1, -- read

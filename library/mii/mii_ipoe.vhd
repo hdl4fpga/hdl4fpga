@@ -113,10 +113,9 @@ architecture def of mii_ipoe is
 
 	signal ethtx_frm      : std_logic;
 	signal ethtx_irdy     : std_logic;
-	signal ethpltx_irdy   : std_logic;
-	signal ethpltx_trdy   : std_logic;
-	signal ethpltx_end    : std_logic;
-	signal ethpltx_data   : std_logic_vector(miitx_data'range);
+	signal ethtx_trdy     : std_logic;
+	signal ethtx_end      : std_logic;
+	signal ethtx_data     : std_logic_vector(miitx_data'range);
 	signal dlltx_irdy     : std_logic;
 	signal dlltx_trdy     : std_logic;
 	signal dlltx_end      : std_logic;
@@ -354,6 +353,7 @@ begin
 		signal dev_req : std_logic_vector(0 to 2-1);
 		signal dev_gnt : std_logic_vector(0 to 2-1);
 		signal dev_csc : std_logic;
+		signal gnt     : std_logic_vector(0 to 2-1);
 	begin
 
 		dev_csc <= not miirx_frm when hdplx='1' else '1';
@@ -363,17 +363,24 @@ begin
 			clk => mii_clk,
 			csc => dev_csc,
 			req => dev_req,
-			gnt => dev_gnt);
+			gnt => gnt);
 
-		ethtx_frm    <= wirebus(arptx_frm  & ipv4tx_frm,  dev_gnt);
-		ethtx_irdy   <= wirebus(arptx_irdy & ipv4tx_irdy, dev_gnt);
-		(0 => arptx_trdy,   1 => ipv4tx_trdy)   <= dev_gnt and (dev_gnt'range => ethpltx_trdy);
-		(0 => arpdlltx_end, 1 => ipv4dlltx_end) <= dev_gnt and (dev_gnt'range => dlltx_end);
-		dlltx_irdy   <= wirebus(arpdlltx_irdy & ipv4dlltx_irdy,  dev_gnt);
-		dlltx_data   <= wirebus(arpdlltx_data & ipv4dlltx_data,  dev_gnt);
-		hwtyp_tx     <= wirebus(reverse(x"0806",8) & reverse(x"0800",8), dev_gnt);
-		ethpltx_end  <= wirebus(arptx_end  & ipv4tx_end,  dev_gnt);
-		ethpltx_data <= wirebus(arptx_data & ipv4tx_data, dev_gnt);
+		process (mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				dev_gnt <= gnt;
+			end if;
+		end process;
+
+		ethtx_frm  <= wirebus(arptx_frm  & ipv4tx_frm,  dev_gnt);
+		ethtx_irdy <= wirebus(arptx_irdy & ipv4tx_irdy, dev_gnt);
+		(arptx_trdy,   ipv4tx_trdy)   <= dev_gnt and (dev_gnt'range => ethtx_trdy);
+		(arpdlltx_end, ipv4dlltx_end) <= dev_gnt and (dev_gnt'range => dlltx_end);
+		dlltx_irdy <= wirebus(arpdlltx_irdy & ipv4dlltx_irdy,  dev_gnt);
+		dlltx_data <= wirebus(arpdlltx_data & ipv4dlltx_data,  dev_gnt);
+		hwtyp_tx   <= wirebus(reverse(x"0806",8) & reverse(x"0800",8), dev_gnt);
+		ethtx_end  <= wirebus(arptx_end  & ipv4tx_end,  dev_gnt);
+		ethtx_data <= wirebus(arptx_data & ipv4tx_data, dev_gnt);
 
 	end block;
 
@@ -439,10 +446,10 @@ begin
 		hwtyp_data => hwtyptx_data,
 
 		pl_frm     => ethtx_frm,
-		pl_irdy    => ethpltx_irdy,
-		pl_trdy    => ethpltx_trdy,
-		pl_end     => ethpltx_end,
-		pl_data    => ethpltx_data,
+		pl_irdy    => ethtx_irdy,
+		pl_trdy    => ethtx_trdy,
+		pl_end     => ethtx_end,
+		pl_data    => ethtx_data,
 		
 		mii_frm    => miitx_frm,
 		mii_irdy   => miitx_irdy,

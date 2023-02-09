@@ -152,8 +152,9 @@ begin
 		udppl_irdy   => udpplrx_irdy);
 
 	arbiter_b : block
-		signal dev_req    : std_logic_vector(0 to 2-1);
-		signal dev_gnt    : std_logic_vector(0 to 2-1);
+		signal dev_req : std_logic_vector(0 to 2-1);
+		signal dev_gnt : std_logic_vector(0 to 2-1);
+		signal gnt     : std_logic_vector(0 to 2-1);
 	begin
 
 		dev_req <= (dhcptx_frm, pltx_frm);
@@ -161,7 +162,14 @@ begin
 		port map (
 			clk => mii_clk,
 			req => dev_req,
-			gnt => dev_gnt);
+			gnt => gnt);
+
+		process (mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				dev_gnt <= gnt;
+			end if;
+		end process;
 
 		udptx_frm  <= wirebus(dhcptx_frm  & pltx_frm,     dev_gnt);
 		udptx_irdy <= wirebus(dhcptx_irdy & pltx_irdy,    dev_gnt);
@@ -246,7 +254,12 @@ begin
     			so_end  => udpdp_end,
     			so_data => udpdp_data);
 
-			rev_udpdata <= reverse(udppltx_data);
+			process (mii_clk)
+			begin
+				if rising_edge(mii_clk) then
+				end if;
+			end process;
+					rev_udpdata <= reverse(udppltx_data);
            	udllen_e : entity hdl4fpga.sio_ram
            	generic map (
            		mode_fifo => false,

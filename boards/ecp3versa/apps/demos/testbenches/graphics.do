@@ -31,8 +31,15 @@ add wave -noupdate -group ddr3 -expand /testbench/du_e/ddr3_dqs
 add wave -noupdate -group ddr3 -radix hexadecimal /testbench/du_e/ddr3_dq
 add wave -noupdate -group ddr3 /testbench/du_e/ddr3_odt
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -group mii_ipoe /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/fcs_vld
-add wave -noupdate -group mii_ipoe /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/fcs_sb
+add wave -noupdate -expand -group mii_ipoe /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethrx_e/fcs_sb
+add wave -noupdate -expand -group mii_ipoe /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethrx_e/fcs_vld
+add wave -noupdate -expand -group mii_ipoe -radix hexadecimal /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethrx_e/fcs_rem
+add wave -noupdate -group arpd_e -expand -group arprx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arpd_e/arprx_e/mii_clk
+add wave -noupdate -group arpd_e -expand -group arprx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arpd_e/arprx_e/arp_frm
+add wave -noupdate -group arpd_e -expand -group arprx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arpd_e/arprx_e/arp_irdy
+add wave -noupdate -group arpd_e -expand -group arprx_e -radix hexadecimal /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arpd_e/arprx_e/arp_data
+add wave -noupdate -group arpd_e -expand -group arprx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arpd_e/arprx_e/tpa_frm
+add wave -noupdate -group arpd_e -expand -group arprx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arpd_e/arprx_e/frm_ptr
 add wave -noupdate -group arpd_e -expand -group arptx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arpd_e/arptx_e/pa_frm
 add wave -noupdate -group arpd_e -expand -group arptx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arpd_e/arptx_e/pa_irdy
 add wave -noupdate -group arpd_e -expand -group arptx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arpd_e/arptx_e/pa_trdy
@@ -51,6 +58,7 @@ add wave -noupdate -group arpd_e -expand -group arptx_e /testbench/du_e/ipoe_b/u
 add wave -noupdate -group arpd_e -expand -group arptx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arpd_e/arptx_e/arp_irdy
 add wave -noupdate -group arpd_e -expand -group arptx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arpd_e/arptx_e/arp_trdy
 add wave -noupdate -group arpd_e -expand -group arptx_e -radix hexadecimal /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arpd_e/arptx_e/arp_data
+add wave -noupdate -group arpd_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arpd_e/arprx_frm
 add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/ipv4tx_e/mii_clk
 add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/ipv4tx_e/pl_frm
 add wave -noupdate -group ipv4_tx /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/ipv4tx_e/pl_irdy
@@ -176,24 +184,24 @@ add wave -noupdate -group sdrphy_e/byte_g(0) /testbench/du_e/sdrphy_b/sdrphy_e/b
 add wave -noupdate -group sdrphy_e/byte_g(0) /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/dqclk0
 add wave -noupdate -group sdrphy_e/byte_g(0) /testbench/du_e/sdrphy_b/sdrphy_e/byte_g(0)/sdr3phy_i/dqsw
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethtx_frm
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethtx_irdy
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethpltx_irdy
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethpltx_trdy
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethpltx_end
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethpltx_data
+add wave -noupdate /testbench/ipoe_b/ethrx_e/fcs_sb
+add wave -noupdate /testbench/ipoe_b/ethrx_e/fcs_vld
+add wave -noupdate -radix hexadecimal /testbench/ipoe_b/ethrx_e/fcs_rem
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethtx_b/ethtx_e/hwllc_irdy
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethtx_b/ethtx_e/hwllc_trdy
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethtx_b/ethtx_e/hwllc_end
+add wave -noupdate /testbench/ipoe_b/htb_e/ethtx_e/pl_frm
+add wave -noupdate /testbench/ipoe_b/htb_e/ethtx_e/pl_irdy
+add wave -noupdate /testbench/ipoe_b/htb_e/ethtx_e/pl_trdy
+add wave -noupdate /testbench/ipoe_b/htb_e/ethtx_e/pl_end
+add wave -noupdate -radix hexadecimal /testbench/ipoe_b/htb_e/ethtx_e/pl_data
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arptx_trdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {10790587815 fs} 0}
+WaveRestoreCursors {{Cursor 1} {10639995517 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 298
 configure wave -valuecolwidth 118
@@ -209,4 +217,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {10517217763 fs} {10828668157 fs}
+WaveRestoreZoom {10507902027 fs} {10793944885 fs}

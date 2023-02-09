@@ -134,6 +134,7 @@ architecture def of eth_tb is
 
 	signal pl_frm     : std_logic;
 	signal pl_trdy    : std_logic;
+	signal pl_trdy0    : std_logic;
 	signal pl_end     : std_logic;
 	signal pl_data    : std_logic_vector(mii_txd'range);
 
@@ -261,6 +262,7 @@ begin
 	end process;
 
 
+	pl_trdy <= pl_frm and pl_trdy0;
 	ethtx_e : entity hdl4fpga.eth_tx
 	generic map (
 		debug => debug)
@@ -272,7 +274,8 @@ begin
 		hwtyp_data => hwllc_data,
 
 		pl_frm     => pl_frm,
-		pl_trdy    => pl_trdy,
+		pl_irdy    => pl_frm,
+		pl_trdy    => pl_trdy0,
 		pl_end     => pl_end,
 		pl_data    => pl_data,
 

@@ -351,12 +351,12 @@ begin
 			req => dev_req,
 			gnt => gnt);
 
-			process (mii_clk)
-			begin
-				if rising_edge(mii_clk) then
-					dev_gnt <= gnt;
-				end if;
-			end process;
+		process (mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				dev_gnt <= gnt;
+			end if;
+		end process;
 
 		ipv4pltx_frm  <= wirebus(icmptx_frm  & udptx_frm,  dev_gnt);
 		ipv4pltx_irdy <= wirebus(icmptx_irdy & udptx_irdy, dev_gnt);
@@ -401,7 +401,13 @@ begin
 				si_data  => ipv4pltx_data,
     			so_data  => so_sum);
     	
-			si_data <= reverse(so_sum);
+			process (mii_clk)
+			begin
+				if rising_edge(mii_clk) then
+					si_data <= reverse(so_sum);
+				end if;
+			end process;
+
     		ipv4len_e : entity hdl4fpga.sio_ram
     		generic map (
     			mode_fifo => false,
