@@ -401,9 +401,9 @@ begin
 			process (mii_clk)
 			begin
 				if rising_edge(mii_clk) then
-					si_data <= reverse(so_sum);
 				end if;
 			end process;
+			si_data <= reverse(so_sum);
 
     		ipv4len_e : entity hdl4fpga.sio_ram
     		generic map (

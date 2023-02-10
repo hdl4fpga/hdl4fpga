@@ -146,6 +146,7 @@ architecture arty_graphics of testbench is
 	signal xtal_p : std_logic := '0';
 
 	signal datarx_null :  std_logic_vector(mii_rxd'range);
+	signal btn0 : std_logic;
 begin
 
 	rst   <= '1', '0' after 1.1 us;
@@ -239,8 +240,8 @@ begin
 		x"1702_0003ff_1603_0007_3000",
 		mii_data5 => x"010000_1702_0003ff_1603_8007_3000",
 --		mii_data4 => x"01007e_1702_000030_1603_8000_07d0",
-		mii_frm1 => mii_req, --'0',
-		mii_frm2 => mii_req1, -- '0', --ping_req,
+		mii_frm1 => '0' , ---mii_req, --'0',
+		mii_frm2 => '0' , --mii_req, -- '0', --ping_req,
 		mii_frm3 => '0',
 		mii_frm4 => '0', --mii_req,
 		mii_frm5 => '0', --mii_req1,
@@ -259,11 +260,12 @@ begin
 
 
 	end block;
+	btn0 <= '0', '1' after 2 us;
 	du_e : arty
 	generic map (
 		debug => true)
 	port map (
-		btn(0) => rst,
+		btn(0) => btn0,
 		btn(4-1 downto 1) => (1 to 3 => '-'),
 		sw => "0000",
 

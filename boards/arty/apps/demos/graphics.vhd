@@ -292,7 +292,7 @@ architecture graphics of arty is
 
 begin
 
-	sys_rst <= btn(0);
+	-- sys_rst <= btn(0);
 
 	idelayctrl_i : idelayctrl
 	port map (
@@ -569,6 +569,26 @@ begin
 
 	begin
 
+		dhcp_p : process(mii_txc)
+			type states is (s_request, s_wait);
+			variable state : states;
+		begin
+			if rising_edge(mii_txc) then
+				case state is
+				when s_request =>
+					if btn(0)='1' then
+						dhcpcd_req <= not dhcpcd_rdy;
+						state := s_wait;
+					end if;
+				when s_wait =>
+					if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+						if btn(0)='0' then
+							state := s_request;
+						end if;
+					end if;
+				end case;
+			end if;
+		end process;
 		sync_b : block
 
 			signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
@@ -612,15 +632,6 @@ begin
 				end if;
 			end process;
 		end block;
-
-		dhcp_p : process(mii_txc)
-		begin
-			if rising_edge(mii_txc) then
-				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-			--		dhcpcd_req <= dhcpcd_rdy xor not sw1;
-				end if;
-			end if;
-		end process;
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (

@@ -145,8 +145,8 @@ begin
 		si_data  => pl_data,
 		so_data  => so_sum);
 	
-	dlltx_irdy    <= pl_irdy and udp_trdy;
-	dlltx_data    <= pl_data;
+	dlltx_irdy <= pl_irdy and udp_trdy;
+	dlltx_data <= pl_data;
 	udp_frm <= pl_frm;
 	udp_data <=
 		pl_data     when   tptdp_end='0' else

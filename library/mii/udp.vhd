@@ -294,7 +294,7 @@ begin
 			pl_data       => pltx_data,
 
 			dlltx_irdy    => udpdlltx_irdy,
-			dlltx_end     => dlltx_end,
+			dlltx_end     => udpdlltx_end,
 			dlltx_data    => udpdlltx_data,
 			netdatx_irdy  => udpdatx_irdy,
 			netdatx_end   => udpdatx_end,
@@ -393,7 +393,7 @@ begin
     		dhcpcdtx_frm  => dhcptx_frm,
 			dlltx_irdy    => dhcpdlltx_irdy,
 			dlltx_data    => dhcpdlltx_data,
-    		dlltx_end     => dlltx_end,
+    		dlltx_end     => dhcpdlltx_end,
     		netdatx_irdy  => dhcpdatx_irdy,
     		netdatx_end   => dhcpdatx_end,
     		netlentx_irdy => dhcplentx_irdy,

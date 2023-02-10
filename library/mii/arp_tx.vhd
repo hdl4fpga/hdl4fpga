@@ -99,7 +99,7 @@ begin
 			pa_frm <= '0';
 		end if;
 	end process;
-	pa_irdy <= pa_frm and arp_irdy;
+	pa_irdy <= pa_frm and arp_irdy and arp_trdy;
 	
 	arpmux_irdy <= 
 		'0' when dlltx_end='0' else

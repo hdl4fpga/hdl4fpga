@@ -138,7 +138,9 @@ begin
 	netlentx_irdy <= dhcpdscb_trdy when    dlltx_end='1' else '0';
 	netdatx_irdy  <= dhcpdscb_trdy when netlentx_end='1' else '0';
 
-	dhcpdscb_irdy <= dhcppkt_trdy when netlentx_end='1' else '0';
+	dhcpdscb_irdy <= 
+		'1' when    dlltx_end='0' else
+		dhcppkt_trdy when netlentx_end='1' else '0';
 
 	dhcpdscb_end <=
 		'0' when netdatx_end='0' else

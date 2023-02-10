@@ -483,7 +483,7 @@ begin
 		arptx_frm  => arptx_frm,
 		dlltx_irdy => arpdlltx_irdy,
 		dlltx_data => arpdlltx_data,
-		dlltx_end  => dlltx_end,
+		dlltx_end  => arpdlltx_end,
 		arptx_irdy => arptx_irdy,
 		arptx_trdy => arptx_trdy,
 		arptx_end  => arptx_end,
@@ -542,7 +542,7 @@ begin
 		ipv4tx_frm   => ipv4tx_frm,
 		dlltx_irdy   => ipv4dlltx_irdy,
 		dlltx_data   => ipv4dlltx_data,
-		dlltx_end    => dlltx_end,
+		dlltx_end    => ipv4dlltx_end,
 
 		ipv4tx_irdy   => ipv4tx_irdy,
 		ipv4tx_trdy   => ipv4tx_trdy,

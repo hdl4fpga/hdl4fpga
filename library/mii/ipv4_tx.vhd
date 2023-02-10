@@ -202,7 +202,7 @@ begin
 	ipv4a_irdy <= 
 		'0' when dlltx_end='0'    else 
 		'1' when (state=s_ipv4a and ipv4a_end='0') else
-		'1' when  state=s_ipv4hdr else
+		ipv4_trdy when  state=s_ipv4hdr else
 		ipv4_trdy;
 	ipv4shdr_irdy  <= ipv4_trdy when  ipv4shdr_frm='1' else '0';
 	ipv4proto_irdy <= ipv4_trdy when ipv4proto_frm='1' else '0';
