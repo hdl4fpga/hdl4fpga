@@ -1,13 +1,13 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate -group tb_ethrx /testbench/ipoe_b/ethrx_e/fcs_sb
-add wave -noupdate -group tb_ethrx /testbench/ipoe_b/ethrx_e/fcs_vld
-add wave -noupdate -group tb_ethrx -radix hexadecimal /testbench/ipoe_b/ethrx_e/fcs_rem
-add wave -noupdate -group phy1 /testbench/du_e/phy1_gtxclk
-add wave -noupdate -group phy1 -radix hexadecimal /testbench/du_e/phy1_rx_dv
-add wave -noupdate -group phy1 -radix hexadecimal /testbench/du_e/phy1_rx_d
-add wave -noupdate -group phy1 /testbench/du_e/phy1_tx_en
-add wave -noupdate -group phy1 -radix hexadecimal -childformat {{/testbench/du_e/phy1_tx_d(0) -radix hexadecimal} {/testbench/du_e/phy1_tx_d(1) -radix hexadecimal} {/testbench/du_e/phy1_tx_d(2) -radix hexadecimal} {/testbench/du_e/phy1_tx_d(3) -radix hexadecimal} {/testbench/du_e/phy1_tx_d(4) -radix hexadecimal} {/testbench/du_e/phy1_tx_d(5) -radix hexadecimal} {/testbench/du_e/phy1_tx_d(6) -radix hexadecimal} {/testbench/du_e/phy1_tx_d(7) -radix hexadecimal}} -subitemconfig {/testbench/du_e/phy1_tx_d(0) {-height 29 -radix hexadecimal} /testbench/du_e/phy1_tx_d(1) {-height 29 -radix hexadecimal} /testbench/du_e/phy1_tx_d(2) {-height 29 -radix hexadecimal} /testbench/du_e/phy1_tx_d(3) {-height 29 -radix hexadecimal} /testbench/du_e/phy1_tx_d(4) {-height 29 -radix hexadecimal} /testbench/du_e/phy1_tx_d(5) {-height 29 -radix hexadecimal} /testbench/du_e/phy1_tx_d(6) {-height 29 -radix hexadecimal} /testbench/du_e/phy1_tx_d(7) {-height 29 -radix hexadecimal}} /testbench/du_e/phy1_tx_d
+add wave -noupdate -expand -group tb_ethrx /testbench/ipoe_b/ethrx_e/fcs_sb
+add wave -noupdate -expand -group tb_ethrx /testbench/ipoe_b/ethrx_e/fcs_vld
+add wave -noupdate -expand -group tb_ethrx -radix hexadecimal /testbench/ipoe_b/ethrx_e/fcs_rem
+add wave -noupdate -expand -group phy1 /testbench/du_e/phy1_gtxclk
+add wave -noupdate -expand -group phy1 -radix hexadecimal /testbench/du_e/phy1_rx_dv
+add wave -noupdate -expand -group phy1 -radix hexadecimal /testbench/du_e/phy1_rx_d
+add wave -noupdate -expand -group phy1 /testbench/du_e/phy1_tx_en
+add wave -noupdate -expand -group phy1 -radix hexadecimal -childformat {{/testbench/du_e/phy1_tx_d(0) -radix hexadecimal} {/testbench/du_e/phy1_tx_d(1) -radix hexadecimal} {/testbench/du_e/phy1_tx_d(2) -radix hexadecimal} {/testbench/du_e/phy1_tx_d(3) -radix hexadecimal} {/testbench/du_e/phy1_tx_d(4) -radix hexadecimal} {/testbench/du_e/phy1_tx_d(5) -radix hexadecimal} {/testbench/du_e/phy1_tx_d(6) -radix hexadecimal} {/testbench/du_e/phy1_tx_d(7) -radix hexadecimal}} -subitemconfig {/testbench/du_e/phy1_tx_d(0) {-height 29 -radix hexadecimal} /testbench/du_e/phy1_tx_d(1) {-height 29 -radix hexadecimal} /testbench/du_e/phy1_tx_d(2) {-height 29 -radix hexadecimal} /testbench/du_e/phy1_tx_d(3) {-height 29 -radix hexadecimal} /testbench/du_e/phy1_tx_d(4) {-height 29 -radix hexadecimal} /testbench/du_e/phy1_tx_d(5) {-height 29 -radix hexadecimal} /testbench/du_e/phy1_tx_d(6) {-height 29 -radix hexadecimal} /testbench/du_e/phy1_tx_d(7) {-height 29 -radix hexadecimal}} /testbench/du_e/phy1_tx_d
 add wave -noupdate -group ddr3 /testbench/du_e/ddr3_clk
 add wave -noupdate -group ddr3 /testbench/du_e/ddr3_rst
 add wave -noupdate -group ddr3 /testbench/du_e/ddr3_cke
@@ -33,9 +33,9 @@ add wave -noupdate -group ddr3 -expand /testbench/du_e/ddr3_dqs
 add wave -noupdate -group ddr3 -radix hexadecimal /testbench/du_e/ddr3_dq
 add wave -noupdate -group ddr3 /testbench/du_e/ddr3_odt
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -expand -group mii_ipoe /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethrx_e/fcs_sb
-add wave -noupdate -expand -group mii_ipoe /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethrx_e/fcs_vld
-add wave -noupdate -expand -group mii_ipoe -radix hexadecimal /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethrx_e/fcs_rem
+add wave -noupdate -group mii_ipoe /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethrx_e/fcs_sb
+add wave -noupdate -group mii_ipoe /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethrx_e/fcs_vld
+add wave -noupdate -group mii_ipoe -radix hexadecimal /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethrx_e/fcs_rem
 add wave -noupdate -group arpd_e -expand -group arprx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arpd_e/arprx_e/mii_clk
 add wave -noupdate -group arpd_e -expand -group arprx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arpd_e/arprx_e/arp_frm
 add wave -noupdate -group arpd_e -expand -group arprx_e /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/arpd_e/arprx_e/arp_irdy
@@ -220,8 +220,10 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/ipoe_b/mii_req
+add wave -noupdate /testbench/ipoe_b/mii_req1
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {11313440570 fs} 0}
+WaveRestoreCursors {{Cursor 1} {23423605754 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 298
 configure wave -valuecolwidth 118
@@ -237,4 +239,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {11160500090 fs} {11455499910 fs}
+WaveRestoreZoom {23311372580 fs} {23450735910 fs}

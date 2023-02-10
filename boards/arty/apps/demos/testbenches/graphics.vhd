@@ -34,7 +34,7 @@ architecture arty_graphics of testbench is
 
 	constant ddr_period : time := 6 ns;
 	constant bank_bits  : natural := 3;
-	constant addr_bits  : natural := 15;
+	constant addr_bits  : natural := 16;
 	constant cols_bits  : natural := 10;
 	constant data_bytes : natural := 2;
 	constant byte_bits  : natural := 8;
@@ -130,7 +130,7 @@ architecture arty_graphics of testbench is
 			cas_n : in std_logic;
 			we_n  : in std_logic;
 			ba    : in std_logic_vector(3-1 downto 0);
-			addr  : in std_logic_vector(15-1 downto 0);
+			addr  : in std_logic_vector(16-1 downto 0);
 			dm_tdqs : in std_logic_vector(2-1 downto 0);
 			dq    : inout std_logic_vector(16-1 downto 0);
 			dqs   : inout std_logic_vector(2-1 downto 0);
@@ -159,22 +159,40 @@ begin
 	mii_txc <= mii_refclk;
 
 
-	mii_req  <= '0', '1' after 30 us, '0' after 35 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
---	mii_req1 <= '0', '1' after 14.5 us, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
-	process
+	ipoe_b : block
+		signal mii_req    : std_logic := '0';
+    	signal ping_req   : std_logic := '0';
+		signal mii_req1   : std_logic := '0';
+		signal req         : std_logic;
+		signal datarx_null :  std_logic_vector(mii_rxd'range);
+		signal x : natural := 0;
+
+
 	begin
-		wait for 35 us;
-		loop
-			if rep_req='1' then
-				wait;
-				rep_req <= '0' after 5.8 us;
-			else
-				rep_req <= '1' after 250 ns;
-			end if;
-			wait on rep_req;
-		end loop;
-	end process;
-	mii_req1 <= rep_req;
+
+    	process
+    	begin
+    		req <= '0';
+    		wait for 10 us;
+    		loop
+    			if req='1' then
+    				wait on mii_rxdv;
+    				if falling_edge(mii_rxdv) then
+    					req <= '0';
+    					x <= x + 1;
+    					wait for 12 us;
+    				end if;
+    			else
+    				if x > 1 then
+    					wait;
+    				end if;
+    				req <= '1';
+    				wait on req;
+    			end if;
+    		end loop;
+    	end process;
+    	mii_req  <= req when x=0 else '0';
+    	mii_req1 <= req when x=1 else '0';
 
 	htb_e : entity hdl4fpga.eth_tb
 	generic map (
@@ -221,16 +239,26 @@ begin
 		x"1702_0003ff_1603_0007_3000",
 		mii_data5 => x"010000_1702_0003ff_1603_8007_3000",
 --		mii_data4 => x"01007e_1702_000030_1603_8000_07d0",
-		mii_frm1 => '0',
-		mii_frm2 => '0', --ping_req,
+		mii_frm1 => mii_req, --'0',
+		mii_frm2 => mii_req1, -- '0', --ping_req,
 		mii_frm3 => '0',
-		mii_frm4 => mii_req,
-		mii_frm5 => mii_req1,
+		mii_frm4 => '0', --mii_req,
+		mii_frm5 => '0', --mii_req1,
 
 		mii_txc  => mii_rxc,
 		mii_txen => mii_rxdv,
 		mii_txd  => mii_rxd);
 
+		ethrx_e : entity hdl4fpga.eth_rx
+		port map (
+			dll_data   => datarx_null,
+			mii_clk    => mii_txc,
+			mii_frm    => mii_txen,
+			mii_irdy   => mii_txen,
+			mii_data   => mii_txd);
+
+
+	end block;
 	du_e : arty
 	generic map (
 		debug => true)
@@ -270,14 +298,6 @@ begin
 		ddr3_dq    => dq,
 		ddr3_dm    => dm,
 		ddr3_odt   => odt);
-
-	ethrx_e : entity hdl4fpga.eth_rx
-	port map (
-		dll_data   => datarx_null,
-		mii_clk    => mii_txc,
-		mii_frm    => mii_txen,
-		mii_irdy   => mii_txen,
-		mii_data   => mii_txd);
 
 	mt_u : ddr3_model
 	port map (
