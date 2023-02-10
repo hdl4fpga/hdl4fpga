@@ -117,7 +117,6 @@ architecture def of mii_ipoe is
 	signal ethtx_end      : std_logic;
 	signal ethtx_data     : std_logic_vector(miitx_data'range);
 	signal dlltx_irdy     : std_logic;
-	signal dlltx_trdy     : std_logic;
 	signal dlltx_end      : std_logic;
 	signal dlltx_data     : std_logic_vector(miitx_data'range);
 
@@ -396,7 +395,7 @@ begin
 			si_clk   => mii_clk,
 			si_frm   => ethtx_frm,
 			si_irdy  => dlltx_irdy,
-			si_trdy  => dlltx_trdy,
+			si_trdy  => open,
 			si_full  => dlltx_end,
 			si_data  => dlltx_data,
 

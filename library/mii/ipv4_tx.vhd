@@ -45,7 +45,6 @@ entity ipv4_tx is
 		ipv4_frm       : buffer std_logic;
 
 		dlltx_irdy     : out std_logic;
-		dlltx_trdy     : in  std_logic := '1';
 		dlltx_end      : in  std_logic;
 
 		nettx_irdy     : out std_logic;
@@ -99,7 +98,7 @@ architecture def of ipv4_tx is
 begin
 
 	pl_trdy <= 
-		dlltx_trdy when    dlltx_end='0' else
+		ipv4_trdy  when    dlltx_end='0' else
 		nettx_trdy when    nettx_end='0' else
 		'0'        when ipv4chsm_end='0' else
 		'0'        when    ipv4a_end='0' else
@@ -113,7 +112,9 @@ begin
 				case state is
 				when s_ipv4a =>
 					if ipv4a_end='1' then
-						cntr := cntr - 1;
+						if (ipv4_trdy and pl_irdy)='1' then
+							cntr := cntr - 1;
+						end if;
 						state <= s_ipv4hdr;
 					end if;
 				when s_ipv4hdr =>
@@ -196,7 +197,7 @@ begin
 		end if;
 	end process;
 
-	dlltx_irdy <= pl_irdy;
+	dlltx_irdy <= pl_irdy and ipv4_trdy;
 	nettx_irdy <= pl_irdy when dlltx_end='1' else '0';
 	ipv4a_irdy <= 
 		'0' when dlltx_end='0'    else 
@@ -207,7 +208,7 @@ begin
 	ipv4proto_irdy <= ipv4_trdy when ipv4proto_frm='1' else '0';
 	ipv4len_irdy   <= ipv4_trdy when   ipv4len_frm='1' else '0';
 	ipv4_irdy <= 
-		'0'            when     dlltx_end='0' else 
+		pl_irdy        when     dlltx_end='0' else 
 		'0'            when (state=s_ipv4a and ipv4a_end='0') else
 		ipv4shdr_trdy  when  ipv4shdr_end='0' else
 		ipv4proto_trdy when ipv4proto_end='0' else

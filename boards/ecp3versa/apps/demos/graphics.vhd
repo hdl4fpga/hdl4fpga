@@ -56,7 +56,7 @@ architecture graphics of ecp3versa is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app_profile  : app_profiles := mii_500MHz_1080p24bpp30;
+	constant app_profile  : app_profiles := mii_350MHz_1080p24bpp30;
 	---------------------------------------------
 
 	type profile_params is record

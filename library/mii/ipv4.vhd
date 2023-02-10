@@ -83,7 +83,6 @@ entity ipv4 is
 		pltx_data     : in  std_logic_vector;
 
 		dlltx_irdy    : out  std_logic;
-		dlltx_trdy    : in   std_logic := '1';
 		dlltx_data    : out  std_logic_vector;
 		dlltx_end     : in   std_logic;
 
@@ -336,11 +335,9 @@ begin
 	end block;
 
 	arbiter_b : block
-		signal dev_req          : std_logic_vector(0 to 2-1);
-		signal dev_gnt          : std_logic_vector(0 to 2-1);
-		signal gnt          : std_logic_vector(0 to 2-1);
-
-		signal icmpiplentx_irdy : std_logic;
+		signal dev_req : std_logic_vector(0 to 2-1);
+		signal dev_gnt : std_logic_vector(0 to 2-1);
+		signal gnt     : std_logic_vector(0 to 2-1);
 
 	begin
 
@@ -530,7 +527,6 @@ begin
 
 		ipv4_frm       => ipv4tx_frm,
 
-		dlltx_trdy     => dlltx_trdy,
 		dlltx_end      => dlltx_end,
 
 		nettx_irdy     => nettx_irdy,
@@ -624,7 +620,7 @@ begin
 			o_data => icmptx_data,
 			o_end  => icmptx_end);
 
-		icmpdlltx_irdy <= icmptx_irdy;
+		icmpdlltx_irdy <= icmptx_irdy and icmptx_trdy;
 		icmpdlltx_data <= icmptx_data;
 		icmplentx_irdy <= icmptx_irdy when dlltx_end='1' else '0';
 		icmpdatx_irdy  <= icmptx_irdy when icmplentx_end='1' else '0';
