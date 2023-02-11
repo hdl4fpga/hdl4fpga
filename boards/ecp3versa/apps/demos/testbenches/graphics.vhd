@@ -218,15 +218,15 @@ begin
 		port map (
 			mii_data4 => snd_data,
 			mii_data5 => req_data,
-			mii_frm1 => mii_req, -- arp
-			mii_frm2 => mii_req1, -- ping
-			mii_frm3 => '0',
-			mii_frm4 =>  '0', --mii_req, -- write
-			mii_frm5 =>  '0', --mii_req1, -- read
+			mii_frm1  => '0', 
+			mii_frm2  => '0', --mii_req1, -- ping
+			mii_frm3  => '0', -- mii_req, -- arp'0',
+			mii_frm4  => '0', --mii_req, -- write
+			mii_frm5  => '0', --mii_req1, -- read
 	
-			mii_txc  => mii_rxc,
-			mii_txen => mii_rxdv,
-			mii_txd  => mii_rxd);
+			mii_txc   => mii_rxc,
+			mii_txen  => mii_rxdv,
+			mii_txd   => mii_rxd);
 
 		ethrx_e : entity hdl4fpga.eth_rx
 		port map (
@@ -238,7 +238,7 @@ begin
 
 	end block;
 
-	fpga_gsrn <= '1', '1' after 20 us;
+	fpga_gsrn <= '1', '0' after 10 us;
 	du_e : ecp3versa
 	generic map (
 		debug => debug)
