@@ -931,11 +931,11 @@ begin
 		begin
 			for i in tab'range loop
 				retval(i) := tab(i).value;
-				assert false
-				report "tid "           &
-					tids'image(tids'val(i)) & " is value  " &
-					natural'image(retval(i))
-				severity note;
+--				assert false
+--				report "tid "           &
+--					tids'image(tids'val(i)) & " is value  " &
+--					natural'image(retval(i))
+--				severity note;
 
 			end loop;
 			return retval;

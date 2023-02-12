@@ -563,7 +563,7 @@ begin
 	begin
 		oddr_g : for i in sdram_dqo'range generate
 
-			signal dqo : std_logic_vector(0 to data_gear-1);
+			signal dqo : std_logic_vector(data_gear-1 downto 0);
 			signal dqt : std_logic_vector(sys_dqt'range);
 			signal sw  : std_logic;
 		begin
@@ -577,12 +577,12 @@ begin
 
 			process (sw, clk90)
 			begin
-				for j in 0 to data_gear-1 loop
+				for j in dqo'range loop
 					if sw='1' then
 						if j mod 2=0 then
-							dqo(j) <= '0';
-						else
 							dqo(j) <= '1';
+						else
+							dqo(j) <= '0';
 						end if;
 					elsif not register_on then
 						dqo(j) <= sys_dqi(byte_size*j+i);

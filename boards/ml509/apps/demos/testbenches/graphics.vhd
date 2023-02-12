@@ -37,7 +37,7 @@ architecture ml509_graphics of testbench is
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 14;
 	constant cols_bits  : natural := 9;
-	constant data_bytes : natural := 2;
+	constant data_bytes : natural := 8;
 	constant byte_bits  : natural := 8;
 	constant timer_dll  : natural := 9;
 	constant timer_200u : natural := 9;
@@ -189,6 +189,7 @@ architecture ml509_graphics of testbench is
 	signal sw : std_logic;
 	signal x : natural := 0;
 	signal dmi : std_logic_vector(dm'range);
+	signal gpio_sw_n : std_logic; 
 begin
 
 	rst   <= '1', '0' after 1.1 us, '1' after 42 us, '0' after 43 us;
@@ -272,7 +273,7 @@ begin
 		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_0003ff_1603_0000_0000",
+		x"1702_00000f_1603_0000_0000",
 		-- mii_data4 => x"01007e_1702_00000f_1603_8000_0000",
 		mii_data5 => x"010000_1702_00001f_1603_8000_01f8", -- 1f8
 		mii_frm1 => '0', --mii_req,
@@ -285,6 +286,7 @@ begin
 		mii_txen => mii_rxdv,
 		mii_txd  => mii_rxd);
 
+	gpio_sw_n <= '0', '1' after 5 us;
 	du_e : ml509
 	generic map (
 		debug => true)
@@ -307,6 +309,7 @@ begin
 		ddr2_odt       => odt,
 
 		gpio_sw_c      => sw,
+		gpio_sw_n      => gpio_sw_n,
 		gpio_sw_w      => '1',
 		phy_rxclk      => mii_rxc,
 		phy_rxctl_rxdv => mii_rxdv,

@@ -46,6 +46,7 @@ entity dhcpc_dscb is
 		netdatx_end   : in  std_logic;
 		netlentx_irdy : out std_logic := '1';
 		netlentx_end  : in  std_logic;
+		netlentx_data : out std_logic_vector;
 		nettx_end     : in  std_logic;
 
 		dhcpdscb_irdy : out std_logic;
@@ -136,11 +137,13 @@ begin
 
 	dlltx_irdy    <= dhcpdscb_trdy;
 	netlentx_irdy <= dhcpdscb_trdy when    dlltx_end='1' else '0';
+	netlentx_data <= dhcppkt_data;
 	netdatx_irdy  <= dhcpdscb_trdy when netlentx_end='1' else '0';
 
 	dhcpdscb_irdy <= 
-		'1' when    dlltx_end='0' else
-		dhcppkt_trdy when netlentx_end='1' else '0';
+		'1'          when    dlltx_end='0' else
+		dhcppkt_trdy when netlentx_end='1' else
+		'0';
 
 	dhcpdscb_end <=
 		'0' when netdatx_end='0' else

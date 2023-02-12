@@ -131,12 +131,13 @@ architecture xilinx of xc_sdrphy is
 	subtype bline_word is std_logic_vector(data_gear-1 downto 0);
 	type bline_vector is array (natural range <>) of bline_word;
 
+
 	function to_bytevector (
-		constant arg : std_logic_vector)
+		constant arg : std_logic_vector) 
 		return byte_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : byte_vector(arg'length/byte'length-1 downto 0);
-	begin
+	begin	
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
 			val(i) := std_logic_vector(dat(byte'range));
@@ -146,11 +147,11 @@ architecture xilinx of xc_sdrphy is
 	end;
 
 	function to_blinevector (
-		constant arg : std_logic_vector)
+		constant arg : std_logic_vector) 
 		return bline_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : bline_vector(arg'length/bline_word'length-1 downto 0);
-	begin
+	begin	
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
 			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
@@ -160,11 +161,11 @@ architecture xilinx of xc_sdrphy is
 	end;
 
 	function to_dlinevector (
-		constant arg : std_logic_vector)
+		constant arg : std_logic_vector) 
 		return dline_vector is
 		variable dat : unsigned(arg'length-1 downto 0);
 		variable val : dline_vector(arg'length/dline_word'length-1 downto 0);
-	begin
+	begin	
 		dat := unsigned(arg);
 		for i in val'reverse_range loop
 			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
@@ -215,49 +216,19 @@ architecture xilinx of xc_sdrphy is
 		return val;
 	end;
 
-	function shuffle_stdlogicvector (
-		constant arg : std_logic_vector)
-		return std_logic_vector is
-		variable dat : std_logic_vector(0 to arg'length-1);
-		variable val : std_logic_vector(dat'range);
-	begin
-		dat := arg;
-		for i in word_size/byte_size-1 downto 0 loop
-			for j in data_gear-1 downto 0 loop
-				val(i*data_gear+j) := dat(j*word_size/byte_size+i);
-			end loop;
-		end loop;
-		return val;
-	end;
-
 	function shuffle_dlinevector (
-		constant arg : std_logic_vector)
+		constant arg : std_logic_vector) 
 		return dline_vector is
-		variable dat : byte_vector(0 to arg'length/byte'length-1);
+		variable dat : byte_vector(arg'length/byte'length-1 downto 0);
 		variable val : byte_vector(dat'range);
-	begin
+	begin	
 		dat := to_bytevector(arg);
 		for i in word_size/byte_size-1 downto 0 loop
-			for j in data_gear-1 downto 0 loop
-				val(i*data_gear+j) := dat(j*word_size/byte_size+i);
+			for j in data_gear*word_size/word_size-1 downto 0 loop
+				val(i*data_gear*word_size/word_size+j) := dat(j*word_size/byte_size+i);
 			end loop;
 		end loop;
 		return to_dlinevector(to_stdlogicvector(val));
-	end;
-
-	function unshuffle(
-		constant arg : dline_vector)
-		return byte_vector is
-		variable val : byte_vector(sys_dqi'length/byte_size-1 downto 0);
-		variable aux : byte_vector(0 to data_gear-1);
-	begin
-		for i in arg'range loop
-			aux := to_bytevector(arg(i));
-			for j in aux'range loop
-				val(j*arg'length+i) := aux(j);
-			end loop;
-		end loop;
-		return val;
 	end;
 
 	signal sdmt       : bline_vector(word_size/byte_size-1 downto 0);
@@ -496,7 +467,7 @@ begin
 
 	end block;
 
-	sdmi  <= to_blinevector(shuffle_stdlogicvector(sys_dmi));
+	sdmi  <= to_blinevector(sys_dmi);
 	ssti  <= to_blinevector(sys_sti);
 	sdmt  <= to_blinevector(sys_dmt);
 	sdqt  <= to_blinevector(sys_dqt);

@@ -164,21 +164,24 @@ architecture def of ipv4 is
 	signal netdatx_end      : std_logic;
 	signal netdatx_irdy     : std_logic;
 	signal netlentx_irdy    : std_logic;
+	signal netlentx_data    : std_logic_vector(ipv4tx_data'range);
 	signal netlentx_end     : std_logic;
 
 	signal icmpdlltx_irdy   : std_logic;
-	signal icmpdlltx_data   : std_logic_vector(dlltx_data'range);
+	signal icmpdlltx_data   : std_logic_vector(ipv4tx_data'range);
 	signal icmpdlltx_end    : std_logic;
 	signal icmplentx_irdy   : std_logic;
 	signal icmplentx_end    : std_logic;
+	signal icmplentx_data   : std_logic_vector(ipv4tx_data'range);
 	signal icmpdatx_irdy    : std_logic;
 	signal icmpdatx_end     : std_logic;
 
 	signal udpdlltx_irdy    : std_logic;
 	signal udpdlltx_end     : std_logic;
-	signal udpdlltx_data    : std_logic_vector(dlltx_data'range);
+	signal udpdlltx_data    : std_logic_vector(ipv4tx_data'range);
 	signal udplentx_irdy    : std_logic;
 	signal udplentx_end     : std_logic;
+	signal udplentx_data    : std_logic_vector(ipv4tx_data'range);
 	signal udpdatx_irdy     : std_logic;
 	signal udpdatx_end      : std_logic;
 
@@ -368,6 +371,7 @@ begin
 		dlltx_data    <= wirebus(icmpdlltx_data & udpdlltx_data, dev_gnt);
 		(icmpdlltx_end, udpdlltx_end) <= dev_gnt and (dev_gnt'range => dlltx_end);
 		netlentx_irdy <= wirebus(icmplentx_irdy & udplentx_irdy, dev_gnt);
+		netlentx_data <= wirebus(icmplentx_data & udplentx_data, dev_gnt);
 		netlentx_end  <= wirebus(icmplentx_end  & udplentx_end,  dev_gnt);
 		netdatx_irdy  <= wirebus(icmpdatx_irdy  & udpdatx_irdy,  dev_gnt);
 
@@ -395,7 +399,8 @@ begin
     			sio_frm  => ipv4pltx_frm,
     			sio_irdy => udplentx_irdy,
     			sio_trdy => open,
-				si_data  => ipv4pltx_data,
+				-- si_data  => ipv4pltx_data,
+				si_data  => udplentx_data,
     			so_data  => so_sum);
     	
 			process (mii_clk)
@@ -444,7 +449,8 @@ begin
 			si_irdy  => icmplentx_irdy,
 			si_trdy  => open,
 			si_full  => icmplentx_end,
-			si_data  => ipv4pltx_data,
+			-- si_data  => ipv4pltx_data,
+			si_data  => icmplentx_data,
 
 			so_clk   => mii_clk,
 			so_frm   => ipv4pltx_frm,
@@ -622,6 +628,7 @@ begin
 
 		icmpdlltx_irdy <= icmptx_irdy and icmptx_trdy;
 		icmpdlltx_data <= icmptx_data;
+		icmplentx_data <= icmptx_data;
 		icmplentx_irdy <= icmptx_irdy when dlltx_end='1' else '0';
 		icmpdatx_irdy  <= icmptx_irdy when icmplentx_end='1' else '0';
 	end block;
@@ -669,6 +676,7 @@ begin
 		netdatx_end   => udpdatx_end,
 		netlentx_irdy => udplentx_irdy,
 		netlentx_end  => udplentx_end,
+		netlentx_data => udplentx_data,
 		nettx_end     => nettx_end,
 
 		udptx_frm     => udptx_frm,

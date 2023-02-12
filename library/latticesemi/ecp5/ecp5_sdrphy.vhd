@@ -66,24 +66,26 @@ entity ecp5_sdrphy is
 		phy_rlrdy : buffer std_logic;
 
 		phy_cs    : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '0');
-		phy_sti   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_sto   : buffer std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_b     : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
-		phy_a     : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
 		phy_cke   : in  std_logic_vector(cmmd_gear-1 downto 0);
 		phy_ras   : in  std_logic_vector(cmmd_gear-1 downto 0);
 		phy_cas   : in  std_logic_vector(cmmd_gear-1 downto 0);
 		phy_we    : in  std_logic_vector(cmmd_gear-1 downto 0);
+		phy_b     : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
+		phy_a     : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
 		phy_odt   : in  std_logic_vector(cmmd_gear-1 downto 0);
+		
 		phy_dmt   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dmi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dmo   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dqt   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dqo   : out std_logic_vector(data_gear*word_size-1 downto 0);
 		phy_dqi   : in  std_logic_vector(data_gear*word_size-1 downto 0);
+		phy_dqo   : out std_logic_vector(data_gear*word_size-1 downto 0);
+
 		phy_dqso  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dqst  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dqsi  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
+		phy_dqst  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		phy_sti   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		phy_sto   : buffer std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
 		sdr_rst   : out std_logic;
 		sdr_ck    : out std_logic;
@@ -210,21 +212,6 @@ architecture ecp5 of ecp5_sdrphy is
 		end loop;
 		return to_dlinevector(to_stdlogicvector(val));
 	end;
-
---	function unshuffle_dlinevector (
---		constant arg : dline_vector) 
---		return std_logic_vectoris
---		variable dat : byte_vector(arg'length/byte'length-1 downto 0);
---		variable val : byte_vector(dat'range);
---	begin	
---		dat := to_bytevector(arg);
---		for i in word_size/byte_size-1 downto 0 loop
---			for j in data_gear*word_size/word_size-1 downto 0 loop
---				val(i*data_gear*word_size/word_size+j) := dat(j*word_size/byte_size+i);
---			end loop;
---		end loop;
---		return to_dlinevector(to_stdlogicvector(val));
---	end;
 
 	signal srst      : std_logic;
 

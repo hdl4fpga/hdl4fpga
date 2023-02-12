@@ -589,6 +589,7 @@ begin
 				end case;
 			end if;
 		end process;
+
 		sync_b : block
 
 			signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);

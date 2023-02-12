@@ -45,14 +45,14 @@ entity udp_tx is
 		udp_frm       : out std_logic;
 
 		dlltx_irdy    : out std_logic;
-		dlltx_end     : in  std_logic := 'U';
+		dlltx_end     : in  std_logic;
 		dlltx_data    : out std_logic_vector;
 
 		netdatx_irdy  : out  std_logic;
 		netdatx_end   : in  std_logic;
 		netlentx_irdy : out  std_logic;
 		netlentx_end  : in  std_logic;
-		nettx_end     : in  std_logic := 'U';
+		netlentx_data : out std_logic_vector;
 
 		tptsp_irdy    : out std_logic;
 		tptsp_end     : in  std_logic;
@@ -60,7 +60,7 @@ entity udp_tx is
 		tptdp_end     : in  std_logic;
 		tptlen_irdy   : buffer std_logic;
 		tptlen_end    : in  std_logic;
-		tpttx_end     : in  std_logic := 'U';
+		tpttx_end     : in  std_logic;
 
 		udpsp_irdy    : out std_logic;
 		udpsp_end     : in  std_logic;
@@ -88,6 +88,7 @@ architecture def of udp_tx is
 	signal cksm_end  : std_logic;
 	signal cksm_data : std_logic_vector(pl_data'range);
 	signal so_sum    : std_logic_vector(pl_data'range);
+	signal so_sum1   : std_logic_vector(pl_data'range);
 
 begin
 
@@ -145,12 +146,20 @@ begin
 		si_data  => pl_data,
 		so_data  => so_sum);
 	
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+		end if;
+	end process;
+			so_sum1 <= so_sum;
+	netlentx_data <= so_sum1;
+
 	dlltx_irdy <= pl_irdy and udp_trdy;
 	dlltx_data <= pl_data;
 	udp_frm <= pl_frm;
 	udp_data <=
 		pl_data     when   tptdp_end='0' else
-		so_sum      when  tptlen_end='0' else
+		so_sum1     when  tptlen_end='0' else
 		udpsp_data  when   udpsp_end='0' else
 		udpdp_data  when   udpdp_end='0' else
 		udplen_data when  udplen_end='0' else

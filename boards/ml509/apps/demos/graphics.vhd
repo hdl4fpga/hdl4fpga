@@ -51,7 +51,7 @@ architecture graphics of ml509 is
 		sdr400MHz_600p);
 
 	----------------------------------------------------------
-	constant app_profile : app_profiles := sdr350Mhz_600p;  --
+	constant app_profile : app_profiles := sdr400Mhz_600p;  --
 	----------------------------------------------------------
 
 	type profileparam_vector is array (app_profiles) of profile_params;
@@ -664,24 +664,23 @@ begin
 		end block;
 
 		dhcp_p : process(mii_txc)
-			type states is (north, south);
+			type states is (s_request, s_wait);
 			variable state : states;
 		begin
 			if rising_edge(mii_txc) then
-				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-					case state is
-					when north =>
-						if gpio_sw_n='1' then 
-							dhcpcd_req <= not dhcpcd_rdy;
-							state := south;
+				case state is
+				when s_request =>
+					if gpio_sw_n='1' then
+						dhcpcd_req <= not dhcpcd_rdy;
+						state := s_wait;
+					end if;
+				when s_wait =>
+					if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+						if gpio_sw_n='0' then
+							state := s_request;
 						end if;
-					when south =>
-						if gpio_sw_s='1' then 
-							dhcpcd_req <= not dhcpcd_rdy;
-							state := north;
-						end if;
-					end case;
-				end if;
+					end if;
+				end case;
 			end if;
 		end process;
 

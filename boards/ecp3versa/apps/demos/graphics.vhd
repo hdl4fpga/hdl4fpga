@@ -56,7 +56,7 @@ architecture graphics of ecp3versa is
 
 	---------------------------------------------
 	-- Set your profile here                   --
-	constant app_profile  : app_profiles := mii_350MHz_1080p24bpp30;
+	constant app_profile  : app_profiles := mii_500MHz_1080p24bpp30;
 	---------------------------------------------
 
 	type profile_params is record
@@ -255,11 +255,10 @@ architecture graphics of ecp3versa is
 	alias ctlr_clk        : std_logic is ctlrpll_sclk;
 
 	alias  sin_clk        : std_logic is phy1_125clk;
-	-- alias  sin_clk        : std_logic is clk;
 
 	attribute oddrapps : string;
 	attribute oddrapps of phy1_gtxclk_i : label is "SCLK_ALIGNED";
-	attribute oddrapps of phy1_txc_i : label is "SCLK_ALIGNED";
+	attribute oddrapps of phy1_txc_i    : label is "SCLK_ALIGNED";
 
 begin
 

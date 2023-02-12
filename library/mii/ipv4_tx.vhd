@@ -151,7 +151,7 @@ begin
 		ipv4shdr_data  when  ipv4shdr_frm='1' else
 		ipv4proto_data when ipv4proto_frm='1' else
 		ipv4len_data   when   ipv4len_frm='1' else
-		(others => '-');
+		(ipv4hdr_data'range => '-');
 
 	cksm_data <= 
 		ipv4a_data   when state=s_ipv4a and ipv4a_end='0' else

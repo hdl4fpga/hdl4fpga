@@ -43,16 +43,17 @@ entity ipv4_adjlen is
 end;
 
 architecture def of ipv4_adjlen is
-	signal si_b      : std_logic_vector(si_data'range);
-	signal si_ci     : std_logic;
-	signal si_co     : std_logic;
-	signal so_sum    : std_logic_vector(so_data'range);
+	signal si_b   : std_logic_vector(si_data'range);
+	signal si_ci  : std_logic;
+	signal si_co  : std_logic;
+	signal so_sum : std_logic_vector(so_data'range);
 
+	constant crtn_data : std_logic_vector := reverse(reverse(adjust), si_b'length);
 begin
 
 	crtnmux_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data => reverse(reverse(adjust), si_b'length),
+		mux_data => crtn_data,
 		sio_clk  => sio_clk,
 		sio_frm  => sio_frm,
 		sio_irdy => sio_irdy,
