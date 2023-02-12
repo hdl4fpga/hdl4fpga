@@ -516,6 +516,8 @@ begin
 	end process;
 
 	rotate_i : entity hdl4fpga.barrel
+	generic map (
+		left => false)
 	port map (
 		shf => rot_val,
 		di  => ctlr_di,
