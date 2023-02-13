@@ -151,7 +151,7 @@ begin
 		if rising_edge(mii_clk) then
 		end if;
 	end process;
-			so_sum1 <= so_sum;
+	so_sum1 <= so_sum;
 
 	netlentx_data <= so_sum1;
 

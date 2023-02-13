@@ -189,22 +189,17 @@ add wave -noupdate -group udptx_e -radix hexadecimal /testbench/du_e/ipoe_b/udpd
 add wave -noupdate -group udptx_e -radix hexadecimal /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/udp_e/udptx_b/udptx_e/so_sum
 add wave -noupdate -group udptx_e -radix hexadecimal /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/udp_e/udptx_b/udptx_e/so_sum1
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/meta_b/ipv4udplen_b/ipv4len_e/si_clk
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/meta_b/ipv4udplen_b/ipv4len_e/si_frm
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/meta_b/ipv4udplen_b/ipv4len_e/si_irdy
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/meta_b/ipv4udplen_b/ipv4len_e/si_trdy
-add wave -noupdate /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/meta_b/ipv4udplen_b/ipv4len_e/si_full
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/meta_b/ipv4udplen_b/ipv4len_e/si_data
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_di_dv
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_di
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/rot_di
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/sys_dqt
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/sys_dqi
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/sys_dqsi
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -227,10 +222,10 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {53657926 ps} 0} {{Cursor 2} {58004243 ps} 0} {{Cursor 3} {12108907 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {53675145 ps} 0} {{Cursor 2} {58036167 ps} 0} {{Cursor 3} {12108907 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 242
-configure wave -valuecolwidth 1298
+configure wave -valuecolwidth 268
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -243,4 +238,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {53532761 ps} {53666697 ps}
+WaveRestoreZoom {58031935 ps} {58061979 ps}
