@@ -152,6 +152,7 @@ begin
 		end if;
 	end process;
 			so_sum1 <= so_sum;
+
 	netlentx_data <= so_sum1;
 
 	dlltx_irdy <= pl_irdy and udp_trdy;
