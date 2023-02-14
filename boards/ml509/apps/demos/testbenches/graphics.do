@@ -221,6 +221,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e/clk0
 add wave -noupdate /testbench/du_e/sdrphy_e/clk90x2
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqspre
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -237,10 +238,10 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {29881350 ps} 0} {{Cursor 2} {58031127 ps} 0}
+WaveRestoreCursors {{Cursor 1} {29881350 ps} 0} {{Cursor 2} {58032580 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 242
-configure wave -valuecolwidth 889
+configure wave -valuecolwidth 378
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -253,4 +254,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {58016551 ps} {58032630 ps}
+WaveRestoreZoom {58018067 ps} {58045117 ps}
