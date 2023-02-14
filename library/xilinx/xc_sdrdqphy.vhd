@@ -300,9 +300,9 @@ begin
 	end process;
 
 	dqsi_b : block
-		signal dqsi     : std_logic;
-		signal dqsi_buf : std_logic;
-		signal dqs_smp  : std_logic_vector(0 to data_gear-1);
+		signal dqsi      : std_logic;
+		signal dqsi_buf  : std_logic;
+		signal dqs_smp   : std_logic_vector(0 to data_gear-1);
 		signal clk90x2_n : std_logic;
 	begin
 
@@ -376,7 +376,7 @@ begin
 		begin
 			adjdqi_b : block
 				signal delay  : std_logic_vector(0 to setif(device=xc7a,5,6)-1);
-				signal dq_smp : std_logic_vector(0 to data_gear-1);
+				signal dq_smp : std_logic_vector(data_gear-1 downto 0);
 				signal ddqi   : std_logic;
 			begin
 	
@@ -461,40 +461,40 @@ begin
 						clkx2 => clk90x2,
 						clk   => clk90,
 						d(0)  => dqi(i),
-						q(0)  => dq(0*byte_size+i),
-						q(1)  => dq(1*byte_size+i),
-						q(2)  => dq(2*byte_size+i),
-						q(3)  => dq(3*byte_size+i));
+						q(0)  => dq(3*byte_size+i),
+						q(1)  => dq(2*byte_size+i),
+						q(2)  => dq(1*byte_size+i),
+						q(3)  => dq(0*byte_size+i));
 			
 					lath_g : entity hdl4fpga.latency
 					generic map (
 						n => 4,
-						d => (0, 0, 0, 1))
+						d => (1, 0, 0, 0))
 					port map (
 						clk   => clk90,
 						di(0) => dq(0*byte_size+i),
 						di(1) => dq(1*byte_size+i),
 						di(2) => dq(2*byte_size+i),
 						di(3) => dq(3*byte_size+i),
-						do(0) => dqh(1*byte_size+i),
-						do(1) => dqh(2*byte_size+i),
-						do(2) => dqh(3*byte_size+i),
-						do(3) => dqh(0*byte_size+i));
+						do(0) => dqh(3*byte_size+i),
+						do(1) => dqh(0*byte_size+i),
+						do(2) => dqh(1*byte_size+i),
+						do(3) => dqh(2*byte_size+i));
 			
 					latf_g : entity hdl4fpga.latency
 					generic map (
 						n => 4,
-						d => (0, 1, 1, 1))
+						d => (1, 1, 1, 0))
 					port map (
 						clk   => clk90,
 						di(0) => dq(0*byte_size+i),
 						di(1) => dq(1*byte_size+i),
 						di(2) => dq(2*byte_size+i),
 						di(3) => dq(3*byte_size+i),
-						do(0) => dqf(3*byte_size+i),
-						do(1) => dqf(0*byte_size+i),
-						do(2) => dqf(1*byte_size+i),
-						do(3) => dqf(2*byte_size+i));
+						do(0) => dqf(1*byte_size+i),
+						do(1) => dqf(2*byte_size+i),
+						do(2) => dqf(3*byte_size+i),
+						do(3) => dqf(0*byte_size+i));
 
 					process(iod_clk) 
 					begin
@@ -505,7 +505,7 @@ begin
 					end process;
 
 					shuffle_g : for j in 0 to data_gear-1 generate
-						sys_dqo(j*byte_size+i) <= multiplex(dqf(j*byte_size+i) & dqh(j*byte_size+i), sel);
+						sys_dqo(j*byte_size+i) <= multiplex(dqh(j*byte_size+i) & dqf(j*byte_size+i), sel);
 					end generate;
 
 				end generate;
