@@ -121,71 +121,6 @@ use hdl4fpga.base.all;
 
 architecture mix of sdram_ctlr is
 
-	function sdram_rotval (
-		constant line_size : natural;
-		constant word_size : natural;
-		constant lat_val : std_logic_vector;
-		constant lat_cod : std_logic_vector;
-		constant lat_tab : natural_vector)
-		return std_logic_vector is
-
-		subtype word is std_logic_vector(unsigned_num_bits(line_size/word_size-1)-1 downto 0);
-		type word_vector is array(natural range <>) of word;
-
-		subtype latword is std_logic_vector(0 to lat_val'length-1);
-		type latword_vector is array (natural range <>) of latword;
-
-		constant algn : natural := unsigned_num_bits(word_size-1);
-
-		function to_latwordvector(
-			constant arg : std_logic_vector)
-			return latword_vector is
-			variable aux : unsigned(0 to arg'length-1);
-			variable val : latword_vector(0 to arg'length/latword'length-1);
-		begin
-			aux := unsigned(arg);
-			for i in val'range loop
-				val(i) := std_logic_vector(aux(latword'range));
-				aux := aux sll latword'length;
-			end loop;
-			return val;
-		end;
-
-		function select_lat (
-			constant lat_val : std_logic_vector;
-			constant lat_cod : latword_vector;
-			constant lat_sch : word_vector)
-			return std_logic_vector is
-			variable val : word;
-		begin
-			val := (others => '-');
-			for i in 0 to lat_tab'length-1 loop
-				if lat_val = lat_cod(i) then
-					for j in word'range loop
-						val(j) := lat_sch(i)(j);
-					end loop;
-				end if;
-			end loop;
-			return val;
-		end;
-
-		constant lc   : latword_vector := to_latwordvector(lat_cod);
-
-		variable sel_sch : word_vector(lc'range);
-		variable val : unsigned(unsigned_num_bits(line_size-1)-1 downto 0) := (others => '0');
-		variable disp : natural;
-
-	begin
-
-		setup_l : for i in 0 to lat_tab'length-1 loop
-			sel_sch(i) := std_logic_vector(to_unsigned(lat_tab(i) mod (line_size/word_size), word'length));
-		end loop;
-
-		val(word'range) := unsigned(select_lat(lat_val, lc, sel_sch));
-		val := val sll algn;
-		return std_logic_vector(val);
-	end;
-
 	constant stdr    : sdram_standards    := sdrmark_standard(chip);
 
 	constant bl_cod  : std_logic_vector := sdram_latcod(stdr, bl);
@@ -416,7 +351,7 @@ begin
 				phy_sto(i*data_gear+j)  <= sdram_sch_st(j);
 				phy_dmo(i*data_gear+j)  <= sdram_wr_dm(i*data_gear+j);
 			end loop;
-			for j in 0 to data_phases-1 loop
+			for j in sdram_sch_wwn'range loop
 				sdram_wenas(i*data_phases+j) <= sdram_sch_wwn(j);
 			end loop;
 		end loop;
@@ -440,7 +375,7 @@ begin
 		sdram_dqsi    => phy_dqsi,
 		sdram_dqi     => phy_dqi);
 
-	sdram_rotval_p : process(ctlr_cwl)
+	sdram_rotval_p : process(sdram_cwl)
 		function sdram_rotval (
 			constant line_size : natural;
 			constant word_size : natural;
@@ -506,13 +441,14 @@ begin
 			return std_logic_vector(val);
 		end;
 
+		constant wwnl_tab : natural_vector := sdram_schtab(stdr, fpga, wwnl);
 	begin
 		rot_val <= sdram_rotval (
 			line_size => data_gear*word_size,
 			word_size => word_size,
-			lat_val   => ctlr_cwl,
+			lat_val   => sdram_cwl,
 			lat_cod   => cwl_cod,
-			lat_tab   => sdram_schtab(stdr, fpga, wwnl)); --wwnl_tab);
+			lat_tab   => wwnl_tab);
 	end process;
 
 	rotate_i : entity hdl4fpga.barrel

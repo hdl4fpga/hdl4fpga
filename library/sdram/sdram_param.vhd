@@ -287,7 +287,7 @@ package body sdram_param is
 
 	function sdram_query_data (
 		constant stdr : sdram_standards;
-		constant rgtr  : sdram_latency_rgtr)
+		constant rgtr : sdram_latency_rgtr)
 		return cfglat_vector is
 		constant query_size : natural := sdram_query_size(stdr, rgtr);
 		variable query_data : cfglat_vector (0 to query_size-1);

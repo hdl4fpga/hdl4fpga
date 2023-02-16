@@ -68,7 +68,7 @@ entity xc_sdrdqphy is
 		write_req  : buffer std_logic;
 		sys_dmt    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_sti    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
-		sys_sto    : out std_logic_vector(data_gear-1 downto 0);
+		sys_sto    : buffer std_logic_vector(data_gear-1 downto 0);
 		sys_dmi    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_dqi    : in  std_logic_vector(data_gear*byte_size-1 downto 0);
 		sys_dqt    : in  std_logic_vector(data_gear-1 downto 0);
@@ -109,8 +109,6 @@ architecture xilinx of xc_sdrdqphy is
 
 	signal dq           : std_logic_vector(sys_dqo'range);
 	signal dqi          : std_logic_vector(sdram_dqi'range);
-	signal dqh          : std_logic_vector(dq'range);
-	signal dqf          : std_logic_vector(dq'range);
 
 	signal dqipause_req : std_logic;
 	signal dqipause_rdy : std_logic;
@@ -128,6 +126,7 @@ architecture xilinx of xc_sdrdqphy is
 	signal step_req : std_logic;
 	signal step_rdy : std_logic;
 
+	signal data_align : std_logic_vector(sys_sti'range);
 begin
 
 	with tp_sel select
@@ -445,8 +444,10 @@ begin
 				end generate;
 	
 				data_gear4_g : if data_gear=4 generate
-					signal sel : std_logic;
 					signal clk90x2_n : std_logic;
+					signal q : std_logic_vector(data_gear-1 downto 0);
+					signal q2 : std_logic_vector(data_gear-1 downto 0);
+					
 				begin
 					clk90x2_n <= not clk90x2;
 					igbx_i : entity hdl4fpga.igbx
@@ -461,77 +462,80 @@ begin
 						clkx2 => clk90x2,
 						clk   => clk90,
 						d(0)  => dqi(i),
-						q(0)  => dq(3*byte_size+i),
-						q(1)  => dq(2*byte_size+i),
-						q(2)  => dq(1*byte_size+i),
-						q(3)  => dq(0*byte_size+i));
+						q     => q);
 			
-					lath_g : entity hdl4fpga.latency
-					generic map (
-						n => 4,
-						d => (1, 0, 0, 0))
-					port map (
-						clk   => clk90,
-						di(0) => dq(0*byte_size+i),
-						di(1) => dq(1*byte_size+i),
-						di(2) => dq(2*byte_size+i),
-						di(3) => dq(3*byte_size+i),
-						do(0) => dqh(3*byte_size+i),
-						do(1) => dqh(0*byte_size+i),
-						do(2) => dqh(1*byte_size+i),
-						do(3) => dqh(2*byte_size+i));
-			
-					latf_g : entity hdl4fpga.latency
-					generic map (
-						n => 4,
-						d => (1, 1, 1, 0))
-					port map (
-						clk   => clk90,
-						di(0) => dq(0*byte_size+i),
-						di(1) => dq(1*byte_size+i),
-						di(2) => dq(2*byte_size+i),
-						di(3) => dq(3*byte_size+i),
-						do(0) => dqf(1*byte_size+i),
-						do(1) => dqf(2*byte_size+i),
-						do(2) => dqf(3*byte_size+i),
-						do(3) => dqf(0*byte_size+i));
-
-					process(iod_clk) 
+					process (q, data_align)
+						variable data : unsigned(q'range);
 					begin
-						if rising_edge(iod_clk) then
-							-- sel <= dqspre xnor dqs180;
-							sel <= dqspre;
-						end if;
+						data := unsigned(q);
+						for j in data_align'range loop
+							if data_align(j)='0' then
+								data := data rol 1;
+							else
+								exit;
+							end if;
+						end loop;
+						q2 <= std_logic_vector(data);
 					end process;
 
 					shuffle_g : for j in 0 to data_gear-1 generate
-						sys_dqo(j*byte_size+i) <= multiplex(dqh(j*byte_size+i) & dqf(j*byte_size+i), sel);
+						dq(j*byte_size+i) <= q(j);
+						sys_dqo(j*byte_size+i) <= q2(j);
 					end generate;
-
 				end generate;
 			end generate;
 		end generate;
 	
 		sto_b : block
-			signal sti : std_logic;
 		begin
 			igbx_g : if not bypass generate
+				data_gear4_g : if data_gear=4 generate
+					signal clk90x2_n : std_logic;
+				begin
+					clk90x2_n <= not clk90x2;
+					igbx_i : entity hdl4fpga.igbx
+					generic map (
+						device => device,
+						size => 1,
+						gear => data_gear)
+					port map (
+						rst   => rst,
+						-- sclk  => clk90x2_n,
+						sclk  => clk0x2,
+						clkx2 => clk90x2,
+						clk   => clk90,
+						d(0)  => sdram_dmi);
+				end generate;
+			
 				gbx4_g : if data_gear=4 generate
+					signal sti : std_logic_vector(sys_sti'range);
+				begin
+					lat_e : entity hdl4fpga.latency
+					generic map (
+						n => data_gear,
+						d => (0 to data_gear-1 => 2))
+					port map (
+						clk => clk90,
+						di => sys_sti,
+						do => sys_sto);
+
 					process (clk90)
-						variable q : std_logic;
+						variable ena : std_logic;
 					begin
 						if rising_edge(clk90) then
-							-- if dqs180='1' then
-								sys_sto <= (others => dqssto);
-							-- else
-								-- sys_sto <= (others => q);
-							-- end if;
-							q := dqssto;
+							if sys_sti=(sys_sti'range => '0') then
+								ena := '1';
+							elsif ena='1' then
+								ena:= '0';
+								data_align <= reverse(sys_sti);
+							end if;
 						end if;
 					end process;
+
 				end generate;
 
 				gbx2_g : if data_gear=2 generate
+					signal sti : std_logic;
 					signal clk : std_logic;
 				begin
 					clk <= not sdram_dqsi;
@@ -559,7 +563,7 @@ begin
 	end block;
 
 	datao_b : block
-		constant register_on : boolean := device=xc5v or device=xc7a;
+		constant register_on : boolean := device=xc7a;
 	begin
 		oddr_g : for i in sdram_dqo'range generate
 
@@ -575,7 +579,7 @@ begin
 				end if;
 			end process;
 
-			process (sw, clk90)
+			process (sw, sys_dqi, clk90)
 			begin
 				for j in dqo'range loop
 					if sw='1' then
@@ -628,9 +632,9 @@ begin
 			begin
 				for i in dmi'range loop
 					if loopback then
-						dmd(i) <= reverse(sys_dmi)(i);
-					elsif sys_dmt(i)='1' then
 						dmd(i) <= reverse(sys_sti)(i);
+					elsif sys_dmt(i)='1' then
+						dmd(i) <= reverse(sys_dmi)(i);
 					else
 						dmd(i) <= reverse(sys_dmi)(i);
 					end if;
@@ -650,15 +654,15 @@ begin
 			begin
 				if not register_on then
 					if loopback then
-						dmt <= sys_dmt;
-					else
 						dmt <= (others => '0');
+					else
+						dmt <= sys_dmt;
 					end if;
 				elsif rising_edge(clk90) then
 					if loopback then
-						dmt <= sys_dmt;
-					else
 						dmt <= (others => '0');
+					else
+						dmt <= sys_dmt;
 					end if;
 				end if;
 			end process;

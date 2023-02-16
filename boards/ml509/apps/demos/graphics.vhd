@@ -51,7 +51,7 @@ architecture graphics of ml509 is
 		sdr400MHz_600p);
 
 	----------------------------------------------------------
-	constant app_profile : app_profiles := sdr350Mhz_600p;  --
+	constant app_profile : app_profiles := sdr300Mhz_600p;  --
 	----------------------------------------------------------
 
 	type profileparam_vector is array (app_profiles) of profile_params;
@@ -118,11 +118,11 @@ architecture graphics of ml509 is
 		-- Divide by   --   1     --   4     --   4     --   1     --   4     --
 		------------------------------------------------------------------------
 
-		(sdram200MHz, pll => (dcm_mul =>  4, dcm_div => 2), cl => "001"),
-		(sdram225MHz, pll => (dcm_mul =>  9, dcm_div => 4), cl => "010"),
-		(sdram250MHz, pll => (dcm_mul =>  5, dcm_div => 2), cl => "010"),
-		(sdram275MHz, pll => (dcm_mul => 11, dcm_div => 4), cl => "010"),
-		(sdram300MHz, pll => (dcm_mul =>  3, dcm_div => 1), cl => "101"),
+		(sdram200MHz, pll => (dcm_mul =>  4, dcm_div => 2), cl => "011"),
+		(sdram225MHz, pll => (dcm_mul =>  9, dcm_div => 4), cl => "011"),
+		(sdram250MHz, pll => (dcm_mul =>  5, dcm_div => 2), cl => "011"),
+		(sdram275MHz, pll => (dcm_mul => 11, dcm_div => 4), cl => "011"),
+		(sdram300MHz, pll => (dcm_mul =>  3, dcm_div => 1), cl => "110"),
 
 		------------------------------------------------------------------------
 		-- Frequency   -- 333 Mhz -- 350 Mhz -- 375 Mhz -- 400 Mhz -- 425 Mhz --
@@ -130,9 +130,9 @@ architecture graphics of ml509 is
 		-- Divide by   --   3     --   2     --   4     --   1     --   4     --
 		------------------------------------------------------------------------
 
-		(sdram333MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "101"),
-		(sdram350MHz, pll => (dcm_mul =>  7, dcm_div => 2), cl => "110"),
-		(sdram375MHz, pll => (dcm_mul => 15, dcm_div => 4), cl => "111"),
+		(sdram333MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "100"),
+		(sdram350MHz, pll => (dcm_mul =>  7, dcm_div => 2), cl => "101"),
+		(sdram375MHz, pll => (dcm_mul => 15, dcm_div => 4), cl => "110"),
 		(sdram400MHz, pll => (dcm_mul =>  4, dcm_div => 1), cl => "111"));
 
 	function sdramparams (
@@ -197,16 +197,16 @@ architecture graphics of ml509 is
 	-- constant data_phases  : natural := 2;
 
 	constant coln_size    : natural := 10;
-	constant bank_size    : natural := 2;
-	constant addr_size    : natural := 13;
-	-- constant bank_size    : natural := ddr2_ba'length;
-	-- constant addr_size    : natural := ddr2_a'length;
+	-- constant bank_size    : natural := 2;
+	-- constant addr_size    : natural := 13;
+	constant bank_size    : natural := ddr2_ba'length;
+	constant addr_size    : natural := ddr2_a'length;
 
-	constant word_size    : natural := ddr2_d'length;
-	constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
-
-	-- constant word_size    : natural := 8*2;
-	-- constant byte_size    : natural := 8;
+	-- constant word_size    : natural := ddr2_d'length;
+	-- constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
+-- 
+	constant word_size    : natural := 8*2;
+	constant byte_size    : natural := 8;
 
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
@@ -853,11 +853,8 @@ begin
 
 		ctlr_clks     => ctlr_clks(0 to sclk_phases/sclk_edges-1),
 		ctlr_rst      => sdrphy_rst, --ddrsys_rst,
-		ctlr_cwl      => b"0_11",
 		ctlr_rtt      => b"11",
-		ctlr_al       => "001",
-		-- ctlr_wrl      : in  std_logic_vector(0 to 3-1) := "101";
-		-- ctlr_bl       => "010", -- Busrt length 4
+		ctlr_al       => "000",
 		ctlr_bl       => "011", -- Busrt length 8
 		ctlr_cl       => sdram_params.cl,
 		ctlr_cmd      => ctlrphy_cmd,
@@ -1020,6 +1017,7 @@ begin
 	generic map (
 		-- dqs_delay   => (0 => 0.954 ns, 1 => 6.954 ns),
 		-- dqi_delay   => (0 => 0.937 ns, 1 => 6.937 ns),
+		loopback    => true,
 		device      => xc5v,
 		bufio       => false,
 		bypass      => false,
