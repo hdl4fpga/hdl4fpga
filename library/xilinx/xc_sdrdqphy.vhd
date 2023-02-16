@@ -445,10 +445,11 @@ begin
 	
 				data_gear4_g : if data_gear=4 generate
 					signal clk90x2_n : std_logic;
-					signal q : std_logic_vector(data_gear-1 downto 0);
+					signal q1 : std_logic_vector(data_gear-1 downto 0);
 					signal q2 : std_logic_vector(data_gear-1 downto 0);
 					
 				begin
+
 					clk90x2_n <= not clk90x2;
 					igbx_i : entity hdl4fpga.igbx
 					generic map (
@@ -462,12 +463,12 @@ begin
 						clkx2 => clk90x2,
 						clk   => clk90,
 						d(0)  => dqi(i),
-						q     => q);
+						q     => q1);
 			
-					process (q, data_align)
-						variable data : unsigned(q'range);
+					process (q1, data_align)
+						variable data : unsigned(q1'range);
 					begin
-						data := unsigned(q);
+						data := unsigned(q1);
 						for j in data_align'range loop
 							if data_align(j)='0' then
 								data := data rol 1;
@@ -479,7 +480,7 @@ begin
 					end process;
 
 					shuffle_g : for j in 0 to data_gear-1 generate
-						dq(j*byte_size+i) <= q(j);
+						dq(j*byte_size+i)      <= q1(j);
 						sys_dqo(j*byte_size+i) <= q2(j);
 					end generate;
 				end generate;
