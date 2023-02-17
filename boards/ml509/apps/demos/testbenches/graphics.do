@@ -5,6 +5,7 @@ quietly virtual signal -install /testbench/du_e { /testbench/du_e/ddr2_d(7 downt
 quietly virtual signal -install /testbench/du_e/graphics_e {/testbench/du_e/graphics_e/sout_data  } xxx
 quietly virtual signal -install /testbench/du_e/graphics_e { (context /testbench/du_e/graphics_e )( sout_data(7) & sout_data(6) & sout_data(5) & sout_data(4) & sout_data(3) & sout_data(2) & sout_data(1) & sout_data(0) )} rev_soutdata
 quietly virtual signal -install /testbench/du_e { /testbench/du_e/ddr2_d(15 downto 0)} ddr2_d16
+quietly virtual signal -install /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i { (context /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i )(dqspre & dqs180 )} xx
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -expand -group phy_rx /testbench/du_e/phy_rxclk
 add wave -noupdate -expand -group phy_rx /testbench/du_e/phy_rxctl_rxdv
@@ -45,6 +46,9 @@ add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/i_igbx(
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/i_igbx(0)/igbx_g/data_gear4_g/q2
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dq
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sdram_dqi
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/xx
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqspre
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqs180
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -group mii_ipoe /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethrx_e/fcs_sb
 add wave -noupdate -group mii_ipoe /testbench/du_e/ipoe_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ethrx_e/fcs_vld
@@ -239,10 +243,10 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {53668433 ps} 0} {{Cursor 2} {58008850 ps} 0}
+WaveRestoreCursors {{Cursor 1} {58021527 ps} 0} {{Cursor 2} {58035955 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 185
-configure wave -valuecolwidth 347
+configure wave -valuecolwidth 210
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -255,4 +259,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {57986728 ps} {58030972 ps}
+WaveRestoreZoom {58001528 ps} {58069333 ps}
