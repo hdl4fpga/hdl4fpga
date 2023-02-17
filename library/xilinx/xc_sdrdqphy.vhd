@@ -34,8 +34,10 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		dqs_delay  : time := 1.65*1.25 ns;
-		dqi_delay  : time := 1.65*1.25 ns;
+		-- dqs_delay  : time := 1.65*1.25 ns;
+		-- dqi_delay  : time := 1.65*1.25 ns;
+		dqs_delay  : time := 2.9*1000 ns /400/4;
+		dqi_delay  : time := 2.9*1000 ns /400/4;
 
 		loopback   : boolean := false;
 		bypass     : boolean := false;

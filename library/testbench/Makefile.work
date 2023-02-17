@@ -2,8 +2,6 @@
 
 # Define path to each library
 LIB_ECP3 = /opt/diamond/3.11_x64/ispfpga/vhdl/data/ecp3/mti/work
-LIB_SIMPRIM = /opt/Xilinx/14.7/ISE_DS/ISE/vhdl/mti_se/10.1b/lin64/simprim
-LIB_VITAL2000 = /opt/modeltech/linux_x86_64/../vital2000
 LIB_UNISIM = /opt/Xilinx/14.7/ISE_DS/ISE/vhdl/mti_se/10.1b/lin64/unisim
 LIB_STD = /opt/modeltech/linux_x86_64/../std
 LIB_ECP5U = /opt/diamond/3.11_x64/ispfpga/vhdl/data/ecp5u/mti/ecp5u
@@ -18,10 +16,6 @@ HDL4FPGA__ogbx = $(LIB_HDL4FPGA)/ogbx/_primary.dat
 ECP3__components = $(LIB_ECP3)/components/_primary.dat
 HDL4FPGA__ecp3_sdrphy = $(LIB_HDL4FPGA)/ecp3_sdrphy/_primary.dat
 HDL4FPGA__ser_debug = $(LIB_HDL4FPGA)/ser_debug/_primary.dat
-SIMPRIM__vcomponents = $(LIB_SIMPRIM)/vcomponents/_primary.dat
-VITAL2000__vital_timing = $(LIB_VITAL2000)/vital_timing/_primary.dat
-SIMPRIM__vpackage = $(LIB_SIMPRIM)/vpackage/_primary.dat
-VITAL2000__vital_primitives = $(LIB_VITAL2000)/vital_primitives/_primary.dat
 UNISIM__vcomponents = $(LIB_UNISIM)/vcomponents/_primary.dat
 HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
 HDL4FPGA__serdes = $(LIB_HDL4FPGA)/serdes/_primary.dat
@@ -67,14 +61,14 @@ WORK__ulx3s_graphic_structure_md = $(LIB_WORK)/ulx3s_graphic_structure_md/_prima
 WORK__ulx3s_graphic_md = $(LIB_WORK)/ulx3s_graphic_md/_primary.dat
 WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
-WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
-WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
 WORK__testbench__ml509_miiipoe_debug = $(LIB_WORK)/testbench/ml509_miiipoe_debug.dat
 WORK__testbench__s3estarter_graphics = $(LIB_WORK)/testbench/s3estarter_graphics.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
-WORK__testbench__ml509_graphics = $(LIB_WORK)/testbench/ml509_graphics.dat
-WORK__testbench__ecp3versa_graphics = $(LIB_WORK)/testbench/ecp3versa_graphics.dat
+WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
 WORK__testbench__arty_graphics = $(LIB_WORK)/testbench/arty_graphics.dat
+WORK__testbench__ecp3versa_graphics = $(LIB_WORK)/testbench/ecp3versa_graphics.dat
+WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
+WORK__testbench__ml509_graphics = $(LIB_WORK)/testbench/ml509_graphics.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__s3estarter_structure_md = $(LIB_WORK)/s3estarter_structure_md/_primary.dat
 WORK__s3estarter_graphics_md = $(LIB_WORK)/s3estarter_graphics_md/_primary.dat
@@ -88,7 +82,6 @@ WORK__ml509_miiipoedebug_structure_md = $(LIB_WORK)/ml509_miiipoedebug_structure
 WORK__ml509_miiipoedebug_md = $(LIB_WORK)/ml509_miiipoedebug_md/_primary.dat
 WORK__ml509_graphics_structure_md = $(LIB_WORK)/ml509_graphics_structure_md/_primary.dat
 WORK__ml509_graphics_md = $(LIB_WORK)/ml509_graphics_md/_primary.dat
-WORK__ml509__structure = $(LIB_WORK)/ml509/structure.dat
 WORK__ml509__graphics = $(LIB_WORK)/ml509/graphics.dat
 WORK__ml509 = $(LIB_WORK)/ml509/_primary.dat
 WORK__ecp3versa_graphic_structure_md = $(LIB_WORK)/ecp3versa_graphic_structure_md/_primary.dat
@@ -112,14 +105,14 @@ whole_library :     $(WORK__ulx4mld_graphics_structure_md) \
     $(WORK__ulx3s_graphic_md) \
     $(WORK__ulx3s__graphics) \
     $(WORK__ulx3s) \
-    $(WORK__testbench__ulx3s_graphics) \
-    $(WORK__testbench__ulx4mld_graphics) \
     $(WORK__testbench__ml509_miiipoe_debug) \
     $(WORK__testbench__s3estarter_graphics) \
     $(WORK__testbench__nuhs3adsp_graphics) \
-    $(WORK__testbench__ml509_graphics) \
-    $(WORK__testbench__ecp3versa_graphics) \
+    $(WORK__testbench__ulx3s_graphics) \
     $(WORK__testbench__arty_graphics) \
+    $(WORK__testbench__ecp3versa_graphics) \
+    $(WORK__testbench__ulx4mld_graphics) \
+    $(WORK__testbench__ml509_graphics) \
     $(WORK__testbench) \
     $(WORK__s3estarter_structure_md) \
     $(WORK__s3estarter_graphics_md) \
@@ -133,7 +126,6 @@ whole_library :     $(WORK__ulx4mld_graphics_structure_md) \
     $(WORK__ml509_miiipoedebug_md) \
     $(WORK__ml509_graphics_structure_md) \
     $(WORK__ml509_graphics_md) \
-    $(WORK__ml509__structure) \
     $(WORK__ml509__graphics) \
     $(WORK__ml509) \
     $(WORK__ecp3versa_graphic_structure_md) \
@@ -174,7 +166,7 @@ $(WORK__arty__graphics) : ../../boards/arty/apps/demos/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../boards/arty/apps/demos/graphics.vhd
+	$(VCOM) -2002 ../../boards/arty/apps/demos/graphics.vhd
 
 $(WORK__ecp3versa) : ../../boards/ecp3versa/common/ecp3versa.vhd \
 		$(STD__textio) \
@@ -232,17 +224,6 @@ $(WORK__ml509__graphics) : /home/msagre/work/hdl4fpga.dev/boards/ml509/apps/demo
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 /home/msagre/work/hdl4fpga.dev/boards/ml509/apps/demos/graphics.vhd
-
-$(WORK__ml509__structure) : /home/msagre/work/hdl4fpga.dev/boards/ml509/ise/graphics/netgen/par/ml509_timesim.vhd \
-		$(IEEE__numeric_std) \
-		$(WORK__ml509) \
-		$(VITAL2000__vital_primitives) \
-		$(SIMPRIM__vpackage) \
-		$(VITAL2000__vital_timing) \
-		$(SIMPRIM__vcomponents) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga.dev/boards/ml509/ise/graphics/netgen/par/ml509_timesim.vhd
 
 $(WORK__nuhs3adsp) : ../../boards/nuhs3adsp/common/nuhs3adsp.vhd \
 		$(STD__textio) \
@@ -305,12 +286,12 @@ $(WORK__testbench) : testbench.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 testbench.vhd
 
-$(WORK__arty_graphics_md) \
-$(WORK__arty_graphics_structure_md) \
-$(WORK__testbench__arty_graphics) : ../../boards/arty/apps/demos/testbenches/graphics.vhd \
+$(WORK__ml509_graphics_md) \
+$(WORK__ml509_graphics_structure_md) \
+$(WORK__testbench__ml509_graphics) : ../../boards/ml509/apps/demos/testbenches/graphics.vhd \
+		$(WORK__ml509) \
 		$(VERILOG__vl_types) \
-		$(MICRON__ddr3) \
-		$(WORK__arty) \
+		$(MICRON__ddr2) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__eth_rx) \
 		$(HDL4FPGA__eth_tb) \
@@ -320,7 +301,7 @@ $(WORK__testbench__arty_graphics) : ../../boards/arty/apps/demos/testbenches/gra
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base) \
 		$(STD__textio)
-	$(VCOM) -2002 ../../boards/arty/apps/demos/testbenches/graphics.vhd
+	$(VCOM) -2002 ../../boards/ml509/apps/demos/testbenches/graphics.vhd
 
 $(WORK__ecp3versa_graphic_md) \
 $(WORK__ecp3versa_graphic_structure_md) \
@@ -339,12 +320,12 @@ $(WORK__testbench__ecp3versa_graphics) : ../../boards/ecp3versa/apps/demos/testb
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 ../../boards/ecp3versa/apps/demos/testbenches/graphics.vhd
 
-$(WORK__ml509_graphics_md) \
-$(WORK__ml509_graphics_structure_md) \
-$(WORK__testbench__ml509_graphics) : ../../boards/ml509/apps/demos/testbenches/graphics.vhd \
-		$(WORK__ml509) \
+$(WORK__arty_graphics_md) \
+$(WORK__arty_graphics_structure_md) \
+$(WORK__testbench__arty_graphics) : ../../boards/arty/apps/demos/testbenches/graphics.vhd \
 		$(VERILOG__vl_types) \
-		$(MICRON__ddr2) \
+		$(MICRON__ddr3) \
+		$(WORK__arty) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__eth_rx) \
 		$(HDL4FPGA__eth_tb) \
@@ -354,7 +335,7 @@ $(WORK__testbench__ml509_graphics) : ../../boards/ml509/apps/demos/testbenches/g
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base) \
 		$(STD__textio)
-	$(VCOM) -2002 ../../boards/ml509/apps/demos/testbenches/graphics.vhd
+	$(VCOM) -2002 ../../boards/arty/apps/demos/testbenches/graphics.vhd
 
 $(WORK__nuhs3adsp_graphic_structure_md) \
 $(WORK__nuhs3adsp_graphics_md) \

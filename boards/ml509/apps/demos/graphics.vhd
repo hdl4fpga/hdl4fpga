@@ -51,7 +51,7 @@ architecture graphics of ml509 is
 		sdr400MHz_600p);
 
 	----------------------------------------------------------
-	constant app_profile : app_profiles := sdr300Mhz_600p;  --
+	constant app_profile : app_profiles := sdr400Mhz_600p;  --
 	----------------------------------------------------------
 
 	type profileparam_vector is array (app_profiles) of profile_params;
@@ -122,7 +122,7 @@ architecture graphics of ml509 is
 		(sdram225MHz, pll => (dcm_mul =>  9, dcm_div => 4), cl => "011"),
 		(sdram250MHz, pll => (dcm_mul =>  5, dcm_div => 2), cl => "011"),
 		(sdram275MHz, pll => (dcm_mul => 11, dcm_div => 4), cl => "011"),
-		(sdram300MHz, pll => (dcm_mul =>  3, dcm_div => 1), cl => "110"),
+		(sdram300MHz, pll => (dcm_mul =>  3, dcm_div => 1), cl => "111"),
 
 		------------------------------------------------------------------------
 		-- Frequency   -- 333 Mhz -- 350 Mhz -- 375 Mhz -- 400 Mhz -- 425 Mhz --
@@ -202,11 +202,11 @@ architecture graphics of ml509 is
 	constant bank_size    : natural := ddr2_ba'length;
 	constant addr_size    : natural := ddr2_a'length;
 
-	-- constant word_size    : natural := ddr2_d'length;
-	-- constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
--- 
-	constant word_size    : natural := 8*2;
-	constant byte_size    : natural := 8;
+	constant word_size    : natural := ddr2_d'length;
+	constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
+
+	-- constant word_size    : natural := 8*2;
+	-- constant byte_size    : natural := 8;
 
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
@@ -614,27 +614,18 @@ begin
 			rxd_g : for i in mii_rxd'range generate 
 				iddr_i : iddr 
 				port map (
-					c => phy_rxclk_bufg,
+					c  => phy_rxclk_bufg,
 					ce => '1',
-					q1 => rxc_rxbus(i+1),
-					d => phy_rxd(i));
+					d  => phy_rxd(i),
+					q1 => rxc_rxbus(i+1));
 			end generate;
 
 			rxdv_i : iddr 
 			port map (
 				c  => phy_rxclk,
 				ce => '1',
-				q1 => rxc_rxbus(0),
-				d  => mii_rxdv);
-
-			-- process (mii_rxc)
-				-- variable q : std_logic_vector(rxc_rxbus'range);
-			-- begin
-				-- if rising_edge(mii_rxc) then
-					-- rxc_rxbus <= q;
-					-- q := mii_rxdv & mii_rxd;
-				-- end if;
-			-- end process;
+				d  => mii_rxdv,
+				q1 => rxc_rxbus(0));
 
 			rxc2txc_e : entity hdl4fpga.fifo
 			generic map (
@@ -1017,6 +1008,8 @@ begin
 	generic map (
 		-- dqs_delay   => (0 => 0.954 ns, 1 => 6.954 ns),
 		-- dqi_delay   => (0 => 0.937 ns, 1 => 6.937 ns),
+		-- dqs_delay   => (0 => 0 ns, 1 => 0 ns),
+		-- dqi_delay   => (0 => 0 ns, 1 => 0 ns),
 		loopback    => true,
 		device      => xc5v,
 		bufio       => false,
