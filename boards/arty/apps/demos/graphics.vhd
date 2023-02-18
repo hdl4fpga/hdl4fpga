@@ -825,7 +825,7 @@ begin
 		tp_sel    => btn(3),
 		tp        => tp_delay,
 
-		rst       => ddrsys_rst,
+		rst0      => ddrsys_rst,
 		iod_clk   => sys_clk,
 		clk0      => ddr_clk0,
 		clk90     => ddr_clk90,

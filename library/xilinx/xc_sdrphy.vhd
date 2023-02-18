@@ -50,7 +50,8 @@ entity xc_sdrphy is
 		tp_sel     : in  std_logic := '0';
 		tp         : out std_logic_vector(1 to 32);
 
-		rst        : in  std_logic;
+		rst0       : in  std_logic;
+		rst90      : in  std_logic := '-';
 		iod_clk    : in  std_logic;
 		clk0       : in  std_logic := '-';
 		clk90      : in  std_logic := '-';
@@ -295,7 +296,7 @@ begin
 		addr_size => addr_size)
 	port map (
 		clk0    => clk0,
-     	rst     => rst,
+     	rst     => rst0,
 		sys_rst => sys_rst,
 		sys_cs  => sys_cs,
 		sys_cke => sys_cke,
@@ -365,7 +366,7 @@ begin
 			variable sy_rd_req : std_logic_vector(rd_req'range);
 		begin
 			if rising_edge(clk0) then
-				if rst='1' then
+				if rst0='1' then
 					write_rdy <= to_stdulogic(to_bit(write_req));
 					read_rdy  <= to_stdulogic(to_bit(read_req));
 					wr_rdy    <= to_stdlogicvector(to_bitvector(wr_req));
@@ -439,7 +440,7 @@ begin
 			variable state : states;
 		begin
 			if rising_edge(clk0) then
-				if rst='1' then
+				if rst0='1' then
 					phy_ini   <= '0';
 					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 					state := s_init;
@@ -501,7 +502,8 @@ begin
 			tp_sel     => tp_sel,
 			tp_delay   => tp_byte,
 
-			rst        => rst,
+			rst0       => rst0,
+			rst90      => rst90,
 			iod_clk    => iod_clk,
 			clk0       => clk0,
 			clk90      => clk90,

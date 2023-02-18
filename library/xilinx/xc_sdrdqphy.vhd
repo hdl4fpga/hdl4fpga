@@ -36,8 +36,8 @@ entity xc_sdrdqphy is
 	generic (
 		-- dqs_delay  : time := 1.65*1.25 ns;
 		-- dqi_delay  : time := 1.65*1.25 ns;
-		dqs_delay  : time := 2.9*1000 ns /400/4;
-		dqi_delay  : time := 2.9*1000 ns /400/4;
+		dqs_delay  : time := 0*1000 ns /400/4;
+		dqi_delay  : time := 0*1000 ns /400/4;
 
 		loopback   : boolean := false;
 		bypass     : boolean := false;
@@ -51,7 +51,8 @@ entity xc_sdrdqphy is
 		tp_sel     : in  std_logic := '-';
 		tp_delay   : out std_logic_vector(1 to 8);
 
-		rst        : in  std_logic;
+		rst0       : in  std_logic;
+		rst90      : in  std_logic;
 		iod_clk    : in  std_logic;
 		clk0       : in  std_logic := '-';
 		clk90      : in  std_logic := '-';
@@ -70,7 +71,7 @@ entity xc_sdrdqphy is
 		write_req  : buffer std_logic;
 		sys_dmt    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_sti    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
-		sys_sto    : buffer std_logic_vector(data_gear-1 downto 0);
+		sys_sto    : out std_logic_vector(data_gear-1 downto 0);
 		sys_dmi    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_dqi    : in  std_logic_vector(data_gear*byte_size-1 downto 0);
 		sys_dqt    : in  std_logic_vector(data_gear-1 downto 0);
@@ -149,7 +150,7 @@ begin
 			variable sy_read_rdy  : std_logic;
 		begin
 			if rising_edge(iod_clk) then
-				if rst='1' then
+				if rst0='1' then
 					sys_rlrdy <= to_stdulogic(to_bit(sys_rlreq));
 					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
 					adjdqi_req <= to_stdlogicvector(to_bitvector(adjdqi_rdy));
@@ -216,7 +217,7 @@ begin
 			variable sy_dqipau_req : std_logic_vector(dqipau_req'range);
 		begin
 			if rising_edge(iod_clk) then
-				if rst='1' then
+				if rst0='1' then
 					dqipau_rdy <= to_stdlogicvector(to_bitvector(dqipau_req));
 					state := s_idle;
 				else
@@ -251,7 +252,7 @@ begin
 		variable sy_dqspau_req : std_logic;
 	begin
 		if rising_edge(iod_clk) then
-			if rst='1' then
+			if rst0='1' then
 				dqipause_rdy <= to_stdulogic(to_bit(dqipause_req));
 				dqspau_rdy   <= to_stdulogic(to_bit(dqspau_req));
 				state := s_idle;
@@ -284,7 +285,7 @@ begin
 		variable cntr : unsigned(0 to unsigned_num_bits(64-1));
 	begin
 		if rising_edge(iod_clk) then
-			if rst='1' then
+			if rst0='1' then
 				pause_rdy <= to_stdulogic(to_bit(pause_req));
 				cntr := (others => '0');
 			elsif (pause_rdy xor to_stdulogic(to_bit(pause_req)))='1' then
@@ -311,7 +312,7 @@ begin
 		generic map (
 			taps     => taps)
 		port map (
-			rst      => rst,
+			rst      => rst0,
 			edge     => std_logic'('1'),
 			clk      => clk0,
 			req      => adjdqs_req,
@@ -328,7 +329,7 @@ begin
 			device => device,
 			data_gear => data_gear)
 		port map (
-			rst    => rst,
+			rst    => rst0,
 			clk    => clk0,
 			delay  => dqsi_delay,
 			dqsi   => dqsi,
@@ -342,7 +343,7 @@ begin
 			size   => 1,
 			gear   => data_gear)
 		port map (
-			rst   => rst,
+			rst   => rst0,
 			sclk  => clk90x2_n,
 			clkx2 => clk0x2,
 			clk   => clk0,
@@ -356,7 +357,7 @@ begin
 			gear      => data_gear)
 		port map (
 			tp        => tp_dqssel,
-			rst       => rst,
+			rst       => rst0,
 			sdram_clk => clk0,
 			edge      => std_logic'('0'),
 			sdram_sti => sys_sti(0),
@@ -392,7 +393,7 @@ begin
 				generic map (
 					taps     => taps)
 				port map (
-					rst      => rst,
+					rst      => rst90,
 					edge     => std_logic'('1'),
 					clk      => clk90,
 					req      => adjdqi_req(i),
@@ -412,7 +413,7 @@ begin
 					device => device,
 					signal_pattern => "DATA")
 				port map(
-					rst     => rst,
+					rst     => rst90,
 					clk     => clk90,
 					delay   => delay,
 					-- delay   => dqsi_delay,
@@ -434,7 +435,7 @@ begin
 						size => 1,
 						gear => data_gear)
 					port map (
-						rst  => rst,
+						rst  => rst0,
 						clk  => clk0,
 						d(0) => dqi(i),
 						q(0) => dq(0*byte_size+i),
@@ -459,7 +460,7 @@ begin
 						size => 1,
 						gear => data_gear)
 					port map (
-						rst   => rst,
+						rst   => rst90,
 						-- sclk  => clk90x2_n,
 						sclk  => clk0x2,
 						clkx2 => clk90x2,
@@ -502,7 +503,7 @@ begin
 						size => 1,
 						gear => data_gear)
 					port map (
-						rst   => rst,
+						rst   => rst90,
 						-- sclk  => clk90x2_n,
 						sclk  => clk0x2,
 						clkx2 => clk90x2,
@@ -615,7 +616,7 @@ begin
 				data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 				gear => data_gear)
 			port map (
-				rst   => rst,
+				rst   => rst90,
 				clk   => clk90,
 				clkx2 => clk90x2,
 				t     => dqt,
@@ -677,7 +678,7 @@ begin
 				data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 				gear => data_gear)
 			port map (
-				rst   => rst,
+				rst   => rst90,
 				clk   => clk90,
 				clkx2 => clk90x2,
 				t     => dmt,
@@ -699,7 +700,7 @@ begin
 				data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 				gear => data_gear)
 			port map (
-				rst   => rst,
+				rst   => rst90,
 				clk   => clk90,
 				clkx2 => clk90x2,
 				d     => d,
@@ -732,7 +733,7 @@ begin
 			data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 			gear => data_gear)
 		port map (
-			rst   => rst,
+			rst   => rst0,
 			clk   => clk0,
 			clkx2 => clk0x2,
 			t     => dqst,

@@ -601,7 +601,7 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
-		rst         => sdrsys_rst,
+		rst0        => sdrsys_rst,
 		iod_clk     => clk0,
 		clk0        => clk0,
 		clk90       => clk90,

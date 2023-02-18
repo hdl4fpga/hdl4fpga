@@ -277,6 +277,7 @@ architecture graphics of ml509 is
 	signal sys_clks       : std_logic_vector(0 to 5-1);
 	signal phy_rsts       : std_logic_vector(0 to 3-1);
 	signal sdrphy_rst     : std_logic;
+	signal sdrphy_rst90   : std_logic;
 
 	signal iod_rdy        : std_logic;
 
@@ -508,6 +509,17 @@ begin
 					sdrphy_rst <= '1';
 				else
 					sdrphy_rst <= ddrsys_rst;
+				end if;
+			end if;
+		end process;
+
+		process (sys_clk)
+		begin
+			if rising_edge(ddr_clk90) then
+				if ddrsys_rst='1' then
+					sdrphy_rst90 <= '1';
+				else
+					sdrphy_rst90 <= ddrsys_rst;
 				end if;
 			end if;
 		end process;
@@ -1024,7 +1036,8 @@ begin
 	port map (
 		tp_sel     => gpio_sw_w,
 		tp         => tp,
-		rst        => sdrphy_rst,
+		rst0       => sdrphy_rst,
+		rst90      => sdrphy_rst90,
 		iod_clk    => sys_clk,
 		clk0       => ddr_clk0,
 		clk90      => ddr_clk90,

@@ -683,7 +683,7 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
-		rst         => ddrsys_rst,
+		rst0        => ddrsys_rst,
 		iod_clk     => clk0,
 		clk0        => clk0,
 		clk90       => clk90,
