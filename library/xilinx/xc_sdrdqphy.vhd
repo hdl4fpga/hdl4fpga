@@ -382,11 +382,13 @@ begin
 				signal ddqi   : std_logic;
 			begin
 	
-				dqismp_p : process (dq)
+				dqismp_p : process (dq, clk90)
 				begin
+					if rising_edge(clk90) then
 					for j in dq_smp'range loop
 						dq_smp(j) <= dq(j*byte_size+i);
 					end loop;
+					end if;
 				end process;
 	
 				adjdqi_e : entity hdl4fpga.adjpha
@@ -468,18 +470,20 @@ begin
 						d(0)  => dqi(i),
 						q     => q1);
 			
-					process (q1, data_align)
+					process (q1, data_align, clk90)
 						variable data : unsigned(q1'range);
 					begin
-						data := unsigned(q1);
-						for j in data_align'range loop
-							if data_align(j)='0' then
-								data := data rol 1;
-							else
-								exit;
-							end if;
-						end loop;
-						q2 <= std_logic_vector(data);
+						if rising_edge(clk90) then
+							data := unsigned(q1);
+							for j in data_align'range loop
+								if data_align(j)='0' then
+									data := data rol 1;
+								else
+									exit;
+								end if;
+							end loop;
+							q2 <= std_logic_vector(data);
+						end if;
 					end process;
 
 					shuffle_g : for j in 0 to data_gear-1 generate

@@ -54,7 +54,7 @@ entity sdram_ctlr is
 		ctlr_blat    : out std_logic_vector(2 downto 0);
 		ctlr_al      : in  std_logic_vector(3-1 downto 0) := (others => '0');
 		ctlr_bl      : in std_logic_vector(2 downto 0);
-		ctlr_cl      : in std_logic_vector(2 downto 0);
+		ctlr_cl      : in std_logic_vector;
 		ctlr_cwl     : in std_logic_vector(2 downto 0);
 		ctlr_wrl     : in std_logic_vector(2 downto 0);
 		ctlr_rtt     : in std_logic_vector := (0 to 0 => '-');

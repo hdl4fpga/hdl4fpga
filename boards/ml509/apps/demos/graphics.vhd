@@ -51,7 +51,7 @@ architecture graphics of ml509 is
 		sdr400MHz_600p);
 
 	----------------------------------------------------------
-	constant app_profile : app_profiles := sdr400Mhz_600p;  --
+	constant app_profile : app_profiles := sdr333Mhz_600p;  --
 	----------------------------------------------------------
 
 	type profileparam_vector is array (app_profiles) of profile_params;
@@ -130,7 +130,7 @@ architecture graphics of ml509 is
 		-- Divide by   --   3     --   2     --   4     --   1     --   4     --
 		------------------------------------------------------------------------
 
-		(sdram333MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "100"),
+		(sdram333MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "111"),
 		(sdram350MHz, pll => (dcm_mul =>  7, dcm_div => 2), cl => "101"),
 		(sdram375MHz, pll => (dcm_mul => 15, dcm_div => 4), cl => "110"),
 		(sdram400MHz, pll => (dcm_mul =>  4, dcm_div => 1), cl => "111"));
@@ -202,11 +202,11 @@ architecture graphics of ml509 is
 	constant bank_size    : natural := ddr2_ba'length;
 	constant addr_size    : natural := ddr2_a'length;
 
-	constant word_size    : natural := ddr2_d'length;
-	constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
-
-	-- constant word_size    : natural := 8*2;
-	-- constant byte_size    : natural := 8;
+	-- constant word_size    : natural := ddr2_d'length;
+	-- constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
+-- 
+	constant word_size    : natural := 8*2;
+	constant byte_size    : natural := 8;
 
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
@@ -513,7 +513,7 @@ begin
 			end if;
 		end process;
 
-		process (sys_clk)
+		process (ddr_clk90)
 		begin
 			if rising_edge(ddr_clk90) then
 				if ddrsys_rst='1' then
@@ -806,6 +806,7 @@ begin
 
 	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
+		ena_burstref => false,
 		debug => debug,
 		profile      => 1,
 		sdram_tcp    => 2.0*sdram_tcp,

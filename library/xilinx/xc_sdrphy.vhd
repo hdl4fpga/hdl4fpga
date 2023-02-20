@@ -331,11 +331,18 @@ begin
 		signal leveling   : std_logic;
 		signal sdram_act  : std_logic;
 		signal sdram_idle : std_logic;
+		signal swaddress  : std_logic;
 
 	begin
 
-		ddrphy_b <= sys_b when leveling='0' else (others => '0');
-		ddrphy_a <= sys_a when leveling='0' else (others => '0');
+		process (iod_clk)
+		begin
+			if rising_edge(iod_clk) then
+				swaddress <= leveling;
+			end if;
+		end process;
+		ddrphy_b <= sys_b when swaddress='0' else (others => '0');
+		ddrphy_a <= sys_a when swaddress='0' else (others => '0');
 
 		process (phy_trdy, clk0)
 			variable s_pre : std_logic;

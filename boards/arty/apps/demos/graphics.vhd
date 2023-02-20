@@ -348,8 +348,8 @@ begin
 				clkfbin  => ioctrl_clkfb,
 				clkfbout => ioctrl_clkfb,
 				clkout0  => ioctrl_clk,
-				clkout1  => video_clk,
-				clkout2  => video_shf_clk,
+				clkout1  => open, --video_clk,
+				clkout2  => open, --video_shf_clk,
 				locked   => ioctrl_lkd);
 			ioctrl_rst <= not ioctrl_lkd;
 
@@ -409,16 +409,20 @@ begin
 			ctlrphy_dqsi <= (others => ddr_clk90);
 			ddrsys_rst <= not ddr_lkd;
 
-			process(ddr_clk0)
+			process(ddrsys_rst, ddr_clk0)
 			begin
-				if rising_edge(ddr_clk0) then
+				if ddrsys_rst='1' then
+					rst0div_rst <= '1';
+				elsif rising_edge(ddr_clk0) then
 					rst0div_rst <= ddrsys_rst;
 				end if;
 			end process;
 
-			process(ddr_clk90)
+			process(ddrsys_rst, ddr_clk90)
 			begin
-				if rising_edge(ddr_clk90) then
+				if ddrsys_rst='1' then
+					rst90div_rst <= '1';
+				elsif rising_edge(ddr_clk90) then
 					rst90div_rst <= ddrsys_rst;
 				end if;
 			end process;
@@ -732,7 +736,7 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => video_clk,
+		video_clk    => '0', --video_clk,
 		video_hzsync => video_hs,
 		video_vtsync => video_vs,
 		video_blank  => video_blank,
@@ -740,7 +744,7 @@ begin
 		dvid_crgb    => dvid_crgb,
 
 		ctlr_clks(0) => ctlr_clk,
-		ctlr_rst     => ddrsys_rst,
+		ctlr_rst     => rst0div_rst,
 		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
 		ctlr_cwl     => sdram_params.cwl,
@@ -825,7 +829,8 @@ begin
 		tp_sel    => btn(3),
 		tp        => tp_delay,
 
-		rst0      => ddrsys_rst,
+		rst0      => rst0div_rst,
+		rst90     => rst90div_rst,
 		iod_clk   => sys_clk,
 		clk0      => ddr_clk0,
 		clk90     => ddr_clk90,

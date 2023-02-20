@@ -35,25 +35,30 @@ set_input_delay -clock dqso1 -max $ddr_qh [get_ports ddr3_dq[*] ]
 #set_max_delay -datapath_only 0.0 -from [ get_clocks dqso0 ] -to [ get_clocks I* ]
 #set_max_delay -datapath_only 0.0 -from [ get_clocks dqso1 ] -to [ get_clocks I* ]
 
-set_clock_groups -asynchronous -group { ddr_clk0_mmce2 } -group { sys_clk    }
-set_clock_groups -asynchronous -group { ddr_clk0_mmce2 } -group { eth_tx_clk }
+set_clock_groups -asynchronous -group { dcm_b.ddr_b.ddr_clk0_mmce2 } -group { sys_clk    }
+set_clock_groups -asynchronous -group { dcm_b.ddr_b.ddr_clk0_mmce2 } -group { eth_tx_clk }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { ddr_clk0_mmce2 }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { video_clk }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { eth_rx_clk }
-set_clock_groups -asynchronous -group { sys_clk    } -group { ddr_clk0_mmce2  }
-set_clock_groups -asynchronous -group { sys_clk    } -group { ddr_clk90_mmce2 }
+set_clock_groups -asynchronous -group { sys_clk    } -group { dcm_b.ddr_b.ddr_clk0_mmce2  }
+set_clock_groups -asynchronous -group { sys_clk    } -group { dcm_b.ddr_b.ddr_clk90_mmce2 }
 set_clock_groups -asynchronous -group { video_clk  } -group { eth_tx_clk  }
 
 set_clock_groups -asynchronous -group { dqso0      } -group { sys_clk    }
-set_clock_groups -asynchronous -group { dqso0      } -group { ddr_clk0x2_mmce2 }
-set_clock_groups -asynchronous -group { dqso0      } -group { ddr_clk90x2_mmce2 }
+set_clock_groups -asynchronous -group { dqso0      } -group { dcm_b.ddr_b.ddr_clk0x2_mmce2 }
+set_clock_groups -asynchronous -group { dqso0      } -group { dcm_b.ddr_b.ddr_clk90x2_mmce2 }
 
 set_clock_groups -asynchronous -group { dqso1      } -group { sys_clk     }
-set_clock_groups -asynchronous -group { dqso1      } -group { ddr_clk0x2_mmce2 }
-set_clock_groups -asynchronous -group { dqso1      } -group { ddr_clk90x2_mmce2 }
+set_clock_groups -asynchronous -group { dqso1      } -group { dcm_b.ddr_b.ddr_clk0x2_mmce2 }
+set_clock_groups -asynchronous -group { dqso1      } -group { dcm_b.ddr_b.ddr_clk90x2_mmce2 }
 
 set_max_delay 0.0 -from [ get_ports ddr3_dqs_p[*] ]
 
 set_false_path -from [ get_pins graphics_e/sdrctlr_b.sdrctlr_e/rdfifo_i/datadelay_g.bytes_g[*].data_phases_g[*].inbyte_i/phases_g[*].ram_i/ram_g[*].ram_i/DP/CLK ] -to [ get_pins graphics_e/dmactlr_b.dmado_e/delay[*].q_reg[*]/D ]
 set_false_path -from [ get_pins graphics_e/sdrctlr_b.sdrctlr_e/wrfifo_b.wrfifo_i/sdram_fifo_g[*].outbyte_i/phases_g[*].sr_g.gcntr_g[*].ffd_i/ffd_i/C   ] -to [ get_pins sdrphy_e/byte_g[*].sdrdqphy_i/datao_b.oddr_g[*].[*].dqo_reg[*]/D ]
 set_false_path -from [ get_pins graphics_e/sdrctlr_b.sdrctlr_e/wrfifo_b.wrfifo_i/sdram_fifo_g[*].outbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK     ] -to [ get_pins sdrphy_e/byte_g[*].sdrdqphy_i/datao_b.oddr_g[*].[*].dqo_reg[*]/D ]
+
+# set_false_path -from [ get_pins graphics_e/sdrctlr_b.sdrctlr_e/rdfifo_i/datadelay_g.bytes_g[*].data_phases_g[*].inbyte_i/phases_g[*].ram_i/ram_g[*].ram_i/DP/CLK ] -to [ get_pins graphics_e/dmactlr_b.dmado_e/delay[*].q_reg[*]/D ]
+# set_false_path -from [ get_pins graphics_e/sdrctlr_b.sdrctlr_e/wrfifo_b.wrfifo_i/sdram_fifo_g[*].outbyte_i/phases_g[*].sr_g.gcntr_g[*].ffd_i/ffd_i/C   ] -to [ get_pins sdrphy_e/byte_g[*].sdrdqphy_i/datao_b.oddr_g[*].ogbx_i/reg_g[*].oserdese_g.xc7a_g.oser_i/D* ]
+# set_false_path -from [ get_pins graphics_e/sdrctlr_b.sdrctlr_e/wrfifo_b.wrfifo_i/sdram_fifo_g[*].outbyte_i/phases_g[*].ram_i/ram_g[*].ram_i/DP/CLK     ] -to [ get_pins sdrphy_e/byte_g[*].sdrdqphy_i/datao_b.oddr_g[*].ogbx_i/reg_g[*].oserdese_g.xc7a_g.oser_i/D* ]
+# 

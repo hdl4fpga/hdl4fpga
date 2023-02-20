@@ -85,7 +85,7 @@ entity demo_graphics is
 		ctlr_rst      : in  std_logic;
 		ctlr_al       : in  std_logic_vector(3-1 downto 0) := (others => '0');
 		ctlr_bl       : in  std_logic_vector(0 to 3-1);
-		ctlr_cl       : in  std_logic_vector(0 to 3-1);
+		ctlr_cl       : in  std_logic_vector;
 		ctlr_cwl      : in  std_logic_vector(0 to 3-1) := "000";
 		ctlr_wrl      : in  std_logic_vector(0 to 3-1) := "101";
 		ctlr_rtt      : in  std_logic_vector := (0 to 0 => '-');
@@ -262,12 +262,14 @@ begin
 		signal debug_dmaio_rdy    : std_logic;
 
 		constant word_bits    : natural := unsigned_num_bits(ctlr_di'length/byte_size)-1;
+		constant blword_bits  : natural := word_bits+unsigned_num_bits(setif(burst_length=0, data_gear, burst_length)/data_gear-1);
 
 		signal status         : std_logic_vector(0 to 8-1);
 		alias  status_rw      : std_logic is status(status'right);
 
 		signal tp_meta        : std_logic_vector(tp'range);
 	begin
+
 
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
@@ -509,7 +511,7 @@ begin
 				end if;
 			end process;
 
-			process (sout_clk)
+			process (sout_frm, sout_clk)
 				constant pfix_size   : natural := sio_dmaio'length/siobyte_size-2;
 				variable pay_length  : unsigned(trans_length'range);
 				variable data_length : unsigned(pay_length'range);
@@ -528,13 +530,13 @@ begin
 						end if;
 
 						hdr_length  := unsigned(trans_length);
-						hdr_length  := hdr_length srl (8-word_bits);
+						hdr_length  := hdr_length srl (8-blword_bits);
 						hdr_length  := hdr_length + 1;
 						hdr_length  := hdr_length sll 1;
 
 						data_length := unsigned(trans_length);
-						data_length := data_length sll word_bits;
-						data_length := data_length + (pfix_size + 2**word_bits);
+						data_length := data_length sll blword_bits;
+						data_length := data_length + (pfix_size + 2**blword_bits);
 				end if;
 			end process;
 
@@ -608,8 +610,8 @@ begin
 				begin
 					if rising_edge(sout_clk) then
 						length := (others => '1');
-						length := length srl (length'length-unsigned_num_bits(fifo_data'length/sodata_data'length-1));
-						length := length or  (trans_length sll word_bits);
+						length := length srl (length'length-unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length-1));
+						length := length or  (trans_length sll blword_bits);
 						fifo_length <= std_logic_vector(length);
 					end if;
 				end process;

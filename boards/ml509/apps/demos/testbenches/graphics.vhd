@@ -37,7 +37,7 @@ architecture ml509_graphics of testbench is
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 14;
 	constant cols_bits  : natural := 9;
-	constant data_bytes : natural := 8;
+	constant data_bytes : natural := 2; --8;
 	constant byte_bits  : natural := 8;
 	constant timer_dll  : natural := 9;
 	constant timer_200u : natural := 9;
@@ -64,20 +64,22 @@ architecture ml509_graphics of testbench is
 	signal rdqs_n : std_logic_vector(dqs'range);
 	signal odt   : std_logic_vector(2-1 downto 0);
 
-	signal ds   : std_logic_vector(dqs'length-1 downto 0);
-	signal ds_n : std_logic_vector(dqs_n'length-1 downto 0);
+	signal ds    : std_logic_vector(dqs'length-1 downto 0);
+	signal ds_n  : std_logic_vector(dqs_n'length-1 downto 0);
 	signal scl   : std_logic;
 	signal sda   : std_logic;
 
 	signal mii_refclk : std_logic;
-	signal req    : std_logic := '0';
+	signal req        : std_logic := '0';
 	signal mii_req    : std_logic := '0';
 	signal mii_req1   : std_logic := '0';
 	signal ping_req   : std_logic := '0';
 	signal rep_req    : std_logic := '0';
 	signal mii_rxdv   : std_logic;
 	signal mii_rxd    : std_logic_vector(0 to 8-1);
+	signal mii_revrxd : std_logic_vector(0 to 8-1);
 	signal mii_txd    : std_logic_vector(0 to 8-1);
+	signal mii_revtxd : std_logic_vector(0 to 8-1);
 	signal mii_txc    : std_logic;
 	signal mii_rxc    : std_logic;
 	signal mii_txen   : std_logic;
@@ -273,14 +275,14 @@ begin
 		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_00000f_1603_0000_0000",
-		-- mii_data4 => x"01007e_1702_00001f_1603_8000_0000",
-		mii_data5 => x"010000_1702_00000f_1603_8000_0000", -- 1f8
+		x"1702_00001f_1603_0000_0000",
+		-- mii_data4 => x"01007e_1702_000000_1603_8000_0000",
+		mii_data5 => x"010078_1702_000008_1603_8000_0000", -- 1f8
 		mii_frm1 => '0', --mii_req,
 		mii_frm2 => '0',
 		mii_frm3 => '0',
-		mii_frm4 => mii_req,
-		mii_frm5 => mii_req1,
+		mii_frm4 => '0' , --mii_req,
+		mii_frm5 => mii_req,
 
 		mii_txc  => mii_rxc,
 		mii_txen => mii_rxdv,
@@ -321,7 +323,8 @@ begin
 		phy_txd        => mii_txd,
 
 		user_clk       => xtal);
-
+	mii_revrxd <= reverse(mii_rxd);
+	mii_revtxd <= reverse(mii_txd);
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
 		dll_data   => datarx_null,
