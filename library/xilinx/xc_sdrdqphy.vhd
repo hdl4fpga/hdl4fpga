@@ -383,11 +383,13 @@ begin
 			begin
 	
 				dqismp_p : process (dq, clk90)
+					variable q : std_logic_vector(dq_smp'range);
 				begin
 					if rising_edge(clk90) then
-					for j in dq_smp'range loop
-						dq_smp(j) <= dq(j*byte_size+i);
-					end loop;
+						for j in dq_smp'range loop
+							q(j) := dq(j*byte_size+i);
+						end loop;
+					dq_smp <= q;
 					end if;
 				end process;
 	
@@ -521,7 +523,7 @@ begin
 					lat_e : entity hdl4fpga.latency
 					generic map (
 						n => data_gear,
-						d => (0 to data_gear-1 => 2))
+						d => (0 to data_gear-1 => 3))
 					port map (
 						clk => clk90,
 						di => sys_sti,
