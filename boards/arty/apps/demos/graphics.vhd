@@ -260,20 +260,10 @@ architecture graphics of arty is
     signal video_pixel    : std_logic_vector(0 to 32-1);
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
-	signal sin_clk        : std_logic;
-	signal sin_frm        : std_logic;
-	signal sin_irdy       : std_logic;
-	signal sin_data       : std_logic_vector(0 to 8-1); 
-	signal sout_frm       : std_logic;
-	signal sout_irdy      : std_logic;
-	signal sout_trdy      : std_logic;
-	signal sout_data      : std_logic_vector(0 to 8-1);
-
 	alias  mii_txc        : std_logic is eth_tx_clk;
 	alias  sio_clk        : std_logic is mii_txc;
 
 	signal tp  : std_logic_vector(1 to 32);
-	alias data : std_logic_vector(0 to 8-1) is tp(3 to 3+8-1);
 
 	-----------------
 	-- Select link --
@@ -474,20 +464,6 @@ begin
 				if uart_rxdv='1' then
 					q0 := not q0;
 				end if;
-			end if;
-		end process;
-
-		process (dummy_txd ,uart_clk)
-			variable q : std_logic := '0';
-			variable e : std_logic := '1';
-		begin
-			if rising_edge(uart_clk) then
---				led(5) <= q;
-				if (so_frm and not e)='1' then
-					q := not q;
-				end if;
-	--			led(4) <= so_frm;
-				e := so_frm;
 			end if;
 		end process;
 
@@ -926,8 +902,8 @@ begin
 
 	end block;
 
-	process (sys_clk)
-		variable data : std_logic_vector(8-1 downto 0);
+	process (sio_clk, sys_clk)
+		variable e, q : std_logic := '0';
 	begin
 		if rising_edge(sys_clk) then
 			rgbled <= (others => '0');
@@ -937,9 +913,18 @@ begin
 			elsif sw1='1' then
 				(led3_r, led2_r, led1_r, led0_r) <= std_logic_vector'(ctlrphy_rlrdy, ctlrphy_rlreq, ctlrphy_wlrdy, ctlrphy_wlreq);
 			else
-				(led3_b, led2_b, led1_b, led0_b) <= std_logic_vector'(sout_frm, '0', sin_frm, '0');
+				--(led3_b, led2_b, led1_b, led0_b) <= std_logic_vector'(q, '0', si_frm, '0');
+				(led3_b, led2_b, led1_b, led0_b) <= std_logic_vector'(si_frm, si_irdy, si_trdy, si_end);
 			end if;
 		end if;
+
+		if rising_edge(sio_clk) then
+			if (so_frm and not e)='1' then
+				q := not q;
+			end if;
+			e := so_frm;
+		end if;
+
 	end process;
 
 	ddr3_dm <= (others => '0');
