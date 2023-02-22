@@ -127,6 +127,7 @@ begin
 		if rising_edge(sdram_clk) then
 			if rst='1' then
 				sys_rdy <= to_stdulogic(to_bit(sys_req));
+				synced  <= '0';
 				state   := s_init;
 			elsif (sys_rdy xor to_stdulogic(to_bit(sy_sys_req)))='1' then
 				case state is

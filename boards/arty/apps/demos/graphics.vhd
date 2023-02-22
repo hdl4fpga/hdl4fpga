@@ -213,6 +213,7 @@ architecture graphics of arty is
 	signal ctlrphy_wlrdy  : std_logic;
 	signal ctlrphy_rlreq  : std_logic;
 	signal ctlrphy_rlrdy  : std_logic;
+	signal ctlrphy_synced : std_logic;
 
 	signal ddr_ba         : std_logic_vector(ddr3_ba'range);
 	signal ddr_a          : std_logic_vector(ddr3_a'range);
@@ -292,7 +293,7 @@ architecture graphics of arty is
 
 begin
 
-	-- sys_rst <= btn(0);
+	sys_rst <= btn0;
 
 	idelayctrl_i : idelayctrl
 	port map (
@@ -376,7 +377,7 @@ begin
 				clkout3_phase    => 90.0/real((data_gear/2))+270.0)
 			port map (
 				pwrdwn   => '0',
-				rst      => sys_rst,
+				rst      => '0',
 				clkin1   => sys_clk,
 				clkfbin  => ddr_clkfb,
 				clkfbout => ddr_clkfb,
@@ -407,7 +408,7 @@ begin
 				o => ddr_clk90);
 
 			ctlrphy_dqsi <= (others => ddr_clk90);
-			ddrsys_rst <= not ddr_lkd;
+			ddrsys_rst <= not ddr_lkd or sys_rst;
 
 			process(ddrsys_rst, ddr_clk0)
 			begin
@@ -580,13 +581,13 @@ begin
 			if rising_edge(mii_txc) then
 				case state is
 				when s_request =>
-					if btn(0)='1' then
+					if btn1='1' then
 						dhcpcd_req <= not dhcpcd_rdy;
 						state := s_wait;
 					end if;
 				when s_wait =>
 					if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-						if btn(0)='0' then
+						if btn1='0' then
 							state := s_request;
 						end if;
 					end if;
@@ -826,7 +827,7 @@ begin
 		byte_size => byte_size)
 	port map (
 
-		tp_sel    => btn(3),
+		tp_sel    => btn3,
 		tp        => tp_delay,
 
 		rst0      => rst0div_rst,
@@ -848,6 +849,8 @@ begin
 
 		phy_rlreq => ctlrphy_rlreq,
 		phy_rlrdy => ctlrphy_rlrdy,
+
+		phy_synced => ctlrphy_synced,
 
 		sys_cke   => ctlrphy_cke,
 		sys_rst   => ctlrphy_rst,
@@ -923,20 +926,20 @@ begin
 
 	end block;
 
-	process (sw, tp_delay)
+	process (sys_clk)
 		variable data : std_logic_vector(8-1 downto 0);
 	begin
-		rgbled <= (others => '0');
-		data := tp_delay(1 to 8);
-		for i in 0 to 4-1 loop
-			if data(i)='1' then
-				rgbled(3*i+0) <= '1';
+		if rising_edge(sys_clk) then
+			rgbled <= (others => '0');
+			led    <= (others => '0');
+			if sw0='1' then
+				(led3, led2, led1, led0, led3_g, led2_g, led1_g, led0_g) <= tp_delay(1 to 8);
+			elsif sw1='1' then
+				(led3_r, led2_r, led1_r, led0_r) <= std_logic_vector'(ctlrphy_rlrdy, ctlrphy_rlreq, ctlrphy_wlrdy, ctlrphy_wlreq);
+			else
+				(led3_b, led2_b, led1_b, led0_b) <= std_logic_vector'(sout_frm, '0', sin_frm, '0');
 			end if;
-		end loop;
-		led(0) <= data(4);
-		led(1) <= data(5);
-		led(2) <= data(6);
-		led(3) <= data(7);
+		end if;
 	end process;
 
 	ddr3_dm <= (others => '0');
