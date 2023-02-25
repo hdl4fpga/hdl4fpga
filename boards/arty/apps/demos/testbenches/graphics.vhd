@@ -81,8 +81,8 @@ architecture arty_graphics of testbench is
 		generic (
 			debug : boolean := false);
 		port (
-			btn : in std_logic_vector(4-1 downto 0) := (others => '-');
-			sw  : in std_logic_vector(4-1 downto 0) := (others => '-');
+			btn : in std_logic_vector(4-1 downto 0) := (others => '0');
+			sw  : in std_logic_vector(4-1 downto 0) := (others => '0');
 			led : out std_logic_vector(8-1 downto 4);
 			RGBled : out std_logic_vector(4*3-1 downto 0);
 
@@ -238,13 +238,13 @@ begin
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
 		x"1702_000000_1603_0000_0000",
-		mii_data5 => x"010000_1702_000000_1603_8000_0000",
+		mii_data5 => x"010000_1702_000000_1603_8000_0008",
 --		mii_data4 => x"01007e_1702_000030_1603_8000_07d0",
 		mii_frm1 => '0' , ---mii_req, --'0',
 		mii_frm2 => '0' , --mii_req, -- '0', --ping_req,
 		mii_frm3 => '0',
-		mii_frm4 => mii_req,
-		mii_frm5 => mii_req1,
+		mii_frm4 => '0', --mii_req,
+		mii_frm5 => mii_req,
 
 		mii_txc  => mii_rxc,
 		mii_txen => mii_rxdv,
@@ -265,8 +265,6 @@ begin
 	generic map (
 		debug => true)
 	port map (
-		btn(0) => btn0,
-		btn(4-1 downto 1) => (1 to 3 => '-'),
 		sw => "0000",
 
 		gclk100     => xtal,

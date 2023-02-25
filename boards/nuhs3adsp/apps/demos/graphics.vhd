@@ -18,7 +18,7 @@
 -- This source is distributed in the hope that it will be useful, but WITHOUT --
 -- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
 -- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
+-- more details at http://www.gnu.org/lic6enses/.                              --
 --                                                                            --
 
 library ieee;
@@ -604,7 +604,7 @@ begin
 		fifo_size    => 8*2048)
 
 	port map (
-		tpin => "0000",
+		tp_sel       => "0000",
 		sin_clk      => sio_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,

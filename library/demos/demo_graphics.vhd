@@ -60,7 +60,6 @@ entity demo_graphics is
 		blue_length  : natural := 8);
 
 	port (
-		tpin          : in  std_logic_vector(0 to 4-1) := (others => '0');
 		sin_clk       : in  std_logic;
 		sin_frm       : in  std_logic;
 		sin_irdy      : in  std_logic;
@@ -122,6 +121,7 @@ entity demo_graphics is
 		ctlrphy_sto   : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
 		ctlrphy_sti   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
+		tp_sel        : in  std_logic_vector(0 to 4-1) := (others => '0');
 		tp            : out std_logic_vector(1 to 32));
 
 	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length));
@@ -564,6 +564,7 @@ begin
 				signal fifo_length : std_logic_vector(trans_length'range);
 
 				signal dmaso_irdy  : std_logic;
+				signal dmaso_trdy  : std_logic;
 				signal dmaso_data  : std_logic_vector(ctlr_do'range);
 
 			begin
@@ -590,13 +591,14 @@ begin
 				generic map (
 					max_depth  => (dataout_size/(ctlr_di'length/siobyte_size)),
 					async_mode => true,
-					latency    => 2,
+					latency    => 1,
 					gray_code  => false,
 					check_sov  => false,
 					check_dov  => true)
 				port map (
 					src_clk  => ctlr_clk,
 					src_irdy => dmaso_irdy,
+					src_trdy => dmaso_trdy,
 					src_data => dmaso_data,
 
 					dst_clk  => sout_clk,
@@ -633,7 +635,7 @@ begin
 
 				sodata_trdy <=
 					'0' when siodmaio_end='0' else
-					'0' when status_rw='0'    else
+					'0' when    status_rw='0' else
 					sout_trdy;
 
 				sodata_e : entity hdl4fpga.so_data
@@ -653,32 +655,23 @@ begin
 			end block;
 
 			sout_irdy <=
-				meta_trdy     when meta_end='0' else
+				meta_trdy     when     meta_end='0' else
 				siodmaio_trdy when siodmaio_end='0' else
-				'1'           when status_rw='0' else
+				'1'           when    status_rw='0' else
 				sodata_irdy;
 
---			tp(4) <= sout_frm;
---			tp(3) <= sout_trdy;
---			tp(2) <= meta_trdy;
---			tp(1) <= meta_end;
-
-			tp(1) <= sout_frm; --meta_trdy;
-			tp(2) <= siodmaio_trdy;
+			tp(1) <= meta_end;
+			tp(2) <= siodmaio_end;
 			tp(3) <= status_rw;
-			tp(4) <= sodata_irdy;
-			tp(5) <= meta_end;
-			tp(6) <= siodmaio_end;
-			tp(7) <= status_rw;
-			tp(8) <= meta_avail;
+			tp(4) <= sodata_end;
 
 			sout_end  <=
-				'0' when meta_end='0'     else
+				'0' when     meta_end='0' else
 				'0' when siodmaio_end='0' else
-				'1' when status_rw='0'    else
+				'1' when    status_rw='0' else
 				sodata_end;
 			sout_data <=
-				meta_data     when meta_end='0'     else
+				meta_data     when     meta_end='0' else
 				siodmaio_data when siodmaio_end='0' else
 				reverse(sodata_data);
 
@@ -989,7 +982,7 @@ begin
 			word_size    => word_size,
 			byte_size    => byte_size)
 		port map (
---			tpin => tpin,
+--			tp_sel        => tp_sel,
 			ctlr_alat    => ctlr_alat,
 			ctlr_blat    => ctlr_blat,
 			ctlr_al      => ctlr_al,

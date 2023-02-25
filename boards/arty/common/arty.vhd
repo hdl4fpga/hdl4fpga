@@ -39,8 +39,8 @@ entity arty is
 		vaux_n       : in     std_logic_vector(16-1 downto  0) := (others => '-');
 		v_p          : in     std_logic_vector(    0 to   1-1) := (others => '-');
 		v_n          : in     std_logic_vector(    0 to   1-1) := (others => '-');
-		btn          : in     std_logic_vector(  4-1 downto 0) := (others => '-');
-		sw           : in     std_logic_vector(  4-1 downto 0) := (others => '-');
+		btn          : in     std_logic_vector(  4-1 downto 0) := (others => '0');
+		sw           : in     std_logic_vector(  4-1 downto 0) := (others => '0');
 		led          : out    std_logic_vector(  4-1 downto 0);
 		rgbled       : out    std_logic_vector(4*3-1 downto 0);
 

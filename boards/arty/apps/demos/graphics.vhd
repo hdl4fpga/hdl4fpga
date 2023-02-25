@@ -68,8 +68,9 @@ architecture graphics of arty is
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,      timing => pclk_debug,              pll => (dcm_mul => 4, dcm_div => 2)),
-		(id => mode900p24bpp,  timing => pclk108_00m1600x900at60, pll => (dcm_mul => 1, dcm_div => 11)));
+		(id => modedebug,      timing => pclk_debug,               pll => (dcm_mul => 4, dcm_div =>  2)),
+		(id => mode900p24bpp,  timing => pclk108_00m1600x900at60,  pll => (dcm_mul => 1, dcm_div => 11)),
+		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, pll => (dcm_mul => 3, dcm_div =>  1)));
 
 	function videoparam (
 		constant id  : video_modes)
@@ -165,7 +166,8 @@ architecture graphics of arty is
 		sdr575MHz_900p24bpp => (io_ipoe, sdram575MHz, mode900p24bpp),
 		sdr600MHz_900p24bpp => (io_ipoe, sdram600MHz, mode900p24bpp));
 
-	constant video_mode   : video_modes :=setdebug(debug, profile_tab(app_profile).video_mode);
+	-- constant video_mode   : video_modes :=setdebug(debug, profile_tab(app_profile).video_mode);
+	constant video_mode   : video_modes := mode1080p24bpp;
 	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 
@@ -209,6 +211,7 @@ architecture graphics of arty is
 	signal ctlrphy_trdy   : std_logic;
 	signal ctlrphy_ini    : std_logic;
 	signal ctlrphy_rw     : std_logic;
+	signal ctlrphy_inirdy : std_logic;
 	signal ctlrphy_wlreq  : std_logic;
 	signal ctlrphy_wlrdy  : std_logic;
 	signal ctlrphy_rlreq  : std_logic;
@@ -252,34 +255,38 @@ architecture graphics of arty is
 	alias  sys_clk        : std_logic is gclk100;
 	alias  ctlr_clk       : std_logic is ddr_clk0;
 	signal video_clk      : std_logic := '0';
-	signal video_lck      : std_logic := '0';
 	signal video_shf_clk  : std_logic := '0';
+	signal video_lck      : std_logic := '0';
 	signal video_hs       : std_logic;
 	signal video_vs       : std_logic;
     signal video_blank    : std_logic;
     signal video_pixel    : std_logic_vector(0 to 32-1);
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
+	signal dd_clk      : std_logic := '0';
+	signal dd_hs       : std_logic;
+	signal dd_vs       : std_logic;
+    signal dd_pixel   : std_logic_vector(0 to 3-1);
+
 	alias  mii_txc        : std_logic is eth_tx_clk;
 	alias  sio_clk        : std_logic is mii_txc;
-
-	signal tp  : std_logic_vector(1 to 32);
 
 	-----------------
 	-- Select link --
 	-----------------
 
-	constant io_link     : io_comms := profile_tab(app_profile).comms;
+	constant io_link    : io_comms := profile_tab(app_profile).comms;
 
-	constant mem_size : natural := 8*(1024*8);
+	constant mem_size   : natural := 8*(1024*8);
 
-	signal rst0div_rst : std_logic;
+	signal rst0div_rst  : std_logic;
 	signal rst90div_rst : std_logic;
-	signal ioctrl_rst : std_logic;
-	signal ioctrl_clk : std_logic;
-	signal ioctrl_rdy : std_logic;
+	signal ioctrl_rst   : std_logic;
+	signal ioctrl_clk   : std_logic;
+	signal ioctrl_rdy   : std_logic;
 
-	signal tp_delay   : std_logic_vector(1 to 32);
+	signal tp_sdrphy    : std_logic_vector(1 to 32);
+	signal tp_demographics : std_logic_vector(1 to 32);
 
 begin
 
@@ -318,31 +325,44 @@ begin
 		constant clk270div : natural := 5;
 	begin
 
-		ioctrl_b : block
-			signal video_clk_mmce2 : std_logic;
-			signal video_shf_clk_mmce2 : std_logic;
-			signal ioctrl_clkfb  : std_logic;
-			signal ioctrl_lkd    : std_logic;
+		video_b : block
+			signal clkfb  : std_logic;
 		begin
-			ioctrl_i :  mmcme2_base
+			pll_i :  plle2_base
 			generic map (
-				clkfbout_mult_f => 10.75,		-- 200 MHz
-				clkin1_period => sys_per*1.0e9,
-				clkout0_divide_f => 5.375,
-				clkout1_divide   => 10,
-				clkout2_divide   => 2,
-				bandwidth => "LOW")
+				clkin1_period  => sys_per*1.0e9,
+				clkfbout_mult  => 12,
+				clkout0_divide => 8)
 			port map (
 				pwrdwn   => '0',
 				rst      => sys_rst,
 				clkin1   => sys_clk,
-				clkfbin  => ioctrl_clkfb,
-				clkfbout => ioctrl_clkfb,
+				clkfbin  => clkfb,
+				clkfbout => clkfb,
+				clkout0  => dd_clk,
+				clkout1  => open,
+				locked   => video_lck);
+
+		end block;
+
+		ioctrl_b : block
+			signal clkfb  : std_logic;
+			signal locked : std_logic;
+		begin
+			pll_i :  plle2_base
+			generic map (
+				clkin1_period  => sys_per*1.0e9,
+				clkfbout_mult  => 12,
+				clkout0_divide => 6)
+			port map (
+				pwrdwn   => '0',
+				rst      => sys_rst,
+				clkin1   => sys_clk,
+				clkfbin  => clkfb,
+				clkfbout => clkfb,
 				clkout0  => ioctrl_clk,
-				clkout1  => open, --video_clk,
-				clkout2  => open, --video_shf_clk,
-				locked   => ioctrl_lkd);
-			ioctrl_rst <= not ioctrl_lkd;
+				locked   => locked);
+			ioctrl_rst <= not locked;
 
 		end block;
 
@@ -692,6 +712,7 @@ begin
 		word_size    => word_size,
 		byte_size    => byte_size,
 
+		ena_burstref => false,
 		timing_id    => videoparam(video_mode).timing,
 		red_length   => 8,
 		green_length => 8,
@@ -700,7 +721,6 @@ begin
 		fifo_size    => 8*2048)
 
 	port map (
---		tpin         => sw,
 		sin_clk      => sio_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,
@@ -737,7 +757,7 @@ begin
 		ctlrphy_trdy => ctlrphy_trdy,
 		ctlrphy_ini  => ctlrphy_ini,
 		ctlrphy_rw   => ctlrphy_rw,
-
+		ctlr_inirdy  => ctlrphy_inirdy,  
 		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),
@@ -758,8 +778,42 @@ begin
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
-		tp => tp);
+--		tp_sel       => sw,
+		tp           => tp_demographics);
 
+	serdebug_b : block
+		signal ser_irdy : std_logic;
+	begin
+		ser_irdy <= si_irdy and si_trdy;
+    	ser_debug_e : entity hdl4fpga.ser_debug
+    	generic map (
+    		timing_id    => videoparam(video_mode).timing,
+    		red_length   => 1,
+    		green_length => 1,
+    		blue_length  => 1)
+    	port map (
+    		ser_clk      => sio_clk,
+    		ser_frm      => si_frm,
+    		ser_irdy     => ser_irdy,
+    		ser_data     => si_data,
+
+    		video_clk    => dd_clk,
+    		video_hzsync => dd_hs,
+    		video_vtsync => dd_vs,
+    		video_pixel  => dd_pixel);
+	end block;
+
+	process (dd_clk)
+	begin
+		if rising_edge(dd_clk) then
+			ja(1)  <= multiplex(dd_pixel, std_logic_vector(to_unsigned(0,2)), 1)(0);
+			ja(2)  <= multiplex(dd_pixel, std_logic_vector(to_unsigned(1,2)), 1)(0);
+			ja(3)  <= multiplex(dd_pixel, std_logic_vector(to_unsigned(2,2)), 1)(0);
+			ja(4)  <= dd_hs;
+			ja(10) <= dd_vs;
+		end if;
+	end process;
+  
 	process (ddr_ba)
 	begin
 		for i in ddr_ba'range loop
@@ -804,7 +858,7 @@ begin
 	port map (
 
 		tp_sel    => btn3,
-		tp        => tp_delay,
+		tp        => tp_sdrphy,
 
 		rst0      => rst0div_rst,
 		rst90     => rst90div_rst,
@@ -902,27 +956,30 @@ begin
 
 	end block;
 
-	process (sio_clk, sys_clk)
-		variable e, q : std_logic := '0';
+	process (sio_clk, sys_clk, ctlr_clk)
+		variable d, e, q : std_logic := '0';
 	begin
 		if rising_edge(sys_clk) then
 			rgbled <= (others => '0');
 			led    <= (others => '0');
 			if sw0='1' then
-				(led3, led2, led1, led0, led3_g, led2_g, led1_g, led0_g) <= tp_delay(1 to 8);
+				(led3, led2, led1, led0, led3_g, led2_g, led1_g, led0_g) <= tp_sdrphy(1 to 8);
 			elsif sw1='1' then
 				(led3_r, led2_r, led1_r, led0_r) <= std_logic_vector'(ctlrphy_rlrdy, ctlrphy_rlreq, ctlrphy_wlrdy, ctlrphy_wlreq);
 			else
-				--(led3_b, led2_b, led1_b, led0_b) <= std_logic_vector'(q, '0', si_frm, '0');
-				(led3_b, led2_b, led1_b, led0_b) <= std_logic_vector'(si_frm, si_irdy, si_trdy, si_end);
+				(led3,   led2,   led1,   led0)   <= std_logic_vector'(si_frm, si_irdy, si_trdy, si_end);
+				(led3_b, led2_b, led1_b, led0_b) <= tp_demographics(1 to 4);
+				(led3_r, led2_r, led1_r, led0_r) <= std_logic_vector'('0', '0', '0', q);
 			end if;
 		end if;
 
 		if rising_edge(sio_clk) then
-			if (so_frm and not e)='1' then
+			d := si_end;
+			d := tp_demographics(1);
+			if (d and not e)='1' then
 				q := not q;
 			end if;
-			e := so_frm;
+			e := d;
 		end if;
 
 	end process;

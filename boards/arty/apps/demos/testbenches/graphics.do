@@ -134,16 +134,36 @@ add wave -noupdate -group dhcpdscb_e -radix hexadecimal /testbench/du_e/ipoe_e/u
 add wave -noupdate -group dhcpdscb_e -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv
+add wave -noupdate /testbench/du_e/sys_rst
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(0)
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/sout_clk
+add wave -noupdate /testbench/du_e/graphics_e/sout_frm
+add wave -noupdate /testbench/du_e/graphics_e/sout_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sout_trdy
+add wave -noupdate /testbench/du_e/graphics_e/sout_end
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_dqi
-add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_sti
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/so_frm
+add wave -noupdate /testbench/du_e/so_irdy
+add wave -noupdate /testbench/du_e/so_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/dev_len
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/dev_addr
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/graphics_e/dev_gnt(0) -radix hexadecimal} {/testbench/du_e/graphics_e/dev_gnt(1) -radix hexadecimal}} -expand -subitemconfig {/testbench/du_e/graphics_e/dev_gnt(0) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/dev_gnt(1) {-height 29 -radix hexadecimal}} /testbench/du_e/graphics_e/dev_gnt
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/graphics_e/dev_req(0) -radix hexadecimal} {/testbench/du_e/graphics_e/dev_req(1) -radix hexadecimal}} -subitemconfig {/testbench/du_e/graphics_e/dev_req(0) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/dev_req(1) {-height 29 -radix hexadecimal}} /testbench/du_e/graphics_e/dev_req
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/dev_rdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/dma_do
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/dma_do_dv
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/ctlr_inirdy
+add wave -noupdate /testbench/du_e/graphics_e/sin_clk
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e/phy_wlreq
+add wave -noupdate /testbench/du_e/sdrphy_e/phy_wlrdy
+add wave -noupdate /testbench/du_e/sdrphy_e/phy_rlreq
+add wave -noupdate /testbench/du_e/sdrphy_e/phy_rlrdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -154,7 +174,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {52908548549 fs} 0} {{Cursor 2} {701577100000 fs} 0}
+WaveRestoreCursors {{Cursor 1} {37063000000 fs} 0} {{Cursor 2} {701577100000 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 391
 configure wave -valuecolwidth 202
@@ -170,4 +190,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {52891618606 fs} {52914746118 fs}
+WaveRestoreZoom {37049201913 fs} {37079963641 fs}
