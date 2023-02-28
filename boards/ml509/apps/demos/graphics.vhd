@@ -857,7 +857,7 @@ begin
 
 		ctlr_clks     => ctlr_clks(0 to sclk_phases/sclk_edges-1),
 		ctlr_rst      => sdrphy_rst, --ddrsys_rst,
-		ctlr_rtt      => b"11",
+		ctlr_rtt      => "-11",
 		ctlr_al       => "000",
 		ctlr_bl       => "011", -- Busrt length 8
 		ctlr_cl       => sdram_params.cl,

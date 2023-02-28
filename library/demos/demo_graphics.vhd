@@ -87,7 +87,7 @@ entity demo_graphics is
 		ctlr_cl       : in  std_logic_vector;
 		ctlr_cwl      : in  std_logic_vector(0 to 3-1) := "000";
 		ctlr_wrl      : in  std_logic_vector(0 to 3-1) := "101";
-		ctlr_rtt      : in  std_logic_vector := (0 to 0 => '-');
+		ctlr_rtt      : in  std_logic_vector(0 to 3-1) := (others => '-');
 		ctlr_cmd      : buffer std_logic_vector(0 to 3-1);
 		ctlr_inirdy   : buffer std_logic;
 
@@ -262,15 +262,19 @@ begin
 		signal debug_dmaio_rdy    : std_logic;
 
 		constant word_bits    : natural := unsigned_num_bits(ctlr_di'length/byte_size)-1;
-		constant blword_bits  : natural := word_bits+unsigned_num_bits(setif(burst_length=0, data_gear, burst_length)/data_gear-1);
+		constant blword_bits  : natural := word_bits+unsigned_num_bits(setif(burst_length=0, data_gear, burst_length)/data_gear)-1;
+		-- constant blword_bits  : natural := word_bits; --+unsigned_num_bits(setif(burst_length=0, data_gear, burst_length)/data_gear-1);
 
+		signal xxx1 : natural;
+		signal xxx2 : natural;
 		signal status         : std_logic_vector(0 to 8-1);
 		alias  status_rw      : std_logic is status(status'right);
 
 		signal tp_meta        : std_logic_vector(tp'range);
 	begin
 
-
+		xxx1 <= word_bits;
+		xxx2 <= blword_bits;
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sin_clk,
@@ -608,13 +612,17 @@ begin
 					dst_data => fifo_data);
 
 				process (sout_clk)
-					variable length : unsigned(fifo_length'range);
+					variable len : unsigned(fifo_length'range);
+					constant xxx : natural := (len'length-(unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length)-1));
 				begin
+					-- assert false
+					-- report "AAAAAA " & natural'image(xxx)
+					-- severity failure;
 					if rising_edge(sout_clk) then
-						length := (others => '1');
-						length := length srl (length'length-unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length-1));
-						length := length or  (trans_length sll blword_bits);
-						fifo_length <= std_logic_vector(length);
+						len := (others => '1');
+						len := len srl xxx;
+						len := len or  (trans_length sll blword_bits);
+						fifo_length <= std_logic_vector(len);
 					end if;
 				end process;
 

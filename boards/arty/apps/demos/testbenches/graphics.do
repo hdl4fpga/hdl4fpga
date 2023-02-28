@@ -133,6 +133,9 @@ add wave -noupdate -group dhcpdscb_e -radix hexadecimal /testbench/du_e/ipoe_e/u
 add wave -noupdate -group dhcpdscb_e -radix hexadecimal /testbench/du_e/ipoe_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/udp_e/dhcpcd_b/dhcpcd_e/dhcpdscb_e/dhcpdscb_data
 add wave -noupdate -group dhcpdscb_e -divider {New Divider}
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/line__614/xxx
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/xxx1
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/xxx2
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv
 add wave -noupdate /testbench/du_e/sys_rst
 add wave -noupdate -divider {New Divider}
@@ -174,7 +177,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {37063000000 fs} 0} {{Cursor 2} {701577100000 fs} 0}
+WaveRestoreCursors {{Cursor 1} {36965631605 fs} 0} {{Cursor 2} {701577100000 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 391
 configure wave -valuecolwidth 202
@@ -190,4 +193,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {37049201913 fs} {37079963641 fs}
+WaveRestoreZoom {0 fs} {91968090 fs}

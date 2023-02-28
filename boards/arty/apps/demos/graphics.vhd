@@ -784,7 +784,7 @@ begin
 	serdebug_b : block
 		signal ser_irdy : std_logic;
 	begin
-		ser_irdy <= si_irdy and si_trdy;
+		ser_irdy <= si_irdy and si_trdy and not si_end;
     	ser_debug_e : entity hdl4fpga.ser_debug
     	generic map (
     		timing_id    => videoparam(video_mode).timing,

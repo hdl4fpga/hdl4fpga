@@ -552,7 +552,6 @@ begin
 		ctlr_rst     => sdrsys_rst,
 		ctlr_bl      => "001",
 		ctlr_cl      => sdram_params.cl,
-		ctlr_rtt     => "-",
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),

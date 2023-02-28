@@ -91,7 +91,7 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := hdlc_sdr166MHz_720p24bpp;
+	constant app_profile : app_profiles := ipoe_sdr166MHz_480p24bpp;
     --                                  --
 	--------------------------------------
 
@@ -161,14 +161,14 @@ architecture graphics of ulx3s is
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant v_r : natural := 5; -- video ratio
 	constant video_tab : videoparams_vector := (
-		(id => modedebug    , pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb888, timing => pclk_debug),
-		(id => mode480p16bpp, pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb565, timing => pclk25_00m640x480at60),
-		(id => mode480p24bpp, pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, timing => pclk25_00m640x480at60),
-		(id => mode600p16bpp, pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb565, timing => pclk40_00m800x600at60),
-		(id => mode600p24bpp, pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb888, timing => pclk40_00m800x600at60),
-		(id => mode768p24bpp, pll => (clkos_div => 2, clkop_div => 26,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 16), pixel => rgb888, timing => pclk40_00m800x600at60),
-		(id => mode720p16bpp, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb565, timing => pclk75_00m1280x720at60),
-		(id => mode720p24bpp, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb888, timing => pclk75_00m1280x720at60),
+		(id => modedebug,        pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb888, timing => pclk_debug),
+		(id => mode480p16bpp,    pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb565, timing => pclk25_00m640x480at60),
+		(id => mode480p24bpp,    pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, timing => pclk25_00m640x480at60),
+		(id => mode600p16bpp,    pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb565, timing => pclk40_00m800x600at60),
+		(id => mode600p24bpp,    pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb888, timing => pclk40_00m800x600at60),
+		(id => mode768p24bpp,    pll => (clkos_div => 2, clkop_div => 26,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 16), pixel => rgb888, timing => pclk40_00m800x600at60),
+		(id => mode720p16bpp,    pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb565, timing => pclk75_00m1280x720at60),
+		(id => mode720p24bpp,    pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb888, timing => pclk75_00m1280x720at60),
 		(id => mode1080p16bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb565, timing => pclk150_00m1920x1080at60),
 		(id => mode1080p24bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb888, timing => pclk150_00m1920x1080at60));
 
@@ -296,7 +296,7 @@ architecture graphics of ulx3s is
 	signal video_clk     : std_logic;
 	signal videoio_clk   : std_logic;
 	signal video_lck     : std_logic;
-	signal video_shf_clk : std_logic;
+	signal video_shift_clk : std_logic;
 	signal video_hzsync  : std_logic;
     signal video_vtsyn   : std_logic;
     signal video_blank   : std_logic;
@@ -392,7 +392,7 @@ begin
 			ENCLKOS2  => '0',
             ENCLKOS3  => '0',
 			CLKOP     => clkfb,
-			CLKOS     => video_shf_clk,
+			CLKOS     => video_shift_clk,
 			CLKOS2    => video_clk,
 			CLKOS3    => videoio_clk,
 			LOCK      => video_lck,
@@ -561,116 +561,154 @@ begin
 	end generate;
 
 	ipoe_e : if io_link=io_ipoe generate
-		-- RMII pins as labeled on the board and connected to ULX3S with pins down and flat cable
-		alias rmii_tx_en : std_logic is gn(10);
-		alias rmii_tx0   : std_logic is gp(10);
-		alias rmii_tx1   : std_logic is gn(9);
-
-		alias rmii_rx0   : std_logic is gn(11);
-		alias rmii_rx1   : std_logic is gp(11);
-
-		alias rmii_crs   : std_logic is gp(12);
-
-		alias rmii_nint  : std_logic is gn(12);
-		alias rmii_mdio  : std_logic is gn(13);
-		alias rmii_mdc   : std_logic is gp(13);
-		signal mii_clk   : std_logic;
-
-		signal mii_txen  : std_logic;
-		signal mii_txd   : std_logic_vector(0 to 2-1);
-
-		signal mii_rxdv  : std_logic;
-		signal mii_rxd   : std_logic_vector(0 to 2-1);
-
-		signal dhcpcd_req : std_logic := '0';
-		signal dhcpcd_rdy : std_logic := '0';
-
-		signal miitx_frm  : std_logic;
-		signal miitx_irdy : std_logic;
-		signal miitx_trdy : std_logic;
-		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(si_data'range);
 
 	begin
 
-		wifi_en <= '0';
+		rmii_b : block
+			generic (
+				n : natural);
+			generic map (
+				n => 2);
+			port (
+				dhcp_btn : in  std_logic;
 
-		sio_clk <= rmii_nint;
-		mii_clk <= rmii_nint;
+				mii_rxc  : in  std_logic;
+				mii_rxdv : in  std_logic;
+				mii_rxd  : in  std_logic_vector(0 to n-1);
 
-		process (mii_clk)
+				mii_txc  : in  std_logic;
+				mii_txen : out std_logic;
+				mii_txd  : out std_logic_vector(0 to n-1));
+			port map (
+				dhcp_btn   => fire1,
+				mii_txc    => rmii_nint,
+				mii_txen   => rmii_tx_en,
+				mii_txd(0) => rmii_tx0,
+				mii_txd(1) => rmii_tx1,
+
+				mii_rxc    => rmii_nint,
+				mii_rxdv   => rmii_crs,
+				mii_rxd(0) => rmii_rx0,
+				mii_rxd(1) => rmii_rx1);
+
+    		signal dhcpcd_req : std_logic;
+    		signal dhcpcd_rdy : std_logic;
+
+    		signal miitx_frm  : std_logic;
+    		signal miitx_irdy : std_logic;
+    		signal miitx_trdy : std_logic;
+    		signal miitx_end  : std_logic;
+    		signal miitx_data : std_logic_vector(si_data'range);
+
 		begin
-			if rising_edge(mii_clk) then
-				rmii_tx_en <= mii_txen;
-				(0 => rmii_tx0, 1 => rmii_tx1) <= mii_txd;
-			end if;
-		end process;
+		
+    		dhcp_p : process(mii_txc)
+    			type states is (s_request, s_wait);
+    			variable state : states;
+    		begin
+    			if rising_edge(mii_txc) then
+    				case state is
+    				when s_request =>
+    					if dhcp_btn='1' then
+    						dhcpcd_req <= not dhcpcd_rdy;
+    						state := s_wait;
+    					end if;
+    				when s_wait =>
+    					if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+    						if dhcp_btn='0' then
+    							state := s_request;
+    						end if;
+    					end if;
+    				end case;
+    			end if;
+    		end process;
 
-		process (mii_clk)
+			udpdaisy_e : entity hdl4fpga.sio_dayudp
+			generic map (
+				my_mac        => x"00_40_00_01_02_03",
+				default_ipv4a => aton("192.168.1.1"))
+			port map (
+				hdplx      => hdplx,
+				mii_clk    => mii_txc,
+				dhcpcd_req => dhcpcd_req,
+				dhcpcd_rdy => dhcpcd_rdy,
+				miirx_frm  => mii_rxdv,
+				miirx_data => mii_rxd,
+			
+				miitx_frm  => miitx_frm,
+				miitx_irdy => miitx_irdy,
+				miitx_trdy => miitx_trdy,
+				miitx_end  => miitx_end,
+				miitx_data => miitx_data,
+			
+				si_frm     => si_frm,
+				si_irdy    => si_irdy,
+				si_trdy    => si_trdy,
+				si_end     => si_end,
+				si_data    => si_data,
+			
+				so_clk     => mii_txc,
+				so_frm     => so_frm,
+				so_irdy    => so_irdy,
+				so_trdy    => so_trdy,
+				so_data    => so_data);
+			
+			desser_e: entity hdl4fpga.desser
+			port map (
+				desser_clk => mii_txc,
+			
+				des_frm    => miitx_frm,
+				des_irdy   => miitx_irdy,
+				des_trdy   => miitx_trdy,
+				des_data   => miitx_data,
+			
+				ser_irdy   => open,
+				ser_data   => mii_txd);
+			
+			mii_txen <= miitx_frm and not miitx_end;
+		end block;
+		
+		miirefclk_b : block
+			signal d0, d1 : std_logic;
+			signal refclk : std_logic;
 		begin
-			if rising_edge(mii_clk) then
-				mii_rxdv <= rmii_crs;
-				mii_rxd  <= rmii_rx0 & rmii_rx1;
-			end if;
-		end process;
 
-		rmii_mdc  <= '0';
+			assert 
+				video_mode=mode480p24bpp or 
+				video_mode=modedebug
+			report "mii not available for videomode " & video_modes'image(video_mode)
+			severity failure;
+
+			mode480p24bp_g : if video_mode=mode480p24bpp generate
+			begin
+				process (video_shift_clk)
+					variable reg : unsigned(0 to 10-1) := b"11_10_01_11_00";
+				begin
+					if rising_edge(video_shift_clk) then
+						reg := reg rol 2;
+					end if;
+					d0 <= reg(0);
+					d1 <= reg(1);
+				end process;
+			end generate;
+	
+			oddr_i : oddrx1f
+			port map(
+				sclk => video_shift_clk,
+				rst  => '0',
+				d0   => d0,
+				d1   => d1,
+				q    => refclk);
+
+			gp(9) <= refclk when video_mode/=modedebug else video_shift_clk;
+	
+		end block;
+
+		wifi_en   <= '0';
+		sio_clk   <= rmii_nint;
 		rmii_mdio <= '0';
+		rmii_mdc  <= '0';
 
-		dhcp_p : process(mii_clk)
-		begin
-			if rising_edge(mii_clk) then
-				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-					dhcpcd_req <= dhcpcd_rdy xor ((fire2 and dhcpcd_rdy) or (fire1 and not dhcpcd_rdy));
-				end if;
-			end if;
-		end process;
-		led(0) <= dhcpcd_rdy;
-		led(7) <= not dhcpcd_rdy;
-
-		udpdaisy_e : entity hdl4fpga.sio_dayudp
-		generic map (
-			my_mac        => x"00_40_00_01_02_03",
-			default_ipv4a => aton("192.168.1.1"))
-		port map (
-			hdplx      => hdplx,
-			mii_clk     => mii_clk,
-			dhcpcd_req => dhcpcd_req,
-			dhcpcd_rdy => dhcpcd_rdy,
-			miirx_frm  => mii_rxdv,
-			miirx_data => mii_rxd,
-
-			miitx_frm  => miitx_frm,
-			miitx_irdy => miitx_irdy,
-			miitx_trdy => miitx_trdy,
-			miitx_end  => miitx_end,
-			miitx_data => miitx_data,
-
-			si_frm     => si_frm,
-			si_irdy    => si_irdy,
-			si_trdy    => si_trdy,
-			si_end     => si_end,
-			si_data    => si_data,
-
-			so_clk     => mii_clk,
-			so_frm     => so_frm,
-			so_irdy    => so_irdy,
-			so_trdy    => so_trdy,
-			so_data    => so_data);
-
-		desser_e: entity hdl4fpga.desser
-		port map (
-			desser_clk => mii_clk,
-
-			des_frm    => miitx_frm,
-			des_irdy   => miitx_irdy,
-			des_trdy   => miitx_trdy,
-			des_data   => miitx_data,
-
-			ser_irdy   => open,
-			ser_data   => mii_txd);
-
-		mii_txen <= miitx_frm and not miitx_end;
 
 	end generate;
 
@@ -714,7 +752,7 @@ begin
 		sout_data    => si_data,
 
 		video_clk    => video_clk,
-		video_shift_clk => video_shf_clk,
+		video_shift_clk => video_shift_clk,
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
@@ -831,7 +869,7 @@ begin
 	begin
 		oddr_i : oddrx1f
 		port map(
-			sclk => video_shf_clk,
+			sclk => video_shift_clk,
 			rst  => '0',
 			d0   => dvid_crgb(2*i),
 			d1   => dvid_crgb(2*i+1),

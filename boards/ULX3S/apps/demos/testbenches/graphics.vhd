@@ -57,6 +57,7 @@ architecture ulx3s_graphics of testbench is
 	signal fire1       : std_logic;
 	signal fire2       : std_logic;
 
+	alias mii_refclk   : std_logic is gn(9);
 	alias mii_clk      : std_logic is gn(12);
 
 	component ulx3s is
@@ -354,7 +355,7 @@ begin
 
 	end block;
 
-	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after 10 ns;
+	mii_clk <= mii_refclk;
 	ipoe_b : block
 		generic (
 			payload   : std_logic_vector);
@@ -396,9 +397,6 @@ begin
 
 	begin
 
-		assert false
-		report "not working"
-		severity failure;
 		htb_e : entity hdl4fpga.eth_tb
 		generic map (
 			debug => false)
@@ -469,7 +467,7 @@ end;
 
 library micron;
 
-configuration ulx3s_graphic_structure_md of testbench is
+configuration ulx3s_graphics_structure_md of testbench is
 	for ulx3s_graphics
 		for all : ulx3s
 			use entity work.ulx3s(structure);
@@ -493,7 +491,7 @@ end;
 
 library micron;
 
-configuration ulx3s_graphic_md of testbench is
+configuration ulx3s_graphics_md of testbench is
 	for ulx3s_graphics
 		for all : ulx3s
 			use entity work.ulx3s(graphics);

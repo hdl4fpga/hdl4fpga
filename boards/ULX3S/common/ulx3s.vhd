@@ -110,8 +110,6 @@ entity ulx3s is
 
 		gpdi_dp        : out   std_logic_vector(4-1 downto 0);
 		gpdi_dn        : out   std_logic_vector(4-1 downto 0);
-		--gpdi_ethp      : out   std_logic;  
-		--gpdi_ethn      : out   std_logic;
 		gpdi_cec       : inout std_logic := '-';
 		gpdi_sda       : inout std_logic := '-';
 		gpdi_scl       : inout std_logic := '-';
@@ -126,4 +124,20 @@ entity ulx3s is
 
 	constant clk25mhz_freq : real := 25.0e6;
 	constant sys_freq      : real := clk25mhz_freq;
+
+	alias rmii_tx_en  : std_logic is gn(10);
+	alias rmii_tx0    : std_logic is gp(10);
+	alias rmii_tx1    : std_logic is gn(9);
+
+	alias rmii_rx0    : std_logic is gn(11);
+	alias rmii_rx1    : std_logic is gp(11);
+
+	alias rmii_crs    : std_logic is gp(12);
+
+	alias rmii_clk    : std_logic is gn(12);
+	alias rmii_nint   : std_logic is gn(12);
+	alias rmii_mdio   : std_logic is gn(13);
+	alias rmii_mdc    : std_logic is gp(13);
+	alias rmii_refclk : std_logic is gp(9);
+
 end;
