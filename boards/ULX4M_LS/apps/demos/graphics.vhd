@@ -36,7 +36,7 @@ use hdl4fpga.app_profiles.all;
 library ecp5u;
 use ecp5u.components.all;
 
-architecture graphics of ulx3s is
+architecture graphics of ulx4m_ls is
 
 	---------------------------------------
 	-- Set of profiles                   --
@@ -580,16 +580,14 @@ begin
 				mii_txen : out std_logic;
 				mii_txd  : out std_logic_vector(0 to n-1));
 			port map (
-				dhcp_btn   => fire1,
-				mii_txc    => rmii_nint,
-				mii_txen   => rmii_tx_en,
-				mii_txd(0) => rmii_tx0,
-				mii_txd(1) => rmii_tx1,
+				dhcp_btn  => btn(0),
+				mii_txc   => rmii_tx_clk,
+				mii_txen  => rmii_tx_en,
+				mii_txd   => rmii_txd,
 
-				mii_rxc    => rmii_nint,
-				mii_rxdv   => rmii_crs,
-				mii_rxd(0) => rmii_rx0,
-				mii_rxd(1) => rmii_rx1);
+				mii_rxc    => rmii_tx_clk,
+				mii_rxdv   => rmii_rx_dv,
+				mii_rxd    => rmii_rxd);
 
     		signal dhcpcd_req : std_logic;
     		signal dhcpcd_rdy : std_logic;
@@ -700,14 +698,13 @@ begin
 				d1   => d1,
 				q    => refclk);
 
-			gp(9) <= refclk when video_mode/=modedebug else video_shift_clk;
+			rmii_ref_clk <= refclk when video_mode/=modedebug else video_shift_clk;
 	
 		end block;
 
-		wifi_en   <= '0';
-		sio_clk   <= rmii_nint;
-		rmii_mdio <= '0';
-		rmii_mdc  <= '0';
+		sio_clk   <= rmii_tx_clk;
+		eth_mdio <= '0';
+		eth_mdc  <= '0';
 
 
 	end generate;
@@ -864,21 +861,32 @@ begin
 	-- VGA --
 	---------
 
-	sdr_g : for i in gpdi_dp'range generate
-		signal q : std_logic;
-	begin
-		oddr_i : oddrx1f
-		port map(
-			sclk => video_shift_clk,
-			rst  => '0',
-			d0   => dvid_crgb(2*i),
-			d1   => dvid_crgb(2*i+1),
-			q    => q);
-		olvds_i : olvds
-		port map(
-			a  => q,
-			z  => gpdi_dp(i),
-			zn => gpdi_dn(i));
-	end generate;
-
+	hdmi0_blue_i : oddrx1f
+	port map(
+		sclk => video_shift_clk,
+		d0   => dvid_crgb(2*0),
+		d1   => dvid_crgb(2*0+1),
+		q    => hdmi0_blue);
+ 
+	hdmi0_green_i : oddrx1f
+	port map(
+		sclk => video_shift_clk,
+		d0   => dvid_crgb(2*1),
+		d1   => dvid_crgb(2*1+1),
+		q    => hdmi0_green);
+ 
+	hdmi0_red_i : oddrx1f
+	port map(
+		sclk => video_shift_clk,
+		d0   => dvid_crgb(2*2),
+		d1   => dvid_crgb(2*2+1),
+		q    => hdmi0_red);
+ 
+	hdmi0_clock_i : oddrx1f
+	port map(
+		sclk => video_shift_clk,
+		d0   => dvid_crgb(2*3),
+		d1   => dvid_crgb(2*3+1),
+		q    => hdmi0_clock);
+ 
 end;

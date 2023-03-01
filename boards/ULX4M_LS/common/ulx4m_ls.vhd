@@ -33,14 +33,14 @@ entity ulx4m_ls is
 	port (
 
 		clk_25mhz       : in  std_logic := 'Z';
-		btn             : in  std_logic_vector(1 to 3) := (others => '-');
+		btn             : in  std_logic_vector(0 to 7-1) := (others => '-');
 		led             : out std_logic_vector(8-1 downto 0) := (others => 'Z');
 
 		sd_clk          : in  std_logic := '-';
-		sd_cmd          : out std_logic; -- sd_cmd=MOSI (out)
+		sd_cmd          : out std_logic;
 		sd_d            : inout std_logic_vector(4-1 downto 0) := (others => 'U'); -- sd_d(0)=MISO (in), sd_d(3)=CSn (out)
 		sd_wp           : in  std_logic := '-';
-		sd_cdn          : in  std_logic := '-'; -- card detect not connected
+		sd_cdn          : in  std_logic := '-';
 
 		usb_fpga_d      : inout std_logic := 'Z';
 		usb_fpga_bd_dp  : inout std_logic := 'Z';
@@ -51,18 +51,17 @@ entity ulx4m_ls is
 		usb_fpga_otg_dn : inout std_logic := 'Z';
 		n_extrst        : inout std_logic := 'Z';
 
-		eth_reset       : out std_logic;
+		eth_nreset      : out std_logic;
 		eth_mdio        : inout std_logic := '-';
 		eth_mdc         : out std_logic;
 
---		rgmii_ref_clk   : in std_logic;
+		rmii_ref_clk   : out std_logic;
 
-		rgmii_tx_clk    : out std_logic := '-';
-		rgmii_tx_en     : buffer std_logic;
-		rgmii_txd       : buffer std_logic_vector(0 to 4-1);
-		rgmii_rx_clk    : in  std_logic := '-';
-		rgmii_rx_dv     : in  std_logic := '-';
-		rgmii_rxd       : in  std_logic_vector(0 to 4-1) := (others => '-');
+		rmii_tx_clk    : in std_logic := '-';
+		rmii_tx_en     : buffer std_logic;
+		rmii_txd       : buffer std_logic_vector(0 to 2-1) := (others => 'Z');
+		rmii_rx_dv     : in  std_logic := '0';
+		rmii_rxd       : in  std_logic_vector(0 to 2-1) := (others => '-');
 
 		sdram_clk      : inout std_logic;  
 		sdram_cke      : out   std_logic;
@@ -79,34 +78,24 @@ entity ulx4m_ls is
         gpdi_cec        : out std_logic;
 		gpio_scl        : out std_logic;
 
-		gpio            : inout std_logic_vector(0 to 28-1)
-		cam_scl         : out std_logic;
-		cam_sda         : inout std_logic := 'Z';
+		gpio            : inout std_logic_vector(0 to 28-1) := (others => 'Z');
 
 		user_programn   : out std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
 		shutdown        : out std_logic := '0'); -- '1' power off the board, 10uA sleep
 
+	alias cam_sda    : std_logic is gpio(0);
+	alias cam_scl    : std_logic is gpio(1);
+	alias ftdi_txd   : std_logic is gpio(23);
+	alias ftdi_rxd   : std_logic is gpio(24);
+	alias ftdi_txden : std_logic is gpio(20);
+
+	alias hdmi0_blue  : std_logic is gpdi_d(0);
+	alias hdmi0_green : std_logic is gpdi_d(1);
+	alias hdmi0_red   : std_logic is gpdi_d(2);
+	alias hdmi0_clock : std_logic is gpdi_d(3);
+
 	constant clk25mhz_freq : real := 25.0e6;
 	constant sys_freq      : real := clk25mhz_freq;
 
-	alias ftdi_txden  : std_logic is gpio(20);
-	alias ftdi_txd    : std_logic is gpio(23);
-	alias ftdi_rxd    : std_logic is gpio(24);
-	alias ftdi_nrts   : std_logic is gpio(22);
-	alias ftdi_ndtr   : std_logic is gpio(5);
-
-	alias rmii_tx_en  : std_logic is gn(10); B4
-	alias rmii_tx0    : std_logic is gp(10); C4
-	alias rmii_tx1    : std_logic is gn(9);  B1
-
-	alias rmii_rx0    : std_logic is gn(11); E3
-	alias rmii_rx1    : std_logic is gp(11); F4
-
-	alias rmii_crs    : std_logic is gp(12); G3
-
-	alias rmii_nint   : std_logic is gn(12); F3
-	alias rmii_mdio   : std_logic is gn(13); G5
-	alias rmii_mdc    : std_logic is gp(13); H4
-	alias rmii_refclk : std_logic is gp(9);  A2
 
 end;

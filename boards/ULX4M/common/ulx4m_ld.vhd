@@ -79,7 +79,7 @@ entity ulx4m_ld is
 		ddram_dqs       : inout std_logic_vector(2-1 downto 0) := (others => 'Z');
 
 		ftdi_txd        : in std_logic;
-		ftdi_txen       : out std_logic;
+		ftdi_txden      : out std_logic;
 		ftdi_rxd        : out std_logic;
 
         gpdi_d          : out std_logic_Vector(4-1 downto 0);

@@ -501,7 +501,7 @@ begin
 			end if;
 		end process;
 
-		ftdi_txen <= '1';
+		ftdi_txden <= '1';
 		nodebug_g : if not debug generate
 			uart_clk <= videoio_clk;
 		end generate;

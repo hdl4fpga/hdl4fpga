@@ -25,7 +25,7 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
-architecture ulx3s_graphics of testbench is
+architecture ulx4mls_graphics of testbench is
 
 	constant bank_bits  : natural := 2;
 	constant addr_bits  : natural := 13;
@@ -48,8 +48,14 @@ architecture ulx3s_graphics of testbench is
 	signal sdram_we_n  : std_logic;
 	signal sdram_dqm   : std_logic_vector(1 downto 0);
 
-	signal gp          : std_logic_vector(28-1 downto 0);
-	signal gn          : std_logic_vector(28-1 downto 0);
+
+	signal mii_refclk  : std_logic;
+
+	signal mii_clk     : std_logic;
+	signal mii_txen    : std_logic;
+	signal mii_txd     : std_logic_vector(0 to 2-1);
+	signal mii_rxdv    : std_logic;
+	signal mii_rxd     : std_logic_vector(0 to 2-1);
 
 	signal ftdi_txd    : std_logic;
 	signal ftdi_rxd    : std_logic;
@@ -57,103 +63,63 @@ architecture ulx3s_graphics of testbench is
 	signal fire1       : std_logic;
 	signal fire2       : std_logic;
 
-	alias mii_refclk   : std_logic is gn(9);
-	alias mii_clk      : std_logic is gn(12);
 
-	component ulx3s is
+	component ulx4m_ls is
 		generic (
 			debug  : boolean := true);
-		port (
-			clk_25mhz      : in    std_logic;
+    	port (
 
-			ftdi_rxd       : out   std_logic;
-			ftdi_txd       : in    std_logic := '-';
-			ftdi_nrts      : inout std_logic := '-';
-			ftdi_ndtr      : inout std_logic := '-';
-			ftdi_txden     : inout std_logic := '-';
+    		clk_25mhz       : in  std_logic := 'Z';
+    		btn             : in  std_logic_vector(0 to 7-1) := (others => '-');
+    		led             : out std_logic_vector(8-1 downto 0) := (others => 'Z');
 
-			btn_pwr_n      : in  std_logic := 'U';
-			fire1          : in  std_logic := 'U';
-			fire2          : in  std_logic := 'U';
-			up             : in  std_logic := 'U';
-			down           : in  std_logic := 'U';
-			left           : in  std_logic := 'U';
-			right          : in  std_logic := 'U';
+    		sd_clk          : in  std_logic := '-';
+    		sd_cmd          : out std_logic; -- sd_cmd=MOSI (out)
+    		sd_d            : inout std_logic_vector(4-1 downto 0) := (others => 'U'); -- sd_d(0)=MISO (in), sd_d(3)=CSn (out)
+    		sd_wp           : in  std_logic := '-';
+    		sd_cdn          : in  std_logic := '-'; -- card detect not connected
 
-			led            : out   std_logic_vector(8-1 downto 0);
-			sw             : in    std_logic_vector(4-1 downto 0) := (others => '-');
+    		usb_fpga_d      : inout std_logic := 'Z';
+    		usb_fpga_bd_dp  : inout std_logic := 'Z';
+    		usb_fpga_bd_dn  : inout std_logic := 'Z';
+    		usb_fpga_pu_dp  : inout std_logic := 'Z';
+    		usb_fpga_pu_dn  : inout std_logic := 'Z';
+    		usb_fpga_otg_dp : inout std_logic := 'Z';
+    		usb_fpga_otg_dn : inout std_logic := 'Z';
+    		n_extrst        : inout std_logic := 'Z';
 
+    		eth_reset       : out std_logic;
+    		eth_mdio        : inout std_logic := '-';
+    		eth_mdc         : out std_logic;
 
-			oled_clk       : out   std_logic;
-			oled_mosi      : out   std_logic;
-			oled_dc        : out   std_logic;
-			oled_resn      : out   std_logic;
-			oled_csn       : out   std_logic;
+    		rmii_ref_clk   : out std_logic;
 
-			--flash_csn      : out   std_logic;
-			--flash_clk      : out   std_logic;
-			--flash_mosi     : out   std_logic;
-			--flash_miso     : in    std_logic;
-			--flash_holdn    : out   std_logic;
-			--flash_wpn      : out   std_logic;
+    		rmii_tx_clk    : in  std_logic := '-';
+    		rmii_tx_en     : buffer std_logic;
+    		rmii_txd       : buffer std_logic_vector(0 to 2-1);
+    		rmii_rx_dv     : in  std_logic := '-';
+    		rmii_rxd       : in  std_logic_vector(0 to 2-1) := (others => '-');
 
-			sd_clk         : in    std_logic := '-';
-			sd_cmd         : out   std_logic; -- sd_cmd=MOSI (out)
-			sd_d           : inout std_logic_vector(4-1 downto 0) := (others => '-'); -- sd_d(0)=MISO (in), sd_d(3)=CSn (out)
-			sd_wp          : in    std_logic := '-';
-			sd_cdn         : in    std_logic := '-'; -- card detect not connected
+    		sdram_clk      : inout std_logic;  
+    		sdram_cke      : out   std_logic;
+    		sdram_csn      : out   std_logic;
+    		sdram_wen      : out   std_logic;
+    		sdram_rasn     : out   std_logic;
+    		sdram_casn     : out   std_logic;
+    		sdram_a        : out   std_logic_vector(13-1 downto 0);
+    		sdram_ba       : out   std_logic_vector(2-1 downto 0);
+    		sdram_dqm      : inout std_logic_vector(2-1 downto 0) := (others => 'U');
+    		sdram_d        : inout std_logic_vector(16-1 downto 0) := (others => 'U');
 
-			adc_csn        : out   std_logic;
-			adc_mosi       : out   std_logic;
-			adc_miso       : in    std_logic := '-';
-			adc_sclk       : out   std_logic;
+            gpdi_d          : out std_logic_Vector(4-1 downto 0);
+            gpdi_cec        : out std_logic;
+    		gpio_scl        : out std_logic;
 
-			audio_l        : out   std_logic_vector(4-1 downto 0);
-			audio_r        : out   std_logic_vector(4-1 downto 0);
-			audio_v        : out   std_logic_vector(4-1 downto 0);
+    		gpio            : inout std_logic_vector(0 to 28-1) := (others => 'Z');
 
-			wifi_en        : out   std_logic := '1'; -- '0' disables ESP32
-			wifi_rxd       : out   std_logic;
-			wifi_txd       : in    std_logic := '-';
-			wifi_gpio0     : out   std_logic := '1'; -- '0' requests ESP32 to upload "passthru" bitstream
-			wifi_gpio5     : inout std_logic := '-';
-			wifi_gpio16    : inout std_logic := '-';
-			wifi_gpio17    : inout std_logic := '-';
+    		user_programn   : out std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
+    		shutdown        : out std_logic := '0'); -- '1' power off the board, 10uA sleep
 
-			ant_433mhz     : out   std_logic;
-
-			usb_fpga_dp    : inout std_logic := '-';
-			usb_fpga_dn    : inout std_logic := '-';
-			usb_fpga_bd_dp : inout std_logic := '-';
-			usb_fpga_bd_dn : inout std_logic := '-';
-			usb_fpga_pu_dp : inout std_logic := '-';
-			usb_fpga_pu_dn : inout std_logic := '-';
-
-			sdram_clk      : inout std_logic;
-			sdram_cke      : out   std_logic;
-			sdram_csn      : out   std_logic;
-			sdram_wen      : out   std_logic;
-			sdram_rasn     : out   std_logic;
-			sdram_casn     : out   std_logic;
-			sdram_a        : out   std_logic_vector(13-1 downto 0);
-			sdram_ba       : out   std_logic_vector(2-1 downto 0);
-			sdram_dqm      : inout std_logic_vector(2-1 downto 0) := (others => '-');
-			sdram_d        : inout std_logic_vector(16-1 downto 0) := (others => '-');
-
-			gpdi_dp        : out   std_logic_vector(4-1 downto 0);
-			gpdi_dn        : out   std_logic_vector(4-1 downto 0);
-			--gpdi_ethp      : out   std_logic;
-			--gpdi_ethn      : out   std_logic;
-			gpdi_cec       : inout std_logic := '-';
-			gpdi_sda       : inout std_logic := '-';
-			gpdi_scl       : inout std_logic := '-';
-
-			gp             : inout std_logic_vector(28-1 downto 0) := (others => '-');
-			gn             : inout std_logic_vector(28-1 downto 0) := (others => '-');
-			gp_i           : in    std_logic_vector(12 downto 9) := (others => '-');
-
-			user_programn  : out   std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
-			shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep
 	end component;
 
 	component mt48lc32m16a2 is
@@ -208,6 +174,7 @@ architecture ulx3s_graphics of testbench is
 
 	signal nrst : std_logic;
 	signal uart_clk : std_logic := '0';
+	signal gpio : std_logic_vector(0 to 28-1);
 
 	constant debug : boolean := true;
 begin
@@ -356,6 +323,7 @@ begin
 	end block;
 
 	mii_clk <= mii_refclk;
+
 	ipoe_b : block
 		generic (
 			payload   : std_logic_vector);
@@ -372,20 +340,17 @@ begin
 			mii_txen  : buffer std_logic;
 			mii_txd   : out std_logic_vector(0 to 2-1));
 		port map (
-			rst        => rst,
-			mii_rxc    => mii_clk,
-			mii_txc    => mii_clk,
-			mii_txen   => gp(12),
-			mii_txd(0) => gn(11),
-			mii_txd(1) => gp(11),
+			rst      => rst,
+			mii_rxc  => mii_clk,
+			mii_txc  => mii_clk,
+			mii_txen => mii_txen,
+			mii_txd  => mii_txd,
 
-			mii_rxdv   => gn(10),
-			mii_rxd(0) => gp(10),
-			mii_rxd(1) => gn(9));
+			mii_rxdv => mii_rxdv,
+			mii_rxd  => mii_rxd);
 
 		signal eth_txen  : std_logic;
 		signal eth_txd   : std_logic_vector(mii_txd'range);
-
 
 		signal mii_req    : std_logic := '0';
     	signal ping_req   : std_logic := '0';
@@ -429,17 +394,17 @@ begin
 	fire1 <= '0';
 	fire2 <= '0';
 
-	du_e : ulx3s
+	du_e : ulx4m_ls
 	generic map (
 		debug => debug)
 	port map (
 		clk_25mhz  => xtal,
-		ftdi_txd   => ftdi_txd,
-		ftdi_rxd   => ftdi_rxd,
-		fire1      => fire1,
-		fire2      => fire2,
-		gp         => gp,
-		gn         => gn,
+		gpio(0 to 22) => gpio(0 to 22),
+		gpio(23)   => ftdi_txd,
+		gpio(24)   => ftdi_rxd,
+		gpio(25 to 28-1) => gpio(25 to 28-1),
+		btn(0)      => fire1,
+		btn(1 to 7-1)  => gpio(1 to 7-1),
 		sdram_clk  => sdram_clk,
 		sdram_cke  => sdram_cke,
 		sdram_csn  => sdram_cs_n,
@@ -467,10 +432,10 @@ end;
 
 library micron;
 
-configuration ulx3s_graphics_structure_md of testbench is
-	for ulx3s_graphics
-		for all : ulx3s
-			use entity work.ulx3s(structure);
+configuration ulx4mls_graphics_structure_md of testbench is
+	for ulx4mls_graphics
+		for all : ulx4m_ls
+			use entity work.ulx4m_ls(structure);
 		end for;
 		for all: mt48lc32m16a2
 			use entity micron.mt48lc32m16a2
@@ -491,10 +456,10 @@ end;
 
 library micron;
 
-configuration ulx3s_graphics_md of testbench is
-	for ulx3s_graphics
-		for all : ulx3s
-			use entity work.ulx3s(graphics);
+configuration ulx4mls_graphics_md of testbench is
+	for ulx4mls_graphics
+		for all : ulx4m_ls
+			use entity work.ulx4m_ls(graphics);
 		end for;
 			for all : mt48lc32m16a2
 			use entity micron.mt48lc32m16a2
