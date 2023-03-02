@@ -581,12 +581,12 @@ begin
 				mii_txd  : out std_logic_vector(0 to n-1));
 			port map (
 				dhcp_btn  => btn(0),
-				mii_txc   => rmii_tx_clk,
-				mii_txen  => rmii_tx_en,
+				mii_txc   => rmii_nintclk,
+				mii_txen  => rmii_txen,
 				mii_txd   => rmii_txd,
 
-				mii_rxc    => rmii_tx_clk,
-				mii_rxdv   => rmii_rx_dv,
+				mii_rxc    => rmii_nintclk,
+				mii_rxdv   => rmii_rxdv,
 				mii_rxd    => rmii_rxd);
 
     		signal dhcpcd_req : std_logic;
@@ -671,44 +671,52 @@ begin
 			signal refclk : std_logic;
 		begin
 
-			assert 
-				video_mode=mode480p24bpp or 
-				video_mode=modedebug
-			report "mii not available for videomode " & video_modes'image(video_mode)
-			severity failure;
+			-- assert 
+				-- video_mode=mode480p24bpp or 
+				-- video_mode=modedebug
+			-- report "mii not available for videomode " & video_modes'image(video_mode)
+			-- severity failure;
+-- 
+			-- mode480p24bp_g : if video_mode=mode480p24bpp generate
+			-- begin
+				-- process (video_shift_clk)
+					-- variable reg : unsigned(0 to 10-1) := b"11_10_01_11_00";
+				-- begin
+					-- if rising_edge(video_shift_clk) then
+						-- reg := reg rol 2;
+					-- end if;
+					-- d0 <= reg(0);
+					-- d1 <= reg(1);
+				-- end process;
+			-- end generate;
+	-- 
+			-- oddr_i : oddrx1f
+			-- port map(
+				-- sclk => video_shift_clk,
+				-- rst  => '0',
+				-- d0   => d0,
+				-- d1   => d1,
+				-- q    => refclk);
 
-			mode480p24bp_g : if video_mode=mode480p24bpp generate
-			begin
-				process (video_shift_clk)
-					variable reg : unsigned(0 to 10-1) := b"11_10_01_11_00";
-				begin
-					if rising_edge(video_shift_clk) then
-						reg := reg rol 2;
-					end if;
-					d0 <= reg(0);
-					d1 <= reg(1);
-				end process;
-			end generate;
-	
 			oddr_i : oddrx1f
 			port map(
-				sclk => video_shift_clk,
+				sclk => clk_25mhz,
 				rst  => '0',
-				d0   => d0,
-				d1   => d1,
+				d0   => '1',
+				d1   => '0',
 				q    => refclk);
 
 			debug_g : block
-				signal xxx : std_logic;
+				signal debug_clk : std_logic;
 			begin
-				xxx <= not to_stdulogic(to_bit(xxx)) after 0.1 ns /2;
-				rmii_ref_clk <= refclk when video_mode/=modedebug else xxx;
+				debug_clk <= not to_stdulogic(to_bit(debug_clk)) after 0.1 ns /2;
+				rmii_refclk <= refclk when video_mode/=modedebug else debug_clk;
 			end block;
 
 	
 		end block;
 
-		sio_clk   <= rmii_tx_clk;
+		sio_clk   <= rmii_nintclk;
 		eth_nreset <= not '0';
 		eth_mdio   <= '0';
 		eth_mdc    <= '0';

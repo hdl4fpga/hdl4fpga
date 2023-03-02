@@ -56,12 +56,11 @@ entity ulx4m_ls is
 		eth_mdio        : inout std_logic := '-';
 		eth_mdc         : out std_logic;
 
-		rmii_ref_clk   : out std_logic;
-
-		rmii_tx_clk    : in std_logic := '-';
-		rmii_tx_en     : buffer std_logic;
+		rmii_refclk    : out std_logic;
+		rmii_nintclk   : in std_logic := '-';
+		rmii_txen      : buffer std_logic;
 		rmii_txd       : buffer std_logic_vector(0 to 2-1) := (others => 'Z');
-		rmii_rx_dv     : in  std_logic := '0';
+		rmii_rxdv      : in  std_logic := '0';
 		rmii_rxd       : in  std_logic_vector(0 to 2-1) := (others => '-');
 
 		sdram_clk      : inout std_logic;  
@@ -78,8 +77,8 @@ entity ulx4m_ls is
         gpdi_d          : out std_logic_Vector(4-1 downto 0);
         gpdi_cec        : out std_logic;
 		gpio_scl        : out std_logic;
-
 		gpio            : inout std_logic_vector(0 to 28-1) := (others => 'Z');
+		ftdi_txden      : out std_logic := '1';
 
 		user_programn   : out std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
 		shutdown        : out std_logic := '0'); -- '1' power off the board, 10uA sleep
@@ -88,7 +87,7 @@ entity ulx4m_ls is
 	alias cam_scl    : std_logic is gpio(1);
 	alias ftdi_txd   : std_logic is gpio(23);
 	alias ftdi_rxd   : std_logic is gpio(24);
-	alias ftdi_txden : std_logic is gpio(20);
+	-- alias ftdi_txden : std_logic is gpio(20);
 
 	alias hdmi0_blue  : std_logic is gpdi_d(0);
 	alias hdmi0_green : std_logic is gpdi_d(1);

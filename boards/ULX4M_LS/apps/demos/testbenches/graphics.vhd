@@ -92,13 +92,12 @@ architecture ulx4mls_graphics of testbench is
     		eth_mdio        : inout std_logic := '-';
     		eth_mdc         : out std_logic;
 
-    		rmii_ref_clk   : out std_logic;
-
-    		rmii_tx_clk    : in  std_logic := '-';
-    		rmii_tx_en     : buffer std_logic;
-    		rmii_txd       : buffer std_logic_vector(0 to 2-1);
-    		rmii_rx_dv     : in  std_logic := '-';
-    		rmii_rxd       : in  std_logic_vector(0 to 2-1) := (others => '-');
+			rmii_refclk    : out std_logic;
+			rmii_nintclk   : in std_logic := '-';
+			rmii_txen      : buffer std_logic;
+			rmii_txd       : buffer std_logic_vector(0 to 2-1) := (others => 'Z');
+			rmii_rxdv      : in  std_logic := '0';
+			rmii_rxd       : in  std_logic_vector(0 to 2-1) := (others => '-');
 
     		sdram_clk      : inout std_logic;  
     		sdram_cke      : out   std_logic;
@@ -174,7 +173,6 @@ architecture ulx4mls_graphics of testbench is
 
 	signal nrst : std_logic;
 	signal uart_clk : std_logic := '0';
-	signal gpio : std_logic_vector(0 to 28-1);
 
 	constant debug : boolean := false;
 begin
@@ -322,8 +320,6 @@ begin
 
 	end block;
 
-	mii_clk <= mii_refclk;
-
 	ipoe_b : block
 		generic (
 			payload   : std_logic_vector);
@@ -393,7 +389,7 @@ begin
 			mii_data4 => snd_data,
 			mii_data5 => req_data,
 			mii_frm1 => '0', --mii_req, -- arp
-			mii_frm2 => '0', --mii_req, -- ping
+			mii_frm2 => mii_req, -- ping
 			mii_frm3 => '0',
 			mii_frm4 =>  '0', --mii_req, -- write
 			mii_frm5 =>  '0', --mii_req1, -- read
@@ -415,25 +411,25 @@ begin
 	fire1 <= '0', '1' after 6 us;
 	fire2 <= '0';
 
-	mii_clk <= mii_refclk;
+	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after (1000 ns)/50/2;
 	du_e : ulx4m_ls
 	generic map (
 		debug => debug)
 	port map (
-		clk_25mhz  => xtal,
-		gpio(0 to 22) => gpio(0 to 22),
-		gpio(23)   => ftdi_txd,
-		gpio(24)   => ftdi_rxd,
-		gpio(25 to 28-1) => gpio(25 to 28-1),
-		btn(0)      => fire1,
-		btn(1 to 7-1)  => gpio(1 to 7-1),
+		clk_25mhz => xtal,
+		gpio(0 to 22) => (others => 'Z'),
+		gpio(23)  => ftdi_txd,
+		gpio(24)  => ftdi_rxd,
+		gpio(25 to 28-1) => (others => 'Z'),
+		btn(0)    => fire1,
+		btn(1 to 7-1) => (others => 'Z'),
 
-		rmii_ref_clk   => mii_refclk,
-		rmii_tx_clk    => mii_clk,
-		rmii_tx_en     => mii_rxdv,
-		rmii_txd       => mii_rxd,
-		rmii_rx_dv     => mii_txen,
-		rmii_rxd       => mii_txd, 
+		rmii_refclk => mii_refclk,
+		rmii_nintclk => mii_clk,
+		rmii_txen   => mii_rxdv,
+		rmii_txd    => mii_rxd,
+		rmii_rxdv   => mii_txen,
+		rmii_rxd    => mii_txd, 
 
 		sdram_clk  => sdram_clk,
 		sdram_cke  => sdram_cke,
