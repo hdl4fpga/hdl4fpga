@@ -36,7 +36,8 @@ entity ulx4m_ls is
 		btn             : in  std_logic_vector(0 to 7-1) := (others => '-');
 		led             : out std_logic_vector(8-1 downto 0) := (others => 'Z');
 
-		sd_clk          : in  std_logic := '-';
+		sd_clk          : out std_logic := '-';
+		sd_enable       : out std_logic := '-';
 		sd_cmd          : out std_logic;
 		sd_d            : inout std_logic_vector(4-1 downto 0) := (others => 'U'); -- sd_d(0)=MISO (in), sd_d(3)=CSn (out)
 		sd_wp           : in  std_logic := '-';

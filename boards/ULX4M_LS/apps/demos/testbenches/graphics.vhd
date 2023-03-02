@@ -73,7 +73,7 @@ architecture ulx4mls_graphics of testbench is
     		btn             : in  std_logic_vector(0 to 7-1) := (others => '-');
     		led             : out std_logic_vector(8-1 downto 0) := (others => 'Z');
 
-    		sd_clk          : in  std_logic := '-';
+    		sd_clk          : out  std_logic := '-';
     		sd_cmd          : out std_logic; -- sd_cmd=MOSI (out)
     		sd_d            : inout std_logic_vector(4-1 downto 0) := (others => 'U'); -- sd_d(0)=MISO (in), sd_d(3)=CSn (out)
     		sd_wp           : in  std_logic := '-';
@@ -88,7 +88,7 @@ architecture ulx4mls_graphics of testbench is
     		usb_fpga_otg_dn : inout std_logic := 'Z';
     		n_extrst        : inout std_logic := 'Z';
 
-    		eth_reset       : out std_logic;
+    		eth_nreset      : out std_logic;
     		eth_mdio        : inout std_logic := '-';
     		eth_mdc         : out std_logic;
 
@@ -176,7 +176,7 @@ architecture ulx4mls_graphics of testbench is
 	signal uart_clk : std_logic := '0';
 	signal gpio : std_logic_vector(0 to 28-1);
 
-	constant debug : boolean := true;
+	constant debug : boolean := false;
 begin
 
 	rst <= '1', '0' after 10 us; --, '1' after 30 us, '0' after 31 us;
@@ -333,19 +333,19 @@ begin
 		port (
 			rst       : in  std_logic;
 			mii_rxc   : in  std_logic;
-			mii_txc   : in  std_logic;
 			mii_rxdv  : in  std_logic;
 			mii_rxd   : in  std_logic_vector(0 to 2-1);
 
+			mii_txc   : in  std_logic;
 			mii_txen  : buffer std_logic;
 			mii_txd   : out std_logic_vector(0 to 2-1));
 		port map (
 			rst      => rst,
-			mii_rxc  => mii_clk,
 			mii_txc  => mii_clk,
 			mii_txen => mii_txen,
 			mii_txd  => mii_txd,
 
+			mii_rxc  => mii_clk,
 			mii_rxdv => mii_rxdv,
 			mii_rxd  => mii_rxd);
 
@@ -362,13 +362,37 @@ begin
 
 	begin
 
+    	process
+    	begin
+    		req <= '0';
+    		wait for 36 us;
+    		loop
+    			if req='1' then
+    				wait on mii_rxdv;
+    				if falling_edge(mii_rxdv) then
+    					req <= '0';
+    					x <= x + 1;
+    					wait for 12 us;
+    				end if;
+    			else
+    				if x > 1 then
+    					wait;
+    				end if;
+    				req <= '1';
+    				wait on req;
+    			end if;
+    		end loop;
+    	end process;
+    	mii_req  <= req when x=0 else '0';
+    	mii_req1 <= req when x=1 else '0';
+
 		htb_e : entity hdl4fpga.eth_tb
 		generic map (
 			debug => false)
 		port map (
 			mii_data4 => snd_data,
 			mii_data5 => req_data,
-			mii_frm1 => mii_req, -- arp
+			mii_frm1 => '0', --mii_req, -- arp
 			mii_frm2 => '0', --mii_req, -- ping
 			mii_frm3 => '0',
 			mii_frm4 =>  '0', --mii_req, -- write
@@ -378,22 +402,20 @@ begin
 			mii_txen => mii_txen,
 			mii_txd  => mii_txd);
 
-		-- mii_txen <= miirx_frm and not miirx_end;
-		-- mii_txd  <= miirx_data;
-
 		ethrx_e : entity hdl4fpga.eth_rx
 		port map (
 			dll_data   => datarx_null,
-			mii_clk    => mii_clk,
+			mii_clk    => mii_rxc,
 			mii_frm    => mii_rxdv,
 			mii_irdy   => mii_rxdv,
 			mii_data   => mii_rxd);
 
 	end block;
 
-	fire1 <= '0';
+	fire1 <= '0', '1' after 6 us;
 	fire2 <= '0';
 
+	mii_clk <= mii_refclk;
 	du_e : ulx4m_ls
 	generic map (
 		debug => debug)
@@ -405,6 +427,14 @@ begin
 		gpio(25 to 28-1) => gpio(25 to 28-1),
 		btn(0)      => fire1,
 		btn(1 to 7-1)  => gpio(1 to 7-1),
+
+		rmii_ref_clk   => mii_refclk,
+		rmii_tx_clk    => mii_clk,
+		rmii_tx_en     => mii_rxdv,
+		rmii_txd       => mii_rxd,
+		rmii_rx_dv     => mii_txen,
+		rmii_rxd       => mii_txd, 
+
 		sdram_clk  => sdram_clk,
 		sdram_cke  => sdram_cke,
 		sdram_csn  => sdram_cs_n,

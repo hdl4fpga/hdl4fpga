@@ -500,13 +500,13 @@ begin
 
 	begin
 
-		-- nodebug_g : if not debug generate
+		nodebug_g : if not debug generate
 			uart_clk <= videoio_clk;
-		-- end generate;
+		end generate;
 
-		-- debug_g : if debug generate
-			-- uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
-		-- end generate;
+		debug_g : if debug generate
+			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
+		end generate;
 
 		assert FALSE
 			report "BAUDRATE : " & " " & integer'image(baudrate)
@@ -624,7 +624,7 @@ begin
 			udpdaisy_e : entity hdl4fpga.sio_dayudp
 			generic map (
 				my_mac        => x"00_40_00_01_02_03",
-				default_ipv4a => aton("192.168.1.1"))
+				default_ipv4a => aton("192.168.0.14"))
 			port map (
 				hdplx      => hdplx,
 				mii_clk    => mii_txc,
@@ -698,13 +698,20 @@ begin
 				d1   => d1,
 				q    => refclk);
 
-			rmii_ref_clk <= refclk when video_mode/=modedebug else video_shift_clk;
+			debug_g : block
+				signal xxx : std_logic;
+			begin
+				xxx <= not to_stdulogic(to_bit(xxx)) after 0.1 ns /2;
+				rmii_ref_clk <= refclk when video_mode/=modedebug else xxx;
+			end block;
+
 	
 		end block;
 
 		sio_clk   <= rmii_tx_clk;
-		eth_mdio <= '0';
-		eth_mdc  <= '0';
+		eth_nreset <= not '0';
+		eth_mdio   <= '0';
+		eth_mdc    <= '0';
 
 
 	end generate;

@@ -136,7 +136,7 @@ begin
 		end if;
 	end process;
 
-	dhcpcdtx_frm <= dhcpcd_req xor dhcpcd_rdy;
+	dhcpcdtx_frm <= to_stdulogic(to_bit(dhcpcd_req)) xor dhcpcd_rdy;
 	dhcpdscb_e : entity hdl4fpga.dhcpc_dscb
 	port map (
 		mii_clk       => mii_clk,
