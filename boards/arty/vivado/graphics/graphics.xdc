@@ -39,10 +39,12 @@ set_clock_groups -asynchronous -group { dcm_b.ddr_b.ddr_clk0_mmce2 } -group { sy
 set_clock_groups -asynchronous -group { dcm_b.ddr_b.ddr_clk0_mmce2 } -group { eth_tx_clk }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { ddr_clk0_mmce2 }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { video_clk }
+set_clock_groups -asynchronous -group { eth_tx_clk } -group { dd_clk }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { eth_rx_clk }
 set_clock_groups -asynchronous -group { sys_clk    } -group { dcm_b.ddr_b.ddr_clk0_mmce2  }
 set_clock_groups -asynchronous -group { sys_clk    } -group { dcm_b.ddr_b.ddr_clk90_mmce2 }
 set_clock_groups -asynchronous -group { video_clk  } -group { eth_tx_clk  }
+set_clock_groups -asynchronous -group { dd_clk  } i  -group { eth_tx_clk  }
 
 set_clock_groups -asynchronous -group { dqso0      } -group { sys_clk    }
 set_clock_groups -asynchronous -group { dqso0      } -group { dcm_b.ddr_b.ddr_clk0x2_mmce2 }

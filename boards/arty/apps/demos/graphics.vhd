@@ -946,22 +946,9 @@ begin
 			led    <= (others => '0');
 			if sw0='1' then
 				(led3, led2, led1, led0, led3_g, led2_g, led1_g, led0_g) <= tp_sdrphy(1 to 8);
-			elsif sw1='1' then
-				(led3_r, led2_r, led1_r, led0_r) <= std_logic_vector'(ctlrphy_rlrdy, ctlrphy_rlreq, ctlrphy_wlrdy, ctlrphy_wlreq);
 			else
-				(led3,   led2,   led1,   led0)   <= std_logic_vector'(si_frm, si_irdy, si_trdy, si_end);
-				(led3_b, led2_b, led1_b, led0_b) <= tp_demographics(1 to 4);
-				(led3_r, led2_r, led1_r, led0_r) <= std_logic_vector'('0', '0', '0', q);
+				(led3_r, led2_r, led1_r, led0_r) <= std_logic_vector'(ctlrphy_rlrdy, ctlrphy_rlreq, ctlrphy_wlrdy, ctlrphy_wlreq);
 			end if;
-		end if;
-
-		if rising_edge(sio_clk) then
-			d := si_end;
-			d := tp_demographics(1);
-			if (d and not e)='1' then
-				q := not q;
-			end if;
-			e := d;
 		end if;
 
 	end process;
