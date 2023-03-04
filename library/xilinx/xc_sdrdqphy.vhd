@@ -136,8 +136,6 @@ begin
 	tp_delay <= 
 		dqs180 & dqspre & tp_dqidly when '1',
 		tp_dqssel(2-1 downto 0) & tp_dqsdly(6-1 downto 0) when others;
-		-- sys_rlrdy & sys_rlreq & adjsto_req & adjsto_rdy & step_rdy & step_req & (read_rdy xor read_req) & sto_synced when others;
-		-- adjdqs_req & adjdqs_rdy & adjdqi_req(0) & adjdqi_rdy(0) & adjsto_req & adjsto_rdy & (read_rdy xor read_req) & sto_synced when others;
 
 	sys_wlrdy <= to_stdulogic(to_bit(sys_wlreq));
 	rl_b : block
