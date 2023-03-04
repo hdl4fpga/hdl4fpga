@@ -534,8 +534,8 @@ begin
 						hdr_length  := hdr_length sll 1;
 
 						data_length := shift_right(unsigned(trans_length), blword_bits-word_bits); 
-						data_length := data_length sll word_bits;
-						data_length := data_length + (pfix_size + 2**word_bits);
+						data_length := data_length sll blword_bits;
+						data_length := data_length + (pfix_size + 2**blword_bits);
 
 				end if;
 			end process;
