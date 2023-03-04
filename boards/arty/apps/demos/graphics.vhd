@@ -469,24 +469,6 @@ begin
 		signal dummy_txd  : std_logic_vector(uart_rxd'range);
 	begin
 
-		process (uart_clk)
-			variable q0 : std_logic := '0';
-			variable q1 : std_logic := '0';
-		begin
-			if rising_edge(uart_clk) then
---				led(1) <= q1;
---				led(7) <= q0;
-				if tp(1)='1' then
-					if tp(2)='1' then
-						q1 := not q1;
-					end if;
-				end if;
-				if uart_rxdv='1' then
-					q0 := not q0;
-				end if;
-			end if;
-		end process;
-
 		nodebug_g : if not debug generate
 			uart_clk <= video_clk;
 		end generate;

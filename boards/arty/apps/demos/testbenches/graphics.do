@@ -1,9 +1,9 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/du_e/btn(0)
-add wave -noupdate -expand -group du_ethrx /testbench/ipoe_b/ethrx_e/fcs_sb
-add wave -noupdate -expand -group du_ethrx /testbench/ipoe_b/ethrx_e/fcs_vld
-add wave -noupdate -expand -group du_ethrx -radix hexadecimal /testbench/ipoe_b/ethrx_e/fcs_rem
+add wave -noupdate -group du_ethrx /testbench/ipoe_b/ethrx_e/fcs_sb
+add wave -noupdate -group du_ethrx /testbench/ipoe_b/ethrx_e/fcs_vld
+add wave -noupdate -group du_ethrx -radix hexadecimal /testbench/ipoe_b/ethrx_e/fcs_rem
 add wave -noupdate -expand -group eth_rx /testbench/du_e/eth_rx_clk
 add wave -noupdate -expand -group eth_rx /testbench/du_e/eth_rx_dv
 add wave -noupdate -expand -group eth_rx -radix hexadecimal /testbench/du_e/eth_rxd
@@ -133,23 +133,25 @@ add wave -noupdate -group dhcpdscb_e -radix hexadecimal /testbench/du_e/ipoe_e/u
 add wave -noupdate -group dhcpdscb_e -radix hexadecimal /testbench/du_e/ipoe_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/udp_e/dhcpcd_b/dhcpcd_e/dhcpdscb_e/dhcpdscb_data
 add wave -noupdate -group dhcpdscb_e -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/line__614/xxx
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/xxx1
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/xxx2
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv
 add wave -noupdate /testbench/du_e/sys_rst
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(0)
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/trans_length
+add wave -noupdate -radix unsigned /testbench/du_e/graphics_e/sio_b/tx_b/line__513/data_length
+add wave -noupdate -radix unsigned /testbench/du_e/graphics_e/sio_b/tx_b/line__513/hdr_length
+add wave -noupdate -radix unsigned /testbench/du_e/graphics_e/sio_b/tx_b/line__513/pay_length
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/line__513/pfix_size
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/so_frm
 add wave -noupdate /testbench/du_e/graphics_e/sout_clk
 add wave -noupdate /testbench/du_e/graphics_e/sout_frm
 add wave -noupdate /testbench/du_e/graphics_e/sout_irdy
 add wave -noupdate /testbench/du_e/graphics_e/sout_trdy
 add wave -noupdate /testbench/du_e/graphics_e/sout_end
-add wave -noupdate -divider {New Divider}
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/so_frm
 add wave -noupdate /testbench/du_e/so_irdy
 add wave -noupdate /testbench/du_e/so_trdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/dev_len
@@ -177,7 +179,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {36965631605 fs} 0} {{Cursor 2} {701577100000 fs} 0}
+WaveRestoreCursors {{Cursor 1} {36761348886 fs} 0} {{Cursor 2} {701577100000 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 391
 configure wave -valuecolwidth 202
@@ -193,4 +195,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {91968090 fs}
+WaveRestoreZoom {38961035156 fs} {39002050782 fs}
