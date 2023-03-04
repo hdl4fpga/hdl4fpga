@@ -238,7 +238,7 @@ begin
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
 		x"1702_000000_1603_0000_0000",
-		mii_data5 => x"010000_1702_000008_1603_8000_0000",
+		mii_data5 => x"010000_1702_0003ff_1603_8000_0000",
 --		mii_data4 => x"01007e_1702_000030_1603_8000_07d0",
 		mii_frm1 => '0' , ---mii_req, --'0',
 		mii_frm2 => '0' , --mii_req, -- '0', --ping_req,
