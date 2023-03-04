@@ -262,6 +262,13 @@ begin
 		signal debug_dmaio_rdy    : std_logic;
 
 		constant word_bits    : natural := unsigned_num_bits(ctlr_di'length/byte_size)-1;
+<<<<<<< .mine
+		constant blword_bits : natural := word_bits+unsigned_num_bits(setif(burst_length=0, data_gear, burst_length)/data_gear)-1;
+||||||| .r19578
+		constant blword_bits  : natural := word_bits+unsigned_num_bits(setif(burst_length=0, data_gear, burst_length)/data_gear)-1;
+		-- constant blword_bits  : natural := word_bits; --+unsigned_num_bits(setif(burst_length=0, data_gear, burst_length)/data_gear-1);
+=======
+>>>>>>> .r19586
 
 		signal status         : std_logic_vector(0 to 8-1);
 		alias  status_rw      : std_logic is status(status'right);
@@ -527,14 +534,15 @@ begin
 							pay_length := to_unsigned(pfix_size, pay_length'length);
 						end if;
 
-						hdr_length  := unsigned(trans_length);
-						hdr_length  := hdr_length srl (8-word_bits);
+						hdr_length  := shift_right(unsigned(trans_length), blword_bits-word_bits);
+						hdr_length  := hdr_length srl (unsigned_num_bits(256-1)-blword_bits);
 						hdr_length  := hdr_length + 1;
 						hdr_length  := hdr_length sll 1;
 
-						data_length := unsigned(trans_length);
+						data_length := shift_right(unsigned(trans_length), blword_bits-word_bits); 
 						data_length := data_length sll word_bits;
 						data_length := data_length + (pfix_size + 2**word_bits);
+
 				end if;
 			end process;
 
@@ -606,14 +614,13 @@ begin
 					dst_data => fifo_data);
 
 				process (sout_clk)
-					constant blword_bits   : natural := word_bits+unsigned_num_bits(setif(burst_length=0, data_gear, burst_length)/data_gear)-1;
-					variable octect_length : unsigned(fifo_length'range);
+					variable byte_length : unsigned(fifo_length'range);
 				begin
 					if rising_edge(sout_clk) then
-						octect_length := (others => '1');
-						octect_length := octect_length srl (octect_length'length-(unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length)-1));
-						octect_length := octect_length or  (trans_length sll word_bits);
-						fifo_length <= std_logic_vector(octect_length);
+						byte_length := (others => '1');
+						byte_length := byte_length srl (byte_length'length-(unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length)-1));
+						byte_length := byte_length or  (trans_length sll word_bits);
+						fifo_length <= std_logic_vector(byte_length);
 					end if;
 				end process;
 
