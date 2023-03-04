@@ -262,13 +262,7 @@ begin
 		signal debug_dmaio_rdy    : std_logic;
 
 		constant word_bits    : natural := unsigned_num_bits(ctlr_di'length/byte_size)-1;
-<<<<<<< .mine
 		constant blword_bits : natural := word_bits+unsigned_num_bits(setif(burst_length=0, data_gear, burst_length)/data_gear)-1;
-||||||| .r19578
-		constant blword_bits  : natural := word_bits+unsigned_num_bits(setif(burst_length=0, data_gear, burst_length)/data_gear)-1;
-		-- constant blword_bits  : natural := word_bits; --+unsigned_num_bits(setif(burst_length=0, data_gear, burst_length)/data_gear-1);
-=======
->>>>>>> .r19586
 
 		signal status         : std_logic_vector(0 to 8-1);
 		alias  status_rw      : std_logic is status(status'right);
