@@ -34,10 +34,10 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		-- dqs_delay  : time := 1.65*1.25 ns;
-		-- dqi_delay  : time := 1.65*1.25 ns;
-		dqs_delay  : time := 0*1000 ns /400/4;
-		dqi_delay  : time := 0*1000 ns /400/4;
+		dqs_delay  : time := 1.50*1.25 ns;
+		dqi_delay  : time := 1.50*1.25 ns;
+		-- dqs_delay  : time := 0*1000 ns /400/4;
+		-- dqi_delay  : time := 0*1000 ns /400/4;
 
 		loopback   : boolean := false;
 		bypass     : boolean := false;
@@ -123,7 +123,7 @@ architecture xilinx of xc_sdrdqphy is
 
 	signal dqsi_delay   : std_logic_vector(0 to setif(device=xc7a,5,6)-1);
 	signal tp_dqidly    : std_logic_vector(6-1 downto 0);
-	signal tp_dqsdly    : std_logic_vector(6-1 downto 0);
+	signal tp_dqsdly    : std_logic_vector(6-1 downto 0) := (others => '0');
 	signal tp_dqssel    : std_logic_vector(3-1 downto 0);
 
 	signal step_req : std_logic;
@@ -132,10 +132,7 @@ architecture xilinx of xc_sdrdqphy is
 	signal data_align : std_logic_vector(sys_sti'range);
 begin
 
-	with tp_sel select
-	tp_delay <= 
-		dqs180 & dqspre & tp_dqidly when '1',
-		tp_dqssel(2-1 downto 0) & tp_dqsdly(6-1 downto 0) when others;
+	tp_delay <= tp_dqssel(2-1 downto 0) & tp_dqsdly(6-1 downto 0);
 
 	sys_wlrdy <= to_stdulogic(to_bit(sys_wlreq));
 	rl_b : block

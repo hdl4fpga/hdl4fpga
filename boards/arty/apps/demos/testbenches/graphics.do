@@ -1,4 +1,5 @@
 onerror {resume}
+quietly virtual signal -install /testbench/du_e/sdrphy_e { /testbench/du_e/sdrphy_e/tp(1 to 8)} tp_delay
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/du_e/btn(0)
 add wave -noupdate -group du_ethrx /testbench/ipoe_b/ethrx_e/fcs_sb
@@ -136,6 +137,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv
 add wave -noupdate /testbench/du_e/sys_rst
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e/tp_delay
 add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(0)
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do
 add wave -noupdate -divider {New Divider}
@@ -179,10 +181,10 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {36761348886 fs} 0} {{Cursor 2} {701577100000 fs} 0}
+WaveRestoreCursors {{Cursor 1} {28293706294 fs} 0} {{Cursor 2} {701577100000 fs} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 391
-configure wave -valuecolwidth 202
+configure wave -namecolwidth 228
+configure wave -valuecolwidth 187
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -195,4 +197,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {38961035156 fs} {39002050782 fs}
+WaveRestoreZoom {0 fs} {47808857809 fs}
