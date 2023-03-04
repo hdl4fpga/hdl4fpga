@@ -944,11 +944,10 @@ begin
 		if rising_edge(sys_clk) then
 			rgbled <= (others => '0');
 			led    <= (others => '0');
-			if sw0='1' then
+			case sw is
+			when others =>
 				(led3, led2, led1, led0, led3_g, led2_g, led1_g, led0_g) <= tp_sdrphy(1 to 8);
-			else
-				(led3_r, led2_r, led1_r, led0_r) <= std_logic_vector'(ctlrphy_rlrdy, ctlrphy_rlreq, ctlrphy_wlrdy, ctlrphy_wlreq);
-			end if;
+			end case;
 		end if;
 
 	end process;
