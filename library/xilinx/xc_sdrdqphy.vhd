@@ -34,10 +34,8 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		dqs_delay  : time := 1.50*1.25 ns;
-		dqi_delay  : time := 1.50*1.25 ns;
-		-- dqs_delay  : time := 0*1000 ns /400/4;
-		-- dqi_delay  : time := 0*1000 ns /400/4;
+		dqs_delay  : time := 1.0*(1000 ns /400)*(1.0/4.0);
+		dqi_delay  : time := 1.0*(1000 ns /400)*(1.0/4.0);
 
 		loopback   : boolean := false;
 		bypass     : boolean := false;
@@ -126,10 +124,11 @@ architecture xilinx of xc_sdrdqphy is
 	signal tp_dqsdly    : std_logic_vector(6-1 downto 0) := (others => '0');
 	signal tp_dqssel    : std_logic_vector(3-1 downto 0);
 
-	signal step_req : std_logic;
-	signal step_rdy : std_logic;
+	signal step_req     : std_logic;
+	signal step_rdy     : std_logic;
 
-	signal data_align : std_logic_vector(sys_sti'range);
+	signal data_align   : std_logic_vector(sys_sti'range);
+
 begin
 
 	tp_delay <= tp_dqssel(2-1 downto 0) & tp_dqsdly(6-1 downto 0);
@@ -297,10 +296,13 @@ begin
 	end process;
 
 	dqsi_b : block
-		signal dqsi      : std_logic;
-		signal dqsi_buf  : std_logic;
-		signal dqs_smp   : std_logic_vector(0 to data_gear-1);
-		signal clk90x2_n : std_logic;
+		signal dqsi       : std_logic;
+		signal dqsi_buf   : std_logic;
+		signal dqs_smp    : std_logic_vector(0 to data_gear-1);
+		signal clk90x2_n  : std_logic;
+		signal igbx_sclk  : std_logic;
+		signal igbx_clkx2 : std_logic;
+		signal igbx_clk   : std_logic;
 	begin
 
 		adjdqs_e : entity hdl4fpga.adjpha
@@ -332,6 +334,11 @@ begin
 		dqsi_buf <= sys_dqso(0);
 
 		clk90x2_n <= not clk90x2;
+
+		igbx_sclk  <= clk0x2  when device=xc7a else clk90x2_n;
+		igbx_clkx2 <= clk90x2 when device=xc7a else clk0x2;
+		igbx_clk   <= clk90   when device=xc7a else clk0;
+
 		igbx_i : entity hdl4fpga.igbx
 		generic map (
 			device => device,
@@ -339,9 +346,9 @@ begin
 			gear   => data_gear)
 		port map (
 			rst   => rst0,
-			sclk  => clk90x2_n,
-			clkx2 => clk0x2,
-			clk   => clk0,
+			sclk  => igbx_sclk,
+			clkx2 => igbx_clkx2,
+			clk   => igbx_clk,
 			d(0)  => dqsi_buf,
 			q     => dqs_smp);
 
@@ -353,7 +360,7 @@ begin
 		port map (
 			tp        => tp_dqssel,
 			rst       => rst0,
-			sdram_clk => clk0,
+			sdram_clk => igbx_clk,
 			edge      => std_logic'('0'),
 			sdram_sti => sys_sti(0),
 			sdram_sto => dqssto,
