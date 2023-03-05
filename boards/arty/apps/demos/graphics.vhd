@@ -259,14 +259,14 @@ architecture graphics of arty is
 	signal video_lck      : std_logic := '0';
 	signal video_hs       : std_logic;
 	signal video_vs       : std_logic;
-    signal video_blank    : std_logic;
-    signal video_pixel    : std_logic_vector(0 to 32-1);
+	signal video_blank    : std_logic;
+	signal video_pixel    : std_logic_vector(0 to 32-1);
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
 	signal dd_clk      : std_logic := '0';
 	signal dd_hs       : std_logic;
 	signal dd_vs       : std_logic;
-    signal dd_pixel   : std_logic_vector(0 to 3-1);
+	signal dd_pixel   : std_logic_vector(0 to 3-1);
 
 	alias  mii_txc        : std_logic is eth_tx_clk;
 	alias  sio_clk        : std_logic is mii_txc;
@@ -451,7 +451,7 @@ begin
 		constant baudrate : natural := setif(
 			uart_xtal >= 32.0e6, 3000000, setif(
 			uart_xtal >= 25.0e6, 2000000,
-                                 115200));
+								 115200));
 
 		signal uart_clk   : std_logic;
 		signal uart_rxdv  : std_logic;
@@ -767,22 +767,22 @@ begin
 		signal ser_irdy : std_logic;
 	begin
 		ser_irdy <= si_irdy and si_trdy and not si_end;
-    	ser_debug_e : entity hdl4fpga.ser_debug
-    	generic map (
-    		timing_id    => videoparam(video_mode).timing,
-    		red_length   => 1,
-    		green_length => 1,
-    		blue_length  => 1)
-    	port map (
-    		ser_clk      => sio_clk,
-    		ser_frm      => si_frm,
-    		ser_irdy     => ser_irdy,
-    		ser_data     => si_data,
+		ser_debug_e : entity hdl4fpga.ser_debug
+		generic map (
+			timing_id    => videoparam(video_mode).timing,
+			red_length   => 1,
+			green_length => 1,
+			blue_length  => 1)
+		port map (
+			ser_clk      => sio_clk,
+			ser_frm      => si_frm,
+			ser_irdy     => ser_irdy,
+			ser_data     => si_data,
 
-    		video_clk    => dd_clk,
-    		video_hzsync => dd_hs,
-    		video_vtsync => dd_vs,
-    		video_pixel  => dd_pixel);
+			video_clk    => dd_clk,
+			video_hzsync => dd_hs,
+			video_vtsync => dd_vs,
+			video_pixel  => dd_pixel);
 	end block;
 
 	process (dd_clk)
@@ -832,7 +832,7 @@ begin
 		taps      => natural(floor(sdram_tcp*(32.0*2.0)/(sys_per/2.0)))-1,
 		data_edge => false,
 		bank_size => bank_size,
-        addr_size => addr_size,
+		addr_size => addr_size,
 		cmmd_gear => cmmd_gear,
 		data_gear => data_gear,
 		word_size => word_size,

@@ -415,7 +415,6 @@ begin
 					rst     => rst90,
 					clk     => clk90,
 					delay   => delay,
-					-- delay   => dqsi_delay,
 					idatain => ddqi,
 					dataout => dqi(i));
 			end block;

@@ -162,7 +162,7 @@ begin
 
 	ipoe_b : block
 		signal mii_req    : std_logic := '0';
-    	signal ping_req   : std_logic := '0';
+		signal ping_req   : std_logic := '0';
 		signal mii_req1   : std_logic := '0';
 		signal req         : std_logic;
 		signal datarx_null :  std_logic_vector(mii_rxd'range);
@@ -171,29 +171,29 @@ begin
 
 	begin
 
-    	process
-    	begin
-    		req <= '0';
-    		wait for 36 us;
-    		loop
-    			if req='1' then
-    				wait on mii_rxdv;
-    				if falling_edge(mii_rxdv) then
-    					req <= '0';
-    					x <= x + 1;
-    					wait for 12 us;
-    				end if;
-    			else
-    				if x > 1 then
-    					wait;
-    				end if;
-    				req <= '1';
-    				wait on req;
-    			end if;
-    		end loop;
-    	end process;
-    	mii_req  <= req when x=0 else '0';
-    	mii_req1 <= req when x=1 else '0';
+		process
+		begin
+			req <= '0';
+			wait for 36 us;
+			loop
+				if req='1' then
+					wait on mii_rxdv;
+					if falling_edge(mii_rxdv) then
+						req <= '0';
+						x <= x + 1;
+						wait for 12 us;
+					end if;
+				else
+					if x > 1 then
+						wait;
+					end if;
+					req <= '1';
+					wait on req;
+				end if;
+			end loop;
+		end process;
+		mii_req  <= req when x=0 else '0';
+		mii_req1 <= req when x=1 else '0';
 
 	htb_e : entity hdl4fpga.eth_tb
 	generic map (

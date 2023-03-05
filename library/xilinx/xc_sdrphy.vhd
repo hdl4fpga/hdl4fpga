@@ -296,7 +296,7 @@ begin
 		addr_size => addr_size)
 	port map (
 		clk0    => clk0,
-     	rst     => rst0,
+	 	rst     => rst0,
 		sys_rst => sys_rst,
 		sys_cs  => sys_cs,
 		sys_cke => sys_cke,
