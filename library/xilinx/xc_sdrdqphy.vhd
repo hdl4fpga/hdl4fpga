@@ -335,9 +335,9 @@ begin
 
 		clk90x2_n <= not clk90x2;
 
-		igbx_sclk  <= clk0x2  when device=xc7a else clk90x2_n;
-		igbx_clkx2 <= clk90x2 when device=xc7a else clk0x2;
-		igbx_clk   <= clk90   when device=xc7a else clk0;
+		igbx_sclk  <= clk0x2; -- when device=xc7a else clk90x2_n;
+		igbx_clkx2 <= clk0x2; -- when device=xc7a else clk0x2;
+		igbx_clk   <= clk0  ; -- when device=xc7a else clk0;
 
 		igbx_i : entity hdl4fpga.igbx
 		generic map (
