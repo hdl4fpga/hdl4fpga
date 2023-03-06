@@ -53,7 +53,7 @@ architecture graphics of arty is
 		sdr575MHz_900p24bpp,
 		sdr600MHz_900p24bpp);
 
-	constant app_profile : app_profiles := sdr450mhz_900p24bpp;
+	constant app_profile : app_profiles := sdr500mhz_900p24bpp;
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -122,7 +122,7 @@ architecture graphics of arty is
 		(id => sdram475MHz, pll => (dcm_mul => 19, dcm_div => 4), cl => "011", cwl => "001"),
 		(id => sdram500MHz, pll => (dcm_mul =>  5, dcm_div => 1), cl => "011", cwl => "001"),
 		(id => sdram525MHz, pll => (dcm_mul => 21, dcm_div => 4), cl => "011", cwl => "001"),
-		(id => sdram550MHz, pll => (dcm_mul => 11, dcm_div => 2), cl => "101", cwl => "010"),  -- latency 9
+		(id => sdram550MHz, pll => (dcm_mul => 11, dcm_div => 2), cl => "100", cwl => "010"),  -- latency 9
 		-- 
 		---------------------------------------
 		-- Frequency   -- 575 Mhz -- 600 Mhz --

@@ -34,8 +34,8 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		dqs_delay  : time := 0.0*(1000 ns /400)*(1.0/4.0);
-		dqi_delay  : time := 0.0*(1000 ns /400)*(1.0/4.0);
+		dqs_delay  : time := 2.0*(1000 ns /500)*(1.0/4.0);
+		dqi_delay  : time := 2.0*(1000 ns /500)*(1.0/4.0);
 
 		loopback   : boolean := false;
 		bypass     : boolean := false;
@@ -485,6 +485,7 @@ begin
 									exit;
 								end if;
 							end loop;
+							-- data := unsigned(q1);
 							q2 <= std_logic_vector(data);
 						end if;
 					end process;
@@ -520,6 +521,7 @@ begin
 			
 				gbx4_g : if data_gear=4 generate
 					signal sti : std_logic_vector(sys_sti'range);
+					signal sto : std_logic_vector(sys_sti'range);
 				begin
 					lat_e : entity hdl4fpga.latency
 					generic map (
@@ -530,6 +532,25 @@ begin
 						di => sys_sti,
 						do => sys_sto);
 
+					-- process(sto, dqspre, data_align, clk90)
+						-- variable xxx : std_logic_vector(sto'range);
+					-- begin
+						-- if rising_edge(clk90) then
+							-- xxx := sto;
+						-- end if;
+-- 
+						-- for i in sto'range loop
+							-- if dqspre='0' and data_align="0001" then
+								-- if i < 3 then
+									-- sys_sto(i) <= sto(i);
+								-- else
+									-- sys_sto(i) <= xxx(i);
+								-- end if;
+							-- end if;
+						-- end loop;
+						-- 
+					-- end process;
+-- 
 					process (clk90)
 						variable ena : std_logic;
 					begin
