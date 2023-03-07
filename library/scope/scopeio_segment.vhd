@@ -164,7 +164,7 @@ begin
 		axis_scale <= multiplex(hz_scale & std_logic_vector(resize(unsigned(vt_scale), axis_scale'length)), axis_sel);
 
 		g_offset <= multiplex(vt_offsets, gain_cid, vt_offset'length);
-		v_offset <= std_logic_vector(unsigned(multiplex(vt_offset & g_offset, gain_dv)) - bias);
+		v_offset <= std_logic_vector(unsigned(std_logic_vector'(multiplex(vt_offset & g_offset, gain_dv))) - bias);
 
 		process (axis_sel, hz_base, v_offset)
 			variable vt_base : std_logic_vector(v_offset'range);
