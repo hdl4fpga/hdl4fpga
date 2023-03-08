@@ -128,6 +128,7 @@ architecture xilinx of xc_sdrdqphy is
 	signal step_rdy     : std_logic;
 
 	signal data_align   : std_logic_vector(sys_sti'range);
+	signal half_align   : std_logic;
 
 begin
 
@@ -485,7 +486,7 @@ begin
 									exit;
 								end if;
 							end loop;
-							-- data := unsigned(q1);
+							data := unsigned(q1);
 							q2 <= std_logic_vector(data);
 						end if;
 					end process;
@@ -538,7 +539,7 @@ begin
 						if rising_edge(clk90) then
 							lat := lat srl sys_sti'length;
 							lat(0 to sys_sti'length-1) := unsigned(sys_sti);
-							sys_sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), dqspre), "0", 4);
+							sys_sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
 						end if;
 					end process;
 
@@ -546,11 +547,20 @@ begin
 						variable ena : std_logic;
 					begin
 						if rising_edge(clk90) then
-							if sys_sti=(sys_sti'range => '0') then
-								ena := '1';
-							elsif ena='1' then
-								ena:= '0';
-								data_align <= reverse(sys_sti);
+							if sto_synced='0' then
+								if sys_sti=(sys_sti'range => '0') then
+									ena := '1';
+								elsif ena='1' then
+									ena:= '0';
+									if sys_sti="1110" then
+										half_align <= not dqspre;
+									elsif sys_sti="1000" then
+										half_align <= not dqspre;
+									else
+										half_align <= '-';
+									end if;
+									data_align <= reverse(sys_sti);
+								end if;
 							end if;
 						end if;
 					end process;

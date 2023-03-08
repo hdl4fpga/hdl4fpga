@@ -29,13 +29,10 @@ use hdl4fpga.base.all;
 
 architecture def of adjsto is
 
-	signal sync     : std_logic;
-	signal sel      : unsigned(0 to tp'length-1);
-	signal seq      : std_logic_vector(0 to dqs_smp'length-1);
-	signal pre      : unsigned(seq'range);
-
-	-- signal step_req : std_logic;
-	-- signal step_rdy : std_logic;
+	signal sync : std_logic;
+	signal sel  : unsigned(0 to tp'length-1);
+	signal seq  : std_logic_vector(0 to dqs_smp'length-1);
+	signal pre  : unsigned(seq'range);
 
 begin
 
@@ -90,7 +87,7 @@ begin
 					dqs_pre <= '0';
 				when s_sync =>
 					if cntr(0)='1' then
-						state := s_init;
+						state    := s_init;
 						step_rdy <= to_stdulogic(to_bit(step_req));
 					elsif sto(lat)='1' then
 						if sto(lat+1)='0' then
