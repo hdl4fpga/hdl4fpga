@@ -300,10 +300,6 @@ begin
 		signal dqsi       : std_logic;
 		signal dqsi_buf   : std_logic;
 		signal dqs_smp    : std_logic_vector(0 to data_gear-1);
-		signal clk90x2_n  : std_logic;
-		signal igbx_sclk  : std_logic;
-		signal igbx_clkx2 : std_logic;
-		signal igbx_clk   : std_logic;
 	begin
 
 		adjdqs_e : entity hdl4fpga.adjpha
@@ -334,12 +330,6 @@ begin
 			dqso   => sys_dqso);
 		dqsi_buf <= sys_dqso(0);
 
-		clk90x2_n <= not clk90x2;
-
-		igbx_sclk  <= clk0x2; -- when device=xc7a else clk90x2_n;
-		igbx_clkx2 <= clk0x2; -- when device=xc7a else clk0x2;
-		igbx_clk   <= clk0  ; -- when device=xc7a else clk0;
-
 		igbx_i : entity hdl4fpga.igbx
 		generic map (
 			device => device,
@@ -347,9 +337,9 @@ begin
 			gear   => data_gear)
 		port map (
 			rst   => rst0,
-			sclk  => igbx_sclk,
-			clkx2 => igbx_clkx2,
-			clk   => igbx_clk,
+			sclk  => clk0x2,
+			clkx2 => clk0x2,
+			clk   => clk0,  
 			d(0)  => dqsi_buf,
 			q     => dqs_smp);
 
@@ -361,7 +351,7 @@ begin
 		port map (
 			tp        => tp_dqssel,
 			rst       => rst0,
-			sdram_clk => igbx_clk,
+			sdram_clk => clk0,
 			edge      => std_logic'('0'),
 			sdram_sti => sys_sti(0),
 			sdram_sto => dqssto,
@@ -453,13 +443,11 @@ begin
 				end generate;
 	
 				data_gear4_g : if data_gear=4 generate
-					signal clk90x2_n : std_logic;
 					signal q1 : std_logic_vector(data_gear-1 downto 0);
 					signal q2 : std_logic_vector(data_gear-1 downto 0);
 					
 				begin
 
-					clk90x2_n <= not clk90x2;
 					igbx_i : entity hdl4fpga.igbx
 					generic map (
 						device => device,
@@ -467,7 +455,6 @@ begin
 						gear => data_gear)
 					port map (
 						rst   => rst90,
-						-- sclk  => clk90x2_n,
 						sclk  => clk0x2,
 						clkx2 => clk90x2,
 						clk   => clk90,
@@ -500,9 +487,7 @@ begin
 		begin
 			igbx_g : if not bypass generate
 				data_gear4_g : if data_gear=4 generate
-					signal clk90x2_n : std_logic;
 				begin
-					clk90x2_n <= not clk90x2;
 					igbx_i : entity hdl4fpga.igbx
 					generic map (
 						device => device,
@@ -510,7 +495,6 @@ begin
 						gear => data_gear)
 					port map (
 						rst   => rst90,
-						-- sclk  => clk90x2_n,
 						sclk  => clk0x2,
 						clkx2 => clk90x2,
 						clk   => clk90,
