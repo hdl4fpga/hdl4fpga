@@ -34,8 +34,8 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		dqs_delay  : time := 0.0*(1000 ns /500)*(1.0/4.0);
-		dqi_delay  : time := 0.0*(1000 ns /500)*(1.0/4.0);
+		dqs_delay  : time := 0.1*(1000 ns /333.0)*(1.0/4.0);
+		dqi_delay  : time := 0.1*(1000 ns /333.0)*(1.0/4.0);
 
 		loopback   : boolean := false;
 		bypass     : boolean := false;
@@ -69,7 +69,7 @@ entity xc_sdrdqphy is
 		write_req  : buffer std_logic;
 		sys_dmt    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_sti    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
-		sys_sto    : out std_logic_vector(data_gear-1 downto 0);
+		sys_sto    : buffer std_logic_vector(data_gear-1 downto 0);
 		sys_dmi    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_dqi    : in  std_logic_vector(data_gear*byte_size-1 downto 0);
 		sys_dqt    : in  std_logic_vector(data_gear-1 downto 0);
@@ -477,18 +477,15 @@ begin
 					process (q1, data_align, clk90)
 						variable data : unsigned(q1'range);
 					begin
-						if rising_edge(clk90) then
-							data := unsigned(q1);
-							for j in data_align'range loop
-								if data_align(j)='0' then
-									data := data rol 1;
-								else
-									exit;
-								end if;
-							end loop;
-							data := unsigned(q1);
-							q2 <= std_logic_vector(data);
-						end if;
+						data := unsigned(q1);
+						for j in data_align'range loop
+							if data_align(j)='0' then
+								data := data rol 1;
+							else
+								exit;
+							end if;
+						end loop;
+						q2 <= std_logic_vector(data);
 					end process;
 
 					shuffle_g : for j in 0 to data_gear-1 generate
@@ -527,18 +524,18 @@ begin
 					lat_e : entity hdl4fpga.latency
 					generic map (
 						n => data_gear,
-						d => (0 to data_gear-1 => 2))
+						d => (0 to data_gear-1 => 1))
 					port map (
 						clk => clk90,
 						di => sys_sti,
 						do => sto);
 
-					process(sys_sti,clk90)
-						variable lat : unsigned(0 to 2*sys_sti'length-1);
+					process(sto,clk90)
+						variable lat : unsigned(0 to 2*sto'length-1);
 					begin
 						if rising_edge(clk90) then
-							lat := lat srl sys_sti'length;
-							lat(0 to sys_sti'length-1) := unsigned(sys_sti);
+							lat := lat srl sto'length;
+							lat(0 to sto'length-1) := unsigned(sto);
 							sys_sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
 						end if;
 					end process;
@@ -553,13 +550,15 @@ begin
 								elsif ena='1' then
 									ena:= '0';
 									if sys_sti="1110" then
-										half_align <= not dqspre;
+										half_align <= dqspre;
+										data_align <= reverse(sys_sti) xor ('0', dqspre, dqspre, '0');
 									elsif sys_sti="1000" then
 										half_align <= not dqspre;
+										data_align <= reverse(sys_sti) xor ('0', not dqspre, not dqspre, '0');
 									else
 										half_align <= '-';
+										data_align <= (others => '-');
 									end if;
-									data_align <= reverse(sys_sti);
 								end if;
 							end if;
 						end if;
