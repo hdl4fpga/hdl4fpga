@@ -32,9 +32,6 @@ create_clock -name dqso1 -period $ddr_tck -waveform [list 0 [expr $ddr_tck/2 ]] 
 set_input_delay -clock dqso1 -min [ expr -$ddr_dqsq ]  [get_ports ddr3_dq[*] ]
 set_input_delay -clock dqso1 -max $ddr_qh [get_ports ddr3_dq[*] ]
 
-#set_max_delay -datapath_only 0.0 -from [ get_clocks dqso0 ] -to [ get_clocks I* ]
-#set_max_delay -datapath_only 0.0 -from [ get_clocks dqso1 ] -to [ get_clocks I* ]
-
 set_clock_groups -asynchronous -group { dcm_b.ddr_b.ddr_clk0_mmce2 } -group { sys_clk    }
 set_clock_groups -asynchronous -group { dcm_b.ddr_b.ddr_clk0_mmce2 } -group { eth_tx_clk }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { ddr_clk0_mmce2 }

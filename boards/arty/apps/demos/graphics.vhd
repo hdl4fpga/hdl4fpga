@@ -53,7 +53,7 @@ architecture graphics of arty is
 		sdr575MHz_900p24bpp,
 		sdr600MHz_900p24bpp);
 
-	constant app_profile : app_profiles := sdr500mhz_900p24bpp;
+	constant app_profile : app_profiles := sdr450mhz_900p24bpp;
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -839,7 +839,7 @@ begin
 		byte_size => byte_size)
 	port map (
 
-		tp_sel    => btn3,
+		tp_sel    => sw(1 downto 0),
 		tp        => tp_sdrphy,
 
 		rst0      => rst0div_rst,
@@ -947,6 +947,7 @@ begin
 			case sw is
 			when others =>
 				(led3, led2, led1, led0, led3_g, led2_g, led1_g, led0_g) <= tp_sdrphy(1 to 8);
+				led3 <= ctlrphy_ini;
 			end case;
 		end if;
 

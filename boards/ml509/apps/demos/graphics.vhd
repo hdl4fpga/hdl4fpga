@@ -1035,7 +1035,6 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
-		tp_sel     => gpio_sw_w,
 		tp         => tp,
 		rst0       => sdrphy_rst,
 		rst90      => sdrphy_rst90,

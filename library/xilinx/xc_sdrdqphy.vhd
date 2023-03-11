@@ -34,8 +34,8 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		dqs_delay  : time := 0.1*(1000 ns /333.0)*(1.0/4.0);
-		dqi_delay  : time := 0.1*(1000 ns /333.0)*(1.0/4.0);
+		dqs_delay  : time := 0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
+		dqi_delay  : time := 0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
 
 		loopback   : boolean := false;
 		bypass     : boolean := false;
@@ -46,7 +46,7 @@ entity xc_sdrdqphy is
 		data_edge  : boolean;
 		byte_size  : natural);
 	port (
-		tp_sel     : in  std_logic := '-';
+		tp_sel     : in  std_logic_vector(2-1 downto 0) := "00";
 		tp_delay   : out std_logic_vector(1 to 8);
 
 		rst0       : in  std_logic;
@@ -120,8 +120,8 @@ architecture xilinx of xc_sdrdqphy is
 	signal pause_rdy    : std_logic;
 
 	signal dqsi_delay   : std_logic_vector(0 to setif(device=xc7a,5,6)-1);
-	signal tp_dqidly    : std_logic_vector(6-1 downto 0);
 	signal tp_dqsdly    : std_logic_vector(6-1 downto 0) := (others => '0');
+	signal tp_dqidly    : std_logic_vector(6-1 downto 0);
 	signal tp_dqssel    : std_logic_vector(3-1 downto 0);
 
 	signal step_req     : std_logic;
@@ -132,7 +132,11 @@ architecture xilinx of xc_sdrdqphy is
 
 begin
 
-	tp_delay <= tp_dqssel(2-1 downto 0) & tp_dqsdly(6-1 downto 0);
+	with tp_sel select
+	tp_delay <= 
+		tp_dqssel(1-1 downto 0) & dqspre & tp_dqsdly(6-1 downto 0)       when "00",
+		tp_dqssel(1-1 downto 0) & dqspre & tp_dqidly(6-1 downto 0)       when "01",
+		'0'                     & dqspre & '0' & half_align & data_align when others;
 
 	sys_wlrdy <= to_stdulogic(to_bit(sys_wlreq));
 	rl_b : block
@@ -343,7 +347,7 @@ begin
 			d(0)  => dqsi_buf,
 			q     => dqs_smp);
 
-		tp_dqsdly(dqsi_delay'length-1 downto 0) <= dqsi_delay;
+		tp_dqsdly <= std_logic_vector(resize(unsigned(dqsi_delay), tp_dqsdly'length));
 
 		adjsto_e : entity hdl4fpga.adjsto
 		generic map (
@@ -401,7 +405,7 @@ begin
 					delay    => delay);
 	
 				tp_g : if i=0 generate
-					tp_dqidly(delay'length-1 downto 0) <= delay;
+					tp_dqidly <= std_logic_vector(resize(unsigned(delay), tp_dqidly'length));
 				end generate;
 	
 				ddqi <= transport sdram_dqi(i) after dqi_delay;
@@ -461,19 +465,29 @@ begin
 						d(0)  => dqi(i),
 						q     => q1);
 			
-					process (q1, data_align, clk90)
-						variable data : unsigned(q1'range);
+					process(q1, clk90)
+						variable data : std_logic_vector(0 to q1'length-1);
 					begin
-						data := unsigned(q1);
-						for j in data_align'range loop
-							if data_align(j)='0' then
-								data := data rol 1;
-							else
-								exit;
-							end if;
-						end loop;
-						q2 <= std_logic_vector(data);
+						if rising_edge(clk90) then
+							data := q1;
+						end if;
+						q2 <= data(1 to 4-1) & q1(q1'left);
+						-- q2 <= q1;
 					end process;
+
+					-- process (q1, data_align)
+						-- variable data : unsigned(q1'range);
+					-- begin
+						-- for j in data_align'range loop
+							-- if data_align(j)='0' then
+								-- data := data rol 1;
+							-- else
+								-- exit;
+							-- end if;
+						-- end loop;
+						-- data := unsigned(q1);
+						-- q2 <= std_logic_vector(data);
+					-- end process;
 
 					shuffle_g : for j in 0 to data_gear-1 generate
 						dq(j*byte_size+i)      <= q1(j);
@@ -502,17 +516,16 @@ begin
 				end generate;
 			
 				gbx4_g : if data_gear=4 generate
-					signal sti : std_logic_vector(sys_sti'range);
 					signal sto : std_logic_vector(sys_sti'range);
 				begin
 					lat_e : entity hdl4fpga.latency
 					generic map (
 						n => data_gear,
-						d => (0 to data_gear-1 => 1))
+						d => (0 to data_gear-1 => 2))
 					port map (
 						clk => clk90,
-						di => sys_sti,
-						do => sto);
+						di  => sys_sti,
+						do  => sto);
 
 					process(sto,clk90)
 						variable lat : unsigned(0 to 2*sto'length-1);
@@ -521,6 +534,7 @@ begin
 							lat := lat srl sto'length;
 							lat(0 to sto'length-1) := unsigned(sto);
 							sys_sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
+							sys_sto <= (others => sto(0)); --sto'left));
 						end if;
 					end process;
 
