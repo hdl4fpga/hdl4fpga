@@ -465,29 +465,28 @@ begin
 						d(0)  => dqi(i),
 						q     => q1);
 			
-					process(q1, clk90)
-						variable data : std_logic_vector(0 to q1'length-1);
-					begin
-						if rising_edge(clk90) then
-							data := q1;
-						end if;
-						q2 <= data(1 to 4-1) & q1(q1'left);
-						-- q2 <= q1;
-					end process;
-
-					-- process (q1, data_align)
-						-- variable data : unsigned(q1'range);
+					-- process(q1, clk90)
+						-- variable data : std_logic_vector(0 to q1'length-1);
 					-- begin
-						-- for j in data_align'range loop
-							-- if data_align(j)='0' then
-								-- data := data rol 1;
-							-- else
-								-- exit;
-							-- end if;
-						-- end loop;
-						-- data := unsigned(q1);
-						-- q2 <= std_logic_vector(data);
+						-- if rising_edge(clk90) then
+							-- data := q1;
+						-- end if;
+						-- q2 <= data(1 to 4-1) & q1(q1'left);
 					-- end process;
+
+					process (q1, data_align)
+						variable data : unsigned(q1'range);
+					begin
+						data := unsigned(q1);
+						for j in data_align'range loop
+							if data_align(j)='0' then
+								data := data rol 1;
+							else
+								exit;
+							end if;
+						end loop;
+						q2 <= std_logic_vector(data);
+					end process;
 
 					shuffle_g : for j in 0 to data_gear-1 generate
 						dq(j*byte_size+i)      <= q1(j);
@@ -521,7 +520,7 @@ begin
 					lat_e : entity hdl4fpga.latency
 					generic map (
 						n => data_gear,
-						d => (0 to data_gear-1 => 2))
+						d => (0 to data_gear-1 => 1))
 					port map (
 						clk => clk90,
 						di  => sys_sti,
@@ -534,7 +533,7 @@ begin
 							lat := lat srl sto'length;
 							lat(0 to sto'length-1) := unsigned(sto);
 							sys_sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
-							sys_sto <= (others => sto(0)); --sto'left));
+							-- sys_sto <= (others => sto(0)); --sto'left));
 						end if;
 					end process;
 
@@ -548,11 +547,11 @@ begin
 								elsif ena='1' then
 									ena:= '0';
 									if sys_sti="1110" then
-										half_align <= dqspre;
-										data_align <= reverse(sys_sti) xor ('0', dqspre, dqspre, '0');
-									elsif sys_sti="1000" then
 										half_align <= not dqspre;
 										data_align <= reverse(sys_sti) xor ('0', not dqspre, not dqspre, '0');
+									elsif sys_sti="1000" then
+										half_align <= dqspre;
+										data_align <= reverse(sys_sti) xor ('0', dqspre, dqspre, '0');
 									else
 										half_align <= '-';
 										data_align <= (others => '-');

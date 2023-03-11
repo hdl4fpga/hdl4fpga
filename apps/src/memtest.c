@@ -223,5 +223,6 @@ int main (int argc, char *argv[])
 		}
 	}
 
+	fprintf(stderr, "finished\n");
 	return 0;
 }
