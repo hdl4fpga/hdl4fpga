@@ -547,11 +547,11 @@ begin
 								elsif ena='1' then
 									ena:= '0';
 									if sys_sti="1110" then
-										half_align <= not dqspre;
-										data_align <= reverse(sys_sti) xor ('0', not dqspre, not dqspre, '0');
-									elsif sys_sti="1000" then
 										half_align <= dqspre;
 										data_align <= reverse(sys_sti) xor ('0', dqspre, dqspre, '0');
+									elsif sys_sti="1000" then
+										half_align <= not dqspre;
+										data_align <= reverse(sys_sti) xor ('0', not dqspre, not dqspre, '0');
 									else
 										half_align <= '-';
 										data_align <= (others => '-');
