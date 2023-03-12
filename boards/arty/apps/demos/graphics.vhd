@@ -53,7 +53,7 @@ architecture graphics of arty is
 		sdr575MHz_900p24bpp,
 		sdr600MHz_900p24bpp);
 
-	constant app_profile : app_profiles := sdr525mhz_900p24bpp;
+	constant app_profile : app_profiles := sdr450mhz_900p24bpp;
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -829,7 +829,7 @@ begin
 		bufio     => true,
 		device    => xc7a,
 		bypass    => false,
-		taps      => natural(floor(sdram_tcp*(32.0*2.0)/(sys_per/2.0)))-1,
+		taps      => natural(floor(sdram_tcp/((sys_per/2.0)/(32.0*2.0))))-1,
 		data_edge => false,
 		bank_size => bank_size,
 		addr_size => addr_size,
