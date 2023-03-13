@@ -39,7 +39,6 @@ entity xc_sdrdqphy is
 
 		loopback   : boolean := false;
 		bypass     : boolean := false;
-		bufio      : boolean;
 		device     : fpga_devices;
 		taps       : natural;
 		data_gear  : natural;
@@ -592,7 +591,7 @@ begin
 	end block;
 
 	datao_b : block
-		constant register_on : boolean := device=xc7a;
+		constant register_on : boolean := device=xc7a or device=xc5v;
 	begin
 		oddr_g : for i in sdram_dqo'range generate
 

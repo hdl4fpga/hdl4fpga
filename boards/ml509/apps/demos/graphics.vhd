@@ -1025,7 +1025,6 @@ begin
 		-- dqi_delay   => (0 => 0 ns, 1 => 0 ns),
 		loopback    => true,
 		device      => xc5v,
-		bufio       => false,
 		bypass      => false,
 		taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
 		bank_size   => bank_size,

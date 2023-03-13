@@ -619,7 +619,7 @@
     <property xil_pn:name="Evaluation Development Board" xil_pn:value="None Specified" xil_pn:valueState="default"/>
     <property xil_pn:name="Exclude Compilation of Deprecated EDK Cores" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Exclude Compilation of EDK Sub-Libraries" xil_pn:value="false" xil_pn:valueState="default"/>
-    <property xil_pn:name="Extra Effort (Highest PAR level only)" xil_pn:value="None" xil_pn:valueState="default"/>
+    <property xil_pn:name="Extra Effort (Highest PAR level only)" xil_pn:value="Normal" xil_pn:valueState="non-default"/>
     <property xil_pn:name="FPGA Start-Up Clock" xil_pn:value="CCLK" xil_pn:valueState="default"/>
     <property xil_pn:name="FSM Encoding Algorithm" xil_pn:value="Auto" xil_pn:valueState="default"/>
     <property xil_pn:name="FSM Style" xil_pn:value="LUT" xil_pn:valueState="default"/>
@@ -754,9 +754,9 @@
     <property xil_pn:name="Read Cores" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Reduce Control Sets" xil_pn:value="No" xil_pn:valueState="default"/>
     <property xil_pn:name="Regenerate Core" xil_pn:value="Under Current Project Setting" xil_pn:valueState="default"/>
-    <property xil_pn:name="Register Balancing" xil_pn:value="Yes" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Register Balancing" xil_pn:value="No" xil_pn:valueState="default"/>
     <property xil_pn:name="Register Duplication Map" xil_pn:value="Off" xil_pn:valueState="default"/>
-    <property xil_pn:name="Register Duplication Xst" xil_pn:value="false" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="Register Duplication Xst" xil_pn:value="true" xil_pn:valueState="default"/>
     <property xil_pn:name="Release Write Enable (Output Events)" xil_pn:value="Default (6)" xil_pn:valueState="default"/>
     <property xil_pn:name="Rename Design Instance in Testbench File to" xil_pn:value="UUT" xil_pn:valueState="default"/>
     <property xil_pn:name="Rename Top Level Architecture To" xil_pn:value="Structure" xil_pn:valueState="default"/>

@@ -37,7 +37,6 @@ entity xc_sdrphy is
 		device     : fpga_devices;
 		loopback   : boolean   := false;
 		bypass     : boolean   := true;
-		bufio      : boolean   := false;
 		taps       : natural   := 0;
 		cmmd_gear  : natural   := 1;
 		data_gear  : natural   := 2;
@@ -499,7 +498,6 @@ begin
 			-- dqi_delay  => dqi_delay(i mod dqi_delay'length),
 			loopback   => loopback,
 			bypass     => bypass,
-			bufio      => bufio,
 			device     => device,
 			taps       => taps,
 			data_edge  => data_edge,
