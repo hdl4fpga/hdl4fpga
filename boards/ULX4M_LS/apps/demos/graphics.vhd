@@ -729,6 +729,7 @@ begin
 		debug => debug,
 		profile      => 0,
 
+		ena_burstref => false,
 		sdram_tcp    => sdram_tcp,
 		fpga         => xc3s,
 		mark         => MT48LC256MA27E ,

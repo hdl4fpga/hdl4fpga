@@ -31,7 +31,7 @@ use hdl4fpga.profiles.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.videopkg.all;
 
-entity demo_graphics is
+entity demo_graphics1 is
 	generic (
 		debug        : boolean := false;
 		profile      : natural;
@@ -80,7 +80,7 @@ entity demo_graphics is
 		video_pixel   : buffer std_logic_vector;
 		dvid_crgb     : out std_logic_vector(7 downto 0);
 
-		ctlr_clks     : in  std_logic_vector(0 to sclk_phases/sclk_edges-1);
+		ctlr_clks     : in  std_logic_vector(0 to 2-1);
 		ctlr_rst      : in  std_logic;
 		ctlr_al       : in  std_logic_vector(3-1 downto 0) := (others => '0');
 		ctlr_bl       : in  std_logic_vector(0 to 3-1);
@@ -128,7 +128,7 @@ entity demo_graphics is
 
 end;
 
-architecture mix of demo_graphics is
+architecture mix of demo_graphics1 is
 
 	type latencies is record
 		ddro    : natural;
@@ -964,7 +964,7 @@ begin
 		signal inirdy    : std_logic;
 	begin
 		ctlr_dm <= (others => '0');
-		sdrctlr_e : entity hdl4fpga.sdram_ctlr
+		sdrctlr_e : entity hdl4fpga.sdram_ctlr1
 		generic map (
 			debug        => debug,
 			fpga         => fpga,

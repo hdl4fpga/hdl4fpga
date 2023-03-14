@@ -51,7 +51,7 @@ architecture graphics of ml509 is
 		sdr400MHz_600p);
 
 	----------------------------------------------------------
-	constant app_profile : app_profiles := sdr400Mhz_600p;  --
+	constant app_profile : app_profiles := sdr400MHz_600p;  --
 	----------------------------------------------------------
 
 	type profileparam_vector is array (app_profiles) of profile_params;
@@ -133,7 +133,7 @@ architecture graphics of ml509 is
 		(sdram333MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "111"),
 		(sdram350MHz, pll => (dcm_mul =>  7, dcm_div => 2), cl => "101"),
 		(sdram375MHz, pll => (dcm_mul => 15, dcm_div => 4), cl => "110"),
-		(sdram400MHz, pll => (dcm_mul =>  4, dcm_div => 1), cl => "111"));
+		(sdram400MHz, pll => (dcm_mul =>  4, dcm_div => 1), cl => "110"));
 
 	function sdramparams (
 		constant id  : sdram_speeds)
@@ -804,7 +804,7 @@ begin
 
 	end block;
 
-	graphics_e : entity hdl4fpga.demo_graphics
+	graphics_e : entity hdl4fpga.demo_graphics1
 	generic map (
 		ena_burstref => false,
 		debug => debug,
@@ -855,9 +855,9 @@ begin
 		video_pixel   => video_pixel,
 		dvid_crgb     => dvid_crgb,
 
-		ctlr_clks     => ctlr_clks(0 to sclk_phases/sclk_edges-1),
+		ctlr_clks     => ctlr_clks,
 		ctlr_rst      => sdrphy_rst, --ddrsys_rst,
-		ctlr_rtt      => "-11",
+		ctlr_rtt      => "11-",
 		ctlr_al       => "000",
 		ctlr_bl       => "011", -- Busrt length 8
 		ctlr_cl       => sdram_params.cl,

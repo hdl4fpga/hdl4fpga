@@ -591,7 +591,7 @@ begin
 	end block;
 
 	datao_b : block
-		constant register_on : boolean := device=xc7a or device=xc5v;
+		constant register_on : boolean := device=xc7a;
 	begin
 		oddr_g : for i in sdram_dqo'range generate
 

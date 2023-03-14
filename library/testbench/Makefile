@@ -130,6 +130,8 @@ HDL4FPGA__sdram_init__def = $(LIB_HDL4FPGA)/sdram_init/def.dat
 HDL4FPGA__sdram_init = $(LIB_HDL4FPGA)/sdram_init/_primary.dat
 HDL4FPGA__sdram_db__body = $(LIB_HDL4FPGA)/sdram_db/body.dat
 HDL4FPGA__sdram_db = $(LIB_HDL4FPGA)/sdram_db/_primary.dat
+HDL4FPGA__sdram_ctlr1__mix = $(LIB_HDL4FPGA)/sdram_ctlr1/mix.dat
+HDL4FPGA__sdram_ctlr1 = $(LIB_HDL4FPGA)/sdram_ctlr1/_primary.dat
 HDL4FPGA__sdram_ctlr__mix = $(LIB_HDL4FPGA)/sdram_ctlr/mix.dat
 HDL4FPGA__sdram_ctlr = $(LIB_HDL4FPGA)/sdram_ctlr/_primary.dat
 HDL4FPGA__scopeiopkg__body = $(LIB_HDL4FPGA)/scopeiopkg/body.dat
@@ -262,6 +264,8 @@ HDL4FPGA__dhcpc_dscb__def = $(LIB_HDL4FPGA)/dhcpc_dscb/def.dat
 HDL4FPGA__dhcpc_dscb = $(LIB_HDL4FPGA)/dhcpc_dscb/_primary.dat
 HDL4FPGA__desser__mux = $(LIB_HDL4FPGA)/desser/mux.dat
 HDL4FPGA__desser = $(LIB_HDL4FPGA)/desser/_primary.dat
+HDL4FPGA__demo_graphics1__mix = $(LIB_HDL4FPGA)/demo_graphics1/mix.dat
+HDL4FPGA__demo_graphics1 = $(LIB_HDL4FPGA)/demo_graphics1/_primary.dat
 HDL4FPGA__demo_graphics__mix = $(LIB_HDL4FPGA)/demo_graphics/mix.dat
 HDL4FPGA__demo_graphics = $(LIB_HDL4FPGA)/demo_graphics/_primary.dat
 HDL4FPGA__dbram__xilinx = $(LIB_HDL4FPGA)/dbram/xilinx.dat
@@ -297,6 +301,7 @@ HDL4FPGA__base__body = $(LIB_HDL4FPGA)/base/body.dat
 HDL4FPGA__base = $(LIB_HDL4FPGA)/base/_primary.dat
 HDL4FPGA__barrel__beh = $(LIB_HDL4FPGA)/barrel/beh.dat
 HDL4FPGA__barrel = $(LIB_HDL4FPGA)/barrel/_primary.dat
+HDL4FPGA__arty = $(LIB_HDL4FPGA)/arty/_primary.dat
 HDL4FPGA__arpd__def = $(LIB_HDL4FPGA)/arpd/def.dat
 HDL4FPGA__arpd = $(LIB_HDL4FPGA)/arpd/_primary.dat
 HDL4FPGA__arp_tx__def = $(LIB_HDL4FPGA)/arp_tx/def.dat
@@ -436,6 +441,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__sdram_init) \
     $(HDL4FPGA__sdram_db__body) \
     $(HDL4FPGA__sdram_db) \
+    $(HDL4FPGA__sdram_ctlr1__mix) \
+    $(HDL4FPGA__sdram_ctlr1) \
     $(HDL4FPGA__sdram_ctlr__mix) \
     $(HDL4FPGA__sdram_ctlr) \
     $(HDL4FPGA__scopeiopkg__body) \
@@ -568,6 +575,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__dhcpc_dscb) \
     $(HDL4FPGA__desser__mux) \
     $(HDL4FPGA__desser) \
+    $(HDL4FPGA__demo_graphics1__mix) \
+    $(HDL4FPGA__demo_graphics1) \
     $(HDL4FPGA__demo_graphics__mix) \
     $(HDL4FPGA__demo_graphics) \
     $(HDL4FPGA__dbram__xilinx) \
@@ -603,6 +612,7 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__base) \
     $(HDL4FPGA__barrel__beh) \
     $(HDL4FPGA__barrel) \
+    $(HDL4FPGA__arty) \
     $(HDL4FPGA__arpd__def) \
     $(HDL4FPGA__arpd) \
     $(HDL4FPGA__arp_tx__def) \
@@ -722,6 +732,11 @@ $(HDL4FPGA__arpd__def) : ../mii/arpd.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/arpd.vhd
+
+$(HDL4FPGA__arty) : ../../boards/arty/common/arty.vhd \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../../boards/arty/common/arty.vhd
 
 $(HDL4FPGA__barrel) \
 $(HDL4FPGA__barrel__beh) : ../basic/barrel.vhd \
@@ -897,6 +912,34 @@ $(HDL4FPGA__demo_graphics__mix) : ../demos/demo_graphics.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../demos/demo_graphics.vhd
+
+$(HDL4FPGA__demo_graphics1) \
+$(HDL4FPGA__demo_graphics1__mix) : ../demos/demo_graphics1.vhd \
+		$(HDL4FPGA__sdram_ctlr1) \
+		$(HDL4FPGA__dmactlr) \
+		$(IEEE__std_logic_unsigned) \
+		$(IEEE__std_logic_arith) \
+		$(HDL4FPGA__vga2dvid) \
+		$(HDL4FPGA__graphics) \
+		$(HDL4FPGA__video_sync) \
+		$(HDL4FPGA__so_data) \
+		$(HDL4FPGA__latency) \
+		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__sio_dmahdsk) \
+		$(HDL4FPGA__fifo) \
+		$(HDL4FPGA__sio_rgtr) \
+		$(HDL4FPGA__txn_buffer) \
+		$(HDL4FPGA__sio_sin) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__sdram_param) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__profiles) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../demos/demo_graphics1.vhd
 
 $(HDL4FPGA__desser) \
 $(HDL4FPGA__desser__mux) : ../basic/desser.vhd \
@@ -1097,6 +1140,7 @@ $(HDL4FPGA__eth_tx) \
 $(HDL4FPGA__eth_tx__def) : ../mii/eth_tx.vhd \
 		$(HDL4FPGA__crc) \
 		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__mii_buffer) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \
@@ -1254,7 +1298,7 @@ $(HDL4FPGA__ipv4__def) : ../mii/ipv4.vhd \
 		$(HDL4FPGA__icmpd) \
 		$(HDL4FPGA__ipv4_tx) \
 		$(HDL4FPGA__sio_mux) \
-		$(HDL4FPGA__ip_adjlen) \
+		$(HDL4FPGA__ipv4_adjlen) \
 		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__sio_cmp) \
 		$(HDL4FPGA__sio_muxcmp) \
@@ -1334,7 +1378,6 @@ $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
 		$(HDL4FPGA__ipv4) \
 		$(HDL4FPGA__arpd) \
 		$(HDL4FPGA__eth_tx) \
-		$(HDL4FPGA__mii_buffer) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__sio_ram) \
 		$(HDL4FPGA__arbiter) \
@@ -1589,6 +1632,26 @@ $(HDL4FPGA__sdram_ctlr__mix) : ../sdram/sdram_ctlr.vhd \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../sdram/sdram_ctlr.vhd
+
+$(HDL4FPGA__sdram_ctlr1) \
+$(HDL4FPGA__sdram_ctlr1__mix) : ../sdram/sdram_ctlr1.vhd \
+		$(IEEE__std_logic_textio) \
+		$(HDL4FPGA__sdram_wrfifo) \
+		$(HDL4FPGA__barrel) \
+		$(HDL4FPGA__sdram_rdfifo) \
+		$(HDL4FPGA__sdram_sch) \
+		$(HDL4FPGA__sdram_mpu) \
+		$(HDL4FPGA__sdram_pgm) \
+		$(HDL4FPGA__sdram_init) \
+		$(HDL4FPGA__sdram_param) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__profiles) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(HDL4FPGA__base)
+	$(VCOM) -2002 -work hdl4fpga ../sdram/sdram_ctlr1.vhd
 
 $(HDL4FPGA__sdram_db) \
 $(HDL4FPGA__sdram_db__body) : ../sdram/sdram_db.vhd \
@@ -1999,7 +2062,7 @@ $(HDL4FPGA__udp_rx__def) : ../mii/udp_rx.vhd \
 
 $(HDL4FPGA__udp_tx) \
 $(HDL4FPGA__udp_tx__def) : ../mii/udp_tx.vhd \
-		$(HDL4FPGA__udp_adjlen) \
+		$(HDL4FPGA__ipv4_adjlen) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \

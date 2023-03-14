@@ -167,14 +167,14 @@ architecture ulx4mls_graphics of testbench is
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
 
-		x"1702_0000ff_1603_0000_1700";
+		x"1702_0000ff_1603_0000_0000";
 	constant req_data  : std_logic_vector :=
-		x"010008_1702_0007ff_1603_8000_0000";
+		x"010008_1702_0000ff_1603_8000_0000";
 
 	signal nrst : std_logic;
 	signal uart_clk : std_logic := '0';
 
-	constant debug : boolean := false;
+	constant debug : boolean := true;
 begin
 
 	rst <= '1', '0' after 10 us; --, '1' after 30 us, '0' after 31 us;
@@ -389,10 +389,10 @@ begin
 			mii_data4 => snd_data,
 			mii_data5 => req_data,
 			mii_frm1 => '0', --mii_req, -- arp
-			mii_frm2 => mii_req, -- ping
+			mii_frm2 => '0', --mii_req, -- ping
 			mii_frm3 => '0',
-			mii_frm4 =>  '0', --mii_req, -- write
-			mii_frm5 =>  '0', --mii_req1, -- read
+			mii_frm4 =>  mii_req, -- write
+			mii_frm5 =>  mii_req1, -- read
 	
 			mii_txc  => mii_txc,
 			mii_txen => mii_txen,
