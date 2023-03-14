@@ -461,13 +461,13 @@ begin
 		di  => ctlr_di,
 		do  => rot_di);
 
-	process (ctlr_wclk)
+	process (ctlr_clks(1))
 	begin
 		for k in 0 to word_size/byte_size-1 loop
 			for i in 0 to data_phases-1 loop
-				sdram_wclks(k*data_phases+i) <= ctlr_wclk;
+				sdram_wclks(k*data_phases+i) <= ctlr_clks(1);
 				if data_edges > 1 then
-					sdram_wclks(k*data_phases+1) <= not ctlr_wclk;
+					sdram_wclks(k*data_phases+1) <= not ctlr_clks(1);
 				end if;
 			end loop;
 		end loop;
