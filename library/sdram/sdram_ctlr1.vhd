@@ -303,7 +303,7 @@ begin
 	ctlr_do_req  <= sdram_mpu_rwin;
 	ctlr_dio_req <= sdram_mpu_rwwin;
 
-	sdram_sch_e : entity hdl4fpga.sdram_sch
+	sdram_sch_e : entity hdl4fpga.sdram_sch1
 	generic map (
 		tcp         => tcp,
 		fpga        => fpga,
@@ -319,7 +319,7 @@ begin
 	port map (
 		sys_cl      => ctlr_cl,
 		sys_cwl     => sdram_cwl,
-		sys_clks    => ctlr_clks(0 to sclk_phases/sclk_edges-1),
+		sys_clk     => ctlr_clks(0),
 		sys_rea     => sdram_mpu_rwin,
 		sys_wri     => sdram_mpu_wwin,
 

@@ -291,7 +291,6 @@ architecture graphics of ml509 is
 	signal tp_delay       : std_logic_vector(word_size/byte_size*6-1 downto 0);
 	signal tp_bit         : std_logic_vector(word_size/byte_size*5-1 downto 0);
 	signal tst            : std_logic;
-	signal tp_sel         : std_logic_vector(0 to unsigned_num_bits(WORD_SIZE/BYTE_SIZE-1)-1);
 
 	signal ddr_d          : std_logic_vector(word_size-1 downto 0);
 	signal ddr_dqst       : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -303,6 +302,8 @@ architecture graphics of ml509 is
 	signal ser_frm        : std_logic;
 	signal ser_data       : std_logic_vector(0 to 8-1);
 
+	signal tp_sel         : std_logic_vector(1 downto 0);
+	signal tp_sdrphy      : std_logic_vector(1 to 32);
 begin
 
 	clkin_ibufg : ibufg
@@ -792,16 +793,6 @@ begin
 			end process;
 		end block;
 
-		process (phy_rxclk_bufg)
-			variable q : std_logic;
-		begin
-			if rising_edge(phy_rxclk_bufg) then
-				-- gpio_led <= (others => '0');
-			end if;
-		end process;
-				gpio_led(0 to 8-1) <= tp(1 to 8);
-
-
 	end block;
 
 	graphics_e : entity hdl4fpga.demo_graphics1
@@ -1017,6 +1008,13 @@ begin
 		end if;
 	end process;
 	
+	process (sys_clk)
+	begin
+		if rising_edge(sys_clk) then
+			gpio_led <= tp_sdrphy(1 to 8);
+		end if;
+	end process;
+	tp_sel <= ('0', gpio_sw_s);
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
 		-- dqs_delay   => (0 => 0.954 ns, 1 => 6.954 ns),
@@ -1034,7 +1032,8 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
-		tp         => tp,
+		tp_sel => tp_sel,
+		tp         => tp_sdrphy,
 		rst0       => sdrphy_rst,
 		rst90      => sdrphy_rst90,
 		iod_clk    => sys_clk,
