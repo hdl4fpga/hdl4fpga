@@ -148,16 +148,19 @@ architecture def of sdram_sch1 is
 	constant wwnx_lat  : natural         := sdram_latency(fpga, wwnxl);
 	constant wid_lat   : natural         := sdram_latency(fpga, widl);
 
-	signal shtrgtr     : std_logic_vector(0 to delay_size);
+	signal wri_sr      : std_logic_vector(0 to delay_size-1);
+	signal rea_sr      : std_logic_vector(0 to delay_size-1);
 
 begin
 	
-	shtrgtr(0) <= sys_rea or sys_wri;
-	process (sys_clk)
+	process (sys_rea, sys_wri, sys_clk)
 	begin
 		if rising_edge(sys_clk) then
-			shtrgtr(1 to shtrgtr'right) <= shtrgtr(0 to shtrgtr'right-1);
+			rea_sr <= std_logic_vector(shift_right(unsigned(rea_sr), 1));
+			wri_sr <= std_logic_vector(shift_right(unsigned(wri_sr), 1));
 		end if;
+		rea_sr(0) <= sys_rea;
+		wri_sr(0) <= sys_wri;
 	end process;
 
 	sdram_st <= sdram_task (
@@ -168,7 +171,7 @@ begin
 		lat_wid    => wid_lat,
 
 		lat_val    => sys_cl,
-		lat_sch    => shtrgtr);
+		lat_sch    => rea_sr);
 
 	sdram_rwn <= sdram_task (
 		gear       => data_gear,
@@ -178,7 +181,7 @@ begin
 		lat_wid    => wid_lat,
 
 		lat_val    => sys_cl,
-		lat_sch    => shtrgtr);
+		lat_sch    => rea_sr);
 
 	sdram_dqsz <= sdram_task (
 		gear       => data_gear,
@@ -188,7 +191,7 @@ begin
 		lat_wid    => wid_lat,
 
 		lat_val    => sys_cwl,
-		lat_sch    => shtrgtr);
+		lat_sch    => wri_sr);
 
 	sdram_dqs <= sdram_task (
 		gear       => data_gear,
@@ -198,7 +201,7 @@ begin
 		lat_wid    => wid_lat,
 
 		lat_val    => sys_cwl,
-		lat_sch    => shtrgtr);
+		lat_sch    => wri_sr);
 
 	sdram_dqz <= sdram_task (
 		gear       => data_gear,
@@ -208,7 +211,7 @@ begin
 		lat_wid    => wid_lat,
 
 		lat_val    => sys_cwl,
-		lat_sch    => shtrgtr);
+		lat_sch    => wri_sr);
 
 	sdram_wwn <= sdram_task (
 		gear       => data_gear,
@@ -218,7 +221,7 @@ begin
 		lat_wid    => wid_lat,
 
 		lat_val    => sys_cwl,
-		lat_sch    => shtrgtr);
+		lat_sch    => wri_sr);
 
 	sdram_odt <= sdram_task (
 		gear       => cmmd_gear,
@@ -228,5 +231,5 @@ begin
 		lat_wid    => wid_lat,
 
 		lat_val    => "000",
-		lat_sch    => shtrgtr);
+		lat_sch    => wri_sr);
 end;

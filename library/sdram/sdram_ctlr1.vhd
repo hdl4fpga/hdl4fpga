@@ -56,8 +56,8 @@ entity sdram_ctlr1 is
 		ctlr_wrl     : in std_logic_vector(2 downto 0);
 		ctlr_rtt     : in std_logic_vector := (0 to 0 => '-');
 
-		ctlr_rst     : in std_logic;
-		ctlr_clks    : in std_logic_vector(0 to 2-1);
+		ctlr_rst     : in  std_logic;
+		ctlr_clk     : in  std_logic;
 		ctlr_cfgrdy  : out std_logic;
 		ctlr_inirdy  : out std_logic;
 
@@ -107,12 +107,14 @@ entity sdram_ctlr1 is
 		phy_sti      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_sto      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
+		phy_dqv      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		phy_dqe      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		phy_dqc      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+
 		phy_dqsi     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dqso     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dqst     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0));
 
-		alias ctlr_clk  : std_logic is ctlr_clks(0);
-		alias ctlr_wclk : std_logic is ctlr_clks(1);
 end;
 
 library hdl4fpga;
@@ -168,15 +170,13 @@ architecture mix of sdram_ctlr1 is
 	signal sdram_sch_st     : std_logic_vector(sdram_sch_dqsz'range);
 	signal sdram_sch_wwn    : std_logic_vector(0 to data_gear-1);
 	signal sdram_sch_rwn    : std_logic_vector(sdram_sch_dqsz'range);
-	signal sdram_wclks      : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal sdram_wenas      : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
 	signal sdram_win_dqs    : std_logic_vector(phy_dqsi'range);
 	signal sdram_win_dq     : std_logic_vector(phy_dqsi'range);
 	signal sdram_wr_dm      : std_logic_vector(ctlr_dm'range);
 
-	signal rot_val        : std_logic_vector(unsigned_num_bits(data_gear*word_size-1)-1 downto 0);
-	signal rot_di         : std_logic_vector(ctlr_di'range);
+	signal rot_val          : std_logic_vector(unsigned_num_bits(data_gear*word_size-1)-1 downto 0);
+	signal rot_di           : std_logic_vector(ctlr_di'range);
 
 	signal sdram_cwl        : std_logic_vector(ctlr_cwl'range);
 
@@ -214,7 +214,7 @@ begin
 		sdram_init_wr    => ctlr_wrl,
 		sdram_init_rtt   => ctlr_rtt,
 
-		sdram_init_clk   => ctlr_clks(0),
+		sdram_init_clk   => ctlr_clk,
 		sdram_init_req   => sdram_init_req,
 		sdram_init_rdy   => sdram_init_rdy,
 		sdram_init_rst   => sdram_init_rst,
@@ -249,9 +249,9 @@ begin
 	generic map (
 		cmmd_gear     => cmmd_gear)
 	port map (
-		ctlr_clk      => ctlr_clks(0),
-		ctlr_rst      => sdram_mpu_rst,
-		ctlr_refreq   => ctlr_refreq,
+		ctlr_clk        => ctlr_clk,
+		ctlr_rst        => sdram_mpu_rst,
+		ctlr_refreq     => ctlr_refreq,
 		sdram_pgm_frm   => sdram_pgm_frm ,
 		sdram_mpu_trdy  => sdram_mpu_trdy,
 		sdram_pgm_cmd   => sdram_pgm_cmd,
@@ -263,15 +263,15 @@ begin
 	sdram_mpu_sel <= init_rdy;
 	sdram_mpu_e : entity hdl4fpga.sdram_mpu
 	generic map (
-		tcp           => tcp,
-		fpga          => fpga,
-		chip          => chip,
+		tcp             => tcp,
+		fpga            => fpga,
+		chip            => chip,
 
-		gear          => data_gear,
-		bl_cod        => bl_cod,
-		al_cod        => al_cod,
-		cl_cod        => cl_cod,
-		cwl_cod       => cwl_cod)
+		gear            => data_gear,
+		bl_cod          => bl_cod,
+		al_cod          => al_cod,
+		cl_cod          => cl_cod,
+		cwl_cod         => cwl_cod)
 	port map (
 		sdram_mpu_bl    => ctlr_bl,
 		sdram_mpu_al    => ctlr_al,
@@ -279,7 +279,7 @@ begin
 		sdram_mpu_cwl   => sdram_cwl,
 
 		sdram_mpu_rst   => sdram_mpu_rst,
-		sdram_mpu_clk   => ctlr_clks(0),
+		sdram_mpu_clk   => ctlr_clk,
 		sdram_mpu_cmd   => sdram_pgm_cmd,
 		sdram_mpu_trdy  => sdram_mpu_trdy,
 		sdram_mpu_fch   => ctlr_fch,
@@ -312,7 +312,7 @@ begin
 	port map (
 		sys_cl      => ctlr_cl,
 		sys_cwl     => sdram_cwl,
-		sys_clk     => ctlr_clks(0),
+		sys_clk     => ctlr_clk,
 		sys_rea     => sdram_mpu_rwin,
 		sys_wri     => sdram_mpu_wwin,
 
@@ -347,7 +347,7 @@ begin
 				phy_dmo(i*data_gear+j)  <= sdram_wr_dm(i*data_gear+j);
 			end loop;
 			for j in sdram_sch_wwn'range loop
-				sdram_wenas(i*data_gear+j) <= sdram_sch_wwn(j);
+				phy_dqv(i*data_gear+j) <= sdram_sch_wwn(j);
 			end loop;
 		end loop;
 	end process;
@@ -359,7 +359,7 @@ begin
 		byte_size     => byte_size,
 		data_delay    => sdram_latency(fpga, rdfifo_lat))
 	port map (
-		sys_clk       => ctlr_clks(0),
+		sys_clk       => ctlr_clk,
 		sys_rdy       => ctlr_do_dv,
 		sys_rea       => sdram_mpu_rea,
 		sys_do        => ctlr_do,
@@ -453,18 +453,6 @@ begin
 		di  => ctlr_di,
 		do  => rot_di);
 
-	process (ctlr_clks(1))
-	begin
-		for k in 0 to word_size/byte_size-1 loop
-			for i in 0 to data_gear-1 loop
-				sdram_wclks(k*data_gear+i) <= ctlr_clks(1);
-				if not same_edge then
-					sdram_wclks(k*data_gear+1) <= not ctlr_clks(1);
-				end if;
-			end loop;
-		end loop;
-	end process;
-
 	wrfifo_b : block
 		signal bypass : std_logic;
 		signal dqo    : std_logic_vector(phy_dqo'range);
@@ -478,14 +466,14 @@ begin
 			word_size   => word_size,
 			byte_size   => byte_size)
 		port map (
-			ctlr_clk    => ctlr_clks(0),
+			ctlr_clk    => ctlr_clk,
 			ctlr_dqi    => rot_di,
 			ctlr_ena    => ctlr_di_dv,
 			ctlr_req    => sdram_mpu_wri,
 			ctlr_dmi    => ctlr_dm,
-			sdram_clks  => sdram_wclks,
+			sdram_clks  => phy_dqc,
 			sdram_dmo   => dmo,
-			sdram_enas  => sdram_wenas,
+			sdram_enas  => phy_dqe,
 			sdram_dqo   => dqo);
 
 		phy_dqo   <= rot_di  when bypass='1' else dqo;

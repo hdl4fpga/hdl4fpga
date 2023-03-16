@@ -258,6 +258,9 @@ architecture graphics of ml509 is
 	signal ctlrphy_dqo    : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqv    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqe    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqc    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
 	signal ddr2_clk       : std_logic_vector(ddr2_clk_p'range);
 	signal ddr2_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -836,7 +839,7 @@ begin
 		video_pixel   => video_pixel,
 		dvid_crgb     => dvid_crgb,
 
-		ctlr_clks     => ctlr_clks,
+		ctlr_clk      => ddr_clk0,
 		ctlr_rst      => sdrphy_rst, --ddrsys_rst,
 		ctlr_rtt      => "11-",
 		ctlr_al       => "000",
@@ -870,6 +873,9 @@ begin
 		ctlrphy_dqo   => ctlrphy_dqo,
 		ctlrphy_sto   => ctlrphy_sto,
 		ctlrphy_sti   => ctlrphy_sti,
+		ctlrphy_dqv   => ctlrphy_dqv,
+		ctlrphy_dqe   => ctlrphy_dqe,
+		ctlrphy_dqc   => ctlrphy_dqc,
 		tp => open);
 
 	videoio_b : block

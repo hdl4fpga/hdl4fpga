@@ -76,7 +76,7 @@ entity demo_graphics1 is
 		video_pixel   : buffer std_logic_vector;
 		dvid_crgb     : out std_logic_vector(7 downto 0);
 
-		ctlr_clks     : in  std_logic_vector(0 to 2-1);
+		ctlr_clk      : in  std_logic;
 		ctlr_rst      : in  std_logic;
 		ctlr_al       : in  std_logic_vector(3-1 downto 0) := (others => '0');
 		ctlr_bl       : in  std_logic_vector(0 to 3-1);
@@ -116,6 +116,10 @@ entity demo_graphics1 is
 		ctlrphy_dqo   : out std_logic_vector(data_gear*word_size-1 downto 0);
 		ctlrphy_sto   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_sti   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+
+		ctlrphy_dqv   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		ctlrphy_dqe   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		ctlrphy_dqc   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
 		tp_sel        : in  std_logic_vector(0 to 4-1) := (others => '0');
 		tp            : out std_logic_vector(1 to 32));
@@ -197,7 +201,6 @@ architecture mix of demo_graphics1 is
 
 	signal ctlr_fch       : std_logic;
 
-	alias ctlr_clk        : std_logic is ctlr_clks(0);
 begin
 
 	sio_b : block
@@ -986,7 +989,7 @@ begin
 			ctlr_rtt     => ctlr_rtt,
 
 			ctlr_rst     => ctlr_rst,
-			ctlr_clks    => ctlr_clks,
+			ctlr_clk    => ctlr_clk,
 			ctlr_inirdy  => inirdy,
 
 			ctlr_frm     => ctlr_frm,
@@ -1029,6 +1032,10 @@ begin
 			phy_dqo      => ctlrphy_dqo,
 			phy_sti      => ctlrphy_sti,
 			phy_sto      => ctlrphy_sto,
+
+		    phy_dqv      => ctlrphy_dqv,
+		    phy_dqe      => ctlrphy_dqe,
+		    phy_dqc      => ctlrphy_dqc,
 
 			phy_dqsi     => ctlrphy_dsi,
 			phy_dqso     => ctlrphy_dso,
