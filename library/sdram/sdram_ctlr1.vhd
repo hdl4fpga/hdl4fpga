@@ -39,13 +39,10 @@ entity sdram_ctlr1 is
 		fpga         : fpga_devices;
 		chip         : sdram_chips;
 
+		same_edge    : boolean :=  true;
 		cmmd_gear    : natural :=  1;
 		bank_size    : natural :=  2;
 		addr_size    : natural := 13;
-		sclk_phases  : natural :=  4;
-		sclk_edges   : natural :=  2;
-		data_phases  : natural :=  2;
-		data_edges   : natural :=  2;
 		data_gear    : natural :=  2;
 		word_size    : natural := 16;
 		byte_size    : natural :=  8);
@@ -73,7 +70,7 @@ entity sdram_ctlr1 is
 		ctlr_a       : in  std_logic_vector(addr_size-1 downto 0);
 		ctlr_di_dv   : in  std_logic;
 		ctlr_di_req  : out std_logic;
-		ctlr_do_dv   : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		ctlr_do_dv   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlr_do_req  : out std_logic;
 		ctlr_dio_req : out std_logic;
 		ctlr_act     : out std_logic;
@@ -81,7 +78,7 @@ entity sdram_ctlr1 is
 		ctlr_di      : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		ctlr_do      : out std_logic_vector(data_gear*word_size-1 downto 0);
 
-		ctlr_win_do  : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		ctlr_win_do  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlr_refreq  : out std_logic;
 		phy_frm      : in  std_logic := '0';
 		phy_trdy     : out std_logic;
@@ -107,10 +104,10 @@ entity sdram_ctlr1 is
 		phy_dqi      : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		phy_dqt      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dqo      : out std_logic_vector(data_gear*word_size-1 downto 0);
-		phy_sti      : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		phy_sti      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_sto      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
-		phy_dqsi     : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		phy_dqsi     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dqso     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dqst     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0));
 
@@ -171,8 +168,8 @@ architecture mix of sdram_ctlr1 is
 	signal sdram_sch_st     : std_logic_vector(sdram_sch_dqsz'range);
 	signal sdram_sch_wwn    : std_logic_vector(0 to data_gear-1);
 	signal sdram_sch_rwn    : std_logic_vector(sdram_sch_dqsz'range);
-	signal sdram_wclks      : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
-	signal sdram_wenas      : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal sdram_wclks      : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal sdram_wenas      : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
 	signal sdram_win_dqs    : std_logic_vector(phy_dqsi'range);
 	signal sdram_win_dq     : std_logic_vector(phy_dqsi'range);
@@ -305,14 +302,10 @@ begin
 
 	sdram_sch_e : entity hdl4fpga.sdram_sch1
 	generic map (
-		tcp         => tcp,
 		fpga        => fpga,
 		chip        => chip,
 
 		cmmd_gear   => cmmd_gear,
-		data_phases => data_phases,
-		clk_phases  => sclk_phases,
-		clk_edges   => sclk_edges,
 		data_gear   => data_gear,
 		cl_cod      => cl_cod,
 		cwl_cod     => cwl_cod)
@@ -354,14 +347,13 @@ begin
 				phy_dmo(i*data_gear+j)  <= sdram_wr_dm(i*data_gear+j);
 			end loop;
 			for j in sdram_sch_wwn'range loop
-				sdram_wenas(i*data_phases+j) <= sdram_sch_wwn(j);
+				sdram_wenas(i*data_gear+j) <= sdram_sch_wwn(j);
 			end loop;
 		end loop;
 	end process;
 
-	rdfifo_i : entity hdl4fpga.sdram_rdfifo
+	rdfifo_i : entity hdl4fpga.sdram_rdfifo1
 	generic map (
-		data_phases   => data_phases,
 		data_gear     => data_gear,
 		word_size     => word_size,
 		byte_size     => byte_size,
@@ -429,8 +421,8 @@ begin
 			constant lc   : latword_vector := to_latwordvector(lat_cod);
 	
 			variable sel_sch : word_vector(lc'range);
-			variable val : unsigned(unsigned_num_bits(LINE_SIZE-1)-1 downto 0) := (others => '0');
-			variable disp : natural;
+			variable val     : unsigned(unsigned_num_bits(LINE_SIZE-1)-1 downto 0) := (others => '0');
+			variable disp    : natural;
 	
 		begin
 	
@@ -464,10 +456,10 @@ begin
 	process (ctlr_clks(1))
 	begin
 		for k in 0 to word_size/byte_size-1 loop
-			for i in 0 to data_phases-1 loop
-				sdram_wclks(k*data_phases+i) <= ctlr_clks(1);
-				if data_edges > 1 then
-					sdram_wclks(k*data_phases+1) <= not ctlr_clks(1);
+			for i in 0 to data_gear-1 loop
+				sdram_wclks(k*data_gear+i) <= ctlr_clks(1);
+				if not same_edge then
+					sdram_wclks(k*data_gear+1) <= not ctlr_clks(1);
 				end if;
 			end loop;
 		end loop;
@@ -480,9 +472,8 @@ begin
 	begin
 		bypass <= '1' when stdr=sdr else '0';
 
-		wrfifo_i : entity hdl4fpga.sdram_wrfifo
+		wrfifo_i : entity hdl4fpga.sdram_wrfifo1
 		generic map (
-			data_phases => data_phases,
 			data_gear   => data_gear,
 			word_size   => word_size,
 			byte_size   => byte_size)

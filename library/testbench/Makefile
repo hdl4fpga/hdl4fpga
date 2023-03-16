@@ -113,10 +113,16 @@ HDL4FPGA__sdrdqphy__ecp = $(LIB_HDL4FPGA)/sdrdqphy/ecp.dat
 HDL4FPGA__sdrdqphy = $(LIB_HDL4FPGA)/sdrdqphy/_primary.dat
 HDL4FPGA__sdrbaphy__ecp = $(LIB_HDL4FPGA)/sdrbaphy/ecp.dat
 HDL4FPGA__sdrbaphy = $(LIB_HDL4FPGA)/sdrbaphy/_primary.dat
+HDL4FPGA__sdram_wrfifo1__struct = $(LIB_HDL4FPGA)/sdram_wrfifo1/struct.dat
+HDL4FPGA__sdram_wrfifo1 = $(LIB_HDL4FPGA)/sdram_wrfifo1/_primary.dat
 HDL4FPGA__sdram_wrfifo__struct = $(LIB_HDL4FPGA)/sdram_wrfifo/struct.dat
 HDL4FPGA__sdram_wrfifo = $(LIB_HDL4FPGA)/sdram_wrfifo/_primary.dat
+HDL4FPGA__sdram_sch1__def = $(LIB_HDL4FPGA)/sdram_sch1/def.dat
+HDL4FPGA__sdram_sch1 = $(LIB_HDL4FPGA)/sdram_sch1/_primary.dat
 HDL4FPGA__sdram_sch__def = $(LIB_HDL4FPGA)/sdram_sch/def.dat
 HDL4FPGA__sdram_sch = $(LIB_HDL4FPGA)/sdram_sch/_primary.dat
+HDL4FPGA__sdram_rdfifo1__struct = $(LIB_HDL4FPGA)/sdram_rdfifo1/struct.dat
+HDL4FPGA__sdram_rdfifo1 = $(LIB_HDL4FPGA)/sdram_rdfifo1/_primary.dat
 HDL4FPGA__sdram_rdfifo__struct = $(LIB_HDL4FPGA)/sdram_rdfifo/struct.dat
 HDL4FPGA__sdram_rdfifo = $(LIB_HDL4FPGA)/sdram_rdfifo/_primary.dat
 HDL4FPGA__sdram_ph__slr = $(LIB_HDL4FPGA)/sdram_ph/slr.dat
@@ -196,6 +202,8 @@ HDL4FPGA__ipv4__def = $(LIB_HDL4FPGA)/ipv4/def.dat
 HDL4FPGA__ipv4 = $(LIB_HDL4FPGA)/ipv4/_primary.dat
 HDL4FPGA__ipoepkg__body = $(LIB_HDL4FPGA)/ipoepkg/body.dat
 HDL4FPGA__ipoepkg = $(LIB_HDL4FPGA)/ipoepkg/_primary.dat
+HDL4FPGA__iofifo1__mix = $(LIB_HDL4FPGA)/iofifo1/mix.dat
+HDL4FPGA__iofifo1 = $(LIB_HDL4FPGA)/iofifo1/_primary.dat
 HDL4FPGA__iofifo__mix = $(LIB_HDL4FPGA)/iofifo/mix.dat
 HDL4FPGA__iofifo = $(LIB_HDL4FPGA)/iofifo/_primary.dat
 HDL4FPGA__igbx__beh = $(LIB_HDL4FPGA)/igbx/beh.dat
@@ -429,10 +437,16 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__sdrdqphy) \
     $(HDL4FPGA__sdrbaphy__ecp) \
     $(HDL4FPGA__sdrbaphy) \
+    $(HDL4FPGA__sdram_wrfifo1__struct) \
+    $(HDL4FPGA__sdram_wrfifo1) \
     $(HDL4FPGA__sdram_wrfifo__struct) \
     $(HDL4FPGA__sdram_wrfifo) \
+    $(HDL4FPGA__sdram_sch1__def) \
+    $(HDL4FPGA__sdram_sch1) \
     $(HDL4FPGA__sdram_sch__def) \
     $(HDL4FPGA__sdram_sch) \
+    $(HDL4FPGA__sdram_rdfifo1__struct) \
+    $(HDL4FPGA__sdram_rdfifo1) \
     $(HDL4FPGA__sdram_rdfifo__struct) \
     $(HDL4FPGA__sdram_rdfifo) \
     $(HDL4FPGA__sdram_ph__slr) \
@@ -512,6 +526,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__ipv4) \
     $(HDL4FPGA__ipoepkg__body) \
     $(HDL4FPGA__ipoepkg) \
+    $(HDL4FPGA__iofifo1__mix) \
+    $(HDL4FPGA__iofifo1) \
     $(HDL4FPGA__iofifo__mix) \
     $(HDL4FPGA__iofifo) \
     $(HDL4FPGA__igbx__beh) \
@@ -1292,6 +1308,14 @@ $(HDL4FPGA__iofifo__mix) : ../sdram/sdram_iofifo.vhd \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../sdram/sdram_iofifo.vhd
 
+$(HDL4FPGA__iofifo1) \
+$(HDL4FPGA__iofifo1__mix) : ../sdram/sdram_iofifo1.vhd \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(HDL4FPGA__base)
+	$(VCOM) -2002 -work hdl4fpga ../sdram/sdram_iofifo1.vhd
+
 $(HDL4FPGA__ipoepkg) \
 $(HDL4FPGA__ipoepkg__body) : ../mii/ipoepkg.vhd \
 		$(HDL4FPGA__ethpkg) \
@@ -1670,10 +1694,10 @@ $(HDL4FPGA__sdram_ctlr__mix) : ../sdram/sdram_ctlr.vhd \
 $(HDL4FPGA__sdram_ctlr1) \
 $(HDL4FPGA__sdram_ctlr1__mix) : ../sdram/sdram_ctlr1.vhd \
 		$(IEEE__std_logic_textio) \
-		$(HDL4FPGA__sdram_wrfifo) \
+		$(HDL4FPGA__sdram_wrfifo1) \
 		$(HDL4FPGA__barrel) \
-		$(HDL4FPGA__sdram_rdfifo) \
-		$(HDL4FPGA__sdram_sch) \
+		$(HDL4FPGA__sdram_rdfifo1) \
+		$(HDL4FPGA__sdram_sch1) \
 		$(HDL4FPGA__sdram_mpu) \
 		$(HDL4FPGA__sdram_pgm) \
 		$(HDL4FPGA__sdram_init) \
@@ -1757,6 +1781,15 @@ $(HDL4FPGA__sdram_rdfifo__struct) : ../sdram/sdram_rdfifo.vhd \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../sdram/sdram_rdfifo.vhd
 
+$(HDL4FPGA__sdram_rdfifo1) \
+$(HDL4FPGA__sdram_rdfifo1__struct) : ../sdram/sdram_rdfifo1.vhd \
+		$(HDL4FPGA__iofifo1) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(HDL4FPGA__base)
+	$(VCOM) -2002 -work hdl4fpga ../sdram/sdram_rdfifo1.vhd
+
 $(HDL4FPGA__sdram_sch) \
 $(HDL4FPGA__sdram_sch__def) : ../sdram/sdram_sch.vhd \
 		$(HDL4FPGA__sdram_ph) \
@@ -1770,6 +1803,18 @@ $(HDL4FPGA__sdram_sch__def) : ../sdram/sdram_sch.vhd \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../sdram/sdram_sch.vhd
 
+$(HDL4FPGA__sdram_sch1) \
+$(HDL4FPGA__sdram_sch1__def) : ../sdram/sdram_sch1.vhd \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__profiles) \
+		$(HDL4FPGA__sdram_param) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(HDL4FPGA__base)
+	$(VCOM) -2002 -work hdl4fpga ../sdram/sdram_sch1.vhd
+
 $(HDL4FPGA__sdram_wrfifo) \
 $(HDL4FPGA__sdram_wrfifo__struct) : ../sdram/sdram_wrfifo.vhd \
 		$(HDL4FPGA__iofifo) \
@@ -1779,6 +1824,16 @@ $(HDL4FPGA__sdram_wrfifo__struct) : ../sdram/sdram_wrfifo.vhd \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../sdram/sdram_wrfifo.vhd
+
+$(HDL4FPGA__sdram_wrfifo1) \
+$(HDL4FPGA__sdram_wrfifo1__struct) : ../sdram/sdram_wrfifo1.vhd \
+		$(HDL4FPGA__iofifo1) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(HDL4FPGA__base)
+	$(VCOM) -2002 -work hdl4fpga ../sdram/sdram_wrfifo1.vhd
 
 $(HDL4FPGA__sdrbaphy) \
 $(HDL4FPGA__sdrbaphy__ecp) : ../latticesemi/sdrbaphy.vhd \

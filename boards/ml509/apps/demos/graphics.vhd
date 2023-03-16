@@ -182,15 +182,11 @@ architecture graphics of ml509 is
 	alias vs              : std_logic is hdr1(3);
 	alias hs              : std_logic is hdr1(4);
 
-	constant sclk_phases  : natural := 1;
-	constant sclk_edges   : natural := 1;
 	constant data_edges   : natural := 1;
 	constant cmmd_gear    : natural := 2;
 	constant data_gear    : natural := 4;
 	constant data_phases  : natural := data_gear;
 
-	-- constant sclk_phases  : natural := 4;
-	-- constant sclk_edges   : natural := 2;
 	-- constant data_edges   : natural := 2;
 	-- constant cmmd_gear    : natural := 1;
 	-- constant data_gear    : natural := 2;
@@ -801,21 +797,15 @@ begin
 		debug => debug,
 		profile      => 1,
 		sdram_tcp    => 2.0*sdram_tcp,
-		-- sdram_tcp    => sdram_tcp,
 		fpga         => xc5v,
 		mark         => MT47H512M3,
-		sclk_phases  => sclk_phases,
-		sclk_edges   => sclk_edges,
 		cmmd_gear    => cmmd_gear,
-		data_phases  => data_phases,
-		data_edges   => data_edges,
 		data_gear    => data_gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
 		coln_size    => coln_size,
 		word_size    => word_size,
 		byte_size    => byte_size,
-		-- burst_length => 4,
 		burst_length => 8,
 
 		timing_id    => videoparam(video_mode).timing,

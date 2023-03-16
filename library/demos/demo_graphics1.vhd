@@ -41,10 +41,6 @@ entity demo_graphics1 is
 		sdram_tcp    : real;
 		fpga         : fpga_devices;
 		mark         : sdram_chips;
-		sclk_phases  : natural;
-		sclk_edges   : natural;
-		data_phases  : natural;
-		data_edges   : natural;
 		data_gear    : natural;
 		cmmd_gear    : natural;
 		bank_size    : natural;
@@ -109,7 +105,7 @@ entity demo_graphics1 is
 		ctlrphy_odt   : out std_logic;
 		ctlrphy_b     : out std_logic_vector(bank_size-1 downto 0);
 		ctlrphy_a     : out std_logic_vector(addr_size-1 downto 0);
-		ctlrphy_dsi   : in  std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		ctlrphy_dsi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dst   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dso   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dmi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
@@ -118,7 +114,7 @@ entity demo_graphics1 is
 		ctlrphy_dqi   : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		ctlrphy_dqt   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dqo   : out std_logic_vector(data_gear*word_size-1 downto 0);
-		ctlrphy_sto   : out std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+		ctlrphy_sto   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_sti   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
 		tp_sel        : in  std_logic_vector(0 to 4-1) := (others => '0');
@@ -172,7 +168,7 @@ architecture mix of demo_graphics1 is
 	signal ctlr_di        : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlr_do        : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlr_dm        : std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
-	signal ctlr_do_dv     : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal ctlr_do_dv     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlr_di_dv     : std_logic;
 	signal ctlr_di_req    : std_logic;
 
@@ -974,10 +970,6 @@ begin
 			cmmd_gear    => cmmd_gear,
 			bank_size    => bank_size,
 			addr_size    => addr_size,
-			sclk_phases  => sclk_phases,
-			sclk_edges   => sclk_edges,
-			data_phases  => data_phases,
-			data_edges   => data_edges,
 			data_gear    => data_gear,
 			word_size    => word_size,
 			byte_size    => byte_size)
