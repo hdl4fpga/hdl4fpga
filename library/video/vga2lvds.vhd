@@ -5,8 +5,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_unsigned.all;
-use ieee.std_logic_arith.all;
+use ieee.numeric_std.all;
 
 entity vga2lvds is 
 port
@@ -19,7 +18,7 @@ port
 end;
 
 architecture Behavioral of vga2lvds is 
-  signal bit_counter: std_logic_vector(2 downto 0);
+  signal bit_counter: unsigned(2 downto 0);
   signal clk_data: std_logic_vector(6 downto 0) := "1100011"; -- the clock
   signal ch0_data, ch1_data, ch2_data: std_logic_vector(6 downto 0);
   signal R_clk_pixel: std_logic_vector(1 downto 0);
@@ -28,7 +27,7 @@ begin
   begin
     if rising_edge(clk_shift) then
       if bit_counter = "110" then -- 6
-        bit_counter <= 0; -- after 6 comes 0
+        bit_counter <= (others => '0'); -- after 6 comes 0
       else
         if R_clk_pixel = "10" and clk_data(5 downto 4) /= "10" then -- clock synchronizer
           clk_data <= clk_data(5 downto 0) & clk_data(6); -- left shift clock (slow it down by 1 cycle)
@@ -48,9 +47,9 @@ begin
 --    end if;
 --  end process;
 
-  lvds_o(3) <= clk_data(conv_integer(bit_counter));
-  lvds_o(2) <= ch2_data(conv_integer(bit_counter));
-  lvds_o(1) <= ch1_data(conv_integer(bit_counter));
-  lvds_o(0) <= ch0_data(conv_integer(bit_counter));
+  lvds_o(3) <= clk_data(to_integer(bit_counter));
+  lvds_o(2) <= ch2_data(to_integer(bit_counter));
+  lvds_o(1) <= ch1_data(to_integer(bit_counter));
+  lvds_o(0) <= ch0_data(to_integer(bit_counter));
 
 end Behavioral;

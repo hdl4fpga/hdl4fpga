@@ -794,7 +794,7 @@ begin
 
 	end block;
 
-	graphics_e : entity hdl4fpga.demo_graphics1
+	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		ena_burstref => false,
 		debug => debug,

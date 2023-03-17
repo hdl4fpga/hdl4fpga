@@ -36,7 +36,7 @@ entity bcdadder is
 		s   : out std_logic_vector);
 end;
 
-architecture def of adder is
+architecture def of bcdadder is
 	signal cy_q : std_logic;
 	signal cy_d : std_logic;
 begin

@@ -244,6 +244,9 @@ architecture graphics of arty is
 	signal ctlrphy_dqo    : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
 	signal ctlrphy_sti    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
+	signal ctlrphy_dqv    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqe    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqc    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
 	signal ddr3_clk       : std_logic_vector(1-1 downto 0);
 	signal ddr3_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -674,7 +677,7 @@ begin
 
 	end generate;
 
-	graphics_e : entity hdl4fpga.demo_graphics0
+	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		debug        => debug,
 		profile      => 1,
@@ -821,6 +824,9 @@ begin
 	ctlrphy_cas(1) <= '1';
 	ctlrphy_we(1)  <= '1';
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
+
+	ctlrphy_dqc    <= (others => ddr_clk90);
+	ctlrphy_dqe    <= ctlrphy_dqv;
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (

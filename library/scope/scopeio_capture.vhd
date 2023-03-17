@@ -283,7 +283,7 @@ begin
 	end process;
 
 	video_data <= 
-		multiplex(multiplex(mem_data, hilw) & y0, dv2) & multiplex(mem_data, hilw) when downsampling='0' else
+		std_logic_vector'(multiplex(std_logic_vector'(multiplex(mem_data, hilw)) & y0, dv2)) & std_logic_vector'(multiplex(mem_data, hilw)) when downsampling='0' else
 		mem_data;
 
 end;

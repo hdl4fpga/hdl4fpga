@@ -31,7 +31,7 @@ use hdl4fpga.profiles.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.videopkg.all;
 
-entity demo_graphics1 is
+entity demo_graphics is
 	generic (
 		debug        : boolean := false;
 		profile      : natural;
@@ -128,7 +128,7 @@ entity demo_graphics1 is
 
 end;
 
-architecture mix of demo_graphics1 is
+architecture mix of demo_graphics is
 
 	type latencies is record
 		ddro    : natural;
