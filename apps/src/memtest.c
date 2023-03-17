@@ -170,7 +170,7 @@ int main (int argc, char *argv[])
 		seq_init();
 		for (address = 0; address < MAX_ADDRESS; address += length) {
 
-//#define LSR
+#define LSR
 #ifdef LSR
 			test_fill(wr_buffer, length);
 #else
