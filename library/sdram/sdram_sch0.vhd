@@ -30,7 +30,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.profiles.all;
 use hdl4fpga.sdram_db.all;
 
-entity sdram_sch is
+entity sdram_sch0 is
 	generic (
 		tcp               : real := 0.0;
 		fpga              : fpga_devices;
@@ -73,7 +73,7 @@ use hdl4fpga.sdram_param.all;
 library ieee;
 use ieee.std_logic_1164.all;
 
-architecture def of sdram_sch is
+architecture def of sdram_sch0 is
 	function sdram_task (
 		constant clk_phases : natural;
 		constant gear : natural;

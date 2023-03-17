@@ -188,7 +188,7 @@ begin
 		ser_ena <= std_logic_vector(unsigned(sdram_enas) sll (i*data_gear));
 
 		fifo_di <= to_stdlogicvector(dqi);
-		outbyte_i : entity hdl4fpga.iofifo
+		outbyte_i : entity hdl4fpga.sdram_iofifo
 		generic map (
 			pll2ser => true,
 			data_gear => data_gear,

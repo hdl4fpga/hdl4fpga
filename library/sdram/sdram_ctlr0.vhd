@@ -31,7 +31,7 @@ use hdl4fpga.profiles.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.sdram_param.all;
 
-entity sdram_ctlr is
+entity sdram_ctlr0 is
 	generic (
 		debug        : boolean := false;
 
@@ -119,7 +119,7 @@ end;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-architecture mix of sdram_ctlr is
+architecture mix of sdram_ctlr0 is
 
 	constant stdr    : sdram_standards    := sdrmark_standard(chip);
 
@@ -301,7 +301,7 @@ begin
 	ctlr_do_req  <= sdram_mpu_rwin;
 	ctlr_dio_req <= sdram_mpu_rwwin;
 
-	sdram_sch_e : entity hdl4fpga.sdram_sch
+	sdram_sch_e : entity hdl4fpga.sdram_sch0
 	generic map (
 		tcp         => tcp,
 		fpga        => fpga,

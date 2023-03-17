@@ -119,7 +119,7 @@ begin
 				end process;
 				sys_rdy(i*data_gear+j) <= pll_req;
 	
-				inbyte_i : entity hdl4fpga.iofifo
+				inbyte_i : entity hdl4fpga.sdram_iofifo
 				generic map (
 					pll2ser    => false,
 					data_gear  => 1,
