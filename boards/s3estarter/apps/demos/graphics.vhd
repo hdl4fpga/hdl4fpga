@@ -185,6 +185,9 @@ architecture graphics of s3estarter is
 	signal ctlrphy_dqi     : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_dqt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_dqc     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqv     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqe     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
@@ -501,18 +504,14 @@ begin
 
 	end block;
 
-	graphics_e : entity hdl4fpga.demo_graphics0
+	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		debug        => debug,
 		profile      => 1,
 		sdram_tcp      => sdram_tcp,
 		fpga         => xc3s,
 		mark         => MT46V256M6T,
-		sclk_phases  => sclk_phases,
-		sclk_edges   => sclk_edges,
 		cmmd_gear    => cmmd_gear,
-		data_phases  => data_phases,
-		data_edges   => data_edges,
 		data_gear    => data_gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
@@ -547,8 +546,7 @@ begin
 		video_blank  => video_blank,
 		video_pixel  => video_pixel,
 
-		ctlr_clks(0) => clk0,
-		ctlr_clks(1) => clk90,
+		ctlr_clk     => clk0,
 		ctlr_rst     => sdrsys_rst,
 		ctlr_bl      => "001",
 		ctlr_cl      => sdram_params.cl,
@@ -569,6 +567,9 @@ begin
 		ctlrphy_dqi  => ctlrphy_dqi,
 		ctlrphy_dqt  => ctlrphy_dqt,
 		ctlrphy_dqo  => ctlrphy_dqo,
+		ctlrphy_dqv  => ctlrphy_dqv,
+		ctlrphy_dqe  => ctlrphy_dqe,
+		ctlrphy_dqc  => ctlrphy_dqc,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
 		tp => open);

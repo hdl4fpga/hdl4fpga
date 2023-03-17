@@ -114,13 +114,11 @@ entity demo_graphics is
 		ctlrphy_dqi   : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		ctlrphy_dqt   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dqo   : out std_logic_vector(data_gear*word_size-1 downto 0);
-		ctlrphy_sto   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		ctlrphy_sti   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-
+		ctlrphy_dqc   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dqv   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dqe   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		ctlrphy_dqc   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-
+		ctlrphy_sto   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		ctlrphy_sti   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		tp_sel        : in  std_logic_vector(0 to 4-1) := (others => '0');
 		tp            : out std_logic_vector(1 to 32));
 

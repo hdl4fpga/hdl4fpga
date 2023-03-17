@@ -175,11 +175,7 @@ architecture graphics of nuhs3adsp is
 	signal so_data       : std_logic_vector(0 to 8-1);
 
 
-	constant sclk_phases : natural := 4;
-	constant sclk_edges  : natural := 2;
 	constant cmmd_gear   : natural := 1;
-	constant data_phases : natural := 2;
-	constant data_edges  : natural := 2;
 	constant data_gear   : natural := 2;
 	constant bank_size   : natural := ddr_ba'length;
 	constant addr_size   : natural := ddr_a'length;
@@ -211,6 +207,9 @@ architecture graphics of nuhs3adsp is
 	signal ctlrphy_dqi   : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_dqt   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_dqc   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqv   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqe   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal phyctlr_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -574,18 +573,14 @@ begin
 
 	end block;
 
-	graphics_e : entity hdl4fpga.demo_graphics0
+	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		debug        => debug,
 		profile      => 1,
 		sdram_tcp    => sdram_tcp,
 		fpga         => xc3s,
 		mark         => MT46V256M6T,
-		sclk_phases  => sclk_phases,
-		sclk_edges   => sclk_edges,
 		cmmd_gear    => cmmd_gear,
-		data_phases  => data_phases,
-		data_edges   => data_edges,
 		data_gear    => data_gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
@@ -623,8 +618,7 @@ begin
 		video_blank  => video_blank,
 		video_pixel  => video_pixel,
 
-		ctlr_clks(0) => clk0,
-		ctlr_clks(1) => clk90,
+		ctlr_clk     => clk0,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_rtt     => "---",
 		ctlr_bl      => "001",				-- Busrt length 2
@@ -648,6 +642,9 @@ begin
 		ctlrphy_dqi  => ctlrphy_dqi,
 		ctlrphy_dqt  => ctlrphy_dqt,
 		ctlrphy_dqo  => ctlrphy_dqo,
+		ctlrphy_dqv  => ctlrphy_dqv,
+		ctlrphy_dqe  => ctlrphy_dqe,
+		ctlrphy_dqc  => ctlrphy_dqc,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
 		tp           => tp);
@@ -710,6 +707,9 @@ begin
 		sys_dqt     => ctlrphy_dqt,
 		sys_dqo     => ctlrphy_dqi,
 		sys_odt     => ctlrphy_odt,
+		sys_dqv     => ctlrphy_dqv,
+		sys_dqe     => ctlrphy_dqe,
+		sys_dqc     => ctlrphy_dqc,
 		sys_sti     => ctlrphy_sto,
 		sys_sto     => phyctlr_sto,
 
