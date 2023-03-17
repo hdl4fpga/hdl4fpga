@@ -244,11 +244,7 @@ architecture graphics of ulx3s is
 
 	constant io_link     : io_comms := profile_tab(app_profile).comms;
 
-	constant sclk_phases : natural := 1;
-	constant sclk_edges  : natural := 1;
 	constant cmmd_gear   : natural := 1;
-	constant data_phases : natural := 1;
-	constant data_edges  : natural := 1;
 	constant data_gear   : natural := 1;
 
 	constant bank_size   : natural := sdram_ba'length;
@@ -274,7 +270,7 @@ architecture graphics of ulx3s is
 	signal ctlrphy_odt   : std_logic;
 	signal ctlrphy_b     : std_logic_vector(sdram_ba'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(sdram_a'length-1 downto 0);
-	signal ctlrphy_dsi   : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dsi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmi   : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -283,9 +279,12 @@ architecture graphics of ulx3s is
 	signal ctlrphy_dqi   : std_logic_vector(word_size-1 downto 0);
 	signal ctlrphy_dqt   : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqo   : std_logic_vector(word_size-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal sdrphy_sti    : std_logic_vector(data_phases*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqv   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqe   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqc   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal sdrphy_sti    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal sdram_st_dqs_open : std_logic;
 
 	signal sdram_dst     : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -712,7 +711,7 @@ begin
 
 	end generate;
 
-	graphics_e : entity hdl4fpga.demo_graphics0
+	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		debug => debug,
 		profile      => 0,
@@ -720,10 +719,6 @@ begin
 		sdram_tcp    => sdram_tcp,
 		fpga         => xc3s,
 		mark         => MT48LC256MA27E ,
-		sclk_phases  => sclk_phases,
-		sclk_edges   => sclk_edges,
-		data_phases  => data_phases,
-		data_edges   => data_edges,
 		data_gear    => data_gear,
 		cmmd_gear    => cmmd_gear,
 		bank_size    => bank_size,
@@ -756,7 +751,7 @@ begin
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
-		ctlr_clks(0) => ctlr_clk,
+		ctlr_clk     => ctlr_clk,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
@@ -778,8 +773,14 @@ begin
 		ctlrphy_dqi  => ctlrphy_dqi,
 		ctlrphy_dqt  => ctlrphy_dqt,
 		ctlrphy_dqo  => ctlrphy_dqo,
+		ctlrphy_dqv  => ctlrphy_dqv,
+		ctlrphy_dqe  => ctlrphy_dqe,
+		ctlrphy_dqc  => ctlrphy_dqc,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
+
+	ctlrphy_dqc <= (others => ctlr_clk);
+	ctlrphy_dqe <= ctlrphy_dqv;
 
 	sdrphy_b : block
 		constant phy_debug : boolean := debug;
