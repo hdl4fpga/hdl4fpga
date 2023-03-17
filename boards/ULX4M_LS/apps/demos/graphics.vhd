@@ -797,29 +797,7 @@ begin
 	ctlrphy_dqe <= ctlrphy_dqv;
 
 	sdrphy_b : block
-		constant phy_debug : boolean := debug;
-		-- constant phy_debug : boolean := true;
-		signal phy_do : std_logic_vector(ctlrphy_dqi'range);
 	begin
-		debug_g : if phy_debug generate
-			signal do : std_logic_vector(ctlrphy_dqi'range);
-		begin
-
-			do <= std_logic_vector(resize(unsigned(ctlrphy_a), do'length));
-			delay_e : entity hdl4fpga.latency
-			generic map (
-				n => do'length,
-				d => (0 to do'length-1=> 4))
-			port map (
-				clk => ctlr_clk,
-				-- di  => (do'range => '1'),
-				di  => do,
-				do  => ctlrphy_dqi);
-		end generate;
-	
-		nodebug_g : if not phy_debug generate
-			ctlrphy_dqi <= phy_do;
-		end generate;
 
 		sdrphy_e : entity hdl4fpga.sdrphy
 		generic map (
@@ -849,7 +827,7 @@ begin
 			phy_dmo       => ctlrphy_dmi,
 			phy_dqi       => ctlrphy_dqo,
 			phy_dqt       => ctlrphy_dqt,
-			phy_dqo       => phy_do,
+			phy_dqo       => ctlrphy_dqi,
 			phy_sti       => sdrphy_sti,
 			phy_sto       => ctlrphy_sti,
 	
