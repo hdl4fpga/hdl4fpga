@@ -189,9 +189,6 @@ architecture graphics of arty is
 
 	constant sdram_tcp   : real := (sys_per*real(sdram_params.pll.dcm_div))/real(sdram_params.pll.dcm_mul); -- 1 ns /1ps
 
-	constant sclk_phases  : natural := 1;
-	constant sclk_edges   : natural := 1;
-	constant data_edges   : natural := 1;
 	constant cmmd_gear    : natural := 2;
 	constant data_gear    : natural := 4;
 
@@ -289,7 +286,6 @@ architecture graphics of arty is
 	signal ioctrl_rdy   : std_logic;
 
 	signal tp_sdrphy    : std_logic_vector(1 to 32);
-	signal tp_demographics : std_logic_vector(1 to 32);
 
 begin
 
@@ -684,11 +680,7 @@ begin
 		sdram_tcp    => 2.0*sdram_tcp,
 		fpga         => xc7a,
 		mark         => MT41K2G125,
-		sclk_phases  => sclk_phases,
-		sclk_edges   => sclk_edges,
 		burst_length => 8,
-		data_phases  => data_gear,
-		data_edges   => data_edges,
 		data_gear    => data_gear,
 		cmmd_gear    => cmmd_gear,
 		bank_size    => bank_size,
@@ -725,7 +717,7 @@ begin
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
-		ctlr_clks(0) => ctlr_clk,
+		ctlr_clk     => ctlr_clk,
 		ctlr_rst     => rst0div_rst,
 		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
@@ -763,8 +755,10 @@ begin
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
---		tp_sel       => sw,
-		tp           => tp_demographics);
+		ctlrphy_dqv   => ctlrphy_dqv,
+		ctlrphy_dqe   => ctlrphy_dqe,
+		ctlrphy_dqc   => ctlrphy_dqc,
+		tp           => open);
 
 	serdebug_b : block
 		signal ser_irdy : std_logic;
