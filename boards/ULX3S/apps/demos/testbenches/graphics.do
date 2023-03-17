@@ -1,5 +1,7 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
+add wave -noupdate -expand -group uart /testbench/du_e/ftdi_txd
+add wave -noupdate -expand -group uart /testbench/du_e/ftdi_rxd
 add wave -noupdate -expand -group sdram /testbench/du_e/sdram_clk
 add wave -noupdate -expand -group sdram /testbench/du_e/sdram_cke
 add wave -noupdate -expand -group sdram /testbench/du_e/sdram_csn
@@ -10,10 +12,8 @@ add wave -noupdate -expand -group sdram -radix hexadecimal /testbench/du_e/sdram
 add wave -noupdate -expand -group sdram /testbench/du_e/sdram_ba
 add wave -noupdate -expand -group sdram /testbench/du_e/sdram_dqm
 add wave -noupdate -expand -group sdram -radix hexadecimal /testbench/du_e/sdram_d
-add wave -noupdate -group uart /testbench/du_e/ftdi_rxd
-add wave -noupdate -group uart /testbench/du_e/ftdi_txd
-add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/dmactlr_b/dmactlr_e/dmatrans_e/dmatrans_clk
+add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/dmactlr_b/dmactlr_e/dmatrans_e/ddrdma_row
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/dmactlr_b/dmactlr_e/dmatrans_e/ddrdma_col
 add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/dmacfg_clk
@@ -22,8 +22,6 @@ add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/dmacfg_rdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_len
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_addr
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/dmactlr_b/dmactlr_e/ctlr_do_dv
-add wave -noupdate /testbench/du_e/graphics_e/dmactlr_b/dmactlr_e/dev_do_dv
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_b/vrdy
 add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_b/vreq
@@ -72,8 +70,6 @@ add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/pwater_mark
 add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/video_width
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix unsigned /testbench/du_e/graphics_e/adapter_b/graphics_e/video_b/level
-add wave -noupdate -radix unsigned /testbench/du_e/graphics_e/adapter_b/graphics_e/video_b/line__141/new_level
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/video_b/line__141/state
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/video_hzon
 add wave -noupdate -divider {New Divider}
@@ -100,4 +96,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {300156789350 fs} {306719289350 fs}
+WaveRestoreZoom {0 fs} {1106616 ns}

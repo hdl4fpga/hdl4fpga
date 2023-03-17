@@ -202,9 +202,9 @@ architecture ulx3s_graphics of testbench is
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
 
-		x"1702_0000ff_1603_0000_1700";
+		x"1702_0000ff_1603_0000_0000";
 	constant req_data  : std_logic_vector :=
-		x"010008_1702_0007ff_1603_8000_0000";
+		x"010008_1702_0000ff_1603_8000_0000";
 
 	signal nrst : std_logic;
 	signal uart_clk : std_logic := '0';
@@ -215,7 +215,7 @@ begin
 	rst <= '1', '0' after 10 us; --, '1' after 30 us, '0' after 31 us;
 	nrst <= not rst;
 	xtal <= not xtal after 20 ns;
-	uart_clk <= not uart_clk after 0.1 ns /2 when debug and false else not uart_clk after 12.5 ns;
+	uart_clk <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
 
 	hdlc_b : block
 
@@ -285,7 +285,7 @@ begin
 						hdlctx_frm <= '1';
 						hdlctx_end <= '1';
 					end if;
-				elsif i < xxx'length-1 then
+				elsif i < xxx'length then
 					if i > 0 then
 						if debug then
 							wait for 5 us;

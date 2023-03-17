@@ -257,6 +257,9 @@ architecture graphics of ulx4m_ld is
 	signal ctlrphy_dqi   : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_dqt   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_dqv   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqe   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqc   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal sdr_ba        : std_logic_vector(ddram_ba'length-1 downto 0);
@@ -567,7 +570,7 @@ begin
 	report "NO mii ready"
 	severity FAILURE;
 
-	graphics_e : entity hdl4fpga.demo_graphics0
+	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		ena_burstref  => false,
 		-- debug        => true,
@@ -578,11 +581,7 @@ begin
 		fpga         => ecp5,
 		-- mark         => MT41K8G107,
 		mark         => MT41K8G125,
-		sclk_phases  => sclk_phases,
-		sclk_edges   => sclk_edges,
 		burst_length => 8,
-		data_phases  => data_gear,
-		data_edges   => data_edges,
 		data_gear    => data_gear,
 		cmmd_gear    => cmmd_gear,
 		bank_size    => bank_size,
@@ -616,7 +615,7 @@ begin
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
-		ctlr_clks(0) => ctlr_clk,
+		ctlr_clk     => ctlr_clk,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
@@ -654,8 +653,14 @@ begin
 		ctlrphy_dqi  => ctlrphy_dqi,
 		ctlrphy_dqt  => ctlrphy_dqt,
 		ctlrphy_dqo  => ctlrphy_dqo,
+		ctlrphy_dqv  => ctlrphy_dqv,
+		ctlrphy_dqe  => ctlrphy_dqe,
+		ctlrphy_dqc  => ctlrphy_dqc,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
+
+	ctlrphy_dqc <= (others => ctlr_clk);
+	ctlrphy_dqe <= ctlrphy_dqv;
 
 	tp(2) <= not (ctlrphy_wlreq xor ctlrphy_wlrdy);
 	tp(3) <= not (ctlrphy_rlreq xor ctlrphy_rlrdy);

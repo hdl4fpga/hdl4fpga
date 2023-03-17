@@ -91,7 +91,8 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := ipoe_sdr166MHz_480p24bpp;
+	-- constant app_profile : app_profiles := ipoe_sdr166MHz_480p24bpp;
+	constant app_profile : app_profiles := hdlc_sdr133MHz_480p16bpp;
     --                                  --
 	--------------------------------------
 
@@ -279,11 +280,11 @@ architecture graphics of ulx3s is
 	signal ctlrphy_dqi   : std_logic_vector(word_size-1 downto 0);
 	signal ctlrphy_dqt   : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqo   : std_logic_vector(word_size-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqv   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqe   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqc   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal sdrphy_sti    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal sdram_st_dqs_open : std_logic;
 
@@ -499,13 +500,13 @@ begin
 
 	begin
 
-		-- nodebug_g : if not debug generate
+		nodebug_g : if not debug generate
 			uart_clk <= videoio_clk;
-		-- end generate;
+		end generate;
 
-		-- debug_g : if debug generate
-			-- uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
-		-- end generate;
+		debug_g : if debug generate
+			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
+		end generate;
 
 		assert FALSE
 			report "BAUDRATE : " & " " & integer'image(baudrate)
