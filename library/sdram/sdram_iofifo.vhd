@@ -25,7 +25,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity iofifo1 is
+entity iofifo is
 	generic (
 		pll2ser   : boolean;
 		data_gear : natural;
@@ -47,7 +47,7 @@ end;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-architecture mix of iofifo1 is
+architecture mix of iofifo is
 	component sff
 		port (
 			clk : in  std_logic;

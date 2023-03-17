@@ -30,7 +30,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.profiles.all;
 use hdl4fpga.sdram_db.all;
 
-entity sdram_sch1 is
+entity sdram_sch is
 	generic (
 		fpga       : fpga_devices;
 		chip       : sdram_chips;
@@ -67,7 +67,7 @@ use hdl4fpga.sdram_param.all;
 library ieee;
 use ieee.std_logic_1164.all;
 
-architecture def of sdram_sch1 is
+architecture def of sdram_sch is
 	function sdram_task (
 		constant gear : natural;
 		constant lat_val : std_logic_vector;

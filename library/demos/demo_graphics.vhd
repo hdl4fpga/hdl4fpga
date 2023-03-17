@@ -963,7 +963,7 @@ begin
 		signal inirdy    : std_logic;
 	begin
 		ctlr_dm <= (others => '0');
-		sdrctlr_e : entity hdl4fpga.sdram_ctlr1
+		sdrctlr_e : entity hdl4fpga.sdram_ctlr
 		generic map (
 			debug        => debug,
 			fpga         => fpga,

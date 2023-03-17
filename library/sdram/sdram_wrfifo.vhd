@@ -28,7 +28,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_textio.all;
 
-entity sdram_wrfifo1 is
+entity sdram_wrfifo is
 	generic (
 		data_gear  : natural;
 		word_size  : natural;
@@ -52,7 +52,7 @@ use hdl4fpga.base.all;
 
 use std.textio.all;
 
-architecture struct of sdram_wrfifo1 is
+architecture struct of sdram_wrfifo is
 
 	subtype byte is std_logic_vector(BYTE_SIZE downto 0);
 	type byte_vector is array (natural range <>) of byte;
@@ -188,7 +188,7 @@ begin
 		ser_ena <= std_logic_vector(unsigned(sdram_enas) sll (i*data_gear));
 
 		fifo_di <= to_stdlogicvector(dqi);
-		outbyte_i : entity hdl4fpga.iofifo1
+		outbyte_i : entity hdl4fpga.iofifo
 		generic map (
 			pll2ser => true,
 			data_gear => data_gear,
