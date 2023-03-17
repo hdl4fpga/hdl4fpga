@@ -198,12 +198,11 @@ add wave -noupdate /testbench/du_e/sdrphy_e/clk90
 add wave -noupdate /testbench/du_e/sdrphy_e/clk0x2
 add wave -noupdate /testbench/du_e/sdrphy_e/clk90x2
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_dqt
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_dqso
-add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_dqsi
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv
+add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -245,4 +244,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {11085072 ps} {12311312 ps}
+WaveRestoreZoom {58835072 ps} {60061312 ps}

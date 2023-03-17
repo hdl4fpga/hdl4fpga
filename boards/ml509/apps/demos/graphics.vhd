@@ -925,40 +925,7 @@ begin
 
 	end block;
 
-	ser_debug_e : entity hdl4fpga.ser_debug
-	generic map (
-		timing_id    => videoparam(mode600p24bpp).timing,
-		red_length   => 1,
-		green_length => 1,
-		blue_length  => 1)
-	port map (
-		-- ser_clk      => phy_rxclk_bufg,
-		-- ser_frm      => mii_tp(1),
-		-- ser_data     => phy_rxd,
-		ser_clk      => ser_clk,
-		ser_frm      => ser_frm,
-		ser_data     => ser_data,
-
-
-		ser_irdy     => '1',
-
-		video_clk    => video_clk,
-		video_hzsync => video_hs,
-		video_blank  => video_bk,
-		video_vtsync => video_vs,
-		video_pixel  => video_spixel);
-
-	process (video_clk)
-	begin
-		if rising_edge(video_clk) then
-			hs <= video_hs;
-			vs <= video_vs;
-			(red, green, blue) <= video_spixel;
-		end if;
-	end process;
-
-
-	gear_g : for i in 1 to CMMD_GEAR-1 generate
+	gear_g : for i in 1 to cmmd_gear-1 generate
 		ctlrphy_cke(i) <= ctlrphy_cke(0);
 		ctlrphy_cs(i)  <= ctlrphy_cs(0);
 		ctlrphy_ras(i) <= '1';
@@ -970,8 +937,8 @@ begin
 	process (ddr_ba)
 	begin
 		for i in ddr_ba'range loop
-			for j in 0 to CMMD_GEAR-1 loop
-				ctlrphy_ba(i*CMMD_GEAR+j) <= ddr_ba(i);
+			for j in 0 to cmmd_gear-1 loop
+				ctlrphy_ba(i*cmmd_gear+j) <= ddr_ba(i);
 			end loop;
 		end loop;
 	end process;
@@ -979,8 +946,8 @@ begin
 	process (ddr_a)
 	begin
 		for i in ddr_a'range loop
-			for j in 0 to CMMD_GEAR-1 loop
-				ctlrphy_a(i*CMMD_GEAR+j) <= ddr_a(i);
+			for j in 0 to cmmd_gear-1 loop
+				ctlrphy_a(i*cmmd_gear+j) <= ddr_a(i);
 			end loop;
 		end loop;
 	end process;
@@ -994,29 +961,17 @@ begin
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
 
 	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
-	process (sys_clk)
+	ctlrphy_dqc <= (others => ddr_clk90);
+	process (ddr_clk90)
 	begin
-		if rising_edge(sys_clk) then
-			gpio_led_w <= ctlrphy_rlreq;
-			gpio_led_e <= ctlrphy_rlrdy;
-			gpio_led_n <= 'Z';
-			gpio_led_s <= 'Z';
+		if rising_edge(ddr_clk90) then
+			ctlrphy_dqe <= ctlrphy_dqv;
 		end if;
 	end process;
-	
-	process (sys_clk)
-	begin
-		if rising_edge(sys_clk) then
-			gpio_led <= tp_sdrphy(1 to 8);
-		end if;
-	end process;
+
 	tp_sel <= ('0', gpio_sw_s);
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
-		-- dqs_delay   => (0 => 0.954 ns, 1 => 6.954 ns),
-		-- dqi_delay   => (0 => 0.937 ns, 1 => 6.937 ns),
-		-- dqs_delay   => (0 => 0 ns, 1 => 0 ns),
-		-- dqi_delay   => (0 => 0 ns, 1 => 0 ns),
 		loopback    => true,
 		device      => xc5v,
 		bypass      => false,
@@ -1165,6 +1120,56 @@ begin
 		end generate;
 
 	end block;
+
+	ser_debug_e : entity hdl4fpga.ser_debug
+	generic map (
+		timing_id    => videoparam(mode600p24bpp).timing,
+		red_length   => 1,
+		green_length => 1,
+		blue_length  => 1)
+	port map (
+		-- ser_clk      => phy_rxclk_bufg,
+		-- ser_frm      => mii_tp(1),
+		-- ser_data     => phy_rxd,
+		ser_clk      => ser_clk,
+		ser_frm      => ser_frm,
+		ser_data     => ser_data,
+
+
+		ser_irdy     => '1',
+
+		video_clk    => video_clk,
+		video_hzsync => video_hs,
+		video_blank  => video_bk,
+		video_vtsync => video_vs,
+		video_pixel  => video_spixel);
+
+	process (video_clk)
+	begin
+		if rising_edge(video_clk) then
+			hs <= video_hs;
+			vs <= video_vs;
+			(red, green, blue) <= video_spixel;
+		end if;
+	end process;
+
+	process (sys_clk)
+	begin
+		if rising_edge(sys_clk) then
+			gpio_led_w <= ctlrphy_rlreq;
+			gpio_led_e <= ctlrphy_rlrdy;
+			gpio_led_n <= 'Z';
+			gpio_led_s <= 'Z';
+		end if;
+	end process;
+	
+	process (sys_clk)
+	begin
+		if rising_edge(sys_clk) then
+			gpio_led <= tp_sdrphy(1 to 8);
+		end if;
+	end process;
+
 	phy_reset  <= not gtx_rst;
 	phy_txer   <= '0';
 	phy_mdc    <= '0';
