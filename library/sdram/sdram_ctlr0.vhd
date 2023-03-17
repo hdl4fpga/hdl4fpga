@@ -357,7 +357,7 @@ begin
 		end loop;
 	end process;
 
-	rdfifo_i : entity hdl4fpga.sdram_rdfifo
+	rdfifo_i : entity hdl4fpga.sdram_rdfifo0
 	generic map (
 		data_phases   => data_phases,
 		data_gear     => data_gear,
@@ -478,7 +478,7 @@ begin
 	begin
 		bypass <= '1' when stdr=sdr else '0';
 
-		wrfifo_i : entity hdl4fpga.sdram_wrfifo
+		wrfifo_i : entity hdl4fpga.sdram_wrfifo0
 		generic map (
 			data_phases => data_phases,
 			data_gear   => data_gear,

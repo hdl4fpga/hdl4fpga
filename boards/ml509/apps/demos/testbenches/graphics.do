@@ -201,11 +201,21 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv
-add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(31) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(30) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(29) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(28) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(27) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(26) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(25) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(24) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(23) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(22) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(21) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(20) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(19) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(18) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(17) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(16) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(15) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(14) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(13) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(12) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(11) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(10) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(9) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(8) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(7) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(6) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(5) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(4) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(3) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(2) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(1) -radix hexadecimal} {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(31) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(30) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(29) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(28) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(27) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(26) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(25) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(24) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(23) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(22) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(21) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(20) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(19) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(18) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(17) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(16) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(15) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(14) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(13) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(12) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(11) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(10) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(9) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(8) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(7) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(6) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(5) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(4) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(3) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(2) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(1) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(0) {-height 29 -radix hexadecimal}} /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv(0)
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/ctlrphy_dqc(0)
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/ctlrphy_dqv(3)
+add wave -noupdate /testbench/du_e/graphics_e/ctlrphy_dqv(2)
+add wave -noupdate /testbench/du_e/graphics_e/ctlrphy_dqv(1)
+add wave -noupdate /testbench/du_e/graphics_e/ctlrphy_dqv(0)
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/ctlrphy_dqe(3)
+add wave -noupdate /testbench/du_e/graphics_e/ctlrphy_dqe(2)
+add wave -noupdate /testbench/du_e/graphics_e/ctlrphy_dqe(1)
+add wave -noupdate /testbench/du_e/graphics_e/ctlrphy_dqe(0)
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -228,10 +238,10 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {12100000 ps} 0} {{Cursor 2} {54085000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {53649999 ps} 0} {{Cursor 2} {77683626 ps} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 287
-configure wave -valuecolwidth 140
+configure wave -namecolwidth 242
+configure wave -valuecolwidth 451
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -244,4 +254,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {58835072 ps} {60061312 ps}
+WaveRestoreZoom {53628795 ps} {53691405 ps}

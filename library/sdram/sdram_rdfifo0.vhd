@@ -25,7 +25,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity sdram_rdfifo is
+entity sdram_rdfifo0 is
 	generic (
 		data_delay  : natural := 1;
 		data_phases : natural := 1;
@@ -49,7 +49,7 @@ end;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-architecture struct of sdram_rdfifo is
+architecture struct of sdram_rdfifo0 is
 	subtype byte is std_logic_vector(BYTE_SIZE-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
@@ -123,7 +123,7 @@ begin
 				sys_rdy(i*DATA_PHASES+j) <= pll_req;
 	
 	
-				inbyte_i : entity hdl4fpga.iofifo
+				inbyte_i : entity hdl4fpga.iofifo0
 				generic map (
 					pll2ser => false,
 					DATA_PHASES => 1,

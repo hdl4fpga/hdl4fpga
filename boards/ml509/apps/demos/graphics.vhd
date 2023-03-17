@@ -960,15 +960,10 @@ begin
 	ctlrphy_we(1)  <= '1';
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
 
-	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
-	ctlrphy_dqc <= (others => ddr_clk90);
-	process (ddr_clk90)
-	begin
-		if rising_edge(ddr_clk90) then
-			ctlrphy_dqe <= ctlrphy_dqv;
-		end if;
-	end process;
+	ctlrphy_dqc    <= (others => ddr_clk90);
+	ctlrphy_dqe    <= ctlrphy_dqv;
 
+	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
 	tp_sel <= ('0', gpio_sw_s);
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
