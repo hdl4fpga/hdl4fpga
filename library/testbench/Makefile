@@ -231,8 +231,6 @@ HDL4FPGA__ipv4__def = $(LIB_HDL4FPGA)/ipv4/def.dat
 HDL4FPGA__ipv4 = $(LIB_HDL4FPGA)/ipv4/_primary.dat
 HDL4FPGA__ipoepkg__body = $(LIB_HDL4FPGA)/ipoepkg/body.dat
 HDL4FPGA__ipoepkg = $(LIB_HDL4FPGA)/ipoepkg/_primary.dat
-HDL4FPGA__iofifo0__mix = $(LIB_HDL4FPGA)/iofifo0/mix.dat
-HDL4FPGA__iofifo0 = $(LIB_HDL4FPGA)/iofifo0/_primary.dat
 HDL4FPGA__igbx__beh = $(LIB_HDL4FPGA)/igbx/beh.dat
 HDL4FPGA__igbx = $(LIB_HDL4FPGA)/igbx/_primary.dat
 HDL4FPGA__idbuf__ecp3 = $(LIB_HDL4FPGA)/idbuf/ecp3.dat
@@ -311,8 +309,8 @@ HDL4FPGA__demux__arch = $(LIB_HDL4FPGA)/demux/arch.dat
 HDL4FPGA__demux = $(LIB_HDL4FPGA)/demux/_primary.dat
 HDL4FPGA__demo_graphics__mix = $(LIB_HDL4FPGA)/demo_graphics/mix.dat
 HDL4FPGA__demo_graphics = $(LIB_HDL4FPGA)/demo_graphics/_primary.dat
-HDL4FPGA__dbram__ecp3 = $(LIB_HDL4FPGA)/dbram/ecp3.dat
 HDL4FPGA__dbram__lscc = $(LIB_HDL4FPGA)/dbram/lscc.dat
+HDL4FPGA__dbram__ecp3 = $(LIB_HDL4FPGA)/dbram/ecp3.dat
 HDL4FPGA__dbram = $(LIB_HDL4FPGA)/dbram/_primary.dat
 HDL4FPGA__dbdbbl__def = $(LIB_HDL4FPGA)/dbdbbl/def.dat
 HDL4FPGA__dbdbbl = $(LIB_HDL4FPGA)/dbdbbl/_primary.dat
@@ -590,8 +588,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__ipv4) \
     $(HDL4FPGA__ipoepkg__body) \
     $(HDL4FPGA__ipoepkg) \
-    $(HDL4FPGA__iofifo0__mix) \
-    $(HDL4FPGA__iofifo0) \
     $(HDL4FPGA__igbx__beh) \
     $(HDL4FPGA__igbx) \
     $(HDL4FPGA__idbuf__ecp3) \
@@ -670,8 +666,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__demux) \
     $(HDL4FPGA__demo_graphics__mix) \
     $(HDL4FPGA__demo_graphics) \
-    $(HDL4FPGA__dbram__ecp3) \
     $(HDL4FPGA__dbram__lscc) \
+    $(HDL4FPGA__dbram__ecp3) \
     $(HDL4FPGA__dbram) \
     $(HDL4FPGA__dbdbbl__def) \
     $(HDL4FPGA__dbdbbl) \
@@ -993,20 +989,20 @@ $(HDL4FPGA__dbdbbl__def) : ../basic/dbdbbl.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../basic/dbdbbl.vhd
 
 $(HDL4FPGA__dbram) \
-$(HDL4FPGA__dbram__lscc) : ../latticesemi/ecp3/dbram.vhd \
+$(HDL4FPGA__dbram__ecp3) : ../latticesemi/dbram.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(ECP3__components)
-	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/dbram.vhd
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/dbram.vhd
 
-$(HDL4FPGA__dbram__ecp3) : ../latticesemi/dbram.vhd \
+$(HDL4FPGA__dbram__lscc) : ../latticesemi/ecp3/dbram.vhd \
 		$(IEEE__numeric_std) \
 		$(HDL4FPGA__dbram) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(ECP3__components)
-	$(VCOM) -2002 -work hdl4fpga ../latticesemi/dbram.vhd
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/dbram.vhd
 
 $(HDL4FPGA__demo_graphics) \
 $(HDL4FPGA__demo_graphics__mix) : ../demos/demo_graphics.vhd \
@@ -1374,14 +1370,6 @@ $(HDL4FPGA__igbx__beh) : ../xilinx/igbx.vhd \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/igbx.vhd
-
-$(HDL4FPGA__iofifo0) \
-$(HDL4FPGA__iofifo0__mix) : ../sdram/sdram_iofifo0.vhd \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164) \
-		$(HDL4FPGA__base)
-	$(VCOM) -2002 -work hdl4fpga ../sdram/sdram_iofifo0.vhd
 
 $(HDL4FPGA__ipoepkg) \
 $(HDL4FPGA__ipoepkg__body) : ../mii/ipoepkg.vhd \

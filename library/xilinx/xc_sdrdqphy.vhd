@@ -66,6 +66,8 @@ entity xc_sdrdqphy is
 		read_brst  : out std_logic;
 		write_rdy  : in  std_logic;
 		write_req  : buffer std_logic;
+		sto_synced : buffer std_logic;
+
 		sys_dmt    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_sti    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_sto    : buffer std_logic_vector(data_gear-1 downto 0);
@@ -76,7 +78,9 @@ entity xc_sdrdqphy is
 		sys_dqsi   : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dqso   : buffer std_logic_vector(data_gear-1 downto 0);
 		sys_dqst   : in  std_logic_vector(data_gear-1 downto 0);
-		sto_synced : buffer std_logic;
+		sys_dqc    : out  std_logic_vector(data_gear-1 downto 0);
+		sys_dqv    : in std_logic_vector(data_gear-1 downto 0) := (others => '0');
+		sys_dqe    : out  std_logic_vector(data_gear-1 downto 0);
 
 		sdram_dmi  : in  std_logic := '-';
 		sdram_sti  : in  std_logic := '-';

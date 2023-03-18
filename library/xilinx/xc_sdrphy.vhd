@@ -246,6 +246,10 @@ architecture xilinx of xc_sdrphy is
 	signal sdqsi      : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdqst      : bline_vector(word_size/byte_size-1 downto 0);
 
+	signal dqc        : bline_vector(word_size/byte_size-1 downto 0);
+	signal dqv        : bline_vector(word_size/byte_size-1 downto 0);
+	signal dqe        : bline_vector(word_size/byte_size-1 downto 0);
+
 	signal ddmo       : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddmt       : std_logic_vector(word_size/byte_size-1 downto 0);
 
@@ -477,6 +481,7 @@ begin
 
 	end block;
 
+	dqv   <= to_blinevector(sys_dqv);
 	sdmi  <= to_blinevector(sys_dmi);
 	ssti  <= to_blinevector(sys_sti);
 	sdmt  <= to_blinevector(sys_dmt);
@@ -537,6 +542,10 @@ begin
 			sys_dqt    => sdqt(i),
 			sys_dqo    => sdqo(i),
 
+		    sys_dqc    => dqc(i),
+		    sys_dqv    => dqv(i),
+		    sys_dqe    => dqe(i),
+
 			sys_dqsi   => sdqsi(i),
 			sys_dqst   => sdqst(i),
 			sys_dqso   => sys_dqso(data_gear*(i+1)-1 downto data_gear*i),
@@ -560,6 +569,8 @@ begin
 		sys_sto((i+1)*data_gear-1 downto i*data_gear) <= ssto(i);
 	end generate;
 
+	sys_dqc   <= to_stdlogicvector(dqc);
+	sys_dqe   <= to_stdlogicvector(dqe);
 	sdram_dqt <= to_stdlogicvector(ddqt);
 	sdram_dqo <= to_stdlogicvector(ddqo);
 
