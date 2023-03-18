@@ -42,19 +42,18 @@ entity xc_sdrdqphy is
 		device     : fpga_devices;
 		taps       : natural;
 		data_gear  : natural;
-		data_edge  : boolean;
 		byte_size  : natural);
 	port (
 		tp_sel     : in  std_logic_vector(2-1 downto 0) := "00";
 		tp_delay   : out std_logic_vector(1 to 8);
 
-		rst0       : in  std_logic;
-		rst90      : in  std_logic;
+		rst        : in  std_logic;
+		rst_shift  : in  std_logic;
 		iod_clk    : in  std_logic;
-		clk0       : in  std_logic := '-';
-		clk90      : in  std_logic := '-';
-		clk0x2     : in  std_logic := '-';
-		clk90x2    : in  std_logic := '-';
+		clk        : in  std_logic := '-';
+		clk_shift  : in  std_logic := '-';
+		clkx2      : in  std_logic := '-';
+		clkx2_shift : in  std_logic := '-';
 
 		sys_wlreq  : in  std_logic := '-';
 		sys_wlrdy  : out std_logic;
@@ -152,7 +151,7 @@ begin
 			variable sy_read_rdy  : std_logic;
 		begin
 			if rising_edge(iod_clk) then
-				if rst0='1' then
+				if rst='1' then
 					sys_rlrdy <= to_stdulogic(to_bit(sys_rlreq));
 					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
 					adjdqi_req <= to_stdlogicvector(to_bitvector(adjdqi_rdy));
@@ -219,7 +218,7 @@ begin
 			variable sy_dqipau_req : std_logic_vector(dqipau_req'range);
 		begin
 			if rising_edge(iod_clk) then
-				if rst0='1' then
+				if rst='1' then
 					dqipau_rdy <= to_stdlogicvector(to_bitvector(dqipau_req));
 					state := s_idle;
 				else
@@ -254,7 +253,7 @@ begin
 		variable sy_dqspau_req : std_logic;
 	begin
 		if rising_edge(iod_clk) then
-			if rst0='1' then
+			if rst='1' then
 				dqipause_rdy <= to_stdulogic(to_bit(dqipause_req));
 				dqspau_rdy   <= to_stdulogic(to_bit(dqspau_req));
 				state := s_idle;
@@ -287,7 +286,7 @@ begin
 		variable cntr : unsigned(0 to unsigned_num_bits(64-1));
 	begin
 		if rising_edge(iod_clk) then
-			if rst0='1' then
+			if rst='1' then
 				pause_rdy <= to_stdulogic(to_bit(pause_req));
 				cntr := (others => '0');
 			elsif (pause_rdy xor to_stdulogic(to_bit(pause_req)))='1' then
@@ -313,9 +312,9 @@ begin
 		generic map (
 			taps     => taps)
 		port map (
-			rst      => rst0,
+			rst      => rst,
 			edge     => std_logic'('1'),
-			clk      => clk0,
+			clk      => clk,
 			req      => adjdqs_req,
 			rdy      => adjdqs_rdy,
 			step_req => dqspau_req,
@@ -330,8 +329,8 @@ begin
 			device => device,
 			data_gear => data_gear)
 		port map (
-			rst    => rst0,
-			clk    => clk0,
+			rst    => rst,
+			clk    => clk,
 			delay  => dqsi_delay,
 			dqsi   => dqsi,
 			dqso   => sys_dqso);
@@ -343,10 +342,10 @@ begin
 			size   => 1,
 			gear   => data_gear)
 		port map (
-			rst   => rst0,
-			sclk  => clk0x2,
-			clkx2 => clk0x2,
-			clk   => clk0,  
+			rst   => rst,
+			sclk  => clkx2,
+			clkx2 => clkx2,
+			clk   => clk,  
 			d(0)  => dqsi_buf,
 			q     => dqs_smp);
 
@@ -357,8 +356,8 @@ begin
 			gear      => data_gear)
 		port map (
 			tp        => tp_dqssel,
-			rst       => rst0,
-			sdram_clk => clk0,
+			rst       => rst,
+			sdram_clk => clk,
 			edge      => std_logic'('0'),
 			sdram_sti => sys_sti(0),
 			sdram_sto => dqssto,
@@ -382,10 +381,10 @@ begin
 				signal ddqi   : std_logic;
 			begin
 	
-				dqismp_p : process (dq, clk90)
+				dqismp_p : process (dq, clk_shift)
 					variable q : std_logic_vector(dq_smp'range);
 				begin
-					if rising_edge(clk90) then
+					if rising_edge(clk_shift) then
 						for j in dq_smp'range loop
 							q(j) := dq(j*byte_size+i);
 						end loop;
@@ -397,9 +396,9 @@ begin
 				generic map (
 					taps     => taps)
 				port map (
-					rst      => rst90,
+					rst      => rst_shift,
 					edge     => std_logic'('1'),
-					clk      => clk90,
+					clk      => clk_shift,
 					req      => adjdqi_req(i),
 					rdy      => adjdqi_rdy(i),
 					step_req => dqipau_req(i),
@@ -417,8 +416,8 @@ begin
 					device => device,
 					signal_pattern => "DATA")
 				port map(
-					rst     => rst90,
-					clk     => clk90,
+					rst     => rst_shift,
+					clk     => clk_shift,
 					delay   => delay,
 					idatain => ddqi,
 					dataout => dqi(i));
@@ -438,8 +437,8 @@ begin
 						size => 1,
 						gear => data_gear)
 					port map (
-						rst  => rst0,
-						clk  => clk0,
+						rst  => rst,
+						clk  => clk,
 						d(0) => dqi(i),
 						q(0) => dq(0*byte_size+i),
 						q(1) => dq(1*byte_size+i));
@@ -461,17 +460,17 @@ begin
 						size => 1,
 						gear => data_gear)
 					port map (
-						rst   => rst90,
-						sclk  => clk0x2,
-						clkx2 => clk90x2,
-						clk   => clk90,
+						rst   => rst_shift,
+						sclk  => clkx2,
+						clkx2 => clkx2_shift,
+						clk   => clk_shift,
 						d(0)  => dqi(i),
 						q     => q1);
 			
-					-- process(q1, clk90)
+					-- process(q1, clk_shift)
 						-- variable data : std_logic_vector(0 to q1'length-1);
 					-- begin
-						-- if rising_edge(clk90) then
+						-- if rising_edge(clk_shift) then
 							-- data := q1;
 						-- end if;
 						-- q2 <= data(1 to 4-1) & q1(q1'left);
@@ -510,10 +509,10 @@ begin
 						size => 1,
 						gear => data_gear)
 					port map (
-						rst   => rst90,
-						sclk  => clk0x2,
-						clkx2 => clk90x2,
-						clk   => clk90,
+						rst   => rst_shift,
+						sclk  => clkx2,
+						clkx2 => clkx2_shift,
+						clk   => clk_shift,
 						d(0)  => sdram_dmi);
 				end generate;
 			
@@ -525,14 +524,14 @@ begin
 						n => data_gear,
 						d => (0 to data_gear-1 => 1))
 					port map (
-						clk => clk90,
+						clk => clk_shift,
 						di  => sys_sti,
 						do  => sto);
 
-					process(sto,clk90)
+					process(sto,clk_shift)
 						variable lat : unsigned(0 to 2*sto'length-1);
 					begin
-						if rising_edge(clk90) then
+						if rising_edge(clk_shift) then
 							lat := lat srl sto'length;
 							lat(0 to sto'length-1) := unsigned(sto);
 							sys_sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
@@ -540,10 +539,10 @@ begin
 						end if;
 					end process;
 
-					process (clk90)
+					process (clk_shift)
 						variable ena : std_logic;
 					begin
-						if rising_edge(clk90) then
+						if rising_edge(clk_shift) then
 							if sto_synced='0' then
 								if sys_sti=(sys_sti'range => '0') then
 									ena := '1';
@@ -578,8 +577,8 @@ begin
 						gear   => data_gear)
 					port map (
 						clk   => clk,
-						sclk  => clk90x2,
-						clkx2 => clk90x2,
+						sclk  => clkx2_shift,
+						clkx2 => clkx2_shift,
 						d(0)  => sti,
 						q     => sys_sto);
 				end generate;
@@ -597,6 +596,15 @@ begin
 	datao_b : block
 		constant register_on : boolean := device=xc7a;
 	begin
+
+		sys_dqc <= (others => clk_shift);
+		process (clk_shift)
+		begin
+			if rising_edge(clk_shift) then
+				sys_dqe <= sys_dqv;
+			end if;
+		end process;
+
 		oddr_g : for i in sdram_dqo'range generate
 
 			signal dqo : std_logic_vector(data_gear-1 downto 0);
@@ -611,7 +619,7 @@ begin
 				end if;
 			end process;
 
-			process (sw, sys_dqi, clk90)
+			process (sw, sys_dqi, clk_shift)
 			begin
 				for j in dqo'range loop
 					if sw='1' then
@@ -622,17 +630,17 @@ begin
 						end if;
 					elsif not register_on then
 						dqo(j) <= sys_dqi(byte_size*j+i);
-					elsif rising_edge(clk90) then
+					elsif rising_edge(clk_shift) then
 						dqo(j) <= sys_dqi(byte_size*j+i);
 					end if;
 				end loop;
 			end process;
 
-			process (sys_dqt, clk90)
+			process (sys_dqt, clk_shift)
 			begin
 				if not register_on then
 					dqt <= reverse(sys_dqt);
-				elsif rising_edge(clk90) then
+				elsif rising_edge(clk_shift) then
 					dqt <= reverse(sys_dqt);
 				end if;
 			end process;
@@ -641,12 +649,11 @@ begin
 			generic map (
 				device => device,
 				size => 1,
-				data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 				gear => data_gear)
 			port map (
-				rst   => rst90,
-				clk   => clk90,
-				clkx2 => clk90x2,
+				rst   => rst_shift,
+				clk   => clk_shift,
+				clkx2 => clkx2_shift,
 				t     => dqt,
 				tq(0) => sdram_dqt(i),
 				d     => dqo,
@@ -673,16 +680,16 @@ begin
 				end loop;
 			end process;
 
-			process (dmd, clk90)
+			process (dmd, clk_shift)
 			begin
 				if not register_on then
 					dmi <= dmd;
-				elsif rising_edge(clk90) then
+				elsif rising_edge(clk_shift) then
 					dmi <= dmd;
 				end if;
 			end process;
 
-			process (sys_dmt, clk90)
+			process (sys_dmt, clk_shift)
 			begin
 				if not register_on then
 					if loopback then
@@ -690,7 +697,7 @@ begin
 					else
 						dmt <= sys_dmt;
 					end if;
-				elsif rising_edge(clk90) then
+				elsif rising_edge(clk_shift) then
 					if loopback then
 						dmt <= (others => '0');
 					else
@@ -703,12 +710,11 @@ begin
 			generic map (
 				device => device,
 				size => 1,
-				data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 				gear => data_gear)
 			port map (
-				rst   => rst90,
-				clk   => clk90,
-				clkx2 => clk90x2,
+				rst   => rst_shift,
+				clk   => clk_shift,
+				clkx2 => clkx2_shift,
 				t     => dmt,
 				tq(0) => sdram_dmt,
 				d     => dmi,
@@ -725,12 +731,11 @@ begin
 			generic map (
 				device => device,
 				size => 1,
-				data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 				gear => data_gear)
 			port map (
-				rst   => rst90,
-				clk   => clk90,
-				clkx2 => clk90x2,
+				rst   => rst_shift,
+				clk   => clk_shift,
+				clkx2 => clkx2_shift,
 				d     => d,
 				q(0)  => sdram_sto);
 	
@@ -758,12 +763,11 @@ begin
 		generic map (
 			device => device,
 			size => 1,
-			data_edge => setif(data_edge, string'("OPPOSITE_EDGE"), string'("SAME_EDGE")),
 			gear => data_gear)
 		port map (
-			rst   => rst0,
-			clk   => clk0,
-			clkx2 => clk0x2,
+			rst   => rst,
+			clk   => clk,
+			clkx2 => clkx2,
 			t     => dqst,
 			tq(0) => sdram_dqst,
 			d     => dqsi,

@@ -593,7 +593,6 @@ begin
 		device      => xc3s,
 		bypass      => true,
 		loopback    => false,
-		data_edge   => true,
 		bank_size   => sd_ba'length,
 		addr_size   => sd_a'length,
 		cmmd_gear   => cmmd_gear,
@@ -601,11 +600,10 @@ begin
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (
-		rst0        => sdrsys_rst,
+		rst         => sdrsys_rst,
 		iod_clk     => clk0,
-		clk0        => clk0,
-		clk90       => clk90,
-		clk0x2      => clk0,
+		clk         => clk0,
+		clk_shift   => clk90,
 
 		phy_wlreq   => phy_wlreq,
 		phy_wlrdy   => phy_wlrdy,

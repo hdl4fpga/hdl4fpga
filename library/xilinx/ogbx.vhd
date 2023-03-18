@@ -32,8 +32,7 @@ entity ogbx is
 	generic (
 		device    : fpga_devices := xc7a;
 		size      : natural;
-		gear      : natural;
-		data_edge : string := "SAME_EDGE");
+		gear      : natural);
 	port (
 		rst   : in  std_logic := '0';
 		clk   : in  std_logic;
@@ -132,7 +131,7 @@ begin
 
 				oddr_i : oddr
 				generic map (
-					ddr_clk_edge => data_edge)
+					ddr_clk_edge => "SAME_EDGE")
 				port map (
 					c  => clk,
 					ce => '1',

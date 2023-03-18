@@ -161,9 +161,9 @@ package sdram_db is
 	constant device_latency_tab : device_latency_vector := (
 		(fpga => xc3s, param => STRL,       value => 0),
 		(fpga => xc3s, param => RWNL,       value => 0),
-		(fpga => xc3s, param => DQSZL,      value => 0),
-		(fpga => xc3s, param => DQSL,       value => 0),
-		(fpga => xc3s, param => DQZL,       value => 0),
+		(fpga => xc3s, param => DQSZL,      value => -1),
+		(fpga => xc3s, param => DQSL,       value => -1),
+		(fpga => xc3s, param => DQZL,       value => -1),
 		(fpga => xc3s, param => WWNL,       value => 0),
 		(fpga => xc3s, param => STRXL,      value => 0),
 		(fpga => xc3s, param => RWNXL,      value => 0),

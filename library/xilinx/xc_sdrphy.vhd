@@ -40,7 +40,6 @@ entity xc_sdrphy is
 		taps       : natural   := 0;
 		cmmd_gear  : natural   := 1;
 		data_gear  : natural   := 2;
-		data_edge  : boolean   := true;
 		bank_size  : natural   := 2;
 		addr_size  : natural   := 13;
 		word_size  : natural   := 16;
@@ -49,13 +48,13 @@ entity xc_sdrphy is
 		tp_sel     : in  std_logic_vector(2-1 downto 0) := "00";
 		tp         : out std_logic_vector(1 to 32);
 
-		rst0       : in  std_logic;
-		rst90      : in  std_logic := '-';
+		rst        : in  std_logic;
+		rst_shift  : in  std_logic := '-';
 		iod_clk    : in  std_logic;
-		clk0       : in  std_logic := '-';
-		clk90      : in  std_logic := '-';
-		clk0x2     : in  std_logic := '-';
-		clk90x2    : in  std_logic := '-';
+		clk        : in  std_logic := '-';
+		clk_shift  : in  std_logic := '-';
+		clkx2      : in  std_logic := '-';
+		clkx2_shift : in  std_logic := '-';
 
 		phy_frm    : buffer std_logic;
 		phy_trdy   : in  std_logic := '-';
@@ -280,7 +279,7 @@ begin
 	sdram_clk_g : for i in sdram_clk'range generate
 		signal clk : std_logic;
 	begin
-		clk <= clk0 when data_gear=2 else clk0x2;
+		clk <= clk when data_gear=2 else clkx2;
 		clk_i : entity hdl4fpga.ogbx
 		generic map (
 			device => device,
@@ -296,13 +295,12 @@ begin
 	sdrbaphy_i : entity hdl4fpga.xc_sdrbaphy
 	generic map (
 		device => device,
-		data_edge => "SAME_EDGE",
 		gear      => cmmd_gear,
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
-		clk0    => clk0,
-	 	rst     => rst0,
+		clk    => clk,
+	 	rst     => rst,
 		sys_rst => sys_rst,
 		sys_cs  => sys_cs,
 		sys_cke => sys_cke,
@@ -350,10 +348,10 @@ begin
 		ddrphy_b <= sys_b when swaddress='0' else (others => '0');
 		ddrphy_a <= sys_a when swaddress='0' else (others => '0');
 
-		process (phy_trdy, clk0)
+		process (phy_trdy, clk)
 			variable s_pre : std_logic;
 		begin
-			if rising_edge(clk0) then
+			if rising_edge(clk) then
 				if phy_trdy='1' then
 					sdram_idle <= s_pre;
 					case phy_cmd is
@@ -371,15 +369,15 @@ begin
 			end if;
 		end process;
 
-		readcycle_p : process (clk0, rd_rdy)
+		readcycle_p : process (clk, rd_rdy)
 			type states is (s_idle, s_init, s_run);
 			variable state : states;
 			variable burst : std_logic;
 			variable sy_wr_req : std_logic_vector(wr_req'range);
 			variable sy_rd_req : std_logic_vector(rd_req'range);
 		begin
-			if rising_edge(clk0) then
-				if rst0='1' then
+			if rising_edge(clk) then
+				if rst='1' then
 					write_rdy <= to_stdulogic(to_bit(write_req));
 					read_rdy  <= to_stdulogic(to_bit(read_req));
 					wr_rdy    <= to_stdlogicvector(to_bitvector(wr_req));
@@ -448,12 +446,12 @@ begin
 			end if;
 		end process;
 
-		process (clk0)
+		process (clk)
 			type states is (s_init, s_w4all, s_4rdy);
 			variable state : states;
 		begin
-			if rising_edge(clk0) then
-				if rst0='1' then
+			if rising_edge(clk) then
+				if rst='1' then
 					phy_ini   <= '0';
 					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 					state := s_init;
@@ -508,20 +506,19 @@ begin
 			bypass     => bypass,
 			device     => device,
 			taps       => taps,
-			data_edge  => data_edge,
 			data_gear  => data_gear,
 			byte_size  => byte_size)
 		port map (
 			tp_sel     => tp_sel,
 			tp_delay   => tp_byte,
 
-			rst0       => rst0,
-			rst90      => rst90,
-			iod_clk    => iod_clk,
-			clk0       => clk0,
-			clk90      => clk90,
-			clk0x2     => clk0x2,
-			clk90x2    => clk90x2,
+			rst       => rst,
+			rst_shift => rst_shift,
+			iod_clk   => iod_clk,
+			clk       => clk,
+			clk_shift => clk_shift,
+			clkx2     => clkx2,
+			clkx2_shift => clkx2_shift,
 
 			sys_wlreq  => phy_wlreq,
 			sys_wlrdy  => wl_rdy(i),

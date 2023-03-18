@@ -30,13 +30,12 @@ use hdl4fpga.profiles.all;
 entity xc_sdrbaphy is
 	generic (
 		device    : fpga_devices;
-		data_edge : string  := "SAME_EDGE";
 		gear      : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13);
 	port (
 		rst       : in  std_logic := '0';
-		clk0      : in  std_logic;
+		clk       : in  std_logic;
 		sys_rst   : in  std_logic_vector(gear-1 downto 0) := (others => '-');
 		sys_cs    : in  std_logic_vector(gear-1 downto 0);
 		sys_cke   : in  std_logic_vector(gear-1 downto 0);
@@ -64,12 +63,11 @@ begin
 	rst_i : entity hdl4fpga.ogbx
 	generic map (
 		device    => device,
-		data_edge => data_edge,
 		size      => 1,
 		gear      => gear)
 	port map (
 		rst       => rst,
-		clk       => clk0,
+		clk       => clk,
 		d         => sys_rst,
 		q(0)      => sdram_rst);
 
@@ -77,12 +75,11 @@ begin
 		cke_i : entity hdl4fpga.ogbx
 		generic map (
 			device    => device,
-			data_edge => data_edge,
 			size      => 1,
 			gear      => gear)
 		port map (
 			rst       => rst,
-			clk       => clk0,
+			clk       => clk,
 			d         => sys_cke,
 			q(0)      => sdram_cke(i));
 	end generate;
@@ -91,12 +88,11 @@ begin
 		cs_i : entity hdl4fpga.ogbx
 		generic map (
 			device    => device,
-			data_edge => data_edge,
 			size      => 1,
 			gear      => gear)
 		port map (
 			rst       => rst,
-			clk       => clk0,
+			clk       => clk,
 			d         => sys_cs,
 			q(0)      => sdram_cs(i));
 	end generate;
@@ -104,36 +100,33 @@ begin
 	ras_i : entity hdl4fpga.ogbx
 	generic map (
 		device    => device,
-		data_edge => data_edge,
 		size      => 1,
 		gear      => gear)
 	port map (
 		rst       => rst,
-		clk       => clk0,
+		clk       => clk,
 		d         => sys_ras,
 		q(0)      => sdram_ras);
 
 	cas_i : entity hdl4fpga.ogbx
 	generic map (
 		device    => device,
-		data_edge => data_edge,
 		size      => 1,
 		gear      => gear)
 	port map (
 		rst       => rst,
-		clk       => clk0,
+		clk       => clk,
 		d         => sys_cas,
 		q(0)      => sdram_cas);
 
 	we_i : entity hdl4fpga.ogbx
 	generic map (
 		device    => device,
-		data_edge => data_edge,
 		size      => 1,
 		gear      => gear)
 	port map (
 		rst       => rst,
-		clk       => clk0,
+		clk       => clk,
 		d         => sys_we,
 		q(0)      => sdram_we);
 
@@ -141,12 +134,11 @@ begin
 		odt_i : entity hdl4fpga.ogbx
 		generic map (
 			device    => device,
-			data_edge => data_edge,
 			size      => 1,
 			gear      => gear)
 		port map (
 			rst       => rst,
-			clk       => clk0,
+			clk       => clk,
 			d         => sys_odt,
 			q(0)      => sdram_odt(i));
 	end generate;
@@ -154,24 +146,22 @@ begin
 	ba_i : entity hdl4fpga.ogbx
 	generic map (
 		device    => device,
-		data_edge => data_edge,
 		size      => sdram_b'length,
 		gear      => gear)
 	port map (
 		rst       => rst,
-		clk       => clk0,
+		clk       => clk,
 		d         => sys_b,
 		q         => sdram_b);
 
 	a_i : entity hdl4fpga.ogbx
 	generic map (
 		device    => device,
-		data_edge => data_edge,
 		size      => sdram_a'length,
 		gear      => gear)
 	port map (
 		rst       => rst,
-		clk       => clk0,
+		clk       => clk,
 		d         => sys_a,
 		q         => sdram_a);
 

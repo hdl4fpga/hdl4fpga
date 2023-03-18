@@ -76,10 +76,7 @@ architecture graphics of ecp3versa is
 		mii_475MHz_1080p24bpp30 => (comms => io_ipoe, mode => mode1080p24bpp30, speed => sdram475MHz),
 		mii_500MHz_1080p24bpp30 => (comms => io_ipoe, mode => mode1080p24bpp30, speed => sdram500MHz));
 
-	constant sclk_phases : natural := 1;
-	constant sclk_edges  : natural := 1;
 	constant cmmd_gear   : natural := 2;
-	constant data_edges  : natural := 1;
 	constant data_gear   : natural := 4;
 
 	constant bank_size   : natural := ddr3_b'length;
@@ -124,6 +121,9 @@ architecture graphics of ecp3versa is
 	signal ctlrphy_dqi   : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_dqt   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_dqc   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqv   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqe   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ddr_ba        : std_logic_vector(ddr3_b'length-1 downto 0);
@@ -578,7 +578,7 @@ begin
 
 	end block;
 
-	grahics_e : entity hdl4fpga.demo_graphics0
+	grahics_e : entity hdl4fpga.demo_graphics
 	generic map (
 		debug        => debug,
 		profile      => 2,
@@ -587,11 +587,7 @@ begin
 		fpga         => hdl4fpga.profiles.ecp3,
 		-- mark         => MT41J1G15E,
 		mark         => MT41K8G125,
-		sclk_phases  => sclk_phases,
-		sclk_edges   => sclk_edges,
 		burst_length => 8,
-		data_phases  => data_gear,
-		data_edges   => data_edges,
 		data_gear    => data_gear,
 		cmmd_gear    => cmmd_gear,
 		bank_size    => bank_size,
@@ -620,7 +616,7 @@ begin
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
-		ctlr_clks(0) => ctlr_clk,
+		ctlr_clk     => ctlr_clk,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
@@ -658,6 +654,9 @@ begin
 		ctlrphy_dqi  => ctlrphy_dqi,
 		ctlrphy_dqt  => ctlrphy_dqt,
 		ctlrphy_dqo  => ctlrphy_dqo,
+		ctlrphy_dqv  => ctlrphy_dqv,
+		ctlrphy_dqe  => ctlrphy_dqe,
+		ctlrphy_dqc  => ctlrphy_dqc,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
 
