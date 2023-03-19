@@ -597,14 +597,6 @@ begin
 		constant register_on : boolean := device=xc7a;
 	begin
 
-		sys_dqc <= (others => clk_shift);
-		process (clk_shift)
-		begin
-			if rising_edge(clk_shift) then
-				sys_dqe <= sys_dqv;
-			end if;
-		end process;
-
 		oddr_g : for i in sdram_dqo'range generate
 
 			signal dqo : std_logic_vector(data_gear-1 downto 0);
@@ -774,4 +766,24 @@ begin
 			q(0)  => sdram_dqso);
 
 	end block;
+
+	gear2_g : if data_gear=2 generate
+		sys_dqc(0) <= clk_shift;
+		sys_dqc(1) <= not clk_shift;
+
+		process (clk_shift)
+		begin
+			if rising_edge(clk_shift) then
+				sys_dqe(0) <= sys_dqv(0);
+			end if;
+		end process;
+
+		process (clk_shift)
+		begin
+			if rising_edge(clk_shift) then
+				sys_dqe(0) <= sys_dqv(0);
+			end if;
+		end process;
+	end generate;
+
 end;
