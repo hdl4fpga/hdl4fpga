@@ -186,8 +186,8 @@ architecture graphics of nuhs3adsp is
 	signal ddrsys_lckd   : std_logic;
 	signal ddrsys_rst    : std_logic;
 
-	signal clk0          : std_logic;
-	signal clk270         : std_logic;
+	signal cltr_clk          : std_logic;
+	signal clk_shift     : std_logic;
 
 	signal ctlrphy_rst   : std_logic;
 	signal ctlrphy_cke   : std_logic_vector(cmmd_gear-1 downto 0);
@@ -276,7 +276,7 @@ begin
 		
 		signal dcm_rst   : std_logic;
 		signal dcm_clk0  : std_logic;
-		signal dcm_clk270 : std_logic;
+		signal dcm_clk90 : std_logic;
 		signal dcm_lckd  : std_logic;
 
 	begin
@@ -340,20 +340,20 @@ begin
 	
 			rst      => dcm_rst,
 			clkin    => dfs_clkfx,
-			clkfb    => clk0,
+			clkfb    => cltr_clk,
 			clk0     => dcm_clk0,
-			clk270   => dcm_clk270,
+			clk270   => dcm_clk90,
 			locked   => dcm_lckd);
 
 		clk0_bufg_i : bufg
 		port map (
 			i => dcm_clk0,
-			o => clk0);
+			o => cltr_clk);
 	
 		clk90_bufg_i : bufg
 		port map (
-			i => dcm_clk270,
-			o => clk270);
+			i => dcm_clk90,
+			o => clk_shift);
 	
 		ddrsys_rst <= not dcm_lckd;
 
@@ -618,7 +618,7 @@ begin
 		video_blank  => video_blank,
 		video_pixel  => video_pixel,
 
-		ctlr_clk     => clk0,
+		ctlr_clk     => cltr_clk,
 		ctlr_rst     => ddrsys_rst,
 		ctlr_rtt     => "---",
 		ctlr_bl      => "001",				-- Busrt length 2
@@ -680,9 +680,9 @@ begin
 		byte_size   => byte_size)
 	port map (
 		rst         => ddrsys_rst,
-		iod_clk     => clk0,
-		clk         => clk0,
-		clk_shift   => clk270,
+		iod_clk     => cltr_clk,
+		clk         => cltr_clk,
+		clk_shift   => clk_shift,
 
 		phy_wlreq   => phy_wlreq,
 		phy_wlrdy   => phy_wlrdy,

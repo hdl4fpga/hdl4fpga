@@ -768,22 +768,49 @@ begin
 	end block;
 
 	gear2_g : if data_gear=2 generate
-		sys_dqc(0) <= clk_shift;
-		sys_dqc(1) <= not clk_shift;
+		signal cntr0   : unsigned(4-1 downto 0) := (others => '0');
+		signal cntr90  : unsigned(4-1 downto 0);
+		signal cntr180 : unsigned(4-1 downto 0);
+		signal cntr270 : unsigned(4-1 downto 0);
+
+		signal ram90  : std_logic_vector(0 to 16-1);
+		signal ram270 : std_logic_vector(0 to 16-1);
+	begin
+		
+		sys_dqc(1) <= clk_shift;
+		sys_dqc(0) <= not clk_shift;
+
+		process (clk)
+		begin
+			if rising_edge(clk) then
+				ram90(to_integer(cntr0))  <= sys_dqv(1);
+				ram270(to_integer(cntr0)) <= sys_dqv(0);
+			end if;
+		end process;
+
+		sys_dqe(1) <= ram90(to_integer(cntr90));
+		sys_dqe(0) <= ram270(to_integer(cntr270));
 
 		process (clk_shift)
 		begin
 			if rising_edge(clk_shift) then
-				sys_dqe(0) <= sys_dqv(0);
+				cntr270 <= cntr0;
+			end if;
+			if falling_edge(clk_shift) then
+				cntr90 <= cntr180;
 			end if;
 		end process;
 
-		process (clk_shift)
+		process (clk)
 		begin
-			if rising_edge(clk_shift) then
-				sys_dqe(0) <= sys_dqv(0);
+			if rising_edge(clk) then
+				cntr0 <= cntr0 + 1;
+			end if;
+			if falling_edge(clk) then
+				cntr180 <= cntr270 + 1;
 			end if;
 		end process;
+
 	end generate;
 
 end;

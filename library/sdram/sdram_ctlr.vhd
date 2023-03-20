@@ -476,7 +476,7 @@ begin
 			sdram_enas  => phy_dqe,
 			sdram_dqo   => dqo);
 
-		phy_dqo   <= rot_di  when bypass='1' else dqo;
+		phy_dqo     <= rot_di  when bypass='1' else dqo;
 		sdram_wr_dm <= ctlr_dm when bypass='1' else dmo;
 	end block;
 
