@@ -577,8 +577,6 @@ begin
 						gear   => data_gear)
 					port map (
 						clk   => clk,
-						sclk  => clkx2_shift,
-						clkx2 => clkx2_shift,
 						d(0)  => sti,
 						q     => sys_sto);
 				end generate;
@@ -718,18 +716,19 @@ begin
 			signal d : std_logic_vector(0 to data_gear-1);
 		begin
 	
-			d <= reverse(sys_sti);
-			ogbx_i : entity hdl4fpga.ogbx
-			generic map (
-				device => device,
-				size => 1,
-				gear => data_gear)
-			port map (
-				rst   => rst_shift,
-				clk   => clk_shift,
+   			d <= sys_sti when data_gear=2 else reverse(sys_sti);
+
+   			ogbx_i : entity hdl4fpga.ogbx
+   			generic map (
+   				device => device,
+   				size => 1,
+   				gear => data_gear)
+   			port map (
+   				rst   => rst_shift,
+   				clk   => clk_shift,
 				clkx2 => clkx2_shift,
-				d     => d,
-				q(0)  => sdram_sto);
+   				d     => d,
+   				q(0)  => sdram_sto);
 	
 		end block;
 
@@ -768,48 +767,27 @@ begin
 	end block;
 
 	gear2_g : if data_gear=2 generate
-		signal cntr0   : unsigned(4-1 downto 0) := (others => '0');
-		signal cntr90  : unsigned(4-1 downto 0);
-		signal cntr180 : unsigned(4-1 downto 0);
-		signal cntr270 : unsigned(4-1 downto 0);
-
-		signal ram90  : std_logic_vector(0 to 16-1);
-		signal ram270 : std_logic_vector(0 to 16-1);
 	begin
 		
 		sys_dqc(1) <= clk_shift;
 		sys_dqc(0) <= not clk_shift;
 
-		process (clk)
-		begin
-			if rising_edge(clk) then
-				ram90(to_integer(cntr0))  <= sys_dqv(1);
-				ram270(to_integer(cntr0)) <= sys_dqv(0);
-			end if;
-		end process;
+		phdata_e : entity hdl4fpga.phdata
+		generic map (
+			data_width90  => 2,
+			data_width270 => 2)
+		port map (
+			clk0     => clk,
+			clk270   => clk_shift,
+			di90(0)  => sys_dqv(1),
+			di90(1)  => sys_sti(1),
+			di270(0) => sys_dqv(0),
+			di270(1) => sys_sti(0),
 
-		sys_dqe(1) <= ram90(to_integer(cntr90));
-		sys_dqe(0) <= ram270(to_integer(cntr270));
-
-		process (clk_shift)
-		begin
-			if rising_edge(clk_shift) then
-				cntr270 <= cntr0;
-			end if;
-			if falling_edge(clk_shift) then
-				cntr90 <= cntr180;
-			end if;
-		end process;
-
-		process (clk)
-		begin
-			if rising_edge(clk) then
-				cntr0 <= cntr0 + 1;
-			end if;
-			if falling_edge(clk) then
-				cntr180 <= cntr270 + 1;
-			end if;
-		end process;
+			do90(0)  => sys_dqe(1),
+			do90(1)  => sys_sti(1),
+			do270(0) => sys_dqe(0)
+			do270(1) => sys_sti(0));
 
 	end generate;
 

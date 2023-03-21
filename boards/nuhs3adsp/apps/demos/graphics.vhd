@@ -352,7 +352,7 @@ begin
 	
 		clk90_bufg_i : bufg
 		port map (
-			i => dcm_270,
+			i => dcm_clk270,
 			o => clk270);
 	
 		ddrsys_rst <= not dcm_lckd;

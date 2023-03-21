@@ -25,7 +25,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity dataph is
+entity phdata is
 	generic (
 		data_width90  : natural;
 		data_width270 : natural);
@@ -38,7 +38,7 @@ entity dataph is
 		do270  : out std_logic_vector(data_width270-1 downto 0));
 end;
 
-architecture inference of dataph is
+architecture inference of phdata is
 
 	signal cntr0   : unsigned(4-1 downto 0);
 	signal cntr90  : unsigned(4-1 downto 0);
