@@ -132,6 +132,7 @@ architecture xilinx of xc_sdrdqphy is
 	signal data_align   : std_logic_vector(sys_sti'range);
 	signal half_align   : std_logic;
 
+	signal ssti         : std_logic_vector(sys_sti'range);
 begin
 
 	with tp_sel select
@@ -660,7 +661,7 @@ begin
 			process (sys_sti, sys_dmt, sys_dmi)
 			begin
 				for i in dmi'range loop
-					if loopback then
+					if not loopback then
 						dmd(i) <= reverse(sys_sti)(i);
 					elsif sys_dmt(i)='1' then
 						dmd(i) <= reverse(sys_dmi)(i);
@@ -716,7 +717,7 @@ begin
 			signal d : std_logic_vector(0 to data_gear-1);
 		begin
 	
-   			d <= sys_sti when data_gear=2 else reverse(sys_sti);
+   			d <= reverse(ssti) when data_gear=2 else reverse(sys_sti);
 
    			ogbx_i : entity hdl4fpga.ogbx
    			generic map (
@@ -785,9 +786,9 @@ begin
 			di270(1) => sys_sti(0),
 
 			do90(0)  => sys_dqe(1),
-			do90(1)  => sys_sti(1),
-			do270(0) => sys_dqe(0)
-			do270(1) => sys_sti(0));
+			do90(1)  => ssti(1),
+			do270(0) => sys_dqe(0),
+			do270(1) => ssti(0));
 
 	end generate;
 

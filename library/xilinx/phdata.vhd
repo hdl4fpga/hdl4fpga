@@ -27,14 +27,17 @@ use ieee.numeric_std.all;
 
 entity phdata is
 	generic (
-		data_width90  : natural;
-		data_width270 : natural);
+		data_width90  : natural := 1;
+		data_width180 : natural := 1;
+		data_width270 : natural := 1);
 	port (
 		clk0   : in  std_logic := '-';
 		clk270 : in  std_logic := '-';
 		di90   : in  std_logic_vector(data_width90-1  downto 0) := (others => '-');
+		di180  : in  std_logic_vector(data_width180-1 downto 0) := (others => '-');
 		di270  : in  std_logic_vector(data_width270-1 downto 0) := (others => '-');
 		do90   : out std_logic_vector(data_width90-1  downto 0);
+		do180  : out std_logic_vector(data_width180-1 downto 0) := (others => '-');
 		do270  : out std_logic_vector(data_width270-1 downto 0));
 end;
 
@@ -46,9 +49,11 @@ architecture inference of phdata is
 	signal cntr270 : unsigned(4-1 downto 0);
 
 	type mem90  is array (natural range <>) of std_logic_vector(di90'range);
+	type mem180 is array (natural range <>) of std_logic_vector(di180'range);
 	type mem270 is array (natural range <>) of std_logic_vector(di270'range);
 
-	signal ram90  :  mem90(0 to 2**cntr0'length-1);
+	signal ram90  : mem90(0 to 2**cntr0'length-1);
+	signal ram180 : mem180(0 to 2**cntr0'length-1);
 	signal ram270 : mem270(0 to 2**cntr0'length-1);
 begin
 	
@@ -76,11 +81,13 @@ begin
 	begin
 		if rising_edge(clk0) then
 			ram90(to_integer(cntr0))  <= di90;
+			ram180(to_integer(cntr0)) <= di180;
 			ram270(to_integer(cntr0)) <= di270;
 		end if;
 	end process;
 
-	do90  <= ram90(to_integer(cntr270));
+	do90  <= ram90(to_integer(cntr90));
+	do180 <= ram180(to_integer(cntr180));
 	do270 <= ram270(to_integer(cntr270));
 
 end;
