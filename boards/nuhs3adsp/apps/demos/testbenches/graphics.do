@@ -76,9 +76,16 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/fifo_g/gear_g(1)/fifo_i/line__46/cntr
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix unsigned /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/fifo_g/gear_g(1)/fifo_i/line__46/cntr
-add wave -noupdate -radix unsigned /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/fifo_g/gear_g(1)/fifo_i/line__57/cntr
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/fifo_g/gear_g(1)/fifo_i/in_clk
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/fifo_g/gear_g(1)/fifo_i/in_frm
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/fifo_g/gear_g(1)/fifo_i/in_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/fifo_g/gear_g(1)/fifo_i/out_clk
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/fifo_g/gear_g(1)/fifo_i/out_frm
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/fifo_g/gear_g(1)/fifo_i/out_data
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/fifo_g/sdqi
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -expand /testbench/du_e/sdrphy_e/sys_dmi
 add wave -noupdate -divider {New Divider}
@@ -121,7 +128,7 @@ add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/oddr_g(
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/oddr_g(2)/ogbx_i/reg_g(0)/gear2_g/xc3s_g/oddr_i/C1
 add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/oddr_g(2)/ogbx_i/reg_g(0)/gear2_g/xc3s_g/oddr_i/D1
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {69203315 ps} 0} {{Cursor 2} {94751461 ps} 0} {{Cursor 3} {94823469 ps} 0}
+WaveRestoreCursors {{Cursor 1} {69201265 ps} 0} {{Cursor 2} {69214089 ps} 0} {{Cursor 3} {94823469 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 316
 configure wave -valuecolwidth 219
@@ -137,4 +144,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {69022133 ps} {69230415 ps}
+WaveRestoreZoom {69183327 ps} {69221931 ps}

@@ -28,38 +28,42 @@ use ieee.numeric_std.all;
 entity iofifo is
 	port (
 		in_clk   : in  std_logic;
-		in_dv    : in  std_logic;
+		in_frm   : in  std_logic;
 		in_data  : in  std_logic_vector;
 
 		out_clk  : in  std_logic;
-		out_ena  : in  std_logic;
+		out_frm  : in  std_logic;
 		out_data : out std_logic_vector);
 end;
 
 architecture mix of iofifo is
 
 	type ram is array(natural range <>) of std_logic_vector(in_data'range);
-	signal mem : ram(2**4-1 downto 0);
+	shared variable mem : ram(2**4-1 downto 0);
 
 begin
 
 	process (in_clk)
-		variable cntr : std_logic_vector(4-1 downto 0);
+		variable cntr : unsigned(4-1 downto 0);
 	begin
 		if rising_edge(in_clk) then
-			if in_dv='1' then
-				cntr := std_logic_vector(unsigned(to_stdlogicvector(to_bitvector(cntr))) + 1);
+			if in_frm='0' then
+				cntr := (others => '0');
+			else
+				mem(to_integer(unsigned(cntr))) := in_data;
+				cntr := cntr + 1;
 			end if;
-			mem(to_integer(unsigned(cntr))) <= in_data;
 		end if;
 	end process;
 
 	process (out_clk)
-		variable cntr : std_logic_vector(4-1 downto 0);
+		variable cntr : unsigned(4-1 downto 0);
 	begin
 		if rising_edge(out_clk) then
-			if out_ena='1' then
-				cntr := std_logic_vector(unsigned(to_stdlogicvector(to_bitvector(cntr))) + 1);
+			if out_frm='0' then
+				cntr := (others => '0');
+			else
+				cntr := cntr + 1;
 			end if;
 			out_data <= mem(to_integer(unsigned(cntr)));
 		end if;

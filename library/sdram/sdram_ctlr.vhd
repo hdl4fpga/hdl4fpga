@@ -173,7 +173,6 @@ architecture mix of sdram_ctlr is
 
 	signal sdram_win_dqs    : std_logic_vector(phy_dqsi'range);
 	signal sdram_win_dq     : std_logic_vector(phy_dqsi'range);
-	signal sdram_wr_dm      : std_logic_vector(ctlr_dm'range);
 
 	signal rot_val          : std_logic_vector(unsigned_num_bits(data_gear*word_size-1)-1 downto 0);
 	signal rot_di           : std_logic_vector(ctlr_di'range);
@@ -296,7 +295,8 @@ begin
 		sdram_mpu_rwwin => sdram_mpu_rwwin);
 
 	ctlr_cmd     <= sdram_pgm_cmd;
-	ctlr_di_req  <= sdram_mpu_wwin;
+	-- ctlr_di_req  <= sdram_mpu_wwin;
+	ctlr_di_req  <= sdram_sch_wwn(0);
 	ctlr_do_req  <= sdram_mpu_rwin;
 	ctlr_dio_req <= sdram_mpu_rwwin;
 
@@ -329,7 +329,6 @@ begin
 	sdram_win_dq  <= (others => sdram_sch_rwn(0));
 
 	process (
-		sdram_wr_dm,
 		sdram_sch_st,
 		sdram_sch_dqz,
 		sdram_sch_dqs,
@@ -344,7 +343,6 @@ begin
 				phy_dqso(i*data_gear+j) <= sdram_sch_dqs(j);
 				phy_dqst(i*data_gear+j) <= not sdram_sch_dqsz(j);
 				phy_sto(i*data_gear+j)  <= sdram_sch_st(j);
-				phy_dmo(i*data_gear+j)  <= sdram_wr_dm(i*data_gear+j);
 			end loop;
 			for j in sdram_sch_wwn'range loop
 				phy_dqv(i*data_gear+j) <= sdram_sch_wwn(j);
@@ -451,33 +449,8 @@ begin
 	port map (
 		shf => rot_val,
 		di  => ctlr_di,
-		do  => rot_di);
+		do  => phy_dqo);
 
-	wrfifo_b : block
-		signal bypass : std_logic;
-		signal dqo    : std_logic_vector(phy_dqo'range);
-		signal dmo    : std_logic_vector(sdram_wr_dm'range);
-	begin
-		bypass <= '1' when stdr=sdr else '0';
-
-		wrfifo_i : entity hdl4fpga.sdram_wrfifo
-		generic map (
-			data_gear   => data_gear,
-			word_size   => word_size,
-			byte_size   => byte_size)
-		port map (
-			ctlr_clk    => ctlr_clk,
-			ctlr_dqi    => rot_di,
-			ctlr_ena    => ctlr_di_dv,
-			ctlr_req    => sdram_mpu_wri,
-			ctlr_dmi    => ctlr_dm,
-			sdram_clks  => phy_dqc,
-			sdram_dmo   => dmo,
-			sdram_enas  => phy_dqe,
-			sdram_dqo   => dqo);
-
-		phy_dqo     <= rot_di  when bypass='1' else dqo;
-		sdram_wr_dm <= ctlr_dm when bypass='1' else dmo;
-	end block;
+	phy_dmo <= ctlr_dm;
 
 end;

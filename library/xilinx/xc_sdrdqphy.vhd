@@ -37,7 +37,7 @@ entity xc_sdrdqphy is
 		dqs_delay  : time := 0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
 		dqi_delay  : time := 0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
 
-		fifo       : boolean := false;
+		fifo       : boolean := true;
 		loopback   : boolean := false;
 		bypass     : boolean := false;
 		device     : fpga_devices;
@@ -601,26 +601,31 @@ begin
 		constant register_on : boolean := device=xc7a;
 
 		signal sdqi : std_logic_vector(sys_dqi'range);
+		signal sdmi : std_logic_vector(sys_dmi'range);
 	begin
 
-		fifo_g : if true generate
-			signal sdqi : std_logic_vector(sys_dqi'range);
-		begin
+		fifo_g : if fifo generate
 			gear_g : for i in data_gear-1 downto 0 generate
+				signal in_data  : std_logic_vector(sys_dqi'length/data_gear downto 0);
+				signal out_data : std_logic_vector(sys_dqi'length/data_gear downto 0);
 			begin
+				in_data <= sys_dmi(i) & sys_dqi(byte_size*(i+1)-1 downto byte_size*i);
 				fifo_i : entity hdl4fpga.iofifo
 				port map (
 					in_clk   => clk,
-					in_dv    => sys_dqv(i),
-					in_data  => sys_dqi(byte_size*(i+1)-1 downto byte_size*i),
+					in_frm   => sys_dqv(i),
+					in_data  => in_data,
 					out_clk  => sys_dqc(i),
-					out_ena  => sys_dqe(i),
-					out_data => sdqi(byte_size*(i+1)-1 downto byte_size*i));
+					out_frm  => sys_dqe(i),
+					out_data => out_data);
+				sdmi(i) <= out_data(out_data'left);
+				sdqi(byte_size*(i+1)-1 downto byte_size*i) <= out_data(out_data'left-1 downto 0);
 			end generate;
 		end generate;
 		
 		nofifo_g : if not fifo generate
 			sdqi <= sys_dqi;
+			sdmi <= sys_dmi;
 		end generate;
 
 		oddr_g : for i in sdram_dqo'range generate
@@ -691,9 +696,9 @@ begin
 					if not loopback then
 						dmd(i) <= sys_sti(i);
 					elsif sys_dmt(i)='1' then
-						dmd(i) <= sys_dmi(i);
+						dmd(i) <= sdmi(i);
 					else
-						dmd(i) <= sys_dmi(i);
+						dmd(i) <= sdmi(i);
 					end if;
 				end loop;
 			end process;
