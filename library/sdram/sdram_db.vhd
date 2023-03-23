@@ -164,7 +164,7 @@ package sdram_db is
 		(fpga => xc3s, param => DQSZL,      value => 0),
 		(fpga => xc3s, param => DQSL,       value => 0),
 		(fpga => xc3s, param => DQZL,       value => -2),
-		(fpga => xc3s, param => WWNL,       value => -2),
+		(fpga => xc3s, param => WWNL,       value => 0),
 		(fpga => xc3s, param => STRXL,      value => 0),
 		(fpga => xc3s, param => RWNXL,      value => 0),
 		(fpga => xc3s, param => DQSZXL,     value => 2),

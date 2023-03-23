@@ -960,6 +960,7 @@ begin
 	sdrctlr_b : block
 		signal inirdy    : std_logic;
 	begin
+		-- ctlr_dm <= ctlr_di(2) & ctlr_di(2) & ctlr_di(18) & ctlr_di(18); -- (others => '0');
 		ctlr_dm <= (others => '0');
 		sdrctlr_e : entity hdl4fpga.sdram_ctlr
 		generic map (

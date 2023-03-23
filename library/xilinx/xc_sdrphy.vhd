@@ -218,6 +218,19 @@ architecture xilinx of xc_sdrphy is
 		return val;
 	end;
 
+	function shuffle_blinevector (
+		constant arg : std_logic_vector) 
+		return bline_vector is
+		variable val : bline_vector(word_size/byte_size-1 downto 0);
+	begin	
+		for i in word_size/byte_size-1 downto 0 loop
+			for j in data_gear-1 downto 0 loop
+				val(i)(j) := arg(word_size/byte_size*i+j);
+			end loop;
+		end loop;
+		return to_blinevector(to_stdlogicvector(val));
+	end;
+
 	function shuffle_dlinevector (
 		constant arg : std_logic_vector) 
 		return dline_vector is
@@ -480,7 +493,7 @@ begin
 	end block;
 
 	dqv   <= to_blinevector(sys_dqv);
-	sdmi  <= to_blinevector(sys_dmi);
+	sdmi  <= shuffle_blinevector(sys_dmi);
 	ssti  <= to_blinevector(sys_sti);
 	sdmt  <= to_blinevector(sys_dmt);
 	sdqt  <= to_blinevector(sys_dqt);

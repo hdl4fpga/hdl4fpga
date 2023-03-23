@@ -666,11 +666,11 @@ begin
 			begin
 				for i in dmi'range loop
 					if not loopback then
-						dmd(i) <= reverse(sys_sti)(i);
+						dmd(i) <= sys_sti(i);
 					elsif sys_dmt(i)='1' then
-						dmd(i) <= reverse(sys_dmi)(i);
+						dmd(i) <= sys_dmi(i);
 					else
-						dmd(i) <= reverse(sys_dmi)(i);
+						dmd(i) <= sys_dmi(i);
 					end if;
 				end loop;
 			end process;
@@ -721,7 +721,7 @@ begin
 			signal d : std_logic_vector(0 to data_gear-1);
 		begin
 	
-   			d <= ssti when data_gear=2 else reverse(sys_sti);
+   			d <= reverse(ssti) when data_gear=2 else reverse(sys_sti);
 
    			ogbx_i : entity hdl4fpga.ogbx
    			generic map (
@@ -792,25 +792,25 @@ begin
 			di0(0)   => sys_dqsi(1),
 
 			di90(2)  => sys_dqt(1),
-			di90(1)  => sys_sti(1),
+			di90(1)  => sys_sti(0),
 			di90(0)  => sys_dqv(1),
 
 			di180(0) => sys_dqsi(0),
 
 			di270(2) => sys_dqt(0),
-			di270(1) => sys_sti(0),
+			di270(1) => sys_sti(1),
 			di270(0) => sys_dqv(0),
 
 			do0(0)   => sdqsi(1),
 
 			do90(2)  => sdqt(1),
-			do90(1)  => ssti(1),
+			do90(1)  => ssti(0),
 			do90(0)  => sys_dqe(1),
 
 			do180(0) => sdqsi(0),
 
 			do270(2) => sdqt(0),
-			do270(1) => ssti(0),
+			do270(1) => ssti(1),
 			do270(0) => sys_dqe(0));
 
 	end generate;
