@@ -634,9 +634,9 @@ begin
 			process (sdqt, clk_shift)
 			begin
 				if not register_on then
-					dqt <= reverse(sdqt);
+					dqt <= sdqt;
 				elsif rising_edge(clk_shift) then
-					dqt <= reverse(sdqt);
+					dqt <= sdqt;
 				end if;
 			end process;
 	

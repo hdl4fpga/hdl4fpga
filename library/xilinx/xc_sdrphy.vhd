@@ -225,7 +225,7 @@ architecture xilinx of xc_sdrphy is
 	begin	
 		for i in word_size/byte_size-1 downto 0 loop
 			for j in data_gear-1 downto 0 loop
-				val(i)(j) := arg(word_size/byte_size*i+j);
+				val(i)(j) := arg(word_size/byte_size*j+i);
 			end loop;
 		end loop;
 		return to_blinevector(to_stdlogicvector(val));
