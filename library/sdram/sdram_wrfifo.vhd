@@ -40,8 +40,8 @@ entity sdram_wrfifo is
 		ctlr_dmi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlr_dqi   : in  std_logic_vector(data_gear*word_size-1 downto 0);
 
-		sdram_clks : in  std_logic_vector(0 to data_gear*word_size/byte_size-1);
-		sdram_enas : in  std_logic_vector(0 to data_gear*word_size/byte_size-1);
+		sdram_clks : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sdram_enas : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sdram_dmo  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sdram_dqo  : out std_logic_vector(data_gear*word_size-1 downto 0));
 
@@ -156,12 +156,12 @@ architecture struct of sdram_wrfifo is
 
 	signal di : byte_vector(ctlr_dmi'range);
 	signal do : byte_vector(sdram_dmo'range);
-	signal dqo : word_vector((WORD_SIZE/BYTE_SIZE)-1 downto 0);
+	signal dqo : word_vector((word_size/byte_size)-1 downto 0);
 
 begin
 
 	di <= to_bytevector(merge(ctlr_dqi, ctlr_dmi));
-	sdram_fifo_g : for i in 0 to WORD_SIZE/BYTE_SIZE-1 generate
+	sdram_fifo_g : for i in word_size/byte_size-1 downto 0 generate
 		signal ser_clk : std_logic_vector(sdram_clks'range);
 		signal ser_ena : std_logic_vector(sdram_enas'range);
 
@@ -176,7 +176,7 @@ begin
 		begin
 			aux := arg1;
 			for i in val'range loop
-				val(i) := aux((WORD_SIZE/BYTE_SIZE)*i+arg2);
+				val(i) := aux((word_size/byte_size)*i+arg2);
 			end loop;
 			return val;
 		end;
@@ -184,22 +184,22 @@ begin
 		signal fifo_di : word;
 	begin
 		dqi <= shuffle(di, i);
-		ser_clk <= std_logic_vector(unsigned(sdram_clks) sll (i*data_gear));
-		ser_ena <= std_logic_vector(unsigned(sdram_enas) sll (i*data_gear));
+		ser_clk <= sdram_clks;
+		ser_ena <= sdram_enas;
 
 		fifo_di <= to_stdlogicvector(dqi);
 		outbyte_i : entity hdl4fpga.sdram_iofifo
 		generic map (
 			pll2ser => true,
 			data_gear => data_gear,
-			WORD_SIZE => word'length,
-			BYTE_SIZE => byte'length)
+			word_size => word'length,
+			byte_size => byte'length)
 		port map (
 			pll_clk => ctlr_clk,
 			pll_req => ctlr_req,
 			pll_ena => ctlr_ena,
-			ser_clk => ser_clk(0 to data_gear-1),
-			ser_ena => ser_ena(0 to data_gear-1),
+			ser_clk => ser_clk(data_gear-1 downto 0),
+			ser_ena => ser_ena(data_gear-1 downto 0),
 			di  => fifo_di,
 			do  => dqo(i));
 

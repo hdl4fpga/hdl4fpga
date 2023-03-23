@@ -133,6 +133,10 @@ architecture xilinx of xc_sdrdqphy is
 	signal half_align   : std_logic;
 
 	signal ssti         : std_logic_vector(sys_sti'range);
+	signal sdqt         : std_logic_vector(sys_sti'range);
+	signal sdqsi        : std_logic_vector(sys_dqsi'range);
+	signal clk_shift_n  : std_logic;
+
 begin
 
 	with tp_sel select
@@ -627,12 +631,12 @@ begin
 				end loop;
 			end process;
 
-			process (sys_dqt, clk_shift)
+			process (sdqt, clk_shift)
 			begin
 				if not register_on then
-					dqt <= reverse(sys_dqt);
+					dqt <= reverse(sdqt);
 				elsif rising_edge(clk_shift) then
-					dqt <= reverse(sys_dqt);
+					dqt <= reverse(sdqt);
 				end if;
 			end process;
 	
@@ -717,7 +721,7 @@ begin
 			signal d : std_logic_vector(0 to data_gear-1);
 		begin
 	
-   			d <= reverse(ssti) when data_gear=2 else reverse(sys_sti);
+   			d <= ssti when data_gear=2 else reverse(sys_sti);
 
    			ogbx_i : entity hdl4fpga.ogbx
    			generic map (
@@ -740,12 +744,12 @@ begin
 		signal dqst : std_logic_vector(sys_dqst'range);
 	begin
 
-		process (sys_dqsi)
+		process (sdqsi)
 		begin
 			dqsi <= (others => '0');
 			for i in dqsi'range loop
 				if i mod 2 = 1 then
-					dqsi(i) <= sys_dqsi(i);
+					dqsi(i) <= sdqsi(i);
 				end if;
 			end loop;
 		end process;
@@ -768,27 +772,46 @@ begin
 	end block;
 
 	gear2_g : if data_gear=2 generate
+		signal clk270 : std_logic;
 	begin
 		
 		sys_dqc(1) <= clk_shift;
 		sys_dqc(0) <= not clk_shift;
 
+		clk270 <= not clk_shift;
 		phdata_e : entity hdl4fpga.phdata
 		generic map (
-			data_width90  => 2,
-			data_width270 => 2)
+			data_width0   => 1,
+			data_width90  => 3,
+			data_width180 => 1,
+			data_width270 => 3)
 		port map (
 			clk0     => clk,
-			clk270   => clk_shift,
-			di90(0)  => sys_dqv(1),
-			di90(1)  => sys_sti(1),
-			di270(0) => sys_dqv(0),
-			di270(1) => sys_sti(0),
+			clk270   => clk270,
 
-			do90(0)  => sys_dqe(1),
+			di0(0)   => sys_dqsi(1),
+
+			di90(2)  => sys_dqt(1),
+			di90(1)  => sys_sti(1),
+			di90(0)  => sys_dqv(1),
+
+			di180(0) => sys_dqsi(0),
+
+			di270(2) => sys_dqt(0),
+			di270(1) => sys_sti(0),
+			di270(0) => sys_dqv(0),
+
+			do0(0)   => sdqsi(1),
+
+			do90(2)  => sdqt(1),
 			do90(1)  => ssti(1),
-			do270(0) => sys_dqe(0),
-			do270(1) => ssti(0));
+			do90(0)  => sys_dqe(1),
+
+			do180(0) => sdqsi(0),
+
+			do270(2) => sdqt(0),
+			do270(1) => ssti(0),
+			do270(0) => sys_dqe(0));
 
 	end generate;
 

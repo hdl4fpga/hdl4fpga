@@ -342,7 +342,7 @@ begin
 			clkin    => dfs_clkfx,
 			clkfb    => clk0,
 			clk0     => dcm_clk0,
-			clk270   => dcm_clk270,
+			clk90    => dcm_clk270,
 			locked   => dcm_lckd);
 
 		clk0_bufg_i : bufg

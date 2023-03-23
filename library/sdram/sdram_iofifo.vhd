@@ -36,9 +36,9 @@ entity sdram_iofifo is
 		pll_req : in  std_logic := '-';
 		pll_ena : in  std_logic := '1';
 
-		ser_ar  : in  std_logic_vector(0 to data_gear-1) := (others => '1');
-		ser_clk : in  std_logic_vector(0 to data_gear-1);
-		ser_ena : in  std_logic_vector(0 to data_gear-1);
+		ser_ar  : in  std_logic_vector(data_gear-1 downto 0) := (others => '1');
+		ser_clk : in  std_logic_vector(data_gear-1 downto 0);
+		ser_ena : in  std_logic_vector(data_gear-1 downto 0);
 
 		di  : in  std_logic_vector(word_size-1 downto 0);
 		do  : out std_logic_vector(word_size-1 downto 0));
@@ -81,7 +81,7 @@ architecture mix of sdram_iofifo is
 	type byte_vector is array (natural range <>) of byte;
 
 	signal fifo_clk : std_logic;
-	signal fifo_do : byte_vector(ser_clk'reverse_range);
+	signal fifo_do : byte_vector(ser_clk'range);
 	signal fifo_di : byte_vector(fifo_do'range);
 
 	subtype aword is std_logic_vector(0 to 4-1);
