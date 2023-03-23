@@ -37,6 +37,7 @@ entity xc_sdrdqphy is
 		dqs_delay  : time := 0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
 		dqi_delay  : time := 0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
 
+		fifo       : boolean := false;
 		loopback   : boolean := false;
 		bypass     : boolean := false;
 		device     : fpga_devices;
@@ -77,9 +78,9 @@ entity xc_sdrdqphy is
 		sys_dqsi   : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dqso   : buffer std_logic_vector(data_gear-1 downto 0);
 		sys_dqst   : in  std_logic_vector(data_gear-1 downto 0);
-		sys_dqc    : out  std_logic_vector(data_gear-1 downto 0);
+		sys_dqc    : buffer  std_logic_vector(data_gear-1 downto 0);
 		sys_dqv    : in std_logic_vector(data_gear-1 downto 0) := (others => '0');
-		sys_dqe    : out  std_logic_vector(data_gear-1 downto 0);
+		sys_dqe    : buffer  std_logic_vector(data_gear-1 downto 0);
 
 		sdram_dmi  : in  std_logic := '-';
 		sdram_sti  : in  std_logic := '-';
@@ -598,7 +599,29 @@ begin
 
 	datao_b : block
 		constant register_on : boolean := device=xc7a;
+
+		signal sdqi : std_logic_vector(sys_dqi'range);
 	begin
+
+		fifo_g : if true generate
+			signal sdqi : std_logic_vector(sys_dqi'range);
+		begin
+			gear_g : for i in data_gear-1 downto 0 generate
+			begin
+				fifo_i : entity hdl4fpga.iofifo
+				port map (
+					in_clk   => clk,
+					in_dv    => sys_dqv(i),
+					in_data  => sys_dqi(byte_size*(i+1)-1 downto byte_size*i),
+					out_clk  => sys_dqc(i),
+					out_ena  => sys_dqe(i),
+					out_data => sdqi(byte_size*(i+1)-1 downto byte_size*i));
+			end generate;
+		end generate;
+		
+		nofifo_g : if not fifo generate
+			sdqi <= sys_dqi;
+		end generate;
 
 		oddr_g : for i in sdram_dqo'range generate
 
@@ -614,7 +637,7 @@ begin
 				end if;
 			end process;
 
-			process (sw, sys_dqi, clk_shift)
+			process (sw, sdqi, clk_shift)
 			begin
 				for j in dqo'range loop
 					if sw='1' then
@@ -624,9 +647,9 @@ begin
 							dqo(j) <= '0';
 						end if;
 					elsif not register_on then
-						dqo(j) <= sys_dqi(byte_size*j+i);
+						dqo(j) <= sdqi(byte_size*j+i);
 					elsif rising_edge(clk_shift) then
-						dqo(j) <= sys_dqi(byte_size*j+i);
+						dqo(j) <= sdqi(byte_size*j+i);
 					end if;
 				end loop;
 			end process;
@@ -815,4 +838,10 @@ begin
 
 	end generate;
 
+	gear4_g : if data_gear=4 generate
+		sdqt   <= sys_dqt;
+		sdqsi  <= sys_dqsi;
+		ssti   <= sys_sti;
+		sys_dqe <= sys_dqv;
+	end generate;
 end;
