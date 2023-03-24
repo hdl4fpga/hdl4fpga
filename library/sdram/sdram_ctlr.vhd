@@ -376,13 +376,13 @@ begin
 			constant lat_tab : natural_vector)
 			return std_logic_vector is
 	
-			subtype word is std_logic_vector(unsigned_num_bits(LINE_SIZE/WORD_SIZE-1)-1 downto 0);
+			subtype word is std_logic_vector(unsigned_num_bits(line_size/word_size-1)-1 downto 0);
 			type word_vector is array(natural range <>) of word;
 	
 			subtype latword is std_logic_vector(0 to lat_val'length-1);
 			type latword_vector is array (natural range <>) of latword;
 	
-			constant algn : natural := unsigned_num_bits(WORD_SIZE-1);
+			constant algn : natural := unsigned_num_bits(word_size-1);
 	
 			function to_latwordvector(
 				constant arg : std_logic_vector)

@@ -76,7 +76,7 @@ entity xc_sdrdqphy is
 		sys_dqt    : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dqo    : out std_logic_vector(data_gear*byte_size-1 downto 0);
 		sys_dqsi   : in  std_logic_vector(data_gear-1 downto 0);
-		sys_dqso   : buffer std_logic_vector(data_gear-1 downto 0);
+		sys_dqso   : out std_logic_vector(data_gear-1 downto 0);
 		sys_dqst   : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dqc    : buffer  std_logic_vector(data_gear-1 downto 0);
 		sys_dqv    : in std_logic_vector(data_gear-1 downto 0) := (others => '0');
@@ -136,6 +136,7 @@ architecture xilinx of xc_sdrdqphy is
 	signal ssti         : std_logic_vector(sys_sti'range);
 	signal sdqt         : std_logic_vector(sys_sti'range);
 	signal sdqsi        : std_logic_vector(sys_dqsi'range);
+	signal sdqso        : std_logic_vector(sys_dqso'range);
 	signal clk_shift_n  : std_logic;
 
 begin
@@ -339,8 +340,8 @@ begin
 			clk    => clk,
 			delay  => dqsi_delay,
 			dqsi   => dqsi,
-			dqso   => sys_dqso);
-		dqsi_buf <= sys_dqso(0);
+			dqso   => sdqso);
+		dqsi_buf <= sdqso(0);
 
 		igbx_i : entity hdl4fpga.igbx
 		generic map (
@@ -378,6 +379,7 @@ begin
 	end block;
 
 	datai_b : block
+		signal sdqo : std_logic_vector(sys_dqo'range);
 	begin
 		i_igbx : for i in sdram_dqi'range generate
 		begin
@@ -431,7 +433,7 @@ begin
 	
 			bypass_g : if bypass generate
 				phases_g : for j in 0 to data_gear-1 generate
-					sys_dqo(j*byte_size+i) <= sdram_dqi(i);
+					sdqo(j*byte_size+i) <= sdram_dqi(i);
 				end generate;
 			end generate;
 	
@@ -450,7 +452,7 @@ begin
 						q(1) => dq(1*byte_size+i));
 
 					shuffle_g : for j in 0 to data_gear-1 generate
-						sys_dqo(j*byte_size+i) <= dq(j*byte_size+i);
+						sdqo(j*byte_size+i) <= dq(j*byte_size+i);
 					end generate;
 				end generate;
 	
@@ -473,15 +475,6 @@ begin
 						d(0)  => dqi(i),
 						q     => q1);
 			
-					-- process(q1, clk_shift)
-						-- variable data : std_logic_vector(0 to q1'length-1);
-					-- begin
-						-- if rising_edge(clk_shift) then
-							-- data := q1;
-						-- end if;
-						-- q2 <= data(1 to 4-1) & q1(q1'left);
-					-- end process;
-
 					process (q1, data_align)
 						variable data : unsigned(q1'range);
 					begin
@@ -497,13 +490,32 @@ begin
 					end process;
 
 					shuffle_g : for j in 0 to data_gear-1 generate
-						dq(j*byte_size+i)      <= q1(j);
-						sys_dqo(j*byte_size+i) <= q2(j);
+						dq(j*byte_size+i)   <= q1(j);
+						sdqo(j*byte_size+i) <= q2(j);
 					end generate;
+
 				end generate;
 			end generate;
 		end generate;
 	
+		fifo_g : if fifo generate
+			gear_g : for i in data_gear-1 downto 0 generate
+				fifo_i : entity hdl4fpga.iofifo
+				port map (
+					in_clk   => sdqso(i),
+					in_frm   => sys_sto(i),
+					in_data  => sdqo(byte_size*(i+1)-1 downto byte_size*i),
+					out_clk  => clk,
+					out_frm  => ,
+					out_data => sys_dqo(byte_size*(i+1)-1 downto byte_size*i));
+			end generate;
+		end generate;
+		
+		nofifo_g : if not fifo generate
+			sys_dqo  <= sdqo;
+			sys_dqso <= sdqso;
+		end generate;
+
 		sto_b : block
 		begin
 			igbx_g : if not bypass generate
@@ -541,7 +553,6 @@ begin
 							lat := lat srl sto'length;
 							lat(0 to sto'length-1) := unsigned(sto);
 							sys_sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
-							-- sys_sto <= (others => sto(0)); --sto'left));
 						end if;
 					end process;
 
