@@ -209,7 +209,6 @@ architecture graphics of nuhs3adsp is
 	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_dqc   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqv   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqe   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal phyctlr_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -643,7 +642,6 @@ begin
 		ctlrphy_dqt  => ctlrphy_dqt,
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_dqv  => ctlrphy_dqv,
-		ctlrphy_dqe  => ctlrphy_dqe,
 		ctlrphy_dqc  => ctlrphy_dqc,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
@@ -706,7 +704,6 @@ begin
 		sys_dqo     => ctlrphy_dqi,
 		sys_odt     => ctlrphy_odt,
 		sys_dqv     => ctlrphy_dqv,
-		sys_dqe     => ctlrphy_dqe,
 		sys_dqc     => ctlrphy_dqc,
 		sys_sti     => ctlrphy_sto,
 		sys_sto     => phyctlr_sto,
@@ -714,7 +711,7 @@ begin
 		sdram_sto(0)  => ddr_st_dqs,
 		sdram_sto(1)  => st_dqs_open,
 		sdram_sti(0)  => ddr_st_lp_dqs,
-		sdram_sti(1)  => '-',
+		sdram_sti(1)  => ddr_st_lp_dqs,
 		sdram_clk     => ddr_clk,
 		sdram_cke     => sdram_cke,
 		sdram_cs      => sdram_cs,

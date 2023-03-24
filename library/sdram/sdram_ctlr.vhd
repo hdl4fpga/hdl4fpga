@@ -72,13 +72,11 @@ entity sdram_ctlr is
 		ctlr_di_req  : out std_logic;
 		ctlr_do_dv   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlr_do_req  : out std_logic;
-		ctlr_dio_req : out std_logic;
 		ctlr_act     : out std_logic;
 		ctlr_dm      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
 		ctlr_di      : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		ctlr_do      : out std_logic_vector(data_gear*word_size-1 downto 0);
 
-		ctlr_win_do  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlr_refreq  : out std_logic;
 		phy_frm      : in  std_logic := '0';
 		phy_trdy     : out std_logic;
@@ -108,7 +106,6 @@ entity sdram_ctlr is
 		phy_sto      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
 		phy_dqv      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dqe      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dqc      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
 		phy_dqsi     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -170,9 +167,6 @@ architecture mix of sdram_ctlr is
 	signal sdram_sch_st     : std_logic_vector(sdram_sch_dqsz'range);
 	signal sdram_sch_wwn    : std_logic_vector(0 to data_gear-1);
 	signal sdram_sch_rwn    : std_logic_vector(sdram_sch_dqsz'range);
-
-	signal sdram_win_dqs    : std_logic_vector(phy_dqsi'range);
-	signal sdram_win_dq     : std_logic_vector(phy_dqsi'range);
 
 	signal rot_val          : std_logic_vector(unsigned_num_bits(data_gear*word_size-1)-1 downto 0);
 	signal rot_di           : std_logic_vector(ctlr_di'range);
@@ -298,7 +292,6 @@ begin
 	-- ctlr_di_req  <= sdram_mpu_wwin;
 	ctlr_di_req  <= sdram_sch_wwn(0);
 	ctlr_do_req  <= sdram_mpu_rwin;
-	ctlr_dio_req <= sdram_mpu_rwwin;
 
 	sdram_sch_e : entity hdl4fpga.sdram_sch
 	generic map (
@@ -325,9 +318,6 @@ begin
 		sdram_odt   => sdram_sch_odt,
 		sdram_wwn   => sdram_sch_wwn);
 
-	sdram_win_dqs <= phy_sti;
-	sdram_win_dq  <= (others => sdram_sch_rwn(0));
-
 	process (
 		sdram_sch_st,
 		sdram_sch_dqz,
@@ -350,22 +340,8 @@ begin
 		end loop;
 	end process;
 
-	rdfifo_i : entity hdl4fpga.sdram_rdfifo
-	generic map (
-		data_gear     => data_gear,
-		word_size     => word_size,
-		byte_size     => byte_size,
-		data_delay    => sdram_latency(fpga, rdfifo_lat))
-	port map (
-		sys_clk       => ctlr_clk,
-		sys_rdy       => ctlr_do_dv,
-		sys_rea       => sdram_mpu_rea,
-		sys_do        => ctlr_do,
-		sys_win_dq    => ctlr_win_do,
-		sdram_win_dq  => sdram_win_dq,
-		sdram_win_dqs => sdram_win_dqs,
-		sdram_dqsi    => phy_dqsi,
-		sdram_dqi     => phy_dqi);
+	ctlr_do    <= phy_dqi;
+	ctlr_do_dv <= phy_sti;
 
 	sdram_rotval_p : process(sdram_cwl)
 		function sdram_rotval (

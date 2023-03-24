@@ -38,6 +38,18 @@ end;
 
 architecture mix of iofifo is
 
+	component dbram
+		generic (
+			n : natural);
+		port (
+			clk : in  std_logic;
+			we  : in  std_logic;
+			wa  : in  std_logic_vector(4-1 downto 0);
+			di  : in  std_logic_vector(n-1 downto 0);
+			ra  : in  std_logic_vector(4-1 downto 0);
+			do  : out  std_logic_vector(n-1 downto 0));
+	end component;
+	
 	type ram is array(natural range <>) of std_logic_vector(in_data'range);
 	shared variable mem : ram(2**4-1 downto 0);
 
@@ -46,13 +58,11 @@ begin
 	process (in_clk)
 		variable cntr : unsigned(4-1 downto 0);
 	begin
-		if rising_edge(in_clk) then
-			if in_frm='0' then
-				cntr := (others => '0');
-			else
-				mem(to_integer(unsigned(cntr))) := in_data;
-				cntr := cntr + 1;
-			end if;
+		if in_frm='0' then
+			cntr := (others => '0');
+		elsif rising_edge(in_clk) then
+			mem(to_integer(unsigned(cntr))) := in_data;
+			cntr := cntr + 1;
 		end if;
 	end process;
 
@@ -68,6 +78,5 @@ begin
 			out_data <= mem(to_integer(unsigned(cntr)));
 		end if;
 	end process;
-
 
 end;

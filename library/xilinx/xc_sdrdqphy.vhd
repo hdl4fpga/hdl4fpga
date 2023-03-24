@@ -78,9 +78,8 @@ entity xc_sdrdqphy is
 		sys_dqsi   : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dqso   : out std_logic_vector(data_gear-1 downto 0);
 		sys_dqst   : in  std_logic_vector(data_gear-1 downto 0);
-		sys_dqc    : buffer  std_logic_vector(data_gear-1 downto 0);
-		sys_dqv    : in std_logic_vector(data_gear-1 downto 0) := (others => '0');
-		sys_dqe    : buffer  std_logic_vector(data_gear-1 downto 0);
+		sys_dqc    : buffer std_logic_vector(data_gear-1 downto 0);
+		sys_dqv    : in  std_logic_vector(data_gear-1 downto 0) := (others => '0');
 
 		sdram_dmi  : in  std_logic := '-';
 		sdram_sti  : in  std_logic := '-';
@@ -133,11 +132,13 @@ architecture xilinx of xc_sdrdqphy is
 	signal data_align   : std_logic_vector(sys_sti'range);
 	signal half_align   : std_logic;
 
+	signal sdqe         : std_logic_vector(sys_dqv'range);
 	signal ssti         : std_logic_vector(sys_sti'range);
+	signal ssto         : std_logic_vector(sys_sto'range);
 	signal sdqt         : std_logic_vector(sys_sti'range);
 	signal sdqsi        : std_logic_vector(sys_dqsi'range);
 	signal sdqso        : std_logic_vector(sys_dqso'range);
-	signal clk_shift_n  : std_logic;
+
 
 begin
 
@@ -503,11 +504,12 @@ begin
 				fifo_i : entity hdl4fpga.iofifo
 				port map (
 					in_clk   => sdqso(i),
-					in_frm   => sys_sto(i),
+					in_frm   => ssto(i),
 					in_data  => sdqo(byte_size*(i+1)-1 downto byte_size*i),
 					out_clk  => clk,
-					out_frm  => ,
+					out_frm  => '0',
 					out_data => sys_dqo(byte_size*(i+1)-1 downto byte_size*i));
+				sys_dqso <= (others => clk);
 			end generate;
 		end generate;
 		
@@ -552,7 +554,7 @@ begin
 						if rising_edge(clk_shift) then
 							lat := lat srl sto'length;
 							lat(0 to sto'length-1) := unsigned(sto);
-							sys_sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
+							ssto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
 						end if;
 					end process;
 
@@ -580,6 +582,7 @@ begin
 						end if;
 					end process;
 
+					sys_sto <= ssto;
 				end generate;
 
 				gbx2_g : if data_gear=2 generate
@@ -595,13 +598,15 @@ begin
 					port map (
 						clk   => clk,
 						d(0)  => sti,
-						q     => sys_sto);
+						q     => ssto);
+
+					sys_sto <= sys_sti;
 				end generate;
 			end generate;
 
 			bypass_g : if bypass generate
-				phases_g : for j in 0 to data_gear-1 generate
-					sys_sto(j) <= sdram_sti when loopback else sdram_dmi;
+				phases_g : for i in data_gear-1 downto 0 generate
+					ssto(i) <= sdram_sti when loopback else sdram_dmi;
 				end generate;
 			end generate;
 		end block;
@@ -627,7 +632,7 @@ begin
 					in_frm   => sys_dqv(i),
 					in_data  => in_data,
 					out_clk  => sys_dqc(i),
-					out_frm  => sys_dqe(i),
+					out_frm  => sdqe(i),
 					out_data => out_data);
 				sdmi(i) <= out_data(out_data'left);
 				sdqi(byte_size*(i+1)-1 downto byte_size*i) <= out_data(out_data'left-1 downto 0);
@@ -844,20 +849,21 @@ begin
 
 			do90(2)  => sdqt(1),
 			do90(1)  => ssti(0),
-			do90(0)  => sys_dqe(1),
+			do90(0)  => sdqe(1),
 
 			do180(0) => sdqsi(0),
 
 			do270(2) => sdqt(0),
 			do270(1) => ssti(1),
-			do270(0) => sys_dqe(0));
+			do270(0) => sdqe(0));
 
+		sys_sto <= ssto;
 	end generate;
 
 	gear4_g : if data_gear=4 generate
-		sdqt   <= sys_dqt;
-		sdqsi  <= sys_dqsi;
-		ssti   <= sys_sti;
-		sys_dqe <= sys_dqv;
+		sdqt    <= sys_dqt;
+		sdqsi   <= sys_dqsi;
+		ssti    <= sys_sti;
+		sdqe <= sys_dqv;
 	end generate;
 end;
