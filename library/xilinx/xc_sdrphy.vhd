@@ -238,11 +238,24 @@ architecture xilinx of xc_sdrphy is
 	begin	
 		dat := to_bytevector(arg);
 		for i in word_size/byte_size-1 downto 0 loop
-			for j in data_gear*word_size/word_size-1 downto 0 loop
-				val(i*data_gear*word_size/word_size+j) := dat(j*word_size/byte_size+i);
+			for j in data_gear-1 downto 0 loop
+				val(i*data_gear+j) := dat(j*word_size/byte_size+i);
 			end loop;
 		end loop;
 		return to_dlinevector(to_stdlogicvector(val));
+	end;
+
+	function unshuffle_dlinevector (
+		constant arg : dline_vector) 
+		return std_logic_vector is
+		variable val : byte_vector(data_gear*arg'length-1 downto 0);
+	begin	
+		for i in arg'range loop
+			for j in data_gear-1 downto 0 loop
+				val(j)(i) := arg(i)(j);
+			end loop;
+		end loop;
+		return to_stdlogicvector(val);
 	end;
 
 	signal sdmt       : bline_vector(word_size/byte_size-1 downto 0);
@@ -591,5 +604,5 @@ begin
 		end loop;
 	end process;
 
-	sys_dqo <= to_stdlogicvector(sdqo);
+	sys_dqo <= unshuffle_dlinevector(sdqo);
 end;
