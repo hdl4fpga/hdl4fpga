@@ -289,7 +289,6 @@ begin
 		sdram_mpu_rwwin => sdram_mpu_rwwin);
 
 	ctlr_cmd     <= sdram_pgm_cmd;
-	-- ctlr_di_req  <= sdram_mpu_wwin;
 	ctlr_di_req  <= sdram_sch_wwn(0);
 	ctlr_do_req  <= sdram_mpu_rwin;
 

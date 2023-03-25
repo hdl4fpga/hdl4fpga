@@ -55,7 +55,7 @@ architecture mix of iofifo is
 
 begin
 
-	process (in_clk)
+	process (in_frm, in_clk)
 		variable cntr : unsigned(4-1 downto 0);
 	begin
 		if in_frm='0' then
