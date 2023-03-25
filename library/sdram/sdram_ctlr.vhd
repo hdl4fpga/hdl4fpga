@@ -71,7 +71,6 @@ entity sdram_ctlr is
 		ctlr_di_dv   : in  std_logic;
 		ctlr_di_req  : out std_logic;
 		ctlr_do_dv   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		ctlr_do_req  : out std_logic;
 		ctlr_act     : out std_logic;
 		ctlr_dm      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
 		ctlr_di      : in  std_logic_vector(data_gear*word_size-1 downto 0);
@@ -285,7 +284,6 @@ begin
 
 	ctlr_cmd     <= sdram_pgm_cmd;
 	ctlr_di_req  <= sdram_sch_wwn(0);
-	ctlr_do_req  <= sdram_mpu_rwin;
 
 	sdram_sch_e : entity hdl4fpga.sdram_sch
 	generic map (
