@@ -57,8 +57,7 @@ begin
 			dqsi   => dqsi,
 			dqso_p => dqso_p,
 			dqso_n => dqso_n);
-		dqso(0) <= dqso_n;
-		dqso(1) <= dqso_p;
+		dqso <= (dqso_p, dqso_n);
 	end generate;
 
 	xc5v_g : if device=xc5v generate

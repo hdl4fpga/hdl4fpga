@@ -51,7 +51,7 @@ architecture mix of iofifo is
 	end component;
 	
 	type ram is array(natural range <>) of std_logic_vector(in_data'range);
-	shared variable mem : ram(2**4-1 downto 0);
+	signal mem : ram(2**4-1 downto 0);
 
 begin
 
@@ -61,12 +61,12 @@ begin
 		if in_frm='0' then
 			cntr := (others => '0');
 		elsif rising_edge(in_clk) then
-			mem(to_integer(unsigned(cntr))) := in_data;
+			mem(to_integer(unsigned(cntr))) <= in_data;
 			cntr := cntr + 1;
 		end if;
 	end process;
 
-	process (out_clk)
+	process (mem, out_clk)
 		variable cntr : unsigned(4-1 downto 0);
 	begin
 		if rising_edge(out_clk) then
@@ -75,8 +75,8 @@ begin
 			else
 				cntr := cntr + 1;
 			end if;
-			out_data <= mem(to_integer(unsigned(cntr)));
 		end if;
+		out_data <= mem(to_integer(unsigned(cntr)));
 	end process;
 
 end;

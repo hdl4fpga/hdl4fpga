@@ -361,11 +361,6 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="70"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/sdram/sdram_iofifo.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="150"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="47"/>
-      <library xil_pn:name="hdl4fpga"/>
-    </file>
     <file xil_pn:name="../../../../library/sdram/sdram_mpu.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="151"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="69"/>
@@ -384,11 +379,6 @@
     <file xil_pn:name="../../../../library/sdram/sdram_ph.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="154"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
-      <library xil_pn:name="hdl4fpga"/>
-    </file>
-    <file xil_pn:name="../../../../library/sdram/sdram_rdfifo.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="155"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="67"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
     <file xil_pn:name="../../../../library/sdram/sdram_sch.vhd" xil_pn:type="FILE_VHDL">

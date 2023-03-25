@@ -248,11 +248,13 @@ architecture xilinx of xc_sdrphy is
 	function unshuffle_dlinevector (
 		constant arg : dline_vector) 
 		return std_logic_vector is
-		variable val : byte_vector(data_gear*arg'length-1 downto 0);
+		variable val : byte_vector(arg'length*data_gear-1 downto 0);
 	begin	
 		for i in arg'range loop
 			for j in data_gear-1 downto 0 loop
-				val(j)(i) := arg(i)(j);
+				for l in byte_size-1 downto 0 loop
+					val(arg'length*j+i)(l) := arg(i)(j*byte_size+l);
+				end loop;
 			end loop;
 		end loop;
 		return to_stdlogicvector(val);

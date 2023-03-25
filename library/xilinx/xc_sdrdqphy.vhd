@@ -507,7 +507,7 @@ begin
 					in_frm   => ssto(i),
 					in_data  => sdqo(byte_size*(i+1)-1 downto byte_size*i),
 					out_clk  => clk,
-					out_frm  => '0',
+					out_frm  => sys_sto(i),
 					out_data => sys_dqo(byte_size*(i+1)-1 downto byte_size*i));
 				sys_dqso <= (others => clk);
 			end generate;
@@ -587,26 +587,43 @@ begin
 
 				gbx2_g : if data_gear=2 generate
 					signal sti : std_logic;
-					signal clk : std_logic;
+					signal sdram_dqsi_n : std_logic;
 				begin
-					clk <= not sdram_dqsi;
+					sdram_dqsi_n <= not sdram_dqsi;
 					sti <= sdram_sti when loopback else sdram_dmi;
+					lat_e : entity hdl4fpga.latency
+					generic map (
+						n => data_gear,
+						d => (0 to data_gear-1 => 2))
+					port map (
+						clk => clk,
+						di  => sys_sti,
+						do  => sys_sto);
+
 					sto_i : entity hdl4fpga.igbx
 					generic map (
 						device => hdl4fpga.profiles.xc3s,
 						gear   => data_gear)
 					port map (
-						clk   => clk,
+						clk   => sdram_dqsi_n,
 						d(0)  => sti,
 						q     => ssto);
 
-					sys_sto <= sys_sti;
 				end generate;
 			end generate;
 
 			bypass_g : if bypass generate
 				phases_g : for i in data_gear-1 downto 0 generate
 					ssto(i) <= sdram_sti when loopback else sdram_dmi;
+					lat_e : entity hdl4fpga.latency
+					generic map (
+						n => data_gear,
+						d => (0 to data_gear-1 => 3))
+					port map (
+						clk => clk,
+						di  => sys_sti,
+						do  => sys_sto);
+
 				end generate;
 			end generate;
 		end block;
@@ -857,13 +874,12 @@ begin
 			do270(1) => ssti(1),
 			do270(0) => sdqe(0));
 
-		sys_sto <= ssto;
 	end generate;
 
 	gear4_g : if data_gear=4 generate
-		sdqt    <= sys_dqt;
-		sdqsi   <= sys_dqsi;
-		ssti    <= sys_sti;
-		sdqe <= sys_dqv;
+		sdqt  <= sys_dqt;
+		sdqsi <= sys_dqsi;
+		ssti  <= sys_sti;
+		sdqe  <= sys_dqv;
 	end generate;
 end;
