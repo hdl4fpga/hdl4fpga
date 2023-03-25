@@ -271,7 +271,6 @@ architecture graphics of ulx3s is
 	signal ctlrphy_odt   : std_logic;
 	signal ctlrphy_b     : std_logic_vector(sdram_ba'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(sdram_a'length-1 downto 0);
-	signal ctlrphy_dsi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmi   : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -281,7 +280,6 @@ architecture graphics of ulx3s is
 	signal ctlrphy_dqt   : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqo   : std_logic_vector(word_size-1 downto 0);
 	signal ctlrphy_dqv   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqc   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal sdrphy_sti    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -764,7 +762,6 @@ begin
 		ctlrphy_we   => ctlrphy_we,
 		ctlrphy_b    => ctlrphy_b,
 		ctlrphy_a    => ctlrphy_a,
-		ctlrphy_dsi  => ctlrphy_dsi,
 		ctlrphy_dst  => ctlrphy_dst,
 		ctlrphy_dso  => open,
 		ctlrphy_dmi  => ctlrphy_dmi,
@@ -774,11 +771,8 @@ begin
 		ctlrphy_dqt  => ctlrphy_dqt,
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_dqv  => ctlrphy_dqv,
-		ctlrphy_dqc  => ctlrphy_dqc,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
-
-	ctlrphy_dqc <= (others => ctlr_clk);
 
 	sdrphy_b : block
 		constant phy_debug : boolean := debug;
@@ -827,7 +821,6 @@ begin
 			phy_a         => ctlrphy_a,
 			phy_dsi       => ctlrphy_dso,
 			phy_dst       => ctlrphy_dst,
-			phy_dso       => ctlrphy_dsi,
 			phy_dmi       => ctlrphy_dmo,
 			phy_dmt       => ctlrphy_dmt,
 			phy_dmo       => ctlrphy_dmi,

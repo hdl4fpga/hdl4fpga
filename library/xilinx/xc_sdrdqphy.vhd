@@ -457,7 +457,7 @@ begin
 						q(0)   => dq(0*byte_size+i),
 						q(1)   => dq(1*byte_size+i));
 
-					shuffle_g : for j in 0 to data_gear-1 generate
+					shuffle_g : for j in data_gear-1 downto 0 generate
 						sdqo(j*byte_size+i) <= dq(j*byte_size+i);
 					end generate;
 				end generate;
@@ -527,29 +527,16 @@ begin
 			igbx_g : if not bypass generate
 
 				gbx2_g : if data_gear=2 generate
-					signal sti : std_logic;
-					signal sdram_dqsi_n : std_logic;
-				begin
-					sdram_dqsi_n <= not sdram_dqsi;
-					sti <= sdram_sti when loopback else sdram_dmi;
-
 					lat_e : entity hdl4fpga.latency
 					generic map (
 						n => data_gear,
-						d => (0 to data_gear-1 => 2))
+						d => (0 to data_gear-1 => 4))
 					port map (
 						clk => clk,
 						di  => sys_sti,
 						do  => sys_sto);
 
-					sto_i : entity hdl4fpga.igbx
-					generic map (
-						device => hdl4fpga.profiles.xc3s,
-						gear   => data_gear)
-					port map (
-						clk   => sdram_dqsi_n,
-						d(0)  => sti,
-						q     => ssto);
+					ssto <= sys_sti;
 
 				end generate;
 

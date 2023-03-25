@@ -105,7 +105,6 @@ entity demo_graphics is
 		ctlrphy_odt   : out std_logic;
 		ctlrphy_b     : out std_logic_vector(bank_size-1 downto 0);
 		ctlrphy_a     : out std_logic_vector(addr_size-1 downto 0);
-		ctlrphy_dsi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dst   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dso   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dmi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
@@ -114,7 +113,6 @@ entity demo_graphics is
 		ctlrphy_dqi   : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		ctlrphy_dqt   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dqo   : out std_logic_vector(data_gear*word_size-1 downto 0);
-		ctlrphy_dqc   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dqv   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_sto   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_sti   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -1032,9 +1030,6 @@ begin
 			phy_sto      => ctlrphy_sto,
 
 		    phy_dqv      => ctlrphy_dqv,
-		    phy_dqc      => ctlrphy_dqc,
-
-			phy_dqsi     => ctlrphy_dsi,
 			phy_dqso     => ctlrphy_dso,
 			phy_dqst     => ctlrphy_dst);
 

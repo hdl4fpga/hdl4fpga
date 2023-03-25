@@ -185,7 +185,6 @@ architecture graphics of s3estarter is
 	signal ctlrphy_dqi     : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_dqt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqc     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqv     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -557,7 +556,6 @@ begin
 		ctlrphy_we   => ctlrphy_we(0),
 		ctlrphy_b    => ctlrphy_b,
 		ctlrphy_a    => ctlrphy_a,
-		ctlrphy_dsi  => ctlrphy_dqsi,
 		ctlrphy_dst  => ctlrphy_dqst,
 		ctlrphy_dso  => ctlrphy_dqso,
 		ctlrphy_dmi  => ctlrphy_dmi,
@@ -567,7 +565,6 @@ begin
 		ctlrphy_dqt  => ctlrphy_dqt,
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_dqv  => ctlrphy_dqv,
-		ctlrphy_dqc  => ctlrphy_dqc,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
 		tp => open);

@@ -99,16 +99,13 @@ entity sdram_ctlr is
 		phy_dmt      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dmo      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
-		phy_dqi      : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		phy_dqt      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dqo      : out std_logic_vector(data_gear*word_size-1 downto 0);
+		phy_dqv      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		phy_dqo      : out std_logic_vector(data_gear*word_size-1           downto 0);
+
 		phy_sti      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_sto      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-
-		phy_dqv      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dqc      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-
-		phy_dqsi     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		phy_dqi      : in  std_logic_vector(data_gear*word_size-1           downto 0);
 		phy_dqso     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dqst     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0));
 
@@ -124,9 +121,7 @@ architecture mix of sdram_ctlr is
 	constant bl_cod  : std_logic_vector := sdram_latcod(stdr, bl);
 	constant al_cod  : std_logic_vector := sdram_latcod(stdr, al);
 	constant cl_cod  : std_logic_vector := sdram_latcod(stdr, cl);
-	-- constant cwl_cod : std_logic_vector := sdram_latcod(stdr, cwl); --sdram_selcwl(stdr));
 	constant cwl_cod : std_logic_vector := sdram_latcod(stdr, sdram_selcwl(stdr));
-
 
 	subtype byte is std_logic_vector(0 to byte_size-1);
 	type byte_vector is array (natural range <>) of byte;

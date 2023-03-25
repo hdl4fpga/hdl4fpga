@@ -242,7 +242,6 @@ architecture graphics of arty is
 	signal ctlrphy_sto    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
 	signal ctlrphy_sti    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
 	signal ctlrphy_dqv    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqc    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
 	signal ddr3_clk       : std_logic_vector(1-1 downto 0);
 	signal ddr3_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -743,7 +742,6 @@ begin
 		ctlrphy_odt  => ctlrphy_odt(0),
 		ctlrphy_b    => ddr_ba,
 		ctlrphy_a    => ddr_a,
-		ctlrphy_dsi  => ctlrphy_dqsi,
 		ctlrphy_dst  => ctlrphy_dqst,
 		ctlrphy_dso  => ctlrphy_dqso,
 		ctlrphy_dmi  => ctlrphy_dmi,
@@ -755,7 +753,6 @@ begin
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
 		ctlrphy_dqv   => ctlrphy_dqv,
-		ctlrphy_dqc   => ctlrphy_dqc,
 		tp           => open);
 
 	serdebug_b : block
@@ -816,8 +813,6 @@ begin
 	ctlrphy_cas(1) <= '1';
 	ctlrphy_we(1)  <= '1';
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
-
-	ctlrphy_dqc    <= (others => ddr_clk90);
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
