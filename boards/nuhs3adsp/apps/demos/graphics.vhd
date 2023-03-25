@@ -706,7 +706,7 @@ begin
 		sys_dqv     => ctlrphy_dqv,
 		sys_dqc     => ctlrphy_dqc,
 		sys_sti     => ctlrphy_sto,
-		sys_sto     => phyctlr_sto,
+		sys_sto     => ctlrphy_sti,
 
 		sdram_sto(0)  => ddr_st_dqs,
 		sdram_sto(1)  => st_dqs_open,
@@ -732,7 +732,6 @@ begin
 
 	ddr_cke <= sdram_cke(0);
 	ddr_cs  <= sdram_cs(0);
-	ctlrphy_sti <= phyctlr_sto(data_gear-1 downto 0) & phyctlr_sto(data_gear-1 downto 0);
 
 	ddr_clk_i : obufds
 	generic map (

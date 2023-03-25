@@ -591,6 +591,7 @@ begin
 				begin
 					sdram_dqsi_n <= not sdram_dqsi;
 					sti <= sdram_sti when loopback else sdram_dmi;
+
 					lat_e : entity hdl4fpga.latency
 					generic map (
 						n => data_gear,
@@ -613,17 +614,17 @@ begin
 			end generate;
 
 			bypass_g : if bypass generate
+				lat_e : entity hdl4fpga.latency
+				generic map (
+					n => data_gear,
+					d => (0 to data_gear-1 => 3))
+				port map (
+					clk => clk,
+					di  => sys_sti,
+					do  => sys_sto);
+
 				phases_g : for i in data_gear-1 downto 0 generate
 					ssto(i) <= sdram_sti when loopback else sdram_dmi;
-					lat_e : entity hdl4fpga.latency
-					generic map (
-						n => data_gear,
-						d => (0 to data_gear-1 => 3))
-					port map (
-						clk => clk,
-						di  => sys_sti,
-						do  => sys_sto);
-
 				end generate;
 			end generate;
 		end block;
