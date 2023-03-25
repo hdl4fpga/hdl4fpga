@@ -187,7 +187,7 @@ architecture graphics of nuhs3adsp is
 	signal ddrsys_rst    : std_logic;
 
 	signal clk0          : std_logic;
-	signal clk270     : std_logic;
+	signal clk90         : std_logic;
 
 	signal ctlrphy_rst   : std_logic;
 	signal ctlrphy_cke   : std_logic_vector(cmmd_gear-1 downto 0);
@@ -274,7 +274,7 @@ begin
 		
 		signal dcm_rst   : std_logic;
 		signal dcm_clk0  : std_logic;
-		signal dcm_clk270 : std_logic;
+		signal dcm_clk90 : std_logic;
 		signal dcm_lckd  : std_logic;
 
 	begin
@@ -340,7 +340,7 @@ begin
 			clkin    => dfs_clkfx,
 			clkfb    => clk0,
 			clk0     => dcm_clk0,
-			clk90    => dcm_clk270,
+			clk90    => dcm_clk90,
 			locked   => dcm_lckd);
 
 		clk0_bufg_i : bufg
@@ -350,8 +350,8 @@ begin
 	
 		clk90_bufg_i : bufg
 		port map (
-			i => dcm_clk270,
-			o => clk270);
+			i => dcm_clk90,
+			o => clk90);
 	
 		ddrsys_rst <= not dcm_lckd;
 
@@ -679,7 +679,7 @@ begin
 		rst         => ddrsys_rst,
 		iod_clk     => clk0,
 		clk         => clk0,
-		clk_shift   => clk270,
+		clk_shift   => clk90,
 
 		phy_wlreq   => phy_wlreq,
 		phy_wlrdy   => phy_wlrdy,
