@@ -339,9 +339,6 @@ begin
 		end loop;
 	end process;
 
-	ctlr_do    <= phy_dqi;
-	ctlr_do_dv <= phy_sti;
-
 	sdram_rotval_p : process(sdram_cwl)
 		function sdram_rotval (
 			constant line_size : natural;
@@ -418,6 +415,9 @@ begin
 			lat_tab   => wwnl_tab);
 	end process;
 
+	ctlr_do    <= phy_dqi;
+	ctlr_do_dv <= phy_sti;
+
 	rotate_i : entity hdl4fpga.barrel
 	generic map (
 		left => false)
@@ -426,6 +426,5 @@ begin
 		di  => ctlr_di,
 		do  => phy_dqo);
 
-	phy_dmo <= ctlr_dm;
-
+	phy_dmo    <= ctlr_dm;
 end;
