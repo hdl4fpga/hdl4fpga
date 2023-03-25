@@ -139,7 +139,7 @@ architecture xilinx of xc_sdrdqphy is
 
 	signal sdqe         : std_logic_vector(sys_dqv'range);
 	signal ssti         : std_logic_vector(sys_sti'range);
-	signal ssto         : std_logic_vector(sys_sto'range);
+	signal rdv         : std_logic_vector(sys_sto'range);
 	signal sdqt         : std_logic_vector(sys_sti'range);
 	signal sdqsi        : std_logic_vector(sys_dqsi'range);
 	signal sdqso        : std_logic_vector(sys_dqso'range);
@@ -505,13 +505,16 @@ begin
 	
 		rd_fifo_g : if rd_fifo generate
 			gear_g : for i in data_gear-1 downto 0 generate
+				signal out_frm : std_logic;
+			begin
+				out_frm <= sys_sto(sys_sto'right) when rd_align else sys_sto(i);
 				fifo_i : entity hdl4fpga.iofifo
 				port map (
 					in_clk   => sdqso(i),
-					in_frm   => ssto(i),
+					in_frm   => rdv(i),
 					in_data  => sdqo(byte_size*(i+1)-1 downto byte_size*i),
 					out_clk  => clk,
-					out_frm  => sys_sto(i),
+					out_frm  => out_frm,
 					out_data => sys_dqo(byte_size*(i+1)-1 downto byte_size*i));
 				sys_dqso <= (others => clk);
 			end generate;
@@ -536,7 +539,7 @@ begin
 						di  => sys_sti,
 						do  => sys_sto);
 
-					ssto <= sys_sti;
+					rdv <= sys_sti;
 
 				end generate;
 
@@ -560,14 +563,14 @@ begin
 					port map (
 						clk => clk_shift,
 						di  => sys_sti,
-						do  => ssto);
+						do  => rdv);
 
-					process(ssto,clk_shift)
-						variable lat : unsigned(0 to 2*ssto'length-1);
+					process(rdv, clk_shift)
+						variable lat : unsigned(0 to 2*rdv'length-1);
 					begin
 						if rising_edge(clk_shift) then
-							lat := lat srl ssto'length;
-							lat(0 to ssto'length-1) := unsigned(ssto);
+							lat := lat srl rdv'length;
+							lat(0 to rdv'length-1) := unsigned(rdv);
 							sys_sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
 						end if;
 					end process;
@@ -595,11 +598,12 @@ begin
 							end if;
 						end if;
 					end process;
-
 				end generate;
 			end generate;
 
 			bypass_g : if bypass generate
+				signal sto : std_logic_vector(sys_sto'range);
+			begin
 
 				lat_e : entity hdl4fpga.latency
 				generic map (
@@ -608,10 +612,11 @@ begin
 				port map (
 					clk => clk,
 					di  => sys_sti,
-					do  => sys_sto);
-
+					do  => sto);
+				sys_sto <= (others => sto(sto'right)) when rd_fifo and rd_align else sto;
+				
 				phases_g : for i in data_gear-1 downto 0 generate
-					ssto(i) <= sdram_sti when loopback else sdram_dmi;
+					rdv(i) <= sdram_sti when loopback else sdram_dmi;
 				end generate;
 
 			end generate;

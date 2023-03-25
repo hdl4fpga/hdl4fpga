@@ -672,7 +672,9 @@ begin
 		cmmd_gear   => cmmd_gear,
 		data_gear   => data_gear,
 		word_size   => word_size,
-		byte_size   => byte_size)
+		byte_size   => byte_size,
+		rd_fifo     => true,
+		rd_align    => true)
 	port map (
 		rst         => ddrsys_rst,
 		iod_clk     => clk0,
