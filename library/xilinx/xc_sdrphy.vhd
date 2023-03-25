@@ -34,85 +34,89 @@ entity xc_sdrphy is
 	generic (
 		-- dqs_delay  : time_vector := (0 to 0 => 0 ns);
 		-- dqi_delay  : time_vector := (0 to 0 => 0 ns);
-		device     : fpga_devices;
-		loopback   : boolean   := false;
-		bypass     : boolean   := true;
-		taps       : natural   := 0;
-		cmmd_gear  : natural   := 1;
-		data_gear  : natural   := 2;
-		bank_size  : natural   := 2;
-		addr_size  : natural   := 13;
-		word_size  : natural   := 16;
-		byte_size  : natural   := 8);
+		device      : fpga_devices;
+		bank_size   : natural := 2;
+		addr_size   : natural := 13;
+		word_size   : natural := 16;
+		byte_size   : natural := 8;
+		cmmd_gear   : natural := 1;
+		data_gear   : natural := 2;
+		loopback    : boolean := false;
+		bypass      : boolean := true;
+		rd_fifo     : boolean := true;
+		rd_align    : boolean := true;
+		wr_register : boolean := false;
+		wr_fifo     : boolean := true;
+		taps        : natural := 0);
 	port (
-		tp_sel     : in  std_logic_vector(2-1 downto 0) := "00";
-		tp         : out std_logic_vector(1 to 32);
+		tp_sel      : in  std_logic_vector(2-1 downto 0) := "00";
+		tp          : out std_logic_vector(1 to 32);
 
-		rst        : in  std_logic;
-		rst_shift  : in  std_logic := '-';
-		iod_clk    : in  std_logic;
-		clk        : in  std_logic := '-';
-		clk_shift  : in  std_logic := '-';
-		clkx2      : in  std_logic := '-';
+		rst         : in  std_logic;
+		rst_shift   : in  std_logic := '-';
+		iod_clk     : in  std_logic;
+		clk         : in  std_logic := '-';
+		clk_shift   : in  std_logic := '-';
+		clkx2       : in  std_logic := '-';
 		clkx2_shift : in  std_logic := '-';
 
-		phy_frm    : buffer std_logic;
-		phy_trdy   : in  std_logic := '-';
-		phy_rw     : out std_logic;
-		phy_cmd    : in  std_logic_vector(0 to 3-1) := (others => '-');
-		phy_ini    : out std_logic;
-		phy_synced : buffer std_logic;
+		phy_frm     : buffer std_logic;
+		phy_trdy    : in  std_logic := '-';
+		phy_rw      : out std_logic;
+		phy_cmd     : in  std_logic_vector(0 to 3-1) := (others => '-');
+		phy_ini     : out std_logic;
+		phy_synced  : buffer std_logic;
 
-		phy_wlreq  : in  std_logic := '-';
-		phy_wlrdy  : out std_logic;
-		phy_rlreq  : in  std_logic := '-';
-		phy_rlrdy  : buffer std_logic;
+		phy_wlreq   : in  std_logic := '-';
+		phy_wlrdy   : out std_logic;
+		phy_rlreq   : in  std_logic := '-';
+		phy_rlrdy   : buffer std_logic;
 
-		sys_rst    : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '-');
-		sys_cs     : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '0');
-		sys_cke    : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_ras    : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_cas    : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_we     : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_b      : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
-		sys_a      : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
-		sys_odt    : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_rst     : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '-');
+		sys_cs      : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '0');
+		sys_cke     : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_ras     : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_cas     : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_we      : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_b       : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
+		sys_a       : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
+		sys_odt     : in  std_logic_vector(cmmd_gear-1 downto 0);
 
-		sys_dmt    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dmi    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dmo    : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqt    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqi    : in  std_logic_vector(data_gear*word_size-1 downto 0);
-		sys_dqo    : out std_logic_vector(data_gear*word_size-1 downto 0);
+		sys_dmt     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dmi     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dmo     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqt     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqi     : in  std_logic_vector(data_gear*word_size-1 downto 0);
+		sys_dqo     : out std_logic_vector(data_gear*word_size-1 downto 0);
 
-		sys_dqso   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqsi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqst   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqc    : out  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqv    : in std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
-		sys_sti    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
-		sys_sto    : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqso    : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqsi    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqst    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqc     : out  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqv     : in std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
+		sys_sti     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
+		sys_sto     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
-		sdram_rst  : out std_logic := '0';
-		sdram_cs   : out std_logic_vector;
-		sdram_cke  : out std_logic_vector;
-		sdram_clk  : out std_logic_vector;
-		sdram_odt  : out std_logic_vector;
-		sdram_ras  : out std_logic;
-		sdram_cas  : out std_logic;
-		sdram_we   : out std_logic;
-		sdram_b    : out std_logic_vector(bank_size-1 downto 0);
-		sdram_a    : out std_logic_vector(addr_size-1 downto 0);
+		sdram_rst   : out std_logic := '0';
+		sdram_cs    : out std_logic_vector;
+		sdram_cke   : out std_logic_vector;
+		sdram_clk   : out std_logic_vector;
+		sdram_odt   : out std_logic_vector;
+		sdram_ras   : out std_logic;
+		sdram_cas   : out std_logic;
+		sdram_we    : out std_logic;
+		sdram_b     : out std_logic_vector(bank_size-1 downto 0);
+		sdram_a     : out std_logic_vector(addr_size-1 downto 0);
 
-		sdram_sti  : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
-		sdram_sto  : out std_logic_vector(word_size/byte_size-1 downto 0);
-		sdram_dm   : inout std_logic_vector(word_size/byte_size-1 downto 0);
-		sdram_dqt  : out std_logic_vector(word_size-1 downto 0);
-		sdram_dqi  : in  std_logic_vector(word_size-1 downto 0);
-		sdram_dqo  : out std_logic_vector(word_size-1 downto 0);
-		sdram_dqst : out std_logic_vector(word_size/byte_size-1 downto 0);
-		sdram_dqsi : in  std_logic_vector(word_size/byte_size-1 downto 0);
-		sdram_dqso : out std_logic_vector(word_size/byte_size-1 downto 0));
+		sdram_sti   : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
+		sdram_sto   : out std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dm    : inout std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dqt   : out std_logic_vector(word_size-1 downto 0);
+		sdram_dqi   : in  std_logic_vector(word_size-1 downto 0);
+		sdram_dqo   : out std_logic_vector(word_size-1 downto 0);
+		sdram_dqst  : out std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dqsi  : in  std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dqso  : out std_logic_vector(word_size/byte_size-1 downto 0));
 
 end;
 
@@ -528,12 +532,18 @@ begin
 		generic map (
 			-- dqs_delay  => dqs_delay(i mod dqi_delay'length),
 			-- dqi_delay  => dqi_delay(i mod dqi_delay'length),
-			loopback   => loopback,
-			bypass     => bypass,
-			device     => device,
-			taps       => taps,
-			data_gear  => data_gear,
-			byte_size  => byte_size)
+
+			device      => device,
+			byte_size   => byte_size,
+			data_gear   => data_gear,
+			loopback    => loopback,
+			bypass      => bypass,
+    		rd_fifo     => rd_fifo,
+    		rd_align    => rd_align,
+    		wr_register => wr_register,
+    		wr_fifo     => wr_fifo,
+
+			taps        => taps)
 		port map (
 			tp_sel     => tp_sel,
 			tp_delay   => tp_byte,

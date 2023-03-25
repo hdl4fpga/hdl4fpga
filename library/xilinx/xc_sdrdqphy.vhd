@@ -34,65 +34,70 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		dqs_delay  : time := 0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
-		dqi_delay  : time := 0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
+		dqs_delay   : time := 0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
+		dqi_delay   : time := 0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
 
-		fifo       : boolean := true;
-		loopback   : boolean := false;
-		bypass     : boolean := false;
-		device     : fpga_devices;
-		taps       : natural;
-		data_gear  : natural;
-		byte_size  : natural);
+		device      : fpga_devices;
+		byte_size   : natural;
+		data_gear   : natural;
+
+		loopback    : boolean := false;
+		bypass      : boolean := false;
+		rd_fifo     : boolean := true;
+		rd_align    : boolean := true;
+		wr_register : boolean := false;
+		wr_fifo     : boolean := true;
+
+		taps        : natural);
 	port (
-		tp_sel     : in  std_logic_vector(2-1 downto 0) := "00";
-		tp_delay   : out std_logic_vector(1 to 8);
+		tp_sel      : in  std_logic_vector(2-1 downto 0) := "00";
+		tp_delay    : out std_logic_vector(1 to 8);
 
-		rst        : in  std_logic;
-		rst_shift  : in  std_logic;
-		iod_clk    : in  std_logic;
-		clk        : in  std_logic := '-';
-		clk_shift  : in  std_logic := '-';
-		clkx2      : in  std_logic := '-';
+		rst         : in  std_logic;
+		rst_shift   : in  std_logic;
+		iod_clk     : in  std_logic;
+		clk         : in  std_logic := '-';
+		clk_shift   : in  std_logic := '-';
+		clkx2       : in  std_logic := '-';
 		clkx2_shift : in  std_logic := '-';
 
-		sys_wlreq  : in  std_logic := '-';
-		sys_wlrdy  : out std_logic;
+		sys_wlreq   : in  std_logic := '-';
+		sys_wlrdy   : out std_logic;
 
-		sys_rlreq  : in  std_logic;
-		sys_rlrdy  : buffer std_logic;
-		read_rdy   : in  std_logic;
-		read_req   : buffer std_logic;
-		read_brst  : out std_logic;
-		write_rdy  : in  std_logic;
-		write_req  : buffer std_logic;
-		sto_synced : buffer std_logic;
+		sys_rlreq   : in  std_logic;
+		sys_rlrdy   : buffer std_logic;
+		read_rdy    : in  std_logic;
+		read_req    : buffer std_logic;
+		read_brst   : out std_logic;
+		write_rdy   : in  std_logic;
+		write_req   : buffer std_logic;
+		sto_synced  : buffer std_logic;
 
-		sys_dmt    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
-		sys_sti    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
-		sys_sto    : buffer std_logic_vector(data_gear-1 downto 0);
-		sys_dmi    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
-		sys_dqi    : in  std_logic_vector(data_gear*byte_size-1 downto 0);
-		sys_dqt    : in  std_logic_vector(data_gear-1 downto 0);
-		sys_dqo    : out std_logic_vector(data_gear*byte_size-1 downto 0);
-		sys_dqsi   : in  std_logic_vector(data_gear-1 downto 0);
-		sys_dqso   : out std_logic_vector(data_gear-1 downto 0);
-		sys_dqst   : in  std_logic_vector(data_gear-1 downto 0);
-		sys_dqc    : buffer std_logic_vector(data_gear-1 downto 0);
-		sys_dqv    : in  std_logic_vector(data_gear-1 downto 0) := (others => '0');
+		sys_dmt     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
+		sys_sti     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
+		sys_sto     : buffer std_logic_vector(data_gear-1 downto 0);
+		sys_dmi     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
+		sys_dqi     : in  std_logic_vector(data_gear*byte_size-1 downto 0);
+		sys_dqt     : in  std_logic_vector(data_gear-1 downto 0);
+		sys_dqo     : out std_logic_vector(data_gear*byte_size-1 downto 0);
+		sys_dqsi    : in  std_logic_vector(data_gear-1 downto 0);
+		sys_dqso    : out std_logic_vector(data_gear-1 downto 0);
+		sys_dqst    : in  std_logic_vector(data_gear-1 downto 0);
+		sys_dqc     : buffer std_logic_vector(data_gear-1 downto 0);
+		sys_dqv     : in  std_logic_vector(data_gear-1 downto 0) := (others => '0');
 
-		sdram_dmi  : in  std_logic := '-';
-		sdram_sti  : in  std_logic := '-';
-		sdram_sto  : out std_logic;
-		sdram_dmt  : out std_logic;
-		sdram_dmo  : out std_logic;
-		sdram_dqsi : in  std_logic;
-		sdram_dqi  : in  std_logic_vector(byte_size-1 downto 0);
-		sdram_dqt  : out std_logic_vector(byte_size-1 downto 0);
-		sdram_dqo  : out std_logic_vector(byte_size-1 downto 0);
+		sdram_dmi   : in  std_logic := '-';
+		sdram_sti   : in  std_logic := '-';
+		sdram_sto   : out std_logic;
+		sdram_dmt   : out std_logic;
+		sdram_dmo   : out std_logic;
+		sdram_dqsi  : in  std_logic;
+		sdram_dqi   : in  std_logic_vector(byte_size-1 downto 0);
+		sdram_dqt   : out std_logic_vector(byte_size-1 downto 0);
+		sdram_dqo   : out std_logic_vector(byte_size-1 downto 0);
 
-		sdram_dqst : out std_logic;
-		sdram_dqso : out std_logic);
+		sdram_dqst  : out std_logic;
+		sdram_dqso  : out std_logic);
 end;
 
 architecture xilinx of xc_sdrdqphy is
@@ -138,7 +143,6 @@ architecture xilinx of xc_sdrdqphy is
 	signal sdqt         : std_logic_vector(sys_sti'range);
 	signal sdqsi        : std_logic_vector(sys_dqsi'range);
 	signal sdqso        : std_logic_vector(sys_dqso'range);
-
 
 begin
 
@@ -382,6 +386,7 @@ begin
 	datai_b : block
 		signal sdqo : std_logic_vector(sys_dqo'range);
 	begin
+
 		i_igbx : for i in sdram_dqi'range generate
 		begin
 			adjdqi_b : block
@@ -439,28 +444,27 @@ begin
 			end generate;
 	
 			igbx_g : if not bypass generate
-				data_gear2_g : if data_gear=2 generate
+				gbx2_g : if data_gear=2 generate
 					igbx_i : entity hdl4fpga.igbx
 					generic map (
 						device => device,
-						size => 1,
-						gear => data_gear)
+						size   => 1,
+						gear   => data_gear)
 					port map (
-						rst  => rst,
-						clk  => clk,
-						d(0) => dqi(i),
-						q(0) => dq(0*byte_size+i),
-						q(1) => dq(1*byte_size+i));
+						rst    => rst,
+						clk    => clk,
+						d(0)   => dqi(i),
+						q(0)   => dq(0*byte_size+i),
+						q(1)   => dq(1*byte_size+i));
 
 					shuffle_g : for j in 0 to data_gear-1 generate
 						sdqo(j*byte_size+i) <= dq(j*byte_size+i);
 					end generate;
 				end generate;
 	
-				data_gear4_g : if data_gear=4 generate
+				gbx4_g : if data_gear=4 generate
 					signal q1 : std_logic_vector(data_gear-1 downto 0);
 					signal q2 : std_logic_vector(data_gear-1 downto 0);
-					
 				begin
 
 					igbx_i : entity hdl4fpga.igbx
@@ -499,7 +503,7 @@ begin
 			end generate;
 		end generate;
 	
-		fifo_g : if fifo generate
+		rd_fifo_g : if rd_fifo generate
 			gear_g : for i in data_gear-1 downto 0 generate
 				fifo_i : entity hdl4fpga.iofifo
 				port map (
@@ -513,7 +517,7 @@ begin
 			end generate;
 		end generate;
 		
-		nofifo_g : if not fifo generate
+		no_rdfifo_g : if not rd_fifo generate
 			sys_dqo  <= sdqo;
 			sys_dqso <= sdqso;
 		end generate;
@@ -521,69 +525,6 @@ begin
 		sto_b : block
 		begin
 			igbx_g : if not bypass generate
-				data_gear4_g : if data_gear=4 generate
-				begin
-					igbx_i : entity hdl4fpga.igbx
-					generic map (
-						device => device,
-						size => 1,
-						gear => data_gear)
-					port map (
-						rst   => rst_shift,
-						sclk  => clkx2,
-						clkx2 => clkx2_shift,
-						clk   => clk_shift,
-						d(0)  => sdram_dmi);
-				end generate;
-			
-				gbx4_g : if data_gear=4 generate
-					signal sto : std_logic_vector(sys_sti'range);
-				begin
-					lat_e : entity hdl4fpga.latency
-					generic map (
-						n => data_gear,
-						d => (0 to data_gear-1 => 1))
-					port map (
-						clk => clk_shift,
-						di  => sys_sti,
-						do  => sto);
-
-					process(sto,clk_shift)
-						variable lat : unsigned(0 to 2*sto'length-1);
-					begin
-						if rising_edge(clk_shift) then
-							lat := lat srl sto'length;
-							lat(0 to sto'length-1) := unsigned(sto);
-							ssto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
-						end if;
-					end process;
-
-					process (clk_shift)
-						variable ena : std_logic;
-					begin
-						if rising_edge(clk_shift) then
-							if sto_synced='0' then
-								if sys_sti=(sys_sti'range => '0') then
-									ena := '1';
-								elsif ena='1' then
-									ena:= '0';
-									if sys_sti="1110" then
-										half_align <= dqspre;
-										data_align <= reverse(sys_sti) xor ('0', dqspre, dqspre, '0');
-									elsif sys_sti="1000" then
-										half_align <= not dqspre;
-										data_align <= reverse(sys_sti) xor ('0', not dqspre, not dqspre, '0');
-									else
-										half_align <= '-';
-										data_align <= (others => '-');
-									end if;
-								end if;
-							end if;
-						end if;
-					end process;
-
-					sys_sto <= ssto;
-				end generate;
 
 				gbx2_g : if data_gear=2 generate
 					signal sti : std_logic;
@@ -611,9 +552,68 @@ begin
 						q     => ssto);
 
 				end generate;
+
+				gbx4_g : if data_gear=4 generate
+					igbx_i : entity hdl4fpga.igbx
+					generic map (
+						device => device,
+						size => 1,
+						gear => data_gear)
+					port map (
+						rst   => rst_shift,
+						sclk  => clkx2,
+						clkx2 => clkx2_shift,
+						clk   => clk_shift,
+						d(0)  => sdram_dmi);
+			
+					lat_e : entity hdl4fpga.latency
+					generic map (
+						n => data_gear,
+						d => (0 to data_gear-1 => 1))
+					port map (
+						clk => clk_shift,
+						di  => sys_sti,
+						do  => ssto);
+
+					process(ssto,clk_shift)
+						variable lat : unsigned(0 to 2*ssto'length-1);
+					begin
+						if rising_edge(clk_shift) then
+							lat := lat srl ssto'length;
+							lat(0 to ssto'length-1) := unsigned(ssto);
+							sys_sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
+						end if;
+					end process;
+
+					process (clk_shift)
+						variable ena : std_logic;
+					begin
+						if rising_edge(clk_shift) then
+							if sto_synced='0' then
+								if sys_sti=(sys_sti'range => '0') then
+									ena := '1';
+								elsif ena='1' then
+									ena:= '0';
+									if sys_sti="1110" then
+										half_align <= dqspre;
+										data_align <= reverse(sys_sti) xor ('0', dqspre, dqspre, '0');
+									elsif sys_sti="1000" then
+										half_align <= not dqspre;
+										data_align <= reverse(sys_sti) xor ('0', not dqspre, not dqspre, '0');
+									else
+										half_align <= '-';
+										data_align <= (others => '-');
+									end if;
+								end if;
+							end if;
+						end if;
+					end process;
+
+				end generate;
 			end generate;
 
 			bypass_g : if bypass generate
+
 				lat_e : entity hdl4fpga.latency
 				generic map (
 					n => data_gear,
@@ -626,19 +626,20 @@ begin
 				phases_g : for i in data_gear-1 downto 0 generate
 					ssto(i) <= sdram_sti when loopback else sdram_dmi;
 				end generate;
+
 			end generate;
 		end block;
 	
 	end block;
 
 	datao_b : block
-		constant register_on : boolean := device=xc7a;
 
 		signal sdqi : std_logic_vector(sys_dqi'range);
 		signal sdmi : std_logic_vector(sys_dmi'range);
+
 	begin
 
-		fifo_g : if fifo generate
+		wrfifo_g : if wr_fifo generate
 			gear_g : for i in data_gear-1 downto 0 generate
 				signal in_data  : std_logic_vector(sys_dqi'length/data_gear downto 0);
 				signal out_data : std_logic_vector(sys_dqi'length/data_gear downto 0);
@@ -657,7 +658,7 @@ begin
 			end generate;
 		end generate;
 		
-		nofifo_g : if not fifo generate
+		no_wrfifo_g : if not wr_fifo generate
 			sdqi <= sys_dqi;
 			sdmi <= sys_dmi;
 		end generate;
@@ -685,7 +686,7 @@ begin
 						else
 							dqo(j) <= '0';
 						end if;
-					elsif not register_on then
+					elsif not wr_register then
 						dqo(j) <= sdqi(byte_size*j+i);
 					elsif rising_edge(clk_shift) then
 						dqo(j) <= sdqi(byte_size*j+i);
@@ -695,7 +696,7 @@ begin
 
 			process (sdqt, clk_shift)
 			begin
-				if not register_on then
+				if not wr_register then
 					dqt <= sdqt;
 				elsif rising_edge(clk_shift) then
 					dqt <= sdqt;
@@ -739,7 +740,7 @@ begin
 
 			process (dmd, clk_shift)
 			begin
-				if not register_on then
+				if not wr_register then
 					dmi <= dmd;
 				elsif rising_edge(clk_shift) then
 					dmi <= dmd;
@@ -748,7 +749,7 @@ begin
 
 			process (sys_dmt, clk_shift)
 			begin
-				if not register_on then
+				if not wr_register then
 					if loopback then
 						dmt <= (others => '0');
 					else
