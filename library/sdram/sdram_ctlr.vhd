@@ -294,28 +294,28 @@ begin
 
 	sdram_sch_e : entity hdl4fpga.sdram_sch
 	generic map (
-		fpga        => fpga,
-		chip        => chip,
+		fpga       => fpga,
+		chip       => chip,
 
-		cmmd_gear   => cmmd_gear,
-		data_gear   => data_gear,
-		cl_cod      => cl_cod,
-		cwl_cod     => cwl_cod)
+		cmmd_gear  => cmmd_gear,
+		data_gear  => data_gear,
+		cl_cod     => cl_cod,
+		cwl_cod    => cwl_cod)
 	port map (
-		sys_cl      => ctlr_cl,
-		sys_cwl     => sdram_cwl,
-		sys_clk     => ctlr_clk,
-		sys_rea     => sdram_mpu_rwin,
-		sys_wri     => sdram_mpu_wwin,
+		sys_cl     => ctlr_cl,
+		sys_cwl    => sdram_cwl,
+		sys_clk    => ctlr_clk,
+		sys_rea    => sdram_mpu_rwin,
+		sys_wri    => sdram_mpu_wwin,
 
-		sdram_rwn   => sdram_sch_rwn,
-		sdram_st    => sdram_sch_st,
+		sdram_rwn  => sdram_sch_rwn,
+		sdram_st   => sdram_sch_st,
 
-		sdram_dqsz  => sdram_sch_dqsz,
-		sdram_dqs   => sdram_sch_dqs,
-		sdram_dqz   => sdram_sch_dqz,
-		sdram_odt   => sdram_sch_odt,
-		sdram_wwn   => sdram_sch_wwn);
+		sdram_dqsz => sdram_sch_dqsz,
+		sdram_dqs  => sdram_sch_dqs,
+		sdram_dqz  => sdram_sch_dqz,
+		sdram_odt  => sdram_sch_odt,
+		sdram_wwn  => sdram_sch_wwn);
 
 	process (
 		sdram_sch_st,

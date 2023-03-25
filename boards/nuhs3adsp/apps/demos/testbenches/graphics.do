@@ -88,8 +88,8 @@ add wave -noupdate -group oddr_g2 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/
 add wave -noupdate -group oddr_g2 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/oddr_g(2)/ogbx_i/reg_g(0)/gear2_g/xc3s_g/oddr_i/C1
 add wave -noupdate -group oddr_g2 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/oddr_g(2)/ogbx_i/reg_g(0)/gear2_g/xc3s_g/oddr_i/D1
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {94725269 ps} 0} {{Cursor 2} {94728939 ps} 0} {{Cursor 3} {94735302 ps} 0}
-quietly wave cursor active 3
+WaveRestoreCursors {{Cursor 1} {69196000 ps} 0} {{Cursor 2} {69583000 ps} 0} {{Cursor 3} {94733617 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 273
 configure wave -valuecolwidth 219
 configure wave -justifyvalue left
@@ -104,4 +104,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {94718071 ps} {94744675 ps}
+WaveRestoreZoom {52782011 ps} {85965755 ps}

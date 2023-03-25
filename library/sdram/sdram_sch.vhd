@@ -125,7 +125,7 @@ architecture def of sdram_sch is
 			sel_sch(i) := pulse_delay (
 				phase     => lat_sch,
 				latency   => lat_tab(i),
-				WORD_SIZE => word'length,
+				word_size => word'length,
 				extension => lat_ext,
 				width     => lat_wid);
 		end loop;
