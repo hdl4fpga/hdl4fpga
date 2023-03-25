@@ -35,7 +35,7 @@ package sdram_param is
 	type sdram_latencies    is (cDLL, MRD, MODu, XPR, ZQINIT);
 	type device_latencies   is (
 		strl,   rwnl,  dqszl, dqsl,  dqzl, wwnl, strxl, rwnxl,
-		dqszxl, dqsxl, dqzxl, wwnxl, widl, rdfifo_lat);
+		dqszxl, dqsxl, dqzxl, wwnxl, widl);
 
 	type sdram_standards is (sdr, ddr, ddr2, ddr3);
 

@@ -172,22 +172,6 @@ package sdram_db is
 		(fpga => xc3s, param => DQZXL,      value =>  2),
 		(fpga => xc3s, param => WWNXL,      value =>  0),
 		(fpga => xc3s, param => WIDL,       value =>  1),
-		(fpga => xc3s, param => RDFIFO_LAT, value =>  2),
-
-		-- (fpga => xc5v, param => STRL,       value =>   0),
-		-- (fpga => xc5v, param => RWNL,       value =>   4),
-		-- (fpga => xc5v, param => DQSL,       value =>   0),
-		-- (fpga => xc5v, param => DQSZL,      value =>  -2),
-		-- (fpga => xc5v, param => DQZL,       value =>  -2),
-		-- (fpga => xc5v, param => WWNL,       value =>  -4),
-		-- (fpga => xc5v, param => STRXL,      value =>   0),
-		-- (fpga => xc5v, param => RWNXL,      value =>   0),
-		-- (fpga => xc5v, param => DQSXL,      value =>   0),
-		-- (fpga => xc5v, param => DQSZXL,     value =>   4),
-		-- (fpga => xc5v, param => DQZXL,      value =>   0),
-		-- (fpga => xc5v, param => WWNXL,      value =>   2),
-		-- (fpga => xc5v, param => WIDL,       value =>   4),
-		-- (fpga => xc5v, param => RDFIFO_LAT, value =>   2),
 
 		(fpga => xc5v, param => STRL,       value =>   5),
 		(fpga => xc5v, param => RWNL,       value =>   4),
@@ -202,7 +186,6 @@ package sdram_db is
 		(fpga => xc5v, param => DQZXL,      value =>   0),
 		(fpga => xc5v, param => WWNXL,      value =>   0),
 		(fpga => xc5v, param => WIDL,       value =>   4),
-		(fpga => xc5v, param => RDFIFO_LAT, value =>   4),
 
 		(fpga => xc7a, param => STRL,       value =>   5),
 		(fpga => xc7a, param => RWNL,       value =>   4),
@@ -217,7 +200,6 @@ package sdram_db is
 		(fpga => xc7a, param => DQZXL,      value =>   0),
 		(fpga => xc7a, param => WWNXL,      value =>   0),
 		(fpga => xc7a, param => WIDL,       value =>   4),
-		(fpga => xc7a, param => RDFIFO_LAT, value =>   4),
 
 		(fpga => ecp3, param => STRL,       value =>   0),
 		(fpga => ecp3, param => RWNL,       value =>   0),
@@ -232,22 +214,6 @@ package sdram_db is
 		(fpga => ecp3, param => DQZXL,      value =>   0),
 		(fpga => ecp3, param => WWNXL,      value =>   2),
 		(fpga => ecp3, param => WIDL,       value =>   4),
-		(fpga => ecp3, param => RDFIFO_LAT, value =>   0),
-
-		-- (fpga => ecp5, param => STRL,       value =>   0),
-		-- (fpga => ecp5, param => RWNL,       value =>   0),
-		-- (fpga => ecp5, param => DQSL,       value =>   2),
-		-- (fpga => ecp5, param => DQSZL,      value =>   2),
-		-- (fpga => ecp5, param => DQZL,       value =>   2),
-		-- (fpga => ecp5, param => WWNL,       value =>   2),
-		-- (fpga => ecp5, param => STRXL,      value =>   0),
-		-- (fpga => ecp5, param => RWNXL,      value =>   0),
-		-- (fpga => ecp5, param => DQSXL,      value =>   2),
-		-- (fpga => ecp5, param => DQSZXL,     value =>   2),
-		-- (fpga => ecp5, param => DQZXL,      value =>   0),
-		-- (fpga => ecp5, param => WWNXL,      value =>   2),
-		-- (fpga => ecp5, param => WIDL,       value =>   4),
-		-- (fpga => ecp5, param => RDFIFO_LAT, value =>   0));
 
 		(fpga => ecp5, param => STRL,       value =>   0),
 		(fpga => ecp5, param => RWNL,       value =>   0),
@@ -261,8 +227,7 @@ package sdram_db is
 		(fpga => ecp5, param => DQSZXL,     value =>   4),
 		(fpga => ecp5, param => DQZXL,      value =>   0),
 		(fpga => ecp5, param => WWNXL,      value =>   2),
-		(fpga => ecp5, param => WIDL,       value =>   4),
-		(fpga => ecp5, param => RDFIFO_LAT, value =>   0));
+		(fpga => ecp5, param => WIDL,       value =>   4));
 
 	function sdrmark_standard (
 		constant mark : sdram_chips)
