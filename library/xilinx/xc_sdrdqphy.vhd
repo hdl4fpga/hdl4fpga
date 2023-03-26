@@ -795,20 +795,19 @@ begin
 	end block;
 
 	dqso_b : block
-		signal dqsi : std_logic_vector(sys_dqsi'reverse_range);
+		signal dqsi : std_logic_vector(sys_dqsi'range);
 		signal dqst : std_logic_vector(sys_dqst'range);
 	begin
 
 		process (sdqsi)
 		begin
-			dqsi <= (others => '0');
+			dqsi <= sdqsi;
 			for i in dqsi'range loop
 				if i mod 2 = 1 then
-					dqsi(i) <= sdqsi(i);
+					dqsi(i) <= '0';
 				end if;
 			end loop;
 		end process;
-		dqst <= reverse(sys_dqst);
 
 		ogbx_i : entity hdl4fpga.ogbx
 		generic map (
@@ -819,7 +818,7 @@ begin
 			rst   => rst,
 			clk   => clk,
 			clkx2 => clkx2,
-			t     => dqst,
+			t     => sys_dqst,
 			tq(0) => sdram_dqst,
 			d     => dqsi,
 			q(0)  => sdram_dqso);

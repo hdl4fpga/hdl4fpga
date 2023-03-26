@@ -69,7 +69,7 @@ use ieee.std_logic_1164.all;
 
 architecture def of sdram_sch is
 	function sdram_task (
-		constant gear : natural;
+		constant gear    : natural;
 		constant lat_val : std_logic_vector;
 		constant lat_cod : std_logic_vector;
 		constant lat_tab : natural_vector;
@@ -129,7 +129,7 @@ architecture def of sdram_sch is
 				extension => lat_ext,
 				width     => lat_wid);
 		end loop;
-		return reverse(select_lat(lat_val, lat_cod1, sel_sch));
+		return select_lat(lat_val, lat_cod1, sel_sch);
 	end;
 
 	constant stdr      : sdram_standards := sdrmark_standard(chip);

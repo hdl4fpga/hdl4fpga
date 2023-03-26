@@ -230,18 +230,18 @@ architecture graphics of arty is
 	signal ctlrphy_cmd    : std_logic_vector(0 to 3-1);
 	signal ctlrphy_ba     : std_logic_vector(cmmd_gear*ddr3_ba'length-1 downto 0);
 	signal ctlrphy_a      : std_logic_vector(cmmd_gear*ddr3_a'length-1 downto 0);
-	signal ctlrphy_dqsi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqsi   : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_dqst   : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_dqso   : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_dmt    : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_dmi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmt    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmo    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqt    : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_dqi    : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqt    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqo    : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_sto    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
-	signal ctlrphy_sti    : std_logic_vector(0 to data_gear*word_size/byte_size-1);
-	signal ctlrphy_dqv    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sto    : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqv    : std_logic_vector(data_gear-1 downto 0);
 
 	signal ddr3_clk       : std_logic_vector(1-1 downto 0);
 	signal ddr3_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -818,6 +818,7 @@ begin
 	generic map (
 		-- dqs_delay => (0 to 0 => 1.35 ns),
 		-- dqi_delay => (0 to 0 => 0 ns),
+		wr_register => true,
 		device    => xc7a,
 		bypass    => false,
 		taps      => natural(floor(sdram_tcp/((sys_per/2.0)/(32.0*2.0))))-1,

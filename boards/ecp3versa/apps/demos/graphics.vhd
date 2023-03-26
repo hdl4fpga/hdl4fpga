@@ -644,7 +644,6 @@ begin
 		ctlrphy_odt  => ctlrphy_odt(0),
 		ctlrphy_b    => ddr_ba,
 		ctlrphy_a    => ddr_a,
-		ctlrphy_dsi  => ctlrphy_dsi,
 		ctlrphy_dst  => ctlrphy_dst,
 		ctlrphy_dso  => ctlrphy_dso,
 		ctlrphy_dmi  => ctlrphy_dmi,
@@ -654,7 +653,6 @@ begin
 		ctlrphy_dqt  => ctlrphy_dqt,
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_dqv  => ctlrphy_dqv,
-		ctlrphy_dqc  => ctlrphy_dqc,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
 

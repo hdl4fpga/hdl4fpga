@@ -158,12 +158,12 @@ architecture mix of sdram_ctlr is
 	signal sdram_mpu_rwwin  : std_logic;
 
 	signal sdram_sch_odt    : std_logic_vector(cmmd_gear-1 downto 0);
-	signal sdram_sch_dqsz   : std_logic_vector(data_gear-1 downto 0);
-	signal sdram_sch_dqs    : std_logic_vector(sdram_sch_dqsz'range);
-	signal sdram_sch_dqz    : std_logic_vector(sdram_sch_dqsz'range);
-	signal sdram_sch_st     : std_logic_vector(sdram_sch_dqsz'range);
 	signal sdram_sch_wwn    : std_logic_vector(data_gear-1 downto 0);
-	signal sdram_sch_rwn    : std_logic_vector(sdram_sch_dqsz'range);
+	signal sdram_sch_dqsz   : std_logic_vector(sdram_sch_wwn'range);
+	signal sdram_sch_dqs    : std_logic_vector(sdram_sch_wwn'range);
+	signal sdram_sch_dqz    : std_logic_vector(sdram_sch_wwn'range);
+	signal sdram_sch_st     : std_logic_vector(sdram_sch_wwn'range);
+	signal sdram_sch_rwn    : std_logic_vector(sdram_sch_wwn'range);
 
 	signal rot_val          : std_logic_vector(unsigned_num_bits(data_gear*word_size-1)-1 downto 0);
 	signal rot_di           : std_logic_vector(ctlr_di'range);
