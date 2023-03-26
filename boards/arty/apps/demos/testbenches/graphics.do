@@ -164,6 +164,8 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/ctlrphy_dqv
 add wave -noupdate /testbench/du_e/graphics_e/ctlrphy_dqv
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_dqi
 add wave -noupdate -divider {New Divider}
@@ -180,16 +182,14 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e/sys_sto
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/sys_dqo
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/sdqo
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/data_align
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/rd_fifo_g/gear_g(0)/fifo_i/in_clk
-add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/rd_fifo_g/gear_g(0)/fifo_i/in_frm
-add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/rd_fifo_g/gear_g(0)/fifo_i/in_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/rd_fifo_g/gear_g(0)/fifo_i/out_clk
-add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/rd_fifo_g/gear_g(0)/fifo_i/out_frm
-add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/rd_fifo_g/gear_g(0)/fifo_i/out_data
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/rd_fifo_g/gear_g(3)/fifo_i/out_frm
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/rdv
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_sti
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {43205629962 fs} 0} {{Cursor 2} {42670277920 fs} 0} {{Cursor 3} {42667224704 fs} 0} {{Cursor 4} {52900224355 fs} 0}
+WaveRestoreCursors {{Cursor 1} {43205629962 fs} 0} {{Cursor 2} {42670277920 fs} 0} {{Cursor 3} {42667224704 fs} 0} {{Cursor 4} {52909445000 fs} 0}
 quietly wave cursor active 4
 configure wave -namecolwidth 228
 configure wave -valuecolwidth 312
