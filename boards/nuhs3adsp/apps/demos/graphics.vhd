@@ -198,19 +198,18 @@ architecture graphics of nuhs3adsp is
 	signal ctlrphy_odt   : std_logic_vector(cmmd_gear-1 downto 0);
 	signal ctlrphy_b     : std_logic_vector(cmmd_gear*ddr_ba'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(cmmd_gear*ddr_a'length-1 downto 0);
-	signal ctlrphy_dqsi  : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqst  : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqso  : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqsi  : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_dqst  : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_dqso  : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_dmt   : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_dmi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmt   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmo   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_dqi   : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqt   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqv   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqv   : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal phyctlr_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
 	signal phy_wlreq     : std_logic;
 	signal phy_wlrdy     : std_logic;

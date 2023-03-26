@@ -94,19 +94,22 @@ entity sdram_ctlr is
 		phy_b        : out std_logic_vector(bank_size-1 downto 0);
 		phy_a        : out std_logic_vector(addr_size-1 downto 0);
 		phy_odt      : out std_logic;
+
+		phy_dmt      : out std_logic_vector(data_gear-1 downto 0);
 		phy_dmi      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dmt      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dmo      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
-		phy_dqt      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dqv      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dqo      : out std_logic_vector(data_gear*word_size-1           downto 0);
+		phy_dqso     : out std_logic_vector(data_gear-1 downto 0);
+		phy_dqst     : out std_logic_vector(data_gear-1 downto 0);
+
+		phy_dqt      : out std_logic_vector(data_gear-1 downto 0);
+		phy_dqv      : out std_logic_vector(data_gear-1 downto 0);
+		phy_dqo      : out std_logic_vector(data_gear*word_size-1 downto 0);
 
 		phy_sti      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_sto      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dqi      : in  std_logic_vector(data_gear*word_size-1           downto 0);
-		phy_dqso     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dqst     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0));
+		phy_sto      : out std_logic_vector(data_gear-1 downto 0);
+		phy_dqi      : in  std_logic_vector(data_gear*word_size-1 downto 0));
+
 
 end;
 
@@ -310,27 +313,12 @@ begin
 		sdram_odt  => sdram_sch_odt,
 		sdram_wwn  => sdram_sch_wwn);
 
-	process (
-		sdram_sch_st,
-		sdram_sch_dqz,
-		sdram_sch_dqs,
-		sdram_sch_dqsz,
-		sdram_sch_rwn,
-		sdram_sch_wwn)
-	begin
-		for i in 0 to word_size/byte_size-1 loop
-			for j in 0 to data_gear-1 loop
-				phy_dqt(i*data_gear+j)  <= not sdram_sch_dqz(j);
-				phy_dmt(i*data_gear+j)  <= not reverse(sdram_sch_dqz)(j);
-				phy_dqso(i*data_gear+j) <= sdram_sch_dqs(j);
-				phy_dqst(i*data_gear+j) <= not sdram_sch_dqsz(j);
-				phy_sto(i*data_gear+j)  <= sdram_sch_st(j);
-			end loop;
-			for j in sdram_sch_wwn'range loop
-				phy_dqv(i*data_gear+j) <= sdram_sch_wwn(j);
-			end loop;
-		end loop;
-	end process;
+	phy_dqt  <= not sdram_sch_dqz;
+	phy_dmt  <= not sdram_sch_dqz;
+	phy_dqso <= sdram_sch_dqs;
+	phy_dqst <= not sdram_sch_dqsz;
+	phy_sto  <= sdram_sch_st;
+	phy_dqv  <= sdram_sch_wwn;
 
 	sdram_rotval_p : process(sdram_cwl)
 		function sdram_rotval (

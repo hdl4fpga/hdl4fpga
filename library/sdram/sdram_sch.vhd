@@ -48,15 +48,15 @@ entity sdram_sch is
 		sys_rea    : in  std_logic;
 		sys_wri    : in  std_logic;
 
-		sdram_rwn  : out std_logic_vector(0 to data_gear-1);
-		sdram_st   : out std_logic_vector(0 to data_gear-1);
+		sdram_rwn  : out std_logic_vector(data_gear-1 downto 0);
+		sdram_st   : out std_logic_vector(data_gear-1 downto 0);
 
-		sdram_dqsz : out std_logic_vector(0 to data_gear-1);
-		sdram_dqs  : out std_logic_vector(0 to data_gear-1);
+		sdram_dqsz : out std_logic_vector(data_gear-1 downto 0);
+		sdram_dqs  : out std_logic_vector(data_gear-1 downto 0);
 
-		sdram_dqz  : out std_logic_vector(0 to data_gear-1);
-		sdram_wwn  : out std_logic_vector(0 to data_gear-1);
-		sdram_odt  : out std_logic_vector(0 to cmmd_gear-1));
+		sdram_dqz  : out std_logic_vector(data_gear-1 downto 0);
+		sdram_wwn  : out std_logic_vector(data_gear-1 downto 0);
+		sdram_odt  : out std_logic_vector(cmmd_gear-1 downto 0));
 
 end;
 
@@ -129,7 +129,7 @@ architecture def of sdram_sch is
 				extension => lat_ext,
 				width     => lat_wid);
 		end loop;
-		return select_lat(lat_val, lat_cod1, sel_sch);
+		return reverse(select_lat(lat_val, lat_cod1, sel_sch));
 	end;
 
 	constant stdr      : sdram_standards := sdrmark_standard(chip);

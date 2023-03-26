@@ -82,20 +82,22 @@ entity xc_sdrphy is
 		sys_a       : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
 		sys_odt     : in  std_logic_vector(cmmd_gear-1 downto 0);
 
-		sys_dmt     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dmt     : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dmi     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dmo     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqt     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqi     : in  std_logic_vector(data_gear*word_size-1 downto 0);
+
+		sys_dqsi    : in  std_logic_vector(data_gear-1 downto 0);
+		sys_dqst    : in  std_logic_vector(data_gear-1 downto 0);
+		sys_dqso    : out std_logic_vector(data_gear-1 downto 0);
+
+		sys_dqv     : in  std_logic_vector(data_gear-1 downto 0) := (others => '0');
+		sys_dqt     : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dqo     : out std_logic_vector(data_gear*word_size-1 downto 0);
 
-		sys_dqso    : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqsi    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqst    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dqc     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqv     : in std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
-		sys_sti     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
+		sys_sti     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_sto     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqi     : in  std_logic_vector(data_gear*word_size-1 downto 0);
 
 		sdram_rst   : out std_logic := '0';
 		sdram_cs    : out std_logic_vector;
@@ -264,20 +266,14 @@ architecture xilinx of xc_sdrphy is
 		return to_stdlogicvector(val);
 	end;
 
-	signal sdmt       : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmi       : bline_vector(word_size/byte_size-1 downto 0);
-	signal ssti       : bline_vector(word_size/byte_size-1 downto 0);
 	signal ssto       : bline_vector(word_size/byte_size-1 downto 0);
 
-	signal sdqt       : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdqi       : dline_vector(word_size/byte_size-1 downto 0);
 	signal sdqo       : dline_vector(word_size/byte_size-1 downto 0);
 
-	signal sdqsi      : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdqst      : bline_vector(word_size/byte_size-1 downto 0);
 
 	signal dqc        : bline_vector(word_size/byte_size-1 downto 0);
-	signal dqv        : bline_vector(word_size/byte_size-1 downto 0);
 
 	signal ddmo       : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddmt       : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -509,15 +505,9 @@ begin
 
 	end block;
 
-	dqv   <= to_blinevector(sys_dqv);
 	sdmi  <= shuffle_blinevector(sys_dmi);
-	ssti  <= to_blinevector(sys_sti);
-	sdmt  <= to_blinevector(sys_dmt);
-	sdqt  <= to_blinevector(sys_dqt);
 	sdqi  <= shuffle_dlinevector(sys_dqi);
 	ddqi  <= to_bytevector(sdram_dqi);
-	sdqsi <= to_blinevector(sys_dqsi);
-	sdqst <= to_blinevector(sys_dqst);
 
 	phy_synced <= '1' when sto_synced=(sto_synced'range => '1') else '0';
 
@@ -566,21 +556,21 @@ begin
 			read_rdy   => rd_rdy(i),
 			read_brst  => read_brst(i),
 
-			sys_sti    => ssti(i),
+			sys_sti    => sys_sti,
 			sys_sto    => ssto(i),
-			sys_dmt    => sdmt(i),
+			sys_dmt    => sys_dmt,
 			sys_dmi    => sdmi(i),
 
 			sys_dqi    => sdqi(i),
-			sys_dqt    => sdqt(i),
+			sys_dqt    => sys_dqt,
 			sys_dqo    => sdqo(i),
 
 		    sys_dqc    => dqc(i),
-		    sys_dqv    => dqv(i),
+		    sys_dqv    => sys_dqv,
 
-			sys_dqsi   => sdqsi(i),
-			sys_dqst   => sdqst(i),
-			sys_dqso   => sys_dqso(data_gear*(i+1)-1 downto data_gear*i),
+			sys_dqsi   => sys_dqsi,
+			sys_dqst   => sys_dqst,
+			sys_dqso   => sys_dqso,
 			sto_synced => sto_synced(i),
 
 			sdram_sti  => sdram_sti(i),
