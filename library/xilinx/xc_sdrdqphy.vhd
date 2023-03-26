@@ -507,11 +507,13 @@ begin
 		rd_fifo_g : if rd_fifo generate
 			gear_g : for i in data_gear-1 downto 0 generate
 				signal out_frm : std_logic;
+				signal in_clk  : std_logic;
 			begin
+				in_clk  <= sdqso(i) when bypass else clk_shift;
 				out_frm <= sys_sto(sys_sto'right) when rd_align else sys_sto(i);
 				fifo_i : entity hdl4fpga.iofifo
 				port map (
-					in_clk   => sdqso(i),
+					in_clk   => in_clk,
 					in_frm   => rdv(i),
 					in_data  => sdqo(byte_size*(i+1)-1 downto byte_size*i),
 					out_clk  => clk,
@@ -545,6 +547,8 @@ begin
 				end generate;
 
 				gbx4_g : if data_gear=4 generate
+					signal xxx : std_logic;
+				begin
 					igbx_i : entity hdl4fpga.igbx
 					generic map (
 						device => device,
@@ -566,15 +570,40 @@ begin
 						di  => sys_sti,
 						do  => rdv);
 
-					process(rdv, clk_shift)
-						variable lat : unsigned(0 to 2*rdv'length-1);
+					no_wrfifo_g : if not wr_fifo generate
+    					process(rdv, clk_shift)
+    						variable lat : unsigned(0 to 2*rdv'length-1);
+    					begin
+    						if rising_edge(clk_shift) then
+    							lat := lat srl rdv'length;
+    							lat(0 to sys_sti'length-1) := unsigned(rdv);
+    							sys_sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
+    						end if;
+    					end process;
+					end generate;
+
+					wrfifo_g : if wr_fifo generate
+						signal sti : std_logic_vector(sys_sti'range);
 					begin
-						if rising_edge(clk_shift) then
-							lat := lat srl rdv'length;
-							lat(0 to rdv'length-1) := unsigned(rdv);
-							sys_sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
-						end if;
-					end process;
+    					lat_e : entity hdl4fpga.latency
+    					generic map (
+    						n => data_gear,
+    						d => (0 to data_gear-1 => 1))
+    					port map (
+    						clk => clk,
+    						di  => sys_sti,
+    						do  => sti);
+
+    					process(sti, clk)
+    						variable lat : unsigned(0 to 2*sti'length-1);
+    					begin
+    						if rising_edge(clk) then
+    							lat := lat srl sti'length;
+    							lat(0 to sti'length-1) := unsigned(sti);
+    							sys_sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
+    						end if;
+    					end process;
+					end generate;
 
 					process (clk_shift)
 						variable ena : std_logic;
@@ -587,10 +616,10 @@ begin
 									ena:= '0';
 									if sys_sti="1110" then
 										half_align <= dqspre;
-										data_align <= reverse(sys_sti) xor ('0', dqspre, dqspre, '0');
-									elsif sys_sti="1000" then
+										data_align <= sys_sti xor ('0', dqspre, dqspre, '0');
+									elsif sys_sti="0001" then
 										half_align <= not dqspre;
-										data_align <= reverse(sys_sti) xor ('0', not dqspre, not dqspre, '0');
+										data_align <= sys_sti xor ('0', not dqspre, not dqspre, '0');
 									else
 										half_align <= '-';
 										data_align <= (others => '-');

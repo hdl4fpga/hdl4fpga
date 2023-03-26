@@ -158,17 +158,39 @@ add wave -noupdate -radix unsigned /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i
 add wave -noupdate -radix unsigned /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/gear4_g/phdata_e/cntr270
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -expand /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_dqv
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_dqo
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/ctlrphy_dqv
+add wave -noupdate /testbench/du_e/graphics_e/ctlrphy_dqv
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_dqi
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -expand /testbench/du_e/sdrphy_e/sys_dqv
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sdqe
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(31) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(30) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(29) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(28) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(27) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(26) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(25) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(24) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(23) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(22) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(21) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(20) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(19) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(18) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(17) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(16) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(15) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(14) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(13) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(12) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(11) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(10) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(9) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(8) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(7) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(6) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(5) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(4) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(3) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(2) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(1) -radix hexadecimal} {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(31) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(30) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(29) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(28) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(27) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(26) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(25) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(24) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(23) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(22) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(21) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(20) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(19) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(18) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(17) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(16) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(15) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(14) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(13) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(12) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(11) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(10) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(9) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(8) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(7) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(6) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(5) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(4) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(3) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(2) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(1) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi(0) {-height 29 -radix hexadecimal}} /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datao_b/sdqi
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sdram_dqo
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_dqi
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_dqv
+add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/sdram_sch_dqz
+add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/sdram_sch_wwn
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e/sys_sto
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/sys_dqo
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/sdqo
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/rd_fifo_g/gear_g(0)/fifo_i/in_clk
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/rd_fifo_g/gear_g(0)/fifo_i/in_frm
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/rd_fifo_g/gear_g(0)/fifo_i/in_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/rd_fifo_g/gear_g(0)/fifo_i/out_clk
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/rd_fifo_g/gear_g(0)/fifo_i/out_frm
+add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/rd_fifo_g/gear_g(0)/fifo_i/out_data
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {11453039586 fs} 0} {{Cursor 2} {42661913207 fs} 0} {{Cursor 3} {94702936445 fs} 0} {{Cursor 4} {52903413962 fs} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {43205629962 fs} 0} {{Cursor 2} {42670277920 fs} 0} {{Cursor 3} {42667224704 fs} 0} {{Cursor 4} {52900224355 fs} 0}
+quietly wave cursor active 4
 configure wave -namecolwidth 228
 configure wave -valuecolwidth 312
 configure wave -justifyvalue left
@@ -183,4 +205,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {9983232205 fs} {11537724621 fs}
+WaveRestoreZoom {52875905762 fs} {52911794434 fs}
