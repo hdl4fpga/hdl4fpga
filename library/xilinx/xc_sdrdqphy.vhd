@@ -510,7 +510,7 @@ begin
 				signal in_clk  : std_logic;
 			begin
 				in_clk  <= sdqso(i) when bypass else clk_shift;
-				out_frm <= sys_sto(sys_sto'right) when rd_align else sys_sto(i);
+				out_frm <= sys_sto(sys_sto'left) when rd_align else sys_sto(i);
 				fifo_i : entity hdl4fpga.iofifo
 				port map (
 					in_clk   => in_clk,
@@ -547,7 +547,7 @@ begin
 				end generate;
 
 				gbx4_g : if data_gear=4 generate
-					signal xxx : std_logic;
+					signal xxx : std_logic_vector(sys_sti'range);
 				begin
 					igbx_i : entity hdl4fpga.igbx
 					generic map (
@@ -564,13 +564,14 @@ begin
 					lat_e : entity hdl4fpga.latency
 					generic map (
 						n => data_gear,
-						d => (0 to data_gear-1 => 1))
+						d => (0 to data_gear-1 => 2))
 					port map (
 						clk => clk_shift,
 						di  => sys_sti,
-						do  => rdv);
+						do  => xxx);
+					rdv <= reverse(xxx);
 
-					no_wrfifo_g : if not wr_fifo generate
+					no_rdfifo_g : if not rd_fifo generate
     					process(rdv, clk_shift)
     						variable lat : unsigned(0 to 2*rdv'length-1);
     					begin
@@ -582,13 +583,13 @@ begin
     					end process;
 					end generate;
 
-					wrfifo_g : if wr_fifo generate
+					rdfifo_g : if rd_fifo generate
 						signal sti : std_logic_vector(sys_sti'range);
 					begin
     					lat_e : entity hdl4fpga.latency
     					generic map (
     						n => data_gear,
-    						d => (0 to data_gear-1 => 1))
+    						d => (0 to data_gear-1 => 2))
     					port map (
     						clk => clk,
     						di  => sys_sti,
