@@ -818,7 +818,7 @@ begin
 	generic map (
 		-- dqs_delay => (0 to 0 => 1.35 ns),
 		-- dqi_delay => (0 to 0 => 0 ns),
-		wr_register => true,
+		wr_register => false,
 		device    => xc7a,
 		bypass    => false,
 		taps      => natural(floor(sdram_tcp/((sys_per/2.0)/(32.0*2.0))))-1,
@@ -870,6 +870,7 @@ begin
 		sys_dmt   => ctlrphy_dmt,
 		sys_dmo   => ctlrphy_dmi,
 		sys_dqo   => ctlrphy_dqi,
+		sys_dqv   => ctlrphy_dqv,
 		sys_dqt   => ctlrphy_dqt,
 		sys_dqi   => ctlrphy_dqo,
 		sys_odt   => ctlrphy_odt,

@@ -139,7 +139,8 @@ architecture xilinx of xc_sdrdqphy is
 
 	signal sdqe         : std_logic_vector(sys_dqv'range);
 	signal ssti         : std_logic_vector(sys_sti'range);
-	signal rdv         : std_logic_vector(sys_sto'range);
+	signal ten          : std_logic_vector(sys_dqv'range);
+	signal rdv          : std_logic_vector(sys_sto'range);
 	signal sdqt         : std_logic_vector(sys_sti'range);
 	signal sdqsi        : std_logic_vector(sys_dqsi'range);
 	signal sdqso        : std_logic_vector(sys_dqso'range);
@@ -640,7 +641,7 @@ begin
 				fifo_i : entity hdl4fpga.iofifo
 				port map (
 					in_clk   => clk,
-					in_frm   => sys_dqv(i),
+					in_frm   => ten(i),
 					in_data  => in_data,
 					out_clk  => sys_dqc(i),
 					out_frm  => sdqe(i),
@@ -867,12 +868,28 @@ begin
 			do270(1) => ssti(1),
 			do270(0) => sdqe(0));
 
+			ten <= sys_dqv;
 	end generate;
 
 	gear4_g : if data_gear=4 generate
-		sdqt  <= sys_dqt;
+		sys_dqc <= (others => clk_shift);
+
+		phdata_e : entity hdl4fpga.g4_phdata
+		generic map (
+			data_width270 => 12)
+		port map (
+			clk0     => clk,
+			clk270   => clk_shift,
+
+			di270(12-1 downto 8) => sys_dqt,
+			di270( 8-1 downto 4) => sys_sti,
+			di270( 4-1 downto 0) => sys_dqv,
+
+			do270(12-1 downto 8) => sdqt,
+			do270( 8-1 downto 4) => ssti,
+			do270( 4-1 downto 0) => sdqe);
+
+		ten <= (others => sys_dqv(sys_dqv'right));
 		sdqsi <= sys_dqsi;
-		ssti  <= sys_sti;
-		sdqe  <= sys_dqv;
 	end generate;
 end;

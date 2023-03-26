@@ -151,7 +151,11 @@ add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(1)/sdrdqphy_i/clk_shift
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e/tp_delay
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_dqt(3)
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sdqt(3)
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix unsigned /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/gear4_g/phdata_e/cntr
+add wave -noupdate -radix unsigned /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/gear4_g/phdata_e/cntr270
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -163,7 +167,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {11442221500 fs} 0} {{Cursor 2} {52888886716 fs} 0} {{Cursor 3} {94702936445 fs} 0} {{Cursor 4} {52903413962 fs} 0}
+WaveRestoreCursors {{Cursor 1} {11453039586 fs} 0} {{Cursor 2} {42661913207 fs} 0} {{Cursor 3} {94702936445 fs} 0} {{Cursor 4} {52903413962 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 228
 configure wave -valuecolwidth 312
@@ -179,4 +183,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {11427133166 fs} {11475711048 fs}
+WaveRestoreZoom {9983232205 fs} {11537724621 fs}

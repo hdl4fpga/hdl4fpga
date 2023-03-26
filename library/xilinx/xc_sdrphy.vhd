@@ -90,7 +90,7 @@ entity xc_sdrphy is
 		sys_dqst    : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dqso    : out std_logic_vector(data_gear-1 downto 0);
 
-		sys_dqv     : in  std_logic_vector(data_gear-1 downto 0) := (others => '0');
+		sys_dqv     : in  std_logic_vector(data_gear-1 downto 0) := (others => 'U');
 		sys_dqt     : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dqo     : out std_logic_vector(data_gear*word_size-1 downto 0);
 

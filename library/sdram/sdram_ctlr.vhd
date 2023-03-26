@@ -286,7 +286,7 @@ begin
 		sdram_mpu_rwwin => sdram_mpu_rwwin);
 
 	ctlr_cmd     <= sdram_pgm_cmd;
-	ctlr_di_req  <= sdram_sch_wwn(sdram_sch_wwn'left);
+	ctlr_di_req  <= sdram_sch_wwn(sdram_sch_wwn'right);
 
 	sdram_sch_e : entity hdl4fpga.sdram_sch
 	generic map (
