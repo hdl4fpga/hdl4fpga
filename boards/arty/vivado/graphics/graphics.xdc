@@ -55,4 +55,3 @@ set_max_delay 0.0 -from [ get_ports ddr3_dqs_p[*] ]
 
 set_false_path -from [ get_pins sdrphy_e/byte_g[*].sdrdqphy_i/datao_b.wrfifo_g.gear_g[*].fifo_i/mem*/*/CLK ] -to [ get_pins sdrphy_e/byte_g[*].sdrdqphy_i/datao_b.oddr_g[*].ogbx_i/reg_g[*].oserdese_g.xc7a_g.oser_i/D* ]
 set_false_path -from [ get_pins sdrphy_e/byte_g[*].sdrdqphy_i/datai_b.rdfifo_g.gear_g[*].fifo_i/mem*/*/CLK ] -to [ get_pins graphics_e/dmactlr_b.dmado_e/delay[*].q_reg[*]/D ]
-
