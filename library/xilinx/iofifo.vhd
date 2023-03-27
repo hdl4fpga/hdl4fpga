@@ -26,6 +26,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity iofifo is
+	generic (
+		clr      : boolean := false);
 	port (
 		in_clk   : in  std_logic;
 		in_frm   : in  std_logic;
@@ -58,11 +60,15 @@ begin
 	process (in_frm, in_clk)
 		variable cntr : unsigned(4-1 downto 0);
 	begin
-		if in_frm='0' then
+		if clr and in_frm='0' then
 			cntr := (others => '0');
 		elsif rising_edge(in_clk) then
-			mem(to_integer(unsigned(cntr))) <= in_data;
-			cntr := cntr + 1;
+			if not clr and in_frm='0' then
+				cntr := (others => '0');
+			else
+				mem(to_integer(unsigned(cntr))) <= in_data;
+				cntr := cntr + 1;
+			end if;
 		end if;
 	end process;
 
