@@ -504,7 +504,7 @@ begin
 			end generate;
 		end generate;
 	
-		rd_fifo_g : if rd_fifo generate
+		rdfifo_g : if rd_fifo generate
 			gear_g : for i in data_gear-1 downto 0 generate
 				signal out_frm : std_logic;
 				signal in_clk  : std_logic;

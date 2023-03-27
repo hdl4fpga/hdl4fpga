@@ -15,7 +15,7 @@
 # Free Software Foundation, either version 3 of the License, or (at your     #
 # option) any later version.                                                 #
 #                                                                            #
-# This source is distributed in the hope that it will be useful, but WITHOUT #
+# This source is distributed in the hope that it will be usef`ul, but WITHOUT #
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      #
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   #
 # more details at http://www.gnu.org/licenses/.                              #
@@ -41,7 +41,7 @@ set_clock_groups -asynchronous -group { eth_tx_clk } -group { eth_rx_clk }
 set_clock_groups -asynchronous -group { sys_clk    } -group { dcm_b.ddr_b.ddr_clk0_mmce2  }
 set_clock_groups -asynchronous -group { sys_clk    } -group { dcm_b.ddr_b.ddr_clk90_mmce2 }
 set_clock_groups -asynchronous -group { video_clk  } -group { eth_tx_clk  }
-set_clock_groups -asynchronous -group { dd_clk  } i  -group { eth_tx_clk  }
+set_clock_groups -asynchronous -group { dd_clk  }    -group { eth_tx_clk  }
 
 set_clock_groups -asynchronous -group { dqso0      } -group { sys_clk    }
 set_clock_groups -asynchronous -group { dqso0      } -group { dcm_b.ddr_b.ddr_clk0x2_mmce2 }
@@ -53,11 +53,6 @@ set_clock_groups -asynchronous -group { dqso1      } -group { dcm_b.ddr_b.ddr_cl
 
 set_max_delay 0.0 -from [ get_ports ddr3_dqs_p[*] ]
 
-set_false_path -from [ get_pins graphics_e/sdrctlr_b.sdrctlr_e/rdfifo_i/datadelay_g.bytes_g[*].data_phases_g[*].inbyte_i/phases_g[*].ram_i/ram_g[*].ram_i/DP/CLK ] -to [ get_pins graphics_e/dmactlr_b.dmado_e/delay[*].q_reg[*]/D ]
-set_false_path -from [ get_pins graphics_e/sdrctlr_b.sdrctlr_e/wrfifo_b.wrfifo_i/sdram_fifo_g[*].outbyte_i/phases_g[*].sr_g.gcntr_g[*].ffd_i/ffd_i/C   ] -to [ get_pins sdrphy_e/byte_g[*].sdrdqphy_i/datao_b.oddr_g[*].[*].dqo_reg[*]/D ]
-set_false_path -from [ get_pins graphics_e/sdrctlr_b.sdrctlr_e/wrfifo_b.wrfifo_i/sdram_fifo_g[*].outbyte_i/phases_g[*].ram_b/ram_g[*].ram_i/DP/CLK     ] -to [ get_pins sdrphy_e/byte_g[*].sdrdqphy_i/datao_b.oddr_g[*].[*].dqo_reg[*]/D ]
+set_false_path -from [ get_pins sdrphy_e/byte_g[*].sdrdqphy_i/datao_b.wrfifo_g.gear_g[*].fifo_i/mem*/*/CLK ] -to [ get_pins sdrphy_e/byte_g[*].sdrdqphy_i/datao_b.oddr_g[*].ogbx_i/reg_g[*].oserdese_g.xc7a_g.oser_i/D* ]
+set_false_path -from [ get_pins sdrphy_e/byte_g[*].sdrdqphy_i/datai_b.rdfifo_g.gear_g[*].fifo_i/mem*/*/CLK ] -to [ get_pins graphics_e/dmactlr_b.dmado_e/delay[*].q_reg[*]/D ]
 
-# set_false_path -from [ get_pins graphics_e/sdrctlr_b.sdrctlr_e/rdfifo_i/datadelay_g.bytes_g[*].data_phases_g[*].inbyte_i/phases_g[*].ram_i/ram_g[*].ram_i/DP/CLK ] -to [ get_pins graphics_e/dmactlr_b.dmado_e/delay[*].q_reg[*]/D ]
-# set_false_path -from [ get_pins graphics_e/sdrctlr_b.sdrctlr_e/wrfifo_b.wrfifo_i/sdram_fifo_g[*].outbyte_i/phases_g[*].sr_g.gcntr_g[*].ffd_i/ffd_i/C   ] -to [ get_pins sdrphy_e/byte_g[*].sdrdqphy_i/datao_b.oddr_g[*].ogbx_i/reg_g[*].oserdese_g.xc7a_g.oser_i/D* ]
-# set_false_path -from [ get_pins graphics_e/sdrctlr_b.sdrctlr_e/wrfifo_b.wrfifo_i/sdram_fifo_g[*].outbyte_i/phases_g[*].ram_i/ram_g[*].ram_i/DP/CLK     ] -to [ get_pins sdrphy_e/byte_g[*].sdrdqphy_i/datao_b.oddr_g[*].ogbx_i/reg_g[*].oserdese_g.xc7a_g.oser_i/D* ]
-# 
