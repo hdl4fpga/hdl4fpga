@@ -45,7 +45,6 @@ entity xc_sdrdqphy is
 		bypass      : boolean := false;
 		rd_fifo     : boolean := true;
 		rd_align    : boolean := true;
-		wr_register : boolean := false;
 		wr_fifo     : boolean := true;
 
 		taps        : natural);
@@ -137,10 +136,13 @@ architecture xilinx of xc_sdrdqphy is
 	signal data_align   : std_logic_vector(sys_sti'range);
 	signal half_align   : std_logic;
 
+	signal sto          : std_logic_vector(sys_sto'range);
+
+	signal sha          : std_logic;
 	signal sdqe         : std_logic_vector(sys_dqv'range);
 	signal ssti         : std_logic_vector(sys_sti'range);
-	signal ten          : std_logic_vector(sys_dqv'range);
-	signal rdv          : std_logic_vector(sys_sti'range);
+	signal ordv         : std_logic_vector(sys_dqv'range);
+	signal idrv         : std_logic_vector(sys_sti'range);
 	signal sdqt         : std_logic_vector(sys_sti'range);
 	signal sdqsi        : std_logic_vector(sys_dqsi'range);
 	signal sdqso        : std_logic_vector(sys_dqso'range);
@@ -508,7 +510,7 @@ begin
 
 			bypass_g : if bypass generate
 				phases_g : for i in data_gear-1 downto 0 generate
-					rdv(i) <= sdram_sti when loopback else sdram_dmi;
+					idrv(i) <= sdram_sti when loopback else sdram_dmi;
 				end generate;
 			end generate;
 
@@ -517,13 +519,13 @@ begin
 				signal in_clk  : std_logic;
 			begin
 				in_clk  <= sdqso(i) when bypass else clk_shift;
-				out_frm <= sys_sto(sys_sto'left) when rd_align else sys_sto(i);
+				out_frm <= sys_sto(i);
 				fifo_i : entity hdl4fpga.iofifo
 				generic map (
 					clr => bypass)
 				port map (
 					in_clk   => in_clk,
-					in_frm   => rdv(i),
+					in_frm   => idrv(i),
 					in_data  => sdqo(byte_size*(i+1)-1 downto byte_size*i),
 					out_clk  => clk,
 					out_frm  => out_frm,
@@ -550,14 +552,12 @@ begin
 					port map (
 						clk => clk,
 						di  => sys_sti,
-						do  => sys_sto);
+						do  => sto);
 
 
 				end generate;
 
 				gbx4_g : if data_gear=4 generate
-					signal xxx : std_logic;
-				begin
 					igbx_i : entity hdl4fpga.igbx
 					generic map (
 						device => device,
@@ -570,14 +570,38 @@ begin
 						clk   => clk_shift,
 						d(0)  => sdram_dmi);
 			
+					process (clk_shift)
+						variable ena : std_logic;
+					begin
+						if rising_edge(clk_shift) then
+							if sto_synced='0' then
+								if ssti=(sys_sti'range => '0') then
+									ena := '1';
+								elsif ena='1' then
+									ena:= '0';
+									if ssti="1110" then
+										half_align <= dqspre;
+										data_align <= ssti xor ('0', dqspre, dqspre, '0');
+									elsif ssti="0001" then
+										half_align <= not dqspre;
+										data_align <= ssti xor ('0', not dqspre, not dqspre, '0');
+									else
+										half_align <= '-';
+										data_align <= (others => '-');
+									end if;
+								end if;
+							end if;
+						end if;
+					end process;
+
 					no_rdfifo_g : if not rd_fifo generate
     					process(clk_shift)
     						variable lat : unsigned(0 to 2*sys_sti'length-1);
     					begin
     						if rising_edge(clk_shift) then
     							lat := lat srl sys_sti'length;
-    							lat(0 to sys_sti'length-1) := unsigned(sys_sti);
-    							sys_sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
+    							lat(0 to sys_sti'length-1) := unsigned(ssti);
+    							sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
     						end if;
     					end process;
 					end generate;
@@ -600,41 +624,16 @@ begin
     						if rising_edge(clk) then
     							lat := lat srl lat_sti'length;
     							lat(0 to lat_sti'length-1) := unsigned(lat_sti);
-    							sys_sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
+    							sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), sha), "0", 4);
     						end if;
     					end process;
 					end generate;
-
-					xxx <= clk when rd_fifo else clk_shift;
-					process (xxx)
-						variable ena : std_logic;
-					begin
-						if rising_edge(xxx) then
-							if sto_synced='0' then
-								if sys_sti=(sys_sti'range => '0') then
-									ena := '1';
-								elsif ena='1' then
-									ena:= '0';
-									if sys_sti="1110" then
-										half_align <= dqspre;
-										data_align <= sys_sti xor ('0', dqspre, dqspre, '0');
-									elsif sys_sti="0001" then
-										half_align <= not dqspre;
-										data_align <= sys_sti xor ('0', not dqspre, not dqspre, '0');
-									else
-										half_align <= '-';
-										data_align <= (others => '-');
-									end if;
-								end if;
-							end if;
-						end if;
-					end process;
 
 				end generate;
 			end generate;
 
 			bypass_g : if bypass generate
-				signal sto : std_logic_vector(sys_sto'range);
+				signal lat_sti : std_logic_vector(sys_sti'range);
 			begin
 
 				lat_e : entity hdl4fpga.latency
@@ -644,8 +643,8 @@ begin
 				port map (
 					clk => clk,
 					di  => sys_sti,
-					do  => sto);
-				sys_sto <= (others => sto(sto'right)) when rd_fifo and rd_align else sto;
+					do  => lat_sti);
+				sto <= (others => lat_sti(lat_sti'right)) when rd_fifo and rd_align else lat_sti;
 				
 			end generate;
 		end block;
@@ -668,7 +667,7 @@ begin
 				fifo_i : entity hdl4fpga.iofifo
 				port map (
 					in_clk   => clk,
-					in_frm   => ten(i),
+					in_frm   => ordv(i),
 					in_data  => in_data,
 					out_clk  => sys_dqc(i),
 					out_frm  => sdqe(i),
@@ -697,7 +696,7 @@ begin
 				end if;
 			end process;
 
-			process (sw, sdqi, clk_shift)
+			process (sw, sdqi)
 			begin
 				for j in dqo'range loop
 					if sw='1' then
@@ -706,22 +705,13 @@ begin
 						else
 							dqo(j) <= '0';
 						end if;
-					elsif not wr_register then
-						dqo(j) <= sdqi(byte_size*j+i);
-					elsif rising_edge(clk_shift) then
+					else
 						dqo(j) <= sdqi(byte_size*j+i);
 					end if;
 				end loop;
 			end process;
 
-			process (sdqt, clk_shift)
-			begin
-				if not wr_register then
-					dqt <= sdqt;
-				elsif rising_edge(clk_shift) then
-					dqt <= sdqt;
-				end if;
-			end process;
+			dqt <= sdqt;
 	
 			ogbx_i : entity hdl4fpga.ogbx
 			generic map (
@@ -741,48 +731,23 @@ begin
 	
 		dmo_g : block
 			signal dmt : std_logic_vector(sys_dmt'range);
-			signal dmd : std_logic_vector(sys_dmi'range);
-			signal dmi : std_logic_vector(dmd'range);
+			signal dmi : std_logic_vector(sys_dmi'range);
 		begin
 	
 			process (sys_sti, sys_dmt, sys_dmi)
 			begin
 				for i in dmi'range loop
 					if not loopback then
-						dmd(i) <= sys_sti(i);
+						dmi(i) <= sys_sti(i);
 					elsif sys_dmt(i)='1' then
-						dmd(i) <= sdmi(i);
+						dmi(i) <= sdmi(i);
 					else
-						dmd(i) <= sdmi(i);
+						dmi(i) <= sdmi(i);
 					end if;
 				end loop;
 			end process;
 
-			process (dmd, clk_shift)
-			begin
-				if not wr_register then
-					dmi <= dmd;
-				elsif rising_edge(clk_shift) then
-					dmi <= dmd;
-				end if;
-			end process;
-
-			process (sys_dmt, clk_shift)
-			begin
-				if not wr_register then
-					if loopback then
-						dmt <= (others => '0');
-					else
-						dmt <= sys_dmt;
-					end if;
-				elsif rising_edge(clk_shift) then
-					if loopback then
-						dmt <= (others => '0');
-					else
-						dmt <= sys_dmt;
-					end if;
-				end if;
-			end process;
+			dmt <= (others => '0') when loopback else sys_dmt;
 	
 			ogbx_i : entity hdl4fpga.ogbx
 			generic map (
@@ -896,9 +861,9 @@ begin
 			do270(0) => sdqe(0));
 
 		no_bypass_g : if not bypass generate
-			rdv <= sys_sti;
+			idrv <= sys_sti;
 		end generate;
-		ten <= sys_dqv;
+		ordv <= sys_dqv;
 
 	end generate;
 
@@ -918,7 +883,7 @@ begin
 					clk => clk,
 					di  => sys_sti,
 					do  => lat_sti);
-				rdv <= reverse(rev_rdv);
+				idrv <= reverse(rev_rdv);
 			end generate;
 		end generate;
 
@@ -939,7 +904,19 @@ begin
 			do270( 8-1 downto  4) => ssti,
 			do270( 4-1 downto  0) => sdqe);
 
-		ten   <= (others => sys_dqv(sys_dqv'right));
+		phdata270_e : entity hdl4fpga.g4_phdata270
+		generic map (
+			data_width0 => 1)
+		port map (
+			clk270 => clk_shift,
+			clk0   => clk,
+
+			di0(0) => half_align,
+			do0(0) => sha);
+
+		ordv  <= (others => sys_dqv(sys_dqv'right));
 		sdqsi <= sys_dqsi;
 	end generate;
+
+	sys_sto <= (others => sto(sto'left)) when rd_align else sys_sto;
 end;

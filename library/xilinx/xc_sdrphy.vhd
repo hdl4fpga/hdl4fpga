@@ -45,7 +45,6 @@ entity xc_sdrphy is
 		bypass      : boolean := true;
 		rd_fifo     : boolean := true;
 		rd_align    : boolean := true;
-		wr_register : boolean := false;
 		wr_fifo     : boolean := true;
 		taps        : natural := 0);
 	port (
@@ -530,7 +529,6 @@ begin
 			bypass      => bypass,
     		rd_fifo     => rd_fifo,
     		rd_align    => rd_align,
-    		wr_register => wr_register,
     		wr_fifo     => wr_fifo,
 
 			taps        => taps)

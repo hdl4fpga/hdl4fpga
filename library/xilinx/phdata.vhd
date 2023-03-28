@@ -148,3 +148,48 @@ begin
 
 end;
 
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity g4_phdata270 is
+	generic (
+		data_width0 : natural := 1);
+	port (
+		clk270 : in  std_logic := '-';
+		clk0   : in  std_logic := '-';
+		di0  : in  std_logic_vector(data_width0-1 downto 0) := (others => '-');
+		do0  : out std_logic_vector(data_width0-1 downto 0));
+end;
+
+architecture inference of g4_phdata270 is
+
+	signal cntr    : unsigned(4-1 downto 0);
+	signal cntr270 : unsigned(4-1 downto 0);
+
+	type mem0 is array (natural range <>) of std_logic_vector(di0'range);
+
+	signal ram0 : mem0(0 to 2**cntr'length-1);
+
+begin
+	
+	process (clk0, clk270)
+	begin
+		if rising_edge(clk0) then
+			cntr  <= unsigned(to_stdlogicvector(to_bitvector(std_logic_vector(cntr)))) + 1;
+		end if;
+		if rising_edge(clk270) then
+			cntr270 <= cntr + 2 ;
+		end if;
+	end process;
+
+	process (clk270)
+	begin
+		if rising_edge(clk270) then
+			ram0(to_integer(cntr270)) <= di0;
+		end if;
+	end process;
+
+	do0 <= ram0(to_integer(cntr));
+
+end;
