@@ -48,7 +48,6 @@ entity sdram_sch is
 		sys_rea    : in  std_logic;
 		sys_wri    : in  std_logic;
 
-		sdram_rwn  : out std_logic_vector(data_gear-1 downto 0);
 		sdram_st   : out std_logic_vector(data_gear-1 downto 0);
 
 		sdram_dqsz : out std_logic_vector(data_gear-1 downto 0);
@@ -134,14 +133,12 @@ architecture def of sdram_sch is
 
 	constant stdr      : sdram_standards := sdrmark_standard(chip);
 	constant strl_tab  : natural_vector  := sdram_schtab(stdr, fpga, strl);
-	constant rwnl_tab  : natural_vector  := sdram_schtab(stdr, fpga, rwnl);
 	constant dqszl_tab : natural_vector  := sdram_schtab(stdr, fpga, dqszl);
 	constant dqsol_tab : natural_vector  := sdram_schtab(stdr, fpga, dqsl);
 	constant dqzl_tab  : natural_vector  := sdram_schtab(stdr, fpga, dqzl);
 	constant wwnl_tab  : natural_vector  := sdram_schtab(stdr, fpga, wwnl);
 
 	constant strx_lat  : natural         := sdram_latency(fpga, strxl);
-	constant rwnx_lat  : natural         := sdram_latency(fpga, rwnxl);
 	constant dqszx_lat : natural         := sdram_latency(fpga, dqszxl);
 	constant dqsx_lat  : natural         := sdram_latency(fpga, dqsxl);
 	constant dqzx_lat  : natural         := sdram_latency(fpga, dqzxl);
@@ -168,16 +165,6 @@ begin
 		lat_cod    => cl_cod,
 		lat_tab    => strl_tab,
 		lat_ext    => strx_lat,
-		lat_wid    => wid_lat,
-
-		lat_val    => sys_cl,
-		lat_sch    => rea_sr);
-
-	sdram_rwn <= sdram_task (
-		gear       => data_gear,
-		lat_cod    => cl_cod,
-		lat_tab    => rwnl_tab,
-		lat_ext    => rwnx_lat,
 		lat_wid    => wid_lat,
 
 		lat_val    => sys_cl,

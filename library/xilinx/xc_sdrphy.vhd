@@ -43,6 +43,7 @@ entity xc_sdrphy is
 		data_gear   : natural := 2;
 		loopback    : boolean := false;
 		bypass      : boolean := true;
+		bufio       : boolean := false;
 		rd_fifo     : boolean := true;
 		rd_align    : boolean := true;
 		wr_fifo     : boolean := true;
@@ -527,6 +528,7 @@ begin
 			data_gear   => data_gear,
 			loopback    => loopback,
 			bypass      => bypass,
+			bufio       => bufio,
     		rd_fifo     => rd_fifo,
     		rd_align    => rd_align,
     		wr_fifo     => wr_fifo,

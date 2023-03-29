@@ -43,6 +43,7 @@ entity xc_sdrdqphy is
 
 		loopback    : boolean := false;
 		bypass      : boolean := false;
+		bufio       : boolean := false;
 		rd_fifo     : boolean := true;
 		rd_align    : boolean := true;
 		wr_fifo     : boolean := true;
@@ -574,6 +575,7 @@ begin
 			
 					process (clk_shift)
 						variable ena : std_logic;
+						variable buf_sti : std_logic_vector(ssti'range);
 					begin
 						if rising_edge(clk_shift) then
 							if synced90='0' then
@@ -581,12 +583,18 @@ begin
 									ena := '1';
 								elsif ena='1' then
 									ena:= '0';
-									if ssti="1110" then
+
+									buf_sti := ssti;
+									if bufio then
+										buf_sti := buf_sti xor "0110";
+									end if;
+
+									if buf_sti="0111" then
 										half_align <= dqspre90;
-										data_align <= ssti xor ('0', dqspre90, dqspre90, '0');
-									elsif ssti="0001" then
+										data_align <= buf_sti xor ('0', dqspre90, dqspre90, '0');
+									elsif buf_sti="0001" then
 										half_align <= not dqspre90;
-										data_align <= ssti xor ('0', not dqspre90, not dqspre90, '0');
+										data_align <= buf_sti xor ('0', not dqspre90, not dqspre90, '0');
 									else
 										half_align <= '-';
 										data_align <= (others => '-');

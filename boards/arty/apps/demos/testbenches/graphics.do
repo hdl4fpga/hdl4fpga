@@ -137,6 +137,11 @@ add wave -noupdate -group dhcpdscb_e -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/clk
+add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/clk_shift
+add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/sys_sti
+add wave -noupdate -expand -group sdrphy_e -radix hexadecimal /testbench/du_e/sdrphy_e/sys_sto
+add wave -noupdate -expand -group sdrphy_e -radix hexadecimal /testbench/du_e/sdrphy_e/sys_dqo
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -151,7 +156,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {52896072257 fs} 0} {{Cursor 2} {52900040044 fs} 0} {{Cursor 3} {11442777000 fs} 0} {{Cursor 4} {52863277280 fs} 0}
+WaveRestoreCursors {{Cursor 1} {52895465370 fs} 0} {{Cursor 2} {52908643159 fs} 0} {{Cursor 3} {11442777000 fs} 0} {{Cursor 4} {52863277280 fs} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 228
 configure wave -valuecolwidth 312
@@ -167,4 +172,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {52858459253 fs} {52912712671 fs}
+WaveRestoreZoom {52905778659 fs} {52912560336 fs}

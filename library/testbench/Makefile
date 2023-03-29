@@ -137,6 +137,7 @@ HDL4FPGA__scopeio_trigger__beh = $(LIB_HDL4FPGA)/scopeio_trigger/beh.dat
 HDL4FPGA__scopeio_trigger = $(LIB_HDL4FPGA)/scopeio_trigger/_primary.dat
 HDL4FPGA__scopeio_tracer__def = $(LIB_HDL4FPGA)/scopeio_tracer/def.dat
 HDL4FPGA__scopeio_tracer = $(LIB_HDL4FPGA)/scopeio_tracer/_primary.dat
+HDL4FPGA__scopeio_textbox__def = $(LIB_HDL4FPGA)/scopeio_textbox/def.dat
 HDL4FPGA__scopeio_textbox = $(LIB_HDL4FPGA)/scopeio_textbox/_primary.dat
 HDL4FPGA__scopeio_tds = $(LIB_HDL4FPGA)/scopeio_tds/_primary.dat
 HDL4FPGA__scopeio_storage__beh = $(LIB_HDL4FPGA)/scopeio_storage/beh.dat
@@ -158,6 +159,7 @@ HDL4FPGA__scopeio_rgtrgain__def = $(LIB_HDL4FPGA)/scopeio_rgtrgain/def.dat
 HDL4FPGA__scopeio_rgtrgain = $(LIB_HDL4FPGA)/scopeio_rgtrgain/_primary.dat
 HDL4FPGA__scopeio_resize__beh = $(LIB_HDL4FPGA)/scopeio_resize/beh.dat
 HDL4FPGA__scopeio_resize = $(LIB_HDL4FPGA)/scopeio_resize/_primary.dat
+HDL4FPGA__scopeio_pointer__beh = $(LIB_HDL4FPGA)/scopeio_pointer/beh.dat
 HDL4FPGA__scopeio_pointer = $(LIB_HDL4FPGA)/scopeio_pointer/_primary.dat
 HDL4FPGA__scopeio_palette__beh = $(LIB_HDL4FPGA)/scopeio_palette/beh.dat
 HDL4FPGA__scopeio_palette = $(LIB_HDL4FPGA)/scopeio_palette/_primary.dat
@@ -251,6 +253,8 @@ HDL4FPGA__gray_cntr__mix = $(LIB_HDL4FPGA)/gray_cntr/mix.dat
 HDL4FPGA__gray_cntr = $(LIB_HDL4FPGA)/gray_cntr/_primary.dat
 HDL4FPGA__graphics__def = $(LIB_HDL4FPGA)/graphics/def.dat
 HDL4FPGA__graphics = $(LIB_HDL4FPGA)/graphics/_primary.dat
+HDL4FPGA__g4_phdata270__inference = $(LIB_HDL4FPGA)/g4_phdata270/inference.dat
+HDL4FPGA__g4_phdata270 = $(LIB_HDL4FPGA)/g4_phdata270/_primary.dat
 HDL4FPGA__g4_phdata__inference = $(LIB_HDL4FPGA)/g4_phdata/inference.dat
 HDL4FPGA__g4_phdata = $(LIB_HDL4FPGA)/g4_phdata/_primary.dat
 HDL4FPGA__fifo__def = $(LIB_HDL4FPGA)/fifo/def.dat
@@ -492,6 +496,7 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__scopeio_trigger) \
     $(HDL4FPGA__scopeio_tracer__def) \
     $(HDL4FPGA__scopeio_tracer) \
+    $(HDL4FPGA__scopeio_textbox__def) \
     $(HDL4FPGA__scopeio_textbox) \
     $(HDL4FPGA__scopeio_tds) \
     $(HDL4FPGA__scopeio_storage__beh) \
@@ -513,6 +518,7 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__scopeio_rgtrgain) \
     $(HDL4FPGA__scopeio_resize__beh) \
     $(HDL4FPGA__scopeio_resize) \
+    $(HDL4FPGA__scopeio_pointer__beh) \
     $(HDL4FPGA__scopeio_pointer) \
     $(HDL4FPGA__scopeio_palette__beh) \
     $(HDL4FPGA__scopeio_palette) \
@@ -606,6 +612,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__gray_cntr) \
     $(HDL4FPGA__graphics__def) \
     $(HDL4FPGA__graphics) \
+    $(HDL4FPGA__g4_phdata270__inference) \
+    $(HDL4FPGA__g4_phdata270) \
     $(HDL4FPGA__g4_phdata__inference) \
     $(HDL4FPGA__g4_phdata) \
     $(HDL4FPGA__fifo__def) \
@@ -1539,6 +1547,8 @@ $(HDL4FPGA__pgm_delay__mix) : ../xilinx/misc/pgm_delay.vhd \
 
 $(HDL4FPGA__g4_phdata) \
 $(HDL4FPGA__g4_phdata__inference) \
+$(HDL4FPGA__g4_phdata270) \
+$(HDL4FPGA__g4_phdata270__inference) \
 $(HDL4FPGA__phdata) \
 $(HDL4FPGA__phdata__inference) : ../xilinx/phdata.vhd \
 		$(IEEE__numeric_std) \
@@ -1720,7 +1730,14 @@ $(HDL4FPGA__scopeio_palette__beh) : ../scope/scopeio_palette.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_palette.vhd
 
-$(HDL4FPGA__scopeio_pointer) : ../scope/scopeio_pointer.vhd \
+$(HDL4FPGA__scopeio_pointer) \
+$(HDL4FPGA__scopeio_pointer__beh) : ../scope/scopeio_pointer.vhd \
+		$(HDL4FPGA__latency) \
+		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__scopeio_rgtrpointer) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -1858,7 +1875,15 @@ $(HDL4FPGA__scopeio_tds) : ../scope/scopeio_tds.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_tds.vhd
 
-$(HDL4FPGA__scopeio_textbox) : ../scope/scopeio_textbox.vhd \
+$(HDL4FPGA__scopeio_textbox) \
+$(HDL4FPGA__scopeio_textbox__def) : ../scope/scopeio_textbox.vhd \
+		$(HDL4FPGA__latency) \
+		$(HDL4FPGA__cga_adapter) \
+		$(HDL4FPGA__scopeio_float2btof) \
+		$(HDL4FPGA__arbiter) \
+		$(HDL4FPGA__scopeio_rgtrvtaxis) \
+		$(HDL4FPGA__scopeio_rgtrtrigger) \
+		$(HDL4FPGA__scopeio_rgtrmyip) \
 		$(HDL4FPGA__bcdfonts) \
 		$(HDL4FPGA__cp850x8x16x128to255) \
 		$(HDL4FPGA__cp850x8x16x0to127) \
@@ -2455,6 +2480,7 @@ $(HDL4FPGA__xc_sdrbaphy__xilinx) : ../xilinx/xc_sdrbaphy.vhd \
 
 $(HDL4FPGA__xc_sdrdqphy) \
 $(HDL4FPGA__xc_sdrdqphy__xilinx) : ../xilinx/xc_sdrdqphy.vhd \
+		$(HDL4FPGA__g4_phdata270) \
 		$(HDL4FPGA__g4_phdata) \
 		$(HDL4FPGA__phdata) \
 		$(HDL4FPGA__ogbx) \

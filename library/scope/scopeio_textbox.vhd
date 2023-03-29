@@ -466,11 +466,11 @@ begin
 		tgr_multp <= std_logic_vector(to_unsigned(vt_multps(to_integer(unsigned(tgr_scale))),  tgr_multp'length));
 
 		chr_value <= wirebus(
-			multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), hz_multp,       ascii'length) &
-			multiplex(x"1819",                                trigger_slope)                 &
-			multiplex(to_ascii(" *"),                         trigger_freeze)               &
-			multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), tgr_multp,      ascii'length) &
-			multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), vt_multp,       ascii'length),
+			std_logic_vector'(multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), hz_multp,       ascii'length)) &
+			std_logic_vector'(multiplex(x"1819",                                trigger_slope))                 &
+			std_logic_vector'(multiplex(to_ascii(" *"),                         trigger_freeze))                &
+			std_logic_vector'(multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), tgr_multp,      ascii'length)) &
+			std_logic_vector'(multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), vt_multp,       ascii'length)),
 			cgachr_frm);
 
 		chr_memaddr <= wirebus (

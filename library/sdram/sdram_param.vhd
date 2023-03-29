@@ -33,9 +33,7 @@ package sdram_param is
 	type sdram_parameters   is (tPreRST, tPstRST, tXPR, tWR, tRP, tRCD, tRFC, tMRD, tREFI, tRPA);
 	type sdram_latency_rgtr is (AL, CL, BL, WRL, CWL);
 	type sdram_latencies    is (cDLL, MRD, MODu, XPR, ZQINIT);
-	type device_latencies   is (
-		strl,   rwnl,  dqszl, dqsl,  dqzl, wwnl, strxl, rwnxl,
-		dqszxl, dqsxl, dqzxl, wwnxl, widl);
+	type device_latencies   is (STRL, DQSZL, DQSL, DQZL, WWNL, STRXL, DQSZXL, DQSXL, DQZXL, WWNXL, WIDL);
 
 	type sdram_standards is (sdr, ddr, ddr2, ddr3);
 

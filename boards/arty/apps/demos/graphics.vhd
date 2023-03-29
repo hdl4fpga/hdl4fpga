@@ -819,6 +819,7 @@ begin
 		-- dqs_delay => (0 to 0 => 1.35 ns),
 		-- dqi_delay => (0 to 0 => 0 ns),
 		device    => xc7a,
+		bufio     => false,
 		bypass    => false,
 		taps      => natural(floor(sdram_tcp/((sys_per/2.0)/(32.0*2.0))))-1,
 		bank_size => bank_size,

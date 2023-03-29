@@ -159,75 +159,65 @@ package sdram_db is
 		(stdr => ddr3, param => XPR,        value =>   5));
 
 	constant device_latency_tab : device_latency_vector := (
-		(fpga => xc3s, param => STRL,       value => -2),
-		(fpga => xc3s, param => RWNL,       value =>  0),
-		(fpga => xc3s, param => DQSZL,      value => -2),
-		(fpga => xc3s, param => DQSL,       value => -2),
-		(fpga => xc3s, param => DQZL,       value => -2),
-		(fpga => xc3s, param => WWNL,       value => -2),
-		(fpga => xc3s, param => STRXL,      value =>  0),
-		(fpga => xc3s, param => RWNXL,      value =>  0),
-		(fpga => xc3s, param => DQSZXL,     value =>  2),
-		(fpga => xc3s, param => DQSXL,      value =>  0),
-		(fpga => xc3s, param => DQZXL,      value =>  0),
-		(fpga => xc3s, param => WWNXL,      value =>  0),
-		(fpga => xc3s, param => WIDL,       value =>  2),
+		(fpga => xc3s, param => STRL,   value => -2),
+		(fpga => xc3s, param => DQSZL,  value => -2),
+		(fpga => xc3s, param => DQSL,   value => -2),
+		(fpga => xc3s, param => DQZL,   value => -2),
+		(fpga => xc3s, param => WWNL,   value => -2),
+		(fpga => xc3s, param => STRXL,  value =>  0),
+		(fpga => xc3s, param => DQSZXL, value =>  2),
+		(fpga => xc3s, param => DQSXL,  value =>  0),
+		(fpga => xc3s, param => DQZXL,  value =>  0),
+		(fpga => xc3s, param => WWNXL,  value =>  0),
+		(fpga => xc3s, param => WIDL,   value =>  2),
 
-		(fpga => xc5v, param => STRL,       value =>   5),
-		(fpga => xc5v, param => RWNL,       value =>   4),
-		(fpga => xc5v, param => DQSL,       value =>  -2),
-		(fpga => xc5v, param => DQSZL,      value =>  -2),
-		(fpga => xc5v, param => DQZL,       value =>  -1),
-		(fpga => xc5v, param => WWNL,       value =>  -1-2),
-		(fpga => xc5v, param => STRXL,      value =>   0),
-		(fpga => xc5v, param => RWNXL,      value =>   0),
-		(fpga => xc5v, param => DQSXL,      value =>   0),
-		(fpga => xc5v, param => DQSZXL,     value =>   2),
-		(fpga => xc5v, param => DQZXL,      value =>   0),
-		(fpga => xc5v, param => WWNXL,      value =>   0),
-		(fpga => xc5v, param => WIDL,       value =>   4),
+		(fpga => xc5v, param => STRL,   value =>   5),
+		(fpga => xc5v, param => DQSL,   value =>  -2),
+		(fpga => xc5v, param => DQSZL,  value =>  -2),
+		(fpga => xc5v, param => DQZL,   value =>  -1),
+		(fpga => xc5v, param => WWNL,   value =>  -3),
+		(fpga => xc5v, param => STRXL,  value =>   0),
+		(fpga => xc5v, param => DQSXL,  value =>   0),
+		(fpga => xc5v, param => DQSZXL, value =>   2),
+		(fpga => xc5v, param => DQZXL,  value =>   0),
+		(fpga => xc5v, param => WWNXL,  value =>   0),
+		(fpga => xc5v, param => WIDL,   value =>   4),
 
-		(fpga => xc7a, param => STRL,       value =>   5),
-		(fpga => xc7a, param => RWNL,       value =>   4),
-		(fpga => xc7a, param => DQSL,       value =>  -1-2),
-		(fpga => xc7a, param => DQSZL,      value =>  -1-2),
-		(fpga => xc7a, param => DQZL,       value =>  -1-4),
-		(fpga => xc7a, param => WWNL,       value =>  -1-4),
-		(fpga => xc7a, param => STRXL,      value =>   0),
-		(fpga => xc7a, param => RWNXL,      value =>   0),
-		(fpga => xc7a, param => DQSXL,      value =>   2),
-		(fpga => xc7a, param => DQSZXL,     value =>   2),
-		(fpga => xc7a, param => DQZXL,      value =>   0),
-		(fpga => xc7a, param => WWNXL,      value =>   0),
-		(fpga => xc7a, param => WIDL,       value =>   4),
+		(fpga => xc7a, param => STRL,   value =>  5),
+		(fpga => xc7a, param => DQSL,   value => -3),
+		(fpga => xc7a, param => DQSZL,  value => -3),
+		(fpga => xc7a, param => DQZL,   value => -5),
+		(fpga => xc7a, param => WWNL,   value => -5),
+		(fpga => xc7a, param => STRXL,  value =>  0),
+		(fpga => xc7a, param => DQSXL,  value =>  2),
+		(fpga => xc7a, param => DQSZXL, value =>  2),
+		(fpga => xc7a, param => DQZXL,  value =>  0),
+		(fpga => xc7a, param => WWNXL,  value =>  0),
+		(fpga => xc7a, param => WIDL,   value =>  4),
 
-		(fpga => ecp3, param => STRL,       value =>   0),
-		(fpga => ecp3, param => RWNL,       value =>   0),
-		(fpga => ecp3, param => DQSL,       value =>   0),
-		(fpga => ecp3, param => DQSZL,      value =>   0),
-		(fpga => ecp3, param => DQZL,       value =>   2),
-		(fpga => ecp3, param => WWNL,       value =>   2),
-		(fpga => ecp3, param => STRXL,      value =>   0),
-		(fpga => ecp3, param => RWNXL,      value =>   0),
-		(fpga => ecp3, param => DQSXL,      value =>   2),
-		(fpga => ecp3, param => DQSZXL,     value =>   2),
-		(fpga => ecp3, param => DQZXL,      value =>   0),
-		(fpga => ecp3, param => WWNXL,      value =>   2),
-		(fpga => ecp3, param => WIDL,       value =>   4),
+		(fpga => ecp3, param => STRL,   value =>   0),
+		(fpga => ecp3, param => DQSL,   value =>   0),
+		(fpga => ecp3, param => DQSZL,  value =>   0),
+		(fpga => ecp3, param => DQZL,   value =>   2),
+		(fpga => ecp3, param => WWNL,   value =>   2),
+		(fpga => ecp3, param => STRXL,  value =>   0),
+		(fpga => ecp3, param => DQSXL,  value =>   2),
+		(fpga => ecp3, param => DQSZXL, value =>   2),
+		(fpga => ecp3, param => DQZXL,  value =>   0),
+		(fpga => ecp3, param => WWNXL,  value =>   2),
+		(fpga => ecp3, param => WIDL,   value =>   4),
 
-		(fpga => ecp5, param => STRL,       value =>   0),
-		(fpga => ecp5, param => RWNL,       value =>   0),
-		(fpga => ecp5, param => DQSL,       value =>   0),
-		(fpga => ecp5, param => DQSZL,      value =>   2),
-		(fpga => ecp5, param => DQZL,       value =>   2),
-		(fpga => ecp5, param => WWNL,       value =>   2),
-		(fpga => ecp5, param => STRXL,      value =>   0),
-		(fpga => ecp5, param => RWNXL,      value =>   0),
-		(fpga => ecp5, param => DQSXL,      value =>   4),
-		(fpga => ecp5, param => DQSZXL,     value =>   4),
-		(fpga => ecp5, param => DQZXL,      value =>   0),
-		(fpga => ecp5, param => WWNXL,      value =>   2),
-		(fpga => ecp5, param => WIDL,       value =>   4));
+		(fpga => ecp5, param => STRL,   value =>   0),
+		(fpga => ecp5, param => DQSL,   value =>   0),
+		(fpga => ecp5, param => DQSZL,  value =>   2),
+		(fpga => ecp5, param => DQZL,   value =>   2),
+		(fpga => ecp5, param => WWNL,   value =>   2),
+		(fpga => ecp5, param => STRXL,  value =>   0),
+		(fpga => ecp5, param => DQSXL,  value =>   4),
+		(fpga => ecp5, param => DQSZXL, value =>   4),
+		(fpga => ecp5, param => DQZXL,  value =>   0),
+		(fpga => ecp5, param => WWNXL,  value =>   2),
+		(fpga => ecp5, param => WIDL,   value =>   4));
 
 	function sdrmark_standard (
 		constant mark : sdram_chips)
@@ -308,8 +298,8 @@ package body sdram_db is
 		end loop;
 
 		assert false
-		report ">>> sdram_latency <<<"     & " : " & 
-			sdram_standards'image(stdr)          & " : " &
+		report ">>> sdram_latency <<<"   & " : " & 
+			sdram_standards'image(stdr)  & " : " &
 			sdram_latencies'image(param) & " : " &
 			"not found, returning 0"
 		severity warning;
@@ -382,7 +372,7 @@ package body sdram_db is
 			when others =>
 				return (0 to 0 => 0);
 			end case;
-		when STRL|RWNL =>
+		when STRL =>
 			for i in cltab'range loop
 				clval(i) := cltab(i) + lat;
 			end loop;
