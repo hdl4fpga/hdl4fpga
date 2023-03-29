@@ -138,6 +138,8 @@ architecture xilinx of xc_sdrdqphy is
 
 	signal sto          : std_logic_vector(sys_sto'range);
 
+	signal synced90     : std_logic;
+	signal dqspre90     : std_logic;
 	signal sha          : std_logic;
 	signal sdqe         : std_logic_vector(sys_dqv'range);
 	signal ssti         : std_logic_vector(sys_sti'range);
@@ -574,17 +576,17 @@ begin
 						variable ena : std_logic;
 					begin
 						if rising_edge(clk_shift) then
-							if sto_synced='0' then
+							if synced90='0' then
 								if ssti=(sys_sti'range => '0') then
 									ena := '1';
 								elsif ena='1' then
 									ena:= '0';
 									if ssti="1110" then
-										half_align <= dqspre;
-										data_align <= ssti xor ('0', dqspre, dqspre, '0');
+										half_align <= dqspre90;
+										data_align <= ssti xor ('0', dqspre90, dqspre90, '0');
 									elsif ssti="0001" then
-										half_align <= not dqspre;
-										data_align <= ssti xor ('0', not dqspre, not dqspre, '0');
+										half_align <= not dqspre90;
+										data_align <= ssti xor ('0', not dqspre90, not dqspre90, '0');
 									else
 										half_align <= '-';
 										data_align <= (others => '-');
@@ -889,16 +891,20 @@ begin
 
 		phdata_e : entity hdl4fpga.g4_phdata
 		generic map (
-			data_width270 => 16)
+			data_width270 => 18)
 		port map (
 			clk0   => clk,
 			clk270 => clk_shift,
-
+			
+			di270(17)             => dqspre,
+			di270(16)             => sto_synced,
 			di270(16-1 downto 12) => lat_sti,
 			di270(12-1 downto  8) => sys_dqt,
 			di270( 8-1 downto  4) => sys_sti,
 			di270( 4-1 downto  0) => sys_dqv,
 
+			do270(17)             => dqspre90,
+			do270(16)             => synced90,
 			do270(16-1 downto 12) => rev_rdv,
 			do270(12-1 downto  8) => sdqt,
 			do270( 8-1 downto  4) => ssti,
