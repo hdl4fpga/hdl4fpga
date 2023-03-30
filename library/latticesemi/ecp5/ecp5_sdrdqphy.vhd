@@ -465,7 +465,7 @@ begin
 				end process;
 
 				in_data <= sys_dmi(i) & sys_dqi(byte_size*(i+1)-1 downto byte_size*i);
-				fifo_i : entity hdl4fpga.iofifo
+				fifo_i : entity hdl4fpga.phy_iofifo
 				port map (
 					in_clk   => sclk,
 					in_frm   => sys_dqv(sys_dqv'right),

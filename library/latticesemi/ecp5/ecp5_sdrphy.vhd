@@ -108,6 +108,38 @@ end;
 
 architecture ecp5 of ecp5_sdrphy is
 
+	signal ddr_rst  : std_logic;
+	signal sync_rst : std_logic;
+
+	signal rl_req   : std_logic_vector(sdram_dqs'range);
+	signal rl_rdy   : std_logic_vector(sdram_dqs'range);
+	signal wl_rdy   : std_logic_vector(0 to word_size/byte_size-1);
+
+	signal ddrsys_b : std_logic_vector(sys_b'range);
+	signal ddrsys_a : std_logic_vector(sys_a'range);
+
+	signal ms_pause : std_logic;
+	signal ddrdel   : std_logic;
+
+	signal read_req : std_logic_vector(sdram_dqs'range);
+	signal read_rdy : std_logic_vector(sdram_dqs'range);
+
+	component mem_sync
+		port (
+			start_clk : in  std_logic;
+			rst       : in  std_logic;
+			dll_lock  : in  std_logic;
+			pll_lock  : in  std_logic;
+			update    : in  std_logic;
+			pause     : out std_logic;
+			stop      : out std_logic;
+			freeze    : out std_logic;
+			uddcntln  : out std_logic;
+			dll_rst   : out std_logic;
+			ddr_rst   : out std_logic;
+			ready     : out std_logic);
+	end component;
+
 	function shuffle_vector (
 		constant data : std_logic_vector;
 		constant gear : natural;
@@ -142,45 +174,12 @@ architecture ecp5 of ecp5_sdrphy is
 		return val;
 	end;
 
-	signal srst      : std_logic;
-
-	signal sdmi      : std_logic_vector(sys_dmi'range);
-	signal sdqi      : std_logic_vector(sys_dqi'range);
-	signal sdqo      : std_logic_vector(sys_dqo'range);
-
-	signal sdram_reset : std_logic;
-
-	signal rl_req    : std_logic_vector(sdram_dqs'range);
-	signal rl_rdy    : std_logic_vector(sdram_dqs'range);
-	signal wl_rdy    : std_logic_vector(0 to word_size/byte_size-1);
-
-	signal ddrsys_b  : std_logic_vector(sys_b'range);
-	signal ddrsys_a  : std_logic_vector(sys_a'range);
-
-	signal ms_pause  : std_logic;
-	signal ddrdel    : std_logic;
-
-	signal read_req  : std_logic_vector(sdram_dqs'range);
-	signal read_rdy  : std_logic_vector(sdram_dqs'range);
-
-	component mem_sync
-		port (
-			start_clk : in  std_logic;
-			rst       : in  std_logic;
-			dll_lock  : in  std_logic;
-			pll_lock  : in  std_logic;
-			update    : in  std_logic;
-			pause     : out std_logic;
-			stop      : out std_logic;
-			freeze    : out std_logic;
-			uddcntln  : out std_logic;
-			dll_rst   : out std_logic;
-			ddr_rst   : out std_logic;
-			ready     : out std_logic);
-	end component;
-
-	signal tp_dq : std_logic_vector(1 to 32*sdram_dqs'length);
+	signal dmi : std_logic_vector(sys_dmi'range);
+	signal dqi : std_logic_vector(sys_dqi'range);
+	signal dqo : std_logic_vector(sys_dqo'range);
 	signal dqs_locked : std_logic_vector(sdram_dqs'range);
+	signal tp_dq : std_logic_vector(1 to 32*sdram_dqs'length);
+
 begin
 
 	mem_sync_b : block
@@ -217,7 +216,7 @@ begin
 			freeze    => freeze,
 			uddcntln  => uddcntln,
 			dll_rst   => dll_rst,
-			ddr_rst   => sdram_reset,
+			ddr_rst   => ddr_rst,
 			ready     => ready);
 		rdy <= ready;
 
@@ -231,7 +230,7 @@ begin
 		generic map (
 			div => "2.0")
 		port map (
-			rst     => sdram_reset,
+			rst     => ddr_rst,
 			alignwd => '0',
 			clki    => eclko,
 			cdivx   => cdivx);
@@ -252,12 +251,12 @@ begin
 
 	end block;
 
-	process (sdram_reset, sclk)
+	process (ddr_rst, sclk)
 	begin
-		if sdram_reset='1' then
-			srst <= '1';
+		if ddr_rst='1' then
+			sync_rst <= '1';
 		elsif rising_edge(sclk) then
-			srst <= '0';
+			sync_rst <= '0';
 		end if;
 	end process;
 
@@ -267,7 +266,7 @@ begin
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
-		rst     => sdram_reset,
+		rst     => ddr_rst,
 		eclk    => eclk,
 		sclk    => sclk,
           
@@ -339,7 +338,7 @@ begin
 			variable state : states;
 		begin
 			if rising_edge(sclk) then
-				if srst='1' then
+				if sync_rst='1' then
 					read_rdy <= to_stdlogicvector(to_bitvector(read_req));
 					state := s_idle;
 				else
@@ -374,11 +373,11 @@ begin
 			end if;
 		end process;
 
-		process (srst, sclk)
+		process (sync_rst, sclk)
 			variable z : std_logic;
 		begin
 			if rising_edge(sclk) then
-				if srst='1' then
+				if sync_rst='1' then
 					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 					phy_ini <= '0';
 				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
@@ -396,11 +395,10 @@ begin
 			end if;
 		end process;
 		rl_req <= (others => phy_rlreq);
-
 	end block;
 
-	sdmi  <= shuffle_vector(sys_dmi, gear => data_gear, size => 1);
-	sdqi  <= shuffle_vector(sys_dqi, gear => data_gear, size => byte_size);
+	dmi <= shuffle_vector(sys_dmi, gear => data_gear, size => 1);
+	dqi <= shuffle_vector(sys_dqi, gear => data_gear, size => byte_size);
 
 	tp <= multiplex(tp_dq, tpin);
 	phy_synced <= '1' when dqs_locked=(dqs_locked'range => '1') else '0';
@@ -412,7 +410,7 @@ begin
 			data_gear  => data_gear,
 			byte_size  => byte_size)
 		port map (
-			rst        => sdram_reset,
+			rst        => ddr_rst,
 			sclk       => sclk,
 			eclk       => eclk,
 			ddrdel     => ddrdel,
@@ -430,12 +428,12 @@ begin
 			sys_sti    => sys_sti,
 			sys_sto    => sys_sto((i+1)*data_gear-1 downto i*data_gear),
 			sys_dmt    => sys_dmt,
-			sys_dmi    => sdmi((i+1)*data_gear-1 downto i*data_gear),
+			sys_dmi    => dmi((i+1)*data_gear-1 downto i*data_gear),
 
 			sys_dqv    => sys_dqv,
-			sys_dqi    => sdqi((i+1)*byte_size*data_gear-1 downto i*byte_size*data_gear),
+			sys_dqi    => dqi((i+1)*byte_size*data_gear-1 downto i*byte_size*data_gear),
 			sys_dqt    => sys_dqt,
-			sys_dqo    => sdqo((i+1)*byte_size*data_gear-1 downto i*byte_size*data_gear),
+			sys_dqo    => dqo((i+1)*byte_size*data_gear-1 downto i*byte_size*data_gear),
 
 			sys_dqst   => sys_dqst,
 			sys_dqsi   => sys_dqsi,
@@ -447,5 +445,5 @@ begin
 			tp         => tp_dq(i*32+1 to (i+1)*32));
 	end generate;
 
-	sys_dqo  <= unshuffle_vector(sdqo, gear => data_gear, size => byte_size);
+	sys_dqo <= unshuffle_vector(dqo, gear => data_gear, size => byte_size);
 end;
