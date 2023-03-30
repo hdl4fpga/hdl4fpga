@@ -574,6 +574,7 @@ begin
 
 			sdram_sti  => sdram_sti(i),
 			sdram_sto  => sdram_sto(i),
+
 			sdram_dqi  => ddqi(i),
 			sdram_dqt  => ddqt(i),
 			sdram_dqo  => ddqo(i),

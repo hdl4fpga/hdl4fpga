@@ -113,7 +113,7 @@ architecture ulx4mld_graphics of testbench is
 		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_0000ff_1603_0000_0000";
+		x"1702_00000f_1603_0000_0000";
 	constant req_data : std_logic_vector := x"010000_1702_0000ff_1603_8000_0000";
 
 	signal rst_n     : std_logic;
@@ -198,7 +198,7 @@ architecture ulx4mld_graphics of testbench is
 	signal ds_n : std_logic_vector(dqs_n'length-1 downto 0);
 begin
 
-	rst      <= '1', '0' after 17 us when debug else '1', '0' after 100 us;
+	rst      <= '1', '0' after 17.5 us when debug else '1', '0' after 100 us;
 	xtal     <= not xtal after 20 ns;
 	uart_clk <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
 
