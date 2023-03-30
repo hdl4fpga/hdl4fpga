@@ -232,7 +232,6 @@ architecture graphics of arty is
 	signal ctlrphy_a      : std_logic_vector(cmmd_gear*ddr3_a'length-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(data_gear-1 downto 0);
-	signal ctlrphy_dmt    : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_dmi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmo    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqt    : std_logic_vector(data_gear-1 downto 0);
@@ -743,7 +742,6 @@ begin
 		ctlrphy_dst  => ctlrphy_dqst,
 		ctlrphy_dso  => ctlrphy_dqso,
 		ctlrphy_dmi  => ctlrphy_dmi,
-		ctlrphy_dmt  => ctlrphy_dmt,
 		ctlrphy_dmo  => ctlrphy_dmo,
 		ctlrphy_dqi  => ctlrphy_dqi,
 		ctlrphy_dqt  => ctlrphy_dqt,
@@ -865,7 +863,6 @@ begin
 		sys_dqst  => ctlrphy_dqst,
 		sys_dqsi  => ctlrphy_dqso,
 		sys_dmi   => ctlrphy_dmo,
-		sys_dmt   => ctlrphy_dmt,
 		sys_dmo   => ctlrphy_dmi,
 		sys_dqo   => ctlrphy_dqi,
 		sys_dqv   => ctlrphy_dqv,
@@ -886,9 +883,7 @@ begin
 		sdram_a     => ddr3_a,
 		sdram_odt   => ddr_odt,
 --		sdram_dm    => ddr3_dm,
-		sdram_dqo   => ddr3_dqo,
-		sdram_dqi   => ddr3_dq,
-		sdram_dqt   => ddr3_dqt,
+		sdram_dq    => ddr3_dq,
 		sdram_dqst  => ddr3_dqst,
 		sdram_dqsi  => ddr3_dqsi,
 		sdram_dqso  => ddr3_dqso);
@@ -920,10 +915,6 @@ begin
 				io  => ddr3_dqs_p(i),
 				iob => ddr3_dqs_n(i));
 
-		end generate;
-
-		ddr_d_g : for i in ddr3_dq'range generate
-			ddr3_dq(i) <= ddr3_dqo(i) when ddr3_dqt(i)='0' else 'Z';
 		end generate;
 
 	end block;

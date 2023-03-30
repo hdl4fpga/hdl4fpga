@@ -73,7 +73,6 @@ entity xc_sdrdqphy is
 		write_req   : buffer std_logic;
 		phy_locked  : buffer std_logic;
 
-		sys_dmt     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_sti     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_sto     : buffer std_logic_vector(data_gear-1 downto 0);
 		sys_dmi     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
@@ -86,15 +85,12 @@ entity xc_sdrdqphy is
 		sys_dqc     : buffer std_logic_vector(data_gear-1 downto 0);
 		sys_dqv     : in  std_logic_vector(data_gear-1 downto 0) := (others => '0');
 
-		sdram_dmi   : in  std_logic := '-';
+		sdram_dm    : inout std_logic := '-';
 		sdram_sti   : in  std_logic := '-';
 		sdram_sto   : out std_logic;
-		sdram_dmt   : out std_logic;
-		sdram_dmo   : out std_logic;
 		sdram_dqsi  : in  std_logic;
-		sdram_dqi   : in  std_logic_vector(byte_size-1 downto 0);
-		sdram_dqt   : out std_logic_vector(byte_size-1 downto 0);
-		sdram_dqo   : out std_logic_vector(byte_size-1 downto 0);
+
+		sdram_dq    : inout std_logic_vector(byte_size-1 downto 0);
 
 		sdram_dqst  : out std_logic;
 		sdram_dqso  : out std_logic);
@@ -104,8 +100,8 @@ architecture xilinx of xc_sdrdqphy is
 
 	signal adjdqs_req   : std_logic;
 	signal adjdqs_rdy   : std_logic;
-	signal adjdqi_req   : std_logic_vector(sdram_dqi'range);
-	signal adjdqi_rdy   : std_logic_vector(sdram_dqi'range);
+	signal adjdqi_req   : std_logic_vector(sdram_dq'range);
+	signal adjdqi_rdy   : std_logic_vector(sdram_dq'range);
 	signal adjsto_req   : std_logic;
 	signal adjsto_rdy   : std_logic;
 
@@ -116,12 +112,12 @@ architecture xilinx of xc_sdrdqphy is
 	signal dqssto       : std_logic;
 
 	signal dq           : std_logic_vector(sys_dqo'range);
-	signal dqi          : std_logic_vector(sdram_dqi'range);
+	signal dqi          : std_logic_vector(sdram_dq'range);
 
 	signal dqipause_req : std_logic;
 	signal dqipause_rdy : std_logic;
-	signal dqipau_req   : std_logic_vector(sdram_dqi'range);
-	signal dqipau_rdy   : std_logic_vector(sdram_dqi'range);
+	signal dqipau_req   : std_logic_vector(sdram_dq'range);
+	signal dqipau_rdy   : std_logic_vector(sdram_dq'range);
 
 	signal pause_req    : std_logic;
 	signal pause_rdy    : std_logic;
@@ -149,6 +145,11 @@ architecture xilinx of xc_sdrdqphy is
 	signal sdqt         : std_logic_vector(sys_sti'range);
 	signal sdqsi        : std_logic_vector(sys_dqsi'range);
 	signal sdqso        : std_logic_vector(sys_dqso'range);
+
+	signal sdram_dmt    : std_logic;
+	signal sdram_dmo    : std_logic;
+	signal sdram_dqt    : std_logic_vector(byte_size-1 downto 0);
+	signal sdram_dqo    : std_logic_vector(byte_size-1 downto 0);
 
 begin
 
@@ -393,7 +394,7 @@ begin
 		signal sdqo : std_logic_vector(sys_dqo'range);
 	begin
 
-		i_igbx : for i in sdram_dqi'range generate
+		i_igbx : for i in sdram_dq'range generate
 		begin
 			adjdqi_b : block
 				signal delay  : std_logic_vector(0 to setif(device=xc7a,5,6)-1);
@@ -430,7 +431,7 @@ begin
 					tp_dqidly <= std_logic_vector(resize(unsigned(delay), tp_dqidly'length));
 				end generate;
 	
-				ddqi <= transport sdram_dqi(i) after dqi_delay;
+				ddqi <= transport sdram_dq(i) after dqi_delay;
 				dqi_i : entity hdl4fpga.xc_idelay
 				generic map (
 					device => device,
@@ -445,7 +446,7 @@ begin
 	
 			bypass_g : if bypass generate
 				phases_g : for j in 0 to data_gear-1 generate
-					sdqo(j*byte_size+i) <= sdram_dqi(i);
+					sdqo(j*byte_size+i) <= sdram_dq(i);
 				end generate;
 			end generate;
 	
@@ -513,7 +514,7 @@ begin
 
 			bypass_g : if bypass generate
 				phases_g : for i in data_gear-1 downto 0 generate
-					idrv(i) <= sdram_sti when loopback else sdram_dmi;
+					idrv(i) <= sdram_sti when loopback else sdram_dm;
 				end generate;
 			end generate;
 
@@ -571,7 +572,7 @@ begin
 						sclk  => clkx2,
 						clkx2 => clkx2_shift,
 						clk   => clk_shift,
-						d(0)  => sdram_dmi);
+						d(0)  => sdram_dm);
 			
 					process (clk_shift)
 						variable ena : std_logic;
@@ -737,19 +738,20 @@ begin
 				d     => dqo,
 				q(0)  => sdram_dqo(i));
 	
+    		sdram_dq(i) <= sdram_dqo(i) when sdram_dqt(i)='0' else 'Z';
 		end generate;
 	
 		dmo_g : block
-			signal dmt : std_logic_vector(sys_dmt'range);
+			signal dmt : std_logic_vector(sys_dqt'range);
 			signal dmi : std_logic_vector(sys_dmi'range);
 		begin
 	
-			process (sys_sti, sys_dmt, sys_dmi)
+			process (sys_sti, sys_dqt, sys_dmi)
 			begin
 				for i in dmi'range loop
 					if not loopback then
 						dmi(i) <= sys_sti(i);
-					elsif sys_dmt(i)='1' then
+					elsif sys_dqt(i)='1' then
 						dmi(i) <= sdmi(i);
 					else
 						dmi(i) <= sdmi(i);
@@ -757,7 +759,7 @@ begin
 				end loop;
 			end process;
 
-			dmt <= (others => '0') when loopback else sys_dmt;
+			dmt <= (others => '0') when loopback else sys_dqt;
 	
 			ogbx_i : entity hdl4fpga.ogbx
 			generic map (
@@ -773,6 +775,7 @@ begin
 				d     => dmi,
 				q(0)  => sdram_dmo);
 	
+    		sdram_dm <= sdram_dmo when sdram_dmt='0' else 'Z';
 		end block;
 
 		sto_g : block

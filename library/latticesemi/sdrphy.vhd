@@ -52,7 +52,6 @@ entity sdrphy is
 		phy_ras       : in  std_logic;
 		phy_cas       : in  std_logic;
 		phy_we        : in  std_logic;
-		phy_dmt       : in  std_logic_vector(data_gear-1 downto 0);
 		phy_dmi       : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dmo       : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dqt       : in  std_logic_vector(data_gear-1 downto 0);
@@ -130,7 +129,6 @@ begin
 			sys_clk => sys_clk,
 
 			phy_dmi => phy_dmi(i),
-			phy_dmt => phy_dmt(0),
 			phy_dmo => phy_dmo(i),
 			phy_dqi => phy_dqi((i+1)*byte_size-1 downto i*byte_size),
 			phy_dqt => phy_dqt(i),

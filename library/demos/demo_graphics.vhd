@@ -107,7 +107,6 @@ entity demo_graphics is
 		ctlrphy_a     : out std_logic_vector(addr_size-1 downto 0);
 		ctlrphy_dst   : out std_logic_vector(data_gear-1 downto 0);
 		ctlrphy_dso   : out std_logic_vector(data_gear-1 downto 0);
-		ctlrphy_dmt   : out std_logic_vector(data_gear-1 downto 0);
 		ctlrphy_dmi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
 		ctlrphy_dmo   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dqt   : out std_logic_vector(data_gear-1 downto 0);
@@ -1020,7 +1019,6 @@ begin
 			phy_b        => ctlrphy_b,
 			phy_a        => ctlrphy_a,
 			phy_dmi      => ctlrphy_dmi,
-			phy_dmt      => ctlrphy_dmt,
 			phy_dmo      => ctlrphy_dmo,
 
 			phy_dqi      => ctlrphy_dqi,

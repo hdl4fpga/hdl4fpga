@@ -201,7 +201,6 @@ architecture graphics of nuhs3adsp is
 	signal ctlrphy_dqsi  : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_dqst  : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_dqso  : std_logic_vector(data_gear-1 downto 0);
-	signal ctlrphy_dmt   : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_dmi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmo   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqt   : std_logic_vector(data_gear-1 downto 0);
@@ -633,7 +632,6 @@ begin
 		ctlrphy_dst  => ctlrphy_dqst,
 		ctlrphy_dso  => ctlrphy_dqso,
 		ctlrphy_dmi  => ctlrphy_dmi,
-		ctlrphy_dmt  => ctlrphy_dmt,
 		ctlrphy_dmo  => ctlrphy_dmo,
 		ctlrphy_dqi  => ctlrphy_dqi,
 		ctlrphy_dqt  => ctlrphy_dqt,
@@ -695,7 +693,6 @@ begin
 		sys_dqst    => ctlrphy_dqst,
 		sys_dqso    => ctlrphy_dqsi,
 		sys_dmi     => ctlrphy_dmo,
-		sys_dmt     => ctlrphy_dmt,
 		sys_dmo     => ctlrphy_dmi,
 		sys_dqi     => ctlrphy_dqo,
 		sys_dqt     => ctlrphy_dqt,
@@ -720,9 +717,7 @@ begin
 		sdram_a       => ddr_a,
 
 		sdram_dm      => ddr_dm,
-		sdram_dqt     => ddr_dqt,
-		sdram_dqi     => ddr_dq,
-		sdram_dqo     => ddr_dqo,
+		sdram_dq      => ddr_dq,
 		sdram_dqst    => ddr_dqst,
 		sdram_dqsi    => ddr_dqs,
 		sdram_dqso    => ddr_dqso);

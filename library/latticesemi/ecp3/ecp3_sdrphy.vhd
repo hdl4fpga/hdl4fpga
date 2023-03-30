@@ -70,7 +70,6 @@ entity ecp3_sdrphy is
 		phy_cas   : in  std_logic_vector(cmmd_gear-1 downto 0);
 		phy_we    : in  std_logic_vector(cmmd_gear-1 downto 0);
 		phy_odt   : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_dmt   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dmi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dmo   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dqt   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -220,7 +219,6 @@ architecture ecp3 of ecp3_sdrphy is
 --		return to_dlinevector(to_stdlogicvector(val));
 --	end;
 
-	signal sdmt      : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmi      : bline_vector(word_size/byte_size-1 downto 0);
 	signal sdmo      : bline_vector(word_size/byte_size-1 downto 0);
 
@@ -395,7 +393,6 @@ begin
 	end process;
 
 	sdmi  <= to_blinevector(phy_dmi);
-	sdmt  <= to_blinevector(not phy_dmt);
 	sdqt  <= to_blinevector(not phy_dqt);
 	sdqi  <= shuffle_dlinevector(phy_dqi);
 	ddqi  <= to_bytevector(sdr_dq);
@@ -428,7 +425,6 @@ begin
 
 			phy_sti   => phy_sti(0),
 			phy_sto   => sto,
-			phy_dmt   => sdmt(i),
 			phy_dmi   => sdmi(i),
 			phy_dmo   => sdmo(i),
 			phy_dqi   => sdqi(i),

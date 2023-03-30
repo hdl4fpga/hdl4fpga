@@ -32,7 +32,6 @@ entity sdrdqphy is
 		byte_size     : natural);
 	port (
 		sys_clk  : in  std_logic;
-		phy_dmt  : in  std_logic;
 		phy_dmi  : in  std_logic := '-';
 		phy_dmo  : out std_logic;
 		phy_dqo  : out std_logic_vector(byte_size-1 downto 0);

@@ -508,18 +508,9 @@ begin
     			d2   => dqi(1*byte_size+i),
     			d3   => dqi(0*byte_size+i),
     			q    => sdram_dqo(i));
-    	end generate;
 
-       	process (sdram_dqo, sdram_dqt)
-       	begin
-       		for i in sdram_dqo'range loop
-       			if sdram_dqt(i)='1' then
-       				sdram_dq(i) <= 'Z';
-       			else
-       				sdram_dq(i) <= sdram_dqo(i);
-       			end if;
-       		end loop;
-       	end process;
+    		sdram_dq(i) <= sdram_dqo(i) when sdram_dqt(i)='0' else 'Z';
+    	end generate;
 
     	dm_b : block
     	begin

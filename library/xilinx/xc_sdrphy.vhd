@@ -82,7 +82,6 @@ entity xc_sdrphy is
 		sys_a       : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
 		sys_odt     : in  std_logic_vector(cmmd_gear-1 downto 0);
 
-		sys_dmt     : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dmi     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_dmo     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
@@ -112,12 +111,8 @@ entity xc_sdrphy is
 
 		sdram_sti   : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
 		sdram_sto   : out std_logic_vector(word_size/byte_size-1 downto 0);
-		sdram_dmi   : in std_logic_vector(word_size/byte_size-1 downto 0);
-		sdram_dmt   : out std_logic_vector(word_size/byte_size-1 downto 0);
-		sdram_dmo   : out std_logic_vector(word_size/byte_size-1 downto 0);
-		sdram_dqt   : out std_logic_vector(word_size-1 downto 0);
-		sdram_dqi   : in  std_logic_vector(word_size-1 downto 0);
-		sdram_dqo   : out std_logic_vector(word_size-1 downto 0);
+		sdram_dm    : inout std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dq    : inout std_logic_vector(word_size-1 downto 0);
 		sdram_dqst  : out std_logic_vector(word_size/byte_size-1 downto 0);
 		sdram_dqsi  : in  std_logic_vector(word_size/byte_size-1 downto 0);
 		sdram_dqso  : out std_logic_vector(word_size/byte_size-1 downto 0));
@@ -446,7 +441,6 @@ begin
 
 			sys_sti    => sys_sti,
 			sys_sto    => sys_sto((i+1)*data_gear-1 downto i*data_gear),
-			sys_dmt    => sys_dmt,
 			sys_dmi    => dmi((i+1)*data_gear-1 downto i*data_gear),
 
 		    sys_dqv    => sys_dqv,
@@ -463,13 +457,9 @@ begin
 			sdram_sti  => sdram_sti(i),
 			sdram_sto  => sdram_sto(i),
 
-			sdram_dqt  => sdram_dqt((i+1)*byte_size-1 downto i*byte_size),
-			sdram_dqi  => sdram_dqi((i+1)*byte_size-1 downto i*byte_size),
-			sdram_dqo  => sdram_dqo((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dq   => sdram_dq((i+1)*byte_size-1 downto i*byte_size),
 
-			sdram_dmt  => sdram_dmt(i),
-			sdram_dmi  => sdram_dmi(i),
-			sdram_dmo  => sdram_dmo(i),
+			sdram_dm   => sdram_dm(i),
 
 			sdram_dqst => sdram_dqst(i),
 			sdram_dqsi => sdram_dqsi(i),

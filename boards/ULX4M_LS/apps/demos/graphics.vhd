@@ -274,7 +274,6 @@ architecture graphics of ulx4m_ls is
 	signal ctlrphy_dst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmi   : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmt   : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmo   : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqi   : std_logic_vector(word_size-1 downto 0);
 	signal ctlrphy_dqt   : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -779,7 +778,6 @@ begin
 		ctlrphy_dst  => ctlrphy_dst,
 		ctlrphy_dso  => open,
 		ctlrphy_dmi  => ctlrphy_dmi,
-		ctlrphy_dmt  => ctlrphy_dmt,
 		ctlrphy_dmo  => ctlrphy_dmo,
 		ctlrphy_dqi  => ctlrphy_dqi,
 		ctlrphy_dqt  => ctlrphy_dqt,
@@ -814,7 +812,6 @@ begin
 			phy_dsi       => ctlrphy_dso,
 			phy_dst       => ctlrphy_dst,
 			phy_dmi       => ctlrphy_dmo,
-			phy_dmt       => ctlrphy_dmt,
 			phy_dmo       => ctlrphy_dmi,
 			phy_dqi       => ctlrphy_dqo,
 			phy_dqt       => ctlrphy_dqt,

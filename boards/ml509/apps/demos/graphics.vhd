@@ -251,7 +251,6 @@ architecture graphics of ml509 is
 	signal ctlrphy_dqst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmt    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmo    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqi    : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_dqt    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -863,7 +862,6 @@ begin
 		ctlrphy_dst   => ctlrphy_dqst,
 		ctlrphy_dso   => ctlrphy_dqso,
 		ctlrphy_dmi   => ctlrphy_dmi,
-		ctlrphy_dmt   => ctlrphy_dmt,
 		ctlrphy_dmo   => ctlrphy_dmo,
 		ctlrphy_dqi   => ctlrphy_dqi,
 		ctlrphy_dqt   => ctlrphy_dqt,
@@ -1002,7 +1000,6 @@ begin
 		sys_dqst   => ctlrphy_dqst,
 		sys_dqsi   => ctlrphy_dqso,
 		sys_dmi    => ctlrphy_dmo,
-		sys_dmt    => ctlrphy_dmt,
 		sys_dmo    => ctlrphy_dmi,
 		sys_dqi    => ctlrphy_dqo,
 		sys_dqt    => ctlrphy_dqt,
@@ -1021,9 +1018,7 @@ begin
 		sdram_odt  => ddr2_odt,
 
 		sdram_dm   => ddr2_dm(word_size/byte_size-1 downto 0),
-		sdram_dqo  => ddr2_dqo,
-		sdram_dqi  => ddr2_d(word_size-1 downto 0),
-		sdram_dqt  => ddr2_dqt,
+		sdram_dq   => ddr2_d(word_size-1 downto 0),
 		sdram_dqst => ddr2_dqst,
 		sdram_dqsi => ddr2_dqsi,
 		sdram_dqso => ddr2_dqso);

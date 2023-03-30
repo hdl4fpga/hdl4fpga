@@ -95,7 +95,6 @@ entity sdram_ctlr is
 		phy_a        : out std_logic_vector(addr_size-1 downto 0);
 		phy_odt      : out std_logic;
 
-		phy_dmt      : out std_logic_vector(data_gear-1 downto 0);
 		phy_dmi      : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		phy_dmo      : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
@@ -312,7 +311,6 @@ begin
 		sdram_wwn  => sdram_sch_wwn);
 
 	phy_dqt  <= not sdram_sch_dqz;
-	phy_dmt  <= not sdram_sch_dqz;
 	phy_dqso <= sdram_sch_dqs;
 	phy_dqst <= not sdram_sch_dqsz;
 	phy_sto  <= sdram_sch_st;

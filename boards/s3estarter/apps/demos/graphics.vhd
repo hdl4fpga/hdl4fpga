@@ -180,7 +180,6 @@ architecture graphics of s3estarter is
 	signal ctlrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmi     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmo     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqi     : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_dqt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
@@ -559,7 +558,6 @@ begin
 		ctlrphy_dst  => ctlrphy_dqst,
 		ctlrphy_dso  => ctlrphy_dqso,
 		ctlrphy_dmi  => ctlrphy_dmi,
-		ctlrphy_dmt  => ctlrphy_dmt,
 		ctlrphy_dmo  => ctlrphy_dmo,
 		ctlrphy_dqi  => ctlrphy_dqi,
 		ctlrphy_dqt  => ctlrphy_dqt,
@@ -615,7 +613,6 @@ begin
 		sys_dqst    => ctlrphy_dqst,
 		sys_dqso    => ctlrphy_dqsi,
 		sys_dmi     => ctlrphy_dmo,
-		sys_dmt     => ctlrphy_dmt,
 		sys_dmo     => ctlrphy_dmi,
 		sys_dqi     => ctlrphy_dqo,
 		sys_dqt     => ctlrphy_dqt,
@@ -635,9 +632,7 @@ begin
 		sdram_a       => sd_a,
 
 		sdram_dm      => sd_dm,
-		sdram_dqt     => sdram_dqt,
-		sdram_dqi     => sd_dq,
-		sdram_dqo     => sdram_dqo,
+		sdram_dq      => sd_dq,
 		sdram_dqst    => sdram_dqst,
 		sdram_dqsi    => sd_dqs,
 		sdram_dqso    => sdram_dqso);

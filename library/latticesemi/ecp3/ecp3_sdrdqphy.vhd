@@ -50,7 +50,6 @@ entity ecp3_sdrdqphy is
 		locked    : out std_logic;
 		phy_sti   : in  std_logic;
 		phy_sto   : out std_logic;
-		phy_dmt   : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		phy_dmi   : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		phy_dmo   : out std_logic_vector(data_gear-1 downto 0);
 		phy_dqo   : out std_logic_vector(data_gear*byte_size-1 downto 0);
