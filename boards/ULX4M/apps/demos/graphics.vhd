@@ -761,7 +761,7 @@ begin
 		phy_cmd    => ctlrphy_cmd,
 		phy_rw     => ctlrphy_rw,
 		phy_ini    => ctlrphy_ini,
-		phy_synced => sdrphy_locked,
+		phy_locked => sdrphy_locked,
 
 		phy_wlreq  => ctlrphy_wlreq,
 		phy_wlrdy  => ctlrphy_wlrdy,

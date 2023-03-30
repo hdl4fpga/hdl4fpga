@@ -112,7 +112,9 @@ entity xc_sdrphy is
 
 		sdram_sti   : in  std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
 		sdram_sto   : out std_logic_vector(word_size/byte_size-1 downto 0);
-		sdram_dm    : inout std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dmi   : in std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dmt   : out std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dmo   : out std_logic_vector(word_size/byte_size-1 downto 0);
 		sdram_dqt   : out std_logic_vector(word_size-1 downto 0);
 		sdram_dqi   : in  std_logic_vector(word_size-1 downto 0);
 		sdram_dqo   : out std_logic_vector(word_size-1 downto 0);
@@ -129,158 +131,6 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture xilinx of xc_sdrphy is
-	subtype byte is std_logic_vector(byte_size-1 downto 0);
-	type byte_vector is array (natural range <>) of byte;
-
-	subtype dline_word is std_logic_vector(data_gear*byte_size-1 downto 0);
-	type dline_vector is array (natural range <>) of dline_word;
-
-	subtype bline_word is std_logic_vector(data_gear-1 downto 0);
-	type bline_vector is array (natural range <>) of bline_word;
-
-
-	function to_bytevector (
-		constant arg : std_logic_vector) 
-		return byte_vector is
-		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : byte_vector(arg'length/byte'length-1 downto 0);
-	begin	
-		dat := unsigned(arg);
-		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(byte'range));
-			dat := dat srl val(val'left)'length;
-		end loop;
-		return val;
-	end;
-
-	function to_blinevector (
-		constant arg : std_logic_vector) 
-		return bline_vector is
-		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : bline_vector(arg'length/bline_word'length-1 downto 0);
-	begin	
-		dat := unsigned(arg);
-		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
-			dat := dat srl val(val'left)'length;
-		end loop;
-		return val;
-	end;
-
-	function to_dlinevector (
-		constant arg : std_logic_vector) 
-		return dline_vector is
-		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : dline_vector(arg'length/dline_word'length-1 downto 0);
-	begin	
-		dat := unsigned(arg);
-		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
-			dat := dat srl val(val'left)'length;
-		end loop;
-		return val;
-	end;
-
-	function to_stdlogicvector (
-		constant arg : byte_vector)
-		return std_logic_vector is
-		variable dat : byte_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length*arg(arg'left)'length-1 downto 0);
-	begin
-		dat := arg;
-		for i in dat'range loop
-			val := std_logic_vector(unsigned(val) sll arg(arg'left)'length);
-			val(arg(arg'left)'range) := dat(i);
-		end loop;
-		return val;
-	end;
-
-	function to_stdlogicvector (
-		constant arg : dline_vector)
-		return std_logic_vector is
-		variable dat : dline_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length*arg(arg'left)'length-1 downto 0);
-	begin
-		dat := arg;
-		for i in dat'range loop
-			val := std_logic_vector(unsigned(val) sll arg(arg'left)'length);
-			val(arg(arg'left)'range) := dat(i);
-		end loop;
-		return val;
-	end;
-
-	function to_stdlogicvector (
-		constant arg : bline_vector)
-		return std_logic_vector is
-		variable dat : bline_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length*arg(arg'left)'length-1 downto 0);
-	begin
-		dat := arg;
-		for i in dat'range loop
-			val := std_logic_vector(unsigned(val) sll arg(arg'left)'length);
-			val(arg(arg'left)'range) := dat(i);
-		end loop;
-		return val;
-	end;
-
-	function shuffle_blinevector (
-		constant arg : std_logic_vector) 
-		return bline_vector is
-		variable val : bline_vector(word_size/byte_size-1 downto 0);
-	begin	
-		for i in word_size/byte_size-1 downto 0 loop
-			for j in data_gear-1 downto 0 loop
-				val(i)(j) := arg(word_size/byte_size*j+i);
-			end loop;
-		end loop;
-		return to_blinevector(to_stdlogicvector(val));
-	end;
-
-	function shuffle_dlinevector (
-		constant arg : std_logic_vector) 
-		return dline_vector is
-		variable dat : byte_vector(arg'length/byte'length-1 downto 0);
-		variable val : byte_vector(dat'range);
-	begin	
-		dat := to_bytevector(arg);
-		for i in word_size/byte_size-1 downto 0 loop
-			for j in data_gear-1 downto 0 loop
-				val(i*data_gear+j) := dat(j*word_size/byte_size+i);
-			end loop;
-		end loop;
-		return to_dlinevector(to_stdlogicvector(val));
-	end;
-
-	function unshuffle_dlinevector (
-		constant arg : dline_vector) 
-		return std_logic_vector is
-		variable val : byte_vector(arg'length*data_gear-1 downto 0);
-	begin	
-		for i in arg'range loop
-			for j in data_gear-1 downto 0 loop
-				for l in byte_size-1 downto 0 loop
-					val(arg'length*j+i)(l) := arg(i)(j*byte_size+l);
-				end loop;
-			end loop;
-		end loop;
-		return to_stdlogicvector(val);
-	end;
-
-	signal sdmi       : bline_vector(word_size/byte_size-1 downto 0);
-
-	signal sdqi       : dline_vector(word_size/byte_size-1 downto 0);
-	signal sdqo       : dline_vector(word_size/byte_size-1 downto 0);
-
-
-	signal dqc        : bline_vector(word_size/byte_size-1 downto 0);
-
-	signal ddmo       : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddmt       : std_logic_vector(word_size/byte_size-1 downto 0);
-
-	signal ddqi       : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqt       : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqo       : byte_vector(word_size/byte_size-1 downto 0);
-
 	signal sto_locked : std_logic_vector(sdram_dqsi'range);
 	signal rl_req     : std_logic_vector(sdram_dqsi'range);
 	signal rl_rdy     : std_logic_vector(rl_req'range);
@@ -298,6 +148,45 @@ architecture xilinx of xc_sdrphy is
 
 	signal ddrphy_b   : std_logic_vector(sys_b'range);
 	signal ddrphy_a   : std_logic_vector(sys_a'range);
+
+	function shuffle_vector (
+		constant data : std_logic_vector;
+		constant gear : natural;
+		constant size : natural) 
+		return std_logic_vector is
+		variable val : std_logic_vector(data'range);
+	begin	
+		for i in data'length/(gear*size)-1 downto 0 loop
+			for j in gear-1 downto 0 loop
+				for l in size-1 downto 0 loop
+					val((i*gear+j)*size+l) := data(j*(data'length/gear)+i*size+l);
+				end loop;
+			end loop;
+		end loop;
+		return val;
+	end;
+
+	function unshuffle_vector (
+		constant data : std_logic_vector;
+		constant gear : natural;
+		constant size : natural) 
+		return std_logic_vector is
+		variable val : std_logic_vector(data'range);
+	begin	
+		for i in data'length/(gear*size)-1 downto 0 loop
+			for j in data_gear-1 downto 0 loop
+				for l in byte_size-1 downto 0 loop
+					val(j*(data'length/gear)+i*size+l) := data((i*gear+j)*size+l);
+				end loop;
+			end loop;
+		end loop;
+		return val;
+	end;
+
+	signal dmi : std_logic_vector(sys_dmi'range);
+	signal dqi : std_logic_vector(sys_dqi'range);
+	signal dqo : std_logic_vector(sys_dqo'range);
+	signal dmo : std_logic_vector(word_size/byte_size-1 downto 0);
 
 begin
 
@@ -504,11 +393,10 @@ begin
 
 	end block;
 
-	sdmi  <= shuffle_blinevector(sys_dmi);
-	sdqi  <= shuffle_dlinevector(sys_dqi);
-	ddqi  <= to_bytevector(sdram_dqi);
-
 	phy_locked <= '1' when sto_locked=(sto_locked'range => '1') else '0';
+
+	dmi <= shuffle_vector(sys_dmi, gear => data_gear, size => 1);
+	dqi <= shuffle_vector(sys_dqi, gear => data_gear, size => byte_size);
 
 	byte_g : for i in sdram_dqsi'range generate
 		signal tp_byte : std_logic_vector(1 to 8);
@@ -559,29 +447,29 @@ begin
 			sys_sti    => sys_sti,
 			sys_sto    => sys_sto((i+1)*data_gear-1 downto i*data_gear),
 			sys_dmt    => sys_dmt,
-			sys_dmi    => sdmi(i),
+			sys_dmi    => dmi((i+1)*data_gear-1 downto i*data_gear),
 
-			sys_dqi    => sdqi(i),
-			sys_dqt    => sys_dqt,
-			sys_dqo    => sdqo(i),
-
-		    sys_dqc    => dqc(i),
 		    sys_dqv    => sys_dqv,
+			sys_dqi    => dqi((i+1)*byte_size*data_gear-1 downto i*byte_size*data_gear),
+			sys_dqt    => sys_dqt,
+			sys_dqo    => dqo((i+1)*byte_size*data_gear-1 downto i*byte_size*data_gear),
 
-			sys_dqsi   => sys_dqsi,
+		    sys_dqc    => sys_dqc((i+1)*data_gear-1 downto i*data_gear),
+
 			sys_dqst   => sys_dqst,
+			sys_dqsi   => sys_dqsi,
 			sys_dqso   => sys_dqso,
 
 			sdram_sti  => sdram_sti(i),
 			sdram_sto  => sdram_sto(i),
 
-			sdram_dqi  => ddqi(i),
-			sdram_dqt  => ddqt(i),
-			sdram_dqo  => ddqo(i),
+			sdram_dqt  => sdram_dqt((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dqi  => sdram_dqi((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dqo  => sdram_dqo((i+1)*byte_size-1 downto i*byte_size),
 
-			sdram_dmt  => ddmt(i),
-			sdram_dmi  => sdram_dm(i),
-			sdram_dmo  => ddmo(i),
+			sdram_dmt  => sdram_dmt(i),
+			sdram_dmi  => sdram_dmi(i),
+			sdram_dmo  => sdram_dmo(i),
 
 			sdram_dqst => sdram_dqst(i),
 			sdram_dqsi => sdram_dqsi(i),
@@ -591,20 +479,5 @@ begin
 		
 	end generate;
 
-	sys_dqc   <= to_stdlogicvector(dqc);
-	sdram_dqt <= to_stdlogicvector(ddqt);
-	sdram_dqo <= to_stdlogicvector(ddqo);
-
-	process (ddmo, ddmt)
-	begin
-		for i in ddmo'range loop
-			if ddmt(i)='1' then
-				sdram_dm(i) <= 'Z';
-			else
-				sdram_dm(i) <= ddmo(i);
-			end if;
-		end loop;
-	end process;
-
-	sys_dqo <= unshuffle_dlinevector(sdqo);
+	sys_dqo <= unshuffle_vector(dqo, gear => data_gear, size => byte_size);
 end;

@@ -57,7 +57,7 @@ entity ecp5_sdrphy is
 		phy_rw     : out std_logic := '1';
 		phy_cmd    : in  std_logic_vector(0 to 3-1) := (others => 'U');
 		phy_ini    : out std_logic;
-		phy_synced : out std_logic;
+		phy_locked : out std_logic;
 
 		phy_wlreq  : in  std_logic := '0';
 		phy_wlrdy  : buffer std_logic;
@@ -401,7 +401,7 @@ begin
 	dqi <= shuffle_vector(sys_dqi, gear => data_gear, size => byte_size);
 
 	tp <= multiplex(tp_dq, tpin);
-	phy_synced <= '1' when dqs_locked=(dqs_locked'range => '1') else '0';
+	phy_locked <= '1' when dqs_locked=(dqs_locked'range => '1') else '0';
 	byte_g : for i in word_size/byte_size-1 downto 0 generate
 		sdr3phy_i : entity hdl4fpga.ecp5_sdrdqphy
 		generic map (
@@ -420,10 +420,9 @@ begin
 			phy_wlrdy  => wl_rdy(i),
 			phy_rlreq  => rl_req(i),
 			phy_rlrdy  => rl_rdy(i),
-			phy_locked => dqs_locked(i),
-
 			read_req   => read_req(i),
 			read_rdy   => read_rdy(i),
+			phy_locked => dqs_locked(i),
 
 			sys_sti    => sys_sti,
 			sys_sto    => sys_sto((i+1)*data_gear-1 downto i*data_gear),
