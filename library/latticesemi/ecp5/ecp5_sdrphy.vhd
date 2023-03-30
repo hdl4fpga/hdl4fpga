@@ -77,6 +77,7 @@ entity ecp5_sdrphy is
 		sys_dmt    : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dmi    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
+		sys_dqv    : in  std_logic_vector(data_gear-1 downto 0) := (others => '0');
 		sys_dqt    : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dqi    : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		sys_dqo    : out std_logic_vector(data_gear*word_size-1 downto 0);
@@ -84,25 +85,24 @@ entity ecp5_sdrphy is
 		sys_dqsi   : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_dqst   : in  std_logic_vector(data_gear-1 downto 0);
 
-		sys_dqv    : in  std_logic_vector(data_gear-1 downto 0) := (others => 'U');
 		sys_dqc    : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_sti    : in  std_logic_vector(data_gear-1 downto 0);
 		sys_sto    : buffer std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
-		sdram_rst : out std_logic;
-		sdram_cs  : out std_logic := '0';
-		sdram_cke : out std_logic := '1';
-		sdram_clk : out std_logic;
-		sdram_odt : out std_logic;
-		sdram_ras : out std_logic;
-		sdram_cas : out std_logic;
-		sdram_we  : out std_logic;
-		sdram_b   : out std_logic_vector(bank_size-1 downto 0);
-		sdram_a   : out std_logic_vector(addr_size-1 downto 0);
+		sdram_rst  : out std_logic;
+		sdram_cs   : out std_logic := '0';
+		sdram_cke  : out std_logic := '1';
+		sdram_clk  : out std_logic;
+		sdram_odt  : out std_logic;
+		sdram_ras  : out std_logic;
+		sdram_cas  : out std_logic;
+		sdram_we   : out std_logic;
+		sdram_b    : out std_logic_vector(bank_size-1 downto 0);
+		sdram_a    : out std_logic_vector(addr_size-1 downto 0);
 
-		sdram_dm  : inout std_logic_vector(word_size/byte_size-1 downto 0);
-		sdram_dq  : inout std_logic_vector(word_size-1 downto 0);
-		sdram_dqs : inout std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dm   : inout std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dq   : inout std_logic_vector(word_size-1 downto 0);
+		sdram_dqs  : inout std_logic_vector(word_size/byte_size-1 downto 0);
 		tp         : out std_logic_vector(1 to 32));
 end;
 
@@ -432,6 +432,7 @@ begin
 			sys_dmt    => sys_dmt,
 			sys_dmi    => sdmi((i+1)*data_gear-1 downto i*data_gear),
 
+			sys_dqv    => sys_dqv,
 			sys_dqi    => sdqi((i+1)*byte_size*data_gear-1 downto i*byte_size*data_gear),
 			sys_dqt    => sys_dqt,
 			sys_dqo    => sdqo((i+1)*byte_size*data_gear-1 downto i*byte_size*data_gear),

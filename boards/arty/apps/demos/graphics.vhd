@@ -750,7 +750,7 @@ begin
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
-		ctlrphy_dqv   => ctlrphy_dqv,
+		ctlrphy_dqv  => ctlrphy_dqv,
 		tp           => open);
 
 	serdebug_b : block

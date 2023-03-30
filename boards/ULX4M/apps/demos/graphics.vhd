@@ -782,6 +782,7 @@ begin
 		sys_dqst   => ctlrphy_dqst,
 		sys_dmi    => ctlrphy_dmo,
 		sys_dmt    => ctlrphy_dmt,
+		sys_dqv    => ctlrphy_dqv,
 		sys_dqi    => ctlrphy_dqo,
 		sys_dqt    => ctlrphy_dqt,
 		sys_dqo    => ctlrphy_dqi,

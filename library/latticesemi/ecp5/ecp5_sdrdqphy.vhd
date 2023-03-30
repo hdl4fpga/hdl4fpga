@@ -31,9 +31,13 @@ use ecp5u.components.all;
 entity ecp5_sdrdqphy is
 	generic (
 		debug     : boolean := false;
-		taps      : natural;
 		data_gear : natural;
-		byte_size : natural);
+		byte_size : natural;
+		rd_fifo   : boolean := true;
+		rd_align  : boolean := true;
+		wr_fifo   : boolean := true;
+
+		taps      : natural);
 	port (
 		rst       : in  std_logic;
 		sclk      : in  std_logic;
@@ -56,6 +60,7 @@ entity ecp5_sdrdqphy is
 		sys_dmo   : out std_logic_vector(data_gear-1 downto 0);
 		sys_dqo   : out std_logic_vector(data_gear*byte_size-1 downto 0);
 		sys_dqt   : in  std_logic_vector(data_gear-1 downto 0);
+		sys_dqv    : in  std_logic_vector(data_gear-1 downto 0) := (others => '0');
 		sys_dqi   : in  std_logic_vector(data_gear*byte_size-1 downto 0);
 		sys_dqsi  : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dqst  : in  std_logic_vector(data_gear-1 downto 0);
@@ -79,9 +84,9 @@ architecture ecp5 of ecp5_sdrdqphy is
 	signal dqsw         : std_logic;
 	signal dqsw270      : std_logic;
 	
-	signal dqi          : std_logic_vector(sys_dqi'range);
-
 	signal dqt          : std_logic_vector(sys_dqt'range);
+	signal dqi          : std_logic_vector(sys_dqi'range);
+	signal dmi          : std_logic_vector(sys_dmi'range);
 	signal wle          : std_logic;
 
 	signal rdpntr       : std_logic_vector(3-1 downto 0);
@@ -441,70 +446,108 @@ begin
 			q3      => sys_dmo(0));
 	end block;
 
-	wle <= to_stdulogic(to_bit(phy_wlrdy)) xor phy_wlreq;
+	datao_b : block
 
-	dqt <= sys_dqt when wle='0' else (others => '1');
-	oddr_g : for i in 0 to byte_size-1 generate
-		tshx2dqa_i : tshx2dqa
-		port map (
-			rst  => rst,
-			sclk => sclk,
-			eclk => eclk,
-			dqsw270 => dqsw270,
-			t0  => dqt(2*1+1),
-			t1  => dqt(2*0+1),
-			q   => sdram_dqt(i));
 
-		oddrx2dqa_i : oddrx2dqa
-		port map (
-			rst  => rst,
-			sclk => sclk,
-			eclk => eclk,
-			dqsw270 => dqsw270,
-			d0   => sys_dqi(3*byte_size+i),
-			d1   => sys_dqi(2*byte_size+i),
-			d2   => sys_dqi(1*byte_size+i),
-			d3   => sys_dqi(0*byte_size+i),
-			q    => sdram_dqo(i));
-	end generate;
-
-   	process (sdram_dqo, sdram_dqt)
-   	begin
-   		for i in sdram_dqo'range loop
-   			if sdram_dqt(i)='1' then
-   				sdram_dq(i) <= 'Z';
-   			else
-   				sdram_dq(i) <= sdram_dqo(i);
-   			end if;
-   		end loop;
-   	end process;
-
-	dm_b : block
 	begin
-		tshx2dqa_i : tshx2dqa
-		port map (
-			rst  => rst,
-			sclk => sclk,
-			eclk => eclk,
-			dqsw270 => dqsw270,
-			t0  => dqt(2*0),
-			t1  => dqt(2*1),
-			q   => sdram_dmt);
 
-		oddrx2dqa_i : oddrx2dqa
-		port map (
-			rst  => rst,
-			sclk => sclk,
-			eclk => eclk,
-			dqsw270 => dqsw270,
-			d0   => sys_dmi(3),
-			d1   => sys_dmi(2),
-			d2   => sys_dmi(1),
-			d3   => sys_dmi(0),
-			q    => sdram_dmo);
+		wrfifo_g : if wr_fifo generate
+			gear_g : for i in data_gear-1 downto 0 generate
+				signal in_data  : std_logic_vector(sys_dqi'length/data_gear downto 0);
+				signal out_data : std_logic_vector(sys_dqi'length/data_gear downto 0);
+				signal out_frm  : std_logic;
+			begin
+				process (sclk)
+				begin
+					if rising_edge(sclk) then
+						out_frm <= sys_dqv(i);
+					end if;
+				end process;
 
-		sdram_dm <= sdram_dmo when sdram_dmt='0' else 'Z';
+				in_data <= sys_dmi(i) & sys_dqi(byte_size*(i+1)-1 downto byte_size*i);
+				fifo_i : entity hdl4fpga.iofifo
+				port map (
+					in_clk   => sclk,
+					in_frm   => sys_dqv(sys_dqv'right),
+					in_data  => in_data,
+					out_clk  => sclk,
+					out_frm  => out_frm,
+					out_data => out_data);
+				dmi(i) <= out_data(out_data'left);
+				dqi(byte_size*(i+1)-1 downto byte_size*i) <= out_data(out_data'left-1 downto 0);
+			end generate;
+		end generate;
+		
+		no_wrfifo_g : if not wr_fifo generate
+			dqi <= sys_dqi;
+			dmi <= sys_dmi;
+		end generate;
 
+    	wle <= to_stdulogic(to_bit(phy_wlrdy)) xor phy_wlreq;
+
+    	dqt <= sys_dqt when wle='0' else (others => '1');
+    	oddr_g : for i in 0 to byte_size-1 generate
+    		tshx2dqa_i : tshx2dqa
+    		port map (
+    			rst  => rst,
+    			sclk => sclk,
+    			eclk => eclk,
+    			dqsw270 => dqsw270,
+    			t0  => dqt(2*1+1),
+    			t1  => dqt(2*0+1),
+    			q   => sdram_dqt(i));
+
+    		oddrx2dqa_i : oddrx2dqa
+    		port map (
+    			rst  => rst,
+    			sclk => sclk,
+    			eclk => eclk,
+    			dqsw270 => dqsw270,
+    			d0   => dqi(3*byte_size+i),
+    			d1   => dqi(2*byte_size+i),
+    			d2   => dqi(1*byte_size+i),
+    			d3   => dqi(0*byte_size+i),
+    			q    => sdram_dqo(i));
+    	end generate;
+
+       	process (sdram_dqo, sdram_dqt)
+       	begin
+       		for i in sdram_dqo'range loop
+       			if sdram_dqt(i)='1' then
+       				sdram_dq(i) <= 'Z';
+       			else
+       				sdram_dq(i) <= sdram_dqo(i);
+       			end if;
+       		end loop;
+       	end process;
+
+    	dm_b : block
+    	begin
+    		tshx2dqa_i : tshx2dqa
+    		port map (
+    			rst  => rst,
+    			sclk => sclk,
+    			eclk => eclk,
+    			dqsw270 => dqsw270,
+    			t0  => dqt(2*0),
+    			t1  => dqt(2*1),
+    			q   => sdram_dmt);
+
+    		oddrx2dqa_i : oddrx2dqa
+    		port map (
+    			rst  => rst,
+    			sclk => sclk,
+    			eclk => eclk,
+    			dqsw270 => dqsw270,
+    			d0   => dmi(3),
+    			d1   => dmi(2),
+    			d2   => dmi(1),
+    			d3   => dmi(0),
+    			q    => sdram_dmo);
+
+    		sdram_dm <= sdram_dmo when sdram_dmt='0' else 'Z';
+
+    	end block;
 	end block;
 
 	dqso_b : block 
@@ -532,9 +575,9 @@ begin
 			eclk => eclk,
 			dqsw => dqsw,
 			d0   => '0',
-			d1   => dqsi(2*0),
+			d1   => dqsi(2*1),
 			d2   => '0',
-			d3   => dqsi(2*1),
+			d3   => dqsi(2*0),
 			q    => sdram_dqso);
 
 		sdram_dqs <= sdram_dqso when sdram_dqst='0' else 'Z';
