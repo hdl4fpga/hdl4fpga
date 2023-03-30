@@ -213,7 +213,7 @@ architecture graphics of arty is
 	signal ctlrphy_wlrdy  : std_logic;
 	signal ctlrphy_rlreq  : std_logic;
 	signal ctlrphy_rlrdy  : std_logic;
-	signal ctlrphy_synced : std_logic;
+	signal ctlrphy_locked : std_logic;
 
 	signal ddr_ba         : std_logic_vector(ddr3_ba'range);
 	signal ddr_a          : std_logic_vector(ddr3_a'range);
@@ -230,7 +230,6 @@ architecture graphics of arty is
 	signal ctlrphy_cmd    : std_logic_vector(0 to 3-1);
 	signal ctlrphy_ba     : std_logic_vector(cmmd_gear*ddr3_ba'length-1 downto 0);
 	signal ctlrphy_a      : std_logic_vector(cmmd_gear*ddr3_a'length-1 downto 0);
-	signal ctlrphy_dqsi   : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_dmt    : std_logic_vector(data_gear-1 downto 0);
@@ -239,9 +238,9 @@ architecture graphics of arty is
 	signal ctlrphy_dqt    : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_dqi    : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_dqo    : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_dqv    : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_sti    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqv    : std_logic_vector(data_gear-1 downto 0);
 
 	signal ddr3_clk       : std_logic_vector(1-1 downto 0);
 	signal ddr3_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -414,7 +413,6 @@ begin
 				i => ddr_clk90_mmce2,
 				o => ddr_clk90);
 
-			ctlrphy_dqsi <= (others => ddr_clk90);
 			ddrsys_rst <= not ddr_lkd or sys_rst;
 
 			process(ddrsys_rst, ddr_clk0)
@@ -853,7 +851,7 @@ begin
 		phy_rlreq => ctlrphy_rlreq,
 		phy_rlrdy => ctlrphy_rlrdy,
 
-		phy_synced => ctlrphy_synced,
+		phy_locked => ctlrphy_locked,
 
 		sys_cke   => ctlrphy_cke,
 		sys_rst   => ctlrphy_rst,

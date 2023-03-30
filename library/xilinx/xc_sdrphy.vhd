@@ -65,7 +65,7 @@ entity xc_sdrphy is
 		phy_rw      : out std_logic;
 		phy_cmd     : in  std_logic_vector(0 to 3-1) := (others => '-');
 		phy_ini     : out std_logic;
-		phy_synced  : buffer std_logic;
+		phy_locked  : buffer std_logic;
 
 		phy_wlreq   : in  std_logic := '-';
 		phy_wlrdy   : out std_logic;
@@ -90,14 +90,14 @@ entity xc_sdrphy is
 		sys_dqst    : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dqso    : out std_logic_vector(data_gear-1 downto 0);
 
-		sys_dqv     : in  std_logic_vector(data_gear-1 downto 0) := (others => 'U');
 		sys_dqt     : in  std_logic_vector(data_gear-1 downto 0);
+		sys_dqi     : in  std_logic_vector(data_gear*word_size-1 downto 0);
 		sys_dqo     : out std_logic_vector(data_gear*word_size-1 downto 0);
 
+		sys_dqv     : in  std_logic_vector(data_gear-1 downto 0) := (others => 'U');
 		sys_dqc     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 		sys_sti     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_sto     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dqi     : in  std_logic_vector(data_gear*word_size-1 downto 0);
 
 		sdram_rst   : out std_logic := '0';
 		sdram_cs    : out std_logic_vector;
@@ -267,7 +267,6 @@ architecture xilinx of xc_sdrphy is
 	end;
 
 	signal sdmi       : bline_vector(word_size/byte_size-1 downto 0);
-	signal ssto       : bline_vector(word_size/byte_size-1 downto 0);
 
 	signal sdqi       : dline_vector(word_size/byte_size-1 downto 0);
 	signal sdqo       : dline_vector(word_size/byte_size-1 downto 0);
@@ -282,7 +281,7 @@ architecture xilinx of xc_sdrphy is
 	signal ddqt       : byte_vector(word_size/byte_size-1 downto 0);
 	signal ddqo       : byte_vector(word_size/byte_size-1 downto 0);
 
-	signal sto_synced : std_logic_vector(sdram_dqsi'range);
+	signal sto_locked : std_logic_vector(sdram_dqsi'range);
 	signal rl_req     : std_logic_vector(sdram_dqsi'range);
 	signal rl_rdy     : std_logic_vector(rl_req'range);
 	signal wr_req     : std_logic_vector(sdram_dqsi'range);
@@ -494,7 +493,7 @@ begin
 							end if;
 						end loop;
 					when s_4rdy => -- All(4) ready
-						phy_ini   <= phy_synced;
+						phy_ini   <= phy_locked;
 						phy_rlrdy <= phy_rlreq;
 					end case;
 				else
@@ -509,7 +508,7 @@ begin
 	sdqi  <= shuffle_dlinevector(sys_dqi);
 	ddqi  <= to_bytevector(sdram_dqi);
 
-	phy_synced <= '1' when sto_synced=(sto_synced'range => '1') else '0';
+	phy_locked <= '1' when sto_locked=(sto_locked'range => '1') else '0';
 
 	byte_g : for i in sdram_dqsi'range generate
 		signal tp_byte : std_logic_vector(1 to 8);
@@ -546,18 +545,19 @@ begin
 			clkx2     => clkx2,
 			clkx2_shift => clkx2_shift,
 
-			sys_wlreq  => phy_wlreq,
-			sys_wlrdy  => wl_rdy(i),
-			sys_rlreq  => rl_req(i),
-			sys_rlrdy  => rl_rdy(i),
+			phy_wlreq  => phy_wlreq,
+			phy_wlrdy  => wl_rdy(i),
+			phy_rlreq  => rl_req(i),
+			phy_rlrdy  => rl_rdy(i),
 			write_req  => wr_req(i),
 			write_rdy  => wr_rdy(i),
 			read_req   => rd_req(i),
 			read_rdy   => rd_rdy(i),
 			read_brst  => read_brst(i),
+			phy_locked => sto_locked(i),
 
 			sys_sti    => sys_sti,
-			sys_sto    => ssto(i),
+			sys_sto    => sys_sto((i+1)*data_gear-1 downto i*data_gear),
 			sys_dmt    => sys_dmt,
 			sys_dmi    => sdmi(i),
 
@@ -571,7 +571,6 @@ begin
 			sys_dqsi   => sys_dqsi,
 			sys_dqst   => sys_dqst,
 			sys_dqso   => sys_dqso,
-			sto_synced => sto_synced(i),
 
 			sdram_sti  => sdram_sti(i),
 			sdram_sto  => sdram_sto(i),
@@ -588,7 +587,7 @@ begin
 			sdram_dqso => sdram_dqso(i));
 
 
-		sys_sto((i+1)*data_gear-1 downto i*data_gear) <= ssto(i);
+		
 	end generate;
 
 	sys_dqc   <= to_stdlogicvector(dqc);

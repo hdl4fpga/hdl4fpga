@@ -271,18 +271,18 @@ architecture graphics of ulx3s is
 	signal ctlrphy_odt   : std_logic;
 	signal ctlrphy_b     : std_logic_vector(sdram_ba'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(sdram_a'length-1 downto 0);
-	signal ctlrphy_dst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmi   : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmt   : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(word_size-1 downto 0);
-	signal ctlrphy_dqt   : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(word_size-1 downto 0);
-	signal ctlrphy_dqv   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dst   : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_dso   : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_dmt   : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_dmi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
+	signal ctlrphy_dqv   : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal sdrphy_sti    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal sdrphy_sti    : std_logic_vector(data_gear-1 downto 0);
 	signal sdram_st_dqs_open : std_logic;
 
 	signal sdram_dst     : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -715,7 +715,7 @@ begin
 		profile      => 0,
 
 		sdram_tcp    => sdram_tcp,
-		fpga         => xc3s,
+		fpga         => ecp5,
 		mark         => MT48LC256MA27E ,
 		data_gear    => data_gear,
 		cmmd_gear    => cmmd_gear,

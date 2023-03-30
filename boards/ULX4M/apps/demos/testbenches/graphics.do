@@ -25,81 +25,14 @@ add wave -noupdate -expand -group ddram -radix hexadecimal /testbench/du_e/ddram
 add wave -noupdate -expand -group ddram -expand /testbench/du_e/ddram_dqs
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rst
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/sclk
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/eclk
-add wave -noupdate -expand /testbench/du_e/sdrphy_e/dqs_locked
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_di
-add wave -noupdate -radix unsigned /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/rot_val
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/rot_di
-add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/phy_dqi
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/sdram_wclks
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/sdram_wenas
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/phy_sto
-add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/phy_dqo
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_refreq
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/ctlrphy_sti
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjbrst_e/adj_req
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjbrst_e/adj_rdy
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjbrst_e/step_req
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjbrst_e/step_rdy
-add wave -noupdate /testbench/du_e/sdrphy_e/sclk
-add wave -noupdate /testbench/du_e/sdrphy_e/eclk
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjbrst_e/input
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjbrst_e/pause_req
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjbrst_e/pause_rdy
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjbrst_e/step_req
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/rl_b/adjbrst_e/step_rdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/lat
-add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/dqsbuf_b/readclksel
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/dqsbuf_b/dqsbufm_i/DATAVALID
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/dqsbuf_b/dqsbufm_i/BURSTDET
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(0)/sdr3phy_i/dqsbuf_b/dqsbufm_i/PAUSE
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/sync_e/video_hzcntr
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/sync_e/video_vtcntr
-add wave -noupdate /testbench/du_e/graphics_e/video_clk
-add wave -noupdate /testbench/du_e/graphics_e/video_shift_clk
-add wave -noupdate /testbench/du_e/graphics_e/video_hzsync
-add wave -noupdate /testbench/du_e/graphics_e/video_vtsync
-add wave -noupdate /testbench/du_e/graphics_e/video_blank
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/video_frm
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/video_on
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/video_hzon
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/video_vton
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/video_word
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/video_pixel
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/video_rdy
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/video_req
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_b/trdy
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_b/treq
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_b/vrdy
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_b/vreq
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/desser_g/desser_e/desser_clk
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/desser_g/desser_e/des_frm
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/desser_g/desser_e/des_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/desser_g/desser_e/ser_data
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/vram_e/max_depthgt1_g/mem_e/rd_addr
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/vram_e/max_depthgt1_g/mem_e/rd_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/vram_e/dst_data
-add wave -noupdate /testbench/du_e/graphics_e/dmacfgvideo_req
-add wave -noupdate /testbench/du_e/graphics_e/dmacfgvideo_rdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/dmavideo_req
-add wave -noupdate /testbench/du_e/graphics_e/dmavideo_rdy
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_b/dmacfg_p/state
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/ctlr_do
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/ctlr_do_dv
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/dmaso_irdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/dmaso_data
-add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_di_dv
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_di
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {20699047909 fs} 0} {{Cursor 2} {20740730130 fs} 0}
 quietly wave cursor active 2

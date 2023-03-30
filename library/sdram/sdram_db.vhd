@@ -219,6 +219,19 @@ package sdram_db is
 		(fpga => ecp5, param => WWNXL,  value =>   2),
 		(fpga => ecp5, param => WIDL,   value =>   4));
 
+
+		-- (fpga => ecp5, param => STRL,   value =>   4),
+		-- (fpga => ecp5, param => DQSL,   value =>   0),
+		-- (fpga => ecp5, param => DQSZL,  value =>   0),
+		-- (fpga => ecp5, param => DQZL,   value =>   0),
+		-- (fpga => ecp5, param => WWNL,   value =>   0),
+		-- (fpga => ecp5, param => STRXL,  value =>   0),
+		-- (fpga => ecp5, param => DQSXL,  value =>   0),
+		-- (fpga => ecp5, param => DQSZXL, value =>   0),
+		-- (fpga => ecp5, param => DQZXL,  value =>   0),
+		-- (fpga => ecp5, param => WWNXL,  value =>   0),
+		-- (fpga => ecp5, param => WIDL,   value =>   1));
+
 	function sdrmark_standard (
 		constant mark : sdram_chips)
 		return sdram_standards;
@@ -374,8 +387,12 @@ package body sdram_db is
 			end case;
 		when STRL =>
 			for i in cltab'range loop
+				assert false
+				report " ******* " & natural'image(clval(i)) & " ******* " & integer'image(lat)
+				severity NOTE;
 				clval(i) := cltab(i) + lat;
 			end loop;
+			
 			return clval;
 		when DQSZL|DQSL|DQZL =>
 			if stdr=ddr2 then

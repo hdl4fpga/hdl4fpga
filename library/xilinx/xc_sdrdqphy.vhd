@@ -61,17 +61,17 @@ entity xc_sdrdqphy is
 		clkx2       : in  std_logic := '-';
 		clkx2_shift : in  std_logic := '-';
 
-		sys_wlreq   : in  std_logic := '-';
-		sys_wlrdy   : out std_logic;
+		phy_wlreq   : in  std_logic := '-';
+		phy_wlrdy   : out std_logic;
+		phy_rlreq   : in  std_logic;
+		phy_rlrdy   : buffer std_logic;
 
-		sys_rlreq   : in  std_logic;
-		sys_rlrdy   : buffer std_logic;
 		read_rdy    : in  std_logic;
 		read_req    : buffer std_logic;
 		read_brst   : out std_logic;
 		write_rdy   : in  std_logic;
 		write_req   : buffer std_logic;
-		sto_synced  : buffer std_logic;
+		phy_locked  : buffer std_logic;
 
 		sys_dmt     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
 		sys_sti     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
@@ -158,7 +158,7 @@ begin
 		tp_dqssel(1-1 downto 0) & dqspre & tp_dqidly(6-1 downto 0)       when "01",
 		'0'                     & dqspre & '0' & half_align & data_align when others;
 
-	sys_wlrdy <= to_stdulogic(to_bit(sys_wlreq));
+	phy_wlrdy <= to_stdulogic(to_bit(phy_wlreq));
 	rl_b : block
 	begin
 
@@ -170,12 +170,12 @@ begin
 		begin
 			if rising_edge(iod_clk) then
 				if rst='1' then
-					sys_rlrdy <= to_stdulogic(to_bit(sys_rlreq));
+					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
 					adjdqi_req <= to_stdlogicvector(to_bitvector(adjdqi_rdy));
 					adjsto_req <= to_stdulogic(to_bit(adjsto_rdy));
 					state      := s_init;
-				elsif (sys_rlrdy xor to_stdulogic(to_bit(sys_rlreq)))='0' then
+				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='0' then
 					adjdqs_req <= to_stdulogic(to_bit(adjdqs_rdy));
 					adjdqi_req <= to_stdlogicvector(to_bitvector(adjdqi_rdy));
 					adjsto_req <= to_stdulogic(to_bit(adjsto_rdy));
@@ -217,7 +217,7 @@ begin
 					when s_sto =>
 						if (sy_read_rdy xor to_stdulogic(to_bit(read_req)))='0' then
 							if (adjsto_rdy xor to_stdulogic(to_bit(adjsto_req)))='0' then
-								sys_rlrdy <= to_stdulogic(to_bit(sys_rlreq));
+								phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 							else
 								read_req <= not sy_read_rdy;
 							end if;
@@ -385,7 +385,7 @@ begin
 			step_rdy  => step_rdy,
 			sys_req   => adjsto_req,
 			sys_rdy   => adjsto_rdy,
-			synced    => sto_synced);
+			synced    => phy_locked);
 
 	end block;
 
@@ -702,7 +702,7 @@ begin
 			process (iod_clk)
 			begin
 				if rising_edge(iod_clk) then
-					sw <= sys_rlrdy xor to_stdulogic(to_bit(sys_rlreq));
+					sw <= phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq));
 				end if;
 			end process;
 
@@ -905,7 +905,7 @@ begin
 			clk270 => clk_shift,
 			
 			di270(17)             => dqspre,
-			di270(16)             => sto_synced,
+			di270(16)             => phy_locked,
 			di270(16-1 downto 12) => lat_sti,
 			di270(12-1 downto  8) => sys_dqt,
 			di270( 8-1 downto  4) => sys_sti,

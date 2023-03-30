@@ -38,26 +38,26 @@ entity ecp5_sdrbaphy is
 		sclk    : in  std_logic;
 		eclk    : in  std_logic;
 
-		phy_rst : in  std_logic_vector(0 to cmmd_gear-1);
-		phy_cs  : in  std_logic_vector(0 to cmmd_gear-1);
-		phy_cke : in  std_logic_vector(0 to cmmd_gear-1);
-		phy_b   : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
-		phy_a   : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
-		phy_ras : in  std_logic_vector(0 to cmmd_gear-1);
-		phy_cas : in  std_logic_vector(0 to cmmd_gear-1);
-		phy_we  : in  std_logic_vector(0 to cmmd_gear-1);
-		phy_odt : in  std_logic_vector(0 to cmmd_gear-1);
+		sys_rst : in  std_logic_vector(0 to cmmd_gear-1);
+		sys_cs  : in  std_logic_vector(0 to cmmd_gear-1);
+		sys_cke : in  std_logic_vector(0 to cmmd_gear-1);
+		sys_b   : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
+		sys_a   : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
+		sys_ras : in  std_logic_vector(0 to cmmd_gear-1);
+		sys_cas : in  std_logic_vector(0 to cmmd_gear-1);
+		sys_we  : in  std_logic_vector(0 to cmmd_gear-1);
+		sys_odt : in  std_logic_vector(0 to cmmd_gear-1);
 
-		sdr_rst : out std_logic;
-		sdr_cs  : out std_logic;
-		sdr_ck  : out std_logic;
-		sdr_cke : out std_logic;
-		sdr_odt : out std_logic;
-		sdr_ras : out std_logic;
-		sdr_cas : out std_logic;
-		sdr_we  : out std_logic;
-		sdr_b   : out std_logic_vector(bank_size-1 downto 0);
-		sdr_a   : out std_logic_vector(addr_size-1 downto 0));
+		sdram_rst : out std_logic;
+		sdram_cs  : out std_logic;
+		sdram_ck  : out std_logic;
+		sdram_cke : out std_logic;
+		sdram_odt : out std_logic;
+		sdram_ras : out std_logic;
+		sdram_cas : out std_logic;
+		sdram_we  : out std_logic;
+		sdram_b   : out std_logic_vector(bank_size-1 downto 0);
+		sdram_a   : out std_logic_vector(addr_size-1 downto 0));
 end;
 
 architecture ecp5 of ecp5_sdrbaphy is
@@ -83,7 +83,7 @@ begin
 			del_mode => "DQS_CMD_CLK")
 		port map (
 			a => ck,
-			z => sdr_ck);
+			z => sdram_ck);
 
 	end block;
 
@@ -93,9 +93,9 @@ begin
 		port map (
 			rst  => rst,
 			sclk => sclk,
-			d0 => phy_b(cmmd_gear*i+0),
-			d1 => phy_b(cmmd_gear*i+1),
-			q  => sdr_b(i));
+			d0 => sys_b(cmmd_gear*i+0),
+			d1 => sys_b(cmmd_gear*i+1),
+			q  => sdram_b(i));
 	end generate;
 
 	a_g : for i in 0 to addr_size-1 generate
@@ -103,34 +103,34 @@ begin
 		port map (
 			rst  => rst,
 			sclk => sclk,
-			d0   => phy_a(cmmd_gear*i+0),
-			d1   => phy_a(cmmd_gear*i+1),
-			q    => sdr_a(i));
+			d0   => sys_a(cmmd_gear*i+0),
+			d1   => sys_a(cmmd_gear*i+1),
+			q    => sdram_a(i));
 	end generate;
 
 	ras_i : oddrx1f
 	port map (
 		rst  => rst,
 		sclk => sclk,
-		d0   => phy_ras(0),
-		d1   => phy_ras(1),
-		q    => sdr_ras);
+		d0   => sys_ras(0),
+		d1   => sys_ras(1),
+		q    => sdram_ras);
 
 	cas_i :oddrx1f
 	port map (
 		rst  => rst,
 		sclk => sclk,
-		d0   => phy_cas(0),
-		d1   => phy_cas(1),
-		q    => sdr_cas);
+		d0   => sys_cas(0),
+		d1   => sys_cas(1),
+		q    => sdram_cas);
 
 	we_i : oddrx1f
 	port map (
 		rst  => rst,
 		sclk => sclk,
-		d0   => phy_we(0),
-		d1   => phy_we(1),
-		q    => sdr_we);
+		d0   => sys_we(0),
+		d1   => sys_we(1),
+		q    => sdram_we);
 
 	cs_b : block
 		signal cs : std_logic;
@@ -141,8 +141,8 @@ begin
 			rst  => rst,
 			sclk => sclk,
 			eclk => eclk, 
-			d0   => phy_cs(0),
-			d1   => phy_cs(1),
+			d0   => sys_cs(0),
+			d1   => sys_cs(1),
 			q    => cs);
 
 		delay_i : delayg
@@ -150,7 +150,7 @@ begin
 			del_mode => "DQS_ALIGNED_X2")
 		port map (
 			a => cs,
-			z => sdr_cs);
+			z => sdram_cs);
 
 	end block;
 
@@ -158,24 +158,24 @@ begin
 	port map (
 		rst  => rst,
 		sclk => sclk,
-		d0   => phy_cke(0),
-		d1   => phy_cke(1),
-		q    => sdr_cke);
+		d0   => sys_cke(0),
+		d1   => sys_cke(1),
+		q    => sdram_cke);
 
 	odt_i : oddrx1f
 	port map (
 		rst  => rst,
 		sclk => sclk,
-		d0   => phy_odt(0),
-		d1   => phy_odt(1),
-		q    => sdr_odt);
+		d0   => sys_odt(0),
+		d1   => sys_odt(1),
+		q    => sdram_odt);
 
 	rst_i : oddrx1f
 	port map (
 		rst  => rst,
 		sclk => sclk,
-		d0   => phy_rst(0),
-		d1   => phy_rst(1),
-		q    => sdr_rst);
+		d0   => sys_rst(0),
+		d1   => sys_rst(1),
+		q    => sdram_rst);
 
 end;

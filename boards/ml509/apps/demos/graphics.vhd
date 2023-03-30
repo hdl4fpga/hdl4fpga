@@ -220,7 +220,7 @@ architecture graphics of ml509 is
 	signal ctlrphy_frm    : std_logic;
 	signal ctlrphy_trdy   : std_logic;
 	signal ctlr_inirdy    : std_logic;
-	signal ctlrphy_synced : std_logic;
+	signal ctlrphy_locked : std_logic;
 	signal ctlrphy_ini    : std_logic;
 	signal ctlrphy_rw     : std_logic;
 	signal ctlrphy_wlreq  : std_logic;
@@ -983,7 +983,7 @@ begin
 		phy_trdy   => ctlrphy_trdy,
 		phy_rw     => ctlrphy_rw,
 		phy_ini    => ctlrphy_ini,
-		phy_synced => ctlrphy_synced,
+		phy_locked => ctlrphy_locked,
 
 		phy_cmd    => ctlrphy_cmd,
 		phy_wlreq  => ctlrphy_wlreq,

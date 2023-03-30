@@ -248,28 +248,26 @@ architecture graphics of ulx4m_ld is
 	signal ctlrphy_cmd   : std_logic_vector(0 to 3-1);
 	signal ctlrphy_ba    : std_logic_vector(cmmd_gear*ddram_ba'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(cmmd_gear*ddram_a'length-1 downto 0);
-	signal ctlrphy_dst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmt   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqst  : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_dqso  : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_dmt   : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_dmo   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_dqi   : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqt   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqv   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqv   : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+
 	signal sdr_ba        : std_logic_vector(ddram_ba'length-1 downto 0);
 	signal sdr_a         : std_logic_vector(ddram_a'length-1 downto 0);
 
+	signal ctlr_clk      : std_logic;
 	signal video_clk     : std_logic;
 	signal videoio_clk   : std_logic;
 	signal video_lck     : std_logic;
 	signal video_shift_clk : std_logic;
 	signal dvid_crgb     : std_logic_vector(8-1 downto 0);
-
-
-	signal ctlr_clk      : std_logic;
 
 	constant mem_size    : natural := 8*(1024*8);
 	signal so_frm        : std_logic;
@@ -641,9 +639,8 @@ begin
 		ctlrphy_odt  => ctlrphy_odt(0),
 		ctlrphy_b    => sdr_ba,
 		ctlrphy_a    => sdr_a,
-		ctlrphy_dst  => ctlrphy_dst,
-		ctlrphy_dso  => ctlrphy_dso,
-		ctlrphy_dmi  => ctlrphy_dmi,
+		ctlrphy_dst  => ctlrphy_dqst,
+		ctlrphy_dso  => ctlrphy_dqso,
 		ctlrphy_dmt  => ctlrphy_dmt,
 		ctlrphy_dmo  => ctlrphy_dmo,
 		ctlrphy_dqi  => ctlrphy_dqi,
@@ -744,69 +741,68 @@ begin
 
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
-		debug         => debug,
-		sdr_tcp       => sdram_tcp,
-		cmmd_gear     => cmmd_gear,
-		data_gear     => data_gear,
-		bank_size     => ddram_ba'length,
-		addr_size     => ddram_a'length,
-		word_size     => word_size,
-		byte_size     => byte_size)
+		debug      => debug,
+		sdram_tcp    => sdram_tcp,
+		cmmd_gear  => cmmd_gear,
+		data_gear  => data_gear,
+		bank_size  => ddram_ba'length,
+		addr_size  => ddram_a'length,
+		word_size  => word_size,
+		byte_size  => byte_size)
 	port map (
-		tpin          => btn(1),
-		rst           => ddrphy_rst,
-		sync_clk      => clk_25mhz,
-		clkop         => physys_clk,
-		sclk          => ctlr_clk,
-		rdy           => ddrphy_rdy,
-		phy_frm       => ctlrphy_frm,
-		phy_trdy      => ctlrphy_trdy,
-		phy_cmd       => ctlrphy_cmd,
-		phy_rw        => ctlrphy_rw,
-		phy_ini       => ctlrphy_ini,
-		phy_locked    => sdrphy_locked,
+		tpin       => btn(1),
+		rst        => ddrphy_rst,
+		sync_clk   => clk_25mhz,
+		clkop      => physys_clk,
+		sclk       => ctlr_clk,
+		rdy        => ddrphy_rdy,
+		phy_frm    => ctlrphy_frm,
+		phy_trdy   => ctlrphy_trdy,
+		phy_cmd    => ctlrphy_cmd,
+		phy_rw     => ctlrphy_rw,
+		phy_ini    => ctlrphy_ini,
+		phy_synced => sdrphy_locked,
 
-		phy_wlreq     => ctlrphy_wlreq,
-		phy_wlrdy     => ctlrphy_wlrdy,
+		phy_wlreq  => ctlrphy_wlreq,
+		phy_wlrdy  => ctlrphy_wlrdy,
 
-		phy_rlreq     => ctlrphy_rlreq,
-		phy_rlrdy     => ctlrphy_rlrdy,
+		phy_rlreq  => ctlrphy_rlreq,
+		phy_rlrdy  => ctlrphy_rlrdy,
 
-		phy_rst       => ctlrphy_rst,
-		phy_cs        => ctlrphy_cs,
-		phy_cke       => ctlrphy_cke,
-		phy_ras       => ctlrphy_ras,
-		phy_cas       => ctlrphy_cas,
-		phy_we        => ctlrphy_we,
-		phy_odt       => ctlrphy_odt,
-		phy_b         => ctlrphy_ba,
-		phy_a         => ctlrphy_a,
-		phy_dqsi      => ctlrphy_dso,
-		phy_dqst      => ctlrphy_dst,
-		phy_dmi       => ctlrphy_dmo,
-		phy_dmt       => ctlrphy_dmt,
-		phy_dmo       => ctlrphy_dmi,
-		phy_dqi       => ctlrphy_dqo,
-		phy_dqt       => ctlrphy_dqt,
-		phy_dqo       => ctlrphy_dqi,
-		phy_sti       => ctlrphy_sto,
-		phy_sto       => ctlrphy_sti,
+		sys_rst    => ctlrphy_rst,
+		sys_cs     => ctlrphy_cs,
+		sys_cke    => ctlrphy_cke,
+		sys_ras    => ctlrphy_ras,
+		sys_cas    => ctlrphy_cas,
+		sys_we     => ctlrphy_we,
+		sys_odt    => ctlrphy_odt,
+		sys_b      => ctlrphy_ba,
+		sys_a      => ctlrphy_a,
+		sys_dqsi   => ctlrphy_dqso,
+		sys_dqst   => ctlrphy_dqst,
+		sys_dmi    => ctlrphy_dmo,
+		sys_dmt    => ctlrphy_dmt,
+		sys_dqi    => ctlrphy_dqo,
+		sys_dqt    => ctlrphy_dqt,
+		sys_dqo    => ctlrphy_dqi,
+		sys_sti    => ctlrphy_sto,
+		sys_sto    => ctlrphy_sti,
 
-		sdr_rst       => ddram_reset_n,
-		sdr_ck        => ddram_clk,
-		sdr_cke       => ddram_cke,
-		sdr_cs        => ddram_cs_n,
-		sdr_ras       => ddram_ras_n,
-		sdr_cas       => ddram_cas_n,
-		sdr_we        => ddram_we_n,
-		sdr_odt       => ddram_odt,
-		sdr_b         => ddram_ba,
-		sdr_a         => ddram_a,
+		sdram_rst    => ddram_reset_n,
+		sdram_clk    => ddram_clk,
+		sdram_cke    => ddram_cke,
+		sdram_cs     => ddram_cs_n,
+		sdram_ras    => ddram_ras_n,
+		sdram_cas    => ddram_cas_n,
+		sdram_we     => ddram_we_n,
+		sdram_odt    => ddram_odt,
+		sdram_b      => ddram_ba,
+		sdram_a      => ddram_a,
 
-		sdr_dm        => open,
-		sdr_dq        => ddram_dq,
-		sdr_dqs       => ddram_dqs,
-		tp => tp_phy);
+		sdram_dm     => open,
+		sdram_dq     => ddram_dq,
+		sdram_dqs    => ddram_dqs,
+		tp         => tp_phy);
 	ddram_dm <= (others => '0');
 
 	-- VGA --
