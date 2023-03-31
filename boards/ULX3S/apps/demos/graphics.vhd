@@ -801,44 +801,44 @@ begin
 
 		sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 		generic map (
-			cmmd_gear => 1,
-			data_gear => 1,
-			bank_size => sdram_ba'length,
-			addr_size => sdram_a'length,
-			word_size => word_size,
-			byte_size => byte_size)
+			cmmd_gear  => 1,
+			data_gear  => 1,
+			bank_size  => sdram_ba'length,
+			addr_size  => sdram_a'length,
+			word_size  => word_size,
+			byte_size  => byte_size)
 		port map (
 			sclk       => ctlr_clk,
-			rst       => sdrsys_rst,
+			rst        => sdrsys_rst,
 	
 			phy_trdy   => ctlrphy_trdy,
-			sys_cs(0)        => ctlrphy_cs,
-			sys_cke(0)       => ctlrphy_cke,
-			sys_ras(0)       => ctlrphy_ras,
-			sys_cas(0)       => ctlrphy_cas,
-			sys_we(0)        => ctlrphy_we,
-			sys_b         => ctlrphy_b,
-			sys_a         => ctlrphy_a,
-			sys_dqsi      => ctlrphy_dqso,
-			sys_dqst      => ctlrphy_dqst,
-			sys_dmi       => ctlrphy_dmo,
-			sys_dqi       => ctlrphy_dqo,
-			sys_dqt       => ctlrphy_dqt,
-			sys_dqo       => phy_do,
-			sys_sti       => sdrphy_sti,
-			sys_sto       => ctlrphy_sti,
+			sys_cs(0)  => ctlrphy_cs,
+			sys_cke(0) => ctlrphy_cke,
+			sys_ras(0) => ctlrphy_ras,
+			sys_cas(0) => ctlrphy_cas,
+			sys_we(0)  => ctlrphy_we,
+			sys_b      => ctlrphy_b,
+			sys_a      => ctlrphy_a,
+			sys_dqsi   => ctlrphy_dqso,
+			sys_dqst   => ctlrphy_dqst,
+			sys_dmi    => ctlrphy_dmo,
+			sys_dqi    => ctlrphy_dqo,
+			sys_dqt    => ctlrphy_dqt,
+			sys_dqo    => phy_do,
+			sys_sti    => sdrphy_sti,
+			sys_sto    => ctlrphy_sti,
 	
-			sdram_clk       => sdram_clk,
-			sdram_cke       => sdram_cke,
-			sdram_cs        => sdram_csn,
-			sdram_ras       => sdram_rasn,
-			sdram_cas       => sdram_casn,
-			sdram_we        => sdram_wen,
-			sdram_b         => sdram_ba,
-			sdram_a         => sdram_a,
+			sdram_clk  => sdram_clk,
+			sdram_cke  => sdram_cke,
+			sdram_cs   => sdram_csn,
+			sdram_ras  => sdram_rasn,
+			sdram_cas  => sdram_casn,
+			sdram_we   => sdram_wen,
+			sdram_b    => sdram_ba,
+			sdram_a    => sdram_a,
 	
-			sdram_dm        => sdram_dqm,
-			sdram_dq        => sdram_d);
+			sdram_dm   => sdram_dqm,
+			sdram_dq   => sdram_d);
 
 		sdram_sti : entity hdl4fpga.latency
 		generic map (
