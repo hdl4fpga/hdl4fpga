@@ -49,6 +49,7 @@ entity ecp5_sdrphy is
 		sync_clk  : in std_logic;
 		sclk      : in std_logic;
 		eclk      : in std_logic;
+		ddrdel    : in std_logic;
 		ms_pause  : in  std_logic;
 
 		phy_frm    : buffer std_logic;
@@ -112,16 +113,12 @@ end;
 
 architecture ecp5 of ecp5_sdrphy is
 
-	signal sync_rst : std_logic;
-
 	signal rl_req   : std_logic_vector(sdram_dqs'range);
 	signal rl_rdy   : std_logic_vector(sdram_dqs'range);
 	signal wl_rdy   : std_logic_vector(0 to word_size/byte_size-1);
 
-	signal ddrsys_b : std_logic_vector(sys_b'range);
-	signal ddrsys_a : std_logic_vector(sys_a'range);
-
-	signal ddrdel   : std_logic;
+	signal sdrsys_b : std_logic_vector(sys_b'range);
+	signal sdrsys_a : std_logic_vector(sys_a'range);
 
 	signal read_req : std_logic_vector(sdram_dqs'range);
 	signal read_rdy : std_logic_vector(sdram_dqs'range);
@@ -133,37 +130,6 @@ architecture ecp5 of ecp5_sdrphy is
 	signal tp_dq : std_logic_vector(1 to 32*sdram_dqs'length);
 
 begin
-
-	sdr3baphy_i : entity hdl4fpga.ecp5_sdrbaphy
-	generic map (
-		cmmd_gear => cmmd_gear,
-		bank_size => bank_size,
-		addr_size => addr_size)
-	port map (
-		rst     => phy_rst,
-		eclk    => eclk,
-		sclk    => sclk,
-          
-		sys_rst => sys_rst,
-		sys_cs  => sys_cs,
-		sys_cke => sys_cke,
-		sys_b   => ddrsys_b,
-		sys_a   => ddrsys_a,
-		sys_ras => sys_ras,
-		sys_cas => sys_cas,
-		sys_we  => sys_we,
-		sys_odt => sys_odt,
-        
-		sdram_rst => sdram_rst,
-		sdram_ck => sdram_clk,
-		sdram_cke => sdram_cke,
-		sdram_odt => sdram_odt,
-		sdram_cs  => sdram_cs,
-		sdram_ras => sdram_ras,
-		sdram_cas => sdram_cas,
-		sdram_we  => sdram_we,
-		sdram_b   => sdram_b,
-		sdram_a   => sdram_a);
 
 	write_leveling_p : process (phy_wlreq, wl_rdy)
 		variable z : std_logic;
@@ -183,8 +149,8 @@ begin
 
 	begin
 
-		ddrsys_b <= sys_b when leveling='0' else (others => '0');
-		ddrsys_a <= sys_a when leveling='0' else (others => '0');
+		sdrsys_b <= sys_b when leveling='0' else (others => '0');
+		sdrsys_a <= sys_a when leveling='0' else (others => '0');
 
 		process (phy_trdy, sclk)
 			variable s_pre : std_logic;
@@ -212,7 +178,7 @@ begin
 			variable state : states;
 		begin
 			if rising_edge(sclk) then
-				if sync_rst='1' then
+				if rst='1' then
 					read_rdy <= to_stdlogicvector(to_bitvector(read_req));
 					state := s_idle;
 				else
@@ -247,11 +213,11 @@ begin
 			end if;
 		end process;
 
-		process (sync_rst, sclk)
+		process (rst, sclk)
 			variable z : std_logic;
 		begin
 			if rising_edge(sclk) then
-				if sync_rst='1' then
+				if rst='1' then
 					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 					phy_ini <= '0';
 				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
@@ -271,20 +237,51 @@ begin
 		rl_req <= (others => phy_rlreq);
 	end block;
 
+	sdrbaphy_i : entity hdl4fpga.ecp5_sdrbaphy
+	generic map (
+		cmmd_gear => cmmd_gear,
+		bank_size => bank_size,
+		addr_size => addr_size)
+	port map (
+		rst     => rst,
+		eclk    => eclk,
+		sclk    => sclk,
+          
+		sys_rst => sys_rst,
+		sys_cs  => sys_cs,
+		sys_cke => sys_cke,
+		sys_b   => sdrsys_b,
+		sys_a   => sdrsys_a,
+		sys_ras => sys_ras,
+		sys_cas => sys_cas,
+		sys_we  => sys_we,
+		sys_odt => sys_odt,
+        
+		sdram_rst => sdram_rst,
+		sdram_ck => sdram_clk,
+		sdram_cke => sdram_cke,
+		sdram_odt => sdram_odt,
+		sdram_cs  => sdram_cs,
+		sdram_ras => sdram_ras,
+		sdram_cas => sdram_cas,
+		sdram_we  => sdram_we,
+		sdram_b   => sdram_b,
+		sdram_a   => sdram_a);
+
 	dmi <= shuffle_vector(sys_dmi, gear => data_gear, size => 1);
 	dqi <= shuffle_vector(sys_dqi, gear => data_gear, size => byte_size);
 
 	tp <= multiplex(tp_dq, tpin);
 	phy_locked <= '1' when dqs_locked=(dqs_locked'range => '1') else '0';
 	byte_g : for i in word_size/byte_size-1 downto 0 generate
-		sdr3phy_i : entity hdl4fpga.ecp5_sdrdqphy
+		sdrphy_i : entity hdl4fpga.ecp5_sdrdqphy
 		generic map (
 			debug      => debug,
 			taps       => natural(ceil((sdram_tcp-25.0e-12)/25.0e-12)), -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
 			data_gear  => data_gear,
 			byte_size  => byte_size)
 		port map (
-			rst        => phy_rst,
+			rst        => rst,
 			sclk       => sclk,
 			eclk       => eclk,
 			ddrdel     => ddrdel,

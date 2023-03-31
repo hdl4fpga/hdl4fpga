@@ -223,7 +223,6 @@ architecture graphics of ulx4m_ld is
 	signal sys_rst       : std_logic;
 
 	signal ctlr_rst    : std_logic;
-	signal sdrphy_rst    : std_logic;
 
 	signal dramclk_lck   : std_logic;
 
@@ -280,7 +279,6 @@ architecture graphics of ulx4m_ld is
 
 	signal sclk          : std_logic;
 	signal eclk          : std_logic;
-	alias  ctlr_clk      : std_logic is sclk;
 
     signal video_pixel   : std_logic_vector(0 to 32-1);
 
@@ -292,8 +290,9 @@ architecture graphics of ulx4m_ld is
 	signal tp_phy        : std_logic_vector(1 to 32);
 	signal sdrphy_locked : std_logic;
 
+	signal sdrphy_rst    : std_logic;
 	signal ms_pause      : std_logic;
-	signal phy_rst  : std_logic;
+	signal ddrdel        : std_logic;
 
 begin
 
@@ -389,9 +388,10 @@ begin
 		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_mhz/hack, 10);
 		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/hack/1.0e6, 10);
 
-		signal clkfb : std_logic;
+		signal clkfb       : std_logic;
+		signal clkop       : std_logic;
+		signal memsync_rst : std_logic;
 
-		signal clkop    : std_logic;
 	begin
 
 		assert false
@@ -444,7 +444,7 @@ begin
 			REFCLK    => open,
 			CLKINTFB  => open);
 
-		sdrphy_rst <= not dramclk_lck;
+		memsync_rst <= not dramclk_lck;
     	mem_sync_b : block
 
         	component mem_sync
@@ -471,7 +471,6 @@ begin
     		signal pll_lock : std_logic;
     		signal update   : std_logic;
     		signal ready    : std_logic;
-			signal ddrdel   : std_logic;
 
     		attribute FREQUENCY_PIN_ECLKO : string;
     		attribute FREQUENCY_PIN_ECLKO of  eclksyncb_i : label is ftoa(1.0e-6/sdram_tcp, 10);
@@ -490,7 +489,7 @@ begin
     		mem_sync_i : mem_sync
     		port map (
     			start_clk => sync_clk,
-    			rst       => sdrphy_rst,
+    			rst       => memsync_rst,
     			dll_lock  => dll_lock,
     			pll_lock  => pll_lock,
     			update    => update,
@@ -501,15 +500,6 @@ begin
     			dll_rst   => dll_rst,
     			ddr_rst   => ddr_rst,
     			ready     => ready);
-
-        	process (ddr_rst, sclk)
-        	begin
-        		if ddr_rst='1' then
-        			phy_rst <= '1';
-        		elsif rising_edge(sclk) then
-        			phy_rst <= '0';
-        		end if;
-        	end process;
 
     		eclksyncb_i : eclksyncb
     		port map (
@@ -540,16 +530,26 @@ begin
     			ddrdel   => ddrdel,
     			lock     => dll_lock);
 
-        	process (sdrphy_rst, ready, ctlr_clk)
+        	process (ddr_rst, sclk)
         	begin
-        		if sdrphy_rst='1' then
+        		if ddr_rst='1' then
+        			sdrphy_rst <= '1';
+        		elsif rising_edge(sclk) then
+        			sdrphy_rst <= '0';
+        		end if;
+        	end process;
+
+        	process (memsync_rst, ready, sclk)
+        	begin
+        		if memsync_rst='1' then
         			ctlr_rst <= '1';
         		elsif ready='0' then
         			ctlr_rst <= '1';
-        		elsif rising_edge(ctlr_clk) then
-        			ctlr_rst <= sdrphy_rst;
+        		elsif rising_edge(sclk) then
+        			ctlr_rst <= memsync_rst;
         		end if;
         	end process;
+
     	end block;
 	
 	end block;
@@ -722,7 +722,7 @@ begin
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
-		ctlr_clk     => ctlr_clk,
+		ctlr_clk     => sclk,
 		ctlr_rst     => ctlr_rst,
 		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
@@ -802,11 +802,11 @@ begin
 	tp_b : block
 		signal tp_dv : std_logic;
 	begin
-		process (ctlr_clk)
+		process (sclk)
 			variable q : std_logic;
 			variable q1 : std_logic := '0';
 		begin
-			if rising_edge(ctlr_clk) then
+			if rising_edge(sclk) then
 				if ctlrphy_sti(0)='1' then
 					if q='0' then
 						q1 := not q1;
@@ -826,11 +826,11 @@ begin
 		
 	end block;
 
-	process (ctlr_clk)
+	process (sclk)
 		variable q0 : std_logic;
 		variable q1 : std_logic;
 	begin
-		if rising_edge(ctlr_clk) then
+		if rising_edge(sclk) then
 			cam_scl  <= q0;
 			gpio_scl <= q1;
 			q0 := not q0;
@@ -850,11 +850,14 @@ begin
 		byte_size  => byte_size)
 	port map (
 		tpin       => btn(1),
-		rst        => phy_rst,
+
+		rst        => sdrphy_rst,
 		sync_clk   => clk_25mhz,
 		sclk       => sclk,
 		eclk       => eclk,
 		ms_pause   => ms_pause,
+		ddrdel     => ddrdel,
+
 		phy_frm    => ctlrphy_frm,
 		phy_trdy   => ctlrphy_trdy,
 		phy_cmd    => ctlrphy_cmd,
