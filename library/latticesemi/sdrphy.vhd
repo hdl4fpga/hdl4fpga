@@ -82,8 +82,6 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 architecture ecp of sdrphy is
-	subtype byte is std_logic_vector(byte_size-1 downto 0);
-	type byte_vector is array (natural range <>) of byte;
 
 	signal dmt : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal dmo : std_logic_vector(word_size/byte_size-1 downto 0);

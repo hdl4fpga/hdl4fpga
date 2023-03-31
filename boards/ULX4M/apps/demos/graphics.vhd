@@ -24,6 +24,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
@@ -478,7 +479,6 @@ begin
     		attribute FREQUENCY_PIN_CDIVX of clkdivf_i : label is ftoa(1.0e-6/(sdram_tcp*2.0), 10);
     		signal eclko : std_logic;
     		signal cdivx : std_logic;
-			alias sync_clk : std_logic is clk_25mhz;
 			signal ddr_rst : std_logic;
     	begin
 
@@ -487,7 +487,7 @@ begin
 
     		mem_sync_i : mem_sync
     		port map (
-    			start_clk => sync_clk,
+    			start_clk => clk_25mhz,
     			rst       => memsync_rst,
     			dll_lock  => dll_lock,
     			pll_lock  => pll_lock,
@@ -840,18 +840,17 @@ begin
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
 		debug      => debug,
-		sdram_tcp    => sdram_tcp,
 		cmmd_gear  => cmmd_gear,
 		data_gear  => data_gear,
 		bank_size  => ddram_ba'length,
 		addr_size  => ddram_a'length,
 		word_size  => word_size,
-		byte_size  => byte_size)
+		byte_size  => byte_size,
+		taps       => natural(ceil((sdram_tcp-25.0e-12)/25.0e-12))) -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
 	port map (
 		tpin       => btn(1),
 
 		rst        => sdrphy_rst,
-		sync_clk   => clk_25mhz,
 		sclk       => sclk,
 		eclk       => eclk,
 		ms_pause   => ms_pause,

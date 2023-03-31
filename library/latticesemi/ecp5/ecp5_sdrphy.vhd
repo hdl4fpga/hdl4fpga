@@ -24,7 +24,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.math_real.all;
 
 library ecp5u;
 use ecp5u.components.all;
@@ -36,21 +35,20 @@ use hdl4fpga.sdram_param.all;
 entity ecp5_sdrphy is
 	generic (
 		debug     : boolean := false;
-		sdram_tcp   : real;
 		cmmd_gear : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
 		data_gear : natural := 32;
 		word_size : natural := 16;
-		byte_size : natural := 8);
+		byte_size : natural := 8;
+		taps      : natural := 0);
 	port (
-		tpin      : in std_logic;
+		tpin      : in std_logic := '-';
 		rst       : in std_logic;
-		sync_clk  : in std_logic;
 		sclk      : in std_logic;
-		eclk      : in std_logic;
-		ddrdel    : in std_logic;
-		ms_pause  : in  std_logic;
+		eclk      : in std_logic := '-';
+		ddrdel    : in std_logic := '-';
+		ms_pause  : in  std_logic := '-';
 
 		phy_frm    : buffer std_logic;
 		phy_trdy   : in  std_logic;
@@ -64,15 +62,15 @@ entity ecp5_sdrphy is
 		phy_rlreq  : in  std_logic := '0';
 		phy_rlrdy  : buffer std_logic;
 
-		sys_rst    : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_cs     : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '0');
+		sys_rst    : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '1');
+		sys_cs     : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '1');
 		sys_cke    : in  std_logic_vector(cmmd_gear-1 downto 0);
 		sys_ras    : in  std_logic_vector(cmmd_gear-1 downto 0);
 		sys_cas    : in  std_logic_vector(cmmd_gear-1 downto 0);
 		sys_we     : in  std_logic_vector(cmmd_gear-1 downto 0);
 		sys_b      : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
 		sys_a      : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
-		sys_odt    : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_odt    : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '0');
 		
 		sys_dmi    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 
@@ -277,7 +275,7 @@ begin
 		sdrphy_i : entity hdl4fpga.ecp5_sdrdqphy
 		generic map (
 			debug      => debug,
-			taps       => natural(ceil((sdram_tcp-25.0e-12)/25.0e-12)), -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
+			taps       => taps,
 			data_gear  => data_gear,
 			byte_size  => byte_size)
 		port map (

@@ -255,11 +255,15 @@ architecture graphics of ulx3s is
 
 	signal sys_rst       : std_logic;
 
-	signal ddrsys_rst    : std_logic;
-	signal ddrsys_clks   : std_logic_vector(0 to 0);
+	signal sdrsys_rst    : std_logic;
 
 	signal sdram_lck     : std_logic;
 	signal sdram_dqs     : std_logic_vector(word_size/byte_size-1 downto 0);
+
+	signal ctlrphy_frm   : std_logic;
+	signal ctlrphy_trdy  : std_logic;
+	signal ctlrphy_ini   : std_logic;
+	signal ctlrphy_rw    : std_logic;
 
 	signal ctlrphy_rst   : std_logic;
 	signal ctlrphy_cke   : std_logic;
@@ -270,10 +274,9 @@ architecture graphics of ulx3s is
 	signal ctlrphy_odt   : std_logic;
 	signal ctlrphy_b     : std_logic_vector(sdram_ba'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(sdram_a'length-1 downto 0);
-	signal ctlrphy_dst   : std_logic_vector(data_gear-1 downto 0);
-	signal ctlrphy_dso   : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_dqst   : std_logic_vector(data_gear-1 downto 0);
+	signal ctlrphy_dqso   : std_logic_vector(data_gear-1 downto 0);
 	signal ctlrphy_dmt   : std_logic_vector(data_gear-1 downto 0);
-	signal ctlrphy_dmi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmo   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqi   : std_logic_vector(data_gear*word_size-1 downto 0);
 	signal ctlrphy_dqt   : std_logic_vector(data_gear-1 downto 0);
@@ -300,7 +303,7 @@ architecture graphics of ulx3s is
     signal video_dot     : std_logic;
 	signal dvid_crgb     : std_logic_vector(8-1 downto 0);
 
-	alias ctlr_clk       : std_logic is ddrsys_clks(0);
+	signal ctlr_clk      : std_logic;
 
 	constant mem_size    : natural := 8*(1024*8);
 	signal so_frm        : std_logic;
@@ -469,9 +472,9 @@ begin
 			REFCLK    => open,
 			CLKINTFB  => open);
 
-		ddrsys_rst <= not sdram_lck;
+		sdrsys_rst <= not sdram_lck;
 
-		ctlrphy_dso <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
+		ctlrphy_dqso <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
 
 	end block;
 
@@ -714,6 +717,7 @@ begin
 		profile      => 0,
 
 		sdram_tcp    => sdram_tcp,
+		phy_latencies => ecp5g1_latencies,
 		mark         => MT48LC256MA27E ,
 		data_gear    => data_gear,
 		cmmd_gear    => cmmd_gear,
@@ -748,7 +752,7 @@ begin
 		dvid_crgb    => dvid_crgb,
 
 		ctlr_clk     => ctlr_clk,
-		ctlr_rst     => ddrsys_rst,
+		ctlr_rst     => sdrsys_rst,
 		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
 
@@ -760,9 +764,8 @@ begin
 		ctlrphy_we   => ctlrphy_we,
 		ctlrphy_b    => ctlrphy_b,
 		ctlrphy_a    => ctlrphy_a,
-		ctlrphy_dst  => ctlrphy_dst,
-		ctlrphy_dso  => open,
-		ctlrphy_dmi  => ctlrphy_dmi,
+		ctlrphy_dst => ctlrphy_dqst,
+		ctlrphy_dso => open,
 		ctlrphy_dmo  => ctlrphy_dmo,
 		ctlrphy_dqi  => ctlrphy_dqi,
 		ctlrphy_dqt  => ctlrphy_dqt,
@@ -796,47 +799,46 @@ begin
 			ctlrphy_dqi <= phy_do;
 		end generate;
 
-		sdrphy_e : entity hdl4fpga.sdrphy
+		sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 		generic map (
-			cmmd_latency  => false,
-			read_latency  => true,
-			write_latency => true,
-			bank_size     => sdram_ba'length,
-			addr_size     => sdram_a'length,
-			word_size     => word_size,
-			byte_size     => byte_size)
+			cmmd_gear => 1,
+			data_gear => 1,
+			bank_size => sdram_ba'length,
+			addr_size => sdram_a'length,
+			word_size => word_size,
+			byte_size => byte_size)
 		port map (
-			sys_clk       => ctlr_clk,
-			sys_rst       => ddrsys_rst,
+			sclk       => ctlr_clk,
+			rst       => sdrsys_rst,
 	
-			phy_cs        => ctlrphy_cs,
-			phy_cke       => ctlrphy_cke,
-			phy_ras       => ctlrphy_ras,
-			phy_cas       => ctlrphy_cas,
-			phy_we        => ctlrphy_we,
-			phy_b         => ctlrphy_b,
-			phy_a         => ctlrphy_a,
-			phy_dsi       => ctlrphy_dso,
-			phy_dst       => ctlrphy_dst,
-			phy_dmi       => ctlrphy_dmo,
-			phy_dmo       => ctlrphy_dmi,
-			phy_dqi       => ctlrphy_dqo,
-			phy_dqt       => ctlrphy_dqt,
-			phy_dqo       => phy_do,
-			phy_sti       => sdrphy_sti,
-			phy_sto       => ctlrphy_sti,
+			phy_trdy   => ctlrphy_trdy,
+			sys_cs(0)        => ctlrphy_cs,
+			sys_cke(0)       => ctlrphy_cke,
+			sys_ras(0)       => ctlrphy_ras,
+			sys_cas(0)       => ctlrphy_cas,
+			sys_we(0)        => ctlrphy_we,
+			sys_b         => ctlrphy_b,
+			sys_a         => ctlrphy_a,
+			sys_dqsi      => ctlrphy_dqso,
+			sys_dqst      => ctlrphy_dqst,
+			sys_dmi       => ctlrphy_dmo,
+			sys_dqi       => ctlrphy_dqo,
+			sys_dqt       => ctlrphy_dqt,
+			sys_dqo       => phy_do,
+			sys_sti       => sdrphy_sti,
+			sys_sto       => ctlrphy_sti,
 	
-			sdr_clk       => sdram_clk,
-			sdr_cke       => sdram_cke,
-			sdr_cs        => sdram_csn,
-			sdr_ras       => sdram_rasn,
-			sdr_cas       => sdram_casn,
-			sdr_we        => sdram_wen,
-			sdr_b         => sdram_ba,
-			sdr_a         => sdram_a,
+			sdram_clk       => sdram_clk,
+			sdram_cke       => sdram_cke,
+			sdram_cs        => sdram_csn,
+			sdram_ras       => sdram_rasn,
+			sdram_cas       => sdram_casn,
+			sdram_we        => sdram_wen,
+			sdram_b         => sdram_ba,
+			sdram_a         => sdram_a,
 	
-			sdr_dm        => sdram_dqm,
-			sdr_dq        => sdram_d);
+			sdram_dm        => sdram_dqm,
+			sdram_dq        => sdram_d);
 
 		sdram_sti : entity hdl4fpga.latency
 		generic map (
