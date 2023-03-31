@@ -137,6 +137,7 @@ package sdram_db is
 		(mark => AS4CD3LC12,     param => tXPR,    value => 260.00e-9 + 10.0e-9),  -- tMin : tRFC + 10 ns
 		(mark => AS4CD3LC12,     param => tREFI,   value =>  64.00e-3/8192.0));
 
+	type latency_vector     is array (device_latencies) of integer;
 	constant sdram_latency_tab : sdram_latency_vector := (
 		(stdr => ddr,  param => cDLL,       value => 200),
 
@@ -200,7 +201,7 @@ package sdram_db is
 		DQZXL  => 0,
 		WWNXL  => 2,
 		WIDL   => 4);
--- 
+
 	constant ecp5g1_latencies : latency_vector := (
 		STRL   => 4,
 		DQSZL  => 0,

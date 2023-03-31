@@ -38,6 +38,7 @@ entity demo_graphics is
 		ena_burstref : boolean := true;
 
 		sdram_tcp    : real;
+		phy_latencies    : latency_vector := (others => 0);
 		mark         : sdram_chips;
 		data_gear    : natural;
 		cmmd_gear    : natural;
@@ -962,6 +963,7 @@ begin
 			chip         => mark,
 			tcp          => sdram_tcp,
 
+			latencies  => phy_latencies,
 			cmmd_gear    => cmmd_gear,
 			bank_size    => bank_size,
 			addr_size    => addr_size,

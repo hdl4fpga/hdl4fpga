@@ -682,6 +682,7 @@ begin
 		-- debug        => true,
 		debug        => debug,
 		profile      => 2,
+		phy_latencies    => ecp5g4_latencies,
 
 		sdram_tcp      => 2.0*sdram_tcp,
 		-- mark         => MT41K8G107,
