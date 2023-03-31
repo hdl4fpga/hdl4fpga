@@ -99,9 +99,15 @@ entity ecp5_sdrphy is
 		sdram_b    : out std_logic_vector(bank_size-1 downto 0);
 		sdram_a    : out std_logic_vector(addr_size-1 downto 0);
 
+		sdram_dqt  : buffer std_logic_vector(word_size-1 downto 0);
 		sdram_dm   : inout std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dmo  : buffer std_logic_vector(word_size/byte_size-1 downto 0);
 		sdram_dq   : inout std_logic_vector(word_size-1 downto 0);
+		sdram_dqo  : buffer std_logic_vector(word_size-1 downto 0);
+
 		sdram_dqs  : inout std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dqst : buffer std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dqso : buffer std_logic_vector(word_size/byte_size-1 downto 0);
 		tp         : out std_logic_vector(1 to 32));
 end;
 
@@ -435,10 +441,15 @@ begin
 			sys_dqst   => sys_dqst,
 			sys_dqsi   => sys_dqsi,
 
+			sdram_dqt  => sdram_dqt((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dqo  => sdram_dqo((i+1)*byte_size-1 downto i*byte_size),
 			sdram_dq   => sdram_dq((i+1)*byte_size-1 downto i*byte_size),
 			sdram_dm   => sdram_dm(i),
+			sdram_dmo  => sdram_dmo(i),
 
 			sdram_dqs  => sdram_dqs(i),
+			sdram_dqst => sdram_dqst(i),
+			sdram_dqso => sdram_dqso(i),
 			tp         => tp_dq(i*32+1 to (i+1)*32));
 	end generate;
 

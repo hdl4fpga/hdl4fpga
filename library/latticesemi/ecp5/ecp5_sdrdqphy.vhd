@@ -66,8 +66,14 @@ entity ecp5_sdrdqphy is
 		sys_dqst  : in  std_logic_vector(data_gear-1 downto 0);
 
 		sdram_dqs : inout std_logic;
+		sdram_dqst : buffer std_logic;
+		sdram_dqso : buffer std_logic;
+
 		sdram_dm  : inout std_logic;
+		sdram_dmo : buffer std_logic;
 		sdram_dq  : inout std_logic_vector(byte_size-1 downto 0);
+		sdram_dqt : buffer std_logic_vector(byte_size-1 downto 0);
+		sdram_dqo : buffer std_logic_vector(byte_size-1 downto 0);
 
 		tp        : out std_logic_vector(1 to 32));
 
@@ -117,12 +123,7 @@ architecture ecp5 of ecp5_sdrdqphy is
 	signal wlstep_rdy   : std_logic;
 	signal dqi0         : std_logic;
 
-	signal sdram_dqst   : std_logic;
-	signal sdram_dqso   : std_logic;
 	signal sdram_dmt    : std_logic;
-	signal sdram_dmo    : std_logic;
-	signal sdram_dqt    : std_logic_vector(sdram_dq'range);
-	signal sdram_dqo    : std_logic_vector(sdram_dq'range);
 
 begin
 
