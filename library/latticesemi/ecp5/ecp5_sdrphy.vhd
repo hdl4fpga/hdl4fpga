@@ -46,11 +46,10 @@ entity ecp5_sdrphy is
 	port (
 		tpin      : in std_logic;
 		rst       : in std_logic;
-		rdy       : out std_logic;
 		sync_clk  : in std_logic;
-		clkop     : in std_logic;
-		sclk      : buffer std_logic;
-		eclk      : buffer std_logic;
+		sclk      : in std_logic;
+		eclk      : in std_logic;
+		ms_pause  : in  std_logic;
 
 		phy_frm    : buffer std_logic;
 		phy_trdy   : in  std_logic;
@@ -113,7 +112,6 @@ end;
 
 architecture ecp5 of ecp5_sdrphy is
 
-	signal ddr_rst  : std_logic;
 	signal sync_rst : std_logic;
 
 	signal rl_req   : std_logic_vector(sdram_dqs'range);
@@ -123,61 +121,10 @@ architecture ecp5 of ecp5_sdrphy is
 	signal ddrsys_b : std_logic_vector(sys_b'range);
 	signal ddrsys_a : std_logic_vector(sys_a'range);
 
-	signal ms_pause : std_logic;
 	signal ddrdel   : std_logic;
 
 	signal read_req : std_logic_vector(sdram_dqs'range);
 	signal read_rdy : std_logic_vector(sdram_dqs'range);
-
-	component mem_sync
-		port (
-			start_clk : in  std_logic;
-			rst       : in  std_logic;
-			dll_lock  : in  std_logic;
-			pll_lock  : in  std_logic;
-			update    : in  std_logic;
-			pause     : out std_logic;
-			stop      : out std_logic;
-			freeze    : out std_logic;
-			uddcntln  : out std_logic;
-			dll_rst   : out std_logic;
-			ddr_rst   : out std_logic;
-			ready     : out std_logic);
-	end component;
-
-	function shuffle_vector (
-		constant data : std_logic_vector;
-		constant gear : natural;
-		constant size : natural) 
-		return std_logic_vector is
-		variable val : std_logic_vector(data'range);
-	begin	
-		for i in data'length/(gear*size)-1 downto 0 loop
-			for j in gear-1 downto 0 loop
-				for l in size-1 downto 0 loop
-					val((i*gear+j)*size+l) := data(j*(data'length/gear)+i*size+l);
-				end loop;
-			end loop;
-		end loop;
-		return val;
-	end;
-
-	function unshuffle_vector (
-		constant data : std_logic_vector;
-		constant gear : natural;
-		constant size : natural) 
-		return std_logic_vector is
-		variable val : std_logic_vector(data'range);
-	begin	
-		for i in data'length/(gear*size)-1 downto 0 loop
-			for j in data_gear-1 downto 0 loop
-				for l in byte_size-1 downto 0 loop
-					val(j*(data'length/gear)+i*size+l) := data((i*gear+j)*size+l);
-				end loop;
-			end loop;
-		end loop;
-		return val;
-	end;
 
 	signal dmi : std_logic_vector(sys_dmi'range);
 	signal dqi : std_logic_vector(sys_dqi'range);
@@ -187,91 +134,13 @@ architecture ecp5 of ecp5_sdrphy is
 
 begin
 
-	mem_sync_b : block
-		signal uddcntln : std_logic;
-		signal freeze   : std_logic;
-		signal stop     : std_logic;
-		signal dll_rst  : std_logic;
-		signal dll_lock : std_logic;
-		signal pll_lock : std_logic;
-		signal update   : std_logic;
-		signal ready    : std_logic;
-
-		attribute FREQUENCY_PIN_ECLKO : string;
-		attribute FREQUENCY_PIN_ECLKO of  eclksyncb_i : label is ftoa(1.0e-6/sdram_tcp, 10);
-
-		attribute FREQUENCY_PIN_CDIVX : string;
-		attribute FREQUENCY_PIN_CDIVX of clkdivf_i : label is ftoa(1.0e-6/(sdram_tcp*2.0), 10);
-		signal eclko : std_logic;
-		signal cdivx : std_logic;
-	begin
-
-		pll_lock <= '1';
-		update   <= '0';
-
-		mem_sync_i : mem_sync
-		port map (
-			start_clk => sync_clk,
-			rst       => rst,
-			dll_lock  => dll_lock,
-			pll_lock  => pll_lock,
-			update    => update,
-			pause     => ms_pause,
-			stop      => stop,
-			freeze    => freeze,
-			uddcntln  => uddcntln,
-			dll_rst   => dll_rst,
-			ddr_rst   => ddr_rst,
-			ready     => ready);
-		rdy <= ready;
-
-		eclksyncb_i : eclksyncb
-		port map (
-			stop  => stop,
-			eclki => clkop,
-			eclko => eclko);
-	
-		clkdivf_i : clkdivf
-		generic map (
-			div => "2.0")
-		port map (
-			rst     => ddr_rst,
-			alignwd => '0',
-			clki    => eclko,
-			cdivx   => cdivx);
-		eclk <= eclko;
-		sclk <= transport cdivx after natural(sdram_tcp*1.0e12*(3.0/4.0))*1 ps;
--- 
-		-- eclk <= transport eclko after natural(sdram_tcp*1.0e12*(3.0/4.0))*1 ps;
-		-- sclk <= cdivx;
-	
-		ddrdll_i : ddrdlla
-		port map (
-			rst      => dll_rst,
-			clk      => eclk,
-			freeze   => freeze,
-			uddcntln => uddcntln,
-			ddrdel   => ddrdel,
-			lock     => dll_lock);
-
-	end block;
-
-	process (ddr_rst, sclk)
-	begin
-		if ddr_rst='1' then
-			sync_rst <= '1';
-		elsif rising_edge(sclk) then
-			sync_rst <= '0';
-		end if;
-	end process;
-
 	sdr3baphy_i : entity hdl4fpga.ecp5_sdrbaphy
 	generic map (
 		cmmd_gear => cmmd_gear,
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
-		rst     => ddr_rst,
+		rst     => phy_rst,
 		eclk    => eclk,
 		sclk    => sclk,
           
@@ -415,7 +284,7 @@ begin
 			data_gear  => data_gear,
 			byte_size  => byte_size)
 		port map (
-			rst        => ddr_rst,
+			rst        => phy_rst,
 			sclk       => sclk,
 			eclk       => eclk,
 			ddrdel     => ddrdel,

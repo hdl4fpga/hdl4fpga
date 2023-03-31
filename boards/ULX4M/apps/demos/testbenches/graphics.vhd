@@ -480,18 +480,6 @@ begin
 		ddram_dm     => dm,
 		ddram_odt    => odt);
 
-	-- process (rgmii_txc)
-		-- variable en : std_logic;
-	-- begin
-		-- if rising_edge(rgmii_txc) then
-			-- mii_txen <= en;
-			-- en := rgmii_txen;
-			-- mii_txd(0 to 4-1) <= rgmii_txd;
-		-- elsif rising_edge(rgmii_txc) then
-			-- mii_txd(4 to 8-1) <= rgmii_txd;
-		-- end if;
-	-- end process;
-
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
 		dll_data => datarx_null,
@@ -500,58 +488,10 @@ begin
 		mii_irdy => mii_txen,
 		mii_data => mii_txd);
 
-
 	ddr_clk_p <= ddr_clk;
 	ddr_clk_n <= not ddr_clk;
 	dqs_n <= not dqs;
 
-	-- process (ds_n, dqs_n)
-	-- begin
-		-- for i in ds_n'range loop
-			-- case ds_n(i) is
-			-- when '0'|'1' =>
-				-- dqs_n(i) <= ds_n(i);
-			-- when others =>
-				-- dqs_n(i) <= 'H';
-			-- end case;
-			-- ds_n(i) <= dqs_n(0);
-		-- end loop;
-	-- end process;
--- 
-	-- process (ds, dqs)
-	-- begin
-		-- for i in ds'range loop
-			-- case ds(i) is
-			-- when '0'|'1' =>
-				-- dqs(i) <= ds(i);
-			-- when others =>
-				-- dqs(i) <= 'L';
-			-- end case;
-			-- ds(i) <= dqs(0);
-		-- end loop;
-	-- end process;
--- 
-	-- process (dd, dq)
-	-- begin
-		-- for i in dd'range loop
-			-- case dd(i) is
-			-- when '0'|'1' =>
-				-- dq(i) <= dd(i);
-			-- when others =>
-				-- dq(i) <= 'L';
-			-- end case;
-			-- dd(i) <= dq(i);
-		-- end loop;
-	-- end process;
--- 
-	-- process (dm)
-	-- begin
-		-- dmi <= (others => '1');
-		-- for i in 0 to data_bytes-1 loop
-			-- dmi(i) <= dm(i);
-		-- end loop;
-	-- end process;
--- 
 	mt_u : ddr3_model
 	port map (
 		rst_n => rst_n,
@@ -564,11 +504,6 @@ begin
 		We_n  => we_n,
 		Ba    => ba,
 		Addr  => addr,
-		-- Dm_tdqs => dmi,
-		-- Dq    => dd,
-		-- Dqs   => ds,
-		-- Dqs_n => ds_n,
-		-- tdqs_n => tdqs_n,
 		Dm_tdqs => dm,
 		Dq    => dq,
 		Dqs   => dqs,

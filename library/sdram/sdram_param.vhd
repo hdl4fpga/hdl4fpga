@@ -230,6 +230,18 @@ package sdram_param is
 		constant rgtr  : sdram_latency_rgtr)
 		return natural_vector;
 
+	function shuffle_vector (
+		constant data : std_logic_vector;
+		constant gear : natural;
+		constant size : natural)
+		return std_logic_vector;
+
+	function unshuffle_vector (
+		constant data : std_logic_vector;
+		constant gear : natural;
+		constant size : natural)
+		return std_logic_vector;
+
 end package;
 
 package body sdram_param is
@@ -339,6 +351,40 @@ package body sdram_param is
 			lattab(i) := query_data(i).lat;
 		end loop;
 		return lattab;
+	end;
+
+	function shuffle_vector (
+		constant data : std_logic_vector;
+		constant gear : natural;
+		constant size : natural) 
+		return std_logic_vector is
+		variable val : std_logic_vector(data'range);
+	begin	
+		for i in data'length/(gear*size)-1 downto 0 loop
+			for j in gear-1 downto 0 loop
+				for l in size-1 downto 0 loop
+					val((i*gear+j)*size+l) := data(j*(data'length/gear)+i*size+l);
+				end loop;
+			end loop;
+		end loop;
+		return val;
+	end;
+
+	function unshuffle_vector (
+		constant data : std_logic_vector;
+		constant gear : natural;
+		constant size : natural) 
+		return std_logic_vector is
+		variable val : std_logic_vector(data'range);
+	begin	
+		for i in data'length/(gear*size)-1 downto 0 loop
+			for j in gear-1 downto 0 loop
+				for l in size-1 downto 0 loop
+					val(j*(data'length/gear)+i*size+l) := data((i*gear+j)*size+l);
+				end loop;
+			end loop;
+		end loop;
+		return val;
 	end;
 
 end package body;

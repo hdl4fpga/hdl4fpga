@@ -222,10 +222,8 @@ architecture graphics of ulx4m_ld is
 
 	signal sys_rst       : std_logic;
 
-	signal ddrsys_rst    : std_logic;
-	signal ddrphy_rst    : std_logic;
-	signal ddrphy_rdy    : std_logic;
-	signal physys_clk    : std_logic;
+	signal ctlr_rst    : std_logic;
+	signal sdrphy_rst    : std_logic;
 
 	signal dramclk_lck   : std_logic;
 
@@ -261,7 +259,6 @@ architecture graphics of ulx4m_ld is
 	signal sdr_ba        : std_logic_vector(ddram_ba'length-1 downto 0);
 	signal sdr_a         : std_logic_vector(ddram_a'length-1 downto 0);
 
-	signal ctlr_clk      : std_logic;
 	signal video_clk     : std_logic;
 	signal videoio_clk   : std_logic;
 	signal video_lck     : std_logic;
@@ -281,6 +278,10 @@ architecture graphics of ulx4m_ld is
 
 	signal sio_clk       : std_logic;
 
+	signal sclk          : std_logic;
+	signal eclk          : std_logic;
+	alias  ctlr_clk      : std_logic is sclk;
+
     signal video_pixel   : std_logic_vector(0 to 32-1);
 
 	constant io_link     : io_comms := profile_tab(app_profile).comms;
@@ -290,6 +291,9 @@ architecture graphics of ulx4m_ld is
 	signal tp            : std_logic_vector(1 to 32);
 	signal tp_phy        : std_logic_vector(1 to 32);
 	signal sdrphy_locked : std_logic;
+
+	signal ms_pause      : std_logic;
+	signal phy_rst  : std_logic;
 
 begin
 
@@ -387,6 +391,7 @@ begin
 
 		signal clkfb : std_logic;
 
+		signal clkop    : std_logic;
 	begin
 
 		assert false
@@ -421,7 +426,7 @@ begin
         port map (
 			rst       => '0',
 			clki      => clk_25mhz,
-			CLKFB     => physys_clk,
+			CLKFB     => clkop,
             PHASESEL0 => '0', PHASESEL1 => '0',
 			PHASEDIR  => '0',
             PHASESTEP => '0', PHASELOADREG => '0',
@@ -430,7 +435,7 @@ begin
 			ENCLKOS   => '0',
 			ENCLKOS2  => '0',
             ENCLKOS3  => '0',
-			CLKOP     => physys_clk,
+			CLKOP     => clkop,
 			CLKOS     => open,
 			CLKOS2    => open,
 			CLKOS3    => open,
@@ -439,6 +444,114 @@ begin
 			REFCLK    => open,
 			CLKINTFB  => open);
 
+		sdrphy_rst <= not dramclk_lck;
+    	mem_sync_b : block
+
+        	component mem_sync
+        		port (
+        			start_clk : in  std_logic;
+        			rst       : in  std_logic;
+        			dll_lock  : in  std_logic;
+        			pll_lock  : in  std_logic;
+        			update    : in  std_logic;
+        			pause     : out std_logic;
+        			stop      : out std_logic;
+        			freeze    : out std_logic;
+        			uddcntln  : out std_logic;
+        			dll_rst   : out std_logic;
+        			ddr_rst   : out std_logic;
+        			ready     : out std_logic);
+        	end component;
+
+    		signal uddcntln : std_logic;
+    		signal freeze   : std_logic;
+    		signal stop     : std_logic;
+    		signal dll_rst  : std_logic;
+    		signal dll_lock : std_logic;
+    		signal pll_lock : std_logic;
+    		signal update   : std_logic;
+    		signal ready    : std_logic;
+			signal ddrdel   : std_logic;
+
+    		attribute FREQUENCY_PIN_ECLKO : string;
+    		attribute FREQUENCY_PIN_ECLKO of  eclksyncb_i : label is ftoa(1.0e-6/sdram_tcp, 10);
+
+    		attribute FREQUENCY_PIN_CDIVX : string;
+    		attribute FREQUENCY_PIN_CDIVX of clkdivf_i : label is ftoa(1.0e-6/(sdram_tcp*2.0), 10);
+    		signal eclko : std_logic;
+    		signal cdivx : std_logic;
+			alias sync_clk : std_logic is clk_25mhz;
+			signal ddr_rst : std_logic;
+    	begin
+
+    		pll_lock <= '1';
+    		update   <= '0';
+
+    		mem_sync_i : mem_sync
+    		port map (
+    			start_clk => sync_clk,
+    			rst       => sdrphy_rst,
+    			dll_lock  => dll_lock,
+    			pll_lock  => pll_lock,
+    			update    => update,
+    			pause     => ms_pause,
+    			stop      => stop,
+    			freeze    => freeze,
+    			uddcntln  => uddcntln,
+    			dll_rst   => dll_rst,
+    			ddr_rst   => ddr_rst,
+    			ready     => ready);
+
+        	process (ddr_rst, sclk)
+        	begin
+        		if ddr_rst='1' then
+        			phy_rst <= '1';
+        		elsif rising_edge(sclk) then
+        			phy_rst <= '0';
+        		end if;
+        	end process;
+
+    		eclksyncb_i : eclksyncb
+    		port map (
+    			stop  => stop,
+    			eclki => clkop,
+    			eclko => eclko);
+    	
+    		clkdivf_i : clkdivf
+    		generic map (
+    			div => "2.0")
+    		port map (
+    			rst     => ddr_rst,
+    			alignwd => '0',
+    			clki    => eclko,
+    			cdivx   => cdivx);
+    		eclk <= eclko;
+    		sclk <= transport cdivx after natural(sdram_tcp*1.0e12*(3.0/4.0))*1 ps;
+    -- 
+    		-- eclk <= transport eclko after natural(sdram_tcp*1.0e12*(3.0/4.0))*1 ps;
+    		-- sclk <= cdivx;
+    	
+    		ddrdll_i : ddrdlla
+    		port map (
+    			rst      => dll_rst,
+    			clk      => eclk,
+    			freeze   => freeze,
+    			uddcntln => uddcntln,
+    			ddrdel   => ddrdel,
+    			lock     => dll_lock);
+
+        	process (sdrphy_rst, ready, ctlr_clk)
+        	begin
+        		if sdrphy_rst='1' then
+        			ctlr_rst <= '1';
+        		elsif ready='0' then
+        			ctlr_rst <= '1';
+        		elsif rising_edge(ctlr_clk) then
+        			ctlr_rst <= sdrphy_rst;
+        		end if;
+        	end process;
+    	end block;
+	
 	end block;
 
 	hdlc_g : if io_link=io_hdlc generate
@@ -610,7 +723,7 @@ begin
 		dvid_crgb    => dvid_crgb,
 
 		ctlr_clk     => ctlr_clk,
-		ctlr_rst     => ddrsys_rst,
+		ctlr_rst     => ctlr_rst,
 		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
 		ctlr_cwl     => sdram_params.cwl,
@@ -686,18 +799,6 @@ begin
 	ctlrphy_we(1)  <= '1';
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
 
-	ddrphy_rst <= not dramclk_lck;
-	process (ddrphy_rst, ddrphy_rdy, ctlr_clk)
-	begin
-		if ddrphy_rst='1' then
-			ddrsys_rst <= '1';
-		elsif ddrphy_rdy='0' then
-			ddrsys_rst <= '1';
-		elsif rising_edge(ctlr_clk) then
-			ddrsys_rst <= not dramclk_lck;
-		end if;
-	end process;
-	
 	tp_b : block
 		signal tp_dv : std_logic;
 	begin
@@ -749,18 +850,17 @@ begin
 		byte_size  => byte_size)
 	port map (
 		tpin       => btn(1),
-		rst        => ddrphy_rst,
+		rst        => phy_rst,
 		sync_clk   => clk_25mhz,
-		clkop      => physys_clk,
-		sclk       => ctlr_clk,
-		rdy        => ddrphy_rdy,
+		sclk       => sclk,
+		eclk       => eclk,
+		ms_pause   => ms_pause,
 		phy_frm    => ctlrphy_frm,
 		phy_trdy   => ctlrphy_trdy,
 		phy_cmd    => ctlrphy_cmd,
 		phy_rw     => ctlrphy_rw,
 		phy_ini    => ctlrphy_ini,
 		phy_locked => sdrphy_locked,
-
 		phy_wlreq  => ctlrphy_wlreq,
 		phy_wlrdy  => ctlrphy_wlrdy,
 

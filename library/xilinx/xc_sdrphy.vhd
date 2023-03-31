@@ -144,40 +144,6 @@ architecture xilinx of xc_sdrphy is
 	signal ddrphy_b   : std_logic_vector(sys_b'range);
 	signal ddrphy_a   : std_logic_vector(sys_a'range);
 
-	function shuffle_vector (
-		constant data : std_logic_vector;
-		constant gear : natural;
-		constant size : natural) 
-		return std_logic_vector is
-		variable val : std_logic_vector(data'range);
-	begin	
-		for i in data'length/(gear*size)-1 downto 0 loop
-			for j in gear-1 downto 0 loop
-				for l in size-1 downto 0 loop
-					val((i*gear+j)*size+l) := data(j*(data'length/gear)+i*size+l);
-				end loop;
-			end loop;
-		end loop;
-		return val;
-	end;
-
-	function unshuffle_vector (
-		constant data : std_logic_vector;
-		constant gear : natural;
-		constant size : natural) 
-		return std_logic_vector is
-		variable val : std_logic_vector(data'range);
-	begin	
-		for i in data'length/(gear*size)-1 downto 0 loop
-			for j in data_gear-1 downto 0 loop
-				for l in byte_size-1 downto 0 loop
-					val(j*(data'length/gear)+i*size+l) := data((i*gear+j)*size+l);
-				end loop;
-			end loop;
-		end loop;
-		return val;
-	end;
-
 	signal dmi : std_logic_vector(sys_dmi'range);
 	signal dqi : std_logic_vector(sys_dqi'range);
 	signal dqo : std_logic_vector(sys_dqo'range);
