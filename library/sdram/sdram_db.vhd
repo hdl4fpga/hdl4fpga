@@ -152,8 +152,8 @@ package sdram_db is
 
 	constant xc3sg2_latencies : latency_vector := (
 		STRL   => -2,
-		DQSZL  => -2,
 		DQSL   => -2,
+		DQSZL  => -2,
 		DQZL   => -2,
 		WWNL   => -2,
 		STRXL  =>  0,
@@ -165,8 +165,8 @@ package sdram_db is
 
 	constant xc5vg4_latencies : latency_vector := (
 		STRL   =>  5,
-		DQSZL  => -2,
 		DQSL   => -2,
+		DQSZL  => -2,
 		DQZL   => -1,
 		WWNL   => -3,
 		STRXL  =>  0,
@@ -178,8 +178,8 @@ package sdram_db is
 
 	constant xc7vg4_latencies : latency_vector := (
 		STRL   =>  5,
-		DQSZL  => -3,
 		DQSL   => -3,
+		DQSZL  => -3,
 		DQZL   => -5,
 		WWNL   => -5,
 		STRXL  =>  0,
@@ -191,8 +191,8 @@ package sdram_db is
 
 	constant ecp3g4_latencies : latency_vector := (
 		STRL   => 0,
-		DQSZL  => 0,
 		DQSL   => 0,
+		DQSZL  => 0,
 		DQZL   => 2,
 		WWNL   => 2,
 		STRXL  => 0,
@@ -204,8 +204,8 @@ package sdram_db is
 
 	constant ecp5g1_latencies : latency_vector := (
 		STRL   => 4,
-		DQSZL  => 0,
 		DQSL   => 0,
+		DQSZL  => 0,
 		DQZL   => 0,
 		WWNL   => 0,
 		STRXL  => 0,
@@ -217,8 +217,8 @@ package sdram_db is
 
 	constant ecp5g4_latencies : latency_vector := (
 		STRL   =>  0,
-		DQSZL  =>  0,
-		DQSL   =>  2,
+		DQSL   =>  0,
+		DQSZL  =>  2,
 		DQZL   =>  2,
 		WWNL   => -2,
 		STRXL  =>  0,
