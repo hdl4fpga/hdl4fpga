@@ -33,14 +33,13 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.profiles.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.sdram_param.all;
 
 entity sdram_mpu is
 	generic (
 		tcp           : real := 0.0;
-		fpga          : fpga_devices;
+		latencies     : latency_vector;
 		chip          : sdram_chips;
 		gear          : natural;
 		bl_cod        : std_logic_vector;
@@ -78,7 +77,7 @@ architecture arch of sdram_mpu is
 
 	constant stdr    : sdram_standards := sdrmark_standard(chip);
 
-	constant lwr     : natural          := natural(ceil((sdram_timing(chip, twr)+tcp*real(sdram_latency(fpga, dqsxl)))/tcp));
+	constant lwr     : natural          := natural(ceil((sdram_timing(chip, twr)+tcp*real(latencies(dqsxl)))/tcp));
 	constant lrcd    : natural          := to_sdrlatency(tcp, chip, trcd);
 	constant lrfc    : natural          := to_sdrlatency(tcp, chip, trfc);
 	constant lrp     : natural          := to_sdrlatency(tcp, chip, trp);

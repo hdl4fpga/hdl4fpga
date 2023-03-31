@@ -797,7 +797,6 @@ begin
 		debug => debug,
 		profile      => 1,
 		sdram_tcp    => 2.0*sdram_tcp,
-		fpga         => xc5v,
 		mark         => MT47H512M3,
 		cmmd_gear    => cmmd_gear,
 		data_gear    => data_gear,

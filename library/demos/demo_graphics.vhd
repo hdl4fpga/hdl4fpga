@@ -27,7 +27,6 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.profiles.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.videopkg.all;
 
@@ -39,7 +38,6 @@ entity demo_graphics is
 		ena_burstref : boolean := true;
 
 		sdram_tcp    : real;
-		fpga         : fpga_devices;
 		mark         : sdram_chips;
 		data_gear    : natural;
 		cmmd_gear    : natural;
@@ -961,7 +959,6 @@ begin
 		sdrctlr_e : entity hdl4fpga.sdram_ctlr
 		generic map (
 			debug        => debug,
-			fpga         => fpga,
 			chip         => mark,
 			tcp          => sdram_tcp,
 

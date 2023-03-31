@@ -27,7 +27,6 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.profiles.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
@@ -728,7 +727,6 @@ begin
 
 		ena_burstref => false,
 		sdram_tcp    => sdram_tcp,
-		fpga         => xc3s,
 		mark         => MT48LC256MA27E ,
 		data_gear    => data_gear,
 		cmmd_gear    => cmmd_gear,

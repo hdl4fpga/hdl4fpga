@@ -506,7 +506,6 @@ begin
 		debug        => debug,
 		profile      => 1,
 		sdram_tcp      => sdram_tcp,
-		fpga         => xc3s,
 		mark         => MT46V256M6T,
 		cmmd_gear    => cmmd_gear,
 		data_gear    => data_gear,

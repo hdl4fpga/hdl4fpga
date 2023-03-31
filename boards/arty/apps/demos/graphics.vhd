@@ -673,7 +673,6 @@ begin
 		debug        => debug,
 		profile      => 1,
 		sdram_tcp    => 2.0*sdram_tcp,
-		fpga         => xc7a,
 		mark         => MT41K2G125,
 		burst_length => 8,
 		data_gear    => data_gear,

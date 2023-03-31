@@ -582,7 +582,6 @@ begin
 		profile      => 2,
 
 		sdram_tcp    => 2.0*sdram_tcp,
-		fpga         => hdl4fpga.profiles.ecp3,
 		-- mark         => MT41J1G15E,
 		mark         => MT41K8G125,
 		burst_length => 8,

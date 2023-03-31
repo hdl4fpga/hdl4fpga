@@ -27,7 +27,6 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.profiles.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
@@ -685,7 +684,6 @@ begin
 		profile      => 2,
 
 		sdram_tcp      => 2.0*sdram_tcp,
-		fpga         => ecp5,
 		-- mark         => MT41K8G107,
 		mark         => MT41K8G125,
 		burst_length => 8,

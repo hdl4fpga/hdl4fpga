@@ -30,13 +30,11 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.sdram_param.all;
-use hdl4fpga.profiles.all;
 
 entity sdram_init is
 	generic (
 		debug : boolean;
 		tcp           : real := 0.0;
-		fpga          : fpga_devices;
 		chip          : sdram_chips;
 		ADDR_SIZE : natural := 13;
 		BANK_SIZE : natural := 3);

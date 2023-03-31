@@ -27,12 +27,12 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.profiles.all;
+use hdl4fpga.sdram_param.all;
 use hdl4fpga.sdram_db.all;
 
 entity sdram_sch is
 	generic (
-		fpga       : fpga_devices;
+		latencies  : latency_vector;
 		chip       : sdram_chips;
 
 		delay_size : natural := 64;
@@ -132,18 +132,11 @@ architecture def of sdram_sch is
 	end;
 
 	constant stdr      : sdram_standards := sdrmark_standard(chip);
-	constant strl_tab  : natural_vector  := sdram_schtab(stdr, fpga, strl);
-	constant dqszl_tab : natural_vector  := sdram_schtab(stdr, fpga, dqszl);
-	constant dqsol_tab : natural_vector  := sdram_schtab(stdr, fpga, dqsl);
-	constant dqzl_tab  : natural_vector  := sdram_schtab(stdr, fpga, dqzl);
-	constant wwnl_tab  : natural_vector  := sdram_schtab(stdr, fpga, wwnl);
-
-	constant strx_lat  : natural         := sdram_latency(fpga, strxl);
-	constant dqszx_lat : natural         := sdram_latency(fpga, dqszxl);
-	constant dqsx_lat  : natural         := sdram_latency(fpga, dqsxl);
-	constant dqzx_lat  : natural         := sdram_latency(fpga, dqzxl);
-	constant wwnx_lat  : natural         := sdram_latency(fpga, wwnxl);
-	constant wid_lat   : natural         := sdram_latency(fpga, widl);
+	constant strl_tab  : natural_vector  := sdram_schtab(stdr, latencies, strl);
+	constant dqszl_tab : natural_vector  := sdram_schtab(stdr, latencies, dqszl);
+	constant dqsol_tab : natural_vector  := sdram_schtab(stdr, latencies, dqsl);
+	constant dqzl_tab  : natural_vector  := sdram_schtab(stdr, latencies, dqzl);
+	constant wwnl_tab  : natural_vector  := sdram_schtab(stdr, latencies, wwnl);
 
 	signal wri_sr      : std_logic_vector(0 to delay_size-1);
 	signal rea_sr      : std_logic_vector(0 to delay_size-1);
@@ -164,8 +157,7 @@ begin
 		gear       => data_gear,
 		lat_cod    => cl_cod,
 		lat_tab    => strl_tab,
-		lat_ext    => strx_lat,
-		lat_wid    => wid_lat,
+		lat_wid    => latencies(widl),
 
 		lat_val    => sys_cl,
 		lat_sch    => rea_sr);
@@ -174,8 +166,8 @@ begin
 		gear       => data_gear,
 		lat_cod    => cwl_cod,
 		lat_tab    => dqszl_tab,
-		lat_ext    => dqszx_lat,
-		lat_wid    => wid_lat,
+		lat_ext    => latencies(dqszxl),
+		lat_wid    => latencies(widl),
 
 		lat_val    => sys_cwl,
 		lat_sch    => wri_sr);
@@ -184,8 +176,8 @@ begin
 		gear       => data_gear,
 		lat_cod    => cwl_cod,
 		lat_tab    => dqsol_tab,
-		lat_ext    => dqsx_lat,
-		lat_wid    => wid_lat,
+		lat_ext    => latencies(dqsxl),
+		lat_wid    => latencies(widl),
 
 		lat_val    => sys_cwl,
 		lat_sch    => wri_sr);
@@ -194,8 +186,8 @@ begin
 		gear       => data_gear,
 		lat_cod    => cwl_cod,
 		lat_tab    => dqzl_tab,
-		lat_ext    => dqzx_lat,
-		lat_wid    => wid_lat,
+		lat_ext    => latencies(dqzxl),
+		lat_wid    => latencies(widl),
 
 		lat_val    => sys_cwl,
 		lat_sch    => wri_sr);
@@ -204,8 +196,8 @@ begin
 		gear       => data_gear,
 		lat_cod    => cwl_cod,
 		lat_tab    => wwnl_tab,
-		lat_ext    => wwnx_lat,
-		lat_wid    => wid_lat,
+		lat_ext    => latencies(wwnxl),
+		lat_wid    => latencies(widl),
 
 		lat_val    => sys_cwl,
 		lat_sch    => wri_sr);
@@ -215,7 +207,7 @@ begin
 		lat_cod    => "000",
 		lat_tab    => (0 to 0 => 0),
 		lat_ext    => 2*cmmd_gear,
-		lat_wid    => wid_lat,
+		lat_wid    => latencies(widl),
 
 		lat_val    => "000",
 		lat_sch    => wri_sr);

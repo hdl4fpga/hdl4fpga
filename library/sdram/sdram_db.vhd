@@ -28,7 +28,6 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.profiles.all;
 use hdl4fpga.sdram_param.all;
 
 package sdram_db is
@@ -53,14 +52,6 @@ package sdram_db is
 		MT41K4G107     => ddr3,
 		MT41K8G125     => ddr3,
 		AS4CD3LC12     => ddr3);
-
-	type device_latency_record is record
-		fpga  : fpga_devices;
-		param : device_latencies;
-		value : integer;
-	end record;
-
-	type device_latency_vector is array (natural range <>) of device_latency_record;
 
 	type timing_record is record
 		mark  : sdram_chips;
@@ -158,79 +149,83 @@ package sdram_db is
 		(stdr => ddr3, param => MODu,       value =>  12),
 		(stdr => ddr3, param => XPR,        value =>   5));
 
-	constant device_latency_tab : device_latency_vector := (
-		(fpga => xc3s, param => STRL,   value => -2),
-		(fpga => xc3s, param => DQSZL,  value => -2),
-		(fpga => xc3s, param => DQSL,   value => -2),
-		(fpga => xc3s, param => DQZL,   value => -2),
-		(fpga => xc3s, param => WWNL,   value => -2),
-		(fpga => xc3s, param => STRXL,  value =>  0),
-		(fpga => xc3s, param => DQSZXL, value =>  2),
-		(fpga => xc3s, param => DQSXL,  value =>  0),
-		(fpga => xc3s, param => DQZXL,  value =>  0),
-		(fpga => xc3s, param => WWNXL,  value =>  0),
-		(fpga => xc3s, param => WIDL,   value =>  2),
+	constant xc3sg2_latencies : latency_vector := (
+		STRL   => -2,
+		DQSZL  => -2,
+		DQSL   => -2,
+		DQZL   => -2,
+		WWNL   => -2,
+		STRXL  =>  0,
+		DQSZXL =>  2,
+		DQSXL  =>  0,
+		DQZXL  =>  0,
+		WWNXL  =>  0,
+		WIDL   =>  2);
 
-		(fpga => xc5v, param => STRL,   value =>   5),
-		(fpga => xc5v, param => DQSL,   value =>  -2),
-		(fpga => xc5v, param => DQSZL,  value =>  -2),
-		(fpga => xc5v, param => DQZL,   value =>  -1),
-		(fpga => xc5v, param => WWNL,   value =>  -3),
-		(fpga => xc5v, param => STRXL,  value =>   0),
-		(fpga => xc5v, param => DQSXL,  value =>   0),
-		(fpga => xc5v, param => DQSZXL, value =>   2),
-		(fpga => xc5v, param => DQZXL,  value =>   0),
-		(fpga => xc5v, param => WWNXL,  value =>   0),
-		(fpga => xc5v, param => WIDL,   value =>   4),
+	constant xc5vg4_latencies : latency_vector := (
+		STRL   =>  5,
+		DQSZL  => -2,
+		DQSL   => -2,
+		DQZL   => -1,
+		WWNL   => -3,
+		STRXL  =>  0,
+		DQSZXL =>  0,
+		DQSXL  =>  2,
+		DQZXL  =>  0,
+		WWNXL  =>  0,
+		WIDL   =>  4);
 
-		(fpga => xc7a, param => STRL,   value =>  5),
-		(fpga => xc7a, param => DQSL,   value => -3),
-		(fpga => xc7a, param => DQSZL,  value => -3),
-		(fpga => xc7a, param => DQZL,   value => -5),
-		(fpga => xc7a, param => WWNL,   value => -5),
-		(fpga => xc7a, param => STRXL,  value =>  0),
-		(fpga => xc7a, param => DQSXL,  value =>  2),
-		(fpga => xc7a, param => DQSZXL, value =>  2),
-		(fpga => xc7a, param => DQZXL,  value =>  0),
-		(fpga => xc7a, param => WWNXL,  value =>  0),
-		(fpga => xc7a, param => WIDL,   value =>  4),
+	constant xc7vg4_latencies : latency_vector := (
+		STRL   =>  5,
+		DQSZL  => -3,
+		DQSL   => -3,
+		DQZL   => -5,
+		WWNL   => -5,
+		STRXL  =>  0,
+		DQSZXL =>  2,
+		DQSXL  =>  2,
+		DQZXL  =>  0,
+		WWNXL  =>  0,
+		WIDL   =>  4);
 
-		(fpga => ecp3, param => STRL,   value =>   0),
-		(fpga => ecp3, param => DQSL,   value =>   0),
-		(fpga => ecp3, param => DQSZL,  value =>   0),
-		(fpga => ecp3, param => DQZL,   value =>   2),
-		(fpga => ecp3, param => WWNL,   value =>   2),
-		(fpga => ecp3, param => STRXL,  value =>   0),
-		(fpga => ecp3, param => DQSXL,  value =>   2),
-		(fpga => ecp3, param => DQSZXL, value =>   2),
-		(fpga => ecp3, param => DQZXL,  value =>   0),
-		(fpga => ecp3, param => WWNXL,  value =>   2),
-		(fpga => ecp3, param => WIDL,   value =>   4),
+	constant ecp3g4_latencies : latency_vector := (
+		STRL   => 0,
+		DQSZL  => 0,
+		DQSL   => 0,
+		DQZL   => 2,
+		WWNL   => 2,
+		STRXL  => 0,
+		DQSZXL => 2,
+		DQSXL  => 2,
+		DQZXL  => 0,
+		WWNXL  => 2,
+		WIDL   => 4);
+-- 
+	constant ecp5g1_latencies : latency_vector := (
+		STRL   => 4,
+		DQSZL  => 0,
+		DQSL   => 0,
+		DQZL   => 0,
+		WWNL   => 0,
+		STRXL  => 0,
+		DQSZXL => 0,
+		DQSXL  => 0,
+		DQZXL  => 0,
+		WWNXL  => 0,
+		WIDL   => 1);
 
-		(fpga => ecp5, param => STRL,   value =>   0),
-		(fpga => ecp5, param => DQSL,   value =>   0),
-		(fpga => ecp5, param => DQSZL,  value =>   2),
-		(fpga => ecp5, param => DQZL,   value =>   2),
-		(fpga => ecp5, param => WWNL,   value =>  -2),
-		(fpga => ecp5, param => STRXL,  value =>   0),
-		(fpga => ecp5, param => DQSXL,  value =>   2),
-		(fpga => ecp5, param => DQSZXL, value =>   2),
-		(fpga => ecp5, param => DQZXL,  value =>   0),
-		(fpga => ecp5, param => WWNXL,  value =>   2),
-		(fpga => ecp5, param => WIDL,   value =>   4));
-
-
-		-- (fpga => ecp5, param => STRL,   value =>   4),
-		-- (fpga => ecp5, param => DQSL,   value =>   0),
-		-- (fpga => ecp5, param => DQSZL,  value =>   0),
-		-- (fpga => ecp5, param => DQZL,   value =>   0),
-		-- (fpga => ecp5, param => WWNL,   value =>   0),
-		-- (fpga => ecp5, param => STRXL,  value =>   0),
-		-- (fpga => ecp5, param => DQSXL,  value =>   0),
-		-- (fpga => ecp5, param => DQSZXL, value =>   0),
-		-- (fpga => ecp5, param => DQZXL,  value =>   0),
-		-- (fpga => ecp5, param => WWNXL,  value =>   0),
-		-- (fpga => ecp5, param => WIDL,   value =>   1));
+	constant ecp5g4_latencies : latency_vector := (
+		STRL   =>  0,
+		DQSZL  =>  0,
+		DQSL   =>  2,
+		DQZL   =>  2,
+		WWNL   => -2,
+		STRXL  =>  0,
+		DQSZXL =>  2,
+		DQSXL  =>  2,
+		DQZXL  =>  0,
+		WWNXL  =>  2,
+		WIDL   =>  4);
 
 	function sdrmark_standard (
 		constant mark : sdram_chips)
@@ -246,15 +241,10 @@ package sdram_db is
 		constant param : sdram_latencies)
 		return natural;
 
-	function sdram_latency (
-		constant fpga  : fpga_devices;
-		constant param : device_latencies)
-		return natural;
-
 	function sdram_schtab (
-		constant stdr  : sdram_standards;
-		constant fpga  : fpga_devices;
-		constant tabid : device_latencies)
+		constant stdr      : sdram_standards;
+		constant latencies : latency_vector;
+		constant tabid     : device_latencies)
 		return natural_vector;
 
 	function to_sdrlatency (
@@ -320,21 +310,6 @@ package body sdram_db is
 		return 0;
 	end;
 
-	function sdram_latency (
-		constant fpga  : fpga_devices;
-		constant param : device_latencies)
-		return integer is
-	begin
-		for i in device_latency_tab'range loop
-			if device_latency_tab(i).fpga = fpga then
-				if device_latency_tab(i).param = param then
-					return device_latency_tab(i).value;
-				end if;
-			end if;
-		end loop;
-		return 0;
-	end;
-
 	function to_sdrlatency (
 		constant period : real;
 		constant mark   : sdram_chips;
@@ -355,16 +330,16 @@ package body sdram_db is
 	end;
 
 	function sdram_schtab (
-		constant stdr : sdram_standards;
-		constant fpga  : fpga_devices;
-		constant tabid : device_latencies)
+		constant stdr      : sdram_standards;
+		constant latencies : latency_vector;
+		constant tabid     : device_latencies)
 		return natural_vector is
 
 		constant cwlsel : sdram_latency_rgtr := sdram_selcwl(stdr);
 		constant cltab  : natural_vector := sdram_lattab(stdr, CL);
 		constant cwltab : natural_vector := sdram_lattab(stdr, cwlsel);
 
-		variable lat    : integer := sdram_latency(fpga, tabid);
+		variable lat    : integer := latencies(tabid);
 		variable clval  : natural_vector(cltab'range);
 		variable cwlval : natural_vector(cwltab'range);
 
