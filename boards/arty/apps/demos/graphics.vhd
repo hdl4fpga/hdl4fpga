@@ -888,36 +888,32 @@ begin
 		sdram_dqsi  => ddr3_dqsi,
 		sdram_dqso  => ddr3_dqso);
 
-	ddriob_b : block
-	begin
 		ddr3_cke <= ddr_cke(0);
 		ddr3_cs  <= ddr_cs(0);
 		ddr3_odt <= ddr_odt(0);
 
-		ddr_clks_g : for i in ddr3_clk'range generate
-			ddr_ck_obufds : obufds
-			generic map (
-				iostandard => "DIFF_SSTL135")
-			port map (
-				i  => ddr3_clk(i),
-				o  => ddr3_clk_p,
-				ob => ddr3_clk_n);
-		end generate;
+	ddr_clk_g : for i in ddr3_clk'range generate
+		ddr_ck_obufds : obufds
+		generic map (
+			iostandard => "DIFF_SSTL135")
+		port map (
+			i  => ddr3_clk(i),
+			o  => ddr3_clk_p,
+			ob => ddr3_clk_n);
+	end generate;
 
-		ddr_dqs_g : for i in ddr3_dqs_p'range generate
-			dqsiobuf_i : iobufds
-			generic map (
-				iostandard => "DIFF_SSTL135")
-			port map (
-				t   => ddr3_dqst(i),
-				i   => ddr3_dqso(i),
-				o   => ddr3_dqsi(i),
-				io  => ddr3_dqs_p(i),
-				iob => ddr3_dqs_n(i));
+	ddr_dqs_g : for i in ddr3_dqs_p'range generate
+		dqsiobuf_i : iobufds
+		generic map (
+			iostandard => "DIFF_SSTL135")
+		port map (
+			t   => ddr3_dqst(i),
+			i   => ddr3_dqso(i),
+			o   => ddr3_dqsi(i),
+			io  => ddr3_dqs_p(i),
+			iob => ddr3_dqs_n(i));
 
-		end generate;
-
-	end block;
+	end generate;
 
 	process (sio_clk, sys_clk, ctlr_clk)
 		variable d, e, q : std_logic := '0';
