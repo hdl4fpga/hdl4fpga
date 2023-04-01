@@ -129,6 +129,43 @@ architecture ecp5 of ecp5_sdrphy is
 
 begin
 
+	ck_b : block
+	begin
+
+		gear2_g : if data_gear=2 generate 
+			ck_i : oddrx1f
+			port map (
+				sclk => sclk,
+				d0   => '0',
+				d1   => '1',
+				q    => sdram_clk);
+		end generate;
+
+		gear4_g : if data_gear=4 generate 
+			signal ck : std_logic;
+		begin
+    		ck_i : oddrx2f
+    		port map (
+    			rst  => rst,
+    			sclk => sclk,
+    			eclk => eclk,
+    			d0   => '0',
+    			d1   => '1',
+    			d2   => '0',
+    			d3   => '1',
+    			q    => ck);
+
+    		delay_i : delayg
+    		generic map (
+    			del_value  => 0,
+    			del_mode => "DQS_CMD_CLK")
+    		port map (
+    			a => ck,
+    			z => sdram_clk);
+		end generate;
+
+	end block;
+
 	write_leveling_p : process (phy_wlreq, wl_rdy)
 		variable z : std_logic;
 	begin
@@ -237,7 +274,7 @@ begin
 
 	sdrbaphy_i : entity hdl4fpga.ecp5_sdrbaphy
 	generic map (
-		cmmd_gear => cmmd_gear,
+		gear      => cmmd_gear,
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
@@ -256,7 +293,7 @@ begin
 		sys_odt => sys_odt,
         
 		sdram_rst => sdram_rst,
-		sdram_ck => sdram_clk,
+		sdram_ck  => sdram_clk,
 		sdram_cke => sdram_cke,
 		sdram_odt => sdram_odt,
 		sdram_cs  => sdram_cs,

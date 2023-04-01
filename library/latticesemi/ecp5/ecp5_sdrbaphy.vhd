@@ -29,8 +29,7 @@ use ecp5u.components.all;
 
 entity ecp5_sdrbaphy is
 	generic (
-		clk_inv   : std_logic := '0';
-		cmmd_gear : natural := 2;
+		gear      : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13);
 	port (
@@ -38,15 +37,15 @@ entity ecp5_sdrbaphy is
 		sclk    : in  std_logic;
 		eclk    : in  std_logic;
 
-		sys_rst : in  std_logic_vector(0 to cmmd_gear-1);
-		sys_cs  : in  std_logic_vector(0 to cmmd_gear-1);
-		sys_cke : in  std_logic_vector(0 to cmmd_gear-1);
-		sys_b   : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
-		sys_a   : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
-		sys_ras : in  std_logic_vector(0 to cmmd_gear-1);
-		sys_cas : in  std_logic_vector(0 to cmmd_gear-1);
-		sys_we  : in  std_logic_vector(0 to cmmd_gear-1);
-		sys_odt : in  std_logic_vector(0 to cmmd_gear-1);
+		sys_rst : in  std_logic_vector(0 to gear-1);
+		sys_cs  : in  std_logic_vector(0 to gear-1);
+		sys_cke : in  std_logic_vector(0 to gear-1);
+		sys_b   : in  std_logic_vector(gear*bank_size-1 downto 0);
+		sys_a   : in  std_logic_vector(gear*addr_size-1 downto 0);
+		sys_ras : in  std_logic_vector(0 to gear-1);
+		sys_cas : in  std_logic_vector(0 to gear-1);
+		sys_we  : in  std_logic_vector(0 to gear-1);
+		sys_odt : in  std_logic_vector(0 to gear-1);
 
 		sdram_rst : out std_logic;
 		sdram_cs  : out std_logic;
@@ -60,122 +59,125 @@ entity ecp5_sdrbaphy is
 		sdram_a   : out std_logic_vector(addr_size-1 downto 0));
 end;
 
+library hdl4fpga;
+
 architecture ecp5 of ecp5_sdrbaphy is
 begin
 
-	ck_b : block
-		signal ck : std_logic;
-	begin
-		ck_i : oddrx2f
-		port map (
-			rst  => rst,
-			sclk => sclk,
-			eclk => eclk,
-			d0   => '0' xor clk_inv,
-			d1   => '1' xor clk_inv,
-			d2   => '0' xor clk_inv,
-			d3   => '1' xor clk_inv,
-			q    => ck);
-
-		delay_i : delayg
-		generic map (
-			del_value  => 0,
-			del_mode => "DQS_CMD_CLK")
-		port map (
-			a => ck,
-			z => sdram_ck);
-
-	end block;
-
-	b_g : for i in 0 to bank_size-1 generate
-	begin
-		oddr_i : oddrx1f
-		port map (
-			rst  => rst,
-			sclk => sclk,
-			d0 => sys_b(cmmd_gear*i+0),
-			d1 => sys_b(cmmd_gear*i+1),
-			q  => sdram_b(i));
-	end generate;
-
-	a_g : for i in 0 to addr_size-1 generate
-		oddr_i : oddrx1f
-		port map (
-			rst  => rst,
-			sclk => sclk,
-			d0   => sys_a(cmmd_gear*i+0),
-			d1   => sys_a(cmmd_gear*i+1),
-			q    => sdram_a(i));
-	end generate;
-
-	ras_i : oddrx1f
+	rst_i : entity hdl4fpga.ecp5_ogbx
+	generic map (
+		size => 1,
+		gear => gear)
 	port map (
 		rst  => rst,
 		sclk => sclk,
-		d0   => sys_ras(0),
-		d1   => sys_ras(1),
-		q    => sdram_ras);
-
-	cas_i :oddrx1f
-	port map (
-		rst  => rst,
-		sclk => sclk,
-		d0   => sys_cas(0),
-		d1   => sys_cas(1),
-		q    => sdram_cas);
-
-	we_i : oddrx1f
-	port map (
-		rst  => rst,
-		sclk => sclk,
-		d0   => sys_we(0),
-		d1   => sys_we(1),
-		q    => sdram_we);
+		d    => sys_rst,
+		q(0) => sdram_rst);
 
 	cs_b : block
-		signal cs : std_logic;
 	begin
 
-		cs_i : oshx2a
-		port map (
-			rst  => rst,
-			sclk => sclk,
-			eclk => eclk, 
-			d0   => sys_cs(0),
-			d1   => sys_cs(1),
-			q    => cs);
+		gear1_g : if gear=2 generate
+        	cke_i : entity hdl4fpga.ecp5_ogbx
+        	generic map (
+        		size => 1,
+        		gear => gear)
+        	port map (
+        		rst  => rst,
+        		sclk => sclk,
+        		d    => sys_cs,
+        		q(0) => sdram_cs);
+		end generate;
 
-		delay_i : delayg
-		generic map (
-			del_mode => "DQS_ALIGNED_X2")
-		port map (
-			a => cs,
-			z => sdram_cs);
+		gear2_g : if gear=2 generate
+			signal cs : std_logic;
+		begin
+			cs_i : oshx2a
+			port map (
+				rst  => rst,
+				sclk => sclk,
+				eclk => eclk, 
+				d0   => sys_cs(0),
+				d1   => sys_cs(1),
+				q    => cs);
+	
+			delay_i : delayg
+			generic map (
+				del_mode => "DQS_ALIGNED_X2")
+			port map (
+				a => cs,
+				z => sdram_cs);
+		end generate;
 
 	end block;
 
-	cke_i : oddrx1f
+	cke_i : entity hdl4fpga.ecp5_ogbx
+	generic map (
+		size => 1,
+		gear => gear)
 	port map (
 		rst  => rst,
 		sclk => sclk,
-		d0   => sys_cke(0),
-		d1   => sys_cke(1),
-		q    => sdram_cke);
+		d    => sys_cke,
+		q(0) => sdram_cke);
 
-	odt_i : oddrx1f
+	ras_i : entity hdl4fpga.ecp5_ogbx
+	generic map (
+		size => 1,
+		gear => gear)
 	port map (
 		rst  => rst,
 		sclk => sclk,
-		d0   => sys_odt(0),
-		d1   => sys_odt(1),
-		q    => sdram_odt);
+		d    => sys_ras,
+		q(0) => sdram_ras);
 
-	rst_i : oddrx1f
+	cas_i : entity hdl4fpga.ecp5_ogbx
+	generic map (
+		size => 1,
+		gear => gear)
 	port map (
 		rst  => rst,
 		sclk => sclk,
-		d0   => sys_rst(0),
-		d1   => sys_rst(1),
-		q    => sdram_rst);
+		d    => sys_cas,
+		q(0) => sdram_cas);
+
+	we_i : entity hdl4fpga.ecp5_ogbx
+	generic map (
+		size => 1,
+		gear => gear)
+	port map (
+		rst  => rst,
+		sclk => sclk,
+		d    => sys_we,
+		q(0) => sdram_we);
+
+	odt_i : entity hdl4fpga.ecp5_ogbx
+	generic map (
+		size => 1,
+		gear => gear)
+	port map (
+		rst  => rst,
+		sclk => sclk,
+		d    => sys_odt,
+		q(0) => sdram_odt);
+
+	b_i : entity hdl4fpga.ecp5_ogbx
+	generic map (
+		size => sdram_b'length,
+		gear => gear)
+	port map (
+		sclk => sclk,
+		d    => sys_b,
+		q    => sdram_b);
+
+	a_i : entity hdl4fpga.ecp5_ogbx
+	generic map (
+		size => sdram_a'length,
+		gear => gear)
+	port map (
+		rst  => rst,
+		sclk => sclk,
+		d    => sys_a,
+		q    => sdram_a);
 
 end;
