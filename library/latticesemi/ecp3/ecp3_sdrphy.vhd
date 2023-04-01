@@ -35,10 +35,9 @@ use hdl4fpga.sdram_param.all;
 entity ecp3_sdrphy is
 	generic (
 		taps      : natural := 0;
-		cmmd_gear : natural := 2;
+		gear : natural := 4;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
-		data_gear : natural := 32;
 		word_size : natural := 16;
 		byte_size : natural := 8);
 	port (
@@ -50,7 +49,7 @@ entity ecp3_sdrphy is
 		dqsdel    : in  std_logic;
 		locked    : out std_logic_vector(word_size/byte_size-1 downto 0);
 
-		phy_rst   : in  std_logic_vector(cmmd_gear-1 downto 0);
+		phy_rst   : in  std_logic_vector((gear+1)/2-1 downto 0);
 		phy_frm   : buffer std_logic;
 		phy_trdy  : in  std_logic;
 		phy_rw    : out std_logic := '1';
@@ -60,24 +59,24 @@ entity ecp3_sdrphy is
 		phy_wlrdy : buffer std_logic;
 		phy_rlreq : in  std_logic := '0';
 		phy_rlrdy : buffer std_logic;
-		phy_cs    : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '0');
-		phy_sti   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_sto   : buffer std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_b     : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
-		phy_a     : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
-		phy_cke   : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_ras   : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_cas   : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_we    : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_odt   : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_dmi   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dmo   : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dqt   : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dqo   : out std_logic_vector(data_gear*word_size-1 downto 0);
-		phy_dqi   : in  std_logic_vector(data_gear*word_size-1 downto 0);
-		phy_dqso  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dqst  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dqsi  : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '-');
+		phy_cs    : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '0');
+		phy_sti   : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		phy_sto   : buffer std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		phy_b     : in  std_logic_vector((gear+1)/2*bank_size-1 downto 0);
+		phy_a     : in  std_logic_vector((gear+1)/2*addr_size-1 downto 0);
+		phy_cke   : in  std_logic_vector((gear+1)/2-1 downto 0);
+		phy_ras   : in  std_logic_vector((gear+1)/2-1 downto 0);
+		phy_cas   : in  std_logic_vector((gear+1)/2-1 downto 0);
+		phy_we    : in  std_logic_vector((gear+1)/2-1 downto 0);
+		phy_odt   : in  std_logic_vector((gear+1)/2-1 downto 0);
+		phy_dmi   : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		phy_dmo   : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		phy_dqt   : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		phy_dqo   : out std_logic_vector(gear*word_size-1 downto 0);
+		phy_dqi   : in  std_logic_vector(gear*word_size-1 downto 0);
+		phy_dqso  : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		phy_dqst  : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		phy_dqsi  : in  std_logic_vector(gear*word_size/byte_size-1 downto 0) := (others => '-');
 
 		sdr_rst   : out std_logic;
 		sdr_ck    : out std_logic;
@@ -99,10 +98,10 @@ architecture ecp3 of ecp3_sdrphy is
 	subtype byte is std_logic_vector(byte_size-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
-	subtype dline_word is std_logic_vector(byte_size*data_gear*word_size/word_size-1 downto 0);
+	subtype dline_word is std_logic_vector(byte_size*gear*word_size/word_size-1 downto 0);
 	type dline_vector is array (natural range <>) of dline_word;
 
-	subtype bline_word is std_logic_vector(data_gear*word_size/word_size-1 downto 0);
+	subtype bline_word is std_logic_vector(gear*word_size/word_size-1 downto 0);
 	type bline_vector is array (natural range <>) of bline_word;
 
 	function to_bytevector (
@@ -197,8 +196,8 @@ architecture ecp3 of ecp3_sdrphy is
 	begin	
 		dat := to_bytevector(arg);
 		for i in word_size/byte_size-1 downto 0 loop
-			for j in data_gear*word_size/word_size-1 downto 0 loop
-				val(i*data_gear*word_size/word_size+j) := dat(j*word_size/byte_size+i);
+			for j in gear*word_size/word_size-1 downto 0 loop
+				val(i*gear*word_size/word_size+j) := dat(j*word_size/byte_size+i);
 			end loop;
 		end loop;
 		return to_dlinevector(to_stdlogicvector(val));
@@ -212,8 +211,8 @@ architecture ecp3 of ecp3_sdrphy is
 --	begin	
 --		dat := to_bytevector(arg);
 --		for i in word_size/byte_size-1 downto 0 loop
---			for j in data_gear*word_size/word_size-1 downto 0 loop
---				val(i*data_gear*word_size/word_size+j) := dat(j*word_size/byte_size+i);
+--			for j in gear*word_size/word_size-1 downto 0 loop
+--				val(i*gear*word_size/word_size+j) := dat(j*word_size/byte_size+i);
 --			end loop;
 --		end loop;
 --		return to_dlinevector(to_stdlogicvector(val));
@@ -255,7 +254,7 @@ begin
 
 	sdr3baphy_i : entity hdl4fpga.ecp3_sdrbaphy
 	generic map (
-		cmmd_gear => cmmd_gear,
+		cmmd_gear => (gear+1)/2,
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
@@ -402,11 +401,11 @@ begin
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		signal sto : std_logic;
 	begin
-		phy_sto(data_gear*(i+1)-1 downto data_gear*i) <= (others => sto);
+		phy_sto(gear*(i+1)-1 downto gear*i) <= (others => sto);
 		sdr3phy_i : entity hdl4fpga.ecp3_sdrdqphy
 		generic map (
 			taps      => taps,
-			data_gear => data_gear,
+			data_gear => gear,
 			byte_size => byte_size)
 		port map (
 			rst       => rst,

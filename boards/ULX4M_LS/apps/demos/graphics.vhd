@@ -243,9 +243,7 @@ architecture graphics of ulx4m_ls is
 
 	constant io_link     : io_comms := profile_tab(app_profile).comms;
 
-	constant cmmd_gear   : natural := 1;
-	constant data_gear   : natural := 1;
-
+	constant gear        : natural := 1;
 	constant bank_size   : natural := sdram_ba'length;
 	constant addr_size   : natural := sdram_a'length;
 	constant coln_size   : natural := 9;
@@ -269,18 +267,18 @@ architecture graphics of ulx4m_ls is
 	signal ctlrphy_odt   : std_logic;
 	signal ctlrphy_b     : std_logic_vector(sdram_ba'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(sdram_a'length-1 downto 0);
-	signal ctlrphy_dsi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dsi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dst   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dso   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmi   : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmo   : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqi   : std_logic_vector(word_size-1 downto 0);
 	signal ctlrphy_dqt   : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqo   : std_logic_vector(word_size-1 downto 0);
-	signal ctlrphy_dqv   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal sdrphy_sti    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqv   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal sdrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal sdram_st_dqs_open : std_logic;
 
 	signal sdram_dst     : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -728,8 +726,7 @@ begin
 		ena_burstref => false,
 		sdram_tcp    => sdram_tcp,
 		mark         => MT48LC256MA27E ,
-		data_gear    => data_gear,
-		cmmd_gear    => cmmd_gear,
+		gear         => gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
 		coln_size    => coln_size,

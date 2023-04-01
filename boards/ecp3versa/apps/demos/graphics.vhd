@@ -76,14 +76,14 @@ architecture graphics of ecp3versa is
 		mii_475MHz_1080p24bpp30 => (comms => io_ipoe, mode => mode1080p24bpp30, speed => sdram475MHz),
 		mii_500MHz_1080p24bpp30 => (comms => io_ipoe, mode => mode1080p24bpp30, speed => sdram500MHz));
 
-	constant cmmd_gear   : natural := 2;
-	constant data_gear   : natural := 4;
+	constant gear        : natural := 4;
+	constant word_size   : natural := ddr3_dq'length;
+	constant byte_size   : natural := ddr3_dq'length/ddr3_dqs'length;
+	constant cgear       : natural := (gear+1)/2;
 
 	constant bank_size   : natural := ddr3_b'length;
 	constant addr_size   : natural := ddr3_a'length;
 	constant coln_size   : natural := 10;
-	constant word_size   : natural := ddr3_dq'length;
-	constant byte_size   : natural := ddr3_dq'length/ddr3_dqs'length;
 
 	signal sys_rst       : std_logic;
 
@@ -110,20 +110,20 @@ architecture graphics of ecp3versa is
 	signal ctlrphy_we    : std_logic_vector(0 to 2-1);
 	signal ctlrphy_odt   : std_logic_vector(0 to 2-1);
 	signal ctlrphy_cmd   : std_logic_vector(0 to 3-1);
-	signal ctlrphy_ba    : std_logic_vector(cmmd_gear*ddr3_b'length-1 downto 0);
-	signal ctlrphy_a     : std_logic_vector(cmmd_gear*ddr3_a'length-1 downto 0);
-	signal ctlrphy_dsi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqt   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqc   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqv   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_ba    : std_logic_vector(cgear*ddr3_b'length-1 downto 0);
+	signal ctlrphy_a     : std_logic_vector(cgear*ddr3_a'length-1 downto 0);
+	signal ctlrphy_dsi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dst   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dso   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqc   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqv   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal ddr_ba        : std_logic_vector(ddr3_b'length-1 downto 0);
 	signal ddr_a         : std_logic_vector(ddr3_a'length-1 downto 0);
 
@@ -585,8 +585,7 @@ begin
 		-- mark         => MT41J1G15E,
 		mark         => MT41K8G125,
 		burst_length => 8,
-		data_gear    => data_gear,
-		cmmd_gear    => cmmd_gear,
+		gear         => gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
 		coln_size    => coln_size,
@@ -660,8 +659,8 @@ begin
 	process (ddr_ba)
 	begin
 		for i in ddr_ba'range loop
-			for j in 0 to cmmd_gear-1 loop
-				ctlrphy_ba(i*cmmd_gear+j) <= ddr_ba(i);
+			for j in 0 to cgear-1 loop
+				ctlrphy_ba(i*cgear+j) <= ddr_ba(i);
 			end loop;
 		end loop;
 	end process;
@@ -669,8 +668,8 @@ begin
 	process (ddr_a)
 	begin
 		for i in ddr_a'range loop
-			for j in 0 to cmmd_gear-1 loop
-				ctlrphy_a(i*cmmd_gear+j) <= ddr_a(i);
+			for j in 0 to cgear-1 loop
+				ctlrphy_a(i*cgear+j) <= ddr_a(i);
 			end loop;
 		end loop;
 	end process;
@@ -797,8 +796,7 @@ begin
     	sdrphy_e : entity hdl4fpga.ecp3_sdrphy
     	generic map (
     		taps      => natural(floor(sdram_tcp/26.0e-12)),
-    		cmmd_gear => cmmd_gear,
-    		data_gear => data_gear,
+    		gear      => gear,
     		bank_size => ddr3_b'length,
     		addr_size => ddr3_a'length,
     		word_size => word_size,

@@ -189,8 +189,8 @@ architecture graphics of arty is
 
 	constant sdram_tcp   : real := (sys_per*real(sdram_params.pll.dcm_div))/real(sdram_params.pll.dcm_mul); -- 1 ns /1ps
 
-	constant cmmd_gear    : natural := 2;
-	constant data_gear    : natural := 4;
+	constant gear         : natural := 4;
+	constant cgear        : natural := (gear+1)/2;
 
 	constant bank_size    : natural := ddr3_ba'length;
 	constant addr_size    : natural := ddr3_a'length;
@@ -220,26 +220,26 @@ architecture graphics of arty is
 	signal ddr_cke        : std_logic_vector(0 to 0);
 	signal ddr_cs         : std_logic_vector(0 to 0);
 	signal ddr_odt        : std_logic_vector(0 to 0);
-	signal ctlrphy_rst    : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_cke    : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_cs     : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_ras    : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_cas    : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_we     : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_odt    : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_rst    : std_logic_vector(0 to cgear-1);
+	signal ctlrphy_cke    : std_logic_vector(0 to cgear-1);
+	signal ctlrphy_cs     : std_logic_vector(0 to cgear-1);
+	signal ctlrphy_ras    : std_logic_vector(0 to cgear-1);
+	signal ctlrphy_cas    : std_logic_vector(0 to cgear-1);
+	signal ctlrphy_we     : std_logic_vector(0 to cgear-1);
+	signal ctlrphy_odt    : std_logic_vector(0 to cgear-1);
 	signal ctlrphy_cmd    : std_logic_vector(0 to 3-1);
-	signal ctlrphy_ba     : std_logic_vector(cmmd_gear*ddr3_ba'length-1 downto 0);
-	signal ctlrphy_a      : std_logic_vector(cmmd_gear*ddr3_a'length-1 downto 0);
-	signal ctlrphy_dqst   : std_logic_vector(data_gear-1 downto 0);
-	signal ctlrphy_dqso   : std_logic_vector(data_gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqt    : std_logic_vector(data_gear-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqv    : std_logic_vector(data_gear-1 downto 0);
-	signal ctlrphy_sto    : std_logic_vector(data_gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_ba     : std_logic_vector(cgear*ddr3_ba'length-1 downto 0);
+	signal ctlrphy_a      : std_logic_vector(cgear*ddr3_a'length-1 downto 0);
+	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
 	signal ddr3_clk       : std_logic_vector(1-1 downto 0);
 	signal ddr3_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -374,12 +374,12 @@ begin
 				divclk_divide    => sdram_params.pll.dcm_div,
 				clkfbout_mult_f  => real(2*sdram_params.pll.dcm_mul),
 				clkin1_period    => sys_per*1.0e9,
-				clkout0_divide_f => real(data_gear/2),
-				clkout1_divide   => data_gear/2,
+				clkout0_divide_f => real(gear/2),
+				clkout1_divide   => gear/2,
 				clkout1_phase    => 90.0+180.0,
-				clkout2_divide   => data_gear,
-				clkout3_divide   => data_gear,
-				clkout3_phase    => 90.0/real((data_gear/2))+270.0)
+				clkout2_divide   => gear,
+				clkout3_divide   => gear,
+				clkout3_phase    => 90.0/real((gear/2))+270.0)
 			port map (
 				pwrdwn   => '0',
 				rst      => '0',
@@ -675,8 +675,7 @@ begin
 		sdram_tcp    => 2.0*sdram_tcp,
 		mark         => MT41K2G125,
 		burst_length => 8,
-		data_gear    => data_gear,
-		cmmd_gear    => cmmd_gear,
+		gear         => gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
 		coln_size    => coln_size,
@@ -786,8 +785,8 @@ begin
 	process (ddr_ba)
 	begin
 		for i in ddr_ba'range loop
-			for j in 0 to cmmd_gear-1 loop
-				ctlrphy_ba(i*cmmd_gear+j) <= ddr_ba(i);
+			for j in 0 to cgear-1 loop
+				ctlrphy_ba(i*cgear+j) <= ddr_ba(i);
 			end loop;
 		end loop;
 	end process;
@@ -795,8 +794,8 @@ begin
 	process (ddr_a)
 	begin
 		for i in ddr_a'range loop
-			for j in 0 to cmmd_gear-1 loop
-				ctlrphy_a(i*cmmd_gear+j) <= ddr_a(i);
+			for j in 0 to cgear-1 loop
+				ctlrphy_a(i*cgear+j) <= ddr_a(i);
 			end loop;
 		end loop;
 	end process;
@@ -819,8 +818,7 @@ begin
 		taps      => natural(floor(sdram_tcp/((sys_per/2.0)/(32.0*2.0))))-1,
 		bank_size => bank_size,
 		addr_size => addr_size,
-		cmmd_gear => cmmd_gear,
-		data_gear => data_gear,
+		gear      => gear,
 		word_size => word_size,
 		byte_size => byte_size)
 	port map (

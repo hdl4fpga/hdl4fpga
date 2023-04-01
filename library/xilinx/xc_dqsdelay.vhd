@@ -31,13 +31,13 @@ use hdl4fpga.profiles.all;
 entity xc_dqsdelay is
 	generic (
 		device : fpga_devices;
-		data_gear : natural);
+		gear   : natural);
 	port (
 		clk    : in  std_logic;
 		rst    : in  std_logic;
 		delay  : in  std_logic_vector;
 		dqsi   : in  std_logic;
-		dqso   : out std_logic_vector(0 to data_gear-1));
+		dqso   : out std_logic_vector(0 to gear-1));
 end;
 
 library unisim;

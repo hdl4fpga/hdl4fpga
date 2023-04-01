@@ -182,15 +182,11 @@ architecture graphics of ml509 is
 	alias vs              : std_logic is hdr1(3);
 	alias hs              : std_logic is hdr1(4);
 
-	constant data_edges   : natural := 1;
-	constant cmmd_gear    : natural := 2;
-	constant data_gear    : natural := 4;
-	constant data_phases  : natural := data_gear;
+	constant gear         : natural := 4;
+	constant cgear        : natural := (gear+1)/2;
 
-	-- constant data_edges   : natural := 2;
 	-- constant cmmd_gear    : natural := 1;
-	-- constant data_gear    : natural := 2;
-	-- constant data_phases  : natural := 2;
+	-- constant gear         : natural := 2;
 
 	constant coln_size    : natural := 10;
 	-- constant bank_size    : natural := 2;
@@ -237,27 +233,27 @@ architecture graphics of ml509 is
 	signal ddr_clk90x2    : std_logic;
 	signal ddr_ba         : std_logic_vector(bank_size-1 downto 0);
 	signal ddr_a          : std_logic_vector(addr_size-1 downto 0);
-	signal ctlrphy_rst    : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_cke    : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_cs     : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_ras    : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_cas    : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_we     : std_logic_vector(0 to cmmd_gear-1);
-	signal ctlrphy_odt    : std_logic_vector(0 to cmmd_gear-1);
+	signal ctlrphy_rst    : std_logic_vector(0 to cgear-1);
+	signal ctlrphy_cke    : std_logic_vector(0 to cgear-1);
+	signal ctlrphy_cs     : std_logic_vector(0 to cgear-1);
+	signal ctlrphy_ras    : std_logic_vector(0 to cgear-1);
+	signal ctlrphy_cas    : std_logic_vector(0 to cgear-1);
+	signal ctlrphy_we     : std_logic_vector(0 to cgear-1);
+	signal ctlrphy_odt    : std_logic_vector(0 to cgear-1);
 	signal ctlrphy_cmd    : std_logic_vector(0 to 3-1);
-	signal ctlrphy_ba     : std_logic_vector(cmmd_gear*ddr_ba'length-1 downto 0);
-	signal ctlrphy_a      : std_logic_vector(cmmd_gear*ddr_a'length-1 downto 0);
-	signal ctlrphy_dqsi   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqst   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqso   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqt    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_sto    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqv    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_ba     : std_logic_vector(cgear*ddr_ba'length-1 downto 0);
+	signal ctlrphy_a      : std_logic_vector(cgear*ddr_a'length-1 downto 0);
+	signal ctlrphy_dqsi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqst   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqso   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqt    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_sto    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqv    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
 	signal ddr2_clk       : std_logic_vector(ddr2_clk_p'range);
 	signal ddr2_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -355,7 +351,7 @@ begin
 		signal ddr_locked : std_logic;
 	begin
 
-		gbx4_g : if data_gear=4 generate 
+		gbx4_g : if gear=4 generate 
 			signal ddr_clkfb         : std_logic;
 			signal ddr_clk0x2_mmce2  : std_logic;
 			signal ddr_clk90x2_mmce2 : std_logic;
@@ -367,12 +363,12 @@ begin
 				divclk_divide  => sdram_params.pll.dcm_div,
 				clkfbout_mult  => 2*sdram_params.pll.dcm_mul,
 				clkin_period   => user_per*1.0e9,
-				clkout0_divide => data_gear/2,
-				clkout1_divide => data_gear/2,
+				clkout0_divide => gear/2,
+				clkout1_divide => gear/2,
 				clkout1_phase  => 90.0+180.0,
-				clkout2_divide => data_gear,
-				clkout3_divide => data_gear,
-				clkout3_phase  => 90.0/real((data_gear/2))+270.0)
+				clkout2_divide => gear,
+				clkout3_divide => gear,
+				clkout3_phase  => 90.0/real((gear/2))+270.0)
 			port map (
 				rst      => sys_rst,
 				clkin    => sys_clk,
@@ -408,7 +404,7 @@ begin
 
 		end generate;
 
-		gbx2_g : if  data_gear=2 generate 
+		gbx2_g : if  gear=2 generate 
 
 			dfs_b : block
 				signal clk_fx    : std_logic;
@@ -798,8 +794,7 @@ begin
 		profile      => 1,
 		sdram_tcp    => 2.0*sdram_tcp,
 		mark         => MT47H512M3,
-		cmmd_gear    => cmmd_gear,
-		data_gear    => data_gear,
+		gear         => gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
 		coln_size    => coln_size,
@@ -917,7 +912,7 @@ begin
 
 	end block;
 
-	gear_g : for i in 1 to cmmd_gear-1 generate
+	gear_g : for i in 1 to cgear-1 generate
 		ctlrphy_cke(i) <= ctlrphy_cke(0);
 		ctlrphy_cs(i)  <= ctlrphy_cs(0);
 		ctlrphy_ras(i) <= '1';
@@ -929,8 +924,8 @@ begin
 	process (ddr_ba)
 	begin
 		for i in ddr_ba'range loop
-			for j in 0 to cmmd_gear-1 loop
-				ctlrphy_ba(i*cmmd_gear+j) <= ddr_ba(i);
+			for j in 0 to cgear-1 loop
+				ctlrphy_ba(i*cgear+j) <= ddr_ba(i);
 			end loop;
 		end loop;
 	end process;
@@ -938,8 +933,8 @@ begin
 	process (ddr_a)
 	begin
 		for i in ddr_a'range loop
-			for j in 0 to cmmd_gear-1 loop
-				ctlrphy_a(i*cmmd_gear+j) <= ddr_a(i);
+			for j in 0 to cgear-1 loop
+				ctlrphy_a(i*cgear+j) <= ddr_a(i);
 			end loop;
 		end loop;
 	end process;
@@ -962,8 +957,7 @@ begin
 		taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
 		bank_size   => bank_size,
 		addr_size   => addr_size,
-		cmmd_gear   => cmmd_gear,
-		data_gear   => data_gear,
+		gear        => gear,
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (

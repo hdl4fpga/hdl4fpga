@@ -150,15 +150,13 @@ architecture graphics of s3estarter is
 	signal so_trdy         : std_logic;
 	signal so_data         : std_logic_vector(0 to 8-1);
 
-	constant sclk_phases   : natural := 4;
-	constant sclk_edges    : natural := 2;
-	constant cmmd_gear     : natural := 1;
+	constant gear          : natural := 2;
+	constant cgear         : natural := (gear+1)/2;
 	constant data_phases   : natural := 2;
 	constant data_edges    : natural := 2;
 	constant bank_size     : natural := sd_ba'length;
 	constant addr_size     : natural := sd_a'length;
 	constant coln_size     : natural := 10;
-	constant data_gear     : natural := 2;
 	constant word_size     : natural := sd_dq'length;
 	constant byte_size     : natural := 8;
 
@@ -168,25 +166,25 @@ architecture graphics of s3estarter is
 	signal clk90           : std_logic;
 
 	signal ctlrphy_rst     : std_logic;
-	signal ctlrphy_cke     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_cs      : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_ras     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_cas     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_we      : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_odt     : std_logic_vector(cmmd_gear-1 downto 0);
-	signal ctlrphy_b       : std_logic_vector(cmmd_gear*sd_ba'length-1 downto 0);
-	signal ctlrphy_a       : std_logic_vector(cmmd_gear*sd_a'length-1 downto 0);
-	signal ctlrphy_dqsi    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqst    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqso    : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmi     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqi     : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqt     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqo     : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqv     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_sto     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_sti     : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_cke     : std_logic_vector(cgear-1 downto 0);
+	signal ctlrphy_cs      : std_logic_vector(cgear-1 downto 0);
+	signal ctlrphy_ras     : std_logic_vector(cgear-1 downto 0);
+	signal ctlrphy_cas     : std_logic_vector(cgear-1 downto 0);
+	signal ctlrphy_we      : std_logic_vector(cgear-1 downto 0);
+	signal ctlrphy_odt     : std_logic_vector(cgear-1 downto 0);
+	signal ctlrphy_b       : std_logic_vector(cgear*sd_ba'length-1 downto 0);
+	signal ctlrphy_a       : std_logic_vector(cgear*sd_a'length-1 downto 0);
+	signal ctlrphy_dqsi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqst    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqso    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi     : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo     : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi     : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqt     : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqo     : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqv     : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sto     : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti     : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
 	signal phy_wlreq     : std_logic;
 	signal phy_wlrdy     : std_logic;
@@ -507,8 +505,7 @@ begin
 		profile      => 1,
 		sdram_tcp      => sdram_tcp,
 		mark         => MT46V256M6T,
-		cmmd_gear    => cmmd_gear,
-		data_gear    => data_gear,
+		gear         => gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
 		coln_size    => coln_size,
@@ -587,8 +584,7 @@ begin
 		loopback    => false,
 		bank_size   => sd_ba'length,
 		addr_size   => sd_a'length,
-		cmmd_gear   => cmmd_gear,
-		data_gear   => data_gear,
+		gear        => gear,
 		word_size   => word_size,
 		byte_size   => byte_size)
 	port map (

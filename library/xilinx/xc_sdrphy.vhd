@@ -35,12 +35,11 @@ entity xc_sdrphy is
 		-- dqs_delay  : time_vector := (0 to 0 => 0 ns);
 		-- dqi_delay  : time_vector := (0 to 0 => 0 ns);
 		device      : fpga_devices;
+		gear        : natural := 2;
 		bank_size   : natural := 2;
 		addr_size   : natural := 13;
 		word_size   : natural := 16;
 		byte_size   : natural := 8;
-		cmmd_gear   : natural := 1;
-		data_gear   : natural := 2;
 		loopback    : boolean := false;
 		bypass      : boolean := true;
 		bufio       : boolean := false;
@@ -72,31 +71,31 @@ entity xc_sdrphy is
 		phy_rlreq   : in  std_logic := '-';
 		phy_rlrdy   : buffer std_logic;
 
-		sys_rst     : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '-');
-		sys_cs      : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '0');
-		sys_cke     : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_ras     : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_cas     : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_we      : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_b       : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
-		sys_a       : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
-		sys_odt     : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_rst     : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '-');
+		sys_cs      : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '0');
+		sys_cke     : in  std_logic_vector((gear+1)/2-1 downto 0);
+		sys_ras     : in  std_logic_vector((gear+1)/2-1 downto 0);
+		sys_cas     : in  std_logic_vector((gear+1)/2-1 downto 0);
+		sys_we      : in  std_logic_vector((gear+1)/2-1 downto 0);
+		sys_b       : in  std_logic_vector((gear+1)/2*bank_size-1 downto 0);
+		sys_a       : in  std_logic_vector((gear+1)/2*addr_size-1 downto 0);
+		sys_odt     : in  std_logic_vector((gear+1)/2-1 downto 0);
 
-		sys_dmi     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_dmo     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dmi     : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		sys_dmo     : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
-		sys_dqsi    : in  std_logic_vector(data_gear-1 downto 0);
-		sys_dqst    : in  std_logic_vector(data_gear-1 downto 0);
-		sys_dqso    : out std_logic_vector(data_gear-1 downto 0);
+		sys_dqsi    : in  std_logic_vector(gear-1 downto 0);
+		sys_dqst    : in  std_logic_vector(gear-1 downto 0);
+		sys_dqso    : out std_logic_vector(gear-1 downto 0);
 
-		sys_dqt     : in  std_logic_vector(data_gear-1 downto 0);
-		sys_dqi     : in  std_logic_vector(data_gear*word_size-1 downto 0);
-		sys_dqo     : out std_logic_vector(data_gear*word_size-1 downto 0);
+		sys_dqt     : in  std_logic_vector(gear-1 downto 0);
+		sys_dqi     : in  std_logic_vector(gear*word_size-1 downto 0);
+		sys_dqo     : out std_logic_vector(gear*word_size-1 downto 0);
 
-		sys_dqv     : in  std_logic_vector(data_gear-1 downto 0) := (others => 'U');
-		sys_dqc     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_sti     : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
-		sys_sto     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqv     : in  std_logic_vector(gear-1 downto 0) := (others => 'U');
+		sys_dqc     : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		sys_sti     : in  std_logic_vector(gear-1 downto 0) := (others => '-');
+		sys_sto     : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
 		sdram_rst   : out std_logic := '0';
 		sdram_cs    : out std_logic_vector;
@@ -154,7 +153,7 @@ begin
 	sdram_clk_g : for i in sdram_clk'range generate
 		signal sdrclk : std_logic;
 	begin
-		sdrclk <= clk when data_gear=2 else clkx2;
+		sdrclk <= clk when gear=2 else clkx2;
 		clk_i : entity hdl4fpga.ogbx
 		generic map (
 			device => device,
@@ -169,8 +168,8 @@ begin
 
 	sdrbaphy_i : entity hdl4fpga.xc_sdrbaphy
 	generic map (
-		device => device,
-		gear      => cmmd_gear,
+		device    => device,
+		gear      => (gear+1)/2,
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
@@ -356,8 +355,8 @@ begin
 
 	phy_locked <= '1' when sto_locked=(sto_locked'range => '1') else '0';
 
-	dmi <= shuffle_vector(sys_dmi, gear => data_gear, size => 1);
-	dqi <= shuffle_vector(sys_dqi, gear => data_gear, size => byte_size);
+	dmi <= shuffle_vector(sys_dmi, gear => gear, size => 1);
+	dqi <= shuffle_vector(sys_dqi, gear => gear, size => byte_size);
 
 	byte_g : for i in sdram_dqsi'range generate
 		signal tp_byte : std_logic_vector(1 to 8);
@@ -371,17 +370,16 @@ begin
 			-- dqs_delay  => dqs_delay(i mod dqi_delay'length),
 			-- dqi_delay  => dqi_delay(i mod dqi_delay'length),
 
-			device      => device,
-			byte_size   => byte_size,
-			data_gear   => data_gear,
-			loopback    => loopback,
-			bypass      => bypass,
-			bufio       => bufio,
-    		rd_fifo     => rd_fifo,
-    		rd_align    => rd_align,
-    		wr_fifo     => wr_fifo,
-
-			taps        => taps)
+			device    => device,
+			gear      => gear,
+			byte_size => byte_size,
+			loopback  => loopback,
+			bypass    => bypass,
+			bufio     => bufio,
+			rd_fifo   => rd_fifo,
+			rd_align  => rd_align,
+			wr_fifo   => wr_fifo,
+			taps      => taps)
 		port map (
 			tp_sel     => tp_sel,
 			tp_delay   => tp_byte,
@@ -406,15 +404,15 @@ begin
 			phy_locked => sto_locked(i),
 
 			sys_sti    => sys_sti,
-			sys_sto    => sys_sto((i+1)*data_gear-1 downto i*data_gear),
-			sys_dmi    => dmi((i+1)*data_gear-1 downto i*data_gear),
+			sys_sto    => sys_sto((i+1)*gear-1 downto i*gear),
+			sys_dmi    => dmi((i+1)*gear-1 downto i*gear),
 
 		    sys_dqv    => sys_dqv,
-			sys_dqi    => dqi((i+1)*byte_size*data_gear-1 downto i*byte_size*data_gear),
+			sys_dqi    => dqi((i+1)*byte_size*gear-1 downto i*byte_size*gear),
 			sys_dqt    => sys_dqt,
-			sys_dqo    => dqo((i+1)*byte_size*data_gear-1 downto i*byte_size*data_gear),
+			sys_dqo    => dqo((i+1)*byte_size*gear-1 downto i*byte_size*gear),
 
-		    sys_dqc    => sys_dqc((i+1)*data_gear-1 downto i*data_gear),
+		    sys_dqc    => sys_dqc((i+1)*gear-1 downto i*gear),
 
 			sys_dqst   => sys_dqst,
 			sys_dqsi   => sys_dqsi,
@@ -435,5 +433,5 @@ begin
 		
 	end generate;
 
-	sys_dqo <= unshuffle_vector(dqo, gear => data_gear, size => byte_size);
+	sys_dqo <= unshuffle_vector(dqo, gear => gear, size => byte_size);
 end;
