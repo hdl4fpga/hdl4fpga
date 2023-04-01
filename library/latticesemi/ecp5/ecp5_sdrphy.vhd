@@ -40,6 +40,7 @@ entity ecp5_sdrphy is
 		gear      : natural := 2;
 		word_size : natural := 16;
 		byte_size : natural := 8;
+		wr_fifo   : boolean := true;
 		taps      : natural := 0);
 	port (
 		tpin      : in std_logic := '-';
@@ -131,7 +132,7 @@ begin
 	ck_b : block
 	begin
 
-		gear2_g : if gear=2 generate 
+		gear1or2_g : if gear=1 or gear=2 generate 
 			ck_i : oddrx1f
 			port map (
 				sclk => sclk,
@@ -292,7 +293,6 @@ begin
 		sys_odt => sys_odt,
         
 		sdram_rst => sdram_rst,
-		sdram_ck  => sdram_clk,
 		sdram_cke => sdram_cke,
 		sdram_odt => sdram_odt,
 		sdram_cs  => sdram_cs,
@@ -313,6 +313,7 @@ begin
 			debug      => debug,
 			taps       => taps,
 			gear       => gear,
+			wr_fifo    => wr_fifo,
 			byte_size  => byte_size)
 		port map (
 			rst        => rst,

@@ -53,13 +53,17 @@ begin
 	reg_g : for i in q'range generate
 	begin
 		gear1_g : if gear = 1 generate
+			ffdt_i : fd1s3ax
+			port map (
+				ck => sclk,
+				d  => t(i),
+				q  => tq(i));
+
 			ffd_i : fd1s3ax
 			port map (
 				ck => sclk,
 				d  => d(i),
 				q  => q(i));
-
-			tq(i) <= t(i);
 		end generate;
 
 		gear2_g : if gear=2 generate

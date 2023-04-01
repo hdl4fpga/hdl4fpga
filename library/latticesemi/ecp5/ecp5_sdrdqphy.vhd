@@ -389,7 +389,7 @@ begin
 		signal z : std_logic;
 	begin
 		d <= transport sdram_dq(i) after delay;
-		gear1or2_g : if gear=2 or gear=4 generate
+		gear1or2_g : if gear=1 or gear=2 generate
 			signal dqo : std_logic_vector(gear-1 downto 0);
 		begin
             ibx_i : entity hdl4fpga.ecp5_igbx
@@ -440,7 +440,7 @@ begin
 	dmi_g : block
 		signal d : std_logic;
 	begin
-		gear1or2_g : if gear=2 or gear=4 generate
+		gear1or2_g : if gear=1 or gear=2 generate
             ibx_i : entity hdl4fpga.ecp5_igbx
 			generic map (
 				gear => gear)

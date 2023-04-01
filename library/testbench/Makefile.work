@@ -423,7 +423,7 @@ $(WORK__ulx3s__graphics) : ../../boards/ULX3S/apps/demos/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../boards/ULX3S/apps/demos/graphics.vhd
+	$(VCOM) -2002 ../../boards/ULX3S/apps/demos/graphics.vhd
 
 $(WORK__testbench__ulx3s_graphics) \
 $(WORK__ulx3s_graphics_md) \

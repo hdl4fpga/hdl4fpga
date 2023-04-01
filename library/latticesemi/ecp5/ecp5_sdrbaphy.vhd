@@ -49,7 +49,6 @@ entity ecp5_sdrbaphy is
 
 		sdram_rst : out std_logic;
 		sdram_cs  : out std_logic;
-		sdram_ck  : out std_logic;
 		sdram_cke : out std_logic;
 		sdram_odt : out std_logic;
 		sdram_ras : out std_logic;
@@ -77,7 +76,7 @@ begin
 	cs_b : block
 	begin
 
-		gear1_g : if gear=2 generate
+		gear1_g : if gear=1 generate
         	cke_i : entity hdl4fpga.ecp5_ogbx
         	generic map (
         		size => 1,
