@@ -30,52 +30,52 @@ use ecp5u.components.all;
 
 entity ecp5_sdrdqphy is
 	generic (
-		debug     : boolean := false;
-		data_gear : natural;
-		byte_size : natural;
-		rd_fifo   : boolean := true;
-		rd_align  : boolean := true;
-		wr_fifo   : boolean := true;
+		debug      : boolean := false;
+		data_gear  : natural;
+		byte_size  : natural;
+		rd_fifo    : boolean := true;
+		rd_align   : boolean := true;
+		wr_fifo    : boolean := true;
 
-		taps      : natural);
+		taps       : natural);
 	port (
-		rst       : in  std_logic;
-		sclk      : in  std_logic;
-		eclk      : in  std_logic;
-		ddrdel    : in  std_logic;
-		pause     : in  std_logic;
+		rst        : in  std_logic;
+		sclk       : in  std_logic;
+		eclk       : in  std_logic;
+		ddrdel     : in  std_logic;
+		pause      : in  std_logic;
 
-		phy_wlreq : in  std_logic;
-		phy_wlrdy : buffer std_logic;
-		phy_rlreq : in  std_logic := 'U';
-		phy_rlrdy : buffer std_logic;
-		read_rdy  : in  std_logic;
-		read_req  : buffer std_logic;
-		phy_locked    : buffer std_logic;
+		phy_wlreq  : in  std_logic;
+		phy_wlrdy  : buffer std_logic;
+		phy_rlreq  : in  std_logic := 'U';
+		phy_rlrdy  : buffer std_logic;
+		read_rdy   : in  std_logic;
+		read_req   : buffer std_logic;
+		phy_locked : buffer std_logic;
 
-		sys_sti   : in  std_logic_vector(data_gear-1 downto 0);
-		sys_sto   : out std_logic_vector(data_gear-1 downto 0);
-		sys_dmt   : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
-		sys_dmi   : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
-		sys_dmo   : out std_logic_vector(data_gear-1 downto 0);
-		sys_dqo   : out std_logic_vector(data_gear*byte_size-1 downto 0);
-		sys_dqt   : in  std_logic_vector(data_gear-1 downto 0);
+		sys_sti    : in  std_logic_vector(data_gear-1 downto 0);
+		sys_sto    : out std_logic_vector(data_gear-1 downto 0);
+		sys_dmt    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
+		sys_dmi    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
+		sys_dmo    : out std_logic_vector(data_gear-1 downto 0);
+		sys_dqo    : out std_logic_vector(data_gear*byte_size-1 downto 0);
+		sys_dqt    : in  std_logic_vector(data_gear-1 downto 0);
 		sys_dqv    : in  std_logic_vector(data_gear-1 downto 0) := (others => '0');
-		sys_dqi   : in  std_logic_vector(data_gear*byte_size-1 downto 0);
-		sys_dqsi  : in  std_logic_vector(data_gear-1 downto 0);
-		sys_dqst  : in  std_logic_vector(data_gear-1 downto 0);
+		sys_dqi    : in  std_logic_vector(data_gear*byte_size-1 downto 0);
+		sys_dqsi   : in  std_logic_vector(data_gear-1 downto 0);
+		sys_dqst   : in  std_logic_vector(data_gear-1 downto 0);
 
-		sdram_dqs : inout std_logic;
+		sdram_dqs  : inout std_logic;
 		sdram_dqst : buffer std_logic;
 		sdram_dqso : buffer std_logic;
 
-		sdram_dm  : inout std_logic;
-		sdram_dmo : buffer std_logic;
-		sdram_dq  : inout std_logic_vector(byte_size-1 downto 0);
-		sdram_dqt : buffer std_logic_vector(byte_size-1 downto 0);
-		sdram_dqo : buffer std_logic_vector(byte_size-1 downto 0);
+		sdram_dm   : inout std_logic;
+		sdram_dmo  : buffer std_logic;
+		sdram_dq   : inout std_logic_vector(byte_size-1 downto 0);
+		sdram_dqt  : buffer std_logic_vector(byte_size-1 downto 0);
+		sdram_dqo  : buffer std_logic_vector(byte_size-1 downto 0);
 
-		tp        : out std_logic_vector(1 to 32));
+		tp         : out std_logic_vector(1 to 32));
 
 end;
 
