@@ -389,62 +389,94 @@ begin
 		signal z : std_logic;
 	begin
 		d <= transport sdram_dq(i) after delay;
-		dqi0_g : if i=0 generate
-			dqi0 <= z;
-		end generate;
-		delay_i : delayg
-		generic map (
-			del_mode => "DQS_ALIGNED_X2")
-		port map (
-			a => d,
-			z => z);
+		gear1or2_g : if gear=2 or gear=4 generate
+			signal dqo : std_logic_vector(gear-1 downto 0);
+		begin
+            ibx_i : entity hdl4fpga.ecp5_igbx
+			generic map (
+				gear => gear)
+			port map (
+				rst  => rst,
+				sclk => sclk,
+				d(0) => sdram_dq(i),
+				q    => dqo);
 
-		iddrx2_i : iddrx2dqa
-		port map (
-			rst     => rst,
-			sclk    => sclk,
-			eclk    => eclk,
-			dqsr90  => dqsr90,
-			rdpntr2 => rdpntr(2),
-			rdpntr1 => rdpntr(1),
-			rdpntr0 => rdpntr(0),
-			wrpntr2 => wrpntr(2),
-			wrpntr1 => wrpntr(1),
-			wrpntr0 => wrpntr(0),
-			d       => z,
-			q0      => sys_dqo(3*byte_size+i),
-			q1      => sys_dqo(2*byte_size+i),
-			q2      => sys_dqo(1*byte_size+i),
-			q3      => sys_dqo(0*byte_size+i));
+			shuffle_g : for j in dqo'range generate
+				sys_dqo(j*byte_size+i) <= dqo(j);
+			end generate;
+		end generate;
+
+		gear4_g : if gear=4 generate
+			dqi0_g : if i=0 generate
+				dqi0 <= z;
+			end generate;
+			delay_i : delayg
+			generic map (
+				del_mode => "DQS_ALIGNED_X2")
+			port map (
+				a => d,
+				z => z);
+
+			iddrx2_i : iddrx2dqa
+			port map (
+				rst     => rst,
+				sclk    => sclk,
+				eclk    => eclk,
+				dqsr90  => dqsr90,
+				rdpntr2 => rdpntr(2),
+				rdpntr1 => rdpntr(1),
+				rdpntr0 => rdpntr(0),
+				wrpntr2 => wrpntr(2),
+				wrpntr1 => wrpntr(1),
+				wrpntr0 => wrpntr(0),
+				d       => z,
+				q0      => sys_dqo(3*byte_size+i),
+				q1      => sys_dqo(2*byte_size+i),
+				q2      => sys_dqo(1*byte_size+i),
+				q3      => sys_dqo(0*byte_size+i));
+		end generate;
 	end generate;
 
 	dmi_g : block
 		signal d : std_logic;
 	begin
-		delay_i : delayg
-		generic map (
-			del_mode => "DQS_ALIGNED_X2")
-		port map (
-			a => sdram_dm,
-			z => d);
+		gear1or2_g : if gear=2 or gear=4 generate
+            ibx_i : entity hdl4fpga.ecp5_igbx
+			generic map (
+				gear => gear)
+			port map (
+				rst  => rst,
+				sclk => sclk,
+				d(0) => sdram_dm,
+				q    => sys_dmo);
+		end generate;
 
-		iddrx2_i : iddrx2dqa
-		port map (
-			rst     => rst,
-			sclk    => sclk,
-			eclk    => eclk,
-			dqsr90  => dqsr90,
-			rdpntr0 => rdpntr(0),
-			rdpntr1 => rdpntr(1),
-			rdpntr2 => rdpntr(2),
-			wrpntr0 => wrpntr(0),
-			wrpntr1 => wrpntr(1),
-			wrpntr2 => wrpntr(2),
-			d       => d,
-			q0      => sys_dmo(3),
-			q1      => sys_dmo(2),
-			q2      => sys_dmo(1),
-			q3      => sys_dmo(0));
+		gear4_g : if gear=4 generate
+    		delay_i : delayg
+    		generic map (
+    			del_mode => "DQS_ALIGNED_X2")
+    		port map (
+    			a => sdram_dm,
+    			z => d);
+
+    		iddrx2_i : iddrx2dqa
+    		port map (
+    			rst     => rst,
+    			sclk    => sclk,
+    			eclk    => eclk,
+    			dqsr90  => dqsr90,
+    			rdpntr0 => rdpntr(0),
+    			rdpntr1 => rdpntr(1),
+    			rdpntr2 => rdpntr(2),
+    			wrpntr0 => wrpntr(0),
+    			wrpntr1 => wrpntr(1),
+    			wrpntr2 => wrpntr(2),
+    			d       => d,
+    			q0      => sys_dmo(3),
+    			q1      => sys_dmo(2),
+    			q2      => sys_dmo(1),
+    			q3      => sys_dmo(0));
+			end generate;
 	end block;
 
 	datao_b : block

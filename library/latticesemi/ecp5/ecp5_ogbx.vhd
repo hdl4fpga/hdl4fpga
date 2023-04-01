@@ -25,9 +25,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library ecp5u;
-use ecp5u.components.all;
-
 entity ecp5_ogbx is
 	generic (
 		interlace : boolean := false;
@@ -43,6 +40,9 @@ entity ecp5_ogbx is
 		d    : in  std_logic_vector(0 to gear*size-1);
 		q    : out std_logic_vector(0 to size-1));
 end;
+
+library ecp5u;
+use ecp5u.components.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;

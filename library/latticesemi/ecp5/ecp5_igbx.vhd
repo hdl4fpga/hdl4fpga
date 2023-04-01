@@ -28,15 +28,16 @@ use ieee.numeric_std.all;
 entity ecp5_igbx is
 	generic (
 		size : natural := 1;
-		gear : natural := 2)
+		gear : natural);
 	port (
 		rst  : in std_logic := '0';
 		sclk : in std_logic := '0';
-		eclk : in std_logic := '0';
-		clk  : in std_logic;
 		d    : in  std_logic_vector(0 to size-1);
 		q    : out std_logic_vector(0 to size*gear-1));
 end;
+
+library ecp5u;
+use ecp5u.components.all;
 
 architecture beh of ecp5_igbx is
 begin
