@@ -26,8 +26,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity sdram_pgm is
-	generic (
-		cmmd_gear    : natural := 1);
 	port (
 		ctlr_clk     : in  std_logic := '0';
 		ctlr_rst     : in  std_logic := '0';

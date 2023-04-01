@@ -36,7 +36,7 @@ entity sdram_sch is
 		chip       : sdram_chips;
 
 		delay_size : natural := 64;
-		data_gear  : natural;
+		gear       : natural;
 		cmmd_gear  : natural := 1;
 
 		cl_cod     : std_logic_vector;
@@ -48,14 +48,16 @@ entity sdram_sch is
 		sys_rea    : in  std_logic;
 		sys_wri    : in  std_logic;
 
-		sdram_st   : out std_logic_vector(data_gear-1 downto 0);
+		sdram_st   : out std_logic_vector(gear-1 downto 0);
 
-		sdram_dqsz : out std_logic_vector(data_gear-1 downto 0);
-		sdram_dqs  : out std_logic_vector(data_gear-1 downto 0);
+		sdram_dqsz : out std_logic_vector(gear-1 downto 0);
+		sdram_dqs  : out std_logic_vector(gear-1 downto 0);
 
-		sdram_dqz  : out std_logic_vector(data_gear-1 downto 0);
-		sdram_wwn  : out std_logic_vector(data_gear-1 downto 0);
-		sdram_odt  : out std_logic_vector(cmmd_gear-1 downto 0));
+		sdram_dqz  : out std_logic_vector(gear-1 downto 0);
+		sdram_wwn  : out std_logic_vector(gear-1 downto 0);
+		sdram_odt  : out std_logic_vector(1-1    downto 0));
+
+	constant gear_odt : natural := sdram_odt'length;
 
 end;
 
@@ -154,7 +156,7 @@ begin
 	end process;
 
 	sdram_st <= sdram_task (
-		gear       => data_gear,
+		gear       => gear,
 		lat_cod    => cl_cod,
 		lat_tab    => strl_tab,
 		lat_wid    => latencies(widl),
@@ -163,7 +165,7 @@ begin
 		lat_sch    => rea_sr);
 
 	sdram_dqsz <= sdram_task (
-		gear       => data_gear,
+		gear       => gear,
 		lat_cod    => cwl_cod,
 		lat_tab    => dqszl_tab,
 		lat_ext    => latencies(dqszxl),
@@ -173,7 +175,7 @@ begin
 		lat_sch    => wri_sr);
 
 	sdram_dqs <= sdram_task (
-		gear       => data_gear,
+		gear       => gear,
 		lat_cod    => cwl_cod,
 		lat_tab    => dqsol_tab,
 		lat_ext    => latencies(dqsxl),
@@ -183,7 +185,7 @@ begin
 		lat_sch    => wri_sr);
 
 	sdram_dqz <= sdram_task (
-		gear       => data_gear,
+		gear       => gear,
 		lat_cod    => cwl_cod,
 		lat_tab    => dqzl_tab,
 		lat_ext    => latencies(dqzxl),
@@ -193,7 +195,7 @@ begin
 		lat_sch    => wri_sr);
 
 	sdram_wwn <= sdram_task (
-		gear       => data_gear,
+		gear       => gear,
 		lat_cod    => cwl_cod,
 		lat_tab    => wwnl_tab,
 		lat_ext    => latencies(wwnxl),
@@ -203,10 +205,10 @@ begin
 		lat_sch    => wri_sr);
 
 	sdram_odt <= sdram_task (
-		gear       => cmmd_gear,
+		gear       => gear_odt,
 		lat_cod    => "000",
 		lat_tab    => (0 to 0 => 0),
-		lat_ext    => 2*cmmd_gear,
+		lat_ext    => 2*gear_odt,
 		lat_wid    => latencies(widl),
 
 		lat_val    => "000",

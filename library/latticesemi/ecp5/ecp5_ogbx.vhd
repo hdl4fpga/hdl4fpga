@@ -30,17 +30,22 @@ use ecp5u.components.all;
 
 entity ecp5_ogbx is
 	generic (
-		size      : natural;
+		interlace : boolean := false;
+		size      : natural := 1;
 		gear      : natural);
 	port (
 		rst  : in  std_logic := '0';
 		sclk : in  std_logic;
 		eclk : in std_logic := '0';
+		dqsw : in std_logic := '0';
 		t    : in  std_logic_vector(0 to gear*size-1) := (others => '0');
 		tq   : out std_logic_vector(0 to size-1);
 		d    : in  std_logic_vector(0 to gear*size-1);
 		q    : out std_logic_vector(0 to size-1));
 end;
+
+library hdl4fpga;
+use hdl4fpga.base.all;
 
 architecture beh of ecp5_ogbx is
 begin
@@ -53,19 +58,45 @@ begin
 				ck => sclk,
 				d  => d(i),
 				q  => q(i));
+
+			tq(i) <= t(i);
 		end generate;
 
 		gear2_g : if gear=2 generate
+		begin
     		oddr_i : oddrx1f
     		port map (
     			rst  => rst,
     			sclk => sclk,
-    			d0   => d(gear*i+0),
-    			d1   => d(gear*i+1),
+    			d0   => d(setif(interlace, gear*i+0, 0*size+i)),
+    			d1   => d(setif(interlace, gear*i+1, 1*size+i)),
     			q    => q(i));
+
+			tq(i) <= t(i);
 		end generate;
 
 		gear4_g : if gear=4 generate
+    		tshx2dqa_i : tshx2dqa
+    		port map (
+    			rst  => rst,
+    			sclk => sclk,
+    			eclk => eclk,
+    			dqsw270 => dqsw,
+    			t0   => t(setif(interlace, gear*i+0, 0*size+i)),
+    			t1   => t(setif(interlace, gear*i+2, 2*size+i)),
+    			q    => tq(i));
+
+    		oddrx2dqa_i : oddrx2dqa
+    		port map (
+    			rst  => rst,
+    			sclk => sclk,
+    			eclk => eclk,
+    			dqsw270 => dqsw,
+    			d0   => d(setif(interlace, gear*i+0, 0*size+i)),
+    			d1   => d(setif(interlace, gear*i+1, 1*size+i)),
+    			d2   => d(setif(interlace, gear*i+2, 2*size+i)),
+    			d3   => d(setif(interlace, gear*i+3, 3*size+i)),
+    			q    => q(i));
 		end generate;
 
 	end generate;

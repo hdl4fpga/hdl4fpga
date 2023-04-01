@@ -38,11 +38,9 @@ entity sdram_ctlr is
 		latencies   : latency_vector := (others => 0);
 		chip        : sdram_chips;
 
-		same_edge   : boolean :=  true;
-		cmmd_gear   : natural :=  1;
+		gear        : natural :=  2;
 		bank_size   : natural :=  2;
 		addr_size   : natural := 13;
-		data_gear   : natural :=  2;
 		word_size   : natural := 16;
 		byte_size   : natural :=  8);
 	port (
@@ -69,11 +67,11 @@ entity sdram_ctlr is
 		ctlr_a      : in  std_logic_vector(addr_size-1 downto 0);
 		ctlr_di_dv  : in  std_logic;
 		ctlr_di_req : out std_logic;
-		ctlr_do_dv  : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		ctlr_do_dv  : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
 		ctlr_act    : out std_logic;
-		ctlr_dm     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0) := (others => '0');
-		ctlr_di     : in  std_logic_vector(data_gear*word_size-1 downto 0);
-		ctlr_do     : out std_logic_vector(data_gear*word_size-1 downto 0);
+		ctlr_dm     : in  std_logic_vector(gear*word_size/byte_size-1 downto 0) := (others => '0');
+		ctlr_di     : in  std_logic_vector(gear*word_size-1 downto 0);
+		ctlr_do     : out std_logic_vector(gear*word_size-1 downto 0);
 
 		ctlr_refreq : out std_logic;
 		phy_frm     : in  std_logic := '0';
@@ -94,19 +92,19 @@ entity sdram_ctlr is
 		phy_a       : out std_logic_vector(addr_size-1 downto 0);
 		phy_odt     : out std_logic;
 
-		phy_dmi     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_dmo     : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		phy_dmi     : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		phy_dmo     : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
-		phy_dqso    : out std_logic_vector(data_gear-1 downto 0);
-		phy_dqst    : out std_logic_vector(data_gear-1 downto 0);
+		phy_dqso    : out std_logic_vector(gear-1 downto 0);
+		phy_dqst    : out std_logic_vector(gear-1 downto 0);
 
-		phy_dqt     : out std_logic_vector(data_gear-1 downto 0);
-		phy_dqv     : out std_logic_vector(data_gear-1 downto 0);
-		phy_dqo     : out std_logic_vector(data_gear*word_size-1 downto 0);
+		phy_dqt     : out std_logic_vector(gear-1 downto 0);
+		phy_dqv     : out std_logic_vector(gear-1 downto 0);
+		phy_dqo     : out std_logic_vector(gear*word_size-1 downto 0);
 
-		phy_sti     : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		phy_sto     : out std_logic_vector(data_gear-1 downto 0);
-		phy_dqi     : in  std_logic_vector(data_gear*word_size-1 downto 0));
+		phy_sti     : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		phy_sto     : out std_logic_vector(gear-1 downto 0);
+		phy_dqi     : in  std_logic_vector(gear*word_size-1 downto 0));
 
 
 end;
@@ -155,14 +153,14 @@ architecture mix of sdram_ctlr is
 	signal sdram_mpu_wwin   : std_logic;
 	signal sdram_mpu_rwwin  : std_logic;
 
-	signal sdram_sch_odt    : std_logic_vector(cmmd_gear-1 downto 0);
-	signal sdram_sch_wwn    : std_logic_vector(data_gear-1 downto 0);
+	signal sdram_sch_odt    : std_logic_vector(1-1 downto 0);
+	signal sdram_sch_wwn    : std_logic_vector(gear-1 downto 0);
 	signal sdram_sch_dqsz   : std_logic_vector(sdram_sch_wwn'range);
 	signal sdram_sch_dqs    : std_logic_vector(sdram_sch_wwn'range);
 	signal sdram_sch_dqz    : std_logic_vector(sdram_sch_wwn'range);
 	signal sdram_sch_st     : std_logic_vector(sdram_sch_wwn'range);
 
-	signal rot_val          : std_logic_vector(unsigned_num_bits(data_gear*word_size-1)-1 downto 0);
+	signal rot_val          : std_logic_vector(unsigned_num_bits(gear*word_size-1)-1 downto 0);
 	signal rot_di           : std_logic_vector(ctlr_di'range);
 
 	signal sdram_cwl        : std_logic_vector(ctlr_cwl'range);
@@ -232,8 +230,6 @@ begin
 	ctlr_inirdy <= init_rdy when phy_inirdy='1' else '0';
 
 	sdram_pgm_e : entity hdl4fpga.sdram_pgm
-	generic map (
-		cmmd_gear     => cmmd_gear)
 	port map (
 		ctlr_clk        => ctlr_clk,
 		ctlr_rst        => sdram_mpu_rst,
@@ -253,7 +249,7 @@ begin
 		latencies       => latencies,
 		chip            => chip,
 
-		gear            => data_gear,
+		gear            => gear,
 		bl_cod          => bl_cod,
 		al_cod          => al_cod,
 		cl_cod          => cl_cod,
@@ -286,21 +282,19 @@ begin
 
 	sdram_sch_e : entity hdl4fpga.sdram_sch
 	generic map (
-		latencies  => latencies,
-		chip       => chip,
-
-		cmmd_gear  => cmmd_gear,
-		data_gear  => data_gear,
-		cl_cod     => cl_cod,
-		cwl_cod    => cwl_cod)
+		latencies => latencies,
+		chip      => chip,
+		gear      => gear,
+		cl_cod    => cl_cod,
+		cwl_cod   => cwl_cod)
 	port map (
-		sys_cl     => ctlr_cl,
-		sys_cwl    => sdram_cwl,
-		sys_clk    => ctlr_clk,
-		sys_rea    => sdram_mpu_rwin,
-		sys_wri    => sdram_mpu_wwin,
+		sys_cl    => ctlr_cl,
+		sys_cwl   => sdram_cwl,
+		sys_clk   => ctlr_clk,
+		sys_rea   => sdram_mpu_rwin,
+		sys_wri   => sdram_mpu_wwin,
 
-		sdram_st   => sdram_sch_st,
+		sdram_st  => sdram_sch_st,
 
 		sdram_dqsz => sdram_sch_dqsz,
 		sdram_dqs  => sdram_sch_dqs,
@@ -383,7 +377,7 @@ begin
 		constant wwnl_tab : natural_vector := sdram_schtab(stdr, latencies, wwnl);
 	begin
 		rot_val <= sdram_rotval (
-			line_size => data_gear*word_size,
+			line_size => gear*word_size,
 			word_size => word_size,
 			lat_val   => sdram_cwl,
 			lat_cod   => cwl_cod,

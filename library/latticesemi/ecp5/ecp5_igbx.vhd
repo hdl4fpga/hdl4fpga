@@ -51,9 +51,15 @@ begin
 		end generate;
 
 		gear2_g : if gear=2 generate
+			assert false
+			report "No gear2 core yet"
+			severity failure;
 		end generate;
 
 		gear4_g : if gear=4 generate
+			assert false
+			report "No gear4 core yet"
+			severity failure;
 		end generate;
 
 	end generate;

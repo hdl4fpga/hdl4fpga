@@ -208,11 +208,8 @@ architecture graphics of ulx4m_ld is
 		real(sdram_params.pll.clki_div)/
 		(real(sdram_params.pll.clkos_div*sdram_params.pll.clkfb_div)*sys_freq);
 
-	constant sclk_phases : natural := 1;
-	constant sclk_edges  : natural := 1;
-	constant cmmd_gear   : natural := 2;
-	constant data_edges  : natural := 1;
-	constant data_gear   : natural := 4;
+	constant gear        : natural := 4;
+	constant cgear   : natural := (gear+1)/2;
 
 	constant bank_size   : natural := ddram_ba'length;
 	constant addr_size   : natural := ddram_a'length;
@@ -243,17 +240,17 @@ architecture graphics of ulx4m_ld is
 	signal ctlrphy_we    : std_logic_vector(0 to 2-1);
 	signal ctlrphy_odt   : std_logic_vector(0 to 2-1);
 	signal ctlrphy_cmd   : std_logic_vector(0 to 3-1);
-	signal ctlrphy_ba    : std_logic_vector(cmmd_gear*ddram_ba'length-1 downto 0);
-	signal ctlrphy_a     : std_logic_vector(cmmd_gear*ddram_a'length-1 downto 0);
-	signal ctlrphy_dqst  : std_logic_vector(data_gear-1 downto 0);
-	signal ctlrphy_dqso  : std_logic_vector(data_gear-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqt   : std_logic_vector(data_gear-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(data_gear*word_size-1 downto 0);
-	signal ctlrphy_dqv   : std_logic_vector(data_gear-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(data_gear-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_ba    : std_logic_vector(cgear*ddram_ba'length-1 downto 0);
+	signal ctlrphy_a     : std_logic_vector(cgear*ddram_a'length-1 downto 0);
+	signal ctlrphy_dqst  : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqso  : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqv   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
 	signal sdr_ba        : std_logic_vector(ddram_ba'length-1 downto 0);
 	signal sdr_a         : std_logic_vector(ddram_a'length-1 downto 0);
@@ -688,8 +685,8 @@ begin
 		-- mark         => MT41K8G107,
 		mark         => MT41K8G125,
 		burst_length => 8,
-		data_gear    => data_gear,
-		cmmd_gear    => cmmd_gear,
+		gear    => gear,
+		cgear    => cgear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
 		coln_size    => coln_size,
@@ -775,8 +772,8 @@ begin
 	process (sdr_ba)
 	begin
 		for i in sdr_ba'range loop
-			for j in 0 to cmmd_gear-1 loop
-				ctlrphy_ba(i*cmmd_gear+j) <= sdr_ba(i);
+			for j in 0 to cgear-1 loop
+				ctlrphy_ba(i*cgear+j) <= sdr_ba(i);
 			end loop;
 		end loop;
 	end process;
@@ -784,8 +781,8 @@ begin
 	process (sdr_a)
 	begin
 		for i in sdr_a'range loop
-			for j in 0 to cmmd_gear-1 loop
-				ctlrphy_a(i*cmmd_gear+j) <= sdr_a(i);
+			for j in 0 to cgear-1 loop
+				ctlrphy_a(i*cgear+j) <= sdr_a(i);
 			end loop;
 		end loop;
 	end process;
@@ -840,8 +837,7 @@ begin
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
 		debug      => debug,
-		cmmd_gear  => cmmd_gear,
-		data_gear  => data_gear,
+		gear       => gear,
 		bank_size  => ddram_ba'length,
 		addr_size  => ddram_a'length,
 		word_size  => word_size,

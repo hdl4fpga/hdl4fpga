@@ -31,7 +31,7 @@ use ecp5u.components.all;
 entity ecp5_sdrdqphy is
 	generic (
 		debug      : boolean := false;
-		data_gear  : natural;
+		gear       : natural;
 		byte_size  : natural;
 		rd_fifo    : boolean := true;
 		rd_align   : boolean := true;
@@ -53,17 +53,17 @@ entity ecp5_sdrdqphy is
 		read_req   : buffer std_logic;
 		phy_locked : buffer std_logic;
 
-		sys_sti    : in  std_logic_vector(data_gear-1 downto 0);
-		sys_sto    : out std_logic_vector(data_gear-1 downto 0);
-		sys_dmt    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
-		sys_dmi    : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
-		sys_dmo    : out std_logic_vector(data_gear-1 downto 0);
-		sys_dqo    : out std_logic_vector(data_gear*byte_size-1 downto 0);
-		sys_dqt    : in  std_logic_vector(data_gear-1 downto 0);
-		sys_dqv    : in  std_logic_vector(data_gear-1 downto 0) := (others => '0');
-		sys_dqi    : in  std_logic_vector(data_gear*byte_size-1 downto 0);
-		sys_dqsi   : in  std_logic_vector(data_gear-1 downto 0);
-		sys_dqst   : in  std_logic_vector(data_gear-1 downto 0);
+		sys_sti    : in  std_logic_vector(gear-1 downto 0);
+		sys_sto    : out std_logic_vector(gear-1 downto 0);
+		sys_dmt    : in  std_logic_vector(gear-1 downto 0) := (others => '-');
+		sys_dmi    : in  std_logic_vector(gear-1 downto 0) := (others => '-');
+		sys_dmo    : out std_logic_vector(gear-1 downto 0);
+		sys_dqo    : out std_logic_vector(gear*byte_size-1 downto 0);
+		sys_dqt    : in  std_logic_vector(gear-1 downto 0);
+		sys_dqv    : in  std_logic_vector(gear-1 downto 0) := (others => '0');
+		sys_dqi    : in  std_logic_vector(gear*byte_size-1 downto 0);
+		sys_dqsi   : in  std_logic_vector(gear-1 downto 0);
+		sys_dqst   : in  std_logic_vector(gear-1 downto 0);
 
 		sdram_dqs  : inout std_logic;
 		sdram_dqst : buffer std_logic;
@@ -453,9 +453,9 @@ begin
 	begin
 
 		wrfifo_g : if wr_fifo generate
-			gear_g : for i in data_gear-1 downto 0 generate
-				signal in_data  : std_logic_vector(sys_dqi'length/data_gear downto 0);
-				signal out_data : std_logic_vector(sys_dqi'length/data_gear downto 0);
+			gear_g : for i in gear-1 downto 0 generate
+				signal in_data  : std_logic_vector(sys_dqi'length/gear downto 0);
+				signal out_data : std_logic_vector(sys_dqi'length/gear downto 0);
 				signal out_frm  : std_logic;
 			begin
 				process (sclk)
@@ -488,54 +488,63 @@ begin
 
     	dqt <= sys_dqt when wle='0' else (others => '1');
     	oddr_g : for i in 0 to byte_size-1 generate
-    		tshx2dqa_i : tshx2dqa
-    		port map (
-    			rst  => rst,
-    			sclk => sclk,
-    			eclk => eclk,
-    			dqsw270 => dqsw270,
-    			t0  => dqt(2*1+1),
-    			t1  => dqt(2*0+1),
-    			q   => sdram_dqt(i));
+			signal di : std_logic_vector(gear-1 downto 0);
+			signal sw : std_logic;
+		begin
 
-    		oddrx2dqa_i : oddrx2dqa
-    		port map (
-    			rst  => rst,
-    			sclk => sclk,
-    			eclk => eclk,
-    			dqsw270 => dqsw270,
-    			d0   => dqi(3*byte_size+i),
-    			d1   => dqi(2*byte_size+i),
-    			d2   => dqi(1*byte_size+i),
-    			d3   => dqi(0*byte_size+i),
-    			q    => sdram_dqo(i));
+			process (sclk)
+			begin
+				if rising_edge(sclk) then
+					sw <= phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq));
+				end if;
+			end process;
+
+			process (sw, dqi)
+			begin
+				for j in di'range loop
+					if sw='1' then
+						if j mod 2=0 then
+							di(j) <= '1';
+						else
+							di(j) <= '0';
+						end if;
+					else
+						di(j) <= dqi(byte_size*j+i);
+					end if;
+				end loop;
+			end process;
+
+			ogbx_i : entity hdl4fpga.ecp5_ogbx
+			generic map (
+				gear => gear)
+			port map (
+    			rst   => rst,
+    			sclk  => sclk,
+    			eclk  => eclk,
+    			dqsw  => dqsw270,
+				t     => dqt,
+    			tq(0) => sdram_dqt(i),
+				d     => di,
+				q(0)  => sdram_dqo(i));
 
     		sdram_dq(i) <= sdram_dqo(i) when sdram_dqt(i)='0' else 'Z';
     	end generate;
 
     	dm_b : block
     	begin
-    		tshx2dqa_i : tshx2dqa
-    		port map (
-    			rst  => rst,
-    			sclk => sclk,
-    			eclk => eclk,
-    			dqsw270 => dqsw270,
-    			t0  => dqt(2*0),
-    			t1  => dqt(2*1),
-    			q   => sdram_dmt);
 
-    		oddrx2dqa_i : oddrx2dqa
-    		port map (
-    			rst  => rst,
-    			sclk => sclk,
-    			eclk => eclk,
-    			dqsw270 => dqsw270,
-    			d0   => dmi(3),
-    			d1   => dmi(2),
-    			d2   => dmi(1),
-    			d3   => dmi(0),
-    			q    => sdram_dmo);
+			ogbx_i : entity hdl4fpga.ecp5_ogbx
+			generic map (
+				gear => gear)
+			port map (
+    			rst   => rst,
+    			sclk  => sclk,
+    			eclk  => eclk,
+    			dqsw  => dqsw270,
+				t     => dqt,
+    			tq(0) => sdram_dmt,
+				d     => dmi,
+				q(0)  => sdram_dmo);
 
     		sdram_dm <= sdram_dmo when sdram_dmt='0' else 'Z';
 
@@ -550,27 +559,29 @@ begin
 		dqst <= sys_dqst when wle='0' else (others => '0');
 		dqsi <= sys_dqsi when wle='0' else (others => '1');
 
-		tshx2dqsa_i : tshx2dqsa
-		port map (
-			rst  => rst,
-			sclk => sclk,
-			eclk => eclk,
-			dqsw => dqsw,
-			t0   => dqst(2*1+1),
-			t1   => dqst(2*0+1),
-			q    => sdram_dqst);
-
-		oddrx2dqsb_i : oddrx2dqsb
-		port map (
-			rst  => rst,
-			sclk => sclk,
-			eclk => eclk,
-			dqsw => dqsw,
-			d0   => '0',
-			d1   => dqsi(2*1),
-			d2   => '0',
-			d3   => dqsi(2*0),
-			q    => sdram_dqso);
+		gear4_g : if gear=4 generate
+			tshx2dqsa_i : tshx2dqsa
+			port map (
+				rst  => rst,
+				sclk => sclk,
+				eclk => eclk,
+				dqsw => dqsw,
+				t0   => dqst(2*1+1),
+				t1   => dqst(2*0+1),
+				q    => sdram_dqst);
+	
+			oddrx2dqsb_i : oddrx2dqsb
+			port map (
+				rst  => rst,
+				sclk => sclk,
+				eclk => eclk,
+				dqsw => dqsw,
+				d0   => '0',
+				d1   => dqsi(2*1),
+				d2   => '0',
+				d3   => dqsi(2*0),
+				q    => sdram_dqso);
+		end generate;
 
 		sdram_dqs <= sdram_dqso when sdram_dqst='0' else 'Z';
 

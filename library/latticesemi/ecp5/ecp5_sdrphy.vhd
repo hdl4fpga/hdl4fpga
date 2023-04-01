@@ -35,10 +35,9 @@ use hdl4fpga.sdram_param.all;
 entity ecp5_sdrphy is
 	generic (
 		debug     : boolean := false;
-		cmmd_gear : natural := 2;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
-		data_gear : natural := 32;
+		gear      : natural := 2;
 		word_size : natural := 16;
 		byte_size : natural := 8;
 		taps      : natural := 0);
@@ -62,29 +61,29 @@ entity ecp5_sdrphy is
 		phy_rlreq  : in  std_logic := '0';
 		phy_rlrdy  : buffer std_logic;
 
-		sys_rst    : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '1');
-		sys_cs     : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '1');
-		sys_cke    : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_ras    : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_cas    : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_we     : in  std_logic_vector(cmmd_gear-1 downto 0);
-		sys_b      : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
-		sys_a      : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
-		sys_odt    : in  std_logic_vector(cmmd_gear-1 downto 0) := (others => '0');
+		sys_rst    : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '1');
+		sys_cs     : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '1');
+		sys_cke    : in  std_logic_vector((gear+1)/2-1 downto 0);
+		sys_ras    : in  std_logic_vector((gear+1)/2-1 downto 0);
+		sys_cas    : in  std_logic_vector((gear+1)/2-1 downto 0);
+		sys_we     : in  std_logic_vector((gear+1)/2-1 downto 0);
+		sys_b      : in  std_logic_vector((gear+1)/2*bank_size-1 downto 0);
+		sys_a      : in  std_logic_vector((gear+1)/2*addr_size-1 downto 0);
+		sys_odt    : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '0');
 		
-		sys_dmi    : in  std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dmi    : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
-		sys_dqv    : in  std_logic_vector(data_gear-1 downto 0) := (others => '0');
-		sys_dqt    : in  std_logic_vector(data_gear-1 downto 0);
-		sys_dqi    : in  std_logic_vector(data_gear*word_size-1 downto 0);
-		sys_dqo    : out std_logic_vector(data_gear*word_size-1 downto 0);
+		sys_dqv    : in  std_logic_vector(gear-1 downto 0) := (others => '0');
+		sys_dqt    : in  std_logic_vector(gear-1 downto 0);
+		sys_dqi    : in  std_logic_vector(gear*word_size-1 downto 0);
+		sys_dqo    : out std_logic_vector(gear*word_size-1 downto 0);
 
-		sys_dqsi   : in  std_logic_vector(data_gear-1 downto 0) := (others => '-');
-		sys_dqst   : in  std_logic_vector(data_gear-1 downto 0);
+		sys_dqsi   : in  std_logic_vector(gear-1 downto 0) := (others => '-');
+		sys_dqst   : in  std_logic_vector(gear-1 downto 0);
 
-		sys_dqc    : out std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
-		sys_sti    : in  std_logic_vector(data_gear-1 downto 0);
-		sys_sto    : buffer std_logic_vector(data_gear*word_size/byte_size-1 downto 0);
+		sys_dqc    : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		sys_sti    : in  std_logic_vector(gear-1 downto 0);
+		sys_sto    : buffer std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
 		sdram_rst  : out std_logic;
 		sdram_cs   : out std_logic := '0';
@@ -132,7 +131,7 @@ begin
 	ck_b : block
 	begin
 
-		gear2_g : if data_gear=2 generate 
+		gear2_g : if gear=2 generate 
 			ck_i : oddrx1f
 			port map (
 				sclk => sclk,
@@ -141,7 +140,7 @@ begin
 				q    => sdram_clk);
 		end generate;
 
-		gear4_g : if data_gear=4 generate 
+		gear4_g : if gear=4 generate 
 			signal ck : std_logic;
 		begin
     		ck_i : oddrx2f
@@ -274,7 +273,7 @@ begin
 
 	sdrbaphy_i : entity hdl4fpga.ecp5_sdrbaphy
 	generic map (
-		gear      => cmmd_gear,
+		gear      => (gear+1)/2,
 		bank_size => bank_size,
 		addr_size => addr_size)
 	port map (
@@ -303,8 +302,8 @@ begin
 		sdram_b   => sdram_b,
 		sdram_a   => sdram_a);
 
-	dmi <= shuffle_vector(sys_dmi, gear => data_gear, size => 1);
-	dqi <= shuffle_vector(sys_dqi, gear => data_gear, size => byte_size);
+	dmi <= shuffle_vector(sys_dmi, gear => gear, size => 1);
+	dqi <= shuffle_vector(sys_dqi, gear => gear, size => byte_size);
 
 	tp <= multiplex(tp_dq, tpin);
 	phy_locked <= '1' when dqs_locked=(dqs_locked'range => '1') else '0';
@@ -313,7 +312,7 @@ begin
 		generic map (
 			debug      => debug,
 			taps       => taps,
-			data_gear  => data_gear,
+			gear       => gear,
 			byte_size  => byte_size)
 		port map (
 			rst        => rst,
@@ -331,13 +330,13 @@ begin
 			phy_locked => dqs_locked(i),
 
 			sys_sti    => sys_sti,
-			sys_sto    => sys_sto((i+1)*data_gear-1 downto i*data_gear),
-			sys_dmi    => dmi((i+1)*data_gear-1 downto i*data_gear),
+			sys_sto    => sys_sto((i+1)*gear-1 downto i*gear),
+			sys_dmi    => dmi((i+1)*gear-1 downto i*gear),
 
 			sys_dqv    => sys_dqv,
-			sys_dqi    => dqi((i+1)*byte_size*data_gear-1 downto i*byte_size*data_gear),
+			sys_dqi    => dqi((i+1)*byte_size*gear-1 downto i*byte_size*gear),
 			sys_dqt    => sys_dqt,
-			sys_dqo    => dqo((i+1)*byte_size*data_gear-1 downto i*byte_size*data_gear),
+			sys_dqo    => dqo((i+1)*byte_size*gear-1 downto i*byte_size*gear),
 
 			sys_dqst   => sys_dqst,
 			sys_dqsi   => sys_dqsi,
@@ -354,5 +353,5 @@ begin
 			tp         => tp_dq(i*32+1 to (i+1)*32));
 	end generate;
 
-	sys_dqo <= unshuffle_vector(dqo, gear => data_gear, size => byte_size);
+	sys_dqo <= unshuffle_vector(dqo, gear => gear, size => byte_size);
 end;
