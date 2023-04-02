@@ -112,9 +112,9 @@ architecture graphics of ecp3versa is
 	signal ctlrphy_cmd   : std_logic_vector(0 to 3-1);
 	signal ctlrphy_ba    : std_logic_vector(cgear*ddr3_b'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(cgear*ddr3_a'length-1 downto 0);
-	signal ctlrphy_dsi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dst   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dso   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqsi  : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqst  : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqso  : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dmo   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqi   : std_logic_vector(gear*word_size-1 downto 0);
@@ -641,8 +641,8 @@ begin
 		ctlrphy_odt  => ctlrphy_odt(0),
 		ctlrphy_b    => ddr_ba,
 		ctlrphy_a    => ddr_a,
-		ctlrphy_dst  => ctlrphy_dst,
-		ctlrphy_dso  => ctlrphy_dso,
+		ctlrphy_dqst => ctlrphy_dqst,
+		ctlrphy_dqso => ctlrphy_dqso,
 		ctlrphy_dmi  => ctlrphy_dmi,
 		ctlrphy_dmo  => ctlrphy_dmo,
 		ctlrphy_dqi  => ctlrphy_dqi,
@@ -829,9 +829,9 @@ begin
     		phy_odt   => ctlrphy_odt,
     		phy_b     => ctlrphy_ba,
     		phy_a     => ctlrphy_a,
-    		phy_dqsi  => ctlrphy_dso,
-    		phy_dqst  => ctlrphy_dst,
-    		phy_dqso  => ctlrphy_dsi,
+    		phy_dqsi  => ctlrphy_dqso,
+    		phy_dqst  => ctlrphy_dqst,
+    		phy_dqso  => ctlrphy_dqsi,
     		phy_dmi   => ctlrphy_dmo,
     		phy_dmo   => ctlrphy_dmi,
     		phy_dqi   => ctlrphy_dqo,

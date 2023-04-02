@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.sdram_param.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
@@ -90,8 +91,8 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	-- constant app_profile : app_profiles := ipoe_sdr166MHz_480p24bpp;
-	constant app_profile : app_profiles := hdlc_sdr133MHz_480p16bpp;
+	constant app_profile : app_profiles := hdlc_sdr250MHz_600p24bpp;
+	-- constant app_profile : app_profiles := hdlc_sdr133MHz_480p16bpp;
     --                                  --
 	--------------------------------------
 
@@ -172,7 +173,7 @@ architecture graphics of ulx3s is
 		(id => mode1080p16bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb565, timing => pclk150_00m1920x1080at60),
 		(id => mode1080p24bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb888, timing => pclk150_00m1920x1080at60));
 
-	function videoparam (
+	impure function videoparam (
 		constant id  : video_modes)
 		return video_params is
 		constant tab : videoparams_vector := video_tab;
@@ -537,7 +538,6 @@ begin
 	end generate;
 
 	ipoe_e : if io_link=io_ipoe generate
-
 	begin
 
 		rmii_b : block

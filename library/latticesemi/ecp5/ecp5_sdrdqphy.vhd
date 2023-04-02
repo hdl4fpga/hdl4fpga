@@ -588,10 +588,11 @@ begin
 		signal dqst : std_logic_vector(sys_dqst'range);
 	begin
 
-		dqst <= sys_dqst when wle='0' else (others => '0');
-		dqsi <= sys_dqsi when wle='0' else (others => '1');
 
 		gear4_g : if gear=4 generate
+			dqst <= sys_dqst when wle='0' else (others => '0');
+			dqsi <= sys_dqsi when wle='0' else (others => '1');
+
 			tshx2dqsa_i : tshx2dqsa
 			port map (
 				rst  => rst,
@@ -613,9 +614,10 @@ begin
 				d2   => '0',
 				d3   => dqsi(2*0),
 				q    => sdram_dqso);
+
+			sdram_dqs <= sdram_dqso when sdram_dqst='0' else 'Z';
 		end generate;
 
-		sdram_dqs <= sdram_dqso when sdram_dqst='0' else 'Z';
 
 	end block;
 

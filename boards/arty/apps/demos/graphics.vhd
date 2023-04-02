@@ -29,6 +29,7 @@ use ieee.math_real.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.profiles.all;
+use hdl4fpga.sdram_param.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
@@ -681,6 +682,7 @@ begin
 		coln_size    => coln_size,
 		word_size    => word_size,
 		byte_size    => byte_size,
+		phy_latencies => xc7vg4_latencies,
 
 		ena_burstref => false,
 		timing_id    => videoparam(video_mode).timing,
@@ -737,8 +739,8 @@ begin
 		ctlrphy_odt  => ctlrphy_odt(0),
 		ctlrphy_b    => ddr_ba,
 		ctlrphy_a    => ddr_a,
-		ctlrphy_dst  => ctlrphy_dqst,
-		ctlrphy_dso  => ctlrphy_dqso,
+		ctlrphy_dqst => ctlrphy_dqst,
+		ctlrphy_dqso => ctlrphy_dqso,
 		ctlrphy_dmi  => ctlrphy_dmi,
 		ctlrphy_dmo  => ctlrphy_dmo,
 		ctlrphy_dqi  => ctlrphy_dqi,

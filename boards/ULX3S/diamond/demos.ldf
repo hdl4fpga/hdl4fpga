@@ -206,7 +206,7 @@
         <Source name="../../../library/basic/txn_buffer.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="constraints/ulx3s_demos.lpf" type="Logic Preference" type_short="LPF">
+        <Source name="demos.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
     </Implementation>
@@ -252,9 +252,6 @@
             <Options/>
         </Source>
         <Source name="../../../library/video/videopkg.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/video/modeline_calculator.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/video/fonts/bcdfonts.vhd" type="VHDL" type_short="VHDL">
@@ -318,15 +315,6 @@
             <Options/>
         </Source>
         <Source name="../../../library/basic/timer.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/latticesemi/sdrbaphy.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/latticesemi/sdrdqphy.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/latticesemi/sdrphy.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/sio/so_data.vhd" type="VHDL" type_short="VHDL">
@@ -482,9 +470,6 @@
         <Source name="../../../library/sdram/sdram_init.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdram/sdram_iofifo.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/sdram/sdram_mpu.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -494,16 +479,7 @@
         <Source name="../../../library/sdram/sdram_pgm.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdram/sdram_ph.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/sdram/sdram_rdfifo.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/sdram/sdram_sch.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/sdram/sdram_wrfifo.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/basic/profiles.vhd" type="VHDL" type_short="VHDL">
@@ -521,7 +497,34 @@
         <Source name="../../../library/mii/ipv4_adjlen.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="constraints/ulx3s_demos.lpf" type="Logic Preference" type_short="LPF">
+        <Source name="../../../library/latticesemi/ecp5/adjbrst.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_igbx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_ogbx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_sdrbaphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_sdrdqphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_sdrphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/mem_sync.v" type="Verilog" type_short="Verilog">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/phy_iofifo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/xilinx/adjpha.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="demos.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
     </Implementation>
@@ -665,7 +668,7 @@
         <Source name="../../../library/sio/sio_hdlc.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="constraints/ulx3s_demos.lpf" type="Logic Preference" type_short="LPF">
+        <Source name="demos.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
     </Implementation>
@@ -854,7 +857,7 @@
         <Source name="../../../library/mii/dll_rx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="constraints/ulx3s_demos.lpf" type="Logic Preference" type_short="LPF">
+        <Source name="demos.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
     </Implementation>
@@ -950,9 +953,9 @@
         <Source name="../../../library/video/ser_display.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="constraints/ulx3s_demos.lpf" type="Logic Preference" type_short="LPF">
+        <Source name="demos.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
     </Implementation>
-    <Strategy name="Strategy1" file="scripts/ulx3s.sty"/>
+    <Strategy name="Strategy1" file="demos.sty"/>
 </BaliProject>

@@ -103,8 +103,8 @@ entity demo_graphics is
 		ctlrphy_odt   : out std_logic;
 		ctlrphy_b     : out std_logic_vector(bank_size-1 downto 0);
 		ctlrphy_a     : out std_logic_vector(addr_size-1 downto 0);
-		ctlrphy_dst   : out std_logic_vector(gear-1 downto 0);
-		ctlrphy_dso   : out std_logic_vector(gear-1 downto 0);
+		ctlrphy_dqst  : out std_logic_vector(gear-1 downto 0);
+		ctlrphy_dqso  : out std_logic_vector(gear-1 downto 0);
 		ctlrphy_dmi   : in  std_logic_vector(gear*word_size/byte_size-1 downto 0) := (others => '-');
 		ctlrphy_dmo   : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
 		ctlrphy_dqt   : out std_logic_vector(gear-1 downto 0);
@@ -163,7 +163,6 @@ architecture mix of demo_graphics is
 	signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);
 	signal ctlr_di        : std_logic_vector(gear*word_size-1 downto 0);
 	signal ctlr_do        : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlr_dm        : std_logic_vector(gear*word_size/byte_size-1 downto 0) := (others => '0');
 	signal ctlr_do_dv     : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal ctlr_di_dv     : std_logic;
 	signal ctlr_di_req    : std_logic;
@@ -954,8 +953,6 @@ begin
 	sdrctlr_b : block
 		signal inirdy    : std_logic;
 	begin
-		-- ctlr_dm <= ctlr_di(2) & ctlr_di(2) & ctlr_di(18) & ctlr_di(18);
-		ctlr_dm <= (others => '0');
 		sdrctlr_e : entity hdl4fpga.sdram_ctlr
 		generic map (
 			debug        => debug,
@@ -969,7 +966,6 @@ begin
 			word_size    => word_size,
 			byte_size    => byte_size)
 		port map (
---			tp_sel        => tp_sel,
 			ctlr_alat    => ctlr_alat,
 			ctlr_blat    => ctlr_blat,
 			ctlr_al      => ctlr_al,
@@ -994,7 +990,7 @@ begin
 			ctlr_di_dv   => ctlr_di_dv,
 			ctlr_di_req  => ctlr_di_req,
 			ctlr_di      => ctlr_di,
-			ctlr_dm      => ctlr_dm,
+			ctlr_dm      => (others => '0'),
 			ctlr_do_dv   => ctlr_do_dv,
 			ctlr_do      => ctlr_do,
 			ctlr_refreq  => ctlr_refreq,
@@ -1025,8 +1021,8 @@ begin
 			phy_sto      => ctlrphy_sto,
 
 		    phy_dqv      => ctlrphy_dqv,
-			phy_dqso     => ctlrphy_dso,
-			phy_dqst     => ctlrphy_dst);
+			phy_dqso     => ctlrphy_dqso,
+			phy_dqst     => ctlrphy_dqst);
 
 		inirdy_e : entity hdl4fpga.latency
 		generic map (

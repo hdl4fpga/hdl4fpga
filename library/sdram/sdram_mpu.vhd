@@ -33,8 +33,8 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_db.all;
 use hdl4fpga.sdram_param.all;
+use hdl4fpga.sdram_db.all;
 
 entity sdram_mpu is
 	generic (
@@ -77,7 +77,9 @@ architecture arch of sdram_mpu is
 
 	constant stdr    : sdram_standards := sdrmark_standard(chip);
 
-	constant lwr     : natural          := natural(ceil((sdram_timing(chip, twr)+tcp*real(latencies(dqsxl)))/tcp));
+	constant twr1     : real            := ceil(sdram_timing(chip, twr)+tcp*real(latencies(dqsxl))/tcp);
+	-- constant lwr     : natural          := natural(ceil((sdram_timing(chip, twr)+tcp*real(latencies(dqsxl)))/tcp));
+	constant lwr     : natural          := natural(twr1); -- Diamond 3.11.2.446 crashes when replace twr1 by its expression
 	constant lrcd    : natural          := to_sdrlatency(tcp, chip, trcd);
 	constant lrfc    : natural          := to_sdrlatency(tcp, chip, trfc);
 	constant lrp     : natural          := to_sdrlatency(tcp, chip, trp);
