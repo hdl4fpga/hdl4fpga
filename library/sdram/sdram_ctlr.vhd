@@ -27,8 +27,8 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_db.all;
 use hdl4fpga.sdram_param.all;
+use hdl4fpga.sdram_db.all;
 
 entity sdram_ctlr is
 	generic (

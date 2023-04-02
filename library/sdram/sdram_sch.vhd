@@ -145,14 +145,14 @@ architecture def of sdram_sch is
 
 begin
 	
-	process (sys_rea, sys_wri, sys_clk)
+	rea_sr(0) <= sys_rea;
+	wri_sr(0) <= sys_wri;
+	process (sys_clk)
 	begin
 		if rising_edge(sys_clk) then
 			rea_sr <= std_logic_vector(shift_right(unsigned(rea_sr), 1));
 			wri_sr <= std_logic_vector(shift_right(unsigned(wri_sr), 1));
 		end if;
-		rea_sr(0) <= sys_rea;
-		wri_sr(0) <= sys_wri;
 	end process;
 
 	sdram_st <= sdram_task (
