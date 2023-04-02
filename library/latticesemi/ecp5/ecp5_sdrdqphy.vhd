@@ -384,7 +384,7 @@ begin
     		dqsw270   => dqsw270);
 		end block;
 
-	iddr_g : for i in 0 to byte_size-1 generate
+	iddr_g : for i in byte_size-1 downto 0 generate
 		signal d : std_logic;
 		signal z : std_logic;
 	begin
@@ -397,7 +397,7 @@ begin
 				gear => gear)
 			port map (
 				rst  => rst,
-				sclk => sclk,
+				sclk => sdram_dqs,
 				d(0) => sdram_dq(i),
 				q    => dqo);
 
@@ -446,7 +446,7 @@ begin
 				gear => gear)
 			port map (
 				rst  => rst,
-				sclk => sclk,
+				sclk => sdram_dqs,
 				d(0) => sdram_dm,
 				q    => sys_dmo);
 		end generate;

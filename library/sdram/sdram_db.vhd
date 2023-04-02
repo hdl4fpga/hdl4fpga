@@ -139,16 +139,16 @@ package sdram_db is
 
 	type latency_vector     is array (device_latencies) of integer;
 	constant sdram_latency_tab : sdram_latency_vector := (
-		(stdr => ddr,  param => cDLL,       value => 200),
+		(stdr => ddr,  param => cDLL,   value => 200),
 
-		(stdr => ddr2, param => cDLL,       value => 200),
-		(stdr => ddr2, param => MRD,        value =>   2),
+		(stdr => ddr2, param => cDLL,   value => 200),
+		(stdr => ddr2, param => MRD,    value =>   2),
 
-		(stdr => ddr3, param => cDLL,       value => 500),
-		(stdr => ddr3, param => ZQINIT,     value => 500),
-		(stdr => ddr3, param => MRD,        value =>   4),
-		(stdr => ddr3, param => MODu,       value =>  12),
-		(stdr => ddr3, param => XPR,        value =>   5));
+		(stdr => ddr3, param => cDLL,   value => 500),
+		(stdr => ddr3, param => ZQINIT, value => 500),
+		(stdr => ddr3, param => MRD,    value =>   4),
+		(stdr => ddr3, param => MODu,   value =>  12),
+		(stdr => ddr3, param => XPR,    value =>   5));
 
 	constant xc3sg2_latencies : latency_vector := (
 		STRL   => -2,
@@ -203,7 +203,7 @@ package sdram_db is
 		WIDL   => 4);
 
 	constant ecp5g1_latencies : latency_vector := (
-		STRL   => 4,
+		STRL   => 1,
 		DQSL   => 0,
 		DQSZL  => 0,
 		DQZL   => 0,

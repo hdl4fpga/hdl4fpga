@@ -272,8 +272,6 @@ architecture graphics of ulx3s is
 	signal ctlrphy_odt   : std_logic;
 	signal ctlrphy_b     : std_logic_vector(sdram_ba'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(sdram_a'length-1 downto 0);
-	signal ctlrphy_dqst  : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqso  : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dmt   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dmo   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqi   : std_logic_vector(gear*word_size-1 downto 0);
@@ -472,7 +470,7 @@ begin
 
 		sdrsys_rst <= not sdram_lck;
 
-		ctlrphy_dqso <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
+		sdram_dqs <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
 
 	end block;
 
@@ -654,13 +652,13 @@ begin
 			port map (
 				desser_clk => mii_txc,
 			
-				des_frm    => miitx_frm,
-				des_irdy   => miitx_irdy,
-				des_trdy   => miitx_trdy,
-				des_data   => miitx_data,
+				des_frm  => miitx_frm,
+				des_irdy => miitx_irdy,
+				des_trdy => miitx_trdy,
+				des_data => miitx_data,
 			
-				ser_irdy   => open,
-				ser_data   => mii_txd);
+				ser_irdy => open,
+				ser_data => mii_txd);
 			
 			mii_txen <= miitx_frm and not miitx_end;
 		end block;
@@ -711,7 +709,7 @@ begin
 
 	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
-		debug => debug,
+		debug        => debug,
 		profile      => 0,
 
 		sdram_tcp    => sdram_tcp,
@@ -761,8 +759,6 @@ begin
 		ctlrphy_we   => ctlrphy_we,
 		ctlrphy_b    => ctlrphy_b,
 		ctlrphy_a    => ctlrphy_a,
-		ctlrphy_dst => ctlrphy_dqst,
-		ctlrphy_dso => open,
 		ctlrphy_dmo  => ctlrphy_dmo,
 		ctlrphy_dqi  => ctlrphy_dqi,
 		ctlrphy_dqt  => ctlrphy_dqt,
@@ -770,6 +766,8 @@ begin
 		ctlrphy_dqv  => ctlrphy_dqv,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
+
+	ctlrphy_sti <= (others => ctlrphy_sto(0));
 
 	sdrphy_b : block
 		constant phy_debug : boolean := debug;
@@ -816,14 +814,10 @@ begin
 			sys_we(0)  => ctlrphy_we,
 			sys_b      => ctlrphy_b,
 			sys_a      => ctlrphy_a,
-			sys_dqsi   => ctlrphy_dqso,
-			sys_dqst   => ctlrphy_dqst,
 			sys_dmi    => ctlrphy_dmo,
 			sys_dqi    => ctlrphy_dqo,
 			sys_dqt    => ctlrphy_dqt,
 			sys_dqo    => phy_do,
-			sys_sti    => sdrphy_sti,
-			sys_sto    => ctlrphy_sti,
 	
 			sdram_clk  => sdram_clk,
 			sdram_cke  => sdram_cke,
@@ -833,19 +827,11 @@ begin
 			sdram_we   => sdram_wen,
 			sdram_b    => sdram_ba,
 			sdram_a    => sdram_a,
+			sdram_dqs  => sdram_dqs,
 	
 			sdram_dm   => sdram_dqm,
 			sdram_dq   => sdram_d);
 
-		sdram_sti : entity hdl4fpga.latency
-		generic map (
-			n => sdrphy_sti'length,
-			d => (0 to sdrphy_sti'length-1 => setif(sdram_mode/=sdram133MHz, 1, 0)))
-		port map (
-			clk => ctlr_clk,
-			di  => ctlrphy_sto,
-			do  => sdrphy_sti);
-		
 	end block;
 
 	-- VGA --
