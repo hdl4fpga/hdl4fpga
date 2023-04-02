@@ -24,9 +24,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library ecp5u;
-use ecp5u.components.all;
-
 entity ulx4m_ls is
 	generic (
 		debug : boolean := false);
@@ -95,7 +92,5 @@ entity ulx4m_ls is
 	alias hdmi0_clock : std_logic is gpdi_d(3);
 
 	constant clk25mhz_freq : real := 25.0e6;
-	constant sys_freq      : real := clk25mhz_freq;
-
 
 end;

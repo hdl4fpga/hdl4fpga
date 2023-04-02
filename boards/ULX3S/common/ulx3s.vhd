@@ -24,9 +24,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library ecp5u;
-use ecp5u.components.all;
-
 entity ulx3s is
 	generic (
 		debug : boolean := false);
@@ -108,7 +105,7 @@ entity ulx3s is
 		sdram_dqm      : inout std_logic_vector(2-1 downto 0) := (others => 'U');
 		sdram_d        : inout std_logic_vector(16-1 downto 0) := (others => 'U');
 
-		gpdi_dp        : out   std_logic_vector(4-1 downto 0);
+		gpdi_d         : out   std_logic_vector(4-1 downto 0);
 		gpdi_dn        : out   std_logic_vector(4-1 downto 0);
 		gpdi_cec       : inout std_logic := '-';
 		gpdi_sda       : inout std_logic := '-';
@@ -121,9 +118,6 @@ entity ulx3s is
 
 		user_programn  : out   std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
 		shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep
-
-	constant clk25mhz_freq : real := 25.0e6;
-	constant sys_freq      : real := clk25mhz_freq;
 
 	alias rmii_tx_en  : std_logic is gn(10);
 	alias rmii_tx0    : std_logic is gp(10);
@@ -139,5 +133,12 @@ entity ulx3s is
 	alias rmii_mdio   : std_logic is gn(13);
 	alias rmii_mdc    : std_logic is gp(13);
 	alias rmii_refclk : std_logic is gp(9);
+
+	alias hdmi0_blue  : std_logic is gpdi_d(0);
+	alias hdmi0_green : std_logic is gpdi_d(1);
+	alias hdmi0_red   : std_logic is gpdi_d(2);
+	alias hdmi0_clock : std_logic is gpdi_d(3);
+
+	constant clk25mhz_freq : real := 25.0e6;
 
 end;

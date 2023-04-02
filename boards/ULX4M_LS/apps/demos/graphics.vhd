@@ -239,7 +239,7 @@ architecture graphics of ulx4m_ls is
 
 	constant sdram_tcp : real := 
 		real(sdram_params.pll.clki_div*sdram_params.pll.clkos2_div)/
-		(real(sdram_params.pll.clkfb_div*sdram_params.pll.clkop_div)*sys_freq);
+		(real(sdram_params.pll.clkfb_div*sdram_params.pll.clkop_div)*clk25mhz_freq);
 
 	constant io_link     : io_comms := profile_tab(app_profile).comms;
 
@@ -308,22 +308,22 @@ begin
 		attribute FREQUENCY_PIN_CLKOP  : string;
 
 		constant video_freq  : real :=
-			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq)/
+			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
 			(real(video_record.pll.clki_div*video_record.pll.clkos2_div*1e6));
 
 		constant video_shift_freq  : real :=
-			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq)/
+			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
 			(real(video_record.pll.clki_div*video_record.pll.clkos_div*1e6));
 
 		constant videoio_freq  : real :=
-			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq)/
+			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
 			(real(video_record.pll.clki_div*video_record.pll.clkos3_div*1e6));
 
-		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(video_shift_freq, 10);
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(video_freq,       10);
-		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is ftoa(videoio_freq,     10);
-		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(sys_freq/1.0e6,   10);
-		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(sys_freq/1.0e6,   10);
+		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(video_shift_freq,    10);
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(video_freq,          10);
+		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is ftoa(videoio_freq,        10);
+		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
 
 		signal clkfb : std_logic;
 
@@ -386,12 +386,12 @@ begin
 
 
 		constant sdram_freq  : real :=
-			(real(sdram_params.pll.clkfb_div*sdram_params.pll.clkop_div)*sys_freq)/
+			(real(sdram_params.pll.clkfb_div*sdram_params.pll.clkop_div)*clk25mhz_freq)/
 			(real(sdram_params.pll.clki_div*sdram_params.pll.clkos2_div*1e6));
 
 		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(sdram_freq, 10);
-		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(sys_freq/1.0e6, 10);
-		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
 
 		signal clkfb : std_logic;
 		signal lock  : std_logic;
@@ -457,7 +457,7 @@ begin
 	hdlc_g : if io_link=io_hdlc generate
 
 		constant uart_xtal : real := 
-			real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq/
+			real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq/
 			real(video_record.pll.clki_div*video_record.pll.clkos3_div);
 
 		constant baudrate : natural := setif(
@@ -642,43 +642,42 @@ begin
 		end block;
 		
 		miirefclk_b : block
-			signal d0, d1 : std_logic;
+			type ref_freqs is (f25MHz, f50MHz);
+			constant ref_freq : ref_freqs := f25MHz;
+
+			signal shtclk : std_logic;
+			signal d0     : std_logic;
+			signal d1     : std_logic;
 			signal refclk : std_logic;
+			
 		begin
 
-			-- assert 
-				-- video_mode=mode480p24bpp or 
-				-- video_mode=modedebug
-			-- report "mii not available for videomode " & video_modes'image(video_mode)
-			-- severity failure;
--- 
-			-- mode480p24bp_g : if video_mode=mode480p24bpp generate
-			-- begin
-				-- process (video_shift_clk)
-					-- variable reg : unsigned(0 to 10-1) := b"11_10_01_11_00";
-				-- begin
-					-- if rising_edge(video_shift_clk) then
-						-- reg := reg rol 2;
-					-- end if;
-					-- d0 <= reg(0);
-					-- d1 <= reg(1);
-				-- end process;
-			-- end generate;
-	-- 
-			-- oddr_i : oddrx1f
-			-- port map(
-				-- sclk => video_shift_clk,
-				-- rst  => '0',
-				-- d0   => d0,
-				-- d1   => d1,
-				-- q    => refclk);
+			ref50_g : if ref_freq=f50MHz generate
+			begin
+				process (video_shift_clk)
+					variable reg : unsigned(0 to 10-1) := b"11_10_01_11_00";
+				begin
+					if rising_edge(video_shift_clk) then
+						reg := reg rol 2;
+					end if;
+					d0 <= reg(0);
+					d1 <= reg(1);
+				end process;
+				shtclk <= video_shift_clk;
+			end generate;
 
+			ref25_g : if ref_freq=f25MHz generate
+				shtclk <= clk_25mhz;
+				d0     <= '1';
+				d1     <= '0';
+			end generate;
+	
 			oddr_i : oddrx1f
 			port map(
-				sclk => clk_25mhz,
+				sclk => video_shift_clk,
 				rst  => '0',
-				d0   => '1',
-				d1   => '0',
+				d0   => d0,
+				d1   => d1,
 				q    => refclk);
 
 			debug_g : block
@@ -696,16 +695,16 @@ begin
 		eth_mdio   <= '0';
 		eth_mdc    <= '0';
 
-
 	end generate;
 
 	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
-		debug => debug,
+		debug        => debug,
 		profile      => 0,
 
 		ena_burstref => false,
 		sdram_tcp    => sdram_tcp,
+		phy_latencies => ecp5g1_latencies,
 		mark         => MT48LC256MA27E ,
 		gear         => gear,
 		bank_size    => bank_size,
@@ -768,7 +767,6 @@ begin
         byte_size  => byte_size,
         wr_fifo    => false)
     port map (
-
         sclk       => ctlr_clk,
         rst        => sdrsys_rst,
 
@@ -796,7 +794,6 @@ begin
 
         sdram_dm   => sdram_dqm,
         sdram_dq   => sdram_d);
-
 
 	-- VGA --
 	---------
