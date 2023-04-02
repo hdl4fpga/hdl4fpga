@@ -90,7 +90,7 @@ architecture graphics of ulx4m_ls is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := ipoe_sdr166MHz_480p24bpp;
+	constant app_profile : app_profiles := ipoe_sdr250MHz_600p24bpp;
     --                                  --
 	--------------------------------------
 

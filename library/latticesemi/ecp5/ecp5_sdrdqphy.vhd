@@ -73,6 +73,7 @@ entity ecp5_sdrdqphy is
 		sdram_dmo  : buffer std_logic;
 		sdram_dq   : inout std_logic_vector(byte_size-1 downto 0);
 		sdram_dqt  : buffer std_logic_vector(byte_size-1 downto 0);
+		sdram_dqi  : in std_logic_vector(byte_size-1 downto 0) := (others => '-');
 		sdram_dqo  : buffer std_logic_vector(byte_size-1 downto 0);
 
 		tp         : out std_logic_vector(1 to 32));
@@ -403,6 +404,7 @@ begin
 
 			shuffle_g : for j in dqo'range generate
 				sys_dqo(j*byte_size+i) <= dqo(j);
+				-- sys_dqo(j*byte_size+i) <= sdram_dqi(i);
 			end generate;
 		end generate;
 

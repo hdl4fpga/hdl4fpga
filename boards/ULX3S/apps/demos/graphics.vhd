@@ -91,7 +91,7 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := hdlc_sdr250MHz_600p24bpp;
+	constant app_profile : app_profiles := hdlc_sdr133MHz_600p24bpp;
 	-- constant app_profile : app_profiles := hdlc_sdr133MHz_480p16bpp;
     --                                  --
 	--------------------------------------
@@ -452,7 +452,7 @@ begin
 
 		sdrsys_rst <= not lock;
 
-		sdram_dqs <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
+		sdram_dqs <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => not ctlr_clk);
 
 	end block;
 
@@ -795,6 +795,7 @@ begin
 		sdram_dqs  => sdram_dqs,
 
 		sdram_dm   => sdram_dqm,
+		sdram_dqi  => x"aa55",
 		sdram_dq   => sdram_d);
 
 	-- VGA --
