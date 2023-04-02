@@ -19,26 +19,14 @@ add wave -noupdate -group sdram /testbench/du_e/sdram_ba
 add wave -noupdate -group sdram /testbench/du_e/sdram_dqm
 add wave -noupdate -group sdram -radix hexadecimal /testbench/du_e/sdram_d
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_e/rmii_b/dhcp_btn
-add wave -noupdate /testbench/du_e/ipoe_e/rmii_b/dhcpcd_req
-add wave -noupdate /testbench/du_e/ipoe_e/rmii_b/dhcpcd_rdy
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_e/rmii_b/mii_rxc
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/ipoe_b/ethrx_e/fcs_sb
 add wave -noupdate /testbench/ipoe_b/ethrx_e/fcs_vld
+add wave -noupdate /testbench/ipoe_b/ethrx_e/fcs_sb
 add wave -noupdate -radix hexadecimal /testbench/ipoe_b/ethrx_e/fcs_rem
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_e/miirefclk_b/refclk
-add wave -noupdate /testbench/du_e/ipoe_e/rmii_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/udp_e/dhcpcd_b/dhcpcd_e/dhcpdscb_e/dhcpdscb_frm
-add wave -noupdate /testbench/du_e/ipoe_e/rmii_b/udpdaisy_e/sio_udp_e/mii_ipoe_e/ipv4_e/udp_e/dhcpcd_b/dhcpcd_e/dhcpdscb_e/dhcpdscb_ptr
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_di_dv
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_di
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/vram_e/src_frm
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/vram_e/src_irdy
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/vram_e/src_trdy
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -48,9 +36,9 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {96351529729 fs} 0} {{Cursor 2} {95375095109 fs} 0} {{Cursor 3} {69141786685 fs} 0}
+WaveRestoreCursors {{Cursor 1} {122049800169 fs} 0} {{Cursor 2} {95375095109 fs} 0} {{Cursor 3} {69141786685 fs} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 199
+configure wave -namecolwidth 632
 configure wave -valuecolwidth 161
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -64,4 +52,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {101220 ns}
+WaveRestoreZoom {121723546845 fs} {121957118812 fs}
