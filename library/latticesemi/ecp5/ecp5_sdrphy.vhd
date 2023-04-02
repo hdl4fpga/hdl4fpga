@@ -51,7 +51,7 @@ entity ecp5_sdrphy is
 		ms_pause  : in  std_logic := '-';
 
 		phy_frm    : buffer std_logic;
-		phy_trdy   : in  std_logic;
+		phy_trdy   : in  std_logic := '-';
 		phy_rw     : out std_logic := '1';
 		phy_cmd    : in  std_logic_vector(0 to 3-1) := (others => 'U');
 		phy_ini    : out std_logic;

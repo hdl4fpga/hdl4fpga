@@ -251,17 +251,7 @@ architecture graphics of ulx3s is
 	constant word_size   : natural := sdram_d'length;
 	constant byte_size   : natural := 8;
 
-	signal sys_rst       : std_logic;
-
 	signal sdrsys_rst    : std_logic;
-
-	signal sdram_lck     : std_logic;
-	signal sdram_dqs     : std_logic_vector(word_size/byte_size-1 downto 0);
-
-	signal ctlrphy_frm   : std_logic;
-	signal ctlrphy_trdy  : std_logic;
-	signal ctlrphy_ini   : std_logic;
-	signal ctlrphy_rw    : std_logic;
 
 	signal ctlrphy_rst   : std_logic;
 	signal ctlrphy_cke   : std_logic;
@@ -269,24 +259,15 @@ architecture graphics of ulx3s is
 	signal ctlrphy_ras   : std_logic;
 	signal ctlrphy_cas   : std_logic;
 	signal ctlrphy_we    : std_logic;
-	signal ctlrphy_odt   : std_logic;
 	signal ctlrphy_b     : std_logic_vector(sdram_ba'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(sdram_a'length-1 downto 0);
-	signal ctlrphy_dmt   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dmo   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqi   : std_logic_vector(gear*word_size-1 downto 0);
 	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqo   : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqv   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal sdrphy_sti    : std_logic_vector(gear-1 downto 0);
-	signal sdram_st_dqs_open : std_logic;
-
-	signal sdram_dst     : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal sdram_dso     : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal sdram_dqt     : std_logic_vector(sdram_d'range);
-	signal sdram_do      : std_logic_vector(sdram_d'range);
+	signal sdram_dqs     : std_logic_vector(word_size/byte_size-1 downto 0);
 
 	signal video_clk     : std_logic;
 	signal videoio_clk   : std_logic;
@@ -319,7 +300,6 @@ architecture graphics of ulx3s is
 
 begin
 
-	sys_rst <= '0';
 	videopll_b : block
 
 		attribute FREQUENCY_PIN_CLKOS  : string;
@@ -415,6 +395,7 @@ begin
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(sys_freq/1.0e6, 10);
 
 		signal clkfb : std_logic;
+		signal lock  : std_logic;
 
 	begin
 
@@ -463,12 +444,12 @@ begin
 			CLKOS     => open,
 			CLKOS2    => ctlr_clk,
 			CLKOS3    => open,
-			LOCK      => sdram_lck,
+			LOCK      => lock,
             INTLOCK   => open,
 			REFCLK    => open,
 			CLKINTFB  => open);
 
-		sdrsys_rst <= not sdram_lck;
+		sdrsys_rst <= not lock;
 
 		sdram_dqs <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
 
@@ -763,76 +744,49 @@ begin
 		ctlrphy_dqi  => ctlrphy_dqi,
 		ctlrphy_dqt  => ctlrphy_dqt,
 		ctlrphy_dqo  => ctlrphy_dqo,
-		ctlrphy_dqv  => ctlrphy_dqv,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
 
 	ctlrphy_sti <= (others => ctlrphy_sto(0));
 
-	sdrphy_b : block
-		constant phy_debug : boolean := debug;
-		-- constant phy_debug : boolean := true;
-		signal phy_do : std_logic_vector(ctlrphy_dqi'range);
-	begin
-		debug_g : if phy_debug generate
-			signal do : std_logic_vector(ctlrphy_dqi'range);
-		begin
+	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
+	generic map (
+		wr_fifo    => false,
+		gear       => gear,
+		bank_size  => sdram_ba'length,
+		addr_size  => sdram_a'length,
+		word_size  => word_size,
+		byte_size  => byte_size)
+	port map (
 
-			do <= std_logic_vector(resize(unsigned(ctlrphy_a), do'length));
-			delay_e : entity hdl4fpga.latency
-			generic map (
-				n => do'length,
-				d => (0 to do'length-1=> 4))
-			port map (
-				clk => ctlr_clk,
-				-- di  => (do'range => '1'),
-				di  => do,
-				do  => ctlrphy_dqi);
-		end generate;
-	
-		nodebug_g : if not phy_debug generate
-			ctlrphy_dqi <= phy_do;
-		end generate;
+		sclk       => ctlr_clk,
+		rst        => sdrsys_rst,
 
-		sdrphy_e : entity hdl4fpga.ecp5_sdrphy
-		generic map (
-			wr_fifo    => false,
-			gear       => gear,
-			bank_size  => sdram_ba'length,
-			addr_size  => sdram_a'length,
-			word_size  => word_size,
-			byte_size  => byte_size)
-		port map (
-			sclk       => ctlr_clk,
-			rst        => sdrsys_rst,
-	
-			phy_trdy   => ctlrphy_trdy,
-			sys_cs(0)  => ctlrphy_cs,
-			sys_cke(0) => ctlrphy_cke,
-			sys_ras(0) => ctlrphy_ras,
-			sys_cas(0) => ctlrphy_cas,
-			sys_we(0)  => ctlrphy_we,
-			sys_b      => ctlrphy_b,
-			sys_a      => ctlrphy_a,
-			sys_dmi    => ctlrphy_dmo,
-			sys_dqi    => ctlrphy_dqo,
-			sys_dqt    => ctlrphy_dqt,
-			sys_dqo    => phy_do,
-	
-			sdram_clk  => sdram_clk,
-			sdram_cke  => sdram_cke,
-			sdram_cs   => sdram_csn,
-			sdram_ras  => sdram_rasn,
-			sdram_cas  => sdram_casn,
-			sdram_we   => sdram_wen,
-			sdram_b    => sdram_ba,
-			sdram_a    => sdram_a,
-			sdram_dqs  => sdram_dqs,
-	
-			sdram_dm   => sdram_dqm,
-			sdram_dq   => sdram_d);
+		sys_cs(0)  => ctlrphy_cs,
+		sys_cke(0) => ctlrphy_cke,
+		sys_ras(0) => ctlrphy_ras,
+		sys_cas(0) => ctlrphy_cas,
+		sys_we(0)  => ctlrphy_we,
+		sys_b      => ctlrphy_b,
+		sys_a      => ctlrphy_a,
+		sys_dmi    => ctlrphy_dmo,
+		sys_dqi    => ctlrphy_dqo,
+		sys_dqt    => ctlrphy_dqt,
+		sys_dqo    => ctlrphy_dqi,
 
-	end block;
+		sdram_clk  => sdram_clk,
+		sdram_cke  => sdram_cke,
+		sdram_cs   => sdram_csn,
+		sdram_ras  => sdram_rasn,
+		sdram_cas  => sdram_casn,
+		sdram_we   => sdram_wen,
+		sdram_b    => sdram_ba,
+		sdram_a    => sdram_a,
+		sdram_dqs  => sdram_dqs,
+
+		sdram_dm   => sdram_dqm,
+		sdram_dq   => sdram_d);
+
 
 	-- VGA --
 	---------
