@@ -4,7 +4,7 @@
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.phy_iofifo" lib="hdl4fpga" top="ulx4m_ls"/>
+        <Options def_top="hdl4fpga.phy_rl" lib="hdl4fpga" top="ulx4m_ls"/>
         <Source name="../common/ulx4m_ls.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx4m_ls"/>
         </Source>
@@ -108,15 +108,6 @@
             <Options/>
         </Source>
         <Source name="../../../library/basic/timer.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/latticesemi/sdrbaphy.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/latticesemi/sdrdqphy.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/latticesemi/sdrphy.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/sio/so_data.vhd" type="VHDL" type_short="VHDL">
@@ -300,6 +291,27 @@
             <Options/>
         </Source>
         <Source name="../../../library/sdram/phy_iofifo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/adjbrst.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_igbx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_ogbx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_sdrbaphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_sdrdqphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_sdrphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/xilinx/adjpha.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ulx4m_ls.lpf" type="Logic Preference" type_short="LPF">
