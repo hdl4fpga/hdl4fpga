@@ -30,6 +30,8 @@ use ecp5u.components.all;
 
 entity ecp5_sdrdqphy is
 	generic (
+		byteno     : natural;
+		bypass     : boolean := false;
 		debug      : boolean := false;
 		gear       : natural;
 		byte_size  : natural;
@@ -54,7 +56,7 @@ entity ecp5_sdrdqphy is
 		phy_locked : buffer std_logic;
 
 		sys_sti    : in  std_logic_vector(gear-1 downto 0);
-		sys_sto    : out std_logic_vector(gear-1 downto 0);
+		sys_sto    : buffer std_logic_vector(gear-1 downto 0);
 		sys_dmt    : in  std_logic_vector(gear-1 downto 0) := (others => '-');
 		sys_dmi    : in  std_logic_vector(gear-1 downto 0) := (others => '-');
 		sys_dmo    : out std_logic_vector(gear-1 downto 0);
@@ -93,7 +95,9 @@ architecture ecp5 of ecp5_sdrdqphy is
 	
 	signal dqt          : std_logic_vector(sys_dqt'range);
 	signal dqi          : std_logic_vector(sys_dqi'range);
+	signal dqo          : std_logic_vector(sys_dqo'range);
 	signal dmi          : std_logic_vector(sys_dmi'range);
+
 	signal wle          : std_logic;
 
 	signal rdpntr       : std_logic_vector(3-1 downto 0);
@@ -145,20 +149,56 @@ begin
 
 	begin
 
-		lat_b : block
-			signal q : std_logic_vector(0 to 5-1);
-		begin
-			q(0) <= sys_sti(sys_sti'right);
-			process(sclk)
+		gear1or2 : if gear=1 or gear=2 generate
+			process (sclk)
+				variable q   : std_logic_vector(sys_sti'range);
+				variable q0 : std_logic_vector(sys_sti'range);
 			begin
 				if rising_edge(sclk) then
-					q(1 to q'right) <= q(0 to q'right-1);
+					sys_sto <= q;
+					q := q0;
+					q0 := sys_sti;
 				end if;
 			end process;
-			rd <= multiplex(q(0 to q'right-1), lat, 1)(0);
-		end block;
+		end generate;
 
-		process (srst, sclk, read_req)
+		gear4_g : if gear=4 generate
+    		adjbrst_e : entity hdl4fpga.adjbrst
+    		generic map (
+    			debug      => debug)
+    		port map (
+    			sclk       => sclk,
+    			adj_req    => adj_req,
+    			adj_rdy    => adj_rdy,
+    			pause_req  => rlpause_req,
+    			pause_rdy  => rlpause_rdy,
+    			step_req   => step_req,
+    			step_rdy   => step_rdy,
+    			read       => rd,
+    			datavalid  => datavalid,
+    			burstdet   => burstdet,
+    			locked     => phy_locked,
+    			lat        => lat,
+    			readclksel => rdclksel);
+
+    		lat_b : block
+    			signal q : std_logic_vector(0 to 5-1);
+    		begin
+    			q(0) <= sys_sti(sys_sti'right);
+    			process(sclk)
+    			begin
+    				if rising_edge(sclk) then
+    					q(1 to q'right) <= q(0 to q'right-1);
+    				end if;
+    			end process;
+    			rd <= multiplex(q(0 to q'right-1), lat, 1)(0);
+    		end block;
+
+			sys_sto <= (others => datavalid);
+			tp(1 to 7) <= lat & rdclksel & phy_locked;
+		end generate;
+
+		adjust_p : process (srst, sclk, read_req)
 			type states is (s_start, s_adj, s_paused);
 			variable state : states;
 		begin
@@ -190,27 +230,7 @@ begin
 			end if;
 		end process;
 
-		adjbrst_e : entity hdl4fpga.adjbrst
-		generic map (
-			debug      => debug)
-		port map (
-			sclk       => sclk,
-			adj_req    => adj_req,
-			adj_rdy    => adj_rdy,
-			pause_req  => rlpause_req,
-			pause_rdy  => rlpause_rdy,
-			step_req   => step_req,
-			step_rdy   => step_rdy,
-			read       => rd,
-			datavalid  => datavalid,
-			burstdet   => burstdet,
-			locked     => phy_locked,
-			lat        => lat,
-			readclksel => rdclksel);
-		sys_sto <= (others => datavalid);
-		tp(1 to 7) <= lat & rdclksel & phy_locked;
-
-		process (sclk, read_req)
+		step_p : process (sclk, read_req)
 			type states is (s_start, s_read);
 			variable state : states;
 		begin
@@ -335,54 +355,54 @@ begin
 		end process;
 
 		dqs_pause <= pause or lv_pause;
-    	dqsbufm_i : dqsbufm 
-    	port map (
-    		rst       => rst,
-    		sclk      => sclk,
-    		eclk      => eclk,
+		dqsbufm_i : dqsbufm 
+		port map (
+			rst       => rst,
+			sclk      => sclk,
+			eclk      => eclk,
 
-    		ddrdel    => ddrdel,
-    		pause     => dqs_pause,
+			ddrdel    => ddrdel,
+			pause     => dqs_pause,
 
-    		dqsi      => dqsi_buf,
-    		dqsr90    => dqsr90,
+			dqsi      => dqsi_buf,
+			dqsr90    => dqsr90,
 
-    		read1     => rd,
-    		read0     => rd,
-    		readclksel2 => readclksel(2),
-    		readclksel1 => readclksel(1),
-    		readclksel0 => readclksel(0),
+			read1     => rd,
+			read0     => rd,
+			readclksel2 => readclksel(2),
+			readclksel1 => readclksel(1),
+			readclksel0 => readclksel(0),
 
-    		rdpntr2   => rdpntr(2),
-    		rdpntr1   => rdpntr(1),
-    		rdpntr0   => rdpntr(0),
-    		wrpntr2   => wrpntr(2),
-    		wrpntr1   => wrpntr(1),
-    		wrpntr0   => wrpntr(0),
+			rdpntr2   => rdpntr(2),
+			rdpntr1   => rdpntr(1),
+			rdpntr0   => rdpntr(0),
+			wrpntr2   => wrpntr(2),
+			wrpntr1   => wrpntr(1),
+			wrpntr0   => wrpntr(0),
 
-    		burstdet  => burstdet,
-    		datavalid => datavalid,
-    		rdmove    => '0',
-    		wrmove    => '0',
-    		rdcflag   => open,
-    		wrcflag   => open,
+			burstdet  => burstdet,
+			datavalid => datavalid,
+			rdmove    => '0',
+			wrmove    => '0',
+			rdcflag   => open,
+			wrcflag   => open,
 
-    		rdloadn   => '0',
-    		rddirection => '0',
-    		wrloadn   => '0',
-    		wrdirection => '0',
+			rdloadn   => '0',
+			rddirection => '0',
+			wrloadn   => '0',
+			wrdirection => '0',
 
-    		dyndelay0 => dyndelay(0),
-    		dyndelay1 => dyndelay(1),
-    		dyndelay2 => dyndelay(2),
-    		dyndelay3 => dyndelay(3),
-    		dyndelay4 => dyndelay(4),
-    		dyndelay5 => dyndelay(5),
-    		dyndelay6 => dyndelay(6),
-    		dyndelay7 => dyndelay(7),
+			dyndelay0 => dyndelay(0),
+			dyndelay1 => dyndelay(1),
+			dyndelay2 => dyndelay(2),
+			dyndelay3 => dyndelay(3),
+			dyndelay4 => dyndelay(4),
+			dyndelay5 => dyndelay(5),
+			dyndelay6 => dyndelay(6),
+			dyndelay7 => dyndelay(7),
 
-    		dqsw      => dqsw,
-    		dqsw270   => dqsw270);
+			dqsw      => dqsw,
+			dqsw270   => dqsw270);
 		end block;
 
 	iddr_g : for i in byte_size-1 downto 0 generate
@@ -390,60 +410,115 @@ begin
 		signal z : std_logic;
 	begin
 		d <= transport sdram_dq(i) after delay;
-		gear1or2_g : if gear=1 or gear=2 generate
-			signal dqo : std_logic_vector(gear-1 downto 0);
+		dqi0_g : if i=0 generate
+			dqi0 <= z;
+		end generate;
+
+		delay_i : delayg
+		generic map (
+			del_mode => "DQS_ALIGNED_X2")
+		port map (
+			a => d,
+			z => z);
+
+		no_bypass_g : if bypass generate
+			shuffle_g : for j in gear-1 downto 0 generate
+				dqo(j*byte_size+i) <= d;
+			end generate;
+		end generate;
+
+		bypass_g : if not bypass generate
+			signal q : std_logic_vector(gear-1 downto 0);
 		begin
-            ibx_i : entity hdl4fpga.ecp5_igbx
-			generic map (
-				gear => gear)
-			port map (
-				rst  => rst,
-				sclk => sdram_dqs,
-				d(0) => sdram_dq(i),
-				q    => dqo);
-
-			shuffle_g : for j in dqo'range generate
-				sys_dqo(j*byte_size+i) <= dqo(j);
-				-- sys_dqo(j*byte_size+i) <= sdram_dqi(i);
+			gear1or2_g : if gear=1 or gear=2 generate
+			begin
+				ibx_i : entity hdl4fpga.ecp5_igbx
+				generic map (
+					gear => gear)
+				port map (
+					rst  => rst,
+					sclk => sdram_dqs,
+					d(0) => d,
+					q    => q);
 			end generate;
+
+			gear4_g : if gear=4 generate
+				iddrx2_i : iddrx2dqa
+				port map (
+					rst     => rst,
+					sclk    => sclk,
+					eclk    => eclk,
+					dqsr90  => dqsr90,
+					rdpntr2 => rdpntr(2),
+					rdpntr1 => rdpntr(1),
+					rdpntr0 => rdpntr(0),
+					wrpntr2 => wrpntr(2),
+					wrpntr1 => wrpntr(1),
+					wrpntr0 => wrpntr(0),
+					d       => z,
+					q0      => q(3),
+					q1      => q(2),
+					q2      => q(1),
+					q3      => q(0));
+			end generate;
+
+			shuffle_g : for j in q'range generate
+				dqo(j*byte_size+i) <= q(j);
+			end generate;
+
+		end generate;
+	end generate;
+
+	rdfifo_g : if rd_fifo generate
+
+		-- bypass_g : if bypass generate
+			-- phases_g : for i in gear-1 downto 0 generate
+				-- idrv(i) <= sdram_sti when loopback else sdram_dm;
+			-- end generate;
+		-- end generate;
+
+		gear_g : for i in gear-1 downto 0 generate
+			signal in_clk  : std_logic;
+			signal test : std_logic_vector(byte_size-1 downto 0);
+		begin
+			process (sdram_dqs)
+				variable cntr : unsigned(test'range);
+			begin
+				if rising_edge(sdram_dqs) then
+					if sys_sti(i)='0' then
+						cntr := to_unsigned(byteno, cntr'length);
+					else
+						cntr := cntr + 2;
+					end if;
+					test <= std_logic_vector(cntr);
+				end if;
+			end process;
+
+			in_clk  <= sdram_dqs when bypass else sclk;
+			fifo_i : entity hdl4fpga.phy_iofifo
+			generic map (
+				clr => true)
+			port map (
+				in_clk   => sdram_dqs,
+				in_frm   => sys_sti(i),
+				in_data  => dqo(byte_size*(i+1)-1 downto byte_size*i),
+				-- in_data  => test,
+				out_clk  => sclk,
+				out_frm  => sys_sto(i),
+				out_data => sys_dqo(byte_size*(i+1)-1 downto byte_size*i));
 		end generate;
 
-		gear4_g : if gear=4 generate
-			dqi0_g : if i=0 generate
-				dqi0 <= z;
-			end generate;
-			delay_i : delayg
-			generic map (
-				del_mode => "DQS_ALIGNED_X2")
-			port map (
-				a => d,
-				z => z);
-
-			iddrx2_i : iddrx2dqa
-			port map (
-				rst     => rst,
-				sclk    => sclk,
-				eclk    => eclk,
-				dqsr90  => dqsr90,
-				rdpntr2 => rdpntr(2),
-				rdpntr1 => rdpntr(1),
-				rdpntr0 => rdpntr(0),
-				wrpntr2 => wrpntr(2),
-				wrpntr1 => wrpntr(1),
-				wrpntr0 => wrpntr(0),
-				d       => z,
-				q0      => sys_dqo(3*byte_size+i),
-				q1      => sys_dqo(2*byte_size+i),
-				q2      => sys_dqo(1*byte_size+i),
-				q3      => sys_dqo(0*byte_size+i));
-		end generate;
+	end generate;
+	
+	no_rdfifo_g : if not rd_fifo generate
+		sys_dqo  <= dqo;
 	end generate;
 
 	dmi_g : block
 		signal d : std_logic;
 	begin
 		gear1or2_g : if gear=1 or gear=2 generate
-            ibx_i : entity hdl4fpga.ecp5_igbx
+			ibx_i : entity hdl4fpga.ecp5_igbx
 			generic map (
 				gear => gear)
 			port map (
@@ -454,30 +529,30 @@ begin
 		end generate;
 
 		gear4_g : if gear=4 generate
-    		delay_i : delayg
-    		generic map (
-    			del_mode => "DQS_ALIGNED_X2")
-    		port map (
-    			a => sdram_dm,
-    			z => d);
+			delay_i : delayg
+			generic map (
+				del_mode => "DQS_ALIGNED_X2")
+			port map (
+				a => sdram_dm,
+				z => d);
 
-    		iddrx2_i : iddrx2dqa
-    		port map (
-    			rst     => rst,
-    			sclk    => sclk,
-    			eclk    => eclk,
-    			dqsr90  => dqsr90,
-    			rdpntr0 => rdpntr(0),
-    			rdpntr1 => rdpntr(1),
-    			rdpntr2 => rdpntr(2),
-    			wrpntr0 => wrpntr(0),
-    			wrpntr1 => wrpntr(1),
-    			wrpntr2 => wrpntr(2),
-    			d       => d,
-    			q0      => sys_dmo(3),
-    			q1      => sys_dmo(2),
-    			q2      => sys_dmo(1),
-    			q3      => sys_dmo(0));
+			iddrx2_i : iddrx2dqa
+			port map (
+				rst     => rst,
+				sclk    => sclk,
+				eclk    => eclk,
+				dqsr90  => dqsr90,
+				rdpntr0 => rdpntr(0),
+				rdpntr1 => rdpntr(1),
+				rdpntr2 => rdpntr(2),
+				wrpntr0 => wrpntr(0),
+				wrpntr1 => wrpntr(1),
+				wrpntr2 => wrpntr(2),
+				d       => d,
+				q0      => sys_dmo(3),
+				q1      => sys_dmo(2),
+				q2      => sys_dmo(1),
+				q3      => sys_dmo(0));
 			end generate;
 	end block;
 
@@ -518,10 +593,10 @@ begin
 			dmi <= sys_dmi;
 		end generate;
 
-    	wle <= to_stdulogic(to_bit(phy_wlrdy)) xor phy_wlreq;
+		wle <= to_stdulogic(to_bit(phy_wlrdy)) xor phy_wlreq;
 
-    	dqt <= sys_dqt when wle='0' else (others => '1');
-    	oddr_g : for i in 0 to byte_size-1 generate
+		dqt <= sys_dqt when wle='0' else (others => '1');
+		oddr_g : for i in 0 to byte_size-1 generate
 			signal di : std_logic_vector(gear-1 downto 0);
 			signal sw : std_logic;
 		begin
@@ -552,37 +627,37 @@ begin
 			generic map (
 				gear => gear)
 			port map (
-    			rst   => rst,
-    			sclk  => sclk,
-    			eclk  => eclk,
-    			dqsw  => dqsw270,
+				rst   => rst,
+				sclk  => sclk,
+				eclk  => eclk,
+				dqsw  => dqsw270,
 				t     => dqt,
-    			tq(0) => sdram_dqt(i),
+				tq(0) => sdram_dqt(i),
 				d     => di,
 				q(0)  => sdram_dqo(i));
 
-    		sdram_dq(i) <= sdram_dqo(i) when sdram_dqt(i)='0' else 'Z';
-    	end generate;
+			sdram_dq(i) <= sdram_dqo(i) when sdram_dqt(i)='0' else 'Z';
+		end generate;
 
-    	dm_b : block
-    	begin
+		dm_b : block
+		begin
 
 			ogbx_i : entity hdl4fpga.ecp5_ogbx
 			generic map (
 				gear => gear)
 			port map (
-    			rst   => rst,
-    			sclk  => sclk,
-    			eclk  => eclk,
-    			dqsw  => dqsw270,
+				rst   => rst,
+				sclk  => sclk,
+				eclk  => eclk,
+				dqsw  => dqsw270,
 				t     => dqt,
-    			tq(0) => sdram_dmt,
+				tq(0) => sdram_dmt,
 				d     => dmi,
 				q(0)  => sdram_dmo);
 
-    		sdram_dm <= sdram_dmo when sdram_dmt='0' else 'Z';
+			sdram_dm <= sdram_dmo when sdram_dmt='0' else 'Z';
 
-    	end block;
+		end block;
 	end block;
 
 	dqso_b : block 

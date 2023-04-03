@@ -40,7 +40,9 @@ entity ecp5_sdrphy is
 		gear      : natural := 2;
 		word_size : natural := 16;
 		byte_size : natural := 8;
+		rd_fifo   : boolean := true;
 		wr_fifo   : boolean := true;
+		bypass    : boolean := false;
 		taps      : natural := 0);
 	port (
 		tpin      : in std_logic := '-';
@@ -311,10 +313,13 @@ begin
 	byte_g : for i in word_size/byte_size-1 downto 0 generate
 		sdrphy_i : entity hdl4fpga.ecp5_sdrdqphy
 		generic map (
+			byteno     => 1-i,
 			debug      => debug,
 			taps       => taps,
 			gear       => gear,
+			rd_fifo    => rd_fifo,
 			wr_fifo    => wr_fifo,
+			bypass     => bypass,
 			byte_size  => byte_size)
 		port map (
 			rst        => rst,

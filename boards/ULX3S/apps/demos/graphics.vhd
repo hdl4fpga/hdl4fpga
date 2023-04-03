@@ -453,6 +453,7 @@ begin
 		sdrsys_rst <= not lock;
 
 		sdram_dqs <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
+		-- sdram_dqs <= (others => not ctlr_clk);
 
 	end block;
 
@@ -758,7 +759,6 @@ begin
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
-	ctlrphy_sti <= (others => ctlrphy_sto(0));
 
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
@@ -767,7 +767,9 @@ begin
 		addr_size  => sdram_a'length,
 		word_size  => word_size,
 		byte_size  => byte_size,
-		wr_fifo    => false)
+		wr_fifo    => false,
+		rd_fifo    => true,
+		bypass     => true)
 	port map (
 		sclk       => ctlr_clk,
 		rst        => sdrsys_rst,
@@ -783,6 +785,8 @@ begin
 		sys_dqi    => ctlrphy_dqo,
 		sys_dqt    => ctlrphy_dqt,
 		sys_dqo    => ctlrphy_dqi,
+		sys_sti    => ctlrphy_sto,
+		sys_sto    => ctlrphy_sti,
 
 		sdram_clk  => sdram_clk,
 		sdram_cke  => sdram_cke,

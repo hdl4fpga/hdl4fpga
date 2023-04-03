@@ -874,7 +874,7 @@ begin
 			ctlr_cl      => ctlr_cl,
 
 			ctlr_inirdy  => ctlr_inirdy,
-			ctlr_refreq  => burst_ref,
+			ctlr_refreq  => '0', --burst_ref,
 			-- ctlr_refreq  => ctlr_refreq,
 			-- ctlr_refreq  => burst_ref,
 
