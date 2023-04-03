@@ -3,17 +3,19 @@
 # Define path to each library
 LIB_ECP3 = /opt/diamond/3.11_x64/ispfpga/vhdl/data/ecp3/mti/work
 LIB_UNISIM = /opt/Xilinx/14.7/ISE_DS/ISE/vhdl/mti_se/10.1b/lin64/unisim
-LIB_STD = /opt/modeltech/linux_x86_64/../std
-LIB_ECP5U = /opt/diamond/3.11_x64/ispfpga/vhdl/data/ecp5u/mti/ecp5u
-LIB_IEEE = /opt/modeltech/linux_x86_64/../ieee
 LIB_MICRON = micron
 LIB_VERILOG = /opt/modeltech/linux_x86_64/../verilog
 LIB_HDL4FPGA = hdl4fpga
+LIB_STD = /opt/modeltech/linux_x86_64/../std
+LIB_VITAL2000 = /opt/modeltech/linux_x86_64/../vital2000
+LIB_ECP5U = /opt/diamond/3.11_x64/ispfpga/vhdl/data/ecp5u/mti/ecp5u
+LIB_IEEE = /opt/modeltech/linux_x86_64/../ieee
 LIB_WORK = work
 
 # Define path to each design unit
 HDL4FPGA__ogbx = $(LIB_HDL4FPGA)/ogbx/_primary.dat
 ECP3__components = $(LIB_ECP3)/components/_primary.dat
+HDL4FPGA__latency = $(LIB_HDL4FPGA)/latency/_primary.dat
 HDL4FPGA__ecp3_sdrphy = $(LIB_HDL4FPGA)/ecp3_sdrphy/_primary.dat
 HDL4FPGA__ser_debug = $(LIB_HDL4FPGA)/ser_debug/_primary.dat
 HDL4FPGA__profiles = $(LIB_HDL4FPGA)/profiles/_primary.dat
@@ -22,9 +24,19 @@ HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
 HDL4FPGA__serdes = $(LIB_HDL4FPGA)/serdes/_primary.dat
 HDL4FPGA__xc_sdrphy = $(LIB_HDL4FPGA)/xc_sdrphy/_primary.dat
 MICRON__ddr_model = $(LIB_MICRON)/ddr_model/_primary.dat
+ECP5U__sccu2c = $(LIB_ECP5U)/sccu2c/_primary.dat
+ECP5U__sramwb = $(LIB_ECP5U)/sramwb/_primary.dat
+ECP5U__sdprame = $(LIB_ECP5U)/sdprame/_primary.dat
+ECP5U__slogicb = $(LIB_ECP5U)/slogicb/_primary.dat
+ECP5U__inv = $(LIB_ECP5U)/inv/_primary.dat
+ECP5U__BUFBA = $(LIB_ECP5U)/@b@u@f@b@a/_primary.dat
+ECP5U__VHI = $(LIB_ECP5U)/@v@h@i/_primary.dat
+ECP5U__pur = $(LIB_ECP5U)/pur/_primary.dat
+ECP5U__global = $(LIB_ECP5U)/global/_primary.dat
+IEEE__vital_primitives = $(LIB_IEEE)/vital_primitives/_primary.dat
+IEEE__vital_timing = $(LIB_IEEE)/vital_timing/_primary.dat
 MICRON__ddr2 = $(LIB_MICRON)/ddr2/_primary.dat
 IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
-HDL4FPGA__ecp5_sdrphy = $(LIB_HDL4FPGA)/ecp5_sdrphy/_primary.dat
 HDL4FPGA__sdram_db = $(LIB_HDL4FPGA)/sdram_db/_primary.dat
 HDL4FPGA__sdram_param = $(LIB_HDL4FPGA)/sdram_param/_primary.dat
 HDL4FPGA__videopkg = $(LIB_HDL4FPGA)/videopkg/_primary.dat
@@ -33,17 +45,13 @@ HDL4FPGA__sio_dayhdlc = $(LIB_HDL4FPGA)/sio_dayhdlc/_primary.dat
 HDL4FPGA__sio_dayudp = $(LIB_HDL4FPGA)/sio_dayudp/_primary.dat
 HDL4FPGA__desser = $(LIB_HDL4FPGA)/desser/_primary.dat
 HDL4FPGA__demo_graphics = $(LIB_HDL4FPGA)/demo_graphics/_primary.dat
-HDL4FPGA__latency = $(LIB_HDL4FPGA)/latency/_primary.dat
+HDL4FPGA__ecp5_sdrphy = $(LIB_HDL4FPGA)/ecp5_sdrphy/_primary.dat
 MICRON__ddr3 = $(LIB_MICRON)/ddr3/_primary.dat
-IEEE__std_logic_1164 = $(LIB_IEEE)/std_logic_1164/_primary.dat
-STD__textio = $(LIB_STD)/textio/_primary.dat
 IEEE__numeric_std = $(LIB_IEEE)/numeric_std/_primary.dat
 HDL4FPGA__base = $(LIB_HDL4FPGA)/base/_primary.dat
 HDL4FPGA__ipoepkg = $(LIB_HDL4FPGA)/ipoepkg/_primary.dat
 HDL4FPGA__ethpkg = $(LIB_HDL4FPGA)/ethpkg/_primary.dat
 IEEE__math_real = $(LIB_IEEE)/math_real/_primary.dat
-ECP5U__components = $(LIB_ECP5U)/components/_primary.dat
-IEEE__std_logic_arith = $(LIB_IEEE)/std_logic_arith/_primary.dat
 MICRON__mt48lc32m16a2 = $(LIB_MICRON)/mt48lc32m16a2/_primary.dat
 VERILOG__vl_types = $(LIB_VERILOG)/vl_types/_primary.dat
 HDL4FPGA__hdlcdll_tx = $(LIB_HDL4FPGA)/hdlcdll_tx/_primary.dat
@@ -52,6 +60,23 @@ HDL4FPGA__uart_rx = $(LIB_HDL4FPGA)/uart_rx/_primary.dat
 HDL4FPGA__hdlcdll_rx = $(LIB_HDL4FPGA)/hdlcdll_rx/_primary.dat
 HDL4FPGA__eth_tb = $(LIB_HDL4FPGA)/eth_tb/_primary.dat
 HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
+IEEE__std_logic_1164 = $(LIB_IEEE)/std_logic_1164/_primary.dat
+STD__textio = $(LIB_STD)/textio/_primary.dat
+VITAL2000__vital_timing = $(LIB_VITAL2000)/vital_timing/_primary.dat
+ECP5U__components = $(LIB_ECP5U)/components/_primary.dat
+IEEE__std_logic_arith = $(LIB_IEEE)/std_logic_arith/_primary.dat
+WORK__wifi_rxdb__structure = $(LIB_WORK)/wifi_rxdb/structure.dat
+WORK__wifi_rxdb = $(LIB_WORK)/wifi_rxdb/_primary.dat
+WORK__wifi_gpio0b__structure = $(LIB_WORK)/wifi_gpio0b/structure.dat
+WORK__wifi_gpio0b = $(LIB_WORK)/wifi_gpio0b/_primary.dat
+WORK__wifi_enb__structure = $(LIB_WORK)/wifi_enb/structure.dat
+WORK__wifi_enb = $(LIB_WORK)/wifi_enb/_primary.dat
+WORK__videopll_b_pll_i__structure = $(LIB_WORK)/videopll_b_pll_i/structure.dat
+WORK__videopll_b_pll_i = $(LIB_WORK)/videopll_b_pll_i/_primary.dat
+WORK__vcc__structure = $(LIB_WORK)/vcc/structure.dat
+WORK__vcc = $(LIB_WORK)/vcc/_primary.dat
+WORK__user_programnb__structure = $(LIB_WORK)/user_programnb/structure.dat
+WORK__user_programnb = $(LIB_WORK)/user_programnb/_primary.dat
 WORK__ulx4mls_graphics_structure_md = $(LIB_WORK)/ulx4mls_graphics_structure_md/_primary.dat
 WORK__ulx4mls_graphics_md = $(LIB_WORK)/ulx4mls_graphics_md/_primary.dat
 WORK__ulx4mld_graphics_structure_md = $(LIB_WORK)/ulx4mld_graphics_structure_md/_primary.dat
@@ -62,9 +87,9 @@ WORK__ulx4m_ld__graphics = $(LIB_WORK)/ulx4m_ld/graphics.dat
 WORK__ulx4m_ld = $(LIB_WORK)/ulx4m_ld/_primary.dat
 WORK__ulx3s_graphics_structure_md = $(LIB_WORK)/ulx3s_graphics_structure_md/_primary.dat
 WORK__ulx3s_graphics_md = $(LIB_WORK)/ulx3s_graphics_md/_primary.dat
+WORK__ulx3s__structure = $(LIB_WORK)/ulx3s/structure.dat
 WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
-WORK__testbench__ulx4mls_graphics = $(LIB_WORK)/testbench/ulx4mls_graphics.dat
 WORK__testbench__ml509_miiipoe_debug = $(LIB_WORK)/testbench/ml509_miiipoe_debug.dat
 WORK__testbench__s3estarter_graphics = $(LIB_WORK)/testbench/s3estarter_graphics.dat
 WORK__testbench__ecp3versa_graphics = $(LIB_WORK)/testbench/ecp3versa_graphics.dat
@@ -72,12 +97,214 @@ WORK__testbench__ml509_graphics = $(LIB_WORK)/testbench/ml509_graphics.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench__arty_graphics = $(LIB_WORK)/testbench/arty_graphics.dat
 WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
+WORK__testbench__ulx4mls_graphics = $(LIB_WORK)/testbench/ulx4mls_graphics.dat
 WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
+WORK__structure_con = $(LIB_WORK)/structure_con/_primary.dat
+WORK__smuxlregsre__structure = $(LIB_WORK)/smuxlregsre/structure.dat
+WORK__smuxlregsre = $(LIB_WORK)/smuxlregsre/_primary.dat
+WORK__shutdownb__structure = $(LIB_WORK)/shutdownb/structure.dat
+WORK__shutdownb = $(LIB_WORK)/shutdownb/_primary.dat
+WORK__sdram_wenb__structure = $(LIB_WORK)/sdram_wenb/structure.dat
+WORK__sdram_wenb = $(LIB_WORK)/sdram_wenb/_primary.dat
+WORK__sdram_wen_mgiol__structure = $(LIB_WORK)/sdram_wen_mgiol/structure.dat
+WORK__sdram_wen_mgiol = $(LIB_WORK)/sdram_wen_mgiol/_primary.dat
+WORK__sdram_rasnb__structure = $(LIB_WORK)/sdram_rasnb/structure.dat
+WORK__sdram_rasnb = $(LIB_WORK)/sdram_rasnb/_primary.dat
+WORK__sdram_rasn_mgiol__structure = $(LIB_WORK)/sdram_rasn_mgiol/structure.dat
+WORK__sdram_rasn_mgiol = $(LIB_WORK)/sdram_rasn_mgiol/_primary.dat
+WORK__sdram_dqm_1_mgiol__structure = $(LIB_WORK)/sdram_dqm_1_mgiol/structure.dat
+WORK__sdram_dqm_1_mgiol = $(LIB_WORK)/sdram_dqm_1_mgiol/_primary.dat
+WORK__sdram_dqm_1_b__structure = $(LIB_WORK)/sdram_dqm_1_b/structure.dat
+WORK__sdram_dqm_1_b = $(LIB_WORK)/sdram_dqm_1_b/_primary.dat
+WORK__sdram_dqm_0_mgiol__structure = $(LIB_WORK)/sdram_dqm_0_mgiol/structure.dat
+WORK__sdram_dqm_0_mgiol = $(LIB_WORK)/sdram_dqm_0_mgiol/_primary.dat
+WORK__sdram_dqm_0_b__structure = $(LIB_WORK)/sdram_dqm_0_b/structure.dat
+WORK__sdram_dqm_0_b = $(LIB_WORK)/sdram_dqm_0_b/_primary.dat
+WORK__sdram_d_9_mgiol__structure = $(LIB_WORK)/sdram_d_9_mgiol/structure.dat
+WORK__sdram_d_9_mgiol = $(LIB_WORK)/sdram_d_9_mgiol/_primary.dat
+WORK__sdram_d_9_b__structure = $(LIB_WORK)/sdram_d_9_b/structure.dat
+WORK__sdram_d_9_b = $(LIB_WORK)/sdram_d_9_b/_primary.dat
+WORK__sdram_d_8_mgiol__structure = $(LIB_WORK)/sdram_d_8_mgiol/structure.dat
+WORK__sdram_d_8_mgiol = $(LIB_WORK)/sdram_d_8_mgiol/_primary.dat
+WORK__sdram_d_8_b__structure = $(LIB_WORK)/sdram_d_8_b/structure.dat
+WORK__sdram_d_8_b = $(LIB_WORK)/sdram_d_8_b/_primary.dat
+WORK__sdram_d_7_mgiol__structure = $(LIB_WORK)/sdram_d_7_mgiol/structure.dat
+WORK__sdram_d_7_mgiol = $(LIB_WORK)/sdram_d_7_mgiol/_primary.dat
+WORK__sdram_d_7_b__structure = $(LIB_WORK)/sdram_d_7_b/structure.dat
+WORK__sdram_d_7_b = $(LIB_WORK)/sdram_d_7_b/_primary.dat
+WORK__sdram_d_6_mgiol__structure = $(LIB_WORK)/sdram_d_6_mgiol/structure.dat
+WORK__sdram_d_6_mgiol = $(LIB_WORK)/sdram_d_6_mgiol/_primary.dat
+WORK__sdram_d_6_b__structure = $(LIB_WORK)/sdram_d_6_b/structure.dat
+WORK__sdram_d_6_b = $(LIB_WORK)/sdram_d_6_b/_primary.dat
+WORK__sdram_d_5_mgiol__structure = $(LIB_WORK)/sdram_d_5_mgiol/structure.dat
+WORK__sdram_d_5_mgiol = $(LIB_WORK)/sdram_d_5_mgiol/_primary.dat
+WORK__sdram_d_5_b__structure = $(LIB_WORK)/sdram_d_5_b/structure.dat
+WORK__sdram_d_5_b = $(LIB_WORK)/sdram_d_5_b/_primary.dat
+WORK__sdram_d_4_mgiol__structure = $(LIB_WORK)/sdram_d_4_mgiol/structure.dat
+WORK__sdram_d_4_mgiol = $(LIB_WORK)/sdram_d_4_mgiol/_primary.dat
+WORK__sdram_d_4_b__structure = $(LIB_WORK)/sdram_d_4_b/structure.dat
+WORK__sdram_d_4_b = $(LIB_WORK)/sdram_d_4_b/_primary.dat
+WORK__sdram_d_3_mgiol__structure = $(LIB_WORK)/sdram_d_3_mgiol/structure.dat
+WORK__sdram_d_3_mgiol = $(LIB_WORK)/sdram_d_3_mgiol/_primary.dat
+WORK__sdram_d_3_b__structure = $(LIB_WORK)/sdram_d_3_b/structure.dat
+WORK__sdram_d_3_b = $(LIB_WORK)/sdram_d_3_b/_primary.dat
+WORK__sdram_d_2_mgiol__structure = $(LIB_WORK)/sdram_d_2_mgiol/structure.dat
+WORK__sdram_d_2_mgiol = $(LIB_WORK)/sdram_d_2_mgiol/_primary.dat
+WORK__sdram_d_2_b__structure = $(LIB_WORK)/sdram_d_2_b/structure.dat
+WORK__sdram_d_2_b = $(LIB_WORK)/sdram_d_2_b/_primary.dat
+WORK__sdram_d_1_mgiol__structure = $(LIB_WORK)/sdram_d_1_mgiol/structure.dat
+WORK__sdram_d_1_mgiol = $(LIB_WORK)/sdram_d_1_mgiol/_primary.dat
+WORK__sdram_d_1_b__structure = $(LIB_WORK)/sdram_d_1_b/structure.dat
+WORK__sdram_d_1_b = $(LIB_WORK)/sdram_d_1_b/_primary.dat
+WORK__sdram_d_15_mgiol__structure = $(LIB_WORK)/sdram_d_15_mgiol/structure.dat
+WORK__sdram_d_15_mgiol = $(LIB_WORK)/sdram_d_15_mgiol/_primary.dat
+WORK__sdram_d_15_b__structure = $(LIB_WORK)/sdram_d_15_b/structure.dat
+WORK__sdram_d_15_b = $(LIB_WORK)/sdram_d_15_b/_primary.dat
+WORK__sdram_d_14_mgiol__structure = $(LIB_WORK)/sdram_d_14_mgiol/structure.dat
+WORK__sdram_d_14_mgiol = $(LIB_WORK)/sdram_d_14_mgiol/_primary.dat
+WORK__sdram_d_14_b__structure = $(LIB_WORK)/sdram_d_14_b/structure.dat
+WORK__sdram_d_14_b = $(LIB_WORK)/sdram_d_14_b/_primary.dat
+WORK__sdram_d_13_mgiol__structure = $(LIB_WORK)/sdram_d_13_mgiol/structure.dat
+WORK__sdram_d_13_mgiol = $(LIB_WORK)/sdram_d_13_mgiol/_primary.dat
+WORK__sdram_d_13_b__structure = $(LIB_WORK)/sdram_d_13_b/structure.dat
+WORK__sdram_d_13_b = $(LIB_WORK)/sdram_d_13_b/_primary.dat
+WORK__sdram_d_12_mgiol__structure = $(LIB_WORK)/sdram_d_12_mgiol/structure.dat
+WORK__sdram_d_12_mgiol = $(LIB_WORK)/sdram_d_12_mgiol/_primary.dat
+WORK__sdram_d_12_b__structure = $(LIB_WORK)/sdram_d_12_b/structure.dat
+WORK__sdram_d_12_b = $(LIB_WORK)/sdram_d_12_b/_primary.dat
+WORK__sdram_d_11_mgiol__structure = $(LIB_WORK)/sdram_d_11_mgiol/structure.dat
+WORK__sdram_d_11_mgiol = $(LIB_WORK)/sdram_d_11_mgiol/_primary.dat
+WORK__sdram_d_11_b__structure = $(LIB_WORK)/sdram_d_11_b/structure.dat
+WORK__sdram_d_11_b = $(LIB_WORK)/sdram_d_11_b/_primary.dat
+WORK__sdram_d_10_mgiol__structure = $(LIB_WORK)/sdram_d_10_mgiol/structure.dat
+WORK__sdram_d_10_mgiol = $(LIB_WORK)/sdram_d_10_mgiol/_primary.dat
+WORK__sdram_d_10_b__structure = $(LIB_WORK)/sdram_d_10_b/structure.dat
+WORK__sdram_d_10_b = $(LIB_WORK)/sdram_d_10_b/_primary.dat
+WORK__sdram_d_0_mgiol__structure = $(LIB_WORK)/sdram_d_0_mgiol/structure.dat
+WORK__sdram_d_0_mgiol = $(LIB_WORK)/sdram_d_0_mgiol/_primary.dat
+WORK__sdram_d_0_b__structure = $(LIB_WORK)/sdram_d_0_b/structure.dat
+WORK__sdram_d_0_b = $(LIB_WORK)/sdram_d_0_b/_primary.dat
+WORK__sdram_csnb__structure = $(LIB_WORK)/sdram_csnb/structure.dat
+WORK__sdram_csnb = $(LIB_WORK)/sdram_csnb/_primary.dat
+WORK__sdram_csn_mgiol__structure = $(LIB_WORK)/sdram_csn_mgiol/structure.dat
+WORK__sdram_csn_mgiol = $(LIB_WORK)/sdram_csn_mgiol/_primary.dat
+WORK__sdram_clkb__structure = $(LIB_WORK)/sdram_clkb/structure.dat
+WORK__sdram_clkb = $(LIB_WORK)/sdram_clkb/_primary.dat
+WORK__sdram_clk_mgiol__structure = $(LIB_WORK)/sdram_clk_mgiol/structure.dat
+WORK__sdram_clk_mgiol = $(LIB_WORK)/sdram_clk_mgiol/_primary.dat
+WORK__sdram_ckeb__structure = $(LIB_WORK)/sdram_ckeb/structure.dat
+WORK__sdram_ckeb = $(LIB_WORK)/sdram_ckeb/_primary.dat
+WORK__sdram_cke_mgiol__structure = $(LIB_WORK)/sdram_cke_mgiol/structure.dat
+WORK__sdram_cke_mgiol = $(LIB_WORK)/sdram_cke_mgiol/_primary.dat
+WORK__sdram_casnb__structure = $(LIB_WORK)/sdram_casnb/structure.dat
+WORK__sdram_casnb = $(LIB_WORK)/sdram_casnb/_primary.dat
+WORK__sdram_casn_mgiol__structure = $(LIB_WORK)/sdram_casn_mgiol/structure.dat
+WORK__sdram_casn_mgiol = $(LIB_WORK)/sdram_casn_mgiol/_primary.dat
+WORK__sdram_ba_1_mgiol__structure = $(LIB_WORK)/sdram_ba_1_mgiol/structure.dat
+WORK__sdram_ba_1_mgiol = $(LIB_WORK)/sdram_ba_1_mgiol/_primary.dat
+WORK__sdram_ba_1_b__structure = $(LIB_WORK)/sdram_ba_1_b/structure.dat
+WORK__sdram_ba_1_b = $(LIB_WORK)/sdram_ba_1_b/_primary.dat
+WORK__sdram_ba_0_mgiol__structure = $(LIB_WORK)/sdram_ba_0_mgiol/structure.dat
+WORK__sdram_ba_0_mgiol = $(LIB_WORK)/sdram_ba_0_mgiol/_primary.dat
+WORK__sdram_ba_0_b__structure = $(LIB_WORK)/sdram_ba_0_b/structure.dat
+WORK__sdram_ba_0_b = $(LIB_WORK)/sdram_ba_0_b/_primary.dat
+WORK__sdram_a_9_mgiol__structure = $(LIB_WORK)/sdram_a_9_mgiol/structure.dat
+WORK__sdram_a_9_mgiol = $(LIB_WORK)/sdram_a_9_mgiol/_primary.dat
+WORK__sdram_a_9_b__structure = $(LIB_WORK)/sdram_a_9_b/structure.dat
+WORK__sdram_a_9_b = $(LIB_WORK)/sdram_a_9_b/_primary.dat
+WORK__sdram_a_8_mgiol__structure = $(LIB_WORK)/sdram_a_8_mgiol/structure.dat
+WORK__sdram_a_8_mgiol = $(LIB_WORK)/sdram_a_8_mgiol/_primary.dat
+WORK__sdram_a_8_b__structure = $(LIB_WORK)/sdram_a_8_b/structure.dat
+WORK__sdram_a_8_b = $(LIB_WORK)/sdram_a_8_b/_primary.dat
+WORK__sdram_a_7_mgiol__structure = $(LIB_WORK)/sdram_a_7_mgiol/structure.dat
+WORK__sdram_a_7_mgiol = $(LIB_WORK)/sdram_a_7_mgiol/_primary.dat
+WORK__sdram_a_7_b__structure = $(LIB_WORK)/sdram_a_7_b/structure.dat
+WORK__sdram_a_7_b = $(LIB_WORK)/sdram_a_7_b/_primary.dat
+WORK__sdram_a_6_mgiol__structure = $(LIB_WORK)/sdram_a_6_mgiol/structure.dat
+WORK__sdram_a_6_mgiol = $(LIB_WORK)/sdram_a_6_mgiol/_primary.dat
+WORK__sdram_a_6_b__structure = $(LIB_WORK)/sdram_a_6_b/structure.dat
+WORK__sdram_a_6_b = $(LIB_WORK)/sdram_a_6_b/_primary.dat
+WORK__sdram_a_5_mgiol__structure = $(LIB_WORK)/sdram_a_5_mgiol/structure.dat
+WORK__sdram_a_5_mgiol = $(LIB_WORK)/sdram_a_5_mgiol/_primary.dat
+WORK__sdram_a_5_b__structure = $(LIB_WORK)/sdram_a_5_b/structure.dat
+WORK__sdram_a_5_b = $(LIB_WORK)/sdram_a_5_b/_primary.dat
+WORK__sdram_a_4_mgiol__structure = $(LIB_WORK)/sdram_a_4_mgiol/structure.dat
+WORK__sdram_a_4_mgiol = $(LIB_WORK)/sdram_a_4_mgiol/_primary.dat
+WORK__sdram_a_4_b__structure = $(LIB_WORK)/sdram_a_4_b/structure.dat
+WORK__sdram_a_4_b = $(LIB_WORK)/sdram_a_4_b/_primary.dat
+WORK__sdram_a_3_mgiol__structure = $(LIB_WORK)/sdram_a_3_mgiol/structure.dat
+WORK__sdram_a_3_mgiol = $(LIB_WORK)/sdram_a_3_mgiol/_primary.dat
+WORK__sdram_a_3_b__structure = $(LIB_WORK)/sdram_a_3_b/structure.dat
+WORK__sdram_a_3_b = $(LIB_WORK)/sdram_a_3_b/_primary.dat
+WORK__sdram_a_2_mgiol__structure = $(LIB_WORK)/sdram_a_2_mgiol/structure.dat
+WORK__sdram_a_2_mgiol = $(LIB_WORK)/sdram_a_2_mgiol/_primary.dat
+WORK__sdram_a_2_b__structure = $(LIB_WORK)/sdram_a_2_b/structure.dat
+WORK__sdram_a_2_b = $(LIB_WORK)/sdram_a_2_b/_primary.dat
+WORK__sdram_a_1_mgiol__structure = $(LIB_WORK)/sdram_a_1_mgiol/structure.dat
+WORK__sdram_a_1_mgiol = $(LIB_WORK)/sdram_a_1_mgiol/_primary.dat
+WORK__sdram_a_1_b__structure = $(LIB_WORK)/sdram_a_1_b/structure.dat
+WORK__sdram_a_1_b = $(LIB_WORK)/sdram_a_1_b/_primary.dat
+WORK__sdram_a_12_mgiol__structure = $(LIB_WORK)/sdram_a_12_mgiol/structure.dat
+WORK__sdram_a_12_mgiol = $(LIB_WORK)/sdram_a_12_mgiol/_primary.dat
+WORK__sdram_a_12_b__structure = $(LIB_WORK)/sdram_a_12_b/structure.dat
+WORK__sdram_a_12_b = $(LIB_WORK)/sdram_a_12_b/_primary.dat
+WORK__sdram_a_11_mgiol__structure = $(LIB_WORK)/sdram_a_11_mgiol/structure.dat
+WORK__sdram_a_11_mgiol = $(LIB_WORK)/sdram_a_11_mgiol/_primary.dat
+WORK__sdram_a_11_b__structure = $(LIB_WORK)/sdram_a_11_b/structure.dat
+WORK__sdram_a_11_b = $(LIB_WORK)/sdram_a_11_b/_primary.dat
+WORK__sdram_a_10_mgiol__structure = $(LIB_WORK)/sdram_a_10_mgiol/structure.dat
+WORK__sdram_a_10_mgiol = $(LIB_WORK)/sdram_a_10_mgiol/_primary.dat
+WORK__sdram_a_10_b__structure = $(LIB_WORK)/sdram_a_10_b/structure.dat
+WORK__sdram_a_10_b = $(LIB_WORK)/sdram_a_10_b/_primary.dat
+WORK__sdram_a_0_mgiol__structure = $(LIB_WORK)/sdram_a_0_mgiol/structure.dat
+WORK__sdram_a_0_mgiol = $(LIB_WORK)/sdram_a_0_mgiol/_primary.dat
+WORK__sdram_a_0_b__structure = $(LIB_WORK)/sdram_a_0_b/structure.dat
+WORK__sdram_a_0_b = $(LIB_WORK)/sdram_a_0_b/_primary.dat
+WORK__sd_cmdb__structure = $(LIB_WORK)/sd_cmdb/structure.dat
+WORK__sd_cmdb = $(LIB_WORK)/sd_cmdb/_primary.dat
+WORK__sapoddrx10007__structure = $(LIB_WORK)/sapoddrx10007/structure.dat
+WORK__sapoddrx10007 = $(LIB_WORK)/sapoddrx10007/_primary.dat
+WORK__sapoddrx1__structure = $(LIB_WORK)/sapoddrx1/structure.dat
+WORK__sapoddrx1 = $(LIB_WORK)/sapoddrx1/_primary.dat
+WORK__sapiobuf0012__structure = $(LIB_WORK)/sapiobuf0012/structure.dat
+WORK__sapiobuf0012 = $(LIB_WORK)/sapiobuf0012/_primary.dat
+WORK__sapiobuf0011__structure = $(LIB_WORK)/sapiobuf0011/structure.dat
+WORK__sapiobuf0011 = $(LIB_WORK)/sapiobuf0011/_primary.dat
+WORK__sapiobuf0010__structure = $(LIB_WORK)/sapiobuf0010/structure.dat
+WORK__sapiobuf0010 = $(LIB_WORK)/sapiobuf0010/_primary.dat
+WORK__sapiobuf0009__structure = $(LIB_WORK)/sapiobuf0009/structure.dat
+WORK__sapiobuf0009 = $(LIB_WORK)/sapiobuf0009/_primary.dat
+WORK__sapiobuf0008__structure = $(LIB_WORK)/sapiobuf0008/structure.dat
+WORK__sapiobuf0008 = $(LIB_WORK)/sapiobuf0008/_primary.dat
+WORK__sapiobuf0006__structure = $(LIB_WORK)/sapiobuf0006/structure.dat
+WORK__sapiobuf0006 = $(LIB_WORK)/sapiobuf0006/_primary.dat
+WORK__sapiobuf0005__structure = $(LIB_WORK)/sapiobuf0005/structure.dat
+WORK__sapiobuf0005 = $(LIB_WORK)/sapiobuf0005/_primary.dat
+WORK__sapiobuf0004__structure = $(LIB_WORK)/sapiobuf0004/structure.dat
+WORK__sapiobuf0004 = $(LIB_WORK)/sapiobuf0004/_primary.dat
+WORK__sapiobuf0002__structure = $(LIB_WORK)/sapiobuf0002/structure.dat
+WORK__sapiobuf0002 = $(LIB_WORK)/sapiobuf0002/_primary.dat
+WORK__sapiobuf0001__structure = $(LIB_WORK)/sapiobuf0001/structure.dat
+WORK__sapiobuf0001 = $(LIB_WORK)/sapiobuf0001/_primary.dat
+WORK__sapiobuf__structure = $(LIB_WORK)/sapiobuf/structure.dat
+WORK__sapiobuf = $(LIB_WORK)/sapiobuf/_primary.dat
 WORK__s3estarter_structure_md = $(LIB_WORK)/s3estarter_structure_md/_primary.dat
 WORK__s3estarter_graphics_md = $(LIB_WORK)/s3estarter_graphics_md/_primary.dat
 WORK__s3estarter__graphics = $(LIB_WORK)/s3estarter/graphics.dat
 WORK__s3estarter = $(LIB_WORK)/s3estarter/_primary.dat
+WORK__pdpw16kdb__structure = $(LIB_WORK)/pdpw16kdb/structure.dat
+WORK__pdpw16kdb = $(LIB_WORK)/pdpw16kdb/_primary.dat
+WORK__oled_resnb__structure = $(LIB_WORK)/oled_resnb/structure.dat
+WORK__oled_resnb = $(LIB_WORK)/oled_resnb/_primary.dat
+WORK__oled_mosib__structure = $(LIB_WORK)/oled_mosib/structure.dat
+WORK__oled_mosib = $(LIB_WORK)/oled_mosib/_primary.dat
+WORK__oled_dcb__structure = $(LIB_WORK)/oled_dcb/structure.dat
+WORK__oled_dcb = $(LIB_WORK)/oled_dcb/_primary.dat
+WORK__oled_csnb__structure = $(LIB_WORK)/oled_csnb/structure.dat
+WORK__oled_csnb = $(LIB_WORK)/oled_csnb/_primary.dat
+WORK__oled_clkb__structure = $(LIB_WORK)/oled_clkb/structure.dat
+WORK__oled_clkb = $(LIB_WORK)/oled_clkb/_primary.dat
 WORK__nuhs3adsp_graphics_md = $(LIB_WORK)/nuhs3adsp_graphics_md/_primary.dat
 WORK__nuhs3adsp_graphic_structure_md = $(LIB_WORK)/nuhs3adsp_graphic_structure_md/_primary.dat
 WORK__nuhs3adsp__graphics = $(LIB_WORK)/nuhs3adsp/graphics.dat
@@ -88,20 +315,178 @@ WORK__ml509_graphics_structure_md = $(LIB_WORK)/ml509_graphics_structure_md/_pri
 WORK__ml509_graphics_md = $(LIB_WORK)/ml509_graphics_md/_primary.dat
 WORK__ml509__graphics = $(LIB_WORK)/ml509/graphics.dat
 WORK__ml509 = $(LIB_WORK)/ml509/_primary.dat
+WORK__mfflsre0003__structure = $(LIB_WORK)/mfflsre0003/structure.dat
+WORK__mfflsre0003 = $(LIB_WORK)/mfflsre0003/_primary.dat
+WORK__mfflsre__structure = $(LIB_WORK)/mfflsre/structure.dat
+WORK__mfflsre = $(LIB_WORK)/mfflsre/_primary.dat
+WORK__led_7_b__structure = $(LIB_WORK)/led_7_b/structure.dat
+WORK__led_7_b = $(LIB_WORK)/led_7_b/_primary.dat
+WORK__led_6_b__structure = $(LIB_WORK)/led_6_b/structure.dat
+WORK__led_6_b = $(LIB_WORK)/led_6_b/_primary.dat
+WORK__led_5_b__structure = $(LIB_WORK)/led_5_b/structure.dat
+WORK__led_5_b = $(LIB_WORK)/led_5_b/_primary.dat
+WORK__led_4_b__structure = $(LIB_WORK)/led_4_b/structure.dat
+WORK__led_4_b = $(LIB_WORK)/led_4_b/_primary.dat
+WORK__led_3_b__structure = $(LIB_WORK)/led_3_b/structure.dat
+WORK__led_3_b = $(LIB_WORK)/led_3_b/_primary.dat
+WORK__led_2_b__structure = $(LIB_WORK)/led_2_b/structure.dat
+WORK__led_2_b = $(LIB_WORK)/led_2_b/_primary.dat
+WORK__led_1_b__structure = $(LIB_WORK)/led_1_b/structure.dat
+WORK__led_1_b = $(LIB_WORK)/led_1_b/_primary.dat
+WORK__led_0_b__structure = $(LIB_WORK)/led_0_b/structure.dat
+WORK__led_0_b = $(LIB_WORK)/led_0_b/_primary.dat
+WORK__inverter__structure = $(LIB_WORK)/inverter/structure.dat
+WORK__inverter = $(LIB_WORK)/inverter/_primary.dat
+WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_3__structure = $(LIB_WORK)/hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_3/structure.dat
+WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_3 = $(LIB_WORK)/hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_3/_primary.dat
+WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_2__structure = $(LIB_WORK)/hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_2/structure.dat
+WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_2 = $(LIB_WORK)/hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_2/_primary.dat
+WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_1__structure = $(LIB_WORK)/hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_1/structure.dat
+WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_1 = $(LIB_WORK)/hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_1/_primary.dat
+WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_0__structure = $(LIB_WORK)/hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_0/structure.dat
+WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_0 = $(LIB_WORK)/hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_0/_primary.dat
+WORK__gsr_instb__structure = $(LIB_WORK)/gsr_instb/structure.dat
+WORK__gsr_instb = $(LIB_WORK)/gsr_instb/_primary.dat
+WORK__gsr5mode__structure = $(LIB_WORK)/gsr5mode/structure.dat
+WORK__gsr5mode = $(LIB_WORK)/gsr5mode/_primary.dat
+WORK__graphics_e_sio_b_tx_b_sodata_b_dmadataout_e_max_depthgt1_g_mem_e_ram_ram_0_0__structure = $(LIB_WORK)/graphics_e_sio_b_tx_b_sodata_b_dmadataout_e_max_depthgt1_g_mem_e_ram_ram_0_0/structure.dat
+WORK__graphics_e_sio_b_tx_b_sodata_b_dmadataout_e_max_depthgt1_g_mem_e_ram_ram_0_0 = $(LIB_WORK)/graphics_e_sio_b_tx_b_sodata_b_dmadataout_e_max_depthgt1_g_mem_e_ram_ram_0_0/_primary.dat
+WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_3__structure = $(LIB_WORK)/graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_3/structure.dat
+WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_3 = $(LIB_WORK)/graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_3/_primary.dat
+WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_2__structure = $(LIB_WORK)/graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_2/structure.dat
+WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_2 = $(LIB_WORK)/graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_2/_primary.dat
+WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_1__structure = $(LIB_WORK)/graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_1/structure.dat
+WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_1 = $(LIB_WORK)/graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_1/_primary.dat
+WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_0__structure = $(LIB_WORK)/graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_0/structure.dat
+WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_0 = $(LIB_WORK)/graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_0/_primary.dat
+WORK__graphics_e_sio_b_metafifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_0__structure = $(LIB_WORK)/graphics_e_sio_b_metafifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_0/structure.dat
+WORK__graphics_e_sio_b_metafifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_0 = $(LIB_WORK)/graphics_e_sio_b_metafifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_0/_primary.dat
+WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_3__structure = $(LIB_WORK)/graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_3/structure.dat
+WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_3 = $(LIB_WORK)/graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_3/_primary.dat
+WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_2__structure = $(LIB_WORK)/graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_2/structure.dat
+WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_2 = $(LIB_WORK)/graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_2/_primary.dat
+WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_1__structure = $(LIB_WORK)/graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_1/structure.dat
+WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_1 = $(LIB_WORK)/graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_1/_primary.dat
+WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_0__structure = $(LIB_WORK)/graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_0/structure.dat
+WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_0 = $(LIB_WORK)/graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_0/_primary.dat
+WORK__gpdi_d_3_mgiol__structure = $(LIB_WORK)/gpdi_d_3_mgiol/structure.dat
+WORK__gpdi_d_3_mgiol = $(LIB_WORK)/gpdi_d_3_mgiol/_primary.dat
+WORK__gpdi_d_3_b__structure = $(LIB_WORK)/gpdi_d_3_b/structure.dat
+WORK__gpdi_d_3_b = $(LIB_WORK)/gpdi_d_3_b/_primary.dat
+WORK__gpdi_d_2_mgiol__structure = $(LIB_WORK)/gpdi_d_2_mgiol/structure.dat
+WORK__gpdi_d_2_mgiol = $(LIB_WORK)/gpdi_d_2_mgiol/_primary.dat
+WORK__gpdi_d_2_b__structure = $(LIB_WORK)/gpdi_d_2_b/structure.dat
+WORK__gpdi_d_2_b = $(LIB_WORK)/gpdi_d_2_b/_primary.dat
+WORK__gpdi_d_1_mgiol__structure = $(LIB_WORK)/gpdi_d_1_mgiol/structure.dat
+WORK__gpdi_d_1_mgiol = $(LIB_WORK)/gpdi_d_1_mgiol/_primary.dat
+WORK__gpdi_d_1_b__structure = $(LIB_WORK)/gpdi_d_1_b/structure.dat
+WORK__gpdi_d_1_b = $(LIB_WORK)/gpdi_d_1_b/_primary.dat
+WORK__gpdi_d_0_mgiol__structure = $(LIB_WORK)/gpdi_d_0_mgiol/structure.dat
+WORK__gpdi_d_0_mgiol = $(LIB_WORK)/gpdi_d_0_mgiol/_primary.dat
+WORK__gpdi_d_0_b__structure = $(LIB_WORK)/gpdi_d_0_b/structure.dat
+WORK__gpdi_d_0_b = $(LIB_WORK)/gpdi_d_0_b/_primary.dat
+WORK__gndb__structure = $(LIB_WORK)/gndb/structure.dat
+WORK__gndb = $(LIB_WORK)/gndb/_primary.dat
+WORK__ftdi_txdb__structure = $(LIB_WORK)/ftdi_txdb/structure.dat
+WORK__ftdi_txdb = $(LIB_WORK)/ftdi_txdb/_primary.dat
+WORK__ftdi_txd_mgiol__structure = $(LIB_WORK)/ftdi_txd_mgiol/structure.dat
+WORK__ftdi_txd_mgiol = $(LIB_WORK)/ftdi_txd_mgiol/_primary.dat
+WORK__ftdi_rxdb__structure = $(LIB_WORK)/ftdi_rxdb/structure.dat
+WORK__ftdi_rxdb = $(LIB_WORK)/ftdi_rxdb/_primary.dat
+WORK__ftdi_rxd_mgiol__structure = $(LIB_WORK)/ftdi_rxd_mgiol/structure.dat
+WORK__ftdi_rxd_mgiol = $(LIB_WORK)/ftdi_rxd_mgiol/_primary.dat
+WORK__ehxplllb__structure = $(LIB_WORK)/ehxplllb/structure.dat
+WORK__ehxplllb = $(LIB_WORK)/ehxplllb/_primary.dat
+WORK__ehxplll0025__structure = $(LIB_WORK)/ehxplll0025/structure.dat
+WORK__ehxplll0025 = $(LIB_WORK)/ehxplll0025/_primary.dat
 WORK__ecp3versa_graphic_structure_md = $(LIB_WORK)/ecp3versa_graphic_structure_md/_primary.dat
 WORK__ecp3versa_graphic_md = $(LIB_WORK)/ecp3versa_graphic_md/_primary.dat
 WORK__ecp3versa__graphics = $(LIB_WORK)/ecp3versa/graphics.dat
 WORK__ecp3versa = $(LIB_WORK)/ecp3versa/_primary.dat
+WORK__dp16kdb__structure = $(LIB_WORK)/dp16kdb/structure.dat
+WORK__dp16kdb = $(LIB_WORK)/dp16kdb/_primary.dat
+WORK__dp16kd0024__structure = $(LIB_WORK)/dp16kd0024/structure.dat
+WORK__dp16kd0024 = $(LIB_WORK)/dp16kd0024/_primary.dat
+WORK__dp16kd0023__structure = $(LIB_WORK)/dp16kd0023/structure.dat
+WORK__dp16kd0023 = $(LIB_WORK)/dp16kd0023/_primary.dat
+WORK__dp16kd0022__structure = $(LIB_WORK)/dp16kd0022/structure.dat
+WORK__dp16kd0022 = $(LIB_WORK)/dp16kd0022/_primary.dat
+WORK__dp16kd0021__structure = $(LIB_WORK)/dp16kd0021/structure.dat
+WORK__dp16kd0021 = $(LIB_WORK)/dp16kd0021/_primary.dat
+WORK__dp16kd0020__structure = $(LIB_WORK)/dp16kd0020/structure.dat
+WORK__dp16kd0020 = $(LIB_WORK)/dp16kd0020/_primary.dat
+WORK__dp16kd0019__structure = $(LIB_WORK)/dp16kd0019/structure.dat
+WORK__dp16kd0019 = $(LIB_WORK)/dp16kd0019/_primary.dat
+WORK__dp16kd0018__structure = $(LIB_WORK)/dp16kd0018/structure.dat
+WORK__dp16kd0018 = $(LIB_WORK)/dp16kd0018/_primary.dat
+WORK__dp16kd0017__structure = $(LIB_WORK)/dp16kd0017/structure.dat
+WORK__dp16kd0017 = $(LIB_WORK)/dp16kd0017/_primary.dat
+WORK__dp16kd0016__structure = $(LIB_WORK)/dp16kd0016/structure.dat
+WORK__dp16kd0016 = $(LIB_WORK)/dp16kd0016/_primary.dat
+WORK__dp16kd0015__structure = $(LIB_WORK)/dp16kd0015/structure.dat
+WORK__dp16kd0015 = $(LIB_WORK)/dp16kd0015/_primary.dat
+WORK__dp16kd0014__structure = $(LIB_WORK)/dp16kd0014/structure.dat
+WORK__dp16kd0014 = $(LIB_WORK)/dp16kd0014/_primary.dat
+WORK__dp16kd0013__structure = $(LIB_WORK)/dp16kd0013/structure.dat
+WORK__dp16kd0013 = $(LIB_WORK)/dp16kd0013/_primary.dat
+WORK__ctlrpll_b_pll_i__structure = $(LIB_WORK)/ctlrpll_b_pll_i/structure.dat
+WORK__ctlrpll_b_pll_i = $(LIB_WORK)/ctlrpll_b_pll_i/_primary.dat
+WORK__clk_25mhzb__structure = $(LIB_WORK)/clk_25mhzb/structure.dat
+WORK__clk_25mhzb = $(LIB_WORK)/clk_25mhzb/_primary.dat
+WORK__audio_v_3_b__structure = $(LIB_WORK)/audio_v_3_b/structure.dat
+WORK__audio_v_3_b = $(LIB_WORK)/audio_v_3_b/_primary.dat
+WORK__audio_v_2_b__structure = $(LIB_WORK)/audio_v_2_b/structure.dat
+WORK__audio_v_2_b = $(LIB_WORK)/audio_v_2_b/_primary.dat
+WORK__audio_v_1_b__structure = $(LIB_WORK)/audio_v_1_b/structure.dat
+WORK__audio_v_1_b = $(LIB_WORK)/audio_v_1_b/_primary.dat
+WORK__audio_v_0_b__structure = $(LIB_WORK)/audio_v_0_b/structure.dat
+WORK__audio_v_0_b = $(LIB_WORK)/audio_v_0_b/_primary.dat
+WORK__audio_r_3_b__structure = $(LIB_WORK)/audio_r_3_b/structure.dat
+WORK__audio_r_3_b = $(LIB_WORK)/audio_r_3_b/_primary.dat
+WORK__audio_r_2_b__structure = $(LIB_WORK)/audio_r_2_b/structure.dat
+WORK__audio_r_2_b = $(LIB_WORK)/audio_r_2_b/_primary.dat
+WORK__audio_r_1_b__structure = $(LIB_WORK)/audio_r_1_b/structure.dat
+WORK__audio_r_1_b = $(LIB_WORK)/audio_r_1_b/_primary.dat
+WORK__audio_r_0_b__structure = $(LIB_WORK)/audio_r_0_b/structure.dat
+WORK__audio_r_0_b = $(LIB_WORK)/audio_r_0_b/_primary.dat
+WORK__audio_l_3_b__structure = $(LIB_WORK)/audio_l_3_b/structure.dat
+WORK__audio_l_3_b = $(LIB_WORK)/audio_l_3_b/_primary.dat
+WORK__audio_l_2_b__structure = $(LIB_WORK)/audio_l_2_b/structure.dat
+WORK__audio_l_2_b = $(LIB_WORK)/audio_l_2_b/_primary.dat
+WORK__audio_l_1_b__structure = $(LIB_WORK)/audio_l_1_b/structure.dat
+WORK__audio_l_1_b = $(LIB_WORK)/audio_l_1_b/_primary.dat
+WORK__audio_l_0_b__structure = $(LIB_WORK)/audio_l_0_b/structure.dat
+WORK__audio_l_0_b = $(LIB_WORK)/audio_l_0_b/_primary.dat
 WORK__arty_graphics_structure_md = $(LIB_WORK)/arty_graphics_structure_md/_primary.dat
 WORK__arty_graphics_md = $(LIB_WORK)/arty_graphics_md/_primary.dat
 WORK__arty__graphics = $(LIB_WORK)/arty/graphics.dat
 WORK__arty = $(LIB_WORK)/arty/_primary.dat
+WORK__ant_433mhzb__structure = $(LIB_WORK)/ant_433mhzb/structure.dat
+WORK__ant_433mhzb = $(LIB_WORK)/ant_433mhzb/_primary.dat
+WORK__adc_sclkb__structure = $(LIB_WORK)/adc_sclkb/structure.dat
+WORK__adc_sclkb = $(LIB_WORK)/adc_sclkb/_primary.dat
+WORK__adc_mosib__structure = $(LIB_WORK)/adc_mosib/structure.dat
+WORK__adc_mosib = $(LIB_WORK)/adc_mosib/_primary.dat
+WORK__adc_csnb__structure = $(LIB_WORK)/adc_csnb/structure.dat
+WORK__adc_csnb = $(LIB_WORK)/adc_csnb/_primary.dat
 VCOM = vcom
 VLOG = vlog
 VOPT = vopt
 SCCOM = sccom
 
-whole_library :     $(WORK__ulx4mls_graphics_structure_md) \
+whole_library :     $(WORK__wifi_rxdb__structure) \
+    $(WORK__wifi_rxdb) \
+    $(WORK__wifi_gpio0b__structure) \
+    $(WORK__wifi_gpio0b) \
+    $(WORK__wifi_enb__structure) \
+    $(WORK__wifi_enb) \
+    $(WORK__videopll_b_pll_i__structure) \
+    $(WORK__videopll_b_pll_i) \
+    $(WORK__vcc__structure) \
+    $(WORK__vcc) \
+    $(WORK__user_programnb__structure) \
+    $(WORK__user_programnb) \
+    $(WORK__ulx4mls_graphics_structure_md) \
     $(WORK__ulx4mls_graphics_md) \
     $(WORK__ulx4mld_graphics_structure_md) \
     $(WORK__ulx4mld_graphics_md) \
@@ -111,9 +496,9 @@ whole_library :     $(WORK__ulx4mls_graphics_structure_md) \
     $(WORK__ulx4m_ld) \
     $(WORK__ulx3s_graphics_structure_md) \
     $(WORK__ulx3s_graphics_md) \
+    $(WORK__ulx3s__structure) \
     $(WORK__ulx3s__graphics) \
     $(WORK__ulx3s) \
-    $(WORK__testbench__ulx4mls_graphics) \
     $(WORK__testbench__ml509_miiipoe_debug) \
     $(WORK__testbench__s3estarter_graphics) \
     $(WORK__testbench__ecp3versa_graphics) \
@@ -121,12 +506,214 @@ whole_library :     $(WORK__ulx4mls_graphics_structure_md) \
     $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench__arty_graphics) \
     $(WORK__testbench__ulx4mld_graphics) \
+    $(WORK__testbench__ulx4mls_graphics) \
     $(WORK__testbench__ulx3s_graphics) \
     $(WORK__testbench) \
+    $(WORK__structure_con) \
+    $(WORK__smuxlregsre__structure) \
+    $(WORK__smuxlregsre) \
+    $(WORK__shutdownb__structure) \
+    $(WORK__shutdownb) \
+    $(WORK__sdram_wenb__structure) \
+    $(WORK__sdram_wenb) \
+    $(WORK__sdram_wen_mgiol__structure) \
+    $(WORK__sdram_wen_mgiol) \
+    $(WORK__sdram_rasnb__structure) \
+    $(WORK__sdram_rasnb) \
+    $(WORK__sdram_rasn_mgiol__structure) \
+    $(WORK__sdram_rasn_mgiol) \
+    $(WORK__sdram_dqm_1_mgiol__structure) \
+    $(WORK__sdram_dqm_1_mgiol) \
+    $(WORK__sdram_dqm_1_b__structure) \
+    $(WORK__sdram_dqm_1_b) \
+    $(WORK__sdram_dqm_0_mgiol__structure) \
+    $(WORK__sdram_dqm_0_mgiol) \
+    $(WORK__sdram_dqm_0_b__structure) \
+    $(WORK__sdram_dqm_0_b) \
+    $(WORK__sdram_d_9_mgiol__structure) \
+    $(WORK__sdram_d_9_mgiol) \
+    $(WORK__sdram_d_9_b__structure) \
+    $(WORK__sdram_d_9_b) \
+    $(WORK__sdram_d_8_mgiol__structure) \
+    $(WORK__sdram_d_8_mgiol) \
+    $(WORK__sdram_d_8_b__structure) \
+    $(WORK__sdram_d_8_b) \
+    $(WORK__sdram_d_7_mgiol__structure) \
+    $(WORK__sdram_d_7_mgiol) \
+    $(WORK__sdram_d_7_b__structure) \
+    $(WORK__sdram_d_7_b) \
+    $(WORK__sdram_d_6_mgiol__structure) \
+    $(WORK__sdram_d_6_mgiol) \
+    $(WORK__sdram_d_6_b__structure) \
+    $(WORK__sdram_d_6_b) \
+    $(WORK__sdram_d_5_mgiol__structure) \
+    $(WORK__sdram_d_5_mgiol) \
+    $(WORK__sdram_d_5_b__structure) \
+    $(WORK__sdram_d_5_b) \
+    $(WORK__sdram_d_4_mgiol__structure) \
+    $(WORK__sdram_d_4_mgiol) \
+    $(WORK__sdram_d_4_b__structure) \
+    $(WORK__sdram_d_4_b) \
+    $(WORK__sdram_d_3_mgiol__structure) \
+    $(WORK__sdram_d_3_mgiol) \
+    $(WORK__sdram_d_3_b__structure) \
+    $(WORK__sdram_d_3_b) \
+    $(WORK__sdram_d_2_mgiol__structure) \
+    $(WORK__sdram_d_2_mgiol) \
+    $(WORK__sdram_d_2_b__structure) \
+    $(WORK__sdram_d_2_b) \
+    $(WORK__sdram_d_1_mgiol__structure) \
+    $(WORK__sdram_d_1_mgiol) \
+    $(WORK__sdram_d_1_b__structure) \
+    $(WORK__sdram_d_1_b) \
+    $(WORK__sdram_d_15_mgiol__structure) \
+    $(WORK__sdram_d_15_mgiol) \
+    $(WORK__sdram_d_15_b__structure) \
+    $(WORK__sdram_d_15_b) \
+    $(WORK__sdram_d_14_mgiol__structure) \
+    $(WORK__sdram_d_14_mgiol) \
+    $(WORK__sdram_d_14_b__structure) \
+    $(WORK__sdram_d_14_b) \
+    $(WORK__sdram_d_13_mgiol__structure) \
+    $(WORK__sdram_d_13_mgiol) \
+    $(WORK__sdram_d_13_b__structure) \
+    $(WORK__sdram_d_13_b) \
+    $(WORK__sdram_d_12_mgiol__structure) \
+    $(WORK__sdram_d_12_mgiol) \
+    $(WORK__sdram_d_12_b__structure) \
+    $(WORK__sdram_d_12_b) \
+    $(WORK__sdram_d_11_mgiol__structure) \
+    $(WORK__sdram_d_11_mgiol) \
+    $(WORK__sdram_d_11_b__structure) \
+    $(WORK__sdram_d_11_b) \
+    $(WORK__sdram_d_10_mgiol__structure) \
+    $(WORK__sdram_d_10_mgiol) \
+    $(WORK__sdram_d_10_b__structure) \
+    $(WORK__sdram_d_10_b) \
+    $(WORK__sdram_d_0_mgiol__structure) \
+    $(WORK__sdram_d_0_mgiol) \
+    $(WORK__sdram_d_0_b__structure) \
+    $(WORK__sdram_d_0_b) \
+    $(WORK__sdram_csnb__structure) \
+    $(WORK__sdram_csnb) \
+    $(WORK__sdram_csn_mgiol__structure) \
+    $(WORK__sdram_csn_mgiol) \
+    $(WORK__sdram_clkb__structure) \
+    $(WORK__sdram_clkb) \
+    $(WORK__sdram_clk_mgiol__structure) \
+    $(WORK__sdram_clk_mgiol) \
+    $(WORK__sdram_ckeb__structure) \
+    $(WORK__sdram_ckeb) \
+    $(WORK__sdram_cke_mgiol__structure) \
+    $(WORK__sdram_cke_mgiol) \
+    $(WORK__sdram_casnb__structure) \
+    $(WORK__sdram_casnb) \
+    $(WORK__sdram_casn_mgiol__structure) \
+    $(WORK__sdram_casn_mgiol) \
+    $(WORK__sdram_ba_1_mgiol__structure) \
+    $(WORK__sdram_ba_1_mgiol) \
+    $(WORK__sdram_ba_1_b__structure) \
+    $(WORK__sdram_ba_1_b) \
+    $(WORK__sdram_ba_0_mgiol__structure) \
+    $(WORK__sdram_ba_0_mgiol) \
+    $(WORK__sdram_ba_0_b__structure) \
+    $(WORK__sdram_ba_0_b) \
+    $(WORK__sdram_a_9_mgiol__structure) \
+    $(WORK__sdram_a_9_mgiol) \
+    $(WORK__sdram_a_9_b__structure) \
+    $(WORK__sdram_a_9_b) \
+    $(WORK__sdram_a_8_mgiol__structure) \
+    $(WORK__sdram_a_8_mgiol) \
+    $(WORK__sdram_a_8_b__structure) \
+    $(WORK__sdram_a_8_b) \
+    $(WORK__sdram_a_7_mgiol__structure) \
+    $(WORK__sdram_a_7_mgiol) \
+    $(WORK__sdram_a_7_b__structure) \
+    $(WORK__sdram_a_7_b) \
+    $(WORK__sdram_a_6_mgiol__structure) \
+    $(WORK__sdram_a_6_mgiol) \
+    $(WORK__sdram_a_6_b__structure) \
+    $(WORK__sdram_a_6_b) \
+    $(WORK__sdram_a_5_mgiol__structure) \
+    $(WORK__sdram_a_5_mgiol) \
+    $(WORK__sdram_a_5_b__structure) \
+    $(WORK__sdram_a_5_b) \
+    $(WORK__sdram_a_4_mgiol__structure) \
+    $(WORK__sdram_a_4_mgiol) \
+    $(WORK__sdram_a_4_b__structure) \
+    $(WORK__sdram_a_4_b) \
+    $(WORK__sdram_a_3_mgiol__structure) \
+    $(WORK__sdram_a_3_mgiol) \
+    $(WORK__sdram_a_3_b__structure) \
+    $(WORK__sdram_a_3_b) \
+    $(WORK__sdram_a_2_mgiol__structure) \
+    $(WORK__sdram_a_2_mgiol) \
+    $(WORK__sdram_a_2_b__structure) \
+    $(WORK__sdram_a_2_b) \
+    $(WORK__sdram_a_1_mgiol__structure) \
+    $(WORK__sdram_a_1_mgiol) \
+    $(WORK__sdram_a_1_b__structure) \
+    $(WORK__sdram_a_1_b) \
+    $(WORK__sdram_a_12_mgiol__structure) \
+    $(WORK__sdram_a_12_mgiol) \
+    $(WORK__sdram_a_12_b__structure) \
+    $(WORK__sdram_a_12_b) \
+    $(WORK__sdram_a_11_mgiol__structure) \
+    $(WORK__sdram_a_11_mgiol) \
+    $(WORK__sdram_a_11_b__structure) \
+    $(WORK__sdram_a_11_b) \
+    $(WORK__sdram_a_10_mgiol__structure) \
+    $(WORK__sdram_a_10_mgiol) \
+    $(WORK__sdram_a_10_b__structure) \
+    $(WORK__sdram_a_10_b) \
+    $(WORK__sdram_a_0_mgiol__structure) \
+    $(WORK__sdram_a_0_mgiol) \
+    $(WORK__sdram_a_0_b__structure) \
+    $(WORK__sdram_a_0_b) \
+    $(WORK__sd_cmdb__structure) \
+    $(WORK__sd_cmdb) \
+    $(WORK__sapoddrx10007__structure) \
+    $(WORK__sapoddrx10007) \
+    $(WORK__sapoddrx1__structure) \
+    $(WORK__sapoddrx1) \
+    $(WORK__sapiobuf0012__structure) \
+    $(WORK__sapiobuf0012) \
+    $(WORK__sapiobuf0011__structure) \
+    $(WORK__sapiobuf0011) \
+    $(WORK__sapiobuf0010__structure) \
+    $(WORK__sapiobuf0010) \
+    $(WORK__sapiobuf0009__structure) \
+    $(WORK__sapiobuf0009) \
+    $(WORK__sapiobuf0008__structure) \
+    $(WORK__sapiobuf0008) \
+    $(WORK__sapiobuf0006__structure) \
+    $(WORK__sapiobuf0006) \
+    $(WORK__sapiobuf0005__structure) \
+    $(WORK__sapiobuf0005) \
+    $(WORK__sapiobuf0004__structure) \
+    $(WORK__sapiobuf0004) \
+    $(WORK__sapiobuf0002__structure) \
+    $(WORK__sapiobuf0002) \
+    $(WORK__sapiobuf0001__structure) \
+    $(WORK__sapiobuf0001) \
+    $(WORK__sapiobuf__structure) \
+    $(WORK__sapiobuf) \
     $(WORK__s3estarter_structure_md) \
     $(WORK__s3estarter_graphics_md) \
     $(WORK__s3estarter__graphics) \
     $(WORK__s3estarter) \
+    $(WORK__pdpw16kdb__structure) \
+    $(WORK__pdpw16kdb) \
+    $(WORK__oled_resnb__structure) \
+    $(WORK__oled_resnb) \
+    $(WORK__oled_mosib__structure) \
+    $(WORK__oled_mosib) \
+    $(WORK__oled_dcb__structure) \
+    $(WORK__oled_dcb) \
+    $(WORK__oled_csnb__structure) \
+    $(WORK__oled_csnb) \
+    $(WORK__oled_clkb__structure) \
+    $(WORK__oled_clkb) \
     $(WORK__nuhs3adsp_graphics_md) \
     $(WORK__nuhs3adsp_graphic_structure_md) \
     $(WORK__nuhs3adsp__graphics) \
@@ -137,14 +724,160 @@ whole_library :     $(WORK__ulx4mls_graphics_structure_md) \
     $(WORK__ml509_graphics_md) \
     $(WORK__ml509__graphics) \
     $(WORK__ml509) \
+    $(WORK__mfflsre0003__structure) \
+    $(WORK__mfflsre0003) \
+    $(WORK__mfflsre__structure) \
+    $(WORK__mfflsre) \
+    $(WORK__led_7_b__structure) \
+    $(WORK__led_7_b) \
+    $(WORK__led_6_b__structure) \
+    $(WORK__led_6_b) \
+    $(WORK__led_5_b__structure) \
+    $(WORK__led_5_b) \
+    $(WORK__led_4_b__structure) \
+    $(WORK__led_4_b) \
+    $(WORK__led_3_b__structure) \
+    $(WORK__led_3_b) \
+    $(WORK__led_2_b__structure) \
+    $(WORK__led_2_b) \
+    $(WORK__led_1_b__structure) \
+    $(WORK__led_1_b) \
+    $(WORK__led_0_b__structure) \
+    $(WORK__led_0_b) \
+    $(WORK__inverter__structure) \
+    $(WORK__inverter) \
+    $(WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_3__structure) \
+    $(WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_3) \
+    $(WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_2__structure) \
+    $(WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_2) \
+    $(WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_1__structure) \
+    $(WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_1) \
+    $(WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_0__structure) \
+    $(WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_0) \
+    $(WORK__gsr_instb__structure) \
+    $(WORK__gsr_instb) \
+    $(WORK__gsr5mode__structure) \
+    $(WORK__gsr5mode) \
+    $(WORK__graphics_e_sio_b_tx_b_sodata_b_dmadataout_e_max_depthgt1_g_mem_e_ram_ram_0_0__structure) \
+    $(WORK__graphics_e_sio_b_tx_b_sodata_b_dmadataout_e_max_depthgt1_g_mem_e_ram_ram_0_0) \
+    $(WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_3__structure) \
+    $(WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_3) \
+    $(WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_2__structure) \
+    $(WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_2) \
+    $(WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_1__structure) \
+    $(WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_1) \
+    $(WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_0__structure) \
+    $(WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_0) \
+    $(WORK__graphics_e_sio_b_metafifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_0__structure) \
+    $(WORK__graphics_e_sio_b_metafifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_0) \
+    $(WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_3__structure) \
+    $(WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_3) \
+    $(WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_2__structure) \
+    $(WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_2) \
+    $(WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_1__structure) \
+    $(WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_1) \
+    $(WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_0__structure) \
+    $(WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_0) \
+    $(WORK__gpdi_d_3_mgiol__structure) \
+    $(WORK__gpdi_d_3_mgiol) \
+    $(WORK__gpdi_d_3_b__structure) \
+    $(WORK__gpdi_d_3_b) \
+    $(WORK__gpdi_d_2_mgiol__structure) \
+    $(WORK__gpdi_d_2_mgiol) \
+    $(WORK__gpdi_d_2_b__structure) \
+    $(WORK__gpdi_d_2_b) \
+    $(WORK__gpdi_d_1_mgiol__structure) \
+    $(WORK__gpdi_d_1_mgiol) \
+    $(WORK__gpdi_d_1_b__structure) \
+    $(WORK__gpdi_d_1_b) \
+    $(WORK__gpdi_d_0_mgiol__structure) \
+    $(WORK__gpdi_d_0_mgiol) \
+    $(WORK__gpdi_d_0_b__structure) \
+    $(WORK__gpdi_d_0_b) \
+    $(WORK__gndb__structure) \
+    $(WORK__gndb) \
+    $(WORK__ftdi_txdb__structure) \
+    $(WORK__ftdi_txdb) \
+    $(WORK__ftdi_txd_mgiol__structure) \
+    $(WORK__ftdi_txd_mgiol) \
+    $(WORK__ftdi_rxdb__structure) \
+    $(WORK__ftdi_rxdb) \
+    $(WORK__ftdi_rxd_mgiol__structure) \
+    $(WORK__ftdi_rxd_mgiol) \
+    $(WORK__ehxplllb__structure) \
+    $(WORK__ehxplllb) \
+    $(WORK__ehxplll0025__structure) \
+    $(WORK__ehxplll0025) \
     $(WORK__ecp3versa_graphic_structure_md) \
     $(WORK__ecp3versa_graphic_md) \
     $(WORK__ecp3versa__graphics) \
     $(WORK__ecp3versa) \
+    $(WORK__dp16kdb__structure) \
+    $(WORK__dp16kdb) \
+    $(WORK__dp16kd0024__structure) \
+    $(WORK__dp16kd0024) \
+    $(WORK__dp16kd0023__structure) \
+    $(WORK__dp16kd0023) \
+    $(WORK__dp16kd0022__structure) \
+    $(WORK__dp16kd0022) \
+    $(WORK__dp16kd0021__structure) \
+    $(WORK__dp16kd0021) \
+    $(WORK__dp16kd0020__structure) \
+    $(WORK__dp16kd0020) \
+    $(WORK__dp16kd0019__structure) \
+    $(WORK__dp16kd0019) \
+    $(WORK__dp16kd0018__structure) \
+    $(WORK__dp16kd0018) \
+    $(WORK__dp16kd0017__structure) \
+    $(WORK__dp16kd0017) \
+    $(WORK__dp16kd0016__structure) \
+    $(WORK__dp16kd0016) \
+    $(WORK__dp16kd0015__structure) \
+    $(WORK__dp16kd0015) \
+    $(WORK__dp16kd0014__structure) \
+    $(WORK__dp16kd0014) \
+    $(WORK__dp16kd0013__structure) \
+    $(WORK__dp16kd0013) \
+    $(WORK__ctlrpll_b_pll_i__structure) \
+    $(WORK__ctlrpll_b_pll_i) \
+    $(WORK__clk_25mhzb__structure) \
+    $(WORK__clk_25mhzb) \
+    $(WORK__audio_v_3_b__structure) \
+    $(WORK__audio_v_3_b) \
+    $(WORK__audio_v_2_b__structure) \
+    $(WORK__audio_v_2_b) \
+    $(WORK__audio_v_1_b__structure) \
+    $(WORK__audio_v_1_b) \
+    $(WORK__audio_v_0_b__structure) \
+    $(WORK__audio_v_0_b) \
+    $(WORK__audio_r_3_b__structure) \
+    $(WORK__audio_r_3_b) \
+    $(WORK__audio_r_2_b__structure) \
+    $(WORK__audio_r_2_b) \
+    $(WORK__audio_r_1_b__structure) \
+    $(WORK__audio_r_1_b) \
+    $(WORK__audio_r_0_b__structure) \
+    $(WORK__audio_r_0_b) \
+    $(WORK__audio_l_3_b__structure) \
+    $(WORK__audio_l_3_b) \
+    $(WORK__audio_l_2_b__structure) \
+    $(WORK__audio_l_2_b) \
+    $(WORK__audio_l_1_b__structure) \
+    $(WORK__audio_l_1_b) \
+    $(WORK__audio_l_0_b__structure) \
+    $(WORK__audio_l_0_b) \
     $(WORK__arty_graphics_structure_md) \
     $(WORK__arty_graphics_md) \
     $(WORK__arty__graphics) \
-    $(WORK__arty)
+    $(WORK__arty) \
+    $(WORK__ant_433mhzb__structure) \
+    $(WORK__ant_433mhzb) \
+    $(WORK__adc_sclkb__structure) \
+    $(WORK__adc_sclkb) \
+    $(WORK__adc_mosib__structure) \
+    $(WORK__adc_mosib) \
+    $(WORK__adc_csnb__structure) \
+    $(WORK__adc_csnb)
 
 $(WORK__arty) : ../../boards/arty/common/arty.vhd \
 		$(STD__textio) \
@@ -168,8 +901,8 @@ $(WORK__arty__graphics) : ../../boards/arty/apps/demos/graphics.vhd \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__videopkg) \
-		$(HDL4FPGA__sdram_param) \
 		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__sdram_param) \
 		$(HDL4FPGA__profiles) \
 		$(HDL4FPGA__base) \
 		$(IEEE__math_real) \
@@ -393,15 +1126,12 @@ $(WORK__testbench__ml509_miiipoe_debug) : ../../boards/ml509/apps/demos/testbenc
 	$(VCOM) -2002 ../../boards/ml509/apps/demos/testbenches/miiipoe_debug.vhd
 
 $(WORK__ulx3s) : ../../boards/ULX3S/common/ulx3s.vhd \
-		$(IEEE__std_logic_arith) \
-		$(ECP5U__components) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ../../boards/ULX3S/common/ulx3s.vhd
 
 $(WORK__ulx3s__graphics) : ../../boards/ULX3S/apps/demos/graphics.vhd \
 		$(HDL4FPGA__ecp5_sdrphy) \
-		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__demo_graphics) \
 		$(HDL4FPGA__desser) \
 		$(HDL4FPGA__sio_dayudp) \
@@ -415,9 +1145,9 @@ $(WORK__ulx3s__graphics) : ../../boards/ULX3S/apps/demos/graphics.vhd \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__sdram_param) \
 		$(IEEE__math_real) \
 		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__sdram_param) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -435,8 +1165,6 @@ $(WORK__ulx3s_graphics_structure_md) : ../../boards/ULX3S/apps/demos/testbenches
 		$(HDL4FPGA__hdlcdll_tx) \
 		$(VERILOG__vl_types) \
 		$(MICRON__mt48lc32m16a2) \
-		$(IEEE__std_logic_arith) \
-		$(ECP5U__components) \
 		$(WORK__ulx3s) \
 		$(IEEE__math_real) \
 		$(HDL4FPGA__ethpkg) \
@@ -446,7 +1174,7 @@ $(WORK__ulx3s_graphics_structure_md) : ../../boards/ULX3S/apps/demos/testbenches
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(WORK__testbench)
-	$(VCOM) -2002 ../../boards/ULX3S/apps/demos/testbenches/graphics.vhd
+	$(VCOM) -2002  ../../boards/ULX3S/apps/demos/testbenches/graphics.vhd
 
 $(WORK__ulx4m_ld) : ../../boards/ULX4M/common/ulx4m_ld.vhd \
 		$(IEEE__std_logic_arith) \
@@ -478,15 +1206,12 @@ $(WORK__ulx4m_ld__graphics) : ../../boards/ULX4M/apps/demos/graphics.vhd \
 	$(VCOM) -2002 ../../boards/ULX4M/apps/demos/graphics.vhd
 
 $(WORK__ulx4m_ls) : ../../boards/ULX4M_LS/common/ulx4m_ls.vhd \
-		$(IEEE__std_logic_arith) \
-		$(ECP5U__components) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ../../boards/ULX4M_LS/common/ulx4m_ls.vhd
 
 $(WORK__ulx4m_ls__graphics) : ../../boards/ULX4M_LS/apps/demos/graphics.vhd \
-		$(HDL4FPGA__latency) \
-		$(HDL4FPGA__sdrphy) \
+		$(HDL4FPGA__ecp5_sdrphy) \
 		$(HDL4FPGA__demo_graphics) \
 		$(HDL4FPGA__desser) \
 		$(HDL4FPGA__sio_dayudp) \
@@ -544,8 +1269,6 @@ $(WORK__ulx4mls_graphics_structure_md) : ../../boards/ULX4M_LS/apps/demos/testbe
 		$(HDL4FPGA__hdlcdll_tx) \
 		$(VERILOG__vl_types) \
 		$(MICRON__mt48lc32m16a2) \
-		$(IEEE__std_logic_arith) \
-		$(ECP5U__components) \
 		$(WORK__ulx4m_ls) \
 		$(IEEE__math_real) \
 		$(HDL4FPGA__ethpkg) \
@@ -556,4 +1279,384 @@ $(WORK__ulx4mls_graphics_structure_md) : ../../boards/ULX4M_LS/apps/demos/testbe
 		$(IEEE__std_logic_1164) \
 		$(WORK__testbench)
 	$(VCOM) -2002 ../../boards/ULX4M_LS/apps/demos/testbenches/graphics.vhd
+
+$(WORK__adc_csnb) \
+$(WORK__adc_csnb__structure) \
+$(WORK__adc_mosib) \
+$(WORK__adc_mosib__structure) \
+$(WORK__adc_sclkb) \
+$(WORK__adc_sclkb__structure) \
+$(WORK__ant_433mhzb) \
+$(WORK__ant_433mhzb__structure) \
+$(WORK__audio_l_0_b) \
+$(WORK__audio_l_0_b__structure) \
+$(WORK__audio_l_1_b) \
+$(WORK__audio_l_1_b__structure) \
+$(WORK__audio_l_2_b) \
+$(WORK__audio_l_2_b__structure) \
+$(WORK__audio_l_3_b) \
+$(WORK__audio_l_3_b__structure) \
+$(WORK__audio_r_0_b) \
+$(WORK__audio_r_0_b__structure) \
+$(WORK__audio_r_1_b) \
+$(WORK__audio_r_1_b__structure) \
+$(WORK__audio_r_2_b) \
+$(WORK__audio_r_2_b__structure) \
+$(WORK__audio_r_3_b) \
+$(WORK__audio_r_3_b__structure) \
+$(WORK__audio_v_0_b) \
+$(WORK__audio_v_0_b__structure) \
+$(WORK__audio_v_1_b) \
+$(WORK__audio_v_1_b__structure) \
+$(WORK__audio_v_2_b) \
+$(WORK__audio_v_2_b__structure) \
+$(WORK__audio_v_3_b) \
+$(WORK__audio_v_3_b__structure) \
+$(WORK__clk_25mhzb) \
+$(WORK__clk_25mhzb__structure) \
+$(WORK__ctlrpll_b_pll_i) \
+$(WORK__ctlrpll_b_pll_i__structure) \
+$(WORK__dp16kd0013) \
+$(WORK__dp16kd0013__structure) \
+$(WORK__dp16kd0014) \
+$(WORK__dp16kd0014__structure) \
+$(WORK__dp16kd0015) \
+$(WORK__dp16kd0015__structure) \
+$(WORK__dp16kd0016) \
+$(WORK__dp16kd0016__structure) \
+$(WORK__dp16kd0017) \
+$(WORK__dp16kd0017__structure) \
+$(WORK__dp16kd0018) \
+$(WORK__dp16kd0018__structure) \
+$(WORK__dp16kd0019) \
+$(WORK__dp16kd0019__structure) \
+$(WORK__dp16kd0020) \
+$(WORK__dp16kd0020__structure) \
+$(WORK__dp16kd0021) \
+$(WORK__dp16kd0021__structure) \
+$(WORK__dp16kd0022) \
+$(WORK__dp16kd0022__structure) \
+$(WORK__dp16kd0023) \
+$(WORK__dp16kd0023__structure) \
+$(WORK__dp16kd0024) \
+$(WORK__dp16kd0024__structure) \
+$(WORK__dp16kdb) \
+$(WORK__dp16kdb__structure) \
+$(WORK__ehxplll0025) \
+$(WORK__ehxplll0025__structure) \
+$(WORK__ehxplllb) \
+$(WORK__ehxplllb__structure) \
+$(WORK__ftdi_rxd_mgiol) \
+$(WORK__ftdi_rxd_mgiol__structure) \
+$(WORK__ftdi_rxdb) \
+$(WORK__ftdi_rxdb__structure) \
+$(WORK__ftdi_txd_mgiol) \
+$(WORK__ftdi_txd_mgiol__structure) \
+$(WORK__ftdi_txdb) \
+$(WORK__ftdi_txdb__structure) \
+$(WORK__gndb) \
+$(WORK__gndb__structure) \
+$(WORK__gpdi_d_0_b) \
+$(WORK__gpdi_d_0_b__structure) \
+$(WORK__gpdi_d_0_mgiol) \
+$(WORK__gpdi_d_0_mgiol__structure) \
+$(WORK__gpdi_d_1_b) \
+$(WORK__gpdi_d_1_b__structure) \
+$(WORK__gpdi_d_1_mgiol) \
+$(WORK__gpdi_d_1_mgiol__structure) \
+$(WORK__gpdi_d_2_b) \
+$(WORK__gpdi_d_2_b__structure) \
+$(WORK__gpdi_d_2_mgiol) \
+$(WORK__gpdi_d_2_mgiol__structure) \
+$(WORK__gpdi_d_3_b) \
+$(WORK__gpdi_d_3_b__structure) \
+$(WORK__gpdi_d_3_mgiol) \
+$(WORK__gpdi_d_3_mgiol__structure) \
+$(WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_0) \
+$(WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_0__structure) \
+$(WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_1) \
+$(WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_1__structure) \
+$(WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_2) \
+$(WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_2__structure) \
+$(WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_3) \
+$(WORK__graphics_e_adapter_b_graphics_e_vram_e_max_depthgt1_g_mem_e_ram_ram_0_3__structure) \
+$(WORK__graphics_e_sio_b_metafifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_0) \
+$(WORK__graphics_e_sio_b_metafifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_0__structure) \
+$(WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_0) \
+$(WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_0__structure) \
+$(WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_1) \
+$(WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_1__structure) \
+$(WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_2) \
+$(WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_2__structure) \
+$(WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_3) \
+$(WORK__graphics_e_sio_b_rx_b_dmadata_e_max_depthgt1_g_mem_e_ram_ram_0_3__structure) \
+$(WORK__graphics_e_sio_b_tx_b_sodata_b_dmadataout_e_max_depthgt1_g_mem_e_ram_ram_0_0) \
+$(WORK__graphics_e_sio_b_tx_b_sodata_b_dmadataout_e_max_depthgt1_g_mem_e_ram_ram_0_0__structure) \
+$(WORK__gsr5mode) \
+$(WORK__gsr5mode__structure) \
+$(WORK__gsr_instb) \
+$(WORK__gsr_instb__structure) \
+$(WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_0) \
+$(WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_0__structure) \
+$(WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_1) \
+$(WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_1__structure) \
+$(WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_2) \
+$(WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_2__structure) \
+$(WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_3) \
+$(WORK__hdlc_g_siodaahdlc_e_siohdlc_e_hdlc_b_fifo_e_data_e_max_depthgt1_g_mem_e_ram_ram_0_3__structure) \
+$(WORK__inverter) \
+$(WORK__inverter__structure) \
+$(WORK__led_0_b) \
+$(WORK__led_0_b__structure) \
+$(WORK__led_1_b) \
+$(WORK__led_1_b__structure) \
+$(WORK__led_2_b) \
+$(WORK__led_2_b__structure) \
+$(WORK__led_3_b) \
+$(WORK__led_3_b__structure) \
+$(WORK__led_4_b) \
+$(WORK__led_4_b__structure) \
+$(WORK__led_5_b) \
+$(WORK__led_5_b__structure) \
+$(WORK__led_6_b) \
+$(WORK__led_6_b__structure) \
+$(WORK__led_7_b) \
+$(WORK__led_7_b__structure) \
+$(WORK__mfflsre) \
+$(WORK__mfflsre__structure) \
+$(WORK__mfflsre0003) \
+$(WORK__mfflsre0003__structure) \
+$(WORK__oled_clkb) \
+$(WORK__oled_clkb__structure) \
+$(WORK__oled_csnb) \
+$(WORK__oled_csnb__structure) \
+$(WORK__oled_dcb) \
+$(WORK__oled_dcb__structure) \
+$(WORK__oled_mosib) \
+$(WORK__oled_mosib__structure) \
+$(WORK__oled_resnb) \
+$(WORK__oled_resnb__structure) \
+$(WORK__pdpw16kdb) \
+$(WORK__pdpw16kdb__structure) \
+$(WORK__sapiobuf) \
+$(WORK__sapiobuf__structure) \
+$(WORK__sapiobuf0001) \
+$(WORK__sapiobuf0001__structure) \
+$(WORK__sapiobuf0002) \
+$(WORK__sapiobuf0002__structure) \
+$(WORK__sapiobuf0004) \
+$(WORK__sapiobuf0004__structure) \
+$(WORK__sapiobuf0005) \
+$(WORK__sapiobuf0005__structure) \
+$(WORK__sapiobuf0006) \
+$(WORK__sapiobuf0006__structure) \
+$(WORK__sapiobuf0008) \
+$(WORK__sapiobuf0008__structure) \
+$(WORK__sapiobuf0009) \
+$(WORK__sapiobuf0009__structure) \
+$(WORK__sapiobuf0010) \
+$(WORK__sapiobuf0010__structure) \
+$(WORK__sapiobuf0011) \
+$(WORK__sapiobuf0011__structure) \
+$(WORK__sapiobuf0012) \
+$(WORK__sapiobuf0012__structure) \
+$(WORK__sapoddrx1) \
+$(WORK__sapoddrx1__structure) \
+$(WORK__sapoddrx10007) \
+$(WORK__sapoddrx10007__structure) \
+$(WORK__sd_cmdb) \
+$(WORK__sd_cmdb__structure) \
+$(WORK__sdram_a_0_b) \
+$(WORK__sdram_a_0_b__structure) \
+$(WORK__sdram_a_0_mgiol) \
+$(WORK__sdram_a_0_mgiol__structure) \
+$(WORK__sdram_a_10_b) \
+$(WORK__sdram_a_10_b__structure) \
+$(WORK__sdram_a_10_mgiol) \
+$(WORK__sdram_a_10_mgiol__structure) \
+$(WORK__sdram_a_11_b) \
+$(WORK__sdram_a_11_b__structure) \
+$(WORK__sdram_a_11_mgiol) \
+$(WORK__sdram_a_11_mgiol__structure) \
+$(WORK__sdram_a_12_b) \
+$(WORK__sdram_a_12_b__structure) \
+$(WORK__sdram_a_12_mgiol) \
+$(WORK__sdram_a_12_mgiol__structure) \
+$(WORK__sdram_a_1_b) \
+$(WORK__sdram_a_1_b__structure) \
+$(WORK__sdram_a_1_mgiol) \
+$(WORK__sdram_a_1_mgiol__structure) \
+$(WORK__sdram_a_2_b) \
+$(WORK__sdram_a_2_b__structure) \
+$(WORK__sdram_a_2_mgiol) \
+$(WORK__sdram_a_2_mgiol__structure) \
+$(WORK__sdram_a_3_b) \
+$(WORK__sdram_a_3_b__structure) \
+$(WORK__sdram_a_3_mgiol) \
+$(WORK__sdram_a_3_mgiol__structure) \
+$(WORK__sdram_a_4_b) \
+$(WORK__sdram_a_4_b__structure) \
+$(WORK__sdram_a_4_mgiol) \
+$(WORK__sdram_a_4_mgiol__structure) \
+$(WORK__sdram_a_5_b) \
+$(WORK__sdram_a_5_b__structure) \
+$(WORK__sdram_a_5_mgiol) \
+$(WORK__sdram_a_5_mgiol__structure) \
+$(WORK__sdram_a_6_b) \
+$(WORK__sdram_a_6_b__structure) \
+$(WORK__sdram_a_6_mgiol) \
+$(WORK__sdram_a_6_mgiol__structure) \
+$(WORK__sdram_a_7_b) \
+$(WORK__sdram_a_7_b__structure) \
+$(WORK__sdram_a_7_mgiol) \
+$(WORK__sdram_a_7_mgiol__structure) \
+$(WORK__sdram_a_8_b) \
+$(WORK__sdram_a_8_b__structure) \
+$(WORK__sdram_a_8_mgiol) \
+$(WORK__sdram_a_8_mgiol__structure) \
+$(WORK__sdram_a_9_b) \
+$(WORK__sdram_a_9_b__structure) \
+$(WORK__sdram_a_9_mgiol) \
+$(WORK__sdram_a_9_mgiol__structure) \
+$(WORK__sdram_ba_0_b) \
+$(WORK__sdram_ba_0_b__structure) \
+$(WORK__sdram_ba_0_mgiol) \
+$(WORK__sdram_ba_0_mgiol__structure) \
+$(WORK__sdram_ba_1_b) \
+$(WORK__sdram_ba_1_b__structure) \
+$(WORK__sdram_ba_1_mgiol) \
+$(WORK__sdram_ba_1_mgiol__structure) \
+$(WORK__sdram_casn_mgiol) \
+$(WORK__sdram_casn_mgiol__structure) \
+$(WORK__sdram_casnb) \
+$(WORK__sdram_casnb__structure) \
+$(WORK__sdram_cke_mgiol) \
+$(WORK__sdram_cke_mgiol__structure) \
+$(WORK__sdram_ckeb) \
+$(WORK__sdram_ckeb__structure) \
+$(WORK__sdram_clk_mgiol) \
+$(WORK__sdram_clk_mgiol__structure) \
+$(WORK__sdram_clkb) \
+$(WORK__sdram_clkb__structure) \
+$(WORK__sdram_csn_mgiol) \
+$(WORK__sdram_csn_mgiol__structure) \
+$(WORK__sdram_csnb) \
+$(WORK__sdram_csnb__structure) \
+$(WORK__sdram_d_0_b) \
+$(WORK__sdram_d_0_b__structure) \
+$(WORK__sdram_d_0_mgiol) \
+$(WORK__sdram_d_0_mgiol__structure) \
+$(WORK__sdram_d_10_b) \
+$(WORK__sdram_d_10_b__structure) \
+$(WORK__sdram_d_10_mgiol) \
+$(WORK__sdram_d_10_mgiol__structure) \
+$(WORK__sdram_d_11_b) \
+$(WORK__sdram_d_11_b__structure) \
+$(WORK__sdram_d_11_mgiol) \
+$(WORK__sdram_d_11_mgiol__structure) \
+$(WORK__sdram_d_12_b) \
+$(WORK__sdram_d_12_b__structure) \
+$(WORK__sdram_d_12_mgiol) \
+$(WORK__sdram_d_12_mgiol__structure) \
+$(WORK__sdram_d_13_b) \
+$(WORK__sdram_d_13_b__structure) \
+$(WORK__sdram_d_13_mgiol) \
+$(WORK__sdram_d_13_mgiol__structure) \
+$(WORK__sdram_d_14_b) \
+$(WORK__sdram_d_14_b__structure) \
+$(WORK__sdram_d_14_mgiol) \
+$(WORK__sdram_d_14_mgiol__structure) \
+$(WORK__sdram_d_15_b) \
+$(WORK__sdram_d_15_b__structure) \
+$(WORK__sdram_d_15_mgiol) \
+$(WORK__sdram_d_15_mgiol__structure) \
+$(WORK__sdram_d_1_b) \
+$(WORK__sdram_d_1_b__structure) \
+$(WORK__sdram_d_1_mgiol) \
+$(WORK__sdram_d_1_mgiol__structure) \
+$(WORK__sdram_d_2_b) \
+$(WORK__sdram_d_2_b__structure) \
+$(WORK__sdram_d_2_mgiol) \
+$(WORK__sdram_d_2_mgiol__structure) \
+$(WORK__sdram_d_3_b) \
+$(WORK__sdram_d_3_b__structure) \
+$(WORK__sdram_d_3_mgiol) \
+$(WORK__sdram_d_3_mgiol__structure) \
+$(WORK__sdram_d_4_b) \
+$(WORK__sdram_d_4_b__structure) \
+$(WORK__sdram_d_4_mgiol) \
+$(WORK__sdram_d_4_mgiol__structure) \
+$(WORK__sdram_d_5_b) \
+$(WORK__sdram_d_5_b__structure) \
+$(WORK__sdram_d_5_mgiol) \
+$(WORK__sdram_d_5_mgiol__structure) \
+$(WORK__sdram_d_6_b) \
+$(WORK__sdram_d_6_b__structure) \
+$(WORK__sdram_d_6_mgiol) \
+$(WORK__sdram_d_6_mgiol__structure) \
+$(WORK__sdram_d_7_b) \
+$(WORK__sdram_d_7_b__structure) \
+$(WORK__sdram_d_7_mgiol) \
+$(WORK__sdram_d_7_mgiol__structure) \
+$(WORK__sdram_d_8_b) \
+$(WORK__sdram_d_8_b__structure) \
+$(WORK__sdram_d_8_mgiol) \
+$(WORK__sdram_d_8_mgiol__structure) \
+$(WORK__sdram_d_9_b) \
+$(WORK__sdram_d_9_b__structure) \
+$(WORK__sdram_d_9_mgiol) \
+$(WORK__sdram_d_9_mgiol__structure) \
+$(WORK__sdram_dqm_0_b) \
+$(WORK__sdram_dqm_0_b__structure) \
+$(WORK__sdram_dqm_0_mgiol) \
+$(WORK__sdram_dqm_0_mgiol__structure) \
+$(WORK__sdram_dqm_1_b) \
+$(WORK__sdram_dqm_1_b__structure) \
+$(WORK__sdram_dqm_1_mgiol) \
+$(WORK__sdram_dqm_1_mgiol__structure) \
+$(WORK__sdram_rasn_mgiol) \
+$(WORK__sdram_rasn_mgiol__structure) \
+$(WORK__sdram_rasnb) \
+$(WORK__sdram_rasnb__structure) \
+$(WORK__sdram_wen_mgiol) \
+$(WORK__sdram_wen_mgiol__structure) \
+$(WORK__sdram_wenb) \
+$(WORK__sdram_wenb__structure) \
+$(WORK__shutdownb) \
+$(WORK__shutdownb__structure) \
+$(WORK__smuxlregsre) \
+$(WORK__smuxlregsre__structure) \
+$(WORK__structure_con) \
+$(WORK__ulx3s__structure) \
+$(WORK__user_programnb) \
+$(WORK__user_programnb__structure) \
+$(WORK__vcc) \
+$(WORK__vcc__structure) \
+$(WORK__videopll_b_pll_i) \
+$(WORK__videopll_b_pll_i__structure) \
+$(WORK__wifi_enb) \
+$(WORK__wifi_enb__structure) \
+$(WORK__wifi_gpio0b) \
+$(WORK__wifi_gpio0b__structure) \
+$(WORK__wifi_rxdb) \
+$(WORK__wifi_rxdb__structure) : ../../boards/ULX3S/diamond/graphics/demos_graphics_vho.vho \
+		$(IEEE__vital_timing) \
+		$(IEEE__vital_primitives) \
+		$(ECP5U__global) \
+		$(VERILOG__vl_types) \
+		$(ECP5U__pur) \
+		$(ECP5U__VHI) \
+		$(ECP5U__BUFBA) \
+		$(ECP5U__inv) \
+		$(ECP5U__slogicb) \
+		$(ECP5U__sdprame) \
+		$(ECP5U__sramwb) \
+		$(ECP5U__sccu2c) \
+		$(WORK__ulx3s) \
+		$(IEEE__std_logic_arith) \
+		$(ECP5U__components) \
+		$(VITAL2000__vital_timing) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002  ../../boards/ULX3S/diamond/graphics/demos_graphics_vho.vho
 

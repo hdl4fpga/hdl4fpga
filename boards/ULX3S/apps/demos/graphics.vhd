@@ -452,7 +452,7 @@ begin
 
 		sdrsys_rst <= not lock;
 
-		sdram_dqs <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => not ctlr_clk);
+		sdram_dqs <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
 
 	end block;
 
@@ -734,8 +734,8 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => video_clk,
-		video_shift_clk => video_shift_clk,
+		video_clk    => '0', --video_clk,
+		video_shift_clk => '0', --video_shift_clk,
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
