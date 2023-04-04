@@ -151,7 +151,6 @@ architecture mix of sdram_ctlr is
 	signal sdram_mpu_rea    : std_logic;
 	signal sdram_mpu_rwin   : std_logic;
 	signal sdram_mpu_wwin   : std_logic;
-	signal sdram_mpu_rwwin  : std_logic;
 
 	signal sdram_sch_odt    : std_logic_vector(1-1 downto 0);
 	signal sdram_sch_wwn    : std_logic_vector(gear-1 downto 0);
@@ -274,8 +273,7 @@ begin
 		sdram_mpu_rea   => sdram_mpu_rea,
 		sdram_mpu_wri   => sdram_mpu_wri,
 		sdram_mpu_rwin  => sdram_mpu_rwin,
-		sdram_mpu_wwin  => sdram_mpu_wwin,
-		sdram_mpu_rwwin => sdram_mpu_rwwin);
+		sdram_mpu_wwin  => sdram_mpu_wwin);
 
 	ctlr_cmd     <= sdram_pgm_cmd;
 	ctlr_di_req  <= sdram_sch_wwn(sdram_sch_wwn'right);

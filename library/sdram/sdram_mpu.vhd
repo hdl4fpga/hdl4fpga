@@ -68,8 +68,7 @@ entity sdram_mpu is
 		sdram_mpu_rea   : out std_logic;
 		sdram_mpu_rwin  : out std_logic;
 		sdram_mpu_wri   : out std_logic;
-		sdram_mpu_wwin  : out std_logic;
-		sdram_mpu_rwwin : out std_logic);
+		sdram_mpu_wwin  : out std_logic);
 
 end;
 
@@ -77,8 +76,7 @@ architecture arch of sdram_mpu is
 
 	constant stdr    : sdram_standards := sdrmark_standard(chip);
 
-	constant twr1     : real            := ceil(sdram_timing(chip, twr)+tcp*real(latencies(dqsxl))/tcp);
-	-- constant lwr     : natural          := natural(ceil((sdram_timing(chip, twr)+tcp*real(latencies(dqsxl)))/tcp));
+	constant twr1     : real            := ceil((sdram_timing(chip, twr)+real(latencies(dqsxl))*tcp)/tcp);
 	constant lwr     : natural          := natural(twr1); -- Diamond 3.11.2.446 crashes when replace twr1 by its expression
 	constant lrcd    : natural          := to_sdrlatency(tcp, chip, trcd);
 	constant lrfc    : natural          := to_sdrlatency(tcp, chip, trfc);
@@ -366,7 +364,6 @@ begin
 					sdram_mpu_rea   <= '-';
 					sdram_mpu_rwin  <= '-';
 					sdram_mpu_wwin  <= '-';
-					sdram_mpu_rwwin <= '-';
 					sdram_rdy_ena   <= '-';
 					sdram_rdy_fch   <= '-';
 					sdram_mpu_cen   <= '-';
@@ -383,7 +380,6 @@ begin
 								sdram_mpu_rea  <= sdram_state_tab(i).sdram_rea;
 								sdram_mpu_rwin <= sdram_state_tab(i).sdram_rph;
 								sdram_mpu_wwin <= sdram_state_tab(i).sdram_wph;
-								sdram_mpu_rwwin <= sdram_state_tab(i).sdram_wph or sdram_state_tab(i).sdram_rph;
 								sdram_rdy_ena  <= sdram_state_tab(i).sdram_rdy;
 								sdram_rdy_fch  <= sdram_state_tab(i).sdram_fch;
 
@@ -428,7 +424,6 @@ begin
 				sdram_mpu_rea   <= sdram_state_tab(0).sdram_rea;
 				sdram_mpu_rwin  <= sdram_state_tab(0).sdram_rph;
 				sdram_mpu_wwin  <= sdram_state_tab(0).sdram_wph;
-				sdram_mpu_rwwin <= sdram_state_tab(0).sdram_wph or sdram_state_tab(0).sdram_rph;
 				sdram_rdy_ena   <= '1';
 				sdram_rdy_fch   <= '1';
 				lat_timer     <= (others => '1');

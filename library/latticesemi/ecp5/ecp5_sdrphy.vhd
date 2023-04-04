@@ -313,7 +313,7 @@ begin
 	byte_g : for i in word_size/byte_size-1 downto 0 generate
 		sdrphy_i : entity hdl4fpga.ecp5_sdrdqphy
 		generic map (
-			byteno     => 1-i,
+			byteno     => i,
 			debug      => debug,
 			taps       => taps,
 			gear       => gear,

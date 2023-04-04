@@ -150,16 +150,14 @@ begin
 	begin
 
 		gear1or2 : if gear=1 or gear=2 generate
-			process (sclk)
-				variable q   : std_logic_vector(sys_sti'range);
-				variable q0 : std_logic_vector(sys_sti'range);
-			begin
-				if rising_edge(sclk) then
-					sys_sto <= q;
-					q := q0;
-					q0 := sys_sti;
-				end if;
-			end process;
+			lat : entity hdl4fpga.latency
+			generic map (
+				n => sys_sti'length,
+				d => (0 to sys_sti'length-1 => 1))
+			port map (
+				clk => sclk,
+				di => sys_sti,
+				do => sys_sto);
 		end generate;
 
 		gear4_g : if gear=4 generate
@@ -486,7 +484,7 @@ begin
 			begin
 				if rising_edge(sdram_dqs) then
 					if sys_sti(i)='0' then
-						cntr := to_unsigned(byteno, cntr'length);
+						cntr := to_unsigned(1-byteno, cntr'length);
 					else
 						cntr := cntr + 2;
 					end if;
@@ -497,7 +495,7 @@ begin
 			in_clk  <= sdram_dqs when bypass else sclk;
 			fifo_i : entity hdl4fpga.phy_iofifo
 			generic map (
-				clr => true)
+				clr => false)
 			port map (
 				in_clk   => sdram_dqs,
 				in_frm   => sys_sti(i),
@@ -655,7 +653,7 @@ begin
 				d     => dmi,
 				q(0)  => sdram_dmo);
 
-			sdram_dm <= sdram_dmo when sdram_dmt='0' else 'Z';
+			sdram_dm <= sdram_dmo when sdram_dmt='0' else '0';
 
 		end block;
 	end block;
