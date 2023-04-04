@@ -97,6 +97,7 @@ architecture ecp5 of ecp5_sdrdqphy is
 	signal dqi          : std_logic_vector(sys_dqi'range);
 	signal dqo          : std_logic_vector(sys_dqo'range);
 	signal dmi          : std_logic_vector(sys_dmi'range);
+	signal sto          : std_logic_vector(sys_sto'range);
 
 	signal wle          : std_logic;
 
@@ -153,11 +154,11 @@ begin
 			lat : entity hdl4fpga.latency
 			generic map (
 				n => sys_sti'length,
-				d => (0 to sys_sti'length-1 => 1))
+				d => (0 to sys_sti'length-1 => 2))
 			port map (
 				clk => sclk,
 				di => sys_sti,
-				do => sys_sto);
+				do => sto);
 		end generate;
 
 		gear4_g : if gear=4 generate
@@ -192,7 +193,7 @@ begin
     			rd <= multiplex(q(0 to q'right-1), lat, 1)(0);
     		end block;
 
-			sys_sto <= (others => datavalid);
+			sto <= (others => datavalid);
 			tp(1 to 7) <= lat & rdclksel & phy_locked;
 		end generate;
 
@@ -476,14 +477,22 @@ begin
 		-- end generate;
 
 		gear_g : for i in gear-1 downto 0 generate
-			signal in_clk  : std_logic;
-			signal test : std_logic_vector(byte_size-1 downto 0);
+			signal in_clk : std_logic;
+			signal out_frm : std_logic;
+			signal test   : std_logic_vector(byte_size-1 downto 0);
 		begin
+			process (sclk)
+			begin
+				if rising_edge(sclk) then
+					sys_sto(i) <= sto(i);
+				end if;
+			end process;
+
 			process (sdram_dqs)
 				variable cntr : unsigned(test'range);
 			begin
 				if rising_edge(sdram_dqs) then
-					if sys_sti(i)='0' then
+					if sto(i)='0' then
 						cntr := to_unsigned(1-byteno, cntr'length);
 					else
 						cntr := cntr + 2;
@@ -498,7 +507,7 @@ begin
 				clr => false)
 			port map (
 				in_clk   => sdram_dqs,
-				in_frm   => sys_sti(i),
+				in_frm   => sto(i),
 				in_data  => dqo(byte_size*(i+1)-1 downto byte_size*i),
 				-- in_data  => test,
 				out_clk  => sclk,
@@ -509,6 +518,7 @@ begin
 	end generate;
 	
 	no_rdfifo_g : if not rd_fifo generate
+		sys_sto  <= sto;
 		sys_dqo  <= dqo;
 	end generate;
 
@@ -653,7 +663,9 @@ begin
 				d     => dmi,
 				q(0)  => sdram_dmo);
 
-			sdram_dm <= sdram_dmo when sdram_dmt='0' else '0';
+			sdram_dm <= 
+				      '0' when sys_sti/=(sys_sti'range => '0') else
+				sdram_dmo when sdram_dmt='0' else 'Z';
 
 		end block;
 	end block;
