@@ -136,6 +136,7 @@ architecture def of sdram_sch is
 
 	constant stdr      : sdram_standards := sdrmark_standard(chip);
 	constant strl_tab  : natural_vector  := sdram_schtab(stdr, latencies, strl);
+	constant dozl_tab  : natural_vector  := sdram_schtab(-3, strl_tab);
 	constant dqszl_tab : natural_vector  := sdram_schtab(stdr, latencies, dqszl);
 	constant dqsol_tab : natural_vector  := sdram_schtab(stdr, latencies, dqsl);
 	constant dqzl_tab  : natural_vector  := sdram_schtab(stdr, latencies, dqzl);
@@ -158,17 +159,19 @@ begin
 
 	sdram_st <= sdram_task (
 		gear       => gear,
+		lat_val    => sys_cl,
 		lat_cod    => cl_cod,
 		lat_tab    => strl_tab,
+		lat_ext    => latencies(strxl),
 		lat_wid    => latencies(widl),
-		lat_val    => sys_cl,
 		lat_sch    => rea_sr);
 
 	sdram_dmo <= sdram_task (
 		gear       => gear,
-		lat_val    => "0",
-		lat_cod    => "0",
-		lat_tab    => (0 => 0),
+		lat_val    => sys_cl,
+		lat_cod    => cl_cod,
+		lat_tab    => dozl_tab, 
+		lat_ext    => 0,
 		lat_wid    => latencies(widl),
 		lat_sch    => rea_sr);
 

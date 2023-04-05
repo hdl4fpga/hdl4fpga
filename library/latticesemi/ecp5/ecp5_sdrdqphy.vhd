@@ -157,8 +157,8 @@ begin
 				d => (0 to sys_sti'length-1 => 0))
 			port map (
 				clk => sclk,
-				di => sys_sti,
-				do => sto);
+				di  => sys_sti,
+				do  => sto);
 		end generate;
 
 		gear4_g : if gear=4 generate

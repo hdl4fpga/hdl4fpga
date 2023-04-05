@@ -248,6 +248,11 @@ package sdram_db is
 		constant tabid     : device_latencies)
 		return natural_vector;
 
+	function sdram_schtab (
+		constant latency   : integer;
+		constant latencies : natural_vector)
+		return natural_vector;
+
 	function to_sdrlatency (
 		constant period : real;
 		constant mark   : sdram_chips;
@@ -382,6 +387,23 @@ package body sdram_db is
 			return (0 to 0 => 0);
 		end case;
 		return (0 to 0 => 0);
+	end;
+
+	function sdram_schtab (
+		constant latency   : integer;
+		constant latencies : natural_vector)
+		return natural_vector is
+		variable retval : natural_vector(latencies'range);
+	begin
+		retval := latencies;
+		for i in latencies'range loop
+			if retval(i)+latency < 0  then
+				retval(i) := 0;
+			else
+				retval(i) := retval(i) + latency;
+			end if;
+		end loop;
+		return retval;
 	end;
 
 end package body;
