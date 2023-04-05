@@ -20,6 +20,8 @@ add wave -noupdate -expand -group graphics_e -radix hexadecimal /testbench/du_e/
 add wave -noupdate -expand -group graphics_e -expand /testbench/du_e/graphics_e/ctlrphy_sto
 add wave -noupdate -expand -group graphics_e -expand /testbench/du_e/graphics_e/ctlrphy_sti
 add wave -noupdate -expand -group graphics_e -radix hexadecimal /testbench/du_e/graphics_e/ctlrphy_dqi
+add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/dma_do
+add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/dma_do_dv
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/sclk
 add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/sys_sti
@@ -45,8 +47,8 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {18844684300 fs} 0} {{Cursor 2} {18910976936 fs} 0} {{Cursor 3} {18847500000 fs} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {23002509410 fs} 0} {{Cursor 2} {23832496863 fs} 0} {{Cursor 3} {18852572146 fs} 0}
+quietly wave cursor active 3
 configure wave -namecolwidth 199
 configure wave -valuecolwidth 87
 configure wave -justifyvalue left
@@ -61,4 +63,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {18707826160 fs} {18964173840 fs}
+WaveRestoreZoom {0 fs} {31500 ns}
