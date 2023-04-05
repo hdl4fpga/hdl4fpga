@@ -92,7 +92,7 @@ entity sdram_ctlr is
 		phy_a       : out std_logic_vector(addr_size-1 downto 0);
 		phy_odt     : out std_logic;
 
-		phy_dmt     : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		phy_dmt     : out std_logic_vector(gear-1 downto 0);
 		phy_dmi     : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
 		phy_dmo     : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
@@ -303,16 +303,19 @@ begin
 		sdram_odt  => sdram_sch_odt,
 		sdram_wwn  => sdram_sch_wwn);
 
-	phy_dmt  <= (others => '1') when stdr=sdr else phy_dqt; 
-	process (ctlr_dm, sdram_sch_dmo)
+	phy_dmt  <= (others => '0') when stdr=sdr else phy_dqt; 
+	process (ctlr_dm, sdram_sch_wwn, sdram_sch_dmo)
 		variable xxx : unsigned(phy_dmo'range);
+		variable yyy : unsigned(phy_dmo'range);
 	begin
 		if stdr=sdr then
 			for i in word_size/byte_size-1 downto 0 loop
 				xxx := xxx rol sdram_sch_dmo'length;
+				yyy := yyy rol sdram_sch_wwn'length;
 				xxx(sdram_sch_dmo'range) := unsigned(not sdram_sch_dmo);
+				yyy(sdram_sch_wwn'range) := unsigned(sdram_sch_wwn);
 			end loop;
-			xxx := xxx and unsigned(ctlr_dm);
+			xxx := xxx and (unsigned(ctlr_dm) or not yyy);
 			phy_dmo <= std_logic_vector(xxx);
 		else
 			phy_dmo <= ctlr_dm;

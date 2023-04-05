@@ -154,7 +154,7 @@ begin
 			lat : entity hdl4fpga.latency
 			generic map (
 				n => sys_sti'length,
-				d => (0 to sys_sti'length-1 => 2))
+				d => (0 to sys_sti'length-1 => 0))
 			port map (
 				clk => sclk,
 				di => sys_sti,
@@ -658,14 +658,12 @@ begin
 				sclk  => sclk,
 				eclk  => eclk,
 				dqsw  => dqsw270,
-				t     => dqt,
+				t     => sys_dmt,
 				tq(0) => sdram_dmt,
 				d     => dmi,
 				q(0)  => sdram_dmo);
 
-			sdram_dm <= 
-				      '0' when sys_sti/=(sys_sti'range => '0') else
-				sdram_dmo when sdram_dmt='0' else 'Z';
+			sdram_dm <= sdram_dmo when sdram_dmt='0' else 'Z';
 
 		end block;
 	end block;

@@ -91,7 +91,7 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := hdlc_sdr225MHz_600p24bpp;
+	constant app_profile : app_profiles := hdlc_sdr250MHz_600p24bpp;
 	-- constant app_profile : app_profiles := hdlc_sdr133MHz_480p16bpp;
     --                                  --
 	--------------------------------------
@@ -262,6 +262,7 @@ architecture graphics of ulx3s is
 	signal ctlrphy_we    : std_logic;
 	signal ctlrphy_b     : std_logic_vector(sdram_ba'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(sdram_a'length-1 downto 0);
+	signal ctlrphy_dmt   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dmo   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqi   : std_logic_vector(gear*word_size-1 downto 0);
 	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
@@ -753,6 +754,7 @@ begin
 		ctlrphy_we   => ctlrphy_we,
 		ctlrphy_b    => ctlrphy_b,
 		ctlrphy_a    => ctlrphy_a,
+		ctlrphy_dmt  => ctlrphy_dmt,
 		ctlrphy_dmo  => ctlrphy_dmo,
 		ctlrphy_dqi  => ctlrphy_dqi,
 		ctlrphy_dqt  => ctlrphy_dqt,
@@ -781,6 +783,7 @@ begin
 		sys_we(0)  => ctlrphy_we,
 		sys_b      => ctlrphy_b,
 		sys_a      => ctlrphy_a,
+		sys_dmt    => ctlrphy_dmt,
 		sys_dmi    => ctlrphy_dmo,
 		sys_dqi    => ctlrphy_dqo,
 		sys_dqt    => ctlrphy_dqt,

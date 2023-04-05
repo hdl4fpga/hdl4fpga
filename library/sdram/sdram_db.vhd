@@ -203,7 +203,7 @@ package sdram_db is
 		WIDL   => 4);
 
 	constant ecp5g1_latencies : latency_vector := (
-		STRL   => -1,
+		STRL   => 1,
 		DQSL   => 0,
 		DQSZL  => 0,
 		DQZL   => 0,
