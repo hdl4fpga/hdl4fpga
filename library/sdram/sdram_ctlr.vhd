@@ -92,13 +92,14 @@ entity sdram_ctlr is
 		phy_a       : out std_logic_vector(addr_size-1 downto 0);
 		phy_odt     : out std_logic;
 
+		phy_dmt     : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
 		phy_dmi     : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
 		phy_dmo     : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
 		phy_dqso    : out std_logic_vector(gear-1 downto 0);
 		phy_dqst    : out std_logic_vector(gear-1 downto 0);
 
-		phy_dqt     : out std_logic_vector(gear-1 downto 0);
+		phy_dqt     : buffer std_logic_vector(gear-1 downto 0);
 		phy_dqv     : out std_logic_vector(gear-1 downto 0);
 		phy_dqo     : out std_logic_vector(gear*word_size-1 downto 0);
 
@@ -158,6 +159,7 @@ architecture mix of sdram_ctlr is
 	signal sdram_sch_dqs    : std_logic_vector(sdram_sch_wwn'range);
 	signal sdram_sch_dqz    : std_logic_vector(sdram_sch_wwn'range);
 	signal sdram_sch_st     : std_logic_vector(sdram_sch_wwn'range);
+	signal sdram_sch_dmo    : std_logic_vector(sdram_sch_wwn'range);
 
 	signal rot_val          : std_logic_vector(unsigned_num_bits(gear*word_size-1)-1 downto 0);
 	signal rot_di           : std_logic_vector(ctlr_di'range);
@@ -293,12 +295,29 @@ begin
 		sys_wri   => sdram_mpu_wwin,
 
 		sdram_st  => sdram_sch_st,
+		sdram_dmo => sdram_sch_dmo,
 
 		sdram_dqsz => sdram_sch_dqsz,
 		sdram_dqs  => sdram_sch_dqs,
 		sdram_dqz  => sdram_sch_dqz,
 		sdram_odt  => sdram_sch_odt,
 		sdram_wwn  => sdram_sch_wwn);
+
+	phy_dmt  <= (others => '1') when stdr=sdr else phy_dqt; 
+	process (ctlr_dm, sdram_sch_dmo)
+		variable xxx : unsigned(phy_dmo'range);
+	begin
+		if stdr=sdr then
+			for i in word_size/byte_size-1 downto 0 loop
+				xxx := xxx rol sdram_sch_dmo'length;
+				xxx(sdram_sch_dmo'range) := unsigned(not sdram_sch_dmo);
+			end loop;
+			xxx := xxx and unsigned(ctlr_dm);
+			phy_dmo <= std_logic_vector(xxx);
+		else
+			phy_dmo <= ctlr_dm;
+		end if;
+	end process;
 
 	phy_dqt  <= not sdram_sch_dqz;
 	phy_dqso <= sdram_sch_dqs;
@@ -393,5 +412,4 @@ begin
 		di  => ctlr_di,
 		do  => phy_dqo);
 
-	phy_dmo    <= ctlr_dm;
 end;

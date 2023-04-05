@@ -49,6 +49,7 @@ entity sdram_sch is
 		sys_wri    : in  std_logic;
 
 		sdram_st   : out std_logic_vector(gear-1 downto 0);
+		sdram_dmo  : out std_logic_vector(gear-1 downto 0);
 
 		sdram_dqsz : out std_logic_vector(gear-1 downto 0);
 		sdram_dqs  : out std_logic_vector(gear-1 downto 0);
@@ -160,57 +161,59 @@ begin
 		lat_cod    => cl_cod,
 		lat_tab    => strl_tab,
 		lat_wid    => latencies(widl),
-
 		lat_val    => sys_cl,
+		lat_sch    => rea_sr);
+
+	sdram_dmo <= sdram_task (
+		gear       => gear,
+		lat_val    => "0",
+		lat_cod    => "0",
+		lat_tab    => (0 => 0),
+		lat_wid    => latencies(widl),
 		lat_sch    => rea_sr);
 
 	sdram_dqsz <= sdram_task (
 		gear       => gear,
+		lat_val    => sys_cwl,
 		lat_cod    => cwl_cod,
 		lat_tab    => dqszl_tab,
 		lat_ext    => latencies(dqszxl),
 		lat_wid    => latencies(widl),
-
-		lat_val    => sys_cwl,
 		lat_sch    => wri_sr);
 
 	sdram_dqs <= sdram_task (
 		gear       => gear,
+		lat_val    => sys_cwl,
 		lat_cod    => cwl_cod,
 		lat_tab    => dqsol_tab,
 		lat_ext    => latencies(dqsxl),
 		lat_wid    => latencies(widl),
-
-		lat_val    => sys_cwl,
 		lat_sch    => wri_sr);
 
 	sdram_dqz <= sdram_task (
 		gear       => gear,
+		lat_val    => sys_cwl,
 		lat_cod    => cwl_cod,
 		lat_tab    => dqzl_tab,
 		lat_ext    => latencies(dqzxl),
 		lat_wid    => latencies(widl),
-
-		lat_val    => sys_cwl,
 		lat_sch    => wri_sr);
 
 	sdram_wwn <= sdram_task (
 		gear       => gear,
+		lat_val    => sys_cwl,
 		lat_cod    => cwl_cod,
 		lat_tab    => wwnl_tab,
 		lat_ext    => latencies(wwnxl),
 		lat_wid    => latencies(widl),
-
-		lat_val    => sys_cwl,
 		lat_sch    => wri_sr);
 
 	sdram_odt <= sdram_task (
 		gear       => gear_odt,
+		lat_val    => "000",
 		lat_cod    => "000",
 		lat_tab    => (0 to 0 => 0),
 		lat_ext    => 2*gear_odt,
 		lat_wid    => latencies(widl),
-
-		lat_val    => "000",
 		lat_sch    => wri_sr);
 end;
