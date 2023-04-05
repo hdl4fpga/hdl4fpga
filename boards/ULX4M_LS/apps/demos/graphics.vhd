@@ -770,7 +770,7 @@ begin
         byte_size  => byte_size,
 		wr_fifo    => false,
 		rd_fifo    => false,
-		bypass     => true)
+		bypass     => false)
     port map (
         sclk       => ctlr_clk,
         rst        => sdrsys_rst,

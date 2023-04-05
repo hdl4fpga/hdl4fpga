@@ -154,7 +154,7 @@ begin
 			lat : entity hdl4fpga.latency
 			generic map (
 				n => sys_sti'length,
-				d => (0 to sys_sti'length-1 => 0))
+				d => (0 to sys_sti'length-1 => setif(bypass,0,1)))
 			port map (
 				clk => sclk,
 				di  => sys_sti,
