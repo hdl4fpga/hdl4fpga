@@ -85,13 +85,13 @@ architecture graphics of ulx3s is
 		hdlc_sdr250MHz_1080p24bpp30,     --
 
 		ipoe_sdr166MHz_480p24bpp,        --
-		ipoe_sdr200MHz_600p24bpp,        --
-		ipoe_sdr250MHz_600p24bpp);       --
+		ipoe_sdr200MHz_1080p24bpp30,        --
+		ipoe_sdr250MHz_1080p24bpp30);       --
 	---------------------------------------
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := hdlc_sdr250MHz_600p24bpp;
+	constant app_profile : app_profiles := hdlc_sdr250MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr133MHz_480p16bpp;
     --                                  --
 	--------------------------------------
@@ -140,8 +140,8 @@ architecture graphics of ulx3s is
 		hdlc_sdr250MHz_1080p24bpp30 => (io_hdlc, sdram250MHz, mode1080p24bpp30),
 
 		ipoe_sdr166MHz_480p24bpp => (io_ipoe, sdram166MHz, mode480p24bpp),
-		ipoe_sdr200MHz_600p24bpp => (io_ipoe, sdram200MHz, mode600p24bpp),
-		ipoe_sdr250MHz_600p24bpp => (io_ipoe, sdram250MHz, mode600p24bpp));
+		ipoe_sdr200MHz_1080p24bpp30 => (io_ipoe, sdram200MHz, mode1080p24bpp30),
+		ipoe_sdr250MHz_1080p24bpp30 => (io_ipoe, sdram250MHz, mode1080p24bpp30));
 
 	type pll_params is record
 		clkos_div  : natural;

@@ -35,8 +35,6 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/hdlc_b/uartrx_e/debug_rxd
-add wave -noupdate /testbench/hdlc_b/uartrx_e/debug_rxdv
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -47,7 +45,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {23002509410 fs} 0} {{Cursor 2} {23832496863 fs} 0} {{Cursor 3} {18852572146 fs} 0}
+WaveRestoreCursors {{Cursor 1} {23002509410 fs} 0} {{Cursor 2} {23832496863 fs} 0} {{Cursor 3} {19228356890 fs} 0}
 quietly wave cursor active 3
 configure wave -namecolwidth 199
 configure wave -valuecolwidth 87
@@ -63,4 +61,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {31500 ns}
+WaveRestoreZoom {18982263140 fs} {19474450640 fs}

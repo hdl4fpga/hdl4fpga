@@ -85,8 +85,8 @@ architecture graphics of ulx4m_ls is
 
 		ipoe_sdr133MHz_480p24bpp,        --
 		ipoe_sdr166MHz_480p24bpp,        --
-		ipoe_sdr200MHz_600p24bpp,        --
-		ipoe_sdr250MHz_600p24bpp);       --
+		ipoe_sdr200MHz_1080p24bpp30,        --
+		ipoe_sdr250MHz_1080p24bpp30);       --
 	---------------------------------------
 
 	--------------------------------------
@@ -140,8 +140,8 @@ architecture graphics of ulx4m_ls is
 
 		ipoe_sdr133MHz_480p24bpp => (io_ipoe, sdram133MHz, mode480p24bpp),
 		ipoe_sdr166MHz_480p24bpp => (io_ipoe, sdram166MHz, mode480p24bpp),
-		ipoe_sdr200MHz_600p24bpp => (io_ipoe, sdram200MHz, mode600p24bpp),
-		ipoe_sdr250MHz_600p24bpp => (io_ipoe, sdram250MHz, mode600p24bpp));
+		ipoe_sdr200MHz_1080p24bpp30 => (io_ipoe, sdram200MHz, mode1080p16bpp30),
+		ipoe_sdr250MHz_1080p24bpp30 => (io_ipoe, sdram250MHz, mode1080p16bpp30));
 
 	type pll_params is record
 		clkos_div  : natural;
@@ -735,8 +735,8 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => '0', --video_clk,
-		video_shift_clk => '0', --video_shift_clk,
+		video_clk    => video_clk,
+		video_shift_clk => video_shift_clk,
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
