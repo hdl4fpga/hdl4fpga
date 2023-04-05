@@ -91,7 +91,7 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := hdlc_sdr225MHz_600p24bpp;
+	constant app_profile : app_profiles := hdlc_sdr133MHz_600p24bpp;
 	-- constant app_profile : app_profiles := hdlc_sdr133MHz_480p16bpp;
     --                                  --
 	--------------------------------------
