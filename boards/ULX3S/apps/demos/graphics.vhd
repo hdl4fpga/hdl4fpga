@@ -91,9 +91,8 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := hdlc_sdr250MHz_1080p24bpp30;
+	constant app_profile : app_profiles := hdlc_sdr250MHz_720p24bpp;
 	-- constant app_profile : app_profiles := hdlc_sdr133MHz_480p16bpp;
-    --                                  --
 	--------------------------------------
 
 	type profileparams_vector is array (app_profiles) of profile_params;
@@ -736,8 +735,8 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => '0', --video_clk,
-		video_shift_clk => '0', --video_shift_clk,
+		video_clk    => video_clk,
+		video_shift_clk => video_shift_clk,
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
@@ -802,7 +801,6 @@ begin
 		sdram_dqs  => sdram_dqs,
 
 		sdram_dm   => sdram_dqm,
-		sdram_dqi  => x"aa55",
 		sdram_dq   => sdram_d);
 
 	-- VGA --

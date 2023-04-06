@@ -309,32 +309,19 @@ IOBUF PORT "sdram_d[15]"  PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4 SLEWRATE=FAST;
 #INPUT_SETUP PORT "sdram_d[*]"  5 ns CLKPORT clk_25mhz;
 
 # GPDI differential interface (Video) "gpdi" sheet
-LOCATE COMP "gpdi_dp[0]" SITE "A16"; # Blue +
-LOCATE COMP "gpdi_dn[0]" SITE "B16"; # Blue -
-LOCATE COMP "gpdi_dp[1]" SITE "A14"; # Green +
-LOCATE COMP "gpdi_dn[1]" SITE "C14"; # Green -
-LOCATE COMP "gpdi_dp[2]" SITE "A12"; # Red +
-LOCATE COMP "gpdi_dn[2]" SITE "A13"; # Red -
-LOCATE COMP "gpdi_dp[3]" SITE "A17"; # Clock +
-LOCATE COMP "gpdi_dn[3]" SITE "B18"; # Clock -
-LOCATE COMP "gpdi_ethp" SITE "A19"; # Ethernet +
-LOCATE COMP "gpdi_ethn" SITE "B20"; # Ethernet -
-LOCATE COMP "gpdi_cec" SITE "A18";
-LOCATE COMP "gpdi_sda" SITE "B19"; # I2C shared with RTC
-LOCATE COMP "gpdi_scl" SITE "E12"; # I2C shared with RTC C12->E12
-IOBUF PORT "gpdi_dp[0]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dn[0]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dp[1]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dn[1]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dp[2]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dn[2]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dp[3]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_dn[3]" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_ethp" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_ethn" IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_cec" PULLMODE=UP IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_sda" PULLMODE=UP IO_TYPE=LVCMOS33 DRIVE=4;
-IOBUF PORT "gpdi_scl" PULLMODE=UP IO_TYPE=LVCMOS33 DRIVE=4;
+LOCATE COMP "gpdi_d[0]"  SITE "A16"; IOBUF PORT "gpdi_d[0]" IO_TYPE=LVCMOS33 DRIVE=4;  # Blue +
+LOCATE COMP "gpdi_d[1]"  SITE "A14"; IOBUF PORT "gpdi_d[1]" IO_TYPE=LVCMOS33 DRIVE=4;  # Green +
+LOCATE COMP "gpdi_d[2]"  SITE "A12"; IOBUF PORT "gpdi_d[2]" IO_TYPE=LVCMOS33 DRIVE=4;  # Red +
+LOCATE COMP "gpdi_d[3]"  SITE "A17"; IOBUF PORT "gpdi_d[3]" IO_TYPE=LVCMOS33 DRIVE=4;  # Clock +
+LOCATE COMP "gpdi_dn[0]" SITE "B16"; IOBUF PORT "gpdi_dn[0]" IO_TYPE=LVCMOS33 DRIVE=4; # Blue -
+LOCATE COMP "gpdi_dn[1]" SITE "C14"; IOBUF PORT "gpdi_dn[1]" IO_TYPE=LVCMOS33 DRIVE=4; # Green -
+LOCATE COMP "gpdi_dn[2]" SITE "A13"; IOBUF PORT "gpdi_dn[2]" IO_TYPE=LVCMOS33 DRIVE=4; # Red -
+LOCATE COMP "gpdi_dn[3]" SITE "B18"; IOBUF PORT "gpdi_dn[3]" IO_TYPE=LVCMOS33 DRIVE=4; # Clock -
+LOCATE COMP "gpdi_eth"  SITE "A19";  IOBUF PORT "gpdi_eth"  IO_TYPE=LVCMOS33 DRIVE=4;  # Ethernet +
+LOCATE COMP "gpdi_ethn" SITE "B20";  IOBUF PORT "gpdi_ethn" IO_TYPE=LVCMOS33 DRIVE=4;  # Ethernet -
+LOCATE COMP "gpdi_cec" SITE "A18";   IOBUF PORT "gpdi_cec" PULLMODE=UP IO_TYPE=LVCMOS33 DRIVE=4;
+LOCATE COMP "gpdi_sda" SITE "B19";   IOBUF PORT "gpdi_sda" PULLMODE=UP IO_TYPE=LVCMOS33 DRIVE=4; # I2C shared with RTC
+LOCATE COMP "gpdi_scl" SITE "E12";   IOBUF PORT "gpdi_scl" PULLMODE=UP IO_TYPE=LVCMOS33 DRIVE=4; # I2C shared with RTC C12->E12
 
 # GPIO (default single-ended) "gpio", "ram", "gpdi" sheet
 # Pins enumerated gp[0-27], gn[0-27].
