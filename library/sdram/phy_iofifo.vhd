@@ -26,11 +26,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity phy_iofifo is
-	generic (
-		clr      : boolean := false);
 	port (
-		in_clk   : in  std_logic;
 		in_frm   : in  std_logic;
+		in_clk   : in  std_logic;
 		in_data  : in  std_logic_vector;
 
 		out_clk  : in  std_logic;
@@ -40,18 +38,6 @@ end;
 
 architecture mix of phy_iofifo is
 
-	component dbram
-		generic (
-			n : natural);
-		port (
-			clk : in  std_logic;
-			we  : in  std_logic;
-			wa  : in  std_logic_vector(4-1 downto 0);
-			di  : in  std_logic_vector(n-1 downto 0);
-			ra  : in  std_logic_vector(4-1 downto 0);
-			do  : out  std_logic_vector(n-1 downto 0));
-	end component;
-	
 	type ram is array(natural range <>) of std_logic_vector(in_data'range);
 	signal mem : ram(2**4-1 downto 0);
 
@@ -60,15 +46,11 @@ begin
 	process (in_frm, in_clk)
 		variable cntr : unsigned(4-1 downto 0);
 	begin
-		if clr and in_frm='0' then
+		if in_frm='0' then
 			cntr := (others => '0');
 		elsif rising_edge(in_clk) then
-			if not clr and in_frm='0' then
-				cntr := (others => '0');
-			else
-				mem(to_integer(unsigned(cntr))) <= in_data;
-				cntr := cntr + 1;
-			end if;
+			mem(to_integer(unsigned(cntr))) <= in_data;
+			cntr := cntr + 1;
 		end if;
 	end process;
 

@@ -91,8 +91,8 @@ architecture graphics of ulx4m_ls is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := ipoe_sdr250MHz_1080p24bpp30;
-	-- constant app_profile : app_profiles := ipoe_sdr133MHz_480p24bpp;
+	-- constant app_profile : app_profiles := ipoe_sdr250MHz_1080p24bpp30;
+	constant app_profile : app_profiles := ipoe_sdr133MHz_480p24bpp;
     --                                  --
 	--------------------------------------
 
@@ -458,6 +458,18 @@ begin
 
 	end block;
 
+	ctlrclk_tp_p: process (ctlr_clk)
+		variable q0 : std_logic;
+		variable q1 : std_logic;
+	begin
+		if rising_edge(ctlr_clk) then
+			cam_scl  <= q0;
+			gpio_scl <= q1;
+			q0 := not q0;
+			q1 := not q1;
+		end if;
+	end process;
+
 	hdlc_g : if io_link=io_hdlc generate
 
 		constant uart_xtal : real := 
@@ -649,7 +661,7 @@ begin
 			type ref_freqs is (f25MHz, f50MHz);
 			constant ref_freq : ref_freqs := f25MHz;
 
-			signal shtclk : std_logic;
+			signal shfclk : std_logic;
 			signal d0     : std_logic;
 			signal d1     : std_logic;
 			signal refclk : std_logic;
@@ -667,18 +679,18 @@ begin
 					d0 <= reg(0);
 					d1 <= reg(1);
 				end process;
-				shtclk <= video_shift_clk;
+				shfclk <= video_shift_clk;
 			end generate;
 
 			ref25_g : if ref_freq=f25MHz generate
-				shtclk <= clk_25mhz;
+				shfclk <= clk_25mhz;
 				d0     <= '1';
 				d1     <= '0';
 			end generate;
 	
 			oddr_i : oddrx1f
 			port map(
-				sclk => video_shift_clk,
+				sclk => shfclk,
 				rst  => '0',
 				d0   => d0,
 				d1   => d1,
@@ -771,7 +783,7 @@ begin
         byte_size  => byte_size,
 		wr_fifo    => false,
 		rd_fifo    => false,
-		bypass     => false)
+		bypass     => true)
     port map (
         sclk       => ctlr_clk,
         rst        => sdrsys_rst,

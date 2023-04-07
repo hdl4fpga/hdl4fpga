@@ -574,6 +574,7 @@ begin
 		profile      => 1,
 		sdram_tcp    => sdram_tcp,
 		mark         => MT46V256M6T,
+		phy_latencies => xc3sg2_latencies,
 		gear         => gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
@@ -714,9 +715,7 @@ begin
 
 		sdram_dm      => ddr_dm,
 		sdram_dq      => ddr_dq,
-		sdram_dqst    => ddr_dqst,
-		sdram_dqsi    => ddr_dqs,
-		sdram_dqso    => ddr_dqso);
+		sdram_dqs     => ddr_dqs);
 
 	ddr_cke <= sdram_cke(0);
 	ddr_cs  <= sdram_cs(0);
@@ -728,20 +727,6 @@ begin
 		i  => ddr_clk(0),
 		o  => ddr_ckp,
 		ob => ddr_ckn);
-
-	sdram_dqs_g : for i in ddr_dqs'range generate
-		ddr_dqs(i)  <= ddr_dqso(i) when ddr_dqst(i)='0' else 'Z';
-	end generate;
-
-	process (ddr_dqt, ddr_dqo)
-	begin
-		for i in ddr_dq'range loop
-			ddr_dq(i) <= 'Z';
-			if ddr_dqt(i)='0' then
-				ddr_dq(i) <= ddr_dqo(i);
-			end if;
-		end loop;
-	end process;
 
 	psave <= '1';
 	adc_clkab <= 'Z';

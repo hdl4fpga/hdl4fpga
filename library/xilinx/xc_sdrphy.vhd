@@ -112,9 +112,9 @@ entity xc_sdrphy is
 		sdram_sto   : out std_logic_vector(word_size/byte_size-1 downto 0);
 		sdram_dm    : inout std_logic_vector(word_size/byte_size-1 downto 0);
 		sdram_dq    : inout std_logic_vector(word_size-1 downto 0);
-		sdram_dqst  : out std_logic_vector(word_size/byte_size-1 downto 0);
-		sdram_dqsi  : in  std_logic_vector(word_size/byte_size-1 downto 0);
-		sdram_dqso  : out std_logic_vector(word_size/byte_size-1 downto 0));
+		sdram_dqs   : inout std_logic_vector(word_size/byte_size-1 downto 0) := (others => '-');
+		sdram_dqst  : buffer std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dqso  : buffer std_logic_vector(word_size/byte_size-1 downto 0));
 
 end;
 
@@ -125,14 +125,14 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture xilinx of xc_sdrphy is
-	signal sto_locked : std_logic_vector(sdram_dqsi'range);
-	signal rl_req     : std_logic_vector(sdram_dqsi'range);
+	signal sto_locked : std_logic_vector(sdram_dqs'range);
+	signal rl_req     : std_logic_vector(sdram_dqs'range);
 	signal rl_rdy     : std_logic_vector(rl_req'range);
-	signal wr_req     : std_logic_vector(sdram_dqsi'range);
+	signal wr_req     : std_logic_vector(sdram_dqs'range);
 	signal wr_rdy     : std_logic_vector(rl_req'range);
-	signal wl_rdy     : std_logic_vector(sdram_dqsi'range);
+	signal wl_rdy     : std_logic_vector(sdram_dqs'range);
 
-	signal rd_req     : std_logic_vector(sdram_dqsi'range);
+	signal rd_req     : std_logic_vector(sdram_dqs'range);
 	signal rd_rdy     : std_logic_vector(rd_req'range);
 	signal write_req  : std_logic;
 	signal write_rdy  : std_logic;
@@ -358,7 +358,7 @@ begin
 	dmi <= shuffle_vector(sys_dmi, gear => gear, size => 1);
 	dqi <= shuffle_vector(sys_dqi, gear => gear, size => byte_size);
 
-	byte_g : for i in sdram_dqsi'range generate
+	byte_g : for i in sdram_dqs'range generate
 		signal tp_byte : std_logic_vector(1 to 8);
 	begin
 		tp_g : if i=0 generate
@@ -371,6 +371,7 @@ begin
 			-- dqi_delay  => dqi_delay(i mod dqi_delay'length),
 
 			device    => device,
+			byteno    => i,
 			gear      => gear,
 			byte_size => byte_size,
 			loopback  => loopback,
@@ -425,8 +426,8 @@ begin
 
 			sdram_dm   => sdram_dm(i),
 
+			sdram_dqs  => sdram_dqs(i),
 			sdram_dqst => sdram_dqst(i),
-			sdram_dqsi => sdram_dqsi(i),
 			sdram_dqso => sdram_dqso(i));
 
 

@@ -503,8 +503,6 @@ begin
 
 			in_clk  <= sdram_dqs when bypass else sclk;
 			fifo_i : entity hdl4fpga.phy_iofifo
-			generic map (
-				clr => false)
 			port map (
 				in_clk   => sdram_dqs,
 				in_frm   => sto(i),

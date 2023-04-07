@@ -60,14 +60,14 @@ NET "ddr_dqs[1]" CLOCK_DEDICATED_ROUTE = false;
 # DDR 166 Mhz rate clock #
 # ###################### #
 
-TIMESPEC TS_dso0 = PERIOD "dqs0" 6.0 ns  HIGH 50% PHASE 0.0 INPUT_JITTER 0.000 ns;
-TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0 INPUT_JITTER 0.000 ns;
+TIMESPEC TS_dso0 = PERIOD "dqs0" 6.0 ns  HIGH 50% PHASE 0.0 INPUT_JITTER 1.000 ns;
+TIMESPEC TS_dso1 = PERIOD "dqs1" TS_dso0 HIGH 50% PHASE 0.0 INPUT_JITTER 1.000 ns;
 
-NET "ddr_st_lp_dqs" OFFSET = IN 0.900 ns VALID 4.800 ns BEFORE ddr_dqs[0] RISING;
-NET "ddr_st_lp_dqs" OFFSET = IN 0.900 ns VALID 4.800 ns BEFORE ddr_dqs[1] RISING;
+NET "ddr_st_lp_dqs" OFFSET = IN 1.5 ns VALID 6 ns BEFORE ddr_dqs[0] RISING;
+NET "ddr_st_lp_dqs" OFFSET = IN 1.5 ns VALID 6 ns BEFORE ddr_dqs[1] RISING;
 
-OFFSET = IN -0.450 ns VALID 1.900 ns BEFORE ddr_dqs[0] RISING;
-OFFSET = IN -0.450 ns VALID 1.900 ns BEFORE ddr_dqs[1] RISING;
+OFFSET = IN 0 ns VALID 3 ns BEFORE ddr_dqs[0] RISING;
+OFFSET = IN 0 ns VALID 3 ns BEFORE ddr_dqs[1] RISING;
 
 # ###################### #
 # Ignore crossclock time #

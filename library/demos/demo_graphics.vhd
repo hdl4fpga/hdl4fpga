@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.sdram_param.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.videopkg.all;
 
@@ -991,7 +992,7 @@ begin
 			ctlr_di_dv   => ctlr_di_dv,
 			ctlr_di_req  => ctlr_di_req,
 			ctlr_di      => ctlr_di,
-			ctlr_dm      => (others => '0'),
+			ctlr_dm      => (0 to gear*word_size/byte_size-1 => '0'),
 			ctlr_do_dv   => ctlr_do_dv,
 			ctlr_do      => ctlr_do,
 			ctlr_refreq  => ctlr_refreq,

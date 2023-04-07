@@ -202,14 +202,14 @@ begin
 	process
 	begin
 		req <= '0';
-		wait for 30 us;
+		wait for 36 us;
 		loop
 			if req='1' then
 				wait on mii_rxdv;
 				if falling_edge(mii_rxdv) then
 					req <= '0';
 					x <= x + 1;
-					wait for 30 us;
+					wait for 12 us;
 				end if;
 			else
 				if x > 1 then
@@ -238,7 +238,7 @@ begin
 		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_0000ff_1603_0000_0000",
+		x"1702_00000f_1603_0000_0000",
 		mii_data5 => x"0100" & x"00" & x"1702_00000f_1603_8000_0000",
 		mii_frm1 => '0',
 		mii_frm2 => '0',

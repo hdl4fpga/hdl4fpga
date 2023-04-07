@@ -629,7 +629,7 @@ begin
 		sdram_dm      => sd_dm,
 		sdram_dq      => sd_dq,
 		sdram_dqst    => sdram_dqst,
-		sdram_dqsi    => sd_dqs,
+		sdram_dqs     => sd_dqs,
 		sdram_dqso    => sdram_dqso);
 
 

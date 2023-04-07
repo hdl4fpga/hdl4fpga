@@ -884,7 +884,7 @@ begin
 --		sdram_dm    => ddr3_dm,
 		sdram_dq    => ddr3_dq,
 		sdram_dqst  => ddr3_dqst,
-		sdram_dqsi  => ddr3_dqsi,
+		sdram_dqs   => ddr3_dqsi,
 		sdram_dqso  => ddr3_dqso);
 
 		ddr3_cke <= ddr_cke(0);

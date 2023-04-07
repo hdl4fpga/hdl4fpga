@@ -1013,7 +1013,7 @@ begin
 		sdram_dm   => ddr2_dm(word_size/byte_size-1 downto 0),
 		sdram_dq   => ddr2_d(word_size-1 downto 0),
 		sdram_dqst => ddr2_dqst,
-		sdram_dqsi => ddr2_dqsi,
+		sdram_dqs  => ddr2_dqsi,
 		sdram_dqso => ddr2_dqso);
 
 	ddr2_ba(ddr2_ba'left downto bank_size) <= (others => '0');

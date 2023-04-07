@@ -34,9 +34,10 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		dqs_delay   : time := 0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
-		dqi_delay   : time := 0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
+		dqs_delay   : time := 1.5 ns; --0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
+		dqi_delay   : time := 0 ns ; --0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
 
+		byteno      : natural;
 		device      : fpga_devices;
 		gear        : natural;
 		byte_size   : natural;
@@ -88,12 +89,12 @@ entity xc_sdrdqphy is
 		sdram_dm    : inout std_logic := '-';
 		sdram_sti   : in  std_logic := '-';
 		sdram_sto   : out std_logic;
-		sdram_dqsi  : in  std_logic;
 
 		sdram_dq    : inout std_logic_vector(byte_size-1 downto 0);
 
-		sdram_dqst  : out std_logic;
-		sdram_dqso  : out std_logic);
+		sdram_dqs   : inout  std_logic := '-';
+		sdram_dqst  : buffer std_logic;
+		sdram_dqso  : buffer std_logic);
 end;
 
 architecture xilinx of xc_sdrdqphy is
@@ -342,7 +343,7 @@ begin
 			ph180    => dqs180,
 			delay    => dqsi_delay);
 
-		dqsi <= transport sdram_dqsi after dqs_delay;
+		dqsi <= transport sdram_dqs after dqs_delay;
 		dqsidelay_i : entity hdl4fpga.xc_dqsdelay 
 		generic map (
 			device => device,
@@ -524,9 +525,7 @@ begin
 			begin
 				in_clk  <= sdqso(i) when bypass else clk_shift;
 				out_frm <= sys_sto(i);
-				fifo_i : entity hdl4fpga.iofifo
-				generic map (
-					clr => bypass)
+				fifo_i : entity hdl4fpga.phy_iofifo
 				port map (
 					in_clk   => in_clk,
 					in_frm   => idrv(i),
@@ -648,7 +647,7 @@ begin
 				lat_e : entity hdl4fpga.latency
 				generic map (
 					n => gear,
-					d => (0 to gear-1 => 3))
+					d => (0 to gear-1 => 5))
 				port map (
 					clk => clk,
 					di  => sys_sti,
@@ -673,7 +672,7 @@ begin
 				signal out_data : std_logic_vector(sys_dqi'length/gear downto 0);
 			begin
 				in_data <= sys_dmi(i) & sys_dqi(byte_size*(i+1)-1 downto byte_size*i);
-				fifo_i : entity hdl4fpga.iofifo
+				fifo_i : entity hdl4fpga.phy_iofifo
 				port map (
 					in_clk   => clk,
 					in_frm   => ordv(i),
@@ -827,6 +826,7 @@ begin
 			d     => dqsi,
 			q(0)  => sdram_dqso);
 
+		sdram_dqs <= sdram_dqso when sdram_dqst='0' else 'Z';
 	end block;
 
 	gear2_g : if gear=2 generate
