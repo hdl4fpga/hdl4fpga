@@ -91,7 +91,7 @@ architecture graphics of ulx4m_ls is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := ipoe_sdr166MHz_1080p24bpp30;
+	constant app_profile : app_profiles := ipoe_sdr200MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := ipoe_sdr133MHz_480p24bpp;
     --                                  --
 	--------------------------------------
@@ -455,7 +455,11 @@ begin
 		sdrsys_rst <= not lock;
 
 		-- sdram_dqs <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
-		sdram_dqs <= (others => ctlr_clk);
+		sdram_dqs <= 
+			(others => ctlr_clk) when debug=false or 
+				sdram_mode=sdram133MHz or 
+				sdram_mode=sdram166MHz else 
+			(others => not ctlr_clk);
 
 	end block;
 
@@ -784,7 +788,7 @@ begin
         byte_size  => byte_size,
 		wr_fifo    => false,
 		rd_fifo    => false,
-		bypass     => true)
+		bypass     => false)
     port map (
         sclk       => ctlr_clk,
         rst        => sdrsys_rst,

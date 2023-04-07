@@ -183,7 +183,7 @@ architecture graphics of nuhs3adsp is
 	constant coln_size   : natural := 9;
 
 	signal ddrsys_lckd   : std_logic;
-	signal ddrsys_rst    : std_logic;
+	signal sdrsys_rst    : std_logic;
 
 	signal clk0          : std_logic;
 	signal clk90         : std_logic;
@@ -350,7 +350,7 @@ begin
 			i => dcm_clk90,
 			o => clk90);
 	
-		ddrsys_rst <= not dcm_lckd;
+		sdrsys_rst <= not dcm_lckd;
 
 	end block;
 
@@ -613,8 +613,7 @@ begin
 		video_pixel  => video_pixel,
 
 		ctlr_clk     => clk0,
-		ctlr_rst     => ddrsys_rst,
-		ctlr_rtt     => "---",
+		ctlr_rst     => sdrsys_rst,
 		ctlr_bl      => "001",				-- Busrt length 2
 		-- ctlr_bl      => "010",				-- Busrt length 4
 		-- ctlr_bl      => "011",				-- Busrt length 8
@@ -660,17 +659,17 @@ begin
 		-- dqs_delay   => (0 to 0 => 0 ns),
 		-- dqi_delay   => (0 to 0 => 0 ns),
 		device      => xc3s,
-		bypass      => true,
-		loopback    => true,
 		bank_size   => ddr_ba'length,
 		addr_size   => ddr_a'length,
 		gear        => gear,
 		word_size   => word_size,
 		byte_size   => byte_size,
+		bypass      => true,
+		loopback    => true,
 		rd_fifo     => true,
 		rd_align    => true)
 	port map (
-		rst         => ddrsys_rst,
+		rst         => sdrsys_rst,
 		iod_clk     => clk0,
 		clk         => clk0,
 		clk_shift   => clk90,
@@ -779,7 +778,7 @@ begin
 	-- Ethernet Transceiver --
 	--------------------------
 
-	mii_rstn <= not ddrsys_rst;
+	mii_rstn <= not sdrsys_rst;
 	mii_mdc  <= '0';
 	mii_mdio <= 'Z';
 

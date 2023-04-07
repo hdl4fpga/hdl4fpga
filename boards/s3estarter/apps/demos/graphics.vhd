@@ -131,88 +131,86 @@ architecture graphics of s3estarter is
 		return tab(tab'left);
 	end;
 
-	constant sdram_speed   : sdram_speeds  := profile_tab(app_profile).sdram_speed;
-	constant sdram_params  : sdramparams_record := sdramparams(sdram_speed);
+	constant sdram_speed  : sdram_speeds  := profile_tab(app_profile).sdram_speed;
+	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 
-	constant sdram_tcp       : real := real(sdram_params.pll.dcm_div)*sys_per/real(sdram_params.pll.dcm_mul);
+	constant sdram_tcp    : real := real(sdram_params.pll.dcm_div)*sys_per/real(sdram_params.pll.dcm_mul);
 
-	signal sys_rst         : std_logic;
-	signal sys_clk         : std_logic;
+	signal sys_rst        : std_logic;
+	signal sys_clk        : std_logic;
 
-	signal si_frm          : std_logic;
-	signal si_irdy         : std_logic;
-	signal si_trdy         : std_logic;
-	signal si_end          : std_logic;
-	signal si_data         : std_logic_vector(0 to 8-1);
+	signal si_frm         : std_logic;
+	signal si_irdy        : std_logic;
+	signal si_trdy        : std_logic;
+	signal si_end         : std_logic;
+	signal si_data        : std_logic_vector(0 to 8-1);
 
-	signal so_frm          : std_logic;
-	signal so_irdy         : std_logic;
-	signal so_trdy         : std_logic;
-	signal so_data         : std_logic_vector(0 to 8-1);
+	signal so_frm         : std_logic;
+	signal so_irdy        : std_logic;
+	signal so_trdy        : std_logic;
+	signal so_data        : std_logic_vector(0 to 8-1);
 
-	constant gear          : natural := 2;
-	constant cgear         : natural := (gear+1)/2;
-	constant data_phases   : natural := 2;
-	constant data_edges    : natural := 2;
-	constant bank_size     : natural := sd_ba'length;
-	constant addr_size     : natural := sd_a'length;
-	constant coln_size     : natural := 10;
-	constant word_size     : natural := sd_dq'length;
-	constant byte_size     : natural := 8;
+	constant gear         : natural := 2;
+	constant data_phases  : natural := 2;
+	constant data_edges   : natural := 2;
+	constant bank_size    : natural := sd_ba'length;
+	constant addr_size    : natural := sd_a'length;
+	constant coln_size    : natural := 10;
+	constant word_size    : natural := sd_dq'length;
+	constant byte_size    : natural := 8;
 
-	signal sdrsys_rst      : std_logic;
+	signal sdrsys_rst     : std_logic;
 
-	signal clk0            : std_logic;
-	signal clk90           : std_logic;
+	signal clk0           : std_logic;
+	signal clk90          : std_logic;
 
-	signal ctlrphy_rst     : std_logic;
-	signal ctlrphy_cke     : std_logic_vector(cgear-1 downto 0);
-	signal ctlrphy_cs      : std_logic_vector(cgear-1 downto 0);
-	signal ctlrphy_ras     : std_logic_vector(cgear-1 downto 0);
-	signal ctlrphy_cas     : std_logic_vector(cgear-1 downto 0);
-	signal ctlrphy_we      : std_logic_vector(cgear-1 downto 0);
-	signal ctlrphy_odt     : std_logic_vector(cgear-1 downto 0);
-	signal ctlrphy_b       : std_logic_vector(cgear*sd_ba'length-1 downto 0);
-	signal ctlrphy_a       : std_logic_vector(cgear*sd_a'length-1 downto 0);
-	signal ctlrphy_dqsi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqst    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqso    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmi     : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo     : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqi     : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqt     : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqo     : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqv     : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_sto     : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_sti     : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_rst    : std_logic;
+	signal ctlrphy_cke    : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_cs     : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_ras    : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_cas    : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_we     : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_odt    : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_b      : std_logic_vector((gear+1)/2*sd_ba'length-1 downto 0);
+	signal ctlrphy_a      : std_logic_vector((gear+1)/2*sd_a'length-1 downto 0);
+	signal ctlrphy_dqsi   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
-	signal phy_wlreq     : std_logic;
-	signal phy_wlrdy     : std_logic;
-	signal phy_rlreq     : std_logic;
-	signal phy_rlrdy     : std_logic;
+	signal phy_wlreq      : std_logic;
+	signal phy_wlrdy      : std_logic;
+	signal phy_rlreq      : std_logic;
+	signal phy_rlrdy      : std_logic;
 
-	signal sd_clk          : std_logic_vector(0 downto 0);
-	signal sdram_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal sdram_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal sdram_dqt       : std_logic_vector(sd_dq'range);
-	signal sdram_dqo       : std_logic_vector(sd_dq'range);
+	signal sd_clk         : std_logic_vector(0 downto 0);
+	signal sdram_dqst     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_dqso     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_dqt      : std_logic_vector(sd_dq'range);
+	signal sdram_dqo      : std_logic_vector(sd_dq'range);
 
-	signal sdram_cke       : std_logic_vector(0 to 0);
-	signal sdram_cs        : std_logic_vector(0 to 0);
-	signal sdram_odt       : std_logic_vector(0 to 0);
+	signal sdram_cke      : std_logic_vector(0 to 0);
+	signal sdram_cs       : std_logic_vector(0 to 0);
+	signal sdram_odt      : std_logic_vector(0 to 0);
 
-	signal mii_clk         : std_logic;
-	signal video_clk       : std_logic;
-	signal video_hzsync    : std_logic;
-    signal video_vtsync    : std_logic;
-    signal video_blank     : std_logic;
-    signal video_pixel     : std_logic_vector(0 to 32-1);
+	signal mii_clk        : std_logic;
+	signal video_clk      : std_logic;
+	signal video_hzsync   : std_logic;
+	signal video_vtsync   : std_logic;
+	signal video_blank    : std_logic;
+	signal video_pixel    : std_logic_vector(0 to 32-1);
 
-	alias ctlr_clk   : std_logic is clk0;
+	alias ctlr_clk        : std_logic is clk0;
+	alias sio_clk         : std_logic is e_tx_clk;
 
-	alias sio_clk : std_logic is e_tx_clk;
-
-	constant baudrate  : natural := 1000000;
+	constant baudrate     : natural := 1000000;
 
 	signal dmavideotrans_cnl : std_logic;
 	signal tp : std_logic_vector(1 to 32);
@@ -503,8 +501,9 @@ begin
 	generic map (
 		debug        => debug,
 		profile      => 1,
-		sdram_tcp      => sdram_tcp,
+		sdram_tcp    => sdram_tcp,
 		mark         => MT46V256M6T,
+		phy_latencies => xc3sg2_latencies,
 		gear         => gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
@@ -580,13 +579,15 @@ begin
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
 		device      => xc3s,
-		bypass      => true,
-		loopback    => false,
 		bank_size   => sd_ba'length,
 		addr_size   => sd_a'length,
 		gear        => gear,
 		word_size   => word_size,
-		byte_size   => byte_size)
+		byte_size   => byte_size,
+		loopback    => false,
+		bypass      => true,
+		rd_fifo     => true,
+		rd_align    => true)
 	port map (
 		rst         => sdrsys_rst,
 		iod_clk     => clk0,
@@ -602,6 +603,7 @@ begin
 		sys_ras     => ctlrphy_ras,
 		sys_cas     => ctlrphy_cas,
 		sys_we      => ctlrphy_we,
+		sys_odt     => ctlrphy_odt,
 		sys_b       => ctlrphy_b,
 		sys_a       => ctlrphy_a,
 		sys_dqsi    => ctlrphy_dqso,
@@ -612,7 +614,7 @@ begin
 		sys_dqi     => ctlrphy_dqo,
 		sys_dqt     => ctlrphy_dqt,
 		sys_dqo     => ctlrphy_dqi,
-		sys_odt     => ctlrphy_odt,
+		sys_dqv     => ctlrphy_dqv,
 		sys_sti     => ctlrphy_sto,
 		sys_sto     => ctlrphy_sti,
 
