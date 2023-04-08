@@ -157,7 +157,7 @@ package sdram_db is
 		DQZL   => -2,
 		WWNL   => -2,
 		STRXL  =>  0,
-		DQSZXL =>  3,
+		DQSZXL =>  4,
 		DQSXL  =>  0,
 		DQZXL  =>  0,
 		WWNXL  =>  0,
