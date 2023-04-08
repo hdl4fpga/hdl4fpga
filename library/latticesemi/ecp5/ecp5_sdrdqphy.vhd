@@ -57,7 +57,7 @@ entity ecp5_sdrdqphy is
 
 		sys_sti    : in  std_logic_vector(gear-1 downto 0);
 		sys_sto    : buffer std_logic_vector(gear-1 downto 0);
-		sys_dmt    : in  std_logic_vector(gear-1 downto 0) := (others => '-');
+		sys_dmt    : in  std_logic_vector(gear-1 downto 0) := (others => '0');
 		sys_dmi    : in  std_logic_vector(gear-1 downto 0) := (others => '-');
 		sys_dmo    : out std_logic_vector(gear-1 downto 0);
 		sys_dqo    : out std_logic_vector(gear*byte_size-1 downto 0);

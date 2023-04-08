@@ -76,6 +76,7 @@ entity xc_sdrdqphy is
 
 		sys_sti     : in  std_logic_vector(gear-1 downto 0) := (others => '-');
 		sys_sto     : buffer std_logic_vector(gear-1 downto 0);
+		sys_dmt     : in  std_logic_vector(gear-1 downto 0) := (others => '0');
 		sys_dmi     : in  std_logic_vector(gear-1 downto 0) := (others => '-');
 		sys_dqi     : in  std_logic_vector(gear*byte_size-1 downto 0);
 		sys_dqt     : in  std_logic_vector(gear-1 downto 0);
@@ -739,7 +740,6 @@ begin
 		end generate;
 	
 		dmo_g : block
-			signal dmt : std_logic_vector(sys_dqt'range);
 			signal dmi : std_logic_vector(sys_dmi'range);
 		begin
 	
@@ -756,8 +756,6 @@ begin
 				end loop;
 			end process;
 
-			dmt <= (others => '0') when not loopback else sdqt;
-	
 			ogbx_i : entity hdl4fpga.ogbx
 			generic map (
 				device => device,
@@ -767,7 +765,7 @@ begin
 				rst   => rst_shift,
 				clk   => clk_shift,
 				clkx2 => clkx2_shift,
-				t     => dmt,
+				t     => sys_dmt,
 				tq(0) => sdram_dmt,
 				d     => dmi,
 				q(0)  => sdram_dmo);

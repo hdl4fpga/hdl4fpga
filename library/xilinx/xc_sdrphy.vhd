@@ -81,6 +81,7 @@ entity xc_sdrphy is
 		sys_a       : in  std_logic_vector((gear+1)/2*addr_size-1 downto 0);
 		sys_odt     : in  std_logic_vector((gear+1)/2-1 downto 0);
 
+		sys_dmt     : in  std_logic_vector(gear-1 downto 0) := (others => '0');
 		sys_dmi     : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
 		sys_dmo     : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
@@ -143,6 +144,7 @@ architecture xilinx of xc_sdrphy is
 	signal ddrphy_b   : std_logic_vector(sys_b'range);
 	signal ddrphy_a   : std_logic_vector(sys_a'range);
 
+	signal dmt : std_logic_vector(sys_dmi'range);
 	signal dmi : std_logic_vector(sys_dmi'range);
 	signal dqi : std_logic_vector(sys_dqi'range);
 	signal dqo : std_logic_vector(sys_dqo'range);
@@ -406,6 +408,7 @@ begin
 
 			sys_sti    => sys_sti,
 			sys_sto    => sys_sto((i+1)*gear-1 downto i*gear),
+			sys_dmt    => sys_dmt,
 			sys_dmi    => dmi((i+1)*gear-1 downto i*gear),
 
 		    sys_dqv    => sys_dqv,

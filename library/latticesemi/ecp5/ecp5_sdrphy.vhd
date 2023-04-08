@@ -74,7 +74,7 @@ entity ecp5_sdrphy is
 		sys_a      : in  std_logic_vector((gear+1)/2*addr_size-1 downto 0);
 		sys_odt    : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '0');
 		
-		sys_dmt    : in  std_logic_vector(gear-1 downto 0) := (others => '1');
+		sys_dmt    : in  std_logic_vector(gear-1 downto 0) := (others => '0');
 		sys_dmi    : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
 		sys_dqv    : in  std_logic_vector(gear-1 downto 0) := (others => '0');

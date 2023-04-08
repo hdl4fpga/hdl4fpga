@@ -92,7 +92,6 @@ entity sdram_ctlr is
 		phy_a       : out std_logic_vector(addr_size-1 downto 0);
 		phy_odt     : out std_logic;
 
-		phy_dmt     : out std_logic_vector(gear-1 downto 0);
 		phy_dmi     : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
 		phy_dmo     : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
@@ -303,7 +302,6 @@ begin
 		sdram_odt  => sdram_sch_odt,
 		sdram_wwn  => sdram_sch_wwn);
 
-	phy_dmt  <= (others => '0') when stdr=sdr else phy_dqt; 
 	process (ctlr_dm, sdram_sch_wwn, sdram_sch_dmo)
 		variable xxx : unsigned(phy_dmo'range);
 		variable yyy : unsigned(phy_dmo'range);

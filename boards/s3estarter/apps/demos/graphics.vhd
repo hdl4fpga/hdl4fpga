@@ -44,8 +44,8 @@ architecture graphics of s3estarter is
 		sdr170mhz_600p24bpp,
 		sdr200mhz_1080p24bpp);
 
-	-- constant app_profile : app_profiles := sdr133mhz_480p24bpp;
-	constant app_profile : app_profiles := sdr166mhz_600p24bpp;
+	constant app_profile : app_profiles := sdr133mhz_480p24bpp;
+	-- constant app_profile : app_profiles := sdr166mhz_600p24bpp;
 
 	type profile_param is record
 		comms       : io_comms;
