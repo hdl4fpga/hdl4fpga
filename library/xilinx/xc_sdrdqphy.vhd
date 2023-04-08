@@ -34,7 +34,7 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		dqs_delay   : time := 1.5 ns; --0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
+		dqs_delay   : time := 0.1 ns; --0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
 		dqi_delay   : time := 0 ns ; --0.2777778 ns; --0.5*(1000 ns /450.0)*(1.0/4.0);
 
 		byteno      : natural;
@@ -743,20 +743,20 @@ begin
 			signal dmi : std_logic_vector(sys_dmi'range);
 		begin
 	
-			process (sys_sti, sys_dqt, sys_dmi)
+			process (ssti, sys_dmi)
 			begin
 				for i in dmi'range loop
-					if not loopback then
-						dmi(i) <= sys_sti(i);
-					elsif sys_dqt(i)='1' then
+					if loopback then
 						dmi(i) <= sdmi(i);
+					elsif ssti(i)='1' then
+						dmi(i) <= '1';
 					else
 						dmi(i) <= sdmi(i);
 					end if;
 				end loop;
 			end process;
 
-			dmt <= (others => '0') when loopback else sys_dqt;
+			dmt <= (others => '0') when not loopback else sdqt;
 	
 			ogbx_i : entity hdl4fpga.ogbx
 			generic map (
@@ -933,5 +933,5 @@ begin
 		sdqsi <= sys_dqsi;
 	end generate;
 
-	sys_sto <= (others => sto(sto'left)) when rd_align else sys_sto;
+	sys_sto <= (others => sto(sto'left)) when rd_align else sto;
 end;

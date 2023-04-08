@@ -646,20 +646,6 @@ begin
 	sd_cke <= sdram_cke(0);
 	sd_cs  <= sdram_cs(0);
 
-	sdram_dqs_g : for i in sd_dqs'range generate
-		sd_dqs(i) <= sdram_dqso(i) when sdram_dqst(i)='0' else 'Z';
-	end generate;
-
-	process (sdram_dqt, sdram_dqo)
-	begin
-		for i in sd_dq'range loop
-			sd_dq(i) <= 'Z';
-			if sdram_dqt(i)='0' then
-				sd_dq(i) <= sdram_dqo(i);
-			end if;
-		end loop;
-	end process;
-
 	-- LEDs --
 	----------
 
