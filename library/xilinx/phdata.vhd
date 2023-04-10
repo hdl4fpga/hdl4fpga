@@ -118,31 +118,34 @@ end;
 
 architecture inference of g4_phdata is
 
-	signal cntr    : unsigned(4-1 downto 0);
-	signal cntr270 : unsigned(4-1 downto 0);
-
-	type mem270 is array (natural range <>) of std_logic_vector(di270'range);
-
-	signal ram270 : mem270(0 to 2**cntr'length-1);
-
 begin
 	
-	-- process (clk0, clk270)
-	-- begin
-		-- if rising_edge(clk0) then
-			-- cntr  <= unsigned(to_stdlogicvector(to_bitvector(std_logic_vector(cntr)))) + 1;
-		-- end if;
-		-- if rising_edge(clk270) then
-			-- cntr270 <= cntr;
-		-- end if;
-	-- end process;
+	-- mem_b : block
+		-- signal cntr    : unsigned(4-1 downto 0);
+		-- signal cntr270 : unsigned(4-1 downto 0);
+	-- 
+		-- type mem270 is array (natural range <>) of std_logic_vector(di270'range);
+	-- 
+		-- signal ram270 : mem270(0 to 2**cntr'length-1);
 -- 
-	-- process (clk0)
 	-- begin
-		-- if rising_edge(clk0) then
-			-- ram270(to_integer(cntr)) <= di270;
-		-- end if;
-	-- end process;
+    	-- process (clk0, clk270)
+    	-- begin
+    		-- if rising_edge(clk0) then
+    			-- cntr  <= unsigned(to_stdlogicvector(to_bitvector(std_logic_vector(cntr)))) + 1;
+    		-- end if;
+    		-- if rising_edge(clk270) then
+    			-- cntr270 <= cntr;
+    		-- end if;
+    	-- end process;
+    -- 
+    	-- process (clk0)
+    	-- begin
+    		-- if rising_edge(clk0) then
+    			-- ram270(to_integer(cntr)) <= di270;
+    		-- end if;
+    	-- end process;
+	-- end block;
 
 	process (clk270)
 	begin
