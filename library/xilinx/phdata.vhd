@@ -127,24 +127,29 @@ architecture inference of g4_phdata is
 
 begin
 	
-	process (clk0, clk270)
+	-- process (clk0, clk270)
+	-- begin
+		-- if rising_edge(clk0) then
+			-- cntr  <= unsigned(to_stdlogicvector(to_bitvector(std_logic_vector(cntr)))) + 1;
+		-- end if;
+		-- if rising_edge(clk270) then
+			-- cntr270 <= cntr;
+		-- end if;
+	-- end process;
+-- 
+	-- process (clk0)
+	-- begin
+		-- if rising_edge(clk0) then
+			-- ram270(to_integer(cntr)) <= di270;
+		-- end if;
+	-- end process;
+
+	process (clk270)
 	begin
-		if rising_edge(clk0) then
-			cntr  <= unsigned(to_stdlogicvector(to_bitvector(std_logic_vector(cntr)))) + 1;
-		end if;
 		if rising_edge(clk270) then
-			cntr270 <= cntr;
+			do270 <= di270;
 		end if;
 	end process;
-
-	process (clk0)
-	begin
-		if rising_edge(clk0) then
-			ram270(to_integer(cntr)) <= di270;
-		end if;
-	end process;
-
-	do270 <= ram270(to_integer(cntr270));
 
 end;
 

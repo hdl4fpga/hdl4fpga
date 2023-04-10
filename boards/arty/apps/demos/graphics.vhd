@@ -54,7 +54,7 @@ architecture graphics of arty is
 		sdr575MHz_900p24bpp,
 		sdr600MHz_900p24bpp);
 
-	constant app_profile : app_profiles := sdr500MHz_900p24bpp;
+	constant app_profile : app_profiles := sdr525MHz_900p24bpp;
 
 	type pll_params is record
 		dcm_mul : natural;
