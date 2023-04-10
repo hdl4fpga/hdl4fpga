@@ -42,6 +42,7 @@ entity xc_sdrdqphy is
 		gear        : natural;
 		byte_size   : natural;
 
+		dqs_highz   : boolean;
 		loopback    : boolean := false;
 		bypass      : boolean := false;
 		bufio       : boolean := false;
@@ -521,18 +522,23 @@ begin
 			end generate;
 
 			gear_g : for i in gear-1 downto 0 generate
-				signal out_frm : std_logic;
+				signal in_clr  : std_logic;
 				signal in_clk  : std_logic;
+				signal in_rst  : std_logic;
+				signal out_rst : std_logic;
 			begin
+				in_clr  <= not idrv(i) when     bypass else '0';
+				in_rst  <= not idrv(i) when not bypass else '0';
 				in_clk  <= sdqso(i) when bypass else clk_shift;
-				out_frm <= sys_sto(i);
+				out_rst <= not sys_sto(i);
 				fifo_i : entity hdl4fpga.phy_iofifo
 				port map (
+					in_clr   => in_clr,
 					in_clk   => in_clk,
-					in_frm   => idrv(i),
+					in_rst   => in_rst,
 					in_data  => sdqo(byte_size*(i+1)-1 downto byte_size*i),
 					out_clk  => clk,
-					out_frm  => out_frm,
+					out_rst  => out_rst,
 					out_data => sys_dqo(byte_size*(i+1)-1 downto byte_size*i));
 				sys_dqso <= (others => clk);
 			end generate;
@@ -664,22 +670,55 @@ begin
 
 		signal sdqi : std_logic_vector(sys_dqi'range);
 		signal sdmi : std_logic_vector(sys_dmi'range);
+		signal sw   : std_logic;
+		signal dqo  : std_logic_vector(sys_dqi'range);
 
 	begin
 
+		process (iod_clk)
+		begin
+			if rising_edge(iod_clk) then
+				sw <= phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq));
+			end if;
+		end process;
+
+		process (sw, sys_dqi)
+		begin
+			if sw='1' then
+				for i in sdram_dqo'range loop
+    				for j in gear-1 downto 0 loop
+    					if j mod 2=0 then
+    						dqo(byte_size*j+i) <= '1';
+    					else
+    						dqo(byte_size*j+i) <= '0';
+    					end if;
+    				end loop;
+				end loop;
+			else
+				dqo <= sys_dqi;
+			end if;
+		end process;
+
 		wrfifo_g : if wr_fifo generate
 			gear_g : for i in gear-1 downto 0 generate
+				signal dmi      : std_logic;
+				signal in_rst   : std_logic;
 				signal in_data  : std_logic_vector(sys_dqi'length/gear downto 0);
+				signal out_rst  : std_logic;
 				signal out_data : std_logic_vector(sys_dqi'length/gear downto 0);
 			begin
-				in_data <= sys_dmi(i) & sys_dqi(byte_size*(i+1)-1 downto byte_size*i);
+				-- in_data <= sys_dmi(i) & sys_dqi(byte_size*(i+1)-1 downto byte_size*i);
+				dmi     <= sys_dmi(i) when sw='0' else '1';
+				in_data <= dmi & dqo(byte_size*(i+1)-1 downto byte_size*i);
+				in_rst  <= not ordv(i);
+				out_rst <= not sdqe(i);
 				fifo_i : entity hdl4fpga.phy_iofifo
 				port map (
 					in_clk   => clk,
-					in_frm   => ordv(i),
+					in_rst   => in_rst,
 					in_data  => in_data,
 					out_clk  => sys_dqc(i),
-					out_frm  => sdqe(i),
+					out_rst  => out_rst,
 					out_data => out_data);
 				sdmi(i) <= out_data(out_data'left);
 				sdqi(byte_size*(i+1)-1 downto byte_size*i) <= out_data(out_data'left-1 downto 0);
@@ -693,34 +732,18 @@ begin
 
 		oddr_g : for i in sdram_dqo'range generate
 
-			signal dqo : std_logic_vector(gear-1 downto 0);
-			signal dqt : std_logic_vector(sys_dqt'range);
-			signal sw  : std_logic;
+			signal d : std_logic_vector(gear-1 downto 0);
+			signal t : std_logic_vector(sys_dqt'range);
 		begin
 
-			process (iod_clk)
+			t <= sdqt;
+			process (sdqi)
 			begin
-				if rising_edge(iod_clk) then
-					sw <= phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq));
-				end if;
-			end process;
-
-			process (sw, sdqi)
-			begin
-				for j in dqo'range loop
-					if sw='1' then
-						if j mod 2=0 then
-							dqo(j) <= '1';
-						else
-							dqo(j) <= '0';
-						end if;
-					else
-						dqo(j) <= sdqi(byte_size*j+i);
-					end if;
+				for j in d'range loop
+					d(j) <= sdqi(byte_size*j+i);
 				end loop;
 			end process;
 
-			dqt <= sdqt;
 	
 			ogbx_i : entity hdl4fpga.ogbx
 			generic map (
@@ -731,9 +754,9 @@ begin
 				rst   => rst_shift,
 				clk   => clk_shift,
 				clkx2 => clkx2_shift,
-				t     => dqt,
+				t     => t,
 				tq(0) => sdram_dqt(i),
-				d     => dqo,
+				d     => d,
 				q(0)  => sdram_dqo(i));
 	
     		sdram_dq(i) <= sdram_dqo(i) when sdram_dqt(i)='0' else 'Z';
@@ -824,7 +847,9 @@ begin
 			d     => dqsi,
 			q(0)  => sdram_dqso);
 
-		sdram_dqs <= sdram_dqso when sdram_dqst='0' else 'Z';
+		dqshighz_e : if dqs_highz generate
+			sdram_dqs <= sdram_dqso when sdram_dqst='0' else 'Z';
+		end generate;
 	end block;
 
 	gear2_g : if gear=2 generate

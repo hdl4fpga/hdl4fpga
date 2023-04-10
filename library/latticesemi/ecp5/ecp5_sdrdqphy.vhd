@@ -477,8 +477,9 @@ begin
 		-- end generate;
 
 		gear_g : for i in gear-1 downto 0 generate
-			signal in_clk : std_logic;
-			signal out_frm : std_logic;
+			signal in_clk  : std_logic;
+			signal in_rst  : std_logic;
+			signal out_rst : std_logic;
 			signal test   : std_logic_vector(byte_size-1 downto 0);
 		begin
 			process (sclk)
@@ -502,14 +503,16 @@ begin
 			end process;
 
 			in_clk  <= sdram_dqs when bypass else sclk;
+			in_rst  <= not sto(i);
+			out_rst <= not sys_sto(i);
 			fifo_i : entity hdl4fpga.phy_iofifo
 			port map (
 				in_clk   => sdram_dqs,
-				in_frm   => sto(i),
+				in_rst   => in_rst,
 				in_data  => dqo(byte_size*(i+1)-1 downto byte_size*i),
 				-- in_data  => test,
 				out_clk  => sclk,
-				out_frm  => sys_sto(i),
+				out_rst  => out_rst,
 				out_data => sys_dqo(byte_size*(i+1)-1 downto byte_size*i));
 		end generate;
 
@@ -569,14 +572,17 @@ begin
 
 		wrfifo_g : if wr_fifo generate
 			gear_g : for i in gear-1 downto 0 generate
+				signal in_rst  : std_logic;
 				signal in_data  : std_logic_vector(sys_dqi'length/gear downto 0);
+				signal out_rst  : std_logic;
 				signal out_data : std_logic_vector(sys_dqi'length/gear downto 0);
-				signal out_frm  : std_logic;
 			begin
+
+				in_rst <= not sys_dqv(sys_dqv'right);
 				process (sclk)
 				begin
 					if rising_edge(sclk) then
-						out_frm <= sys_dqv(i);
+						out_rst <= not sys_dqv(i);
 					end if;
 				end process;
 
@@ -584,10 +590,10 @@ begin
 				fifo_i : entity hdl4fpga.phy_iofifo
 				port map (
 					in_clk   => sclk,
-					in_frm   => sys_dqv(sys_dqv'right),
+					in_rst   => in_rst,
 					in_data  => in_data,
 					out_clk  => sclk,
-					out_frm  => out_frm,
+					out_rst  => out_rst,
 					out_data => out_data);
 				dmi(i) <= out_data(out_data'left);
 				dqi(byte_size*(i+1)-1 downto byte_size*i) <= out_data(out_data'left-1 downto 0);

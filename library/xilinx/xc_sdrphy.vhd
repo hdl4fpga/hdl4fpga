@@ -32,21 +32,24 @@ use hdl4fpga.sdram_param.all;
 
 entity xc_sdrphy is
 	generic (
-		-- dqs_delay  : time_vector := (0 to 0 => 0 ns);
-		-- dqi_delay  : time_vector := (0 to 0 => 0 ns);
-		device      : fpga_devices;
 		gear        : natural := 2;
 		bank_size   : natural := 2;
 		addr_size   : natural := 13;
 		word_size   : natural := 16;
 		byte_size   : natural := 8;
+
+		device      : fpga_devices;
+		ba_latency  : natural := 0;
 		loopback    : boolean := false;
+		dqs_highz   : boolean := true;
 		bypass      : boolean := true;
 		bufio       : boolean := false;
 		rd_fifo     : boolean := true;
 		rd_align    : boolean := true;
 		wr_fifo     : boolean := true;
 		taps        : natural := 0);
+		-- dqs_delay  : time_vector := (0 to 0 => 0 ns);
+		-- dqi_delay  : time_vector := (0 to 0 => 0 ns);
 	port (
 		tp_sel      : in  std_logic_vector(2-1 downto 0) := "00";
 		tp          : out std_logic_vector(1 to 32);
@@ -170,13 +173,14 @@ begin
 
 	sdrbaphy_i : entity hdl4fpga.xc_sdrbaphy
 	generic map (
-		device    => device,
-		gear      => (gear+1)/2,
 		bank_size => bank_size,
-		addr_size => addr_size)
+		addr_size => addr_size,
+		gear      => (gear+1)/2,
+		device    => device,
+		ba_latency => ba_latency)
 	port map (
-		clk    => clk,
-	 	rst     => rst,
+		clk     => clk,
+	 	grst    => rst,
 		sys_rst => sys_rst,
 		sys_cs  => sys_cs,
 		sys_cke => sys_cke,
@@ -376,6 +380,7 @@ begin
 			byteno    => i,
 			gear      => gear,
 			byte_size => byte_size,
+			dqs_highz => dqs_highz,
 			loopback  => loopback,
 			bypass    => bypass,
 			bufio     => bufio,

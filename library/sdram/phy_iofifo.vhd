@@ -27,12 +27,13 @@ use ieee.numeric_std.all;
 
 entity phy_iofifo is
 	port (
-		in_frm   : in  std_logic;
+		in_clr   : in  std_logic := '0';
 		in_clk   : in  std_logic;
+		in_rst   : in  std_logic := '0';
 		in_data  : in  std_logic_vector;
 
 		out_clk  : in  std_logic;
-		out_frm  : in  std_logic;
+		out_rst  : in  std_logic;
 		out_data : out std_logic_vector);
 end;
 
@@ -43,14 +44,18 @@ architecture mix of phy_iofifo is
 
 begin
 
-	process (in_frm, in_clk)
+	process (in_clr, in_clk)
 		variable cntr : unsigned(4-1 downto 0);
 	begin
-		if in_frm='0' then
+		if in_clr='1' then
 			cntr := (others => '0');
 		elsif rising_edge(in_clk) then
-			mem(to_integer(unsigned(cntr))) <= in_data;
-			cntr := cntr + 1;
+			if in_rst='1' then
+				cntr := (others => '0');
+			else
+				mem(to_integer(unsigned(cntr))) <= in_data;
+				cntr := cntr + 1;
+			end if;
 		end if;
 	end process;
 
@@ -58,7 +63,7 @@ begin
 		variable cntr : unsigned(4-1 downto 0);
 	begin
 		if rising_edge(out_clk) then
-			if out_frm='0' then
+			if out_rst='1' then
 				cntr := (others => '0');
 			else
 				cntr := cntr + 1;

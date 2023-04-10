@@ -29,12 +29,13 @@ use hdl4fpga.profiles.all;
 
 entity xc_sdrbaphy is
 	generic (
-		device    : fpga_devices;
-		gear      : natural := 2;
-		bank_size : natural := 2;
-		addr_size : natural := 13);
+		bank_size  : natural;
+		addr_size  : natural;
+		gear       : natural;
+		device     : fpga_devices;
+		ba_latency : natural);
 	port (
-		rst       : in  std_logic := '0';
+		grst      : in  std_logic := '0';
 		clk       : in  std_logic;
 		sys_rst   : in  std_logic_vector(gear-1 downto 0) := (others => '-');
 		sys_cs    : in  std_logic_vector(gear-1 downto 0);
@@ -58,7 +59,102 @@ entity xc_sdrbaphy is
 end;
 
 architecture xilinx of xc_sdrbaphy is
+
+	signal rst : std_logic_vector(gear-1 downto 0) := (others => '-');
+	signal cs  : std_logic_vector(gear-1 downto 0);
+	signal cke : std_logic_vector(gear-1 downto 0);
+	signal b   : std_logic_vector(gear*bank_size-1 downto 0);
+	signal a   : std_logic_vector(gear*addr_size-1 downto 0);
+	signal ras : std_logic_vector(gear-1 downto 0);
+	signal cas : std_logic_vector(gear-1 downto 0);
+	signal we  : std_logic_vector(gear-1 downto 0);
+	signal odt : std_logic_vector(gear-1 downto 0);
+
 begin
+
+	latency_b : block
+	begin
+    	b_e : entity hdl4fpga.latency
+    	generic map (
+    		n => sys_b'length,
+    		d => (sys_b'range => ba_latency))
+    	port map (
+    		clk => clk,
+    		di  => sys_b,
+    		do  => b);
+
+    	a_e : entity hdl4fpga.latency
+    	generic map (
+    		n => sys_a'length,
+    		d => (sys_a'range => ba_latency))
+    	port map (
+    		clk => clk,
+    		di  => sys_a,
+    		do  => a);
+
+    	sysrst_e : entity hdl4fpga.latency
+    	generic map (
+    		n => gear,
+    		d => (0 to gear-1=> ba_latency))
+    	port map (
+    		clk   => clk,
+    		di => sys_rst,
+    		do => rst);
+
+    	cs_e : entity hdl4fpga.latency
+    	generic map (
+    		n => gear,
+    		d => (0 to gear-1=> ba_latency))
+    	port map (
+    		clk   => clk,
+    		di => sys_cs,
+    		do => cs);
+
+    	cke_e : entity hdl4fpga.latency
+    	generic map (
+    		n => gear,
+    		d => (0 to gear-1=> ba_latency))
+    	port map (
+    		clk   => clk,
+    		di => sys_cke,
+    		do => cke);
+
+    	ras_e : entity hdl4fpga.latency
+    	generic map (
+    		n => gear,
+    		d => (0 to gear-1=> ba_latency))
+    	port map (
+    		clk   => clk,
+    		di => sys_ras,
+    		do => ras);
+
+    	cas_e : entity hdl4fpga.latency
+    	generic map (
+    		n => gear,
+    		d => (0 to gear-1=> ba_latency))
+    	port map (
+    		clk   => clk,
+    		di => sys_cas,
+    		do => cas);
+
+    	we_e : entity hdl4fpga.latency
+    	generic map (
+    		n => gear,
+    		d => (0 to gear-1=> ba_latency))
+    	port map (
+    		clk   => clk,
+    		di => sys_we,
+    		do => we);
+
+    	odt_e : entity hdl4fpga.latency
+    	generic map (
+    		n => gear,
+    		d => (0 to gear-1=> ba_latency))
+    	port map (
+    		clk   => clk,
+    		di => sys_odt,
+    		do => odt);
+	end block;
 
 	rst_i : entity hdl4fpga.ogbx
 	generic map (
@@ -66,9 +162,9 @@ begin
 		size      => 1,
 		gear      => gear)
 	port map (
-		rst       => rst,
+		rst       => grst,
 		clk       => clk,
-		d         => sys_rst,
+		d         => rst,
 		q(0)      => sdram_rst);
 
 	cke_g : for i in sdram_cke'range generate
@@ -78,9 +174,9 @@ begin
 			size      => 1,
 			gear      => gear)
 		port map (
-			rst       => rst,
+			rst       => grst,
 			clk       => clk,
-			d         => sys_cke,
+			d         => cke,
 			q(0)      => sdram_cke(i));
 	end generate;
 
@@ -91,9 +187,9 @@ begin
 			size      => 1,
 			gear      => gear)
 		port map (
-			rst       => rst,
+			rst       => grst,
 			clk       => clk,
-			d         => sys_cs,
+			d         => cs,
 			q(0)      => sdram_cs(i));
 	end generate;
 
@@ -103,9 +199,9 @@ begin
 		size      => 1,
 		gear      => gear)
 	port map (
-		rst       => rst,
+		rst       => grst,
 		clk       => clk,
-		d         => sys_ras,
+		d         => ras,
 		q(0)      => sdram_ras);
 
 	cas_i : entity hdl4fpga.ogbx
@@ -114,9 +210,9 @@ begin
 		size      => 1,
 		gear      => gear)
 	port map (
-		rst       => rst,
+		rst       => grst,
 		clk       => clk,
-		d         => sys_cas,
+		d         => cas,
 		q(0)      => sdram_cas);
 
 	we_i : entity hdl4fpga.ogbx
@@ -125,9 +221,9 @@ begin
 		size      => 1,
 		gear      => gear)
 	port map (
-		rst       => rst,
+		rst       => grst,
 		clk       => clk,
-		d         => sys_we,
+		d         => we,
 		q(0)      => sdram_we);
 
 	odt_g : for i in sdram_odt'range generate
@@ -137,9 +233,9 @@ begin
 			size      => 1,
 			gear      => gear)
 		port map (
-			rst       => rst,
+			rst       => grst,
 			clk       => clk,
-			d         => sys_odt,
+			d         => odt,
 			q(0)      => sdram_odt(i));
 	end generate;
 
@@ -149,9 +245,9 @@ begin
 		size      => sdram_b'length,
 		gear      => gear)
 	port map (
-		rst       => rst,
+		rst       => grst,
 		clk       => clk,
-		d         => sys_b,
+		d         => b,
 		q         => sdram_b);
 
 	a_i : entity hdl4fpga.ogbx
@@ -160,9 +256,9 @@ begin
 		size      => sdram_a'length,
 		gear      => gear)
 	port map (
-		rst       => rst,
+		rst       => grst,
 		clk       => clk,
-		d         => sys_a,
+		d         => a,
 		q         => sdram_a);
 
 end;

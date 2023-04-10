@@ -225,6 +225,21 @@ begin
 	phy_a       <= ctlr_a         when sdram_mpu_sel='1' else sdram_init_a;
 	phy_b       <= ctlr_b         when sdram_mpu_sel='1' else sdram_init_b;
 	phy_odt     <= sdram_init_odt when sdram_mpu_sel='0' else sdram_sch_odt(0); 
+
+	-- process (ctlr_clk)
+	-- begin
+		-- if rising_edge(ctlr_clk) then
+			-- phy_rlreq   <= init_rdy;
+			-- ctlr_cfgrdy <= init_rdy;
+			-- 
+			-- if phy_inirdy='1' then
+				-- ctlr_inirdy <= init_rdy;
+			-- else 
+				-- ctlr_inirdy <= '0';
+			-- end if;
+		-- end if;
+	-- end process;
+
 	phy_rlreq   <= init_rdy;
 	ctlr_cfgrdy <= init_rdy;
 	ctlr_inirdy <= init_rdy when phy_inirdy='1' else '0';
