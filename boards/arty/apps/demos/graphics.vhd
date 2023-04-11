@@ -54,7 +54,7 @@ architecture graphics of arty is
 		sdr575MHz_900p24bpp,
 		sdr600MHz_900p24bpp);
 
-	constant app_profile : app_profiles := sdr525MHz_900p24bpp;
+	constant app_profile : app_profiles := sdr450MHz_900p24bpp;
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -393,12 +393,12 @@ begin
 				clkout3  => ddr_clk90_mmce2,
 				locked   => ddr_lkd);
 
-			ddr_clk0x2_bufg : bufio
+			ddr_clk0x2_bufg : bufg
 			port map (
 				i => ddr_clk0x2_mmce2,
 				o => ddr_clk0x2);
 
-			ddr_clk90x2_bufg : bufio
+			ddr_clk90x2_bufg : bufg
 			port map (
 				i => ddr_clk90x2_mmce2,
 				o => ddr_clk90x2);
@@ -821,7 +821,7 @@ begin
 		taps       => natural(floor(sdram_tcp/((sys_per/2.0)/(32.0*2.0))))-1,
 		device     => xc7a,
 		dqs_highz  => false,
-		bufio      => false,
+		bufio      => true,
 		bypass     => false)
 		-- dqs_delay => (0 to 0 => 1.35 ns),
 		-- dqi_delay => (0 to 0 => 0 ns),
