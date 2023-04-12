@@ -172,18 +172,18 @@ architecture graphics of arty is
 	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 
-	signal sys_rst : std_logic;
+	signal sys_rst        : std_logic;
 
-	signal si_frm  : std_logic;
-	signal si_irdy : std_logic;
-	signal si_trdy : std_logic;
-	signal si_end  : std_logic;
-	signal si_data : std_logic_vector(0 to 8-1);
+	signal si_frm         : std_logic;
+	signal si_irdy        : std_logic;
+	signal si_trdy        : std_logic;
+	signal si_end         : std_logic;
+	signal si_data        : std_logic_vector(0 to 8-1);
 
-	signal so_frm  : std_logic;
-	signal so_irdy : std_logic;
-	signal so_trdy : std_logic;
-	signal so_data : std_logic_vector(0 to 8-1);
+	signal so_frm         : std_logic;
+	signal so_irdy        : std_logic;
+	signal so_trdy        : std_logic;
+	signal so_data        : std_logic_vector(0 to 8-1);
 
 	constant sdram_tcp    : real := (gclk100_per*real(sdram_params.pll.dcm_div))/real(sdram_params.pll.dcm_mul); -- 1 ns /1ps
 
@@ -246,8 +246,6 @@ architecture graphics of arty is
 	signal ddr3_dqo       : std_logic_vector(word_size-1 downto 0);
 	signal ddr3_dqt       : std_logic_vector(word_size-1 downto 0);
 
-	alias  sys_clk        : std_logic is gclk100;
-	alias  ctlr_clk       : std_logic is ddr_clk0;
 	signal video_clk      : std_logic := '0';
 	signal video_shf_clk  : std_logic := '0';
 	signal video_lck      : std_logic := '0';
@@ -257,10 +255,10 @@ architecture graphics of arty is
 	signal video_pixel    : std_logic_vector(0 to 32-1);
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 
-	signal dd_clk      : std_logic := '0';
-	signal dd_hs       : std_logic;
-	signal dd_vs       : std_logic;
-	signal dd_pixel   : std_logic_vector(0 to 3-1);
+	signal dd_clk         : std_logic := '0';
+	signal dd_hs          : std_logic;
+	signal dd_vs          : std_logic;
+	signal dd_pixel       : std_logic_vector(0 to 3-1);
 
 	alias  mii_txc        : std_logic is eth_tx_clk;
 	alias  sio_clk        : std_logic is mii_txc;
@@ -299,10 +297,10 @@ begin
 	end generate;
 
 	nodebug_g : if not debug generate
-		process (sys_clk)
+		process (gclk100)
 			variable div : unsigned(0 to 1) := (others => '0');
 		begin
-			if rising_edge(sys_clk) then
+			if rising_edge(gclk100) then
 				div := div + 1;
 				eth_ref_clk <= div(0);
 			end if;
@@ -329,7 +327,7 @@ begin
 			port map (
 				pwrdwn   => '0',
 				rst      => sys_rst,
-				clkin1   => sys_clk,
+				clkin1   => gclk100,
 				clkfbin  => clkfb,
 				clkfbout => clkfb,
 				clkout0  => dd_clk,
@@ -350,7 +348,7 @@ begin
 			port map (
 				pwrdwn   => '0',
 				rst      => sys_rst,
-				clkin1   => sys_clk,
+				clkin1   => gclk100,
 				clkfbin  => clkfb,
 				clkfbout => clkfb,
 				clkout0  => ioctrl_clk,
@@ -381,7 +379,7 @@ begin
 			port map (
 				pwrdwn   => '0',
 				rst      => '0',
-				clkin1   => sys_clk,
+				clkin1   => gclk100,
 				clkfbin  => ddr_clkfb,
 				clkfbout => ddr_clkfb,
 				clkout0  => ddr_clk0x2_mmce2,
@@ -709,7 +707,7 @@ begin
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
-		ctlr_clk     => ctlr_clk,
+		ctlr_clk     => ddr_clk0,
 		ctlr_rst     => rst0div_rst,
 		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
@@ -829,7 +827,7 @@ begin
 
 		rst       => rst0div_rst,
 		rst_shift => rst90div_rst,
-		iod_clk   => sys_clk,
+		iod_clk   => gclk100,
 		clk       => ddr_clk0,
 		clk_shift => ddr_clk90,
 		clkx2     => ddr_clk0x2,
@@ -913,10 +911,10 @@ begin
 
 	end generate;
 
-	process (sio_clk, sys_clk, ctlr_clk)
+	process (sio_clk, gclk100, ddr_clk0)
 		variable d, e, q : std_logic := '0';
 	begin
-		if rising_edge(sys_clk) then
+		if rising_edge(gclk100) then
 			rgbled <= (others => '0');
 			led    <= (others => '0');
 			case sw is
