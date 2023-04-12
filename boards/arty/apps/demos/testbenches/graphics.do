@@ -140,11 +140,16 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/clk
 add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/clk_shift
 add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/sys_sti
-add wave -noupdate -expand -group sdrphy_e -radix hexadecimal /testbench/du_e/sdrphy_e/sys_sto
+add wave -noupdate -expand -group sdrphy_e -radix hexadecimal -childformat {{/testbench/du_e/sdrphy_e/sys_sto(7) -radix hexadecimal} {/testbench/du_e/sdrphy_e/sys_sto(6) -radix hexadecimal} {/testbench/du_e/sdrphy_e/sys_sto(5) -radix hexadecimal} {/testbench/du_e/sdrphy_e/sys_sto(4) -radix hexadecimal} {/testbench/du_e/sdrphy_e/sys_sto(3) -radix hexadecimal} {/testbench/du_e/sdrphy_e/sys_sto(2) -radix hexadecimal} {/testbench/du_e/sdrphy_e/sys_sto(1) -radix hexadecimal} {/testbench/du_e/sdrphy_e/sys_sto(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/sdrphy_e/sys_sto(7) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/sys_sto(6) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/sys_sto(5) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/sys_sto(4) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/sys_sto(3) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/sys_sto(2) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/sys_sto(1) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/sys_sto(0) {-height 29 -radix hexadecimal}} /testbench/du_e/sdrphy_e/sys_sto
+add wave -noupdate -expand -group sdrphy_e -radix hexadecimal /testbench/du_e/sdrphy_e/sys_sto(0)
 add wave -noupdate -expand -group sdrphy_e -radix hexadecimal /testbench/du_e/sdrphy_e/sys_dqo
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(1)/sdrdqphy_i/datai_b/sto_b/igbx_g/gbx4_g/line__581/buf_sti
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(1)/sdrdqphy_i/data_align
+add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(1)/sdrdqphy_i/half_align
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/sdrphy_e/tp_delay
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -156,7 +161,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {52895465370 fs} 0} {{Cursor 2} {52908643159 fs} 0} {{Cursor 3} {11442777000 fs} 0} {{Cursor 4} {52863277280 fs} 0}
+WaveRestoreCursors {{Cursor 1} {52895465370 fs} 0} {{Cursor 2} {52914108987 fs} 0} {{Cursor 3} {11442777000 fs} 0} {{Cursor 4} {52863277280 fs} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 228
 configure wave -valuecolwidth 312
@@ -172,4 +177,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {52905778659 fs} {52912560336 fs}
+WaveRestoreZoom {52895079807 fs} {52922206511 fs}

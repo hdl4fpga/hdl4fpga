@@ -113,6 +113,9 @@ entity arty is
 	alias led2     : std_logic is led(2);
 	alias led3     : std_logic is led(3);
 
+	constant gclk100_per  : real := 10.0e-9;
+	constant gclk100_freq : real := 1.0/(gclk100_per);
+
 --	attribute loc : string;
 
 --	attribute loc of btn          : signal is "B8,B9,C9,D9";

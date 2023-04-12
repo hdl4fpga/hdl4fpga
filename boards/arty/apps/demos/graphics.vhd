@@ -185,13 +185,9 @@ architecture graphics of arty is
 	signal so_trdy : std_logic;
 	signal so_data : std_logic_vector(0 to 8-1);
 
-	constant sys_per  : real := 10.0e-9;
-	constant sys_freq : real := 1.0/(sys_per);
-
-	constant sdram_tcp   : real := (sys_per*real(sdram_params.pll.dcm_div))/real(sdram_params.pll.dcm_mul); -- 1 ns /1ps
+	constant sdram_tcp    : real := (gclk100_per*real(sdram_params.pll.dcm_div))/real(sdram_params.pll.dcm_mul); -- 1 ns /1ps
 
 	constant gear         : natural := 4;
-	constant cgear        : natural := (gear+1)/2;
 
 	constant bank_size    : natural := ddr3_ba'length;
 	constant addr_size    : natural := ddr3_a'length;
@@ -221,16 +217,17 @@ architecture graphics of arty is
 	signal ddr_cke        : std_logic_vector(0 to 0);
 	signal ddr_cs         : std_logic_vector(0 to 0);
 	signal ddr_odt        : std_logic_vector(0 to 0);
-	signal ctlrphy_rst    : std_logic_vector(0 to cgear-1);
-	signal ctlrphy_cke    : std_logic_vector(0 to cgear-1);
-	signal ctlrphy_cs     : std_logic_vector(0 to cgear-1);
-	signal ctlrphy_ras    : std_logic_vector(0 to cgear-1);
-	signal ctlrphy_cas    : std_logic_vector(0 to cgear-1);
-	signal ctlrphy_we     : std_logic_vector(0 to cgear-1);
-	signal ctlrphy_odt    : std_logic_vector(0 to cgear-1);
+
+	signal ctlrphy_rst    : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_cke    : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_cs     : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_ras    : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_cas    : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_we     : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_odt    : std_logic_vector(0 to gear/2-1);
 	signal ctlrphy_cmd    : std_logic_vector(0 to 3-1);
-	signal ctlrphy_ba     : std_logic_vector(cgear*ddr3_ba'length-1 downto 0);
-	signal ctlrphy_a      : std_logic_vector(cgear*ddr3_a'length-1 downto 0);
+	signal ctlrphy_ba     : std_logic_vector(gear/2*ddr3_ba'length-1 downto 0);
+	signal ctlrphy_a      : std_logic_vector(gear/2*ddr3_a'length-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
@@ -326,7 +323,7 @@ begin
 		begin
 			pll_i :  plle2_base
 			generic map (
-				clkin1_period  => sys_per*1.0e9,
+				clkin1_period  => gclk100_per*1.0e9,
 				clkfbout_mult  => 12,
 				clkout0_divide => 8)
 			port map (
@@ -347,7 +344,7 @@ begin
 		begin
 			pll_i :  plle2_base
 			generic map (
-				clkin1_period  => sys_per*1.0e9,
+				clkin1_period  => gclk100_per*1.0e9,
 				clkfbout_mult  => 12,
 				clkout0_divide => 6)
 			port map (
@@ -374,7 +371,7 @@ begin
 			generic map (
 				divclk_divide    => sdram_params.pll.dcm_div,
 				clkfbout_mult_f  => real(2*sdram_params.pll.dcm_mul),
-				clkin1_period    => sys_per*1.0e9,
+				clkin1_period    => gclk100_per*1.0e9,
 				clkout0_divide_f => real(gear/2),
 				clkout1_divide   => gear/2,
 				clkout1_phase    => 90.0+180.0,
@@ -440,7 +437,7 @@ begin
 	hdlc_g : if io_link=io_hdlc generate
 
 		constant uart_xtal : real := 
-			real(videoparam(video_mode).pll.dcm_mul)*sys_freq/
+			real(videoparam(video_mode).pll.dcm_mul)*gclk100_freq/
 			real(videoparam(video_mode).pll.dcm_div);
 
 		constant baudrate : natural := setif(
@@ -787,8 +784,8 @@ begin
 	process (ddr_ba)
 	begin
 		for i in ddr_ba'range loop
-			for j in 0 to cgear-1 loop
-				ctlrphy_ba(i*cgear+j) <= ddr_ba(i);
+			for j in 0 to gear/2-1 loop
+				ctlrphy_ba(i*gear/2+j) <= ddr_ba(i);
 			end loop;
 		end loop;
 	end process;
@@ -796,8 +793,8 @@ begin
 	process (ddr_a)
 	begin
 		for i in ddr_a'range loop
-			for j in 0 to cgear-1 loop
-				ctlrphy_a(i*cgear+j) <= ddr_a(i);
+			for j in 0 to gear/2-1 loop
+				ctlrphy_a(i*gear/2+j) <= ddr_a(i);
 			end loop;
 		end loop;
 	end process;
@@ -818,10 +815,10 @@ begin
 		byte_size  => byte_size,
 		gear       => gear,
 		ba_latency => 1,
-		taps       => natural(floor(sdram_tcp/((sys_per/2.0)/(32.0*2.0))))-1,
+		taps       => natural(floor(sdram_tcp/((gclk100_per/2.0)/(32.0*2.0))))-1,
 		device     => xc7a,
 		dqs_highz  => false,
-		bufio      => true,
+		bufio      => false,
 		bypass     => false)
 		-- dqs_delay => (0 to 0 => 1.35 ns),
 		-- dqi_delay => (0 to 0 => 0 ns),
