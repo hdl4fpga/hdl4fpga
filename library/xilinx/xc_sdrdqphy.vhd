@@ -520,6 +520,20 @@ begin
 				end generate;
 			end generate;
 
+			process (ssti, sda)
+				variable dv : unsigned(idrv'range);
+			begin
+				dv   := unsigned(ssti);
+				for j in sda'range loop
+					if sda(j)='0' then
+						dv := dv rol 1;
+					else
+						exit;
+					end if;
+				end loop;
+				idrv <= std_logic_vector(dv);
+			end process;
+
 			gear_g : for i in gear-1 downto 0 generate
 				signal in_clr  : std_logic;
 				signal in_clk  : std_logic;
@@ -900,13 +914,13 @@ begin
 
 		no_bypass_g : if not bypass generate
 			rdfifo_g : if rd_fifo generate
-				idrv <= reverse(ssti);
+				-- idrv <= reverse(ssti);
 			end generate;
 		end generate;
 
 		phdata_e : entity hdl4fpga.g4_phdata
 		generic map (
-			data_width270 => 20)
+			data_width270 => 16)
 		port map (
 			clk0   => clk,
 			clk270 => clk_shift,
