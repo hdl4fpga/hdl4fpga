@@ -920,7 +920,7 @@ begin
 			case sw is
 			when others =>
 				(led3, led2, led1, led0, led3_g, led2_g, led1_g, led0_g) <= tp_sdrphy(1 to 8);
-				led3 <= ctlrphy_ini;
+				led3_r <= ctlrphy_ini;
 			end case;
 		end if;
 

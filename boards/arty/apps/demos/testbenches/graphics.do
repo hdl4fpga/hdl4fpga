@@ -136,18 +136,24 @@ add wave -noupdate -group dhcpdscb_e -radix hexadecimal /testbench/du_e/ipoe_e/u
 add wave -noupdate -group dhcpdscb_e -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -divider {New Divider}
-add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/clk
-add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/clk_shift
-add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/sys_sti
-add wave -noupdate -expand -group sdrphy_e -radix hexadecimal -childformat {{/testbench/du_e/sdrphy_e/sys_sto(7) -radix hexadecimal} {/testbench/du_e/sdrphy_e/sys_sto(6) -radix hexadecimal} {/testbench/du_e/sdrphy_e/sys_sto(5) -radix hexadecimal} {/testbench/du_e/sdrphy_e/sys_sto(4) -radix hexadecimal} {/testbench/du_e/sdrphy_e/sys_sto(3) -radix hexadecimal} {/testbench/du_e/sdrphy_e/sys_sto(2) -radix hexadecimal} {/testbench/du_e/sdrphy_e/sys_sto(1) -radix hexadecimal} {/testbench/du_e/sdrphy_e/sys_sto(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/sdrphy_e/sys_sto(7) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/sys_sto(6) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/sys_sto(5) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/sys_sto(4) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/sys_sto(3) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/sys_sto(2) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/sys_sto(1) {-height 29 -radix hexadecimal} /testbench/du_e/sdrphy_e/sys_sto(0) {-height 29 -radix hexadecimal}} /testbench/du_e/sdrphy_e/sys_sto
-add wave -noupdate -expand -group sdrphy_e -radix hexadecimal /testbench/du_e/sdrphy_e/sys_sto(0)
-add wave -noupdate -expand -group sdrphy_e -radix hexadecimal /testbench/du_e/sdrphy_e/sys_dqo
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(1)/sdrdqphy_i/datai_b/sto_b/igbx_g/gbx4_g/line__581/buf_sti
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(1)/sdrdqphy_i/data_align
-add wave -noupdate /testbench/du_e/sdrphy_e/byte_g(1)/sdrdqphy_i/half_align
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/clk
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/clk_shift
+add wave -noupdate -expand -group byte_g0 -expand /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_sti
+add wave -noupdate -expand -group byte_g0 -expand /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/ssti
+add wave -noupdate -expand -group byte_g0 -divider {New Divider}
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sto
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_sto
+add wave -noupdate -expand -group byte_g0 -expand /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/idrv
+add wave -noupdate -expand -group byte_g0 -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dq
+add wave -noupdate -expand -group byte_g0 -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/sdqo
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqs180
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqspre
+add wave -noupdate -expand -group byte_g0 -divider {New Divider}
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/half_align
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/sto_b/igbx_g/gbx4_g/line__581/ena
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/sto_b/igbx_g/gbx4_g/line__581/buf_sti
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/data_align
+add wave -noupdate -expand -group byte_g0 -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e/tp_delay
 add wave -noupdate -divider {New Divider}
@@ -161,10 +167,10 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {52895465370 fs} 0} {{Cursor 2} {52914108987 fs} 0} {{Cursor 3} {11442777000 fs} 0} {{Cursor 4} {52863277280 fs} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {52896999111 fs} 0} {{Cursor 2} {52919534784 fs} 0} {{Cursor 3} {29577892771 fs} 0} {{Cursor 4} {52911756659 fs} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 228
-configure wave -valuecolwidth 312
+configure wave -valuecolwidth 144
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -177,4 +183,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {52895079807 fs} {52922206511 fs}
+WaveRestoreZoom {52857596776 fs} {52911860448 fs}
