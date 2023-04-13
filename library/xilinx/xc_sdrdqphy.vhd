@@ -140,7 +140,7 @@ architecture xilinx of xc_sdrdqphy is
 
 	signal sda          : std_logic_vector(data_align'range);
 	signal sdqe         : std_logic_vector(sys_dqv'range);
-	signal xsti         : std_logic_vector(sys_sti'range);
+	signal sti          : std_logic_vector(sys_sti'range);
 	signal ssti         : std_logic_vector(sys_sti'range);
 	signal ordv         : std_logic_vector(sys_dqv'range);
 	signal idrv         : std_logic_vector(sys_sti'range);
@@ -520,19 +520,21 @@ begin
 				end generate;
 			end generate;
 
-			process (ssti, sda)
-				variable dv : unsigned(idrv'range);
-			begin
-				dv   := unsigned(ssti);
-				for j in sda'range loop
-					if sda(j)='0' then
-						dv := dv rol 1;
-					else
-						exit;
-					end if;
-				end loop;
-				idrv <= std_logic_vector(dv);
-			end process;
+			nobypass_g : if not bypass generate
+				process (ssti, sda)
+					variable dv : unsigned(idrv'range);
+				begin
+					dv := unsigned(ssti);
+					for j in sda'range loop
+						if sda(j)='0' then
+							dv := dv rol 1;
+						else
+							exit;
+						end if;
+					end loop;
+					idrv <= std_logic_vector(dv);
+				end process;
+			end generate;
 
 			gear_g : for i in gear-1 downto 0 generate
 				signal in_clr  : std_logic;
@@ -592,38 +594,31 @@ begin
 						d(0)   => sdram_dm);
 			
    					process(clk)
-						variable ena     : std_logic;
-						variable buf_sti : std_logic_vector(sys_sti'range);
-						variable xxx : std_logic_vector(sys_sti'range);
-						variable sti     : std_logic_vector(sys_sti'range);
-						variable ha      : std_logic;
-   						variable lat     : unsigned(2*sys_sti'length-1 downto 0);
+						variable ha  : std_logic;
+						variable ena : std_logic;
+						variable st  : std_logic_vector(sys_sti'range);
+						variable lat : unsigned(2*sys_sti'length-1 downto 0);
    					begin
    						if rising_edge(clk) then
-							buf_sti := sys_sti;
-							if bufio then
-								buf_sti := buf_sti xor "0110";
-							end if;
-							if buf_sti="0111" then
-								ha := dqspre;
-							elsif buf_sti="0001" then
-								ha := not dqspre;
+							if sys_sti="0001" then
+								ha := setif(bufio, dqspre, not dqspre);
+							elsif sys_sti="0111" then
+								ha := setif(bufio, not dqspre, dqspre);
 							end if;
 
    							lat := lat sll sys_sti'length;
    							lat(sys_sti'length-1 downto 0) := unsigned(sys_sti);
-							sto <= xxx;
-							xxx := sti;
-   							sti := multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), ha), "0", 4);
-   							xsti <= sti;
+   							st := multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), ha), "0", 4);
 
-							if sti=(sys_sti'range => '0') then
+							if st=(st'range => '0') then
 								ena := '1';
 								data_align <= (others => '-');
 							elsif ena='1' then
 								ena:= '0';
-								data_align <= sti;
+								data_align <= st;
 							end if;
+
+   							sti        <= st;
 							half_align <= ha;
    						end if;
    					end process;
@@ -649,8 +644,9 @@ begin
     						d   => (0 to gear-1 => 2))
     					port map (
     						clk => clk,
-    						di  => sys_sti,
+    						di  => sti,
     						do  => lat_sti);
+						sto <= lat_sti;
 					end generate;
 
 				end generate;
@@ -912,12 +908,6 @@ begin
 	gear4_g : if gear=4 generate
 		sys_dqc <= (others => clk_shift);
 
-		no_bypass_g : if not bypass generate
-			rdfifo_g : if rd_fifo generate
-				-- idrv <= reverse(ssti);
-			end generate;
-		end generate;
-
 		phdata_e : entity hdl4fpga.g4_phdata
 		generic map (
 			data_width270 => 16)
@@ -927,7 +917,7 @@ begin
 			
 			di270(16-1 downto 12) => data_align,
 			di270(12-1 downto  8) => sys_dqt,
-			di270( 8-1 downto  4) => xsti,
+			di270( 8-1 downto  4) => sti,
 			di270( 4-1 downto  0) => sys_dqv,
 
 			do270(16-1 downto 12) => sda,
