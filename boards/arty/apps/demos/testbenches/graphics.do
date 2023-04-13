@@ -138,23 +138,25 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e/sys_sto
 add wave -noupdate -radix hexadecimal /testbench/du_e/sdrphy_e/sys_dqo
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/clk
-add wave -noupdate -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/clk_shift
-add wave -noupdate -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_sti
-add wave -noupdate -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/ssti
-add wave -noupdate -group byte_g0 -divider {New Divider}
-add wave -noupdate -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/idrv
-add wave -noupdate -group byte_g0 -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dq
-add wave -noupdate -group byte_g0 -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/sdqo
-add wave -noupdate -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sto
-add wave -noupdate -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_sto
-add wave -noupdate -group byte_g0 -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_dqo
-add wave -noupdate -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqs180
-add wave -noupdate -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqspre
-add wave -noupdate -group byte_g0 -divider {New Divider}
-add wave -noupdate -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/half_align
-add wave -noupdate -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/data_align
-add wave -noupdate -group byte_g0 -divider {New Divider}
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/clk
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/clk_shift
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_sti
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/ssti
+add wave -noupdate -expand -group byte_g0 -divider {New Divider}
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/idrv
+add wave -noupdate -expand -group byte_g0 -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dq
+add wave -noupdate -expand -group byte_g0 -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/sdqo
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sto
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_sto
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_sto(0)
+add wave -noupdate -expand -group byte_g0 -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/sys_dqo
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqs180
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/dqspre
+add wave -noupdate -expand -group byte_g0 -expand /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/datai_b/sto_b/igbx_g/gbx4_g/line__596/st
+add wave -noupdate -expand -group byte_g0 -divider {New Divider}
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/half_align
+add wave -noupdate -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrdqphy_i/data_align
+add wave -noupdate -expand -group byte_g0 -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/sdrphy_e/tp_delay
 add wave -noupdate -divider {New Divider}
@@ -168,8 +170,8 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {52903389847 fs} 0} {{Cursor 2} {52911594169 fs} 0} {{Cursor 3} {29577892771 fs} 0} {{Cursor 4} {52905908718 fs} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {52896031146 fs} 0} {{Cursor 2} {52919780499 fs} 0} {{Cursor 3} {29577892771 fs} 0} {{Cursor 4} {52905000000 fs} 0}
+quietly wave cursor active 4
 configure wave -namecolwidth 228
 configure wave -valuecolwidth 254
 configure wave -justifyvalue left
@@ -184,4 +186,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {52868449512 fs} {52918754959 fs}
+WaveRestoreZoom {52872209826 fs} {52922515273 fs}
