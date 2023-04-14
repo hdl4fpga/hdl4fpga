@@ -32,11 +32,11 @@ use hdl4fpga.sdram_param.all;
 
 entity xc_sdrphy is
 	generic (
-		gear        : natural := 2;
 		bank_size   : natural := 2;
 		addr_size   : natural := 13;
 		word_size   : natural := 16;
 		byte_size   : natural := 8;
+		gear        : natural := 2;
 
 		device      : fpga_devices;
 		ba_latency  : natural := 0;
@@ -88,15 +88,15 @@ entity xc_sdrphy is
 		sys_dmi     : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
 		sys_dmo     : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
-		sys_dqsi    : in  std_logic_vector(gear-1 downto 0);
 		sys_dqst    : in  std_logic_vector(gear-1 downto 0);
-		sys_dqso    : out std_logic_vector(gear-1 downto 0);
+		sys_dqsi    : in  std_logic_vector(gear-1 downto 0);
+		sys_dqso    : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
 		sys_dqt     : in  std_logic_vector(gear-1 downto 0);
 		sys_dqi     : in  std_logic_vector(gear*word_size-1 downto 0);
 		sys_dqo     : out std_logic_vector(gear*word_size-1 downto 0);
 
-		sys_dqv     : in  std_logic_vector(gear-1 downto 0) := (others => 'U');
+		sys_dqv     : in  std_logic_vector(gear-1 downto 0) := (others => '-');
 		sys_dqc     : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
 		sys_sti     : in  std_logic_vector(gear-1 downto 0) := (others => '-');
 		sys_sto     : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
@@ -425,7 +425,7 @@ begin
 
 			sys_dqst   => sys_dqst,
 			sys_dqsi   => sys_dqsi,
-			sys_dqso   => sys_dqso,
+			sys_dqso   => sys_dqso((i+1)*gear-1 downto i*gear),
 
 			sdram_sti  => sdram_sti(i),
 			sdram_sto  => sdram_sto(i),

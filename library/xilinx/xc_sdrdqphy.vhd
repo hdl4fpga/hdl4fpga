@@ -770,7 +770,7 @@ begin
 			signal dmi : std_logic_vector(sys_dmi'range);
 		begin
 	
-			process (ssti, sys_dmi)
+			process (ssti, sdmi)
 			begin
 				for i in dmi'range loop
 					if loopback then

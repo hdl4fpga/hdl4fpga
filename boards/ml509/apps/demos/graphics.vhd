@@ -159,16 +159,16 @@ architecture graphics of ml509 is
 
 
 
-	constant coln_size    : natural := 10;
-	constant bank_size    : natural := ddr2_ba'length;
-	constant addr_size    : natural := ddr2_a'length;
-	constant word_size    : natural := ddr2_d'length;
-	constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
-	-- constant bank_size    : natural := 2;
-	-- constant addr_size    : natural := 13;
-	-- constant word_size    : natural := 8*2;
-	-- constant byte_size    : natural := 8;
+	-- constant bank_size    : natural := ddr2_ba'length;
+	-- constant addr_size    : natural := ddr2_a'length;
+	-- constant word_size    : natural := ddr2_d'length;
+	-- constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
+	constant bank_size    : natural := 2;
+	constant addr_size    : natural := 13;
+	constant word_size    : natural := 8*2;
+	constant byte_size    : natural := 8;
 
+	constant coln_size    : natural := 10;
 	constant gear         : natural := 4;
 
 	signal ddr_clk0       : std_logic;
@@ -287,8 +287,6 @@ begin
 		I => user_clk,
 		O => userclk_bufg);
 
-	-- gpio_led_c <= gpio_sw_c;
-	-- (gpio_led_w, gpio_led_n, gpio_led_e, gpio_led_s) <= mii_tp(2 to 5);
 	process (gpio_sw_c, userclk_bufg)
 		variable tmr : unsigned(0 to 8-1) := (others => '0');
 	begin
@@ -736,47 +734,25 @@ begin
 			end if;
 		end process;
 
-		toggle_b : block
-			alias clk_w : std_logic is miirx_frm;
-			alias clk_e : std_logic is miitx_frm;
-		begin
-			process (clk_e)
-				variable q : std_logic;
-			begin
-				if rising_edge(clk_e) then
-					-- gpio_led_e <= q;
-					q := not q;
-				end if;
-			end process;
-			-- gpio_led_e <= miitx_frm;
-	
-			process (clk_w)
-				variable q : std_logic;
-			begin
-				if rising_edge(clk_w) then
-					-- gpio_led_w <= q;
-					q := not q;
-				end if;
-			end process;
-		end block;
-
 	end block;
 
 	graphics_e : entity hdl4fpga.demo_graphics
 	generic map (
-		ena_burstref => false,
-		debug => debug,
-		profile      => 1,
-		sdram_tcp    => 2.0*sdram_tcp,
-		mark         => MT47H512M3,
-		gear         => gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
 		coln_size    => coln_size,
 		word_size    => word_size,
 		byte_size    => byte_size,
+		gear         => gear,
+
+		ena_burstref => false,
+		debug => debug,
+		profile      => 1,
+		sdram_tcp    => 2.0*sdram_tcp,
+		mark         => MT47H512M3,
 		burst_length => 8,
 
+		phy_latencies => xc7vg4_latencies,
 		timing_id    => videoparam(video_mode).timing,
 		red_length   => 8,
 		green_length => 8,
@@ -925,17 +901,19 @@ begin
 	tp_sel <= ('0', gpio_sw_s);
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
-		loopback    => true,
-		device      => xc5v,
-		bypass      => false,
-		taps        => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
-		bank_size   => bank_size,
-		addr_size   => addr_size,
-		gear        => gear,
-		word_size   => word_size,
-		byte_size   => byte_size)
+		bank_size  => bank_size,
+		addr_size  => addr_size,
+		word_size  => word_size,
+		byte_size  => byte_size,
+		gear       => gear,
+		ba_latency => 1,
+		device     => xc5v,
+		loopback   => false,
+		bypass     => false,
+		taps       => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
+		dqs_highz  => false)
 	port map (
-		tp_sel => tp_sel,
+		tp_sel     => "00",
 		tp         => tp_sdrphy,
 		rst        => sdrphy_rst0,
 		rst_shift  => sdrphy_rst90,
@@ -1039,15 +1017,8 @@ begin
 			end generate;
 
 			false_g : if not (i < word_size/byte_size) generate
-				dqsiobuf_i : iobufds
-				generic map (
-					iostandard => "DIFF_SSTL18_II_DCI")
-				port map (
-					t   => '1',
-					i   => '-',
-					o   => open,
-					io  => ddr2_dqs_p(i),
-					iob => ddr2_dqs_n(i));
+				ddr2_dqs_p(i) <= 'Z';
+				ddr2_dqs_n(i) <= 'Z';
 			end generate;
 
 		end generate;
@@ -1056,11 +1027,6 @@ begin
 			process (ddr2_dqo, ddr2_dqt)
 			begin
 				if i < word_size then
-					if ddr2_dqt(i)='0' then
-						ddr2_d(i) <= ddr2_dqo(i);
-					else
-						ddr2_d(i) <= 'Z';
-					end if;
 				else
 					ddr2_d(i) <= 'Z';
 				end if;
@@ -1081,9 +1047,6 @@ begin
     		green_length => 1,
     		blue_length  => 1)
     	port map (
-    		-- ser_clk      => phyrxclk_bufg,
-    		-- ser_frm      => mii_tp(1),
-    		-- ser_data     => phy_rxd,
     		ser_clk      => sio_clk,
     		ser_frm      => si_frm,
 			ser_irdy     => ser_irdy,
@@ -1112,6 +1075,7 @@ begin
 		end if;
 	end process;
 
+	(gpio_led_w, gpio_led_n, gpio_led_e, gpio_led_s) <= std_logic_vector'(1 to 4 => 'Z');
 	phy_reset  <= not gtx_rst;
 	phy_txer   <= '0';
 	phy_mdc    <= '0';
