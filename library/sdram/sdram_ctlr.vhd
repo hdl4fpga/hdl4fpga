@@ -109,85 +109,73 @@ entity sdram_ctlr is
 
 end;
 
-library hdl4fpga;
-use hdl4fpga.base.all;
-
 architecture mix of sdram_ctlr is
 
-	constant stdr    : sdram_standards    := sdrmark_standard(chip);
+	constant stdr         : sdram_standards  := sdrmark_standard(chip);
+	constant bl_cod       : std_logic_vector := sdram_latcod(stdr, bl);
+	constant al_cod       : std_logic_vector := sdram_latcod(stdr, al);
+	constant cl_cod       : std_logic_vector := sdram_latcod(stdr, cl);
+	constant cwl_cod      : std_logic_vector := sdram_latcod(stdr, sdram_selcwl(stdr));
 
-	constant bl_cod  : std_logic_vector := sdram_latcod(stdr, bl);
-	constant al_cod  : std_logic_vector := sdram_latcod(stdr, al);
-	constant cl_cod  : std_logic_vector := sdram_latcod(stdr, cl);
-	constant cwl_cod : std_logic_vector := sdram_latcod(stdr, sdram_selcwl(stdr));
+	signal sdram_refi_rdy : std_logic;
+	signal sdram_refi_req : std_logic;
+	signal sdram_init_rst : std_logic;
+	signal sdram_init_cke : std_logic;
+	signal sdram_init_cs  : std_logic;
+	signal sdram_init_req : std_logic;
+	signal sdram_init_rdy : std_logic;
+	signal sdram_init_ras : std_logic;
+	signal sdram_init_cas : std_logic;
+	signal sdram_init_we  : std_logic;
+	signal sdram_init_odt : std_logic;
+	signal sdram_init_a   : std_logic_vector(addr_size-1 downto 0);
+	signal sdram_init_b   : std_logic_vector(bank_size-1 downto 0);
 
-	subtype byte is std_logic_vector(0 to byte_size-1);
-	type byte_vector is array (natural range <>) of byte;
+	signal sdram_pgm_frm  : std_logic;
+	signal sdram_pgm_rw   : std_logic;
+	signal sdram_pgm_cmd  : std_logic_vector(0 to 2);
 
-	signal sdram_refi_rdy   : std_logic;
-	signal sdram_refi_req   : std_logic;
-	signal sdram_init_rst   : std_logic;
-	signal sdram_init_cke   : std_logic;
-	signal sdram_init_cs    : std_logic;
-	signal sdram_init_req   : std_logic;
-	signal sdram_init_rdy   : std_logic;
-	signal sdram_init_ras   : std_logic;
-	signal sdram_init_cas   : std_logic;
-	signal sdram_init_we    : std_logic;
-	signal sdram_init_odt   : std_logic;
-	signal sdram_init_a     : std_logic_vector(addr_size-1 downto 0);
-	signal sdram_init_b     : std_logic_vector(bank_size-1 downto 0);
+	signal sdram_mpu_rst  : std_logic;
+	signal sdram_mpu_trdy : std_logic;
+	signal sdram_mpu_ras  : std_logic;
+	signal sdram_mpu_cas  : std_logic;
+	signal sdram_mpu_we   : std_logic;
+	signal sdram_mpu_wri  : std_logic;
+	signal sdram_mpu_rea  : std_logic;
+	signal sdram_mpu_rwin : std_logic;
+	signal sdram_mpu_wwin : std_logic;
 
-	signal sdram_pgm_frm    : std_logic;
-	signal sdram_pgm_rw     : std_logic;
-	signal sdram_pgm_cmd    : std_logic_vector(0 to 2);
+	signal sdram_sch_odt  : std_logic_vector(1-1 downto 0);
+	signal sdram_sch_wwn  : std_logic_vector(gear-1 downto 0);
+	signal sdram_sch_dqsz : std_logic_vector(sdram_sch_wwn'range);
+	signal sdram_sch_dqs  : std_logic_vector(sdram_sch_wwn'range);
+	signal sdram_sch_dqz  : std_logic_vector(sdram_sch_wwn'range);
+	signal sdram_sch_st   : std_logic_vector(sdram_sch_wwn'range);
+	signal sdram_sch_dmo  : std_logic_vector(sdram_sch_wwn'range);
 
-	signal sdram_mpu_rst    : std_logic;
-	signal sdram_mpu_trdy   : std_logic;
-	signal sdram_mpu_ras    : std_logic;
-	signal sdram_mpu_cas    : std_logic;
-	signal sdram_mpu_we     : std_logic;
-	signal sdram_mpu_wri    : std_logic;
-	signal sdram_mpu_rea    : std_logic;
-	signal sdram_mpu_rwin   : std_logic;
-	signal sdram_mpu_wwin   : std_logic;
+	signal rot_val        : std_logic_vector(unsigned_num_bits(gear*word_size-1)-1 downto 0);
+	signal rot_di         : std_logic_vector(ctlr_di'range);
 
-	signal sdram_sch_odt    : std_logic_vector(1-1 downto 0);
-	signal sdram_sch_wwn    : std_logic_vector(gear-1 downto 0);
-	signal sdram_sch_dqsz   : std_logic_vector(sdram_sch_wwn'range);
-	signal sdram_sch_dqs    : std_logic_vector(sdram_sch_wwn'range);
-	signal sdram_sch_dqz    : std_logic_vector(sdram_sch_wwn'range);
-	signal sdram_sch_st     : std_logic_vector(sdram_sch_wwn'range);
-	signal sdram_sch_dmo    : std_logic_vector(sdram_sch_wwn'range);
+	signal sdram_cwl      : std_logic_vector(ctlr_cwl'range);
 
-	signal rot_val          : std_logic_vector(unsigned_num_bits(gear*word_size-1)-1 downto 0);
-	signal rot_di           : std_logic_vector(ctlr_di'range);
+	signal sdram_mr_addr  : std_logic_vector(3-1 downto 0);
+	signal sdram_mr_data  : std_logic_vector(13-1 downto 0);
+	signal sdram_mpu_sel  : std_logic;
 
-	signal sdram_cwl        : std_logic_vector(ctlr_cwl'range);
-
-	signal sdram_mr_addr    : std_logic_vector(3-1 downto 0);
-	signal sdram_mr_data    : std_logic_vector(13-1 downto 0);
-	signal sdram_mpu_sel    : std_logic;
-	signal init_rdy       : std_logic;
-
-	signal fifo_bypass : std_logic;
 begin
 
-	ctlr_trdy    <= sdram_mpu_trdy when phy_inirdy='1' else '0';
-	phy_trdy     <= sdram_mpu_trdy when phy_inirdy='0' else '0';
-	sdram_pgm_frm  <= ctlr_frm     when phy_inirdy='1' else phy_frm;
-	sdram_pgm_rw   <= ctlr_rw      when phy_inirdy='1' else phy_rw;
-	sdram_cwl      <= ctlr_cl      when stdr=ddr2      else ctlr_cwl;
+	sdram_pgm_frm  <= ctlr_frm when phy_inirdy='1' else phy_frm;
+	sdram_pgm_rw   <= ctlr_rw  when phy_inirdy='1' else phy_rw;
+	sdram_cwl      <= ctlr_cl  when stdr=ddr2      else ctlr_cwl;
 	sdram_init_req <= ctlr_rst;
 
 	sdram_init_e : entity hdl4fpga.sdram_init
 	generic map (
 		debug            => debug,
 		tcp              => tcp,
-		chip             => chip,
-
 		addr_size        => addr_size,
-		bank_size        => bank_size)
+		bank_size        => bank_size,
+		chip             => chip)
 	port map (
 		sdram_init_al    => ctlr_al,
 		sdram_init_bl    => ctlr_bl,
@@ -215,35 +203,6 @@ begin
 		sdram_refi_req   => sdram_refi_req,
 		sdram_refi_rdy   => sdram_refi_rdy);
 
-	init_rdy    <= sdram_init_rdy;
-	phy_rst     <= sdram_init_rst;
-	phy_cke     <= sdram_init_cke;
-	phy_cs      <= '0'            when sdram_mpu_sel='1' else sdram_init_cs;
-	phy_ras     <= sdram_mpu_ras  when sdram_mpu_sel='1' else sdram_init_ras;
-	phy_cas     <= sdram_mpu_cas  when sdram_mpu_sel='1' else sdram_init_cas;
-	phy_we      <= sdram_mpu_we   when sdram_mpu_sel='1' else sdram_init_we;
-	phy_a       <= ctlr_a         when sdram_mpu_sel='1' else sdram_init_a;
-	phy_b       <= ctlr_b         when sdram_mpu_sel='1' else sdram_init_b;
-	phy_odt     <= sdram_init_odt when sdram_mpu_sel='0' else sdram_sch_odt(0); 
-
-	-- process (ctlr_clk)
-	-- begin
-		-- if rising_edge(ctlr_clk) then
-			-- phy_rlreq   <= init_rdy;
-			-- ctlr_cfgrdy <= init_rdy;
-			-- 
-			-- if phy_inirdy='1' then
-				-- ctlr_inirdy <= init_rdy;
-			-- else 
-				-- ctlr_inirdy <= '0';
-			-- end if;
-		-- end if;
-	-- end process;
-
-	phy_rlreq   <= init_rdy;
-	ctlr_cfgrdy <= init_rdy;
-	ctlr_inirdy <= init_rdy when phy_inirdy='1' else '0';
-
 	sdram_pgm_e : entity hdl4fpga.sdram_pgm
 	port map (
 		ctlr_clk        => ctlr_clk,
@@ -256,8 +215,8 @@ begin
 		sdram_ref_req   => sdram_refi_req,
 		sdram_ref_rdy   => sdram_refi_rdy);
 
-	sdram_mpu_rst <= not init_rdy;
-	sdram_mpu_sel <= init_rdy;
+	sdram_mpu_rst <= not sdram_init_rdy;
+	sdram_mpu_sel <= sdram_init_rdy;
 	sdram_mpu_e : entity hdl4fpga.sdram_mpu
 	generic map (
 		tcp             => tcp,
@@ -291,9 +250,6 @@ begin
 		sdram_mpu_rwin  => sdram_mpu_rwin,
 		sdram_mpu_wwin  => sdram_mpu_wwin);
 
-	ctlr_cmd     <= sdram_pgm_cmd;
-	ctlr_di_req  <= sdram_sch_wwn(sdram_sch_wwn'right);
-
 	sdram_sch_e : entity hdl4fpga.sdram_sch
 	generic map (
 		latencies => latencies,
@@ -316,30 +272,6 @@ begin
 		sdram_dqz  => sdram_sch_dqz,
 		sdram_odt  => sdram_sch_odt,
 		sdram_wwn  => sdram_sch_wwn);
-
-	process (ctlr_dm, sdram_sch_wwn, sdram_sch_dmo)
-		variable xxx : unsigned(phy_dmo'range);
-		variable yyy : unsigned(phy_dmo'range);
-	begin
-		if stdr=sdr then
-			for i in word_size/byte_size-1 downto 0 loop
-				xxx := xxx rol sdram_sch_dmo'length;
-				yyy := yyy rol sdram_sch_wwn'length;
-				xxx(sdram_sch_dmo'range) := unsigned(not sdram_sch_dmo);
-				yyy(sdram_sch_wwn'range) := unsigned(sdram_sch_wwn);
-			end loop;
-			xxx := xxx and (unsigned(ctlr_dm) or not yyy);
-			phy_dmo <= std_logic_vector(xxx);
-		else
-			phy_dmo <= ctlr_dm;
-		end if;
-	end process;
-
-	phy_dqt  <= not sdram_sch_dqz;
-	phy_dqso <= sdram_sch_dqs;
-	phy_dqst <= not sdram_sch_dqsz;
-	phy_sto  <= sdram_sch_st;
-	phy_dqv  <= sdram_sch_wwn;
 
 	sdram_rotval_p : process(sdram_cwl)
 		function sdram_rotval (
@@ -417,8 +349,26 @@ begin
 			lat_tab   => wwnl_tab);
 	end process;
 
-	ctlr_do    <= phy_dqi;
-	ctlr_do_dv <= phy_sti;
+	ctlr_trdy   <= sdram_mpu_trdy when phy_inirdy='1' else '0';
+	ctlr_cmd    <= sdram_pgm_cmd;
+	ctlr_di_req <= sdram_sch_wwn(sdram_sch_wwn'right);
+	ctlr_cfgrdy <= sdram_init_rdy;
+	ctlr_inirdy <= sdram_init_rdy when phy_inirdy='1' else '0';
+
+	ctlr_do     <= phy_dqi;
+	ctlr_do_dv  <= phy_sti;
+
+	phy_rlreq   <= sdram_init_rdy;
+	phy_trdy    <= sdram_mpu_trdy when phy_inirdy='0' else '0';
+	phy_rst     <= sdram_init_rst;
+	phy_cke     <= sdram_init_cke;
+	phy_cs      <= '0'            when sdram_mpu_sel='1' else sdram_init_cs;
+	phy_ras     <= sdram_mpu_ras  when sdram_mpu_sel='1' else sdram_init_ras;
+	phy_cas     <= sdram_mpu_cas  when sdram_mpu_sel='1' else sdram_init_cas;
+	phy_we      <= sdram_mpu_we   when sdram_mpu_sel='1' else sdram_init_we;
+	phy_a       <= ctlr_a         when sdram_mpu_sel='1' else sdram_init_a;
+	phy_b       <= ctlr_b         when sdram_mpu_sel='1' else sdram_init_b;
+	phy_odt     <= sdram_init_odt when sdram_mpu_sel='0' else sdram_sch_odt(0); 
 
 	rotate_i : entity hdl4fpga.barrel
 	generic map (
@@ -427,5 +377,15 @@ begin
 		shf => rot_val,
 		di  => ctlr_di,
 		do  => phy_dqo);
+
+	phy_dmo  <= 
+		(fill(not sdram_sch_dmo, phy_dmo'length, false) and ctlr_dm) or 
+		 fill(not sdram_sch_wwn, phy_dmo'length, false) when stdr=sdr else
+		ctlr_dm;
+	phy_dqt  <= not sdram_sch_dqz;
+	phy_dqso <= sdram_sch_dqs;
+	phy_dqst <= not sdram_sch_dqsz;
+	phy_sto  <= sdram_sch_st;
+	phy_dqv  <= sdram_sch_wwn;
 
 end;
