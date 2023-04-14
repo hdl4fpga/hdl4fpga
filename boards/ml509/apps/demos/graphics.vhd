@@ -207,7 +207,7 @@ architecture graphics of ml509 is
 	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
 	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqv    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
@@ -1105,16 +1105,6 @@ begin
 		end if;
 	end process;
 
-	process (userclk_bufg)
-	begin
-		if rising_edge(userclk_bufg) then
-			gpio_led_w <= ctlrphy_rlreq;
-			gpio_led_e <= ctlrphy_rlrdy;
-			gpio_led_n <= 'Z';
-			gpio_led_s <= 'Z';
-		end if;
-	end process;
-	
 	process (userclk_bufg)
 	begin
 		if rising_edge(userclk_bufg) then
