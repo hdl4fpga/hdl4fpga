@@ -100,11 +100,15 @@ entity ml509 is
 		dvi_v          : inout std_logic;
 		dvi_h          : inout std_logic);
 
-	constant user_per   : real := 10.0e-9;
+	constant clkfpga_freq : real := 200.0e6;
+	constant clkfpga_per  : real := 1.0/(clkfpga_freq);
 
-	attribute loc : string;
+	constant userclk_freq : real := 100.0e6;
+	constant userclk_per  : real := 1.0/(userclk_freq);
+
+	attribute loc        : string;
 	attribute iostandard : string;
-	attribute nodelay : string;
+	attribute nodelay    : string;
 
 	attribute loc of user_clk   : signal is "AH15";
 	attribute loc of clk_27mhz_fpga : signal is "AG18";

@@ -54,7 +54,24 @@ architecture graphics of arty is
 		sdr575MHz_900p24bpp,
 		sdr600MHz_900p24bpp);
 
-	constant app_profile : app_profiles := sdr500MHz_900p24bpp;
+	--------------------------------------------------------------
+	constant app_profile : app_profiles := sdr500MHz_900p24bpp; --
+	--------------------------------------------------------------
+
+	type profileparam_vector is array (app_profiles) of profile_params;
+	constant profile_tab : profileparam_vector := (
+		sdr333MHz_900p24bpp => (io_ipoe, sdram333MHz, mode900p24bpp),
+		sdr350MHz_900p24bpp => (io_ipoe, sdram350MHz, mode900p24bpp),
+		sdr375MHz_900p24bpp => (io_ipoe, sdram375MHz, mode900p24bpp),
+		sdr400MHz_900p24bpp => (io_ipoe, sdram400MHz, mode900p24bpp),
+		sdr425MHz_900p24bpp => (io_ipoe, sdram425MHz, mode900p24bpp),
+		sdr450MHz_900p24bpp => (io_ipoe, sdram450MHz, mode900p24bpp),
+		sdr475MHz_900p24bpp => (io_ipoe, sdram475MHz, mode900p24bpp),
+		sdr500MHz_900p24bpp => (io_ipoe, sdram500MHz, mode900p24bpp),
+		sdr525MHz_900p24bpp => (io_ipoe, sdram525MHz, mode900p24bpp),
+		sdr550MHz_900p24bpp => (io_ipoe, sdram550MHz, mode900p24bpp),
+		sdr575MHz_900p24bpp => (io_ipoe, sdram575MHz, mode900p24bpp),
+		sdr600MHz_900p24bpp => (io_ipoe, sdram600MHz, mode900p24bpp));
 
 	type pll_params is record
 		dcm_mul : natural;
@@ -90,6 +107,9 @@ architecture graphics of arty is
 
 		return tab(tab'left);
 	end;
+
+	-- constant video_mode   : video_modes :=setdebug(debug, profile_tab(app_profile).video_mode);
+	constant video_mode   : video_modes := mode1080p24bpp;
 
 	type sdramparams_record is record
 		id  : sdram_speeds;
@@ -152,48 +172,17 @@ architecture graphics of arty is
 		return tab(tab'left);
 	end;
 
-	type profileparam_vector is array (app_profiles) of profile_params;
-	constant profile_tab : profileparam_vector := (
-		sdr333MHz_900p24bpp => (io_ipoe, sdram333MHz, mode900p24bpp),
-		sdr350MHz_900p24bpp => (io_ipoe, sdram350MHz, mode900p24bpp),
-		sdr375MHz_900p24bpp => (io_ipoe, sdram375MHz, mode900p24bpp),
-		sdr400MHz_900p24bpp => (io_ipoe, sdram400MHz, mode900p24bpp),
-		sdr425MHz_900p24bpp => (io_ipoe, sdram425MHz, mode900p24bpp),
-		sdr450MHz_900p24bpp => (io_ipoe, sdram450MHz, mode900p24bpp),
-		sdr475MHz_900p24bpp => (io_ipoe, sdram475MHz, mode900p24bpp),
-		sdr500MHz_900p24bpp => (io_ipoe, sdram500MHz, mode900p24bpp),
-		sdr525MHz_900p24bpp => (io_ipoe, sdram525MHz, mode900p24bpp),
-		sdr550MHz_900p24bpp => (io_ipoe, sdram550MHz, mode900p24bpp),
-		sdr575MHz_900p24bpp => (io_ipoe, sdram575MHz, mode900p24bpp),
-		sdr600MHz_900p24bpp => (io_ipoe, sdram600MHz, mode900p24bpp));
-
-	-- constant video_mode   : video_modes :=setdebug(debug, profile_tab(app_profile).video_mode);
-	constant video_mode   : video_modes := mode1080p24bpp;
 	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
-
-	signal sys_rst        : std_logic;
-
-	signal si_frm         : std_logic;
-	signal si_irdy        : std_logic;
-	signal si_trdy        : std_logic;
-	signal si_end         : std_logic;
-	signal si_data        : std_logic_vector(0 to 8-1);
-
-	signal so_frm         : std_logic;
-	signal so_irdy        : std_logic;
-	signal so_trdy        : std_logic;
-	signal so_data        : std_logic_vector(0 to 8-1);
-
 	constant sdram_tcp    : real := (gclk100_per*real(sdram_params.pll.dcm_div))/real(sdram_params.pll.dcm_mul); -- 1 ns /1ps
 
 
 	constant bank_size    : natural := ddr3_ba'length;
 	constant addr_size    : natural := ddr3_a'length;
 	constant coln_size    : natural := 10;
-	constant gear         : natural := 4;
 	constant word_size    : natural := ddr3_dq'length;
 	constant byte_size    : natural := ddr3_dq'length/ddr3_dqs_p'length;
+	constant gear         : natural := 4;
 
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk0x2     : std_logic;
@@ -203,14 +192,13 @@ architecture graphics of arty is
 
 	signal ctlrphy_frm    : std_logic;
 	signal ctlrphy_trdy   : std_logic;
+	signal ctlrphy_locked : std_logic;
 	signal ctlrphy_ini    : std_logic;
 	signal ctlrphy_rw     : std_logic;
-	signal ctlrphy_inirdy : std_logic;
 	signal ctlrphy_wlreq  : std_logic;
 	signal ctlrphy_wlrdy  : std_logic;
 	signal ctlrphy_rlreq  : std_logic;
 	signal ctlrphy_rlrdy  : std_logic;
-	signal ctlrphy_locked : std_logic;
 
 	signal ddr_ba         : std_logic_vector(ddr3_ba'range);
 	signal ddr_a          : std_logic_vector(ddr3_a'range);
@@ -246,6 +234,17 @@ architecture graphics of arty is
 	signal ddr3_dqo       : std_logic_vector(word_size-1 downto 0);
 	signal ddr3_dqt       : std_logic_vector(word_size-1 downto 0);
 
+	signal si_frm         : std_logic;
+	signal si_irdy        : std_logic;
+	signal si_trdy        : std_logic;
+	signal si_end         : std_logic;
+	signal si_data        : std_logic_vector(0 to 8-1);
+
+	signal so_frm         : std_logic;
+	signal so_irdy        : std_logic;
+	signal so_trdy        : std_logic;
+	signal so_data        : std_logic_vector(0 to 8-1);
+
 	signal video_clk      : std_logic := '0';
 	signal video_shf_clk  : std_logic := '0';
 	signal video_lck      : std_logic := '0';
@@ -260,6 +259,13 @@ architecture graphics of arty is
 	signal dd_vs          : std_logic;
 	signal dd_pixel       : std_logic_vector(0 to 3-1);
 
+	signal sys_rst        : std_logic;
+	signal sdrphy_rst0   : std_logic;
+	signal sdrphy_rst90  : std_logic;
+	signal ioctrl_rst    : std_logic;
+	signal ioctrl_clk    : std_logic;
+	signal ioctrl_rdy    : std_logic;
+
 	alias  mii_txc        : std_logic is eth_tx_clk;
 	alias  sio_clk        : std_logic is mii_txc;
 
@@ -270,12 +276,6 @@ architecture graphics of arty is
 	constant io_link    : io_comms := profile_tab(app_profile).comms;
 
 	constant mem_size   : natural := 8*(1024*8);
-
-	signal rst0div_rst  : std_logic;
-	signal rst90div_rst : std_logic;
-	signal ioctrl_rst   : std_logic;
-	signal ioctrl_clk   : std_logic;
-	signal ioctrl_rdy   : std_logic;
 
 	signal tp_sdrphy    : std_logic_vector(1 to 32);
 
@@ -413,18 +413,18 @@ begin
 			process(ddrsys_rst, ddr_clk0)
 			begin
 				if ddrsys_rst='1' then
-					rst0div_rst <= '1';
+					sdrphy_rst0 <= '1';
 				elsif rising_edge(ddr_clk0) then
-					rst0div_rst <= ddrsys_rst;
+					sdrphy_rst0 <= ddrsys_rst;
 				end if;
 			end process;
 
 			process(ddrsys_rst, ddr_clk90)
 			begin
 				if ddrsys_rst='1' then
-					rst90div_rst <= '1';
+					sdrphy_rst90 <= '1';
 				elsif rising_edge(ddr_clk90) then
-					rst90div_rst <= ddrsys_rst;
+					sdrphy_rst90 <= ddrsys_rst;
 				end if;
 			end process;
 
@@ -708,7 +708,7 @@ begin
 		dvid_crgb    => dvid_crgb,
 
 		ctlr_clk     => ddr_clk0,
-		ctlr_rst     => rst0div_rst,
+		ctlr_rst     => sdrphy_rst0,
 		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
 		ctlr_cwl     => sdram_params.cwl,
@@ -724,7 +724,6 @@ begin
 		ctlrphy_trdy => ctlrphy_trdy,
 		ctlrphy_ini  => ctlrphy_ini,
 		ctlrphy_rw   => ctlrphy_rw,
-		ctlr_inirdy  => ctlrphy_inirdy,  
 		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),
@@ -750,7 +749,7 @@ begin
 		signal ser_irdy : std_logic;
 	begin
 		ser_irdy <= si_irdy and si_trdy and not si_end;
-		ser_debug_e : entity hdl4fpga.ser_debug
+		serdebug_e : entity hdl4fpga.ser_debug
 		generic map (
 			timing_id    => videoparam(video_mode).timing,
 			red_length   => 1,
@@ -825,8 +824,8 @@ begin
 		tp_sel    => sw(1 downto 0),
 		tp        => tp_sdrphy,
 
-		rst       => rst0div_rst,
-		rst_shift => rst90div_rst,
+		rst       => sdrphy_rst0,
+		rst_shift => sdrphy_rst90,
 		iod_clk   => gclk100,
 		clk       => ddr_clk0,
 		clk_shift => ddr_clk90,
