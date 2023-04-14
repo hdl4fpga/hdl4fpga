@@ -187,11 +187,11 @@ architecture graphics of arty is
 
 	constant sdram_tcp    : real := (gclk100_per*real(sdram_params.pll.dcm_div))/real(sdram_params.pll.dcm_mul); -- 1 ns /1ps
 
-	constant gear         : natural := 4;
 
 	constant bank_size    : natural := ddr3_ba'length;
 	constant addr_size    : natural := ddr3_a'length;
 	constant coln_size    : natural := 10;
+	constant gear         : natural := 4;
 	constant word_size    : natural := ddr3_dq'length;
 	constant byte_size    : natural := ddr3_dq'length/ddr3_dqs_p'length;
 

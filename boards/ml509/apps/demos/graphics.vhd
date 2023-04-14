@@ -183,7 +183,6 @@ architecture graphics of ml509 is
 	alias hs              : std_logic is hdr1(4);
 
 	constant gear         : natural := 4;
-	constant cgear        : natural := (gear+1)/2;
 
 	-- constant cmmd_gear    : natural := 1;
 	-- constant gear         : natural := 2;
@@ -226,23 +225,22 @@ architecture graphics of ml509 is
 	signal ctlrphy_rlcal  : std_logic;
 	signal ctlrphy_rlseq  : std_logic;
 
-	signal ctlr_clks      : std_logic_vector(0 to 2-1);
-	alias  ddr_clk0       : std_logic is ctlr_clks(0);
-	alias  ddr_clk90      : std_logic is ctlr_clks(1);
+	signal ddr_clk0       : std_logic;
+	signal ddr_clk90      : std_logic;
 	signal ddr_clk0x2     : std_logic;
 	signal ddr_clk90x2    : std_logic;
 	signal ddr_ba         : std_logic_vector(bank_size-1 downto 0);
 	signal ddr_a          : std_logic_vector(addr_size-1 downto 0);
-	signal ctlrphy_rst    : std_logic_vector(0 to cgear-1);
-	signal ctlrphy_cke    : std_logic_vector(0 to cgear-1);
-	signal ctlrphy_cs     : std_logic_vector(0 to cgear-1);
-	signal ctlrphy_ras    : std_logic_vector(0 to cgear-1);
-	signal ctlrphy_cas    : std_logic_vector(0 to cgear-1);
-	signal ctlrphy_we     : std_logic_vector(0 to cgear-1);
-	signal ctlrphy_odt    : std_logic_vector(0 to cgear-1);
+	signal ctlrphy_rst    : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_cke    : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_cs     : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_ras    : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_cas    : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_we     : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_odt    : std_logic_vector(0 to gear/2-1);
 	signal ctlrphy_cmd    : std_logic_vector(0 to 3-1);
-	signal ctlrphy_ba     : std_logic_vector(cgear*ddr_ba'length-1 downto 0);
-	signal ctlrphy_a      : std_logic_vector(cgear*ddr_a'length-1 downto 0);
+	signal ctlrphy_ba     : std_logic_vector(gear/2*ddr_ba'length-1 downto 0);
+	signal ctlrphy_a      : std_logic_vector(gear/2*ddr_a'length-1 downto 0);
 	signal ctlrphy_dqsi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
@@ -912,7 +910,7 @@ begin
 
 	end block;
 
-	gear_g : for i in 1 to cgear-1 generate
+	gear_g : for i in 1 to gear/2-1 generate
 		ctlrphy_cke(i) <= ctlrphy_cke(0);
 		ctlrphy_cs(i)  <= ctlrphy_cs(0);
 		ctlrphy_ras(i) <= '1';
@@ -924,8 +922,8 @@ begin
 	process (ddr_ba)
 	begin
 		for i in ddr_ba'range loop
-			for j in 0 to cgear-1 loop
-				ctlrphy_ba(i*cgear+j) <= ddr_ba(i);
+			for j in 0 to gear/2-1 loop
+				ctlrphy_ba(i*gear/2+j) <= ddr_ba(i);
 			end loop;
 		end loop;
 	end process;
@@ -933,8 +931,8 @@ begin
 	process (ddr_a)
 	begin
 		for i in ddr_a'range loop
-			for j in 0 to cgear-1 loop
-				ctlrphy_a(i*cgear+j) <= ddr_a(i);
+			for j in 0 to gear/2-1 loop
+				ctlrphy_a(i*gear/2+j) <= ddr_a(i);
 			end loop;
 		end loop;
 	end process;
