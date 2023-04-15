@@ -767,7 +767,7 @@ begin
 		word_size  => word_size,
 		byte_size  => byte_size,
 		wr_fifo    => false,
-		rd_fifo    => false,
+		rd_fifo    => true,
 		bypass     => false)
 	port map (
 		sclk       => ctlr_clk,
