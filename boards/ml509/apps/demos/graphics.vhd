@@ -165,7 +165,7 @@ architecture graphics of ml509 is
 	-- constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
 	constant bank_size    : natural := 2;
 	constant addr_size    : natural := 13;
-	constant word_size    : natural := 8*2;
+	constant word_size    : natural := 8*8;
 	constant byte_size    : natural := 8;
 
 	constant coln_size    : natural := 10;

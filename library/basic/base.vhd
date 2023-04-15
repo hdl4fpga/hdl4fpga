@@ -411,11 +411,6 @@ package base is
 		constant value : std_logic := '-')
 		return std_logic_vector;
 
-	function fill (
-		constant value : std_logic_vector;
-		constant size  : natural)
-		return std_logic_vector;
-
 	function bcd2ascii (
 		constant arg : std_logic_vector)
 		return std_logic_vector;
@@ -1742,19 +1737,6 @@ package body base is
 		end if;
 		retval_left(data'length-1 downto 0) := data;
 		return retval_left;
-	end;
-
-	function fill (
-		constant value : std_logic_vector;
-		constant size  : natural)
-		return std_logic_vector is
-		variable retval : unsigned(0 to size-1);
-	begin
-		for i in 0 to size/value'length-1 loop
-			retval := retval srl value'length;
-			retval(0 to value'length-1) := unsigned(value);
-		end loop;
-		return std_logic_vector(retval);
 	end;
 
 	function bcd2ascii (
