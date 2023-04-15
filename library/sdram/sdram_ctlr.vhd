@@ -55,7 +55,7 @@ entity sdram_ctlr is
 
 		ctlr_rst    : in  std_logic;
 		ctlr_clk    : in  std_logic;
-		ctlr_cfgrdy : out std_logic;
+		ctlr_cfgrdy : buffer std_logic;
 		ctlr_inirdy : out std_logic;
 
 		ctlr_frm    : in  std_logic;
@@ -160,7 +160,6 @@ architecture mix of sdram_ctlr is
 
 	signal sdram_mr_addr  : std_logic_vector(3-1 downto 0);
 	signal sdram_mr_data  : std_logic_vector(13-1 downto 0);
-	signal sdram_mpu_sel  : std_logic;
 
 begin
 
@@ -203,6 +202,8 @@ begin
 		sdram_refi_req   => sdram_refi_req,
 		sdram_refi_rdy   => sdram_refi_rdy);
 
+	ctlr_cfgrdy   <= sdram_init_rdy;
+	sdram_mpu_rst <= not ctlr_cfgrdy;
 	sdram_pgm_e : entity hdl4fpga.sdram_pgm
 	port map (
 		ctlr_clk        => ctlr_clk,
@@ -215,8 +216,6 @@ begin
 		sdram_ref_req   => sdram_refi_req,
 		sdram_ref_rdy   => sdram_refi_rdy);
 
-	sdram_mpu_rst <= not sdram_init_rdy;
-	sdram_mpu_sel <= sdram_init_rdy;
 	sdram_mpu_e : entity hdl4fpga.sdram_mpu
 	generic map (
 		tcp             => tcp,
@@ -352,23 +351,22 @@ begin
 	ctlr_trdy   <= sdram_mpu_trdy when phy_inirdy='1' else '0';
 	ctlr_cmd    <= sdram_pgm_cmd;
 	ctlr_di_req <= sdram_sch_wwn(sdram_sch_wwn'right);
-	ctlr_cfgrdy <= sdram_init_rdy;
-	ctlr_inirdy <= sdram_init_rdy when phy_inirdy='1' else '0';
+	ctlr_inirdy <= ctlr_cfgrdy when phy_inirdy='1' else '0';
 
 	ctlr_do     <= phy_dqi;
 	ctlr_do_dv  <= phy_sti;
 
-	phy_rlreq   <= sdram_init_rdy;
+	phy_rlreq   <= ctlr_cfgrdy;
 	phy_trdy    <= sdram_mpu_trdy   when phy_inirdy='0' else '0';
 	phy_rst     <= sdram_init_rst;
 	phy_cke     <= sdram_init_cke;
-	phy_cs      <= '0'              when sdram_init_rdy='1' else sdram_init_cs;
-	phy_ras     <= sdram_mpu_ras    when sdram_init_rdy='1' else sdram_init_ras;
-	phy_cas     <= sdram_mpu_cas    when sdram_init_rdy='1' else sdram_init_cas;
-	phy_we      <= sdram_mpu_we     when sdram_init_rdy='1' else sdram_init_we;
-	phy_a       <= ctlr_a           when sdram_init_rdy='1' else sdram_init_a;
-	phy_b       <= ctlr_b           when sdram_init_rdy='1' else sdram_init_b;
-	phy_odt     <= sdram_sch_odt(0) when sdram_init_rdy='1' else sdram_init_odt; 
+	phy_cs      <= '0'              when ctlr_cfgrdy='1' else sdram_init_cs;
+	phy_ras     <= sdram_mpu_ras    when ctlr_cfgrdy='1' else sdram_init_ras;
+	phy_cas     <= sdram_mpu_cas    when ctlr_cfgrdy='1' else sdram_init_cas;
+	phy_we      <= sdram_mpu_we     when ctlr_cfgrdy='1' else sdram_init_we;
+	phy_a       <= ctlr_a           when ctlr_cfgrdy='1' else sdram_init_a;
+	phy_b       <= ctlr_b           when ctlr_cfgrdy='1' else sdram_init_b;
+	phy_odt     <= sdram_sch_odt(0) when ctlr_cfgrdy='1' else sdram_init_odt; 
 
 	rotate_i : entity hdl4fpga.barrel
 	generic map (
