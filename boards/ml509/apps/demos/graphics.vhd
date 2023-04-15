@@ -157,8 +157,6 @@ architecture graphics of ml509 is
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (real(sdram_params.pll.dcm_div)*userclk_per)/real(sdram_params.pll.dcm_mul);
 
-
-
 	constant bank_size    : natural := ddr2_ba'length;
 	constant addr_size    : natural := ddr2_a'length;
 	constant word_size    : natural := ddr2_d'length;
@@ -166,7 +164,6 @@ architecture graphics of ml509 is
 	-- constant bank_size    : natural := 2;
 	-- constant addr_size    : natural := 13;
 	-- constant word_size    : natural := 8*8;
-	-- constant byte_size    : natural := 8;
 
 	constant coln_size    : natural := 10;
 	constant gear         : natural := 4;
@@ -287,12 +284,10 @@ begin
 		I => user_clk,
 		O => userclk_bufg);
 
-	process (gpio_sw_c, userclk_bufg)
+	process (userclk_bufg)
 		variable tmr : unsigned(0 to 8-1) := (others => '0');
 	begin
-		if gpio_sw_c='1' then
-			tmr := (others => '0');
-		elsif rising_edge(userclk_bufg) then
+		if rising_edge(userclk_bufg) then
 			if tmr(0)='0' then
 				tmr := tmr + 1;
 			end if;
@@ -415,10 +410,10 @@ begin
 					o => ddr_clk180);
 			end block;
 
-			process (ddr_clk0, locked)
+			process (gpio_sw_c, locked, ddr_clk0)
 				variable cntr : unsigned(0 to 2);
 			begin
-				if locked='0' then
+				if locked='0' or gpio_sw_c='1' then
 					cntr := (others => '0');
 				elsif rising_edge(ddr_clk0) then
 					if cntr(0)='0' then
@@ -580,7 +575,6 @@ begin
 
 		signal mii_txcrxd : std_logic_vector(mii_rxd'range);
 
-		signal ser_pause : std_logic := '1';
 	begin
 
 		mii_rxc  <= gtx_clk;
@@ -690,28 +684,6 @@ begin
 			so_irdy    => so_irdy,
 			so_trdy    => so_trdy,
 			so_data    => so_data);
-
-		pause_p : process(mii_txc)
-			type states is (west, east);
-			variable state : states;
-		begin
-			if rising_edge(mii_txc) then
-				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-					case state is
-					when west =>
-						if gpio_sw_w='1' then 
-							ser_pause <= '0';
-							state := east;
-						end if;
-					when east =>
-						if gpio_sw_e='1' then 
-							ser_pause <= '1';
-							state := west;
-						end if;
-					end case;
-				end if;
-			end if;
-		end process;
 
 		desser_e: entity hdl4fpga.desser
 		port map (
@@ -1074,7 +1046,7 @@ begin
 		end if;
 	end process;
 
-	(gpio_led_w, gpio_led_n, gpio_led_e, gpio_led_s) <= std_logic_vector'(1 to 4 => 'Z');
+	(gpio_led_w, gpio_led_n, gpio_led_e, gpio_led_s) <= std_logic_vector'(1 to 4 => '0');
 	phy_reset  <= not gtx_rst;
 	phy_txer   <= '0';
 	phy_mdc    <= '0';

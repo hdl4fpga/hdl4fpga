@@ -273,13 +273,13 @@ begin
 		sdram_odt  => sdram_sch_odt,
 		sdram_wwn  => sdram_sch_wwn);
 
-	sdram_rotval_p : process(sdram_cwl)
+	sdram_rotval_b : block
 		function sdram_rotval (
 			constant line_size : natural;
 			constant word_size : natural;
-			constant lat_val : std_logic_vector;
-			constant lat_cod : std_logic_vector;
-			constant lat_tab : natural_vector)
+			constant lat_val   : std_logic_vector;
+			constant lat_cod   : std_logic_vector;
+			constant lat_tab   : natural_vector)
 			return std_logic_vector is
 	
 			subtype word is std_logic_vector(unsigned_num_bits(line_size/word_size-1)-1 downto 0);
@@ -347,7 +347,7 @@ begin
 			lat_val   => sdram_cwl,
 			lat_cod   => cwl_cod,
 			lat_tab   => wwnl_tab);
-	end process;
+	end block;
 
 	ctlr_trdy   <= sdram_mpu_trdy when phy_inirdy='1' else '0';
 	ctlr_cmd    <= sdram_pgm_cmd;
@@ -359,16 +359,16 @@ begin
 	ctlr_do_dv  <= phy_sti;
 
 	phy_rlreq   <= sdram_init_rdy;
-	phy_trdy    <= sdram_mpu_trdy when phy_inirdy='0' else '0';
+	phy_trdy    <= sdram_mpu_trdy   when phy_inirdy='0' else '0';
 	phy_rst     <= sdram_init_rst;
 	phy_cke     <= sdram_init_cke;
-	phy_cs      <= '0'            when sdram_mpu_sel='1' else sdram_init_cs;
-	phy_ras     <= sdram_mpu_ras  when sdram_mpu_sel='1' else sdram_init_ras;
-	phy_cas     <= sdram_mpu_cas  when sdram_mpu_sel='1' else sdram_init_cas;
-	phy_we      <= sdram_mpu_we   when sdram_mpu_sel='1' else sdram_init_we;
-	phy_a       <= ctlr_a         when sdram_mpu_sel='1' else sdram_init_a;
-	phy_b       <= ctlr_b         when sdram_mpu_sel='1' else sdram_init_b;
-	phy_odt     <= sdram_init_odt when sdram_mpu_sel='0' else sdram_sch_odt(0); 
+	phy_cs      <= '0'              when sdram_init_rdy='1' else sdram_init_cs;
+	phy_ras     <= sdram_mpu_ras    when sdram_init_rdy='1' else sdram_init_ras;
+	phy_cas     <= sdram_mpu_cas    when sdram_init_rdy='1' else sdram_init_cas;
+	phy_we      <= sdram_mpu_we     when sdram_init_rdy='1' else sdram_init_we;
+	phy_a       <= ctlr_a           when sdram_init_rdy='1' else sdram_init_a;
+	phy_b       <= ctlr_b           when sdram_init_rdy='1' else sdram_init_b;
+	phy_odt     <= sdram_sch_odt(0) when sdram_init_rdy='1' else sdram_init_odt; 
 
 	rotate_i : entity hdl4fpga.barrel
 	generic map (

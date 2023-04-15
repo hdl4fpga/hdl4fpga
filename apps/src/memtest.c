@@ -119,7 +119,7 @@ int sio_memwrite(size_t address, const char *buffer, size_t length)
 
 //#define MAX_ADDRESS    (32*1024*1024)
 #define MAX_ADDRESS    (256*1024*1024)
-//#define MAX_ADDRESS    (16*1024*1024)
+// #define MAX_ADDRESS    (16*1024*1024)
 
 int main (int argc, char *argv[])
 {
@@ -167,7 +167,7 @@ int main (int argc, char *argv[])
 	int  length;
 
 	length  = 1*1024;
-	for(int pass = 1; pass < 2 || 1;pass++) {
+	for(int pass = 1; pass < 2 || 0;pass++) {
 		seq_init();
 		for (address = 0; address < MAX_ADDRESS; address += length) {
 
