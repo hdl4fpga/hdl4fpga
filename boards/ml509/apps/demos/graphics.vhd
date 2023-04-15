@@ -410,10 +410,10 @@ begin
 					o => ddr_clk180);
 			end block;
 
-			process (gpio_sw_c, locked, ddr_clk0)
+			process (locked, ddr_clk0)
 				variable cntr : unsigned(0 to 2);
 			begin
-				if locked='0' or gpio_sw_c='1' then
+				if locked='0' then
 					cntr := (others => '0');
 				elsif rising_edge(ddr_clk0) then
 					if cntr(0)='0' then
@@ -458,7 +458,7 @@ begin
 			variable tmr : unsigned(0 to 8-1) := (others => '0');
 		begin
 			if rising_edge(userclk_bufg) then
-				if (not ddr_locked or sys_rst or not iodctlr_rdy)='1' then
+				if (gpio_sw_c or not ddr_locked or sys_rst or not iodctlr_rdy)='1' then
 					tmr := (others => '0');
 				elsif tmr(0)='0' then
 					tmr := tmr + 1;
