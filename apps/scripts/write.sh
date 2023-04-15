@@ -15,8 +15,7 @@ ADDR="${ADDR: -8}"
 LENGTH="${LENGTH:-${#2}}"
 LENGTH="${LENGTH:-0}"
 LEN=`printf %02x $(( ${LENGTH}/2-1 ))`
-LENGTH=`printf %06x $(( ${LEN} ))`
-LENGTH="${LENGTH: -6}"
+LENGTH=`printf %06x 0x${LEN}`
 DATA=`echo -n "18${LEN}${2}1702${LENGTH}1603${ADDR}"`
 echo $ADDR':'$LENGTH ' : ' "${DATA}"
-echo "${DATA}"|xxd -r -ps|./scripts/siocomm.sh |xxd -ps| tr -d '\n'
+echo  "${DATA}"|xxd -r -ps|./scripts/siocomm.sh |xxd -ps| tr -d '\n'

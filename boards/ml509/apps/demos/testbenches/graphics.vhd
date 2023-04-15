@@ -248,34 +248,7 @@ begin
 		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"18ff" &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"18ff" &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"18ff" &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_00001f_1603_0000_0000",
+		x"1702_0000ff_1603_0000_0000",
 		-- mii_data4 => x"01007e_1702_000000_1603_8000_0000",
 		mii_data5 => x"010078_1702_000008_1603_8000_0000", -- 1f8
 		mii_frm1 => '0', --mii_req,
@@ -333,31 +306,31 @@ begin
 		mii_irdy   => mii_txen,
 		mii_data   => mii_txd);
 
-	process (ds_n, dqs_n)
-	begin
-		for i in ds_n'range loop
-			case ds_n(i) is
-			when '0'|'1' =>
-				dqs_n(i) <= ds_n(i);
-			when others =>
-				dqs_n(i) <= 'H';
-			end case;
-			ds_n(i) <= dqs_n(0);
-		end loop;
-	end process;
-
-	process (ds, dqs)
-	begin
-		for i in ds'range loop
-			case ds(i) is
-			when '0'|'1' =>
-				dqs(i) <= ds(i);
-			when others =>
-				dqs(i) <= 'L';
-			end case;
-			ds(i) <= dqs(0);
-		end loop;
-	end process;
+	-- process (ds_n, dqs_n)
+	-- begin
+		-- for i in ds_n'range loop
+			-- case ds_n(i) is
+			-- when '0'|'1' =>
+				-- dqs_n(i) <= ds_n(i);
+			-- when others =>
+				-- dqs_n(i) <= 'H';
+			-- end case;
+			-- ds_n(i) <= dqs_n(0);
+		-- end loop;
+	-- end process;
+-- 
+	-- process (ds, dqs)
+	-- begin
+		-- for i in ds'range loop
+			-- case ds(i) is
+			-- when '0'|'1' =>
+				-- dqs(i) <= ds(i);
+			-- when others =>
+				-- dqs(i) <= 'L';
+			-- end case;
+			-- ds(i) <= dqs(0);
+		-- end loop;
+	-- end process;
 
 	process (dm)
 	begin
@@ -381,8 +354,8 @@ begin
 			Ba      => ba(2-1 downto 0),
 			Addr    => addr(13-1 downto 0),
 			Dm_rdqs => dmi(2*(i+1)-1 downto 2*i),
-			Dqs     => ds(2*(i+1)-1 downto 2*i),
-			Dqs_n   => ds_n(2*(i+1)-1 downto 2*i),
+			Dqs     => dqs(2*(i+1)-1 downto 2*i),
+			Dqs_n   => dqs_n(2*(i+1)-1 downto 2*i),
 			rdqs_n  => rdqs_n(2*(i+1)-1 downto 2*i),
 			Dq      => dq(16*(i+1)-1 downto 16*i),
 			Odt     => odt(i/2));

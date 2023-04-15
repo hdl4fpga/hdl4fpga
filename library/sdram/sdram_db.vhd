@@ -164,14 +164,14 @@ package sdram_db is
 		WIDL   =>  2);
 
 	constant xc5vg4_latencies : latency_vector := (
-		STRL   =>  5,
-		DQSL   => -2,
-		DQSZL  => -2,
+		STRL   =>  9,
+		DQSL   =>  2,
+		DQSZL  =>  2,
 		DQZL   => -1,
 		WWNL   => -3,
 		STRXL  =>  0,
-		DQSZXL =>  0,
-		DQSXL  =>  2,
+		DQSZXL =>  1,
+		DQSXL  =>  0,
 		DQZXL  =>  0,
 		WWNXL  =>  0,
 		WIDL   =>  4);

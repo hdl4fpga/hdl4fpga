@@ -34,8 +34,10 @@ use unisim.vcomponents.all;
 
 entity xc_sdrdqphy is
 	generic (
-		dqs_delay   : time := (1000 ns /450.0)*(4.5/4.0);
-		dqi_delay   : time := (1000 ns /450.0)*(4.5/4.0);
+		-- dqs_delay   : time := (1000 ns /450.0)*(4.5/4.0);
+		-- dqi_delay   : time := (1000 ns /450.0)*(4.5/4.0);
+		dqs_delay   : time := 4.4 ns ; --(1000 ns /450.0)*(4.5/4.0);
+		dqi_delay   : time := 4.4 ns ; --(1000 ns /450.0)*(4.5/4.0);
 
 		byteno      : natural;
 		device      : fpga_devices;
@@ -712,7 +714,7 @@ begin
 				signal out_rst  : std_logic;
 				signal out_data : std_logic_vector(sys_dqi'length/gear downto 0);
 			begin
-				dmi     <= sys_dmi(i) when sw='0' else '1';
+				dmi     <= sys_dmi(i) when sw='0' else '0';
 				in_data <= dmi & dqo(byte_size*(i+1)-1 downto byte_size*i);
 				in_rst  <= not ordv(i);
 				out_rst <= not sdqe(i);

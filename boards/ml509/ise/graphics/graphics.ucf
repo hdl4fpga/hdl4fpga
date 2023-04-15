@@ -27,9 +27,9 @@ TIMESPEC ts_user_clk = PERIOD "user_clk" 10 ns HIGH 50%;
 NET "clk_fpga" TNM_NET = clk_fpga;
 TIMESPEC ts_clk_fpga = PERIOD "clk_fpga" 5 ns HIGH 50%;
 
-NET "phy_rxclk_bufg" TNM_NET = phy_rxclk_bufg;
-TIMESPEC ts_phy_rxclk = PERIOD "phy_rxclk_bufg" 8 ns HIGH 50%;
-OFFSET = IN 0 ns VALID 8 ns BEFORE phy_rxclk_bufg rising;
+NET "phyrxclk_bufg" TNM_NET = phyrxclk_bufg;
+TIMESPEC ts_phy_rxclk = PERIOD "phyrxclk_bufg" 8 ns HIGH 50%;
+OFFSET = IN 0 ns VALID 8 ns BEFORE phyrxclk_bufg rising;
 
 NET "phy_txclk" TNM_NET = phy_txclk;
 TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 8 ns HIGH 50%;
@@ -38,19 +38,18 @@ TIMESPEC ts_phy_txclk = PERIOD "phy_txclk" 8 ns HIGH 50%;
 # Ignore crossclock time #
 # ###################### #
 
-NET sys_clk      TNM_NET = FFS  FFS_sysclk;
-NET gtx_clk      TNM_NET = FFS  FFS_gtxclk;
-NET gtx_clk      TNM_NET = RAMS RAMS_gtxclk;
-NET ctlr_clks[0] TNM_NET = FFS  FFS_clk0;
-NET ctlr_clks[0] TNM_NET = RAMS RAMS_clk0;
-NET ctlr_clks[1] TNM_NET = FFS  FFS_clk90;
-NET ctlr_clks[1] TNM_NET = RAMS RAMS_clk90;
+NET user_clk  TNM_NET = FFS  FFS_userclk;
+NET gtx_clk   TNM_NET = FFS  FFS_gtxclk;
+NET gtx_clk   TNM_NET = RAMS RAMS_gtxclk;
+NET ddr_clk0  TNM_NET = FFS  FFS_clk0;
+NET ddr_clk0  TNM_NET = RAMS RAMS_clk0;
+NET ddr_clk90 TNM_NET = FFS  FFS_clk90;
+NET ddr_clk90 TNM_NET = RAMS RAMS_clk90;
 
-TIMESPEC TS_sys2ffclk0  = FROM FFS_sysclk TO FFS_clk0   TIG;
-TIMESPEC TS_sys2ffclk90 = FROM FFS_sysclk TO FFS_clk90  TIG;
-#TIMESPEC TS_sys2ram90   = FROM FFS_sysclk TO RAMS_clk90 TIG;
-TIMESPEC TS_ddr2clk     = FROM FFS_clk0   TO FFS_sysclk TIG;
-TIMESPEC TS_clk902sys   = FROM FFS_clk90  TO FFS_sysclk TIG;
+TIMESPEC TS_sys2ffclk0  = FROM FFS_userclk TO FFS_clk0   TIG;
+TIMESPEC TS_sys2ffclk90 = FROM FFS_userclk TO FFS_clk90  TIG;
+TIMESPEC TS_ddr2clk     = FROM FFS_clk0   TO FFS_userclk TIG;
+TIMESPEC TS_clk902sys   = FROM FFS_clk90  TO FFS_userclk TIG;
 TIMESPEC TS_ram90toff   = FROM RAMS_clk90 TO FFS_clk0 TIG;
 TIMESPEC TS_ram0toff90  = FROM RAMS_clk0  TO FFS_clk90 TIG;
 

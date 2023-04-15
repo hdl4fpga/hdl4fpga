@@ -752,7 +752,7 @@ begin
 		mark         => MT47H512M3,
 		burst_length => 8,
 
-		phy_latencies => xc7vg4_latencies,
+		phy_latencies => xc5vg4_latencies,
 		timing_id    => videoparam(video_mode).timing,
 		red_length   => 8,
 		green_length => 8,
@@ -913,7 +913,7 @@ begin
 		taps       => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
 		dqs_highz  => false)
 	port map (
-		tp_sel     => "00",
+		tp_sel     => tp_sel,
 		tp         => tp_sdrphy,
 		rst        => sdrphy_rst0,
 		rst_shift  => sdrphy_rst90,
@@ -950,6 +950,7 @@ begin
 		sys_dqt    => ctlrphy_dqt,
 		sys_dqo    => ctlrphy_dqi,
 		sys_odt    => ctlrphy_odt,
+		sys_dqv    => ctlrphy_dqv,
 		sys_sti    => ctlrphy_sto,
 		sys_sto    => ctlrphy_sti,
 		sdram_clk  => ddr2_clk,
@@ -1017,22 +1018,20 @@ begin
 			end generate;
 
 			false_g : if not (i < word_size/byte_size) generate
-				ddr2_dqs_p(i) <= 'Z';
-				ddr2_dqs_n(i) <= 'Z';
+				dqsiobuf_i : iobufds
+				generic map (
+					iostandard => "DIFF_SSTL18_II_DCI")
+				port map (
+					t   => '1',
+					i   => '-',
+					o   => open,
+					io  => ddr2_dqs_p(i),
+					iob => ddr2_dqs_n(i));
 			end generate;
 
 		end generate;
 
-		ddr_d_g : for i in ddr2_d'range generate
-			process (ddr2_dqo, ddr2_dqt)
-			begin
-				if i < word_size then
-				else
-					ddr2_d(i) <= 'Z';
-				end if;
-			end process;
-
-		end generate;
+		ddr2_d(ddr2_d'left downto word_size) <= (others => 'Z');
 
 	end block;
 
