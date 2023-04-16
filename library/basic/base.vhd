@@ -408,6 +408,7 @@ package base is
 		constant data  : std_logic_vector;
 		constant size  : natural;
 		constant right : boolean := true;
+		constant full  : boolean := false;
 		constant value : std_logic := '-')
 		return std_logic_vector;
 
@@ -1278,7 +1279,7 @@ package body base is
 		return std_logic_vector is
 		constant size : natural := (inp'length+ena'length-1)/ena'length;
 		variable aux  : unsigned(0 to size*ena'length-1) := (others => '0');
-		variable rval : std_logic_vector(0 to size-1) := fill(data => def, size => size);
+		variable rval : std_logic_vector(0 to size-1) := fill(data => def, size => size, right => true);
 	begin
 
 		assert inp'length mod ena'length = 0
@@ -1419,7 +1420,7 @@ package body base is
 		assert word'length mod size = 0
 			report "multiplex mod"
 			severity failure;
-		return multiplex(fill(data => word, size => size*(2**addr'length)), addr);
+		return multiplex(fill(data => word, size => size*(2**addr'length), right => true), addr);
 	end;
 
 	function multiplex (
@@ -1718,25 +1719,44 @@ package body base is
 		constant data  : std_logic_vector;
 		constant size  : natural;
 		constant right : boolean := true;
+		constant full  : boolean := false;
 		constant value : std_logic := '-')
 		return std_logic_vector is
-		variable retval_right : std_logic_vector(0 to size-1)     := (others => value);
-		variable retval_left  : std_logic_vector(size-1 downto 0) := (others => value);
+		variable retval_right : unsigned(0 to size-1)     := (others => value);
+		variable retval_left  : unsigned(size-1 downto 0) := (others => value);
 	begin
-		if right then
-			if data'length > size then
-				retval_right(0 to size-1):= std_logic_vector(resize(rotate_left(unsigned(data), size), size));
-				return retval_right(0 to size-1);
+		if full then
+				assert true
+				report "XXXXXX **** " & natural'image(data'length) & "XXXXXX **** " & natural'image(size)
+				severity failure;
+			for i in 0 to size/data'length-1 loop
+
+				retval_right := rotate_right(retval_right, data'length);
+				retval_right(0 to data'length-1) := unsigned(data);
+				retval_left := rotate_left(retval_left, data'length);
+				retval_left(data'length-1 downto 0) := unsigned(data);
+			end loop;
+				return std_logic_vector(retval_right);
+			if right then
+			else
+				return std_logic_vector(retval_left);
 			end if;
-			retval_right(0 to data'length-1) := data;
-			return retval_right;
+		else
+    		if right then
+    			if data'length > size then
+    				retval_right(0 to size-1):= resize(rotate_left(unsigned(data), size), size);
+    				return std_logic_vector(retval_right(0 to size-1));
+    			end if;
+    			retval_right(0 to data'length-1) := unsigned(data);
+    			return std_logic_vector(retval_right);
+    		end if;
+    		if data'length > size then
+    			retval_left(size-1 downto 0) :=  resize(unsigned(data), size);
+    			return std_logic_vector(retval_left(size-1 downto 0));
+    		end if;
+    		retval_left(data'length-1 downto 0) := unsigned(data);
+    		return std_logic_vector(retval_left);
 		end if;
-		if data'length > size then
-			retval_left(size-1 downto 0) :=  std_logic_vector(resize(unsigned(data), size));
-			return retval_left(size-1 downto 0);
-		end if;
-		retval_left(data'length-1 downto 0) := data;
-		return retval_left;
 	end;
 
 	function bcd2ascii (

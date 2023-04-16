@@ -266,8 +266,6 @@ HDL4FPGA__eth_tb__def = $(LIB_HDL4FPGA)/eth_tb/def.dat
 HDL4FPGA__eth_tb = $(LIB_HDL4FPGA)/eth_tb/_primary.dat
 HDL4FPGA__eth_rx__def = $(LIB_HDL4FPGA)/eth_rx/def.dat
 HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
-HDL4FPGA__ecp5pll__mix = $(LIB_HDL4FPGA)/ecp5pll/mix.dat
-HDL4FPGA__ecp5pll = $(LIB_HDL4FPGA)/ecp5pll/_primary.dat
 HDL4FPGA__ecp5_sdrphy__ecp5 = $(LIB_HDL4FPGA)/ecp5_sdrphy/ecp5.dat
 HDL4FPGA__ecp5_sdrphy = $(LIB_HDL4FPGA)/ecp5_sdrphy/_primary.dat
 HDL4FPGA__ecp5_sdrdqphy__ecp5 = $(LIB_HDL4FPGA)/ecp5_sdrdqphy/ecp5.dat
@@ -626,8 +624,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__eth_tb) \
     $(HDL4FPGA__eth_rx__def) \
     $(HDL4FPGA__eth_rx) \
-    $(HDL4FPGA__ecp5pll__mix) \
-    $(HDL4FPGA__ecp5pll) \
     $(HDL4FPGA__ecp5_sdrphy__ecp5) \
     $(HDL4FPGA__ecp5_sdrphy) \
     $(HDL4FPGA__ecp5_sdrdqphy__ecp5) \
@@ -1225,14 +1221,6 @@ $(HDL4FPGA__ecp5_sdrphy__ecp5) : ../latticesemi/ecp5/ecp5_sdrphy.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/ecp5_sdrphy.vhd
-
-$(HDL4FPGA__ecp5pll) \
-$(HDL4FPGA__ecp5pll__mix) : ../latticesemi/ecp5/ecp5pll.vhd \
-		$(IEEE__std_logic_arith) \
-		$(IEEE__std_logic_unsigned) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/ecp5pll.vhd
 
 $(HDL4FPGA__eth_rx) \
 $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \

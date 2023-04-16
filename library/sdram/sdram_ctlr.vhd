@@ -377,8 +377,8 @@ begin
 		do  => phy_dqo);
 
 	phy_dmo  <= 
-		(fill(not sdram_sch_dmo, phy_dmo'length) and ctlr_dm) or 
-		 fill(not sdram_sch_wwn, phy_dmo'length) when stdr=sdr else
+		(fill(not sdram_sch_wwn, phy_dmo'length, full => true) or ctlr_dm) and 
+		 fill(not sdram_sch_dmo, phy_dmo'length, full => true) when stdr=sdr else
 		ctlr_dm;
 	phy_dqt  <= not sdram_sch_dqz;
 	phy_dqso <= sdram_sch_dqs;
