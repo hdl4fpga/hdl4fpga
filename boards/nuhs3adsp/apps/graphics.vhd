@@ -197,7 +197,7 @@ architecture graphics of nuhs3adsp is
 	signal ctlrphy_odt   : std_logic_vector((gear+1)/2-1 downto 0);
 	signal ctlrphy_b     : std_logic_vector((gear+1)/2*ddr_ba'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector((gear+1)/2*ddr_a'length-1 downto 0);
-	signal ctlrphy_dqsi  : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqsi  : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal ctlrphy_dqst  : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqso  : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dmi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
