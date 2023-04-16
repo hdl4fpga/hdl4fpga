@@ -576,7 +576,7 @@ begin
 
 	end block;
 
-	grahics_e : entity hdl4fpga.demo_graphics
+	grahics_e : entity hdl4fpga.app_graphics
 	generic map (
 		debug        => debug,
 		profile      => 2,

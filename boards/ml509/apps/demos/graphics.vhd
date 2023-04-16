@@ -708,7 +708,7 @@ begin
 
 	end block;
 
-	graphics_e : entity hdl4fpga.demo_graphics
+	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
 		bank_size    => bank_size,
 		addr_size    => addr_size,

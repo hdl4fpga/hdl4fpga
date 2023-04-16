@@ -91,6 +91,8 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
+	-- constant app_profile : app_profiles := hdlc_sdr250MHz_1080p24bpp30;
+	-- constant app_profile : app_profiles := hdlc_sdr250MHz_720p24bpp;
 	constant app_profile : app_profiles := hdlc_sdr166MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr133MHz_480p16bpp;
 	--------------------------------------
@@ -709,7 +711,7 @@ begin
 
 	end generate;
 
-	graphics_e : entity hdl4fpga.demo_graphics
+	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
 		debug        => debug,
 		profile      => 0,
@@ -828,5 +830,17 @@ begin
 			z  => gpdi_d(i),
 			zn => gpdi_dn(i));
 	end generate;
+
+	tp_p : process (ctlr_clk)
+		variable q0 : std_logic;
+		variable q1 : std_logic;
+	begin
+		if rising_edge(ctlr_clk) then
+			gp(27) <= q0;
+			gn(27) <= q1;
+			q0 := not q0;
+			q1 := not q1;
+		end if;
+	end process;
 
 end;

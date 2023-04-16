@@ -673,7 +673,7 @@ begin
 	report "NO mii ready"
 	severity FAILURE;
 
-	graphics_e : entity hdl4fpga.demo_graphics
+	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
 		ena_burstref  => false,
 		-- debug        => true,

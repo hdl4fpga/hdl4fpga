@@ -664,7 +664,7 @@ begin
 
 	end generate;
 
-	graphics_e : entity hdl4fpga.demo_graphics
+	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
 		debug        => debug,
 		profile      => 1,

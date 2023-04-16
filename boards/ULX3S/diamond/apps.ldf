@@ -113,7 +113,7 @@
         <Source name="../../../library/video/video.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/demos/ser_debug.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/apps/ser_debug.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/mii/arp_rx.vhd" type="VHDL" type_short="VHDL">
@@ -146,10 +146,10 @@
         <Source name="../../../library/video/ser_display.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/demos/eth_tb.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/apps/eth_tb.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../demos/eth_tb.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../apps/eth_tb.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work"/>
         </Source>
         <Source name="../../../library/sio/sio_cmp.vhd" type="VHDL" type_short="VHDL">
@@ -323,7 +323,7 @@
         <Source name="../../../library/sio/sio_dmahdsk.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/demos/demo_graphics.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/apps/app_graphics.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/hdlc/hdlcdll_rx.vhd" type="VHDL" type_short="VHDL">
@@ -440,7 +440,7 @@
         <Source name="../../../library/mii/dll_rx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../apps/demos/graphics.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../apps/graphics.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work"/>
         </Source>
         <Source name="../../../library/basic/sync_transfer.vhd" type="VHDL" type_short="VHDL">
@@ -485,7 +485,7 @@
         <Source name="../../../library/basic/profiles.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/demos/app_profiles.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/apps/app_profiles.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/latticesemi/ff.vhd" type="VHDL" type_short="VHDL">
@@ -605,7 +605,7 @@
         <Source name="../../../library/video/video.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/demos/ser_debug.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/apps/ser_debug.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/basic/fifo.vhd" type="VHDL" type_short="VHDL">
@@ -659,7 +659,7 @@
         <Source name="../../../library/hdlc/hdlcsync_tx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../demos/hdlc_debug.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../apps/hdlc_debug.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work"/>
         </Source>
         <Source name="../../../library/sio/sio_dayhdlc.vhd" type="VHDL" type_short="VHDL">
@@ -677,7 +677,7 @@
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
-        <Source name="../apps/demos/ser_debug.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../apps/ser_debug.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work"/>
         </Source>
         <Source name="../../../library/basic/base.vhd" type="VHDL" type_short="VHDL">
@@ -758,7 +758,7 @@
         <Source name="../../../library/video/video.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/demos/ser_debug.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/apps/ser_debug.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/video/ser_display.vhd" type="VHDL" type_short="VHDL">
