@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="demos" device="LFE5U-12F-8BG381C" default_implementation="graphics">
+<BaliProject version="3.2" title="apps" device="LFE5U-12F-8BG381C" default_implementation="graphics">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
@@ -206,7 +206,7 @@
         <Source name="../../../library/basic/txn_buffer.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="demos.lpf" type="Logic Preference" type_short="LPF">
+        <Source name="apps.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
     </Implementation>
@@ -524,7 +524,7 @@
         <Source name="../../../library/xilinx/adjpha.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="demos.lpf" type="Logic Preference" type_short="LPF">
+        <Source name="apps.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
     </Implementation>
@@ -668,196 +668,7 @@
         <Source name="../../../library/sio/sio_hdlc.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="demos.lpf" type="Logic Preference" type_short="LPF">
-            <Options/>
-        </Source>
-    </Implementation>
-    <Implementation title="miiipoe_debug" dir="miiipoe_debug" description="miiipoe_debug" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.eth_tb" lib="hdl4fpga" top="ulx3s"/>
-        <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work" top_module="ulx3s"/>
-        </Source>
-        <Source name="../../../library/sio/sio_flow.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/basic/base.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/basic/dpram.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/basic/crc.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/video/videopkg.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/video/vga2dvid.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/video/tmds_encoder.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/video/modeline_calculator.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/video/cgafonts.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/video/cga_rom.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/video/cga_adapter.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/video/fonts/bcdfonts.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/video/fonts/cp850x8x8x0to127.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/video/fonts/cp850x8x8x128to255.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/video/fonts/cp850x8x16x0to127.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/video/fonts/cp850x8x16x128to255.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/basic/latency.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/basic/arbiter.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/basic/desser.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/basic/serdes.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/sio/sio_mux.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/sio/sio_ram.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/basic/rom.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/video/video.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/demos/ser_debug.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/arp_rx.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/arp_tx.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/eth_rx.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/eth_tx.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/ethpkg.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/ipoepkg.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/mii_ipoe.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/mii_rxpre.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/basic/fifo.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/video/ser_display.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/demos/eth_tb.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/sio/sio_cmp.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/arpd.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/sio/sio_muxcmp.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/icmprply_tx.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/icmprqst_rx.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/dhcp_dscb.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/dhcp_offer.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/dhcpcd.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/icmpd.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/ipv4.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/ipv4_rx.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/ipv4_tx.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/mii_1cksm.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/udp.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/udp_rx.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/udp_tx.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/basic/txn_buffer.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../demos/miiipoe_debug.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="work"/>
-        </Source>
-        <Source name="../../../library/basic/adder.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/sio/sio_sin.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/sio/sio_ff.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/sio/sio_rgtr.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/basic/et.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/mii/dll_rx.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="demos.lpf" type="Logic Preference" type_short="LPF">
+        <Source name="apps.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
     </Implementation>
@@ -953,9 +764,9 @@
         <Source name="../../../library/video/ser_display.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="demos.lpf" type="Logic Preference" type_short="LPF">
+        <Source name="apps.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
     </Implementation>
-    <Strategy name="Strategy1" file="demos.sty"/>
+    <Strategy name="Strategy1" file="apps.sty"/>
 </BaliProject>
