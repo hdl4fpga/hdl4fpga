@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="demos" device="LFE5U-12F-8BG381C" default_implementation="graphics">
+<BaliProject version="3.2" title="apps" device="LFE5U-12F-8BG381C" default_implementation="graphics">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
@@ -116,7 +116,7 @@
         <Source name="../../../library/sio/sio_dmahdsk.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/demos/demo_graphics.vhd" type="VHDL" type_short="VHDL">
+		<Source name="../../../library/apps/app_graphics.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/hdlc/hdlcdll_rx.vhd" type="VHDL" type_short="VHDL">
@@ -233,7 +233,7 @@
         <Source name="../../../library/mii/dll_rx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../apps/demos/graphics.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../apps/graphics.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work"/>
         </Source>
         <Source name="../../../library/basic/sync_transfer.vhd" type="VHDL" type_short="VHDL">
@@ -278,7 +278,7 @@
         <Source name="../../../library/basic/profiles.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/demos/app_profiles.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/apps/app_profiles.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/latticesemi/ff.vhd" type="VHDL" type_short="VHDL">
@@ -318,5 +318,5 @@
             <Options/>
         </Source>
     </Implementation>
-    <Strategy name="Strategy1" file="demos.sty"/>
+    <Strategy name="Strategy1" file="apps.sty"/>
 </BaliProject>
