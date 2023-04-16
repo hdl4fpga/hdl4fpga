@@ -100,8 +100,8 @@ HDL4FPGA__sio_dayhdlc__beh = $(LIB_HDL4FPGA)/sio_dayhdlc/beh.dat
 HDL4FPGA__sio_dayhdlc = $(LIB_HDL4FPGA)/sio_dayhdlc/_primary.dat
 HDL4FPGA__sio_cmp__def = $(LIB_HDL4FPGA)/sio_cmp/def.dat
 HDL4FPGA__sio_cmp = $(LIB_HDL4FPGA)/sio_cmp/_primary.dat
-HDL4FPGA__sff__xilinx = $(LIB_HDL4FPGA)/sff/xilinx.dat
 HDL4FPGA__sff__ecp3 = $(LIB_HDL4FPGA)/sff/ecp3.dat
+HDL4FPGA__sff__xilinx = $(LIB_HDL4FPGA)/sff/xilinx.dat
 HDL4FPGA__sff = $(LIB_HDL4FPGA)/sff/_primary.dat
 HDL4FPGA__serdes__def = $(LIB_HDL4FPGA)/serdes/def.dat
 HDL4FPGA__serdes = $(LIB_HDL4FPGA)/serdes/_primary.dat
@@ -308,10 +308,8 @@ HDL4FPGA__desser__mux = $(LIB_HDL4FPGA)/desser/mux.dat
 HDL4FPGA__desser = $(LIB_HDL4FPGA)/desser/_primary.dat
 HDL4FPGA__demux__arch = $(LIB_HDL4FPGA)/demux/arch.dat
 HDL4FPGA__demux = $(LIB_HDL4FPGA)/demux/_primary.dat
-HDL4FPGA__demo_graphics__mix = $(LIB_HDL4FPGA)/demo_graphics/mix.dat
-HDL4FPGA__demo_graphics = $(LIB_HDL4FPGA)/demo_graphics/_primary.dat
-HDL4FPGA__dbram__lscc = $(LIB_HDL4FPGA)/dbram/lscc.dat
 HDL4FPGA__dbram__ecp3 = $(LIB_HDL4FPGA)/dbram/ecp3.dat
+HDL4FPGA__dbram__lscc = $(LIB_HDL4FPGA)/dbram/lscc.dat
 HDL4FPGA__dbram = $(LIB_HDL4FPGA)/dbram/_primary.dat
 HDL4FPGA__dbdbbl__def = $(LIB_HDL4FPGA)/dbdbbl/def.dat
 HDL4FPGA__dbdbbl = $(LIB_HDL4FPGA)/dbdbbl/_primary.dat
@@ -358,8 +356,10 @@ HDL4FPGA__arbiter__mix = $(LIB_HDL4FPGA)/arbiter/mix.dat
 HDL4FPGA__arbiter = $(LIB_HDL4FPGA)/arbiter/_primary.dat
 HDL4FPGA__app_profiles__body = $(LIB_HDL4FPGA)/app_profiles/body.dat
 HDL4FPGA__app_profiles = $(LIB_HDL4FPGA)/app_profiles/_primary.dat
-HDL4FPGA__aff__xilinx = $(LIB_HDL4FPGA)/aff/xilinx.dat
+HDL4FPGA__app_graphics__mix = $(LIB_HDL4FPGA)/app_graphics/mix.dat
+HDL4FPGA__app_graphics = $(LIB_HDL4FPGA)/app_graphics/_primary.dat
 HDL4FPGA__aff__ecp3 = $(LIB_HDL4FPGA)/aff/ecp3.dat
+HDL4FPGA__aff__xilinx = $(LIB_HDL4FPGA)/aff/xilinx.dat
 HDL4FPGA__aff = $(LIB_HDL4FPGA)/aff/_primary.dat
 HDL4FPGA__adjsto__def = $(LIB_HDL4FPGA)/adjsto/def.dat
 HDL4FPGA__adjsto = $(LIB_HDL4FPGA)/adjsto/_primary.dat
@@ -458,8 +458,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__sio_dayhdlc) \
     $(HDL4FPGA__sio_cmp__def) \
     $(HDL4FPGA__sio_cmp) \
-    $(HDL4FPGA__sff__xilinx) \
     $(HDL4FPGA__sff__ecp3) \
+    $(HDL4FPGA__sff__xilinx) \
     $(HDL4FPGA__sff) \
     $(HDL4FPGA__serdes__def) \
     $(HDL4FPGA__serdes) \
@@ -666,10 +666,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__desser) \
     $(HDL4FPGA__demux__arch) \
     $(HDL4FPGA__demux) \
-    $(HDL4FPGA__demo_graphics__mix) \
-    $(HDL4FPGA__demo_graphics) \
-    $(HDL4FPGA__dbram__lscc) \
     $(HDL4FPGA__dbram__ecp3) \
+    $(HDL4FPGA__dbram__lscc) \
     $(HDL4FPGA__dbram) \
     $(HDL4FPGA__dbdbbl__def) \
     $(HDL4FPGA__dbdbbl) \
@@ -716,8 +714,10 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__arbiter) \
     $(HDL4FPGA__app_profiles__body) \
     $(HDL4FPGA__app_profiles) \
-    $(HDL4FPGA__aff__xilinx) \
+    $(HDL4FPGA__app_graphics__mix) \
+    $(HDL4FPGA__app_graphics) \
     $(HDL4FPGA__aff__ecp3) \
+    $(HDL4FPGA__aff__xilinx) \
     $(HDL4FPGA__aff) \
     $(HDL4FPGA__adjsto__def) \
     $(HDL4FPGA__adjsto) \
@@ -782,9 +782,36 @@ $(HDL4FPGA__adjsto__def) : ../xilinx/adjsto.vhd \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/adjsto.vhd
 
+$(HDL4FPGA__app_graphics) \
+$(HDL4FPGA__app_graphics__mix) : ../apps/app_graphics.vhd \
+		$(HDL4FPGA__sdram_ctlr) \
+		$(HDL4FPGA__dmactlr) \
+		$(IEEE__std_logic_unsigned) \
+		$(IEEE__std_logic_arith) \
+		$(HDL4FPGA__vga2dvid) \
+		$(HDL4FPGA__graphics) \
+		$(HDL4FPGA__video_sync) \
+		$(HDL4FPGA__so_data) \
+		$(HDL4FPGA__latency) \
+		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__sio_dmahdsk) \
+		$(HDL4FPGA__fifo) \
+		$(HDL4FPGA__sio_rgtr) \
+		$(HDL4FPGA__txn_buffer) \
+		$(HDL4FPGA__sio_sin) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__sdram_param) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../apps/app_graphics.vhd
+
 $(HDL4FPGA__app_profiles) \
-$(HDL4FPGA__app_profiles__body) : ../demos/app_profiles.vhd
-	$(VCOM) -2002 -work hdl4fpga ../demos/app_profiles.vhd
+$(HDL4FPGA__app_profiles__body) : ../apps/app_profiles.vhd
+	$(VCOM) -2002 -work hdl4fpga ../apps/app_profiles.vhd
 
 $(HDL4FPGA__arbiter) \
 $(HDL4FPGA__arbiter__mix) : ../basic/arbiter.vhd \
@@ -991,47 +1018,20 @@ $(HDL4FPGA__dbdbbl__def) : ../basic/dbdbbl.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../basic/dbdbbl.vhd
 
 $(HDL4FPGA__dbram) \
-$(HDL4FPGA__dbram__ecp3) : ../latticesemi/dbram.vhd \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164) \
-		$(ECP3__components)
-	$(VCOM) -2002 -work hdl4fpga ../latticesemi/dbram.vhd
-
 $(HDL4FPGA__dbram__lscc) : ../latticesemi/ecp3/dbram.vhd \
 		$(IEEE__numeric_std) \
-		$(HDL4FPGA__dbram) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(ECP3__components)
 	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp3/dbram.vhd
 
-$(HDL4FPGA__demo_graphics) \
-$(HDL4FPGA__demo_graphics__mix) : ../demos/demo_graphics.vhd \
-		$(HDL4FPGA__sdram_ctlr) \
-		$(HDL4FPGA__dmactlr) \
-		$(IEEE__std_logic_unsigned) \
-		$(IEEE__std_logic_arith) \
-		$(HDL4FPGA__vga2dvid) \
-		$(HDL4FPGA__graphics) \
-		$(HDL4FPGA__video_sync) \
-		$(HDL4FPGA__so_data) \
-		$(HDL4FPGA__latency) \
-		$(HDL4FPGA__sio_mux) \
-		$(HDL4FPGA__sio_dmahdsk) \
-		$(HDL4FPGA__fifo) \
-		$(HDL4FPGA__sio_rgtr) \
-		$(HDL4FPGA__txn_buffer) \
-		$(HDL4FPGA__sio_sin) \
-		$(HDL4FPGA__videopkg) \
-		$(IEEE__math_real) \
-		$(HDL4FPGA__sdram_db) \
-		$(HDL4FPGA__sdram_param) \
-		$(HDL4FPGA__base) \
+$(HDL4FPGA__dbram__ecp3) : ../latticesemi/dbram.vhd \
 		$(IEEE__numeric_std) \
+		$(HDL4FPGA__dbram) \
 		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../demos/demo_graphics.vhd
+		$(IEEE__std_logic_1164) \
+		$(ECP3__components)
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/dbram.vhd
 
 $(HDL4FPGA__desser) \
 $(HDL4FPGA__desser__mux) : ../basic/desser.vhd \
@@ -1235,14 +1235,14 @@ $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../mii/eth_rx.vhd
 
 $(HDL4FPGA__eth_tb) \
-$(HDL4FPGA__eth_tb__def) : ../demos/eth_tb.vhd \
+$(HDL4FPGA__eth_tb__def) : ../apps/eth_tb.vhd \
 		$(HDL4FPGA__eth_tx) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../demos/eth_tb.vhd
+	$(VCOM) -2002 -work hdl4fpga ../apps/eth_tb.vhd
 
 $(HDL4FPGA__eth_tx) \
 $(HDL4FPGA__eth_tx__def) : ../mii/eth_tx.vhd \
@@ -2075,7 +2075,7 @@ $(HDL4FPGA__seg7) : ../basic/seg7.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../basic/seg7.vhd
 
 $(HDL4FPGA__ser_debug) \
-$(HDL4FPGA__ser_debug__def) : ../demos/ser_debug.vhd \
+$(HDL4FPGA__ser_debug__def) : ../apps/ser_debug.vhd \
 		$(IEEE__std_logic_unsigned) \
 		$(IEEE__std_logic_arith) \
 		$(HDL4FPGA__vga2dvid) \
@@ -2092,7 +2092,7 @@ $(HDL4FPGA__ser_debug__def) : ../demos/ser_debug.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../demos/ser_debug.vhd
+	$(VCOM) -2002 -work hdl4fpga ../apps/ser_debug.vhd
 
 $(HDL4FPGA__ser_display) \
 $(HDL4FPGA__ser_display__def) : ../video/ser_display.vhd \
@@ -2121,22 +2121,22 @@ $(HDL4FPGA__serdes__def) : ../basic/serdes.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../basic/serdes.vhd
 
 $(HDL4FPGA__aff) \
-$(HDL4FPGA__aff__ecp3) \
-$(HDL4FPGA__sff) \
-$(HDL4FPGA__sff__ecp3) : ../latticesemi/ff.vhd \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164) \
-		$(ECP3__components)
-	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ff.vhd
-
 $(HDL4FPGA__aff__xilinx) \
+$(HDL4FPGA__sff) \
 $(HDL4FPGA__sff__xilinx) : ../xilinx/ff.vhd \
-		$(HDL4FPGA__aff) \
-		$(HDL4FPGA__sff) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/ff.vhd
+
+$(HDL4FPGA__aff__ecp3) \
+$(HDL4FPGA__sff__ecp3) : ../latticesemi/ff.vhd \
+		$(HDL4FPGA__aff) \
+		$(HDL4FPGA__sff) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(ECP3__components)
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ff.vhd
 
 $(HDL4FPGA__sio_cmp) \
 $(HDL4FPGA__sio_cmp__def) : ../sio/sio_cmp.vhd \
