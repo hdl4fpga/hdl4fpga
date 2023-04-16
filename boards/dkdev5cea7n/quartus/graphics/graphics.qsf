@@ -62,7 +62,7 @@ set_global_assignment -name EDA_TEST_BENCH_NAME testbench -section_id eda_simula
 set_global_assignment -name EDA_DESIGN_INSTANCE_NAME testbench -section_id testbench
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME testbench -section_id testbench
 set_global_assignment -name EDA_TEST_BENCH_FILE ../../../../library/testbench/testbench.vhd -section_id testbench
-set_global_assignment -name EDA_TEST_BENCH_FILE ../../apps/demos/testbenches/graphics.vhd -section_id testbench
+set_global_assignment -name EDA_TEST_BENCH_FILE ../../apps/testbenches/graphics.vhd -section_id testbench
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
@@ -76,7 +76,7 @@ set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name PROJECT_IP_REGENERATION_POLICY ALWAYS_REGENERATE_IP
 set_global_assignment -name DEVICE_FILTER_SPEED_GRADE 7
 set_global_assignment -name SYSTEMVERILOG_FILE /opt/intelFPGA/lite/22.1std/ip/altera/altdq_dqs2/altdq_dqs2_acv_cyclonev.sv
-set_global_assignment -name VHDL_FILE ../../../../library/demos/eth_tb.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/apps/eth_tb.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/xilinx/adjsto.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/xilinx/adjpha.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/intel/alt_dqsdelay.vhd -library hdl4fpga
@@ -147,9 +147,9 @@ set_global_assignment -name VHDL_FILE ../../../../library/sdram/phy_memcycle.vhd
 set_global_assignment -name VHDL_FILE ../../../../library/sdram/dmatrans.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/sdram/dmactlr.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/sdram/dmacntr.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../apps/demos/graphics.vhd
-set_global_assignment -name VHDL_FILE ../../../../library/demos/demo_graphics.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/demos/app_profiles.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../apps/apps/graphics.vhd
+set_global_assignment -name VHDL_FILE ../../../../library/apps/app_graphics.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/apps/app_profiles.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/mii/udp_tx.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/mii/udp_rx.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/mii/udp.vhd -library hdl4fpga
