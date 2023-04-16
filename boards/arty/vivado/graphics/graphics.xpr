@@ -293,7 +293,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../apps/demos/graphics.vhd">
+      <File Path="$PPRDIR/../../apps/graphics.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -426,7 +426,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/demos/demo_graphics.vhd">
+      <File Path="$PPRDIR/../../../../library/apps/app_graphics.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -647,7 +647,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/demos/app_profiles.vhd">
+      <File Path="$PPRDIR/../../../../library/apps/app_profiles.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -779,7 +779,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/demos/ser_debug.vhd">
+      <File Path="$PPRDIR/../../../../library/apps/ser_debug.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
