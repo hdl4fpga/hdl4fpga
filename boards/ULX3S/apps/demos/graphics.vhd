@@ -91,7 +91,7 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := hdlc_sdr250MHz_720p24bpp;
+	constant app_profile : app_profiles := hdlc_sdr166MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr133MHz_480p16bpp;
 	--------------------------------------
 
@@ -138,7 +138,7 @@ architecture graphics of ulx3s is
 		hdlc_sdr250MHz_1080p16bpp30 => (io_hdlc, sdram250MHz, mode1080p16bpp30),
 		hdlc_sdr250MHz_1080p24bpp30 => (io_hdlc, sdram250MHz, mode1080p24bpp30),
 
-		ipoe_sdr166MHz_480p24bpp => (io_ipoe, sdram166MHz, mode480p24bpp),
+		ipoe_sdr166MHz_480p24bpp    => (io_ipoe, sdram166MHz, mode480p24bpp),
 		ipoe_sdr200MHz_1080p24bpp30 => (io_ipoe, sdram200MHz, mode1080p24bpp30),
 		ipoe_sdr250MHz_1080p24bpp30 => (io_ipoe, sdram250MHz, mode1080p24bpp30));
 
@@ -400,7 +400,7 @@ begin
 	begin
 
 		assert false
-		report real'image(sdram_freq)
+		report "SDRAM CLK FREQUENCY : " & ftoa(sdram_freq, 6) & " MHz"
 		severity NOTE;
 
 		pll_i : EHXPLLL
@@ -422,9 +422,7 @@ begin
 			OUTDIVIDER_MUXB  => "DIVB",
 			OUTDIVIDER_MUXA  => "DIVA",
 
---			CLKOS_DIV        => sdram_params.pll.clkos_div,
 			CLKOS2_DIV       => sdram_params.pll.clkos2_div,
---			CLKOS3_DIV       => sdram_params.pll.clkos3_div,
 			CLKOP_DIV        => sdram_params.pll.clkop_div,
 			CLKFB_DIV        => sdram_params.pll.clkfb_div,
 			CLKI_DIV         => sdram_params.pll.clki_div)
@@ -451,8 +449,19 @@ begin
 
 		sdrsys_rst <= not lock;
 
-		sdram_dqs <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
-		-- sdram_dqs <= (others => not ctlr_clk);
+		process (ctlr_clk)
+		begin
+			if debug then
+				sdram_dqs <= (others => not ctlr_clk);
+			else
+				case sdram_mode is
+				when  sdram133MHz =>
+					sdram_dqs <= (others => ctlr_clk);
+				when others =>
+					sdram_dqs <= (others => not ctlr_clk);
+				end case;
+			end if;
+		end process;
 
 	end block;
 
@@ -485,9 +494,9 @@ begin
 			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
 		end generate;
 
-		assert FALSE
-			report "BAUDRATE : " & " " & integer'image(baudrate)
-			severity NOTE;
+		assert false
+		report "BAUDRATE : " & " " & natural'image(baudrate) & " Bd"
+		severity NOTE;
 
 		uartrx_e : entity hdl4fpga.uart_rx
 		generic map (
