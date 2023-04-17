@@ -32,24 +32,25 @@ create_clock -name dqso1 -period $ddr_tck -waveform [list 0 [expr $ddr_tck/2 ]] 
 set_input_delay -clock dqso1 -min [ expr -$ddr_dqsq ]  [get_ports ddr3_dq[*] ]
 set_input_delay -clock dqso1 -max $ddr_qh [get_ports ddr3_dq[*] ]
 
-set_clock_groups -asynchronous -group { dcm_b.ddr_b.ddr_clk0_mmce2 } -group { sys_clk    }
-set_clock_groups -asynchronous -group { dcm_b.ddr_b.ddr_clk0_mmce2 } -group { eth_tx_clk }
+set_clock_groups -asynchronous -group { sdrampll_b.ddr_clk0_mmce2 } -group { sys_clk    }
+set_clock_groups -asynchronous -group { sdrampll_b.ddr_clk0_mmce2 } -group { eth_tx_clk }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { ddr_clk0_mmce2 }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { video_clk }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { dd_clk }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { eth_rx_clk }
-set_clock_groups -asynchronous -group { sys_clk    } -group { dcm_b.ddr_b.ddr_clk0_mmce2  }
-set_clock_groups -asynchronous -group { sys_clk    } -group { dcm_b.ddr_b.ddr_clk90_mmce2 }
+set_clock_groups -asynchronous -group { sys_clk    } -group { sdrampll_b.ddr_clk0_mmce2  }
+set_clock_groups -asynchronous -group { sys_clk    } -group { sdrampll_b.ddr_clk90_mmce2 }
 set_clock_groups -asynchronous -group { video_clk  } -group { eth_tx_clk  }
+set_clock_groups -asynchronous -group { video_clk  } -group { sdrampll_b.ddr_clk0_mmce2 }
 set_clock_groups -asynchronous -group { dd_clk  }    -group { eth_tx_clk  }
 
 set_clock_groups -asynchronous -group { dqso0      } -group { sys_clk    }
-set_clock_groups -asynchronous -group { dqso0      } -group { dcm_b.ddr_b.ddr_clk0x2_mmce2 }
-set_clock_groups -asynchronous -group { dqso0      } -group { dcm_b.ddr_b.ddr_clk90x2_mmce2 }
+set_clock_groups -asynchronous -group { dqso0      } -group { sdrampll_b.ddr_clk0x2_mmce2 }
+set_clock_groups -asynchronous -group { dqso0      } -group { sdrampll_b.ddr_clk90x2_mmce2 }
 
 set_clock_groups -asynchronous -group { dqso1      } -group { sys_clk     }
-set_clock_groups -asynchronous -group { dqso1      } -group { dcm_b.ddr_b.ddr_clk0x2_mmce2 }
-set_clock_groups -asynchronous -group { dqso1      } -group { dcm_b.ddr_b.ddr_clk90x2_mmce2 }
+set_clock_groups -asynchronous -group { dqso1      } -group { sdrampll_b.ddr_clk0x2_mmce2 }
+set_clock_groups -asynchronous -group { dqso1      } -group { sdrampll_b.ddr_clk90x2_mmce2 }
 
 set_max_delay 0.0 -from [ get_ports ddr3_dqs_p[*] ]
 

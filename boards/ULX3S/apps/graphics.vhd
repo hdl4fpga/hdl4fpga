@@ -91,9 +91,9 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	-- constant app_profile : app_profiles := hdlc_sdr250MHz_1080p24bpp30;
+	constant app_profile : app_profiles := hdlc_sdr250MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr250MHz_720p24bpp;
-	constant app_profile : app_profiles := hdlc_sdr166MHz_1080p24bpp30;
+	-- constant app_profile : app_profiles := hdlc_sdr166MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr133MHz_480p16bpp;
 	--------------------------------------
 
@@ -247,6 +247,7 @@ architecture graphics of ulx3s is
 	constant byte_size   : natural := sdram_d'length/sdram_dqm'length;
 	constant coln_size   : natural := 9;
 
+	signal ctlr_clk      : std_logic;
 	signal sdrsys_rst    : std_logic;
 
 	signal ctlrphy_rst   : std_logic;
@@ -266,21 +267,13 @@ architecture graphics of ulx3s is
 	signal sdram_dqs     : std_logic_vector(word_size/byte_size-1 downto 0);
 
 	signal video_clk     : std_logic;
-	signal videoio_clk   : std_logic;
 	signal video_lck     : std_logic;
 	signal video_shift_clk : std_logic;
-	signal video_hzsync  : std_logic;
-    signal video_vtsyn   : std_logic;
-    signal video_blank   : std_logic;
-    signal video_on      : std_logic;
-    signal video_dot     : std_logic;
     signal video_pixel : std_logic_vector(0 to setif(
 		video_record.pixel=rgb565, 16, setif(
 		video_record.pixel=rgb888, 32, 0))-1);
-
 	signal dvid_crgb     : std_logic_vector(8-1 downto 0);
-
-	signal ctlr_clk      : std_logic;
+	signal videoio_clk   : std_logic;
 
 	constant mem_size    : natural := 8*(1024*8);
 	signal so_frm        : std_logic;

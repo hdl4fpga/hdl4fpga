@@ -249,9 +249,9 @@ architecture graphics of ml509 is
 	signal sys_rst        : std_logic;
 	signal sdrphy_rst0    : std_logic;
 	signal sdrphy_rst90   : std_logic;
-	alias  iodctlr_rst    : std_logic is sys_rst;
-	signal iodctlr_clk    : std_logic;
-	signal iodctlr_rdy    : std_logic;
+	alias  iodctrl_rst    : std_logic is sys_rst;
+	signal iodctrl_clk    : std_logic;
+	signal iodctrl_rdy    : std_logic;
 
 	signal gtx_rst        : std_logic;
 	signal gtx_clk        : std_logic;
@@ -286,7 +286,33 @@ begin
 		sys_rst <= not tmr(0);
 	end process;
 	
-	iod_b : block
+	videodcm_b : block
+		signal clkfx      : std_logic;
+		signal video_lckd : std_logic;
+	begin
+	
+		dcm_i : dcm_base
+		generic map (
+			clk_feedback   => "NONE",
+			clkin_period   => userclk_per*1.0e9,
+			clkfx_divide   => videoparam(video_mode).pll.dcm_div,
+			clkfx_multiply => videoparam(video_mode).pll.dcm_mul,
+			dfs_frequency_mode => "LOW")
+		port map (
+			rst    => sys_rst,
+			clkfb  => '0',
+			clkin  => userclk_bufg,
+			clkfx  => clkfx,
+			locked => video_lckd);
+
+		bufg_i : bufg
+		port map (
+			i => clkfx,
+			o => video_clk);
+
+	end block;
+
+	iodctrl_b : block
 		signal clk_fpga : std_logic;
 	begin
 
@@ -299,164 +325,75 @@ begin
 		bufg_i : bufg
 		port map (
 			i => clk_fpga,
-			o => iodctlr_clk);
-
-		idelayctrl_i : idelayctrl
-		port map (
-			rst    => iodctlr_rst,
-			refclk => iodctlr_clk,
-			rdy    => iodctlr_rdy);
-	
+			o => iodctrl_clk);
 	end block;
-	
-	ddr_b : block
 
-		signal ddr_clk    : std_logic;
-		signal ddr_clk180 : std_logic;
-		signal dcm_rst    : std_logic;
-		signal locked     : std_logic;
+	
+	sdrampll_b : block
+
+		signal ddr_clk0_mmce2    : std_logic;
+		signal ddr_clk90_mmce2   : std_logic;
+		signal ddr_clk0x2_mmce2  : std_logic;
+		signal ddr_clk90x2_mmce2 : std_logic;
+		signal ddr_clkfb         : std_logic;
 		signal ddr_locked : std_logic;
+
 	begin
 
-		gbx4_g : if gear=4 generate 
-			signal ddr_clkfb         : std_logic;
-			signal ddr_clk0x2_mmce2  : std_logic;
-			signal ddr_clk90x2_mmce2 : std_logic;
-			signal ddr_clk0_mmce2    : std_logic;
-			signal ddr_clk90_mmce2   : std_logic;
-		begin
-			ddr_i : pll_base
-			generic map (
-				divclk_divide  => sdram_params.pll.dcm_div,
-				clkfbout_mult  => 2*sdram_params.pll.dcm_mul,
-				clkin_period   => userclk_per*1.0e9,
-				clkout0_divide => gear/2,
-				clkout1_divide => gear/2,
-				clkout1_phase  => 90.0+180.0,
-				clkout2_divide => gear,
-				clkout3_divide => gear,
-				clkout3_phase  => 90.0/real((gear/2))+270.0)
-			port map (
-				rst      => sys_rst,
-				clkin    => userclk_bufg,
-				clkfbin  => ddr_clkfb,
-				clkfbout => ddr_clkfb,
-				clkout0  => ddr_clk0x2_mmce2,
-				clkout1  => ddr_clk90x2_mmce2,
-				clkout2  => ddr_clk0_mmce2,
-				clkout3  => ddr_clk90_mmce2,
-				locked   => ddr_locked);
+		pll_i : pll_base
+		generic map (
+			divclk_divide  => sdram_params.pll.dcm_div,
+			clkfbout_mult  => 2*sdram_params.pll.dcm_mul,
+			clkin_period   => userclk_per*1.0e9,
+			clkout0_divide => gear/2,
+			clkout1_divide => gear/2,
+			clkout1_phase  => 90.0+180.0,
+			clkout2_divide => gear,
+			clkout3_divide => gear,
+			clkout3_phase  => 90.0/real((gear/2))+270.0)
+		port map (
+			rst      => sys_rst,
+			clkin    => userclk_bufg,
+			clkfbin  => ddr_clkfb,
+			clkfbout => ddr_clkfb,
+			clkout0  => ddr_clk0x2_mmce2,
+			clkout1  => ddr_clk90x2_mmce2,
+			clkout2  => ddr_clk0_mmce2,
+			clkout3  => ddr_clk90_mmce2,
+			locked   => ddr_locked);
 
-			ddr_clk0x2_bufg : bufg
-			port map (
-				i => ddr_clk0x2_mmce2,
-				o => ddr_clk0x2);
+		ddr_clk0x2_bufg : bufg
+		port map (
+			i => ddr_clk0x2_mmce2,
+			o => ddr_clk0x2);
 
-			ddr_clk90x2_bufg : bufg
-			port map (
-				i => ddr_clk90x2_mmce2,
-				o => ddr_clk90x2);
+		ddr_clk90x2_bufg : bufg
+		port map (
+			i => ddr_clk90x2_mmce2,
+			o => ddr_clk90x2);
 
-			ddr_clk0_bufg : bufg
-			port map (
-				i => ddr_clk0_mmce2,
-				o => ddr_clk0);
+		ddr_clk0_bufg : bufg
+		port map (
+			i => ddr_clk0_mmce2,
+			o => ddr_clk0);
 
-			ddr_clk90_bufg : bufg
-			port map (
-				i => ddr_clk90_mmce2,
-				o => ddr_clk90);
+		ddr_clk90_bufg : bufg
+		port map (
+			i => ddr_clk90_mmce2,
+			o => ddr_clk90);
 
-		end generate;
-
-		gbx2_g : if  gear=2 generate 
-
-			dfs_b : block
-				signal clk_fx    : std_logic;
-				signal clk_fx180 : std_logic;
-			begin
-				dfs_i : dcm_base
-				generic map (
-					clk_feedback   => "NONE",
-					clkin_period   => userclk_per*1.0e9,
-					clkfx_divide   => sdram_params.pll.dcm_div,
-					clkfx_multiply => sdram_params.pll.dcm_mul,
-					dfs_frequency_mode => "HIGH")
-				port map (
-					rst      => sys_rst,
-					clkfb    => '0',
-					clkin    => userclk_bufg,
-					clkfx    => clk_fx,
-					clkfx180 => clk_fx180,
-					locked   => locked);
-	
-				bufg0_i : bufg
-				port map (
-					i => clk_fx,
-					o => ddr_clk);
-	
-				bufg180_i : bufg
-				port map (
-					i => clk_fx180,
-					o => ddr_clk180);
-			end block;
-
-			process (locked, ddr_clk0)
-				variable cntr : unsigned(0 to 2);
-			begin
-				if locked='0' then
-					cntr := (others => '0');
-				elsif rising_edge(ddr_clk0) then
-					if cntr(0)='0' then
-						cntr := cntr + 1;
-					end if;
-				end if;
-				dcm_rst <= not cntr(0);
-			end process;
-	
-			dcm_b : block
-				signal ddr_clk0_bufg  : std_logic;
-				signal ddr_clk90_bufg : std_logic;
-			begin
-				dcm_i : dcm_base
-				generic map (
-					clk_feedback => "1X",
-					clkin_period => sdram_tcp*1.0e9,
-					dll_frequency_mode => "HIGH")
-				port map (
-					rst    => dcm_rst,
-					clkin  => ddr_clk,
-					clkfb  => ddr_clk,
-					clk0   => ddr_clk0_bufg,
-					clk90  => ddr_clk90_bufg,
-					locked => ddr_locked);
-	
-				bufg0_i : bufg
-				port map (
-					i => ddr_clk0_bufg,
-					o => ddr_clk0);
-	
-				bufg90_i : bufg
-				port map (
-					i => ddr_clk90_bufg,
-					o => ddr_clk90);
-
-			end block;
-
-		end generate;
-
-		process (userclk_bufg)
-			variable tmr : unsigned(0 to 8-1) := (others => '0');
-		begin
-			if rising_edge(userclk_bufg) then
-				if (gpio_sw_c or not ddr_locked or sys_rst or not iodctlr_rdy)='1' then
-					tmr := (others => '0');
-				elsif tmr(0)='0' then
-					tmr := tmr + 1;
-				end if;
-			end if;
-			sdrsys_rst <= not tmr(0);
-		end process;
+    	process (userclk_bufg)
+    		variable tmr : unsigned(0 to 8-1) := (others => '0');
+    	begin
+    		if rising_edge(userclk_bufg) then
+    			if (gpio_sw_c or not ddr_locked or sys_rst or not iodctrl_rdy)='1' then
+    				tmr := (others => '0');
+    			elsif tmr(0)='0' then
+    				tmr := tmr + 1;
+    			end if;
+    		end if;
+    		sdrsys_rst <= not tmr(0);
+    	end process;
 	
 		process (ddr_clk0)
 		begin
@@ -479,32 +416,6 @@ begin
 				end if;
 			end if;
 		end process;
-
-	end block;
-
-	videodcm_b : block
-		signal clk_fx     : std_logic;
-		signal video_lckd : std_logic;
-	begin
-	
-		dfs_i : dcm_base
-		generic map (
-			clk_feedback   => "NONE",
-			clkin_period   => userclk_per*1.0e9,
-			clkfx_divide   => videoparam(video_mode).pll.dcm_div,
-			clkfx_multiply => videoparam(video_mode).pll.dcm_mul,
-			dfs_frequency_mode => "LOW")
-		port map (
-			rst    => sys_rst,
-			clkfb  => '0',
-			clkin  => userclk_bufg,
-			clkfx  => clk_fx,
-			locked => video_lckd);
-
-		bufg_i : bufg
-		port map (
-			i => clk_fx,
-			o => video_clk);
 
 	end block;
 
@@ -778,54 +689,8 @@ begin
 		ctlrphy_dqv   => ctlrphy_dqv,
 		tp            => open);
 
-	videoio_b : block
-		signal xclk : std_logic;
-	begin
-		process (video_clk)
-		begin
-			if rising_edge(video_clk) then
-				dvi_de <= not video_blank;
-				dvi_h  <= video_hs;
-				dvi_v  <= video_vs;
-			end if;
-		end process;
-
-		xclkp_i : oddr
-		port map (
-			c => video_clk,
-			ce => '1',
-			s  => '0',
-			r  => '0',
-			d1 => '1',
-			d2 => '0',
-			q  => xclk);
-	
-		diff_i: obufds
-		generic map (
-			iostandard => "LVDS_25")
-		port map (
-			i  => xclk,
-			o  => dvi_xclk_p,
-			ob => dvi_xclk_n);
-	
-	
-		d_g : for i in dvi_d'range generate
-		begin
-			oddr_i : oddr
-			port map (
-				c => video_clk,
-				ce => '1',
-				s  => '0',
-				r  => '0',
-				d1 => '1', --video_pixel(i),
-				d2 => '1', --video_pixel(i+dvi_d'length),
-				q  => dvi_d(i));
-	
-		end generate;
-
-	end block;
-
-	gear_g : for i in 1 to gear/2-1 generate
+	cgear_g : for i in 1 to gear/2-1 generate
+		ctlrphy_rst(i) <= ctlrphy_rst(0);
 		ctlrphy_cke(i) <= ctlrphy_cke(0);
 		ctlrphy_cs(i)  <= ctlrphy_cs(0);
 		ctlrphy_ras(i) <= '1';
@@ -852,16 +717,15 @@ begin
 		end loop;
 	end process;
 
-	ctlrphy_rst(1) <= ctlrphy_rst(0);
-	ctlrphy_cke(1) <= ctlrphy_cke(0);
-	ctlrphy_cs(1)  <= ctlrphy_cs(0);
-	ctlrphy_ras(1) <= '1';
-	ctlrphy_cas(1) <= '1';
-	ctlrphy_we(1)  <= '1';
-	ctlrphy_odt(1) <= ctlrphy_odt(0);
-
 	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
 	tp_sel <= ('0', gpio_sw_s);
+
+	idelayctrl_i : idelayctrl
+	port map (
+		rst    => iodctrl_rst,
+		refclk => iodctrl_clk,
+		rdy    => iodctrl_rdy);
+	
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
 		bank_size  => bank_size,
@@ -932,30 +796,59 @@ begin
 		sdram_dqs  => ddr2_dqsi,
 		sdram_dqso => ddr2_dqso);
 
-	ddr2_ba(ddr2_ba'left downto bank_size) <= (others => '0');
-	ddr2_a(ddr2_a'left downto addr_size)   <= (others => '0');
+	dviio_b : block
+		signal xclk : std_logic;
+	begin
+		process (video_clk)
+		begin
+			if rising_edge(video_clk) then
+				dvi_de <= not video_blank;
+				dvi_h  <= video_hs;
+				dvi_v  <= video_vs;
+			end if;
+		end process;
 
-	gpio_led_c <= ctlrphy_locked;
-
-	ddr2_scl   <= '0';
-
-	phy_mdc    <= '0';
-	phy_mdio   <= '0';
-
-	phy_txc_gtxclk_i : oddr
-	port map (
-		c  => gtx_clk,
-		ce => '1',
-		s  => '0',
-		r  => '0',
-		d1 => '1',
-		d2 => '0',
-		q  => phy_txc_gtxclk);
+		xclkp_i : oddr
+		port map (
+			c => video_clk,
+			ce => '1',
+			s  => '0',
+			r  => '0',
+			d1 => '1',
+			d2 => '0',
+			q  => xclk);
 	
+		diff_i: obufds
+		generic map (
+			iostandard => "LVDS_25")
+		port map (
+			i  => xclk,
+			o  => dvi_xclk_p,
+			ob => dvi_xclk_n);
+	
+	
+		d_g : for i in dvi_d'range generate
+			oddr_i : oddr
+			port map (
+				c => video_clk,
+				ce => '1',
+				s  => '0',
+				r  => '0',
+				d1 => video_pixel(i),
+				d2 => video_pixel(i+dvi_d'length),
+				q  => dvi_d(i));
+		end generate;
+
+		dvi_reset_b <= video_lckd;
+	end block;
+
 	ddrio_b : block
 	begin
 
-		ddr_clks_g : for i in ddr2_clk'range generate
+		ddr2_ba(ddr2_ba'left downto bank_size) <= (others => '0');
+		ddr2_a(ddr2_a'left downto addr_size)   <= (others => '0');
+
+		ddr_clk_g : for i in ddr2_clk'range generate
 			ddr_ck_obufds : obufds
 			generic map (
 				iostandard => "DIFF_SSTL18_II")
@@ -1018,17 +911,27 @@ begin
     		video_hzsync => dd_hs,
     		video_vtsync => dd_vs,
     		video_pixel  => dd_pixel);
+
+    	process (video_clk)
+    	begin
+    		if rising_edge(video_clk) then
+    			hs <= dd_hs;
+    			vs <= dd_vs;
+    			(red, green, blue) <= dd_pixel;
+    		end if;
+    	end process;
 	end block;
 
-	process (video_clk)
-	begin
-		if rising_edge(video_clk) then
-			hs <= dd_hs;
-			vs <= dd_vs;
-			(red, green, blue) <= dd_pixel;
-		end if;
-	end process;
-
+	phy_txc_gtxclk_i : oddr
+	port map (
+		c  => gtx_clk,
+		ce => '1',
+		s  => '0',
+		r  => '0',
+		d1 => '1',
+		d2 => '0',
+		q  => phy_txc_gtxclk);
+	
 	process (userclk_bufg)
 	begin
 		if rising_edge(userclk_bufg) then
@@ -1036,14 +939,21 @@ begin
 		end if;
 	end process;
 
+	gpio_led_c <= ctlrphy_locked;
+
+
 	(gpio_led_w, gpio_led_n, gpio_led_e, gpio_led_s) <= std_logic_vector'(1 to 4 => '0');
+
+	phy_mdc    <= '0';
+	phy_mdio   <= '0';
+
 	phy_reset  <= not gtx_rst;
 	phy_txer   <= '0';
 	phy_mdc    <= '0';
 	phy_mdio   <= '0';
 
 	dvi_gpio1  <= '1';
-	dvi_reset_b <= video_lckd;
+	ddr2_scl   <= '0';
 
 	bus_error <= (others => '0');
 	iic_sda_video <= 'Z';
