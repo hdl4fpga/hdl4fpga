@@ -27,7 +27,6 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_param.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
@@ -233,19 +232,18 @@ architecture graphics of ulx3s is
 
 	constant sdram_speed  : sdram_speeds := sdram_speeds'VAL(setif(not debug,
 		sdram_speeds'POS(profile_tab(app_profile).sdram_speed),
-		sdram_speeds'POS(sdram133Mhz)));
+		sdram_speeds'POS(sdram133MHz)));
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := 
 		real(sdram_params.pll.clki_div*sdram_params.pll.clkos2_div)/
 		(real(sdram_params.pll.clkfb_div*sdram_params.pll.clkop_div)*clk25mhz_freq);
 
-
-	constant gear        : natural := 1;
 	constant bank_size   : natural := sdram_ba'length;
 	constant addr_size   : natural := sdram_a'length;
 	constant word_size   : natural := sdram_d'length;
 	constant byte_size   : natural := sdram_d'length/sdram_dqm'length;
 	constant coln_size   : natural := 9;
+	constant gear        : natural := 1;
 
 	signal ctlr_clk      : std_logic;
 	signal sdrsys_rst    : std_logic;
@@ -449,7 +447,7 @@ begin
 				sdram_dqs <= (others => not ctlr_clk);
 			else
 				case sdram_speed is
-				when  sdram133MHz =>
+				when sdram133MHz =>
 					sdram_dqs <= (others => ctlr_clk);
 				when others =>
 					sdram_dqs <= (others => not ctlr_clk);
@@ -823,6 +821,7 @@ begin
 			zn => gpdi_dn(i));
 	end generate;
 
+	-- SDRAM-clk-divided-by-2 monitor
 	tp_p : process (ctlr_clk)
 		variable q0 : std_logic;
 		variable q1 : std_logic;

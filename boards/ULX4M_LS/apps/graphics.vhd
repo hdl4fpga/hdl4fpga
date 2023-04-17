@@ -231,28 +231,23 @@ architecture graphics of ulx4m_ls is
 		return tab(tab'left);
 	end;
 
-    signal video_pixel : std_logic_vector(0 to setif(
-		video_record.pixel=rgb565, 16, setif(
-		video_record.pixel=rgb888, 32, 0))-1);
-
 	constant sdram_mode : sdram_speeds := sdram_speeds'VAL(setif(not debug,
 		sdram_speeds'POS(profile_tab(app_profile).sdram_speed),
-		sdram_speeds'POS(sdram133Mhz)));
+		sdram_speeds'POS(sdram133MHz)));
 	constant sdram_params : sdramparams_record := sdramparams(sdram_mode);
-
 	constant sdram_tcp : real := 
 		real(sdram_params.pll.clki_div*sdram_params.pll.clkos2_div)/
 		(real(sdram_params.pll.clkfb_div*sdram_params.pll.clkop_div)*clk25mhz_freq);
 
-	constant io_link     : io_comms := profile_tab(app_profile).comms;
 
-	constant gear        : natural := 1;
 	constant bank_size   : natural := sdram_ba'length;
 	constant addr_size   : natural := sdram_a'length;
-	constant coln_size   : natural := 9;
 	constant word_size   : natural := sdram_d'length;
-	constant byte_size   : natural := 8;
+	constant byte_size   : natural := sdram_d'length/sdram_dqm'length;
+	constant coln_size   : natural := 9;
+	constant gear        : natural := 1;
 
+	signal ctlr_clk      : std_logic;
 	signal sdrsys_rst    : std_logic;
 
 	signal ctlrphy_rst   : std_logic;
@@ -272,17 +267,13 @@ architecture graphics of ulx4m_ls is
 	signal sdram_dqs     : std_logic_vector(word_size/byte_size-1 downto 0);
 
 	signal video_clk     : std_logic;
-	signal videoio_clk   : std_logic;
 	signal video_lck     : std_logic;
 	signal video_shift_clk : std_logic;
-	signal video_hzsync  : std_logic;
-    signal video_vtsyn   : std_logic;
-    signal video_blank   : std_logic;
-    signal video_on      : std_logic;
-    signal video_dot     : std_logic;
+    signal video_pixel : std_logic_vector(0 to setif(
+		video_record.pixel=rgb565, 16, setif(
+		video_record.pixel=rgb888, 32, 0))-1);
 	signal dvid_crgb     : std_logic_vector(8-1 downto 0);
-
-	signal ctlr_clk      : std_logic;
+	signal videoio_clk   : std_logic;
 
 	constant mem_size    : natural := 8*(1024*8);
 	signal so_frm        : std_logic;
@@ -298,6 +289,7 @@ architecture graphics of ulx4m_ls is
 	signal sio_clk       : std_logic;
 	alias uart_clk       : std_logic is sio_clk;
 
+	constant io_link     : io_comms := profile_tab(app_profile).comms;
 	constant hdplx       : std_logic := setif(debug, '0', '1');
 
 begin
@@ -379,7 +371,7 @@ begin
 
 	end block;
 
-	ctlrpll_b : block
+	sdrpll_b : block
 
 		attribute FREQUENCY_PIN_CLKOS  : string;
 		attribute FREQUENCY_PIN_CLKOS2 : string;
@@ -402,7 +394,7 @@ begin
 	begin
 
 		assert false
-		report real'image(sdram_freq)
+		report "SDRAM CLK FREQUENCY : " & ftoa(sdram_freq, 6) & " MHz"
 		severity NOTE;
 
 		pll_i : EHXPLLL
@@ -424,9 +416,7 @@ begin
 			OUTDIVIDER_MUXB  => "DIVB",
 			OUTDIVIDER_MUXA  => "DIVA",
 
---			CLKOS_DIV        => sdram_params.pll.clkos_div,
 			CLKOS2_DIV       => sdram_params.pll.clkos2_div,
---			CLKOS3_DIV       => sdram_params.pll.clkos3_div,
 			CLKOP_DIV        => sdram_params.pll.clkop_div,
 			CLKFB_DIV        => sdram_params.pll.clkfb_div,
 			CLKI_DIV         => sdram_params.pll.clki_div)
@@ -453,26 +443,21 @@ begin
 
 		sdrsys_rst <= not lock;
 
-		-- sdram_dqs <= (others => not ctlr_clk) when sdram_mode/=sdram133MHz or debug=true else (others => ctlr_clk);
-		sdram_dqs <= 
-			(others => ctlr_clk) when debug=false or 
-				sdram_mode=sdram133MHz or 
-				sdram_mode=sdram166MHz else 
-			(others => not ctlr_clk);
+		process (ctlr_clk)
+		begin
+			if debug then
+				sdram_dqs <= (others => not ctlr_clk);
+			else
+				case sdram_speed is
+				when sdram133MHz|sdram166MHz =>
+					sdram_dqs <= (others => ctlr_clk);
+				when others =>
+					sdram_dqs <= (others => not ctlr_clk);
+				end case;
+			end if;
+		end process;
 
 	end block;
-
-	ctlrclk_tp_p: process (ctlr_clk)
-		variable q0 : std_logic;
-		variable q1 : std_logic;
-	begin
-		if rising_edge(ctlr_clk) then
-			cam_scl  <= q0;
-			gpio_scl <= q1;
-			q0 := not q0;
-			q1 := not q1;
-		end if;
-	end process;
 
 	hdlc_g : if io_link=io_hdlc generate
 
@@ -618,7 +603,6 @@ begin
 			udpdaisy_e : entity hdl4fpga.sio_dayudp
 			generic map (
 				my_mac        => x"00_40_00_01_02_03",
-				-- default_ipv4a => aton("192.168.0.14"))
 				default_ipv4a => aton("10.31.175.150"))
 			port map (
 				hdplx      => hdplx,
@@ -849,4 +833,17 @@ begin
 		d1   => dvid_crgb(2*3+1),
 		q    => hdmi0_clock);
  
+	-- SDRAM-clk-divided-by-4 monitor
+	tp_p: process (ctlr_clk)
+		variable q0 : std_logic;
+		variable q1 : std_logic;
+	begin
+		if rising_edge(ctlr_clk) then
+			cam_scl  <= q0;
+			gpio_scl <= q1;
+			q0 := not q0;
+			q1 := not q1;
+		end if;
+	end process;
+
 end;
