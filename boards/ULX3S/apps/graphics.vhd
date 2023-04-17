@@ -378,7 +378,7 @@ begin
 
 	end block;
 
-	ctlrpll_b : block
+	sdrpll_b : block
 
 		attribute FREQUENCY_PIN_CLKOS  : string;
 		attribute FREQUENCY_PIN_CLKOS2 : string;

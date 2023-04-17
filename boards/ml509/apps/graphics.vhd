@@ -228,7 +228,7 @@ architecture graphics of ml509 is
 
 	signal video_clk      : std_logic;
 	signal video_lckd     : std_logic;
-	signal video_shf_clk  : std_logic;
+	signal video_shift_clk : std_logic;
 	signal video_hs       : std_logic;
 	signal video_vs       : std_logic;
     signal video_blank    : std_logic;
@@ -736,8 +736,8 @@ begin
 		sout_end      => si_end,
 		sout_data     => si_data,
 
-		video_clk     => '0', --video_clk,
-		video_shift_clk => '0', --video_shf_clk,
+		video_clk     => video_clk,
+		video_shift_clk => video_shift_clk,
 		video_hzsync  => video_hs,
 		video_vtsync  => video_vs,
 		video_blank   => video_blank,

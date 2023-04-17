@@ -85,6 +85,7 @@ architecture graphics of arty is
 	end record;
 
 	type videoparams_vector is array (natural range <>) of video_params;
+	constant v_r : natural := 5; -- video ratio
 	constant video_tab : videoparams_vector := (
 		(id => modedebug,      timing => pclk_debug,               pll => (dcm_mul => 4, dcm_div =>  2)),
 		(id => mode900p24bpp,  timing => pclk108_00m1600x900at60,  pll => (dcm_mul => 1, dcm_div => 11)),
@@ -247,7 +248,7 @@ architecture graphics of arty is
 
 	signal video_clk      : std_logic := '0';
 	signal video_lckd     : std_logic := '0';
-	signal video_shf_clk  : std_logic := '0';
+	signal video_shift_clk : std_logic;
 	signal video_hs       : std_logic;
 	signal video_vs       : std_logic;
 	signal video_blank    : std_logic;
@@ -288,12 +289,6 @@ begin
 
 	sys_rst <= btn0;
 
-	idelayctrl_i : idelayctrl
-	port map (
-		rst    => ioctrl_rst,
-		refclk => ioctrl_clk,
-		rdy    => ioctrl_rdy);
-
 	debug_q : if debug generate
 		signal q : bit;
 	begin
@@ -312,128 +307,122 @@ begin
 		end process;
 	end generate;
 
-	dcm_b : block
-		constant clk0div   : natural := 0;
-		constant clk90div  : natural := 1;
-		constant iodclk    : natural := 2;
-		constant clk0      : natural := 3;
-		constant clk90     : natural := 4;
-		constant clk270div : natural := 5;
+
+	videopll_b : block
+		signal clkfb  : std_logic;
+	begin
+		pll_i :  plle2_base
+		generic map (
+			clkin1_period  => gclk100_per*1.0e9,
+			clkfbout_mult  => 12,
+			clkout0_divide => 8)
+		port map (
+			pwrdwn   => '0',
+			rst      => sys_rst,
+			clkin1   => gclk100,
+			clkfbin  => clkfb,
+			clkfbout => clkfb,
+			clkout0  => dd_clk,
+			clkout1  => open,
+			locked   => video_lckd);
+
+	end block;
+
+
+	ioctrl_b : block
+		signal clkfb  : std_logic;
+		signal locked : std_logic;
+	begin
+		pll_i :  plle2_base
+		generic map (
+			clkin1_period  => gclk100_per*1.0e9,
+			clkfbout_mult  => 12,
+			clkout0_divide => 6)
+		port map (
+			pwrdwn   => '0',
+			rst      => sys_rst,
+			clkin1   => gclk100,
+			clkfbin  => clkfb,
+			clkfbout => clkfb,
+			clkout0  => ioctrl_clk,
+			locked   => locked);
+		ioctrl_rst <= not locked;
+
+	end block;
+
+	sdrpll_b : block
+
+		signal ddr_clk0_mmce2    : std_logic;
+		signal ddr_clk90_mmce2   : std_logic;
+		signal ddr_clk0x2_mmce2  : std_logic;
+		signal ddr_clk90x2_mmce2 : std_logic;
+		signal clkfb             : std_logic;
+		signal locked            : std_logic;
+
 	begin
 
-		video_b : block
-			signal clkfb  : std_logic;
+		ddr_i : mmcme2_base
+		generic map (
+			divclk_divide    => sdram_params.pll.dcm_div,
+			clkfbout_mult_f  => real(2*sdram_params.pll.dcm_mul),
+			clkin1_period    => gclk100_per*1.0e9,
+			clkout0_divide_f => real(gear/2),
+			clkout1_divide   => gear/2,
+			clkout1_phase    => 90.0+180.0,
+			clkout2_divide   => gear,
+			clkout3_divide   => gear,
+			clkout3_phase    => 90.0/real((gear/2))+270.0)
+		port map (
+			pwrdwn           => '0',
+			rst              => '0',
+			clkin1           => gclk100,
+			clkfbin          => clkfb,
+			clkfbout         => clkfb,
+			clkout0          => ddr_clk0x2_mmce2,
+			clkout1          => ddr_clk90x2_mmce2,
+			clkout2          => ddr_clk0_mmce2,
+			clkout3          => ddr_clk90_mmce2,
+			locked           => locked);
+
+		ddr_clk0x2_bufg : bufio
+		port map (
+			i => ddr_clk0x2_mmce2,
+			o => ddr_clk0x2);
+
+		ddr_clk90x2_bufg : bufio
+		port map (
+			i => ddr_clk90x2_mmce2,
+			o => ddr_clk90x2);
+
+		ddr_clk0_bufg : bufg
+		port map (
+			i => ddr_clk0_mmce2,
+			o => ddr_clk0);
+
+		ddr_clk90_bufg : bufg
+		port map (
+			i => ddr_clk90_mmce2,
+			o => ddr_clk90);
+
+		ddrsys_rst <= not locked or sys_rst;
+
+		process(ddrsys_rst, ddr_clk0)
 		begin
-			pll_i :  plle2_base
-			generic map (
-				clkin1_period  => gclk100_per*1.0e9,
-				clkfbout_mult  => 12,
-				clkout0_divide => 8)
-			port map (
-				pwrdwn   => '0',
-				rst      => sys_rst,
-				clkin1   => gclk100,
-				clkfbin  => clkfb,
-				clkfbout => clkfb,
-				clkout0  => dd_clk,
-				clkout1  => open,
-				locked   => video_lckd);
+			if ddrsys_rst='1' then
+				sdrphy_rst0 <= '1';
+			elsif rising_edge(ddr_clk0) then
+				sdrphy_rst0 <= ddrsys_rst;
+			end if;
+		end process;
 
-		end block;
-
-		ioctrl_b : block
-			signal clkfb  : std_logic;
-			signal locked : std_logic;
+		process(ddrsys_rst, ddr_clk90)
 		begin
-			pll_i :  plle2_base
-			generic map (
-				clkin1_period  => gclk100_per*1.0e9,
-				clkfbout_mult  => 12,
-				clkout0_divide => 6)
-			port map (
-				pwrdwn   => '0',
-				rst      => sys_rst,
-				clkin1   => gclk100,
-				clkfbin  => clkfb,
-				clkfbout => clkfb,
-				clkout0  => ioctrl_clk,
-				locked   => locked);
-			ioctrl_rst <= not locked;
-
-		end block;
-
-		ddr_b : block
-			signal ddr_lkd           : std_logic;
-			signal ddr_clkfb         : std_logic;
-			signal ddr_clk0x2_mmce2  : std_logic;
-			signal ddr_clk90x2_mmce2 : std_logic;
-			signal ddr_clk0_mmce2    : std_logic;
-			signal ddr_clk90_mmce2   : std_logic;
-		begin
-			ddr_i : mmcme2_base
-			generic map (
-				divclk_divide    => sdram_params.pll.dcm_div,
-				clkfbout_mult_f  => real(2*sdram_params.pll.dcm_mul),
-				clkin1_period    => gclk100_per*1.0e9,
-				clkout0_divide_f => real(gear/2),
-				clkout1_divide   => gear/2,
-				clkout1_phase    => 90.0+180.0,
-				clkout2_divide   => gear,
-				clkout3_divide   => gear,
-				clkout3_phase    => 90.0/real((gear/2))+270.0)
-			port map (
-				pwrdwn   => '0',
-				rst      => '0',
-				clkin1   => gclk100,
-				clkfbin  => ddr_clkfb,
-				clkfbout => ddr_clkfb,
-				clkout0  => ddr_clk0x2_mmce2,
-				clkout1  => ddr_clk90x2_mmce2,
-				clkout2  => ddr_clk0_mmce2,
-				clkout3  => ddr_clk90_mmce2,
-				locked   => ddr_lkd);
-
-			ddr_clk0x2_bufg : bufio
-			port map (
-				i => ddr_clk0x2_mmce2,
-				o => ddr_clk0x2);
-
-			ddr_clk90x2_bufg : bufio
-			port map (
-				i => ddr_clk90x2_mmce2,
-				o => ddr_clk90x2);
-
-			ddr_clk0_bufg : bufg
-			port map (
-				i => ddr_clk0_mmce2,
-				o => ddr_clk0);
-
-			ddr_clk90_bufg : bufg
-			port map (
-				i => ddr_clk90_mmce2,
-				o => ddr_clk90);
-
-			ddrsys_rst <= not ddr_lkd or sys_rst;
-
-			process(ddrsys_rst, ddr_clk0)
-			begin
-				if ddrsys_rst='1' then
-					sdrphy_rst0 <= '1';
-				elsif rising_edge(ddr_clk0) then
-					sdrphy_rst0 <= ddrsys_rst;
-				end if;
-			end process;
-
-			process(ddrsys_rst, ddr_clk90)
-			begin
-				if ddrsys_rst='1' then
-					sdrphy_rst90 <= '1';
-				elsif rising_edge(ddr_clk90) then
-					sdrphy_rst90 <= ddrsys_rst;
-				end if;
-			end process;
-
-		end block;
+			if ddrsys_rst='1' then
+				sdrphy_rst90 <= '1';
+			elsif rising_edge(ddr_clk90) then
+				sdrphy_rst90 <= ddrsys_rst;
+			end if;
+		end process;
 
 	end block;
 
@@ -706,7 +695,8 @@ begin
 		sout_end     => si_end,
 		sout_data    => si_data,
 
-		video_clk    => '0', --video_clk,
+		video_clk    => video_clk,
+		video_shift_clk => video_shift_clk,
 		video_hzsync => video_hs,
 		video_vtsync => video_vs,
 		video_blank  => video_blank,
@@ -809,6 +799,12 @@ begin
 	ctlrphy_cas(1) <= '1';
 	ctlrphy_we(1)  <= '1';
 	ctlrphy_odt(1) <= ctlrphy_odt(0);
+
+	idelayctrl_i : idelayctrl
+	port map (
+		rst    => ioctrl_rst,
+		refclk => ioctrl_clk,
+		rdy    => ioctrl_rdy);
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
@@ -946,7 +942,7 @@ begin
 			SIZE => 4,
 			GEAR => 2)
 		port map (
-			clk => video_shf_clk,
+			clk => video_shift_clk,
 			d   => dvid_crgb,
 			q   => q);
 
