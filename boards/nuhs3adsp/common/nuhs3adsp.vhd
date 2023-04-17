@@ -26,9 +26,10 @@ use ieee.std_logic_1164.all;
 
 entity nuhs3adsp is
 	generic (
-		debug : boolean := false);
+		debug    : boolean := false;
+		clk_freq : real    := 20.0e6);
 	port (
-		xtal : in std_logic := '0';
+		clk : in std_logic := '0';
 
 		sw1 : in std_logic := '1';
 
@@ -134,7 +135,7 @@ entity nuhs3adsp is
 		lcd_data : inout std_logic_vector(0 to 7);
 		lcd_backlight : out std_logic);
 
-	constant sys_per     : real    := 50.0e-9;
+	constant clk_per : real := 1.0/clk_freq;
 
 	attribute loc : string;
 	attribute iostandard : string;
@@ -144,7 +145,7 @@ entity nuhs3adsp is
 	attribute pullup : string;
 	attribute buffer_type : string;
 
-	attribute loc of xtal : signal is "F10";
+	attribute loc of clk : signal is "F10";
 	attribute loc of sw1  : signal is "A15";
 	attribute loc of hd_t_data  : signal is "H22";
 	attribute loc of hd_t_clock : signal is "F11";

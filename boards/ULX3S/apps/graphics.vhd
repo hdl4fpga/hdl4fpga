@@ -231,27 +231,21 @@ architecture graphics of ulx3s is
 		return tab(tab'left);
 	end;
 
-    signal video_pixel : std_logic_vector(0 to setif(
-		video_record.pixel=rgb565, 16, setif(
-		video_record.pixel=rgb888, 32, 0))-1);
-
-	constant sdram_mode : sdram_speeds := sdram_speeds'VAL(setif(not debug,
+	constant sdram_speed  : sdram_speeds := sdram_speeds'VAL(setif(not debug,
 		sdram_speeds'POS(profile_tab(app_profile).sdram_speed),
 		sdram_speeds'POS(sdram133Mhz)));
-	constant sdram_params : sdramparams_record := sdramparams(sdram_mode);
-
-	constant sdram_tcp : real := 
+	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
+	constant sdram_tcp    : real := 
 		real(sdram_params.pll.clki_div*sdram_params.pll.clkos2_div)/
 		(real(sdram_params.pll.clkfb_div*sdram_params.pll.clkop_div)*clk25mhz_freq);
 
-	constant io_link     : io_comms := profile_tab(app_profile).comms;
 
 	constant gear        : natural := 1;
 	constant bank_size   : natural := sdram_ba'length;
 	constant addr_size   : natural := sdram_a'length;
-	constant coln_size   : natural := 9;
 	constant word_size   : natural := sdram_d'length;
-	constant byte_size   : natural := 8;
+	constant byte_size   : natural := sdram_d'length/sdram_dqm'length;
+	constant coln_size   : natural := 9;
 
 	signal sdrsys_rst    : std_logic;
 
@@ -280,6 +274,10 @@ architecture graphics of ulx3s is
     signal video_blank   : std_logic;
     signal video_on      : std_logic;
     signal video_dot     : std_logic;
+    signal video_pixel : std_logic_vector(0 to setif(
+		video_record.pixel=rgb565, 16, setif(
+		video_record.pixel=rgb888, 32, 0))-1);
+
 	signal dvid_crgb     : std_logic_vector(8-1 downto 0);
 
 	signal ctlr_clk      : std_logic;
@@ -298,6 +296,7 @@ architecture graphics of ulx3s is
 	signal sio_clk       : std_logic;
 	alias uart_clk       : std_logic is sio_clk;
 
+	constant io_link     : io_comms := profile_tab(app_profile).comms;
 	constant hdplx       : std_logic := setif(debug, '0', '1');
 
 begin
@@ -456,7 +455,7 @@ begin
 			if debug then
 				sdram_dqs <= (others => not ctlr_clk);
 			else
-				case sdram_mode is
+				case sdram_speed is
 				when  sdram133MHz =>
 					sdram_dqs <= (others => ctlr_clk);
 				when others =>

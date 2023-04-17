@@ -157,11 +157,52 @@ architecture graphics of nuhs3adsp is
 
 	constant sdram_speed  : sdram_speeds  := profile_tab(app_profile).sdram_speed;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
+	constant sdram_tcp    : real := real(sdram_params.pll.dcm_div)*clk_per/real(sdram_params.pll.dcm_mul);
 
-	constant sdram_tcp   : real := real(sdram_params.pll.dcm_div)*sys_per/real(sdram_params.pll.dcm_mul);
 
-	signal sys_rst       : std_logic;
-	signal sys_clk       : std_logic;
+	constant bank_size   : natural := ddr_ba'length;
+	constant addr_size   : natural := ddr_a'length;
+	constant word_size   : natural := ddr_dq'length;
+	constant byte_size   : natural := ddr_dq'length/ddr_dm'length;
+	constant coln_size   : natural := 9;
+	constant gear        : natural := 2;
+
+	signal ddr_clk0      : std_logic;
+	signal ddr_clk90     : std_logic;
+	signal sdrsys_rst    : std_logic;
+
+	signal ctlrphy_rst   : std_logic;
+	signal ctlrphy_cke   : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_cs    : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_ras   : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_cas   : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_we    : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_odt   : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_b     : std_logic_vector((gear+1)/2*ddr_ba'length-1 downto 0);
+	signal ctlrphy_a     : std_logic_vector((gear+1)/2*ddr_a'length-1 downto 0);
+	signal ctlrphy_dqst  : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqsi  : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqso  : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dmi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqv   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+
+	signal ctlrphy_wlreq     : std_logic;
+	signal ctlrphy_wlrdy     : std_logic;
+	signal ctlrphy_rlreq     : std_logic;
+	signal ctlrphy_rlrdy     : std_logic;
+
+	signal ddr_clk       : std_logic_vector(0 downto 0);
+	signal ddr_odt       : std_logic_vector(0 to 0);
+	signal sdram_cke     : std_logic_vector(0 to 0);
+	signal sdram_cs      : std_logic_vector(0 to 0);
+	signal ddr_lp_ck     : std_logic;
+	signal st_dqs_open   : std_logic;
 
 	signal si_frm        : std_logic;
 	signal si_irdy       : std_logic;
@@ -174,71 +215,17 @@ architecture graphics of nuhs3adsp is
 	signal so_trdy       : std_logic;
 	signal so_data       : std_logic_vector(0 to 8-1);
 
-
-	constant gear        : natural := 2;
-	constant word_size   : natural := ddr_dq'length;
-	constant byte_size   : natural := 8;
-	constant bank_size   : natural := ddr_ba'length;
-	constant addr_size   : natural := ddr_a'length;
-	constant coln_size   : natural := 9;
-
-	signal ddrsys_lckd   : std_logic;
-	signal sdrsys_rst    : std_logic;
-
-	signal clk0          : std_logic;
-	signal clk90         : std_logic;
-
-	signal ctlrphy_rst   : std_logic;
-	signal ctlrphy_cke   : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_cs    : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_ras   : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_cas   : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_we    : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_odt   : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_b     : std_logic_vector((gear+1)/2*ddr_ba'length-1 downto 0);
-	signal ctlrphy_a     : std_logic_vector((gear+1)/2*ddr_a'length-1 downto 0);
-	signal ctlrphy_dqsi  : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqst  : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqso  : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqv   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-
-	signal phy_wlreq     : std_logic;
-	signal phy_wlrdy     : std_logic;
-	signal phy_rlreq     : std_logic;
-	signal phy_rlrdy     : std_logic;
-
-	signal sdram_cke     : std_logic_vector(0 to 0);
-	signal sdram_cs      : std_logic_vector(0 to 0);
-	signal sdram_odt     : std_logic_vector(0 to 0);
-	signal dqsi_inv      : std_logic;
-	signal ddr_clk       : std_logic_vector(0 downto 0);
-	signal ddr_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr_dqt       : std_logic_vector(ddr_dq'range);
-	signal ddr_dqo       : std_logic_vector(ddr_dq'range);
-	signal ddr_lp_ck     : std_logic;
-	signal st_dqs_open   : std_logic;
-
-	signal mii_clk       : std_logic;
 	signal video_clk     : std_logic;
 	signal video_hzsync  : std_logic;
     signal video_vtsync  : std_logic;
     signal video_blank   : std_logic;
     signal video_pixel   : std_logic_vector(0 to 32-1);
 
-	constant uart_xtal : natural := natural(5.0*10.0**9/real(sys_per*4.0));
-	alias sio_clk : std_logic is mii_txc;
+	alias sio_clk        : std_logic is mii_txc;
 
-	constant baudrate  : natural := 1000000;
---	constant baudrate  : natural := 115200;
+	signal mii_clk       : std_logic;
+	signal sys_rst       : std_logic;
+	signal clk_bufg      : std_logic;
 
 	signal dmavideotrans_cnl : std_logic;
 	signal tp : std_logic_vector(1 to 32);
@@ -247,8 +234,8 @@ begin
 --	sys_rst <= not hd_t_clock;
 	clkin_ibufg : ibufg
 	port map (
-		I => xtal ,
-		O => sys_clk);
+		I => clk ,
+		O => clk_bufg);
 
 	ddr_lp_ck_i : ibufgds
 	generic map (
@@ -258,9 +245,9 @@ begin
 		ib => ddr_lp_ckn,
 		o  => ddr_lp_ck);
 
-	process(sys_clk)
+	process(clk_bufg)
 	begin
-		if rising_edge(sys_clk) then
+		if rising_edge(clk_bufg) then
 			sys_rst <= not sw1;
 		end if;
 	end process;
@@ -279,7 +266,7 @@ begin
 		dfs_i : dcm_sp
 		generic map(
 			clk_feedback  => "NONE",
-			clkin_period  => sys_per*1.0e9,
+			clkin_period  => clk_per*1.0e9,
 			clkdv_divide  => 2.0,
 			clkin_divide_by_2 => FALSE,
 			clkfx_divide  => sdram_params.pll.dcm_div,
@@ -298,16 +285,16 @@ begin
 			psincdec => '0',
 	
 			rst      => sys_rst,
-			clkin    => sys_clk,
+			clkin    => clk_bufg,
 			clkfb    => '0',
 			clkfx    => dfs_clkfx,
 			locked   => dfs_lckd);
 
-		process (sys_rst, sys_clk)
+		process (sys_rst, clk_bufg)
 		begin
 			if sys_rst='1' then
 				dcm_rst <= '1';
-			elsif rising_edge(sys_clk) then
+			elsif rising_edge(clk_bufg) then
 				dcm_rst <= not dfs_lckd;
 			end if;
 		end process;
@@ -319,7 +306,7 @@ begin
 			clkfx_divide  => 1,
 			clkfx_multiply => 2,
 			clkin_divide_by_2 => FALSE,
-			clkin_period  => (real(sdram_params.pll.dcm_div)*sys_per*1.0e9)/real( sdram_params.pll.dcm_mul),
+			clkin_period  => (real(sdram_params.pll.dcm_div)*clk_per*1.0e9)/real( sdram_params.pll.dcm_mul),
 			clkout_phase_shift => "NONE",
 			deskew_adjust => "SYSTEM_SYNCHRONOUS",
 			dfs_frequency_mode => "HIGH",
@@ -335,7 +322,7 @@ begin
 	
 			rst      => dcm_rst,
 			clkin    => dfs_clkfx,
-			clkfb    => clk0,
+			clkfb    => ddr_clk0,
 			clk0     => dcm_clk0,
 			clk90    => dcm_clk90,
 			locked   => dcm_lckd);
@@ -343,12 +330,12 @@ begin
 		clk0_bufg_i : bufg
 		port map (
 			i => dcm_clk0,
-			o => clk0);
+			o => ddr_clk0);
 	
 		clk90_bufg_i : bufg
 		port map (
 			i => dcm_clk90,
-			o => clk90);
+			o => ddr_clk90);
 	
 		sdrsys_rst <= not dcm_lckd;
 
@@ -373,7 +360,7 @@ begin
 			clkfx_divide   => videoparam(video_mode).pll.dcm_div,
 			clkfx_multiply => videoparam(video_mode).pll.dcm_mul,
 			clkin_divide_by_2 => false,
-			clkin_period   => sys_per*1.0e9,
+			clkin_period   => clk_per*1.0e9,
 			clkout_phase_shift => "none",
 			deskew_adjust  => "system_synchronous",
 			dfs_frequency_mode => "LOW",
@@ -388,7 +375,7 @@ begin
 			psen     => '0',
 			psincdec => '0',
 			clkfb    => dcm_clkfb,
-			clkin    => sys_clk,
+			clkin    => clk_bufg,
 			clkfx    => video_clk,
 			clkfx180 => open,
 			clk0     => dcm_clk0,
@@ -399,14 +386,16 @@ begin
 	end generate;
 
 	miidcm_g : if not debug generate
-	   signal dcm_clkfb  : std_logic;
-	   signal dcm_clk0   : std_logic;
+	   signal clk0    : std_logic;
+	   signal clkfb   : std_logic;
+	   signal clkfx   : std_logic;
+	   signal clkfx_n : std_logic;
 	begin
 	
 		bug_i : bufg
 		port map (
-			I => dcm_clk0,
-			O => dcm_clkfb);
+			I => clk0,
+			O => clkfb);
 	
 		dcm_i : dcm
 		generic map(
@@ -415,7 +404,7 @@ begin
 			clkfx_divide   => 4,
 			clkfx_multiply => 5,
 			clkin_divide_by_2 => false,
-			clkin_period   => sys_per*1.0e9,
+			clkin_period   => clk_per*1.0e9,
 			clkout_phase_shift => "none",
 			deskew_adjust  => "system_synchronous",
 			dfs_frequency_mode => "LOW",
@@ -429,14 +418,27 @@ begin
 			psclk    => '0',
 			psen     => '0',
 			psincdec => '0',
-			clkfb    => dcm_clkfb,
-			clkin    => sys_clk,
-			clkfx    => mii_clk,
+			clkfb    => clkfb,
+			clkin    => clk_bufg,
+			clkfx    => clkfx,
 			clkfx180 => open,
-			clk0     => dcm_clk0,
+			clk0     => clk0,
 			locked   => open,
 			psdone   => open,
 			status   => open);
+
+		-- clk_mii_i : oddr2
+		-- port map (
+			-- c0 => clkfx,
+			-- c1 => clkfx_n,
+			-- ce => '1',
+			-- r  => '0',
+			-- s  => '0',
+			-- d0 => '0',
+			-- d1 => '1',
+			-- q => mii_refclk);
+
+    	mii_refclk <= mii_clk;
 
 	end generate;
 
@@ -612,7 +614,7 @@ begin
 		video_blank  => video_blank,
 		video_pixel  => video_pixel,
 
-		ctlr_clk     => clk0,
+		ctlr_clk     => ddr_clk0,
 		ctlr_rst     => sdrsys_rst,
 		ctlr_bl      => "001",				-- Busrt length 2
 		-- ctlr_bl      => "010",				-- Busrt length 4
@@ -651,8 +653,8 @@ begin
 		end if;
 	end process;
 
-	phy_wlreq <= to_stdulogic(to_bit(phy_wlrdy));
-	phy_rlreq <= to_stdulogic(to_bit(phy_rlrdy));
+	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
+	ctlrphy_rlreq <= to_stdulogic(to_bit(ctlrphy_rlrdy));
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
@@ -670,14 +672,14 @@ begin
 		rd_align    => true)
 	port map (
 		rst         => sdrsys_rst,
-		iod_clk     => clk0,
-		clk         => clk0,
-		clk_shift   => clk90,
+		iod_clk     => ddr_clk0,
+		clk         => ddr_clk0,
+		clk_shift   => ddr_clk90,
 
-		phy_wlreq   => phy_wlreq,
-		phy_wlrdy   => phy_wlrdy,
-		phy_rlreq   => phy_rlreq,
-		phy_rlrdy   => phy_rlrdy,
+		phy_wlreq   => ctlrphy_wlreq,
+		phy_wlrdy   => ctlrphy_wlrdy,
+		phy_rlreq   => ctlrphy_rlreq,
+		phy_rlrdy   => ctlrphy_rlrdy,
 		sys_cke     => ctlrphy_cke,
 		sys_cs      => ctlrphy_cs,
 		sys_ras     => ctlrphy_ras,
@@ -705,7 +707,7 @@ begin
 		sdram_clk     => ddr_clk,
 		sdram_cke     => sdram_cke,
 		sdram_cs      => sdram_cs,
-		sdram_odt     => sdram_odt,
+		sdram_odt     => ddr_odt,
 		sdram_ras     => ddr_ras,
 		sdram_cas     => ddr_cas,
 		sdram_we      => ddr_we,
@@ -745,14 +747,6 @@ begin
 			d1 => '1',
 			q => clk_videodac);
 		end block;
-
---	clk_mii_e : entity hdl4fpga.ddro
---	port map (
---		clk => mii_clk,
---		dr => '0',
---		df => '1',
---		q => mii_refclk);
-	mii_refclk <= mii_clk;
 
 	hd_t_data <= 'Z';
 

@@ -246,38 +246,43 @@ architecture graphics of arty is
 	signal so_data        : std_logic_vector(0 to 8-1);
 
 	signal video_clk      : std_logic := '0';
+	signal video_lckd     : std_logic := '0';
 	signal video_shf_clk  : std_logic := '0';
-	signal video_lck      : std_logic := '0';
 	signal video_hs       : std_logic;
 	signal video_vs       : std_logic;
 	signal video_blank    : std_logic;
 	signal video_pixel    : std_logic_vector(0 to 32-1);
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
+	signal videoio_clk    : std_logic;
 
-	signal dd_clk         : std_logic := '0';
+	signal dd_clk         : std_logic;
 	signal dd_hs          : std_logic;
 	signal dd_vs          : std_logic;
 	signal dd_pixel       : std_logic_vector(0 to 3-1);
 
+	alias red             : std_logic is ja(1);
+	alias green           : std_logic is ja(2);
+	alias blue            : std_logic is ja(3);
+	alias vs              : std_logic is ja(10);
+	alias hs              : std_logic is ja(4);
+
 	signal sys_rst        : std_logic;
-	signal sdrphy_rst0   : std_logic;
-	signal sdrphy_rst90  : std_logic;
-	signal ioctrl_rst    : std_logic;
-	signal ioctrl_clk    : std_logic;
-	signal ioctrl_rdy    : std_logic;
+	signal sdrphy_rst0    : std_logic;
+	signal sdrphy_rst90   : std_logic;
+	signal ioctrl_rst     : std_logic;
+	signal ioctrl_clk     : std_logic;
+	signal ioctrl_rdy     : std_logic;
 
 	alias  mii_txc        : std_logic is eth_tx_clk;
 	alias  sio_clk        : std_logic is mii_txc;
+
+	signal tp_sdrphy    : std_logic_vector(1 to 32);
 
 	-----------------
 	-- Select link --
 	-----------------
 
 	constant io_link    : io_comms := profile_tab(app_profile).comms;
-
-	constant mem_size   : natural := 8*(1024*8);
-
-	signal tp_sdrphy    : std_logic_vector(1 to 32);
 
 begin
 
@@ -332,7 +337,7 @@ begin
 				clkfbout => clkfb,
 				clkout0  => dd_clk,
 				clkout1  => open,
-				locked   => video_lck);
+				locked   => video_lckd);
 
 		end block;
 
@@ -433,14 +438,15 @@ begin
 	end block;
 
 	hdlc_g : if io_link=io_hdlc generate
+		constant mem_size   : natural := 8*(1024*8);
 
-		constant uart_xtal : real := 
+		constant uart_freq : real := 
 			real(videoparam(video_mode).pll.dcm_mul)*gclk100_freq/
 			real(videoparam(video_mode).pll.dcm_div);
 
 		constant baudrate : natural := setif(
-			uart_xtal >= 32.0e6, 3000000, setif(
-			uart_xtal >= 25.0e6, 2000000,
+			uart_freq >= 32.0e6, 3000000, setif(
+			uart_freq >= 25.0e6, 2000000,
 								 115200));
 
 		signal uart_clk   : std_logic;
@@ -474,7 +480,7 @@ begin
 		uartrx_e : entity hdl4fpga.uart_rx
 		generic map (
 			baudrate => baudrate,
-			clk_rate => uart_xtal)
+			clk_rate => uart_freq)
 		port map (
 			uart_rxc  => uart_clk,
 			uart_sin  => ftdi_txd,
@@ -484,10 +490,10 @@ begin
 		uarttx_e : entity hdl4fpga.uart_tx
 		generic map (
 			baudrate => baudrate,
-			clk_rate => uart_xtal)
+			clk_rate => uart_freq)
 		port map (
 			uart_txc  => uart_clk,
-			uart_frm  => video_lck,
+			uart_frm  => video_lckd,
 			uart_irdy => uart_txen,
 			uart_trdy => uart_idle,
 			uart_data => uart_txd,
@@ -770,11 +776,11 @@ begin
 	process (dd_clk)
 	begin
 		if rising_edge(dd_clk) then
-			ja(1)  <= multiplex(dd_pixel, std_logic_vector(to_unsigned(0,2)), 1)(0);
-			ja(2)  <= multiplex(dd_pixel, std_logic_vector(to_unsigned(1,2)), 1)(0);
-			ja(3)  <= multiplex(dd_pixel, std_logic_vector(to_unsigned(2,2)), 1)(0);
-			ja(4)  <= dd_hs;
-			ja(10) <= dd_vs;
+			red   <= multiplex(dd_pixel, std_logic_vector(to_unsigned(0,2)), 1)(0);
+			green <= multiplex(dd_pixel, std_logic_vector(to_unsigned(1,2)), 1)(0);
+			blue  <= multiplex(dd_pixel, std_logic_vector(to_unsigned(2,2)), 1)(0);
+			vs    <= dd_vs;
+			hs    <= dd_hs;
 		end if;
 	end process;
   

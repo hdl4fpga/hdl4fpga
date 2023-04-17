@@ -160,11 +160,10 @@ architecture graphics of ml509 is
 	constant bank_size    : natural := ddr2_ba'length;
 	constant addr_size    : natural := ddr2_a'length;
 	constant word_size    : natural := ddr2_d'length;
-	constant byte_size    : natural := ddr2_d'length/ddr2_dqs_p'length;
+	constant byte_size    : natural := ddr2_d'length/ddr2_dm'length;
 	-- constant bank_size    : natural := 2;
 	-- constant addr_size    : natural := 13;
-	-- constant word_size    : natural := 8*8;
-
+	-- constant word_size    : natural := byte_size*8;
 	constant coln_size    : natural := 10;
 	constant gear         : natural := 4;
 
@@ -172,17 +171,13 @@ architecture graphics of ml509 is
 	signal ddr_clk90      : std_logic;
 	signal ddr_clk0x2     : std_logic;
 	signal ddr_clk90x2    : std_logic;
-	signal ddrsys_rst     : std_logic;
+	signal sdrsys_rst     : std_logic;
 
 	signal ctlrphy_frm    : std_logic;
 	signal ctlrphy_trdy   : std_logic;
 	signal ctlrphy_locked : std_logic;
 	signal ctlrphy_ini    : std_logic;
 	signal ctlrphy_rw     : std_logic;
-	signal ctlrphy_wlreq  : std_logic;
-	signal ctlrphy_wlrdy  : std_logic;
-	signal ctlrphy_rlreq  : std_logic;
-	signal ctlrphy_rlrdy  : std_logic;
 
 	signal ddr_ba         : std_logic_vector(bank_size-1 downto 0);
 	signal ddr_a          : std_logic_vector(addr_size-1 downto 0);
@@ -208,6 +203,11 @@ architecture graphics of ml509 is
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
+	signal ctlrphy_wlreq  : std_logic;
+	signal ctlrphy_wlrdy  : std_logic;
+	signal ctlrphy_rlreq  : std_logic;
+	signal ctlrphy_rlrdy  : std_logic;
+
 	signal ddr2_clk       : std_logic_vector(ddr2_clk_p'range);
 	signal ddr2_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
 	signal ddr2_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -228,20 +228,17 @@ architecture graphics of ml509 is
 
 	signal video_clk      : std_logic;
 	signal video_lckd     : std_logic;
-	signal videoio_clk    : std_logic;
-	signal video_lck      : std_logic;
 	signal video_shf_clk  : std_logic;
-	signal video_hzsync   : std_logic;
-    signal video_vtsync   : std_logic;
-    signal video_blank    : std_logic;
-    signal video_vs       : std_logic;
 	signal video_hs       : std_logic;
-    signal video_bk       : std_logic;
-    signal video_on       : std_logic;
-    signal video_dot      : std_logic;
+	signal video_vs       : std_logic;
+    signal video_blank    : std_logic;
     signal video_pixel    : std_logic_vector(0 to 32-1);
-    signal video_spixel   : std_logic_vector(0 to 3-1);
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
+	signal videoio_clk    : std_logic;
+
+	signal dd_hs          : std_logic;
+	signal dd_vs          : std_logic;
+	signal dd_pixel       : std_logic_vector(0 to 3-1);
 
 	alias red             : std_logic is hdr1(0);
 	alias green           : std_logic is hdr1(1);
@@ -267,15 +264,9 @@ architecture graphics of ml509 is
 	signal phyrxclk_bufg  : std_logic;
 	signal phytxclk_bufg  : std_logic;
 
-	signal tp_delay       : std_logic_vector(word_size/byte_size*6-1 downto 0);
-	signal tp_bit         : std_logic_vector(word_size/byte_size*5-1 downto 0);
-	signal tst            : std_logic;
-
-	signal tp             : std_logic_vector(1 to 32);
-	signal mii_tp         : std_logic_vector(1 to 32);
-
 	signal tp_sel         : std_logic_vector(1 downto 0);
 	signal tp_sdrphy      : std_logic_vector(1 to 32);
+	signal mii_tp         : std_logic_vector(1 to 32);
 
 begin
 
@@ -464,16 +455,16 @@ begin
 					tmr := tmr + 1;
 				end if;
 			end if;
-			ddrsys_rst <= not tmr(0);
+			sdrsys_rst <= not tmr(0);
 		end process;
 	
 		process (ddr_clk0)
 		begin
 			if rising_edge(ddr_clk0) then
-				if ddrsys_rst='1' then
+				if sdrsys_rst='1' then
 					sdrphy_rst0 <= '1';
 				else
-					sdrphy_rst0 <= ddrsys_rst;
+					sdrphy_rst0 <= sdrsys_rst;
 				end if;
 			end if;
 		end process;
@@ -481,10 +472,10 @@ begin
 		process (ddr_clk90)
 		begin
 			if rising_edge(ddr_clk90) then
-				if ddrsys_rst='1' then
+				if sdrsys_rst='1' then
 					sdrphy_rst90 <= '1';
 				else
-					sdrphy_rst90 <= ddrsys_rst;
+					sdrphy_rst90 <= sdrsys_rst;
 				end if;
 			end if;
 		end process;
@@ -747,8 +738,8 @@ begin
 
 		video_clk     => '0', --video_clk,
 		video_shift_clk => '0', --video_shf_clk,
-		video_hzsync  => video_hzsync,
-		video_vtsync  => video_vtsync,
+		video_hzsync  => video_hs,
+		video_vtsync  => video_vs,
 		video_blank   => video_blank,
 		video_pixel   => video_pixel,
 		dvid_crgb     => dvid_crgb,
@@ -794,8 +785,8 @@ begin
 		begin
 			if rising_edge(video_clk) then
 				dvi_de <= not video_blank;
-				dvi_h  <= video_hzsync;
-				dvi_v  <= video_vtsync;
+				dvi_h  <= video_hs;
+				dvi_v  <= video_vs;
 			end if;
 		end process;
 
@@ -1024,18 +1015,17 @@ begin
     		ser_data     => si_data,
 
     		video_clk    => video_clk,
-    		video_hzsync => video_hs,
-    		video_blank  => video_bk,
-    		video_vtsync => video_vs,
-    		video_pixel  => video_spixel);
+    		video_hzsync => dd_hs,
+    		video_vtsync => dd_vs,
+    		video_pixel  => dd_pixel);
 	end block;
 
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			hs <= video_hs;
-			vs <= video_vs;
-			(red, green, blue) <= video_spixel;
+			hs <= dd_hs;
+			vs <= dd_vs;
+			(red, green, blue) <= dd_pixel;
 		end if;
 	end process;
 

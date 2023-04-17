@@ -70,7 +70,7 @@ architecture nuhs3adsp_graphics of testbench is
 		generic (
 			debug : boolean := true);
 		port (
-			xtal : in std_logic;
+			clk : in std_logic;
 			sw1 : in std_logic := '1';
 
 			hd_t_data  : inout std_logic := '1';
@@ -252,7 +252,7 @@ begin
 
 	du_e : nuhs3adsp
 	port map (
-		xtal => clk,
+		clk => clk,
 		sw1  => sw1,
 		led7 => led7,
 		dip => b"0000_0001",

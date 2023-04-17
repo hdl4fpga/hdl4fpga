@@ -35,7 +35,7 @@ use unisim.vcomponents.all;
 
 architecture ser_debug of nuhs3adsp is
 
-	signal sys_clk   : std_logic;
+	signal clk_bufg   : std_logic;
 	signal mii_req   : std_logic;
 	signal vga_dot   : std_logic;
 	signal vga_on    : std_logic;
@@ -83,8 +83,8 @@ begin
 
 	clkin_ibufg : ibufg
 	port map (
-		I => xtal,
-		O => sys_clk);
+		I => clk,
+		O => clk_bufg);
 
 	videodcm_e : entity hdl4fpga.dfs
 	generic map (
@@ -93,7 +93,7 @@ begin
 		dfs_div => video_tab(video_mode).dcm_div)
 	port map(
 		dcm_rst => '0',
-		dcm_clk => sys_clk,
+		dcm_clk => clk_bufg,
 		dfs_clk => vga_clk);
 
 	mii_dfs_e : entity hdl4fpga.dfs
@@ -103,7 +103,7 @@ begin
 		dfs_div => 4)
 	port map (
 		dcm_rst => '0',
-		dcm_clk => sys_clk,
+		dcm_clk => clk_bufg,
 		dfs_clk => mii_clk);
 	mii_refclk <= not mii_clk;
 
