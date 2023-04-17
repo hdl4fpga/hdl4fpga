@@ -227,8 +227,8 @@ architecture graphics of nuhs3adsp is
 	signal sys_rst       : std_logic;
 	signal clk_bufg      : std_logic;
 
-	signal dmavideotrans_cnl : std_logic;
-	signal tp : std_logic_vector(1 to 32);
+	signal mii_tp         : std_logic_vector(1 to 32);
+
 begin
 
 --	sys_rst <= not hd_t_clock;
@@ -526,9 +526,9 @@ begin
 			my_mac        => x"00_40_00_01_02_03",
 			default_ipv4a => aton("192.168.0.14"))
 		port map (
---			tp         => tp,
+			tp         => mii_tp,
 
-			mii_clk     => sio_clk,
+			mii_clk    => sio_clk,
 			dhcpcd_req => dhcpcd_req,
 			dhcpcd_rdy => dhcpcd_rdy,
 			miirx_frm  => miirx_frm,
@@ -638,7 +638,7 @@ begin
 		ctlrphy_dqv  => ctlrphy_dqv,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
-		tp           => tp);
+		tp           => open);
 
 	process (video_clk)
 	begin

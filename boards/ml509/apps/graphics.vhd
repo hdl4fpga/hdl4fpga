@@ -776,7 +776,7 @@ begin
 		ctlrphy_sto   => ctlrphy_sto,
 		ctlrphy_sti   => ctlrphy_sti,
 		ctlrphy_dqv   => ctlrphy_dqv,
-		tp => open);
+		tp            => open);
 
 	videoio_b : block
 		signal xclk : std_logic;
