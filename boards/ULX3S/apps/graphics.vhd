@@ -40,7 +40,7 @@ architecture graphics of ulx3s is
 	---------------------------------------
 	-- Set of profiles                   --
 	type app_profiles is (
-	--	Interface_SdramSpeed_PixelFormat --
+	--	Interface_SdramSpeed_VideoFormat --
 
 		hdlc_sdr133MHz_480p16bpp,        --
 		hdlc_sdr133MHz_480p24bpp,        --

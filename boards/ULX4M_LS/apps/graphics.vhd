@@ -40,7 +40,7 @@ architecture graphics of ulx4m_ls is
 	---------------------------------------
 	-- Set of profiles                   --
 	type app_profiles is (
-	--	Interface_SdramSpeed_PixelFormat --
+	--	Interface_SdramSpeed_VideoFormat --
 
 		hdlc_sdr133MHz_480p16bpp,        --
 		hdlc_sdr133MHz_480p24bpp,        --
@@ -93,7 +93,6 @@ architecture graphics of ulx4m_ls is
 	--     Set your profile here        --
 	constant app_profile : app_profiles := ipoe_sdr200MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := ipoe_sdr133MHz_480p24bpp;
-    --                                  --
 	--------------------------------------
 
 	type profileparams_vector is array (app_profiles) of profile_params;

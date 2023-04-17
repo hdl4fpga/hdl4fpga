@@ -41,7 +41,7 @@ architecture graphics of ulx4m_ld is
 	--------------------------------------
 	-- Set of profiles                  --
 	type app_profiles is (
-	--	Interface_SdramSpeed_PixelFormat--
+	--	Interface_SdramSpeed_VideoFormat --
 
 		uart_325MHz_480p24bpp,
 		uart_350MHz_480p24bpp,
@@ -73,7 +73,6 @@ architecture graphics of ulx4m_ld is
 	---------------------------------------------
 	-- Set your profile here                   --
 	constant app_profile  : app_profiles := uart_425MHz_1080p24bpp30;
-
 	---------------------------------------------
 
 	type profile_params is record

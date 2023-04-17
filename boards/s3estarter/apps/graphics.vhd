@@ -38,14 +38,19 @@ use unisim.vcomponents.all;
 
 architecture graphics of s3estarter is
 
+	--------------------------------------
+	-- Set of profiles                  --
 	type app_profiles is (
 		sdr133mhz_480p24bpp,
 		sdr166mhz_600p24bpp,
 		sdr170mhz_600p24bpp,
 		sdr200mhz_1080p24bpp);
 
+	--------------------------------------
+	--     Set your profile here        --
 	constant app_profile : app_profiles := sdr133mhz_480p24bpp;
 	-- constant app_profile : app_profiles := sdr166mhz_600p24bpp;
+	--------------------------------------
 
 	type profile_param is record
 		comms       : io_comms;
