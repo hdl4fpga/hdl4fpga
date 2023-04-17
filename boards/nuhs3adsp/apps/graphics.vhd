@@ -158,47 +158,47 @@ architecture graphics of nuhs3adsp is
 		return tab(tab'left);
 	end;
 
-	constant sdram_speed  : sdram_speeds  := profile_tab(app_profile).sdram_speed;
+	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := real(sdram_params.dcm.dcm_div)*clk_per/real(sdram_params.dcm.dcm_mul);
 
 
-	constant bank_size   : natural := ddr_ba'length;
-	constant addr_size   : natural := ddr_a'length;
-	constant word_size   : natural := ddr_dq'length;
-	constant byte_size   : natural := ddr_dq'length/ddr_dm'length;
-	constant coln_size   : natural := 9;
-	constant gear        : natural := 2;
+	constant bank_size    : natural := ddr_ba'length;
+	constant addr_size    : natural := ddr_a'length;
+	constant word_size    : natural := ddr_dq'length;
+	constant byte_size    : natural := ddr_dq'length/ddr_dm'length;
+	constant coln_size    : natural := 9;
+	constant gear         : natural := 2;
 
-	signal ddr_clk0      : std_logic;
-	signal ddr_clk90     : std_logic;
-	signal sdrsys_rst    : std_logic;
+	signal ddr_clk0       : std_logic;
+	signal ddr_clk90      : std_logic;
+	signal sdrsys_rst     : std_logic;
 
-	signal ctlrphy_rst   : std_logic;
-	signal ctlrphy_cke   : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_cs    : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_ras   : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_cas   : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_we    : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_odt   : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_b     : std_logic_vector((gear+1)/2*ddr_ba'length-1 downto 0);
-	signal ctlrphy_a     : std_logic_vector((gear+1)/2*ddr_a'length-1 downto 0);
-	signal ctlrphy_dqst  : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqsi  : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqso  : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqv   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_rst    : std_logic;
+	signal ctlrphy_cke    : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_cs     : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_ras    : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_cas    : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_we     : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_odt    : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_b      : std_logic_vector((gear+1)/2*ddr_ba'length-1 downto 0);
+	signal ctlrphy_a      : std_logic_vector((gear+1)/2*ddr_a'length-1 downto 0);
+	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqsi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
-	signal ctlrphy_wlreq     : std_logic;
-	signal ctlrphy_wlrdy     : std_logic;
-	signal ctlrphy_rlreq     : std_logic;
-	signal ctlrphy_rlrdy     : std_logic;
+	signal ctlrphy_wlreq  : std_logic;
+	signal ctlrphy_wlrdy  : std_logic;
+	signal ctlrphy_rlreq  : std_logic;
+	signal ctlrphy_rlrdy  : std_logic;
 
 	signal ddr_clk       : std_logic_vector(0 downto 0);
 	signal ddr_odt       : std_logic_vector(0 to 0);
@@ -206,6 +206,12 @@ architecture graphics of nuhs3adsp is
 	signal sdram_cs      : std_logic_vector(0 to 0);
 	signal ddr_lp_ck     : std_logic;
 	signal st_dqs_open   : std_logic;
+
+	signal video_clk     : std_logic;
+	signal video_hs      : std_logic;
+	signal video_vs      : std_logic;
+    signal video_blank   : std_logic;
+    signal video_pixel   : std_logic_vector(0 to 32-1);
 
 	signal si_frm        : std_logic;
 	signal si_irdy       : std_logic;
@@ -216,12 +222,6 @@ architecture graphics of nuhs3adsp is
 	signal so_irdy       : std_logic;
 	signal so_trdy       : std_logic;
 	signal so_data       : std_logic_vector(0 to 8-1);
-
-	signal video_clk     : std_logic;
-	signal video_hs      : std_logic;
-	signal video_vs      : std_logic;
-    signal video_blank   : std_logic;
-    signal video_pixel   : std_logic_vector(0 to 32-1);
 
 	alias sio_clk        : std_logic is mii_txc;
 
@@ -297,7 +297,7 @@ begin
 		ib => ddr_lp_ckn,
 		o  => ddr_lp_ck);
 
-	ddrdcm_b : block
+	sdrdcm_b : block
 		signal dfs_clkfx : std_logic;
 		signal dfs_lckd  : std_logic;
 		
@@ -308,7 +308,7 @@ begin
 
 	begin
 
-		dfs_i : dcm_sp
+		dcmdfs_i : dcm_sp
 		generic map(
 			clk_feedback  => "NONE",
 			clkin_period  => clk_per*1.0e9,
@@ -344,7 +344,7 @@ begin
 			end if;
 		end process;
 
-		dcm_dll : dcm_sp
+		dcmdll_i : dcm_sp
 		generic map(
 			clk_feedback  => "1X",
 			clkdv_divide  => 2.0,
@@ -439,7 +439,6 @@ begin
 			d0 => '0',
 			d1 => '1',
 			q => mii_refclk);
-
 
 	end generate;
 
@@ -706,9 +705,6 @@ begin
 		sdram_dq      => ddr_dq,
 		sdram_dqs     => ddr_dqs);
 
-	ddr_cke <= sdram_cke(0);
-	ddr_cs  <= sdram_cs(0);
-
 	ddr_clk_i : obufds
 	generic map (
 		iostandard => "DIFF_SSTL2_I")
@@ -716,6 +712,9 @@ begin
 		i  => ddr_clk(0),
 		o  => ddr_ckp,
 		ob => ddr_ckn);
+
+	ddr_cke <= sdram_cke(0);
+	ddr_cs  <= sdram_cs(0);
 
 	videoio_b : block
 		signal videoclk_n : std_logic;

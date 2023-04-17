@@ -60,24 +60,24 @@ architecture graphics of s3estarter is
 		sdr170mhz_600p24bpp  => (io_ipoe, sdram170MHz, mode600p24bpp),
 		sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp));
 
-	type pll_params is record
+	type dcm_params is record
 		dcm_mul : natural;
 		dcm_div : natural;
 	end record;
 
 	type video_params is record
-		id   : video_modes;
-		pll    : pll_params;
+		id     : video_modes;
+		dcm    : dcm_params;
 		timing : videotiming_ids;
 	end record;
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,      timing => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
-		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    pll => (dcm_mul =>  2, dcm_div => 4)),
-		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    pll => (dcm_mul =>  4, dcm_div => 5)),
-		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   pll => (dcm_mul =>  3, dcm_div => 2)),
-		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, pll => (dcm_mul =>  3, dcm_div => 1)));
+		(id => modedebug,      timing => pclk_debug,               dcm => (dcm_mul =>  4, dcm_div => 2)),
+		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    dcm => (dcm_mul =>  2, dcm_div => 4)),
+		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    dcm => (dcm_mul =>  4, dcm_div => 5)),
+		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   dcm => (dcm_mul =>  3, dcm_div => 2)),
+		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, dcm => (dcm_mul =>  3, dcm_div => 1)));
 
 
 	function videoparam (
@@ -102,16 +102,16 @@ architecture graphics of s3estarter is
 
 	type sdramparams_record is record
 		id  : sdram_speeds;
-		pll : pll_params;
+		dcm : dcm_params;
 		cl  : std_logic_vector(0 to 3-1);
 	end record;
 
 	type sdramparams_vector is array (natural range <>) of sdramparams_record;
 	constant sdram_tab : sdramparams_vector := (
-		(id => sdram133MHz, pll => (dcm_mul =>  8, dcm_div => 3), cl => "010"),
-		(id => sdram166MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "110"),
-		(id => sdram170MHz, pll => (dcm_mul => 17, dcm_div => 5), cl => "110"),
-		(id => sdram200MHz, pll => (dcm_mul =>  4, dcm_div => 1), cl => "011"));
+		(id => sdram133MHz, dcm => (dcm_mul =>  8, dcm_div => 3), cl => "010"),
+		(id => sdram166MHz, dcm => (dcm_mul => 10, dcm_div => 3), cl => "110"),
+		(id => sdram170MHz, dcm => (dcm_mul => 17, dcm_div => 5), cl => "110"),
+		(id => sdram200MHz, dcm => (dcm_mul =>  4, dcm_div => 1), cl => "011"));
 
 	function sdramparams (
 		constant id  : sdram_speeds)
@@ -131,38 +131,20 @@ architecture graphics of s3estarter is
 		return tab(tab'left);
 	end;
 
-	constant sdram_speed  : sdram_speeds  := profile_tab(app_profile).sdram_speed;
+	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
+	constant sdram_tcp    : real := real(sdram_params.dcm.dcm_div)*sys_per/real(sdram_params.dcm.dcm_mul);
 
-	constant sdram_tcp    : real := real(sdram_params.pll.dcm_div)*sys_per/real(sdram_params.pll.dcm_mul);
-
-	signal sys_rst        : std_logic;
-	signal sys_clk        : std_logic;
-
-	signal si_frm         : std_logic;
-	signal si_irdy        : std_logic;
-	signal si_trdy        : std_logic;
-	signal si_end         : std_logic;
-	signal si_data        : std_logic_vector(0 to 8-1);
-
-	signal so_frm         : std_logic;
-	signal so_irdy        : std_logic;
-	signal so_trdy        : std_logic;
-	signal so_data        : std_logic_vector(0 to 8-1);
-
-	constant gear         : natural := 2;
-	constant data_phases  : natural := 2;
-	constant data_edges   : natural := 2;
 	constant bank_size    : natural := sd_ba'length;
 	constant addr_size    : natural := sd_a'length;
-	constant coln_size    : natural := 10;
 	constant word_size    : natural := sd_dq'length;
-	constant byte_size    : natural := 8;
+	constant byte_size    : natural := sd_dq'length/sd_dm'length;
+	constant coln_size    : natural := 10;
+	constant gear         : natural := 2;
 
+	signal ddr_clk0       : std_logic;
+	signal ddr_clk90      : std_logic;
 	signal sdrsys_rst     : std_logic;
-
-	signal clk0           : std_logic;
-	signal clk90          : std_logic;
 
 	signal ctlrphy_rst    : std_logic;
 	signal ctlrphy_cke    : std_logic_vector((gear+1)/2-1 downto 0);
@@ -185,10 +167,10 @@ architecture graphics of s3estarter is
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
-	signal phy_wlreq      : std_logic;
-	signal phy_wlrdy      : std_logic;
-	signal phy_rlreq      : std_logic;
-	signal phy_rlrdy      : std_logic;
+	signal ctlrphy_wlreq  : std_logic;
+	signal ctlrphy_wlrdy  : std_logic;
+	signal ctlrphy_rlreq  : std_logic;
+	signal ctlrphy_rlrdy  : std_logic;
 
 	signal sd_clk         : std_logic_vector(0 downto 0);
 	signal sdram_dqst     : std_logic_vector(word_size/byte_size-1 downto 0);
@@ -200,19 +182,29 @@ architecture graphics of s3estarter is
 	signal sdram_cs       : std_logic_vector(0 to 0);
 	signal sdram_odt      : std_logic_vector(0 to 0);
 
-	signal mii_clk        : std_logic;
 	signal video_clk      : std_logic;
-	signal video_hzsync   : std_logic;
-	signal video_vtsync   : std_logic;
+	signal video_hs       : std_logic;
+	signal video_vs       : std_logic;
 	signal video_blank    : std_logic;
 	signal video_pixel    : std_logic_vector(0 to 32-1);
 
-	alias ctlr_clk        : std_logic is clk0;
+	signal si_frm         : std_logic;
+	signal si_irdy        : std_logic;
+	signal si_trdy        : std_logic;
+	signal si_end         : std_logic;
+	signal si_data        : std_logic_vector(0 to 8-1);
+	signal so_frm         : std_logic;
+	signal so_irdy        : std_logic;
+	signal so_trdy        : std_logic;
+	signal so_data        : std_logic_vector(0 to 8-1);
+
+	signal mii_clk        : std_logic;
+	alias ctlr_clk        : std_logic is ddr_clk0;
 	alias sio_clk         : std_logic is e_tx_clk;
 
-	constant baudrate     : natural := 1000000;
+	signal sys_rst        : std_logic;
+	signal sys_clk        : std_logic;
 
-	signal dmavideotrans_cnl : std_logic;
 	signal tp : std_logic_vector(1 to 32);
 begin
 
@@ -242,8 +234,8 @@ begin
 		generic map(
 			clk_feedback   => "1x",
 			clkdv_divide   => 2.0,
-			clkfx_divide   => videoparam(video_mode).pll.dcm_div,
-			clkfx_multiply => videoparam(video_mode).pll.dcm_mul,
+			clkfx_divide   => videoparam(video_mode).dcm.dcm_div,
+			clkfx_multiply => videoparam(video_mode).dcm.dcm_mul,
 			clkin_divide_by_2 => false,
 			clkin_period   => sys_per*1.0e9,
 			clkout_phase_shift => "none",
@@ -270,7 +262,7 @@ begin
 
 	end generate;
 
-	ddrdcm_b : block
+	sdrdcm_b : block
 		signal dfs_lckd  : std_logic;
 		signal dfs_clkfb : std_logic;
 		
@@ -283,14 +275,14 @@ begin
 
 	begin
 
-		dfs_i : dcm_sp
+		dcmdfs_i : dcm_sp
 		generic map(
 			clk_feedback   => "NONE",
 			clkin_period   => sys_per*1.0e9,
 			clkdv_divide   => 2.0,
 			clkin_divide_by_2 => FALSE,
-			clkfx_divide   => sdram_params.pll.dcm_div,
-			clkfx_multiply => sdram_params.pll.dcm_mul,
+			clkfx_divide   => sdram_params.dcm.dcm_div,
+			clkfx_multiply => sdram_params.dcm.dcm_mul,
 			clkout_phase_shift => "NONE",
 			deskew_adjust  => "SYSTEM_SYNCHRONOUS",
 			dfs_frequency_mode => "HIGH",
@@ -311,10 +303,10 @@ begin
 			clkfx    => dcm_clkin,
 			locked   => dfs_lckd);
 	
-		dcm_dll : dcm_sp
+		dcmdll_i : dcm_sp
 		generic map(
 			clk_feedback   => "1X",
-			clkin_period   => (sys_per*real(sdram_params.pll.dcm_div))/real( sdram_params.pll.dcm_mul)*1.0e9,
+			clkin_period   => (sys_per*real(sdram_params.dcm.dcm_div))/real( sdram_params.dcm.dcm_mul)*1.0e9,
 			clkdv_divide   => 2.0,
 			clkin_divide_by_2 => FALSE,
 			clkfx_divide   => 1,
@@ -334,7 +326,7 @@ begin
 	
 			rst      => '0',
 			clkin    => dcm_clkin,
-			clkfb    => clk0,
+			clkfb    => ddr_clk0,
 			clk0     => dcm_clk0,
 			clk90    => dcm_clk90,
 			locked   => dcm_lckd);
@@ -342,12 +334,12 @@ begin
 		clk0_bufg_i : bufg
 		port map (
 			i => dcm_clk0,
-			o => clk0);
+			o => ddr_clk0);
 	
 		clk90_bufg_i : bufg
 		port map (
 			i => dcm_clk90,
-			o => clk90);
+			o => ddr_clk90);
 	
 		sdrsys_rst <= not dcm_lckd;
 
@@ -533,12 +525,12 @@ begin
 		sout_data    => si_data,
 
 		video_clk    => video_clk,
-		video_hzsync => video_hzsync,
-		video_vtsync => video_vtsync,
+		video_hzsync => video_hs,
+		video_vtsync => video_vs,
 		video_blank  => video_blank,
 		video_pixel  => video_pixel,
 
-		ctlr_clk     => clk0,
+		ctlr_clk     => ddr_clk0,
 		ctlr_rst     => sdrsys_rst,
 		ctlr_bl      => "001",
 		ctlr_cl      => sdram_params.cl,
@@ -560,21 +552,10 @@ begin
 		ctlrphy_dqv  => ctlrphy_dqv,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
-		tp => open);
+		tp           => open);
 
-	process (video_clk)
-	begin
-		if rising_edge(video_clk) then
-			vga_red    <= multiplex(video_pixel, std_logic_vector(to_unsigned(0,2)), 8)(0);
-			vga_green  <= multiplex(video_pixel, std_logic_vector(to_unsigned(1,2)), 8)(0);
-			vga_blue   <= multiplex(video_pixel, std_logic_vector(to_unsigned(2,2)), 8)(0);
-			vga_hsync  <= video_hzsync;
-			vga_vsync  <= video_vtsync;
-		end if;
-	end process;
-
-	phy_wlreq <= to_stdulogic(to_bit(phy_wlrdy));
-	phy_rlreq <= to_stdulogic(to_bit(phy_rlrdy));
+	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
+	ctlrphy_rlreq <= to_stdulogic(to_bit(ctlrphy_rlrdy));
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
@@ -590,14 +571,14 @@ begin
 		rd_align    => true)
 	port map (
 		rst         => sdrsys_rst,
-		iod_clk     => clk0,
-		clk         => clk0,
-		clk_shift   => clk90,
+		iod_clk     => ddr_clk0,
+		clk         => ddr_clk0,
+		clk_shift   => ddr_clk90,
 
-		phy_wlreq   => phy_wlreq,
-		phy_wlrdy   => phy_wlrdy,
-		phy_rlreq   => phy_rlreq,
-		phy_rlrdy   => phy_rlrdy,
+		phy_wlreq   => ctlrphy_wlreq,
+		phy_wlrdy   => ctlrphy_wlrdy,
+		phy_rlreq   => ctlrphy_rlreq,
+		phy_rlrdy   => ctlrphy_rlrdy,
 		sys_cke     => ctlrphy_cke,
 		sys_cs      => ctlrphy_cs,
 		sys_ras     => ctlrphy_ras,
@@ -645,6 +626,17 @@ begin
 
 	sd_cke <= sdram_cke(0);
 	sd_cs  <= sdram_cs(0);
+
+	videoio_p : process (video_clk)
+	begin
+		if rising_edge(video_clk) then
+			vga_red    <= multiplex(video_pixel, std_logic_vector(to_unsigned(0,2)), 8)(0);
+			vga_green  <= multiplex(video_pixel, std_logic_vector(to_unsigned(1,2)), 8)(0);
+			vga_blue   <= multiplex(video_pixel, std_logic_vector(to_unsigned(2,2)), 8)(0);
+			vga_hsync  <= video_hs;
+			vga_vsync  <= video_vs;
+		end if;
+	end process;
 
 	-- LEDs --
 	----------
