@@ -50,7 +50,8 @@ architecture graphics of ml509 is
 		sdr375MHz_600p,
 		sdr400MHz_600p);
 
-	----------------------------------------------------------
+	--------------------------------------
+	--     Set your profile here        --
 	constant app_profile : app_profiles := sdr400MHz_600p;  --
 	----------------------------------------------------------
 
@@ -66,22 +67,22 @@ architecture graphics of ml509 is
 		sdr375MHz_600p => (io_ipoe, sdram375MHz, mode600p24bpp),
 		sdr400MHz_600p => (io_ipoe, sdram400MHz, mode600p24bpp));
 
-	type pll_params is record
+	type dcm_params is record
 		dcm_mul : natural;
 		dcm_div : natural;
 	end record;
 
 	type video_params is record
 		id     : video_modes;
-		pll    : pll_params;
+		dcm    : dcm_params;
 		timing : videotiming_ids;
 	end record;
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,     timing => pclk_debug,            pll => (dcm_mul => 4, dcm_div => 2)),
-		(id => mode480p24bpp, timing => pclk25_00m640x480at60, pll => (dcm_mul => 1, dcm_div => 4)),
-		(id => mode600p24bpp, timing => pclk40_00m800x600at60, pll => (dcm_mul => 2, dcm_div => 5)));
+		(id => modedebug,     timing => pclk_debug,            dcm => (dcm_mul => 4, dcm_div => 2)),
+		(id => mode480p24bpp, timing => pclk25_00m640x480at60, dcm => (dcm_mul => 1, dcm_div => 4)),
+		(id => mode600p24bpp, timing => pclk40_00m800x600at60, dcm => (dcm_mul => 2, dcm_div => 5)));
 
 	function videoparam (
 		constant id  : video_modes)
@@ -103,6 +104,11 @@ architecture graphics of ml509 is
 
 	constant video_mode : video_modes := setdebug(debug, profile_tab(app_profile).video_mode);
 
+	type pll_params is record
+		clkfbout_mult : natural;
+		divclk_divide : natural;
+	end record;
+
 	type sdramparams_record is record
 		id  : sdram_speeds;
 		pll : pll_params;
@@ -118,11 +124,11 @@ architecture graphics of ml509 is
 		-- Divide by   --   1     --   4     --   4     --   1     --   4     --
 		------------------------------------------------------------------------
 
-		(sdram200MHz, pll => (dcm_mul =>  4, dcm_div => 2), cl => "011"),
-		(sdram225MHz, pll => (dcm_mul =>  9, dcm_div => 4), cl => "011"),
-		(sdram250MHz, pll => (dcm_mul =>  5, dcm_div => 2), cl => "011"),
-		(sdram275MHz, pll => (dcm_mul => 11, dcm_div => 4), cl => "011"),
-		(sdram300MHz, pll => (dcm_mul =>  3, dcm_div => 1), cl => "111"),
+		(sdram200MHz, pll => (clkfbout_mult =>  4, divclk_divide => 2), cl => "011"),
+		(sdram225MHz, pll => (clkfbout_mult =>  9, divclk_divide => 4), cl => "011"),
+		(sdram250MHz, pll => (clkfbout_mult =>  5, divclk_divide => 2), cl => "011"),
+		(sdram275MHz, pll => (clkfbout_mult => 11, divclk_divide => 4), cl => "011"),
+		(sdram300MHz, pll => (clkfbout_mult =>  3, divclk_divide => 1), cl => "111"),
 
 		------------------------------------------------------------------------
 		-- Frequency   -- 333 Mhz -- 350 Mhz -- 375 Mhz -- 400 Mhz -- 425 Mhz --
@@ -130,10 +136,10 @@ architecture graphics of ml509 is
 		-- Divide by   --   3     --   2     --   4     --   1     --   4     --
 		------------------------------------------------------------------------
 
-		(sdram333MHz, pll => (dcm_mul => 10, dcm_div => 3), cl => "111"),
-		(sdram350MHz, pll => (dcm_mul =>  7, dcm_div => 2), cl => "101"),
-		(sdram375MHz, pll => (dcm_mul => 15, dcm_div => 4), cl => "110"),
-		(sdram400MHz, pll => (dcm_mul =>  4, dcm_div => 1), cl => "110"));
+		(sdram333MHz, pll => (clkfbout_mult => 10, divclk_divide => 3), cl => "111"),
+		(sdram350MHz, pll => (clkfbout_mult =>  7, divclk_divide => 2), cl => "101"),
+		(sdram375MHz, pll => (clkfbout_mult => 15, divclk_divide => 4), cl => "110"),
+		(sdram400MHz, pll => (clkfbout_mult =>  4, divclk_divide => 1), cl => "110"));
 
 	function sdramparams (
 		constant id  : sdram_speeds)
@@ -155,7 +161,7 @@ architecture graphics of ml509 is
 
 	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
-	constant sdram_tcp    : real := (real(sdram_params.pll.dcm_div)*userclk_per)/real(sdram_params.pll.dcm_mul);
+	constant sdram_tcp    : real := (real(sdram_params.pll.divclk_divide)*userclk_per)/real(sdram_params.pll.clkfbout_mult);
 
 	constant bank_size    : natural := ddr2_ba'length;
 	constant addr_size    : natural := ddr2_a'length;
@@ -179,7 +185,7 @@ architecture graphics of ml509 is
 	signal ctlrphy_ini    : std_logic;
 	signal ctlrphy_rw     : std_logic;
 
-	signal ddr_ba         : std_logic_vector(bank_size-1 downto 0);
+	signal ddr_b          : std_logic_vector(bank_size-1 downto 0);
 	signal ddr_a          : std_logic_vector(addr_size-1 downto 0);
 
 	signal ctlrphy_rst    : std_logic_vector(0 to gear/2-1);
@@ -190,7 +196,7 @@ architecture graphics of ml509 is
 	signal ctlrphy_we     : std_logic_vector(0 to gear/2-1);
 	signal ctlrphy_odt    : std_logic_vector(0 to gear/2-1);
 	signal ctlrphy_cmd    : std_logic_vector(0 to 3-1);
-	signal ctlrphy_ba     : std_logic_vector(gear/2*ddr_ba'length-1 downto 0);
+	signal ctlrphy_b      : std_logic_vector(gear/2*ddr_b'length-1 downto 0);
 	signal ctlrphy_a      : std_logic_vector(gear/2*ddr_a'length-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
@@ -220,7 +226,6 @@ architecture graphics of ml509 is
 	signal si_trdy        : std_logic;
 	signal si_end         : std_logic;
 	signal si_data        : std_logic_vector(0 to 8-1);
-
 	signal so_frm         : std_logic;
 	signal so_irdy        : std_logic;
 	signal so_trdy        : std_logic;
@@ -295,8 +300,8 @@ begin
 		generic map (
 			clk_feedback   => "NONE",
 			clkin_period   => userclk_per*1.0e9,
-			clkfx_divide   => videoparam(video_mode).pll.dcm_div,
-			clkfx_multiply => videoparam(video_mode).pll.dcm_mul,
+			clkfx_divide   => videoparam(video_mode).dcm.dcm_div,
+			clkfx_multiply => videoparam(video_mode).dcm.dcm_mul,
 			dfs_frequency_mode => "LOW")
 		port map (
 			rst    => sys_rst,
@@ -342,8 +347,8 @@ begin
 
 		pll_i : pll_base
 		generic map (
-			divclk_divide  => sdram_params.pll.dcm_div,
-			clkfbout_mult  => 2*sdram_params.pll.dcm_mul,
+			divclk_divide  => sdram_params.pll.divclk_divide,
+			clkfbout_mult  => 2*sdram_params.pll.clkfbout_mult,
 			clkin_period   => userclk_per*1.0e9,
 			clkout0_divide => gear/2,
 			clkout1_divide => gear/2,
@@ -675,7 +680,7 @@ begin
 		ctlrphy_cas   => ctlrphy_cas(0),
 		ctlrphy_we    => ctlrphy_we(0),
 		ctlrphy_odt   => ctlrphy_odt(0),
-		ctlrphy_b     => ddr_ba,
+		ctlrphy_b     => ddr_b,
 		ctlrphy_a     => ddr_a,
 		ctlrphy_dqst  => ctlrphy_dqst,
 		ctlrphy_dqso  => ctlrphy_dqso,
@@ -699,11 +704,11 @@ begin
 		ctlrphy_odt(i) <= ctlrphy_odt(0);
 	end generate;
 
-	process (ddr_ba)
+	process (ddr_b)
 	begin
-		for i in ddr_ba'range loop
+		for i in ddr_b'range loop
 			for j in 0 to gear/2-1 loop
-				ctlrphy_ba(i*gear/2+j) <= ddr_ba(i);
+				ctlrphy_b(i*gear/2+j) <= ddr_b(i);
 			end loop;
 		end loop;
 	end process;
@@ -766,7 +771,7 @@ begin
 		sys_ras    => ctlrphy_ras,
 		sys_cas    => ctlrphy_cas,
 		sys_we     => ctlrphy_we,
-		sys_b      => ctlrphy_ba,
+		sys_b      => ctlrphy_b,
 		sys_a      => ctlrphy_a,
 
 		sys_dqst   => ctlrphy_dqst,

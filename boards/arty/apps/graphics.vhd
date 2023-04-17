@@ -775,66 +775,66 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
-		bank_size  => bank_size,
-		addr_size  => addr_size,
-		word_size  => word_size,
-		byte_size  => byte_size,
-		gear       => gear,
-		ba_latency => 1,
-		device     => xc7a,
-		taps       => natural(floor(sdram_tcp/((gclk100_per/2.0)/(32.0*2.0))))-1,
-		dqs_highz  => false,
-		bufio      => false,
-		bypass     => false)
+		bank_size   => bank_size,
+		addr_size   => addr_size,
+		word_size   => word_size,
+		byte_size   => byte_size,
+		gear        => gear,
+		ba_latency  => 1,
+		device      => xc7a,
+		taps        => natural(floor(sdram_tcp/((gclk100_per/2.0)/(32.0*2.0))))-1,
+		dqs_highz   => false,
+		bufio       => false,
+		bypass      => false)
 		-- dqs_delay => (0 to 0 => 1.35 ns),
 		-- dqi_delay => (0 to 0 => 0 ns),
 	port map (
 
-		tp_sel    => sw(1 downto 0),
-		tp        => tp_sdrphy,
+		tp_sel      => sw(1 downto 0),
+		tp          => tp_sdrphy,
 
-		rst       => sdrphy_rst0,
-		rst_shift => sdrphy_rst90,
-		iod_clk   => gclk100,
-		clk       => ddr_clk0,
-		clk_shift => ddr_clk90,
-		clkx2     => ddr_clk0x2,
+		rst         => sdrphy_rst0,
+		rst_shift   => sdrphy_rst90,
+		iod_clk     => gclk100,
+		clk         => ddr_clk0,
+		clk_shift   => ddr_clk90,
+		clkx2       => ddr_clk0x2,
 		clkx2_shift => ddr_clk90x2,
 
-		phy_frm   => ctlrphy_frm,
-		phy_trdy  => ctlrphy_trdy,
-		phy_rw    => ctlrphy_rw,
-		phy_ini   => ctlrphy_ini,
+		phy_frm     => ctlrphy_frm,
+		phy_trdy    => ctlrphy_trdy,
+		phy_rw      => ctlrphy_rw,
+		phy_ini     => ctlrphy_ini,
 
-		phy_cmd   => ctlrphy_cmd,
-		phy_wlreq => ctlrphy_wlreq,
-		phy_wlrdy => ctlrphy_wlrdy,
+		phy_cmd     => ctlrphy_cmd,
+		phy_wlreq   => ctlrphy_wlreq,
+		phy_wlrdy   => ctlrphy_wlrdy,
 
-		phy_rlreq => ctlrphy_rlreq,
-		phy_rlrdy => ctlrphy_rlrdy,
+		phy_rlreq   => ctlrphy_rlreq,
+		phy_rlrdy   => ctlrphy_rlrdy,
 
-		phy_locked => ctlrphy_locked,
+		phy_locked   => ctlrphy_locked,
 
-		sys_cke   => ctlrphy_cke,
-		sys_rst   => ctlrphy_rst,
-		sys_cs    => ctlrphy_cs,
-		sys_ras   => ctlrphy_ras,
-		sys_cas   => ctlrphy_cas,
-		sys_we    => ctlrphy_we,
-		sys_b     => ctlrphy_ba,
-		sys_a     => ctlrphy_a,
+		sys_cke     => ctlrphy_cke,
+		sys_rst     => ctlrphy_rst,
+		sys_cs      => ctlrphy_cs,
+		sys_ras     => ctlrphy_ras,
+		sys_cas     => ctlrphy_cas,
+		sys_we      => ctlrphy_we,
+		sys_b       => ctlrphy_ba,
+		sys_a       => ctlrphy_a,
 
-		sys_dqst  => ctlrphy_dqst,
-		sys_dqsi  => ctlrphy_dqso,
-		sys_dmi   => ctlrphy_dmo,
-		sys_dmo   => ctlrphy_dmi,
-		sys_dqo   => ctlrphy_dqi,
-		sys_dqv   => ctlrphy_dqv,
-		sys_dqt   => ctlrphy_dqt,
-		sys_dqi   => ctlrphy_dqo,
-		sys_odt   => ctlrphy_odt,
-		sys_sti   => ctlrphy_sto,
-		sys_sto   => ctlrphy_sti,
+		sys_dqst    => ctlrphy_dqst,
+		sys_dqsi    => ctlrphy_dqso,
+		sys_dmi     => ctlrphy_dmo,
+		sys_dmo     => ctlrphy_dmi,
+		sys_dqo     => ctlrphy_dqi,
+		sys_dqv     => ctlrphy_dqv,
+		sys_dqt     => ctlrphy_dqt,
+		sys_dqi     => ctlrphy_dqo,
+		sys_odt     => ctlrphy_odt,
+		sys_sti     => ctlrphy_sto,
+		sys_sto     => ctlrphy_sti,
 
 		sdram_rst   => ddr3_reset,
 		sdram_clk   => ddr3_clk,
@@ -846,15 +846,17 @@ begin
 		sdram_b     => ddr3_ba,
 		sdram_a     => ddr3_a,
 		sdram_odt   => ddr_odt,
---		sdram_dm    => ddr3_dm,
+		-- sdram_dm    => ddr3_dm,
 		sdram_dq    => ddr3_dq,
 		sdram_dqst  => ddr3_dqst,
 		sdram_dqs   => ddr3_dqsi,
 		sdram_dqso  => ddr3_dqso);
 
-		ddr3_cke <= ddr_cke(0);
-		ddr3_cs  <= ddr_cs(0);
-		ddr3_odt <= ddr_odt(0);
+	ddr3_cke <= ddr_cke(0);
+	ddr3_cs  <= ddr_cs(0);
+	ddr3_odt <= ddr_odt(0);
+	ddr3_dm <= (others => '0');
+
 
 	process (sio_clk, gclk100, ddr_clk0)
 		variable d, e, q : std_logic := '0';
@@ -928,8 +930,6 @@ begin
 
     	end generate;
 	end block;
-
-	ddr3_dm <= (others => '0');
 
 	serdebug_b : block
 		signal ser_irdy : std_logic;

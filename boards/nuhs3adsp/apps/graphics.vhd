@@ -58,8 +58,11 @@ architecture graphics of nuhs3adsp is
 
 		sdr200mhz_1080p24bpp);
 
+	--------------------------------------
+	--     Set your profile here        --
 	constant app_profile : app_profiles := sdr166mhz_1080p24bpp;
 	-- constant app_profile : app_profiles := sdr133mhz_600p24bpp;
+	----------------------------------------------------------
 
 	type profileparam_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparam_vector := (
@@ -82,26 +85,26 @@ architecture graphics of nuhs3adsp is
 
 		sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp));
 
-	type pll_params is record
+	type dcm_params is record
 		dcm_mul : natural;
 		dcm_div : natural;
 	end record;
 
 	type video_params is record
-		id   : video_modes;
-		pll    : pll_params;
+		id     : video_modes;
+		dcm    : dcm_params;
 		timing : videotiming_ids;
 	end record;
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,      timing => pclk_debug,               pll => (dcm_mul =>  4, dcm_div => 2)),
-		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    pll => (dcm_mul =>  5, dcm_div => 4)),
-		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    pll => (dcm_mul =>  2, dcm_div => 1)),
-		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   pll => (dcm_mul => 15, dcm_div => 4)),
-		(id => mode900p24bpp,  timing => pclk108_00m1600x900at60,  pll => (dcm_mul => 27, dcm_div => 5)),
-		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, pll => (dcm_mul => 15, dcm_div => 2)),
-		(id => mode1080r24bpp, timing => pclk140_00m1920x1080at60, pll => (dcm_mul =>  7, dcm_div => 1)));
+		(id => modedebug,      timing => pclk_debug,               dcm => (dcm_mul =>  4, dcm_div => 2)),
+		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    dcm => (dcm_mul =>  5, dcm_div => 4)),
+		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    dcm => (dcm_mul =>  2, dcm_div => 1)),
+		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   dcm => (dcm_mul => 15, dcm_div => 4)),
+		(id => mode900p24bpp,  timing => pclk108_00m1600x900at60,  dcm => (dcm_mul => 27, dcm_div => 5)),
+		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, dcm => (dcm_mul => 15, dcm_div => 2)),
+		(id => mode1080r24bpp, timing => pclk140_00m1920x1080at60, dcm => (dcm_mul =>  7, dcm_div => 1)));
 
 	function videoparam (
 		constant id  : video_modes)
@@ -125,17 +128,17 @@ architecture graphics of nuhs3adsp is
 
 	type sdramparams_record is record
 		id  : sdram_speeds;
-		pll : pll_params;
+		dcm : dcm_params;
 		cl  : std_logic_vector(0 to 3-1);
 	end record;
 
 	type sdramparams_vector is array (natural range <>) of sdramparams_record;
 	constant sdram_tab : sdramparams_vector := (
-		(id => sdram133MHz, pll => (dcm_mul => 20, dcm_div => 3), cl => "010"),
-		(id => sdram145MHz, pll => (dcm_mul => 29, dcm_div => 4), cl => "110"),
-		(id => sdram150MHz, pll => (dcm_mul => 15, dcm_div => 2), cl => "110"),
-		(id => sdram166MHz, pll => (dcm_mul => 25, dcm_div => 3), cl => "110"),
-		(id => sdram200MHz, pll => (dcm_mul => 10, dcm_div => 1), cl => "011"));
+		(id => sdram133MHz, dcm => (dcm_mul => 20, dcm_div => 3), cl => "010"),
+		(id => sdram145MHz, dcm => (dcm_mul => 29, dcm_div => 4), cl => "110"),
+		(id => sdram150MHz, dcm => (dcm_mul => 15, dcm_div => 2), cl => "110"),
+		(id => sdram166MHz, dcm => (dcm_mul => 25, dcm_div => 3), cl => "110"),
+		(id => sdram200MHz, dcm => (dcm_mul => 10, dcm_div => 1), cl => "011"));
 
 	function sdramparams (
 		constant id  : sdram_speeds)
@@ -157,7 +160,7 @@ architecture graphics of nuhs3adsp is
 
 	constant sdram_speed  : sdram_speeds  := profile_tab(app_profile).sdram_speed;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
-	constant sdram_tcp    : real := real(sdram_params.pll.dcm_div)*clk_per/real(sdram_params.pll.dcm_mul);
+	constant sdram_tcp    : real := real(sdram_params.dcm.dcm_div)*clk_per/real(sdram_params.dcm.dcm_mul);
 
 
 	constant bank_size   : natural := ddr_ba'length;
@@ -209,15 +212,14 @@ architecture graphics of nuhs3adsp is
 	signal si_trdy       : std_logic;
 	signal si_end        : std_logic;
 	signal si_data       : std_logic_vector(0 to 8-1);
-
 	signal so_frm        : std_logic;
 	signal so_irdy       : std_logic;
 	signal so_trdy       : std_logic;
 	signal so_data       : std_logic_vector(0 to 8-1);
 
 	signal video_clk     : std_logic;
-	signal video_hzsync  : std_logic;
-    signal video_vtsync  : std_logic;
+	signal video_hs      : std_logic;
+	signal video_vs      : std_logic;
     signal video_blank   : std_logic;
     signal video_pixel   : std_logic_vector(0 to 32-1);
 
@@ -231,11 +233,61 @@ architecture graphics of nuhs3adsp is
 
 begin
 
---	sys_rst <= not hd_t_clock;
 	clkin_ibufg : ibufg
 	port map (
 		I => clk ,
 		O => clk_bufg);
+
+	process(clk_bufg)
+	begin
+		if rising_edge(clk_bufg) then
+			sys_rst <= not sw1;
+		end if;
+	end process;
+
+	videodcm_b : if not debug generate
+	   signal dcm_rst   : std_logic;
+	   signal dcm_clkfb : std_logic;
+	   signal dcm_clk0  : std_logic;
+	begin
+	
+		dcm_rst <= setif(debug, '1', sys_rst);
+		bug_i : bufg
+		port map (
+			I => dcm_clk0,
+			O => dcm_clkfb);
+	
+		dcm_i : dcm
+		generic map(
+			clk_feedback   => "1x",
+			clkdv_divide   => 2.0,
+			clkfx_divide   => videoparam(video_mode).dcm.dcm_div,
+			clkfx_multiply => videoparam(video_mode).dcm.dcm_mul,
+			clkin_divide_by_2 => false,
+			clkin_period   => clk_per*1.0e9,
+			clkout_phase_shift => "none",
+			deskew_adjust  => "system_synchronous",
+			dfs_frequency_mode => "LOW",
+			duty_cycle_correction => true,
+			factory_jf   => x"c080",
+			phase_shift  => 0,
+			startup_wait => false)
+		port map (
+			rst      => dcm_rst,
+			dssen    => '0',
+			psclk    => '0',
+			psen     => '0',
+			psincdec => '0',
+			clkfb    => dcm_clkfb,
+			clkin    => clk_bufg,
+			clkfx    => video_clk,
+			clkfx180 => open,
+			clk0     => dcm_clk0,
+			locked   => open,
+			psdone   => open,
+			status   => open);
+
+	end generate;
 
 	ddr_lp_ck_i : ibufgds
 	generic map (
@@ -244,13 +296,6 @@ begin
 		i  => ddr_lp_ckp,
 		ib => ddr_lp_ckn,
 		o  => ddr_lp_ck);
-
-	process(clk_bufg)
-	begin
-		if rising_edge(clk_bufg) then
-			sys_rst <= not sw1;
-		end if;
-	end process;
 
 	ddrdcm_b : block
 		signal dfs_clkfx : std_logic;
@@ -269,8 +314,8 @@ begin
 			clkin_period  => clk_per*1.0e9,
 			clkdv_divide  => 2.0,
 			clkin_divide_by_2 => FALSE,
-			clkfx_divide  => sdram_params.pll.dcm_div,
-			clkfx_multiply => sdram_params.pll.dcm_mul,
+			clkfx_divide  => sdram_params.dcm.dcm_div,
+			clkfx_multiply => sdram_params.dcm.dcm_mul,
 			clkout_phase_shift => "NONE",
 			deskew_adjust => "SYSTEM_SYNCHRONOUS",
 			dfs_frequency_mode => "HIGH",
@@ -306,7 +351,7 @@ begin
 			clkfx_divide  => 1,
 			clkfx_multiply => 2,
 			clkin_divide_by_2 => FALSE,
-			clkin_period  => (real(sdram_params.pll.dcm_div)*clk_per*1.0e9)/real( sdram_params.pll.dcm_mul),
+			clkin_period  => (real(sdram_params.dcm.dcm_div)*clk_per*1.0e9)/real( sdram_params.dcm.dcm_mul),
 			clkout_phase_shift => "NONE",
 			deskew_adjust => "SYSTEM_SYNCHRONOUS",
 			dfs_frequency_mode => "HIGH",
@@ -340,50 +385,6 @@ begin
 		sdrsys_rst <= not dcm_lckd;
 
 	end block;
-
-	videodcm_b : if not debug generate
-	   signal dcm_rst   : std_logic;
-	   signal dcm_clkfb : std_logic;
-	   signal dcm_clk0  : std_logic;
-	begin
-	
-		dcm_rst <= setif(debug, '1', sys_rst);
-		bug_i : bufg
-		port map (
-			I => dcm_clk0,
-			O => dcm_clkfb);
-	
-		dcm_i : dcm
-		generic map(
-			clk_feedback   => "1x",
-			clkdv_divide   => 2.0,
-			clkfx_divide   => videoparam(video_mode).pll.dcm_div,
-			clkfx_multiply => videoparam(video_mode).pll.dcm_mul,
-			clkin_divide_by_2 => false,
-			clkin_period   => clk_per*1.0e9,
-			clkout_phase_shift => "none",
-			deskew_adjust  => "system_synchronous",
-			dfs_frequency_mode => "LOW",
-			duty_cycle_correction => true,
-			factory_jf   => x"c080",
-			phase_shift  => 0,
-			startup_wait => false)
-		port map (
-			rst      => dcm_rst,
-			dssen    => '0',
-			psclk    => '0',
-			psen     => '0',
-			psincdec => '0',
-			clkfb    => dcm_clkfb,
-			clkin    => clk_bufg,
-			clkfx    => video_clk,
-			clkfx180 => open,
-			clk0     => dcm_clk0,
-			locked   => open,
-			psdone   => open,
-			status   => open);
-
-	end generate;
 
 	miidcm_g : if not debug generate
 	   signal clk0    : std_logic;
@@ -427,18 +428,18 @@ begin
 			psdone   => open,
 			status   => open);
 
-		-- clk_mii_i : oddr2
-		-- port map (
-			-- c0 => clkfx,
-			-- c1 => clkfx_n,
-			-- ce => '1',
-			-- r  => '0',
-			-- s  => '0',
-			-- d0 => '0',
-			-- d1 => '1',
-			-- q => mii_refclk);
+		clkfx_n <= not clkfx;
+		clk_mii_i : oddr2
+		port map (
+			c0 => clkfx,
+			c1 => clkfx_n,
+			ce => '1',
+			r  => '0',
+			s  => '0',
+			d0 => '0',
+			d1 => '1',
+			q => mii_refclk);
 
-    	mii_refclk <= mii_clk;
 
 	end generate;
 
@@ -609,8 +610,8 @@ begin
 		sout_data    => si_data,
 
 		video_clk    => video_clk,
-		video_hzsync => video_hzsync,
-		video_vtsync => video_vtsync,
+		video_hzsync => video_hs,
+		video_vtsync => video_vs,
 		video_blank  => video_blank,
 		video_pixel  => video_pixel,
 
@@ -639,19 +640,6 @@ begin
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
 		tp           => open);
-
-	process (video_clk)
-	begin
-		if rising_edge(video_clk) then
-			red    <= multiplex(video_pixel, std_logic_vector(to_unsigned(0,2)), 8);
-			green  <= multiplex(video_pixel, std_logic_vector(to_unsigned(1,2)), 8);
-			blue   <= multiplex(video_pixel, std_logic_vector(to_unsigned(2,2)), 8);
-			blankn <= not video_blank;
-			hsync  <= video_hzsync;
-			vsync  <= video_vtsync;
-			sync   <= not video_hzsync and not video_vtsync;
-		end if;
-	end process;
 
 	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
 	ctlrphy_rlreq <= to_stdulogic(to_bit(ctlrphy_rlrdy));
@@ -729,10 +717,7 @@ begin
 		o  => ddr_ckp,
 		ob => ddr_ckn);
 
-	psave <= '1';
-	adc_clkab <= 'Z';
-
-	clk_videodac_b : block
+	videoio_b : block
 		signal videoclk_n : std_logic;
 	begin
 		videoclk_n <= not video_clk;
@@ -746,7 +731,23 @@ begin
 			d0 => '0',
 			d1 => '1',
 			q => clk_videodac);
-		end block;
+
+    	process (video_clk)
+    	begin
+    		if rising_edge(video_clk) then
+    			red    <= multiplex(video_pixel, std_logic_vector(to_unsigned(0,2)), 8);
+    			green  <= multiplex(video_pixel, std_logic_vector(to_unsigned(1,2)), 8);
+    			blue   <= multiplex(video_pixel, std_logic_vector(to_unsigned(2,2)), 8);
+    			blankn <= not video_blank;
+    			hsync  <= video_hs;
+    			vsync  <= video_vs;
+    			sync   <= not video_hs and not video_vs;
+    		end if;
+    	end process;
+	end block;
+
+	psave <= '1';
+	adc_clkab <= 'Z';
 
 	hd_t_data <= 'Z';
 
