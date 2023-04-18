@@ -422,14 +422,14 @@ $(WORK__ulx3s_graphics_structure_md) : ../../boards/ULX3S/testbenches/graphics.v
 		$(WORK__testbench)
 	$(VCOM) -2002 ../../boards/ULX3S/testbenches/graphics.vhd
 
-$(WORK__ulx4m_ld) : ../../boards/ULX4M/common/ulx4m_ld.vhd \
+$(WORK__ulx4m_ld) : ../../boards/ULX4M_LD/common/ulx4m_ld.vhd \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ULX4M/common/ulx4m_ld.vhd
+	$(VCOM) -2002 ../../boards/ULX4M_LD/common/ulx4m_ld.vhd
 
-$(WORK__ulx4m_ld__graphics) : ../../boards/ULX4M/apps/graphics.vhd \
+$(WORK__ulx4m_ld__graphics) : ../../boards/ULX4M_LD/apps/graphics.vhd \
 		$(HDL4FPGA__ecp5_sdrphy) \
 		$(HDL4FPGA__app_graphics) \
 		$(HDL4FPGA__sio_dayhdlc) \
@@ -449,7 +449,7 @@ $(WORK__ulx4m_ld__graphics) : ../../boards/ULX4M/apps/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ULX4M/apps/graphics.vhd
+	$(VCOM) -2002 ../../boards/ULX4M_LD/apps/graphics.vhd
 
 $(WORK__ulx4m_ls) : ../../boards/ULX4M_LS/common/ulx4m_ls.vhd \
 		$(STD__textio) \
@@ -482,7 +482,7 @@ $(WORK__ulx4m_ls__graphics) : ../../boards/ULX4M_LS/apps/graphics.vhd \
 
 $(WORK__testbench__ulx4mld_graphics) \
 $(WORK__ulx4mld_graphics_md) \
-$(WORK__ulx4mld_graphics_structure_md) : ../../boards/ULX4M/testbenches/graphics.vhd \
+$(WORK__ulx4mld_graphics_structure_md) : ../../boards/ULX4M_LD/testbenches/graphics.vhd \
 		$(HDL4FPGA__eth_rx) \
 		$(HDL4FPGA__eth_tb) \
 		$(HDL4FPGA__hdlcdll_rx) \
@@ -502,7 +502,7 @@ $(WORK__ulx4mld_graphics_structure_md) : ../../boards/ULX4M/testbenches/graphics
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(WORK__testbench)
-	$(VCOM) -2002 ../../boards/ULX4M/testbenches/graphics.vhd
+	$(VCOM) -2002 ../../boards/ULX4M_LD/testbenches/graphics.vhd
 
 $(WORK__testbench__ulx4mls_graphics) \
 $(WORK__ulx4mls_graphics_md) \
