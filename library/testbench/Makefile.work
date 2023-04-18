@@ -66,12 +66,12 @@ WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
 WORK__testbench__ulx4mls_graphics = $(LIB_WORK)/testbench/ulx4mls_graphics.dat
 WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
+WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
 WORK__testbench__s3estarter_graphics = $(LIB_WORK)/testbench/s3estarter_graphics.dat
 WORK__testbench__ecp3versa_graphics = $(LIB_WORK)/testbench/ecp3versa_graphics.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench__arty_graphics = $(LIB_WORK)/testbench/arty_graphics.dat
 WORK__testbench__ml509_graphics = $(LIB_WORK)/testbench/ml509_graphics.dat
-WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__s3estarter_structure_md = $(LIB_WORK)/s3estarter_structure_md/_primary.dat
 WORK__s3estarter_graphics_md = $(LIB_WORK)/s3estarter_graphics_md/_primary.dat
@@ -112,12 +112,12 @@ whole_library :     $(WORK__ulx4mls_graphics_structure_md) \
     $(WORK__ulx3s) \
     $(WORK__testbench__ulx4mls_graphics) \
     $(WORK__testbench__ulx4mld_graphics) \
+    $(WORK__testbench__ulx3s_graphics) \
     $(WORK__testbench__s3estarter_graphics) \
     $(WORK__testbench__ecp3versa_graphics) \
     $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench__arty_graphics) \
     $(WORK__testbench__ml509_graphics) \
-    $(WORK__testbench__ulx3s_graphics) \
     $(WORK__testbench) \
     $(WORK__s3estarter_structure_md) \
     $(WORK__s3estarter_graphics_md) \
@@ -146,9 +146,9 @@ $(WORK__arty) : ../../boards/arty/common/arty.vhd \
 	$(VCOM) -2002 ../../boards/arty/common/arty.vhd
 
 $(WORK__arty__graphics) : ../../boards/arty/apps/graphics.vhd \
+		$(HDL4FPGA__ser_debug) \
 		$(HDL4FPGA__ogbx) \
 		$(HDL4FPGA__xc_sdrphy) \
-		$(HDL4FPGA__ser_debug) \
 		$(HDL4FPGA__app_graphics) \
 		$(HDL4FPGA__desser) \
 		$(HDL4FPGA__sio_dayudp) \
@@ -391,9 +391,9 @@ $(WORK__ulx3s__graphics) : ../../boards/ULX3S/apps/graphics.vhd \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__sdram_param) \
 		$(IEEE__math_real) \
 		$(HDL4FPGA__sdram_db) \
-		$(HDL4FPGA__sdram_param) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \

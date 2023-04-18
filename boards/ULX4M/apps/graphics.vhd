@@ -43,25 +43,25 @@ architecture graphics of ulx4m_ld is
 	type app_profiles is (
 	--	Interface_SdramSpeed_VideoFormat --
 
-		uart_325MHz_480p24bpp,
-		uart_350MHz_480p24bpp,
-		uart_375MHz_480p24bpp,
-		uart_400MHz_480p24bpp,
-		uart_425MHz_480p24bpp,
-		uart_450MHz_480p24bpp,
-		uart_475MHz_480p24bpp,
-		uart_500MHz_480p24bpp,
+		hdlc_325MHz_480p24bpp,
+		hdlc_350MHz_480p24bpp,
+		hdlc_375MHz_480p24bpp,
+		hdlc_400MHz_480p24bpp,
+		hdlc_425MHz_480p24bpp,
+		hdlc_450MHz_480p24bpp,
+		hdlc_475MHz_480p24bpp,
+		hdlc_500MHz_480p24bpp,
 
-		uart_350MHz_600p24bpp,
-		uart_400MHz_600p24bpp,
+		hdlc_350MHz_600p24bpp,
+		hdlc_400MHz_600p24bpp,
 
-		uart_350MHz_1080p24bpp30,
-		uart_375MHz_1080p24bpp30,
-		uart_400MHz_1080p24bpp30,
-		uart_425MHz_1080p24bpp30,
-		uart_450MHz_1080p24bpp30,
-		uart_475MHz_1080p24bpp30,
-		uart_500MHz_1080p24bpp30,
+		hdlc_350MHz_1080p24bpp30,
+		hdlc_375MHz_1080p24bpp30,
+		hdlc_400MHz_1080p24bpp30,
+		hdlc_425MHz_1080p24bpp30,
+		hdlc_450MHz_1080p24bpp30,
+		hdlc_475MHz_1080p24bpp30,
+		hdlc_500MHz_1080p24bpp30,
 
 		mii_400MHz_480p24bpp,
 		mii_425MHz_480p24bpp,
@@ -72,8 +72,8 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------
 	-- Set your profile here             --
-	constant app_profile  : app_profiles := uart_400MHz_1080p24bpp30;
-	-- constant app_profile  : app_profiles := uart_425MHz_1080p24bpp30;
+	-- constant app_profile  : app_profiles := hdlc_400MHz_1080p24bpp30;
+	constant app_profile  : app_profiles := hdlc_425MHz_1080p24bpp30;
 	---------------------------------------
 
 	type profile_params is record
@@ -85,25 +85,25 @@ architecture graphics of ulx4m_ld is
 
 	type profileparams_vector is array (app_profiles) of profile_params;
 	constant profile_tab : profileparams_vector := (
-		uart_325MHz_480p24bpp    => (io_hdlc, sdram325MHz, mode480p24bpp,    hack => 1.0),
-		uart_350MHz_480p24bpp    => (io_hdlc, sdram350MHz, mode480p24bpp,    hack => 1.0),
-		uart_375MHz_480p24bpp    => (io_hdlc, sdram375MHz, mode480p24bpp,    hack => 1.0),
-		uart_400MHz_480p24bpp    => (io_hdlc, sdram400MHz, mode480p24bpp,    hack => 1.0),
-		uart_425MHz_480p24bpp    => (io_hdlc, sdram425MHz, mode480p24bpp,    hack => 1.0625),
-		uart_450MHz_480p24bpp    => (io_hdlc, sdram450MHz, mode480p24bpp,    hack => 1.125),
-		uart_475MHz_480p24bpp    => (io_hdlc, sdram475MHz, mode480p24bpp,    hack => 1.250),
-		uart_500MHz_480p24bpp    => (io_hdlc, sdram500MHz, mode480p24bpp,    hack => 1.375),
+		hdlc_325MHz_480p24bpp    => (io_hdlc, sdram325MHz, mode480p24bpp,    hack => 1.0),
+		hdlc_350MHz_480p24bpp    => (io_hdlc, sdram350MHz, mode480p24bpp,    hack => 1.0),
+		hdlc_375MHz_480p24bpp    => (io_hdlc, sdram375MHz, mode480p24bpp,    hack => 1.0),
+		hdlc_400MHz_480p24bpp    => (io_hdlc, sdram400MHz, mode480p24bpp,    hack => 1.0),
+		hdlc_425MHz_480p24bpp    => (io_hdlc, sdram425MHz, mode480p24bpp,    hack => 1.0625),
+		hdlc_450MHz_480p24bpp    => (io_hdlc, sdram450MHz, mode480p24bpp,    hack => 1.125),
+		hdlc_475MHz_480p24bpp    => (io_hdlc, sdram475MHz, mode480p24bpp,    hack => 1.250),
+		hdlc_500MHz_480p24bpp    => (io_hdlc, sdram500MHz, mode480p24bpp,    hack => 1.375),
 												   
-		uart_350MHz_600p24bpp    => (io_hdlc, sdram350MHz, mode600p24bpp,    hack => 1.0),
-		uart_400MHz_600p24bpp    => (io_hdlc, sdram400MHz, mode600p24bpp,    hack => 1.0),
+		hdlc_350MHz_600p24bpp    => (io_hdlc, sdram350MHz, mode600p24bpp,    hack => 1.0),
+		hdlc_400MHz_600p24bpp    => (io_hdlc, sdram400MHz, mode600p24bpp,    hack => 1.0),
 
-		uart_350MHz_1080p24bpp30 => (io_hdlc, sdram350MHz, mode1080p24bpp30, hack => 1.0),
-		uart_375MHz_1080p24bpp30 => (io_hdlc, sdram375MHz, mode1080p24bpp30, hack => 1.0),
-		uart_400MHz_1080p24bpp30 => (io_hdlc, sdram400MHz, mode1080p24bpp30, hack => 1.0),
-		uart_425MHz_1080p24bpp30 => (io_hdlc, sdram425MHz, mode1080p24bpp30, hack => 1.0625),
-		uart_450MHz_1080p24bpp30 => (io_hdlc, sdram450MHz, mode1080p24bpp30, hack => 1.125),
-		uart_475MHz_1080p24bpp30 => (io_hdlc, sdram475MHz, mode1080p24bpp30, hack => 1.1875),
-		uart_500MHz_1080p24bpp30 => (io_hdlc, sdram500MHz, mode1080p24bpp30, hack => 1.250),
+		hdlc_350MHz_1080p24bpp30 => (io_hdlc, sdram350MHz, mode1080p24bpp30, hack => 1.0),
+		hdlc_375MHz_1080p24bpp30 => (io_hdlc, sdram375MHz, mode1080p24bpp30, hack => 1.0),
+		hdlc_400MHz_1080p24bpp30 => (io_hdlc, sdram400MHz, mode1080p24bpp30, hack => 1.0),
+		hdlc_425MHz_1080p24bpp30 => (io_hdlc, sdram425MHz, mode1080p24bpp30, hack => 1.0625),
+		hdlc_450MHz_1080p24bpp30 => (io_hdlc, sdram450MHz, mode1080p24bpp30, hack => 1.125),
+		hdlc_475MHz_1080p24bpp30 => (io_hdlc, sdram475MHz, mode1080p24bpp30, hack => 1.1875),
+		hdlc_500MHz_1080p24bpp30 => (io_hdlc, sdram500MHz, mode1080p24bpp30, hack => 1.250),
 																	
 		mii_400MHz_480p24bpp     => (io_ipoe, sdram400MHz, mode480p24bpp,    hack => 1.0),
 		mii_425MHz_480p24bpp     => (io_ipoe, sdram425MHz, mode480p24bpp,    hack => 1.0625),
@@ -753,9 +753,15 @@ begin
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
 
-	tp(2) <= not (ctlrphy_wlreq xor ctlrphy_wlrdy);
-	tp(3) <= not (ctlrphy_rlreq xor ctlrphy_rlrdy);
-	tp(4) <= ctlrphy_ini;
+	cgear_g : for i in 1 to gear/2-1 generate
+    	ctlrphy_rst(i) <= ctlrphy_rst(0);
+    	ctlrphy_cke(i) <= ctlrphy_cke(0);
+    	ctlrphy_cs(i)  <= ctlrphy_cs(0);
+    	ctlrphy_ras(i) <= '1';
+    	ctlrphy_cas(i) <= '1';
+    	ctlrphy_we(i)  <= '1';
+    	ctlrphy_odt(i) <= ctlrphy_odt(0);
+	end generate;
 
 	process (clk_25mhz)
 	begin
@@ -769,7 +775,7 @@ begin
 	begin
 		for i in sdr_b'range loop
 			for j in 0 to gear/2-1 loop
-				ctlrphy_b(i*gear/2+j) <= sdr_b(i);
+				ctlrphy_b(j*sdr_b'length+i) <= sdr_b(i);
 			end loop;
 		end loop;
 	end process;
@@ -778,18 +784,10 @@ begin
 	begin
 		for i in sdr_a'range loop
 			for j in 0 to gear/2-1 loop
-				ctlrphy_a(i*gear/2+j) <= sdr_a(i);
+				ctlrphy_a(j*sdr_a'length+i) <= sdr_a(i);
 			end loop;
 		end loop;
 	end process;
-
-	ctlrphy_rst(1) <= ctlrphy_rst(0);
-	ctlrphy_cke(1) <= ctlrphy_cke(0);
-	ctlrphy_cs(1)  <= ctlrphy_cs(0);
-	ctlrphy_ras(1) <= '1';
-	ctlrphy_cas(1) <= '1';
-	ctlrphy_we(1)  <= '1';
-	ctlrphy_odt(1) <= ctlrphy_odt(0);
 
 	tp_b : block
 		signal tp_dv : std_logic;
@@ -838,6 +836,9 @@ begin
 		addr_size  => ddram_a'length,
 		word_size  => word_size,
 		byte_size  => byte_size,
+		rd_fifo    => false,
+		wr_fifo    => false,
+		bypass     => false,
 		taps       => natural(ceil((sdram_tcp-25.0e-12)/25.0e-12))) -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
 	port map (
 		tpin       => btn(1),
@@ -972,4 +973,8 @@ begin
 		-- d1   => dvid_crgb(2*3+1),
 		-- q    => hdmi1_clock);
  
+	tp(2) <= not (ctlrphy_wlreq xor ctlrphy_wlrdy);
+	tp(3) <= not (ctlrphy_rlreq xor ctlrphy_rlrdy);
+	tp(4) <= ctlrphy_ini;
+
 end;

@@ -171,36 +171,6 @@ begin
 			q(0) => sdram_clk(i));
 	end generate;
 
-	sdrbaphy_i : entity hdl4fpga.xc_sdrbaphy
-	generic map (
-		bank_size => bank_size,
-		addr_size => addr_size,
-		gear      => (gear+1)/2,
-		device    => device,
-		ba_latency => ba_latency)
-	port map (
-		clk     => clk,
-	 	grst    => rst,
-		sys_rst => sys_rst,
-		sys_cs  => sys_cs,
-		sys_cke => sys_cke,
-		sys_b   => ddrphy_b,
-		sys_a   => ddrphy_a,
-		sys_ras => sys_ras,
-		sys_cas => sys_cas,
-		sys_we  => sys_we,
-		sys_odt => sys_odt,
-
-		sdram_rst => sdram_rst,
-		sdram_cke => sdram_cke,
-		sdram_odt => sdram_odt,
-		sdram_cs  => sdram_cs,
-		sdram_ras => sdram_ras,
-		sdram_cas => sdram_cas,
-		sdram_we  => sdram_we,
-		sdram_b   => sdram_b,
-		sdram_a   => sdram_a);
-
 	write_leveling_p : process (phy_wlreq, wl_rdy)
 		variable z : std_logic;
 	begin
@@ -363,6 +333,36 @@ begin
 
 	dmi <= shuffle_vector(sys_dmi, gear => gear, size => 1);
 	dqi <= shuffle_vector(sys_dqi, gear => gear, size => byte_size);
+
+	sdrbaphy_i : entity hdl4fpga.xc_sdrbaphy
+	generic map (
+		bank_size => bank_size,
+		addr_size => addr_size,
+		gear      => (gear+1)/2,
+		device    => device,
+		ba_latency => ba_latency)
+	port map (
+		clk     => clk,
+	 	grst    => rst,
+		sys_rst => sys_rst,
+		sys_cs  => sys_cs,
+		sys_cke => sys_cke,
+		sys_b   => ddrphy_b,
+		sys_a   => ddrphy_a,
+		sys_ras => sys_ras,
+		sys_cas => sys_cas,
+		sys_we  => sys_we,
+		sys_odt => sys_odt,
+
+		sdram_rst => sdram_rst,
+		sdram_cke => sdram_cke,
+		sdram_odt => sdram_odt,
+		sdram_cs  => sdram_cs,
+		sdram_ras => sdram_ras,
+		sdram_cas => sdram_cas,
+		sdram_we  => sdram_we,
+		sdram_b   => sdram_b,
+		sdram_a   => sdram_a);
 
 	byte_g : for i in sdram_dqs'range generate
 		signal tp_byte : std_logic_vector(1 to 8);
