@@ -30,12 +30,6 @@
         <Source name="../../../library/basic/arbiter.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/latticesemi/dbuf.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/latticesemi/ecp3/dbram.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/basic/cntrcs.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -298,9 +292,6 @@
             <Options/>
         </Source>
         <Source name="../../../library/apps/app_profiles.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/latticesemi/ff.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/mii/mii_buffer.vhd" type="VHDL" type_short="VHDL">
