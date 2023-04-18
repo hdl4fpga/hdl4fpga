@@ -56,6 +56,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library hdl4fpga;
+
 entity seg7 is
 	generic (
 		refresh : natural := 2**12;

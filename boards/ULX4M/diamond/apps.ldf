@@ -123,7 +123,7 @@
         <Source name="../apps/graphics.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work"/>
         </Source>
-		<Source name="../../../library/apps/app_graphics.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/apps/app_graphics.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/hdlc/hdlcdll_rx.vhd" type="VHDL" type_short="VHDL">
@@ -313,6 +313,12 @@
             <Options/>
         </Source>
         <Source name="../../../library/mii/ipv4_adjlen.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_ogbx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_igbx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ulx4m_ld.lpf" type="Logic Preference" type_short="LPF">

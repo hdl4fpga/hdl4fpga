@@ -70,10 +70,11 @@ architecture graphics of ulx4m_ld is
 		mii_500MHz_480p24bpp);
 	--------------------------------------
 
-	---------------------------------------------
-	-- Set your profile here                   --
-	constant app_profile  : app_profiles := uart_425MHz_1080p24bpp30;
-	---------------------------------------------
+	---------------------------------------
+	-- Set your profile here             --
+	constant app_profile  : app_profiles := uart_400MHz_1080p24bpp30;
+	-- constant app_profile  : app_profiles := uart_425MHz_1080p24bpp30;
+	---------------------------------------
 
 	type profile_params is record
 		comms       : io_comms;
@@ -92,7 +93,7 @@ architecture graphics of ulx4m_ld is
 		uart_450MHz_480p24bpp    => (io_hdlc, sdram450MHz, mode480p24bpp,    hack => 1.125),
 		uart_475MHz_480p24bpp    => (io_hdlc, sdram475MHz, mode480p24bpp,    hack => 1.250),
 		uart_500MHz_480p24bpp    => (io_hdlc, sdram500MHz, mode480p24bpp,    hack => 1.375),
-                                                   
+												   
 		uart_350MHz_600p24bpp    => (io_hdlc, sdram350MHz, mode600p24bpp,    hack => 1.0),
 		uart_400MHz_600p24bpp    => (io_hdlc, sdram400MHz, mode600p24bpp,    hack => 1.0),
 
@@ -103,7 +104,7 @@ architecture graphics of ulx4m_ld is
 		uart_450MHz_1080p24bpp30 => (io_hdlc, sdram450MHz, mode1080p24bpp30, hack => 1.125),
 		uart_475MHz_1080p24bpp30 => (io_hdlc, sdram475MHz, mode1080p24bpp30, hack => 1.1875),
 		uart_500MHz_1080p24bpp30 => (io_hdlc, sdram500MHz, mode1080p24bpp30, hack => 1.250),
-                                                                    
+																	
 		mii_400MHz_480p24bpp     => (io_ipoe, sdram400MHz, mode480p24bpp,    hack => 1.0),
 		mii_425MHz_480p24bpp     => (io_ipoe, sdram425MHz, mode480p24bpp,    hack => 1.0625),
 		mii_450MHz_480p24bpp     => (io_ipoe, sdram450MHz, mode480p24bpp,    hack => 1.125),
@@ -197,24 +198,21 @@ architecture graphics of ulx4m_ld is
 		return tab(tab'left);
 	end;
 
-	constant sdram_mode : sdram_speeds := profile_tab(app_profile).sdram_speed;
-	-- constant sdram_mode : sdram_speeds := sdram_speeds'VAL(setif(not debug,
+	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
+	-- constant sdram_speed : sdram_speeds := sdram_speeds'VAL(setif(not debug,
 		-- sdram_speeds'POS(profile_tab(app_profile).sdram_speed),
 		-- sdram_speeds'POS(sdram400Mhz)));
-	constant sdram_params : sdramparams_record := sdramparams(sdram_mode);
-
-	constant sdram_tcp : real := 
+	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
+	constant sdram_tcp    : real := 
 		real(sdram_params.pll.clki_div)/
 		(real(sdram_params.pll.clkos_div*sdram_params.pll.clkfb_div)*sys_freq);
 
-	constant gear        : natural := 4;
-	constant cgear   : natural := (gear+1)/2;
-
 	constant bank_size   : natural := ddram_ba'length;
 	constant addr_size   : natural := ddram_a'length;
-	constant coln_size   : natural := 10;
 	constant word_size   : natural := ddram_dq'length;
 	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
+	constant coln_size   : natural := 10;
+	constant gear        : natural := 4;
 
 	signal sys_rst       : std_logic;
 
@@ -239,8 +237,8 @@ architecture graphics of ulx4m_ld is
 	signal ctlrphy_we    : std_logic_vector(0 to 2-1);
 	signal ctlrphy_odt   : std_logic_vector(0 to 2-1);
 	signal ctlrphy_cmd   : std_logic_vector(0 to 3-1);
-	signal ctlrphy_ba    : std_logic_vector(cgear*ddram_ba'length-1 downto 0);
-	signal ctlrphy_a     : std_logic_vector(cgear*ddram_a'length-1 downto 0);
+	signal ctlrphy_b     : std_logic_vector(gear/2*ddram_ba'length-1 downto 0);
+	signal ctlrphy_a     : std_logic_vector(gear/2*ddram_a'length-1 downto 0);
 	signal ctlrphy_dqst  : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqso  : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dmo   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
@@ -251,7 +249,7 @@ architecture graphics of ulx4m_ld is
 	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
-	signal sdr_ba        : std_logic_vector(ddram_ba'length-1 downto 0);
+	signal sdr_b         : std_logic_vector(ddram_ba'range);
 	signal sdr_a         : std_logic_vector(ddram_a'length-1 downto 0);
 
 	signal video_clk     : std_logic;
@@ -276,7 +274,7 @@ architecture graphics of ulx4m_ld is
 	signal sclk          : std_logic;
 	signal eclk          : std_logic;
 
-    signal video_pixel   : std_logic_vector(0 to 32-1);
+	signal video_pixel   : std_logic_vector(0 to 32-1);
 
 	constant io_link     : io_comms := profile_tab(app_profile).comms;
 
@@ -323,7 +321,7 @@ begin
 
 	begin
 		pll_i : EHXPLLL
-        generic map (
+		generic map (
 			PLLRST_ENA       => "DISABLED",
 			INTFB_WAKE       => "DISABLED",
 			STDBY_ENABLE     => "DISABLED",
@@ -347,24 +345,24 @@ begin
 			CLKOP_DIV        => video_record.pll.clkop_div,
 			CLKFB_DIV        => video_record.pll.clkfb_div,
 			CLKI_DIV         => video_record.pll.clki_div)
-        port map (
+		port map (
 			rst       => '0',
 			clki      => clk_25mhz,
 			CLKFB     => clkfb,
-            PHASESEL0 => '0', PHASESEL1 => '0',
+			PHASESEL0 => '0', PHASESEL1 => '0',
 			PHASEDIR  => '0',
-            PHASESTEP => '0', PHASELOADREG => '0',
-            STDBY     => '0', PLLWAKESYNC  => '0',
-            ENCLKOP   => '0',
+			PHASESTEP => '0', PHASELOADREG => '0',
+			STDBY     => '0', PLLWAKESYNC  => '0',
+			ENCLKOP   => '0',
 			ENCLKOS   => '0',
 			ENCLKOS2  => '0',
-            ENCLKOS3  => '0',
+			ENCLKOS3  => '0',
 			CLKOP     => clkfb,
 			CLKOS     => video_shift_clk,
 			CLKOS2    => video_clk,
-            CLKOS3    => videoio_clk,
+			CLKOS3    => videoio_clk,
 			LOCK      => video_lck,
-            INTLOCK   => open,
+			INTLOCK   => open,
 			REFCLK    => open,
 			CLKINTFB  => open);
 
@@ -395,7 +393,7 @@ begin
 		severity NOTE;
 
 		pll_i : EHXPLLL
-        generic map (
+		generic map (
 			PLLRST_ENA       => "DISABLED",
 			INTFB_WAKE       => "DISABLED",
 			STDBY_ENABLE     => "DISABLED",
@@ -419,133 +417,133 @@ begin
 			CLKOP_DIV        => sdram_params.pll.clkop_div,
 			CLKFB_DIV        => sdram_params.pll.clkfb_div,
 			CLKI_DIV         => sdram_params.pll.clki_div)
-        port map (
+		port map (
 			rst       => '0',
 			clki      => clk_25mhz,
 			CLKFB     => clkop,
-            PHASESEL0 => '0', PHASESEL1 => '0',
+			PHASESEL0 => '0', PHASESEL1 => '0',
 			PHASEDIR  => '0',
-            PHASESTEP => '0', PHASELOADREG => '0',
-            STDBY     => '0', PLLWAKESYNC  => '0',
-            ENCLKOP   => '0',
+			PHASESTEP => '0', PHASELOADREG => '0',
+			STDBY     => '0', PLLWAKESYNC  => '0',
+			ENCLKOP   => '0',
 			ENCLKOS   => '0',
 			ENCLKOS2  => '0',
-            ENCLKOS3  => '0',
+			ENCLKOS3  => '0',
 			CLKOP     => clkop,
 			CLKOS     => open,
 			CLKOS2    => open,
 			CLKOS3    => open,
 			LOCK      => dramclk_lck,
-            INTLOCK   => open,
+			INTLOCK   => open,
 			REFCLK    => open,
 			CLKINTFB  => open);
 
 		memsync_rst <= not dramclk_lck;
-    	mem_sync_b : block
+		mem_sync_b : block
 
-        	component mem_sync
-        		port (
-        			start_clk : in  std_logic;
-        			rst       : in  std_logic;
-        			dll_lock  : in  std_logic;
-        			pll_lock  : in  std_logic;
-        			update    : in  std_logic;
-        			pause     : out std_logic;
-        			stop      : out std_logic;
-        			freeze    : out std_logic;
-        			uddcntln  : out std_logic;
-        			dll_rst   : out std_logic;
-        			ddr_rst   : out std_logic;
-        			ready     : out std_logic);
-        	end component;
+			component mem_sync
+				port (
+					start_clk : in  std_logic;
+					rst       : in  std_logic;
+					dll_lock  : in  std_logic;
+					pll_lock  : in  std_logic;
+					update    : in  std_logic;
+					pause     : out std_logic;
+					stop      : out std_logic;
+					freeze    : out std_logic;
+					uddcntln  : out std_logic;
+					dll_rst   : out std_logic;
+					ddr_rst   : out std_logic;
+					ready     : out std_logic);
+			end component;
 
-    		signal uddcntln : std_logic;
-    		signal freeze   : std_logic;
-    		signal stop     : std_logic;
-    		signal dll_rst  : std_logic;
-    		signal dll_lock : std_logic;
-    		signal pll_lock : std_logic;
-    		signal update   : std_logic;
-    		signal ready    : std_logic;
+			signal uddcntln : std_logic;
+			signal freeze   : std_logic;
+			signal stop     : std_logic;
+			signal dll_rst  : std_logic;
+			signal dll_lock : std_logic;
+			signal pll_lock : std_logic;
+			signal update   : std_logic;
+			signal ready    : std_logic;
 
-    		attribute FREQUENCY_PIN_ECLKO : string;
-    		attribute FREQUENCY_PIN_ECLKO of  eclksyncb_i : label is ftoa(1.0e-6/sdram_tcp, 10);
+			attribute FREQUENCY_PIN_ECLKO : string;
+			attribute FREQUENCY_PIN_ECLKO of  eclksyncb_i : label is ftoa(1.0e-6/sdram_tcp, 10);
 
-    		attribute FREQUENCY_PIN_CDIVX : string;
-    		attribute FREQUENCY_PIN_CDIVX of clkdivf_i : label is ftoa(1.0e-6/(sdram_tcp*2.0), 10);
-    		signal eclko : std_logic;
-    		signal cdivx : std_logic;
+			attribute FREQUENCY_PIN_CDIVX : string;
+			attribute FREQUENCY_PIN_CDIVX of clkdivf_i : label is ftoa(1.0e-6/(sdram_tcp*2.0), 10);
+			signal eclko : std_logic;
+			signal cdivx : std_logic;
 			signal ddr_rst : std_logic;
-    	begin
+		begin
 
-    		pll_lock <= '1';
-    		update   <= '0';
+			pll_lock <= '1';
+			update   <= '0';
 
-    		mem_sync_i : mem_sync
-    		port map (
-    			start_clk => clk_25mhz,
-    			rst       => memsync_rst,
-    			dll_lock  => dll_lock,
-    			pll_lock  => pll_lock,
-    			update    => update,
-    			pause     => ms_pause,
-    			stop      => stop,
-    			freeze    => freeze,
-    			uddcntln  => uddcntln,
-    			dll_rst   => dll_rst,
-    			ddr_rst   => ddr_rst,
-    			ready     => ready);
+			mem_sync_i : mem_sync
+			port map (
+				start_clk => clk_25mhz,
+				rst       => memsync_rst,
+				dll_lock  => dll_lock,
+				pll_lock  => pll_lock,
+				update    => update,
+				pause     => ms_pause,
+				stop      => stop,
+				freeze    => freeze,
+				uddcntln  => uddcntln,
+				dll_rst   => dll_rst,
+				ddr_rst   => ddr_rst,
+				ready     => ready);
 
-    		eclksyncb_i : eclksyncb
-    		port map (
-    			stop  => stop,
-    			eclki => clkop,
-    			eclko => eclko);
-    	
-    		clkdivf_i : clkdivf
-    		generic map (
-    			div => "2.0")
-    		port map (
-    			rst     => ddr_rst,
-    			alignwd => '0',
-    			clki    => eclko,
-    			cdivx   => cdivx);
-    		eclk <= eclko;
-    		sclk <= transport cdivx after natural(sdram_tcp*1.0e12*(3.0/4.0))*1 ps;
-    -- 
-    		-- eclk <= transport eclko after natural(sdram_tcp*1.0e12*(3.0/4.0))*1 ps;
-    		-- sclk <= cdivx;
-    	
-    		ddrdll_i : ddrdlla
-    		port map (
-    			rst      => dll_rst,
-    			clk      => eclk,
-    			freeze   => freeze,
-    			uddcntln => uddcntln,
-    			ddrdel   => ddrdel,
-    			lock     => dll_lock);
+			eclksyncb_i : eclksyncb
+			port map (
+				stop  => stop,
+				eclki => clkop,
+				eclko => eclko);
+		
+			clkdivf_i : clkdivf
+			generic map (
+				div => "2.0")
+			port map (
+				rst     => ddr_rst,
+				alignwd => '0',
+				clki    => eclko,
+				cdivx   => cdivx);
+			eclk <= eclko;
+			sclk <= transport cdivx after natural(sdram_tcp*1.0e12*(3.0/4.0))*1 ps;
+	-- 
+			-- eclk <= transport eclko after natural(sdram_tcp*1.0e12*(3.0/4.0))*1 ps;
+			-- sclk <= cdivx;
+		
+			ddrdll_i : ddrdlla
+			port map (
+				rst      => dll_rst,
+				clk      => eclk,
+				freeze   => freeze,
+				uddcntln => uddcntln,
+				ddrdel   => ddrdel,
+				lock     => dll_lock);
 
-        	process (ddr_rst, sclk)
-        	begin
-        		if ddr_rst='1' then
-        			sdrphy_rst <= '1';
-        		elsif rising_edge(sclk) then
-        			sdrphy_rst <= '0';
-        		end if;
-        	end process;
+			process (ddr_rst, sclk)
+			begin
+				if ddr_rst='1' then
+					sdrphy_rst <= '1';
+				elsif rising_edge(sclk) then
+					sdrphy_rst <= '0';
+				end if;
+			end process;
 
-        	process (memsync_rst, ready, sclk)
-        	begin
-        		if memsync_rst='1' then
-        			ctlr_rst <= '1';
-        		elsif ready='0' then
-        			ctlr_rst <= '1';
-        		elsif rising_edge(sclk) then
-        			ctlr_rst <= memsync_rst;
-        		end if;
-        	end process;
+			process (memsync_rst, ready, sclk)
+			begin
+				if memsync_rst='1' then
+					ctlr_rst <= '1';
+				elsif ready='0' then
+					ctlr_rst <= '1';
+				elsif rising_edge(sclk) then
+					ctlr_rst <= memsync_rst;
+				end if;
+			end process;
 
-    	end block;
+		end block;
 	
 	end block;
 
@@ -558,7 +556,7 @@ begin
 		constant baudrate : natural := setif(
 			uart_xtal >= 32.0e6, 3000000, setif(
 			uart_xtal >= 25.0e6, 2000000,
-                                 115200));
+								 115200));
 
 		signal uart_rxdv  : std_logic;
 		signal uart_rxd   : std_logic_vector(0 to 8-1);
@@ -743,7 +741,7 @@ begin
 		ctlrphy_cas  => ctlrphy_cas(0),
 		ctlrphy_we   => ctlrphy_we(0),
 		ctlrphy_odt  => ctlrphy_odt(0),
-		ctlrphy_b    => sdr_ba,
+		ctlrphy_b    => sdr_b,
 		ctlrphy_a    => sdr_a,
 		ctlrphy_dqst => ctlrphy_dqst,
 		ctlrphy_dqso => ctlrphy_dqso,
@@ -767,11 +765,11 @@ begin
 		end if;
 	end process;
 
-	process (sdr_ba)
+	process (sdr_b)
 	begin
-		for i in sdr_ba'range loop
-			for j in 0 to cgear-1 loop
-				ctlrphy_ba(i*cgear+j) <= sdr_ba(i);
+		for i in sdr_b'range loop
+			for j in 0 to gear/2-1 loop
+				ctlrphy_b(i*gear/2+j) <= sdr_b(i);
 			end loop;
 		end loop;
 	end process;
@@ -779,8 +777,8 @@ begin
 	process (sdr_a)
 	begin
 		for i in sdr_a'range loop
-			for j in 0 to cgear-1 loop
-				ctlrphy_a(i*cgear+j) <= sdr_a(i);
+			for j in 0 to gear/2-1 loop
+				ctlrphy_a(i*gear/2+j) <= sdr_a(i);
 			end loop;
 		end loop;
 	end process;
@@ -869,7 +867,7 @@ begin
 		sys_cas    => ctlrphy_cas,
 		sys_we     => ctlrphy_we,
 		sys_odt    => ctlrphy_odt,
-		sys_b      => ctlrphy_ba,
+		sys_b      => ctlrphy_b,
 		sys_a      => ctlrphy_a,
 		sys_dqsi   => ctlrphy_dqso,
 		sys_dqst   => ctlrphy_dqst,

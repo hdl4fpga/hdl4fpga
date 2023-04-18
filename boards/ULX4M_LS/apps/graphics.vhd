@@ -322,9 +322,10 @@ begin
 		signal clkfb : std_logic;
 
 	begin
+
 		pll_i : EHXPLLL
         generic map (
-			PLLRST_ENA       => "DISABLED",
+			PLLRST_ENA       => setif(debug,"ENABLED", "DISABLED"),
 			INTFB_WAKE       => "DISABLED",
 			STDBY_ENABLE     => "DISABLED",
 			DPHASE_SOURCE    => "DISABLED",
@@ -348,7 +349,7 @@ begin
 			CLKFB_DIV        => video_record.pll.clkfb_div,
 			CLKI_DIV         => video_record.pll.clki_div)
         port map (
-			rst       => '0',
+			rst       => setif(debug, '1'),
 			clki      => clk_25mhz,
 			CLKFB     => clkfb,
             PHASESEL0 => '0', PHASESEL1 => '0',

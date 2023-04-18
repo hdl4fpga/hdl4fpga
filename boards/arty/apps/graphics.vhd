@@ -213,7 +213,7 @@ architecture graphics of arty is
 	signal ctlrphy_rlreq  : std_logic;
 	signal ctlrphy_rlrdy  : std_logic;
 
-	signal ddr_ba         : std_logic_vector(ddr3_ba'range);
+	signal ddr_b          : std_logic_vector(ddr3_ba'range);
 	signal ddr_a          : std_logic_vector(ddr3_a'range);
 	signal ddr_cke        : std_logic_vector(0 to 0);
 	signal ddr_cs         : std_logic_vector(0 to 0);
@@ -227,7 +227,7 @@ architecture graphics of arty is
 	signal ctlrphy_we     : std_logic_vector(0 to gear/2-1);
 	signal ctlrphy_odt    : std_logic_vector(0 to gear/2-1);
 	signal ctlrphy_cmd    : std_logic_vector(0 to 3-1);
-	signal ctlrphy_ba     : std_logic_vector(gear/2*ddr3_ba'length-1 downto 0);
+	signal ctlrphy_b      : std_logic_vector(gear/2*ddr3_ba'length-1 downto 0);
 	signal ctlrphy_a      : std_logic_vector(gear/2*ddr3_a'length-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
@@ -725,7 +725,7 @@ begin
 		ctlrphy_cas  => ctlrphy_cas(0),
 		ctlrphy_we   => ctlrphy_we(0),
 		ctlrphy_odt  => ctlrphy_odt(0),
-		ctlrphy_b    => ddr_ba,
+		ctlrphy_b    => ddr_b,
 		ctlrphy_a    => ddr_a,
 		ctlrphy_dqst => ctlrphy_dqst,
 		ctlrphy_dqso => ctlrphy_dqso,
@@ -749,11 +749,11 @@ begin
     	ctlrphy_odt(i) <= ctlrphy_odt(0);
 	end generate;
 
-	process (ddr_ba)
+	process (ddr_b)
 	begin
-		for i in ddr_ba'range loop
+		for i in ddr_b'range loop
 			for j in 0 to gear/2-1 loop
-				ctlrphy_ba(i*gear/2+j) <= ddr_ba(i);
+				ctlrphy_b(i*gear/2+j) <= ddr_b(i);
 			end loop;
 		end loop;
 	end process;
@@ -821,7 +821,7 @@ begin
 		sys_ras     => ctlrphy_ras,
 		sys_cas     => ctlrphy_cas,
 		sys_we      => ctlrphy_we,
-		sys_b       => ctlrphy_ba,
+		sys_b       => ctlrphy_b,
 		sys_a       => ctlrphy_a,
 
 		sys_dqst    => ctlrphy_dqst,
