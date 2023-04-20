@@ -28,33 +28,33 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity videogbx is
+entity serlzr is
 	port (
-		word_clk  : in  std_logic;
-		word_frm  : in  std_logic;
-		word_data : in  std_logic_vector;
-		bit_data  : out std_logic_vector);
+		in_clk  : in  std_logic;
+		in_frm  : in  std_logic;
+		in_data : in  std_logic_vector;
+		out_data  : out std_logic_vector);
 end;
 
-architecture def of videogbx is
-	signal shf  : std_logic_vector(unsigned_num_bits(word_data'length)-1 downto 0);
-	signal rgtr : std_logic_vector(word_data'length+bit_data'length-2 downto 0);
+architecture def of serlzr  is
+	signal shf  : std_logic_vector(unsigned_num_bits(in_data'length)-1 downto 0);
+	signal rgtr : std_logic_vector(in_data'length+out_data'length-2 downto 0);
 	signal shfd : std_logic_vector(rgtr'range);
 begin 
 
-	process (word_clk)
-		variable shr : unsigned(word_data'length+bit_data'length-2 downto 0);
-		variable acc : unsigned(unsigned_num_bits(word_data'length) downto 0);
+	process (in_clk)
+		variable shr : unsigned(in_data'length+out_data'length-2 downto 0);
+		variable acc : unsigned(shf'range);
 	begin 
-		if rising_edge(word_clk) then
-			if word_frm='0' then
+		if rising_edge(in_clk) then
+			if in_frm='0' then
 				acc := (others => '0');
-			elsif acc >= bit_data'length then 
-				acc := acc - bit_data'length;
+			elsif acc >= out_data'length then 
+				acc := acc - out_data'length;
 			else
-				shr := shift_left(shr, word_data'length);
-				shr(word_data'length-1 downto 0) := unsigned(word_data);
-				acc := acc + (word_data'length - bit_data'length);
+				shr := shift_left(shr, in_data'length);
+				shr(in_data'length-1 downto 0) := unsigned(in_data);
+				acc := acc + (in_data'length - out_data'length);
 			end if;
 			shf  <= std_logic_vector(acc);
 			rgtr <= std_logic_vector(shr);
@@ -69,5 +69,5 @@ begin
 		di  => rgtr,
 		do  => shfd);
 	
-	bit_data <= shfd(bit_data'length-1 downto 0);
+	out_data <= shfd(out_data'length-1 downto 0);
 end;
