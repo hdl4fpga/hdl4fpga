@@ -1,14 +1,13 @@
-ScopeIO  
-=======
+A library for embedded debuging tools
+=====================================
 
-A tool to be **embedded along with the design** when simulation tools are not
-enough to discover what is wrong.
+Documentation
+-------------
+
+[[https://github.com/hdl4fpga/hdl4fpga/wiki]]
 
 Goals 
 -----
 
 - Portability
 - Small footprint
-- Video interface
-- Block RAM requirement only
-- Data transfer

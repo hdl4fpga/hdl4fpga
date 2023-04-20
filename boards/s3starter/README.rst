@@ -8,10 +8,3 @@ DIGILENT Spartan-3 Board
        * 1M-byte of Fast Asynchronous SRAM 
        * VGA display port
        * 9-pin RS-232 Serial Port PS/2 Port
-
-
-
-
-
-
-
