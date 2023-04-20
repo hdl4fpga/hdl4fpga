@@ -30,24 +30,44 @@ use hdl4fpga.base.all;
 
 entity videogbx is
 	port (
-		video_clk   : in  std_logic;
-		video_red   : in  std_logic_vector;
-		video_green : in  std_logic_vector;
-		video_blue  : in  std_logic_vector;
-
-		gbx_clk     : out std_logic_vector;
-		gbx_red     : out std_logic_vector;
-		gbx_green   : out std_logic_vector;
-		gbx_blue    : out std_logic);
+		word_clk  : in  std_logic;
+		word_frm  : in  std_logic;
+		word_data : in  std_logic_vector;
+		bit_data  : out std_logic_vector);
 end;
 
 architecture def of videogbx is
+	signal rgtr : std_logic_vector(word_data'length+bit_data'length-2 downto 0);
+	signal shf  : std_logic_vector(unsigned_num_bits(rgtr'length-1) downto 0);
+	signal shfd : std_logic_vector(rgtr'range);
+begin 
 
-begin
-	process (video_clk)
+	process (word_clk)
+		variable shr : unsigned(word_data'length+bit_data'length-2 downto 0);
+		variable acc : unsigned(unsigned_num_bits(word_data'length) downto 0);
 	begin 
-		if rising_edge(video_clk) then
-			gbx_red <= 
+		if rising_edge(word_clk) then
+			if word_frm='0' then
+				acc := (others => '0');
+			elsif acc >= bit_data'length then 
+				acc := acc - bit_data'length;
+			else
+				shr := shift_left(shr, word_data'length);
+				shr(word_data'length-1 downto 0) := unsigned(word_data);
+				acc := acc + (word_data'length - bit_data'length);
+			end if;
+			shf  <= std_logic_vector(acc);
+			rgtr <= std_logic_vector(shr);
 		end if;
 	end process;
+
+	shl_i : entity hdl4fpga.barrel
+	generic map (
+		left => false)
+	port map (
+		shf => shf,
+		di  => rgtr,
+		do  => shfd);
+	
+	bit_data <= shfd(bit_data'length-1 downto 0);
 end;
