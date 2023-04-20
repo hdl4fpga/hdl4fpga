@@ -38,6 +38,8 @@ HDL4FPGA__xc3s_dqsdelay__xilinx = $(LIB_HDL4FPGA)/xc3s_dqsdelay/xilinx.dat
 HDL4FPGA__xc3s_dqsdelay = $(LIB_HDL4FPGA)/xc3s_dqsdelay/_primary.dat
 HDL4FPGA__videopkg__body = $(LIB_HDL4FPGA)/videopkg/body.dat
 HDL4FPGA__videopkg = $(LIB_HDL4FPGA)/videopkg/_primary.dat
+HDL4FPGA__videogbx__def = $(LIB_HDL4FPGA)/videogbx/def.dat
+HDL4FPGA__videogbx = $(LIB_HDL4FPGA)/videogbx/_primary.dat
 HDL4FPGA__videobox_layout__def = $(LIB_HDL4FPGA)/videobox_layout/def.dat
 HDL4FPGA__videobox_layout = $(LIB_HDL4FPGA)/videobox_layout/_primary.dat
 HDL4FPGA__videobox__def = $(LIB_HDL4FPGA)/videobox/def.dat
@@ -355,6 +357,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__xc3s_dqsdelay) \
     $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__videopkg) \
+    $(HDL4FPGA__videogbx__def) \
+    $(HDL4FPGA__videogbx) \
     $(HDL4FPGA__videobox_layout__def) \
     $(HDL4FPGA__videobox_layout) \
     $(HDL4FPGA__videobox__def) \
@@ -2186,6 +2190,15 @@ $(HDL4FPGA__videobox_layout__def) : ../video/video.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../video/video.vhd
+
+$(HDL4FPGA__videogbx) \
+$(HDL4FPGA__videogbx__def) : ../video/videogbx.vhd \
+		$(HDL4FPGA__barrel) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../video/videogbx.vhd
 
 $(HDL4FPGA__videopkg) \
 $(HDL4FPGA__videopkg__body) : ../video/videopkg.vhd \

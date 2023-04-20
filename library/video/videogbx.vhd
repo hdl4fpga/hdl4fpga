@@ -37,8 +37,8 @@ entity videogbx is
 end;
 
 architecture def of videogbx is
+	signal shf  : std_logic_vector(unsigned_num_bits(word_data'length)-1 downto 0);
 	signal rgtr : std_logic_vector(word_data'length+bit_data'length-2 downto 0);
-	signal shf  : std_logic_vector(unsigned_num_bits(rgtr'length-1) downto 0);
 	signal shfd : std_logic_vector(rgtr'range);
 begin 
 
