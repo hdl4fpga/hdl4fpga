@@ -1,5 +1,5 @@
-A library for embedded debuging tools
-=====================================
+A library for embedded debugging tools
+======================================
 
 Documentation
 -------------
