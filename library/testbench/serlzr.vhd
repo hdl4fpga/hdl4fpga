@@ -9,6 +9,10 @@ architecture serlzr of testbench is
     signal clk   : std_logic := '0';
     signal pixel : std_logic_vector(3*10-1 downto 0);
     signal q     : std_logic_vector(3*7-1  downto 0);
+
+    alias red   : std_logic_vector(7-1 downto  0) is q( 7-1 downto 0);
+    alias green : std_logic_vector(7-1 downto  0) is q(14-1 downto 7);
+    alias blue  : std_logic_vector(7-1 downto 0) is q(21-1 downto 14);
 begin
     frm <= '0', '1' after 20 ns;
     clk <= not clk after 10 ns;
