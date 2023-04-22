@@ -37,48 +37,74 @@ end;
 architecture def of tmds_encoder1 is
 begin
 
-	process (data, blank)
-		variable cnt : unsigned(5-1 downto 0);
+	process (clk)
+		variable lvl : unsigned(5-1 downto 0);
 		variable acc : unsigned(4-1 downto 0);
 		variable q_m : unsigned(encoded'range);
 	begin
-		acc := (others => '0');
-		for i in data'range loop
-			if data(i)='1' then 
-				acc := acc + 1;
-			end if;
-		end loop;
+		if rising_edge(clk) then
+    		acc := (others => '0');
+    		for i in data'range loop
+    			if data(i)='1' then 
+    				acc := acc + 1;
+    			end if;
+    		end loop;
 
-		q_m := (others => '0');
-		for i in data'range loop
-			q_m(i+1) := q_m(i) xor data(i);
-		end loop;
+    		q_m := (others => '0');
+    		for i in data'range loop
+    			q_m(i+1) := q_m(i) xor data(i);
+    		end loop;
 
-		if acc > 4 or (acc=4 and data(0)='0') then
-			q_m := q_m xor (q_m'range => '1');
-		end if;
-		q_m := shift_right(q_m, 1);
+    		if acc > 4 or (acc=4 and data(0)='0') then
+    			q_m := q_m xor (q_m'range => '1');
+    		end if;
+    		q_m := shift_right(q_m, 1);
 
-		acc := (others => '0');
-		for i in data'range loop
-			if q_m(i)='1' then 
-				acc := acc + 1;
-			end if;
-		end loop;
-		acc := acc - 4;
+    		acc := (others => '0');
+    		for i in data'range loop
+    			if q_m(i)='1' then 
+    				acc := acc + 1;
+    			end if;
+    		end loop;
+    		acc := acc - 4;
 
-		if blank='1' then
-		else
-			if cnt=0 then
-				encoded <= std_logic_vector(not q_m(8) & q_m(8) & (q_m(data'range) xor (data'range => q_m(8))));
-				if q_m(8) ='1' then
-					cnt := 0 + resize(acc, cnt'length);
-				else
-					cnt := 0 - resize(acc, cnt'length);
-				end if;
-			elsif acc=0 then
-				encoded <= std_logic_vector(not q_m(8) & q_m(8) & (q_m(data'range) xor (data'range => q_m(8))));
-			else
+    		if blank='1' then
+                case c is            
+    			when "00"   => 
+    				encoded <= "1101010100";
+    			when "01"   => 
+    				encoded <= "0010101011";
+    			when "10"   => 
+    				encoded <= "0101010100";
+    			when others => 
+    				encoded <= "1010101011";
+    			end case;
+    		else
+    			if lvl=0 or acc=0 then
+    				q_m := not q_m(8) & q_m(8) & (q_m(data'range) xor (data'range => q_m(8)));
+    				if lvl=0 then
+    					if q_m(8) ='1' then
+    						lvl := lvl + resize(acc, lvl'length);
+    					else
+    						lvl := lvl - resize(acc, lvl'length);
+    					end if;
+    				else
+    					q_m := not q_m;
+    				end if;
+    				encoded <= std_logic_vector(q_m);
+    			elsif ((lvl(3), acc(3))=unsigned'("00")) or ((lvl(3), acc(3))=unsigned'("11")) then
+    				encoded <= std_logic_vector('1' & q_m(8) & q_m(data'range));
+    				lvl := lvl - resize(acc, lvl'length);
+    				if q_m(8)='1' then
+    					lvl := lvl + 1;
+    				end if;
+    			else
+    				encoded <= std_logic_vector('1' & q_m(8) & q_m(data'range));
+    				lvl := lvl + resize(acc, lvl'length);
+    				if q_m(8)='0' then
+    					lvl := lvl - 1;
+    				end if;
+    			end if;
 			end if;
 		end if;
 		
