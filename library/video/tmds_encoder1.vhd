@@ -38,15 +38,15 @@ architecture def of tmds_encoder1 is
 begin
 
 	process (clk)
-		variable lvl : unsigned(5-1 downto 0);
-		variable acc : unsigned(4-1 downto 0);
+		variable cnt : unsigned(5-1 downto 0);
+		variable n10 : unsigned(4-1 downto 0);
 		variable q_m : unsigned(encoded'range);
 	begin
 		if rising_edge(clk) then
-    		acc := (others => '0');
+    		n10 := (others => '0');
     		for i in data'range loop
     			if data(i)='1' then 
-    				acc := acc + 1;
+    				n10 := n10 + 1;
     			end if;
     		end loop;
 
@@ -55,18 +55,18 @@ begin
     			q_m(i+1) := q_m(i) xor data(i);
     		end loop;
 
-    		if acc > 4 or (acc=4 and data(0)='0') then
+    		if n10 > 4 or (n10=4 and data(0)='0') then
     			q_m := q_m xor (q_m'range => '1');
     		end if;
     		q_m := shift_right(q_m, 1);
 
-    		acc := (others => '0');
+    		n10 := (others => '0');
     		for i in data'range loop
     			if q_m(i)='1' then 
-    				acc := acc + 1;
+    				n10 := n10 + 1;
     			end if;
     		end loop;
-    		acc := acc - 4;
+    		n10 := n10 - 4;
 
     		if blank='1' then
                 case c is            
@@ -80,29 +80,29 @@ begin
     				encoded <= "1010101011";
     			end case;
     		else
-    			if lvl=0 or acc=0 then
+    			if cnt=0 or n10=0 then
     				q_m := not q_m(8) & q_m(8) & (q_m(data'range) xor (data'range => q_m(8)));
-    				if lvl=0 then
+    				if cnt=0 then
     					if q_m(8) ='1' then
-    						lvl := lvl + resize(acc, lvl'length);
+    						cnt := cnt + resize(n10, cnt'length);
     					else
-    						lvl := lvl - resize(acc, lvl'length);
+    						cnt := cnt - resize(n10, cnt'length);
     					end if;
     				else
     					q_m := not q_m;
     				end if;
     				encoded <= std_logic_vector(q_m);
-    			elsif ((lvl(3), acc(3))=unsigned'("00")) or ((lvl(3), acc(3))=unsigned'("11")) then
+    			elsif ((cnt(3), n10(3))=unsigned'("00")) or ((cnt(3), n10(3))=unsigned'("11")) then
     				encoded <= std_logic_vector('1' & q_m(8) & q_m(data'range));
-    				lvl := lvl - resize(acc, lvl'length);
+    				cnt := cnt - resize(n10, cnt'length);
     				if q_m(8)='1' then
-    					lvl := lvl + 1;
+    					cnt := cnt + 1;
     				end if;
     			else
     				encoded <= std_logic_vector('1' & q_m(8) & q_m(data'range));
-    				lvl := lvl + resize(acc, lvl'length);
+    				cnt := cnt + resize(n10, cnt'length);
     				if q_m(8)='0' then
-    					lvl := lvl - 1;
+    					cnt := cnt - 1;
     				end if;
     			end if;
 			end if;
