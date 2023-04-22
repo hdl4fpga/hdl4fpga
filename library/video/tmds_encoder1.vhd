@@ -26,20 +26,25 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity tmds_encoder1 is
+	generic (
+		n       : natural := 8);
 	port (
 		clk     : in  std_logic;
-		c       : in  std_logic_vector( 2-1 downto 0);
+		c       : in  std_logic_vector(2+n-1 downto 0);
 		de      : in  std_logic;
-		data    : in  std_logic_vector( 8-1 downto 0);
-		encoded : out std_logic_vector(10-1 downto 0));
+		data    : in  std_logic_vector(  n-1 downto 0);
+		encoded : out std_logic_vector(2+n-1 downto 0));
 end;
+
+library hdl4fpga;
+use hdl4fpga.base.all;
 
 architecture def of tmds_encoder1 is
 begin
 
 	process (clk)
-		variable cnt : unsigned(4-1 downto 0);
-		variable n10 : unsigned(4-1 downto 0);
+		variable cnt : unsigned(unsigned_num_bits(data'length)-1 downto 0);
+		variable n10 : unsigned(cnt'range);
 		variable q_m : unsigned(encoded'range);
 	begin
 		if rising_edge(clk) then
@@ -51,10 +56,10 @@ begin
     		end loop;
 
     		q_m := (others => '0');
-    		for i in data'reverse_range loop
+    		for i in 0 to data'length-1 loop
     			q_m(i+1) := q_m(i) xor data(i);
     		end loop;
-			q_m(9) := '1';
+			q_m(data'length+1) := '1';
 
     		if n10 > 4 or (n10=4 and data(0)='0') then
     			q_m := q_m xor (q_m'range => '1');
@@ -70,43 +75,35 @@ begin
     		n10 := n10 - 4;
 
     		if de='1' then
-                case c is            
-    			when "00"   => 
-    				encoded <= "1101010100";
-    			when "01"   => 
-    				encoded <= "0010101011";
-    			when "10"   => 
-    				encoded <= "0101010100";
-    			when others => 
-    				encoded <= "1010101011";
-    			end case;
 				cnt := (others => '0');
+    			encoded <= c;
     		else
     			if cnt=0 or n10=0 then
-    				q_m := not q_m(8) & q_m(8) & (q_m(data'range) xnor (data'range => q_m(8)));
     				if cnt=0 then
     					if q_m(8) ='1' then
     						cnt := cnt + resize(n10, cnt'length);
     					else
     						cnt := cnt - resize(n10, cnt'length);
     					end if;
-    				else
+    				end if;
+    				q_m := not q_m(8) & q_m(8) & (q_m(data'range) xnor (data'range => q_m(8)));
+    				if cnt=0 then
     					q_m := not q_m;
     				end if;
-    				encoded <= std_logic_vector(q_m);
     			elsif ((cnt(3), n10(3))=unsigned'("00")) or ((cnt(3), n10(3))=unsigned'("11")) then
-    				encoded <= std_logic_vector(q_m(8) & q_m(8) & not q_m(data'range));
     				cnt := cnt - resize(n10, cnt'length);
     				if q_m(8)='1' then
     					cnt := cnt + 1;
     				end if;
+    				q_m := q_m(8) & q_m(8) & not q_m(data'range);
     			else
-    				encoded <= std_logic_vector(not q_m(8) & q_m(8) & q_m(data'range));
     				cnt := cnt + resize(n10, cnt'length);
     				if q_m(8)='0' then
     					cnt := cnt - 1;
     				end if;
+    				q_m := not q_m(8) & q_m(8) & q_m(data'range);
     			end if;
+				encoded <= std_logic_vector(q_m);
 			end if;
 		end if;
 	end process;

@@ -798,10 +798,14 @@ begin
 
 			dvid_blank <= video_blank;
 
+            --    when "00"   => encoded <= "1101010100";
+            --    when "01"   => encoded <= "0010101011";
+            --    when "10"   => encoded <= "0101010100";
+            --    when others => encoded <= "1010101011";
             xx_e : entity hdl4fpga.tmds_encoder1
            	port map  (
            		clk     => video_clk,
-           		c       => "00",
+           		c       => "1101010100",
            		de      => dvid_blank,
            		data    => b"00001111", --std_logic_vector(in_red),
            		encoded => open);
