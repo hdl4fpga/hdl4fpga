@@ -29,7 +29,7 @@ entity tmds_encoder1 is
 	port (
 		clk     : in  std_logic;
 		c       : in  std_logic_vector( 2-1 downto 0);
-		blank   : in  std_logic;
+		de      : in  std_logic;
 		data    : in  std_logic_vector( 8-1 downto 0);
 		encoded : out std_logic_vector(10-1 downto 0));
 end;
@@ -38,7 +38,7 @@ architecture def of tmds_encoder1 is
 begin
 
 	process (clk)
-		variable cnt : unsigned(5-1 downto 0);
+		variable cnt : unsigned(4-1 downto 0);
 		variable n10 : unsigned(4-1 downto 0);
 		variable q_m : unsigned(encoded'range);
 	begin
@@ -51,9 +51,10 @@ begin
     		end loop;
 
     		q_m := (others => '0');
-    		for i in data'range loop
+    		for i in data'reverse_range loop
     			q_m(i+1) := q_m(i) xor data(i);
     		end loop;
+			q_m(9) := '1';
 
     		if n10 > 4 or (n10=4 and data(0)='0') then
     			q_m := q_m xor (q_m'range => '1');
@@ -68,7 +69,7 @@ begin
     		end loop;
     		n10 := n10 - 4;
 
-    		if blank='1' then
+    		if de='1' then
                 case c is            
     			when "00"   => 
     				encoded <= "1101010100";
@@ -79,9 +80,10 @@ begin
     			when others => 
     				encoded <= "1010101011";
     			end case;
+				cnt := (others => '0');
     		else
     			if cnt=0 or n10=0 then
-    				q_m := not q_m(8) & q_m(8) & (q_m(data'range) xor (data'range => q_m(8)));
+    				q_m := not q_m(8) & q_m(8) & (q_m(data'range) xnor (data'range => q_m(8)));
     				if cnt=0 then
     					if q_m(8) ='1' then
     						cnt := cnt + resize(n10, cnt'length);
@@ -93,13 +95,13 @@ begin
     				end if;
     				encoded <= std_logic_vector(q_m);
     			elsif ((cnt(3), n10(3))=unsigned'("00")) or ((cnt(3), n10(3))=unsigned'("11")) then
-    				encoded <= std_logic_vector('1' & q_m(8) & q_m(data'range));
+    				encoded <= std_logic_vector(q_m(8) & q_m(8) & not q_m(data'range));
     				cnt := cnt - resize(n10, cnt'length);
     				if q_m(8)='1' then
     					cnt := cnt + 1;
     				end if;
     			else
-    				encoded <= std_logic_vector('1' & q_m(8) & q_m(data'range));
+    				encoded <= std_logic_vector(not q_m(8) & q_m(8) & q_m(data'range));
     				cnt := cnt + resize(n10, cnt'length);
     				if q_m(8)='0' then
     					cnt := cnt - 1;

@@ -798,6 +798,14 @@ begin
 
 			dvid_blank <= video_blank;
 
+            xx_e : entity hdl4fpga.tmds_encoder1
+           	port map  (
+           		clk     => video_clk,
+           		c       => "00",
+           		de      => dvid_blank,
+           		data    => b"00001111", --std_logic_vector(in_red),
+           		encoded => open);
+
 			process (video_pixel)
 				variable pixel : unsigned(0 to video_pixel'length-1);
 			begin
@@ -817,7 +825,7 @@ begin
 			port map (
 				clk_pixel => video_clk,
 				clk_shift => video_shift_clk,
-				in_red    => std_logic_vector(in_red),
+				in_red    => b"00001111", --std_logic_vector(in_red),
 				in_green  => std_logic_vector(in_green),
 				in_blue   => std_logic_vector(in_blue),
 				in_hsync  => video_hzsync,
