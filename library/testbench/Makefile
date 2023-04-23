@@ -713,6 +713,7 @@ $(HDL4FPGA__app_graphics__mix) : ../apps/app_graphics.vhd \
 		$(IEEE__std_logic_unsigned) \
 		$(IEEE__std_logic_arith) \
 		$(HDL4FPGA__vga2dvid) \
+		$(HDL4FPGA__dvi) \
 		$(HDL4FPGA__tmds_encoder1) \
 		$(HDL4FPGA__graphics) \
 		$(HDL4FPGA__video_sync) \
@@ -1031,6 +1032,8 @@ $(HDL4FPGA__dvi) \
 $(HDL4FPGA__dvi__def) \
 $(HDL4FPGA__dvi_subpxl) \
 $(HDL4FPGA__dvi_subpxl__def) : ../video/dvi.vhd \
+		$(HDL4FPGA__base) \
+		$(HDL4FPGA__serlzr) \
 		$(HDL4FPGA__tmds_encoder1) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \

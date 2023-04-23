@@ -91,6 +91,7 @@ entity dvi is
 		hsync : in  std_logic;
 		vsync : in  std_logic;
 		blank : in  std_logic;
+		cclk  : in  std_logic;
 		chn0  : out std_logic_vector(ser_size-1 downto 0);
 		chn1  : out std_logic_vector(ser_size-1 downto 0);
 		chn2  : out std_logic_vector(ser_size-1 downto 0);
@@ -98,15 +99,15 @@ entity dvi is
 end;
 
 architecture def of dvi is
-	signal cpixel : std_logic_vector(4*10-1 downto 0);
-	signal spixel : std_logic_vector(4*ser_size-1  downto 0);
+	signal cpixel : std_logic_vector(3*10-1 downto 0);
+	signal spixel : std_logic_vector(3*ser_size-1  downto 0);
 
-	alias cred   is cpixel(2*10-1 downto 1*10);
-	alias cgreen is cpixel(3*10-1 downto 2*10);
+	alias cred   is cpixel(3*10-1 downto 2*10);
+	alias cgreen is cpixel(2*10-1 downto 1*10);
 	alias cblue  is cpixel(1*10-1 downto 0*10);
 
-	alias sred   is spixel(2*ser_size-1 downto 1*ser_size);
-	alias sgreen is spixel(3*ser_size-1 downto 2*ser_size);
+	alias sred   is spixel(3*ser_size-1 downto 2*ser_size);
+	alias sgreen is spixel(2*ser_size-1 downto 1*ser_size);
 	alias sblue  is spixel(1*ser_size-1 downto 0*ser_size);
 begin
 
@@ -126,10 +127,11 @@ begin
 	serlzr_g : for i in 0 to 3-1 generate
 		serlzr_e : entity hdl4fpga.serlzr
 		port map (
-			clk    => clk,
-			frm    => '0',
-			data_i => cpixel(10*(i+1) downto 10*i),
-			data_o => spixel(ser_size*(i+1)  downto ser_size*i));
+			src_clk  => clk,
+			src_frm  => '1',
+			src_data => cpixel(10*(i+1)-1 downto 10*i),
+			dst_clk  => cclk,
+			dst_data => spixel(ser_size*(i+1)-1  downto ser_size*i));
 	end generate;
 
 	chn0 <= sblue;

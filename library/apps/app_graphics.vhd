@@ -837,6 +837,7 @@ begin
 				hsync => video_hzsync,
 				vsync => video_vtsync,
 				blank => dvid_blank,
+				cclk  => video_shift_clk,
 				chn0  => open,
 				chn1  => open,
 				chn2  => open);
