@@ -59,7 +59,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {23002509410 fs} 0} {{Cursor 2} {23832496863 fs} 0} {{Cursor 3} {19067859699 fs} 0}
+WaveRestoreCursors {{Cursor 1} {23002509410 fs} 0} {{Cursor 2} {23832496863 fs} 0} {{Cursor 3} {19060064345 fs} 0}
 quietly wave cursor active 3
 configure wave -namecolwidth 313
 configure wave -valuecolwidth 398
@@ -75,4 +75,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {19022947971 fs} {19102269802 fs}
+WaveRestoreZoom {19174644261 fs} {19253966092 fs}
