@@ -30,31 +30,31 @@ use hdl4fpga.base.all;
 
 entity serlzr is
 	port (
-		in_clk  : in  std_logic;
-		in_frm  : in  std_logic;
-		in_data : in  std_logic_vector;
-		out_data  : out std_logic_vector);
+		clk    : in  std_logic;
+		frm    : in  std_logic;
+		data_i : in  std_logic_vector;
+		data_o : out std_logic_vector);
 end;
 
 architecture def of serlzr  is
-	signal shf  : std_logic_vector(unsigned_num_bits(in_data'length)-1 downto 0);
-	signal rgtr : std_logic_vector(in_data'length+out_data'length-2 downto 0);
+	signal shf  : std_logic_vector(unsigned_num_bits(data_i'length)-1 downto 0);
+	signal rgtr : std_logic_vector(data_i'length+data_o'length-2 downto 0);
 	signal shfd : std_logic_vector(rgtr'range);
 begin 
 
-	process (in_clk)
-		variable shr : unsigned(in_data'length+out_data'length-2 downto 0);
+	process (clk)
+		variable shr : unsigned(data_i'length+data_o'length-2 downto 0);
 		variable acc : unsigned(shf'range);
 	begin 
-		if rising_edge(in_clk) then
-			if in_frm='0' then
+		if rising_edge(clk) then
+			if frm='0' then
 				acc := (others => '0');
-			elsif acc >= out_data'length then 
-				acc := acc - out_data'length;
+			elsif acc >= data_o'length then 
+				acc := acc - data_o'length;
 			else
-				shr := shift_left(shr, in_data'length);
-				shr(in_data'length-1 downto 0) := unsigned(in_data);
-				acc := acc + (in_data'length - out_data'length);
+				shr := shift_left(shr, data_i'length);
+				shr(data_i'length-1 downto 0) := unsigned(data_i);
+				acc := acc + (data_i'length - data_o'length);
 			end if;
 			shf  <= std_logic_vector(acc);
 			rgtr <= std_logic_vector(shr);
@@ -69,5 +69,5 @@ begin
 		di  => rgtr,
 		do  => shfd);
 	
-	out_data <= shfd(out_data'length-1 downto 0);
+	data_o <= shfd(data_o'length-1 downto 0);
 end;

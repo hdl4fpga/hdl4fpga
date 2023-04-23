@@ -50,6 +50,7 @@ entity app_graphics is
 		burst_length : natural := 0;
 
 		timing_id    : videotiming_ids;
+		vserlzr_size : natural := 2;
 		red_length   : natural := 8;
 		green_length : natural := 8;
 		blue_length  : natural := 8);
@@ -168,7 +169,7 @@ architecture mix of app_graphics is
 	signal ctlr_di_dv     : std_logic;
 	signal ctlr_di_req    : std_logic;
 
-    signal base_addr      : std_logic_vector(dmactlr_addr'range) := (others => '0');
+	signal base_addr      : std_logic_vector(dmactlr_addr'range) := (others => '0');
 
 	signal dmacfgvideo_req : std_logic;
 	signal dmacfgvideo_rdy : std_logic;
@@ -793,22 +794,21 @@ begin
 			signal in_red     : unsigned(0 to subpixel_length-1);
 			signal in_green   : unsigned(0 to subpixel_length-1);
 			signal in_blue    : unsigned(0 to subpixel_length-1);
+			signal red        : std_logic_vector(0 to 8-1);
+			signal green      : std_logic_vector(0 to 8-1);
+			signal blue       : std_logic_vector(0 to 8-1);
 
 		begin
 
 			dvid_blank <= video_blank;
 
-            --    when "00"   => encoded <= "1101010100";
-            --    when "01"   => encoded <= "0010101011";
-            --    when "10"   => encoded <= "0101010100";
-            --    when others => encoded <= "1010101011";
-            xx_e : entity hdl4fpga.tmds_encoder1
-           	port map  (
-           		clk     => video_clk,
-           		c       => "1101010100",
-           		de      => dvid_blank,
-           		data    => b"00001111", --std_logic_vector(in_red),
-           		encoded => open);
+			xx_e : entity hdl4fpga.tmds_encoder1
+		   	port map  (
+		   		clk     => video_clk,
+		   		c       => "1101010100",
+		   		de      => dvid_blank,
+		   		data    => b"00001111", --std_logic_vector(in_red),
+		   		encoded => open);
 
 			process (video_pixel)
 				variable pixel : unsigned(0 to video_pixel'length-1);
@@ -820,6 +820,26 @@ begin
 				pixel    := pixel sll green_length;
 				in_blue  <= pixel(in_blue'range);
 			end process;
+
+			red(in_red'range)     <= std_logic_vector(in_red);
+			green(in_green'range) <= std_logic_vector(in_green);
+			red(in_blue'range)    <= std_logic_vector(in_blue);
+
+			xx1_e : entity hdl4fpga.dvi
+			generic map (
+				ser_size => vserlzr_size)
+			port map (
+				clk   => video_clk,
+				red   => b"00001111", --std_logic_vector(in_red),
+				-- red   => red,
+				green => green,
+				blue  => blue,
+				hsync => video_hzsync,
+				vsync => video_vtsync,
+				blank => dvid_blank,
+				chn0  => open,
+				chn1  => open,
+				chn2  => open);
 
 			vga2dvid_e : entity hdl4fpga.vga2dvid
 			generic map (
@@ -1033,7 +1053,7 @@ begin
 			phy_sti      => ctlrphy_sti,
 			phy_sto      => ctlrphy_sto,
 
-		    phy_dqv      => ctlrphy_dqv,
+			phy_dqv      => ctlrphy_dqv,
 			phy_dqso     => ctlrphy_dqso,
 			phy_dqst     => ctlrphy_dqst);
 

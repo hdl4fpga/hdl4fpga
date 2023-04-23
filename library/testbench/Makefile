@@ -259,6 +259,10 @@ HDL4FPGA__ecp3_sdrdqphy__ecp3 = $(LIB_HDL4FPGA)/ecp3_sdrdqphy/ecp3.dat
 HDL4FPGA__ecp3_sdrdqphy = $(LIB_HDL4FPGA)/ecp3_sdrdqphy/_primary.dat
 HDL4FPGA__ecp3_sdrbaphy__ecp3 = $(LIB_HDL4FPGA)/ecp3_sdrbaphy/ecp3.dat
 HDL4FPGA__ecp3_sdrbaphy = $(LIB_HDL4FPGA)/ecp3_sdrbaphy/_primary.dat
+HDL4FPGA__dvi_subpxl__def = $(LIB_HDL4FPGA)/dvi_subpxl/def.dat
+HDL4FPGA__dvi_subpxl = $(LIB_HDL4FPGA)/dvi_subpxl/_primary.dat
+HDL4FPGA__dvi__def = $(LIB_HDL4FPGA)/dvi/def.dat
+HDL4FPGA__dvi = $(LIB_HDL4FPGA)/dvi/_primary.dat
 HDL4FPGA__dtos__def = $(LIB_HDL4FPGA)/dtos/def.dat
 HDL4FPGA__dtos = $(LIB_HDL4FPGA)/dtos/_primary.dat
 HDL4FPGA__draw_vline__def = $(LIB_HDL4FPGA)/draw_vline/def.dat
@@ -580,6 +584,10 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__ecp3_sdrdqphy) \
     $(HDL4FPGA__ecp3_sdrbaphy__ecp3) \
     $(HDL4FPGA__ecp3_sdrbaphy) \
+    $(HDL4FPGA__dvi_subpxl__def) \
+    $(HDL4FPGA__dvi_subpxl) \
+    $(HDL4FPGA__dvi__def) \
+    $(HDL4FPGA__dvi) \
     $(HDL4FPGA__dtos__def) \
     $(HDL4FPGA__dtos) \
     $(HDL4FPGA__draw_vline__def) \
@@ -705,6 +713,7 @@ $(HDL4FPGA__app_graphics__mix) : ../apps/app_graphics.vhd \
 		$(IEEE__std_logic_unsigned) \
 		$(IEEE__std_logic_arith) \
 		$(HDL4FPGA__vga2dvid) \
+		$(HDL4FPGA__tmds_encoder1) \
 		$(HDL4FPGA__graphics) \
 		$(HDL4FPGA__video_sync) \
 		$(HDL4FPGA__so_data) \
@@ -1017,6 +1026,16 @@ $(HDL4FPGA__dtos__def) : ../basic/dtos.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/dtos.vhd
+
+$(HDL4FPGA__dvi) \
+$(HDL4FPGA__dvi__def) \
+$(HDL4FPGA__dvi_subpxl) \
+$(HDL4FPGA__dvi_subpxl__def) : ../video/dvi.vhd \
+		$(HDL4FPGA__tmds_encoder1) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../video/dvi.vhd
 
 $(HDL4FPGA__ecp3_sdrbaphy) \
 $(HDL4FPGA__ecp3_sdrbaphy__ecp3) : ../latticesemi/ecp3/ecp3_sdrbaphy.vhd \
@@ -2096,7 +2115,8 @@ $(HDL4FPGA__tmds_encoder1) \
 $(HDL4FPGA__tmds_encoder1__def) : ../video/tmds_encoder1.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
-		$(IEEE__std_logic_1164)
+		$(IEEE__std_logic_1164) \
+		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../video/tmds_encoder1.vhd
 
 $(HDL4FPGA__txn_buffer) \
