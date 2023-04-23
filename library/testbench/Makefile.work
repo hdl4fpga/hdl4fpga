@@ -23,6 +23,7 @@ HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
 HDL4FPGA__serdes = $(LIB_HDL4FPGA)/serdes/_primary.dat
 HDL4FPGA__xc_sdrphy = $(LIB_HDL4FPGA)/xc_sdrphy/_primary.dat
 MICRON__ddr_model = $(LIB_MICRON)/ddr_model/_primary.dat
+HDL4FPGA__serlzr = $(LIB_HDL4FPGA)/serlzr/_primary.dat
 MICRON__ddr2 = $(LIB_MICRON)/ddr2/_primary.dat
 IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
 HDL4FPGA__sdram_db = $(LIB_HDL4FPGA)/sdram_db/_primary.dat
@@ -72,6 +73,7 @@ WORK__testbench__ecp3versa_graphics = $(LIB_WORK)/testbench/ecp3versa_graphics.d
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench__arty_graphics = $(LIB_WORK)/testbench/arty_graphics.dat
 WORK__testbench__ml509_graphics = $(LIB_WORK)/testbench/ml509_graphics.dat
+WORK__testbench__serlzr = $(LIB_WORK)/testbench/serlzr.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__s3estarter_structure_md = $(LIB_WORK)/s3estarter_structure_md/_primary.dat
 WORK__s3estarter_graphics_md = $(LIB_WORK)/s3estarter_graphics_md/_primary.dat
@@ -118,6 +120,7 @@ whole_library :     $(WORK__ulx4mls_graphics_structure_md) \
     $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench__arty_graphics) \
     $(WORK__testbench__ml509_graphics) \
+    $(WORK__testbench__serlzr) \
     $(WORK__testbench) \
     $(WORK__s3estarter_structure_md) \
     $(WORK__s3estarter_graphics_md) \
@@ -289,6 +292,15 @@ $(WORK__testbench) : testbench.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 testbench.vhd
+
+$(WORK__testbench__serlzr) : serlzr.vhd \
+		$(HDL4FPGA__base) \
+		$(HDL4FPGA__serlzr) \
+		$(WORK__testbench) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002  serlzr.vhd
 
 $(WORK__ml509_graphics_md) \
 $(WORK__ml509_graphics_structure_md) \
