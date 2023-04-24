@@ -76,7 +76,9 @@ add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/vga2dvid_e/u21/dc_
 add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/xx_e/line__45/cnt
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/xx1_e/chn2
+add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/vga2dvid_e/out_red
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/vga2dvid_e/latched_red
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -121,10 +123,10 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {23002509410 fs} 0} {{Cursor 2} {23832496863 fs} 0} {{Cursor 3} {19080963440 fs} 0}
+WaveRestoreCursors {{Cursor 1} {23002509410 fs} 0} {{Cursor 2} {23832496863 fs} 0} {{Cursor 3} {18572197589 fs} 0}
 quietly wave cursor active 3
-configure wave -namecolwidth 313
-configure wave -valuecolwidth 398
+configure wave -namecolwidth 271
+configure wave -valuecolwidth 256
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -137,4 +139,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {19024644261 fs} {19103966092 fs}
+WaveRestoreZoom {18489075910 fs} {18580882956 fs}

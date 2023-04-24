@@ -29,6 +29,8 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 entity serlzr is
+	generic (
+		lsdfirst : boolean := true);
 	port (
 		src_clk  : in  std_logic;
 		src_frm  : in  std_logic := '1';
@@ -143,8 +145,8 @@ begin
 				acc := acc - dst_data'length;
 			else
 				shr := shift_left(shr, src_data'length);
-				shr(src_data'length-1 downto 0) := unsigned(src_data);
-				acc := acc + (src_data'length - dst_data'length);
+				shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(src_data), src_data));
+				acc := acc + abs(src_data'length - dst_data'length);
 			end if;
 			shf  <= std_logic_vector(acc and to_unsigned(mm(1), acc'length));
 			rgtr <= std_logic_vector(shr);
@@ -159,5 +161,5 @@ begin
 		di  => rgtr,
 		do  => shfd);
 	
-	dst_data <= shfd(dst_data'length-1 downto 0);
+	dst_data <= setif(lsdfirst,reverse(shfd(dst_data'length-1 downto 0)), shfd(dst_data'length-1 downto 0));
 end;
