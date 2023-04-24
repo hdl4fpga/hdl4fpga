@@ -41,6 +41,7 @@ entity serlzr is
 end;
 
 architecture def of serlzr  is
+
 	function max_and_mask (
 		constant src_size : natural;
 		constant dst_size : natural) 
@@ -121,7 +122,7 @@ architecture def of serlzr  is
 		return (max+dst_size, mask);
 	end;
 
-	constant debug_maxmask : boolean := false;
+	constant debug_mm : boolean := false;
 	constant mm : natural_vector := max_and_mask(src_data'length,dst_data'length);
 
 	signal shf  : std_logic_vector(unsigned_num_bits(src_data'length)-1 downto 0);
@@ -130,7 +131,7 @@ architecture def of serlzr  is
 
 begin 
 
-	assert not debug_maxmask
+	assert not debug_mm
 	report "(MAX => " & natural'image(mm(0)) & ", MASK => " & natural'image(mm(1)) & ")"
 	severity note;
 
