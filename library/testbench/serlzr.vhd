@@ -6,7 +6,7 @@ library hdl4fpga;
 
 architecture serlzr of testbench is
 	constant n : natural := 10;
-	constant m : natural := 2;
+	constant m : natural := 7;
 	signal dst_frm   : std_logic := '0';
 	signal clk       : std_logic := '1';
 	signal clk_shift : std_logic := '1';
@@ -22,13 +22,14 @@ begin
 	begin
 		if rising_edge(clk) then
 			datai <= datai xor (datai'range => '1');
+			-- datai <= std_logic_vector(unsigned(datai) + 1);
 		end if;
 	end process;
 
 	du_e : entity hdl4fpga.serlzr
 	port map (
 		src_clk  => clk,
-		src_data  => datai,
-		dst_clk => clk_shift,
+		src_data => datai,
+		dst_clk  => clk_shift,
 		dst_data => datao);
 end;
