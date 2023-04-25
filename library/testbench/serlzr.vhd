@@ -5,8 +5,8 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 
 architecture serlzr of testbench is
-	constant n : natural := 10;
-	constant m : natural := 7;
+	constant n : natural := 32;
+	constant m : natural := 24;
 	signal dst_frm   : std_logic := '0';
 	signal clk       : std_logic := '1';
 	signal clk_shift : std_logic := '1';

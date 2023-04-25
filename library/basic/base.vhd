@@ -321,10 +321,10 @@ package base is
 
 	function pulse_delay (
 		constant phase     : std_logic_vector;
-		constant latency   : natural := 12;
-		constant extension : natural := 4;
+		constant latency   : natural := 0;
+		constant extension : natural := 0;
 		constant word_size : natural := 4;
-		constant width     : natural := 3)
+		constant width     : natural := 1)
 		return std_logic_vector;
 
 	-----------
@@ -333,6 +333,10 @@ package base is
 
 	function to_string (
 		constant arg : std_logic_vector)
+		return string;
+
+	function to_string (
+		constant arg : unsigned)
 		return string;
 
 	function to_stdlogicvector (
@@ -933,8 +937,7 @@ package body base is
 
 	function to_string(
 		constant arg : std_logic_vector)
-		return string
-	is
+		return string is
 		variable aux    : unsigned(0 to arg'length-1);
 		variable retval : string(1 to arg'length);
 	begin
@@ -949,6 +952,13 @@ package body base is
 			aux := aux sll 1;
 		end loop;
 		return retval;
+	end;
+
+	function to_string(
+		constant arg : unsigned)
+		return string is
+	begin
+		return to_string(std_logic_vector(arg));
 	end;
 
 	function to_stdlogicvector (
@@ -1672,10 +1682,10 @@ package body base is
 
 	function pulse_delay (
 		constant phase     : std_logic_vector;
-		constant latency   : natural := 12;
-		constant extension : natural := 4;
+		constant latency   : natural := 0;
+		constant extension : natural := 0;
 		constant word_size : natural := 4;
-		constant width     : natural := 3)
+		constant width     : natural := 1)
 		return std_logic_vector is
 
 		variable latency_mod : natural;

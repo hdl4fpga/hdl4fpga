@@ -25,8 +25,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library hdl4fpga;
-
 entity dvi_subpxl is
 	port (
 		clk   : in  std_logic;
@@ -40,6 +38,8 @@ entity dvi_subpxl is
 		chn1  : out std_logic_vector(10-1 downto 0);
 		chn2  : out std_logic_vector(10-1 downto 0));
 end;
+
+library hdl4fpga;
 
 architecture def of dvi_subpxl is
 	constant c00  : std_logic_vector := "1101010100";
@@ -78,8 +78,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library hdl4fpga;
-
 entity dvi is
 	generic (
 		ser_size     : natural := 10);
@@ -98,9 +96,12 @@ entity dvi is
 		chnc  : out std_logic_vector(ser_size-1 downto 0));
 end;
 
+library hdl4fpga;
+use hdl4fpga.base.all;
+
 architecture def of dvi is
-	signal cpixel : std_logic_vector(3*10-1 downto 0);
-	signal spixel : std_logic_vector(3*ser_size-1  downto 0);
+	signal cpixel  : std_logic_vector(3*10-1 downto 0);
+	signal spixel  : std_logic_vector(3*ser_size-1  downto 0);
 
 	alias cred   is cpixel(3*10-1 downto 2*10);
 	alias cgreen is cpixel(2*10-1 downto 1*10);
@@ -109,6 +110,8 @@ architecture def of dvi is
 	alias sred   is spixel(3*ser_size-1 downto 2*ser_size);
 	alias sgreen is spixel(2*ser_size-1 downto 1*ser_size);
 	alias sblue  is spixel(1*ser_size-1 downto 0*ser_size);
+
+	constant dvi_clk : unsigned(10-1 downto 0) := rotate_left(b"0011111000", 5);
 begin
 
 	dvisubpxl_e : entity hdl4fpga.dvi_subpxl
@@ -124,7 +127,15 @@ begin
 		chn1  => cgreen,
 		chn2  => cred);
 
-	serlzr_g : for i in 0 to 3-1 generate
+	chnc_e : entity hdl4fpga.serlzr
+	port map (
+		src_clk  => clk,
+		src_frm  => '1',
+		src_data => std_logic_vector(dvi_clk),
+		dst_clk  => cclk,
+		dst_data => chnc);
+
+	chn0to2_g : for i in 0 to 3-1 generate
 		serlzr_e : entity hdl4fpga.serlzr
 		port map (
 			src_clk  => clk,

@@ -26,6 +26,7 @@ add wave -noupdate -expand -group sdram /testbench/du_e/sdram_ba
 add wave -noupdate -expand -group sdram -expand /testbench/du_e/sdram_dqm
 add wave -noupdate -expand -group sdram -radix hexadecimal -childformat {{/testbench/du_e/sdram_d(15) -radix hexadecimal} {/testbench/du_e/sdram_d(14) -radix hexadecimal} {/testbench/du_e/sdram_d(13) -radix hexadecimal} {/testbench/du_e/sdram_d(12) -radix hexadecimal} {/testbench/du_e/sdram_d(11) -radix hexadecimal} {/testbench/du_e/sdram_d(10) -radix hexadecimal} {/testbench/du_e/sdram_d(9) -radix hexadecimal} {/testbench/du_e/sdram_d(8) -radix hexadecimal} {/testbench/du_e/sdram_d(7) -radix hexadecimal} {/testbench/du_e/sdram_d(6) -radix hexadecimal} {/testbench/du_e/sdram_d(5) -radix hexadecimal} {/testbench/du_e/sdram_d(4) -radix hexadecimal} {/testbench/du_e/sdram_d(3) -radix hexadecimal} {/testbench/du_e/sdram_d(2) -radix hexadecimal} {/testbench/du_e/sdram_d(1) -radix hexadecimal} {/testbench/du_e/sdram_d(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/sdram_d(15) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(14) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(13) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(12) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(11) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(10) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(9) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(8) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(7) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(6) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(5) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(4) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(3) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(2) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(1) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(0) {-height 29 -radix hexadecimal}} /testbench/du_e/sdram_d
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/xx1_e/chnc
 add wave -noupdate -radix hexadecimal /testbench/hdlc_b/uartrx_e/debug_rxd
 add wave -noupdate /testbench/hdlc_b/uartrx_e/debug_rxdv
 add wave -noupdate -divider {New Divider}
@@ -80,42 +81,24 @@ add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/vga2dvid_e/out_red
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/vga2dvid_e/latched_red
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/xx1_e/chnc
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/hdlc_b/uartrx_e/debug_rxd
-add wave -noupdate /testbench/hdlc_b/uartrx_e/debug_rxdv
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/video_clk
-add wave -noupdate /testbench/du_e/graphics_e/video_shift_clk
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/vga2dvid_e/u21/clk
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/xx_e/data
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/vga2dvid_e/u21/data
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/vga2dvid_e/u21/ones
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/vga2dvid_e/u21/data_word_disparity
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/xx_e/line__45/n10
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/vga2dvid_e/u21/data_word
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/xx_e/qm8to0
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/vga2dvid_e/u21/encoded
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/xx_e/encoded
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/xx1_e/dvisubpxl_e/chn0to2_g(2)/tmds_encoder_e/encoded
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/vga2dvid_e/u21/dc_bias
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/xx_e/line__45/cnt
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/xx1_e/serlzr_g(2)/serlzr_e/src_data
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/dvi_b/xx1_e/serlzr_g(2)/serlzr_e/dst_data
+add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -123,7 +106,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {19063882068 fs} 0} {{Cursor 2} {19077327190 fs} 0} {{Cursor 3} {19090655904 fs} 0} {{Cursor 4} {19104101025 fs} 0}
+WaveRestoreCursors {{Cursor 1} {19047992378 fs} 0} {{Cursor 2} {19077327190 fs} 0} {{Cursor 3} {19090655904 fs} 0} {{Cursor 4} {19104101025 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 271
 configure wave -valuecolwidth 256
