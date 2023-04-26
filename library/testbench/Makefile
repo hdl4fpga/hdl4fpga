@@ -12,9 +12,8 @@ LIB_HDL4FPGA = hdl4fpga
 # Define path to each design unit
 ECP3__components = $(LIB_ECP3)/components/_primary.dat
 ECP5U__components = $(LIB_ECP5U)/components/_primary.dat
-IEEE__math_real = $(LIB_IEEE)/math_real/_primary.dat
 IEEE__std_logic_arith = $(LIB_IEEE)/std_logic_arith/_primary.dat
-IEEE__std_logic_unsigned = $(LIB_IEEE)/std_logic_unsigned/_primary.dat
+IEEE__math_real = $(LIB_IEEE)/math_real/_primary.dat
 IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
 IEEE__std_logic_1164 = $(LIB_IEEE)/std_logic_1164/_primary.dat
 STD__textio = $(LIB_STD)/textio/_primary.dat
@@ -44,10 +43,6 @@ HDL4FPGA__videobox__def = $(LIB_HDL4FPGA)/videobox/def.dat
 HDL4FPGA__videobox = $(LIB_HDL4FPGA)/videobox/_primary.dat
 HDL4FPGA__video_sync__mix = $(LIB_HDL4FPGA)/video_sync/mix.dat
 HDL4FPGA__video_sync = $(LIB_HDL4FPGA)/video_sync/_primary.dat
-HDL4FPGA__vga2lvds__behavioral = $(LIB_HDL4FPGA)/vga2lvds/behavioral.dat
-HDL4FPGA__vga2lvds = $(LIB_HDL4FPGA)/vga2lvds/_primary.dat
-HDL4FPGA__vga2dvid__behavioral = $(LIB_HDL4FPGA)/vga2dvid/behavioral.dat
-HDL4FPGA__vga2dvid = $(LIB_HDL4FPGA)/vga2dvid/_primary.dat
 HDL4FPGA__vector__def = $(LIB_HDL4FPGA)/vector/def.dat
 HDL4FPGA__vector = $(LIB_HDL4FPGA)/vector/_primary.dat
 HDL4FPGA__udp_tx__def = $(LIB_HDL4FPGA)/udp_tx/def.dat
@@ -62,9 +57,7 @@ HDL4FPGA__uart_rx__def = $(LIB_HDL4FPGA)/uart_rx/def.dat
 HDL4FPGA__uart_rx = $(LIB_HDL4FPGA)/uart_rx/_primary.dat
 HDL4FPGA__txn_buffer__def = $(LIB_HDL4FPGA)/txn_buffer/def.dat
 HDL4FPGA__txn_buffer = $(LIB_HDL4FPGA)/txn_buffer/_primary.dat
-HDL4FPGA__tmds_encoder1__def = $(LIB_HDL4FPGA)/tmds_encoder1/def.dat
-HDL4FPGA__tmds_encoder1 = $(LIB_HDL4FPGA)/tmds_encoder1/_primary.dat
-HDL4FPGA__tmds_encoder__behavioral = $(LIB_HDL4FPGA)/tmds_encoder/behavioral.dat
+HDL4FPGA__tmds_encoder__def = $(LIB_HDL4FPGA)/tmds_encoder/def.dat
 HDL4FPGA__tmds_encoder = $(LIB_HDL4FPGA)/tmds_encoder/_primary.dat
 HDL4FPGA__timer__def = $(LIB_HDL4FPGA)/timer/def.dat
 HDL4FPGA__timer = $(LIB_HDL4FPGA)/timer/_primary.dat
@@ -369,10 +362,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__videobox) \
     $(HDL4FPGA__video_sync__mix) \
     $(HDL4FPGA__video_sync) \
-    $(HDL4FPGA__vga2lvds__behavioral) \
-    $(HDL4FPGA__vga2lvds) \
-    $(HDL4FPGA__vga2dvid__behavioral) \
-    $(HDL4FPGA__vga2dvid) \
     $(HDL4FPGA__vector__def) \
     $(HDL4FPGA__vector) \
     $(HDL4FPGA__udp_tx__def) \
@@ -387,9 +376,7 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__uart_rx) \
     $(HDL4FPGA__txn_buffer__def) \
     $(HDL4FPGA__txn_buffer) \
-    $(HDL4FPGA__tmds_encoder1__def) \
-    $(HDL4FPGA__tmds_encoder1) \
-    $(HDL4FPGA__tmds_encoder__behavioral) \
+    $(HDL4FPGA__tmds_encoder__def) \
     $(HDL4FPGA__tmds_encoder) \
     $(HDL4FPGA__timer__def) \
     $(HDL4FPGA__timer) \
@@ -710,11 +697,7 @@ $(HDL4FPGA__app_graphics) \
 $(HDL4FPGA__app_graphics__mix) : ../apps/app_graphics.vhd \
 		$(HDL4FPGA__sdram_ctlr) \
 		$(HDL4FPGA__dmactlr) \
-		$(IEEE__std_logic_unsigned) \
-		$(IEEE__std_logic_arith) \
-		$(HDL4FPGA__vga2dvid) \
 		$(HDL4FPGA__dvi) \
-		$(HDL4FPGA__tmds_encoder1) \
 		$(HDL4FPGA__graphics) \
 		$(HDL4FPGA__video_sync) \
 		$(HDL4FPGA__so_data) \
@@ -1032,9 +1015,9 @@ $(HDL4FPGA__dvi) \
 $(HDL4FPGA__dvi__def) \
 $(HDL4FPGA__dvi_subpxl) \
 $(HDL4FPGA__dvi_subpxl__def) : ../video/dvi.vhd \
-		$(HDL4FPGA__base) \
 		$(HDL4FPGA__serlzr) \
-		$(HDL4FPGA__tmds_encoder1) \
+		$(HDL4FPGA__base) \
+		$(HDL4FPGA__tmds_encoder) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
@@ -1885,9 +1868,7 @@ $(HDL4FPGA__seg7__mixed) : ../basic/seg7.vhd \
 
 $(HDL4FPGA__ser_debug) \
 $(HDL4FPGA__ser_debug__def) : ../apps/ser_debug.vhd \
-		$(IEEE__std_logic_unsigned) \
-		$(IEEE__std_logic_arith) \
-		$(HDL4FPGA__vga2dvid) \
+		$(HDL4FPGA__dvi) \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__bcdfonts) \
 		$(HDL4FPGA__cp850x8x16x128to255) \
@@ -2107,20 +2088,12 @@ $(HDL4FPGA__timer__def) : ../basic/timer.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../basic/timer.vhd
 
 $(HDL4FPGA__tmds_encoder) \
-$(HDL4FPGA__tmds_encoder__behavioral) : ../video/tmds_encoder.vhd \
-		$(IEEE__std_logic_arith) \
-		$(IEEE__std_logic_unsigned) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../video/tmds_encoder.vhd
-
-$(HDL4FPGA__tmds_encoder1) \
-$(HDL4FPGA__tmds_encoder1__def) : ../video/tmds_encoder1.vhd \
+$(HDL4FPGA__tmds_encoder__def) : ../video/tmds_encoder.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
-	$(VCOM) -2002 -work hdl4fpga ../video/tmds_encoder1.vhd
+	$(VCOM) -2002 -work hdl4fpga ../video/tmds_encoder.vhd
 
 $(HDL4FPGA__txn_buffer) \
 $(HDL4FPGA__txn_buffer__def) : ../basic/txn_buffer.vhd \
@@ -2195,24 +2168,6 @@ $(HDL4FPGA__vector__def) : ../basic/vector.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/vector.vhd
-
-$(HDL4FPGA__vga2dvid) \
-$(HDL4FPGA__vga2dvid__behavioral) : ../video/vga2dvid.vhd \
-		$(HDL4FPGA__tmds_encoder) \
-		$(IEEE__numeric_std) \
-		$(HDL4FPGA__base) \
-		$(IEEE__std_logic_unsigned) \
-		$(IEEE__std_logic_arith) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../video/vga2dvid.vhd
-
-$(HDL4FPGA__vga2lvds) \
-$(HDL4FPGA__vga2lvds__behavioral) : ../video/vga2lvds.vhd \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../video/vga2lvds.vhd
 
 $(HDL4FPGA__box_edges) \
 $(HDL4FPGA__box_edges__def) \

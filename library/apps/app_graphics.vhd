@@ -787,71 +787,41 @@ begin
 		------------------
 
 		dvi_b : block
-
-			constant subpixel_length : natural := hdl4fpga.base.min(hdl4fpga.base.min(red_length, green_length), blue_length);
-
 			signal dvid_blank : std_logic;
-			signal in_red     : unsigned(0 to subpixel_length-1);
-			signal in_green   : unsigned(0 to subpixel_length-1);
-			signal in_blue    : unsigned(0 to subpixel_length-1);
-			signal red        : std_logic_vector(0 to 8-1);
-			signal green      : std_logic_vector(0 to 8-1);
-			signal blue       : std_logic_vector(0 to 8-1);
+			signal red   : std_logic_vector(0 to 8-1) := (others => '0');
+			signal green : std_logic_vector(0 to 8-1) := (others => '0');
+			signal blue  : std_logic_vector(0 to 8-1) := (others => '0');
 
 		begin
 
 			dvid_blank <= video_blank;
-
 			process (video_pixel)
 				variable pixel : unsigned(0 to video_pixel'length-1);
 			begin
-				pixel    := unsigned(video_pixel);
-				in_red   <= pixel(in_red'range);
-				pixel    := pixel sll red_length;
-				in_green <= pixel(in_green'range);
-				pixel    := pixel sll green_length;
-				in_blue  <= pixel(in_blue'range);
+			    pixel := unsigned(video_pixel);
+			    red(0 to red_length-1)  <= std_logic_vector(pixel(0 to red_length-1));
+			    pixel := pixel sll red_length;
+			    green(0 to green_length-1) <= std_logic_vector(pixel(0 to green_length-1));
+			    pixel := pixel sll green_length;
+			    blue(0 to blue_length-1) <= std_logic_vector(pixel(0 to blue_length-1));
 			end process;
 
-			red(in_red'range)     <= std_logic_vector(in_red);
-			green(in_green'range) <= std_logic_vector(in_green);
-			red(in_blue'range)    <= std_logic_vector(in_blue);
-
-			xx1_e : entity hdl4fpga.dvi
+			dvi_e : entity hdl4fpga.dvi
 			generic map (
 				ser_size => vserlzr_size)
 			port map (
 				clk   => video_clk,
-				red   => b"00001111", --std_logic_vector(in_red),
-				-- red   => red,
+				red   => red,
 				green => green,
 				blue  => blue,
 				hsync => video_hzsync,
 				vsync => video_vtsync,
 				blank => dvid_blank,
 				cclk  => video_shift_clk,
-				chn0  => open,
-				chn1  => open,
-				chn2  => open);
-
-			vga2dvid_e : entity hdl4fpga.vga2dvid
-			generic map (
-				C_shift_clock_synchronizer => '0',
-				C_ddr     => '1',
-				C_depth   => subpixel_length)
-			port map (
-				clk_pixel => video_clk,
-				clk_shift => video_shift_clk,
-				in_red    => b"00001111", --std_logic_vector(in_red),
-				in_green  => std_logic_vector(in_green),
-				in_blue   => std_logic_vector(in_blue),
-				in_hsync  => video_hzsync,
-				in_vsync  => video_vtsync,
-				in_blank  => dvid_blank,
-				out_clock => dvid_crgb(7 downto 6),
-				out_red   => dvid_crgb(5 downto 4),
-				out_green => dvid_crgb(3 downto 2),
-				out_blue  => dvid_crgb(1 downto 0));
+				chnc  => dvid_crgb(vserlzr_size*4-1 downto vserlzr_size*3),
+				chn2  => dvid_crgb(vserlzr_size*3-1 downto vserlzr_size*2),  
+				chn1  => dvid_crgb(vserlzr_size*2-1 downto vserlzr_size*1),  
+				chn0  => dvid_crgb(vserlzr_size*1-1 downto vserlzr_size*0));
 
 		end block;
 

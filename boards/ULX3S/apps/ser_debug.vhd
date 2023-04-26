@@ -40,8 +40,7 @@ architecture ser_debug of ulx3s is
 	type video_modes is (
 		mode600p,
 		mode600p18,
-		mode600p24,
-		mode1080p);
+		mode600p24);
 
 	type pll_params is record
 		clkos_div   : natural;
@@ -64,12 +63,11 @@ architecture ser_debug of ulx3s is
 	constant video_tab : videoparams_vector := (
 		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk40_00m800x600at60),
 		mode600p18 => (pll => (clkos_div => 3, clkop_div => 29,  clkfb_div => 1, clki_div => 1, clkos2_div => 18, clkos3_div => 2), pixel => rgb666, mode => pclk40_00m800x600at60),
-		mode600p24 => (pll => (clkos_div => 2, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2), pixel => rgb888, mode => pclk40_00m800x600at60),
-		mode1080p  => (pll => (clkos_div => 1, clkop_div => 24,  clkfb_div => 1, clki_div => 1, clkos2_div =>  5, clkos3_div => 2), pixel => rgb565, mode => pclk120_00m1920x1080at50));
+		mode600p24 => (pll => (clkos_div => 2, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2), pixel => rgb888, mode => pclk40_00m800x600at60));
 
-	constant video_mode : video_modes := mode600p;
+	constant video_mode : video_modes := mode600p24;
 	constant videodot_freq : real := 
-		real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*sys_freq/
+		real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*clk25mhz_freq/
 		real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos2_div);
 
     signal video_pixel     : std_logic_vector(0 to setif(video_tab(video_mode).pixel=rgb565, 16, 32)-1);
@@ -193,10 +191,7 @@ begin
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
-		timing_id       => video_tab(video_mode).mode,
-		red_length      => 5,
-		green_length    => 6,
-		blue_length     => 5)
+		timing_id       => video_tab(video_mode).mode)
 	port map (
 		ser_clk         => ser_clk, 
 		ser_frm         => ser_frm, 
@@ -210,7 +205,7 @@ begin
 		video_pixel     => video_pixel,
 		dvid_crgb       => dvid_crgb);
 
-	ddr_g : for i in gpdi_dp'range generate
+	ddr_g : for i in gpdi_d'range generate
 		signal q : std_logic;
 	begin
 		oddr_i : oddrx1f
@@ -223,7 +218,7 @@ begin
 		olvds_i : olvds 
 		port map(
 			a  => q,
-			z  => gpdi_dp(i),
+			z  => gpdi_d(i),
 			zn => gpdi_dn(i));
 	end generate;
 

@@ -112,7 +112,7 @@ architecture ulx3s_serdebug of testbench is
 			sdram_dqm      : inout std_logic_vector(2-1 downto 0) := (others => '-');
 			sdram_d        : inout std_logic_vector(16-1 downto 0) := (others => '-');
 
-			gpdi_dp        : out   std_logic_vector(4-1 downto 0);
+			gpdi_d         : out   std_logic_vector(4-1 downto 0);
 			gpdi_dn        : out   std_logic_vector(4-1 downto 0);
 			--gpdi_ethp      : out   std_logic;  
 			--gpdi_ethn      : out   std_logic;
@@ -221,7 +221,7 @@ begin
 
 		generic (
 			baudrate  : natural := 3_000_000;
-			uart_xtal : natural := 25 sec / 1 us;
+			uart_xtal : real := 25.0e6;
 			payload   : std_logic_vector);
 		generic map (
 			payload   => data);
@@ -282,11 +282,12 @@ begin
 			hdlctx_irdy => '1',
 			hdlctx_trdy => hdlctx_trdy,
 			hdlctx_data => hdlctx_data,
+			hdlctx_end  => '0',
 
 			uart_clk    => uart_clk,
-			uart_idle   => uart_idle,
-			uart_txen   => uart_txen,
-			uart_txd    => uart_txd);
+			uart_trdy   => uart_idle,
+			uart_irdy   => uart_txen,
+			uart_data   => uart_txd);
 
 		uarttx_e : entity hdl4fpga.uart_tx
 		generic map (
@@ -295,9 +296,9 @@ begin
 		port map (
 			uart_txc  => uart_clk,
 			uart_sout => uart_sout,
-			uart_idle => uart_idle,
-			uart_txen => uart_txen,
-			uart_txd  => uart_txd);
+			uart_trdy => uart_idle,
+			uart_irdy => uart_txen,
+			uart_data => uart_txd);
 
 	end block;
 	
@@ -306,7 +307,6 @@ begin
 	ipoe_b : block
 		generic (
 			baudrate  : natural := 3_000_000;
-			uart_xtal : natural := 25 sec / 1 us;
 			payload   : std_logic_vector);
 		generic map (
 			payload   => data);

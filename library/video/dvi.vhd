@@ -61,7 +61,7 @@ begin
 		c11 when others;
 	c <= c00 & c00 & chn0_c;
 	chn0to2_g : for i in 0 to 3-1 generate
-		tmds_encoder_e : entity hdl4fpga.tmds_encoder1
+		tmds_encoder_e : entity hdl4fpga.tmds_encoder
 		port map (
 			clk     => clk,
 			c       => c(c00'length*(i+1)-1 downto c00'length*i),
@@ -80,7 +80,7 @@ use ieee.numeric_std.all;
 
 entity dvi is
 	generic (
-		ser_size     : natural := 10);
+		ser_size : natural := 10);
 	port (
 		clk   : in  std_logic;
 		red   : in  std_logic_vector( 8-1 downto 0);
