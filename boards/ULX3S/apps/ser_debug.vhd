@@ -38,8 +38,6 @@ use ecp5u.components.all;
 architecture ser_debug of ulx3s is
 
 	type video_modes is (
-		mode600p,
-		mode600p18,
 		mode600p24);
 
 	type pll_params is record
@@ -60,15 +58,15 @@ architecture ser_debug of ulx3s is
 	end record;
 
 	type videoparams_vector is array (video_modes) of video_params;
+	constant v_r : natural := 5; -- video ratio
 	constant video_tab : videoparams_vector := (
-		mode600p   => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 10, clkos3_div => 2), pixel => rgb565, mode => pclk40_00m800x600at60),
-		mode600p18 => (pll => (clkos_div => 3, clkop_div => 29,  clkfb_div => 1, clki_div => 1, clkos2_div => 18, clkos3_div => 2), pixel => rgb666, mode => pclk40_00m800x600at60),
-		mode600p24 => (pll => (clkos_div => 2, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => 16, clkos3_div => 2), pixel => rgb888, mode => pclk40_00m800x600at60));
+		mode600p24 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 5*2, clkos3_div => 2*v_r), pixel => rgb888, mode => pclk40_00m800x600at60));
 
 	constant video_mode : video_modes := mode600p24;
 	constant videodot_freq : real := 
 		real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*clk25mhz_freq/
 		real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos2_div);
+	alias video_record is video_tab(video_mode);
 
     signal video_pixel     : std_logic_vector(0 to setif(video_tab(video_mode).pixel=rgb565, 16, 32)-1);
 
@@ -80,8 +78,6 @@ architecture ser_debug of ulx3s is
 	signal video_lck       : std_logic;
 	signal video_hzsync    : std_logic;
     signal video_vtsync    : std_logic;
-    signal video_on        : std_logic;
-	signal video_dot       : std_logic;
 	signal dvid_crgb       : std_logic_vector(7 downto 0);
 
 	signal ser_clk         : std_logic;
@@ -102,11 +98,23 @@ begin
 		attribute FREQUENCY_PIN_CLKOS2 : string; 
 		attribute FREQUENCY_PIN_CLKOS3 : string; 
 
-		attribute FREQUENCY_PIN_CLKI   of pll_i : label is  "25.000000";
-		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is  "25.000000";
+		constant video_freq  : real :=
+			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
+			(real(video_record.pll.clki_div*video_record.pll.clkos2_div*1e6));
 
-		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is "200.000000";
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is  "40.000000";
+		constant video_shift_freq  : real :=
+			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
+			(real(video_record.pll.clki_div*video_record.pll.clkos_div*1e6));
+
+		constant videoio_freq  : real :=
+			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
+			(real(video_record.pll.clki_div*video_record.pll.clkos3_div*1e6));
+
+		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(video_shift_freq,    10);
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(video_freq,          10);
+		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is ftoa(videoio_freq,        10);
+		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
 
 	begin
 		pll_i : EHXPLLL

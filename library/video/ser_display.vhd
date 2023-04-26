@@ -78,6 +78,10 @@ architecture def of ser_display is
 
 	signal des_irdy          : std_logic;
 
+	signal hzsync            : std_logic;
+	signal vtsync            : std_logic;
+	signal von               : std_logic;
+
 begin
 
 	video_e : entity hdl4fpga.video_sync
@@ -85,13 +89,13 @@ begin
 		timing_id   => timing_id)
 	port map (
 		video_clk    => video_clk,
-		video_hzsync => video_hs,
-		video_vtsync => video_vs,
+		video_hzsync => hzsync,
+		video_vtsync => vtsync,
 		video_hzcntr => video_hcntr,
 		video_vtcntr => video_vcntr,
 		video_hzon   => video_hon,
 		video_vton   => video_von);
-	video_on <= video_hon and video_von;
+	von <= video_hon and video_von;
 
 	serdes_e : entity hdl4fpga.serdes
 	port map (
@@ -158,7 +162,20 @@ begin
 		video_addr  => video_addr,
 		font_hcntr  => video_hcntr(fontwidth_bits-1 downto 0),
 		font_vcntr  => video_vcntr(fontheight_bits-1 downto 0),
-		video_on    => video_on,
+		video_on    => von,
 		video_dot   => video_dot);
+
+		video_lat_e : entity hdl4fpga.latency
+		generic map (
+			n => 3,
+			d => (0 to 3-1 => 4))
+		port map (
+			clk => video_clk,
+			di(0) => von,
+			di(1) => hzsync,
+			di(2) => vtsync,
+			do(0) => video_on,
+			do(1) => video_hs,
+			do(2) => video_vs);
 
 end;

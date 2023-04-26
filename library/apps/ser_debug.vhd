@@ -55,61 +55,38 @@ entity ser_debug is
 end;
 
 architecture def of ser_debug is
-
-    signal video_on        : std_logic;
-	signal video_dot       : std_logic;
-
+	signal video_on   : std_logic;
+	signal video_dot  : std_logic;
+	signal dvid_blank : std_logic;
+	signal red        : std_logic_vector(0 to 8-1) := (others => '1');
+	signal green      : std_logic_vector(0 to 8-1) := (others => '1');
+	signal blue       : std_logic_vector(0 to 8-1) := (others => '1');
 begin
 
-	video_b : block
-		signal hzsync : std_logic;
-		signal vtsync : std_logic;
-		signal von    : std_logic;
-	begin
+	ser_display_e : entity hdl4fpga.ser_display
+	generic map (
+		code_spce   => to_ascii(" "),
+		code_digits => to_ascii("0123456789abcdef"),
+		cga_bitrom  => to_ascii("Ready Steady GO!"),
+		timing_id   => timing_id)
+	port map (
+		phy_clk     => ser_clk,
+		phy_frm     => ser_frm,
+		phy_irdy    => ser_irdy,
+		phy_data    => ser_data,
 
-		ser_display_e : entity hdl4fpga.ser_display
-		generic map (
-			code_spce   => to_ascii(" "),
-			code_digits => to_ascii("0123456789abcdef"),
-			cga_bitrom  => to_ascii("Ready Steady GO!"),
-			timing_id   => timing_id)
-		port map (
-			phy_clk     => ser_clk,
-			phy_frm     => ser_frm,
-			phy_irdy    => ser_irdy,
-			phy_data    => ser_data,
+		video_clk   => video_clk, 
+		video_dot   => video_dot,
+		video_on    => video_on,
+		video_hs    => video_hzsync,
+		video_vs    => video_vtsync);
 
-			video_clk   => video_clk, 
-			video_dot   => video_dot,
-			video_on    => von,
-			video_hs    => hzsync,
-			video_vs    => vtsync);
-
-		video_lat_e : entity hdl4fpga.latency
-		generic map (
-			n => 3,
-			d => (0 to 3-1 => 4))
-		port map (
-			clk => video_clk,
-			di(0) => von,
-			di(1) => hzsync,
-			di(2) => vtsync,
-			do(0) => video_on,
-			do(1) => video_hzsync,
-			do(2) => video_vtsync);
-
-		video_blank <= not video_on;
-	end block;
+	video_blank <= not video_on;
 
 	-- VGA --
 	---------
 
 	dvi_b : block
-		signal dvid_blank : std_logic;
-		signal red   : std_logic_vector(0 to 8-1) := (others => '1');
-		signal green : std_logic_vector(0 to 8-1) := (others => '1');
-		signal blue  : std_logic_vector(0 to 8-1) := (others => '1');
-
 	begin
 
 		video_pixel <= (video_pixel'range => video_dot);
@@ -131,7 +108,7 @@ begin
 			ser_size => vserlzr_size)
 		port map (
 			clk   => video_clk,
-			red   => red,
+			red   => b"11111111", --red,
 			green => green,
 			blue  => blue,
 			hsync => video_hzsync,
