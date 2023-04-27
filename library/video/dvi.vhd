@@ -51,6 +51,8 @@ architecture def of dvi_subpxl is
 	signal c      : std_logic_vector(3*chn0'length-1 downto 0);
 	signal pixel  : std_logic_vector(3*blue'length-1 downto 0);
 	signal chnpxl : std_logic_vector(3*chn0'length-1 downto 0);
+	signal ed1 : std_logic_vector(chn0'range);
+	signal mode : std_logic_vector(0 to 1);
 begin
 	pixel <= red & green & blue;
 	with std_logic_vector'(vsync, hsync) select
@@ -69,6 +71,22 @@ begin
 			data    => pixel( blue'length*(i+1)-1 downto blue'length*i),
 			encoded => chnpxl(chn0'length*(i+1)-1 downto chn0'length*i));
 	end generate;
+-- mode <= std_logic_vector'(vsync, hsync);
+		-- tmds_encoder_e : entity hdl4fpga.tmds_encoder1
+		-- port map (
+			-- clk     => clk,
+			-- c       => mode,
+			-- blank   => blank,
+			-- data    => pixel( blue'length*(0+1)-1 downto blue'length*0),
+			-- encoded => ed1);
+
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			assert ed1=chn0
+			report "failed";
+		end if;
+	end process;
 
 	chn0 <= chnpxl(chn0'length*1-1 downto chn0'length*0);
 	chn1 <= chnpxl(chn0'length*2-1 downto chn0'length*1);
