@@ -46,6 +46,7 @@ begin
 		variable cnt : unsigned(unsigned_num_bits(data'length)-1 downto 0);
 		variable n10 : unsigned(cnt'range);
 		variable q_m : unsigned(encoded'range);
+		variable q_m1 : unsigned(encoded'range);
 	begin
 		if rising_edge(clk) then
     		n10 := (others => '0');
@@ -56,15 +57,17 @@ begin
     		end loop;
 
     		q_m := (others => '0');
-    		for i in 0 to data'length-1 loop
-    			q_m(i+1) := q_m(i) xor data(i);
+    		q_m(0) := data(0);
+    		for i in 1 to data'length-1 loop
+				if n10 > 4 or (n10=4 and data(0)='0') then
+					q_m(i) := q_m(i-1) xnor data(i);
+					q_m(data'length) := '1';
+				else
+					q_m(i) := q_m(i-1) xor data(i);
+					q_m(data'length) := '0';
+				end if;
     		end loop;
-			q_m(data'length+1) := '1';
-
-    		if n10 > 4 or (n10=4 and data(0)='0') then
-    			q_m := q_m xor (q_m'range => '1');
-    		end if;
-    		q_m := shift_right(q_m, 1);
+			q_m1 := q_m;
 
     		n10 := (others => '0');
     		for i in data'range loop
@@ -81,27 +84,27 @@ begin
     			if cnt=0 or n10=0 then
     				if cnt=0 then
     					if q_m(8) ='1' then
-    						cnt := cnt + resize(n10, cnt'length);
-    					else
     						cnt := cnt - resize(n10, cnt'length);
+    					else
+    						cnt := cnt + resize(n10, cnt'length);
     					end if;
     				end if;
-    				q_m := not q_m(8) & q_m(8) & (q_m(data'range) xnor (data'range => q_m(8)));
+    				q_m := q_m(8) & not q_m(8) & (q_m(data'range) xor (data'range => q_m(8)));
     				if cnt=0 then
     					q_m := not q_m;
     				end if;
     			elsif ((cnt(3), n10(3))=unsigned'("00")) or ((cnt(3), n10(3))=unsigned'("11")) then
     				cnt := cnt - resize(n10, cnt'length);
-    				if q_m(8)='1' then
+    				if q_m(8)='0' then
     					cnt := cnt + 1;
     				end if;
-    				q_m := q_m(8) & q_m(8) & not q_m(data'range);
+    				q_m := '1' & not q_m(8) & not q_m(data'range);
     			else
     				cnt := cnt + resize(n10, cnt'length);
-    				if q_m(8)='0' then
+    				if q_m(8)='1' then
     					cnt := cnt - 1;
     				end if;
-    				q_m := not q_m(8) & q_m(8) & q_m(data'range);
+    				q_m := '0' & not q_m(8) & q_m(data'range);
     			end if;
 				encoded <= std_logic_vector(q_m);
 			end if;

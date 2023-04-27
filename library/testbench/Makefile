@@ -1869,7 +1869,6 @@ $(HDL4FPGA__seg7__mixed) : ../basic/seg7.vhd \
 $(HDL4FPGA__ser_debug) \
 $(HDL4FPGA__ser_debug__def) : ../apps/ser_debug.vhd \
 		$(HDL4FPGA__dvi) \
-		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__bcdfonts) \
 		$(HDL4FPGA__cp850x8x16x128to255) \
 		$(HDL4FPGA__cp850x8x16x0to127) \
@@ -1886,6 +1885,7 @@ $(HDL4FPGA__ser_debug__def) : ../apps/ser_debug.vhd \
 
 $(HDL4FPGA__ser_display) \
 $(HDL4FPGA__ser_display__def) : ../video/ser_display.vhd \
+		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__cga_adapter) \
 		$(HDL4FPGA__serdes) \
 		$(HDL4FPGA__video_sync) \

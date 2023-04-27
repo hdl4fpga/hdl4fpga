@@ -58,9 +58,9 @@ architecture def of ser_debug is
 	signal video_on   : std_logic;
 	signal video_dot  : std_logic;
 	signal dvid_blank : std_logic;
-	signal red        : std_logic_vector(0 to 8-1) := (others => '1');
-	signal green      : std_logic_vector(0 to 8-1) := (others => '1');
-	signal blue       : std_logic_vector(0 to 8-1) := (others => '1');
+	signal red        : std_logic_vector(0 to 8-1) := (others => '0');
+	signal green      : std_logic_vector(0 to 8-1) := (others => '0');
+	signal blue       : std_logic_vector(0 to 8-1) := (others => '0');
 begin
 
 	ser_display_e : entity hdl4fpga.ser_display
@@ -86,40 +86,35 @@ begin
 	-- VGA --
 	---------
 
-	dvi_b : block
+	video_pixel <= (video_pixel'range => video_dot);
+	process (video_pixel)
+		variable pixel : unsigned(0 to video_pixel'length-1);
 	begin
+		pixel := unsigned(video_pixel);
+		red(0 to red_length-1)  <= std_logic_vector(pixel(0 to red_length-1));
+		pixel := pixel sll red_length;
+		green(0 to green_length-1) <= std_logic_vector(pixel(0 to green_length-1));
+		pixel := pixel sll green_length;
+		blue(0 to blue_length-1) <= std_logic_vector(pixel(0 to blue_length-1));
+	end process;
 
-		video_pixel <= (video_pixel'range => video_dot);
-		process (video_pixel)
-			variable pixel : unsigned(0 to video_pixel'length-1);
-		begin
-			-- pixel := unsigned(video_pixel);
-			-- red(0 to red_length-1)  <= std_logic_vector(pixel(0 to red_length-1));
-			-- pixel := pixel sll red_length;
-			-- green(0 to green_length-1) <= std_logic_vector(pixel(0 to green_length-1));
-			-- pixel := pixel sll green_length;
-			-- blue(0 to blue_length-1) <= std_logic_vector(pixel(0 to blue_length-1));
-		end process;
+	dvid_blank <= video_blank;
 
-		dvid_blank <= video_blank;
-
-		dvi_e : entity hdl4fpga.dvi
-		generic map (
-			ser_size => vserlzr_size)
-		port map (
-			clk   => video_clk,
-			red   => b"11111111", --red,
-			green => green,
-			blue  => blue,
-			hsync => video_hzsync,
-			vsync => video_vtsync,
-			blank => dvid_blank,
-			cclk  => video_shift_clk,
-			chnc  => dvid_crgb(vserlzr_size*4-1 downto vserlzr_size*3),
-			chn2  => dvid_crgb(vserlzr_size*3-1 downto vserlzr_size*2),  
-			chn1  => dvid_crgb(vserlzr_size*2-1 downto vserlzr_size*1),  
-			chn0  => dvid_crgb(vserlzr_size*1-1 downto vserlzr_size*0));
-
-	end block;
+	dvi_e : entity hdl4fpga.dvi
+	generic map (
+		ser_size => vserlzr_size)
+	port map (
+		clk   => video_clk,
+		red   => red,
+		green => green,
+		blue  => blue,
+		hsync => video_hzsync,
+		vsync => video_vtsync,
+		blank => dvid_blank,
+		cclk  => video_shift_clk,
+		chnc  => dvid_crgb(vserlzr_size*4-1 downto vserlzr_size*3),
+		chn2  => dvid_crgb(vserlzr_size*3-1 downto vserlzr_size*2),  
+		chn1  => dvid_crgb(vserlzr_size*2-1 downto vserlzr_size*1),  
+		chn0  => dvid_crgb(vserlzr_size*1-1 downto vserlzr_size*0));
 
 end;

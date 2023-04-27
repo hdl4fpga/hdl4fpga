@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="apps" device="LFE5U-12F-8BG381C" default_implementation="graphics">
+<BaliProject version="3.2" title="apps" device="LFE5U-12F-8BG381C" default_implementation="ser_debug">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
@@ -272,9 +272,6 @@
         <Source name="../../../library/video/video.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/video/vga2dvid.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/video/cgafonts.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -515,6 +512,12 @@
         <Source name="../../../library/xilinx/adjpha.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
+        <Source name="../../../library/video/dvi.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/serlzr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
         <Source name="apps.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
         </Source>
@@ -683,13 +686,7 @@
         <Source name="../../../library/video/videopkg.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/video/vga2dvid.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
         <Source name="../../../library/video/tmds_encoder.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/video/modeline_calculator.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../../library/video/cgafonts.vhd" type="VHDL" type_short="VHDL">
@@ -753,6 +750,15 @@
             <Options/>
         </Source>
         <Source name="../../../library/video/ser_display.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/video/dvi.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/serlzr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/barrel.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="apps.lpf" type="Logic Preference" type_short="LPF">
