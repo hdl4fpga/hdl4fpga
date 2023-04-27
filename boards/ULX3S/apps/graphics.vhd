@@ -192,7 +192,7 @@ architecture graphics of ulx3s is
 		return tab(tab'left);
 	end;
 
-	constant video_mode   : video_modes := setdebug(debug, profile_tab(app_profile).video_mode);
+	constant video_mode   : video_modes := setdebug(not debug, profile_tab(app_profile).video_mode);
 	constant video_record : video_params := videoparam(video_mode);
 
 	type sdramparams_record is record
@@ -268,11 +268,13 @@ architecture graphics of ulx3s is
 	signal video_clk     : std_logic;
 	signal video_lck     : std_logic;
 	signal video_shift_clk : std_logic;
-    signal video_pixel : std_logic_vector(0 to setif(
+	signal video_pixel : std_logic_vector(0 to setif(
 		video_record.pixel=rgb565, 16, setif(
 		video_record.pixel=rgb888, 32, 0))-1);
-	signal dvid_crgb     : std_logic_vector(8-1 downto 0);
+	constant video_gear  : natural := 4;
+	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk   : std_logic;
+	signal video_phyrst  : std_logic;
 
 	constant mem_size    : natural := 8*(1024*8);
 	signal so_frm        : std_logic;
@@ -290,7 +292,6 @@ architecture graphics of ulx3s is
 
 	constant io_link     : io_comms := profile_tab(app_profile).comms;
 	constant hdplx       : std_logic := setif(debug, '0', '1');
-
 begin
 
 	videopll_b : block
@@ -319,11 +320,17 @@ begin
 		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
 
-		signal clkfb : std_logic;
+		signal clkop  : std_logic;
+		signal clkos  : std_logic;
+		signal clkos2 : std_logic;
 
 	begin
+		assert false
+		report "VIDEO CLK FREQUENCY : " & ftoa(video_freq, 6) & " MHz"
+		severity NOTE;
+
 		pll_i : EHXPLLL
-        generic map (
+		generic map (
 			PLLRST_ENA       => "DISABLED",
 			INTFB_WAKE       => "DISABLED",
 			STDBY_ENABLE     => "DISABLED",
@@ -347,27 +354,77 @@ begin
 			CLKOP_DIV        => video_record.pll.clkop_div,
 			CLKFB_DIV        => video_record.pll.clkfb_div,
 			CLKI_DIV         => video_record.pll.clki_div)
-        port map (
+		port map (
 			rst       => '0',
 			clki      => clk_25mhz,
-			CLKFB     => clkfb,
-            PHASESEL0 => '0', PHASESEL1 => '0',
+			CLKFB     => clkop,
+			PHASESEL0 => '0', PHASESEL1 => '0',
 			PHASEDIR  => '0',
-            PHASESTEP => '0', PHASELOADREG => '0',
-            STDBY     => '0', PLLWAKESYNC  => '0',
-            ENCLKOP   => '0',
+			PHASESTEP => '0', PHASELOADREG => '0',
+			STDBY     => '0', PLLWAKESYNC  => '0',
+			ENCLKOP   => '0',
 			ENCLKOS   => '0',
 			ENCLKOS2  => '0',
-            ENCLKOS3  => '0',
-			CLKOP     => clkfb,
-			CLKOS     => video_shift_clk,
-			CLKOS2    => video_clk,
+			ENCLKOS3  => '0',
+			CLKOP     => clkop,
+			CLKOS     => clkos,
+			clkos2    => clkos2,
 			CLKOS3    => videoio_clk,
 			LOCK      => video_lck,
-            INTLOCK   => open,
+			INTLOCK   => open,
 			REFCLK    => open,
 			CLKINTFB  => open);
 
+		gbx21_g : if video_gear=2 generate
+			video_shift_clk <= clkos;
+			video_clk       <= clkos2;
+		end generate;
+
+		gbx71_g : if video_gear=4 or video_gear=7 generate
+    		component gddr_sync
+    		port (
+    			rst       : in  std_logic;
+    			sync_clk  : in  std_logic;
+    			start     : in  std_logic;
+    			stop      : out std_logic;
+    			ddr_reset : out std_logic;
+    			ready     : out std_logic);
+    		end component;
+
+    		signal gddr_rst : std_logic;
+    		signal stop     : std_logic;
+    		signal eclko    : std_logic;
+    		signal cdivx    : std_logic;
+
+		begin
+			gddr_rst <= not video_lck;
+			gddr_sync_i : gddr_sync 
+			port map (
+			  rst       => gddr_rst,
+			  sync_clk  => clk_25mhz,
+			  start     => gddr_rst,
+			  stop      => stop,
+			  ddr_reset => video_phyrst,
+			  ready     => open);
+
+			eclksyncb_i : eclksyncb
+			port map (
+				stop  => stop,
+				eclki => clkos,
+				eclko => eclko);
+		
+			clkdivf_i : clkdivf
+			generic map (
+				div => setif(video_gear=7, "3.5", "2.0"))
+			port map (
+				rst     => video_phyrst,
+				alignwd => '0',
+				clki    => eclko,
+				cdivx   => cdivx);
+			video_shift_clk <= eclko;
+			video_clk       <= transport cdivx after natural((3.0/4.0)/(video_shift_freq*1.0e12))*1 ps;
+		end generate;
+		
 	end block;
 
 	sdrpll_b : block
@@ -397,7 +454,7 @@ begin
 		severity NOTE;
 
 		pll_i : EHXPLLL
-        generic map (
+		generic map (
 			PLLRST_ENA       => "DISABLED",
 			INTFB_WAKE       => "DISABLED",
 			STDBY_ENABLE     => "DISABLED",
@@ -419,24 +476,24 @@ begin
 			CLKOP_DIV        => sdram_params.pll.clkop_div,
 			CLKFB_DIV        => sdram_params.pll.clkfb_div,
 			CLKI_DIV         => sdram_params.pll.clki_div)
-        port map (
+		port map (
 			rst       => '0',
 			clki      => clk_25mhz,
 			CLKFB     => clkfb,
-            PHASESEL0 => '0', PHASESEL1 => '0',
+			PHASESEL0 => '0', PHASESEL1 => '0',
 			PHASEDIR  => '0',
-            PHASESTEP => '0', PHASELOADREG => '0',
-            STDBY     => '0', PLLWAKESYNC  => '0',
-            ENCLKOP   => '0',
+			PHASESTEP => '0', PHASELOADREG => '0',
+			STDBY     => '0', PLLWAKESYNC  => '0',
+			ENCLKOP   => '0',
 			ENCLKOS   => '0',
 			ENCLKOS2  => '0',
-            ENCLKOS3  => '0',
+			ENCLKOS3  => '0',
 			CLKOP     => clkfb,
 			CLKOS     => open,
 			CLKOS2    => ctlr_clk,
 			CLKOS3    => open,
 			LOCK      => lock,
-            INTLOCK   => open,
+			INTLOCK   => open,
 			REFCLK    => open,
 			CLKINTFB  => open);
 
@@ -569,37 +626,37 @@ begin
 				mii_rxd(0) => rmii_rx0,
 				mii_rxd(1) => rmii_rx1);
 
-    		signal dhcpcd_req : std_logic;
-    		signal dhcpcd_rdy : std_logic;
+			signal dhcpcd_req : std_logic;
+			signal dhcpcd_rdy : std_logic;
 
-    		signal miitx_frm  : std_logic;
-    		signal miitx_irdy : std_logic;
-    		signal miitx_trdy : std_logic;
-    		signal miitx_end  : std_logic;
-    		signal miitx_data : std_logic_vector(si_data'range);
+			signal miitx_frm  : std_logic;
+			signal miitx_irdy : std_logic;
+			signal miitx_trdy : std_logic;
+			signal miitx_end  : std_logic;
+			signal miitx_data : std_logic_vector(si_data'range);
 
 		begin
 		
-    		dhcp_p : process(mii_txc)
-    			type states is (s_request, s_wait);
-    			variable state : states;
-    		begin
-    			if rising_edge(mii_txc) then
-    				case state is
-    				when s_request =>
-    					if dhcp_btn='1' then
-    						dhcpcd_req <= not dhcpcd_rdy;
-    						state := s_wait;
-    					end if;
-    				when s_wait =>
-    					if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-    						if dhcp_btn='0' then
-    							state := s_request;
-    						end if;
-    					end if;
-    				end case;
-    			end if;
-    		end process;
+			dhcp_p : process(mii_txc)
+				type states is (s_request, s_wait);
+				variable state : states;
+			begin
+				if rising_edge(mii_txc) then
+					case state is
+					when s_request =>
+						if dhcp_btn='1' then
+							dhcpcd_req <= not dhcpcd_rdy;
+							state := s_wait;
+						end if;
+					when s_wait =>
+						if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+							if dhcp_btn='0' then
+								state := s_request;
+							end if;
+						end if;
+					end case;
+				end if;
+			end process;
 
 			udpdaisy_e : entity hdl4fpga.sio_dayudp
 			generic map (
@@ -718,6 +775,7 @@ begin
 		byte_size    => byte_size,
 
 		timing_id    => video_record.timing,
+		video_gear   => video_gear,
 		red_length   => setif(video_record.pixel=rgb565, 5, setif(video_record.pixel=rgb888, 8, 0)),
 		green_length => setif(video_record.pixel=rgb565, 6, setif(video_record.pixel=rgb888, 8, 0)),
 		blue_length  => setif(video_record.pixel=rgb565, 5, setif(video_record.pixel=rgb888, 8, 0)),
@@ -805,16 +863,50 @@ begin
 	-- VGA --
 	---------
 
+
 	sdr_g : for i in gpdi_d'range generate
 		signal q : std_logic;
 	begin
-		oddr_i : oddrx1f
-		port map(
-			sclk => video_shift_clk,
-			rst  => '0',
-			d0   => dvid_crgb(2*i),
-			d1   => dvid_crgb(2*i+1),
-			q    => q);
+
+		gbx21_g : if video_gear=2 generate
+			oddr_i : oddrx1f
+			port map(
+				sclk => video_shift_clk,
+				rst  => '0',
+				d0   => dvid_crgb(video_gear*i),
+				d1   => dvid_crgb(video_gear*i+1),
+				q    => q);
+		end generate;
+
+		gbx41_g : if video_gear=4 generate 
+			oddr_i : oddrx2f
+			port map(
+				rst  => video_phyrst,
+				eclk => video_clk,
+				sclk => video_shift_clk,
+				d0   => dvid_crgb(video_gear*i+0),
+				d1   => dvid_crgb(video_gear*i+1),
+				d2   => dvid_crgb(video_gear*i+2),
+				d3   => dvid_crgb(video_gear*i+3),
+				q    => q);
+		end generate;
+
+		gbx71_g : if video_gear=7 generate 
+			oddr_i : oddr71b
+			port map(
+				rst  => video_phyrst,
+				eclk => video_clk,
+				sclk => video_shift_clk,
+				d0   => dvid_crgb(video_gear*i+0),
+				d1   => dvid_crgb(video_gear*i+1),
+				d2   => dvid_crgb(video_gear*i+2),
+				d3   => dvid_crgb(video_gear*i+3),
+				d4   => dvid_crgb(video_gear*i+4),
+				d5   => dvid_crgb(video_gear*i+5),
+				d6   => dvid_crgb(video_gear*i+6),
+				q    => q);
+		end generate;
+
 		olvds_i : olvds
 		port map(
 			a  => q,

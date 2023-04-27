@@ -50,7 +50,7 @@ entity app_graphics is
 		burst_length : natural := 0;
 
 		timing_id    : videotiming_ids;
-		vserlzr_size : natural := 2;
+		video_gear   : natural := 2;
 		red_length   : natural := 8;
 		green_length : natural := 8;
 		blue_length  : natural := 8);
@@ -74,7 +74,7 @@ entity app_graphics is
 		video_vtsync  : buffer std_logic;
 		video_blank   : buffer std_logic;
 		video_pixel   : buffer std_logic_vector;
-		dvid_crgb     : out std_logic_vector(7 downto 0);
+		dvid_crgb     : out std_logic_vector(4*video_gear-1 downto 0);
 
 		ctlr_clk      : in  std_logic;
 		ctlr_rst      : in  std_logic;
@@ -808,7 +808,7 @@ begin
 
 			dvi_e : entity hdl4fpga.dvi
 			generic map (
-				ser_size => vserlzr_size)
+				ser_size => video_gear)
 			port map (
 				clk   => video_clk,
 				red   => red,
@@ -818,10 +818,10 @@ begin
 				vsync => video_vtsync,
 				blank => dvid_blank,
 				cclk  => video_shift_clk,
-				chnc  => dvid_crgb(vserlzr_size*4-1 downto vserlzr_size*3),
-				chn2  => dvid_crgb(vserlzr_size*3-1 downto vserlzr_size*2),  
-				chn1  => dvid_crgb(vserlzr_size*2-1 downto vserlzr_size*1),  
-				chn0  => dvid_crgb(vserlzr_size*1-1 downto vserlzr_size*0));
+				chnc  => dvid_crgb(video_gear*4-1 downto video_gear*3),
+				chn2  => dvid_crgb(video_gear*3-1 downto video_gear*2),  
+				chn1  => dvid_crgb(video_gear*2-1 downto video_gear*1),  
+				chn0  => dvid_crgb(video_gear*1-1 downto video_gear*0));
 
 		end block;
 
@@ -973,7 +973,7 @@ begin
 			ctlr_rtt     => ctlr_rtt,
 
 			ctlr_rst     => ctlr_rst,
-			ctlr_clk    => ctlr_clk,
+			ctlr_clk     => ctlr_clk,
 			ctlr_inirdy  => inirdy,
 
 			ctlr_frm     => ctlr_frm,
