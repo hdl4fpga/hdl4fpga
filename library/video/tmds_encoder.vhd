@@ -45,7 +45,7 @@ begin
 	process (clk)
 		variable cnt : unsigned(unsigned_num_bits(data'length)-1 downto 0);
 		variable n10 : unsigned(cnt'range);
-		variable q_m : unsigned(encoded'range);
+		variable q_m : std_logic_vector(encoded'range);
 	begin
 		if rising_edge(clk) then
     		n10 := (others => '0');
@@ -77,7 +77,7 @@ begin
 
     		if de='1' then
 				cnt := (others => '0');
-    			encoded <= c;
+    			q_m := c;
     		else
     			if cnt=0 or n10=0 then
     				if q_m(8) ='1' then
@@ -100,8 +100,8 @@ begin
     				end if;
 					q_m := "0" & q_m(8) &     q_m(data'range);
     			end if;
-				encoded <= std_logic_vector(q_m);
 			end if;
+			encoded <= q_m;
 		end if;
 	end process;
 end;

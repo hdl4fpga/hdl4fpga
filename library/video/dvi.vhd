@@ -70,14 +70,6 @@ begin
 			encoded => chnpxl(chn0'length*(i+1)-1 downto chn0'length*i));
 	end generate;
 
-	process (clk)
-	begin
-		if rising_edge(clk) then
-			assert ed1=chn0
-			report "failed";
-		end if;
-	end process;
-
 	chn0 <= chnpxl(chn0'length*1-1 downto chn0'length*0);
 	chn1 <= chnpxl(chn0'length*2-1 downto chn0'length*1);
 	chn2 <= chnpxl(chn0'length*3-1 downto chn0'length*2);

@@ -44,32 +44,40 @@ architecture def of serlzr  is
 
 	function max_and_mask (
 		constant src_size : natural;
-		constant dst_size : natural) 
+		constant dst_size : natural)
 		return natural_vector is
 
-		constant debug_mask : boolean := false;
-		constant debug_shft : boolean := false;
+		constant debug_mask : boolean := true;
+		constant debug_shft : boolean := true;
 		constant debug_max  : boolean := false;
 
 		function barrel_stage (
 			constant mask   : natural;
-			constant shft   : natural)
+			constant shft   : natural;
+			constant mode   : bit) 
 			return natural is
 			variable vmask  : natural;
 			variable vshft  : natural;
 			variable stage  : natural;
 			variable retval : natural;
 		begin
-			vmask := mask;
-			vshft := shft;
-			stage := 0;
+			vmask  := mask;
+			vshft  := shft;
+			stage  := 0;
+			retval := mask;
 			while vshft > 0 or vmask > 0 loop
-				if vmask mod 2 = 0 then
-					if vshft mod 2 = 1 then
-						retval := retval + 2**stage;
+				if mode='0' then
+					if vmask mod 2 = 0 then
+						if vshft mod 2 = 1 then
+							retval := retval + 2**stage;
+						end if;
 					end if;
 				else
-					retval := retval + 2**stage;
+					if vmask mod 2 = 1 then
+						if vshft mod 2 = 0 then
+							retval := retval - 2**stage;
+						end if;
+					end if;
 				end if;
 				vmask := vmask / 2;
 				vshft := vshft / 2;
@@ -78,14 +86,16 @@ architecture def of serlzr  is
 			return retval;
 		end;
 
-		variable shft : natural;
-		variable mask : natural;
-		variable max  : natural;
+		variable max   : natural;
+		variable mask0 : natural;
+		variable mask1 : natural;
+		variable shft  : natural;
 
 	begin
-		mask := 0;
-		shft := 0;
-		max  := 0;
+		max   := 0;
+		mask0 := 0;
+		mask1 := 2**unsigned_num_bits(src_size-1)-1;
+		shft  := 0;
 		for i in 0 to dst_size-1 loop
 			shft := shft + src_size mod dst_size + (src_size/dst_size-1)*dst_size;
 			if shft > max then
@@ -100,39 +110,47 @@ architecture def of serlzr  is
 			report "SHIFT VALUE : " & natural'image(shft)
 			severity note;
 
-			mask := barrel_stage(mask,shft);
+			mask0 := barrel_stage(mask0,shft, '0');
+			mask1 := barrel_stage(mask1,shft, '1');
 			assert not debug_mask
-			report "UPDATED MASK : " & natural'image(mask)
+			report "UPDATED MASK0 : " & natural'image(mask0)
+			severity note;
+			assert not debug_mask
+			report "UPDATED MASK1 : " & natural'image(mask1)
 			severity note;
 
 			while shft >= dst_size loop
 				shft := shft - dst_size;
-				mask := barrel_stage(mask,shft);
+				mask0 := barrel_stage(mask0,shft, '0');
+				mask1 := barrel_stage(mask1,shft, '1');
 
 				assert not debug_shft
 				report "SHIFT ALUE : " & natural'image(shft)
 				severity note;
 
 				assert not debug_mask
-				report "UPDATED MASK : " & natural'image(mask)
+				report "UPDATED MASK0 : " & natural'image(mask0)
+				severity note;
+				assert not debug_mask
+				report "UPDATED MASK1 : " & natural'image(mask1)
 				severity note;
 
 			end loop;
 		end loop;
-		return (max+dst_size, mask);
+		return (max+dst_size, mask0, mask1);
 	end;
 
 	constant debug_mm : boolean := true;
 	constant mm : natural_vector := max_and_mask(src_data'length,dst_data'length);
 
-	signal shf  : std_logic_vector(unsigned_num_bits(src_data'length)-1 downto 0);
+	signal shf  : std_logic_vector(unsigned_num_bits(src_data'length-1)-1 downto 0);
 	signal rgtr : std_logic_vector(mm(0)-1 downto 0);
 	signal shfd : std_logic_vector(rgtr'range);
 
 begin 
 
 	assert not debug_mm
-	report "(MAX => " & natural'image(mm(0)) & ", MASK => " & to_string((to_unsigned(mm(1), shf'length))) & ")"
+	report "(MAX => " & natural'image(mm(0)) & ", MASK0 => " & to_string((to_unsigned(mm(1), shf'length))) & ", MASK1 => " & to_string((to_unsigned(mm(2), shf'length))) & ")"
 	severity note;
 
 	process (dst_clk)
