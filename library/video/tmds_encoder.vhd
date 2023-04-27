@@ -46,7 +46,6 @@ begin
 		variable cnt : unsigned(unsigned_num_bits(data'length)-1 downto 0);
 		variable n10 : unsigned(cnt'range);
 		variable q_m : unsigned(encoded'range);
-		variable q_m1 : unsigned(q_m'range);
 	begin
 		if rising_edge(clk) then
     		n10 := (others => '0');
@@ -67,7 +66,6 @@ begin
 					q_m(data'length) := '1';
 				end if;
     		end loop;
-			q_m1 := q_m;
 
     		n10 := (others => '0');
     		for i in data'range loop
