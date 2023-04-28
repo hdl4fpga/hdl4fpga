@@ -377,25 +377,26 @@ begin
 			CLKINTFB  => open);
 
 		gbx21_g : if video_gear=2 generate
+			video_phyrst    <= '0';
 			video_eclk      <= clkos;
 			video_shift_clk <= clkos;
 		end generate;
 
 		gbx71_g : if video_gear=4 or video_gear=7 generate
-    		component gddr_sync
-    		port (
-    			rst       : in  std_logic;
-    			sync_clk  : in  std_logic;
-    			start     : in  std_logic;
-    			stop      : out std_logic;
-    			ddr_reset : out std_logic;
-    			ready     : out std_logic);
-    		end component;
+			component gddr_sync
+			port (
+				rst       : in  std_logic;
+				sync_clk  : in  std_logic;
+				start     : in  std_logic;
+				stop      : out std_logic;
+				ddr_reset : out std_logic;
+				ready     : out std_logic);
+			end component;
 
-    		signal gddr_rst : std_logic;
-    		signal stop     : std_logic;
-    		signal eclko    : std_logic;
-    		signal cdivx    : std_logic;
+			signal gddr_rst : std_logic;
+			signal stop     : std_logic;
+			signal eclko    : std_logic;
+			signal cdivx    : std_logic;
 
 		begin
 			gddr_rst <= not video_lck;
@@ -863,23 +864,40 @@ begin
 
 	-- VGA --
 	---------
+	-- sdr_g : for i in gpdi_d'range generate
+		-- signal q : std_logic;
+	-- begin
+		-- oddr_i : oddrx1f
+		-- port map(
+			-- sclk => video_shift_clk,
+			-- rst  => '0',
+			-- d0   => dvid_crgb(2*i),
+			-- d1   => dvid_crgb(2*i+1),
+			-- q    => q);
+		-- olvds_i : olvds
+		-- port map(
+			-- a  => q,
+			-- z  => gpdi_d(i),
+			-- zn => gpdi_dn(i));
+	-- end generate;
 
 	videophy_b : block
 		signal q : std_logic_vector(gpdi_d'range);
 	begin
 
-        gbx_g : entity hdl4fpga.ecp5_ogbx
-       	generic map (
-        	mem_mode  => false,
-        	interlace => false,
+		gbx_g : entity hdl4fpga.ecp5_ogbx
+	   	generic map (
+			mem_mode  => false,
+			lfbt_frst => false,
+			interlace => true,
 			size      => gpdi_d'length,
-        	gear      => video_gear)
-       	port map (
+			gear      => video_gear)
+	   	port map (
 			rst  => video_phyrst,
-			eclk => video_eclk,
 			sclk => video_shift_clk,
-        	d    => dvid_crgb,
-        	q    => q);
+			eclk => video_eclk,
+			d    => dvid_crgb,
+			q    => q);
 
 		lvds_g : for i in gpdi_d'range generate
 			olvds_i : olvds

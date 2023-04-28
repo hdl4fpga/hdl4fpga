@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 entity ecp5_ogbx is
 	generic (
+		lfbt_frst : boolean := true;
 		interlace : boolean := false;
 		mem_mode  : boolean := true;
 		size      : natural := 1;
@@ -49,7 +50,19 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 architecture beh of ecp5_ogbx is
+	signal ti : std_logic_vector(d'range);
+	signal di : std_logic_vector(d'range);
 begin
+
+	ti <= 
+		reverse(reverse(t), size) when not lfbt_frst and not interlace else
+		reverse(         t, gear) when not lfbt_frst and     interlace else
+		t;
+
+	di <= 
+		reverse(reverse(d), size) when not lfbt_frst and not interlace else
+		reverse(         d, gear) when not lfbt_frst and     interlace else
+		d;
 
 	reg_g : for i in q'range generate
 	begin
@@ -57,13 +70,13 @@ begin
 			ffdt_i : fd1s3ax
 			port map (
 				ck => sclk,
-				d  => t(i),
+				d  => ti(i),
 				q  => tq(i));
 
 			ffd_i : fd1s3ax
 			port map (
 				ck => sclk,
-				d  => d(i),
+				d  => di(i),
 				q  => q(i));
 		end generate;
 
@@ -73,11 +86,11 @@ begin
     		port map (
     			rst  => rst,
     			sclk => sclk,
-    			d0   => d(setif(interlace, gear*i+0, 0*size+i)),
-    			d1   => d(setif(interlace, gear*i+1, 1*size+i)),
+    			d0   => di(setif(interlace, gear*i+0, 0*size+i)),
+    			d1   => di(setif(interlace, gear*i+1, 1*size+i)),
     			q    => q(i));
 
-			tq(i) <= t(i);
+			tq(i) <= ti(i);
 		end generate;
 
 		memgear4_g : if gear=4 and mem_mode generate
@@ -87,8 +100,8 @@ begin
     			sclk => sclk,
     			eclk => eclk,
     			dqsw270 => dqsw,
-    			t0   => t(setif(interlace, gear*i+0, 0*size+i)),
-    			t1   => t(setif(interlace, gear*i+2, 2*size+i)),
+    			t0   => ti(setif(interlace, gear*i+0, 0*size+i)),
+    			t1   => ti(setif(interlace, gear*i+2, 2*size+i)),
     			q    => tq(i));
 
     		oddrx2dqa_i : oddrx2dqa
@@ -97,10 +110,10 @@ begin
     			sclk => sclk,
     			eclk => eclk,
     			dqsw270 => dqsw,
-    			d0   => d(setif(interlace, gear*i+0, 0*size+i)),
-    			d1   => d(setif(interlace, gear*i+1, 1*size+i)),
-    			d2   => d(setif(interlace, gear*i+2, 2*size+i)),
-    			d3   => d(setif(interlace, gear*i+3, 3*size+i)),
+    			d0   => di(setif(interlace, gear*i+0, 0*size+i)),
+    			d1   => di(setif(interlace, gear*i+1, 1*size+i)),
+    			d2   => di(setif(interlace, gear*i+2, 2*size+i)),
+    			d3   => di(setif(interlace, gear*i+3, 3*size+i)),
     			q    => q(i));
 		end generate;
 
@@ -108,7 +121,7 @@ begin
 			ffdt_i : fd1s3ax
 			port map (
 				ck => sclk,
-				d  => t(i),
+				d  => ti(i),
 				q  => tq(i));
 
 			oddr_i : oddrx2f
@@ -116,10 +129,10 @@ begin
 				rst  => rst,
 				sclk => sclk,
 				eclk => eclk,
-				d0   => d(gear*i+0),
-				d1   => d(gear*i+1),
-				d2   => d(gear*i+2),
-				d3   => d(gear*i+3),
+				d0   => di(gear*i+0),
+				d1   => di(gear*i+1),
+				d2   => di(gear*i+2),
+				d3   => di(gear*i+3),
 				q    => q(i));
 		end generate;
 
@@ -127,7 +140,7 @@ begin
 			ffdt_i : fd1s3ax
 			port map (
 				ck => sclk,
-				d  => t(i),
+				d  => ti(i),
 				q  => tq(i));
 
 			oddr_i : oddr71b
@@ -135,13 +148,13 @@ begin
 				rst  => rst,
 				eclk => eclk,
 				sclk => sclk,
-				d0   => d(gear*i+0),
-				d1   => d(gear*i+1),
-				d2   => d(gear*i+2),
-				d3   => d(gear*i+3),
-				d4   => d(gear*i+4),
-				d5   => d(gear*i+5),
-				d6   => d(gear*i+6),
+				d0   => di(gear*i+0),
+				d1   => di(gear*i+1),
+				d2   => di(gear*i+2),
+				d3   => di(gear*i+3),
+				d4   => di(gear*i+4),
+				d5   => di(gear*i+5),
+				d6   => di(gear*i+6),
 				q    => q(i));
 		end generate;
 

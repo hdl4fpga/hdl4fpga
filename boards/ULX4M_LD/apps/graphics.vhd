@@ -373,6 +373,7 @@ begin
 			CLKINTFB  => open);
 
 		gbx21_g : if video_gear=2 generate
+			video_phyrst    <= '0';
 			video_eclk      <= clkos;
 			video_shift_clk <= clkos;
 		end generate;
@@ -771,8 +772,6 @@ begin
 
 		video_clk    => video_clk,
 		video_shift_clk => video_shift_clk,
-		-- video_clk    => '0',
-		-- video_shift_clk => '0',
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
@@ -781,7 +780,7 @@ begin
 		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
 		ctlr_cwl     => sdram_params.cwl,
-		ctlr_wrl     => sdram_params.wrl, --"010",
+		ctlr_wrl     => sdram_params.wrl,
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
 		ctlr_inirdy  => tp(1),
@@ -869,26 +868,7 @@ begin
 			end if;
 		end process;
 		
-		process (clk_25mhz)
-		begin
-			if rising_edge(clk_25mhz) then
-				-- led(1) <= tp_dv;
-			end if;
-		end process;
-		
 	end block;
-
-	process (sclk)
-		variable q0 : std_logic;
-		variable q1 : std_logic;
-	begin
-		if rising_edge(sclk) then
-			cam_scl  <= q0;
-			gpio_scl <= q1;
-			q0 := not q0;
-			q1 := not q1;
-		end if;
-	end process;
 
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
@@ -982,7 +962,8 @@ begin
 	hdmi0_g : entity hdl4fpga.ecp5_ogbx
    	generic map (
 		mem_mode  => false,
-		interlace => false,
+		lfbt_frst => false,
+		interlace => true,
 		size      => gpdi_d'length,
 		gear      => video_gear)
    	port map (
@@ -992,7 +973,19 @@ begin
 		d         => dvid_crgb,
 		q         => gpdi_d);
 
- 
+	-- SDRAM-clk-divided-by-4 monitor
+	process (sclk)
+		variable q0 : std_logic;
+		variable q1 : std_logic;
+	begin
+		if rising_edge(sclk) then
+			cam_scl  <= q0;
+			gpio_scl <= q1;
+			q0       := not q0;
+			q1       := not q1;
+		end if;
+	end process;
+
 	tp(2) <= not (ctlrphy_wlreq xor ctlrphy_wlrdy);
 	tp(3) <= not (ctlrphy_rlreq xor ctlrphy_rlrdy);
 	tp(4) <= ctlrphy_ini;

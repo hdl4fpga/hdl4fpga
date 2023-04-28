@@ -376,6 +376,7 @@ begin
 			CLKINTFB  => open);
 
 		gbx21_g : if video_gear=2 generate
+			video_phyrst    <= '0';
 			video_eclk      <= clkos;
 			video_shift_clk <= clkos;
 		end generate;
@@ -871,7 +872,8 @@ begin
 	video_g : entity hdl4fpga.ecp5_ogbx
    	generic map (
 		mem_mode  => false,
-		interlace => false,
+		lfbt_frst => false,
+		interlace => true,
 		size      => gpdi_d'length,
 		gear      => video_gear)
    	port map (
@@ -881,7 +883,7 @@ begin
 		d         => dvid_crgb,
 		q         => gpdi_d);
 
-	-- SDRAM-clk-divided-by-4 monitor
+	-- SDRAM-clk-divided-by-2 monitor
 	tp_p: process (ctlr_clk)
 		variable q0 : std_logic;
 		variable q1 : std_logic;
@@ -889,8 +891,8 @@ begin
 		if rising_edge(ctlr_clk) then
 			cam_scl  <= q0;
 			gpio_scl <= q1;
-			q0 := not q0;
-			q1 := not q1;
+			q0       := not q0;
+			q1       := not q1;
 		end if;
 	end process;
 
