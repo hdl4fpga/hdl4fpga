@@ -347,7 +347,7 @@ begin
 		gbx4_g : if video_gear=4 generate
 			video_clk       <= clkout0;
 			video_shift_clk <= clkout2;
-			buf_i : bufio
+			buf_i : bufg
 			port map (
 				i => clkout1,
 				o => video_clkx2);
@@ -701,6 +701,7 @@ begin
 
 		ena_burstref => false,
 		timing_id    => videoparam(video_mode).timing,
+		video_gear   => video_gear,
 		red_length   => 8,
 		green_length => 8,
 		blue_length  => 8,

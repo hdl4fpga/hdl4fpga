@@ -40,6 +40,7 @@ entity dvi_subpxl is
 end;
 
 library hdl4fpga;
+use hdl4fpga.base.all;
 
 architecture def of dvi_subpxl is
 	constant c00  : std_logic_vector := "1101010100";
@@ -53,13 +54,7 @@ architecture def of dvi_subpxl is
 	signal chnpxl : std_logic_vector(3*chn0'length-1 downto 0);
 begin
 	pixel <= red & green & blue;
-	with std_logic_vector'(vsync, hsync) select
-	c_chn0 <= 
-		c00 when "00",
-		c01 when "01",
-		c10 when "10",
-		c11 when others;
-	c <= c00 & c00 & c_chn0;
+	c <= c00 & c00 & std_logic_vector'(multiplex(c00 & c01 & c10 & c11, vsync & hsync));
 	chn0to2_g : for i in 0 to 3-1 generate
 		tmds_encoder_e : entity hdl4fpga.tmds_encoder
 		port map (
