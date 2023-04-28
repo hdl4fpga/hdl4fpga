@@ -28,17 +28,18 @@ use ieee.numeric_std.all;
 entity ecp5_ogbx is
 	generic (
 		interlace : boolean := false;
+		mem_mode  : boolean := true;
 		size      : natural := 1;
 		gear      : natural);
 	port (
-		rst  : in  std_logic := '0';
-		sclk : in  std_logic;
-		eclk : in std_logic := '0';
-		dqsw : in std_logic := '0';
-		t    : in  std_logic_vector(0 to gear*size-1) := (others => '0');
-		tq   : out std_logic_vector(0 to size-1);
-		d    : in  std_logic_vector(0 to gear*size-1);
-		q    : out std_logic_vector(0 to size-1));
+		rst       : in  std_logic := '0';
+		sclk      : in  std_logic;
+		eclk      : in std_logic := '0';
+		dqsw      : in std_logic := '0';
+		t         : in  std_logic_vector(0 to gear*size-1) := (others => '0');
+		tq        : out std_logic_vector(0 to size-1);
+		d         : in  std_logic_vector(0 to gear*size-1);
+		q         : out std_logic_vector(0 to size-1));
 end;
 
 library ecp5u;
@@ -79,7 +80,7 @@ begin
 			tq(i) <= t(i);
 		end generate;
 
-		gear4_g : if gear=4 generate
+		memgear4_g : if gear=4 and mem_mode generate
     		tshx2dqa_i : tshx2dqa
     		port map (
     			rst  => rst,
@@ -101,6 +102,47 @@ begin
     			d2   => d(setif(interlace, gear*i+2, 2*size+i)),
     			d3   => d(setif(interlace, gear*i+3, 3*size+i)),
     			q    => q(i));
+		end generate;
+
+		sergear4_g : if gear=4 and not mem_mode generate
+			ffdt_i : fd1s3ax
+			port map (
+				ck => sclk,
+				d  => t(i),
+				q  => tq(i));
+
+			oddr_i : oddrx2f
+			port map(
+				rst  => rst,
+				sclk => sclk,
+				eclk => eclk,
+				d0   => d(gear*i+0),
+				d1   => d(gear*i+1),
+				d2   => d(gear*i+2),
+				d3   => d(gear*i+3),
+				q    => q(i));
+		end generate;
+
+		sergear7_g : if gear=7 generate
+			ffdt_i : fd1s3ax
+			port map (
+				ck => sclk,
+				d  => t(i),
+				q  => tq(i));
+
+			oddr_i : oddr71b
+			port map(
+				rst  => rst,
+				eclk => eclk,
+				sclk => sclk,
+				d0   => d(gear*i+0),
+				d1   => d(gear*i+1),
+				d2   => d(gear*i+2),
+				d3   => d(gear*i+3),
+				d4   => d(gear*i+4),
+				d5   => d(gear*i+5),
+				d6   => d(gear*i+6),
+				q    => q(i));
 		end generate;
 
 	end generate;

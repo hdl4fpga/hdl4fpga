@@ -83,14 +83,15 @@ architecture graphics of arty is
 		id     : video_modes;
 		pll    : pll2_params;
 		timing : videotiming_ids;
+		gear   : natural;
 	end record;
 
 	type videoparams_vector is array (natural range <>) of video_params;
-	constant v_r : natural := 5; -- video ratio
+	constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,      timing => pclk_debug,               pll => (clkfbout_mult =>  4, clkout0_divide =>  2*v_r, clkout1_divide =>  2)),
-		(id => mode900p24bpp,  timing => pclk108_00m1600x900at60,  pll => (clkfbout_mult =>  1, clkout0_divide => 11*v_r, clkout1_divide => 11)),
-		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, pll => (clkfbout_mult => 15, clkout0_divide =>  2*v_r, clkout1_divide =>  2)));
+		(id => modedebug,      timing => pclk_debug,               pll => (clkfbout_mult =>  4, clkout0_divide =>  2*video_ratio, clkout1_divide =>  2), gear => 2),
+		(id => mode900p24bpp,  timing => pclk108_00m1600x900at60,  pll => (clkfbout_mult =>  1, clkout0_divide => 11*video_ratio, clkout1_divide => 11), gear => 4),
+		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, pll => (clkfbout_mult => 15, clkout0_divide =>  2*video_ratio, clkout1_divide =>  2), gear => 4));
 
 	function videoparam (
 		constant id  : video_modes)
@@ -112,6 +113,7 @@ architecture graphics of arty is
 
 	-- constant video_mode   : video_modes :=setdebug(debug, profile_tab(app_profile).video_mode);
 	constant video_mode   : video_modes := mode1080p24bpp;
+	constant video_record : video_params := videoparam(video_mode);
 
 	type pll_params is record
 		clkfbout_mult_f : real;
@@ -249,9 +251,11 @@ architecture graphics of arty is
 
 	signal video_clk      : std_logic := '0';
 	signal video_lckd     : std_logic := '0';
+	signal video_clkx2    : std_logic;
 	signal video_shift_clk : std_logic;
 	signal video_pixel    : std_logic_vector(0 to 32-1);
-	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
+	constant video_gear   : natural := video_record.gear;
+	signal dvid_crgb      : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk    : std_logic;
 
 	signal dd_hs          : std_logic;
@@ -311,23 +315,43 @@ begin
 
 
 	videopll_b : block
-		signal clkfb  : std_logic;
+		signal clkfb   : std_logic;
+		signal clkout0 : std_logic;
+		signal clkout1 : std_logic;
+		signal clkout2 : std_logic;
 	begin
 		pll_i :  plle2_base
 		generic map (
 			clkin1_period  => gclk100_per*1.0e9,
 			clkfbout_mult  => videoparam(video_mode).pll.clkfbout_mult,
 			clkout0_divide => videoparam(video_mode).pll.clkout0_divide,
-			clkout1_divide => videoparam(video_mode).pll.clkout1_divide)
+			clkout1_divide => videoparam(video_mode).pll.clkout1_divide,
+			clkout2_divide => videoparam(video_mode).pll.clkout1_divide*2)
 		port map (
 			pwrdwn   => '0',
 			rst      => sys_rst,
 			clkin1   => gclk100,
 			clkfbin  => clkfb,
 			clkfbout => clkfb,
-			clkout0  => video_clk,
-			clkout1  => video_shift_clk,
+			clkout0  => clkout0,
+			clkout1  => clkout1,
+			clkout2  => clkout2,
 			locked   => video_lckd);
+
+		gbx2_g : if video_gear=2 generate
+			video_clk       <= clkout0;
+			video_clkx2     <= clkout1;
+			video_shift_clk <= clkout1;
+		end generate;
+
+		gbx4_g : if video_gear=4 generate
+			video_clk       <= clkout0;
+			video_shift_clk <= clkout2;
+			buf_i : bufio
+			port map (
+				i => clkout1,
+				o => video_clkx2);
+		end generate;
 
 	end block;
 
@@ -873,7 +897,6 @@ begin
 
 	end process;
 
-
 	-- VGA --
 	---------
 
@@ -884,12 +907,13 @@ begin
 	begin
 		oddr_i : entity hdl4fpga.ogbx
 		generic map (
-			SIZE => 4,
-			GEAR => 2)
+			size => 4,
+			gear => video_gear)
 		port map (
-			clk => video_shift_clk,
-			d   => dvid_crgb,
-			q   => q);
+			clk   => video_shift_clk,
+			clkx2 => video_clkx2,
+			d     => dvid_crgb,
+			q     => q);
 
 		hdmi_g : for i in q'range generate
 			obufds_i : obufds

@@ -125,16 +125,17 @@ architecture graphics of ulx4m_ld is
 		pll    : pll_params;
 		timing : videotiming_ids;
 		pixel  : pixel_types;
+		gear   : natural;
 	end record;
 
 	type videoparams_vector is array (natural range <>) of video_params;
-	constant v_r : natural := 5; -- video ratio
-	constant video_tab : videoparams_vector := (
-		(id => modedebug,        pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, timing => pclk_debug),
-		(id => mode480p24bpp,    pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, timing => pclk25_00m640x480at60),
-		(id => mode600p24bpp,    pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb888, timing => pclk40_00m800x600at60),
-		(id => mode900p24bpp,    pll => (clkos_div => 2, clkop_div => 22,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 14), pixel => rgb888, timing => pclk108_00m1600x900at60), -- 30 Hz
-		(id => mode1080p24bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb888, timing => pclk150_00m1920x1080at60)); -- 30 Hz
+	constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
+	constant video_tab   : videoparams_vector := (
+		(id => modedebug,        pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), gear => 2, pixel => rgb888, timing => pclk_debug),
+		(id => mode480p24bpp,    pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), gear => 2, pixel => rgb888, timing => pclk25_00m640x480at60),
+		(id => mode600p24bpp,    pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 10), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60),
+		(id => mode900p24bpp,    pll => (clkos_div => 2, clkop_div => 22,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 14), gear => 4, pixel => rgb888, timing => pclk108_00m1600x900at60), -- 30 Hz
+		(id => mode1080p24bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb888, timing => pclk150_00m1920x1080at60)); -- 30 Hz
 
 	function videoparam (
 		constant id  : video_modes)
@@ -258,7 +259,7 @@ architecture graphics of ulx4m_ld is
 	signal video_shift_clk : std_logic;
 	signal video_eclk    : std_logic;
 	signal video_phyrst  : std_logic;
-	constant video_gear  : natural := 7;
+	constant video_gear  : natural := video_record.gear;
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 
 	constant mem_size    : natural := 8*(1024*8);
@@ -978,61 +979,19 @@ begin
 			q    => rgmii_tx_clk);
 	end generate;
 	
-	hdmi0_blue_i : oddrx1f
-	port map(
-		sclk => video_shift_clk,
-		d0   => dvid_crgb(2*0),
-		d1   => dvid_crgb(2*0+1),
-		q    => hdmi0_blue);
- 
-	hdmi0_green_i : oddrx1f
-	port map(
-		sclk => video_shift_clk,
-		d0   => dvid_crgb(2*1),
-		d1   => dvid_crgb(2*1+1),
-		q    => hdmi0_green);
- 
-	hdmi0_red_i : oddrx1f
-	port map(
-		sclk => video_shift_clk,
-		d0   => dvid_crgb(2*2),
-		d1   => dvid_crgb(2*2+1),
-		q    => hdmi0_red);
- 
-	hdmi0_clock_i : oddrx1f
-	port map(
-		sclk => video_shift_clk,
-		d0   => dvid_crgb(2*3),
-		d1   => dvid_crgb(2*3+1),
-		q    => hdmi0_clock);
- 
-	-- hdmi1_blue_i : oddrx1f
-	-- port map(
-		-- sclk => video_shift_clk,
-		-- d0   => dvid_crgb(2*0),
-		-- d1   => dvid_crgb(2*0+1),
-		-- q    => hdmi1_blue);
---  
-	-- hdmi1_green_i : oddrx1f
-	-- port map(
-		-- sclk => video_shift_clk,
-		-- d0   => dvid_crgb(2*1),
-		-- d1   => dvid_crgb(2*1+1),
-		-- q    => hdmi1_green);
---  
-	-- hdmi1_red_i : oddrx1f
-	-- port map(
-		-- sclk => video_shift_clk,
-		-- d0   => dvid_crgb(2*2),
-		-- d1   => dvid_crgb(2*2+1),
-		-- q    => hdmi1_red);
---  
-	-- hdmi1_clock_i : oddrx1f
-	-- port map(
-		-- sclk => video_shift_clk,
-		-- d0   => dvid_crgb(2*3),
-		-- d1   => dvid_crgb(2*3+1),
-		-- q    => hdmi1_clock);
+	hdmi0_g : entity hdl4fpga.ecp5_ogbx
+   	generic map (
+		mem_mode  => false,
+		interlace => false,
+		size      => gpdi_d'length,
+		gear      => video_gear)
+   	port map (
+		rst       => video_phyrst,
+		eclk      => video_eclk,
+		sclk      => video_shift_clk,
+		d         => dvid_crgb,
+		q         => gpdi_d);
+
  
 	tp(2) <= not (ctlrphy_wlreq xor ctlrphy_wlrdy);
 	tp(3) <= not (ctlrphy_rlreq xor ctlrphy_rlrdy);

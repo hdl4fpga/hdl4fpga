@@ -864,55 +864,31 @@ begin
 	-- VGA --
 	---------
 
-	sdr_g : for i in gpdi_d'range generate
-		signal q : std_logic;
+	videophy_b : block
+		signal q : std_logic_vector(gpdi_d'range);
 	begin
 
-		gbx21_g : if video_gear=2 generate
-			oddr_i : oddrx1f
-			port map(
-				sclk => video_eclk,
-				rst  => '0',
-				d0   => dvid_crgb(video_gear*i),
-				d1   => dvid_crgb(video_gear*i+1),
-				q    => q);
-		end generate;
+        gbx_g : entity hdl4fpga.ecp5_ogbx
+       	generic map (
+        	mem_mode  => false,
+        	interlace => false,
+			size      => gpdi_d'length,
+        	gear      => video_gear)
+       	port map (
+			rst  => video_phyrst,
+			eclk => video_eclk,
+			sclk => video_shift_clk,
+        	d    => dvid_crgb,
+        	q    => q);
 
-		gbx41_g : if video_gear=4 generate 
-			oddr_i : oddrx2f
+		lvds_g : for i in gpdi_d'range generate
+			olvds_i : olvds
 			port map(
-				rst  => video_phyrst,
-				eclk => video_eclk,
-				sclk => video_shift_clk,
-				d0   => dvid_crgb(video_gear*i+0),
-				d1   => dvid_crgb(video_gear*i+1),
-				d2   => dvid_crgb(video_gear*i+2),
-				d3   => dvid_crgb(video_gear*i+3),
-				q    => q);
+				a  => q(i),
+				z  => gpdi_d(i),
+				zn => gpdi_dn(i));
 		end generate;
-
-		gbx71_g : if video_gear=7 generate 
-			oddr_i : oddr71b
-			port map(
-				rst  => video_phyrst,
-				eclk => video_eclk,
-				sclk => video_shift_clk,
-				d0   => dvid_crgb(video_gear*i+0),
-				d1   => dvid_crgb(video_gear*i+1),
-				d2   => dvid_crgb(video_gear*i+2),
-				d3   => dvid_crgb(video_gear*i+3),
-				d4   => dvid_crgb(video_gear*i+4),
-				d5   => dvid_crgb(video_gear*i+5),
-				d6   => dvid_crgb(video_gear*i+6),
-				q    => q);
-		end generate;
-
-		olvds_i : olvds
-		port map(
-			a  => q,
-			z  => gpdi_d(i),
-			zn => gpdi_dn(i));
-	end generate;
+	end block;
 
 	-- SDRAM-clk-divided-by-2 monitor
 	tp_p : process (ctlr_clk)
