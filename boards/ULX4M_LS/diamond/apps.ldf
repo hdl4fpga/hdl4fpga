@@ -26,12 +26,6 @@
         <Source name="../../../library/basic/arbiter.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/latticesemi/dbuf.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/latticesemi/ecp3/dbram.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/basic/cntrcs.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -69,9 +63,6 @@
             <Options/>
         </Source>
         <Source name="../../../library/video/video.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/video/vga2dvid.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/video/cgafonts.vhd" type="VHDL" type_short="VHDL">
@@ -116,7 +107,7 @@
         <Source name="../../../library/sio/sio_dmahdsk.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-		<Source name="../../../library/apps/app_graphics.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/apps/app_graphics.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/hdlc/hdlcdll_rx.vhd" type="VHDL" type_short="VHDL">
@@ -281,9 +272,6 @@
         <Source name="../../../library/apps/app_profiles.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/latticesemi/ff.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/mii/mii_buffer.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -312,6 +300,15 @@
             <Options/>
         </Source>
         <Source name="../../../library/xilinx/adjpha.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/video/dvi.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/serlzr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/gddr_sync.v" type="Verilog" type_short="Verilog">
             <Options/>
         </Source>
         <Source name="ulx4m_ls.lpf" type="Logic Preference" type_short="LPF">

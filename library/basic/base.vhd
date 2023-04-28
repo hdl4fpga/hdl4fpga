@@ -229,6 +229,12 @@ package base is
 
 	function setif (
 		constant arg  : boolean;
+		constant argt : real;
+		constant argf : real)
+		return real;
+
+	function setif (
+		constant arg  : boolean;
 		constant argt : string;
 		constant argf : string)
 		return string;
@@ -1189,6 +1195,18 @@ package body base is
 		constant argt : integer := 1;
 		constant argf : integer := 0)
 		return integer is
+	begin
+		if arg then
+			return argt;
+		end if;
+		return argf;
+	end function;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : real;
+		constant argf : real)
+		return real is
 	begin
 		if arg then
 			return argt;

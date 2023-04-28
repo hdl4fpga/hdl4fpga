@@ -92,7 +92,7 @@ entity ulx4m_ld is
 		shutdown        : out std_logic := '0'); -- '1' power off the board, 10uA sleep
 
 
-	constant sys_freq : real    := 25.0e6;
+	constant clk25mhz_freq : real := 25.0e6;
 
 	alias hdmi0_blue  : std_logic is gpdi_d(0);
 	alias hdmi0_green : std_logic is gpdi_d(1);

@@ -47,14 +47,14 @@ architecture def of serlzr  is
 		constant dst_size : natural)
 		return natural_vector is
 
-		constant debug_mask : boolean := true;
-		constant debug_shft : boolean := true;
+		constant debug_mask : boolean := false;
+		constant debug_shft : boolean := false;
 		constant debug_max  : boolean := false;
 
 		function barrel_stage (
 			constant mask   : natural;
 			constant shft   : natural;
-			constant mode   : bit) 
+			constant mode   : bit := '0') 
 			return natural is
 			variable vmask  : natural;
 			variable vshft  : natural;
@@ -111,7 +111,7 @@ architecture def of serlzr  is
 			severity note;
 
 			mask0 := barrel_stage(mask0,shft, '0');
-			mask1 := barrel_stage(mask1,shft, '1');
+			-- mask1 := barrel_stage(mask1,shft, '1');
 			assert not debug_mask
 			report "UPDATED MASK0 : " & natural'image(mask0)
 			severity note;
@@ -122,7 +122,7 @@ architecture def of serlzr  is
 			while shft >= dst_size loop
 				shft := shft - dst_size;
 				mask0 := barrel_stage(mask0,shft, '0');
-				mask1 := barrel_stage(mask1,shft, '1');
+				-- mask1 := barrel_stage(mask1,shft, '1');
 
 				assert not debug_shft
 				report "SHIFT ALUE : " & natural'image(shft)
@@ -141,7 +141,7 @@ architecture def of serlzr  is
 	end;
 
 	constant debug_mm : boolean := true;
-	constant mm : natural_vector := max_and_mask(src_data'length,dst_data'length);
+	constant mm : natural_vector := max_and_mask(src_data'length, dst_data'length);
 
 	signal shf  : std_logic_vector(unsigned_num_bits(src_data'length-1)-1 downto 0);
 	signal rgtr : std_logic_vector(mm(0)-1 downto 0);

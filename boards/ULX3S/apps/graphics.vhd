@@ -161,18 +161,18 @@ architecture graphics of ulx3s is
 	end record;
 
 	type videoparams_vector is array (natural range <>) of video_params;
-	constant v_r : natural := 10/video_gear; -- video ratio
+	constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,        pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb888, timing => pclk_debug),
-		(id => mode480p16bpp,    pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb565, timing => pclk25_00m640x480at60),
-		(id => mode480p24bpp,    pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*5, clkos3_div => 16), pixel => rgb888, timing => pclk25_00m640x480at60),
-		(id => mode600p16bpp,    pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb565, timing => pclk40_00m800x600at60),
-		(id => mode600p24bpp,    pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 10), pixel => rgb888, timing => pclk40_00m800x600at60),
-		(id => mode768p24bpp,    pll => (clkos_div => 2, clkop_div => 26,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 16), pixel => rgb888, timing => pclk40_00m800x600at60),
-		(id => mode720p16bpp,    pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb565, timing => pclk75_00m1280x720at60),
-		(id => mode720p24bpp,    pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb888, timing => pclk75_00m1280x720at60),
-		(id => mode1080p16bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb565, timing => pclk150_00m1920x1080at60),
-		(id => mode1080p24bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => v_r*2, clkos3_div => 19), pixel => rgb888, timing => pclk150_00m1920x1080at60));
+		(id => modedebug,        pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), pixel => rgb888, timing => pclk_debug),
+		(id => mode480p16bpp,    pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), pixel => rgb565, timing => pclk25_00m640x480at60),
+		(id => mode480p24bpp,    pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), pixel => rgb888, timing => pclk25_00m640x480at60),
+		(id => mode600p16bpp,    pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 10), pixel => rgb565, timing => pclk40_00m800x600at60),
+		(id => mode600p24bpp,    pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 10), pixel => rgb888, timing => pclk40_00m800x600at60),
+		(id => mode768p24bpp,    pll => (clkos_div => 2, clkop_div => 26,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 16), pixel => rgb888, timing => pclk40_00m800x600at60),
+		(id => mode720p16bpp,    pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), pixel => rgb565, timing => pclk75_00m1280x720at60),
+		(id => mode720p24bpp,    pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), pixel => rgb888, timing => pclk75_00m1280x720at60),
+		(id => mode1080p16bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), pixel => rgb565, timing => pclk150_00m1920x1080at60),
+		(id => mode1080p24bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), pixel => rgb888, timing => pclk150_00m1920x1080at60));
 
 	impure function videoparam (
 		constant id  : video_modes)
@@ -192,7 +192,7 @@ architecture graphics of ulx3s is
 		return tab(tab'left);
 	end;
 
-	constant video_mode   : video_modes := setdebug(not debug, profile_tab(app_profile).video_mode);
+	constant video_mode   : video_modes := setdebug(debug, profile_tab(app_profile).video_mode);
 	constant video_record : video_params := videoparam(video_mode);
 
 	type sdramparams_record is record
@@ -268,10 +268,11 @@ architecture graphics of ulx3s is
 	signal video_clk     : std_logic;
 	signal video_lck     : std_logic;
 	signal video_shift_clk : std_logic;
-	signal video_pixel : std_logic_vector(0 to setif(
+	signal video_eclk    : std_logic;
+	signal video_pixel   : std_logic_vector(0 to setif(
 		video_record.pixel=rgb565, 16, setif(
 		video_record.pixel=rgb888, 32, 0))-1);
-	constant video_gear  : natural := 4;
+	constant video_gear  : natural := 2;
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk   : std_logic;
 	signal video_phyrst  : std_logic;
@@ -368,7 +369,7 @@ begin
 			ENCLKOS3  => '0',
 			CLKOP     => clkop,
 			CLKOS     => clkos,
-			clkos2    => clkos2,
+			clkos2    => video_clk,
 			CLKOS3    => videoio_clk,
 			LOCK      => video_lck,
 			INTLOCK   => open,
@@ -376,8 +377,8 @@ begin
 			CLKINTFB  => open);
 
 		gbx21_g : if video_gear=2 generate
+			video_eclk      <= clkos;
 			video_shift_clk <= clkos;
-			video_clk       <= clkos2;
 		end generate;
 
 		gbx71_g : if video_gear=4 or video_gear=7 generate
@@ -421,10 +422,10 @@ begin
 				alignwd => '0',
 				clki    => eclko,
 				cdivx   => cdivx);
-			video_shift_clk <= eclko;
-			video_clk       <= transport cdivx after natural((3.0/4.0)/(video_shift_freq*1.0e12))*1 ps;
+			video_eclk      <= eclko;
+			video_shift_clk <= transport cdivx after natural((3.0/4.0)/(video_shift_freq*1.0e12))*1 ps;
 		end generate;
-		
+
 	end block;
 
 	sdrpll_b : block
@@ -863,7 +864,6 @@ begin
 	-- VGA --
 	---------
 
-
 	sdr_g : for i in gpdi_d'range generate
 		signal q : std_logic;
 	begin
@@ -871,7 +871,7 @@ begin
 		gbx21_g : if video_gear=2 generate
 			oddr_i : oddrx1f
 			port map(
-				sclk => video_shift_clk,
+				sclk => video_eclk,
 				rst  => '0',
 				d0   => dvid_crgb(video_gear*i),
 				d1   => dvid_crgb(video_gear*i+1),
@@ -882,7 +882,7 @@ begin
 			oddr_i : oddrx2f
 			port map(
 				rst  => video_phyrst,
-				eclk => video_clk,
+				eclk => video_eclk,
 				sclk => video_shift_clk,
 				d0   => dvid_crgb(video_gear*i+0),
 				d1   => dvid_crgb(video_gear*i+1),
@@ -895,7 +895,7 @@ begin
 			oddr_i : oddr71b
 			port map(
 				rst  => video_phyrst,
-				eclk => video_clk,
+				eclk => video_eclk,
 				sclk => video_shift_clk,
 				d0   => dvid_crgb(video_gear*i+0),
 				d1   => dvid_crgb(video_gear*i+1),

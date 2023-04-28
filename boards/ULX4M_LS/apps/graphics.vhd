@@ -268,11 +268,14 @@ architecture graphics of ulx4m_ls is
 	signal video_clk     : std_logic;
 	signal video_lck     : std_logic;
 	signal video_shift_clk : std_logic;
-    signal video_pixel : std_logic_vector(0 to setif(
+	signal video_eclk    : std_logic;
+    signal video_pixel   : std_logic_vector(0 to setif(
 		video_record.pixel=rgb565, 16, setif(
 		video_record.pixel=rgb888, 32, 0))-1);
-	signal dvid_crgb     : std_logic_vector(8-1 downto 0);
+	constant video_gear  : natural := 7;
+	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk   : std_logic;
+	signal video_phyrst  : std_logic;
 
 	constant mem_size    : natural := 8*(1024*8);
 	signal so_frm        : std_logic;
@@ -303,23 +306,25 @@ begin
 
 		constant video_freq  : real :=
 			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos2_div*1e6));
+			(real(video_record.pll.clki_div*video_record.pll.clkos2_div));
 
-		constant video_shift_freq  : real :=
+		constant video_clkos_freq  : real :=
 			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos_div*1e6));
+			(real(video_record.pll.clki_div*video_record.pll.clkos_div));
 
 		constant videoio_freq  : real :=
 			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos3_div*1e6));
+			(real(video_record.pll.clki_div*video_record.pll.clkos3_div));
 
-		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(video_shift_freq,    10);
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(video_freq,          10);
-		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is ftoa(videoio_freq,        10);
-		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
-		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(video_clkos_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(video_freq/1.0e6,       10);
+		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is ftoa(videoio_freq/1.0e6,     10);
+		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(clk25mhz_freq/1.0e6,    10);
+		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(clk25mhz_freq/1.0e6,    10);
 
-		signal clkfb : std_logic;
+		signal clkop  : std_logic;
+		signal clkos  : std_logic;
+		signal clkos2 : std_logic;
 
 	begin
 
@@ -351,7 +356,7 @@ begin
         port map (
 			rst       => setif(debug, '1'),
 			clki      => clk_25mhz,
-			CLKFB     => clkfb,
+			CLKFB     => clkop,
             PHASESEL0 => '0', PHASESEL1 => '0',
 			PHASEDIR  => '0',
             PHASESTEP => '0', PHASELOADREG => '0',
@@ -360,14 +365,70 @@ begin
 			ENCLKOS   => '0',
 			ENCLKOS2  => '0',
             ENCLKOS3  => '0',
-			CLKOP     => clkfb,
-			CLKOS     => video_shift_clk,
+			CLKOP     => clkop,
+			CLKOS     => clkos,
 			CLKOS2    => video_clk,
 			CLKOS3    => videoio_clk,
 			LOCK      => video_lck,
             INTLOCK   => open,
 			REFCLK    => open,
 			CLKINTFB  => open);
+
+		gbx21_g : if video_gear=2 generate
+			video_eclk      <= clkos;
+			video_shift_clk <= clkos;
+		end generate;
+
+		gbx71_g : if video_gear=4 or video_gear=7 generate
+    		component gddr_sync
+    		port (
+    			rst       : in  std_logic;
+    			sync_clk  : in  std_logic;
+    			start     : in  std_logic;
+    			stop      : out std_logic;
+    			ddr_reset : out std_logic;
+    			ready     : out std_logic);
+    		end component;
+
+    		signal gddr_rst : std_logic;
+    		signal stop     : std_logic;
+    		signal eclko    : std_logic;
+    		signal cdivx    : std_logic;
+
+			attribute FREQUENCY_PIN_ECLKO : string;
+			attribute FREQUENCY_PIN_ECLKO of eclksyncb_i : label is ftoa(video_clkos_freq/1.0e6, 10);
+
+			attribute FREQUENCY_PIN_CDIVX : string;
+			attribute FREQUENCY_PIN_CDIVX of clkdivf_i   : label is ftoa((video_clkos_freq/setif(video_gear=4,2.0,3.5))/1.0e6, 10);
+
+		begin
+			gddr_rst <= not video_lck;
+			gddr_sync_i : gddr_sync 
+			port map (
+			  rst       => gddr_rst,
+			  sync_clk  => clk_25mhz,
+			  start     => gddr_rst,
+			  stop      => stop,
+			  ddr_reset => video_phyrst,
+			  ready     => open);
+
+			eclksyncb_i : eclksyncb
+			port map (
+				stop  => stop,
+				eclki => clkos,
+				eclko => eclko);
+		
+			clkdivf_i : clkdivf
+			generic map (
+				div => setif(video_gear=7, "3.5", "2.0"))
+			port map (
+				rst     => video_phyrst,
+				alignwd => '0',
+				clki    => eclko,
+				cdivx   => cdivx);
+			video_eclk      <= eclko;
+			video_shift_clk <= transport cdivx after natural((3.0/4.0)/(video_clkos_freq*1.0e12))*1 ps;
+		end generate;
 
 	end block;
 
@@ -718,6 +779,7 @@ begin
 		byte_size    => byte_size,
 
 		timing_id    => video_record.timing,
+		video_gear   => video_gear,
 		red_length   => setif(video_record.pixel=rgb565, 5, setif(video_record.pixel=rgb888, 8, 0)),
 		green_length => setif(video_record.pixel=rgb565, 6, setif(video_record.pixel=rgb888, 8, 0)),
 		blue_length  => setif(video_record.pixel=rgb565, 5, setif(video_record.pixel=rgb888, 8, 0)),
@@ -805,34 +867,48 @@ begin
 	-- VGA --
 	---------
 
-	hdmi0_blue_i : oddrx1f
-	port map(
-		sclk => video_shift_clk,
-		d0   => dvid_crgb(2*0),
-		d1   => dvid_crgb(2*0+1),
-		q    => hdmi0_blue);
- 
-	hdmi0_green_i : oddrx1f
-	port map(
-		sclk => video_shift_clk,
-		d0   => dvid_crgb(2*1),
-		d1   => dvid_crgb(2*1+1),
-		q    => hdmi0_green);
- 
-	hdmi0_red_i : oddrx1f
-	port map(
-		sclk => video_shift_clk,
-		d0   => dvid_crgb(2*2),
-		d1   => dvid_crgb(2*2+1),
-		q    => hdmi0_red);
- 
-	hdmi0_clock_i : oddrx1f
-	port map(
-		sclk => video_shift_clk,
-		d0   => dvid_crgb(2*3),
-		d1   => dvid_crgb(2*3+1),
-		q    => hdmi0_clock);
- 
+	sdr_g : for i in gpdi_d'range generate
+		gbx21_g : if video_gear=2 generate
+			oddr_i : oddrx1f
+			port map(
+				sclk => video_eclk,
+				rst  => '0',
+				d0   => dvid_crgb(video_gear*i),
+				d1   => dvid_crgb(video_gear*i+1),
+				q    => gpdi_d(i));
+		end generate;
+
+		gbx41_g : if video_gear=4 generate 
+			oddr_i : oddrx2f
+			port map(
+				rst  => video_phyrst,
+				eclk => video_eclk,
+				sclk => video_shift_clk,
+				d0   => dvid_crgb(video_gear*i+0),
+				d1   => dvid_crgb(video_gear*i+1),
+				d2   => dvid_crgb(video_gear*i+2),
+				d3   => dvid_crgb(video_gear*i+3),
+				q    => gpdi_d(i));
+		end generate;
+
+		gbx71_g : if video_gear=7 generate 
+			oddr_i : oddr71b
+			port map(
+				rst  => video_phyrst,
+				eclk => video_eclk,
+				sclk => video_shift_clk,
+				d0   => dvid_crgb(video_gear*i+0),
+				d1   => dvid_crgb(video_gear*i+1),
+				d2   => dvid_crgb(video_gear*i+2),
+				d3   => dvid_crgb(video_gear*i+3),
+				d4   => dvid_crgb(video_gear*i+4),
+				d5   => dvid_crgb(video_gear*i+5),
+				d6   => dvid_crgb(video_gear*i+6),
+				q    => gpdi_d(i));
+		end generate;
+
+	end generate;
+
 	-- SDRAM-clk-divided-by-4 monitor
 	tp_p: process (ctlr_clk)
 		variable q0 : std_logic;

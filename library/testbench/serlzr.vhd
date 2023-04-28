@@ -6,7 +6,7 @@ library hdl4fpga;
 
 architecture serlzr of testbench is
 	constant n : natural := 10;
-	constant m : natural := 5;
+	constant m : natural := 2;
 	signal dst_frm   : std_logic := '0';
 	signal clk       : std_logic := '1';
 	signal clk_shift : std_logic := '1';

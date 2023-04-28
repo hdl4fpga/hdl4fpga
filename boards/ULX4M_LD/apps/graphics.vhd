@@ -205,7 +205,7 @@ architecture graphics of ulx4m_ld is
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := 
 		real(sdram_params.pll.clki_div)/
-		(real(sdram_params.pll.clkos_div*sdram_params.pll.clkfb_div)*sys_freq);
+		(real(sdram_params.pll.clkos_div*sdram_params.pll.clkfb_div)*clk25mhz_freq);
 
 	constant bank_size   : natural := ddram_ba'length;
 	constant addr_size   : natural := ddram_a'length;
@@ -256,7 +256,10 @@ architecture graphics of ulx4m_ld is
 	signal videoio_clk   : std_logic;
 	signal video_lck     : std_logic;
 	signal video_shift_clk : std_logic;
-	signal dvid_crgb     : std_logic_vector(8-1 downto 0);
+	signal video_eclk    : std_logic;
+	signal video_phyrst  : std_logic;
+	constant video_gear  : natural := 7;
+	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 
 	constant mem_size    : natural := 8*(1024*8);
 	signal so_frm        : std_logic;
@@ -300,24 +303,26 @@ begin
 		attribute FREQUENCY_PIN_CLKOP  : string;
 
 		constant video_freq  : real :=
-			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos2_div*1e6));
+			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
+			(real(video_record.pll.clki_div*video_record.pll.clkos2_div));
 
-		constant video_shift_freq  : real := 
-			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos_div*1e6));
+		constant video_clkos_freq  : real :=
+			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
+			(real(video_record.pll.clki_div*video_record.pll.clkos_div));
 
-		constant videoio_freq  : real := 
-			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos3_div*1e6));
+		constant videoio_freq  : real :=
+			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
+			(real(video_record.pll.clki_div*video_record.pll.clkos3_div));
 
-		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(video_shift_freq, 10);
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(video_freq,       10);
-		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is ftoa(videoio_freq,     10);
-		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(sys_freq/1.0e6,   10);
-		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(sys_freq/1.0e6,   10);
+		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(video_clkos_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(video_freq/1.0e6,       10);
+		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is ftoa(videoio_freq/1.0e6,     10);
+		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(clk25mhz_freq/1.0e6,    10);
+		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(clk25mhz_freq/1.0e6,    10);
 
-		signal clkfb : std_logic;
+		signal clkop  : std_logic;
+		signal clkos  : std_logic;
+		signal clkos2 : std_logic;
 
 	begin
 		pll_i : EHXPLLL
@@ -348,7 +353,7 @@ begin
 		port map (
 			rst       => '0',
 			clki      => clk_25mhz,
-			CLKFB     => clkfb,
+			CLKFB     => clkop,
 			PHASESEL0 => '0', PHASESEL1 => '0',
 			PHASEDIR  => '0',
 			PHASESTEP => '0', PHASELOADREG => '0',
@@ -357,8 +362,8 @@ begin
 			ENCLKOS   => '0',
 			ENCLKOS2  => '0',
 			ENCLKOS3  => '0',
-			CLKOP     => clkfb,
-			CLKOS     => video_shift_clk,
+			CLKOP     => clkop,
+			CLKOS     => clkos,
 			CLKOS2    => video_clk,
 			CLKOS3    => videoio_clk,
 			LOCK      => video_lck,
@@ -366,9 +371,65 @@ begin
 			REFCLK    => open,
 			CLKINTFB  => open);
 
+		gbx21_g : if video_gear=2 generate
+			video_eclk      <= clkos;
+			video_shift_clk <= clkos;
+		end generate;
+
+		gbx71_g : if video_gear=4 or video_gear=7 generate
+    		component gddr_sync
+    		port (
+    			rst       : in  std_logic;
+    			sync_clk  : in  std_logic;
+    			start     : in  std_logic;
+    			stop      : out std_logic;
+    			ddr_reset : out std_logic;
+    			ready     : out std_logic);
+    		end component;
+
+    		signal gddr_rst : std_logic;
+    		signal stop     : std_logic;
+    		signal eclko    : std_logic;
+    		signal cdivx    : std_logic;
+
+			attribute FREQUENCY_PIN_ECLKO : string;
+			attribute FREQUENCY_PIN_ECLKO of eclksyncb_i : label is ftoa(video_clkos_freq/1.0e6, 10);
+
+			attribute FREQUENCY_PIN_CDIVX : string;
+			attribute FREQUENCY_PIN_CDIVX of clkdivf_i   : label is ftoa((video_clkos_freq/setif(video_gear=4,2.0,3.5))/1.0e6, 10);
+
+		begin
+			gddr_rst <= not video_lck;
+			gddr_sync_i : gddr_sync 
+			port map (
+			  rst       => gddr_rst,
+			  sync_clk  => clk_25mhz,
+			  start     => gddr_rst,
+			  stop      => stop,
+			  ddr_reset => video_phyrst,
+			  ready     => open);
+
+			eclksyncb_i : eclksyncb
+			port map (
+				stop  => stop,
+				eclki => clkos,
+				eclko => eclko);
+		
+			clkdivf_i : clkdivf
+			generic map (
+				div => setif(video_gear=7, "3.5", "2.0"))
+			port map (
+				rst     => video_phyrst,
+				alignwd => '0',
+				clki    => eclko,
+				cdivx   => cdivx);
+			video_eclk      <= eclko;
+			video_shift_clk <= transport cdivx after natural((3.0/4.0)/(video_clkos_freq*1.0e12))*1 ps;
+		end generate;
+
 	end block;
 
-	ctlrpll_b : block
+	sdrrpll_b : block
 
 		attribute FREQUENCY_PIN_CLKOS  : string;
 		attribute FREQUENCY_PIN_CLKOS2 : string;
@@ -380,7 +441,7 @@ begin
 		constant hack      : real := profile_tab(app_profile).hack;
 
 		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(ddram_mhz/hack, 10);
-		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(sys_freq/hack/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(clk25mhz_freq/hack/1.0e6, 10);
 
 		signal clkfb       : std_logic;
 		signal clkop       : std_logic;
@@ -550,7 +611,7 @@ begin
 	hdlc_g : if io_link=io_hdlc generate
 
 		constant uart_xtal : real := 
-			real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*sys_freq/
+			real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq/
 			real(video_record.pll.clki_div*video_record.pll.clkos3_div);
 
 		constant baudrate : natural := setif(
