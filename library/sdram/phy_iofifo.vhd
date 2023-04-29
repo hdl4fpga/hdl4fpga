@@ -23,7 +23,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+use ieee.numeric_bit.all;
 
 entity phy_iofifo is
 	port (
@@ -33,7 +33,8 @@ entity phy_iofifo is
 		in_data  : in  std_logic_vector;
 
 		out_clk  : in  std_logic;
-		out_rst  : in  std_logic;
+		out_rst  : in  std_logic := '0';
+		out_trdy : in  std_logic := '1';
 		out_data : out std_logic_vector);
 end;
 
@@ -53,7 +54,7 @@ begin
 			if in_rst='1' then
 				cntr := (others => '0');
 			else
-				mem(to_integer(unsigned(cntr))) <= in_data;
+				mem(to_integer(cntr)) <= in_data;
 				cntr := cntr + 1;
 			end if;
 		end if;
@@ -65,11 +66,11 @@ begin
 		if rising_edge(out_clk) then
 			if out_rst='1' then
 				cntr := (others => '0');
-			else
+			elsif out_trdy='1' then
 				cntr := cntr + 1;
 			end if;
 		end if;
-		out_data <= mem(to_integer(unsigned(cntr)));
+		out_data <= mem(to_integer(cntr));
 	end process;
 
 end;

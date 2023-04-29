@@ -64,8 +64,7 @@ begin
 		reverse(         d, gear) when not lfbt_frst and     interlace else
 		d;
 
-	reg_g : for i in q'range generate
-	begin
+	dr_g : for i in q'range generate
 		gear1_g : if gear = 1 generate
 			ffdt_i : fd1s3ax
 			port map (
@@ -81,7 +80,6 @@ begin
 		end generate;
 
 		gear2_g : if gear=2 generate
-		begin
     		oddr_i : oddrx1f
     		port map (
     			rst  => rst,
@@ -136,7 +134,7 @@ begin
 				q    => q(i));
 		end generate;
 
-		sergear7_g : if gear=7 generate
+		gear7_g : if gear=7 generate
 			ffdt_i : fd1s3ax
 			port map (
 				ck => sclk,

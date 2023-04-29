@@ -92,8 +92,8 @@ architecture graphics of ulx3s is
 	--     Set your profile here        --
 	-- constant app_profile : app_profiles := hdlc_sdr250MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr200MHz_1080p24bpp30;
-	-- constant app_profile : app_profiles := hdlc_sdr166MHz_1080p24bpp30;
-	constant app_profile : app_profiles := hdlc_sdr166MHz_720p24bpp;
+	constant app_profile : app_profiles := hdlc_sdr166MHz_1080p24bpp30;
+	-- constant app_profile : app_profiles := hdlc_sdr166MHz_720p24bpp;
 	-- constant app_profile : app_profiles := hdlc_sdr133MHz_600p24bpp;
 	--------------------------------------
 
@@ -377,7 +377,7 @@ begin
 			CLKINTFB  => open);
 
 		gbx21_g : if video_gear=2 generate
-			video_phyrst    <= '0';
+			video_phyrst    <= not video_lck;
 			video_eclk      <= clkos;
 			video_shift_clk <= clkos;
 		end generate;
@@ -864,26 +864,18 @@ begin
 
 	-- VGA --
 	---------
-	-- sdr_g : for i in gpdi_d'range generate
-		-- signal q : std_logic;
-	-- begin
-		-- oddr_i : oddrx1f
-		-- port map(
-			-- sclk => video_shift_clk,
-			-- rst  => '0',
-			-- d0   => dvid_crgb(2*i),
-			-- d1   => dvid_crgb(2*i+1),
-			-- q    => q);
-		-- olvds_i : olvds
-		-- port map(
-			-- a  => q,
-			-- z  => gpdi_d(i),
-			-- zn => gpdi_dn(i));
-	-- end generate;
 
 	hdmi_b : block
+		signal crgb : std_logic_vector(dvid_crgb'range);
 		signal q : std_logic_vector(gpdi_d'range);
 	begin
+
+		process (video_shift_clk)
+		begin
+			if rising_edge(video_shift_clk) then
+				crgb <= dvid_crgb;
+			end if;
+		end process;
 
 		gbx_g : entity hdl4fpga.ecp5_ogbx
 	   	generic map (
@@ -893,11 +885,11 @@ begin
 			size      => gpdi_d'length,
 			gear      => video_gear)
 	   	port map (
-			rst  => video_phyrst,
-			sclk => video_shift_clk,
-			eclk => video_eclk,
-			d    => dvid_crgb,
-			q    => q);
+			rst       => video_phyrst,
+			sclk      => video_shift_clk,
+			eclk      => video_eclk,
+			d         => crgb,
+			q         => q);
 
 		lvds_g : for i in gpdi_d'range generate
 			olvds_i : olvds

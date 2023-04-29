@@ -50,9 +50,21 @@ architecture def of dvi_subpxl is
 
 	signal c_chn0 : std_logic_vector(chn0'range);
 	signal c      : std_logic_vector(3*chn0'length-1 downto 0);
-	signal pixel  : std_logic_vector(3*blue'length-1 downto 0);
+	signal pixel  : std_logic_vector(3*blue'length-1 downto 0) := (others => '0');
 	signal chnpxl : std_logic_vector(3*chn0'length-1 downto 0);
 begin
+	-- process (clk)
+		-- variable xx : unsigned(0 to 8-1);
+	-- begin
+		-- if rising_edge(clk) then
+			-- if blank='1' then
+				-- xx := (others => '0');
+			-- else
+				-- xx := xx + 1;
+			-- end if;
+			-- pixel <= reverse(std_logic_vector(xx & not xx & xx), 8);
+		-- end if;
+	-- end process;
 	pixel <= red & green & blue;
 	c <= c00 & c00 & std_logic_vector'(multiplex(c00 & c01 & c10 & c11, vsync & hsync));
 	chn0to2_g : for i in 0 to 3-1 generate
@@ -132,6 +144,8 @@ begin
 
 	chn0to2_g : for i in 0 to 3-1 generate
 		serlzr_e : entity hdl4fpga.serlzr
+		generic map (
+			fifo_mode => false)
 		port map (
 			src_clk  => clk,
 			src_frm  => '1',

@@ -30,14 +30,15 @@ use hdl4fpga.base.all;
 
 entity serlzr is
 	generic (
-		lsdfirst : boolean := true);
+		fifo_mode : boolean := false;
+		lsdfirst  : boolean := true);
 	port (
-		src_clk  : in  std_logic;
-		src_frm  : in  std_logic := '1';
-		src_data : in  std_logic_vector;
-		dst_frm  : in  std_logic := '1';
-		dst_clk  : in  std_logic;
-		dst_data : out std_logic_vector);
+		src_clk   : in  std_logic;
+		src_frm   : in  std_logic := '1';
+		src_data  : in  std_logic_vector;
+		dst_frm   : in  std_logic := '1';
+		dst_clk   : in  std_logic;
+		dst_data  : out std_logic_vector);
 end;
 
 architecture def of serlzr  is
@@ -147,11 +148,27 @@ architecture def of serlzr  is
 	signal rgtr : std_logic_vector(mm(0)-1 downto 0);
 	signal shfd : std_logic_vector(rgtr'range);
 
+	signal fifo_data : std_logic_vector(src_data'range);
+	signal fifo_trdy : std_logic;
 begin 
 
 	assert not debug_mm
 	report "(MAX => " & natural'image(mm(0)) & ", MASK0 => " & to_string((to_unsigned(mm(1), shf'length))) & ", MASK1 => " & to_string((to_unsigned(mm(2), shf'length))) & ")"
 	severity note;
+
+	fifoon_g : if fifo_mode generate
+    	fifo_e : entity hdl4fpga.phy_iofifo
+    	port map (
+    		in_clk   => src_clk,
+    		in_data  => src_data,
+    		out_clk  => dst_clk,
+    		out_trdy => fifo_trdy,
+    		out_data => fifo_data);
+	end generate;
+
+	fifooff_g : if not fifo_mode generate
+		fifo_data <= src_data;
+	end generate;
 
 	process (dst_clk)
 		variable shr : unsigned(rgtr'range);
@@ -160,11 +177,14 @@ begin
 		if rising_edge(dst_clk) then
 			if dst_frm='0' then
 				acc := (others => '0');
+				fifo_trdy <= '1';
 			elsif acc >= dst_data'length then 
 				acc := acc - dst_data'length;
+				fifo_trdy <= '0';
 			else
+				fifo_trdy <= '1';
 				shr := shift_left(shr, src_data'length);
-				shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(src_data), src_data));
+				shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(fifo_data), fifo_data));
 				acc := acc + abs(src_data'length - dst_data'length);
 			end if;
 			shf  <= std_logic_vector(acc and to_unsigned(mm(1), acc'length));
