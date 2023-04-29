@@ -92,11 +92,11 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant app_profile : app_profiles := hdlc_sdr225MHz_1440p24bpp25;
+	-- constant app_profile : app_profiles := hdlc_sdr225MHz_1440p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr250MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr200MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr166MHz_1080p24bpp30;
-	-- constant app_profile : app_profiles := hdlc_sdr166MHz_720p24bpp;
+	constant app_profile : app_profiles := hdlc_sdr166MHz_720p24bpp;
 	-- constant app_profile : app_profiles := hdlc_sdr133MHz_600p24bpp;
 	--------------------------------------
 
@@ -178,7 +178,7 @@ architecture graphics of ulx3s is
 		(id => mode720p24bpp,    pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), pixel => rgb888, timing => pclk75_00m1280x720at60),
 		(id => mode1080p16bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), pixel => rgb565, timing => pclk150_00m1920x1080at60),
 		(id => mode1080p24bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), pixel => rgb888, timing => pclk150_00m1920x1080at60),
-		(id => mode1440p24bpp25, pll => (clkos_div => 1, clkop_div => 19,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 12), pixel => rgb888, timing => pclk115_00m2560x1440at60));
+		(id => mode1440p24bpp25, pll => (clkos_div => 1, clkop_div => 19,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 12), pixel => rgb888, timing => pclk115_00m2560x1440at60),
 		(id => mode1440p24bpp30, pll => (clkos_div => 1, clkop_div => 23,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 14), pixel => rgb888, timing => pclk115_00m2560x1440at60));
 
 	impure function videoparam (
