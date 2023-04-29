@@ -347,7 +347,7 @@ begin
 			uart_freq >= 32.0e6, 3000000, setif(
 			uart_freq >= 25.0e6, 2000000,
 								 115200));
-		signal uart_clk : std_logic;
+		alias uart_clk is sio_clk;
 	begin
 
 		ftdi_txden <= '1';
