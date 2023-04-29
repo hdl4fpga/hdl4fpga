@@ -88,6 +88,7 @@ use ieee.numeric_std.all;
 
 entity dvi is
 	generic (
+		fifo_mode : boolean := true;
 		ser_size : natural := 10);
 	port (
 		clk   : in  std_logic;
@@ -135,6 +136,8 @@ begin
 		chn2  => cred);
 
 	chnc_e : entity hdl4fpga.serlzr
+	generic map (
+		fifo_mode => fifo_mode)
 	port map (
 		src_clk  => clk,
 		src_frm  => '1',
