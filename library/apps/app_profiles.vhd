@@ -36,7 +36,9 @@ package app_profiles is
 		mode1080r24bpp,
 		mode1080p16bpp30,
 		mode1080p24bpp30,
-		mode1080p24bpp);
+		mode1080p24bpp,
+		mode1440p24bpp25,
+		mode1440p24bpp30);
 
 	type pixel_types is (
 		rgb565,

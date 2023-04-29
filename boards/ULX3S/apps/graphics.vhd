@@ -75,6 +75,8 @@ architecture graphics of ulx3s is
 		hdlc_sdr225MHz_720p24bpp,        --
 		hdlc_sdr225MHz_1080p16bpp30,     --
 		hdlc_sdr225MHz_1080p24bpp30,     --
+		hdlc_sdr225MHz_1440p24bpp25,     --
+		hdlc_sdr225MHz_1440p24bpp30,     --
 
 		hdlc_sdr250MHz_480p16bpp,        --
 		hdlc_sdr250MHz_600p16bpp,        --
@@ -90,10 +92,11 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
+	constant app_profile : app_profiles := hdlc_sdr225MHz_1440p24bpp25;
 	-- constant app_profile : app_profiles := hdlc_sdr250MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr200MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr166MHz_1080p24bpp30;
-	constant app_profile : app_profiles := hdlc_sdr166MHz_720p24bpp;
+	-- constant app_profile : app_profiles := hdlc_sdr166MHz_720p24bpp;
 	-- constant app_profile : app_profiles := hdlc_sdr133MHz_600p24bpp;
 	--------------------------------------
 
@@ -132,6 +135,8 @@ architecture graphics of ulx3s is
 		hdlc_sdr225MHz_720p24bpp    => (io_hdlc, sdram225MHz, mode720p24bpp),
 		hdlc_sdr225MHz_1080p16bpp30 => (io_hdlc, sdram225MHz, mode1080p16bpp30),
 		hdlc_sdr225MHz_1080p24bpp30 => (io_hdlc, sdram225MHz, mode1080p24bpp30),
+		hdlc_sdr225MHz_1440p24bpp25 => (io_hdlc, sdram225MHz, mode1440p24bpp25),
+		hdlc_sdr225MHz_1440p24bpp30 => (io_hdlc, sdram225MHz, mode1440p24bpp30),
 
 		hdlc_sdr250MHz_480p16bpp    => (io_hdlc, sdram250MHz, mode480p16bpp),
 		hdlc_sdr250MHz_600p16bpp    => (io_hdlc, sdram250MHz, mode600p16bpp),
@@ -172,7 +177,9 @@ architecture graphics of ulx3s is
 		(id => mode720p16bpp,    pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), pixel => rgb565, timing => pclk75_00m1280x720at60),
 		(id => mode720p24bpp,    pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), pixel => rgb888, timing => pclk75_00m1280x720at60),
 		(id => mode1080p16bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), pixel => rgb565, timing => pclk150_00m1920x1080at60),
-		(id => mode1080p24bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), pixel => rgb888, timing => pclk150_00m1920x1080at60));
+		(id => mode1080p24bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), pixel => rgb888, timing => pclk150_00m1920x1080at60),
+		(id => mode1440p24bpp25, pll => (clkos_div => 1, clkop_div => 19,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 12), pixel => rgb888, timing => pclk115_00m2560x1440at60));
+		(id => mode1440p24bpp30, pll => (clkos_div => 1, clkop_div => 23,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 14), pixel => rgb888, timing => pclk115_00m2560x1440at60));
 
 	impure function videoparam (
 		constant id  : video_modes)
@@ -307,9 +314,11 @@ begin
 			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
 			(real(video_record.pll.clki_div*video_record.pll.clkos2_div*1e6));
 
-		constant video_shift_freq  : real :=
+		constant video_shift_freq  : real := setif(
 			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos_div*1e6));
+			(real(video_record.pll.clki_div*video_record.pll.clkos_div*1e6)) > 400.0, 400.0,
+			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
+			(real(video_record.pll.clki_div*video_record.pll.clkos_div*1e6)));
 
 		constant videoio_freq  : real :=
 			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
