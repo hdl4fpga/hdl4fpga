@@ -15,6 +15,7 @@ ECP5U__components = $(LIB_ECP5U)/components/_primary.dat
 IEEE__std_logic_arith = $(LIB_IEEE)/std_logic_arith/_primary.dat
 IEEE__math_real = $(LIB_IEEE)/math_real/_primary.dat
 IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
+IEEE__numeric_bit = $(LIB_IEEE)/numeric_bit/_primary.dat
 IEEE__std_logic_1164 = $(LIB_IEEE)/std_logic_1164/_primary.dat
 STD__textio = $(LIB_STD)/textio/_primary.dat
 IEEE__numeric_std = $(LIB_IEEE)/numeric_std/_primary.dat
@@ -236,12 +237,16 @@ HDL4FPGA__eth_tb__def = $(LIB_HDL4FPGA)/eth_tb/def.dat
 HDL4FPGA__eth_tb = $(LIB_HDL4FPGA)/eth_tb/_primary.dat
 HDL4FPGA__eth_rx__def = $(LIB_HDL4FPGA)/eth_rx/def.dat
 HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
+HDL4FPGA__ecp5_videopll__def = $(LIB_HDL4FPGA)/ecp5_videopll/def.dat
+HDL4FPGA__ecp5_videopll = $(LIB_HDL4FPGA)/ecp5_videopll/_primary.dat
 HDL4FPGA__ecp5_sdrphy__ecp5 = $(LIB_HDL4FPGA)/ecp5_sdrphy/ecp5.dat
 HDL4FPGA__ecp5_sdrphy = $(LIB_HDL4FPGA)/ecp5_sdrphy/_primary.dat
 HDL4FPGA__ecp5_sdrdqphy__ecp5 = $(LIB_HDL4FPGA)/ecp5_sdrdqphy/ecp5.dat
 HDL4FPGA__ecp5_sdrdqphy = $(LIB_HDL4FPGA)/ecp5_sdrdqphy/_primary.dat
 HDL4FPGA__ecp5_sdrbaphy__ecp5 = $(LIB_HDL4FPGA)/ecp5_sdrbaphy/ecp5.dat
 HDL4FPGA__ecp5_sdrbaphy = $(LIB_HDL4FPGA)/ecp5_sdrbaphy/_primary.dat
+HDL4FPGA__ecp5_profiles__body = $(LIB_HDL4FPGA)/ecp5_profiles/body.dat
+HDL4FPGA__ecp5_profiles = $(LIB_HDL4FPGA)/ecp5_profiles/_primary.dat
 HDL4FPGA__ecp5_ogbx__beh = $(LIB_HDL4FPGA)/ecp5_ogbx/beh.dat
 HDL4FPGA__ecp5_ogbx = $(LIB_HDL4FPGA)/ecp5_ogbx/_primary.dat
 HDL4FPGA__ecp5_igbx__beh = $(LIB_HDL4FPGA)/ecp5_igbx/beh.dat
@@ -555,12 +560,16 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__eth_tb) \
     $(HDL4FPGA__eth_rx__def) \
     $(HDL4FPGA__eth_rx) \
+    $(HDL4FPGA__ecp5_videopll__def) \
+    $(HDL4FPGA__ecp5_videopll) \
     $(HDL4FPGA__ecp5_sdrphy__ecp5) \
     $(HDL4FPGA__ecp5_sdrphy) \
     $(HDL4FPGA__ecp5_sdrdqphy__ecp5) \
     $(HDL4FPGA__ecp5_sdrdqphy) \
     $(HDL4FPGA__ecp5_sdrbaphy__ecp5) \
     $(HDL4FPGA__ecp5_sdrbaphy) \
+    $(HDL4FPGA__ecp5_profiles__body) \
+    $(HDL4FPGA__ecp5_profiles) \
     $(HDL4FPGA__ecp5_ogbx__beh) \
     $(HDL4FPGA__ecp5_ogbx) \
     $(HDL4FPGA__ecp5_igbx__beh) \
@@ -1016,11 +1025,11 @@ $(HDL4FPGA__dvi__def) \
 $(HDL4FPGA__dvi_subpxl) \
 $(HDL4FPGA__dvi_subpxl__def) : ../video/dvi.vhd \
 		$(HDL4FPGA__serlzr) \
-		$(HDL4FPGA__base) \
 		$(HDL4FPGA__tmds_encoder) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
-		$(IEEE__std_logic_1164)
+		$(IEEE__std_logic_1164) \
+		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../video/dvi.vhd
 
 $(HDL4FPGA__ecp3_sdrbaphy) \
@@ -1072,6 +1081,16 @@ $(HDL4FPGA__ecp5_ogbx__beh) : ../latticesemi/ecp5/ecp5_ogbx.vhd \
 		$(ECP5U__components)
 	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/ecp5_ogbx.vhd
 
+$(HDL4FPGA__ecp5_profiles) \
+$(HDL4FPGA__ecp5_profiles__body) : ../apps/ecp5_profiles.vhd \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__app_profiles) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../apps/ecp5_profiles.vhd
+
 $(HDL4FPGA__ecp5_sdrbaphy) \
 $(HDL4FPGA__ecp5_sdrbaphy__ecp5) : ../latticesemi/ecp5/ecp5_sdrbaphy.vhd \
 		$(IEEE__numeric_std) \
@@ -1085,6 +1104,7 @@ $(HDL4FPGA__ecp5_sdrbaphy__ecp5) : ../latticesemi/ecp5/ecp5_sdrbaphy.vhd \
 $(HDL4FPGA__ecp5_sdrdqphy) \
 $(HDL4FPGA__ecp5_sdrdqphy__ecp5) : ../latticesemi/ecp5/ecp5_sdrdqphy.vhd \
 		$(HDL4FPGA__ecp5_ogbx) \
+		$(IEEE__numeric_bit) \
 		$(HDL4FPGA__phy_iofifo) \
 		$(HDL4FPGA__ecp5_igbx) \
 		$(IEEE__std_logic_textio) \
@@ -1111,6 +1131,20 @@ $(HDL4FPGA__ecp5_sdrphy__ecp5) : ../latticesemi/ecp5/ecp5_sdrphy.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/ecp5_sdrphy.vhd
+
+$(HDL4FPGA__ecp5_videopll) \
+$(HDL4FPGA__ecp5_videopll__def) : ../apps/ecp5_videopll.vhd \
+		$(IEEE__std_logic_arith) \
+		$(ECP5U__components) \
+		$(HDL4FPGA__ecp5_profiles) \
+		$(HDL4FPGA__app_profiles) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../apps/ecp5_videopll.vhd
 
 $(HDL4FPGA__eth_rx) \
 $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
@@ -1415,7 +1449,7 @@ $(HDL4FPGA__phdata__inference) : ../xilinx/phdata.vhd \
 
 $(HDL4FPGA__phy_iofifo) \
 $(HDL4FPGA__phy_iofifo__mix) : ../sdram/phy_iofifo.vhd \
-		$(IEEE__numeric_std) \
+		$(IEEE__numeric_bit) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../sdram/phy_iofifo.vhd
@@ -1913,6 +1947,8 @@ $(HDL4FPGA__serdes__def) : ../basic/serdes.vhd \
 $(HDL4FPGA__serlzr) \
 $(HDL4FPGA__serlzr__def) : ../basic/serlzr.vhd \
 		$(HDL4FPGA__barrel) \
+		$(IEEE__numeric_bit) \
+		$(HDL4FPGA__phy_iofifo) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -2263,6 +2299,7 @@ $(HDL4FPGA__xc_sdrdqphy__xilinx) : ../xilinx/xc_sdrdqphy.vhd \
 		$(HDL4FPGA__phdata) \
 		$(HDL4FPGA__ogbx) \
 		$(HDL4FPGA__latency) \
+		$(IEEE__numeric_bit) \
 		$(HDL4FPGA__phy_iofifo) \
 		$(HDL4FPGA__xc_idelay) \
 		$(HDL4FPGA__adjsto) \
