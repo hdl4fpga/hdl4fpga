@@ -50,6 +50,7 @@ entity app_graphics is
 		burst_length : natural := 0;
 
 		timing_id    : videotiming_ids;
+		dvid_fifo    : boolean := false;
 		video_gear   : natural := 2;
 		red_length   : natural := 8;
 		green_length : natural := 8;
@@ -808,7 +809,8 @@ begin
 
 			dvi_e : entity hdl4fpga.dvi
 			generic map (
-				ser_size => video_gear)
+				fifo_mode => dvid_fifo,
+				ser_size  => video_gear)
 			port map (
 				clk   => video_clk,
 				red   => red,

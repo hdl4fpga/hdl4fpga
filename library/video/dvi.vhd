@@ -53,16 +53,16 @@ architecture def of dvi_subpxl is
 	signal pixel  : std_logic_vector(3*blue'length-1 downto 0) := (others => '0');
 	signal chnpxl : std_logic_vector(3*chn0'length-1 downto 0);
 begin
-	-- process (clk)
-		-- variable xx : unsigned(0 to 8-1);
+	-- test_patter_p : process (clk)
+		-- variable cntr : unsigned(0 to 8-1);
 	-- begin
 		-- if rising_edge(clk) then
 			-- if blank='1' then
-				-- xx := (others => '0');
+				-- cntr := (others => '0');
 			-- else
-				-- xx := xx + 1;
+				-- cntr := cntr + 1;
 			-- end if;
-			-- pixel <= reverse(std_logic_vector(xx & not xx & xx), 8);
+			-- pixel <= std_logic_vector(cntr & not cntr & cntr);
 		-- end if;
 	-- end process;
 	pixel <= red & green & blue;
@@ -88,7 +88,7 @@ use ieee.numeric_std.all;
 
 entity dvi is
 	generic (
-		fifo_mode : boolean := true;
+		fifo_mode : boolean := false;
 		ser_size : natural := 10);
 	port (
 		clk   : in  std_logic;

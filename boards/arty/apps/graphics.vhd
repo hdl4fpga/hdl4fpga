@@ -700,6 +700,7 @@ begin
 		phy_latencies => xc7vg4_latencies,
 
 		ena_burstref => false,
+		dvid_fifo    => true,
 		timing_id    => videoparam(video_mode).timing,
 		video_gear   => video_gear,
 		red_length   => 8,
