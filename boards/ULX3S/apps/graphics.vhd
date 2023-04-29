@@ -111,7 +111,6 @@ architecture graphics of ulx3s is
 	signal si_data       : std_logic_vector(0 to 8-1);
 
 	signal sio_clk       : std_logic;
-	alias uart_clk       : std_logic is sio_clk;
 
 	constant io_link     : io_comms := profile_tab(app_profile).comms;
 	constant hdplx       : std_logic := setif(debug, '0', '1');
@@ -349,7 +348,7 @@ begin
 			uart_freq >= 32.0e6, 3000000, setif(
 			uart_freq >= 25.0e6, 2000000,
 								 115200));
-		signal uart_clk : std_logic;
+		alias uart_clk is sio_clk;
 	begin
 
 		ftdi_txden <= '1';
