@@ -221,6 +221,8 @@ HDL4FPGA__hdlcdll_tx__def = $(LIB_HDL4FPGA)/hdlcdll_tx/def.dat
 HDL4FPGA__hdlcdll_tx = $(LIB_HDL4FPGA)/hdlcdll_tx/_primary.dat
 HDL4FPGA__hdlcdll_rx__def = $(LIB_HDL4FPGA)/hdlcdll_rx/def.dat
 HDL4FPGA__hdlcdll_rx = $(LIB_HDL4FPGA)/hdlcdll_rx/_primary.dat
+HDL4FPGA__hdlc_link__def = $(LIB_HDL4FPGA)/hdlc_link/def.dat
+HDL4FPGA__hdlc_link = $(LIB_HDL4FPGA)/hdlc_link/_primary.dat
 HDL4FPGA__graphics__def = $(LIB_HDL4FPGA)/graphics/def.dat
 HDL4FPGA__graphics = $(LIB_HDL4FPGA)/graphics/_primary.dat
 HDL4FPGA__g4_phdata270__inference = $(LIB_HDL4FPGA)/g4_phdata270/inference.dat
@@ -544,6 +546,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__hdlcdll_tx) \
     $(HDL4FPGA__hdlcdll_rx__def) \
     $(HDL4FPGA__hdlcdll_rx) \
+    $(HDL4FPGA__hdlc_link__def) \
+    $(HDL4FPGA__hdlc_link) \
     $(HDL4FPGA__graphics__def) \
     $(HDL4FPGA__graphics) \
     $(HDL4FPGA__g4_phdata270__inference) \
@@ -1208,6 +1212,23 @@ $(HDL4FPGA__graphics__def) : ../video/graphics.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../video/graphics.vhd
+
+$(HDL4FPGA__hdlc_link) \
+$(HDL4FPGA__hdlc_link__def) : ../apps/link_hdlc.vhd \
+		$(HDL4FPGA__sio_dayhdlc) \
+		$(HDL4FPGA__uart_tx) \
+		$(HDL4FPGA__uart_rx) \
+		$(IEEE__std_logic_arith) \
+		$(ECP5U__components) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__ecp5_profiles) \
+		$(HDL4FPGA__app_profiles) \
+		$(HDL4FPGA__base) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../apps/link_hdlc.vhd
 
 $(HDL4FPGA__hdlcdll_rx) \
 $(HDL4FPGA__hdlcdll_rx__def) : ../hdlc/hdlcdll_rx.vhd \
