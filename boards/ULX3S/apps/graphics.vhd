@@ -46,8 +46,8 @@ architecture graphics of ulx3s is
 	-- constant app_profile : app_profiles := hdlc_sdr250MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr200MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr166MHz_1080p24bpp30;
-	constant app_profile : app_profiles := hdlc_sdr166MHz_720p24bpp;
-	-- constant app_profile : app_profiles := hdlc_sdr133MHz_600p24bpp;
+	-- constant app_profile : app_profiles := hdlc_sdr166MHz_720p24bpp;
+	constant app_profile : app_profiles := hdlc_sdr133MHz_600p24bpp;
 	--------------------------------------
 
 	constant video_mode   : video_modes := setdebug(debug, profile_tab(app_profile).video_mode);
@@ -118,8 +118,8 @@ begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
-		gear        => 2,
-		clkref_freq => clk25mhz_freq,
+		clkref_freq  => clk25mhz_freq,
+		video_gear   => video_gear,
 		video_record => video_record)
 	port map (
 		clk_ref     => clk_25mhz,
@@ -140,11 +140,11 @@ begin
 
 		constant sdram_freq  : real :=
 			(real(sdram_params.pll.clkfb_div*sdram_params.pll.clkop_div)*clk25mhz_freq)/
-			(real(sdram_params.pll.clki_div*sdram_params.pll.clkos2_div*1e6));
+			(real(sdram_params.pll.clki_div*sdram_params.pll.clkos2_div));
 
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(sdram_freq, 10);
 		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
 		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(   sdram_freq/1.0e6, 10);
 
 		signal clkfb : std_logic;
 		signal lock  : std_logic;
@@ -152,7 +152,7 @@ begin
 	begin
 
 		assert false
-		report "SDRAM CLK FREQUENCY : " & ftoa(sdram_freq, 6) & " MHz"
+		report "SDRAM CLK FREQUENCY : " & ftoa(sdram_freq/1.0e6, 6) & " MHz"
 		severity NOTE;
 
 		pll_i : EHXPLLL
@@ -535,12 +535,14 @@ begin
 		signal q : std_logic_vector(gpdi_d'range);
 	begin
 
-		process (video_shift_clk)
-		begin
-			if rising_edge(video_shift_clk) then
-				crgb <= dvid_crgb;
-			end if;
-		end process;
+		reg_e : entity hdl4fpga.latency
+		generic map (
+			n => dvid_crgb'length,
+			d => (dvid_crgb'range => 1))
+		port map (
+			clk => video_shift_clk,
+			di => dvid_crgb,
+			do => crgb);
 
 		gbx_g : entity hdl4fpga.ecp5_ogbx
 	   	generic map (
