@@ -38,6 +38,7 @@ use ecp5u.components.all;
 entity ecp5_videopll is
 	generic (
 		clkref_freq  : real;
+		gear         : natural := 0;
 		video_record : video_params);
 	port (
 		clk_ref      : in std_logic;
@@ -51,7 +52,7 @@ end;
 
 architecture def of ecp5_videopll is
 
-	constant video_gear  : natural := video_record.gear;
+	constant video_gear  : natural := setif(gear=0,video_record.gear, gear);
 
 	attribute FREQUENCY_PIN_CLKOS  : string;
 	attribute FREQUENCY_PIN_CLKOS2 : string;

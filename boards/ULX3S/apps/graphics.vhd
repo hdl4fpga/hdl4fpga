@@ -116,141 +116,18 @@ architecture graphics of ulx3s is
 	constant hdplx       : std_logic := setif(debug, '0', '1');
 begin
 
-	videopll_b : block
-
-		attribute FREQUENCY_PIN_CLKOS  : string;
-		attribute FREQUENCY_PIN_CLKOS2 : string;
-		attribute FREQUENCY_PIN_CLKOS3 : string;
-		attribute FREQUENCY_PIN_CLKI   : string;
-		attribute FREQUENCY_PIN_CLKOP  : string;
-
-		constant video_freq  : real :=
-			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos2_div*1e6));
-
-		constant video_shift_freq  : real := setif(
-			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos_div*1e6)) > 400.0, 400.0,
-			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos_div*1e6)));
-
-		constant videoio_freq  : real :=
-			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos3_div*1e6));
-
-		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(video_shift_freq,    10);
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(video_freq,          10);
-		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is ftoa(videoio_freq,        10);
-		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
-		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
-
-		signal clkop  : std_logic;
-		signal clkos  : std_logic;
-		signal clkos2 : std_logic;
-
-	begin
-		assert false
-		report "VIDEO CLK FREQUENCY : " & ftoa(video_freq, 6) & " MHz"
-		severity NOTE;
-
-		pll_i : EHXPLLL
-		generic map (
-			PLLRST_ENA       => "DISABLED",
-			INTFB_WAKE       => "DISABLED",
-			STDBY_ENABLE     => "DISABLED",
-			DPHASE_SOURCE    => "DISABLED",
-			PLL_LOCK_MODE    =>  0,
-			FEEDBK_PATH      => "CLKOP",
-			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
-			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
-			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
-			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => video_record.pll.clkop_div-1,
-			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
-			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
-			OUTDIVIDER_MUXD  => "DIVD",
-			OUTDIVIDER_MUXC  => "DIVC",
-			OUTDIVIDER_MUXB  => "DIVB",
-			OUTDIVIDER_MUXA  => "DIVA",
-
-			CLKOS_DIV        => video_record.pll.clkos_div,
-			CLKOS2_DIV       => video_record.pll.clkos2_div,
-			CLKOS3_DIV       => video_record.pll.clkos3_div,
-			CLKOP_DIV        => video_record.pll.clkop_div,
-			CLKFB_DIV        => video_record.pll.clkfb_div,
-			CLKI_DIV         => video_record.pll.clki_div)
-		port map (
-			rst       => '0',
-			clki      => clk_25mhz,
-			CLKFB     => clkop,
-			PHASESEL0 => '0', PHASESEL1 => '0',
-			PHASEDIR  => '0',
-			PHASESTEP => '0', PHASELOADREG => '0',
-			STDBY     => '0', PLLWAKESYNC  => '0',
-			ENCLKOP   => '0',
-			ENCLKOS   => '0',
-			ENCLKOS2  => '0',
-			ENCLKOS3  => '0',
-			CLKOP     => clkop,
-			CLKOS     => clkos,
-			clkos2    => video_clk,
-			CLKOS3    => videoio_clk,
-			LOCK      => video_lck,
-			INTLOCK   => open,
-			REFCLK    => open,
-			CLKINTFB  => open);
-
-		gbx21_g : if video_gear=2 generate
-			video_phyrst    <= not video_lck;
-			video_eclk      <= clkos;
-			video_shift_clk <= clkos;
-		end generate;
-
-		gbx71_g : if video_gear=4 or video_gear=7 generate
-			component gddr_sync
-			port (
-				rst       : in  std_logic;
-				sync_clk  : in  std_logic;
-				start     : in  std_logic;
-				stop      : out std_logic;
-				ddr_reset : out std_logic;
-				ready     : out std_logic);
-			end component;
-
-			signal gddr_rst : std_logic;
-			signal stop     : std_logic;
-			signal eclko    : std_logic;
-			signal cdivx    : std_logic;
-
-		begin
-			gddr_rst <= not video_lck;
-			gddr_sync_i : gddr_sync 
-			port map (
-			  rst       => gddr_rst,
-			  sync_clk  => clk_25mhz,
-			  start     => gddr_rst,
-			  stop      => stop,
-			  ddr_reset => video_phyrst,
-			  ready     => open);
-
-			eclksyncb_i : eclksyncb
-			port map (
-				stop  => stop,
-				eclki => clkos,
-				eclko => eclko);
-		
-			clkdivf_i : clkdivf
-			generic map (
-				div => setif(video_gear=7, "3.5", "2.0"))
-			port map (
-				rst     => video_phyrst,
-				alignwd => '0',
-				clki    => eclko,
-				cdivx   => cdivx);
-			video_eclk      <= eclko;
-			video_shift_clk <= transport cdivx after natural((3.0/4.0)/(video_shift_freq*1.0e12))*1 ps;
-		end generate;
-
-	end block;
+	videopll_e : entity hdl4fpga.ecp5_videopll
+	generic map (
+		gear        => 2,
+		clkref_freq => clk25mhz_freq,
+		video_record => video_record)
+	port map (
+		clk_ref     => clk_25mhz,
+		videoio_clk => videoio_clk,
+		video_clk   => video_clk,
+		video_shift_clk => video_shift_clk,
+		video_eclk  => video_eclk,
+		video_lck   => video_lck);
 
 	sdrpll_b : block
 
