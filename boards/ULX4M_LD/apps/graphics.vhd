@@ -42,7 +42,7 @@ architecture graphics of ulx4m_ld is
 	---------------------------------------
 	-- Set your profile here             --
 	-- constant app_profile  : app_profiles := hdlc_400MHz_1080p24bpp30;
-	constant app_profile  : app_profiles := hdlc_425MHz_1080p24bpp30;
+	constant app_profile  : app_profiles := hdlc_sdr425MHz_1080p24bpp30;
 	---------------------------------------
 
 	constant nodebug_videomode : video_modes := profile_tab(app_profile).video_mode;
@@ -339,6 +339,52 @@ begin
 	
 	end block;
 
+	hdlc1_g : if io_link=io_hdlc generate
+		constant uart_freq : real := 
+			real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq/
+			real(video_record.pll.clki_div*video_record.pll.clkos3_div);
+		constant baudrate : natural := setif(
+			uart_freq >= 32.0e6, 3000000, setif(
+			uart_freq >= 25.0e6, 2000000,
+								 115200));
+		signal uart_clk : std_logic;
+	begin
+
+		ftdi_txden <= '1';
+		nodebug_g : if not debug generate
+			uart_clk <= videoio_clk;
+		end generate;
+
+		debug_g : if debug generate
+			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
+		end generate;
+
+		assert FALSE
+			report "BAUDRATE : " & " " & integer'image(baudrate)
+			severity NOTE;
+
+		hdlc_e : entity hdl4fpga.hdlc_link
+		generic map (
+			uart_freq => uart_freq,
+			baudrate => baudrate,
+			mem_size => mem_size)
+		port map (
+			sio_clk   => uart_clk,
+			si_frm    => si_frm,
+			si_irdy   => si_irdy,
+			si_trdy   => si_trdy,
+			si_end    => si_end,
+			si_data   => si_data,
+	
+			so_frm    => so_frm,
+			so_irdy   => so_irdy,
+			so_trdy   => so_trdy,
+			so_data   => so_data,
+			uart_frm  => video_lck,
+			uart_sin  => ftdi_txd,
+			uart_sout => ftdi_rxd);
+	end generate;
+
 	hdlc_g : if io_link=io_hdlc generate
 
 		constant uart_xtal : real := 
@@ -545,13 +591,13 @@ begin
 		ctlrphy_sti  => ctlrphy_sti);
 
 	cgear_g : for i in 1 to gear/2-1 generate
-    	ctlrphy_rst(i) <= ctlrphy_rst(0);
-    	ctlrphy_cke(i) <= ctlrphy_cke(0);
-    	ctlrphy_cs(i)  <= ctlrphy_cs(0);
-    	ctlrphy_ras(i) <= '1';
-    	ctlrphy_cas(i) <= '1';
-    	ctlrphy_we(i)  <= '1';
-    	ctlrphy_odt(i) <= ctlrphy_odt(0);
+		ctlrphy_rst(i) <= ctlrphy_rst(0);
+		ctlrphy_cke(i) <= ctlrphy_cke(0);
+		ctlrphy_cs(i)  <= ctlrphy_cs(0);
+		ctlrphy_ras(i) <= '1';
+		ctlrphy_cas(i) <= '1';
+		ctlrphy_we(i)  <= '1';
+		ctlrphy_odt(i) <= ctlrphy_odt(0);
 	end generate;
 
 	process (clk_25mhz)

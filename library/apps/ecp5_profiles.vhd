@@ -83,33 +83,31 @@ package ecp5_profiles is
 		ipoe_sdr200MHz_1080p24bpp30,        --
 		ipoe_sdr250MHz_1080p24bpp30,
 	---------------------------------------
+		hdlc_sdr325MHz_480p24bpp,
+		hdlc_sdr350MHz_480p24bpp,
+		hdlc_sdr375MHz_480p24bpp,
+		hdlc_sdr400MHz_480p24bpp,
+		hdlc_sdr425MHz_480p24bpp,
+		hdlc_sdr450MHz_480p24bpp,
+		hdlc_sdr475MHz_480p24bpp,
+		hdlc_sdr500MHz_480p24bpp,
 
+		hdlc_sdr350MHz_600p24bpp,
+		hdlc_sdr400MHz_600p24bpp,
 
-		hdlc_325MHz_480p24bpp,
-		hdlc_350MHz_480p24bpp,
-		hdlc_375MHz_480p24bpp,
-		hdlc_400MHz_480p24bpp,
-		hdlc_425MHz_480p24bpp,
-		hdlc_450MHz_480p24bpp,
-		hdlc_475MHz_480p24bpp,
-		hdlc_500MHz_480p24bpp,
+		hdlc_sdr350MHz_1080p24bpp30,
+		hdlc_sdr375MHz_1080p24bpp30,
+		hdlc_sdr400MHz_1080p24bpp30,
+		hdlc_sdr425MHz_1080p24bpp30,
+		hdlc_sdr450MHz_1080p24bpp30,
+		hdlc_sdr475MHz_1080p24bpp30,
+		hdlc_sdr500MHz_1080p24bpp30,
 
-		hdlc_350MHz_600p24bpp,
-		hdlc_400MHz_600p24bpp,
-
-		hdlc_350MHz_1080p24bpp30,
-		hdlc_375MHz_1080p24bpp30,
-		hdlc_400MHz_1080p24bpp30,
-		hdlc_425MHz_1080p24bpp30,
-		hdlc_450MHz_1080p24bpp30,
-		hdlc_475MHz_1080p24bpp30,
-		hdlc_500MHz_1080p24bpp30,
-
-		mii_400MHz_480p24bpp,
-		mii_425MHz_480p24bpp,
-		mii_450MHz_480p24bpp,
-		mii_475MHz_480p24bpp,
-		mii_500MHz_480p24bpp);
+		mii_sdr400MHz_480p24bpp,
+		mii_sdr425MHz_480p24bpp,
+		mii_sdr450MHz_480p24bpp,
+		mii_sdr475MHz_480p24bpp,
+		mii_sdr500MHz_480p24bpp);
 	--------------------------------------
 
 	type profileparams_vector is array (app_profiles) of profile_params;
@@ -161,31 +159,31 @@ package ecp5_profiles is
 		ipoe_sdr200MHz_1080p24bpp30 => (io_ipoe, sdram200MHz, mode1080p24bpp30),
 		ipoe_sdr250MHz_1080p24bpp30 => (io_ipoe, sdram250MHz, mode1080p24bpp30),
 
-		hdlc_325MHz_480p24bpp       => (io_hdlc, sdram325MHz, mode480p24bpp),
-		hdlc_350MHz_480p24bpp       => (io_hdlc, sdram350MHz, mode480p24bpp),
-		hdlc_375MHz_480p24bpp       => (io_hdlc, sdram375MHz, mode480p24bpp),
-		hdlc_400MHz_480p24bpp       => (io_hdlc, sdram400MHz, mode480p24bpp),
-		hdlc_425MHz_480p24bpp       => (io_hdlc, sdram425MHz, mode480p24bpp),
-		hdlc_450MHz_480p24bpp       => (io_hdlc, sdram450MHz, mode480p24bpp),
-		hdlc_475MHz_480p24bpp       => (io_hdlc, sdram475MHz, mode480p24bpp),
-		hdlc_500MHz_480p24bpp       => (io_hdlc, sdram500MHz, mode480p24bpp),
-												   
-		hdlc_350MHz_600p24bpp       => (io_hdlc, sdram350MHz, mode600p24bpp),
-		hdlc_400MHz_600p24bpp       => (io_hdlc, sdram400MHz, mode600p24bpp),
+		hdlc_sdr325MHz_480p24bpp    => (io_hdlc, sdram325MHz, mode480p24bpp),
+		hdlc_sdr350MHz_480p24bpp    => (io_hdlc, sdram350MHz, mode480p24bpp),
+		hdlc_sdr375MHz_480p24bpp    => (io_hdlc, sdram375MHz, mode480p24bpp),
+		hdlc_sdr400MHz_480p24bpp    => (io_hdlc, sdram400MHz, mode480p24bpp),
+		hdlc_sdr425MHz_480p24bpp    => (io_hdlc, sdram425MHz, mode480p24bpp),
+		hdlc_sdr450MHz_480p24bpp    => (io_hdlc, sdram450MHz, mode480p24bpp),
+		hdlc_sdr475MHz_480p24bpp    => (io_hdlc, sdram475MHz, mode480p24bpp),
+		hdlc_sdr500MHz_480p24bpp    => (io_hdlc, sdram500MHz, mode480p24bpp),
 
-		hdlc_350MHz_1080p24bpp30    => (io_hdlc, sdram350MHz, mode1080p24bpp30),
-		hdlc_375MHz_1080p24bpp30    => (io_hdlc, sdram375MHz, mode1080p24bpp30),
-		hdlc_400MHz_1080p24bpp30    => (io_hdlc, sdram400MHz, mode1080p24bpp30),
-		hdlc_425MHz_1080p24bpp30    => (io_hdlc, sdram425MHz, mode1080p24bpp30),
-		hdlc_450MHz_1080p24bpp30    => (io_hdlc, sdram450MHz, mode1080p24bpp30),
-		hdlc_475MHz_1080p24bpp30    => (io_hdlc, sdram475MHz, mode1080p24bpp30),
-		hdlc_500MHz_1080p24bpp30    => (io_hdlc, sdram500MHz, mode1080p24bpp30),
+		hdlc_sdr350MHz_600p24bpp    => (io_hdlc, sdram350MHz, mode600p24bpp),
+		hdlc_sdr400MHz_600p24bpp    => (io_hdlc, sdram400MHz, mode600p24bpp),
+
+		hdlc_sdr350MHz_1080p24bpp30 => (io_hdlc, sdram350MHz, mode1080p24bpp30),
+		hdlc_sdr375MHz_1080p24bpp30 => (io_hdlc, sdram375MHz, mode1080p24bpp30),
+		hdlc_sdr400MHz_1080p24bpp30 => (io_hdlc, sdram400MHz, mode1080p24bpp30),
+		hdlc_sdr425MHz_1080p24bpp30 => (io_hdlc, sdram425MHz, mode1080p24bpp30),
+		hdlc_sdr450MHz_1080p24bpp30 => (io_hdlc, sdram450MHz, mode1080p24bpp30),
+		hdlc_sdr475MHz_1080p24bpp30 => (io_hdlc, sdram475MHz, mode1080p24bpp30),
+		hdlc_sdr500MHz_1080p24bpp30 => (io_hdlc, sdram500MHz, mode1080p24bpp30),
 																	
-		mii_400MHz_480p24bpp        => (io_ipoe, sdram400MHz, mode480p24bpp),
-		mii_425MHz_480p24bpp        => (io_ipoe, sdram425MHz, mode480p24bpp),
-		mii_450MHz_480p24bpp        => (io_ipoe, sdram450MHz, mode480p24bpp),
-		mii_475MHz_480p24bpp        => (io_ipoe, sdram475MHz, mode480p24bpp),
-		mii_500MHz_480p24bpp        => (io_ipoe, sdram500MHz, mode480p24bpp));
+		mii_sdr400MHz_480p24bpp     => (io_ipoe, sdram400MHz, mode480p24bpp),
+		mii_sdr425MHz_480p24bpp     => (io_ipoe, sdram425MHz, mode480p24bpp),
+		mii_sdr450MHz_480p24bpp     => (io_ipoe, sdram450MHz, mode480p24bpp),
+		mii_sdr475MHz_480p24bpp     => (io_ipoe, sdram475MHz, mode480p24bpp),
+		mii_sdr500MHz_480p24bpp     => (io_ipoe, sdram500MHz, mode480p24bpp));
 
 	type pll_params is record
 		clkos_div  : natural;

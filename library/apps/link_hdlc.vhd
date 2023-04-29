@@ -36,7 +36,7 @@ use ecp5u.components.all;
 
 entity hdlc_link is
 	generic (
-		clkref_freq : real;
+		uart_freq : real;
 		baudrate : natural;
 		mem_size : natural := 8*(1024*8));
 	port (
@@ -79,7 +79,7 @@ begin
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
 		baudrate => baudrate,
-		clk_rate => clkref_freq)
+		clk_rate => uart_freq)
 	port map (
 		uart_rxc  => uart_clk,
 		uart_sin  => uart_sin,
@@ -89,7 +89,7 @@ begin
 	uarttx_e : entity hdl4fpga.uart_tx
 	generic map (
 		baudrate => baudrate,
-		clk_rate => clkref_freq)
+		clk_rate => uart_freq)
 	port map (
 		uart_txc  => uart_clk,
 		uart_frm  => uart_frm,
