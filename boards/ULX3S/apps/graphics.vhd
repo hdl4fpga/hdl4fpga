@@ -342,26 +342,17 @@ begin
 	end block;
 
 	hdlc_g : if io_link=io_hdlc generate
-
-		constant uart_xtal : real := 
+		constant uart_freq : real := 
 			real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq/
 			real(video_record.pll.clki_div*video_record.pll.clkos3_div);
-
 		constant baudrate : natural := setif(
-			uart_xtal >= 32.0e6, 3e6, setif(
-			uart_xtal >= 25.0e6, 2e6, 115200));
-
-		signal uart_rxdv  : std_logic;
-		signal uart_rxd   : std_logic_vector(0 to 8-1);
-		signal uarttx_frm : std_logic;
-		signal uart_idle  : std_logic;
-		signal uart_txen  : std_logic;
-		signal uart_txd   : std_logic_vector(uart_rxd'range);
-
-		signal tp         : std_logic_vector(1 to 32);
-
+			uart_freq >= 32.0e6, 3000000, setif(
+			uart_freq >= 25.0e6, 2000000,
+								 115200));
+		signal uart_clk : std_logic;
 	begin
 
+		ftdi_txden <= '1';
 		nodebug_g : if not debug generate
 			uart_clk <= videoio_clk;
 		end generate;
@@ -370,56 +361,30 @@ begin
 			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
 		end generate;
 
-		assert false
-		report "BAUDRATE : " & " " & natural'image(baudrate) & " Bd"
-		severity NOTE;
+		assert FALSE
+			report "BAUDRATE : " & " " & integer'image(baudrate)
+			severity NOTE;
 
-		uartrx_e : entity hdl4fpga.uart_rx
+		hdlc_e : entity hdl4fpga.hdlc_link
 		generic map (
+			uart_freq => uart_freq,
 			baudrate => baudrate,
-			clk_rate => uart_xtal)
+			mem_size => mem_size)
 		port map (
-			uart_rxc  => uart_clk,
-			uart_sin  => ftdi_txd,
-			uart_irdy => uart_rxdv,
-			uart_data => uart_rxd);
-
-		uarttx_e : entity hdl4fpga.uart_tx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_txc  => uart_clk,
+			sio_clk   => uart_clk,
+			si_frm    => si_frm,
+			si_irdy   => si_irdy,
+			si_trdy   => si_trdy,
+			si_end    => si_end,
+			si_data   => si_data,
+	
+			so_frm    => so_frm,
+			so_irdy   => so_irdy,
+			so_trdy   => so_trdy,
+			so_data   => so_data,
 			uart_frm  => video_lck,
-			uart_irdy => uart_txen,
-			uart_trdy => uart_idle,
-			uart_data => uart_txd,
+			uart_sin  => ftdi_txd,
 			uart_sout => ftdi_rxd);
-
-		siodaahdlc_e : entity hdl4fpga.sio_dayhdlc
-		generic map (
-			mem_size  => mem_size)
-		port map (
-			uart_clk    => uart_clk,
-			uartrx_irdy => uart_rxdv,
-			uartrx_data => uart_rxd,
-			uarttx_frm  => uarttx_frm,
-			uarttx_trdy => uart_idle,
-			uarttx_data => uart_txd,
-			uarttx_irdy => uart_txen,
-			sio_clk     => sio_clk,
-			so_frm      => so_frm,
-			so_irdy     => so_irdy,
-			so_trdy     => so_trdy,
-			so_data     => so_data,
-
-			si_frm      => si_frm,
-			si_irdy     => si_irdy,
-			si_trdy     => si_trdy,
-			si_end      => si_end,
-			si_data     => si_data,
-			tp          => tp);
-
 	end generate;
 
 	ipoe_e : if io_link=io_ipoe generate

@@ -41,7 +41,7 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------
 	-- Set your profile here             --
-	-- constant app_profile  : app_profiles := hdlc_400MHz_1080p24bpp30;
+	-- constant app_profile  : app_profiles := hdlc_sdr400MHz_1080p24bpp30;
 	constant app_profile  : app_profiles := hdlc_sdr425MHz_1080p24bpp30;
 	---------------------------------------
 
@@ -339,7 +339,7 @@ begin
 	
 	end block;
 
-	hdlc1_g : if io_link=io_hdlc generate
+	hdlc_g : if io_link=io_hdlc generate
 		constant uart_freq : real := 
 			real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq/
 			real(video_record.pll.clki_div*video_record.pll.clkos3_div);
@@ -385,125 +385,6 @@ begin
 			uart_sout => ftdi_rxd);
 	end generate;
 
-	hdlc_g : if io_link=io_hdlc generate
-
-		constant uart_xtal : real := 
-			real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq/
-			real(video_record.pll.clki_div*video_record.pll.clkos3_div);
-
-		constant baudrate : natural := setif(
-			uart_xtal >= 32.0e6, 3000000, setif(
-			uart_xtal >= 25.0e6, 2000000,
-								 115200));
-
-		signal uart_rxdv  : std_logic;
-		signal uart_rxd   : std_logic_vector(0 to 8-1);
-		signal uarttx_frm : std_logic;
-		signal uart_idle  : std_logic;
-		signal uart_txen  : std_logic;
-		signal uart_txd   : std_logic_vector(uart_rxd'range);
-
-		signal tp         : std_logic_vector(1 to 32);
-
-		signal dummy_txd  : std_logic_vector(uart_rxd'range);
-		alias uart_clk    : std_logic is sio_clk;
-
-	begin
-
-		process (uart_clk)
-			variable q0 : std_logic := '0';
-			variable q1 : std_logic := '0';
-		begin
-			if rising_edge(uart_clk) then
-				-- led(1) <= q1;
-				-- led(7) <= q0;
-				if tp(1)='1' then
-					if tp(2)='1' then
-						q1 := not q1;
-					end if;
-				end if;
-				if uart_rxdv='1' then
-					q0 := not q0;
-				end if;
-			end if;
-		end process;
-
-		process (dummy_txd ,uart_clk)
-			variable q : std_logic := '0';
-			variable e : std_logic := '1';
-		begin
-			if rising_edge(uart_clk) then
-				-- led(5) <= q;
-				if (so_frm and not e)='1' then
-					q := not q;
-				end if;
-				-- led(4) <= so_frm;
-				e := so_frm;
-			end if;
-		end process;
-
-		ftdi_txden <= '1';
-		nodebug_g : if not debug generate
-			uart_clk <= videoio_clk;
-		end generate;
-
-		debug_g : if debug generate
-			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
-		end generate;
-
-		assert FALSE
-			report "BAUDRATE : " & " " & integer'image(baudrate)
-			severity NOTE;
-
-		uartrx_e : entity hdl4fpga.uart_rx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_rxc  => uart_clk,
-			uart_sin  => ftdi_txd,
-			uart_irdy => uart_rxdv,
-			uart_data => uart_rxd);
-
-		uarttx_e : entity hdl4fpga.uart_tx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_txc  => uart_clk,
-			uart_frm  => video_lck,
-			uart_irdy => uart_txen,
-			uart_trdy => uart_idle,
-			uart_data => uart_txd,
-			uart_sout => ftdi_rxd);
-
-		siodaahdlc_e : entity hdl4fpga.sio_dayhdlc
-		generic map (
-			mem_size    => mem_size)
-		port map (
-			uart_clk    => uart_clk,
-			uartrx_irdy => uart_rxdv,
-			uartrx_data => uart_rxd,
-			uarttx_frm  => uarttx_frm,
-			uarttx_trdy => uart_idle,
-			uarttx_data => uart_txd,
-			uarttx_irdy => uart_txen,
-			sio_clk     => sio_clk,
-			so_frm      => so_frm,
-			so_irdy     => so_irdy,
-			so_trdy     => so_trdy,
-			so_data     => so_data,
-
-			si_frm      => si_frm,
-			si_irdy     => si_irdy,
-			si_trdy     => si_trdy,
-			si_end      => si_end,
-			si_data     => si_data,
-			tp          => tp);
-
-	end generate;
-
-	
 	assert io_link/=io_ipoe 
 	report "NO mii ready"
 	severity FAILURE;
