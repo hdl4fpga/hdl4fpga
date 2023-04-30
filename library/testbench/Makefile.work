@@ -14,7 +14,6 @@ LIB_WORK = work
 # Define path to each design unit
 HDL4FPGA__ogbx = $(LIB_HDL4FPGA)/ogbx/_primary.dat
 ECP3__components = $(LIB_ECP3)/components/_primary.dat
-HDL4FPGA__latency = $(LIB_HDL4FPGA)/latency/_primary.dat
 HDL4FPGA__ecp3_sdrphy = $(LIB_HDL4FPGA)/ecp3_sdrphy/_primary.dat
 HDL4FPGA__profiles = $(LIB_HDL4FPGA)/profiles/_primary.dat
 UNISIM__vcomponents = $(LIB_UNISIM)/vcomponents/_primary.dat
@@ -25,9 +24,13 @@ MICRON__ddr_model = $(LIB_MICRON)/ddr_model/_primary.dat
 HDL4FPGA__serlzr = $(LIB_HDL4FPGA)/serlzr/_primary.dat
 MICRON__ddr2 = $(LIB_MICRON)/ddr2/_primary.dat
 IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
+HDL4FPGA__link_rmii = $(LIB_HDL4FPGA)/link_rmii/_primary.dat
+HDL4FPGA__latency = $(LIB_HDL4FPGA)/latency/_primary.dat
 HDL4FPGA__ser_debug = $(LIB_HDL4FPGA)/ser_debug/_primary.dat
 HDL4FPGA__ecp5_profiles = $(LIB_HDL4FPGA)/ecp5_profiles/_primary.dat
 HDL4FPGA__ecp5_videopll = $(LIB_HDL4FPGA)/ecp5_videopll/_primary.dat
+HDL4FPGA__ecp5_sdrampll = $(LIB_HDL4FPGA)/ecp5_sdrampll/_primary.dat
+HDL4FPGA__hdlc_link = $(LIB_HDL4FPGA)/hdlc_link/_primary.dat
 HDL4FPGA__sdram_db = $(LIB_HDL4FPGA)/sdram_db/_primary.dat
 HDL4FPGA__sdram_param = $(LIB_HDL4FPGA)/sdram_param/_primary.dat
 HDL4FPGA__videopkg = $(LIB_HDL4FPGA)/videopkg/_primary.dat
@@ -70,7 +73,6 @@ WORK__ulx3s__ser_debug = $(LIB_WORK)/ulx3s/ser_debug.dat
 WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
 WORK__testbench__ulx4mls_graphics = $(LIB_WORK)/testbench/ulx4mls_graphics.dat
-WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
 WORK__testbench__s3estarter_graphics = $(LIB_WORK)/testbench/s3estarter_graphics.dat
 WORK__testbench__ecp3versa_graphics = $(LIB_WORK)/testbench/ecp3versa_graphics.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
@@ -78,6 +80,7 @@ WORK__testbench__arty_graphics = $(LIB_WORK)/testbench/arty_graphics.dat
 WORK__testbench__ml509_graphics = $(LIB_WORK)/testbench/ml509_graphics.dat
 WORK__testbench__ulx3s_serdebug = $(LIB_WORK)/testbench/ulx3s_serdebug.dat
 WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
+WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
 WORK__testbench__serlzr = $(LIB_WORK)/testbench/serlzr.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__s3estarter_structure_md = $(LIB_WORK)/s3estarter_structure_md/_primary.dat
@@ -120,7 +123,6 @@ whole_library :     $(WORK__ulx4mls_graphics_structure_md) \
     $(WORK__ulx3s__graphics) \
     $(WORK__ulx3s) \
     $(WORK__testbench__ulx4mls_graphics) \
-    $(WORK__testbench__ulx3s_graphics) \
     $(WORK__testbench__s3estarter_graphics) \
     $(WORK__testbench__ecp3versa_graphics) \
     $(WORK__testbench__nuhs3adsp_graphics) \
@@ -128,6 +130,7 @@ whole_library :     $(WORK__ulx4mls_graphics_structure_md) \
     $(WORK__testbench__ml509_graphics) \
     $(WORK__testbench__ulx3s_serdebug) \
     $(WORK__testbench__ulx4mld_graphics) \
+    $(WORK__testbench__ulx3s_graphics) \
     $(WORK__testbench__serlzr) \
     $(WORK__testbench) \
     $(WORK__s3estarter_structure_md) \
@@ -415,13 +418,13 @@ $(WORK__ulx3s) : ../../boards/ULX3S/common/ulx3s.vhd \
 
 $(WORK__ulx3s__graphics) : ../../boards/ULX3S/apps/graphics.vhd \
 		$(HDL4FPGA__ecp5_ogbx) \
+		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__ecp5_sdrphy) \
 		$(HDL4FPGA__app_graphics) \
-		$(HDL4FPGA__desser) \
-		$(HDL4FPGA__sio_dayudp) \
-		$(HDL4FPGA__sio_dayhdlc) \
-		$(HDL4FPGA__uart_tx) \
-		$(HDL4FPGA__uart_rx) \
+		$(HDL4FPGA__link_rmii) \
+		$(HDL4FPGA__hdlc_link) \
+		$(HDL4FPGA__ecp5_sdrampll) \
+		$(HDL4FPGA__ecp5_videopll) \
 		$(WORK__ulx3s) \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
@@ -486,9 +489,8 @@ $(WORK__ulx4m_ld__graphics) : ../../boards/ULX4M_LD/apps/graphics.vhd \
 		$(HDL4FPGA__ecp5_ogbx) \
 		$(HDL4FPGA__ecp5_sdrphy) \
 		$(HDL4FPGA__app_graphics) \
-		$(HDL4FPGA__sio_dayhdlc) \
-		$(HDL4FPGA__uart_tx) \
-		$(HDL4FPGA__uart_rx) \
+		$(HDL4FPGA__hdlc_link) \
+		$(HDL4FPGA__ecp5_sdrampll) \
 		$(HDL4FPGA__ecp5_videopll) \
 		$(WORK__ulx4m_ld) \
 		$(IEEE__std_logic_arith) \

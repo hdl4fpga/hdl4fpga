@@ -184,7 +184,7 @@ package ecp5_profiles is
 		mii_sdr475MHz_480p24bpp     => (io_ipoe, sdram475MHz, mode480p24bpp),
 		mii_sdr500MHz_480p24bpp     => (io_ipoe, sdram500MHz, mode480p24bpp));
 
-	type pll_params is record
+	type pll_record is record
 		clkos_div  : natural;
 		clkop_div  : natural;
 		clkfb_div  : natural;
@@ -193,15 +193,15 @@ package ecp5_profiles is
 		clkos3_div : natural;
 	end record;
 
-	type video_params is record
+	type video_record is record
 		id     : video_modes;
-		pll    : pll_params;
+		pll    : pll_record;
 		timing : videotiming_ids;
 		pixel  : pixel_types;
 		gear   : natural;
 	end record;
 
-	type videoparams_vector is array (natural range <>) of video_params;
+	type videoparams_vector is array (natural range <>) of video_record;
 	constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
 	constant video_tab : videoparams_vector := (
 		(id => modedebug,        pll => (clkos_div => 30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 2, pixel => rgb888, timing => pclk_debug),
@@ -219,11 +219,11 @@ package ecp5_profiles is
 
 	function videoparam (
 		constant id  : video_modes)
-		return video_params;
+		return video_record;
 
 	type sdramparams_record is record
 		id  : sdram_speeds;
-		pll : pll_params;
+		pll : pll_record;
 		cl  : std_logic_vector(0 to 3-1);
 		cwl : std_logic_vector(0 to 3-1);
 		wrl : std_logic_vector(0 to 3-1);
@@ -252,7 +252,7 @@ package ecp5_profiles is
 
 
 	function sdramparams (
-		constant id  : sdram_speeds)
+		constant id : sdram_speeds)
 		return sdramparams_record;
 
 end package;
@@ -261,7 +261,7 @@ package body ecp5_profiles is
 
 	function videoparam (
 		constant id  : video_modes)
-		return video_params is
+		return video_record is
 		constant tab : videoparams_vector := video_tab;
 	begin
 		for i in tab'range loop

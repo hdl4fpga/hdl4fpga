@@ -50,7 +50,7 @@ architecture graphics of ulx4m_ld is
 		video_modes'POS(modedebug),
 		video_modes'POS(nodebug_videomode)));
 	-- constant video_mode   : video_modes := nodebug_videomode;
-	constant video_record : video_params := videoparam(video_mode);
+	constant video_param  : video_record := videoparam(video_mode);
 
 	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
 	-- constant sdram_speed : sdram_speeds := sdram_speeds'VAL(setif(not debug,
@@ -66,13 +66,11 @@ architecture graphics of ulx4m_ld is
 	constant word_size   : natural := ddram_dq'length;
 	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
 	constant coln_size   : natural := 10;
-	constant gear        : natural := 4;
+	constant sdram_gear  : natural := 4;
 
 	signal sys_rst       : std_logic;
 
-	signal ctlr_rst    : std_logic;
-
-	signal dramclk_lck   : std_logic;
+	signal ctlr_rst      : std_logic;
 
 	signal ctlrphy_frm   : std_logic;
 	signal ctlrphy_trdy  : std_logic;
@@ -91,17 +89,17 @@ architecture graphics of ulx4m_ld is
 	signal ctlrphy_we    : std_logic_vector(0 to 2-1);
 	signal ctlrphy_odt   : std_logic_vector(0 to 2-1);
 	signal ctlrphy_cmd   : std_logic_vector(0 to 3-1);
-	signal ctlrphy_b     : std_logic_vector(gear/2*ddram_ba'length-1 downto 0);
-	signal ctlrphy_a     : std_logic_vector(gear/2*ddram_a'length-1 downto 0);
-	signal ctlrphy_dqst  : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqso  : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqv   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_b     : std_logic_vector(sdram_gear/2*ddram_ba'length-1 downto 0);
+	signal ctlrphy_a     : std_logic_vector(sdram_gear/2*ddram_a'length-1 downto 0);
+	signal ctlrphy_dqst  : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dqso  : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(sdram_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(sdram_gear*word_size-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(sdram_gear*word_size-1 downto 0);
+	signal ctlrphy_dqv   : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(sdram_gear*word_size/byte_size-1 downto 0);
 
 	signal sdr_b         : std_logic_vector(ddram_ba'range);
 	signal sdr_a         : std_logic_vector(ddram_a'length-1 downto 0);
@@ -112,7 +110,7 @@ architecture graphics of ulx4m_ld is
 	signal video_shift_clk : std_logic;
 	signal video_eclk    : std_logic;
 	signal video_phyrst  : std_logic;
-	constant video_gear  : natural := video_record.gear;
+	constant video_gear  : natural := video_param.gear;
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 
 	constant mem_size    : natural := 8*(1024*8);
@@ -152,194 +150,33 @@ begin
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
 		clkref_freq => clk25mhz_freq,
-		video_record => video_record)
+		video_param => video_param)
 	port map (
-		clk_ref    => clk_25mhz,
+		clk_ref     => clk_25mhz,
 		videoio_clk => videoio_clk,
-		video_clk  => video_clk,
+		video_clk   => video_clk,
 		video_shift_clk => video_shift_clk,
-		video_eclk => video_eclk,
-		video_lck  => video_lck);
+		video_eclk  => video_eclk,
+		video_lck   => video_lck);
 
-	sdrrpll_b : block
-
-		attribute FREQUENCY_PIN_CLKOS  : string;
-		attribute FREQUENCY_PIN_CLKOS2 : string;
-		attribute FREQUENCY_PIN_CLKOS3 : string;
-		attribute FREQUENCY_PIN_CLKI   : string;
-		attribute FREQUENCY_PIN_CLKOP  : string;
-
-		constant ddram_mhz : real := 1.0e-6/sdram_tcp;
-
-		attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(setif(ddram_mhz < 400.0, ddram_mhz, 400.0), 10);
-		attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
-
-		signal clkfb       : std_logic;
-		signal clkop       : std_logic;
-		signal memsync_rst : std_logic;
-
-	begin
-
-		assert false
-		report real'image(ddram_mhz)
-		severity NOTE;
-
-		pll_i : EHXPLLL
-		generic map (
-			PLLRST_ENA       => "DISABLED",
-			INTFB_WAKE       => "DISABLED",
-			STDBY_ENABLE     => "DISABLED",
-			DPHASE_SOURCE    => "DISABLED",
-			PLL_LOCK_MODE    =>  0,
-			FEEDBK_PATH      => "CLKOP",
-			CLKOS_ENABLE     => "DISABLED", CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
-			CLKOS2_ENABLE    => "DISABLED", CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
-			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
-			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => sdram_params.pll.clkop_div-1,
-			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
-			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
-			OUTDIVIDER_MUXD  => "DIVD",
-			OUTDIVIDER_MUXC  => "DIVC",
-			OUTDIVIDER_MUXB  => "DIVB",
-			OUTDIVIDER_MUXA  => "DIVA",
-
-			CLKOP_DIV        => sdram_params.pll.clkop_div,
-			CLKFB_DIV        => sdram_params.pll.clkfb_div,
-			CLKI_DIV         => sdram_params.pll.clki_div)
-		port map (
-			rst       => '0',
-			clki      => clk_25mhz,
-			CLKFB     => clkop,
-			PHASESEL0 => '0', PHASESEL1 => '0',
-			PHASEDIR  => '0',
-			PHASESTEP => '0', PHASELOADREG => '0',
-			STDBY     => '0', PLLWAKESYNC  => '0',
-			ENCLKOP   => '0',
-			ENCLKOS   => '0',
-			ENCLKOS2  => '0',
-			ENCLKOS3  => '0',
-			CLKOP     => clkop,
-			CLKOS     => open,
-			CLKOS2    => open,
-			CLKOS3    => open,
-			LOCK      => dramclk_lck,
-			INTLOCK   => open,
-			REFCLK    => open,
-			CLKINTFB  => open);
-
-		memsync_rst <= not dramclk_lck;
-		mem_sync_b : block
-
-			component mem_sync
-				port (
-					start_clk : in  std_logic;
-					rst       : in  std_logic;
-					dll_lock  : in  std_logic;
-					pll_lock  : in  std_logic;
-					update    : in  std_logic;
-					pause     : out std_logic;
-					stop      : out std_logic;
-					freeze    : out std_logic;
-					uddcntln  : out std_logic;
-					dll_rst   : out std_logic;
-					ddr_rst   : out std_logic;
-					ready     : out std_logic);
-			end component;
-
-			signal uddcntln : std_logic;
-			signal freeze   : std_logic;
-			signal stop     : std_logic;
-			signal dll_rst  : std_logic;
-			signal dll_lock : std_logic;
-			signal pll_lock : std_logic;
-			signal update   : std_logic;
-			signal ready    : std_logic;
-
-			attribute FREQUENCY_PIN_ECLKO : string;
-			attribute FREQUENCY_PIN_ECLKO of  eclksyncb_i : label is ftoa(1.0e-6/sdram_tcp, 10);
-
-			attribute FREQUENCY_PIN_CDIVX : string;
-			attribute FREQUENCY_PIN_CDIVX of clkdivf_i : label is ftoa(1.0e-6/(sdram_tcp*2.0), 10);
-			signal eclko : std_logic;
-			signal cdivx : std_logic;
-			signal ddr_rst : std_logic;
-		begin
-
-			pll_lock <= '1';
-			update   <= '0';
-
-			mem_sync_i : mem_sync
-			port map (
-				start_clk => clk_25mhz,
-				rst       => memsync_rst,
-				dll_lock  => dll_lock,
-				pll_lock  => pll_lock,
-				update    => update,
-				pause     => ms_pause,
-				stop      => stop,
-				freeze    => freeze,
-				uddcntln  => uddcntln,
-				dll_rst   => dll_rst,
-				ddr_rst   => ddr_rst,
-				ready     => ready);
-
-			eclksyncb_i : eclksyncb
-			port map (
-				stop  => stop,
-				eclki => clkop,
-				eclko => eclko);
-		
-			clkdivf_i : clkdivf
-			generic map (
-				div => "2.0")
-			port map (
-				rst     => ddr_rst,
-				alignwd => '0',
-				clki    => eclko,
-				cdivx   => cdivx);
-			eclk <= eclko;
-			sclk <= transport cdivx after natural(sdram_tcp*1.0e12*(3.0/4.0))*1 ps;
-	-- 
-			-- eclk <= transport eclko after natural(sdram_tcp*1.0e12*(3.0/4.0))*1 ps;
-			-- sclk <= cdivx;
-		
-			ddrdll_i : ddrdlla
-			port map (
-				rst      => dll_rst,
-				clk      => eclk,
-				freeze   => freeze,
-				uddcntln => uddcntln,
-				ddrdel   => ddrdel,
-				lock     => dll_lock);
-
-			process (ddr_rst, sclk)
-			begin
-				if ddr_rst='1' then
-					sdrphy_rst <= '1';
-				elsif rising_edge(sclk) then
-					sdrphy_rst <= '0';
-				end if;
-			end process;
-
-			process (memsync_rst, ready, sclk)
-			begin
-				if memsync_rst='1' then
-					ctlr_rst <= '1';
-				elsif ready='0' then
-					ctlr_rst <= '1';
-				elsif rising_edge(sclk) then
-					ctlr_rst <= memsync_rst;
-				end if;
-			end process;
-
-		end block;
-	
-	end block;
+	sdrampll_e  : entity hdl4fpga.ecp5_sdrampll
+	generic map (
+		gear         => sdram_gear,
+		clkref_freq  => clk25mhz_freq,
+		sdram_params => sdram_params)
+	port map (
+		clk_ref      => clk_25mhz,
+		ctlr_rst     => ctlr_rst,
+		sclk         => sclk,
+		eclk         => eclk,
+		phy_rst      => sdrphy_rst,
+		phy_mspause  => ms_pause,
+		phy_ddrdel   => ddrdel);
 
 	hdlc_g : if io_link=io_hdlc generate
 		constant uart_freq : real := 
-			real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq/
-			real(video_record.pll.clki_div*video_record.pll.clkos3_div);
+			real(video_param.pll.clkfb_div*video_param.pll.clkop_div)*clk25mhz_freq/
+			real(video_param.pll.clki_div*video_param.pll.clkos3_div);
 		constant baudrate : natural := setif(
 			uart_freq >= 32.0e6, 3000000, setif(
 			uart_freq >= 25.0e6, 2000000,
@@ -395,7 +232,7 @@ begin
 		sdram_tcp      => 2.0*sdram_tcp,
 		-- mark         => MT41K8G107,
 		mark         => MT41K8G125,
-		gear         => gear,
+		gear         => sdram_gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
 		coln_size    => coln_size,
@@ -403,7 +240,7 @@ begin
 		byte_size    => byte_size,
 		burst_length => 8,
 
-		timing_id    => video_record.timing,
+		timing_id    => video_param.timing,
 		video_gear   => video_gear,
 		red_length   => 8,
 		green_length => 8,
@@ -466,7 +303,7 @@ begin
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
 
-	cgear_g : for i in 1 to gear/2-1 generate
+	cgear_g : for i in 1 to sdram_gear/2-1 generate
 		ctlrphy_rst(i) <= ctlrphy_rst(0);
 		ctlrphy_cke(i) <= ctlrphy_cke(0);
 		ctlrphy_cs(i)  <= ctlrphy_cs(0);
@@ -487,7 +324,7 @@ begin
 	process (sdr_b)
 	begin
 		for i in sdr_b'range loop
-			for j in 0 to gear/2-1 loop
+			for j in 0 to sdram_gear/2-1 loop
 				ctlrphy_b(j*sdr_b'length+i) <= sdr_b(i);
 			end loop;
 		end loop;
@@ -496,7 +333,7 @@ begin
 	process (sdr_a)
 	begin
 		for i in sdr_a'range loop
-			for j in 0 to gear/2-1 loop
+			for j in 0 to sdram_gear/2-1 loop
 				ctlrphy_a(j*sdr_a'length+i) <= sdr_a(i);
 			end loop;
 		end loop;
@@ -525,7 +362,7 @@ begin
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
 		debug      => debug,
-		gear       => gear,
+		gear       => sdram_gear,
 		bank_size  => ddram_ba'length,
 		addr_size  => ddram_a'length,
 		word_size  => word_size,

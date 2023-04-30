@@ -43,8 +43,8 @@ entity ecp5_sdrampll is
 	port (
 		clk_ref      : in  std_logic;
 		ctlr_rst     : out std_logic;
-		ctlr_clk     : buffer std_logic;
-		sdram_eclk   : buffer std_logic;
+		sclk         : buffer std_logic;
+		eclk         : buffer std_logic;
 		phy_rst      : out std_logic;
 		phy_mspause  : out std_logic;
 		phy_ddrdel   : out std_logic;
@@ -130,7 +130,7 @@ begin
 		CLKINTFB  => open);
 
 	gear1_g : if gear=1 generate
-		ctlr_clk <= clkop;
+		sclk <= clkop;
 	end generate;
 	gear4_g : if gear=4 generate
 
@@ -203,37 +203,37 @@ begin
 			alignwd => '0',
 			clki    => eclko,
 			cdivx   => cdivx);
-		sdram_eclk <= eclko;
-		ctlr_clk <= transport cdivx after natural(1.0e12*(3.0/4.0)/sdram_freq)*1 ps;
+		eclk <= eclko;
+		sclk <= transport cdivx after natural(1.0e12*(3.0/4.0)/sdram_freq)*1 ps;
 
-		-- sdram_eclk <= transport eclko after natural(sdram_tcp*1.0e12*(3.0/4.0))*1 ps;
-		-- ctlr_clk <= cdivx;
+		-- eclk <= transport eclko after natural(sdram_tcp*1.0e12*(3.0/4.0))*1 ps;
+		-- sclk <= cdivx;
 	
 		ddrdll_i : ddrdlla
 		port map (
 			rst      => dll_rst,
-			clk      => sdram_eclk,
+			clk      => eclk,
 			freeze   => freeze,
 			uddcntln => uddcntln,
 			ddrdel   => phy_ddrdel,
 			lock     => dll_lock);
 
-		process (ddr_rst, ctlr_clk)
+		process (ddr_rst, sclk)
 		begin
 			if ddr_rst='1' then
 				phy_rst <= '1';
-			elsif rising_edge(ctlr_clk) then
+			elsif rising_edge(sclk) then
 				phy_rst <= '0';
 			end if;
 		end process;
 
-		process (memsync_rst, ready, ctlr_clk)
+		process (memsync_rst, ready, sclk)
 		begin
 			if memsync_rst='1' then
 				ctlr_rst <= '1';
 			elsif ready='0' then
 				ctlr_rst <= '1';
-			elsif rising_edge(ctlr_clk) then
+			elsif rising_edge(sclk) then
 				ctlr_rst <= memsync_rst;
 			end if;
 		end process;

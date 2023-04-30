@@ -51,7 +51,7 @@ architecture graphics of ulx3s is
 	--------------------------------------
 
 	constant video_mode   : video_modes := setdebug(debug, profile_tab(app_profile).video_mode);
-	constant video_record : video_params := videoparam(video_mode);
+	constant video_param  : video_record := videoparam(video_mode);
 
 	constant sdram_speed  : sdram_speeds := sdram_speeds'VAL(setif(debug,
 		sdram_speeds'POS(sdram166MHz),
@@ -92,8 +92,8 @@ architecture graphics of ulx3s is
 	signal video_shift_clk : std_logic;
 	signal video_eclk    : std_logic;
 	signal video_pixel   : std_logic_vector(0 to setif(
-		video_record.pixel=rgb565, 16, setif(
-		video_record.pixel=rgb888, 32, 0))-1);
+		video_param.pixel=rgb565, 16, setif(
+		video_param.pixel=rgb888, 32, 0))-1);
 	constant video_gear  : natural := 2;
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk   : std_logic;
@@ -120,7 +120,7 @@ begin
 	generic map (
 		clkref_freq  => clk25mhz_freq,
 		default_gear => video_gear,
-		video_record => video_record)
+		video_param  => video_param)
 	port map (
 		clk_ref     => clk_25mhz,
 		videoio_clk => videoio_clk,
@@ -137,7 +137,7 @@ begin
 	port map (
 		clk_ref  => clk_25mhz,
 		ctlr_rst => sdrsys_rst,
-		ctlr_clk => ctlr_clk);
+		sclk     => ctlr_clk);
 
 	process (ctlr_clk)
 	begin
@@ -155,8 +155,8 @@ begin
 
 	hdlc_g : if io_link=io_hdlc generate
 		constant uart_freq : real := 
-			real(video_record.pll.clkfb_div*video_record.pll.clkos_div)*clk25mhz_freq/
-			real(video_record.pll.clki_div*video_record.pll.clkos3_div);
+			real(video_param.pll.clkfb_div*video_param.pll.clkos_div)*clk25mhz_freq/
+			real(video_param.pll.clki_div*video_param.pll.clkos3_div);
 		constant baudrate : natural := setif(
 			uart_freq >= 32.0e6, 3000000, setif(
 			uart_freq >= 25.0e6, 2000000,
@@ -249,11 +249,11 @@ begin
 		word_size    => word_size,
 		byte_size    => byte_size,
 
-		timing_id    => video_record.timing,
+		timing_id    => video_param.timing,
 		video_gear   => video_gear,
-		red_length   => setif(video_record.pixel=rgb565, 5, setif(video_record.pixel=rgb888, 8, 0)),
-		green_length => setif(video_record.pixel=rgb565, 6, setif(video_record.pixel=rgb888, 8, 0)),
-		blue_length  => setif(video_record.pixel=rgb565, 5, setif(video_record.pixel=rgb888, 8, 0)),
+		red_length   => setif(video_param.pixel=rgb565, 5, setif(video_param.pixel=rgb888, 8, 0)),
+		green_length => setif(video_param.pixel=rgb565, 6, setif(video_param.pixel=rgb888, 8, 0)),
+		blue_length  => setif(video_param.pixel=rgb565, 5, setif(video_param.pixel=rgb888, 8, 0)),
 		fifo_size    => mem_size)
 
 	port map (

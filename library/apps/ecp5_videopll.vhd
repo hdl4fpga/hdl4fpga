@@ -39,7 +39,7 @@ entity ecp5_videopll is
 	generic (
 		clkref_freq  : real;
 		default_gear : natural := 0;
-		video_record : video_params);
+		video_param :  video_record);
 	port (
 		clk_ref      : in std_logic;
 		videoio_clk  : out std_logic;
@@ -49,7 +49,7 @@ entity ecp5_videopll is
 		video_phyrst : buffer std_logic;
 		video_lck    : buffer std_logic);
 
-	constant gear  : natural := setif(default_gear=0,video_record.gear, default_gear);
+	constant gear  : natural := setif(default_gear=0,video_param.gear, default_gear);
 
 end;
 
@@ -62,18 +62,18 @@ architecture def of ecp5_videopll is
 	attribute FREQUENCY_PIN_CLKOP  : string;
 
 	constant video_freq : real :=
-		(real(video_record.pll.clkfb_div*video_record.pll.clkos_div)*clkref_freq)/
-		(real(video_record.pll.clki_div*video_record.pll.clkos2_div));
+		(real(video_param.pll.clkfb_div*video_param.pll.clkos_div)*clkref_freq)/
+		(real(video_param.pll.clki_div*video_param.pll.clkos2_div));
 
 	constant video_clkop_freq : real := 
-		real(video_record.pll.clkfb_div*video_record.pll.clkos_div)*clkref_freq/
-		real(video_record.pll.clki_div*video_record.pll.clkop_div);
+		real(video_param.pll.clkfb_div*video_param.pll.clkos_div)*clkref_freq/
+		real(video_param.pll.clki_div*video_param.pll.clkop_div);
 	constant video_clkop_clampfreq : real := 
 		setif(video_clkop_freq > 400.0e6, 400.0e6, video_clkop_freq);
 
 	constant videoio_freq : real :=
-		(real(video_record.pll.clkfb_div*video_record.pll.clkos_div)*clkref_freq)/
-		(real(video_record.pll.clki_div*video_record.pll.clkos3_div));
+		(real(video_param.pll.clkfb_div*video_param.pll.clkos_div)*clkref_freq)/
+		(real(video_param.pll.clki_div*video_param.pll.clkos3_div));
 
 	attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(video_clkop_clampfreq/1.0e6, 10);
 	attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(           video_freq/1.0e6, 10);
@@ -103,7 +103,7 @@ begin
 		DPHASE_SOURCE    => "DISABLED",
 		PLL_LOCK_MODE    =>  0,
 		FEEDBK_PATH      => "CLKOS",
-		CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => video_record.pll.clkos_div-1,
+		CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => video_param.pll.clkos_div-1,
 		CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
 		CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
 		CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
@@ -114,12 +114,12 @@ begin
 		OUTDIVIDER_MUXB  => "DIVB",
 		OUTDIVIDER_MUXA  => "DIVA",
 
-		CLKOS_DIV        => video_record.pll.clkos_div,
-		CLKOS2_DIV       => video_record.pll.clkos2_div,
-		CLKOS3_DIV       => video_record.pll.clkos3_div,
-		CLKOP_DIV        => video_record.pll.clkop_div,
-		CLKFB_DIV        => video_record.pll.clkfb_div,
-		CLKI_DIV         => video_record.pll.clki_div)
+		CLKOS_DIV        => video_param.pll.clkos_div,
+		CLKOS2_DIV       => video_param.pll.clkos2_div,
+		CLKOS3_DIV       => video_param.pll.clkos3_div,
+		CLKOP_DIV        => video_param.pll.clkop_div,
+		CLKFB_DIV        => video_param.pll.clkfb_div,
+		CLKI_DIV         => video_param.pll.clki_div)
 	port map (
 		rst       => '0',
 		clki      => clk_ref,
