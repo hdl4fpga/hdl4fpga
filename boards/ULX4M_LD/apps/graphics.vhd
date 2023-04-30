@@ -146,7 +146,6 @@ architecture graphics of ulx4m_ld is
 begin
 
 	sys_rst <= '0';
-
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
 		clkref_freq => clk25mhz_freq,
@@ -175,7 +174,7 @@ begin
 
 	hdlc_g : if io_link=io_hdlc generate
 		constant uart_freq : real := 
-			real(video_param.pll.clkfb_div*video_param.pll.clkop_div)*clk25mhz_freq/
+			real(video_param.pll.clkfb_div*video_param.pll.clkos_div)*clk25mhz_freq/
 			real(video_param.pll.clki_div*video_param.pll.clkos3_div);
 		constant baudrate : natural := setif(
 			uart_freq >= 32.0e6, 3000000, setif(
