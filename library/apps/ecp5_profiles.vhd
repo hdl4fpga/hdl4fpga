@@ -36,53 +36,52 @@ package ecp5_profiles is
 	type app_profiles is (
 	--	Interface_SdramSpeed_VideoFormat --
 
-		hdlc_sdr133MHz_480p16bpp,        --
-		hdlc_sdr133MHz_480p24bpp,        --
-		hdlc_sdr133MHz_600p16bpp,        --
-		hdlc_sdr133MHz_600p24bpp,        --
-		hdlc_sdr133MHz_768p24bpp,        --
-		hdlc_sdr133MHz_720p16bpp,        --
-		hdlc_sdr133MHz_720p24bpp,        --
+		hdlc_sdr133MHz_480p16bpp,  
+		hdlc_sdr133MHz_480p24bpp,
+		hdlc_sdr133MHz_600p16bpp,   
+		hdlc_sdr133MHz_600p24bpp,   
+		hdlc_sdr133MHz_768p24bpp,   
+		hdlc_sdr133MHz_720p16bpp,   
+		hdlc_sdr133MHz_720p24bpp,   
 
-		hdlc_sdr150MHz_720p24bpp,        --
+		hdlc_sdr150MHz_720p24bpp,   
 
-		hdlc_sdr166MHz_480p16bpp,        --
-		hdlc_sdr166MHz_480p24bpp,        --
-		hdlc_sdr166MHz_600p16bpp,        --
-		hdlc_sdr166MHz_600p24bpp,        --
-		hdlc_sdr166MHz_720p24bpp,        --
-		hdlc_sdr166MHz_1080p16bpp30,     --
-		hdlc_sdr166MHz_1080p24bpp30,     --
+		hdlc_sdr166MHz_480p16bpp,   
+		hdlc_sdr166MHz_480p24bpp,   
+		hdlc_sdr166MHz_600p16bpp,   
+		hdlc_sdr166MHz_600p24bpp,   
+		hdlc_sdr166MHz_720p24bpp,   
+		hdlc_sdr166MHz_1080p16bpp30,
+		hdlc_sdr166MHz_1080p24bpp30,
 
-		hdlc_sdr200MHz_480p16bpp,        --
-		hdlc_sdr200MHz_480p24bpp,        --
-		hdlc_sdr200MHz_600p24bpp,        --
-		hdlc_sdr200MHz_600p16bpp,        --
-		hdlc_sdr200MHz_720p24bpp,        --
-		hdlc_sdr200MHz_1080p16bpp30,     --
-		hdlc_sdr200MHz_1080p24bpp30,     --
+		hdlc_sdr200MHz_480p16bpp,   
+		hdlc_sdr200MHz_480p24bpp,   
+		hdlc_sdr200MHz_600p24bpp,   
+		hdlc_sdr200MHz_600p16bpp,   
+		hdlc_sdr200MHz_720p24bpp,   
+		hdlc_sdr200MHz_1080p16bpp30,
+		hdlc_sdr200MHz_1080p24bpp30,
 
-		hdlc_sdr225MHz_480p16bpp,        --
-		hdlc_sdr225MHz_480p24bpp,        --
-		hdlc_sdr225MHz_600p16bpp,        --
-		hdlc_sdr225MHz_600p24bpp,        --
-		hdlc_sdr225MHz_720p24bpp,        --
-		hdlc_sdr225MHz_1080p16bpp30,     --
-		hdlc_sdr225MHz_1080p24bpp30,     --
-		hdlc_sdr225MHz_1440p24bpp25,     --
-		hdlc_sdr225MHz_1440p24bpp30,     --
+		hdlc_sdr225MHz_480p16bpp,   
+		hdlc_sdr225MHz_480p24bpp,   
+		hdlc_sdr225MHz_600p16bpp,   
+		hdlc_sdr225MHz_600p24bpp,   
+		hdlc_sdr225MHz_720p24bpp,   
+		hdlc_sdr225MHz_1080p16bpp30,
+		hdlc_sdr225MHz_1080p24bpp30,
+		hdlc_sdr225MHz_1440p24bpp25,
+		hdlc_sdr225MHz_1440p24bpp30,
 
-		hdlc_sdr250MHz_480p16bpp,        --
-		hdlc_sdr250MHz_600p16bpp,        --
-		hdlc_sdr250MHz_600p24bpp,        --
-		hdlc_sdr250MHz_720p24bpp,        --
-		hdlc_sdr250MHz_1080p16bpp30,     --
-		hdlc_sdr250MHz_1080p24bpp30,     --
+		hdlc_sdr250MHz_480p16bpp,   
+		hdlc_sdr250MHz_600p16bpp,   
+		hdlc_sdr250MHz_600p24bpp,   
+		hdlc_sdr250MHz_720p24bpp,   
+		hdlc_sdr250MHz_1080p16bpp30,
+		hdlc_sdr250MHz_1080p24bpp30,
 
-		ipoe_sdr166MHz_480p24bpp,        --
-		ipoe_sdr200MHz_1080p24bpp30,        --
+		ipoe_sdr166MHz_480p24bpp,   
+		ipoe_sdr200MHz_1080p24bpp30,
 		ipoe_sdr250MHz_1080p24bpp30,
-	---------------------------------------
 		hdlc_sdr325MHz_480p24bpp,
 		hdlc_sdr350MHz_480p24bpp,
 		hdlc_sdr375MHz_480p24bpp,
@@ -205,18 +204,18 @@ package ecp5_profiles is
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,        pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 2, pixel => rgb888, timing => pclk_debug),
-		(id => mode480p16bpp,    pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), gear => 2, pixel => rgb565, timing => pclk25_00m640x480at60),
-		(id => mode480p24bpp,    pll => (clkos_div => 5, clkop_div => 25,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), gear => 2, pixel => rgb888, timing => pclk25_00m640x480at60),
-		(id => mode600p16bpp,    pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 10), gear => 2, pixel => rgb565, timing => pclk40_00m800x600at60),
-		(id => mode600p24bpp,    pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 10), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60),
-		(id => mode768p24bpp,    pll => (clkos_div => 2, clkop_div => 26,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 16), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60),
-		(id => mode720p16bpp,    pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 2, pixel => rgb565, timing => pclk75_00m1280x720at60),
-		(id => mode720p24bpp,    pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 2, pixel => rgb888, timing => pclk75_00m1280x720at60),
-		(id => mode1080p16bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb565, timing => pclk150_00m1920x1080at60),
-		(id => mode1080p24bpp30, pll => (clkos_div => 2, clkop_div => 30,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb888, timing => pclk150_00m1920x1080at60),
-		(id => mode1440p24bpp25, pll => (clkos_div => 1, clkop_div => 19,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 12), gear => 7, pixel => rgb888, timing => pclk115_00m2560x1440at60),
-		(id => mode1440p24bpp30, pll => (clkos_div => 1, clkop_div => 23,  clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 14), gear => 7, pixel => rgb888, timing => pclk115_00m2560x1440at60));
+		(id => modedebug,        pll => (clkos_div => 30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 2, pixel => rgb888, timing => pclk_debug),
+		(id => mode480p16bpp,    pll => (clkos_div => 25, clkop_div => 5, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), gear => 2, pixel => rgb565, timing => pclk25_00m640x480at60),
+		(id => mode480p24bpp,    pll => (clkos_div => 25, clkop_div => 5, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), gear => 2, pixel => rgb888, timing => pclk25_00m640x480at60),
+		(id => mode600p16bpp,    pll => (clkos_div => 16, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 10), gear => 2, pixel => rgb565, timing => pclk40_00m800x600at60),
+		(id => mode600p24bpp,    pll => (clkos_div => 16, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 10), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60),
+		(id => mode768p24bpp,    pll => (clkos_div => 26, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 16), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60),
+		(id => mode720p16bpp,    pll => (clkos_div => 30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 2, pixel => rgb565, timing => pclk75_00m1280x720at60),
+		(id => mode720p24bpp,    pll => (clkos_div => 30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 2, pixel => rgb888, timing => pclk75_00m1280x720at60),
+		(id => mode1080p16bpp30, pll => (clkos_div => 30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb565, timing => pclk150_00m1920x1080at60),
+		(id => mode1080p24bpp30, pll => (clkos_div => 30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb888, timing => pclk150_00m1920x1080at60),
+		(id => mode1440p24bpp25, pll => (clkos_div => 19, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 12), gear => 7, pixel => rgb888, timing => pclk115_00m2560x1440at60),
+		(id => mode1440p24bpp30, pll => (clkos_div => 23, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 14), gear => 7, pixel => rgb888, timing => pclk115_00m2560x1440at60));
 
 	function videoparam (
 		constant id  : video_modes)

@@ -40,20 +40,22 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	-- constant app_profile : app_profiles := hdlc_sdr225MHz_1440p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr250MHz_1080p24bpp30;
+	-- constant app_profile : app_profiles := hdlc_sdr250MHz_720p24bpp;
+	-- constant app_profile : app_profiles := hdlc_sdr225MHz_1440p24bpp30;
+	constant app_profile : app_profiles := hdlc_sdr225MHz_720p24bpp;
 	-- constant app_profile : app_profiles := hdlc_sdr200MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr166MHz_1080p24bpp30;
-	constant app_profile : app_profiles := hdlc_sdr166MHz_720p24bpp;
+	-- constant app_profile : app_profiles := hdlc_sdr166MHz_720p24bpp;
 	-- constant app_profile : app_profiles := hdlc_sdr133MHz_600p24bpp;
 	--------------------------------------
 
 	constant video_mode   : video_modes := setdebug(debug, profile_tab(app_profile).video_mode);
 	constant video_record : video_params := videoparam(video_mode);
 
-	constant sdram_speed  : sdram_speeds := sdram_speeds'VAL(setif(not debug,
-		sdram_speeds'POS(profile_tab(app_profile).sdram_speed),
-		sdram_speeds'POS(sdram166MHz)));
+	constant sdram_speed  : sdram_speeds := sdram_speeds'VAL(setif(debug,
+		sdram_speeds'POS(sdram166MHz),
+		sdram_speeds'POS(profile_tab(app_profile).sdram_speed)));
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := 
 		real(sdram_params.pll.clki_div*sdram_params.pll.clkop_div)/
@@ -117,7 +119,7 @@ begin
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
 		clkref_freq  => clk25mhz_freq,
-		video_gear   => video_gear,
+		default_gear => video_gear,
 		video_record => video_record)
 	port map (
 		clk_ref     => clk_25mhz,
@@ -153,29 +155,29 @@ begin
 
 	hdlc_g : if io_link=io_hdlc generate
 		constant uart_freq : real := 
-			real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq/
+			real(video_record.pll.clkfb_div*video_record.pll.clkos_div)*clk25mhz_freq/
 			real(video_record.pll.clki_div*video_record.pll.clkos3_div);
 		constant baudrate : natural := setif(
 			uart_freq >= 32.0e6, 3000000, setif(
 			uart_freq >= 25.0e6, 2000000,
 								 115200));
-		alias uart_clk is sio_clk;
+		signal uart_clk : std_logic;
 	begin
-
-		ftdi_txden <= '1';
 		nodebug_g : if not debug generate
 			uart_clk <= videoio_clk;
+			sio_clk  <= videoio_clk;
 		end generate;
 
 		debug_g : if debug generate
 			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
+			sio_clk  <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
 		end generate;
 
 		hdlc_e : entity hdl4fpga.hdlc_link
 		generic map (
 			uart_freq => uart_freq,
-			baudrate => baudrate,
-			mem_size => mem_size)
+			baudrate  => baudrate,
+			mem_size  => mem_size)
 		port map (
 			sio_clk   => uart_clk,
 			si_frm    => si_frm,
@@ -191,166 +193,42 @@ begin
 			uart_frm  => video_lck,
 			uart_sin  => ftdi_txd,
 			uart_sout => ftdi_rxd);
+
+		ftdi_txden <= '1';
 	end generate;
 
 	ipoe_e : if io_link=io_ipoe generate
-	begin
 
-		rmii_b : block
-			generic (
-				n : natural);
-			generic map (
-				n => 2);
-			port (
-				dhcp_btn : in  std_logic;
-
-				mii_rxc  : in  std_logic;
-				mii_rxdv : in  std_logic;
-				mii_rxd  : in  std_logic_vector(0 to n-1);
-
-				mii_txc  : in  std_logic;
-				mii_txen : out std_logic;
-				mii_txd  : out std_logic_vector(0 to n-1));
-			port map (
-				dhcp_btn   => fire1,
-				mii_txc    => rmii_nint,
-				mii_txen   => rmii_tx_en,
-				mii_txd(0) => rmii_tx0,
-				mii_txd(1) => rmii_tx1,
-
-				mii_rxc    => rmii_nint,
-				mii_rxdv   => rmii_crs,
-				mii_rxd(0) => rmii_rx0,
-				mii_rxd(1) => rmii_rx1);
-
-			signal dhcpcd_req : std_logic;
-			signal dhcpcd_rdy : std_logic;
-
-			signal miitx_frm  : std_logic;
-			signal miitx_irdy : std_logic;
-			signal miitx_trdy : std_logic;
-			signal miitx_end  : std_logic;
-			signal miitx_data : std_logic_vector(si_data'range);
-
-		begin
-		
-			dhcp_p : process(mii_txc)
-				type states is (s_request, s_wait);
-				variable state : states;
-			begin
-				if rising_edge(mii_txc) then
-					case state is
-					when s_request =>
-						if dhcp_btn='1' then
-							dhcpcd_req <= not dhcpcd_rdy;
-							state := s_wait;
-						end if;
-					when s_wait =>
-						if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-							if dhcp_btn='0' then
-								state := s_request;
-							end if;
-						end if;
-					end case;
-				end if;
-			end process;
-
-			udpdaisy_e : entity hdl4fpga.sio_dayudp
-			generic map (
-				my_mac        => x"00_40_00_01_02_03",
-				default_ipv4a => aton("192.168.1.1"))
-			port map (
-				hdplx      => hdplx,
-				mii_clk    => mii_txc,
-				dhcpcd_req => dhcpcd_req,
-				dhcpcd_rdy => dhcpcd_rdy,
-				miirx_frm  => mii_rxdv,
-				miirx_data => mii_rxd,
-			
-				miitx_frm  => miitx_frm,
-				miitx_irdy => miitx_irdy,
-				miitx_trdy => miitx_trdy,
-				miitx_end  => miitx_end,
-				miitx_data => miitx_data,
-			
-				si_frm     => si_frm,
-				si_irdy    => si_irdy,
-				si_trdy    => si_trdy,
-				si_end     => si_end,
-				si_data    => si_data,
-			
-				so_clk     => mii_txc,
-				so_frm     => so_frm,
-				so_irdy    => so_irdy,
-				so_trdy    => so_trdy,
-				so_data    => so_data);
-			
-			desser_e: entity hdl4fpga.desser
-			port map (
-				desser_clk => mii_txc,
-			
-				des_frm  => miitx_frm,
-				des_irdy => miitx_irdy,
-				des_trdy => miitx_trdy,
-				des_data => miitx_data,
-			
-				ser_irdy => open,
-				ser_data => mii_txd);
-			
-			mii_txen <= miitx_frm and not miitx_end;
-		end block;
-		
-		miirefclk_b : block
-			type ref_freqs is (f25MHz, f50MHz);
-			constant ref_freq : ref_freqs := f25MHz;
-
-			signal shtclk : std_logic;
-			signal d0     : std_logic;
-			signal d1     : std_logic;
-			signal refclk : std_logic;
-			
-		begin
-
-			ref50_g : if ref_freq=f50MHz generate
-			begin
-				process (video_shift_clk)
-					variable reg : unsigned(0 to 10-1) := b"11_10_01_11_00";
-				begin
-					if rising_edge(video_shift_clk) then
-						reg := reg rol 2;
-					end if;
-					d0 <= reg(0);
-					d1 <= reg(1);
-				end process;
-				shtclk <= video_shift_clk;
-			end generate;
-
-			ref25_g : if ref_freq=f25MHz generate
-				shtclk <= clk_25mhz;
-				d0     <= '1';
-				d1     <= '0';
-			end generate;
+		rmii_e : entity hdl4fpga.link_rmii
+		generic map (
+			default_mac   => x"00_40_00_01_02_03",
+			default_ipv4a => aton("192.168.1.1"),
+			n             => 2)
+		port map (
+			si_frm     => si_frm,
+			si_irdy    => si_irdy,
+			si_trdy    => si_trdy,
+			si_end     => si_end,
+			si_data    => si_data,
 	
-			oddr_i : oddrx1f
-			port map(
-				sclk => video_shift_clk,
-				rst  => '0',
-				d0   => d0,
-				d1   => d1,
-				q    => refclk);
+			so_frm     => so_frm,
+			so_irdy    => so_irdy,
+			so_trdy    => so_trdy,
+			so_data    => so_data,
+			dhcp_btn   => fire1,
+			hdplx      => hdplx,
+			mii_txc    => rmii_nint,
+			mii_txen   => rmii_tx_en,
+			mii_txd(0) => rmii_tx0,
+			mii_txd(1) => rmii_tx1,
 
-			debug_g : block
-				signal debug_clk : std_logic;
-			begin
-				debug_clk <= not to_stdulogic(to_bit(debug_clk)) after 0.1 ns /2;
-				rmii_refclk <= refclk when video_mode/=modedebug else debug_clk;
-			end block;
+			mii_rxc    => rmii_nint,
+			mii_rxdv   => rmii_crs,
+			mii_rxd(0) => rmii_rx0,
+			mii_rxd(1) => rmii_rx1);
 
-	
-		end block;
-
-		wifi_en   <= '0';
 		sio_clk   <= rmii_nint;
+		wifi_en   <= '0';
 		rmii_mdio <= '0';
 		rmii_mdc  <= '0';
 
@@ -462,17 +340,16 @@ begin
 
 	hdmi_b : block
 		signal crgb : std_logic_vector(dvid_crgb'range);
-		signal q : std_logic_vector(gpdi_d'range);
+		signal q    : std_logic_vector(gpdi_d'range);
 	begin
-
 		reg_e : entity hdl4fpga.latency
 		generic map (
 			n => dvid_crgb'length,
 			d => (dvid_crgb'range => 1))
 		port map (
 			clk => video_shift_clk,
-			di => dvid_crgb,
-			do => crgb);
+			di  => dvid_crgb,
+			do  => crgb);
 
 		gbx_g : entity hdl4fpga.ecp5_ogbx
 	   	generic map (
@@ -509,5 +386,4 @@ begin
 			q1 := not q1;
 		end if;
 	end process;
-
 end;

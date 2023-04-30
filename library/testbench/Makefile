@@ -191,6 +191,8 @@ HDL4FPGA__mii_buffer__def = $(LIB_HDL4FPGA)/mii_buffer/def.dat
 HDL4FPGA__mii_buffer = $(LIB_HDL4FPGA)/mii_buffer/_primary.dat
 HDL4FPGA__mii_1cksm__beh = $(LIB_HDL4FPGA)/mii_1cksm/beh.dat
 HDL4FPGA__mii_1cksm = $(LIB_HDL4FPGA)/mii_1cksm/_primary.dat
+HDL4FPGA__link_rmii__graphics = $(LIB_HDL4FPGA)/link_rmii/graphics.dat
+HDL4FPGA__link_rmii = $(LIB_HDL4FPGA)/link_rmii/_primary.dat
 HDL4FPGA__latency__def = $(LIB_HDL4FPGA)/latency/def.dat
 HDL4FPGA__latency = $(LIB_HDL4FPGA)/latency/_primary.dat
 HDL4FPGA__ipv4_tx__def = $(LIB_HDL4FPGA)/ipv4_tx/def.dat
@@ -518,6 +520,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__mii_buffer) \
     $(HDL4FPGA__mii_1cksm__beh) \
     $(HDL4FPGA__mii_1cksm) \
+    $(HDL4FPGA__link_rmii__graphics) \
+    $(HDL4FPGA__link_rmii) \
     $(HDL4FPGA__latency__def) \
     $(HDL4FPGA__latency) \
     $(HDL4FPGA__ipv4_tx__def) \
@@ -1412,6 +1416,26 @@ $(HDL4FPGA__latency__def) : ../basic/latency.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/latency.vhd
+
+$(HDL4FPGA__link_rmii) \
+$(HDL4FPGA__link_rmii__graphics) : ../apps/link_rmii.vhd \
+		$(HDL4FPGA__desser) \
+		$(HDL4FPGA__sio_dayudp) \
+		$(IEEE__std_logic_arith) \
+		$(ECP5U__components) \
+		$(HDL4FPGA__ecp5_profiles) \
+		$(HDL4FPGA__app_profiles) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__sdram_param) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../apps/link_rmii.vhd
 
 $(HDL4FPGA__mii_1cksm) \
 $(HDL4FPGA__mii_1cksm__beh) : ../mii/mii_1cksm.vhd \

@@ -38,7 +38,7 @@ use ecp5u.components.all;
 entity ecp5_videopll is
 	generic (
 		clkref_freq  : real;
-		video_gear   : natural := 0;
+		default_gear : natural := 0;
 		video_record : video_params);
 	port (
 		clk_ref      : in std_logic;
@@ -49,7 +49,7 @@ entity ecp5_videopll is
 		video_phyrst : buffer std_logic;
 		video_lck    : buffer std_logic);
 
-	constant gear  : natural := setif(video_gear=0,video_record.gear, video_gear);
+	constant gear  : natural := setif(default_gear=0,video_record.gear, default_gear);
 
 end;
 
@@ -62,24 +62,24 @@ architecture def of ecp5_videopll is
 	attribute FREQUENCY_PIN_CLKOP  : string;
 
 	constant video_freq : real :=
-		(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clkref_freq)/
+		(real(video_record.pll.clkfb_div*video_record.pll.clkos_div)*clkref_freq)/
 		(real(video_record.pll.clki_div*video_record.pll.clkos2_div));
 
-	constant video_clkos_freq : real := setif(
-		(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clkref_freq)/
-		(real(video_record.pll.clki_div*video_record.pll.clkos_div)) > 400.0e6, 400.0e6,
-		(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clkref_freq)/
-		(real(video_record.pll.clki_div*video_record.pll.clkos_div)));
+	constant video_clkop_freq : real := 
+		real(video_record.pll.clkfb_div*video_record.pll.clkos_div)*clkref_freq/
+		real(video_record.pll.clki_div*video_record.pll.clkop_div);
+	constant video_clkop_clampfreq : real := 
+		setif(video_clkop_freq > 400.0e6, 400.0e6, video_clkop_freq);
 
 	constant videoio_freq : real :=
-		(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clkref_freq)/
+		(real(video_record.pll.clkfb_div*video_record.pll.clkos_div)*clkref_freq)/
 		(real(video_record.pll.clki_div*video_record.pll.clkos3_div));
 
-	attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(video_clkos_freq/1.0e6, 10);
-	attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(      video_freq/1.0e6, 10);
-	attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is ftoa(    videoio_freq/1.0e6, 10);
-	attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(     clkref_freq/1.0e6, 10);
-	attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(     clkref_freq/1.0e6, 10);
+	attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(video_clkop_clampfreq/1.0e6, 10);
+	attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(           video_freq/1.0e6, 10);
+	attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is ftoa(         videoio_freq/1.0e6, 10);
+	attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(          clkref_freq/1.0e6, 10);
+	attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(          clkref_freq/1.0e6, 10);
 
 	signal clkop  : std_logic;
 	signal clkos  : std_logic;
@@ -87,7 +87,12 @@ architecture def of ecp5_videopll is
 
 begin
 	assert false
-	report "VIDEO CLK FREQUENCY : " & ftoa(video_freq/1.0e6, 6) & " MHz"
+	report 
+		"VIDEO CLK FREQUENCY : " & ftoa(video_freq/1.0e6, 6) & " MHz " &
+		pll_i'FREQUENCY_PIN_CLKOP  & " " &
+		pll_i'FREQUENCY_PIN_CLKOS  & " " &
+		pll_i'FREQUENCY_PIN_CLKOS2 & " " &
+		pll_i'FREQUENCY_PIN_CLKOS3
 	severity NOTE;
 
 	pll_i : EHXPLLL
@@ -97,11 +102,11 @@ begin
 		STDBY_ENABLE     => "DISABLED",
 		DPHASE_SOURCE    => "DISABLED",
 		PLL_LOCK_MODE    =>  0,
-		FEEDBK_PATH      => "CLKOP",
-		CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
+		FEEDBK_PATH      => "CLKOS",
+		CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => video_record.pll.clkos_div-1,
 		CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
 		CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
-		CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => video_record.pll.clkop_div-1,
+		CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
 		CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
 		CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
 		OUTDIVIDER_MUXD  => "DIVD",
@@ -118,7 +123,7 @@ begin
 	port map (
 		rst       => '0',
 		clki      => clk_ref,
-		CLKFB     => clkop,
+		CLKFB     => clkos,
 		PHASESEL0 => '0', PHASESEL1 => '0',
 		PHASEDIR  => '0',
 		PHASESTEP => '0', PHASELOADREG => '0',
@@ -138,8 +143,8 @@ begin
 
 	gbx21_g : if gear=2 generate
 		video_phyrst    <= not video_lck;
-		video_eclk      <= clkos;
-		video_shift_clk <= clkos;
+		video_eclk      <= clkop;
+		video_shift_clk <= clkop;
 	end generate;
 
 	gbx71_g : if gear=4 or gear=7 generate
@@ -159,10 +164,10 @@ begin
 		signal cdivx    : std_logic;
 
 		attribute FREQUENCY_PIN_ECLKO : string;
-		attribute FREQUENCY_PIN_ECLKO of eclksyncb_i : label is ftoa(video_clkos_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_ECLKO of eclksyncb_i : label is ftoa(video_clkop_clampfreq/1.0e6, 10);
 
 		attribute FREQUENCY_PIN_CDIVX : string;
-		attribute FREQUENCY_PIN_CDIVX of clkdivf_i   : label is ftoa((video_clkos_freq/setif(gear=4,2.0,3.5))/1.0e6, 10);
+		attribute FREQUENCY_PIN_CDIVX of clkdivf_i   : label is ftoa((video_clkop_clampfreq/setif(gear=4,2.0,3.5))/1.0e6, 10);
 
 	begin
 		gddr_rst <= not video_lck;
@@ -178,7 +183,7 @@ begin
 		eclksyncb_i : eclksyncb
 		port map (
 			stop  => stop,
-			eclki => clkos,
+			eclki => clkop,
 			eclko => eclko);
 	
 		clkdivf_i : clkdivf
@@ -190,7 +195,7 @@ begin
 			clki    => eclko,
 			cdivx   => cdivx);
 		video_eclk      <= eclko;
-		video_shift_clk <= transport cdivx after natural((3.0/4.0)/(video_clkos_freq*1.0e12))*1 ps;
+		video_shift_clk <= transport cdivx after natural((3.0/4.0)/(video_clkop_freq*1.0e12))*1 ps;
 	end generate;
 
 end;
