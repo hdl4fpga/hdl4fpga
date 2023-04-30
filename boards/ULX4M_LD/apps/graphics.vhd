@@ -203,9 +203,6 @@ begin
 			OUTDIVIDER_MUXB  => "DIVB",
 			OUTDIVIDER_MUXA  => "DIVA",
 
---			CLKOS_DIV        => sdram_params.pll.clkos_div,
---			CLKOS2_DIV       => sdram_params.pll.clkos2_div,
---			CLKOS3_DIV       => sdram_params.pll.clkos3_div,
 			CLKOP_DIV        => sdram_params.pll.clkop_div,
 			CLKFB_DIV        => sdram_params.pll.clkfb_div,
 			CLKI_DIV         => sdram_params.pll.clki_div)
