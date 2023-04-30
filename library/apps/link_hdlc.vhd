@@ -73,8 +73,9 @@ architecture def of hdlc_link is
 begin
 
 	assert FALSE
-		report "BAUDRATE : " & " " & integer'image(baudrate)
-		severity NOTE;
+	report CR & 
+		"BAUDRATE : " & " " & integer'image(baudrate)
+	severity NOTE;
 
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (

@@ -87,12 +87,12 @@ architecture def of ecp5_videopll is
 
 begin
 	assert false
-	report 
-		"VIDEO CLK FREQUENCY : " & ftoa(video_freq/1.0e6, 6) & " MHz " &
-		pll_i'FREQUENCY_PIN_CLKOP  & " " &
-		pll_i'FREQUENCY_PIN_CLKOS  & " " &
-		pll_i'FREQUENCY_PIN_CLKOS2 & " " &
-		pll_i'FREQUENCY_PIN_CLKOS3
+	report CR &
+		"VIDEO CLK FREQUENCY : " & ftoa(video_freq/1.0e6, 6) & " MHz" & CR &
+		"CLKOP  : " & pll_i'FREQUENCY_PIN_CLKOP  & " MHz "  & CR &
+		"CLKOS  : " & pll_i'FREQUENCY_PIN_CLKOS  & " MHz "  & CR &
+		"CLKOS2 : " & pll_i'FREQUENCY_PIN_CLKOS2 & " MHz "  & CR &
+		"CLKOS3 : " & pll_i'FREQUENCY_PIN_CLKOS3 & " MHz "
 	severity NOTE;
 
 	pll_i : EHXPLLL

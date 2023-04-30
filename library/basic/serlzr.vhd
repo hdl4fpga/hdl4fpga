@@ -104,20 +104,20 @@ architecture def of serlzr  is
 			end if;
 
 			assert not debug_max
-			report "MAX SHIFT   : " & natural'image(max)
+			report CR & "MAX SHIFT   : " & natural'image(max)
 			severity note;
 
 			assert not debug_shft
-			report "SHIFT VALUE : " & natural'image(shft)
+			report CR & "SHIFT VALUE : " & natural'image(shft)
 			severity note;
 
 			mask0 := barrel_stage(mask0,shft, '0');
 			-- mask1 := barrel_stage(mask1,shft, '1');
 			assert not debug_mask
-			report "UPDATED MASK0 : " & natural'image(mask0)
+			report CR & "UPDATED MASK0 : " & natural'image(mask0)
 			severity note;
 			assert not debug_mask
-			report "UPDATED MASK1 : " & natural'image(mask1)
+			report CR & "UPDATED MASK1 : " & natural'image(mask1)
 			severity note;
 
 			while shft >= dst_size loop
@@ -126,14 +126,14 @@ architecture def of serlzr  is
 				-- mask1 := barrel_stage(mask1,shft, '1');
 
 				assert not debug_shft
-				report "SHIFT ALUE : " & natural'image(shft)
+				report CR & "SHIFT ALUE : " & natural'image(shft)
 				severity note;
 
 				assert not debug_mask
-				report "UPDATED MASK0 : " & natural'image(mask0)
+				report CR & "UPDATED MASK0 : " & natural'image(mask0)
 				severity note;
 				assert not debug_mask
-				report "UPDATED MASK1 : " & natural'image(mask1)
+				report CR & "UPDATED MASK1 : " & natural'image(mask1)
 				severity note;
 
 			end loop;
@@ -153,7 +153,7 @@ architecture def of serlzr  is
 begin 
 
 	assert not debug_mm
-	report "(MAX => " & natural'image(mm(0)) & ", MASK0 => " & to_string((to_unsigned(mm(1), shf'length))) & ", MASK1 => " & to_string((to_unsigned(mm(2), shf'length))) & ")"
+	report CR & "(MAX => " & natural'image(mm(0)) & ", MASK0 => " & to_string((to_unsigned(mm(1), shf'length))) & ", MASK1 => " & to_string((to_unsigned(mm(2), shf'length))) & ")"
 	severity note;
 
 	fifoon_g : if fifo_mode generate

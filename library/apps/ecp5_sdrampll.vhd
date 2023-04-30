@@ -79,7 +79,10 @@ architecture def of ecp5_sdrampll is
 begin
 
 	assert false
-	report "SDRAM CLK FREQUENCY : " & ftoa(sdram_freq/1.0e6, 6) & " MHz " & pll_i'FREQUENCY_PIN_CLKOS
+	report CR &
+		"SDRAM CLK FREQUENCY : " & ftoa(sdram_freq/1.0e6, 6) & " MHz" & CR & 
+		"CLKOP  : " & pll_i'FREQUENCY_PIN_CLKOP  & " MHz "  & CR &
+		"CLKOS  : " & pll_i'FREQUENCY_PIN_CLKOS  & " MHz "
 	severity NOTE;
 
 	pll_i : EHXPLLL

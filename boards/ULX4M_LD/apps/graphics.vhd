@@ -344,21 +344,17 @@ begin
 			uart_freq >= 32.0e6, 3000000, setif(
 			uart_freq >= 25.0e6, 2000000,
 								 115200));
-		alias uart_clk is sio_clk;
+		signal uart_clk : std_logic;
 	begin
-
-		ftdi_txden <= '1';
 		nodebug_g : if not debug generate
 			uart_clk <= videoio_clk;
+			sio_clk  <= videoio_clk;
 		end generate;
 
 		debug_g : if debug generate
 			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
+			sio_clk  <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
 		end generate;
-
-		assert FALSE
-			report "BAUDRATE : " & " " & integer'image(baudrate)
-			severity NOTE;
 
 		hdlc_e : entity hdl4fpga.hdlc_link
 		generic map (
@@ -380,6 +376,8 @@ begin
 			uart_frm  => video_lck,
 			uart_sin  => ftdi_txd,
 			uart_sout => ftdi_rxd);
+
+		ftdi_txden <= '1';
 	end generate;
 
 	assert io_link/=io_ipoe 
