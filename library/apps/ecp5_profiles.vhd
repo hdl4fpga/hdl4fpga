@@ -232,24 +232,24 @@ package ecp5_profiles is
 
 	type sdramparams_vector is array (natural range <>) of sdramparams_record;
 	constant sdram_tab : sdramparams_vector := (
-		(id => sdram133MHz, pll => (clkos_div => 2, clkop_div => 16, clkfb_div =>  1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cl => "010", cwl => "---", wrl => "---"),
-		(id => sdram150MHz, pll => (clkos_div => 2, clkop_div => 18, clkfb_div =>  1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
-		(id => sdram166MHz, pll => (clkos_div => 2, clkop_div => 20, clkfb_div =>  1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
-		(id => sdram200MHz, pll => (clkos_div => 2, clkop_div => 16, clkfb_div =>  1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
-		(id => sdram225MHz, pll => (clkos_div => 2, clkop_div => 27, clkfb_div =>  1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
-		(id => sdram233MHz, pll => (clkos_div => 2, clkop_div => 28, clkfb_div =>  1, clki_div => 1, clkos2_div => 3, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
-		(id => sdram250MHz, pll => (clkos_div => 2, clkop_div => 20, clkfb_div =>  1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
-		(id => sdram262MHz, pll => (clkos_div => 2, clkop_div => 21, clkfb_div =>  1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
-		(id => sdram275MHz, pll => (clkos_div => 2, clkop_div => 22, clkfb_div =>  1, clki_div => 1, clkos2_div => 2, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
+		(id => sdram133MHz, pll => (clkos_div => 16, clkop_div => 3, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "010", cwl => "---", wrl => "---"),
+		(id => sdram150MHz, pll => (clkos_div => 18, clkop_div => 3, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
+		(id => sdram166MHz, pll => (clkos_div => 20, clkop_div => 3, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
+		(id => sdram200MHz, pll => (clkos_div => 16, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
+		(id => sdram225MHz, pll => (clkos_div => 27, clkop_div => 3, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
+		(id => sdram233MHz, pll => (clkos_div => 28, clkop_div => 3, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
+		(id => sdram250MHz, pll => (clkos_div => 20, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
+		(id => sdram262MHz, pll => (clkos_div => 21, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
+		(id => sdram275MHz, pll => (clkos_div => 22, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
 
-		(id => sdram325MHz, pll => (clkos_div => 1, clkop_div =>  1, clkfb_div => 13, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
-		(id => sdram350MHz, pll => (clkos_div => 1, clkop_div =>  1, clkfb_div => 14, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
-		(id => sdram375MHz, pll => (clkos_div => 1, clkop_div =>  1, clkfb_div => 15, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
-		(id => sdram400MHz, pll => (clkos_div => 1, clkop_div =>  1, clkfb_div => 16, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
-		(id => sdram425MHz, pll => (clkos_div => 1, clkop_div =>  1, clkfb_div => 17, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001", wrl => "011"),
-		(id => sdram450MHz, pll => (clkos_div => 1, clkop_div =>  1, clkfb_div => 18, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001", wrl => "011"),
-		(id => sdram475MHz, pll => (clkos_div => 1, clkop_div =>  1, clkfb_div => 19, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001", wrl => "100"),
-		(id => sdram500MHz, pll => (clkos_div => 1, clkop_div =>  1, clkfb_div => 20, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001", wrl => "100"));
+		(id => sdram325MHz, pll => (clkos_div => 13, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
+		(id => sdram350MHz, pll => (clkos_div => 14, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
+		(id => sdram375MHz, pll => (clkos_div => 15, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
+		(id => sdram400MHz, pll => (clkos_div => 16, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
+		(id => sdram425MHz, pll => (clkos_div => 17, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001", wrl => "011"),
+		(id => sdram450MHz, pll => (clkos_div => 18, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001", wrl => "011"),
+		(id => sdram475MHz, pll => (clkos_div => 19, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001", wrl => "100"),
+		(id => sdram500MHz, pll => (clkos_div => 20, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001", wrl => "100"));
 
 
 	function sdramparams (

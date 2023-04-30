@@ -35,11 +35,10 @@ use hdl4fpga.ecp5_profiles.all;
 library ecp5u;
 use ecp5u.components.all;
 
-entity sdrampll is
+entity ecp5_sdrampll is
 	generic (
 		gear         : natural;
 		clkref_freq  : real;
-		sdram_freq   : real;
 		sdram_params : sdramparams_record);
 	port (
 		clk_ref      : in  std_logic;
@@ -52,7 +51,7 @@ entity sdrampll is
 		sdrampll_lck : buffer std_logic);
 end;
 
-architecture def of sdrampll is
+architecture def of ecp5_sdrampll is
 
 	attribute FREQUENCY_PIN_CLKOS  : string;
 	attribute FREQUENCY_PIN_CLKOS2 : string;
@@ -60,6 +59,16 @@ architecture def of sdrampll is
 	attribute FREQUENCY_PIN_CLKI   : string;
 	attribute FREQUENCY_PIN_CLKOP  : string;
 
+	constant clkos_freq  : real :=
+		real(sdram_params.pll.clkfb_div)*clkref_freq/
+		real(sdram_params.pll.clki_div);
+
+	constant sdram_freq    : real := 
+		real(sdram_params.pll.clkfb_div*sdram_params.pll.clkos_div)*clkref_freq/
+		real(sdram_params.pll.clki_div*sdram_params.pll.clkop_div);
+
+ 
+	attribute FREQUENCY_PIN_CLKOS of pll_i : label is ftoa(clkos_freq/1.0e6, 10);
 	attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(setif(sdram_freq < 400.0e6, sdram_freq/1.0e6, 400.0), 10);
 	attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(clkref_freq/1.0e6, 10);
 
@@ -70,7 +79,7 @@ architecture def of sdrampll is
 begin
 
 	assert false
-	report "SDRAM CLK FREQUENCY : " & ftoa(sdram_freq/1.0e6, 6) & " MHz"
+	report "SDRAM CLK FREQUENCY : " & ftoa(sdram_freq/1.0e6, 6) & " MHz " & pll_i'FREQUENCY_PIN_CLKOS
 	severity NOTE;
 
 	pll_i : EHXPLLL
@@ -80,11 +89,11 @@ begin
 		STDBY_ENABLE     => "DISABLED",
 		DPHASE_SOURCE    => "DISABLED",
 		PLL_LOCK_MODE    =>  0,
-		FEEDBK_PATH      => "CLKOP",
-		CLKOS_ENABLE     => "DISABLED", CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
+		FEEDBK_PATH      => "CLKOS",
+		CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => sdram_params.pll.clkos_div-1,
 		CLKOS2_ENABLE    => "DISABLED", CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
 		CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
-		CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => sdram_params.pll.clkop_div-1,
+		CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
 		CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
 		CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
 		OUTDIVIDER_MUXD  => "DIVD",
@@ -92,16 +101,14 @@ begin
 		OUTDIVIDER_MUXB  => "DIVB",
 		OUTDIVIDER_MUXA  => "DIVA",
 
---		CLKOS_DIV        => sdram_params.pll.clkos_div,
---		CLKOS2_DIV       => sdram_params.pll.clkos2_div,
---		CLKOS3_DIV       => sdram_params.pll.clkos3_div,
+		CLKOS_DIV        => sdram_params.pll.clkos_div,
 		CLKOP_DIV        => sdram_params.pll.clkop_div,
 		CLKFB_DIV        => sdram_params.pll.clkfb_div,
 		CLKI_DIV         => sdram_params.pll.clki_div)
 	port map (
 		rst       => '0',
 		clki      => clk_ref,
-		CLKFB     => clkop,
+		CLKFB     => clkfb,
 		PHASESEL0 => '0', PHASESEL1 => '0',
 		PHASEDIR  => '0',
 		PHASESTEP => '0', PHASELOADREG => '0',
@@ -111,7 +118,7 @@ begin
 		ENCLKOS2  => '0',
 		ENCLKOS3  => '0',
 		CLKOP     => clkop,
-		CLKOS     => open,
+		CLKOS     => clkfb,
 		CLKOS2    => open,
 		CLKOS3    => open,
 		LOCK      => sdrampll_lck,
@@ -119,6 +126,9 @@ begin
 		REFCLK    => open,
 		CLKINTFB  => open);
 
+	gear1_g : if gear=1 generate
+		ctlr_clk <= clkop;
+	end generate;
 	gear4_g : if gear=4 generate
 
 		component mem_sync

@@ -38,16 +38,14 @@ use ecp5u.components.all;
 
 architecture graphics of ulx3s is
 
-	---------------------------------------
-	-- Set of profiles                   --
 	--------------------------------------
 	--     Set your profile here        --
 	-- constant app_profile : app_profiles := hdlc_sdr225MHz_1440p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr250MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr200MHz_1080p24bpp30;
 	-- constant app_profile : app_profiles := hdlc_sdr166MHz_1080p24bpp30;
-	-- constant app_profile : app_profiles := hdlc_sdr166MHz_720p24bpp;
-	constant app_profile : app_profiles := hdlc_sdr133MHz_600p24bpp;
+	constant app_profile : app_profiles := hdlc_sdr166MHz_720p24bpp;
+	-- constant app_profile : app_profiles := hdlc_sdr133MHz_600p24bpp;
 	--------------------------------------
 
 	constant video_mode   : video_modes := setdebug(debug, profile_tab(app_profile).video_mode);
@@ -58,8 +56,8 @@ architecture graphics of ulx3s is
 		sdram_speeds'POS(sdram166MHz)));
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := 
-		real(sdram_params.pll.clki_div*sdram_params.pll.clkos2_div)/
-		(real(sdram_params.pll.clkfb_div*sdram_params.pll.clkop_div)*clk25mhz_freq);
+		real(sdram_params.pll.clki_div*sdram_params.pll.clkop_div)/
+		(real(sdram_params.pll.clkfb_div*sdram_params.pll.clkos_div)*clk25mhz_freq);
 
 	constant bank_size   : natural := sdram_ba'length;
 	constant addr_size   : natural := sdram_a'length;
@@ -129,93 +127,29 @@ begin
 		video_eclk  => video_eclk,
 		video_lck   => video_lck);
 
-	sdrpll_b : block
+	sdrampll_e  : entity hdl4fpga.ecp5_sdrampll
+	generic map (
+		gear         => gear,
+		clkref_freq  => clk25mhz_freq,
+		sdram_params => sdram_params)
+	port map (
+		clk_ref  => clk_25mhz,
+		ctlr_rst => sdrsys_rst,
+		ctlr_clk => ctlr_clk);
 
-		attribute FREQUENCY_PIN_CLKOS  : string;
-		attribute FREQUENCY_PIN_CLKOS2 : string;
-		attribute FREQUENCY_PIN_CLKOS3 : string;
-		attribute FREQUENCY_PIN_CLKI   : string;
-		attribute FREQUENCY_PIN_CLKOP  : string;
-
-
-		constant sdram_freq  : real :=
-			(real(sdram_params.pll.clkfb_div*sdram_params.pll.clkop_div)*clk25mhz_freq)/
-			(real(sdram_params.pll.clki_div*sdram_params.pll.clkos2_div));
-
-		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
-		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(   sdram_freq/1.0e6, 10);
-
-		signal clkfb : std_logic;
-		signal lock  : std_logic;
-
+	process (ctlr_clk)
 	begin
-
-		assert false
-		report "SDRAM CLK FREQUENCY : " & ftoa(sdram_freq/1.0e6, 6) & " MHz"
-		severity NOTE;
-
-		pll_i : EHXPLLL
-		generic map (
-			PLLRST_ENA       => "DISABLED",
-			INTFB_WAKE       => "DISABLED",
-			STDBY_ENABLE     => "DISABLED",
-			DPHASE_SOURCE    => "DISABLED",
-			PLL_LOCK_MODE    =>  0,
-			FEEDBK_PATH      => "CLKOP",
-			CLKOS_ENABLE     => "DISABLED", CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0,
-			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
-			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
-			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => sdram_params.pll.clkop_div-1,
-			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
-			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
-			OUTDIVIDER_MUXD  => "DIVD",
-			OUTDIVIDER_MUXC  => "DIVC",
-			OUTDIVIDER_MUXB  => "DIVB",
-			OUTDIVIDER_MUXA  => "DIVA",
-
-			CLKOS2_DIV       => sdram_params.pll.clkos2_div,
-			CLKOP_DIV        => sdram_params.pll.clkop_div,
-			CLKFB_DIV        => sdram_params.pll.clkfb_div,
-			CLKI_DIV         => sdram_params.pll.clki_div)
-		port map (
-			rst       => '0',
-			clki      => clk_25mhz,
-			CLKFB     => clkfb,
-			PHASESEL0 => '0', PHASESEL1 => '0',
-			PHASEDIR  => '0',
-			PHASESTEP => '0', PHASELOADREG => '0',
-			STDBY     => '0', PLLWAKESYNC  => '0',
-			ENCLKOP   => '0',
-			ENCLKOS   => '0',
-			ENCLKOS2  => '0',
-			ENCLKOS3  => '0',
-			CLKOP     => clkfb,
-			CLKOS     => open,
-			CLKOS2    => ctlr_clk,
-			CLKOS3    => open,
-			LOCK      => lock,
-			INTLOCK   => open,
-			REFCLK    => open,
-			CLKINTFB  => open);
-
-		sdrsys_rst <= not lock;
-
-		process (ctlr_clk)
-		begin
-			if debug then
+		if debug then
+			sdram_dqs <= (others => not ctlr_clk);
+		else
+			case sdram_speed is
+			when sdram133MHz =>
+				sdram_dqs <= (others => ctlr_clk);
+			when others =>
 				sdram_dqs <= (others => not ctlr_clk);
-			else
-				case sdram_speed is
-				when sdram133MHz =>
-					sdram_dqs <= (others => ctlr_clk);
-				when others =>
-					sdram_dqs <= (others => not ctlr_clk);
-				end case;
-			end if;
-		end process;
-
-	end block;
+			end case;
+		end if;
+	end process;
 
 	hdlc_g : if io_link=io_hdlc generate
 		constant uart_freq : real := 
@@ -236,10 +170,6 @@ begin
 		debug_g : if debug generate
 			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
 		end generate;
-
-		assert FALSE
-			report "BAUDRATE : " & " " & integer'image(baudrate)
-			severity NOTE;
 
 		hdlc_e : entity hdl4fpga.hdlc_link
 		generic map (
