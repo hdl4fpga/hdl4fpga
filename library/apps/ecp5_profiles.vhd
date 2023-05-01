@@ -27,7 +27,6 @@ use ieee.std_logic_1164.all;
 library hdl4fpga;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.app_profiles.all;
-use hdl4fpga.app_profiles.all;
 
 package ecp5_profiles is
 
