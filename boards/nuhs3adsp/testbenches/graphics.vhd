@@ -200,12 +200,12 @@ begin
 		snd_data => snd_data,
 		req_data => req_data)
 	port map (
-		mii_clk   => mii_refclk,
-		mii_rxdv  => mii_txen,
-		mii_rxd   => mii_txd,
+		mii_clk  => mii_refclk,
+		mii_rxdv => mii_txen,
+		mii_rxd  => mii_txd,
 
-		mii_txen  => mii_rxdv,
-		mii_txd   => mii_rxd);
+		mii_txen => mii_rxdv,
+		mii_txd  => mii_rxd);
 
 	du_e : nuhs3adsp
 	port map (

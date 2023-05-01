@@ -36,9 +36,6 @@ architecture ulx4mld_graphics of testbench is
 	constant byte_bits      : natural := 8;
 	constant data_bits      : natural := byte_bits*data_bytes;
 
-	signal rst              : std_logic;
-	signal xtal             : std_logic := '0';
-
 	component ulx4m_ld is
 		generic (
 			debug           : boolean := debug);
@@ -102,40 +99,6 @@ architecture ulx4mld_graphics of testbench is
 			shutdown        : out   std_logic := '0');
 	end component;
 
-	constant snd_data : std_logic_vector := 
-		x"01007e" &
-		x"18ff"   &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_00000f_1603_0000_0000";
-	constant req_data : std_logic_vector := x"010000_1702_00000f_1603_8000_0000";
-
-	signal rst_n     : std_logic;
-	signal cke       : std_logic;
-	signal ddr_clk   : std_logic;
-	signal ddr_clk_p : std_logic;
-	signal ddr_clk_n : std_logic;
-	signal cs_n      : std_logic;
-	signal ras_n     : std_logic;
-	signal cas_n     : std_logic;
-	signal we_n      : std_logic;
-	signal ba        : std_logic_vector(bank_bits-1 downto 0);
-	signal addr      : std_logic_vector(addr_bits-1 downto 0) := (others => '0');
-	signal dq        : std_logic_vector(data_bytes*byte_bits-1 downto 0) := (others => 'Z');
-	signal dqs       : std_logic_vector(data_bytes-1 downto 0) := (others => 'Z');
-	signal dqs_n     : std_logic_vector(dqs'range) := (others => 'Z');
-	signal dm        : std_logic_vector(data_bytes-1 downto 0);
-	signal odt       : std_logic;
-	signal scl       : std_logic;
-	signal sda       : std_logic;
-	signal tdqs_n    : std_logic_vector(dqs'range);
-
 	component ddr3_model is
 		port (
 			rst_n   : in std_logic;
@@ -156,20 +119,39 @@ architecture ulx4mld_graphics of testbench is
 			odt     : in std_logic);
 	end component;
 
-	signal gpio6  : std_logic;
-	signal gpio7  : std_logic;
-	signal gpio8  : std_logic;
-        
-	signal gpio9  : std_logic;
-	signal gpio11 : std_logic;
-	signal gpio17 : std_logic;
+	constant snd_data : std_logic_vector := 
+		x"01007e" &
+		x"18ff"   &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+		x"1702_00000f_1603_0000_0000";
+	constant req_data : std_logic_vector := x"010000_1702_00000f_1603_8000_0000";
 
-	signal gpio19 : std_logic;
-
-	signal mii_req    : std_logic := '0';
-	signal mii_req1   : std_logic := '0';
-	signal ping_req   : std_logic := '0';
-	signal rep_req    : std_logic := '0';
+	signal rst_n      : std_logic;
+	signal cke        : std_logic;
+	signal ddr_clk    : std_logic;
+	signal ddr_clk_p  : std_logic;
+	signal ddr_clk_n  : std_logic;
+	signal cs_n       : std_logic;
+	signal ras_n      : std_logic;
+	signal cas_n      : std_logic;
+	signal we_n       : std_logic;
+	signal ba         : std_logic_vector(bank_bits-1 downto 0);
+	signal addr       : std_logic_vector(addr_bits-1 downto 0) := (others => '0');
+	signal dq         : std_logic_vector(data_bytes*byte_bits-1 downto 0) := (others => 'Z');
+	signal dqs        : std_logic_vector(data_bytes-1 downto 0) := (others => 'Z');
+	signal dqs_n      : std_logic_vector(dqs'range) := (others => 'Z');
+	signal dm         : std_logic_vector(data_bytes-1 downto 0);
+	signal odt        : std_logic;
+	signal scl        : std_logic;
+	signal sda        : std_logic;
+	signal tdqs_n     : std_logic_vector(dqs'range);
 
 	signal rgmii_rxc  : std_logic;
 	signal rgmii_rxdv : std_logic;
@@ -179,15 +161,14 @@ architecture ulx4mld_graphics of testbench is
 	signal rgmii_txen : std_logic;
 	signal rgmii_txd  : std_logic_vector(0 to 4-1);
 
-	signal ftdi_txd    : std_logic;
-	signal ftdi_rxd    : std_logic;
+	signal ftdi_txd   : std_logic;
+	signal ftdi_rxd   : std_logic;
 
-	signal uart_clk : std_logic := '0';
+	signal uart_clk   : std_logic := '0';
 
-	signal ds   : std_logic_vector(dqs'length-1 downto 0);
-	signal dd   : std_logic_vector(dq'length-1 downto 0);
-	signal dmi  : std_logic_vector(dm'range);
-	signal ds_n : std_logic_vector(dqs_n'length-1 downto 0);
+	signal rst        : std_logic;
+	signal xtal       : std_logic := '0';
+
 begin
 
 	rst      <= '1', '0' after 17.5 us when debug else '1', '0' after 100 us;
@@ -237,8 +218,8 @@ begin
 		rgmii_rx_dv  => rgmii_rxdv,
 		rgmii_rxd    => rgmii_rxd,
 
-		ftdi_txd      => ftdi_txd,
-		ftdi_rxd      => ftdi_rxd,
+		ftdi_txd     => ftdi_txd,
+		ftdi_rxd     => ftdi_rxd,
 		ddram_reset_n => rst_n,
 		ddram_clk    => ddr_clk,
 		ddram_cke    => cke,
@@ -255,7 +236,7 @@ begin
 
 	ddr_clk_p <= ddr_clk;
 	ddr_clk_n <= not ddr_clk;
-	dqs_n <= not dqs;
+	dqs_n     <= not dqs;
 
 	mt_u : ddr3_model
 	port map (
