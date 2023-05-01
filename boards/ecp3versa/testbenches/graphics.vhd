@@ -26,8 +26,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
 architecture ecp3versa_graphics of testbench is
-
-	constant debug      : boolean := true;
+	constant debug      : boolean := false;
 
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 16;
@@ -35,10 +34,6 @@ architecture ecp3versa_graphics of testbench is
 	constant data_bytes : natural := 2;
 	constant byte_bits  : natural := 8;
 	constant data_bits  : natural := byte_bits*data_bytes;
-
-	signal reset        : std_logic;
-	signal fpga_gsrn    : std_logic;
-	signal xtal         : std_logic := '0';
 
 	component ecp3versa
 		generic (
@@ -113,27 +108,8 @@ architecture ecp3versa_graphics of testbench is
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
 		x"1702_0000ff_1603_0007_3000";
-	constant req_data : std_logic_vector := x"010000_1702_00001f_1603_8007_3000";
-
-	signal rst_n     : std_logic;
-	signal cke       : std_logic;
-	signal ddr_clk   : std_logic;
-	signal ddr_clk_p : std_logic;
-	signal ddr_clk_n : std_logic;
-	signal cs_n      : std_logic;
-	signal ras_n     : std_logic;
-	signal cas_n     : std_logic;
-	signal we_n      : std_logic;
-	signal ba        : std_logic_vector(bank_bits-1 downto 0);
-	signal addr      : std_logic_vector(addr_bits-1 downto 0) := (others => '0');
-	signal dq        : std_logic_vector(data_bytes*byte_bits-1 downto 0) := (others => 'Z');
-	signal dqs       : std_logic_vector(data_bytes-1 downto 0) := (others => 'Z');
-	signal dqs_n     : std_logic_vector(dqs'range) := (others => 'Z');
-	signal dm        : std_logic_vector(data_bytes-1 downto 0);
-	signal odt       : std_logic;
-	signal scl       : std_logic;
-	signal sda       : std_logic;
-	signal tdqs_n    : std_logic_vector(dqs'range);
+	constant req_data : std_logic_vector := 
+		x"010000_1702_00001f_1603_8007_3000";
 
 	component ddr3_model is
 		port (
@@ -155,103 +131,72 @@ architecture ecp3versa_graphics of testbench is
 			odt     : in std_logic);
 	end component;
 
+	signal rst_n       : std_logic;
+	signal cke         : std_logic;
+	signal ddr_clk     : std_logic;
+	signal ddr_clk_p   : std_logic;
+	signal ddr_clk_n   : std_logic;
+	signal cs_n        : std_logic;
+	signal ras_n       : std_logic;
+	signal cas_n       : std_logic;
+	signal we_n        : std_logic;
+	signal ba          : std_logic_vector(bank_bits-1 downto 0);
+	signal addr        : std_logic_vector(addr_bits-1 downto 0) := (others => '0');
+	signal dq          : std_logic_vector(data_bytes*byte_bits-1 downto 0) := (others => 'Z');
+	signal dqs         : std_logic_vector(data_bytes-1 downto 0) := (others => 'Z');
+	signal dqs_n       : std_logic_vector(dqs'range) := (others => 'Z');
+	signal dm          : std_logic_vector(data_bytes-1 downto 0);
+	signal odt         : std_logic;
+	signal scl         : std_logic;
+	signal sda         : std_logic;
+	signal tdqs_n      : std_logic_vector(dqs'range);
+
+	signal fpga_gsrn   : std_logic;
+	signal clk         : std_logic := '0';
+
 	signal phy1_125clk : std_logic := '0';
 
-   	alias  mii_rxc  : std_logic is phy1_125clk;
-   	signal mii_rxd  : std_logic_vector(0 to 8-1);
-   	signal mii_rxdv : std_logic;
+   	signal mii_rxd     : std_logic_vector(0 to 8-1);
+   	signal mii_rxdv    : std_logic;
 
-   	signal mii_txc  : std_logic;
-   	signal mii_txd  : std_logic_vector(0 to 8-1);
-   	signal mii_txen : std_logic;
-
-
-	signal uart_clk : std_logic := '0';
-
+   	signal mii_txd     : std_logic_vector(0 to 8-1);
+   	signal mii_txen    : std_logic;
 
 begin
 
-	reset       <= '1', '0' after 17 us when debug else '1', '0' after 4 us;
-	xtal        <= not xtal after 5 ns;
-	uart_clk    <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
+	fpga_gsrn   <= '1', '0' after 10 us;
+	clk         <= not clk after 5 ns;
 	phy1_125clk <= not phy1_125clk after 4 ns;
 
-	ipoe_b : block
+	ddr_clk_p   <= ddr_clk;
+	ddr_clk_n   <= not ddr_clk;
+	dqs_n       <= not dqs;
 
-		signal mii_req    : std_logic := '0';
-    	signal ping_req   : std_logic := '0';
-		signal mii_req1   : std_logic := '0';
-		signal req         : std_logic;
-		signal datarx_null :  std_logic_vector(mii_rxd'range);
-		signal x : natural := 0;
+    ipoetb_e : entity work.ipoe_tb
+	generic map (
+		snd_data => snd_data,
+		req_data => req_data)
+	port map (
+		mii_clk  => phy1_125clk,
+		mii_rxdv => mii_txen,
+		mii_rxd  => mii_txd,
 
+		mii_txen => mii_rxdv,
+		mii_txd  => mii_rxd);
 
-	begin
-
-    	process
-    	begin
-    		req <= '0';
-    		wait for 10 us;
-    		loop
-    			if req='1' then
-    				wait on mii_rxdv;
-    				if falling_edge(mii_rxdv) then
-    					req <= '0';
-    					x <= x + 1;
-    					wait for 12 us;
-    				end if;
-    			else
-    				if x > 1 then
-    					wait;
-    				end if;
-    				req <= '1';
-    				wait on req;
-    			end if;
-    		end loop;
-    	end process;
-    	mii_req  <= req when x=0 else '0';
-    	mii_req1 <= req when x=1 else '0';
-
-		htb_e : entity hdl4fpga.eth_tb
-		generic map (
-			debug => false)
-		port map (
-			mii_data4 => snd_data,
-			mii_data5 => req_data,
-			mii_frm1  => '0', 
-			mii_frm2  => '0', --mii_req1, -- ping
-			mii_frm3  => '0', -- mii_req, -- arp'0',
-			mii_frm4  => '0', --mii_req, -- write
-			mii_frm5  => '0', --mii_req1, -- read
-	
-			mii_txc   => mii_rxc,
-			mii_txen  => mii_rxdv,
-			mii_txd   => mii_rxd);
-
-		ethrx_e : entity hdl4fpga.eth_rx
-		port map (
-			dll_data   => datarx_null,
-			mii_clk    => mii_txc,
-			mii_frm    => mii_txen,
-			mii_irdy   => mii_txen,
-			mii_data   => mii_txd);
-
-	end block;
-
-	fpga_gsrn <= '1', '0' after 10 us;
 	du_e : ecp3versa
 	generic map (
-		debug => debug)
+		debug       => debug)
 	port map (
-		clk         => xtal,
+		clk         => clk,
 		fpga_gsrn   => fpga_gsrn,
 
 		phy1_125clk => phy1_125clk,
-		phy1_rxc    => mii_rxc,
+		phy1_rxc    => phy1_125clk,
 		phy1_rx_dv  => mii_rxdv,
 		phy1_rx_d   => mii_rxd,
 
-		phy1_txc    => mii_txc,
+		phy1_txc    => phy1_125clk,
 		phy1_tx_en  => mii_txen,
 		phy1_tx_d   => mii_txd,
 
@@ -272,10 +217,6 @@ begin
 		ddr3_dq  => dq,
 		ddr3_dm  => dm,
 		ddr3_odt => odt);
-
-	ddr_clk_p <= ddr_clk;
-	ddr_clk_n <= not ddr_clk;
-	dqs_n <= not dqs;
 
 	mt_u : ddr3_model
 	port map (

@@ -32,8 +32,6 @@ use ieee.std_logic_textio.all;
 library micron;
 
 architecture ml509_graphics of testbench is
-	constant ddr_std  : positive := 1;
-
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 14;
 	constant cols_bits  : natural := 9;
@@ -42,47 +40,6 @@ architecture ml509_graphics of testbench is
 	constant timer_dll  : natural := 9;
 	constant timer_200u : natural := 9;
 	constant data_bits  : natural := byte_bits*data_bytes;
-
-	signal reset_n    : std_logic;
-	signal rst        : std_logic;
-	signal led7       : std_logic;
-
-
-	signal clk_p : std_logic_vector(2-1 downto 0) := (others => '1');
-	signal clk_n : std_logic_vector(2-1 downto 0) := (others => '1');
-	signal cke   : std_logic_vector (2-1 downto 0) := (others => '1');
-	signal cs_n  : std_logic_vector (2-1 downto 0) := (others => '1');
-	signal ras_n : std_logic;
-	signal cas_n : std_logic;
-	signal we_n  : std_logic;
-	signal ba    : std_logic_vector (bank_bits-1 downto 0);
-	signal addr  : std_logic_vector (addr_bits-1 downto 0);
-	signal dm    : std_logic_vector(8-1 downto 0);
-	signal dq    : std_logic_vector (8*byte_bits-1 downto 0) := (others => 'Z');
-	signal dqs   : std_logic_vector (dq'length/byte_bits-1 downto 0) := (others => '1');
-	signal dqs_n : std_logic_vector (dq'length/byte_bits-1 downto 0) := (others => '1');
-	signal rdqs_n : std_logic_vector(dqs'range);
-	signal odt   : std_logic_vector(2-1 downto 0);
-
-	signal ds    : std_logic_vector(dqs'length-1 downto 0);
-	signal ds_n  : std_logic_vector(dqs_n'length-1 downto 0);
-	signal scl   : std_logic;
-	signal sda   : std_logic;
-
-	signal mii_refclk : std_logic;
-	signal req        : std_logic := '0';
-	signal mii_req    : std_logic := '0';
-	signal mii_req1   : std_logic := '0';
-	signal ping_req   : std_logic := '0';
-	signal rep_req    : std_logic := '0';
-	signal mii_rxdv   : std_logic;
-	signal mii_rxd    : std_logic_vector(0 to 8-1);
-	signal mii_revrxd : std_logic_vector(0 to 8-1);
-	signal mii_txd    : std_logic_vector(0 to 8-1);
-	signal mii_revtxd : std_logic_vector(0 to 8-1);
-	signal mii_txc    : std_logic;
-	signal mii_rxc    : std_logic;
-	signal mii_txen   : std_logic;
 
 	component ml509 is
 		generic (
@@ -177,67 +134,7 @@ architecture ml509_graphics of testbench is
 			odt   : in std_logic);
 	end component;
 
-	constant delay : time := 1 ns;
-
-	signal xtal   : std_logic := '0';
-	signal xtal_n : std_logic := '0';
-	signal xtal_p : std_logic := '0';
-
-	signal clk_fpga   : std_logic := '0';
-	signal clk_fpga_n : std_logic := '0';
-	signal clk_fpga_p : std_logic := '0';
-
-	signal datarx_null :  std_logic_vector(mii_rxd'range);
-	signal sw : std_logic;
-	signal x : natural := 0;
-	signal dmi : std_logic_vector(dm'range);
-	signal gpio_sw_n : std_logic; 
-begin
-
-	rst   <= '1', '0' after 1.1 us, '1' after 42 us, '0' after 43 us;
-	sw <= '1' after 1 us, '0' after 1.2 us;
-	reset_n <= not rst;
-
-	xtal   <= not xtal after 5 ns;
-	xtal_p <= not xtal after 5 ns;
-	xtal_n <=     xtal after 5 ns;
-
-	clk_fpga <= not clk_fpga after 2.5 ns;
-	clk_fpga_p <= clk_fpga;
-	clk_fpga_n <= not clk_fpga;
-
-	mii_rxc <= mii_refclk;
-	mii_txc <= mii_refclk;
-
-	process
-	begin
-		req <= '0';
-		wait for 36 us;
-		loop
-			if req='1' then
-				wait on mii_rxdv;
-				if falling_edge(mii_rxdv) then
-					req <= '0';
-					x <= x + 1;
-					wait for 12 us;
-				end if;
-			else
-				if x > 1 then
-					wait;
-				end if;
-				req <= '1';
-				wait on req;
-			end if;
-		end loop;
-	end process;
-	mii_req <= req when x=0 else '0';
-	mii_req1 <= req when x=1 else '0';
-
-	htb_e : entity hdl4fpga.eth_tb
-	generic map (
-		debug =>false)
-	port map (
-		mii_data4 =>
+	constant snd_data : std_logic_vector :=
 		x"01007e" &
 		x"18ff"   &
 		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
@@ -248,20 +145,68 @@ begin
 		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_0000ff_1603_0000_0000",
-		-- mii_data4 => x"01007e_1702_000000_1603_8000_0000",
-		mii_data5 => x"010078_1702_000008_1603_8000_0000", -- 1f8
-		mii_frm1 => '0', --mii_req,
-		mii_frm2 => '0',
-		mii_frm3 => '0',
-		mii_frm4 => mii_req,
-		mii_frm5 => mii_req1,
+		x"1702_00000f_1603_0000_0000";
+	constant req_data  : std_logic_vector :=
+		x"010008_1702_00000f_1603_8000_0000";
 
-		mii_txc  => mii_rxc,
+	signal clk_p      : std_logic_vector(2-1 downto 0) := (others => '1');
+	signal clk_n      : std_logic_vector(2-1 downto 0) := (others => '1');
+	signal cke        : std_logic_vector(2-1 downto 0) := (others => '1');
+	signal cs_n       : std_logic_vector(2-1 downto 0) := (others => '1');
+	signal ras_n      : std_logic;
+	signal cas_n      : std_logic;
+	signal we_n       : std_logic;
+	signal ba         : std_logic_vector(bank_bits-1 downto 0);
+	signal addr       : std_logic_vector(addr_bits-1 downto 0);
+	signal dm         : std_logic_vector(8-1 downto 0);
+	signal dq         : std_logic_vector(8*byte_bits-1 downto 0) := (others => 'Z');
+	signal dqs        : std_logic_vector(dq'length/byte_bits-1 downto 0) := (others => '1');
+	signal dqs_n      : std_logic_vector(dq'length/byte_bits-1 downto 0) := (others => '1');
+	signal rdqs_n     : std_logic_vector(dqs'range);
+	signal odt        : std_logic_vector(2-1 downto 0);
+
+	signal ds         : std_logic_vector(dqs'length-1 downto 0);
+	signal ds_n       : std_logic_vector(dqs_n'length-1 downto 0);
+	signal scl        : std_logic;
+	signal sda        : std_logic;
+
+	signal mii_refclk : std_logic;
+	signal mii_rxdv   : std_logic;
+	signal mii_rxd    : std_logic_vector(0 to 8-1);
+	signal mii_txd    : std_logic_vector(0 to 8-1);
+	signal mii_txen   : std_logic;
+
+	signal user_clk   : std_logic := '0';
+
+	signal clk_fpga   : std_logic := '0';
+	signal clk_fpga_n : std_logic := '0';
+	signal clk_fpga_p : std_logic := '0';
+
+	signal gpio_sw_c  : std_logic;
+	signal gpio_sw_n  : std_logic; 
+
+begin
+
+	gpio_sw_c <= '1' after 1 us, '0' after 1.2 us;
+	gpio_sw_n <= '0', '1' after 5 us;
+	user_clk  <= not user_clk after 5 ns;
+
+	clk_fpga   <= not clk_fpga after 2.5 ns;
+	clk_fpga_p <= clk_fpga;
+	clk_fpga_n <= not clk_fpga;
+
+    ipoetb_e : entity work.ipoe_tb
+	generic map (
+		snd_data => snd_data,
+		req_data => req_data)
+	port map (
+		mii_clk  => mii_refclk,
+		mii_rxdv => mii_txen,
+		mii_rxd  => mii_txd,
+
 		mii_txen => mii_rxdv,
 		mii_txd  => mii_rxd);
 
-	gpio_sw_n <= '0', '1' after 5 us;
 	du_e : ml509
 	generic map (
 		debug => true)
@@ -283,62 +228,19 @@ begin
 		ddr2_dqs_n     => dqs_n,
 		ddr2_odt       => odt,
 
-		gpio_sw_c      => sw,
+		gpio_sw_c      => gpio_sw_c,
 		gpio_sw_n      => gpio_sw_n,
 		gpio_sw_w      => '1',
-		phy_rxclk      => mii_rxc,
+		phy_rxclk      => mii_refclk,
 		phy_rxctl_rxdv => mii_rxdv,
 		phy_rxd        => mii_rxd,
 
 		phy_txc_gtxclk => mii_refclk,
-		phy_txclk      => mii_rxc,
+		phy_txclk      => mii_refclk,
 		phy_txctl_txen => mii_txen,
 		phy_txd        => mii_txd,
 
-		user_clk       => xtal);
-	mii_revrxd <= reverse(mii_rxd);
-	mii_revtxd <= reverse(mii_txd);
-	ethrx_e : entity hdl4fpga.eth_rx
-	port map (
-		dll_data   => datarx_null,
-		mii_clk    => mii_txc,
-		mii_frm    => mii_txen,
-		mii_irdy   => mii_txen,
-		mii_data   => mii_txd);
-
-	-- process (ds_n, dqs_n)
-	-- begin
-		-- for i in ds_n'range loop
-			-- case ds_n(i) is
-			-- when '0'|'1' =>
-				-- dqs_n(i) <= ds_n(i);
-			-- when others =>
-				-- dqs_n(i) <= 'H';
-			-- end case;
-			-- ds_n(i) <= dqs_n(0);
-		-- end loop;
-	-- end process;
--- 
-	-- process (ds, dqs)
-	-- begin
-		-- for i in ds'range loop
-			-- case ds(i) is
-			-- when '0'|'1' =>
-				-- dqs(i) <= ds(i);
-			-- when others =>
-				-- dqs(i) <= 'L';
-			-- end case;
-			-- ds(i) <= dqs(0);
-		-- end loop;
-	-- end process;
-
-	process (dm)
-	begin
-		dmi <= (others => '1');
-		for i in 0 to data_bytes-1 loop
-			dmi(i) <= dm(i);
-		end loop;
-	end process;
+		user_clk       => user_clk);
 
 	simm_g : for i in 0 to (data_bytes+1)/2-1 generate
 	begin
@@ -353,7 +255,7 @@ begin
 			We_n    => we_n,
 			Ba      => ba(2-1 downto 0),
 			Addr    => addr(13-1 downto 0),
-			Dm_rdqs => dmi(2*(i+1)-1 downto 2*i),
+			Dm_rdqs => dm(2*(i+1)-1 downto 2*i),
 			Dqs     => dqs(2*(i+1)-1 downto 2*i),
 			Dqs_n   => dqs_n(2*(i+1)-1 downto 2*i),
 			rdqs_n  => rdqs_n(2*(i+1)-1 downto 2*i),
