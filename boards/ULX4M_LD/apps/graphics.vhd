@@ -41,22 +41,21 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------
 	-- Set your profile here             --
-	-- constant app_profile  : app_profiles := hdlc_sdr400MHz_1080p24bpp30;
-	constant app_profile  : app_profiles := hdlc_sdr425MHz_1080p24bpp30;
+	constant io_link      : io_comms     := io_hdlc;
+	constant sdram_speed  : sdram_speeds := sdram400MHz;
+	constant video_mode   : video_modes  := mode600p24bpp;
 	---------------------------------------
 
-	constant nodebug_videomode : video_modes := profile_tab(app_profile).video_mode;
-	constant video_mode   : video_modes := video_modes'VAL(setif(debug,
-		video_modes'POS(modedebug),
-		video_modes'POS(nodebug_videomode)));
-	-- constant video_mode   : video_modes := nodebug_videomode;
-	constant video_param  : video_record := videoparam(video_mode);
+	constant video_param  : video_record := videoparam(
+		video_modes'VAL(setif(debug,
+			video_modes'POS(modedebug),
+			video_modes'POS(video_mode))));
 
-	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
-	-- constant sdram_speed : sdram_speeds := sdram_speeds'VAL(setif(not debug,
-		-- sdram_speeds'POS(profile_tab(app_profile).sdram_speed),
-		-- sdram_speeds'POS(sdram400Mhz)));
-	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
+	constant sdram_params : sdramparams_record := sdramparams(
+		sdram_speeds'VAL(setif(debug,
+			sdram_speeds'POS(sdram400Mhz),
+			sdram_speeds'POS(sdram_speed))));
+	
 	constant sdram_tcp    : real := 
 		real(sdram_params.pll.clki_div)/
 		(real(sdram_params.pll.clkos_div*sdram_params.pll.clkfb_div)*clk25mhz_freq);
@@ -131,7 +130,6 @@ architecture graphics of ulx4m_ld is
 
 	signal video_pixel   : std_logic_vector(0 to 32-1);
 
-	constant io_link     : io_comms := profile_tab(app_profile).comms;
 
 	constant hdplx       : std_logic := setif(debug, '0', '1');
 

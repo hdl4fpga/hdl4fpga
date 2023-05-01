@@ -132,6 +132,7 @@ begin
 	gear1_g : if gear=1 generate
 		sclk <= clkop;
 	end generate;
+
 	gear4_g : if gear=4 generate
 
 		component mem_sync
@@ -169,6 +170,12 @@ begin
 		attribute FREQUENCY_PIN_CDIVX of clkdivf_i : label is ftoa(sdram_freq/1.0e6/2.0, 10);
 
 	begin
+
+		assert false
+		report CR &
+			"ECLKO : " & eclksyncb_i'FREQUENCY_PIN_ECLKO  & " MHz "  & CR &
+			"CDIVX : " &   clkdivf_i'FREQUENCY_PIN_CDIVX  & " MHz "
+		severity NOTE;
 
 		memsync_rst <= not sdrampll_lck;
 		pll_lock <= '1';
