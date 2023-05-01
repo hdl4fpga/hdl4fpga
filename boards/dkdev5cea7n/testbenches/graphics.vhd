@@ -30,9 +30,6 @@ library ieee;
 use ieee.std_logic_textio.all;
 
 architecture dkdev5cea7n_graphics of testbench is
-	constant ddr_std  : positive := 1;
-
-	constant ddr_period : time := 6 ns;
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 15;
 	constant cols_bits  : natural := 10;
@@ -41,41 +38,6 @@ architecture dkdev5cea7n_graphics of testbench is
 	constant timer_dll  : natural := 9;
 	constant timer_200u : natural := 9;
 	constant data_bits  : natural := byte_bits*data_bytes;
-
-	signal reset_n : std_logic;
-	signal rst   : std_logic;
-	signal led7  : std_logic;
-
-	signal rst_n : std_logic;
-	signal ddr_clk_p : std_logic;
-	signal ddr_clk_n : std_logic;
-	signal cke   : std_logic;
-	signal cs_n  : std_logic;
-	signal ras_n : std_logic;
-	signal cas_n : std_logic;
-	signal we_n  : std_logic;
-	signal ba    : std_logic_vector (bank_bits-1 downto 0);
-	signal addr  : std_logic_vector (addr_bits-1 downto 0) := (others => '0');
-	signal dq    : std_logic_vector (data_bytes*byte_bits-1 downto 0) := (others => 'Z');
-	signal dqs_p : std_logic_vector (data_bytes-1 downto 0) := (others => 'Z');
-	signal dqs_n : std_logic_vector (data_bytes-1 downto 0) := (others => 'Z');
-	signal dm    : std_logic_vector(data_bytes-1 downto 0);
-	signal odt   : std_logic;
-	signal scl   : std_logic;
-	signal sda   : std_logic;
-	signal tdqs_n : std_logic_vector(dqs_p'range);
-
-	signal mii_refclk : std_logic;
-	signal mii_req : std_logic := '0';
-	signal mii_req1 : std_logic := '0';
-	signal ping_req : std_logic := '0';
-	signal rep_req : std_logic := '0';
-	signal mii_rxdv : std_logic;
-	signal mii_rxd  : std_logic_vector(0 to 4-1);
-	signal mii_txd  : std_logic_vector(0 to 4-1);
-	signal mii_txc  : std_logic;
-	signal mii_rxc  : std_logic;
-	signal mii_txen : std_logic;
 
 	component dkdev5cea7n is
     	generic (
@@ -166,48 +128,7 @@ architecture dkdev5cea7n_graphics of testbench is
 			odt   : in std_logic);
 	end component;
 
-	constant delay : time := 1 ns;
-
-	signal xtal   : std_logic := '0';
-	signal xtal_n : std_logic := '0';
-	signal xtal_p : std_logic := '0';
-
-	signal datarx_null :  std_logic_vector(mii_rxd'range);
-begin
-
-	rst   <= '1', '0' after 1.1 us;
-	reset_n <= not rst;
-
-	xtal   <= not xtal after 5 ns;
-	xtal_p <= not xtal after 5 ns;
-	xtal_n <=     xtal after 5 ns;
-
-	mii_rxc <= mii_refclk;
-	mii_txc <= mii_refclk;
-
-
-	mii_req  <= '0', '1' after 30 us, '0' after 35 us; --, '0' after 244 us; --, '0' after 219 us, '1' after 220 us;
---	mii_req1 <= '0', '1' after 14.5 us, '0' after 55 us, '1' after 55.02 us; --, '0' after 219 us, '1' after 220 us;
-	process
-	begin
-		wait for 35 us;
-		loop
-			if rep_req='1' then
-				wait;
-				rep_req <= '0' after 5.8 us;
-			else
-				rep_req <= '1' after 250 ns;
-			end if;
-			wait on rep_req;
-		end loop;
-	end process;
-	mii_req1 <= rep_req;
-
-	htb_e : entity hdl4fpga.eth_tb
-	generic map (
-		debug =>false)
-	port map (
-		mii_data4 =>
+	constant snd_data  : std_logic_vector :=
 		x"01007e" &
 		x"18ff"   &
 		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
@@ -218,43 +139,54 @@ begin
 		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"18ff" &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"18ff"   &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"18ff" &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_0003ff_1603_0007_3000",
-		mii_data5 => x"010000_1702_0003ff_1603_8007_3000",
---		mii_data4 => x"01007e_1702_000030_1603_8000_07d0",
-		mii_frm1 => '0',
-		mii_frm2 => '0', --ping_req,
-		mii_frm3 => '0',
-		mii_frm4 => mii_req,
-		mii_frm5 => mii_req1,
+		x"1702_00000f_1603_0000_0000";
+	constant req_data  : std_logic_vector :=
+		x"010008_1702_00000f_1603_8000_0000";
 
-		mii_txc  => mii_rxc,
+	signal rst_n      : std_logic;
+	signal ddr_clk_p  : std_logic;
+	signal ddr_clk_n  : std_logic;
+	signal cke        : std_logic;
+	signal cs_n       : std_logic;
+	signal ras_n      : std_logic;
+	signal cas_n      : std_logic;
+	signal we_n       : std_logic;
+	signal ba         : std_logic_vector(bank_bits-1 downto 0);
+	signal addr       : std_logic_vector(addr_bits-1 downto 0) := (others => '0');
+	signal dq         : std_logic_vector(data_bytes*byte_bits-1 downto 0) := (others => 'Z');
+	signal dqs_p      : std_logic_vector(data_bytes-1 downto 0) := (others => 'Z');
+	signal dqs_n      : std_logic_vector(data_bytes-1 downto 0) := (others => 'Z');
+	signal dm         : std_logic_vector(data_bytes-1 downto 0);
+	signal odt        : std_logic;
+	signal scl        : std_logic;
+	signal sda        : std_logic;
+	signal tdqs_n     : std_logic_vector(dqs_p'range);
+
+	signal mii_refclk : std_logic;
+	signal mii_rxdv   : std_logic;
+	signal mii_rxd    : std_logic_vector(0 to 4-1);
+	signal mii_txd    : std_logic_vector(0 to 4-1);
+	signal mii_txen   : std_logic;
+
+	constant delay    : time := 1 ns;
+
+	signal rst        : std_logic;
+	signal xtal       : std_logic := '0';
+
+begin
+
+	rst   <= '1', '0' after 1.1 us;
+	xtal  <= not xtal after 5 ns;
+
+    ipoetb_e : entity work.ipoe_tb
+	generic map (
+		snd_data => snd_data,
+		req_data => req_data)
+	port map (
+		mii_clk  => mii_refclk,
+		mii_rxdv => mii_txen,
+		mii_rxd  => mii_txd,
+
 		mii_txen => mii_rxdv,
 		mii_txd  => mii_rxd);
 
@@ -272,10 +204,10 @@ begin
 		eth_mdc     => open,
 		eth_crs     => '-',
 		eth_col     => '-',
-		eth_tx_clk  => mii_rxc,
+		eth_tx_clk  => mii_refclk,
 		eth_tx_en   => mii_txen,
 		eth_txd     => mii_txd,
-		eth_rx_clk  => mii_rxc,
+		eth_rx_clk  => mii_refclk,
 		eth_rxerr   => '-',
 		eth_rx_dv   => mii_rxdv,
 		eth_rxd     => mii_rxd,
@@ -297,14 +229,6 @@ begin
 		ddr3_dq    => dq,
 		ddr3_dm    => dm,
 		ddr3_odt   => odt);
-
-	ethrx_e : entity hdl4fpga.eth_rx
-	port map (
-		dll_data   => datarx_null,
-		mii_clk    => mii_txc,
-		mii_frm    => mii_txen,
-		mii_irdy   => mii_txen,
-		mii_data   => mii_txd);
 
 	-- mt_u : ddr3_model
 	-- port map (

@@ -26,6 +26,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
 architecture ulx3s_graphics of testbench is
+	constant debug      : boolean := false;
 
 	constant bank_bits  : natural := 2;
 	constant addr_bits  : natural := 13;
@@ -186,9 +187,8 @@ architecture ulx3s_graphics of testbench is
 	alias mii_refclk   : std_logic is gn(9);
 	alias mii_clk      : std_logic is gn(12);
 
-	signal uart_clk : std_logic := '0';
+	signal uart_clk    : std_logic := '0';
 
-	constant debug : boolean := false;
 
 	signal 	mii_txen   : std_logic;
 	signal 	mii_txd    : std_logic_vector(0 to 2-1);
@@ -200,6 +200,8 @@ begin
 	rst      <= '1', '0' after 10 us;
 	xtal     <= not xtal after 20 ns;
 	uart_clk <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
+	fire1    <= '0';
+	fire2    <= '0';
 
 	hdlctb_e : entity work.hdlc_tb
 	generic map (
@@ -228,9 +230,6 @@ begin
 
 		mii_txen  => mii_rxdv,
 		mii_txd   => mii_rxd);
-
-	fire1 <= '0';
-	fire2 <= '0';
 
 	du_e : ulx3s
 	generic map (
