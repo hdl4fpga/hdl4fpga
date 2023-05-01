@@ -42,27 +42,27 @@ entity ipoe_tb is
 end;
 
 architecture def of ipoe_tb is
-	signal datarx_null :  std_logic_vector(mii_rxd'range);
-	signal req    : std_logic := '0';
-	signal mii_req : std_logic := '0';
+	signal rx_null  : std_logic_vector(mii_rxd'range);
+	signal req      : std_logic := '0';
+	signal mii_req  : std_logic := '0';
 	signal mii_req1 : std_logic := '0';
-	signal x        : natural := 0;
+	signal segment  : natural := 0;
 begin
 
 	process
 	begin
-		req <= '0';
+		req  <= '0';
 		wait for 36 us;
 		loop
 			if req='1' then
 				wait on mii_rxdv;
 				if falling_edge(mii_rxdv) then
 					req <= '0';
-					x <= x + 1;
+					segment <= segment + 1;
 					wait for 12 us;
 				end if;
 			else
-				if x > 1 then
+				if segment > 1 then
 					wait;
 				end if;
 				req <= '1';
@@ -70,8 +70,8 @@ begin
 			end if;
 		end loop;
 	end process;
-	mii_req  <= req when x=0 else '0';
-	mii_req1 <= req when x=1 else '0';
+	mii_req  <= req when segment=0 else '0';
+	mii_req1 <= req when segment=1 else '0';
 
 	htb_e : entity hdl4fpga.eth_tb
 	generic map (
@@ -94,7 +94,7 @@ begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
-		dll_data   => datarx_null,
+		dll_data   => rx_null,
 		mii_clk    => mii_clk,
 		mii_frm    => mii_rxdv,
 		mii_irdy   => mii_rxdv,

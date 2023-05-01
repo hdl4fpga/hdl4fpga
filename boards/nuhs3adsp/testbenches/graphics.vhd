@@ -25,7 +25,6 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 architecture nuhs3adsp_graphics of testbench is
-	constant ddr_period : time := 6 ns;
 	constant bank_bits  : natural := 2;
 	constant addr_bits  : natural := 13;
 	constant cols_bits  : natural := 9;
@@ -148,7 +147,6 @@ architecture nuhs3adsp_graphics of testbench is
 			dqs   : inout std_logic_vector(data_bytes - 1 downto 0));
 	end component;
 
-
 	constant snd_data  : std_logic_vector :=
 		x"01007e" &
 		x"18ff"   &
@@ -164,7 +162,7 @@ architecture nuhs3adsp_graphics of testbench is
 	constant req_data  : std_logic_vector :=
 		x"010008_1702_00000f_1603_8000_0000";
 
-	constant baudrate : natural := 1000000;
+	constant baudrate : natural := 1e6;
 
 	signal rst        : std_logic;
 	signal clk        : std_logic := '0';

@@ -170,22 +170,14 @@ architecture ulx4mld_graphics of testbench is
 	signal mii_req1   : std_logic := '0';
 	signal ping_req   : std_logic := '0';
 	signal rep_req    : std_logic := '0';
-	alias  mii_rxdv   : std_logic is gpio17;
-	signal mii_rxd    : std_logic_vector(0 to 2-1);
-	signal mii_txd    : std_logic_vector(0 to 2-1);
-	signal mii_txc    : std_logic;
-	signal mii_rxc    : std_logic;
-	signal mii_txen   : std_logic;
 
-	alias rgmii_rxc   : std_logic is mii_rxc;
-	alias rgmii_rxdv  : std_logic is mii_rxdv;
+	signal rgmii_rxc  : std_logic;
+	signal rgmii_rxdv : std_logic;
 	signal rgmii_rxd  : std_logic_vector(0 to 4-1);
 
-	alias rgmii_txc   : std_logic is mii_txc;
+	signal rgmii_txc  : std_logic;
 	signal rgmii_txen : std_logic;
 	signal rgmii_txd  : std_logic_vector(0 to 4-1);
-
-	signal datarx_null :  std_logic_vector(mii_rxd'range);
 
 	signal ftdi_txd    : std_logic;
 	signal ftdi_rxd    : std_logic;
@@ -215,109 +207,17 @@ begin
 		uart_sin  => ftdi_rxd,
 		uart_sout => ftdi_txd);
 
-	ipoe_b : block
+    ipoetb_e : entity work.ipoe_tb
+	generic map (
+		snd_data => snd_data,
+		req_data => req_data)
+	port map (
+		mii_clk   => rgmii_rxc,
+		mii_rxdv  => rgmii_txen,
+		mii_rxd   => rgmii_txd,
 
-		signal eth_txen  : std_logic;
-		signal eth_txd   : std_logic_vector(mii_txd'range);
-
-		signal pl_trdy    : std_logic;
-		signal pl_end     : std_logic;
-		signal pl_data    : std_logic_vector(mii_txd'range);
-
-		signal miirx_frm  : std_logic;
-		signal miirx_end  : std_logic;
-		signal miirx_irdy : std_logic;
-		signal miirx_trdy : std_logic;
-		signal miirx_data : std_logic_vector(pl_data'range);
-
-		signal miitx_frm  : std_logic;
-		signal miitx_irdy : std_logic;
-		signal miitx_trdy : std_logic;
-		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(pl_data'range);
-
-		signal llc_data   : std_logic_vector(0 to 2*48+16-1);
-		signal hwllc_irdy : std_logic;
-		signal hwllc_trdy : std_logic;
-		signal hwllc_end  : std_logic;
-		signal hwllc_data : std_logic_vector(pl_data'range);
-		signal datarx_null :  std_logic_vector(mii_rxd'range);
-
-		alias rmii_tx_en  : std_logic is gpio6;
-		alias rmii_tx0    : std_logic is gpio7;
-		alias rmii_tx1    : std_logic is gpio8;
-
-		alias rmii_rx_dv  : std_logic is gpio17;
-		alias rmii_rx0    : std_logic is gpio9;
-		alias rmii_rx1    : std_logic is gpio11;
-
-		alias rmii_nint   : std_logic is gpio19;
-
-	begin
-
-		mii_txc <= not to_stdulogic(to_bit(mii_txc)) after 10 ns;
-		mii_rxc <= mii_txc;
-		rmii_nint <= mii_txc;
-
-		seq_b : block
-			signal x : natural := 0;
-			signal req : std_logic;
-		begin
-			process
-			begin
-				req <= '0';
-				wait for 20 us;
-				loop
-					if req='1' then
-						wait on mii_rxdv;
-						if falling_edge(mii_rxdv) then
-							req <= '0';
-							x <= x + 1;
-							wait for 10 us;
-						end if;
-					else
-						if x > 1 then
-							wait;
-						end if;
-						req <= '1';
-						wait on req;
-					end if;
-				end loop;
-			end process;
-			mii_req  <= req when x=0 else '0';
-			mii_req1 <= req when x=1 else '0';
-		end block;
-
-	
-		-- rgmii_rxd <= multiplex(mii_rxd, not rgmii_rxc);
-
-		htb_e : entity hdl4fpga.eth_tb
-		generic map (
-			debug => false)
-		port map (
-			mii_data4 => snd_data,
-			mii_data5 => req_data,
-			mii_frm1 => '0',
-			mii_frm2 => '0', --ping_req,
-			mii_frm3 => '0',
-			mii_frm4 => mii_req,
-			mii_frm5 => mii_req1,
-	
-			mii_txc  => mii_rxc,
-			mii_txen => mii_rxdv,
-			mii_txd  => mii_rxd);
-		(0 => rmii_rx0, 1 => rmii_rx1) <= mii_rxd;
-		rmii_tx_en <= mii_rxdv;
-
-		ethrx_e : entity hdl4fpga.eth_rx
-		port map (
-			dll_data   => datarx_null,
-			mii_clk    => mii_rxc,
-			mii_frm    => mii_rxdv,
-			mii_irdy   => mii_rxdv,
-			mii_data   => mii_rxd);
-
-	end block;
+		mii_txen  => rgmii_rxdv,
+		mii_txd   => rgmii_rxd);
 
 	du_e : ulx4m_ld
 	generic map (
@@ -352,14 +252,6 @@ begin
 		ddram_dq     => dq,
 		ddram_dm     => dm,
 		ddram_odt    => odt);
-
-	ethrx_e : entity hdl4fpga.eth_rx
-	port map (
-		dll_data => datarx_null,
-		mii_clk  => mii_txc,
-		mii_frm  => mii_txen,
-		mii_irdy => mii_txen,
-		mii_data => mii_txd);
 
 	ddr_clk_p <= ddr_clk;
 	ddr_clk_n <= not ddr_clk;
