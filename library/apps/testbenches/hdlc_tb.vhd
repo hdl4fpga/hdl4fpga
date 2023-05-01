@@ -29,16 +29,16 @@ use hdl4fpga.base.all;
 
 entity hdlc_tb is
 	generic (
-		debug      : boolean;
-		baudrate   : natural;
-		uasrt_freq : real;
-		payload_segment : natural_vector;
-		payload    : std_logic_vector);
+		debug     : boolean;
+		baudrate  : natural;
+		uart_freq : real;
+		payload_segments : natural_vector;
+		payload   : std_logic_vector);
 	port (
-		rst        : in  std_logic;
-		uart_clk   : in  std_logic;
-		uart_sin   : in  std_logic;
-		uart_sout  : out std_logic);
+		rst       : in  std_logic;
+		uart_clk  : in  std_logic;
+		uart_sin  : in  std_logic;
+		uart_sout : out std_logic);
 end;
 
 architecture def of hdlc_tb is
@@ -93,7 +93,7 @@ begin
 					hdlctx_frm <= '1';
 					hdlctx_end <= '1';
 				end if;
-			elsif segment < payload_segment'length then
+			elsif segment < payload_segments'length then
 				if segment > 0 then
 					if debug then
 						wait for 5 us;
@@ -103,7 +103,7 @@ begin
 					hdlctx_frm <= '0';
 					hdlctx_end <= '0';
 				end if;
-				total   := total + payload_segment(segment);
+				total   := total + payload_segments(segment);
 				segment := segment + 1;
 			else
 				hdlctx_data <= (others => '-');
@@ -129,7 +129,7 @@ begin
 	uarttx_e : entity hdl4fpga.uart_tx
 	generic map (
 		baudrate  => baudrate,
-		clk_rate  => uasrt_freq)
+		clk_rate  => uart_freq)
 	port map (
 		uart_frm  => rst_n,
 		uart_txc  => uart_clk,
@@ -141,7 +141,7 @@ begin
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
 		baudrate  => baudrate,
-		clk_rate  => uasrt_freq)
+		clk_rate  => uart_freq)
 	port map (
 		uart_rxc  => uart_clk,
 		uart_sin  => uart_sin,

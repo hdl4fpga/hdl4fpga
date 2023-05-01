@@ -35,37 +35,6 @@ architecture nuhs3adsp_graphics of testbench is
 	constant timer_200u : natural := 9;
 	constant data_bits  : natural := byte_bits*data_bytes;
 
-	signal rst      : std_logic;
-	signal clk      : std_logic := '0';
-	signal led7     : std_logic;
-	signal sw1      : std_logic := '1';
-
-	signal dq       : std_logic_vector (data_bits - 1 downto 0) := (others => 'Z');
-	signal dqs      : std_logic_vector (1 downto 0) := "00";
-	signal addr     : std_logic_vector (addr_bits - 1 downto 0);
-	signal ba       : std_logic_vector (1 downto 0);
-	signal clk_p    : std_logic := '0';
-	signal clk_n    : std_logic := '0';
-	signal cke      : std_logic := '1';
-	signal cs_n     : std_logic := '1';
-	signal ras_n    : std_logic;
-	signal cas_n    : std_logic;
-	signal we_n     : std_logic;
-	signal dm       : std_logic_vector(1 downto 0);
-
-	signal mii_refclk : std_logic;
-	signal req    : std_logic := '0';
-	signal mii_req  : std_logic := '0';
-	signal mii_req1 : std_logic := '0';
-	signal mii_rxdv : std_logic;
-	signal mii_rxd  : std_logic_vector(0 to 4-1);
-	signal mii_txd  : std_logic_vector(0 to 4-1);
-	signal mii_txc  : std_logic;
-	signal mii_rxc  : std_logic;
-	signal mii_txen : std_logic;
-
-	signal ddr_lp_dqs : std_logic;
-
 	component nuhs3adsp is
 		generic (
 			debug : boolean := true);
@@ -179,55 +148,8 @@ architecture nuhs3adsp_graphics of testbench is
 			dqs   : inout std_logic_vector(data_bytes - 1 downto 0));
 	end component;
 
-	constant baudrate : natural := 1000000;
 
-	signal uart_clk : std_logic := '0';
-	signal uart_sin : std_logic;
-
-	signal datarx_null :  std_logic_vector(mii_rxd'range);
-
-		signal x : natural := 0;
-begin
-
-	mii_rxc <= mii_refclk;
-	mii_txc <= mii_refclk;
-
-	clk <= not clk after 25 ns;
-
-
-	uart_clk <= not uart_clk after (1 sec / baudrate / 2);
-
-	rst <= '0', '1' after 300 ns;
-
-	process
-	begin
-		req <= '0';
-		wait for 36 us;
-		loop
-			if req='1' then
-				wait on mii_rxdv;
-				if falling_edge(mii_rxdv) then
-					req <= '0';
-					x <= x + 1;
-					wait for 12 us;
-				end if;
-			else
-				if x > 1 then
-					wait;
-				end if;
-				req <= '1';
-				wait on req;
-			end if;
-		end loop;
-	end process;
-	mii_req  <= req when x=0 else '0';
-	mii_req1 <= req when x=1 else '0';
-
-	htb_e : entity hdl4fpga.eth_tb
-	generic map (
-		debug =>false)
-	port map (
-		mii_data4 =>
+	constant snd_data  : std_logic_vector :=
 		x"01007e" &
 		x"18ff"   &
 		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
@@ -238,17 +160,54 @@ begin
 		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_00000f_1603_0000_0000",
-		mii_data5 => x"0100" & x"00" & x"1702_00000f_1603_8000_0000",
-		mii_frm1 => '0',
-		mii_frm2 => '0',
-		mii_frm3 => '0',
-		mii_frm4 => mii_req,
-		mii_frm5 => mii_req1,
+		x"1702_00000f_1603_0000_0000";
+	constant req_data  : std_logic_vector :=
+		x"010008_1702_00000f_1603_8000_0000";
 
-		mii_txc  => mii_rxc,
-		mii_txen => mii_rxdv,
-		mii_txd  => mii_rxd);
+	constant baudrate : natural := 1000000;
+
+	signal rst        : std_logic;
+	signal clk        : std_logic := '0';
+	signal led7       : std_logic;
+	signal sw1        : std_logic := '1';
+
+	signal dq         : std_logic_vector (data_bits - 1 downto 0) := (others => 'Z');
+	signal dqs        : std_logic_vector (1 downto 0) := "00";
+	signal addr       : std_logic_vector (addr_bits - 1 downto 0);
+	signal ba         : std_logic_vector (1 downto 0);
+	signal clk_p      : std_logic := '0';
+	signal clk_n      : std_logic := '0';
+	signal cke        : std_logic := '1';
+	signal cs_n       : std_logic := '1';
+	signal ras_n      : std_logic;
+	signal cas_n      : std_logic;
+	signal we_n       : std_logic;
+	signal dm         : std_logic_vector(1 downto 0);
+
+	signal mii_refclk : std_logic;
+	signal mii_rxdv   : std_logic;
+	signal mii_rxd    : std_logic_vector(0 to 4-1);
+	signal mii_txd    : std_logic_vector(0 to 4-1);
+	signal mii_txen   : std_logic;
+
+	signal ddr_lp_dqs : std_logic;
+
+begin
+
+	rst <= '0', '1' after 300 ns;
+	clk <= not clk after 25 ns;
+
+    ipoetb_e : entity work.ipoe_tb
+	generic map (
+		snd_data => snd_data,
+		req_data => req_data)
+	port map (
+		mii_clk   => mii_refclk,
+		mii_rxdv  => mii_txen,
+		mii_rxd   => mii_txd,
+
+		mii_txen  => mii_rxdv,
+		mii_txd   => mii_rxd);
 
 	du_e : nuhs3adsp
 	port map (
@@ -266,12 +225,11 @@ begin
 
 		hd_t_clock => rst,
 
-		rs232_rd   => uart_sin,
 		mii_refclk => mii_refclk,
-		mii_rxc    => mii_rxc,
+		mii_rxc    => mii_refclk,
 		mii_rxdv   => mii_rxdv,
 		mii_rxd    => mii_rxd,
-		mii_txc    => mii_txc,
+		mii_txc    => mii_refclk,
 		mii_txen   => mii_txen,
 		mii_txd    => mii_txd,
 		-------------
@@ -293,14 +251,6 @@ begin
 		ddr_dm     => dm,
 		ddr_dqs    => dqs,
 		ddr_dq     => dq);
-
-	ethrx_e : entity hdl4fpga.eth_rx
-	port map (
-		dll_data   => datarx_null,
-		mii_clk    => mii_txc,
-		mii_frm    => mii_txen,
-		mii_irdy   => mii_txen,
-		mii_data   => mii_txd);
 
 	ddr_model_g: ddr_model
 	port map (
