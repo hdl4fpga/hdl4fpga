@@ -1,1 +1,0 @@
-../../ULX3S/diamond/Makefile
