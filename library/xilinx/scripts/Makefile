@@ -20,11 +20,18 @@
 # fitness for a particular purpose. see the gnu general public license for   #
 # more details at http://www.gnu.org/licenses/.                              #
 #                                                                            #
- vivado -mode batch myscript.tcl
-open_project graphics.xpr
-synth_design 
-opt_design
-place_design
-route_design
-write_bitstream -force $outputDir/cpu.bit
+#		open_project graphics.xpr;\
+#		synth_design; \
+#		opt_design;\
+#		place_design;\
+#		route_design;\
 #
+.PHONY: all
+
+all:
+	echo "\
+		set outputDir . ;\
+		open_project graphics.xpr;\
+		write_bitstream -force "'$$outputDir/cpu.bit'";"|\
+	vivado -mode tcl
+
