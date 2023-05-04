@@ -67,7 +67,7 @@ entity mii_ipoe is
 		miitx_end     : buffer std_logic;
 		miitx_data    : out std_logic_vector;
 
-		tp            : buffer std_logic_vector(1 to 32));
+		tp            : buffer std_logic_vector(1 to 32) := (others => '0'));
 
 end;
 
@@ -251,6 +251,7 @@ begin
 		fcs_sb     => fcs_sb,
 		fcs_vld    => fcs_vld);
 
+	tp(1) <= dllrx_frm;
 	bcstcmp_b : block
 		constant all1s : std_logic_vector := (0 to dllrx_data'length-1 => '1');
 	begin

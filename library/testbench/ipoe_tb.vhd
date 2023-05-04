@@ -30,6 +30,8 @@ use hdl4fpga.ipoepkg.all;
 
 entity ipoe_tb is
 	generic (
+		delay1 : time := 36 us;
+		delay2 : time := 12 us;
 		snd_data : std_logic_vector :=
 			x"01007e" &
 			x"18ff"   &
@@ -64,14 +66,14 @@ begin
 	process
 	begin
 		req  <= '0';
-		wait for 36 us;
+		wait for delay1;
 		loop
 			if req='1' then
 				wait on mii_rxdv;
 				if falling_edge(mii_rxdv) then
 					req <= '0';
 					segment <= segment + 1;
-					wait for 12 us;
+					wait for delay2;
 				end if;
 			else
 				if segment > 1 then

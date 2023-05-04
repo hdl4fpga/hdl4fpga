@@ -40,7 +40,7 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant io_link      : io_comms     := io_hdlc;
+	constant io_link      : io_comms     := io_ipoe;
 	constant sdram_speed  : sdram_speeds := sdram225MHz;
 	constant video_mode   : video_modes  := mode720p24bpp;
 	--------------------------------------
@@ -52,7 +52,7 @@ architecture graphics of ulx3s is
 
 	constant sdram_params : sdramparams_record := sdramparams(
 		sdram_speeds'VAL(setif(debug,
-			sdram_speeds'POS(sdram400Mhz),
+			sdram_speeds'POS(sdram133MHz),
 			sdram_speeds'POS(sdram_speed))));
 	
 	constant sdram_tcp : real := 
@@ -199,7 +199,7 @@ begin
 		rmii_e : entity hdl4fpga.link_rmii
 		generic map (
 			default_mac   => x"00_40_00_01_02_03",
-			default_ipv4a => aton("192.168.1.1"),
+			default_ipv4a => aton("192.168.0.14"),
 			n             => 2)
 		port map (
 			si_frm     => si_frm,
@@ -214,17 +214,17 @@ begin
 			so_data    => so_data,
 			dhcp_btn   => fire1,
 			hdplx      => hdplx,
-			mii_txc    => rmii_nint,
+			mii_txc    => rmii_nintclk,
 			mii_txen   => rmii_tx_en,
 			mii_txd(0) => rmii_tx0,
 			mii_txd(1) => rmii_tx1,
 
-			mii_rxc    => rmii_nint,
-			mii_rxdv   => rmii_crs,
+			mii_rxc    => rmii_nintclk,
+			mii_rxdv   => rmii_crsdv,
 			mii_rxd(0) => rmii_rx0,
 			mii_rxd(1) => rmii_rx1);
 
-		sio_clk   <= rmii_nint;
+		sio_clk   <= rmii_nintclk;
 		wifi_en   <= '0';
 		rmii_mdio <= '0';
 		rmii_mdc  <= '0';

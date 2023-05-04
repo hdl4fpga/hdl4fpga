@@ -26,7 +26,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
 architecture ulx3s_graphics of testbench is
-	constant debug      : boolean := false;
+	constant debug      : boolean := true;
 
 	constant bank_bits  : natural := 2;
 	constant addr_bits  : natural := 13;
@@ -176,7 +176,7 @@ architecture ulx3s_graphics of testbench is
 	signal sdram_dqm   : std_logic_vector(1 downto 0);
 
 	signal gp          : std_logic_vector(28-1 downto 0);
-	signal gn          : std_logic_vector(28-1 downto 0);
+	signal gn          : std_logic_vector(28-1 downto 0) := (others => '0');
 
 	signal ftdi_txd    : std_logic;
 	signal ftdi_rxd    : std_logic;
@@ -184,15 +184,14 @@ architecture ulx3s_graphics of testbench is
 	signal fire1       : std_logic;
 	signal fire2       : std_logic;
 
-	alias mii_refclk   : std_logic is gn(9);
-	alias mii_clk      : std_logic is gn(12);
+	alias mii_refclk   : std_logic is gn(12);
 
 	signal uart_clk    : std_logic := '0';
 
 
-	signal 	mii_txen   : std_logic;
+	alias   mii_txen   : std_logic is gp(12);
 	signal 	mii_txd    : std_logic_vector(0 to 2-1);
-	signal 	mii_rxdv   : std_logic;
+	alias   mii_rxdv   : std_logic is gn(10);
 	signal 	mii_rxd    : std_logic_vector(0 to 2-1);
 
 begin
@@ -200,6 +199,8 @@ begin
 	rst      <= '1', '0' after 10 us;
 	xtal     <= not xtal after 20 ns;
 	uart_clk <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
+
+	mii_refclk <= not mii_refclk after 1000 ns / 50 /2;
 	fire1    <= '0';
 	fire2    <= '0';
 
@@ -216,20 +217,20 @@ begin
 		uart_sin  => ftdi_rxd,
 		uart_sout => ftdi_txd);
 
-	mii_clk <= mii_refclk;
 	mii_rxd <= (gp(10), gn(9));
 	(gn(11), gp(11)) <= mii_txd;
     ipoetb_e : entity work.ipoe_tb
 	generic map (
+		delay1 => 10 us,
 		snd_data => snd_data,
 		req_data => req_data)
 	port map (
-		mii_clk   => mii_clk,
-		mii_rxdv  => mii_txen,
-		mii_rxd   => mii_txd,
+		mii_clk   => mii_refclk,
+		mii_rxdv  => mii_rxdv,
+		mii_rxd   => mii_rxd,
 
-		mii_txen  => mii_rxdv,
-		mii_txd   => mii_rxd);
+		mii_txen  => mii_txen,
+		mii_txd   => mii_txd); 
 
 	du_e : ulx3s
 	generic map (

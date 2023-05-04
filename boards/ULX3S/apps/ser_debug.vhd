@@ -28,51 +28,31 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.videopkg.all;
-
-library ieee;
-use ieee.std_logic_1164.all;
+use hdl4fpga.ipoepkg.all;
+use hdl4fpga.app_profiles.all;
+use hdl4fpga.ecp5_profiles.all;
 
 library ecp5u;
 use ecp5u.components.all;
 
 architecture ser_debug of ulx3s is
 
-	type video_modes is (
-		mode600p24);
+	constant io_link : io_comms := io_ipoe;
 
-	type pll_params is record
-		clkos_div   : natural;
-		clkop_div   : natural;
-		clkfb_div   : natural;
-		clki_div    : natural;
-		clkos2_div  : natural;
-		clkos3_div  : natural;
-	end record;
+	constant video_mode : video_modes := mode600p24bpp;
+	constant video_param  : video_record := videoparam(
+		video_modes'VAL(setif(debug,
+			video_modes'POS(modedebug),
+			video_modes'POS(video_mode))));
 
-	type pixel_types is (rgb565, rgb666, rgb888);
-
-	type video_params is record
-		pll   : pll_params;
-		mode  : videotiming_ids;
-		pixel : pixel_types;
-	end record;
-
-	type videoparams_vector is array (video_modes) of video_params;
-	constant v_r : natural := 5; -- video ratio
-	constant video_tab : videoparams_vector := (
-		mode600p24 => (pll => (clkos_div => 2, clkop_div => 16,  clkfb_div => 1, clki_div => 1, clkos2_div => 5*2, clkos3_div => 2*v_r), pixel => rgb888, mode => pclk40_00m800x600at60));
-
-	constant video_mode : video_modes := mode600p24;
-	constant videodot_freq : real := 
-		real(video_tab(video_mode).pll.clkfb_div*video_tab(video_mode).pll.clkop_div)*clk25mhz_freq/
-		real(video_tab(video_mode).pll.clki_div*video_tab(video_mode).pll.clkos2_div);
-	alias video_record is video_tab(video_mode);
-
-    signal video_pixel     : std_logic_vector(0 to setif(video_tab(video_mode).pixel=rgb565, 16, 32)-1);
+	signal video_pixel   : std_logic_vector(0 to setif(
+		video_param.pixel=rgb565, 16, setif(
+		video_param.pixel=rgb888, 32, 0))-1);
 
 	signal sys_rst         : std_logic;
 	signal sys_clk         : std_logic;
 
+	signal videoio_clk     : std_logic;
 	signal video_clk       : std_logic;
 	signal video_shift_clk : std_logic;
 	signal video_lck       : std_logic;
@@ -80,126 +60,126 @@ architecture ser_debug of ulx3s is
     signal video_vtsync    : std_logic;
 	signal dvid_crgb       : std_logic_vector(7 downto 0);
 
+	signal so_frm        : std_logic;
+	signal so_irdy       : std_logic;
+	signal so_trdy       : std_logic;
+	signal so_data       : std_logic_vector(0 to 8-1);
+	signal si_frm        : std_logic;
+	signal si_irdy       : std_logic;
+	signal si_trdy       : std_logic;
+	signal si_end        : std_logic;
+	signal si_data       : std_logic_vector(0 to 8-1);
+
 	signal ser_clk         : std_logic;
 	signal ser_frm         : std_logic;
 	signal ser_irdy        : std_logic;
-	signal ser_data        : std_logic_vector(0 to 0);
+	signal ser_data        : std_logic_vector(0 to setif(io_link=io_ipoe, 2,1)-1);
 
+	constant hdplx       : std_logic := setif(debug, '0', '1');
 begin
 
 	sys_rst <= '0';
 
-	videopll_b : block
-		signal clkfb : std_logic;
+	videopll_e : entity hdl4fpga.ecp5_videopll
+	generic map (
+		clkref_freq  => clk25mhz_freq,
+		default_gear => 2,
+		video_param  => video_param)
+	port map (
+		clk_ref     => clk_25mhz,
+		videoio_clk => videoio_clk,
+		video_clk   => video_clk,
+		video_shift_clk => video_shift_clk,
+		video_lck   => video_lck);
 
-		attribute FREQUENCY_PIN_CLKI   : string; 
-		attribute FREQUENCY_PIN_CLKOP  : string; 
-		attribute FREQUENCY_PIN_CLKOS  : string; 
-		attribute FREQUENCY_PIN_CLKOS2 : string; 
-		attribute FREQUENCY_PIN_CLKOS3 : string; 
-
-		constant video_freq  : real :=
-			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos2_div*1e6));
-
-		constant video_shift_freq  : real :=
-			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos_div*1e6));
-
-		constant videoio_freq  : real :=
-			(real(video_record.pll.clkfb_div*video_record.pll.clkop_div)*clk25mhz_freq)/
-			(real(video_record.pll.clki_div*video_record.pll.clkos3_div*1e6));
-
-		attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(video_shift_freq,    10);
-		attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(video_freq,          10);
-		attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is ftoa(videoio_freq,        10);
-		attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
-		attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(clk25mhz_freq/1.0e6, 10);
-
-	begin
-		pll_i : EHXPLLL
-        generic map (
-			PLLRST_ENA       => "DISABLED",
-			INTFB_WAKE       => "DISABLED", 
-			STDBY_ENABLE     => "DISABLED",
-			DPHASE_SOURCE    => "DISABLED", 
-			PLL_LOCK_MODE    =>  0, 
-			FEEDBK_PATH      => "CLKOP",
-			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => video_tab(video_mode).pll.clkop_div-1,
-			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => 0, 
-			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
-			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
-			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING", 
-			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING", 
-			OUTDIVIDER_MUXD  => "DIVD",
-			OUTDIVIDER_MUXC  => "DIVC",
-			OUTDIVIDER_MUXB  => "DIVB",
-			OUTDIVIDER_MUXA  => "DIVA",
-
-			CLKOS3_DIV       => video_tab(video_mode).pll.clkos3_div, 
-			CLKOS2_DIV       => video_tab(video_mode).pll.clkos2_div, 
-			CLKOS_DIV        => video_tab(video_mode).pll.clkos_div,
-			CLKOP_DIV        => video_tab(video_mode).pll.clkop_div,
-			CLKFB_DIV        => video_tab(video_mode).pll.clkfb_div,
-			CLKI_DIV         => video_tab(video_mode).pll.clki_div)
-        port map (
-			rst       => '0', 
-			clki      => clk_25mhz,
-			CLKFB     => clkfb, 
-            PHASESEL0 => '0', PHASESEL1 => '0', 
-			PHASEDIR  => '0', 
-            PHASESTEP => '0', PHASELOADREG => '0', 
-            STDBY     => '0', PLLWAKESYNC  => '0',
-            ENCLKOP   => '0', 
-			ENCLKOS   => '0',
-			ENCLKOS2  => '0', 
-            ENCLKOS3  => '0', 
-			CLKOP     => clkfb,
-			CLKOS     => video_shift_clk,
-            CLKOS2    => video_clk,
-            CLKOS3    => open,
-			LOCK      => video_lck, 
-            INTLOCK   => open, 
-			REFCLK    => open,
-			CLKINTFB  => open);
-
-	end block;
-
-	dut_b : block
-
-		constant uart_xtal : real := videodot_freq;
-
-		constant baudrate  : natural := 3000000;
-
+	hdlc_g : if io_link=io_hdlc generate
+		constant uart_freq : real := 
+			real(video_param.pll.clkfb_div*video_param.pll.clkos_div)*clk25mhz_freq/
+			real(video_param.pll.clki_div*video_param.pll.clkos3_div);
+		constant baudrate : natural := setif(
+			uart_freq >= 32.0e6, 3000000, setif(
+			uart_freq >= 25.0e6, 2000000,
+								 115200));
+		signal uart_clk : std_logic;
 		signal uart_frm    : std_logic;
 		signal uart_rxdv   : std_logic;
 		signal uart_rxd    : std_logic_vector(0 to 0);
-
 	begin
-
-		ser_clk <= video_clk;
+		uart_clk <= videoio_clk;
 
 		uartrx_e : entity hdl4fpga.uart_rx
 		generic map (
 			baudrate => baudrate,
-			clk_rate => uart_xtal)
+			clk_rate => uart_freq)
 		port map (
-			uart_rxc  => ser_clk,
+			uart_rxc  => uart_clk,
 			uart_sin  => ftdi_txd,
 			uart_frm  => uart_frm,
 			uart_rxd  => uart_rxd(0),
 			uart_rxdv => uart_rxdv);
 
---		ser_frm  <= '1';
+		ser_clk  <= uart_clk;
 		ser_frm  <= uart_frm;
 		ser_irdy <= uart_rxdv;
 		ser_data <= uart_rxd;
 
-	end block;
+		ftdi_txden <= '1';
+	end generate;
+
+	ipoe_e : if io_link=io_ipoe generate
+
+		signal mii_clk : std_logic;
+		signal tp : std_logic_vector(1 to 32);
+	begin
+
+		rmii_nintclk <= 'Z';
+		rmii_crsdv   <= 'Z';
+		rmii_rx0     <= 'Z';
+		rmii_rx1     <= 'Z';
+		mii_clk <= not rmii_nintclk;
+		rmii_e : entity hdl4fpga.link_rmii
+		generic map (
+			default_mac   => x"00_40_00_01_02_03",
+			default_ipv4a => aton("192.168.0.14"),
+			n             => 2)
+		port map (
+			tp         => tp,
+			si_frm     => si_frm,
+			si_irdy    => si_irdy,
+			si_trdy    => si_trdy,
+			si_end     => si_end,
+			si_data    => si_data,
+	
+			so_frm     => so_frm,
+			so_irdy    => so_irdy,
+			so_trdy    => so_trdy,
+			so_data    => so_data,
+			dhcp_btn   => fire1,
+			hdplx      => hdplx,
+			mii_txc    => mii_clk,
+			mii_txen   => rmii_tx_en,
+			mii_txd(0) => rmii_tx0,
+			mii_txd(1) => rmii_tx1,
+
+			mii_rxc    => mii_clk,
+			mii_rxdv   => rmii_crsdv,
+			mii_rxd(0) => rmii_rx0,
+			mii_rxd(1) => rmii_rx1);
+
+		ser_clk  <= mii_clk;
+		ser_frm  <= rmii_crsdv and not tp(1);
+		ser_irdy <= '1';
+		ser_data <= (rmii_rx0, rmii_rx1);
+
+		wifi_en   <= '0';
+		rmii_mdio <= '0';
+		rmii_mdc  <= '0';
+
+	end generate;
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
-		timing_id       => video_tab(video_mode).mode)
+		timing_id       => video_param.timing)
 	port map (
 		ser_clk         => ser_clk, 
 		ser_frm         => ser_frm, 
@@ -212,6 +192,26 @@ begin
 		video_vtsync    => video_vtsync,
 		video_pixel     => video_pixel,
 		dvid_crgb       => dvid_crgb);
+
+	process (rmii_crsdv)
+		variable q : std_logic;
+	begin
+		if rising_edge(rmii_crsdv) then
+			q := not q;
+			led(6) <= q;
+			led(7) <= not q;
+		end if;
+	end process;
+
+	process (rmii_nintclk)
+		variable q : std_logic;
+	begin
+		if rising_edge(rmii_nintclk) then
+			q := not q;
+			led(0) <= q;
+			led(1) <= not q;
+		end if;
+	end process;
 
 	ddr_g : for i in gpdi_d'range generate
 		signal q : std_logic;

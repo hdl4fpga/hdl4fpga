@@ -42,6 +42,7 @@ entity link_rmii is
 		default_ipv4a : std_logic_vector(0 to 32-1) := aton("192.168.1.1");
 		n             : natural);
 	port (
+		tp       : out std_logic_vector(1 to 32);
 		si_frm   : in  std_logic;
 		si_irdy  : in  std_logic;
 		si_trdy  : out std_logic;
@@ -102,6 +103,7 @@ begin
 		my_mac        => default_mac,
 		default_ipv4a => default_ipv4a)
 	port map (
+		tp         => tp,
 		hdplx      => hdplx,
 		mii_clk    => mii_txc,
 		dhcpcd_req => dhcpcd_req,

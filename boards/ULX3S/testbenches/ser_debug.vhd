@@ -25,15 +25,6 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 architecture ulx3s_serdebug of testbench is
-
-	signal gp          : std_logic_vector(28-1 downto 0);
-	signal gn          : std_logic_vector(28-1 downto 0);
-
-
-	signal ftdi_txd    : std_logic;
-
-	alias mii_clk      : std_logic is gn(12);
-
 	component ulx3s is
 		port (
 			clk_25mhz      : in    std_logic;
@@ -128,301 +119,59 @@ architecture ulx3s_serdebug of testbench is
 			shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep
 	end component;
 
+	for all: ulx3s use entity work.ulx3s(ser_debug);
+
+	constant snd_data  : std_logic_vector :=
+		x"01007e" &
+		x"18ff"   &
+		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+
+		x"1702_00000f_1603_0000_0000";
+	constant req_data  : std_logic_vector :=
+		x"010008_1702_00000f_1603_8000_0000";
+
+	constant baudrate : natural := 3_000_000;
+
+	signal ftdi_txd    : std_logic;
+	signal gp          : std_logic_vector(28-1 downto 0);
+	signal gn          : std_logic_vector(28-1 downto 0);
+
 	signal rst   : std_logic;
 	signal xtal  : std_logic := '0';
 
-	function gen_natural(
-		constant start : natural := 0;
-		constant stop  : natural;
-		constant step  : natural := 1;
-		constant size  : natural)
-		return std_logic_vector is
-		variable retval : std_logic_vector(start*size to size*(stop+1)-1);
-	begin
-		if start < stop then
-			for i in start to stop loop
-				retval(size*i to size*(i+1)-1) := std_logic_vector(to_unsigned(i, size));
-			end loop;
-		else
-			for i in start downto stop loop
-				retval(size*i to size*(i+1)-1) := std_logic_vector(to_unsigned(i, size));
-			end loop;
-		end if;
-		return retval;
-	end;
+	alias  mii_refclk : std_logic is gn(12);
+	alias  mii_txen   : std_logic is gp(12);
+	signal mii_txd    : std_logic_vector(0 to 2-1);
+	alias  mii_rxdv   : std_logic is gn(10);
+	signal mii_rxd    : std_logic_vector(0 to 2-1);
 
-	constant baudrate : natural := 3_000_000;
-	constant data  : std_logic_vector := reverse(
-		-- x"0002_000004";
---		x"0002000080" &
---		x"18ff" & 
---		gen_natural(start => 0, stop => 127, size => 16) &
---		x"123456789abcdef123456789abcdef12" &
---		x"23456789abcdef123456789abcdef123" &
---		x"3456789abcdef123456789abcdef1234" &
---		x"456789abcdef123456789abcdef12345" &
---		x"56789abcdef123456789abcdef123456" &
---		x"6789abcdef123456789abcdef1234567" &
---		x"789abcdef123456789abcdef12345678" &
---		x"89abcdef123456789abcdef123456789" &
---		x"9abcdef123456789abcdef123456789a" &
---		x"abcdef123456789abcdef123456789ab" &
---		x"bcdef123456789abcdef123456789abc" &
---		x"cdef123456789abcdef123456789abcd" &
---		x"def123456789abcdef123456789abcde" &
---		x"ef123456789abcdef123456789abcdef" &
---		x"f123456789abcdef123456789abcdef1" &
---		x"123456789abcdef123456789abcdef12" &
---		x"18ff" & 
---		gen_natural(start => 128, stop => 255, size => 16) &
---		x"123456789abcdef123456789abcdef12" &
---		x"23456789abcdef123456789abcdef123" &
---		x"3456789abcdef123456789abcdef1234" &
---		x"456789abcdef123456789abcdef12345" &
---		x"56789abcdef123456789abcdef123456" &
---		x"6789abcdef123456789abcdef1234567" &
---		x"789abcdef123456789abcdef12345678" &
---		x"89abcdef123456789abcdef123456789" &
---		x"9abcdef123456789abcdef123456789a" &
---		x"abcdef123456789abcdef123456789ab" &
---		x"bcdef123456789abcdef123456789abc" &
---		x"cdef123456789abcdef123456789abcd" &
---		x"def123456789abcdef123456789abcde" &
---		x"ef123456789abcdef123456789abcdef" &
---		x"f123456789abcdef123456789abcdef1" &
---		x"123456789abcdef123456789abcdef12" &
---		x"1602000080" &
---		x"170200007f" &
---		x"1602000080" &
---		x"170200007f"
-		x"010000" -- &
---		x"1801" & 
---		x"7e34" &
---		x"1602000000" &
---		x"17020000ff" --&
---		x"1602000000" &
---		x"1702000000"  &
---		x"1803" & 
---		x"5678" &
---		x"9abc" &
---		x"1602000000" &
---		x"1702000000"
-		, 8);
-
-	for all: ulx3s use entity work.ulx3s(ser_debug);
-
-	signal mii_req : std_logic;
 begin
 
 	rst <= '1', '0' after 100 us; --, '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
-	hdlc_b : block
+	mii_refclk <= not mii_refclk after 1000 ns / 50 /2;
+	mii_rxd <= (gp(10), gn(9));
+	(gn(11), gp(11)) <= mii_txd;
+    ipoetb_e : entity work.ipoe_tb
+	generic map (
+		delay1 => 10 us,
+		snd_data => snd_data,
+		req_data => req_data)
+	port map (
+		mii_clk   => mii_refclk,
+		mii_rxdv  => mii_rxdv,
+		mii_rxd   => mii_rxd,
 
-		generic (
-			baudrate  : natural := 3_000_000;
-			uart_xtal : real := 25.0e6;
-			payload   : std_logic_vector);
-		generic map (
-			payload   => data);
-
-		port (
-			rst       : in  std_logic;
-			uart_clk  : in  std_logic;
-			uart_sout : out std_logic);
-		port map (
-			rst       => rst,
-			uart_clk  => xtal,
-			uart_sout => ftdi_txd);
-
-		signal uart_idle   : std_logic;
-		signal uart_txen   : std_logic;
-		signal uart_txd    : std_logic_vector(0 to 8-1);
-
-		signal hdlctx_frm  : std_logic;
-		signal hdlctx_trdy : std_logic;
-		signal hdlctx_data : std_logic_vector(0 to 8-1);
-
-	begin
-
-		process (rst, uart_clk)
-			variable addr : natural;
-			variable n    : natural;
-		begin
-			if rst='1' then
-				hdlctx_frm <= '0';
-				addr       := 0;
-				n          := 0;
-			elsif rising_edge(uart_clk) then
-				if addr < payload'length then
-					hdlctx_data <= reverse(payload(addr to addr+8-1));
-					if hdlctx_trdy='1' then
-						addr := addr + 8;
-					end if;
-				else
-					if n < 0 then
-						if uart_idle='1' then
-							addr := 0;
-							n := n + 1;
-						end if;
-					end if;
-					hdlctx_data <= (others => '-');
-				end if;
-				if addr < payload'length then
-					hdlctx_frm  <= '1';
-				else
-					hdlctx_frm  <= '0';
-				end if;
-			end if;
-		end process;
-
-		hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
-		port map (
-			hdlctx_frm  => hdlctx_frm,
-			hdlctx_irdy => '1',
-			hdlctx_trdy => hdlctx_trdy,
-			hdlctx_data => hdlctx_data,
-			hdlctx_end  => '0',
-
-			uart_clk    => uart_clk,
-			uart_trdy   => uart_idle,
-			uart_irdy   => uart_txen,
-			uart_data   => uart_txd);
-
-		uarttx_e : entity hdl4fpga.uart_tx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_txc  => uart_clk,
-			uart_sout => uart_sout,
-			uart_trdy => uart_idle,
-			uart_irdy => uart_txen,
-			uart_data => uart_txd);
-
-	end block;
-	
-	mii_req <= '0', '1' after 1.005 us;
-	mii_clk <= not to_stdulogic(to_bit(mii_clk)) after 10 ns;
-	ipoe_b : block
-		generic (
-			baudrate  : natural := 3_000_000;
-			payload   : std_logic_vector);
-		generic map (
-			payload   => data);
-
-		port (
-			rst       : in  std_logic;
-			mii_req   : in  std_logic;
-			mii_rxc   : in  std_logic;
-			mii_rxdv  : in  std_logic;
-			mii_rxd   : in  std_logic_vector(0 to 2-1);
-
-			mii_txc   : in  std_logic;
-			mii_txen  : buffer std_logic;
-			mii_txd   : out std_logic_vector(0 to 2-1));
-		port map (
-			rst        => rst,
-			mii_req    => mii_req,
-			mii_txc    => mii_clk,
-			mii_txen   => gp(12),
-			mii_txd(0) => gn(11),
-			mii_txd(1) => gp(11),
-
-			mii_rxc    => mii_clk,
-			mii_rxdv   => gn(10),
-			mii_rxd(0) => gp(10),
-			mii_rxd(1) => gn(9));
-
-		constant arppkt : std_logic_vector :=
-			x"0000"                 & -- arp_htype
-			x"0000"                 & -- arp_ptype
-			x"00"                   & -- arp_hlen 
-			x"00"                   & -- arp_plen 
-			x"0000"                 & -- arp_oper 
-			x"00_00_00_00_00_00"    & -- arp_sha  
-			x"00_00_00_00"          & -- arp_spa  
-			x"00_00_00_00_00_00"    & -- arp_tha  
-			x"c0_a8_00_0e";           -- arp_tpa  
-
-		constant icmppkt : std_logic_vector :=
-			x"4500"                 &    -- IP Version, TOS
-			x"0000"                 &    -- IP Length
-			x"0000"                 &    -- IP Identification
-			x"0000"                 &    -- IP Fragmentation
-			x"0501"                 &    -- IP TTL, protocol
-			x"0000"                 &    -- IP Header Checksum
-			x"ffffffff"             &    -- IP Source IP address
-			x"c0a8000e"             &    -- IP Destiantion IP Address
-			reverse(x"12345678",8) &
-			reverse(x"12345678",8) &
-			reverse(x"12345678",8) &
-			reverse(x"12345678",8) &
-			reverse(x"12345678",8) &
-			reverse(x"12345678",8) &
-			reverse(x"12345678",8) &
-			reverse(x"aaaaaaaa",8) &
-			reverse(x"ffffffff",8) ;
-
-		constant packet : std_logic_vector := 
-			x"4500"                 &    -- IP Version, TOS
-			x"0000"                 &    -- IP Length
-			x"0000"                 &    -- IP Identification
-			x"0000"                 &    -- IP Fragmentation
-			x"0511"                 &    -- IP TTL, protocol
-			x"0000"                 &    -- IP Header Checksum
-			x"ffffffff"             &    -- IP Source IP address
-			x"c0a8000e"             &    -- IP Destiantion IP Address
-
-			udp_checksummed (
-				x"00000000",
-				x"ffffffff",
-				x"0044dea9"         & -- UDP Source port, Destination port
-				std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
-				x"0000" &              -- UPD checksum
-				payload);
-
-		signal eth_txen  : std_logic;
-		signal eth_txd   : std_logic_vector(mii_txd'range);
-
-		signal txfrm_ptr : std_logic_vector(0 to 20);
-
-	begin
-
---		eth_e: entity hdl4fpga.mii_rom
---		generic map (
---			mem_data => reverse(icmppkt,8))
---		port map (
---			mii_txc  => mii_txc,
---			mii_txen => mii_req,
---			mii_txdv => eth_txen,
---			mii_txd  => eth_txd);
---
---		process (mii_txc)
---		begin
---
---			if rising_edge(mii_txc) then
---				if eth_txen='0' and mii_txen='0' then
---					txfrm_ptr <= (others => '0');
---				else
---					txfrm_ptr <= std_logic_vector(unsigned(txfrm_ptr) + 1);
---				end if;
---			end if;
---		end process;
---
---		ethtx_e : entity hdl4fpga.eth_tx
---		port map (
---			mii_txc  => mii_txc,
---			eth_ptr  => txfrm_ptr,
---			hwsa     => x"af_ff_ff_ff_ff_f5",
---			hwda     => x"00_40_00_01_02_03",
---			llc      => x"0800",
---			pl_txen  => eth_txen,
---			eth_rxd  => eth_txd,
---			eth_txen => mii_txen,
---			eth_txd  => mii_txd);
-
-	end block;
+		mii_txen  => mii_txen,
+		mii_txd   => mii_txd); 
 
 	du_e : ulx3s
 	port map (

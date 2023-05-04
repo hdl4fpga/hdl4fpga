@@ -111,33 +111,31 @@ entity ulx3s is
 		gpdi_sda       : inout std_logic := '-';
 		gpdi_scl       : inout std_logic := '-';
 
-		gp             : inout std_logic_vector(28-1 downto 0);
-		gn             : inout std_logic_vector(28-1 downto 0);
+		gp             : inout std_logic_vector(28-1 downto 0) := (others => 'Z');
+		gn             : inout std_logic_vector(28-1 downto 0) := (others => 'Z');
 		
 		gp_i           : in    std_logic_vector(12 downto 9);
 
 		user_programn  : out   std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
 		shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep
 
-	alias rmii_tx_en  : std_logic is gn(10);
-	alias rmii_tx0    : std_logic is gp(10);
-	alias rmii_tx1    : std_logic is gn(9);
+	alias rmii_tx_en   : std_logic is gn(10);
+	alias rmii_tx0     : std_logic is gp(10);
+	alias rmii_tx1     : std_logic is gn(9);
 
-	alias rmii_rx0    : std_logic is gn(11);
-	alias rmii_rx1    : std_logic is gp(11);
+	alias rmii_rx0     : std_logic is gn(11);
+	alias rmii_rx1     : std_logic is gp(11);
 
-	alias rmii_crs    : std_logic is gp(12);
+	alias rmii_crsdv   : std_logic is gp(12);
 
-	alias rmii_clk    : std_logic is gn(12);
-	alias rmii_nint   : std_logic is gn(12);
-	alias rmii_mdio   : std_logic is gn(13);
-	alias rmii_mdc    : std_logic is gp(13);
-	alias rmii_refclk : std_logic is gp(9);
+	alias rmii_nintclk : std_logic is gn(12);
+	alias rmii_mdio    : std_logic is gn(13);
+	alias rmii_mdc     : std_logic is gp(13);
 
-	alias hdmi0_blue  : std_logic is gpdi_d(0);
-	alias hdmi0_green : std_logic is gpdi_d(1);
-	alias hdmi0_red   : std_logic is gpdi_d(2);
-	alias hdmi0_clock : std_logic is gpdi_d(3);
+	alias hdmi0_blue   : std_logic is gpdi_d(0);
+	alias hdmi0_green  : std_logic is gpdi_d(1);
+	alias hdmi0_red    : std_logic is gpdi_d(2);
+	alias hdmi0_clock  : std_logic is gpdi_d(3);
 
 	constant clk25mhz_freq : real := 25.0e6;
 
