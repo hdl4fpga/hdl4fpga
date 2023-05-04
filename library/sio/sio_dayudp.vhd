@@ -118,7 +118,7 @@ begin
 		so_irdy     => soudp_irdy,
 		so_trdy     => soudp_trdy,
 		so_data     => soudp_data,
-		tp => tp);
+		tp          => tp);
 
 	si_trdy <= so_trdy when sio_addr/='0' else siudp_trdy;
 	so_frm  <= si_frm  when sio_addr/='0' else soudp_frm;

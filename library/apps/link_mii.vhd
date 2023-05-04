@@ -36,8 +36,9 @@ use hdl4fpga.ecp5_profiles.all;
 library ecp5u;
 use ecp5u.components.all;
 
-entity link_rmii is
+entity link_mii is
 	generic (
+		rmii          : boolean := false;
 		default_mac   : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03";
 		default_ipv4a : std_logic_vector(0 to 32-1) := aton("192.168.1.1");
 		n             : natural);
@@ -65,7 +66,7 @@ entity link_rmii is
 		mii_txd  : out std_logic_vector(0 to n-1));
 end;
 
-architecture graphics of link_rmii is
+architecture graphics of link_mii is
 	signal dhcpcd_req : std_logic;
 	signal dhcpcd_rdy : std_logic;
 
@@ -75,7 +76,29 @@ architecture graphics of link_rmii is
 	signal miitx_end  : std_logic;
 	signal miitx_data : std_logic_vector(si_data'range);
 
+	signal rxdv       : std_logic;
+	signal tp1 : std_logic_vector(tp'range);
 begin
+
+   	process (mii_rxdv, mii_rxc)
+   		variable last_rxd : std_logic;
+   	begin
+   		if rising_edge(mii_rxc) then
+   			last_rxd := mii_rxdv;
+   		end if;
+		if rmii then
+       		rmii : if mii_rxdv='1' then
+       			rxdv <= '1';
+       		elsif last_rxd='1' then
+       			rxdv <= '1';
+       		else 
+       			rxdv <= '0';
+       		end if;
+		else
+			non_rmii : rxdv <= mii_rxdv;
+		end if;
+   	end process;
+	tp(1) <= tp1(1);
 
 	dhcp_p : process(mii_txc)
 		type states is (s_request, s_wait);
@@ -103,12 +126,12 @@ begin
 		my_mac        => default_mac,
 		default_ipv4a => default_ipv4a)
 	port map (
-		tp         => tp,
+		tp         => tp1,
 		hdplx      => hdplx,
 		mii_clk    => mii_txc,
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,
-		miirx_frm  => mii_rxdv,
+		miirx_frm  => rxdv,
 		miirx_data => mii_rxd,
 	
 		miitx_frm  => miitx_frm,

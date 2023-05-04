@@ -196,8 +196,9 @@ begin
 
 	ipoe_e : if io_link=io_ipoe generate
 
-		rmii_e : entity hdl4fpga.link_rmii
+		rmii_e : entity hdl4fpga.link_mii
 		generic map (
+			rmii          => true,
 			default_mac   => x"00_40_00_01_02_03",
 			default_ipv4a => aton("192.168.0.14"),
 			n             => 2)
