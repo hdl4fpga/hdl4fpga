@@ -168,23 +168,23 @@ begin
 			mii_rxd(1) => rmii_rx1);
 
 		ser_clk  <= mii_clk;
-		-- process (mii_clk)
-			-- variable cntr : unsigned (0 to 4-1);
-		-- begin
-			-- if rising_edge(mii_clk) then
-				-- if frm='0' then
-					-- cntr := x"4";
-					-- ser_irdy <= '0';
-				-- elsif cntr < (5-1) then
-					-- ser_irdy <= '0';
-					-- cntr := cntr + 1 ;
-				-- else
-					-- ser_irdy <= '1';
-					-- cntr := (others => '0');
-				-- end if;
-			-- end if;
-		-- end process;
-		ser_irdy <= '1';
+		process (mii_clk)
+			variable cntr : unsigned (0 to 4-1);
+		begin
+			if rising_edge(mii_clk) then
+				if frm='0' then
+					cntr := x"0";
+					ser_irdy <= '0';
+				elsif cntr < (10-1) then
+					ser_irdy <= '0';
+					cntr := cntr + 1 ;
+				else
+					ser_irdy <= '1';
+					cntr := (others => '0');
+				end if;
+			end if;
+		end process;
+		-- ser_irdy <= '1';
 		frm  <= tp(1);
 		x1 : entity hdl4fpga.latency
 		generic map (
@@ -201,6 +201,7 @@ begin
 			d => (0 to 2-1 => 32))
 		port map (
 			clk => mii_clk,
+			-- ena   => ser_irdy,
 			di(0) => rmii_rx0,
 			di(1) => rmii_rx1,
 			do    => ser_data);
