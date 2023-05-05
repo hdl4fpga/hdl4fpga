@@ -524,7 +524,7 @@
         <Source name="../../../library/apps/ecp5_sdrampll.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/apps/link_rmii.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/apps/link_mii.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="apps.lpf" type="Logic Preference" type_short="LPF">

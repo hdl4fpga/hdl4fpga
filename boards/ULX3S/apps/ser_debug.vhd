@@ -127,7 +127,6 @@ begin
 	end generate;
 
 	ipoe_e : if io_link=io_ipoe generate
-		signal frm : std_logic;
 		signal mii_clk : std_logic;
 		signal tp : std_logic_vector(1 to 32);
 	begin
@@ -136,7 +135,20 @@ begin
 		rmii_crsdv   <= 'Z';
 		rmii_rx0     <= 'Z';
 		rmii_rx1     <= 'Z';
-		mii_clk <= rmii_nintclk;
+
+		process (rmii_nintclk)
+			variable cntr : unsigned (0 to 4-1);
+		begin
+			if rising_edge(rmii_nintclk) then
+				if cntr < (10/2-1) then
+					cntr := cntr + 1 ;
+				else
+					mii_clk <= not mii_clk;
+					cntr := (others => '0');
+				end if;
+			end if;
+		end process;
+
 		rmii_e : entity hdl4fpga.link_mii
 		generic map (
 			rmii          => true,
@@ -168,44 +180,18 @@ begin
 			mii_rxd(1) => rmii_rx1);
 
 		ser_clk  <= mii_clk;
-		process (mii_clk)
-			variable cntr : unsigned (0 to 4-1);
-		begin
-			if rising_edge(mii_clk) then
-				if frm='0' then
-					cntr := x"0";
-					ser_irdy <= '0';
-				elsif cntr < (10-1) then
-					ser_irdy <= '0';
-					cntr := cntr + 1 ;
-				else
-					ser_irdy <= '1';
-					cntr := (others => '0');
-				end if;
-			end if;
-		end process;
-		-- ser_irdy <= '1';
-		frm  <= tp(1);
-		x1 : entity hdl4fpga.latency
-		generic map (
-			n => 1,
-			d => (0 to 1-1 => 0))
-		port map (
-			clk => mii_clk,
-			di(0) => frm,
-			do(0) => ser_frm);
+		ser_frm  <= tp(1);
+		ser_irdy <= '1';
 
-		xx : entity hdl4fpga.latency
+		datalat_e : entity hdl4fpga.latency
 		generic map (
 			n => 2,
-			d => (0 to 2-1 => 32))
+			d => (0 to 2-1 => 4))
 		port map (
 			clk => mii_clk,
-			-- ena   => ser_irdy,
 			di(0) => rmii_rx0,
 			di(1) => rmii_rx1,
 			do    => ser_data);
-		-- ser_data <= (rmii_rx0, rmii_rx1);
 
 		wifi_en   <= '0';
 		rmii_mdio <= '0';

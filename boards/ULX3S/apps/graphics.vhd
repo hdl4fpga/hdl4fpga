@@ -110,7 +110,6 @@ architecture graphics of ulx3s is
 
 	signal sio_clk       : std_logic;
 
-	constant hdplx       : std_logic := setif(debug, '0', '1');
 begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
@@ -195,6 +194,31 @@ begin
 	end generate;
 
 	ipoe_e : if io_link=io_ipoe generate
+		-- https://www.waveshare.com/LAN8720-ETH-Board.htm
+		-- Starts up 10Mb half duplex
+
+		constant hdplx : '1';
+		signal mii_clk : std_logic;
+		signal tp      : std_logic_vector(1 to 32);
+	begin
+
+		rmii_nintclk <= 'Z';
+		rmii_crsdv   <= 'Z';
+		rmii_rx0     <= 'Z';
+		rmii_rx1     <= 'Z';
+
+		process (rmii_nintclk)
+			variable cntr : unsigned (0 to 4-1);
+		begin
+			if rising_edge(rmii_nintclk) then
+				if cntr < (10/2-1) then
+					cntr := cntr + 1 ;
+				else
+					mii_clk <= not mii_clk;
+					cntr := (others => '0');
+				end if;
+			end if;
+		end process;
 
 		rmii_e : entity hdl4fpga.link_mii
 		generic map (
@@ -215,17 +239,17 @@ begin
 			so_data    => so_data,
 			dhcp_btn   => fire1,
 			hdplx      => hdplx,
-			mii_txc    => rmii_nintclk,
+			mii_txc    => mii_clk,
 			mii_txen   => rmii_tx_en,
 			mii_txd(0) => rmii_tx0,
 			mii_txd(1) => rmii_tx1,
 
-			mii_rxc    => rmii_nintclk,
+			mii_rxc    => mii_clk,
 			mii_rxdv   => rmii_crsdv,
 			mii_rxd(0) => rmii_rx0,
 			mii_rxd(1) => rmii_rx1);
 
-		sio_clk   <= rmii_nintclk;
+		sio_clk   <= mii_clk;
 		wifi_en   <= '0';
 		rmii_mdio <= '0';
 		rmii_mdc  <= '0';
