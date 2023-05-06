@@ -197,7 +197,7 @@ begin
 		-- https://www.waveshare.com/LAN8720-ETH-Board.htm
 		-- Starts up 10Mb half duplex
 
-		constant hdplx : '1';
+		constant hdplx : std_logic := '1';
 		signal mii_clk : std_logic;
 		signal tp      : std_logic_vector(1 to 32);
 	begin
@@ -220,6 +220,13 @@ begin
 			end if;
 		end process;
 
+		process (clk_25mhz)
+		begin
+			if rising_edge(clk_25mhz) then
+				led <= tp(1 to 8);
+			end if;
+		end process;
+
 		rmii_e : entity hdl4fpga.link_mii
 		generic map (
 			rmii          => true,
@@ -227,6 +234,7 @@ begin
 			default_ipv4a => aton("192.168.0.14"),
 			n             => 2)
 		port map (
+			tp         => tp,
 			si_frm     => si_frm,
 			si_irdy    => si_irdy,
 			si_trdy    => si_trdy,

@@ -789,33 +789,39 @@ begin
 
 		dvi_b : block
 			signal dvid_blank : std_logic;
-			signal red   : std_logic_vector(0 to 8-1) := (others => '0');
-			signal green : std_logic_vector(0 to 8-1) := (others => '0');
-			signal blue  : std_logic_vector(0 to 8-1) := (others => '0');
+			signal rgb : std_logic_vector(0 to 3*8-1) := (others => '0');
 
 		begin
 
 			dvid_blank <= video_blank;
-			process (video_pixel)
-				variable pixel : unsigned(0 to video_pixel'length-1);
-			begin
-			    pixel := unsigned(video_pixel);
-			    red(0 to red_length-1)  <= std_logic_vector(pixel(0 to red_length-1));
-			    pixel := pixel sll red_length;
-			    green(0 to green_length-1) <= std_logic_vector(pixel(0 to green_length-1));
-			    pixel := pixel sll green_length;
-			    blue(0 to blue_length-1) <= std_logic_vector(pixel(0 to blue_length-1));
-			end process;
+        	process (video_pixel)
+        		variable urgb  : unsigned(0 to 3*8-1);
+        		variable pixel : unsigned(0 to video_pixel'length-1);
+        	begin
+        		pixel := unsigned(video_pixel);
+
+        		urgb(0 to red_length-1)  := pixel(0 to red_length-1);
+        		urgb  := urgb rol 8;
+        		pixel := pixel sll red_length;
+
+        		urgb(0 to green_length-1) := pixel(0 to green_length-1);
+        		urgb  := urgb rol 8;
+        		pixel := pixel sll green_length;
+
+        		urgb(0 to blue_length-1) := pixel(0 to blue_length-1);
+        		urgb  := urgb rol 8;
+        		pixel := pixel sll blue_length;
+
+        		rgb <= std_logic_vector(urgb);
+        	end process;
 
 			dvi_e : entity hdl4fpga.dvi
 			generic map (
 				fifo_mode => dvid_fifo,
-				ser_size  => video_gear)
+				gear  => video_gear)
 			port map (
 				clk   => video_clk,
-				red   => red,
-				green => green,
-				blue  => blue,
+				rgb   => rgb,
 				hsync => video_hzsync,
 				vsync => video_vtsync,
 				blank => dvid_blank,

@@ -251,7 +251,6 @@ begin
 		fcs_sb     => fcs_sb,
 		fcs_vld    => fcs_vld);
 
-	tp(1) <= dllrx_frm;
 	bcstcmp_b : block
 		constant all1s : std_logic_vector := (0 to dllrx_data'length-1 => '1');
 	begin
@@ -371,6 +370,7 @@ begin
 				dev_gnt <= gnt;
 			end if;
 		end process;
+		tp(1 to 8) <= miitx_frm & arptx_frm  & dev_gnt & b"0" & dev_csc & dev_req;
 
 		ethtx_frm  <= wirebus(arptx_frm  & ipv4tx_frm,  dev_gnt);
 		ethtx_irdy <= wirebus(arptx_irdy & ipv4tx_irdy, dev_gnt);

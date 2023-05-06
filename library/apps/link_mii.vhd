@@ -77,7 +77,6 @@ architecture graphics of link_mii is
 	signal miitx_data : std_logic_vector(si_data'range);
 
 	signal rxdv       : std_logic;
-	signal tp1 : std_logic_vector(tp'range);
 begin
 
    	process (mii_rxdv, mii_rxc)
@@ -98,7 +97,6 @@ begin
 			non_rmii : rxdv <= mii_rxdv;
 		end if;
    	end process;
-	tp(1) <= tp1(1);
 
 	dhcp_p : process(mii_txc)
 		type states is (s_request, s_wait);
@@ -126,7 +124,7 @@ begin
 		my_mac        => default_mac,
 		default_ipv4a => default_ipv4a)
 	port map (
-		tp         => tp1,
+		tp         => tp,
 		hdplx      => hdplx,
 		mii_clk    => mii_txc,
 		dhcpcd_req => dhcpcd_req,

@@ -31,9 +31,7 @@ entity dvi_subpxl is
 		hsync : in  std_logic;
 		vsync : in  std_logic;
 		blank : in  std_logic;
-		red   : in  std_logic_vector( 8-1 downto 0);
-		green : in  std_logic_vector( 8-1 downto 0);
-		blue  : in  std_logic_vector( 8-1 downto 0);
+		rgb   : in  std_logic_vector(3*8-1 downto 0);
 		chn0  : buffer std_logic_vector(10-1 downto 0);
 		chn1  : out std_logic_vector(10-1 downto 0);
 		chn2  : out std_logic_vector(10-1 downto 0));
@@ -50,22 +48,8 @@ architecture def of dvi_subpxl is
 
 	signal c_chn0 : std_logic_vector(chn0'range);
 	signal c      : std_logic_vector(3*chn0'length-1 downto 0);
-	signal pixel  : std_logic_vector(3*blue'length-1 downto 0) := (others => '0');
 	signal chnpxl : std_logic_vector(3*chn0'length-1 downto 0);
 begin
-	-- test_patter_p : process (clk)
-		-- variable cntr : unsigned(0 to 8-1);
-	-- begin
-		-- if rising_edge(clk) then
-			-- if blank='1' then
-				-- cntr := (others => '0');
-			-- else
-				-- cntr := cntr + 1;
-			-- end if;
-			-- pixel <= std_logic_vector(cntr & not cntr & cntr);
-		-- end if;
-	-- end process;
-	pixel <= red & green & blue;
 	c <= c00 & c00 & std_logic_vector'(multiplex(c00 & c01 & c10 & c11, vsync & hsync));
 	chn0to2_g : for i in 0 to 3-1 generate
 		tmds_encoder_e : entity hdl4fpga.tmds_encoder
@@ -73,7 +57,7 @@ begin
 			clk     => clk,
 			c       => c(c00'length*(i+1)-1 downto c00'length*i),
 			de      => blank,
-			data    => pixel( blue'length*(i+1)-1 downto blue'length*i),
+			data    => rgb(rgb'length/3*(i+1)-1 downto rgb'length/3*i),
 			encoded => chnpxl(chn0'length*(i+1)-1 downto chn0'length*i));
 	end generate;
 
@@ -89,20 +73,18 @@ use ieee.numeric_std.all;
 entity dvi is
 	generic (
 		fifo_mode : boolean := false;
-		ser_size : natural := 10);
+		gear : natural := 10);
 	port (
 		clk   : in  std_logic;
-		red   : in  std_logic_vector( 8-1 downto 0);
-		green : in  std_logic_vector( 8-1 downto 0);
-		blue  : in  std_logic_vector( 8-1 downto 0);
+		rgb   : in  std_logic_vector(3*8-1 downto 0);
 		hsync : in  std_logic;
 		vsync : in  std_logic;
 		blank : in  std_logic;
 		cclk  : in  std_logic;
-		chn0  : out std_logic_vector(ser_size-1 downto 0);
-		chn1  : out std_logic_vector(ser_size-1 downto 0);
-		chn2  : out std_logic_vector(ser_size-1 downto 0);
-		chnc  : out std_logic_vector(ser_size-1 downto 0));
+		chn0  : out std_logic_vector(gear-1 downto 0);
+		chn1  : out std_logic_vector(gear-1 downto 0);
+		chn2  : out std_logic_vector(gear-1 downto 0);
+		chnc  : out std_logic_vector(gear-1 downto 0));
 end;
 
 library hdl4fpga;
@@ -114,10 +96,10 @@ architecture def of dvi is
 	alias cgreen is cpixel(2*10-1 downto 1*10);
 	alias cblue  is cpixel(1*10-1 downto 0*10);
 
-	signal spixel : std_logic_vector(3*ser_size-1  downto 0);
-	alias sred   is spixel(3*ser_size-1 downto 2*ser_size);
-	alias sgreen is spixel(2*ser_size-1 downto 1*ser_size);
-	alias sblue  is spixel(1*ser_size-1 downto 0*ser_size);
+	signal spixel : std_logic_vector(3*gear-1  downto 0);
+	alias sred   is spixel(3*gear-1 downto 2*gear);
+	alias sgreen is spixel(2*gear-1 downto 1*gear);
+	alias sblue  is spixel(1*gear-1 downto 0*gear);
 
 	constant dvi_clk : unsigned(10-1 downto 0) := b"0000011111";
 begin
@@ -128,9 +110,7 @@ begin
 		hsync => hsync,
 		vsync => vsync,
 		blank => blank,
-		red   => red,
-		green => green,
-		blue  => blue,
+		rgb   => rgb,
 		chn0  => cblue,
 		chn1  => cgreen,
 		chn2  => cred);
@@ -154,7 +134,7 @@ begin
 			src_frm  => '1',
 			src_data => cpixel(10*(i+1)-1 downto 10*i),
 			dst_clk  => cclk,
-			dst_data => spixel(ser_size*(i+1)-1 downto ser_size*i));
+			dst_data => spixel(gear*(i+1)-1 downto gear*i));
 	end generate;
 
 	chn0 <= sblue;

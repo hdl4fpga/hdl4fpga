@@ -35,7 +35,7 @@ use ieee.std_logic_1164.all;
 entity ser_debug is
 	generic (
 		timing_id    : videotiming_ids;
-		vserlzr_size : natural := 2;
+		video_gear   : natural := 2;
 		red_length   : natural := 5;
 		green_length : natural := 6;
 		blue_length  : natural := 5);
@@ -58,9 +58,7 @@ architecture def of ser_debug is
 	signal video_on   : std_logic;
 	signal video_dot  : std_logic;
 	signal dvid_blank : std_logic;
-	signal red        : std_logic_vector(0 to 8-1) := (others => '0');
-	signal green      : std_logic_vector(0 to 8-1) := (others => '0');
-	signal blue       : std_logic_vector(0 to 8-1) := (others => '0');
+	signal rgb        : std_logic_vector(0 to 3*8-1) := (others => '0');
 begin
 
 	ser_display_e : entity hdl4fpga.ser_display
@@ -88,33 +86,41 @@ begin
 
 	video_pixel <= (video_pixel'range => video_dot);
 	process (video_pixel)
+		variable urgb  : unsigned(0 to 3*8-1);
 		variable pixel : unsigned(0 to video_pixel'length-1);
 	begin
 		pixel := unsigned(video_pixel);
-		red(0 to red_length-1)  <= std_logic_vector(pixel(0 to red_length-1));
+
+		urgb(0 to red_length-1)  := pixel(0 to red_length-1);
+		urgb  := urgb rol 8;
 		pixel := pixel sll red_length;
-		green(0 to green_length-1) <= std_logic_vector(pixel(0 to green_length-1));
+
+		urgb(0 to green_length-1) := pixel(0 to green_length-1);
+		urgb  := urgb rol 8;
 		pixel := pixel sll green_length;
-		blue(0 to blue_length-1) <= std_logic_vector(pixel(0 to blue_length-1));
+
+		urgb(0 to blue_length-1) := pixel(0 to blue_length-1);
+		urgb  := urgb rol 8;
+		pixel := pixel sll blue_length;
+
+		rgb <= std_logic_vector(urgb);
 	end process;
 
 	dvid_blank <= video_blank;
 
 	dvi_e : entity hdl4fpga.dvi
 	generic map (
-		ser_size => vserlzr_size)
+		gear => video_gear)
 	port map (
 		clk   => video_clk,
-		red   => red,
-		green => green,
-		blue  => blue,
+		rgb   => rgb,
 		hsync => video_hzsync,
 		vsync => video_vtsync,
 		blank => dvid_blank,
 		cclk  => video_shift_clk,
-		chnc  => dvid_crgb(vserlzr_size*4-1 downto vserlzr_size*3),
-		chn2  => dvid_crgb(vserlzr_size*3-1 downto vserlzr_size*2),  
-		chn1  => dvid_crgb(vserlzr_size*2-1 downto vserlzr_size*1),  
-		chn0  => dvid_crgb(vserlzr_size*1-1 downto vserlzr_size*0));
+		chnc  => dvid_crgb(video_gear*4-1 downto video_gear*3),
+		chn2  => dvid_crgb(video_gear*3-1 downto video_gear*2),  
+		chn1  => dvid_crgb(video_gear*2-1 downto video_gear*1),  
+		chn0  => dvid_crgb(video_gear*1-1 downto video_gear*0));
 
 end;
