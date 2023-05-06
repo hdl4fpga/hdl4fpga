@@ -65,9 +65,9 @@ architecture def of display_tp is
 		constant labels : string)
 	return string is
 		constant debug : boolean := false;
-		variable sx : natural;
-		variable dx : natural;
-		variable data : string(1 to display_width*display_height);
+		variable sx    : natural;
+		variable dx     : natural;
+		variable data  : string(1 to display_width*display_height);
 	begin
 		sx := 1;
 		dx := 1;
@@ -175,8 +175,8 @@ architecture def of display_tp is
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
 	constant display_width   : natural := modeline_tab(timing_id)(0)/font_width;
 	constant display_height  : natural := modeline_tab(timing_id)(4)/font_height;
-	constant data : string :=  romdata(display_width, display_height, cols, field_widths, labels);
-	constant cga_bitrom : std_logic_vector := to_ascii(data);
+	constant ascii_data      : string :=  romdata(display_width, display_height, cols, field_widths, labels);
+	constant cga_bitrom      : std_logic_vector := to_ascii(ascii_data);
 
 	signal video_von   : std_logic;
 	signal video_hon   : std_logic;
@@ -285,7 +285,6 @@ begin
 		resize(mul(unsigned(video_vcntr(video_vcntr'left downto fontheight_bits)),display_width), video_addr'length) +
 		unsigned(video_hcntr(video_hcntr'left downto fontwidth_bits)) + video_base;
 
-	video_pixel <= (video_pixel'range => video_dot);
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
 		cga_bitrom  => cga_bitrom,
@@ -304,6 +303,7 @@ begin
 		font_vcntr  => video_vcntr(fontheight_bits-1 downto 0),
 		video_on    => von,
 		video_dot   => video_dot);
+	video_pixel <= (video_pixel'range => video_dot);
 
 	video_lat_e : entity hdl4fpga.latency
 	generic map (
