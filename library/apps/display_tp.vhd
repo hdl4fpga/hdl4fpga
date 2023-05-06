@@ -66,7 +66,7 @@ architecture def of display_tp is
 	return string is
 		constant debug : boolean := false;
 		variable sx    : natural;
-		variable dx     : natural;
+		variable dx    : natural;
 		variable data  : string(1 to display_width*display_height);
 	begin
 		sx := 1;
@@ -139,6 +139,9 @@ architecture def of display_tp is
 				retval := retval + 1;
 			end if;
 		end loop;
+		if labels(labels'right)/=NUL then
+			retval := retval + 1;
+		end if;
 		return retval;
 	end;
 
@@ -154,10 +157,10 @@ architecture def of display_tp is
 	begin
 		field_num := 0;
 		row_addr  := 0;
-		for i in 0 to cols-1 loop
-			for j in 0 to field_widths(i)-1 loop
+		loop
+			for i in 0 to cols-1 loop
 				retval(field_num) := row_addr + field_widths(i);
-				if field_num < num_of_fields(labels) then
+				if field_num < num_of_fields(labels)-1 then
 					field_num := field_num + 1;
 				else
 					return retval;
@@ -165,7 +168,6 @@ architecture def of display_tp is
 			end loop;
 			row_addr := row_addr + display_width;
 		end loop;
-		return retval;
 	end;
 
 	subtype font_code is std_logic_vector(unsigned_num_bits(font_bitrom'length/font_width/font_height-1)-1 downto 0);
@@ -177,6 +179,7 @@ architecture def of display_tp is
 	constant display_height  : natural := modeline_tab(timing_id)(4)/font_height;
 	constant ascii_data      : string :=  romdata(display_width, display_height, cols, field_widths, labels);
 	constant cga_bitrom      : std_logic_vector := to_ascii(ascii_data);
+	-- constant cga_bitrom      : std_logic_vector := to_ascii("hello world hhhhh");
 
 	signal video_von   : std_logic;
 	signal video_hon   : std_logic;
