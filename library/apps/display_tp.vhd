@@ -190,10 +190,9 @@ architecture def of display_tp is
 	signal vtsync      : std_logic;
 	signal von         : std_logic;
 
-	signal cga_codes   : std_logic_vector(font_code'range);
 	signal cga_code    : std_logic_vector(font_code'range);
 	signal cga_we      : std_logic;
-	signal cga_addr    : std_logic_vector(video_addr'length-1 downto unsigned_num_bits(cga_codes'length/cga_code'length)-1);
+	signal cga_addr    : std_logic_vector(video_addr'length-1 downto unsigned_num_bits(cga_code'length/cga_code'length)-1);
 	signal font_row    : unsigned(0 to fontheight_bits-1);
 	signal font_col    : unsigned(0 to  fontwidth_bits-1);
 
@@ -297,7 +296,7 @@ begin
 		cga_clk     => sweep_clk,
 		cga_we      => cga_we,
 		cga_addr    => cga_addr,
-		cga_data    => cga_codes,
+		cga_data    => cga_code,
 
 		video_clk   => video_clk,
 		video_addr  => std_logic_vector(video_addr),
