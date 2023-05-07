@@ -67,14 +67,13 @@ architecture def of ser_display is
 	signal video_hon         : std_logic;
 	signal video_vcntr       : std_logic_vector(11-1 downto 0);
 	signal video_hcntr       : std_logic_vector(11-1 downto 0);
-	signal video_addr        : std_logic_vector(unsigned_num_bits(display_width*display_height-1)-1 downto 0);
-	signal video_base        : unsigned(video_addr'range);
 
 	signal des_data          : std_logic_vector(2*digit'length-1 downto 0);
 	signal cga_codes         : std_logic_vector(font_code'length*des_data'length/digit'length-1 downto 0);
 	signal cga_code          : std_logic_vector(font_code'range);
 	signal cga_we            : std_logic;
-	signal cga_addr          : std_logic_vector(video_addr'length-1 downto unsigned_num_bits(cga_codes'length/cga_code'length-1));
+	signal cga_base          : std_logic_vector(unsigned_num_bits(display_width*display_height-1)-1 downto 0);
+	signal cga_addr          : std_logic_vector(cga_base'range);
 
 	signal des_irdy          : std_logic;
 
@@ -137,33 +136,29 @@ begin
 			end if;
 			we := phy_frm;
 			cga_codes <= std_logic_vector(code);
-			video_base <= shift_left(resize(unsigned(cga_addr), video_base'length), video_base'length-cga_addr'length)-display_width*display_height;
+			cga_base  <= std_logic_vector(shift_left(resize(unsigned(cga_addr), cga_base'length), cga_base'length-cga_addr'length)-display_width*display_height);
 		end if;
 	end process;
 
-	video_addr <= std_logic_vector(
-		resize(mul(unsigned(video_vcntr(video_vcntr'left downto fontheight_bits)),display_width), video_addr'length) +
---		resize(unsigned(video_vcntr(video_vcntr'left downto fontheight_bits))*display_width, video_addr'length) +
-		unsigned(video_hcntr(video_hcntr'left downto fontwidth_bits)) + video_base);
-
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
-		cga_bitrom  => cga_bitrom,
-	  	font_bitrom => psf1cp850x8x16,
-		font_height => font_height,
-		font_width  => font_width)
+		display_width  => display_width,
+		display_height => display_height,
+		cga_bitrom     => cga_bitrom,
+		font_bitrom    => psf1cp850x8x16,
+		font_height    => font_height,
+		font_width     => font_width)
 	port map (
-		cga_clk     => phy_clk,
-		cga_we      => cga_we,
-		cga_addr    => cga_addr,
-		cga_data    => cga_codes,
+		cga_clk   => phy_clk,
+		cga_we    => cga_we,
+		cga_addr  => cga_addr,
+		cga_data  => cga_codes,
+		cga_base  => cga_base,
 
-		video_clk   => video_clk,
-		video_addr  => video_addr,
-		font_hcntr  => video_hcntr(fontwidth_bits-1 downto 0),
-		font_vcntr  => video_vcntr(fontheight_bits-1 downto 0),
-		video_on    => von,
-		video_dot   => video_dot);
+		video_clk => video_clk,
+		video_hon => video_hon,
+		video_von => video_von,
+		video_dot => video_dot);
 
 	video_lat_e : entity hdl4fpga.latency
 	generic map (

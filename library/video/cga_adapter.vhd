@@ -42,9 +42,9 @@ entity cga_adapter is
 		cga_clk        : in  std_logic;
 		cga_we         : in  std_logic := '1';
 		cga_addr       : in  std_logic_vector(unsigned_num_bits(display_width*display_height-1)-1 downto 0) := (others => '0');
+		cga_base       : in  std_logic_vector(unsigned_num_bits(display_width*display_height-1)-1 downto 0) := (others => '0');
 		cga_data       : in  std_logic_vector;
 
-		video_bsaddr   : in  std_logic_vector(unsigned_num_bits(display_width*display_height-1)-1 downto 0) := (others => '0');
 		video_clk      : in  std_logic;
 		video_hon      : in  std_logic;
 		video_von      : in  std_logic;
@@ -71,18 +71,40 @@ begin
 
 	video_on <= video_von and video_hon;
 	cga_sweep_b : block
-		signal hon_edge : std_logic;
+		signal display_col : unsigned(unsigned_num_bits(display_width-1)-1 downto 0);
+		signal display_row : unsigned(unsigned_num_bits(display_height-1)-1 downto 0);
+		signal hon_edge    : std_logic;
 	begin
+    	display_p : process (video_clk)
+    	begin
+    		if rising_edge(video_clk) then
+    			if video_von='0' then
+					display_col <= (others => '0');
+					display_row <= (others => '0');
+				elsif display_row=display_height-1 then
+					display_col <= (others => '0');
+					display_row <= (others => '0');
+				elsif video_hon='0' then
+					display_col <= (others => '0');
+				elsif display_col=display_width-1 then
+					display_col <= (others => '0');
+					display_row <= display_row + 1;
+    			else
+					display_col <= display_col + 1;
+				end if;
+    		end if;
+    	end process;
+
     	font_col_p : process (video_clk)
     	begin
     		if rising_edge(video_clk) then
     			if video_hon='0' then
-    				font_hcntr <= (others => '0');
+    				font_hcntr  <= (others => '0');
     			elsif font_hcntr=font_width-1 then
-    				font_hcntr <= (others => '0');
-    			else
-    				font_hcntr <= font_hcntr + 1;
-    			end if;
+					font_hcntr <= (others => '0');
+				else
+					font_hcntr <= font_hcntr + 1;
+				end if;
     		end if;
     	end process;
 
@@ -92,6 +114,7 @@ begin
     			if video_von='0' then
     				font_row <= (others => '0');
     			elsif (hon_edge and not video_hon)='1' then
+    			-- elsif display_col=display_width-1 then
     				if font_vcntr=font_height-1 then
     					font_vcntr <= (others => '0');
     				else
@@ -108,12 +131,13 @@ begin
     		if rising_edge(video_clk) then
     			if video_von='0' then
     				row_addr   := (others => '0');
-    				char_addr <= row_addr;
+    				char_addr <= unsigned(cga_base) + row_addr;
     			elsif (hon_edge and not video_hon)='1' then
+    			-- elsif display_col=display_width-1 then
     				if font_vcntr=font_height-1 then
     					row_addr := row_addr + display_width;
     				end if;
-    				char_addr <= row_addr;
+    				char_addr <= unsigned(cga_base) + row_addr;
     			elsif font_hcntr=font_width-1 then
     				char_addr <= char_addr + 1;
     			end if;
