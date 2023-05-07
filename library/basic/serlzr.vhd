@@ -141,7 +141,7 @@ architecture def of serlzr  is
 		return (max+dst_size, mask0, mask1);
 	end;
 
-	constant debug_mm : boolean := true;
+	constant debug_mm : boolean := false;
 	constant mm : natural_vector := max_and_mask(src_data'length, dst_data'length);
 
 	signal shf  : std_logic_vector(unsigned_num_bits(src_data'length-1)-1 downto 0);

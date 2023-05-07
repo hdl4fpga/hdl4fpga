@@ -76,6 +76,7 @@ architecture display_tp of ulx3s is
 	signal ser_data        : std_logic_vector(0 to setif(io_link=io_ipoe, 2,1)-1);
 
 	constant hdplx       : std_logic := setif(debug, '0', '1');
+	signal tp : std_logic_vector(0 to 3);
 begin
 
 	sys_rst <= '0';
@@ -199,11 +200,12 @@ begin
 
 	end generate;
 
+	tp(0 to 1) <= (fire1, fire2);
 	displaytp_e : entity hdl4fpga.display_tp
 	generic map (
 		timing_id  => video_param.timing,
 		video_gear => 2,
-		cols       => 2,
+		num_of_cols  => 1,
 		field_widths => (15,10,3),
 		labels     => 
 			"hello" & NUL &
@@ -213,7 +215,7 @@ begin
 			"world" & NUL)
 	port map (
 		sweep_clk   => video_clk,
-		tp          => ser_data,
+		tp          => tp,
 		video_clk   => video_clk,
 		video_shift_clk => video_shift_clk,
 		video_hs    => video_hzsync,

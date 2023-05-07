@@ -23,7 +23,7 @@ begin
 	generic map (
 		timing_id  => pclk40_00m800x600at60,
 		video_gear => video_gear,
-		cols       => 2,
+		num_of_cols  => 3,
 		field_widths => (15,10,3),
 		labels     => 
 			"hello" & NUL &
