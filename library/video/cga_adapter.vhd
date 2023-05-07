@@ -32,39 +32,96 @@ use hdl4fpga.cgafonts.all;
 
 entity cga_adapter is
 	generic (
-		cga_bitrom   : std_logic_vector := (1 to 0 => '-');
-		font_bitrom  : std_logic_vector := psf1cp850x8x16;
-		font_height  : natural := 16;
-		font_width   : natural := 8);
+		display_width  : natural;
+		display_height : natural;
+		cga_bitrom     : std_logic_vector := (1 to 0 => '-');
+		font_bitrom    : std_logic_vector := psf1cp850x8x16;
+		font_height    : natural := 16;
+		font_width     : natural := 8);
 	port (
-		cga_clk    : in  std_logic;
-		cga_we     : in  std_logic := '1';
-		cga_addr   : in  std_logic_vector;
-		cga_data   : in  std_logic_vector;
+		cga_clk        : in  std_logic;
+		cga_we         : in  std_logic := '1';
+		cga_addr       : in  std_logic_vector(unsigned_num_bits(display_width*display_height-1)-1 downto 0) := (others => '0');
+		cga_data       : in  std_logic_vector;
 
-		video_clk  : in std_logic;
-		video_addr : in std_logic_vector;
-		font_hcntr : in std_logic_vector(unsigned_num_bits(font_width-1)-1 downto 0);
-		font_vcntr : in std_logic_vector(unsigned_num_bits(font_height-1)-1 downto 0);
-		video_on   : in std_logic := '1';
+		video_bsaddr   : in  std_logic_vector(unsigned_num_bits(display_width*display_height-1)-1 downto 0) := (others => '0');
+		video_clk      : in  std_logic;
+		video_hon      : in  std_logic;
+		video_von      : in  std_logic;
 
-		video_dot  : out std_logic);
+		video_dot      : out std_logic);
 end;
 
 architecture struct of cga_adapter is
-	signal font_col  : std_logic_vector(font_hcntr'range);
-	signal font_row  : std_logic_vector(font_vcntr'range);
+	signal font_hcntr : unsigned(unsigned_num_bits(font_width-1)-1 downto 0);
+	signal font_vcntr : unsigned(unsigned_num_bits(font_height-1)-1 downto 0);
+	signal font_col   : std_logic_vector(font_hcntr'range);
+	signal font_row   : std_logic_vector(font_vcntr'range);
+	signal video_on   : std_logic;
 
-	signal cga_codes : std_logic_vector(cga_data'range);
-	signal cga_code  : std_logic_vector(unsigned_num_bits(font_bitrom'length/font_height/font_width-1)-1 downto 0);
-	signal mux_code  : std_logic_vector(cga_code'range);
-	signal char_addr : std_logic_vector(video_addr'length-1 downto 0);
+	signal char_addr  : unsigned(unsigned_num_bits(display_width*display_height-1)-1 downto 0);
+	signal cga_codes  : std_logic_vector(cga_data'range);
+	signal cga_code   : std_logic_vector(unsigned_num_bits(font_bitrom'length/font_height/font_width-1)-1 downto 0);
+	signal mux_code   : std_logic_vector(cga_code'range);
 
-	signal char_on   : std_logic;
-	signal char_dot  : std_logic;
+	signal char_on    : std_logic;
+	signal char_dot   : std_logic;
+
 begin
 
-	char_addr <= video_addr;
+	video_on <= video_von and video_hon;
+	cga_sweep_b : block
+		signal hon_edge : std_logic;
+	begin
+    	font_col_p : process (video_clk)
+    	begin
+    		if rising_edge(video_clk) then
+    			if video_hon='0' then
+    				font_hcntr <= (others => '0');
+    			elsif font_hcntr=font_width-1 then
+    				font_hcntr <= (others => '0');
+    			else
+    				font_hcntr <= font_hcntr + 1;
+    			end if;
+    		end if;
+    	end process;
+
+    	font_row_p : process (video_clk)
+    	begin
+    		if rising_edge(video_clk) then
+    			if video_von='0' then
+    				font_row <= (others => '0');
+    			elsif (hon_edge and not video_hon)='1' then
+    				if font_vcntr=font_height-1 then
+    					font_vcntr <= (others => '0');
+    				else
+    					font_vcntr <= font_vcntr + 1;
+    				end if;
+    			end if;
+    			hon_edge <= video_hon;
+    		end if;
+    	end process;
+
+    	code_p : process (video_clk)
+    		variable row_addr : unsigned(char_addr'range);
+    	begin
+    		if rising_edge(video_clk) then
+    			if video_von='0' then
+    				row_addr   := (others => '0');
+    				char_addr <= row_addr;
+    			elsif (hon_edge and not video_hon)='1' then
+    				if font_vcntr=font_height-1 then
+    					row_addr := row_addr + display_width;
+    				end if;
+    				char_addr <= row_addr;
+    			elsif font_hcntr=font_width-1 then
+    				char_addr <= char_addr + 1;
+    			end if;
+    		end if;
+    	end process;
+
+	end block;
+
 	cgamem_e : entity hdl4fpga.dpram
 	generic map (
 		synchronous_rdaddr => true,
@@ -77,7 +134,7 @@ begin
 		wr_data => cga_data,
 
 		rd_clk  => video_clk,
-		rd_addr => char_addr(char_addr'left downto char_addr'length-cga_addr'length),
+		rd_addr => std_logic_vector(char_addr(char_addr'left downto char_addr'length-cga_addr'length)),
 		rd_data => cga_codes);
 
 	muxcode_g : if char_addr'length > cga_addr'length generate
@@ -89,7 +146,7 @@ begin
 			d => (0 to char_addr'length-cga_addr'length => 2))
 		port map (
 			clk => video_clk,
-			di  => char_addr(char_addr'length-cga_addr'length-1 downto 0),
+			di  => std_logic_vector(char_addr(char_addr'length-cga_addr'length-1 downto 0)),
 			do  => sel);
 
 		mux_code <= multiplex(cga_codes, sel);
@@ -102,7 +159,7 @@ begin
 		d   => (font_row'range => 2))
 	port map (
 		clk => video_clk,
-		di  => font_vcntr,
+		di  => std_logic_vector(font_vcntr),
 		do  => font_row);
 
 	hsync_e : entity hdl4fpga.latency
@@ -111,7 +168,7 @@ begin
 		d   => (font_col'range => 2))
 	port map (
 		clk => video_clk,
-		di  => font_hcntr,
+		di  => std_logic_vector(font_hcntr),
 		do  => font_col);
 
 	rom_e : entity hdl4fpga.cga_rom

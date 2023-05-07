@@ -173,8 +173,6 @@ architecture def of display_tp is
 	subtype font_code is std_logic_vector(unsigned_num_bits(font_bitrom'length/font_width/font_height-1)-1 downto 0);
 	subtype digit     is std_logic_vector(0 to 4-1);
 
-	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
-	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
 	constant display_width   : natural := modeline_tab(timing_id)(0)/font_width;
 	constant display_height  : natural := modeline_tab(timing_id)(4)/font_height;
 	constant ascii_data      : string :=  romdata(display_width, display_height, cols, field_widths, labels);
@@ -195,8 +193,6 @@ architecture def of display_tp is
 	signal cga_code    : std_logic_vector(font_code'range);
 	signal cga_we      : std_logic;
 	signal cga_addr    : std_logic_vector(video_addr'length-1 downto unsigned_num_bits(cga_code'length/cga_code'length)-1);
-	signal font_row    : unsigned(0 to fontheight_bits-1);
-	signal font_col    : unsigned(0 to  fontwidth_bits-1);
 
 	signal dvid_blank  : std_logic;
 	signal rgb         : std_logic_vector(3*8-1 downto 0) := (others => '0');
@@ -216,7 +212,6 @@ begin
 		video_vtcntr => video_vcntr,
 		video_hzon   => video_hon,
 		video_vton   => video_von);
-	von <= video_hon and video_von;
 
 	-- VGA --
 	---------
@@ -243,60 +238,10 @@ begin
 		-- end if;
 	-- end process;
 
-	cga_sweep_b : block
-		signal hon_edge : std_logic;
-	begin
-    	font_col_p : process (video_clk)
-    	begin
-    		if rising_edge(video_clk) then
-    			if video_hon='0' then
-    				font_col <= (others => '0');
-    			elsif font_col=font_width-1 then
-    				font_col <= (others => '0');
-    			else
-    				font_col <= font_col + 1;
-    			end if;
-    		end if;
-    	end process;
-
-    	font_row_p : process (video_clk)
-    	begin
-    		if rising_edge(video_clk) then
-    			if video_von='0' then
-    				font_row <= (others => '0');
-    			elsif (hon_edge and not video_hon)='1' then
-    				if font_row=font_height-1 then
-    					font_row <= (others => '0');
-    				else
-    					font_row <= font_row + 1;
-    				end if;
-    			end if;
-    			hon_edge <= video_hon;
-    		end if;
-    	end process;
-
-    	code_p : process (video_clk)
-    		variable row_addr : unsigned(video_addr'range);
-    	begin
-    		if rising_edge(video_clk) then
-    			if video_von='0' then
-    				row_addr   := (others => '0');
-    				video_addr <= row_addr;
-    			elsif (hon_edge and not video_hon)='1' then
-    				if font_row=font_height-1 then
-    					row_addr := row_addr + display_width;
-    				end if;
-    				video_addr <= row_addr;
-    			elsif font_col=font_width-1 then
-    				video_addr <= video_addr + 1;
-    			end if;
-    		end if;
-    	end process;
-
-	end block;
-
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
+		display_width  => display_width,
+		display_height => display_height,
 		cga_bitrom  => cga_bitrom,
 	  	font_bitrom => psf1cp850x8x16,
 		font_height => font_height,
@@ -308,14 +253,14 @@ begin
 		cga_data    => cga_code,
 
 		video_clk   => video_clk,
-		video_addr  => std_logic_vector(video_addr),
-		font_hcntr  => video_hcntr(fontwidth_bits-1 downto 0),
-		font_vcntr  => video_vcntr(fontheight_bits-1 downto 0),
-		video_on    => von,
+		video_hon   => video_hon,
+		video_von   => video_von,
 		video_dot   => video_dot);
+
 	rgb  <= (rgb'range => video_dot);
 	video_pixel <= (video_pixel'range => video_dot);
 
+	von <= video_hon and video_von;
 	video_lat_e : entity hdl4fpga.latency
 	generic map (
 		n => 3,
