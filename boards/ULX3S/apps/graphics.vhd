@@ -42,7 +42,7 @@ architecture graphics of ulx3s is
 	--     Set your profile here        --
 	constant io_link      : io_comms     := io_ipoe;
 	constant sdram_speed  : sdram_speeds := sdram225MHz;
-	constant video_mode   : video_modes  := mode720p24bpp;
+	constant video_mode   : video_modes  := mode600p24bpp;
 	--------------------------------------
 
 	constant video_param  : video_record := videoparam(
@@ -194,6 +194,9 @@ begin
 	end generate;
 
 	ipoe_e : if io_link=io_ipoe generate
+		signal video_pixel   : std_logic_vector(0 to setif(
+		video_param.pixel=rgb565, 16, setif(
+		video_param.pixel=rgb888, 32, 0))-1);
 		-- https://www.waveshare.com/LAN8720-ETH-Board.htm
 		-- Starts up 10Mb half duplex
 
@@ -257,6 +260,30 @@ begin
 			mii_rxd(0) => rmii_rx0,
 			mii_rxd(1) => rmii_rx1);
 
+    	displaytp_e : entity hdl4fpga.display_tp
+    	generic map (
+    		timing_id  => video_param.timing,
+    		video_gear => 2,
+    		num_of_cols  => 1,
+    		field_widths => (15,10,3),
+    		labels     => 
+    			"miitx_frm"  & NUL &
+    			"arptx_frm"  & NUL &
+    			"dev_gtn(0)" & NUL &
+    			"dev_gtn(1)" & NUL &
+    			"dev_csc"    & NUL &
+    			"dev_req(0)" & NUL &
+    			"dev_req(1)" & NUL)
+    	port map (
+    		sweep_clk   => video_clk,
+    		tp          => tp(1 to 7),
+    		video_clk   => video_clk,
+    		video_shift_clk => video_shift_clk,
+    		-- video_hs    => video_hzsync,
+    		-- video_vs    => video_vtsync,
+    		video_pixel => video_pixel,
+    		dvid_crgb   => dvid_crgb);
+
 		sio_clk   <= mii_clk;
 		wifi_en   <= '0';
 		rmii_mdio <= '0';
@@ -302,7 +329,7 @@ begin
 		video_clk    => video_clk,
 		video_shift_clk => video_shift_clk,
 		video_pixel  => video_pixel,
-		dvid_crgb    => dvid_crgb,
+		-- dvid_crgb    => dvid_crgb,
 
 		ctlr_clk     => ctlr_clk,
 		ctlr_rst     => sdrsys_rst,

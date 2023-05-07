@@ -27,7 +27,10 @@ ser_debug: apps.ldf
 graphics: apps.ldf
 	echo prj_project open apps.ldf \; prj_run Export -impl $@  -task Bitgen | diamondc
 
+demo_displaytp : apps.ldf
+	echo prj_project open apps.ldf \; prj_run Export -impl $@  -task Bitgen | diamondc
+
 display_tp: apps.ldf
 	echo prj_project open apps.ldf \; prj_run Export -impl $@  -task Bitgen | diamondc
 
-.PHONY: display_tp ser_debug graphics clean
+.PHONY: demo_displaytp display_tp ser_debug graphics clean

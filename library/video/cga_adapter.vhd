@@ -32,6 +32,7 @@ use hdl4fpga.cgafonts.all;
 
 entity cga_adapter is
 	generic (
+		display_scale  : natural := 2;
 		display_width  : natural;
 		display_height : natural;
 		cga_bitrom     : std_logic_vector := (1 to 0 => '-');
@@ -41,8 +42,8 @@ entity cga_adapter is
 	port (
 		cga_clk        : in  std_logic;
 		cga_we         : in  std_logic := '1';
-		cga_addr       : in  std_logic_vector(unsigned_num_bits(display_width*display_height-1)-1 downto 0) := (others => '0');
-		cga_base       : in  std_logic_vector(unsigned_num_bits(display_width*display_height-1)-1 downto 0) := (others => '0');
+		cga_addr       : in  std_logic_vector(unsigned_num_bits(display_width*display_height/display_scale**2-1)-1 downto 0) := (others => '0');
+		cga_base       : in  std_logic_vector(unsigned_num_bits(display_width*display_height/display_scale**2-1)-1 downto 0) := (others => '0');
 		cga_data       : in  std_logic_vector;
 
 		video_clk      : in  std_logic;
@@ -53,11 +54,13 @@ entity cga_adapter is
 end;
 
 architecture struct of cga_adapter is
+	constant scale_displaywidth  : natural := display_width/display_scale;
+	constant scale_displayheight : natural := display_height/display_scale;
 	signal font_col  : unsigned(unsigned_num_bits(font_width-1)-1 downto 0);
 	signal font_row  : unsigned(unsigned_num_bits(font_height-1)-1 downto 0);
 	signal video_on  : std_logic;
 
-	signal char_addr : unsigned(unsigned_num_bits(display_width*display_height-1)-1 downto 0);
+	signal char_addr : unsigned(cga_addr'range);
 	signal cga_codes : std_logic_vector(cga_data'range);
 	signal cga_code  : std_logic_vector(unsigned_num_bits(font_bitrom'length/font_height/font_width-1)-1 downto 0);
 	signal mux_code  : std_logic_vector(cga_code'range);
@@ -70,8 +73,8 @@ architecture struct of cga_adapter is
 begin
 
 	cga_sweep_b : block
-		signal display_col : unsigned(unsigned_num_bits(display_width-1)-1 downto 0);
-		signal display_row : unsigned(unsigned_num_bits(display_height-1)-1 downto 0);
+		signal display_col : unsigned(unsigned_num_bits(scale_displaywidth-1)-1 downto 0);
+		signal display_row : unsigned(unsigned_num_bits(scale_displayheight-1)-1 downto 0);
 		signal hon_edge    : std_logic;
 	begin
     	display_p : process (video_clk)
@@ -80,12 +83,12 @@ begin
     			if video_von='0' then
 					display_col <= (others => '0');
 					display_row <= (others => '0');
-				elsif display_row=display_height-1 then
+				elsif display_row=scale_displayheight-1 then
 					display_col <= (others => '0');
 					display_row <= (others => '0');
 				elsif video_hon='0' then
 					display_col <= (others => '0');
-				elsif display_col=display_width-1 then
+				elsif display_col=scale_displaywidth-1 then
 					display_col <= (others => '0');
 					display_row <= display_row + 1;
     			else
@@ -97,9 +100,9 @@ begin
     	font_col_p : process (video_clk)
     	begin
     		if rising_edge(video_clk) then
-				-- if display_row=display_height-1 then
+				-- if display_row=scale_displayheight-1 then
     				-- font_col  <= (others => '0');
-    			-- elsif display_col=display_width-1 then
+    			-- elsif display_col=scale_displaywidth-1 then
     				-- font_col  <= (others => '0');
     			if video_hon='0' then
     				font_col  <= (others => '0');
@@ -114,12 +117,12 @@ begin
     	font_row_p : process (video_clk)
     	begin
     		if rising_edge(video_clk) then
-				-- if display_row=display_height-1 then
+				-- if display_row=scale_displayheight-1 then
     				-- font_row <= (others => '0');
     			if video_von='0' then
     				font_row <= (others => '0');
     			elsif (hon_edge and not video_hon)='1' then
-    			-- elsif display_col=display_width-1 then
+    			-- elsif display_col=scale_displaywidth-1 then
     				if font_row=font_height-1 then
     					font_row <= (others => '0');
     				else
@@ -138,9 +141,9 @@ begin
     				row_addr   := (others => '0');
     				char_addr <= unsigned(cga_base) + row_addr;
     			elsif (hon_edge and not video_hon)='1' then
-    			-- elsif display_col=display_width-1 then
+    			-- elsif display_col=scale_displaywidth-1 then
     				if font_row=font_height-1 then
-    					row_addr := row_addr + display_width;
+    					row_addr := row_addr + scale_displaywidth;
     				end if;
     				char_addr <= unsigned(cga_base) + row_addr;
     			elsif font_col=font_width-1 then

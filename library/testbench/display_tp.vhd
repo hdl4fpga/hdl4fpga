@@ -14,6 +14,7 @@ architecture display_tp of testbench is
 	signal video_shift_clk : std_logic := '1';
 	signal video_pixel : std_logic_vector(32-1 downto 0);
 
+	signal tp : std_logic_vector(0 to 5-1);
 begin
 	sweep_clk       <= not sweep_clk after 10 ns;
 	video_clk       <= not video_clk after encoded_size*10 ns;
@@ -33,7 +34,7 @@ begin
 			"world" & NUL )
 	port map (
 		sweep_clk   => sweep_clk,
-		tp          => "00",
+		tp          => tp,
 		video_clk   => video_clk,
 		video_shift_clk => video_shift_clk,
 		video_hs    => open,

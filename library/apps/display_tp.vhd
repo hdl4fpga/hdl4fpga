@@ -42,7 +42,7 @@ entity display_tp is
 		labels       : string);
 	port (
 		sweep_clk    : in std_logic;
-		tp           : std_logic_vector;
+		tp           : in std_logic_vector;
 		video_clk    : in  std_logic;
 		video_shift_clk : in std_logic := '-';
 		video_hs     : buffer std_logic;
@@ -137,7 +137,7 @@ architecture def of display_tp is
     					sx := sx + 1;
     					dx := dx + 1;
     				else
-    					data(dx) := '*';
+    					data(dx) := ' ';
     					dx := dx + 1;
     				end if;
     			end loop;
@@ -164,7 +164,7 @@ architecture def of display_tp is
 					severity note;
 					return data;
 				end if;
-				data(dx) := '|';
+				data(dx) := ' ';
 				dx := dx + 1;
 
 				assert not debug_indexptrs 
@@ -174,23 +174,27 @@ architecture def of display_tp is
 				severity note;
     		end loop;
 			while dx mod display_width /= 0 loop
-				data(dx) := '*';
+				data(dx) := ' ';
 				dx := dx + 1;
 			end loop;
-			data(dx) := CR;
+			-- data(dx) := CR;
+			data(dx) := ' ';
 			dx := dx + 1;
 		end loop;
 	end;
 
 
+	constant display_scale  : natural := 1;
 	constant display_width  : natural := modeline_tab(timing_id)(0)/font_width;
 	constant display_height : natural := modeline_tab(timing_id)(4)/font_height;
-	constant ascii_data     : string :=  romdata(display_width, display_height, num_of_cols, field_widths, labels);
+	constant scale_displaywidth  : natural := display_width/display_scale;
+	constant scale_displayheight : natural := display_height/display_scale;
+	constant ascii_data     : string :=  romdata(scale_displaywidth, scale_displayheight, num_of_cols, field_widths, labels);
 	constant cga_bitrom     : std_logic_vector := to_ascii(ascii_data);
 
 	signal video_von   : std_logic;
 	signal video_hon   : std_logic;
-	signal video_addr  : unsigned(unsigned_num_bits(display_width*display_height-1)-1 downto 0);
+	signal video_addr  : unsigned(unsigned_num_bits(scale_displaywidth*scale_displayheight-1)-1 downto 0);
 	signal video_vcntr : std_logic_vector(11-1 downto 0);
 	signal video_hcntr : std_logic_vector(11-1 downto 0);
 	signal video_base  : unsigned(video_addr'range);
@@ -201,7 +205,7 @@ architecture def of display_tp is
 	signal von         : std_logic;
 
 	signal cga_code    : std_logic_vector(unsigned_num_bits(font_bitrom'length/font_width/font_height-1)-1 downto 0);
-	signal cga_we      : std_logic;
+	signal cga_we      : std_logic := '0';
 	signal cga_addr    : std_logic_vector(video_addr'length-1 downto unsigned_num_bits(cga_code'length/cga_code'length)-1);
 
 	signal dvid_blank  : std_logic;
@@ -230,31 +234,32 @@ begin
 	---------
 
 	process(sweep_clk)
-		constant addr : natural_vector := addr_of_fields(num_of_cols, display_width, field_widths, labels);
-		variable cntr : unsigned(unsigned_num_bits(num_of_fields(labels)-1)-1 downto 0) := (others => '0');
-		variable we   : std_logic;
+		constant addr : natural_vector := addr_of_fields(num_of_cols, scale_displaywidth, field_widths, labels);
+		variable cntr : unsigned( unsigned_num_bits(addr'length-1)-1 downto 0) := (others => '0');
+		variable we   : std_logic := '0';
+		alias tp_alias : std_logic_vector(0 to tp'length-1) is tp;
 	begin
 		if rising_edge(sweep_clk) then
-			cga_addr <= std_logic_vector(to_unsigned(addr(to_integer(cntr)), cga_addr'length));
+			cga_addr <= std_logic_vector(to_unsigned(addr(to_integer(cntr))-1, cga_addr'length));
 			cga_we   <= '1';
-			if tp(to_integer(cntr))='1' then
-				cga_code <= to_ascii("*");
+			if tp_alias(to_integer(cntr))='1' then
+				cga_code <= x"1e";
 			else
-				cga_code <= to_ascii("0");
+				cga_code <= x"1f";
 			end if;
 			if cntr >= num_of_fields(labels)-1 then
 				cntr := (others => '0');
-			elsif cntr >= tp'length-1 then
+			elsif cntr >= tp_alias'length-1 then
 				cntr := (others => '0');
 			else
 				cntr := cntr + 1;
 			end if;
-			
 		end if;
 	end process;
 
 	cga_adapter_e : entity hdl4fpga.cga_adapter
 	generic map (
+		display_scale => display_scale,
 		display_width  => display_width,
 		display_height => display_height,
 		cga_bitrom  => cga_bitrom,

@@ -129,7 +129,7 @@ begin
 
 	ipoe_e : if io_link=io_ipoe generate
 		signal mii_clk : std_logic;
-		signal tp : std_logic_vector(1 to 32);
+		signal tp      : std_logic_vector(1 to 32);
 	begin
 
 		rmii_nintclk <= 'Z';
@@ -198,30 +198,31 @@ begin
 		rmii_mdio <= '0';
 		rmii_mdc  <= '0';
 
-	end generate;
+    	displaytp_e : entity hdl4fpga.display_tp
+    	generic map (
+    		timing_id  => video_param.timing,
+    		video_gear => 2,
+    		num_of_cols  => 1,
+    		field_widths => (15,10,3),
+    		labels     => 
+    			"miitx_frm"  & NUL &
+    			"arptx_frm"  & NUL &
+    			"dev_gtn(0)" & NUL &
+    			"dev_gtn(1)" & NUL &
+    			"dev_csc"    & NUL &
+    			"dev_req(0)" & NUL &
+    			"dev_req(1)" & NUL)
+    	port map (
+    		sweep_clk   => video_clk,
+    		tp          => tp(1 to 7),
+    		video_clk   => video_clk,
+    		video_shift_clk => video_shift_clk,
+    		video_hs    => video_hzsync,
+    		video_vs    => video_vtsync,
+    		video_pixel => video_pixel,
+    		dvid_crgb   => dvid_crgb);
 
-	tp(0 to 1) <= (fire1, fire2);
-	displaytp_e : entity hdl4fpga.display_tp
-	generic map (
-		timing_id  => video_param.timing,
-		video_gear => 2,
-		num_of_cols  => 1,
-		field_widths => (15,10,3),
-		labels     => 
-			"hello" & NUL &
-			"again" & NUL &
-			"again" & NUL &
-			"again" & NUL &
-			"world" & NUL)
-	port map (
-		sweep_clk   => video_clk,
-		tp          => tp,
-		video_clk   => video_clk,
-		video_shift_clk => video_shift_clk,
-		video_hs    => video_hzsync,
-		video_vs    => video_vtsync,
-		video_pixel => video_pixel,
-		dvid_crgb   => dvid_crgb);
+	end generate;
 
 	process (rmii_crsdv)
 		variable q : std_logic;
