@@ -210,7 +210,7 @@ begin
 			"again" & NUL &
 			"again" & NUL &
 			"again" & NUL &
-			"world")
+			"world" & NUL)
 	port map (
 		sweep_clk   => video_clk,
 		tp          => ser_data,

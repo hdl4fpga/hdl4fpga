@@ -30,7 +30,7 @@ begin
 			"again" & NUL &
 			"again" & NUL &
 			"again" & NUL &
-			"world")
+			"world" & NUL )
 	port map (
 		sweep_clk   => sweep_clk,
 		tp          => "00",
