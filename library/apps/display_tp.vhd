@@ -89,6 +89,7 @@ architecture def of display_tp is
 		loop
 			field_acc := 0;
 			for i in 0 to num_of_cols-1 loop
+				exit when i > field_widths'length;
 				field_acc := field_acc + (field_widths(i)+1);
 				retval(field_num) := row_addr + field_acc;
 				assert not debug_addroffields
@@ -117,12 +118,13 @@ architecture def of display_tp is
 		variable sx    : natural;
 		variable dx    : natural;
 		constant addr_of_fields : natural_vector := addr_of_fields(num_of_cols, display_width, field_widths, labels);
-		variable data  : string(1 to addr_of_fields(addr_of_fields'right)+1);
+		variable data  : string(1 to addr_of_fields(addr_of_fields'right)+6);
 	begin
 		sx := 1;
 		dx := 1;
 		loop
     		for i in 0 to num_of_cols-1 loop
+				exit when i > field_widths'length;
     			for j in 1 to field_widths(i) loop
 					if labels'length < sx then
 						exit;

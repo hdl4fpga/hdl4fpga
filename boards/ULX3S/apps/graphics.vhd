@@ -265,18 +265,24 @@ begin
     		timing_id  => video_param.timing,
     		video_gear => 2,
     		num_of_cols  => 1,
-    		field_widths => (15,10,3),
+    		field_widths => (0 to 6-1 => 15),
     		labels     => 
-    			"miitx_frm"  & NUL &
-    			"arptx_frm"  & NUL &
     			"dev_gtn(0)" & NUL &
     			"dev_gtn(1)" & NUL &
     			"dev_csc"    & NUL &
     			"dev_req(0)" & NUL &
-    			"dev_req(1)" & NUL)
+    			"dev_req(1)" & NUL &
+    			"miitx_frm"  & NUL &
+    			"miitx_end"  & NUL &
+    			"ethtx_frm"  & NUL &
+    			"ethtx_irdy" & NUL &
+    			"ethtx_trdy" & NUL &
+    			"arptx_frm"  & NUL &
+    			"arptx_irdy" & NUL &
+    			"arptx_trdy" & NUL)
     	port map (
     		sweep_clk   => video_clk,
-    		tp          => tp(1 to 7),
+    		tp          => tp(1 to 13),
     		video_clk   => video_clk,
     		video_shift_clk => video_shift_clk,
     		-- video_hs    => video_hzsync,

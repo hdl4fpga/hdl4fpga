@@ -370,7 +370,19 @@ begin
 				dev_gnt <= gnt;
 			end if;
 		end process;
-		tp(1 to 7) <= miitx_frm & arptx_frm & dev_gnt(0) & dev_gnt(1) & dev_csc & dev_req;
+		tp(1)  <= dev_gnt(0);
+		tp(2)  <= dev_gnt(1);
+		tp(3)  <= dev_csc;
+		tp(4)  <= dev_req(0);
+		tp(5)  <= dev_req(1);
+		tp(6)  <= miitx_frm;
+		tp(7)  <= miitx_end;
+		tp(8)  <= ethtx_frm;
+		tp(9)  <= ethtx_irdy;
+		tp(10) <= ethtx_trdy;
+		tp(11) <= arptx_frm;
+		tp(12) <= arptx_irdy;
+		tp(13) <= arptx_trdy;
 
 		ethtx_frm  <= wirebus(arptx_frm  & ipv4tx_frm,  dev_gnt);
 		ethtx_irdy <= wirebus(arptx_irdy & ipv4tx_irdy, dev_gnt);
