@@ -182,7 +182,11 @@ begin
 				ipv4a_frm <= '1';
 				if ipv4a_end='1' then
 					ipv4shdr_frm  <= frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, (ipv4_verihl, ipv4_tos, ipv4_ident, ipv4_flgsfrg, ipv4_ttl));
+				else
+					ipv4shdr_frm  <= '0';
 				end if;
+				ipv4proto_frm <= '0';
+				ipv4len_frm   <= '0';
 			when s_ipv4hdr =>
 				ipv4a_frm     <= ipv4chsm_end;
 				ipv4shdr_frm  <= frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, (ipv4_verihl, ipv4_tos, ipv4_ident, ipv4_flgsfrg, ipv4_ttl));
@@ -200,9 +204,9 @@ begin
 	dlltx_irdy <= pl_irdy and ipv4_trdy;
 	nettx_irdy <= pl_irdy when dlltx_end='1' else '0';
 	ipv4a_irdy <= 
-		'0' when dlltx_end='0'    else 
-		'1' when (state=s_ipv4a and ipv4a_end='0') else
-		ipv4_trdy when  state=s_ipv4hdr else
+		'0'       when dlltx_end='0'                     else 
+		'1'       when (state=s_ipv4a and ipv4a_end='0') else
+		ipv4_trdy when  state=s_ipv4hdr                  else
 		ipv4_trdy;
 	ipv4shdr_irdy  <= ipv4_trdy when  ipv4shdr_frm='1' else '0';
 	ipv4proto_irdy <= ipv4_trdy when ipv4proto_frm='1' else '0';
