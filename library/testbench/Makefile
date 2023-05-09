@@ -1451,9 +1451,6 @@ $(HDL4FPGA__link_mii__graphics) : ../apps/link_mii.vhd \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__sdram_param) \
-		$(IEEE__math_real) \
-		$(HDL4FPGA__sdram_db) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
