@@ -175,11 +175,6 @@ architecture def of display_tp is
 					"dx => " & natural'image(dx) & ")"
 				severity note;
     		end loop;
-			assert false and not debug_indexptrs 
-			report CR & "(" & 
-				"sx => " & natural'image(sx) & ", " &
-				"dx => " & natural'image(dx) & ")"
-			severity note;
 			while dx mod display_width /= 0 loop
 				data(dx) := ' ';
 				dx := dx + 1;
