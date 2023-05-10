@@ -193,7 +193,7 @@ begin
 		ftdi_txden <= '1';
 	end generate;
 
-	ipoe_e : if io_link=io_ipoe generate
+	ipoe_g : if io_link=io_ipoe generate
 		signal video_pixel   : std_logic_vector(0 to setif(
 		video_param.pixel=rgb565, 16, setif(
 		video_param.pixel=rgb888, 32, 0))-1);
@@ -203,6 +203,7 @@ begin
 		constant hdplx : std_logic := '1';
 		signal mii_clk : std_logic;
 		signal tp      : std_logic_vector(1 to 32);
+		signal mii_clk10 : std_logic;
 	begin
 
 		rmii_nintclk <= 'Z';
@@ -217,11 +218,13 @@ begin
 				if cntr < (10/2-1) then
 					cntr := cntr + 1 ;
 				else
-					mii_clk <= not mii_clk;
+					mii_clk10 <= not setif(mii_clk10/='0','1');
 					cntr := (others => '0');
 				end if;
 			end if;
 		end process;
+
+		mii_clk <= mii_clk10 when not debug else rmii_nintclk;
 
 		process (clk_25mhz)
 		begin
@@ -237,36 +240,36 @@ begin
 			default_ipv4a => aton("192.168.0.14"),
 			n             => 2)
 		port map (
-			tp         => tp,
-			si_frm     => si_frm,
-			si_irdy    => si_irdy,
-			si_trdy    => si_trdy,
-			si_end     => si_end,
-			si_data    => si_data,
+			tp            => tp,
+			si_frm        => si_frm,
+			si_irdy       => si_irdy,
+			si_trdy       => si_trdy,
+			si_end        => si_end,
+			si_data       => si_data,
 	
-			so_frm     => so_frm,
-			so_irdy    => so_irdy,
-			so_trdy    => so_trdy,
-			so_data    => so_data,
-			dhcp_btn   => fire1,
-			hdplx      => hdplx,
-			mii_txc    => mii_clk,
-			mii_txen   => rmii_tx_en,
-			mii_txd(0) => rmii_tx0,
-			mii_txd(1) => rmii_tx1,
+			so_frm        => so_frm,
+			so_irdy       => so_irdy,
+			so_trdy       => so_trdy,
+			so_data       => so_data,
+			dhcp_btn      => fire1,
+			hdplx         => hdplx,
+			mii_txc       => mii_clk,
+			mii_txen      => rmii_tx_en,
+			mii_txd(0)    => rmii_tx0,
+			mii_txd(1)    => rmii_tx1,
 
-			mii_rxc    => mii_clk,
-			mii_rxdv   => rmii_crsdv,
-			mii_rxd(0) => rmii_rx0,
-			mii_rxd(1) => rmii_rx1);
+			mii_rxc       => mii_clk,
+			mii_rxdv      => rmii_crsdv,
+			mii_rxd(0)    => rmii_rx0,
+			mii_rxd(1)    => rmii_rx1);
 
     	displaytp_e : entity hdl4fpga.display_tp
     	generic map (
-    		timing_id  => video_param.timing,
-    		video_gear => 2,
+    		timing_id    => video_param.timing,
+    		video_gear   => 2,
     		num_of_cols  => 1,
     		field_widths => (0 to 6-1 => 15),
-    		labels     => 
+    		labels       => 
     			"dev_gtn(0)" & NUL &
     			"dev_gtn(1)" & NUL &
     			"dev_csc"    & NUL &

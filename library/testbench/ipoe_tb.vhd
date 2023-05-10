@@ -31,7 +31,7 @@ use hdl4fpga.ipoepkg.all;
 entity ipoe_tb is
 	generic (
 		delay1 : time := 36 us;
-		delay2 : time := 12 us;
+		delay2 : time := 1 us;
 		snd_data : std_logic_vector :=
 			x"01007e" &
 			x"18ff"   &
@@ -43,9 +43,9 @@ entity ipoe_tb is
 			x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 			x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 			x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-			x"1702_0000ff_1603_0000_0000";
+			x"1702_0003ff_1603_0000_0000";
 		req_data : std_logic_vector := 
-			x"010008_1702_0000ff_1603_8000_0000");
+			x"010008_1702_0003ff_1603_8000_0000");
 	port (
 		mii_clk  : in  std_logic;
 		mii_rxdv : in  std_logic;
@@ -69,8 +69,8 @@ begin
 		wait for delay1;
 		loop
 			if req='1' then
-				wait on mii_rxdv;
-				if falling_edge(mii_rxdv) then
+				wait on mii_txen;
+				if falling_edge(mii_txen) then
 					req <= '0';
 					segment <= segment + 1;
 					wait for delay2;
@@ -93,11 +93,11 @@ begin
 	port map (
 		mii_data4 => snd_data,
 		mii_data5 => req_data,
-		mii_frm1  => mii_req, -- arp
+		mii_frm1  => mii_req1, -- arp
 		mii_frm2  => '0', --mii_req, -- ping
 		mii_frm3  => '0',
 		mii_frm4  => '0', --mii_req, -- write
-		mii_frm5  => '0', --mii_req1, -- read
+		mii_frm5  => mii_req, -- read
 
 		mii_txc   => mii_clk,
 		mii_txen  => mii_txen,

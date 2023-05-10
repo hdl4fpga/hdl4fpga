@@ -26,7 +26,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
 architecture ulx3s_graphics of testbench is
-	constant debug      : boolean := false;
+	constant debug      : boolean := true;
 
 	constant bank_bits  : natural := 2;
 	constant addr_bits  : natural := 13;
@@ -159,7 +159,7 @@ architecture ulx3s_graphics of testbench is
 
 		x"1702_00000f_1603_0000_0000";
 	constant req_data  : std_logic_vector :=
-		x"010008_1702_00000f_1603_8000_0000";
+		x"010008_1702_0000ff_1603_8000_0000";
 
 	signal rst         : std_logic;
 	signal xtal        : std_logic := '0';

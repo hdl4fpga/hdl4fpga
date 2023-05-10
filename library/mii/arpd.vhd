@@ -44,12 +44,12 @@ entity arpd is
 		sparx_end   : in  std_logic;
 		sparx_equ   : in  std_logic;
 
-		spatx_frm   : out std_logic;
-		spatx_irdy  : out std_logic;
-		spatx_trdy  : in  std_logic;
-		spatx_end   : in  std_logic;
-		spatx_data  : in  std_logic_vector;
-
+			si_frm  => ipv4sawr_frm,
+			si_irdy => ipv4sawr_irdy,
+			si_trdy => open,
+			si_full => ipv4sawr_end,
+			si_data => ipv4sawr_data,
+	
 		dlltx_irdy  : out  std_logic;
 		dlltx_end   : in   std_logic;
 		dlltx_data  : out std_logic_vector;
@@ -70,6 +70,12 @@ architecture def of arpd is
 	signal tparx_vld : std_logic;
 	signal arptx_rdy : std_logic;
 	signal arptx_req : std_logic;
+
+	signal spatx_frm   : std_logic;
+	signal spatx_irdy  : std_logic;
+	signal spatx_trdy  : std_logic;
+	signal spatx_end   : std_logic;
+	signal spatx_data  : std_logic_vector(arptx_data'range);
 
 begin
 
@@ -106,6 +112,34 @@ begin
 			end if;
 		end if;
 	end process;
+
+	ipv4sard_frm  <= 
+			'1' when ipv4satx_frm='1' else
+			'1' when  ipv4atx_frm='1' else
+			'0';
+		ipv4sard_irdy  <= 
+			'1' when ipv4satx_irdy='1' else
+			'1' when  ipv4atx_irdy='1' else
+			'0';
+
+	ipv4sa_e : entity hdl4fpga.sio_ram
+	generic map (
+		mem_data => reverse(default_ipv4a,8),
+		mem_length => 32)
+	port map (
+		si_clk  => mii_clk,
+		si_frm  => ipv4sawr_frm,
+		si_irdy => ipv4sawr_irdy,
+		si_trdy => open,
+		si_full => ipv4sawr_end,
+		si_data => ipv4sawr_data,
+	
+		so_clk  => mii_clk,
+		so_frm  => spatx_frm,
+		so_irdy => spatx_irdy,
+		so_trdy => spatx_trdy,
+		so_end  => spatx_end,
+		so_data => spatx_data,
 
 	arptx_e : entity hdl4fpga.arp_tx
 	generic map (

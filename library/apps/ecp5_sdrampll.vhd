@@ -130,7 +130,8 @@ begin
 		CLKINTFB  => open);
 
 	gear1_g : if gear=1 generate
-		sclk <= clkop;
+		sclk     <= clkop;
+		ctlr_rst <= not sdrampll_lck;
 	end generate;
 
 	gear4_g : if gear=4 generate
