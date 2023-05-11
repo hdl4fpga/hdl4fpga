@@ -97,7 +97,7 @@
         </Source>
     </Implementation>
     <Implementation title="display_tp" dir="display_tp" description="display_tp" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.so_data" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.display_tp" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
