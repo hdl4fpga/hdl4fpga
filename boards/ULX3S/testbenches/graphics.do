@@ -16,8 +16,8 @@ add wave -noupdate -expand -group sdram -expand /testbench/du_e/sdram_dqm
 add wave -noupdate -expand -group sdram -radix hexadecimal -childformat {{/testbench/du_e/sdram_d(15) -radix hexadecimal} {/testbench/du_e/sdram_d(14) -radix hexadecimal} {/testbench/du_e/sdram_d(13) -radix hexadecimal} {/testbench/du_e/sdram_d(12) -radix hexadecimal} {/testbench/du_e/sdram_d(11) -radix hexadecimal} {/testbench/du_e/sdram_d(10) -radix hexadecimal} {/testbench/du_e/sdram_d(9) -radix hexadecimal} {/testbench/du_e/sdram_d(8) -radix hexadecimal} {/testbench/du_e/sdram_d(7) -radix hexadecimal} {/testbench/du_e/sdram_d(6) -radix hexadecimal} {/testbench/du_e/sdram_d(5) -radix hexadecimal} {/testbench/du_e/sdram_d(4) -radix hexadecimal} {/testbench/du_e/sdram_d(3) -radix hexadecimal} {/testbench/du_e/sdram_d(2) -radix hexadecimal} {/testbench/du_e/sdram_d(1) -radix hexadecimal} {/testbench/du_e/sdram_d(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/sdram_d(15) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(14) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(13) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(12) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(11) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(10) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(9) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(8) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(7) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(6) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(5) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(4) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(3) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(2) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(1) {-height 29 -radix hexadecimal} /testbench/du_e/sdram_d(0) {-height 29 -radix hexadecimal}} /testbench/du_e/sdram_d
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ipoe_g/mii_clk
-add wave -noupdate -group rmii_rx /testbench/du_e/rmii_crsdv
-add wave -noupdate -group rmii_rx -label rmii_rxd -radix hexadecimal -childformat {{/testbench/du_e/rmii_rx(1) -radix hexadecimal} {/testbench/du_e/rmii_rx(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/rmii_rx0 {-radix hexadecimal} /testbench/du_e/rmii_rx1 {-radix hexadecimal}} /testbench/du_e/rmii_rx
+add wave -noupdate -expand -group rmii_rx /testbench/du_e/rmii_crsdv
+add wave -noupdate -expand -group rmii_rx -label rmii_rxd -radix hexadecimal -childformat {{/testbench/du_e/rmii_rx(1) -radix hexadecimal} {/testbench/du_e/rmii_rx(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/rmii_rx0 {-radix hexadecimal} /testbench/du_e/rmii_rx1 {-radix hexadecimal}} /testbench/du_e/rmii_rx
 add wave -noupdate -expand -group rmii_tx /testbench/du_e/rmii_tx_en
 add wave -noupdate -expand -group rmii_tx -label rmii_txd -radix hexadecimal -childformat {{/testbench/du_e/rmii_tx(1) -radix hexadecimal} {/testbench/du_e/rmii_tx(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/rmii_tx0 {-radix hexadecimal} /testbench/du_e/rmii_tx1 {-radix hexadecimal}} /testbench/du_e/rmii_tx
 add wave -noupdate -divider {New Divider}
@@ -43,6 +43,7 @@ add wave -noupdate -group sdrphy_e /testbench/du_e/sdrphy_e/sys_sti
 add wave -noupdate -group sdrphy_e /testbench/du_e/sdrphy_e/sys_sto
 add wave -noupdate -group sdrphy_e -radix hexadecimal /testbench/du_e/sdrphy_e/sys_dqo
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ipoe_g/rmii_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/arbiter_b/dev_csc
 add wave -noupdate -expand /testbench/du_e/ipoe_g/rmii_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/arbiter_b/dev_req
 add wave -noupdate /testbench/du_e/ipoe_g/rmii_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/arbiter_b/dev_gnt
 add wave -noupdate /testbench/du_e/ipoe_g/rmii_e/udpdaisy_e/sio_udp_e/mii_ipoe_e/arbiter_b/gnt
@@ -114,7 +115,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {18270000000 fs} 0} {{Cursor 2} {26857504158 fs} 0} {{Cursor 3} {26701507511 fs} 0} {{Cursor 4} {25690000000 fs} 0}
+WaveRestoreCursors {{Cursor 1} {61003308638 fs} 0} {{Cursor 2} {54760001270 fs} 0} {{Cursor 3} {62814344363 fs} 0} {{Cursor 4} {42749974882 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 271
 configure wave -valuecolwidth 256
