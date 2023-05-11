@@ -41,7 +41,7 @@ architecture graphics of ulx3s is
 	--------------------------------------
 	--     Set your profile here        --
 	constant io_link      : io_comms     := io_ipoe;
-	constant sdram_speed  : sdram_speeds := sdram200MHz;
+	constant sdram_speed  : sdram_speeds := sdram225MHz;
 	constant video_mode   : video_modes  := mode600p24bpp;
 	--------------------------------------
 
@@ -369,7 +369,7 @@ begin
 		byte_size  => byte_size,
 		wr_fifo    => false,
 		rd_fifo    => false,
-		bypass     => false)
+		bypass     => setif(sdram_speed=sdram250MHz,false,true))
 	port map (
 		sclk       => ctlr_clk,
 		rst        => sdrsys_rst,
