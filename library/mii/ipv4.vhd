@@ -62,6 +62,11 @@ entity ipv4 is
 		ipv4satx_end  : buffer std_logic;
 		ipv4satx_data : buffer std_logic_vector;
 
+	    ipv4sawr_frm  : buffer std_logic;
+	    ipv4sawr_irdy : buffer std_logic;
+	    ipv4sawr_end  : buffer std_logic;
+	    ipv4sawr_data : buffer std_logic_vector;
+
 		hwda_frm      : out std_logic;
 		hwda_irdy     : out std_logic;
 		hwda_trdy     : in  std_logic;
@@ -153,11 +158,6 @@ architecture def of ipv4 is
 
 	signal ipv4darx_frm     : std_logic;
 	signal ipv4darx_irdy    : std_logic;
-
-	signal ipv4sawr_frm     : std_logic;
-	signal ipv4sawr_irdy    : std_logic;
-	signal ipv4sawr_end     : std_logic;
-	signal ipv4sawr_data    : std_logic_vector(ipv4rx_data'range);
 
 	signal nettx_irdy       : std_logic;
 	signal nettx_end        : std_logic;
@@ -463,7 +463,6 @@ begin
 		ipv4sa_b : block
 			signal ipv4sard_frm  : std_logic;
 			signal ipv4sard_irdy : std_logic;
-			signal ipv4sard_trdy : std_logic;
 		begin
 			ipv4sard_frm  <= 
 				'1' when ipv4satx_frm='1' else
@@ -487,12 +486,11 @@ begin
 				si_data => ipv4sawr_data,
 	
 				so_clk  => mii_clk,
-				so_frm  => ipv4sard_frm,
+				so_frm  => ipv4atx_frm,
 				so_irdy => ipv4sard_irdy,
-				so_trdy => ipv4sard_trdy,
+				so_trdy => ipv4satx_trdy,
 				so_end  => ipv4satx_end,
 				so_data => ipv4satx_data);
-			ipv4satx_trdy <= ipv4sard_trdy;
 		end block;
 
 		ipv4da_e : entity hdl4fpga.sio_ram
@@ -515,9 +513,7 @@ begin
 
 		nettx_end    <= netdatx_end and netlentx_end;
 		ipv4atx_trdy <= ipv4satx_trdy when ipv4satx_end='0' else ipv4da_trdy;
-		ipv4atx_data <= 
-			ipv4satx_data when ipv4satx_end='0' else
-			ipv4da_data;
+		ipv4atx_data <= ipv4satx_data when ipv4satx_end='0' else ipv4da_data;
 
 	end block;
 

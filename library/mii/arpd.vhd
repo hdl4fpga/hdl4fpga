@@ -29,6 +29,7 @@ use hdl4fpga.base.all;
 
 entity arpd is
 	generic (
+		default_ipv4a : std_logic_vector;
 		hwsa        : in std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		mii_clk     : in  std_logic;
@@ -44,11 +45,11 @@ entity arpd is
 		sparx_end   : in  std_logic;
 		sparx_equ   : in  std_logic;
 
-			si_frm  => ipv4sawr_frm,
-			si_irdy => ipv4sawr_irdy,
-			si_trdy => open,
-			si_full => ipv4sawr_end,
-			si_data => ipv4sawr_data,
+		ipv4sawr_frm  : in  std_logic;
+		ipv4sawr_irdy : in  std_logic;
+		ipv4sawr_trdy : out std_logic;
+		ipv4sawr_end  : out std_logic;
+		ipv4sawr_data : in  std_logic_vector;
 	
 		dlltx_irdy  : out  std_logic;
 		dlltx_end   : in   std_logic;
@@ -113,15 +114,6 @@ begin
 		end if;
 	end process;
 
-	ipv4sard_frm  <= 
-			'1' when ipv4satx_frm='1' else
-			'1' when  ipv4atx_frm='1' else
-			'0';
-		ipv4sard_irdy  <= 
-			'1' when ipv4satx_irdy='1' else
-			'1' when  ipv4atx_irdy='1' else
-			'0';
-
 	ipv4sa_e : entity hdl4fpga.sio_ram
 	generic map (
 		mem_data => reverse(default_ipv4a,8),
@@ -130,7 +122,7 @@ begin
 		si_clk  => mii_clk,
 		si_frm  => ipv4sawr_frm,
 		si_irdy => ipv4sawr_irdy,
-		si_trdy => open,
+		si_trdy => ipv4sawr_trdy,
 		si_full => ipv4sawr_end,
 		si_data => ipv4sawr_data,
 	
@@ -139,7 +131,7 @@ begin
 		so_irdy => spatx_irdy,
 		so_trdy => spatx_trdy,
 		so_end  => spatx_end,
-		so_data => spatx_data,
+		so_data => spatx_data);
 
 	arptx_e : entity hdl4fpga.arp_tx
 	generic map (
