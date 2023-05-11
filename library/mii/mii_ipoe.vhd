@@ -563,7 +563,7 @@ begin
 		ipv4tx_end    => ipv4tx_end,
 		ipv4tx_data   => ipv4tx_data);
 
-	cmmt_p : process (fcs_vld, fcs_sb, mii_clk)
+	commit_p : process (fcs_vld, fcs_sb, mii_clk)
 		variable q : std_logic;
 		variable c : std_logic;
 	begin

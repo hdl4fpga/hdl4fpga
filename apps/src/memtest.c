@@ -188,7 +188,7 @@ int main (int argc, char *argv[])
 
 				data_rd = *(lfsr_word *) (rd_buffer+i);
 				data_wt = *(lfsr_word *) (wr_buffer+i);
-				if (data_wt!=data_rd && 0) {
+				if (data_wt!=data_rd) {
 					fprintf(stderr, "Check failed : ");
 					fprintf(stderr, "block address : 0x%08x ", address);
 					fprintf(stderr, "word address : 0x%08x", address+i);

@@ -60,7 +60,7 @@ architecture def of ipoe_tb is
 	signal req      : std_logic := '0';
 	signal mii_req  : std_logic := '0';
 	signal mii_req1 : std_logic := '0';
-	signal segment  : natural := 0;
+	signal segment  : natural   := 0;
 begin
 
 	process
@@ -69,8 +69,8 @@ begin
 		wait for delay1;
 		loop
 			if req='1' then
-				wait on mii_txen;
-				if falling_edge(mii_txen) then
+				wait on mii_rxdv;
+				if falling_edge(mii_rxdv) then
 					req <= '0';
 					segment <= segment + 1;
 					wait for delay2;
