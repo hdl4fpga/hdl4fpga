@@ -30,20 +30,20 @@ use hdl4fpga.base.all;
 entity arpd is
 	generic (
 		default_ipv4a : std_logic_vector;
-		hwsa        : in std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
+		hwsa          : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
-		mii_clk     : in  std_logic;
-		arp_req     : in  std_logic;
-		arp_rdy     : buffer  std_logic;
+		mii_clk       : in  std_logic;
+		arp_req       : in  std_logic;
+		arp_rdy       : buffer  std_logic;
 
-		arprx_frm   : in  std_logic;
-		arprx_irdy  : in  std_logic;
-		arprx_data  : in  std_logic_vector;
+		arprx_frm     : in  std_logic;
+		arprx_irdy    : in  std_logic;
+		arprx_data    : in  std_logic_vector;
 
-		sparx_irdy  : out std_logic;
-		sparx_trdy  : in  std_logic;
-		sparx_end   : in  std_logic;
-		sparx_equ   : in  std_logic;
+		sparx_irdy    : out std_logic;
+		sparx_trdy    : in  std_logic;
+		sparx_end     : in  std_logic;
+		sparx_equ     : in  std_logic;
 
 		ipv4sawr_frm  : in  std_logic;
 		ipv4sawr_irdy : in  std_logic;
@@ -51,17 +51,17 @@ entity arpd is
 		ipv4sawr_end  : out std_logic;
 		ipv4sawr_data : in  std_logic_vector;
 	
-		dlltx_irdy  : out  std_logic;
-		dlltx_end   : in   std_logic;
-		dlltx_data  : out std_logic_vector;
+		dlltx_irdy    : out  std_logic;
+		dlltx_end     : in   std_logic;
+		dlltx_data    : out std_logic_vector;
 
-		arptx_frm   : buffer std_logic := '0';
-		arptx_irdy  : out std_logic;
-		arptx_trdy  : in  std_logic;
-		arptx_end   : buffer std_logic;
-		arptx_data  : out std_logic_vector;
+		arptx_frm     : buffer std_logic := '0';
+		arptx_irdy    : out std_logic;
+		arptx_trdy    : in  std_logic;
+		arptx_end     : buffer std_logic;
+		arptx_data    : out std_logic_vector;
 
-		tp          : out std_logic_vector(1 to 32));
+		tp            : out std_logic_vector(1 to 32));
 
 end;
 

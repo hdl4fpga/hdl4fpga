@@ -167,11 +167,11 @@ architecture def of mii_ipoe is
 	signal ipv4sarx_end   : std_logic;
 	signal ipv4sarx_equ   : std_logic;
 
-	signal ipv4satx_frm   : std_logic :='0';
-	signal ipv4satx_trdy  : std_logic :='0';
-	signal ipv4satx_irdy  : std_logic :='0';
-	signal ipv4satx_end   : std_logic :='1';
-	signal ipv4satx_data  : std_logic_vector(miitx_data'range);
+	signal ipv4sawr_frm   : std_logic :='0';
+	signal ipv4sawr_irdy  : std_logic :='0';
+	signal ipv4sawr_trdy  : std_logic :='0';
+	signal ipv4sawr_end   : std_logic :='1';
+	signal ipv4sawr_data  : std_logic_vector(miitx_data'range);
 
 	signal arpdlltx_irdy  : std_logic;
 	signal arpdlltx_end   : std_logic;
@@ -471,6 +471,7 @@ begin
 
 	arpd_e : entity hdl4fpga.arpd
 	generic map (
+		default_ipv4a => default_ipv4a,
 		hwsa       => my_mac)
 	port map (
 		mii_clk    => mii_clk,
@@ -487,12 +488,12 @@ begin
 		sparx_end  => ipv4sarx_end,
 		sparx_equ  => ipv4sarx_equ,
 
-		spatx_frm  => ipv4satx_frm,
-		spatx_irdy => ipv4satx_irdy,
-		spatx_trdy => ipv4satx_trdy,
-		spatx_end  => ipv4satx_end,
-		spatx_data => ipv4satx_data,
-
+		ipv4sawr_frm  => ipv4sawr_frm,
+		ipv4sawr_irdy => ipv4sawr_irdy,
+		ipv4sawr_trdy => ipv4sawr_trdy,
+		ipv4sawr_end  => ipv4sawr_end,
+		ipv4sawr_data => ipv4sawr_data,
+	
 		arptx_frm  => arptx_frm,
 		dlltx_irdy => arpdlltx_irdy,
 		dlltx_data => arpdlltx_data,
@@ -533,12 +534,12 @@ begin
 		hwda_equ      => hwda_equ,
 		hwdarx_vld    => hwdarx_vld,
 
-		ipv4satx_frm  => ipv4satx_frm,
-		ipv4satx_irdy => ipv4satx_irdy,
-		ipv4satx_trdy => ipv4satx_trdy,
-		ipv4satx_end  => ipv4satx_end,
-		ipv4satx_data => ipv4satx_data,
-
+		ipv4sawr_frm  => ipv4sawr_frm,
+		ipv4sawr_irdy => ipv4sawr_irdy,
+		ipv4sawr_trdy => ipv4sawr_trdy,
+		ipv4sawr_end  => ipv4sawr_end,
+		ipv4sawr_data => ipv4sawr_data,
+	
 		plrx_frm      => ipv4plrx_frm,
 		plrx_cmmt     => ipv4plrx_cmmt,
 		plrx_rllbk    => ipv4plrx_rllbk,
