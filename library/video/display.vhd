@@ -47,7 +47,7 @@ architecture def of display is
 	constant ident_background : ident_ids := 2;
 	constant ident_width      : ident_ids := 3;
 
-	function keyword (
+	function lkup_keyword (
 		constant stream   : string;
 		constant keywords : string)
 		return natural is
@@ -116,7 +116,7 @@ architecture def of display is
 				when s_keyword =>
 					right := isword(stream(left to stream'right));
 					if right >= left then
-						iden_id := keyword(stream(left to right), idents);
+						iden_id := lkup_keyword(stream(left to right), idents);
 						if ident_id > 0 then
 							right := right - left;
 							left  := left  + right + 1;
