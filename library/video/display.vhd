@@ -35,61 +35,21 @@ end;
 
 architecture def of display is
 
-	constant keywords : string := (
+	constant idents : string := (
 		"foreground" & NUL &
 		"background" & NUL &
 		"text-align" & NUL &
 		"format"     & NUL &
 		"width"      & NUL );
 	
-	subtype keyword_id is positive range 1 to 3;
-	constant key_foreground : keyword_id := 1;
-	constant key_background : keyword_id := 2;
-	constant key_width      : keyword_id := 3;
+	subtype ident_ids is positive range 1 to 3;
+	constant ident_foreground : ident_ids := 1;
+	constant ident_background : ident_ids := 2;
+	constant ident_width      : ident_ids := 3;
 
-	function isalpha (
-		constant char : character)
-		return boolean is
-	begin
-		if    character'pos('a') > character'pos(char) then
-			return false;
-		elsif character'pos('z') < character'pos(char) then
-			return false;
-		else 
-			return true;
-		end if;
-	end;
-
-	function isspace (
-		constant char : character)
-		return boolean is
-	begin
-		case char is
-		when ' ' =>
-			return true;
-		when others =>
-			return false;
-		end case;
-	end;
-
-	function isword (
-		constant stream : string)
-		return natural is
-	begin
-		for i in stream'range loop
-			if isalpha(stream(i)) then
-				next;
-			elsif stream(i)='-' then
-				next;
-			else
-				return i-1;
-			end if;
-		end loop;
-		return stream'right;
-	end;
-
-	function iskeyword (
-		constant stream : string)
+	function keyword (
+		constant stream   : string;
+		constant keywords : string)
 		return natural is
 		variable i : natural;
 		variable j : natural;
@@ -134,48 +94,67 @@ architecture def of display is
 	end;
 
 	function parse (
-		constant style : string)
+		constant stream : string)
 		return boolean is
-		type tokens is (s_keyword, s_equal, s_natural);
+		type states is (s_keyword, s_colon, s_value, s_end);
+		variable state : states;
 		variable left  : positive;
 		variable right : natural;
-		-- rule1 : keyword:value
-		-- rule2 : rule1 { ; rule1}
+		-- rule1 ::= ident:value
+		-- rule2 ::= rule1 { ; rule1}
+		variable iden_id : ident_ids;
+		variable style : 
 	begin
-		left  := style'left;
-		right := style'left-1;
-		while right <= style'length loop
-			if isspace(style(left)) then
+		left  := stream'left;
+		right := stream'left-1;
+		while left <= stream'right loop
+			if isspace(stream(left)) then
 				right := left;
 				left  := left + 1;
 			else
-				right := isword(style(left to style'right));
-				if right >= left then
-					case keyword(style(left to right)) is
-					when key_foreground =>
-					when key_background =>
-					when key_width      =>
-					when others         =>
-					end case;
-					right := right - left;
-					left  := left  + right + 1;
-					right := left  - 1 ;
-				else
-					assert false
-					report "syntax error"
-					severity failure;
-				end if;
+				case state is
+				when s_keyword =>
+					right := isword(stream(left to stream'right));
+					if right >= left then
+						iden_id := keyword(stream(left to right), idents);
+						if ident_id > 0 then
+							right := right - left;
+							left  := left  + right + 1;
+							right := left  - 1 ;
+							state := s_colon;
+						else
+							return false;
+						end if;
+					else 
+						return false;
+					end if;
+				when s_colon =>
+					if stream(left)=':' then
+						state := s_value;
+					else
+						return false;
+					end if;
+				when s_value =>
+					right := isword(stream(left to stream'right));
+					if right >= left then
+						style(iden_id):= atoi(stream(left to stream'right));
+						state := s_end;
+					else
+						return false;
+					end if;
+				when s_end =>
+				end case;
 			end if;
 		end loop;
+		return false;
 	end;
 
 begin
 	process
 	begin
-		-- assert false
-		-- report CR & boolean'image(keyword("foreground "))
-		-- report CR & "'" & match_word(" fore ground ") & "'"
-		-- severity note;
+		assert false
+		report CR & "'" & boolean'image(parse("foreground:ground ")) & "'"
+		severity note;
 		wait;
 	end process;
 end;

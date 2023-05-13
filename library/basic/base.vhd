@@ -43,6 +43,18 @@ package base is
 	subtype integer64 is time;
 	type integer64_vector is array (natural range <>) of integer64;
 
+	function isalpha (
+		constant char : character)
+		return boolean;
+
+	function isspace (
+		constant char : character)
+		return boolean;
+
+	function isword (
+		constant stream : string)
+		return natural;
+
 	function strlen (
 		constant str : string)
 		return natural;
@@ -445,6 +457,47 @@ use ieee.std_logic_textio.all;
 use ieee.math_real.all;
 
 package body base is
+
+	function isalpha (
+		constant char : character)
+		return boolean is
+	begin
+		if    character'pos('a') > character'pos(char) then
+			return false;
+		elsif character'pos('z') < character'pos(char) then
+			return false;
+		else 
+			return true;
+		end if;
+	end;
+
+	function isspace (
+		constant char : character)
+		return boolean is
+	begin
+		case char is
+		when ' ' =>
+			return true;
+		when others =>
+			return false;
+		end case;
+	end;
+
+	function isword (
+		constant stream : string)
+		return natural is
+	begin
+		for i in stream'range loop
+			if isalpha(stream(i)) then
+				next;
+			elsif stream(i)='-' then
+				next;
+			else
+				return i-1;
+			end if;
+		end loop;
+		return stream'right;
+	end;
 
 	function strfill (
 		constant s    : string;
