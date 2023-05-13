@@ -470,11 +470,14 @@ begin
 
 	rdfifo_g : if rd_fifo generate
 
-		-- bypass_g : if bypass generate
-			-- phases_g : for i in gear-1 downto 0 generate
-				-- idrv(i) <= sdram_sti when loopback else sdram_dm;
-			-- end generate;
-		-- end generate;
+        latsto_e : entity hdl4fpga.latency
+        generic map (
+        	n => gear,
+        	d => (0 to gear-1 => 3))
+        port map (
+        	clk => sclk,
+        	di  => sto,
+        	do  => sys_sto);
 
 		gear_g : for i in gear-1 downto 0 generate
 			signal in_clk  : std_logic;
@@ -482,25 +485,19 @@ begin
 			signal out_rst : std_logic;
 			signal test   : std_logic_vector(byte_size-1 downto 0);
 		begin
-			process (sclk)
-			begin
-				if rising_edge(sclk) then
-					sys_sto(i) <= sto(i);
-				end if;
-			end process;
 
-			process (sdram_dqs)
-				variable cntr : unsigned(test'range);
-			begin
-				if rising_edge(sdram_dqs) then
-					if sto(i)='0' then
-						cntr := to_unsigned(1-byteno, cntr'length);
-					else
-						cntr := cntr + 2;
-					end if;
-					test <= std_logic_vector(cntr);
-				end if;
-			end process;
+			-- process (sdram_dqs)
+				-- variable cntr : unsigned(test'range);
+			-- begin
+				-- if rising_edge(sdram_dqs) then
+					-- if sto(i)='0' then
+						-- cntr := to_unsigned(1-byteno, cntr'length);
+					-- else
+						-- cntr := cntr + 2;
+					-- end if;
+					-- test <= std_logic_vector(cntr);
+				-- end if;
+			-- end process;
 
 			in_clk  <= sdram_dqs when bypass else sclk;
 			in_rst  <= not sto(i);

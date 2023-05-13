@@ -82,6 +82,7 @@ architecture graphics of ulx4m_ls is
 	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqo   : std_logic_vector(gear*word_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
+	signal sdrphy_sti    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal sdram_dqs     : std_logic_vector(word_size/byte_size-1 downto 0);
 
@@ -302,6 +303,19 @@ begin
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
 
+	latsti_e : entity hdl4fpga.latency
+	generic map (
+		n => gear,
+		d => (0 to gear-1 => setif(
+			sdram_speed=sdram250MHz or
+			sdram_speed=sdram225MHz,
+			1,
+			0)))
+	port map (
+		clk => ctlr_clk,
+		di  => ctlrphy_sto,
+		do  => sdrphy_sti);
+
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
 		gear       => gear,
@@ -328,7 +342,7 @@ begin
 		sys_dqt    => ctlrphy_dqt,
 		sys_dqo    => ctlrphy_dqi,
 		sys_sto    => ctlrphy_sti,
-		sys_sti    => ctlrphy_sto,
+		sys_sti    => sdrphy_sti,
 
 		sdram_clk  => sdram_clk,
 		sdram_cke  => sdram_cke,

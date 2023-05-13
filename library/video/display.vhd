@@ -47,7 +47,7 @@ architecture def of display is
 	constant ident_background : ident_ids := 2;
 	constant ident_width      : ident_ids := 3;
 
-	function lkup_keyword (
+	function lut_keyword (
 		constant stream   : string;
 		constant keywords : string)
 		return natural is
@@ -93,15 +93,99 @@ architecture def of display is
 		end loop;
 	end;
 
-	function parse (
+	-- tag_list          ::=  { tag_element ; } style_element
+	-- tag_element       ::= '<' tag_id attribute_list '/' '>'
+	-- tag_element       ::= '<' tag_id attribute_list '>' tag_list '<' '/' tag_id '>'
+	-- tag_id            ::= identifier
+	-- attribute_list    ::= attribute_element { atrribute_element }
+	-- attribute_element ::= identifier '=' value
+
+	function parse_tag (
+		constant stream : string)
+		return boolean is
+		type states is (s_lessthan, s_tagid, s_value, s_end);
+		variable state : states;
+		variable left  : positive;
+		variable right : natural;
+		variable iden_id : ident_ids;
+		variable style : 
+	begin
+		left  := stream'left;
+		right := stream'left-1;
+		while left <= stream'right loop
+			if isspace(stream(left)) then
+				right := left;
+				left  := left + 1;
+			else
+				case state is
+				when s_lessthan =>
+					if stream(left)='<' then
+						state := s_tagid;
+					else
+						return false;
+					end if;
+				when s_tagid =>
+					right := isword(stream(left to stream'right));
+					if right >= left then
+						iden_id := lut_keyword(stream(left to right), idents);
+						if ident_id > 0 then
+							right := right - left;
+							left  := left  + right + 1;
+							right := left  - 1 ;
+							state := s_attrelmnt;
+						else
+							return false;
+						end if;
+					else 
+						return false;
+					end if;
+				when s_attrelmnt =>
+					right := isword(stream(left to stream'right));
+					if right >= left then
+						iden_id := lut_keyword(stream(left to right), idents);
+						if ident_id > 0 then
+							right := right - left;
+							left  := left  + right + 1;
+							right := left  - 1 ;
+							state := s_equal;
+						else
+							return false;
+						end if;
+					else 
+						return false;
+					end if;
+				when s_equal =>
+					if stream(left)='=' then
+						state := s_attrvalue;
+					else
+						return false;
+					end if;
+				when s_value =>
+					right := isword(stream(left to stream'right));
+					if right >= left then
+						style(iden_id):= atoi(stream(left to stream'right));
+						state := s_end;
+					else
+						return false;
+					end if;
+				when s_end =>
+				end case;
+			end if;
+		end loop;
+		return false;
+	end;
+
+	-- style         ::= { style_element ; } style_element
+	-- style_element ::= variable:value
+	-- variable      ::= identifier
+	-- value         ::= alphanum
+	function parse_style (
 		constant stream : string)
 		return boolean is
 		type states is (s_keyword, s_colon, s_value, s_end);
 		variable state : states;
 		variable left  : positive;
 		variable right : natural;
-		-- rule1 ::= ident:value
-		-- rule2 ::= rule1 { ; rule1}
 		variable iden_id : ident_ids;
 		variable style : 
 	begin
@@ -116,7 +200,7 @@ architecture def of display is
 				when s_keyword =>
 					right := isword(stream(left to stream'right));
 					if right >= left then
-						iden_id := lkup_keyword(stream(left to right), idents);
+						iden_id := lut_keyword(stream(left to right), idents);
 						if ident_id > 0 then
 							right := right - left;
 							left  := left  + right + 1;

@@ -41,8 +41,8 @@ architecture graphics of ulx3s is
 	--------------------------------------
 	--     Set your profile here        --
 	constant io_link      : io_comms     := io_ipoe;
-	constant sdram_speed  : sdram_speeds := sdram225MHz;
-	constant video_mode   : video_modes  := mode600p24bpp;
+	constant sdram_speed  : sdram_speeds := sdram200MHz;
+	constant video_mode   : video_modes  := mode720p24bpp;
 	--------------------------------------
 
 	constant video_param  : video_record := videoparam(
@@ -82,6 +82,7 @@ architecture graphics of ulx3s is
 	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqo   : std_logic_vector(gear*word_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
+	signal sdrphy_sti    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal sdram_dqs     : std_logic_vector(word_size/byte_size-1 downto 0);
 
@@ -143,6 +144,10 @@ begin
 			case sdram_speed is
 			when sdram133MHz =>
 				sdram_dqs <= (others => ctlr_clk);
+			when sdram225MHz =>
+				sdram_dqs <= (others => not ctlr_clk);
+			when sdram250MHz =>
+				sdram_dqs <= (others => not ctlr_clk);
 			when others =>
 				sdram_dqs <= (others => not ctlr_clk);
 			end case;
@@ -290,8 +295,8 @@ begin
     		video_shift_clk => video_shift_clk,
     		-- video_hs    => video_hzsync,
     		-- video_vs    => video_vtsync,
-    		video_pixel => video_pixel,
-    		dvid_crgb   => dvid_crgb);
+    		-- dvid_crgb   => dvid_crgb,
+    		video_pixel => video_pixel);
 
 		sio_clk   <= mii_clk;
 		wifi_en   <= '0';
@@ -338,7 +343,7 @@ begin
 		video_clk    => video_clk,
 		video_shift_clk => video_shift_clk,
 		video_pixel  => video_pixel,
-		-- dvid_crgb    => dvid_crgb,
+		dvid_crgb    => dvid_crgb,
 
 		ctlr_clk     => ctlr_clk,
 		ctlr_rst     => sdrsys_rst,
@@ -360,6 +365,19 @@ begin
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
 
+	latsti_e : entity hdl4fpga.latency
+	generic map (
+		n => gear,
+		d => (0 to gear-1 => setif(
+			sdram_speed=sdram250MHz or
+			sdram_speed=sdram225MHz,
+			1,
+			0)))
+	port map (
+		clk => ctlr_clk,
+		di  => ctlrphy_sto,
+		do  => sdrphy_sti);
+
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
 		gear       => gear,
@@ -369,7 +387,11 @@ begin
 		byte_size  => byte_size,
 		wr_fifo    => false,
 		rd_fifo    => false,
-		bypass     => setif(sdram_speed=sdram250MHz,false,true))
+		bypass     => setif(
+			sdram_speed=sdram250MHz or
+			sdram_speed=sdram225MHz,
+			false,
+			true))
 	port map (
 		sclk       => ctlr_clk,
 		rst        => sdrsys_rst,
@@ -385,7 +407,7 @@ begin
 		sys_dqi    => ctlrphy_dqo,
 		sys_dqt    => ctlrphy_dqt,
 		sys_dqo    => ctlrphy_dqi,
-		sys_sti    => ctlrphy_sto,
+		sys_sti    => sdrphy_sti,
 		sys_sto    => ctlrphy_sti,
 
 		sdram_clk  => sdram_clk,

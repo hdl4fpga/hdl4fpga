@@ -43,6 +43,14 @@ package base is
 	subtype integer64 is time;
 	type integer64_vector is array (natural range <>) of integer64;
 
+	function toupper(
+		constant char : character)
+		return character;
+
+	function tolower(
+		constant char : character)
+		return character;
+
 	function isalpha (
 		constant char : character)
 		return boolean;
@@ -458,13 +466,39 @@ use ieee.math_real.all;
 
 package body base is
 
+	function toupper(
+		constant char : character)
+		return character is
+	begin
+		if character'pos('a') > character'pos(char) then
+			return char;
+		elsif character'pos('z') < character'pos(char) then
+			return char;
+		else
+			return character'val(character'pos(char)-character'pos('a')+ character'pos('A'));
+		end if;
+	end;
+
+	function tolower(
+		constant char : character)
+		return character is
+	begin
+		if character'pos('A') > character'pos(char) then
+			return char;
+		elsif character'pos('Z') < character'pos(char) then
+			return char;
+		else
+			return character'val(character'pos(char)-character'pos('A')+ character'pos('a'));
+		end if;
+	end;
+
 	function isalpha (
 		constant char : character)
 		return boolean is
 	begin
-		if    character'pos('a') > character'pos(char) then
+		if    character'pos('a') > character'pos(tolower(char)) then
 			return false;
-		elsif character'pos('z') < character'pos(char) then
+		elsif character'pos('z') < character'pos(tolower(char)) then
 			return false;
 		else 
 			return true;
