@@ -167,7 +167,7 @@ begin
 		attribute FREQUENCY_PIN_ECLKO of eclksyncb_i : label is ftoa(video_clkop_clampfreq/1.0e6, 10);
 
 		attribute FREQUENCY_PIN_CDIVX : string;
-		attribute FREQUENCY_PIN_CDIVX of clkdivf_i   : label is ftoa((video_clkop_clampfreq/setif(gear=4,2.0,3.5))/1.0e6, 10);
+		attribute FREQUENCY_PIN_CDIVX of clkdivf_i   : label is ftoa((video_clkop_freq/setif(gear=4,2.0,3.5))/1.0e6, 10);
 
 	begin
 		gddr_rst <= not video_lck;

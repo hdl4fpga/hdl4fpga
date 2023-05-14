@@ -42,7 +42,7 @@ architecture graphics of ulx4m_ls is
 	--     Set your profile here        --
 	constant io_link      : io_comms     := io_ipoe;
 	constant sdram_speed  : sdram_speeds := sdram166MHz;
-	constant video_mode   : video_modes  := mode1080p24bpp30;
+	constant video_mode   : video_modes  := mode1440p24bpp30;
 	--------------------------------------
 
 	constant video_param  : video_record := videoparam(
@@ -59,57 +59,57 @@ architecture graphics of ulx4m_ls is
 		real(sdram_params.pll.clki_div*sdram_params.pll.clkop_div)/
 		(real(sdram_params.pll.clkfb_div*sdram_params.pll.clkos_div)*clk25mhz_freq);
 
-	constant bank_size   : natural := sdram_ba'length;
-	constant addr_size   : natural := sdram_a'length;
-	constant word_size   : natural := sdram_d'length;
-	constant byte_size   : natural := sdram_d'length/sdram_dqm'length;
-	constant coln_size   : natural := 9;
-	constant gear        : natural := 1;
+	constant bank_size  : natural := sdram_ba'length;
+	constant addr_size  : natural := sdram_a'length;
+	constant word_size  : natural := sdram_d'length;
+	constant byte_size  : natural := sdram_d'length/sdram_dqm'length;
+	constant coln_size  : natural := 9;
+	constant gear       : natural := 1;
 
-	signal ctlr_clk      : std_logic;
-	signal sdrsys_rst    : std_logic;
+	signal ctlr_clk     : std_logic;
+	signal sdrsys_rst   : std_logic;
 
-	signal ctlrphy_rst   : std_logic;
-	signal ctlrphy_cke   : std_logic;
-	signal ctlrphy_cs    : std_logic;
-	signal ctlrphy_ras   : std_logic;
-	signal ctlrphy_cas   : std_logic;
-	signal ctlrphy_we    : std_logic;
-	signal ctlrphy_b     : std_logic_vector(sdram_ba'length-1 downto 0);
-	signal ctlrphy_a     : std_logic_vector(sdram_a'length-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
-	signal sdrphy_sti    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal sdram_dqs     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ctlrphy_rst  : std_logic;
+	signal ctlrphy_cke  : std_logic;
+	signal ctlrphy_cs   : std_logic;
+	signal ctlrphy_ras  : std_logic;
+	signal ctlrphy_cas  : std_logic;
+	signal ctlrphy_we   : std_logic;
+	signal ctlrphy_b    : std_logic_vector(sdram_ba'length-1 downto 0);
+	signal ctlrphy_a    : std_logic_vector(sdram_a'length-1 downto 0);
+	signal ctlrphy_dmo  : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi  : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqt  : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqo  : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_sto  : std_logic_vector(gear-1 downto 0);
+	signal sdrphy_sti   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sti  : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal sdram_dqs    : std_logic_vector(word_size/byte_size-1 downto 0);
 
-	signal video_clk     : std_logic;
-	signal video_lck     : std_logic;
+	signal video_clk    : std_logic;
+	signal video_lck    : std_logic;
 	signal video_shift_clk : std_logic;
-	signal video_eclk    : std_logic;
-	signal video_pixel   : std_logic_vector(0 to setif(
+	signal video_eclk   : std_logic;
+	signal video_pixel  : std_logic_vector(0 to setif(
 		video_param.pixel=rgb565, 16, setif(
 		video_param.pixel=rgb888, 32, 0))-1);
-	constant video_gear  : natural := video_param.gear;
-	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
-	signal videoio_clk   : std_logic;
-	signal video_phyrst  : std_logic;
+	constant video_gear : natural := video_param.gear;
+	signal dvid_crgb    : std_logic_vector(4*video_gear-1 downto 0);
+	signal videoio_clk  : std_logic;
+	signal video_phyrst : std_logic;
 
-	constant mem_size    : natural := 8*(1024*8);
-	signal so_frm        : std_logic;
-	signal so_irdy       : std_logic;
-	signal so_trdy       : std_logic;
-	signal so_data       : std_logic_vector(0 to 8-1);
-	signal si_frm        : std_logic;
-	signal si_irdy       : std_logic;
-	signal si_trdy       : std_logic;
-	signal si_end        : std_logic;
-	signal si_data       : std_logic_vector(0 to 8-1);
+	constant mem_size   : natural := 8*(1024*8);
+	signal so_frm       : std_logic;
+	signal so_irdy      : std_logic;
+	signal so_trdy      : std_logic;
+	signal so_data      : std_logic_vector(0 to 8-1);
+	signal si_frm       : std_logic;
+	signal si_irdy      : std_logic;
+	signal si_trdy      : std_logic;
+	signal si_end       : std_logic;
+	signal si_data      : std_logic_vector(0 to 8-1);
 
-	signal sio_clk       : std_logic;
+	signal sio_clk      : std_logic;
 
 begin
 
