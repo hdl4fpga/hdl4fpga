@@ -364,11 +364,7 @@ begin
 	latsti_e : entity hdl4fpga.latency
 	generic map (
 		n => gear,
-		d => (0 to gear-1 => setif(
-			sdram_speed=sdram250MHz or
-			sdram_speed=sdram225MHz,
-			0,
-			0)))
+		d => (0 to gear-1 => 0))
 	port map (
 		clk => ctlr_clk,
 		di  => ctlrphy_sto,
