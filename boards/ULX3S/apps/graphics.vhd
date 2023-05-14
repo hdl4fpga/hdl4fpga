@@ -393,8 +393,8 @@ begin
 		sys_dqi    => ctlrphy_dqo,
 		sys_dqt    => ctlrphy_dqt,
 		sys_dqo    => ctlrphy_dqi,
-		sys_sti    => sdrphy_sti,
 		sys_sto    => ctlrphy_sti,
+		sys_sti    => sdrphy_sti,
 
 		sdram_clk  => sdram_clk,
 		sdram_cke  => sdram_cke,
