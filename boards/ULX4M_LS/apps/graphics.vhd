@@ -198,11 +198,6 @@ begin
 		constant hdplx : std_logic := '0';
 	begin
 
-		rmii_nintclk <= 'Z';
-		rmii_crsdv   <= 'Z';
-		rmii_rx0     <= 'Z';
-		rmii_rx1     <= 'Z';
-
 		rmii_e : entity hdl4fpga.link_mii
 		generic map (
 			rmii          => true,
