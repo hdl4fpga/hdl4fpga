@@ -473,7 +473,7 @@ begin
         latsto_e : entity hdl4fpga.latency
         generic map (
         	n => gear,
-        	d => (0 to gear-1 => 3))
+        	d => (0 to gear-1 => 1))
         port map (
         	clk => sclk,
         	di  => sto,

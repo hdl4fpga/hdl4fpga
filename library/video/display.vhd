@@ -144,9 +144,6 @@ architecture def of display is
 					if right >= left then
 						iden_id := lut_keyword(stream(left to right), idents);
 						if ident_id > 0 then
-							right := right - left;
-							left  := left  + right + 1;
-							right := left  - 1 ;
 							state := s_equal;
 						else
 							return false;
@@ -170,6 +167,9 @@ architecture def of display is
 					end if;
 				when s_end =>
 				end case;
+				right := right - left;
+				left  := left  + right + 1;
+				right := left  - 1 ;
 			end if;
 		end loop;
 		return false;
@@ -179,6 +179,7 @@ architecture def of display is
 	-- style_element ::= variable:value
 	-- variable      ::= identifier
 	-- value         ::= alphanum
+
 	function parse_style (
 		constant stream : string)
 		return boolean is
@@ -194,7 +195,6 @@ architecture def of display is
 		while left <= stream'right loop
 			if isspace(stream(left)) then
 				right := left;
-				left  := left + 1;
 			else
 				case state is
 				when s_keyword =>
@@ -202,9 +202,6 @@ architecture def of display is
 					if right >= left then
 						iden_id := lut_keyword(stream(left to right), idents);
 						if ident_id > 0 then
-							right := right - left;
-							left  := left  + right + 1;
-							right := left  - 1 ;
 							state := s_colon;
 						else
 							return false;
@@ -214,6 +211,7 @@ architecture def of display is
 					end if;
 				when s_colon =>
 					if stream(left)=':' then
+						right := left;
 						state := s_value;
 					else
 						return false;
@@ -228,6 +226,9 @@ architecture def of display is
 					end if;
 				when s_end =>
 				end case;
+				right := right - left;
+				left  := left  + right + 1;
+				right := left  - 1 ;
 			end if;
 		end loop;
 		return false;
