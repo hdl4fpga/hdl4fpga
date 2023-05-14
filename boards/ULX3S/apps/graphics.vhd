@@ -82,7 +82,7 @@ architecture graphics of ulx3s is
 	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqo   : std_logic_vector(gear*word_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
-	signal sdrphy_sti    : std_logic_vector(gear-1 downto 0);
+	signal sdrphy_sti   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal sdram_dqs     : std_logic_vector(word_size/byte_size-1 downto 0);
 
@@ -364,7 +364,11 @@ begin
 	latsti_e : entity hdl4fpga.latency
 	generic map (
 		n => gear,
-		d => (0 to gear-1 => 0))
+		d => (0 to gear-1 => setif(
+			sdram_speed=sdram250MHz or
+			sdram_speed=sdram225MHz,
+			0,
+			0)))
 	port map (
 		clk => ctlr_clk,
 		di  => ctlrphy_sto,
