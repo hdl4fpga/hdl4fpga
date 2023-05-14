@@ -40,9 +40,9 @@ architecture graphics of ulx4m_ls is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant io_link      : io_comms     := io_hdlc;
+	constant io_link      : io_comms     := io_ipoe;
 	constant sdram_speed  : sdram_speeds := sdram225MHz;
-	constant video_mode   : video_modes  := mode720p24bpp;
+	constant video_mode   : video_modes  := mode600p24bpp;
 	--------------------------------------
 
 	constant video_param  : video_record := videoparam(
@@ -306,11 +306,7 @@ begin
 	latsti_e : entity hdl4fpga.latency
 	generic map (
 		n => gear,
-		d => (0 to gear-1 => setif(
-			sdram_speed=sdram250MHz or
-			sdram_speed=sdram225MHz,
-			1,
-			0)))
+		d => (0 to gear-1 => 0))
 	port map (
 		clk => ctlr_clk,
 		di  => ctlrphy_sto,
