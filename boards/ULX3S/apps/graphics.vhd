@@ -82,7 +82,7 @@ architecture graphics of ulx3s is
 	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqo   : std_logic_vector(gear*word_size-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
-	signal sdrphy_sti   : std_logic_vector(gear-1 downto 0);
+	signal sdrphy_sti    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
 	signal sdram_dqs     : std_logic_vector(word_size/byte_size-1 downto 0);
 
@@ -195,13 +195,13 @@ begin
 	end generate;
 
 	ipoe_g : if io_link=io_ipoe generate
+		constant hdplx : std_logic := '1';
 		signal video_pixel   : std_logic_vector(0 to setif(
 		video_param.pixel=rgb565, 16, setif(
 		video_param.pixel=rgb888, 32, 0))-1);
 		-- https://www.waveshare.com/LAN8720-ETH-Board.htm
 		-- Starts up 10Mb half duplex
 
-		constant hdplx : std_logic := '1';
 		signal mii_clk : std_logic;
 		signal tp      : std_logic_vector(1 to 32);
 		signal mii_clk10 : std_logic;
@@ -212,7 +212,7 @@ begin
 		rmii_rx0     <= 'Z';
 		rmii_rx1     <= 'Z';
 
-		process (rmii_nintclk)
+		clk10Mb_p : process (rmii_nintclk)
 			variable cntr : unsigned (0 to 4-1);
 		begin
 			if rising_edge(rmii_nintclk) then
@@ -289,8 +289,6 @@ begin
     		tp          => tp(1 to 13),
     		video_clk   => video_clk,
     		video_shift_clk => video_shift_clk,
-    		-- video_hs    => video_hzsync,
-    		-- video_vs    => video_vtsync,
     		-- dvid_crgb   => dvid_crgb,
     		video_pixel => video_pixel);
 
@@ -379,11 +377,7 @@ begin
 		byte_size  => byte_size,
 		wr_fifo    => false,
 		rd_fifo    => false,
-		bypass     => setif(
-			sdram_speed=sdram250MHz or
-			sdram_speed=sdram225MHz,
-			false,
-			true))
+		bypass     => false)
 	port map (
 		sclk       => ctlr_clk,
 		rst        => sdrsys_rst,

@@ -41,7 +41,7 @@ architecture graphics of ulx4m_ls is
 	--------------------------------------
 	--     Set your profile here        --
 	constant io_link      : io_comms     := io_ipoe;
-	constant sdram_speed  : sdram_speeds := sdram225MHz;
+	constant sdram_speed  : sdram_speeds := sdram133MHz;
 	constant video_mode   : video_modes  := mode600p24bpp;
 	--------------------------------------
 
@@ -52,7 +52,7 @@ architecture graphics of ulx4m_ls is
 
 	constant sdram_params : sdramparams_record := sdramparams(
 		sdram_speeds'VAL(setif(debug,
-			sdram_speeds'POS(sdram400Mhz),
+			sdram_speeds'POS(sdram133MHz),
 			sdram_speeds'POS(sdram_speed))));
 	
 	constant sdram_tcp : real := 
@@ -110,9 +110,6 @@ architecture graphics of ulx4m_ls is
 	signal si_data       : std_logic_vector(0 to 8-1);
 
 	signal sio_clk       : std_logic;
-	alias uart_clk       : std_logic is sio_clk;
-
-	constant hdplx       : std_logic := setif(debug, '0', '1');
 
 begin
 
@@ -145,7 +142,7 @@ begin
 			sdram_dqs <= (others => not ctlr_clk);
 		else
 			case sdram_speed is
-			when sdram133MHz|sdram166MHz =>
+			when sdram133MHz =>
 				sdram_dqs <= (others => ctlr_clk);
 			when others =>
 				sdram_dqs <= (others => not ctlr_clk);
@@ -198,6 +195,13 @@ begin
 	end generate;
 
 	ipoe_e : if io_link=io_ipoe generate
+		constant hdplx : std_logic := '0';
+	begin
+
+		rmii_nintclk <= 'Z';
+		rmii_crsdv   <= 'Z';
+		rmii_rx0     <= 'Z';
+		rmii_rx1     <= 'Z';
 
 		rmii_e : entity hdl4fpga.link_mii
 		generic map (
@@ -247,7 +251,6 @@ begin
 		debug        => debug,
 		profile      => 0,
 
-		ena_burstref => false,
 		sdram_tcp    => sdram_tcp,
 		phy_latencies => ecp5g1_latencies,
 		mark         => MT48LC256MA27E ,

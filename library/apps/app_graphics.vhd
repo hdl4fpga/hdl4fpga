@@ -880,7 +880,6 @@ begin
 			ctlr_inirdy  => ctlr_inirdy,
 			ctlr_refreq  => burst_ref,
 			-- ctlr_refreq  => ctlr_refreq,
-			-- ctlr_refreq  => burst_ref,
 
 			ctlr_frm     => ctlr_frm,
 			ctlr_trdy    => ctlr_trdy,
