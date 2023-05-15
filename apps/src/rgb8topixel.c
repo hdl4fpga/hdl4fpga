@@ -74,12 +74,11 @@ int torgb24 (char *pixels, const char *rgb8, int n)
 
 		for (unsigned j = 0; j < 2; j++) {
 			pixels[3*i+2-j] = (pixel & 0xff);
-//			pixels[4*i+3-j] = 0xff;
 			pixel >>= 8;
-			m += 3;
+			m++;
 		}
 	}
-	return (m+4-1)/4;
+	return m;
 }
 
 int torgb32 (char *pixels, const char *rgb8, int n)
@@ -128,7 +127,7 @@ int main (int argc, char *argv[])
 			break;
 		case '?':
 		default:
-			fprintf (stderr, "usage :  rgb8tofmt -f [rgb32|rgb565]\n");
+			fprintf (stderr, "usage :  rgb8tofmt -f [rgb32|rgb24|rgb565]\n");
 			exit(-1);
 		}
 	}
