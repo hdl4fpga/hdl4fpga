@@ -253,13 +253,18 @@ begin
 	end generate;
 
 	desser_g : if ctlr_di'length > video_pixel'length generate
-		desser_e : entity hdl4fpga.desser
-		port map (
-			desser_clk => video_clk,
-			des_frm    => video_on,
-			des_trdy   => video_trdy,
-			des_data   => video_word,
-			ser_data   => video_pixel);
+        serlzr_e : entity hdl4fpga.serlzr
+       	generic map (
+       		fifo_mode => false,
+       		lsdfirst  => false)
+       	port map (
+       		src_clk   => video_clk,
+			src_frm   => video_on,
+       		src_trdy  => video_trdy,
+       		src_data  => video_word,
+       		dst_clk   => video_clk,
+       		dst_data  => video_pixel);
+
 	end generate;
 
 end;

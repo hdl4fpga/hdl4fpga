@@ -55,6 +55,33 @@ int torgb565 (char *pixels, const char *rgb8, int n)
 	return m;
 }
 
+int torgb24 (char *pixels, const char *rgb8, int n)
+{
+
+	unsigned m;
+	unsigned i;
+
+	m = 0;
+	for (i=0; i < n/3; i++) {
+		unsigned pixel;
+
+		pixel   = 0;
+		pixel   |= ((rgb8[3*i+0]) & 0xff);
+		pixel <<= 8;
+		pixel   |= ((rgb8[3*i+1]) & 0xff);
+		pixel <<= 8;
+		pixel   |= ((rgb8[3*i+2]) & 0xff);
+
+		for (unsigned j = 0; j < 2; j++) {
+			pixels[3*i+2-j] = (pixel & 0xff);
+//			pixels[4*i+3-j] = 0xff;
+			pixel >>= 8;
+			m += 3;
+		}
+	}
+	return (m+4-1)/4;
+}
+
 int torgb32 (char *pixels, const char *rgb8, int n)
 {
 

@@ -25,7 +25,7 @@ static char c;
 
 void help ()
 {
-	fprintf (stderr, "usage :  format -b buffer_size -s word_size\n");
+	fprintf (stderr, "usage :  format -b buffer_size\n");
 }
 
 int main (int argc, char *argv[])

@@ -35,6 +35,7 @@ entity serlzr is
 	port (
 		src_clk   : in  std_logic;
 		src_frm   : in  std_logic := '1';
+		src_trdy  : out std_logic;
 		src_data  : in  std_logic_vector;
 		dst_frm   : in  std_logic := '1';
 		dst_clk   : in  std_logic;
@@ -168,6 +169,7 @@ begin
 
 	fifooff_g : if not fifo_mode generate
 		fifo_data <= src_data;
+		src_trdy  <= fifo_trdy;
 	end generate;
 
 	process (dst_clk)
@@ -175,7 +177,10 @@ begin
 		variable acc : unsigned(shf'range) := (others => '0');
 	begin 
 		if rising_edge(dst_clk) then
-			if dst_frm='0' then
+			if src_frm='0' then
+				acc := (others => '0');
+				fifo_trdy <= '1';
+			elsif dst_frm='0' then
 				acc := (others => '0');
 				fifo_trdy <= '1';
 			elsif acc >= dst_data'length then 
