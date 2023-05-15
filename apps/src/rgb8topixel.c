@@ -120,8 +120,9 @@ int main (int argc, char *argv[])
 			if (optarg) {
 				if (strcmp("rgb32", optarg) == 0) {
 					topixels = torgb32;
-                                } else if (strcmp("rgb24", optarg) == 0) {
-topixels = torgb24;				} else if (strcmp("rgb565", optarg) == 0) {
+				} else if (strcmp("rgb24", optarg) == 0) {
+					topixels = torgb24;		
+				} else if (strcmp("rgb565", optarg) == 0) {
 					topixels = torgb565;
 				}
 			}
