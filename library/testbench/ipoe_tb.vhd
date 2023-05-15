@@ -31,7 +31,7 @@ use hdl4fpga.ipoepkg.all;
 entity ipoe_tb is
 	generic (
 		delay1 : time := 36 us;
-		delay2 : time := 1 us;
+		delay2 : time := 10 us;
 		snd_data : std_logic_vector :=
 			x"01007e" &
 			x"18ff"   &
@@ -93,11 +93,11 @@ begin
 	port map (
 		mii_data4 => snd_data,
 		mii_data5 => req_data,
-		mii_frm1  => mii_req1, -- arp
+		mii_frm1  => '0', -- arp
 		mii_frm2  => '0', --mii_req, -- ping
 		mii_frm3  => '0',
-		mii_frm4  => '0', --mii_req, -- write
-		mii_frm5  => mii_req, -- read
+		mii_frm4  => mii_req, --mii_req, -- write
+		mii_frm5  => mii_req1, -- read
 
 		mii_txc   => mii_clk,
 		mii_txen  => mii_txen,

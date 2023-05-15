@@ -68,9 +68,7 @@ architecture def of graphics is
 
 	signal dma_step      : unsigned(dma_addr'range);
 
-	signal video_word : std_logic_vector(0 to setif(video_pixel'length < ctlr_di'length, ctlr_di'length, video_pixel'length)-1);
-	signal vram_irdy  : std_logic;
-	signal vram_data  : std_logic_vector(video_word'range);
+	signal video_word : std_logic_vector(ctlr_di'range);
 
 begin
 
@@ -202,32 +200,6 @@ begin
 		end process;
 	end block;
 
-	serdes_g : if ctlr_di'length < video_pixel'length generate
-		signal ser_frm : std_logic;
-		signal des_irdy : std_logic;
-		signal des_data : std_logic_vector(0 to video_pixel'length-1);
-	begin
-		ser_frm <= (dma_req xor dma_rdy);
-
-		serdes_e : entity hdl4fpga.serdes
-		port map (
-			serdes_clk => ctlr_clk,
-			serdes_frm => ser_frm,
-			ser_irdy   => ctlr_di_dv,
-			ser_data   => ctlr_di,
-
-			des_irdy   => des_irdy,
-			des_data   => des_data);
-
-			vram_irdy <= des_irdy;
-			vram_data <= reverse(reverse(des_data), ctlr_di'length);
-	end generate;
-
-	bypass_input_g : if ctlr_di'length >= video_pixel'length generate
-		vram_irdy <= ctlr_di_dv;
-		vram_data <= ctlr_di;
-	end generate;
-
 	video_on <= video_hzon and video_vton;
 	vram_e : entity hdl4fpga.fifo
 	generic map (
@@ -239,32 +211,26 @@ begin
 		gray_code  => false)
 	port map (
 		src_clk  => ctlr_clk,
-		src_irdy => vram_irdy,
-		src_data => vram_data,
+		src_irdy => ctlr_di_dv,
+		src_data => ctlr_di,
 
 		dst_clk  => video_clk,
 		dst_frm  => video_frm,
 		dst_trdy => video_trdy,
 		dst_data => video_word);
 
-	bypass_output_g : if ctlr_di'length <= video_pixel'length generate
-		video_trdy  <= video_on;
-		video_pixel <= video_word;
-	end generate;
+	serlzr_e : entity hdl4fpga.serlzr
+   	generic map (
+   		fifo_mode => false,
+   		lsdfirst  => false)
+   	port map (
+   		src_clk   => video_clk,
+		src_frm   => video_vton,
+   		src_irdy  => video_hzon,
+   		src_trdy  => video_trdy,
+   		src_data  => video_word,
+   		dst_clk   => video_clk,
+   		dst_data  => video_pixel);
 
-	desser_g : if ctlr_di'length > video_pixel'length generate
-        serlzr_e : entity hdl4fpga.serlzr
-       	generic map (
-       		fifo_mode => false,
-       		lsdfirst  => false)
-       	port map (
-       		src_clk   => video_clk,
-			src_frm   => video_on,
-       		src_trdy  => video_trdy,
-       		src_data  => video_word,
-       		dst_clk   => video_clk,
-       		dst_data  => video_pixel);
-
-	end generate;
 
 end;

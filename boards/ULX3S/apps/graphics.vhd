@@ -92,7 +92,7 @@ architecture graphics of ulx3s is
 	signal video_eclk    : std_logic;
 	signal video_pixel   : std_logic_vector(0 to setif(
 		video_param.pixel=rgb565, 16, setif(
-		video_param.pixel=rgb888, 32, 0))-1);
+		video_param.pixel=rgb888, 24, 0))-1);
 	constant video_gear  : natural := 2;
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk   : std_logic;
@@ -264,33 +264,33 @@ begin
 			mii_rxd(0)    => rmii_rx0,
 			mii_rxd(1)    => rmii_rx1);
 
-    	displaytp_e : entity hdl4fpga.display_tp
-    	generic map (
-    		timing_id    => video_param.timing,
-    		video_gear   => 2,
-    		num_of_cols  => 1,
-    		field_widths => (0 to 6-1 => 15),
-    		labels       => 
-    			"dev_gtn(0)" & NUL &
-    			"dev_gtn(1)" & NUL &
-    			"dev_csc"    & NUL &
-    			"dev_req(0)" & NUL &
-    			"dev_req(1)" & NUL &
-    			"miitx_frm"  & NUL &
-    			"miitx_end"  & NUL &
-    			"ethtx_frm"  & NUL &
-    			"ethtx_irdy" & NUL &
-    			"ethtx_trdy" & NUL &
-    			"arptx_frm"  & NUL &
-    			"arptx_irdy" & NUL &
-    			"arptx_trdy" & NUL)
-    	port map (
-    		sweep_clk   => video_clk,
-    		tp          => tp(1 to 13),
-    		video_clk   => video_clk,
-    		video_shift_clk => video_shift_clk,
+    	-- displaytp_e : entity hdl4fpga.display_tp
+    	-- generic map (
+    		-- timing_id    => video_param.timing,
+    		-- video_gear   => 2,
+    		-- num_of_cols  => 1,
+    		-- field_widths => (0 to 6-1 => 15),
+    		-- labels       => 
+    			-- "dev_gtn(0)" & NUL &
+    			-- "dev_gtn(1)" & NUL &
+    			-- "dev_csc"    & NUL &
+    			-- "dev_req(0)" & NUL &
+    			-- "dev_req(1)" & NUL &
+    			-- "miitx_frm"  & NUL &
+    			-- "miitx_end"  & NUL &
+    			-- "ethtx_frm"  & NUL &
+    			-- "ethtx_irdy" & NUL &
+    			-- "ethtx_trdy" & NUL &
+    			-- "arptx_frm"  & NUL &
+    			-- "arptx_irdy" & NUL &
+    			-- "arptx_trdy" & NUL)
+    	-- port map (
+    		-- sweep_clk   => video_clk,
+    		-- tp          => tp(1 to 13),
+    		-- video_clk   => video_clk,
+    		-- video_shift_clk => video_shift_clk,
     		-- dvid_crgb   => dvid_crgb,
-    		video_pixel => video_pixel);
+    		-- video_pixel => video_pixel);
 
 		sio_clk   <= mii_clk;
 		wifi_en   <= '0';

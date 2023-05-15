@@ -157,7 +157,7 @@ architecture ulx3s_graphics of testbench is
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
 
-		x"1702_00000f_1603_0000_0000";
+		x"1702_0000ff_1603_0000_0000";
 	constant req_data  : std_logic_vector :=
 		x"010008_1702_0000ff_1603_8000_0000";
 
@@ -221,7 +221,7 @@ begin
 	(gn(11), gp(11)) <= mii_txd;
     ipoetb_e : entity work.ipoe_tb
 	generic map (
-		delay1 => 10 us,
+		delay1   => 10 us,
 		snd_data => snd_data,
 		req_data => req_data)
 	port map (

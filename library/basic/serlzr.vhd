@@ -30,11 +30,12 @@ use hdl4fpga.base.all;
 
 entity serlzr is
 	generic (
-		fifo_mode : boolean := true;
-		lsdfirst  : boolean := true);
+		fifo_mode : boolean := false;
+		lsdfirst  : boolean := false);
 	port (
 		src_clk   : in  std_logic;
 		src_frm   : in  std_logic := '1';
+		src_irdy  : in  std_logic := '1';
 		src_trdy  : out std_logic;
 		src_data  : in  std_logic_vector;
 		dst_frm   : in  std_logic := '1';
@@ -45,8 +46,8 @@ end;
 architecture def of serlzr  is
 
 	function max_and_mask (
-		constant src_size : natural;
-		constant dst_size : natural)
+		constant wide_size : natural;
+		constant narrow_size : natural)
 		return natural_vector is
 
 		constant debug_mask : boolean := false;
@@ -96,10 +97,10 @@ architecture def of serlzr  is
 	begin
 		max   := 0;
 		mask0 := 0;
-		mask1 := 2**unsigned_num_bits(src_size-1)-1;
+		mask1 := 2**unsigned_num_bits(wide_size-1)-1;
 		shft  := 0;
-		for i in 0 to dst_size-1 loop
-			shft := shft + src_size mod dst_size + (src_size/dst_size-1)*dst_size;
+		for i in 0 to narrow_size-1 loop
+			shft := shft + wide_size mod narrow_size + (wide_size/narrow_size-1)*narrow_size;
 			if shft > max then
 				max := shft;
 			end if;
@@ -121,8 +122,8 @@ architecture def of serlzr  is
 			report CR & "UPDATED MASK1 : " & natural'image(mask1)
 			severity note;
 
-			while shft >= dst_size loop
-				shft := shft - dst_size;
+			while shft >= narrow_size loop
+				shft := shft - narrow_size;
 				mask0 := barrel_stage(mask0,shft, '0');
 				-- mask1 := barrel_stage(mask1,shft, '1');
 
@@ -139,13 +140,16 @@ architecture def of serlzr  is
 
 			end loop;
 		end loop;
-		return (max+dst_size, mask0, mask1);
+		return (max+narrow_size, mask0, mask1);
 	end;
 
-	constant debug_mm : boolean := false;
-	constant mm : natural_vector := max_and_mask(src_data'length, dst_data'length);
+	constant wide_size   : natural := max(src_data'length, dst_data'length);
+	constant narrow_size : natural := hdl4fpga.base.min(src_data'length, dst_data'length);
 
-	signal shf  : std_logic_vector(unsigned_num_bits(src_data'length-1)-1 downto 0);
+	constant debug_mm : boolean := false;
+	constant mm : natural_vector := max_and_mask(wide_size, narrow_size);
+
+	signal shf  : std_logic_vector(unsigned_num_bits(wide_size-1)-1 downto 0);
 	signal rgtr : std_logic_vector(mm(0)-1 downto 0);
 	signal shfd : std_logic_vector(rgtr'range);
 
@@ -172,30 +176,53 @@ begin
 		src_trdy  <= fifo_trdy;
 	end generate;
 
-	process (dst_clk)
-		variable shr : unsigned(rgtr'range);
-		variable acc : unsigned(shf'range) := (others => '0');
-	begin 
-		if rising_edge(dst_clk) then
-			if src_frm='0' then
-				acc := (others => '0');
-				fifo_trdy <= '1';
-			elsif dst_frm='0' then
-				acc := (others => '0');
-				fifo_trdy <= '1';
-			elsif acc >= dst_data'length then 
-				acc := acc - dst_data'length;
-				fifo_trdy <= '0';
-			else
-				fifo_trdy <= '1';
-				shr := shift_left(shr, src_data'length);
-				shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(fifo_data), fifo_data));
-				acc := acc + abs(src_data'length - dst_data'length);
-			end if;
-			shf  <= std_logic_vector(acc and to_unsigned(mm(1), acc'length));
-			rgtr <= std_logic_vector(shr);
-		end if;
-	end process;
+	srcgtdst_g : if src_data'length > dst_data'length generate
+    	process (dst_clk)
+    		variable shr : unsigned(rgtr'range);
+    		variable acc : unsigned(shf'range) := (others => '0');
+    	begin 
+    		if rising_edge(dst_clk) then
+    			if dst_frm='0' then
+    				acc := (others => '0');
+    				fifo_trdy <= '1';
+    			elsif acc >= dst_data'length then 
+   					acc := acc - dst_data'length;
+   					fifo_trdy <= '0';
+   				else
+   					fifo_trdy <= '1';
+   					shr := shift_left(shr, src_data'length);
+   					shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(fifo_data), fifo_data));
+   					acc := acc + (src_data'length - dst_data'length);
+    			end if;
+    			shf  <= std_logic_vector(acc and to_unsigned(mm(1), acc'length));
+    			rgtr <= std_logic_vector(shr);
+    		end if;
+    	end process;
+	end generate;
+
+	srcltdst_g : if src_data'length < dst_data'length generate
+    	process (src_clk)
+    		variable shr : unsigned(rgtr'range);
+    		variable acc : unsigned(shf'range) := (others => '0');
+    	begin 
+    		if rising_edge(src_clk) then
+    			if src_frm='0' then
+    				acc := (others => '0');
+    				fifo_trdy <= '0';
+    			elsif acc >= dst_data'length-src_data'length then 
+   					acc := acc + (dst_data'length - src_data'length);
+   					fifo_trdy <= '1';
+   				else
+   					fifo_trdy <= '0';
+   					shr := shift_left(shr, src_data'length);
+   					shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(fifo_data), fifo_data));
+   					acc := acc + src_data'length;
+    			end if;
+    			shf  <= std_logic_vector(acc and to_unsigned(mm(1), acc'length));
+    			rgtr <= std_logic_vector(shr);
+    		end if;
+    	end process;
+	end generate;
 
 	shl_i : entity hdl4fpga.barrel
 	generic map (
