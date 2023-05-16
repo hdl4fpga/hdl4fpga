@@ -35,12 +35,10 @@ entity serlzr is
 	port (
 		src_clk   : in  std_logic;
 		src_frm   : in  std_logic := '1';
-		src_irdy  : in  std_logic := '1';
-		src_trdy  : out std_logic;
 		src_data  : in  std_logic_vector;
 		dst_frm   : in  std_logic := '1';
 		dst_clk   : in  std_logic;
-		dst_data  : out std_logic_vector);
+		dst_data  : buffer std_logic_vector);
 end;
 
 architecture def of serlzr  is
@@ -153,30 +151,30 @@ architecture def of serlzr  is
 	signal rgtr : std_logic_vector(mm(0)-1 downto 0);
 	signal shfd : std_logic_vector(rgtr'range);
 
-	signal fifo_data : std_logic_vector(src_data'range);
-	signal fifo_trdy : std_logic;
 begin 
 
 	assert not debug_mm
 	report CR & "(MAX => " & natural'image(mm(0)) & ", MASK0 => " & to_string((to_unsigned(mm(1), shf'length))) & ", MASK1 => " & to_string((to_unsigned(mm(2), shf'length))) & ")"
 	severity note;
 
-	fifoon_g : if fifo_mode generate
-    	fifo_e : entity hdl4fpga.phy_iofifo
-    	port map (
-    		in_clk   => src_clk,
-    		in_data  => src_data,
-    		out_clk  => dst_clk,
-    		out_trdy => fifo_trdy,
-    		out_data => fifo_data);
-	end generate;
-
-	fifooff_g : if not fifo_mode generate
-		fifo_data <= src_data;
-		src_trdy  <= fifo_trdy;
-	end generate;
-
 	srcgtdst_g : if src_data'length > dst_data'length generate
+		signal fifo_data : std_logic_vector(src_data'range);
+		signal fifo_trdy : std_logic;
+	begin
+		fifooff_g : if not fifo_mode generate
+			fifo_data <= src_data;
+		end generate;
+
+    	fifoon_g : if fifo_mode generate
+        	fifo_e : entity hdl4fpga.phy_iofifo
+        	port map (
+        		in_clk   => src_clk,
+        		in_data  => src_data,
+        		out_clk  => dst_clk,
+        		out_trdy => fifo_trdy,
+        		out_data => fifo_data);
+    	end generate;
+
     	process (dst_clk)
     		variable shr : unsigned(rgtr'range);
     		variable acc : unsigned(shf'range) := (others => '0');
@@ -201,6 +199,10 @@ begin
 	end generate;
 
 	srcltdst_g : if src_data'length < dst_data'length generate
+		signal fifo_rst  : std_logic;
+		signal fifo_irdy : std_logic;
+		signal fifo_data : std_logic_vector(dst_data'range);
+	begin
     	process (src_clk)
     		variable shr : unsigned(rgtr'range);
     		variable acc : unsigned(shf'range) := (others => '0');
@@ -208,20 +210,33 @@ begin
     		if rising_edge(src_clk) then
     			if src_frm='0' then
     				acc := (others => '0');
-    				fifo_trdy <= '0';
+    				fifo_irdy <= '0';
     			elsif acc >= dst_data'length-src_data'length then 
-   					acc := acc + (dst_data'length - src_data'length);
-   					fifo_trdy <= '1';
+   					acc := acc - (dst_data'length - src_data'length);
+   					fifo_irdy <= '1';
    				else
-   					fifo_trdy <= '0';
-   					shr := shift_left(shr, src_data'length);
-   					shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(fifo_data), fifo_data));
+   					fifo_irdy <= '0';
    					acc := acc + src_data'length;
     			end if;
-    			shf  <= std_logic_vector(acc and to_unsigned(mm(1), acc'length));
+				shr := shift_left(shr, src_data'length);
+				shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(src_data), src_data));
+    			shf  <= std_logic_vector(acc and to_unsigned(mm(1) mod src_data'length, acc'length));
     			rgtr <= std_logic_vector(shr);
     		end if;
     	end process;
+
+    	-- fifoon_g : if fifo_mode generate
+			fifo_rst <= not src_frm;
+        	fifo_e : entity hdl4fpga.phy_iofifo
+        	port map (
+        		in_clk   => src_clk,
+				in_rst   => fifo_rst,
+        		in_data  => dst_data,
+        		in_irdy  => fifo_irdy,
+        		out_clk  => dst_clk,
+        		out_data => fifo_data);
+    	-- end generate;
+
 	end generate;
 
 	shl_i : entity hdl4fpga.barrel

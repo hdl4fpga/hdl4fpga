@@ -30,6 +30,7 @@ entity phy_iofifo is
 		in_clr   : in  std_logic := '0';
 		in_clk   : in  std_logic;
 		in_rst   : in  std_logic := '0';
+		in_irdy  : in  std_logic := '1';
 		in_data  : in  std_logic_vector;
 
 		out_clk  : in  std_logic;
@@ -53,7 +54,7 @@ begin
 		elsif rising_edge(in_clk) then
 			if in_rst='1' then
 				cntr := (others => '0');
-			else
+			elsif in_irdy='1' then
 				mem(to_integer(cntr)) <= in_data;
 				cntr := cntr + 1;
 			end if;
