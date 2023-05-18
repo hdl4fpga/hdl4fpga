@@ -201,6 +201,18 @@ begin
 	end block;
 
 	video_on <= video_hzon and video_vton;
+	deslzr_e : entity hdl4fpga.serlzr
+	generic map (
+		fifo_mode => false,
+		lsdfirst  => false)
+	port map (
+		src_clk   => ctlr_clk,
+		src_frm   => cttr_di_dv,
+ 		src_data  => ctlr_di,
+ 		dst_clk   => ctlr_clk,
+		dst_trdy  => vram_trdy,
+ 		dst_data  => vram_word);
+
 	vram_e : entity hdl4fpga.fifo
 	generic map (
 		max_depth  => ppage_size,
@@ -211,8 +223,11 @@ begin
 		gray_code  => false)
 	port map (
 		src_clk  => ctlr_clk,
-		src_irdy => ctlr_di_dv,
-		src_data => ctlr_di,
+		src_irdy => vram_trdy,
+		src_data => vram_word,
+		-- src_clk  => ctlr_clk,
+		-- src_irdy => ctlr_di_dv,
+		-- src_data => ctlr_di,
 
 		dst_clk  => video_clk,
 		dst_frm  => video_frm,
@@ -220,17 +235,17 @@ begin
 		dst_data => video_word);
 
 	serlzr_e : entity hdl4fpga.serlzr
-   	generic map (
-   		fifo_mode => false,
-   		lsdfirst  => false)
-   	port map (
-   		src_clk   => video_clk,
+	generic map (
+		fifo_mode => false,
+		lsdfirst  => false)
+	port map (
+		src_clk   => video_clk,
 		src_frm   => video_vton,
-   		src_irdy  => video_hzon,
-   		src_trdy  => video_trdy,
-   		src_data  => video_word,
-   		dst_clk   => video_clk,
-   		dst_data  => video_pixel);
+ 		src_irdy  => video_hzon,
+ 		src_trdy  => video_trdy,
+ 		src_data  => video_word,
+ 		dst_clk   => video_clk,
+ 		dst_data  => video_pixel);
 
 
 end;

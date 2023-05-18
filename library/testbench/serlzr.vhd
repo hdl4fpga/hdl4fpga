@@ -19,11 +19,12 @@ architecture serlzr of testbench is
 begin
 	clk       <= not clk after n*10 ns;
 	clk_shift <= not clk_shift after m*10 ns;
+	-- clk_shift <= not clk_shift after m*10 ns;
 	dst_frm   <= '0', '1' after 10 ns;
 
 	process (clk)
 		variable frm : std_logic := '0';
-		variable xxx : unsigned(0 to 3*m-1) := unsigned(reverse(reverse(std_logic_vector'(x"010203040506070809")),8));
+		variable xxx : unsigned(0 to 4*m-1) := unsigned(reverse(reverse(std_logic_vector'(x"0102030405060708090a0b0c")),8));
 	begin
 		if rising_edge(clk) then
 			if rising_edge(clk_shift) then

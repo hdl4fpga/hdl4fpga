@@ -452,10 +452,16 @@ package base is
 		constant g : std_logic_vector)
 		return std_logic_vector;
 
---	procedure edge(
---		signal xx  : out std_logic;
---		signal yy  : in  std_logic;
---		signal clk : in std_logic);
+	function gcd(
+		constant a : natural; 
+		constant b : natural)
+		return natural;
+		
+	function mcm(
+		constant a : natural; 
+		constant b : natural)
+		return natural;
+		
 end;
 
 use std.textio.all;
@@ -1896,6 +1902,34 @@ package body base is
 		return std_logic_vector(val);
 	end;
 
+	function gcd(
+		constant a : natural; 
+		constant b : natural)
+		return natural is
+		variable var_a : natural;
+		variable var_b : natural;
+		variable aux   : natural;
+	begin
+		var_a := a;
+		var_b := b;
+		while var_b /= 0 loop
+			aux   := var_b;
+			var_b := var_a mod var_b;
+			var_a := aux;
+		end loop;
+		return var_a;
+	end function;
+		
+	function mcm(
+		constant a : natural; 
+		constant b : natural)
+		return natural is
+		variable var_a : natural;
+		variable var_b : natural;
+	begin
+		return (a*b)/gcd(a,b);
+	end function;
+		
 	function galois_crc(
 		constant m : std_logic_vector;
 		constant r : std_logic_vector;
