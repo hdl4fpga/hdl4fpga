@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="apps" device="LFE5U-85F-8BG381C" default_implementation="graphics">
+<BaliProject version="3.2" title="apps" device="LFE5U-25F-8MG285C" default_implementation="graphics">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="strategy1">
         <Options def_top="hdl4fpga.phy_rl">
             <Option name="include path" value="../../../../../../../opt/diamond/3.11_x64/ispfpga/sa5p00/data"/>
-            <Option name="lib" value="work"/>
+            <Option name="lib" value="hdl4fpga"/>
             <Option name="top" value="orangecrab"/>
         </Options>
         <Source name="../common/orangecrab.vhd" type="VHDL" type_short="VHDL">

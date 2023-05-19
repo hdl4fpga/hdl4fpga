@@ -4,7 +4,7 @@ LOCATE COMP "rst_n"            SITE "V17"; IOBUF PORT "rst_n"            IO_TYPE
 LOCATE COMP "rgb_led[0]"       SITE "K4";  IOBUF PORT "rgb_led[0]"       IO_TYPE=LVCMOS33;
 LOCATE COMP "rgb_led[1]"       SITE "M3";  IOBUF PORT "rgb_led[1]"       IO_TYPE=LVCMOS33;
 LOCATE COMP "rgb_led[2]"       SITE "J3";  IOBUF PORT "rgb_led[2]"       IO_TYPE=LVCMOS33;
-LOCATE COMP "gpio_0"           SITE "N17"; IOBUF PORT "gpio_0"           IO_TYPE=LVCMOS33 PULLMODE=DOWN;
+LOCATE COMP "gpio_0"           SITE "N17"; IOBUF PORT "gpio_0"           IO_TYPE=LVCMOS25 PULLMODE=DOWN;
 LOCATE COMP "gpio_1"           SITE "M18"; IOBUF PORT "gpio_1"           IO_TYPE=LVCMOS33 PULLMODE=DOWN;
 LOCATE COMP "gpio_5"           SITE "B10"; IOBUF PORT "gpio_5"           IO_TYPE=LVCMOS33 PULLMODE=DOWN;
 LOCATE COMP "gpio_6"           SITE "B9";  IOBUF PORT "gpio_6"           IO_TYPE=LVCMOS33 PULLMODE=DOWN;
@@ -68,14 +68,14 @@ LOCATE COMP "ddram_dq[15]"     SITE "F18"; IOBUF PORT "ddram_dq[15]"     IO_TYPE
 LOCATE COMP "ddram_dqs[0]"     SITE "B15"; IOBUF PORT "ddram_dqs[0]"     IO_TYPE=SSTL135D_I SLEWRATE=FAST TERMINATION=OFF DIFFRESISTOR=100;
 LOCATE COMP "ddram_dqs[1]"     SITE "G18"; IOBUF PORT "ddram_dqs[1]"     IO_TYPE=SSTL135D_I SLEWRATE=FAST TERMINATION=OFF DIFFRESISTOR=100;
 
-LOCATE COMP "ddram_vccio[0]"   SITE "K16"; IOBUF PORT "ddram_vccio[0]"   IO_TYPE=SSTL135_II SLEWRATE=FAST;
-LOCATE COMP "ddram_vccio[1]"   SITE "D17"; IOBUF PORT "ddram_vccio[1]"   IO_TYPE=SSTL135_II SLEWRATE=FAST;
-LOCATE COMP "ddram_vccio[2]"   SITE "K15"; IOBUF PORT "ddram_vccio[2]"   IO_TYPE=SSTL135_II SLEWRATE=FAST;
-LOCATE COMP "ddram_vccio[3]"   SITE "K17"; IOBUF PORT "ddram_vccio[3]"   IO_TYPE=SSTL135_II SLEWRATE=FAST;
-LOCATE COMP "ddram_vccio[4]"   SITE "B18"; IOBUF PORT "ddram_vccio[4]"   IO_TYPE=SSTL135_II SLEWRATE=FAST;
-LOCATE COMP "ddram_vccio[5]"   SITE "C6";  IOBUF PORT "ddram_vccio[5]"   IO_TYPE=SSTL135_II SLEWRATE=FAST;
-LOCATE COMP "ddram_gnd[0]"     SITE "L15"; IOBUF PORT "ddram_gnd[0]"     IO_TYPE=SSTL135_II SLEWRATE=FAST;
-LOCATE COMP "ddram_gnd[1]"     SITE "L16"; IOBUF PORT "ddram_gnd[1]"     IO_TYPE=SSTL135_II SLEWRATE=FAST;
+#LOCATE COMP "ddram_vccio[0]"   SITE "K16"; IOBUF PORT "ddram_vccio[0]"   IO_TYPE=SSTL135_II SLEWRATE=FAST;
+#LOCATE COMP "ddram_vccio[1]"   SITE "D17"; IOBUF PORT "ddram_vccio[1]"   IO_TYPE=SSTL135_II SLEWRATE=FAST;
+#LOCATE COMP "ddram_vccio[2]"   SITE "K15"; IOBUF PORT "ddram_vccio[2]"   IO_TYPE=SSTL135_II SLEWRATE=FAST;
+#LOCATE COMP "ddram_vccio[3]"   SITE "K17"; IOBUF PORT "ddram_vccio[3]"   IO_TYPE=SSTL135_II SLEWRATE=FAST;
+#LOCATE COMP "ddram_vccio[4]"   SITE "B18"; IOBUF PORT "ddram_vccio[4]"   IO_TYPE=SSTL135_II SLEWRATE=FAST;
+#LOCATE COMP "ddram_vccio[5]"   SITE "C6";  IOBUF PORT "ddram_vccio[5]"   IO_TYPE=SSTL135_II SLEWRATE=FAST;
+#LOCATE COMP "ddram_gnd[0]"     SITE "L15"; IOBUF PORT "ddram_gnd[0]"     IO_TYPE=SSTL135_II SLEWRATE=FAST;
+#LOCATE COMP "ddram_gnd[1]"     SITE "L16"; IOBUF PORT "ddram_gnd[1]"     IO_TYPE=SSTL135_II SLEWRATE=FAST;
 LOCATE COMP "spiflash4x_cs_n"  SITE "U17"; IOBUF PORT "spiflash4x_cs_n"  IO_TYPE=LVCMOS33;
 LOCATE COMP "spiflash4x_dq[0]" SITE "U18"; IOBUF PORT "spiflash4x_dq[0]" IO_TYPE=LVCMOS33;
 LOCATE COMP "spiflash4x_dq[1]" SITE "T18"; IOBUF PORT "spiflash4x_dq[1]" IO_TYPE=LVCMOS33;
