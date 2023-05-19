@@ -1,10 +1,16 @@
+# voltage 3.3V and options to boot from SPI flash write to FLASH possible any time from JTAG:
+SYSCONFIG CONFIG_IOVOLTAGE=3.3 COMPRESS_CONFIG=ON MCCLK_FREQ=62 SLAVE_SPI_PORT=DISABLE MASTER_SPI_PORT=ENABLE SLAVE_PARALLEL_PORT=DISABLE;
+
+# voltage 3.3V and options to boot from SPI flash write to FLASH possible from user bitstream:
+# SYSCONFIG CONFIG_IOVOLTAGE=3.3 COMPRESS_CONFIG=ON MCCLK_FREQ=62 SLAVE_SPI_PORT=DISABLE MASTER_SPI_PORT=DISABLE SLAVE_PARALLEL_PORT=DISABLE;
+
 LOCATE COMP "clk_48MHz"        SITE "A9";  IOBUF PORT "clk_48MHz"        IO_TYPE=LVCMOS33; FREQUENCY PORT "clk_48MHz" 48.0 MHz;
 
 LOCATE COMP "rst_n"            SITE "V17"; IOBUF PORT "rst_n"            IO_TYPE=LVCMOS33;
 LOCATE COMP "rgb_led[0]"       SITE "K4";  IOBUF PORT "rgb_led[0]"       IO_TYPE=LVCMOS33;
 LOCATE COMP "rgb_led[1]"       SITE "M3";  IOBUF PORT "rgb_led[1]"       IO_TYPE=LVCMOS33;
 LOCATE COMP "rgb_led[2]"       SITE "J3";  IOBUF PORT "rgb_led[2]"       IO_TYPE=LVCMOS33;
-LOCATE COMP "gpio_0"           SITE "N17"; IOBUF PORT "gpio_0"           IO_TYPE=LVCMOS25 PULLMODE=DOWN;
+LOCATE COMP "gpio_0"           SITE "N17"; IOBUF PORT "gpio_0"           IO_TYPE=LVCMOS33 PULLMODE=DOWN;
 LOCATE COMP "gpio_1"           SITE "M18"; IOBUF PORT "gpio_1"           IO_TYPE=LVCMOS33 PULLMODE=DOWN;
 LOCATE COMP "gpio_5"           SITE "B10"; IOBUF PORT "gpio_5"           IO_TYPE=LVCMOS33 PULLMODE=DOWN;
 LOCATE COMP "gpio_6"           SITE "B9";  IOBUF PORT "gpio_6"           IO_TYPE=LVCMOS33 PULLMODE=DOWN;
@@ -76,10 +82,10 @@ LOCATE COMP "ddram_dqs[1]"     SITE "G18"; IOBUF PORT "ddram_dqs[1]"     IO_TYPE
 #LOCATE COMP "ddram_vccio[5]"   SITE "C6";  IOBUF PORT "ddram_vccio[5]"   IO_TYPE=SSTL135_II SLEWRATE=FAST;
 #LOCATE COMP "ddram_gnd[0]"     SITE "L15"; IOBUF PORT "ddram_gnd[0]"     IO_TYPE=SSTL135_II SLEWRATE=FAST;
 #LOCATE COMP "ddram_gnd[1]"     SITE "L16"; IOBUF PORT "ddram_gnd[1]"     IO_TYPE=SSTL135_II SLEWRATE=FAST;
-LOCATE COMP "spiflash4x_cs_n"  SITE "U17"; IOBUF PORT "spiflash4x_cs_n"  IO_TYPE=LVCMOS33;
-LOCATE COMP "spiflash4x_dq[0]" SITE "U18"; IOBUF PORT "spiflash4x_dq[0]" IO_TYPE=LVCMOS33;
-LOCATE COMP "spiflash4x_dq[1]" SITE "T18"; IOBUF PORT "spiflash4x_dq[1]" IO_TYPE=LVCMOS33;
-LOCATE COMP "spiflash4x_dq[2]" SITE "R18"; IOBUF PORT "spiflash4x_dq[2]" IO_TYPE=LVCMOS33;
+#LOCATE COMP "spiflash4x_cs_n"  SITE "U17"; IOBUF PORT "spiflash4x_cs_n"  IO_TYPE=LVCMOS33;
+#LOCATE COMP "spiflash4x_dq[0]" SITE "U18"; IOBUF PORT "spiflash4x_dq[0]" IO_TYPE=LVCMOS33;
+#LOCATE COMP "spiflash4x_dq[1]" SITE "T18"; IOBUF PORT "spiflash4x_dq[1]" IO_TYPE=LVCMOS33;
+#LOCATE COMP "spiflash4x_dq[2]" SITE "R18"; IOBUF PORT "spiflash4x_dq[2]" IO_TYPE=LVCMOS33;
 LOCATE COMP "spiflash4x_dq[3]" SITE "N18"; IOBUF PORT "spiflash4x_dq[3]" IO_TYPE=LVCMOS33;
 LOCATE COMP "usb_d_p"          SITE "N1";  IOBUF PORT "usb_d_p"          IO_TYPE=LVCMOS33;
 LOCATE COMP "usb_d_n"          SITE "M2";  IOBUF PORT "usb_d_n"          IO_TYPE=LVCMOS33;

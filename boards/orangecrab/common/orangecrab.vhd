@@ -39,8 +39,6 @@ entity orangecrab is
         gpio            : inout std_logic_vector(14-1 downto 0);
         gpio_a          : inout std_logic_vector( 4-1 downto 0);
 
-        spiflash4x_cs_n : out std_logic := 'Z';
-        spiflash4x_dq   : out std_logic_vector(4-1 downto 0) := (others => 'Z');
 		usb_d_p         : inout std_logic := 'Z';
 		usb_d_n         : inout std_logic := 'Z';
 		usb_pullup      : inout std_logic := 'Z';
