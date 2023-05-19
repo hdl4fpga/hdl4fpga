@@ -36,7 +36,7 @@ entity serlzr is
 		src_clk   : in  std_logic;
 		src_frm   : in  std_logic := '1';
 		src_data  : in  std_logic_vector;
-		src_irdy  : in  std_logic;
+		src_irdy  : in  std_logic := '1';
 		dst_frm   : in  std_logic := '1';
 		dst_clk   : in  std_logic;
 		dst_trdy  : out std_logic;
@@ -224,15 +224,17 @@ begin
 					if src_frm='0' then
 						acc := (others => '0');
 						fifo_irdy <= '0';
-					elsif acc >= dst_data'length-src_data'length then 
-						acc := acc - (dst_data'length - src_data'length);
-						fifo_irdy <= '1';
-					else
-						fifo_irdy <= '0';
-						acc := acc + src_data'length;
+					elsif src_irdy='1' then
+						if acc >= dst_data'length-src_data'length then 
+							acc := acc - (dst_data'length - src_data'length);
+							fifo_irdy <= '1';
+						else
+							acc := acc + src_data'length;
+							fifo_irdy <= '0';
+						end if;
+						shr := shift_left(shr, src_data'length);
+						shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(src_data), src_data));
 					end if;
-					shr := shift_left(shr, src_data'length);
-					shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(src_data), src_data));
 					shf  <= std_logic_vector(acc and to_unsigned(mm(1) mod src_data'length, acc'length));
 					rgtr <= std_logic_vector(shr);
 				end if;
@@ -272,17 +274,21 @@ begin
 					if src_frm='0' then
 						acc  := (others => '0');
 						full := '0';
-					elsif acc >= shr'length-src_data'length then 
-						acc  := (others => '0');
-						full := '1';
+					elsif src_irdy='1' then
+						if acc >= shr'length-src_data'length then 
+							acc  := (others => '0');
+							full := '1';
+						else
+							acc  := acc + src_data'length;
+							full := '0';
+						end if;
+						shr := shift_left(shr, src_data'length);
+						shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(src_data), src_data));
+						if full='1' then
+							rgtr <= std_logic_vector(shr);
+						end if;
 					else
-						acc  := acc + src_data'length;
 						full := '0';
-					end if;
-					shr := shift_left(shr, src_data'length);
-					shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(src_data), src_data));
-					if full='1' then
-						rgtr <= std_logic_vector(shr);
 					end if;
 				end if;
 
