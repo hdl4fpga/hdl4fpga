@@ -46,7 +46,7 @@ architecture graphics of ulx4m_ld is
 	constant video_mode   : video_modes  := mode600p24bpp;
 	---------------------------------------
 
-	constant video_param  : video_record := videoparam(
+	constant video_params : video_record := videoparam(
 		video_modes'VAL(setif(debug,
 			video_modes'POS(modedebug),
 			video_modes'POS(video_mode))), clk25mhz_freq);
@@ -109,7 +109,7 @@ architecture graphics of ulx4m_ld is
 	signal video_shift_clk : std_logic;
 	signal video_eclk    : std_logic;
 	signal video_phyrst  : std_logic;
-	constant video_gear  : natural := video_param.gear;
+	constant video_gear  : natural := video_params.gear;
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 
 	constant mem_size    : natural := 8*(1024*8);
@@ -147,7 +147,7 @@ begin
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
 		clkref_freq => clk25mhz_freq,
-		video_param => video_param)
+		video_params => video_params)
 	port map (
 		clk_ref     => clk_25mhz,
 		videoio_clk => videoio_clk,
@@ -172,8 +172,8 @@ begin
 
 	hdlc_g : if io_link=io_hdlc generate
 		constant uart_freq : real := 
-			real(video_param.pll.clkfb_div*video_param.pll.clkos_div)*clk25mhz_freq/
-			real(video_param.pll.clki_div*video_param.pll.clkos3_div);
+			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk25mhz_freq/
+			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
 		constant baudrate : natural := setif(
 			uart_freq >= 32.0e6, 3000000, setif(
 			uart_freq >= 25.0e6, 2000000,
@@ -237,7 +237,7 @@ begin
 		byte_size    => byte_size,
 		burst_length => 8,
 
-		timing_id    => video_param.timing,
+		timing_id    => video_params.timing,
 		video_gear   => video_gear,
 		red_length   => 8,
 		green_length => 8,

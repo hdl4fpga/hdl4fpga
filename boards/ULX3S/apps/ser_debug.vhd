@@ -39,15 +39,15 @@ architecture ser_debug of ulx3s is
 
 	constant io_link : io_comms := io_ipoe;
 
-	constant video_mode : video_modes := mode600p24bpp;
-	constant video_param  : video_record := videoparam(
+	constant video_mode   : video_modes := mode600p24bpp;
+	constant video_params : video_record := videoparam(
 		video_modes'VAL(setif(debug,
 			video_modes'POS(modedebug),
 			video_modes'POS(video_mode))), clk25mhz_freq);
 
 	signal video_pixel   : std_logic_vector(0 to setif(
-		video_param.pixel=rgb565, 16, setif(
-		video_param.pixel=rgb888, 32, 0))-1);
+		video_params.pixel=rgb565, 16, setif(
+		video_params.pixel=rgb888, 32, 0))-1);
 
 	signal sys_rst         : std_logic;
 	signal sys_clk         : std_logic;
@@ -84,7 +84,7 @@ begin
 	generic map (
 		clkref_freq  => clk25mhz_freq,
 		default_gear => 2,
-		video_param  => video_param)
+		video_params  => video_params)
 	port map (
 		clk_ref     => clk_25mhz,
 		videoio_clk => videoio_clk,
@@ -94,8 +94,8 @@ begin
 
 	hdlc_g : if io_link=io_hdlc generate
 		constant uart_freq : real := 
-			real(video_param.pll.clkfb_div*video_param.pll.clkos_div)*clk25mhz_freq/
-			real(video_param.pll.clki_div*video_param.pll.clkos3_div);
+			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk25mhz_freq/
+			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
 		constant baudrate : natural := setif(
 			uart_freq >= 32.0e6, 3000000, setif(
 			uart_freq >= 25.0e6, 2000000,
@@ -201,7 +201,7 @@ begin
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
-		timing_id       => video_param.timing)
+		timing_id       => video_params.timing)
 	port map (
 		ser_clk         => ser_clk, 
 		ser_frm         => ser_frm, 

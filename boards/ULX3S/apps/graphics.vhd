@@ -45,7 +45,7 @@ architecture graphics of ulx3s is
 	constant video_mode   : video_modes  := mode720p24bpp;
 	--------------------------------------
 
-	constant video_param  : video_record := videoparam(
+	constant video_params  : video_record := videoparam(
 		video_modes'VAL(setif(debug,
 			video_modes'POS(modedebug),
 			video_modes'POS(video_mode))), clk25mhz_freq);
@@ -91,8 +91,8 @@ architecture graphics of ulx3s is
 	signal video_shift_clk : std_logic;
 	signal video_eclk    : std_logic;
 	signal video_pixel   : std_logic_vector(0 to setif(
-		video_param.pixel=rgb565, 16, setif(
-		video_param.pixel=rgb888, 24, 0))-1);
+		video_params.pixel=rgb565, 16, setif(
+		video_params.pixel=rgb888, 24, 0))-1);
 	constant video_gear  : natural := 2;
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk   : std_logic;
@@ -117,7 +117,7 @@ begin
 	generic map (
 		clkref_freq  => clk25mhz_freq,
 		default_gear => video_gear,
-		video_param  => video_param)
+		video_params  => video_params)
 	port map (
 		clk_ref     => clk_25mhz,
 		videoio_clk => videoio_clk,
@@ -152,8 +152,8 @@ begin
 
 	hdlc_g : if io_link=io_hdlc generate
 		constant uart_freq : real := 
-			real(video_param.pll.clkfb_div*video_param.pll.clkos_div)*clk25mhz_freq/
-			real(video_param.pll.clki_div*video_param.pll.clkos3_div);
+			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk25mhz_freq/
+			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
 		constant baudrate : natural := setif(
 			uart_freq >= 32.0e6, 3000000, setif(
 			uart_freq >= 25.0e6, 2000000,
@@ -197,8 +197,8 @@ begin
 	ipoe_g : if io_link=io_ipoe generate
 		constant hdplx : std_logic := '1';
 		signal video_pixel   : std_logic_vector(0 to setif(
-		video_param.pixel=rgb565, 16, setif(
-		video_param.pixel=rgb888, 32, 0))-1);
+		video_params.pixel=rgb565, 16, setif(
+		video_params.pixel=rgb888, 32, 0))-1);
 		-- https://www.waveshare.com/LAN8720-ETH-Board.htm
 		-- Starts up 10Mb half duplex
 
@@ -266,7 +266,7 @@ begin
 
     	-- displaytp_e : entity hdl4fpga.display_tp
     	-- generic map (
-    		-- timing_id    => video_param.timing,
+    		-- timing_id    => video_params.timing,
     		-- video_gear   => 2,
     		-- num_of_cols  => 1,
     		-- field_widths => (0 to 6-1 => 15),
@@ -314,11 +314,11 @@ begin
 		word_size    => word_size,
 		byte_size    => byte_size,
 
-		timing_id    => video_param.timing,
+		timing_id    => video_params.timing,
 		video_gear   => video_gear,
-		red_length   => setif(video_param.pixel=rgb565, 5, setif(video_param.pixel=rgb888, 8, 0)),
-		green_length => setif(video_param.pixel=rgb565, 6, setif(video_param.pixel=rgb888, 8, 0)),
-		blue_length  => setif(video_param.pixel=rgb565, 5, setif(video_param.pixel=rgb888, 8, 0)),
+		red_length   => setif(video_params.pixel=rgb565, 5, setif(video_params.pixel=rgb888, 8, 0)),
+		green_length => setif(video_params.pixel=rgb565, 6, setif(video_params.pixel=rgb888, 8, 0)),
+		blue_length  => setif(video_params.pixel=rgb565, 5, setif(video_params.pixel=rgb888, 8, 0)),
 		fifo_size    => mem_size)
 
 	port map (
