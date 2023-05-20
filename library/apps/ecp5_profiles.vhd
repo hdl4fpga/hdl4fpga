@@ -30,7 +30,6 @@ use hdl4fpga.app_profiles.all;
 
 package ecp5_profiles is
 
-	type board_ids is (bid_ulx3s, bid_ulx4mls,  bid_ulx4mld, bid_orangecrab);
 
 	type pll_record is record
 		clkos_div  : natural;
@@ -53,7 +52,7 @@ package ecp5_profiles is
 	constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
 	function videoparam (
 		constant video_id : video_modes;
-		constant board_id : board_ids)
+		constant clk_ref  : real)
 		return video_record;
 
 	type sdramparams_record is record
@@ -67,7 +66,7 @@ package ecp5_profiles is
 	type sdramparams_vector is array (natural range <>) of sdramparams_record;
 	function sdramparams (
 		constant sdram_id : sdram_speeds;
-		constant board_id : board_ids)
+		constant clk_ref  : real)
 		return sdramparams_record;
 
 end package;
@@ -142,26 +141,25 @@ package body ecp5_profiles is
 
 	function videoparam (
 		constant video_id : video_modes;
-		constant board_id : board_ids)
+		constant clk_ref  : real)
 		return video_record is
 		variable retval : video_record;
 	begin
-		case board_id is
-		when bid_ulx3s|bid_ulx4mld|bid_ulx4mls =>
+		if clk_ref=25.0e6 then
 			for i in ulxvideo_tab'range loop
 				if video_id=ulxvideo_tab(i).id then
 					return ulxvideo_tab(i);
 				end if;
 			end loop;
 			retval := ulxvideo_tab(ulxvideo_tab'left);
-		when bid_orangecrab =>
+		elsif clk_ref=48.0e6 then
 			for i in orangecrabvideo_tab'range loop
 				if video_id=orangecrabvideo_tab(i).id then
 					return orangecrabvideo_tab(i);
 				end if;
 			end loop;
 			retval := orangecrabvideo_tab(orangecrabvideo_tab'left);
-		end case;
+		end if;
 
 		assert false 
 		report ">>>videoparam<<< : video id not available"
@@ -172,26 +170,25 @@ package body ecp5_profiles is
 
 	function sdramparams (
 		constant sdram_id : sdram_speeds;
-		constant board_id : board_ids)
+		constant clk_ref  : real)
 		return sdramparams_record is
 		variable retval : sdramparams_record;
 	begin
-		case board_id is
-		when bid_ulx3s|bid_ulx4mld|bid_ulx4mls =>
+		if clk_ref=25.0e6 then
 			for i in ulxsdram_tab'range loop
 				if sdram_id=ulxsdram_tab(i).id then
 					return ulxsdram_tab(i);
 				end if;
 			end loop;
 			retval := ulxsdram_tab(ulxsdram_tab'left);
-		when bid_orangecrab =>
+		elsif clk_ref=48.0e6 then
 			for i in orangecrabsdram_tab'range loop
 				if sdram_id=orangecrabsdram_tab(i).id then
 					return orangecrabsdram_tab(i);
 				end if;
 			end loop;
 			retval := orangecrabsdram_tab(orangecrabsdram_tab'left);
-		end case;
+		end if;
 
 		assert false 
 		report ">>>sdramparams<<< : sdram speed not enabled"

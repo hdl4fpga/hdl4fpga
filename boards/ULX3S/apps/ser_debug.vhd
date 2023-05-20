@@ -43,7 +43,7 @@ architecture ser_debug of ulx3s is
 	constant video_param  : video_record := videoparam(
 		video_modes'VAL(setif(debug,
 			video_modes'POS(modedebug),
-			video_modes'POS(video_mode))), bid_ulx3s);
+			video_modes'POS(video_mode))), clk25mhz_freq);
 
 	signal video_pixel   : std_logic_vector(0 to setif(
 		video_param.pixel=rgb565, 16, setif(

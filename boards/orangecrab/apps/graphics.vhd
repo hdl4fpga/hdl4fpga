@@ -49,12 +49,12 @@ architecture graphics of orangecrab is
 	constant video_param  : video_record := videoparam(
 		video_modes'VAL(setif(debug,
 			video_modes'POS(modedebug),
-			video_modes'POS(video_mode))), bid_orangecrab);
+			video_modes'POS(video_mode))), clk48MHz_freq);
 
 	constant sdram_params : sdramparams_record := sdramparams(
 		sdram_speeds'VAL(setif(debug,
 			sdram_speeds'POS(sdram400Mhz),
-			sdram_speeds'POS(sdram_speed))), bid_orangecrab);
+			sdram_speeds'POS(sdram_speed))), clk48MHz_freq);
 	
 	constant sdram_tcp    : real := 
 		real(sdram_params.pll.clki_div)/
