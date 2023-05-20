@@ -34,14 +34,6 @@ MICRON__ddr2 = $(LIB_MICRON)/ddr2/_primary.dat
 IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
 HDL4FPGA__uart_rx = $(LIB_HDL4FPGA)/uart_rx/_primary.dat
 HDL4FPGA__ser_debug = $(LIB_HDL4FPGA)/ser_debug/_primary.dat
-HDL4FPGA__display_tp = $(LIB_HDL4FPGA)/display_tp/_primary.dat
-HDL4FPGA__cgafonts = $(LIB_HDL4FPGA)/cgafonts/_primary.dat
-HDL4FPGA__cp850x8x8x0to127 = $(LIB_HDL4FPGA)/cp850x8x8x0to127/_primary.dat
-HDL4FPGA__cp850x8x8x128to255 = $(LIB_HDL4FPGA)/cp850x8x8x128to255/_primary.dat
-HDL4FPGA__cp850x8x16x0to127 = $(LIB_HDL4FPGA)/cp850x8x16x0to127/_primary.dat
-HDL4FPGA__cp850x8x16x128to255 = $(LIB_HDL4FPGA)/cp850x8x16x128to255/_primary.dat
-HDL4FPGA__bcdfonts = $(LIB_HDL4FPGA)/bcdfonts/_primary.dat
-HDL4FPGA__latency = $(LIB_HDL4FPGA)/latency/_primary.dat
 HDL4FPGA__sdram_db = $(LIB_HDL4FPGA)/sdram_db/_primary.dat
 IEEE__math_real = $(LIB_IEEE)/math_real/_primary.dat
 HDL4FPGA__sdram_param = $(LIB_HDL4FPGA)/sdram_param/_primary.dat
@@ -53,6 +45,7 @@ HDL4FPGA__ecp5_sdrampll = $(LIB_HDL4FPGA)/ecp5_sdrampll/_primary.dat
 HDL4FPGA__hdlc_link = $(LIB_HDL4FPGA)/hdlc_link/_primary.dat
 HDL4FPGA__link_mii = $(LIB_HDL4FPGA)/link_mii/_primary.dat
 HDL4FPGA__app_graphics = $(LIB_HDL4FPGA)/app_graphics/_primary.dat
+HDL4FPGA__latency = $(LIB_HDL4FPGA)/latency/_primary.dat
 HDL4FPGA__ecp5_sdrphy = $(LIB_HDL4FPGA)/ecp5_sdrphy/_primary.dat
 HDL4FPGA__ecp5_ogbx = $(LIB_HDL4FPGA)/ecp5_ogbx/_primary.dat
 ECP5U__components = $(LIB_ECP5U)/components/_primary.dat
@@ -94,6 +87,8 @@ WORK__s3estarter_structure_md = $(LIB_WORK)/s3estarter_structure_md/_primary.dat
 WORK__s3estarter_graphics_md = $(LIB_WORK)/s3estarter_graphics_md/_primary.dat
 WORK__s3estarter__graphics = $(LIB_WORK)/s3estarter/graphics.dat
 WORK__s3estarter = $(LIB_WORK)/s3estarter/_primary.dat
+WORK__orangecrab__graphics = $(LIB_WORK)/orangecrab/graphics.dat
+WORK__orangecrab = $(LIB_WORK)/orangecrab/_primary.dat
 WORK__nuhs3adsp_graphics_md = $(LIB_WORK)/nuhs3adsp_graphics_md/_primary.dat
 WORK__nuhs3adsp_graphic_structure_md = $(LIB_WORK)/nuhs3adsp_graphic_structure_md/_primary.dat
 WORK__nuhs3adsp__graphics = $(LIB_WORK)/nuhs3adsp/graphics.dat
@@ -148,6 +143,8 @@ whole_library :     $(WORK__ulx4mls_graphics_structure_md) \
     $(WORK__s3estarter_graphics_md) \
     $(WORK__s3estarter__graphics) \
     $(WORK__s3estarter) \
+    $(WORK__orangecrab__graphics) \
+    $(WORK__orangecrab) \
     $(WORK__nuhs3adsp_graphics_md) \
     $(WORK__nuhs3adsp_graphic_structure_md) \
     $(WORK__nuhs3adsp__graphics) \
@@ -315,6 +312,36 @@ $(WORK__nuhs3adsp__graphics) : ../../boards/nuhs3adsp/apps/graphics.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ../../boards/nuhs3adsp/apps/graphics.vhd
 
+$(WORK__orangecrab) : ../../boards/orangecrab/common/orangecrab.vhd \
+		$(IEEE__std_logic_arith) \
+		$(ECP5U__components) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002  ../../boards/orangecrab/common/orangecrab.vhd
+
+$(WORK__orangecrab__graphics) : ../../boards/orangecrab/apps/graphics.vhd \
+		$(HDL4FPGA__ecp5_sdrphy) \
+		$(HDL4FPGA__app_graphics) \
+		$(HDL4FPGA__hdlc_link) \
+		$(HDL4FPGA__ecp5_sdrampll) \
+		$(HDL4FPGA__ecp5_videopll) \
+		$(WORK__orangecrab) \
+		$(IEEE__std_logic_arith) \
+		$(ECP5U__components) \
+		$(HDL4FPGA__ecp5_profiles) \
+		$(HDL4FPGA__app_profiles) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__sdram_param) \
+		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__base) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002  ../../boards/orangecrab/apps/graphics.vhd
+
 $(WORK__s3estarter) : ../../boards/s3estarter/common/s3estarter.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
@@ -350,9 +377,9 @@ $(WORK__testbench) : testbench.vhd \
 	$(VCOM) -2002 testbench.vhd
 
 $(WORK__testbench__serlzr) : serlzr.vhd \
-		$(HDL4FPGA__base) \
 		$(HDL4FPGA__serlzr) \
 		$(WORK__testbench) \
+		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
@@ -480,16 +507,9 @@ $(WORK__ulx3s__ser_debug) : ../../boards/ULX3S/apps/ser_debug.vhd \
 
 $(WORK__ulx3s__graphics) : ../../boards/ULX3S/apps/graphics.vhd \
 		$(HDL4FPGA__ecp5_ogbx) \
-		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__ecp5_sdrphy) \
+		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__app_graphics) \
-		$(HDL4FPGA__bcdfonts) \
-		$(HDL4FPGA__cp850x8x16x128to255) \
-		$(HDL4FPGA__cp850x8x16x0to127) \
-		$(HDL4FPGA__cp850x8x8x128to255) \
-		$(HDL4FPGA__cp850x8x8x0to127) \
-		$(HDL4FPGA__cgafonts) \
-		$(HDL4FPGA__display_tp) \
 		$(HDL4FPGA__link_mii) \
 		$(HDL4FPGA__hdlc_link) \
 		$(HDL4FPGA__ecp5_sdrampll) \
@@ -567,6 +587,7 @@ $(WORK__ulx4m_ls) : ../../boards/ULX4M_LS/common/ulx4m_ls.vhd \
 $(WORK__ulx4m_ls__graphics) : ../../boards/ULX4M_LS/apps/graphics.vhd \
 		$(HDL4FPGA__ecp5_ogbx) \
 		$(HDL4FPGA__ecp5_sdrphy) \
+		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__app_graphics) \
 		$(HDL4FPGA__link_mii) \
 		$(HDL4FPGA__hdlc_link) \
