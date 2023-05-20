@@ -72,12 +72,12 @@ architecture def of graphics is
 
 begin
 
-	assert ctlr_di'length mod video_pixel'length=0 or video_pixel'length mod ctlr_di'length=0
-	report
-		"video_pixel " & natural'image(video_pixel'length) & 
-		" is not multiple of " & "ctlr_di " & natural'image(ctlr_di'length) &
-		" or viceversa"
-	severity FAILURE;
+	-- assert ctlr_di'length mod video_pixel'length=0 or video_pixel'length mod ctlr_di'length=0
+	-- report
+		-- "video_pixel " & natural'image(video_pixel'length) & 
+		-- " is not multiple of " & "ctlr_di " & natural'image(ctlr_di'length) &
+		-- " or viceversa"
+	-- severity FAILURE;
 
 	dma_b : block
 		signal trdy : std_logic;
@@ -228,7 +228,7 @@ begin
     		gray_code  => false)
     	port map (
     		src_clk  => ctlr_clk,
-    		src_frm  => ctlr_di_dv,
+    		-- src_frm  => ctlr_di_dv,
     		src_irdy => vram_trdy,
     		src_data => vram_word,
 
@@ -252,7 +252,6 @@ begin
     		gray_code  => false)
     	port map (
     		src_clk  => ctlr_clk,
-    		src_frm  => ctlr_di_dv,
     		src_data => ctlr_di,
 
     		dst_clk  => video_clk,

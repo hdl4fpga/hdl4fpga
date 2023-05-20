@@ -899,16 +899,20 @@ begin
 			if rising_edge(ctlr_clk) then
 				if ctlr_inirdy='0' then
 					gnt_dv := dev_gnt;
-					state := idle;
+					state  := idle;
 				else
 					case state is
 					when active =>
 						if ctlr_do_dv(0)='1' then
-							state  := data;
+							state := data;
+						elsif ctlr_di_dv='1' then
+							state := data;
 						end if;
 					when data =>
 						if ctlr_do_dv(0)='0' then
 							gnt_dv := dev_gnt;
+						elsif ctlr_di_dv='0' then
+							state := data;
 						end if;
 					when idle =>
 						if dev_gnt/=(dev_gnt'range => '0') then

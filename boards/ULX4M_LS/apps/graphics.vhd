@@ -48,12 +48,12 @@ architecture graphics of ulx4m_ls is
 	constant video_param  : video_record := videoparam(
 		video_modes'VAL(setif(debug,
 			video_modes'POS(modedebug),
-			video_modes'POS(video_mode))));
+			video_modes'POS(video_mode))), bid_ulx4mls);
 
 	constant sdram_params : sdramparams_record := sdramparams(
 		sdram_speeds'VAL(setif(debug,
 			sdram_speeds'POS(sdram133MHz),
-			sdram_speeds'POS(sdram_speed))));
+			sdram_speeds'POS(sdram_speed))), bid_ulx4mls);
 	
 	constant sdram_tcp : real := 
 		real(sdram_params.pll.clki_div*sdram_params.pll.clkop_div)/
