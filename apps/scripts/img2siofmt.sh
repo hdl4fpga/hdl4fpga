@@ -1,5 +1,5 @@
 #!/bin/sh
-PIXEL="${PIXEL:-rgb32}"
+PIXEL="${PIXEL:-rgb24}"
 BADDR="${BADDR:-0}"
 BSIZE="${BSIZE:-1280}"
 PKTMD="${PKTMD:-PKT}"
