@@ -285,6 +285,8 @@ HDL4FPGA__dll_rx__def = $(LIB_HDL4FPGA)/dll_rx/def.dat
 HDL4FPGA__dll_rx = $(LIB_HDL4FPGA)/dll_rx/_primary.dat
 HDL4FPGA__display_tp__def = $(LIB_HDL4FPGA)/display_tp/def.dat
 HDL4FPGA__display_tp = $(LIB_HDL4FPGA)/display_tp/_primary.dat
+HDL4FPGA__display__def = $(LIB_HDL4FPGA)/display/def.dat
+HDL4FPGA__display = $(LIB_HDL4FPGA)/display/_primary.dat
 HDL4FPGA__dhcpcd__def = $(LIB_HDL4FPGA)/dhcpcd/def.dat
 HDL4FPGA__dhcpcd = $(LIB_HDL4FPGA)/dhcpcd/_primary.dat
 HDL4FPGA__dhcpc_offer__def = $(LIB_HDL4FPGA)/dhcpc_offer/def.dat
@@ -616,6 +618,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__dll_rx) \
     $(HDL4FPGA__display_tp__def) \
     $(HDL4FPGA__display_tp) \
+    $(HDL4FPGA__display__def) \
+    $(HDL4FPGA__display) \
     $(HDL4FPGA__dhcpcd__def) \
     $(HDL4FPGA__dhcpcd) \
     $(HDL4FPGA__dhcpc_offer__def) \
@@ -779,6 +783,7 @@ $(HDL4FPGA__arp_tx__def) : ../mii/arp_tx.vhd \
 $(HDL4FPGA__arpd) \
 $(HDL4FPGA__arpd__def) : ../mii/arpd.vhd \
 		$(HDL4FPGA__arp_tx) \
+		$(HDL4FPGA__sio_ram) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__arp_rx) \
@@ -976,6 +981,21 @@ $(HDL4FPGA__dhcpcd__def) : ../mii/dhcpcd.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/dhcpcd.vhd
+
+$(HDL4FPGA__display) \
+$(HDL4FPGA__display__def) : ../video/display.vhd \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__bcdfonts) \
+		$(HDL4FPGA__cp850x8x16x128to255) \
+		$(HDL4FPGA__cp850x8x16x0to127) \
+		$(HDL4FPGA__cp850x8x8x128to255) \
+		$(HDL4FPGA__cp850x8x8x0to127) \
+		$(HDL4FPGA__cgafonts) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../video/display.vhd
 
 $(HDL4FPGA__display_tp) \
 $(HDL4FPGA__display_tp__def) : ../apps/display_tp.vhd \
@@ -1250,9 +1270,8 @@ $(HDL4FPGA__fifo__def) : ../basic/fifo.vhd \
 
 $(HDL4FPGA__graphics) \
 $(HDL4FPGA__graphics__def) : ../video/graphics.vhd \
-		$(HDL4FPGA__desser) \
 		$(HDL4FPGA__fifo) \
-		$(HDL4FPGA__serdes) \
+		$(HDL4FPGA__serlzr) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \

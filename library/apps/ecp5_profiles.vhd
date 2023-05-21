@@ -120,7 +120,7 @@ package body ecp5_profiles is
 		(id => sdram500MHz,      pll => (clkos_div => 20, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => 1,             clkos3_div => 1), cl => "011", cwl => "001", wrl => "100"));
 
 	constant orangecrabvideo_tab : videoparams_vector := (
-		(id => modedebug,        pll => (clkos_div => 25, clkop_div => 2, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*5, clkos3_div => 16), gear => 2, pixel => rgb888, timing => pclk_debug),
+		(id => modedebug,        pll => (clkos_div => 25, clkop_div => 2, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*5, clkos3_div => 10), gear => 2, pixel => rgb888, timing => pclk_debug),
 		(id => mode600p24bpp,    pll => (clkos_div => 25, clkop_div => 2, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*2, clkos3_div => 10), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60),
 		(id => mode720p24bpp,    pll => (clkos_div => 47, clkop_div => 2, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb888, timing => pclk75_00m1280x720at60),
 		(id => mode1080p24bpp30, pll => (clkos_div => 47, clkop_div => 2, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb888, timing => pclk150_00m1920x1080at60),
