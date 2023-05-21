@@ -41,8 +41,8 @@ architecture graphics of orangecrab is
 
 	---------------------------------------
 	-- Set your profile here             --
-	constant sdram_speed  : sdram_speeds := sdram400MHz;
-	constant video_mode   : video_modes  := mode1080p24bpp30;
+	constant sdram_speed  : sdram_speeds := sdram300MHz;
+	constant video_mode   : video_modes  := mode600p24bpp;
 	constant io_link      : io_comms     := io_hdlc;
 	constant baudrate     : natural      := 3000000;
 	-- Set your UART pinout here         --
