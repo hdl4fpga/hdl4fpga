@@ -70,16 +70,21 @@ architecture def of hdlc_link is
 	signal dummy_txd  : std_logic_vector(uart_rxd'range);
 	alias uart_clk    : std_logic is sio_clk;
 
+	constant uart_baudrate : natural := setif(baudrate=0,
+		setif(
+			uart_freq >= 32.0e6, 3000000, setif(
+			uart_freq >= 25.0e6, 2000000, 115200)),
+		baudrate);
 begin
 
 	assert FALSE
 	report CR & 
-		"BAUDRATE : " & " " & integer'image(baudrate)
+		"BAUDRATE : " & " " & natural'image(uart_baudrate)
 	severity NOTE;
 
 	uartrx_e : entity hdl4fpga.uart_rx
 	generic map (
-		baudrate => baudrate,
+		baudrate => uart_baudrate,
 		clk_rate => uart_freq)
 	port map (
 		uart_rxc  => uart_clk,
@@ -89,7 +94,7 @@ begin
 
 	uarttx_e : entity hdl4fpga.uart_tx
 	generic map (
-		baudrate => baudrate,
+		baudrate => uart_baudrate,
 		clk_rate => uart_freq)
 	port map (
 		uart_txc  => uart_clk,

@@ -41,9 +41,13 @@ architecture graphics of orangecrab is
 
 	---------------------------------------
 	-- Set your profile here             --
-	constant io_link      : io_comms     := io_hdlc;
 	constant sdram_speed  : sdram_speeds := sdram400MHz;
 	constant video_mode   : video_modes  := mode1080p24bpp30;
+	constant io_link      : io_comms     := io_hdlc;
+	constant baudrate     : natural      := 1000000;
+	-- Set your UART pinout here         --
+    alias uart_rxd : std_logic is gpio(0); -- input  data received by the FPGA
+    alias uart_txd : std_logic is gpio(1); -- output data sent by the FPGA
 	---------------------------------------
 
 	constant video_params  : video_record := videoparam(
@@ -130,9 +134,6 @@ architecture graphics of orangecrab is
 
 	signal video_pixel   : std_logic_vector(0 to 32-1);
 
-
-	constant hdplx       : std_logic := setif(debug, '0', '1');
-
 	signal tp            : std_logic_vector(1 to 32);
 	signal tp_phy        : std_logic_vector(1 to 32);
 	signal sdrphy_locked : std_logic;
@@ -140,9 +141,6 @@ architecture graphics of orangecrab is
 	signal sdrphy_rst    : std_logic;
 	signal ms_pause      : std_logic;
 	signal ddrdel        : std_logic;
-
-    alias uart_rxd : std_logic is gpio(0);
-    alias uart_txd : std_logic is gpio(1);
 
 begin
 
@@ -177,10 +175,6 @@ begin
 		constant uart_freq : real := 
 			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk48MHz_freq/
 			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
-		constant baudrate : natural := setif(
-			uart_freq >= 32.0e6, 3000000, setif(
-			uart_freq >= 25.0e6, 2000000,
-								 115200));
 		signal uart_clk : std_logic;
 	begin
 		nodebug_g : if not debug generate
@@ -196,8 +190,8 @@ begin
 		hdlc_e : entity hdl4fpga.hdlc_link
 		generic map (
 			uart_freq => uart_freq,
-			baudrate => baudrate,
-			mem_size => mem_size)
+			baudrate  => baudrate,
+			mem_size  => mem_size)
 		port map (
 			sio_clk   => uart_clk,
 			si_frm    => si_frm,

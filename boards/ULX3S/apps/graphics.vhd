@@ -41,8 +41,9 @@ architecture graphics of ulx3s is
 	--------------------------------------
 	--     Set your profile here        --
 	constant io_link      : io_comms     := io_ipoe;
-	constant sdram_speed  : sdram_speeds := sdram133MHz;
-	constant video_mode   : video_modes  := mode600p24bpp;
+	constant sdram_speed  : sdram_speeds := sdram250MHz; 
+	constant video_mode   : video_modes  := mode720p24bpp; -- mode1920p24bpp30;
+	constant baudrate     : natural      := 3000000;
 	--------------------------------------
 
 	constant video_params  : video_record := videoparam(
@@ -154,10 +155,6 @@ begin
 		constant uart_freq : real := 
 			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk25mhz_freq/
 			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
-		constant baudrate : natural := setif(
-			uart_freq >= 32.0e6, 3000000, setif(
-			uart_freq >= 25.0e6, 2000000,
-								 115200));
 		signal uart_clk : std_logic;
 	begin
 		nodebug_g : if not debug generate
@@ -376,7 +373,7 @@ begin
 		word_size  => word_size,
 		byte_size  => byte_size,
 		wr_fifo    => false,
-		rd_fifo    => true,
+		rd_fifo    => false,
 		bypass     => false)
 	port map (
 		sclk       => ctlr_clk,
