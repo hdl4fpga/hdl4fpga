@@ -50,31 +50,12 @@ add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/video_hzon
 add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/video_vton
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/video_pixel
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_trdy
-add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(0) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(1) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(2) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(3) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(4) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(5) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(6) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(7) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(8) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(9) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(10) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(11) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(12) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(13) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(14) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(15) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(16) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(17) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(18) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(19) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(20) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(21) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(22) -radix hexadecimal} {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(23) -radix hexadecimal}} -subitemconfig {/testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(0) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(1) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(2) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(3) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(4) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(5) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(6) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(7) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(8) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(9) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(10) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(11) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(12) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(13) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(14) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(15) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(16) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(17) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(18) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(19) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(20) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(21) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(22) {-height 29 -radix hexadecimal} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word(23) {-height 29 -radix hexadecimal}} /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_word
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_e/dst_clk
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_e/dst_frm
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_e/dst_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_e/dst_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_e/wr_cntr
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_e/rd_cntr
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_clk
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_di_dv
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_di
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/deslzr_e/dst_data
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/dmavideo_req
-add wave -noupdate /testbench/du_e/graphics_e/dmavideo_rdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_di
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_dv
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_clk
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do
-add wave -noupdate -expand /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -116,8 +97,8 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {68021600000 fs} 0} {{Cursor 2} {52771992652 fs} 0} {{Cursor 3} {180829124298 fs} 0} {{Cursor 4} {48669031539 fs} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {60343791281 fs} 0} {{Cursor 2} {67820013210 fs} 0} {{Cursor 3} {180829124298 fs} 0} {{Cursor 4} {50343130779 fs} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 217
 configure wave -valuecolwidth 149
 configure wave -justifyvalue left
@@ -132,4 +113,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {67766366087 fs} {68340584839 fs}
+WaveRestoreZoom {0 fs} {73500 ns}

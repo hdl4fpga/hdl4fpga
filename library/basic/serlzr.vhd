@@ -31,7 +31,7 @@ use hdl4fpga.base.all;
 entity serlzr is
 	generic (
 		fifo_mode : boolean := false;
-		lsdfirst  : boolean := false);
+		lsdfirst  : boolean := true);
 	port (
 		src_clk   : in  std_logic;
 		src_frm   : in  std_logic := '1';

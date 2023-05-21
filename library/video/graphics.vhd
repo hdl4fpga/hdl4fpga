@@ -72,13 +72,6 @@ architecture def of graphics is
 
 begin
 
-	-- assert ctlr_di'length mod video_pixel'length=0 or video_pixel'length mod ctlr_di'length=0
-	-- report
-		-- "video_pixel " & natural'image(video_pixel'length) & 
-		-- " is not multiple of " & "ctlr_di " & natural'image(ctlr_di'length) &
-		-- " or viceversa"
-	-- severity FAILURE;
-
 	dma_b : block
 		signal trdy : std_logic;
 		signal treq : std_logic;
@@ -204,6 +197,7 @@ begin
 	srcltdst_g : if ctlr_di'length < video_pixel'length generate
 		signal vram_trdy : std_logic;
 		signal vram_word : std_logic_vector(video_pixel'range);
+		signal xxx : std_logic_vector(video_pixel'range);
 	begin
     	deslzr_e : entity hdl4fpga.serlzr
     	generic map (
@@ -235,7 +229,8 @@ begin
     		dst_clk  => video_clk,
     		dst_frm  => video_frm,
     		dst_trdy => video_on,
-    		dst_data => video_pixel);
+    		dst_data => xxx);
+		video_pixel <= xxx;
 	end generate;
 
 	srcgtdst_g : if ctlr_di'length > video_pixel'length generate

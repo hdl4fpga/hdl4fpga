@@ -50,7 +50,7 @@ int torgb24 (char *pixels, const char *rgb8, int n)
 			pixel |= ((rgb8[3*i+j]) & 0xff);
 		}
 
-		for (int j = 0; j < 2; j++) {
+		for (int j = 0; j < 3; j++) {
 			pixels[3*i+2-j] = (pixel & 0xff);
 			pixel >>= 8;
 			m++;

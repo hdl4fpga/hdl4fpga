@@ -128,6 +128,7 @@ begin
 	chn0to2_g : for i in 0 to 3-1 generate
 		serlzr_e : entity hdl4fpga.serlzr
 		generic map (
+			lsdfirst  => true,
 			fifo_mode => false)
 		port map (
 			src_clk  => clk,
