@@ -131,10 +131,8 @@ begin
 		signal level  : unsigned(0 to unsigned_num_bits(ppage_size-1));
 	begin
 		process (video_clk)
-			constant dataperpixel : natural := video_pixel'length/ctlr_di'length;
-			constant pixelperdata : natural := setif(ctlr_di'length<video_pixel'length, 1, ctlr_di'length/video_pixel'length);
-			constant dpage_size   : natural := setif(dataperpixel/=0, ppage_size*dataperpixel,  ppage_size/pixelperdata);
-			constant dslice_size  : natural := setif(dataperpixel/=0, pslice_size*dataperpixel, pslice_size/pixelperdata);
+			constant dpage_size   : natural := ( ppage_size*video_pixel'length+ctlr_di'length-1)/ctlr_di'length;
+			constant dslice_size  : natural := (pslice_size*video_pixel'length+ctlr_di'length-1)/ctlr_di'length;
 	
 			type states is (s_frm, s_vtpoll, s_hzpoll, s_line);
 			variable state : states;
@@ -197,7 +195,6 @@ begin
 	srcltdst_g : if ctlr_di'length < video_pixel'length generate
 		signal vram_trdy : std_logic;
 		signal vram_word : std_logic_vector(video_pixel'range);
-		signal xxx : std_logic_vector(video_pixel'range);
 	begin
     	deslzr_e : entity hdl4fpga.serlzr
     	generic map (
@@ -229,8 +226,7 @@ begin
     		dst_clk  => video_clk,
     		dst_frm  => video_frm,
     		dst_trdy => video_on,
-    		dst_data => xxx);
-		video_pixel <= xxx;
+    		dst_data => video_pixel);
 	end generate;
 
 	srcgtdst_g : if ctlr_di'length > video_pixel'length generate
