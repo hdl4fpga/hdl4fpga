@@ -255,7 +255,7 @@ begin
 		signal debug_dmaio_rdy    : std_logic;
 
 		constant word_bits    : natural := unsigned_num_bits(ctlr_di'length/byte_size)-1;
-		constant blword_bits : natural := word_bits+unsigned_num_bits(setif(burst_length=0, gear, burst_length)/gear)-1;
+		constant blword_bits  : natural := word_bits+unsigned_num_bits(setif(burst_length=0, gear, burst_length)/gear)-1;
 
 		signal status         : std_logic_vector(0 to 8-1);
 		alias  status_rw      : std_logic is status(status'right);
@@ -905,14 +905,14 @@ begin
 					when active =>
 						if ctlr_do_dv(0)='1' then
 							state := data;
-						-- elsif ctlr_di_dv='1' then
-							-- state := data;
+						elsif ctlr_di_dv='1' then
+							state := data;
 						end if;
 					when data =>
 						if ctlr_do_dv(0)='0' then
 							gnt_dv := dev_gnt;
-						-- elsif ctlr_di_dv='0' then
-							-- state := data;
+						elsif ctlr_di_dv='0' then
+							state := data;
 						end if;
 					when idle =>
 						if dev_gnt/=(dev_gnt'range => '0') then
