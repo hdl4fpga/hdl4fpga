@@ -18,15 +18,16 @@ add wave -noupdate -expand -group ddram -radix hexadecimal -childformat {{/testb
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/sclk
 add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/eclk
+add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/phy_locked
 add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/sys_dmi
 add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/sys_dqt
 add wave -noupdate -expand -group sdrphy_e -radix hexadecimal /testbench/du_e/sdrphy_e/sys_dqi
-add wave -noupdate -expand -group sdrphy_e -radix hexadecimal /testbench/du_e/sdrphy_e/sys_dqo
 add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/sys_dqsi
 add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/sys_dqst
 add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/sys_dqv
 add wave -noupdate -expand -group sdrphy_e /testbench/du_e/sdrphy_e/sys_sti
 add wave -noupdate -expand -group sdrphy_e -radix hexadecimal /testbench/du_e/sdrphy_e/sys_sto
+add wave -noupdate -expand -group sdrphy_e -radix hexadecimal /testbench/du_e/sdrphy_e/sys_dqo
 add wave -noupdate -expand -group sdrphy_e -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrphy_i/burstdet
 add wave -noupdate -expand -group sdrphy_e -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrphy_i/datavalid
 add wave -noupdate -expand -group sdrphy_e -expand -group byte_g0 -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrphy_i/dqi
@@ -44,7 +45,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {200197208040 fs} 0} {{Cursor 2} {1545851950 fs} 0}
+WaveRestoreCursors {{Cursor 1} {40101339668 fs} 0} {{Cursor 2} {34740724000 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 214
 configure wave -valuecolwidth 99
@@ -60,4 +61,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {180075 ns} {211575 ns}
+WaveRestoreZoom {0 fs} {52605 ns}

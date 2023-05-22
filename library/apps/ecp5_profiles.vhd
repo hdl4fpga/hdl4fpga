@@ -112,13 +112,8 @@ package body ecp5_profiles is
 		(id => mode1440p24bpp30, pll => (clkos_div => 20, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*1, clkos3_div => 14), gear => 7, pixel => rgb888, timing => pclk115_71m2560x1440at60));
 
 	constant orangecrabsdram_tab : sdramparams_vector := (
-		(id => sdram133MHz,      pll => (clkos_div => 25, clkop_div => 3, clkfb_div => 1, clki_div => 3, clkos2_div => 1,             clkos3_div => 0), cl => "010", cwl => "---", wrl => "---"),
-		(id => sdram200MHz,      pll => (clkos_div => 16, clkop_div => 2, clkfb_div => 1, clki_div => 3, clkos2_div => 1,             clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
-		(id => sdram300MHz,      pll => (clkos_div => 38, clkop_div => 2, clkfb_div => 1, clki_div => 3, clkos2_div => 1,             clkos3_div => 0), cl => "010", cwl => "000", wrl => "010"),
-		(id => sdram400MHz,      pll => (clkos_div => 25, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => 1,             clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
-		(id => sdram425MHz,      pll => (clkos_div => 17, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => 1,             clkos3_div => 1), cl => "011", cwl => "001", wrl => "011"),
-		(id => sdram450MHz,      pll => (clkos_div => 18, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => 1,             clkos3_div => 1), cl => "011", cwl => "001", wrl => "011"),
-		(id => sdram500MHz,      pll => (clkos_div => 20, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => 1,             clkos3_div => 1), cl => "011", cwl => "001", wrl => "100"));
+		(id => sdram300MHz,      pll => (clkos_div => 38, clkop_div => 2, clkfb_div => 1, clki_div => 3, clkos2_div => 1,             clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
+		(id => sdram400MHz,      pll => (clkos_div => 25, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => 1,             clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"));
 
 	constant orangecrabvideo_tab : videoparams_vector := (
 		(id => modedebug,        pll => (clkos_div => 25, clkop_div => 2, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*5, clkos3_div => 10), gear => 2, pixel => rgb888, timing => pclk_debug),

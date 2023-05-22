@@ -27,7 +27,7 @@ use hdl4fpga.ipoepkg.all;
 
 architecture orangecrab_graphics of testbench is
 
-	constant debug          : boolean := false;
+	constant debug          : boolean := true;
 
 	constant bank_bits      : natural := 3;
 	constant addr_bits      : natural := 16;
@@ -128,7 +128,7 @@ architecture orangecrab_graphics of testbench is
 
 begin
 
-	rst        <= '1', '0' after 17.5 us when debug else '1', '0' after 100 us;
+	rst        <= '1', '0' after 40 us when debug else '1', '0' after 100 us;
 	clk_48MHz  <= not clk_48MHz after (1 sec/ 48e6)/2;
 	uart_clk   <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
 

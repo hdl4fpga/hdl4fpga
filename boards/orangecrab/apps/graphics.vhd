@@ -57,7 +57,7 @@ architecture graphics of orangecrab is
 
 	constant sdram_params : sdramparams_record := sdramparams(
 		sdram_speeds'VAL(setif(debug,
-			sdram_speeds'POS(sdram400Mhz),
+			sdram_speeds'POS(sdram300Mhz),
 			sdram_speeds'POS(sdram_speed))), clk48MHz_freq);
 	
 	constant sdram_tcp    : real := 
@@ -309,7 +309,8 @@ begin
 	process (clk_48MHz)
 	begin
 		if rising_edge(clk_48MHz) then
-			rgb_led0_g <= sdrphy_locked;
+			rgb_led <= (others => '1');
+			rgb_led0_g <= not sdrphy_locked;
 		end if;
 	end process;
 
@@ -440,11 +441,11 @@ begin
 
 	-- SDRAM-clk-divided-by-4 monitor
 	process (sclk)
-		variable q0 : std_logic;
+		variable q : std_logic;
 	begin
 		if rising_edge(sclk) then
-			gpio(2)  <= q0;
-			q0       := not q0;
+			gpio(2) <= q;
+			q := not q;
 		end if;
 	end process;
 

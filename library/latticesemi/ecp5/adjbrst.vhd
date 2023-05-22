@@ -90,14 +90,14 @@ begin
 								state    := s_step;
 							end if;
 						else
-							if (burstdet and datavalid)='1' then
-								input <= '1';
-							end if;
 							wlat   := wlat + 1;
 							locked <= '0';
 						end if;
 					else
 						wlat := (others => '0');
+					end if;
+					if (burstdet and datavalid)='1' then
+						input <= '1';
 					end if;
 				end case;
 			else
