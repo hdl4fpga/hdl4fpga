@@ -46,8 +46,8 @@ architecture graphics of orangecrab is
 	constant io_link      : io_comms     := io_hdlc;
 	constant baudrate     : natural      := 3000000;
 	-- Set your UART pinout here         --
-    alias uart_rxd : std_logic is gpio(0); -- input  data received by the FPGA
-    alias uart_txd : std_logic is gpio(1); -- output data sent by the FPGA
+	alias uart_rxd : std_logic is gpio(0); -- input  data received by the FPGA
+	alias uart_txd : std_logic is gpio(1); -- output data sent by the FPGA
 	---------------------------------------
 
 	constant video_params  : video_record := videoparam(
