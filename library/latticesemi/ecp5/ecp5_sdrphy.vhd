@@ -37,9 +37,11 @@ entity ecp5_sdrphy is
 		debug     : boolean := false;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
-		gear      : natural := 2;
 		word_size : natural := 16;
 		byte_size : natural := 8;
+		gear      : natural := 2;
+
+		ba_latency : natural := 0;
 		rd_fifo   : boolean := true;
 		wr_fifo   : boolean := true;
 		bypass    : boolean := false;
@@ -278,11 +280,12 @@ begin
 
 	sdrbaphy_i : entity hdl4fpga.ecp5_sdrbaphy
 	generic map (
-		gear      => (gear+1)/2,
 		bank_size => bank_size,
-		addr_size => addr_size)
+		addr_size => addr_size,
+		gear      => (gear+1)/2,
+		ba_latency => ba_latency)
 	port map (
-		rst     => rst,
+		grst    => rst,
 		eclk    => eclk,
 		sclk    => sclk,
           

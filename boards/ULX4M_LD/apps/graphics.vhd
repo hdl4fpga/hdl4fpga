@@ -359,11 +359,12 @@ begin
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
 		debug      => debug,
-		gear       => sdram_gear,
 		bank_size  => ddram_ba'length,
 		addr_size  => ddram_a'length,
 		word_size  => word_size,
 		byte_size  => byte_size,
+		gear       => sdram_gear,
+		ba_latency => 1,
 		rd_fifo    => false,
 		wr_fifo    => false,
 		bypass     => false,

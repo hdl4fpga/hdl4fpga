@@ -40,14 +40,14 @@ entity xc_sdrphy is
 
 		device      : fpga_devices;
 		ba_latency  : natural := 0;
-		loopback    : boolean := false;
-		dqs_highz   : boolean := true;
-		bypass      : boolean := true;
-		bufio       : boolean := false;
 		rd_fifo     : boolean := true;
 		rd_align    : boolean := true;
 		wr_fifo     : boolean := true;
-		taps        : natural := 0);
+		bypass      : boolean := true;
+		taps        : natural := 0;
+		loopback    : boolean := false;
+		dqs_highz   : boolean := true;
+		bufio       : boolean := false);
 		-- dqs_delay  : time_vector := (0 to 0 => 0 ns);
 		-- dqi_delay  : time_vector := (0 to 0 => 0 ns);
 	port (
@@ -336,23 +336,23 @@ begin
 
 	sdrbaphy_i : entity hdl4fpga.xc_sdrbaphy
 	generic map (
-		bank_size => bank_size,
-		addr_size => addr_size,
-		gear      => (gear+1)/2,
-		device    => device,
+		bank_size  => bank_size,
+		addr_size  => addr_size,
+		gear       => (gear+1)/2,
+		device     => device,
 		ba_latency => ba_latency)
 	port map (
-		clk     => clk,
-	 	grst    => rst,
-		sys_rst => sys_rst,
-		sys_cs  => sys_cs,
-		sys_cke => sys_cke,
-		sys_b   => ddrphy_b,
-		sys_a   => ddrphy_a,
-		sys_ras => sys_ras,
-		sys_cas => sys_cas,
-		sys_we  => sys_we,
-		sys_odt => sys_odt,
+		clk       => clk,
+	 	grst      => rst,
+		sys_rst   => sys_rst,
+		sys_cs    => sys_cs,
+		sys_cke   => sys_cke,
+		sys_b     => ddrphy_b,
+		sys_a     => ddrphy_a,
+		sys_ras   => sys_ras,
+		sys_cas   => sys_cas,
+		sys_we    => sys_we,
+		sys_odt   => sys_odt,
 
 		sdram_rst => sdram_rst,
 		sdram_cke => sdram_cke,
