@@ -44,7 +44,7 @@ architecture graphics of orangecrab is
 	constant sdram_speed  : sdram_speeds := sdram400MHz;
 	constant video_mode   : video_modes  := mode600p24bpp;
 	constant io_link      : io_comms     := io_hdlc;
-	constant baudrate     : natural      := setif(debug, 3e6, 115200);
+	constant baudrate     : natural      := 3e6; --setif(debug, 3e6, 115200);
 	-- Set your UART pinout here         --
 	alias uart_rxd : std_logic is gpio(0); -- input  data received by the FPGA
 	alias uart_txd : std_logic is gpio(1); -- output data sent by the FPGA
@@ -61,9 +61,10 @@ architecture graphics of orangecrab is
 			sdram_speeds'POS(sdram_speed))), clk48MHz_freq);
 	
 	constant sdram_tcp    : real := 
-		real(sdram_params.pll.clki_div)/
+		real(sdram_params.pll.clki_divs*dram_params.pll.clki_div)/
 		(real(sdram_params.pll.clkos_div*sdram_params.pll.clkfb_div)*clk48MHz_freq);
 
+		signal xxx : real := sdram_tcp;
 	constant bank_size   : natural := ddram_ba'length;
 	constant addr_size   : natural := ddram_a'length;
 	constant word_size   : natural := ddram_dq'length;
