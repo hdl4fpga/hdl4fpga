@@ -44,7 +44,7 @@ architecture graphics of orangecrab is
 	constant sdram_speed  : sdram_speeds := sdram400MHz;
 	constant video_mode   : video_modes  := mode600p24bpp;
 	constant io_link      : io_comms     := io_hdlc;
-	constant baudrate     : natural      := 3000000;
+	constant baudrate     : natural      := setif(debug, 3000000, 115200);
 	-- Set your UART pinout here         --
 	alias uart_rxd : std_logic is gpio(0); -- input  data received by the FPGA
 	alias uart_txd : std_logic is gpio(1); -- output data sent by the FPGA
@@ -57,7 +57,7 @@ architecture graphics of orangecrab is
 
 	constant sdram_params : sdramparams_record := sdramparams(
 		sdram_speeds'VAL(setif(debug,
-			sdram_speeds'POS(sdram300Mhz),
+			sdram_speeds'POS(sdram400Mhz),
 			sdram_speeds'POS(sdram_speed))), clk48MHz_freq);
 	
 	constant sdram_tcp    : real := 
@@ -354,56 +354,56 @@ begin
 
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
-		debug      => debug,
-		bank_size  => ddram_ba'length,
-		addr_size  => ddram_a'length,
-		word_size  => word_size,
-		byte_size  => byte_size,
-		gear       => sdram_gear,
-		ba_latency => 1,
-		rd_fifo    => false,
-		wr_fifo    => false,
-		bypass     => false,
-		taps       => natural(ceil((sdram_tcp-25.0e-12)/25.0e-12))) -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
+		debug        => debug,
+		bank_size    => ddram_ba'length,
+		addr_size    => ddram_a'length,
+		word_size    => word_size,
+		byte_size    => byte_size,
+		gear         => sdram_gear,
+		ba_latency   => 1,
+		rd_fifo      => false,
+		wr_fifo      => false,
+		bypass       => false,
+		taps         => natural(ceil((sdram_tcp-25.0e-12)/25.0e-12))) -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
 	port map (
 		-- tpin       => btn(1),
 
-		rst        => sdrphy_rst,
-		sclk       => sclk,
-		eclk       => eclk,
-		ms_pause   => ms_pause,
-		ddrdel     => ddrdel,
+		rst          => sdrphy_rst,
+		sclk         => sclk,
+		eclk         => eclk,
+		ms_pause     => ms_pause,
+		ddrdel       => ddrdel,
 
-		phy_frm    => ctlrphy_frm,
-		phy_trdy   => ctlrphy_trdy,
-		phy_cmd    => ctlrphy_cmd,
-		phy_rw     => ctlrphy_rw,
-		phy_ini    => ctlrphy_ini,
-		phy_locked => sdrphy_locked,
-		phy_wlreq  => ctlrphy_wlreq,
-		phy_wlrdy  => ctlrphy_wlrdy,
+		phy_frm      => ctlrphy_frm,
+		phy_trdy     => ctlrphy_trdy,
+		phy_cmd      => ctlrphy_cmd,
+		phy_rw       => ctlrphy_rw,
+		phy_ini      => ctlrphy_ini,
+		phy_locked   => sdrphy_locked,
+		phy_wlreq    => ctlrphy_wlreq,
+		phy_wlrdy    => ctlrphy_wlrdy,
 
-		phy_rlreq  => ctlrphy_rlreq,
-		phy_rlrdy  => ctlrphy_rlrdy,
+		phy_rlreq    => ctlrphy_rlreq,
+		phy_rlrdy    => ctlrphy_rlrdy,
 
-		sys_rst    => ctlrphy_rst,
-		sys_cs     => ctlrphy_cs,
-		sys_cke    => ctlrphy_cke,
-		sys_ras    => ctlrphy_ras,
-		sys_cas    => ctlrphy_cas,
-		sys_we     => ctlrphy_we,
-		sys_odt    => ctlrphy_odt,
-		sys_b      => ctlrphy_b,
-		sys_a      => ctlrphy_a,
-		sys_dqsi   => ctlrphy_dqso,
-		sys_dqst   => ctlrphy_dqst,
-		sys_dmi    => ctlrphy_dmo,
-		sys_dqv    => ctlrphy_dqv,
-		sys_dqi    => ctlrphy_dqo,
-		sys_dqt    => ctlrphy_dqt,
-		sys_dqo    => ctlrphy_dqi,
-		sys_sti    => ctlrphy_sto,
-		sys_sto    => ctlrphy_sti,
+		sys_rst      => ctlrphy_rst,
+		sys_cs       => ctlrphy_cs,
+		sys_cke      => ctlrphy_cke,
+		sys_ras      => ctlrphy_ras,
+		sys_cas      => ctlrphy_cas,
+		sys_we       => ctlrphy_we,
+		sys_odt      => ctlrphy_odt,
+		sys_b        => ctlrphy_b,
+		sys_a        => ctlrphy_a,
+		sys_dqsi     => ctlrphy_dqso,
+		sys_dqst     => ctlrphy_dqst,
+		sys_dmi      => ctlrphy_dmo,
+		sys_dqv      => ctlrphy_dqv,
+		sys_dqi      => ctlrphy_dqo,
+		sys_dqt      => ctlrphy_dqt,
+		sys_dqo      => ctlrphy_dqi,
+		sys_sti      => ctlrphy_sto,
+		sys_sto      => ctlrphy_sti,
 
 		sdram_rst    => ddram_reset_n,
 		sdram_clk    => ddram_clk,

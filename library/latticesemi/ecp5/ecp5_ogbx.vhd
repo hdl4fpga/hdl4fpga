@@ -36,7 +36,7 @@ entity ecp5_ogbx is
 		rst       : in  std_logic := '0';
 		sclk      : in  std_logic;
 		eclk      : in std_logic := '0';
-		dqsw      : in std_logic := '0';
+		dqsw270   : in std_logic := '0';
 		t         : in  std_logic_vector(0 to gear*size-1) := (others => '0');
 		tq        : out std_logic_vector(0 to size-1);
 		d         : in  std_logic_vector(0 to gear*size-1);
@@ -97,7 +97,7 @@ begin
     			rst  => rst,
     			sclk => sclk,
     			eclk => eclk,
-    			dqsw270 => dqsw,
+    			dqsw270 => dqsw270,
     			t0   => ti(setif(interlace, gear*i+0, 0*size+i)),
     			t1   => ti(setif(interlace, gear*i+2, 2*size+i)),
     			q    => tq(i));
@@ -107,7 +107,7 @@ begin
     			rst  => rst,
     			sclk => sclk,
     			eclk => eclk,
-    			dqsw270 => dqsw,
+    			dqsw270 => dqsw270,
     			d0   => di(setif(interlace, gear*i+0, 0*size+i)),
     			d1   => di(setif(interlace, gear*i+1, 1*size+i)),
     			d2   => di(setif(interlace, gear*i+2, 2*size+i)),

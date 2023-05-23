@@ -45,7 +45,7 @@ entity ecp5_sdrampll is
 		ctlr_rst     : out std_logic;
 		sclk         : buffer std_logic;
 		eclk         : buffer std_logic;
-		phy_rst      : out std_logic;
+		phy_rst      : buffer std_logic;
 		phy_mspause  : out std_logic;
 		phy_ddrdel   : out std_logic;
 		sdrampll_lck : buffer std_logic);
@@ -159,9 +159,12 @@ begin
 		signal pll_lock : std_logic;
 		signal update   : std_logic;
 		signal ready    : std_logic;
-		signal eclko    : std_logic;
-		signal cdivx    : std_logic;
-		signal ddr_rst  : std_logic;
+		-- signal ddr_rst  : std_logic;
+		-- signal eclko    : std_logic;
+		-- signal cdivx    : std_logic;
+		alias ddr_rst is phy_rst;
+		alias eclko is eclk;
+		alias cdivx is sclk;
 
 		attribute FREQUENCY_PIN_ECLKO : string;
 		attribute FREQUENCY_PIN_ECLKO of  eclksyncb_i : label is ftoa(sdram_freq/1.0e6, 10);
@@ -210,37 +213,26 @@ begin
 			alignwd => '0',
 			clki    => eclko,
 			cdivx   => cdivx);
-		eclk <= eclko;
-		sclk <= transport cdivx after natural(1.0e12*(3.0/4.0)/sdram_freq)*1 ps;
+		-- eclk <= eclko;
+		-- sclk <= transport cdivx after natural(1.0e12*(3.0/4.0)/sdram_freq)*1 ps;
 
-		-- eclk <= transport eclko after natural(sdram_tcp*1.0e12*(3.0/4.0))*1 ps;
-		-- sclk <= cdivx;
-	
+
 		ddrdll_i : ddrdlla
 		port map (
 			rst      => dll_rst,
-			clk      => eclk,
+			clk      => eclko,
 			freeze   => freeze,
 			uddcntln => uddcntln,
 			ddrdel   => phy_ddrdel,
 			lock     => dll_lock);
 
-		process (ddr_rst, sclk)
-		begin
-			if ddr_rst='1' then
-				phy_rst <= '1';
-			elsif rising_edge(sclk) then
-				phy_rst <= '0';
-			end if;
-		end process;
-
-		process (memsync_rst, ready, sclk)
+		process (memsync_rst, ready, cdivx)
 		begin
 			if memsync_rst='1' then
 				ctlr_rst <= '1';
 			elsif ready='0' then
 				ctlr_rst <= '1';
-			elsif rising_edge(sclk) then
+			elsif rising_edge(cdivx) then
 				ctlr_rst <= memsync_rst;
 			end if;
 		end process;

@@ -636,14 +636,14 @@ begin
 			generic map (
 				gear => gear)
 			port map (
-				rst   => rst,
-				sclk  => sclk,
-				eclk  => eclk,
-				dqsw  => dqsw270,
-				t     => dqt,
-				tq(0) => sdram_dqt(i),
-				d     => di,
-				q(0)  => sdram_dqo(i));
+				rst     => rst,
+				sclk    => sclk,
+				eclk    => eclk,
+				dqsw270 => dqsw270,
+				t       => dqt,
+				tq(0)   => sdram_dqt(i),
+				d       => di,
+				q(0)    => sdram_dqo(i));
 
 			sdram_dq(i) <= sdram_dqo(i) when sdram_dqt(i)='0' else 'Z';
 		end generate;
@@ -655,14 +655,14 @@ begin
 			generic map (
 				gear => gear)
 			port map (
-				rst   => rst,
-				sclk  => sclk,
-				eclk  => eclk,
-				dqsw  => dqsw270,
-				t     => sys_dmt,
-				tq(0) => sdram_dmt,
-				d     => dmi,
-				q(0)  => sdram_dmo);
+				rst     => rst,
+				sclk    => sclk,
+				eclk    => eclk,
+				dqsw270 => dqsw270,
+				t       => sys_dmt,
+				tq(0)   => sdram_dmt,
+				d       => dmi,
+				q(0)    => sdram_dmo);
 
 			sdram_dm <= sdram_dmo when sdram_dmt='0' else 'Z';
 
