@@ -61,7 +61,7 @@ architecture graphics of orangecrab is
 			sdram_speeds'POS(sdram_speed))), clk48MHz_freq);
 	
 	constant sdram_tcp    : real := 
-		real(sdram_params.pll.clki_divs*dram_params.pll.clki_div)/
+		real(sdram_params.pll.clki_div*sdram_params.pll.clkop_div)/
 		(real(sdram_params.pll.clkos_div*sdram_params.pll.clkfb_div)*clk48MHz_freq);
 
 		signal xxx : real := sdram_tcp;

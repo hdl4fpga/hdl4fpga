@@ -57,7 +57,7 @@ architecture graphics of ulx4m_ld is
 			sdram_speeds'POS(sdram_speed))), clk25mhz_freq);
 	
 	constant sdram_tcp    : real := 
-		real(sdram_params.pll.clki_div)/
+		real(sdram_params.pll.clki_div*sdram_params.pll.clkop_div)/
 		(real(sdram_params.pll.clkos_div*sdram_params.pll.clkfb_div)*clk25mhz_freq);
 
 	constant bank_size   : natural := ddram_ba'length;
