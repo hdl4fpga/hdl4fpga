@@ -27,7 +27,7 @@ use hdl4fpga.ipoepkg.all;
 
 architecture orangecrab_graphics of testbench is
 
-	constant debug          : boolean := true;
+	constant debug          : boolean := false;
 
 	constant bank_bits      : natural := 3;
 	constant addr_bits      : natural := 16;
@@ -130,13 +130,13 @@ begin
 
 	rst        <= '1', '0' after 40 us when debug else '1', '0' after 100 us;
 	clk_48MHz  <= not clk_48MHz after (1 sec/ 48e6)/2;
-	uart_clk   <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
+	uart_clk   <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 1 sec/48.0e6/2.0;
 
 	hdlctb_e : entity work.hdlc_tb
 	generic map (
 		debug     => debug,
 		baudrate  =>    3e6,
-		uart_freq => 40.0e6,
+		uart_freq => 48.0e6,
 		payload_segments => (0 => snd_data'length, 1 => req_data'length),
 		payload   => snd_data & req_data)
 	port map (

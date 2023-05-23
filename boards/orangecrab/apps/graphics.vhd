@@ -44,7 +44,7 @@ architecture graphics of orangecrab is
 	constant sdram_speed  : sdram_speeds := sdram400MHz;
 	constant video_mode   : video_modes  := mode600p24bpp;
 	constant io_link      : io_comms     := io_hdlc;
-	constant baudrate     : natural      := setif(debug, 3000000, 115200);
+	constant baudrate     : natural      := 3e6; --setif(debug, 3e6, 115200);
 	-- Set your UART pinout here         --
 	alias uart_rxd : std_logic is gpio(0); -- input  data received by the FPGA
 	alias uart_txd : std_logic is gpio(1); -- output data sent by the FPGA
@@ -150,7 +150,7 @@ begin
 		clkref_freq => clk48MHz_freq,
 		video_params => video_params)
 	port map (
-		clk_ref     => clk_48MHz,
+		clk_ref     => '0', --clk_48MHz,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
 		video_shift_clk => video_shift_clk,
@@ -172,14 +172,12 @@ begin
 		phy_ddrdel   => ddrdel);
 
 	hdlc_g : if io_link=io_hdlc generate
-		constant uart_freq : real := 
-			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk48MHz_freq/
-			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
+		constant uart_freq : real := clk48MHz_freq;
 		signal uart_clk : std_logic;
 	begin
 		nodebug_g : if not debug generate
-			uart_clk <= videoio_clk;
-			sio_clk  <= videoio_clk;
+			uart_clk <= clk_48MHz;
+			sio_clk  <= clk_48MHz;
 		end generate;
 
 		debug_g : if debug generate
@@ -354,7 +352,8 @@ begin
 
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
-		debug        => debug,
+		-- debug        => debug,
+		debug        => true,
 		bank_size    => ddram_ba'length,
 		addr_size    => ddram_a'length,
 		word_size    => word_size,

@@ -159,10 +159,9 @@ begin
 		signal pll_lock : std_logic;
 		signal update   : std_logic;
 		signal ready    : std_logic;
-		-- signal ddr_rst  : std_logic;
+		alias ddr_rst is phy_rst;
 		-- signal eclko    : std_logic;
 		-- signal cdivx    : std_logic;
-		alias ddr_rst is phy_rst;
 		alias eclko is eclk;
 		alias cdivx is sclk;
 
@@ -214,25 +213,25 @@ begin
 			clki    => eclko,
 			cdivx   => cdivx);
 		-- eclk <= eclko;
-		-- sclk <= transport cdivx after natural(1.0e12*(3.0/4.0)/sdram_freq)*1 ps;
+		-- sclk <= transport cdivx after natural(1.0e12*(1.0/4.0)/sdram_freq)*1 ps;
 
 
 		ddrdll_i : ddrdlla
 		port map (
 			rst      => dll_rst,
-			clk      => eclko,
+			clk      => eclk,
 			freeze   => freeze,
 			uddcntln => uddcntln,
 			ddrdel   => phy_ddrdel,
 			lock     => dll_lock);
 
-		process (memsync_rst, ready, cdivx)
+		process (memsync_rst, ready, sclk)
 		begin
 			if memsync_rst='1' then
 				ctlr_rst <= '1';
 			elsif ready='0' then
 				ctlr_rst <= '1';
-			elsif rising_edge(cdivx) then
+			elsif rising_edge(sclk) then
 				ctlr_rst <= memsync_rst;
 			end if;
 		end process;
