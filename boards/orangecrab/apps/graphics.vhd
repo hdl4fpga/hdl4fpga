@@ -60,11 +60,9 @@ architecture graphics of orangecrab is
 			sdram_speeds'POS(sdram400Mhz),
 			sdram_speeds'POS(sdram_speed))), clk48MHz_freq);
 	
-	constant sdram_tcp    : real := 
-		real(sdram_params.pll.clki_div*sdram_params.pll.clkop_div)/
-		(real(sdram_params.pll.clkos_div*sdram_params.pll.clkfb_div)*clk48MHz_freq);
+	constant sdram_tcp : real := 1.0/sdram_freq(sdram_params, clk48MHz_freq);
 
-		signal xxx : real := sdram_tcp;
+	signal xxx : real := sdram_tcp;
 	constant bank_size   : natural := ddram_ba'length;
 	constant addr_size   : natural := ddram_a'length;
 	constant word_size   : natural := ddram_dq'length;
@@ -203,7 +201,6 @@ begin
 			so_irdy   => so_irdy,
 			so_trdy   => so_trdy,
 			so_data   => so_data,
-			uart_frm  => video_lck,
 			uart_sin  => uart_rxd,
 			uart_sout => uart_txd);
 
@@ -216,7 +213,6 @@ begin
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
 		ena_burstref  => false,
-		-- debug        => true,
 		debug        => debug,
 		profile      => 2,
 		phy_latencies => ecp5g4_latencies,

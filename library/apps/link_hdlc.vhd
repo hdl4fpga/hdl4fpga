@@ -51,7 +51,7 @@ entity hdlc_link is
     	so_irdy   : out std_logic;
     	so_trdy   : in  std_logic;
     	so_data   : out std_logic_vector(0 to 8-1);
-		uart_frm  : in  std_logic;
+		uart_frm  : in  std_logic := '1';
 		uart_sin  : in  std_logic;
 		uart_sout : out std_logic);
 end;

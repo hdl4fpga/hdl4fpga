@@ -69,9 +69,25 @@ package ecp5_profiles is
 		constant clk_ref  : real)
 		return sdramparams_record;
 
+	function sdram_freq(
+		constant sdram_params : sdramparams_record;
+		constant clk_ref      : real)
+		return real;
+
+
 end package;
 
 package body ecp5_profiles is
+
+	function sdram_freq(
+		constant sdram_params : sdramparams_record;
+		constant clk_ref      : real)
+		return real is
+	begin
+		return 
+			real(sdram_params.pll.clkos_div*sdram_params.pll.clkfb_div)*clk_ref/
+			real(sdram_params.pll.clki_div*sdram_params.pll.clkop_div);
+	end;
 
 	-- SDRAM CLK=clk_ref*clkos_div/clkop_div
 	constant ulxsdram_tab : sdramparams_vector := (
