@@ -21,6 +21,8 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -expand -group uart -label uart_rxd /testbench/du_e/gpio(0)
 add wave -noupdate -expand -group uart -label uart_txd /testbench/du_e/gpio(1)
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/hdlctb_e/uartrx_e/debug_rxd
+add wave -noupdate /testbench/hdlctb_e/uartrx_e/debug_rxdv
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddram_clk_MGIOLI/ECLK
 add wave -noupdate /testbench/du_e/ddram_clk_MGIOLI/CLK
