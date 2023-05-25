@@ -731,6 +731,10 @@ begin
 			end generate;
 		end generate;
 		
+		assert wr_fifo
+		report "direct write fifo unfinished"
+		severity FAILURE;
+
 		no_wrfifo_g : if not wr_fifo generate
 			sdqi <= sys_dqi;
 			sdmi <= sys_dmi;

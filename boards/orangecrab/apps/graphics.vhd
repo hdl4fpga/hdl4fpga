@@ -57,7 +57,7 @@ architecture graphics of orangecrab is
 
 	constant sdram_params : sdramparams_record := sdramparams(
 		sdram_speeds'VAL(setif(debug,
-			sdram_speeds'POS(sdram400Mhz),
+			sdram_speeds'POS(sdram300Mhz),
 			sdram_speeds'POS(sdram_speed))), clk48MHz_freq);
 	
 	constant sdram_tcp : real := 1.0/sdram_freq(sdram_params, clk48MHz_freq);
