@@ -366,7 +366,7 @@ begin
 		gear       => sdram_gear,
 		ba_latency => 1,
 		rd_fifo    => false,
-		wr_fifo    => false,
+		wr_fifo    => true,
 		bypass     => false,
 		taps       => natural(ceil((sdram_tcp-25.0e-12)/25.0e-12))) -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
 	port map (

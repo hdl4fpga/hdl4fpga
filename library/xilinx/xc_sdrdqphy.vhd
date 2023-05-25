@@ -731,7 +731,7 @@ begin
 			end generate;
 		end generate;
 		
-		assert wr_fifo
+		assert wr_fifo and gear/=4
 		report "direct write fifo unfinished"
 		severity FAILURE;
 

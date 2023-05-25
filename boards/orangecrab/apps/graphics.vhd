@@ -41,10 +41,10 @@ architecture graphics of orangecrab is
 
 	---------------------------------------
 	-- Set your profile here             --
-	constant sdram_speed  : sdram_speeds := sdram300MHz;
+	constant sdram_speed  : sdram_speeds := sdram400MHz;
 	constant video_mode   : video_modes  := mode600p24bpp;
 	constant io_link      : io_comms     := io_hdlc;
-	constant baudrate     : natural      := 3e6; --setif(debug, 3e6, 115200);
+	constant baudrate     : natural      := setif(debug, 3e6, 115200);
 	-- Set your UART pinout here         --
 	alias uart_rxd : std_logic is gpio(0); -- input  data received by the FPGA
 	alias uart_txd : std_logic is gpio(1); -- output data sent by the FPGA
@@ -348,7 +348,7 @@ begin
 
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
-		debug        => true, --debug,
+		debug        => debug,
 		bank_size    => ddram_ba'length,
 		addr_size    => ddram_a'length,
 		word_size    => word_size,
@@ -356,7 +356,7 @@ begin
 		gear         => sdram_gear,
 		ba_latency   => 1,
 		rd_fifo      => false,
-		wr_fifo      => false,
+		wr_fifo      => true,
 		bypass       => false,
 		taps         => natural(ceil((sdram_tcp-25.0e-12)/25.0e-12))) -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
 	port map (

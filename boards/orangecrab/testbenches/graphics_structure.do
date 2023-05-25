@@ -21,7 +21,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -expand -group uart -label uart_rxd /testbench/du_e/gpio(0)
 add wave -noupdate -expand -group uart -label uart_txd /testbench/du_e/gpio(1)
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/hdlctb_e/uartrx_e/debug_rxd
+add wave -noupdate -radix hexadecimal /testbench/hdlctb_e/uartrx_e/debug_rxd
 add wave -noupdate /testbench/hdlctb_e/uartrx_e/debug_rxdv
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ddram_clk_MGIOLI/ECLK
@@ -121,4 +121,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {217920617650 fs} {1041162072760 fs}
+WaveRestoreZoom {617920617650 fs} {1441162072760 fs}
