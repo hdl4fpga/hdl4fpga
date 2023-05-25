@@ -30,6 +30,8 @@ use ecp5u.components.all;
 
 entity ecp5_sdrdqphy is
 	generic (
+		wl_delay   : time := 0 ns;
+
 		byteno     : natural;
 		bypass     : boolean := false;
 		debug      : boolean := false;
@@ -123,7 +125,7 @@ architecture ecp5 of ecp5_sdrdqphy is
 	signal wlpause_req  : std_logic;
 	signal lv_pause     : std_logic;
 
-	constant delay      : time := 0*0.625 ns;
+	constant delay      : time := 10*0.625 ns;
 
 	signal wlstep_req   : std_logic;
 	signal wlstep_rdy   : std_logic;
@@ -131,6 +133,7 @@ architecture ecp5 of ecp5_sdrdqphy is
 
 	signal sdram_dmt    : std_logic;
 
+	constant wldelay : time := 0.5 ns;
 begin
 
 	process (rst, sclk)
@@ -283,7 +286,7 @@ begin
 	wlpause_req <= wlstep_req;
 	wlstep_rdy  <= wlpause_rdy;
 
-	dqsbuf_b : block
+	dqsi_b : block
 		signal latch      : std_logic;
    		signal readclksel : std_logic_vector(2 downto 0);
 		signal dyndelay   : std_logic_vector(7 downto 0);
@@ -645,7 +648,7 @@ begin
 				d       => di,
 				q(0)    => sdram_dqo(i));
 
-			sdram_dq(i) <= sdram_dqo(i) when sdram_dqt(i)='0' else 'Z';
+			sdram_dq(i) <= transport sdram_dqo(i) after wl_delay when sdram_dqt(i)='0' else 'Z' after wl_delay;
 		end generate;
 
 		dm_b : block
@@ -664,7 +667,7 @@ begin
 				d       => dmi,
 				q(0)    => sdram_dmo);
 
-			sdram_dm <= sdram_dmo when sdram_dmt='0' else 'Z';
+			sdram_dm <= transport sdram_dmo after wl_delay when sdram_dmt='0' else 'Z' after wl_delay;
 
 		end block;
 	end block;
@@ -701,7 +704,7 @@ begin
 				d3   => dqsi(2*0),
 				q    => sdram_dqso);
 
-			sdram_dqs <= sdram_dqso when sdram_dqst='0' else 'Z';
+			sdram_dqs <= transport sdram_dqso after wl_delay when sdram_dqst='0' else 'Z' after wl_delay;
 		end generate;
 
 

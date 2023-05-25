@@ -34,6 +34,7 @@ use hdl4fpga.sdram_param.all;
 
 entity ecp5_sdrphy is
 	generic (
+		wl_delay  : time := 1.00 ns;
 		debug     : boolean := false;
 		bank_size : natural := 2;
 		addr_size : natural := 13;
@@ -149,6 +150,7 @@ begin
 
 		gear4_g : if gear=4 generate 
 			signal ck : std_logic;
+			signal nodelay_clk : std_logic;
 		begin
     		ck_i : oddrx2f
     		port map (
@@ -167,7 +169,8 @@ begin
     			del_mode => "DQS_CMD_CLK")
     		port map (
     			a => ck,
-    			z => sdram_clk);
+    			z => nodelay_clk);
+			sdram_clk <= transport nodelay_clk after wl_delay;
 		end generate;
 
 	end block;
@@ -280,6 +283,7 @@ begin
 
 	sdrbaphy_i : entity hdl4fpga.ecp5_sdrbaphy
 	generic map (
+		wl_delay  => wl_delay,
 		bank_size => bank_size,
 		addr_size => addr_size,
 		gear      => (gear+1)/2,
@@ -317,6 +321,7 @@ begin
 	byte_g : for i in word_size/byte_size-1 downto 0 generate
 		sdrphy_i : entity hdl4fpga.ecp5_sdrdqphy
 		generic map (
+			wl_delay   => wl_delay,
 			byteno     => i,
 			debug      => debug,
 			taps       => taps,

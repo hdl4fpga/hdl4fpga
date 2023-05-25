@@ -29,6 +29,7 @@ use ecp5u.components.all;
 
 entity ecp5_sdrbaphy is
 	generic (
+		wl_delay   : time    := 0 ns;
 		gear       : natural := 2;
 		bank_size  : natural := 2;
 		addr_size  : natural := 13;
@@ -73,7 +74,26 @@ architecture ecp5 of ecp5_sdrbaphy is
 	signal we  : std_logic_vector(gear-1 downto 0);
 	signal odt : std_logic_vector(gear-1 downto 0);
 
+	signal no_sdram_rst : std_logic;
+	signal no_sdram_cs  : std_logic;
+	signal no_sdram_cke : std_logic;
+	signal no_sdram_odt : std_logic;
+	signal no_sdram_ras : std_logic;
+	signal no_sdram_cas : std_logic;
+	signal no_sdram_we  : std_logic;
+	signal no_sdram_b   : std_logic_vector(bank_size-1 downto 0);
+	signal no_sdram_a   : std_logic_vector(addr_size-1 downto 0);
 begin
+
+	sdram_rst  <= no_sdram_rst after wl_delay;
+	sdram_cs   <= no_sdram_cs  after wl_delay;
+	sdram_cke  <= no_sdram_cke after wl_delay;
+	sdram_odt  <= no_sdram_odt after wl_delay;
+	sdram_ras  <= no_sdram_ras after wl_delay;
+	sdram_cas  <= no_sdram_cas after wl_delay;
+	sdram_we   <= no_sdram_we  after wl_delay;
+	sdram_b    <= no_sdram_b   after wl_delay;
+	sdram_a    <= no_sdram_a   after wl_delay;
 
 	latency_b : block
 	begin
@@ -167,7 +187,7 @@ begin
 		rst  => grst,
 		sclk => sclk,
 		d    => sys_rst,
-		q(0) => sdram_rst);
+		q(0) => no_sdram_rst);
 
 	cs_b : block
 	begin
@@ -181,7 +201,7 @@ begin
         		rst  => grst,
         		sclk => sclk,
         		d    => cs,
-        		q(0) => sdram_cs);
+        		q(0) => no_sdram_cs);
 		end generate;
 
 		gear2_g : if gear=2 generate
@@ -201,7 +221,7 @@ begin
 				del_mode => "DQS_ALIGNED_X2")
 			port map (
 				a => gear2_cs,
-				z => sdram_cs);
+				z => no_sdram_cs);
 		end generate;
 
 	end block;
@@ -214,7 +234,7 @@ begin
 		rst  => grst,
 		sclk => sclk,
 		d    => cke,
-		q(0) => sdram_cke);
+		q(0) => no_sdram_cke);
 
 	ras_i : entity hdl4fpga.ecp5_ogbx
 	generic map (
@@ -224,7 +244,7 @@ begin
 		rst  => grst,
 		sclk => sclk,
 		d    => ras,
-		q(0) => sdram_ras);
+		q(0) => no_sdram_ras);
 
 	cas_i : entity hdl4fpga.ecp5_ogbx
 	generic map (
@@ -234,7 +254,7 @@ begin
 		rst  => grst,
 		sclk => sclk,
 		d    => cas,
-		q(0) => sdram_cas);
+		q(0) => no_sdram_cas);
 
 	we_i : entity hdl4fpga.ecp5_ogbx
 	generic map (
@@ -244,7 +264,7 @@ begin
 		rst  => grst,
 		sclk => sclk,
 		d    => we,
-		q(0) => sdram_we);
+		q(0) => no_sdram_we);
 
 	odt_i : entity hdl4fpga.ecp5_ogbx
 	generic map (
@@ -254,7 +274,7 @@ begin
 		rst  => grst,
 		sclk => sclk,
 		d    => odt,
-		q(0) => sdram_odt);
+		q(0) => no_sdram_odt);
 
 	b_i : entity hdl4fpga.ecp5_ogbx
 	generic map (
@@ -263,7 +283,7 @@ begin
 	port map (
 		sclk => sclk,
 		d    => b,
-		q    => sdram_b);
+		q    => no_sdram_b);
 
 	a_i : entity hdl4fpga.ecp5_ogbx
 	generic map (
@@ -273,6 +293,6 @@ begin
 		rst  => grst,
 		sclk => sclk,
 		d    => a,
-		q    => sdram_a);
+		q    => no_sdram_a);
 
 end;

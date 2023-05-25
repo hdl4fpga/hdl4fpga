@@ -30,6 +30,7 @@ add wave -noupdate -expand -group sdrphy_e -radix hexadecimal /testbench/du_e/sd
 add wave -noupdate -expand -group sdrphy_e -radix hexadecimal /testbench/du_e/sdrphy_e/sys_dqo
 add wave -noupdate -expand -group sdrphy_e -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrphy_i/burstdet
 add wave -noupdate -expand -group sdrphy_e -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrphy_i/datavalid
+add wave -noupdate -expand -group sdrphy_e -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrphy_i/dqsi_b/dyndelay
 add wave -noupdate -expand -group sdrphy_e -expand -group byte_g0 -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrphy_i/dqi
 add wave -noupdate -expand -group sdrphy_e -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrphy_i/sys_sti
 add wave -noupdate -expand -group sdrphy_e -expand -group byte_g0 /testbench/du_e/sdrphy_e/byte_g(0)/sdrphy_i/sys_dqo
@@ -63,4 +64,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {43696473568 fs} {43718929624 fs}
+WaveRestoreZoom {0 fs} {54600 ns}
