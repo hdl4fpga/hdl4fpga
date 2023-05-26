@@ -63,4 +63,7 @@ entity orangecrab is
     alias rgb_led0_g : std_logic is rgb_led(1);
     alias rgb_led0_b : std_logic is rgb_led(2);
 
+    alias gpio_mosi : std_logic is gpio(2);
+    alias gpio_miso : std_logic is gpio(3);
+    alias gpio_sck  : std_logic is gpio(4);
 end;

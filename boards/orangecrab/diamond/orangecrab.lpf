@@ -16,6 +16,9 @@ LOCATE COMP "rgb_led[1]"       SITE "M3";  IOBUF PORT "rgb_led[1]"       IO_TYPE
 LOCATE COMP "rgb_led[2]"       SITE "J3";  IOBUF PORT "rgb_led[2]"       IO_TYPE=LVCMOS33;
 LOCATE COMP "gpio_0"           SITE "N17"; IOBUF PORT "gpio_0"           IO_TYPE=LVCMOS33 PULLMODE=DOWN;
 LOCATE COMP "gpio_1"           SITE "M18"; IOBUF PORT "gpio_1"           IO_TYPE=LVCMOS33 PULLMODE=DOWN;
+LOCATE COMP "gpio_2"           SITE "N15"; IOBUF PORT "gpio_2"           IO_TYPE=LVCMOS33 PULLMODE=DOWN;
+LOCATE COMP "gpio_3"           SITE "M16"; IOBUF PORT "gpio_3"           IO_TYPE=LVCMOS33 PULLMODE=DOWN;
+LOCATE COMP "gpio_4"           SITE "R17"; IOBUF PORT "gpio_4"           IO_TYPE=LVCMOS33 PULLMODE=DOWN;
 LOCATE COMP "gpio_5"           SITE "B10"; IOBUF PORT "gpio_5"           IO_TYPE=LVCMOS33 PULLMODE=DOWN;
 LOCATE COMP "gpio_6"           SITE "B9";  IOBUF PORT "gpio_6"           IO_TYPE=LVCMOS33 PULLMODE=DOWN;
 LOCATE COMP "gpio_9"           SITE "C8";  IOBUF PORT "gpio_9"           IO_TYPE=LVCMOS33 PULLMODE=DOWN;

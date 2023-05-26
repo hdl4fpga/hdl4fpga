@@ -438,7 +438,7 @@ begin
 		variable q : std_logic;
 	begin
 		if rising_edge(sclk) then
-			gpio(2) <= q;
+			gpio(5) <= q;
 			q := not q;
 		end if;
 	end process;
