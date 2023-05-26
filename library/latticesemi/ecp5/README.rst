@@ -1,4 +1,4 @@
 TODO
 ----
 
-Check the write leveling phase
+- Check the phase of write leveling procedure
