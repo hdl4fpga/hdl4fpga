@@ -1,76 +1,94 @@
 library ieee;
-use ieee.numeric_std.all.all;
+use ieee.numeric_bit.all;
 
 entity tx_manchester is
 	port (
 		clk  : in  bit;
-		txd  : out bit;
-		data : in  bit);
+		txen : in  bit;
+		txd  : in  bit;
+		sout : out bit);
 end;
 
 architecture def of tx_manchester is
+	signal clk_n : bit;
 begin
-	txd <= data xor clk;
+	clk_n <= not clk;
+	sout  <= txd xor clk_n when txen='1' else '0';
 end;
 
 library ieee;
-use ieee.numeric_std.all.all;
+use ieee.numeric_bit.all;
 
 entity rx_manchester is
 	port (
+		sin  : in  bit;
 		clk  : in  bit;
-		rxd  : in  bit;
-		data : buffer bit);
+		rxdv : out bit;
+		rxd  : buffer bit);
 end;
 
 architecture def of rx_manchester is
+	signal xxx : bit;
 begin
 	process (clk)
-		variable cntr : natural 0 to 15;
+		variable cntr : natural range 0 to 15;
 	begin
 		if rising_edge(clk) then
 			if cntr > 0 then
 				if cntr=1 then
-					data <= rxd;
+					rxd <= sin;
 				end if;
 				cntr := cntr - 1;
-			elsif (data xor rxd)='1' then
+				xxx <= '1';
+			elsif (sin xor rxd)='1' then
 				cntr := (16*3)/4;
+				xxx <= '0';
 			end if;
 		end if;
 	end process;
 end;
 
 library ieee;
-use ieee.numeric_std.all.all;
+use ieee.numeric_bit.all;
 
 entity tb is
 end;
 
 architecture def of tb is
-	constant data : bit_vector(0 to 64-1) := x"aaaa_aaab" & x"ffff_ffff";
-	signal tx_clk  : bit;
-	signal tx_data : bit;
-	signal xd      : bit;
+	constant data : bit_vector(0 to 64-1) := x"aaaa_aaab" & x"0000_ffff";
+	signal txc  : bit;
+	signal txen : bit;
+	signal txd : bit;
+	signal rxc  : bit;
+	signal rxd : bit;
+	signal xd  : bit;
 begin
-	tx_clk <= not tx_clk after 20 ns;
-	process (tx_clk)
+	txc <= not txc after 20*15 ns;
+	rxc <= not rxc after 20 ns;
+	process (txc)
 		variable cntr : natural := 0;
 	begin
-		if rising_edge(tx_clk) then
-			tx_data := data(cntr);
+		if rising_edge(txc) then
+			if cntr < data'length then
+				txd <= data(cntr);
+				txen <= '1';
+				cntr := cntr + 1;
+			else
+				txen <= '0';
+			end if;
 		end if;
 	end process;
 
 	tx_d : entity work.tx_manchester
 	port map (
-		clk  => tx_clk,
-		data => tx_data,
-		txd  => xd);
+		clk  => txc,
+		txen => txen,
+		txd  => txd,
+		sout => xd);
 
 	rx_d : entity work.rx_manchester
 	port map (
-		clk  => rx_clk,
-		data => rx_data,
-		rxd  => xd);
+		clk => rxc,
+		rxd => rxd,
+		sin => xd);
 end;
