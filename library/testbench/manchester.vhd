@@ -19,7 +19,7 @@ architecture def of testbench is
 
 begin
 
-	txc <= not txc after 20*15 ns;
+	txc <= not txc after (20 ns*oversampling)*0.9;
 	rxc <= not rxc after 20 ns;
 	process (txc)
 		variable cntr : natural := 0;
