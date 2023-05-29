@@ -58,6 +58,8 @@ HDL4FPGA__uart_rx__def = $(LIB_HDL4FPGA)/uart_rx/def.dat
 HDL4FPGA__uart_rx = $(LIB_HDL4FPGA)/uart_rx/_primary.dat
 HDL4FPGA__txn_buffer__def = $(LIB_HDL4FPGA)/txn_buffer/def.dat
 HDL4FPGA__txn_buffer = $(LIB_HDL4FPGA)/txn_buffer/_primary.dat
+HDL4FPGA__tx_manchester__def = $(LIB_HDL4FPGA)/tx_manchester/def.dat
+HDL4FPGA__tx_manchester = $(LIB_HDL4FPGA)/tx_manchester/_primary.dat
 HDL4FPGA__tmds_encoder__def = $(LIB_HDL4FPGA)/tmds_encoder/def.dat
 HDL4FPGA__tmds_encoder = $(LIB_HDL4FPGA)/tmds_encoder/_primary.dat
 HDL4FPGA__timer__def = $(LIB_HDL4FPGA)/timer/def.dat
@@ -170,6 +172,8 @@ HDL4FPGA__scopeio_btof__def = $(LIB_HDL4FPGA)/scopeio_btof/def.dat
 HDL4FPGA__scopeio_btof = $(LIB_HDL4FPGA)/scopeio_btof/_primary.dat
 HDL4FPGA__scopeio_axis__def = $(LIB_HDL4FPGA)/scopeio_axis/def.dat
 HDL4FPGA__scopeio_axis = $(LIB_HDL4FPGA)/scopeio_axis/_primary.dat
+HDL4FPGA__rx_manchester__def = $(LIB_HDL4FPGA)/rx_manchester/def.dat
+HDL4FPGA__rx_manchester = $(LIB_HDL4FPGA)/rx_manchester/_primary.dat
 HDL4FPGA__rom7seg__mixed = $(LIB_HDL4FPGA)/rom7seg/mixed.dat
 HDL4FPGA__rom7seg = $(LIB_HDL4FPGA)/rom7seg/_primary.dat
 HDL4FPGA__rom__def = $(LIB_HDL4FPGA)/rom/def.dat
@@ -391,6 +395,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__uart_rx) \
     $(HDL4FPGA__txn_buffer__def) \
     $(HDL4FPGA__txn_buffer) \
+    $(HDL4FPGA__tx_manchester__def) \
+    $(HDL4FPGA__tx_manchester) \
     $(HDL4FPGA__tmds_encoder__def) \
     $(HDL4FPGA__tmds_encoder) \
     $(HDL4FPGA__timer__def) \
@@ -503,6 +509,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__scopeio_btof) \
     $(HDL4FPGA__scopeio_axis__def) \
     $(HDL4FPGA__scopeio_axis) \
+    $(HDL4FPGA__rx_manchester__def) \
+    $(HDL4FPGA__rx_manchester) \
     $(HDL4FPGA__rom7seg__mixed) \
     $(HDL4FPGA__rom7seg) \
     $(HDL4FPGA__rom__def) \
@@ -1164,8 +1172,10 @@ $(HDL4FPGA__ecp5_sdrampll__def) : ../apps/ecp5_sdrampll.vhd \
 
 $(HDL4FPGA__ecp5_sdrbaphy) \
 $(HDL4FPGA__ecp5_sdrbaphy__ecp5) : ../latticesemi/ecp5/ecp5_sdrbaphy.vhd \
-		$(IEEE__numeric_std) \
 		$(HDL4FPGA__ecp5_ogbx) \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__base) \
+		$(HDL4FPGA__latency) \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
 		$(STD__textio) \
@@ -2234,6 +2244,15 @@ $(HDL4FPGA__tmds_encoder__def) : ../video/tmds_encoder.vhd \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../video/tmds_encoder.vhd
+
+$(HDL4FPGA__rx_manchester) \
+$(HDL4FPGA__rx_manchester__def) \
+$(HDL4FPGA__tx_manchester) \
+$(HDL4FPGA__tx_manchester__def) : ../mii/manchester.vhd \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../mii/manchester.vhd
 
 $(HDL4FPGA__txn_buffer) \
 $(HDL4FPGA__txn_buffer__def) : ../basic/txn_buffer.vhd \

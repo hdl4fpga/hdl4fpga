@@ -4,23 +4,23 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-architecture def of testbench is
-    constant oversampling : natural := 16;
+architecture manchester of testbench is
+    constant oversampling : natural := 4;
 
 	constant data : std_logic_vector(0 to 64-1) := x"aaaa_aaab" & x"0000_ffff";
 
-	signal txc  : std_logic;
+	signal txc  : std_logic := '0';
 	signal txen : std_logic;
 	signal txd  : std_logic;
-	signal rxc  : std_logic;
+	signal rxc  : std_logic := '0';
 	signal rxdv : std_logic;
 	signal rxd  : std_logic;
 	signal txr  : std_logic;
 
 begin
 
-	txc <= not txc after (20 ns*oversampling)*0.9;
-	rxc <= not rxc after 20 ns;
+	txc <= not txc after (10 ns*oversampling)*0.9;
+	rxc <= not rxc after 10 ns;
 	process (txc)
 		variable cntr : natural := 0;
 	begin
@@ -37,16 +37,16 @@ begin
 
 	tx_d : entity hdl4fpga.tx_manchester
 	port map (
-		clk  => txc,
+		txc  => txc,
 		txen => txen,
 		txd  => txd,
 		tx   => txr);
 
 	rx_d : entity hdl4fpga.rx_manchester
     generic map (
-        oversampling => oversampling)
+        oversampling => (3*oversampling)/4)
 	port map (
-		clk  => rxc,
+		rxc  => rxc,
 		rxdv => rxdv,
 		rxd  => rxd,
 		rx   => txr);
