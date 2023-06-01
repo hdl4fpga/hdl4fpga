@@ -30,71 +30,79 @@ entity usbphy_rx is
 		oversampling : natural);
 	port (
 		clk  : in  std_logic;
-		rxd  : in  std_logic;
 		rxdp : in  std_logic;
 		rxdn : in  std_logic;
-		rxc  : in  std_logic;
-		rxdv : out std_logic;
-		rxd  : buffer std_logic);
+		frm  : out std_logic;
+		dv   : out std_logic;
+		data : buffer std_logic);
 end;
 
 architecture def of usbphy_rx is
-	signal j : std_logic;
-	signal k : std_logic;
+
+	signal j   : std_logic;
+	signal k   : std_logic;
+
 begin
 	j   <=     rxdp and not rxdn;
 	k   <= not rxdp and     rxdn;
-	se0 <= not rxdp and     rxdn;
-
+	se0 <= not rxdp and not rxdn;
+ 
 	process (clk)
-		type states is (
-			s_idle, 
-			s_k1, s_k1j1, s_k2j1, s_k2j2, s_k3j2, s_k3j3, s_k4j3, s_k4k5);
+		type states (s_idle, s_k, s_j, s_datak, s_dataj, s_data);
+		variable state : states;
+		variable cnt1  : natural range 0 to 7;
 	begin
 		if rising_edge(clk)
 			case state is
-			when s_idle =>
-				if k = '1' then
-					state := s_k1;
+			when s_idle  =>
+				if k='1' then
+					state := s_k;
+				elsif j=1 then
+					state := s_j;
 				end if;
-			when s_k1 =>
-				if j = '1' then
-					state := s_k1j1;
+				cnt1 := 0;
+				dv   <= '0';
+			when s_k     =>
+				if k='1' then
+					cnt1  := cnt1 + 1;
+					state := s_datak;
+				elsif j='1' then
+					cnt1  := 0;
+					state := s_j;
 				end if;
-				state := s_idle;
-			when s_k1j1 =>
-				if k = '1' then
-					state := s_k2j1;
+				dv <= '0';
+			when s_j     =>
+				if k='1' then
+					state := s_k;
 				end if;
-				state := s_idle;
-			when s_k2j1 =>
-				if j = '1' then
-					state := s_k2j2;
+				cnt1 := 0;
+				dv   <= '0';
+			when s_datak =>
+				if j='1' then
+					cnt1  := cnt1 + 1;
+					state := s_dataj;
+				else
+					cnt1  := 0;
 				end if;
-				state := s_idle;
-			when s_k2j2 =>
-				if k = '1' then
-					state := s_k3j2;
+				dv <= '1';
+			when s_dataj =>
+				if k=1 then
+					cnt1  := cnt1 + 1;
+					state := s_datak;
+				else
+					cnt1  := 0;
 				end if;
-				state := s_idle;
-			when s_k3j2 =>
-				if j = '1' then
-					state := s_k3j3;
-				end if;
-				state := s_idle;
-			when s_k3j3 =>
-				if k = '1' then
-					state := s_k4j3;
-				end if;
-				state := s_idle;
-			when s_k4j3 =>
-				if k = '1' then
-					state := s_k4k5;
-				end if;
-				state := s_idle;
-			when s_k4k5 =>
+				dv <= '1';
 			end case;
+
+			stuffed_bit : if cnt1 > 6 then
+				cnt1 := '0';
+				dv   <= '0';
+			end if;
+
+			nrzi : data <= data xnor k;
 		end if;
+
 	end process;
 
 end;
