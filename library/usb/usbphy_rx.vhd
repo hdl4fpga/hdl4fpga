@@ -48,13 +48,14 @@ begin
 	k   <= not rxdp and     rxdn;
 	se0 <= not rxdp and not rxdn;
  
-	process (rxc)
+	process (k, j, rxc)
 		type stateskj is (s_k, s_j);
 		variable statekj : stateskj;
 		type states is (s_idle, s_sync, s_syncj, s_data);
 		variable state : states;
 
 		variable cnt1  : natural range 0 to 7;
+		variable q     : std_logic;
 	begin
 		if rising_edge(rxc) then
 			sync_l : case state is
@@ -126,8 +127,10 @@ begin
 				err <= '1';
 			end if;
 
-			nrzi_l : data <= not data xnor k;
+			nrzi_l : data <= q xor k;
+			q := not k;
 		end if;
+
 
 	end process;
 
