@@ -23,10 +23,10 @@ begin
 	begin
 		if rising_edge(txc) then
 			if txen='0' then
-				data := x"80";
+				data := x"80"; -- sync word
 				cnt1 := 0;
-				txdn <= '0';
 				txdp <= '0';
+				txdn <= '0';
 			else
 				if data(0)='1' then
 					if cnt1 < 5 then
@@ -42,8 +42,8 @@ begin
 					data := data ror 1;
 					cnt1 := 0;
 				end if;
-				txdp <=     (txdn xnor data(0));
-				txdn <= not (txdn xnor data(0));
+				txdp <= not (txdp xor data(0));
+				txdn <=     (txdp xor data(0));
 			end if;
 		end if;
 	end process;
