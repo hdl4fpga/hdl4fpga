@@ -26,16 +26,16 @@ use ieee.numeric_std.all;
 --                                                                            --
 
 entity usbphy_rx is
-	generic (
-		oversampling : natural);
+	-- generic (
+		-- oversampling : natural);
 	port (
-		clk  : in  std_logic;
+		rxc  : in  std_logic;
 		rxdp : in  std_logic;
 		rxdn : in  std_logic;
 		frm  : out std_logic;
 		dv   : out std_logic;
 		err  : out std_logic;
-		data : buffer std_logic);
+		data : buffer std_logic := '1');
 end;
 
 architecture def of usbphy_rx is
@@ -48,7 +48,7 @@ begin
 	k   <= not rxdp and     rxdn;
 	se0 <= not rxdp and not rxdn;
  
-	process (clk)
+	process (rxc)
 		type stateskj is (s_k, s_j);
 		variable statekj : stateskj;
 		type states is (s_idle, s_sync, s_syncj, s_data);
@@ -56,8 +56,8 @@ begin
 
 		variable cnt1  : natural range 0 to 7;
 	begin
-		if rising_edge(clk) then
-			case state is
+		if rising_edge(rxc) then
+			sync_l : case state is
 			when s_idle =>
 				if k='1' then
 					state := s_syncj;
@@ -101,15 +101,19 @@ begin
 				end if;
 			end case;
 
-			case statekj is
+			kj_l : case statekj is
 			when s_k =>
-				cnt1 := cnt1 + 1;
+				if cnt1 < 6 then
+					cnt1 := cnt1 + 1;
+				end if;
 				if j='1' then
 					cnt1    := 0;
 					statekj := s_j;
 				end if;
 			when s_j =>
-				cnt1 := cnt1 + 1;
+				if cnt1 < 6 then
+					cnt1 := cnt1 + 1;
+				end if;
 				if k='1' then
 					cnt1    := 0;
 					statekj := s_k;
@@ -122,7 +126,7 @@ begin
 				err <= '1';
 			end if;
 
-			nrzi_l : data <= data xnor k;
+			nrzi_l : data <= not data xnor k;
 		end if;
 
 	end process;
