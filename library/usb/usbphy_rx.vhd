@@ -48,32 +48,37 @@ architecture def of usbphy_rx is
 	signal ena : std_logic;
 begin
 
-	j   <=     rxdp and not rxdn;
-	k   <= not rxdp and     rxdn;
-	se0 <= not rxdp and not rxdn;
- 
 	process (rxc)
-		variable cntr : natural range 0 to oversampling-1;
-		variable q    : std_logic;
+		variable cntr  : natural range 0 to oversampling-1;
+		variable q     : std_logic;
+		variable k_d   : std_logic;
+		variable j_d   : std_logic;
+		variable se0_d : std_logic;
 	begin
 		if rising_edge(rxc) then
-			if (to_bit(q) xor to_bit(k))='1' then
-				cntr := oversampling/2;
+			k_d   := not rxdp and     rxdn;
+			j_d   :=     rxdp and not rxdn;
+			se0_d := not rxdp and not rxdn;
+			if (to_bit(q) xor to_bit(k_d))='1' then
+				cntr := oversampling-1;
 			elsif cntr=0 then
 				cntr := oversampling-1;
 			else
 				cntr := cntr - 1;
 			end if;
-			if cntr=oversampling/2 then
+			if cntr=(oversampling-1)/2 then
 				ena <= '1';
 			else
 				ena <= '0';
 			end if;
-			q := k;
+			q   := k_d;
+			k   <= k_d;
+			j   <= j_d;
+			se0 <= se0_d;
 		end if;
 	end process;
 
-	assert true
+	assert false
 	report cr & "oversampling/2 => " & natural'image(oversampling/2)
 	severity note;
 
@@ -171,7 +176,6 @@ begin
 				dv <= '0';
 			end if;
 		end if;
-
 
 	end process;
 
