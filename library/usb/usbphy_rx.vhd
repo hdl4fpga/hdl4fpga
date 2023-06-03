@@ -53,26 +53,34 @@ begin
 	se0 <= not rxdp and not rxdn;
  
 	process (rxc)
-		variable cntr : signed(0 to setif(oversampling > 2, unsigned_num_bits(oversampling-1), 0));
+		variable cntr : natural range 0 to oversampling-1;
 		variable q    : std_logic;
 	begin
 		if rising_edge(rxc) then
-			if cntr(0)='1' then
-				cntr := to_signed(oversampling-2, cntr'length);
-			elsif (to_bit(q) xor to_bit(k))='1' then
-				cntr := to_signed(oversampling-2, cntr'length);
+			if (to_bit(q) xor to_bit(k))='1' then
+				cntr := oversampling/2;
+			elsif cntr=0 then
+				cntr := oversampling-1;
 			else
 				cntr := cntr - 1;
 			end if;
-			ena <= to_stdulogic(cntr(0));
+			if cntr=oversampling/2 then
+				ena <= '1';
+			else
+				ena <= '0';
+			end if;
 			q := k;
 		end if;
 	end process;
 
+	assert true
+	report cr & "oversampling/2 => " & natural'image(oversampling/2)
+	severity note;
+
 	process (k, j, rxc)
 		type stateskj is (s_k, s_j);
 		variable statekj : stateskj;
-		type states is (s_idle, s_sync, s_syncj, s_data);
+		type states is (s_idle, s_synck, s_syncj, s_data);
 		variable state : states;
 
 		variable cnt1  : natural range 0 to 7;
@@ -87,20 +95,20 @@ begin
 					elsif k='1' then
 						state := s_syncj;
 					elsif j='1' then
-						state := s_sync;
+						state := s_synck;
 					end if;
 					frm <= '0';
 					dv  <= '0';
 				when s_syncj =>
 					if se0='1' then
 					elsif j='1' then
-						state := s_sync;
+						state := s_synck;
 					else
 						state := s_idle;
 					end if;
 					frm <= '0';
 					dv  <= '0';
-				when s_sync =>
+				when s_synck =>
 					if se0='1' then
 						state := s_idle;
 					elsif k='1' then
@@ -159,6 +167,8 @@ begin
 
 				nrzi_l : data <= q xor k;
 				q := not k;
+			else
+				dv <= '0';
 			end if;
 		end if;
 
