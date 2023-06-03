@@ -8,14 +8,18 @@ add wave -noupdate /testbench/dn
 add wave -noupdate /testbench/tx_d/line__20/data
 add wave -noupdate /testbench/tx_d/line__20/cnt1
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/rx_d/rxc
 add wave -noupdate /testbench/rx_d/rxdp
 add wave -noupdate /testbench/rx_d/rxdn
 add wave -noupdate /testbench/rx_d/frm
 add wave -noupdate /testbench/rx_d/dv
 add wave -noupdate /testbench/rx_d/data
+add wave -noupdate /testbench/rx_d/line__54/cntr(0)
+add wave -noupdate -expand /testbench/rx_d/line__54/cntr
+add wave -noupdate /testbench/rx_d/rxc
+add wave -noupdate /testbench/rx_d/line__54/q
+add wave -noupdate /testbench/rx_d/k
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {227675 ps} 0}
+WaveRestoreCursors {{Cursor 1} {59662080 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 132
@@ -31,4 +35,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {525 ns}
+WaveRestoreZoom {0 fs} {420 ns}
