@@ -45,6 +45,7 @@ architecture def of usbphy_rx is
 	signal j   : std_logic;
 	signal k   : std_logic;
 	signal se0 : std_logic;
+	signal ena : std_logic;
 begin
 
 	j   <=     rxdp and not rxdn;
@@ -52,7 +53,7 @@ begin
 	se0 <= not rxdp and not rxdn;
  
 	process (rxc)
-		variable cntr : signed(0 to unsigned_num_bits(oversampling-1)-1);
+		variable cntr : signed(0 to setif(oversampling > 2, unsigned_num_bits(oversampling-1), 0));
 		variable q    : std_logic;
 	begin
 		if rising_edge(rxc) then
@@ -63,6 +64,7 @@ begin
 			else
 				cntr := cntr - 1;
 			end if;
+			ena <= to_stdulogic(cntr(0));
 			q := k;
 		end if;
 	end process;
@@ -77,85 +79,87 @@ begin
 		variable q     : std_logic;
 	begin
 		if rising_edge(rxc) then
-			sync_l : case state is
-			when s_idle =>
-				if se0='1' then
-					state := s_idle;
-				elsif k='1' then
-					state := s_syncj;
-				elsif j='1' then
-					state := s_sync;
-				end if;
-				frm <= '0';
-				dv  <= '0';
-			when s_syncj =>
-				if se0='1' then
-				elsif j='1' then
-					state := s_sync;
-				else
-					state := s_idle;
-				end if;
-				frm <= '0';
-				dv  <= '0';
-			when s_sync =>
-				if se0='1' then
-					state := s_idle;
-				elsif k='1' then
-					case statekj is
-					when s_k =>
-						state := s_data;
-					when others =>
-					end case;
-				elsif j='1' then
-					case statekj is
-					when s_j =>
+			if ena='1' then
+				sync_l : case state is
+				when s_idle =>
+					if se0='1' then
 						state := s_idle;
-					when others =>
-					end case;
-				else
-					state := s_idle;
-				end if;
-				frm <= '0';
-				dv  <= '0';
-			when s_data =>
-				frm <= '1';
-				stuffed_bit : if cnt1 > 5 then
-					dv <= '0';
-				else
-					dv <= '1';
-				end if;
-				if se0='1' then
-					state := s_idle;
-				end if;
-			end case;
+					elsif k='1' then
+						state := s_syncj;
+					elsif j='1' then
+						state := s_sync;
+					end if;
+					frm <= '0';
+					dv  <= '0';
+				when s_syncj =>
+					if se0='1' then
+					elsif j='1' then
+						state := s_sync;
+					else
+						state := s_idle;
+					end if;
+					frm <= '0';
+					dv  <= '0';
+				when s_sync =>
+					if se0='1' then
+						state := s_idle;
+					elsif k='1' then
+						case statekj is
+						when s_k =>
+							state := s_data;
+						when others =>
+						end case;
+					elsif j='1' then
+						case statekj is
+						when s_j =>
+							state := s_idle;
+						when others =>
+						end case;
+					else
+						state := s_idle;
+					end if;
+					frm <= '0';
+					dv  <= '0';
+				when s_data =>
+					frm <= '1';
+					stuffed_bit : if cnt1 > 5 then
+						dv <= '0';
+					else
+						dv <= '1';
+					end if;
+					if se0='1' then
+						state := s_idle;
+					end if;
+				end case;
 
-			kj_l : case statekj is
-			when s_k =>
-				if cnt1 < 6 then
-					cnt1 := cnt1 + 1;
-				end if;
-				if j='1' then
-					cnt1    := 0;
-					statekj := s_j;
-				end if;
-			when s_j =>
-				if cnt1 < 6 then
-					cnt1 := cnt1 + 1;
-				end if;
-				if k='1' then
-					cnt1    := 0;
-					statekj := s_k;
-				end if;
-			end case;
+				kj_l : case statekj is
+				when s_k =>
+					if cnt1 < 6 then
+						cnt1 := cnt1 + 1;
+					end if;
+					if j='1' then
+						cnt1    := 0;
+						statekj := s_j;
+					end if;
+				when s_j =>
+					if cnt1 < 6 then
+						cnt1 := cnt1 + 1;
+					end if;
+					if k='1' then
+						cnt1    := 0;
+						statekj := s_k;
+					end if;
+				end case;
 
-			err_l : if se0='1' then
-				err <= '0';
-			elsif cnt1 > 6 then
-				err <= '1';
+				err_l : if se0='1' then
+					err <= '0';
+				elsif cnt1 > 6 then
+					err <= '1';
+				end if;
+
+				nrzi_l : data <= q xor k;
+				q := not k;
 			end if;
-
-			nrzi_l : data <= q xor k;
-			q := not k;
 		end if;
 
 
