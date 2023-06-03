@@ -56,13 +56,14 @@ begin
 		variable q    : std_logic;
 	begin
 		if rising_edge(rxc) then
-			if cntr < 0 then
+			if cntr(0)='1' then
 				cntr := to_signed(oversampling-2, cntr'length);
 			elsif (to_bit(q) xor to_bit(k))='1' then
 				cntr := to_signed(oversampling-2, cntr'length);
+			else
+				cntr := cntr - 1;
 			end if;
 			q := k;
-			cntr := cntr - 1;
 		end if;
 	end process;
 

@@ -93,7 +93,7 @@ begin
 		video_lck   => video_lck);
 
 	usb_g : if io_link=io_usb generate 
-		constant oversampling : natural := 1;
+		constant oversampling : natural := 2;
 		signal usb_frm : std_logic;
 		signal clk     : std_logic;
 	begin
