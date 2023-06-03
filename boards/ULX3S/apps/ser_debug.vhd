@@ -93,35 +93,36 @@ begin
 		video_lck   => video_lck);
 
 	usb_g : if io_link=io_usb generate 
+		constant oversampling : natural := 1;
 		signal usb_frm : std_logic;
+		signal clk     : std_logic;
 	begin
 		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
-		-- usb_fpga_d; -- differential input reads D+
-		-- S_rxdp <= usb_fpga_bd_dp; -- single-ended input reads D+
-		-- S_rxdn <= usb_fpga_bd_dn; -- single-ended input reads D-
-		usb_fpga_d  <= 'Z' when up='0' else '0';
-		usb_fpga_dn <= 'Z' when up='0' else '0';
+		usb_fpga_dp    <= 'Z' when up='0' else '0';
+		usb_fpga_dn    <= 'Z' when up='0' else '0';
 		usb_fpga_bd_dp <= 'Z';
 		usb_fpga_bd_dn <= 'Z';
 
+		clk <= not to_stdulogic(to_bit(clk)) after 1 sec/(2*oversampling)/clk25mhz_freq;
 		usbphyrx_e : entity hdl4fpga.usbphy_rx
+		generic map (
+			oversampling => oversampling)
 		port map (
 			rxc  => clk_25mhz,
-			rxdp => usb_fpga_d,
+			rxdp => usb_fpga_dp,
 			rxdn => usb_fpga_dn,
 			frm  => usb_frm,
-			dv   => open, --ser_irdy,
+			dv   => ser_irdy,
 			err  => open,
-			data => open); --ser_data(0));
+			data => ser_data(0));
 
 		ser_clk     <= clk_25mhz;
 		ser_frm     <= usb_frm; --not usb_fpga_d;
-		ser_irdy    <= '1';
-		ser_data(0) <= '1';
-		led(8-1 downto 0) <= 
-			(usb_fpga_pu_dp, not usb_fpga_pu_dn, usb_fpga_d, not usb_fpga_dn, 
-			 not usb_fpga_pu_dp, usb_fpga_pu_dn, not usb_fpga_d, usb_fpga_dn);
+		-- ser_irdy    <= '1';
+		-- ser_data(0) <= '1';
+		led(8-1 downto 4) <= 
+			(usb_fpga_pu_dp, usb_fpga_pu_dn, usb_fpga_dp, usb_fpga_dn);
 	end generate;
 
 	hdlc_g : if io_link=io_hdlc generate

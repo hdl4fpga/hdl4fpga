@@ -1,7 +1,3 @@
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
 --                                                                            --
 -- Author(s):                                                                 --
 --   Miguel Angel Sagreras                                                    --
@@ -25,9 +21,16 @@ use ieee.numeric_std.all;
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_bit.all;
+
+library hdl4fpga;
+use hdl4fpga.base.all;
+
 entity usbphy_rx is
-	-- generic (
-		-- oversampling : natural);
+	generic (
+		oversampling : natural);
 	port (
 		rxc  : in  std_logic;
 		rxdp : in  std_logic;
@@ -48,6 +51,21 @@ begin
 	k   <= not rxdp and     rxdn;
 	se0 <= not rxdp and not rxdn;
  
+	process (rxc)
+		variable cntr : signed(0 to unsigned_num_bits(oversampling-1)-1);
+		variable q    : std_logic;
+	begin
+		if rising_edge(rxc) then
+			if cntr < 0 then
+				cntr := to_signed(oversampling-2, cntr'length);
+			elsif (to_bit(q) xor to_bit(k))='1' then
+				cntr := to_signed(oversampling-2, cntr'length);
+			end if;
+			q := k;
+			cntr := cntr - 1;
+		end if;
+	end process;
+
 	process (k, j, rxc)
 		type stateskj is (s_k, s_j);
 		variable statekj : stateskj;

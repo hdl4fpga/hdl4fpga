@@ -105,7 +105,7 @@ LOCATE COMP "wifi_gpio17" SITE "N3"; IOBUF  PORT "wifi_gpio17" PULLMODE=UP   IO_
 LOCATE COMP "ant_433mhz" SITE "G1"; IOBUF   PORT "ant_433mhz" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
 
 ## Second USB port "US2" going directly into FPGA "usb", "ram" sheet
-LOCATE COMP "usb_fpga_d"     SITE "E16"; IOBUF  PORT "usb_fpga_d"     PULLMODE=NONE IO_TYPE=LVCMOS33  DRIVE=16;# single ended or differential input only
+LOCATE COMP "usb_fpga_dp"    SITE "E16"; IOBUF  PORT "usb_fpga_dp"    PULLMODE=NONE IO_TYPE=LVCMOS33  DRIVE=16;# single ended or differential input only
 LOCATE COMP "usb_fpga_dn"    SITE "F16"; IOBUF  PORT "usb_fpga_dn"    PULLMODE=NONE IO_TYPE=LVCMOS33  DRIVE=16;
 LOCATE COMP "usb_fpga_bd_dp" SITE "D15"; IOBUF  PORT "usb_fpga_bd_dp" PULLMODE=NONE IO_TYPE=LVCMOS33D DRIVE=4;# differential bidirectional
 LOCATE COMP "usb_fpga_bd_dn" SITE "E15"; IOBUF  PORT "usb_fpga_bd_dn" PULLMODE=NONE IO_TYPE=LVCMOS33D DRIVE=4;
