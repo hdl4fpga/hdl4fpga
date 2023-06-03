@@ -35,7 +35,7 @@ entity usbphy_rx is
 		frm  : out std_logic;
 		dv   : out std_logic;
 		err  : out std_logic;
-		data : buffer std_logic := '1');
+		data : out std_logic);
 end;
 
 architecture def of usbphy_rx is
@@ -60,7 +60,9 @@ begin
 		if rising_edge(rxc) then
 			sync_l : case state is
 			when s_idle =>
-				if k='1' then
+				if se0='1' then
+					state := s_idle;
+				elsif k='1' then
 					state := s_syncj;
 				elsif j='1' then
 					state := s_sync;
@@ -68,7 +70,8 @@ begin
 				frm <= '0';
 				dv  <= '0';
 			when s_syncj =>
-				if j='1' then
+				if se0='1' then
+				elsif j='1' then
 					state := s_sync;
 				else
 					state := s_idle;
@@ -76,7 +79,9 @@ begin
 				frm <= '0';
 				dv  <= '0';
 			when s_sync =>
-				if k='1' then
+				if se0='1' then
+					state := s_idle;
+				elsif k='1' then
 					case statekj is
 					when s_k =>
 						state := s_data;
@@ -99,6 +104,9 @@ begin
 					dv <= '0';
 				else
 					dv <= '1';
+				end if;
+				if se0='1' then
+					state := s_idle;
 				end if;
 			end case;
 

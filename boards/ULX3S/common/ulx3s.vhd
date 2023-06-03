@@ -46,7 +46,7 @@ entity ulx3s is
 		right          : in  std_logic := 'U';
 
 		led            : out std_logic_vector(8-1 downto 0);
-		sw             : in    std_logic_vector(4-1 downto 0) := (others => 'U');
+		sw             : in  std_logic_vector(4-1 downto 0) := (others => 'U');
 
 
 		oled_clk       : out   std_logic;
@@ -87,8 +87,8 @@ entity ulx3s is
 
 		ant_433mhz     : out   std_logic;
 
-		usb_fpga_dp    : inout std_logic := 'U';  
-		usb_fpga_dn    : inout std_logic := 'U';
+		usb_fpga_d     : inout std_logic := 'U';  
+		usb_fpga_dn    : inout std_logic := 'U';  
 		usb_fpga_bd_dp : inout std_logic := 'U';
 		usb_fpga_bd_dn : inout std_logic := 'U';
 		usb_fpga_pu_dp : inout std_logic := 'U';

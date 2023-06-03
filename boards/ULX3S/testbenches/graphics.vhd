@@ -97,8 +97,7 @@ architecture ulx3s_graphics of testbench is
 
 			ant_433mhz     : out   std_logic;
 
-			usb_fpga_dp    : inout std_logic := '-';
-			usb_fpga_dn    : inout std_logic := '-';
+			usb_fpga_d     : inout std_logic := '-';
 			usb_fpga_bd_dp : inout std_logic := '-';
 			usb_fpga_bd_dn : inout std_logic := '-';
 			usb_fpga_pu_dp : inout std_logic := '-';

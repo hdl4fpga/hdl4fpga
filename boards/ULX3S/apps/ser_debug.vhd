@@ -37,17 +37,17 @@ use ecp5u.components.all;
 
 architecture ser_debug of ulx3s is
 
-	constant io_link : io_comms := io_ipoe;
+	constant io_link : io_comms := io_usb;
 
 	constant video_mode   : video_modes := mode600p24bpp;
 	constant video_params : video_record := videoparam(
 		video_modes'VAL(setif(debug,
-			video_modes'POS(modedebug),
+			video_modes'POS(video_mode),
 			video_modes'POS(video_mode))), clk25mhz_freq);
 
 	signal video_pixel   : std_logic_vector(0 to setif(
 		video_params.pixel=rgb565, 16, setif(
-		video_params.pixel=rgb888, 32, 0))-1);
+		video_params.pixel=rgb888, 24, 0))-1);
 
 	signal sys_rst         : std_logic;
 	signal sys_clk         : std_logic;
@@ -57,7 +57,7 @@ architecture ser_debug of ulx3s is
 	signal video_shift_clk : std_logic;
 	signal video_lck       : std_logic;
 	signal video_hzsync    : std_logic;
-    signal video_vtsync    : std_logic;
+	signal video_vtsync    : std_logic;
 	signal dvid_crgb       : std_logic_vector(7 downto 0);
 
 	signal so_frm        : std_logic;
@@ -75,7 +75,7 @@ architecture ser_debug of ulx3s is
 	signal ser_irdy        : std_logic;
 	signal ser_data        : std_logic_vector(0 to setif(io_link=io_ipoe, 2,1)-1);
 
-	constant hdplx       : std_logic := setif(debug, '0', '1');
+	constant hdplx         : std_logic := setif(debug, '0', '1');
 begin
 
 	sys_rst <= '0';
@@ -91,6 +91,38 @@ begin
 		video_clk   => video_clk,
 		video_shift_clk => video_shift_clk,
 		video_lck   => video_lck);
+
+	usb_g : if io_link=io_usb generate 
+		signal usb_frm : std_logic;
+	begin
+		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
+		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
+		-- usb_fpga_d; -- differential input reads D+
+		-- S_rxdp <= usb_fpga_bd_dp; -- single-ended input reads D+
+		-- S_rxdn <= usb_fpga_bd_dn; -- single-ended input reads D-
+		usb_fpga_d  <= 'Z' when up='0' else '0';
+		usb_fpga_dn <= 'Z' when up='0' else '0';
+		usb_fpga_bd_dp <= 'Z';
+		usb_fpga_bd_dn <= 'Z';
+
+		usbphyrx_e : entity hdl4fpga.usbphy_rx
+		port map (
+			rxc  => clk_25mhz,
+			rxdp => usb_fpga_d,
+			rxdn => usb_fpga_dn,
+			frm  => usb_frm,
+			dv   => open, --ser_irdy,
+			err  => open,
+			data => open); --ser_data(0));
+
+		ser_clk     <= clk_25mhz;
+		ser_frm     <= usb_frm; --not usb_fpga_d;
+		ser_irdy    <= '1';
+		ser_data(0) <= '1';
+		led(8-1 downto 0) <= 
+			(usb_fpga_pu_dp, not usb_fpga_pu_dn, usb_fpga_d, not usb_fpga_dn, 
+			 not usb_fpga_pu_dp, usb_fpga_pu_dn, not usb_fpga_d, usb_fpga_dn);
+	end generate;
 
 	hdlc_g : if io_link=io_hdlc generate
 		constant uart_freq : real := 
@@ -180,7 +212,7 @@ begin
 			mii_rxd(1) => rmii_rx1);
 
 		ser_clk  <= mii_clk;
-		ser_frm  <= tp(1);
+		ser_frm  <= rmii_crsdv; --tp(1);
 		ser_irdy <= '1';
 
 		datalat_e : entity hdl4fpga.latency
@@ -196,6 +228,26 @@ begin
 		wifi_en   <= '0';
 		rmii_mdio <= '0';
 		rmii_mdc  <= '0';
+
+		process (rmii_crsdv)
+			variable q : std_logic;
+		begin
+			if rising_edge(rmii_crsdv) then
+				q := not q;
+				led(6) <= q;
+				led(7) <= not q;
+			end if;
+		end process;
+
+		process (rmii_nintclk)
+			variable q : std_logic;
+		begin
+			if rising_edge(rmii_nintclk) then
+				q := not q;
+				led(0) <= q;
+				led(1) <= not q;
+			end if;
+		end process;
 
 	end generate;
 
@@ -214,26 +266,6 @@ begin
 		video_vtsync    => video_vtsync,
 		video_pixel     => video_pixel,
 		dvid_crgb       => dvid_crgb);
-
-	process (rmii_crsdv)
-		variable q : std_logic;
-	begin
-		if rising_edge(rmii_crsdv) then
-			q := not q;
-			led(6) <= q;
-			led(7) <= not q;
-		end if;
-	end process;
-
-	process (rmii_nintclk)
-		variable q : std_logic;
-	begin
-		if rising_edge(rmii_nintclk) then
-			q := not q;
-			led(0) <= q;
-			led(1) <= not q;
-		end if;
-	end process;
 
 	ddr_g : for i in gpdi_d'range generate
 		signal q : std_logic;

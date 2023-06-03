@@ -32,7 +32,7 @@ use hdl4fpga.cgafonts.all;
 
 entity cga_adapter is
 	generic (
-		display_scale  : natural := 2;
+		display_scale  : natural := 1;
 		display_width  : natural;
 		display_height : natural;
 		cga_bitrom     : std_logic_vector := (1 to 0 => '-');
@@ -60,10 +60,10 @@ architecture struct of cga_adapter is
 	signal font_row  : unsigned(unsigned_num_bits(font_height-1)-1 downto 0);
 	signal video_on  : std_logic;
 
-	signal char_addr : unsigned(cga_addr'range);
 	signal cga_codes : std_logic_vector(cga_data'range);
 	signal cga_code  : std_logic_vector(unsigned_num_bits(font_bitrom'length/font_height/font_width-1)-1 downto 0);
 	signal mux_code  : std_logic_vector(cga_code'range);
+	signal char_addr : unsigned(cga_addr'length-1+(unsigned_num_bits(cga_codes'length/cga_code'length)-1) downto 0);
 
 	signal char_on   : std_logic;
 	signal char_dot  : std_logic;
@@ -181,7 +181,7 @@ begin
 			di  => std_logic_vector(char_addr(char_addr'length-cga_addr'length-1 downto 0)),
 			do  => sel);
 
-		mux_code <= multiplex(cga_codes, sel);
+		mux_code <= multiplex(cga_codes, sel, mux_code'length);
 	end generate;
 	cga_code <= mux_code when char_addr'length > cga_addr'length else cga_codes; 
 

@@ -73,7 +73,8 @@ package app_profiles is
 
 	type io_comms is (
 		io_hdlc,
-		io_ipoe);
+		io_ipoe,
+		io_usb);
 
 	type profile_params is record
 		comms       : io_comms;
