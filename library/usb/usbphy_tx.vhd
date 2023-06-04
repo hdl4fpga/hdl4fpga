@@ -23,15 +23,15 @@ begin
 		variable data : unsigned(8-1 downto 0) := (others => '0');
 	begin
 		if rising_edge(txc) then
-			busy <= '0';
 			if txen='0' then
 				data := x"80"; -- sync word
 				cnt1 := 0;
-				txdp <= '0';
-				txdn <= '0';
+				busy <= '0';
+				txdp <= data(0);
+				txdn <= data(0);
 			else
 				if data(0)='1' then
-					if cnt1 < 5 then
+					stuffed_bit : if cnt1 < 5 then
 						data(0) := txd;
 						data := data ror 1;
 						cnt1 := cnt1 + 1;
@@ -44,13 +44,16 @@ begin
 					data := data ror 1;
 					cnt1 := 0;
 				end if;
-				if data(0)='1' then
-					if cnt1 >= 5 then
-						busy <= '1';
-					end if;
-				end if;
 				txdp <= not (txdp xor data(0));
 				txdn <=     (txdp xor data(0));
+			end if;
+
+			stuffing_bit : if data(0)='0' then
+				busy <= '0';
+			elsif  cnt1 < 5 then
+				busy <= '0';
+			else
+				busy <= '1';
 			end if;
 		end if;
 	end process;
