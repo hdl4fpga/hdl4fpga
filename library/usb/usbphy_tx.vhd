@@ -11,24 +11,28 @@ entity usbphy_tx is
 		txen : in  std_logic;
 		busy : out std_logic := '1';
 		txd  : in  std_logic;
-		txdp : buffer std_logic;
-		txdn : buffer std_logic);
+		txdp : out std_logic;
+		txdn : out std_logic);
 end;
 
 architecture def of usbphy_tx is
+	alias tx_stuffedbit : std_logic is busy;
 begin
 
 	process (txc)
 		variable cnt1 : natural range 0 to 7;
 		variable data : unsigned(8-1 downto 0) := (others => '0');
+		variable 
+		variable dp   : std_logic;
+		variable dn   : std_logic;
 	begin
 		if rising_edge(txc) then
 			if txen='0' then
 				data := x"80"; -- sync word
 				cnt1 := 0;
 				busy <= '0';
-				txdp <= data(0);
-				txdn <= data(0);
+				dp   := data(0);
+				dn   := data(0);
 			else
 				if data(0)='1' then
 					stuffed_bit : if cnt1 < 5 then
@@ -44,8 +48,8 @@ begin
 					data := data ror 1;
 					cnt1 := 0;
 				end if;
-				txdp <= not (txdp xor data(0));
-				txdn <=     (txdp xor data(0));
+				dp := not (dp xor data(0));
+				dn := not dp;
 			end if;
 
 			bit_stuffing : if data(0)='0' then
@@ -55,6 +59,9 @@ begin
 			else
 				busy <= '1';
 			end if;
+
+			txdp <= dp;
+			txdn <= dn;
 		end if;
 	end process;
 
