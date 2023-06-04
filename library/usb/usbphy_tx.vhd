@@ -48,7 +48,7 @@ begin
 				txdn <=     (txdp xor data(0));
 			end if;
 
-			stuffing_bit : if data(0)='0' then
+			bit_stuffing : if data(0)='0' then
 				busy <= '0';
 			elsif cnt1 < 5 then
 				busy <= '0';
