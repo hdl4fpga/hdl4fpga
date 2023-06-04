@@ -46,6 +46,7 @@ architecture def of usbphy_rx is
 	signal k   : std_logic;
 	signal se0 : std_logic;
 	signal ena : std_logic;
+	alias rx_stuffedbit : std_logic is ena;
 begin
 
 	process (rxc)
@@ -66,7 +67,7 @@ begin
 			else
 				cntr := cntr - 1;
 			end if;
-			if cntr=(oversampling-1)/2 then
+			if cntr=oversampling-2 then
 				ena <= '1';
 			else
 				ena <= '0';

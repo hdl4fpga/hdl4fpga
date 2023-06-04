@@ -15,6 +15,7 @@ entity usbphy_tx is
 end;
 
 architecture def of usbphy_tx is
+	signal tx_stuffedbit : std_logic;
 begin
 
 	process (txc)
@@ -22,6 +23,7 @@ begin
 		variable data : unsigned(8-1 downto 0) := (others => '0');
 	begin
 		if rising_edge(txc) then
+			tx_stuffedbit <= '0';
 			if txen='0' then
 				data := x"80"; -- sync word
 				cnt1 := 0;
@@ -34,6 +36,7 @@ begin
 						data := data ror 1;
 						cnt1 := cnt1 + 1;
 					else
+						tx_stuffedbit <= '1';
 						data(0) := '0';
 						cnt1 := 0;
 					end if;
