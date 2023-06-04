@@ -22,7 +22,6 @@ begin
 	process (txc)
 		variable cnt1 : natural range 0 to 7;
 		variable data : unsigned(8-1 downto 0) := (others => '0');
-		variable 
 		variable dp   : std_logic;
 		variable dn   : std_logic;
 	begin
@@ -59,7 +58,6 @@ begin
 			else
 				busy <= '1';
 			end if;
-
 			txdp <= dp;
 			txdn <= dn;
 		end if;
