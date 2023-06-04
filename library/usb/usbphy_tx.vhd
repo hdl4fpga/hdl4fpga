@@ -50,7 +50,7 @@ begin
 
 			stuffing_bit : if data(0)='0' then
 				busy <= '0';
-			elsif  cnt1 < 5 then
+			elsif cnt1 < 5 then
 				busy <= '0';
 			else
 				busy <= '1';
