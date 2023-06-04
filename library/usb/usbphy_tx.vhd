@@ -9,13 +9,13 @@ entity usbphy_tx is
 	port (
 		txc  : in  std_logic;
 		txen : in  std_logic;
+		busy : out std_logic := '1';
 		txd  : in  std_logic;
 		txdp : buffer std_logic;
 		txdn : buffer std_logic);
 end;
 
 architecture def of usbphy_tx is
-	signal tx_stuffedbit : std_logic;
 begin
 
 	process (txc)
@@ -23,7 +23,7 @@ begin
 		variable data : unsigned(8-1 downto 0) := (others => '0');
 	begin
 		if rising_edge(txc) then
-			tx_stuffedbit <= '0';
+			busy <= '0';
 			if txen='0' then
 				data := x"80"; -- sync word
 				cnt1 := 0;
@@ -36,7 +36,6 @@ begin
 						data := data ror 1;
 						cnt1 := cnt1 + 1;
 					else
-						tx_stuffedbit <= '1';
 						data(0) := '0';
 						cnt1 := 0;
 					end if;
@@ -44,6 +43,11 @@ begin
 					data(0) := txd;
 					data := data ror 1;
 					cnt1 := 0;
+				end if;
+				if data(0)='1' then
+					if cnt1 >= 5 then
+						busy <= '1';
+					end if;
 				end if;
 				txdp <= not (txdp xor data(0));
 				txdn <=     (txdp xor data(0));
