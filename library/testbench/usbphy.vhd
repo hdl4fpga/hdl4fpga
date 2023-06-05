@@ -26,12 +26,13 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.base.all;
 
 architecture usbphy of testbench is
 	constant usb_freq : real := 12.0e6;
     constant oversampling : natural := 4;
 
-	constant data : std_logic_vector(0 to 64-1) := x"7efd_aaab" & x"5555_fff1";
+	constant data : std_logic_vector(0 to 24-1) := reverse(x"a50df2",8);
 
 	signal txc  : std_logic := '0';
 	signal txen : std_logic := '0';
@@ -41,10 +42,11 @@ architecture usbphy of testbench is
 	signal rxc  : std_logic := '0';
 	signal frm : std_logic := '0';
 	signal rxdv : std_logic := '0';
-	signal rxd  : std_logic := '0';
 	signal busy : std_logic;
 
 	signal datao : std_logic_vector(0 to 64-1) := (others => '0');
+	signal rx_data : std_logic_vector(0 to 0);
+	signal rx_crc : std_logic_vector(0 to 5-1);
 begin
 
 	txc <= not txc after 1 sec/(2.0*usb_freq)*(50.0e6/12.0e6); --*0.975;
@@ -83,19 +85,28 @@ begin
 	generic map (
 		oversampling => oversampling)
 	port map (
-		data => rxd,
+		data => rx_data(0),
 		dv => rxdv,
 		frm => frm,
 		rxc  => rxc,
 		rxdp => dp,
 		rxdn => dn);
 
+	crc_e : entity hdl4fpga.crc
+	port map (
+		g    => b"00101",
+		clk  => rxc,
+		frm  => frm,
+		irdy => rxdv,
+		data => rx_data,
+		crc  => rx_crc);
+
 	process (rxc)
 		variable cntr : natural := 0;
 	begin
 		if rising_edge(rxc) then
 			if (frm and rxdv)='1' then
-				datao(cntr) <= rxd;
+				datao(cntr) <= rx_data(0);
 				cntr := cntr + 1;
 			end if;
 		end if;
