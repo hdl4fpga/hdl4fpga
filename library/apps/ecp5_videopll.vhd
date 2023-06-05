@@ -37,9 +37,11 @@ use ecp5u.components.all;
 
 entity ecp5_videopll is
 	generic (
+		io_link      : io_comms := io_hdlc;
+		clkio_freq   : real := 36.0e6;
 		clkref_freq  : real;
 		default_gear : natural := 0;
-		video_params :  video_record);
+		video_params : video_record);
 	port (
 		clk_ref      : in std_logic;
 		videoio_clk  : out std_logic;
@@ -54,6 +56,10 @@ entity ecp5_videopll is
 end;
 
 architecture def of ecp5_videopll is
+	constant clkos3_div : natural := setif(io_link=io_hdlc, 
+		video_params.pll.clkos3_div,
+		natural((real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clkref_freq)/
+		(real(video_params.pll.clki_div)*clkio_freq)));
 
 	attribute FREQUENCY_PIN_CLKOS  : string;
 	attribute FREQUENCY_PIN_CLKOS2 : string;
@@ -73,7 +79,7 @@ architecture def of ecp5_videopll is
 
 	constant videoio_freq : real :=
 		(real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clkref_freq)/
-		(real(video_params.pll.clki_div*video_params.pll.clkos3_div));
+		(real(video_params.pll.clki_div*clkos3_div));
 
 	constant clkos_freq  : real :=
 		real(video_params.pll.clkfb_div)*clkref_freq/
@@ -120,7 +126,7 @@ begin
 
 		CLKOS_DIV        => video_params.pll.clkos_div,
 		CLKOS2_DIV       => video_params.pll.clkos2_div,
-		CLKOS3_DIV       => video_params.pll.clkos3_div,
+		CLKOS3_DIV       => clkos3_div,
 		CLKOP_DIV        => video_params.pll.clkop_div,
 		CLKFB_DIV        => video_params.pll.clkfb_div,
 		CLKI_DIV         => video_params.pll.clki_div)

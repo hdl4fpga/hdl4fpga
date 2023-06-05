@@ -28,7 +28,8 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 
 architecture usbphy of testbench is
-    constant oversampling : natural := 3;
+	constant usb_freq : real := 12.0e6;
+    constant oversampling : natural := 4;
 
 	constant data : std_logic_vector(0 to 64-1) := x"7efd_aaab" & x"5555_fff1";
 
@@ -46,8 +47,8 @@ architecture usbphy of testbench is
 	signal datao : std_logic_vector(0 to 64-1) := (others => '0');
 begin
 
-	txc <= not txc after 10 ns*oversampling*(25.0/24.0); --*0.975;
-	rxc <= not rxc after 10 ns;
+	txc <= not txc after 1 sec/(2.0*usb_freq)*(50.0e6/12.0e6); --*0.975;
+	rxc <= not rxc after 1 sec/(2.0*usb_freq);
 
 	process (txc)
 		variable cntr : natural := 0;

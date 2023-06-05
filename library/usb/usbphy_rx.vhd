@@ -30,7 +30,8 @@ use hdl4fpga.base.all;
 
 entity usbphy_rx is
 	generic (
-		oversampling : natural);
+		oversampling : natural;
+		bit_stuffing : natural := 5);
 	port (
 		rxc  : in  std_logic;
 		rxdp : in  std_logic;
@@ -136,14 +137,16 @@ begin
 					frm <= '0';
 					dv  <= '0';
 				when s_data =>
-					frm <= '1';
-					stuffed_bit : if cnt1 > 5 then
+					stuffedbit_l : if cnt1 > bit_stuffing then
 						rx_stuffedbit <= '1';
-						dv <= '0';
+						frm <= '1';
+						dv  <= '0';
 					elsif se0='1' then
-						dv <= '0';
+						frm <= '0';
+						dv  <= '0';
 					else
-						dv <= '1';
+						frm <= '1';
+						dv  <= '1';
 					end if;
 					if se0='1' then
 						state := s_idle;

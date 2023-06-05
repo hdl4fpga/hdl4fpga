@@ -6,6 +6,8 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 entity usbphy_tx is
+	generic (
+		bit_stuffing : natural := 5);
 	port (
 		txc  : in  std_logic;
 		txen : in  std_logic;
@@ -31,10 +33,10 @@ begin
 				cnt1 := 0;
 				busy <= '0';
 				dp   := data(0);
-				dn   := '0'; --data(0);
+				dn   := not data(0);
 			else
 				if data(0)='1' then
-					stuffed_bit : if cnt1 < 5 then
+					stuffedbit_l : if cnt1 < bit_stuffing then
 						data(0) := txd;
 						data := data ror 1;
 						cnt1 := cnt1 + 1;
@@ -51,7 +53,7 @@ begin
 				dn := not dp;
 			end if;
 
-			bit_stuffing : if data(0)='0' then
+			bitstuffing_l : if data(0)='0' then
 				busy <= '0';
 			elsif cnt1 < 5 then
 				busy <= '0';

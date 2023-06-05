@@ -37,6 +37,7 @@ use ecp5u.components.all;
 
 architecture ser_debug of ulx3s is
 
+	constant usb_oversampling : natural := 3;
 	constant io_link : io_comms := io_usb;
 
 	constant video_mode   : video_modes := mode600p24bpp;
@@ -60,15 +61,15 @@ architecture ser_debug of ulx3s is
 	signal video_vtsync    : std_logic;
 	signal dvid_crgb       : std_logic_vector(7 downto 0);
 
-	signal so_frm        : std_logic;
-	signal so_irdy       : std_logic;
-	signal so_trdy       : std_logic;
-	signal so_data       : std_logic_vector(0 to 8-1);
-	signal si_frm        : std_logic;
-	signal si_irdy       : std_logic;
-	signal si_trdy       : std_logic;
-	signal si_end        : std_logic;
-	signal si_data       : std_logic_vector(0 to 8-1);
+	signal so_frm          : std_logic;
+	signal so_irdy         : std_logic;
+	signal so_trdy         : std_logic;
+	signal so_data         : std_logic_vector(0 to 8-1);
+	signal si_frm          : std_logic;
+	signal si_irdy         : std_logic;
+	signal si_trdy         : std_logic;
+	signal si_end          : std_logic;
+	signal si_data         : std_logic_vector(0 to 8-1);
 
 	signal ser_clk         : std_logic;
 	signal ser_frm         : std_logic;
@@ -82,19 +83,19 @@ begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
+		io_link      => io_link,
+		clkio_freq   => 12.0e6*real(usb_oversampling),
 		clkref_freq  => clk25mhz_freq,
 		default_gear => 2,
 		video_params  => video_params)
 	port map (
 		clk_ref     => clk_25mhz,
-		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
+		videoio_clk => videoio_clk,
 		video_shift_clk => video_shift_clk,
 		video_lck   => video_lck);
 
 	usb_g : if io_link=io_usb generate 
-		constant oversampling : natural := 2;
-		signal usb_frm : std_logic;
 		signal clk     : std_logic;
 	begin
 		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
@@ -104,23 +105,20 @@ begin
 		usb_fpga_bd_dp <= 'Z';
 		usb_fpga_bd_dn <= 'Z';
 
-		clk <= not to_stdulogic(to_bit(clk)) after 1 sec/(2*oversampling)/clk25mhz_freq;
+		clk <= not to_stdulogic(to_bit(clk)) after 1 sec/(2*usb_oversampling)/clk25mhz_freq;
 		usbphyrx_e : entity hdl4fpga.usbphy_rx
 		generic map (
-			oversampling => oversampling)
+			oversampling => usb_oversampling)
 		port map (
-			rxc  => clk_25mhz,
+			rxc  => videoio_clk,
 			rxdp => usb_fpga_dp,
 			rxdn => usb_fpga_dn,
-			frm  => usb_frm,
+			frm  => ser_frm,
 			dv   => ser_irdy,
 			err  => open,
 			data => ser_data(0));
 
-		ser_clk     <= clk_25mhz;
-		ser_frm     <= usb_frm; --not usb_fpga_d;
-		-- ser_irdy    <= '1';
-		-- ser_data(0) <= '1';
+		ser_clk <= videoio_clk;
 		led(8-1 downto 4) <= 
 			(usb_fpga_pu_dp, usb_fpga_pu_dn, usb_fpga_dp, usb_fpga_dn);
 	end generate;
