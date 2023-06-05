@@ -30,7 +30,7 @@ library hdl4fpga;
 architecture usbphy of testbench is
     constant oversampling : natural := 3;
 
-	constant data : std_logic_vector(0 to 64-1) := x"7efd_aaab" & x"5555_fffe";
+	constant data : std_logic_vector(0 to 64-1) := x"7efd_aaab" & x"5555_fff1";
 
 	signal txc  : std_logic := '0';
 	signal txen : std_logic := '0';
@@ -43,7 +43,7 @@ architecture usbphy of testbench is
 	signal rxd  : std_logic := '0';
 	signal busy : std_logic;
 
-	signal datao : std_logic_vector(0 to 68-1) := (others => '0');
+	signal datao : std_logic_vector(0 to 64-1) := (others => '0');
 begin
 
 	txc <= not txc after 10 ns*oversampling*(25.0/24.0); --*0.975;
@@ -59,10 +59,11 @@ begin
 					txen <= '1';
 					cntr := cntr + 1;
 				end if;
-			else
-				cntr := cntr + 1;
-				if cntr > data'length+8 then
+			elsif busy='0' then
+				if cntr > data'length+7 then
 					txen <= '0';
+				else
+					cntr := cntr + 1;
 				end if;
 			end if;
 		end if;

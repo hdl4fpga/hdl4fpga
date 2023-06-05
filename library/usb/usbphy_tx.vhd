@@ -19,7 +19,7 @@ architecture def of usbphy_tx is
 	alias tx_stuffedbit : std_logic is busy;
 begin
 
-	process (txc)
+	process (txen, txc)
 		variable cnt1 : natural range 0 to 7;
 		variable data : unsigned(8-1 downto 0) := (others => '0');
 		variable dp   : std_logic;
@@ -31,7 +31,7 @@ begin
 				cnt1 := 0;
 				busy <= '0';
 				dp   := data(0);
-				dn   := data(0);
+				dn   := '0'; --data(0);
 			else
 				if data(0)='1' then
 					stuffed_bit : if cnt1 < 5 then
@@ -58,9 +58,9 @@ begin
 			else
 				busy <= '1';
 			end if;
-			txdp <= dp;
-			txdn <= dn;
 		end if;
+		txdp <= dp and txen;
+		txdn <= dn and txen;
 	end process;
 
 end;

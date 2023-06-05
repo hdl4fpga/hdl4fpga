@@ -46,7 +46,7 @@ architecture def of usbphy_rx is
 	signal k   : std_logic;
 	signal se0 : std_logic;
 	signal ena : std_logic;
-	alias rx_stuffedbit : std_logic is ena;
+	signal rx_stuffedbit : std_logic;
 begin
 
 	process (rxc)
@@ -93,6 +93,7 @@ begin
 		variable q     : std_logic;
 	begin
 		if rising_edge(rxc) then
+			rx_stuffedbit <= '0';
 			if ena='1' then
 				sync_l : case state is
 				when s_idle =>
@@ -137,6 +138,9 @@ begin
 				when s_data =>
 					frm <= '1';
 					stuffed_bit : if cnt1 > 5 then
+						rx_stuffedbit <= '1';
+						dv <= '0';
+					elsif se0='1' then
 						dv <= '0';
 					else
 						dv <= '1';
