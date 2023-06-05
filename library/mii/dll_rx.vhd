@@ -91,7 +91,7 @@ begin
 	hwtyp_irdy <= dll_irdy and hwtyp_frm;
 	pl_irdy    <= dll_irdy and pl_frm;
 
-	crc_frm  <= dll_frm and dll_frm;
+	crc_frm  <= dll_frm;
 	crc_irdy <= dll_irdy;
 	crc_e : entity hdl4fpga.crc
 	port map (

@@ -32,7 +32,11 @@ architecture usbphy of testbench is
 	constant usb_freq : real := 12.0e6;
     constant oversampling : natural := 4;
 
-	constant data : std_logic_vector(0 to 24-1) := reverse(x"a50df2",8);
+	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a50df2",8);
+	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a527b2",8);
+	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a50302",8);
+	constant data : std_logic_vector := reverse(x"c300052f_0000000000_ed6b",8);
+	-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8);
 
 	signal txc  : std_logic := '0';
 	signal txen : std_logic := '0';
@@ -41,12 +45,15 @@ architecture usbphy of testbench is
 	signal dn   : std_logic;
 	signal rxc  : std_logic := '0';
 	signal frm : std_logic := '0';
+	signal xxx : std_logic := '0';
+	signal crc_frm : std_logic := '0';
 	signal rxdv : std_logic := '0';
 	signal busy : std_logic;
 
-	signal datao : std_logic_vector(0 to 64-1) := (others => '0');
+	signal datao : std_logic_vector(data'range) := (others => '0');
 	signal rx_data : std_logic_vector(0 to 0);
 	signal rx_crc : std_logic_vector(0 to 5-1);
+	signal rx_crc16 : std_logic_vector(0 to 16-1);
 begin
 
 	txc <= not txc after 1 sec/(2.0*usb_freq)*(50.0e6/12.0e6); --*0.975;
@@ -92,15 +99,25 @@ begin
 		rxdp => dp,
 		rxdn => dn);
 
-	crc_e : entity hdl4fpga.crc
+	crc5_e : entity hdl4fpga.crc
 	port map (
 		g    => b"00101",
 		clk  => rxc,
-		frm  => frm,
+		frm  => crc_frm,
 		irdy => rxdv,
 		data => rx_data,
 		crc  => rx_crc);
 
+	crc16_e : entity hdl4fpga.crc
+	port map (
+		g    => x"8005",
+		clk  => rxc,
+		frm  => crc_frm,
+		irdy => rxdv,
+		data => rx_data,
+		crc  => rx_crc16);
+
+	crc_frm <= frm and xxx;
 	process (rxc)
 		variable cntr : natural := 0;
 	begin
@@ -108,6 +125,9 @@ begin
 			if (frm and rxdv)='1' then
 				datao(cntr) <= rx_data(0);
 				cntr := cntr + 1;
+			end if;
+			if cntr >= 8 then
+				xxx <= '1';
 			end if;
 		end if;
 	end process;
