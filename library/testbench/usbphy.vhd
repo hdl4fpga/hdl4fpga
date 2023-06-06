@@ -35,7 +35,8 @@ architecture usbphy of testbench is
 	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a50df2",8);
 	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a527b2",8);
 	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a50302",8);
-	constant data : std_logic_vector := reverse(x"c300052f_0000000000_ed6b",8);
+	constant data : std_logic_vector(0 to 24-1) := reverse(x"a55fa0",8);
+	-- constant data : std_logic_vector := reverse(x"c300052f_0000000000_ed6b",8);
 	-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8);
 
 	signal txc  : std_logic := '0';
