@@ -52,7 +52,7 @@ architecture usbphy of testbench is
 	signal busy : std_logic;
 
 	signal datao : std_logic_vector(data'range) := (others => '0');
-	signal rx_data : std_logic_vector(0 to 0);
+	signal rxd : std_logic_vector(0 to 0);
 	signal rx_crc : std_logic_vector(0 to 5-1);
 	signal rx_crc16 : std_logic_vector(0 to 16-1);
 begin
@@ -89,48 +89,94 @@ begin
 		txdp => dp,
 		txdn => dn);
 
-	rx_d : entity hdl4fpga.usbphy_rx
-	generic map (
-		oversampling => oversampling)
-	port map (
-		data => rx_data(0),
-		dv => rxdv,
-		frm => frm,
-		rxc  => rxc,
-		rxdp => dp,
-		rxdn => dn);
-
-	crc5_e : entity hdl4fpga.crc
-	port map (
-		g    => b"00101",
-		clk  => rxc,
-		frm  => crc_frm,
-		irdy => rxdv,
-		data => rx_data,
-		crc  => rx_crc);
-
-	crc16_e : entity hdl4fpga.crc
-	port map (
-		g    => x"8005",
-		clk  => rxc,
-		frm  => crc_frm,
-		irdy => rxdv,
-		data => rx_data,
-		crc  => rx_crc16);
-
-	crc_frm <= frm and xxx;
-	process (rxc)
-		variable cntr : natural := 0;
+	rx_b : block
 	begin
-		if rising_edge(rxc) then
-			if (frm and rxdv)='1' then
-				datao(cntr) <= rx_data(0);
-				cntr := cntr + 1;
+
+    	rx_d : entity hdl4fpga.usbphy_rx
+    	generic map (
+    		oversampling => oversampling)
+    	port map (
+    		data => rxd(0),
+    		dv   => rxdv,
+    		frm  => frm,
+    		rxc  => rxc,
+    		rxdp => dp,
+    		rxdn => dn);
+
+		usbcrc_b : block
+    		g    => b"00101",
+		begin
+    		usbcrc_g : for i in 0 to 1 generate
+    			crc_b : block
+    				port (
+    					clk  : in  clk;
+    					g    : in  std_logic_vector;
+    					ena  : in  std_logic_vector;
+    					data : in  std_logic_vector;
+    					crc  : buffer std_logic_vector)
+    				port map (
+    					clk  => rxc,
+    					g    => g(s1(i) to s1(i+1)),
+    					ena  => rxdv
+    					data => rxd,
+    					crc  => crc(s1(i) to s1(i+1)));
+    			begin
+    				crc_p : process (clk)
+    				begin
+    					if rising_edge(clk) then
+    						if frm='0' then
+    							crc <= (crc'range => '0');
+    						elsif ena='1' then
+    							crc <= not galois_crc(data, not crc, g);
+    						end if;
+    					end if;
+    				end process;
+    			end block;
+
+    			process (rxc)
+    			begin
+    				if rising_edge(rxc) then
+    					if frm='1' then
+    						crc;
+    					end if;
+    				end if;
+    			end process;
+
+    		end generate;
+		end block;
+
+    	crc5_e : entity hdl4fpga.crc
+    	port map (
+    		g    => b"00101",
+    		clk  => rxc,
+    		frm  => crc_frm,
+    		irdy => rxdv,
+    		data => rxd,
+    		crc  => rx_crc);
+
+    	crc16_e : entity hdl4fpga.crc
+    	port map (
+    		g    => x"8005",
+    		clk  => rxc,
+    		frm  => crc_frm,
+    		irdy => rxdv,
+    		data => rxd,
+    		crc  => rx_crc16);
+
+    	crc_frm <= frm and xxx;
+		process (rxc)
+			variable cntr : natural := 0;
+		begin
+			if rising_edge(rxc) then
+				if (frm and rxdv)='1' then
+					datao(cntr) <= rxd(0);
+					cntr := cntr + 1;
+				end if;
+				if cntr >= 8 then
+					xxx <= '1';
+				end if;
 			end if;
-			if cntr >= 8 then
-				xxx <= '1';
-			end if;
-		end if;
-	end process;
+		end process;
+	end block;
 
 end;
