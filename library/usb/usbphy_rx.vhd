@@ -31,6 +31,7 @@ use hdl4fpga.base.all;
 entity usbphy_rx is
 	generic (
 		oversampling : natural;
+		watermark    : natural := 0;
 		bit_stuffing : natural := 5);
 	port (
 		rxc  : in  std_logic;
@@ -40,6 +41,8 @@ entity usbphy_rx is
 		dv   : out std_logic;
 		err  : out std_logic;
 		data : out std_logic);
+
+	constant wm : natural := setif(watermark=0, (oversampling)/2, watermark);
 end;
 
 architecture def of usbphy_rx is
@@ -68,7 +71,7 @@ begin
 			else
 				cntr := cntr - 1;
 			end if;
-			if cntr=oversampling-2 then
+			if cntr=wm then
 				ena <= '1';
 			else
 				ena <= '0';
@@ -81,7 +84,7 @@ begin
 	end process;
 
 	assert false
-	report cr & "oversampling/2 => " & natural'image(oversampling/2)
+	report cr & "watermark" & natural'image(wm)
 	severity note;
 
 	process (k, j, rxc)
