@@ -104,14 +104,14 @@ begin
     		rxdn => dn);
 
 		usbcrc_b : block
-    		constant g5  : std_logic_vector := b"00101";
-    		constant g16 : std_logic_vector := x"8005";
-    		constant g   : std_logic_vector := g5 & g16;
-			constant s1  : natural_vector := (0, g5'length, g5'length+g16'length);
-			signal crc   : std_logic_vector(g'range);
+    		constant g5   : std_logic_vector := b"00101";
+    		constant g16  : std_logic_vector := x"8005";
+    		constant g    : std_logic_vector := g5 & g16;
+			constant slce : natural_vector := (0, g5'length, g5'length+g16'length);
+			signal crc    : std_logic_vector(g'range);
 
-			alias crc5   : std_logic_vector(s1(0) to s1(1)-1);
-			alias crc16  : std_logic_vector(g5'length-1);
+			alias crc5   : std_logic_vector(slce(0) to slce(1)-1);
+			alias crc16  : std_logic_vector(slce(1) to slce(2)-1);
 		begin
     		usbcrc_g : for i in 0 to 1 generate
     			crc_b : block
@@ -123,10 +123,10 @@ begin
     					crc  : buffer std_logic_vector)
     				port map (
     					clk  => rxc,
-    					g    => g(s1(i) to s1(i+1)-1),
+    					g    => g(slce(i) to slce(i+1)-1),
     					ena  => rxdv
     					data => rxd,
-    					crc  => crc(s1(i) to s1(i+1)-1));
+    					crc  => crc(slce(i) to slce(i+1)-1));
     			begin
     				crc_p : process (clk)
     				begin
