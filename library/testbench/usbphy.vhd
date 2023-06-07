@@ -36,6 +36,7 @@ architecture usbphy of testbench is
 	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a527b2",8);
 	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a50302",8);
 	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a5badf",8);
+	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"2d0010",8);
 	constant data : std_logic_vector := reverse(x"c300052f_0000000000_ed6b",8);
 	-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8);
 
@@ -123,10 +124,10 @@ begin
 		begin
 
     		process (rxdv, rxc)
-				type states is (s_pid, s_crc);
+				type states is (s_pid, s_data);
 				variable state : states;
     			variable cntr  : natural range 0 to 7;
-				variable pid   : unsigned(0 to 8-1);
+				variable pid   : unsigned(8-1 downto 0);
     		begin
     			if rising_edge(rxc) then
 					case state is
@@ -137,13 +138,13 @@ begin
 							if cntr < 7 then
 								cntr := cntr + 1;
 							else 
-								state := s_crc;
+								state := s_data;
 							end if;
 							pid(0) := rxd(0);
-							pid := pid rol 1;
+							pid := pid ror 1;
 						end if;
 						crc_frm <= '0';
-					when s_crc =>
+					when s_data =>
 						if frm='0' then
 							crc_frm <= '0';
 							state := s_pid;
