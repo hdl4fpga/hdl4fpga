@@ -50,6 +50,8 @@ HDL4FPGA__usbphy_tx__def = $(LIB_HDL4FPGA)/usbphy_tx/def.dat
 HDL4FPGA__usbphy_tx = $(LIB_HDL4FPGA)/usbphy_tx/_primary.dat
 HDL4FPGA__usbphy_rx__def = $(LIB_HDL4FPGA)/usbphy_rx/def.dat
 HDL4FPGA__usbphy_rx = $(LIB_HDL4FPGA)/usbphy_rx/_primary.dat
+HDL4FPGA__usbphy__def = $(LIB_HDL4FPGA)/usbphy/def.dat
+HDL4FPGA__usbphy = $(LIB_HDL4FPGA)/usbphy/_primary.dat
 HDL4FPGA__udp_tx__def = $(LIB_HDL4FPGA)/udp_tx/def.dat
 HDL4FPGA__udp_tx = $(LIB_HDL4FPGA)/udp_tx/_primary.dat
 HDL4FPGA__udp_rx__def = $(LIB_HDL4FPGA)/udp_rx/def.dat
@@ -391,6 +393,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__usbphy_tx) \
     $(HDL4FPGA__usbphy_rx__def) \
     $(HDL4FPGA__usbphy_rx) \
+    $(HDL4FPGA__usbphy__def) \
+    $(HDL4FPGA__usbphy) \
     $(HDL4FPGA__udp_tx__def) \
     $(HDL4FPGA__udp_tx) \
     $(HDL4FPGA__udp_rx__def) \
@@ -2327,9 +2331,22 @@ $(HDL4FPGA__udp_tx__def) : ../mii/udp_tx.vhd \
 		$(STD__textio)
 	$(VCOM) -2002 -work hdl4fpga ../mii/udp_tx.vhd
 
+$(HDL4FPGA__usbphy) \
+$(HDL4FPGA__usbphy__def) : ../usb/usbphy.vhd \
+		$(HDL4FPGA__usbphy_tx) \
+		$(IEEE__numeric_bit) \
+		$(HDL4FPGA__usbphy_rx) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../usb/usbphy.vhd
+
 $(HDL4FPGA__usbphy_rx) \
 $(HDL4FPGA__usbphy_rx__def) : ../usb/usbphy_rx.vhd \
 		$(IEEE__numeric_std) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_bit) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../usb/usbphy_rx.vhd
