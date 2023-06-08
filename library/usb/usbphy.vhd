@@ -45,11 +45,10 @@ entity usbphy is
 
 		rxdv : out  std_logic;
 		rxd  : out  std_logic);
-
-	constant wm : natural := setif(watermark=0, (oversampling)/2, watermark);
 end;
 
 architecture def of usbphy is
+
 	signal j     : std_logic;
 	signal k     : std_logic;
 	signal se0   : std_logic;
@@ -90,6 +89,7 @@ begin
 
 	oversampling_g : if oversampling/=0 generate
     	oversampling_p : process (clk)
+			constant wm : natural := setif(watermark=0, (oversampling)/2, watermark);
     		variable cntr  : natural range 0 to oversampling-1;
     		variable q     : std_logic;
     	begin
