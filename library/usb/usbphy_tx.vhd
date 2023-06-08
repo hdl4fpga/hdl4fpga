@@ -9,29 +9,29 @@ entity usbphy_tx is
 	generic (
 		bit_stuffing : natural := 5);
 	port (
-		txc  : in  std_logic;
+		clk  : in  std_logic;
 		txen : in  std_logic;
-		busy : out std_logic := '1';
 		txd  : in  std_logic;
+		txbs : out std_logic;
 		txdp : out std_logic;
 		txdn : out std_logic);
 end;
 
 architecture def of usbphy_tx is
-	alias tx_stuffedbit : std_logic is busy;
+	alias tx_stuffedbit : std_logic is txbs;
 begin
 
-	process (txen, txc)
+	process (txen, clk)
 		variable cnt1 : natural range 0 to 7;
 		variable data : unsigned(8-1 downto 0) := (others => '0');
 		variable dp   : std_logic;
 		variable dn   : std_logic;
 	begin
-		if rising_edge(txc) then
+		if rising_edge(clk) then
 			if txen='0' then
 				data := x"80"; -- sync word
 				cnt1 := 0;
-				busy <= '0';
+				txbs <= '0';
 				dp   := data(0);
 				dn   := not data(0);
 			else
@@ -54,11 +54,11 @@ begin
 			end if;
 
 			bitstuffing_l : if data(0)='0' then
-				busy <= '0';
+				txbs <= '0';
 			elsif cnt1 < 5 then
-				busy <= '0';
+				txbs <= '0';
 			else
-				busy <= '1';
+				txbs <= '1';
 			end if;
 		end if;
 		txdp <= dp and txen;
