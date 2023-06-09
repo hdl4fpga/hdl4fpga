@@ -96,8 +96,6 @@ begin
 		video_lck   => video_lck);
 
 	usb_g : if io_link=io_usb generate 
-		signal clk     : std_logic;
-	begin
 		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 		usb_fpga_dp    <= 'Z' when up='0' else '0';
@@ -105,18 +103,16 @@ begin
 		usb_fpga_bd_dp <= 'Z';
 		usb_fpga_bd_dn <= 'Z';
 
-		clk <= not to_stdulogic(to_bit(clk)) after 1 sec/(2*usb_oversampling)/clk25mhz_freq;
-		usbphyrx_e : entity hdl4fpga.usbphy_rx
+		usbphy_e : entity hdl4fpga.usbphy
 		generic map (
 			oversampling => usb_oversampling)
 		port map (
-			rxc  => videoio_clk,
-			rxdp => usb_fpga_dp,
-			rxdn => usb_fpga_dn,
-			frm  => ser_frm,
-			dv   => ser_irdy,
-			err  => open,
-			data => ser_data(0));
+			dp   => usb_fpga_dp,
+			dn   => usb_fpga_dn,
+			clk  => videoio_clk,
+			cken => ser_irdy,
+			rxdv => ser_frm,
+			rxd  => ser_data(0));
 
 		ser_clk <= videoio_clk;
 		led(8-1 downto 4) <= 

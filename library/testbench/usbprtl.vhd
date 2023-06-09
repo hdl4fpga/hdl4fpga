@@ -46,11 +46,12 @@ architecture usbprtcl of testbench is
 	signal dp   : std_logic;
 	signal dn   : std_logic;
 	signal rxc  : std_logic := '0';
-	signal frm  : std_logic := '0';
 	signal rxdv : std_logic := '0';
 	signal busy : std_logic;
 
-	signal rxd : std_logic_vector(0 to 0);
+	signal rxd  : std_logic;
+	signal clk  : std_logic;
+	signal cken : std_logic;
 begin
 
 	txc <= not txc after 1 sec/(2.0*usb_freq)*(50.0e6/12.0e6); --*0.975;
@@ -78,30 +79,35 @@ begin
 
 	tx_d : entity hdl4fpga.usbphy_tx
 	port map (
-		txc  => txc,
+		clk  => txc,
 		txen => txen,
-		busy => busy,
+		txbs => busy,
 		txd  => txd,
 		txdp => dp,
 		txdn => dn);
 
-   	usbprtcl_d : entity hdl4fpga.usbprtcl
+   	usbprtl_d : entity hdl4fpga.usbprtl
    	generic map (
    		oversampling => oversampling)
-   	port map (
-   		data => rxd(0),
-   		dv   => rxdv,
-   		frm  => frm,
-   		rxc  => rxc,
-   		rxdp => dp,
-   		rxdn => dn);
+	port map (
+		dp   => dp,
+		dn   => dn,
+		clk  => clk,
+		cken => cken,
+
+		txen => '0',
+		txbs => open,
+		txd  => '-',
+
+		rxdv => rxdv,
+		rxd  => rxd);
 
 	process (rxc)
 		variable rx_data : unsigned(data'range);
 	begin
 		if rising_edge(rxc) then
-			if (frm and rxdv)='1' then
-				rx_data(0) := rxd(0);
+			if (rxdv and cken)='1' then
+				rx_data(0) := rxd;
 				rx_data := rx_data rol 1;
 			end if;
 		end if;

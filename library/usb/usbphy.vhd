@@ -34,17 +34,18 @@ entity usbphy is
 		watermark    : natural := 0;
 		bit_stuffing : natural := 6);
 	port (
-		dp   : inout std_logic;
-		dn   : inout std_logic;
-		clk  : in  std_logic;
-		cken : buffer std_logic;
+		dp    : inout std_logic;
+		dn    : inout std_logic;
+		clk   : in  std_logic;
+		cken  : buffer std_logic;
 
-		txen : in  std_logic;
-		txbs : out std_logic;
-		txd  : in  std_logic;
+		txen  : in  std_logic := '0';
+		txbs  : out std_logic;
+		txd   : in  std_logic := '-';
 
-		rxdv : out  std_logic;
-		rxd  : out  std_logic);
+		rxdv  : out std_logic;
+		rxd   : out std_logic;
+		rxerr : out std_logic);
 end;
 
 architecture def of usbphy is
@@ -131,7 +132,8 @@ begin
 		j    => s_j,
 		se0  => s_se0,
 		rxdv => rxdv,
-		rxd  => rxd);
+		rxd  => rxd,
+		err  => rxerr);
 		
 	tx_d : entity hdl4fpga.usbphy_tx
 	port map (

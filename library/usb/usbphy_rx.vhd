@@ -111,9 +111,6 @@ begin
 					stuffedbit_l : if cnt1 >= bit_stuffing then
 						rxdv  <= '0';
 						rxbs  <= '1';
-						if rxd='1' then
-							err <= '1';
-						end if;
 					elsif se0='1' then
 						rxdv  <= '0';
 						rxbs  <= '0';
@@ -147,7 +144,11 @@ begin
 
 				err_l : if se0='1' then
 					err <= '0';
-				elsif cnt1 > 6 then
+				elsif cnt1=bit_stuffing then
+					if rxd='1' then
+						err <= '1';
+					end if;
+				elsif cnt1 > bit_stuffing then
 					err <= '1';
 				end if;
 

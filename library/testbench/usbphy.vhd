@@ -78,34 +78,34 @@ begin
 
 	tx_d : entity hdl4fpga.usbphy_tx
 	port map (
-		txc  => txc,
+		clk  => txc,
 		txen => txen,
-		busy => busy,
+		txbs => busy,
 		txd  => txd,
 		txdp => dp,
 		txdn => dn);
 
-   	rx_d : entity hdl4fpga.usbphy_rx
-   	generic map (
-   		oversampling => oversampling)
-   	port map (
-   		data => rxd(0),
-   		dv   => rxdv,
-   		frm  => frm,
-   		rxc  => rxc,
-   		rxdp => dp,
-   		rxdn => dn);
+	usbphy_e : entity hdl4fpga.usbphy
+	generic map (
+		oversampling => oversampling)
+	port map (
+		dp   => dp,
+		dn   => dn,
+		clk  => rxc,
+		cken => rxdv,
+		rxdv => frm,
+		rxd  => rxd(0));
 
-   		process (rxc)
-			variable rx_data : unsigned(data'range);
-   		begin
-   			if rising_edge(rxc) then
-   				if (frm and rxdv)='1' then
-   					rx_data(0) := rxd(0);
-					rx_data := rx_data rol 1;
-    			end if;
+	process (rxc)
+		variable rx_data : unsigned(data'range);
+	begin
+		if rising_edge(rxc) then
+			if (frm and rxdv)='1' then
+				rx_data(0) := rxd(0);
+				rx_data := rx_data rol 1;
 			end if;
-		end process;
+		end if;
+	end process;
 
 	rx_b : block
 	begin
