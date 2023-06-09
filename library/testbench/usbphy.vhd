@@ -111,11 +111,13 @@ begin
 	begin
 
 		usbcrc_b : block
-    		constant g5   : std_logic_vector := b"0010_1"; -- & b"111_1111_1111";
-    		constant g16  : std_logic_vector := x"8005";
-    		constant g    : std_logic_vector := g5 & g16;
-			constant slce : natural_vector := (0, g5'length, g5'length+g16'length);
-			signal crc    : std_logic_vector(g'range);
+			constant g5    : std_logic_vector := b"0_0101"; -- & b"111_1111_1111";
+			constant g16   : std_logic_vector := b"1000_0000_0000_0101";
+			constant rem5  : std_logic_vector := b"01100";
+			constant rem16 : std_logic_vector := b"1000_0000_0000_1101";
+			constant g     : std_logic_vector := g5 & g16;
+			constant slce  : natural_vector := (0, g5'length, g5'length+g16'length);
+			signal crc     : std_logic_vector(g'range);
 
 			alias crc5    : std_logic_vector(0 to g5'length-1)  is crc(slce(0) to slce(1)-1);
 			alias crc16   : std_logic_vector(0 to g16'length-1) is crc(slce(1) to slce(2)-1);
