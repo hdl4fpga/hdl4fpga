@@ -32,7 +32,7 @@ entity usbprtcl is
    	generic (
 		oversampling : natural;
 		watermark    : natural := 0;
-		bit_stuffing : natural := 5);
+		bit_stuffing : natural := 6);
 	port (
 		dp   : inout std_logic;
 		dn   : inout std_logic;
