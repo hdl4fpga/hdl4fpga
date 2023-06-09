@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity usbprtcl is
+entity usbprtl is
    	generic (
 		oversampling : natural;
 		watermark    : natural := 0;
@@ -47,7 +47,7 @@ entity usbprtcl is
 		rxd  : buffer std_logic);
 end;
 
-architecture def of usbprtcl is
+architecture def of usbprtl is
 	signal dv    : std_logic;
 	signal data  : std_logic;
 	signal crcdv : std_logic;
