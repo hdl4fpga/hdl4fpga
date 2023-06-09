@@ -30,7 +30,7 @@ use hdl4fpga.base.all;
 
 entity usbphy is
    	generic (
-		oversampling : natural;
+		oversampling : natural := 0;
 		watermark    : natural := 0;
 		bit_stuffing : natural := 6);
 	port (

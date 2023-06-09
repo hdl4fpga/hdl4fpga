@@ -55,14 +55,14 @@ begin
 		crc_b : block
 			port (
 				clk  : in  std_logic;
-				ena  : in  std_logic;
+				cken : in  std_logic;
 				g    : in  std_logic_vector;
 				dv   : in  std_logic;
 				data : in  std_logic_vector;
 				crc  : buffer std_logic_vector);
 			port map (
 				clk  => clk,
-				ena  => cken,
+				cken => cken,
 				g    => g(slce(i) to slce(i+1)-1),
 				dv   => dv,
 				data => d,
@@ -75,8 +75,8 @@ begin
 				if rising_edge(clk) then
 					case state is
 					when s_idle =>
-						if dv='1' then
-							if ena='1' then
+						if cken='1' then
+							if dv='1' then
 								crc   <= galois_crc(data, (crc'range => '1'), g);
 								state := s_run;
 							end if;
@@ -84,7 +84,7 @@ begin
 					when s_run =>
 						if dv='0' then
 							state := s_idle;
-						elsif ena='1' then
+						elsif cken='1' then
 							crc   <= galois_crc(data, crc, g);
 						end if;
 					end case;
