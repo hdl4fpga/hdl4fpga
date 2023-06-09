@@ -31,7 +31,7 @@ use hdl4fpga.base.all;
 entity usbcrc is
 	port (
 		clk   : in  std_logic;
-		cken  : buffer std_logic;
+		cken  : in  std_logic;
 		dv    : in  std_logic;
 		data  : in  std_logic;
 		crc5  : out std_logic_vector(0 to 5-1);
@@ -39,12 +39,14 @@ entity usbcrc is
 end;
 
 architecture def of usbcrc is
-	constant g5   : std_logic_vector := b"0_0101";
-	constant g16  : std_logic_vector := b"1000_0000_0000_0101";
-	constant g    : std_logic_vector := g5 & g16;
-	constant slce : natural_vector := (0, g5'length, g5'length+g16'length);
+	constant g5    : std_logic_vector := b"0_0101";
+	constant g16   : std_logic_vector := b"1000_0000_0000_0101";
+	constant rem5  : std_logic_vector := b"01100";
+	constant rem16 : std_logic_vector := b"1000_0000_0000_1101";
+	constant g     : std_logic_vector := g5 & g16;
+	constant slce  : natural_vector   := (0, g5'length, g5'length+g16'length);
 
-	signal crc    : std_logic_vector(g'range);
+	signal crc     : std_logic_vector(g'range);
 
 begin
 

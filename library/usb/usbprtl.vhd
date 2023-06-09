@@ -34,8 +34,8 @@ entity usbprtl is
 		watermark    : natural := 0;
 		bit_stuffing : natural := 6);
 	port (
-		dp   : inout std_logic;
-		dn   : inout std_logic;
+		dp   : inout std_logic := 'Z';
+		dn   : inout std_logic := 'Z';
 		clk  : in  std_logic;
 		cken : buffer std_logic;
 

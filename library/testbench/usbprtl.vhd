@@ -29,16 +29,17 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 architecture usbprtcl of testbench is
-	constant usb_freq : real := 12.0e6;
-    constant oversampling : natural := 4;
+	constant usb_freq     : real := 12.0e6;
+    constant oversampling : natural := 3;
 
 	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a50df2",8);
 	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a527b2",8);
 	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a50302",8);
 	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a5badf",8);
 	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"2d0010",8);
-	constant data : std_logic_vector := reverse(x"c300052f_0000000000_ed6b",8);
+	-- constant data : std_logic_vector := reverse(x"c300052f_0000000000_ed6b",8);
 	-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8);
+	constant data : std_logic_vector := reverse(x"c300050c_0000000000_ea38",8);
 
 	signal txc  : std_logic := '0';
 	signal txen : std_logic := '0';
@@ -54,8 +55,13 @@ architecture usbprtcl of testbench is
 	signal cken : std_logic;
 begin
 
-	txc <= not txc after 1 sec/(2.0*usb_freq)*(50.0e6/12.0e6); --*0.975;
-	rxc <= not rxc after 1 sec/(2.0*usb_freq);
+	with oversampling select
+	txc <= 
+		not txc after 1 sec/(2.0*usb_freq)*(50.00e6/usb_freq) when 4,
+		not txc after 1 sec/(2.0*usb_freq)*(36.37e6/usb_freq) when 3,
+		not txc after 1 sec/(2.0*usb_freq)*(12.00e6/usb_freq) when others; --*0.975;
+	rxc <= 
+		not rxc after 1 sec/(2.0*usb_freq);
 
 	process (txc)
 		variable cntr : natural := 0;
@@ -92,7 +98,7 @@ begin
 	port map (
 		dp   => dp,
 		dn   => dn,
-		clk  => clk,
+		clk  => rxc,
 		cken => cken,
 
 		txen => '0',
