@@ -32,7 +32,7 @@ entity usbphy is
    	generic (
 		oversampling : natural;
 		watermark    : natural := 0;
-		bit_stuffing : natural := 5);
+		bit_stuffing : natural := 6);
 	port (
 		dp   : inout std_logic;
 		dn   : inout std_logic;
@@ -122,6 +122,8 @@ begin
 	end generate;
 
 	rx_d : entity hdl4fpga.usbphy_rx
+   	generic map (
+		bit_stuffing => bit_stuffing)
 	port map (
 		clk  => clk,
 		cken => cken,

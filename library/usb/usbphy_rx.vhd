@@ -30,44 +30,54 @@ use hdl4fpga.base.all;
 
 entity usbphy_rx is
    	generic (
-		bit_stuffing : natural := 5);
+		bit_stuffing : natural := 6);
 	port (
-		clk   : in  std_logic;
-    	cken  : in  std_logic;
-    	j     : in  std_logic;
-    	k     : in  std_logic;
-    	se0   : in  std_logic;
-		rxdv  : out std_logic;
-		rxd   : out std_logic;
-		err   : out std_logic);
+		clk  : in  std_logic;
+		cken : in  std_logic;
+		j    : in  std_logic;
+		k    : in  std_logic;
+		se0  : in  std_logic;
+		rxdv : out std_logic;
+		rxbs : out std_logic;
+		rxd  : buffer std_logic;
+		err  : out std_logic);
 end;
 
 architecture def of usbphy_rx is
-	signal rx_stuffedbit : std_logic;
 begin
 
 	process (k, j, clk)
 		type stateskj is (s_k, s_j);
 		variable statekj : stateskj;
-		type states is (s_idle, s_synck, s_syncj, s_data);
+		type states is (s_eop, s_idle, s_synck, s_syncj, s_data);
 		variable state : states;
 
 		variable cnt1  : natural range 0 to 7;
 		variable q     : std_logic;
 	begin
 		if rising_edge(clk) then
-			rx_stuffedbit <= '0';
 			if cken='1' then
 				sync_l : case state is
-				when s_idle =>
+				when s_eop  =>
 					if se0='1' then
-						state := s_idle;
+						state := s_eop;
 					elsif k='1' then
 						state := s_syncj;
 					elsif j='1' then
-						state := s_synck;
+						state := s_idle;
 					end if;
 					rxdv  <= '0';
+					rxbs  <= '0';
+				when s_idle =>
+					if se0='1' then
+						state := s_eop;
+					elsif k='1' then
+						state := s_syncj;
+					elsif j='1' then
+						state := s_idle;
+					end if;
+					rxdv  <= '0';
+					rxbs  <= '0';
 				when s_syncj =>
 					if se0='1' then
 					elsif j='1' then
@@ -76,6 +86,7 @@ begin
 						state := s_idle;
 					end if;
 					rxdv  <= '0';
+					rxbs  <= '0';
 				when s_synck =>
 					if se0='1' then
 						state := s_idle;
@@ -95,14 +106,20 @@ begin
 						state := s_idle;
 					end if;
 					rxdv  <= '0';
+					rxbs  <= '0';
 				when s_data =>
-					stuffedbit_l : if cnt1 > bit_stuffing then
-						rx_stuffedbit <= '1';
+					stuffedbit_l : if cnt1 >= bit_stuffing then
 						rxdv  <= '0';
+						rxbs  <= '1';
+						if rxd='1' then
+							err <= '1';
+						end if;
 					elsif se0='1' then
 						rxdv  <= '0';
+						rxbs  <= '0';
 					else
 						rxdv  <= '1';
+						rxbs  <= '0';
 					end if;
 					if se0='1' then
 						state := s_idle;
@@ -111,7 +128,7 @@ begin
 
 				kj_l : case statekj is
 				when s_k =>
-					if cnt1 < 6 then
+					if cnt1 < bit_stuffing then
 						cnt1 := cnt1 + 1;
 					end if;
 					if j='1' then
@@ -136,8 +153,6 @@ begin
 
 				nrzi_l : rxd <= q xor k;
 				q := not k;
-			else
-				rxdv <= '0';
 			end if;
 		end if;
 

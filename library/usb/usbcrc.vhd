@@ -32,7 +32,6 @@ entity usbcrc is
 	port (
 		clk   : in  std_logic;
 		cken  : buffer std_logic;
-		frm   : in  std_logic;
 		dv    : in  std_logic;
 		data  : in  std_logic;
 		crc5  : out std_logic_vector(0 to 5-1);
@@ -56,16 +55,16 @@ begin
 		crc_b : block
 			port (
 				clk  : in  std_logic;
-				g    : in  std_logic_vector;
-				frm  : in  std_logic;
 				ena  : in  std_logic;
+				g    : in  std_logic_vector;
+				dv   : in  std_logic;
 				data : in  std_logic_vector;
 				crc  : buffer std_logic_vector);
 			port map (
 				clk  => clk,
+				ena  => cken,
 				g    => g(slce(i) to slce(i+1)-1),
-				frm  => frm,
-				ena  => dv,
+				dv   => dv,
 				data => d,
 				crc  => crc(slce(i) to slce(i+1)-1));
 		begin
@@ -76,14 +75,14 @@ begin
 				if rising_edge(clk) then
 					case state is
 					when s_idle =>
-						if frm='1' then
+						if dv='1' then
 							if ena='1' then
 								crc   <= galois_crc(data, (crc'range => '1'), g);
 								state := s_run;
 							end if;
 						end if;
 					when s_run =>
-						if frm='0' then
+						if dv='0' then
 							state := s_idle;
 						elsif ena='1' then
 							crc   <= galois_crc(data, crc, g);

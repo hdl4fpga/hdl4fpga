@@ -48,15 +48,18 @@ entity usbprtcl is
 end;
 
 architecture def of usbprtcl is
-	signal frm : std_logic;
-	signal dv  : std_logic;
+	signal dv    : std_logic;
+	signal data  : std_logic;
+	signal crcdv : std_logic;
+	signal crc5  : std_logic_vector(0 to 5-1);
+	signal crc16 : std_logic_vector(0 to 16-1);
 begin
 
 	usbphy_e : entity hdl4fpga.usbphy
    	generic map (
 		oversampling => oversampling,
 		watermark    => watermark,
-		bit_stuffing => bit_stuffing);
+		bit_stuffing => bit_stuffing)
 	port map (
 		dp   => dp,
 		dn   => dn,
@@ -70,6 +73,8 @@ begin
 		rxdv => rxdv,
 		rxd  => rxd);
 
+	dv   <= txen or rxdv;
+	data <= txd  when txen='1' else rxd;
 	process (clk)
 		type states is (s_pid, s_data);
 		variable state : states;
@@ -79,37 +84,35 @@ begin
 		if rising_edge(clk) then
 			case state is
 			when s_pid =>
-				if frm='0' then
+				if dv='0' then
 					cntr := 0;
-				elsif dv='1' then
+				elsif cken='1' then
 					if cntr < 7 then
 						cntr := cntr + 1;
 					else 
 						state := s_data;
 					end if;
-					pid(0) := rxd(0);
+					pid(0) := data;
 					pid := pid ror 1;
 				end if;
-				crc_frm <= '0';
+				crcdv <= '0';
 			when s_data =>
-				if frm='0' then
-					crc_frm <= '0';
+				if dv='0' then
+					crcdv <= '0';
 					state := s_pid;
 				else
-					crc_frm <= '1';
+					crcdv <= '1';
 				end if;
 			end case;
 		end if;
 	end process;
 
-	dv <= (rxdv or txen) and cken;
 	usbcrc_e : entity hdl4fpga.usbcrc
 	port map (
 		clk   => clk,
 		cken  => cken,
-		frm   => frm,
-		dv    => dv,
-		data  => ,
+		dv    => crcdv,
+		data  => data,
 		crc5  => crc5,
 		crc16 => crc16);
 
