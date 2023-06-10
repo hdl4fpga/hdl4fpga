@@ -10,6 +10,7 @@ entity usbphy_tx is
 		bit_stuffing : natural := 6);
 	port (
 		clk  : in  std_logic;
+		cken : in std_logic := '1';
 		txen : in  std_logic;
 		txd  : in  std_logic;
 		txbs : out std_logic;
@@ -34,7 +35,7 @@ begin
 				txbs <= '0';
 				dp   := data(0);
 				dn   := not data(0);
-			else
+			elsif cken='1' then
 				if data(0)='1' then
 					stuffedbit_l : if cnt1 < bit_stuffing-1 then
 						data(0) := txd;

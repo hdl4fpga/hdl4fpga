@@ -40,21 +40,31 @@ entity usbprtl is
 		cken : buffer std_logic;
 
 		txen : in  std_logic;
-		txbs : out std_logic;
+		txbs : buffer std_logic;
 		txd  : in  std_logic;
 
 		rxdv : buffer std_logic;
+		rxbs : buffer std_logic;
 		rxd  : buffer std_logic);
 end;
 
 architecture def of usbprtl is
+	signal phy_txen : std_logic;
+	alias  phy_txbs is txbs;
+	signal phy_txd  : std_logic;
+
 	signal dv    : std_logic;
 	signal data  : std_logic;
+	signal ena   : std_logic;
 	signal crcdv : std_logic;
+	signal crcen : std_logic;
 	signal crc5  : std_logic_vector(0 to 5-1);
 	signal crc16 : std_logic_vector(0 to 16-1);
+	signal bs    : std_logic;
 begin
 
+	phy_txen <= txen or ena;
+	phy_txd  <= txd when txen='1' else not crc16(0);
 	usbphy_e : entity hdl4fpga.usbphy
    	generic map (
 		oversampling => oversampling,
@@ -66,47 +76,70 @@ begin
 		clk  => clk,
 		cken => cken,
 
-		txen => txen,
-		txbs => txbs,
-		txd  => txd,
+		txen => phy_txen,
+		txbs => phy_txbs,
+		txd  => phy_txd,
 
 		rxdv => rxdv,
+		rxbs => rxbs,
 		rxd  => rxd);
 
-	dv   <= txen or rxdv;
+	bs   <= phy_txbs or rxbs;
+	dv   <= to_stdulogic(to_bit(txen or rxdv));
 	data <= txd  when txen='1' else rxd;
 	process (clk)
-		type states is (s_pid, s_data);
+		type states is (s_pid, s_data, s_crc);
 		variable state : states;
-		variable cntr  : natural range 0 to 7;
+		variable cntr  : natural range 0 to 15;
 		variable pid   : unsigned(8-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			case state is
 			when s_pid =>
 				if dv='0' then
-					cntr := 0;
+					cntr  := 0;
+					ena <= '0';
 				elsif cken='1' then
-					if cntr < 7 then
-						cntr := cntr + 1;
-					else 
-						state := s_data;
+					if bs='0' then
+						if cntr < 7 then
+							cntr := cntr + 1;
+							ena <= '0';
+						else 
+							cntr  := 0;
+							ena   <= '1';
+							state := s_data;
+						end if;
+						pid(0) := data;
+						pid := pid ror 1;
 					end if;
-					pid(0) := data;
-					pid := pid ror 1;
+				else
+					ena <= '0';
 				end if;
-				crcdv <= '0';
 			when s_data =>
 				if dv='0' then
-					crcdv <= '0';
-					state := s_pid;
-				else
-					crcdv <= '1';
+					if cken='1' then
+						state := s_crc;
+						cntr  := cntr + 1;
+					end if;
+				end if;
+				ena <= '1';
+			when s_crc =>
+				if cken='1' then
+					if bs='0' then
+						if cntr < 15 then
+							cntr := cntr + 1;
+						else
+							ena   <= '0';
+							state := s_pid;
+						end if;
+					end if;
 				end if;
 			end case;
 		end if;
 	end process;
 
+	crcen <= ena and not bs;
+	crcdv <= ena and txen;
 	usbcrc_e : entity hdl4fpga.usbcrc
 	port map (
 		clk   => clk,

@@ -44,6 +44,7 @@ entity usbphy is
 		txd   : in  std_logic := '-';
 
 		rxdv  : out std_logic;
+		rxbs  : out std_logic;
 		rxd   : out std_logic;
 		rxerr : out std_logic);
 end;
@@ -132,12 +133,14 @@ begin
 		j    => s_j,
 		se0  => s_se0,
 		rxdv => rxdv,
+		rxbs => rxbs,
 		rxd  => rxd,
 		err  => rxerr);
 		
 	tx_d : entity hdl4fpga.usbphy_tx
 	port map (
 		clk  => clk,
+		cken => cken,
 		txen => txen,
 		txbs => txbs,
 		txd  => txd,

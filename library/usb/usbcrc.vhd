@@ -34,8 +34,8 @@ entity usbcrc is
 		cken  : in  std_logic;
 		dv    : in  std_logic;
 		data  : in  std_logic;
-		crc5  : out std_logic_vector(0 to 5-1);
-		crc16 : out std_logic_vector(0 to 16-1));
+		crc5  : buffer std_logic_vector(0 to 5-1);
+		crc16 : buffer std_logic_vector(0 to 16-1));
 end;
 
 architecture def of usbcrc is
@@ -47,6 +47,8 @@ architecture def of usbcrc is
 	constant slce  : natural_vector   := (0, g5'length, g5'length+g16'length);
 
 	signal crc     : std_logic_vector(g'range);
+	signal ncrc5   : std_logic_vector(crc5'range);
+	signal ncrc16  : std_logic_vector(crc16'range);
 
 begin
 
@@ -81,13 +83,20 @@ begin
 							if dv='1' then
 								crc   <= galois_crc(data, (crc'range => '1'), g);
 								state := s_run;
+							else
+								crc <= std_logic_vector(unsigned(crc) rol 1);
 							end if;
 						end if;
 					when s_run =>
-						if dv='0' then
+						if dv='1' then
+							if cken='1' then
+								crc <= galois_crc(data, crc, g);
+							end if;
+						else
+							if cken='1' then
+								crc <= std_logic_vector(unsigned(crc) rol 1);
+							end if;
 							state := s_idle;
-						elsif cken='1' then
-							crc   <= galois_crc(data, crc, g);
 						end if;
 					end case;
 				end if;
@@ -95,7 +104,9 @@ begin
 		end block;
 	end generate;
 
-	crc5  <= crc(slce(0) to slce(1)-1);
-	crc16 <= crc(slce(1) to slce(2)-1);
+	crc5   <= crc(slce(0) to slce(1)-1);
+	crc16  <= crc(slce(1) to slce(2)-1);
+	ncrc5  <= not crc5;
+	ncrc16 <= not crc16;
 
 end;
