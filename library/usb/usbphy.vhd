@@ -59,14 +59,18 @@ architecture def of usbphy is
 	signal s_se0 : std_logic;
 	signal txdp  : std_logic;
 	signal txdn  : std_logic;
+	signal rxdp  : std_logic;
+	signal rxdn  : std_logic;
 begin
 
 	dp <= 'L' when txen='0' else txdp;
 	dn <= 'L' when txen='0' else txdn;
 
-	k   <= not dp and     dn;
-	j   <=     dp and not dn;
-	se0 <= not dp and not dn;
+	rxdp <= '0' when txen='1' else dp;
+	rxdn <= '0' when txen='1' else dn;
+	k   <= not rxdp and     rxdn;
+	j   <=     rxdp and not rxdn;
+	se0 <= not rxdp and not rxdn;
 		
 	linestates_p : process (j, k, clk)
 		type states is (s_idle, s_sop, s_eop, s_resume, s_suspend);
