@@ -30,28 +30,27 @@ use hdl4fpga.base.all;
 
 architecture usbprtcl of testbench is
 	constant usb_freq     : real := 12.0e6;
-    constant oversampling : natural := 0;
 
-	signal dp   : std_logic;
-	signal dn   : std_logic;
-	signal cken : std_logic;
+	signal usb_clk : std_logic := '0';
+	signal dp      : std_logic;
+	signal dn      : std_logic;
 begin
 
+	usb_clk <= not usb_clk after 1 sec/(2.0*usb_freq);
 
 	tb_b : block
 		signal tp   : std_logic_vector(1 to 32);
-		signal clk  : std_logic := '0';
+		alias  clk  is usb_clk;
 		signal cken : std_logic;
 		signal txen : std_logic := '0';
 		signal txbs : std_logic;
 		signal txd  : std_logic := '0';
 		signal rxdv : std_logic := '0';
+		signal rxbs : std_logic;
 		signal rxd  : std_logic;
 	begin
 
-		clk <= not clk after 1 sec/(2.0*usb_freq);
-
-    	process (clk)
+    	process (cken, clk)
     		-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a50df2",8);
     		-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a527b2",8);
     		-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a50302",8);
@@ -82,31 +81,28 @@ begin
       	tb_e : entity hdl4fpga.usbprtl
     	port map (
     		tp   => tp,
-    		dp   => dp,
-    		dn   => dn,
+    		dp   => open, --dp,
+    		dn   => open, --dn,
     		clk  => clk,
     		cken => cken,
 
-    		txen => txen,
+    		txen => '0', --txen,
     		txbs => txbs,
     		txd  => txd,
 
     		rxdv => rxdv,
+			rxbs => rxbs,
     		rxd  => rxd);
 
     	process (clk)
-    		alias dv is tp(1);
-    		alias bs is tp(2);
-    		alias rd is tp(3);
-
     		variable cntr : natural := 0;
     		variable data : std_logic_vector(0 to 128-1);
     	begin
     		if rising_edge(clk) then
     			if cken='1' then
-        			if (dv and not bs)='1' then
+        			if (rxdv and not rxbs)='1' then
         				if cntr < data'length then
-        					data(cntr) := rd;
+        					data(cntr) := rxd;
         					cntr := cntr + 1;
         				end if;
         			end if;
@@ -117,10 +113,11 @@ begin
 	end block;
 
 	du_b : block
+		constant oversampling : natural := 0;
 		signal tp   : std_logic_vector(1 to 32);
 		signal clk  : std_logic := '0';
 		signal cken : std_logic;
-		signal txen : std_logic;
+		signal txen : std_logic := '0';
 		signal txbs : std_logic;
 		signal txd  : std_logic;
 		signal rxdv : std_logic;
@@ -128,13 +125,14 @@ begin
 	begin
     	with oversampling select
     	clk <= 
-    		not clk after 1 sec/((2.0*usb_freq)/(50.00e6/usb_freq)) when 4,
-    		not clk after 1 sec/((2.0*usb_freq)/(36.37e6/usb_freq)) when 3,
-    		not clk after 1 sec/((2.0*usb_freq)/(12.00e6/usb_freq)) when others; --*0.975;
+    		not clk after 1 sec/((2.0*usb_freq)*(50.00e6/usb_freq)) when 4,
+    		not clk after 1 sec/((2.0*usb_freq)*(36.37e6/usb_freq)) when 3,
+    		not clk after 1 sec/((2.0*usb_freq)*(12.00e6/usb_freq)) when others; --*0.975;
 
-     	process (clk)
+     	tx_p : process (clk)
+    		constant data : std_logic_vector := reverse(x"a5badf",8)(0 to 19-1);
+    		-- constant data : std_logic_vector := reverse(x"c300050c_0000000000",8);
     		variable cntr : natural := 0;
-    		constant data : std_logic_vector := reverse(x"c300050c_000000f801",8);
     	begin
     		if rising_edge(clk) then
     			if cken='1' then
@@ -155,24 +153,7 @@ begin
     		end if;
     	end process;
 
-       	du : entity hdl4fpga.usbprtl
-       	generic map (
-       		oversampling => oversampling)
-    	port map (
-    		tp   => tp,
-    		dp   => dp,
-    		dn   => dn,
-    		clk  => clk,
-    		cken => cken,
-
-    		txen => txen,
-    		txbs => txbs,
-    		txd  => txd,
-
-    		rxdv => rxdv,
-    		rxd  => rxd);
-
-    	process (rxdv, clk)
+    	phytx_p : process (rxdv, clk)
     		alias dv is tp(1);
     		alias bs is tp(2);
     		alias rd is tp(3);
@@ -191,6 +172,25 @@ begin
     			end if;
     		end if;
     	end process;
+
+		dp <= 'L';
+		dn <= 'H';
+       	du : entity hdl4fpga.usbprtl
+       	generic map (
+       		oversampling => oversampling)
+    	port map (
+    		tp   => tp,
+    		dp   => dp,
+    		dn   => dn,
+    		clk  => clk,
+    		cken => cken,
+
+    		txen => txen,
+    		txbs => txbs,
+    		txd  => txd,
+
+    		rxdv => rxdv,
+    		rxd  => rxd);
 
 	end block;
 

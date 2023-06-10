@@ -43,8 +43,8 @@ entity usbphy is
 		txbs  : out std_logic;
 		txd   : in  std_logic := '-';
 
-		rxdv  : out std_logic;
-		rxbs  : out std_logic;
+		rxdv  : out std_logic := '0';
+		rxbs  : out std_logic := '0';
 		rxd   : out std_logic;
 		rxerr : out std_logic);
 end;
@@ -57,7 +57,12 @@ architecture def of usbphy is
 	signal s_k   : std_logic;
 	signal s_j   : std_logic;
 	signal s_se0 : std_logic;
+	signal txdp  : std_logic;
+	signal txdn  : std_logic;
 begin
+
+	dp <= 'L' when txen='0' else txdp;
+	dn <= 'L' when txen='0' else txdn;
 
 	k   <= not dp and     dn;
 	j   <=     dp and not dn;
@@ -144,7 +149,7 @@ begin
 		txen => txen,
 		txbs => txbs,
 		txd  => txd,
-		txdp => open,
-		txdn => open);
+		txdp => txdp,
+		txdn => txdn);
 
 end;

@@ -109,7 +109,7 @@ begin
 					rxbs  <= '0';
 				when s_data =>
 					stuffedbit_l : if cnt1 >= bit_stuffing then
-						rxdv  <= '0';
+						rxdv  <= '1';
 						rxbs  <= '1';
 					elsif se0='1' then
 						rxdv  <= '0';

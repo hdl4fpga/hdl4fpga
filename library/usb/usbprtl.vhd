@@ -56,7 +56,7 @@ architecture def of usbprtl is
 
 	signal dv     : bit;
 	signal data   : std_logic;
-	signal ena    : std_logic;
+	signal crcrq  : std_logic;
 	signal crcdv  : std_logic;
 	signal crcen  : std_logic;
 	signal crc5   : std_logic_vector(0 to 5-1);
@@ -65,7 +65,7 @@ architecture def of usbprtl is
 	signal pktdat : std_logic;
 begin
 
-	phy_txen <= txen or ena;
+	phy_txen <= txen or crcrq;
 	phy_txd  <= 
 		txd          when txen='1'   else 
 		not crc16(0) when pktdat='1' else
@@ -108,21 +108,21 @@ begin
 			when s_pid =>
 				if dv='0' then
 					cntr := length_of_pid-1;
-					ena  <= '0';
+					crcrq  <= '0';
 				elsif cken='1' then
 					if bs='0' then
 						if cntr /= 0 then
 							cntr := cntr - 1;
-							ena  <= '0';
+							crcrq  <= '0';
 						else 
-							ena   <= '1';
+							crcrq   <= txen;
 							state := s_data;
 						end if;
 						pid(0) := data;
 						pid := pid ror 1;
 					end if;
 				else
-					ena <= '0';
+					crcrq <= '0';
 				end if;
 				if pid(2-1 downto 0)="11" then
 					pktdat <= '1';
@@ -132,7 +132,11 @@ begin
 			when s_data =>
 				if dv='0' then
 					if cken='1' then
-						state := s_crc;
+						if crcrq='1' then
+							state := s_crc;
+						else
+							state := s_pid;
+						end if;
 					end if;
 				end if;
 				if pktdat='1' then
@@ -140,14 +144,13 @@ begin
 				else
 					cntr := (length_of_crc5-1)+length_of_sync-1;
 				end if;
-				ena <= '1';
 			when s_crc =>
 				if cken='1' then
 					if bs='0' then
 						if cntr /= 0 then
 							cntr := cntr - 1;
 						else
-							ena   <= '0';
+							crcrq   <= '0';
 							state := s_pid;
 						end if;
 					end if;
@@ -156,8 +159,8 @@ begin
 		end if;
 	end process;
 
-	crcen <= ena and not bs;
-	crcdv <= ena and txen;
+	crcen <= crcrq and not bs;
+	crcdv <= crcrq and txen;
 	usbcrc_e : entity hdl4fpga.usbcrc
 	port map (
 		clk   => clk,
