@@ -53,18 +53,22 @@ architecture def of usbprtl is
 	alias  phy_txbs is txbs;
 	signal phy_txd  : std_logic;
 
-	signal dv    : std_logic;
-	signal data  : std_logic;
-	signal ena   : std_logic;
-	signal crcdv : std_logic;
-	signal crcen : std_logic;
-	signal crc5  : std_logic_vector(0 to 5-1);
-	signal crc16 : std_logic_vector(0 to 16-1);
-	signal bs    : std_logic;
+	signal dv     : std_logic;
+	signal data   : std_logic;
+	signal ena    : std_logic;
+	signal crcdv  : std_logic;
+	signal crcen  : std_logic;
+	signal crc5   : std_logic_vector(0 to 5-1);
+	signal crc16  : std_logic_vector(0 to 16-1);
+	signal bs     : std_logic;
+	signal pktdat : std_logic;
 begin
 
 	phy_txen <= txen or ena;
-	phy_txd  <= txd when txen='1' else not crc16(0);
+	phy_txd  <= 
+		txd          when txen='1'   else 
+		not crc16(0) when pktdat='1' else
+		not crc5(0);
 	usbphy_e : entity hdl4fpga.usbphy
    	generic map (
 		oversampling => oversampling,
@@ -103,7 +107,7 @@ begin
 					if bs='0' then
 						if cntr < 7 then
 							cntr := cntr + 1;
-							ena <= '0';
+							ena  <= '0';
 						else 
 							cntr  := 0;
 							ena   <= '1';
@@ -114,6 +118,11 @@ begin
 					end if;
 				else
 					ena <= '0';
+				end if;
+				if pid(2-1 downto 0)="11" then
+					pktdat <= '1';
+				else
+					pktdat <= '0';
 				end if;
 			when s_data =>
 				if dv='0' then
