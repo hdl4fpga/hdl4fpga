@@ -32,124 +32,166 @@ architecture usbprtcl of testbench is
 	constant usb_freq     : real := 12.0e6;
     constant oversampling : natural := 0;
 
-	signal txc  : std_logic := '0';
-	signal txen : std_logic := '0';
-	signal txd  : std_logic := '0';
 	signal dp   : std_logic;
 	signal dn   : std_logic;
-	signal rxc  : std_logic := '0';
-	signal rxdv : std_logic := '0';
-	signal txbs : std_logic;
-
-	signal rxd  : std_logic;
-	signal clk  : std_logic;
 	signal cken : std_logic;
-    	constant xdata : std_logic_vector := reverse(x"c300050c_0000000000_ea38",8);
-    	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a5badf",8);
-	signal tp : std_logic_vector(1 to 32);
 begin
 
-	with oversampling select
-	txc <= 
-		not txc after 1 sec/(2.0*usb_freq)*(50.00e6/usb_freq) when 4,
-		not txc after 1 sec/(2.0*usb_freq)*(36.37e6/usb_freq) when 3,
-		not txc after 1 sec/(2.0*usb_freq)*(12.00e6/usb_freq) when others; --*0.975;
-	rxc <= 
-		not rxc after 1 sec/(2.0*usb_freq);
 
-	-- process (txc)
-    	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a50df2",8);
-    	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a527b2",8);
-    	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a50302",8);
-    	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a5badf",8);
-    	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"2d0010",8);
-    	-- constant data : std_logic_vector := reverse(x"c300052f_0000000000_ed6b",8);
-    	-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8);
-    	-- constant data : std_logic_vector := reverse(x"c300050c_0000000000_ea38",8);
-		-- variable cntr : natural := 0;
-	-- begin
-		-- if rising_edge(txc) then
-			-- if cntr < data'length then
-				-- if txbs='0' then
-					-- txd  <= data(cntr);
-					-- txen <= '1';
-					-- cntr := cntr + 1;
-				-- end if;
-			-- elsif txbs='0' then
-				-- if cntr > data'length+7 then
-					-- txen <= '0';
-				-- else
-					-- cntr := cntr + 1;
-				-- end if;
-			-- end if;
-		-- end if;
-	-- end process;
--- 
-	-- tx_d : entity hdl4fpga.usbphy_tx
-	-- port map (
-		-- clk  => txc,
-		-- txen => txen,
-		-- txbs => txbs,
-		-- txd  => txd,
-		-- txdp => dp,
-		-- txdn => dn);
-
-	process (rxc)
-		variable cntr    : natural := 0;
-		constant tx_data : std_logic_vector := reverse(x"c300050c_0000000000",8);
-    	-- constant tx_data : std_logic_vector := b"1010_0101_0101_1101_111";
-		variable rx_data : unsigned(tx_data'range);
+	tb_b : block
+		signal tp   : std_logic_vector(1 to 32);
+		signal clk  : std_logic := '0';
+		signal cken : std_logic;
+		signal txen : std_logic := '0';
+		signal txbs : std_logic;
+		signal txd  : std_logic := '0';
+		signal rxdv : std_logic := '0';
+		signal rxd  : std_logic;
 	begin
-		if rising_edge(rxc) then
-			if cken='1' then
-				if cntr < tx_data'length then
-					if txbs='0' then
-						txd  <= tx_data(cntr);
-						txen <= '1';
-						cntr := cntr + 1;
-					end if;
-				elsif txbs='0' then
-					if cntr >= tx_data'length then
-						txen <= '0';
-					else
-						cntr := cntr + 1;
-					end if;
-				end if;
-			end if;
-		end if;
-	end process;
 
-	process (rxdv, rxc)
-		variable cntr : natural := 0;
-		variable data : std_logic_vector(0 to 128-1);
-	begin
-		if rising_edge(rxc) then
-			if cken='1' then
-    			if (tp(1) and not tp(2))='1' then
-    				if cntr < data'length then
-    					data(cntr) := tp(3);
+		clk <= not clk after 1 sec/(2.0*usb_freq);
+
+    	process (clk)
+    		-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a50df2",8);
+    		-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a527b2",8);
+    		-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a50302",8);
+    		-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a5badf",8);
+    		-- constant data : std_logic_vector(0 to 24-1) := reverse(x"2d0010",8);
+    		-- constant data : std_logic_vector := reverse(x"c300052f_0000000000_ed6b",8);
+    		-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8);
+    		constant data : std_logic_vector := reverse(x"c300050c_0000000000_ea38",8);
+    		variable cntr : natural := 0;
+    	begin
+    		if rising_edge(clk) then
+    			if cntr < data'length then
+    				if txbs='0' then
+    					txd  <= data(cntr);
+    					txen <= '1';
+    					cntr := cntr + 1;
+    				end if;
+    			elsif txbs='0' then
+    				if cntr > data'length+7 then
+    					txen <= '0';
+    				else
     					cntr := cntr + 1;
     				end if;
     			end if;
-			end if;
-		end if;
-	end process;
+    		end if;
+		end process;
 
-   	usbprtl_d : entity hdl4fpga.usbprtl
-   	generic map (
-   		oversampling => oversampling)
-	port map (
-		tp   => tp,
-		dp   => dp,
-		dn   => dn,
-		clk  => rxc,
-		cken => cken,
+      	tb_e : entity hdl4fpga.usbprtl
+    	port map (
+    		tp   => tp,
+    		dp   => dp,
+    		dn   => dn,
+    		clk  => clk,
+    		cken => cken,
 
-		txen => txen,
-		txbs => txbs,
-		txd  => txd,
+    		txen => txen,
+    		txbs => txbs,
+    		txd  => txd,
 
-		rxdv => rxdv,
-		rxd  => rxd);
+    		rxdv => rxdv,
+    		rxd  => rxd);
+
+    	process (clk)
+    		alias dv is tp(1);
+    		alias bs is tp(2);
+    		alias rd is tp(3);
+
+    		variable cntr : natural := 0;
+    		variable data : std_logic_vector(0 to 128-1);
+    	begin
+    		if rising_edge(clk) then
+    			if cken='1' then
+        			if (dv and not bs)='1' then
+        				if cntr < data'length then
+        					data(cntr) := rd;
+        					cntr := cntr + 1;
+        				end if;
+        			end if;
+    			end if;
+    		end if;
+    	end process;
+
+	end block;
+
+	du_b : block
+		signal tp   : std_logic_vector(1 to 32);
+		signal clk  : std_logic := '0';
+		signal cken : std_logic;
+		signal txen : std_logic;
+		signal txbs : std_logic;
+		signal txd  : std_logic;
+		signal rxdv : std_logic;
+		signal rxd  : std_logic;
+	begin
+    	with oversampling select
+    	clk <= 
+    		not clk after 1 sec/((2.0*usb_freq)/(50.00e6/usb_freq)) when 4,
+    		not clk after 1 sec/((2.0*usb_freq)/(36.37e6/usb_freq)) when 3,
+    		not clk after 1 sec/((2.0*usb_freq)/(12.00e6/usb_freq)) when others; --*0.975;
+
+     	process (clk)
+    		variable cntr : natural := 0;
+    		constant data : std_logic_vector := reverse(x"c300050c_000000f801",8);
+    	begin
+    		if rising_edge(clk) then
+    			if cken='1' then
+    				if cntr < data'length then
+    					if txbs='0' then
+    						txd  <= data(cntr);
+    						txen <= '1';
+    						cntr := cntr + 1;
+    					end if;
+    				elsif txbs='0' then
+    					if cntr >= data'length then
+    						txen <= '0';
+    					else
+    						cntr := cntr + 1;
+    					end if;
+    				end if;
+    			end if;
+    		end if;
+    	end process;
+
+       	du : entity hdl4fpga.usbprtl
+       	generic map (
+       		oversampling => oversampling)
+    	port map (
+    		tp   => tp,
+    		dp   => dp,
+    		dn   => dn,
+    		clk  => clk,
+    		cken => cken,
+
+    		txen => txen,
+    		txbs => txbs,
+    		txd  => txd,
+
+    		rxdv => rxdv,
+    		rxd  => rxd);
+
+    	process (rxdv, clk)
+    		alias dv is tp(1);
+    		alias bs is tp(2);
+    		alias rd is tp(3);
+
+    		variable cntr : natural := 0;
+    		variable data : std_logic_vector(0 to 128-1);
+    	begin
+    		if rising_edge(clk) then
+    			if cken='1' then
+        			if (dv and not bs)='1' then
+        				if cntr < data'length then
+        					data(cntr) := rd ;
+        					cntr := cntr + 1;
+        				end if;
+        			end if;
+    			end if;
+    		end if;
+    	end process;
+
+	end block;
 
 end;
