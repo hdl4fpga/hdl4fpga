@@ -91,6 +91,13 @@ begin
 						if dv='1' then
 							if cken='1' then
 								crc <= galois_crc(data, crc, g);
+								case crc'length is
+								when 16 =>
+									crc <= b"0000_0000_0000_0001";
+								when  5 =>
+									-- crc <= b"0_0001";
+								when others =>
+								end case;
 							end if;
 						else
 							if cken='1' then

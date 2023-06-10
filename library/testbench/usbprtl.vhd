@@ -30,7 +30,7 @@ use hdl4fpga.base.all;
 
 architecture usbprtcl of testbench is
 	constant usb_freq     : real := 12.0e6;
-    constant oversampling : natural := 3;
+    constant oversampling : natural := 0;
 
 	signal txc  : std_logic := '0';
 	signal txen : std_logic := '0';
@@ -44,7 +44,9 @@ architecture usbprtcl of testbench is
 	signal rxd  : std_logic;
 	signal clk  : std_logic;
 	signal cken : std_logic;
-    	constant data : std_logic_vector := reverse(x"c300050c_0000000000_ea38",8);
+    	constant xdata : std_logic_vector := reverse(x"c300050c_0000000000_ea38",8);
+    	-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a5badf",8);
+	signal tp : std_logic_vector(1 to 32);
 begin
 
 	with oversampling select
@@ -92,9 +94,10 @@ begin
 		-- txdp => dp,
 		-- txdn => dn);
 
-	process (rxdv, rxc)
+	process (rxc)
 		variable cntr    : natural := 0;
 		constant tx_data : std_logic_vector := reverse(x"c300050c_0000000000",8);
+    	-- constant tx_data : std_logic_vector := b"1010_0101_0101_1101_111";
 		variable rx_data : unsigned(tx_data'range);
 	begin
 		if rising_edge(rxc) then
@@ -114,11 +117,20 @@ begin
 				end if;
 			end if;
 		end if;
+	end process;
 
+	process (rxdv, rxc)
+		variable cntr : natural := 0;
+		variable data : std_logic_vector(0 to 128-1);
+	begin
 		if rising_edge(rxc) then
-			if (rxdv and cken)='1' then
-				rx_data(0) := rxd;
-				rx_data := rx_data rol 1;
+			if cken='1' then
+    			if (tp(1) and not tp(2))='1' then
+    				if cntr < data'length then
+    					data(cntr) := tp(3);
+    					cntr := cntr + 1;
+    				end if;
+    			end if;
 			end if;
 		end if;
 	end process;
@@ -127,6 +139,7 @@ begin
    	generic map (
    		oversampling => oversampling)
 	port map (
+		tp   => tp,
 		dp   => dp,
 		dn   => dn,
 		clk  => rxc,
@@ -138,9 +151,5 @@ begin
 
 		rxdv => rxdv,
 		rxd  => rxd);
-
-	process (rxc)
-	begin
-	end process;
 
 end;

@@ -772,7 +772,7 @@
         </Source>
     </Implementation>
     <Implementation title="ser_debug" dir="ser_debug" description="ser_debug" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.so_data" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.usbprtl" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
@@ -990,6 +990,18 @@
             <Options/>
         </Source>
         <Source name="../../../library/usb/usbphy_rx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/usb/usbprtl.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/usb/usbcrc.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/usb/usbphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/usb/usbphy_tx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="apps.lpf" type="Logic Preference" type_short="LPF">
