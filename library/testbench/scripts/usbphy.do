@@ -1,34 +1,63 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate -radix hexadecimal -childformat {{/testbench/data(0) -radix hexadecimal} {/testbench/data(1) -radix hexadecimal} {/testbench/data(2) -radix hexadecimal} {/testbench/data(3) -radix hexadecimal} {/testbench/data(4) -radix hexadecimal} {/testbench/data(5) -radix hexadecimal} {/testbench/data(6) -radix hexadecimal} {/testbench/data(7) -radix hexadecimal} {/testbench/data(8) -radix hexadecimal} {/testbench/data(9) -radix hexadecimal} {/testbench/data(10) -radix hexadecimal} {/testbench/data(11) -radix hexadecimal} {/testbench/data(12) -radix hexadecimal} {/testbench/data(13) -radix hexadecimal} {/testbench/data(14) -radix hexadecimal} {/testbench/data(15) -radix hexadecimal} {/testbench/data(16) -radix hexadecimal} {/testbench/data(17) -radix hexadecimal} {/testbench/data(18) -radix hexadecimal} {/testbench/data(19) -radix hexadecimal} {/testbench/data(20) -radix hexadecimal} {/testbench/data(21) -radix hexadecimal} {/testbench/data(22) -radix hexadecimal} {/testbench/data(23) -radix hexadecimal} {/testbench/data(24) -radix hexadecimal} {/testbench/data(25) -radix hexadecimal} {/testbench/data(26) -radix hexadecimal} {/testbench/data(27) -radix hexadecimal} {/testbench/data(28) -radix hexadecimal} {/testbench/data(29) -radix hexadecimal} {/testbench/data(30) -radix hexadecimal} {/testbench/data(31) -radix hexadecimal} {/testbench/data(32) -radix hexadecimal} {/testbench/data(33) -radix hexadecimal} {/testbench/data(34) -radix hexadecimal} {/testbench/data(35) -radix hexadecimal} {/testbench/data(36) -radix hexadecimal} {/testbench/data(37) -radix hexadecimal} {/testbench/data(38) -radix hexadecimal} {/testbench/data(39) -radix hexadecimal} {/testbench/data(40) -radix hexadecimal} {/testbench/data(41) -radix hexadecimal} {/testbench/data(42) -radix hexadecimal} {/testbench/data(43) -radix hexadecimal} {/testbench/data(44) -radix hexadecimal} {/testbench/data(45) -radix hexadecimal} {/testbench/data(46) -radix hexadecimal} {/testbench/data(47) -radix hexadecimal} {/testbench/data(48) -radix hexadecimal} {/testbench/data(49) -radix hexadecimal} {/testbench/data(50) -radix hexadecimal} {/testbench/data(51) -radix hexadecimal} {/testbench/data(52) -radix hexadecimal} {/testbench/data(53) -radix hexadecimal} {/testbench/data(54) -radix hexadecimal} {/testbench/data(55) -radix hexadecimal} {/testbench/data(56) -radix hexadecimal} {/testbench/data(57) -radix hexadecimal} {/testbench/data(58) -radix hexadecimal} {/testbench/data(59) -radix hexadecimal} {/testbench/data(60) -radix hexadecimal} {/testbench/data(61) -radix hexadecimal} {/testbench/data(62) -radix hexadecimal} {/testbench/data(63) -radix hexadecimal} {/testbench/data(64) -radix hexadecimal} {/testbench/data(65) -radix hexadecimal} {/testbench/data(66) -radix hexadecimal} {/testbench/data(67) -radix hexadecimal} {/testbench/data(68) -radix hexadecimal} {/testbench/data(69) -radix hexadecimal} {/testbench/data(70) -radix hexadecimal} {/testbench/data(71) -radix hexadecimal} {/testbench/data(72) -radix hexadecimal} {/testbench/data(73) -radix hexadecimal} {/testbench/data(74) -radix hexadecimal} {/testbench/data(75) -radix hexadecimal} {/testbench/data(76) -radix hexadecimal} {/testbench/data(77) -radix hexadecimal} {/testbench/data(78) -radix hexadecimal} {/testbench/data(79) -radix hexadecimal} {/testbench/data(80) -radix hexadecimal} {/testbench/data(81) -radix hexadecimal} {/testbench/data(82) -radix hexadecimal} {/testbench/data(83) -radix hexadecimal} {/testbench/data(84) -radix hexadecimal} {/testbench/data(85) -radix hexadecimal} {/testbench/data(86) -radix hexadecimal} {/testbench/data(87) -radix hexadecimal}} -subitemconfig {/testbench/data(0) {-height 29 -radix hexadecimal} /testbench/data(1) {-height 29 -radix hexadecimal} /testbench/data(2) {-height 29 -radix hexadecimal} /testbench/data(3) {-height 29 -radix hexadecimal} /testbench/data(4) {-height 29 -radix hexadecimal} /testbench/data(5) {-height 29 -radix hexadecimal} /testbench/data(6) {-height 29 -radix hexadecimal} /testbench/data(7) {-height 29 -radix hexadecimal} /testbench/data(8) {-height 29 -radix hexadecimal} /testbench/data(9) {-height 29 -radix hexadecimal} /testbench/data(10) {-height 29 -radix hexadecimal} /testbench/data(11) {-height 29 -radix hexadecimal} /testbench/data(12) {-height 29 -radix hexadecimal} /testbench/data(13) {-height 29 -radix hexadecimal} /testbench/data(14) {-height 29 -radix hexadecimal} /testbench/data(15) {-height 29 -radix hexadecimal} /testbench/data(16) {-height 29 -radix hexadecimal} /testbench/data(17) {-height 29 -radix hexadecimal} /testbench/data(18) {-height 29 -radix hexadecimal} /testbench/data(19) {-height 29 -radix hexadecimal} /testbench/data(20) {-height 29 -radix hexadecimal} /testbench/data(21) {-height 29 -radix hexadecimal} /testbench/data(22) {-height 29 -radix hexadecimal} /testbench/data(23) {-height 29 -radix hexadecimal} /testbench/data(24) {-height 29 -radix hexadecimal} /testbench/data(25) {-height 29 -radix hexadecimal} /testbench/data(26) {-height 29 -radix hexadecimal} /testbench/data(27) {-height 29 -radix hexadecimal} /testbench/data(28) {-height 29 -radix hexadecimal} /testbench/data(29) {-height 29 -radix hexadecimal} /testbench/data(30) {-height 29 -radix hexadecimal} /testbench/data(31) {-height 29 -radix hexadecimal} /testbench/data(32) {-height 29 -radix hexadecimal} /testbench/data(33) {-height 29 -radix hexadecimal} /testbench/data(34) {-height 29 -radix hexadecimal} /testbench/data(35) {-height 29 -radix hexadecimal} /testbench/data(36) {-height 29 -radix hexadecimal} /testbench/data(37) {-height 29 -radix hexadecimal} /testbench/data(38) {-height 29 -radix hexadecimal} /testbench/data(39) {-height 29 -radix hexadecimal} /testbench/data(40) {-height 29 -radix hexadecimal} /testbench/data(41) {-height 29 -radix hexadecimal} /testbench/data(42) {-height 29 -radix hexadecimal} /testbench/data(43) {-height 29 -radix hexadecimal} /testbench/data(44) {-height 29 -radix hexadecimal} /testbench/data(45) {-height 29 -radix hexadecimal} /testbench/data(46) {-height 29 -radix hexadecimal} /testbench/data(47) {-height 29 -radix hexadecimal} /testbench/data(48) {-height 29 -radix hexadecimal} /testbench/data(49) {-height 29 -radix hexadecimal} /testbench/data(50) {-height 29 -radix hexadecimal} /testbench/data(51) {-height 29 -radix hexadecimal} /testbench/data(52) {-height 29 -radix hexadecimal} /testbench/data(53) {-height 29 -radix hexadecimal} /testbench/data(54) {-height 29 -radix hexadecimal} /testbench/data(55) {-height 29 -radix hexadecimal} /testbench/data(56) {-height 29 -radix hexadecimal} /testbench/data(57) {-height 29 -radix hexadecimal} /testbench/data(58) {-height 29 -radix hexadecimal} /testbench/data(59) {-height 29 -radix hexadecimal} /testbench/data(60) {-height 29 -radix hexadecimal} /testbench/data(61) {-height 29 -radix hexadecimal} /testbench/data(62) {-height 29 -radix hexadecimal} /testbench/data(63) {-height 29 -radix hexadecimal} /testbench/data(64) {-height 29 -radix hexadecimal} /testbench/data(65) {-height 29 -radix hexadecimal} /testbench/data(66) {-height 29 -radix hexadecimal} /testbench/data(67) {-height 29 -radix hexadecimal} /testbench/data(68) {-height 29 -radix hexadecimal} /testbench/data(69) {-height 29 -radix hexadecimal} /testbench/data(70) {-height 29 -radix hexadecimal} /testbench/data(71) {-height 29 -radix hexadecimal} /testbench/data(72) {-height 29 -radix hexadecimal} /testbench/data(73) {-height 29 -radix hexadecimal} /testbench/data(74) {-height 29 -radix hexadecimal} /testbench/data(75) {-height 29 -radix hexadecimal} /testbench/data(76) {-height 29 -radix hexadecimal} /testbench/data(77) {-height 29 -radix hexadecimal} /testbench/data(78) {-height 29 -radix hexadecimal} /testbench/data(79) {-height 29 -radix hexadecimal} /testbench/data(80) {-height 29 -radix hexadecimal} /testbench/data(81) {-height 29 -radix hexadecimal} /testbench/data(82) {-height 29 -radix hexadecimal} /testbench/data(83) {-height 29 -radix hexadecimal} /testbench/data(84) {-height 29 -radix hexadecimal} /testbench/data(85) {-height 29 -radix hexadecimal} /testbench/data(86) {-height 29 -radix hexadecimal} /testbench/data(87) {-height 29 -radix hexadecimal}} /testbench/data
-add wave -noupdate /testbench/txc
-add wave -noupdate /testbench/txen
-add wave -noupdate /testbench/txd
-add wave -noupdate /testbench/tx_d/busy
-add wave -noupdate /testbench/tx_d/tx_stuffedbit
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/usb_clk
 add wave -noupdate /testbench/dp
 add wave -noupdate /testbench/dn
+add wave -noupdate -divider du_block
+add wave -noupdate -divider usbphy
+add wave -noupdate /testbench/du_b/du/usbphy_e/j
+add wave -noupdate /testbench/du_b/du/usbphy_e/k
+add wave -noupdate /testbench/du_b/du/usbphy_e/se0
+add wave -noupdate -group usbphy_rx /testbench/du_b/du/usbphy_e/rx_d/clk
+add wave -noupdate -group usbphy_rx /testbench/du_b/du/usbphy_e/rx_d/cken
+add wave -noupdate -group usbphy_rx /testbench/du_b/du/usbphy_e/rx_d/j
+add wave -noupdate -group usbphy_rx /testbench/du_b/du/usbphy_e/rx_d/k
+add wave -noupdate -group usbphy_rx /testbench/du_b/du/usbphy_e/rx_d/se0
+add wave -noupdate -group usbphy_rx /testbench/du_b/du/usbphy_e/rx_d/rxdv
+add wave -noupdate -group usbphy_rx /testbench/du_b/du/usbphy_e/rx_d/rxbs
+add wave -noupdate -group usbphy_rx /testbench/du_b/du/usbphy_e/rx_d/rxd
+add wave -noupdate -group usbphy_rx /testbench/du_b/du/usbphy_e/rx_d/err
+add wave -noupdate -group usbphy_tx /testbench/du_b/du/usbphy_e/tx_d/line__25/state
+add wave -noupdate -group usbphy_tx /testbench/du_b/du/usbphy_e/tx_d/cken
+add wave -noupdate -group usbphy_tx /testbench/du_b/du/usbphy_e/tx_d/txen
+add wave -noupdate -group usbphy_tx /testbench/du_b/du/usbphy_e/tx_d/txd
+add wave -noupdate -group usbphy_tx /testbench/du_b/du/usbphy_e/tx_d/txbs
+add wave -noupdate -group usbphy_tx /testbench/du_b/du/usbphy_e/tx_d/txdp
+add wave -noupdate -group usbphy_tx /testbench/du_b/du/usbphy_e/tx_d/txdn
+add wave -noupdate -divider du_usbprtl
+add wave -noupdate -group tbusbphy_rx /testbench/tb_b/tb_e/usbphy_e/rx_d/rxdv
+add wave -noupdate -group tbusbphy_rx /testbench/tb_b/tb_e/usbphy_e/rx_d/rxbs
+add wave -noupdate -group tbusbphy_rx /testbench/tb_b/tb_e/usbphy_e/rx_d/rxd
+add wave -noupdate -group tbusbphy_rx /testbench/tb_b/tb_e/usbphy_e/rx_d/line__49/state
+add wave -noupdate -group tbusbphy_rx /testbench/tb_b/tb_e/usbphy_e/rx_d/line__49/statekj
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/rx_d/rxc
-add wave -noupdate /testbench/rx_d/k
-add wave -noupdate /testbench/rx_d/ena
+add wave -noupdate -expand -group tbusbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/clk
+add wave -noupdate -expand -group tbusbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/cken
+add wave -noupdate -expand -group tbusbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/txen
+add wave -noupdate -expand -group tbusbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/txd
+add wave -noupdate -expand -group tbusbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/txbs
+add wave -noupdate -expand -group tbusbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/txdp
+add wave -noupdate -expand -group tbusbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/txdn
+add wave -noupdate -radix hexadecimal /testbench/tb_b/line__57/data
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/rx_d/frm
-add wave -noupdate /testbench/rx_d/dv
-add wave -noupdate /testbench/rx_d/data
-add wave -noupdate /testbench/rx_d/rx_stuffedbit
-add wave -noupdate /testbench/rx_b/usbcrc_b/crc5
-add wave -noupdate /testbench/rx_b/usbcrc_b/crc16
-add wave -noupdate /testbench/rx_b/usbcrc_b/crc_frm
-add wave -noupdate -radix hexadecimal /testbench/data
-add wave -noupdate /testbench/rx_b/usbcrc_b/usbcrc_g(0)/crc_b/crc_p/state
-add wave -noupdate -radix hexadecimal -childformat {{/testbench/rx_b/usbcrc_b/line__126/pid(7) -radix hexadecimal} {/testbench/rx_b/usbcrc_b/line__126/pid(6) -radix hexadecimal} {/testbench/rx_b/usbcrc_b/line__126/pid(5) -radix hexadecimal} {/testbench/rx_b/usbcrc_b/line__126/pid(4) -radix hexadecimal} {/testbench/rx_b/usbcrc_b/line__126/pid(3) -radix hexadecimal} {/testbench/rx_b/usbcrc_b/line__126/pid(2) -radix hexadecimal} {/testbench/rx_b/usbcrc_b/line__126/pid(1) -radix hexadecimal} {/testbench/rx_b/usbcrc_b/line__126/pid(0) -radix hexadecimal}} -subitemconfig {/testbench/rx_b/usbcrc_b/line__126/pid(7) {-height 29 -radix hexadecimal} /testbench/rx_b/usbcrc_b/line__126/pid(6) {-height 29 -radix hexadecimal} /testbench/rx_b/usbcrc_b/line__126/pid(5) {-height 29 -radix hexadecimal} /testbench/rx_b/usbcrc_b/line__126/pid(4) {-height 29 -radix hexadecimal} /testbench/rx_b/usbcrc_b/line__126/pid(3) {-height 29 -radix hexadecimal} /testbench/rx_b/usbcrc_b/line__126/pid(2) {-height 29 -radix hexadecimal} /testbench/rx_b/usbcrc_b/line__126/pid(1) {-height 29 -radix hexadecimal} /testbench/rx_b/usbcrc_b/line__126/pid(0) {-height 29 -radix hexadecimal}} /testbench/rx_b/usbcrc_b/line__126/pid
+add wave -noupdate /testbench/tb_b/tb_e/usbcrc_e/cken
+add wave -noupdate /testbench/tb_b/tb_e/usbcrc_e/dv
+add wave -noupdate /testbench/tb_b/tb_e/usbcrc_e/data
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/tb_b/tb_e/usbcrc_e/crc5
+add wave -noupdate /testbench/tb_b/tb_e/usbcrc_e/ncrc5
+add wave -noupdate -radix hexadecimal /testbench/tb_b/tb_e/usbcrc_e/ncrc16
+add wave -noupdate -radix hexadecimal /testbench/tb_b/tb_e/usbcrc_e/crc16
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {12084792 ps} 0} {{Cursor 2} {35964693 ps} 0}
-quietly wave cursor active 1
-configure wave -namecolwidth 150
-configure wave -valuecolwidth 336
+WaveRestoreCursors {{Cursor 1} {7180380 ps} 0} {{Cursor 2} {2791689 ps} 0}
+quietly wave cursor active 2
+configure wave -namecolwidth 397
+configure wave -valuecolwidth 171
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -41,4 +70,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {12070 ns} {41470 ns}
+WaveRestoreZoom {2383308 ps} {3695808 ps}
