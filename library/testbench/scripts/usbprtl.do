@@ -1,6 +1,7 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/usb_clk
 add wave -noupdate /testbench/dp
 add wave -noupdate /testbench/dn
 add wave -noupdate -divider du_block
@@ -35,7 +36,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {2958680 ps} 1} {{Cursor 2} {3401485 ps} 0}
+WaveRestoreCursors {{Cursor 1} {2958680 ps} 1} {{Cursor 2} {3280968 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 336
