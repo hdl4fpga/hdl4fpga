@@ -81,8 +81,8 @@ begin
       	tb_e : entity hdl4fpga.usbprtl
     	port map (
     		tp   => tp,
-    		dp   => open, --dp,
-    		dn   => open, --dn,
+    		dp   => dp,
+    		dn   => dn,
     		clk  => clk,
     		cken => cken,
 
@@ -174,7 +174,7 @@ begin
     	end process;
 
 		dp <= 'L';
-		dn <= 'H';
+		dn <= 'L';
        	du : entity hdl4fpga.usbprtl
        	generic map (
        		oversampling => oversampling)

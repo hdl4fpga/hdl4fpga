@@ -44,7 +44,7 @@ entity usbprtl is
 		txbs : buffer std_logic;
 		txd  : in  std_logic;
 
-		rxdv : buffer std_logic;
+		rxdv : out std_logic;
 		rxbs : buffer std_logic;
 		rxd  : buffer std_logic);
 end;
@@ -53,6 +53,7 @@ architecture def of usbprtl is
 	signal phy_txen : std_logic;
 	alias  phy_txbs is txbs;
 	signal phy_txd  : std_logic;
+	signal phy_rxdv : std_logic;
 
 	signal dv     : bit;
 	signal data   : std_logic;
@@ -64,6 +65,9 @@ architecture def of usbprtl is
 	signal bs     : std_logic;
 	signal pktdat : std_logic;
 begin
+
+	tp(1 to 3) <= (phy_txen, phy_txbs, phy_txd);
+	rxdv <= phy_rxdv and not phy_txen;
 
 	phy_txen <= txen or crcrq;
 	phy_txd  <= 
@@ -85,13 +89,16 @@ begin
 		txbs => phy_txbs,
 		txd  => phy_txd,
 
-		rxdv => rxdv,
+		rxdv => phy_rxdv,
 		rxbs => rxbs,
 		rxd  => rxd);
 
-	tp(1 to 3) <= (phy_txen, phy_txbs, phy_txd);
 	bs   <= phy_txbs or rxbs;
-	dv   <= to_bit(txen or rxdv);
+	dv   <= 
+		'1' when     txen='1' else 
+		'0' when phy_txen='1' else
+		'1' when phy_rxdv='1' else
+		'0';
 	data <= txd when txen='1' else rxd;
 	process (clk)
 		constant length_of_sync  : natural := 8;
