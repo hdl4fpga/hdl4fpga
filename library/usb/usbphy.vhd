@@ -57,12 +57,8 @@ architecture def of usbphy is
 	signal s_k   : std_logic;
 	signal s_j   : std_logic;
 	signal s_se0 : std_logic;
-	signal txdp  : std_logic;
-	signal txdn  : std_logic;
-begin
 
-	dp <= 'L' when txen='0' else txdp;
-	dn <= 'L' when txen='0' else txdn;
+begin
 
 	k   <= not dp and     dn;
 	j   <=     dp and not dn;
@@ -150,7 +146,7 @@ begin
 		txen => txen,
 		txbs => txbs,
 		txd  => txd,
-		txdp => txdp,
-		txdn => txdn);
+		txdp => dp,
+		txdn => dn);
 
 end;

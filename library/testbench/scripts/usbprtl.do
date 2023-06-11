@@ -3,6 +3,8 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/dp
 add wave -noupdate /testbench/dn
+add wave -noupdate -divider du_block
+add wave -noupdate -radix hexadecimal /testbench/du_b/tx_p/data
 add wave -noupdate -divider usbphy
 add wave -noupdate /testbench/du_b/du/usbphy_e/j
 add wave -noupdate /testbench/du_b/du/usbphy_e/k
@@ -21,8 +23,10 @@ add wave -noupdate -divider tb_usbphy_rx
 add wave -noupdate /testbench/tb_b/tb_e/usbphy_e/rx_d/rxdv
 add wave -noupdate /testbench/tb_b/tb_e/usbphy_e/rx_d/rxbs
 add wave -noupdate /testbench/tb_b/tb_e/usbphy_e/rx_d/rxd
+add wave -noupdate /testbench/tb_b/tb_e/usbphy_e/rx_d/line__49/state
+add wave -noupdate /testbench/tb_b/tb_e/usbphy_e/rx_d/line__49/statekj
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/tb_b/line__102/data
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -31,7 +35,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {2958680 ps} 1} {{Cursor 2} {418795 ps} 0}
+WaveRestoreCursors {{Cursor 1} {2958680 ps} 1} {{Cursor 2} {3401485 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 336
@@ -47,4 +51,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {4200 ns}
+WaveRestoreZoom {2005 ns} {4105 ns}

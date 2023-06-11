@@ -184,8 +184,8 @@ begin
     		end if;
     	end process;
 
-		-- dp <= 'L';
-		-- dn <= 'L';
+		dp <= 'H';
+		dn <= 'L';
        	du : entity hdl4fpga.usbprtl
        	generic map (
        		oversampling => oversampling)

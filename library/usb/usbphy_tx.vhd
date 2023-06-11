@@ -38,10 +38,13 @@ begin
 					data := x"80"; -- sync word
 					cnt1 := 0;
 					txbs <= '0';
-					dp   := data(0);
-					dn   := not data(0);
 					if txen='1' then
+						dp   := data(0);
+						dn   := not data(0);
 						state := s_running;
+					else
+						dp   := 'Z';
+						dn   := 'Z';
 					end if;
 				when s_running =>
 					if data(0)='1' then
@@ -58,14 +61,16 @@ begin
 						data := data ror 1;
 						cnt1 := 0;
 					end if;
-					if txen='0' then
-						state := s_eop;
-					end if;
 					dp := not (dp xor data(0));
 					dn := not dp;
+					if txen='0' then
+						dp := '0';
+						dn := '0';
+						state := s_eop;
+					end if;
 				when s_eop =>
-					dp := 'L';
-					dn := 'L';
+					dp := '0';
+					dn := '0';
 					state := s_idle;
 				end case;
 			end if;
@@ -78,8 +83,8 @@ begin
 				txbs <= '1';
 			end if;
 		end if;
-		txdp <= dp and txen;
-		txdn <= dn and txen;
+		txdp <= dp;
+		txdn <= dn;
 	end process;
 
 end;

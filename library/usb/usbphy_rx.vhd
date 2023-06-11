@@ -49,7 +49,7 @@ begin
 	process (k, j, clk)
 		type stateskj is (s_k, s_j);
 		variable statekj : stateskj;
-		type states is (s_eop, s_idle, s_synck, s_syncj, s_data);
+		type states is (s_eop, s_synck, s_syncj, s_data);
 		variable state : states;
 
 		variable cnt1  : natural range 0 to 7;
@@ -64,32 +64,21 @@ begin
 					elsif k='1' then
 						state := s_syncj;
 					elsif j='1' then
-						state := s_idle;
-					end if;
-					rxdv  <= '0';
-					rxbs  <= '0';
-				when s_idle =>
-					if se0='1' then
-						state := s_eop;
-					elsif k='1' then
-						state := s_syncj;
-					elsif j='1' then
-						state := s_idle;
+						state := s_synck;
 					end if;
 					rxdv  <= '0';
 					rxbs  <= '0';
 				when s_syncj =>
 					if se0='1' then
+						state := s_eop;
 					elsif j='1' then
 						state := s_synck;
-					else
-						state := s_idle;
 					end if;
 					rxdv  <= '0';
 					rxbs  <= '0';
 				when s_synck =>
 					if se0='1' then
-						state := s_idle;
+						state := s_eop;
 					elsif k='1' then
 						case statekj is
 						when s_k =>
@@ -104,13 +93,13 @@ begin
 						rxbs  <= '0';
 						case statekj is
 						when s_j =>
-							state := s_idle;
+							state := s_synck;
 						when others =>
 						end case;
 					else
 						rxdv  <= '0';
 						rxbs  <= '0';
-						state := s_idle;
+						state := s_syncj;
 					end if;
 				when s_data =>
 					stuffedbit_l : if cnt1 >= bit_stuffing then
@@ -124,7 +113,7 @@ begin
 						rxbs  <= '0';
 					end if;
 					if se0='1' then
-						state := s_idle;
+						state := s_eop;
 					end if;
 				end case;
 
