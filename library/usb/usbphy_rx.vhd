@@ -82,7 +82,7 @@ begin
 					elsif k='1' then
 						case statekj is
 						when s_k =>
-							rxdv  <='1';
+							rxdv  <='0';
 							state := s_data;
 						when others =>
 							rxdv  <= '0';

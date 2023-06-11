@@ -41,12 +41,22 @@ begin
 					if txen='1' then
 						dp   := data(0);
 						dn   := not data(0);
+						data(0) := txd;
+						data := data ror 1;
 						state := s_running;
 					else
 						dp   := 'Z';
 						dn   := 'Z';
 					end if;
 				when s_running =>
+					if txen='1' then
+						dp := not (dp xor data(0));
+						dn := not dp;
+					else
+						dp := '0';
+						dn := '0';
+						state := s_eop;
+					end if;
 					if data(0)='1' then
 						stuffedbit_l : if cnt1 < bit_stuffing-1 then
 							data(0) := txd;
@@ -60,13 +70,6 @@ begin
 						data(0) := txd;
 						data := data ror 1;
 						cnt1 := 0;
-					end if;
-					dp := not (dp xor data(0));
-					dn := not dp;
-					if txen='0' then
-						dp := '0';
-						dn := '0';
-						state := s_eop;
 					end if;
 				when s_eop =>
 					dp := '0';

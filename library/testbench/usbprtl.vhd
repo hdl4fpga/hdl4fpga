@@ -37,6 +37,8 @@ architecture usbprtcl of testbench is
 begin
 
 	usb_clk <= not usb_clk after 1 sec/(2.0*usb_freq);
+	dp <= 'H';
+	dn <= 'L';
 
 	tb_b : block
 		signal tp   : std_logic_vector(1 to 32);
@@ -51,16 +53,17 @@ begin
 		signal rxd  : std_logic;
 	begin
 
-		rst <= '1'; --, '0' after 500 us;
+		rst <= '1', '0' after 0.500 us;
     	process (cken, clk)
-    		-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a50df2",8);
-    		-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a527b2",8);
-    		-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a50302",8);
-    		-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a5badf",8);
-    		-- constant data : std_logic_vector(0 to 24-1) := reverse(x"2d0010",8);
-    		-- constant data : std_logic_vector := reverse(x"c300052f_0000000000_ed6b",8);
-    		-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8);
-    		constant data : std_logic_vector := reverse(x"c300050c_0000000000_ea38",8);
+    		-- constant data : std_logic_vector := reverse(x"a50df2",8)(0 to 19-1);
+    		-- constant data : std_logic_vector := reverse(x"a527b2",8)(0 to 19-1);
+    		-- constant data : std_logic_vector := reverse(x"a50302",8)(0 to 19-1);
+    		-- constant data : std_logic_vector := reverse(x"a5badf",8)(0 to 19-1);
+    		-- constant data : std_logic_vector := reverse(x"2d0010",8)(0 to 19-1);
+    		constant data : std_logic_vector := reverse(x"c3000515_0000000000_e381",8); --(0 to 112-1);
+    		-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8)(0 to 112-1);
+    		-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8)(0 to 112-1);
+    		-- constant data : std_logic_vector := reverse(x"c300_050c_000000_0000_ea38",8)(0 to 112-1);
     		variable cntr : natural := 0;
     	begin
     		if rising_edge(clk) then
@@ -118,7 +121,7 @@ begin
 	end block;
 
 	du_b : block
-		constant oversampling : natural := 0;
+		constant oversampling : natural := 3;
 		signal tp   : std_logic_vector(1 to 32);
 		signal rst  : std_logic;
 		signal clk  : std_logic := '0';
@@ -127,9 +130,10 @@ begin
 		signal txbs : std_logic;
 		signal txd  : std_logic;
 		signal rxdv : std_logic;
+		signal rxbs : std_logic;
 		signal rxd  : std_logic;
 	begin
-		rst <= '1', '0' after 0.500 us;
+		rst <= '1'; --, '0' after 0.500 us;
 
     	with oversampling select
     	clk <= 
@@ -164,7 +168,7 @@ begin
     		end if;
     	end process;
 
-    	phytx_p : process (rxdv, clk)
+    	tp_p : process (rxdv, clk)
     		alias dv is tp(1);
     		alias bs is tp(2);
     		alias rd is tp(3);
@@ -184,8 +188,6 @@ begin
     		end if;
     	end process;
 
-		dp <= 'H';
-		dn <= 'L';
        	du : entity hdl4fpga.usbprtl
        	generic map (
        		oversampling => oversampling)
@@ -201,7 +203,24 @@ begin
     		txd  => txd,
 
     		rxdv => rxdv,
+    		rxbs => rxbs,
     		rxd  => rxd);
+
+    	rx_p : process (rxbs, clk)
+    		variable cntr : natural := 0;
+    		variable data : std_logic_vector(0 to 128-1);
+    	begin
+    		if rising_edge(clk) then
+    			if cken='1' then
+        			if (rxdv and not rxbs)='1' then
+        				if cntr < data'length then
+        					data(cntr) := rxd;
+        					cntr := cntr + 1;
+        				end if;
+        			end if;
+    			end if;
+    		end if;
+    	end process;
 
 	end block;
 
