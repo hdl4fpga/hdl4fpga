@@ -93,20 +93,25 @@ begin
 					elsif k='1' then
 						case statekj is
 						when s_k =>
+							rxdv  <='1';
 							state := s_data;
 						when others =>
+							rxdv  <= '0';
+							rxbs  <= '0';
 						end case;
 					elsif j='1' then
+						rxdv  <= '0';
+						rxbs  <= '0';
 						case statekj is
 						when s_j =>
 							state := s_idle;
 						when others =>
 						end case;
 					else
+						rxdv  <= '0';
+						rxbs  <= '0';
 						state := s_idle;
 					end if;
-					rxdv  <= '0';
-					rxbs  <= '0';
 				when s_data =>
 					stuffedbit_l : if cnt1 >= bit_stuffing then
 						rxdv  <= '1';

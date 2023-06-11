@@ -40,6 +40,7 @@ begin
 
 	tb_b : block
 		signal tp   : std_logic_vector(1 to 32);
+		signal rst  : std_logic;
 		alias  clk  is usb_clk;
 		signal cken : std_logic;
 		signal txen : std_logic := '0';
@@ -50,6 +51,7 @@ begin
 		signal rxd  : std_logic;
 	begin
 
+		rst <= '1'; --, '0' after 500 us;
     	process (cken, clk)
     		-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a50df2",8);
     		-- constant data : std_logic_vector(0 to 24-1) := reverse(x"a527b2",8);
@@ -62,7 +64,10 @@ begin
     		variable cntr : natural := 0;
     	begin
     		if rising_edge(clk) then
-    			if cntr < data'length then
+				if rst='1' then
+					cntr := 0;
+					txen <= '0';
+    			elsif cntr < data'length then
     				if txbs='0' then
     					txd  <= data(cntr);
     					txen <= '1';
@@ -86,7 +91,7 @@ begin
     		clk  => clk,
     		cken => cken,
 
-    		txen => '0', --txen,
+    		txen => txen,
     		txbs => txbs,
     		txd  => txd,
 
@@ -115,6 +120,7 @@ begin
 	du_b : block
 		constant oversampling : natural := 0;
 		signal tp   : std_logic_vector(1 to 32);
+		signal rst  : std_logic;
 		signal clk  : std_logic := '0';
 		signal cken : std_logic;
 		signal txen : std_logic := '0';
@@ -123,6 +129,8 @@ begin
 		signal rxdv : std_logic;
 		signal rxd  : std_logic;
 	begin
+		rst <= '1', '0' after 0.500 us;
+
     	with oversampling select
     	clk <= 
     		not clk after 1 sec/((2.0*usb_freq)*(50.00e6/usb_freq)) when 4,
@@ -135,7 +143,10 @@ begin
     		variable cntr : natural := 0;
     	begin
     		if rising_edge(clk) then
-    			if cken='1' then
+				if rst='1' then
+					cntr := 0;
+					txen <= '0';
+    			elsif cken='1' then
     				if cntr < data'length then
     					if txbs='0' then
     						txd  <= data(cntr);
@@ -173,8 +184,8 @@ begin
     		end if;
     	end process;
 
-		dp <= 'L';
-		dn <= 'L';
+		-- dp <= 'L';
+		-- dn <= 'L';
        	du : entity hdl4fpga.usbprtl
        	generic map (
        		oversampling => oversampling)
