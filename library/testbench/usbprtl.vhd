@@ -40,7 +40,7 @@ begin
 	dp <= 'H';
 	dn <= 'L';
 
-	tb_b : block
+	host_b : block
 		signal tp   : std_logic_vector(1 to 32);
 		signal rst  : std_logic;
 		alias  clk  is usb_clk;
@@ -86,7 +86,7 @@ begin
     		end if;
 		end process;
 
-      	tb_e : entity hdl4fpga.usbprtl
+      	host_e : entity hdl4fpga.usbprtl
     	port map (
     		tp   => tp,
     		dp   => dp,
@@ -120,7 +120,7 @@ begin
 
 	end block;
 
-	du_b : block
+	dev_b : block
 		constant oversampling : natural := 3;
 		signal tp   : std_logic_vector(1 to 32);
 		signal rst  : std_logic;
@@ -188,7 +188,7 @@ begin
     		end if;
     	end process;
 
-       	du : entity hdl4fpga.usbprtl
+       	dev_e : entity hdl4fpga.usbprtl
        	generic map (
        		oversampling => oversampling)
     	port map (

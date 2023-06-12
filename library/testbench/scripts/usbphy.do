@@ -26,19 +26,19 @@ add wave -noupdate -group usbphy_tx /testbench/du_b/du/usbphy_e/tx_d/txbs
 add wave -noupdate -group usbphy_tx /testbench/du_b/du/usbphy_e/tx_d/txdp
 add wave -noupdate -group usbphy_tx /testbench/du_b/du/usbphy_e/tx_d/txdn
 add wave -noupdate -divider du_usbprtl
-add wave -noupdate -group tbusbphy_rx /testbench/tb_b/tb_e/usbphy_e/rx_d/rxdv
-add wave -noupdate -group tbusbphy_rx /testbench/tb_b/tb_e/usbphy_e/rx_d/rxbs
-add wave -noupdate -group tbusbphy_rx /testbench/tb_b/tb_e/usbphy_e/rx_d/rxd
-add wave -noupdate -group tbusbphy_rx /testbench/tb_b/tb_e/usbphy_e/rx_d/line__49/state
-add wave -noupdate -group tbusbphy_rx /testbench/tb_b/tb_e/usbphy_e/rx_d/line__49/statekj
+add wave -noupdate -group tb_usbphy_rx /testbench/tb_b/tb_e/usbphy_e/rx_d/rxdv
+add wave -noupdate -group tb_usbphy_rx /testbench/tb_b/tb_e/usbphy_e/rx_d/rxbs
+add wave -noupdate -group tb_usbphy_rx /testbench/tb_b/tb_e/usbphy_e/rx_d/rxd
+add wave -noupdate -group tb_usbphy_rx /testbench/tb_b/tb_e/usbphy_e/rx_d/line__49/state
+add wave -noupdate -group tb_usbphy_rx /testbench/tb_b/tb_e/usbphy_e/rx_d/line__49/statekj
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -expand -group tbusbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/clk
-add wave -noupdate -expand -group tbusbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/cken
-add wave -noupdate -expand -group tbusbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/txen
-add wave -noupdate -expand -group tbusbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/txd
-add wave -noupdate -expand -group tbusbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/txbs
-add wave -noupdate -expand -group tbusbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/txdp
-add wave -noupdate -expand -group tbusbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/txdn
+add wave -noupdate -expand -group tb_usbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/clk
+add wave -noupdate -expand -group tb_usbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/cken
+add wave -noupdate -expand -group tb_usbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/txen
+add wave -noupdate -expand -group tb_usbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/txd
+add wave -noupdate -expand -group tb_usbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/txbs
+add wave -noupdate -expand -group tb_usbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/txdp
+add wave -noupdate -expand -group tb_usbphy_tx /testbench/tb_b/tb_e/usbphy_e/tx_d/txdn
 add wave -noupdate -radix hexadecimal /testbench/tb_b/line__57/data
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/tb_b/tb_e/usbcrc_e/cken
