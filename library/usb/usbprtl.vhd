@@ -71,7 +71,7 @@ begin
 
 	phy_txen <= txen or crcrq;
 	phy_txd  <= 
-		txd          when txen='1'   else 
+		txd      when txen='1'   else 
 		not crc16(0) when pktdat='1' else
 		not crc5(0);
 	usbphy_e : entity hdl4fpga.usbphy
