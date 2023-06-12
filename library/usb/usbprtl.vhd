@@ -44,7 +44,7 @@ entity usbprtl is
 		txbs : buffer std_logic;
 		txd  : in  std_logic;
 
-		rxdv : out std_logic;
+		rxdv : buffer std_logic;
 		rxbs : buffer std_logic;
 		rxd  : buffer std_logic);
 end;
@@ -69,7 +69,42 @@ begin
 	tp(1 to 3) <= (phy_txen, phy_txbs, phy_txd);
 	rxdv <= phy_rxdv and not phy_txen;
 
-	phy_txen <= txen or crcrq;
+	process (txen, rxdv, clk)
+		type states is (s_idle, s_tx, s_rx);
+		variable state : states;
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				case state is
+				when s_idle =>
+					if txen='1' then
+						state := s_tx;
+					elsif rxdv='1' then
+						state := s_rx;
+					end if;
+				when s_tx =>
+					if txen='0' then
+						if crcrq='0' then
+							state  := s_idle;
+						end if;
+					end if;
+				when s_rx =>
+					if crcrq='0' then
+						state  := s_idle;
+					end if;
+				end case;
+			end if;
+		end if;
+		case state is
+		when s_idle =>
+			phy_txen <= txen;
+		when s_tx =>
+			phy_txen <= txen or crcrq;
+		when s_rx =>
+			phy_txen <= '0';
+		end case;
+	end process;
+
 	phy_txd  <= 
 		txd      when txen='1'   else 
 		not crc16(0) when pktdat='1' else
@@ -107,7 +142,7 @@ begin
 		constant length_of_crc16 : natural := 16;
 		type states is (s_pid, s_data, s_crc);
 		variable state : states;
-		variable cntr  : natural range 0 to max(length_of_crc16,length_of_crc5)+length_of_pid-1;
+		variable cntr  : natural range 0 to max(length_of_crc16,length_of_crc5)-1+length_of_pid-1;
 		variable pid   : unsigned(8-1 downto 0);
 	begin
 		if rising_edge(clk) then
@@ -122,7 +157,7 @@ begin
 							cntr := cntr - 1;
 							crcrq  <= '0';
 						else 
-							crcrq   <= txen;
+							crcrq  <= txen or rxdv;
 							state := s_data;
 						end if;
 						pid(0) := data;
@@ -147,9 +182,9 @@ begin
 					end if;
 				end if;
 				if pktdat='1' then
-					cntr := (length_of_crc16)+length_of_sync-1;
+					cntr := (length_of_crc16-1)+length_of_sync-1;
 				else
-					cntr := (length_of_crc5)+length_of_sync-1;
+					cntr := (length_of_crc5-1)+length_of_sync-1;
 				end if;
 			when s_crc =>
 				if cken='1' then
@@ -157,6 +192,7 @@ begin
 						if cntr /= 0 then
 							cntr := cntr - 1;
 						else
+							crcrq <= '0';
 							state := s_pid;
 						end if;
 					end if;
@@ -165,8 +201,8 @@ begin
 		end if;
 	end process;
 
-	crcen <= crcrq and not bs;
-	crcdv <= crcrq and txen;
+	crcen <= (crcrq and not bs) and cken;
+	crcdv <= crcrq and txen when phy_txen='1' else rxdv;
 	usbcrc_e : entity hdl4fpga.usbcrc
 	port map (
 		clk   => clk,
