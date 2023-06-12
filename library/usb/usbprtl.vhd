@@ -74,7 +74,35 @@ begin
 	tp(1 to 3) <= (phy_txen, phy_txbs, phy_txd);
 	rxdv <= phy_rxdv and not phy_txen;
 
-	phytx_and_crc_ena_p : process (phy_txbs, txen, rxbs, phy_rxdv, crcrq, clk)
+	usbphy_e : entity hdl4fpga.usbphy
+   	generic map (
+		oversampling => oversampling,
+		watermark    => watermark,
+		bit_stuffing => bit_stuffing)
+	port map (
+		dp   => dp,
+		dn   => dn,
+		clk  => clk,
+		cken => cken,
+
+		txen => phy_txen,
+		txbs => phy_txbs,
+		txd  => phy_txd,
+
+		rxdv => phy_rxdv,
+		rxbs => rxbs,
+		rxd  => rxd);
+
+	usbcrc_e : entity hdl4fpga.usbcrc
+	port map (
+		clk   => clk,
+		cken  => crcen,
+		dv    => crcdv,
+		data  => data,
+		crc5  => crc5,
+		crc16 => crc16);
+
+	data_crc_p : process (phy_txbs, txen, rxbs, phy_rxdv, crcrq, clk)
 		type states is (s_idle, s_tx, s_rx);
 		variable state : states;
 	begin
@@ -145,14 +173,14 @@ begin
 			when s_pid =>
 				if dv='0' then
 					cntr := length_of_pid-1;
-					crcrq  <= '0';
+					crcrq <= '0';
 				elsif cken='1' then
 					if bs='0' then
 						if cntr /= 0 then
-							cntr := cntr - 1;
-							crcrq  <= '0';
+							cntr  := cntr - 1;
+							crcrq <= '0';
 						else 
-							crcrq  <= txen or phy_rxdv;
+							crcrq <= txen or phy_rxdv;
 							state := s_data;
 						end if;
 						pid(0) := data;
@@ -179,7 +207,7 @@ begin
 				if pktdat='1' then
 					cntr := (length_of_crc16-1)+length_of_sync-1;
 				else
-					cntr := (length_of_crc5-1)+length_of_sync-1;
+					cntr :=  (length_of_crc5-1)+length_of_sync-1;
 				end if;
 			when s_crc =>
 				if cken='1' then
@@ -195,33 +223,5 @@ begin
 			end case;
 		end if;
 	end process;
-
-	usbphy_e : entity hdl4fpga.usbphy
-   	generic map (
-		oversampling => oversampling,
-		watermark    => watermark,
-		bit_stuffing => bit_stuffing)
-	port map (
-		dp   => dp,
-		dn   => dn,
-		clk  => clk,
-		cken => cken,
-
-		txen => phy_txen,
-		txbs => phy_txbs,
-		txd  => phy_txd,
-
-		rxdv => phy_rxdv,
-		rxbs => rxbs,
-		rxd  => rxd);
-
-	usbcrc_e : entity hdl4fpga.usbcrc
-	port map (
-		clk   => clk,
-		cken  => crcen,
-		dv    => crcdv,
-		data  => data,
-		crc5  => crc5,
-		crc16 => crc16);
 
 end;
