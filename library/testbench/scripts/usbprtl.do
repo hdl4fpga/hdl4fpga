@@ -51,7 +51,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1250010 ps} 0} {{Cursor 2} {3441779 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1250010 ps} 0} {{Cursor 2} {3077981 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 181
 configure wave -valuecolwidth 451
