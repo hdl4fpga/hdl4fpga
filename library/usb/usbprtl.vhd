@@ -56,23 +56,25 @@ end;
 
 architecture def of usbprtl is
 	signal phy_txen : std_logic;
-	alias  phy_txbs is txbs;
+	signal phy_txbs : std_logic;
 	signal phy_txd  : std_logic;
+	signal phy_rxbs : std_logic;
 	signal phy_rxdv : std_logic;
+	signal phy_rxd  : std_logic;
 
-	signal dv     : std_logic;
-	signal data   : std_logic;
-	signal crcrq  : std_logic;
-	signal crcdv  : std_logic;
-	signal crcen  : std_logic;
-	signal crc5   : std_logic_vector(0 to 5-1);
-	signal crc16  : std_logic_vector(0 to 16-1);
-	signal bs     : std_logic;
-	signal pktdat : std_logic;
+	signal dv       : std_logic;
+	signal data     : std_logic;
+	signal crcact   : std_logic;
+	signal crcdv    : std_logic;
+	signal crcen    : std_logic;
+	signal crcd     : std_logic;
+	signal crc5     : std_logic_vector(0 to 5-1);
+	signal crc16    : std_logic_vector(0 to 16-1);
+	signal bitstff  : std_logic;
+	signal pktdat   : std_logic;
 begin
 
 	tp(1 to 3) <= (phy_txen, phy_txbs, phy_txd);
-	rxdv <= phy_rxdv and not phy_txen;
 
 	usbphy_e : entity hdl4fpga.usbphy
    	generic map (
@@ -90,8 +92,8 @@ begin
 		txd  => phy_txd,
 
 		rxdv => phy_rxdv,
-		rxbs => rxbs,
-		rxd  => rxd);
+		rxbs => phy_rxbs,
+		rxd  => phy_rxd);
 
 	usbcrc_e : entity hdl4fpga.usbcrc
 	port map (
@@ -102,65 +104,35 @@ begin
 		crc5  => crc5,
 		crc16 => crc16);
 
-	data_crc_p : process (phy_txbs, txen, rxbs, phy_rxdv, crcrq, clk)
-		type states is (s_idle, s_tx, s_rx);
-		variable state : states;
-	begin
-		memory : if rising_edge(clk) then
-			if cken='1' then
-				case state is
-				when s_idle =>
-					if txen='1' then
-						state := s_tx;
-					elsif phy_rxdv='1' then
-						state := s_rx;
-					end if;
-				when s_tx =>
-					if crcrq='0' then
-						if phy_rxdv='0' then
-							if phy_txen='0' then
-								state := s_idle;
-							end if;
-						end if;
-					end if;
-				when s_rx =>
-					if crcrq='0' then
-						if phy_rxdv='0' then
-							if phy_txen='0' then
-								state := s_idle;
-							end if;
-						end if;
-					end if;
-				end case;
-			end if;
-		end if;
-
-		combimatorial : case state is
-		when s_idle =>
-			phy_txen <= txen;
-			bs       <= phy_txbs or rxbs;
-			crcdv    <= txen or phy_rxdv;
-			dv       <= txen or phy_rxdv;
-		when s_tx =>
-			phy_txen <= txen or crcrq;
-			bs       <= phy_txbs;
-			crcdv    <= crcrq and txen;
-			dv       <= txen;
-		when s_rx =>
-			phy_txen <= '0';
-			bs       <= rxbs;
-			crcdv    <= phy_rxdv;
-			dv       <= phy_rxdv;
-		end case;
-	end process;
-	crcen <= (crcrq and not bs) when cken='1' else '0';
-
-	phy_txd  <= 
-		txd          when txen='1'   else 
-		not crc16(0) when pktdat='1' else
-		not crc5(0);
-
-	data <= txd when txen='1' else rxd;
+	crcd <= crc16(0) when pktdat='1' else crc5(0);
+	crcglue_e : entity hdl4fpga.usbcrcglue
+	port map (
+		clk      => clk,
+		cken     => cken,
+		dv       => dv,
+		bitstff  => bitstff,
+		data     => data,
+           
+		crcdv    => crcdv,
+		crcact   => crcact,
+		crcen    => crcen,
+		crcd     => crcd,
+           
+		txen     => txen,
+		txbs     => txbs,
+		txd      => txd,
+           
+		phy_txen => phy_txen,
+		phy_txbs => phy_txbs,
+		phy_txd  => phy_txd,
+           
+		rxdv     => rxdv,
+		rxbs     => rxbs,
+		rxd      => rxd,
+           
+		phy_rxdv => phy_rxdv,
+		phy_rxbs => phy_rxbs,
+		phy_rxd  => phy_rxd);
 
 	process (clk)
 		type states is (s_pid, s_data, s_crc);
@@ -173,21 +145,21 @@ begin
 			when s_pid =>
 				if dv='0' then
 					cntr := length_of_pid-1;
-					crcrq <= '0';
+					crcact <= '0';
 				elsif cken='1' then
-					if bs='0' then
+					if bitstff='0' then
 						if cntr /= 0 then
 							cntr  := cntr - 1;
-							crcrq <= '0';
+							crcact <= '0';
 						else 
-							crcrq <= txen or phy_rxdv;
+							crcact <= txen or phy_rxdv;
 							state := s_data;
 						end if;
 						pid(0) := data;
 						pid := pid ror 1;
 					end if;
 				else
-					crcrq <= '0';
+					crcact <= '0';
 				end if;
 				if pid(2-1 downto 0)="11" then
 					pktdat <= '1';
@@ -195,27 +167,27 @@ begin
 					pktdat <= '0';
 				end if;
 			when s_data =>
-				if dv='0' then
-					if cken='1' then
-						if crcrq='1' then
+				if cken='1' then
+					if dv='0' then
+						if crcact='1' then
 							state := s_crc;
 						else
 							state := s_pid;
 						end if;
 					end if;
 				end if;
-				if pktdat='1' then
+				if pktdat='1' then  -- Flush serial resgister and crc
 					cntr := (length_of_crc16-1)+length_of_sync-1;
 				else
 					cntr :=  (length_of_crc5-1)+length_of_sync-1;
 				end if;
 			when s_crc =>
 				if cken='1' then
-					if bs='0' then
+					if bitstff='0' then
 						if cntr /= 0 then
 							cntr := cntr - 1;
 						else
-							crcrq <= '0';
+							crcact <= '0';
 							state := s_pid;
 						end if;
 					end if;

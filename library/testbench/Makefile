@@ -54,6 +54,8 @@ HDL4FPGA__usbphy_rx__def = $(LIB_HDL4FPGA)/usbphy_rx/def.dat
 HDL4FPGA__usbphy_rx = $(LIB_HDL4FPGA)/usbphy_rx/_primary.dat
 HDL4FPGA__usbphy__def = $(LIB_HDL4FPGA)/usbphy/def.dat
 HDL4FPGA__usbphy = $(LIB_HDL4FPGA)/usbphy/_primary.dat
+HDL4FPGA__usbcrcglue__def = $(LIB_HDL4FPGA)/usbcrcglue/def.dat
+HDL4FPGA__usbcrcglue = $(LIB_HDL4FPGA)/usbcrcglue/_primary.dat
 HDL4FPGA__usbcrc__def = $(LIB_HDL4FPGA)/usbcrc/def.dat
 HDL4FPGA__usbcrc = $(LIB_HDL4FPGA)/usbcrc/_primary.dat
 HDL4FPGA__udp_tx__def = $(LIB_HDL4FPGA)/udp_tx/def.dat
@@ -401,6 +403,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__usbphy_rx) \
     $(HDL4FPGA__usbphy__def) \
     $(HDL4FPGA__usbphy) \
+    $(HDL4FPGA__usbcrcglue__def) \
+    $(HDL4FPGA__usbcrcglue) \
     $(HDL4FPGA__usbcrc__def) \
     $(HDL4FPGA__usbcrc) \
     $(HDL4FPGA__udp_tx__def) \
@@ -2347,6 +2351,14 @@ $(HDL4FPGA__usbcrc__def) : ../usb/usbcrc.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../usb/usbcrc.vhd
 
+$(HDL4FPGA__usbcrcglue) \
+$(HDL4FPGA__usbcrcglue__def) : ../usb/usbcrcglue.vhd \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../usb/usbcrcglue.vhd
+
 $(HDL4FPGA__usbphy) \
 $(HDL4FPGA__usbphy__def) : ../usb/usbphy.vhd \
 		$(HDL4FPGA__usbphy_tx) \
@@ -2377,6 +2389,7 @@ $(HDL4FPGA__usbphy_tx__def) : ../usb/usbphy_tx.vhd \
 
 $(HDL4FPGA__usbprtl) \
 $(HDL4FPGA__usbprtl__def) : ../usb/usbprtl.vhd \
+		$(HDL4FPGA__usbcrcglue) \
 		$(HDL4FPGA__usbcrc) \
 		$(HDL4FPGA__usbphy) \
 		$(HDL4FPGA__base) \
