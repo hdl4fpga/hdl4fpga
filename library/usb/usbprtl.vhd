@@ -147,9 +147,9 @@ begin
 					end if;
 				end if;
 				if pktdat='1' then
-					cntr := (length_of_crc16-1)+length_of_sync-1;
+					cntr := (length_of_crc16)+length_of_sync-1;
 				else
-					cntr := (length_of_crc5-1)+length_of_sync-1;
+					cntr := (length_of_crc5)+length_of_sync-1;
 				end if;
 			when s_crc =>
 				if cken='1' then
@@ -157,7 +157,6 @@ begin
 						if cntr /= 0 then
 							cntr := cntr - 1;
 						else
-							crcrq   <= '0';
 							state := s_pid;
 						end if;
 					end if;
