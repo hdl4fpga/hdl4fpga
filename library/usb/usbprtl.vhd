@@ -44,9 +44,14 @@ entity usbprtl is
 		txbs : buffer std_logic;
 		txd  : in  std_logic;
 
-		rxdv : buffer std_logic;
+		rxdv : out std_logic;
 		rxbs : buffer std_logic;
 		rxd  : buffer std_logic);
+
+	constant length_of_sync  : natural := 8;
+	constant length_of_pid   : natural := 8;
+	constant length_of_crc5  : natural := 5;
+	constant length_of_crc16 : natural := 16;
 end;
 
 architecture def of usbprtl is
@@ -55,7 +60,7 @@ architecture def of usbprtl is
 	signal phy_txd  : std_logic;
 	signal phy_rxdv : std_logic;
 
-	signal dv     : bit;
+	signal dv     : std_logic;
 	signal data   : std_logic;
 	signal crcrq  : std_logic;
 	signal crcdv  : std_logic;
@@ -69,7 +74,7 @@ begin
 	tp(1 to 3) <= (phy_txen, phy_txbs, phy_txd);
 	rxdv <= phy_rxdv and not phy_txen;
 
-	phytx_and_crc_ena_p : process (txen, rxdv, crcrq, clk)
+	phytx_and_crc_ena_p : process (phy_txbs, txen, rxbs, phy_rxdv, crcrq, clk)
 		type states is (s_idle, s_tx, s_rx);
 		variable state : states;
 	begin
@@ -79,32 +84,45 @@ begin
 				when s_idle =>
 					if txen='1' then
 						state := s_tx;
-					elsif rxdv='1' then
+					elsif phy_rxdv='1' then
 						state := s_rx;
 					end if;
 				when s_tx =>
-					if txen='0' then
-						if crcrq='0' then
-							state := s_idle;
+					if crcrq='0' then
+						if phy_rxdv='0' then
+							if phy_txen='0' then
+								state := s_idle;
+							end if;
 						end if;
 					end if;
 				when s_rx =>
 					if crcrq='0' then
-						state := s_idle;
+						if phy_rxdv='0' then
+							if phy_txen='0' then
+								state := s_idle;
+							end if;
+						end if;
 					end if;
 				end case;
 			end if;
 		end if;
+
 		combimatorial : case state is
 		when s_idle =>
 			phy_txen <= txen;
-			crcdv    <= txen or rxdv;
+			bs       <= phy_txbs or rxbs;
+			crcdv    <= txen or phy_rxdv;
+			dv       <= txen or phy_rxdv;
 		when s_tx =>
 			phy_txen <= txen or crcrq;
+			bs       <= phy_txbs;
 			crcdv    <= crcrq and txen;
+			dv       <= txen;
 		when s_rx =>
 			phy_txen <= '0';
-			crcdv    <= rxdv;
+			bs       <= rxbs;
+			crcdv    <= phy_rxdv;
+			dv       <= phy_rxdv;
 		end case;
 	end process;
 	crcen <= (crcrq and not bs) when cken='1' else '0';
@@ -114,38 +132,9 @@ begin
 		not crc16(0) when pktdat='1' else
 		not crc5(0);
 
-	usbphy_e : entity hdl4fpga.usbphy
-   	generic map (
-		oversampling => oversampling,
-		watermark    => watermark,
-		bit_stuffing => bit_stuffing)
-	port map (
-		dp   => dp,
-		dn   => dn,
-		clk  => clk,
-		cken => cken,
-
-		txen => phy_txen,
-		txbs => phy_txbs,
-		txd  => phy_txd,
-
-		rxdv => phy_rxdv,
-		rxbs => rxbs,
-		rxd  => rxd);
-
-	bs   <= phy_txbs or rxbs;
-	dv   <= 
-		'1' when     txen='1' else 
-		'0' when phy_txen='1' else
-		'1' when phy_rxdv='1' else
-		'0';
 	data <= txd when txen='1' else rxd;
 
 	process (clk)
-		constant length_of_sync  : natural := 8;
-		constant length_of_pid   : natural := 8;
-		constant length_of_crc5  : natural := 5;
-		constant length_of_crc16 : natural := 16;
 		type states is (s_pid, s_data, s_crc);
 		variable state : states;
 		variable cntr  : natural range 0 to max(length_of_crc16,length_of_crc5)-1+length_of_pid-1;
@@ -163,7 +152,7 @@ begin
 							cntr := cntr - 1;
 							crcrq  <= '0';
 						else 
-							crcrq  <= txen or rxdv;
+							crcrq  <= txen or phy_rxdv;
 							state := s_data;
 						end if;
 						pid(0) := data;
@@ -206,6 +195,25 @@ begin
 			end case;
 		end if;
 	end process;
+
+	usbphy_e : entity hdl4fpga.usbphy
+   	generic map (
+		oversampling => oversampling,
+		watermark    => watermark,
+		bit_stuffing => bit_stuffing)
+	port map (
+		dp   => dp,
+		dn   => dn,
+		clk  => clk,
+		cken => cken,
+
+		txen => phy_txen,
+		txbs => phy_txbs,
+		txd  => phy_txd,
+
+		rxdv => phy_rxdv,
+		rxbs => rxbs,
+		rxd  => rxd);
 
 	usbcrc_e : entity hdl4fpga.usbcrc
 	port map (

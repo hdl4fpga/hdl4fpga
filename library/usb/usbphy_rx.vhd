@@ -38,7 +38,7 @@ entity usbphy_rx is
 		k    : in  std_logic;
 		se0  : in  std_logic;
 		rxdv : out std_logic;
-		rxbs : out std_logic;
+		rxbs : buffer std_logic;
 		rxd  : buffer std_logic;
 		err  : out std_logic);
 end;
@@ -120,15 +120,27 @@ begin
 				kj_l : case statekj is
 				when s_k =>
 					if cnt1 < bit_stuffing then
-						cnt1 := cnt1 + 1;
+						case state is
+						when s_synck =>
+							if k='1' then
+								cnt1 := cnt1 + 1;
+							end if;
+						when s_data =>
+							cnt1 := cnt1 + 1;
+						when others =>
+						end case;
 					end if;
 					if j='1' then
 						cnt1    := 0;
 						statekj := s_j;
 					end if;
 				when s_j =>
-					if cnt1 < 6 then
-						cnt1 := cnt1 + 1;
+					if cnt1 < bit_stuffing then
+						case state is
+						when s_data =>
+							cnt1 := cnt1 + 1;
+						when others =>
+						end case;
 					end if;
 					if k='1' then
 						cnt1    := 0;
@@ -138,7 +150,11 @@ begin
 
 				err_l : if se0='1' then
 					err <= '0';
-				elsif cnt1=bit_stuffing then
+				elsif state=s_synck then
+					err <= '0';
+				elsif state=s_syncj then
+					err <= '0';
+				elsif rxbs='1' then
 					if rxd='1' then
 						err <= '1';
 					end if;

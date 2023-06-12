@@ -96,6 +96,11 @@ begin
 		video_lck   => video_lck);
 
 	usb_g : if io_link=io_usb generate 
+		signal cken : std_logic;
+		signal rxdv : std_logic;
+		signal rxbs : std_logic;
+		signal rxd  : std_logic;
+	begin
 		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 		usb_fpga_dp    <= 'Z' when up='0' else '0';
@@ -110,11 +115,16 @@ begin
 			dp   => usb_fpga_dp,
 			dn   => usb_fpga_dn,
 			clk  => videoio_clk,
-			cken => ser_irdy,
-			rxdv => ser_frm,
-			rxd  => ser_data(0));
+			cken => cken,
+			rxdv => rxdv, 
+			rxbs => rxbs,
+			rxd  => rxd);
+			
+		ser_clk     <= videoio_clk;
+		ser_frm     <= rxdv;
+		ser_irdy    <= cken and not rxbs;
+		ser_data(0) <= rxd;
 
-		ser_clk <= videoio_clk;
 		led(8-1 downto 4) <= 
 			(usb_fpga_pu_dp, usb_fpga_pu_dn, usb_fpga_dp, usb_fpga_dn);
 	end generate;
