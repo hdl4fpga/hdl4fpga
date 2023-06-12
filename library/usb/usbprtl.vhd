@@ -69,11 +69,11 @@ begin
 	tp(1 to 3) <= (phy_txen, phy_txbs, phy_txd);
 	rxdv <= phy_rxdv and not phy_txen;
 
-	process (txen, rxdv, crcrq, clk)
+	phytx_and_crc_ena_p : process (txen, rxdv, crcrq, clk)
 		type states is (s_idle, s_tx, s_rx);
 		variable state : states;
 	begin
-		if rising_edge(clk) then
+		memory : if rising_edge(clk) then
 			if cken='1' then
 				case state is
 				when s_idle =>
@@ -85,17 +85,17 @@ begin
 				when s_tx =>
 					if txen='0' then
 						if crcrq='0' then
-							state  := s_idle;
+							state := s_idle;
 						end if;
 					end if;
 				when s_rx =>
 					if crcrq='0' then
-						state  := s_idle;
+						state := s_idle;
 					end if;
 				end case;
 			end if;
 		end if;
-		case state is
+		combimatorial : case state is
 		when s_idle =>
 			phy_txen <= txen;
 			crcdv    <= txen or rxdv;
@@ -107,6 +107,7 @@ begin
 			crcdv    <= rxdv;
 		end case;
 	end process;
+	crcen <= (crcrq and not bs) when cken='1' else '0';
 
 	phy_txd  <= 
 		txd          when txen='1'   else 
@@ -139,6 +140,7 @@ begin
 		'1' when phy_rxdv='1' else
 		'0';
 	data <= txd when txen='1' else rxd;
+
 	process (clk)
 		constant length_of_sync  : natural := 8;
 		constant length_of_pid   : natural := 8;
@@ -205,7 +207,6 @@ begin
 		end if;
 	end process;
 
-	crcen <= (crcrq and not bs) when cken='1' else '0';
 	usbcrc_e : entity hdl4fpga.usbcrc
 	port map (
 		clk   => clk,
