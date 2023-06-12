@@ -134,8 +134,8 @@ begin
 		phy_rxbs => phy_rxbs,
 		phy_rxd  => phy_rxd);
 
-	process (clk)
-		type states is (s_pid, s_data, s_crc);
+	pid_and_crc_p : process (clk)
+		type states is (s_pid, s_payload, s_crc);
 		variable state : states;
 		variable cntr  : natural range 0 to max(length_of_crc16,length_of_crc5)-1+length_of_pid-1;
 		variable pid   : unsigned(8-1 downto 0);
@@ -153,7 +153,7 @@ begin
 							crcact <= '0';
 						else 
 							crcact <= txen or phy_rxdv;
-							state := s_data;
+							state := s_payload;
 						end if;
 						pid(0) := data;
 						pid := pid ror 1;
@@ -166,7 +166,7 @@ begin
 				else
 					pktdat <= '0';
 				end if;
-			when s_data =>
+			when s_payload =>
 				if cken='1' then
 					if dv='0' then
 						if crcact='1' then
@@ -176,7 +176,8 @@ begin
 						end if;
 					end if;
 				end if;
-				if pktdat='1' then  -- Flush serial resgister and crc
+				-- crc plus tx serial register
+				if pktdat='1' then
 					cntr := (length_of_crc16-1)+length_of_sync-1;
 				else
 					cntr :=  (length_of_crc5-1)+length_of_sync-1;
