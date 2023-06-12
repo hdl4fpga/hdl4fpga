@@ -31,9 +31,7 @@ add wave -noupdate -expand -group du_usbprtcl -expand -group usbrcr /testbench/d
 add wave -noupdate -expand -group du_usbprtcl -expand -group usbrcr /testbench/du_b/du/usbcrc_e/dv
 add wave -noupdate -expand -group du_usbprtcl -expand -group usbrcr /testbench/du_b/du/usbcrc_e/data
 add wave -noupdate -expand -group du_usbprtcl -expand -group usbrcr /testbench/du_b/du/usbcrc_e/crc5
-add wave -noupdate -expand -group du_usbprtcl -expand -group usbrcr /testbench/du_b/du/usbcrc_e/ncrc5
 add wave -noupdate -expand -group du_usbprtcl -expand -group usbrcr /testbench/du_b/du/usbcrc_e/crc16
-add wave -noupdate -expand -group du_usbprtcl -expand -group usbrcr /testbench/du_b/du/usbcrc_e/ncrc16
 add wave -noupdate -expand -group du_usbprtcl -expand -group usbphy_tx /testbench/du_b/du/usbphy_e/tx_d/line__25/state
 add wave -noupdate -expand -group du_usbprtcl -expand -group usbphy_tx /testbench/du_b/du/usbphy_e/tx_d/cken
 add wave -noupdate -expand -group du_usbprtcl -expand -group usbphy_tx /testbench/du_b/du/usbphy_e/tx_d/txen
@@ -74,7 +72,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {3393535 ps} 0} {{Cursor 2} {2083350 ps} 0}
+WaveRestoreCursors {{Cursor 1} {3419219 ps} 0} {{Cursor 2} {2083350 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 181
 configure wave -valuecolwidth 262
@@ -90,4 +88,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {1098343 ps} {3516372 ps}
+WaveRestoreZoom {1702873 ps} {4120902 ps}

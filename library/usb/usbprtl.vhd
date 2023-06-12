@@ -69,7 +69,7 @@ begin
 	tp(1 to 3) <= (phy_txen, phy_txbs, phy_txd);
 	rxdv <= phy_rxdv and not phy_txen;
 
-	process (txen, rxdv, clk)
+	process (txen, rxdv, crcrq, clk)
 		type states is (s_idle, s_tx, s_rx);
 		variable state : states;
 	begin
@@ -98,17 +98,21 @@ begin
 		case state is
 		when s_idle =>
 			phy_txen <= txen;
+			crcdv    <= txen or rxdv;
 		when s_tx =>
 			phy_txen <= txen or crcrq;
+			crcdv    <= crcrq and txen;
 		when s_rx =>
 			phy_txen <= '0';
+			crcdv    <= rxdv;
 		end case;
 	end process;
 
 	phy_txd  <= 
-		txd      when txen='1'   else 
+		txd          when txen='1'   else 
 		not crc16(0) when pktdat='1' else
 		not crc5(0);
+
 	usbphy_e : entity hdl4fpga.usbphy
    	generic map (
 		oversampling => oversampling,
@@ -201,8 +205,7 @@ begin
 		end if;
 	end process;
 
-	crcen <= (crcrq and not bs) and cken;
-	crcdv <= crcrq and txen when phy_txen='1' else rxdv;
+	crcen <= (crcrq and not bs) when cken='1' else '0';
 	usbcrc_e : entity hdl4fpga.usbcrc
 	port map (
 		clk   => clk,
