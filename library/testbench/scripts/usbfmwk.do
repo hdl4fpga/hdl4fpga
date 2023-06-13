@@ -12,19 +12,19 @@ add wave -noupdate -expand -group host_usbprtcl /testbench/host_b/host_e/txd
 add wave -noupdate -expand -group host_usbprtcl /testbench/host_b/host_e/rxdv
 add wave -noupdate -expand -group host_usbprtcl /testbench/host_b/host_e/rxd
 add wave -noupdate -expand -group host_usbprtcl /testbench/host_b/host_e/rxbs
-add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_tx  /testbench/host_b/host_e/usbphy_e/tx_d/clk
-add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_tx  /testbench/host_b/host_e/usbphy_e/tx_d/cken
-add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_tx  /testbench/host_b/host_e/usbphy_e/tx_d/txen
-add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_tx  /testbench/host_b/host_e/usbphy_e/tx_d/txd
-add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_tx  /testbench/host_b/host_e/usbphy_e/tx_d/txbs
-add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_tx  /testbench/host_b/host_e/usbphy_e/tx_d/bit_stuffing
-add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_tx  /testbench/host_b/host_e/usbphy_e/tx_d/line__25/data
-add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_tx  /testbench/host_b/host_e/usbphy_e/tx_d/line__25/state
-add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_rx  /testbench/host_b/host_e/usbphy_e/rx_d/rxdv
-add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_rx  /testbench/host_b/host_e/usbphy_e/rx_d/rxbs
-add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_rx  /testbench/host_b/host_e/usbphy_e/rx_d/rxd
-add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_rx  /testbench/host_b/host_e/usbphy_e/rx_d/line__49/state
-add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_rx  /testbench/host_b/host_e/usbphy_e/rx_d/line__49/statekj
+add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/tx_d/clk
+add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/tx_d/cken
+add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/tx_d/txen
+add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/tx_d/txd
+add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/tx_d/txbs
+add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/tx_d/bit_stuffing
+add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/tx_d/line__25/data
+add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/tx_d/line__25/state
+add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_rx /testbench/host_b/host_e/usbphy_e/rx_d/rxdv
+add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_rx /testbench/host_b/host_e/usbphy_e/rx_d/rxbs
+add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_rx /testbench/host_b/host_e/usbphy_e/rx_d/rxd
+add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_rx /testbench/host_b/host_e/usbphy_e/rx_d/line__49/state
+add wave -noupdate -expand -group host_usbprtcl -group host_usbphy_rx /testbench/host_b/host_e/usbphy_e/rx_d/line__49/statekj
 add wave -noupdate -expand -group host_usbprtcl -group host_usbcrcglue /testbench/host_b/host_e/crcglue_e/clk
 add wave -noupdate -expand -group host_usbprtcl -group host_usbcrcglue /testbench/host_b/host_e/crcglue_e/cken
 add wave -noupdate -expand -group host_usbprtcl -group host_usbcrcglue /testbench/host_b/host_e/crcglue_e/dv
@@ -112,13 +112,20 @@ add wave -noupdate -expand -group dev_usbprtcl -group dev_usbrcr /testbench/dev_
 add wave -noupdate -expand -group dev_usbprtcl -group dev_usbrcr /testbench/dev_b/dev_e/usbprtl_e/usbcrc_e/crc5
 add wave -noupdate -expand -group dev_usbprtcl -group dev_usbrcr /testbench/dev_b/dev_e/usbprtl_e/usbcrc_e/crc16
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/dev_b/dev_e/frwk_e/setup_p/state
+add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/frwk_e/setup_p/pid
+add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/frwk_e/setup_p/rgtr
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/dev_b/dev_e/frwk_e/setup_p/token(23) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(22) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(21) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(20) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(19) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(18) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(17) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(16) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(15) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(14) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(13) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(12) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(11) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(10) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(9) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(8) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(7) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(6) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(5) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(4) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(3) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(2) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(1) -radix hexadecimal} {/testbench/dev_b/dev_e/frwk_e/setup_p/token(0) -radix hexadecimal}} -subitemconfig {/testbench/dev_b/dev_e/frwk_e/setup_p/token(23) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(22) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(21) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(20) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(19) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(18) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(17) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(16) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(15) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(14) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(13) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(12) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(11) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(10) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(9) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(8) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(7) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(6) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(5) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(4) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(3) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(2) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(1) {-height 29 -radix hexadecimal} /testbench/dev_b/dev_e/frwk_e/setup_p/token(0) {-height 29 -radix hexadecimal}} /testbench/dev_b/dev_e/frwk_e/setup_p/token
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/dev_b/dev_e/frwk_e/rxdv
+add wave -noupdate /testbench/dev_b/dev_e/phy_rxdv
+add wave -noupdate /testbench/dev_b/dev_e/frwk_e/tk_setup
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {6569325 ps} 1} {{Cursor 2} {8757476 ps} 1} {{Cursor 3} {2163545 ps} 1} {{Cursor 4} {3408340 ps} 1} {{Cursor 5} {3750099 ps} 0}
+WaveRestoreCursors {{Cursor 1} {6569325 ps} 1} {{Cursor 2} {8757476 ps} 1} {{Cursor 3} {2163545 ps} 1} {{Cursor 4} {3408340 ps} 1} {{Cursor 5} {3615821 ps} 0}
 quietly wave cursor active 5
 configure wave -namecolwidth 266
 configure wave -valuecolwidth 97
@@ -134,4 +141,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {9450 ns}
+WaveRestoreZoom {0 ps} {4200 ns}
