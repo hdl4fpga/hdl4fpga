@@ -72,6 +72,17 @@ architecture def of usbprtl is
 	signal crc16    : std_logic_vector(0 to 16-1);
 	signal bitstff  : std_logic;
 	signal pktdat   : std_logic;
+	signal pid      : std_logic_vector(8-1 downto 0);
+
+	-- type tokens is (tk_out, tk_in, tk_sof, tksetup);
+	constant tk_out   : std_logic_vector := b"0001";
+	constant tk_in    : std_logic_vector := b"1001";
+	constant tk_sof   : std_logic_vector := b"0101";
+	constant tk_setup : std_logic_vector := b"1101";
+
+	constant data0    : std_logic_vector := b"0011";
+	constant data1    : std_logic_vector := b"1011";
+
 begin
 
 	tp(1 to 3) <= (phy_txen, phy_txbs, phy_txd);
@@ -138,7 +149,7 @@ begin
 		type states is (s_pid, s_payload, s_crc);
 		variable state : states;
 		variable cntr  : natural range 0 to max(length_of_crc16,length_of_crc5)-1+length_of_pid-1;
-		variable pid   : unsigned(8-1 downto 0);
+		variable id    : unsigned(8-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			case state is
@@ -155,17 +166,18 @@ begin
 							crcact <= txen or phy_rxdv;
 							state := s_payload;
 						end if;
-						pid(0) := data;
-						pid := pid ror 1;
+						id(0) := data;
+						id := id ror 1;
 					end if;
 				else
 					crcact <= '0';
 				end if;
-				if pid(2-1 downto 0)="11" then
+				if id(2-1 downto 0)="11" then
 					pktdat <= '1';
 				else
 					pktdat <= '0';
 				end if;
+				pid <= std_logic_vector(id);
 			when s_payload =>
 				if cken='1' then
 					if dv='0' then
@@ -197,4 +209,18 @@ begin
 		end if;
 	end process;
 
+	process(clk)
+		type states is (s_setup, s_data0, s_ack);
+		variable state : states;
+
+	begin
+		if rising_edge(clk) then
+			case pid(4-1 downto 0) is
+			when tk_setup =>
+			when data0 =>
+				
+			when others =>
+			end case;
+		end if;
+	end process;
 end;
