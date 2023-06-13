@@ -28,83 +28,70 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity usbfrwk is
+entity usbdev is
+   	generic (
+		oversampling : natural := 0;
+		watermark    : natural := 0;
+		bit_stuffing : natural := 6);
 	port (
 		tp   : out std_logic_vector(1 to 32);
+		dp   : inout std_logic := 'Z';
+		dn   : inout std_logic := 'Z';
 		clk  : in  std_logic;
-		cken : in std_logic;
+		cken : buffer std_logic;
 
-		txen : out  std_logic;
-		txbs : in  std_logic;
-		txd  : out  std_logic;
+		txen : in  std_logic;
+		txbs : buffer std_logic;
+		txd  : in  std_logic;
 
-		rxdv : in  std_logic;
-		rxbs : in  std_logic;
-		rxd  : in  std_logic);
-
+		rxdv : out std_logic;
+		rxbs : buffer std_logic;
+		rxd  : buffer std_logic);
 end;
 
-architecture def of usbfrwk is
-	constant tk_out   : std_logic_vector := b"0001";
-	constant tk_in    : std_logic_vector := b"1001";
-	constant tk_sof   : std_logic_vector := b"0101";
-	constant tk_setup : std_logic_vector := b"1101";
+architecture def of usbdev is
+		signal phy_txen : std_logic;
+		signal phy_txbs : std_logic;
+		signal phy_txd  : std_logic;
 
-	constant data0    : std_logic_vector := b"0011";
-	constant data1    : std_logic_vector := b"1011";
-
-	constant hs_ack   : std_logic_vector := b"0010";
-
+		signal phy_rxdv : std_logic;
+		signal phy_rxbs : std_logic;
+		signal phy_rxd  : std_logic;
 begin
 
-	token_p : process (clk)
-		type states is (s_setup, s_data, s_ack);
-		variable state : states;
-		variable rgtr  : unsigned(0 to 8+64+16-1);
-		alias  token   : unsigned(0 to 24-1) is rgtr(0 to 24-1);
-		alias  data    : unsigned(0 to 8+64+16-1) is rgtr(0 to 8+64+16-1);
-		alias  pid     : unsigned(8-1 downto 0) is rgtr(0 to 8-1);
-		alias  pidl    : unsigned(4-1 downto 0) is rgtr(4 to 8-1);
-		variable txpid : unsigned(8-1 downto 0);
-		variable cntr  : natural range 0 to 8-1;
-	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				case state is
-				when s_setup =>
-					if (rxdv and not rxbs)='1' then
-						token(0) := rxd;
-						token := token ror 1;
-					elsif pidl=unsigned(tk_setup) then
-						state := s_setup;
-					end if;
-					txen <= '0';
-				when s_data =>
-					if (rxdv and not rxbs)='1' then
-						data(0) := rxd;
-						data := data ror 1;
-					elsif pidl=unsigned(data0) then
-						cntr  := 0;
-						txpid := unsigned(not hs_ack) & unsigned(hs_ack);
-						state := s_ack;
-					else
-						state := s_setup;
-					end if;
-					txen <= '0';
-				when s_ack =>
-					if txbs='0' then
-						if cntr < 7 then
-							cntr := cntr + 1;
-						else
-							state := s_setup;
-						end if;
-					end if;
-					txd   <= txpid(0);
-					txpid := txpid srl 1;
-					txen  <= '1';
-				end case;
-			end if;
-		end if;
-	end process;
+  	frwk_e : entity hdl4fpga.usbfrwk_dev
+	port map (
+		clk  => clk,
+		cken => cken,
+
+		txen => phy_txen,
+		txbs => phy_txbs,
+		txd  => phy_txd,
+
+		rxdv => phy_rxdv,
+		rxbs => phy_rxbs,
+		rxd  => phy_rxd);
+
+  	usbprtl_e : entity hdl4fpga.usbprtl
+   	generic map (
+		oversampling => oversampling,
+		watermark    => watermark,
+		bit_stuffing => bit_stuffing)
+	port map (
+		tp   => tp,
+		dp   => dp,
+		dn   => dn,
+		clk  => clk,
+		cken => cken,
+
+		txen => phy_txen,
+		txbs => phy_txbs,
+		txd  => phy_txd,
+
+		rxdv => phy_rxdv,
+		rxbs => phy_rxbs,
+		rxd  => phy_rxd);
+	txbs <= phy_txbs;
+	rxbs <= phy_rxbs;
 
 end;
