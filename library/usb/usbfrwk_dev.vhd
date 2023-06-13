@@ -45,40 +45,48 @@ entity usbfrwk_dev is
 end;
 
 architecture def of usbfrwk_dev is
-	constant tk_out   : std_logic_vector := b"0001";
-	constant tk_in    : std_logic_vector := b"1001";
-	constant tk_sof   : std_logic_vector := b"0101";
-	constant tk_setup : std_logic_vector := b"1101";
+	constant tk_out   : std_logic_vector := reverse(not b"0001" & b"0001");
+	constant tk_in    : std_logic_vector := reverse(not b"1001" & b"1001");
+	constant tk_sof   : std_logic_vector := reverse(not b"0101" & b"0101");
+	constant tk_setup : std_logic_vector := reverse(not b"1101" & b"1101");
 
-	constant data0    : std_logic_vector := b"0011";
-	constant data1    : std_logic_vector := b"1011";
+	constant data0    : std_logic_vector := reverse(not b"0011" & b"0011");
+	constant data1    : std_logic_vector := reverse(not b"1011" & b"1011");
 
-	constant hs_ack   : std_logic_vector := b"0010";
+	constant hs_ack   : std_logic_vector := reverse(not b"0010" & b"0010");
 
 begin
 
 	setup_p : process (clk)
-		type states is (s_setup, s_data, s_ack);
+		type states is (s_idle, s_setup, s_data, s_ack);
 		variable state : states;
 		variable rgtr  : unsigned(0 to 8+64+16-1);
-		alias  token   : unsigned(0 to 24-1) is rgtr(0 to 24-1);
+		alias  token   : unsigned(24-1 downto 0) is rgtr(0 to 24-1);
 		alias  data    : unsigned(0 to 8+64+16-1) is rgtr(0 to 8+64+16-1);
 		alias  pid     : unsigned(8-1 downto 0) is rgtr(0 to 8-1);
-		alias  pidl    : unsigned(4-1 downto 0) is rgtr(4 to 8-1);
 		variable txpid : unsigned(8-1 downto 0);
 		variable cntr  : natural range 0 to 8-1;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				case state is
+				when s_idle =>
+					if rxdv='1' then
+						if rxbs='0' then
+							token    := token rol 1;
+							token(0) := rxd;
+							state    := s_setup;
+						end if;
+					end if;
+					txen <= '0';
 				when s_setup =>
 					if rxdv='1' then
 						if rxbs='0' then
+							token := token rol 1;
 							token(0) := rxd;
-							token := token ror 1;
 						end if;
-					elsif pidl=unsigned(tk_setup) then
-						state := s_setup;
+					elsif pid=unsigned(tk_setup) then
+						state := s_data;
 					end if;
 					txen <= '0';
 				when s_data =>
@@ -87,7 +95,7 @@ begin
 							data(0) := rxd;
 							data := data ror 1;
 						end if;
-					elsif pidl=unsigned(data0) then
+					elsif pid=unsigned(data0) then
 						cntr  := 0;
 						txpid := unsigned(not hs_ack) & unsigned(hs_ack);
 						state := s_ack;
