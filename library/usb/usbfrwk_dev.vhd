@@ -57,7 +57,7 @@ architecture def of usbfrwk_dev is
 
 begin
 
-	token_p : process (clk)
+	setup_p : process (clk)
 		type states is (s_setup, s_data, s_ack);
 		variable state : states;
 		variable rgtr  : unsigned(0 to 8+64+16-1);
@@ -72,9 +72,11 @@ begin
 			if cken='1' then
 				case state is
 				when s_setup =>
-					if (rxdv and not rxbs)='1' then
-						token(0) := rxd;
-						token := token ror 1;
+					if rxdv='1' then
+						if rxbs='0' then
+							token(0) := rxd;
+							token := token ror 1;
+						end if;
 					elsif pidl=unsigned(tk_setup) then
 						state := s_setup;
 					end if;
