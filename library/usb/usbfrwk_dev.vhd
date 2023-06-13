@@ -57,8 +57,9 @@ architecture def of usbfrwk_dev is
 
 begin
 
+
 	setup_p : process (clk)
-		type states is (s_idle, s_setup, s_data, s_ack);
+		type states is (s_setup, s_data, s_ack);
 		variable state : states;
 		variable rgtr  : unsigned(0 to 8+64+16-1);
 		alias  token   : unsigned(24-1 downto 0) is rgtr(0 to 24-1);
@@ -66,19 +67,11 @@ begin
 		alias  pid     : unsigned(8-1 downto 0) is rgtr(0 to 8-1);
 		variable txpid : unsigned(8-1 downto 0);
 		variable cntr  : natural range 0 to 8-1;
+		variable rcvd  : std_logic;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				case state is
-				when s_idle =>
-					if rxdv='1' then
-						if rxbs='0' then
-							token    := token rol 1;
-							token(0) := rxd;
-							state    := s_setup;
-						end if;
-					end if;
-					txen <= '0';
 				when s_setup =>
 					if rxdv='1' then
 						if rxbs='0' then
@@ -86,6 +79,7 @@ begin
 							token(0) := rxd;
 						end if;
 					elsif pid=unsigned(tk_setup) then
+						rcvd  := '0';
 						state := s_data;
 					end if;
 					txen <= '0';
@@ -95,12 +89,14 @@ begin
 							data(0) := rxd;
 							data := data ror 1;
 						end if;
-					elsif pid=unsigned(data0) then
-						cntr  := 0;
-						txpid := unsigned(not hs_ack) & unsigned(hs_ack);
-						state := s_ack;
-					else
-						state := s_setup;
+					elsif rcvd='1' then
+						if pid=unsigned(data0) then
+							cntr  := 0;
+							txpid := unsigned(not hs_ack) & unsigned(hs_ack);
+							state := s_ack;
+						else
+							state := s_setup;
+						end if;
 					end if;
 					txen <= '0';
 				when s_ack =>
