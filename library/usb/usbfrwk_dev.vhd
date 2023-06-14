@@ -63,11 +63,10 @@ begin
 		variable state : states;
 		variable rgtr  : unsigned(0 to 8+64+16-1);
 		alias  token   : unsigned(24-1 downto 0) is rgtr(0 to 24-1);
-		alias  data    : unsigned(0 to 8+64+16-1) is rgtr(0 to 8+64+16-1);
+		alias  data    : unsigned(8+64+16-1 downto 0) is rgtr(0 to 8+64+16-1);
 		alias  pid     : unsigned(8-1 downto 0) is rgtr(0 to 8-1);
 		variable txpid : unsigned(8-1 downto 0);
 		variable cntr  : natural range 0 to 8-1;
-		variable rcvd  : std_logic;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -79,24 +78,22 @@ begin
 							token(0) := rxd;
 						end if;
 					elsif pid=unsigned(tk_setup) then
-						rcvd  := '0';
+						pid   := x"00";
 						state := s_data;
 					end if;
 					txen <= '0';
 				when s_data =>
 					if rxdv='1' then
 						if rxbs='0' then
+							data := data rol 1;
 							data(0) := rxd;
-							data := data ror 1;
 						end if;
-					elsif rcvd='1' then
-						if pid=unsigned(data0) then
-							cntr  := 0;
-							txpid := unsigned(not hs_ack) & unsigned(hs_ack);
-							state := s_ack;
-						else
-							state := s_setup;
-						end if;
+					elsif pid=unsigned(data0) then
+						cntr  := 0;
+						txpid := unsigned(hs_ack);
+						state := s_ack;
+					elsif pid/=x"00" then
+						state := s_setup;
 					end if;
 					txen <= '0';
 				when s_ack =>

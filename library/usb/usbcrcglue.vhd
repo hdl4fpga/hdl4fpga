@@ -61,7 +61,6 @@ end;
 architecture def of usbcrcglue is
 begin
 
-
 	process (phy_txbs, txen, phy_rxbs, phy_rxdv, crcact, clk)
 		type states is (s_idle, s_tx, s_rx);
 		variable state : states;
@@ -82,7 +81,7 @@ begin
 						end if;
 					end if;
 				when s_rx =>
-					if (txen or crcact)='0' then
+					if phy_rxdv='0' then
 						if phy_rxdv='0' then
 							state := s_idle;
 						end if;

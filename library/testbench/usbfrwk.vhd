@@ -52,74 +52,88 @@ begin
 		signal rxdv : std_logic := '0';
 		signal rxbs : std_logic;
 		signal rxd  : std_logic;
+		signal idle : std_logic;
 	begin
 
 		rst <= '1', '0' after 0.500 us;
-    	process (cken, clk)
-    		-- constant data : std_logic_vector := reverse(x"a50df2",8)(0 to 19-1);
-    		-- constant data : std_logic_vector := reverse(x"a527b2",8)(0 to 19-1);
-    		-- constant data : std_logic_vector := reverse(x"a50302",8)(0 to 19-1);
-    		-- constant data : std_logic_vector := reverse(x"a5badf",8)(0 to 19-1);
-    		constant data : std_logic_vector := reverse(x"2d0010",8)(0 to 19-1);
-    		-- constant data : std_logic_vector := reverse(x"a5ff98",8)(0 to 19-1);
+		process (cken, clk)
+			-- constant data : std_logic_vector := reverse(x"a50df2",8)(0 to 19-1);
+			-- constant data : std_logic_vector := reverse(x"a527b2",8)(0 to 19-1);
+			-- constant data : std_logic_vector := reverse(x"a50302",8)(0 to 19-1);
+			-- constant data : std_logic_vector := reverse(x"a5badf",8)(0 to 19-1);
+			-- constant data : std_logic_vector := reverse(x"2d0010",8)(0 to 19-1);
+			-- constant data : std_logic_vector := reverse(x"a5ff98",8)(0 to 19-1);
 			-- constant data : std_logic_vector := reverse(x"c300_0515_000000_0000_e831",8)(0 to 72-1);
 			-- constant data : std_logic_vector := reverse(x"c300_052d_000000_0000_ec89",8)(0 to 72-1);
-    		-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8)(0 to 72-1);
-    		-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8)(0 to 72-1);
-    		-- constant data : std_logic_vector := reverse(x"c300_050c_000000_0000_ea38",8)(0 to 72-1);
-    		variable cntr : natural := 0;
-    	begin
-    		if rising_edge(clk) then
+			-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8)(0 to 72-1);
+			-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8)(0 to 72-1);
+			-- constant data : std_logic_vector := reverse(x"c300_050c_000000_0000_ea38",8)(0 to 72-1);
+			constant data : std_logic_vector := 
+				reverse(x"a5ff98",8)(0 to 19-1) & 
+				reverse(x"2d0010",8)(0 to 19-1) &
+				reverse(x"c300_0515_000000_0000_e831",8)(0 to 72-1);
+			-- constant length : natural_vector := (0 => 19, 1 => 72);
+			constant length : natural_vector := (0 => 19, 1 => 19, 2 => 72);
+			variable i     : natural;
+			variable j     : natural;
+			variable right : natural;
+		begin
+			if rising_edge(clk) then
 				if rst='1' then
-					cntr := 0;
+					txen  <= '0';
+					i     := 0;
+					j     := 0;
+					right := 0;
+				elsif j < right then
+						if txbs='0' then
+							txd  <= data(j);
+							txen <= '1';
+						end if;
+						j := j + 1;
+				elsif txbs='0' then
 					txen <= '0';
-    			elsif cntr < data'length then
-    				if txbs='0' then
-    					txd  <= data(cntr);
-    					txen <= '1';
-    					cntr := cntr + 1;
-    				end if;
-    			elsif txbs='0' then
-    				if cntr >= data'length then
-    					txen <= '0';
-    				else
-    					cntr := cntr + 1;
-    				end if;
-    			end if;
-    		end if;
+					if idle='1' then
+						if i < length'length then
+							right := right + length(i);
+							i     := i + 1;
+						end if;
+					end if;
+				end if;
+			end if;
 		end process;
 
-      	host_e : entity hdl4fpga.usbprtl
-    	port map (
-    		tp   => tp,
-    		dp   => dp,
-    		dn   => dn,
-    		clk  => clk,
-    		cken => cken,
+	  	host_e : entity hdl4fpga.usbprtl
+		port map (
+			tp   => tp,
+			dp   => dp,
+			dn   => dn,
+			idle => idle,
+			clk  => clk,
+			cken => cken,
 
-    		txen => txen,
-    		txbs => txbs,
-    		txd  => txd,
+			txen => txen,
+			txbs => txbs,
+			txd  => txd,
 
-    		rxdv => rxdv,
+			rxdv => rxdv,
 			rxbs => rxbs,
-    		rxd  => rxd);
+			rxd  => rxd);
 
-    	process (clk)
-    		variable cntr : natural := 0;
-    		variable data : std_logic_vector(0 to 128-1);
-    	begin
-    		if rising_edge(clk) then
-    			if cken='1' then
-        			if (rxdv and not rxbs)='1' then
-        				if cntr < data'length then
-        					data(cntr) := rxd;
-        					cntr := cntr + 1;
-        				end if;
-        			end if;
-    			end if;
-    		end if;
-    	end process;
+		process (clk)
+			variable cntr : natural := 0;
+			variable data : std_logic_vector(0 to 128-1);
+		begin
+			if rising_edge(clk) then
+				if cken='1' then
+					if (rxdv and not rxbs)='1' then
+						if cntr < data'length then
+							data(cntr) := rxd;
+							cntr := cntr + 1;
+						end if;
+					end if;
+				end if;
+			end if;
+		end process;
 
 	end block;
 
@@ -138,92 +152,92 @@ begin
 	begin
 		rst <= '1'; --, '0' after 0.500 us;
 
-    	with oversampling select
-    	clk <= 
-    		not clk after 1 sec/((2.0*usb_freq)*(50.00e6/usb_freq)) when 4,
-    		not clk after 1 sec/((2.0*usb_freq)*(36.37e6/usb_freq)) when 3,
-    		not clk after 1 sec/((2.0*usb_freq)*(12.00e6/usb_freq)) when others; --*0.975;
+		with oversampling select
+		clk <= 
+			not clk after 1 sec/((2.0*usb_freq)*(50.00e6/usb_freq)) when 4,
+			not clk after 1 sec/((2.0*usb_freq)*(36.37e6/usb_freq)) when 3,
+			not clk after 1 sec/((2.0*usb_freq)*(12.00e6/usb_freq)) when others; --*0.975;
 
-     	tx_p : process (clk)
-    		constant data : std_logic_vector := reverse(x"a5badf",8)(0 to 19-1);
-    		-- constant data : std_logic_vector := reverse(x"c300050c_0000000000",8);
-    		variable cntr : natural := 0;
-    	begin
-    		if rising_edge(clk) then
+	 	tx_p : process (clk)
+			constant data : std_logic_vector := reverse(x"a5badf",8)(0 to 19-1);
+			-- constant data : std_logic_vector := reverse(x"c300050c_0000000000",8);
+			variable cntr : natural := 0;
+		begin
+			if rising_edge(clk) then
 				if rst='1' then
 					cntr := 0;
 					txen <= '0';
-    			elsif cken='1' then
-    				if cntr < data'length then
-    					if txbs='0' then
-    						txd  <= data(cntr);
-    						txen <= '1';
-    						cntr := cntr + 1;
-    					end if;
-    				elsif txbs='0' then
-    					if cntr >= data'length then
-    						txen <= '0';
-    					else
-    						cntr := cntr + 1;
-    					end if;
-    				end if;
-    			end if;
-    		end if;
-    	end process;
+				elsif cken='1' then
+					if cntr < data'length then
+						if txbs='0' then
+							txd  <= data(cntr);
+							txen <= '1';
+							cntr := cntr + 1;
+						end if;
+					elsif txbs='0' then
+						if cntr >= data'length then
+							txen <= '0';
+						else
+							cntr := cntr + 1;
+						end if;
+					end if;
+				end if;
+			end if;
+		end process;
 
-    	tp_p : process (rxdv, clk)
-    		alias dv is tp(1);
-    		alias bs is tp(2);
-    		alias rd is tp(3);
+		tp_p : process (rxdv, clk)
+			alias dv is tp(1);
+			alias bs is tp(2);
+			alias rd is tp(3);
 
-    		variable cntr : natural := 0;
-    		variable data : std_logic_vector(0 to 128-1);
-    	begin
-    		if rising_edge(clk) then
-    			if cken='1' then
-        			if (dv and not bs)='1' then
-        				if cntr < data'length then
-        					data(cntr) := rd ;
-        					cntr := cntr + 1;
-        				end if;
-        			end if;
-    			end if;
-    		end if;
-    	end process;
+			variable cntr : natural := 0;
+			variable data : std_logic_vector(0 to 128-1);
+		begin
+			if rising_edge(clk) then
+				if cken='1' then
+					if (dv and not bs)='1' then
+						if cntr < data'length then
+							data(cntr) := rd ;
+							cntr := cntr + 1;
+						end if;
+					end if;
+				end if;
+			end if;
+		end process;
 
-       	dev_e : entity hdl4fpga.usbdev
-       	generic map (
-       		oversampling => oversampling)
-    	port map (
-    		tp   => tp,
-    		dp   => dp,
-    		dn   => dn,
-    		clk  => clk,
-    		cken => cken,
+	   	dev_e : entity hdl4fpga.usbdev
+	   	generic map (
+	   		oversampling => oversampling)
+		port map (
+			tp   => tp,
+			dp   => dp,
+			dn   => dn,
+			clk  => clk,
+			cken => cken,
 
-    		txen => txen,
-    		txbs => txbs,
-    		txd  => txd,
+			txen => txen,
+			txbs => txbs,
+			txd  => txd,
 
-    		rxdv => rxdv,
-    		rxbs => rxbs,
-    		rxd  => rxd);
+			rxdv => rxdv,
+			rxbs => rxbs,
+			rxd  => rxd);
 
-    	rx_p : process (rxbs, clk)
-    		variable cntr : natural := 0;
-    		variable data : std_logic_vector(0 to 128-1);
-    	begin
-    		if rising_edge(clk) then
-    			if cken='1' then
-        			if (rxdv and not rxbs)='1' then
-        				if cntr < data'length then
-        					data(cntr) := rxd;
-        					cntr := cntr + 1;
-        				end if;
-        			end if;
-    			end if;
-    		end if;
-    	end process;
+		rx_p : process (rxbs, clk)
+			variable cntr : natural := 0;
+			variable data : std_logic_vector(0 to 128-1);
+		begin
+			if rising_edge(clk) then
+				if cken='1' then
+					if (rxdv and not rxbs)='1' then
+						if cntr < data'length then
+							data(cntr) := rxd;
+							cntr := cntr + 1;
+						end if;
+					end if;
+				end if;
+			end if;
+		end process;
 
 	end block;
 

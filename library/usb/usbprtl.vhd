@@ -37,6 +37,7 @@ entity usbprtl is
 		tp   : out std_logic_vector(1 to 32);
 		dp   : inout std_logic := 'Z';
 		dn   : inout std_logic := 'Z';
+		idle : out std_logic;
 		clk  : in  std_logic;
 		cken : buffer std_logic;
 
@@ -89,6 +90,7 @@ begin
 		dn   => dn,
 		clk  => clk,
 		cken => cken,
+		idle => idle,
 
 		txen => phy_txen,
 		txbs => phy_txbs,

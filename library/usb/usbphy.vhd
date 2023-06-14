@@ -36,6 +36,7 @@ entity usbphy is
 	port (
 		dp    : inout std_logic := 'Z';
 		dn    : inout std_logic := 'Z';
+		idle  : out std_logic;
 		clk   : in  std_logic;
 		cken  : buffer std_logic;
 
@@ -73,7 +74,10 @@ begin
 			case state is
 			when s_idle =>
 				if k='1' then
+					idle  <= '0';
 					state := s_sop;
+				else
+					idle  <= '1';
 				end if;
 			when s_sop =>
 				if se0='1' then
@@ -85,6 +89,7 @@ begin
 			when s_suspend =>
 			when s_eop =>
 				if j='1' then
+					idle  <= '1';
 					state := s_idle;
 				end if;
 			end case;
