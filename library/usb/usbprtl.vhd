@@ -140,7 +140,7 @@ begin
 		phy_rxd  => phy_rxd);
 
 	pktfmt_p : process (clk)
-		type states is (s_pid, s_payload, s_crc);
+		type states is (s_pid, s_tx, s_rx, s_crc);
 		variable state : states;
 		variable cntr  : natural range 0 to max(length_of_crc16,length_of_crc5)-1+length_of_pid-1;
 		variable pid   : unsigned(8-1 downto 0);
@@ -150,15 +150,20 @@ begin
 			when s_pid =>
 				if dv='0' then
 					cntr := length_of_pid-1;
+					pid := x"00";
 					crcact <= '0';
 				elsif cken='1' then
 					if bitstff='0' then
 						if cntr /= 0 then
 							cntr  := cntr - 1;
 							crcact <= '0';
-						else 
+						else
 							crcact <= txen or phy_rxdv;
-							state := s_payload;
+							if txen='1' then
+								state := s_tx;
+							else 
+								state := s_rx;
+							end if;
 						end if;
 						pid(0) := data;
 						pid := pid ror 1;
@@ -172,22 +177,27 @@ begin
 					pktdat <= '0';
 				end if;
 				rxid <= std_logic_vector(pid);
-			when s_payload =>
+			when s_rx =>
 				if cken='1' then
 					if dv='0' then
-						if crcact='1' then
-							state := s_crc;
-						else
-							state := s_pid;
-						end if;
+						state := s_pid;
+					end if;
+				end if;
+			when s_tx =>
+				if cken='1' then
+					if dv='0' then
+						state := s_crc;
 					end if;
 				end if;
 				-- crc plus tx serial register
-				if pktdat='1' then
-					cntr := (length_of_crc16-1)+length_of_sync-1;
-				else
-					cntr :=  (length_of_crc5-1)+length_of_sync-1;
-				end if;
+				case pid(2-1 downto 0) is
+				when "10" =>
+					cntr := length_of_sync-2;
+				when "11" =>
+					cntr := length_of_crc16+length_of_sync-2;
+				when others =>
+					cntr := length_of_crc5+length_of_sync-2;
+				end case;
 			when s_crc =>
 				if cken='1' then
 					if bitstff='0' then

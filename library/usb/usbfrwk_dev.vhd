@@ -65,7 +65,7 @@ begin
 		alias  token   : unsigned(24-1 downto 0) is rgtr(0 to 24-1);
 		alias  data    : unsigned(8+64+16-1 downto 0) is rgtr(0 to 8+64+16-1);
 		alias  pid     : unsigned(8-1 downto 0) is rgtr(0 to 8-1);
-		variable txpid : unsigned(8-1 downto 0);
+		variable txpid : unsigned(0 to 8-1);
 		variable cntr  : natural range 0 to 8-1;
 	begin
 		if rising_edge(clk) then
@@ -105,7 +105,7 @@ begin
 						end if;
 					end if;
 					txd   <= txpid(0);
-					txpid := txpid srl 1;
+					txpid := txpid sll 1;
 					txen  <= '1';
 				end case;
 			end if;
