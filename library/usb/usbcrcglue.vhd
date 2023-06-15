@@ -32,9 +32,7 @@ entity usbcrcglue is
 	port (
 		clk      : in  std_logic;
 		cken     : in  std_logic;
-		dv       : out std_logic;
 		bitstff  : buffer std_logic;
-		data     : out std_logic;
 
 		crcdv    : out std_logic;
 		crcact   : in  std_logic;
@@ -95,19 +93,16 @@ begin
 			phy_txen <= txen;
 			bitstff  <= phy_txbs or phy_rxbs;
 			crcdv    <= txen or phy_rxdv;
-			dv       <= txen or phy_rxdv;
 			rxdv     <= phy_rxdv and not txen;
 		when s_tx =>
 			phy_txen <= txen or crcact;
 			bitstff  <= phy_txbs;
 			crcdv    <= crcact and txen;
-			dv       <= txen;
 			rxdv     <= '0';
 		when s_rx =>
 			phy_txen <= '0';
 			bitstff  <= phy_rxbs;
 			crcdv    <= phy_rxdv;
-			dv       <= phy_rxdv;
 			rxdv     <= phy_rxdv;
 		end case;
 
@@ -115,7 +110,6 @@ begin
 
 	rxbs     <= phy_rxbs;
 	rxd      <= phy_rxd;
-	data     <= txd when txen='1' else phy_rxd;
 	phy_txd  <= txd when txen='1' else not crcd;
 	txbs     <= phy_txbs;
 	crcen    <= cken and not bitstff when crcact='1' else '0';

@@ -100,6 +100,7 @@ begin
 		signal rxdv : std_logic;
 		signal rxbs : std_logic;
 		signal rxd  : std_logic;
+		signal tp   : std_logic_vector(1 to 32);
 	begin
 		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
@@ -108,10 +109,11 @@ begin
 		usb_fpga_bd_dp <= 'Z';
 		usb_fpga_bd_dn <= 'Z';
 
-		usbphy_e : entity hdl4fpga.usbphy
+		usbphy_e : entity hdl4fpga.usbdev
 		generic map (
 			oversampling => usb_oversampling)
 		port map (
+			tp   => tp,
 			dp   => usb_fpga_dp,
 			dn   => usb_fpga_dn,
 			clk  => videoio_clk,
@@ -121,9 +123,9 @@ begin
 			rxd  => rxd);
 			
 		ser_clk     <= videoio_clk;
-		ser_frm     <= rxdv;
-		ser_irdy    <= cken and not rxbs;
-		ser_data(0) <= rxd;
+		ser_frm     <= tp(1);
+		ser_irdy    <= not tp(2) and cken;
+		ser_data(0) <= tp(3);
 
 		led(8-1 downto 4) <= 
 			(usb_fpga_pu_dp, usb_fpga_pu_dn, usb_fpga_dp, usb_fpga_dn);

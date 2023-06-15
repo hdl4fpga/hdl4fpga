@@ -55,6 +55,12 @@ architecture def of usbfrwk_dev is
 
 	constant hs_ack   : std_logic_vector := reverse(not b"0010" & b"0010");
 
+	signal setup_txen  : std_logic;
+	signal setup_txd   : std_logic;
+
+	signal in_txen  : std_logic;
+	signal in_txd   : std_logic;
+
 begin
 
 
@@ -81,7 +87,7 @@ begin
 						pid   := x"00";
 						state := s_data;
 					end if;
-					txen <= '0';
+					setup_txen <= '0';
 				when s_data =>
 					if rxdv='1' then
 						if rxbs='0' then
@@ -95,7 +101,7 @@ begin
 					elsif pid/=x"00" then
 						state := s_setup;
 					end if;
-					txen <= '0';
+					setup_txen <= '0';
 				when s_ack =>
 					if txbs='0' then
 						if cntr < 7 then
@@ -104,12 +110,60 @@ begin
 							state := s_setup;
 						end if;
 					end if;
-					txd   <= txpid(0);
+					setup_txd <= txpid(0);
 					txpid := txpid sll 1;
-					txen  <= '1';
+					Setup_txen  <= '1';
 				end case;
 			end if;
 		end if;
 	end process;
 
+	in_p : process (clk,cken)
+		type states is (s_in, s_ack);
+		variable state : states;
+		variable rgtr  : unsigned(0 to 8+64+16-1);
+		alias  token   : unsigned(24-1 downto 0) is rgtr(0 to 24-1);
+		alias  data    : unsigned(8+64+16-1 downto 0) is rgtr(0 to 8+64+16-1);
+		alias  pid     : unsigned(8-1 downto 0) is rgtr(0 to 8-1);
+		variable txpid : unsigned(0 to 8-1);
+		-- constant sdd : std_logic_vector := 
+			-- x"01", -- bLength
+			-- x"01", -- bDescriptorType
+			-- x"11", -- bcdUSB, 1.1
+			-- x"02", -- bDeviceClass, CDC
+		variable cntr  : natural range 0 to 8-1;
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				case state is
+				when s_in =>
+					if rxdv='1' then
+						if rxbs='0' then
+							token := token rol 1;
+							token(0) := rxd;
+						end if;
+					elsif pid=unsigned(tk_in) then
+						pid   := x"00";
+						state := s_ack;
+					end if;
+					in_txen <= '0';
+					cntr  := 0;
+				when s_ack =>
+					if txbs='0' then
+						if cntr < 7 then
+							cntr := cntr + 1;
+						else
+							state := s_in;
+						end if;
+					end if;
+					in_txd  <= txpid(0);
+					txpid := txpid sll 1;
+					in_txen  <= '1';
+				end case;
+			end if;
+		end if;
+	end process;
+
+	txen <= in_txen or setup_txen;
+	txd  <= wirebus((in_txd, setup_txd), (in_txen, setup_txen));
 end;

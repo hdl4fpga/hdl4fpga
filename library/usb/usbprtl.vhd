@@ -37,7 +37,7 @@ entity usbprtl is
 		tp   : out std_logic_vector(1 to 32);
 		dp   : inout std_logic := 'Z';
 		dn   : inout std_logic := 'Z';
-		idle : out std_logic;
+		idle : buffer std_logic;
 		clk  : in  std_logic;
 		cken : buffer std_logic;
 
@@ -64,7 +64,6 @@ architecture def of usbprtl is
 	signal phy_rxdv : std_logic;
 	signal phy_rxd  : std_logic;
 
-	signal dv       : std_logic;
 	signal data     : std_logic;
 	signal crcact   : std_logic;
 	signal crcdv    : std_logic;
@@ -73,13 +72,14 @@ architecture def of usbprtl is
 	signal crc5     : std_logic_vector(0 to 5-1);
 	signal crc16    : std_logic_vector(0 to 16-1);
 	signal bitstff  : std_logic;
-	signal pktdat   : std_logic;
+	signal crc5_16  : std_logic;
 	signal pid      : std_logic_vector(8-1 downto 0);
 
 begin
 
 	tp(1 to 3) <= (phy_txen, phy_txbs, phy_txd);
 
+	data <= txd when txen='1' else phy_rxd;
 	usbphy_e : entity hdl4fpga.usbphy
    	generic map (
 		oversampling => oversampling,
@@ -109,14 +109,12 @@ begin
 		crc5  => crc5,
 		crc16 => crc16);
 
-	crcd <= crc16(0) when pktdat='1' else crc5(0);
+	crcd <= crc16(0) when crc5_16='1' else crc5(0);
 	crcglue_e : entity hdl4fpga.usbcrcglue
 	port map (
 		clk      => clk,
 		cken     => cken,
-		dv       => dv,
 		bitstff  => bitstff,
-		data     => data,
            
 		crcdv    => crcdv,
 		crcact   => crcact,
@@ -148,7 +146,7 @@ begin
 		if rising_edge(clk) then
 			case state is
 			when s_pid =>
-				if dv='0' then
+				if (txen or phy_rxdv)='0' then
 					cntr := length_of_pid-1;
 					pid := x"00";
 					crcact <= '0';
@@ -158,7 +156,7 @@ begin
 							cntr  := cntr - 1;
 							crcact <= '0';
 						else
-							crcact <= txen or phy_rxdv;
+							crcact <= '1';
 							if txen='1' then
 								state := s_tx;
 							else 
@@ -172,31 +170,30 @@ begin
 					crcact <= '0';
 				end if;
 				if pid(2-1 downto 0)="11" then
-					pktdat <= '1';
+					crc5_16 <= '1';
 				else
-					pktdat <= '0';
+					crc5_16 <= '0';
 				end if;
 				rxid <= std_logic_vector(pid);
 			when s_rx =>
 				if cken='1' then
-					if dv='0' then
+					if phy_rxdv='0' then
 						state := s_pid;
 					end if;
 				end if;
 			when s_tx =>
 				if cken='1' then
-					if dv='0' then
+					if txen='0' then
 						state := s_crc;
 					end if;
 				end if;
-				-- crc plus tx serial register
-				case pid(2-1 downto 0) is
-				when "10" =>
+				case pid(2-1 downto 0) is-- set crc + tx serial register
+				when "10" => -- Handshake
 					cntr := length_of_sync-2;
-				when "11" =>
-					cntr := length_of_crc16+length_of_sync-2;
-				when others =>
-					cntr := length_of_crc5+length_of_sync-2;
+				when "11" => -- Data
+					cntr := length_of_sync-2+length_of_crc16;
+				when others => -- Token
+					cntr := length_of_sync-2+length_of_crc5;
 				end case;
 			when s_crc =>
 				if cken='1' then
@@ -205,7 +202,9 @@ begin
 							cntr := cntr - 1;
 						else
 							crcact <= '0';
-							state := s_pid;
+							if (txen or phy_rxdv)='0' then
+								state := s_pid;
+							end if;
 						end if;
 					end if;
 				end if;

@@ -40,9 +40,9 @@ entity usbdev is
 		clk  : in  std_logic;
 		cken : buffer std_logic;
 
-		txen : in  std_logic;
+		txen : in  std_logic := '0';
 		txbs : buffer std_logic;
-		txd  : in  std_logic;
+		txd  : in  std_logic := '-';
 
 		rxdv : out std_logic;
 		rxbs : buffer std_logic;
@@ -78,7 +78,6 @@ begin
 		watermark    => watermark,
 		bit_stuffing => bit_stuffing)
 	port map (
-		tp   => tp,
 		dp   => dp,
 		dn   => dn,
 		clk  => clk,
@@ -91,6 +90,9 @@ begin
 		rxdv => phy_rxdv,
 		rxbs => phy_rxbs,
 		rxd  => phy_rxd);
+	tp(1) <= phy_txen or phy_rxdv;
+	tp(2) <= phy_txbs or phy_rxbs;
+	tp(3) <= phy_txd when phy_txen='1' else phy_rxd;
 	txbs <= phy_txbs;
 	rxbs <= phy_rxbs;
 

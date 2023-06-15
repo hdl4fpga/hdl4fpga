@@ -63,17 +63,20 @@ begin
 			-- constant data : std_logic_vector := reverse(x"a5badf",8)(0 to 19-1);
 			-- constant data : std_logic_vector := reverse(x"2d0010",8)(0 to 19-1);
 			-- constant data : std_logic_vector := reverse(x"a5ff98",8)(0 to 19-1);
+			-- constant data : std_logic_vector := reverse(x"a5ff47",8)(0 to 19-1);
 			-- constant data : std_logic_vector := reverse(x"c300_0515_000000_0000_e831",8)(0 to 72-1);
 			-- constant data : std_logic_vector := reverse(x"c300_052d_000000_0000_ec89",8)(0 to 72-1);
 			-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8)(0 to 72-1);
 			-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8)(0 to 72-1);
 			-- constant data : std_logic_vector := reverse(x"c300_050c_000000_0000_ea38",8)(0 to 72-1);
 			constant data : std_logic_vector := 
-				reverse(x"a5ff98",8)(0 to 19-1) & 
+				reverse(x"a5ff47",8)(0 to 19-1) & 
 				reverse(x"2d0010",8)(0 to 19-1) &
-				reverse(x"c300_0515_000000_0000_e831",8)(0 to 72-1);
+				reverse(x"c300_0529_000000_0000_ed0d",8)(0 to 72-1) &
+				reverse(x"690010",8)(0 to 19-1);
+				-- reverse(x"c300_0515_000000_0000_e831",8)(0 to 72-1);
 			-- constant length : natural_vector := (0 => 19, 1 => 72);
-			constant length : natural_vector := (0 => 19, 1 => 19, 2 => 72);
+			constant length : natural_vector := (0 => 19, 1 => 19, 2 => 72, 3 => 19);
 			variable i     : natural;
 			variable j     : natural;
 			variable right : natural;
@@ -191,7 +194,7 @@ begin
 			alias rd is tp(3);
 
 			variable cntr : natural := 0;
-			variable data : std_logic_vector(0 to 128-1);
+			variable data : std_logic_vector(0 to 256-1);
 		begin
 			if rising_edge(clk) then
 				if cken='1' then

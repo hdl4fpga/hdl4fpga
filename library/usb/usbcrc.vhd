@@ -53,9 +53,12 @@ architecture def of usbcrc is
 begin
 
 	usbcrc_g : for i in 0 to 1 generate
+		constant g_usb : std_logic_vector(slce(i) to slce(i+1)-1) := g(slce(i) to slce(i+1)-1); -- Latticesemi Diamond Workaround
+		signal crc_usb : std_logic_vector(slce(i) to slce(i+1)-1); -- Latticesemi Diamond Workaround
 		signal d : std_logic_vector(0 to 0);
 	begin
 		d(0) <= data;
+		crc(slce(i) to slce(i+1)-1) <= crc_usb;
 		crc_b : block
 			port (
 				clk  : in  std_logic;
@@ -67,10 +70,12 @@ begin
 			port map (
 				clk  => clk,
 				cken => cken,
-				g    => g(slce(i) to slce(i+1)-1),
+				-- g    => g(slce(i) to slce(i+1)-1), -- Diamond complains
+				g    => g_usb, -- Latticesemi Diamond Workaround
 				dv   => dv,
 				data => d,
-				crc  => crc(slce(i) to slce(i+1)-1));
+				-- crc  => crc(slce(i) to slce(i+1)-1)); -- Diamond complains
+				crc  => crc_usb); -- Latticesemi Diamond Workaround
 		begin
 			crc_p : process (clk)
 				type states is (s_idle, s_run);
