@@ -35,6 +35,7 @@ entity usbdev is
 		bit_stuffing : natural := 6);
 	port (
 		tp   : out std_logic_vector(1 to 32);
+		tp1  : out std_logic_vector(1 to 32);
 		dp   : inout std_logic := 'Z';
 		dn   : inout std_logic := 'Z';
 		clk  : in  std_logic;
@@ -50,17 +51,18 @@ entity usbdev is
 end;
 
 architecture def of usbdev is
-		signal phy_txen : std_logic;
-		signal phy_txbs : std_logic;
-		signal phy_txd  : std_logic;
+	signal phy_txen : std_logic;
+	signal phy_txbs : std_logic;
+	signal phy_txd  : std_logic;
 
-		signal phy_rxdv : std_logic;
-		signal phy_rxbs : std_logic;
-		signal phy_rxd  : std_logic;
+	signal phy_rxdv : std_logic;
+	signal phy_rxbs : std_logic;
+	signal phy_rxd  : std_logic;
 begin
 
   	frwk_e : entity hdl4fpga.usbfrwk_dev
 	port map (
+		tp => tp1,
 		clk  => clk,
 		cken => cken,
 
@@ -78,6 +80,7 @@ begin
 		watermark    => watermark,
 		bit_stuffing => bit_stuffing)
 	port map (
+		tp   => tp,
 		dp   => dp,
 		dn   => dn,
 		clk  => clk,
@@ -90,9 +93,6 @@ begin
 		rxdv => phy_rxdv,
 		rxbs => phy_rxbs,
 		rxd  => phy_rxd);
-	tp(1) <= phy_txen or phy_rxdv;
-	tp(2) <= phy_txbs or phy_rxbs;
-	tp(3) <= phy_txd when phy_txen='1' else phy_rxd;
 	txbs <= phy_txbs;
 	rxbs <= phy_rxbs;
 

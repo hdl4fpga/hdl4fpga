@@ -30,7 +30,7 @@ use hdl4fpga.base.all;
 
 entity usbfrwk_dev is
 	port (
-		dp   : out std_logic_vector(1 to 32);
+		tp   : out std_logic_vector(1 to 32);
 		clk  : in  std_logic;
 		cken : in  std_logic;
 
@@ -61,6 +61,11 @@ architecture def of usbfrwk_dev is
 	signal in_txen  : std_logic;
 	signal in_txd   : std_logic;
 
+	-- constant sdd : std_logic_vector := 
+		-- x"01", -- bLength
+		-- x"01", -- bDescriptorType
+		-- x"11", -- bcdUSB, 1.1
+		-- x"02", -- bDeviceClass, CDC
 begin
 
 
@@ -95,6 +100,7 @@ begin
 							data(0) := rxd;
 						end if;
 					elsif pid=unsigned(data0) then
+						-- tp(1 to 8)    <= reverse(data(8+16 to 8+24-1));
 						cntr  := 0;
 						txpid := unsigned(hs_ack);
 						state := s_ack;
@@ -119,21 +125,23 @@ begin
 	end process;
 
 	in_p : process (clk,cken)
-		type states is (s_in, s_ack);
+		type states is (s_in, s_data);
 		variable state : states;
 		variable rgtr  : unsigned(0 to 8+64+16-1);
 		alias  token   : unsigned(24-1 downto 0) is rgtr(0 to 24-1);
 		alias  data    : unsigned(8+64+16-1 downto 0) is rgtr(0 to 8+64+16-1);
 		alias  pid     : unsigned(8-1 downto 0) is rgtr(0 to 8-1);
 		variable txpid : unsigned(0 to 8-1);
-		-- constant sdd : std_logic_vector := 
-			-- x"01", -- bLength
-			-- x"01", -- bDescriptorType
-			-- x"11", -- bcdUSB, 1.1
-			-- x"02", -- bDeviceClass, CDC
+		variable dpid  : std_logic_vector(data0'range) := data0; 
 		variable cntr  : natural range 0 to 8-1;
 	begin
 		if rising_edge(clk) then
+			if cken='1' then
+				if Setup_txen='1' then
+					dpid := data0;
+				end if;
+			end if;
+
 			if cken='1' then
 				case state is
 				when s_in =>
@@ -144,11 +152,13 @@ begin
 						end if;
 					elsif pid=unsigned(tk_in) then
 						pid   := x"00";
-						state := s_ack;
+						dpid := dpid xor reverse(x"88");
+						txpid := unsigned(dpid);
+						state := s_data;
 					end if;
 					in_txen <= '0';
 					cntr  := 0;
-				when s_ack =>
+				when s_data =>
 					if txbs='0' then
 						if cntr < 7 then
 							cntr := cntr + 1;

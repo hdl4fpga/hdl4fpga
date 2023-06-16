@@ -34,6 +34,7 @@ entity usbphy is
 		watermark    : natural := 0;
 		bit_stuffing : natural := 6);
 	port (
+		tp    : out std_logic_vector(1 to 32);
 		dp    : inout std_logic := 'Z';
 		dn    : inout std_logic := 'Z';
 		idle  : out std_logic;
@@ -41,12 +42,12 @@ entity usbphy is
 		cken  : buffer std_logic;
 
 		txen  : in  std_logic := '0';
-		txbs  : out std_logic;
+		txbs  : buffer std_logic;
 		txd   : in  std_logic := '-';
 
-		rxdv  : out std_logic := '0';
-		rxbs  : out std_logic := '0';
-		rxd   : out std_logic;
+		rxdv  : buffer std_logic := '0';
+		rxbs  : buffer std_logic := '0';
+		rxd   : buffer std_logic;
 		rxerr : out std_logic);
 end;
 
@@ -59,12 +60,16 @@ architecture def of usbphy is
 	signal s_j   : std_logic;
 	signal s_se0 : std_logic;
 
+	signal tx_tp : std_logic_vector(tp'range);
 begin
+
+	tp(1) <= tx_tp(1) or rxdv;
+	tp(2) <= tx_tp(2) when tx_tp(1)='1' else rxbs;
+	tp(3) <= tx_tp(3) when tx_tp(1)='1' else rxd;
 
 	k   <= not dp and     dn;
 	j   <=     dp and not dn;
 	se0 <= not dp and not dn;
-		
 
 	linestates_p : process (j, k, clk)
 		type states is (s_idle, s_sop, s_eop, s_resume, s_suspend);
@@ -146,6 +151,7 @@ begin
 		
 	tx_d : entity hdl4fpga.usbphy_tx
 	port map (
+		tp   => tx_tp,
 		clk  => clk,
 		cken => cken,
 		txen => txen,

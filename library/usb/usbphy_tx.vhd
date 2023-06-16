@@ -9,17 +9,19 @@ entity usbphy_tx is
 	generic (
 		bit_stuffing : natural := 6);
 	port (
+		tp   : out std_logic_vector(1 to 32);
 		clk  : in  std_logic;
 		cken : in std_logic := '1';
 		txen : in  std_logic;
 		txd  : in  std_logic;
-		txbs : out std_logic;
+		txbs : buffer std_logic;
 		txdp : out std_logic;
 		txdn : out std_logic);
 end;
 
 architecture def of usbphy_tx is
 	alias tx_stuffedbit : std_logic is txbs;
+	signal xxx : std_logic;
 begin
 
 	process (txen, clk)
@@ -76,6 +78,8 @@ begin
 					dn := '0';
 					state := s_idle;
 				end case;
+			tp(2) <= txbs;
+			tp(3) <= data(0);
 			end if;
 
 			bitstuffing_l : if data(0)='0' then
@@ -89,5 +93,6 @@ begin
 		txdp <= dp;
 		txdn <= dn;
 	end process;
+			tp(1) <= txen;
 
 end;

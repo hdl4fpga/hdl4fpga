@@ -59,7 +59,7 @@ end;
 architecture def of usbcrcglue is
 begin
 
-	process (phy_txbs, txen, phy_rxbs, phy_rxdv, crcact, clk)
+	mealy_p : process (phy_txbs, txen, phy_rxbs, phy_rxdv, crcact, clk)
 		type states is (s_idle, s_tx, s_rx);
 		variable state : states;
 	begin
@@ -92,7 +92,7 @@ begin
 		when s_idle =>
 			phy_txen <= txen;
 			bitstff  <= phy_txbs or phy_rxbs;
-			crcdv    <= txen or phy_rxdv;
+			crcdv    <= '0';
 			rxdv     <= phy_rxdv and not txen;
 		when s_tx =>
 			phy_txen <= txen or crcact;

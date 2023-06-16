@@ -64,19 +64,19 @@ begin
 			-- constant data : std_logic_vector := reverse(x"2d0010",8)(0 to 19-1);
 			-- constant data : std_logic_vector := reverse(x"a5ff98",8)(0 to 19-1);
 			-- constant data : std_logic_vector := reverse(x"a5ff47",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"c300_0515_000000_0000_e831",8)(0 to 72-1);
-			-- constant data : std_logic_vector := reverse(x"c300_052d_000000_0000_ec89",8)(0 to 72-1);
-			-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8)(0 to 72-1);
-			-- constant data : std_logic_vector := reverse(x"c300_0517_000000_0000_e9d3",8)(0 to 72-1);
-			-- constant data : std_logic_vector := reverse(x"c300_050c_000000_0000_ea38",8)(0 to 72-1);
+			-- constant data : std_logic_vector := reverse(x"c300_05_1500_0000_0000_e831",8)(0 to 72-1);
+			-- constant data : std_logic_vector := reverse(x"c300_05_2d00_0000_0000_ec89",8)(0 to 72-1);
+			-- constant data : std_logic_vector := reverse(x"c300_05_1700_0000_0000_e9d3",8)(0 to 72-1);
+			-- constant data : std_logic_vector := reverse(x"c300_05_1700_0000_0000_e9d3",8)(0 to 72-1);
+			-- constant data : std_logic_vector := reverse(x"c300_05_0c00_0000_0000_ea38",8)(0 to 72-1);
 			constant data : std_logic_vector := 
-				reverse(x"a5ff47",8)(0 to 19-1) & 
-				reverse(x"2d0010",8)(0 to 19-1) &
-				reverse(x"c300_0529_000000_0000_ed0d",8)(0 to 72-1) &
+				-- reverse(x"a5ff47",8)(0 to 19-1) & 
+				-- reverse(x"2d0010",8)(0 to 19-1) &
+				-- reverse(x"c300_0529_000000_0000_ed0d",8)(0 to 72-1) &
 				reverse(x"690010",8)(0 to 19-1);
 				-- reverse(x"c300_0515_000000_0000_e831",8)(0 to 72-1);
 			-- constant length : natural_vector := (0 => 19, 1 => 72);
-			constant length : natural_vector := (0 => 19, 1 => 19, 2 => 72, 3 => 19);
+			constant length : natural_vector := (0 => 19); --, 1 => 19, 2 => 72, 3 => 19);
 			variable i     : natural;
 			variable j     : natural;
 			variable right : natural;
@@ -122,19 +122,21 @@ begin
 			rxbs => rxbs,
 			rxd  => rxd);
 
-		process (clk)
+		rx_p : process (clk)
 			variable cntr : natural := 0;
-			variable data : std_logic_vector(0 to 128-1);
+			variable shr  : std_logic_vector(0 to 128-1);
+			variable msb  : std_logic_vector(shr'range);
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
 					if (rxdv and not rxbs)='1' then
-						if cntr < data'length then
-							data(cntr) := rxd;
+						if cntr < shr'length then
+							shr(cntr) := rxd;
 							cntr := cntr + 1;
 						end if;
 					end if;
 				end if;
+				msb := reverse(shr,8);
 			end if;
 		end process;
 
@@ -163,7 +165,7 @@ begin
 
 	 	tx_p : process (clk)
 			constant data : std_logic_vector := reverse(x"a5badf",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"c300050c_0000000000",8);
+			constant msb  : std_logic_vector(data'range) := reverse(data, 8);
 			variable cntr : natural := 0;
 		begin
 			if rising_edge(clk) then
@@ -189,22 +191,20 @@ begin
 		end process;
 
 		tp_p : process (rxdv, clk)
-			alias dv is tp(1);
-			alias bs is tp(2);
-			alias rd is tp(3);
-
 			variable cntr : natural := 0;
-			variable data : std_logic_vector(0 to 256-1);
+			variable shr  : std_logic_vector(0 to 256-1);
+			variable msb  : std_logic_vector(shr'range);
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
-					if (dv and not bs)='1' then
-						if cntr < data'length then
-							data(cntr) := rd ;
+					if (tp(1) and not tp(2))='1' then
+						if cntr < shr'length then
+							shr(cntr) := tp(3);
 							cntr := cntr + 1;
 						end if;
 					end if;
 				end if;
+				msb := reverse(shr,8);
 			end if;
 		end process;
 
@@ -228,17 +228,19 @@ begin
 
 		rx_p : process (rxbs, clk)
 			variable cntr : natural := 0;
-			variable data : std_logic_vector(0 to 128-1);
+			variable shr : std_logic_vector(0 to 128-1);
+			variable msb : std_logic_vector(0 to 128-1);
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
 					if (rxdv and not rxbs)='1' then
-						if cntr < data'length then
-							data(cntr) := rxd;
+						if cntr < shr'length then
+							shr(cntr) := rxd;
 							cntr := cntr + 1;
 						end if;
 					end if;
 				end if;
+				msb := reverse(shr,8);
 			end if;
 		end process;
 

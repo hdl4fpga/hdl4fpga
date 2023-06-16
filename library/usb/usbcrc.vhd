@@ -91,6 +91,8 @@ begin
 							else
 								crc <= std_logic_vector(unsigned(crc) rol 1);
 							end if;
+						elsif dv='0' then
+							crc <= (crc'range => '1');
 						end if;
 					when s_run =>
 						if dv='1' then

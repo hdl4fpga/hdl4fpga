@@ -77,8 +77,6 @@ architecture def of usbprtl is
 
 begin
 
-	tp(1 to 3) <= (phy_txen, phy_txbs, phy_txd);
-
 	data <= txd when txen='1' else phy_rxd;
 	usbphy_e : entity hdl4fpga.usbphy
    	generic map (
@@ -86,6 +84,7 @@ begin
 		watermark    => watermark,
 		bit_stuffing => bit_stuffing)
 	port map (
+		tp   => tp,
 		dp   => dp,
 		dn   => dn,
 		clk  => clk,

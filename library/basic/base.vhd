@@ -944,7 +944,7 @@ package body base is
 			aux(0 to size-1) := reverse(aux(0 to size-1));
 			aux:= std_logic_vector(unsigned(aux) rol size);
 		end loop;
-		return aux;
+		return aux(0 to arg'length-1);
 	end;
 
 	function reverse (
