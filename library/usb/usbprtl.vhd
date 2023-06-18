@@ -148,8 +148,8 @@ begin
 			when s_pid =>
 				if (txen or phy_rxdv)='0' then
 					cntr := length_of_pid-1;
-					pid  := x"00";
 					crcact <= '0';
+					rxpid <= x"00";
 				elsif cken='1' then
 					if bitstff='0' then
 						if cntr /= 0 then
@@ -162,6 +162,7 @@ begin
 							else 
 								state := s_rx;
 							end if;
+							rxpid <= std_logic_vector(pid);
 						end if;
 						pid(0) := data;
 						pid := pid ror 1;
@@ -174,7 +175,6 @@ begin
 				else
 					crc5_16 <= '0';
 				end if;
-				rxpid <= std_logic_vector(pid);
 			when s_rx =>
 				if cken='1' then
 					if phy_rxdv='0' then
@@ -203,7 +203,7 @@ begin
 						else
 							crcact <= '0';
 							if (txen or phy_rxdv)='0' then
-								pid   := x"00";
+								rxpid := x"00";
 								state := s_pid;
 							end if;
 						end if;
