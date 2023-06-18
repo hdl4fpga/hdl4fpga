@@ -45,7 +45,7 @@ entity usbprtl is
 		txbs  : buffer std_logic;
 		txd   : in  std_logic;
 
-		rxid  : out std_logic_vector(8-1 downto 0);
+		rxpid : out std_logic_vector(8-1 downto 0);
 		rxdv  : out std_logic;
 		rxbs  : buffer std_logic;
 		rxd   : buffer std_logic;
@@ -174,7 +174,7 @@ begin
 				else
 					crc5_16 <= '0';
 				end if;
-				rxid <= std_logic_vector(pid);
+				rxpid <= std_logic_vector(pid);
 			when s_rx =>
 				if cken='1' then
 					if phy_rxdv='0' then

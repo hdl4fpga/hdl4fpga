@@ -39,7 +39,7 @@ entity usbfifo_rx is
 
 		out_frm  : out std_logic;
 		out_irdy : buffer std_logic;
-		out_trdy : in  std_logic;
+		out_trdy : in  std_logic := '0';
 		out_data : out std_logic_vector(8-1 downto 0));
 end;
 

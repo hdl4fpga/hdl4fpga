@@ -62,7 +62,7 @@ begin
 
   	frwk_e : entity hdl4fpga.usbfrwk_dev
 	port map (
-		tp => tp1,
+		tp   => tp1,
 		clk  => clk,
 		cken => cken,
 
@@ -70,6 +70,14 @@ begin
 		txbs => phy_txbs,
 		txd  => phy_txd,
 
+		rxdv => phy_rxdv,
+		rxbs => phy_rxbs,
+		rxd  => phy_rxd);
+
+	usbfiforx_e : entity hdl4fpga.usbfifo_rx
+	port map (
+		clk  => clk,
+		cken => cken,
 		rxdv => phy_rxdv,
 		rxbs => phy_rxbs,
 		rxd  => phy_rxd);
