@@ -28,30 +28,30 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity usbfifo is
+entity usbfifo_rx is
 	port (
-		clk  : in  std_logic;
-		cken : in  std_logic;
+		clk      : in  std_logic;
+		cken     : in  std_logic;
 
-		rxdv : in  std_logic;
-		rxbs : in  std_logic;
-		rxd  : in  std_logic;
+		rxdv     : in  std_logic;
+		rxbs     : in  std_logic;
+		rxd      : in  std_logic;
 
 		out_frm  : out std_logic;
-		out_irdy : out std_logic;
+		out_irdy : buffer std_logic;
 		out_trdy : in  std_logic;
-		out_data : in  std_logic_vector(8-1 downto 0));
+		out_data : out std_logic_vector(8-1 downto 0));
 end;
 
-architecture def of usbfifo is
-	type ram is array (natural range <>) of std_logic_vector(fifo_data'range);
+architecture def of usbfifo_rx is
+	type ram is array (natural range <>) of std_logic_vector(out_data'range);
 	shared variable mem : ram(0 to 1024-1);
 begin
 	process(clk)
 		variable wptr : natural;
 		variable rptr : natural;
 		variable data : unsigned(out_data'range);
-		variable cntr : natural 0 to data'lenght-1;
+		variable cntr : natural range 0 to data'length-1;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -66,7 +66,7 @@ begin
 				end if;
 
 				if cntr=data'length-1 then
-					mem(wptr) := data;
+					mem(wptr) := std_logic_vector(data);
 					wptr := wptr + 1;
 					cntr := 0;
 				end if;
@@ -88,5 +88,4 @@ begin
 			end if;
 		end if;
 	end process;
-
 end;
