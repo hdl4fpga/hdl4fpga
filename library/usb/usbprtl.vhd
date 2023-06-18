@@ -85,20 +85,20 @@ begin
 		watermark    => watermark,
 		bit_stuffing => bit_stuffing)
 	port map (
-		tp   => tp,
-		dp   => dp,
-		dn   => dn,
-		clk  => clk,
-		cken => cken,
-		idle => idle,
+		tp    => tp,
+		dp    => dp,
+		dn    => dn,
+		clk   => clk,
+		cken  => cken,
+		idle  => idle,
 
-		txen => phy_txen,
-		txbs => phy_txbs,
-		txd  => phy_txd,
+		txen  => phy_txen,
+		txbs  => phy_txbs,
+		txd   => phy_txd,
 
-		rxdv => phy_rxdv,
-		rxbs => phy_rxbs,
-		rxd  => phy_rxd);
+		rxdv  => phy_rxdv,
+		rxbs  => phy_rxbs,
+		rxd   => phy_rxd);
 
 	usbcrc_e : entity hdl4fpga.usbcrc
 	port map (
@@ -148,7 +148,7 @@ begin
 			when s_pid =>
 				if (txen or phy_rxdv)='0' then
 					cntr := length_of_pid-1;
-					pid := x"00";
+					pid  := x"00";
 					crcact <= '0';
 				elsif cken='1' then
 					if bitstff='0' then
