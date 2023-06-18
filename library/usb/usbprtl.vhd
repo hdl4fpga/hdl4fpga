@@ -203,6 +203,7 @@ begin
 						else
 							crcact <= '0';
 							if (txen or phy_rxdv)='0' then
+								pid   := x"00";
 								state := s_pid;
 							end if;
 						end if;
