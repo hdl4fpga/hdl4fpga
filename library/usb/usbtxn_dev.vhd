@@ -43,17 +43,17 @@ entity usbtxn_dev is
 		rxbs  : in  std_logic;
 		rxd   : in  std_logic);
 
-	constant tk_out   : std_logic_vector(8-1 downto 0) := reverse(not b"0001" & b"0001");
-	constant tk_in    : std_logic_vector(8-1 downto 0) := reverse(not b"1001" & b"1001");
-	constant tk_setup : std_logic_vector(8-1 downto 0) := reverse(not b"1101" & b"1101");
-	constant tk_sof   : std_logic_vector(8-1 downto 0) := reverse(not b"0101" & b"0101");
+	constant tk_out   : std_logic_vector := b"0001";
+	constant tk_in    : std_logic_vector := b"1001";
+	constant tk_setup : std_logic_vector := b"1101";
+	constant tk_sof   : std_logic_vector := b"0101";
 
-	constant data0    : std_logic_vector(8-1 downto 0) := reverse(not b"0011" & b"0011");
-	constant data1    : std_logic_vector(8-1 downto 0) := reverse(not b"1011" & b"1011");
+	constant data0    : std_logic_vector := b"0011";
+	constant data1    : std_logic_vector := b"1011";
 
-	constant hs_ack   : std_logic_vector(8-1 downto 0) := reverse(not b"0010" & b"0010");
-	constant hs_nack  : std_logic_vector(8-1 downto 0) := reverse(not b"1010" & b"1010");
-	constant hs_stall : std_logic_vector(8-1 downto 0) := reverse(not b"1110" & b"1110");
+	constant hs_ack   : std_logic_vector := b"0010";
+	constant hs_nack  : std_logic_vector := b"1010";
+	constant hs_stall : std_logic_vector := b"1110";
 
 end;
 
@@ -77,7 +77,7 @@ begin
 					when s_idle =>
 						txen <= '0';
 						cntr := 0;
-    					case tx_pid is
+    					case tx_pid(4-1 downto 0) is
     					when tk_setup|tk_in|tk_out|tk_sof =>
     						state := s_token;
     					when data0|data1 =>
@@ -138,7 +138,7 @@ begin
 				when s_idle =>
 					if rxdv='1' then
 						if rxbs='0' then
-    						case rxpid is
+    						case rxpid(4-1 downto 0) is
         					when tk_setup|tk_in|tk_out|tk_sof =>
     							token := token rol 1;
     							token(0) := rxd;

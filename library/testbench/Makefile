@@ -46,6 +46,8 @@ HDL4FPGA__video_sync__mix = $(LIB_HDL4FPGA)/video_sync/mix.dat
 HDL4FPGA__video_sync = $(LIB_HDL4FPGA)/video_sync/_primary.dat
 HDL4FPGA__vector__def = $(LIB_HDL4FPGA)/vector/def.dat
 HDL4FPGA__vector = $(LIB_HDL4FPGA)/vector/_primary.dat
+HDL4FPGA__usbtxn_dev__def = $(LIB_HDL4FPGA)/usbtxn_dev/def.dat
+HDL4FPGA__usbtxn_dev = $(LIB_HDL4FPGA)/usbtxn_dev/_primary.dat
 HDL4FPGA__usbprtl__def = $(LIB_HDL4FPGA)/usbprtl/def.dat
 HDL4FPGA__usbprtl = $(LIB_HDL4FPGA)/usbprtl/_primary.dat
 HDL4FPGA__usbphy_tx__def = $(LIB_HDL4FPGA)/usbphy_tx/def.dat
@@ -401,6 +403,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__video_sync) \
     $(HDL4FPGA__vector__def) \
     $(HDL4FPGA__vector) \
+    $(HDL4FPGA__usbtxn_dev__def) \
+    $(HDL4FPGA__usbtxn_dev) \
     $(HDL4FPGA__usbprtl__def) \
     $(HDL4FPGA__usbprtl) \
     $(HDL4FPGA__usbphy_tx__def) \
@@ -2374,6 +2378,7 @@ $(HDL4FPGA__usbcrcglue__def) : ../usb/usbcrcglue.vhd \
 $(HDL4FPGA__usbdev) \
 $(HDL4FPGA__usbdev__def) : ../usb/usbdev.vhd \
 		$(HDL4FPGA__usbprtl) \
+		$(HDL4FPGA__usbfifo_rx) \
 		$(HDL4FPGA__usbfrwk_dev) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -2435,6 +2440,14 @@ $(HDL4FPGA__usbprtl__def) : ../usb/usbprtl.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../usb/usbprtl.vhd
+
+$(HDL4FPGA__usbtxn_dev) \
+$(HDL4FPGA__usbtxn_dev__def) : ../usb/usbtxn_dev.vhd \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../usb/usbtxn_dev.vhd
 
 $(HDL4FPGA__vector) \
 $(HDL4FPGA__vector__def) : ../basic/vector.vhd \
