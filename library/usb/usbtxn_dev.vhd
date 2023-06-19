@@ -59,9 +59,13 @@ end;
 
 architecture def of usbtxn_dev is
 	signal rx_token : std_logic_vector(0 to 16-1);
-	signal tx_pid : std_logic_vector(8-1 downto 0);
-	signal tx_req : std_logic;
-	signal tx_rdy : std_logic;
+	signal tx_pid   : std_logic_vector(8-1 downto 0);
+	signal tx_req   : std_logic;
+	signal tx_rdy   : std_logic;
+	signal txup_req : std_logic;
+	signal txup_rdy : std_logic;
+	signal txup_req : std_logic;
+	signal txup_rdy : std_logic;
 begin
 
 	txntx_p : process (clk)
@@ -114,14 +118,20 @@ begin
 		end if;
 	end process;
 
-	data_p : process (clk)
+	updata_p : process (clk)
 		type states is (s_idle, s_token, s_data);
 		variable state    : states;
 		variable data_pid : std_logic_vector(8-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				data_pid := data0;
+				if (rxup_req xor txup_rdy)='1' then
+					data_pid := rxdata_pid;
+					rxup_rdy <= rxup_req;
+				elsif (txup_req xor txup_rdy)='1' then
+					data_pid := txdata_pid;
+					txup_rdy <= txup_req;
+				end if;
 			end if;
 		end if;
 	end process;
