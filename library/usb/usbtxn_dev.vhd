@@ -67,7 +67,7 @@ architecture def of usbtxn_dev is
 	signal tx_rdy : bit;
 begin
 
-	txn_tx_p : process (clk)
+	txtkn_p : process (clk)
 		type states is (s_idle, s_token, s_data, s_hs);
 		variable state : states;
 		variable pid   : unsigned(8-1 downto 0);
@@ -117,7 +117,7 @@ begin
 		end if;
 	end process;
 
-	txn_rx_p : process (clk)
+	rxtkn_p : process (clk)
 		type states is (s_idle, s_token, s_data);
 		variable state    : states;
 		variable token    : unsigned(rx_tkn'range);
@@ -160,7 +160,7 @@ begin
 		end if;
 	end process;
 
-	process (clk)
+	txn_p : process (clk)
 		type states is (s_idle, s_setup, s_tkin, s_tkout);
 		variable state : states;
 	begin
