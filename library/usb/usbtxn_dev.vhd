@@ -39,26 +39,27 @@ entity usbtxn_dev is
 		txd   : out std_logic;
 
 		rxdv  : in  std_logic;
-		rxpid : in std_logic_vector(8-1 downto 0);
+		rxpid : in  std_logic_vector(8-1 downto 0);
 		rxbs  : in  std_logic;
 		rxd   : in  std_logic);
 
-	constant tk_out   : std_logic_vector := reverse(not b"0001" & b"0001");
-	constant tk_in    : std_logic_vector := reverse(not b"1001" & b"1001");
-	constant tk_sof   : std_logic_vector := reverse(not b"0101" & b"0101");
-	constant tk_setup : std_logic_vector := reverse(not b"1101" & b"1101");
+	constant tk_out   : std_logic_vector(8-1 downto 0) := reverse(not b"0001" & b"0001");
+	constant tk_in    : std_logic_vector(8-1 downto 0) := reverse(not b"1001" & b"1001");
+	constant tk_setup : std_logic_vector(8-1 downto 0) := reverse(not b"1101" & b"1101");
+	constant tk_sof   : std_logic_vector(8-1 downto 0) := reverse(not b"0101" & b"0101");
 
-	constant data0    : std_logic_vector := reverse(not b"0011" & b"0011");
-	constant data1    : std_logic_vector := reverse(not b"1011" & b"1011");
+	constant data0    : std_logic_vector(8-1 downto 0) := reverse(not b"0011" & b"0011");
+	constant data1    : std_logic_vector(8-1 downto 0) := reverse(not b"1011" & b"1011");
 
-	constant hs_ack   : std_logic_vector := reverse(not b"0010" & b"0010");
+	constant hs_ack   : std_logic_vector(8-1 downto 0) := reverse(not b"0010" & b"0010");
+	constant hs_nack  : std_logic_vector(8-1 downto 0) := reverse(not b"1010" & b"1010");
+	constant hs_stall : std_logic_vector(8-1 downto 0) := reverse(not b"1110" & b"1110");
 
 end;
 
 architecture def of usbtxn_dev is
-	constant tk_mask : std_logic_vector(2-1 downto 0) := b"01";
-	constant hs_mask : std_logic_vector(2-1 downto 0) := b"10";
-	signal tk_payload : unsigned(0 to 8+64+16-1);
+	signal rx_token : std_logic_vector(0 to 16-1);
+	signal tx_pid : std_logic_vector(8-1 downto 0);
 	signal tx_req : std_logic;
 	signal tx_rdy : std_logic;
 begin
@@ -77,12 +78,13 @@ begin
 						txen <= '0';
 						cntr := 0;
     					case tx_pid is
-    					when tk_setup|tk_in|tk_out|tk_sop =>
+    					when tk_setup|tk_in|tk_out|tk_sof =>
     						state := s_token;
-    					when tk_data0|tk_data1 =>
+    					when data0|data1 =>
     						state := s_data;
-    					when hs_ack|hs_nak|hs_stall =>
+    					when hs_ack|hs_nack|hs_stall =>
     						state := s_hs;
+						when others =>
     					end case;
 					when s_token =>
 						tx_rdy <= tx_req;
@@ -94,9 +96,9 @@ begin
 						if txbs='0' then
 							if cntr < 7 then
 								cntr   := cntr + 1;
-								txd    := pid(0);
+								txd    <= pid(0);
 								pid    := pid srl 1;
-								txen   := '1';
+								txen   <= '1';
 							else
 								txen   <= '0';
 								tx_rdy <= tx_req;
@@ -112,9 +114,22 @@ begin
 		end if;
 	end process;
 
-	txnrx_p : process (clk)
-		type states is (s_idle, s_data);
+	data_p : process (clk)
+		type states is (s_idle, s_token, s_data);
 		variable state    : states;
+		variable data_pid : std_logic_vector(8-1 downto 0);
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				data_pid := data0;
+			end if;
+		end if;
+	end process;
+
+	txnrx_p : process (clk)
+		type states is (s_idle, s_token, s_data);
+		variable state    : states;
+		variable token    : unsigned(rx_token'range);
 		variable data_pid : std_logic_vector(8-1 downto 0);
 	begin
 		if rising_edge(clk) then
@@ -122,12 +137,17 @@ begin
 				case state is
 				when s_idle =>
 					if rxdv='1' then
-						if rxpid(tk_mask'ragen)=tk_mask then
-							token := token rol 1;
-							token(0) := rxd;
-							state := token;
-						elsif rxpid=data_pid then
-							state := s_data;
+						if rxbs='0' then
+    						case rxpid is
+        					when tk_setup|tk_in|tk_out|tk_sof =>
+    							token := token rol 1;
+    							token(0) := rxd;
+								state := s_token;
+    						when others =>
+    							if rxpid=data_pid then
+    								state := s_data;
+    							end if;
+							end case;
 						end if;
 					end if;
 				when s_token =>
@@ -137,22 +157,12 @@ begin
 							token(0) := rxd;
 						end if;
 					else
-						case rxpid is
-						when tk_setup =>
-							data_pid <= data0;
-						when tk_in =>
-						end case;
 						state := s_idle;
 					end if;
 				when s_data  =>
-					if rxdv='0' then
-						state := s_ack;
-					end if;
 				end case;
 			end if;
 		end if;
 	end process;
 
-	txen <= in_txen or setup_txen;
-	txd  <= wirebus((in_txd, setup_txd), (in_txen, setup_txen));
 end;
