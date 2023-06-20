@@ -45,7 +45,7 @@ entity usbprtl is
 		txbs  : buffer std_logic;
 		txd   : in  std_logic;
 
-		rxpid : out std_logic_vector(8-1 downto 0);
+		rxpid : out std_logic_vector(4-1 downto 0);
 		rxdv  : out std_logic;
 		rxbs  : buffer std_logic;
 		rxd   : buffer std_logic;
@@ -64,6 +64,9 @@ architecture def of usbprtl is
 	signal phy_rxbs : std_logic;
 	signal phy_rxdv : std_logic;
 	signal phy_rxd  : std_logic;
+	signal crc_rxbs : std_logic;
+	signal crc_rxdv : std_logic;
+	signal crc_rxd  : std_logic;
 
 	signal data     : std_logic;
 	signal crcact   : std_logic;
@@ -115,27 +118,33 @@ begin
 		clk      => clk,
 		cken     => cken,
 		bitstff  => bitstff,
-           
+		   
 		crcdv    => crcdv,
 		crcact   => crcact,
 		crcen    => crcen,
 		crcd     => crcd,
-           
+		   
 		txen     => txen,
 		txbs     => txbs,
 		txd      => txd,
-           
+		   
 		phy_txen => phy_txen,
 		phy_txbs => phy_txbs,
 		phy_txd  => phy_txd,
-           
-		rxdv     => rxdv,
-		rxbs     => rxbs,
-		rxd      => rxd,
-           
+		   
+		rxdv     => crc_rxdv,
+		rxbs     => crc_rxbs,
+		rxd      => crc_rxd,
+		   
 		phy_rxdv => phy_rxdv,
 		phy_rxbs => phy_rxbs,
 		phy_rxd  => phy_rxd);
+
+	process (clk)
+	begin
+		if rising_edge(clk) then
+		end if;
+	end process;
 
 	pktfmt_p : process (clk)
 		type states is (s_pid, s_tx, s_rx, s_crc);
@@ -144,17 +153,16 @@ begin
 		variable pid   : unsigned(8-1 downto 0);
 	begin
 		if rising_edge(clk) then
-			case state is
-			when s_pid =>
-				if (txen or phy_rxdv)='0' then
-					cntr := length_of_pid-1;
-					crcact <= '0';
-					rxpid <= x"00";
-				elsif cken='1' then
-					if bitstff='0' then
+			if cken='1' then
+				case state is
+				when s_pid =>
+					if (txen or phy_rxdv)='0' then
+						cntr := length_of_pid-1;
+						crcact <= '0';
+					elsif bitstff='0' then
 						if cntr /= 0 then
-							cntr   := cntr - 1;
 							crcact <= '0';
+							cntr   := cntr - 1;
 						else
 							crcact <= '1';
 							if txen='1' then
@@ -162,54 +170,52 @@ begin
 							else 
 								state := s_rx;
 							end if;
-							rxpid <= std_logic_vector(pid);
+							rxdv  <= crc_rxdv;
+							rxpid <= std_logic_vector(pid(4-1 downto 0));
 						end if;
 						pid(0) := data;
 						pid := pid ror 1;
 					end if;
-				else
-					crcact <= '0';
-				end if;
-				if pid(2-1 downto 0)="11" then
-					crc5_16 <= '1';
-				else
-					crc5_16 <= '0';
-				end if;
-			when s_rx =>
-				if cken='1' then
+					if pid(2-1 downto 0)="11" then
+						crc5_16 <= '1';
+					else
+						crc5_16 <= '0';
+					end if;
+				when s_rx =>
 					if phy_rxdv='0' then
 						state := s_pid;
 					end if;
-				end if;
-			when s_tx =>
-				if cken='1' then
+				when s_tx =>
+					case pid(2-1 downto 0) is-- set crc + tx serial register
+					when "10" => -- Handshake
+						cntr := length_of_sync-2;
+					when "11" => -- Data
+						cntr := length_of_sync-2+length_of_crc16;
+					when others => -- Token
+						cntr := length_of_sync-2+length_of_crc5;
+					end case;
 					if txen='0' then
 						state := s_crc;
 					end if;
-				end if;
-				case pid(2-1 downto 0) is-- set crc + tx serial register
-				when "10" => -- Handshake
-					cntr := length_of_sync-2;
-				when "11" => -- Data
-					cntr := length_of_sync-2+length_of_crc16;
-				when others => -- Token
-					cntr := length_of_sync-2+length_of_crc5;
-				end case;
-			when s_crc =>
-				if cken='1' then
+				when s_crc =>
 					if bitstff='0' then
 						if cntr /= 0 then
 							cntr := cntr - 1;
 						else
 							crcact <= '0';
+							rxdv   <= '0';
 							if (txen or phy_rxdv)='0' then
-								rxpid := x"00";
+								cntr  := length_of_pid-1;
 								state := s_pid;
 							end if;
 						end if;
 					end if;
-				end if;
-			end case;
+				end case;
+				rxbs <= crc_rxbs;
+				rxd  <= crc_rxd;
+			else
+				crcact <= '0';
+			end if;
 		end if;
 	end process;
 
