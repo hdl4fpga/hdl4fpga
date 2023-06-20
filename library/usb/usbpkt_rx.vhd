@@ -66,7 +66,6 @@ end;
 
 architecture def of usbpkt_rx is
 begin
-
 	process (clk)
 		type states is (s_idle, s_token, s_data);
 		variable state : states;
@@ -123,5 +122,4 @@ begin
 			end if;
 		end if;
 	end process;
-
 end;
