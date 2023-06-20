@@ -30,19 +30,19 @@ use hdl4fpga.base.all;
 
 entity usbpkt_rx is
 	port (
-		clk    : in  std_logic;
-		cken   : in  std_logic;
+		clk           : in  std_logic;
+		cken          : in  std_logic;
 
-		rx_req : buffer std_logic;
-		rx_rdy : in  std_logic;
+		rx_req        : buffer std_logic;
+		rx_rdy        : in  std_logic;
 
-		rxdv   : in  std_logic;
-		rxpid  : in  std_logic_vector(4-1 downto 0);
-		rxbs   : in  std_logic;
-		rxd    : in  std_logic;
+		rxdv          : in  std_logic;
+		rxpid         : in  std_logic_vector( 4-1 downto 0);
+		rxbs          : in  std_logic;
+		rxd           : in  std_logic;
 		-- USB Device protocol
-		addr   : out std_logic_vector(7-1 downto 0);
-		endp   : out std_logic_vector(4-1 downto 0);
+		addr          : out std_logic_vector( 7-1 downto 0);
+		endp          : out std_logic_vector( 4-1 downto 0);
 		-- USB Device Framework 
 		bmrequesttype : out std_logic_vector( 8-1 downto 0);
 		brequest      : out std_logic_vector( 8-1 downto 0);
@@ -70,17 +70,11 @@ begin
 	process (clk)
 		type states is (s_idle, s_token, s_data);
 		variable state : states;
-		variable rgtr  : unsigned(0 to 8*8+15-1); -- address + end point, setup data + crc16
+		variable shr  : unsigned(0 to 8*8+15-1); -- address + end point, setup data + crc16
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (rx_rdy xor rx_req)='0' then
-   					if rxdv='1' then
-   						if rxbs='0' then
-   							rgtr := rgtr rol 1;
-   							rgtr(0) := rxd;
-   						end if;
-					end if;
 					case state is
 					when s_idle =>
 						if rxdv='1' then
@@ -94,29 +88,35 @@ begin
 						end if;
 					when s_token =>
 						if rxdv='0' then
-							endp <= reverse(std_logic_vector(rgtr(0 to endp'length-1)));
-							rgtr := rgtr rol endp'length;
-							addr <= reverse(std_logic_vector(rgtr(0 to addr'length-1)));
-							rgtr := rgtr rol addr'length;
+							endp <= reverse(std_logic_vector(shr(0 to endp'length-1)));
+							shr := shr rol endp'length;
+							addr <= reverse(std_logic_vector(shr(0 to addr'length-1)));
+							shr := shr rol addr'length;
 							rx_req <= not rx_rdy;
 						end if;
 					when s_data =>
 						if rxdv='0' then
-							wlength       <= reverse(std_logic_vector(rgtr(0 to wlength'length-1)),8);
-							rgtr := rgtr rol wlength'length;
-							windex        <= reverse(std_logic_vector(rgtr(0 to windex'length-1)),8);
-							rgtr := rgtr rol windex'length;
-							wvalue        <= reverse(std_logic_vector(rgtr(0 to wvalue'length-1)),8);
-							rgtr := rgtr rol wvalue'length;
-							brequest      <= reverse(std_logic_vector(rgtr(0 to brequest'length-1)),8);
-							rgtr := rgtr rol brequest'length;
-							bmrequesttype <= reverse(std_logic_vector(rgtr(0 to bmrequesttype'length-1)),8);
-							rgtr := rgtr rol bmrequesttype'length;
+							wlength       <= reverse(std_logic_vector(shr(0 to wlength'length-1)),8);
+							shr := shr rol wlength'length;
+							windex        <= reverse(std_logic_vector(shr(0 to windex'length-1)),8);
+							shr := shr rol windex'length;
+							wvalue        <= reverse(std_logic_vector(shr(0 to wvalue'length-1)),8);
+							shr := shr rol wvalue'length;
+							brequest      <= reverse(std_logic_vector(shr(0 to brequest'length-1)),8);
+							shr := shr rol brequest'length;
+							bmrequesttype <= reverse(std_logic_vector(shr(0 to bmrequesttype'length-1)),8);
+							shr := shr rol bmrequesttype'length;
 							rx_req <= not rx_rdy;
 						end if;
 					when others =>
 						rx_req <= not rx_rdy;
 					end case;
+   					if rxdv='1' then
+   						if rxbs='0' then
+   							shr := shr rol 1;
+   							shr(0) := rxd;
+   						end if;
+					end if;
 				else
 					state := s_idle;
 				end if;
