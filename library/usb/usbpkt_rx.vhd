@@ -96,6 +96,7 @@ begin
 						end if;
 					when s_data =>
 						if rxdv='0' then
+							shr := shr rol 16; -- discard crc16
 							wlength  <= reverse(std_logic_vector(shr(0 to wlength'length-1)),8);
 							shr := shr rol wlength'length;
 							windex   <= reverse(std_logic_vector(shr(0 to windex'length-1)),8);
@@ -106,10 +107,12 @@ begin
 							shr := shr rol brequest'length;
 							bmrequesttype <= reverse(std_logic_vector(shr(0 to bmrequesttype'length-1)),8);
 							shr := shr rol bmrequesttype'length;
-							rx_req <= not rx_rdy;
+							rx_req <= not to_stdulogic(to_bit(rx_rdy));
 						end if;
 					when others =>
-						rx_req <= not rx_rdy;
+						assert false
+						report "usbpkt_rx"
+						severity failure;
 					end case;
    					if rxdv='1' then
    						if rxbs='0' then

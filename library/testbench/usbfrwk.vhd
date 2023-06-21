@@ -76,7 +76,7 @@ begin
 				reverse(x"690010",8)(0 to 19-1);
 				-- reverse(x"c300_0515_000000_0000_e831",8)(0 to 72-1);
 			-- constant length : natural_vector := (0 => 19, 1 => 72);
-			constant length : natural_vector := (0 => 19); --, 1 => 19, 2 => 72, 3 => 19);
+			constant length : natural_vector := (19, 72, 19);
 			variable i     : natural;
 			variable j     : natural;
 			variable right : natural;
