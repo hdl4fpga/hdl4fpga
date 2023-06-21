@@ -88,7 +88,7 @@ begin
     		end if;
 		end process;
 
-      	host_e : entity hdl4fpga.usbprtl
+      	host_e : entity hdl4fpga.usbphyerr
     	port map (
     		tp   => tp,
     		dp   => dp,
@@ -190,7 +190,7 @@ begin
     		end if;
     	end process;
 
-       	dev_e : entity hdl4fpga.usbprtl
+       	dev_e : entity hdl4fpga.usbphyerr
        	generic map (
        		oversampling => oversampling)
     	port map (

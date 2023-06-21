@@ -105,7 +105,7 @@ begin
 			end if;
 		end process;
 
-	  	host_e : entity hdl4fpga.usbprtl
+	  	host_e : entity hdl4fpga.usbphyerr
 		port map (
 			tp   => tp,
 			dp   => dp,
