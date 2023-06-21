@@ -57,32 +57,22 @@ architecture def of usbdev is
 
 	signal phy_rxdv : std_logic;
 	signal phy_rxbs : std_logic;
+	signal phy_rxid : std_logic_vector(4-1 downto 0);
 	signal phy_rxd  : std_logic;
+
+	signal rx_req           : std_logic;
+	signal rx_rdy           : std_logic;
+	signal rx_addr          : std_logic_vector( 7-1 downto 0);
+	signal rx_endp          : std_logic_vector( 4-1 downto 0);
+	signal rx_bmrequesttype : std_logic_vector( 8-1 downto 0);
+	signal rx_brequest      : std_logic_vector( 8-1 downto 0);
+	signal rx_wvalue        : std_logic_vector(16-1 downto 0);
+	signal rx_windex        : std_logic_vector(16-1 downto 0);
+	signal rx_wlength       : std_logic_vector(16-1 downto 0);
+
 begin
 
-  	frwk_e : entity hdl4fpga.usbfrwk_dev
-	port map (
-		tp   => tp1,
-		clk  => clk,
-		cken => cken,
-
-		txen => phy_txen,
-		txbs => phy_txbs,
-		txd  => phy_txd,
-
-		rxdv => phy_rxdv,
-		rxbs => phy_rxbs,
-		rxd  => phy_rxd);
-
-	usbfiforx_e : entity hdl4fpga.usbfifo_rx
-	port map (
-		clk  => clk,
-		cken => cken,
-		rxdv => phy_rxdv,
-		rxbs => phy_rxbs,
-		rxd  => phy_rxd);
-
-  	usbprtl_e : entity hdl4fpga.usbprtl
+  	usbphy_e : entity hdl4fpga.usbphyerr
    	generic map (
 		oversampling => oversampling,
 		watermark    => watermark,
@@ -101,6 +91,50 @@ begin
 		rxdv => phy_rxdv,
 		rxbs => phy_rxbs,
 		rxd  => phy_rxd);
+
+	usbpktrx_e : entity hdl4fpga.usbpkt_rx
+	port map (
+		clk           => clk,
+		cken          => cken,
+				   
+		rx_req        => rx_req,
+		rx_rdy        => rx_rdy,
+				   
+		rxdv          => phy_rxdv,
+		rxpid         => phy_rxpid,
+		rxbs          => phy_rxbs,
+		rxd           => phy_rxd,
+				   
+		addr          => rx_addr,
+		endp          => rx_endp,
+		bmrequesttype => rx_bmrequesttype,
+		brequest      => rx_brequest,
+		wvalue        => rx_wvalue,
+		windex        => rx_windex,
+		wlength       => rx_wlength);
+
+	usbfiforx_e : entity hdl4fpga.usbfifo_rx
+	port map (
+		clk  => clk,
+		cken => cken,
+		rxdv => phy_rxdv,
+		rxbs => phy_rxbs,
+		rxd  => phy_rxd);
+
+	usbfrwk_e : entity hdl4fpga.usbfrwk_dev
+	port map (
+		tp   => tp1,
+		clk  => clk,
+		cken => cken,
+
+		txen => phy_txen,
+		txbs => phy_txbs,
+		txd  => phy_txd,
+
+		rxdv => phy_rxdv,
+		rxbs => phy_rxbs,
+		rxd  => phy_rxd);
+
 	txbs <= phy_txbs;
 	rxbs <= phy_rxbs;
 

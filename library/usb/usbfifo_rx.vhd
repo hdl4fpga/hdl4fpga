@@ -30,27 +30,26 @@ use hdl4fpga.base.all;
 
 entity usbfifo_rx is
 	port (
-		clk      : in  std_logic;
-		cken     : in  std_logic;
+		clk    : in  std_logic;
+		cken   : in  std_logic;
 
-		rxdv     : in  std_logic;
-		rxbs     : in  std_logic;
-		rxd      : in  std_logic;
+		rxdv   : in  std_logic;
+		rxbs   : in  std_logic;
+		rxd    : in  std_logic;
 
-		out_frm  : out std_logic;
-		out_irdy : buffer std_logic;
-		out_trdy : in  std_logic := '0';
-		out_data : out std_logic_vector(8-1 downto 0));
+		outdv  : buffer std_logic;
+		outty  : buffer std_logic;
+		outd   : out std_logic_vector(8-1 downto 0));
 end;
 
 architecture def of usbfifo_rx is
-	type ram is array (natural range <>) of std_logic_vector(out_data'range);
+	type ram is array (natural range <>) of std_logic_vector(outd'range);
 	shared variable mem : ram(0 to 1024-1);
 begin
 	process(clk)
 		variable wptr : natural;
 		variable rptr : natural;
-		variable data : unsigned(out_data'range);
+		variable data : unsigned(outd'range);
 		variable cntr : natural range 0 to data'length-1;
 	begin
 		if rising_edge(clk) then
@@ -72,16 +71,19 @@ begin
 				end if;
 
 				if rptr = wptr then
-					out_frm <= rxdv;
+					outdv <= '0';
+					outty <= '1';
+				elsif cntr = 0 then
+					outty <= '0';
+					outdv <= '1';
 				else
-					out_frm <= '1';
-					if cntr = 0 then
-						out_irdy <= '1';
-					end if;
+					outty <= '0';
+					outdv <= '0';
 				end if;
-				out_data <= mem(rptr);
+
+				outd <= mem(rptr);
 				if rptr /= wptr then
-					if out_irdy = '1' then
+					if outdv = '1' then
 						rptr := rptr + 1;
 					end if;
 				end if;

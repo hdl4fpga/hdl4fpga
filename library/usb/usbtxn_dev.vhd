@@ -34,12 +34,18 @@ entity usbtxn_dev is
 		clk   : in  std_logic;
 		cken  : in  std_logic;
 
+		tx_req : buffer std_logic;
+		tx_rdy : in  std_logic;
+		txpid : out std_logic_vector(4-1 downto 0);
 		txen  : out std_logic;
 		txbs  : in  std_logic;
 		txd   : out std_logic;
 
+		rx_req : in  std_logic;
+		rx_rdy : buffer std_logic;
+
 		rxdv  : in  std_logic;
-		rxpid : in  std_logic_vector(8-1 downto 0);
+		rxpid : in  std_logic_vector(4-1 downto 0);
 		rxbs  : in  std_logic;
 		rxd   : in  std_logic);
 
@@ -58,121 +64,14 @@ entity usbtxn_dev is
 end;
 
 architecture def of usbtxn_dev is
-	signal rx_tkn : std_logic_vector(0 to 16-1);
-	signal rx_req : bit;
-	signal rx_rdy : bit;
-
-	signal tx_pid : std_logic_vector(8-1 downto 0);
-	signal tx_req : bit;
-	signal tx_rdy : bit;
 begin
 
-	txpkt_p : process (clk)
-		type states is (s_idle, s_token, s_data, s_hs);
-		variable state : states;
-		variable pid   : unsigned(8-1 downto 0);
-		variable cntr  : natural range 0 to pid'length-1;
-	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				if (tx_req xor tx_rdy)='1' then
-					case state is
-					when s_idle =>
-						txen <= '0';
-						cntr := 0;
-						case tx_pid(4-1 downto 0) is
-						when tk_setup|tk_in|tk_out|tk_sof =>
-							state := s_token;
-						when data0|data1 =>
-							state := s_data;
-						when hs_ack|hs_nack|hs_stall =>
-							state := s_hs;
-						when others =>
-						end case;
-					when s_token =>
-						tx_rdy <= tx_req;
-						state  := s_idle;
-					when s_data =>
-						tx_rdy <= tx_req;
-						state  := s_idle;
-					when s_hs =>
-						if txbs='0' then
-							if cntr < 7 then
-								cntr   := cntr + 1;
-								txd    <= pid(0);
-								pid    := pid srl 1;
-								txen   <= '1';
-							else
-								txen   <= '0';
-								tx_rdy <= tx_req;
-								state  := s_idle;
-							end if;
-						end if;
-					end case;
-				else
-					txen  <= '0';
-					state := s_idle;
-				end if;
-			end if;
-		end if;
-	end process;
-
-	rxpkt_p : process (clk)
-		type states is (s_idle, s_token, s_data);
-		variable state    : states;
-		variable token    : unsigned(rx_tkn'range);
-		variable data_pid : std_logic_vector(8-1 downto 0);
-	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				case state is
-				when s_idle =>
-					if rxdv='1' then
-						if rxbs='0' then
-							case rxpid(4-1 downto 0) is
-							when tk_setup|tk_in|tk_out|tk_sof =>
-								token := token rol 1;
-								token(0) := rxd;
-								state := s_token;
-							when others =>
-								if rxpid=data_pid then
-									state := s_data;
-								end if;
-							end case;
-						end if;
-					end if;
-				when s_token =>
-					if rxdv='1' then
-						if rxbs='0' then
-							token := token rol 1;
-							token(0) := rxd;
-						end if;
-					else
-						case rxpid(4-1 downto 0) is
-						when tk_setup =>
-							setup_req <= not setup_rdy;
-						when others =>
-							if rxpid=data_pid then
-								state := s_data;
-							end if;
-						end case;
-						frwk_req <= not frwk_rdy;
-						state := s_idle;
-					end if;
-				when s_data =>
-				when others =>
-					rx_req <= not rx_rdy;
-				end case;
-			end if;
-		end if;
-	end process;
-
-	setup_p : process (clk)
+	usbreqst_p : process (clk)
 		type states is (s_setup, s_rxdata, s_txack, s_in, s_txdata, s_rxack);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
-			if cke='1' then
+			if cken='1' then
 				case state is
 				when s_setup =>
 					if (rx_rdy xor rx_req)='1' then
@@ -186,7 +85,7 @@ begin
 					if (rx_rdy xor rx_req)='1' then
 						case rxpid is
 						when data0|data1 =>
-							state := s_ack;
+							state := s_txack;
 						when others =>
 						end case;
 						rx_rdy <= rx_req;
@@ -201,8 +100,8 @@ begin
 					if (tx_rdy xor tx_req)='0' then
 						if (rx_rdy xor rx_req)='1' then
 							case rxpid is
-							when tkout =>
-							when tkin  =>
+							when tk_out =>
+							when tk_in  =>
 								tx_req <= not tx_rdy;
 								state  := s_txdata;
 							when others =>

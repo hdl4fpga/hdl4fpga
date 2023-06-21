@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity usbprtl is
+entity usbphyerr is
    	generic (
 		oversampling : natural := 0;
 		watermark    : natural := 0;
@@ -57,7 +57,8 @@ entity usbprtl is
 	constant length_of_crc16 : natural := 16;
 end;
 
-architecture def of usbprtl is
+architecture def of usbphyerr is
+
 	signal phy_txen : std_logic;
 	signal phy_txbs : std_logic;
 	signal phy_txd  : std_logic;
@@ -139,12 +140,6 @@ begin
 		phy_rxdv => phy_rxdv,
 		phy_rxbs => phy_rxbs,
 		phy_rxd  => phy_rxd);
-
-	process (clk)
-	begin
-		if rising_edge(clk) then
-		end if;
-	end process;
 
 	pktfmt_p : process (clk)
 		type states is (s_pid, s_tx, s_rx, s_crc);
