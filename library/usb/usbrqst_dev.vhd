@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity usbtxn_dev is
+entity usbrqst_dev is
 	port (
 		tp    : out std_logic_vector(1 to 32);
 		clk   : in  std_logic;
@@ -63,10 +63,10 @@ entity usbtxn_dev is
 
 end;
 
-architecture def of usbtxn_dev is
+architecture def of usbrqst_dev is
 begin
 
-	usbreqst_p : process (clk)
+	usbrqst_p : process (clk)
 		type states is (s_setup, s_rxdata, s_txack, s_in, s_txdata, s_rxack);
 		variable state : states;
 	begin
