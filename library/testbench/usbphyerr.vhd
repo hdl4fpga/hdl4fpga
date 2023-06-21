@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-architecture usbprtcl of testbench is
+architecture usbphyerr of testbench is
 	constant usb_freq     : real := 12.0e6;
 
 	signal usb_clk : std_logic := '0';
