@@ -51,14 +51,14 @@ entity usbdev is
 end;
 
 architecture def of usbdev is
-	signal tx_req           : std_logic;
-	signal tx_rdy           : std_logic;
-	signal phy_txen : std_logic;
-	signal phy_txbs : std_logic;
-	signal phy_txd  : std_logic;
+	signal tx_req    : std_logic;
+	signal tx_rdy    : std_logic;
+	signal phy_txen  : std_logic;
+	signal phy_txbs  : std_logic;
+	signal phy_txd   : std_logic;
 
-	signal rx_req           : std_logic;
-	signal rx_rdy           : std_logic;
+	signal rx_req    : std_logic;
+	signal rx_rdy    : std_logic;
 	signal phy_rxdv  : std_logic;
 	signal phy_rxbs  : std_logic;
 	signal phy_rxpid : std_logic_vector(4-1 downto 0);
@@ -80,40 +80,41 @@ begin
 		watermark    => watermark,
 		bit_stuffing => bit_stuffing)
 	port map (
-		tp   => tp,
-		dp   => dp,
-		dn   => dn,
-		clk  => clk,
-		cken => cken,
+		tp    => tp,
+		dp    => dp,
+		dn    => dn,
+		clk   => clk,
+		cken  => cken,
 
-		txen => phy_txen,
-		txbs => phy_txbs,
-		txd  => phy_txd,
+		txen  => phy_txen,
+		txbs  => phy_txbs,
+		txd   => phy_txd,
 
-		rxdv => phy_rxdv,
-		rxbs => phy_rxbs,
-		rxd  => phy_rxd);
+		rxdv  => phy_rxdv,
+		rxpid => phy_rxpid,
+		rxbs  => phy_rxbs,
+		rxd   => phy_rxd);
 
 	usbpktrx_e : entity hdl4fpga.usbpkt_rx
 	port map (
-		clk           => clk,
-		cken          => cken,
+		clk      => clk,
+		cken     => cken,
 				   
-		rx_req        => rx_req,
-		rx_rdy        => rx_rdy,
+		rx_req   => rx_req,
+		rx_rdy   => rx_rdy,
 				   
-		rxdv          => phy_rxdv,
-		rxpid         => phy_rxpid,
-		rxbs          => phy_rxbs,
-		rxd           => phy_rxd,
+		rxdv     => phy_rxdv,
+		rxpid    => phy_rxpid,
+		rxbs     => phy_rxbs,
+		rxd      => phy_rxd,
 				   
-		addr          => rx_addr,
-		endp          => rx_endp,
+		addr     => rx_addr,
+		endp     => rx_endp,
 		bmrequesttype => rx_bmrequesttype,
-		brequest      => rx_brequest,
-		wvalue        => rx_wvalue,
-		windex        => rx_windex,
-		wlength       => rx_wlength);
+		brequest => rx_brequest,
+		wvalue   => rx_wvalue,
+		windex   => rx_windex,
+		wlength  => rx_wlength);
 
 	usbfiforx_e : entity hdl4fpga.usbfifo_rx
 	port map (
@@ -125,22 +126,22 @@ begin
 
 	usbrqst_e : entity hdl4fpga.usbrqst_dev
 	port map (
-		tp   => tp1,
-		clk  => clk,
-		cken => cken,
+		tp     => tp1,
+		clk    => clk,
+		cken   => cken,
 
 		tx_req => tx_req,
 		tx_rdy => tx_rdy,
-		txen => phy_txen,
-		txbs => phy_txbs,
-		txd  => phy_txd,
+		txen   => phy_txen,
+		txbs   => phy_txbs,
+		txd    => phy_txd,
 
 		rx_req => rx_req,
 		rx_rdy => rx_rdy,
-		rxpid => phy_rxpid,
-		rxdv => phy_rxdv,
-		rxbs => phy_rxbs,
-		rxd  => phy_rxd);
+		rxpid  => phy_rxpid,
+		rxdv   => phy_rxdv,
+		rxbs   => phy_rxbs,
+		rxd    => phy_rxd);
 
 	txbs <= phy_txbs;
 	rxbs <= phy_rxbs;

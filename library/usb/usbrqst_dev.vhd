@@ -30,24 +30,24 @@ use hdl4fpga.base.all;
 
 entity usbrqst_dev is
 	port (
-		tp    : out std_logic_vector(1 to 32);
-		clk   : in  std_logic;
-		cken  : in  std_logic;
+		tp     : out std_logic_vector(1 to 32);
+		clk    : in  std_logic;
+		cken   : in  std_logic;
 
 		tx_req : buffer std_logic;
 		tx_rdy : in  std_logic;
-		txpid : out std_logic_vector(4-1 downto 0);
-		txen  : out std_logic;
-		txbs  : in  std_logic;
-		txd   : out std_logic;
+		txpid  : out std_logic_vector(4-1 downto 0);
+		txen   : out std_logic := '0';
+		txbs   : in  std_logic;
+		txd    : out std_logic;
 
 		rx_req : in  std_logic;
 		rx_rdy : buffer std_logic;
 
-		rxdv  : in  std_logic;
-		rxpid : in  std_logic_vector(4-1 downto 0);
-		rxbs  : in  std_logic;
-		rxd   : in  std_logic);
+		rxdv   : in  std_logic;
+		rxpid  : in  std_logic_vector(4-1 downto 0);
+		rxbs   : in  std_logic;
+		rxd    : in  std_logic);
 
 	constant tk_out   : std_logic_vector := b"0001";
 	constant tk_in    : std_logic_vector := b"1001";
@@ -74,15 +74,15 @@ begin
 			if cken='1' then
 				case state is
 				when s_setup =>
-					if (rx_rdy xor rx_req)='1' then
+					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 						if rxpid=tk_setup then
 							rx_rdy <= rx_req;
-							state := s_rxdata;
+							state  := s_rxdata;
 						end if;
 						rx_rdy <= rx_req;
 					end if;
 				when s_rxdata =>
-					if (rx_rdy xor rx_req)='1' then
+					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 						case rxpid is
 						when data0|data1 =>
 							state := s_txack;
@@ -98,7 +98,7 @@ begin
 					end if;
 				when s_in =>
 					if (tx_rdy xor tx_req)='0' then
-						if (rx_rdy xor rx_req)='1' then
+						if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 							case rxpid is
 							when tk_out =>
 							when tk_in  =>
@@ -111,7 +111,7 @@ begin
 					end if;
 				when s_txdata =>
 					if (tx_rdy xor tx_req)='0' then
-						if (rx_rdy xor rx_req)='1' then
+						if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 							case rxpid is
 							when data0|data1 =>
 								txpid  <= data0 xor x"88";
@@ -123,7 +123,7 @@ begin
 						end if;
 					end if;
 				when s_rxack =>
-					if (rx_rdy xor rx_req)='1' then
+					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 						case rxpid is
 						when hs_ack =>
 							state := s_setup;
