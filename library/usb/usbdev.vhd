@@ -64,13 +64,13 @@ architecture def of usbdev is
 	signal phy_rxpid   : std_logic_vector(4-1 downto 0);
 	signal phy_rxd     : std_logic;
 
-	signal rx_addr     : std_logic_vector( 7-1 downto 0);
-	signal rx_endp     : std_logic_vector( 4-1 downto 0);
-	signal rx_bmrequesttype : std_logic_vector( 8-1 downto 0);
-	signal rx_brequest : std_logic_vector( 8-1 downto 0);
-	signal rx_wvalue   : std_logic_vector(16-1 downto 0);
-	signal rx_windex   : std_logic_vector(16-1 downto 0);
-	signal rx_wlength  : std_logic_vector(16-1 downto 0);
+	signal rxaddr     : std_logic_vector( 7-1 downto 0);
+	signal rxendp     : std_logic_vector( 4-1 downto 0);
+	signal rxbmrequesttype : std_logic_vector( 8-1 downto 0);
+	signal rxbrequest : std_logic_vector( 8-1 downto 0);
+	signal rxwvalue   : std_logic_vector(16-1 downto 0);
+	signal rxwindex   : std_logic_vector(16-1 downto 0);
+	signal rxwlength  : std_logic_vector(16-1 downto 0);
 
 begin
 
@@ -108,13 +108,13 @@ begin
 		rxbs     => phy_rxbs,
 		rxd      => phy_rxd,
 				   
-		addr     => rx_addr,
-		endp     => rx_endp,
-		bmrequesttype => rx_bmrequesttype,
-		brequest => rx_brequest,
-		wvalue   => rx_wvalue,
-		windex   => rx_windex,
-		wlength  => rx_wlength);
+		addr     => rxaddr,
+		endp     => rxendp,
+		bmrequesttype => rxbmrequesttype,
+		brequest => rxbrequest,
+		wvalue   => rxwvalue,
+		windex   => rxwindex,
+		wlength  => rxwlength);
 
 	usbpkttx_e : entity hdl4fpga.usbpkt_tx
 	port map (
@@ -130,16 +130,25 @@ begin
 
 	usbrqst_e : entity hdl4fpga.usbrqst_dev
 	port map (
-		clk    => clk,
-		cken   => cken,
+		clk      => clk,
+		cken     => cken,
 
-		tx_req => tx_req,
-		tx_rdy => tx_rdy,
-		txpid  => txpid,
+		rx_req   => rx_req,
+		rx_rdy   => rx_rdy,
+		rxpid    => phy_rxpid,
 
-		rx_req => rx_req,
-		rx_rdy => rx_rdy,
-		rxpid  => phy_rxpid);
+		rxaddr     => rxaddr,
+		rxendp     => rxendp,
+		rxbmrequesttype => rxbmrequesttype,
+		rxbrequest => rxbrequest,
+		rxwvalue   => rxwvalue,
+		rxwindex   => rxwindex,
+		rxwlength  => rxwlength,
+
+		tx_req   => tx_req,
+		tx_rdy   => tx_rdy,
+		txpid    => txpid);
+
 
 	txbs <= phy_txbs;
 	rxbs <= phy_rxbs;

@@ -31,16 +31,25 @@ use hdl4fpga.usbpkg.all;
 
 entity usbrqst_dev is
 	port (
-		clk    : in  std_logic;
-		cken   : in  std_logic;
+		clk         : in  std_logic;
+		cken        : in  std_logic;
 
-		tx_req : buffer std_logic;
-		tx_rdy : in  std_logic;
-		txpid  : out std_logic_vector(4-1 downto 0);
+		rx_req      : in  std_logic;
+		rx_rdy      : buffer std_logic;
+		rxpid       : in  std_logic_vector(4-1 downto 0);
 
-		rx_req : in  std_logic;
-		rx_rdy : buffer std_logic;
-		rxpid  : in  std_logic_vector(4-1 downto 0));
+		rxaddr     : in  std_logic_vector( 7-1 downto 0);
+		rxendp     : in  std_logic_vector( 4-1 downto 0);
+		rxbmrequesttype : in  std_logic_vector( 8-1 downto 0);
+		rxbrequest : in  std_logic_vector( 8-1 downto 0);
+		rxwvalue   : in  std_logic_vector(16-1 downto 0);
+		rxwindex   : in  std_logic_vector(16-1 downto 0);
+		rxwlength  : in  std_logic_vector(16-1 downto 0);
+
+		tx_req      : buffer std_logic;
+		tx_rdy      : in  std_logic;
+		txpid       : out std_logic_vector(4-1 downto 0));
+
 end;
 
 architecture def of usbrqst_dev is

@@ -25,15 +25,15 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 package usbpkg is
-	constant tk_out   : std_logic_vector := b"0001";
-	constant tk_in    : std_logic_vector := b"1001";
-	constant tk_setup : std_logic_vector := b"1101";
-	constant tk_sof   : std_logic_vector := b"0101";
+	constant tk_out   : std_logic_vector := x"1";
+	constant tk_in    : std_logic_vector := x"9";
+	constant tk_setup : std_logic_vector := x"d";
+	constant tk_sof   : std_logic_vector := x"5";
 
-	constant data0    : std_logic_vector := b"0011";
-	constant data1    : std_logic_vector := b"1011";
+	constant data0    : std_logic_vector := x"3";
+	constant data1    : std_logic_vector := x"b";
 
-	constant hs_ack   : std_logic_vector := b"0010";
-	constant hs_nack  : std_logic_vector := b"1010";
-	constant hs_stall : std_logic_vector := b"1110";
+	constant hs_ack   : std_logic_vector := x"2";
+	constant hs_nack  : std_logic_vector := x"a";
+	constant hs_stall : std_logic_vector := x"e";
 end;

@@ -2385,6 +2385,7 @@ $(HDL4FPGA__usbdev) \
 $(HDL4FPGA__usbdev__def) : ../usb/usbdev.vhd \
 		$(HDL4FPGA__usbrqst_dev) \
 		$(HDL4FPGA__usbpkt_tx) \
+		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__usbpkt_rx) \
 		$(HDL4FPGA__usbphyerr) \
 		$(HDL4FPGA__base) \
@@ -2447,6 +2448,7 @@ $(HDL4FPGA__usbpkg) : ../usb/usbpkg.vhd \
 
 $(HDL4FPGA__usbpkt_rx) \
 $(HDL4FPGA__usbpkt_rx__def) : ../usb/usbpkt_rx.vhd \
+		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -2455,6 +2457,7 @@ $(HDL4FPGA__usbpkt_rx__def) : ../usb/usbpkt_rx.vhd \
 
 $(HDL4FPGA__usbpkt_tx) \
 $(HDL4FPGA__usbpkt_tx__def) : ../usb/usbpkt_tx.vhd \
+		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -2463,6 +2466,7 @@ $(HDL4FPGA__usbpkt_tx__def) : ../usb/usbpkt_tx.vhd \
 
 $(HDL4FPGA__usbrqst_dev) \
 $(HDL4FPGA__usbrqst_dev__def) : ../usb/usbrqst_dev.vhd \
+		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
