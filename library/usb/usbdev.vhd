@@ -50,27 +50,22 @@ entity usbdev is
 end;
 
 architecture def of usbdev is
-	signal tx_req      : std_logic;
-	signal tx_rdy      : std_logic;
-	signal txpid       : std_logic_vector(4-1 downto 0);
-	signal phy_txen    : std_logic;
-	signal phy_txbs    : std_logic;
-	signal phy_txd     : std_logic;
+	signal tx_req    : std_logic;
+	signal tx_rdy    : std_logic;
+	signal txpid     : std_logic_vector(4-1 downto 0);
+	signal phy_txen  : std_logic;
+	signal phy_txbs  : std_logic;
+	signal phy_txd   : std_logic;
 
-	signal rx_req      : std_logic;
-	signal rx_rdy      : std_logic;
-	signal phy_rxdv    : std_logic;
-	signal phy_rxbs    : std_logic;
-	signal phy_rxpid   : std_logic_vector(4-1 downto 0);
-	signal phy_rxd     : std_logic;
+	signal rx_req    : std_logic;
+	signal rx_rdy    : std_logic;
+	signal phy_rxdv  : std_logic;
+	signal phy_rxbs  : std_logic;
+	signal phy_rxpid : std_logic_vector(4-1 downto 0);
+	signal phy_rxd   : std_logic;
 
-	signal rxaddr     : std_logic_vector( 7-1 downto 0);
-	signal rxendp     : std_logic_vector( 4-1 downto 0);
-	signal rxbmrequesttype : std_logic_vector( 8-1 downto 0);
-	signal rxbrequest : std_logic_vector( 8-1 downto 0);
-	signal rxwvalue   : std_logic_vector(16-1 downto 0);
-	signal rxwindex   : std_logic_vector(16-1 downto 0);
-	signal rxwlength  : std_logic_vector(16-1 downto 0);
+	signal rxtoken   : std_logic_vector(0 to 7+4+5-1);
+	signal rxrqst    : std_logic_vector(0 to 8*8+15-1);
 
 begin
 
@@ -108,13 +103,8 @@ begin
 		rxbs     => phy_rxbs,
 		rxd      => phy_rxd,
 				   
-		addr     => rxaddr,
-		endp     => rxendp,
-		bmrequesttype => rxbmrequesttype,
-		brequest => rxbrequest,
-		wvalue   => rxwvalue,
-		windex   => rxwindex,
-		wlength  => rxwlength);
+		rxtoken  => rxtoken,
+		rxrqst   => rxrqst);
 
 	usbpkttx_e : entity hdl4fpga.usbpkt_tx
 	port map (
@@ -137,13 +127,8 @@ begin
 		rx_rdy   => rx_rdy,
 		rxpid    => phy_rxpid,
 
-		rxaddr     => rxaddr,
-		rxendp     => rxendp,
-		rxbmrequesttype => rxbmrequesttype,
-		rxbrequest => rxbrequest,
-		rxwvalue   => rxwvalue,
-		rxwindex   => rxwindex,
-		rxwlength  => rxwlength,
+		rxtoken  => rxtoken,
+		rxrqst   => rxrqst,
 
 		tx_req   => tx_req,
 		tx_rdy   => tx_rdy,

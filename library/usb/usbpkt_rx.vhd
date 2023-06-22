@@ -39,17 +39,10 @@ entity usbpkt_rx is
 
 		rxdv     : in  std_logic;
 		rxpid    : in  std_logic_vector( 4-1 downto 0);
+		rxtoken  : out std_logic_vector(0 to 7+4+5-1);
+		rxrqst   : out std_logic_vector(0 to 8*8+15-1);
 		rxbs     : in  std_logic;
-		rxd      : in  std_logic;
-		-- USB Device protocol
-		addr     : out std_logic_vector( 7-1 downto 0);
-		endp     : out std_logic_vector( 4-1 downto 0);
-		-- USB Device Framework 
-		bmrequesttype : out std_logic_vector( 8-1 downto 0);
-		brequest : out std_logic_vector( 8-1 downto 0);
-		wvalue   : out std_logic_vector(16-1 downto 0);
-		windex   : out std_logic_vector(16-1 downto 0);
-		wlength  : out std_logic_vector(16-1 downto 0));
+		rxd      : in  std_logic);
 end;
 
 architecture def of usbpkt_rx is
@@ -80,26 +73,12 @@ begin
 						end if;
 					when s_token =>
 						if rxdv='0' then
-							shr := shr rol 5; -- discard crc5
-							endp <= reverse(std_logic_vector(shr(0 to endp'length-1)));
-							shr := shr rol endp'length;
-							addr <= reverse(std_logic_vector(shr(0 to addr'length-1)));
-							shr := shr rol addr'length;
-							rx_req <= not to_stdulogic(to_bit(rx_rdy));
+							rxtoken <= reverse(std_logic_vector(shr(rxtoken'range)));
+							rx_req  <= not to_stdulogic(to_bit(rx_rdy));
 						end if;
 					when s_data =>
 						if rxdv='0' then
-							shr := shr rol 16; -- discard crc16
-							wlength  <= reverse(std_logic_vector(shr(0 to wlength'length-1)),8);
-							shr := shr rol wlength'length;
-							windex   <= reverse(std_logic_vector(shr(0 to windex'length-1)),8);
-							shr := shr rol windex'length;
-							wvalue   <= reverse(std_logic_vector(shr(0 to wvalue'length-1)),8);
-							shr := shr rol wvalue'length;
-							brequest <= reverse(std_logic_vector(shr(0 to brequest'length-1)),8);
-							shr := shr rol brequest'length;
-							bmrequesttype <= reverse(std_logic_vector(shr(0 to bmrequesttype'length-1)),8);
-							shr := shr rol bmrequesttype'length;
+							rxrqst <= reverse(std_logic_vector(shr(rxrqst'range)));
 							rx_req <= not to_stdulogic(to_bit(rx_rdy));
 						end if;
 					when s_hs =>
