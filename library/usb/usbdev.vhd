@@ -50,27 +50,27 @@ entity usbdev is
 end;
 
 architecture def of usbdev is
-	signal tx_req    : std_logic;
-	signal tx_rdy    : std_logic;
-	signal txpid     : std_logic_vector(4-1 downto 0);
-	signal phy_txen  : std_logic;
-	signal phy_txbs  : std_logic;
-	signal phy_txd   : std_logic;
+	signal tx_req      : std_logic;
+	signal tx_rdy      : std_logic;
+	signal txpid       : std_logic_vector(4-1 downto 0);
+	signal phy_txen    : std_logic;
+	signal phy_txbs    : std_logic;
+	signal phy_txd     : std_logic;
 
-	signal rx_req    : std_logic;
-	signal rx_rdy    : std_logic;
-	signal phy_rxdv  : std_logic;
-	signal phy_rxbs  : std_logic;
-	signal phy_rxpid : std_logic_vector(4-1 downto 0);
-	signal phy_rxd   : std_logic;
+	signal rx_req      : std_logic;
+	signal rx_rdy      : std_logic;
+	signal phy_rxdv    : std_logic;
+	signal phy_rxbs    : std_logic;
+	signal phy_rxpid   : std_logic_vector(4-1 downto 0);
+	signal phy_rxd     : std_logic;
 
-	signal rx_addr          : std_logic_vector( 7-1 downto 0);
-	signal rx_endp          : std_logic_vector( 4-1 downto 0);
+	signal rx_addr     : std_logic_vector( 7-1 downto 0);
+	signal rx_endp     : std_logic_vector( 4-1 downto 0);
 	signal rx_bmrequesttype : std_logic_vector( 8-1 downto 0);
-	signal rx_brequest      : std_logic_vector( 8-1 downto 0);
-	signal rx_wvalue        : std_logic_vector(16-1 downto 0);
-	signal rx_windex        : std_logic_vector(16-1 downto 0);
-	signal rx_wlength       : std_logic_vector(16-1 downto 0);
+	signal rx_brequest : std_logic_vector( 8-1 downto 0);
+	signal rx_wvalue   : std_logic_vector(16-1 downto 0);
+	signal rx_windex   : std_logic_vector(16-1 downto 0);
+	signal rx_wlength  : std_logic_vector(16-1 downto 0);
 
 begin
 
