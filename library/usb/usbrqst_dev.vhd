@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.usbpkg.all;
 
 entity usbrqst_dev is
 	port (
@@ -40,22 +41,11 @@ entity usbrqst_dev is
 		rx_req : in  std_logic;
 		rx_rdy : buffer std_logic;
 		rxpid  : in  std_logic_vector(4-1 downto 0));
-
-	constant tk_out   : std_logic_vector := b"0001";
-	constant tk_in    : std_logic_vector := b"1001";
-	constant tk_setup : std_logic_vector := b"1101";
-	constant tk_sof   : std_logic_vector := b"0101";
-
-	constant data0    : std_logic_vector := b"0011";
-	constant data1    : std_logic_vector := b"1011";
-
-	constant hs_ack   : std_logic_vector := b"0010";
-	constant hs_nack  : std_logic_vector := b"1010";
-	constant hs_stall : std_logic_vector := b"1110";
-
 end;
 
 architecture def of usbrqst_dev is
+	constant tdbi : std_logic_vector(data0'range) := b"1000";
+	signal   dpid : std_logic_vector(data0'range);
 begin
 
 	usbrqst_p : process (clk)
@@ -77,10 +67,12 @@ begin
 					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 						if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 							case rxpid is
-							when data0|data1 =>
+							when data0 =>
 								txpid  <= hs_ack;
+								dpid   <= rxpid xor tdbi;
 								tx_req <= not to_stdulogic(to_bit(tx_rdy));
 								state  := s_in;
+							when data1 =>
 							when others =>
 							end case;
 							rx_rdy <= rx_req;
@@ -92,7 +84,7 @@ begin
 							case rxpid is
 							when tk_out =>
 							when tk_in  =>
-								txpid  <= data0;-- xor x"88";
+								txpid  <= dpid;
 								tx_req <= not to_stdulogic(to_bit(tx_rdy));
 								state  := s_rxack;
 							when others =>

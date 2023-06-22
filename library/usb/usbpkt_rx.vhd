@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.usbpkg.all;
 
 entity usbpkt_rx is
 	port (
@@ -49,19 +50,6 @@ entity usbpkt_rx is
 		wvalue   : out std_logic_vector(16-1 downto 0);
 		windex   : out std_logic_vector(16-1 downto 0);
 		wlength  : out std_logic_vector(16-1 downto 0));
-
-	constant tk_out   : std_logic_vector := b"0001";
-	constant tk_in    : std_logic_vector := b"1001";
-	constant tk_setup : std_logic_vector := b"1101";
-	constant tk_sof   : std_logic_vector := b"0101";
-
-	constant data0    : std_logic_vector := b"0011";
-	constant data1    : std_logic_vector := b"1011";
-
-	constant hs_ack   : std_logic_vector := b"0010";
-	constant hs_nack  : std_logic_vector := b"1010";
-	constant hs_stall : std_logic_vector := b"1110";
-
 end;
 
 architecture def of usbpkt_rx is
