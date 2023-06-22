@@ -56,7 +56,8 @@ begin
 	begin
 
 		rst <= '1', '0' after 0.500 us;
-		process (cken, clk)
+		process 
+			type time_vector is array (natural range <>) of time;
 			-- constant data : std_logic_vector := reverse(x"a50df2",8)(0 to 19-1);
 			-- constant data : std_logic_vector := reverse(x"a527b2",8)(0 to 19-1);
 			-- constant data : std_logic_vector := reverse(x"a50302",8)(0 to 19-1);
@@ -73,10 +74,13 @@ begin
 				-- reverse(x"a5ff47",8)(0 to 19-1) & 
 				reverse(x"2d0010",8)(0 to 19-1) &
 				reverse(x"c300_0529_000000_0000_ed0d",8)(0 to 72-1) &
-				reverse(x"690010",8)(0 to 19-1);
+				reverse(x"690010",8)(0 to 19-1) &
+				reverse(x"d2",8);
 				-- reverse(x"c300_0515_000000_0000_e831",8)(0 to 72-1);
 			-- constant length : natural_vector := (0 => 19, 1 => 72);
-			constant length : natural_vector := (19, 72, 19);
+			constant length : natural_vector := (19, 72, 19, 8);
+			constant delays : time_vector := (0 ns, 0 ns, 2 us, 3.3 us);
+
 			variable i     : natural;
 			variable j     : natural;
 			variable right : natural;
@@ -96,13 +100,17 @@ begin
 				elsif txbs='0' then
 					txen <= '0';
 					if idle='1' then
-						if i < length'length then
+						if i < delays'length then
+							wait for delays(i);
 							right := right + length(i);
 							i     := i + 1;
+						else
+							wait;
 						end if;
 					end if;
 				end if;
 			end if;
+			wait on clk;
 		end process;
 
 	  	host_e : entity hdl4fpga.usbphyerr

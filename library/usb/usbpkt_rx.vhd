@@ -67,7 +67,7 @@ end;
 architecture def of usbpkt_rx is
 begin
 	process (clk)
-		type states is (s_idle, s_token, s_data);
+		type states is (s_idle, s_token, s_data, s_hs);
 		variable state : states;
 		variable shr  : unsigned(0 to 8*8+15-1); -- address + end point, setup data + crc16
 	begin
@@ -82,7 +82,12 @@ begin
 								state := s_token;
    							when data0|data1 =>
    								state := s_data;
+							when hs_ack|hs_nack|hs_stall =>
+   								state := s_hs;
 							when others =>
+								assert false
+								report "usbpkt_rx"
+								severity failure;
    							end case;
 						end if;
 					when s_token =>
@@ -109,6 +114,8 @@ begin
 							shr := shr rol bmrequesttype'length;
 							rx_req <= not to_stdulogic(to_bit(rx_rdy));
 						end if;
+					when s_hs =>
+						rx_req <= not to_stdulogic(to_bit(rx_rdy));
 					when others =>
 						assert false
 						report "usbpkt_rx"

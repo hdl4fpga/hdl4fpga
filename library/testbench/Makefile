@@ -48,6 +48,8 @@ HDL4FPGA__vector__def = $(LIB_HDL4FPGA)/vector/def.dat
 HDL4FPGA__vector = $(LIB_HDL4FPGA)/vector/_primary.dat
 HDL4FPGA__usbrqst_dev__def = $(LIB_HDL4FPGA)/usbrqst_dev/def.dat
 HDL4FPGA__usbrqst_dev = $(LIB_HDL4FPGA)/usbrqst_dev/_primary.dat
+HDL4FPGA__usbpkt_tx__def = $(LIB_HDL4FPGA)/usbpkt_tx/def.dat
+HDL4FPGA__usbpkt_tx = $(LIB_HDL4FPGA)/usbpkt_tx/_primary.dat
 HDL4FPGA__usbpkt_rx__def = $(LIB_HDL4FPGA)/usbpkt_rx/def.dat
 HDL4FPGA__usbpkt_rx = $(LIB_HDL4FPGA)/usbpkt_rx/_primary.dat
 HDL4FPGA__usbphyerr__def = $(LIB_HDL4FPGA)/usbphyerr/def.dat
@@ -405,6 +407,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__vector) \
     $(HDL4FPGA__usbrqst_dev__def) \
     $(HDL4FPGA__usbrqst_dev) \
+    $(HDL4FPGA__usbpkt_tx__def) \
+    $(HDL4FPGA__usbpkt_tx) \
     $(HDL4FPGA__usbpkt_rx__def) \
     $(HDL4FPGA__usbpkt_rx) \
     $(HDL4FPGA__usbphyerr__def) \
@@ -2441,6 +2445,14 @@ $(HDL4FPGA__usbpkt_rx__def) : ../usb/usbpkt_rx.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../usb/usbpkt_rx.vhd
+
+$(HDL4FPGA__usbpkt_tx) \
+$(HDL4FPGA__usbpkt_tx__def) : ../usb/usbpkt_tx.vhd \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../usb/usbpkt_tx.vhd
 
 $(HDL4FPGA__usbrqst_dev) \
 $(HDL4FPGA__usbrqst_dev__def) : ../usb/usbrqst_dev.vhd \

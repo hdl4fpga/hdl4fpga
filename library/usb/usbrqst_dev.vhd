@@ -30,24 +30,16 @@ use hdl4fpga.base.all;
 
 entity usbrqst_dev is
 	port (
-		tp     : out std_logic_vector(1 to 32);
 		clk    : in  std_logic;
 		cken   : in  std_logic;
 
 		tx_req : buffer std_logic;
 		tx_rdy : in  std_logic;
 		txpid  : out std_logic_vector(4-1 downto 0);
-		txen   : out std_logic := '0';
-		txbs   : in  std_logic;
-		txd    : out std_logic;
 
 		rx_req : in  std_logic;
 		rx_rdy : buffer std_logic;
-
-		rxdv   : in  std_logic;
-		rxpid  : in  std_logic_vector(4-1 downto 0);
-		rxbs   : in  std_logic;
-		rxd    : in  std_logic);
+		rxpid  : in  std_logic_vector(4-1 downto 0));
 
 	constant tk_out   : std_logic_vector := b"0001";
 	constant tk_in    : std_logic_vector := b"1001";
@@ -67,7 +59,7 @@ architecture def of usbrqst_dev is
 begin
 
 	usbrqst_p : process (clk)
-		type states is (s_setup, s_rxdata, s_txack, s_in, s_txdata, s_rxack);
+		type states is (s_setup, s_rxdata, s_in, s_rxack);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
@@ -82,54 +74,42 @@ begin
 						rx_rdy <= rx_req;
 					end if;
 				when s_rxdata =>
-					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
-						case rxpid is
-						when data0|data1 =>
-							state := s_txack;
-						when others =>
-						end case;
-						rx_rdy <= rx_req;
-					end if;
-				when s_txack =>
-					if (tx_rdy xor tx_req)='0' then
-						txpid  <= hs_ack;
-						tx_req <= not tx_rdy;
-						state  := s_in;
-					end if;
-				when s_in =>
-					if (tx_rdy xor tx_req)='0' then
+					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 						if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 							case rxpid is
-							when tk_out =>
-							when tk_in  =>
-								tx_req <= not tx_rdy;
-								state  := s_txdata;
+							when data0|data1 =>
+								txpid  <= hs_ack;
+								tx_req <= not to_stdulogic(to_bit(tx_rdy));
+								state  := s_in;
 							when others =>
 							end case;
 							rx_rdy <= rx_req;
 						end if;
 					end if;
-				when s_txdata =>
-					if (tx_rdy xor tx_req)='0' then
+				when s_in =>
+					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 						if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 							case rxpid is
-							when data0|data1 =>
-								txpid  <= data0 xor x"88";
-								tx_req <= not tx_rdy;
-								state  := s_txdata;
+							when tk_out =>
+							when tk_in  =>
+								txpid  <= data0;-- xor x"88";
+								tx_req <= not to_stdulogic(to_bit(tx_rdy));
+								state  := s_rxack;
 							when others =>
 							end case;
 							rx_rdy <= rx_req;
 						end if;
 					end if;
 				when s_rxack =>
-					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
-						case rxpid is
-						when hs_ack =>
-							state := s_setup;
-						when others =>
-						end case;
-						rx_rdy <= rx_req;
+					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
+						if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
+							case rxpid is
+							when hs_ack =>
+								rx_rdy <= rx_req;
+								state := s_setup;
+							when others =>
+							end case;
+						end if;
 					end if;
 				end case;
 			end if;

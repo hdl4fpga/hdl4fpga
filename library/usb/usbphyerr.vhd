@@ -211,8 +211,6 @@ begin
 				end case;
 				rxbs <= crc_rxbs;
 				rxd  <= crc_rxd;
-			else
-				crcact <= '0';
 			end if;
 		end if;
 	end process;

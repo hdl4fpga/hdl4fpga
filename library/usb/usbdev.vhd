@@ -35,7 +35,6 @@ entity usbdev is
 		bit_stuffing : natural := 6);
 	port (
 		tp   : out std_logic_vector(1 to 32);
-		tp1  : out std_logic_vector(1 to 32);
 		dp   : inout std_logic := 'Z';
 		dn   : inout std_logic := 'Z';
 		clk  : in  std_logic;
@@ -53,6 +52,7 @@ end;
 architecture def of usbdev is
 	signal tx_req    : std_logic;
 	signal tx_rdy    : std_logic;
+	signal txpid     : std_logic_vector(4-1 downto 0);
 	signal phy_txen  : std_logic;
 	signal phy_txbs  : std_logic;
 	signal phy_txd   : std_logic;
@@ -116,32 +116,30 @@ begin
 		windex   => rx_windex,
 		wlength  => rx_wlength);
 
-	usbfiforx_e : entity hdl4fpga.usbfifo_rx
+	usbpkttx_e : entity hdl4fpga.usbpkt_tx
 	port map (
-		clk  => clk,
-		cken => cken,
-		rxdv => phy_rxdv,
-		rxbs => phy_rxbs,
-		rxd  => phy_rxd);
+		clk    => clk,
+		cken   => cken,
+         
+		tx_req => tx_req,
+		tx_rdy => tx_rdy,
+		txpid  => txpid,
+		txen   => phy_txen,
+		txbs   => phy_txbs,
+		txd    => phy_txd);
 
 	usbrqst_e : entity hdl4fpga.usbrqst_dev
 	port map (
-		tp     => tp1,
 		clk    => clk,
 		cken   => cken,
 
 		tx_req => tx_req,
 		tx_rdy => tx_rdy,
-		txen   => phy_txen,
-		txbs   => phy_txbs,
-		txd    => phy_txd,
+		txpid  => txpid,
 
 		rx_req => rx_req,
 		rx_rdy => rx_rdy,
-		rxpid  => phy_rxpid,
-		rxdv   => phy_rxdv,
-		rxbs   => phy_rxbs,
-		rxd    => phy_rxd);
+		rxpid  => phy_rxpid);
 
 	txbs <= phy_txbs;
 	rxbs <= phy_rxbs;
