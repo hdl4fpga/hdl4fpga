@@ -47,8 +47,6 @@ entity usbrqst_dev is
 end;
 
 architecture def of usbrqst_dev is
-	constant tdbi    : std_logic_vector(data0'range) := b"1000";
-	signal   dpid    : std_logic_vector(data0'range);
 	signal   addr    : std_logic_vector( 7-1 downto 0);
 	signal   endp    : std_logic_vector( 4-1 downto 0);
 	signal   requesttype : std_logic_vector( 8-1 downto 0);
@@ -58,8 +56,10 @@ architecture def of usbrqst_dev is
 	signal   length  : std_logic_vector(16-1 downto 0);
 begin
 	usbrqst_p : process (clk)
-		type states is (s_setup, s_rqstdata, s_in, s_dataout, s_out, s_datain, s_ack);
+		type states is (s_setup, s_rqstdata, s_ackrqst, s_inout, s_dataout, s_ackin, s_datain, s_ackout);
 		variable state : states;
+		constant tbit  : std_logic_vector(data0'range) := b"1000";
+		variable dpid  : std_logic_vector(data0'range);
 		variable shr   : unsigned(rxrqst'range);
 		variable setup_req : std_logic;
 		variable setup_rdy : std_logic;
@@ -69,16 +69,22 @@ begin
 				case state is
 				when s_setup =>
 					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
-						shr(rxtoken'range) := unsigned(rxtoken);
-						addr <= std_logic_vector(shr(0 to addr'length-1));
-						shr := shr rol addr'length;
-						endp <= std_logic_vector(shr(0 to endp'length-1));
-						shr := shr rol endp'length;
-
-						if rxpid=tk_setup then
+						case rxpid is
+						when tk_setup =>
+							shr(rxtoken'range) := unsigned(rxtoken);
+							addr <= std_logic_vector(shr(0 to addr'length-1));
+							shr := shr rol addr'length;
+							endp <= std_logic_vector(shr(0 to endp'length-1));
+							shr := shr rol endp'length;
 							rx_rdy <= rx_req;
 							state  := s_rqstdata;
-						end if;
+						when data0|data1 =>
+							state := s_ackout;
+						when others =>
+							assert false
+							report "wrong case"
+							severity failure;
+						end case;
 						rx_rdy <= rx_req;
 					end if;
 				when s_rqstdata =>
@@ -95,58 +101,77 @@ begin
 							shr := shr rol index'length;
 							length  <= std_logic_vector(shr(0 to length'length-1));
 							shr := shr rol length'length;
-							txpid  <= hs_ack;
-							dpid   <= rxpid xor tdbi;
-							tx_req <= not to_stdulogic(to_bit(tx_rdy));
-							state  := s_in;
-						when data1 =>
+							dpid   := rxpid;
+							dpid   := dpid xor tbit;
+							state  := s_ackrqst;
 						when others =>
+							assert false
+							report "wrong case"
+							severity failure;
 						end case;
 						rx_rdy <= rx_req;
 					end if;
-				when s_in =>
+				when s_ackrqst =>
+					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
+						txpid  <= hs_ack;
+						tx_req <= not to_stdulogic(to_bit(tx_rdy));
+						state := s_inout;
+					end if;
+				when s_inout =>
 					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 						case rxpid is
 						when tk_out =>
+							state := s_datain;
 						when tk_in  =>
-							state  := s_dataout;
+							state := s_dataout;
+						when data0|data1 =>
+							state := s_ackrqst;
 						when others =>
+							assert false
+							report "wrong case"
+							severity failure;
 						end case;
 					end if;
 				when s_dataout =>
 					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 						case rxpid is
-						when tk_out =>
 						when tk_in  =>
 							txpid  <= dpid;
+							dpid   := dpid xor tbit;
 							tx_req <= not to_stdulogic(to_bit(tx_rdy));
-							state  := s_ack;
+							state  := s_ackin;
 						when others =>
+							assert false
+							report "wrong case"
+							severity failure;
 						end case;
 						rx_rdy <= rx_req;
 					end if;
-				when s_ack =>
+				when s_ackin =>
 					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 						case rxpid is
 						when hs_ack =>
 							rx_rdy <= rx_req;
 							state := s_setup;
 						when others =>
+							assert false
+							report "wrong case"
+							severity failure;
 						end case;
-					end if;
-				when s_out =>
-					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
-						case rxpid is
-						when tk_out =>
-							txpid  <= dpid;
-							tx_req <= not to_stdulogic(to_bit(tx_rdy));
-							state  := s_ack;
-						when tk_in  =>
-						when others =>
-						end case;
-						rx_rdy <= rx_req;
 					end if;
 				when s_datain =>
+					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
+						txpid  <= dpid;
+						dpid   := dpid xor tbit;
+						tx_req <= not to_stdulogic(to_bit(tx_rdy));
+						state  := s_ackout;
+					end if;
+				when s_ackout =>
+					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
+						txpid  <= hs_ack;
+						tx_req <= not to_stdulogic(to_bit(tx_rdy));
+						state := s_setup;
+					end if;
 				end case;
 			end if;
 		end if;
