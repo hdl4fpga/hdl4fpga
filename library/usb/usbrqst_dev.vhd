@@ -47,27 +47,29 @@ entity usbrqst_dev is
 end;
 
 architecture def of usbrqst_dev is
-	constant tdbi : std_logic_vector(data0'range) := b"1000";
-	signal   dpid : std_logic_vector(data0'range);
-	signal addr     : std_logic_vector( 7-1 downto 0);
-	signal endp     : std_logic_vector( 4-1 downto 0);
-	signal bmrequesttype : std_logic_vector( 8-1 downto 0);
-	signal brequest : std_logic_vector( 8-1 downto 0);
-	signal wvalue   : std_logic_vector(16-1 downto 0);
-	signal windex   : std_logic_vector(16-1 downto 0);
-	signal wlength  : std_logic_vector(16-1 downto 0);
+	constant tdbi    : std_logic_vector(data0'range) := b"1000";
+	signal   dpid    : std_logic_vector(data0'range);
+	signal   addr    : std_logic_vector( 7-1 downto 0);
+	signal   endp    : std_logic_vector( 4-1 downto 0);
+	signal   requesttype : std_logic_vector( 8-1 downto 0);
+	signal   request : std_logic_vector( 8-1 downto 0);
+	signal   value   : std_logic_vector(16-1 downto 0);
+	signal   index   : std_logic_vector(16-1 downto 0);
+	signal   length  : std_logic_vector(16-1 downto 0);
 begin
 	usbrqst_p : process (clk)
-		type states is (s_setup, s_rxdata, s_in, s_rxack);
+		type states is (s_setup, s_rqstdata, s_in, s_dataout, s_out, s_datain, s_ack);
 		variable state : states;
 		variable shr   : unsigned(rxrqst'range);
+		variable setup_req : std_logic;
+		variable setup_rdy : std_logic;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				case state is
 				when s_setup =>
 					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
-						shr := unsigned(rxtoken);
+						shr(rxtoken'range) := unsigned(rxtoken);
 						addr <= std_logic_vector(shr(0 to addr'length-1));
 						shr := shr rol addr'length;
 						endp <= std_logic_vector(shr(0 to endp'length-1));
@@ -75,60 +77,76 @@ begin
 
 						if rxpid=tk_setup then
 							rx_rdy <= rx_req;
-							state  := s_rxdata;
+							state  := s_rqstdata;
 						end if;
 						rx_rdy <= rx_req;
 					end if;
-				when s_rxdata =>
-					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
-						if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
-							case rxpid is
-							when data0 =>
-    							bmrequesttype <= std_logic_vector(shr(0 to bmrequesttype'length-1));
-								shr := shr rol bmrequesttype'length;
-    							brequest <= std_logic_vector(shr(0 to brequest'length-1));
-    							shr := shr rol brequest'length;
-    							wvalue   <= std_logic_vector(shr(0 to wvalue'length-1));
-    							shr := shr rol wvalue'length;
-    							windex   <= std_logic_vector(shr(0 to windex'length-1));
-    							shr := shr rol windex'length;
-    							wlength  <= std_logic_vector(shr(0 to wlength'length-1));
-    							shr := shr rol wlength'length;
-								txpid  <= hs_ack;
-								dpid   <= rxpid xor tdbi;
-								tx_req <= not to_stdulogic(to_bit(tx_rdy));
-								state  := s_in;
-							when data1 =>
-							when others =>
-							end case;
-							rx_rdy <= rx_req;
-						end if;
+				when s_rqstdata =>
+					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
+						case rxpid is
+						when data0 =>
+							requesttype <= std_logic_vector(shr(0 to requesttype'length-1));
+							shr := shr rol requesttype'length;
+							request <= std_logic_vector(shr(0 to request'length-1));
+							shr := shr rol request'length;
+							value   <= std_logic_vector(shr(0 to value'length-1));
+							shr := shr rol value'length;
+							index   <= std_logic_vector(shr(0 to index'length-1));
+							shr := shr rol index'length;
+							length  <= std_logic_vector(shr(0 to length'length-1));
+							shr := shr rol length'length;
+							txpid  <= hs_ack;
+							dpid   <= rxpid xor tdbi;
+							tx_req <= not to_stdulogic(to_bit(tx_rdy));
+							state  := s_in;
+						when data1 =>
+						when others =>
+						end case;
+						rx_rdy <= rx_req;
 					end if;
 				when s_in =>
+					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
+						case rxpid is
+						when tk_out =>
+						when tk_in  =>
+							state  := s_dataout;
+						when others =>
+						end case;
+					end if;
+				when s_dataout =>
 					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
-						if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
-							case rxpid is
-							when tk_out =>
-							when tk_in  =>
-								txpid  <= dpid;
-								tx_req <= not to_stdulogic(to_bit(tx_rdy));
-								state  := s_rxack;
-							when others =>
-							end case;
+						case rxpid is
+						when tk_out =>
+						when tk_in  =>
+							txpid  <= dpid;
+							tx_req <= not to_stdulogic(to_bit(tx_rdy));
+							state  := s_ack;
+						when others =>
+						end case;
+						rx_rdy <= rx_req;
+					end if;
+				when s_ack =>
+					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
+						case rxpid is
+						when hs_ack =>
 							rx_rdy <= rx_req;
-						end if;
+							state := s_setup;
+						when others =>
+						end case;
 					end if;
-				when s_rxack =>
-					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
-						if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
-							case rxpid is
-							when hs_ack =>
-								rx_rdy <= rx_req;
-								state := s_setup;
-							when others =>
-							end case;
-						end if;
+				when s_out =>
+					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
+						case rxpid is
+						when tk_out =>
+							txpid  <= dpid;
+							tx_req <= not to_stdulogic(to_bit(tx_rdy));
+							state  := s_ack;
+						when tk_in  =>
+						when others =>
+						end case;
+						rx_rdy <= rx_req;
 					end if;
+				when s_datain =>
 				end case;
 			end if;
 		end if;
