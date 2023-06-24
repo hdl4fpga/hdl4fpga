@@ -74,7 +74,8 @@ begin
 			constant data : std_logic_vector := 
 				-- reverse(x"a5ff47",8)(0 to 19-1) & 
 				reverse(x"2d0010",8)(0 to 19-1) &
-				reverse(x"c300_0529_000000_0000_ed0d",8)(0 to 72-1) &
+				-- reverse(x"c300_0529_000000_0000_ed0d",8)(0 to 72-1) &
+				reverse(x"c380_06_0001_0000_0800_eb94",8)(0 to 72-1) &
 				reverse(x"690010",8)(0 to 19-1) &
 				reverse(x"d2",8);
 				-- reverse(x"c300_0515_000000_0000_e831",8)(0 to 72-1);

@@ -59,8 +59,10 @@ architecture def of usbrqst_dev is
 	type bit_rquests is array(requests) of bit;
 	signal rqsts_rdy : bit_rquests;
 	signal rqsts_req : bit_rquests;
-	alias setaddress_rdy is rqsts_rdy(set_address);
-	alias setaddress_req is rqsts_req(set_address);
+	alias setaddress_rdy    is rqsts_rdy(set_address);
+	alias setaddress_req    is rqsts_req(set_address);
+	alias getdescriptor_rdy is rqsts_rdy(get_descriptor);
+	alias getdescriptor_req is rqsts_req(get_descriptor);
 begin
 
 	usbrqst_p : process (cken, clk)
@@ -97,7 +99,7 @@ begin
 						case rxpid is
 						when data0 =>
 							shr(0 to rxrqst'length-1) := unsigned(rxrqst);
-							requesttype <= std_logic_vector(shr(0 to requesttype'length-1));
+							requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
 							shr     := shr rol requesttype'length;
 							request <= reverse(std_logic_vector(shr(0 to request'length-1)));
 							shr     := shr rol request'length;
@@ -215,7 +217,7 @@ begin
 		end if;
 	end process;
 
-	set_address_p : process (clk)
+	setaddress_p : process (clk)
 		type states is (s_set);
 		variable state : states;
 	begin
@@ -224,6 +226,21 @@ begin
 				if (setaddress_rdy xor setaddress_req)='1' then
 					setaddress_rdy <= setaddress_req;
 					addr <= value(addr'range);
+    			end if;
+			else
+				state := s_set;
+			end if;
+		end if;
+	end process;
+
+	getdescriptor_p : process (clk)
+		type states is (s_set);
+		variable state : states;
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (getdescriptor_rdy xor getdescriptor_req)='1' then
+					getdescriptor_rdy <= getdescriptor_req;
     			end if;
 			else
 				state := s_set;

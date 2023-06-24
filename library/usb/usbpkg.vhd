@@ -64,9 +64,21 @@ package usbpkg is
 	    set_interface     => x"b",
 	    synch_frame       => x"c");
 
-	constant device    : std_logic_vector := x"1";
-	constant config    : std_logic_vector := x"2";
-	constant string    : std_logic_vector := x"3";
-	constant interface : std_logic_vector := x"4";
-	constant endpoint  : std_logic_vector := x"5";
+	type decriptor_types is (
+		device, 
+		config, 
+		string, 
+		interface, 
+		endpoint);
+	type decriptortypes_vector is array(decriptor_types) of std_logic_vector(8-1 downto 0);
+	constant decriptortypes_ids : decriptortypes_vector := (
+    	device    => x"01",
+    	config    => x"02",
+    	string    => x"03",
+    	interface => x"04",
+    	endpoint  => x"05");
+	
+	constant device_descritptor : std_logic_vector := (
+		x"00" & 
+		decriptortypes_ids(device));
 end;
