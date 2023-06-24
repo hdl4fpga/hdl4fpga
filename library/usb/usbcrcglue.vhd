@@ -93,7 +93,7 @@ begin
 			phy_txen <= txen;
 			bitstff  <= phy_txbs or phy_rxbs;
 			crcdv    <= '0';
-			rxdv     <= phy_rxdv and not txen;
+			rxdv     <= phy_rxdv and crcact and not txen;
 		when s_tx =>
 			phy_txen <= txen or crcact;
 			bitstff  <= phy_txbs;
@@ -103,7 +103,7 @@ begin
 			phy_txen <= '0';
 			bitstff  <= phy_rxbs;
 			crcdv    <= phy_rxdv;
-			rxdv     <= phy_rxdv;
+			rxdv     <= phy_rxdv and crcact;
 		end case;
 
 	end process;

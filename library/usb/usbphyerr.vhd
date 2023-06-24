@@ -65,9 +65,6 @@ architecture def of usbphyerr is
 	signal phy_rxbs : std_logic;
 	signal phy_rxdv : std_logic;
 	signal phy_rxd  : std_logic;
-	signal crc_rxbs : std_logic;
-	signal crc_rxdv : std_logic;
-	signal crc_rxd  : std_logic;
 
 	signal data     : std_logic;
 	signal crcact   : std_logic;
@@ -133,9 +130,9 @@ begin
 		phy_txbs => phy_txbs,
 		phy_txd  => phy_txd,
 		   
-		rxdv     => crc_rxdv,
-		rxbs     => crc_rxbs,
-		rxd      => crc_rxd,
+		rxdv     => rxdv,
+		rxbs     => rxbs,
+		rxd      => rxd,
 		   
 		phy_rxdv => phy_rxdv,
 		phy_rxbs => phy_rxbs,
@@ -154,7 +151,6 @@ begin
 					if (txen or phy_rxdv)='0' then
 						cntr := length_of_pid-1;
 						crcact <= '0';
-						rxdv   <= '0';
 					elsif bitstff='0' then
 						pid(0) := data;
 						pid := pid ror 1;
@@ -168,7 +164,6 @@ begin
 							else 
 								state := s_rx;
 							end if;
-							rxdv  <= crc_rxdv;
 							rxpid <= std_logic_vector(pid(4-1 downto 0));
 						end if;
 					end if;
@@ -179,7 +174,6 @@ begin
 					end if;
 				when s_rx =>
 					if phy_rxdv='0' then
-						rxdv   <= '0';
 						crcact <= '0';
 						state := s_pid;
 					end if;
@@ -200,7 +194,6 @@ begin
 						if cntr /= 0 then
 							cntr := cntr - 1;
 						else
-							rxdv   <= '0';
 							crcact <= '0';
 							if (txen or phy_rxdv)='0' then
 								cntr  := length_of_pid-1;
@@ -209,8 +202,6 @@ begin
 						end if;
 					end if;
 				end case;
-				rxbs <= crc_rxbs;
-				rxd  <= crc_rxd;
 			end if;
 		end if;
 	end process;

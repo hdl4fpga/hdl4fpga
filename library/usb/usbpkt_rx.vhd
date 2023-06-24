@@ -40,9 +40,10 @@ entity usbpkt_rx is
 		rxdv     : in  std_logic;
 		rxpid    : in  std_logic_vector( 4-1 downto 0);
 		rxtoken  : out std_logic_vector(0 to 7+4+5-1);
-		rxrqst   : out std_logic_vector(0 to 8*8+15-1);
+		rxrqst   : out std_logic_vector;
 		rxbs     : in  std_logic;
-		rxd      : in  std_logic);
+		rxd      : in  std_logic;
+		fifo_ena : out std_logic);
 end;
 
 architecture def of usbpkt_rx is
@@ -50,7 +51,8 @@ begin
 	process (clk)
 		type states is (s_idle, s_token, s_data, s_hs);
 		variable state : states;
-		variable shr  : unsigned(0 to 8*8+15-1); -- address + end point, setup data + crc16
+		variable shr  : unsigned(0 to rxrqst'length-1); -- address + end point, setup data + crc16
+		variable cntr : natural range 0 to shr'length;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -66,33 +68,44 @@ begin
 							when hs_ack|hs_nack|hs_stall =>
    								state := s_hs;
 							when others =>
-								assert false
-								report "usbpkt_rx"
-								severity failure;
+								-- assert false
+								-- report "usbpkt_rx"
+								-- severity failure;
    							end case;
 						end if;
 					when s_token =>
 						if rxdv='0' then
-							rxtoken <= reverse(std_logic_vector(shr(rxtoken'range)));
+							rxtoken <= reverse(std_logic_vector(shr(0 to rxtoken'length-1)));
 							rx_req  <= not to_stdulogic(to_bit(rx_rdy));
 						end if;
 					when s_data =>
 						if rxdv='0' then
-							rxrqst <= reverse(std_logic_vector(shr(rxrqst'range)));
+							rxrqst <= reverse(std_logic_vector(shr(0 to rxrqst'length-1)));
 							rx_req <= not to_stdulogic(to_bit(rx_rdy));
 						end if;
 					when s_hs =>
 						rx_req <= not to_stdulogic(to_bit(rx_rdy));
 					when others =>
-						assert false
-						report "usbpkt_rx"
-						severity failure;
+						-- assert false
+						-- report "usbpkt_rx"
+						-- severity failure;
 					end case;
    					if rxdv='1' then
    						if rxbs='0' then
-   							shr := shr ror 1;
-   							shr(0) := rxd;
+							if cntr < shr'length-1 then
+								fifo_ena <= '0';
+							else
+								fifo_ena <= '1';
+							end if;
+							if cntr < shr'length then
+								shr := shr ror 1;
+								shr(0) := rxd;
+								cntr := cntr + 1;
+							end if;
    						end if;
+					else
+						fifo_ena <='0';
+						cntr := 0;
 					end if;
 				else
 					state := s_idle;
