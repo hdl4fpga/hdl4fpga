@@ -158,8 +158,8 @@ add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbrqst_e/index
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbrqst_e/length
 add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/tx_rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {3575157 ps} 0} {{Cursor 3} {27509303 ps} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {15211989 ps} 0} {{Cursor 3} {23018419 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 245
 configure wave -valuecolwidth 142
 configure wave -justifyvalue left
