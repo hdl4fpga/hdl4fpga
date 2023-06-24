@@ -37,7 +37,7 @@ entity usbrqst_dev is
 		rx_req  : in  std_logic;
 		rx_rdy  : buffer std_logic;
 		rxpid   : in  std_logic_vector(4-1 downto 0);
-		rxtoken : in  std_logic_vector(0 to 7+4+5-1);
+		rxtoken : in  std_logic_vector;
 		rxrqst  : in  std_logic_vector;
 
 		tx_req  : buffer std_logic;
@@ -48,7 +48,6 @@ end;
 
 architecture def of usbrqst_dev is
 	signal addr    : std_logic_vector( 7-1 downto 0);
-	signal endp    : std_logic_vector( 4-1 downto 0);
 	signal requesttype : std_logic_vector( 8-1 downto 0);
 	signal request : std_logic_vector( 8-1 downto 0);
 	signal value   : std_logic_vector(16-1 downto 0);
@@ -70,7 +69,6 @@ begin
 		constant tbit  : std_logic_vector(data0'range) := b"1000";
 		variable dpid  : std_logic_vector(data0'range);
 		variable shr   : unsigned(0 to rxrqst'length);
-		constant xxx : std_logic_vector:= request_ids(set_address);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -79,21 +77,20 @@ begin
 					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 						case rxpid is
 						when tk_setup =>
-							shr(rxtoken'range) := unsigned(rxtoken);
-							addr   <= reverse(std_logic_vector(shr(0 to addr'length-1)));
-							shr    := shr rol addr'length;
-							endp   <= reverse(std_logic_vector(shr(0 to endp'length-1)));
-							shr    := shr rol endp'length;
+							if rxtoken(0 to addr'length-1)=(addr'range => '0') then
+								state := s_rqstdata;
+							elsif rxtoken(0 to addr'length-1)=reverse(addr) then
+								state := s_rqstdata;
+							end if;
 							rx_rdy <= rx_req;
-							state  := s_rqstdata;
 						when data0|data1 =>
 							state  := s_ackout;
+							rx_rdy <= rx_req;
 						when others =>
 							-- assert false
 							-- report "wrong case"
 							-- severity failure;
 						end case;
-						rx_rdy <= rx_req;
 					end if;
 				when s_rqstdata =>
 					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
@@ -135,8 +132,8 @@ begin
 					state := s_rqst;
 				when s_rqst =>
 					if (rqst_rdy xor rqst_req)='1' then
-					else
 						state := s_inout;
+					else
 					end if;
 				when s_inout =>
 					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
@@ -226,6 +223,7 @@ begin
 			if cken='1' then
 				if (setaddress_rdy xor setaddress_req)='1' then
 					setaddress_rdy <= setaddress_req;
+					addr <= value(addr'range);
     			end if;
 			else
 				state := s_set;

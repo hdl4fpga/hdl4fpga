@@ -70,6 +70,7 @@ begin
 			-- constant data : std_logic_vector := reverse(x"c300_05_1700_0000_0000_e9d3",8)(0 to 72-1);
 			-- constant data : std_logic_vector := reverse(x"c300_05_1700_0000_0000_e9d3",8)(0 to 72-1);
 			-- constant data : std_logic_vector := reverse(x"c300_05_0c00_0000_0000_ea38",8)(0 to 72-1);
+			-- constant data : std_logic_vector := reverse(x"c380_06_0001_0000_0800_eb94",8)(0 to 72-1);
 			constant data : std_logic_vector := 
 				-- reverse(x"a5ff47",8)(0 to 19-1) & 
 				reverse(x"2d0010",8)(0 to 19-1) &
