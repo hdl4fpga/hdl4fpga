@@ -24,6 +24,9 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+library hdl4fpga;
+use hdl4fpga.base.all;
+
 package usbpkg is
 	constant tk_out            : std_logic_vector := x"1";
 	constant tk_in             : std_logic_vector := x"9";
@@ -79,6 +82,13 @@ package usbpkg is
     	endpoint  => x"05");
 	
 	constant device_descritptor : std_logic_vector := (
-		x"00" & 
-		decriptortypes_ids(device));
+		reverse(x"00")                      & -- bLength
+		reverse(decriptortypes_ids(device)) & -- Descriptor Type
+		reverse(x"0110")                    & -- bcdUSB
+		reverse(x"ff")                      & -- Class
+		reverse(x"ff")                      & -- SubClass
+		reverse(x"ff")                      & -- bDeviceProtocol
+		reverse(x"08")                      & -- bMaxPacketSize0
+		reverse(x"1200")                    & -- idVendor
+		reverse(x"0001"));
 end;

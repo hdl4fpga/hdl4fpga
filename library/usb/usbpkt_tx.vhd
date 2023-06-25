@@ -31,20 +31,25 @@ use hdl4fpga.usbpkg.all;
 
 entity usbpkt_tx is
 	port (
-		clk    : in  std_logic;
-		cken   : in  std_logic;
+		clk       : in  std_logic;
+		cken      : in  std_logic;
 
-		tx_req : in  std_logic;
-		tx_rdy : buffer std_logic;
-		txpid  : in  std_logic_vector(4-1 downto 0);
-		txen   : out std_logic;
-		txbs   : in  std_logic;
-		txd    : out std_logic);
+		tx_req    : in  std_logic;
+		tx_rdy    : buffer std_logic;
+
+		pkt_txpid : in  std_logic_vector(4-1 downto 0);
+		pkt_txen  : in  std_logic :='0';
+		pkt_txbs  : out std_logic;
+		pkt_txd   : in  std_logic :='-';
+
+		phy_txen : out std_logic;
+		phy_txbs : in  std_logic;
+		phy_txd  : out std_logic);
 end;
 
 architecture def of usbpkt_tx is
 begin
-	process (clk)
+	process (tx_req, tx_rdy, pkt_txen, phy_txbs, clk)
 		type states is (s_idle, s_pid, s_token, s_data);
 		variable state : states;
 		variable pid   : unsigned(8-1 downto 0);
@@ -56,29 +61,30 @@ begin
 					case state is
 					when s_idle =>
 						cntr  := pid'length-1;
-						pid(txpid'range) := unsigned(txpid);
+						pid(pkt_txpid'range) := unsigned(pkt_txpid);
 						pid   := not pid;
-						pid   := pid rol txpid'length;
-						pid(txpid'range) := unsigned(txpid);
-						txd   <= pid(0);
-						txen  <= '1';
+						pid   := pid rol pkt_txpid'length;
+						pid(pkt_txpid'range) := unsigned(pkt_txpid);
+						-- phy_txd   <= pid(0);
+						-- phy_txen  <= '1';
 						state := s_pid;
 					when s_pid =>
 						if cntr > 0 then
-							if txbs='0' then
+							if phy_txbs='0' then
 								pid  := pid ror 1;
-								txd  <= pid(0);
+								-- phy_txd  <= pid(0);
 								cntr := cntr - 1;
 							end if;
+							-- phy_txen  <= '1';
 						else
-							case txpid is
+							case pkt_txpid is
 							when tk_setup|tk_in|tk_out|tk_sof =>
 								state := s_token;
 							when data0|data1 =>
-								txen  <= '0';
+								-- phy_txen  <= '0';
 								state := s_data;
 							when hs_ack|hs_nack|hs_stall =>
-								txen  <= '0';
+								-- phy_txen  <= '0';
 								tx_rdy <= to_stdulogic(to_bit(tx_req));
 								state := s_idle;
 							when others =>
@@ -92,10 +98,24 @@ begin
 						tx_rdy <= to_stdulogic(to_bit(tx_req));
 					end case;
 				else
-					txen  <= '0';
+					-- phy_txen  <= '0';
 					state := s_idle;
 				end if;
 			end if;
 		end if;
+		comb_l : case state is
+		when s_idle =>
+			phy_txen <= '0';
+			pkt_txbs <= '1';
+			phy_txd  <= pid(0);
+		when s_pid =>
+			phy_txen <= '1';
+			pkt_txbs <= '1';
+			phy_txd  <= pid(0);
+		when others =>
+			phy_txen <= pkt_txen;
+			pkt_txbs <= phy_txbs;
+			phy_txd  <= pkt_txd;
+		end case;
 	end process;
 end;

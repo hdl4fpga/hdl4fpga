@@ -52,7 +52,10 @@ end;
 architecture def of usbdev is
 	signal tx_req    : std_logic;
 	signal tx_rdy    : std_logic;
-	signal txpid     : std_logic_vector(4-1 downto 0);
+	signal pkt_txpid : std_logic_vector(4-1 downto 0);
+	signal pkt_txen  : std_logic;
+	signal pkt_txbs  : std_logic;
+	signal pkt_txd   : std_logic;
 	signal phy_txen  : std_logic;
 	signal phy_txbs  : std_logic;
 	signal phy_txd   : std_logic;
@@ -117,31 +120,40 @@ begin
 
 	usbpkttx_e : entity hdl4fpga.usbpkt_tx
 	port map (
-		clk    => clk,
-		cken   => cken,
-		 
-		tx_req => tx_req,
-		tx_rdy => tx_rdy,
-		txpid  => txpid,
-		txen   => phy_txen,
-		txbs   => phy_txbs,
-		txd    => phy_txd);
+		clk       => clk,
+		cken      => cken,
+	
+		tx_req    => tx_req,
+		tx_rdy    => tx_rdy,
+
+		pkt_txpid => pkt_txpid,
+		pkt_txen  => pkt_txen,
+		pkt_txbs  => pkt_txbs,
+		pkt_txd   => pkt_txd,
+
+		phy_txen  => phy_txen,
+		phy_txbs  => phy_txbs,
+		phy_txd   => phy_txd);
 
 	usbrqst_e : entity hdl4fpga.usbrqst_dev
 	port map (
-		clk      => clk,
-		cken     => cken,
+		clk     => clk,
+		cken    => cken,
 
-		rx_req   => rx_req,
-		rx_rdy   => rx_rdy,
-		rxpid    => phy_rxpid,
+		rx_req  => rx_req,
+		rx_rdy  => rx_rdy,
+		rxpid   => phy_rxpid,
 
-		rxtoken  => rxtoken,
-		rxrqst   => rxrqst,
+		rxtoken => rxtoken,
+		rxrqst  => rxrqst,
 
-		tx_req   => tx_req,
-		tx_rdy   => tx_rdy,
-		txpid    => txpid);
+		tx_req  => tx_req,
+		tx_rdy  => tx_rdy,
+
+		txpid   => pkt_txpid,
+		txen    => pkt_txen,
+		txbs    => pkt_txbs,
+		txd     => pkt_txd);
 
 
 	txbs <= phy_txbs;

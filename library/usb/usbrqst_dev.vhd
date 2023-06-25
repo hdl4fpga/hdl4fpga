@@ -42,7 +42,10 @@ entity usbrqst_dev is
 
 		tx_req  : buffer std_logic;
 		tx_rdy  : in  std_logic;
-		txpid   : out std_logic_vector(4-1 downto 0));
+		txpid   : out std_logic_vector(4-1 downto 0);
+		txen    : out std_logic;
+		txbs    : in  std_logic := '0';
+		txd     : out std_logic);
 
 end;
 
@@ -236,10 +239,12 @@ begin
 	getdescriptor_p : process (clk)
 		type states is (s_set);
 		variable state : states;
+		variable mem : std_logic_vector(device_descritptor'range) := device_descritptor;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (getdescriptor_rdy xor getdescriptor_req)='1' then
+
 					getdescriptor_rdy <= getdescriptor_req;
     			end if;
 			else
