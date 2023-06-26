@@ -56,65 +56,65 @@ add wave -noupdate -expand -group host_usbphyerr -expand -group host_usbcrc /tes
 add wave -noupdate -expand -group host_usbphyerr -expand -group host_usbcrc -radix binary /testbench/host_b/host_e/usbcrc_e/crc16
 add wave -noupdate -expand -group host_usbphyerr -expand -group host_usbcrc -radix hexadecimal /testbench/host_b/host_e/usbcrc_e/ncrc16
 add wave -noupdate -divider dvc_usbphy
-add wave -noupdate -expand -group dev_usbphyerr /testbench/dev_b/dev_e/cken
-add wave -noupdate -expand -group dev_usbphyerr /testbench/dev_b/dev_e/usbphy_e/txen
-add wave -noupdate -expand -group dev_usbphyerr /testbench/dev_b/dev_e/usbphy_e/phy_txen
-add wave -noupdate -expand -group dev_usbphyerr /testbench/dev_b/dev_e/txbs
-add wave -noupdate -expand -group dev_usbphyerr /testbench/dev_b/dev_e/txd
-add wave -noupdate -expand -group dev_usbphyerr /testbench/dev_b/dev_e/usbphy_e/pktfmt_p/state
-add wave -noupdate -expand -group dev_usbphyerr /testbench/dev_b/dev_e/usbphy_e/crcact
-add wave -noupdate -expand -group dev_usbphyerr /testbench/dev_b/dev_e/usbphy_e/pktfmt_p/cntr
-add wave -noupdate -expand -group dev_usbphyerr -radix hexadecimal /testbench/dev_b/dev_e/usbphy_e/pktfmt_p/pid
-add wave -noupdate -expand -group dev_usbphyerr /testbench/dev_b/dev_e/rxdv
-add wave -noupdate -expand -group dev_usbphyerr /testbench/dev_b/dev_e/rxbs
-add wave -noupdate -expand -group dev_usbphyerr /testbench/dev_b/dev_e/rxd
-add wave -noupdate -expand -group dev_usbphyerr /testbench/dev_b/dev_e/usbphy_e/usbphy_e/k
-add wave -noupdate -expand -group dev_usbphyerr /testbench/dev_b/dev_e/usbphy_e/usbphy_e/j
-add wave -noupdate -expand -group dev_usbphyerr /testbench/dev_b/dev_e/usbphy_e/usbphy_e/se0
-add wave -noupdate -expand -group dev_usbphyerr -expand -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/tx_d/cken
-add wave -noupdate -expand -group dev_usbphyerr -expand -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/tx_d/txen
-add wave -noupdate -expand -group dev_usbphyerr -expand -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/tx_d/txd
-add wave -noupdate -expand -group dev_usbphyerr -expand -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/tx_d/txbs
-add wave -noupdate -expand -group dev_usbphyerr -expand -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/tx_d/txdp
-add wave -noupdate -expand -group dev_usbphyerr -expand -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/tx_d/txdn
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/clk
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/cken
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/j
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/k
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/se0
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/rxdv
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/rxbs
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/rxd
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/line__49/state
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/line__49/statekj
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/line__49/cnt1
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/err
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/clk
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/cken
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/bitstff
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/crcdv
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/crcact
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/crcen
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/crcd
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/txen
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/txbs
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/txd
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/phy_txen
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/phy_txbs
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/phy_txd
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/rxdv
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/rxbs
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/rxd
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/phy_rxdv
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/phy_rxbs
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/phy_rxd
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbrcr /testbench/dev_b/dev_e/usbphy_e/usbcrc_e/clk
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbrcr /testbench/dev_b/dev_e/usbphy_e/usbcrc_e/cken
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbrcr /testbench/dev_b/dev_e/usbphy_e/crcglue_e/mealy_p/state
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbrcr /testbench/dev_b/dev_e/usbphy_e/usbcrc_e/dv
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbrcr /testbench/dev_b/dev_e/usbphy_e/usbcrc_e/data
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbrcr /testbench/dev_b/dev_e/usbphy_e/usbcrc_e/crc5
-add wave -noupdate -expand -group dev_usbphyerr -group dev_usbrcr /testbench/dev_b/dev_e/usbphy_e/usbcrc_e/crc16
+add wave -noupdate -group dev_usbphyerr /testbench/dev_b/dev_e/cken
+add wave -noupdate -group dev_usbphyerr /testbench/dev_b/dev_e/usbphy_e/txen
+add wave -noupdate -group dev_usbphyerr /testbench/dev_b/dev_e/usbphy_e/phy_txen
+add wave -noupdate -group dev_usbphyerr /testbench/dev_b/dev_e/txbs
+add wave -noupdate -group dev_usbphyerr /testbench/dev_b/dev_e/txd
+add wave -noupdate -group dev_usbphyerr /testbench/dev_b/dev_e/usbphy_e/pktfmt_p/state
+add wave -noupdate -group dev_usbphyerr /testbench/dev_b/dev_e/usbphy_e/crcact
+add wave -noupdate -group dev_usbphyerr /testbench/dev_b/dev_e/usbphy_e/pktfmt_p/cntr
+add wave -noupdate -group dev_usbphyerr -radix hexadecimal /testbench/dev_b/dev_e/usbphy_e/pktfmt_p/pid
+add wave -noupdate -group dev_usbphyerr /testbench/dev_b/dev_e/rxdv
+add wave -noupdate -group dev_usbphyerr /testbench/dev_b/dev_e/rxbs
+add wave -noupdate -group dev_usbphyerr /testbench/dev_b/dev_e/rxd
+add wave -noupdate -group dev_usbphyerr /testbench/dev_b/dev_e/usbphy_e/usbphy_e/k
+add wave -noupdate -group dev_usbphyerr /testbench/dev_b/dev_e/usbphy_e/usbphy_e/j
+add wave -noupdate -group dev_usbphyerr /testbench/dev_b/dev_e/usbphy_e/usbphy_e/se0
+add wave -noupdate -group dev_usbphyerr -expand -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/tx_d/cken
+add wave -noupdate -group dev_usbphyerr -expand -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/tx_d/txen
+add wave -noupdate -group dev_usbphyerr -expand -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/tx_d/txd
+add wave -noupdate -group dev_usbphyerr -expand -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/tx_d/txbs
+add wave -noupdate -group dev_usbphyerr -expand -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/tx_d/txdp
+add wave -noupdate -group dev_usbphyerr -expand -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/tx_d/txdn
+add wave -noupdate -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/clk
+add wave -noupdate -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/cken
+add wave -noupdate -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/j
+add wave -noupdate -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/k
+add wave -noupdate -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/se0
+add wave -noupdate -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/rxdv
+add wave -noupdate -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/rxbs
+add wave -noupdate -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/rxd
+add wave -noupdate -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/line__49/state
+add wave -noupdate -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/line__49/statekj
+add wave -noupdate -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/line__49/cnt1
+add wave -noupdate -group dev_usbphyerr -group dev_usbphy_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/err
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/clk
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/cken
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/bitstff
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/crcdv
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/crcact
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/crcen
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/crcd
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/txen
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/txbs
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/txd
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/phy_txen
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/phy_txbs
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/phy_txd
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/rxdv
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/rxbs
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/rxd
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/phy_rxdv
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/phy_rxbs
+add wave -noupdate -group dev_usbphyerr -group dev_usbcrcglue /testbench/dev_b/dev_e/usbphy_e/crcglue_e/phy_rxd
+add wave -noupdate -group dev_usbphyerr -group dev_usbrcr /testbench/dev_b/dev_e/usbphy_e/usbcrc_e/clk
+add wave -noupdate -group dev_usbphyerr -group dev_usbrcr /testbench/dev_b/dev_e/usbphy_e/usbcrc_e/cken
+add wave -noupdate -group dev_usbphyerr -group dev_usbrcr /testbench/dev_b/dev_e/usbphy_e/crcglue_e/mealy_p/state
+add wave -noupdate -group dev_usbphyerr -group dev_usbrcr /testbench/dev_b/dev_e/usbphy_e/usbcrc_e/dv
+add wave -noupdate -group dev_usbphyerr -group dev_usbrcr /testbench/dev_b/dev_e/usbphy_e/usbcrc_e/data
+add wave -noupdate -group dev_usbphyerr -group dev_usbrcr /testbench/dev_b/dev_e/usbphy_e/usbcrc_e/crc5
+add wave -noupdate -group dev_usbphyerr -group dev_usbrcr /testbench/dev_b/dev_e/usbphy_e/usbcrc_e/crc16
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/dev_b/dev_e/txen
 add wave -noupdate /testbench/dev_b/dev_e/usbphy_e/crcglue_e/mealy_p/state
@@ -126,10 +126,6 @@ add wave -noupdate -expand -group dev_usbpkt_tx /testbench/dev_b/dev_e/usbpkttx_
 add wave -noupdate -expand -group dev_usbpkt_tx /testbench/dev_b/dev_e/usbpkttx_e/cken
 add wave -noupdate -expand -group dev_usbpkt_tx /testbench/dev_b/dev_e/usbpkttx_e/tx_req
 add wave -noupdate -expand -group dev_usbpkt_tx /testbench/dev_b/dev_e/usbpkttx_e/tx_rdy
-add wave -noupdate -expand -group dev_usbpkt_tx /testbench/dev_b/dev_e/usbpkttx_e/txpid
-add wave -noupdate -expand -group dev_usbpkt_tx /testbench/dev_b/dev_e/usbpkttx_e/txen
-add wave -noupdate -expand -group dev_usbpkt_tx /testbench/dev_b/dev_e/usbpkttx_e/txbs
-add wave -noupdate -expand -group dev_usbpkt_tx /testbench/dev_b/dev_e/usbpkttx_e/txd
 add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/usbrqst_p/state
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbphy_e/rxpid
@@ -149,17 +145,30 @@ add wave -noupdate -expand -group dev_usbpkt_rx /testbench/dev_b/dev_e/usbpktrx_
 add wave -noupdate -expand -group dev_usbpkt_rx /testbench/dev_b/dev_e/usbphy_e/usbphy_e/rx_d/rxdv
 add wave -noupdate -expand -group dev_usbpkt_rx /testbench/dev_b/dev_e/usbpktrx_e/rxd
 add wave -noupdate -expand -group dev_usbpkt_rx /testbench/dev_b/dev_e/usbpktrx_e/rxbs
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/rx_req
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/rx_rdy
 add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/tx_req
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/tx_rdy
+add wave -noupdate /testbench/dev_b/dev_e/pkt_txen
+add wave -noupdate /testbench/dev_b/dev_e/usbphy_e/crcact
+add wave -noupdate /testbench/dev_b/dev_e/usbphy_e/txbs
+add wave -noupdate /testbench/dev_b/dev_e/phy_txen
+add wave -noupdate /testbench/dev_b/dev_e/usbpkttx_e/pkt_txen
+add wave -noupdate /testbench/dev_b/dev_e/usbpkttx_e/phy_txen
+add wave -noupdate /testbench/dev_b/dev_e/usbphy_e/phy_txen
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/setaddress_req
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/setaddress_rdy
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/in_rdy
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/in_req
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbrqst_e/addr
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbrqst_e/requesttype
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbrqst_e/request
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbrqst_e/value
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbrqst_e/index
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbrqst_e/length
-add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/tx_rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {15211989 ps} 0} {{Cursor 3} {23018419 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {17975887 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 245
 configure wave -valuecolwidth 142
 configure wave -justifyvalue left

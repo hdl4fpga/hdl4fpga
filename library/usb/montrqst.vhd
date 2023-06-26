@@ -27,91 +27,42 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.usbpkg.all;
 
-entity usbcrcglue is
+entity montrqst is
 	port (
-		clk      : in  std_logic;
-		cken     : in  std_logic;
-		bitstff  : buffer std_logic;
+		rst  : in  std_logic := '0';
+		clk  : in  std_logic;
+		cken : in  std_logic := '1';
 
-		crcdv    : out std_logic;
-		crcact   : in  std_logic;
-		crcen    : out std_logic;
-		crcd     : in  std_logic;
+		req  : in  bit;
+		rdys : in  bit_vector;
+		reqs : in  bit_vector;
+		rdy  : buffer bit);
 
-		txen     : in  std_logic;
-		txbs     : out std_logic;
-		txd      : in  std_logic;
-
-		phy_txen : out std_logic;
-		phy_txbs : in  std_logic;
-		phy_txd  : out std_logic;
-
-		rxdv     : out std_logic;
-		rxbs     : out std_logic;
-		rxd      : out std_logic;
-
-		phy_rxdv : in  std_logic;
-		phy_rxbs : in  std_logic;
-		phy_rxd  : in  std_logic);
 end;
 
-architecture def of usbcrcglue is
+architecture def of montrqst is
 begin
 
-	mealy_p : process (phy_txbs, txen, phy_rxbs, phy_rxdv, crcact, clk)
-		type states is (s_idle, s_tx, s_rx);
-		variable state : states;
+	process (clk)
+		variable z : bit;
 	begin
-		memory : if rising_edge(clk) then
-			if cken='1' then
-				case state is
-				when s_idle =>
-					if txen='1' then
-						state := s_tx;
-					elsif phy_rxdv='1' then
-						state := s_rx;
-					end if;
-				when s_tx =>
-					if (txen or crcact)='0' then
-						if phy_rxdv='0' then
-							state := s_idle;
-						end if;
-					end if;
-				when s_rx =>
-					if phy_rxdv='0' then
-						if phy_rxdv='0' then
-							state := s_idle;
-						end if;
-					end if;
-				end case;
+		if rising_edge(clk) then
+			if rst='1' then
+				rdy <= req;
+			elsif cken='1' then
+				if (rdy xor req)='1' then
+					z := '0';
+					for i in rdys'range loop
+						 z := z or (rdys(i) xor reqs(i));
+					end loop;
+				end if;
+				if z='0' then
+					rdy <= req;
+				end if;
 			end if;
 		end if;
-
-		combimatorial : case state is
-		when s_idle =>
-			phy_txen <= txen;
-			bitstff  <= phy_txbs or phy_rxbs;
-			crcdv    <= '0';
-			rxdv     <= phy_rxdv and crcact and not txen;
-		when s_tx =>
-			phy_txen <= txen or crcact;
-			bitstff  <= phy_txbs;
-			crcdv    <= crcact and txen;
-			rxdv     <= '0';
-		when s_rx =>
-			phy_txen <= '0';
-			bitstff  <= phy_rxbs;
-			crcdv    <= phy_rxdv;
-			rxdv     <= phy_rxdv and crcact;
-		end case;
-
 	end process;
-
-	rxbs     <= phy_rxbs;
-	rxd      <= phy_rxd;
-	phy_txd  <= txd when txen='1' else not crcd;
-	txbs     <= phy_txbs;
-	crcen    <= cken and not bitstff when crcact='1' else '0';
 
 end;

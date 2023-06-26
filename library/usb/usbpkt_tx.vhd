@@ -57,50 +57,40 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (to_bit(tx_req) xor to_bit(tx_rdy))='1' then
-					case state is
-					when s_idle =>
-						cntr  := pid'length-1;
-						pid(pkt_txpid'range) := unsigned(pkt_txpid);
-						pid   := not pid;
-						pid   := pid rol pkt_txpid'length;
-						pid(pkt_txpid'range) := unsigned(pkt_txpid);
-						-- phy_txd   <= pid(0);
-						-- phy_txen  <= '1';
-						state := s_pid;
-					when s_pid =>
-						if cntr > 0 then
-							if phy_txbs='0' then
-								pid  := pid ror 1;
-								-- phy_txd  <= pid(0);
-								cntr := cntr - 1;
-							end if;
-							-- phy_txen  <= '1';
-						else
-							case pkt_txpid is
-							when tk_setup|tk_in|tk_out|tk_sof =>
-								state := s_token;
-							when data0|data1 =>
-								-- phy_txen  <= '0';
-								state := s_data;
-							when hs_ack|hs_nack|hs_stall =>
-								-- phy_txen  <= '0';
-								tx_rdy <= to_stdulogic(to_bit(tx_req));
-								state := s_idle;
-							when others =>
-							end case;
+				case state is
+				when s_idle =>
+					pid  := unsigned(not pkt_txpid) & unsigned(pkt_txpid);
+					cntr := pid'length-1;
+					if (to_bit(tx_req) xor to_bit(tx_rdy))='1' then
+						if phy_txbs='0' then
+							state := s_pid;
 						end if;
-					when s_token =>
-						tx_rdy <= to_stdulogic(to_bit(tx_req));
-						state  := s_idle;
-					when s_data =>
-						state  := s_idle;
-						tx_rdy <= to_stdulogic(to_bit(tx_req));
-					end case;
-				else
-					-- phy_txen  <= '0';
-					state := s_idle;
-				end if;
+					end if;
+				when s_pid =>
+					if cntr > 0 then
+						if phy_txbs='0' then
+							pid  := pid ror 1;
+							cntr := cntr - 1;
+						end if;
+					else
+						case pkt_txpid is
+						when tk_setup|tk_in|tk_out|tk_sof =>
+							state := s_token;
+						when data0|data1 =>
+							state := s_data;
+						when hs_ack|hs_nack|hs_stall =>
+							tx_rdy <= to_stdulogic(to_bit(tx_req));
+							state := s_idle;
+						when others =>
+						end case;
+					end if;
+				when s_token =>
+					tx_rdy <= to_stdulogic(to_bit(tx_req));
+					state  := s_idle;
+				when s_data =>
+					tx_rdy <= to_stdulogic(to_bit(tx_req));
+					state  := s_idle;
+				end case;
 			end if;
 		end if;
 		comb_l : case state is
