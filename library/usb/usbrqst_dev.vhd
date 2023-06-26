@@ -90,7 +90,7 @@ architecture def of usbrqst_dev is
 begin
 
 	usbrqst_p : process (cken, clk)
-		type states is (s_setup, s_rqstdata, s_inout, s_dataout, s_ackin, s_datain, s_ackout);
+		type states is (s_setup, s_rqstdata, s_inout, s_dataout, s_ackin, s_datain);
 		variable state : states;
 		constant tbit  : std_logic_vector(data0'range) := b"1000";
 		variable dpid  : std_logic_vector(data0'range);
@@ -109,9 +109,6 @@ begin
 							elsif rxtoken(0 to addr'length-1)=reverse(addr) then
 								state := s_rqstdata;
 							end if;
-							rx_rdy <= rx_req;
-						when data0|data1 =>
-							state  := s_ackout;
 							rx_rdy <= rx_req;
 						when others =>
 							-- assert false
@@ -195,17 +192,19 @@ begin
 						rx_rdy  <= rx_req;
 					end if;
 				when s_datain =>
-					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
-						txpid  <= dpid;
-						dpid   := dpid xor tbit;
-						tx_req <= not to_stdulogic(to_bit(tx_rdy));
-						state  := s_ackout;
-					end if;
-				when s_ackout =>
-					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
-						txpid  <= hs_ack;
-						tx_req <= not to_stdulogic(to_bit(tx_rdy));
-						state  := s_setup;
+					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
+						case rxpid is
+						when data0|data1 =>
+							if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
+								dpid   := dpid xor tbit;
+								txpid  <= hs_ack;
+								tx_req <= not to_stdulogic(to_bit(tx_rdy));
+							end if;
+						when others =>
+							state := s_setup;
+							-- assert false report "wrong case" severity failure;
+						end case;
+						rx_rdy <= rx_req;
 					end if;
 				end case;
 			end if;
