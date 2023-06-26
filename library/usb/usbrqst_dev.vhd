@@ -69,12 +69,23 @@ architecture def of usbrqst_dev is
 	signal out_reqs  : bit_requests;
 	signal out_rdys  : bit_requests;
 	signal in_rdys   : bit_requests;
-	signal in_reqs   : bit_requests;
 
 	alias setaddress_rdy    is rqst_rdys(requests'pos(set_address));
 	alias setaddress_req    is rqst_reqs(requests'pos(set_address));
 	alias getdescriptor_rdy is rqst_rdys(requests'pos(get_descriptor));
 	alias getdescriptor_req is rqst_reqs(requests'pos(get_descriptor));
+
+	function montrdys (
+		constant rdys : in bit_vector)
+		return bit is
+		variable retval : bit;
+	begin
+		retval := '0';
+		for i in rdys'range loop
+			retval := retval xor rdys(i);
+		end loop;
+		return retval;
+	end;
 
 begin
 
@@ -155,7 +166,7 @@ begin
 						when tk_out =>
 							state := s_datain;
 						when tk_in  =>
-							in_req <= not in_rdy;
+							in_req  <= not in_rdy;
 							state := s_dataout;
 						when data0|data1 =>
 							state := s_ackrqst;
@@ -206,49 +217,37 @@ begin
 		end if;
 	end process;
 
-	rqstmntr_e : entity hdl4fpga.montrqst
-	port map (
-		clk  => clk,
-		cken => cken,
-		rdy  => rqst_rdy,
-		req  => rqst_req,
-		rdys => rqst_rdys,
-		reqs => rqst_reqs);
-
-	inmntr_e : entity hdl4fpga.montrqst
-	port map (
-		clk  => clk,
-		cken => cken,
-		rdy  => in_rdy,
-		req  => in_req,
-		rdys => in_rdys,
-		reqs => in_reqs);
-
-	outmntr_e : entity hdl4fpga.montrqst
-	port map (
-		clk  => clk,
-		cken => cken,
-		rdy  => out_rdy,
-		req  => out_req,
-		rdys => out_rdys,
-		reqs => out_reqs);
+	montrequests_p : process (clk)
+		variable z : bit;
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (rqst_rdy xor rqst_req)='1' then
+					z := '0';
+					for i in rqst_rdys'range loop
+						 z := z or (rqst_rdys(i) xor rqst_reqs(i));
+					end loop;
+				end if;
+				if z='0' then
+					rqst_rdy <= rqst_req;
+				end if;
+			end if;
+		end if;
+	end process;
+	in_rdy <= montrdys(in_rdys);
 
 	setaddress_p : process (clk)
-		type states is (s_set);
-		variable state : states;
 		alias in_rdy is in_rdys(requests'pos(set_address));
-		alias in_req is in_reqs(requests'pos(set_address));
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (setaddress_rdy xor setaddress_req)='1' then
 					if (in_rdy xor in_req)='1' then
 						addr <= value(addr'range);
+						in_rdy <= not in_rdy;
 						setaddress_rdy <= setaddress_req;
 					end if;
     			end if;
-			else
-				state := s_set;
 			end if;
 		end if;
 	end process;

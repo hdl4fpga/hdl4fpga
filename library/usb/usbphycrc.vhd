@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity usbphyerr is
+entity usbphycrc is
    	generic (
 		oversampling : natural := 0;
 		watermark    : natural := 0;
@@ -57,7 +57,7 @@ entity usbphyerr is
 	constant length_of_crc16 : natural := 16;
 end;
 
-architecture def of usbphyerr is
+architecture def of usbphycrc is
 
 	signal phy_txen : std_logic;
 	signal phy_txbs : std_logic;
@@ -160,7 +160,7 @@ begin
 						state := s_pid;
 					end if;
 				when s_tx =>
-					case pid(2-1 downto 0) isi                    -- Set crc + tx serial register length
+					case pid(2-1 downto 0) is -- Set crc + tx serial register length
 					when "10" =>
 						cntr := length_of_sync-2;                 -- Handshake long
 					when "11" =>

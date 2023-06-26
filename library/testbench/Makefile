@@ -53,8 +53,8 @@ HDL4FPGA__usbpkt_tx = $(LIB_HDL4FPGA)/usbpkt_tx/_primary.dat
 HDL4FPGA__usbpkt_rx__def = $(LIB_HDL4FPGA)/usbpkt_rx/def.dat
 HDL4FPGA__usbpkt_rx = $(LIB_HDL4FPGA)/usbpkt_rx/_primary.dat
 HDL4FPGA__usbpkg = $(LIB_HDL4FPGA)/usbpkg/_primary.dat
-HDL4FPGA__usbphyerr__def = $(LIB_HDL4FPGA)/usbphyerr/def.dat
-HDL4FPGA__usbphyerr = $(LIB_HDL4FPGA)/usbphyerr/_primary.dat
+HDL4FPGA__usbphycrc__def = $(LIB_HDL4FPGA)/usbphycrc/def.dat
+HDL4FPGA__usbphycrc = $(LIB_HDL4FPGA)/usbphycrc/_primary.dat
 HDL4FPGA__usbphy_tx__def = $(LIB_HDL4FPGA)/usbphy_tx/def.dat
 HDL4FPGA__usbphy_tx = $(LIB_HDL4FPGA)/usbphy_tx/_primary.dat
 HDL4FPGA__usbphy_rx__def = $(LIB_HDL4FPGA)/usbphy_rx/def.dat
@@ -208,8 +208,6 @@ HDL4FPGA__pgm_delay__mix = $(LIB_HDL4FPGA)/pgm_delay/mix.dat
 HDL4FPGA__pgm_delay = $(LIB_HDL4FPGA)/pgm_delay/_primary.dat
 HDL4FPGA__ogbx__beh = $(LIB_HDL4FPGA)/ogbx/beh.dat
 HDL4FPGA__ogbx = $(LIB_HDL4FPGA)/ogbx/_primary.dat
-HDL4FPGA__montrqst__def = $(LIB_HDL4FPGA)/montrqst/def.dat
-HDL4FPGA__montrqst = $(LIB_HDL4FPGA)/montrqst/_primary.dat
 HDL4FPGA__mii_rxpre__def = $(LIB_HDL4FPGA)/mii_rxpre/def.dat
 HDL4FPGA__mii_rxpre = $(LIB_HDL4FPGA)/mii_rxpre/_primary.dat
 HDL4FPGA__mii_ipoe__def = $(LIB_HDL4FPGA)/mii_ipoe/def.dat
@@ -413,8 +411,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__usbpkt_rx__def) \
     $(HDL4FPGA__usbpkt_rx) \
     $(HDL4FPGA__usbpkg) \
-    $(HDL4FPGA__usbphyerr__def) \
-    $(HDL4FPGA__usbphyerr) \
+    $(HDL4FPGA__usbphycrc__def) \
+    $(HDL4FPGA__usbphycrc) \
     $(HDL4FPGA__usbphy_tx__def) \
     $(HDL4FPGA__usbphy_tx) \
     $(HDL4FPGA__usbphy_rx__def) \
@@ -568,8 +566,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__pgm_delay) \
     $(HDL4FPGA__ogbx__beh) \
     $(HDL4FPGA__ogbx) \
-    $(HDL4FPGA__montrqst__def) \
-    $(HDL4FPGA__montrqst) \
     $(HDL4FPGA__mii_rxpre__def) \
     $(HDL4FPGA__mii_rxpre) \
     $(HDL4FPGA__mii_ipoe__def) \
@@ -1578,15 +1574,6 @@ $(HDL4FPGA__mii_rxpre__def) : ../mii/mii_rxpre.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/mii_rxpre.vhd
 
-$(HDL4FPGA__montrqst) \
-$(HDL4FPGA__montrqst__def) : ../usb/montrqst.vhd \
-		$(HDL4FPGA__usbpkg) \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../usb/montrqst.vhd
-
 $(HDL4FPGA__ogbx) \
 $(HDL4FPGA__ogbx__beh) : ../xilinx/ogbx.vhd \
 		$(HDL4FPGA__profiles) \
@@ -2389,7 +2376,7 @@ $(HDL4FPGA__usbdev__def) : ../usb/usbdev.vhd \
 		$(HDL4FPGA__usbfifo_rx) \
 		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__usbpkt_rx) \
-		$(HDL4FPGA__usbphyerr) \
+		$(HDL4FPGA__usbphycrc) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -2432,15 +2419,15 @@ $(HDL4FPGA__usbphy_tx__def) : ../usb/usbphy_tx.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../usb/usbphy_tx.vhd
 
-$(HDL4FPGA__usbphyerr) \
-$(HDL4FPGA__usbphyerr__def) : ../usb/usbphyerr.vhd \
+$(HDL4FPGA__usbphycrc) \
+$(HDL4FPGA__usbphycrc__def) : ../usb/usbphycrc.vhd \
 		$(HDL4FPGA__usbcrc) \
 		$(HDL4FPGA__usbphy) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../usb/usbphyerr.vhd
+	$(VCOM) -2002 -work hdl4fpga ../usb/usbphycrc.vhd
 
 $(HDL4FPGA__usbpkg) : ../usb/usbpkg.vhd \
 		$(IEEE__numeric_std) \

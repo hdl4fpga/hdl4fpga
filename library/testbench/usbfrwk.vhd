@@ -115,7 +115,7 @@ begin
 			wait on clk;
 		end process;
 
-	  	host_e : entity hdl4fpga.usbphyerr
+	  	host_e : entity hdl4fpga.usbphycrc
 		port map (
 			tp   => tp,
 			dp   => dp,

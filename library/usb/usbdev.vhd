@@ -72,7 +72,7 @@ architecture def of usbdev is
 
 begin
 
-  	usbphy_e : entity hdl4fpga.usbphyerr
+  	usbphy_e : entity hdl4fpga.usbphycrc
    	generic map (
 		oversampling => oversampling,
 		watermark    => watermark,
