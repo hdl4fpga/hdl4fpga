@@ -59,23 +59,23 @@ end;
 
 architecture def of usbphycrc is
 
-	signal phy_txen : std_logic;
-	signal phy_txbs : std_logic;
-	signal phy_txd  : std_logic;
-	signal phy_rxbs : std_logic;
-	signal phy_rxdv : std_logic;
-	signal phy_rxd  : std_logic;
+	signal phy_txen  : std_logic;
+	signal phy_txbs  : std_logic;
+	signal phy_txd   : std_logic;
+	signal phy_rxbs  : std_logic;
+	signal phy_rxdv  : std_logic;
+	signal phy_rxd   : std_logic;
 
-	signal data     : std_logic;
+	signal data      : std_logic;
 	signal crcact_rx : std_logic;
 	signal crcact_tx : std_logic;
-	signal crcdv    : std_logic;
-	signal crcen    : std_logic;
-	signal crcd     : std_logic;
-	signal crc5     : std_logic_vector(0 to 5-1);
-	signal crc16    : std_logic_vector(0 to 16-1);
-	signal crc5_16  : std_logic;
-	signal pid      : std_logic_vector(8-1 downto 0);
+	signal crcdv     : std_logic;
+	signal crcen     : std_logic;
+	signal crcd      : std_logic;
+	signal crc5      : std_logic_vector(0 to 5-1);
+	signal crc16     : std_logic_vector(0 to 16-1);
+	signal crc5_16   : std_logic;
+	signal pid       : std_logic_vector(8-1 downto 0);
 
 begin
 
@@ -102,11 +102,15 @@ begin
 		rxd   => phy_rxd);
 
 
-	crcdv <= crcact_tx when txen='1' else phy_rxdv;
+	crcdv <= 
+		crcact_tx when txen='1'     else 
+		crcact_rx when phy_rxdv='1' else
+		'0';
 	crcen <= 
 		cken and not phy_txbs when crcact_tx='1' else
 		cken and not phy_rxbs when crcact_rx='1' else 
 		'0';
+
 	usbcrc_e : entity hdl4fpga.usbcrc
 	port map (
 		clk   => clk,

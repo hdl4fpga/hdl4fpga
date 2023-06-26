@@ -66,7 +66,6 @@ architecture def of usbrqst_dev is
 	subtype bit_requests is bit_vector(requests'pos(requests'low) to requests'pos(requests'high));
 	signal rqst_rdys : bit_requests;
 	signal rqst_reqs : bit_requests;
-	signal out_reqs  : bit_requests;
 	signal out_rdys  : bit_requests;
 	signal in_rdys   : bit_requests;
 
@@ -139,9 +138,7 @@ begin
 							rx_rdy <= rx_req;
 						when others =>
 							state   := s_setup;
-							-- assert false
-							-- report "wrong case"
-							-- severity failure;
+							-- assert false report "wrong case" severity failure;
 						end case;
 					end if;
 				when s_ackrqst =>
@@ -260,7 +257,6 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (getdescriptor_rdy xor getdescriptor_req)='1' then
-
 					getdescriptor_rdy <= getdescriptor_req;
     			end if;
 			else
