@@ -50,24 +50,25 @@ entity usbrqst_dev is
 end;
 
 architecture def of usbrqst_dev is
-	signal addr     : std_logic_vector( 7-1 downto 0);
+	signal addr      : std_logic_vector( 7-1 downto 0);
 	signal requesttype : std_logic_vector( 8-1 downto 0);
-	signal request  : std_logic_vector( 8-1 downto 0);
-	signal value    : std_logic_vector(16-1 downto 0);
-	signal index    : std_logic_vector(16-1 downto 0);
-	signal length   : std_logic_vector(16-1 downto 0);
-	signal rqst_rdy : bit;
-	signal rqst_req : bit;
-	signal out_req  : bit;
-	signal out_rdy  : bit;
-	signal in_rdy   : bit;
-	signal in_req   : bit;
+	signal value     : std_logic_vector(16-1 downto 0);
+	signal index     : std_logic_vector(16-1 downto 0);
+	signal length    : std_logic_vector(16-1 downto 0);
 
 	subtype bit_requests is bit_vector(requests'pos(requests'low) to requests'pos(requests'high));
+
+	signal rqst_req  : bit;
+	signal rqst_rdy  : bit;
+	signal out_rdy   : bit;
+	signal out_rdys  : bit_requests;
+	signal out_req   : bit;
+	signal in_req    : bit;
+	signal in_rdys   : bit_requests;
+	signal in_rdy    : bit;
+
 	signal rqst_rdys : bit_requests;
 	signal rqst_reqs : bit_requests;
-	signal out_rdys  : bit_requests;
-	signal in_rdys   : bit_requests;
 
 	alias setaddress_rdy    is rqst_rdys(requests'pos(set_address));
 	alias setaddress_req    is rqst_reqs(requests'pos(set_address));
@@ -89,11 +90,12 @@ architecture def of usbrqst_dev is
 begin
 
 	usbrqst_p : process (cken, clk)
-		type states is (s_setup, s_rqstdata, s_ackrqst, s_rqst, s_inout, s_dataout, s_ackin, s_datain, s_ackout);
+		type states is (s_setup, s_rqstdata, s_inout, s_dataout, s_ackin, s_datain, s_ackout);
 		variable state : states;
 		constant tbit  : std_logic_vector(data0'range) := b"1000";
 		variable dpid  : std_logic_vector(data0'range);
 		variable shr   : unsigned(0 to rxrqst'length);
+		variable request  : std_logic_vector( 8-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -124,7 +126,7 @@ begin
 							shr(0 to rxrqst'length-1) := unsigned(rxrqst);
 							requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
 							shr     := shr rol requesttype'length;
-							request <= reverse(std_logic_vector(shr(0 to request'length-1)));
+							request := reverse(std_logic_vector(shr(0 to request'length-1)));
 							shr     := shr rol request'length;
 							value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
 							shr     := shr rol value'length;
@@ -134,67 +136,63 @@ begin
 							shr     := shr rol length'length;
 							dpid    := rxpid;
 							dpid    := dpid xor tbit;
-							state   := s_ackrqst;
-							rx_rdy <= rx_req;
+        					for i in request_ids'range loop
+        						if request(4-1 downto 0)=request_ids(i) then
+        							rqst_reqs(requests'pos(i)) <= not rqst_rdys(requests'pos(i));
+        							rqst_req <= not rqst_rdy;
+        						end if;
+        					end loop;
+        					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
+        						txpid  <= hs_ack;
+        						tx_req <= not to_stdulogic(to_bit(tx_rdy));
+								rx_rdy  <= rx_req;
+								state   := s_inout;
+        					end if;
 						when others =>
 							state   := s_setup;
 							-- assert false report "wrong case" severity failure;
 						end case;
 					end if;
-				when s_ackrqst =>
-					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
-						txpid  <= hs_ack;
-						tx_req <= not to_stdulogic(to_bit(tx_rdy));
-					end if;
-					state := s_rqst;
-				when s_rqst =>
-					if (tx_rdy xor tx_req)='0' then
-						for i in request_ids'range loop
-							if request(4-1 downto 0)=request_ids(i) then
-								rqst_reqs(requests'pos(i)) <= not rqst_rdys(requests'pos(i));
-								rqst_req <= not rqst_rdy;
-							end if;
-						end loop;
-						state := s_inout;
-					end if;
 				when s_inout =>
 					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 						case rxpid is
 						when tk_out =>
-							state := s_datain;
+							out_req <= not out_rdy;
+							state   := s_datain;
 						when tk_in  =>
-							in_req  <= not in_rdy;
-							state := s_dataout;
+							in_req <= not in_rdy;
+							state  := s_dataout;
 						when data0|data1 =>
-							state := s_ackrqst;
+							if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
+								txpid  <= hs_ack;
+								tx_req <= not to_stdulogic(to_bit(tx_rdy));
+							end if;
 						when others =>
 							state := s_setup;
 							-- assert false report "wrong case" severity failure;
 						end case;
+						rx_rdy  <= rx_req;
 					end if;
 				when s_dataout =>
-					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
-						case rxpid is
-						when tk_in  =>
+					if (in_req xor in_rdy)='0' then
+						if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 							txpid  <= dpid;
-							dpid   := dpid xor tbit;
 							tx_req <= not to_stdulogic(to_bit(tx_rdy));
 							state  := s_ackin;
-						when others =>
-							-- assert false report "wrong case" severity failure;
-						end case;
-						rx_rdy <= rx_req;
+						end if;
 					end if;
 				when s_ackin =>
 					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 						case rxpid is
 						when hs_ack =>
+							dpid   := dpid xor tbit;
 							rx_rdy <= rx_req;
-							state := s_setup;
+							state  := s_setup;
 						when others =>
 							state := s_setup;
 							-- assert false report "wrong case" severity failure;
 						end case;
+						rx_rdy  <= rx_req;
 					end if;
 				when s_datain =>
 					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
@@ -231,7 +229,8 @@ begin
 			end if;
 		end if;
 	end process;
-	in_rdy <= montrdys(in_rdys);
+	in_rdy  <= montrdys(in_rdys);
+	out_rdy <= montrdys(out_rdys);
 
 	setaddress_p : process (clk)
 		alias in_rdy is in_rdys(requests'pos(set_address));
@@ -240,7 +239,7 @@ begin
 			if cken='1' then
 				if (setaddress_rdy xor setaddress_req)='1' then
 					if (in_rdy xor in_req)='1' then
-						addr <= value(addr'range);
+						addr   <= value(addr'range);
 						in_rdy <= not in_rdy;
 						setaddress_rdy <= setaddress_req;
 					end if;
