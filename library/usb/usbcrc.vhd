@@ -106,10 +106,8 @@ begin
 								when others =>
 								end case;
 							end if;
-						else
-							if cken='1' then
-								crc <= std_logic_vector(unsigned(crc) rol 1);
-							end if;
+						elsif cken='1' then
+							crc <= std_logic_vector(unsigned(crc) rol 1);
 							state := s_idle;
 						end if;
 					end case;

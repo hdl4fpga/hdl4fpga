@@ -61,9 +61,23 @@ architecture def of usbphy is
 	signal s_se0 : std_logic;
 
 	signal tx_tp : std_logic_vector(tp'range);
+	signal echo : std_logic;
 begin
 
-	tp(1) <= tx_tp(1) or rxdv;
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if tx_tp(1)='1' then
+					echo <= '1';
+				elsif rxdv='0' then
+					echo <= '0';
+				end if;
+			end if;
+		end if;
+	end process;
+
+	tp(1) <= '1'      when tx_tp(1)='1' else rxdv when echo='0' else '0';
 	tp(2) <= tx_tp(2) when tx_tp(1)='1' else rxbs;
 	tp(3) <= tx_tp(3) when tx_tp(1)='1' else rxd;
 
