@@ -50,8 +50,8 @@ entity usbdev is
 end;
 
 architecture def of usbdev is
-	signal tx_req    : std_logic;
-	signal tx_rdy    : std_logic;
+	signal tx_req    : std_logic := '0';
+	signal tx_rdy    : std_logic := '0';
 	signal pkt_txpid : std_logic_vector(4-1 downto 0);
 	signal pkt_txen  : std_logic;
 	signal pkt_txbs  : std_logic;
@@ -60,8 +60,8 @@ architecture def of usbdev is
 	signal phy_txbs  : std_logic;
 	signal phy_txd   : std_logic;
 
-	signal rx_req    : std_logic;
-	signal rx_rdy    : std_logic;
+	signal rx_req    : std_logic := '0';
+	signal rx_rdy    : std_logic := '0';
 	signal phy_rxdv  : std_logic;
 	signal phy_rxbs  : std_logic;
 	signal phy_rxpid : std_logic_vector(4-1 downto 0);
@@ -70,15 +70,19 @@ architecture def of usbdev is
 	signal rxtoken   : std_logic_vector(0 to 7+4+5-1);
 	signal rxrqst    : std_logic_vector(0 to 8*8+8-1);
 
+	signal tp_phy  : std_logic_vector(1 to 32);
+	signal tp_rqst : std_logic_vector(1 to 32);
 begin
 
+	tp(1 to 3) <= tp_phy(1 to 3);
+	tp(4 to 7) <= tp_rqst(1 to 4);
   	usbphycrc_e : entity hdl4fpga.usbphycrc
    	generic map (
 		oversampling => oversampling,
 		watermark    => watermark,
 		bit_stuffing => bit_stuffing)
 	port map (
-		tp    => tp,
+		tp    => tp_phy,
 		dp    => dp,
 		dn    => dn,
 		clk   => clk,
@@ -137,6 +141,7 @@ begin
 
 	usbrqst_e : entity hdl4fpga.usbrqst_dev
 	port map (
+		tp      => tp_rqst,
 		clk     => clk,
 		cken    => cken,
 

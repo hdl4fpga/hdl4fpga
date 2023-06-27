@@ -31,6 +31,7 @@ use hdl4fpga.usbpkg.all;
 
 entity usbrqst_dev is
 	port (
+		tp      : out std_logic_vector(1 to 32) := (others => '0');
 		clk     : in  std_logic;
 		cken    : in  std_logic;
 
@@ -103,8 +104,10 @@ begin
 						case rxpid is
 						when tk_setup =>
 							if rxtoken(0 to addr'length-1)=(addr'range => '0') then
+								tp(1 to 4) <= x"1";
 								state := s_rqstdata;
 							elsif rxtoken(0 to addr'length-1)=reverse(addr) then
+								tp(1 to 4) <= x"1";
 								state := s_rqstdata;
 							end if;
 							rx_rdy <= rx_req;
@@ -141,6 +144,7 @@ begin
         						txpid  <= hs_ack;
         						tx_req <= not to_stdulogic(to_bit(tx_rdy));
 								rx_rdy  <= rx_req;
+								tp(1 to 4) <= x"2";
 								state   := s_inout;
         					end if;
 
@@ -154,9 +158,11 @@ begin
 						case rxpid is
 						when tk_out =>
 							out_req <= not montrdy(out_rdy);
+							tp(1 to 4) <= x"4";
 							state   := s_datain;
 						when tk_in  =>
 							in_req <= not montrdy(in_rdy);
+							tp(1 to 4) <= x"3";
 							state  := s_dataout;
 						when data0|data1 =>
 							if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
@@ -174,6 +180,7 @@ begin
 						if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 							txpid  <= dpid;
 							tx_req <= not to_stdulogic(to_bit(tx_rdy));
+							tp(1 to 4) <= x"5";
 							state  := s_ackin;
 						end if;
 					end if;
@@ -183,6 +190,7 @@ begin
 						when hs_ack =>
 							dpid   := dpid xor tbit;
 							rx_rdy <= rx_req;
+							tp(1 to 4) <= x"6";
 							state  := s_setup;
 						when others =>
 							state := s_setup;
@@ -197,6 +205,7 @@ begin
 							if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 								dpid   := dpid xor tbit;
 								txpid  <= hs_ack;
+								tp(1 to 4) <= x"7";
 								tx_req <= not to_stdulogic(to_bit(tx_rdy));
 							end if;
 						when others =>
@@ -245,17 +254,16 @@ begin
 	end process;
 
 	getdescriptor_p : process (getdescriptor_rdy, clk)
-		type states is (s_set);
-		variable state : states;
-		variable mem : std_logic_vector(device_descritptor'range) := device_descritptor;
+		alias out_rdy is out_rdy(requests'pos(get_descriptor));
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (getdescriptor_rdy xor getdescriptor_req)='1' then
-					getdescriptor_rdy <= getdescriptor_req;
+					if (out_rdy xor out_req)='1' then
+						out_rdy <= not out_rdy;
+						getdescriptor_rdy <= getdescriptor_req;
+					end if;
     			end if;
-			else
-				state := s_set;
 			end if;
 		end if;
 	end process;

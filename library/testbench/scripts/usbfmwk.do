@@ -58,6 +58,12 @@ add wave -noupdate -expand -group usbdev_e /testbench/dev_b/dev_e/phy_txbs
 add wave -noupdate -expand -group usbdev_e /testbench/dev_b/dev_e/phy_txd
 add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst -radix hexadecimal /testbench/dev_b/dev_e/usbrqst_e/usbrqst_p/dpid
 add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst -radix unsigned /testbench/dev_b/dev_e/usbrqst_e/usbrqst_p/request
+add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/setaddress_req
+add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/setaddress_rdy
+add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_req
+add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_rdy
+add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/out_req
+add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/out_rdy
 add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/usbrqst_p/state
 add wave -noupdate -expand -group usbdev_e -group dev_usbphycrc -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphycrc_e/usbphy_e/usbphytx_e/cken
 add wave -noupdate -expand -group usbdev_e -group dev_usbphycrc -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphycrc_e/usbphy_e/usbphytx_e/txen
@@ -93,10 +99,10 @@ add wave -noupdate -group dev_tp_p -radix hexadecimal /testbench/dev_b/tp_p/msb
 add wave -noupdate -group dev_tp_p /testbench/dev_b/tp_p/cntr
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {25070770 ps} 0} {{Cursor 2} {415385 ps} 0}
+WaveRestoreCursors {{Cursor 1} {17307692 ps} 0} {{Cursor 2} {415385 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 292
-configure wave -valuecolwidth 427
+configure wave -valuecolwidth 157
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -109,4 +115,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {3516924 ps} {30309232 ps}
+WaveRestoreZoom {0 ps} {33023077 ps}
