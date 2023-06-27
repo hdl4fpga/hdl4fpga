@@ -60,22 +60,20 @@ architecture def of usbrqst_dev is
 
 	signal rqst_req  : bit;
 	signal rqst_rdy  : bit;
-	signal out_rdy   : bit;
-	signal out_rdys  : bit_requests;
-	signal out_req   : bit;
-	signal in_req    : bit;
-	signal in_rdys   : bit_requests;
-	signal in_rdy    : bit;
-
 	signal rqst_rdys : bit_requests;
 	signal rqst_reqs : bit_requests;
+
+	signal in_req    : bit;
+	signal in_rdy    : bit_requests;
+	signal out_req   : bit;
+	signal out_rdy   : bit_requests;
 
 	alias setaddress_rdy    is rqst_rdys(requests'pos(set_address));
 	alias setaddress_req    is rqst_reqs(requests'pos(set_address));
 	alias getdescriptor_rdy is rqst_rdys(requests'pos(get_descriptor));
 	alias getdescriptor_req is rqst_reqs(requests'pos(get_descriptor));
 
-	function montrdys (
+	function montrdy (
 		constant rdys : in bit_vector)
 		return bit is
 		variable retval : bit;
@@ -111,9 +109,7 @@ begin
 							end if;
 							rx_rdy <= rx_req;
 						when others =>
-							-- assert false
-							-- report "wrong case"
-							-- severity failure;
+							-- assert false report "wrong case" severity failure;
 						end case;
 					end if;
 				when s_rqstdata =>
@@ -133,18 +129,21 @@ begin
 							shr     := shr rol length'length;
 							dpid    := rxpid;
 							dpid    := dpid xor tbit;
+
         					for i in request_ids'range loop
         						if request(4-1 downto 0)=request_ids(i) then
         							rqst_reqs(requests'pos(i)) <= not rqst_rdys(requests'pos(i));
         							rqst_req <= not rqst_rdy;
         						end if;
         					end loop;
+
         					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
         						txpid  <= hs_ack;
         						tx_req <= not to_stdulogic(to_bit(tx_rdy));
 								rx_rdy  <= rx_req;
 								state   := s_inout;
         					end if;
+
 						when others =>
 							state   := s_setup;
 							-- assert false report "wrong case" severity failure;
@@ -154,10 +153,10 @@ begin
 					if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 						case rxpid is
 						when tk_out =>
-							out_req <= not out_rdy;
+							out_req <= not montrdy(out_rdy);
 							state   := s_datain;
 						when tk_in  =>
-							in_req <= not in_rdy;
+							in_req <= not montrdy(in_rdy);
 							state  := s_dataout;
 						when data0|data1 =>
 							if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
@@ -171,7 +170,7 @@ begin
 						rx_rdy  <= rx_req;
 					end if;
 				when s_dataout =>
-					if (in_req xor in_rdy)='0' then
+					if (in_req xor montrdy(in_rdy))='0' then
 						if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 							txpid  <= dpid;
 							tx_req <= not to_stdulogic(to_bit(tx_rdy));
@@ -228,11 +227,9 @@ begin
 			end if;
 		end if;
 	end process;
-	in_rdy  <= montrdys(in_rdys);
-	out_rdy <= montrdys(out_rdys);
 
 	setaddress_p : process (clk)
-		alias in_rdy is in_rdys(requests'pos(set_address));
+		alias in_rdy is in_rdy(requests'pos(set_address));
 	begin
 		if rising_edge(clk) then
 			if cken='1' then

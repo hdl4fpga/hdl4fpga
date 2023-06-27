@@ -149,7 +149,7 @@ begin
 		cken  <= '1';
 	end generate;
 
-	rx_d : entity hdl4fpga.usbphy_rx
+	usbphyrx_e : entity hdl4fpga.usbphy_rx
    	generic map (
 		bit_stuffing => bit_stuffing)
 	port map (
@@ -163,7 +163,7 @@ begin
 		rxd  => rxd,
 		err  => rxerr);
 		
-	tx_d : entity hdl4fpga.usbphy_tx
+	usbphytx_e : entity hdl4fpga.usbphy_tx
 	port map (
 		tp   => tx_tp,
 		clk  => clk,
