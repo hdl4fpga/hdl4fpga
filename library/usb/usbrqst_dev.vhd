@@ -94,7 +94,7 @@ begin
 		constant tbit  : std_logic_vector(data0'range) := b"1000";
 		variable dpid  : std_logic_vector(data0'range);
 		variable shr   : unsigned(0 to rxrqst'length);
-		variable request  : std_logic_vector( 8-1 downto 0);
+		variable request : std_logic_vector( 8-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -145,11 +145,11 @@ begin
         						tx_req <= not to_stdulogic(to_bit(tx_rdy));
 								rx_rdy  <= rx_req;
 								tp(1 to 4) <= x"2";
-								state   := s_inout;
+								-- state   := s_inout;
         					end if;
 
 						when others =>
-							state   := s_setup;
+							-- state   := s_setup;
 							-- assert false report "wrong case" severity failure;
 						end case;
 					end if;
@@ -167,7 +167,7 @@ begin
 						when data0|data1 =>
 							if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 								txpid  <= hs_ack;
-								tx_req <= not to_stdulogic(to_bit(tx_rdy));
+								-- tx_req <= not to_stdulogic(to_bit(tx_rdy));
 							end if;
 						when others =>
 							state := s_setup;
@@ -179,7 +179,7 @@ begin
 					if (in_req xor montrdy(in_rdy))='0' then
 						if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 							txpid  <= dpid;
-							tx_req <= not to_stdulogic(to_bit(tx_rdy));
+							-- tx_req <= not to_stdulogic(to_bit(tx_rdy));
 							tp(1 to 4) <= x"5";
 							state  := s_ackin;
 						end if;
@@ -206,7 +206,7 @@ begin
 								dpid   := dpid xor tbit;
 								txpid  <= hs_ack;
 								tp(1 to 4) <= x"7";
-								tx_req <= not to_stdulogic(to_bit(tx_rdy));
+								-- tx_req <= not to_stdulogic(to_bit(tx_rdy));
 							end if;
 						when others =>
 							state := s_setup;

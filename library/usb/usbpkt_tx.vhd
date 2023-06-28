@@ -49,7 +49,7 @@ end;
 
 architecture def of usbpkt_tx is
 begin
-	process (tx_req, tx_rdy, pkt_txen, phy_txbs, clk)
+	process (pkt_txen, phy_txbs, pkt_txd, clk)
 		type states is (s_idle, s_pid, s_token, s_data);
 		variable state : states;
 		variable pid   : unsigned(8-1 downto 0);
@@ -95,17 +95,11 @@ begin
 		end if;
 		comb_l : case state is
 		when s_idle =>
-			phy_txen <= '0';
-			pkt_txbs <= '1';
-			phy_txd  <= pid(0);
+			(phy_txen, pkt_txbs, phy_txd) <= std_logic_vector'('0', '1', pid(0));
 		when s_pid =>
-			phy_txen <= '1';
-			pkt_txbs <= '1';
-			phy_txd  <= pid(0);
+			(phy_txen, pkt_txbs, phy_txd) <= std_logic_vector'('1', '1', pid(0));
 		when others =>
-			phy_txen <= pkt_txen;
-			pkt_txbs <= phy_txbs;
-			phy_txd  <= pkt_txd;
+			(phy_txen, pkt_txbs, phy_txd) <= std_logic_vector'(pkt_txen, phy_txbs, pkt_txd);
 		end case;
 	end process;
 end;
