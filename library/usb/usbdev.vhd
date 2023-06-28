@@ -72,10 +72,12 @@ architecture def of usbdev is
 
 	signal tp_phy  : std_logic_vector(1 to 32);
 	signal tp_rqst : std_logic_vector(1 to 32);
+	signal tp_pkt : std_logic_vector(1 to 32);
 begin
 
-	tp(1 to 3) <= (tx_req xor tx_rdy) & tp_phy(2 to 3);
-	tp(4 to 7) <= tp_rqst(1 to 4);
+	tp(1 to 3)  <= tp_phy (1 to 3);
+	tp(4 to 7)  <= tp_rqst(1 to 4);
+	tp(8 to 11) <= tp_rqst(5 to 8);
   	usbphycrc_e : entity hdl4fpga.usbphycrc
    	generic map (
 		oversampling => oversampling,
@@ -124,6 +126,7 @@ begin
 
 	usbpkttx_e : entity hdl4fpga.usbpkt_tx
 	port map (
+		tp => tp_pkt,
 		clk       => clk,
 		cken      => cken,
 	

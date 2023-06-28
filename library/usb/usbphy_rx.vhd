@@ -46,7 +46,7 @@ end;
 architecture def of usbphy_rx is
 begin
 
-	process (k, j, clk)
+	process (clk)
 		type stateskj is (s_k, s_j);
 		variable statekj : stateskj;
 		type states is (s_eop, s_synck, s_syncj, s_data);

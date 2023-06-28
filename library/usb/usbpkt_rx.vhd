@@ -68,9 +68,7 @@ begin
 							when hs_ack|hs_nack|hs_stall =>
    								state := s_hs;
 							when others =>
-								-- assert false
-								-- report "usbpkt_rx"
-								-- severity failure;
+								-- assert false report "usbpkt_rx" severity failure;
    							end case;
 						end if;
 					when s_token =>
@@ -86,9 +84,7 @@ begin
 					when s_hs =>
 						rx_req <= not to_stdulogic(to_bit(rx_rdy));
 					when others =>
-						-- assert false
-						-- report "usbpkt_rx"
-						-- severity failure;
+							-- assert false report "usbpkt_rx" severity failure;
 					end case;
    					if rxdv='1' then
    						if rxbs='0' then

@@ -21,7 +21,6 @@ end;
 
 architecture def of usbphy_tx is
 	alias tx_stuffedbit : std_logic is txbs;
-	signal xxx : std_logic;
 begin
 
 	process (txen, clk)
@@ -78,8 +77,9 @@ begin
 					dn := '0';
 					state := s_idle;
 				end case;
-			tp(2) <= txbs;
-			tp(3) <= data(0);
+
+				tp(2) <= txbs;
+				tp(3) <= data(0);
 			end if;
 
 			bitstuffing_l : if data(0)='0' then
@@ -89,10 +89,10 @@ begin
 			else
 				txbs <= '1';
 			end if;
+			txdp <= dp;
+			txdn <= dn;
 		end if;
-		txdp <= dp;
-		txdn <= dn;
 	end process;
-			tp(1) <= txen;
+	tp(1) <= txen;
 
 end;

@@ -192,7 +192,11 @@ begin
 		end if;
 	end process;
 
-	rxdv <= phy_rxdv and crcact_rx and not txen;
+	rxdv <= --phy_rxdv and crcact_rx and not txen;
+		'0' when      txen='1' else
+		'0' when crcact_rx='0' else
+		phy_rxdv;
+
 	rxbs <= phy_rxbs;
 	rxd  <= phy_rxd;
 

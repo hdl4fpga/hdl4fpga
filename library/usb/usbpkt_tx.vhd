@@ -31,6 +31,7 @@ use hdl4fpga.usbpkg.all;
 
 entity usbpkt_tx is
 	port (
+		tp        : out std_logic_vector(1 to 32):= (others => '0');
 		clk       : in  std_logic;
 		cken      : in  std_logic;
 
@@ -48,8 +49,9 @@ entity usbpkt_tx is
 end;
 
 architecture def of usbpkt_tx is
+	signal data : std_logic;
 begin
-	process (pkt_txen, phy_txbs, pkt_txd, clk)
+	process (pkt_txen, phy_txbs, pkt_txd, data, clk)
 		type states is (s_idle, s_pid, s_token, s_data);
 		variable state : states;
 		variable pid   : unsigned(8-1 downto 0);
@@ -63,6 +65,7 @@ begin
 					cntr := pid'length-1;
 					if (to_bit(tx_req) xor to_bit(tx_rdy))='1' then
 						if phy_txbs='0' then
+							tp(1 to 4) <= x"1";
 							state := s_pid;
 						end if;
 					end if;
@@ -71,6 +74,7 @@ begin
 						if phy_txbs='0' then
 							pid  := pid ror 1;
 							cntr := cntr - 1;
+							tp(1 to 4) <= x"2";
 						end if;
 					else
 						case pkt_txpid is
@@ -80,24 +84,30 @@ begin
 							state := s_data;
 						when hs_ack|hs_nack|hs_stall =>
 							tx_rdy <= to_stdulogic(to_bit(tx_req));
-							state := s_idle;
+							if phy_txbs='0' then
+								state := s_idle;
+							end if;
 						when others =>
 						end case;
 					end if;
 				when s_token =>
 					tx_rdy <= to_stdulogic(to_bit(tx_req));
+					-- tp(1 to 4) <= x"3";
 					state  := s_idle;
 				when s_data =>
 					tx_rdy <= to_stdulogic(to_bit(tx_req));
-					state  := s_idle;
+					tp(1 to 4) <= x"4";
+					-- state  := s_idle;
 				end case;
+				data <= pid(0);
 			end if;
 		end if;
+
 		comb_l : case state is
 		when s_idle =>
-			(phy_txen, pkt_txbs, phy_txd) <= std_logic_vector'('0', '1', pid(0));
+			(phy_txen, pkt_txbs, phy_txd) <= std_logic_vector'('0', '1', data);
 		when s_pid =>
-			(phy_txen, pkt_txbs, phy_txd) <= std_logic_vector'('1', '1', pid(0));
+			(phy_txen, pkt_txbs, phy_txd) <= std_logic_vector'('1', '1', data);
 		when others =>
 			(phy_txen, pkt_txbs, phy_txd) <= std_logic_vector'(pkt_txen, phy_txbs, pkt_txd);
 		end case;

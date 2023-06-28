@@ -45,8 +45,8 @@ entity usbphy is
 		txbs  : buffer std_logic;
 		txd   : in  std_logic := '-';
 
-		rxdv  : buffer std_logic := '0';
-		rxbs  : buffer std_logic := '0';
+		rxdv  : buffer std_logic;
+		rxbs  : buffer std_logic;
 		rxd   : buffer std_logic;
 		rxerr : out std_logic);
 end;
@@ -81,11 +81,15 @@ begin
 	tp(2) <= tx_tp(2) when tx_tp(1)='1' else rxbs;
 	tp(3) <= tx_tp(3) when tx_tp(1)='1' else rxd;
 
+	-- tp(1) <= tx_tp(1);
+	-- tp(2) <= '0';
+	-- tp(3) <= tx_tp(1);
+
 	k   <= not dp and     dn;
 	j   <=     dp and not dn;
 	se0 <= not dp and not dn;
 
-	linestates_p : process (j, k, clk)
+	linestates_p : process (clk)
 		type states is (s_idle, s_sop, s_eop, s_resume, s_suspend);
 		variable state : states;
 	begin

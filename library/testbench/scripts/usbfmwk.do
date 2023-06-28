@@ -7,19 +7,18 @@ add wave -noupdate /testbench/dn
 add wave -noupdate -divider host_usbphy
 add wave -noupdate -expand -group host_usbphycrc /testbench/host_b/host_e/cken
 add wave -noupdate -expand -group host_usbphycrc /testbench/host_b/host_e/txen
-add wave -noupdate -expand -group host_usbphycrc /testbench/host_b/host_e/idle
 add wave -noupdate -expand -group host_usbphycrc /testbench/host_b/host_e/txbs
 add wave -noupdate -expand -group host_usbphycrc /testbench/host_b/host_e/pktfmt_p/state
 add wave -noupdate -expand -group host_usbphycrc /testbench/host_b/host_e/txd
 add wave -noupdate -expand -group host_usbphycrc /testbench/host_b/host_e/rxdv
 add wave -noupdate -expand -group host_usbphycrc /testbench/host_b/host_e/rxd
 add wave -noupdate -expand -group host_usbphycrc /testbench/host_b/host_e/rxbs
-add wave -noupdate -expand -group host_usbphycrc -expand -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/usbphytx_e/clk
-add wave -noupdate -expand -group host_usbphycrc -expand -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/usbphytx_e/cken
-add wave -noupdate -expand -group host_usbphycrc -expand -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/usbphytx_e/txen
-add wave -noupdate -expand -group host_usbphycrc -expand -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/usbphytx_e/txd
-add wave -noupdate -expand -group host_usbphycrc -expand -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/usbphytx_e/txbs
-add wave -noupdate -expand -group host_usbphycrc -expand -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/usbphytx_e/bit_stuffing
+add wave -noupdate -expand -group host_usbphycrc -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/usbphytx_e/clk
+add wave -noupdate -expand -group host_usbphycrc -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/usbphytx_e/cken
+add wave -noupdate -expand -group host_usbphycrc -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/usbphytx_e/txen
+add wave -noupdate -expand -group host_usbphycrc -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/usbphytx_e/txd
+add wave -noupdate -expand -group host_usbphycrc -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/usbphytx_e/txbs
+add wave -noupdate -expand -group host_usbphycrc -group host_usbphy_tx /testbench/host_b/host_e/usbphy_e/usbphytx_e/bit_stuffing
 add wave -noupdate -expand -group host_usbphycrc -group host_usbphy_rx /testbench/host_b/host_e/usbphy_e/usbphyrx_e/rxdv
 add wave -noupdate -expand -group host_usbphycrc -group host_usbphy_rx /testbench/host_b/host_e/usbphy_e/usbphyrx_e/rxbs
 add wave -noupdate -expand -group host_usbphycrc -group host_usbphy_rx /testbench/host_b/host_e/usbphy_e/usbphyrx_e/rxd
@@ -35,8 +34,11 @@ add wave -noupdate -expand -group host_usbphycrc -group host_usbcrc /testbench/h
 add wave -noupdate -expand -group host_usbphycrc -group host_usbcrc /testbench/host_b/host_e/usbcrc_e/ncrc5
 add wave -noupdate -expand -group host_usbphycrc -group host_usbcrc -radix binary /testbench/host_b/host_e/usbcrc_e/crc16
 add wave -noupdate -expand -group host_usbphycrc -group host_usbcrc -radix hexadecimal /testbench/host_b/host_e/usbcrc_e/ncrc16
-add wave -noupdate -group host_rx_p /testbench/host_b/rx_p/cntr
-add wave -noupdate -group host_rx_p -radix hexadecimal /testbench/host_b/rx_p/msb
+add wave -noupdate -expand -group host_rx_p /testbench/host_b/host_e/tp(1)
+add wave -noupdate -expand -group host_rx_p /testbench/host_b/host_e/tp(2)
+add wave -noupdate -expand -group host_rx_p /testbench/host_b/host_e/tp(3)
+add wave -noupdate -expand -group host_rx_p /testbench/host_b/rx_p/cntr
+add wave -noupdate -expand -group host_rx_p -radix hexadecimal /testbench/host_b/rx_p/msb
 add wave -noupdate -divider dev_usbphy
 add wave -noupdate -expand -group usbdev_e /testbench/dev_b/dev_e/rx_req
 add wave -noupdate -expand -group usbdev_e /testbench/dev_b/dev_e/tx_req
@@ -62,6 +64,8 @@ add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench
 add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/setaddress_rdy
 add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_req
 add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_rdy
+add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/in_req
+add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/in_rdy
 add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/out_req
 add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/out_rdy
 add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/usbrqst_p/state
@@ -92,17 +96,17 @@ add wave -noupdate -expand -group usbdev_e -group dev_usbphycrc -expand -group d
 add wave -noupdate -expand -group usbdev_e -group dev_usbphycrc -expand -group dev_usbrcr /testbench/dev_b/dev_e/usbphycrc_e/usbcrc_e/ncrc16
 add wave -noupdate -expand -group usbdev_e -group dev_usbphycrc -expand -group dev_usbrcr /testbench/dev_b/dev_e/usbphycrc_e/usbcrc_e/crc16
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -group dev_tp_p /testbench/dev_b/dev_e/tp(1)
-add wave -noupdate -group dev_tp_p /testbench/dev_b/dev_e/tp(2)
-add wave -noupdate -group dev_tp_p /testbench/dev_b/dev_e/tp(3)
-add wave -noupdate -group dev_tp_p -radix hexadecimal /testbench/dev_b/tp_p/msb
-add wave -noupdate -group dev_tp_p /testbench/dev_b/tp_p/cntr
+add wave -noupdate -expand -group dev_tp_p /testbench/dev_b/dev_e/tp(1)
+add wave -noupdate -expand -group dev_tp_p /testbench/dev_b/dev_e/tp(2)
+add wave -noupdate -expand -group dev_tp_p /testbench/dev_b/dev_e/tp(3)
+add wave -noupdate -expand -group dev_tp_p -radix hexadecimal /testbench/dev_b/tp_p/msb
+add wave -noupdate -expand -group dev_tp_p /testbench/dev_b/tp_p/cntr
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {17307692 ps} 0} {{Cursor 2} {415385 ps} 0}
+WaveRestoreCursors {{Cursor 1} {12445922 ps} 0} {{Cursor 2} {17281236 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 292
-configure wave -valuecolwidth 157
+configure wave -valuecolwidth 124
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -115,4 +119,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {33023077 ps}
+WaveRestoreZoom {57500 ps} {24207500 ps}
