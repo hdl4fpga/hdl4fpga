@@ -65,7 +65,6 @@ architecture def of usbrqst_dev is
 	signal rqst_reqs : bit_requests := (others => '0');
 
 	signal in_req    : bit := '0';
-	signal in_rdy    : bit := '0';
 	signal in_rdys   : bit_requests := (others => '0');
 	signal out_req   : bit;
 	signal out_rdys  : bit_requests := (others => '0');
@@ -89,7 +88,6 @@ architecture def of usbrqst_dev is
 
 begin
 
-	in_rdy <= montrdy(in_rdys);
 	usbrqst_p : process (clk)
 		type states is (s_setup, s_rqstdata, s_ackrqstdata, s_inout, s_dataout, s_ackin, s_datain);
 		variable state : states := s_setup;
@@ -241,8 +239,8 @@ begin
 					if (setaddress_rdy xor setaddress_req)='1' then
 						if (in_req xor montrdy(in_rdys))='1' then
 							addr   <= value(addr'range);
-							setaddress_rdy <= setaddress_req;
 							in_rdy <= not in_rdy;
+							setaddress_rdy <= setaddress_req;
 						end if;
 					end if;
 				end if;
