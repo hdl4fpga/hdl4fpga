@@ -83,8 +83,8 @@ begin
 						when data0|data1 =>
 							state := s_data;
 						when hs_ack|hs_nack|hs_stall =>
-							tx_rdy <= to_stdulogic(to_bit(tx_req));
 							if phy_txbs='0' then
+							tx_rdy <= to_stdulogic(to_bit(tx_req));
 								state := s_idle;
 							end if;
 						when others =>

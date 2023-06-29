@@ -77,9 +77,9 @@ begin
 		end if;
 	end process;
 
-	tp(1) <= '1'      when tx_tp(1)='1' else rxdv when echo='0' else '0';
-	tp(2) <= tx_tp(2) when tx_tp(1)='1' else rxbs;
-	tp(3) <= tx_tp(3) when tx_tp(1)='1' else rxd;
+	tp(1) <= '1'      when tx_tp(1)='1' else '0'; --rxdv when echo='0' else '0';
+	tp(2) <= tx_tp(2) when tx_tp(1)='1' else '0'; --rxbs;
+	tp(3) <= tx_tp(3) when tx_tp(1)='1' else '0'; --rxd;
 
 	-- tp(1) <= tx_tp(1);
 	-- tp(2) <= '0';
