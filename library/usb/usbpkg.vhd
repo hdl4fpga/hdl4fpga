@@ -44,8 +44,8 @@ package usbpkg is
     	-- get_status,
     	-- clear_status,
     	-- set_feature,
-    	set_address); --,
-    	-- get_descriptor,
+    	set_address,
+    	get_descriptor);
     	-- set_descriptor,
     	-- get_configuration,
     	-- set_configuration,
@@ -58,8 +58,8 @@ package usbpkg is
 	    -- get_status        => x"0",
 	    -- clear_status      => x"1",
 	    -- set_feature       => x"3",
-	    set_address       => x"5"); --,
-	    -- get_descriptor    => x"6",
+	    set_address       => x"5",
+	    get_descriptor    => x"6");
 	    -- set_descriptor    => x"7",
 	    -- get_configuration => x"8",
 	    -- set_configuration => x"9",
