@@ -127,9 +127,7 @@ begin
 		ser_irdy    <= not tp(2) and cken;
 		ser_data(0) <= tp(3);
 
-		led(4-1 downto 0) <= tp(4 to 7);
-		led(8-1 downto 4) <= 
-			tp(8 to 11);
+		led <= multiplex(tp(1 to 16), left); 
 			-- (usb_fpga_pu_dp, usb_fpga_pu_dn, usb_fpga_dp, usb_fpga_dn);
 	end generate;
 
