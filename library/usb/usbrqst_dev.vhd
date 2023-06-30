@@ -97,6 +97,7 @@ begin
 		variable request   : std_logic_vector( 8-1 downto 0);
 		variable setup_req : bit;
 		variable setup_rdy : bit;
+		alias tp_state is tp(5 to 8);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -130,17 +131,18 @@ begin
 										end if;
 									end loop;
 								end if;
+								tp_state <= x"1";
 
 							when others =>
 								assert false report "wrong case" severity failure;
 							end case;
-							rx_rdy  <= rx_req;
 						end if;
 					when s_ackrqstdata =>
 						if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 							txpid  <= hs_ack;
 							tx_req <= not to_stdulogic(to_bit(tx_rdy));
 							state  := s_inout;
+							tp_state <= x"2";
 						end if;
 					when s_inout =>
 						if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
@@ -149,14 +151,14 @@ begin
 								out_req <= not montrdy(out_rdys);
 								state   := s_datain;
 							when tk_in  =>
-								in_req <= not montrdy(in_rdys);
-								state  := s_dataout;
+								in_req  <= not montrdy(in_rdys);
+								state   := s_dataout;
 							when data0|data1 =>
 							when others =>
-								setup_rdy := setup_req;
+								-- setup_rdy := setup_req;
 								assert false report "wrong case" severity failure;
 							end case;
-							rx_rdy <= rx_req;
+							tp_state <= x"3";
 						end if;
 					when s_dataout =>
 						if (in_req xor montrdy(in_rdys))='0' then
@@ -165,20 +167,21 @@ begin
 								tx_req <= not to_stdulogic(to_bit(tx_rdy));
 								state  := s_ackin;
 							end if;
+							tp_state <= x"4";
 						end if;
 					when s_ackin =>
 						if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 							case rxpid is
 							when hs_ack =>
 								dpid  := dpid xor tbit;
-								setup_rdy := setup_req;
+								-- setup_rdy := setup_req;
 							when data0|data1 =>
 								state := s_dataout;
 							when others =>
-								setup_rdy := setup_req;
+								-- setup_rdy := setup_req;
 								assert false report "wrong case" severity failure;
 							end case;
-							rx_rdy <= rx_req;
+							tp_state <= x"5";
 						end if;
 					when s_datain =>
 						if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
@@ -190,10 +193,10 @@ begin
 									tx_req <= not to_stdulogic(to_bit(tx_rdy));
 								end if;
 							when others =>
-								setup_rdy := setup_req;
+								-- setup_rdy := setup_req;
 								assert false report "wrong case" severity failure;
 							end case;
-							rx_rdy <= rx_req;
+							tp_state <= x"6";
 						end if;
 					end case;
 				end if;
@@ -211,22 +214,31 @@ begin
 						out_req   <= montrdy(out_rdys);
 						rqst_req  <= rqst_rdy;
 						rqst_reqs <= rqst_rdys;
-						rx_rdy    <= rx_req;
+						tx_req    <= tx_rdy;
+						tp_state <= x"e";
 					end if;
+					rx_rdy <= rx_req;
+				end if;
+				if (setup_rdy xor setup_req)='0' then
+					tp_state <= x"f";
 				end if;
 
 			end if;
+	tp(13) <= to_stdulogic(setup_req);
+	tp(14) <= to_stdulogic(setup_rdy);
 		end if;
 	end process;
 
-	tp(1) <= to_stdulogic(rqst_reqs(set_address));
-	tp(2) <= to_stdulogic(rqst_rdys(set_address));
-	tp(3) <= to_stdulogic(rqst_reqs(get_descriptor));
-	tp(4) <= to_stdulogic(rqst_rdys(get_descriptor));
-	tp(5) <= to_stdulogic(in_reqs(set_address));
-	tp(6) <= to_stdulogic(in_rdys(set_address));
-	tp(7) <= to_stdulogic(outs_reqs(get_descriptor));
-	tp(8) <= to_stdulogic(outs_rdys(get_descriptor));
+	tp(1)  <= to_stdulogic(rqst_reqs(set_address));
+	tp(2)  <= to_stdulogic(rqst_rdys(set_address));
+	tp(3)  <= to_stdulogic(rqst_reqs(get_descriptor));
+	tp(4)  <= to_stdulogic(rqst_rdys(get_descriptor));
+
+	tp(9)  <= to_stdulogic(in_req);
+	tp(10) <= to_stdulogic(montrdy(in_rdys));
+	tp(11) <= to_stdulogic(out_req);
+	tp(12) <= to_stdulogic(montrdy(out_rdys));
+
 
 	setaddress_p : process (setaddress_rdy, clk)
 		alias in_rdy is in_rdys(set_address);

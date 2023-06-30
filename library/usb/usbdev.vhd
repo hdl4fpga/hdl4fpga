@@ -76,8 +76,7 @@ architecture def of usbdev is
 begin
 
 	tp(1 to 3)  <= tp_phy (1 to 3);
-	tp(4 to 7)  <= tp_rqst(1 to 4);
-	tp(8 to 11) <= tp_rqst(5 to 8);
+	tp(4 to 19) <= tp_rqst(1 to 16);
   	usbphycrc_e : entity hdl4fpga.usbphycrc
    	generic map (
 		oversampling => oversampling,

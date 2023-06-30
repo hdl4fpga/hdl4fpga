@@ -1,6 +1,4 @@
 onerror {resume}
-quietly virtual signal -install /testbench/dev_b/dev_e/usbrqst_e { /testbench/dev_b/dev_e/usbrqst_e/tp(1 to 4)} leds
-quietly virtual signal -install /testbench/dev_b/dev_e/usbrqst_e { /testbench/dev_b/dev_e/usbrqst_e/tp(1 to 4)} ll
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/usb_clk
@@ -60,24 +58,21 @@ add wave -noupdate -expand -group usbdev_e -divider {New Divider}
 add wave -noupdate -expand -group usbdev_e /testbench/dev_b/dev_e/phy_txen
 add wave -noupdate -expand -group usbdev_e /testbench/dev_b/dev_e/phy_txbs
 add wave -noupdate -expand -group usbdev_e /testbench/dev_b/dev_e/phy_txd
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/tp(1)
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/tp(2)
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/tp(3)
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst -radix hexadecimal /testbench/dev_b/dev_e/usbrqst_e/tp(4)
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst -radix hexadecimal /testbench/dev_b/dev_e/usbrqst_e/leds
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/tp(5)
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/tp(6)
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst -divider {New Divider}
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/clk
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/cken
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/tp(7)
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/tp(8)
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst -divider {New Divider}
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/in_req
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/rqst_rdys(set_address)
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/in_rdy
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/out_req
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/out_rdy
+add wave -noupdate -expand -group usbdev_e -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/tp(1)
+add wave -noupdate -expand -group usbdev_e -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/tp(2)
+add wave -noupdate -expand -group usbdev_e -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/tp(3)
+add wave -noupdate -expand -group usbdev_e -group dev_usbrqst -radix hexadecimal /testbench/dev_b/dev_e/usbrqst_e/tp(4)
+add wave -noupdate -expand -group usbdev_e -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/tp(5)
+add wave -noupdate -expand -group usbdev_e -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/tp(6)
+add wave -noupdate -expand -group usbdev_e -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/tp(7)
+add wave -noupdate -expand -group usbdev_e -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/tp(8)
+add wave -noupdate -expand -group usbdev_e -group dev_usbrqst -divider {New Divider}
+add wave -noupdate -expand -group usbdev_e -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/clk
+add wave -noupdate -expand -group usbdev_e -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/cken
+add wave -noupdate -expand -group usbdev_e -group dev_usbrqst -divider {New Divider}
+add wave -noupdate -expand -group usbdev_e -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/in_req
+add wave -noupdate -expand -group usbdev_e -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/rqst_rdys(set_address)
+add wave -noupdate -expand -group usbdev_e -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/out_req
 add wave -noupdate -expand -group usbdev_e -group dev_usbphycrc -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphycrc_e/usbphy_e/usbphytx_e/cken
 add wave -noupdate -expand -group usbdev_e -group dev_usbphycrc -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphycrc_e/usbphy_e/usbphytx_e/txen
 add wave -noupdate -expand -group usbdev_e -group dev_usbphycrc -group dev_usbphy_tx /testbench/dev_b/dev_e/usbphycrc_e/usbphy_e/usbphytx_e/txd
@@ -110,7 +105,7 @@ add wave -noupdate -expand -group dev_tp_p /testbench/dev_b/dev_e/tp(3)
 add wave -noupdate -expand -group dev_tp_p -radix hexadecimal /testbench/dev_b/tp_p/msb
 add wave -noupdate -expand -group dev_tp_p /testbench/dev_b/tp_p/cntr
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {12173145 ps} 0} {{Cursor 2} {17293732 ps} 0}
+WaveRestoreCursors {{Cursor 1} {7246721 ps} 0} {{Cursor 2} {17075410 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 292
 configure wave -valuecolwidth 124
@@ -126,4 +121,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {16730136 ps} {17320762 ps}
+WaveRestoreZoom {0 ps} {25200 ns}
