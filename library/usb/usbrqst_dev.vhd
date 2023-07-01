@@ -135,9 +135,9 @@ begin
 							end case;
 						end if;
 					when s_ackrqstdata =>
-						if (tx_rdy xor tx_req)='0' then
+						if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 							txpid  <= hs_ack;
-							tx_req <= not tx_rdy;
+							tx_req <= not to_stdulogic(to_bit(tx_rdy));
 							state  := s_inout;
 						end if;
 					when s_inout =>
@@ -147,7 +147,6 @@ begin
 								out_req <= not montrdy(out_rdys);
 								state   := s_datain;
 							when tk_in  =>
-								tp_state <= x"1";
 								in_req  <= not montrdy(in_rdys);
 								state   := s_dataout;
 							when data0|data1 =>
@@ -158,22 +157,25 @@ begin
 						end if;
 					when s_dataout =>
 						if (in_req xor montrdy(in_rdys))='0' then
-							if (tx_rdy xor tx_req)='0' then
+							if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 								txpid  <= dpid;
-								tx_req <= not tx_rdy;
+								tx_req <= not to_stdulogic(to_bit(tx_rdy));
 								state  := s_ackin;
 							end if;
 						end if;
 					when s_ackin =>
 						if (rx_rdy xor rx_req)='1' then
+								tp_state <= x"f";
 							case rxpid is
 							when hs_ack =>
+								tp_state <= x"1";
 								dpid  := dpid xor tbit;
 								setup_rdy := setup_req;
 							when data0|data1 =>
-								tp_state <= x"1";
 								state := s_dataout;
+							when tk_sof =>
 							when others =>
+								tp_state <= x"2";
 								setup_rdy := setup_req;
 								assert false report "wrong case" severity warning;
 							end case;
@@ -197,7 +199,6 @@ begin
 
 				setup_monitor_l : if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 					if rxpid=tk_setup then
-						-- tp_state <= x"8";
 						if rxtoken(0 to addr'length-1)=(addr'range => '0') then
 							setup_req := not setup_rdy;
 							state     := s_rqstdata;
@@ -211,7 +212,7 @@ begin
 						rqst_reqs <= rqst_rdys;
 					end if;
 				end if;
-				rx_rdy <= rx_req;
+				rx_rdy <= to_stdulogic(to_bit(rx_req));
 			end if;
 			tp(13) <= to_stdulogic(setup_req);
 			tp(14) <= to_stdulogic(setup_rdy);

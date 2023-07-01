@@ -87,18 +87,22 @@ begin
 							-- assert false report "usbpkt_rx" severity failure;
 					end case;
    					if rxdv='1' then
-   						if rxbs='0' then
-							if cntr < shr'length-1 then
-								fifo_ena <= '0';
-							else
-								fifo_ena <= '1';
+						case state is
+						when s_token|s_data =>
+							if rxbs='0' then
+								if cntr < shr'length-1 then
+									fifo_ena <= '0';
+								else
+									fifo_ena <= '1';
+								end if;
+								if cntr < shr'length then
+									shr := shr ror 1;
+									shr(0) := rxd;
+									cntr := cntr + 1;
+								end if;
 							end if;
-							if cntr < shr'length then
-								shr := shr ror 1;
-								shr(0) := rxd;
-								cntr := cntr + 1;
-							end if;
-   						end if;
+						when others =>
+						end case;
 					else
 						fifo_ena <='0';
 						cntr := 0;

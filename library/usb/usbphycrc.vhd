@@ -194,7 +194,7 @@ begin
 
 	rxdv <= --phy_rxdv and crcact_rx and not txen;
 		'0' when      txen='1' else
-		'0' when crcact_rx='0' else
+		'0' when crcact_tx='1' else
 		phy_rxdv;
 
 	rxbs <= phy_rxbs;
