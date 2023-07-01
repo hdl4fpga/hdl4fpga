@@ -86,6 +86,7 @@ architecture def of usbrqst_dev is
 		return retval;
 	end;
 
+		alias tp_state is tp(5 to 8);
 begin
 
 	usbrqst_p : process (clk)
@@ -97,14 +98,13 @@ begin
 		variable request   : std_logic_vector( 8-1 downto 0);
 		variable setup_req : bit;
 		variable setup_rdy : bit;
-		alias tp_state is tp(5 to 8);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (setup_rdy xor setup_req)='1' then
 					case state is
 					when s_rqstdata =>
-						if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
+						if (rx_rdy xor rx_req)='1' then
 							case rxpid is
 							when data0 =>
 								shr(0 to rxrqst'length-1) := unsigned(rxrqst);
@@ -121,70 +121,65 @@ begin
 								dpid    := rxpid;
 								dpid    := dpid xor tbit;
 
-								if (rqst_rdy xor rqst_req)='0' then
-									for i in request_ids'range loop
-										if request(4-1 downto 0)=request_ids(i) then
-											rqst_reqs(i) <= not rqst_rdys(i);
-											rqst_req     <= not rqst_rdy;
-											state        := s_ackrqstdata;
-											exit;
-										end if;
-									end loop;
-								end if;
-								tp_state <= x"1";
+								for i in request_ids'range loop
+									if request(4-1 downto 0)=request_ids(i) then
+										rqst_reqs(i) <= not rqst_rdys(i);
+										rqst_req     <= not rqst_rdy;
+										state        := s_ackrqstdata;
+										exit;
+									end if;
+								end loop;
 
 							when others =>
-								assert false report "wrong case" severity failure;
+								assert false report "wrong case" severity warning;
 							end case;
 						end if;
 					when s_ackrqstdata =>
-						if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
+						if (tx_rdy xor tx_req)='0' then
 							txpid  <= hs_ack;
-							tx_req <= not to_stdulogic(to_bit(tx_rdy));
+							tx_req <= not tx_rdy;
 							state  := s_inout;
-							tp_state <= x"2";
 						end if;
 					when s_inout =>
-						if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
+						if (rx_rdy xor rx_req)='1' then
 							case rxpid is
 							when tk_out =>
 								out_req <= not montrdy(out_rdys);
 								state   := s_datain;
 							when tk_in  =>
+								tp_state <= x"1";
 								in_req  <= not montrdy(in_rdys);
 								state   := s_dataout;
 							when data0|data1 =>
 							when others =>
-								-- setup_rdy := setup_req;
-								assert false report "wrong case" severity failure;
+								setup_rdy := setup_req;
+								assert false report "wrong case" severity warning;
 							end case;
-							tp_state <= x"3";
 						end if;
 					when s_dataout =>
 						if (in_req xor montrdy(in_rdys))='0' then
-							if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
+							if (tx_rdy xor tx_req)='0' then
 								txpid  <= dpid;
-								tx_req <= not to_stdulogic(to_bit(tx_rdy));
+								tx_req <= not tx_rdy;
 								state  := s_ackin;
 							end if;
-							tp_state <= x"4";
 						end if;
 					when s_ackin =>
-						if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
+						if (rx_rdy xor rx_req)='1' then
 							case rxpid is
 							when hs_ack =>
 								dpid  := dpid xor tbit;
-								-- setup_rdy := setup_req;
+								setup_rdy := setup_req;
 							when data0|data1 =>
+								tp_state <= x"1";
 								state := s_dataout;
 							when others =>
-								-- setup_rdy := setup_req;
-								assert false report "wrong case" severity failure;
+								setup_rdy := setup_req;
+								assert false report "wrong case" severity warning;
 							end case;
-							tp_state <= x"5";
 						end if;
 					when s_datain =>
-						if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
+						if (rx_rdy xor rx_req)='1' then
 							case rxpid is
 							when data0|data1 =>
 								if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
@@ -193,16 +188,16 @@ begin
 									tx_req <= not to_stdulogic(to_bit(tx_rdy));
 								end if;
 							when others =>
-								-- setup_rdy := setup_req;
-								assert false report "wrong case" severity failure;
+								setup_rdy := setup_req;
+								assert false report "wrong case" severity warning;
 							end case;
-							tp_state <= x"6";
 						end if;
 					end case;
 				end if;
 
 				setup_monitor_l : if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 					if rxpid=tk_setup then
+						-- tp_state <= x"8";
 						if rxtoken(0 to addr'length-1)=(addr'range => '0') then
 							setup_req := not setup_rdy;
 							state     := s_rqstdata;
@@ -214,18 +209,12 @@ begin
 						out_req   <= montrdy(out_rdys);
 						rqst_req  <= rqst_rdy;
 						rqst_reqs <= rqst_rdys;
-						tx_req    <= tx_rdy;
-						tp_state <= x"e";
 					end if;
-					rx_rdy <= rx_req;
 				end if;
-				if (setup_rdy xor setup_req)='0' then
-					tp_state <= x"f";
-				end if;
-
+				rx_rdy <= rx_req;
 			end if;
-	tp(13) <= to_stdulogic(setup_req);
-	tp(14) <= to_stdulogic(setup_rdy);
+			tp(13) <= to_stdulogic(setup_req);
+			tp(14) <= to_stdulogic(setup_rdy);
 		end if;
 	end process;
 
@@ -233,7 +222,6 @@ begin
 	tp(2)  <= to_stdulogic(rqst_rdys(set_address));
 	tp(3)  <= to_stdulogic(rqst_reqs(get_descriptor));
 	tp(4)  <= to_stdulogic(rqst_rdys(get_descriptor));
-
 	tp(9)  <= to_stdulogic(in_req);
 	tp(10) <= to_stdulogic(montrdy(in_rdys));
 	tp(11) <= to_stdulogic(out_req);
@@ -258,44 +246,44 @@ begin
 		end if;
 	end process;
 
-	getdescriptor_p : process (getdescriptor_rdy, clk)
-		alias in_rdy  is in_rdys(get_descriptor);
-		alias out_rdy is out_rdys(get_descriptor);
-	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				if (to_bit(rx_rdy) xor to_bit(rx_req))='0' then
-					if (getdescriptor_rdy xor getdescriptor_req)='1' then
-						if (out_req xor montrdy(out_rdys))='1' then
-							out_rdy <= not out_rdy;
-							getdescriptor_rdy <= getdescriptor_req;
-						end if;
-						if (in_req xor montrdy(in_rdys))='1' then
-							in_rdy <= not in_rdy;
-							getdescriptor_rdy <= getdescriptor_req;
-						end if;
-					end if;
-				end if;
-			end if;
-		end if;
-	end process;
+	-- getdescriptor_p : process (getdescriptor_rdy, clk)
+		-- alias in_rdy  is in_rdys(get_descriptor);
+		-- alias out_rdy is out_rdys(get_descriptor);
+	-- begin
+		-- if rising_edge(clk) then
+			-- if cken='1' then
+				-- if (to_bit(rx_rdy) xor to_bit(rx_req))='0' then
+					-- if (getdescriptor_rdy xor getdescriptor_req)='1' then
+						-- if (out_req xor montrdy(out_rdys))='1' then
+							-- out_rdy <= not out_rdy;
+							-- getdescriptor_rdy <= getdescriptor_req;
+						-- end if;
+						-- if (in_req xor montrdy(in_rdys))='1' then
+							-- in_rdy <= not in_rdy;
+							-- getdescriptor_rdy <= getdescriptor_req;
+						-- end if;
+					-- end if;
+				-- end if;
+			-- end if;
+		-- end if;
+	-- end process;
 
-	montrequests_p : process (clk)
-	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				if (rqst_rdy xor rqst_req)='1' then
-					l1 : for l in 0 to 0 loop
-						for i in rqst_rdys'range loop
-							if (rqst_rdys(i) xor rqst_reqs(i))='1' then
-								exit l1;
-							end if;
-						end loop;
-						rqst_rdy <= rqst_req;
-					end loop;
-				end if;
-			end if;
-		end if;
-	end process;
+	-- montrequests_p : process (clk)
+	-- begin
+		-- if rising_edge(clk) then
+			-- if cken='1' then
+				-- if (rqst_rdy xor rqst_req)='1' then
+					-- l1 : for l in 0 to 0 loop
+						-- for i in rqst_rdys'range loop
+							-- if (rqst_rdys(i) xor rqst_reqs(i))='1' then
+								-- exit l1;
+							-- end if;
+						-- end loop;
+						-- rqst_rdy <= rqst_req;
+					-- end loop;
+				-- end if;
+			-- end if;
+		-- end if;
+	-- end process;
 
 end;

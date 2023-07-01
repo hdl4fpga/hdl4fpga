@@ -76,6 +76,7 @@ begin
 				reverse(x"2d0010",8)(0 to 19-1) &
 				reverse(x"c300_0529_000000_0000_ed0d",8)(0 to 72-1) &
 				reverse(x"690010",8)(0 to 19-1) &
+				-- reverse(x"2d0010",8)(0 to 19-1) &
 				-- reverse(x"c380_06_0001_0000_0800_eb94",8)(0 to 72-1) &
 				-- reverse(x"e10010",8)(0 to 19-1) &
 				reverse(x"d2",8);
