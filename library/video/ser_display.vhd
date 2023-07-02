@@ -108,7 +108,7 @@ begin
 
 	process(phy_clk)
 		variable code  : std_logic_vector(cga_codes'length-1 downto 0);
-		variable addr  : unsigned(cga_addr'range) := ('1', others => '0');
+		variable addr  : unsigned(cga_addr'range) := ('0', others => '0');
 		variable we    : std_logic;
 		variable data  : unsigned(des_data'reverse_range);
 	begin

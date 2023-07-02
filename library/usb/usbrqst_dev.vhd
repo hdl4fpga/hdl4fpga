@@ -150,8 +150,8 @@ begin
 								in_req  <= not montrdy(in_rdys);
 								state   := s_dataout;
 							when data0|data1 =>
+							when tk_sof =>
 							when others =>
-								setup_rdy := setup_req;
 								assert false report "wrong case" severity warning;
 							end case;
 						end if;
@@ -167,14 +167,12 @@ begin
 						if (rx_rdy xor rx_req)='1' then
 							case rxpid is
 							when hs_ack =>
-								tp_state <= x"f";
 								dpid  := dpid xor tbit;
 								setup_rdy := setup_req;
 							when data0|data1 =>
 								state := s_dataout;
 							when tk_sof =>
 							when others =>
-								tp_state <= x"2";
 								setup_rdy := setup_req;
 								assert false report "wrong case" severity warning;
 							end case;
@@ -246,27 +244,27 @@ begin
 		end if;
 	end process;
 
-	-- getdescriptor_p : process (getdescriptor_rdy, clk)
-		-- alias in_rdy  is in_rdys(get_descriptor);
-		-- alias out_rdy is out_rdys(get_descriptor);
-	-- begin
-		-- if rising_edge(clk) then
-			-- if cken='1' then
-				-- if (to_bit(rx_rdy) xor to_bit(rx_req))='0' then
-					-- if (getdescriptor_rdy xor getdescriptor_req)='1' then
-						-- if (out_req xor montrdy(out_rdys))='1' then
-							-- out_rdy <= not out_rdy;
-							-- getdescriptor_rdy <= getdescriptor_req;
-						-- end if;
-						-- if (in_req xor montrdy(in_rdys))='1' then
-							-- in_rdy <= not in_rdy;
-							-- getdescriptor_rdy <= getdescriptor_req;
-						-- end if;
-					-- end if;
-				-- end if;
-			-- end if;
-		-- end if;
-	-- end process;
+	getdescriptor_p : process (getdescriptor_rdy, clk)
+		alias in_rdy  is in_rdys(get_descriptor);
+		alias out_rdy is out_rdys(get_descriptor);
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (to_bit(rx_rdy) xor to_bit(rx_req))='0' then
+					if (getdescriptor_rdy xor getdescriptor_req)='1' then
+						if (out_req xor montrdy(out_rdys))='1' then
+							out_rdy <= not out_rdy;
+							getdescriptor_rdy <= getdescriptor_req;
+						end if;
+						if (in_req xor montrdy(in_rdys))='1' then
+							in_rdy <= not in_rdy;
+							getdescriptor_rdy <= getdescriptor_req;
+						end if;
+					end if;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	-- montrequests_p : process (clk)
 	-- begin
