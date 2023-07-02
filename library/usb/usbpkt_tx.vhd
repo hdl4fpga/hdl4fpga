@@ -65,7 +65,6 @@ begin
 					cntr := pid'length-1;
 					if (to_bit(tx_req) xor to_bit(tx_rdy))='1' then
 						if phy_txbs='0' then
-							tp(1 to 4) <= x"1";
 							state := s_pid;
 						end if;
 					end if;
@@ -74,7 +73,6 @@ begin
 						if phy_txbs='0' then
 							pid  := pid ror 1;
 							cntr := cntr - 1;
-							tp(1 to 4) <= x"2";
 						end if;
 					else
 						case pkt_txpid is
@@ -92,12 +90,10 @@ begin
 					end if;
 				when s_token =>
 					tx_rdy <= to_stdulogic(to_bit(tx_req));
-					-- tp(1 to 4) <= x"3";
 					state  := s_idle;
 				when s_data =>
 					tx_rdy <= to_stdulogic(to_bit(tx_req));
-					tp(1 to 4) <= x"4";
-					-- state  := s_idle;
+					state  := s_idle;
 				end case;
 				data <= pid(0);
 			end if;
