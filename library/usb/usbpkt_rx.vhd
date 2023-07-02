@@ -38,6 +38,7 @@ entity usbpkt_rx is
 		rx_rdy   : in  std_logic;
 
 		rxdv     : in  std_logic;
+		rxpidv   : in  std_logic;
 		rxpid    : in  std_logic_vector( 4-1 downto 0);
 		rxtoken  : out std_logic_vector(0 to 7+4+5-1);
 		rxrqst   : out std_logic_vector;
@@ -59,7 +60,7 @@ begin
 				if (to_bit(rx_rdy) xor to_bit(rx_req))='0' then
 					case state is
 					when s_idle =>
-						if rxdv='1' then
+						if rxpidv='1' then
    							case rxpid is
    							when tk_setup|tk_in|tk_out|tk_sof =>
 								state := s_token;

@@ -165,10 +165,9 @@ begin
 						end if;
 					when s_ackin =>
 						if (rx_rdy xor rx_req)='1' then
-								tp_state <= x"f";
 							case rxpid is
 							when hs_ack =>
-								tp_state <= x"1";
+								tp_state <= x"f";
 								dpid  := dpid xor tbit;
 								setup_rdy := setup_req;
 							when data0|data1 =>

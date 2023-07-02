@@ -106,23 +106,23 @@ add wave -noupdate -group dev_tp_p /testbench/dev_b/dev_e/tp(2)
 add wave -noupdate -group dev_tp_p /testbench/dev_b/dev_e/tp(3)
 add wave -noupdate -group dev_tp_p -radix hexadecimal /testbench/dev_b/tp_p/msb
 add wave -noupdate -group dev_tp_p /testbench/dev_b/tp_p/cntr
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/usbrqst_p/setup_rdy
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/usbrqst_p/setup_req
 add wave -noupdate /testbench/dev_b/dev_e/usbpktrx_e/rx_req
 add wave -noupdate /testbench/dev_b/dev_e/usbpktrx_e/rx_rdy
-add wave -noupdate /testbench/dev_b/dev_e/usbpktrx_e/line__51/state
 add wave -noupdate /testbench/dev_b/dev_e/usbphycrc_e/usbphy_e/usbphyrx_e/rxdv
-add wave -noupdate /testbench/dev_b/dev_e/usbpktrx_e/rxpid
-add wave -noupdate /testbench/dev_b/dev_e/usbpktrx_e/line__51/state
+add wave -noupdate /testbench/dev_b/dev_e/usbpktrx_e/rxpidv
+add wave -noupdate /testbench/dev_b/dev_e/usbpktrx_e/line__52/state
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/usbrqst_p/request
+add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbpktrx_e/rxpid
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbpktrx_e/rxrqst
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/usbrqst_p/state
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbpktrx_e/rxtoken
-add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbpktrx_e/line__51/shr
-add wave -noupdate /testbench/dev_b/dev_e/usbpktrx_e/line__51/cntr
-add wave -noupdate /testbench/dev_b/dev_e/usbphycrc_e/usbphy_e/usbphyrx_e/rxbs
-add wave -noupdate /testbench/dev_b/dev_e/usbphycrc_e/usbphy_e/usbphyrx_e/rxd
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {4539510 ps} 0} {{Cursor 2} {22151140 ps} 0}
+WaveRestoreCursors {{Cursor 1} {22218033 ps} 0} {{Cursor 2} {12054750 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 351
-configure wave -valuecolwidth 408
+configure wave -valuecolwidth 157
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -135,4 +135,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {12915712 ps}
+WaveRestoreZoom {0 ps} {31500 ns}

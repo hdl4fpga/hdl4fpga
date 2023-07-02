@@ -65,6 +65,7 @@ architecture def of usbdev is
 	signal phy_rxdv  : std_logic;
 	signal phy_rxbs  : std_logic;
 	signal phy_rxpid : std_logic_vector(4-1 downto 0);
+	signal phy_rxpidv : std_logic;
 	signal phy_rxd   : std_logic;
 
 	signal rxtoken   : std_logic_vector(0 to 7+4+5-1);
@@ -83,20 +84,21 @@ begin
 		watermark    => watermark,
 		bit_stuffing => bit_stuffing)
 	port map (
-		tp    => tp_phy,
-		dp    => dp,
-		dn    => dn,
-		clk   => clk,
-		cken  => cken,
+		tp     => tp_phy,
+		dp     => dp,
+		dn     => dn,
+		clk    => clk,
+		cken   => cken,
 
-		txen  => phy_txen,
-		txbs  => phy_txbs,
-		txd   => phy_txd,
+		txen   => phy_txen,
+		txbs   => phy_txbs,
+		txd    => phy_txd,
 
-		rxdv  => phy_rxdv,
-		rxpid => phy_rxpid,
-		rxbs  => phy_rxbs,
-		rxd   => phy_rxd);
+		rxdv   => phy_rxdv,
+		rxpid  => phy_rxpid,
+		rxpidv => phy_rxpidv,
+		rxbs   => phy_rxbs,
+		rxd    => phy_rxd);
 
 	usbpktrx_e : entity hdl4fpga.usbpkt_rx
 	port map (
@@ -108,6 +110,7 @@ begin
 				   
 		rxdv     => phy_rxdv,
 		rxpid    => phy_rxpid,
+		rxpidv   => phy_rxpidv,
 		rxbs     => phy_rxbs,
 		rxd      => phy_rxd,
 				   

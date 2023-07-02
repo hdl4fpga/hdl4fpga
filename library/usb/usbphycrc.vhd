@@ -46,6 +46,7 @@ entity usbphycrc is
 		txd   : in  std_logic;
 
 		rxpid : out std_logic_vector(4-1 downto 0);
+		rxpidv : out std_logic;
 		rxdv  : out std_logic;
 		rxbs  : buffer std_logic;
 		rxd   : buffer std_logic;
@@ -196,6 +197,7 @@ begin
 		'0' when      txen='1' else
 		'0' when crcact_tx='1' else
 		phy_rxdv;
+	rxpidv <= crcact_rx;
 
 	rxbs <= phy_rxbs;
 	rxd  <= phy_rxd;
