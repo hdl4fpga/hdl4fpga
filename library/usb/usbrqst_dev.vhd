@@ -194,7 +194,7 @@ begin
 					end case;
 				end if;
 
-				setup_monitor_l : if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
+				setup_l : if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 					if rxpid=tk_setup then
 						if rxtoken(0 to addr'length-1)=(addr'range => '0') then
 							setup_req := not setup_rdy;
@@ -209,6 +209,8 @@ begin
 						rqst_reqs <= rqst_rdys;
 					end if;
 				end if;
+
+
 				rx_rdy <= to_stdulogic(to_bit(rx_req));
 			end if;
 			tp(13) <= to_stdulogic(setup_req);
@@ -224,7 +226,6 @@ begin
 	tp(10) <= to_stdulogic(montrdy(in_rdys));
 	tp(11) <= to_stdulogic(out_req);
 	tp(12) <= to_stdulogic(montrdy(out_rdys));
-
 
 	setaddress_p : process (setaddress_rdy, clk)
 		alias in_rdy is in_rdys(set_address);
@@ -266,22 +267,73 @@ begin
 		end if;
 	end process;
 
-	-- montrequests_p : process (clk)
+	montrequests_p : process (clk)
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (rqst_rdy xor rqst_req)='1' then
+					l1 : for l in 0 to 0 loop
+						for i in rqst_rdys'range loop
+							if (rqst_rdys(i) xor rqst_reqs(i))='1' then
+								exit l1;
+							end if;
+						end loop;
+						rqst_rdy <= rqst_req;
+					end loop;
+				end if;
+			end if;
+		end if;
+	end process;
+
+end;
+
+	-- rqst_p : process (clk)
+		-- type states is (s_setup, s_rqstdata);
+		-- variable state   : states;
+		-- variable shr     : unsigned(0 to rxrqst'length);
+		-- variable request : std_logic_vector( 8-1 downto 0);
 	-- begin
 		-- if rising_edge(clk) then
 			-- if cken='1' then
-				-- if (rqst_rdy xor rqst_req)='1' then
-					-- l1 : for l in 0 to 0 loop
-						-- for i in rqst_rdys'range loop
-							-- if (rqst_rdys(i) xor rqst_reqs(i))='1' then
-								-- exit l1;
+				-- if (rqstdata_rdy xor rqstdata_req)='1' then
+					-- case state is
+					-- when s_data =>
+						-- if (rx_rdy xor rx_req)='1' then
+							-- if rxpid=data0 then
+								-- shr(0 to rxrqst'length-1) := unsigned(rxrqst);
+								-- requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
+								-- shr     := shr rol requesttype'length;
+								-- request := reverse(std_logic_vector(shr(0 to request'length-1)));
+								-- shr     := shr rol request'length;
+								-- value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
+								-- shr     := shr rol value'length;
+								-- index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
+								-- shr     := shr rol index'length;
+								-- length  <= reverse(std_logic_vector(shr(0 to length'length-1)));
+								-- shr     := shr rol length'length;
+								-- dpid    := rxpid;
+								-- dpid    := dpid xor tbit;
+	-- 
+								-- for i in request_ids'range loop
+									-- if request(4-1 downto 0)=request_ids(i) then
+										-- rqst_reqs(i) <= not rqst_rdys(i);
+										-- rqst_req     <= not rqst_rdy;
+										-- ack_req      <= not ack_rdy;
+										-- state        := s_ack;
+										-- exit;
+									-- end if;
+								-- end loop;
+							-- else
 							-- end if;
-						-- end loop;
-						-- rqst_rdy <= rqst_req;
-					-- end loop;
-				-- end if;
+						-- end if;
+					-- end if;
+				-- when s_ack =>
+					-- if (ack_rdy xor ack_req)='0' then
+						-- rqstdata_rdy <= rqstdata_req;
+					-- end if;
+				-- end case;
+			-- else
+				-- state := s_data;
 			-- end if;
 		-- end if;
 	-- end process;
-
-end;
