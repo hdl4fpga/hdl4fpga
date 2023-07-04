@@ -69,6 +69,13 @@ architecture def of usbrqst_dev is
 	signal out_req   : bit;
 	signal out_rdys  : bit_requests := (others => '0');
 
+	signal data_req  : bit_requests := (others => '0');
+	signal data_rdy  : bit;
+	signal ack_req   : bit;
+	signal ack_rdy   : bit;
+	signal rqstdata_req : bit;
+	signal rqstdata_rdy : bit;
+
 	alias setaddress_rdy    is rqst_rdys(set_address);
 	alias setaddress_req    is rqst_reqs(set_address);
 	alias getdescriptor_rdy is rqst_rdys(get_descriptor);
@@ -285,55 +292,190 @@ begin
 		end if;
 	end process;
 
-end;
+	b : block
+    	signal addr      : std_logic_vector( 7-1 downto 0);
+    	signal requesttype : std_logic_vector( 8-1 downto 0);
+    	signal value     : std_logic_vector(16-1 downto 0);
+    	signal index     : std_logic_vector(16-1 downto 0);
+    	signal length    : std_logic_vector(16-1 downto 0);
 
-	-- rqst_p : process (clk)
-		-- type states is (s_setup, s_rqstdata);
-		-- variable state   : states;
-		-- variable shr     : unsigned(0 to rxrqst'length);
-		-- variable request : std_logic_vector( 8-1 downto 0);
-	-- begin
-		-- if rising_edge(clk) then
-			-- if cken='1' then
-				-- if (rqstdata_rdy xor rqstdata_req)='1' then
-					-- case state is
-					-- when s_data =>
-						-- if (rx_rdy xor rx_req)='1' then
-							-- if rxpid=data0 then
-								-- shr(0 to rxrqst'length-1) := unsigned(rxrqst);
-								-- requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
-								-- shr     := shr rol requesttype'length;
-								-- request := reverse(std_logic_vector(shr(0 to request'length-1)));
-								-- shr     := shr rol request'length;
-								-- value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
-								-- shr     := shr rol value'length;
-								-- index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
-								-- shr     := shr rol index'length;
-								-- length  <= reverse(std_logic_vector(shr(0 to length'length-1)));
-								-- shr     := shr rol length'length;
-								-- dpid    := rxpid;
-								-- dpid    := dpid xor tbit;
-	-- 
-								-- for i in request_ids'range loop
-									-- if request(4-1 downto 0)=request_ids(i) then
-										-- rqst_reqs(i) <= not rqst_rdys(i);
-										-- rqst_req     <= not rqst_rdy;
-										-- ack_req      <= not ack_rdy;
-										-- state        := s_ack;
-										-- exit;
-									-- end if;
-								-- end loop;
-							-- else
-							-- end if;
-						-- end if;
-					-- end if;
-				-- when s_ack =>
-					-- if (ack_rdy xor ack_req)='0' then
-						-- rqstdata_rdy <= rqstdata_req;
-					-- end if;
-				-- end case;
-			-- else
-				-- state := s_data;
-			-- end if;
-		-- end if;
-	-- end process;
+    	type bit_requests is array(requests) of bit;
+
+    	signal rqst_req  : bit;
+    	signal rqst_rdy  : bit;
+    	signal rqst_rdys : bit_requests := (others => '0');
+    	signal rqst_reqs : bit_requests := (others => '0');
+
+    	signal in_req    : bit;
+    	signal in_rdys   : bit_requests := (others => '0');
+    	signal out_req   : bit;
+    	signal out_rdys  : bit_requests := (others => '0');
+
+    	signal data_req  : bit_requests := (others => '0');
+    	signal data_rdy  : bit;
+    	signal rqstdata_req : bit;
+    	signal rqstdata_rdy : bit;
+
+    	alias setaddress_rdy    is rqst_rdys(set_address);
+    	alias setaddress_req    is rqst_reqs(set_address);
+    	alias getdescriptor_rdy is rqst_rdys(get_descriptor);
+    	alias getdescriptor_req is rqst_reqs(get_descriptor);
+
+    	function montrdy (
+    		constant rdys : in bit_requests)
+    		return bit is
+    		variable retval : bit;
+    	begin
+    		retval := '0';
+    		for i in rdys'range loop
+    			retval := retval xor rdys(i);
+    		end loop;
+    		return retval;
+    	end;
+
+		alias tp_state is tp(5 to 8);
+
+	begin
+
+	
+	token_p : process (clk)
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
+					case rxpid is
+					when tk_setup =>
+						if (rqst_rdy xor rqst_req)='0' then
+    						if rxtoken(0 to addr'length-1)=(addr'range => '0') then
+    							rqstdata_req <= not rqstdata_rdy;
+    						elsif rxtoken(0 to addr'length-1)=reverse(addr) then
+    							rqstdata_req <= not rqstdata_rdy;
+    						end if;
+    						rqst_rdys <= rqst_reqs;
+						end if;
+					when tk_in =>
+					when tk_out=>
+					when others =>
+					end case;
+				end if;
+			end if;
+		end if;
+	end process;
+
+	hosttodev_p : process (clk)
+		type xxxs is (s_xxx);
+		variable xxx : xxxs;
+		type states is (s_data, s_ack);
+		variable state   : states;
+		constant tbit    : std_logic_vector(data0'range) := b"1000";
+		variable dpid    : std_logic_vector(data0'range);
+		variable shr     : unsigned(0 to rxrqst'length);
+		variable request : std_logic_vector( 8-1 downto 0);
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (data_rdy xor montrdy(data_req))='1' then
+					case state is
+					when s_data =>
+						if (rx_rdy xor rx_req)='1' then
+							case rxpid is
+							when data0|data1 =>
+								case xxx is 
+								when s_xxx =>
+									shr(0 to rxrqst'length-1) := unsigned(rxrqst);
+									requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
+									shr     := shr rol requesttype'length;
+									request := reverse(std_logic_vector(shr(0 to request'length-1)));
+									shr     := shr rol request'length;
+									value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
+									shr     := shr rol value'length;
+									index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
+									shr     := shr rol index'length;
+									length  <= reverse(std_logic_vector(shr(0 to length'length-1)));
+									shr     := shr rol length'length;
+									dpid    := rxpid;
+
+									for i in request_ids'range loop
+										if request(4-1 downto 0)=request_ids(i) then
+											rqst_reqs(i) <= not rqst_rdys(i);
+											rqst_req     <= not rqst_rdy;
+											exit;
+										end if;
+									end loop;
+								end case;
+
+								ack_req <= not ack_rdy; 
+								state   := s_ack;
+							when others =>
+							end case;
+						end if;
+					when s_ack =>
+						if (to_bit(ack_rdy) xor to_bit(ack_req))='0' then
+							dpid     := dpid xor tbit;
+							data_rdy <= montrdy(data_req);
+						end if;
+					end case;
+				end if;
+			else
+				state := s_data;
+			end if;
+		end if;
+	end process;
+
+	devtohost_p : process (clk)
+		type states is (s_data, s_ack);
+		variable state   : states;
+		constant tbit    : std_logic_vector(data0'range) := b"1000";
+		variable dpid    : std_logic_vector(data0'range);
+		variable shr     : unsigned(0 to rxrqst'length);
+		variable request : std_logic_vector( 8-1 downto 0);
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (ack_rdy xor ack_req)='0' then
+					txpid  <= dpid;
+					tx_req <= not to_stdulogic(to_bit(tx_rdy));
+					ack_rdy <= ack_req;
+				end if;
+				if (out_rdy xor montrdy(out_req))='1' then
+					case state is
+					when s_data =>
+						txpid  <= dpid;
+						tx_req <= not to_stdulogic(to_bit(tx_rdy));
+						state  := s_ack;
+					when s_ack =>
+						if (rx_rdy xor rx_req)='1' then
+							case rxpid is
+							when s_ack =>
+							when others =>
+							end case;
+						end if;
+					end case;
+				end if;
+			else
+				state := s_data;
+			end if;
+		end if;
+	end process;
+
+	montrqst_p : process (clk)
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (rqst_rdy xor rqst_req)='1' then
+					l1 : for l in 0 to 0 loop
+						for i in rqst_rdys'range loop
+							if (rqst_rdys(i) xor rqst_reqs(i))='1' then
+								exit l1;
+							end if;
+						end loop;
+						rqst_rdy <= rqst_req;
+					end loop;
+				end if;
+			end if;
+		end if;
+	end process;
+
+	end block;
+
+end;
