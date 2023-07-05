@@ -47,7 +47,6 @@ entity usbrqst_dev is
 		txen    : out std_logic := '0';
 		txbs    : in  std_logic := '0';
 		txd     : out std_logic);
-
 end;
 
 architecture def of usbrqst_dev is
@@ -101,16 +100,8 @@ architecture def of usbrqst_dev is
 	signal hdata  : std_logic_vector(data0'range);
 	alias  token  is rxtoken(rxpid'range);
 
+>>>>>>> .r20292
 begin
-
-	tp(1)  <= to_stdulogic(rqst_reqs(set_address));
-	tp(2)  <= to_stdulogic(rqst_rdys(set_address));
-	tp(3)  <= to_stdulogic(rqst_reqs(get_descriptor));
-	tp(4)  <= to_stdulogic(rqst_rdys(get_descriptor));
-	tp(9)  <= to_stdulogic(in_req);
-	tp(10) <= to_stdulogic(in_rdy);
-	tp(11) <= to_stdulogic(out_req);
-	tp(12) <= to_stdulogic(out_rdy);
 
 	hosttodev_p : process (clk)
 		variable request : std_logic_vector( 8-1 downto 0);
@@ -118,7 +109,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (rx_rdy xor rx_req)='1' then
+				if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 					case rxpid is
 					when tk_setup =>
 						if rxtoken(0 to addr'length-1)=(addr'range => '0') then
@@ -153,6 +144,7 @@ begin
 									rqst_req     <= not rqst_rdy;
 									exit;
 								end if;
+								assert i=request_ids'right report "hola" severity failure;
 							end loop;
 							hdata <= data0;
 						when tk_in =>
@@ -169,6 +161,7 @@ begin
 					when others =>
 					end case;
 				end if;
+				rx_rdy <= to_stdulogic(to_bit(rx_req));
 			end if;
 		end if;
 	end process;
@@ -179,14 +172,15 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
-					tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 					if (out_rdy xor out_req)='1' then
 						txpid   <= hdata;
+						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 						out_rdy <= out_req;
 					end if;
 					if (ack_rdy xor ack_req)='1' then
 						ddata   <= hdata xor tbit;
 						txpid   <= hs_ack;
+						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 						ack_rdy <= ack_req;
 					end if;
 				end if;
