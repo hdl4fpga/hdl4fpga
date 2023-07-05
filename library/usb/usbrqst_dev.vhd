@@ -97,9 +97,10 @@ architecture def of usbrqst_dev is
 	alias tp_state is tp(5 to 8);
 
 	constant tbit : std_logic_vector(data0'range) := b"1000";
-	signal ddata : std_logic_vector(data0'range);
-	signal hdata : std_logic_vector(data0'range);
-	alias token  is rxtoken(rxpid'range);
+	signal ddata  : std_logic_vector(data0'range);
+	signal hdata  : std_logic_vector(data0'range);
+	alias  token  is rxtoken(rxpid'range);
+
 begin
 
 	tp(1)  <= to_stdulogic(rqst_reqs(set_address));
@@ -112,6 +113,7 @@ begin
 	tp(12) <= to_stdulogic(out_rdy);
 
 	hosttodev_p : process (clk)
+		variable request : std_logic_vector( 8-1 downto 0);
 		variable shr : unsigned(0 to rxrqst'length);
 	begin
 		if rising_edge(clk) then
@@ -164,9 +166,8 @@ begin
 						ack_req <= not ack_rdy; 
 					when hs_ack =>
 						hdata <= hdata xor tbit;
+					when others =>
 					end case;
-				else
-					state := s_data;
 				end if;
 			end if;
 		end if;
@@ -213,12 +214,8 @@ begin
 			if cken='1' then
 				if (to_bit(rx_rdy) xor to_bit(rx_req))='0' then
 					if (getdescriptor_rdy xor getdescriptor_req)='1' then
-						if (out_req xor out_rdy)='1' then
-							out_req <= out_rdy;
-							getdescriptor_rdy <= getdescriptor_req;
-						end if;
-						if (in_req xor in_rdy)='1' then
-							in_req <= in_rdy;
+						if (in_rdy xor in_req)='1' then
+							in_rdy <= in_req;
 							getdescriptor_rdy <= getdescriptor_req;
 						end if;
 					end if;
