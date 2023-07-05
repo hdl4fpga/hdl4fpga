@@ -98,11 +98,11 @@ architecture def of usbrqst_dev is
 	constant tbit : std_logic_vector(data0'range) := b"1000";
 	signal ddata  : std_logic_vector(data0'range);
 	signal hdata  : std_logic_vector(data0'range);
-	alias  token  is rxtoken(rxpid'range);
+	signal token  : std_logic_vector(rxpid'range);
 
->>>>>>> .r20292
 begin
 
+	token <= reverse(rxtoken(rxpid'reverse_range));
 	hosttodev_p : process (clk)
 		variable request : std_logic_vector( 8-1 downto 0);
 		variable shr : unsigned(0 to rxrqst'length);
@@ -120,14 +120,15 @@ begin
 					when tk_in =>
 						if (out_req xor out_rdy)='0' then
 							hdata <= ddata;
-							out_req <= out_rdy;
+							out_req <= not out_rdy;
 						end if;
 					when tk_out=>
-						hdata <= ddata;
+						-- hdata;
 					when data0|data1 =>
 						case token is 
 						when tk_setup =>
 							shr(0 to rxrqst'length-1) := unsigned(rxrqst);
+							shr     := shr rol 2*data0'length;
 							requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
 							shr     := shr rol requesttype'length;
 							request := reverse(std_logic_vector(shr(0 to request'length-1)));
@@ -144,20 +145,25 @@ begin
 									rqst_req     <= not rqst_rdy;
 									exit;
 								end if;
-								assert i=request_ids'right report "hola" severity failure;
+								assert i=request_ids'right report "hola" severity error;
 							end loop;
 							hdata <= data0;
+							ddata <= data0 xor tbit;
 						when tk_in =>
+							-- if (out_req xor out_rdy)='1' then
+								-- out_req <= out_rdy;
+							-- end if;
 						when tk_out =>
-							if (in_req xor in_rdy)='1' then
+							if (in_req xor in_rdy)='0' then
 								in_req <= not in_rdy;
 							end if;
 						when others =>
 						end case;
 
+						hdata <= hdata xor tbit;
 						ack_req <= not ack_rdy; 
 					when hs_ack =>
-						hdata <= hdata xor tbit;
+						ddata <= ddata xor tbit;
 					when others =>
 					end case;
 				end if;
@@ -173,12 +179,11 @@ begin
 			if cken='1' then
 				if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 					if (out_rdy xor out_req)='1' then
-						txpid   <= hdata;
+						txpid   <= ddata;
 						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 						out_rdy <= out_req;
 					end if;
 					if (ack_rdy xor ack_req)='1' then
-						ddata   <= hdata xor tbit;
 						txpid   <= hs_ack;
 						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 						ack_rdy <= ack_req;
