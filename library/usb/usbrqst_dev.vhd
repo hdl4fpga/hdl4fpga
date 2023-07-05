@@ -106,15 +106,16 @@ begin
 	hosttodev_p : process (clk)
 		variable request : std_logic_vector( 8-1 downto 0);
 		variable shr : unsigned(0 to rxrqst'length);
+		alias tk_addr is rxtoken(2*rxpid'length to 2*rxpid'length+addr'length-1);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 					case rxpid is
 					when tk_setup =>
-						if rxtoken(0 to addr'length-1)=(addr'range => '0') then
+						if tk_addr=(addr'range => '0') then
 							data_req <= not data_rdy;
-						elsif rxtoken(0 to addr'length-1)=reverse(addr) then
+						elsif tk_addr=reverse(addr) then
 							data_req <= not data_rdy;
 						end if;
 					when tk_in =>
@@ -123,7 +124,6 @@ begin
 							out_req <= not out_rdy;
 						end if;
 					when tk_out=>
-						-- hdata;
 					when data0|data1 =>
 						case token is 
 						when tk_setup =>
@@ -145,14 +145,11 @@ begin
 									rqst_req     <= not rqst_rdy;
 									exit;
 								end if;
-								assert i=request_ids'right report "hola" severity error;
+								assert i/=request_ids'right report requests'image(i) severity error;
 							end loop;
 							hdata <= data0;
 							ddata <= data0 xor tbit;
 						when tk_in =>
-							-- if (out_req xor out_rdy)='1' then
-								-- out_req <= out_rdy;
-							-- end if;
 						when tk_out =>
 							if (in_req xor in_rdy)='0' then
 								in_req <= not in_rdy;
@@ -161,7 +158,8 @@ begin
 						end case;
 
 						hdata <= hdata xor tbit;
-						ack_req <= not ack_rdy; 
+						ack_req  <= not ack_rdy; 
+						data_rdy <= data_req;
 					when hs_ack =>
 						ddata <= ddata xor tbit;
 					when others =>
@@ -208,19 +206,40 @@ begin
 	end process;
 
 	getdescriptor_p : process (getdescriptor_rdy, clk)
+		type states is (s_idle, s_run);
+		variable state : states;
+		constant xxx : std_logic_vector := b"1111_1111";
+		variable cntr : natural range 0 to xxx'length-1;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (to_bit(rx_rdy) xor to_bit(rx_req))='0' then
-					if (getdescriptor_rdy xor getdescriptor_req)='1' then
-						if (in_rdy xor in_req)='1' then
-							in_rdy <= in_req;
-							getdescriptor_rdy <= getdescriptor_req;
+				if (getdescriptor_rdy xor getdescriptor_req)='1' then
+					case state is
+					when s_idle => 
+						if (out_rdy xor out_req)='1' then
+							txen <= '1';
+							state := s_run;
 						end if;
-					end if;
+					when s_run =>
+						if txbs='0' then
+							if cntr < xxx'length-1 then 
+								txen <= '1';
+								cntr := cntr + 1;
+							else
+								txen <= '0';
+								cntr := 0;
+								getdescriptor_rdy <= getdescriptor_req;
+							end if;
+						end if;
+					end case;
+				else
+					txen <= '0';
+					cntr := 0;
+					state := s_idle;
 				end if;
 			end if;
 		end if;
+		txd <= xxx(cntr);
 	end process;
 
 	tp(1)  <= to_stdulogic(rqst_reqs(set_address));

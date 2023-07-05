@@ -92,8 +92,12 @@ begin
 					tx_rdy <= to_stdulogic(to_bit(tx_req));
 					state  := s_idle;
 				when s_data =>
-					tx_rdy <= to_stdulogic(to_bit(tx_req));
-					state  := s_idle;
+					if phy_txbs='0' then
+						if pkt_txen='0' then
+							tx_rdy <= to_stdulogic(to_bit(tx_req));
+							state  := s_idle;
+						end if;
+					end if;
 				end case;
 				data <= pid(0);
 			end if;

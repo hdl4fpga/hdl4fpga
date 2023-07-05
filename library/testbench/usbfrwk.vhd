@@ -78,9 +78,9 @@ begin
 				reverse(x"c3_0005_1500_0000_0000_e831",8)(0 to 72-1) &
 				reverse(x"690010",8)(0 to 19-1) &
 				reverse(x"d2",8) &
-				reverse(x"2d0f18",8)(0 to 19-1) &
+				reverse(x"2d1530",8)(0 to 19-1) &
 				reverse(x"C3_0006_0001_0000_0800_ed0d",8)(0 to 72-1) &
-				reverse(x"690f18",8)(0 to 19-1) &
+				reverse(x"691530",8)(0 to 19-1) &
 				reverse(x"d2",8);
 
 			constant length : natural_vector := (
@@ -89,7 +89,7 @@ begin
 
 			constant delays : time_vector := (
 				0 ns, 0 ns, 2 us, 3.3 us,
-				0 ns, 0 ns, 2 us, 3.3 us);
+				0 ns, 0 ns, 2 us, 4.3 us);
 
 			variable i     : natural;
 			variable j     : natural;
@@ -210,7 +210,7 @@ begin
 
 		tp_p : process (rxdv, clk)
 			variable cntr : natural := 0;
-			variable shr  : std_logic_vector(0 to 256-1);
+			variable shr  : std_logic_vector(0 to 256*2-1);
 			variable msb  : std_logic_vector(shr'range);
 		begin
 			if rising_edge(clk) then
