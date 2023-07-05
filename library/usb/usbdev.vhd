@@ -68,7 +68,7 @@ architecture def of usbdev is
 	signal phy_rxpidv : std_logic;
 	signal phy_rxd   : std_logic;
 
-	signal rxtoken   : std_logic_vector(0 to 7+4+5-1);
+	signal rxtoken   : std_logic_vector(0 to 4+7+4+5-1);
 	signal rxrqst    : std_logic_vector(0 to 8*8+8-1);
 
 	signal tp_phy  : std_logic_vector(1 to 32);

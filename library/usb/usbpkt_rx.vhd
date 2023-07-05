@@ -40,7 +40,7 @@ entity usbpkt_rx is
 		rxdv     : in  std_logic;
 		rxpidv   : in  std_logic;
 		rxpid    : in  std_logic_vector( 4-1 downto 0);
-		rxtoken  : out std_logic_vector(0 to 7+4+5-1);
+		rxtoken  : out std_logic_vector;
 		rxrqst   : out std_logic_vector;
 		rxbs     : in  std_logic;
 		rxd      : in  std_logic;
@@ -88,22 +88,18 @@ begin
 							-- assert false report "usbpkt_rx" severity failure;
 					end case;
    					if rxdv='1' then
-						case state is
-						when s_token|s_data =>
-							if rxbs='0' then
-								if cntr < shr'length-1 then
-									fifo_ena <= '0';
-								else
-									fifo_ena <= '1';
-								end if;
-								if cntr < shr'length then
-									shr := shr ror 1;
-									shr(0) := rxd;
-									cntr := cntr + 1;
-								end if;
+						if rxbs='0' then
+							if cntr < shr'length-1 then
+								fifo_ena <= '0';
+							else
+								fifo_ena <= '1';
 							end if;
-						when others =>
-						end case;
+							if cntr < shr'length then
+								shr := shr ror 1;
+								shr(0) := rxd;
+								cntr := cntr + 1;
+							end if;
+						end if;
 					else
 						fifo_ena <='0';
 						cntr := 0;
