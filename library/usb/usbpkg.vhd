@@ -81,14 +81,4 @@ package usbpkg is
     	interface => x"04",
     	endpoint  => x"05");
 	
-	constant device_descritptor : std_logic_vector := (
-		reverse(x"00")                      & -- bLength
-		reverse(decriptortypes_ids(device)) & -- Descriptor Type
-		reverse(x"0110")                    & -- bcdUSB
-		reverse(x"ff")                      & -- Class
-		reverse(x"ff")                      & -- SubClass
-		reverse(x"ff")                      & -- bDeviceProtocol
-		reverse(x"08")                      & -- bMaxPacketSize0
-		reverse(x"1200")                    & -- idVendor
-		reverse(x"0001"));
 end;

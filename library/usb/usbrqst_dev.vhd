@@ -206,10 +206,25 @@ begin
 	end process;
 
 	getdescriptor_p : process (getdescriptor_rdy, clk)
-		type states is (s_idle, s_run);
+		type states is (s_idle, s_data, s_status);
 		variable state : states;
-		constant xxx : std_logic_vector := x"00";
-		variable cntr : natural range 0 to xxx'length-1;
+		constant device_descritptor : std_logic_vector := (
+			reverse(x"12")                      & -- Length
+			reverse(decriptortypes_ids(device)) & -- DescriptorType
+			reverse(x"0110")                    & -- USB
+			reverse(x"00")                      & -- DeviceClass
+			reverse(x"00")                      & -- SubClass
+			reverse(x"00")                      & -- DeviceProtocol
+			reverse(x"20")                      & -- MaxPacketSize0
+			reverse(x"1234")                    & -- idVendor
+			reverse(x"abcd")                    & -- idProduct
+			reverse(x"0100")                    & -- Device
+			reverse(x"01")                      & -- Manufacturer
+			reverse(x"02")                      & -- Product
+			reverse(x"03")                      & -- SerialNumber
+			reverse(x"01"));                      -- NumConfigurations
+
+		variable cntr : natural range 0 to device_descritptor'length-1;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -217,19 +232,27 @@ begin
 					case state is
 					when s_idle => 
 						if (out_rdy xor out_req)='1' then
-							txen <= '1';
-							state := s_run;
+							txen  <= '1';
+							cntr  := 0;
+							state := s_data;
 						end if;
-					when s_run =>
+					when s_data =>
 						if txbs='0' then
-							if cntr < xxx'length-1 then 
-								txen <= '1';
-								cntr := cntr + 1;
+							if cntr = shift_left(unsigned(length), 3)-1 then 
+								txen  <= '0';
+								state := s_status;
+							elsif cntr = device_descritptor'length-1 then 
+								txen  <= '0';
+								state := s_status;
 							else
-								txen <= '0';
-								cntr := 0;
-								getdescriptor_rdy <= getdescriptor_req;
+								txen  <= '1';
+								cntr  := cntr + 1;
 							end if;
+						end if;
+					when s_status =>
+						getdescriptor_rdy <= getdescriptor_req;
+						if (in_rdy xor in_req)='1' then
+							in_rdy <= in_req;
 						end if;
 					end case;
 				else
@@ -239,7 +262,7 @@ begin
 				end if;
 			end if;
 		end if;
-		txd <= xxx(cntr);
+		txd <= device_descritptor(cntr);
 	end process;
 
 	tp(1)  <= to_stdulogic(rqst_reqs(set_address));
