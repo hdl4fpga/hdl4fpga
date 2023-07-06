@@ -208,7 +208,7 @@ begin
 	getdescriptor_p : process (getdescriptor_rdy, clk)
 		type states is (s_idle, s_run);
 		variable state : states;
-		constant xxx : std_logic_vector := b"1111_1111";
+		constant xxx : std_logic_vector := x"00";
 		variable cntr : natural range 0 to xxx'length-1;
 	begin
 		if rising_edge(clk) then

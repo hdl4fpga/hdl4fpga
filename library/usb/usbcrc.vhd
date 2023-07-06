@@ -32,6 +32,7 @@ entity usbcrc is
 	port (
 		clk   : in  std_logic;
 		cken  : in  std_logic;
+		init  : in  std_logic := '0';
 		dv    : in  std_logic;
 		data  : in  std_logic;
 		crc5  : buffer std_logic_vector(0 to 5-1);
@@ -63,6 +64,7 @@ begin
 			port (
 				clk  : in  std_logic;
 				cken : in  std_logic;
+				init : in  std_logic;
 				g    : in  std_logic_vector;
 				dv   : in  std_logic;
 				data : in  std_logic_vector;
@@ -70,40 +72,43 @@ begin
 			port map (
 				clk  => clk,
 				cken => cken,
+				init => init,
 				-- g    => g(slce(i) to slce(i+1)-1), -- Diamond complains
 				g    => g_usb, -- Latticesemi Diamond Workaround
 				dv   => dv,
 				data => d,
 				-- crc  => crc(slce(i) to slce(i+1)-1)); -- Diamond complains
 				crc  => crc_usb); -- Latticesemi Diamond Workaround
+
 		begin
 			crc_p : process (clk)
 				type states is (s_idle, s_run);
-				variable state : states;
+				variable state : states := s_idle;
 			begin
 				if rising_edge(clk) then
-					case state is
-					when s_idle =>
-						if cken='1' then
-							if dv='1' then
-								crc   <= galois_crc(data, (crc'range => '1'), g);
-								state := s_run;
-							else
-								crc <= std_logic_vector(unsigned(crc) rol 1);
-							end if;
-						elsif dv='0' then
+					if cken='1' then
+						if init='1' then
 							crc <= (crc'range => '1');
-						end if;
-					when s_run =>
-						if dv='1' then
-							if cken='1' then
-								crc <= galois_crc(data, crc, g);
-							end if;
-						elsif cken='1' then
-							crc <= std_logic_vector(unsigned(crc) rol 1);
 							state := s_idle;
+						else
+    						case state is
+    						when s_idle =>
+    							if dv='1' then
+    								crc <= galois_crc(data, crc, g);
+    								state := s_run;
+    							else
+    								crc <= std_logic_vector(unsigned(crc) rol 1);
+    							end if;
+    						when s_run =>
+    							if dv='1' then
+    								crc <= galois_crc(data, crc, g);
+    							else
+    								crc <= std_logic_vector(unsigned(crc) rol 1);
+    								state := s_idle;
+    							end if;
+    						end case;
 						end if;
-					end case;
+					end if;
 				end if;
 			end process;
 		end block;

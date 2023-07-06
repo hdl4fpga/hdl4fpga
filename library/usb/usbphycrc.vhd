@@ -68,10 +68,10 @@ architecture def of usbphycrc is
 	signal phy_rxd   : std_logic;
 
 	signal data      : std_logic;
+	signal crc0      : std_logic;
 	signal crcact_rx : std_logic;
 	signal crcact_tx : std_logic;
 	signal crcdv     : std_logic;
-	signal crcen     : std_logic;
 	signal crcd      : std_logic;
 	signal crc5      : std_logic_vector(0 to 5-1);
 	signal crc16     : std_logic_vector(0 to 16-1);
@@ -107,15 +107,13 @@ begin
 		crcact_tx when txen='1'     else 
 		crcact_rx when phy_rxdv='1' else
 		'0';
-	crcen <= 
-		cken and not phy_txbs when crcact_tx='1' else
-		cken and not phy_rxbs when crcact_rx='1' else 
-		'0';
 
+	crc0 <= not crcact_rx and not crcact_tx;
 	usbcrc_e : entity hdl4fpga.usbcrc
 	port map (
 		clk   => clk,
-		cken  => crcen,
+		cken  => cken,
+		init  => crc0,
 		dv    => crcdv,
 		data  => data,
 		crc5  => crc5,
