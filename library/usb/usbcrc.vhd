@@ -87,27 +87,26 @@ begin
 			begin
 				if rising_edge(clk) then
 					if cken='1' then
-						if init='1' then
-							crc <= (crc'range => '1');
-							state := s_idle;
-						else
-    						case state is
-    						when s_idle =>
-    							if dv='1' then
-    								crc <= galois_crc(data, crc, g);
-    								state := s_run;
-    							else
-    								crc <= std_logic_vector(unsigned(crc) rol 1);
-    							end if;
-    						when s_run =>
-    							if dv='1' then
-    								crc <= galois_crc(data, crc, g);
-    							else
-    								crc <= std_logic_vector(unsigned(crc) rol 1);
-    								state := s_idle;
-    							end if;
-    						end case;
-						end if;
+    					case state is
+    					when s_idle =>
+    						if dv='1' then
+    							crc <= galois_crc(data, (crc'range => '1'), g);
+    							state := s_run;
+							elsif init='1' then
+								crc <= (crc'range => '1');
+    						else
+    							crc <= std_logic_vector(unsigned(crc) rol 1);
+    						end if;
+    					when s_run =>
+							if init='1' then
+    							crc <= galois_crc(data, (crc'range => '1'), g);
+    						elsif dv='1' then
+    							crc <= galois_crc(data, crc, g);
+    						else
+    							crc <= std_logic_vector(unsigned(crc) rol 1);
+    							state := s_idle;
+    						end if;
+    					end case;
 					end if;
 				end if;
 			end process;
