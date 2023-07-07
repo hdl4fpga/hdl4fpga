@@ -215,7 +215,7 @@ begin
 			reverse(x"00")                      & -- DeviceClass
 			reverse(x"00")                      & -- SubClass
 			reverse(x"00")                      & -- DeviceProtocol
-			reverse(x"20")                      & -- MaxPacketSize0
+			reverse(x"40")                      & -- MaxPacketSize0
 			reverse(x"1234")                    & -- idVendor
 			reverse(x"abcd")                    & -- idProduct
 			reverse(x"0100")                    & -- Device
@@ -224,7 +224,49 @@ begin
 			reverse(x"03")                      & -- SerialNumber
 			reverse(x"01"));                      -- NumConfigurations
 
+		constant configuration_descriptor : std_logic_vector := (
+			reverse(x"09")                      & -- Length
+			reverse(decriptortypes_ids(config)) & -- DescriptorType
+			reverse(x"0020")                    & -- TotalLength
+			reverse(x"01")                      & -- NumInterfaces
+			reverse(x"01")                      & -- ConfigurationValue
+			reverse(x"00")                      & -- Configuration
+			reverse(x"c0")                      & -- Attribute
+			reverse(x"32"));
+
+		constant interface_descriptor : std_logic_vector := (
+			reverse(x"09")                      & -- Length
+			reverse(decriptortypes_ids(interface)) & -- DescriptorType
+			reverse(x"00")                      & -- InterfaceNumber
+			reverse(x"00")                      & -- AlternateSetting
+			reverse(x"01")                      & -- NumEndpoints
+			reverse(x"00")                      & -- InterfaceClass
+			reverse(x"00")                      & -- InterfaceSubClass
+			reverse(x"00")                      & -- IntefaceProtocol
+			reverse(x"00"));                      -- Interface
+
+		constant endpoint_descriptor : std_logic_vector := (
+			reverse(x"07")                      & -- Length
+			reverse(decriptortypes_ids(endpoint)) & -- DescriptorType
+			reverse(x"01")                      & -- EndpointAddress
+			reverse(x"10")                      & -- Attibutes
+			reverse(x"0040")                    & -- MaxPacketSize
+			reverse(x"01"));                      -- Interval
+		
+		constant descriptors : std_logic_vector := (
+			device_descritptor       &
+			configuration_descriptor &
+			interface_descriptor     &
+			endpoint_descriptor);
+
+		constant xxx : natural_vector := (
+			device_descritptor'length,
+			configuration_descriptor'length,
+			interface_descriptor'length,
+			endpoint_descriptor'length);
+
 		variable cntr : natural range 0 to device_descritptor'length-1;
+		variable yyy : natural;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -234,6 +276,9 @@ begin
 						if (out_rdy xor out_req)='1' then
 							txen  <= '1';
 							cntr  := 0;
+							yyy = 0;
+							for i in 0 to 2-1 loop
+							end loop;
 							state := s_data;
 						end if;
 					when s_data =>
