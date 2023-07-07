@@ -227,7 +227,7 @@ begin
 		constant configuration_descriptor : std_logic_vector := (
 			reverse(x"09")                      & -- Length
 			reverse(decriptortypes_ids(config)) & -- DescriptorType
-			reverse(x"0012")                    & -- TotalLength
+			reverse(x"0020")                    & -- TotalLength
 			reverse(x"01")                      & -- NumInterfaces
 			reverse(x"01")                      & -- ConfigurationValue
 			reverse(x"00")                      & -- Configuration
@@ -239,13 +239,13 @@ begin
 			reverse(decriptortypes_ids(interface)) & -- DescriptorType
 			reverse(x"00")                      & -- InterfaceNumber
 			reverse(x"00")                      & -- AlternateSetting
-			reverse(x"00")                      & -- NumEndpoints
+			reverse(x"02")                      & -- NumEndpoints
 			reverse(x"00")                      & -- InterfaceClass
 			reverse(x"00")                      & -- InterfaceSubClass
 			reverse(x"00")                      & -- IntefaceProtocol
 			reverse(x"00"));                      -- Interface
 
-		constant endpoint_descriptor : std_logic_vector := (
+		constant endpointin_descriptor : std_logic_vector := (
 			reverse(x"07")                      & -- Length
 			reverse(decriptortypes_ids(endpoint)) & -- DescriptorType
 			reverse(x"01")                      & -- EndpointAddress
@@ -253,17 +253,26 @@ begin
 			reverse(x"0040")                    & -- MaxPacketSize
 			reverse(x"01"));                      -- Interval
 		
+		constant endpointout_descriptor : std_logic_vector := (
+			reverse(x"07")                      & -- Length
+			reverse(decriptortypes_ids(endpoint)) & -- DescriptorType
+			reverse(x"81")                      & -- EndpointAddress
+			reverse(x"10")                      & -- Attibutes
+			reverse(x"0040")                    & -- MaxPacketSize
+			reverse(x"01"));                      -- Interval
+		
 		constant descriptor_data : std_logic_vector := (
 			device_descritptor       &
 			configuration_descriptor &
-			interface_descriptor); --     &
-			-- endpoint_descriptor);
+			interface_descriptor     &
+			endpointin_descriptor    &
+			endpointout_descriptor);
 
 		constant descriptor_lengths : natural_vector := (
 			device_descritptor'length,
 			configuration_descriptor'length,
-			interface_descriptor'length); --,
-			-- endpoint_descriptor'length);
+			interface_descriptor'length,
+			endpointin_descriptor'length + endpointout_descriptor'length);
 		variable descriptor_length : natural range 0 to max(descriptor_lengths);
 		variable descriptor_addr   : natural range 0 to summation(descriptor_lengths)-1;
 
