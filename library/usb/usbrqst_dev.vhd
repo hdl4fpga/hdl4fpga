@@ -219,27 +219,27 @@ begin
 			reverse(x"1234")                    & -- idVendor
 			reverse(x"abcd")                    & -- idProduct
 			reverse(x"0100")                    & -- Device
-			reverse(x"01")                      & -- Manufacturer
-			reverse(x"02")                      & -- Product
-			reverse(x"03")                      & -- SerialNumber
+			reverse(x"00")                      & -- Manufacturer
+			reverse(x"00")                      & -- Product
+			reverse(x"00")                      & -- SerialNumber
 			reverse(x"01"));                      -- NumConfigurations
 
 		constant configuration_descriptor : std_logic_vector := (
 			reverse(x"09")                      & -- Length
 			reverse(decriptortypes_ids(config)) & -- DescriptorType
-			reverse(x"0020")                    & -- TotalLength
+			reverse(x"0012")                    & -- TotalLength
 			reverse(x"01")                      & -- NumInterfaces
 			reverse(x"01")                      & -- ConfigurationValue
 			reverse(x"00")                      & -- Configuration
 			reverse(x"c0")                      & -- Attribute
-			reverse(x"32"));
+			reverse(x"32"));                      -- MaxPower
 
 		constant interface_descriptor : std_logic_vector := (
 			reverse(x"09")                      & -- Length
 			reverse(decriptortypes_ids(interface)) & -- DescriptorType
 			reverse(x"00")                      & -- InterfaceNumber
 			reverse(x"00")                      & -- AlternateSetting
-			reverse(x"01")                      & -- NumEndpoints
+			reverse(x"00")                      & -- NumEndpoints
 			reverse(x"00")                      & -- InterfaceClass
 			reverse(x"00")                      & -- InterfaceSubClass
 			reverse(x"00")                      & -- IntefaceProtocol
@@ -253,20 +253,22 @@ begin
 			reverse(x"0040")                    & -- MaxPacketSize
 			reverse(x"01"));                      -- Interval
 		
-		constant descriptors : std_logic_vector := (
+		constant descriptor_data : std_logic_vector := (
 			device_descritptor       &
 			configuration_descriptor &
-			interface_descriptor     &
-			endpoint_descriptor);
+			interface_descriptor); --     &
+			-- endpoint_descriptor);
 
-		constant xxx : natural_vector := (
+		constant descriptor_lengths : natural_vector := (
 			device_descritptor'length,
 			configuration_descriptor'length,
-			interface_descriptor'length,
-			endpoint_descriptor'length);
+			interface_descriptor'length); --,
+			-- endpoint_descriptor'length);
+		variable descriptor_length : natural range 0 to max(descriptor_lengths);
+		variable descriptor_addr   : natural range 0 to summation(descriptor_lengths)-1;
 
-		variable cntr : natural range 0 to device_descritptor'length-1;
-		variable yyy : natural;
+		alias descriptor is value(16-1 downto 8);
+		variable cntr : natural range 0 to summation(descriptor_lengths)-1;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -274,27 +276,35 @@ begin
 					case state is
 					when s_idle => 
 						if (out_rdy xor out_req)='1' then
-							txen  <= '1';
-							cntr  := 0;
-							yyy = 0;
-							for i in 0 to 2-1 loop
+							txen <= '1';
+							cntr := 0;
+							descriptor_addr := 0;
+							for i in descriptor_lengths'range loop
+								if (i+1)=unsigned(descriptor) then
+									descriptor_length := descriptor_lengths(i);
+									state := s_data;
+									exit;
+								end if;
+								if i=descriptor_lengths'right then
+									txen <= '0';
+									state := s_status;
+								end if;
+								descriptor_addr := descriptor_addr + descriptor_lengths(i);
 							end loop;
-							state := s_data;
 						end if;
 					when s_data =>
 						if txbs='0' then
 							if cntr = shift_left(unsigned(length), 3)-1 then 
 								txen  <= '0';
 								state := s_status;
-							elsif cntr = device_descritptor'length-1 then 
-								txen  <= '0';
-								state := s_status;
 							else
 								txen  <= '1';
+								descriptor_addr := descriptor_addr + 1;
 								cntr  := cntr + 1;
 							end if;
 						end if;
 					when s_status =>
+						txen <= '0';
 						getdescriptor_rdy <= getdescriptor_req;
 						if (in_rdy xor in_req)='1' then
 							in_rdy <= in_req;
@@ -307,7 +317,7 @@ begin
 				end if;
 			end if;
 		end if;
-		txd <= device_descritptor(cntr);
+		txd <= descriptor_data(descriptor_addr);
 	end process;
 
 	tp(1)  <= to_stdulogic(rqst_reqs(set_address));

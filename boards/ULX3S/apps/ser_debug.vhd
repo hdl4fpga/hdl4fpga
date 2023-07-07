@@ -123,7 +123,7 @@ begin
 			rxd  => rxd);
 			
 		ser_clk     <= videoio_clk;
-		ser_frm     <= tp(1);
+		ser_frm     <= tp(1) and not right;
 		ser_irdy    <= not tp(2) and cken;
 		ser_data(0) <= tp(3);
 
