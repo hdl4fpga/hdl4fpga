@@ -249,17 +249,17 @@ begin
 			reverse(x"07")                      & -- Length
 			reverse(decriptortypes_ids(endpoint)) & -- DescriptorType
 			reverse(x"01")                      & -- EndpointAddress
-			reverse(x"10")                      & -- Attibutes
+			reverse(x"02")                      & -- Attibutes
 			reverse(x"0040")                    & -- MaxPacketSize
-			reverse(x"01"));                      -- Interval
+			reverse(x"00"));                      -- Interval
 		
 		constant endpointout_descriptor : std_logic_vector := (
 			reverse(x"07")                      & -- Length
 			reverse(decriptortypes_ids(endpoint)) & -- DescriptorType
 			reverse(x"81")                      & -- EndpointAddress
-			reverse(x"10")                      & -- Attibutes
+			reverse(x"02")                      & -- Attibutes
 			reverse(x"0040")                    & -- MaxPacketSize
-			reverse(x"01"));                      -- Interval
+			reverse(x"00"));                      -- Interval
 		
 		constant descriptor_data : std_logic_vector := (
 			device_descritptor       &
