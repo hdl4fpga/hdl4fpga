@@ -44,9 +44,9 @@ entity usbrqst_dev is
 		tx_req  : buffer std_logic;
 		tx_rdy  : in  std_logic;
 		txpid   : out std_logic_vector(4-1 downto 0);
-		txen    : out std_logic := '0';
+		txen    : buffer std_logic;
 		txbs    : in  std_logic := '0';
-		txd     : out std_logic);
+		txd     : buffer std_logic);
 end;
 
 architecture def of usbrqst_dev is
@@ -338,4 +338,7 @@ begin
 	tp(11) <= to_stdulogic(out_req);
 	tp(12) <= to_stdulogic(out_rdy);
 
+	tp(13) <= txen;
+	tp(14) <= txbs;
+	tp(15) <= txd;
 end;
