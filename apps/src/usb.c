@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <libusb-1.0/libusb.h>
 
 #define VENDOR_ID 0x1234
@@ -61,7 +62,7 @@ int main() {
 
     // Perform the bulk transfer from the endpoint
     int transferred;
-    int result = libusb_bulk_transfer(dev_handle, ENDPOINT_ADDRESS, buffer, TRANSFER_SIZE, &transferred, 0);
+    int result = libusb_bulk_transfer(dev_handle, ENDPOINT_ADDRESS, buffer, strlen(buffer), &transferred, 0);
     if (result == 0) {
         if (ENDPOINT_ADDRESS & 0x80) {
             printf("Bulk transfer completed. Bytes transferred: %d\n", transferred);
