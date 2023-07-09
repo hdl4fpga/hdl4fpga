@@ -28,7 +28,7 @@
 
 #define VENDOR_ID 0x1234
 #define PRODUCT_ID 0xABCD
-#define ENDPOINT_ADDRESS 0x01
+#define ENDPOINT_ADDRESS 0x81
 #define TRANSFER_SIZE 64
 
 int main() {
@@ -62,15 +62,20 @@ int main() {
 
     // Perform the bulk transfer from the endpoint
     int transferred;
-    int result = libusb_bulk_transfer(dev_handle, ENDPOINT_ADDRESS, buffer, strlen(buffer), &transferred, 0);
-    if (result == 0) {
-        if (ENDPOINT_ADDRESS & 0x80) {
-            printf("Bulk transfer completed. Bytes transferred: %d\n", transferred);
+    if (ENDPOINT_ADDRESS & 0x80) {
+        int result = libusb_bulk_transfer(dev_handle, ENDPOINT_ADDRESS, buffer, TRANSFER_SIZE, &transferred, 0);
+        if (result == 0) {
+            printf("Bulk read transfer completed. Bytes transferred: %d\n", transferred);
         } else {
-            printf("Bulk write transfer completed. Bytes transferred: %d\n", transferred);
+            printf("Error in bulk transfer. Error code: %d\n", result);
         }
     } else {
-        printf("Error in bulk transfer. Error code: %d\n", result);
+        int result = libusb_bulk_transfer(dev_handle, ENDPOINT_ADDRESS, buffer, strlen(buffer), &transferred, 0);
+        if (result == 0) {
+            printf("Bulk write transfer completed. Bytes transferred: %d\n", transferred);
+        } else {
+            printf("Error in bulk transfer. Error code: %d\n", result);
+        }
     }
 
     // Release the interface and close the USB device
