@@ -153,6 +153,9 @@ begin
 		rx_req  => rx_req,
 		rx_rdy  => rx_rdy,
 		rxpid   => phy_rxpid,
+		rxdv    => phy_rxdv,
+		rxbs    => phy_rxbs,
+		rxd     => phy_rxd,
 
 		rxtoken => rxtoken,
 		rxrqst  => rxrqst,

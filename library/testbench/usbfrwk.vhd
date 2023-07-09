@@ -85,17 +85,21 @@ begin
 				reverse(x"2d1530",8)(0 to 19-1) &
 				reverse(x"C3_8006_0002_0000_0900_ae04",8)(0 to 72-1) &
 				reverse(x"691530",8)(0 to 19-1) &
-				reverse(x"d2",8);
+				reverse(x"d2",8) &
+				reverse(x"e11530",8)(0 to 19-1) &
+				reverse(x"C3_8006_0002_0000_0900_ae04",8)(0 to 72-1);
 
 			constant length : natural_vector := (
 				19, 72, 19, 8,
 				19, 72, 19, 8,
-				19, 72, 19, 8);
+				19, 72, 19, 8,
+				19, 72);
 
 			constant delays : time_vector := (
 				0 ns, 0 ns, 2 us, 3.3 us,
 				0 ns, 0 ns, 2 us, 4.3 us,
-				0 ns, 0 ns, 2 us, 4.3 us);
+				0 ns, 0 ns, 2 us, 9.3 us,
+				0 ns, 0 ns);
 
 			variable i     : natural;
 			variable j     : natural;

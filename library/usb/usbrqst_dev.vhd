@@ -40,12 +40,15 @@ entity usbrqst_dev is
 		rxpid   : in  std_logic_vector(4-1 downto 0);
 		rxtoken : in  std_logic_vector;
 		rxrqst  : in  std_logic_vector;
+		rxdv    : in  std_logic;
+		rxbs    : in  std_logic;
+		rxd     : in  std_logic;
 
 		tx_req  : buffer std_logic;
 		tx_rdy  : in  std_logic;
 		txpid   : out std_logic_vector(4-1 downto 0);
 		txen    : buffer std_logic;
-		txbs    : in  std_logic := '0';
+		txbs    : in  std_logic;
 		txd     : buffer std_logic);
 end;
 
@@ -124,6 +127,9 @@ begin
 							out_req <= not out_rdy;
 						end if;
 					when tk_out=>
+						if (in_req xor in_rdy)='0' then
+							in_req <= not in_rdy;
+						end if;
 					when data0|data1 =>
 						case token is 
 						when tk_setup =>
@@ -151,8 +157,8 @@ begin
 							ddata <= data0 xor tbit;
 						when tk_in =>
 						when tk_out =>
-							if (in_req xor in_rdy)='0' then
-								in_req <= not in_rdy;
+							if (in_rdy xor in_req)='1' then
+								in_rdy <= in_req;
 							end if;
 						when others =>
 						end case;
@@ -315,9 +321,6 @@ begin
 					when s_status =>
 						txen <= '0';
 						getdescriptor_rdy <= getdescriptor_req;
-						if (in_rdy xor in_req)='1' then
-							in_rdy <= in_req;
-						end if;
 					end case;
 				else
 					txen <= '0';
@@ -338,7 +341,7 @@ begin
 	tp(11) <= to_stdulogic(out_req);
 	tp(12) <= to_stdulogic(out_rdy);
 
-	tp(13) <= txen;
-	tp(14) <= txbs;
-	tp(15) <= txd;
+	tp(13) <= txen or (rxdv and to_stdulogic(in_rdy xor in_req));
+	tp(14) <= txbs when txen='1' else rxbs;
+	tp(15) <= txd when txen='1' else rxd;
 end;
