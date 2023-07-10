@@ -103,6 +103,8 @@ architecture def of usbrqst_dev is
 	signal hdata  : std_logic_vector(data0'range);
 	signal token  : std_logic_vector(rxpid'range);
 
+	signal descriptor_txd : std_logic;
+
 begin
 
 	token <= reverse(rxtoken(rxpid'reverse_range));
@@ -178,12 +180,18 @@ begin
 
 	devtohost_p : process (clk)
 		constant tbit : std_logic_vector(data0'range) := b"1000";
+		variable cntr : natural range 0 to 1024*8-1;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 					if (out_rdy xor out_req)='1' then
 						txpid   <= ddata;
+						if (getdescriptor_rdy xor getdescriptor_req)='1' then
+							cntr := to_integer(unsigned(length));
+						else
+							cntr := 0;
+						end if;
 						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 						out_rdy <= out_req;
 					end if;
@@ -192,10 +200,20 @@ begin
 						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 						ack_rdy <= ack_req;
 					end if;
+				elsif txbs='0' then
+					if cntr > 0 then
+						txen  <= '1';
+						cntr  := cntr - 1;
+					else
+						txen  <= '0';
+					end if;
 				end if;
 			end if;
 		end if;
 	end process;
+	txd <= 
+		descriptor_txd when (getdescriptor_rdy xor getdescriptor_req)='1' else
+		'1';
 
 	setaddress_p : process (setaddress_rdy, clk)
 	begin
@@ -212,7 +230,7 @@ begin
 	end process;
 
 	getdescriptor_p : process (getdescriptor_rdy, clk)
-		type states is (s_idle, s_data, s_status);
+		type states is (s_idle, s_data);
 		variable state : states;
 		constant device_descritptor : std_logic_vector := (
 			reverse(x"12")                      & -- Length
@@ -283,7 +301,6 @@ begin
 		variable descriptor_addr   : natural range 0 to summation(descriptor_lengths)-1;
 
 		alias descriptor is value(16-1 downto 8);
-		variable cntr : natural range 0 to summation(descriptor_lengths)-1;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -291,8 +308,6 @@ begin
 					case state is
 					when s_idle => 
 						if (out_rdy xor out_req)='1' then
-							txen <= '1';
-							cntr := 0;
 							descriptor_addr := 0;
 							for i in descriptor_lengths'range loop
 								if (i+1)=unsigned(descriptor) then
@@ -300,36 +315,25 @@ begin
 									state := s_data;
 									exit;
 								end if;
-								if i=descriptor_lengths'right then
-									txen <= '0';
-									state := s_status;
-								end if;
 								descriptor_addr := descriptor_addr + descriptor_lengths(i);
 							end loop;
 						end if;
 					when s_data =>
-						if txbs='0' then
-							if cntr = shift_left(unsigned(length), 3)-1 then 
-								txen  <= '0';
-								state := s_status;
-							else
-								txen  <= '1';
+						if txen='1' then
+							if txbs='0' then
 								descriptor_addr := descriptor_addr + 1;
-								cntr  := cntr + 1;
 							end if;
+						else
+							getdescriptor_rdy <= getdescriptor_req;
+							state := s_idle;
 						end if;
-					when s_status =>
-						txen <= '0';
-						getdescriptor_rdy <= getdescriptor_req;
 					end case;
 				else
-					txen <= '0';
-					cntr := 0;
 					state := s_idle;
 				end if;
 			end if;
 		end if;
-		txd <= descriptor_data(descriptor_addr);
+		descriptor_txd <= descriptor_data(descriptor_addr);
 	end process;
 
 	tp(1)  <= to_stdulogic(rqst_reqs(set_address));

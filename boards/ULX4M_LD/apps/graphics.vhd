@@ -130,9 +130,6 @@ architecture graphics of ulx4m_ld is
 
 	signal video_pixel   : std_logic_vector(0 to 32-1);
 
-
-	constant hdplx       : std_logic := setif(debug, '0', '1');
-
 	signal tp            : std_logic_vector(1 to 32);
 	signal tp_phy        : std_logic_vector(1 to 32);
 	signal sdrphy_locked : std_logic;
@@ -214,9 +211,49 @@ begin
 		ftdi_txden <= '1';
 	end generate;
 
-	assert io_link/=io_ipoe 
-	report "NO mii ready"
-	severity FAILURE;
+	ipoe_e : if io_link=io_ipoe generate
+
+		rgmii_e : entity hdl4fpga.link_mii
+		generic map (
+			rmii          => true,
+			default_mac   => x"00_40_00_01_02_03",
+			default_ipv4a => aton("10.31.175.150"),
+			n             => 2)
+		port map (
+			si_frm     => si_frm,
+			si_irdy    => si_irdy,
+			si_trdy    => si_trdy,
+			si_end     => si_end,
+			si_data    => si_data,
+	
+			so_frm     => so_frm,
+			so_irdy    => so_irdy,
+			so_trdy    => so_trdy,
+			so_data    => so_data,
+			dhcp_btn   => btn(0),
+			mii_txc    => rmii_nintclk,
+			mii_txen   => rmii_txen,
+			mii_txd    => rmii_txd,
+
+			mii_rxc    => rmii_nintclk,
+			mii_rxdv   => rmii_rxdv,
+			mii_rxd    => rmii_rxd);
+
+		sio_clk <= rmii_nintclk;
+
+		oddr_i : oddrx1f
+		port map(
+			sclk => clk_25mhz,
+			rst  => '0',
+			d0   => '1',
+			d1   => '0',
+			q    => rmii_refclk);
+
+		eth_nreset <= not '0';
+		eth_mdio   <= '0';
+		eth_mdc    <= '0';
+
+	end generate;
 
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
