@@ -90,10 +90,9 @@ add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench
 add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/data_rdy
 add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/ack_req
 add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/ack_rdy
+add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/devtohost_p/cntr
 add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/setaddress_req
 add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/setaddress_rdy
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_req
-add wave -noupdate -expand -group usbdev_e -expand -group dev_usbrqst /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_rdy
 add wave -noupdate -expand -group usbdev_e -group dev_usbpkt_tx /testbench/dev_b/dev_e/usbpkttx_e/tx_req
 add wave -noupdate -expand -group usbdev_e -group dev_usbpkt_tx /testbench/dev_b/dev_e/usbpkttx_e/tx_rdy
 add wave -noupdate -expand -group usbdev_e -group dev_usbpkt_tx /testbench/dev_b/dev_e/usbpkttx_e/line__54/state
@@ -138,18 +137,23 @@ add wave -noupdate -group dev_tp_p /testbench/dev_b/dev_e/tp(2)
 add wave -noupdate -group dev_tp_p /testbench/dev_b/dev_e/tp(3)
 add wave -noupdate -group dev_tp_p -radix hexadecimal /testbench/dev_b/tp_p/msb
 add wave -noupdate -group dev_tp_p /testbench/dev_b/tp_p/cntr
-add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_p/cntr
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_p/descriptor_addr
 add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_p/descriptor_length
-add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/tp(13)
-add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/tp(14)
-add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/tp(15)
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_rdy
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_req
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_rdy
+add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/tx_req
 add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/tx_rdy
-add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_p/state
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/txen
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/txbs
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/txd
+add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/devtohost_p/cntr
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {45174088 ps} 0} {{Cursor 2} {68366232 ps} 0} {{Cursor 3} {87142529 ps} 0}
-quietly wave cursor active 3
+WaveRestoreCursors {{Cursor 1} {42661611 ps} 0} {{Cursor 2} {61979733 ps} 0} {{Cursor 3} {64907557 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 282
 configure wave -valuecolwidth 172
 configure wave -justifyvalue left
@@ -164,4 +168,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {62328364 ps} {114828364 ps}
+WaveRestoreZoom {57676647 ps} {70801647 ps}

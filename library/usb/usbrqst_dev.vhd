@@ -108,7 +108,7 @@ architecture def of usbrqst_dev is
 begin
 
 	token <= reverse(rxtoken(rxpid'reverse_range));
-	hosttodev_p : process (clk)
+	hosttodev_p : process (cken, clk)
 		variable request : std_logic_vector( 8-1 downto 0);
 		variable shr : unsigned(0 to rxrqst'length);
 		alias tk_addr is rxtoken(2*rxpid'length to 2*rxpid'length+addr'length-1);
@@ -188,15 +188,20 @@ begin
 					if (out_rdy xor out_req)='1' then
 						txpid   <= ddata;
 						if (getdescriptor_rdy xor getdescriptor_req)='1' then
-							cntr := to_integer(unsigned(length));
+							txen <= '1';
+							cntr := to_integer(shift_left(unsigned(length),3))-1;
 						else
+							txen <= '0';
 							cntr := 0;
 						end if;
 						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 						out_rdy <= out_req;
+					else
+						txen  <= '0';
 					end if;
 					if (ack_rdy xor ack_req)='1' then
 						txpid   <= hs_ack;
+						txen    <= '0';
 						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 						ack_rdy <= ack_req;
 					end if;

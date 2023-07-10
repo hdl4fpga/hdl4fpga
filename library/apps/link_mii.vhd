@@ -55,7 +55,7 @@ entity link_mii is
 		so_data  : out std_logic_vector(0 to 8-1);
 
 		dhcp_btn : in  std_logic;
-		hdplx    : in  std_logic;
+		hdplx    : in  std_logic := '0';
 		mii_rxc  : in  std_logic;
 		mii_rxdv : in  std_logic;
 		mii_rxd  : in  std_logic_vector(0 to n-1);

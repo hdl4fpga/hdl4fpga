@@ -230,24 +230,24 @@ begin
 			so_irdy    => so_irdy,
 			so_trdy    => so_trdy,
 			so_data    => so_data,
-			dhcp_btn   => btn(0),
-			mii_txc    => rmii_nintclk,
-			mii_txen   => rmii_txen,
-			mii_txd    => rmii_txd,
+			dhcp_btn   => btn(2),
+			mii_txc    => rgmii_rx_clk,
+			mii_txen   => rgmii_tx_en,
+			mii_txd    => rgmii_txd,
 
-			mii_rxc    => rmii_nintclk,
-			mii_rxdv   => rmii_rxdv,
-			mii_rxd    => rmii_rxd);
+			mii_rxc    => rgmii_rx_clk,
+			mii_rxdv   => rgmii_rx_dv,
+			mii_rxd    => rgmii_rxd);
 
-		sio_clk <= rmii_nintclk;
+		sio_clk <= rgmii_rx_clk;
 
 		oddr_i : oddrx1f
 		port map(
-			sclk => clk_25mhz,
+			sclk => rgmii_rx_clk,
 			rst  => '0',
 			d0   => '1',
 			d1   => '0',
-			q    => rmii_refclk);
+			q    => rgmii_tx_clk);
 
 		eth_nreset <= not '0';
 		eth_mdio   <= '0';

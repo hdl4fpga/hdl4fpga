@@ -51,7 +51,7 @@ entity ulx4m_ld is
 		usb_fpga_otg_dn : inout std_logic := 'Z';
 		n_extrst        : inout std_logic := 'Z';
 
-		eth_reset       : out std_logic;
+		eth_nreset      : out std_logic;
 		eth_mdio        : inout std_logic := '-';
 		eth_mdc         : out std_logic;
 
