@@ -115,8 +115,8 @@ begin
 						if txbs='0' then
 							txd  <= data(j);
 							txen <= '1';
+							j := j + 1;
 						end if;
-						j := j + 1;
 				elsif txbs='0' then
 					txen <= '0';
 					if idle='1' then

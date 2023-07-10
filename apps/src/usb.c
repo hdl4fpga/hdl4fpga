@@ -32,61 +32,61 @@
 #define TRANSFER_SIZE 64
 
 int main() {
-    libusb_device_handle *dev_handle;
-    libusb_context *ctx = NULL;
+	libusb_device_handle *dev_handle;
+	libusb_context *ctx = NULL;
 
-    // Initialize libusb context
-    if (libusb_init(&ctx) != 0) {
-        printf("Error initializing libusb.\n");
-        return 1;
-    }
+	// Initialize libusb context
+	if (libusb_init(&ctx) != 0) {
+		printf("Error initializing libusb.\n");
+		return 1;
+	}
 
-    // Open the USB device
-    dev_handle = libusb_open_device_with_vid_pid(ctx, VENDOR_ID, PRODUCT_ID);
-    if (dev_handle == NULL) {
-        printf("Failed to open the USB device.\n");
-        libusb_exit(ctx);
-        return 1;
-    }
+	// Open the USB device
+	dev_handle = libusb_open_device_with_vid_pid(ctx, VENDOR_ID, PRODUCT_ID);
+	if (dev_handle == NULL) {
+		printf("Failed to open the USB device.\n");
+		libusb_exit(ctx);
+		return 1;
+	}
 
-    // Claim the interface of the USB device
-    if (libusb_claim_interface(dev_handle, 0) != 0) {
-        printf("Failed to claim the interface of the USB device.\n");
-        libusb_close(dev_handle);
-        libusb_exit(ctx);
-        return 1;
-    }
+	// Claim the interface of the USB device
+	if (libusb_claim_interface(dev_handle, 0) != 0) {
+		printf("Failed to claim the interface of the USB device.\n");
+		libusb_close(dev_handle);
+		libusb_exit(ctx);
+		return 1;
+	}
 
-    // Buffer for the transfer
-    unsigned char buffer[TRANSFER_SIZE];
+	// Buffer for the transfer
+	unsigned char buffer[TRANSFER_SIZE] = "\xff\xff";
 
-    // Perform the bulk transfer from the endpoint
-    int transferred;
-    if (ENDPOINT_ADDRESS & 0x80) {
-        int result = libusb_bulk_transfer(dev_handle, ENDPOINT_ADDRESS, buffer, TRANSFER_SIZE, &transferred, 0);
-        if (result == 0) {
-            printf("Bulk read transfer completed. Bytes transferred: %d\n", transferred);
-        } else {
-            printf("Error in bulk transfer. Error code: %d\n", result);
-        }
-    } else {
-		if (!fgets(buffer, sizeof(buffer), stdin)) {
-            printf("Error reading stdin\n");
-            return 1;
+	// Perform the bulk transfer from the endpoint
+	int transferred;
+	if (ENDPOINT_ADDRESS & 0x80) {
+		int result = libusb_bulk_transfer(dev_handle, ENDPOINT_ADDRESS, buffer, TRANSFER_SIZE, &transferred, 0);
+		if (result == 0) {
+			printf("Bulk read transfer completed. Bytes transferred: %d\n", transferred);
+		} else {
+			printf("Error in bulk transfer. Error code: %d\n", result);
 		}
+	} else {
+		// if (!fgets(buffer, sizeof(buffer), stdin)) {
+			// printf("Error reading stdin\n");
+			// return 1;
+		// }
 
-        int result = libusb_bulk_transfer(dev_handle, ENDPOINT_ADDRESS, buffer, strlen(buffer), &transferred, 0);
-        if (result == 0) {
-            printf("Bulk write transfer completed. Bytes transferred: %d\n", transferred);
-        } else {
-            printf("Error in bulk transfer. Error code: %d\n", result);
-        }
-    }
+		int result = libusb_bulk_transfer(dev_handle, ENDPOINT_ADDRESS, buffer, 2, &transferred, 0);
+		if (result == 0) {
+			printf("Bulk write transfer completed. Bytes transferred: %d\n", transferred);
+		} else {
+			printf("Error in bulk transfer. Error code: %d\n", result);
+		}
+	}
 
-    // Release the interface and close the USB device
-    libusb_release_interface(dev_handle, 0);
-    libusb_close(dev_handle);
-    libusb_exit(ctx);
+	// Release the interface and close the USB device
+	libusb_release_interface(dev_handle, 0);
+	libusb_close(dev_handle);
+	libusb_exit(ctx);
 
-    return 0;
+	return 0;
 }
