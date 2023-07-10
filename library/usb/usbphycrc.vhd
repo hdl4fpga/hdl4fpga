@@ -141,19 +141,16 @@ begin
 						cntr := length_of_pid-1;
 						crcact_rx <= '0';
 						crcact_tx <= '0';
-						echo      <= '0';
 					elsif (phy_txbs or phy_rxbs)='0' then
 						pid(0) := data;
 						pid := pid ror 1;
 						if cntr /= 0 then
 							crcact_rx <= '0';
 							crcact_tx <= '0';
-							echo      <= '0';
 							cntr      := cntr - 1;
 						else
 							if txen='1' then
 								crcact_tx <= '1';
-								echo      <= '1';
 								state     := s_tx;
 							else 
 								crcact_rx <= '1';
@@ -192,12 +189,24 @@ begin
 							crcact_tx <= '0';
 							if (txen or phy_rxdv)='0' then
 								cntr  := length_of_pid-1;
-								echo  <= '0';
 								state := s_pid;
 							end if;
 						end if;
 					end if;
 				end case;
+			end if;
+		end if;
+	end process;
+
+	echo_p : process (clk)
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if phy_txen='1' then
+					echo <= '1';
+				elsif phy_rxdv='0' then
+					echo <= '0';
+				end if;
 			end if;
 		end if;
 	end process;
