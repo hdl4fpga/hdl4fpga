@@ -343,5 +343,5 @@ begin
 
 	tp(13) <= txen or (rxdv and to_stdulogic(in_rdy xor in_req));
 	tp(14) <= txbs when txen='1' else rxbs;
-	tp(15) <= txd when txen='1' else rxd;
+	tp(15) <= txd  when txen='1' else rxd;
 end;

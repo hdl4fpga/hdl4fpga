@@ -28,7 +28,7 @@
 
 #define VENDOR_ID 0x1234
 #define PRODUCT_ID 0xABCD
-#define ENDPOINT_ADDRESS 0x81
+#define ENDPOINT_ADDRESS 0x01
 #define TRANSFER_SIZE 64
 
 int main() {
@@ -58,7 +58,7 @@ int main() {
     }
 
     // Buffer for the transfer
-    unsigned char buffer[TRANSFER_SIZE] = "HELLO WORLD";
+    unsigned char buffer[TRANSFER_SIZE];
 
     // Perform the bulk transfer from the endpoint
     int transferred;
@@ -70,6 +70,11 @@ int main() {
             printf("Error in bulk transfer. Error code: %d\n", result);
         }
     } else {
+		if (!fgets(buffer, sizeof(buffer), stdin)) {
+            printf("Error reading stdin\n");
+            return 1;
+		}
+
         int result = libusb_bulk_transfer(dev_handle, ENDPOINT_ADDRESS, buffer, strlen(buffer), &transferred, 0);
         if (result == 0) {
             printf("Bulk write transfer completed. Bytes transferred: %d\n", transferred);
