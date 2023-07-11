@@ -191,8 +191,8 @@ begin
 							txen <= '1';
 							cntr := to_integer(shift_left(unsigned(length),3))-1;
 						else
-							txen <= '0';
-							cntr := 0;
+							txen <= '1';
+							cntr := 16;
 						end if;
 						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 						out_rdy <= out_req;

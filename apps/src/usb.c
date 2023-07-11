@@ -28,7 +28,7 @@
 
 #define VENDOR_ID 0x1234
 #define PRODUCT_ID 0xABCD
-#define ENDPOINT_ADDRESS 0x01
+#define ENDPOINT_ADDRESS 0x81
 #define TRANSFER_SIZE 64
 
 int main() {
