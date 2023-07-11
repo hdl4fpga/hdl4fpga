@@ -55,6 +55,7 @@ end;
 architecture def of usbrqst_dev is
 
 	signal addr      : std_logic_vector( 7-1 downto 0);
+	signal endp      : std_logic_vector( 4-1 downto 0);
 	signal requesttype : std_logic_vector( 8-1 downto 0);
 	signal value     : std_logic_vector(16-1 downto 0);
 	signal index     : std_logic_vector(16-1 downto 0);
@@ -76,8 +77,6 @@ architecture def of usbrqst_dev is
 
 	signal data_req  : bit;
 	signal data_rdy  : bit;
-	signal rqstdata_req : bit;
-	signal rqstdata_rdy : bit;
 
 	alias setaddress_rdy    is rqst_rdys(set_address);
 	alias setaddress_req    is rqst_reqs(set_address);
@@ -112,6 +111,7 @@ begin
 		variable request : std_logic_vector( 8-1 downto 0);
 		variable shr : unsigned(0 to rxrqst'length);
 		alias tk_addr is rxtoken(2*rxpid'length to 2*rxpid'length+addr'length-1);
+		alias tk_endp is rxtoken(2*rxpid'length+addr'length to 2*rxpid'length+addr'length+endp'length-1);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -125,11 +125,13 @@ begin
 						end if;
 					when tk_in =>
 						if (out_req xor out_rdy)='0' then
-							hdata <= ddata;
+							endp    <= reverse(tk_endp);
+							hdata   <= ddata;
 							out_req <= not out_rdy;
 						end if;
 					when tk_out=>
 						if (in_req xor in_rdy)='0' then
+							endp   <= tk_endp;
 							in_req <= not in_rdy;
 						end if;
 					when data0|data1 =>
@@ -190,9 +192,15 @@ begin
 						if (getdescriptor_rdy xor getdescriptor_req)='1' then
 							txen <= '1';
 							cntr := to_integer(shift_left(unsigned(length),3))-1;
-						else
+						elsif (setaddress_rdy xor setaddress_req)='1' then
+							txen <= '0';
+							cntr := 0;
+						elsif endp=b"0001" then
 							txen <= '1';
 							cntr := 16-1;
+						else
+							txen <= '0';
+							cntr := 0;
 						end if;
 						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 						out_rdy <= out_req;
@@ -224,10 +232,12 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (to_bit(rx_rdy) xor to_bit(rx_req))='0' then
-					if (setaddress_rdy xor setaddress_req)='1' then
-						addr   <= value(addr'range);
-						setaddress_rdy <= setaddress_req;
+				if (setaddress_rdy xor setaddress_req)='1' then
+					if (to_bit(rx_rdy) xor to_bit(rx_req))='0' then
+						if (in_rdy xor in_req)='1' then
+							addr   <= value(addr'range);
+							setaddress_rdy <= setaddress_req;
+						end if;
 					end if;
 				end if;
 			end if;

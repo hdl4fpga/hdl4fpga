@@ -58,7 +58,7 @@ int main() {
 	}
 
 	// Buffer for the transfer
-	unsigned char buffer[TRANSFER_SIZE] = "\xff\xff";
+	unsigned char buffer[TRANSFER_SIZE];
 
 	// Perform the bulk transfer from the endpoint
 	int transferred;
@@ -66,6 +66,9 @@ int main() {
 		int result = libusb_bulk_transfer(dev_handle, ENDPOINT_ADDRESS, buffer, TRANSFER_SIZE, &transferred, 0);
 		if (result == 0) {
 			printf("Bulk read transfer completed. Bytes transferred: %d\n", transferred);
+			for (int i = 0; i < transferred; i++) {
+				printf("0x%x\n", buffer[i]);
+			}
 		} else {
 			printf("Error in bulk transfer. Error code: %d\n", result);
 		}
