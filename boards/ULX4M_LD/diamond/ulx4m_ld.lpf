@@ -73,13 +73,12 @@ LOCATE COMP "ftdi_rxd"   SITE "N3"; IOBUF  PORT "ftdi_rxd"   PULLMODE=NONE IO_TY
 # RGMII #
 # ##### #
 
-LOCATE COMP "eth_reset"    SITE "G5"; IOBUF PORT "eth_reset"  PULLMODE=NONE IO_TYPE=LVCMOS33;
+LOCATE COMP "eth_resetn"    SITE "G5"; IOBUF PORT "eth_resetn"  PULLMODE=NONE IO_TYPE=LVCMOS33;
 LOCATE COMP "eth_mdio"     SITE "F6"; IOBUF PORT "eth_mdio"   PULLMODE=NONE IO_TYPE=LVCMOS33;
 LOCATE COMP "eth_mdc"      SITE "J5"; IOBUF PORT "eth_mdc"    PULLMODE=NONE IO_TYPE=LVCMOS33;
-LOCATE COMP "eth_int_n"    SITE "M1"; IOBUF PORT "eth_int_n"  PULLMODE=NONE IO_TYPE=LVCMOS33;
 
-#LOCATE COMP "rgmii_ref_clk" SITE "H2"; IOBUF PORT "rgmii_ref_clk" PULLMODE=NONE IO_TYPE=LVCMOS33;
 #FREQUENCY PORT "rgmii_ref_clk" 125 MHZ;
+#LOCATE COMP "rgmii_ref_clk" SITE "H2"; IOBUF PORT "rgmii_ref_clk" PULLMODE=NONE IO_TYPE=LVCMOS33;
 
 LOCATE COMP "rgmii_tx_clk" SITE "H4"; IOBUF PORT "rgmii_tx_clk" PULLMODE=NONE IO_TYPE=LVCMOS33;
 
@@ -91,8 +90,7 @@ LOCATE COMP "rgmii_txd[3]" SITE "L3"; IOBUF PORT "rgmii_txd[3]" PULLMODE=NONE IO
 
 #LOCATE COMP "rgmii_rx_clk" SITE "H5"; IOBUF PORT "rgmii_rx_clk" PULLMODE=NONE IO_TYPE=LVCMOS33;
 LOCATE COMP "rgmii_rx_clk" SITE "H2"; IOBUF PORT "rgmii_rx_clk" PULLMODE=NONE IO_TYPE=LVCMOS33; # Use H2(PCLK)
-#FREQUENCY PORT "rgmii_rx_clk" 125 MHZ;
-FREQUENCY PORT "rgmii_rx_clk" 25 MHZ;
+FREQUENCY PORT "rgmii_rx_clk" 125 MHZ;
 
 LOCATE COMP "rgmii_rx_dv"  SITE "J1"; IOBUF PORT "rgmii_rx_dv"  PULLMODE=NONE IO_TYPE=LVCMOS33;
 LOCATE COMP "rgmii_rxd[0]" SITE "K1"; IOBUF PORT "rgmii_rxd[0]" PULLMODE=NONE IO_TYPE=LVCMOS33;
@@ -243,5 +241,3 @@ LOCATE COMP "n_extrst"        SITE "U16"; IOBUF  PORT "n_extrst"        PULLMODE
 # 
 # LOCATE COMP "shutdown" SITE "G16"; # FPGA receives
 # IOBUF  PORT "shutdown" PULLMODE=DOWN IO_TYPE=LVCMOS33 DRIVE=4;
-
-USE PRIMARY NET "ctlr_clk";

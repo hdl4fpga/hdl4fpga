@@ -212,13 +212,52 @@ begin
 	end generate;
 
 	ipoe_e : if io_link=io_ipoe generate
+		signal gmii_rx_dv : std_logic;
+		signal gmii_rxd   : std_logic_vector(0 to 2*rgmii_rxd'length-1);
+		signal gmii_tx_en : std_logic;
+		signal gmii_txd   : std_logic_vector(0 to 2*rgmii_txd'length-1);
+
+		signal rxdv : std_logic;
+		signal rxd  : std_logic_vector(0 to 2*rgmii_rxd'length-1);
+		signal txen : std_logic;
+		signal txd  : std_logic_vector(0 to 2*rgmii_txd'length-1);
+	begin
+
+		rgmii_rx_dv_g : iddrx1f
+		port map (
+			sclk => rgmii_rx_clk,
+			rst  => '0',
+			d    => rgmii_rx_dv,
+			q0   => gmii_rx_dv,
+			q1   => open);
+
+		rgmii_rxd_g : for i in rgmii_txd'range generate
+		begin
+			iddr_i : iddrx1f
+			port map (
+				sclk => rgmii_rx_clk,
+				rst  => '0',
+				d    => rgmii_rxd(i),
+				q0   => gmii_rxd(0*rgmii_txd'length+i),
+				q1   => gmii_rxd(1*rgmii_txd'length+i));
+		end generate;
+
+		rxlat_e : entity hdl4fpga.latency
+		generic map (
+			n => gmii_rxd'length+1,
+			d => (0 to gmii_rxd'length => 1))
+		port map (
+			clk => rgmii_rx_clk,
+			di(0 to 8-1) => gmii_rxd,
+			di(8) =>  gmii_rx_dv,
+			do(0 to 8-1) => rxd,
+			do(8) =>  rxdv);
 
 		rgmii_e : entity hdl4fpga.link_mii
 		generic map (
-			rmii          => true,
 			default_mac   => x"00_40_00_01_02_03",
 			default_ipv4a => aton("10.31.175.150"),
-			n             => 2)
+			n             => gmii_rxd'length)
 		port map (
 			si_frm     => si_frm,
 			si_irdy    => si_irdy,
@@ -231,17 +270,18 @@ begin
 			so_trdy    => so_trdy,
 			so_data    => so_data,
 			dhcp_btn   => btn(2),
-			mii_txc    => rgmii_rx_clk,
-			mii_txen   => rgmii_tx_en,
-			mii_txd    => rgmii_txd,
 
 			mii_rxc    => rgmii_rx_clk,
-			mii_rxdv   => rgmii_rx_dv,
-			mii_rxd    => rgmii_rxd);
+			mii_rxdv   => gmii_rx_dv,
+			mii_rxd    => gmii_rxd,
+
+			mii_txc    => rgmii_rx_clk,
+			mii_txen   => gmii_tx_en,
+			mii_txd    => gmii_txd);
 
 		sio_clk <= rgmii_rx_clk;
 
-		oddr_i : oddrx1f
+		rgmii_tx_clk_i : oddrx1f
 		port map(
 			sclk => rgmii_rx_clk,
 			rst  => '0',
@@ -249,7 +289,25 @@ begin
 			d1   => '0',
 			q    => rgmii_tx_clk);
 
-		eth_nreset <= not '0';
+		rgmii_tx_en_i : oddrx1f
+		port map(
+			sclk => rgmii_rx_clk,
+			rst  => '0',
+			d0   => gmii_tx_en,
+			d1   => '0',
+			q    => rgmii_tx_en);
+
+		rgmii_txd_g : for i in rgmii_txd'range generate
+			oddr_i : oddrx1f
+			port map (
+				sclk => rgmii_rx_clk,
+				rst  => '0',
+				d0   => gmii_txd(0*rgmii_txd'length+i),
+				d1   => gmii_txd(1*rgmii_txd'length+i),
+				q    => rgmii_txd(i));
+		end generate;
+
+		eth_resetn <= not '0';
 		eth_mdio   <= '0';
 		eth_mdc    <= '0';
 
@@ -466,23 +524,6 @@ begin
 	-- VGA --
 	---------
 
-	debug_q : if debug generate
-		signal q : bit;
-	begin
-		q <= not q after 1 ns;
-		rgmii_tx_clk <= to_stdulogic(q);
-	end generate;
-
-	nodebug_g : if not debug generate
-		rgmii_ref_clk_i : oddrx1f
-		port map(
-			sclk => rgmii_rx_clk,
-			rst  => '0',
-			d0   => '1',
-			d1   => '0',
-			q    => rgmii_tx_clk);
-	end generate;
-	
 	hdmi0_g : entity hdl4fpga.ecp5_ogbx
    	generic map (
 		mem_mode  => false,

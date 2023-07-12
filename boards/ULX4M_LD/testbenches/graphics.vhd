@@ -59,7 +59,7 @@ architecture ulx4mld_graphics of testbench is
 			usb_fpga_otg_dn : inout std_logic := 'Z';
 			n_extrst        : inout std_logic := 'Z';
 
-			eth_nreset      : out   std_logic;
+			eth_resetn      : out   std_logic;
 			-- rgmii_ref_clk  : in    std_logic;
 			eth_mdio        : inout std_logic := '-';
 			eth_mdc         : out   std_logic;
@@ -153,13 +153,17 @@ architecture ulx4mld_graphics of testbench is
 	signal sda        : std_logic;
 	signal tdqs_n     : std_logic_vector(dqs'range);
 
-	signal rgmii_rxc  : std_logic;
+	signal rgmii_rxc  : std_logic := '0';
 	signal rgmii_rxdv : std_logic;
 	signal rgmii_rxd  : std_logic_vector(0 to 4-1);
+	signal gmii_rxdv  : std_logic;
+	signal gmii_rxd   : std_logic_vector(0 to 8-1);
 
 	signal rgmii_txc  : std_logic;
 	signal rgmii_txen : std_logic;
 	signal rgmii_txd  : std_logic_vector(0 to 4-1);
+	signal gmii_txen  : std_logic;
+	signal gmii_txd   : std_logic_vector(0 to 8-1);
 
 	signal ftdi_txd   : std_logic;
 	signal ftdi_rxd   : std_logic;
@@ -190,15 +194,22 @@ begin
 
     ipoetb_e : entity work.ipoe_tb
 	generic map (
+		delay1   => 1 us,
 		snd_data => snd_data,
 		req_data => req_data)
 	port map (
 		mii_clk   => rgmii_rxc,
-		mii_rxdv  => rgmii_txen,
-		mii_rxd   => rgmii_txd,
+		mii_rxdv  => gmii_txen,
+		mii_rxd   => gmii_txd,
 
-		mii_txen  => rgmii_rxdv,
-		mii_txd   => rgmii_rxd);
+		mii_txen  => gmii_rxdv,
+		mii_txd   => gmii_rxd);
+
+
+	rgmii_rxd  <= multiplex(gmii_rxd,  gmii_rxdv);
+	rgmii_rxdv <= multiplex('0' & gmii_rxdv, gmii_rxdv);
+	gmii_txd   <= rgmii_txd & rgmii_txd;
+	rgmii_rxc <= not rgmii_rxc after 1 sec/125.0e6;
 
 	du_e : ulx4m_ld
 	generic map (
@@ -209,7 +220,7 @@ begin
 		btn(1)       => '0',
 		btn(2 to 3)  => (others => '-'),
 
-		eth_nreset   => open,
+		eth_resetn   => open,
 		eth_mdc      => open,
 		-- rgmii_tx_clk => rgmii_txc,
 		rgmii_tx_en  => rgmii_txen,
