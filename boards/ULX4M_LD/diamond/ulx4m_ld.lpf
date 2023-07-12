@@ -73,8 +73,9 @@ LOCATE COMP "ftdi_rxd"   SITE "N3"; IOBUF  PORT "ftdi_rxd"   PULLMODE=NONE IO_TY
 # RGMII #
 # ##### #
 
+#LOCATE COMP "eth_intn"     SITE "M1"; IOBUF PORT "eth_intn"     PULLMODE=NONE IO_TYPE=LVCMOS33;
 LOCATE COMP "eth_resetn"   SITE "G5"; IOBUF PORT "eth_resetn"   PULLMODE=NONE IO_TYPE=LVCMOS33;
-LOCATE COMP "eth_mdio"     SITE "F6"; IOBUF PORT "eth_mdio"     PULLMODE=UP IO_TYPE=LVCMOS33;
+LOCATE COMP "eth_mdio"     SITE "F6"; IOBUF PORT "eth_mdio"     PULLMODE=UP   IO_TYPE=LVCMOS33;
 LOCATE COMP "eth_mdc"      SITE "J5"; IOBUF PORT "eth_mdc"      PULLMODE=NONE IO_TYPE=LVCMOS33;
 
 

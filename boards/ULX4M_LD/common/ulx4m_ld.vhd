@@ -52,7 +52,7 @@ entity ulx4m_ld is
 		n_extrst        : inout std_logic := 'Z';
 
 		eth_resetn      : out std_logic;
-		eth_intn        : in  std_logic := 'Z';
+		-- eth_intn        : in  std_logic := 'Z';
 		eth_mdio        : inout std_logic := 'Z';
 		eth_mdc         : out std_logic := 'Z';
 
