@@ -217,10 +217,10 @@ begin
 		signal gmii_tx_en : std_logic;
 		signal gmii_txd   : std_logic_vector(0 to 2*rgmii_txd'length-1);
 
-		signal rxdv : std_logic;
-		signal rxd  : std_logic_vector(0 to 2*rgmii_rxd'length-1);
-		signal txen : std_logic;
-		signal txd  : std_logic_vector(0 to 2*rgmii_txd'length-1);
+		signal rx_dv : std_logic;
+		signal rxd   : std_logic_vector(0 to 2*rgmii_rxd'length-1);
+		signal tx_en : std_logic;
+		signal txd   : std_logic_vector(0 to 2*rgmii_txd'length-1);
 	begin
 
 		rgmii_rx_dv_g : iddrx1f
@@ -245,13 +245,13 @@ begin
 		rxlat_e : entity hdl4fpga.latency
 		generic map (
 			n => gmii_rxd'length+1,
-			d => (0 to gmii_rxd'length => 1))
+			d => (0 to gmii_rxd'length => 0))
 		port map (
 			clk => rgmii_rx_clk,
 			di(0 to 8-1) => gmii_rxd,
 			di(8) =>  gmii_rx_dv,
 			do(0 to 8-1) => rxd,
-			do(8) =>  rxdv);
+			do(8) => rx_dv);
 
 		rgmii_e : entity hdl4fpga.link_mii
 		generic map (
@@ -269,28 +269,28 @@ begin
 			so_irdy    => so_irdy,
 			so_trdy    => so_trdy,
 			so_data    => so_data,
-			dhcp_btn   => '0', --btn(2),
+			dhcp_btn   => btn(2),
 
 			mii_rxc    => rgmii_rx_clk,
-			mii_rxdv   => rxdv,
+			mii_rxdv   => rx_dv,
 			mii_rxd    => rxd,
 
 			mii_txc    => rgmii_rx_clk,
-			mii_txen   => txen,
-			mii_txd    => txd);
+			mii_txen   => gmii_tx_en,
+			mii_txd    => gmii_txd);
 
 		sio_clk <= rgmii_rx_clk;
 
-		txlat_e : entity hdl4fpga.latency
-		generic map (
-			n => gmii_txd'length+1,
-			d => (0 to gmii_txd'length => 1))
-		port map (
-			clk => rgmii_rx_clk,
-			di(0 to 8-1) => txd,
-			di(8) =>  txen,
-			do(0 to 8-1) => gmii_txd,
-			do(8) =>  gmii_tx_en);
+		-- txlat_e : entity hdl4fpga.latency
+		-- generic map (
+			-- n => gmii_txd'length+1,
+			-- d => (0 to gmii_txd'length => 0))
+		-- port map (
+			-- clk => rgmii_rx_clk,
+			-- di(0 to 8-1) => txd,
+			-- di(8) => tx_en,
+			-- do(0 to 8-1) => gmii_txd,
+			-- do(8) =>  gmii_tx_en);
 
 		rgmii_tx_clk_i : oddrx1f
 		port map(

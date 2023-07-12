@@ -206,10 +206,10 @@ begin
 		mii_txd   => gmii_rxd);
 
 
-	rgmii_rxd  <= multiplex(gmii_rxd,  gmii_rxdv);
-	rgmii_rxdv <= multiplex('0' & gmii_rxdv, gmii_rxdv);
+	rgmii_rxc  <= not rgmii_rxc after 1 sec/125.0e6/2.0;
+	rgmii_rxd  <= transport multiplex(gmii_rxd(0 to 4-1) & gmii_rxd(4 to 8-1),  not rgmii_rxc) after 5 ns;
+	rgmii_rxdv <= transport multiplex(gmii_rxdv          & '0',                 not rgmii_rxc) after 5 ns;
 	gmii_txd   <= rgmii_txd & rgmii_txd;
-	rgmii_rxc <= not rgmii_rxc after 1 sec/125.0e6;
 
 	du_e : ulx4m_ld
 	generic map (
