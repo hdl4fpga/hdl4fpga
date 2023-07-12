@@ -173,6 +173,7 @@ architecture ulx4mld_graphics of testbench is
 	signal rst        : std_logic;
 	signal xtal       : std_logic := '0';
 
+	signal txc : std_logic;
 begin
 
 	rst      <= '1', '0' after 17.5 us when debug else '1', '0' after 100 us;
@@ -207,9 +208,20 @@ begin
 
 
 	rgmii_rxc  <= not rgmii_rxc after 1 sec/125.0e6/2.0;
-	rgmii_rxd  <= transport multiplex(gmii_rxd(0 to 4-1) & gmii_rxd(4 to 8-1),  not rgmii_rxc) after 5 ns;
-	rgmii_rxdv <= transport multiplex(gmii_rxdv          & '0',                 not rgmii_rxc) after 5 ns;
-	gmii_txd   <= rgmii_txd & rgmii_txd;
+	rgmii_rxd  <= transport multiplex(gmii_rxd(0 to 4-1) & gmii_rxd(4 to 8-1),  not rgmii_rxc); -- after 1 ns;
+	rgmii_rxdv <= transport multiplex(gmii_rxdv          & '0',                 not rgmii_rxc); -- after 1 ns;
+
+	txc <= rgmii_txc after 1 ns;
+	process (txc)
+	begin
+		if rising_edge(txc) then
+			gmii_txen <= rgmii_txen;
+			gmii_txd(0 to 4-1) <= rgmii_txd;
+		end if;
+		if falling_edge(txc) then
+			gmii_txd(4 to 8-1) <= rgmii_txd;
+		end if;
+	end process;
 
 	du_e : ulx4m_ld
 	generic map (
@@ -222,7 +234,7 @@ begin
 
 		eth_resetn   => open,
 		eth_mdc      => open,
-		-- rgmii_tx_clk => rgmii_txc,
+		rgmii_tx_clk => rgmii_txc,
 		rgmii_tx_en  => rgmii_txen,
 		rgmii_txd    => rgmii_txd,
 		rgmii_rx_clk => rgmii_rxc,

@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.ipoepkg.all;
 
 entity eth_tb is
 	generic (
@@ -74,7 +75,7 @@ architecture def of eth_tb is
 		x"4001"                 &    -- IP TTL, protocol
 		x"a297"                 &    -- IP Header Checksum
 		x"c0a80002"             &    -- IP Source IP address
-		x"c0a8000e"             &    -- IP Destiantion IP Address
+		aton("192.168.1.50")    &    -- IP Destiantion IP Address
 		reverse(x"00000000") &
 		reverse(x"12345678",8);
 	constant payload : std_logic_vector :=

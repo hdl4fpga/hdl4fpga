@@ -304,7 +304,7 @@ begin
 			sclk => rgmii_rx_clk,
 			rst  => '0',
 			d0   => gmii_tx_en,
-			d1   => '0',
+			d1   => gmii_tx_en,
 			q    => rgmii_tx_en);
 
 		rgmii_txd_g : for i in rgmii_txd'range generate
