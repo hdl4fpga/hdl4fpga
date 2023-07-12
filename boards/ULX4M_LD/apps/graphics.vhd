@@ -255,7 +255,7 @@ begin
 		rgmii_e : entity hdl4fpga.link_mii
 		generic map (
 			default_mac   => x"00_40_00_01_02_03",
-			default_ipv4a => aton("10.31.175.150"),
+			default_ipv4a => aton("192.168.1.50"),
 			n             => gmii_rxd'length)
 		port map (
 			si_frm     => si_frm,
@@ -317,9 +317,9 @@ begin
 				q    => rgmii_txd(i));
 		end generate;
 
-		eth_resetn <= not '0';
-		eth_mdio   <= '0';
-		eth_mdc    <= '0';
+		eth_resetn <= not btn(3);
+		eth_mdc    <= 'Z';
+		eth_mdio   <= 'Z';
 
 	end generate;
 
