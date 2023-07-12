@@ -269,17 +269,28 @@ begin
 			so_irdy    => so_irdy,
 			so_trdy    => so_trdy,
 			so_data    => so_data,
-			dhcp_btn   => btn(2),
+			dhcp_btn   => '0', --btn(2),
 
 			mii_rxc    => rgmii_rx_clk,
-			mii_rxdv   => gmii_rx_dv,
-			mii_rxd    => gmii_rxd,
+			mii_rxdv   => rxdv,
+			mii_rxd    => rxd,
 
 			mii_txc    => rgmii_rx_clk,
-			mii_txen   => gmii_tx_en,
-			mii_txd    => gmii_txd);
+			mii_txen   => txen,
+			mii_txd    => txd);
 
 		sio_clk <= rgmii_rx_clk;
+
+		txlat_e : entity hdl4fpga.latency
+		generic map (
+			n => gmii_txd'length+1,
+			d => (0 to gmii_txd'length => 1))
+		port map (
+			clk => rgmii_rx_clk,
+			di(0 to 8-1) => txd,
+			di(8) =>  txen,
+			do(0 to 8-1) => gmii_txd,
+			do(8) =>  gmii_tx_en);
 
 		rgmii_tx_clk_i : oddrx1f
 		port map(
