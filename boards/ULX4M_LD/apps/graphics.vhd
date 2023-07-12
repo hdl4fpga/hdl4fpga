@@ -232,7 +232,6 @@ begin
 			q1   => open);
 
 		rgmii_rxd_g : for i in rgmii_txd'range generate
-		begin
 			iddr_i : iddrx1f
 			port map (
 				sclk => rgmii_rx_clk,
