@@ -30,6 +30,7 @@ use hdl4fpga.ipoepkg.all;
 
 entity ipoe_tb is
 	generic (
+		ipaddress : std_logic_vector := aton("192.168.0.14");
 		delay1 : time := 36 us;
 		delay2 : time := 10 us;
 		snd_data : std_logic_vector :=
@@ -89,7 +90,8 @@ begin
 
 	htb_e : entity hdl4fpga.eth_tb
 	generic map (
-		debug => false)
+		debug => false,
+		ipaddress => ipaddress)
 	port map (
 		mii_data4 => snd_data,
 		mii_data5 => req_data,

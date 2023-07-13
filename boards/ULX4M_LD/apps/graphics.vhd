@@ -146,7 +146,7 @@ begin
 		clkref_freq => clk25mhz_freq,
 		video_params => video_params)
 	port map (
-		clk_ref     => '0', --clk_25mhz,
+		clk_ref     => clk_25mhz,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
 		video_shift_clk => video_shift_clk,

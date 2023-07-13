@@ -31,6 +31,7 @@ use hdl4fpga.ipoepkg.all;
 
 entity eth_tb is
 	generic (
+		ipaddress : std_logic_vector := aton("192.168.0.14");
 		debug : boolean := false);
 	port (
 		mii_data4 : in  std_logic_vector := x"010000";
@@ -48,7 +49,6 @@ end;
 
 architecture def of eth_tb is
 
-	constant ipaddress : std_logic_vector := aton("192.168.1.50");
 
 	constant arppkt : std_logic_vector :=
 		x"00_40_00_01_02_03" & 
