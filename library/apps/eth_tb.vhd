@@ -48,6 +48,8 @@ end;
 
 architecture def of eth_tb is
 
+	constant ipaddress : std_logic_vector := aton("192.168.1.50");
+
 	constant arppkt : std_logic_vector :=
 		x"00_40_00_01_02_03" & 
 		x"00_27_0e_0f_f5_95" & 
@@ -75,7 +77,7 @@ architecture def of eth_tb is
 		x"4001"                 &    -- IP TTL, protocol
 		x"a297"                 &    -- IP Header Checksum
 		x"c0a80002"             &    -- IP Source IP address
-		aton("192.168.1.50")    &    -- IP Destiantion IP Address
+		ipaddress               &    -- IP Destiantion IP Address
 		reverse(x"00000000") &
 		reverse(x"12345678",8);
 	constant payload : std_logic_vector :=
@@ -106,7 +108,7 @@ architecture def of eth_tb is
 
 		udp_checksummed (
 			x"ffffffff",             -- IP Source IP address
-			x"c0a8000e",             -- IP Destiantion IP Address
+			ipaddress,               -- IP Destiantion IP Address
 			x"00430044"         &    -- UDP Source port, Destination port
 			std_logic_vector(to_unsigned(payload'length/8+8,16))    & -- UDP Length,
 			x"0000" &              -- UPD checksum
@@ -193,11 +195,11 @@ begin
 		x"0511"                 &    -- IP TTL, protocol
 		x"0000"                 &    -- IP Header Checksum
 		x"ffffffff"             &    -- IP Source IP address
-		x"c0a8000e"             &    -- IP Destiantion IP Address
+		ipaddress               &    -- IP Destiantion IP Address
 
 		udp_checksummed (
 			x"ffffffff",             -- IP Source IP address
-			x"c0a8000e",             -- IP Destiantion IP Address
+			ipaddress,               -- IP Destiantion IP Address
 			x"5500ffaa"         &    -- UDP Source port, Destination port
 			std_logic_vector(to_unsigned(mii_data4'length/8+8,16))    & -- UDP Length,
 			x"0000" &              -- UPD checksum
@@ -214,11 +216,11 @@ begin
 		x"0511"                 &    -- IP TTL, protocol
 		x"0000"                 &    -- IP Header Checksum
 		x"ffffffff"             &    -- IP Source IP address
-		x"c0a8000e"             &    -- IP Destiantion IP Address
+		ipaddress               &    -- IP Destiantion IP Address
 
 		udp_checksummed (
 			x"ffffffff",             -- IP Source IP address
-			x"c0a8000e",             -- IP Destiantion IP Address
+			ipaddress,               -- IP Destiantion IP Address
 			x"5ff5affa"         &    -- UDP Source port, Destination port
 			std_logic_vector(to_unsigned(mii_data5'length/8+8,16))    & -- UDP Length,
 			x"0000" &              -- UPD checksum

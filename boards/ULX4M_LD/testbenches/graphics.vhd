@@ -27,7 +27,7 @@ use hdl4fpga.ipoepkg.all;
 
 architecture ulx4mld_graphics of testbench is
 
-	constant debug          : boolean := false;
+	constant debug          : boolean := true;
 
 	constant bank_bits      : natural := 3;
 	constant addr_bits      : natural := 16;
@@ -153,6 +153,7 @@ architecture ulx4mld_graphics of testbench is
 	signal sda        : std_logic;
 	signal tdqs_n     : std_logic_vector(dqs'range);
 
+	signal gmii_rxc  : std_logic := '0';
 	signal rgmii_rxc  : std_logic := '0';
 	signal rgmii_rxdv : std_logic;
 	signal rgmii_rxd  : std_logic_vector(0 to 4-1);
@@ -195,11 +196,11 @@ begin
 
     ipoetb_e : entity work.ipoe_tb
 	generic map (
-		delay1   => 1 us,
+		delay1   => 3 us,
 		snd_data => snd_data,
 		req_data => req_data)
 	port map (
-		mii_clk   => rgmii_rxc,
+		mii_clk   => gmii_rxc,
 		mii_rxdv  => gmii_txen,
 		mii_rxd   => gmii_txd,
 
@@ -207,9 +208,10 @@ begin
 		mii_txd   => gmii_rxd);
 
 
-	rgmii_rxc  <= not rgmii_rxc after 1 sec/125.0e6/2.0;
-	rgmii_rxd  <= transport multiplex(gmii_rxd(0 to 4-1) & gmii_rxd(4 to 8-1),  not rgmii_rxc); -- after 1 ns;
-	rgmii_rxdv <= transport multiplex(gmii_rxdv          & '0',                 not rgmii_rxc); -- after 1 ns;
+	gmii_rxc   <= not gmii_rxc after 1 sec/125.0e6/2.0;
+	rgmii_rxc  <= gmii_rxc after 1 ps;
+	rgmii_rxd  <= transport multiplex(gmii_rxd(0 to 4-1) & gmii_rxd(4 to 8-1),  not gmii_rxc);
+	rgmii_rxdv <= transport multiplex(gmii_rxdv          & '0',                 not gmii_rxc);
 
 	txc <= rgmii_txc after 1 ns;
 	process (txc)

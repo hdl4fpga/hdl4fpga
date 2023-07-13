@@ -146,7 +146,7 @@ begin
 		clkref_freq => clk25mhz_freq,
 		video_params => video_params)
 	port map (
-		clk_ref     => clk_25mhz,
+		clk_ref     => '0', --clk_25mhz,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
 		video_shift_clk => video_shift_clk,
@@ -275,21 +275,21 @@ begin
 			mii_rxd    => rxd,
 
 			mii_txc    => rgmii_rx_clk,
-			mii_txen   => gmii_tx_en,
-			mii_txd    => gmii_txd);
+			mii_txen   => tx_en,
+			mii_txd    => txd);
 
 		sio_clk <= rgmii_rx_clk;
 
-		-- txlat_e : entity hdl4fpga.latency
-		-- generic map (
-			-- n => gmii_txd'length+1,
-			-- d => (0 to gmii_txd'length => 0))
-		-- port map (
-			-- clk => rgmii_rx_clk,
-			-- di(0 to 8-1) => txd,
-			-- di(8) => tx_en,
-			-- do(0 to 8-1) => gmii_txd,
-			-- do(8) =>  gmii_tx_en);
+		txlat_e : entity hdl4fpga.latency
+		generic map (
+			n => gmii_txd'length+1,
+			d => (0 to gmii_txd'length => 0))
+		port map (
+			clk => rgmii_rx_clk,
+			di(0 to 8-1) => txd,
+			di(8) => tx_en,
+			do(0 to 8-1) => gmii_txd,
+			do(8) =>  gmii_tx_en);
 
 		rgmii_tx_clk_i : oddrx1f
 		port map(
