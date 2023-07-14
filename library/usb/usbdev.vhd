@@ -243,9 +243,6 @@ begin
 		rxtoken => rxtoken,
 		rxrqst  => rxrqst,
 
-		tx_req  => tx_req,
-		tx_rdy  => tx_rdy,
-
 		txen    => pkt_txen,
 		txbs    => pkt_txbs);
 

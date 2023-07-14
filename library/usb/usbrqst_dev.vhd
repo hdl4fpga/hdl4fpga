@@ -45,15 +45,14 @@ entity usbrqst_dev is
 		rqst_txd  : out std_logic;
 
 		rx_req  : in  std_logic;
-		rx_rdy  : buffer std_logic;
+		rx_rdy  : in  std_logic;
 		rxpid   : in  std_logic_vector(4-1 downto 0);
 		rxtoken : in  std_logic_vector;
 		rxrqst  : in  std_logic_vector;
 
-		tx_req  : buffer std_logic;
-		tx_rdy  : in  std_logic;
-		txen    : buffer std_logic;
+		txen    : in  std_logic;
 		txbs    : in  std_logic);
+
 end;
 
 architecture def of usbrqst_dev is
@@ -94,10 +93,6 @@ architecture def of usbrqst_dev is
 		end loop;
 		return retval;
 	end;
-
-	alias tp_state is tp(5 to 8);
-
-	signal descriptor_txd : std_logic;
 
 begin
 
@@ -167,7 +162,7 @@ begin
 				end if;
 			end if;
 		end if;
-		descriptor_txd <= descriptor_data(descriptor_addr);
+		rqst_txd <= descriptor_data(descriptor_addr);
 	end process;
 
 	tp(1)  <= to_stdulogic(rqst_reqs(set_address));
