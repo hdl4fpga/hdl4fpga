@@ -260,7 +260,7 @@ begin
 			src_irdy  => video_on,
     		src_data  => vram_word,
     		dst_clk   => video_clk,
-    		dst_data  => vram_word);
+    		dst_data  => video_pixel);
 
 	end generate;
 

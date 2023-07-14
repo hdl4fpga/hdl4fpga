@@ -43,8 +43,14 @@ add wave -noupdate -expand -group sdrphy_e -expand -group byte_g0 /testbench/du_
 add wave -noupdate -expand -group sdrphy_e -expand -group byte_g0 -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrphy_i/sys_dqi
 add wave -noupdate -expand -group sdrphy_e -expand -group byte_g0 -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrphy_i/sdram_dq
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/videoio_clk
+add wave -noupdate /testbench/du_e/video_shift_clk
+add wave -noupdate /testbench/du_e/video_clk
+add wave -noupdate /testbench/du_e/video_eclk
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -expand /testbench/du_e/dvid_crgb
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -expand /testbench/du_e/gpdi_d
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -55,8 +61,8 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {40256198460 fs} 0} {{Cursor 2} {53526016270 fs} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {59807514480 fs} 0} {{Cursor 2} {59944303030 fs} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 214
 configure wave -valuecolwidth 99
 configure wave -justifyvalue left
@@ -71,4 +77,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {44100 ns}
+WaveRestoreZoom {59766210930 fs} {60012304690 fs}

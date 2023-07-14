@@ -43,7 +43,8 @@ architecture graphics of ulx4m_ld is
 	-- Set your profile here             --
 	constant io_link      : io_comms     := io_ipoe;
 	constant sdram_speed  : sdram_speeds := sdram400MHz;
-	constant video_mode   : video_modes  := mode600p24bpp;
+	-- constant video_mode   : video_modes  := mode600p24bpp;
+	constant video_mode   : video_modes  := mode1080p24bpp30;
 	---------------------------------------
 
 	constant video_params : video_record := videoparam(
@@ -128,7 +129,7 @@ architecture graphics of ulx4m_ld is
 	signal sclk          : std_logic;
 	signal eclk          : std_logic;
 
-	signal video_pixel   : std_logic_vector(0 to 32-1);
+	signal video_pixel   : std_logic_vector(0 to 24-1);
 
 	signal tp            : std_logic_vector(1 to 32);
 	signal tp_phy        : std_logic_vector(1 to 32);
@@ -542,7 +543,6 @@ begin
 		size      => gpdi_d'length,
 		gear      => video_gear)
    	port map (
-		rst       => video_phyrst,
 		eclk      => video_eclk,
 		sclk      => video_shift_clk,
 		d         => dvid_crgb,
