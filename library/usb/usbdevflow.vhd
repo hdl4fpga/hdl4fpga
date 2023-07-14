@@ -51,6 +51,10 @@ entity usbdevflow is
 		txbs    : in  std_logic;
 		txd     : buffer std_logic;
 
+		in_req    : buffer bit;
+		in_rdy    : buffer bit;
+		out_req   : buffer bit;
+		out_rdy   : buffer bit;
 	    rqst_rdys : in  bit_requests;
 	    rqst_reqs : buffer bit_requests;
 		rqst_txd  : in std_logic);
@@ -76,10 +80,6 @@ architecture def of usbdevflow is
 	signal rqst_req  : std_logic;
 	signal rqst_rdy  : std_logic;
 
-	signal in_req    : bit;
-	signal in_rdy    : bit;
-	signal out_req   : bit;
-	signal out_rdy   : bit;
 	signal ack_rdy   : bit;
 	signal ack_req   : bit;
 

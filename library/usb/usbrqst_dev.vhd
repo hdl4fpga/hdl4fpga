@@ -32,7 +32,7 @@ use hdl4fpga.usbpkg.all;
 entity usbrqst_dev is
 	 generic (
 		device_dscptr   : std_logic_vector;
-		config_dscptr : std_logic_vector;
+		config_dscptr   : std_logic_vector;
 		interface_dscptr: std_logic_vector;
 		endpoint_dscptr : std_logic_vector);
 	port (
@@ -50,6 +50,10 @@ entity usbrqst_dev is
 		rxtoken : in  std_logic_vector;
 		rxrqst  : in  std_logic_vector;
 
+		in_req  : in  bit;
+		in_rdy  : in  bit;
+		out_req : in  bit;
+		out_rdy : in  bit;
 		txen    : in  std_logic;
 		txbs    : in  std_logic);
 
@@ -63,19 +67,6 @@ architecture def of usbrqst_dev is
 	signal value     : std_logic_vector(16-1 downto 0);
 	signal index     : std_logic_vector(16-1 downto 0);
 	signal length    : std_logic_vector(16-1 downto 0);
-
-	signal rqst_req  : bit;
-	signal rqst_rdy  : bit;
-
-	signal in_req    : bit;
-	signal in_rdy    : bit;
-	signal out_req   : bit;
-	signal out_rdy   : bit;
-	signal ack_rdy   : bit;
-	signal ack_req   : bit;
-
-	signal data_req  : bit;
-	signal data_rdy  : bit;
 
 	alias setaddress_rdy    is rqst_rdys(set_address);
 	alias setaddress_req    is rqst_reqs(set_address);
@@ -144,7 +135,9 @@ begin
 									state := s_data;
 									exit;
 								end if;
-								descriptor_addr := descriptor_addr + descriptor_lengths(i);
+								if i/=descriptor_lengths'right then
+									descriptor_addr := descriptor_addr + descriptor_lengths(i);
+								end if;
 							end loop;
 						end if;
 					when s_data =>
@@ -169,9 +162,5 @@ begin
 	tp(2)  <= to_stdulogic(rqst_rdys(set_address));
 	tp(3)  <= to_stdulogic(rqst_reqs(get_descriptor));
 	tp(4)  <= to_stdulogic(rqst_rdys(get_descriptor));
-	tp(9)  <= to_stdulogic(in_req);
-	tp(10) <= to_stdulogic(in_rdy);
-	tp(11) <= to_stdulogic(out_req);
-	tp(12) <= to_stdulogic(out_rdy);
 
 end;
