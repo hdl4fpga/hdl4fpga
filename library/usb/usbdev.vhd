@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.usbpkg.all;
 
 entity usbdev is
    	generic (
@@ -71,9 +72,14 @@ architecture def of usbdev is
 	signal rxtoken   : std_logic_vector(0 to 8+7+4+5-1);
 	signal rxrqst    : std_logic_vector(0 to 8+8*8-1);
 
-	signal tp_phy  : std_logic_vector(1 to 32);
-	signal tp_rqst : std_logic_vector(1 to 32);
-	signal tp_pkt : std_logic_vector(1 to 32);
+	signal rqst_rdys : bit_requests;
+	signal rqst_reqs : bit_requests;
+	signal rqst_txd  : std_logic;
+
+	signal tp_phy    : std_logic_vector(1 to 32);
+	signal tp_rqst   : std_logic_vector(1 to 32);
+	signal tp_pkt    : std_logic_vector(1 to 32);
+
 begin
 
 	-- tp(1 to 3)  <= tp_phy (1 to 3);
@@ -145,7 +151,7 @@ begin
 		phy_txbs  => phy_txbs,
 		phy_txd   => phy_txd);
 
-	usbrqst_e : entity hdl4fpga.usbrqst_dev
+	usbdevflow_e : entity hdl4fpga.usbdevflow
 	port map (
 		tp      => tp_rqst,
 		clk     => clk,
@@ -167,7 +173,81 @@ begin
 		txpid   => pkt_txpid,
 		txen    => pkt_txen,
 		txbs    => pkt_txbs,
-		txd     => pkt_txd);
+		txd     => pkt_txd,
+
+		rqst_rdys => rqst_rdys,
+		rqst_reqs => rqst_reqs,
+		rqst_txd  => rqst_txd);
+
+	usbrqst_e : entity hdl4fpga.usbrqst_dev
+	generic map (
+		device_dscptr => (
+			reverse(x"12")    & -- Length
+			reverse(decriptortypes_ids(device)) & -- DescriptorType
+			reverse(x"0110")  & -- USB
+			reverse(x"00")    & -- DeviceClass
+			reverse(x"00")    & -- SubClass
+			reverse(x"00")    & -- DeviceProtocol
+			reverse(x"40")    & -- MaxPacketSize0
+			reverse(x"1234")  & -- idVendor
+			reverse(x"abcd")  & -- idProduct
+			reverse(x"0100")  & -- Device
+			reverse(x"00")    & -- Manufacturer
+			reverse(x"00")    & -- Product
+			reverse(x"00")    & -- SerialNumber
+			reverse(x"01")),    -- NumConfigurations
+		config_dscptr => (
+			reverse(x"09")    & -- Length
+			reverse(decriptortypes_ids(config)) & -- DescriptorType
+			reverse(x"0020")  & -- TotalLength
+			reverse(x"01")    & -- NumInterfaces
+			reverse(x"01")    & -- ConfigurationValue
+			reverse(x"00")    & -- Configuration
+			reverse(x"c0")    & -- Attribute
+			reverse(x"32")),    -- MaxPower
+		interface_dscptr => (
+			reverse(x"09")    & -- Length
+			reverse(decriptortypes_ids(interface)) & -- DescriptorType
+			reverse(x"00")    & -- InterfaceNumber
+			reverse(x"00")    & -- AlternateSetting
+			reverse(x"02")    & -- NumEndpoints
+			reverse(x"00")    & -- InterfaceClass
+			reverse(x"00")    & -- InterfaceSubClass
+			reverse(x"00")    & -- IntefaceProtocol
+			reverse(x"00")),    -- Interface
+		endpoint_dscptr => (
+			reverse(x"07")    & -- Length
+			reverse(decriptortypes_ids(endpoint)) & -- DescriptorType
+			reverse(x"01")    & -- EndpointAddress
+			reverse(x"02")    & -- Attibutes
+			reverse(x"0040")  & -- MaxPacketSize
+			reverse(x"00")    & -- Interval
+			reverse(x"07")    & -- Length
+			reverse(decriptortypes_ids(endpoint)) & -- DescriptorType
+			reverse(x"81")    & -- EndpointAddress
+			reverse(x"02")    & -- Attibutes
+			reverse(x"0040")  & -- MaxPacketSize
+			reverse(x"00")))    -- Interval
+	port map (
+		tp      => tp_rqst,
+		clk     => clk,
+		cken    => cken,
+
+		rqst_rdys => rqst_rdys,
+		rqst_reqs => rqst_reqs,
+		rqst_txd  => rqst_txd,
+
+		rx_req  => rx_req,
+		rx_rdy  => rx_rdy,
+		rxpid   => phy_rxpid,
+		rxtoken => rxtoken,
+		rxrqst  => rxrqst,
+
+		tx_req  => tx_req,
+		tx_rdy  => tx_rdy,
+
+		txen    => pkt_txen,
+		txbs    => pkt_txbs);
 
 
 	txbs <= phy_txbs;

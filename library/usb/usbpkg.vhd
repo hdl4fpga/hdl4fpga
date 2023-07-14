@@ -53,6 +53,7 @@ package usbpkg is
     	-- set_interface,
     	-- synch_frame);
 
+	type bit_requests is array(requests) of bit;
 	type requestid_vector is array(requests) of std_logic_vector(4-1 downto 0);
 	constant request_ids : requestid_vector := (
 	    -- get_status        => x"0",

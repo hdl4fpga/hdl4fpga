@@ -96,7 +96,7 @@ begin
 				19, 72);
 
 			constant delays : time_vector := (
-				0 ns, 0 ns, 2 us, 9 us,
+				0 ns, 0 ns, 2 us, 3 us,
 				0 ns, 0 ns, 2 us, 9 us,
 				0 ns, 0 ns, 2 us, 9 us,
 				0 ns); --, 0 ns);
