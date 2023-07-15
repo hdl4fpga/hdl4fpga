@@ -43,8 +43,8 @@ architecture graphics of ulx4m_ld is
 	-- Set your profile here             --
 	constant io_link      : io_comms     := io_ipoe;
 	constant sdram_speed  : sdram_speeds := sdram400MHz;
-	-- constant video_mode   : video_modes  := mode600p24bpp;
-	constant video_mode   : video_modes  := mode1080p24bpp30;
+	constant video_mode   : video_modes  := mode600p24bpp;
+	-- constant video_mode   : video_modes  := mode1080p24bpp30;
 	---------------------------------------
 
 	constant video_params : video_record := videoparam(

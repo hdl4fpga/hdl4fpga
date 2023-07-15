@@ -37,10 +37,11 @@ entity serlzr is
 		src_frm   : in  std_logic := '1';
 		src_data  : in  std_logic_vector;
 		src_irdy  : in  std_logic := '1';
-		src_trdy  : out  std_logic := '1';
+		src_trdy  : out std_logic := '1';
 		dst_frm   : in  std_logic := '1';
 		dst_clk   : in  std_logic;
-		dst_trdy  : out std_logic;
+		dst_irdy  : out std_logic;
+		dst_trdy  : in  std_logic := '1';
 		dst_data  : buffer std_logic_vector);
 end;
 
@@ -178,6 +179,7 @@ begin
 				out_data => fifo_data);
 		end generate;
 
+		src_trdy <= fifo_trdy;
 		process (dst_clk)
 			variable shr : unsigned(rgtr'range);
 			variable acc : unsigned(shf'range) := (others => '0');
@@ -186,17 +188,18 @@ begin
 				if dst_frm='0' then
 					acc := (others => '0');
 					fifo_trdy <= '1';
-					src_trdy  <= '0';
 				elsif acc >= dst_data'length then 
-   					acc := acc - dst_data'length;
+					if dst_trdy='1' then
+						acc := acc - dst_data'length;
+					end if;
    					fifo_trdy <= '0';
-					src_trdy  <= '0';
    				else
    					fifo_trdy <= '1';
-					src_trdy  <= '1';
-   					shr := shift_left(shr, src_data'length);
-   					shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(fifo_data), fifo_data));
-   					acc := acc + (src_data'length - dst_data'length);
+					if src_irdy='1' then
+						shr := shift_left(shr, src_data'length);
+						shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(fifo_data), fifo_data));
+						acc := acc + (src_data'length - dst_data'length);
+					end if;
 				end if;
 				shf  <= std_logic_vector(acc and to_unsigned(mm(1), acc'length));
 				rgtr <= std_logic_vector(shr);
@@ -299,12 +302,12 @@ begin
 				if rising_edge(dst_clk) then
 					if full='1' then
 						sel <= (others => '0');
-						dst_trdy <= full;
+						dst_irdy <= full;
 					elsif sel < unsigned_num_bits(rgtr'length/dst_data'length-1) then
 						sel <= sel + 1;
-						dst_trdy <= '1';
+						dst_irdy <= '1';
 					else
-						dst_trdy <= '0';
+						dst_irdy <= '0';
 					end if;
 				end if;
 			end process;

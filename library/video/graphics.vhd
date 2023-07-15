@@ -206,7 +206,7 @@ begin
 			src_irdy  => ctlr_di_dv,
     		src_data  => ctlr_di,
     		dst_clk   => ctlr_clk,
-    		dst_trdy  => vram_trdy,
+    		dst_irdy  => vram_trdy,
     		dst_data  => vram_word);
 
     	vram_e : entity hdl4fpga.fifo
@@ -230,6 +230,7 @@ begin
 	end generate;
 
 	srcgtdst_g : if ctlr_di'length > video_pixel'length generate
+		signal vram_irdy : std_logic;
 		signal vram_trdy : std_logic;
 		signal vram_word : std_logic_vector(ctlr_di'range);
 	begin
@@ -239,7 +240,7 @@ begin
     		async_mode => true,
     		latency    => 1,
     		check_sov  => false,
-    		check_dov  => false,
+    		check_dov  => true,
     		gray_code  => false)
     	port map (
     		src_clk  => ctlr_clk,
@@ -248,6 +249,7 @@ begin
 
     		dst_clk  => video_clk,
     		dst_frm  => video_frm,
+    		dst_irdy => vram_irdy,
     		dst_trdy => vram_trdy,
     		dst_data => vram_word);
 
@@ -257,12 +259,12 @@ begin
     		lsdfirst  => false)
     	port map (
     		src_clk   => video_clk,
-    		src_frm   => video_frm,
-			src_irdy  => video_on,
+			src_irdy  => vram_irdy,
 			src_trdy  => vram_trdy,
     		src_data  => vram_word,
-    		dst_frm   => video_on,
+    		dst_frm   => video_frm,
     		dst_clk   => video_clk,
+			dst_trdy  => video_on,
     		dst_data  => video_pixel);
 
 	end generate;
