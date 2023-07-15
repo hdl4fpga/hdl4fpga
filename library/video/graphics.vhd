@@ -248,7 +248,7 @@ begin
 
     		dst_clk  => video_clk,
     		dst_frm  => video_frm,
-    		dst_trdy => video_on,
+    		dst_trdy => vram_trdy,
     		dst_data => vram_word);
 
     	deslzr_e : entity hdl4fpga.serlzr
@@ -259,7 +259,9 @@ begin
     		src_clk   => video_clk,
     		src_frm   => video_frm,
 			src_irdy  => video_on,
+			src_trdy  => vram_trdy,
     		src_data  => vram_word,
+    		dst_frm   => video_on,
     		dst_clk   => video_clk,
     		dst_data  => video_pixel);
 

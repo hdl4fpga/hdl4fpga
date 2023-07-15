@@ -37,6 +37,7 @@ entity serlzr is
 		src_frm   : in  std_logic := '1';
 		src_data  : in  std_logic_vector;
 		src_irdy  : in  std_logic := '1';
+		src_trdy  : out  std_logic := '1';
 		dst_frm   : in  std_logic := '1';
 		dst_clk   : in  std_logic;
 		dst_trdy  : out std_logic;
@@ -185,11 +186,14 @@ begin
 				if dst_frm='0' then
 					acc := (others => '0');
 					fifo_trdy <= '1';
+					src_trdy  <= '0';
 				elsif acc >= dst_data'length then 
    					acc := acc - dst_data'length;
    					fifo_trdy <= '0';
+					src_trdy  <= '0';
    				else
    					fifo_trdy <= '1';
+					src_trdy  <= '1';
    					shr := shift_left(shr, src_data'length);
    					shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(fifo_data), fifo_data));
    					acc := acc + (src_data'length - dst_data'length);
