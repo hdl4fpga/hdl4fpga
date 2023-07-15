@@ -110,7 +110,7 @@ architecture graphics of ulx4m_ld is
 	signal video_shift_clk : std_logic;
 	signal video_eclk    : std_logic;
 	signal video_phyrst  : std_logic;
-	constant video_gear  : natural := video_params.gear;
+	constant video_gear  : natural := 7; --video_params.gear;
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 
 	constant mem_size    : natural := 8*(1024*8);
@@ -144,7 +144,8 @@ begin
 	sys_rst <= '0';
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
-		clkref_freq => clk25mhz_freq,
+		clkref_freq  => clk25mhz_freq,
+		default_gear => video_gear,
 		video_params => video_params)
 	port map (
 		clk_ref     => clk_25mhz,

@@ -217,10 +217,14 @@ package sdram_db is
 
 	constant ecp5g4_latencies : latency_vector := (
 		STRL   =>  0,
-		DQSL   =>  4*1-2+0+2,
-		DQSZL  =>  4*1+0+0+2,
-		DQZL   =>  4*1+0+0+2,
-		WWNL   =>  4*1-4+0+2,
+		DQSL   =>  4*1-2+2, -- ulx4ld
+		DQSZL  =>  4*1+0+2,
+		DQZL   =>  4*1+0+2,
+		WWNL   =>  4*1-4+2,
+		-- DQSL   =>  4*1-2+0, -- orangecrab
+		-- DQSZL  =>  4*1+0+0,
+		-- DQZL   =>  4*1+0+0,
+		-- WWNL   =>  4*1-4+0,
 		STRXL  =>  0,
 		DQSZXL =>  2,
 		DQSXL  =>  2,

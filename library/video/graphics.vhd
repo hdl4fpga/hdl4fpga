@@ -244,6 +244,7 @@ begin
     	port map (
     		src_clk  => ctlr_clk,
     		src_data => ctlr_di,
+			src_irdy => ctlr_di_dv,
 
     		dst_clk  => video_clk,
     		dst_frm  => video_frm,
