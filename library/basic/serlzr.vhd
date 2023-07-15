@@ -183,7 +183,6 @@ begin
 		process (dst_clk)
 			variable shr : unsigned(rgtr'range);
 			variable acc : unsigned(shf'range) := (others => '0');
-			variable rshr : std_logic_vector(shr'range);
 		begin 
 			if rising_edge(dst_clk) then
 				if dst_frm='0' then
@@ -203,7 +202,6 @@ begin
 					fifo_trdy <= '1';
 				end if;
 				shf  <= std_logic_vector(acc(shf'range) and to_unsigned(mm(1), shf'length));
-				rshr := reverse(std_logic_vector(shr));
 				rgtr <= std_logic_vector(shr);
 			end if;
 		end process;
