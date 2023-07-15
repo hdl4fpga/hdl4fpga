@@ -183,25 +183,27 @@ begin
 		process (dst_clk)
 			variable shr : unsigned(rgtr'range);
 			variable acc : unsigned(shf'range) := (others => '0');
+			variable rshr : std_logic_vector(shr'range);
 		begin 
 			if rising_edge(dst_clk) then
 				if dst_frm='0' then
 					acc := (others => '0');
-					fifo_trdy <= '1';
 				elsif acc >= dst_data'length then 
 					if dst_trdy='1' then
 						acc := acc - dst_data'length;
 					end if;
-   					fifo_trdy <= '0';
-   				else
-   					fifo_trdy <= '1';
-					if src_irdy='1' then
-						shr := shift_left(shr, src_data'length);
-						shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(fifo_data), fifo_data));
-						acc := acc + (src_data'length - dst_data'length);
-					end if;
+   				elsif src_irdy='1' then
+					shr := shift_left(shr, src_data'length);
+					shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(fifo_data), fifo_data));
+					acc := acc + (src_data'length - dst_data'length);
 				end if;
-				shf  <= std_logic_vector(acc and to_unsigned(mm(1), acc'length));
+				if acc >= dst_data'length then
+					fifo_trdy <= '0';
+				else
+					fifo_trdy <= '1';
+				end if;
+				shf  <= std_logic_vector(acc(shf'range) and to_unsigned(mm(1), shf'length));
+				rshr := reverse(std_logic_vector(shr));
 				rgtr <= std_logic_vector(shr);
 			end if;
 		end process;
