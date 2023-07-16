@@ -40,10 +40,12 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant io_link      : io_comms     := io_hdlc;
+	constant io_link      : io_comms     := io_ipoe;
 	constant sdram_speed  : sdram_speeds := sdram225MHz; 
+	constant video_gear   : natural      := 2;
 	-- constant video_mode   : video_modes  := mode600p24bpp;
-	constant video_mode   : video_modes  := mode1080p24bpp30;
+	-- constant video_mode   : video_modes  := mode1080p24bpp30;
+	constant video_mode   : video_modes  := mode1080p24bpp;
 	constant baudrate     : natural      := 3000000;
 	--------------------------------------
 
@@ -95,7 +97,6 @@ architecture graphics of ulx3s is
 	signal video_pixel   : std_logic_vector(0 to setif(
 		video_params.pixel=rgb565, 16, setif(
 		video_params.pixel=rgb888, 24, 0))-1);
-	constant video_gear  : natural := 7;
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk   : std_logic;
 	signal video_phyrst  : std_logic;
@@ -469,6 +470,7 @@ begin
 				z  => gp(i),
 				zn => gn(i));
 		end generate;
+		wifi_en   <= '0';
 	end generate;
 
 	-- SDRAM-clk-divided-by-2 monitor

@@ -44,20 +44,22 @@ package videopkg is
 		pclk108_00m1600x900at60,  -- pclk 100.00MHz
 		pclk140_00m1920x1080at60, -- pclk 138.50MHz
 		pclk150_00m1920x1080at60, -- pclk 148.50MHz
+		pclk133_32m1920x1080at60,
 		pclk115_71m2560x1440at60,
 
 		pclk25_00m480x272at135,   -- pclk  25.00MHz 	Added by emard@github.com for ULX3S kit
-		pclk40_00m96x64at60);      -- pclk  40.00MHz 	Added by emard@github.com for ULX3S kit
+		pclk40_00m96x64at60);     -- pclk  40.00MHz 	Added by emard@github.com for ULX3S kit
 
 
 	type modeline_vector is array (videotiming_ids) of natural_vector(0 to 9-1);
 
-	constant xxx : natural := 64;
-	constant yyy : natural := 14;
+	constant dbg_width  : natural := 64;
+	constant dbg_height : natural := 14;
 	constant modeline_tab : modeline_vector := (
-		user_timingid            => (   0,    0,   0,     0,    0,    0,    0,    0,          0),
-		pclk_debug               => ( xxx,  xxx+10,  xxx+20,  xxx+30,  yyy, yyy+1,   yyy+2,    yyy+3,   25000000),
+		pclk_debug               => ( dbg_width,  dbg_width+10,  dbg_width+20,  dbg_width+30,
+		                              dbg_height, dbg_height+1,  dbg_height+2,  dbg_height+3, 25000000),
 
+		user_timingid            => (   0,    0,   0,     0,    0,    0,    0,    0,          0),
 		pclk25_00m640x400at60    => ( 640,  672,  736,  832,  400,  401,  404,  445,   25000000),
 		pclk25_00m640x480at60    => ( 640,  656,  752,  800,  480,  490,  492,  525,   25000000),
 		pclk40_00m800x600at60    => ( 800,  840,  968, 1056,  600,  601,  605,  628,   40000000),
@@ -69,6 +71,7 @@ package videopkg is
 		pclk108_00m1600x900at60  => (1600, 1624, 1704, 1800,  900,  901,  904, 1000,  108000000),
 		pclk140_00m1920x1080at60 => (1920, 1976, 2040, 2104, 1080, 1083, 1088, 1111,  140000000),
 		pclk150_00m1920x1080at60 => (1920, 2008, 2052, 2200, 1080, 1084, 1089, 1125,  150000000),
+		pclk133_32m1920x1080at60 => (1920, 1928, 1960, 2000, 1080, 1097, 1105, 1111,  133330000),
 		pclk115_71m2560x1440at60 => (2560, 2568, 2600, 2640, 1440, 1447, 1455, 1461,  115711000),
 
 		pclk40_00m96x64at60      => (  96, 1999, 2000, 4000,   64,   65,   66,   67,   40000000), -- pclk  40.00MHz

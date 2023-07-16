@@ -125,6 +125,7 @@ package body ecp5_profiles is
 		(id => mode720p24bpp,    pll => (clkos_div => 30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb888, timing => pclk75_00m1280x720at60),
 		(id => mode1080p16bpp30, pll => (clkos_div => 30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb565, timing => pclk150_00m1920x1080at60),
 		(id => mode1080p24bpp30, pll => (clkos_div => 30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb888, timing => pclk150_00m1920x1080at60),
+		(id => mode1080p24bpp,   pll => (clkos_div => 80, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 7, pixel => rgb888, timing => pclk150_00m1920x1080at60),
 		(id => mode1440p24bpp30, pll => (clkos_div => 20, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*1, clkos3_div => 14), gear => 7, pixel => rgb888, timing => pclk115_71m2560x1440at60));
 
 	constant orangecrabsdram_tab : sdramparams_vector := (
