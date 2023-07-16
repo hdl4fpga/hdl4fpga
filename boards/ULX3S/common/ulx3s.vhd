@@ -137,6 +137,12 @@ entity ulx3s is
 	alias hdmi0_red    : std_logic is gpdi_d(2);
 	alias hdmi0_clock  : std_logic is gpdi_d(3);
 
+	alias hdmiext_eth    : std_logic is gp(13);
+	alias hdmiext_blue   : std_logic is gp(9);
+	alias hdmiext_green  : std_logic is gp(10);
+	alias hdmiext_red    : std_logic is gp(11);
+	alias hdmiext_clock  : std_logic is gp(12);
+
 	constant clk25mhz_freq : real := 25.0e6;
 
 end;

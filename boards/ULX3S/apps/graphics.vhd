@@ -41,9 +41,9 @@ architecture graphics of ulx3s is
 	--------------------------------------
 	--     Set your profile here        --
 	constant io_link      : io_comms     := io_hdlc;
-	constant sdram_speed  : sdram_speeds := sdram200MHz; 
-	constant video_mode   : video_modes  := mode600p24bpp;
-	-- constant video_mode   : video_modes  := mode1080p24bpp30;
+	constant sdram_speed  : sdram_speeds := sdram225MHz; 
+	-- constant video_mode   : video_modes  := mode600p24bpp;
+	constant video_mode   : video_modes  := mode1080p24bpp30;
 	constant baudrate     : natural      := 3000000;
 	--------------------------------------
 
@@ -95,7 +95,7 @@ architecture graphics of ulx3s is
 	signal video_pixel   : std_logic_vector(0 to setif(
 		video_params.pixel=rgb565, 16, setif(
 		video_params.pixel=rgb888, 24, 0))-1);
-	constant video_gear  : natural := 2;
+	constant video_gear  : natural := 7;
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk   : std_logic;
 	signal video_phyrst  : std_logic;
@@ -410,7 +410,7 @@ begin
 	-- VGA --
 	---------
 
-	hdmi_b : block
+	hdmibrd_g : if video_gear=2 generate 
 		signal crgb : std_logic_vector(dvid_crgb'range);
 		signal q    : std_logic_vector(gpdi_d'range);
 	begin
@@ -444,7 +444,32 @@ begin
 				z  => gpdi_d(i),
 				zn => gpdi_dn(i));
 		end generate;
-	end block;
+	end generate;
+
+	hdmiext_g : if video_gear=7 generate 
+		signal q : std_logic_vector(9 to 13-1);
+	begin
+    	hdmi_ext_g : entity hdl4fpga.ecp5_ogbx
+       	generic map (
+    		mem_mode  => false,
+    		lfbt_frst => false,
+    		interlace => true,
+    		size      => gpdi_d'length,
+    		gear      => video_gear)
+       	port map (
+    		eclk      => video_eclk,
+    		sclk      => video_shift_clk,
+    		d         => dvid_crgb,
+    		q         => q);
+
+		lvds_g : for i in q'range generate
+			olvds_i : olvds
+			port map(
+				a  => q(i),
+				z  => gp(i),
+				zn => gn(i));
+		end generate;
+	end generate;
 
 	-- SDRAM-clk-divided-by-2 monitor
 	tp_p : process (ctlr_clk)
