@@ -43,6 +43,7 @@ entity ecp5_videopll is
 		default_gear : natural := 0;
 		video_params : video_record);
 	port (
+		clk_rst      : in std_logic := '0';
 		clk_ref      : in std_logic;
 		videoio_clk  : out std_logic;
 		video_clk    : out std_logic;
@@ -91,6 +92,12 @@ architecture def of ecp5_videopll is
 	attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(          clkref_freq/1.0e6, 10);
 	attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(           clkos_freq/1.0e6, 10);
 
+    attribute ICP_CURRENT : string; 
+    attribute LPF_RESISTOR : string; 
+    attribute ICP_CURRENT of pll_i : label is "6";
+    attribute LPF_RESISTOR of pll_i : label is "16";
+    attribute NGD_DRC_MASK : integer;
+    attribute NGD_DRC_MASK of def : architecture is 1;
 	signal clkop  : std_logic;
 	signal clkos  : std_logic;
 	signal clkos2 : std_logic;
@@ -107,7 +114,8 @@ begin
 
 	pll_i : EHXPLLL
 	generic map (
-		PLLRST_ENA       => "DISABLED",
+		-- PLLRST_ENA       => "DISABLED",
+		PLLRST_ENA       => "ENABLED",
 		INTFB_WAKE       => "DISABLED",
 		STDBY_ENABLE     => "DISABLED",
 		DPHASE_SOURCE    => "DISABLED",
@@ -131,7 +139,7 @@ begin
 		CLKFB_DIV        => video_params.pll.clkfb_div,
 		CLKI_DIV         => video_params.pll.clki_div)
 	port map (
-		rst       => '0',
+		rst       => clk_rst,
 		clki      => clk_ref,
 		CLKFB     => clkos,
 		PHASESEL0 => '0', PHASESEL1 => '0',

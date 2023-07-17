@@ -40,7 +40,7 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant io_link      : io_comms     := io_ipoe;
+	constant io_link      : io_comms     := io_hdlc;
 	constant sdram_speed  : sdram_speeds := sdram225MHz; 
 	constant video_gear   : natural      := 2;
 	-- constant video_mode   : video_modes  := mode600p24bpp;
@@ -122,6 +122,7 @@ begin
 		default_gear => video_gear,
 		video_params  => video_params)
 	port map (
+		clk_rst     => right,
 		clk_ref     => clk_25mhz,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
@@ -159,6 +160,7 @@ begin
 			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
 		signal uart_clk : std_logic;
 	begin
+
 		nodebug_g : if not debug generate
 			uart_clk <= videoio_clk;
 			sio_clk  <= videoio_clk;
@@ -168,6 +170,7 @@ begin
 			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
 			sio_clk  <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
 		end generate;
+		led(7) <= video_lck;
 
 		hdlc_e : entity hdl4fpga.hdlc_link
 		generic map (
