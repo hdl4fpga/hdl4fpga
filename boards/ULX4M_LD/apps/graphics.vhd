@@ -45,9 +45,10 @@ architecture graphics of ulx4m_ld is
 	constant sdram_speed  : sdram_speeds := sdram400MHz;
 	-- constant video_mode   : video_modes  := mode600p24bpp;
 	-- constant video_mode   : video_modes  := mode720p24bpp;
-	constant video_mode   : video_modes  := mode900p24bpp;
+	-- constant video_mode   : video_modes  := mode900p24bpp;
 	-- constant video_mode   : video_modes  := mode1080p24bpp30;
 	-- constant video_mode   : video_modes  := mode1080p24bpp;
+	constant video_mode   : video_modes  := mode1440p24bpp30;
 	---------------------------------------
 
 	constant video_params : video_record := videoparam(

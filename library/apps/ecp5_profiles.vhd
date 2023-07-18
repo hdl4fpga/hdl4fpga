@@ -131,7 +131,7 @@ package body ecp5_profiles is
 		(id => mode1080p24bpp,   pll => (clkos_div => 80, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 7, pixel => rgb888, timing => pclk133_32m1920x1080at60),
 		-- (id => mode1080p24bpp,   pll => (clkos_div => 26, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 7, pixel => rgb888, timing => pclk130_32m1920x1080at60),
 		-- (id => mode1080p24bpp,   pll => (clkos_div => 25, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 7, pixel => rgb888, timing => pclk125_00m1920x1080at60),
-		(id => mode1440p24bpp30, pll => (clkos_div => 20, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*1, clkos3_div => 14), gear => 7, pixel => rgb888, timing => pclk115_71m2560x1440at60));
+		(id => mode1440p24bpp30, pll => (clkos_div => 23, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 7, pixel => rgb888, timing => pclk115_71m2560x1440at60));
 
 	constant orangecrabsdram_tab : sdramparams_vector := (
 		(id => sdram300MHz,      pll => (clkos_div => 38, clkop_div => 2, clkfb_div => 1, clki_div => 3, clkos2_div => 1,             clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
@@ -142,7 +142,7 @@ package body ecp5_profiles is
 		(id => mode600p24bpp,    pll => (clkos_div => 25, clkop_div => 2, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*2, clkos3_div => 10), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60),
 		(id => mode720p24bpp,    pll => (clkos_div => 47, clkop_div => 2, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb888, timing => pclk75_00m1280x720at60),
 		(id => mode1080p24bpp30, pll => (clkos_div => 47, clkop_div => 2, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb888, timing => pclk150_00m1920x1080at60),
-		(id => mode1440p24bpp30, pll => (clkos_div => 31, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*1, clkos3_div => 14), gear => 7, pixel => rgb888, timing => pclk115_71m2560x1440at60));
+		(id => mode1440p24bpp30, pll => (clkos_div => 25, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*1, clkos3_div => 14), gear => 7, pixel => rgb888, timing => pclk115_71m2560x1440at60));
 
 	function videoparam (
 		constant video_id : video_modes;
