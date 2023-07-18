@@ -44,7 +44,8 @@ architecture graphics of ulx3s is
 	constant sdram_speed  : sdram_speeds := sdram225MHz; 
 	constant video_gear   : natural      := 2;
 	-- constant video_mode   : video_modes  := mode600p24bpp;
-	constant video_mode   : video_modes  := mode720p24bpp;
+	-- constant video_mode   : video_modes  := mode720p24bpp;
+	constant video_mode   : video_modes  := mode900p24bpp;
 	-- constant video_mode   : video_modes  := mode1080p24bpp30;
 	-- constant video_mode   : video_modes  := mode1080p24bpp;
 	constant baudrate     : natural      := 3000000;

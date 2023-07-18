@@ -33,6 +33,7 @@ package app_profiles is
 		mode720p24bpp,
 		mode768p24bpp,
 		mode900p24bpp,
+		mode90024bpp,
 		mode1080r24bpp,
 		mode1080p16bpp30,
 		mode1080p24bpp30,
