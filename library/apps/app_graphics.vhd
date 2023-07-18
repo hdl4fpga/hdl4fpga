@@ -764,6 +764,7 @@ begin
 		port map (
 			clk => video_clk,
 			di  => pixel,
+			-- di  => (pixel'range => '1'),
 			do  => video_pixel);
 
 		tosync_e : entity hdl4fpga.latency
@@ -817,7 +818,7 @@ begin
 
 			dvi_e : entity hdl4fpga.dvi
 			generic map (
-				fifo_mode => dvid_fifo,
+				fifo_mode => false, --dvid_fifo,
 				gear  => video_gear)
 			port map (
 				clk   => video_clk,

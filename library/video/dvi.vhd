@@ -129,7 +129,7 @@ begin
 		serlzr_e : entity hdl4fpga.serlzr
 		generic map (
 			lsdfirst  => true,
-			fifo_mode => false)
+			fifo_mode => fifo_mode)
 		port map (
 			src_clk  => clk,
 			src_frm  => '1',

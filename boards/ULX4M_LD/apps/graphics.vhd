@@ -156,6 +156,7 @@ begin
 		video_eclk  => video_eclk,
 		video_lck   => video_lck);
 
+		led(7) <= video_lck;
 	sdrampll_e  : entity hdl4fpga.ecp5_sdrampll
 	generic map (
 		gear         => sdram_gear,
@@ -422,7 +423,7 @@ begin
 	begin
 		if rising_edge(clk_25mhz) then
 			led(0) <= sdrphy_locked;
-			led(7 downto 1) <= tp_phy(1 to 7);
+			-- led(7 downto 1) <= tp_phy(1 to 7);
 		end if;
 	end process;
 

@@ -115,7 +115,8 @@ package body ecp5_profiles is
 	-- videoio_clk     = (clk_ref/clki_div)*clkos_div/clkos3_div
 	-- clkos2_div      = clkop_div*video_ratio
 	constant ulxvideo_tab : videoparams_vector := (
-		(id => modedebug,        pll => (clkos_div => 25, clkop_div => 5, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), gear => 2, pixel => rgb888, timing => pclk_debug),
+		(id => modedebug,        pll => (clkos_div => 80, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 2, pixel => rgb888, timing => pclk_debug),
+		-- (id => modedebug,        pll => (clkos_div => 25, clkop_div => 5, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), gear => 2, pixel => rgb888, timing => pclk_debug),
 		(id => mode480p16bpp,    pll => (clkos_div => 25, clkop_div => 5, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), gear => 2, pixel => rgb565, timing => pclk25_00m640x480at60),
 		(id => mode480p24bpp,    pll => (clkos_div => 25, clkop_div => 5, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), gear => 2, pixel => rgb888, timing => pclk25_00m640x480at60),
 		(id => mode600p16bpp,    pll => (clkos_div => 16, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 10), gear => 2, pixel => rgb565, timing => pclk40_00m800x600at60),
@@ -126,7 +127,9 @@ package body ecp5_profiles is
 		(id => mode1080p16bpp30, pll => (clkos_div => 30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb565, timing => pclk150_00m1920x1080at60),
 		(id => mode1080p24bpp30, pll => (clkos_div => 30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb888, timing => pclk150_00m1920x1080at60),
 		-- (id => mode1080p24bpp,   pll => (clkos_div => 83, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 7, pixel => rgb888, timing => pclk138_50m1920x1080at60),
-		(id => mode1080p24bpp,   pll => (clkos_div => 80, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 7, pixel => rgb888, timing => pclk133_32m1920x1080at60),
+		-- (id => mode1080p24bpp,   pll => (clkos_div => 80, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 7, pixel => rgb888, timing => pclk133_32m1920x1080at60),
+		(id => mode1080p24bpp,   pll => (clkos_div => 26, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 7, pixel => rgb888, timing => pclk133_32m1920x1080at60),
+		-- (id => mode1080p24bpp,   pll => (clkos_div => 25, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 7, pixel => rgb888, timing => pclk125_00m1920x1080at60),
 		(id => mode1440p24bpp30, pll => (clkos_div => 20, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*1, clkos3_div => 14), gear => 7, pixel => rgb888, timing => pclk115_71m2560x1440at60));
 
 	constant orangecrabsdram_tab : sdramparams_vector := (

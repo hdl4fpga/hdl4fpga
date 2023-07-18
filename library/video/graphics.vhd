@@ -195,14 +195,40 @@ begin
 	srcltdst_g : if ctlr_di'length < video_pixel'length generate
 		signal vram_trdy : std_logic;
 		signal vram_word : std_logic_vector(video_pixel'range);
+		signal slzr_frm : std_logic;
 	begin
+		process (video_clk, ctlr_clk)
+			variable slzr_rdy  : bit;
+			variable slzr_req  : bit;
+			variable video_req : bit;
+			variable video_rdy : bit;
+		begin
+			if rising_edge(ctlr_clk) then
+				if video_frm='1' then
+					if (slzr_rdy xor slzr_req)='1' then
+						slzr_rdy := slzr_req;
+					end if;
+				end if;
+				slzr_req := video_req;
+			end if;
+			if rising_edge(video_clk) then
+				if video_frm='0' then
+					if (video_rdy xor video_req)='0' then
+						video_req := not video_rdy;
+					end if;
+				end if;
+				video_rdy := slzr_rdy;
+			end if;
+			slzr_frm <= not to_stdulogic(slzr_rdy xor slzr_req);
+		end process;
+
     	deslzr_e : entity hdl4fpga.serlzr
     	generic map (
     		fifo_mode => false,
     		lsdfirst  => false)
     	port map (
     		src_clk   => ctlr_clk,
-    		src_frm   => video_frm,
+    		src_frm   => slzr_frm,
 			src_irdy  => ctlr_di_dv,
     		src_data  => ctlr_di,
     		dst_clk   => ctlr_clk,
@@ -212,19 +238,18 @@ begin
     	vram_e : entity hdl4fpga.fifo
     	generic map (
     		max_depth  => ppage_size,
-    		async_mode => true,
+    		async_mode => false,
     		latency    => 1,
     		check_sov  => false,
-    		check_dov  => false,
+    		check_dov  => true,
     		gray_code  => false)
     	port map (
     		src_clk  => ctlr_clk,
-    		-- src_frm  => ctlr_di_dv,
+    		src_frm  => slzr_frm,
     		src_irdy => vram_trdy,
     		src_data => vram_word,
 
     		dst_clk  => video_clk,
-    		dst_frm  => video_frm,
     		dst_trdy => video_on,
     		dst_data => video_pixel);
 	end generate;

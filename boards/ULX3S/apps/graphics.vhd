@@ -44,8 +44,9 @@ architecture graphics of ulx3s is
 	constant sdram_speed  : sdram_speeds := sdram225MHz; 
 	constant video_gear   : natural      := 2;
 	-- constant video_mode   : video_modes  := mode600p24bpp;
+	constant video_mode   : video_modes  := mode720p24bpp;
 	-- constant video_mode   : video_modes  := mode1080p24bpp30;
-	constant video_mode   : video_modes  := mode1080p24bpp;
+	-- constant video_mode   : video_modes  := mode1080p24bpp;
 	constant baudrate     : natural      := 3000000;
 	--------------------------------------
 
@@ -56,7 +57,8 @@ architecture graphics of ulx3s is
 
 	constant sdram_params : sdramparams_record := sdramparams(
 		sdram_speeds'VAL(setif(debug,
-			sdram_speeds'POS(sdram133MHz),
+			-- sdram_speeds'POS(sdram133MHz),
+			sdram_speeds'POS(sdram225MHz),
 			sdram_speeds'POS(sdram_speed))), clk25mhz_freq);
 	
 	constant sdram_tcp : real := 
@@ -99,7 +101,6 @@ architecture graphics of ulx3s is
 		video_params.pixel=rgb888, 24, 0))-1);
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk   : std_logic;
-	signal video_phyrst  : std_logic;
 
 	constant mem_size    : natural := 8*(1024*8);
 	signal so_frm        : std_logic;
@@ -143,7 +144,7 @@ begin
 	process (ctlr_clk)
 	begin
 		if debug then
-			sdram_dqs <= (others => not ctlr_clk);
+			sdram_dqs <= (others => ctlr_clk);
 		else
 			case sdram_speed is
 			when sdram133MHz =>
@@ -435,7 +436,6 @@ begin
 			size      => gpdi_d'length,
 			gear      => video_gear)
 	   	port map (
-			rst       => video_phyrst,
 			sclk      => video_shift_clk,
 			eclk      => video_eclk,
 			d         => crgb,
