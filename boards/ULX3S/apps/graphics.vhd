@@ -445,6 +445,17 @@ begin
 	end generate;
 
 	hdmiext_g : if video_gear=7 or video_gear=4 generate 
+		signal crgb : std_logic_vector(dvid_crgb'range);
+	begin
+		reg_e : entity hdl4fpga.latency
+		generic map (
+			n => dvid_crgb'length,
+			d => (dvid_crgb'range => 1))
+		port map (
+			clk => video_shift_clk,
+			di  => dvid_crgb,
+			do  => crgb);
+
     	hdmi_ext_g : entity hdl4fpga.ecp5_ogbx
        	generic map (
     		mem_mode  => false,
@@ -455,7 +466,7 @@ begin
        	port map (
     		eclk      => video_eclk,
     		sclk      => video_shift_clk,
-    		d         => dvid_crgb,
+			d         => crgb,
     		q         => gp(9 to 13-1));
 
 		wifi_en   <= '0';
