@@ -160,13 +160,19 @@ begin
 		REFCLK    => open,
 		CLKINTFB  => open);
 
-	gbx21_g : if gear=2 generate
+	gbx2_g : if gear=2 generate
 		video_phyrst    <= not video_lck;
 		video_eclk      <= clkop;
 		video_shift_clk <= clkop;
 	end generate;
 
-	gbx71_g : if gear=4 or gear=7 generate
+	gbx4_g : if gear=4 generate
+		video_phyrst    <= not video_lck;
+		video_eclk      <= clkop;
+		video_shift_clk <= clkop;
+	end generate;
+
+	gbx7_g : if gear=4 or gear=7 generate
 		component gddr_sync
 		port (
 			rst       : in  std_logic;
