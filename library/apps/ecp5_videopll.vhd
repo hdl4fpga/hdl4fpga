@@ -166,13 +166,7 @@ begin
 		video_shift_clk <= clkop;
 	end generate;
 
-	gbx4_g : if gear=4 generate
-		video_phyrst    <= not video_lck;
-		video_eclk      <= clkop;
-		video_shift_clk <= clkop;
-	end generate;
-
-	gbx7_g : if gear=4 or gear=7 generate
+	gbx74_g : if gear=4 or gear=7 generate
 		component gddr_sync
 		port (
 			rst       : in  std_logic;
@@ -220,7 +214,7 @@ begin
 			clki    => eclko,
 			cdivx   => cdivx);
 		video_eclk      <= eclko;
-		video_shift_clk <= transport cdivx after natural((3.0/4.0)/(video_clkop_freq*1.0e12))*1 ps;
+		video_shift_clk <= cdivx;
 	end generate;
 
 end;

@@ -44,10 +44,10 @@ architecture graphics of ulx3s is
 	constant sdram_speed  : sdram_speeds := sdram225MHz; 
 	constant video_gear   : natural      := 2;
 	-- constant video_mode   : video_modes  := mode600p24bpp;
-	-- constant video_mode   : video_modes  := mode720p24bpp;
+	constant video_mode   : video_modes  := mode720p24bpp;
 	-- constant video_mode   : video_modes  := mode900p24bpp;
 	-- constant video_mode   : video_modes  := mode1080p24bpp30;
-	constant video_mode   : video_modes  := mode1080p24bpp;
+	-- constant video_mode   : video_modes  := mode1080p24bpp;
 	-- constant video_mode   : video_modes  := mode1440p24bpp30;
 	constant baudrate     : natural      := 3000000;
 	--------------------------------------
@@ -444,9 +444,7 @@ begin
 
 	end generate;
 
-	hdmiext_g : if video_gear=7 generate 
-		signal q : std_logic_vector(9 to 13-1);
-	begin
+	hdmiext_g : if video_gear=7 or video_gear=4 generate 
     	hdmi_ext_g : entity hdl4fpga.ecp5_ogbx
        	generic map (
     		mem_mode  => false,
@@ -458,15 +456,8 @@ begin
     		eclk      => video_eclk,
     		sclk      => video_shift_clk,
     		d         => dvid_crgb,
-    		q         => q);
+    		q         => gp(9 to 13-1));
 
-		lvds_g : for i in q'range generate
-			olvds_i : olvds
-			port map(
-				a  => q(i),
-				z  => gp(i),
-				zn => gn(i));
-		end generate;
 		wifi_en   <= '0';
 	end generate;
 

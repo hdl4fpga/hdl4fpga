@@ -114,7 +114,7 @@ architecture graphics of ulx4m_ld is
 	signal video_shift_clk : std_logic;
 	signal video_eclk    : std_logic;
 	signal video_phyrst  : std_logic;
-	constant video_gear  : natural := 2; --video_params.gear;
+	constant video_gear  : natural := 4; --video_params.gear;
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 
 	constant mem_size    : natural := 8*(1024*8);
