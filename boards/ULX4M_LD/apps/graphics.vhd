@@ -47,8 +47,8 @@ architecture graphics of ulx4m_ld is
 	-- constant video_mode   : video_modes  := mode720p24bpp;
 	-- constant video_mode   : video_modes  := mode900p24bpp;
 	-- constant video_mode   : video_modes  := mode1080p24bpp30;
-	-- constant video_mode   : video_modes  := mode1080p24bpp;
-	constant video_mode   : video_modes  := mode1440p24bpp30;
+	constant video_mode   : video_modes  := mode1080p24bpp;
+	-- constant video_mode   : video_modes  := mode1440p24bpp30;
 	---------------------------------------
 
 	constant video_params : video_record := videoparam(
@@ -114,7 +114,7 @@ architecture graphics of ulx4m_ld is
 	signal video_shift_clk : std_logic;
 	signal video_eclk    : std_logic;
 	signal video_phyrst  : std_logic;
-	constant video_gear  : natural := 7; --video_params.gear;
+	constant video_gear  : natural := 2; --video_params.gear;
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 
 	constant mem_size    : natural := 8*(1024*8);
@@ -541,18 +541,58 @@ begin
 	-- VGA --
 	---------
 
-	hdmi0_g : entity hdl4fpga.ecp5_ogbx
-   	generic map (
-		mem_mode  => false,
-		lfbt_frst => false,
-		interlace => true,
-		size      => gpdi_d'length,
-		gear      => video_gear)
-   	port map (
-		eclk      => video_eclk,
-		sclk      => video_shift_clk,
-		d         => dvid_crgb,
-		q         => gpdi_d);
+	hdmi1_g : if video_gear=2 generate 
+		signal crgb : std_logic_vector(dvid_crgb'range);
+	begin
+		reg_e : entity hdl4fpga.latency
+		generic map (
+			n => dvid_crgb'length,
+			d => (dvid_crgb'range => 1))
+		port map (
+			clk => video_shift_clk,
+			di  => dvid_crgb,
+			do  => crgb);
+
+		gbx_g : entity hdl4fpga.ecp5_ogbx
+	   	generic map (
+			mem_mode  => false,
+			lfbt_frst => false,
+			interlace => true,
+			size      => hdmi1_gpdi'length,
+			gear      => video_gear)
+	   	port map (
+			sclk      => video_shift_clk,
+			eclk      => video_eclk,
+			d         => crgb,
+			q         => hdmi1_gpdi);
+
+	end generate;
+
+	hdmi0_g : if video_gear=7 or video_gear=4 generate
+		signal crgb : std_logic_vector(dvid_crgb'range);
+	begin
+		reg_e : entity hdl4fpga.latency
+		generic map (
+			n => dvid_crgb'length,
+			d => (dvid_crgb'range => 1))
+		port map (
+			clk => video_shift_clk,
+			di  => dvid_crgb,
+			do  => crgb);
+
+    	hdmi_i : entity hdl4fpga.ecp5_ogbx
+       	generic map (
+    		mem_mode  => false,
+    		lfbt_frst => false,
+    		interlace => true,
+			size      => hdmi0_gpdi'length,
+    		gear      => video_gear)
+       	port map (
+    		eclk      => video_eclk,
+    		sclk      => video_shift_clk,
+			d         => crgb,
+			q         => hdmi0_gpdi);
+	end generate;
 
 	-- SDRAM-clk-divided-by-4 monitor
 	process (sclk)

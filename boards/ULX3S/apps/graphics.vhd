@@ -419,7 +419,6 @@ begin
 
 	hdmibrd_g : if video_gear=2 generate 
 		signal crgb : std_logic_vector(dvid_crgb'range);
-		signal q    : std_logic_vector(gpdi_d'range);
 	begin
 		reg_e : entity hdl4fpga.latency
 		generic map (
@@ -441,15 +440,8 @@ begin
 			sclk      => video_shift_clk,
 			eclk      => video_eclk,
 			d         => crgb,
-			q         => q);
+			q         => gpdi_d);
 
-		lvds_g : for i in gpdi_d'range generate
-			olvds_i : olvds
-			port map(
-				a  => q(i),
-				z  => gpdi_d(i),
-				zn => gpdi_dn(i));
-		end generate;
 	end generate;
 
 	hdmiext_g : if video_gear=7 generate 

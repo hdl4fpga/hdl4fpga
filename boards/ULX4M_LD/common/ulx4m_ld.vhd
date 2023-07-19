@@ -81,8 +81,8 @@ entity ulx4m_ld is
 		ftdi_txden      : out std_logic;
 		ftdi_rxd        : out std_logic;
 
-        gpdi_d          : out std_logic_Vector(4-1 downto 0);
-        gpdi_cec        : out std_logic;
+		gpdi_d          : out std_logic_Vector(8-1 downto 0);
+		gpdi_cec        : out std_logic;
 
 		gpio_scl        : out std_logic;
 		cam_scl         : out std_logic;
@@ -97,10 +97,12 @@ entity ulx4m_ld is
 	alias hdmi0_green : std_logic is gpdi_d(1);
 	alias hdmi0_red   : std_logic is gpdi_d(2);
 	alias hdmi0_clock : std_logic is gpdi_d(3);
+	alias hdmi0_gpdi  : std_logic_vector(4-1 downto 0) is gpdi_d(4-1 downto 0);
 
-	-- alias hdmi1_blue  : std_logic is gpdi_d(4);
-	-- alias hdmi1_green : std_logic is gpdi_d(5);
-	-- alias hdmi1_red   : std_logic is gpdi_d(6);
-	-- alias hdmi1_clock : std_logic is gpdi_d(7);
+	alias hdmi1_blue  : std_logic is gpdi_d(4);
+	alias hdmi1_green : std_logic is gpdi_d(5);
+	alias hdmi1_red   : std_logic is gpdi_d(6);
+	alias hdmi1_clock : std_logic is gpdi_d(7);
+	alias hdmi1_gpdi  : std_logic_vector(4-1 downto 0) is gpdi_d(8-1 downto 4);
 
 end;

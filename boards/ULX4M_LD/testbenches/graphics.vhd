@@ -89,7 +89,7 @@ architecture ulx4mld_graphics of testbench is
     		ftdi_txden      : out   std_logic := 'Z';
     		ftdi_rxd        : out   std_logic := 'Z';
 
-            gpdi_d          : out   std_logic_Vector(4-1 downto 0) := (others => 'Z');
+            gpdi_d          : out   std_logic_Vector(8-1 downto 0) := (others => 'Z');
             gpdi_cec        : out   std_logic;
 
             gpio_scl        : out   std_logic;
