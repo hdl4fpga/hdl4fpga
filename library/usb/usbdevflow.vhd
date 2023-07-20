@@ -57,6 +57,7 @@ entity usbdevflow is
 		out_rdy   : buffer bit;
 	    rqst_rdys : in  bit_requests;
 	    rqst_reqs : buffer bit_requests;
+		rqst_txen : in std_logic);
 		rqst_txd  : in std_logic);
 
 	alias tp_state is tp(5 to 8);
