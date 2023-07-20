@@ -283,12 +283,7 @@ begin
 			rst  => '0',
 			d0   => dvid_crgb(2*i),
 			d1   => dvid_crgb(2*i+1),
-			q    => q);
-		olvds_i : olvds 
-		port map(
-			a  => q,
-			z  => gpdi_d(i),
-			zn => gpdi_dn(i));
+			q    => gpdi_d(i));
 	end generate;
 
 end;

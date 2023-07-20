@@ -106,7 +106,6 @@ entity ulx3s is
 		sdram_d        : inout std_logic_vector(16-1 downto 0) := (others => 'U');
 
 		gpdi_d         : out   std_logic_vector(4-1 downto 0);
-		gpdi_dn        : out   std_logic_vector(4-1 downto 0);
 		gpdi_cec       : inout std_logic := '-';
 		gpdi_sda       : inout std_logic := '-';
 		gpdi_scl       : inout std_logic := '-';

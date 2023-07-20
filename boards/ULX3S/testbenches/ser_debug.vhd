@@ -104,7 +104,6 @@ architecture ulx3s_serdebug of testbench is
 			sdram_d        : inout std_logic_vector(16-1 downto 0) := (others => '-');
 
 			gpdi_d         : out   std_logic_vector(4-1 downto 0);
-			gpdi_dn        : out   std_logic_vector(4-1 downto 0);
 			--gpdi_ethp      : out   std_logic;  
 			--gpdi_ethn      : out   std_logic;
 			gpdi_cec       : inout std_logic := '-';
