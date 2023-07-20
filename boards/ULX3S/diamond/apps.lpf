@@ -109,8 +109,8 @@ LOCATE COMP "usb_fpga_dp"    SITE "E16"; IOBUF  PORT "usb_fpga_dp"    PULLMODE=N
 LOCATE COMP "usb_fpga_dn"    SITE "F16"; IOBUF  PORT "usb_fpga_dn"    PULLMODE=NONE IO_TYPE=LVCMOS33  DRIVE=16;
 LOCATE COMP "usb_fpga_bd_dp" SITE "D15"; IOBUF  PORT "usb_fpga_bd_dp" PULLMODE=NONE IO_TYPE=LVCMOS33D DRIVE=4;# differential bidirectional
 LOCATE COMP "usb_fpga_bd_dn" SITE "E15"; IOBUF  PORT "usb_fpga_bd_dn" PULLMODE=NONE IO_TYPE=LVCMOS33D DRIVE=4;
-LOCATE COMP "usb_fpga_pu_dp" SITE "B12"; IOBUF  PORT "usb_fpga_pu_dp" PULLMODE=NONE IO_TYPE=LVCMOS33  DRIVE=16;# pull up/down control
-LOCATE COMP "usb_fpga_pu_dn" SITE "C12"; IOBUF  PORT "usb_fpga_pu_dn" PULLMODE=NONE IO_TYPE=LVCMOS33  DRIVE=16;
+LOCATE COMP "usb_fpga_pu_dp" SITE "B12"; IOBUF  PORT "usb_fpga_pu_dp" PULLMODE=NONE IO_TYPE=LVCMOS25  DRIVE=16;# pull up/down control
+LOCATE COMP "usb_fpga_pu_dn" SITE "C12"; IOBUF  PORT "usb_fpga_pu_dn" PULLMODE=NONE IO_TYPE=LVCMOS25  DRIVE=16;
 
 ## SDRAM "ram" sheet
 LOCATE COMP "sdram_clk"    SITE "F19"; IOBUF PORT "sdram_clk"    PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4 SLEWRATE=FAST;
