@@ -40,8 +40,8 @@ entity usbrqst_dev is
 		clk      : in  std_logic;
 		cken     : in  std_logic;
 
-		rqst_rdy : in  bit;
-		rqst_req : out bit;
+		rqst_req : buffer bit;
+		rqst_rdy : buffer bit;
 		rqst_txd : out std_logic;
 
 		rx_req   : in  std_logic;
@@ -50,6 +50,8 @@ entity usbrqst_dev is
 		rxtoken  : in  std_logic_vector;
 		rxrqst   : in  std_logic_vector;
 
+		tk_req   : in  bit;
+		tk_rdy   : buffer bit;
 		in_req   : in  bit;
 		in_rdy   : in  bit;
 		out_req  : in  bit;
@@ -102,36 +104,31 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
-						case token is 
-						when tk_setup =>
-							shr(0 to rxrqst'length-1) := unsigned(rxrqst);
-							shr     := shr rol 2*data0'length;
-							requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
-							shr     := shr rol requesttype'length;
-							request := reverse(std_logic_vector(shr(0 to request'length-1)));
-							shr     := shr rol request'length;
-							value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
-							shr     := shr rol value'length;
-							index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
-							shr     := shr rol index'length;
-							length  <= reverse(std_logic_vector(shr(0 to length'length-1)));
-							shr     := shr rol length'length;
-							for i in request_ids'range loop
-								if request(4-1 downto 0)=request_ids(i) then
-									rqst_req <= not rqst_rdy;
-									exit;
-								end if;
-								assert i/=request_ids'right report requests'image(i) severity error;
-							end loop;
-						when tk_in =>
-						when tk_out =>
-						when others =>
-						end case;
+					if (tk_rdy xor tk_req)='1' then
+						shr(0 to rxrqst'length-1) := unsigned(rxrqst);
+						shr     := shr rol 2*data0'length;
+						requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
+						shr     := shr rol requesttype'length;
+						request := reverse(std_logic_vector(shr(0 to request'length-1)));
+						shr     := shr rol request'length;
+						value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
+						shr     := shr rol value'length;
+						index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
+						shr     := shr rol index'length;
+						length  <= reverse(std_logic_vector(shr(0 to length'length-1)));
+						shr     := shr rol length'length;
+						for i in request_ids'range loop
+							if request(4-1 downto 0)=request_ids(i) then
+								rqst_req <= not rqst_rdy;
+								exit;
+							end if;
+							assert i/=request_ids'right report requests'image(i) severity error;
+						end loop;
+					end if;
 				end if;
 			end if;
 		end if;
 	end process;
-
 
 	setaddress_p : process (setaddress_rdy, clk)
 	begin

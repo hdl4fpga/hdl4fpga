@@ -77,6 +77,8 @@ architecture def of usbdev is
 	signal rqst_txen : std_logic;
 	signal rqst_txd  : std_logic;
 
+	signal tk_req    : bit;
+	signal tk_rdy    : bit;
 	signal in_req    : bit;
 	signal in_rdy    : bit;
 	signal out_req   : bit;
@@ -181,6 +183,8 @@ begin
 		txbs    => pkt_txbs,
 		txd     => pkt_txd,
 
+		tk_req    => tk_req,
+		tk_rdy    => tk_rdy,
 		in_req    => in_req,
 		in_rdy    => in_rdy,
 		out_req   => out_req,
@@ -244,6 +248,8 @@ begin
 		clk      => clk,
 		cken     => cken,
 
+		tk_req   => tk_req,
+		tk_rdy   => tk_rdy,
 		in_req   => in_req,
 		in_rdy   => in_rdy,
 		out_req  => out_req,

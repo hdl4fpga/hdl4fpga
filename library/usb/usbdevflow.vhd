@@ -51,12 +51,14 @@ entity usbdevflow is
 		txbs    : in  std_logic;
 		txd     : buffer std_logic;
 
+		tk_req    : buffer bit;
+		tk_rdy    : in  bit;
 		in_req    : buffer bit;
-		in_rdy    : buffer bit;
+		in_rdy    : in  bit;
 		out_req   : buffer bit;
 		out_rdy   : buffer bit;
 	    rqst_req  : in  bit;
-	    rqst_rdy  : buffer bit;
+	    rqst_rdy  : in  bit;
 		rqst_txen : in  std_logic;
 		rqst_txd  : in  std_logic);
 
@@ -76,93 +78,36 @@ architecture def of usbdevflow is
 	signal ack_rdy   : bit;
 	signal ack_req   : bit;
 
-	signal data_req  : bit;
-	signal data_rdy  : bit;
-
-	function montrdy (
-		constant rdys : in bit_requests)
-		return bit is
-		variable retval :bit;
-	begin
-		retval := '0';
-		for i in rdys'range loop
-			retval := retval xor rdys(i);
-		end loop;
-		return retval;
-	end;
-
-	constant tbit : std_logic_vector(data0'range) := b"1000";
 	signal ddata  : std_logic_vector(data0'range);
-	signal hdata  : std_logic_vector(data0'range);
-	signal token  : std_logic_vector(rxpid'range);
 
 begin
 
-	token <= reverse(rxtoken(rxpid'reverse_range));
 	hosttodev_p : process (cken, clk)
-		variable request : std_logic_vector( 8-1 downto 0);
+		constant tbit : std_logic_vector(data0'range) := b"1000";
 		variable shr : unsigned(0 to rxrqst'length);
-		alias tk_addr is rxtoken(2*rxpid'length to 2*rxpid'length+addr'length-1);
-		alias tk_endp is rxtoken(2*rxpid'length+addr'length to 2*rxpid'length+addr'length+endp'length-1);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 					case rxpid is
 					when tk_setup =>
-						if tk_addr=(addr'range => '0') then
-							data_req <= not data_rdy;
-						elsif tk_addr=reverse(addr) then
-							data_req <= not data_rdy;
+						if (tk_req xor tk_rdy)='0' then
+							ddata  <= data0;
+							tk_req <= not tk_rdy;
 						end if;
 					when tk_in =>
 						if (out_req xor out_rdy)='0' then
-							endp    <= reverse(tk_endp);
-							hdata   <= ddata;
 							out_req <= not out_rdy;
 						end if;
 					when tk_out=>
 						if (in_req xor in_rdy)='0' then
-							endp   <= tk_endp;
 							in_req <= not in_rdy;
 						end if;
 					when data0|data1 =>
-						-- case token is 
-						-- when tk_setup =>
-							-- shr(0 to rxrqst'length-1) := unsigned(rxrqst);
-							-- shr     := shr rol 2*data0'length;
-							-- requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
-							-- shr     := shr rol requesttype'length;
-							-- request := reverse(std_logic_vector(shr(0 to request'length-1)));
-							-- shr     := shr rol request'length;
-							-- value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
-							-- shr     := shr rol value'length;
-							-- index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
-							-- shr     := shr rol index'length;
-							-- length  <= reverse(std_logic_vector(shr(0 to length'length-1)));
-							-- shr     := shr rol length'length;
-							-- for i in request_ids'range loop
-								-- if request(4-1 downto 0)=request_ids(i) then
-									-- rqst_req <= not rqst_rdy;
-									-- exit;
-								-- end if;
-								-- assert i/=request_ids'right report requests'image(i) severity error;
-							-- end loop;
-							hdata <= data0;
-							ddata <= data0 xor tbit;
-						-- when tk_in =>
-						-- when tk_out =>
-							-- if (in_rdy xor in_req)='1' then
-								-- in_rdy <= in_req;
-							-- end if;
-						-- when others =>
-						-- end case;
-
-						hdata <= hdata xor tbit;
-						ack_req  <= not ack_rdy; 
-						data_rdy <= data_req;
+						ddata   <= ddata xor tbit;
+						ack_req <= not ack_rdy; 
 					when hs_ack =>
-						ddata <= ddata xor tbit;
+						ddata  <= ddata xor tbit;
 					when others =>
 					end case;
 				end if;
@@ -172,28 +117,14 @@ begin
 	end process;
 
 	devtohost_p : process (clk)
-		constant tbit : std_logic_vector(data0'range) := b"1000";
-		variable cntr : natural range 0 to 1024*8-1;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 					if (out_rdy xor out_req)='1' then
 						txpid   <= ddata;
-						if (rqst_rdy xor rqst_req)='1' then
-							txen <= rqst_txen;
-							cntr := 0;
-						elsif endp=b"0001" then
-							txen <= '1';
-							cntr := 16-1;
-						else
-							txen <= '0';
-							cntr := 0;
-						end if;
 						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 						out_rdy <= out_req;
-					else
-						txen  <= '0';
 					end if;
 					if (ack_rdy xor ack_req)='1' then
 						txpid   <= hs_ack;
@@ -210,7 +141,7 @@ begin
 		'0';
 	txd  <= 
 		rqst_txd  when (rqst_rdy xor rqst_req)='1' else
-		'1';
+		'-';
 
 	tp(1) <= to_stdulogic(in_req);
 	tp(2) <= to_stdulogic(in_rdy);
