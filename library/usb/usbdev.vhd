@@ -72,8 +72,9 @@ architecture def of usbdev is
 	signal rxtoken   : std_logic_vector(0 to 8+7+4+5-1);
 	signal rxrqst    : std_logic_vector(0 to 8+8*8-1);
 
-	signal rqst_rdys : bit_requests;
-	signal rqst_reqs : bit_requests;
+	signal rqst_rdy  : bit;
+	signal rqst_req  : bit;
+	signal rqst_txen : std_logic;
 	signal rqst_txd  : std_logic;
 
 	signal in_req    : bit;
@@ -180,12 +181,13 @@ begin
 		txbs    => pkt_txbs,
 		txd     => pkt_txd,
 
-	    in_req    => in_req,
-	    in_rdy    => in_rdy,
-	    out_req   => out_req,
-	    out_rdy   => out_rdy,
-		rqst_rdys => rqst_rdys,
-		rqst_reqs => rqst_reqs,
+		in_req    => in_req,
+		in_rdy    => in_rdy,
+		out_req   => out_req,
+		out_rdy   => out_rdy,
+		rqst_rdy  => rqst_rdy,
+		rqst_req  => rqst_req,
+		rqst_txen  => rqst_txen,
 		rqst_txd  => rqst_txd);
 
 	usbrqst_e : entity hdl4fpga.usbrqst_dev
@@ -238,26 +240,26 @@ begin
 			reverse(x"0040")  & -- MaxPacketSize
 			reverse(x"00")))    -- Interval
 	port map (
-		tp      => tp_rqst,
-		clk     => clk,
-		cken    => cken,
+		tp       => tp_rqst,
+		clk      => clk,
+		cken     => cken,
 
-	    in_req    => in_req,
-	    in_rdy    => in_rdy,
-	    out_req   => out_req,
-	    out_rdy   => out_rdy,
-		rqst_rdys => rqst_rdys,
-		rqst_reqs => rqst_reqs,
-		rqst_txd  => rqst_txd,
+		in_req   => in_req,
+		in_rdy   => in_rdy,
+		out_req  => out_req,
+		out_rdy  => out_rdy,
+		rqst_rdy => rqst_rdy,
+		rqst_req => rqst_req,
+		rqst_txd => rqst_txd,
 
-		rx_req  => rx_req,
-		rx_rdy  => rx_rdy,
-		rxpid   => phy_rxpid,
-		rxtoken => rxtoken,
-		rxrqst  => rxrqst,
+		rx_req   => rx_req,
+		rx_rdy   => rx_rdy,
+		rxpid    => phy_rxpid,
+		rxtoken  => rxtoken,
+		rxrqst   => rxrqst,
 
-		txen    => pkt_txen,
-		txbs    => pkt_txbs);
+		txen     => pkt_txen,
+		txbs     => pkt_txbs);
 
 
 	txbs <= phy_txbs;

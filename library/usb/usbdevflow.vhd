@@ -55,17 +55,12 @@ entity usbdevflow is
 		in_rdy    : buffer bit;
 		out_req   : buffer bit;
 		out_rdy   : buffer bit;
-	    rqst_rdys : in  bit_requests;
-	    rqst_reqs : buffer bit_requests;
-		rqst_txen : in std_logic);
-		rqst_txd  : in std_logic);
+	    rqst_req  : in  bit;
+	    rqst_rdy  : buffer bit;
+		rqst_txen : in  std_logic;
+		rqst_txd  : in  std_logic);
 
 	alias tp_state is tp(5 to 8);
-
-	alias setaddress_rdy    is rqst_rdys(set_address);
-	alias setaddress_req    is rqst_reqs(set_address);
-	alias getdescriptor_rdy is rqst_rdys(get_descriptor);
-	alias getdescriptor_req is rqst_reqs(get_descriptor);
 
 end;
 
@@ -77,9 +72,6 @@ architecture def of usbdevflow is
 	signal value     : std_logic_vector(16-1 downto 0);
 	signal index     : std_logic_vector(16-1 downto 0);
 	signal length    : std_logic_vector(16-1 downto 0);
-
-	signal rqst_req  : std_logic;
-	signal rqst_rdy  : std_logic;
 
 	signal ack_rdy   : bit;
 	signal ack_req   : bit;
@@ -99,12 +91,10 @@ architecture def of usbdevflow is
 		return retval;
 	end;
 
-
 	constant tbit : std_logic_vector(data0'range) := b"1000";
 	signal ddata  : std_logic_vector(data0'range);
 	signal hdata  : std_logic_vector(data0'range);
 	signal token  : std_logic_vector(rxpid'range);
-
 
 begin
 
@@ -137,37 +127,36 @@ begin
 							in_req <= not in_rdy;
 						end if;
 					when data0|data1 =>
-						case token is 
-						when tk_setup =>
-							shr(0 to rxrqst'length-1) := unsigned(rxrqst);
-							shr     := shr rol 2*data0'length;
-							requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
-							shr     := shr rol requesttype'length;
-							request := reverse(std_logic_vector(shr(0 to request'length-1)));
-							shr     := shr rol request'length;
-							value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
-							shr     := shr rol value'length;
-							index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
-							shr     := shr rol index'length;
-							length  <= reverse(std_logic_vector(shr(0 to length'length-1)));
-							shr     := shr rol length'length;
-							for i in request_ids'range loop
-								if request(4-1 downto 0)=request_ids(i) then
-									rqst_reqs(i) <= not rqst_rdys(i);
-									rqst_req     <= not rqst_rdy;
-									exit;
-								end if;
-								assert i/=request_ids'right report requests'image(i) severity error;
-							end loop;
+						-- case token is 
+						-- when tk_setup =>
+							-- shr(0 to rxrqst'length-1) := unsigned(rxrqst);
+							-- shr     := shr rol 2*data0'length;
+							-- requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
+							-- shr     := shr rol requesttype'length;
+							-- request := reverse(std_logic_vector(shr(0 to request'length-1)));
+							-- shr     := shr rol request'length;
+							-- value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
+							-- shr     := shr rol value'length;
+							-- index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
+							-- shr     := shr rol index'length;
+							-- length  <= reverse(std_logic_vector(shr(0 to length'length-1)));
+							-- shr     := shr rol length'length;
+							-- for i in request_ids'range loop
+								-- if request(4-1 downto 0)=request_ids(i) then
+									-- rqst_req <= not rqst_rdy;
+									-- exit;
+								-- end if;
+								-- assert i/=request_ids'right report requests'image(i) severity error;
+							-- end loop;
 							hdata <= data0;
 							ddata <= data0 xor tbit;
-						when tk_in =>
-						when tk_out =>
-							if (in_rdy xor in_req)='1' then
-								in_rdy <= in_req;
-							end if;
-						when others =>
-						end case;
+						-- when tk_in =>
+						-- when tk_out =>
+							-- if (in_rdy xor in_req)='1' then
+								-- in_rdy <= in_req;
+							-- end if;
+						-- when others =>
+						-- end case;
 
 						hdata <= hdata xor tbit;
 						ack_req  <= not ack_rdy; 
@@ -191,11 +180,8 @@ begin
 				if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 					if (out_rdy xor out_req)='1' then
 						txpid   <= ddata;
-						if (getdescriptor_rdy xor getdescriptor_req)='1' then
-							txen <= '1';
-							cntr := to_integer(shift_left(unsigned(length),3))-1;
-						elsif (setaddress_rdy xor setaddress_req)='1' then
-							txen <= '0';
+						if (rqst_rdy xor rqst_req)='1' then
+							txen <= rqst_txen;
 							cntr := 0;
 						elsif endp=b"0001" then
 							txen <= '1';
@@ -215,31 +201,22 @@ begin
 						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 						ack_rdy <= ack_req;
 					end if;
-				elsif txbs='0' then
-					if cntr > 0 then
-						txen  <= '1';
-						cntr  := cntr - 1;
-					else
-						txen  <= '0';
-					end if;
 				end if;
 			end if;
 		end if;
 	end process;
-	txd <= 
-		rqst_txd when (getdescriptor_rdy xor getdescriptor_req)='1' else
+	txen <=
+		rqst_txen when (rqst_rdy xor rqst_req)='1' else
+		'0';
+	txd  <= 
+		rqst_txd  when (rqst_rdy xor rqst_req)='1' else
 		'1';
 
-	tp(1)  <= to_stdulogic(rqst_reqs(set_address));
-	tp(2)  <= to_stdulogic(rqst_rdys(set_address));
-	tp(3)  <= to_stdulogic(rqst_reqs(get_descriptor));
-	tp(4)  <= to_stdulogic(rqst_rdys(get_descriptor));
-	tp(9)  <= to_stdulogic(in_req);
-	tp(10) <= to_stdulogic(in_rdy);
-	tp(11) <= to_stdulogic(out_req);
-	tp(12) <= to_stdulogic(out_rdy);
-
-	tp(13) <= txen or (rxdv and to_stdulogic(in_rdy xor in_req));
-	tp(14) <= txbs when txen='1' else rxbs;
-	tp(15) <= txd  when txen='1' else rxd;
+	tp(1) <= to_stdulogic(in_req);
+	tp(2) <= to_stdulogic(in_rdy);
+	tp(3) <= to_stdulogic(out_req);
+	tp(4) <= to_stdulogic(out_rdy);
+	tp(5) <= txen or (rxdv and to_stdulogic(in_rdy xor in_req));
+	tp(6) <= txbs when txen='1' else rxbs;
+	tp(7) <= txd  when txen='1' else rxd;
 end;

@@ -36,26 +36,26 @@ entity usbrqst_dev is
 		interface_dscptr: std_logic_vector;
 		endpoint_dscptr : std_logic_vector);
 	port (
-		tp      : out std_logic_vector(1 to 32) := (others => '0');
-		clk     : in  std_logic;
-		cken    : in  std_logic;
+		tp       : out std_logic_vector(1 to 32) := (others => '0');
+		clk      : in  std_logic;
+		cken     : in  std_logic;
 
-	    rqst_rdys : buffer  bit_requests;
-	    rqst_reqs : in  bit_requests;
-		rqst_txd  : out std_logic;
+		rqst_rdy : in  bit;
+		rqst_req : out bit;
+		rqst_txd : out std_logic;
 
-		rx_req  : in  std_logic;
-		rx_rdy  : in  std_logic;
-		rxpid   : in  std_logic_vector(4-1 downto 0);
-		rxtoken : in  std_logic_vector;
-		rxrqst  : in  std_logic_vector;
+		rx_req   : in  std_logic;
+		rx_rdy   : in  std_logic;
+		rxpid    : in  std_logic_vector(4-1 downto 0);
+		rxtoken  : in  std_logic_vector;
+		rxrqst   : in  std_logic_vector;
 
-		in_req  : in  bit;
-		in_rdy  : in  bit;
-		out_req : in  bit;
-		out_rdy : in  bit;
-		txen    : in  std_logic;
-		txbs    : in  std_logic);
+		in_req   : in  bit;
+		in_rdy   : in  bit;
+		out_req  : in  bit;
+		out_rdy  : in  bit;
+		txen     : in  std_logic;
+		txbs     : in  std_logic);
 
 end;
 
@@ -67,6 +67,9 @@ architecture def of usbrqst_dev is
 	signal value     : std_logic_vector(16-1 downto 0);
 	signal index     : std_logic_vector(16-1 downto 0);
 	signal length    : std_logic_vector(16-1 downto 0);
+
+	signal rqst_rdys : bit_requests;
+	signal rqst_reqs : bit_requests;
 
 	alias setaddress_rdy    is rqst_rdys(set_address);
 	alias setaddress_req    is rqst_reqs(set_address);
@@ -85,7 +88,50 @@ architecture def of usbrqst_dev is
 		return retval;
 	end;
 
+	alias tk_addr is rxtoken(2*rxpid'length to 2*rxpid'length+addr'length-1);
+	alias tk_endp is rxtoken(2*rxpid'length+addr'length to 2*rxpid'length+addr'length+endp'length-1);
+
+	signal token  : std_logic_vector(rxpid'range);
 begin
+
+	token <= reverse(rxtoken(rxpid'reverse_range));
+	process (cken, clk)
+		variable request : std_logic_vector( 8-1 downto 0);
+		variable shr : unsigned(0 to rxrqst'length);
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
+						case token is 
+						when tk_setup =>
+							shr(0 to rxrqst'length-1) := unsigned(rxrqst);
+							shr     := shr rol 2*data0'length;
+							requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
+							shr     := shr rol requesttype'length;
+							request := reverse(std_logic_vector(shr(0 to request'length-1)));
+							shr     := shr rol request'length;
+							value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
+							shr     := shr rol value'length;
+							index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
+							shr     := shr rol index'length;
+							length  <= reverse(std_logic_vector(shr(0 to length'length-1)));
+							shr     := shr rol length'length;
+							for i in request_ids'range loop
+								if request(4-1 downto 0)=request_ids(i) then
+									rqst_req <= not rqst_rdy;
+									exit;
+								end if;
+								assert i/=request_ids'right report requests'image(i) severity error;
+							end loop;
+						when tk_in =>
+						when tk_out =>
+						when others =>
+						end case;
+				end if;
+			end if;
+		end if;
+	end process;
+
 
 	setaddress_p : process (setaddress_rdy, clk)
 	begin
