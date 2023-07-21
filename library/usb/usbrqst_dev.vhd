@@ -42,22 +42,21 @@ entity usbrqst_dev is
 
 		rqst_req : buffer bit;
 		rqst_rdy : buffer bit;
-		rqst_txd : out std_logic;
 
-		rx_req   : in  std_logic;
-		rx_rdy   : in  std_logic;
 		rxpid    : in  std_logic_vector(4-1 downto 0);
 		rxtoken  : in  std_logic_vector;
 		rxrqst   : in  std_logic_vector;
 
 		tk_req   : in  bit;
 		tk_rdy   : buffer bit;
-		in_req   : in  bit;
-		in_rdy   : in  bit;
-		out_req  : in  bit;
-		out_rdy  : in  bit;
-		txen     : in  std_logic;
-		txbs     : in  std_logic);
+
+		rxdv     : in  std_logic := '-';
+		rxbs     : in  std_logic := '-';
+		rxd      : in  std_logic := '-';
+
+		txen     : out std_logic;
+		txbs     : in  std_logic;
+		txd      : out std_logic);
 
 end;
 
@@ -77,6 +76,11 @@ architecture def of usbrqst_dev is
 	alias setaddress_req    is rqst_reqs(set_address);
 	alias getdescriptor_rdy is rqst_rdys(get_descriptor);
 	alias getdescriptor_req is rqst_reqs(get_descriptor);
+
+	signal setup_txen      : std_logic;
+	signal setup_txd       : std_logic;
+	signal descriptor_txen : std_logic;
+	signal descriptor_txd  : std_logic;
 
 	function montrdy (
 		constant rdys : in bit_requests)
@@ -103,28 +107,26 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
-					if (tk_rdy xor tk_req)='1' then
-						shr(0 to rxrqst'length-1) := unsigned(rxrqst);
-						shr     := shr rol 2*data0'length;
-						requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
-						shr     := shr rol requesttype'length;
-						request := reverse(std_logic_vector(shr(0 to request'length-1)));
-						shr     := shr rol request'length;
-						value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
-						shr     := shr rol value'length;
-						index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
-						shr     := shr rol index'length;
-						length  <= reverse(std_logic_vector(shr(0 to length'length-1)));
-						shr     := shr rol length'length;
-						for i in request_ids'range loop
-							if request(4-1 downto 0)=request_ids(i) then
-								rqst_req <= not rqst_rdy;
-								exit;
-							end if;
-							assert i/=request_ids'right report requests'image(i) severity error;
-						end loop;
-					end if;
+				if (tk_rdy xor tk_req)='1' then
+					shr(0 to rxrqst'length-1) := unsigned(rxrqst);
+					shr     := shr rol 2*data0'length;
+					requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
+					shr     := shr rol requesttype'length;
+					request := reverse(std_logic_vector(shr(0 to request'length-1)));
+					shr     := shr rol request'length;
+					value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
+					shr     := shr rol value'length;
+					index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
+					shr     := shr rol index'length;
+					length  <= reverse(std_logic_vector(shr(0 to length'length-1)));
+					shr     := shr rol length'length;
+					for i in request_ids'range loop
+						if request(4-1 downto 0)=request_ids(i) then
+							rqst_req <= not rqst_rdy;
+							exit;
+						end if;
+						assert i/=request_ids'right report requests'image(i) severity error;
+					end loop;
 				end if;
 			end if;
 		end if;
@@ -135,16 +137,14 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (setaddress_rdy xor setaddress_req)='1' then
-					if (to_bit(rx_rdy) xor to_bit(rx_req))='0' then
-						if (in_rdy xor in_req)='1' then
-							addr   <= value(addr'range);
-							setaddress_rdy <= setaddress_req;
-						end if;
-					end if;
+					addr   <= value(addr'range);
+					setaddress_rdy <= setaddress_req;
 				end if;
 			end if;
 		end if;
 	end process;
+	setup_txen <= '0';
+	setup_txd  <= '0';
 
 	getdescriptor_p : process (getdescriptor_rdy, clk)
 		type states is (s_idle, s_data);
@@ -160,8 +160,9 @@ begin
 			config_dscptr'length,
 			interface_dscptr'length,
 			endpoint_dscptr'length);
-		variable descriptor_length : natural range 0 to max(descriptor_lengths);
+		variable descriptor_length : unsigned(0 to unsigned_num_bits(max(descriptor_lengths)-1));
 		variable descriptor_addr   : natural range 0 to summation(descriptor_lengths)-1;
+		alias txdis is descriptor_length(0);
 
 		alias descriptor is value(16-1 downto 8);
 	begin
@@ -170,23 +171,22 @@ begin
 				if (getdescriptor_rdy xor getdescriptor_req)='1' then
 					case state is
 					when s_idle => 
-						if (out_rdy xor out_req)='1' then
-							descriptor_addr := 0;
-							for i in descriptor_lengths'range loop
-								if (i+1)=unsigned(descriptor) then
-									descriptor_length := descriptor_lengths(i);
-									state := s_data;
-									exit;
-								end if;
-								if i/=descriptor_lengths'right then
-									descriptor_addr := descriptor_addr + descriptor_lengths(i);
-								end if;
-							end loop;
-						end if;
+						descriptor_addr := 0;
+						for i in descriptor_lengths'range loop
+							if (i+1)=unsigned(descriptor) then
+								descriptor_length := to_unsigned(descriptor_lengths(i), descriptor_length'length);
+								state := s_data;
+								exit;
+							end if;
+							if i/=descriptor_lengths'right then
+								descriptor_addr   := descriptor_addr + descriptor_lengths(i);
+							end if;
+						end loop;
 					when s_data =>
-						if txen='1' then
+						if descriptor_length(0)='0' then
 							if txbs='0' then
-								descriptor_addr := descriptor_addr + 1;
+								descriptor_addr   := descriptor_addr   + 1;
+								descriptor_length := descriptor_length - 1;
 							end if;
 						else
 							getdescriptor_rdy <= getdescriptor_req;
@@ -194,12 +194,18 @@ begin
 						end if;
 					end case;
 				else
+					descriptor_length := (others=> '1');
 					state := s_idle;
 				end if;
 			end if;
 		end if;
-		rqst_txd <= descriptor_data(descriptor_addr);
+		descriptor_txen <= not txdis;
+		descriptor_txd  <= descriptor_data(descriptor_addr);
 	end process;
+
+	(txen, txd) <= 
+		std_logic_vector'(setup_txen,      setup_txd)      when requesttype(4-1 downto 0)=request_ids(set_address) else
+		std_logic_vector'(descriptor_txen, descriptor_txd) when requesttype(4-1 downto 0)=request_ids(set_address);
 
 	tp(1)  <= to_stdulogic(rqst_reqs(set_address));
 	tp(2)  <= to_stdulogic(rqst_rdys(set_address));

@@ -31,54 +31,52 @@ use hdl4fpga.usbpkg.all;
 
 entity usbdevflow is
 	port (
-		tp      : out std_logic_vector(1 to 32) := (others => '0');
-		clk     : in  std_logic;
-		cken    : in  std_logic;
+		tp        : out std_logic_vector(1 to 32) := (others => '0');
+		clk       : in  std_logic;
+		cken      : in  std_logic;
 
-		rx_req  : in  std_logic;
-		rx_rdy  : buffer std_logic;
-		rxpid   : in  std_logic_vector(4-1 downto 0);
-		rxtoken : in  std_logic_vector;
-		rxrqst  : in  std_logic_vector;
-		rxdv    : in  std_logic;
-		rxbs    : in  std_logic;
-		rxd     : in  std_logic;
+		rx_req    : in  std_logic;
+		rx_rdy    : buffer std_logic;
+		rxpid     : in  std_logic_vector(4-1 downto 0);
+		rxtoken   : in  std_logic_vector;
+		rxrqst    : in  std_logic_vector;
+		rxdv      : in  std_logic;
+		rxbs      : in  std_logic;
+		rxd       : in  std_logic;
 
-		tx_req  : buffer std_logic;
-		tx_rdy  : in  std_logic;
-		txpid   : out std_logic_vector(4-1 downto 0);
-		txen    : buffer std_logic;
-		txbs    : in  std_logic;
-		txd     : buffer std_logic;
+		tx_req    : buffer std_logic;
+		tx_rdy    : in  std_logic;
+		txpid     : out std_logic_vector(4-1 downto 0);
+		txen      : buffer std_logic;
+		txbs      : in  std_logic;
+		txd       : buffer std_logic;
 
 		tk_req    : buffer bit;
 		tk_rdy    : in  bit;
-		in_req    : buffer bit;
-		in_rdy    : in  bit;
-		out_req   : buffer bit;
-		out_rdy   : buffer bit;
 	    rqst_req  : in  bit;
 	    rqst_rdy  : in  bit;
 		rqst_txen : in  std_logic;
+		rqst_txbs : out std_logic;
 		rqst_txd  : in  std_logic);
-
-	alias tp_state is tp(5 to 8);
-
 end;
 
 architecture def of usbdevflow is
 
-	signal addr      : std_logic_vector( 7-1 downto 0);
-	signal endp      : std_logic_vector( 4-1 downto 0);
+	signal addr    : std_logic_vector( 7-1 downto 0);
+	signal endp    : std_logic_vector( 4-1 downto 0);
 	signal requesttype : std_logic_vector( 8-1 downto 0);
-	signal value     : std_logic_vector(16-1 downto 0);
-	signal index     : std_logic_vector(16-1 downto 0);
-	signal length    : std_logic_vector(16-1 downto 0);
+	signal value   : std_logic_vector(16-1 downto 0);
+	signal index   : std_logic_vector(16-1 downto 0);
+	signal length  : std_logic_vector(16-1 downto 0);
 
-	signal ack_rdy   : bit;
-	signal ack_req   : bit;
+	signal in_req  : bit;
+	signal in_rdy  : bit;
+	signal out_req : bit;
+	signal out_rdy : bit;
+	signal ack_rdy : bit;
+	signal ack_req : bit;
 
-	signal ddata  : std_logic_vector(data0'range);
+	signal ddata   : std_logic_vector(data0'range);
 
 begin
 
@@ -104,7 +102,7 @@ begin
 							in_req <= not in_rdy;
 						end if;
 					when data0|data1 =>
-						ddata   <= ddata xor tbit;
+						ddata  <= ddata xor tbit;
 						ack_req <= not ack_rdy; 
 					when hs_ack =>
 						ddata  <= ddata xor tbit;
@@ -136,12 +134,11 @@ begin
 			end if;
 		end if;
 	end process;
-	txen <=
-		rqst_txen when (rqst_rdy xor rqst_req)='1' else
-		'0';
-	txd  <= 
-		rqst_txd  when (rqst_rdy xor rqst_req)='1' else
-		'-';
+
+	(txen, txd) <=
+		std_logic_vector'(rqst_txen, rqst_txd)  when (rqst_rdy xor rqst_req)='1' else
+		std_logic_vector'('0', '-');
+	rqst_txbs <= txbs;
 
 	tp(1) <= to_stdulogic(in_req);
 	tp(2) <= to_stdulogic(in_rdy);

@@ -75,14 +75,11 @@ architecture def of usbdev is
 	signal rqst_rdy  : bit;
 	signal rqst_req  : bit;
 	signal rqst_txen : std_logic;
+	signal rqst_txbs : std_logic;
 	signal rqst_txd  : std_logic;
 
 	signal tk_req    : bit;
 	signal tk_rdy    : bit;
-	signal in_req    : bit;
-	signal in_rdy    : bit;
-	signal out_req   : bit;
-	signal out_rdy   : bit;
 
 	signal tp_phy    : std_logic_vector(1 to 32);
 	signal tp_rqst   : std_logic_vector(1 to 32);
@@ -185,13 +182,10 @@ begin
 
 		tk_req    => tk_req,
 		tk_rdy    => tk_rdy,
-		in_req    => in_req,
-		in_rdy    => in_rdy,
-		out_req   => out_req,
-		out_rdy   => out_rdy,
 		rqst_rdy  => rqst_rdy,
 		rqst_req  => rqst_req,
-		rqst_txen  => rqst_txen,
+		rqst_txen => rqst_txen,
+		rqst_txbs => rqst_txbs,
 		rqst_txd  => rqst_txd);
 
 	usbrqst_e : entity hdl4fpga.usbrqst_dev
@@ -250,22 +244,16 @@ begin
 
 		tk_req   => tk_req,
 		tk_rdy   => tk_rdy,
-		in_req   => in_req,
-		in_rdy   => in_rdy,
-		out_req  => out_req,
-		out_rdy  => out_rdy,
 		rqst_rdy => rqst_rdy,
 		rqst_req => rqst_req,
-		rqst_txd => rqst_txd,
 
-		rx_req   => rx_req,
-		rx_rdy   => rx_rdy,
 		rxpid    => phy_rxpid,
 		rxtoken  => rxtoken,
 		rxrqst   => rxrqst,
 
-		txen     => pkt_txen,
-		txbs     => pkt_txbs);
+		txen     => rqst_txen,
+		txbs     => rqst_txbs,
+		txd      => rqst_txd);
 
 
 	txbs <= phy_txbs;
