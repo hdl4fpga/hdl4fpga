@@ -51,8 +51,8 @@ entity usbdevflow is
 		txbs      : in  std_logic;
 		txd       : buffer std_logic;
 
-		tk_req    : buffer bit;
-		tk_rdy    : in  bit;
+		setup_req : buffer bit;
+		setup_rdy : in  bit;
 	    rqst_req  : in  bit;
 	    rqst_rdy  : in  bit;
 		rqst_txen : in  std_logic;
@@ -89,9 +89,9 @@ begin
 				if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
 					case rxpid is
 					when tk_setup =>
-						if (tk_req xor tk_rdy)='0' then
+						if (setup_req xor setup_rdy)='0' then
 							ddata  <= data0;
-							tk_req <= not tk_rdy;
+							setup_req <= not setup_rdy;
 						end if;
 					when tk_in =>
 						if (out_req xor out_rdy)='0' then
