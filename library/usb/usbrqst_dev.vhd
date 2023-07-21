@@ -133,7 +133,7 @@ begin
 	end process;
 
 	process (cken, clk)
-		type states is (s_idle, s_rqst);
+		type states is (s_idle, s_setup);
 		variable state : states;
 		variable request : std_logic_vector( 8-1 downto 0);
 		variable shr : unsigned(0 to rxrqst'length);
@@ -144,13 +144,14 @@ begin
 				when s_idle =>
 					if (setup_rdy xor setup_req)='1' then
 						if rxdv='1' then
-							state := s_rqst;
+							state := s_setup;
 						end if;
 					end if;
-				when s_rqst =>
+				when s_setup =>
 					if rxdv='0' then
 						setup_rdy <= setup_req;
 						rqst_rdy  <= not rqst_req;
+						state := s_idle;
 					end if;
 				end case;
 			end if;
@@ -158,18 +159,24 @@ begin
 	end process;
 
 	process (cken, clk)
+		type states is (s_idle, s_rqst);
+		variable state : states;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (rqst_rdy xor rqst_req)='1' then
-    				for i in request_ids'range loop
-    					if request(4-1 downto 0)=request_ids(i) then
-    						rqst_reqs(i) <= not rqst_rdys(i);
-    						exit;
-    					end if;
-    					assert i/=request_ids'right report requests'image(i) severity error;
-    				end loop;
-				end if;
+				case state is
+				when s_idle =>
+					if (rqst_rdy xor rqst_req)='1' then
+						for i in request_ids'range loop
+							if request(4-1 downto 0)=request_ids(i) then
+								rqst_reqs(i) <= not rqst_rdys(i);
+								exit;
+							end if;
+							assert i/=request_ids'right report requests'image(i) severity error;
+						end loop;
+					end if;
+				when s_rqst =>
+				end case;
 			end if;
 		end if;
 	end process;
