@@ -105,20 +105,20 @@ begin
 	process (cken, clk)
 		type states is (s_idle, s_rqst);
 		variable state : states;
-		variable rqstdata : unsigned(0 to rxrqst'length);
-		variable shr : unsigned(0 to rxrqst'length);
+		variable data : unsigned(0 to rxrqst'length);
+		variable shr  : unsigned(0 to rxrqst'length);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (setup_rdy xor setup_req)='1' then
 					if rxdv='1' then
 						if rxbs='0' then
-							rqstdata:= rqstdata rol 1;
+							data:= data rol 1;
 						end if;
 					end if;
 				end if;
 			end if;
-			shr := rqstdata;
+			shr := data;
 			requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
 			shr := shr rol requesttype'length;
 			request <= reverse(std_logic_vector(shr(0 to request'length-1)));
@@ -132,7 +132,7 @@ begin
 		end if;
 	end process;
 
-	process (cken, clk)
+	process (clk)
 		type states is (s_idle, s_setup);
 		variable state : states;
 		variable request : std_logic_vector( 8-1 downto 0);
@@ -150,7 +150,7 @@ begin
 				when s_setup =>
 					if rxdv='0' then
 						setup_rdy <= setup_req;
-						rqst_rdy  <= not rqst_req;
+						rqst_req  <= not rqst_rdy;
 						state := s_idle;
 					end if;
 				end case;
@@ -158,7 +158,7 @@ begin
 		end if;
 	end process;
 
-	process (cken, clk)
+	process (rqst_req, clk)
 		type states is (s_idle, s_rqst);
 		variable state : states;
 	begin
@@ -170,12 +170,22 @@ begin
 						for i in request_ids'range loop
 							if request(4-1 downto 0)=request_ids(i) then
 								rqst_reqs(i) <= not rqst_rdys(i);
+								state := s_rqst;
 								exit;
 							end if;
 							assert i/=request_ids'right report requests'image(i) severity error;
 						end loop;
 					end if;
 				when s_rqst =>
+					for i in request_ids'range loop
+						if (rqst_rdys(i) xor rqst_reqs(i))='1' then
+							exit;
+						end if;
+						if i=request_ids'right then
+							rqst_rdy <= rqst_req;
+							state := s_idle;
+						end if;
+					end loop;
 				end case;
 			end if;
 		end if;

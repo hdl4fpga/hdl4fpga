@@ -74,6 +74,9 @@ architecture def of usbdev is
 
 	signal rqst_rdy  : bit;
 	signal rqst_req  : bit;
+	signal rqst_rxdv : std_logic;
+	signal rqst_rxbs : std_logic;
+	signal rqst_rxd  : std_logic;
 	signal rqst_txen : std_logic;
 	signal rqst_txbs : std_logic;
 	signal rqst_txd  : std_logic;
@@ -184,6 +187,9 @@ begin
 		setup_rdy => setup_rdy,
 		rqst_rdy  => rqst_rdy,
 		rqst_req  => rqst_req,
+		rqst_rxdv => rqst_rxdv,
+		rqst_rxbs => rqst_rxbs,
+		rqst_rxd  => rqst_rxd,
 		rqst_txen => rqst_txen,
 		rqst_txbs => rqst_txbs,
 		rqst_txd  => rqst_txd);
@@ -251,6 +257,9 @@ begin
 		rxtoken  => rxtoken,
 		rxrqst   => rxrqst,
 
+		rxdv     => rqst_rxdv,
+		rxbs     => rqst_rxbs,
+		rxd      => rqst_rxd,
 		txen     => rqst_txen,
 		txbs     => rqst_txbs,
 		txd      => rqst_txd);

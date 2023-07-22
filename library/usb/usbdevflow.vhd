@@ -55,6 +55,9 @@ entity usbdevflow is
 		setup_rdy : in  bit;
 	    rqst_req  : in  bit;
 	    rqst_rdy  : in  bit;
+		rqst_rxdv : out  std_logic;
+		rqst_rxbs : out std_logic;
+		rqst_rxd  : out  std_logic;
 		rqst_txen : in  std_logic;
 		rqst_txbs : out std_logic;
 		rqst_txd  : in  std_logic);
@@ -135,10 +138,10 @@ begin
 		end if;
 	end process;
 
-	(txen, txd) <=
-		std_logic_vector'(rqst_txen, rqst_txd)  when (rqst_rdy xor rqst_req)='1' else
-		std_logic_vector'('0', '-');
-	rqst_txbs <= txbs;
+	(txen, rqst_txbs, txd) <=
+		std_logic_vector'(rqst_txen, txbs, rqst_txd)  when (rqst_rdy xor rqst_req)='1' else
+		std_logic_vector'('0', '-', '-');
+	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd);
 
 	tp(1) <= to_stdulogic(in_req);
 	tp(2) <= to_stdulogic(in_rdy);
