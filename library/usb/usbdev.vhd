@@ -69,9 +69,6 @@ architecture def of usbdev is
 	signal phy_rxpidv : std_logic;
 	signal phy_rxd   : std_logic;
 
-	signal rxtoken   : std_logic_vector(0 to 8+7+4+5-1);
-	signal rxrqst    : std_logic_vector(0 to 8+8*8-1);
-
 	signal rqst_rdy  : bit;
 	signal rqst_req  : bit;
 	signal rqst_rxdv : std_logic;
@@ -124,22 +121,10 @@ begin
 		rx_rdy   => rx_rdy,
 				   
 		rxdv     => phy_rxdv,
-		rxpid    => phy_rxpid,
 		rxpidv   => phy_rxpidv,
+		rxpid    => phy_rxpid,
 		rxbs     => phy_rxbs,
-		rxd      => phy_rxd,
-				   
-		rxtoken  => rxtoken,
-		rxrqst   => rxrqst);
-
-	usbfiforx_e : entity hdl4fpga.usbfifo_rx
-	port map (
-		clk    => clk,
-		cken   => cken,
-
-		rxdv   => phy_rxdv,
-		rxbs   => phy_rxbs,
-		rxd    => phy_rxd);
+		rxd      => phy_rxd);
 
 	usbpkttx_e : entity hdl4fpga.usbpkt_tx
 	port map (
@@ -167,13 +152,11 @@ begin
 
 		rx_req  => rx_req,
 		rx_rdy  => rx_rdy,
+		rxpidv  => phy_rxpidv,
 		rxpid   => phy_rxpid,
 		rxdv    => phy_rxdv,
 		rxbs    => phy_rxbs,
 		rxd     => phy_rxd,
-
-		rxtoken => rxtoken,
-		rxrqst  => rxrqst,
 
 		tx_req  => tx_req,
 		tx_rdy  => tx_rdy,
@@ -252,10 +235,6 @@ begin
 		setup_rdy   => setup_rdy,
 		rqst_rdy => rqst_rdy,
 		rqst_req => rqst_req,
-
-		rxpid    => phy_rxpid,
-		rxtoken  => rxtoken,
-		rxrqst   => rxrqst,
 
 		rxdv     => rqst_rxdv,
 		rxbs     => rqst_rxbs,

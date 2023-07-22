@@ -36,27 +36,23 @@ entity usbrqst_dev is
 		interface_dscptr: std_logic_vector;
 		endpoint_dscptr : std_logic_vector);
 	port (
-		tp       : out std_logic_vector(1 to 32) := (others => '0');
-		clk      : in  std_logic;
-		cken     : in  std_logic;
+		tp        : out std_logic_vector(1 to 32) := (others => '0');
+		clk       : in  std_logic;
+		cken      : in  std_logic;
 
-		rqst_req : buffer bit;
-		rqst_rdy : buffer bit;
-
-		rxpid    : in  std_logic_vector(4-1 downto 0);
-		rxtoken  : in  std_logic_vector;
-		rxrqst   : in  std_logic_vector;
+		rqst_req  : buffer bit;
+		rqst_rdy  : buffer bit;
 
 		setup_req : in  bit;
 		setup_rdy : buffer bit;
 
-		rxdv     : in  std_logic := '-';
-		rxbs     : in  std_logic := '-';
-		rxd      : in  std_logic := '-';
+		rxdv      : in  std_logic := '-';
+		rxbs      : in  std_logic := '-';
+		rxd       : in  std_logic := '-';
 
-		txen     : out std_logic;
-		txbs     : in  std_logic;
-		txd      : out std_logic);
+		txen      : out std_logic;
+		txbs      : in  std_logic;
+		txd       : out std_logic);
 
 end;
 
@@ -83,60 +79,11 @@ architecture def of usbrqst_dev is
 	signal descriptor_txen : std_logic;
 	signal descriptor_txd  : std_logic;
 
-	function montrdy (
-		constant rdys : in bit_requests)
-		return bit is
-		variable retval : bit;
-	begin
-		retval := '0';
-		for i in rdys'range loop
-			retval := retval xor rdys(i);
-		end loop;
-		return retval;
-	end;
-
-	alias tk_addr is rxtoken(2*rxpid'length to 2*rxpid'length+addr'length-1);
-	alias tk_endp is rxtoken(2*rxpid'length+addr'length to 2*rxpid'length+addr'length+endp'length-1);
-
-	signal token  : std_logic_vector(rxpid'range);
 begin
 
-	token <= reverse(rxtoken(rxpid'reverse_range));
-	process (cken, clk)
-		type states is (s_idle, s_rqst);
-		variable state : states;
-		variable data : unsigned(0 to rxrqst'length);
-		variable shr  : unsigned(0 to rxrqst'length);
-	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				if (setup_rdy xor setup_req)='1' then
-					if rxdv='1' then
-						if rxbs='0' then
-							data:= data rol 1;
-						end if;
-					end if;
-				end if;
-			end if;
-			shr := data;
-			requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
-			shr := shr rol requesttype'length;
-			request <= reverse(std_logic_vector(shr(0 to request'length-1)));
-			shr := shr rol request'length;
-			value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
-			shr := shr rol value'length;
-			index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
-			shr := shr rol index'length;
-			length  <= reverse(std_logic_vector(shr(0 to length'length-1)));
-			shr := shr rol length'length;
-		end if;
-	end process;
-
-	process (clk)
+	setup_p : process (clk)
 		type states is (s_idle, s_setup);
 		variable state : states;
-		variable request : std_logic_vector( 8-1 downto 0);
-		variable shr : unsigned(0 to rxrqst'length);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -158,7 +105,38 @@ begin
 		end if;
 	end process;
 
-	process (rqst_req, clk)
+	setup_data_p : process (cken, clk)
+		type states is (s_idle, s_rqst);
+		variable state : states;
+		variable data : unsigned(0 to 64+2*8-1);
+		variable shr  : unsigned(data'range);
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (setup_rdy xor setup_req)='1' then
+					if rxdv='1' then
+						if rxbs='0' then
+							data(0) := rxd;
+							data := data rol 1;
+						end if;
+					end if;
+				end if;
+			end if;
+			shr := data;
+			requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
+			shr := shr rol requesttype'length;
+			request <= reverse(std_logic_vector(shr(0 to request'length-1)));
+			shr := shr rol request'length;
+			value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
+			shr := shr rol value'length;
+			index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
+			shr := shr rol index'length;
+			length  <= reverse(std_logic_vector(shr(0 to length'length-1)));
+			shr := shr rol length'length;
+		end if;
+	end process;
+
+	request_p : process (rqst_req, clk)
 		type states is (s_idle, s_rqst);
 		variable state : states;
 	begin
@@ -263,8 +241,9 @@ begin
 	end process;
 
 	(txen, txd) <= 
-		std_logic_vector'(setaddress_txen, setaddress_txd) when requesttype(4-1 downto 0)=request_ids(set_address) else
-		std_logic_vector'(descriptor_txen, descriptor_txd) when requesttype(4-1 downto 0)=request_ids(get_descriptor);
+		std_logic_vector'(setaddress_txen, setaddress_txd) when request(4-1 downto 0)=request_ids(set_address)    else
+		std_logic_vector'(descriptor_txen, descriptor_txd) when request(4-1 downto 0)=request_ids(get_descriptor) else
+		std_logic_vector'('0', '-');
 
 	tp(1)  <= to_stdulogic(rqst_reqs(set_address));
 	tp(2)  <= to_stdulogic(rqst_rdys(set_address));

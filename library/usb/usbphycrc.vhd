@@ -211,9 +211,10 @@ begin
 		end if;
 	end process;
 
-	rxdv <= --phy_rxdv and crcact_rx and not txen;
-		'0' when txen='1' else
-		'0' when echo='1' else
+	rxdv <=
+		'0' when txen='1'      else
+		'0' when crcact_rx='0' else
+		'0' when echo='1'      else
 		phy_rxdv;
 	rxpidv <= crcact_rx;
 

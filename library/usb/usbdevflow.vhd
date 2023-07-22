@@ -37,9 +37,8 @@ entity usbdevflow is
 
 		rx_req    : in  std_logic;
 		rx_rdy    : buffer std_logic;
+		rxpidv    : in  std_logic;
 		rxpid     : in  std_logic_vector(4-1 downto 0);
-		rxtoken   : in  std_logic_vector;
-		rxrqst    : in  std_logic_vector;
 		rxdv      : in  std_logic;
 		rxbs      : in  std_logic;
 		rxd       : in  std_logic;
@@ -83,9 +82,29 @@ architecture def of usbdevflow is
 
 begin
 
+	tkdata_p : process (cken, clk)
+		variable data : unsigned(0 to 16-1);
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if rxpidv='1' then
+					case rxpid is
+					when tk_setup|tk_in|tk_out|tk_sof =>
+						if rxdv='1' then
+							if rxbs='0' then
+								data(0) := rxd;
+								data := data rol 1;
+							end if;
+						end if;
+					when others =>
+					end case;
+				end if;
+			end if;
+		end if;
+	end process;
+
 	hosttodev_p : process (cken, clk)
 		constant tbit : std_logic_vector(data0'range) := b"1000";
-		variable shr : unsigned(0 to rxrqst'length);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -129,7 +148,6 @@ begin
 					end if;
 					if (ack_rdy xor ack_req)='1' then
 						txpid   <= hs_ack;
-						txen    <= '0';
 						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 						ack_rdy <= ack_req;
 					end if;
