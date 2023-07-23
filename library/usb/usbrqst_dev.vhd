@@ -204,7 +204,7 @@ begin
 								if descriptor_lengths(i) > shift_left(length,3) then
 									descriptor_length := shift_left(resize(length, descriptor_length'length),3)-1;
 								else
-									descriptor_length := to_unsigned(descriptor_lengths(i), descriptor_length'length);
+									descriptor_length := to_unsigned(descriptor_lengths(i), descriptor_length'length)-1;
 								end if;
 								state := s_data;
 								exit;

@@ -98,8 +98,8 @@ begin
 			constant delays : time_vector := (
 				1 us, 1 us, 3 us, 4 us,
 				1 us, 1 us, 3 us, 11 us,
-				1 us, 1 us, 5 us, 16 us,
-				1 us); --, 0 ns);
+				1 us, 1 us, 5 us, 20 us,
+				5 us); --, 0 ns);
 
 			variable i     : natural;
 			variable j     : natural;
@@ -188,7 +188,7 @@ begin
 		with oversampling select
 		clk <= 
 			not clk after 1 sec/((2.0*usb_freq)*(50.00e6/usb_freq)) when 4,
-			not clk after 1 sec/((2.0*usb_freq)*(36.37e6/usb_freq)) when 3,
+			not clk after 1 sec/((2.0*usb_freq)*(36.00e6/usb_freq)) when 3,
 			not clk after 1 sec/((2.0*usb_freq)*(12.00e6/usb_freq)) when others; --*0.975;
 
 	 	tx_p : process (clk)
