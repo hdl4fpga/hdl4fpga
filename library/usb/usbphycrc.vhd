@@ -77,7 +77,6 @@ architecture def of usbphycrc is
 	signal crc5      : std_logic_vector(0 to 5-1);
 	signal crc16     : std_logic_vector(0 to 16-1);
 	signal crc5_16   : std_logic;
-	signal pid       : std_logic_vector(8-1 downto 0);
 
 	signal echo      : std_logic;
 begin

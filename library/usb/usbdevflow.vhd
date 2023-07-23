@@ -137,9 +137,44 @@ begin
 		end if;
 	end process;
 
-	(txen, rqst_txbs, txd) <=
-		std_logic_vector'(rqst_txen, txbs, rqst_txd)  when (rqst_rdy xor rqst_req)='1' else
-		std_logic_vector'('0', '-', '-');
+	fifo_p : process (clk)
+		variable mem  : std_logic_vector(0 to 1024*8-1);
+		variable pin  : natural range mem'left to mem'right;
+		variable pout : natural range mem'left to mem'right;
+		variable psvd : natural range mem'left to mem'right;
+		variable we   : std_logic;
+		variable din  : std_logic;
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if pout /= pin then
+					if txbs='0' then
+						pout := pout + 1;
+					end if;
+				end if;
+				if pout= pin then
+					txen <='0';
+				else
+					txen <='1';
+				end if;
+				txd <= mem(pout);
+				if we='1' then
+					mem(pin) := din;
+					pin  := pin + 1;
+				end if;
+				if (rqst_rdy xor rqst_req)='1' then
+					we   := rqst_txen;
+					din  := rqst_txd;
+				else
+					psvd := pout;
+					we   := '0';
+					din  := '-';
+				end if;
+			end if;
+		end if;
+	end process;
+
+	rqst_txbs <= '0';
 	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd);
 
 	tp(1) <= to_stdulogic(out_req);

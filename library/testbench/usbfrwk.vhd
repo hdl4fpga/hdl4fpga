@@ -96,10 +96,10 @@ begin
 				19, 72);
 
 			constant delays : time_vector := (
-				0 ns, 0 ns, 2 us, 3 us,
-				0 ns, 0 ns, 2 us, 9.5 us,
-				0 ns, 0 ns, 2 us, 9 us,
-				0 ns); --, 0 ns);
+				1 us, 1 us, 3 us, 4 us,
+				1 us, 1 us, 3 us, 11 us,
+				1 us, 1 us, 3 us, 11 us,
+				1 us); --, 0 ns);
 
 			variable i     : natural;
 			variable j     : natural;
