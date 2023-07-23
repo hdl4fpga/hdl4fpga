@@ -201,7 +201,13 @@ begin
 						descriptor_addr := 0;
 						for i in descriptor_lengths'range loop
 							if (i+1)=unsigned(descriptor) then
-								if descriptor_lengths(i) > shift_left(length,3) then
+								if descriptor=decriptortypes_ids(config) then
+									if resize(unsigned(reverse(config_dscptr(16 to 32-1))),8) > resize(length,8) then
+										descriptor_length := shift_left(resize(length, descriptor_length'length),3)-1;
+									else
+										descriptor_length := resize(shift_left(unsigned(reverse(config_dscptr(16 to 32-1))), 3), descriptor_length'length)-1;
+									end if;
+								elsif descriptor_lengths(i) > shift_left(length,3) then
 									descriptor_length := shift_left(resize(length, descriptor_length'length),3)-1;
 								else
 									descriptor_length := to_unsigned(descriptor_lengths(i), descriptor_length'length)-1;

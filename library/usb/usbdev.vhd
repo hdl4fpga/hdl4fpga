@@ -88,8 +88,8 @@ architecture def of usbdev is
 
 begin
 
-	tp(1 to 3)  <= tp_phy (1 to 3);
-	-- tp(1 to 3)  <= tp_rqst(13 to 15);
+	-- tp(1 to 3)  <= tp_phy (1 to 3);
+	tp(1 to 3)  <= tp_rqst(5 to 7);
 	tp(4 to 15) <= tp_rqst(1 to 12);
   	usbphycrc_e : entity hdl4fpga.usbphycrc
    	generic map (
@@ -148,6 +148,7 @@ begin
 
 	usbdevflow_e : entity hdl4fpga.usbdevflow
 	port map (
+		tp       => tp_rqst,
 		clk     => clk,
 		cken    => cken,
 
@@ -229,7 +230,6 @@ begin
 			reverse(x"0040")  & -- MaxPacketSize
 			reverse(x"00")))    -- Interval
 	port map (
-		tp       => tp_rqst,
 		clk      => clk,
 		cken     => cken,
 
