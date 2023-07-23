@@ -83,7 +83,7 @@ begin
 				reverse(x"691530",8)(0 to 19-1) &
 				reverse(x"d2",8) &
 				reverse(x"2d1530",8)(0 to 19-1) &
-				reverse(x"C3_8006_0002_0000_0900_ae04",8)(0 to 72-1) &
+				reverse(x"C3_8006_0001_0000_1200_ae04",8)(0 to 72-1) &
 				reverse(x"691530",8)(0 to 19-1) &
 				reverse(x"d2",8) &
 				reverse(x"691530",8)(0 to 19-1) &
@@ -98,7 +98,7 @@ begin
 			constant delays : time_vector := (
 				1 us, 1 us, 3 us, 4 us,
 				1 us, 1 us, 3 us, 11 us,
-				1 us, 1 us, 3 us, 11 us,
+				1 us, 1 us, 5 us, 16 us,
 				1 us); --, 0 ns);
 
 			variable i     : natural;
