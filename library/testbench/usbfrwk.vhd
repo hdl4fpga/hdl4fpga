@@ -188,7 +188,7 @@ begin
 		with oversampling select
 		clk <= 
 			not clk after 1 sec/((2.0*usb_freq)*(50.00e6/usb_freq)) when 4,
-			not clk after 1 sec/((2.0*usb_freq)*(36.00e6/usb_freq)) when 3,
+			not clk after 1 sec/((2.0*usb_freq)*(36.36e6/usb_freq)) when 3,
 			not clk after 1 sec/((2.0*usb_freq)*(12.00e6/usb_freq)) when others; --*0.975;
 
 	 	tx_p : process (clk)
