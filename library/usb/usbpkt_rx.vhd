@@ -31,21 +31,23 @@ use hdl4fpga.usbpkg.all;
 
 entity usbpkt_rx is
 	port (
-		clk      : in  std_logic;
-		cken     : in  std_logic;
+		clk    : in  std_logic;
+		cken   : in  std_logic;
 
-		rx_req   : buffer std_logic;
-		rx_rdy   : in  std_logic;
+		rx_req : buffer std_logic;
+		rx_rdy : in  std_logic;
 
-		rxpidv   : in  std_logic;
-		rxpid    : in  std_logic_vector( 4-1 downto 0);
-		rxdv     : in  std_logic;
-		rxbs     : in  std_logic;
-		rxd      : in  std_logic);
+		tkdata : out std_logic_vector(0 to 16-1);
+		rxpidv : in  std_logic;
+		rxpid  : in  std_logic_vector( 4-1 downto 0);
+		rxdv   : in  std_logic;
+		rxbs   : in  std_logic;
+		rxd    : in  std_logic);
 end;
 
 architecture def of usbpkt_rx is
 begin
+
 	process (clk)
 		type states is (s_idle, s_token, s_data, s_hs);
 		variable state : states;
@@ -86,4 +88,27 @@ begin
 			end if;
 		end if;
 	end process;
+
+	tkdata_p : process (cken, clk)
+		variable data : unsigned(0 to 16-1);
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+   				if rxpidv='1' then
+   					case rxpid is
+   					when tk_setup|tk_in|tk_out|tk_sof =>
+   						if rxdv='1' then
+   							if rxbs='0' then
+   								data(0) := rxd;
+   								data    := data rol 1;
+   							end if;
+   						end if;
+   					when others =>
+   					end case;
+   				end if;
+			end if;
+			tkdata <= std_logic_vector(data);
+		end if;
+	end process;
+
 end;

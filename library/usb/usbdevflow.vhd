@@ -42,6 +42,7 @@ entity usbdevflow is
 		rxdv      : in  std_logic;
 		rxbs      : in  std_logic;
 		rxd       : in  std_logic;
+		tkdata    : in  std_logic_vector(0 to 16-1);
 
 		tx_req    : buffer std_logic;
 		tx_rdy    : in  std_logic;
@@ -52,6 +53,7 @@ entity usbdevflow is
 
 		setup_req : buffer bit;
 		setup_rdy : in  bit;
+
 	    rqst_req  : in  bit;
 	    rqst_rdy  : in  bit;
 		rqst_rxdv : out  std_logic;
@@ -82,54 +84,33 @@ architecture def of usbdevflow is
 
 begin
 
-	tkdata_p : process (cken, clk)
-		variable data : unsigned(0 to 16-1);
-	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				if rxpidv='1' then
-					case rxpid is
-					when tk_setup|tk_in|tk_out|tk_sof =>
-						if rxdv='1' then
-							if rxbs='0' then
-								data(0) := rxd;
-								data := data rol 1;
-							end if;
-						end if;
-					when others =>
-					end case;
-				end if;
-			end if;
-		end if;
-	end process;
-
 	hosttodev_p : process (cken, clk)
 		constant tbit : std_logic_vector(data0'range) := b"1000";
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (to_bit(rx_rdy) xor to_bit(rx_req))='1' then
-					case rxpid is
-					when tk_setup =>
-						if (setup_req xor setup_rdy)='0' then
-							ddata  <= data0;
-							setup_req <= not setup_rdy;
-						end if;
-					when tk_in =>
-						if (out_req xor out_rdy)='0' then
-							out_req <= not out_rdy;
-						end if;
-					when tk_out=>
-						if (in_req xor in_rdy)='0' then
-							in_req <= not in_rdy;
-						end if;
-					when data0|data1 =>
-						ddata  <= ddata xor tbit;
-						ack_req <= not ack_rdy; 
-					when hs_ack =>
-						ddata  <= ddata xor tbit;
-					when others =>
-					end case;
+				if (rx_rdy xor rx_req)='1' then
+    				case rxpid is
+    				when tk_setup =>
+    					if (setup_req xor setup_rdy)='0' then
+    						ddata  <= data0;
+    						setup_req <= not setup_rdy;
+    					end if;
+    				when tk_in =>
+    					if (in_req xor in_rdy)='0' then
+    						in_req <= not in_rdy;
+    					end if;
+    				when tk_out=>
+    					if (out_req xor out_rdy)='0' then
+    						out_req <= not out_rdy;
+    					end if;
+    				when data0|data1 =>
+    					ddata  <= ddata xor tbit;
+    					ack_req <= not ack_rdy; 
+    				when hs_ack =>
+    					ddata  <= ddata xor tbit;
+    				when others =>
+    				end case;
 				end if;
 				rx_rdy <= to_stdulogic(to_bit(rx_req));
 			end if;
@@ -141,10 +122,10 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
-					if (out_rdy xor out_req)='1' then
+					if (in_rdy xor in_req)='1' then
 						txpid   <= ddata;
 						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
-						out_rdy <= out_req;
+						in_rdy <= in_req;
 					end if;
 					if (ack_rdy xor ack_req)='1' then
 						txpid   <= hs_ack;
@@ -161,11 +142,11 @@ begin
 		std_logic_vector'('0', '-', '-');
 	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd);
 
-	tp(1) <= to_stdulogic(in_req);
-	tp(2) <= to_stdulogic(in_rdy);
-	tp(3) <= to_stdulogic(out_req);
-	tp(4) <= to_stdulogic(out_rdy);
-	tp(5) <= txen or (rxdv and to_stdulogic(in_rdy xor in_req));
+	tp(1) <= to_stdulogic(out_req);
+	tp(2) <= to_stdulogic(out_rdy);
+	tp(3) <= to_stdulogic(in_req);
+	tp(4) <= to_stdulogic(in_rdy);
+	tp(5) <= txen or (rxdv and to_stdulogic(out_rdy xor out_req));
 	tp(6) <= txbs when txen='1' else rxbs;
 	tp(7) <= txd  when txen='1' else rxd;
 end;

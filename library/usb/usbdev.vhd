@@ -78,8 +78,9 @@ architecture def of usbdev is
 	signal rqst_txbs : std_logic;
 	signal rqst_txd  : std_logic;
 
-	signal setup_req    : bit;
-	signal setup_rdy    : bit;
+	signal setup_req : bit;
+	signal setup_rdy : bit;
+	signal tkdata    : std_logic_vector(0 to 16-1);
 
 	signal tp_phy    : std_logic_vector(1 to 32);
 	signal tp_rqst   : std_logic_vector(1 to 32);
@@ -120,9 +121,10 @@ begin
 		rx_req   => rx_req,
 		rx_rdy   => rx_rdy,
 				   
-		rxdv     => phy_rxdv,
 		rxpidv   => phy_rxpidv,
 		rxpid    => phy_rxpid,
+		tkdata   => tkdata,
+		rxdv     => phy_rxdv,
 		rxbs     => phy_rxbs,
 		rxd      => phy_rxd);
 
@@ -146,7 +148,6 @@ begin
 
 	usbdevflow_e : entity hdl4fpga.usbdevflow
 	port map (
-		tp      => tp_rqst,
 		clk     => clk,
 		cken    => cken,
 
@@ -157,6 +158,7 @@ begin
 		rxdv    => phy_rxdv,
 		rxbs    => phy_rxbs,
 		rxd     => phy_rxd,
+		tkdata  => tkdata,
 
 		tx_req  => tx_req,
 		tx_rdy  => tx_rdy,
@@ -231,17 +233,17 @@ begin
 		clk      => clk,
 		cken     => cken,
 
-		setup_req   => setup_req,
-		setup_rdy   => setup_rdy,
-		rqst_rdy => rqst_rdy,
-		rqst_req => rqst_req,
+		setup_req => setup_req,
+		setup_rdy => setup_rdy,
+		rqst_rdy  => rqst_rdy,
+		rqst_req  => rqst_req,
 
-		rxdv     => rqst_rxdv,
-		rxbs     => rqst_rxbs,
-		rxd      => rqst_rxd,
-		txen     => rqst_txen,
-		txbs     => rqst_txbs,
-		txd      => rqst_txd);
+		rxdv      => rqst_rxdv,
+		rxbs      => rqst_rxbs,
+		rxd       => rqst_rxd,
+		txen      => rqst_txen,
+		txbs      => rqst_txbs,
+		txd       => rqst_txd);
 
 
 	txbs <= phy_txbs;

@@ -64,7 +64,7 @@ architecture def of usbrqst_dev is
 	signal request   : std_logic_vector( 8-1 downto 0);
 	signal value     : std_logic_vector(16-1 downto 0);
 	signal index     : std_logic_vector(16-1 downto 0);
-	signal length    : std_logic_vector(16-1 downto 0);
+	signal length    : unsigned(16-1 downto 0);
 
 	signal rqst_rdys : bit_requests;
 	signal rqst_reqs : bit_requests;
@@ -81,31 +81,7 @@ architecture def of usbrqst_dev is
 
 begin
 
-	setup_p : process (clk)
-		type states is (s_idle, s_setup);
-		variable state : states;
-	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				case state is
-				when s_idle =>
-					if (setup_rdy xor setup_req)='1' then
-						if rxdv='1' then
-							state := s_setup;
-						end if;
-					end if;
-				when s_setup =>
-					if rxdv='0' then
-						setup_rdy <= setup_req;
-						rqst_req  <= not rqst_rdy;
-						state := s_idle;
-					end if;
-				end case;
-			end if;
-		end if;
-	end process;
-
-	setup_data_p : process (cken, clk)
+	setup_p : process (cken, clk)
 		type states is (s_idle, s_rqst);
 		variable state : states;
 		variable data : unsigned(0 to 64+2*8-1);
@@ -113,26 +89,40 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (setup_rdy xor setup_req)='1' then
+				case state is
+				when s_idle =>
+					if (setup_rdy xor setup_req)='1' then
+						if rxdv='1'then
+							state := s_rqst;
+						end if;
+					end if;
+				when s_rqst =>
+					if rxdv='0' then
+						rqst_req  <= not rqst_rdy;
+						setup_rdy <= setup_req;
+						state     := s_idle;
+					end if;
+				end case;
+				data_l : if (setup_rdy xor setup_req)='1' then
 					if rxdv='1' then
 						if rxbs='0' then
 							data(0) := rxd;
 							data := data rol 1;
 						end if;
 					end if;
+					shr := data;
+					requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
+					shr := shr rol requesttype'length;
+					request <= reverse(std_logic_vector(shr(0 to request'length-1)));
+					shr := shr rol request'length;
+					value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
+					shr := shr rol value'length;
+					index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
+					shr := shr rol index'length;
+					length  <= unsigned(reverse(std_logic_vector(shr(0 to length'length-1))));
+					shr := shr rol length'length;
 				end if;
 			end if;
-			shr := data;
-			requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
-			shr := shr rol requesttype'length;
-			request <= reverse(std_logic_vector(shr(0 to request'length-1)));
-			shr := shr rol request'length;
-			value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
-			shr := shr rol value'length;
-			index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
-			shr := shr rol index'length;
-			length  <= reverse(std_logic_vector(shr(0 to length'length-1)));
-			shr := shr rol length'length;
 		end if;
 	end process;
 
@@ -211,13 +201,15 @@ begin
 						descriptor_addr := 0;
 						for i in descriptor_lengths'range loop
 							if (i+1)=unsigned(descriptor) then
-								descriptor_length := to_unsigned(descriptor_lengths(i), descriptor_length'length);
+								if descriptor_lengths(i) > shift_left(length,3) then
+									descriptor_length := shift_left(resize(length, descriptor_length'length),3)-1;
+								else
+									descriptor_length := to_unsigned(descriptor_lengths(i), descriptor_length'length);
+								end if;
 								state := s_data;
 								exit;
 							end if;
-							if i/=descriptor_lengths'right then
-								descriptor_addr   := descriptor_addr + descriptor_lengths(i);
-							end if;
+							descriptor_addr := descriptor_addr + descriptor_lengths(i);
 						end loop;
 					when s_data =>
 						if descriptor_length(0)='0' then
