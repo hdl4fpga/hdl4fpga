@@ -106,7 +106,7 @@ begin
 							if tkdata(dev_addr'range) = (dev_addr'range => '0') then
 								ddata  <= data0;
 								setup_req <= not setup_rdy;
-							elsif (tkdata(dev_addr'range) = dev_addr) then
+							elsif tkdata(dev_addr'range) = dev_addr then
 								ddata  <= data0;
 								setup_req <= not setup_rdy;
 							end if;
@@ -115,16 +115,20 @@ begin
     					if (in_req xor in_rdy)='0' then
 							if tkdata(dev_addr'range) = (dev_addr'range => '0') then
 								in_req <= not in_rdy;
-							elsif (tkdata(dev_addr'range) = dev_addr) then
-								in_req <= not in_rdy;
+							elsif tkdata(dev_addr'range) = dev_addr then
+								if tkdata(dev_endp'range) /= (dev_endp'range => '0') then
+									in_req <= not in_rdy;
+								end if;
 							end if;
     					end if;
     				when tk_out=>
     					if (out_req xor out_rdy)='0' then
 							if tkdata(dev_addr'range) = (dev_addr'range => '0') then
 								out_req <= not out_rdy;
-							elsif (tkdata(dev_addr'range) = dev_addr) then
-								out_req <= not out_rdy;
+							elsif tkdata(dev_addr'range) = dev_addr then
+								if tkdata(dev_endp'range) /= (dev_endp'range => '0') then
+									out_req <= not out_rdy;
+								end if;
 							end if;
     					end if;
     				when data0|data1 =>

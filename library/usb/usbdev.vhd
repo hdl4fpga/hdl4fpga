@@ -33,7 +33,54 @@ entity usbdev is
    	generic (
 		oversampling : natural := 0;
 		watermark    : natural := 0;
-		bit_stuffing : natural := 6);
+		bit_stuffing : natural := 6;
+		device_dscptr : std_logic_vector := (
+			reverse(x"12")    & -- Length
+			reverse(decriptortypes_ids(device)) & -- DescriptorType
+			reverse(x"0110")  & -- USB
+			reverse(x"00")    & -- DeviceClass
+			reverse(x"00")    & -- SubClass
+			reverse(x"00")    & -- DeviceProtocol
+			reverse(x"40")    & -- MaxPacketSize0
+			reverse(x"1234")  & -- idVendor
+			reverse(x"abcd")  & -- idProduct
+			reverse(x"0100")  & -- Device
+			reverse(x"00")    & -- Manufacturer
+			reverse(x"00")    & -- Product
+			reverse(x"00")    & -- SerialNumber
+			reverse(x"01"));    -- NumConfigurations
+		config_dscptr : std_logic_vector := (
+			reverse(x"09")    & -- Length
+			reverse(decriptortypes_ids(config)) & -- DescriptorType
+			reverse(x"0020")  & -- TotalLength
+			reverse(x"01")    & -- NumInterfaces
+			reverse(x"01")    & -- ConfigurationValue
+			reverse(x"00")    & -- Configuration
+			reverse(x"c0")    & -- Attribute
+			reverse(x"32"));    -- MaxPower
+		interface_dscptr : std_logic_vector := (
+			reverse(x"09")    & -- Length
+			reverse(decriptortypes_ids(interface)) & -- DescriptorType
+			reverse(x"00")    & -- InterfaceNumber
+			reverse(x"00")    & -- AlternateSetting
+			reverse(x"02")    & -- NumEndpoints
+			reverse(x"00")    & -- InterfaceClass
+			reverse(x"00")    & -- InterfaceSubClass
+			reverse(x"00")    & -- IntefaceProtocol
+			reverse(x"00"));    -- Interface
+		endpoint_dscptr : std_logic_vector := (
+			reverse(x"07")    & -- Length
+			reverse(decriptortypes_ids(endpoint)) & -- DescriptorType
+			reverse(x"01")    & -- EndpointAddress
+			reverse(x"02")    & -- Attibutes
+			reverse(x"0040")  & -- MaxPacketSize
+			reverse(x"00")    & -- Interval
+			reverse(x"07")    & -- Length
+			reverse(decriptortypes_ids(endpoint)) & -- DescriptorType
+			reverse(x"81")    & -- EndpointAddress
+			reverse(x"02")    & -- Attibutes
+			reverse(x"0040")  & -- MaxPacketSize
+			reverse(x"00")));    -- Interval
 	port (
 		tp   : out std_logic_vector(1 to 32);
 
@@ -201,53 +248,10 @@ begin
 
 	usbrqst_e : entity hdl4fpga.usbrqst_dev
 	generic map (
-		device_dscptr => (
-			reverse(x"12")    & -- Length
-			reverse(decriptortypes_ids(device)) & -- DescriptorType
-			reverse(x"0110")  & -- USB
-			reverse(x"00")    & -- DeviceClass
-			reverse(x"00")    & -- SubClass
-			reverse(x"00")    & -- DeviceProtocol
-			reverse(x"40")    & -- MaxPacketSize0
-			reverse(x"1234")  & -- idVendor
-			reverse(x"abcd")  & -- idProduct
-			reverse(x"0100")  & -- Device
-			reverse(x"00")    & -- Manufacturer
-			reverse(x"00")    & -- Product
-			reverse(x"00")    & -- SerialNumber
-			reverse(x"01")),    -- NumConfigurations
-		config_dscptr => (
-			reverse(x"09")    & -- Length
-			reverse(decriptortypes_ids(config)) & -- DescriptorType
-			reverse(x"0020")  & -- TotalLength
-			reverse(x"01")    & -- NumInterfaces
-			reverse(x"01")    & -- ConfigurationValue
-			reverse(x"00")    & -- Configuration
-			reverse(x"c0")    & -- Attribute
-			reverse(x"32")),    -- MaxPower
-		interface_dscptr => (
-			reverse(x"09")    & -- Length
-			reverse(decriptortypes_ids(interface)) & -- DescriptorType
-			reverse(x"00")    & -- InterfaceNumber
-			reverse(x"00")    & -- AlternateSetting
-			reverse(x"02")    & -- NumEndpoints
-			reverse(x"00")    & -- InterfaceClass
-			reverse(x"00")    & -- InterfaceSubClass
-			reverse(x"00")    & -- IntefaceProtocol
-			reverse(x"00")),    -- Interface
-		endpoint_dscptr => (
-			reverse(x"07")    & -- Length
-			reverse(decriptortypes_ids(endpoint)) & -- DescriptorType
-			reverse(x"01")    & -- EndpointAddress
-			reverse(x"02")    & -- Attibutes
-			reverse(x"0040")  & -- MaxPacketSize
-			reverse(x"00")    & -- Interval
-			reverse(x"07")    & -- Length
-			reverse(decriptortypes_ids(endpoint)) & -- DescriptorType
-			reverse(x"81")    & -- EndpointAddress
-			reverse(x"02")    & -- Attibutes
-			reverse(x"0040")  & -- MaxPacketSize
-			reverse(x"00")))    -- Interval
+		device_dscptr    => device_dscptr,
+		config_dscptr    => config_dscptr,  
+		interface_dscptr => interface_dscptr,
+		endpoint_dscptr  => endpoint_dscptr) 
 	port map (
 		clk      => clk,
 		cken     => cken,
