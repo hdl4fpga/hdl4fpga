@@ -37,7 +37,7 @@ entity usbpkt_rx is
 		rx_req : buffer std_logic;
 		rx_rdy : in  std_logic;
 
-		tkdata : out std_logic_vector(0 to 16-1);
+		tkdata : out std_logic_vector(0 to 11-1);
 		rxpidv : in  std_logic;
 		rxpid  : in  std_logic_vector( 4-1 downto 0);
 		rxdv   : in  std_logic;
@@ -107,7 +107,7 @@ begin
    					end case;
    				end if;
 			end if;
-			tkdata <= std_logic_vector(data);
+			tkdata <= std_logic_vector(data(tkdata'range));
 		end if;
 	end process;
 

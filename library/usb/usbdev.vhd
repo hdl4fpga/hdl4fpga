@@ -36,18 +36,24 @@ entity usbdev is
 		bit_stuffing : natural := 6);
 	port (
 		tp   : out std_logic_vector(1 to 32);
+
 		dp   : inout std_logic := 'Z';
 		dn   : inout std_logic := 'Z';
+
 		clk  : in  std_logic;
 		cken : buffer std_logic;
 
-		txen : in  std_logic := '0';
-		txbs : buffer std_logic;
+		dev_addr : buffer std_logic_vector(0 to 7-1);
+		dev_endp : buffer std_logic_vector(0 to 4-1);
+		dev_cfgd : buffer std_logic;
+
+		txen : in  std_logic := '-';
+		txbs : out std_logic;
 		txd  : in  std_logic := '-';
 
 		rxdv : out std_logic;
-		rxbs : buffer std_logic;
-		rxd  : buffer std_logic);
+		rxbs : out std_logic;
+		rxd  : out std_logic);
 end;
 
 architecture def of usbdev is
@@ -80,7 +86,7 @@ architecture def of usbdev is
 
 	signal setup_req : bit;
 	signal setup_rdy : bit;
-	signal tkdata    : std_logic_vector(0 to 16-1);
+	signal tkdata    : std_logic_vector(0 to 11-1);
 
 	signal tp_phy    : std_logic_vector(1 to 32);
 	signal tp_rqst   : std_logic_vector(1 to 32);
@@ -148,26 +154,39 @@ begin
 
 	usbdevflow_e : entity hdl4fpga.usbdevflow
 	port map (
-		tp       => tp_rqst,
-		clk     => clk,
-		cken    => cken,
+		tp        => tp_rqst,
 
-		rx_req  => rx_req,
-		rx_rdy  => rx_rdy,
-		rxpidv  => phy_rxpidv,
-		rxpid   => phy_rxpid,
-		rxdv    => phy_rxdv,
-		rxbs    => phy_rxbs,
-		rxd     => phy_rxd,
-		tkdata  => tkdata,
+		clk       => clk,
+		cken      => cken,
 
-		tx_req  => tx_req,
-		tx_rdy  => tx_rdy,
 
-		txpid   => pkt_txpid,
-		txen    => pkt_txen,
-		txbs    => pkt_txbs,
-		txd     => pkt_txd,
+		rx_req    => rx_req,
+		rx_rdy    => rx_rdy,
+		rxpidv    => phy_rxpidv,
+		rxpid     => phy_rxpid,
+		rxdv      => phy_rxdv,
+		rxbs      => phy_rxbs,
+		rxd       => phy_rxd,
+		tkdata    => tkdata,
+
+		tx_req    => tx_req,
+		tx_rdy    => tx_rdy,
+
+		txpid     => pkt_txpid,
+		txen      => pkt_txen,
+		txbs      => pkt_txbs,
+		txd       => pkt_txd,
+
+		dev_txen  => txen,
+		dev_txbs  => txbs,
+		dev_txd   => txd,
+  
+		dev_rxdv  => rxdv,
+		dev_rxbs  => rxbs,
+		dev_rxd   => rxd,
+		dev_addr  => dev_addr,
+		dev_endp  => dev_endp,
+		dev_cfgd  => dev_cfgd,
 
 		setup_req => setup_req,
 		setup_rdy => setup_rdy,
@@ -233,6 +252,8 @@ begin
 		clk      => clk,
 		cken     => cken,
 
+		dev_addr  => dev_addr,
+		dev_cfgd  => dev_cfgd,
 		setup_req => setup_req,
 		setup_rdy => setup_rdy,
 		rqst_rdy  => rqst_rdy,
@@ -245,7 +266,4 @@ begin
 		txbs      => rqst_txbs,
 		txd       => rqst_txd);
 
-
-	txbs <= phy_txbs;
-	rxbs <= phy_rxbs;
 end;

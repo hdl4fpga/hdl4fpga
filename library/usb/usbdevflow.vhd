@@ -42,7 +42,7 @@ entity usbdevflow is
 		rxdv      : in  std_logic;
 		rxbs      : in  std_logic;
 		rxd       : in  std_logic;
-		tkdata    : in  std_logic_vector(0 to 16-1);
+		tkdata    : in  std_logic_vector(0 to 11-1);
 
 		tx_req    : buffer std_logic;
 		tx_rdy    : in  std_logic;
@@ -54,11 +54,22 @@ entity usbdevflow is
 		setup_req : buffer bit;
 		setup_rdy : in  bit;
 
+		dev_txen  : in  std_logic;
+		dev_txbs  : out std_logic;
+		dev_txd   : in  std_logic;
+
+		dev_rxdv  : out std_logic;
+		dev_rxbs  : out std_logic;
+		dev_rxd   : out std_logic;
+		dev_addr  : in  std_logic_vector(0 to 7-1);
+		dev_endp  : out std_logic_vector(7 to 11-1);
+		dev_cfgd  : in  std_logic;
+
 	    rqst_req  : in  bit;
 	    rqst_rdy  : in  bit;
-		rqst_rxdv : out  std_logic;
+		rqst_rxdv : out std_logic;
 		rqst_rxbs : out std_logic;
-		rqst_rxd  : out  std_logic;
+		rqst_rxd  : out std_logic;
 		rqst_txen : in  std_logic;
 		rqst_txbs : out std_logic;
 		rqst_txd  : in  std_logic);
@@ -66,8 +77,6 @@ end;
 
 architecture def of usbdevflow is
 
-	signal addr    : std_logic_vector( 7-1 downto 0);
-	signal endp    : std_logic_vector( 4-1 downto 0);
 	signal requesttype : std_logic_vector( 8-1 downto 0);
 	signal value   : std_logic_vector(16-1 downto 0);
 	signal index   : std_logic_vector(16-1 downto 0);
@@ -84,6 +93,7 @@ architecture def of usbdevflow is
 
 begin
 
+	dev_endp <= tkdata(dev_endp'range);
 	hosttodev_p : process (cken, clk)
 		constant tbit : std_logic_vector(data0'range) := b"1000";
 	begin
@@ -93,16 +103,29 @@ begin
     				case rxpid is
     				when tk_setup =>
     					if (setup_req xor setup_rdy)='0' then
-    						ddata  <= data0;
-    						setup_req <= not setup_rdy;
+							if tkdata(dev_addr'range) = (dev_addr'range => '0') then
+								ddata  <= data0;
+								setup_req <= not setup_rdy;
+							elsif (tkdata(dev_addr'range) = dev_addr) then
+								ddata  <= data0;
+								setup_req <= not setup_rdy;
+							end if;
     					end if;
     				when tk_in =>
     					if (in_req xor in_rdy)='0' then
-    						in_req <= not in_rdy;
+							if tkdata(dev_addr'range) = (dev_addr'range => '0') then
+								in_req <= not in_rdy;
+							elsif (tkdata(dev_addr'range) = dev_addr) then
+								in_req <= not in_rdy;
+							end if;
     					end if;
     				when tk_out=>
     					if (out_req xor out_rdy)='0' then
-    						out_req <= not out_rdy;
+							if tkdata(dev_addr'range) = (dev_addr'range => '0') then
+								out_req <= not out_rdy;
+							elsif (tkdata(dev_addr'range) = dev_addr) then
+								out_req <= not out_rdy;
+							end if;
     					end if;
     				when data0|data1 =>
     					ddata  <= ddata xor tbit;
@@ -140,9 +163,9 @@ begin
 
 	fifo_p : process (clk)
 		variable mem  : std_logic_vector(0 to 1024*8-1);
-		variable pin  : natural range mem'left to mem'right;
-		variable pout : natural range mem'left to mem'right;
-		variable psvd : natural range mem'left to mem'right;
+		variable pin  : natural range mem'range;
+		variable pout : natural range mem'range;
+		variable psvd : natural range mem'range;
 		variable we   : std_logic;
 		variable din  : std_logic;
 	begin
@@ -166,17 +189,23 @@ begin
 				if (rqst_rdy xor rqst_req)='1' then
 					we   := rqst_txen;
 					din  := rqst_txd;
-				else
-					psvd := pout;
+				elsif dev_cfgd='0' then
 					we   := '0';
 					din  := '-';
+				elsif (out_rdy xor out_req)='1' then
+					we   := dev_txen;
+					din  := dev_txd;
+				else
+					we   := '0';
+					din  := '-';
+					psvd := pout;
 				end if;
 			end if;
 		end if;
 	end process;
 
 	rqst_txbs <= '0';
-	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd);
+	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd) when (rqst_rdy xor rqst_req)='1' else ('0', '1', '-');
 
 	tp(1) <= to_stdulogic(out_req);
 	tp(2) <= to_stdulogic(out_rdy);

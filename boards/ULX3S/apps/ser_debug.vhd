@@ -97,6 +97,9 @@ begin
 
 	usb_g : if io_link=io_usb generate 
 		signal cken : std_logic;
+		signal txen : std_logic;
+		signal txbs : std_logic;
+		signal txd  : std_logic;
 		signal rxdv : std_logic;
 		signal rxbs : std_logic;
 		signal rxd  : std_logic;
@@ -109,6 +112,22 @@ begin
 		usb_fpga_bd_dp <= 'Z';
 		usb_fpga_bd_dn <= 'Z';
 
+		process (videoio_clk)
+			constant msg : std_logic_vector := reverse(to_ascii("Hello there"));
+			variable ptr : natural range msg'range := msg'right;
+		begin
+			if rising_edge(videoio_clk) then
+				if cken='1' then
+					if txbs='0' then
+						txd <= msg(ptr);
+						if ptr /= 0 then
+							ptr := ptr - 1;
+						end if;
+					end if;
+				end if;
+			end if;
+		end process;
+
 		usbphy_e : entity hdl4fpga.usbdev
 		generic map (
 			oversampling => usb_oversampling)
@@ -118,6 +137,9 @@ begin
 			dn   => usb_fpga_dn,
 			clk  => videoio_clk,
 			cken => cken,
+			txen => txen, 
+			txbs => txbs,
+			txd  => txd,
 			rxdv => rxdv, 
 			rxbs => rxbs,
 			rxd  => rxd);
