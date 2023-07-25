@@ -164,7 +164,7 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (setaddress_rdy xor setaddress_req)='1' then
-					dev_addr <= value(dev_addr'range);
+					dev_addr <= reverse(value(dev_addr'reverse_range));
 					setaddress_rdy <= setaddress_req;
 				end if;
 			end if;

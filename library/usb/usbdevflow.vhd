@@ -116,9 +116,7 @@ begin
 							if tkdata(dev_addr'range) = (dev_addr'range => '0') then
 								in_req <= not in_rdy;
 							elsif tkdata(dev_addr'range) = dev_addr then
-								if tkdata(dev_endp'range) /= (dev_endp'range => '0') then
-									in_req <= not in_rdy;
-								end if;
+								in_req <= not in_rdy;
 							end if;
     					end if;
     				when tk_out=>
@@ -126,13 +124,11 @@ begin
 							if tkdata(dev_addr'range) = (dev_addr'range => '0') then
 								out_req <= not out_rdy;
 							elsif tkdata(dev_addr'range) = dev_addr then
-								if tkdata(dev_endp'range) /= (dev_endp'range => '0') then
-									out_req <= not out_rdy;
-								end if;
+								out_req <= not out_rdy;
 							end if;
     					end if;
     				when data0|data1 =>
-    					ddata  <= ddata xor tbit;
+    					ddata   <= ddata xor tbit;
     					ack_req <= not ack_rdy; 
     					out_rdy <= out_req;
     				when hs_ack =>
@@ -209,7 +205,7 @@ begin
 	end process;
 
 	rqst_txbs <= '0';
-	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd) when (rqst_rdy xor rqst_req)='1' else ('0', '1', '-');
+	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd); -- when (rqst_rdy xor rqst_req)='1' else ('0', '1', '-');
 
 	tp(1) <= to_stdulogic(out_req);
 	tp(2) <= to_stdulogic(out_rdy);

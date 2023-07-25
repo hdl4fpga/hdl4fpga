@@ -31,9 +31,9 @@ use hdl4fpga.usbpkg.all;
 
 entity usbdev is
    	generic (
-		oversampling : natural := 0;
-		watermark    : natural := 0;
-		bit_stuffing : natural := 6;
+		oversampling  : natural := 0;
+		watermark     : natural := 0;
+		bit_stuffing  : natural := 6;
 		device_dscptr : std_logic_vector := (
 			reverse(x"12")    & -- Length
 			reverse(decriptortypes_ids(device)) & -- DescriptorType
@@ -183,7 +183,7 @@ begin
 
 	usbpkttx_e : entity hdl4fpga.usbpkt_tx
 	port map (
-		tp => tp_pkt,
+		tp        => tp_pkt,
 		clk       => clk,
 		cken      => cken,
 	

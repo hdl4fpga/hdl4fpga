@@ -103,6 +103,7 @@ begin
 		signal rxdv : std_logic;
 		signal rxbs : std_logic;
 		signal rxd  : std_logic;
+		signal cfgd : std_logic;
 		signal tp   : std_logic_vector(1 to 32);
 	begin
 		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
@@ -136,6 +137,7 @@ begin
 			dp   => usb_fpga_dp,
 			dn   => usb_fpga_dn,
 			clk  => videoio_clk,
+			dev_cfgd => cfgd,
 			cken => cken,
 			txen => txen, 
 			txbs => txbs,
