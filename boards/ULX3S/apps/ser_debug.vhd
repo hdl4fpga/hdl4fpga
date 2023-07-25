@@ -114,23 +114,23 @@ begin
 		usb_fpga_bd_dn <= 'Z';
 
 		process (videoio_clk)
-			constant msg : std_logic_vector := reverse(to_ascii("Hello there"));
-			variable ptr : natural range msg'range := msg'high;
+			constant msg : std_logic_vector := reverse(reverse(to_ascii("HOLA"),8));
+			variable ptr : natural range 0 to msg'length := msg'length;
 		begin
 			if rising_edge(videoio_clk) then
 				if cken='1' then
 					if right='1' then
-						ptr := msg'high;
+						ptr := msg'length;
 						txen <= '0';
 					elsif cfgd='1' then
 						if txbs='0' then
-							txd  <= msg(ptr);
 							if ptr /= 0 then
 								txen <= '1';
 								ptr := ptr - 1;
 							else
 								txen <= '0';
 							end if;
+							txd  <= msg(ptr);
 						end if;
 					else
 						txen <= '0';
