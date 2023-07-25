@@ -185,7 +185,7 @@ begin
 			config_dscptr'length,
 			interface_dscptr'length,
 			endpoint_dscptr'length);
-		variable descriptor_length : unsigned(0 to unsigned_num_bits(max(descriptor_lengths)-1));
+		variable descriptor_length : unsigned(0 to unsigned_num_bits(summation(descriptor_lengths)-1));
 		variable descriptor_addr   : natural range 0 to summation(descriptor_lengths)-1;
 		alias txdis is descriptor_length(0);
 

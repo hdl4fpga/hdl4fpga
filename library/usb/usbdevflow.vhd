@@ -211,7 +211,7 @@ begin
 	tp(2) <= to_stdulogic(out_rdy);
 	tp(3) <= to_stdulogic(in_req);
 	tp(4) <= to_stdulogic(in_rdy);
-	tp(5) <= txen or (rxdv and (to_stdulogic(out_rdy xor out_req) or to_stdulogic(setup_rdy xor setup_req)));
+	tp(5) <= txen or (rxdv and (setif(rxpid=x"d") or to_stdulogic(out_rdy xor out_req) or to_stdulogic(setup_rdy xor setup_req)));
 	tp(6) <= txbs when txen='1' else rxbs;
 	tp(7) <= txd  when txen='1' else rxd;
 end;

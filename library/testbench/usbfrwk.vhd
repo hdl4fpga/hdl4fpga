@@ -75,7 +75,8 @@ begin
 
 			constant data : std_logic_vector := 
 				reverse(x"2d0010",8)(0 to 19-1) &
-				reverse(x"c3_0005_1500_0000_0000_e831",8)(0 to 72-1) &
+				-- reverse(x"c3_0005_1500_0000_0000_e831",8)(0 to 72-1) &
+				reverse(x"C3_8006_0001_0000_4000_eb94",8)(0 to 72-1) &
 				reverse(x"690010",8)(0 to 19-1) &
 				reverse(x"d2",8) &
 				reverse(x"2d1530",8)(0 to 19-1) &
@@ -96,10 +97,10 @@ begin
 				19, 72);
 
 			constant delays : time_vector := (
-				1 us, 1 us, 3 us, 4 us,
-				1 us, 1 us, 3 us, 11 us,
-				1 us, 1 us, 5 us, 20 us,
-				5 us); --, 0 ns);
+				1 us, 1 us, 3 us); --, 4 us,
+				-- 1 us, 1 us, 3 us, 11 us,
+				-- 1 us, 1 us, 5 us, 20 us,
+				-- 5 us); --, 0 ns);
 
 			variable i     : natural;
 			variable j     : natural;
