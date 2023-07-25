@@ -161,7 +161,6 @@ begin
 		end if;
 	end process;
 
-	dev_txbs <= not dev_cfgd;
 	fifo_p : process (clk)
 		variable mem  : std_logic_vector(0 to 1024*8-1);
 		variable pin  : natural range mem'range;
@@ -177,7 +176,7 @@ begin
 						pout := pout + 1;
 					end if;
 				end if;
-				if pout= pin then
+				if pout=pin then
 					txen <='0';
 				else
 					txen <='1';
@@ -193,17 +192,18 @@ begin
 				elsif dev_cfgd='0' then
 					we   := '0';
 					din  := '-';
-				else --if (out_rdy xor out_req)='1' then
-					we   := dev_txen;
-					din  := dev_txd;
-				-- else
-					-- we   := '0';
-					-- din  := '-';
+				-- elsif (in_rdy xor in_req)='1' then
+					-- we   := dev_txen;
+					-- din  := dev_txd;
+				else
+					we   := '0';
+					din  := '-';
 					psvd := pout;
 				end if;
 			end if;
 		end if;
 	end process;
+	dev_txbs <= not dev_cfgd; -- or to_stdulogic(in_rdy xnor in_req);
 
 	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd); -- when (rqst_rdy xor rqst_req)='1' else ('0', '1', '-');
 
@@ -211,7 +211,7 @@ begin
 	tp(2) <= to_stdulogic(out_rdy);
 	tp(3) <= to_stdulogic(in_req);
 	tp(4) <= to_stdulogic(in_rdy);
-	tp(5) <= txen or (rxdv and (setif(rxpid=x"d" or rxpid=x"9") or (dev_cfgd and dev_txen) or to_stdulogic(out_rdy xor out_req) or to_stdulogic(setup_rdy xor setup_req)));
+	tp(5) <= txen or (rxdv and (setif(rxpid=x"d" or rxpid=x"9") or (dev_cfgd and dev_txen) or to_stdulogic(in_rdy xor in_req) or to_stdulogic(setup_rdy xor setup_req)));
 	tp(6) <= txbs when txen='1' else rxbs;
 	tp(7) <= txd  when txen='1' else rxd;
 end;

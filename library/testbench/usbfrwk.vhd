@@ -196,7 +196,7 @@ begin
 			not clk after 1 sec/((2.0*usb_freq)*(12.00e6/usb_freq)) when others; --*0.975;
 
 	 	tx_p : process (clk)
-			constant data : std_logic_vector := reverse(x"a5badf",8)(0 to 19-1);
+			constant data : std_logic_vector := reverse(x"01234567",8);
 			constant msb  : std_logic_vector(data'range) := reverse(data, 8);
 			variable cntr : natural := 0;
 		begin
