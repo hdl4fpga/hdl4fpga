@@ -115,15 +115,25 @@ begin
 
 		process (videoio_clk)
 			constant msg : std_logic_vector := reverse(to_ascii("Hello there"));
-			variable ptr : natural range msg'range := msg'right;
+			variable ptr : natural range msg'range := msg'high;
 		begin
 			if rising_edge(videoio_clk) then
 				if cken='1' then
-					if txbs='0' then
-						txd <= msg(ptr);
-						if ptr /= 0 then
-							ptr := ptr - 1;
+					if right='1' then
+						ptr := msg'high;
+						txen <= '0';
+					elsif cfgd='1' then
+						if txbs='0' then
+							txd  <= msg(ptr);
+							if ptr /= 0 then
+								txen <= '1';
+								ptr := ptr - 1;
+							else
+								txen <= '0';
+							end if;
 						end if;
+					else
+						txen <= '0';
 					end if;
 				end if;
 			end if;
@@ -147,11 +157,16 @@ begin
 			rxd  => rxd);
 			
 		ser_clk     <= videoio_clk;
-		ser_frm     <= tp(1) and not right;
+		ser_frm     <= tp(1); 
 		ser_irdy    <= not tp(2) and cken;
 		ser_data(0) <= tp(3);
 
-		led <= multiplex(tp(4 to 19), left); 
+		-- led <= multiplex(tp(4 to 19), left); 
+		led(7) <= cfgd;
+		led(4) <= right;
+		led(3) <= txbs;
+		led(0) <= txen;
+
 			-- (usb_fpga_pu_dp, usb_fpga_pu_dn, usb_fpga_dp, usb_fpga_dn);
 	end generate;
 

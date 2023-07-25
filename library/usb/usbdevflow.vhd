@@ -71,7 +71,7 @@ entity usbdevflow is
 		rqst_rxbs : out std_logic;
 		rqst_rxd  : out std_logic;
 		rqst_txen : in  std_logic;
-		rqst_txbs : out std_logic;
+		rqst_txbs : out std_logic := '0';
 		rqst_txd  : in  std_logic);
 end;
 
@@ -161,6 +161,7 @@ begin
 		end if;
 	end process;
 
+	dev_txbs <= not dev_cfgd;
 	fifo_p : process (clk)
 		variable mem  : std_logic_vector(0 to 1024*8-1);
 		variable pin  : natural range mem'range;
@@ -192,26 +193,25 @@ begin
 				elsif dev_cfgd='0' then
 					we   := '0';
 					din  := '-';
-				elsif (out_rdy xor out_req)='1' then
+				else --if (out_rdy xor out_req)='1' then
 					we   := dev_txen;
 					din  := dev_txd;
-				else
-					we   := '0';
-					din  := '-';
+				-- else
+					-- we   := '0';
+					-- din  := '-';
 					psvd := pout;
 				end if;
 			end if;
 		end if;
 	end process;
 
-	rqst_txbs <= '0';
 	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd); -- when (rqst_rdy xor rqst_req)='1' else ('0', '1', '-');
 
 	tp(1) <= to_stdulogic(out_req);
 	tp(2) <= to_stdulogic(out_rdy);
 	tp(3) <= to_stdulogic(in_req);
 	tp(4) <= to_stdulogic(in_rdy);
-	tp(5) <= txen or (rxdv and (setif(rxpid=x"d") or to_stdulogic(out_rdy xor out_req) or to_stdulogic(setup_rdy xor setup_req)));
+	tp(5) <= txen or (rxdv and (setif(rxpid=x"d" or rxpid=x"9") or (dev_cfgd and dev_txen) or to_stdulogic(out_rdy xor out_req) or to_stdulogic(setup_rdy xor setup_req)));
 	tp(6) <= txbs when txen='1' else rxbs;
 	tp(7) <= txd  when txen='1' else rxd;
 end;

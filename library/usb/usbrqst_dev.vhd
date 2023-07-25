@@ -204,7 +204,12 @@ begin
 							end if;
 							descriptor_addr := descriptor_addr + descriptor_lengths(i);
 						end loop;
-						descriptor_length := shift_left(resize(length, descriptor_length'length),3)-1;
+						descriptor_length := to_unsigned(summation(descriptor_lengths), descriptor_length'length);
+						descriptor_length := descriptor_length - descriptor_addr;
+						if descriptor_length > shift_left(resize(length, descriptor_length'length),3) then
+							descriptor_length := shift_left(resize(length, descriptor_length'length),3);
+						end if;
+						descriptor_length := descriptor_length-1;
 					when s_data =>
 						if descriptor_length(0)='0' then
 							if txbs='0' then
