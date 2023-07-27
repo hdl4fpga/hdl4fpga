@@ -222,7 +222,6 @@ begin
 		end if;
 	end process;
 
-	dev_txbs  <= to_stdulogic(ctlr_rdy xor ctlr_req);
 	rqst_txbs <= not to_stdulogic(ctlr_rdy xor ctlr_req);
 
 	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd);

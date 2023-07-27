@@ -28,7 +28,7 @@
 
 #define VENDOR_ID 0x1234
 #define PRODUCT_ID 0xABCD
-#define ENDPOINT_ADDRESS 0x01
+#define ENDPOINT_ADDRESS 0x81
 #define TRANSFER_SIZE 64
 
 int main() {
@@ -67,8 +67,9 @@ int main() {
 		if (result == 0) {
 			printf("Bulk read transfer completed. Bytes transferred: %d\n", transferred);
 			for (int i = 0; i < transferred; i++) {
-				printf("0x%x\n", buffer[i]);
+				putchar(buffer[i]);
 			}
+			putchar('\n');
 		} else {
 			printf("Error in bulk transfer. Error code: %d\n", result);
 		}
