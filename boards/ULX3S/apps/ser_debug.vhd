@@ -168,44 +168,42 @@ begin
 				ser_data(0) <= data(0);
 				ser_irdy    <= cken and ena(0) and not bs(0);
 				if cken='1' then
-					if ena(0)='1' then
-						ena(0)  := tp(1);
-						ena     := ena rol 1;
-						bs(0)   := tp(2);
-						bs      := bs rol 1;
-						data(0) := tp(3);
-						data    := data rol 1;
-					end if;
-					if tp(1)='1' then
-						if cntr/=0 then
-							if tp(2)='0' then
-								data(0) := tp(3);
-								data := data rol 1;
+					if tp(1)='1' or ena(0)='1' then
+						if tp(2)='0' then
+							data(0) := tp(3);
+							data    := data rol 1;
+							bs(0)   := tp(2);
+							bs      := bs rol 1;
+							if cntr/=0 then
 								cntr := cntr - 1;
+								if cntr=0 then
+									tken := data;
+								end if;
 							end if;
-							tken := data;
-							ena := (others => '0');
-							bs  := (others => '0');
+						elsif cntr=0 then
+							bs(0) := tp(2);
+							bs    := bs rol 1;
 						end if;
-						if cntr=0 then
-							if reverse(tken)=x"a5" then
-								ena := (others => '0');
-								bs  := (others => '0');
-							-- elsif reverse(tken)=x"80" then
-								-- ena := (others => '0');
-								-- bs  := (others => '0');
-								-- cntr := 8;
-							elsif (tken(0 to 4-1) xor tken(4 to 8-1))/=x"f" then
-								ena := (others => '0');
-								bs  := (others => '0');
-							else
-								ena := (others => '1');
-								bs  := (others => '0');
-							end if;
-						end if;
-					elsif ena(0)='0' then
+					else
 						cntr := 8;
 					end if;
+					ena(0) := tp(1);
+					ena    := ena rol 1;
+
+					if cntr=0 then
+						if reverse(tken)=x"a5" then
+							ena := (others => '0');
+							bs  := (others => '1');
+						elsif reverse(tken)=x"80" then
+							ena := (others => '0');
+							bs  := (others => '1');
+							cntr := 8;
+						elsif (tken(0 to 4-1) xor tken(4 to 8-1))/=x"f" then
+							ena := (others => '0');
+							bs  := (others => '1');
+						end if;
+					end if;
+
 				end if;
 			end if;
 		end process;
