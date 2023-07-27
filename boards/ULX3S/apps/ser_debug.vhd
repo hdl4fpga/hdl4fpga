@@ -116,10 +116,20 @@ begin
 		process (videoio_clk)
 			constant msg : std_logic_vector := reverse(reverse(to_ascii("HOLA"),8));
 			variable ptr : natural range 0 to msg'length := msg'length;
+			variable q : std_logic;
+			variable q0 : std_logic;
 		begin
 			if rising_edge(videoio_clk) then
 				if cken='1' then
-					if right='1' then
+					if q='1' then
+						if right='1' then
+							q := '0';
+						end if;
+					elsif left='1' then
+						q := '1';
+					end if;
+
+					if q0/= q then
 						ptr := msg'length;
 						txen <= '0';
 					elsif cfgd='1' then
@@ -135,6 +145,7 @@ begin
 					else
 						txen <= '0';
 					end if;
+					q0 := q;
 				end if;
 			end if;
 		end process;
