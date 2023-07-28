@@ -34,7 +34,8 @@ entity usbrqst_dev is
 		device_dscptr   : std_logic_vector;
 		config_dscptr   : std_logic_vector;
 		interface_dscptr: std_logic_vector;
-		endpoint_dscptr : std_logic_vector);
+		endpoint_dscptr : std_logic_vector;
+		string_dscptr   : std_logic_vector);
 	port (
 		tp        : out std_logic_vector(1 to 32) := (others => '0');
 		clk       : in  std_logic;
@@ -178,37 +179,62 @@ begin
 			device_dscptr     &
 			config_dscptr     &
 			interface_dscptr  &
-			endpoint_dscptr);
+			endpoint_dscptr   &
+			string_dscptr);
 
 		constant descriptor_lengths : natural_vector := (
 			device_dscptr'length,
 			config_dscptr'length,
 			interface_dscptr'length,
-			endpoint_dscptr'length);
-		variable descriptor_length : unsigned(0 to unsigned_num_bits(summation(descriptor_lengths)-1));
+			endpoint_dscptr'length,
+			string_dscptr'length);
+		variable descriptor_length : unsigned(0 to unsigned_num_bits(max(summation(descriptor_lengths(0 to 4-1)), string_dscptr'length))-1);
 		variable descriptor_addr   : natural range 0 to summation(descriptor_lengths)-1;
 		alias txdis is descriptor_length(0);
 
-		alias descriptor is value(16-1 downto 8);
+		alias descriptor : std_logic_vector(8-1 downto 0) is value(16-1 downto 8);
+		alias index      : std_logic_vector(8-1 downto 0) is value( 8-1 downto 0);
+		constant langid_length : natural := to_integer(unsigned(reverse(string_dscptr(0 to 8-1))))*8;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (getdescriptor_rdy xor getdescriptor_req)='1' then
 					case state is
 					when s_idle => 
-						descriptor_addr := 0;
-						for i in descriptor_lengths'range loop
-							if (i+1)=unsigned(descriptor) then
-								state := s_data;
-								exit;
-							end if;
-							descriptor_addr := descriptor_addr + descriptor_lengths(i);
-						end loop;
-						descriptor_length := to_unsigned(summation(descriptor_lengths), descriptor_length'length);
-						descriptor_length := descriptor_length - descriptor_addr;
-						if descriptor_length > shift_left(resize(length, descriptor_length'length),3) then
-							descriptor_length := shift_left(resize(length, descriptor_length'length),3);
-						end if;
+						case descriptor(3-1 downto 0) is
+						when b"011" => -- string descriptor
+							case index(2-1 downto 0) is
+							when b"00" =>
+								descriptor_addr   := summation(descriptor_lengths(0 to 4-1));
+								descriptor_length := to_unsigned(langid_length, descriptor_length'length);
+							when b"01" =>
+								descriptor_addr   := summation(descriptor_lengths(0 to 4-1))+langid_length;
+								descriptor_length := to_unsigned(string_dscptr'length-langid_length, descriptor_length'length);
+							when others =>
+								descriptor_addr   := summation(descriptor_lengths(0 to 4-1));
+								descriptor_length := to_unsigned(0, descriptor_length'length);
+							end case;
+							state := s_data;
+						when others =>
+    						descriptor_addr := 0;
+    						for i in descriptor_lengths'left to descriptor_lengths'right-1 loop
+    							if i < 2 then
+    								if (i+1)=unsigned(descriptor) then
+    									state := s_data;
+    									exit;
+    								end if;
+    							elsif (i+2)=unsigned(descriptor) then
+    								state := s_data;
+    								exit;
+    							end if;
+								descriptor_addr := descriptor_addr + descriptor_lengths(i);
+    						end loop;
+    						descriptor_length := to_unsigned(summation(descriptor_lengths(0 to 4-1)), descriptor_length'length);
+    						descriptor_length := descriptor_length - descriptor_addr;
+						end case;
+   						if descriptor_length > shift_left(resize(length, descriptor_length'length),3) then
+   							descriptor_length := shift_left(resize(length, descriptor_length'length),3);
+   						end if;
 						descriptor_length := descriptor_length-1;
 					when s_data =>
 						if descriptor_length(0)='0' then

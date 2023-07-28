@@ -38,7 +38,6 @@ package base is
 	subtype byte is std_logic_vector(8-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
-	subtype ascii is std_logic_vector(8-1 downto 0);
 
 	subtype integer64 is time;
 	type integer64_vector is array (natural range <>) of integer64;
@@ -152,6 +151,10 @@ package base is
 		return unsigned;
 
 	function to_ascii(
+		constant arg : string)
+		return std_logic_vector;
+
+	function to_utf16(
 		constant arg : string)
 		return std_logic_vector;
 
@@ -981,11 +984,25 @@ package body base is
 	function to_ascii(
 		constant arg : string)
 		return std_logic_vector is
-		variable retval : unsigned(ascii'length*arg'length-1 downto 0) := (others => '0');
+		subtype ascii is std_logic_vector(0 to 8-1);
+		variable retval : unsigned(0 to ascii'length*arg'length-1) := (others => '0');
 	begin
 		for i in arg'range loop
-			retval := retval sll ascii'length;
 			retval(ascii'range) := to_unsigned(character'pos(arg(i)), ascii'length);
+			retval := retval rol ascii'length;
+		end loop;
+		return std_logic_vector(retval);
+	end;
+
+	function to_utf16(
+		constant arg : string)
+		return std_logic_vector is
+		subtype utf16 is std_logic_vector(0 to 16-1);
+		variable retval : unsigned(0 to utf16'length*arg'length-1) := (others => '0');
+	begin
+		for i in arg'range loop
+			retval(utf16'range) := to_unsigned(character'pos(arg(i)), utf16'length);
+			retval := retval rol utf16'length;
 		end loop;
 		return std_logic_vector(retval);
 	end;

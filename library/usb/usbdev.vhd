@@ -35,52 +35,58 @@ entity usbdev is
 		watermark     : natural := 0;
 		bit_stuffing  : natural := 6;
 		device_dscptr : std_logic_vector := (
-			reverse(x"12")    & -- Length
-			reverse(decriptortypes_ids(device)) & -- DescriptorType
-			reverse(x"0110")  & -- USB
-			reverse(x"00")    & -- DeviceClass
-			reverse(x"00")    & -- SubClass
-			reverse(x"00")    & -- DeviceProtocol
-			reverse(x"40")    & -- MaxPacketSize0
+			reverse(x"12")    & -- bLength
+			reverse(decriptortypes_ids(device)) & -- bDescriptorType
+			reverse(x"0110")  & -- bcdUSB
+			reverse(x"00")    & -- bDeviceClass
+			reverse(x"00")    & -- bDeviceSubClass
+			reverse(x"00")    & -- bDeviceProtocol
+			reverse(x"40")    & -- bMaxPacketSize0
 			reverse(x"1234")  & -- idVendor
 			reverse(x"abcd")  & -- idProduct
-			reverse(x"0100")  & -- Device
-			reverse(x"00")    & -- Manufacturer
-			reverse(x"00")    & -- Product
-			reverse(x"00")    & -- SerialNumber
-			reverse(x"01"));    -- NumConfigurations
+			reverse(x"0100")  & -- bcdDevice
+			reverse(x"01")    & -- iManufacturer
+			reverse(x"00")    & -- iProduct
+			reverse(x"00")    & -- iSerialNumber
+			reverse(x"01"));    -- bNumConfigurations
 		config_dscptr : std_logic_vector := (
-			reverse(x"09")    & -- Length
-			reverse(decriptortypes_ids(config)) & -- DescriptorType
-			reverse(x"0020")  & -- TotalLength
-			reverse(x"01")    & -- NumInterfaces
-			reverse(x"01")    & -- ConfigurationValue
-			reverse(x"00")    & -- Configuration
-			reverse(x"c0")    & -- Attribute
+			reverse(x"09")    & -- bLength
+			reverse(decriptortypes_ids(config)) & -- bDescriptorType
+			reverse(x"0020")  & -- wTotalLength
+			reverse(x"01")    & -- bNumInterfaces
+			reverse(x"01")    & -- bConfigurationValue
+			reverse(x"00")    & -- iConfiguration
+			reverse(x"c0")    & -- bmAttribute
 			reverse(x"32"));    -- MaxPower
+		string_dscptr : std_logic_vector := (
+			reverse(x"02")    & 
+			reverse(decriptortypes_ids(hdl4fpga.usbpkg.string)) & -- bDescriptorType
+			reverse(x"12")    & 
+			reverse(decriptortypes_ids(hdl4fpga.usbpkg.string)) & -- bDescriptorType
+			reverse(to_utf16("HDL4FPGA"),16));
 		interface_dscptr : std_logic_vector := (
-			reverse(x"09")    & -- Length
-			reverse(decriptortypes_ids(interface)) & -- DescriptorType
-			reverse(x"00")    & -- InterfaceNumber
-			reverse(x"00")    & -- AlternateSetting
-			reverse(x"02")    & -- NumEndpoints
-			reverse(x"00")    & -- InterfaceClass
-			reverse(x"00")    & -- InterfaceSubClass
-			reverse(x"00")    & -- IntefaceProtocol
-			reverse(x"00"));    -- Interface
+			reverse(x"09")    & -- bLength
+			reverse(decriptortypes_ids(interface)) & -- bDescriptorType
+			reverse(x"00")    & -- bInterfaceNumber
+			reverse(x"00")    & -- bAlternateSetting
+			reverse(x"02")    & -- bNumEndpoints
+			reverse(x"00")    & -- bInterfaceClass
+			reverse(x"00")    & -- bInterfaceSubClass
+			reverse(x"00")    & -- bIntefaceProtocol
+			reverse(x"00"));    -- iInterface
 		endpoint_dscptr : std_logic_vector := (
-			reverse(x"07")    & -- Length
-			reverse(decriptortypes_ids(endpoint)) & -- DescriptorType
-			reverse(x"01")    & -- EndpointAddress
-			reverse(x"02")    & -- Attibutes
-			reverse(x"0040")  & -- MaxPacketSize
-			reverse(x"00")    & -- Interval
-			reverse(x"07")    & -- Length
-			reverse(decriptortypes_ids(endpoint)) & -- DescriptorType
-			reverse(x"81")    & -- EndpointAddress
-			reverse(x"02")    & -- Attibutes
-			reverse(x"0040")  & -- MaxPacketSize
-			reverse(x"00")));    -- Interval
+			reverse(x"07")    & -- bLength
+			reverse(decriptortypes_ids(endpoint)) & -- bDescriptorType
+			reverse(x"01")    & -- bEndpointAddress
+			reverse(x"02")    & -- bmAttibutes
+			reverse(x"0040")  & -- wMaxPacketSize
+			reverse(x"00")    & -- bInterval
+			reverse(x"07")    & -- bLength
+			reverse(decriptortypes_ids(endpoint)) & -- bDescriptorType
+			reverse(x"81")    & -- bEndpointAddress
+			reverse(x"02")    & -- bmAttibutes
+			reverse(x"0040")  & -- wMaxPacketSize
+			reverse(x"00")));   -- Interval
 	port (
 		tp   : out std_logic_vector(1 to 32);
 
@@ -247,7 +253,8 @@ begin
 		device_dscptr    => device_dscptr,
 		config_dscptr    => config_dscptr,  
 		interface_dscptr => interface_dscptr,
-		endpoint_dscptr  => endpoint_dscptr) 
+		endpoint_dscptr  => endpoint_dscptr,
+		string_dscptr    => string_dscptr)
 	port map (
 		clk      => clk,
 		cken     => cken,

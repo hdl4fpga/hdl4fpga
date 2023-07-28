@@ -66,6 +66,7 @@ end;
 
 architecture def of scopeio_textbox is
 
+	subtype ascii is std_logic_vector(8-1 downto 0);
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
 	constant division_bits : natural := unsigned_num_bits(grid_divisionsize(layout)-1);
 	constant cgaadapter_latency : natural := 4;
