@@ -107,11 +107,8 @@ begin
     				case rxpid is
     				when tk_setup =>
     					if (setup_req xor setup_rdy)='0' then
-							if tkdata(dev_addr'range) = (dev_addr'range => '0') then
-								ddata  <= data0;
-								setup_req <= not setup_rdy;
-								ctlr_req  <= not ctlr_rdy;
-							elsif tkdata(dev_addr'range) = dev_addr then
+							if tkdata(dev_addr'range) = (dev_addr'range => '0') or
+							   tkdata(dev_addr'range) = dev_addr then
 								ddata  <= data0;
 								setup_req <= not setup_rdy;
 								ctlr_req  <= not ctlr_rdy;
@@ -119,24 +116,25 @@ begin
     					end if;
     				when tk_in =>
     					if (in_req xor in_rdy)='0' then
-							if tkdata(dev_addr'range) = (dev_addr'range => '0') then
-								in_req <= not in_rdy;
-							elsif tkdata(dev_addr'range) = dev_addr then
+							if tkdata(dev_addr'range) = (dev_addr'range => '0') or
+							   tkdata(dev_addr'range) = dev_addr then
 								in_req <= not in_rdy;
 							end if;
     					end if;
     				when tk_out=>
     					if (out_req xor out_rdy)='0' then
-							if tkdata(dev_addr'range) = (dev_addr'range => '0') then
-								out_req <= not out_rdy;
-							elsif tkdata(dev_addr'range) = dev_addr then
+							if tkdata(dev_addr'range) = (dev_addr'range => '0') or
+							   tkdata(dev_addr'range) = dev_addr then
 								out_req <= not out_rdy;
 							end if;
     					end if;
     				when data0|data1 =>
-    					ddata   <= ddata xor tbit;
-    					acktx_req <= not acktx_rdy; 
-    					out_rdy <= out_req;
+						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
+						   tkdata(dev_addr'range) = dev_addr then
+							ddata   <= ddata xor tbit;
+							acktx_req <= not acktx_rdy; 
+							out_rdy <= out_req;
+						end if;
     				when hs_ack =>
 						if (ackrx_req xor ackrx_rdy)='0' then
 							ackrx_req <= not ackrx_rdy;
@@ -189,7 +187,11 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if pout /= pin then
+				if (setup_rdy xor setup_req)='1' then
+					pout := pin;
+					prty := pout;
+					ackrx_rdy <= ackrx_req;
+				elsif pout /= pin then
 					if txbs='0' then
 						pout := pout + 1;
 					end if;
@@ -212,11 +214,11 @@ begin
 				end if;
 
 				if (ctlr_rdy xor ctlr_req)='1' then
-					we  := rqst_txen;
-					din := rqst_txd;
+					we   := rqst_txen;
+					din  := rqst_txd;
 				else
-					we  := dev_txen;
-					din := dev_txd;
+					we   := dev_txen;
+					din  := dev_txd;
 				end if;
 			end if;
 		end if;
