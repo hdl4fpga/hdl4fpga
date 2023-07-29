@@ -73,7 +73,7 @@ architecture def of ser_display is
 	signal cga_code          : std_logic_vector(font_code'range);
 	signal cga_we            : std_logic;
 	signal cga_base          : std_logic_vector(unsigned_num_bits(display_width*display_height-1)-1 downto 0);
-	signal cga_addr          : std_logic_vector(cga_base'range);
+	signal cga_addr          : std_logic_vector(cga_base'left downto cga_base'right+unsigned_num_bits(des_data'length/digit'length)-1);
 
 	signal des_irdy          : std_logic;
 
@@ -108,7 +108,7 @@ begin
 
 	process(phy_clk)
 		variable code  : std_logic_vector(cga_codes'length-1 downto 0);
-		variable addr  : unsigned(cga_addr'range) := ('0', '1', others => '0');
+		variable addr  : unsigned(cga_addr'range) := (others => '0');
 		variable we    : std_logic;
 		variable data  : unsigned(des_data'reverse_range);
 	begin

@@ -42,7 +42,7 @@ entity cga_adapter is
 	port (
 		cga_clk        : in  std_logic;
 		cga_we         : in  std_logic := '1';
-		cga_addr       : in  std_logic_vector(unsigned_num_bits(display_width*display_height/display_scale**2-1)-1 downto 0) := (others => '0');
+		cga_addr       : in  std_logic_vector;
 		cga_base       : in  std_logic_vector(unsigned_num_bits(display_width*display_height/display_scale**2-1)-1 downto 0) := (others => '0');
 		cga_data       : in  std_logic_vector;
 

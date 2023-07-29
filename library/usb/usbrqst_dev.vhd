@@ -142,6 +142,9 @@ begin
 								state := s_rqst;
 								exit;
 							end if;
+							if i=request_ids'right then
+								rqst_rdy <= rqst_req;
+							end if;
 							assert i/=request_ids'right report requests'image(i) severity error;
 						end loop;
 					end if;
@@ -188,7 +191,8 @@ begin
 			interface_dscptr'length,
 			endpoint_dscptr'length,
 			string_dscptr'length);
-		variable descriptor_length : unsigned(0 to unsigned_num_bits(max(summation(descriptor_lengths(0 to 4-1)), string_dscptr'length))-1);
+		-- variable descriptor_length : unsigned(0 to unsigned_num_bits(max(summation(descriptor_lengths(0 to 4-1)), string_dscptr'length))-1);
+		variable descriptor_length : unsigned(0 to 256*8-1);
 		variable descriptor_addr   : natural range 0 to summation(descriptor_lengths)-1;
 		alias txdis is descriptor_length(0);
 
@@ -232,7 +236,7 @@ begin
     						descriptor_length := to_unsigned(summation(descriptor_lengths(0 to 4-1)), descriptor_length'length);
     						descriptor_length := descriptor_length - descriptor_addr;
 						end case;
-   						if descriptor_length > shift_left(resize(length, descriptor_length'length),3) then
+   						if resize(shift_right(descriptor_length, 3), length'length) > length  then
    							descriptor_length := shift_left(resize(length, descriptor_length'length),3);
    						end if;
 						descriptor_length := descriptor_length-1;
