@@ -59,8 +59,9 @@ entity usbdev is
 			reverse(x"c0")    & -- bmAttribute
 			reverse(x"32"));    -- MaxPower
 		string_dscptr : std_logic_vector := (
-			reverse(x"02")    & 
+			reverse(x"04")    & 
 			reverse(decriptortypes_ids(hdl4fpga.usbpkg.string)) & -- bDescriptorType
+			reverse(x"0409")  &
 			reverse(x"12")    & 
 			reverse(decriptortypes_ids(hdl4fpga.usbpkg.string)) & -- bDescriptorType
 			reverse(to_utf16("HDL4FPGA"),16));
