@@ -114,7 +114,8 @@ begin
 		usb_fpga_bd_dn <= 'Z';
 
 		process (videoio_clk)
-			constant msg : std_logic_vector := reverse(reverse(to_ascii("HOLA"),8));
+			-- constant msg : std_logic_vector := reverse(reverse(to_ascii("Hello world" & LF),8));
+			constant msg : std_logic_vector := reverse(reverse(x"ffff7fff7f",8));
 			variable ptr : natural range 0 to msg'length := msg'length;
 			variable q1  : std_logic;
 			variable q0  : std_logic;
