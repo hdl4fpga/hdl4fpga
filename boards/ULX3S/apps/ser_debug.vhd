@@ -148,6 +148,8 @@ begin
 					end if;
 					q0 := q1;
 				end if;
+				led(0) <= q1;
+				led(7) <= not q1;
 			end if;
 		end process;
 
@@ -222,10 +224,7 @@ begin
 		-- ser_data(0) <= tp(3);
 
 		-- led <= multiplex(tp(4 to 19), left); 
-		led(7) <= cfgd;
-		led(4) <= right;
-		led(3) <= txbs;
-		led(0) <= txen;
+		led(3) <= cfgd;
 
 			-- (usb_fpga_pu_dp, usb_fpga_pu_dn, usb_fpga_dp, usb_fpga_dn);
 	end generate;
