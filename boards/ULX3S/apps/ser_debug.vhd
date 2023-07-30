@@ -170,35 +170,37 @@ begin
 			rxbs => rxbs,
 			rxd  => rxd);
 			
+		ser_clk <= videoio_clk;
+		-- ser_frm     <= tp(1); 
+		-- ser_irdy    <= not tp(2) and cken;
+		-- ser_data(0) <= tp(3);
+
 		sof_filter_p : process(videoio_clk)
 			variable data : unsigned(0 to 8-1);
 			variable tken : unsigned(0 to 8-1);
 			variable ena  : unsigned(0 to 8-1) := (others => '0');
-			variable bs   : unsigned(0 to 8-1) := (others => '1');
 			variable cntr : natural range 0 to 8;
+			alias trxen is tp(1);
+			alias trxbs is tp(2);
+			alias trxd  is tp(3);
 		begin
 			if rising_edge(videoio_clk) then
 				if cken='1' then
-					if tp(1)='1' or ena(0)='1' then
-						if tp(2)='0' then
-							data(0) := tp(3);
+					if trxen='1' or ena(0)='1' then
+						if trxbs='0' then
+							data(0) := trxd;
 							data    := data rol 1;
-							bs(0)   := tp(2);
-							bs      := bs rol 1;
 							if cntr/=0 then
 								cntr := cntr - 1;
 								if cntr=0 then
 									tken := data;
 								end if;
 							end if;
-						elsif cntr=0 then
-							bs(0) := tp(2);
-							bs    := bs rol 1;
 						end if;
 					else
 						cntr := 8;
 					end if;
-					ena(0) := tp(1);
+					ena(0) := trxen;
 					ena    := ena rol 1;
 
 					if cntr=0 then
@@ -211,8 +213,17 @@ begin
 							ena := (others => '0');
 						end if;
 					end if;
-					ser_frm     <= ena(0); 
-					ser_irdy    <= not bs(0);
+					ser_frm <= ena(0); 
+					if trxen='1' then
+						if trxbs='1' then
+							ser_irdy <= '0';
+						else
+							ser_irdy <= '1';
+						end if;
+					else
+						ser_irdy <= '1';
+					end if;
+
 					ser_data(0) <= data(0);
 				else
 					ser_irdy <= '0';
@@ -220,15 +231,7 @@ begin
 			end if;
 		end process;
 
-		ser_clk     <= videoio_clk;
-		-- ser_frm     <= tp(1); 
-		-- ser_irdy    <= not tp(2) and cken;
-		-- ser_data(0) <= tp(3);
-
-		-- led <= multiplex(tp(4 to 19), left); 
 		led(3) <= cfgd;
-
-			-- (usb_fpga_pu_dp, usb_fpga_pu_dn, usb_fpga_dp, usb_fpga_dn);
 	end generate;
 
 	hdlc_g : if io_link=io_hdlc generate
