@@ -212,11 +212,7 @@ begin
 						end if;
 					end if;
 					ser_frm     <= ena(0); 
-					if bs(0)='0' then
-						ser_irdy <= cken and not bs(0);
-					else
-						ser_irdy <= '0';
-					end if;
+					ser_irdy    <= not bs(0);
 					ser_data(0) <= data(0);
 				else
 					ser_irdy <= '0';
