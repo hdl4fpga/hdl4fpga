@@ -84,6 +84,7 @@ begin
 			crc_p : process (clk)
 				type states is (s_idle, s_run);
 				variable state : states := s_idle;
+				variable cntr : natural;
 			begin
 				if rising_edge(clk) then
 					if cken='1' then
@@ -91,8 +92,10 @@ begin
     					when s_idle =>
     						if dv='1' then
     							crc <= galois_crc(data, (crc'range => '1'), g);
+								cntr := 1;
     							state := s_run;
 							elsif init='1' then
+								cntr := 0;
 								crc <= (crc'range => '1');
     						else
     							crc <= std_logic_vector(unsigned(crc) rol 1);
@@ -101,6 +104,7 @@ begin
 							if init='1' then
     							crc <= galois_crc(data, (crc'range => '1'), g);
     						elsif dv='1' then
+								cntr := cntr + 1;
     							crc <= galois_crc(data, crc, g);
     						else
     							crc <= std_logic_vector(unsigned(crc) rol 1);

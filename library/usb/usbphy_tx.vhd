@@ -29,6 +29,8 @@ begin
 
 		variable cnt1 : natural range 0 to 7;
 		variable data : unsigned(8-1 downto 0) := (others => '0');
+		variable rdata : unsigned(8-1 downto 0) := (others => '0');
+
 		variable dp   : std_logic;
 		variable dn   : std_logic;
 	begin
@@ -78,6 +80,7 @@ begin
 					state := s_idle;
 				end case;
 
+				rdata := reverse(data);
 				tp(2) <= txbs;
 				tp(3) <= data(0);
 			end if;

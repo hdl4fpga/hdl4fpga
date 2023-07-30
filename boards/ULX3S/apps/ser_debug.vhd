@@ -115,7 +115,7 @@ begin
 
 		process (videoio_clk)
 			-- constant msg : std_logic_vector := reverse(reverse(to_ascii("Hello world" & LF),8));
-			constant msg : std_logic_vector := reverse(reverse(x"ffff7fff7f",8));
+			constant msg : std_logic_vector := reverse(reverse(x"7f_fe_ff_ff_ff",8));
 			variable ptr : natural range 0 to msg'length := msg'length;
 			variable q1  : std_logic;
 			variable q0  : std_logic;
@@ -176,9 +176,6 @@ begin
 			variable cntr : natural range 0 to 8;
 		begin
 			if rising_edge(videoio_clk) then
-				ser_frm     <= ena(0); 
-				ser_data(0) <= data(0);
-				ser_irdy    <= cken and ena(0) and not bs(0);
 				if cken='1' then
 					if tp(1)='1' or ena(0)='1' then
 						if tp(2)='0' then
@@ -205,18 +202,17 @@ begin
 					if cntr=0 then
 						if reverse(tken)=x"a5" then
 							ena := (others => '0');
-							bs  := (others => '1');
 						elsif reverse(tken)=x"80" then
 							ena := (others => '0');
-							bs  := (others => '1');
 							cntr := 8;
 						elsif (tken(0 to 4-1) xor tken(4 to 8-1))/=x"f" then
 							ena := (others => '0');
-							bs  := (others => '1');
 						end if;
 					end if;
-
 				end if;
+				ser_frm     <= ena(0); 
+				ser_data(0) <= data(0);
+				ser_irdy    <= cken and ena(0) and not bs(0);
 			end if;
 		end process;
 

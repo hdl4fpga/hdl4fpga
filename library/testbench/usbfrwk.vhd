@@ -75,13 +75,14 @@ begin
 
 			constant data : std_logic_vector := 
 				reverse(x"2d0010",8)(0 to 19-1) &
-				-- reverse(x"c3_0005_1500_0000_0000_e831",8)(0 to 72-1) &
-				reverse(x"C3_8006_0001_0000_4000_eb94",8)(0 to 72-1) &
+				reverse(x"c3_0005_1500_0000_0000_e831",8)(0 to 72-1) &
+				-- reverse(x"C3_8006_0001_0000_4000_eb94",8)(0 to 72-1) &
 				reverse(x"690010",8)(0 to 19-1) &
 				reverse(x"d2",8) &
 
 				reverse(x"2d1530",8)(0 to 19-1) &
-				reverse(x"C3_8006_0001_0000_0800_eb94",8)(0 to 72-1) &
+				-- reverse(x"C3_8006_0001_0000_0800_eb94",8)(0 to 72-1) &
+				reverse(x"C3_0009_0100_0000_0000_2725",8)(0 to 72-1) &
 				reverse(x"691530",8)(0 to 19-1) &
 				reverse(x"d2",8) &
 				reverse(x"691530",8)(0 to 19-1) &
@@ -109,7 +110,7 @@ begin
 
 			constant delays : time_vector := (
 				1 us, 1 us,  3 us,  4 us,
-				1 us, 1 us,  3 us, 10 us, 1 us, 5 us,
+				1 us, 1 us,  3 us, 10 us, 1 us, 10 us,
 				1 us, 1 us,  5 us, 19 us, 1 us, 5 us,
 				1 us, 2 us, 10 us,  4 us, 1 us, 5 us);
 
@@ -132,7 +133,7 @@ begin
 				elsif txbs='0' then
 					txen <= '0';
 					if idle='1' then
-						if i < 21 and i < delays'length then
+						if i < 10 and i < delays'length then
 							wait for delays(i);
 							right := right + length(i);
 							i     := i + 1;
@@ -204,7 +205,9 @@ begin
 			not clk after 1 sec/((2.0*usb_freq)*(12.00e6/usb_freq)) when others; --*0.975;
 
 	 	tx_p : process (clk)
-			constant data : std_logic_vector := reverse(x"01234567",8);
+			-- constant data : std_logic_vector := reverse(x"01234567",8);
+			constant data : std_logic_vector := reverse(x"7f_fe_ff_ff_ff",8);
+			-- constant data : std_logic_vector := reverse(reverse(x"7f_fe_ff_ff_ff",8));
 			constant msb  : std_logic_vector(data'range) := reverse(data, 8);
 			variable cntr : natural := 0;
 		begin
