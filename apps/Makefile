@@ -1,3 +1,5 @@
+#gcc -o rec .\src\usb.c -IE:\libusb\libusb-MinGW-x64\include -LE:\libusb\libusb-MinGW-x64\lib -l"usb-1.0"
+
 .PHONY: bin
 all : bin/rgb8topixel bin/format bin/bundle bin/siosend bin/memtest
 
