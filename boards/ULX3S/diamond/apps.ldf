@@ -1004,9 +1004,6 @@
         <Source name="../../../library/usb/usbdev.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/usb/usbrqst_dev.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/usb/usbfifo_rx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -1023,6 +1020,9 @@
             <Options/>
         </Source>
         <Source name="../../../library/usb/usbdevflow.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/usb/usbdevrqst.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="apps.lpf" type="Logic Preference" type_short="LPF">

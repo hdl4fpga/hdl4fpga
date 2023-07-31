@@ -111,6 +111,27 @@ begin
 		rxerr => phy_rxerr);
 
 
+	crcdv <= 
+		crcact_tx when     txen='1' else 
+		crcact_rx when phy_rxdv='1' else
+		'0';
+
+	crcen <= 
+		cken and not phy_txbs when crcact_tx='1' else
+		cken and not phy_rxbs when crcact_rx='1' else 
+		cken;
+
+	crc0 <= not crcact_rx and not crcact_tx;
+	usbcrc_e : entity hdl4fpga.usbcrc
+	port map (
+		clk   => clk,
+		cken  => crcen,
+		init  => crc0,
+		dv    => crcdv,
+		data  => data,
+		crc5  => crc5,
+		crc16 => crc16);
+
 	chken <= crcact_rx and not crcdv;
 	chkcrc_p : process (clk)
 	begin
@@ -132,27 +153,6 @@ begin
 			end if;
 		end if;
 	end process;
-
-	crcdv <= 
-		crcact_tx when txen='1'     else 
-		crcact_rx when phy_rxdv='1' else
-		'0';
-
-	crcen <= 
-		cken and not phy_txbs when crcact_tx='1' else
-		cken and not phy_rxbs when crcact_rx='1' else 
-		cken;
-
-	crc0 <= not crcact_rx and not crcact_tx;
-	usbcrc_e : entity hdl4fpga.usbcrc
-	port map (
-		clk   => clk,
-		cken  => crcen,
-		init  => crc0,
-		dv    => crcdv,
-		data  => data,
-		crc5  => crc5,
-		crc16 => crc16);
 	crcd <= crc16(0)  when crc5_16='1' else crc5(0);
 
 	pktfmt_p : process (clk)
@@ -175,7 +175,7 @@ begin
 						if cntr /= 0 then
 							crcact_rx <= '0';
 							crcact_tx <= '0';
-							cntr      := cntr - 1;
+							cntr := cntr - 1;
 						else
 							if txen='1' then
 								crcact_tx <= '1';
@@ -186,7 +186,7 @@ begin
 								else
 									crcact_rx <= '1';
 								end if;
-								state     := s_rx;
+								state := s_rx;
 							end if;
 							rxpid <= std_logic_vector(pid(4-1 downto 0));
 							if (pid(8-1 downto 4) xor pid(4-1 downto 0))/=x"f" then
@@ -196,7 +196,7 @@ begin
 							end if;
 						end if;
 					end if;
-					if pid(2-1 downto 0)="11" then
+					if pid(2-1 downto 0)=resize(unsigned(data0),2) then
 						crc5_16 <= '1';
 					else
 						crc5_16 <= '0';
@@ -207,14 +207,15 @@ begin
 						state := s_pid;
 					end if;
 				when s_tx =>
-					case pid(2-1 downto 0) is -- Set crc + tx serial register length
-					when "10" =>
+					if    pid(2-1 downto 0)=resize(unsigned(hs_ack),2) then
 						cntr := length_of_sync-2;                 -- Handshake long
-					when "11" =>
+					elsif pid(2-1 downto 0)=resize(unsigned(data0), 2) then
 						cntr := length_of_sync-2+length_of_crc16; -- Data long
-					when others =>
+					elsif pid(2-1 downto 0)=resize(unsigned(tk_out),2) then
 						cntr := length_of_sync-2+length_of_crc5;  -- Token long
-					end case;
+					else
+						cntr := length_of_sync-2;                 -- Handshake long
+					end if;
 					if txen='0' then
 						if phy_txbs='0' then
 							state := s_crc;
