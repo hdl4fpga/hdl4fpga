@@ -70,6 +70,7 @@ architecture def of usbphycrc is
 	signal phy_rxbs  : std_logic;
 	signal phy_rxdv  : std_logic;
 	signal phy_rxd   : std_logic;
+	signal phy_rxerr : std_logic;
 
 	signal data      : std_logic;
 	signal crc0      : std_logic;
@@ -250,6 +251,7 @@ begin
 	end process;
 
 	rxerr <= tkerr or phy_rxerr or crcerr;
+	phyerr <= phy_rxerr;
 	rxdv <=
 		'0' when txen='1'      else
 		'0' when crcact_rx='0' else

@@ -29,7 +29,7 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.usbpkg.all;
 
-entity usbrqst_dev is
+entity usbdevrqst is
 	 generic (
 		device_dscptr   : std_logic_vector;
 		config_dscptr   : std_logic_vector;
@@ -59,7 +59,7 @@ entity usbrqst_dev is
 
 end;
 
-architecture def of usbrqst_dev is
+architecture def of usbdevrqst is
 
 	signal requesttype : std_logic_vector( 8-1 downto 0);
 	signal request   : std_logic_vector( 8-1 downto 0);

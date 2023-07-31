@@ -248,7 +248,7 @@ begin
 		rqst_txbs => rqst_txbs,
 		rqst_txd  => rqst_txd);
 
-	usbrqst_e : entity hdl4fpga.usbrqst_dev
+	usbrqst_e : entity hdl4fpga.usbdevrqst
 	generic map (
 		device_dscptr    => device_dscptr,
 		config_dscptr    => config_dscptr,  
