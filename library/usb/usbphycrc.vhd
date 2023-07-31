@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.usbpkg.all;
 
 entity usbphycrc is
    	generic (
@@ -50,7 +51,9 @@ entity usbphycrc is
 		rxdv  : out std_logic;
 		rxbs  : buffer std_logic;
 		rxd   : buffer std_logic;
-		rxerr : out std_logic);
+		rxerr : out std_logic;
+		crcerr : buffer std_logic;
+		tkerr : buffer std_logic);
 
 	constant length_of_sync  : natural := 8;
 	constant length_of_pid   : natural := 8;
@@ -66,6 +69,7 @@ architecture def of usbphycrc is
 	signal phy_rxbs  : std_logic;
 	signal phy_rxdv  : std_logic;
 	signal phy_rxd   : std_logic;
+	signal phy_rxerr : std_logic;
 
 	signal data      : std_logic;
 	signal crc0      : std_logic;
@@ -79,6 +83,7 @@ architecture def of usbphycrc is
 	signal crc5_16   : std_logic;
 
 	signal echo      : std_logic;
+	signal chken     : std_logic;
 begin
 
 	data <= txd when txen='1' else phy_rxd;
@@ -101,8 +106,31 @@ begin
 
 		rxdv  => phy_rxdv,
 		rxbs  => phy_rxbs,
-		rxd   => phy_rxd);
+		rxd   => phy_rxd,
+		rxerr => phy_rxerr);
 
+
+	chken <= crcact_rx and not crcdv;
+	chkcrc_p : process (clk)
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if chken='1' then
+					if crc5_16='0' then
+						if crc5/=b"0_1100" then
+							crcerr <= '1';
+						else
+							crcerr <= '0';
+						end if;
+					elsif crc16/=b"1000_0000_0000_1101" then
+						crcerr <= '1';
+					else
+						crcerr <= '0';
+					end if;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	crcdv <= 
 		crcact_tx when txen='1'     else 
@@ -152,10 +180,19 @@ begin
 								crcact_tx <= '1';
 								state     := s_tx;
 							else 
-								crcact_rx <= '1';
+								if pid(2-1 downto 0)=unsigned(hs_ack(2-1 downto 0)) then
+									crcact_rx <= '0';
+								else
+									crcact_rx <= '1';
+								end if;
 								state     := s_rx;
 							end if;
 							rxpid <= std_logic_vector(pid(4-1 downto 0));
+							if (pid(8-1 downto 4) xor pid(4-1 downto 0))/=x"f" then
+								tkerr <= '1';
+							else
+								tkerr <= '0';
+							end if;
 						end if;
 					end if;
 					if pid(2-1 downto 0)="11" then
@@ -212,6 +249,7 @@ begin
 		end if;
 	end process;
 
+	rxerr <= tkerr or phy_rxerr or crcerr;
 	rxdv <=
 		'0' when txen='1'      else
 		'0' when crcact_rx='0' else

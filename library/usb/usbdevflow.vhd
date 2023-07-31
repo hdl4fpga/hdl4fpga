@@ -80,14 +80,14 @@ architecture def of usbdevflow is
 	signal index   : std_logic_vector(16-1 downto 0);
 	signal length  : std_logic_vector(16-1 downto 0);
 
-	signal ctlr_req : bit;
-	signal ctlr_rdy : bit;
-	signal stus_req : bit;
-	signal stus_rdy : bit;
-	signal in_req   : bit;
-	signal in_rdy   : bit;
-	signal out_req  : bit;
-	signal out_rdy  : bit;
+	signal ctlr_req  : bit;
+	signal ctlr_rdy  : bit;
+	signal stus_req  : bit;
+	signal stus_rdy  : bit;
+	signal in_req    : bit;
+	signal in_rdy    : bit;
+	signal out_req   : bit;
+	signal out_rdy   : bit;
 	signal ackrx_rdy : bit;
 	signal ackrx_req : bit;
 	signal acktx_rdy : bit;
@@ -109,9 +109,9 @@ begin
     					if (setup_req xor setup_rdy)='0' then
 							if tkdata(dev_addr'range) = (dev_addr'range => '0') or
 							   tkdata(dev_addr'range) = dev_addr then
-								ddata  <= data0;
-								setup_req <= not setup_rdy;
+								ddata     <= data0;
 								ctlr_req  <= not ctlr_rdy;
+								setup_req <= not setup_rdy;
 							end if;
     					end if;
     				when tk_in =>
@@ -131,9 +131,9 @@ begin
     				when data0|data1 =>
 						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
 						   tkdata(dev_addr'range) = dev_addr then
-							ddata   <= ddata xor tbit;
+							ddata     <= ddata xor tbit;
+							out_rdy   <= out_req;
 							acktx_req <= not acktx_rdy; 
-							out_rdy <= out_req;
 						end if;
     				when hs_ack =>
 						if (ackrx_req xor ackrx_rdy)='0' then
@@ -143,7 +143,7 @@ begin
 							ctlr_rdy <= ctlr_req;
 							stus_rdy <= stus_req;
 						end if;
-    					ddata  <= ddata xor tbit;
+    					ddata <= ddata xor tbit;
     				when others =>
     				end case;
 				end if;
@@ -214,11 +214,11 @@ begin
 				end if;
 
 				if (ctlr_rdy xor ctlr_req)='1' then
-					we   := rqst_txen;
-					din  := rqst_txd;
+					we  := rqst_txen;
+					din := rqst_txd;
 				else
-					we   := dev_txen;
-					din  := dev_txd;
+					we  := dev_txen;
+					din := dev_txd;
 				end if;
 			end if;
 		end if;
@@ -229,11 +229,15 @@ begin
 	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd);
 	dev_txbs <= not dev_cfgd or to_stdulogic(ctlr_rdy xor ctlr_req);
 
-	tp(1) <= to_stdulogic(out_req);
-	tp(2) <= to_stdulogic(out_rdy);
-	tp(3) <= to_stdulogic(in_req);
-	tp(4) <= to_stdulogic(in_rdy);
-	tp(5) <= txen or (rxdv and (setif(rxpid=x"d" or rxpid=x"9") or (dev_cfgd and dev_txen) or to_stdulogic(in_rdy xor in_req) or to_stdulogic(setup_rdy xor setup_req)));
-	tp(6) <= txbs when txen='1' else rxbs;
-	tp(7) <= txd  when txen='1' else rxd;
+	tp(1)  <= to_stdulogic(setup_req);
+	tp(2)  <= to_stdulogic(setup_rdy);
+	tp(3)  <= to_stdulogic(out_req);
+	tp(4)  <= to_stdulogic(out_rdy);
+	tp(5)  <= to_stdulogic(in_req);
+	tp(6)  <= to_stdulogic(in_rdy);
+	tp(7)  <= to_stdulogic(ackrx_req);
+	tp(8)  <= to_stdulogic(ackrx_rdy);
+	tp(9)  <= to_stdulogic(stus_req);
+	tp(10) <= to_stdulogic(stus_rdy);
+
 end;

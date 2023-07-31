@@ -148,9 +148,9 @@ begin
 					end if;
 				end case;
 
-				err_l : if se0='1' then
-					err <= '0';
-				elsif state=s_synck then
+				-- err_l : if se0='1' then
+					-- err <= '0';
+				err_l : if state=s_synck then
 					err <= '0';
 				elsif state=s_syncj then
 					err <= '0';

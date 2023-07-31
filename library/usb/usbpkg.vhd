@@ -28,17 +28,17 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 package usbpkg is
-	constant tk_out            : std_logic_vector := x"1";
-	constant tk_in             : std_logic_vector := x"9";
-	constant tk_setup          : std_logic_vector := x"d";
-	constant tk_sof            : std_logic_vector := x"5";
+	constant tk_out            : std_logic_vector(4-1 downto 0) := x"1";
+	constant tk_in             : std_logic_vector(4-1 downto 0) := x"9";
+	constant tk_setup          : std_logic_vector(4-1 downto 0) := x"d";
+	constant tk_sof            : std_logic_vector(4-1 downto 0) := x"5";
 
-	constant data0             : std_logic_vector := x"3";
-	constant data1             : std_logic_vector := x"b";
+	constant data0             : std_logic_vector(4-1 downto 0) := x"3";
+	constant data1             : std_logic_vector(4-1 downto 0) := x"b";
 
-	constant hs_ack            : std_logic_vector := x"2";
-	constant hs_nack           : std_logic_vector := x"a";
-	constant hs_stall          : std_logic_vector := x"e";
+	constant hs_ack            : std_logic_vector(4-1 downto 0) := x"2";
+	constant hs_nack           : std_logic_vector(4-1 downto 0) := x"a";
+	constant hs_stall          : std_logic_vector(4-1 downto 0) := x"e";
 
 	type requests is (
     	-- get_status,
