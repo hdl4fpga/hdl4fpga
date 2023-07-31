@@ -254,6 +254,7 @@ HDL4FPGA__hdlc_link__def = $(LIB_HDL4FPGA)/hdlc_link/def.dat
 HDL4FPGA__hdlc_link = $(LIB_HDL4FPGA)/hdlc_link/_primary.dat
 HDL4FPGA__graphics__def = $(LIB_HDL4FPGA)/graphics/def.dat
 HDL4FPGA__graphics = $(LIB_HDL4FPGA)/graphics/_primary.dat
+HDL4FPGA__gddr_sync = $(LIB_HDL4FPGA)/gddr_sync/_primary.dat
 HDL4FPGA__g4_phdata270__inference = $(LIB_HDL4FPGA)/g4_phdata270/inference.dat
 HDL4FPGA__g4_phdata270 = $(LIB_HDL4FPGA)/g4_phdata270/_primary.dat
 HDL4FPGA__g4_phdata__inference = $(LIB_HDL4FPGA)/g4_phdata/inference.dat
@@ -614,6 +615,7 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__hdlc_link) \
     $(HDL4FPGA__graphics__def) \
     $(HDL4FPGA__graphics) \
+    $(HDL4FPGA__gddr_sync) \
     $(HDL4FPGA__g4_phdata270__inference) \
     $(HDL4FPGA__g4_phdata270) \
     $(HDL4FPGA__g4_phdata__inference) \
@@ -1325,6 +1327,10 @@ $(HDL4FPGA__fifo__def) : ../basic/fifo.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/fifo.vhd
+
+$(HDL4FPGA__gddr_sync) : ../latticesemi/ecp5/gddr_sync.v
+	$(VLOG) -work hdl4fpga -L mtiAvm -L \
+		 mtiOvm -L mtiUvm -L mtiUPF ../latticesemi/ecp5/gddr_sync.v
 
 $(HDL4FPGA__graphics) \
 $(HDL4FPGA__graphics__def) : ../video/graphics.vhd \
@@ -2380,7 +2386,6 @@ $(HDL4FPGA__usbdev__def) : ../usb/usbdev.vhd \
 		$(HDL4FPGA__usbrqst_dev) \
 		$(HDL4FPGA__usbdevflow) \
 		$(HDL4FPGA__usbpkt_tx) \
-		$(HDL4FPGA__usbfifo_rx) \
 		$(HDL4FPGA__usbpkt_rx) \
 		$(HDL4FPGA__usbphycrc) \
 		$(HDL4FPGA__usbpkg) \
@@ -2439,6 +2444,7 @@ $(HDL4FPGA__usbphycrc) \
 $(HDL4FPGA__usbphycrc__def) : ../usb/usbphycrc.vhd \
 		$(HDL4FPGA__usbcrc) \
 		$(HDL4FPGA__usbphy) \
+		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \

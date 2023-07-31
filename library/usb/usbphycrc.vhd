@@ -52,6 +52,7 @@ entity usbphycrc is
 		rxbs  : buffer std_logic;
 		rxd   : buffer std_logic;
 		rxerr : out std_logic;
+		phyerr : out std_logic;
 		crcerr : buffer std_logic;
 		tkerr : buffer std_logic);
 
@@ -69,7 +70,6 @@ architecture def of usbphycrc is
 	signal phy_rxbs  : std_logic;
 	signal phy_rxdv  : std_logic;
 	signal phy_rxd   : std_logic;
-	signal phy_rxerr : std_logic;
 
 	signal data      : std_logic;
 	signal crc0      : std_logic;
@@ -180,7 +180,7 @@ begin
 								crcact_tx <= '1';
 								state     := s_tx;
 							else 
-								if pid(2-1 downto 0)=unsigned(hs_ack(2-1 downto 0)) then
+								if pid(2-1 downto 0)=resize(unsigned(hs_ack),2) then
 									crcact_rx <= '0';
 								else
 									crcact_rx <= '1';
