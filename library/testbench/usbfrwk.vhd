@@ -206,8 +206,7 @@ begin
 
 	 	tx_p : process (clk)
 			-- constant data : std_logic_vector := reverse(x"01234567",8);
-			constant data : std_logic_vector := reverse(x"7f_fe_ff_ff_ff",8);
-			-- constant data : std_logic_vector := reverse(reverse(x"7f_fe_ff_ff_ff",8));
+			constant data : std_logic_vector := reverse(x"7f_fe_ff_ff_ff",8); -- stress data
 			constant msb  : std_logic_vector(data'range) := reverse(data, 8);
 			variable cntr : natural := 0;
 		begin

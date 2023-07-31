@@ -178,7 +178,7 @@ begin
 						cntr := length_of_sync-2+length_of_crc5;  -- Token long
 					end case;
 					if txen='0' then
-						if phy_txbs='0' then -- WHY ???!!!!
+						if phy_txbs='0' then
 							state := s_crc;
 						end if;
 					end if;
