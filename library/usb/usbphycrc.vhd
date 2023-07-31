@@ -35,26 +35,26 @@ entity usbphycrc is
 		watermark    : natural := 0;
 		bit_stuffing : natural := 6);
 	port (
-		tp    : out std_logic_vector(1 to 32);
-		dp    : inout std_logic := 'Z';
-		dn    : inout std_logic := 'Z';
-		idle  : buffer std_logic;
-		clk   : in  std_logic;
-		cken  : buffer std_logic;
+		tp     : out std_logic_vector(1 to 32);
+		dp     : inout std_logic := 'Z';
+		dn     : inout std_logic := 'Z';
+		idle   : buffer std_logic;
+		clk    : in  std_logic;
+		cken   : buffer std_logic;
 
-		txen  : in  std_logic;
-		txbs  : buffer std_logic;
-		txd   : in  std_logic;
+		txen   : in  std_logic;
+		txbs   : buffer std_logic;
+		txd    : in  std_logic;
 
-		rxpid : out std_logic_vector(4-1 downto 0);
+		rxpid  : out std_logic_vector(4-1 downto 0);
 		rxpidv : out std_logic;
-		rxdv  : out std_logic;
-		rxbs  : buffer std_logic;
-		rxd   : buffer std_logic;
-		rxerr : out std_logic;
+		rxdv   : out std_logic;
+		rxbs   : buffer std_logic;
+		rxd    : buffer std_logic;
+		rxerr  : out std_logic;
 		phyerr : out std_logic;
 		crcerr : buffer std_logic;
-		tkerr : buffer std_logic);
+		tkerr  : buffer std_logic);
 
 	constant length_of_sync  : natural := 8;
 	constant length_of_pid   : natural := 8;
