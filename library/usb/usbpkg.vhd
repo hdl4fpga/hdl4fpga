@@ -29,9 +29,9 @@ use hdl4fpga.base.all;
 
 package usbpkg is
 	constant tk_out    : std_logic_vector := x"1";
+	constant tk_sof    : std_logic_vector := x"5";
 	constant tk_in     : std_logic_vector := x"9";
 	constant tk_setup  : std_logic_vector := x"d";
-	constant tk_sof    : std_logic_vector := x"5";
 
 	constant data0     : std_logic_vector := x"3";
 	constant data1     : std_logic_vector := x"b";
