@@ -1,6 +1,5 @@
-#gcc -o rec .\src\usb.c -IE:\libusb\libusb-MinGW-x64\include -LE:\libusb\libusb-MinGW-x64\lib -l"usb-1.0"
-
 .PHONY: bin
+
 all : bin/rgb8topixel bin/format bin/bundle bin/siosend bin/memtest
 
 bin/rgb8topixel : src/rgb8topixel.c
@@ -22,6 +21,10 @@ bin/siosend : src/hdlc.h src/hdlc.c src/siolib.h src/siolib.c src/siosend.c
 bin/memtest : src/lfsr.h src/lfsr.c src/hdlc.h src/hdlc.c src/siolib.h src/siolib.c src/memtest.c
 	mkdir -p bin
 	cc -O3 src/lfsr.c src/siolib.c src/hdlc.c src/memtest.c -o bin/memtest
+
+#LIBUSB_DIR = E:/libusb/libusb-MinGW-x64/include
+#bin/usb.exe : src/usb.c
+#	gcc -o usb src/usb.c -I$(LIBUSB_DIR)/include -L$(LIBUSB_DIR)/include/lib -l"usb-1.0"
 
 clean :
 	rm  -rf ./bin
