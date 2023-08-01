@@ -197,10 +197,10 @@ begin
 					if dev_rxbs='0' then
 						pout := pout + 1;
 					end if;
-				elsif (acktx_rdy xor acktx_req)='1' then
-					prty := pin;
 				elsif (out_rdy xor out_req)='0' then
 					pin := prty;
+				elsif (acktx_rdy xor acktx_req)='1' then
+					prty := pin;
 				end if;
 
 				if pout=pin then
@@ -214,12 +214,14 @@ begin
 					pin := pin + 1;
 				end if;
 
-				if rxdv='0' then
-					we := '0';
-				elsif rxbs='1' then
-					we := '0';
-				else
-					we := '1';
+				if (out_rdy xor out_req)='1' then
+					if rxdv='0' then
+						we := '0';
+					elsif rxbs='1' then
+						we := '0';
+					else
+						we := '1';
+					end if;
 				end if;
 				din := rxd;
 			end if;
