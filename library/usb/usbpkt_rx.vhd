@@ -39,10 +39,13 @@ entity usbpkt_rx is
 
 		tkdata : out std_logic_vector(0 to 11-1);
 		rxpidv : in  std_logic;
-		rxpid  : in  std_logic_vector( 4-1 downto 0);
+		rxpid  : in  std_logic_vector(4-1 downto 0);
 		rxdv   : in  std_logic;
 		rxbs   : in  std_logic;
-		rxd    : in  std_logic);
+		rxd    : in  std_logic;
+		phyerr : in  std_logic;
+		tkerr  : in  std_logic;
+		crcerr : in  std_logic);
 end;
 
 architecture def of usbpkt_rx is
@@ -58,24 +61,25 @@ begin
 					case state is
 					when s_idle =>
 						if rxpidv='1' then
-   							case rxpid is
-   							when tk_setup|tk_in|tk_out|tk_sof =>
-								state := s_token;
-   							when data0|data1 =>
-   								state := s_data;
-							when hs_ack|hs_nack|hs_stall =>
-   								state := s_hs;
-							when others =>
-								-- assert false report "usbpkt_rx" severity failure;
-   							end case;
+							if (phyerr or tkerr)='0' then
+    							if    unsigned(rxpid(2-1 downto 0))=resize(unsigned(tk_out),2) then
+									state := s_token;
+    							elsif unsigned(rxpid(2-1 downto 0))=resize(unsigned(data0), 2) then
+									state := s_data;
+    							elsif unsigned(rxpid(2-1 downto 0))=resize(unsigned(hs_ack),2) then
+									state := s_hs;
+    							else
+    								-- assert false report "usbpkt_rx" severity failure;
+    							end if;
+							end if;
 						end if;
-					when s_token =>
+					when s_token|s_data =>
 						if rxdv='0' then
-							rx_req  <= not to_stdulogic(to_bit(rx_rdy));
-						end if;
-					when s_data =>
-						if rxdv='0' then
-							rx_req <= not to_stdulogic(to_bit(rx_rdy));
+							if (phyerr or crcerr)='0' then
+								rx_req  <= not to_stdulogic(to_bit(rx_rdy));
+							else
+								state := s_idle;
+							end if;
 						end if;
 					when s_hs =>
 						rx_req <= not to_stdulogic(to_bit(rx_rdy));
@@ -90,24 +94,31 @@ begin
 	end process;
 
 	tkdata_p : process (cken, clk)
+		type states is (s_idle, s_token);
+		variable state : states;
 		variable data : unsigned(0 to 16-1);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-   				if rxpidv='1' then
-   					case rxpid is
-   					when tk_setup|tk_in|tk_out|tk_sof =>
-   						if rxdv='1' then
-   							if rxbs='0' then
-   								data(0) := rxd;
-   								data    := data rol 1;
-   							end if;
-   						end if;
-   					when others =>
-   					end case;
-   				end if;
+				case state is
+				when s_idle =>
+					if rxpidv='1' then
+						if (phyerr or crcerr or tkerr)='0' then
+							if unsigned(rxpid(2-1 downto 0))=resize(unsigned(tk_out),2) then
+								if rxdv='1' then
+									if rxbs='0' then
+										data(0) := rxd;
+										data    := data rol 1;
+									end if;
+								end if;
+							end if;
+						end if;
+					end if;
+				when s_token =>
+					tkdata <= std_logic_vector(data(tkdata'range));
+					state := s_idle;
+				end case;
 			end if;
-			tkdata <= std_logic_vector(data(tkdata'range));
 		end if;
 	end process;
 

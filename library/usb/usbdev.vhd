@@ -136,6 +136,10 @@ architecture def of usbdev is
 	signal rqst_txbs : std_logic;
 	signal rqst_txd  : std_logic;
 
+	signal phyerr    : std_logic;
+	signal tkerr     : std_logic;
+	signal crcerr    : std_logic;
+
 	signal setup_req : bit;
 	signal setup_rdy : bit;
 	signal tkdata    : std_logic_vector(0 to 11-1);
@@ -183,7 +187,10 @@ begin
 		tkdata   => tkdata,
 		rxdv     => phy_rxdv,
 		rxbs     => phy_rxbs,
-		rxd      => phy_rxd);
+		rxd      => phy_rxd,
+		phyerr   => phyerr,
+		tkerr    => tkerr,
+		crcerr   => crcerr);
 
 	usbpkttx_e : entity hdl4fpga.usbpkt_tx
 	port map (
