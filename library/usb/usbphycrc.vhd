@@ -226,11 +226,11 @@ begin
 						if cntr /= 0 then
 							cntr := cntr - 1;
 						else
-							crcact_tx <= '0';
 							if (txen or phy_rxdv)='0' then
 								cntr  := length_of_pid-1;
 								state := s_pid;
 							end if;
+							crcact_tx <= '0';
 						end if;
 					end if;
 				end case;

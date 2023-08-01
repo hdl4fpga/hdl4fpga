@@ -43,6 +43,7 @@ entity usbdevflow is
 		rxbs      : in  std_logic;
 		rxd       : in  std_logic;
 		tkdata    : in  std_logic_vector(0 to 11-1);
+		rxerr     : in  std_logic := '0';
 
 		tx_req    : buffer std_logic;
 		tx_rdy    : in  std_logic;
@@ -59,7 +60,7 @@ entity usbdevflow is
 		dev_txd   : in  std_logic;
 
 		dev_rxdv  : out std_logic;
-		dev_rxbs  : out std_logic;
+		dev_rxbs  : buffer std_logic;
 		dev_rxd   : out std_logic;
 		dev_addr  : in  std_logic_vector(0 to 7-1);
 		dev_endp  : out std_logic_vector(7 to 11-1);
@@ -131,9 +132,11 @@ begin
     				when data0|data1 =>
 						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
 						   tkdata(dev_addr'range) = dev_addr then
-							ddata     <= ddata xor tbit;
-							out_rdy   <= out_req;
-							acktx_req <= not acktx_rdy; 
+							if rxerr='0' then
+								ddata     <= ddata xor tbit;
+								out_rdy   <= out_req;
+								acktx_req <= not acktx_rdy; 
+							end if;
 						end if;
     				when hs_ack =>
 						if (ackrx_req xor ackrx_rdy)='0' then
@@ -177,7 +180,53 @@ begin
 		end if;
 	end process;
 
-	buffer_p : process (clk)
+	rxbuffer_p : process (clk)
+		variable mem  : std_logic_vector(0 to 1024*8-1);
+		variable pin  : natural range mem'range;
+		variable pout : natural range mem'range;
+		variable prty : natural range mem'range;
+		variable we   : std_logic;
+		variable din  : std_logic;
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (setup_rdy xor setup_req)='1' then
+					pout := pin;
+					prty := pout;
+				elsif pout /= prty then
+					if dev_rxbs='0' then
+						pout := pout + 1;
+					end if;
+				elsif (acktx_rdy xor acktx_req)='1' then
+					prty := pin;
+				elsif (out_rdy xor out_req)='0' then
+					pin := prty;
+				end if;
+
+				if pout=pin then
+					dev_rxdv <='0';
+				else
+					dev_rxdv <='1';
+				end if;
+				dev_rxd <= mem(pout);
+				if we='1' then
+					mem(pin) := din;
+					pin := pin + 1;
+				end if;
+
+				if rxdv='0' then
+					we := '0';
+				elsif rxbs='1' then
+					we := '0';
+				else
+					we := '1';
+				end if;
+				din := rxd;
+			end if;
+		end if;
+	end process;
+
+	txbuffer_p : process (clk)
 		variable mem  : std_logic_vector(0 to 1024*8-1);
 		variable pin  : natural range mem'range;
 		variable pout : natural range mem'range;
