@@ -43,7 +43,9 @@ entity usbdevflow is
 		rxbs      : in  std_logic;
 		rxd       : in  std_logic;
 		tkdata    : in  std_logic_vector(0 to 11-1);
-		rxerr     : in  std_logic := '0';
+		phyerr    : in  std_logic;
+		crcerr    : in  std_logic;
+		tkerr     : in  std_logic;
 
 		tx_req    : buffer std_logic;
 		tx_rdy    : in  std_logic;
@@ -94,9 +96,13 @@ architecture def of usbdevflow is
 	signal acktx_rdy : bit;
 	signal acktx_req : bit;
 
-	signal ddata    : std_logic_vector(data0'range);
+	signal ddata     : std_logic_vector(data0'range);
+
+	signal rxerr     : std_logic;
 
 begin
+
+	rxerr <= phyerr or tkerr or crcerr;
 
 	dev_endp <= tkdata(dev_endp'range);
 	hosttodev_p : process (cken, clk)
@@ -192,15 +198,17 @@ begin
 			if cken='1' then
 				if (setup_rdy xor setup_req)='1' then
 					pout := pin;
-					prty := pout;
+					prty := pin;
 				elsif pout /= prty then
 					if dev_rxbs='0' then
 						pout := pout + 1;
 					end if;
 				elsif (out_rdy xor out_req)='0' then
-					pin := prty;
-				elsif (acktx_rdy xor acktx_req)='1' then
-					prty := pin;
+					if rxerr='1' then
+						prty := pin;
+					else
+						pin := prty;
+					end if;
 				end if;
 
 				if pout=pin then

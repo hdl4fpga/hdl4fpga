@@ -226,6 +226,9 @@ begin
 		rxbs      => phy_rxbs,
 		rxd       => phy_rxd,
 		tkdata    => tkdata,
+		phyerr    => phyerr,
+		tkerr     => tkerr,
+		crcerr    => crcerr,
 
 		tx_req    => tx_req,
 		tx_rdy    => tx_rdy,
