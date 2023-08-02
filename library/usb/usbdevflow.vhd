@@ -54,8 +54,8 @@ entity usbdevflow is
 		txbs      : in  std_logic;
 		txd       : buffer std_logic;
 
-		setup_req : buffer bit;
-		setup_rdy : in  bit;
+		rqst_req : buffer bit;
+		rqst_rdy : in  bit;
 
 		dev_txen  : in  std_logic;
 		dev_txbs  : out std_logic;
@@ -87,6 +87,8 @@ architecture def of usbdevflow is
 	signal ctlr_rdy  : bit;
 	signal stus_req  : bit;
 	signal stus_rdy  : bit;
+	signal setup_req : bit;
+	signal setup_rdy : bit;
 	signal in_req    : bit;
 	signal in_rdy    : bit;
 	signal out_req   : bit;
@@ -125,7 +127,8 @@ begin
     					if (in_req xor in_rdy)='0' then
 							if tkdata(dev_addr'range) = (dev_addr'range => '0') or
 							   tkdata(dev_addr'range) = dev_addr then
-								in_req <= not in_rdy;
+								rqst_req <= not rqst_rdy;
+								in_req   <= not in_rdy;
 							end if;
     					end if;
     				when tk_out=>
@@ -223,7 +226,7 @@ begin
 				end if;
 
 				if (out_rdy xor out_req)='1' then
-					if rxdv='0' then
+					if rxpidv='0' then
 						we := '0';
 					elsif rxbs='1' then
 						we := '0';
@@ -285,7 +288,7 @@ begin
 
 	rqst_txbs <= not to_stdulogic(ctlr_rdy xor ctlr_req);
 
-	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd);
+	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxpidv, rxbs, rxd);
 	dev_txbs <= not dev_cfgd or to_stdulogic(ctlr_rdy xor ctlr_req);
 
 	tp(1)  <= to_stdulogic(setup_req);

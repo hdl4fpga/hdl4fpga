@@ -43,13 +43,10 @@ entity usbdevrqst is
 
 		dev_addr  : out std_logic_vector(0 to 7-1);
 		dev_cfgd  : out std_logic;
-		rqst_req  : buffer bit;
+		rqst_req  : in  bit;
 		rqst_rdy  : buffer bit;
 
-		setup_req : in  bit;
-		setup_rdy : buffer bit;
-
-		rxdv      : in  std_logic := '-';
+		rxpidv    : in  std_logic := '-';
 		rxbs      : in  std_logic := '-';
 		rxd       : in  std_logic := '-';
 
@@ -92,20 +89,18 @@ begin
 			if cken='1' then
 				case state is
 				when s_idle =>
-					if (setup_rdy xor setup_req)='1' then
-						if rxdv='1'then
+					if (rqst_rdy xor rqst_req)='1' then
+						if rxpidv='1'then
 							state := s_rqst;
 						end if;
 					end if;
 				when s_rqst =>
-					if rxdv='0' then
-						rqst_req  <= not rqst_rdy;
-						setup_rdy <= setup_req;
-						state     := s_idle;
+					if rxpidv='0' then
+						state := s_idle;
 					end if;
 				end case;
-				data_l : if (setup_rdy xor setup_req)='1' then
-					if rxdv='1' then
+				data_l : if (rqst_rdy xor rqst_req)='1' then
+					if rxpidv='1' then
 						if rxbs='0' then
 							data(0) := rxd;
 							data := data rol 1;

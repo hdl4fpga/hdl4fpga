@@ -142,6 +142,9 @@ architecture def of usbdev is
 
 	signal setup_req : bit;
 	signal setup_rdy : bit;
+	signal rqst_req  : bit;
+	signal rqst_rdy  : bit;
+
 	signal tkdata    : std_logic_vector(0 to 11-1);
 
 	signal tp_phy    : std_logic_vector(1 to 32);
@@ -172,7 +175,10 @@ begin
 		rxpid  => phy_rxpid,
 		rxpidv => phy_rxpidv,
 		rxbs   => phy_rxbs,
-		rxd    => phy_rxd);
+		rxd    => phy_rxd,
+		phyerr   => phyerr,
+		tkerr    => tkerr,
+		crcerr   => crcerr);
 
 	usbpktrx_e : entity hdl4fpga.usbpkt_rx
 	port map (
@@ -249,8 +255,8 @@ begin
 		dev_endp  => dev_endp,
 		dev_cfgd  => dev_cfgd,
 
-		setup_req => setup_req,
-		setup_rdy => setup_rdy,
+		rqst_req => rqst_req,
+		rqst_rdy => rqst_rdy,
 		rqst_rxdv => rqst_rxdv,
 		rqst_rxbs => rqst_rxbs,
 		rqst_rxd  => rqst_rxd,
@@ -271,10 +277,10 @@ begin
 
 		dev_addr  => dev_addr,
 		dev_cfgd  => dev_cfgd,
-		setup_req => setup_req,
-		setup_rdy => setup_rdy,
+		rqst_req => rqst_req,
+		rqst_rdy => rqst_rdy,
 
-		rxdv      => rqst_rxdv,
+		rxpidv    => rqst_rxdv,
 		rxbs      => rqst_rxbs,
 		rxd       => rqst_rxd,
 		txen      => rqst_txen,
