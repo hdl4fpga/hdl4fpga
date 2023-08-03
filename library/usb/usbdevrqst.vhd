@@ -77,13 +77,14 @@ architecture def of usbdevrqst is
 	signal descriptor_txen : std_logic;
 	signal descriptor_txd  : std_logic;
 	signal rqstdata_req    : bit;
+	signal rqstdata_rdy    : bit;
 	signal reply_rdy       : bit;
 	signal reply_req       : bit;
 
 begin
 
 	setup_p : process (cken, clk)
-		type states is (s_idle, s_rqst, s_reply, s_ing);
+		type states is (s_idle, s_data, s_reply);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
@@ -97,14 +98,12 @@ begin
     					end if;
     				when s_data =>
     					if rxpidv='0' then
-    						rqstdata_req <= not rqstdata_rdy;
-    						state := s_idle;
+    						if (rqstdata_req xor rqstdata_rdy)='0' then
+								reply_req <= not reply_rdy;
+								state := s_reply;
+							end if;
     					end if;
     				when s_reply =>
-    					if (rqstdata_rdy xor rqstdata_req)='0' then
-    						reply_req <= not reply_rdy;
-    					end if;
-					when s_ing =>
 						if (reply_rdy xor reply_req)='0' then
 							rqst_rdy <= rqst_req;
 						end if;
@@ -116,8 +115,9 @@ begin
 		end if;
 	end process;
 
-	rqstdata_p : process (cken, clk)
+	rqstdata_p : process (reply_req, clk)
 		type states is (s_idle, s_data);
+		variable state : states;
 		variable data : unsigned(0 to 64+2*8-1);
 		variable shr  : unsigned(data'range);
 	begin
@@ -133,7 +133,7 @@ begin
 						end if;
 					when s_data =>
 						if rxpidv='0' then
-							rqstdata_req <= rqstdata_rdy;
+							rqstdata_rdy <= rqstdata_req;
 							state := s_idle;
 						end if;
 					end case;

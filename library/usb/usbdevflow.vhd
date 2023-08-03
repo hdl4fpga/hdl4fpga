@@ -195,7 +195,7 @@ begin
 		end if;
 	end process;
 
-	rxbuffer_p : process (clk)
+	rxbuffer_p : process (rqst_req, clk)
 		variable mem  : std_logic_vector(0 to 1024*8-1);
 		variable pin  : natural range mem'range;
 		variable pout : natural range mem'range;
@@ -246,7 +246,7 @@ begin
 	end process;
 
 	buffer_txbs <= txbs;
-	txbuffer_p : process (clk)
+	txbuffer_p : process (rqst_rdy, clk)
 		variable mem  : std_logic_vector(0 to 1024*8-1);
 		variable pin  : natural range mem'range;
 		variable pout : natural range mem'range;

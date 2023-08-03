@@ -100,24 +100,20 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				case state is
-				when s_idle =>
+				if (phyerr or crcerr or tkerr)='0' then
 					if rxpidv='1' then
-						if (phyerr or crcerr or tkerr)='0' then
-							if unsigned(rxpid(2-1 downto 0))=resize(unsigned(tk_out),2) then
-								if rxpidv='1' then
-									if rxbs='0' then
-										data(0) := rxd;
-										data    := data rol 1;
-									end if;
+						if unsigned(rxpid(2-1 downto 0))=resize(unsigned(tk_out),2) then
+							if rxpidv='1' then
+								if rxbs='0' then
+									data(0) := rxd;
+									data    := data rol 1;
 								end if;
 							end if;
 						end if;
+					else
+						tkdata <= std_logic_vector(data(tkdata'range));
 					end if;
-				when s_token =>
-					tkdata <= std_logic_vector(data(tkdata'range));
-					state := s_idle;
-				end case;
+				end if;
 			end if;
 		end if;
 	end process;
