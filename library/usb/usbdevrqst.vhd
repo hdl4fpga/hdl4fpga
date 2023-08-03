@@ -47,6 +47,7 @@ entity usbdevrqst is
 		rqst_rdy  : buffer bit;
 
 		rxpidv    : in  std_logic := '-';
+		rxpid     : in  std_logic_vector(4-1 downto 0);
 		rxbs      : in  std_logic := '-';
 		rxd       : in  std_logic := '-';
 
