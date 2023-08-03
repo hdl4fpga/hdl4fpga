@@ -76,48 +76,91 @@ architecture def of usbdevrqst is
 
 	signal descriptor_txen : std_logic;
 	signal descriptor_txd  : std_logic;
+	signal rqstdata_req    : bit;
+	signal reply_rdy       : bit;
+	signal reply_req       : bit;
 
 begin
 
 	setup_p : process (cken, clk)
-		type states is (s_idle, s_rqst);
+		type states is (s_idle, s_rqst, s_reply, s_ing);
 		variable state : states;
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (rqst_req xor rqst_rdy)='1' then
+    				case state is
+    				when s_idle =>
+    					if (rqst_rdy xor rqst_req)='1' then
+    						rqstdata_req <= not rqstdata_rdy;
+    						state := s_data;
+    					end if;
+    				when s_data =>
+    					if rxpidv='0' then
+    						rqstdata_req <= not rqstdata_rdy;
+    						state := s_idle;
+    					end if;
+    				when s_reply =>
+    					if (rqstdata_rdy xor rqstdata_req)='0' then
+    						reply_req <= not reply_rdy;
+    					end if;
+					when s_ing =>
+						if (reply_rdy xor reply_req)='0' then
+							rqst_rdy <= rqst_req;
+						end if;
+    				end case;
+				else
+					state := s_idle;
+				end if;
+			end if;
+		end if;
+	end process;
+
+	rqstdata_p : process (cken, clk)
+		type states is (s_idle, s_data);
 		variable data : unsigned(0 to 64+2*8-1);
 		variable shr  : unsigned(data'range);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				case state is
-				when s_idle =>
-					if (rqst_rdy xor rqst_req)='1' then
-						if rxpidv='1'then
-							state := s_rqst;
+				if (rqst_req xor rqst_rdy)='1' then
+					case state is
+					when s_idle =>
+						if (rqstdata_req xor rqstdata_rdy)='1' then
+							if rxpidv='1'then
+								state := s_data;
+							end if;
 						end if;
-					end if;
-				when s_rqst =>
-					if rxpidv='0' then
-						state := s_idle;
-					end if;
-				end case;
-				data_l : if (rqst_rdy xor rqst_req)='1' then
+					when s_data =>
+						if rxpidv='0' then
+							rqstdata_req <= rqstdata_rdy;
+							state := s_idle;
+						end if;
+					end case;
+				else
+					state := s_idle;
+				end if;
+
+				if (rqstdata_req xor rqstdata_rdy)='1' then
 					if rxpidv='1' then
 						if rxbs='0' then
 							data(0) := rxd;
 							data := data rol 1;
 						end if;
 					end if;
-					shr := data;
-					requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
-					shr := shr rol requesttype'length;
-					request <= reverse(std_logic_vector(shr(0 to request'length-1)));
-					shr := shr rol request'length;
-					value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
-					shr := shr rol value'length;
-					index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
-					shr := shr rol index'length;
-					length  <= unsigned(reverse(std_logic_vector(shr(0 to length'length-1))));
-					shr := shr rol length'length;
 				end if;
+
+				shr := data;
+				requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
+				shr := shr rol requesttype'length;
+				request <= reverse(std_logic_vector(shr(0 to request'length-1)));
+				shr := shr rol request'length;
+				value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
+				shr := shr rol value'length;
+				index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
+				shr := shr rol index'length;
+				length  <= unsigned(reverse(std_logic_vector(shr(0 to length'length-1))));
+				shr := shr rol length'length;
 			end if;
 		end if;
 	end process;
@@ -128,32 +171,36 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				case state is
-				when s_idle =>
-					if (rqst_rdy xor rqst_req)='1' then
-						for i in request_ids'range loop
-							if request(4-1 downto 0)=request_ids(i) then
-								rqst_reqs(i) <= not rqst_rdys(i);
-								state := s_rqst;
-								exit;
-							end if;
-							if i=request_ids'right then
-								rqst_rdy <= rqst_req;
-							end if;
-							assert i/=request_ids'right report requests'image(i) severity error;
-						end loop;
-					end if;
-				when s_rqst =>
-					for i in request_ids'range loop
-						if (rqst_rdys(i) xor rqst_reqs(i))='1' then
-							exit;
-						end if;
-						if i=request_ids'right then
-							rqst_rdy <= rqst_req;
-							state := s_idle;
-						end if;
-					end loop;
-				end case;
+				if (rqst_req xor rqst_rdy)='1' then
+    				case state is
+    				when s_idle =>
+    					if (reply_rdy xor reply_req)='1' then
+    						for i in request_ids'range loop
+    							if request(4-1 downto 0)=request_ids(i) then
+    								rqst_reqs(i) <= not rqst_rdys(i);
+    								state := s_rqst;
+    								exit;
+    							end if;
+    							if i=request_ids'right then
+    								reply_rdy <= reply_req;
+    							end if;
+    							assert i/=request_ids'right report requests'image(i) severity error;
+    						end loop;
+    					end if;
+    				when s_rqst =>
+    					for i in request_ids'range loop
+    						if (rqst_rdys(i) xor rqst_reqs(i))='1' then
+    							exit;
+    						end if;
+    						if i=request_ids'right then
+    							reply_rdy <= reply_req;
+    							state := s_idle;
+    						end if;
+    					end loop;
+    				end case;
+				else
+					state := s_idle;
+				end if;
 			end if;
 		end if;
 	end process;

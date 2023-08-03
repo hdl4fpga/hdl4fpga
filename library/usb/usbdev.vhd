@@ -161,21 +161,21 @@ begin
 		watermark    => watermark,
 		bit_stuffing => bit_stuffing)
 	port map (
-		tp     => tp_phy,
-		dp     => dp,
-		dn     => dn,
-		clk    => clk,
-		cken   => cken,
+		tp       => tp_phy,
+		dp       => dp,
+		dn       => dn,
+		clk      => clk,
+		cken     => cken,
 
-		txen   => phy_txen,
-		txbs   => phy_txbs,
-		txd    => phy_txd,
+		txen     => phy_txen,
+		txbs     => phy_txbs,
+		txd      => phy_txd,
 
-		rxdv   => phy_rxdv,
-		rxpid  => phy_rxpid,
-		rxpidv => phy_rxpidv,
-		rxbs   => phy_rxbs,
-		rxd    => phy_rxd,
+		rxdv     => phy_rxdv,
+		rxpid    => phy_rxpid,
+		rxpidv   => phy_rxpidv,
+		rxbs     => phy_rxbs,
+		rxd      => phy_rxd,
 		phyerr   => phyerr,
 		tkerr    => tkerr,
 		crcerr   => crcerr);
@@ -255,8 +255,8 @@ begin
 		dev_endp  => dev_endp,
 		dev_cfgd  => dev_cfgd,
 
-		rqst_req => rqst_req,
-		rqst_rdy => rqst_rdy,
+		rqst_req  => rqst_req,
+		rqst_rdy  => rqst_rdy,
 		rqst_rxdv => rqst_rxdv,
 		rqst_rxbs => rqst_rxbs,
 		rqst_rxd  => rqst_rxd,
@@ -272,15 +272,16 @@ begin
 		endpoint_dscptr  => endpoint_dscptr,
 		string_dscptr    => string_dscptr)
 	port map (
-		clk      => clk,
-		cken     => cken,
+		clk       => clk,
+		cken      => cken,
 
 		dev_addr  => dev_addr,
 		dev_cfgd  => dev_cfgd,
-		rqst_req => rqst_req,
-		rqst_rdy => rqst_rdy,
+		rqst_req  => rqst_req,
+		rqst_rdy  => rqst_rdy,
 
 		rxpidv    => rqst_rxdv,
+		-- rxpid     => phy_rxpid,
 		rxbs      => rqst_rxbs,
 		rxd       => rqst_rxd,
 		txen      => rqst_txen,

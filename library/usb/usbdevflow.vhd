@@ -30,6 +30,8 @@ use hdl4fpga.base.all;
 use hdl4fpga.usbpkg.all;
 
 entity usbdevflow is
+	generic (
+		txbuffer : boolean := false);
 	port (
 		tp        : out std_logic_vector(1 to 32) := (others => '0');
 		clk       : in  std_logic;
@@ -72,7 +74,7 @@ entity usbdevflow is
 		rqst_rxbs : out std_logic;
 		rqst_rxd  : out std_logic;
 		rqst_txen : in  std_logic;
-		rqst_txbs : out std_logic := '0';
+		rqst_txbs : out std_logic;
 		rqst_txd  : in  std_logic);
 end;
 
@@ -98,6 +100,10 @@ architecture def of usbdevflow is
 	signal acktx_rdy : bit;
 	signal acktx_req : bit;
 
+	signal buffer_txen : std_logic;
+	signal buffer_txbs : std_logic;
+	signal buffer_txd  : std_logic;
+
 	signal ddata     : std_logic_vector(data0'range);
 
 	signal rxerr     : std_logic;
@@ -119,6 +125,7 @@ begin
 							if tkdata(dev_addr'range) = (dev_addr'range => '0') or
 							   tkdata(dev_addr'range) = dev_addr then
 								ddata     <= data0;
+								rqst_req <= not rqst_rdy;
 								ctlr_req  <= not ctlr_rdy;
 								setup_req <= not setup_rdy;
 							end if;
@@ -127,7 +134,6 @@ begin
     					if (in_req xor in_rdy)='0' then
 							if tkdata(dev_addr'range) = (dev_addr'range => '0') or
 							   tkdata(dev_addr'range) = dev_addr then
-								rqst_req <= not rqst_rdy;
 								in_req   <= not in_rdy;
 							end if;
     					end if;
@@ -239,6 +245,7 @@ begin
 		end if;
 	end process;
 
+	buffer_txbs <= txbs;
 	txbuffer_p : process (clk)
 		variable mem  : std_logic_vector(0 to 1024*8-1);
 		variable pin  : natural range mem'range;
@@ -254,7 +261,7 @@ begin
 					prty := pout;
 					ackrx_rdy <= ackrx_req;
 				elsif pout /= pin then
-					if txbs='0' then
+					if buffer_txbs='0' then
 						pout := pout + 1;
 					end if;
 				elsif (ackrx_rdy xor ackrx_req)='1' then
@@ -265,11 +272,11 @@ begin
 				end if;
 
 				if pout=pin then
-					txen <='0';
+					buffer_txen <='0';
 				else
-					txen <='1';
+					buffer_txen <='1';
 				end if;
-				txd <= mem(pout);
+				buffer_txd <= mem(pout);
 				if we='1' then
 					mem(pin) := din;
 					pin := pin + 1;
@@ -285,11 +292,20 @@ begin
 			end if;
 		end if;
 	end process;
-
-	rqst_txbs <= not to_stdulogic(ctlr_rdy xor ctlr_req);
+	(txen, txd) <= 
+		std_logic_vector'(buffer_txen, buffer_txd) when txbuffer else
+		std_logic_vector'(rqst_txen,   rqst_txd)   when (ctlr_rdy xor ctlr_req)='1' else
+		std_logic_vector'(dev_txen,    dev_txd);
+		
+	rqst_txbs <= 
+		not to_stdulogic(ctlr_rdy xor ctlr_req) when txbuffer else 
+		txbs;
+	dev_txbs <= 
+		'0'                                 when dev_cfgd='0' else
+		to_stdulogic(ctlr_rdy xor ctlr_req) when txbuffer     else
+		txbs;
 
 	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxpidv, rxbs, rxd);
-	dev_txbs <= not dev_cfgd or to_stdulogic(ctlr_rdy xor ctlr_req);
 
 	tp(1)  <= to_stdulogic(setup_req);
 	tp(2)  <= to_stdulogic(setup_rdy);
