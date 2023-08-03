@@ -50,6 +50,10 @@ entity usbdevrqst is
 		rxbs      : in  std_logic := '-';
 		rxd       : in  std_logic := '-';
 
+		in_rdy    : in  bit;
+		in_req    : in  bit;
+		ackrx_rdy : in  bit;
+		ackrx_req : in  bit;
 		txen      : out std_logic;
 		txbs      : in  std_logic;
 		txd       : out std_logic);
@@ -287,7 +291,9 @@ begin
 								descriptor_addr   := descriptor_addr   + 1;
 								descriptor_length := descriptor_length - 1;
 							end if;
-						else
+						elsif (in_req xor in_rdy)='1' then
+							state := s_idle;
+						elsif (ackrx_req xor ackrx_rdy)='1' then
 							getdescriptor_rdy <= getdescriptor_req;
 							state := s_idle;
 						end if;

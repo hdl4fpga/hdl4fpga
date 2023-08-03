@@ -142,6 +142,10 @@ architecture def of usbdev is
 
 	signal setup_req : bit;
 	signal setup_rdy : bit;
+	signal in_req    : bit;
+	signal in_rdy    : bit;
+	signal ackrx_req : bit;
+	signal ackrx_rdy : bit;
 	signal rqst_req  : bit;
 	signal rqst_rdy  : bit;
 
@@ -235,6 +239,10 @@ begin
 		phyerr    => phyerr,
 		tkerr     => tkerr,
 		crcerr    => crcerr,
+		in_req    => in_req,
+		in_rdy    => in_rdy,
+		ackrx_req => ackrx_req,
+		ackrx_rdy => ackrx_rdy,
 
 		tx_req    => tx_req,
 		tx_rdy    => tx_rdy,
@@ -279,9 +287,12 @@ begin
 		dev_cfgd  => dev_cfgd,
 		rqst_req  => rqst_req,
 		rqst_rdy  => rqst_rdy,
+		in_req    => in_req,
+		in_rdy    => in_rdy,
+		ackrx_req => ackrx_req,
+		ackrx_rdy => ackrx_rdy,
 
 		rxpidv    => rqst_rxdv,
-		-- rxpid     => phy_rxpid,
 		rxbs      => rqst_rxbs,
 		rxd       => rqst_rxd,
 		txen      => rqst_txen,
