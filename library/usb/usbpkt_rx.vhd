@@ -76,7 +76,7 @@ begin
 					when s_token|s_data =>
 						if rxpidv='0' then
 							if (phyerr or crcerr)='0' then
-								rx_req <= not to_stdulogic(to_bit(rx_rdy));
+								rx_req  <= not to_stdulogic(to_bit(rx_rdy));
 							else
 								state := s_idle;
 							end if;
@@ -103,11 +103,9 @@ begin
 				if (phyerr or crcerr or tkerr)='0' then
 					if (rxdv and rxpidv)='1' then
 						if unsigned(rxpid(2-1 downto 0))=resize(unsigned(tk_out),2) then
-							if rxpidv='1' then
-								if rxbs='0' then
-									data(0) := rxd;
-									data    := data rol 1;
-								end if;
+							if rxbs='0' then
+								data(0) := rxd;
+								data    := data rol 1;
 							end if;
 						end if;
 					else
