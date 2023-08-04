@@ -125,7 +125,7 @@ begin
 							if tkdata(dev_addr'range) = (dev_addr'range => '0') or
 							   tkdata(dev_addr'range) = dev_addr then
 								ddata     <= data0;
-								rqst_req <= not rqst_rdy;
+								rqst_req  <= not rqst_rdy;
 								ctlr_req  <= not ctlr_rdy;
 								setup_req <= not setup_rdy;
 							end if;
@@ -233,7 +233,7 @@ begin
 				end if;
 
 				if (out_rdy xor out_req)='1' then
-					if rxpidv='0' then
+					if (rxdv and rxpidv)='0' then
 						we := '0';
 					elsif rxbs='1' then
 						we := '0';
@@ -293,10 +293,16 @@ begin
 			end if;
 		end if;
 	end process;
-	(txen, txd) <= 
-		std_logic_vector'(buffer_txen, buffer_txd) when txbuffer else
-		std_logic_vector'(rqst_txen,   rqst_txd)   when (ctlr_rdy xor ctlr_req)='1' else
-		std_logic_vector'(dev_txen,    dev_txd);
+
+	txen <= 
+		buffer_txen when txbuffer else
+		rqst_txen   when (ctlr_rdy xor ctlr_req)='1' else
+		dev_txen;
+		
+	txd <= 
+		buffer_txd when txbuffer else
+		rqst_txd   when (ctlr_rdy xor ctlr_req)='1' else
+		dev_txd;
 		
 	rqst_txbs <= 
 		not to_stdulogic(ctlr_rdy xor ctlr_req) when txbuffer else 
@@ -306,7 +312,7 @@ begin
 		to_stdulogic(ctlr_rdy xor ctlr_req) when txbuffer     else
 		txbs;
 
-	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxpidv, rxbs, rxd);
+	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv and rxpidv, rxbs, rxd);
 
 	tp(1)  <= to_stdulogic(setup_req);
 	tp(2)  <= to_stdulogic(setup_rdy);

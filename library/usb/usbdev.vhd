@@ -193,9 +193,9 @@ begin
 		rx_rdy   => rx_rdy,
 				   
 		rxpidv   => phy_rxpidv,
+		rxdv     => phy_rxdv,
 		rxpid    => phy_rxpid,
 		tkdata   => tkdata,
-		rxdv     => phy_rxdv,
 		rxbs     => phy_rxbs,
 		rxd      => phy_rxd,
 		phyerr   => phyerr,
@@ -226,7 +226,6 @@ begin
 
 		clk       => clk,
 		cken      => cken,
-
 
 		rx_req    => rx_req,
 		rx_rdy    => rx_rdy,
@@ -291,6 +290,9 @@ begin
 		in_rdy    => in_rdy,
 		ackrx_req => ackrx_req,
 		ackrx_rdy => ackrx_rdy,
+		phyerr    => phyerr,
+		tkerr     => tkerr,
+		crcerr    => crcerr,
 
 		rxpidv    => rqst_rxdv,
 		rxbs      => rqst_rxbs,

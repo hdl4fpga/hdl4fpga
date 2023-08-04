@@ -39,8 +39,8 @@ entity usbpkt_rx is
 
 		tkdata : out std_logic_vector(0 to 11-1);
 		rxpidv : in  std_logic;
-		rxpid  : in  std_logic_vector(4-1 downto 0);
 		rxdv   : in  std_logic;
+		rxpid  : in  std_logic_vector(4-1 downto 0);
 		rxbs   : in  std_logic;
 		rxd    : in  std_logic;
 		phyerr : in  std_logic;
@@ -76,7 +76,7 @@ begin
 					when s_token|s_data =>
 						if rxpidv='0' then
 							if (phyerr or crcerr)='0' then
-								rx_req  <= not to_stdulogic(to_bit(rx_rdy));
+								rx_req <= not to_stdulogic(to_bit(rx_rdy));
 							else
 								state := s_idle;
 							end if;
@@ -101,7 +101,7 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (phyerr or crcerr or tkerr)='0' then
-					if rxpidv='1' then
+					if (rxdv and rxpidv)='1' then
 						if unsigned(rxpid(2-1 downto 0))=resize(unsigned(tk_out),2) then
 							if rxpidv='1' then
 								if rxbs='0' then

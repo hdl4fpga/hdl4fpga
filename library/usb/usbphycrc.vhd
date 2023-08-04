@@ -169,6 +169,7 @@ begin
 				when s_pid =>
 					if (txen or phy_rxdv)='0' then
 						cntr := length_of_pid-1;
+						rxpidv    <= '0';
 						crcact_rx <= '0';
 						crcact_tx <= '0';
 					elsif (phy_txbs or phy_rxbs)='0' then
@@ -189,6 +190,7 @@ begin
 								else
 									crcact_rx <= '1';
 								end if;
+								rxpidv <= '1';
 								state := s_rx;
 							end if;
 							rxpid <= std_logic_vector(pid(4-1 downto 0));
@@ -206,6 +208,7 @@ begin
 					end if;
 				when s_rx =>
 					if phy_rxdv='0' then
+						rxpidv    <= '0';
 						crcact_rx <= '0';
 						state := s_pid;
 					end if;
@@ -260,7 +263,6 @@ begin
 		'0' when txen='1'      else
 		'0' when echo='1'      else
 		phy_rxdv;
-	rxpidv <= crcact_rx and phy_rxdv;
 
 	rxbs <= phy_rxbs;
 	rxd  <= phy_rxd;

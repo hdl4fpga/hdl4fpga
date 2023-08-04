@@ -47,7 +47,7 @@ entity usbdevrqst is
 		rqst_rdy  : buffer bit;
 
 		rxpidv    : in  std_logic := '-';
-		rxpid     : in  std_logic_vector(4-1 downto 0);
+		rxpid     : in  std_logic_vector(4-1 downto 0) := (others => '0');
 		rxbs      : in  std_logic := '-';
 		rxd       : in  std_logic := '-';
 
@@ -55,6 +55,9 @@ entity usbdevrqst is
 		in_req    : in  bit;
 		ackrx_rdy : in  bit;
 		ackrx_req : in  bit;
+		phyerr    : in  std_logic;
+		tkerr     : in  std_logic;
+		crcerr    : in  std_logic;
 		txen      : out std_logic;
 		txbs      : in  std_logic;
 		txd       : out std_logic);
@@ -153,19 +156,19 @@ begin
 							data := data rol 1;
 						end if;
 					end if;
+				elsif (phyerr or crcerr)='0' then
+    				shr := data;
+    				requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
+    				shr := shr rol requesttype'length;
+    				request <= reverse(std_logic_vector(shr(0 to request'length-1)));
+    				shr := shr rol request'length;
+    				value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
+    				shr := shr rol value'length;
+    				index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
+    				shr := shr rol index'length;
+    				length  <= unsigned(reverse(std_logic_vector(shr(0 to length'length-1))));
+    				shr := shr rol length'length;
 				end if;
-
-				shr := data;
-				requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
-				shr := shr rol requesttype'length;
-				request <= reverse(std_logic_vector(shr(0 to request'length-1)));
-				shr := shr rol request'length;
-				value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
-				shr := shr rol value'length;
-				index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
-				shr := shr rol index'length;
-				length  <= unsigned(reverse(std_logic_vector(shr(0 to length'length-1))));
-				shr := shr rol length'length;
 			end if;
 		end if;
 	end process;
@@ -226,10 +229,10 @@ begin
 		type states is (s_idle, s_data);
 		variable state : states;
 		constant descriptor_data : std_logic_vector := (
-			device_dscptr     &
-			config_dscptr     &
-			interface_dscptr  &
-			endpoint_dscptr   &
+			device_dscptr    &
+			config_dscptr    &
+			interface_dscptr &
+			endpoint_dscptr  &
 			string_dscptr);
 
 		constant descriptor_lengths : natural_vector := (
@@ -327,9 +330,9 @@ begin
 		std_logic_vector'(descriptor_txen, descriptor_txd) when request(4-1 downto 0)=request_ids(get_descriptor) else
 		std_logic_vector'('0', '-');
 
-	tp(1)  <= to_stdulogic(rqst_reqs(set_address));
-	tp(2)  <= to_stdulogic(rqst_rdys(set_address));
-	tp(3)  <= to_stdulogic(rqst_reqs(get_descriptor));
-	tp(4)  <= to_stdulogic(rqst_rdys(get_descriptor));
+	tp(1) <= to_stdulogic(rqst_reqs(set_address));
+	tp(2) <= to_stdulogic(rqst_rdys(set_address));
+	tp(3) <= to_stdulogic(rqst_reqs(get_descriptor));
+	tp(4) <= to_stdulogic(rqst_rdys(get_descriptor));
 
 end;

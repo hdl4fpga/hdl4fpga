@@ -120,6 +120,8 @@ add wave -noupdate -expand -group dev_tp_p /testbench/dev_b/tp_p/cntr
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_p/descriptor_addr
 add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_p/descriptor_length
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/dp
+add wave -noupdate /testbench/dn
 add wave -noupdate /testbench/dev_b/dev_e/usbpktrx_e/tkdata_p/state
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbpktrx_e/tkdata
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbpktrx_e/tkdata_p/data
@@ -158,8 +160,8 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/dev_b/dev_e/clk
 add wave -noupdate /testbench/dev_b/dev_e/cken
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {98490541 ps} 0} {{Cursor 2} {89945955 ps} 0} {{Cursor 3} {19844345 ps} 0}
-quietly wave cursor active 3
+WaveRestoreCursors {{Cursor 1} {98490541 ps} 0} {{Cursor 2} {72676604 ps} 0} {{Cursor 3} {19844345 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 265
 configure wave -valuecolwidth 72
 configure wave -justifyvalue left
@@ -174,4 +176,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {17132750 ps} {22645254 ps}
+WaveRestoreZoom {0 ps} {105 us}
