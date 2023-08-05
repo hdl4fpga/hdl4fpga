@@ -53,8 +53,8 @@ entity usbdevrqst is
 
 		in_rdy    : in  bit;
 		in_req    : in  bit;
-		ackrx_rdy : in  bit;
-		ackrx_req : in  bit;
+		ack_rdy : in  bit;
+		ack_req : in  bit;
 		phyerr    : in  std_logic;
 		tkerr     : in  std_logic;
 		crcerr    : in  std_logic;
@@ -295,9 +295,10 @@ begin
 								descriptor_addr   := descriptor_addr   + 1;
 								descriptor_length := descriptor_length - 1;
 							end if;
-						elsif (in_req xor in_rdy)='1' then
+						elsif (in_rdy xor in_req)='1' then
+							in_rdy <= in_req;
 							state := s_idle;
-						elsif (ackrx_req xor ackrx_rdy)='1' then
+						elsif (ack_rdy xor ack_req)='1' then
 							getdescriptor_rdy <= getdescriptor_req;
 							state := s_idle;
 						end if;

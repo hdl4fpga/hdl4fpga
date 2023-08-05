@@ -140,14 +140,12 @@ architecture def of usbdev is
 	signal tkerr     : std_logic;
 	signal crcerr    : std_logic;
 
-	signal setup_req : bit;
-	signal setup_rdy : bit;
-	signal in_req    : bit;
-	signal in_rdy    : bit;
-	signal ackrx_req : bit;
-	signal ackrx_rdy : bit;
-	signal rqst_req  : bit;
-	signal rqst_rdy  : bit;
+	signal rqst_req    : bit;
+	signal rqst_rdy    : bit;
+	signal rqstin_req  : bit;
+	signal rqstin_rdy  : bit;
+	signal rqstack_req : bit;
+	signal rqstack_rdy : bit;
 
 	signal tkdata    : std_logic_vector(0 to 11-1);
 
@@ -237,10 +235,10 @@ begin
 		phyerr    => phyerr,
 		tkerr     => tkerr,
 		crcerr    => crcerr,
-		in_req    => in_req,
-		in_rdy    => in_rdy,
-		ackrx_req => ackrx_req,
-		ackrx_rdy => ackrx_rdy,
+		rqstin_req  => rqstin_req,
+		rqstin_rdy  => rqstin_rdy,
+		rqstack_req => rqstack_req,
+		rqstack_rdy => rqstack_rdy,
 
 		tx_req    => tx_req,
 		tx_rdy    => tx_rdy,
@@ -285,10 +283,10 @@ begin
 		dev_cfgd  => dev_cfgd,
 		rqst_req  => rqst_req,
 		rqst_rdy  => rqst_rdy,
-		in_req    => in_req,
-		in_rdy    => in_rdy,
-		ackrx_req => ackrx_req,
-		ackrx_rdy => ackrx_rdy,
+		in_req    => rqstin_req,
+		in_rdy    => rqstin_rdy,
+		ack_req   => rqstack_req,
+		ack_rdy   => rqstack_rdy,
 		phyerr    => phyerr,
 		tkerr     => tkerr,
 		crcerr    => crcerr,

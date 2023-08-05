@@ -55,12 +55,12 @@ entity usbdevflow is
 		txbs      : in  std_logic;
 		txd       : buffer std_logic;
 
-		in_req    : buffer bit;
-		in_rdy    : buffer bit;
-		ackrx_req : buffer bit;
-		ackrx_rdy : buffer bit;
-		rqst_req  : buffer bit;
-		rqst_rdy  : in  bit;
+		rqst_req    : buffer bit;
+		rqst_rdy    : in  bit;
+		rqstin_rdy  : in  bit;
+		rqstin_req  : in  bit;
+		rqstack_rdy : in  bit;
+		rqstack_req : in  bit;
 
 		dev_txen  : in  std_logic;
 		dev_txbs  : out std_logic;
@@ -96,6 +96,10 @@ architecture def of usbdevflow is
 	signal setup_rdy : bit;
 	signal out_req   : bit;
 	signal out_rdy   : bit;
+	signal in_req    : bit;
+	signal in_rdy    : bit;
+	signal ackrx_req : bit;
+	signal ackrx_rdy : bit;
 	signal acktx_rdy : bit;
 	signal acktx_req : bit;
 
@@ -131,9 +135,12 @@ begin
     					end if;
     				when tk_in =>
     					if (in_req xor in_rdy)='0' then
-							if tkdata(dev_addr'range) = (dev_addr'range => '0') or
-							   tkdata(dev_addr'range) = dev_addr then
-								in_req   <= not in_rdy;
+							if tkdata(dev_addr'range)=(dev_addr'range => '0') or
+							   tkdata(dev_addr'range)=dev_addr then
+								if tkdata(dev_endp'range)=(dev_endp'range => '0') then
+									rqstin_req <= not rqstin_rdy;
+								end if;
+								in_req <= not in_rdy;
 							end if;
     					end if;
     				when tk_out=>
