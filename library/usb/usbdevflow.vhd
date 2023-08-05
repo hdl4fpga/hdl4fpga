@@ -161,13 +161,17 @@ begin
 							end if;
 						end if;
     				when hs_ack =>
-						if (ackrx_req xor ackrx_rdy)='0' then
-							ackrx_req <= not ackrx_rdy;
+						if tkdata(dev_addr'range)=(dev_addr'range => '0') or
+						   tkdata(dev_addr'range)=dev_addr then
+							if tkdata(dev_endp'range)=(dev_endp'range => '0') then
+								rqstack_req <= not rqstack_rdy;
+							end if;
 						end if;
+						ackrx_req <= not ackrx_rdy;
 						if (stus_rdy xor stus_req)='1' then
 							ctlr_rdy <= ctlr_req;
-							stus_rdy <= stus_req;
 						end if;
+						stus_rdy <= stus_req;
     					ddata <= ddata xor tbit;
     				when others =>
     				end case;
