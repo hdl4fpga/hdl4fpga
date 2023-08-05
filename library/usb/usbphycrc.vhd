@@ -85,6 +85,7 @@ architecture def of usbphycrc is
 
 	signal echo      : std_logic;
 	signal chken     : std_logic;
+	signal pidv      : std_logic;
 begin
 
 	data <= txd when txen='1' else phy_rxd;
@@ -169,7 +170,7 @@ begin
 				when s_pid =>
 					if (txen or phy_rxdv)='0' then
 						cntr := length_of_pid-1;
-						rxpidv    <= '0';
+						pidv    <= '0';
 						crcact_rx <= '0';
 						crcact_tx <= '0';
 					elsif (phy_txbs or phy_rxbs)='0' then
@@ -190,7 +191,7 @@ begin
 								else
 									crcact_rx <= '1';
 								end if;
-								rxpidv <= '1';
+								pidv <= '1';
 								state := s_rx;
 							end if;
 							rxpid <= std_logic_vector(pid(4-1 downto 0));
@@ -207,8 +208,8 @@ begin
 						crc5_16 <= '0';
 					end if;
 				when s_rx =>
+					pidv <= '0';
 					if phy_rxdv='0' then
-						rxpidv    <= '0';
 						crcact_rx <= '0';
 						state := s_pid;
 					end if;
@@ -257,12 +258,14 @@ begin
 		end if;
 	end process;
 
-	rxerr <= tkerr or phy_rxerr or crcerr;
+	rxerr  <= tkerr or phy_rxerr or crcerr;
 	phyerr <= phy_rxerr;
 	rxdv <=
 		'0' when txen='1'      else
 		'0' when echo='1'      else
+		'0' when crcact_rx='0' else
 		phy_rxdv;
+	rxpidv <= pidv;
 
 	rxbs <= phy_rxbs;
 	rxd  <= phy_rxd;

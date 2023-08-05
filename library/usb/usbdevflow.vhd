@@ -31,7 +31,7 @@ use hdl4fpga.usbpkg.all;
 
 entity usbdevflow is
 	generic (
-		txbuffer : boolean := false);
+		txbuffer  : boolean := false);
 	port (
 		tp        : out std_logic_vector(1 to 32) := (others => '0');
 		clk       : in  std_logic;
@@ -39,7 +39,6 @@ entity usbdevflow is
 
 		rx_req    : in  std_logic;
 		rx_rdy    : buffer std_logic;
-		rxpidv    : in  std_logic;
 		rxpid     : in  std_logic_vector(4-1 downto 0);
 		rxdv      : in  std_logic;
 		rxbs      : in  std_logic;
@@ -233,7 +232,7 @@ begin
 				end if;
 
 				if (out_rdy xor out_req)='1' then
-					if (rxdv and rxpidv)='0' then
+					if rxdv='0' then
 						we := '0';
 					elsif rxbs='1' then
 						we := '0';
@@ -312,7 +311,7 @@ begin
 		to_stdulogic(ctlr_rdy xor ctlr_req) when txbuffer     else
 		txbs;
 
-	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv and rxpidv, rxbs, rxd);
+	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd);
 
 	tp(1)  <= to_stdulogic(setup_req);
 	tp(2)  <= to_stdulogic(setup_rdy);

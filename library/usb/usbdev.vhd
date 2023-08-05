@@ -229,7 +229,6 @@ begin
 
 		rx_req    => rx_req,
 		rx_rdy    => rx_rdy,
-		rxpidv    => phy_rxpidv,
 		rxpid     => phy_rxpid,
 		rxdv      => phy_rxdv,
 		rxbs      => phy_rxbs,
