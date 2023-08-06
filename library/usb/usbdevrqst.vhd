@@ -296,12 +296,13 @@ begin
 								descriptor_length := descriptor_length - 1;
 							end if;
 						elsif (in_rdy xor in_req)='1' then
-							in_rdy <= in_req;
 							state := s_idle;
 						elsif (ack_rdy xor ack_req)='1' then
 							getdescriptor_rdy <= getdescriptor_req;
 							state := s_idle;
 						end if;
+						in_rdy  <= in_req;
+						ack_rdy <= ack_req;
 					end case;
 				else
 					descriptor_length := (others=> '1');

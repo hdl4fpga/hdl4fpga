@@ -124,31 +124,33 @@ begin
 				if (rx_rdy xor rx_req)='1' then
     				case rxpid is
     				when tk_setup =>
-    					if (setup_req xor setup_rdy)='0' then
-							if tkdata(dev_addr'range) = (dev_addr'range => '0') or
-							   tkdata(dev_addr'range) = dev_addr then
+						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
+						   tkdata(dev_addr'range) = dev_addr then
+							if (setup_req xor setup_rdy)='0' then
 								ddata     <= data0;
 								rqst_req  <= not rqst_rdy;
 								ctlr_req  <= not ctlr_rdy;
-								setup_req <= not setup_rdy;
 							end if;
+							setup_req <= not setup_rdy;
     					end if;
     				when tk_in =>
-    					if (in_req xor in_rdy)='0' then
-							if tkdata(dev_addr'range)=(dev_addr'range => '0') or
-							   tkdata(dev_addr'range)=dev_addr then
+						if tkdata(dev_addr'range)=(dev_addr'range => '0') or
+						   tkdata(dev_addr'range)=dev_addr then
+							if (in_req xor in_rdy)='0' then
 								if tkdata(dev_endp'range)=(dev_endp'range => '0') then
-									rqstin_req <= not rqstin_rdy;
+									if not txbuffer then
+										rqstin_req <= not rqstin_rdy;
+									end if;
 								end if;
-								in_req <= not in_rdy;
 							end if;
+							in_req <= not in_rdy;
     					end if;
     				when tk_out=>
-    					if (out_req xor out_rdy)='0' then
-							if tkdata(dev_addr'range) = (dev_addr'range => '0') or
-							   tkdata(dev_addr'range) = dev_addr then
-								out_req <= not out_rdy;
+						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
+							tkdata(dev_addr'range) = dev_addr then
+							if (out_req xor out_rdy)='0' then
 							end if;
+							out_req <= not out_rdy;
     					end if;
     				when data0|data1 =>
 						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
