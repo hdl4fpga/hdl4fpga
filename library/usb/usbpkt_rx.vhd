@@ -100,7 +100,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (phyerr or crcerr or tkerr)='0' then
+				if (phyerr or tkerr)='0' then
 					if rxdv='1' then
 						if unsigned(rxpid(2-1 downto 0))=resize(unsigned(tk_out),2) then
 							if rxbs='0' then
@@ -108,7 +108,7 @@ begin
 								data    := data rol 1;
 							end if;
 						end if;
-					else
+					elsif crcerr='0' then
 						tkdata <= std_logic_vector(data(tkdata'range));
 					end if;
 				end if;

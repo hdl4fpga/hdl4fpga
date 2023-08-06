@@ -76,15 +76,12 @@ begin
 			constant data : std_logic_vector := 
 				reverse(x"2d0010",8)(0 to 19-1) &
 				reverse(x"c3_0005_1500_0000_0000_e831",8)(0 to 72-1) &
-				-- reverse(x"C3_8006_0001_0000_4000_eb94",8)(0 to 72-1) &
 				reverse(x"690010",8)(0 to 19-1) &
 				reverse(x"d2",8) &
 
 				reverse(x"2d1530",8)(0 to 19-1) &
 				reverse(x"C3_8006_0001_0000_0800_eb94",8)(0 to 72-1) &
-				-- reverse(x"C3_0009_0100_0000_0000_2725",8)(0 to 72-1) &
 				reverse(x"691530",8)(0 to 19-1) &
-				reverse(x"d2",8) &
 				reverse(x"691530",8)(0 to 19-1) &
 				reverse(x"d2",8) &
 
@@ -104,7 +101,7 @@ begin
 
 			constant length : natural_vector := (
 				19, 72, 19, 8,
-				19, 72, 19, 8, 19, 8,
+				19, 72, 19, 19, 8,
 				19, 72, 19, 8, 19, 8,
 				19, 72, 19, 8, 19, 8);
 

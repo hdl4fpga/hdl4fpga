@@ -82,6 +82,8 @@ architecture def of usbphycrc is
 	signal crc5      : std_logic_vector(0 to 5-1);
 	signal crc16     : std_logic_vector(0 to 16-1);
 	signal crc5_16   : std_logic;
+	signal crcerr_d  : std_logic;
+	signal crcerr_q  : std_logic;
 
 	signal echo      : std_logic;
 	signal chken     : std_logic;
@@ -111,7 +113,6 @@ begin
 		rxd   => phy_rxd,
 		rxerr => phy_rxerr);
 
-
 	crcdv <= 
 		crcact_tx when     txen='1' else 
 		crcact_rx when phy_rxdv='1' else
@@ -134,29 +135,22 @@ begin
 		crc16 => crc16);
 
 	chken <= crcact_rx and not crcdv;
-	chkcrc_p : process (clk)
+	crcerr_d <=
+		setif(crc5/=b"0_1100")               when crc5_16='0' else
+		setif(crc16/=b"1000_0000_0000_1101") when crc5_16='1' else
+		'-';
+	chkcrc_p : process (clk, crcerr_d)
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if chken='1' then
-					if crc5_16='0' then
-						if crc5/=b"0_1100" then
-							crcerr <= '1';
-						else
-							crcerr <= '0';
-						end if;
-					elsif crc16/=b"1000_0000_0000_1101" then
-						crcerr <= '1';
-					else
-						crcerr <= '0';
-					end if;
-				elsif rxdv='1' then
-					crcerr <= '0';
+					crcerr_q <= crcerr_d;
 				end if;
 			end if;
 		end if;
 	end process;
-	crcd <= crc16(0)  when crc5_16='1' else crc5(0);
+	crcerr <= crcerr_d when chken='1'   else crcerr_q;
+	crcd   <= crc16(0) when crc5_16='1' else crc5(0);
 
 	pktfmt_p : process (clk)
 		type states is (s_pid, s_tx, s_rx, s_crc);
