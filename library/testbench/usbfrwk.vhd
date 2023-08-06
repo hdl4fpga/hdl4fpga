@@ -100,16 +100,16 @@ begin
 				reverse(x"d2",8);
 
 			constant length : natural_vector := (
-				19, 72, 19, 8,
-				19, 72, 19, 19, 8,
-				19, 72, 19, 8, 19, 8,
-				19, 72, 19, 8, 19, 8);
+				  19,   72,    19,     8,
+				  19,   72,    19,    19,     8,
+				  19,   72,    19,     8,    19,    8,
+				  19,   72,    19,     8,    19,    8);
 
 			constant delays : time_vector := (
 				1 us, 1 us,  3 us,  4 us,
-				1 us, 1 us,  3 us, 10 us, 1 us, 10 us,
-				1 us, 1 us,  5 us, 19 us, 1 us, 5 us,
-				1 us, 2 us, 10 us,  4 us, 1 us, 5 us);
+				1 us, 1 us,  3 us, 10 us, 10 us,
+				1 us, 1 us,  5 us, 19 us,  1 us, 5 us,
+				1 us, 2 us, 10 us,  4 us,  1 us, 5 us);
 
 			variable i     : natural;
 			variable j     : natural;
@@ -130,7 +130,7 @@ begin
 				elsif txbs='0' then
 					txen <= '0';
 					if idle='1' then
-						if i < 10 and i < delays'length then
+						if i < 8 and i < delays'length then
 							wait for delays(i);
 							right := right + length(i);
 							i     := i + 1;
