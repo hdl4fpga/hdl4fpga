@@ -57,10 +57,10 @@ entity usbdevflow is
 
 		rqst_req    : buffer bit;
 		rqst_rdy    : in  bit;
+		rqstin_req  : buffer  bit;
 		rqstin_rdy  : in  bit;
-		rqstin_req  : in  bit;
+		rqstack_req : buffer  bit;
 		rqstack_rdy : in  bit;
-		rqstack_req : in  bit;
 
 		dev_txen  : in  std_logic;
 		dev_txbs  : out std_logic;

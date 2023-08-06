@@ -51,10 +51,10 @@ entity usbdevrqst is
 		rxbs      : in  std_logic := '-';
 		rxd       : in  std_logic := '-';
 
-		in_rdy    : in  bit;
 		in_req    : in  bit;
-		ack_rdy : in  bit;
-		ack_req : in  bit;
+		in_rdy    : buffer  bit;
+		ack_req   : in  bit;
+		ack_rdy   : buffer  bit;
 		phyerr    : in  std_logic;
 		tkerr     : in  std_logic;
 		crcerr    : in  std_logic;
