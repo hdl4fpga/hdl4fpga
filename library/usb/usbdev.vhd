@@ -149,6 +149,10 @@ architecture def of usbdev is
 
 	signal tkdata    : std_logic_vector(0 to 11-1);
 
+	signal dev_rxdv  : std_logic;
+	signal dev_rxbs  : std_logic;
+	signal dev_rxd   : std_logic;
+
 	signal tp_phy    : std_logic_vector(1 to 32);
 	signal tp_rqst   : std_logic_vector(1 to 32);
 	signal tp_pkt    : std_logic_vector(1 to 32);
@@ -252,9 +256,9 @@ begin
 		dev_txbs  => txbs,
 		dev_txd   => txd,
   
-		dev_rxdv  => rxdv,
-		dev_rxbs  => rxbs,
-		dev_rxd   => rxd,
+		dev_rxdv  => dev_rxdv,
+		dev_rxbs  => dev_rxbs,
+		dev_rxd   => dev_rxd,
 		dev_addr  => dev_addr,
 		dev_endp  => dev_endp,
 		dev_cfgd  => dev_cfgd,
@@ -297,5 +301,25 @@ begin
 		txen      => rqst_txen,
 		txbs      => rqst_txbs,
 		txd       => rqst_txd);
+
+	clipcrc_p : process (clk)
+		variable slr_rxd  : unsigned(0 to (16-1)-1);
+		variable slr_rxdv : unsigned(0 to (16-1)-1);
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if dev_rxbs='0' then
+					rxdv <= slr_rxdv(0);
+					slr_rxdv(0) := dev_rxdv;
+					slr_rxdv := slr_rxdv rol 1;
+
+					rxd <= slr_rxd(0) and dev_rxdv;
+					slr_rxd(0) := dev_rxd;
+					slr_rxd := slr_rxd rol 1;
+				end if;
+				rxbs <= dev_rxbs;
+			end if;
+		end if;
+	end process;
 
 end;

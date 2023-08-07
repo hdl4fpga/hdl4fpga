@@ -107,6 +107,9 @@ architecture def of usbdevflow is
 	signal buffer_txen : std_logic;
 	signal buffer_txbs : std_logic;
 	signal buffer_txd  : std_logic;
+	signal buffer_rxdv : std_logic;
+	signal buffer_rxbs : std_logic;
+	signal buffer_rxd  : std_logic;
 
 	signal ddata     : std_logic_vector(data0'range);
 
@@ -209,6 +212,7 @@ begin
 		end if;
 	end process;
 
+	buffer_rxbs <= rxbs;
 	rxbuffer_p : process (rqst_req, clk)
 		variable mem  : std_logic_vector(0 to 1024*8-1);
 		variable pin  : natural range mem'range;
@@ -223,7 +227,7 @@ begin
 					pout := pin;
 					prty := pin;
 				elsif pout /= prty then
-					if dev_rxbs='0' then
+					if buffer_rxbs='0' then
 						pout := pout + 1;
 					end if;
 				elsif (out_rdy xor out_req)='0' then
@@ -235,11 +239,11 @@ begin
 				end if;
 
 				if pout=pin then
-					dev_rxdv <='0';
+					buffer_rxdv <='0';
 				else
-					dev_rxdv <='1';
+					buffer_rxdv <='1';
 				end if;
-				dev_rxd <= mem(pout);
+				buffer_rxd <= mem(pout);
 				if we='1' then
 					mem(pin) := din;
 					pin := pin + 1;
@@ -248,7 +252,7 @@ begin
 				if (out_rdy xor out_req)='1' then
 					if rxdv='0' then
 						we := '0';
-					elsif rxbs='1' then
+					elsif buffer_rxbs='1' then
 						we := '0';
 					else
 						we := '1';
@@ -259,6 +263,21 @@ begin
 		end if;
 	end process;
 
+	dev_rxd <= 
+		'-' when rxbuffer else
+		rxd;
+		
+	dev_rxdv <= 
+		'-'  when rxbuffer else
+		rxdv when tkdata(dev_addr'range)=dev_addr and tkdata(dev_endp'range)/=(dev_endp'range => '0') and (rxpid=data0 or rxpid=data1) else
+		'0';
+
+	dev_rxbs <= 
+		'1'  when dev_cfgd='0' else
+		rxbs when tkdata(dev_addr'range)=dev_addr and tkdata(dev_endp'range)/=(dev_endp'range => '0') else
+		'1';
+
+		
 	buffer_txbs <= txbs;
 	txbuffer_p : process (rqst_rdy, clk)
 		variable mem  : std_logic_vector(0 to 1024*8-1);

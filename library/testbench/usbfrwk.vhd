@@ -99,7 +99,7 @@ begin
 				reverse(x"d2",8) &
 				reverse(x"691530",8)(0 to 19-1) &
 				reverse(x"d2",8) &
-				reverse(x"e11530",8)(0 to 19-1) &
+				reverse(x"e11534",8)(0 to 19-1) &
 				reverse(msg, 8);
 
 			constant length : natural_vector := (
