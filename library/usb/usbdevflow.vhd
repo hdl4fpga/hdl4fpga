@@ -31,7 +31,7 @@ use hdl4fpga.usbpkg.all;
 
 entity usbdevflow is
 	generic (
-		txbuffer  : boolean := false);
+		txbuffer  : boolean := true);
 	port (
 		tp        : out std_logic_vector(1 to 32) := (others => '0');
 		clk       : in  std_logic;
