@@ -262,9 +262,12 @@ begin
 			clk  => clk,
 			cken => cken,
 
-			txen => txen,
-			txbs => txbs,
-			txd  => txd,
+			-- txen => txen,
+			-- txbs => txbs,
+			-- txd  => txd,
+
+			txen => rxdv,
+			txd  => rxd,
 
 			rxdv => rxdv,
 			rxbs => rxbs,

@@ -101,13 +101,34 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/ackrx_req
 add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/ackrx_rdy
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/txen
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/txbs
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/txd
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/dev_b/dev_e/txen
+add wave -noupdate /testbench/dev_b/dev_e/txbs
+add wave -noupdate /testbench/dev_b/dev_e/txd
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_txen
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_txbs
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_txd
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/dev_b/dev_e/usbphycrc_e/txen
+add wave -noupdate /testbench/dev_b/dev_e/usbphycrc_e/txbs
+add wave -noupdate /testbench/dev_b/dev_e/usbphycrc_e/txd
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/buffer_txen
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/buffer_txbs
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/buffer_txd
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/dev_b/dev_e/dev_rxdv
+add wave -noupdate /testbench/dev_b/dev_e/dev_rxbs
+add wave -noupdate /testbench/dev_b/dev_e/dev_rxd
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/dev_b/rxdv
+add wave -noupdate /testbench/dev_b/rxbs
+add wave -noupdate /testbench/dev_b/rxd
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {60495787 ps} 0} {{Cursor 2} {163568145 ps} 0}
+WaveRestoreCursors {{Cursor 1} {60495787 ps} 0} {{Cursor 2} {178524719 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 265
 configure wave -valuecolwidth 72
@@ -123,4 +144,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {100250 ns} {205250 ns}
+WaveRestoreZoom {176797969 ps} {180079219 ps}

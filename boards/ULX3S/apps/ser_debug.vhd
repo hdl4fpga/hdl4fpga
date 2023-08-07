@@ -163,73 +163,76 @@ begin
 			clk  => videoio_clk,
 			dev_cfgd => cfgd,
 			cken => cken,
-			txen => txen, 
-			txbs => txbs,
-			txd  => txd,
+			-- txen => txen, 
+			-- txbs => txbs,
+			-- txd  => txd,
+			txen => rxdv, 
+			-- txbs => rxbs,
+			txd  => rxd,
 			rxdv => rxdv, 
 			rxbs => rxbs,
 			rxd  => rxd);
 			
 		ser_clk <= videoio_clk;
-		-- ser_frm     <= tp(1); 
-		-- ser_irdy    <= not tp(2) and cken;
-		-- ser_data(0) <= tp(3);
+		ser_frm     <= rxdv; 
+		ser_irdy    <= not rxbs and cken;
+		ser_data(0) <= rxd;
 
-		sof_filter_p : process(videoio_clk)
-			variable data : unsigned(0 to 8-1);
-			variable tken : unsigned(0 to 8-1);
-			variable ena  : unsigned(0 to 8-1) := (others => '0');
-			variable cntr : natural range 0 to 8;
-			alias trxen is tp(1);
-			alias trxbs is tp(2);
-			alias trxd  is tp(3);
-		begin
-			if rising_edge(videoio_clk) then
-				if cken='1' then
-					if trxen='1' or ena(0)='1' then
-						if trxbs='0' then
-							data(0) := trxd;
-							data    := data rol 1;
-							if cntr/=0 then
-								cntr := cntr - 1;
-								if cntr=0 then
-									tken := data;
-								end if;
-							end if;
-						end if;
-					else
-						cntr := 8;
-					end if;
-					ena(0) := trxen;
-					ena    := ena rol 1;
-
-					if cntr=0 then
-						if reverse(tken)=x"a5" then
-							ena := (others => '0');
-						elsif reverse(tken)=x"80" then
-							ena := (others => '0');
-							cntr := 8;
-						elsif (tken(0 to 4-1) xor tken(4 to 8-1))/=x"f" then
-							ena := (others => '0');
-						end if;
-					end if;
-					ser_frm <= ena(0); 
-					if trxen='1' then
-						if trxbs='1' then
-							ser_irdy <= '0';
-						else
-							ser_irdy <= '1';
-						end if;
-					else
-						ser_irdy <= '1';
-					end if;
-
-					ser_data(0) <= data(0);
-				else
-					ser_irdy <= '0';
-				end if;
-			end if;
-		end process;
+		-- sof_filter_p : process(videoio_clk)
+			-- variable data : unsigned(0 to 8-1);
+			-- variable tken : unsigned(0 to 8-1);
+			-- variable ena  : unsigned(0 to 8-1) := (others => '0');
+			-- variable cntr : natural range 0 to 8;
+			-- alias trxen is tp(1);
+			-- alias trxbs is tp(2);
+			-- alias trxd  is tp(3);
+		-- begin
+			-- if rising_edge(videoio_clk) then
+				-- if cken='1' then
+					-- if trxen='1' or ena(0)='1' then
+						-- if trxbs='0' then
+							-- data(0) := trxd;
+							-- data    := data rol 1;
+							-- if cntr/=0 then
+								-- cntr := cntr - 1;
+								-- if cntr=0 then
+									-- tken := data;
+								-- end if;
+							-- end if;
+						-- end if;
+					-- else
+						-- cntr := 8;
+					-- end if;
+					-- ena(0) := trxen;
+					-- ena    := ena rol 1;
+-- 
+					-- if cntr=0 then
+						-- if reverse(tken)=x"a5" then
+							-- ena := (others => '0');
+						-- elsif reverse(tken)=x"80" then
+							-- ena := (others => '0');
+							-- cntr := 8;
+						-- elsif (tken(0 to 4-1) xor tken(4 to 8-1))/=x"f" then
+							-- ena := (others => '0');
+						-- end if;
+					-- end if;
+					-- ser_frm <= ena(0); 
+					-- if trxen='1' then
+						-- if trxbs='1' then
+							-- ser_irdy <= '0';
+						-- else
+							-- ser_irdy <= '1';
+						-- end if;
+					-- else
+						-- ser_irdy <= '1';
+					-- end if;
+-- 
+					-- ser_data(0) <= data(0);
+				-- else
+					-- ser_irdy <= '0';
+				-- end if;
+			-- end if;
+		-- end process;
 
 		led(3) <= cfgd;
 	end generate;
