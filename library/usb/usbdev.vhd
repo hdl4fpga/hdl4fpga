@@ -302,14 +302,15 @@ begin
 		txbs      => rqst_txbs,
 		txd       => rqst_txd);
 
-	clipcrc_p : process (clk)
-		variable slr_rxd  : unsigned(0 to (16-1)-1);
-		variable slr_rxdv : unsigned(0 to (16-1)-1);
+	clipcrc_p : process (clk, dev_rxdv)
+		variable slr_rxd  : unsigned(0 to (16)-1);
+		variable slr_rxdv : unsigned(0 to (16)-1);
+		variable q : std_logic;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if dev_rxbs='0' then
-					rxdv <= slr_rxdv(0) and dev_rxdv;
+					q := slr_rxdv(0);
 					slr_rxdv(0) := dev_rxdv;
 					slr_rxdv := slr_rxdv rol 1;
 
@@ -320,6 +321,7 @@ begin
 				rxbs <= dev_rxbs;
 			end if;
 		end if;
+		rxdv <= q and dev_rxdv;
 	end process;
 
 end;
