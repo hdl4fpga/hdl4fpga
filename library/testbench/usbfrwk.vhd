@@ -73,7 +73,7 @@ begin
 			-- constant data : std_logic_vector := reverse(x"c300_05_0c00_0000_0000_ea38",8)(0 to 72-1);
 			-- constant data : std_logic_vector := reverse(x"c380_06_0001_0000_0800_eb94",8)(0 to 72-1);
 
-			constant msg  : std_logic_vector := x"c3" & x"81"; --to_ascii("HOLA");
+			constant msg  : std_logic_vector := x"c3" & to_ascii("HOLA"&LF);
 			constant data : std_logic_vector := 
 				reverse(x"2d0010",8)(0 to 19-1) &
 				reverse(x"c3_0005_1500_0000_0000_e831",8)(0 to 72-1) &
@@ -192,6 +192,7 @@ begin
 		signal rst  : std_logic;
 		signal clk  : std_logic := '0';
 		signal cken : std_logic;
+		signal txen1 : std_logic := '0';
 		signal txen : std_logic := '0';
 		signal txbs : std_logic;
 		signal txd  : std_logic;
@@ -253,6 +254,7 @@ begin
 			end if;
 		end process;
 
+		txen1 <= rxdv and not rxbs;
 	   	dev_e : entity hdl4fpga.usbdev
 	   	generic map (
 	   		oversampling => oversampling)
@@ -267,7 +269,7 @@ begin
 			-- txbs => txbs,
 			-- txd  => txd,
 
-			txen => rxdv,
+			txen => txen1,
 			txd  => rxd,
 
 			rxdv => rxdv,

@@ -67,8 +67,8 @@ int main() {
 		if (result == 0) {
 			printf("Bulk read transfer completed. Bytes transferred: %d\n", transferred);
 			for (int i = 0; i < transferred; i++) {
-				printf("0x%02x\n", buffer[i]);
-//				putchar(buffer[i]);
+				// printf("0x%02x\n", buffer[i]);
+				putchar(buffer[i]);
 			}
 			putchar('\n');
 		} else {

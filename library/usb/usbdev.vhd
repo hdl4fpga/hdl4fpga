@@ -310,7 +310,7 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if dev_rxbs='0' then
-					q := slr_rxdv(0);
+					rxdv <= slr_rxdv(0) and dev_rxdv;
 					slr_rxdv(0) := dev_rxdv;
 					slr_rxdv := slr_rxdv rol 1;
 
@@ -321,7 +321,6 @@ begin
 				rxbs <= dev_rxbs;
 			end if;
 		end if;
-		rxdv <= q and dev_rxdv;
 	end process;
 
 end;

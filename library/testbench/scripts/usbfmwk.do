@@ -93,53 +93,23 @@ add wave -noupdate -expand -group dev_tp_p /testbench/dev_b/tp_p/cntr
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_p/descriptor_addr
 add wave -noupdate /testbench/dev_b/dev_e/usbrqst_e/getdescriptor_p/descriptor_length
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/txbuffer_p/pin
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/txbuffer_p/pout
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/txbuffer_p/prty
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/txbuffer_p/we
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/ackrx_req
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/ackrx_rdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/txen
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/txbs
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/txd
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/dev_b/dev_e/cken
-add wave -noupdate /testbench/dev_b/dev_e/txen
-add wave -noupdate /testbench/dev_b/dev_e/txbs
-add wave -noupdate /testbench/dev_b/dev_e/txd
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_txen
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_txd
-add wave -noupdate /testbench/dev_b/dev_e/cken
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_rxdv
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_rxd
 add wave -noupdate /testbench/dev_b/dev_e/rxdv
+add wave -noupdate /testbench/dev_b/dev_e/rxbs
 add wave -noupdate /testbench/dev_b/dev_e/rxd
-add wave -noupdate /testbench/dev_b/dev_e/dev_rxbs
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/dev_b/dev_e/clk
 add wave -noupdate /testbench/dev_b/dev_e/cken
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/clipcrc_p/slr_rxd
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/clipcrc_p/slr_rxdv
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_txbs
-add wave -noupdate /testbench/dev_b/rxdv
-add wave -noupdate /testbench/dev_b/dev_e/usbphycrc_e/txen
-add wave -noupdate /testbench/dev_b/dev_e/usbphycrc_e/txbs
-add wave -noupdate /testbench/dev_b/dev_e/usbphycrc_e/txd
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/buffer_txen
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/buffer_txbs
-add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/buffer_txd
-add wave -noupdate /testbench/dev_b/dev_e/dev_rxdv
-add wave -noupdate /testbench/dev_b/dev_e/dev_rxd
-add wave -noupdate /testbench/dev_b/rxbs
-add wave -noupdate /testbench/dev_b/rxd
+add wave -noupdate -radix hexadecimal /testbench/dev_b/rx_p/msb
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {175977735 ps} 1} {{Cursor 2} {176067479 ps} 1}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {175977735 ps} 1} {{Cursor 2} {176067479 ps} 1} {{Cursor 3} {178926006 ps} 0}
+quietly wave cursor active 3
 configure wave -namecolwidth 265
 configure wave -valuecolwidth 291
 configure wave -justifyvalue left
@@ -154,4 +124,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {175642656 ps} {176345738 ps}
+WaveRestoreZoom {170353079 ps} {181602391 ps}
