@@ -96,6 +96,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/dev_b/dev_e/txbs
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/dev_b/dev_e/rxdv
 add wave -noupdate /testbench/dev_b/dev_e/rxbs
@@ -107,9 +108,11 @@ add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/clipcrc_p/slr_rxd
 add wave -noupdate -radix hexadecimal /testbench/dev_b/dev_e/clipcrc_p/slr_rxdv
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/dev_b/rx_p/msb
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/txbuffer_p/pin
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/txbuffer_p/pout
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {175977735 ps} 1} {{Cursor 2} {176067479 ps} 1} {{Cursor 3} {178926006 ps} 0}
-quietly wave cursor active 3
+WaveRestoreCursors {{Cursor 1} {175977735 ps} 1} {{Cursor 2} {207805151 ps} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 265
 configure wave -valuecolwidth 291
 configure wave -justifyvalue left
@@ -124,4 +127,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {170353079 ps} {181602391 ps}
+WaveRestoreZoom {198341718 ps} {210613594 ps}

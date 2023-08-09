@@ -322,6 +322,8 @@ begin
 					we  := dev_txen;
 					din := dev_txd;
 				end if;
+				tp(11) <= buffer_txen;
+				tp(12) <= buffer_txbs;
 			end if;
 		end if;
 	end process;

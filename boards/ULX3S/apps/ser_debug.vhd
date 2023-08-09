@@ -236,7 +236,9 @@ begin
 			end if;
 		end process;
 
-		led(3) <= cfgd;
+		led(4) <= tp(4);
+		led(3) <= tp(5);
+		led(2) <= cfgd;
 	end generate;
 
 	hdlc_g : if io_link=io_hdlc generate
