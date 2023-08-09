@@ -112,6 +112,8 @@ architecture def of usbdevflow is
 	signal buffer_rxd  : std_logic;
 
 	signal ddata     : std_logic_vector(data0'range);
+	signal ddatao    : std_logic_vector(data0'range);
+	signal ddatai    : std_logic_vector(data0'range);
 
 	signal rxerr     : std_logic;
 
@@ -132,6 +134,8 @@ begin
 						   tkdata(dev_addr'range) = dev_addr then
 							if (setup_req xor setup_rdy)='0' then
 								ddata     <= data0;
+								ddatai    <= data0;
+								ddatao    <= data0;
 								rqst_req  <= not rqst_rdy;
 								ctlr_req  <= not ctlr_rdy;
 							end if;
@@ -160,7 +164,12 @@ begin
 						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
 						   tkdata(dev_addr'range) = dev_addr then
 							if rxerr='0' then
-								ddata     <= ddata xor tbit;
+								case tkdata(dev_endp'range) is
+								when (dev_endp'range => '0') =>
+									ddata <= ddata xor tbit;
+								when others =>
+									ddatao <= ddatao xor tbit;
+								end case;
 								out_rdy   <= out_req;
 								acktx_req <= not acktx_rdy; 
 								setup_rdy <= setup_req;
@@ -178,7 +187,12 @@ begin
 							ctlr_rdy <= ctlr_req;
 						end if;
 						stus_rdy <= stus_req;
-    					ddata <= ddata xor tbit;
+						case tkdata(dev_endp'range) is
+						when (dev_endp'range => '0') =>
+							ddata <= ddata xor tbit;
+						when others =>
+							ddatai <= ddatai xor tbit;
+						end case;
     				when others =>
     				end case;
 				end if;
@@ -195,7 +209,12 @@ begin
 			if cken='1' then
 				if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 					if (in_rdy xor in_req)='1' then
-						txpid   <= ddata;
+						case tkdata(dev_endp'range) is
+						when (dev_endp'range => '0') =>
+							txpid  <= ddata;
+						when others =>
+							txpid  <= ddatai;
+						end case;
 						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 						if txen='0' then
 							stus_req <= not stus_rdy;
