@@ -32,6 +32,9 @@
 #include <arpa/inet.h>
 #endif
 
+#include <libusb-1.0/libusb.h>
+
+#define VENDOR_ID 0x1234
 #include "siolib.h"
 #include "lfsr.h"
 
@@ -124,8 +127,13 @@ int sio_memwrite(size_t address, const char *buffer, size_t length)
 
 int main (int argc, char *argv[])
 {
+	libusb_device_handle *dev_handle;
+	libusb_context *ctx = NULL;
+
 	int nooutput;
 
+	short vendor;
+	short product;
 	opterr   = 0;
 
 	setvbuf(stderr, NULL, _IONBF, 0);
@@ -133,9 +141,11 @@ int main (int argc, char *argv[])
 
 	int c;
 	bool h;
+	bool u;
 
 	h = false;
-	while ((c = getopt (argc, argv, "lh:")) != -1) {
+	u = false;
+	while ((c = getopt (argc, argv, "lh:u:")) != -1) {
 		switch (c) {
 		case 'l':
 			sio_setloglevel(8|4|2|1);
@@ -147,17 +157,46 @@ int main (int argc, char *argv[])
 				h = true;
 			}
 			break;
+		case'u':
+			if (optarg) {
+				char colon;
+				sscanf(optarg,  "%hx%c%hx", &vendor, &colon, &product);
+				u = true;
+			}
+			break;
 		case '?':
 			exit(1);
 		default:
-			fprintf (stderr, "usage : sendbyudp [ -l ] [ -o ] [ -p ] [ -h hostname ]\n");
+			fprintf (stderr, "usage : memtest [ -l ] [ -o ] [ -p ] [ -h hostname ] [ -u vendor:product ] \n");
 			abort();
 		}
 	}
 
-	if (!h) {
+	if (!(h || u)) {
 		init_comms();
 		fprintf (stderr, "COMMS has been initialized\n");
+	} else if (!h) {
+		if (libusb_init(&ctx) != 0) {
+			printf("Error initializing libusb.\n");
+			exit(-1);
+		}
+
+		dev_handle = libusb_open_device_with_vid_pid(ctx, vendor, product);
+		fprintf(stderr, "%hx:%hx\n",  vendor,  product);
+		if (dev_handle == NULL) {
+			printf("Failed to open the USB device.\n");
+			libusb_exit(ctx);
+			exit(-1);
+		}
+		if (libusb_claim_interface(dev_handle, 0) != 0) {
+			printf("Failed to claim the interface of the USB device.\n");
+			libusb_close(dev_handle);
+			libusb_exit(ctx);
+			exit(-1);
+		}
+
+		exit(-1);
+
 	}
 
 	test_init();

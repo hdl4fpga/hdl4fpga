@@ -25,6 +25,7 @@ WSADATA wsaData;
 #endif
 
 #include <math.h>
+#include <libusb-1.0/libusb.h>
 #include "hdlc.h"
 
 #define PORT	57001

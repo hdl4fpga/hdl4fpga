@@ -238,6 +238,16 @@ struct rgtr_node *set_acknode(struct rgtr_node *node, int ack, int dup)
 struct sockaddr_in sa_trgt;
 socklen_t sl_trgt = sizeof(sa_trgt);
 
+void usb_send(char * data, int len)
+{
+	if (sendto(sckt, data, len, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
+		int result = libusb_bulk_transfer(dev_handle, ENDPOINT_ADDRESS, buffer, TRANSFER_SIZE, &transferred, 0);
+		perror ("sending packet");
+		abort();
+	}
+	pkt_sent++;
+}
+
 void socket_send(char * data, int len)
 {
 	if (sendto(sckt, data, len, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
@@ -484,6 +494,32 @@ struct rgtr_node *rcvd_rgtr()
 //	if (LOG2) print_rgtrs(node);
 
 	return node;
+}
+
+libusb_device_handle *dev_handle;
+libusb_context *ctx = NULL;
+
+void init_usb (short vid, short pid)
+{
+	if (libusb_init(&ctx) != 0) {
+		printf("Error initializing libusb.\n");
+		exit(-1);
+	}
+
+	dev_handle = libusb_open_device_with_vid_pid(ctx, vid, pid);
+	fprintf(stderr, "%hx:%hx\n",  vid,  pid);
+	if (dev_handle == NULL) {
+		printf("Failed to open the USB device.\n");
+		libusb_exit(ctx);
+		exit(-1);
+	}
+	if (libusb_claim_interface(dev_handle, 0) != 0) {
+		printf("Failed to claim the interface of the USB device.\n");
+		libusb_close(dev_handle);
+		libusb_exit(ctx);
+		exit(-1);
+	}
+
 }
 
 void init_socket ()

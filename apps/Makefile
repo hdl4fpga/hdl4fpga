@@ -20,7 +20,7 @@ bin/siosend : src/hdlc.h src/hdlc.c src/siolib.h src/siolib.c src/siosend.c
 
 bin/memtest : src/lfsr.h src/lfsr.c src/hdlc.h src/hdlc.c src/siolib.h src/siolib.c src/memtest.c
 	mkdir -p bin
-	cc -O3 src/lfsr.c src/siolib.c src/hdlc.c src/memtest.c -o bin/memtest
+	cc -O3 src/lfsr.c src/siolib.c src/hdlc.c src/memtest.c -o bin/memtest -lusb-1.0
 
 bin/usb : src/usb.c
 	gcc -O3 src/usb.c -o bin/usb -lusb-1.0
