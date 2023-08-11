@@ -238,10 +238,16 @@ struct rgtr_node *set_acknode(struct rgtr_node *node, int ack, int dup)
 struct sockaddr_in sa_trgt;
 socklen_t sl_trgt = sizeof(sa_trgt);
 
+static libusb_context *usbctx = NULL;
+static libusb_device_handle *usbdev;
+static unsigned char usbendp;
+
 void usb_send(char * data, int len)
 {
-	if (sendto(sckt, data, len, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
-		int result = libusb_bulk_transfer(dev_handle, ENDPOINT_ADDRESS, buffer, TRANSFER_SIZE, &transferred, 0);
+	int result;
+	int transferred;
+	if ((result = libusb_bulk_transfer(usbdev, usbendp & ~0x80, data, len, &transferred, 0))!=0) {
+		printf("Error in bulk transfer. Error code: %d\n", result);
 		perror ("sending packet");
 		abort();
 	}
@@ -337,7 +343,6 @@ void send_rgtrrawdata(struct rgtr_node *node, char unsigned *data, int len)
 	send_buffer(buffer, len+len1);
 }
 
-
 int socket_rcvd(char unsigned *buffer, int maxlen)
 {
 	static struct sockaddr_in sa_src;
@@ -382,6 +387,21 @@ int socket_rcvd(char unsigned *buffer, int maxlen)
 	}
 
 	return -1;
+}
+
+int usb_rcvd(char unsigned *buffer, int maxlen)
+{
+	int result;
+	int transferred;
+
+	result = libusb_bulk_transfer(usbdev, usbendp | 0x80, buffer, maxlen, &transferred, 0);
+	if (result == 0) {
+		return transferred;
+	} else {
+		printf("Error in bulk transfer. Error code: %d\n", result);
+		return -1;
+	}
+
 }
 
 int hdlc_rcvd(char unsigned *buffer, int maxlen)
@@ -485,6 +505,10 @@ struct rgtr_node *rcvd_rgtr()
 		if ((len = socket_rcvd(buffer, sizeof(buffer))) < 0) {
 			return NULL;
 		}
+	} else if (usbctx) {
+		if ((len = usb_rcvd(buffer, sizeof(buffer))) < 0) {
+			return NULL;
+		}
 	} else {
 		if ((len = hdlc_rcvd(buffer, sizeof(buffer))) < 0) {
 			return NULL;
@@ -496,27 +520,25 @@ struct rgtr_node *rcvd_rgtr()
 	return node;
 }
 
-libusb_device_handle *dev_handle;
-libusb_context *ctx = NULL;
-
-void init_usb (short vid, short pid)
+void init_usb (short vid, short pid, unsigned char endp)
 {
-	if (libusb_init(&ctx) != 0) {
+	usbendp = endp;
+	if (libusb_init(&usbctx) != 0) {
 		printf("Error initializing libusb.\n");
 		exit(-1);
 	}
 
-	dev_handle = libusb_open_device_with_vid_pid(ctx, vid, pid);
+	usbdev = libusb_open_device_with_vid_pid(usbctx, vid, pid);
 	fprintf(stderr, "%hx:%hx\n",  vid,  pid);
-	if (dev_handle == NULL) {
+	if (usbdev == NULL) {
 		printf("Failed to open the USB device.\n");
-		libusb_exit(ctx);
+		libusb_exit(usbctx);
 		exit(-1);
 	}
-	if (libusb_claim_interface(dev_handle, 0) != 0) {
+	if (libusb_claim_interface(usbdev, 0) != 0) {
 		printf("Failed to claim the interface of the USB device.\n");
-		libusb_close(dev_handle);
-		libusb_exit(ctx);
+		libusb_close(usbdev);
+		libusb_exit(usbctx);
 		exit(-1);
 	}
 
