@@ -231,57 +231,6 @@ begin
 		end if;
 	end process;
 
-	buffer_rxbs <= rxbs;
-	rxbuffer_p : process (rqst_req, clk)
-		variable mem  : std_logic_vector(0 to 1024*8-1);
-		variable pin  : natural range mem'range;
-		variable pout : natural range mem'range;
-		variable prty : natural range mem'range;
-		variable we   : std_logic;
-		variable din  : std_logic;
-	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				if (setup_rdy xor setup_req)='1' then
-					pout := pin;
-					prty := pin;
-				elsif pout /= prty then
-					if buffer_rxbs='0' then
-						pout := pout + 1;
-					end if;
-				elsif (out_rdy xor out_req)='0' then
-					if rxerr='1' then
-						prty := pin;
-					else
-						pin := prty;
-					end if;
-				end if;
-
-				if pout=pin then
-					buffer_rxdv <='0';
-				else
-					buffer_rxdv <='1';
-				end if;
-				buffer_rxd <= mem(pout);
-				if we='1' then
-					mem(pin) := din;
-					pin := pin + 1;
-				end if;
-
-				if (out_rdy xor out_req)='1' then
-					if rxdv='0' then
-						we := '0';
-					elsif buffer_rxbs='1' then
-						we := '0';
-					else
-						we := '1';
-					end if;
-				end if;
-				din := rxd;
-			end if;
-		end if;
-	end process;
-
 	dev_rxd <= 
 		'-' when rxbuffer else
 		rxd;
@@ -295,7 +244,6 @@ begin
 		'1'  when dev_cfgd='0' else
 		rxbs when tkdata(dev_addr'range)=dev_addr and tkdata(dev_endp'range)/=(dev_endp'range => '0') else
 		'1';
-
 		
 	buffer_txbs <= txbs;
 	txbuffer_p : process (rqst_rdy, clk)
@@ -366,6 +314,57 @@ begin
 		txbs;
 
 	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd);
+
+	buffer_rxbs <= rxbs;
+	-- rxbuffer_p : process (rqst_req, clk)
+		-- variable mem  : std_logic_vector(0 to 1024*8-1);
+		-- variable pin  : natural range mem'range;
+		-- variable pout : natural range mem'range;
+		-- variable prty : natural range mem'range;
+		-- variable we   : std_logic;
+		-- variable din  : std_logic;
+	-- begin
+		-- if rising_edge(clk) then
+			-- if cken='1' then
+				-- if (setup_rdy xor setup_req)='1' then
+					-- pout := pin;
+					-- prty := pin;
+				-- elsif pout /= prty then
+					-- if buffer_rxbs='0' then
+						-- pout := pout + 1;
+					-- end if;
+				-- elsif (out_rdy xor out_req)='0' then
+					-- if rxerr='1' then
+						-- prty := pin;
+					-- else
+						-- pin := prty;
+					-- end if;
+				-- end if;
+-- 
+				-- if pout=pin then
+					-- buffer_rxdv <='0';
+				-- else
+					-- buffer_rxdv <='1';
+				-- end if;
+				-- buffer_rxd <= mem(pout);
+				-- if we='1' then
+					-- mem(pin) := din;
+					-- pin := pin + 1;
+				-- end if;
+-- 
+				-- if (out_rdy xor out_req)='1' then
+					-- if rxdv='0' then
+						-- we := '0';
+					-- elsif buffer_rxbs='1' then
+						-- we := '0';
+					-- else
+						-- we := '1';
+					-- end if;
+				-- end if;
+				-- din := rxd;
+			-- end if;
+		-- end if;
+	-- end process;
 
 	tp(1)  <= to_stdulogic(setup_req);
 	tp(2)  <= to_stdulogic(setup_rdy);

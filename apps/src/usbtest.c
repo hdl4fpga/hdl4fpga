@@ -138,7 +138,7 @@ int main(int argc, char **argv)
 						unsigned char wr_buffer[16]= "Hola";
 						unsigned char rd_buffer[sizeof(wr_buffer)];
 
-						// test_fill(wr_buffer, sizeof(wr_buffer));
+						test_fill(wr_buffer, sizeof(wr_buffer));
 						pipe &= ~0x80;
 						result = libusb_bulk_transfer(usbdev, pipe, wr_buffer, sizeof(wr_buffer), &wr_transferred, 0);
 						if (result == 0) {
