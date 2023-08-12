@@ -23,7 +23,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+use ieee.numeric_bit.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
@@ -31,7 +31,7 @@ use hdl4fpga.usbpkg.all;
 
 entity usbdevflow is
 	generic (
-		rxbuffer  : boolean := false;
+		rxbuffer  : boolean := true;
 		txbuffer  : boolean := true);
 	port (
 		tp        : out std_logic_vector(1 to 32) := (others => '0');
@@ -104,6 +104,8 @@ architecture def of usbdevflow is
 	signal acktx_rdy : bit;
 	signal acktx_req : bit;
 
+	-- signal endpin_req : bit;
+	-- signal endpin_rdy : bit;
 	signal buffer_txen : std_logic;
 	signal buffer_txbs : std_logic;
 	signal buffer_txd  : std_logic;
@@ -141,6 +143,7 @@ begin
 							end if;
 							setup_req <= not setup_rdy;
     					end if;
+						-- endpin_rdy <= endpin_req;
     				when tk_in =>
 						if tkdata(dev_addr'range)=(dev_addr'range => '0') or
 						   tkdata(dev_addr'range)=dev_addr then
@@ -149,6 +152,8 @@ begin
 									if not txbuffer then
 										rqstin_req <= not rqstin_rdy;
 									end if;
+								else
+									-- endpin_req <= not endpin_rdy;
 								end if;
 							end if;
 							in_req <= not in_rdy;
@@ -180,6 +185,8 @@ begin
 						   tkdata(dev_addr'range)=dev_addr then
 							if tkdata(dev_endp'range)=(dev_endp'range => '0') then
 								rqstack_req <= not rqstack_rdy;
+							else
+								-- endpin_rdy <= endpin_req;
 							end if;
 						end if;
 						ackrx_req <= not ackrx_rdy;
@@ -222,8 +229,10 @@ begin
 						in_rdy <= in_req;
 					end if;
 					if (acktx_rdy xor acktx_req)='1' then
-						txpid   <= hs_ack;
-						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
+						-- if (endpin_rdy xor endpin_req)='0' then
+							txpid   <= hs_ack;
+							tx_req  <= not to_stdulogic(to_bit(tx_rdy));
+						-- end if;
 						acktx_rdy <= acktx_req;
 					end if;
 				end if;
@@ -231,26 +240,11 @@ begin
 		end if;
 	end process;
 
-	dev_rxd <= 
-		'-' when rxbuffer else
-		rxd;
-		
-	dev_rxdv <= 
-		'-'  when rxbuffer else
-		rxdv when tkdata(dev_addr'range)=dev_addr and tkdata(dev_endp'range)/=(dev_endp'range => '0') and (rxpid=data0 or rxpid=data1) else
-		'0';
-
-	dev_rxbs <= 
-		'1'  when dev_cfgd='0' else
-		rxbs when tkdata(dev_addr'range)=dev_addr and tkdata(dev_endp'range)/=(dev_endp'range => '0') else
-		'1';
-		
-	buffer_txbs <= txbs;
 	txbuffer_p : process (rqst_rdy, clk)
 		variable mem  : std_logic_vector(0 to 1024*8-1);
-		variable pin  : natural range mem'range;
-		variable pout : natural range mem'range;
-		variable prty : natural range mem'range;
+		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
+		variable pout : unsigned(pin'range);
+		variable prty : unsigned(pout'range);
 		variable we   : std_logic;
 		variable din  : std_logic;
 	begin
@@ -260,31 +254,41 @@ begin
 					pout := pin;
 					prty := pout;
 					ackrx_rdy <= ackrx_req;
-				elsif pout /= pin then
-					if buffer_txbs='0' then
-						pout := pout + 1;
-					end if;
 				elsif (ackrx_rdy xor ackrx_req)='1' then
 					prty := pout;
 					ackrx_rdy <= ackrx_req;
 				elsif (in_rdy xor in_req)='1' then
 					pout := prty;
+				elsif pout /= pin then
+					if txbs='0' then
+						pout := pout + 1;
+					end if;
+				end if;
+
+				if (ctlr_rdy xor ctlr_req)='1' then
+					buffer_txbs <= '1';
+				elsif pin=prty then
+					buffer_txbs <= '0';
+				elsif dev_txen='0' then
+					buffer_txbs <= '1';
 				end if;
 
 				if pout=pin then
-					buffer_txen <='0';
+					buffer_txen <= '0';
 				else
-					buffer_txen <='1';
+					buffer_txen <= '1';
 				end if;
-				buffer_txd <= mem(pout);
+
+				buffer_txd <= mem(to_integer(pout(1 to pout'right)));
 				if we='1' then
-					mem(pin) := din;
+					mem(to_integer(pin(1 to pin'right))) := din;
 					pin := pin + 1;
 				end if;
 
 				if (ctlr_rdy xor ctlr_req)='1' then
 					we  := rqst_txen;
 					din := rqst_txd;
+				-- elsif (endpin_rdy xor endpin_req)='0' then
 				else
 					we  := dev_txen;
 					din := dev_txd;
@@ -309,63 +313,77 @@ begin
 		not to_stdulogic(ctlr_rdy xor ctlr_req) when txbuffer else 
 		txbs;
 	dev_txbs <= 
-		'0'                                 when dev_cfgd='0' else
-		to_stdulogic(ctlr_rdy xor ctlr_req) when txbuffer     else
+		'0'         when dev_cfgd='0' else
+		buffer_txbs when txbuffer     else
 		txbs;
 
 	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd);
 
 	buffer_rxbs <= rxbs;
-	-- rxbuffer_p : process (rqst_req, clk)
-		-- variable mem  : std_logic_vector(0 to 1024*8-1);
-		-- variable pin  : natural range mem'range;
-		-- variable pout : natural range mem'range;
-		-- variable prty : natural range mem'range;
-		-- variable we   : std_logic;
-		-- variable din  : std_logic;
-	-- begin
-		-- if rising_edge(clk) then
-			-- if cken='1' then
-				-- if (setup_rdy xor setup_req)='1' then
-					-- pout := pin;
-					-- prty := pin;
-				-- elsif pout /= prty then
-					-- if buffer_rxbs='0' then
-						-- pout := pout + 1;
-					-- end if;
-				-- elsif (out_rdy xor out_req)='0' then
-					-- if rxerr='1' then
-						-- prty := pin;
-					-- else
-						-- pin := prty;
-					-- end if;
-				-- end if;
--- 
-				-- if pout=pin then
-					-- buffer_rxdv <='0';
-				-- else
-					-- buffer_rxdv <='1';
-				-- end if;
-				-- buffer_rxd <= mem(pout);
-				-- if we='1' then
-					-- mem(pin) := din;
-					-- pin := pin + 1;
-				-- end if;
--- 
-				-- if (out_rdy xor out_req)='1' then
-					-- if rxdv='0' then
-						-- we := '0';
-					-- elsif buffer_rxbs='1' then
-						-- we := '0';
-					-- else
-						-- we := '1';
-					-- end if;
-				-- end if;
-				-- din := rxd;
-			-- end if;
-		-- end if;
-	-- end process;
+	rxbuffer_p : process (rqst_req, clk)
+		variable mem  : std_logic_vector(0 to 1024*8-1);
+		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
+		variable pout : unsigned(pin'range);
+		variable prty : unsigned(pout'range);
+		variable we   : std_logic;
+		variable din  : std_logic;
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (setup_rdy xor setup_req)='1' then
+					pout := pin;
+					prty := pin;
+				elsif pout /= prty then
+					if rxbs='0' then
+						pout := pout + 1;
+					end if;
+				elsif (out_rdy xor out_req)='0' then
+					if rxerr='1' then
+						prty := pin;
+					else
+						pin := prty;
+					end if;
+				end if;
 
+				if pout=pin then
+					buffer_rxdv <='0';
+				else
+					buffer_rxdv <='1';
+				end if;
+				buffer_rxd <= mem(to_integer(pout(1 to pout'right)));
+				if we='1' then
+					mem(to_integer(pin(1 to pin'right))) := din;
+					pin := pin + 1;
+				end if;
+
+				if (out_rdy xor out_req)='1' then
+					if rxdv='0' then
+						we := '0';
+					elsif rxbs='1' then
+						we := '0';
+					else
+						we := '1';
+					end if;
+				end if;
+				din := rxd;
+			end if;
+		end if;
+	end process;
+
+	dev_rxd <= 
+		buffer_rxd when rxbuffer else
+		rxd;
+		
+	dev_rxdv <= 
+		buffer_rxdv when rxbuffer else
+		rxdv when tkdata(dev_addr'range)=dev_addr and tkdata(dev_endp'range)/=(dev_endp'range => '0') and (rxpid=data0 or rxpid=data1) else
+		'0';
+
+	dev_rxbs <= 
+		buffer_rxbs when dev_cfgd='0' else
+		rxbs when tkdata(dev_addr'range)=dev_addr and tkdata(dev_endp'range)/=(dev_endp'range => '0') else
+		'1';
+		
 	tp(1)  <= to_stdulogic(setup_req);
 	tp(2)  <= to_stdulogic(setup_rdy);
 	tp(3)  <= to_stdulogic(out_req);

@@ -144,7 +144,7 @@ int main(int argc, char **argv)
 						if (result == 0) {
 							fprintf(stderr, "Bulk write transfer completed. Bytes transferred: %d\n", wr_transferred);
 						} else {
-							fprintf(stderr, "Error in bulk transfer. Error code: %d\n", result);
+							fprintf(stderr, "Error in write bulk transfer. Error code: %d\n", result);
 						}
 
 						pipe |=  0x80;
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 						if (result == 0) {
 							fprintf(stderr, "Bulk read  transfer completed. Bytes transferred: %d\n", rd_transferred);
 						} else {
-							fprintf(stderr, "Error in bulk transfer. Error code: %d\n", result);
+							fprintf(stderr, "Error in read bulk transfer. Error code: %d\n", result);
 						}
 						if (memcmp(wr_buffer, rd_buffer, sizeof(rd_buffer)) || wr_transferred!=rd_transferred) {
 							fprintf(stderr, "Bulk data doesn't match %d\n", k);

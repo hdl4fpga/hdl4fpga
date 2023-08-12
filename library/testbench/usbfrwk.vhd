@@ -73,8 +73,8 @@ begin
 			-- constant data : std_logic_vector := reverse(x"c300_05_0c00_0000_0000_ea38",8)(0 to 72-1);
 			-- constant data : std_logic_vector := reverse(x"c380_06_0001_0000_0800_eb94",8)(0 to 72-1);
 
-			constant msg0 : std_logic_vector := x"c3" & to_ascii("HOLA MUNDO"&LF);
-			constant msg1 : std_logic_vector := x"c3" & to_ascii("HOLA MUNDO23"&LF);
+			constant msg0 : std_logic_vector := x"c3" & to_ascii("1234");
+			constant msg1 : std_logic_vector := x"c3" & to_ascii("5678");
 			constant data : std_logic_vector := 
 				reverse(x"2d0010",8)(0 to 19-1) &
 				reverse(x"c3_0005_1500_0000_0000_e831",8)(0 to 72-1) &
