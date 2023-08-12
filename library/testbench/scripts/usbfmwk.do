@@ -113,19 +113,32 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/host_b/line__60/i
 add wave -noupdate /testbench/dev_b/dev_e/dev_cfgd
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/dev_b/dev_e/txbs
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/dev_b/rx_p/msb
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/rxdv
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/rxd
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/dev_b/dev_e/txbs
 add wave -noupdate /testbench/dev_b/dev_e/rxdv
 add wave -noupdate /testbench/dev_b/dev_e/rxbs
 add wave -noupdate /testbench/dev_b/dev_e/rxd
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_rxdv
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_rxbs
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_rxd
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/dev_b/rx_p/msb
-add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/rxbuffer_p/we
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/buffer_rxd
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/buffer_rxbs
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/rxbuffer_p/din
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/rxerr
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/out_req
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/out_rdy
 add wave -noupdate -radix unsigned /testbench/dev_b/dev_e/usbdevflow_e/rxbuffer_p/pin
 add wave -noupdate -radix unsigned /testbench/dev_b/dev_e/usbdevflow_e/rxbuffer_p/pout
 add wave -noupdate -radix unsigned /testbench/dev_b/dev_e/usbdevflow_e/rxbuffer_p/prty
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {175977735 ps} 1} {{Cursor 2} {63866093 ps} 0}
+WaveRestoreCursors {{Cursor 1} {225045426 ps} 0} {{Cursor 2} {194564783 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 265
 configure wave -valuecolwidth 164
@@ -141,4 +154,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {30600 ns} {282600 ns}
+WaveRestoreZoom {0 ps} {241500 ns}
