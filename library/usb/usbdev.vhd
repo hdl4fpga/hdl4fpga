@@ -106,7 +106,7 @@ entity usbdev is
 		txd  : in  std_logic := '-';
 
 		rxdv : out std_logic;
-		rxbs : out std_logic;
+		rxbs : inout std_logic;
 		rxd  : out std_logic);
 end;
 

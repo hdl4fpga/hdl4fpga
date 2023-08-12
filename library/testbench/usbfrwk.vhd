@@ -260,6 +260,7 @@ begin
 		end process;
 
 		txen1 <= rxdv and not rxbs;
+		rxbs <= txbs;
 	   	dev_e : entity hdl4fpga.usbdev
 	   	generic map (
 	   		oversampling => oversampling)
@@ -274,7 +275,8 @@ begin
 			-- txbs => txbs,
 			-- txd  => txd,
 
-			txen => txen1,
+			txen => txen,
+			txbs => txbs,
 			txd  => rxd,
 
 			rxdv => rxdv,

@@ -68,7 +68,7 @@ entity usbdevflow is
 		dev_txd   : in  std_logic;
 
 		dev_rxdv  : out std_logic;
-		dev_rxbs  : buffer std_logic;
+		dev_rxbs  : inout std_logic;
 		dev_rxd   : out std_logic;
 		dev_addr  : in  std_logic_vector(0 to 7-1);
 		dev_endp  : out std_logic_vector(7 to 11-1);
@@ -339,13 +339,13 @@ begin
 					end if;
 				elsif (out_rdy xor out_req)='0' then
 					if rxerr='1' then
-						prty := pin;
-					else
 						pin := prty;
+					else
+						prty := pin;
 					end if;
 				end if;
 
-				if pout=pin then
+				if pout=prty then
 					buffer_rxdv <='0';
 				else
 					buffer_rxdv <='1';
@@ -380,6 +380,7 @@ begin
 		'0';
 
 	dev_rxbs <= 
+		'Z' when rxbuffer else
 		buffer_rxbs when dev_cfgd='0' else
 		rxbs when tkdata(dev_addr'range)=dev_addr and tkdata(dev_endp'range)/=(dev_endp'range => '0') else
 		'1';
