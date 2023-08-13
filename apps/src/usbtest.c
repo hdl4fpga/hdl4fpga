@@ -135,7 +135,7 @@ int main(int argc, char **argv)
 					for (int k = 0; k < 10240; k++) {
 						int wr_transferred;
 						int rd_transferred;
-						unsigned char wr_buffer[16]= "Hola";
+						unsigned char wr_buffer[32]= "Hola";
 						unsigned char rd_buffer[sizeof(wr_buffer)];
 
 						test_fill(wr_buffer, sizeof(wr_buffer));
