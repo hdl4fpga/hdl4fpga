@@ -150,7 +150,7 @@ architecture def of usbdev is
 	signal tkdata    : std_logic_vector(0 to 11-1);
 
 	signal dev_rxdv  : std_logic;
-	signal dev_rxbs  : std_logic;
+	alias  dev_rxbs  is rxbs;
 	signal dev_rxd   : std_logic;
 
 	signal tp_phy    : std_logic_vector(1 to 32);
@@ -318,7 +318,6 @@ begin
 					slr_rxd(0) := dev_rxd;
 					slr_rxd := slr_rxd rol 1;
 				end if;
-				rxbs <= dev_rxbs;
 			end if;
 		end if;
 	end process;

@@ -106,6 +106,8 @@ begin
 				reverse(x"691530",8)(0 to 19-1) &
 				reverse(x"e11534",8)(0 to 19-1) &
 				reverse(msg1, 8) &
+				reverse(x"691530",8)(0 to 19-1) &
+				reverse(x"d2",8) &
 				reverse(x"691530",8)(0 to 19-1);
 
 			constant length : natural_vector := (
@@ -113,14 +115,16 @@ begin
 				  19,         72,    19,    19,     8,
 				  19,         72,    19,     8,    19,    8,
 				  19,         72,    19,     8,    19,    8,
-				  19, msg0'length,    19,    19, msg1'length, 19);
+				  19, msg0'length,    19,    19, msg1'length,
+				  19,          8,    19);
 
 			constant delays : time_vector := (
 				1 us,       1 us,  3 us,  4 us,
 				1 us,       1 us,  3 us, 10 us, 10 us,
 				1 us,       1 us,  5 us, 19 us,  1 us, 5 us,
 				1 us,       2 us, 10 us,  4 us,  1 us, 5 us,
-				1 us,       1 us,  4 us, 11 us,  1 us, 3 us);
+				1 us,       1 us,  4 us, 11 us,  1 us,
+				3 us,       8 us, 10 us);
 
 			variable i     : natural;
 			variable j     : natural;
@@ -197,7 +201,6 @@ begin
 		signal rst  : std_logic;
 		signal clk  : std_logic := '0';
 		signal cken : std_logic;
-		signal txen1 : std_logic := '0';
 		signal txen : std_logic := '0';
 		signal txbs : std_logic;
 		signal txd  : std_logic;
@@ -259,7 +262,6 @@ begin
 			end if;
 		end process;
 
-		txen1 <= rxdv and not rxbs;
 		rxbs <= txbs;
 	   	dev_e : entity hdl4fpga.usbdev
 	   	generic map (
@@ -275,7 +277,7 @@ begin
 			-- txbs => txbs,
 			-- txd  => txd,
 
-			txen => txen,
+			txen => rxdv, --txen,
 			txbs => txbs,
 			txd  => rxd,
 

@@ -113,8 +113,6 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/host_b/line__60/i
 add wave -noupdate /testbench/dev_b/dev_e/dev_cfgd
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -divider {New Divider}
-add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/dev_b/rx_p/msb
 add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/rxdv
 add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/rxd
@@ -127,6 +125,14 @@ add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_rxdv
 add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_rxbs
 add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_rxd
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/ackrx_req
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/ackrx_rdy
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/txbuffer_p/we
+add wave -noupdate -radix unsigned /testbench/dev_b/dev_e/usbdevflow_e/txbuffer_p/pin
+add wave -noupdate -radix unsigned /testbench/dev_b/dev_e/usbdevflow_e/txbuffer_p/pout
+add wave -noupdate -radix unsigned /testbench/dev_b/dev_e/usbdevflow_e/txbuffer_p/prty
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/rxbuffer_p/we
 add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/buffer_rxd
 add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/buffer_rxbs
@@ -138,7 +144,7 @@ add wave -noupdate -radix unsigned /testbench/dev_b/dev_e/usbdevflow_e/rxbuffer_
 add wave -noupdate -radix unsigned /testbench/dev_b/dev_e/usbdevflow_e/rxbuffer_p/pout
 add wave -noupdate -radix unsigned /testbench/dev_b/dev_e/usbdevflow_e/rxbuffer_p/prty
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {225045426 ps} 0} {{Cursor 2} {194564783 ps} 0}
+WaveRestoreCursors {{Cursor 1} {226644952 ps} 0} {{Cursor 2} {251668384 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 265
 configure wave -valuecolwidth 164
@@ -154,4 +160,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {241500 ns}
+WaveRestoreZoom {149316902 ps} {285816902 ps}
