@@ -131,18 +131,21 @@ int main(int argc, char **argv)
 					}
 					break;
 				case TEST:
+					int wr_transferred;
+					int rd_transferred;
+					unsigned char wr_buffer[64]= "Hola";
+					unsigned char rd_buffer[sizeof(wr_buffer)];
+					int k;
+
 					test_init();
-					for (int k = 0; k < 10240; k++) {
-						int wr_transferred;
-						int rd_transferred;
-						unsigned char wr_buffer[32]= "Hola";
-						unsigned char rd_buffer[sizeof(wr_buffer)];
+					for (k = 0; k < 10240; k++) {
 
 						test_fill(wr_buffer, sizeof(wr_buffer));
+						fprintf(stderr, "Pass %5d, %ld bytes lfsr block 0x%08llx", k, sizeof(wr_buffer), (unsigned long long int) lfsr);
 						pipe &= ~0x80;
 						result = libusb_bulk_transfer(usbdev, pipe, wr_buffer, sizeof(wr_buffer), &wr_transferred, 0);
 						if (result == 0) {
-							fprintf(stderr, "Bulk write transfer completed. Bytes transferred: %d\n", wr_transferred);
+							// fprintf(stderr, "Bulk write transfer completed. Bytes transferred: %d\n", wr_transferred);
 						} else {
 							fprintf(stderr, "Error in write bulk transfer. Error code: %d\n", result);
 						}
@@ -150,7 +153,7 @@ int main(int argc, char **argv)
 						pipe |=  0x80;
 						result = libusb_bulk_transfer(usbdev, pipe, rd_buffer, sizeof(rd_buffer), &rd_transferred, 0);
 						if (result == 0) {
-							fprintf(stderr, "Bulk read  transfer completed. Bytes transferred: %d\n", rd_transferred);
+							// fprintf(stderr, "Bulk read  transfer completed. Bytes transferred: %d\n", rd_transferred);
 						} else {
 							fprintf(stderr, "Error in read bulk transfer. Error code: %d\n", result);
 						}
@@ -158,9 +161,10 @@ int main(int argc, char **argv)
 							fprintf(stderr, "Bulk data doesn't match %d\n", k);
 							goto exit;
 						}
+						fputs(" OK\n", stderr);
 						// getchar();
 					}
-					fprintf(stderr, "Data compares successfully\n");
+					fprintf(stderr, "%ld bytes of data checked successfully\n", sizeof(wr_buffer)*k);
 					break;
 				default:
 					break;
