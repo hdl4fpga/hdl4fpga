@@ -110,7 +110,6 @@ architecture def of usbdevflow is
 	signal buffer_txbs : std_logic;
 	signal buffer_txd  : std_logic;
 	signal buffer_rxdv : std_logic;
-	-- signal buffer_rxbs : std_logic;
 	alias  buffer_rxbs is dev_rxbs;
 	signal buffer_rxd  : std_logic;
 

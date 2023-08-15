@@ -46,6 +46,20 @@ void test_fill (char *buffer, int length)
 	}
 }
 
+static char p = 0;
+void seq_init ()
+{
+	p = 0;
+}
+
+void seq_fill (char *buffer, int length)
+{
+	for (int i = 0; i < length; i += sizeof(p)) {
+		memcpy(buffer+i, &p, sizeof(p));
+		p += 1;
+	}
+}
+
 static libusb_device_handle *usbdev;
 static libusb_context *usbctx = NULL;
 
@@ -133,14 +147,16 @@ int main(int argc, char **argv)
 				case TEST:
 					int wr_transferred;
 					int rd_transferred;
-					unsigned char wr_buffer[64];
+					unsigned char wr_buffer[16];
 					unsigned char rd_buffer[sizeof(wr_buffer)];
 					int k;
 
-					test_init();
+					// test_init();
+					seq_init();
 					for (k = 0; 1 || k < 10240; k++) {
 
-						test_fill(wr_buffer, sizeof(wr_buffer));
+						// test_fill(wr_buffer, sizeof(wr_buffer));
+						seq_fill(wr_buffer, sizeof(wr_buffer));
 						fprintf(stderr, "Pass %5d, %ld bytes lfsr block 0x%08llx", k, sizeof(wr_buffer), (unsigned long long int) lfsr);
 						pipe &= ~0x80;
 						result = libusb_bulk_transfer(usbdev, pipe, wr_buffer, sizeof(wr_buffer), &wr_transferred, 0);
