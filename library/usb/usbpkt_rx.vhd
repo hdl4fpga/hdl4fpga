@@ -76,7 +76,11 @@ begin
 					when s_token|s_data =>
 						if rxdv='0' then
 							if (phyerr or crcerr)='0' then
-								rx_req  <= not to_stdulogic(to_bit(rx_rdy));
+								if rxpid(4-1 downto 0)/=tk_sof then
+									rx_req  <= not to_stdulogic(to_bit(rx_rdy));
+								else
+									state := s_idle;
+								end if;
 							else
 								state := s_idle;
 							end if;
@@ -109,7 +113,9 @@ begin
 							end if;
 						end if;
 					elsif crcerr='0' then
-						tkdata <= std_logic_vector(data(tkdata'range));
+						if rxpid(4-1 downto 0)/=tk_sof then
+							tkdata <= std_logic_vector(data(tkdata'range));
+						end if;
 					end if;
 				end if;
 			end if;
