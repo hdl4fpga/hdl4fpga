@@ -168,7 +168,7 @@ begin
     				when data0|data1 =>
 						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
 						   tkdata(dev_addr'range) = dev_addr then
-							-- if rxerr='0' then
+							if rxerr='0' then
 								case tkdata(dev_endp'range) is
 								when (dev_endp'range => '0') =>
 									ddata <= ddata xor tbit;
@@ -178,7 +178,7 @@ begin
 								out_rdy   <= out_req;
 								acktx_req <= not acktx_rdy; 
 								setup_rdy <= setup_req;
-							-- end if;
+							end if;
 						end if;
     				when hs_ack =>
 						if tkdata(dev_addr'range)=(dev_addr'range => '0') or
@@ -242,7 +242,7 @@ begin
 
 	txbuffer_p : process (rqst_rdy, clk)
 		variable mem  : std_logic_vector(0 to 1024*8-1);
-		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
+		variable pin  : unsigned(1 to unsigned_num_bits(mem'length-1));
 		variable pout : unsigned(pin'range);
 		variable prty : unsigned(pout'range);
 		variable we   : std_logic;
@@ -322,7 +322,7 @@ begin
 	-- buffer_rxbs <= rxbs;
 	rxbuffer_p : process (rqst_req, clk)
 		variable mem  : std_logic_vector(0 to 1024*8-1);
-		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
+		variable pin  : unsigned(1 to unsigned_num_bits(mem'length-1));
 		variable pout : unsigned(pin'range);
 		variable prty : unsigned(pout'range);
 		variable we   : std_logic;

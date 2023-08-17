@@ -106,7 +106,7 @@ begin
 				reverse(x"699500",8)(0 to 19-1) &
 				reverse(x"e19500",8)(0 to 19-1) &
 
-				reverse(x"a59500",8)(0 to 19-1) &
+				-- reverse(x"a50000",8)(0 to 19-1) &
 				reverse(msg1, 8) &
 				reverse(x"699500",8)(0 to 19-1) &
 				reverse(x"d2",8) &
@@ -118,7 +118,7 @@ begin
 				72,          19,           8,    19,     8,
 				19,          72,          19,     8,    19,
 				 8,          19, msg0'length,    19,    19,
-				19, msg1'length,          19,     8,    19);
+				0, msg1'length,          19,     8,    19);
 
 			constant delays : time_vector := (
 				 0 us,     0 us,        2 us,  3 us,  0 us,
@@ -264,7 +264,6 @@ begin
 			end if;
 		end process;
 
-		rxbs <= txbs;
 	   	dev_e : entity hdl4fpga.usbdev
 	   	generic map (
 	   		oversampling => oversampling)
@@ -279,8 +278,8 @@ begin
 			-- txbs => txbs,
 			-- txd  => txd,
 
-			txen => rxdv, --txen,
-			txbs => txbs,
+			txen => rxdv,
+			txbs => rxbs,
 			txd  => rxd,
 
 			rxdv => rxdv,

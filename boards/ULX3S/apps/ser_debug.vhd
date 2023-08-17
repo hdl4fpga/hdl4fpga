@@ -98,7 +98,6 @@ begin
 	usb_g : if io_link=io_usb generate 
 		signal cken : std_logic;
 		signal txen : std_logic;
-		signal txen1 : std_logic;
 		signal txbs : std_logic;
 		signal txd  : std_logic;
 		signal rxdv : std_logic;
@@ -167,13 +166,13 @@ begin
 			-- txen => txen, 
 			-- txbs => txbs,
 			-- txd  => txd,
-			txen => txen1, 
+			txen => rxdv, 
+			txbs => rxbs,
 			txd  => rxd,
 
 			rxdv => rxdv, 
 			rxbs => rxbs,
 			rxd  => rxd);
-		txen1 <= rxdv and not rxbs;
 			
 		ser_clk <= videoio_clk;
 		-- ser_frm     <= rxdv; 

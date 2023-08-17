@@ -169,7 +169,7 @@ int main(int argc, char **argv)
 						if (result) {
 							fprintf(stderr, "Error in read bulk transfer. Error code: %d\n", result);
 						}
-						if (memcmp(wr_buffer, rd_buffer, sizeof(rd_buffer)) || wr_transferred!=rd_transferred) {
+						if (memcmp(wr_buffer, rd_buffer, sizeof(wr_buffer)) || wr_transferred!=rd_transferred) {
 							fprintf(stderr, "\nPass %d doesn't match write transfered %d read transfered %d\n", k, wr_transferred, rd_transferred);
 							goto exit;
 						}
