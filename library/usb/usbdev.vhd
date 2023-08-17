@@ -302,10 +302,9 @@ begin
 		txbs      => rqst_txbs,
 		txd       => rqst_txd);
 
-	clipcrc_p : process (clk, dev_rxdv)
+	clipcrc_p : process (clk)
 		variable slr_rxd  : unsigned(0 to (16)-1);
 		variable slr_rxdv : unsigned(0 to (16)-1);
-		variable q : std_logic;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then

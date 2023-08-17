@@ -168,7 +168,7 @@ begin
     				when data0|data1 =>
 						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
 						   tkdata(dev_addr'range) = dev_addr then
-							if rxerr='0' then
+							-- if rxerr='0' then
 								case tkdata(dev_endp'range) is
 								when (dev_endp'range => '0') =>
 									ddata <= ddata xor tbit;
@@ -178,7 +178,7 @@ begin
 								out_rdy   <= out_req;
 								acktx_req <= not acktx_rdy; 
 								setup_rdy <= setup_req;
-							end if;
+							-- end if;
 						end if;
     				when hs_ack =>
 						if tkdata(dev_addr'range)=(dev_addr'range => '0') or

@@ -90,6 +90,9 @@ architecture def of usbphycrc is
 	signal pidv      : std_logic;
 begin
 
+	-- tp(1) <= '1'  when txen='1' else rxdv;
+	-- tp(2) <= txbs when txen='1' else rxbs;
+	-- tp(3) <= txd  when txen='1' else rxd;
 	data <= txd when txen='1' else phy_rxd;
 	usbphy_e : entity hdl4fpga.usbphy
    	generic map (

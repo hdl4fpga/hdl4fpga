@@ -73,21 +73,21 @@ begin
 			-- constant data : std_logic_vector := reverse(x"c300_05_0c00_0000_0000_ea38",8)(0 to 72-1);
 			-- constant data : std_logic_vector := reverse(x"c380_06_0001_0000_0800_eb94",8)(0 to 72-1);
 
-			constant msg0 : std_logic_vector := x"c3" & x"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
-			constant msg1 : std_logic_vector := x"c3" & x"101112131415161718191a1b1c1d1e1f";
+			constant msg0 : std_logic_vector := x"4b" & x"606162636465666768696a6b6c6d6e6f";
+			constant msg1 : std_logic_vector := x"c3" & x"707172737475767778797a7b7c7d7e7f";
 			constant data : std_logic_vector := 
 				reverse(x"2d0010",8)(0 to 19-1) &
 				reverse(x"c3_0005_1500_0000_0000_e831",8)(0 to 72-1) &
 				reverse(x"690010",8)(0 to 19-1) &
 				reverse(x"d2",8) &
-
 				reverse(x"2d1530",8)(0 to 19-1) &
+
 				reverse(x"C3_8006_0001_0000_0800_eb94",8)(0 to 72-1) &
 				reverse(x"691530",8)(0 to 19-1) &
 				reverse(x"691530",8)(0 to 19-1) &
 				reverse(x"d2",8) &
-
 				reverse(x"2d1530",8)(0 to 19-1) &
+
 				reverse(x"C3_8006_0001_0000_1200_ae04",8)(0 to 72-1) &
 				reverse(x"691530",8)(0 to 19-1) &
 				reverse(x"d2",8) &
@@ -99,35 +99,34 @@ begin
 				reverse(x"691530",8)(0 to 19-1) &
 				reverse(x"d2",8) &
 				reverse(x"691530",8)(0 to 19-1) &
-				reverse(x"d2",8) &
 
+				reverse(x"d2",8) &
 				reverse(x"e19500",8)(0 to 19-1) &
 				reverse(msg0, 8)  &
 				reverse(x"699500",8)(0 to 19-1) &
 				reverse(x"e19500",8)(0 to 19-1) &
+
+				reverse(x"a59500",8)(0 to 19-1) &
 				reverse(msg1, 8) &
-
-				reverse(x"a51500",8)(0 to 19-1) &
-
 				reverse(x"699500",8)(0 to 19-1) &
 				reverse(x"d2",8) &
 				reverse(x"699500",8)(0 to 19-1);
 
 			constant length : natural_vector := (
-				  19,          72,    19,     8,
-				  19,          72,    19,    19,     8,
-				  19,          72,    19,     8,    19,    8,
-				  19,          72,    19,     8,    19,    8,
-				  19, msg0'length,    19,    19, msg1'length, 19,
-				  19,           8,    19);
+				19,          72,          19,     8,    19,
+				72,          19,          19,     8,    19,
+				72,          19,           8,    19,     8,
+				19,          72,          19,     8,    19,
+				 8,          19, msg0'length,    19,    19,
+				19, msg1'length,          19,     8,    19);
 
 			constant delays : time_vector := (
-				1 us,        1 us,  3 us,  4 us,
-				1 us,        1 us,  3 us, 10 us, 10 us,
-				1 us,        1 us,  5 us, 19 us,  1 us, 5 us,
-				1 us,        2 us, 10 us,  4 us,  1 us, 5 us,
-				1 us,        1 us,  4 us, 21 us,  40 us, 40 us,
-				20 us,       50 us, 40 us);
+				 1 us,     1 us,        3 us,  4 us,  1 us,
+				 1 us,     3 us,        9 us,  9 us,  0 us,
+				 0 us,     2 us,       15 us,  0 us,  3 us,
+				 0 us,     0 us,        2 us,  3 us,  0 us, 
+				 3 us,     0 us,        0 us,  2 us, 14 us,
+				 0 us,     0 us,        2 us, 14 us,  0 us);
 
 			variable i     : natural;
 			variable j     : natural;
