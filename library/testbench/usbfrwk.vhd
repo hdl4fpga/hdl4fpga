@@ -121,8 +121,8 @@ begin
 				19, msg1'length,          19,     8,    19);
 
 			constant delays : time_vector := (
-				 1 us,     1 us,        3 us,  4 us,  1 us,
-				 1 us,     3 us,        9 us,  9 us,  0 us,
+				 0 us,     0 us,        2 us,  3 us,  0 us,
+				 0 us,     2 us,        9 us,  9 us,  0 us,
 				 0 us,     2 us,       15 us,  0 us,  3 us,
 				 0 us,     0 us,        2 us,  3 us,  0 us, 
 				 3 us,     0 us,        0 us,  2 us, 14 us,
