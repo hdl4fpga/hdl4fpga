@@ -147,7 +147,7 @@ int main(int argc, char **argv)
 				case TEST:
 					int wr_transferred;
 					int rd_transferred;
-					unsigned char wr_buffer[16];
+					unsigned char wr_buffer[64];
 					unsigned char rd_buffer[sizeof(wr_buffer)];
 					int k;
 

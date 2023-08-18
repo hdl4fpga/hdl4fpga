@@ -85,27 +85,25 @@ end;
 architecture def of usbdevflow is
 
 	signal requesttype : std_logic_vector( 8-1 downto 0);
-	signal value   : std_logic_vector(16-1 downto 0);
-	signal index   : std_logic_vector(16-1 downto 0);
-	signal length  : std_logic_vector(16-1 downto 0);
+	signal value       : std_logic_vector(16-1 downto 0);
+	signal index       : std_logic_vector(16-1 downto 0);
+	signal length      : std_logic_vector(16-1 downto 0);
 
-	signal ctlr_req  : bit;
-	signal ctlr_rdy  : bit;
-	signal stus_req  : bit;
-	signal stus_rdy  : bit;
-	signal setup_req : bit;
-	signal setup_rdy : bit;
-	signal out_req   : bit;
-	signal out_rdy   : bit;
-	signal in_req    : bit;
-	signal in_rdy    : bit;
-	signal ackrx_req : bit;
-	signal ackrx_rdy : bit;
-	signal acktx_rdy : bit;
-	signal acktx_req : bit;
+	signal ctlr_req    : bit;
+	signal ctlr_rdy    : bit;
+	signal stus_req    : bit;
+	signal stus_rdy    : bit;
+	signal setup_req   : bit;
+	signal setup_rdy   : bit;
+	signal out_req     : bit;
+	signal out_rdy     : bit;
+	signal in_req      : bit;
+	signal in_rdy      : bit;
+	signal ackrx_req   : bit;
+	signal ackrx_rdy   : bit;
+	signal acktx_rdy   : bit;
+	signal acktx_req   : bit;
 
-	-- signal endpin_req : bit;
-	-- signal endpin_rdy : bit;
 	signal buffer_txen : std_logic;
 	signal buffer_txbs : std_logic;
 	signal buffer_txd  : std_logic;
@@ -113,11 +111,11 @@ architecture def of usbdevflow is
 	alias  buffer_rxbs is dev_rxbs;
 	signal buffer_rxd  : std_logic;
 
-	signal ddata     : std_logic_vector(data0'range);
-	signal ddatao    : std_logic_vector(data0'range);
-	signal ddatai    : std_logic_vector(data0'range);
+	signal ddata       : std_logic_vector(data0'range);
+	signal ddatao      : std_logic_vector(data0'range);
+	signal ddatai      : std_logic_vector(data0'range);
 
-	signal rxerr     : std_logic;
+	signal rxerr       : std_logic;
 
 begin
 
@@ -143,7 +141,6 @@ begin
 							end if;
 							setup_req <= not setup_rdy;
     					end if;
-						-- endpin_rdy <= endpin_req;
     				when tk_in =>
 						if tkdata(dev_addr'range)=(dev_addr'range => '0') or
 						   tkdata(dev_addr'range)=dev_addr then
@@ -152,8 +149,6 @@ begin
 									if not txbuffer then
 										rqstin_req <= not rqstin_rdy;
 									end if;
-								else
-									-- endpin_req <= not endpin_rdy;
 								end if;
 							end if;
 							in_req <= not in_rdy;
@@ -161,8 +156,6 @@ begin
     				when tk_out=>
 						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
 							tkdata(dev_addr'range) = dev_addr then
-							if (out_req xor out_rdy)='0' then
-							end if;
 							out_req <= not out_rdy;
     					end if;
     				when data0|data1 =>
@@ -171,12 +164,16 @@ begin
 							if rxerr='0' then
 								case tkdata(dev_endp'range) is
 								when (dev_endp'range => '0') =>
-									ddata <= ddata xor tbit;
+									ddata  <= ddata  xor tbit;
 								when others =>
 									ddatao <= ddatao xor tbit;
 								end case;
+								if (setup_rdy xor setup_req)='1' then
+									acktx_req <= not acktx_rdy; 
+								elsif (out_rdy xor out_req)='1' then
+									acktx_req <= not acktx_rdy; 
+								end if;
 								out_rdy   <= out_req;
-								acktx_req <= not acktx_rdy; 
 								setup_rdy <= setup_req;
 							end if;
 						end if;
@@ -185,8 +182,6 @@ begin
 						   tkdata(dev_addr'range)=dev_addr then
 							if tkdata(dev_endp'range)=(dev_endp'range => '0') then
 								rqstack_req <= not rqstack_rdy;
-							else
-								-- endpin_rdy <= endpin_req;
 							end if;
 						end if;
 						ackrx_req <= not ackrx_rdy;
@@ -229,7 +224,6 @@ begin
 						in_rdy <= in_req;
 					end if;
 					if (acktx_rdy xor acktx_req)='1' then
-						-- if (endpin_rdy xor endpin_req)='0' then
 							txpid   <= hs_ack;
 							tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 						-- end if;
@@ -288,7 +282,6 @@ begin
 				if (ctlr_rdy xor ctlr_req)='1' then
 					we  := rqst_txen;
 					din := rqst_txd;
-				-- elsif (endpin_rdy xor endpin_req)='0' then
 				else
 					we  := dev_txen;
 					din := dev_txd;
