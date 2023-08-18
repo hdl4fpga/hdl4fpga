@@ -106,12 +106,18 @@ int main(int argc, char **argv)
 			if (!strcmp(argv[j], cmmd[i])) {
 				unsigned char pipe;
 				int result;
+				unsigned char *data;
+				int length;
+				int wr_transferred;
+				int rd_transferred;
+				unsigned char wr_buffer[32];
+				unsigned char rd_buffer[sizeof(wr_buffer)];
+				int k;
+				struct timespec req, rem;
 
 				pipe = endp;
 				switch(i) {
 				case SEND: 
-					unsigned char *data;
-					int length;
 					pipe &= ~0x80;
 					if (argc > (j+1)) {
 						data   = argv[j+1];
@@ -146,18 +152,9 @@ int main(int argc, char **argv)
 					}
 					break;
 				case TEST:
-					int wr_transferred;
-					int rd_transferred;
-					unsigned char wr_buffer[64];
-					unsigned char rd_buffer[sizeof(wr_buffer)];
-					int k;
-					struct timespec req, rem;
-
 
 					req.tv_sec = 0;     
 					req.tv_nsec = 8*5000000;
-
-
 
 					// test_init();
 					seq_init();
@@ -172,7 +169,7 @@ int main(int argc, char **argv)
 							fprintf(stderr, "Error in write bulk transfer. Error code: %d\n", result);
 						}
 
-						while(nanosleep(&req, &rem)) req = rem;
+						// while(nanosleep(&req, &rem)) req = rem;
 
 						pipe |=  0x80;
 						result = libusb_bulk_transfer(usbdev, pipe, rd_buffer, sizeof(rd_buffer), &rd_transferred, 0);

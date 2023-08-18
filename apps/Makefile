@@ -25,9 +25,9 @@ bin/memtest : src/lfsr.h src/lfsr.c src/hdlc.h src/hdlc.c src/siolib.h src/sioli
 bin/usbtest : src/usbtest.c src/lfsr.c
 	gcc -O3 src/usbtest.c src/lfsr.c -o bin/usbtest -lusb-1.0
 
-#LIBUSB_DIR = E:/libusb/libusb-MinGW-x64/include
-#bin/usb.exe : src/usb.c
-#	gcc -o usb src/usb.c -I$(LIBUSB_DIR)/include -L$(LIBUSB_DIR)/include/lib -l"usb-1.0"
+LIBUSB_DIR = E:/libusb/libusb-MinGW-x64
+bin/usbtest.exe : src/usbtest.c src/lfsr.c
+	gcc -O3 -I$(LIBUSB_DIR)/include src/usbtest.c  src/lfsr.c -L$(LIBUSB_DIR)/lib -l"usb-1.0" -o bin/usbtest.exe
 
 clean :
 	rm  -rf ./bin
