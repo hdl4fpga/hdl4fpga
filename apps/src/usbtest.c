@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <libusb-1.0/libusb.h>
 
 #include "lfsr.h"
@@ -150,6 +151,13 @@ int main(int argc, char **argv)
 					unsigned char wr_buffer[64];
 					unsigned char rd_buffer[sizeof(wr_buffer)];
 					int k;
+					struct timespec req, rem;
+
+
+					req.tv_sec = 0;     
+					req.tv_nsec = 8*5000000;
+
+
 
 					// test_init();
 					seq_init();
@@ -164,6 +172,8 @@ int main(int argc, char **argv)
 							fprintf(stderr, "Error in write bulk transfer. Error code: %d\n", result);
 						}
 
+						while(nanosleep(&req, &rem)) req = rem;
+
 						pipe |=  0x80;
 						result = libusb_bulk_transfer(usbdev, pipe, rd_buffer, sizeof(rd_buffer), &rd_transferred, 0);
 						if (result) {
@@ -174,7 +184,6 @@ int main(int argc, char **argv)
 							goto exit;
 						}
 						fputs(" OK\n", stderr);
-						// getchar();
 					}
 					fprintf(stderr, "%ld bytes of data checked successfully\n", sizeof(wr_buffer)*k);
 					break;
