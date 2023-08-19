@@ -86,7 +86,6 @@ static int wr_result;
 static int rd_result;
 static int wr_transferred;
 static int rd_transferred;
-static unsigned char pipe;
 static unsigned char *data;
 static unsigned char wr_buffer[64];
 static unsigned char rd_buffer[sizeof(wr_buffer)];
@@ -122,10 +121,8 @@ int main(int argc, char **argv)
 			if (!strcmp(argv[j], cmmd[i])) {
 				int k;
 
-				pipe = endp;
 				switch(i) {
 				case SEND: 
-					pipe &= ~0x80;
 					if (argc > (j+1)) {
 						data   = argv[j+1];
 						length = strlen(data);
@@ -137,7 +134,7 @@ int main(int argc, char **argv)
 						data   = buffer;
 						length = strlen(data);
 					}
-					wr_result = libusb_bulk_transfer(usbdev, pipe, data, length, &transferred, 0);
+					wr_result = libusb_bulk_transfer(usbdev,  endp & ~0x80, data, length, &transferred, 0);
 					if (wr_result == 0) {
 						fprintf(stderr, "Bulk transfer completed. Bytes transferred: %d\n", transferred);
 					} else {
@@ -145,8 +142,7 @@ int main(int argc, char **argv)
 					}
 					break;
 				case RECV:
-					pipe |=  0x80;
-					rd_result = libusb_bulk_transfer(usbdev, pipe, buffer, sizeof(buffer), &transferred, 0);
+					rd_result = libusb_bulk_transfer(usbdev, endp | 0x80, buffer, sizeof(buffer), &transferred, 0);
 					if (rd_result == 0) {
 						fprintf(stderr, "Bulk transfer completed. Bytes transferred: %d\n", transferred);
 						for (int i = 0; i < transferred; i++) {
@@ -163,23 +159,23 @@ int main(int argc, char **argv)
 
 					lfsr_init();
 					// seq_init();
+					while(libusb_bulk_transfer(usbdev, endp | 0x80, rd_buffer, sizeof(rd_buffer), &rd_transferred, 0) || rd_transferred);
+
 					for (k = 0; 1 || k < 12e6/(sizeof(wr_buffer)*8*2); k++) {
 
 						lfsr_fill(wr_buffer, sizeof(wr_buffer));
 						// seq_fill(wr_buffer, sizeof(wr_buffer));
 						printf("Pass %5d, %ld bytes lfsr block 0x%08llx", k, sizeof(wr_buffer), (unsigned long long int) lfsr);
-						pipe &= ~0x80;
-						wr_result = libusb_bulk_transfer(usbdev, pipe, wr_buffer, sizeof(wr_buffer), &wr_transferred, 0);
+						wr_result = libusb_bulk_transfer(usbdev, endp & ~0x80, wr_buffer, sizeof(wr_buffer), &wr_transferred, 0);
 						if (wr_result) {
 							fprintf(stderr, "\nError in bulk write transfer: %s(%d)\n", libusb_strerror(wr_result), wr_result);
 						}
 
 						// while(nanosleep(&req, &rem)) req = rem;
 
-						pipe |=  0x80;
 						int result;
 						do {
-							result = libusb_bulk_transfer(usbdev, pipe, rd_buffer, sizeof(rd_buffer), &rd_transferred, 0);
+							result = libusb_bulk_transfer(usbdev, endp | 0x80, rd_buffer, sizeof(rd_buffer), &rd_transferred, 0);
 							if (result) {
 								rd_result = result;
 								fprintf(stderr, "\nError in bulk read transfer: %s(%d)\n", libusb_strerror(rd_result), rd_result);
