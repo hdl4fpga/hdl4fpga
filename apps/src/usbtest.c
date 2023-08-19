@@ -80,6 +80,17 @@ static char *cmmd[] = {
 	"recv",
 	"test"};
 
+static struct timespec req, rem;
+static int length;
+static int wr_result;
+static int rd_result;
+static int wr_transferred;
+static int rd_transferred;
+static unsigned char pipe;
+static unsigned char *data;
+static unsigned char wr_buffer[64];
+static unsigned char rd_buffer[sizeof(wr_buffer)];
+
 int main(int argc, char **argv) 
 {
 	if (libusb_init(&usbctx) != 0) {
@@ -101,19 +112,13 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	req.tv_sec  = 0;     
+	req.tv_nsec = 8*5000000;
+
 	for (int i = 0; i < sizeof(cmmd)/sizeof(cmmd[0]); i++) {
 		for (int j = 0; j < argc && j < 2; j++) {
 			if (!strcmp(argv[j], cmmd[i])) {
-				unsigned char pipe;
-				int result;
-				unsigned char *data;
-				int length;
-				int wr_transferred;
-				int rd_transferred;
-				unsigned char wr_buffer[64];
-				unsigned char rd_buffer[sizeof(wr_buffer)];
 				int k;
-				struct timespec req, rem;
 
 				pipe = endp;
 				switch(i) {
@@ -130,31 +135,29 @@ int main(int argc, char **argv)
 						data   = buffer;
 						length = strlen(data);
 					}
-					result = libusb_bulk_transfer(usbdev, pipe, data, length, &transferred, 0);
-					if (result == 0) {
+					wr_result = libusb_bulk_transfer(usbdev, pipe, data, length, &transferred, 0);
+					if (wr_result == 0) {
 						fprintf(stderr, "Bulk transfer completed. Bytes transferred: %d\n", transferred);
 					} else {
-						fprintf(stderr, "Error in bulk transfer. Error code: %d\n", result);
+						fprintf(stderr, "Error in bulk transfer. Error code: %d %s\n", wr_result, libusb_strerror(wr_result));
 					}
 					break;
 				case RECV:
 					pipe |=  0x80;
-					result = libusb_bulk_transfer(usbdev, pipe, buffer, sizeof(buffer), &transferred, 0);
-					if (result == 0) {
+					rd_result = libusb_bulk_transfer(usbdev, pipe, buffer, sizeof(buffer), &transferred, 0);
+					if (rd_result == 0) {
 						fprintf(stderr, "Bulk transfer completed. Bytes transferred: %d\n", transferred);
 						for (int i = 0; i < transferred; i++) {
 							// printf("0x%02x\n", buffer[i]);
 							putchar(buffer[i]);
 						}
 						putchar('\n');
+
 					} else {
-						fprintf(stderr, "Error in bulk transfer. Error code: %d\n", result);
+						fprintf(stderr, "Error in bulk transfer. Error code: %d %s\n", rd_result, libusb_strerror(rd_result));
 					}
 					break;
 				case TEST:
-
-					req.tv_sec = 0;     
-					req.tv_nsec = 8*5000000;
 
 					// test_init();
 					seq_init();
@@ -164,23 +167,31 @@ int main(int argc, char **argv)
 						seq_fill(wr_buffer, sizeof(wr_buffer));
 						fprintf(stderr, "Pass %5d, %ld bytes lfsr block 0x%08llx", k, sizeof(wr_buffer), (unsigned long long int) lfsr);
 						pipe &= ~0x80;
-						result = libusb_bulk_transfer(usbdev, pipe, wr_buffer, sizeof(wr_buffer), &wr_transferred, 0);
-						if (result) {
-							fprintf(stderr, "Error in write bulk transfer. Error code: %d\n", result);
+						wr_result = libusb_bulk_transfer(usbdev, pipe, wr_buffer, sizeof(wr_buffer), &wr_transferred, 0);
+						if (wr_result) {
+							fprintf(stderr, "\nError in bulk write transfer: %s(%d)\n", libusb_strerror(wr_result), wr_result);
 						}
 
 						// while(nanosleep(&req, &rem)) req = rem;
 
 						pipe |=  0x80;
-						result = libusb_bulk_transfer(usbdev, pipe, rd_buffer, sizeof(rd_buffer), &rd_transferred, 0);
-						if (result) {
-							fprintf(stderr, "Error in read bulk transfer. Error code: %d\n", result);
+						int result;
+						do {
+							result = libusb_bulk_transfer(usbdev, pipe, rd_buffer, sizeof(rd_buffer), &rd_transferred, 0);
+							if (result) {
+								rd_result = result;
+								fprintf(stderr, "\nError in bulk read transfer: %s(%d)\n", libusb_strerror(rd_result), rd_result);
+							} 
+						} while(result || (rd_result && rd_transferred));
+
+						if (!wr_result || !rd_result) {
+							if (memcmp(wr_buffer, rd_buffer, rd_transferred)) {
+								fprintf(stderr, "\nPass %d doesn't match write transferred %d read transferred %d\n", k, wr_transferred, rd_transferred);
+								goto exit;
+							}
+							fputs(" OK\n", stderr);
 						}
-						if (memcmp(wr_buffer, rd_buffer, sizeof(wr_buffer)) || wr_transferred!=rd_transferred) {
-							fprintf(stderr, "\nPass %d doesn't match write transfered %d read transfered %d\n", k, wr_transferred, rd_transferred);
-							goto exit;
-						}
-						fputs(" OK\n", stderr);
+						rd_result = result;
 					}
 					fprintf(stderr, "%ld bytes of data checked successfully\n", sizeof(wr_buffer)*k);
 					break;
