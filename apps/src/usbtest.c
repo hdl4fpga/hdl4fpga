@@ -34,12 +34,12 @@ typedef int unsigned lfsr_word;
 __int128 lfsr;
 const size_t lfsr_size = BYTE_SIZE*sizeof(lfsr_word);
 
-void test_init ()
+void lfsr_init ()
 {
 	lfsr = lfsr_mask(lfsr_size);
 }
 
-void test_fill (char *buffer, int length)
+void lfsr_fill (char *buffer, int length)
 {
 	for (int i = 0; i < length; i += sizeof(lfsr_word)) {
 		memcpy(buffer+i, &lfsr, sizeof(lfsr_word));
@@ -115,6 +115,8 @@ int main(int argc, char **argv)
 	req.tv_sec  = 0;     
 	req.tv_nsec = 8*5000000;
 
+	setbuf(stdout, NULL);
+	setbuf(stderr, NULL);
 	for (int i = 0; i < sizeof(cmmd)/sizeof(cmmd[0]); i++) {
 		for (int j = 0; j < argc && j < 2; j++) {
 			if (!strcmp(argv[j], cmmd[i])) {
@@ -159,13 +161,13 @@ int main(int argc, char **argv)
 					break;
 				case TEST:
 
-					// test_init();
-					seq_init();
-					for (k = 0; 1 || k < 10240; k++) {
+					lfsr_init();
+					// seq_init();
+					for (k = 0; 1 || k < 12e6/(sizeof(wr_buffer)*8*2); k++) {
 
-						// test_fill(wr_buffer, sizeof(wr_buffer));
-						seq_fill(wr_buffer, sizeof(wr_buffer));
-						fprintf(stderr, "Pass %5d, %ld bytes lfsr block 0x%08llx", k, sizeof(wr_buffer), (unsigned long long int) lfsr);
+						lfsr_fill(wr_buffer, sizeof(wr_buffer));
+						// seq_fill(wr_buffer, sizeof(wr_buffer));
+						printf("Pass %5d, %ld bytes lfsr block 0x%08llx", k, sizeof(wr_buffer), (unsigned long long int) lfsr);
 						pipe &= ~0x80;
 						wr_result = libusb_bulk_transfer(usbdev, pipe, wr_buffer, sizeof(wr_buffer), &wr_transferred, 0);
 						if (wr_result) {
@@ -189,7 +191,7 @@ int main(int argc, char **argv)
 								fprintf(stderr, "\nPass %d doesn't match write transferred %d read transferred %d\n", k, wr_transferred, rd_transferred);
 								goto exit;
 							}
-							fputs(" OK\n", stderr);
+							fputs(" OK\n", stdout);
 						}
 						rd_result = result;
 					}
