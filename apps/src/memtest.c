@@ -139,13 +139,12 @@ int main (int argc, char *argv[])
 	setvbuf(stderr, NULL, _IONBF, 0);
 	setvbuf(stdout, NULL, _IONBF, 0);
 
-	int c;
 	bool h;
 	bool u;
 
 	h = false;
 	u = false;
-	while ((c = getopt (argc, argv, "lh:u:")) != -1) {
+	for (int c = getopt (argc, argv, "lh:u:"); c != -1; c = getopt (argc, argv, "lh:u:")) {
 		switch (c) {
 		case 'l':
 			sio_setloglevel(8|4|2|1);

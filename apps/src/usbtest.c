@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
+#include <ctype.h>
 #include <time.h>
 #include <libusb-1.0/libusb.h>
 
@@ -31,15 +33,16 @@
 #define BYTE_SIZE 8
 typedef int unsigned lfsr_word;
 
+
 __int128 lfsr;
 const size_t lfsr_size = BYTE_SIZE*sizeof(lfsr_word);
 
-void lfsr_init ()
+static void lfsr_init ()
 {
 	lfsr = lfsr_mask(lfsr_size);
 }
 
-void lfsr_fill (char *buffer, int length)
+static void lfsr_fill (char *buffer, int length)
 {
 	for (int i = 0; i < length; i += sizeof(lfsr_word)) {
 		memcpy(buffer+i, &lfsr, sizeof(lfsr_word));
@@ -48,12 +51,12 @@ void lfsr_fill (char *buffer, int length)
 }
 
 static char p = 0;
-void seq_init ()
+static void arith_init ()
 {
 	p = 0;
 }
 
-void seq_fill (char *buffer, int length)
+static void arith_fill (char *buffer, int length)
 {
 	for (int i = 0; i < length; i += sizeof(p)) {
 		memcpy(buffer+i, &p, sizeof(p));
@@ -80,7 +83,6 @@ static char *cmmd[] = {
 	"recv",
 	"test"};
 
-static struct timespec req, rem;
 static int length;
 static int wr_result;
 static int rd_result;
@@ -89,6 +91,10 @@ static int rd_transferred;
 static unsigned char *data;
 static unsigned char wr_buffer[64];
 static unsigned char rd_buffer[sizeof(wr_buffer)];
+static char *format;
+static void (*seq_init) ();
+static void (*seq_fill) (char *buffer, int length);
+static __int128 lfsr_saved[2];
 
 int main(int argc, char **argv) 
 {
@@ -111,8 +117,21 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	req.tv_sec  = 0;     
-	req.tv_nsec = 8*5000000;
+	for (char c = getopt (argc, argv, "f:"); c != -1; c = getopt (argc, argv, "f:")) {
+		switch (c) {
+		case 'f':
+			if (optarg) {
+			} else {
+				format = "%c";
+			}
+			format = "0x%x";
+			break;
+		case '?':
+			exit(1);
+		default:
+			abort();
+		}
+	}
 
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
@@ -142,12 +161,16 @@ int main(int argc, char **argv)
 					}
 					break;
 				case RECV:
+					if (argc > (j+1)) {
+						format = argv[j+1];
+					} else {
+						format = "%c";
+					}
 					rd_result = libusb_bulk_transfer(usbdev, endp | 0x80, buffer, sizeof(buffer), &transferred, 0);
 					if (rd_result == 0) {
 						fprintf(stderr, "Bulk transfer completed. Bytes transferred: %d\n", transferred);
 						for (int i = 0; i < transferred; i++) {
-							// printf("0x%02x\n", buffer[i]);
-							putchar(buffer[i]);
+							printf(format, buffer[i]);
 						}
 						putchar('\n');
 
@@ -157,21 +180,34 @@ int main(int argc, char **argv)
 					break;
 				case TEST:
 
-					lfsr_init();
-					// seq_init();
+					if (argc > (j+1)) {
+						if (!strcmp(argv[j+1],"arith")) {
+							seq_init = arith_init;
+							seq_fill = arith_fill;
+						} else {
+							if (strcmp(argv[j+1],"lfsr")) {
+								fprintf(stderr, "%s is not a valid sequence. settting sequence to lfsr\n", argv[j+1]);
+							}
+							seq_init = lfsr_init;
+							seq_fill = lfsr_fill;
+						}
+					} else {
+						seq_init = lfsr_init;
+						seq_fill = lfsr_fill;
+					}
+					lfsr_saved[0] = lfsr;
+					lfsr_saved[1] = lfsr;
+					seq_init();
 					while(libusb_bulk_transfer(usbdev, endp | 0x80, rd_buffer, sizeof(rd_buffer), &rd_transferred, 0) || rd_transferred);
 
 					for (k = 0; 1 || k < 12e6/(sizeof(wr_buffer)*8*2); k++) {
 
-						lfsr_fill(wr_buffer, sizeof(wr_buffer));
-						// seq_fill(wr_buffer, sizeof(wr_buffer));
 						printf("Pass %5d, %ld bytes lfsr block 0x%08llx", k, sizeof(wr_buffer), (unsigned long long int) lfsr);
+						seq_fill(wr_buffer, sizeof(wr_buffer));
 						wr_result = libusb_bulk_transfer(usbdev, endp & ~0x80, wr_buffer, sizeof(wr_buffer), &wr_transferred, 0);
 						if (wr_result) {
 							fprintf(stderr, "\nError in bulk write transfer: %s(%d)\n", libusb_strerror(wr_result), wr_result);
 						}
-
-						// while(nanosleep(&req, &rem)) req = rem;
 
 						int result;
 						do {
@@ -179,6 +215,7 @@ int main(int argc, char **argv)
 							if (result) {
 								rd_result = result;
 								fprintf(stderr, "\nError in bulk read transfer: %s(%d)\n", libusb_strerror(rd_result), rd_result);
+								goto exit;
 							} 
 						} while(result || (rd_result && rd_transferred));
 
@@ -187,7 +224,16 @@ int main(int argc, char **argv)
 								fprintf(stderr, "\nPass %d doesn't match write transferred %d read transferred %d\n", k, wr_transferred, rd_transferred);
 								goto exit;
 							}
+							lfsr_saved[1] = lfsr_saved[0];
+							lfsr_saved[0] = lfsr;
 							fputs(" OK\n", stdout);
+						} else if (wr_result) {
+							lfsr = lfsr_saved[1];
+							lfsr_saved[0] = lfsr_saved[1];
+							goto exit;
+						} else if (rd_result) {
+							lfsr = lfsr_saved[0];
+							goto exit;
 						}
 						rd_result = result;
 					}
