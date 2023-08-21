@@ -30,37 +30,38 @@
 #include <libusb-1.0/libusb.h>
 
 #include "lfsr.h"
-#define BYTE_SIZE 8
+
+#define DEBUG 0
+
 typedef int unsigned lfsr_word;
 
-
-__int128 lfsr;
-const size_t lfsr_size = BYTE_SIZE*sizeof(lfsr_word);
+const int byte_size = 8;
+const size_t lfsr_size = byte_size*sizeof(lfsr_word);
+__int128 seq;
 
 static void lfsr_init ()
 {
-	lfsr = lfsr_mask(lfsr_size);
+	seq = lfsr_mask(lfsr_size);
 }
 
 static void lfsr_fill (char *buffer, int length)
 {
 	for (int i = 0; i < length; i += sizeof(lfsr_word)) {
-		memcpy(buffer+i, &lfsr, sizeof(lfsr_word));
-		lfsr = lfsr_next(lfsr, lfsr_size);
+		memcpy(buffer+i, &seq, sizeof(lfsr_word));
+		seq = lfsr_next(seq, lfsr_size);
 	}
 }
 
-static char p = 0;
 static void arith_init ()
 {
-	p = 0;
+	seq = 0;
 }
 
 static void arith_fill (char *buffer, int length)
 {
-	for (int i = 0; i < length; i += sizeof(p)) {
-		memcpy(buffer+i, &p, sizeof(p));
-		p += 1;
+	for (int i = 0; i < length; i += sizeof(char)) {
+		memcpy(buffer+i, (char *) &seq, sizeof(char));
+		*(char *)&seq += 1;
 	}
 }
 
@@ -94,7 +95,8 @@ static unsigned char rd_buffer[sizeof(wr_buffer)];
 static char *format;
 static void (*seq_init) ();
 static void (*seq_fill) (char *buffer, int length);
-static __int128 lfsr_saved[2];
+static __int128 saved_seq;
+static char retry = 0;
 
 int main(int argc, char **argv) 
 {
@@ -195,14 +197,13 @@ int main(int argc, char **argv)
 						seq_init = lfsr_init;
 						seq_fill = lfsr_fill;
 					}
-					lfsr_saved[0] = lfsr;
-					lfsr_saved[1] = lfsr;
+					saved_seq = seq;
 					seq_init();
 					while(libusb_bulk_transfer(usbdev, endp | 0x80, rd_buffer, sizeof(rd_buffer), &rd_transferred, 0) || rd_transferred);
 
 					for (k = 0; 1 || k < 12e6/(sizeof(wr_buffer)*8*2); k++) {
 
-						printf("Pass %5d, %ld bytes lfsr block 0x%08llx", k, sizeof(wr_buffer), (unsigned long long int) lfsr);
+						printf("Pass %5d, %ld bytes sequence id 0x%08llx", k, sizeof(wr_buffer), (unsigned long long int) seq);
 						seq_fill(wr_buffer, sizeof(wr_buffer));
 						wr_result = libusb_bulk_transfer(usbdev, endp & ~0x80, wr_buffer, sizeof(wr_buffer), &wr_transferred, 0);
 						if (wr_result) {
@@ -215,25 +216,28 @@ int main(int argc, char **argv)
 							if (result) {
 								rd_result = result;
 								fprintf(stderr, "\nError in bulk read transfer: %s(%d)\n", libusb_strerror(rd_result), rd_result);
-								goto exit;
+								// goto exit;
 							} 
 						} while(result || (rd_result && rd_transferred));
 
-						if (!wr_result || !rd_result) {
+						if (!wr_result && !rd_result) {
 							if (memcmp(wr_buffer, rd_buffer, rd_transferred)) {
 								fprintf(stderr, "\nPass %d doesn't match write transferred %d read transferred %d\n", k, wr_transferred, rd_transferred);
 								goto exit;
 							}
-							lfsr_saved[1] = lfsr_saved[0];
-							lfsr_saved[0] = lfsr;
+							saved_seq = seq;
 							fputs(" OK\n", stdout);
-						} else if (wr_result) {
-							lfsr = lfsr_saved[1];
-							lfsr_saved[0] = lfsr_saved[1];
-							goto exit;
-						} else if (rd_result) {
-							lfsr = lfsr_saved[0];
-							goto exit;
+							if (DEBUG && retry) {
+								getchar();
+								retry = 0;
+							}
+						} else {
+							seq = saved_seq;
+							printf(" transfer error. Retrying\n");
+							if (DEBUG) {
+								retry = 1;
+								getchar();
+							}
 						}
 						rd_result = result;
 					}
