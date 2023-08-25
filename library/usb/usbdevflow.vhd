@@ -286,7 +286,7 @@ begin
 				if (ctlr_rdy xor ctlr_req)='1' then
 					we  := rqst_txen;
 					din := rqst_txd;
-				else
+				elsif buffer_txbs='0' then
 					we  := dev_txen;
 					din := dev_txd;
 				end if;
@@ -336,7 +336,7 @@ begin
 	end process;
 
 	rxbuffer_p : process (rqst_req, clk)
-		variable mem  : std_logic_vector(0 to 128*8-1);
+		variable mem  : std_logic_vector(0 to 64*8-1);
 		subtype  mem_range is natural range 1 to unsigned_num_bits(mem'length-1);
 		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
 		variable pout : unsigned(pin'range);
@@ -373,36 +373,32 @@ begin
 				end if;
 
 				if (out_rdy xor out_req)='1' then
-					if rxdv='0' then
-					-- if clpcrc_rxdv='0' then
+					if clpcrc_rxdv='0' then
 						we := '0';
-					elsif rxbs='1' then
+					elsif clpcrc_rxbs='1' then
 						we := '0';
 					else
 						we := '1';
 					end if;
 				end if;
-				din := rxd;
-				-- din := clpcrc_rxd;
+				din := clpcrc_rxd;
 			end if;
 		end if;
 	end process;
 
 	dev_rxd <= 
 		buffer_rxd when rxbuffer else
-		rxd;
-		-- clpcrc_rxd;
+		clpcrc_rxd;
 		
 	dev_rxdv <= 
 		buffer_rxdv when rxbuffer else
-		rxdv when tkdata(dev_addr'range)=dev_addr and tkdata(dev_endp'range)/=(dev_endp'range => '0') and (rxpid=data0 or rxpid=data1) else
-		-- clpcrc_rxdv when tkdata(dev_addr'range)=dev_addr and tkdata(dev_endp'range)/=(dev_endp'range => '0') and (rxpid=data0 or rxpid=data1) else
+		clpcrc_rxdv when tkdata(dev_addr'range)=dev_addr and tkdata(dev_endp'range)/=(dev_endp'range => '0') and (rxpid=data0 or rxpid=data1) else
 		'0';
 
 	dev_rxbs <= 
 		'Z'  when rxbuffer else
 		'1'  when dev_cfgd='0' else
-		rxbs when tkdata(dev_addr'range)=dev_addr and tkdata(dev_endp'range)/=(dev_endp'range => '0') else
+		clpcrc_rxbs when tkdata(dev_addr'range)=dev_addr and tkdata(dev_endp'range)/=(dev_endp'range => '0') else
 		'1';
 		
 	tp(1)  <= to_stdulogic(setup_req);

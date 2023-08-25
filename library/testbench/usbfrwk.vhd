@@ -113,12 +113,12 @@ begin
 				reverse(x"699500",8)(0 to 19-1);
 
 			constant length : natural_vector := (
-				19,          72,          19,     8,    19,
-				72,          19,          19,     8,    19,
-				72,          19,           8,    19,     8,
-				19,          72,          19,     8,    19,
-				 8,          19, msg0'length,    19,    19,
-				0, msg1'length,          19,     8,    19);
+				19,          72,          19,    8,    19,
+				72,          19,          19,    8,    19,
+				72,          19,           8,   19,     8,
+				19,          72,          19,    8,    19,
+				 8,          19, msg0'length,   19,    19,
+				 0, msg1'length,          19,    8,    19);
 
 			constant delays : time_vector := (
 				 0 us,     0 us,        2 us,  3 us,  0 us,
@@ -147,7 +147,7 @@ begin
 				elsif txbs='0' then
 					txen <= '0';
 					if idle='1' then
-						if i < delays'length then
+						if  i < delays'length then
 							wait for delays(i);
 							right := right + length(i);
 							i     := i + 1;

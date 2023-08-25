@@ -24,7 +24,7 @@ architecture def of usbphy_tx is
 begin
 
 	process (txen, clk)
-		type states is (s_idle, s_running, s_eop);
+		type states is (s_idle, s_running);
 		variable state : states;
 
 		variable cnt1 : natural range 0 to 7;
@@ -58,7 +58,7 @@ begin
 					else
 						dp := '0';
 						dn := '0';
-						state := s_eop;
+						state := s_idle;
 					end if;
 					if data(0)='1' then
 						stuffedbit_l : if cnt1 < bit_stuffing-1 then
@@ -74,10 +74,6 @@ begin
 						data := data ror 1;
 						cnt1 := 0;
 					end if;
-				when s_eop =>
-					dp := '0';
-					dn := '0';
-					state := s_idle;
 				end case;
 
 				rdata := reverse(data);
