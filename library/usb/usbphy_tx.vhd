@@ -58,6 +58,7 @@ begin
 					else
 						dp := '0';
 						dn := '0';
+						-- state := s_eop;
 						state := s_idle;
 					end if;
 					if data(0)='1' then
