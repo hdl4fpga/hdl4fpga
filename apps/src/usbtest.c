@@ -71,6 +71,8 @@ static libusb_context *usbctx = NULL;
 static const unsigned short vendorID  = 0x1234;
 static const unsigned short productID = 0xabcd;
 static const unsigned char  endp      = 0x01;
+static const unsigned char  rd_endp = endp |  LIBUSB_ENDPOINT_IN;
+static const unsigned char  wr_endp = endp & ~LIBUSB_ENDPOINT_IN;
 
 static unsigned char buffer[64];
 static int transferred;
@@ -97,6 +99,8 @@ static void (*seq_init) ();
 static void (*seq_fill) (char *buffer, int length);
 static __int128 saved_seq;
 static char retry = 0;
+static struct timeval start_time;
+static struct timeval end_time;
 
 int main(int argc, char **argv) 
 {
@@ -155,7 +159,7 @@ int main(int argc, char **argv)
 						data   = buffer;
 						length = strlen(data);
 					}
-					wr_result = libusb_bulk_transfer(usbdev,  endp & ~0x80, data, length, &transferred, 0);
+					wr_result = libusb_bulk_transfer(usbdev,  wr_endp, data, length, &transferred, 0);
 					if (wr_result == 0) {
 						fprintf(stderr, "Bulk transfer completed. Bytes transferred: %d\n", transferred);
 					} else {
@@ -168,7 +172,7 @@ int main(int argc, char **argv)
 					} else {
 						format = "%c";
 					}
-					rd_result = libusb_bulk_transfer(usbdev, endp | 0x80, buffer, sizeof(buffer), &transferred, 0);
+					rd_result = libusb_bulk_transfer(usbdev, rd_endp, buffer, sizeof(buffer), &transferred, 0);
 					if (rd_result == 0) {
 						fprintf(stderr, "Bulk transfer completed. Bytes transferred: %d\n", transferred);
 						for (int i = 0; i < transferred; i++) {
@@ -199,29 +203,37 @@ int main(int argc, char **argv)
 					}
 					saved_seq = seq;
 					seq_init();
-					while(libusb_bulk_transfer(usbdev, endp | 0x80, rd_buffer, sizeof(rd_buffer), &rd_transferred, 0) || rd_transferred);
+					while(libusb_bulk_transfer(usbdev, rd_endp, rd_buffer, sizeof(rd_buffer), &rd_transferred, 0) || rd_transferred);
 
-					for (k = 0; 1 || k < 12e6/(sizeof(wr_buffer)*8*2); k++) {
+					gettimeofday(&start_time, NULL);
+					for (k = 0; k < 12e6/(sizeof(wr_buffer)*8*2)*100; k++) {
 
 						printf("Pass %5d, %ld bytes sequence id 0x%08llx", k, sizeof(wr_buffer), (unsigned long long int) seq);
 						seq_fill(wr_buffer, sizeof(wr_buffer));
-						wr_result = libusb_bulk_transfer(usbdev, endp & ~0x80, wr_buffer, sizeof(wr_buffer), &wr_transferred, 0);
+						wr_result = libusb_bulk_transfer(usbdev, wr_endp, wr_buffer, sizeof(wr_buffer), &wr_transferred, 0);
 						if (wr_result) {
 							fprintf(stderr, "\nError in bulk write transfer: %s(%d)\n", libusb_strerror(wr_result), wr_result);
+							if (wr_result == LIBUSB_ERROR_PIPE) {
+								libusb_clear_halt(usbdev, wr_endp);
+							}
+							goto exit;
 						}
 
 						int result;
 						do {
-							result = libusb_bulk_transfer(usbdev, endp | 0x80, rd_buffer, sizeof(rd_buffer), &rd_transferred, 0);
+							result = libusb_bulk_transfer(usbdev, rd_endp, rd_buffer, sizeof(rd_buffer), &rd_transferred, 0);
 							if (result) {
 								rd_result = result;
 								fprintf(stderr, "\nError in bulk read transfer: %s(%d)\n", libusb_strerror(rd_result), rd_result);
-								// goto exit;
+								goto exit;
 							} 
+							if (rd_result == LIBUSB_ERROR_PIPE) {
+								libusb_clear_halt(usbdev, rd_endp);
+							}
 						} while(result || (rd_result && rd_transferred));
 
 						if (!wr_result && !rd_result) {
-							if (memcmp(wr_buffer, rd_buffer, rd_transferred)) {
+							if (memcmp(wr_buffer, rd_buffer, rd_transferred) || !rd_transferred || rd_transferred != wr_transferred) {
 								fprintf(stderr, "\nPass %d doesn't match write transferred %d read transferred %d\n", k, wr_transferred, rd_transferred);
 								goto exit;
 							}
@@ -241,7 +253,12 @@ int main(int argc, char **argv)
 						}
 						rd_result = result;
 					}
-					fprintf(stderr, "%ld bytes of data checked successfully\n", sizeof(wr_buffer)*k);
+					gettimeofday(&end_time, NULL);
+					fprintf(stderr, "%ld bytes of data checked successfully\nThroughput %f b/s\n",
+						sizeof(wr_buffer)*k,
+						(double) (sizeof(wr_buffer)*k*8*2)/(
+						(double) (end_time.tv_sec  - start_time.tv_sec) +
+						(double) (end_time.tv_usec - start_time.tv_usec)  / 1.0e6));
 					break;
 				default:
 					break;

@@ -235,8 +235,9 @@ begin
 	end process;
 
 	txbuffer_p : process (rqst_rdy, clk)
-		variable mem  : std_logic_vector(0 to 1024*8-1);
-		variable pin  : unsigned(1 to unsigned_num_bits(mem'length-1));
+		variable mem  : std_logic_vector(0 to 64*8-1);
+		subtype  mem_range is natural range 1 to unsigned_num_bits(mem'length-1);
+		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
 		variable pout : unsigned(pin'range);
 		variable prty : unsigned(pout'range);
 		variable we   : std_logic;
@@ -273,9 +274,9 @@ begin
 					buffer_txen <= '1';
 				end if;
 
-				buffer_txd <= mem(to_integer(pout(1 to pout'right)));
+				buffer_txd <= mem(to_integer(pout(mem_range)));
 				if we='1' then
-					mem(to_integer(pin(1 to pin'right))) := din;
+					mem(to_integer(pin(mem_range))) := din;
 					pin := pin + 1;
 				end if;
 
@@ -312,10 +313,10 @@ begin
 
 	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd);
 
-	-- buffer_rxbs <= rxbs;
 	rxbuffer_p : process (rqst_req, clk)
-		variable mem  : std_logic_vector(0 to 1024*8-1);
-		variable pin  : unsigned(1 to unsigned_num_bits(mem'length-1));
+		variable mem  : std_logic_vector(0 to 128*8-1);
+		subtype  mem_range is natural range 1 to unsigned_num_bits(mem'length-1);
+		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
 		variable pout : unsigned(pin'range);
 		variable prty : unsigned(pout'range);
 		variable we   : std_logic;
@@ -343,9 +344,9 @@ begin
 				else
 					buffer_rxdv <='1';
 				end if;
-				buffer_rxd <= mem(to_integer(pout(1 to pout'right)));
+				buffer_rxd <= mem(to_integer(pout(mem_range)));
 				if we='1' then
-					mem(to_integer(pin(1 to pin'right))) := din;
+					mem(to_integer(pin(mem_range))) := din;
 					pin := pin + 1;
 				end if;
 
