@@ -206,7 +206,7 @@ int main(int argc, char **argv)
 					while(libusb_bulk_transfer(usbdev, rd_endp, rd_buffer, sizeof(rd_buffer), &rd_transferred, 0) || rd_transferred);
 
 					gettimeofday(&start_time, NULL);
-					for (k = 0; k < 12e6/(sizeof(wr_buffer)*8*2)*100; k++) {
+					for (k = 0; k < 12e6/(sizeof(wr_buffer)*8*2)*5; k++) {
 
 						printf("Pass %5d, %ld bytes sequence id 0x%08llx", k, sizeof(wr_buffer), (unsigned long long int) seq);
 						seq_fill(wr_buffer, sizeof(wr_buffer));
@@ -254,8 +254,10 @@ int main(int argc, char **argv)
 						rd_result = result;
 					}
 					gettimeofday(&end_time, NULL);
-					fprintf(stderr, "%ld bytes of data checked successfully\nThroughput %f b/s\n",
+					fprintf(stderr, "%ld bytes of data checked successfully in %f sec\nThroughput %f b/s\n",
 						sizeof(wr_buffer)*k,
+						(double) (end_time.tv_sec  - start_time.tv_sec) +
+						(double) (end_time.tv_usec - start_time.tv_usec)  / 1.0e6,
 						(double) (sizeof(wr_buffer)*k*8*2)/(
 						(double) (end_time.tv_sec  - start_time.tv_sec) +
 						(double) (end_time.tv_usec - start_time.tv_usec)  / 1.0e6));
