@@ -107,6 +107,9 @@ architecture def of usbdevflow is
 	signal buffer_txen : std_logic;
 	signal buffer_txbs : std_logic;
 	signal buffer_txd  : std_logic;
+	signal clpcrc_rxdv : std_logic;
+	alias  clpcrc_rxbs is rxbs;
+	signal clpcrc_rxd  : std_logic;
 	signal buffer_rxdv : std_logic;
 	alias  buffer_rxbs is dev_rxbs;
 	signal buffer_rxd  : std_logic;
@@ -313,6 +316,25 @@ begin
 
 	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd);
 
+	clpcrc_p : process (clk)
+		variable slr_rxd  : unsigned(0 to (16)-1);
+		variable slr_rxdv : unsigned(0 to (16)-1);
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if rxbs='0' then
+					clpcrc_rxdv <= to_stdulogic(slr_rxdv(0) and to_bit(rxdv));
+					slr_rxdv(0) := to_bit(rxdv);
+					slr_rxdv := slr_rxdv rol 1;
+
+					clpcrc_rxd <= to_stdulogic(slr_rxd(0));
+					slr_rxd(0) := to_bit(rxd);
+					slr_rxd := slr_rxd rol 1;
+				end if;
+			end if;
+		end if;
+	end process;
+
 	rxbuffer_p : process (rqst_req, clk)
 		variable mem  : std_logic_vector(0 to 128*8-1);
 		subtype  mem_range is natural range 1 to unsigned_num_bits(mem'length-1);
@@ -352,6 +374,7 @@ begin
 
 				if (out_rdy xor out_req)='1' then
 					if rxdv='0' then
+					-- if clpcrc_rxdv='0' then
 						we := '0';
 					elsif rxbs='1' then
 						we := '0';
@@ -360,6 +383,7 @@ begin
 					end if;
 				end if;
 				din := rxd;
+				-- din := clpcrc_rxd;
 			end if;
 		end if;
 	end process;
@@ -367,10 +391,12 @@ begin
 	dev_rxd <= 
 		buffer_rxd when rxbuffer else
 		rxd;
+		-- clpcrc_rxd;
 		
 	dev_rxdv <= 
 		buffer_rxdv when rxbuffer else
 		rxdv when tkdata(dev_addr'range)=dev_addr and tkdata(dev_endp'range)/=(dev_endp'range => '0') and (rxpid=data0 or rxpid=data1) else
+		-- clpcrc_rxdv when tkdata(dev_addr'range)=dev_addr and tkdata(dev_endp'range)/=(dev_endp'range => '0') and (rxpid=data0 or rxpid=data1) else
 		'0';
 
 	dev_rxbs <= 
