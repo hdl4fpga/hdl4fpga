@@ -104,6 +104,15 @@ begin
 		rxbs => usb_rxbs,
 		rxd  => usb_rxd);
 			
+    serlzr_e : entity hdl4fpga.serlzr
+   	port (
+   		src_clk  => usb_clk,
+   		src_frm  => usb_rxdv,
+   		src_data => usb_rxd,
+   		src_irdy => not usb_rxbs,
+   		dst_irdy => 
+   		dst_data => usbrx_data);
+
 	sihdlc_frm  <= si_frm  when sio_addr='0' else '0';
 	sihdlc_irdy <= si_irdy when sio_addr='0' else '0';
 	si_trdy     <= sihdlc_trdy when sio_addr='0' else so_trdy;
