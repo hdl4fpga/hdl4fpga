@@ -104,14 +104,19 @@ begin
 		rxbs => usb_rxbs,
 		rxd  => usb_rxd);
 			
-    serlzr_e : entity hdl4fpga.serlzr
-   	port (
-   		src_clk  => usb_clk,
-   		src_frm  => usb_rxdv,
-   		src_data => usb_rxd,
-   		src_irdy => not usb_rxbs,
-   		dst_irdy => 
-   		dst_data => usbrx_data);
+	rxserlzr_b : block
+		signal src_irdy : std_logic;
+	begin
+		src_irdy <= usb_cken and not usb_rxbs;
+		serlzr_e : entity hdl4fpga.serlzr
+		port (
+			src_clk  => usb_clk,
+			src_frm  => usb_rxdv,
+			src_data => usb_rxd,
+			src_irdy => src_irdy,
+			dst_irdy => usbrx_irdy,
+			dst_data => usbrx_data);
+	end block;
 
 	sihdlc_frm  <= si_frm  when sio_addr='0' else '0';
 	sihdlc_irdy <= si_irdy when sio_addr='0' else '0';
@@ -145,6 +150,22 @@ begin
 		so_trdy   => sohdlc_trdy,
 		so_data   => sohdlc_data,
 		tp => tp);
+
+	txserlzr_b : block
+		signal dst_trdy : std_logic;
+	begin
+		src_irdy <= usb_cken and not usb_txbs;
+		serlzr_e : entity hdl4fpga.serlzr
+		port (
+			src_clk  => usb_clk,
+			src_frm  => usbtx_frm,
+			src_irdy => usbtx_irdy,
+			src_trdy => usbtx_trdy,
+			src_data => usbtx_data,
+			dst_irdy => usbrx_irdy,
+			dst_trdy => usbrx_irdy,
+			dst_data => usbrx_data);
+	end block;
 
 	so_frm  <= si_frm  when sio_addr/='0' else sohdlc_frm;
 	so_irdy <= si_irdy when sio_addr/='0' else sohdlc_irdy;

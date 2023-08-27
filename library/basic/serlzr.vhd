@@ -221,26 +221,31 @@ begin
 		mod0_g : if src_data'length mod dst_data'length = 0 generate 
 			signal rgtr : std_logic_vector(src_data'length-1 downto 0);
 		begin
-        	process (dst_clk)
+			process (dst_clk)
 				variable shr : unsigned(rgtr'range);
 				variable acc : unsigned(shf'range) := (others => '0');
-        	begin
-        		if rising_edge(dst_clk) then
-        			if dst_frm='0' then
+			begin
+				if rising_edge(dst_clk) then
+					if dst_frm='0' then
 						acc := (others => '0');
 					elsif acc >= dst_data'length then 
 						if dst_trdy='1' then
 							shr := shift_left(shr, dst_data'length);
 							acc := acc - dst_data'length;
 						end if;
-        			elsif src_irdy='1' then
+					elsif src_irdy='1' then
 						shr := shift_left(shr, src_data'length);
 						shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(fifo_data), fifo_data));
 						acc := acc + (src_data'length - dst_data'length);
-        			end if;
+					end if;
+					if acc >= dst_data'length then 
+						src_trdy <= '0';
+					else
+						src_trdy <= '1';
+					end if;
 					rgtr <= std_logic_vector(shr);
-        		end if;
-        	end process;
+				end if;
+			end process;
 
 			dst_data <= setif(lsdfirst,reverse(rgtr(dst_data'length-1 downto 0)), rgtr(dst_data'length-1 downto 0));
 
@@ -248,88 +253,59 @@ begin
 	end generate;
 
 	srcltdst_g : if src_data'length < dst_data'length generate
-		none0_g : if src_data'length mod dst_data'length /= 0 generate 
-    		fifoon_g : if fifo_mode generate 
-    			signal fifo_rst  : std_logic;
-    			signal fifo_irdy : std_logic;
-    			signal fifo_data : std_logic_vector(dst_data'range);
-    		begin
-    			process (src_clk)
-    				variable shr : unsigned(rgtr'range);
-    				variable acc : unsigned(shf'range) := (others => '0');
-    			begin 
-    				if rising_edge(src_clk) then
-    					if src_frm='0' then
-    						acc := (others => '0');
-    						fifo_irdy <= '0';
-    					elsif src_irdy='1' then
-    						if acc >= dst_data'length-src_data'length then 
-    							acc := acc - (dst_data'length - src_data'length);
-    							fifo_irdy <= '1';
-    						else
-    							acc := acc + src_data'length;
-    							fifo_irdy <= '0';
-    						end if;
-    						shr := shift_left(shr, src_data'length);
-    						shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(src_data), src_data));
-    					end if;
-    					-- if acc >= dst_data'length-src_data'length then 
-    						-- fifo_irdy <= '1';
-    					-- else
-    						-- fifo_irdy <= '0';
-    					-- end if;
-    					shf  <= std_logic_vector(acc and to_unsigned(mm(1) mod src_data'length, acc'length));
-    					rgtr <= std_logic_vector(shr);
-    				end if;
-    			end process;
-    	
-    			shl_i : entity hdl4fpga.barrel
-    			generic map (
-    				left => false)
-    			port map (
-    				shf => shf,
-    				di  => rgtr,
-    				do  => shfd);
-    	
-    			dst_data <= setif(lsdfirst,reverse(shfd(dst_data'length-1 downto 0)), shfd(dst_data'length-1 downto 0));
+		fifoon_g : if fifo_mode generate 
+			signal fifo_rst  : std_logic;
+			signal fifo_irdy : std_logic;
+			signal fifo_data : std_logic_vector(dst_data'range);
+		begin
+			process (src_clk)
+				variable shr : unsigned(rgtr'range);
+				variable acc : unsigned(shf'range) := (others => '0');
+			begin 
+				if rising_edge(src_clk) then
+					if src_frm='0' then
+						acc := (others => '0');
+						fifo_irdy <= '0';
+					elsif src_irdy='1' then
+						if acc >= dst_data'length-src_data'length then 
+							acc := acc - (dst_data'length - src_data'length);
+							fifo_irdy <= '1';
+						else
+							acc := acc + src_data'length;
+							fifo_irdy <= '0';
+						end if;
+						shr := shift_left(shr, src_data'length);
+						shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(src_data), src_data));
+					end if;
+					-- if acc >= dst_data'length-src_data'length then 
+						-- fifo_irdy <= '1';
+					-- else
+						-- fifo_irdy <= '0';
+					-- end if;
+					shf  <= std_logic_vector(acc and to_unsigned(mm(1) mod src_data'length, acc'length));
+					rgtr <= std_logic_vector(shr);
+				end if;
+			end process;
+	
+			shl_i : entity hdl4fpga.barrel
+			generic map (
+				left => false)
+			port map (
+				shf => shf,
+				di  => rgtr,
+				do  => shfd);
+	
+			dst_data <= setif(lsdfirst,reverse(shfd(dst_data'length-1 downto 0)), shfd(dst_data'length-1 downto 0));
 
-    			fifo_rst <= not src_frm;
-    			fifo_e : entity hdl4fpga.phy_iofifo
-    			port map (
-    				in_clk   => src_clk,
-    				in_rst   => fifo_rst,
-    				in_data  => dst_data,
-    				in_irdy  => fifo_irdy,
-    				out_clk  => dst_clk,
-    				out_data => fifo_data);
-    		end generate;
-		end generate;
-
-		mod0_g : if dst_data'length mod src_data'length = 0 generate 
-    		process (src_clk)
-    			variable shr : unsigned(rgtr'range);
-    			variable acc : unsigned(shf'range) := (others => '0');
-    		begin 
-    			if rising_edge(src_clk) then
-    				if src_frm='0' then
-    					acc := (others => '0');
-    					fifo_irdy <= '0';
-    				elsif src_irdy='1' then
-    					if acc >= dst_data'length-src_data'length then 
-    						acc := acc - (dst_data'length - src_data'length);
-    						fifo_irdy <= '1';
-    					else
-    						acc := acc + src_data'length;
-    						fifo_irdy <= '0';
-    					end if;
-    					shr := shift_left(shr, src_data'length);
-    					shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(src_data), src_data));
-    				end if;
-    				shf  <= std_logic_vector(acc and to_unsigned(mm(1) mod src_data'length, acc'length));
-    				rgtr <= std_logic_vector(shr);
-    			end if;
-    		end process;
-    		dst_data <= setif(lsdfirst,reverse(shfd(dst_data'length-1 downto 0)), shfd(dst_data'length-1 downto 0));
+			fifo_rst <= not src_frm;
+			fifo_e : entity hdl4fpga.phy_iofifo
+			port map (
+				in_clk   => src_clk,
+				in_rst   => fifo_rst,
+				in_data  => dst_data,
+				in_irdy  => fifo_irdy,
+				out_clk  => dst_clk,
+				out_data => fifo_data);
 		end generate;
 
 		fifo_off_g : if not fifo_mode generate 
