@@ -29,11 +29,9 @@ use hdl4fpga.base.all;
 
 entity usb_tb is
 	generic (
-		debug     : boolean;
-		baudrate  : natural;
-		uart_freq : real;
+		debug   : boolean;
 		payload_segments : natural_vector;
-		payload   : std_logic_vector :=
+		payload : std_logic_vector :=
 			x"01007e" &
 			x"18ff"   &
 			x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
@@ -71,7 +69,9 @@ architecture def of usb_tb is
 
 	signal usbtx_trdy    : std_logic;
 	signal usbtx_irdy    : std_logic;
-	signal usbtx_txd     : std_logic_vector(0 to 8-1);
+	signal usbtx_data    : std_logic_vector(0 to 8-1);
+	signal slzrtx_irdy   : std_logic;
+	signal slzrtx_data   : std_logic_vector(0 to 1-1);
 
 	signal usbrx_irdy    : std_logic;
 	signal usbrx_data    : std_logic_vector(0 to 8-1);
@@ -142,32 +142,25 @@ begin
 		uart_clk    => usb_clk,
 		uart_irdy   => usbtx_irdy,
 		uart_trdy   => usbtx_trdy,
-		uart_data   => usbtx_txd);
+		uart_data   => usbtx_data);
 
-	txserlzr_b : block
-		signal src_irdy : std_logic;
-	begin
-		src_irdy <= usb_cken and not usb_txbs;
-		serlzr_e : entity hdl4fpga.serlzr
-		port map (
-			src_clk  => usb_clk,
-			src_frm  => hdlctx_frm,
-			src_irdy => hdlctx_irdy,
-			src_trdy => hdlctx_trdy,
-			src_data => hdlctx_data,
-			dst_irdy => usbrx_irdy,
-			dst_trdy => usbrx_irdy,
-			dst_data => usbrx_data);
-	end block;
+	txserlzr_e : entity hdl4fpga.serlzr
+	port map (
+		src_clk  => usb_clk,
+		src_frm  => hdlctx_frm,
+		src_irdy => usbtx_irdy,
+		src_trdy => usbtx_trdy,
+		src_data => usbtx_data,
+		dst_irdy => slzrtx_irdy,
+		dst_trdy => slzrtx_irdy,
+		dst_data => slzrtx_data);
 
 	host_b : block
 		signal tp   : std_logic_vector(1 to 32);
-		signal rst  : std_logic;
 		alias  clk  is usb_clk;
 		signal idle : std_logic;
 	begin
 
-		rst <= '1', '0' after 0.500 us;
 		process 
 			type time_vector is array (natural range <>) of time;
 			constant data : std_logic_vector := 
@@ -192,22 +185,25 @@ begin
 			variable i     : natural;
 			variable j     : natural;
 			variable right : natural;
+			variable txen  : std_logic := '0';
+			variable txbs  : std_logic;
+			variable txd   : std_logic := '0';
 		begin
 			if rising_edge(clk) then
 				if rst='1' then
-					usb_cfgd <= '1';
-					usb_txen <= '0';
+					usb_cfgd <= '0';
+					txen := '0';
 					i     := 0;
 					j     := 0;
 					right := 0;
 				elsif j < right then
 						if usb_txbs='0' then
-							usb_txd  <= data(j);
-							usb_txen <= '1';
+							txd  := data(j);
+							txen := '1';
 							j := j + 1;
 						end if;
 				elsif usb_txbs='0' then
-					usb_txen <= '0';
+					txen := '0';
 					if idle='1' then
 						if  i < delays'length then
 							wait for delays(i);
@@ -220,7 +216,14 @@ begin
 					end if;
 				end if;
 			end if;
-			wait on clk;
+			if usb_cfgd='0' then
+				usb_txen <= txen;
+				usb_txd  <= txd;
+			else
+				usb_txen <= slzrtx_irdy;
+				usb_txd  <= slzrtx_data(0);
+			end if;
+			wait on slzrtx_irdy, slzrtx_data, clk;
 		end process;
 
 	  	host_e : entity hdl4fpga.usbphycrc

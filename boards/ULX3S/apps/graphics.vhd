@@ -40,21 +40,23 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant io_link      : io_comms     := io_hdlc;
+	constant io_link      : io_comms     := io_usb;
 	constant sdram_speed  : sdram_speeds := sdram225MHz; 
 	constant video_gear   : natural      := 2;
-	-- constant video_mode   : video_modes  := mode600p24bpp;
+	constant video_mode   : video_modes  := mode600p24bpp;
 	-- constant video_mode   : video_modes  := mode720p24bpp;
-	constant video_mode   : video_modes  := mode900p24bpp;
+	-- constant video_mode   : video_modes  := mode900p24bpp;
 	-- constant video_mode   : video_modes  := mode1080p24bpp30;
 	-- constant video_mode   : video_modes  := mode1080p24bpp;
 	-- constant video_mode   : video_modes  := mode1440p24bpp30;
 	constant baudrate     : natural      := 3000000;
 	--------------------------------------
 
+	constant usb_oversampling : natural := 3;
 	constant video_params  : video_record := videoparam(
 		video_modes'VAL(setif(debug,
-			video_modes'POS(modedebug),
+			-- video_modes'POS(modedebug),
+			video_modes'POS(video_mode),
 			video_modes'POS(video_mode))), clk25mhz_freq);
 
 	constant sdram_params : sdramparams_record := sdramparams(
@@ -121,9 +123,11 @@ begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
+		io_link      => io_link,
+		clkio_freq   => 12.0e6*real(usb_oversampling),
 		clkref_freq  => clk25mhz_freq,
 		default_gear => video_gear,
-		video_params  => video_params)
+		video_params => video_params)
 	port map (
 		clk_rst     => right,
 		clk_ref     => clk_25mhz,

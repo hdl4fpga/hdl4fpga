@@ -144,6 +144,7 @@ architecture ulx3s_graphics of testbench is
 			dq    : inout std_logic_vector(data_bits - 1 downto 0));
 	end component;
 
+	constant usb_freq     : real := 12.0e6;
 	constant snd_data  : std_logic_vector :=
 		x"01007e" &
 		x"18ff"   &
@@ -177,6 +178,8 @@ architecture ulx3s_graphics of testbench is
 	signal gp          : std_logic_vector(28-1 downto 0);
 	signal gn          : std_logic_vector(28-1 downto 0) := (others => '0');
 
+	signal usb_fpga_dp : std_logic;
+	signal usb_fpga_dn : std_logic;
 	signal ftdi_txd    : std_logic;
 	signal ftdi_rxd    : std_logic;
 
@@ -186,6 +189,7 @@ architecture ulx3s_graphics of testbench is
 	alias mii_refclk   : std_logic is gn(12);
 
 	signal uart_clk    : std_logic := '0';
+	signal usb_clk     : std_logic := '0';
 
 
 	alias   mii_txen   : std_logic is gp(12);
@@ -198,6 +202,7 @@ begin
 	rst      <= '1', '0' after 10 us;
 	xtal     <= not xtal after 20 ns;
 	uart_clk <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
+	usb_clk <= not usb_clk after 1 sec/(2.0*usb_freq);
 
 	mii_refclk <= not mii_refclk after 1000 ns / 50 /2;
 	fire1    <= '0';
@@ -215,6 +220,20 @@ begin
 		uart_clk  => uart_clk,
 		uart_sin  => ftdi_rxd,
 		uart_sout => ftdi_txd);
+
+	usb_fpga_dp <= 'H';
+	usb_fpga_dn <= 'L';
+
+	usbtb_e : entity work.usb_tb
+	generic map (
+		debug   => debug,
+		payload_segments => (0 => snd_data'length, 1 => req_data'length),
+		payload   => snd_data & req_data)
+	port map (
+		rst     => rst,
+		usb_clk => usb_clk,
+		usb_dp  => usb_fpga_dp,
+		usb_dn  => usb_fpga_dn);
 
 	mii_rxd <= (gp(10), gn(9));
 	(gn(11), gp(11)) <= mii_txd;

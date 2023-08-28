@@ -87,7 +87,7 @@ begin
 		clkio_freq   => 12.0e6*real(usb_oversampling),
 		clkref_freq  => clk25mhz_freq,
 		default_gear => 2,
-		video_params  => video_params)
+		video_params => video_params)
 	port map (
 		clk_ref     => clk_25mhz,
 		video_clk   => video_clk,
