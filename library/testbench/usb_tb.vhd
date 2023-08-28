@@ -83,6 +83,7 @@ architecture def of usb_tb is
 	signal usb_rxdv      : std_logic := '0';
 	signal usb_rxbs      : std_logic;
 	signal usb_rxd       : std_logic;
+	signal usb_cfgd      : std_logic;
 
 begin
 
@@ -91,7 +92,7 @@ begin
 		variable total   : natural;
 		variable addr    : natural;
 	begin
-		if rst='1' then
+		if usb_cfgd='0' then
 			hdlctx_frm <= '0';
 			hdlctx_end <= '0';
 			addr       := 0;
@@ -194,7 +195,8 @@ begin
 		begin
 			if rising_edge(clk) then
 				if rst='1' then
-					usb_txen  <= '0';
+					usb_cfgd <= '1';
+					usb_txen <= '0';
 					i     := 0;
 					j     := 0;
 					right := 0;
@@ -212,6 +214,7 @@ begin
 							right := right + length(i);
 							i     := i + 1;
 						else
+							usb_cfgd <= '1';
 							wait;
 						end if;
 					end if;
