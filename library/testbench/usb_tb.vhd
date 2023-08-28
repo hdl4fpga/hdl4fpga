@@ -47,23 +47,17 @@ entity usb_tb is
 			x"1702_0000ff_1603_0000_0000" &
 			x"010008_1702_0000ff_1603_8000_0000");
 	port (
-		rst       : in  std_logic;
-		uart_clk  : in  std_logic;
-		uart_sin  : in  std_logic;
-		uart_sout : out std_logic);
+		rst      : in std_logic;
+		usb_clk  : in std_logic;
+		usb_dp   : inout std_logic;
+		usb_dn   : inout std_logic);
 end;
 
 architecture def of usb_tb is
 
-	signal uart_trdy     : std_logic;
-	signal uart_irdy     : std_logic;
-	signal uart_txd      : std_logic_vector(0 to 8-1);
-
-	signal uartrx_irdy   : std_logic;
-	signal uartrx_data   : std_logic_vector(0 to 8-1);
-
 	signal hdlctx_frm    : std_logic;
 	signal hdlctx_end    : std_logic;
+	signal hdlctx_irdy   : std_logic := '1';
 	signal hdlctx_trdy   : std_logic;
 	signal hdlctx_data   : std_logic_vector(0 to 8-1);
 
@@ -75,11 +69,22 @@ architecture def of usb_tb is
 	signal hdlcfcsrx_sb  : std_logic;
 	signal hdlcfcsrx_vld : std_logic;
 
-	signal rst_n         : std_logic;
+	signal usbtx_trdy    : std_logic;
+	signal usbtx_irdy    : std_logic;
+	signal usbtx_txd     : std_logic_vector(0 to 8-1);
+
+	signal usbrx_irdy    : std_logic;
+	signal usbrx_data    : std_logic_vector(0 to 8-1);
+
+	signal usb_cken      : std_logic;
+	signal usb_txen      : std_logic := '0';
+	signal usb_txbs      : std_logic;
+	signal usb_txd       : std_logic := '0';
+	signal usb_rxdv      : std_logic := '0';
+	signal usb_rxbs      : std_logic;
+	signal usb_rxd       : std_logic;
 
 begin
-
-	rst_n <= not rst;
 
 	process 
 		variable segment : natural;
@@ -92,7 +97,7 @@ begin
 			addr       := 0;
 			total      := 0;
 			segment    := 0;
-		elsif rising_edge(uart_clk) then
+		elsif rising_edge(usb_clk) then
 			if addr < total then
 				hdlctx_data <= reverse(payload(addr to addr+8-1));
 				if hdlctx_trdy='1' then
@@ -122,95 +127,66 @@ begin
 			end if;
 
 		end if;
-		wait on rst, uart_clk;
+		wait on rst, usb_clk;
 	end process;
+
+	hdlcdll_tx_e : entity hdl4fpga.hdlcdll_tx
+	port map (
+		hdlctx_frm  => hdlctx_frm,
+		hdlctx_irdy => hdlctx_irdy,
+		hdlctx_trdy => hdlctx_trdy,
+		hdlctx_end  => hdlctx_end,
+		hdlctx_data => hdlctx_data,
+
+		uart_clk    => usb_clk,
+		uart_irdy   => usbtx_irdy,
+		uart_trdy   => usbtx_trdy,
+		uart_data   => usbtx_txd);
+
+	txserlzr_b : block
+		signal src_irdy : std_logic;
+	begin
+		src_irdy <= usb_cken and not usb_txbs;
+		serlzr_e : entity hdl4fpga.serlzr
+		port map (
+			src_clk  => usb_clk,
+			src_frm  => hdlctx_frm,
+			src_irdy => hdlctx_irdy,
+			src_trdy => hdlctx_trdy,
+			src_data => hdlctx_data,
+			dst_irdy => usbrx_irdy,
+			dst_trdy => usbrx_irdy,
+			dst_data => usbrx_data);
+	end block;
 
 	host_b : block
 		signal tp   : std_logic_vector(1 to 32);
 		signal rst  : std_logic;
 		alias  clk  is usb_clk;
-		signal cken : std_logic;
-		signal txen : std_logic := '0';
-		signal txbs : std_logic;
-		signal txd  : std_logic := '0';
-		signal rxdv : std_logic := '0';
-		signal rxbs : std_logic;
-		signal rxd  : std_logic;
 		signal idle : std_logic;
 	begin
 
 		rst <= '1', '0' after 0.500 us;
 		process 
 			type time_vector is array (natural range <>) of time;
-			-- constant data : std_logic_vector := reverse(x"a50df2",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"a527b2",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"a50302",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"a5badf",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"2d0010",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"a5ff98",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"a5ff47",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"e10010",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"c300_05_1500_0000_0000_e831",8)(0 to 72-1);
-			-- constant data : std_logic_vector := reverse(x"c300_05_2d00_0000_0000_ec89",8)(0 to 72-1);
-			-- constant data : std_logic_vector := reverse(x"c300_05_1700_0000_0000_e9d3",8)(0 to 72-1);
-			-- constant data : std_logic_vector := reverse(x"c300_05_1700_0000_0000_e9d3",8)(0 to 72-1);
-			-- constant data : std_logic_vector := reverse(x"c300_05_0c00_0000_0000_ea38",8)(0 to 72-1);
-			-- constant data : std_logic_vector := reverse(x"c380_06_0001_0000_0800_eb94",8)(0 to 72-1);
-
-			constant msg0 : std_logic_vector := x"4b" & x"606162636465666768696a6b6c6d6e6f";
-			constant msg1 : std_logic_vector := x"c3" & x"707172737475767778797a7b7c7d7e7f";
 			constant data : std_logic_vector := 
 				reverse(x"2d0010",8)(0 to 19-1) &
 				reverse(x"c3_0005_1500_0000_0000_e831",8)(0 to 72-1) &
 				reverse(x"690010",8)(0 to 19-1) &
 				reverse(x"d2",8) &
-				reverse(x"2d1530",8)(0 to 19-1) &
-
-				reverse(x"C3_8006_0001_0000_0800_eb94",8)(0 to 72-1) &
-				reverse(x"691530",8)(0 to 19-1) &
-				reverse(x"691530",8)(0 to 19-1) &
-				reverse(x"d2",8) &
-				reverse(x"2d1530",8)(0 to 19-1) &
-
-				reverse(x"C3_8006_0001_0000_1200_ae04",8)(0 to 72-1) &
-				reverse(x"691530",8)(0 to 19-1) &
-				reverse(x"d2",8) &
-				reverse(x"691530",8)(0 to 19-1) &
-				reverse(x"d2",8) &
 
 				reverse(x"2d1530",8)(0 to 19-1) &
 				reverse(x"C3_0009_0100_0000_0000_2725",8)(0 to 72-1) &
 				reverse(x"691530",8)(0 to 19-1) &
-				reverse(x"d2",8) &
-				reverse(x"691530",8)(0 to 19-1) &
-
-				reverse(x"d2",8) &
-				reverse(x"e19500",8)(0 to 19-1) &
-				reverse(msg0, 8)  &
-				reverse(x"699500",8)(0 to 19-1) &
-				reverse(x"e19500",8)(0 to 19-1) &
-
-				-- reverse(x"a50000",8)(0 to 19-1) &
-				reverse(msg1, 8) &
-				reverse(x"699500",8)(0 to 19-1) &
-				reverse(x"d2",8) &
-				reverse(x"699500",8)(0 to 19-1);
+				reverse(x"d2",8);
 
 			constant length : natural_vector := (
-				19,          72,          19,    8,    19,
-				72,          19,          19,    8,    19,
-				72,          19,           8,   19,     8,
-				19,          72,          19,    8,    19,
-				 8,          19, msg0'length,   19,    19,
-				 0, msg1'length,          19,    8,    19);
+				19,   72,  19, 8,
+				19,   72,  19, 8);
 
 			constant delays : time_vector := (
-				 0 us,     0 us,        2 us,  3 us,  0 us,
-				 0 us,     2 us,        9 us,  9 us,  0 us,
-				 0 us,     2 us,       15 us,  0 us,  3 us,
-				 0 us,     0 us,        2 us,  3 us,  0 us, 
-				 3 us,     0 us,        0 us,  2 us, 14 us,
-				 0 us,     0 us,        2 us, 14 us,  0 us);
+				0 us, 0 us, 2 us, 3 us,
+				0 us, 0 us, 2 us, 3 us);
 
 			variable i     : natural;
 			variable j     : natural;
@@ -218,18 +194,18 @@ begin
 		begin
 			if rising_edge(clk) then
 				if rst='1' then
-					txen  <= '0';
+					usb_txen  <= '0';
 					i     := 0;
 					j     := 0;
 					right := 0;
 				elsif j < right then
-						if txbs='0' then
-							txd  <= data(j);
-							txen <= '1';
+						if usb_txbs='0' then
+							usb_txd  <= data(j);
+							usb_txen <= '1';
 							j := j + 1;
 						end if;
-				elsif txbs='0' then
-					txen <= '0';
+				elsif usb_txbs='0' then
+					usb_txen <= '0';
 					if idle='1' then
 						if  i < delays'length then
 							wait for delays(i);
@@ -247,39 +223,20 @@ begin
 	  	host_e : entity hdl4fpga.usbphycrc
 		port map (
 			tp   => tp,
-			dp   => dp,
-			dn   => dn,
+			dp   => usb_dp,
+			dn   => usb_dn,
 			idle => idle,
-			clk  => clk,
-			cken => cken,
+			clk  => usb_clk,
+			cken => usb_cken,
 
-			txen => txen,
-			txbs => txbs,
-			txd  => txd,
+			txen => usb_txen,
+			txbs => usb_txbs,
+			txd  => usb_txd,
 
-			rxdv => rxdv,
-			rxbs => rxbs,
-			rxd  => rxd);
-
-		rx_p : process (clk)
-			variable cntr : natural := 0;
-			variable shr  : std_logic_vector(0 to 128-1);
-			variable msb  : std_logic_vector(shr'range);
-		begin
-			if rising_edge(clk) then
-				if cken='1' then
-					if (rxdv and not rxbs)='1' then
-						if cntr < shr'length then
-							shr(cntr) := rxd;
-							cntr := cntr + 1;
-						end if;
-					end if;
-				end if;
-				msb := reverse(shr,8);
-			end if;
-		end process;
+			rxdv => usb_rxdv,
+			rxbs => usb_rxbs,
+			rxd  => usb_rxd);
 
 	end block;
-
 
 end;
