@@ -40,7 +40,7 @@ entity serlzr is
 		src_trdy  : out std_logic := '1';
 		dst_frm   : in  std_logic := '1';
 		dst_clk   : in  std_logic := '1';
-		dst_irdy  : out std_logic;
+		dst_irdy  : out std_logic := '1';
 		dst_trdy  : in  std_logic := '1';
 		dst_data  : buffer std_logic_vector);
 end;
@@ -247,6 +247,7 @@ begin
 				end if;
 			end process;
 
+			dst_irdy <= '1';
 			dst_data <= setif(lsdfirst,reverse(rgtr(dst_data'length-1 downto 0)), rgtr(dst_data'length-1 downto 0));
 
 		end generate;

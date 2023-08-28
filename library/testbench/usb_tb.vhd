@@ -71,6 +71,7 @@ architecture def of usb_tb is
 	signal usbtx_irdy    : std_logic;
 	signal usbtx_data    : std_logic_vector(0 to 8-1);
 	signal slzrtx_irdy   : std_logic;
+	signal slzrtx_trdy   : std_logic;
 	signal slzrtx_data   : std_logic_vector(0 to 1-1);
 
 	signal usbrx_irdy    : std_logic;
@@ -151,8 +152,10 @@ begin
 		src_irdy => usbtx_irdy,
 		src_trdy => usbtx_trdy,
 		src_data => usbtx_data,
+		dst_clk  => usb_clk,
+		dst_frm  => hdlctx_frm,
 		dst_irdy => slzrtx_irdy,
-		dst_trdy => slzrtx_irdy,
+		dst_trdy => usb_cfgd,
 		dst_data => slzrtx_data);
 
 	host_b : block
