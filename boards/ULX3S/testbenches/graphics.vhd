@@ -255,6 +255,8 @@ begin
 		debug => debug)
 	port map (
 		clk_25mhz  => xtal,
+		usb_fpga_dp => usb_fpga_dp,
+		usb_fpga_dn => usb_fpga_dn,
 		ftdi_txd   => ftdi_txd,
 		ftdi_rxd   => ftdi_rxd,
 		fire1      => fire1,

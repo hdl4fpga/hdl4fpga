@@ -52,7 +52,6 @@ architecture graphics of ulx3s is
 	constant baudrate     : natural      := 3000000;
 	--------------------------------------
 
-	constant usb_oversampling : natural := 3;
 	constant video_params  : video_record := videoparam(
 		video_modes'VAL(setif(debug,
 			-- video_modes'POS(modedebug),
@@ -75,6 +74,7 @@ architecture graphics of ulx3s is
 	constant byte_size   : natural := sdram_d'length/sdram_dqm'length;
 	constant coln_size   : natural := 9;
 	constant gear        : natural := 1;
+	constant usb_oversampling : natural := 3;
 
 	signal ctlr_clk      : std_logic;
 	signal sdrsys_rst    : std_logic;
@@ -201,6 +201,42 @@ begin
 			uart_sout => ftdi_rxd);
 
 		ftdi_txden <= '1';
+	end generate;
+
+	usb_g : if io_link=io_usb generate
+		constant uart_freq : real := 
+			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk25mhz_freq/
+			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
+		signal uart_clk : std_logic;
+	begin
+
+		nodebug_g : if not debug generate
+			uart_clk <= videoio_clk;
+			sio_clk  <= videoio_clk;
+		end generate;
+
+		led(7) <= video_lck;
+
+		usb_e : entity hdl4fpga.sio_dayusb
+		generic map (
+			usb_oversampling => usb_oversampling)
+		port map (
+			usb_clk   => videoio_clk,
+			usb_dp    => usb_fpga_dp,
+			usb_dn    => usb_fpga_dn,
+
+			sio_clk   => uart_clk,
+			si_frm    => si_frm,
+			si_irdy   => si_irdy,
+			si_trdy   => si_trdy,
+			si_end    => si_end,
+			si_data   => si_data,
+	
+			so_frm    => so_frm,
+			so_irdy   => so_irdy,
+			so_trdy   => so_trdy,
+			so_data   => so_data);
+
 	end generate;
 
 	ipoe_g : if io_link=io_ipoe generate
