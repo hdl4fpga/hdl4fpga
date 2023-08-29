@@ -107,13 +107,13 @@ begin
 				end if;
 			elsif segment < payload_segments'length then
 				if segment > 0 then
+					hdlctx_frm <= '0';
+					hdlctx_end <= '0';
 					if debug then
 						wait for 5 us;
 					else
 						wait for 100 us;
 					end if;
-					hdlctx_frm <= '0';
-					hdlctx_end <= '0';
 				end if;
 				total   := total + payload_segments(segment);
 				segment := segment + 1;

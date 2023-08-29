@@ -165,21 +165,21 @@ begin
 		signal fifo_data : std_logic_vector(src_data'range);
 		signal fifo_trdy : std_logic;
 	begin
+		fifooff_g : if not fifo_mode generate
+			fifo_data <= src_data;
+		end generate;
+
+		fifoon_g : if fifo_mode generate
+			fifo_e : entity hdl4fpga.phy_iofifo
+			port map (
+				in_clk   => src_clk,
+				in_data  => src_data,
+				out_clk  => dst_clk,
+				out_trdy => fifo_trdy,
+				out_data => fifo_data);
+		end generate;
+
 		none0_g : if src_data'length mod dst_data'length /= 0 generate 
-			fifooff_g : if not fifo_mode generate
-				fifo_data <= src_data;
-			end generate;
-
-			fifoon_g : if fifo_mode generate
-				fifo_e : entity hdl4fpga.phy_iofifo
-				port map (
-					in_clk   => src_clk,
-					in_data  => src_data,
-					out_clk  => dst_clk,
-					out_trdy => fifo_trdy,
-					out_data => fifo_data);
-			end generate;
-
 			src_trdy <= fifo_trdy;
 			process (dst_clk)
 				variable shr : unsigned(rgtr'range);
@@ -243,12 +243,12 @@ begin
 					else
 						src_trdy <= '1';
 					end if;
-					rgtr <= std_logic_vector(shr);
+					rgtr <= reverse(std_logic_vector(shr));
+					dst_irdy <= dst_frm;
 				end if;
 			end process;
 
-			dst_irdy <= '1';
-			dst_data <= setif(lsdfirst,reverse(rgtr(dst_data'length-1 downto 0)), rgtr(dst_data'length-1 downto 0));
+			dst_data <= setif(lsdfirst, reverse(rgtr(dst_data'length-1 downto 0)), rgtr(dst_data'length-1 downto 0));
 
 		end generate;
 	end generate;

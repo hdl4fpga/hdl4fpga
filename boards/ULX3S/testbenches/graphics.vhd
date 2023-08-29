@@ -227,8 +227,10 @@ begin
 	usbtb_e : entity work.usb_tb
 	generic map (
 		debug   => debug,
-		payload_segments => (0 => snd_data'length, 1 => req_data'length),
-		payload   => snd_data & req_data)
+		-- payload_segments => (0 => snd_data'length, 1 => req_data'length),
+		-- payload   => snd_data & req_data)
+		payload_segments => (0 => 8, 1 => 8),
+		payload   => snd_data(0 to 8-1) & req_data(0 to 8-1))
 	port map (
 		rst     => rst,
 		usb_clk => usb_clk,
