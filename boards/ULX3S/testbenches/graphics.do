@@ -57,7 +57,9 @@ add wave -noupdate /testbench/usbtb_e/usb_clk
 add wave -noupdate /testbench/usbtb_e/usb_cken
 add wave -noupdate /testbench/usbtb_e/usb_cfgd
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/usbtb_e/line__92/addr
+add wave -noupdate /testbench/usbtb_e/line__92/segment
+add wave -noupdate /testbench/usbtb_e/line__92/total
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/usb_g/usb_e/usb_dp
 add wave -noupdate /testbench/du_e/usb_g/usb_e/usb_dn
@@ -66,12 +68,14 @@ add wave -noupdate /testbench/usbtb_e/hdlctx_frm
 add wave -noupdate /testbench/usbtb_e/hdlctx_irdy
 add wave -noupdate /testbench/usbtb_e/hdlctx_trdy
 add wave -noupdate /testbench/usbtb_e/hdlctx_end
+add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/usbtb_e/hdlctx_data
-add wave -noupdate /testbench/usbtb_e/usbtx_trdy
 add wave -noupdate /testbench/usbtb_e/usbtx_irdy
-add wave -noupdate /testbench/usbtb_e/usbtx_data
+add wave -noupdate /testbench/usbtb_e/usbtx_trdy
+add wave -noupdate -radix hexadecimal /testbench/usbtb_e/usbtx_data
 add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/dev_cfgd
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/usbtb_e/txserlzr_e/src_data
 add wave -noupdate /testbench/usbtb_e/usb_txen
 add wave -noupdate /testbench/usbtb_e/usb_txbs
 add wave -noupdate /testbench/usbtb_e/usb_txd
@@ -79,15 +83,24 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/usbtb_e/slzrtx_irdy
 add wave -noupdate /testbench/usbtb_e/slzrtx_trdy
 add wave -noupdate /testbench/usbtb_e/slzrtx_data(0)
+add wave -noupdate /testbench/usbtb_e/host_b/line__174/q
+add wave -noupdate /testbench/usbtb_e/host_b/host_e/usbphy_e/txbs
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/usbtb_e/txserlzr_e/srcgtdst_g/mod0_g/line__224/acc
 add wave -noupdate /testbench/usbtb_e/txserlzr_e/srcgtdst_g/mod0_g/line__224/shr
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/usbtb_e/txserlzr_e/dst_clk
 add wave -noupdate /testbench/usbtb_e/txserlzr_e/dst_frm
-add wave -noupdate /testbench/usbtb_e/txserlzr_e/src_clk
 add wave -noupdate /testbench/usbtb_e/txserlzr_e/src_irdy
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbphycrc_e/clk
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbphycrc_e/cken
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbphycrc_e/txen
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbphycrc_e/txbs
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbphycrc_e/txd
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbphycrc_e/phyerr
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbphycrc_e/crcerr
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbphycrc_e/tkerr
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -124,7 +137,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {34676350 ps} 0} {{Cursor 2} {53956410 ps} 0}
+WaveRestoreCursors {{Cursor 1} {61805630 ps} 0} {{Cursor 2} {58161360 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 217
 configure wave -valuecolwidth 149
@@ -140,4 +153,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {105 us}
+WaveRestoreZoom {47599150 ps} {67286670 ps}

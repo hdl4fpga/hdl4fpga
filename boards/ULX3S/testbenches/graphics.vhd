@@ -146,6 +146,7 @@ architecture ulx3s_graphics of testbench is
 
 	constant usb_freq     : real := 12.0e6;
 	constant snd_data  : std_logic_vector :=
+	 	x"c30000" &
 		x"01007e" &
 		x"18ff"   &
 		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
@@ -229,8 +230,8 @@ begin
 		debug   => debug,
 		-- payload_segments => (0 => snd_data'length, 1 => req_data'length),
 		-- payload   => snd_data & req_data)
-		payload_segments => (0 => 8, 1 => 8),
-		payload   => snd_data(0 to 8-1) & req_data(0 to 8-1))
+		payload_segments => (0 => 3*8, 1 => 8),
+		payload   => snd_data(0 to 3*8-1) & req_data(0 to 8-1))
 	port map (
 		rst     => rst,
 		usb_clk => usb_clk,
