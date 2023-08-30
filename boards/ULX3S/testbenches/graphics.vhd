@@ -230,8 +230,8 @@ begin
 		debug   => debug,
 		-- payload_segments => (0 => snd_data'length, 1 => req_data'length),
 		-- payload   => snd_data & req_data)
-		payload_segments => (0 => 3*8, 1 => 8),
-		payload   => snd_data(0 to 3*8-1) & req_data(0 to 8-1))
+		payload_segments => (0 => 1*8, 1 => 8),
+		payload   => snd_data(0 to 1*8-1) & req_data(0 to 8-1))
 	port map (
 		rst     => rst,
 		usb_clk => usb_clk,
