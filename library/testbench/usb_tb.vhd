@@ -115,13 +115,13 @@ begin
 			elsif segment < payload_segments'length then
 				if segment > 0 then
 					if hdlctx_trdy='1' then
-						hdlctx_frm <= '0';
-						hdlctx_end <= '0';
 						if debug then
 							wait for 5 us;
 						else
 							wait for 100 us;
 						end if;
+						hdlctx_frm <= '0';
+						hdlctx_end <= '0';
 						total   := total + payload_segments(segment);
 						segment := segment + 1;
 					end if;
@@ -198,21 +198,11 @@ begin
 			variable txbs  : std_logic;
 			variable txd   : std_logic := '0';
 			variable q : std_logic;
-			variable q1 : std_logic;
 		begin
-			if usb_cfgd='0' then
-				usb_txen <= txen;
-				usb_txd  <= txd;
-			else
-				if usb_txbs='0' then
-					usb_txen <= slzrtx_irdy;
-				end if;
-				usb_txd  <= slzrtx_data(0);
-			end if;
-
 			if rising_edge(clk) then
 				if rst='1' then
 					usb_cfgd <= '0';
+					q := '0';
 					txen := '0';
 					i     := 0;
 					j     := 0;
@@ -236,6 +226,21 @@ begin
 						end if;
 					end if;
 				end if;
+				if usb_cfgd='1' then
+					if usbtx_irdy='1' then
+						q := '1';
+					elsif usbtx_trdy='1' then
+						q := '0';
+					end if;
+				end if;
+			end if;
+
+			if usb_cfgd='0' then
+				usb_txen <= txen;
+				usb_txd  <= txd;
+			else
+				usb_txen <= q;
+				usb_txd  <= slzrtx_data(0);
 			end if;
 
 			wait on usb_cfgd, slzrtx_irdy, slzrtx_data, clk;
