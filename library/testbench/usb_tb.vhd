@@ -150,6 +150,7 @@ begin
 		uart_trdy   => usbtx_trdy,
 		uart_data   => usbtx_data);
 
+	slzrtx_trdy <= usb_cfgd and not usb_txbs;
 	txserlzr_e : entity hdl4fpga.serlzr
 	port map (
 		src_clk  => usb_clk,
@@ -160,7 +161,7 @@ begin
 		dst_clk  => usb_clk,
 		dst_frm  => hdlctx_frm,
 		dst_irdy => slzrtx_irdy,
-		dst_trdy => usb_cfgd,
+		dst_trdy => slzrtx_trdy,
 		dst_data => slzrtx_data);
 
 	host_b : block
@@ -196,7 +197,19 @@ begin
 			variable txen  : std_logic := '0';
 			variable txbs  : std_logic;
 			variable txd   : std_logic := '0';
+			variable q : std_logic;
+			variable q1 : std_logic;
 		begin
+			if usb_cfgd='0' then
+				usb_txen <= txen;
+				usb_txd  <= txd;
+			else
+				if usb_txbs='0' then
+					usb_txen <= slzrtx_irdy;
+				end if;
+				usb_txd  <= slzrtx_data(0);
+			end if;
+
 			if rising_edge(clk) then
 				if rst='1' then
 					usb_cfgd <= '0';
@@ -219,19 +232,13 @@ begin
 							i     := i + 1;
 						else
 							usb_cfgd <= '1';
-							wait;
+							-- wait;
 						end if;
 					end if;
 				end if;
 			end if;
-			if usb_cfgd='0' then
-				usb_txen <= txen;
-				usb_txd  <= txd;
-			else
-				usb_txen <= slzrtx_irdy;
-				usb_txd  <= slzrtx_data(0);
-			end if;
-			wait on slzrtx_irdy, slzrtx_data, clk;
+
+			wait on usb_cfgd, slzrtx_irdy, slzrtx_data, clk;
 		end process;
 
 	  	host_e : entity hdl4fpga.usbphycrc
