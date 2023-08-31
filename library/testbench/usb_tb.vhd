@@ -70,6 +70,9 @@ architecture def of usb_tb is
 	signal usbtx_trdy    : std_logic;
 	signal usbtx_irdy    : std_logic;
 	signal usbtx_data    : std_logic_vector(0 to 8-1);
+	signal srctx_trdy    : std_logic;
+	signal srctx_sel     : std_logic;
+	signal srctx_data    : std_logic_vector(0 to 8-1);
 	signal slzrtx_irdy   : std_logic;
 	signal slzrtx_trdy   : std_logic;
 	signal slzrtx_data   : std_logic_vector(0 to 1-1);
@@ -150,14 +153,32 @@ begin
 		uart_trdy   => usbtx_trdy,
 		uart_data   => usbtx_data);
 
+	process (usb_clk)
+	begin
+		if rising_edge(usb_clk) then
+			if hdlctx_frm='0' then
+				srctx_sel <= '0';
+			elsif srctx_trdy='1' then
+				srctx_sel <= '1';
+			end if;
+		end if;
+	end process;
+
+	srctx_data <=
+		x"c3" when srctx_sel='0' else
+		usbtx_data;
+	usbtx_trdy <=
+		'0'	when srctx_sel='0' else
+		srctx_trdy;
+
 	slzrtx_trdy <= usb_cfgd and not usb_txbs;
 	txserlzr_e : entity hdl4fpga.serlzr
 	port map (
 		src_clk  => usb_clk,
 		src_frm  => hdlctx_frm,
 		src_irdy => usbtx_irdy,
-		src_trdy => usbtx_trdy,
-		src_data => usbtx_data,
+		src_trdy => srctx_trdy,
+		src_data => srctx_data,
 		dst_clk  => usb_clk,
 		dst_frm  => hdlctx_frm,
 		dst_irdy => slzrtx_irdy,

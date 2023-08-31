@@ -146,7 +146,6 @@ architecture ulx3s_graphics of testbench is
 
 	constant usb_freq     : real := 12.0e6;
 	constant snd_data  : std_logic_vector :=
-	 	x"c30000" &
 		x"01007e" &
 		x"18ff"   &
 		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
