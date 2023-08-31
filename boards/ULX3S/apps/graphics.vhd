@@ -207,13 +207,9 @@ begin
 		constant uart_freq : real := 
 			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk25mhz_freq/
 			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
-		signal uart_clk : std_logic;
 	begin
 
-		nodebug_g : if not debug generate
-			uart_clk <= videoio_clk;
-			sio_clk  <= videoio_clk;
-		end generate;
+		sio_clk  <= videoio_clk;
 
 		led(7) <= video_lck;
 
@@ -225,7 +221,7 @@ begin
 			usb_dp    => usb_fpga_dp,
 			usb_dn    => usb_fpga_dn,
 
-			sio_clk   => uart_clk,
+			sio_clk   => sio_clk,
 			si_frm    => si_frm,
 			si_irdy   => si_irdy,
 			si_trdy   => si_trdy,

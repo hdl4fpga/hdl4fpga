@@ -40,7 +40,7 @@ entity serlzr is
 		src_trdy  : out std_logic := '1';
 		dst_frm   : in  std_logic := '1';
 		dst_clk   : in  std_logic := '1';
-		dst_irdy  : out std_logic := '1';
+		dst_irdy  : out std_logic := '0';
 		dst_trdy  : in  std_logic := '1';
 		dst_data  : buffer std_logic_vector);
 end;
@@ -316,10 +316,10 @@ begin
 			process (src_clk, dst_clk)
 				variable shr  : unsigned(rgtr'range);
 				variable acc  : unsigned(0 to unsigned_num_bits(shr'length-1)-1);
-				variable full : std_logic;
+				variable full : bit;
 			begin 
 				if rising_edge(src_clk) then
-					if src_frm='0' then
+					if to_bit(src_frm)='0' then
 						acc  := (others => '0');
 						full := '0';
 					elsif src_irdy='1' then
@@ -343,10 +343,11 @@ begin
 				if rising_edge(dst_clk) then
 					if full='1' then
 						sel <= (others => '0');
-						dst_irdy <= full;
+						dst_irdy <= to_stdulogic(full);
 					elsif sel < unsigned_num_bits(rgtr'length/dst_data'length-1) then
 						sel <= sel + 1;
-						dst_irdy <= '1';
+						-- dst_irdy <= '1';
+						dst_irdy <= '0';
 					else
 						dst_irdy <= '0';
 					end if;

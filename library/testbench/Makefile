@@ -113,6 +113,8 @@ HDL4FPGA__sio_ff__def = $(LIB_HDL4FPGA)/sio_ff/def.dat
 HDL4FPGA__sio_ff = $(LIB_HDL4FPGA)/sio_ff/_primary.dat
 HDL4FPGA__sio_dmahdsk__def = $(LIB_HDL4FPGA)/sio_dmahdsk/def.dat
 HDL4FPGA__sio_dmahdsk = $(LIB_HDL4FPGA)/sio_dmahdsk/_primary.dat
+HDL4FPGA__sio_dayusb__beh = $(LIB_HDL4FPGA)/sio_dayusb/beh.dat
+HDL4FPGA__sio_dayusb = $(LIB_HDL4FPGA)/sio_dayusb/_primary.dat
 HDL4FPGA__sio_dayudp__beh = $(LIB_HDL4FPGA)/sio_dayudp/beh.dat
 HDL4FPGA__sio_dayudp = $(LIB_HDL4FPGA)/sio_dayudp/_primary.dat
 HDL4FPGA__sio_dayhdlc__beh = $(LIB_HDL4FPGA)/sio_dayhdlc/beh.dat
@@ -472,6 +474,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__sio_ff) \
     $(HDL4FPGA__sio_dmahdsk__def) \
     $(HDL4FPGA__sio_dmahdsk) \
+    $(HDL4FPGA__sio_dayusb__beh) \
+    $(HDL4FPGA__sio_dayusb) \
     $(HDL4FPGA__sio_dayudp__beh) \
     $(HDL4FPGA__sio_dayudp) \
     $(HDL4FPGA__sio_dayhdlc__beh) \
@@ -2147,6 +2151,18 @@ $(HDL4FPGA__sio_dayudp__beh) : ../sio/sio_dayudp.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../sio/sio_dayudp.vhd
 
+$(HDL4FPGA__sio_dayusb) \
+$(HDL4FPGA__sio_dayusb__beh) : ../sio/sio_dayusb.vhd \
+		$(HDL4FPGA__sio_hdlc) \
+		$(HDL4FPGA__serlzr) \
+		$(HDL4FPGA__usbpkg) \
+		$(HDL4FPGA__usbdev) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../sio/sio_dayusb.vhd
+
 $(HDL4FPGA__sio_dmahdsk) \
 $(HDL4FPGA__sio_dmahdsk__def) : ../sio/sio_dmahdsk.vhd \
 		$(HDL4FPGA__base) \
@@ -2380,6 +2396,7 @@ $(HDL4FPGA__usbcrc__def) : ../usb/usbcrc.vhd \
 $(HDL4FPGA__usbdev) \
 $(HDL4FPGA__usbdev__def) : ../usb/usbdev.vhd \
 		$(HDL4FPGA__usbdevrqst) \
+		$(IEEE__numeric_bit) \
 		$(HDL4FPGA__usbdevflow) \
 		$(HDL4FPGA__usbpkt_tx) \
 		$(HDL4FPGA__usbpkt_rx) \
@@ -2394,8 +2411,9 @@ $(HDL4FPGA__usbdev__def) : ../usb/usbdev.vhd \
 $(HDL4FPGA__usbdevflow) \
 $(HDL4FPGA__usbdevflow__def) : ../usb/usbdevflow.vhd \
 		$(HDL4FPGA__usbpkg) \
-		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_bit) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../usb/usbdevflow.vhd

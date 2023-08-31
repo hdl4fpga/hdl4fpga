@@ -64,10 +64,10 @@ architecture beh of sio_dayusb is
 
 	signal usb_rxdv    : std_logic;
 	signal usb_rxbs    : std_logic;
-	signal usb_rxd     : std_logic;
+	signal usb_rxd     : std_logic_vector(0 to 0);
 
 	signal usbrx_irdy  : std_logic;
-	signal usbrx_data  : std_logic_vector(so_data'range);
+	signal usbrx_data  : std_logic_vector(so_data'reverse_range);
 
 	signal usbtx_frm   : std_logic;
 	signal usbtx_irdy  : std_logic;
@@ -87,6 +87,7 @@ architecture beh of sio_dayusb is
 
 begin
 
+	usb_rxbs <= '0';
 	usbdev_e : entity hdl4fpga.usbdev
 	generic map (
 		oversampling => usb_oversampling)
@@ -102,18 +103,19 @@ begin
 
 		rxdv => usb_rxdv, 
 		rxbs => usb_rxbs,
-		rxd  => usb_rxd);
+		rxd  => usb_rxd(0));
 			
 	rxserlzr_b : block
 		signal src_irdy : std_logic;
 	begin
-		src_irdy <= usb_cken and not usb_rxbs;
+		src_irdy <= usb_rxdv and usb_cken and not usb_rxbs;
 		serlzr_e : entity hdl4fpga.serlzr
-		port (
+		port map (
 			src_clk  => usb_clk,
 			src_frm  => usb_rxdv,
 			src_data => usb_rxd,
 			src_irdy => src_irdy,
+			dst_clk  => usb_clk,
 			dst_irdy => usbrx_irdy,
 			dst_data => usbrx_data);
 	end block;
@@ -151,21 +153,21 @@ begin
 		so_data   => sohdlc_data,
 		tp => tp);
 
-	txserlzr_b : block
-		signal dst_trdy : std_logic;
-	begin
-		src_irdy <= usb_cken and not usb_txbs;
-		serlzr_e : entity hdl4fpga.serlzr
-		port (
-			src_clk  => usb_clk,
-			src_frm  => usbtx_frm,
-			src_irdy => usbtx_irdy,
-			src_trdy => usbtx_trdy,
-			src_data => usbtx_data,
-			dst_irdy => usbrx_irdy,
-			dst_trdy => usbrx_irdy,
-			dst_data => usbrx_data);
-	end block;
+	-- txserlzr_b : block
+		-- signal dst_trdy : std_logic;
+	-- begin
+		-- src_irdy <= usb_cken and not usb_txbs;
+		-- serlzr_e : entity hdl4fpga.serlzr
+		-- port (
+			-- src_clk  => usb_clk,
+			-- src_frm  => usbtx_frm,
+			-- src_irdy => usbtx_irdy,
+			-- src_trdy => usbtx_trdy,
+			-- src_data => usbtx_data,
+			-- dst_irdy => usbrx_irdy,
+			-- dst_trdy => usbrx_irdy,
+			-- dst_data => usbrx_data);
+	-- end block;
 
 	so_frm  <= si_frm  when sio_addr/='0' else sohdlc_frm;
 	so_irdy <= si_irdy when sio_addr/='0' else sohdlc_irdy;
