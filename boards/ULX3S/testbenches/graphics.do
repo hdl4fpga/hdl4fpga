@@ -61,10 +61,23 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/usb_g/usb_e/usb_dp
 add wave -noupdate /testbench/du_e/usb_g/usb_e/usb_dn
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/txen
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/txbs
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/txd
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbpkttx_e/line__54/state
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbpkttx_e/tx_req
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbpkttx_e/tx_rdy
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/txbuffer_p/we
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/dev_txen
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/dev_txbs
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/dev_txd
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/txbuffer_p/pin
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/txbuffer_p/pout
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/txbuffer_p/prty
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -102,7 +115,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {82927500 ps} 0} {{Cursor 2} {5743000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {137350300 ps} 0} {{Cursor 2} {5743000 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 217
 configure wave -valuecolwidth 149
@@ -118,4 +131,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {100800 ns}
+WaveRestoreZoom {63428160 ps} {189462080 ps}
