@@ -237,7 +237,7 @@ begin
 		end if;
 	end process;
 
-	txbuffer_p : process (rqst_rdy, clk)
+	txbuffer_p : process (acktx_rdy, clk)
 		variable mem  : std_logic_vector(0 to 64*8-1);
 		subtype  mem_range is natural range 1 to unsigned_num_bits(mem'length-1);
 		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
@@ -267,11 +267,11 @@ begin
 					buffer_txbs <= '1';
 				elsif pin=prty then
 					buffer_txbs <= '0';
-				elsif pin=pout then
+				elsif pin=(not pout(0 to 0) & pout(mem_range)) then
 					buffer_txbs <= '1';
 				end if;
 
-				if pout=pin then
+				if pout(mem_range)=pin(mem_range) then
 					buffer_txen <= '0';
 				else
 					buffer_txen <= '1';
@@ -283,7 +283,10 @@ begin
 					pin := pin + 1;
 				end if;
 
-				if (ctlr_rdy xor ctlr_req)='1' then
+				if pin=(not pout(0 to 0) & pout(mem_range)) then
+					we  := '0';
+					din := '-';
+				elsif (ctlr_rdy xor ctlr_req)='1' then
 					we  := rqst_txen;
 					din := rqst_txd;
 				elsif buffer_txbs='0' then
@@ -309,6 +312,7 @@ begin
 	rqst_txbs <= 
 		not to_stdulogic(ctlr_rdy xor ctlr_req) when txbuffer else 
 		txbs;
+
 	dev_txbs <= 
 		'0'         when dev_cfgd='0' else
 		buffer_txbs when txbuffer     else
@@ -316,7 +320,7 @@ begin
 
 	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd);
 
-	clpcrc_p : process (clk)
+	clpcrc_p : process (rqst_rdy, clk)
 		variable slr_rxd  : unsigned(0 to (16)-1);
 		variable slr_rxdv : unsigned(0 to (16)-1);
 	begin
