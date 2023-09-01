@@ -210,9 +210,16 @@ begin
 	end generate;
 
 	usb_g : if io_link=io_usb generate
+		signal tp : std_logic_vector(1 to 32);
 		constant uart_freq : real := 
 			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk25mhz_freq/
 			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
+
+		signal usb_cken : std_logic;
+		signal fltr_en : std_logic;
+		signal fltr_bs : std_logic;
+		signal fltr_d  : std_logic;
+
 	begin
 
 		sio_clk  <= videoio_clk;
@@ -223,7 +230,9 @@ begin
 		generic map (
 			usb_oversampling => usb_oversampling)
 		port map (
+			tp        => tp,
 			usb_clk   => videoio_clk,
+			usb_cken  => usb_cken,
 			usb_dp    => usb_fpga_dp,
 			usb_dn    => usb_fpga_dn,
 
@@ -239,6 +248,20 @@ begin
 			so_trdy   => so_trdy,
 			so_data   => so_data);
 
+		usbfltrsof_e : entity hdl4fpga.usbfltr_sof
+		port map (
+			usb_clk  => sio_clk,
+			usb_cken => usb_cken,
+			phy_en   => tp(1),
+			phy_bs   => tp(2),
+			phy_d    => tp(3),
+			fltr_en  => fltr_en,
+			fltr_bs  => fltr_bs,
+			fltr_d   => fltr_d);
+
+		ser_frm     <= fltr_en;
+		ser_irdy    <= not fltr_bs;
+		ser_data(0) <= fltr_d;
 	end generate;
 
 	ipoe_g : if io_link=io_ipoe generate
@@ -311,33 +334,33 @@ begin
 			mii_rxd(0)    => rmii_rx0,
 			mii_rxd(1)    => rmii_rx1);
 
-    	-- displaytp_e : entity hdl4fpga.display_tp
-    	-- generic map (
-    		-- timing_id    => video_params.timing,
-    		-- video_gear   => 2,
-    		-- num_of_cols  => 1,
-    		-- field_widths => (0 to 6-1 => 15),
-    		-- labels       => 
-    			-- "dev_gtn(0)" & NUL &
-    			-- "dev_gtn(1)" & NUL &
-    			-- "dev_csc"    & NUL &
-    			-- "dev_req(0)" & NUL &
-    			-- "dev_req(1)" & NUL &
-    			-- "miitx_frm"  & NUL &
-    			-- "miitx_end"  & NUL &
-    			-- "ethtx_frm"  & NUL &
-    			-- "ethtx_irdy" & NUL &
-    			-- "ethtx_trdy" & NUL &
-    			-- "arptx_frm"  & NUL &
-    			-- "arptx_irdy" & NUL &
-    			-- "arptx_trdy" & NUL)
-    	-- port map (
-    		-- sweep_clk   => video_clk,
-    		-- tp          => tp(1 to 13),
-    		-- video_clk   => video_clk,
-    		-- video_shift_clk => video_shift_clk,
-    		-- dvid_crgb   => dvid_crgb,
-    		-- video_pixel => video_pixel);
+		-- displaytp_e : entity hdl4fpga.display_tp
+		-- generic map (
+			-- timing_id    => video_params.timing,
+			-- video_gear   => 2,
+			-- num_of_cols  => 1,
+			-- field_widths => (0 to 6-1 => 15),
+			-- labels       => 
+				-- "dev_gtn(0)" & NUL &
+				-- "dev_gtn(1)" & NUL &
+				-- "dev_csc"    & NUL &
+				-- "dev_req(0)" & NUL &
+				-- "dev_req(1)" & NUL &
+				-- "miitx_frm"  & NUL &
+				-- "miitx_end"  & NUL &
+				-- "ethtx_frm"  & NUL &
+				-- "ethtx_irdy" & NUL &
+				-- "ethtx_trdy" & NUL &
+				-- "arptx_frm"  & NUL &
+				-- "arptx_irdy" & NUL &
+				-- "arptx_trdy" & NUL)
+		-- port map (
+			-- sweep_clk   => video_clk,
+			-- tp          => tp(1 to 13),
+			-- video_clk   => video_clk,
+			-- video_shift_clk => video_shift_clk,
+			-- dvid_crgb   => dvid_crgb,
+			-- video_pixel => video_pixel);
 
 		sio_clk   <= mii_clk;
 		wifi_en   <= '0';
@@ -486,32 +509,34 @@ begin
 
 	end generate;
 
-	hdmiext_g : if video_gear=7 or video_gear=4 generate 
-		signal crgb : std_logic_vector(dvid_crgb'range);
-	begin
-		reg_e : entity hdl4fpga.latency
-		generic map (
-			n => dvid_crgb'length,
-			d => (dvid_crgb'range => 1))
-		port map (
-			clk => video_shift_clk,
-			di  => dvid_crgb,
-			do  => crgb);
+	no_serdebug_g : if not serdebug generate
+		hdmiext_g : if video_gear=7 or video_gear=4 generate 
+			signal crgb : std_logic_vector(dvid_crgb'range);
+		begin
+			reg_e : entity hdl4fpga.latency
+			generic map (
+				n => dvid_crgb'length,
+				d => (dvid_crgb'range => 1))
+			port map (
+				clk => video_shift_clk,
+				di  => dvid_crgb,
+				do  => crgb);
 
-    	hdmi_ext_g : entity hdl4fpga.ecp5_ogbx
-       	generic map (
-    		mem_mode  => false,
-    		lfbt_frst => false,
-    		interlace => true,
-    		size      => gpdi_d'length,
-    		gear      => video_gear)
-       	port map (
-    		eclk      => video_eclk,
-    		sclk      => video_shift_clk,
-			d         => crgb,
-    		q         => gp(9 to 13-1));
+			hdmi_ext_g : entity hdl4fpga.ecp5_ogbx
+		   	generic map (
+				mem_mode  => false,
+				lfbt_frst => false,
+				interlace => true,
+				size      => gpdi_d'length,
+				gear      => video_gear)
+		   	port map (
+				eclk      => video_eclk,
+				sclk      => video_shift_clk,
+				d         => crgb,
+				q         => gp(9 to 13-1));
 
-		wifi_en   <= '0';
+			wifi_en   <= '0';
+		end generate;
 	end generate;
 
 	ser_debug_g : if serdebug generate
@@ -534,17 +559,17 @@ begin
 			video_pixel     => video_pixel,
 			dvid_crgb       => dvid_crgb);
 
-    	ddr_g : for i in gpdi_d'range generate
-    		signal q : std_logic;
-    	begin
-    		oddr_i : oddrx1f
-    		port map(
-    			sclk => video_shift_clk,
-    			rst  => '0',
-    			d0   => dvid_crgb(2*i),
-    			d1   => dvid_crgb(2*i+1),
-    			q    => gpdi_d(i));
-    	end generate;
+		ddr_g : for i in gpdi_d'range generate
+			signal q : std_logic;
+		begin
+			oddr_i : oddrx1f
+			port map(
+				sclk => video_shift_clk,
+				rst  => '0',
+				d0   => dvid_crgb(2*i),
+				d1   => dvid_crgb(2*i+1),
+				q    => gpdi_d(i));
+		end generate;
 
 	end generate;
 
