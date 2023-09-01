@@ -119,6 +119,12 @@ architecture graphics of ulx3s is
 
 	signal sio_clk       : std_logic;
 
+	constant serdebug    : boolean := false;
+	signal ser_clk       : std_logic;
+	signal ser_frm       : std_logic;
+	signal ser_irdy      : std_logic;
+	signal ser_data      : std_logic_vector(0 to setif(io_link=io_ipoe, 2,1)-1);
+
 begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
@@ -506,6 +512,40 @@ begin
     		q         => gp(9 to 13-1));
 
 		wifi_en   <= '0';
+	end generate;
+
+	ser_debug_g : if serdebug generate
+		signal video_hzsync : std_logic;
+		signal video_vtsync : std_logic;
+	begin
+		ser_debug_e : entity hdl4fpga.ser_debug
+		generic map (
+			timing_id       => video_params.timing)
+		port map (
+			ser_clk         => ser_clk, 
+			ser_frm         => ser_frm, 
+			ser_irdy        => ser_irdy, 
+			ser_data        => ser_data, 
+			
+			video_clk       => video_clk,
+			video_shift_clk => video_shift_clk,
+			video_hzsync    => video_hzsync,
+			video_vtsync    => video_vtsync,
+			video_pixel     => video_pixel,
+			dvid_crgb       => dvid_crgb);
+
+    	ddr_g : for i in gpdi_d'range generate
+    		signal q : std_logic;
+    	begin
+    		oddr_i : oddrx1f
+    		port map(
+    			sclk => video_shift_clk,
+    			rst  => '0',
+    			d0   => dvid_crgb(2*i),
+    			d1   => dvid_crgb(2*i+1),
+    			q    => gpdi_d(i));
+    	end generate;
+
 	end generate;
 
 	-- SDRAM-clk-divided-by-2 monitor

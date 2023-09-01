@@ -151,7 +151,7 @@ begin
 		so_irdy   => sohdlc_irdy,
 		so_trdy   => sohdlc_trdy,
 		so_data   => sohdlc_data,
-		tp => tp);
+		tp => open);
 
 	txserlzr_b : block
 		signal dst_trdy : std_logic;
