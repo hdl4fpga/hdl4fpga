@@ -271,7 +271,7 @@ begin
 					buffer_txbs <= '1';
 				end if;
 
-				if pout(mem_range)=pin(mem_range) then
+				if pout=pin then
 					buffer_txen <= '0';
 				else
 					buffer_txen <= '1';
