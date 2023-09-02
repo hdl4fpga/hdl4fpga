@@ -73,7 +73,11 @@ begin
 			-- constant data : std_logic_vector := reverse(x"c300_05_0c00_0000_0000_ea38",8)(0 to 72-1);
 			-- constant data : std_logic_vector := reverse(x"c380_06_0001_0000_0800_eb94",8)(0 to 72-1);
 
-			constant msg0 : std_logic_vector := x"4b" & x"606162636465666768696a6b6c6d6e6f";
+			constant msg0 : std_logic_vector := x"4b" & 
+				x"606162636465666768696a6b6c6d6e6f" &
+				x"606162636465666768696a6b6c6d6e6f" &
+				x"606162636465666768696a6b6c6d6e6f" &
+				x"606162636465666768696a6b6c6d6e6f";
 			constant msg1 : std_logic_vector := x"c3" & x"707172737475767778797a7b7c7d7e7f";
 			constant data : std_logic_vector := 
 				reverse(x"2d0010",8)(0 to 19-1) &
@@ -125,8 +129,8 @@ begin
 				 0 us,     2 us,        9 us,  9 us,  0 us,
 				 0 us,     2 us,       15 us,  0 us,  3 us,
 				 0 us,     0 us,        2 us,  3 us,  0 us, 
-				 3 us,     0 us,        0 us,  2 us, 14 us,
-				 0 us,     0 us,        2 us, 14 us,  0 us);
+				 3 us,     0 us,        0 us,  40 us, 14 us,
+				 0 us,     4 us,        2 us, 14 us,  0 us);
 
 			variable i     : natural;
 			variable j     : natural;
@@ -147,7 +151,7 @@ begin
 				elsif txbs='0' then
 					txen <= '0';
 					if idle='1' then
-						if  i < delays'length then
+						if i < 27 and  i < delays'length then
 							wait for delays(i);
 							right := right + length(i);
 							i     := i + 1;

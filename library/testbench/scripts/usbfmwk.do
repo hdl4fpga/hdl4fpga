@@ -110,11 +110,15 @@ add wave -noupdate /testbench/dev_b/dev_e/phyerr
 add wave -noupdate /testbench/dev_b/dev_e/tkerr
 add wave -noupdate /testbench/dev_b/dev_e/crcerr
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_txen
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_txbs
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/dev_txd
+add wave -noupdate /testbench/dev_b/dev_e/usbdevflow_e/buffer_txbs
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {21894439 ps} 0} {{Cursor 2} {175758843 ps} 0}
+WaveRestoreCursors {{Cursor 1} {21894439 ps} 0} {{Cursor 2} {234812802 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 265
 configure wave -valuecolwidth 164
@@ -130,4 +134,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {172518750 ps} {180393750 ps}
+WaveRestoreZoom {134625 ns} {292125 ns}
