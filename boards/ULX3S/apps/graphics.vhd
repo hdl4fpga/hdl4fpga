@@ -119,7 +119,7 @@ architecture graphics of ulx3s is
 
 	signal sio_clk       : std_logic;
 
-	constant serdebug    : boolean := false;
+	constant serdebug    : boolean := true;
 	signal ser_clk       : std_logic;
 	signal ser_frm       : std_logic;
 	signal ser_irdy      : std_logic;
@@ -482,31 +482,33 @@ begin
 	-- VGA --
 	---------
 
-	hdmibrd_g : if video_gear=2 generate 
-		signal crgb : std_logic_vector(dvid_crgb'range);
-	begin
-		reg_e : entity hdl4fpga.latency
-		generic map (
-			n => dvid_crgb'length,
-			d => (dvid_crgb'range => 1))
-		port map (
-			clk => video_shift_clk,
-			di  => dvid_crgb,
-			do  => crgb);
+	no_serdebug_g : if not serdebug generate
+		hdmibrd_g : if video_gear=2 generate 
+			signal crgb : std_logic_vector(dvid_crgb'range);
+		begin
+			reg_e : entity hdl4fpga.latency
+			generic map (
+				n => dvid_crgb'length,
+				d => (dvid_crgb'range => 1))
+			port map (
+				clk => video_shift_clk,
+				di  => dvid_crgb,
+				do  => crgb);
+	
+			gbx_g : entity hdl4fpga.ecp5_ogbx
+			generic map (
+				mem_mode  => false,
+				lfbt_frst => false,
+				interlace => true,
+				size      => gpdi_d'length,
+				gear      => video_gear)
+			port map (
+				sclk      => video_shift_clk,
+				eclk      => video_eclk,
+				d         => crgb,
+				q         => gpdi_d);
 
-		gbx_g : entity hdl4fpga.ecp5_ogbx
-	   	generic map (
-			mem_mode  => false,
-			lfbt_frst => false,
-			interlace => true,
-			size      => gpdi_d'length,
-			gear      => video_gear)
-	   	port map (
-			sclk      => video_shift_clk,
-			eclk      => video_eclk,
-			d         => crgb,
-			q         => gpdi_d);
-
+		end generate;
 	end generate;
 
 	no_serdebug_g : if not serdebug generate
@@ -542,6 +544,7 @@ begin
 	ser_debug_g : if serdebug generate
 		signal video_hzsync : std_logic;
 		signal video_vtsync : std_logic;
+		signal dvid_crgb    : std_logic_vector(4*2-1 downto 0);
 	begin
 		ser_debug_e : entity hdl4fpga.ser_debug
 		generic map (

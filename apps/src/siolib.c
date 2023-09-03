@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <time.h>
 #include "siolib.h"
 
 int pkt_sent = 0;
@@ -244,9 +245,34 @@ static unsigned char usbendp;
 
 void usb_send(char * data, int len)
 {
+	static char buffer[1024];
+	static char *ptr = buffer;
+	u16 fcs;
+
+    fcs = ~pppfcs16(PPPINITFCS16, data, len);
+	*ptr++ = 0x7e;
+	for (int i = 0; i < len+sizeof(fcs); i++) {
+		char c;
+
+		if (i < len) {
+			c = data[i];
+		} else {
+			c = ((char *) &fcs)[i-len];
+		}
+
+		if (c == 0x7e) {
+			*ptr++ = 0x7d;
+			c ^= 0x20;
+		} else if(c == 0x7d) {
+			*ptr++ = 0x7d;
+			c ^= 0x20;
+		}
+		*ptr++ = c;
+	}
+	*ptr++ = 0x7e;
 	int result;
 	int transferred;
-	if ((result = libusb_bulk_transfer(usbdev, usbendp & ~0x80, data, len, &transferred, 0))!=0) {
+	if ((result = libusb_bulk_transfer(usbdev, usbendp & ~0x80, buffer, ptr-buffer, &transferred, 0))!=0) {
 		printf("Error in bulk transfer. Error code: %d\n", result);
 		perror ("sending packet");
 		abort();
@@ -391,17 +417,73 @@ int socket_rcvd(char unsigned *buffer, int maxlen)
 
 int usb_rcvd(char unsigned *buffer, int maxlen)
 {
-	int result;
-	int transferred;
 
-	result = libusb_bulk_transfer(usbdev, usbendp | 0x80, buffer, maxlen, &transferred, 0);
-	if (result == 0) {
-		return transferred;
-	} else {
-		printf("Error in bulk transfer. Error code: %d\n", result);
-		return -1;
+	if (LOG0) {
+		fprintf(stderr, "USB reading\n");
 	}
 
+	pkt_lost++;
+	int retry = 0;
+	char unsigned *ptr = buffer;
+	do {
+		int result;
+		int transferred;
+
+		if (!libusb_bulk_transfer(usbdev, usbendp | 0x80, ptr, maxlen-(ptr-buffer), &transferred, 0)) {
+			printf("Error in bulk transfer. Error code: %d\n", result);
+			return -1;
+		} else if (transferred > 0) {
+			int i; 
+			int j;
+
+			for (i = 0, j = 0; i < transferred; i++, j++) {
+				if (ptr[i] == 0x7e) {
+					break;
+				} else if (ptr[i] == 0x7d) {
+					ptr[++i] ^= 0x20;
+				}
+				ptr[j] = ptr[i];
+			}
+			transferred += (j-i);
+
+			ptr += transferred;
+			if (ptr[i] == 0x7e) {
+				break;
+			}
+			retry = 0;
+		} else {
+			struct timespec req;
+			struct timespec rem;
+
+			for (req.tv_sec = 0, req.tv_nsec = 1e6; nanosleep(&req, &rem); req = rem);
+
+			if (retry++ > 64) {
+				return -1;
+			}
+		}
+	} while ((ptr-buffer) < maxlen);
+
+	short unsigned fcs = pppfcs16(PPPINITFCS16, buffer, ptr-buffer);
+	ptr -= 2;
+	if (fcs == PPPGOODFCS16) {
+		if (LOG0) fprintf(stderr, "FCS OK! ");
+		if (LOG1) fprintf(stderr, "fcs 0x%04x", fcs);
+		if (LOG0 | LOG1) fputc('\n', stderr);
+		pkt_lost--;
+		return ptr-buffer;
+	}
+
+	if (LOG0) fprintf(stderr, "FCS WRONG! ");
+	if (LOG1) fprintf(stderr, "fcs 0x%04x", fcs);
+	if (LOG0 | LOG1) fputc('\n', stderr);
+	if (LOG2) {
+		struct rgtr_node *print_queue;
+		print_queue = rawdata2rgtr(buffer,ptr-buffer);
+		print_rgtrs(print_queue);
+		delete_queue(print_queue);
+	}
+
+	return -1;
 }
 
 int hdlc_rcvd(char unsigned *buffer, int maxlen)

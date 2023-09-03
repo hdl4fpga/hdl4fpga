@@ -45,12 +45,12 @@ typedef int unsigned lfsr_word;
 __int128 lfsr;
 const size_t lfsr_size = BYTE_SIZE*sizeof(lfsr_word);
 
-void test_init ()
+void lfsr_init ()
 {
 	lfsr = lfsr_mask(lfsr_size);
 }
 
-void test_fill (char *buffer, int length)
+void lfsr_fill (char *buffer, int length)
 {
 	for (int i = 0; i < length; i += sizeof(lfsr_word)) {
 		memcpy(buffer+i, &lfsr, sizeof(lfsr_word));
@@ -59,12 +59,12 @@ void test_fill (char *buffer, int length)
 }
 
 static char p = 0;
-void seq_init ()
+void arith_init ()
 {
 	p = 0;
 }
 
-void test_seq (char *buffer, int length)
+void arith_fill (char *buffer, int length)
 {
 	for (int i = 0; i < length; i += sizeof(p)) {
 		memcpy(buffer+i, &p, sizeof(p));
@@ -124,6 +124,9 @@ int sio_memwrite(size_t address, const char *buffer, size_t length)
 // #define MAX_ADDRESS    (256*1024*1024)
 #define MAX_ADDRESS    (1024*1024*1024)
 // #define MAX_ADDRESS    (16*1024*1024)
+
+static void (*seq_init) ();
+static void (*seq_fill) (char *buffer, int length);
 
 int main (int argc, char *argv[])
 {
@@ -198,25 +201,26 @@ int main (int argc, char *argv[])
 
 	}
 
-	test_init();
+#ifdef LSR
+	seq_init = lfsr_init;
+	seq_fill = lfsr_fill;
+#else
+	seq_init = arith_init;
+	seq_fill = arith_fill;
+#endif
+
 
 	char wr_buffer[8*1024];
 	char rd_buffer[8*1024];
 	int  address;
 	int  length;
 
+	seq_init();
 	length  = 1*1024;
 	for(int pass = 1; pass < 2 || 0;pass++) {
-		seq_init();
 		for (address = 0; address < MAX_ADDRESS; address += length) {
 
-#define LSR
-#ifdef LSR
-			test_fill(wr_buffer, length);
-#else
-			test_seq(wr_buffer, length);
-#endif
-//			memset(wr_buffer, 0, length);
+			seq_fill(wr_buffer, length);
 			sio_memwrite(address, wr_buffer, length);
 			sio_memread(address,  rd_buffer, length);
 
