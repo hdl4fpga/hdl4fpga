@@ -261,6 +261,7 @@ begin
 		usb_fpga_dn => usb_fpga_dn,
 		ftdi_txd   => ftdi_txd,
 		ftdi_rxd   => ftdi_rxd,
+		up         => '0',
 		fire1      => fire1,
 		fire2      => fire2,
 		gp         => gp,

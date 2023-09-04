@@ -115,8 +115,8 @@ begin
 	begin
 		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
-		usb_fpga_dp    <= 'Z' when up='0' else '0';
-		usb_fpga_dn    <= 'Z' when up='0' else '0';
+		usb_fpga_dp    <= 'Z';-- when up='0' else '0';
+		usb_fpga_dn    <= 'Z';-- when up='0' else '0';
 		usb_fpga_bd_dp <= 'Z';
 		usb_fpga_bd_dn <= 'Z';
 
@@ -147,6 +147,7 @@ begin
 			phy_en   => tp(1),
 			phy_bs   => tp(2),
 			phy_d    => tp(3),
+			fltr_on  => up,
 			fltr_en  => fltr_en,
 			fltr_bs  => fltr_bs,
 			fltr_d   => fltr_d);

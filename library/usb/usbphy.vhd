@@ -85,10 +85,6 @@ begin
 	-- tp(2) <= '0';
 	-- tp(3) <= tx_tp(1);
 
-	k   <= not dp and     dn;
-	j   <=     dp and not dn;
-	se0 <= not dp and not dn;
-
 	linestates_p : process (clk)
 		type states is (s_idle, s_sop, s_eop, s_resume, s_suspend);
 		variable state : states;
@@ -121,9 +117,12 @@ begin
 
 	oversampling_g : if oversampling/=0 generate
     	oversampling_p : process (clk)
+			-- constant wm : natural := setif(watermark=0, (oversampling)/2, watermark);
 			constant wm : natural := setif(watermark=0, (oversampling)/2, watermark);
-    		variable cntr  : natural range 0 to oversampling-1;
-    		variable q     : std_logic;
+    		variable cntr : natural range 0 to oversampling-1;
+    		variable q    : std_logic;
+			variable dp_s : std_logic;
+			variable dn_s : std_logic;
     	begin
     		if rising_edge(clk) then
     			if (to_bit(q) xor to_bit(k))='1' then
@@ -138,15 +137,23 @@ begin
     			else
     				cken <= '0';
     			end if;
-    			q     := k;
-    			s_k   <= k;
-    			s_j   <= j;
-    			s_se0 <= se0;
+    			q     := not dp_s and     dn_s;
+    			s_k   <= not dp_s and     dn_s;
+    			s_j   <=     dp_s and not dn_s;
+    			s_se0 <= not dp_s and not dn_s;
+				dp_s := dp;
+				dn_s := dn;
     		end if;
+			k   <= not dp_s and     dn_s;
+			j   <=     dp_s and not dn_s;
+			se0 <= not dp_s and not dn_s;
     	end process;
 	end generate;
 	
 	nooversampling_g : if oversampling=0 generate
+		k     <= not dp and     dn;
+		j     <=     dp and not dn;
+		se0   <= not dp and not dn;
 		s_k   <= k;
 		s_j   <= j;
 		s_se0 <= se0;

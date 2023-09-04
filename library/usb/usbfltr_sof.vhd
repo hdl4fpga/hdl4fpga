@@ -32,6 +32,7 @@ entity usbfltr_sof is
 	port (
 		usb_clk  : in  std_logic;
 		usb_cken : in  std_logic;
+		fltr_on  : in  std_logic := '1';
 		phy_en   : in  std_logic;
 		phy_bs   : in  std_logic;
 		phy_d    : in  std_logic;
@@ -41,6 +42,9 @@ entity usbfltr_sof is
 end;
 
 architecture def of usbfltr_sof is
+	signal sof_en : std_logic;
+	signal sof_bs : std_logic;
+	signal sof_d  : std_logic;
 begin
 
 	sof_filter_p : process(usb_clk)
@@ -79,18 +83,21 @@ begin
 					end if;
 				end if;
 
-				fltr_en <= ena(0); 
+				sof_en <= ena(0); 
 				if phy_en='1' then
-					fltr_bs <= phy_bs;
+					sof_bs <= phy_bs;
 				else
-					fltr_bs <= '0';
+					sof_bs <= '0';
 				end if;
 
-				fltr_d <= data(0);
+				sof_d <= data(0);
 			else
-				fltr_bs <= '1';
+				sof_bs <= '1';
 			end if;
 		end if;
 	end process;
+	fltr_en <= sof_en when fltr_on='1' else phy_en;
+	fltr_bs <= sof_bs when fltr_on='1' else phy_bs or not usb_cken;
+	fltr_d  <= sof_d  when fltr_on='1' else phy_d;
 
 end;
