@@ -107,7 +107,7 @@ architecture graphics of ulx3s is
 	signal videoio_clk   : std_logic;
 
 	constant mem_size    : natural := 8*(1024*8);
-	signal so_frm        : std_logic;
+	signal so_frm        : std_logic := '0';
 	signal so_irdy       : std_logic;
 	signal so_trdy       : std_logic;
 	signal so_data       : std_logic_vector(0 to 8-1);
@@ -250,9 +250,9 @@ begin
 			si_end    => si_end,
 			si_data   => si_data,
 	
-			so_frm    => so_frm,
-			so_irdy   => so_irdy,
-			so_trdy   => so_trdy,
+			so_frm    => open, --so_frm,
+			so_irdy   => open, --so_irdy,
+			so_trdy   => open, --so_trdy,
 			so_data   => so_data);
 
 		usbfltrsof_e : entity hdl4fpga.usbfltr_sof

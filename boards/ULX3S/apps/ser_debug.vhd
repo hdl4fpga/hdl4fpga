@@ -97,13 +97,20 @@ begin
 
 	usb_g : if io_link=io_usb generate 
 		signal cken : std_logic;
+		signal cfgd : std_logic;
+
 		signal txen : std_logic;
 		signal txbs : std_logic;
 		signal txd  : std_logic;
+
 		signal rxdv : std_logic;
 		signal rxbs : std_logic;
 		signal rxd  : std_logic;
-		signal cfgd : std_logic;
+
+		signal fltr_en : std_logic;
+		signal fltr_bs : std_logic;
+		signal fltr_d  : std_logic;
+
 		signal tp   : std_logic_vector(1 to 32);
 	begin
 		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
@@ -113,46 +120,9 @@ begin
 		usb_fpga_bd_dp <= 'Z';
 		usb_fpga_bd_dn <= 'Z';
 
-		process (videoio_clk)
-			constant msg : std_logic_vector := reverse(reverse(to_ascii("Hello world" & LF),8));
-			-- constant msg : std_logic_vector := reverse(reverse(x"7f_fe_ff_ff_ff",8));
-			variable ptr : natural range 0 to msg'length := msg'length;
-			variable q1  : std_logic;
-			variable q0  : std_logic;
-		begin
-			if rising_edge(videoio_clk) then
-				if cken='1' then
-					if q1='1' then
-						if right='1' then
-							q1 := '0';
-						end if;
-					elsif left='1' then
-						q1 := '1';
-					end if;
-
-					if q0 /= q1 then
-						ptr := msg'length;
-						txen <= '0';
-					elsif cfgd='1' then
-						if txbs='0' then
-							if ptr /= 0 then
-								txen <= '1';
-								ptr := ptr - 1;
-							else
-								txen <= '0';
-							end if;
-							txd  <= msg(ptr);
-						end if;
-					else
-						txen <= '0';
-					end if;
-					q0 := q1;
-				end if;
-				led(0) <= q1;
-				led(7) <= not q1;
-			end if;
-		end process;
-
+		txen <= rxdv;
+		rxbs <= txbs;
+		txd  <= rxd;
 		usbphy_e : entity hdl4fpga.usbdev
 		generic map (
 			oversampling => usb_oversampling)
@@ -163,77 +133,28 @@ begin
 			clk  => videoio_clk,
 			dev_cfgd => cfgd,
 			cken => cken,
-			-- txen => txen, 
-			-- txbs => txbs,
-			-- txd  => txd,
-			txen => rxdv, 
-			txbs => rxbs,
-			txd  => rxd,
-
+			txen => txen, 
+			txbs => txbs,
+			txd  => txd,
 			rxdv => rxdv, 
 			rxbs => rxbs,
 			rxd  => rxd);
 			
-		ser_clk <= videoio_clk;
-		-- ser_frm     <= rxdv; 
-		-- ser_irdy    <= not rxbs and cken;
-		-- ser_data(0) <= rxd;
+		usbfltrsof_e : entity hdl4fpga.usbfltr_sof
+		port map (
+			usb_clk  => videoio_clk,
+			usb_cken => cken,
+			phy_en   => tp(1),
+			phy_bs   => tp(2),
+			phy_d    => tp(3),
+			fltr_en  => fltr_en,
+			fltr_bs  => fltr_bs,
+			fltr_d   => fltr_d);
 
-		sof_filter_p : process(videoio_clk)
-			variable data : unsigned(0 to 8-1);
-			variable tken : unsigned(0 to 8-1);
-			variable ena  : unsigned(0 to 8-1) := (others => '0');
-			variable cntr : natural range 0 to 8;
-			alias trxen is tp(1);
-			alias trxbs is tp(2);
-			alias trxd  is tp(3);
-		begin
-			if rising_edge(videoio_clk) then
-				if cken='1' then
-					if trxen='1' or ena(0)='1' then
-						if trxbs='0' then
-							data(0) := trxd;
-							data    := data rol 1;
-							if cntr/=0 then
-								cntr := cntr - 1;
-								if cntr=0 then
-									tken := data;
-								end if;
-							end if;
-						end if;
-					else
-						cntr := 8;
-					end if;
-					ena(0) := trxen;
-					ena    := ena rol 1;
-
-					if cntr=0 then
-						if reverse(tken)=x"a5" then
-							ena := (others => '0');
-						elsif reverse(tken)=x"80" then
-							ena := (others => '0');
-							cntr := 8;
-						elsif (tken(0 to 4-1) xor tken(4 to 8-1))/=x"f" then
-							ena := (others => '0');
-						end if;
-					end if;
-					ser_frm <= ena(0); 
-					if trxen='1' then
-						if trxbs='1' then
-							ser_irdy <= '0';
-						else
-							ser_irdy <= '1';
-						end if;
-					else
-						ser_irdy <= '1';
-					end if;
-
-					ser_data(0) <= data(0);
-				else
-					ser_irdy <= '0';
-				end if;
-			end if;
-		end process;
+		ser_clk     <= videoio_clk;
+		ser_frm     <= fltr_en; 
+		ser_irdy    <= not fltr_bs;
+		ser_data(0) <= fltr_d;
 
 		led(4) <= tp(4);
 		led(3) <= tp(5);
