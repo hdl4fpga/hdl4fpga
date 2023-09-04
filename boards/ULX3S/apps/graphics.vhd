@@ -222,6 +222,13 @@ begin
 
 	begin
 
+		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
+		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
+		usb_fpga_dp    <= 'Z' when up='0' else '0';
+		usb_fpga_dn    <= 'Z' when up='0' else '0';
+		usb_fpga_bd_dp <= 'Z';
+		usb_fpga_bd_dn <= 'Z';
+
 		sio_clk  <= videoio_clk;
 
 		led(7) <= video_lck;
@@ -259,6 +266,7 @@ begin
 			fltr_bs  => fltr_bs,
 			fltr_d   => fltr_d);
 
+		ser_clk     <= videoio_clk;
 		ser_frm     <= fltr_en;
 		ser_irdy    <= not fltr_bs;
 		ser_data(0) <= fltr_d;
@@ -509,9 +517,7 @@ begin
 				q         => gpdi_d);
 
 		end generate;
-	end generate;
 
-	no_serdebug_g : if not serdebug generate
 		hdmiext_g : if video_gear=7 or video_gear=4 generate 
 			signal crgb : std_logic_vector(dvid_crgb'range);
 		begin

@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <time.h>
+#include <libusb-1.0/libusb.h>
 #include "siolib.h"
 
 int pkt_sent = 0;
@@ -7,8 +8,9 @@ int pkt_lost = 0;
 
 static FILE *comm;
 
-static char hostname[256] = "";
 static int sckt;
+static int (*sio_send)(char * data, int len);
+static int (*sio_rcvd)(char * data, int len);
 
 #define LOG0 (loglevel & (1 << 0))
 #define LOG1 (loglevel & (1 << 1))
@@ -243,7 +245,7 @@ static libusb_context *usbctx = NULL;
 static libusb_device_handle *usbdev;
 static unsigned char usbendp;
 
-void usb_send(char * data, int len)
+int usb_send(char * data, int len)
 {
 	static char buffer[1024];
 	static char *ptr = buffer;
@@ -280,7 +282,7 @@ void usb_send(char * data, int len)
 	pkt_sent++;
 }
 
-void socket_send(char * data, int len)
+int socket_send(char * data, int len)
 {
 	if (sendto(sckt, data, len, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
 		perror ("sending packet");
@@ -297,7 +299,7 @@ void uart_send(char c, FILE *comm)
 	}
 }
 
-void hdlc_send(char * data, int len)
+int hdlc_send(char * data, int len)
 {
 	u16 fcs;
 
@@ -325,18 +327,9 @@ void hdlc_send(char * data, int len)
 	pkt_sent++;
 }
 
-void sio_sethostname (char *name)
-{
-	strcpy(hostname, name);
-}
-
 void send_buffer(char * data, int len)
 {
-	if (strlen(hostname)) {
-		socket_send(data,len);
-	} else {
-		hdlc_send(data, len);
-	}
+	sio_send(data, len);
 }
 
 void send_rgtr(struct rgtr_node *node)
@@ -369,7 +362,7 @@ void send_rgtrrawdata(struct rgtr_node *node, char unsigned *data, int len)
 	send_buffer(buffer, len+len1);
 }
 
-int socket_rcvd(char unsigned *buffer, int maxlen)
+int socket_rcvd(char *buffer, int maxlen)
 {
 	static struct sockaddr_in sa_src;
 	static socklen_t sl_src  = sizeof(sa_src);
@@ -415,7 +408,7 @@ int socket_rcvd(char unsigned *buffer, int maxlen)
 	return -1;
 }
 
-int usb_rcvd(char unsigned *buffer, int maxlen)
+int usb_rcvd(char *buffer, int maxlen)
 {
 
 	if (LOG0) {
@@ -424,7 +417,7 @@ int usb_rcvd(char unsigned *buffer, int maxlen)
 
 	pkt_lost++;
 	int retry = 0;
-	char unsigned *ptr = buffer;
+	char *ptr = buffer;
 	do {
 		int result;
 		int transferred;
@@ -583,18 +576,8 @@ struct rgtr_node *rcvd_rgtr()
 	struct rgtr_node *node;
 
 	static char unsigned buffer[MAXLEN];
-	if (strlen(hostname)) {
-		if ((len = socket_rcvd(buffer, sizeof(buffer))) < 0) {
-			return NULL;
-		}
-	} else if (usbctx) {
-		if ((len = usb_rcvd(buffer, sizeof(buffer))) < 0) {
-			return NULL;
-		}
-	} else {
-		if ((len = hdlc_rcvd(buffer, sizeof(buffer))) < 0) {
-			return NULL;
-		}
+	if ((len = sio_rcvd(buffer, sizeof(buffer))) < 0) {
+		return NULL;
 	}
 	node = rawdata2rgtr(buffer, len);
 //	if (LOG2) print_rgtrs(node);
@@ -602,7 +585,7 @@ struct rgtr_node *rcvd_rgtr()
 	return node;
 }
 
-void init_usb (short vid, short pid, unsigned char endp)
+void init_usb (short vid, short pid, char endp)
 {
 	usbendp = endp;
 	if (libusb_init(&usbctx) != 0) {
@@ -623,10 +606,11 @@ void init_usb (short vid, short pid, unsigned char endp)
 		libusb_exit(usbctx);
 		exit(-1);
 	}
-
+	sio_send = usb_send;
+	sio_rcvd = usb_rcvd;
 }
 
-void init_socket ()
+void init_socket (char * hostname)
 {
 
 	static struct hostent *host = NULL;
@@ -642,6 +626,9 @@ void init_socket ()
 		fprintf (stderr, "Hostname '%s' not found\n", hostname);
 		exit(1);
 	}
+
+	sio_send = socket_send;
+	sio_rcvd = socket_rcvd;
 
 	memset (&sa_trgt, 0, sizeof (sa_trgt));
 	sa_trgt.sin_family = AF_INET;

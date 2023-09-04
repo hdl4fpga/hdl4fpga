@@ -31,8 +31,7 @@ int main (int argc, char *argv[])
 			break;
 		case 'h':
 			if (optarg) {
-				sio_sethostname(optarg);
-				init_socket();
+				init_socket(optarg);
 				h = true;
 				fprintf (stderr, "Socket has been initialized\n");
 			}

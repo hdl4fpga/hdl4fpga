@@ -79,17 +79,17 @@ void fprint_rgtrs (FILE *file, struct rgtr_node *node);
 #define RGTRDMAADDR_ID 0x16
 
 void sio_setloglevel(int);
-void sio_sethostname(char *);
 void init_comms ();
+void init_socket (char *);
+void init_usb (short vendorid, short prodcutid, char endp);
 void uart_send(char c, FILE *comm);
-void hdlc_send(char * data, int len);
+int  hdlc_send(char * data, int len);
 int  hdlc_rcvd(char unsigned *buffer, int maxlen);
 void send_buffer(char * data, int len);
 void send_rgtr(struct rgtr_node *node);
 void send_rgtrrawdata(struct rgtr_node *node, char unsigned *data, int len);
-void init_socket ();
-void socket_send(char * data, int len);
-int socket_rcvd(char unsigned *buffer, int maxlen);
+int  socket_send(char * data, int len);
+int socket_rcvd(char *buffer, int maxlen);
 int sio_init (int ack_val);
 struct rgtr_node *sio_request (char *buffer, size_t length);
 void sio_dump (FILE *, struct rgtr_node *queue_in);

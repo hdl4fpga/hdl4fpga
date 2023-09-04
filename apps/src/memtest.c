@@ -137,6 +137,7 @@ int main (int argc, char *argv[])
 
 	short vendor;
 	short product;
+	char endp;
 	opterr   = 0;
 
 	setvbuf(stderr, NULL, _IONBF, 0);
@@ -154,15 +155,14 @@ int main (int argc, char *argv[])
 			break;
 		case 'h':
 			if (optarg) {
-				sio_sethostname(optarg);
-				init_socket();
+				init_socket(optarg);
 				h = true;
 			}
 			break;
 		case'u':
 			if (optarg) {
 				char colon;
-				sscanf(optarg,  "%hx%c%hx", &vendor, &colon, &product);
+				sscanf(optarg,  "%hx%c%hx%c%hhx", &vendor, &colon, &product, &colon, &endp);
 				u = true;
 			}
 			break;
@@ -178,27 +178,7 @@ int main (int argc, char *argv[])
 		init_comms();
 		fprintf (stderr, "COMMS has been initialized\n");
 	} else if (!h) {
-		if (libusb_init(&ctx) != 0) {
-			printf("Error initializing libusb.\n");
-			exit(-1);
-		}
-
-		dev_handle = libusb_open_device_with_vid_pid(ctx, vendor, product);
-		fprintf(stderr, "%hx:%hx\n",  vendor,  product);
-		if (dev_handle == NULL) {
-			printf("Failed to open the USB device.\n");
-			libusb_exit(ctx);
-			exit(-1);
-		}
-		if (libusb_claim_interface(dev_handle, 0) != 0) {
-			printf("Failed to claim the interface of the USB device.\n");
-			libusb_close(dev_handle);
-			libusb_exit(ctx);
-			exit(-1);
-		}
-
-		exit(-1);
-
+		init_usb (vendor, product, endp);
 	}
 
 #ifdef LSR
@@ -222,6 +202,7 @@ int main (int argc, char *argv[])
 
 			seq_fill(wr_buffer, length);
 			sio_memwrite(address, wr_buffer, length);
+			exit(-1);
 			sio_memread(address,  rd_buffer, length);
 
 			for(int i = 0; i < length; i += sizeof(lfsr_word)) {
