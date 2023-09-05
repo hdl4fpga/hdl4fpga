@@ -40,7 +40,7 @@ entity serlzr is
 		src_trdy  : out std_logic := '1';
 		dst_frm   : in  std_logic := '1';
 		dst_clk   : in  std_logic := '1';
-		dst_irdy  : out std_logic := '1';
+		dst_irdy  : buffer std_logic;
 		dst_trdy  : in  std_logic := '1';
 		dst_data  : buffer std_logic_vector);
 end;
@@ -163,7 +163,6 @@ begin
 
 	srcgtdst_g : if src_data'length > dst_data'length generate
 		signal fifo_data : std_logic_vector(src_data'range);
-		signal fifo_trdy : std_logic;
 	begin
 		fifooff_g : if not fifo_mode generate
 			fifo_data <= src_data;
@@ -175,12 +174,12 @@ begin
 				in_clk   => src_clk,
 				in_data  => src_data,
 				out_clk  => dst_clk,
-				out_trdy => fifo_trdy,
+				out_trdy => dst_irdy,
 				out_data => fifo_data);
 		end generate;
 
 		-- none0_g : if src_data'length mod dst_data'length /= 0 generate 
-			src_trdy <= fifo_trdy;
+			src_trdy <= dst_irdy;
 			process (dst_clk)
 				variable shr : unsigned(rgtr'range);
 				variable acc : unsigned(shf'range) := (others => '0');
@@ -198,9 +197,9 @@ begin
 						acc := acc + (src_data'length - dst_data'length);
 					end if;
 					if acc >= dst_data'length then
-						fifo_trdy <= '0';
+						dst_irdy  <= '1';
 					else
-						fifo_trdy <= '1';
+						dst_irdy  <= '0';
 					end if;
 					shf  <= std_logic_vector(acc(shf'range) and to_unsigned(mm(1), shf'length));
 					rgtr <= std_logic_vector(shr);
@@ -343,7 +342,7 @@ begin
 				if rising_edge(dst_clk) then
 					if full='1' then
 						sel <= (others => '0');
-						dst_irdy <= to_stdulogic(full);
+						dst_irdy <= '1';
 					elsif sel < unsigned_num_bits(rgtr'length/dst_data'length-1) then
 						sel <= sel + 1;
 						dst_irdy <= '0';

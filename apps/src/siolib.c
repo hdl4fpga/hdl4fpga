@@ -248,7 +248,7 @@ static unsigned char usbendp;
 int usb_send(char * data, int len)
 {
 	static char buffer[1024];
-	static char *ptr = buffer;
+	char *ptr = buffer;
 	u16 fcs;
 
     fcs = ~pppfcs16(PPPINITFCS16, data, len);
@@ -274,7 +274,7 @@ int usb_send(char * data, int len)
 	*ptr++ = 0x7e;
 	int result;
 	int transferred;
-	fprintf(stderr,"usbendp 0x%02hhx", usbendp);
+	fprintf(stderr,"usbendp 0x%02hhx %ld", usbendp, ptr-buffer);
 	getchar();
 	if ((result = libusb_bulk_transfer(usbdev, usbendp & ~0x80, buffer, ptr-buffer, &transferred, 0))!=0) {
 		printf("Error in bulk transfer. Error code: %d\n", result);
@@ -424,7 +424,7 @@ int usb_rcvd(char *buffer, int maxlen)
 		int result;
 		int transferred;
 
-		if (!libusb_bulk_transfer(usbdev, usbendp | 0x80, ptr, maxlen-(ptr-buffer), &transferred, 0)) {
+		if (result = libusb_bulk_transfer(usbdev, usbendp | 0x80, ptr, maxlen-(ptr-buffer), &transferred, 0)) {
 			printf("Error in bulk transfer. Error code: %d\n", result);
 			return -1;
 		} else if (transferred > 0) {

@@ -52,7 +52,7 @@ entity sio_dayusb is
 		so_irdy     : out std_logic;
 		so_trdy     : in  std_logic := '1';
 		so_data     : out std_logic_vector;
-		tp          : out std_logic_vector(1 to 32));
+		tp          : buffer std_logic_vector(1 to 32));
 
 end;
 
@@ -85,6 +85,8 @@ architecture beh of sio_dayusb is
 	signal sohdlc_irdy : std_logic;
 	signal sohdlc_data : std_logic_vector(so_data'range);
 
+	signal tp_usb : std_logic_vector(1 to 32);
+		signal src_irdy : std_logic;
 begin
 
 	usb_rxbs <= '0';
@@ -92,7 +94,7 @@ begin
 	generic map (
 		oversampling => usb_oversampling)
 	port map (
-		tp   => tp,
+		tp   => tp_usb,
 		dp   => usb_dp,
 		dn   => usb_dn,
 		clk  => usb_clk,
@@ -106,7 +108,6 @@ begin
 		rxd  => usb_rxd(0));
 			
 	rxserlzr_b : block
-		signal src_irdy : std_logic;
 	begin
 		src_irdy <= usb_rxdv and usb_cken and not usb_rxbs;
 		serlzr_e : entity hdl4fpga.serlzr
@@ -170,6 +171,23 @@ begin
 			dst_trdy => dst_trdy,
 			dst_data => usb_txd);
 	end block;
+
+	tp(1 to 3) <= tp_usb(1 to 3);
+	tp(4)      <= usbrx_irdy;
+	tp(5 to 12) <= usbrx_data;
+
+	process (usb_clk)
+		variable q : std_logic;
+		variable e : std_logic;
+	begin
+		if rising_edge(usb_clk) then
+			if e='0' and usb_rxdv='1' then
+				q := not q;
+			end if;
+			-- tp(4) <= q;
+			e := usbrx_irdy;
+		end if;
+	end process;
 
 	so_frm  <= si_frm  when sio_addr/='0' else sohdlc_frm;
 	so_irdy <= si_irdy when sio_addr/='0' else sohdlc_irdy;

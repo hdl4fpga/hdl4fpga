@@ -123,7 +123,8 @@ architecture graphics of ulx3s is
 	signal ser_clk       : std_logic;
 	signal ser_frm       : std_logic;
 	signal ser_irdy      : std_logic;
-	signal ser_data      : std_logic_vector(0 to setif(io_link=io_ipoe, 2,1)-1);
+	-- signal ser_data      : std_logic_vector(0 to setif(io_link=io_ipoe, 2,1)-1);
+	signal ser_data      : std_logic_vector(0 to 8-1);
 
 begin
 
@@ -224,14 +225,14 @@ begin
 
 		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
-		usb_fpga_dp    <= 'Z' when up='0' else '0';
-		usb_fpga_dn    <= 'Z' when up='0' else '0';
+		usb_fpga_dp    <= 'Z'; -- when up='0' else '0';
+		usb_fpga_dn    <= 'Z'; -- when up='0' else '0';
 		usb_fpga_bd_dp <= 'Z';
 		usb_fpga_bd_dn <= 'Z';
 
 		sio_clk  <= videoio_clk;
 
-		led(7) <= video_lck;
+		led(7) <= tp(4);
 
 		usb_e : entity hdl4fpga.sio_dayusb
 		generic map (
@@ -250,9 +251,9 @@ begin
 			si_end    => si_end,
 			si_data   => si_data,
 	
-			so_frm    => open, --so_frm,
-			so_irdy   => open, --so_irdy,
-			so_trdy   => open, --so_trdy,
+			so_frm    => so_frm,
+			so_irdy   => so_irdy,
+			so_trdy   => so_trdy,
 			so_data   => so_data);
 
 		usbfltrsof_e : entity hdl4fpga.usbfltr_sof
@@ -267,9 +268,12 @@ begin
 			fltr_d   => fltr_d);
 
 		ser_clk     <= videoio_clk;
-		ser_frm     <= fltr_en;
-		ser_irdy    <= not fltr_bs;
-		ser_data(0) <= fltr_d;
+		-- ser_frm     <= fltr_en;
+		-- ser_irdy    <= not fltr_bs;
+		-- ser_data(0) <= fltr_d;
+		ser_frm  <= tp(4);
+		ser_irdy <= '1';
+		ser_data <= tp(5 to 12);
 	end generate;
 
 	ipoe_g : if io_link=io_ipoe generate
