@@ -123,8 +123,8 @@ architecture graphics of ulx3s is
 	signal ser_clk       : std_logic;
 	signal ser_frm       : std_logic;
 	signal ser_irdy      : std_logic;
-	-- signal ser_data      : std_logic_vector(0 to setif(io_link=io_ipoe, 2,1)-1);
-	signal ser_data      : std_logic_vector(0 to 8-1);
+	signal ser_data      : std_logic_vector(0 to setif(io_link=io_ipoe, 2,1)-1);
+	-- signal ser_data      : std_logic_vector(0 to 8-1);
 
 begin
 
@@ -268,12 +268,12 @@ begin
 			fltr_d   => fltr_d);
 
 		ser_clk     <= videoio_clk;
-		-- ser_frm     <= fltr_en;
-		-- ser_irdy    <= not fltr_bs;
-		-- ser_data(0) <= fltr_d;
-		ser_frm  <= tp(4);
-		ser_irdy <= '1';
-		ser_data <= tp(5 to 12);
+		ser_frm     <= fltr_en;
+		ser_irdy    <= not fltr_bs;
+		ser_data(0) <= fltr_d;
+		-- ser_frm  <= tp(4);
+		-- ser_irdy <= '1';
+		-- ser_data <= tp(5 to 12);
 	end generate;
 
 	ipoe_g : if io_link=io_ipoe generate

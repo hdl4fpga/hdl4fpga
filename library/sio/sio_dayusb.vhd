@@ -67,7 +67,7 @@ architecture beh of sio_dayusb is
 	signal usb_rxd     : std_logic_vector(0 to 0);
 
 	signal usbrx_irdy  : std_logic;
-	signal usbrx_data  : std_logic_vector(so_data'reverse_range);
+	signal usbrx_data  : std_logic_vector(so_data'range);
 
 	signal usbtx_frm   : std_logic;
 	signal usbtx_irdy  : std_logic;
