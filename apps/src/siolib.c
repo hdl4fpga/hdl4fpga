@@ -275,12 +275,13 @@ int usb_send(char * data, int len)
 	int result;
 	int transferred;
 	fprintf(stderr,"usbendp 0x%02hhx %ld", usbendp, ptr-buffer);
-	getchar();
 	if ((result = libusb_bulk_transfer(usbdev, usbendp & ~0x80, buffer, ptr-buffer, &transferred, 0))!=0) {
 		printf("Error in bulk transfer. Error code: %d\n", result);
 		perror ("sending packet");
 		abort();
 	}
+	exit(0);
+	getchar();
 	pkt_sent++;
 }
 

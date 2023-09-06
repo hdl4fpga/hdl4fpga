@@ -162,6 +162,7 @@ begin
 	severity note;
 
 	srcgtdst_g : if src_data'length > dst_data'length generate
+		signal fifo_trdy : std_logic;
 		signal fifo_data : std_logic_vector(src_data'range);
 	begin
 		fifooff_g : if not fifo_mode generate
@@ -169,17 +170,18 @@ begin
 		end generate;
 
 		fifoon_g : if fifo_mode generate
+		begin
 			fifo_e : entity hdl4fpga.phy_iofifo
 			port map (
 				in_clk   => src_clk,
 				in_data  => src_data,
 				out_clk  => dst_clk,
-				out_trdy => dst_irdy,
+				out_trdy => fifo_trdy,
 				out_data => fifo_data);
 		end generate;
 
 		-- none0_g : if src_data'length mod dst_data'length /= 0 generate 
-			src_trdy <= dst_irdy;
+			src_trdy <= fifo_trdy and dst_trdy;
 			process (dst_clk)
 				variable shr : unsigned(rgtr'range);
 				variable acc : unsigned(shf'range) := (others => '0');
@@ -187,19 +189,24 @@ begin
 				if rising_edge(dst_clk) then
 					if dst_frm='0' then
 						acc := (others => '0');
+						dst_irdy <= '0';
 					elsif acc >= dst_data'length then 
 						if dst_trdy='1' then
 							acc := acc - dst_data'length;
 						end if;
-	   				elsif src_irdy='1' then
+						dst_irdy <= '1';
+	   				elsif src_irdy='1' and dst_trdy='1' then
 						shr := shift_left(shr, src_data'length);
 						shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(fifo_data), fifo_data));
 						acc := acc + (src_data'length - dst_data'length);
+						dst_irdy <= '1';
+					else
+						dst_irdy <= '0';
 					end if;
 					if acc >= dst_data'length then
-						dst_irdy  <= '1';
+						fifo_trdy  <= '0';
 					else
-						dst_irdy  <= '0';
+						fifo_trdy  <= '1';
 					end if;
 					shf  <= std_logic_vector(acc(shf'range) and to_unsigned(mm(1), shf'length));
 					rgtr <= std_logic_vector(shr);

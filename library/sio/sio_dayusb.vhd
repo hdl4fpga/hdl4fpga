@@ -87,6 +87,7 @@ architecture beh of sio_dayusb is
 
 	signal tp_usb : std_logic_vector(1 to 32);
 		signal src_irdy : std_logic;
+		signal dst_trdy : std_logic;
 begin
 
 	usb_rxbs <= '0';
@@ -155,9 +156,8 @@ begin
 		tp => open);
 
 	txserlzr_b : block
-		signal dst_trdy : std_logic;
 	begin
-		dst_trdy <= usb_cken and not usb_txbs;
+		dst_trdy <= usb_cken; -- and not usb_txbs;
 		serlzr_e : entity hdl4fpga.serlzr
 		port map (
 			src_clk  => usb_clk,
@@ -172,9 +172,10 @@ begin
 			dst_data => usb_txd);
 	end block;
 
-	tp(1 to 3) <= tp_usb(1 to 3);
-	tp(4)      <= usbrx_irdy;
-	tp(5 to 12) <= usbrx_data;
+	-- tp(1 to 3) <= tp_usb(1 to 3);
+	tp(1 to 3) <= (usbtx_frm, usb_txen and usb_cken,  usb_txd(0));
+	tp(4)      <= usbtx_irdy and usbtx_trdy; --usbrx_irdy;
+	tp(5 to 12) <= usbtx_data; -- usbrx_data;
 
 	process (usb_clk)
 		variable q : std_logic;

@@ -268,9 +268,12 @@ begin
 			fltr_d   => fltr_d);
 
 		ser_clk     <= videoio_clk;
-		ser_frm     <= fltr_en;
-		ser_irdy    <= not fltr_bs;
-		ser_data(0) <= fltr_d;
+		-- ser_frm     <= fltr_en;
+		-- ser_irdy    <= not fltr_bs;
+		-- ser_data(0) <= fltr_d;
+		ser_frm     <= tp(1);
+		ser_irdy    <= tp(2);
+		ser_data(0) <= tp(3);
 		-- ser_frm  <= tp(4);
 		-- ser_irdy <= '1';
 		-- ser_data <= tp(5 to 12);
