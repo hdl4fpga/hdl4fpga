@@ -49,7 +49,15 @@ add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/video_hzon
 add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/video_vton
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/video_pixel
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/usb_g/usb_e/so_frm
+add wave -noupdate /testbench/du_e/usb_g/usb_e/so_irdy
+add wave -noupdate /testbench/du_e/usb_g/usb_e/so_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/usb_g/usb_e/so_data
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/usb_g/usb_e/txserlzr_b/serlzr_e/src_frm
+add wave -noupdate -radix hexadecimal /testbench/du_e/usb_g/usb_e/txserlzr_b/serlzr_e/src_data
+add wave -noupdate /testbench/du_e/usb_g/usb_e/txserlzr_b/serlzr_e/src_irdy
+add wave -noupdate /testbench/du_e/usb_g/usb_e/txserlzr_b/serlzr_e/src_trdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/usbtb_e/usb_dp
 add wave -noupdate /testbench/usbtb_e/usb_dn
@@ -115,7 +123,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {137350300 ps} 0} {{Cursor 2} {5743000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {70525000 ps} 0} {{Cursor 2} {5743000 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 217
 configure wave -valuecolwidth 149
@@ -131,4 +139,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {63428160 ps} {189462080 ps}
+WaveRestoreZoom {70103320 ps} {71507700 ps}
