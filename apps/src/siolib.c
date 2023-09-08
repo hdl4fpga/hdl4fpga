@@ -247,7 +247,7 @@ static unsigned char usbendp;
 
 int usb_send(char * data, int len)
 {
-	static char buffer[1024];
+	static char buffer[2048];
 	char *ptr = buffer;
 	u16 fcs;
 
@@ -275,6 +275,7 @@ int usb_send(char * data, int len)
 	int result;
 	int transferred;
 	fprintf(stderr,"usbendp 0x%02hhx %ld", usbendp, ptr-buffer);
+	fprintf(stderr,"\n");
 	if ((result = libusb_bulk_transfer(usbdev, usbendp & ~0x80, buffer, ptr-buffer, &transferred, 0))!=0) {
 		printf("Error in bulk transfer. Error code: %d\n", result);
 		perror ("sending packet");
@@ -440,10 +441,15 @@ int usb_rcvd(char *buffer, int maxlen)
 				}
 				ptr[j] = ptr[i];
 			}
-			transferred += (j-i);
+			ptr += j;
 
-			ptr += transferred;
-			if (ptr[i] == 0x7e) {
+			fprintf(stderr,"%ld\n", ptr-buffer);
+			for (int i = 0; i < ptr-buffer; i++) {
+				fprintf(stderr,"0x%02hhx ", buffer[i]);
+			}
+			fprintf(stderr,"\n");
+			if (ptr[i-j] == 0x7e) {
+				getchar();
 				break;
 			}
 			retry = 0;
@@ -457,15 +463,18 @@ int usb_rcvd(char *buffer, int maxlen)
 				return -1;
 			}
 		}
+		fprintf(stderr,"------> %d\n", transferred);
 	} while ((ptr-buffer) < maxlen);
 
 	short unsigned fcs = pppfcs16(PPPINITFCS16, buffer, ptr-buffer);
 	ptr -= 2;
 	if (fcs == PPPGOODFCS16) {
+		fprintf(stderr,"OK\n");
 		if (LOG0) fprintf(stderr, "FCS OK! ");
 		if (LOG1) fprintf(stderr, "fcs 0x%04x", fcs);
 		if (LOG0 | LOG1) fputc('\n', stderr);
 		pkt_lost--;
+		fprintf(stderr,"%ld\n", ptr-buffer);
 		return ptr-buffer;
 	}
 

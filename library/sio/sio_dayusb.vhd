@@ -158,6 +158,7 @@ begin
 	txserlzr_b : block
 		signal dst_frm : std_logic;
 		signal src_irdy : std_logic;
+		signal src_data : std_logic_vector(usbtx_data'reverse_range);
 	begin
 		dst_trdy <= usb_cken and not usb_txbs;
 		process (usbtx_frm, usb_clk)
@@ -186,13 +187,14 @@ begin
 			src_irdy <= usbtx_irdy or q;
 		end process;
 
+		src_data <= reverse(usbtx_data);
 		serlzr_e : entity hdl4fpga.serlzr
 		port map (
 			src_clk  => usb_clk,
 			src_frm  => usbtx_frm,
 			src_irdy => src_irdy,
 			src_trdy => usbtx_trdy,
-			src_data => usbtx_data,
+			src_data => src_data,
 			dst_clk  => usb_clk,
 			dst_frm  => dst_frm,
 			dst_irdy => usb_txen,
@@ -200,8 +202,8 @@ begin
 			dst_data => usb_txd);
 	end block;
 
-	-- tp(1 to 3) <= tp_usb(1 to 3);
-	tp(1 to 3) <= (usbtx_frm, usb_txen and usb_cken,  usb_txd(0));
+	tp(1 to 3) <= tp_usb(1 to 3);
+	-- tp(1 to 3) <= (usbtx_frm, usb_txen and usb_cken,  usb_txd(0));
 	tp(4)      <= usbtx_irdy and usbtx_trdy; --usbrx_irdy;
 	tp(5 to 12) <= usbtx_data; -- usbrx_data;
 

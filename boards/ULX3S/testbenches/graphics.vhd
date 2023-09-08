@@ -159,8 +159,8 @@ architecture ulx3s_graphics of testbench is
 
 		x"1702_0000ff_1603_0000_0000";
 	constant req_data  : std_logic_vector :=
-		-- x"010008_1702_0000ff_1603_8000_0000";
-		x"010080";
+		x"010008_1702_0000ff_1603_8000_0000";
+		-- x"010080";
 
 	signal rst         : std_logic;
 	signal xtal        : std_logic := '0';
