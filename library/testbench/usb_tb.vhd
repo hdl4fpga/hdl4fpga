@@ -166,7 +166,7 @@ begin
 
 	srctx_data <=
 		x"c3" when srctx_sel='0' else
-		usbtx_data;
+		reverse(usbtx_data);
 	usbtx_trdy <=
 		'0'	when srctx_sel='0' else
 		srctx_trdy;

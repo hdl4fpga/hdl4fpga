@@ -79,7 +79,6 @@ architecture beh of sio_dayusb is
 	signal sihdlc_irdy : std_logic;
 	signal sihdlc_end  : std_logic;
 	signal sihdlc_data : std_logic_vector(so_data'range);
-	signal xxx : std_logic_vector(so_data'range);
 
 	signal sohdlc_frm  : std_logic;
 	signal sohdlc_trdy : std_logic;
@@ -156,20 +155,46 @@ begin
 		so_data   => sohdlc_data,
 		tp => open);
 
-		-- xxx <= reverse(usbtx_data,8) or x"81";
-		xxx <= usbtx_data;
 	txserlzr_b : block
+		signal dst_frm : std_logic;
+		signal src_irdy : std_logic;
 	begin
-		dst_trdy <= usb_cken; -- and not usb_txbs;
+		dst_trdy <= usb_cken and not usb_txbs;
+		process (usbtx_frm, usb_clk)
+			variable q : std_logic;
+		begin
+			if rising_edge(usb_clk) then
+				if usbtx_frm='1' then
+					q := '1';
+				elsif usbtx_trdy='1' then
+					q := '0';
+				end if;
+			end if;
+			dst_frm <= usbtx_frm or q;
+		end process;
+
+		process (usbtx_irdy, usb_clk)
+			variable q : std_logic;
+		begin
+			if rising_edge(usb_clk) then
+				if usbtx_irdy='1' then
+					q := '1';
+				elsif usbtx_trdy='1' then
+					q := '0';
+				end if;
+			end if;
+			src_irdy <= usbtx_irdy or q;
+		end process;
+
 		serlzr_e : entity hdl4fpga.serlzr
 		port map (
 			src_clk  => usb_clk,
 			src_frm  => usbtx_frm,
-			src_irdy => usbtx_irdy,
+			src_irdy => src_irdy,
 			src_trdy => usbtx_trdy,
-			src_data => xxx, --usbtx_data,
+			src_data => usbtx_data,
 			dst_clk  => usb_clk,
-			dst_frm  => usbtx_frm,
+			dst_frm  => dst_frm,
 			dst_irdy => usb_txen,
 			dst_trdy => dst_trdy,
 			dst_data => usb_txd);
