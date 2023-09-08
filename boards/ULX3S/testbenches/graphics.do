@@ -49,45 +49,63 @@ add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/video_hzon
 add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/video_vton
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/video_pixel
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/usb_g/usb_e/so_frm
-add wave -noupdate /testbench/du_e/usb_g/usb_e/so_irdy
-add wave -noupdate /testbench/du_e/usb_g/usb_e/so_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/usb_g/usb_e/so_data
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/usb_g/usb_e/txserlzr_b/serlzr_e/src_frm
-add wave -noupdate -radix hexadecimal /testbench/du_e/usb_g/usb_e/txserlzr_b/serlzr_e/src_data
-add wave -noupdate /testbench/du_e/usb_g/usb_e/txserlzr_b/serlzr_e/src_irdy
-add wave -noupdate /testbench/du_e/usb_g/usb_e/txserlzr_b/serlzr_e/src_trdy
-add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/usbtb_e/usb_dp
 add wave -noupdate /testbench/usbtb_e/usb_dn
 add wave -noupdate /testbench/usbtb_e/usb_clk
 add wave -noupdate /testbench/usbtb_e/usb_cken
-add wave -noupdate /testbench/usbtb_e/usb_cfgd
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/rxdv
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/rxbs
+add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/rxd
+add wave -noupdate /testbench/du_e/usb_g/usb_e/rxserlzr_b/serlzr_e/src_clk
+add wave -noupdate /testbench/du_e/usb_g/usb_e/rxserlzr_b/serlzr_e/src_frm
+add wave -noupdate /testbench/du_e/usb_g/usb_e/rxserlzr_b/serlzr_e/src_irdy
+add wave -noupdate /testbench/du_e/usb_g/usb_e/rxserlzr_b/serlzr_e/src_trdy
+add wave -noupdate /testbench/du_e/usb_g/usb_e/rxserlzr_b/serlzr_e/src_data
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/usb_g/usb_e/rxserlzr_b/serlzr_e/dst_clk
+add wave -noupdate /testbench/du_e/usb_g/usb_e/rxserlzr_b/serlzr_e/dst_frm
+add wave -noupdate /testbench/du_e/usb_g/usb_e/rxserlzr_b/serlzr_e/dst_irdy
+add wave -noupdate /testbench/du_e/usb_g/usb_e/rxserlzr_b/serlzr_e/dst_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/usb_g/usb_e/rxserlzr_b/serlzr_e/dst_data
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/usb_g/usb_e/txserlzr_b/serlzr_e/src_clk
+add wave -noupdate /testbench/du_e/usb_g/usb_e/txserlzr_b/serlzr_e/src_frm
+add wave -noupdate /testbench/du_e/usb_g/usb_e/txserlzr_b/serlzr_e/src_irdy
+add wave -noupdate /testbench/du_e/usb_g/usb_e/txserlzr_b/serlzr_e/src_trdy
+add wave -noupdate /testbench/du_e/usb_g/usb_e/txserlzr_b/serlzr_e/src_data
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/usb_g/usb_e/usb_dp
-add wave -noupdate /testbench/du_e/usb_g/usb_e/usb_dn
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/txen
-add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/txbs
-add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/txd
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbpkttx_e/line__54/state
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbpkttx_e/tx_req
-add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbpkttx_e/tx_rdy
-add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/txbuffer_p/we
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/dev_txen
-add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/dev_txbs
-add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/dev_txd
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/txbuffer_p/pin
 add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/txbuffer_p/pout
 add wave -noupdate /testbench/du_e/usb_g/usb_e/usbdev_e/usbdevflow_e/txbuffer_p/prty
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/usbtb_e/txserlzr_e/src_clk
+add wave -noupdate /testbench/usbtb_e/txserlzr_e/src_frm
+add wave -noupdate -radix hexadecimal /testbench/usbtb_e/txserlzr_e/src_data
+add wave -noupdate /testbench/usbtb_e/txserlzr_e/src_irdy
+add wave -noupdate /testbench/usbtb_e/txserlzr_e/src_trdy
+add wave -noupdate /testbench/usbtb_e/txserlzr_e/dst_clk
+add wave -noupdate /testbench/usbtb_e/txserlzr_e/dst_frm
+add wave -noupdate /testbench/usbtb_e/txserlzr_e/dst_irdy
+add wave -noupdate /testbench/usbtb_e/txserlzr_e/dst_trdy
+add wave -noupdate /testbench/usbtb_e/txserlzr_e/dst_data
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/usbtb_e/usb_cfgd
+add wave -noupdate /testbench/usbtb_e/host_b/line__195/q
+add wave -noupdate /testbench/usbtb_e/usbtx_irdy
+add wave -noupdate /testbench/usbtb_e/usbtx_trdy
+add wave -noupdate /testbench/usbtb_e/srctx_trdy
+add wave -noupdate /testbench/usbtb_e/txserlzr_e/src_trdy
+add wave -noupdate /testbench/usbtb_e/usbtx_irdy
+add wave -noupdate /testbench/usbtb_e/usbtx_trdy
+add wave -noupdate /testbench/usbtb_e/host_b/host_e/txen
+add wave -noupdate /testbench/usbtb_e/host_b/host_e/txbs
+add wave -noupdate /testbench/usbtb_e/host_b/host_e/txd
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -123,7 +141,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {70525000 ps} 0} {{Cursor 2} {5743000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {66207500 ps} 0} {{Cursor 2} {5743000 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 217
 configure wave -valuecolwidth 149
@@ -139,4 +157,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {70103320 ps} {71507700 ps}
+WaveRestoreZoom {45206540 ps} {87208460 ps}

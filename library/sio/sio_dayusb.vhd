@@ -79,6 +79,7 @@ architecture beh of sio_dayusb is
 	signal sihdlc_irdy : std_logic;
 	signal sihdlc_end  : std_logic;
 	signal sihdlc_data : std_logic_vector(so_data'range);
+	signal xxx : std_logic_vector(so_data'range);
 
 	signal sohdlc_frm  : std_logic;
 	signal sohdlc_trdy : std_logic;
@@ -155,6 +156,8 @@ begin
 		so_data   => sohdlc_data,
 		tp => open);
 
+		-- xxx <= reverse(usbtx_data,8) or x"81";
+		xxx <= usbtx_data;
 	txserlzr_b : block
 	begin
 		dst_trdy <= usb_cken; -- and not usb_txbs;
@@ -164,7 +167,7 @@ begin
 			src_frm  => usbtx_frm,
 			src_irdy => usbtx_irdy,
 			src_trdy => usbtx_trdy,
-			src_data => usbtx_data,
+			src_data => xxx, --usbtx_data,
 			dst_clk  => usb_clk,
 			dst_frm  => usbtx_frm,
 			dst_irdy => usb_txen,

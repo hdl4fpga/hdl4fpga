@@ -10,11 +10,11 @@ architecture serlzr of testbench is
 	constant m : natural := 1;
 	signal src_trdy  : std_logic := '0';
 	signal dst_frm   : std_logic := '0';
-	signal dst_trdy   : std_logic := '0';
+	signal dst_trdy  : std_logic := '0';
 	signal src_frm   : std_logic := '0';
 	signal clk       : std_logic := '1';
 	signal clk_shift : std_logic := '1';
-	signal datai     : std_logic_vector(n-1 downto 0) := (others => '1');
+	signal datai     : std_logic_vector(n-1 downto 0) := x"fe"; --(others => '1');
 	signal datao     : std_logic_vector(m*1-1 downto 0);
 	signal cken      : std_logic;
 

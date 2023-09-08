@@ -251,12 +251,12 @@ begin
 						end if;
 					end if;
 				end if;
-				if usb_cfgd='1' then
-					if usbtx_irdy='1' then
-						q := '1';
-					elsif usbtx_trdy='1' then
-						q := '0';
-					end if;
+			end if;
+			if usb_cfgd='1' then
+				if usbtx_irdy='1' then
+					q := '1';
+				elsif slzrtx_irdy='0' then
+					q := '0';
 				end if;
 			end if;
 
@@ -264,11 +264,11 @@ begin
 				usb_txen <= txen;
 				usb_txd  <= txd;
 			else
-				usb_txen <= q;
+				usb_txen <= slzrtx_irdy;
 				usb_txd  <= slzrtx_data(0);
 			end if;
 
-			wait on usb_cfgd, slzrtx_irdy, slzrtx_data, clk;
+			wait on usb_cfgd, usbtx_irdy, slzrtx_irdy, slzrtx_data, clk;
 		end process;
 
 	  	host_e : entity hdl4fpga.usbphycrc
