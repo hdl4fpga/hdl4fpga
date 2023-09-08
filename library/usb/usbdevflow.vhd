@@ -239,8 +239,10 @@ begin
 
 	txbuffer_p : process (acktx_rdy, clk)
 		variable mem  : std_logic_vector(0 to 64*8-1);
-		subtype  mem_range is natural range 1 to unsigned_num_bits(mem'length-1);
+		subtype  mem_range  is natural range 1 to unsigned_num_bits(mem'length-1);
+		subtype  byte_align is natural range 0 to unsigned_num_bits(mem'length-1)-3;
 		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
+		variable pin1 : unsigned(0 to unsigned_num_bits(mem'length-1));
 		variable pout : unsigned(pin'range);
 		variable prty : unsigned(pout'range);
 		variable we   : std_logic;
@@ -249,15 +251,18 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (setup_rdy xor setup_req)='1' then
+					pin  := (others => '0');
+					pin1 := pin;
 					pout := pin;
 					prty := pout;
 					ackrx_rdy <= ackrx_req;
 				elsif (ackrx_rdy xor ackrx_req)='1' then
-					prty := pout;
+					prty := shift_left(resize(pout(byte_align), pin'length), 3);
 					ackrx_rdy <= ackrx_req;
 				elsif (in_rdy xor in_req)='1' then
-					pout := prty;
-				elsif pout /= pin then
+					pin1 := shift_left(resize(pin(byte_align),  pin'length), 3);
+					pout := shift_left(resize(prty(byte_align), pin'length), 3);
+				elsif pout(byte_align) /= pin1(byte_align) then
 					if txbs='0' then
 						pout := pout + 1;
 					end if;
@@ -265,7 +270,7 @@ begin
 
 				buffertxbs_l : if (ctlr_rdy xor ctlr_req)='1' then
 					buffer_txbs <= '1';
-				elsif pin=prty then
+				elsif pin(byte_align)=prty(byte_align) then
 					buffer_txbs <= '0';
 				elsif pin=(not pout(0 to 0) & pout(mem_range)) then
 					buffer_txbs <= '1';
