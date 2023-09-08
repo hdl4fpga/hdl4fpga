@@ -21,7 +21,6 @@ architecture serlzr of testbench is
 begin
 	clk       <= not clk after n*10 ns;
 	clk_shift <= not clk_shift after m*10 ns;
-	-- clk_shift <= not clk_shift after m*10 ns;
 	dst_frm   <= '0', '1' after 10 ns;
 
 	process (clk)
@@ -30,7 +29,7 @@ begin
 		variable cntr : natural := 0;
 	begin
 		if rising_edge(clk) then
-			if rising_edge(clk) then
+			if rising_edge(clk_shift) then
 				frm := '1';
 				if cntr=2 then
 					cntr := 0;

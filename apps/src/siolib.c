@@ -280,7 +280,7 @@ int usb_send(char * data, int len)
 		perror ("sending packet");
 		abort();
 	}
-	exit(0);
+	// exit(0);
 	getchar();
 	pkt_sent++;
 }
