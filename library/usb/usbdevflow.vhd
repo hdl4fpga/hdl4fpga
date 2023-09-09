@@ -242,9 +242,7 @@ begin
 		subtype  mem_range  is natural range 1 to unsigned_num_bits(mem'length-1);
 		subtype  byte_align is natural range 0 to unsigned_num_bits(mem'length-1)-3;
 		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
-		variable pin1 : unsigned(0 to unsigned_num_bits(mem'length-1));
 		variable pout : unsigned(pin'range);
-		variable prty : unsigned(pout'range);
 		variable we   : std_logic;
 		variable din  : std_logic;
 	begin
@@ -252,17 +250,15 @@ begin
 			if cken='1' then
 				if (setup_rdy xor setup_req)='1' then
 					pin  := (others => '0');
-					pin1 := pin;
 					pout := pin;
-					prty := pout;
 					ackrx_rdy <= ackrx_req;
 				elsif (ackrx_rdy xor ackrx_req)='1' then
-					prty := shift_left(resize(pout(byte_align), pin'length), 3);
+					pin  := (others => '0');
+					pout := (others => '0');
 					ackrx_rdy <= ackrx_req;
 				elsif (in_rdy xor in_req)='1' then
-					pin1 := shift_left(resize(pin(byte_align),  pin'length), 3);
-					pout := shift_left(resize(prty(byte_align), pin'length), 3);
-				elsif pout(byte_align) /= pin1(byte_align) then
+					pout := (others => '0');
+				elsif pout(byte_align) /= pin(byte_align) then
 					if txbs='0' then
 						pout := pout + 1;
 					end if;
@@ -270,9 +266,9 @@ begin
 
 				buffertxbs_l : if (ctlr_rdy xor ctlr_req)='1' then
 					buffer_txbs <= '1';
-				elsif pin(byte_align)=prty(byte_align) then
+				elsif pin(0)='0' then
 					buffer_txbs <= '0';
-				elsif pin=(not pout(0 to 0) & pout(mem_range)) then
+				else
 					buffer_txbs <= '1';
 				end if;
 
@@ -288,7 +284,7 @@ begin
 					pin := pin + 1;
 				end if;
 
-				if pin=(not pout(0 to 0) & pout(mem_range)) then
+				if pin(0)='1' then
 					we  := '0';
 					din := '-';
 				elsif (ctlr_rdy xor ctlr_req)='1' then
@@ -345,7 +341,7 @@ begin
 	end process;
 
 	rxbuffer_p : process (rqst_req, clk)
-		variable mem  : std_logic_vector(0 to 64*8-1);
+		variable mem  : std_logic_vector(0 to 128*8-1);
 		subtype  mem_range is natural range 1 to unsigned_num_bits(mem'length-1);
 		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
 		variable pout : unsigned(pin'range);

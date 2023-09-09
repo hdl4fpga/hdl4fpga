@@ -58,27 +58,14 @@ begin
 		rst <= '1', '0' after 0.500 us;
 		process 
 			type time_vector is array (natural range <>) of time;
-			-- constant data : std_logic_vector := reverse(x"a50df2",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"a527b2",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"a50302",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"a5badf",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"2d0010",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"a5ff98",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"a5ff47",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"e10010",8)(0 to 19-1);
-			-- constant data : std_logic_vector := reverse(x"c300_05_1500_0000_0000_e831",8)(0 to 72-1);
-			-- constant data : std_logic_vector := reverse(x"c300_05_2d00_0000_0000_ec89",8)(0 to 72-1);
-			-- constant data : std_logic_vector := reverse(x"c300_05_1700_0000_0000_e9d3",8)(0 to 72-1);
-			-- constant data : std_logic_vector := reverse(x"c300_05_1700_0000_0000_e9d3",8)(0 to 72-1);
-			-- constant data : std_logic_vector := reverse(x"c300_05_0c00_0000_0000_ea38",8)(0 to 72-1);
-			-- constant data : std_logic_vector := reverse(x"c380_06_0001_0000_0800_eb94",8)(0 to 72-1);
-
-			constant msg0 : std_logic_vector := x"4b" & 
-				x"606162636465666768696a6b6c6d6e6f" &
-				x"606162636465666768696a6b6c6d6e6f" &
-				x"606162636465666768696a6b6c6d6e6f" &
-				x"606162636465666768696a6b6c6d6e6f";
-			constant msg1 : std_logic_vector := x"c3" & x"707172737475767778797a7b7c7d7e7f";
+			constant msg : std_logic_vector :=  
+				reverse(to_ascii("0123456789abcdef0123456789abcdef"), 8) &
+				reverse(to_ascii("0123456789abcdef0123456789abcdef"), 8) &
+				reverse(to_ascii("0123456789abcdef0123456789abcdef"), 8) &
+				reverse(to_ascii("0123456789abcdef0123456789abcdef"), 8) &
+				reverse(to_ascii("0123456789abcdef0123456789abcdef"), 8);
+			constant msg0 : std_logic_vector := x"4b" & msg;
+			constant msg1 : std_logic_vector := x"c3" & msg;
 			constant data : std_logic_vector := 
 				reverse(x"2d0010",8)(0 to 19-1) &
 				reverse(x"c3_0005_1500_0000_0000_e831",8)(0 to 72-1) &
@@ -106,31 +93,31 @@ begin
 
 				reverse(x"d2",8) &
 				reverse(x"e19500",8)(0 to 19-1) &
-				reverse(msg0, 8)  &
-				reverse(x"699500",8)(0 to 19-1) &
+				reverse(msg0, 8) &
 				reverse(x"e19500",8)(0 to 19-1) &
-
-				-- reverse(x"a50000",8)(0 to 19-1) &
 				reverse(msg1, 8) &
-				reverse(x"699500",8)(0 to 19-1) &
+
+				reverse(x"e19500",8)(0 to 19-1) &
+				reverse(msg0, 8) &
+				reverse(x"691530",8)(0 to 19-1) &
 				reverse(x"d2",8) &
-				reverse(x"699500",8)(0 to 19-1);
+				reverse(x"691530",8)(0 to 19-1);
 
 			constant length : natural_vector := (
 				19,          72,          19,    8,    19,
 				72,          19,          19,    8,    19,
 				72,          19,           8,   19,     8,
 				19,          72,          19,    8,    19,
-				 8,          19, msg0'length,   19,    19,
-				 0, msg1'length,          19,    8,    19);
+				 8,          19, msg0'length,   19, msg1'length,
+				19, msg0'length,          19,   8,     19);
 
 			constant delays : time_vector := (
 				 0 us,     0 us,        3 us,  3 us,  0 us,
 				 0 us,     2 us,        9 us,  9 us,  0 us,
 				 0 us,     2 us,       15 us,  0 us,  3 us,
 				 0 us,     0 us,        2 us,  3 us,  0 us, 
-				 3 us,     0 us,        0 us,  40 us, 14 us,
-				 0 us,     4 us,        2 us, 14 us,  0 us);
+				 3 us,     0 us,        0 us,  2 us,  0 us,
+				 2 us,     0 us,        2 us, 46 us,  0 us);
 
 			variable i     : natural;
 			variable j     : natural;
@@ -151,7 +138,7 @@ begin
 				elsif txbs='0' then
 					txen <= '0';
 					if idle='1' then
-						if i < 27 and  i < delays'length then
+						if i < delays'length then
 							wait for delays(i);
 							right := right + length(i);
 							i     := i + 1;

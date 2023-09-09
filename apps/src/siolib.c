@@ -443,11 +443,11 @@ int usb_rcvd(char *buffer, int maxlen)
 			}
 			ptr += j;
 
-			fprintf(stderr,"%ld\n", ptr-buffer);
-			for (int i = 0; i < ptr-buffer; i++) {
-				fprintf(stderr,"0x%02hhx ", buffer[i]);
-			}
-			fprintf(stderr,"\n");
+			// fprintf(stderr,"%ld\n", ptr-buffer);
+			// for (int i = 0; i < ptr-buffer; i++) {
+				// fprintf(stderr,"0x%02hhx ", buffer[i]);
+			// }
+			// fprintf(stderr,"\n");
 			if (ptr[i-j] == 0x7e) {
 				getchar();
 				break;

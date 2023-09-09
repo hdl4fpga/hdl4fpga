@@ -107,6 +107,7 @@ begin
 		signal rxbs : std_logic;
 		signal rxd  : std_logic;
 
+		signal fltr_on : std_logic;
 		signal fltr_en : std_logic;
 		signal fltr_bs : std_logic;
 		signal fltr_d  : std_logic;
@@ -140,6 +141,7 @@ begin
 			rxbs => rxbs,
 			rxd  => rxd);
 			
+		fltr_on <= not up;
 		usbfltrsof_e : entity hdl4fpga.usbfltr_sof
 		port map (
 			usb_clk  => videoio_clk,
@@ -147,7 +149,7 @@ begin
 			phy_en   => tp(1),
 			phy_bs   => tp(2),
 			phy_d    => tp(3),
-			fltr_on  => up,
+			fltr_on  => fltr_on,
 			fltr_en  => fltr_en,
 			fltr_bs  => fltr_bs,
 			fltr_d   => fltr_d);
