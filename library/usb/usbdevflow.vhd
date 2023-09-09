@@ -240,7 +240,6 @@ begin
 	txbuffer_p : process (acktx_rdy, clk)
 		variable mem  : std_logic_vector(0 to 64*8-1);
 		subtype  mem_range  is natural range 1 to unsigned_num_bits(mem'length-1);
-		subtype  byte_align is natural range 0 to unsigned_num_bits(mem'length-1)-3;
 		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
 		variable pout : unsigned(pin'range);
 		variable we   : std_logic;
@@ -258,7 +257,7 @@ begin
 					ackrx_rdy <= ackrx_req;
 				elsif (in_rdy xor in_req)='1' then
 					pout := (others => '0');
-				elsif pout(byte_align) /= pin(byte_align) then
+				elsif pout /= pin then
 					if txbs='0' then
 						pout := pout + 1;
 					end if;

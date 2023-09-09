@@ -426,30 +426,31 @@ int usb_rcvd(char *buffer, int maxlen)
 		int result;
 		int transferred;
 
-		if (result = libusb_bulk_transfer(usbdev, usbendp | 0x80, ptr, maxlen-(ptr-buffer), &transferred, 0)) {
+		if (result = libusb_bulk_transfer(usbdev, usbendp | 0x80, buffer, maxlen-(ptr-buffer), &transferred, 0)) {
 			printf("Error in bulk transfer. Error code: %d\n", result);
 			return -1;
 		} else if (transferred > 0) {
 			int i; 
 			int j;
 
+			fprintf(stderr,"%d\n", transferred);
+			for (int i = 0; i < transferred; i++) {
+				fprintf(stderr,"0x%02hhx ", buffer[i]);
+			}
+			fprintf(stderr,"\n");
 			for (i = 0, j = 0; i < transferred; i++, j++) {
 				if (ptr[i] == 0x7e) {
 					break;
 				} else if (ptr[i] == 0x7d) {
+					fprintf(stderr,"ESC\n");
 					ptr[++i] ^= 0x20;
 				}
 				ptr[j] = ptr[i];
 			}
 			ptr += j;
 
-			// fprintf(stderr,"%ld\n", ptr-buffer);
-			// for (int i = 0; i < ptr-buffer; i++) {
-				// fprintf(stderr,"0x%02hhx ", buffer[i]);
-			// }
-			// fprintf(stderr,"\n");
+		getchar();
 			if (ptr[i-j] == 0x7e) {
-				getchar();
 				break;
 			}
 			retry = 0;
@@ -463,7 +464,6 @@ int usb_rcvd(char *buffer, int maxlen)
 				return -1;
 			}
 		}
-		fprintf(stderr,"------> %d\n", transferred);
 	} while ((ptr-buffer) < maxlen);
 
 	short unsigned fcs = pppfcs16(PPPINITFCS16, buffer, ptr-buffer);
