@@ -274,15 +274,15 @@ int usb_send(char * data, int len)
 	*ptr++ = 0x7e;
 	int result;
 	int transferred;
-	fprintf(stderr,"usbendp 0x%02hhx %ld", usbendp, ptr-buffer);
-	fprintf(stderr,"\n");
-	if ((result = libusb_bulk_transfer(usbdev, usbendp & ~0x80, buffer, ptr-buffer, &transferred, 0))!=0) {
-		printf("Error in bulk transfer. Error code: %d\n", result);
-		perror ("sending packet");
-		abort();
+	while ((result = libusb_bulk_transfer(usbdev, usbendp & ~0x80, buffer, ptr-buffer, &transferred, 0))!=0) {
+		if (result == LIBUSB_ERROR_PIPE) {
+			libusb_clear_halt(usbdev, usbendp);
+		} else {
+			printf("Error in bulk transfer. Error code: %d\n", result);
+			perror ("sending packet");
+			abort();
+		}
 	}
-	// exit(0);
-	getchar();
 	pkt_sent++;
 }
 
@@ -426,30 +426,35 @@ int usb_rcvd(char *buffer, int maxlen)
 		int result;
 		int transferred;
 
-		if (result = libusb_bulk_transfer(usbdev, usbendp | 0x80, buffer, maxlen-(ptr-buffer), &transferred, 0)) {
-			printf("Error in bulk transfer. Error code: %d\n", result);
-			return -1;
-		} else if (transferred > 0) {
+		while (result = libusb_bulk_transfer(usbdev, usbendp | 0x80, buffer, maxlen-(ptr-buffer), &transferred, 0)) {
+			if (result == LIBUSB_ERROR_PIPE) {
+				libusb_clear_halt(usbdev, usbendp);
+			} else {
+				printf("Error in bulk transfer. Error code: %d\n", result);
+				exit(-1);
+				return -1;
+			}
+		}
+		if (transferred > 0) {
 			int i; 
 			int j;
 
-			fprintf(stderr,"%d\n", transferred);
-			for (int i = 0; i < transferred; i++) {
-				fprintf(stderr,"0x%02hhx ", buffer[i]);
-			}
-			fprintf(stderr,"\n");
+			// fprintf(stderr,"%d\n", transferred);
+			// for (int i = 0; i < transferred; i++) {
+				// fprintf(stderr,"0x%02hhx ", buffer[i]);
+			// }
+			// fprintf(stderr,"\n");
 			for (i = 0, j = 0; i < transferred; i++, j++) {
 				if (ptr[i] == 0x7e) {
 					break;
 				} else if (ptr[i] == 0x7d) {
-					fprintf(stderr,"ESC\n");
+					// fprintf(stderr,"ESC\n");
 					ptr[++i] ^= 0x20;
 				}
 				ptr[j] = ptr[i];
 			}
 			ptr += j;
 
-		getchar();
 			if (ptr[i-j] == 0x7e) {
 				break;
 			}
@@ -469,12 +474,10 @@ int usb_rcvd(char *buffer, int maxlen)
 	short unsigned fcs = pppfcs16(PPPINITFCS16, buffer, ptr-buffer);
 	ptr -= 2;
 	if (fcs == PPPGOODFCS16) {
-		fprintf(stderr,"OK\n");
 		if (LOG0) fprintf(stderr, "FCS OK! ");
 		if (LOG1) fprintf(stderr, "fcs 0x%04x", fcs);
 		if (LOG0 | LOG1) fputc('\n', stderr);
 		pkt_lost--;
-		fprintf(stderr,"%ld\n", ptr-buffer);
 		return ptr-buffer;
 	}
 

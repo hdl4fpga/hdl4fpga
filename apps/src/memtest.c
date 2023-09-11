@@ -42,33 +42,33 @@
 
 typedef int unsigned lfsr_word;
 
-__int128 lfsr;
+__int128 seq;
 const size_t lfsr_size = BYTE_SIZE*sizeof(lfsr_word);
 
 void lfsr_init ()
 {
-	lfsr = lfsr_mask(lfsr_size);
+	seq = lfsr_mask(lfsr_size);
 }
 
 void lfsr_fill (char *buffer, int length)
 {
 	for (int i = 0; i < length; i += sizeof(lfsr_word)) {
-		memcpy(buffer+i, &lfsr, sizeof(lfsr_word));
-		lfsr = lfsr_next(lfsr, lfsr_size);
+		memcpy(buffer+i, &seq, sizeof(lfsr_word));
+		seq = lfsr_next(seq, lfsr_size);
 	}
 }
 
 static char p = 0;
 void arith_init ()
 {
-	p = 0;
+	seq = 0;
 }
 
 void arith_fill (char *buffer, int length)
 {
-	for (int i = 0; i < length; i += sizeof(p)) {
-		memcpy(buffer+i, &p, sizeof(p));
-		p += 1;
+	for (int i = 0; i < length; i += sizeof(char)) {
+		memcpy(buffer+i, &seq, sizeof(seq));
+		*(char *)&seq += 1;
 	}
 }
 
@@ -181,6 +181,7 @@ int main (int argc, char *argv[])
 		init_usb (vendor, product, endp);
 	}
 
+#define LSR
 #ifdef LSR
 	seq_init = lfsr_init;
 	seq_fill = lfsr_fill;
@@ -200,10 +201,11 @@ int main (int argc, char *argv[])
 	for(int pass = 1; pass < 2 || 0;pass++) {
 		for (address = 0; address < MAX_ADDRESS; address += length) {
 
+			fprintf(stderr, "Pass %d, Block@0x%08x, 0x%08llx ", pass, address, (unsigned long long int) seq);
 			seq_fill(wr_buffer, length);
 			sio_memwrite(address, wr_buffer, length);
-			sio_memread(address,  rd_buffer, length);
-			exit(-1);
+			sio_memread (address, rd_buffer, length);
+			// exit(-1);
 
 			for(int i = 0; i < length; i += sizeof(lfsr_word)) {
 				lfsr_word data_rd;
@@ -212,6 +214,7 @@ int main (int argc, char *argv[])
 				data_rd = *(lfsr_word *) (rd_buffer+i);
 				data_wt = *(lfsr_word *) (wr_buffer+i);
 				if (data_wt!=data_rd) {
+					fputc('\n', stderr); 
 					fprintf(stderr, "Check failed : ");
 					fprintf(stderr, "block address : 0x%08x ", address);
 					fprintf(stderr, "word address : 0x%08x", address+i);
@@ -243,8 +246,8 @@ int main (int argc, char *argv[])
 				}
 			}
 
-//			fprintf(stderr, "Pass %d, Block@0x%08x, %08x\n", pass, address, (unsigned short) p);
-			fprintf(stderr, "Pass %d, Block@0x%08x\n", pass, address);
+			fprintf(stderr, "OK\n");
+			// fprintf(stderr, "Pass %d, Block@0x%08x\n", pass, address);
 		}
 	}
 
