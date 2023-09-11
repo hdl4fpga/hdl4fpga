@@ -59,13 +59,14 @@ begin
 		process 
 			type time_vector is array (natural range <>) of time;
 			constant msg : std_logic_vector :=  
-				reverse(to_ascii("0123456789abcdef0123456789abcdef"), 8) &
-				reverse(to_ascii("0123456789abcdef0123456789abcdef"), 8) &
-				reverse(to_ascii("0123456789abcdef0123456789abcdef"), 8) &
-				reverse(to_ascii("0123456789abcdef0123456789abcdef"), 8) &
-				reverse(to_ascii("0123456789abcdef0123456789abcdef"), 8);
+				x"b0" & to_ascii("000000000000000000000000000000f") &
+				        to_ascii("0000000000000000000000000000000") & x"01";
+			constant msgx : std_logic_vector :=  
+				to_ascii("1200000000000000000000000000000f") &
+				to_ascii("00000000000000000000000000000000");
 			constant msg0 : std_logic_vector := x"4b" & msg;
 			constant msg1 : std_logic_vector := x"c3" & msg;
+			constant msg2 : std_logic_vector := x"4b" & msgx;
 			constant data : std_logic_vector := 
 				reverse(x"2d0010",8)(0 to 19-1) &
 				reverse(x"c3_0005_1500_0000_0000_e831",8)(0 to 72-1) &
@@ -98,26 +99,31 @@ begin
 				reverse(msg1, 8) &
 
 				reverse(x"e19500",8)(0 to 19-1) &
-				reverse(msg0, 8) &
+				reverse(msg2, 8) &
 				reverse(x"691530",8)(0 to 19-1) &
 				reverse(x"d2",8) &
-				reverse(x"691530",8)(0 to 19-1);
+				reverse(x"691530",8)(0 to 19-1) &
 
+				reverse(x"d2",8) &
+				reverse(x"691530",8)(0 to 19-1) &
+				reverse(x"d2",8);
 			constant length : natural_vector := (
 				19,          72,          19,    8,    19,
 				72,          19,          19,    8,    19,
 				72,          19,           8,   19,     8,
 				19,          72,          19,    8,    19,
 				 8,          19, msg0'length,   19, msg1'length,
-				19, msg0'length,          19,   8,     19);
+				19, msg0'length,          19,   8,     19,
+				8,           19,           8);
 
 			constant delays : time_vector := (
-				 0 us,     0 us,        3 us,  3 us,  0 us,
-				 0 us,     2 us,        9 us,  9 us,  0 us,
-				 0 us,     2 us,       15 us,  0 us,  3 us,
-				 0 us,     0 us,        2 us,  3 us,  0 us, 
-				 3 us,     0 us,        0 us,  2 us,  0 us,
-				 2 us,     0 us,        2 us, 46 us,  0 us);
+				 0 us,     0 us,        3 us,  3.5 us,  0 us,
+				 0 us,     2 us,        9 us,  9 us,    0 us,
+				 0 us,     2 us,       15 us,  0 us,    3.5 us,
+				 0 us,     0 us,        2 us,  3.5 us,  0 us, 
+				 3.5 us,   0 us,        0 us,  2 us,    0 us,
+				 2 us,     0 us,        2 us, 46 us,    0 us,
+				46.0 us,   0 us,      46 us);
 
 			variable i     : natural;
 			variable j     : natural;
@@ -239,7 +245,7 @@ begin
 
 		tp_p : process (rxdv, clk)
 			variable cntr : natural := 0;
-			variable shr  : std_logic_vector(0 to 256*10-1);
+			variable shr  : std_logic_vector(0 to 256*32-1);
 			variable msb  : std_logic_vector(shr'range);
 		begin
 			if rising_edge(clk) then

@@ -262,14 +262,7 @@ begin
 						pout := pout + 1;
 					end if;
 				end if;
-
-				buffertxbs_l : if (ctlr_rdy xor ctlr_req)='1' then
-					buffer_txbs <= '1';
-				elsif pin(0)='0' then
-					buffer_txbs <= '0';
-				else
-					buffer_txbs <= '1';
-				end if;
+				buffer_txd <= mem(to_integer(pout(mem_range)));
 
 				if pout=pin then
 					buffer_txen <= '0';
@@ -277,11 +270,6 @@ begin
 					buffer_txen <= '1';
 				end if;
 
-				buffer_txd <= mem(to_integer(pout(mem_range)));
-				if we='1' then
-					mem(to_integer(pin(mem_range))) := din;
-					pin := pin + 1;
-				end if;
 
 				if pin(0)='1' then
 					we  := '0';
@@ -293,6 +281,19 @@ begin
 					we  := dev_txen;
 					din := dev_txd;
 				end if;
+				if we='1' then
+					mem(to_integer(pin(mem_range))) := din;
+					pin := pin + 1;
+				end if;
+
+				buffertxbs_l : if (ctlr_rdy xor ctlr_req)='1' then
+					buffer_txbs <= '1';
+				elsif pin(0)='0' then
+					buffer_txbs <= '0';
+				else
+					buffer_txbs <= '1';
+				end if;
+
 				tp(11) <= buffer_txen;
 				tp(12) <= buffer_txbs;
 			end if;
@@ -341,8 +342,8 @@ begin
 
 	rxbuffer_p : process (rqst_req, clk)
 		variable mem  : std_logic_vector(0 to 128*8-1);
-		subtype  mem_range is natural range 1 to unsigned_num_bits(mem'length-1);
-		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
+		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1)-1) := (others => '0');
+		subtype  mem_range is natural range 0 to unsigned_num_bits(mem'length-1)-1;
 		variable pout : unsigned(pin'range);
 		variable prty : unsigned(pout'range);
 		variable we   : std_logic;
@@ -353,24 +354,26 @@ begin
 				if (setup_rdy xor setup_req)='1' then
 					pout := pin;
 					prty := pin;
-				elsif pout /= prty then
-					if buffer_rxbs='0' then
-						pout := pout + 1;
-					end if;
-				elsif (out_rdy xor out_req)='0' then
-					if rxerr='1' then
-						pin := prty;
-					else
-						prty := pin;
+				elsif pout=prty then
+					if (out_rdy xor out_req)='0' then
+						if rxerr='1' then
+							pin := prty;
+						else
+							prty := pin;
+						end if;
 					end if;
 				end if;
 
-				if pout=prty then
-					buffer_rxdv <='0';
+				if pout/=prty then
+					if buffer_rxbs='0' then
+						buffer_rxd <= mem(to_integer(pout(mem_range)));
+						pout := pout + 1;
+						buffer_rxdv <= '1';
+					end if;
 				else
-					buffer_rxdv <='1';
+					buffer_rxdv <= '0';
 				end if;
-				buffer_rxd <= mem(to_integer(pout(mem_range)));
+
 				if we='1' then
 					mem(to_integer(pin(mem_range))) := din;
 					pin := pin + 1;

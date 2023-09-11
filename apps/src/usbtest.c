@@ -92,7 +92,7 @@ static int rd_result;
 static int wr_transferred;
 static int rd_transferred;
 static unsigned char *data;
-static unsigned char wr_buffer[64];
+static unsigned char wr_buffer[2*64+64];
 static unsigned char rd_buffer[sizeof(wr_buffer)];
 static char *format;
 static void (*seq_init) ();
@@ -233,15 +233,36 @@ int main(int argc, char **argv)
 						} while(result || (rd_result && rd_transferred));
 
 						if (!wr_result && !rd_result) {
-							if (memcmp(wr_buffer, rd_buffer, rd_transferred) || !rd_transferred || rd_transferred != wr_transferred) {
-								fprintf(stderr, "\nPass %d doesn't match write transferred %d read transferred %d\n", k, wr_transferred, rd_transferred);
+							int n;
+							if (rd_transferred && rd_transferred == wr_transferred) {
+								for (n=0; n < rd_transferred; n++) {
+									if (wr_buffer[n] != rd_buffer[n]) {
+										break;
+									}
+								}
+							} else {
+								fprintf(stderr, "\nPass %d doesn't match write transferred %d read transferred %d %d\n", k, wr_transferred, rd_transferred, n);
 								goto exit;
 							}
-							saved_seq = seq;
-							fputs(" OK\n", stdout);
-							if (DEBUG && retry) {
-								getchar();
-								retry = 0;
+							if (n == rd_transferred) {
+								saved_seq = seq;
+								fputs(" OK\n", stdout);
+								if (DEBUG && retry) {
+									getchar();
+									retry = 0;
+								}
+							} else {
+
+								fputc('\n', stderr);
+								for (int i = n; i < rd_transferred; i++) {
+									fprintf(stderr, "%3d : 0x%02hhx 0x%02hhx ", i, wr_buffer[i], rd_buffer[i]);
+									if (wr_buffer[i]==rd_buffer[i]) {
+										fputs("OK\n", stderr);
+									} else {
+										fputs("MISS\n", stderr);
+									}
+								}
+								exit(1);
 							}
 						} else {
 							seq = saved_seq;
