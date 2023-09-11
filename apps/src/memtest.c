@@ -205,7 +205,7 @@ int main (int argc, char *argv[])
 			seq_fill(wr_buffer, length);
 			sio_memwrite(address, wr_buffer, length);
 			sio_memread (address, rd_buffer, length);
-			// exit(-1);
+			getchar();
 
 			for(int i = 0; i < length; i += sizeof(lfsr_word)) {
 				lfsr_word data_rd;

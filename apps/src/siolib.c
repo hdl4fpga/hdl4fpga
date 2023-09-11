@@ -435,20 +435,15 @@ int usb_rcvd(char *buffer, int maxlen)
 				return -1;
 			}
 		}
+
 		if (transferred > 0) {
 			int i; 
 			int j;
 
-			// fprintf(stderr,"%d\n", transferred);
-			// for (int i = 0; i < transferred; i++) {
-				// fprintf(stderr,"0x%02hhx ", buffer[i]);
-			// }
-			// fprintf(stderr,"\n");
 			for (i = 0, j = 0; i < transferred; i++, j++) {
 				if (ptr[i] == 0x7e) {
 					break;
 				} else if (ptr[i] == 0x7d) {
-					// fprintf(stderr,"ESC\n");
 					ptr[++i] ^= 0x20;
 				}
 				ptr[j] = ptr[i];
