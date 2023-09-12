@@ -119,7 +119,7 @@ architecture graphics of ulx3s is
 
 	signal sio_clk       : std_logic;
 
-	constant serdebug    : boolean := false;
+	constant serdebug    : boolean := true;
 	signal ser_clk       : std_logic;
 	signal ser_frm       : std_logic;
 	signal ser_irdy      : std_logic;

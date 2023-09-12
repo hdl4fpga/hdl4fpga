@@ -604,7 +604,6 @@ void init_usb (short vid, short pid, char endp)
 	}
 
 	usbdev = libusb_open_device_with_vid_pid(usbctx, vid, pid);
-	fprintf(stderr, "%hx:%hx\n",  vid,  pid);
 	if (usbdev == NULL) {
 		printf("Failed to open the USB device.\n");
 		libusb_exit(usbctx);

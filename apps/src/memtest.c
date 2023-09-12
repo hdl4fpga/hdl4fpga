@@ -34,7 +34,6 @@
 
 #include <libusb-1.0/libusb.h>
 
-#define VENDOR_ID 0x1234
 #include "siolib.h"
 #include "lfsr.h"
 
@@ -120,9 +119,9 @@ int sio_memwrite(size_t address, const char *buffer, size_t length)
 	return sioptr-siobuf;
 }
 
-//#define MAX_ADDRESS    (32*1024*1024)
+#define MAX_ADDRESS    (32*1024*1024)
 // #define MAX_ADDRESS    (256*1024*1024)
-#define MAX_ADDRESS    (1024*1024*1024)
+// #define MAX_ADDRESS    (1024*1024*1024)
 // #define MAX_ADDRESS    (16*1024*1024)
 
 static void (*seq_init) ();
@@ -176,7 +175,6 @@ int main (int argc, char *argv[])
 
 	if (!(h || u)) {
 		init_comms();
-		fprintf (stderr, "COMMS has been initialized\n");
 	} else if (!h) {
 		init_usb (vendor, product, endp);
 	}
@@ -190,7 +188,6 @@ int main (int argc, char *argv[])
 	seq_fill = arith_fill;
 #endif
 
-
 	char wr_buffer[8*1024];
 	char rd_buffer[8*1024];
 	int  address;
@@ -198,7 +195,7 @@ int main (int argc, char *argv[])
 
 	seq_init();
 	length  = 1*1024;
-	for(int pass = 1; pass < 2 || 0;pass++) {
+	for(int pass = 1; pass < 2 || 0; pass++) {
 		for (address = 0; address < MAX_ADDRESS; address += length) {
 
 			fprintf(stderr, "Pass %d, Block@0x%08x, 0x%08llx ", pass, address, (unsigned long long int) seq);
