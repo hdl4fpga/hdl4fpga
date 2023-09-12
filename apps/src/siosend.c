@@ -3,6 +3,10 @@
 #include <stdbool.h>
 #include "siolib.h"
 
+static short vendor;
+static short product;
+static char  endp;
+
 int main (int argc, char *argv[])
 {
 
@@ -15,12 +19,14 @@ int main (int argc, char *argv[])
 	setvbuf(stderr, NULL, _IONBF, 0);
 
 	int c;
-	bool h;
 	bool log;
+	bool h;
+	bool u;
 
-	h   = false;
 	log = false;
-	while ((c = getopt (argc, argv, "lph:")) != -1) {
+	h = false;
+	u = false;
+	while ((c = getopt (argc, argv, "lph:u:")) != -1) {
 		switch (c) {
 		case 'l':
 			sio_setloglevel(8|4|2|1);
@@ -36,6 +42,13 @@ int main (int argc, char *argv[])
 				fprintf (stderr, "Socket has been initialized\n");
 			}
 			break;
+		case'u':
+			if (optarg) {
+				char colon;
+				sscanf(optarg,  "%hx%c%hx%c%hhx", &vendor, &colon, &product, &colon, &endp);
+				u = true;
+			}
+			break;
 		case '?':
 			exit(1);
 		default:
@@ -44,9 +57,11 @@ int main (int argc, char *argv[])
 		}
 	}
 
-	if (!h) {
+	if (!(h || u)) {
 		init_comms();
 		fprintf (stderr, "COMMS has been initialized\n");
+	} else if (!h) {
+		init_usb (vendor, product, endp);
 	}
 
 	// Reset ack //

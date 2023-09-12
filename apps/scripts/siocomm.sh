@@ -8,7 +8,23 @@ if [ "${LOG}" == "YES" ] ; then
 	LOG="-l 3"
 fi
 
-if [ "$HOST" == "" ] ; then
+if [ "$HOST" != "" ] ; then
+	if [ "${PKMODE}" == "" ] ; then
+		(eval "exec ./bin/siosend -h ${HOST} ${LOG} ${@} -p")
+	elif [ "${PKMODE}" == "PKT" ] ; then
+		(eval "exec ./bin/siosend -h ${HOST} ${LOG} ${@} -p")
+	else
+		(eval "exec ./bin/siosend -h ${HOST} ${LOG} ${@}")
+	fi
+elif [ "$USBDEV" != "" ] ; then
+	if [ "${PKMODE}" == "" ] ; then
+		(eval "exec ./bin/siosend -u ${USBDEV} ${LOG} ${@} -p")
+	elif [ "${PKMODE}" == "PKT" ] ; then
+		(eval "exec ./bin/siosend -u ${USBDEV} ${LOG} ${@} -p")
+	else
+		(eval "exec ./bin/siosend -u ${USBDEV} ${LOG} ${@}")
+	fi
+else
 	if [ "${SETUART}" == "YES" ] ; then
 		export TTY SPEED
 		./scripts/setuart.sh
@@ -19,13 +35,5 @@ if [ "$HOST" == "" ] ; then
 		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend  ${LOG} ${@} -p")
 	else                                                  
 		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend  ${LOG} ${@}")
-	fi
-else
-	if [ "${PKMODE}" == "" ] ; then
-		(eval "exec ./bin/siosend -h ${HOST} ${LOG} ${@} -p")
-	elif [ "${PKMODE}" == "PKT" ] ; then
-		(eval "exec ./bin/siosend -h ${HOST} ${LOG} ${@} -p")
-	else
-		(eval "exec ./bin/siosend -h ${HOST} ${LOG} ${@}")
 	fi
 fi
