@@ -189,7 +189,8 @@ begin
 				if rising_edge(dst_clk) then
 					if dst_frm='0' then
 						acc := (others => '0');
-						dst_irdy <= '0';
+						dst_irdy  <= '0';
+						fifo_trdy <= '0';
 					elsif acc >= dst_data'length then 
 						if dst_trdy='1' then
 							acc := acc - dst_data'length;
