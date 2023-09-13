@@ -285,11 +285,6 @@ begin
 						shr := shift_left(shr, src_data'length);
 						shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(src_data), src_data));
 					end if;
-					-- if acc >= dst_data'length-src_data'length then 
-						-- fifo_irdy <= '1';
-					-- else
-						-- fifo_irdy <= '0';
-					-- end if;
 					shf  <= std_logic_vector(acc and to_unsigned(mm(1) mod src_data'length, acc'length));
 					rgtr <= std_logic_vector(shr);
 				end if;
