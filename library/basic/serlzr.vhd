@@ -180,7 +180,7 @@ begin
 				out_data => fifo_data);
 		end generate;
 
-		-- none0_g : if src_data'length mod dst_data'length /= 0 generate 
+		none0_g : if true or src_data'length mod dst_data'length /= 0 generate 
 			src_trdy <= fifo_trdy;
 			process (dst_clk)
 				variable shr : unsigned(rgtr'range);
@@ -222,41 +222,42 @@ begin
 				do  => shfd);
 		
 			dst_data <= setif(lsdfirst,reverse(shfd(dst_data'length-1 downto 0)), shfd(dst_data'length-1 downto 0));
-		-- end generate;
+		end generate;
 
-		-- mod0_g : if src_data'length mod dst_data'length = 0 generate 
-			-- signal rgtr : std_logic_vector(src_data'length-1 downto 0);
-		-- begin
-			-- process (dst_clk)
-				-- variable shr : unsigned(rgtr'range);
-				-- variable acc : unsigned(shf'range) := (others => '0');
-			-- begin
-				-- if rising_edge(dst_clk) then
-					-- if dst_frm='0' then
-						-- acc := (others => '0');
-					-- elsif acc >= dst_data'length then 
-						-- if dst_trdy='1' then
-							-- shr := shift_left(shr, dst_data'length);
-							-- acc := acc - dst_data'length;
-						-- end if;
-					-- elsif src_irdy='1' then
-						-- shr := shift_left(shr, src_data'length);
-						-- shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(fifo_data), fifo_data));
-						-- acc := acc + (src_data'length - dst_data'length);
-					-- end if;
-					-- if acc >= dst_data'length then 
-						-- src_trdy <= '0';
-					-- else
-						-- src_trdy <= '1';
-					-- end if;
-					-- rgtr <= reverse(std_logic_vector(shr));
-					-- dst_irdy <= dst_frm;
-				-- end if;
-			-- end process;
--- 
-			-- dst_data <= setif(lsdfirst, reverse(rgtr(dst_data'length-1 downto 0)), rgtr(dst_data'length-1 downto 0));
--- 
-		-- end generate;
+		mod0_g : if false and src_data'length mod dst_data'length = 0 generate 
+			process (dst_clk)
+				variable shr : unsigned(rgtr'range);
+				variable acc : unsigned(shf'range) := (others => '0');
+			begin
+				if rising_edge(dst_clk) then
+					if dst_frm='0' then
+						acc := (others => '0');
+						dst_irdy  <= '0';
+						fifo_trdy <= '0';
+					elsif acc >= dst_data'length then 
+						if dst_trdy='1' then
+							shr := shift_right(shr, dst_data'length);
+							acc := acc - dst_data'length;
+						end if;
+						fifo_trdy <= '0';
+						dst_irdy  <= '1';
+	   				elsif dst_trdy='1' then
+						if src_irdy='1' then
+							shr(src_data'length-1 downto 0) := unsigned(setif(not lsdfirst,reverse(fifo_data), fifo_data));
+							acc := acc + (src_data'length - dst_data'length);
+							fifo_trdy <= '1';
+							dst_irdy  <= '1';
+						else
+							dst_irdy  <= '0';
+						end if;
+					end if;
+					rgtr <= std_logic_vector(shr);
+				end if;
+			end process;
+
+			dst_data <= setif(not lsdfirst, reverse(rgtr(dst_data'length-1 downto 0)), rgtr(dst_data'length-1 downto 0));
+
+		end generate;
 	end generate;
 
 	srcltdst_g : if src_data'length < dst_data'length generate

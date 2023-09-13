@@ -6,8 +6,8 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 architecture serlzr of testbench is
-	constant n : natural := 16;
-	constant m : natural := 24;
+	constant n : natural := 4*8;
+	constant m : natural := 1*8;
 
 	signal rst      : std_logic;
 	signal src_clk  : std_logic := '1';
@@ -34,8 +34,8 @@ begin
 	end process;
 
 	process (src_clk)
-		variable frm  : std_logic := '0';
-		variable data : unsigned(0 to 96-1) := x"0102030405060708090a0b0c";
+		constant size : natural := 3*mcm(m,n);
+		variable data : unsigned(0 to size-1) := resize(x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f", size);
 	begin
 		if rising_edge(src_clk) then
 			if src_frm='1' then
@@ -48,8 +48,6 @@ begin
 	process (dst_clk)
 	begin
 		if rising_edge(dst_clk) then
-			if rising_edge(src_clk) then
-			end if;
 		end if;
 	end process;
 
