@@ -158,7 +158,7 @@ begin
 	txserlzr_b : block
 		signal dst_frm : std_logic;
 		signal src_irdy : std_logic;
-		signal src_data : std_logic_vector(usbtx_data'reverse_range);
+		signal src_data : std_logic_vector(usbtx_data'range);
 	begin
 		dst_trdy <= usb_cken and not usb_txbs;
 		process (usbtx_frm, usb_clk)

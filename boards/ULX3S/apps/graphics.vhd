@@ -54,8 +54,8 @@ architecture graphics of ulx3s is
 
 	constant video_params  : video_record := videoparam(
 		video_modes'VAL(setif(debug,
-			-- video_modes'POS(modedebug),
-			video_modes'POS(video_mode),
+			video_modes'POS(modedebug),
+			-- video_modes'POS(video_mode),
 			video_modes'POS(video_mode))), clk25mhz_freq);
 
 	constant sdram_params : sdramparams_record := sdramparams(
@@ -119,7 +119,7 @@ architecture graphics of ulx3s is
 
 	signal sio_clk       : std_logic;
 
-	constant serdebug    : boolean := true;
+	constant serdebug    : boolean := false;
 	signal ser_clk       : std_logic;
 	signal ser_frm       : std_logic;
 	signal ser_irdy      : std_logic;

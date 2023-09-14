@@ -116,8 +116,6 @@ architecture ulx3s_graphics of testbench is
 			sdram_d        : inout std_logic_vector(16-1 downto 0) := (others => '-');
 
 			gpdi_d         : out   std_logic_vector(4-1 downto 0);
-			--gpdi_ethp      : out   std_logic;
-			--gpdi_ethn      : out   std_logic;
 			gpdi_cec       : inout std_logic := '-';
 			gpdi_sda       : inout std_logic := '-';
 			gpdi_scl       : inout std_logic := '-';
@@ -146,7 +144,7 @@ architecture ulx3s_graphics of testbench is
 
 	constant usb_freq     : real := 12.0e6;
 	constant snd_data  : std_logic_vector :=
-		x"010080" &
+		x"01007e" &
 		x"18ff"   &
 		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
 		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
@@ -160,7 +158,6 @@ architecture ulx3s_graphics of testbench is
 		x"1702_0000ff_1603_0000_0000";
 	constant req_data  : std_logic_vector :=
 		x"010008_1702_0000ff_1603_8000_0000";
-		-- x"010080";
 
 	signal rst         : std_logic;
 	signal xtal        : std_logic := '0';
@@ -230,8 +227,8 @@ begin
 		debug   => debug,
 		-- payload_segments => (0 => snd_data'length, 1 => req_data'length),
 		-- payload   => snd_data & req_data)
-		payload_segments => (0 => req_data'length),
-		payload   => req_data)
+		payload_segments => (0 => snd_data'length),
+		payload   => snd_data)
 	port map (
 		rst     => rst,
 		usb_clk => usb_clk,

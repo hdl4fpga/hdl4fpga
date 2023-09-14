@@ -341,7 +341,7 @@ begin
 	end process;
 
 	rxbuffer_p : process (rqst_req, clk)
-		variable mem  : std_logic_vector(0 to 128*8-1);
+		variable mem  : std_logic_vector(0 to 1024*8-1);
 		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1)-1) := (others => '0');
 		subtype  mem_range is natural range 0 to unsigned_num_bits(mem'length-1)-1;
 		variable pout : unsigned(pin'range);
