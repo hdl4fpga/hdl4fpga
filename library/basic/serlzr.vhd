@@ -346,9 +346,12 @@ begin
 					if full='1' then
 						sel <= (others => '0');
 						dst_irdy <= '1';
+					elsif rgtr'length=dst_data'length then
+						sel <= (others => '0');
+						dst_irdy <= '0';
 					elsif sel < unsigned_num_bits(rgtr'length/dst_data'length-1) then
 						sel <= sel + 1;
-						dst_irdy <= '0';
+						dst_irdy <= src_frm;
 					else
 						dst_irdy <= '0';
 					end if;

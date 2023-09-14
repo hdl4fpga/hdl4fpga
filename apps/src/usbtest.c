@@ -92,7 +92,7 @@ static int rd_result;
 static int wr_transferred;
 static int rd_transferred;
 static unsigned char *data;
-static unsigned char wr_buffer[2*64+64];
+static unsigned char wr_buffer[2*64];
 static unsigned char rd_buffer[sizeof(wr_buffer)];
 static char *format;
 static void (*seq_init) ();
@@ -241,7 +241,7 @@ int main(int argc, char **argv)
 									}
 								}
 							} else {
-								fprintf(stderr, "\nPass %d doesn't match write transferred %d read transferred %d %d\n", k, wr_transferred, rd_transferred, n);
+								fprintf(stderr, "\nPass %d doesn't match write transferred %d read transferred %d\n", k, wr_transferred, rd_transferred);
 								goto exit;
 							}
 							if (n == rd_transferred) {
