@@ -214,7 +214,7 @@ int main(int argc, char **argv)
 						if (wr_result) {
 							fprintf(stderr, "\nError in bulk write transfer: %s(%d)\n", libusb_strerror(wr_result), wr_result);
 							if (wr_result == LIBUSB_ERROR_PIPE) {
-								// libusb_clear_halt(usbdev, wr_endp);
+								libusb_clear_halt(usbdev, wr_endp);
 							}
 							goto exit;
 						}
@@ -228,7 +228,7 @@ int main(int argc, char **argv)
 								goto exit;
 							} 
 							if (rd_result == LIBUSB_ERROR_PIPE) {
-								// libusb_clear_halt(usbdev, rd_endp);
+								libusb_clear_halt(usbdev, rd_endp);
 							}
 						} while(result || (rd_result && rd_transferred));
 
