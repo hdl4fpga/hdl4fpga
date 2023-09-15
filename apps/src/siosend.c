@@ -6,6 +6,8 @@
 static short vendor;
 static short product;
 static char  endp;
+static char  colon;
+static char  point;
 
 int main (int argc, char *argv[])
 {
@@ -44,8 +46,7 @@ int main (int argc, char *argv[])
 			break;
 		case'u':
 			if (optarg) {
-				char colon;
-				sscanf(optarg,  "%hx%c%hx%c%hhx", &vendor, &colon, &product, &colon, &endp);
+				sscanf(optarg,  "%hx%c%hx%c%hhx", &vendor, &colon, &product, &point, &endp);
 				u = true;
 			}
 			break;
@@ -61,6 +62,7 @@ int main (int argc, char *argv[])
 		init_comms();
 		fprintf (stderr, "COMMS has been initialized\n");
 	} else if (!h) {
+		fprintf(stderr, "0x%04hx%c0x%04hx%c0x%02hhx\n", vendor, colon, product, point, endp);
 		init_usb (vendor, product, endp);
 	}
 

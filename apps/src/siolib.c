@@ -1,7 +1,7 @@
 #include <ctype.h>
 #include <time.h>
-#include <libusb-1.0/libusb.h>
 #include "siolib.h"
+#include <libusb-1.0/libusb.h>
 
 int pkt_sent = 0;
 int pkt_lost = 0;
