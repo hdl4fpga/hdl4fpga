@@ -26,7 +26,7 @@ bin/usbtest : src/usbtest.c src/lfsr.c
 	gcc -O3 src/usbtest.c src/lfsr.c -o bin/usbtest -lusb-1.0
 
 WINDOWS_LIBUSB_DIR = E:/libusb/libusb-MinGW-x64
-bin/usbtest.exe : src/usbtest.c src/lfsr.c
+bin\usbtest.exe : src/usbtest.c src/lfsr.c
 	gcc -O3 -I$(WINDOWS_LIBUSB_DIR)/include src/usbtest.c src/lfsr.c -L$(WINDOWS_LIBUSB_DIR)/lib -l"usb-1.0" -o bin/usbtest.exe
 
 bin\siosend.exe : src/hdlc.h src/hdlc.c src/siolib.h src/siolib.c src/siosend.c
