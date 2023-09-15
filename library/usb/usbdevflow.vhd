@@ -240,6 +240,7 @@ begin
 	txbuffer_p : process (acktx_rdy, clk)
 		variable mem  : std_logic_vector(0 to 64*8-1);
 		subtype  mem_range  is natural range 1 to unsigned_num_bits(mem'length-1);
+		subtype  byte_range is natural range 0 to unsigned_num_bits(mem'length-1)-3;
 		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
 		variable pout : unsigned(pin'range);
 		variable we   : std_logic;
@@ -257,14 +258,14 @@ begin
 					ackrx_rdy <= ackrx_req;
 				elsif (in_rdy xor in_req)='1' then
 					pout := (others => '0');
-				elsif pout /= pin then
+				elsif pout(byte_range) /= pin(byte_range) then
 					if txbs='0' then
 						pout := pout + 1;
 					end if;
 				end if;
 				buffer_txd <= mem(to_integer(pout(mem_range)));
 
-				if pout=pin then
+				if pout(byte_range)=pin(byte_range) then
 					buffer_txen <= '0';
 				else
 					buffer_txen <= '1';
@@ -341,8 +342,9 @@ begin
 	end process;
 
 	rxbuffer_p : process (rqst_req, clk)
-		variable mem  : std_logic_vector(0 to 64*8-1);
+		variable mem  : std_logic_vector(0 to 64*2**3-1);
 		subtype  mem_range is natural range 1 to unsigned_num_bits(mem'length-1);
+		subtype  byte_range is natural range 1 to unsigned_num_bits(mem'length-1)-3;
 		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1)) := (others => '0');
 		variable pout : unsigned(pin'range);
 		variable prty : unsigned(pout'range);

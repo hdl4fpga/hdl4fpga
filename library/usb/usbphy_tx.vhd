@@ -33,14 +33,16 @@ begin
 
 		variable dp   : std_logic;
 		variable dn   : std_logic;
-		variable dp0  : std_logic;
-		variable dn0  : std_logic;
+		variable latp : unsigned(0 to 1-1);
+		variable latn : unsigned(latp'range);
 	begin
 		if rising_edge(clk) then
-			txdp <= dp0;
-			txdn <= dn0;
-			dp0 := dp;
-			dn0 := dn;
+			txdp    <= latp(0);
+			txdn    <= latn(0);
+			latp(0) := dp;
+			latn(0) := dn;
+			latp    := latp rol 1;
+			latn    := latn rol 1;
 			if cken='1' then
 				case state is
 				when s_idle =>
@@ -65,7 +67,6 @@ begin
 						dp := '0';
 						dn := '0';
 						state := s_eop;
-						-- state := s_idle;
 					end if;
 					if data(0)='1' then
 						stuffedbit_l : if cnt1 < bit_stuffing-1 then
