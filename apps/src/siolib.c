@@ -277,7 +277,7 @@ int usb_send(char * data, int len)
 	while ((result = libusb_bulk_transfer(usbdev, usbendp & ~0x80, buffer, ptr-buffer, &transferred, 0))!=0) {
 		if (result == LIBUSB_ERROR_PIPE) {
 			libusb_clear_halt(usbdev, usbendp);
-			fprintf(stderr, "WRITING PIPE ERROR RETRYING\n");
+			fprintf(stderr, "WRITING PIPE ERROR\n");
 			abort();
 		} else {
 			printf("Error in bulk transfer. Error code: %d\n", result);
@@ -435,7 +435,7 @@ int usb_rcvd(char *buffer, int maxlen)
 		while (result = libusb_bulk_transfer(usbdev, usbendp | 0x80, buffer, maxlen-(ptr-buffer), &transferred, 0)) {
 			if (result == LIBUSB_ERROR_PIPE) {
 				libusb_clear_halt(usbdev, usbendp);
-				fprintf(stderr, "READING PIPE ERROR RETRYING\n");
+				fprintf(stderr, "READING PIPE ERROR\n");
 				abort();
 			} else {
 				printf("Error in bulk transfer. Error code: %d\n", result);
