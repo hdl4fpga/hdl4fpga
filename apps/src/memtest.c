@@ -127,6 +127,12 @@ int sio_memwrite(size_t address, const char *buffer, size_t length)
 static void (*seq_init) ();
 static void (*seq_fill) (char *buffer, int length);
 
+static short vendor;
+static short product;
+static char  endp;
+static char  colon;
+static char  dot;
+
 int main (int argc, char *argv[])
 {
 	libusb_device_handle *dev_handle;
@@ -134,9 +140,6 @@ int main (int argc, char *argv[])
 
 	int nooutput;
 
-	short vendor;
-	short product;
-	char endp;
 	opterr   = 0;
 
 	setvbuf(stderr, NULL, _IONBF, 0);
@@ -160,8 +163,8 @@ int main (int argc, char *argv[])
 			break;
 		case'u':
 			if (optarg) {
-				char colon;
-				sscanf(optarg,  "%hx%c%hx%c%hhx", &vendor, &colon, &product, &colon, &endp);
+				sscanf(optarg,  "%hx%c%hx%c%hhx", &vendor, &colon, &product, &dot, &endp);
+				// product =0xabcd;
 				u = true;
 			}
 			break;
@@ -177,6 +180,7 @@ int main (int argc, char *argv[])
 		init_comms();
 	} else if (!h) {
 		init_usb (vendor, product, endp);
+		fprintf(stderr, "0x%04hx%c0x%04hx%c0x%02hhx\n", vendor, colon, product, dot, endp);
 	}
 
 #define LSR
@@ -202,7 +206,6 @@ int main (int argc, char *argv[])
 			seq_fill(wr_buffer, length);
 			sio_memwrite(address, wr_buffer, length);
 			sio_memread (address, rd_buffer, length);
-			getchar();
 
 			for(int i = 0; i < length; i += sizeof(lfsr_word)) {
 				lfsr_word data_rd;

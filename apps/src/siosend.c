@@ -7,7 +7,7 @@ static short vendor;
 static short product;
 static char  endp;
 static char  colon;
-static char  point;
+static char  dot;
 
 int main (int argc, char *argv[])
 {
@@ -19,7 +19,6 @@ int main (int argc, char *argv[])
 	nooutput = 0;
 
 	setvbuf(stderr, NULL, _IONBF, 0);
-
 	int c;
 	bool log;
 	bool h;
@@ -46,7 +45,7 @@ int main (int argc, char *argv[])
 			break;
 		case'u':
 			if (optarg) {
-				sscanf(optarg,  "%hx%c%hx%c%hhx", &vendor, &colon, &product, &point, &endp);
+				sscanf(optarg,  "%hx%c%hx%c%hhx", &vendor, &colon, &product, &dot, &endp);
 				// product =0xabcd;
 				u = true;
 			}
@@ -63,7 +62,7 @@ int main (int argc, char *argv[])
 		init_comms();
 		fprintf (stderr, "COMMS has been initialized\n");
 	} else if (!h) {
-		fprintf(stderr, "0x%04hx%c0x%04hx%c0x%02hhx\n", vendor, colon, product, point, endp);
+		fprintf(stderr, "0x%04hx%c0x%04hx%c0x%02hhx\n", vendor, colon, product, dot, endp);
 		init_usb (vendor, product, endp);
 	}
 
@@ -88,6 +87,7 @@ int main (int argc, char *argv[])
 			fprintf (stderr, "\tNo-packet-size mode\n");
 		}
 
+	_setmode(_fileno(stdin), _O_BINARY);
 	for(;;) {
 		int n;
 		short unsigned length = MAXLEN;

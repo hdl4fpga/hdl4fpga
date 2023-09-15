@@ -32,5 +32,8 @@ bin\usbtest.exe : src/usbtest.c src/lfsr.c
 bin\siosend.exe : src/hdlc.h src/hdlc.c src/siolib.h src/siolib.c src/siosend.c
 	gcc -O3 -I$(WINDOWS_LIBUSB_DIR)/include src/siolib.c src/hdlc.c src/siosend.c -L$(WINDOWS_LIBUSB_DIR)/lib -l"usb-1.0" -lws2_32 -o bin/siosend.exe
 
+bin\memtest.exe : src/lfsr.h src/lfsr.c src/hdlc.h src/hdlc.c src/siolib.h src/siolib.c src/memtest.c
+	gcc -O3 -I$(WINDOWS_LIBUSB_DIR)/include src/lfsr.c src/siolib.c src/hdlc.c src/memtest.c -L$(WINDOWS_LIBUSB_DIR)/lib -l"usb-1.0" -lws2_32 -o bin/memtest.exe
+
 clean :
 	rm  -rf ./bin
