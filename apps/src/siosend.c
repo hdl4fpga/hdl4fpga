@@ -87,7 +87,7 @@ int main (int argc, char *argv[])
 			fprintf (stderr, "\tNo-packet-size mode\n");
 		}
 
-	_setmode(_fileno(stdin), _O_BINARY);
+//	_setmode(_fileno(stdin), _O_BINARY);
 	for(;;) {
 		int n;
 		short unsigned length = MAXLEN;
