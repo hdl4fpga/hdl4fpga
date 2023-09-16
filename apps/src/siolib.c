@@ -3,7 +3,10 @@
 #include "siolib.h"
 #include <libusb-1.0/libusb.h>
 
+#ifdef _WIN32
 WSADATA wsaData;
+#endif
+
 int pkt_sent = 0;
 int pkt_lost = 0;
 
