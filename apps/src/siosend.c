@@ -9,6 +9,10 @@ static char  endp;
 static char  colon;
 static char  dot;
 
+static long unsigned totaldata;
+static struct timeval start_time;
+static struct timeval end_time;
+
 int main (int argc, char *argv[])
 {
 
@@ -91,6 +95,8 @@ int main (int argc, char *argv[])
 	_setmode(_fileno(stdin), _O_BINARY);
 #endif
 
+	totaldata = 0;
+	gettimeofday(&start_time, NULL);
 	for(;;) {
 		int n;
 		short unsigned length = MAXLEN;
@@ -100,14 +106,16 @@ int main (int argc, char *argv[])
 			fprintf (stderr, ">>> READING PACKET <<<\n");
 		}
 		if (pktmd) {
-			if (fread(&length, sizeof(unsigned short), 1, stdin) > 0) {
+			if (n = fread(&length, sizeof(unsigned short), 1, stdin) > 0) {
 				if (log) {
 					fprintf (stderr, "Packet length %d\n", length);
 				}
+				totaldata += n;
 			} else break;
 		}
 
 		if ((n = fread(buffer, sizeof(unsigned char), length, stdin)) > 0) {
+			totaldata += n;
 			if (log) {
 				fprintf (stderr, "Packet read length %d\n", n);
 			}
@@ -128,6 +136,13 @@ int main (int argc, char *argv[])
 			break;
 		}
 	}
+	gettimeofday(&end_time, NULL);
+	fprintf(stderr, "Transfer time %f sec\nThroughput %f Bytes/s\n",
+		(double) (end_time.tv_sec  - start_time.tv_sec) +
+		(double) (end_time.tv_usec - start_time.tv_usec)  / 1.0e6,
+		(double) (totaldata)/(
+		(double) (end_time.tv_sec  - start_time.tv_sec) +
+		(double) (end_time.tv_usec - start_time.tv_usec)  / 1.0e6));
 
 	return 0;
 }

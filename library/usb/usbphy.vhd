@@ -81,10 +81,6 @@ begin
 	tp(2) <= tx_tp(2) when tx_tp(1)='1' else rxbs;
 	tp(3) <= tx_tp(3) when tx_tp(1)='1' else rxd;
 
-	-- tp(1) <= tx_tp(1);
-	-- tp(2) <= '0';
-	-- tp(3) <= tx_tp(1);
-
 	linestates_p : process (clk)
 		type states is (s_idle, s_sop, s_eop, s_resume, s_suspend);
 		variable state : states;

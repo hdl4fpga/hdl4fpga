@@ -9,7 +9,7 @@ ifeq ($(OS), Windows_NT)
 	WSOCK          ?= -lws_32
 else
 	UNAME := $(shell uname)
-	LIBUSB_NAME    ?= 'usb-1.0'
+	LIBUSB_NAME    ?= usb-1.0
 	LIBUSB_LIBRARY ?= -l$(LIBUSB_NAME)
 endif
 

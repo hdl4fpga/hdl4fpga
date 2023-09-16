@@ -133,6 +133,9 @@ static char  endp;
 static char  colon;
 static char  dot;
 
+static struct timeval start_time;
+static struct timeval end_time;
+
 int main (int argc, char *argv[])
 {
 	libusb_device_handle *dev_handle;
@@ -198,6 +201,7 @@ int main (int argc, char *argv[])
 
 	seq_init();
 	length  = 1*1024;
+	gettimeofday(&start_time, NULL);
 	for(int pass = 1; pass < 2 || 0; pass++) {
 		for (address = 0; address < MAX_ADDRESS; address += length) {
 
@@ -249,6 +253,10 @@ int main (int argc, char *argv[])
 			// fprintf(stderr, "Pass %d, Block@0x%08x\n", pass, address);
 		}
 	}
+	gettimeofday(&end_time, NULL);
+	fprintf(stderr, "Transfer time %fsec\n",
+		(double) (end_time.tv_sec  - start_time.tv_sec) +
+		(double) (end_time.tv_usec - start_time.tv_usec)  / 1.0e6);
 
 	fprintf(stderr, "finished\n");
 	return 0;
