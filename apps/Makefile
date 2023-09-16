@@ -5,7 +5,7 @@ ifeq ($(OS), Windows_NT)
 	LIBUSB_PATH    ?= 'E:/libusb/libusb-MinGW-x64'
 	LIBUSB_NAME    ?= 'usb-1.0'
 	LIBUSB_INCLUDE ?= -I$(LIBUSB_PATH)/include
-	LIBUSB_LIBRARY ?= -L$(LIBUSB_PATH)/lib -l$(LIBUSB_NAME)
+	LIBUSB_LIBRARY ?= -L$(LIBUSB_PATH)/lib -l$(LIBUSB_NAME) -static
 	WSOCK          ?= -lws2_32
 else
 	UNAME := $(shell uname)
