@@ -164,7 +164,6 @@ int main (int argc, char *argv[])
 		case'u':
 			if (optarg) {
 				sscanf(optarg,  "%hx%c%hx%c%hhx", &vendor, &colon, &product, &dot, &endp);
-				// product =0xabcd;
 				u = true;
 			}
 			break;
@@ -179,8 +178,8 @@ int main (int argc, char *argv[])
 	if (!(h || u)) {
 		init_comms();
 	} else if (!h) {
-		init_usb (vendor, product, endp);
 		fprintf(stderr, "0x%04hx%c0x%04hx%c0x%02hhx\n", vendor, colon, product, dot, endp);
+		init_usb (vendor, product, endp);
 	}
 
 #define LSR

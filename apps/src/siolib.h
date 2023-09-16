@@ -13,8 +13,7 @@
 #include <wininet.h>
 #include <fcntl.h>
 #define	pipe(fds) _pipe(fds, 1024, O_BINARY)
-
-WSADATA wsaData;
+extern WSADATA wsaData;
 #else
 #include <sys/types.h>
 #include <sys/socket.h>

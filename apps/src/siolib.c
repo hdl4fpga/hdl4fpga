@@ -3,6 +3,7 @@
 #include "siolib.h"
 #include <libusb-1.0/libusb.h>
 
+WSADATA wsaData;
 int pkt_sent = 0;
 int pkt_lost = 0;
 
