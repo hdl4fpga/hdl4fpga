@@ -12,9 +12,10 @@ else
 	# include Makefile.posix
 endif
 
-all : bin bin/rgb8topixel$(EXE) bin/format$(EXE) bin/bundle$(EXE) bin/siosend$(EXE) bin/memtest$(EXE) bin/usbtest$(EXE)
+all : bin/rgb8topixel$(EXE) bin/format$(EXE) bin/bundle$(EXE) bin/siosend$(EXE) bin/memtest$(EXE) bin/usbtest$(EXE)
+	echo $(EXE)
 
-bin : 
+bin :
 	mkdir bin
 
 bin/rgb8topixel$(EXE) : bin src/rgb8topixel.c
