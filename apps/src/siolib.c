@@ -608,18 +608,18 @@ void init_usb (short vid, short pid, char endp)
 {
 	usbendp = endp;
 	if (libusb_init(&usbctx) != 0) {
-		printf("Error initializing libusb.\n");
+		fprintf(stderr, "Error initializing libusb.\n");
 		exit(-1);
 	}
 
 	usbdev = libusb_open_device_with_vid_pid(usbctx, vid, pid);
 	if (usbdev == NULL) {
-		printf("Failed to open the USB device.\n");
+		fprintf(stderr, "Failed to open the USB device.\n");
 		libusb_exit(usbctx);
 		exit(-1);
 	}
-	if (libusb_claim_interface(usbdev, 0) != 0) {
-		printf("Failed to claim the interface of the USB device.\n");
+	if (libusb_claim_interface(usbdev, 0)) {
+		fprintf(stderr, "Failed to claim the interface of the USB device.\n");
 		libusb_close(usbdev);
 		libusb_exit(usbctx);
 		exit(-1);

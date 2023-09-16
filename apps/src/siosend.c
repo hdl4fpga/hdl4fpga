@@ -50,7 +50,6 @@ int main (int argc, char *argv[])
 		case'u':
 			if (optarg) {
 				sscanf(optarg, "%hx%c%hx%c%hhx", &vendor, &colon, &product, &dot, &endp);
-				// product = 0xabcd;
 				u = true;
 			}
 			break;

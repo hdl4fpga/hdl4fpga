@@ -6,7 +6,7 @@ ifeq ($(OS), Windows_NT)
 	LIBUSB_NAME    ?= 'usb-1.0'
 	LIBUSB_INCLUDE ?= -I$(LIBUSB_PATH)/include
 	LIBUSB_LIBRARY ?= -L$(LIBUSB_PATH)/lib -l$(LIBUSB_NAME)
-	WSOCK          ?= -lws_32
+	WSOCK          ?= -lws2_32
 else
 	UNAME := $(shell uname)
 	LIBUSB_NAME    ?= usb-1.0
