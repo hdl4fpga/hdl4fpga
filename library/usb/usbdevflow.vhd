@@ -271,7 +271,6 @@ begin
 					buffer_txen <= '1';
 				end if;
 
-
 				if pin(0)='1' then
 					we  := '0';
 					din := '-';
