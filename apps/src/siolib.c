@@ -430,7 +430,7 @@ int usb_rcvd(char *buffer, int maxlen)
 		static struct timespec req;
 		static struct timespec rem;
 
-		// for (req.tv_sec = 0, req.tv_nsec = 1e5; nanosleep(&req, &rem) && errno == EINTR; req = rem);
+		for (req.tv_sec = 0, req.tv_nsec = 1e3; nanosleep(&req, &rem) && errno == EINTR; req = rem);
 
 		while (result = libusb_bulk_transfer(usbdev, usbendp | 0x80, buffer, maxlen-(ptr-buffer), &transferred, 0)) {
 			if (result == LIBUSB_ERROR_PIPE) {
@@ -463,7 +463,7 @@ int usb_rcvd(char *buffer, int maxlen)
 			}
 			retry = 0;
 		} else {
-			for (req.tv_sec = 0, req.tv_nsec = 1e0; nanosleep(&req, &rem) && errno == EINTR; req = rem);
+			for (req.tv_sec = 0, req.tv_nsec = 1e3; nanosleep(&req, &rem) && errno == EINTR; req = rem);
 
 			if (retry++ > 64) {
 				return -1;
