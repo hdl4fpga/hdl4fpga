@@ -1,0 +1,1 @@
+Start-Process -FilePath .\bin\siosend.exe -ArgumentList $args[0] -RedirectStandardInput $args[1] -RedirectStandardOutput nul  -NoNewWindow -Wait

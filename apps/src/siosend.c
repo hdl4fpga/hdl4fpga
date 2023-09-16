@@ -45,8 +45,8 @@ int main (int argc, char *argv[])
 			break;
 		case'u':
 			if (optarg) {
-				sscanf(optarg,  "%hx%c%hx%c%hhx", &vendor, &colon, &product, &dot, &endp);
-				// product =0xabcd;
+				sscanf(optarg, "%hx%c%hx%c%hhx", &vendor, &colon, &product, &dot, &endp);
+				// product = 0xabcd;
 				u = true;
 			}
 			break;
@@ -87,7 +87,10 @@ int main (int argc, char *argv[])
 			fprintf (stderr, "\tNo-packet-size mode\n");
 		}
 
-//	_setmode(_fileno(stdin), _O_BINARY);
+#ifdef _WIN32
+	_setmode(_fileno(stdin), _O_BINARY);
+#endif
+
 	for(;;) {
 		int n;
 		short unsigned length = MAXLEN;
