@@ -60,8 +60,8 @@ architecture graphics of ulx3s is
 
 	constant sdram_params : sdramparams_record := sdramparams(
 		sdram_speeds'VAL(setif(debug,
-			-- sdram_speeds'POS(sdram133MHz),
-			sdram_speeds'POS(sdram225MHz),
+			sdram_speeds'POS(sdram133MHz),
+			-- sdram_speeds'POS(sdram225MHz),
 			sdram_speeds'POS(sdram_speed))), clk25mhz_freq);
 	
 	constant sdram_tcp : real := 
