@@ -722,7 +722,7 @@ void init_comms ()
 	setvbuf(stdin,  NULL, _IONBF, 0);
 	setvbuf(stdout, NULL, _IONBF, 0);
 #else
-	comm = CreateFile("COM3",
+	comm = CreateFile("COM3:",
 		GENERIC_READ | GENERIC_WRITE,
 		0,
 		NULL,
