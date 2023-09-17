@@ -713,7 +713,6 @@ void init_comms ()
 #ifndef _WIN32
 	if(!(comm = fdopen(3, "rw+"))) {
 		if((comm = fdopen(STDIN_FILENO, "rw+"))) stdin = comm;
-		setvbuf(comm,  NULL, _IONBF, 0);
 		comm = stdout;
 	} else {
 		setbuf(comm, NULL);
