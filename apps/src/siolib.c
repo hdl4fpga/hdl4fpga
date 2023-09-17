@@ -322,7 +322,6 @@ void uart_send(char c, FILE *comm)
 #else
 	if (!WriteFile(comm, &c, sizeof(char), NULL, NULL)) {
         fprintf(stderr, "Failed to write to the serial port. Error code: %lu\n", GetLastError());
-        CloseHandle(comm);
 		abort();
     }
 #endif
