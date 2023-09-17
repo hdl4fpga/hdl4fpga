@@ -7,14 +7,25 @@
 WSADATA wsaData;
 #endif
 
+static void nocommfunction (void)
+{
+	fprintf(stderr, "COMM function has not been setup\n");
+	abort();
+}
+
+static int (*sio_send)(char * data, int len) = (void *) nocommfunction;
+static int (*sio_rcvd)(char * data, int len) = (void *) nocommfunction;
+
 int pkt_sent = 0;
 int pkt_lost = 0;
 
+#ifndef _WIN32
 static FILE *comm;
+#else
+static HANDLE comm;
+#endif
 
 static int sckt;
-static int (*sio_send)(char * data, int len);
-static int (*sio_rcvd)(char * data, int len);
 
 #define LOG0 (loglevel & (1 << 0))
 #define LOG1 (loglevel & (1 << 1))
@@ -255,7 +266,7 @@ int usb_send(char * data, int len)
 	char *ptr = buffer;
 	u16 fcs;
 
-    fcs = ~pppfcs16(PPPINITFCS16, data, len);
+	fcs = ~pppfcs16(PPPINITFCS16, data, len);
 	*ptr++ = 0x7e;
 	for (int i = 0; i < len+sizeof(fcs); i++) {
 		char c;
@@ -284,7 +295,7 @@ int usb_send(char * data, int len)
 			fprintf(stderr, "WRITING PIPE ERROR\n");
 			abort();
 		} else {
-			printf("Error in bulk transfer. Error code: %d\n", result);
+			fprintf(stderr, "Error in bulk transfer. Error code: %d\n", result);
 			perror ("sending packet");
 			abort();
 		}
@@ -303,9 +314,21 @@ int socket_send(char * data, int len)
 
 void uart_send(char c, FILE *comm)
 {
-	fputc(c, comm);
+#ifndef __WIN32
+	if (fputc(c, comm) == EOF) {
+		perror("__FUNCTION__");
+		abort();
+	}
+#else
+	if (!WriteFile(comm, &c, sizeof(char), NULL, NULL)) {
+        fprintf(stderr, "Failed to write to the serial port. Error code: %lu\n", GetLastError());
+        CloseHandle(comm);
+		abort();
+    }
+#endif
+
 	if (LOG2) {
-//		fprintf(stderr, "TX data 0x%02x\n", (unsigned char) c);
+		fprintf(stderr, "TXD 0x%02hhx\n", c);
 	}
 }
 
@@ -313,7 +336,7 @@ int hdlc_send(char * data, int len)
 {
 	u16 fcs;
 
-    fcs = ~pppfcs16(PPPINITFCS16, data, len);
+	fcs = ~pppfcs16(PPPINITFCS16, data, len);
 	uart_send(0x7e, comm);
 	for (int i = 0; i < len+sizeof(fcs); i++) {
 		char c;
@@ -442,7 +465,7 @@ int usb_rcvd(char *buffer, int maxlen)
 				fprintf(stderr, "READING PIPE ERROR\n");
 				abort();
 			} else {
-				printf("Error in bulk transfer. Error code: %d\n", result);
+				fprintf(stderr, "Error in bulk transfer. Error code: %d\n", result);
 				exit(-1);
 				return -1;
 			}
@@ -498,7 +521,7 @@ int usb_rcvd(char *buffer, int maxlen)
 	return -1;
 }
 
-int hdlc_rcvd(char unsigned *buffer, int maxlen)
+int hdlc_rcvd(char *buffer, int maxlen)
 {
 	int len;
 	int err;
@@ -515,6 +538,7 @@ int hdlc_rcvd(char unsigned *buffer, int maxlen)
 	len   = 0;
 	retry = 0;
 	for (int i = 0; i < maxlen; i++) {
+#ifndef _WIN32
 		fd_set rfds;
 
 		FD_ZERO(&rfds);
@@ -525,31 +549,43 @@ int hdlc_rcvd(char unsigned *buffer, int maxlen)
 		if ((err = select(fileno(comm)+1, &rfds, NULL, NULL, &tv)) == -1) {
 			perror ("select");
 			abort();
+		} else if (err == 0 || FD_ISSET(fileno(comm), &rfds) == 0) {
+			if (retry++ > 64) {
+				return -1;
+			}
+			if (LOG1) {
+				fprintf(stderr, "reading time out %d\n", retry);
+			}
+			i--;
+		} else if (fread (buffer+i, sizeof(char), 1, comm) <= 0) {
+			perror("reading serial");
+			abort();
 		} else {
-			if (err > 0 && FD_ISSET(fileno(comm), &rfds)) {
-				if (fread (buffer+i, sizeof(char), 1, comm) > 0) {
-					if (LOG3) {
-//						fprintf(stderr, "RX data 0x%02x\n", (unsigned char) buffer[i]);
-					}
-					if (buffer[i] == 0x7e) {
-						len = i;
-						break;
-					} else continue;
-				}
-
-				perror("reading serial");
-				abort();
-			} else {
-				if (retry++ > 64) {
-					return -1;
-				}
-				if (LOG1) {
-					fprintf(stderr, "reading time out %d\n", retry);
-				}
-				i--;
+			if (LOG3) {
+				fprintf(stderr, "RXD 0x%02hhx\n", buffer[i]);
+			}
+			if (buffer[i] == 0x7e) {
+				len = i;
+				break;
 			}
 		}
+#else
+		DWORD transferred;
+		if (!ReadFile(comm, buffer+i, sizeof(char), &transferred, NULL)) {
+			fprintf(stderr, "Failed to read from the serial port. Error code: %lu\n", GetLastError());
+			abort();
+		} else if (transferred > 0) {
+			if (LOG3) {
+				fprintf(stderr, "RXD 0x%02hhx\n", buffer[i]);
+			}
+			if (buffer[i] == 0x7e) {
+				len = i;
+				break;
+			}
+		}
+#endif
 	}
+
 	if (!len) {
 		if (LOG0) {
 			fprintf(stderr, "Error receiving\n");
@@ -675,16 +711,45 @@ void init_socket (char * hostname)
 
 void init_comms ()
 {
-#ifndef __MINGW32__
+#ifndef _WIN32
 	if(!(comm = fdopen(3, "rw+"))) {
 		if((comm = fdopen(STDIN_FILENO, "rw+"))) stdin = comm;
+		setvbuf(comm,  NULL, _IONBF, 0);
 		comm = stdout;
 	} else {
 		setbuf(comm, NULL);
 	}
+
 	setvbuf(stdin,  NULL, _IONBF, 0);
 	setvbuf(stdout, NULL, _IONBF, 0);
+#else
+	comm = CreateFile("COM3",
+		GENERIC_READ | GENERIC_WRITE,
+		0,
+		NULL,
+		OPEN_EXISTING,
+		0,
+		NULL);
+
+	if (comm == INVALID_HANDLE_VALUE) {
+		fprintf(stderr, "Failed to open the serial port. Error code: %lu\n", GetLastError());
+		abort();
+	}
+
+	COMMTIMEOUTS tout = { 0 };
+    tout.ReadIntervalTimeout         = 1;
+    tout.ReadTotalTimeoutConstant    = 0;
+    tout.ReadTotalTimeoutMultiplier  = 0;
+    tout.WriteTotalTimeoutConstant   = 0;
+    tout.WriteTotalTimeoutMultiplier = 0;
+	if (!SetCommTimeouts(comm, &tout)) {
+        fprintf(stderr, "Failed to set serial port timeouts. Error code: %lu\n", GetLastError());
+        abort();
+    }
+
 #endif
+	sio_send = hdlc_send;
+	sio_rcvd = hdlc_rcvd;
 }
 
 void sio_setloglevel(int level)
