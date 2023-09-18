@@ -630,7 +630,7 @@ int hdlc_rcvd(char *buffer, int maxlen)
 	static struct timespec req;
 	static struct timespec rem;
 
-	char esc = 0x7d ^ 0x20;
+	char esc = 0x00;
 	do {
 		DWORD transferred; 
 		if (!ReadFile(comm, ptr, sizeof(char)/* maxlen-(ptr-buffer) */, &transferred, NULL)) {
@@ -647,7 +647,7 @@ int hdlc_rcvd(char *buffer, int maxlen)
 				} else if (esc == 0x7d) {
 					ptr[i] ^= 0x20;
 					ptr[j++] = ptr[i];
-					esc ^= 0x7d;
+					esc = 0x00;
 				} else if (ptr[i] == 0x7d) {
 					esc = ptr[i];
 				} else {
