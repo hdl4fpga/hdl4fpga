@@ -461,13 +461,14 @@ int socket_rcvd(char *buffer, int maxlen)
 
 int usb_rcvd(char *buffer, int maxlen)
 {
-	int  retry = 0;
+	int  retry;
 	char *ptr;
 	char  esc;
 
 	if (LOG0) fprintf(stderr, "USB reading\n");
 	pkt_lost++;
 	ptr = buffer;
+	retry =0;
 	esc = 0;
 	do {
 		int result;
@@ -479,13 +480,12 @@ int usb_rcvd(char *buffer, int maxlen)
 
 		if (result = libusb_bulk_transfer(usbdev, usbendp | 0x80, ptr, maxlen-(ptr-buffer), &transferred, 0)) {
 			if (result == LIBUSB_ERROR_PIPE) {
-				libusb_clear_halt(usbdev, usbendp);
 				fprintf(stderr, "READING PIPE ERROR\n");
+				libusb_clear_halt(usbdev, usbendp);
 				abort();
 			} else {
 				fprintf(stderr, "Error in bulk transfer. Error code: %d\n", result);
-				exit(-1);
-				return -1;
+				abort();
 			}
 		} else if (!transferred) {
 			for (req.tv_sec = 0, req.tv_nsec = 1e3; nanosleep(&req, &rem) && errno == EINTR; req = rem);
@@ -506,7 +506,7 @@ int usb_rcvd(char *buffer, int maxlen)
 				} else if (ptr[i] == 0x7d) {
 					esc = ptr[i];
 				} else {
-					j++;
+					ptr[j++] = ptr[i];
 				}
 			}
 			ptr += j;
@@ -610,7 +610,7 @@ int hdlc_rcvd(char *buffer, int maxlen)
 				} else if (ptr[i] == 0x7d) {
 					esc = ptr[i];
 				} else {
-					j++;
+					ptr[j++] = ptr[i];
 				}
 			}
 			ptr += j;
