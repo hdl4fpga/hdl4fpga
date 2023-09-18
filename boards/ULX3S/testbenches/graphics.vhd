@@ -26,7 +26,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
 architecture ulx3s_graphics of testbench is
-	constant debug      : boolean := true;
+	constant debug      : boolean := false;
 
 	constant bank_bits  : natural := 2;
 	constant addr_bits  : natural := 13;
