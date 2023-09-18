@@ -81,7 +81,7 @@ void sio_setloglevel(int);
 void init_comms ();
 void init_socket (char *);
 void init_usb (short vendorid, short prodcutid, char endp);
-void uart_send(char c, FILE *comm);
+void uart_send(char *data, int len, FILE *comm);
 int  hdlc_send(char *data, int len);
 int  hdlc_rcvd(char *buffer, int maxlen);
 void send_buffer(char * data, int len);

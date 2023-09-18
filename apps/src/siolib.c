@@ -312,7 +312,7 @@ int socket_send(char * data, int len)
 	pkt_sent++;
 }
 
-void uart_send1(char *data, int len, FILE *comm)
+void uart_send(char *data, int len, FILE *comm)
 {
 #ifndef __WIN32
 	if (fwrite (data, sizeof(char), len, comm) < 0) {
@@ -332,26 +332,7 @@ void uart_send1(char *data, int len, FILE *comm)
 	}
 }
 
-void uart_send(char c, FILE *comm)
-{
-#ifndef __WIN32
-	if (fputc(c, comm) == EOF) {
-		perror(__func__);
-		abort();
-	}
-#else
-	if (!WriteFile(comm, &c, sizeof(char), NULL, NULL)) {
-        fprintf(stderr, "Failed to write to the serial port. Error code: %lu\n", GetLastError());
-		abort();
-    }
-#endif
-
-	if (LOG2) {
-		fprintf(stderr, "TXD 0x%02hhx\n", c);
-	}
-}
-
-int hdlc_send1(char *data, int len)
+int hdlc_esc(char *data, int len)
 {
 	int  i;
 
@@ -365,9 +346,9 @@ int hdlc_send1(char *data, int len)
 		case 0x7d:
 			c = data[i];
 			data[i] = 0x7d;
-			uart_send1(data, i+1, comm);
+			uart_send(data, i+1, comm);
 			c ^= 0x20;
-			uart_send1(&c, sizeof(char), comm);
+			uart_send(&c, sizeof(char), comm);
 			c ^= 0x20;
 			data[i++] = c;
 			data += i;
@@ -380,48 +361,20 @@ int hdlc_send1(char *data, int len)
 		}
 	}
 	// fprintf(stderr, "%d %d\n", i, len);
-	uart_send1(data, len, comm);
+	uart_send(data, len, comm);
 }
 
-int hdlc_send2(char * data, int len)
+int hdlc_send(char * data, int len)
 {
 	int  i;
 	char eof[1] = { 0x7e };
 	u16  fcs;
 
 	fcs = ~pppfcs16(PPPINITFCS16, data, len);
-	uart_send1(eof,  sizeof(char), comm);
-	hdlc_send1(data, len);
-	hdlc_send1((char *) &fcs,  sizeof(fcs));
-	uart_send1(eof,  sizeof(char), comm);
-	pkt_sent++;
-}
-
-int hdlc_send(char * data, int len)
-{
-	u16 fcs;
-
-	fcs = ~pppfcs16(PPPINITFCS16, data, len);
-	uart_send(0x7e, comm);
-	for (int i = 0; i < len+sizeof(fcs); i++) {
-		char c;
-
-		if (i < len) {
-			c = data[i];
-		} else {
-			c = ((char *) &fcs)[i-len];
-		}
-
-		if (c == 0x7e) {
-			uart_send(0x7d, comm);
-			c ^= 0x20;
-		} else if(c == 0x7d) {
-			uart_send(0x7d, comm);
-			c ^= 0x20;
-		}
-		uart_send(c, comm);
-	}
-	uart_send(0x7e, comm);
+	uart_send(eof,  sizeof(char), comm);
+	hdlc_esc(data, len);
+	hdlc_esc((char *) &fcs,  sizeof(fcs));
+	uart_send(eof,  sizeof(char), comm);
 	pkt_sent++;
 }
 
@@ -813,7 +766,6 @@ void init_comms ()
 
 #endif
 	sio_send = hdlc_send;
-	sio_send = hdlc_send2;
 	sio_rcvd = hdlc_rcvd;
 }
 

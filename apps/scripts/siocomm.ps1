@@ -7,14 +7,14 @@ param (
 )
 
 if ($hostname -ne '' )    {
-	$process = Start-Process `
+	Start-Process `
 		-FilePath .\bin\siosend.exe `
 		-ArgumentList "-p -h ${hostname}" `
 		-RedirectStandardInput ${file} `
 		-RedirectStandardOutput NUL `
 		-NoNewWindow -Wait
 } elseif ($usbdev -ne '') {                                                                                                           
-	$process = Start-Process `
+	Start-Process `
 		-FilePath .\bin\siosend.exe `
 		-ArgumentList "-p -u ${usbdev}" `
 		-RedirectStandardInput ${file} `
@@ -22,7 +22,7 @@ if ($hostname -ne '' )    {
 		-NoNewWindow -Wait 
 } else {                                                                                                                              
 	.\scripts\setuart.ps1 -tty "${tty}" -speed ${speed}                                                                                  
-	$process = Start-Process `
+	Start-Process `
 		-FilePath .\bin\siosend.exe `
 		-ArgumentList "-p" `
 		-RedirectStandardInput ${file} `
