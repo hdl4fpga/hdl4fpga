@@ -461,14 +461,14 @@ int socket_rcvd(char *buffer, int maxlen)
 
 int usb_rcvd(char *buffer, int maxlen)
 {
+	int  retry = 0;
+	char *ptr;
+	char  esc;
 
-	if (LOG0) {
-		fprintf(stderr, "USB reading\n");
-	}
-
+	if (LOG0) fprintf(stderr, "USB reading\n");
 	pkt_lost++;
-	int retry = 0;
-	char *ptr = buffer;
+	ptr = buffer;
+	esc = 0;
 	do {
 		int result;
 		int transferred;
@@ -477,7 +477,7 @@ int usb_rcvd(char *buffer, int maxlen)
 
 		for (req.tv_sec = 0, req.tv_nsec = 1e3; nanosleep(&req, &rem) && errno == EINTR; req = rem);
 
-		while (result = libusb_bulk_transfer(usbdev, usbendp | 0x80, ptr, maxlen-(ptr-buffer), &transferred, 0)) {
+		if (result = libusb_bulk_transfer(usbdev, usbendp | 0x80, ptr, maxlen-(ptr-buffer), &transferred, 0)) {
 			if (result == LIBUSB_ERROR_PIPE) {
 				libusb_clear_halt(usbdev, usbendp);
 				fprintf(stderr, "READING PIPE ERROR\n");
@@ -487,33 +487,35 @@ int usb_rcvd(char *buffer, int maxlen)
 				exit(-1);
 				return -1;
 			}
-		}
-
-		if (transferred > 0) {
-			int i; 
-			int j;
-
-			for (i = 0, j = 0; i < transferred; i++, j++) {
-				if (ptr[i] == 0x7e) {
-					break;
-				} else if (ptr[i] == 0x7d) {
-					ptr[++i] ^= 0x20;
-				}
-				ptr[j] = ptr[i];
-			}
-			ptr += j;
-
-			if (ptr[i-j] == 0x7e) {
-				break;
-			}
-			retry = 0;
-		} else {
+		} else if (!transferred) {
 			for (req.tv_sec = 0, req.tv_nsec = 1e3; nanosleep(&req, &rem) && errno == EINTR; req = rem);
-
 			if (retry++ > 64) {
 				return -1;
 			}
-		}
+		} else {
+			int i; 
+			int j;
+
+			for (i = 0, j = 0; i < transferred; i++) {
+				if (ptr[i] == 0x7e) {
+					break;
+				} else if (esc == 0x7d) {
+					ptr[i] ^= 0x20;
+					ptr[j++] = ptr[i];
+					esc = 0x00;
+				} else if (ptr[i] == 0x7d) {
+					esc = ptr[i];
+				} else {
+					j++;
+				}
+			}
+			ptr += j;
+
+			if (i < transferred) {
+				break;
+			}
+			retry = 0;
+		} 
 	} while ((ptr-buffer) < maxlen);
 
 	short unsigned fcs = pppfcs16(PPPINITFCS16, buffer, ptr-buffer);
@@ -541,22 +543,25 @@ int usb_rcvd(char *buffer, int maxlen)
 
 int hdlc_rcvd(char *buffer, int maxlen)
 {
-	int len;
-	int err;
-	int retry;
+	char  *ptr;
+	int   len;
+	int   err;
+	int   retry;
+	short unsigned fcs;
+	char  esc;
 
-	struct timeval tv;
-
-	if (LOG0) {
-		fprintf(stderr, "HDLC reading\n");
-	}
+	if (LOG0) fprintf(stderr, "HDLC reading\n");
 
 	pkt_lost++;
+	ptr   = buffer;
 	len   = 0;
 	retry = 0;
+	esc   = 0;
+
 #ifndef _WIN32
-	short unsigned fcs;
-	for (int i = 0; i < maxlen; i++) {
+	do {
+		size_t transferred; 
+		struct timeval tv;
 		fd_set rfds;
 
 		FD_ZERO(&rfds);
@@ -565,7 +570,7 @@ int hdlc_rcvd(char *buffer, int maxlen)
 		tv.tv_usec = 1000;
 
 		if ((err = select(fileno(comm)+1, &rfds, NULL, NULL, &tv)) == -1) {
-			perror ("select");
+			perror (__func__);
 			abort();
 		} else if (err == 0 || FD_ISSET(fileno(comm), &rfds) == 0) {
 			if (retry++ > 64) {
@@ -574,74 +579,28 @@ int hdlc_rcvd(char *buffer, int maxlen)
 			if (LOG1) {
 				fprintf(stderr, "reading time out %d\n", retry);
 			}
-			i--;
-		} else if (fread (buffer+i, sizeof(char), 1, comm) <= 0) {
+		} else if ((transferred = fread (ptr, sizeof(char), 1, comm)) <= 0) {
 			perror("reading serial");
 			abort();
-		} else {
-			if (LOG3) {
-				fprintf(stderr, "RXD 0x%02hhx\n", buffer[i]);
-			}
-			if (buffer[i] == 0x7e) {
-				len = i;
-				break;
-			}
 		}
-	}
-
-	if (!len) {
-		if (LOG0) {
-			fprintf(stderr, "Error receiving\n");
-		}
-		return -1;
-	}
-
-	int i, j;
-	for (i = 0, j = 0; i < len; i++, j++) {
-		if (buffer[i] == 0x7d)
-			buffer[++i] ^= 0x20;
-		buffer[j] = buffer[i];
-	}
-	len += (j-i);
-
-	fcs = pppfcs16(PPPINITFCS16, buffer, len);
-	if (fcs == PPPGOODFCS16) {
-		len -= 2;
-		if (LOG0) fprintf(stderr, "FCS OK! ");
-		if (LOG1) fprintf(stderr, "fcs 0x%04x", fcs);
-		if (LOG0 | LOG1) fputc('\n', stderr);
-		pkt_lost--;
-		return len;
-	}
-	len -= 2;
-
-	if (LOG0) fprintf(stderr, "FCS WRONG! ");
-	if (LOG1) fprintf(stderr, "fcs 0x%04x", fcs);
-	if (LOG0 | LOG1) fputc('\n', stderr);
-	if (LOG2) {
-		struct rgtr_node *print_queue;
-		print_queue = rawdata2rgtr(buffer,len);
-		print_rgtrs(print_queue);
-		delete_queue(print_queue);
-	}
-
 #else
-	char *ptr = buffer;
-	static struct timespec req;
-	static struct timespec rem;
-
-	char esc = 0x00;
 	do {
 		DWORD transferred; 
 		if (!ReadFile(comm, ptr, sizeof(char)/* maxlen-(ptr-buffer) */, &transferred, NULL)) {
 			fprintf(stderr, "Failed to read from the serial port. Error code: %lu\n", GetLastError());
 			abort();
-		} else if (transferred > 0) {
+		} else if (!transferred) {
+			if (retry++ > 64) {
+				abort();
+				return -1;
+			}
+		}
+#endif
+		else {
 			int i; 
 			int j;
 
 			for (i = 0, j = 0; i < transferred; i++) {
-				// fprintf(stderr, "%02hhx\n", ptr[i]);
 				if (ptr[i] == 0x7e) {
 					break;
 				} else if (esc == 0x7d) {
@@ -657,22 +616,13 @@ int hdlc_rcvd(char *buffer, int maxlen)
 			ptr += j;
 
 			if (i < transferred) {
-				// fprintf(stderr, "%d %d %02hhx\n", i, j, ptr[i-j]);
 				break;
 			}
 			retry = 0;
-		} else {
-			// for (req.tv_sec = 0, req.tv_nsec = 1e3; nanosleep(&req, &rem) && errno == EINTR; req = rem);
-
-			if (retry++ > 64) {
-				abort();
-				return -1;
-			}
 		}
 	} while ((ptr-buffer) < maxlen);
-// fprintf(stderr, "%d %d\n", maxlen, ptr-buffer);
 
-	short unsigned fcs = pppfcs16(PPPINITFCS16, buffer, ptr-buffer);
+	fcs = pppfcs16(PPPINITFCS16, buffer, ptr-buffer);
 	ptr -= 2;
 	if (fcs == PPPGOODFCS16) {
 		if (LOG0) fprintf(stderr, "FCS OK! ");
@@ -692,7 +642,6 @@ int hdlc_rcvd(char *buffer, int maxlen)
 		delete_queue(print_queue);
 	}
 
-#endif
 	return -1;
 }
 
