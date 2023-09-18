@@ -312,11 +312,31 @@ int socket_send(char * data, int len)
 	pkt_sent++;
 }
 
+void uart_send1(char *data, int len, FILE *comm)
+{
+#ifndef __WIN32
+	if (fwrite (data, sizeof(char), len, comm) < 0) {
+		abort();
+	}
+#else
+	if (!WriteFile(comm, data, len, NULL, NULL)) {
+        fprintf(stderr, "Failed to write to the serial port. Error code: %lu\n", GetLastError());
+		abort();
+    }
+#endif
+
+	if (LOG2) {
+		for (int i=0; i < len; i++) {
+			fprintf(stderr, "TXD 0x%02hhx\n", data[i]);
+		}
+	}
+}
+
 void uart_send(char c, FILE *comm)
 {
 #ifndef __WIN32
 	if (fputc(c, comm) == EOF) {
-		perror("__FUNCTION__");
+		perror(__func__);
 		abort();
 	}
 #else
@@ -329,6 +349,52 @@ void uart_send(char c, FILE *comm)
 	if (LOG2) {
 		fprintf(stderr, "TXD 0x%02hhx\n", c);
 	}
+}
+
+int hdlc_send1(char *data, int len)
+{
+	int  i;
+
+	i = 0;
+	// fprintf(stderr, "%d %d\n", i, len);
+	while (i < len) {
+		char c;
+
+		switch(data[i]) {
+		case 0x7e:
+		case 0x7d:
+			c = data[i];
+			data[i] = 0x7d;
+			uart_send1(data, i+1, comm);
+			c ^= 0x20;
+			uart_send1(&c, sizeof(char), comm);
+			c ^= 0x20;
+			data[i++] = c;
+			data += i;
+			len  -= i;
+			i = 0;
+			break;
+		default:
+			i++;
+			break;
+		}
+	}
+	// fprintf(stderr, "%d %d\n", i, len);
+	uart_send1(data, len, comm);
+}
+
+int hdlc_send2(char * data, int len)
+{
+	int  i;
+	char eof[1] = { 0x7e };
+	u16  fcs;
+
+	fcs = ~pppfcs16(PPPINITFCS16, data, len);
+	uart_send1(eof,  sizeof(char), comm);
+	hdlc_send1(data, len);
+	hdlc_send1((char *) &fcs,  sizeof(fcs));
+	uart_send1(eof,  sizeof(char), comm);
+	pkt_sent++;
 }
 
 int hdlc_send(char * data, int len)
@@ -747,6 +813,7 @@ void init_comms ()
 
 #endif
 	sio_send = hdlc_send;
+	sio_send = hdlc_send2;
 	sio_rcvd = hdlc_rcvd;
 }
 
