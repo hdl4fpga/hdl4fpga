@@ -7,6 +7,11 @@ if defined host (
 	if not defined speed (
 		set speed=3000000
 	)
-	mode %tty% %speed%,n,8,1 < nul 2> nul
-	.\bin\siosend.exe -p 1>nul
+)
+
+if defined tty (
+	if defined speed (
+		mode %tty% %speed%,n,8,1 < nul 2> nul
+		.\bin\siosend.exe -p 1>nul
+	)
 )
