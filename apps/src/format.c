@@ -2,11 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
+#include <fcntl.h>
 
 #define BUF_SIZE  256
 #define BUF_NUM   (8*1024/BUF_SIZE)
@@ -56,6 +52,11 @@ int main (int argc, char *argv[])
 	} else
 		fprintf (stderr, "buffer size is %d\n", bsize);
 
+
+#ifdef _WIN32
+	_setmode(_fileno(stdin), _O_BINARY);
+	_setmode(_fileno(stdout), _O_BINARY);
+#endif
 
 	setbuf(stdin, NULL);
 	setbuf(stdout, NULL);

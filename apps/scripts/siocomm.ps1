@@ -3,10 +3,9 @@ param (
 	[string]$hostname,
 	[string]$usbdev,
 	[string]$tty = 'COM3',
-	[int]$speed = 3000000
-)
+	[int]$speed = 3000000)
 
-if ($hostname -ne '' )    {
+if ($hostname -ne '' ) {
 	Start-Process `
 		-FilePath .\bin\siosend.exe `
 		-ArgumentList "-p -h ${hostname}" `

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 int main (int argc, char *argv[])
 {
@@ -36,6 +37,14 @@ int main (int argc, char *argv[])
 			exit(1);
 		}
 	}
+
+#ifdef _WIN32
+	_setmode(_fileno(stdin), _O_BINARY);
+	_setmode(_fileno(stdout), _O_BINARY);
+#endif
+
+	setbuf(stdin, NULL);
+	setbuf(stdout, NULL);
 
 	fprintf (stderr, "Memory base address 0x%08x\n", baddr);
 

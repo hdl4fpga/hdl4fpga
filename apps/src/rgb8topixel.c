@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #define SIZE (256)
 
@@ -115,6 +116,11 @@ int main (int argc, char *argv[])
 		fprintf (stderr, "usage :  rgb8tofmt -f [rgb32|rgb565]\n");
 		exit(-1);
 	}
+
+#ifdef _WIN32
+	_setmode(_fileno(stdin), _O_BINARY);
+	_setmode(_fileno(stdout), _O_BINARY);
+#endif
 
 	setbuf(stdin, NULL);
 	setbuf(stdout, NULL);
