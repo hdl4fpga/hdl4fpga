@@ -2,7 +2,7 @@ OS := $(shell echo $(OS))
 
 ifeq ($(OS), Windows_NT)
 	EXE = .exe
-	LIBUSB_PATH    ?= 'E:/libusb/libusb-MinGW-x64'
+	LIBUSB_PATH    ?= '.'
 	LIBUSB_NAME    ?= 'usb-1.0'
 	LIBUSB_INCLUDE ?= -I$(LIBUSB_PATH)/include
 	LIBUSB_LIBRARY ?= -L$(LIBUSB_PATH)/lib -l$(LIBUSB_NAME) -static
