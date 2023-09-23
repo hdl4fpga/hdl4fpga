@@ -79,14 +79,14 @@ LOCATE COMP "sd_pwr_on" SITE "E15"; IOBUF PORT "sd_pwr_on" PULLMODE=NONE IO_TYPE
 # Second USB port "US2" going directly into FPGA "usb", "ram" sheet #
 # ################################################################# #
 
-LOCATE COMP "usb_fpga_d"      SITE "A6";  IOBUF PORT "usb_fpga_dp"     IO_TYPE=LVCMOS33D PULLMODE=NONE DRIVE=16; # same on ULX3S and ULX4M
-LOCATE COMP "usb_fpga_bd_d"   SITE "F4";  IOBUF PORT "usb_fpga_bd_d"   IO_TYPE=LVCMOS33D PULLMODE=NONE DRIVE=4;  # single-ended bidirectional same on ULX3S and ULX4M
-LOCATE COMP "usb_fpga_pu_d"   SITE "F5";  IOBUF PORT "usb_fpga_pu_d"   IO_TYPE=LVCMOS33D PULLMODE=NONE DRIVE=16; # pull up/down control
-LOCATE COMP "usb_fpga_dn"     SITE "B6";  IOBUF PORT "usb_fpga_dn"     IO_TYPE=LVCMOS33  PULLMODE=NONE DRIVE=16; # same on ULX3S and ULX4M
-LOCATE COMP "usb_fpga_bd_dn"  SITE "E3";  IOBUF PORT "usb_fpga_bd_dn"  IO_TYPE=LVCMOS33  PULLMODE=NONE DRIVE=4;  # single-ended bidirectional same on ULX3S and ULX4M
-LOCATE COMP "usb_fpga_pu_dn"  SITE "E5";  IOBUF PORT "usb_fpga_pu_dn"  IO_TYPE=LVCMOS33  PULLMODE=NONE DRIVE=16;
-LOCATE COMP "usb_fpga_otg_id" SITE "D9";  IOBUF PORT "usb_fpga_otg_id" IO_TYPE=LVCMOS33  PULLMODE=UP   DRIVE=4;
-LOCATE COMP "n_extrst"        SITE "U16"; IOBUF PORT "n_extrst"        IO_TYPE=LVCMOS33  PULLMODE=UP   DRIVE=4;
+LOCATE COMP "usb_fpga_dp"     SITE "A6";  IOBUF PORT "usb_fpga_dp"     IO_TYPE=LVCMOS33 PULLMODE=NONE DRIVE=16; # same on ULX3S and ULX4M
+LOCATE COMP "usb_fpga_dn"     SITE "B6";  IOBUF PORT "usb_fpga_dn"     IO_TYPE=LVCMOS33 PULLMODE=NONE DRIVE=16; # same on ULX3S and ULX4M
+LOCATE COMP "usb_fpga_bd_d"   SITE "F4";  IOBUF PORT "usb_fpga_bd_d"   IO_TYPE=LVCMOS33 PULLMODE=NONE DRIVE=4;  # single-ended bidirectional same on ULX3S and ULX4M
+LOCATE COMP "usb_fpga_pu_d"   SITE "F5";  IOBUF PORT "usb_fpga_pu_d"   IO_TYPE=LVCMOS33 PULLMODE=NONE DRIVE=16; # pull up/down control
+LOCATE COMP "usb_fpga_bd_dn"  SITE "E3";  IOBUF PORT "usb_fpga_bd_dn"  IO_TYPE=LVCMOS33 PULLMODE=NONE DRIVE=4;  # single-ended bidirectional same on ULX3S and ULX4M
+LOCATE COMP "usb_fpga_pu_dn"  SITE "E5";  IOBUF PORT "usb_fpga_pu_dn"  IO_TYPE=LVCMOS33 PULLMODE=NONE DRIVE=16;
+LOCATE COMP "usb_fpga_otg_id" SITE "D9";  IOBUF PORT "usb_fpga_otg_id" IO_TYPE=LVCMOS33 PULLMODE=UP   DRIVE=4;
+LOCATE COMP "n_extrst"        SITE "U16"; IOBUF PORT "n_extrst"        IO_TYPE=LVCMOS33 PULLMODE=UP   DRIVE=4;
 
 LOCATE COMP "usb_fpga_dn" SITE "B6";    IOBUF  PORT "usb_fpga_dn"    IO_TYPE=LVCMOS33 PULLMODE=NONE DRIVE=16; # same on ULX3S and ULX4M
 LOCATE COMP "usb_fpga_bd_dn" SITE "E3"; IOBUF  PORT "usb_fpga_bd_dn" IO_TYPE=LVCMOS33 PULLMODE=NONE DRIVE=4;  # single-ended bidirectional same on ULX3S and ULX4M

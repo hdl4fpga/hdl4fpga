@@ -40,9 +40,9 @@ architecture graphics of ulx4m_ls is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant io_link      : io_comms     := io_ipoe;
+	constant io_link      : io_comms     := io_usb;
 	constant sdram_speed  : sdram_speeds := sdram225MHz;
-	constant video_mode   : video_modes  := mode1440p24bpp30;
+	constant video_mode   : video_modes  := mode600p24bpp;
 	--------------------------------------
 
 	constant video_params : video_record := videoparam(
@@ -65,6 +65,7 @@ architecture graphics of ulx4m_ls is
 	constant byte_size  : natural := sdram_d'length/sdram_dqm'length;
 	constant coln_size  : natural := 9;
 	constant gear       : natural := 1;
+	constant usb_oversampling : natural := 3;
 
 	signal ctlr_clk     : std_logic;
 	signal sdrsys_rst   : std_logic;
@@ -115,6 +116,8 @@ begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
+		io_link      => io_link,
+		clkio_freq   => 12.0e6*real(usb_oversampling),
 		clkref_freq  => clk25mhz_freq,
 		default_gear => video_gear,
 		video_params => video_params)
@@ -192,6 +195,50 @@ begin
 			uart_sout => ftdi_rxd);
 
 		ftdi_txden <= '1';
+	end generate;
+
+	usb_g : if io_link=io_usb generate
+		signal tp : std_logic_vector(1 to 32);
+		constant uart_freq : real := 
+			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk25mhz_freq/
+			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
+
+		signal usb_cken : std_logic;
+	begin
+
+		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
+		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
+		usb_fpga_dp    <= 'Z'; -- when up='0' else '0';
+		usb_fpga_dn    <= 'Z'; -- when up='0' else '0';
+		usb_fpga_bd_dp <= 'Z'; -- when up='0' else '0';
+		usb_fpga_bd_dn <= 'Z'; -- when up='0' else '0';
+
+		sio_clk  <= videoio_clk;
+
+		usb_e : entity hdl4fpga.sio_dayusb
+		generic map (
+			usb_oversampling => usb_oversampling)
+		port map (
+			tp        => tp,
+			usb_clk   => videoio_clk,
+			usb_cken  => usb_cken,
+			usb_dp    => usb_fpga_dp,
+			usb_dn    => usb_fpga_dn,
+
+			sio_clk   => sio_clk,
+			si_frm    => si_frm,
+			si_irdy   => si_irdy,
+			si_trdy   => si_trdy,
+			si_end    => si_end,
+			si_data   => si_data,
+	
+			so_frm    => so_frm,
+			so_irdy   => so_irdy,
+			so_trdy   => so_trdy,
+			so_data   => so_data);
+
+		led(7) <= usb_fpga_dp;
+		led(6) <= usb_fpga_dn;
 	end generate;
 
 	ipoe_e : if io_link=io_ipoe generate

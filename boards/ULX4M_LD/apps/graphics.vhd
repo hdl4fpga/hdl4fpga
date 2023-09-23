@@ -260,6 +260,8 @@ begin
 			so_trdy   => so_trdy,
 			so_data   => so_data);
 
+		led(7) <= usb_fpga_dp;
+		led(6) <= usb_fpga_dn;
 	end generate;
 
 	ipoe_e : if io_link=io_ipoe generate
@@ -377,6 +379,7 @@ begin
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
 		debug        => debug, -- true,
+		ena_burstref => false,
 		profile      => 2,
 		phy_latencies => ecp5g4_latencies,
 
