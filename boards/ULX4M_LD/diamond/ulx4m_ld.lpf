@@ -4,12 +4,12 @@ BLOCK INTERCLOCKDOMAIN PATHS;
 
 ## ULX4M-LD v0.0.1
 
-#BANK 0 VCCIO 3.3 V;
-#BANK 1 VCCIO 3.3 V;
+BANK 0 VCCIO 3.3 V;
+BANK 1 VCCIO 3.3 V;
 BANK 2 VCCIO 1.35 V;
 BANK 3 VCCIO 1.35 V;
-#BANK 6 VCCIO 3.3 V;
-#BANK 7 VCCIO 3.3 V;
+BANK 6 VCCIO 3.3 V;
+BANK 7 VCCIO 3.3 V;
 
 # ################## #
 # JTAG and SPI FLASH #
@@ -146,11 +146,11 @@ LOCATE COMP "ddram_dq[5]"    SITE "M19"; IOBUF PORT "ddram_dq[5]"   IO_TYPE=SSTL
 LOCATE COMP "ddram_dq[6]"    SITE "N18"; IOBUF PORT "ddram_dq[6]"   IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_3_VREF"; # Group 53
 LOCATE COMP "ddram_dq[7]"    SITE "N17"; IOBUF PORT "ddram_dq[7]"   IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_3_VREF"; # Group 53
 
-# LOCATE COMP "ddram_dm[0]"    SITE "L18"; IOBUF PORT "ddram_dm[0]"    IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_3_VREF"; # Proposed Group 53 PAD to comply
-LOCATE COMP "ddram_dm[0]"    SITE "F16"; IOBUF PORT "ddram_dm[0]"    IO_TYPE=SSTL135_I SLEWRATE=FAST; # Group 17. It should be n Group 53 to comply 
+#LOCATE COMP "ddram_dm[0]"    SITE "L18"; IOBUF PORT "ddram_dm[0]"    IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_3_VREF"; # Proposed Group 53 PAD to comply
+LOCATE COMP "ddram_dm[0]"    SITE "F16"; IOBUF PORT "ddram_dm[0]"   IO_TYPE=SSTL135_I SLEWRATE=FAST; # Group 17. It should be n Group 53 to comply 
 
 LOCATE VREF "BANK_2_VREF" SITE "D20" ;
-LOCATE COMP "ddram_dqs[1]"   SITE "G19"; IOBUF PORT "ddram_dqs[1]"  IO_TYPE=SSTL135D_I SLEWRATE=FAST DIFFRESISTOR=100 TERMINATION=OFF; # Group 41
+LOCATE COMP "ddram_dqs[1]"   SITE "G19"; IOBUF PORT "ddram_dqs[1]"   IO_TYPE=SSTL135D_I SLEWRATE=FAST DIFFRESISTOR=100 TERMINATION=OFF; # Group 41
 
 LOCATE COMP "ddram_dq[8]"    SITE "J19"; IOBUF PORT "ddram_dq[8]"    IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_2_VREF"; # Group 41
 LOCATE COMP "ddram_dq[9]"    SITE "C20"; IOBUF PORT "ddram_dq[9]"    IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_2_VREF"; # Group 41
@@ -161,8 +161,8 @@ LOCATE COMP "ddram_dq[13]"   SITE "K19"; IOBUF PORT "ddram_dq[13]"   IO_TYPE=SST
 LOCATE COMP "ddram_dq[14]"   SITE "E19"; IOBUF PORT "ddram_dq[14]"   IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_2_VREF"; # Group 41
 LOCATE COMP "ddram_dq[15]"   SITE "G20"; IOBUF PORT "ddram_dq[15]"   IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_2_VREF"; # Group 41
 
-# LOCATE COMP "ddram_dm[1]"    SITE "K18"; IOBUF PORT "ddram_dm[1]"    IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_2_VREF"; # Proposed Group 41 PAD to comply
-LOCATE COMP "ddram_dm[1]"    SITE "U16"; IOBUF PORT "ddram_dm[1]"   IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_2_VREF"; # Group 89. It should be n Group 41 to comply
+#LOCATE COMP "ddram_dm[1]"    SITE "K18"; IOBUF PORT "ddram_dm[1]"    IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_2_VREF"; # Proposed Group 41 PAD to comply
+LOCATE COMP "ddram_dm[1]"    SITE "U16"; IOBUF PORT "ddram_dm[1]"    IO_TYPE=SSTL135_I SLEWRATE=FAST VREF="BANK_2_VREF"; # Group 89. It should be n Group 41 to comply
 
 # ####### #
 # SD card #
@@ -235,5 +235,4 @@ LOCATE COMP "n_extrst"        SITE "U16"; IOBUF  PORT "n_extrst"        PULLMODE
 # # "power", "ram" sheet (connected from PCB v1.7.5)
 # # on PCB v1.7 shutdown is not connected to FPGA
 # 
-# LOCATE COMP "shutdown" SITE "G16"; # FPGA receives
-# IOBUF  PORT "shutdown" PULLMODE=DOWN IO_TYPE=LVCMOS33 DRIVE=4;
+LOCATE COMP "shutdown" SITE "G16"; IOBUF  PORT "shutdown" PULLMODE=DOWN IO_TYPE=LVCMOS33 DRIVE=4; # FPGA receives
