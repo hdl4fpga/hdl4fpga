@@ -209,18 +209,15 @@ begin
 	usb_g : if io_link=io_usb generate
 		signal tp : std_logic_vector(1 to 32);
 		constant uart_freq : real := 
-			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk25mhz_freq/
+			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk48MHz_freq/
 			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
 
 		signal usb_cken : std_logic;
 	begin
 
-		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
-		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
-		usb_fpga_dp    <= 'Z'; -- when up='0' else '0';
-		usb_fpga_dn    <= 'Z'; -- when up='0' else '0';
-		usb_fpga_bd_dp <= 'Z'; -- when up='0' else '0';
-		usb_fpga_bd_dn <= 'Z'; -- when up='0' else '0';
+		usb_pullup <= '1'; -- D+ pullup for USB1.1 device mode
+		usb_d_p    <= 'Z'; -- when up='0' else '0';
+		usb_d_n    <= 'Z'; -- when up='0' else '0';
 
 		sio_clk  <= videoio_clk;
 
@@ -231,8 +228,8 @@ begin
 			tp        => tp,
 			usb_clk   => videoio_clk,
 			usb_cken  => usb_cken,
-			usb_dp    => usb_fpga_dp,
-			usb_dn    => usb_fpga_dn,
+			usb_dp    => usb_d_p,
+			usb_dn    => usb_d_n,
 
 			sio_clk   => sio_clk,
 			si_frm    => si_frm,
@@ -246,8 +243,8 @@ begin
 			so_trdy   => so_trdy,
 			so_data   => so_data);
 
-		led(7) <= usb_fpga_dp;
-		led(6) <= usb_fpga_dn;
+		rgb_led0_r <= usb_d_p;
+		rgb_led0_g <= usb_d_n;
 	end generate;
 
 	assert io_link/=io_ipoe 
