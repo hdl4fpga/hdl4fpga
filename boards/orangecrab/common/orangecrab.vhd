@@ -37,14 +37,14 @@ entity orangecrab is
 		usr_btn         : in  std_logic := 'Z';
         rgb_led         : out std_logic_vector(3-1 downto 0);
         gpio            : inout std_logic_vector(14-1 downto 0);
-        gpio_a          : inout std_logic_vector( 4-1 downto 0);
+        gpio_a          : inout std_logic_vector( 6-1 downto 0);
 
 		usb_d_p         : inout std_logic := 'Z';
 		usb_d_n         : inout std_logic := 'Z';
 		usb_pullup      : inout std_logic := 'Z';
 
-		ddram_clk       : out std_logic;
 		ddram_reset_n   : out std_logic;
+		ddram_clk       : out std_logic;
 		ddram_cke       : out std_logic;
 		ddram_cs_n      : out std_logic;
 		ddram_ras_n     : out std_logic;
@@ -63,7 +63,9 @@ entity orangecrab is
     alias rgb_led0_g : std_logic is rgb_led(1);
     alias rgb_led0_b : std_logic is rgb_led(2);
 
-    alias gpio_mosi : std_logic is gpio(2);
-    alias gpio_miso : std_logic is gpio(3);
-    alias gpio_sck  : std_logic is gpio(4);
+    alias gpio_mosi  : std_logic is gpio(2);
+    alias gpio_miso  : std_logic is gpio(3);
+    alias gpio_sck   : std_logic is gpio(4);
+    alias gpio_sda   : std_logic is gpio(7);
+    alias gpio_scl   : std_logic is gpio(8);
 end;

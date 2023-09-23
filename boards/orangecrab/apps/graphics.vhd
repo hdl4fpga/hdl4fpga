@@ -43,7 +43,7 @@ architecture graphics of orangecrab is
 	-- Set your profile here             --
 	constant sdram_speed  : sdram_speeds := sdram400MHz;
 	constant video_mode   : video_modes  := mode600p24bpp;
-	constant io_link      : io_comms     := io_hdlc;
+	constant io_link      : io_comms     := io_usb;
 	constant baudrate     : natural      := setif(debug, 3e6, 115200);
 	-- Set your UART pinout here         --
 	alias uart_rxd : std_logic is gpio(0); -- input  data received by the FPGA
@@ -146,10 +146,12 @@ begin
 	sys_rst <= not rst_n;
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
+		io_link      => io_link,
+		clkio_freq   => 12.0e6*real(usb_oversampling),
 		clkref_freq => clk48MHz_freq,
 		video_params => video_params)
 	port map (
-		clk_ref     => '0', --clk_48MHz,
+		clk_ref     => clk_48MHz,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
 		video_shift_clk => video_shift_clk,
@@ -341,8 +343,8 @@ begin
 	process (clk_48MHz)
 	begin
 		if rising_edge(clk_48MHz) then
-			rgb_led <= (others => '1');
-			rgb_led0_g <= not sdrphy_locked;
+			-- rgb_led <= (others => '1');
+			rgb_led0_b <= not sdrphy_locked;
 		end if;
 	end process;
 

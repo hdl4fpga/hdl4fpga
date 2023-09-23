@@ -19,7 +19,6 @@ MICRON__ddr2 = $(LIB_MICRON)/ddr2/_primary.dat
 IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
 HDL4FPGA__tx_manchester = $(LIB_HDL4FPGA)/tx_manchester/_primary.dat
 HDL4FPGA__rx_manchester = $(LIB_HDL4FPGA)/rx_manchester/_primary.dat
-HDL4FPGA__sio_dayusb = $(LIB_HDL4FPGA)/sio_dayusb/_primary.dat
 HDL4FPGA__usbdev = $(LIB_HDL4FPGA)/usbdev/_primary.dat
 HDL4FPGA__usbfltr_sof = $(LIB_HDL4FPGA)/usbfltr_sof/_primary.dat
 HDL4FPGA__uart_rx = $(LIB_HDL4FPGA)/uart_rx/_primary.dat
@@ -33,6 +32,7 @@ HDL4FPGA__ecp5_profiles = $(LIB_HDL4FPGA)/ecp5_profiles/_primary.dat
 HDL4FPGA__ecp5_videopll = $(LIB_HDL4FPGA)/ecp5_videopll/_primary.dat
 HDL4FPGA__ecp5_sdrampll = $(LIB_HDL4FPGA)/ecp5_sdrampll/_primary.dat
 HDL4FPGA__hdlc_link = $(LIB_HDL4FPGA)/hdlc_link/_primary.dat
+HDL4FPGA__sio_dayusb = $(LIB_HDL4FPGA)/sio_dayusb/_primary.dat
 HDL4FPGA__link_mii = $(LIB_HDL4FPGA)/link_mii/_primary.dat
 HDL4FPGA__app_graphics = $(LIB_HDL4FPGA)/app_graphics/_primary.dat
 HDL4FPGA__latency = $(LIB_HDL4FPGA)/latency/_primary.dat
@@ -75,18 +75,19 @@ WORK__testbench__ecp3versa_graphics = $(LIB_WORK)/testbench/ecp3versa_graphics.d
 WORK__testbench__ml509_graphics = $(LIB_WORK)/testbench/ml509_graphics.dat
 WORK__testbench__s3estarter_graphics = $(LIB_WORK)/testbench/s3estarter_graphics.dat
 WORK__testbench__ulx3s_serdebug = $(LIB_WORK)/testbench/ulx3s_serdebug.dat
-WORK__testbench__ulx4mls_graphics = $(LIB_WORK)/testbench/ulx4mls_graphics.dat
-WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
-WORK__testbench__orangecrab_graphics = $(LIB_WORK)/testbench/orangecrab_graphics.dat
 WORK__testbench__serlzr = $(LIB_WORK)/testbench/serlzr.dat
 WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
 WORK__testbench__usbfrwk = $(LIB_WORK)/testbench/usbfrwk.dat
+WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
+WORK__testbench__ulx4mls_graphics = $(LIB_WORK)/testbench/ulx4mls_graphics.dat
+WORK__testbench__orangecrab_graphics = $(LIB_WORK)/testbench/orangecrab_graphics.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__s3estarter_structure_md = $(LIB_WORK)/s3estarter_structure_md/_primary.dat
 WORK__s3estarter_graphics_md = $(LIB_WORK)/s3estarter_graphics_md/_primary.dat
 WORK__s3estarter = $(LIB_WORK)/s3estarter/_primary.dat
 WORK__orangecrab_graphics_structure_md = $(LIB_WORK)/orangecrab_graphics_structure_md/_primary.dat
 WORK__orangecrab_graphics_md = $(LIB_WORK)/orangecrab_graphics_md/_primary.dat
+WORK__orangecrab__graphics = $(LIB_WORK)/orangecrab/graphics.dat
 WORK__orangecrab = $(LIB_WORK)/orangecrab/_primary.dat
 WORK__nuhs3adsp_graphics_md = $(LIB_WORK)/nuhs3adsp_graphics_md/_primary.dat
 WORK__nuhs3adsp_graphic_structure_md = $(LIB_WORK)/nuhs3adsp_graphic_structure_md/_primary.dat
@@ -131,18 +132,19 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__testbench__ml509_graphics) \
     $(WORK__testbench__s3estarter_graphics) \
     $(WORK__testbench__ulx3s_serdebug) \
-    $(WORK__testbench__ulx4mls_graphics) \
-    $(WORK__testbench__ulx4mld_graphics) \
-    $(WORK__testbench__orangecrab_graphics) \
     $(WORK__testbench__serlzr) \
     $(WORK__testbench__ulx3s_graphics) \
     $(WORK__testbench__usbfrwk) \
+    $(WORK__testbench__ulx4mld_graphics) \
+    $(WORK__testbench__ulx4mls_graphics) \
+    $(WORK__testbench__orangecrab_graphics) \
     $(WORK__testbench) \
     $(WORK__s3estarter_structure_md) \
     $(WORK__s3estarter_graphics_md) \
     $(WORK__s3estarter) \
     $(WORK__orangecrab_graphics_structure_md) \
     $(WORK__orangecrab_graphics_md) \
+    $(WORK__orangecrab__graphics) \
     $(WORK__orangecrab) \
     $(WORK__nuhs3adsp_graphics_md) \
     $(WORK__nuhs3adsp_graphic_structure_md) \
@@ -212,7 +214,31 @@ $(WORK__orangecrab) : ../../boards/orangecrab/common/orangecrab.vhd \
 		$(ECP5U__components) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/orangecrab/common/orangecrab.vhd
+	$(VCOM) -2002  ../../boards/orangecrab/common/orangecrab.vhd
+
+$(WORK__orangecrab__graphics) : ../../boards/orangecrab/apps/graphics.vhd \
+		$(HDL4FPGA__ecp5_sdrphy) \
+		$(HDL4FPGA__app_graphics) \
+		$(HDL4FPGA__sio_dayusb) \
+		$(HDL4FPGA__hdlc_link) \
+		$(HDL4FPGA__ecp5_sdrampll) \
+		$(HDL4FPGA__ecp5_videopll) \
+		$(WORK__orangecrab) \
+		$(IEEE__std_logic_arith) \
+		$(ECP5U__components) \
+		$(HDL4FPGA__ecp5_profiles) \
+		$(HDL4FPGA__app_profiles) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__sdram_param) \
+		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__base) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002  ../../boards/orangecrab/apps/graphics.vhd
 
 $(WORK__s3estarter) : ../../boards/s3estarter/common/s3estarter.vhd \
 		$(STD__textio) \
@@ -224,6 +250,24 @@ $(WORK__testbench) : testbench.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 testbench.vhd
+
+$(WORK__orangecrab_graphics_md) \
+$(WORK__orangecrab_graphics_structure_md) \
+$(WORK__testbench__orangecrab_graphics) : ../../boards/orangecrab/testbenches/graphics.vhd \
+		$(VERILOG__vl_types) \
+		$(MICRON__ddr3) \
+		$(IEEE__std_logic_arith) \
+		$(ECP5U__components) \
+		$(WORK__orangecrab) \
+		$(WORK__hdlc_tb) \
+		$(WORK__testbench) \
+		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__ipoepkg) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(HDL4FPGA__base)
+	$(VCOM) -2002 ../../boards/orangecrab/testbenches/graphics.vhd
 
 $(WORK__testbench__usbfrwk) : usbfrwk.vhd \
 		$(HDL4FPGA__usbdev) \
@@ -244,24 +288,6 @@ $(WORK__testbench__serlzr) : serlzr.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 serlzr.vhd
-
-$(WORK__orangecrab_graphics_md) \
-$(WORK__orangecrab_graphics_structure_md) \
-$(WORK__testbench__orangecrab_graphics) : ../../boards/orangecrab/testbenches/graphics.vhd \
-		$(VERILOG__vl_types) \
-		$(MICRON__ddr3) \
-		$(IEEE__std_logic_arith) \
-		$(ECP5U__components) \
-		$(WORK__orangecrab) \
-		$(WORK__hdlc_tb) \
-		$(WORK__testbench) \
-		$(HDL4FPGA__ethpkg) \
-		$(HDL4FPGA__ipoepkg) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164) \
-		$(HDL4FPGA__base)
-	$(VCOM) -2002 ../../boards/orangecrab/testbenches/graphics.vhd
 
 $(WORK__testbench__ulx3s_serdebug) : ../../boards/ULX3S/testbenches/ser_debug.vhd \
 		$(HDL4FPGA__ethpkg) \
@@ -427,8 +453,6 @@ $(WORK__ulx3s__ser_debug) : ../../boards/ULX3S/apps/ser_debug.vhd \
 $(WORK__testbench__ulx3s_graphics) \
 $(WORK__ulx3s_graphics_md) \
 $(WORK__ulx3s_graphics_structure_md) : ../../boards/ULX3S/testbenches/graphics.vhd \
-		$(WORK__mt48lc32m16a2) \
-		$(WORK__mt48lc32m16a2) \
 		$(WORK__ipoe_tb) \
 		$(WORK__usb_tb) \
 		$(WORK__hdlc_tb) \
@@ -457,6 +481,7 @@ $(WORK__ulx4m_ld__graphics) : ../../boards/ULX4M_LD/apps/graphics.vhd \
 		$(HDL4FPGA__app_graphics) \
 		$(HDL4FPGA__link_mii) \
 		$(HDL4FPGA__latency) \
+		$(HDL4FPGA__sio_dayusb) \
 		$(HDL4FPGA__hdlc_link) \
 		$(HDL4FPGA__ecp5_sdrampll) \
 		$(HDL4FPGA__ecp5_videopll) \
@@ -488,6 +513,7 @@ $(WORK__ulx4m_ls__graphics) : ../../boards/ULX4M_LS/apps/graphics.vhd \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__app_graphics) \
 		$(HDL4FPGA__link_mii) \
+		$(HDL4FPGA__sio_dayusb) \
 		$(HDL4FPGA__hdlc_link) \
 		$(HDL4FPGA__ecp5_sdrampll) \
 		$(HDL4FPGA__ecp5_videopll) \
@@ -530,8 +556,6 @@ $(WORK__ulx4mld_graphics_structure_md) : ../../boards/ULX4M_LD/testbenches/graph
 $(WORK__testbench__ulx4mls_graphics) \
 $(WORK__ulx4mls_graphics_md) \
 $(WORK__ulx4mls_graphics_structure_md) : ../../boards/ULX4M_LS/testbenches/graphics.vhd \
-		$(WORK__mt48lc32m16a2) \
-		$(WORK__mt48lc32m16a2) \
 		$(WORK__ipoe_tb) \
 		$(WORK__hdlc_tb) \
 		$(VERILOG__vl_types) \
