@@ -199,10 +199,6 @@ begin
 
 	usb_g : if io_link=io_usb generate
 		signal tp : std_logic_vector(1 to 32);
-		constant uart_freq : real := 
-			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk25mhz_freq/
-			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
-
 		signal usb_cken : std_logic;
 	begin
 
