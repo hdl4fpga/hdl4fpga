@@ -193,10 +193,15 @@ LOCATE COMP "gpdi_d[1]" SITE "D18"; IOBUF PORT "gpdi_d[1]" IO_TYPE=SSTL135D_I SL
 LOCATE COMP "gpdi_d[2]" SITE "C18"; IOBUF PORT "gpdi_d[2]" IO_TYPE=SSTL135D_I SLEWRATE=FAST; # Red +
 LOCATE COMP "gpdi_d[3]" SITE "J20"; IOBUF PORT "gpdi_d[3]" IO_TYPE=SSTL135D_I SLEWRATE=FAST; # Clock +
 
-LOCATE COMP "gpdi_d[4]" SITE "B9";  IOBUF PORT "gpdi_d[4]" IO_TYPE=LVDS25E DRIVE=4; # Blue +
-LOCATE COMP "gpdi_d[5]" SITE "A7";  IOBUF PORT "gpdi_d[5]" IO_TYPE=LVDS25E DRIVE=4; # Green +
-LOCATE COMP "gpdi_d[6]" SITE "C8";  IOBUF PORT "gpdi_d[6]" IO_TYPE=LVDS25E DRIVE=4; # Red +
-LOCATE COMP "gpdi_d[7]" SITE "B11"; IOBUF PORT "gpdi_d[7]" IO_TYPE=LVDS25E DRIVE=4; # Clock +
+#LOCATE COMP "gpdi_d[4]" SITE "B9";  IOBUF PORT "gpdi_d[4]" IO_TYPE=LVDS25E DRIVE=4; # Blue +
+#LOCATE COMP "gpdi_d[5]" SITE "A7";  IOBUF PORT "gpdi_d[5]" IO_TYPE=LVDS25E DRIVE=4; # Green +
+#LOCATE COMP "gpdi_d[6]" SITE "C8";  IOBUF PORT "gpdi_d[6]" IO_TYPE=LVDS25E DRIVE=4; # Red +
+#LOCATE COMP "gpdi_d[7]" SITE "B11"; IOBUF PORT "gpdi_d[7]" IO_TYPE=LVDS25E DRIVE=4; # Clock +
+
+LOCATE COMP "gpdi_d[4]" SITE "B9";  IOBUF PORT "gpdi_d[4]" IO_TYPE=LVCMOS33D DRIVE=4; # Blue +
+LOCATE COMP "gpdi_d[5]" SITE "A7";  IOBUF PORT "gpdi_d[5]" IO_TYPE=LVCMOS33D DRIVE=4; # Green +
+LOCATE COMP "gpdi_d[6]" SITE "C8";  IOBUF PORT "gpdi_d[6]" IO_TYPE=LVCMOS33D DRIVE=4; # Red +
+LOCATE COMP "gpdi_d[7]" SITE "B11"; IOBUF PORT "gpdi_d[7]" IO_TYPE=LVCMOS33D DRIVE=4; # Clock +
 
 # ########## #
 # Second USB #
@@ -204,13 +209,14 @@ LOCATE COMP "gpdi_d[7]" SITE "B11"; IOBUF PORT "gpdi_d[7]" IO_TYPE=LVDS25E DRIVE
 
 # port "US2" going directly into FPGA "usb", "ram" sheet
 
-LOCATE COMP "usb_fpga_d"      SITE "A6";  IOBUF  PORT "usb_fpga_dp"     PULLMODE=NONE IO_TYPE=LVCMOS33D DRIVE=16; # same on ULX3S and ULX4M
-LOCATE COMP "usb_fpga_bd_dp"  SITE "F4";  IOBUF  PORT "usb_fpga_bd_dp"  PULLMODE=NONE IO_TYPE=LVCMOS33  DRIVE=4;  # single-ended bidirectional same on ULX3S and ULX4M
-LOCATE COMP "usb_fpga_bd_dn"  SITE "E3";  IOBUF  PORT "usb_fpga_bd_dn"  PULLMODE=NONE IO_TYPE=LVCMOS33  DRIVE=4;  # single-ended bidirectional same on ULX3S and ULX4M
-LOCATE COMP "usb_fpga_pu_dp"  SITE "F5";  IOBUF  PORT "usb_fpga_pu_dp"  PULLMODE=NONE IO_TYPE=LVCMOS33  DRIVE=16; # pull up/down control
-LOCATE COMP "usb_fpga_pu_dn"  SITE "E5";  IOBUF  PORT "usb_fpga_pu_dn"  PULLMODE=NONE IO_TYPE=LVCMOS33  DRIVE=16;
-LOCATE COMP "usb_fpga_otg_id" SITE "D9";  IOBUF  PORT "usb_fpga_otg_id" PULLMODE=UP   IO_TYPE=LVCMOS33  DRIVE=4;
-LOCATE COMP "n_extrst"        SITE "U16"; IOBUF  PORT "n_extrst"        PULLMODE=UP   IO_TYPE=LVCMOS33  DRIVE=4;
+LOCATE COMP "usb_fpga_dp"     SITE "A6";  IOBUF  PORT "usb_fpga_dp"     PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=16; # same on ULX3S and ULX4M
+LOCATE COMP "usb_fpga_dn"     SITE "B6";  IOBUF  PORT "usb_fpga_dn"     PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=16; # same on ULX3S and ULX4M
+LOCATE COMP "usb_fpga_bd_dp"  SITE "F4";  IOBUF  PORT "usb_fpga_bd_dp"  PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;  # single-ended bidirectional same on ULX3S and ULX4M
+LOCATE COMP "usb_fpga_bd_dn"  SITE "E3";  IOBUF  PORT "usb_fpga_bd_dn"  PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;  # single-ended bidirectional same on ULX3S and ULX4M
+LOCATE COMP "usb_fpga_pu_dp"  SITE "F5";  IOBUF  PORT "usb_fpga_pu_dp"  PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=16; # pull up/down control
+LOCATE COMP "usb_fpga_pu_dn"  SITE "E5";  IOBUF  PORT "usb_fpga_pu_dn"  PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=16;
+LOCATE COMP "usb_fpga_otg_id" SITE "D9";  IOBUF  PORT "usb_fpga_otg_id" PULLMODE=UP   IO_TYPE=LVCMOS33 DRIVE=4;
+LOCATE COMP "n_extrst"        SITE "U16"; IOBUF  PORT "n_extrst"        PULLMODE=UP   IO_TYPE=LVCMOS33 DRIVE=4;
 
 # # ######## #
 # # PROGRAMN #

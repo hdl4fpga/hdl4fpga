@@ -41,13 +41,13 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------
 	-- Set your profile here             --
-	constant io_link      : io_comms     := io_ipoe;
+	constant io_link      : io_comms     := io_usb;
 	constant sdram_speed  : sdram_speeds := sdram400MHz;
-	-- constant video_mode   : video_modes  := mode600p24bpp;
+	constant video_mode   : video_modes  := mode600p24bpp;
 	-- constant video_mode   : video_modes  := mode720p24bpp;
 	-- constant video_mode   : video_modes  := mode900p24bpp;
 	-- constant video_mode   : video_modes  := mode1080p24bpp30;
-	constant video_mode   : video_modes  := mode1080p24bpp;
+	-- constant video_mode   : video_modes  := mode1080p24bpp;
 	-- constant video_mode   : video_modes  := mode1440p24bpp30;
 	---------------------------------------
 
@@ -71,6 +71,7 @@ architecture graphics of ulx4m_ld is
 	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
 	constant coln_size   : natural := 10;
 	constant sdram_gear  : natural := 4;
+	constant usb_oversampling : natural := 3;
 
 	signal sys_rst       : std_logic;
 
@@ -148,6 +149,8 @@ begin
 	sys_rst <= '0';
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
+		io_link      => io_link,
+		clkio_freq   => 12.0e6*real(usb_oversampling),
 		clkref_freq  => clk25mhz_freq,
 		default_gear => video_gear,
 		video_params => video_params)
@@ -159,7 +162,6 @@ begin
 		video_eclk  => video_eclk,
 		video_lck   => video_lck);
 
-		led(7) <= video_lck;
 	sdrampll_e  : entity hdl4fpga.ecp5_sdrampll
 	generic map (
 		gear         => sdram_gear,
@@ -216,6 +218,48 @@ begin
 			uart_sout => ftdi_rxd);
 
 		ftdi_txden <= '1';
+	end generate;
+
+	usb_g : if io_link=io_usb generate
+		signal tp : std_logic_vector(1 to 32);
+		constant uart_freq : real := 
+			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk25mhz_freq/
+			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
+
+		signal usb_cken : std_logic;
+	begin
+
+		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
+		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
+		usb_fpga_dp    <= 'Z'; -- when up='0' else '0';
+		usb_fpga_dn    <= 'Z'; -- when up='0' else '0';
+		usb_fpga_bd_dp <= 'Z'; -- when up='0' else '0';
+		usb_fpga_bd_dn <= 'Z'; -- when up='0' else '0';
+
+		sio_clk  <= videoio_clk;
+
+		usb_e : entity hdl4fpga.sio_dayusb
+		generic map (
+			usb_oversampling => usb_oversampling)
+		port map (
+			tp        => tp,
+			usb_clk   => videoio_clk,
+			usb_cken  => usb_cken,
+			usb_dp    => usb_fpga_dp,
+			usb_dn    => usb_fpga_dn,
+
+			sio_clk   => sio_clk,
+			si_frm    => si_frm,
+			si_irdy   => si_irdy,
+			si_trdy   => si_trdy,
+			si_end    => si_end,
+			si_data   => si_data,
+	
+			so_frm    => so_frm,
+			so_irdy   => so_irdy,
+			so_trdy   => so_trdy,
+			so_data   => so_data);
+
 	end generate;
 
 	ipoe_e : if io_link=io_ipoe generate
@@ -332,15 +376,12 @@ begin
 
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
-		ena_burstref  => false,
-		-- debug        => true,
-		debug        => debug,
+		debug        => debug, -- true,
 		profile      => 2,
 		phy_latencies => ecp5g4_latencies,
 
-		sdram_tcp      => 2.0*sdram_tcp,
-		-- mark         => MT41K8G107,
-		mark         => MT41K8G125,
+		sdram_tcp    => 2.0*sdram_tcp,
+		mark         => MT41K8G125, -- MT41K8G107,
 		gear         => sdram_gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,
@@ -426,7 +467,6 @@ begin
 	begin
 		if rising_edge(clk_25mhz) then
 			led(0) <= sdrphy_locked;
-			-- led(7 downto 1) <= tp_phy(1 to 7);
 		end if;
 	end process;
 
@@ -580,16 +620,16 @@ begin
 			di  => dvid_crgb,
 			do  => crgb);
 
-    	hdmi_i : entity hdl4fpga.ecp5_ogbx
-       	generic map (
-    		mem_mode  => false,
-    		lfbt_frst => false,
-    		interlace => true,
+		hdmi_i : entity hdl4fpga.ecp5_ogbx
+	   	generic map (
+			mem_mode  => false,
+			lfbt_frst => false,
+			interlace => true,
 			size      => hdmi0_gpdi'length,
-    		gear      => video_gear)
-       	port map (
-    		eclk      => video_eclk,
-    		sclk      => video_shift_clk,
+			gear      => video_gear)
+	   	port map (
+			eclk      => video_eclk,
+			sclk      => video_shift_clk,
 			d         => crgb,
 			q         => hdmi0_gpdi);
 	end generate;

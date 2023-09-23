@@ -42,7 +42,8 @@ entity ulx4m_ld is
 		sd_wp           : in  std_logic := '-';
 		sd_cdn          : in  std_logic := '-'; -- card detect not connected
 
-		usb_fpga_d      : inout std_logic := 'Z';
+		usb_fpga_dp     : inout std_logic := 'Z';
+		usb_fpga_dn     : inout std_logic := 'Z';
 		usb_fpga_bd_dp  : inout std_logic := 'Z';
 		usb_fpga_bd_dn  : inout std_logic := 'Z';
 		usb_fpga_pu_dp  : inout std_logic := 'Z';
