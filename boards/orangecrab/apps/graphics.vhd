@@ -28,6 +28,7 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.sdram_param.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
@@ -254,8 +255,18 @@ begin
 		ena_burstref  => false,
 		debug        => debug,
 		profile      => 2,
-		phy_latencies => ecp5g4_latencies,
-
+		phy_latencies => (
+			STRL   =>  0,
+			DQSL   =>  4*1-2+0, -- orangecrab
+			DQSZL  =>  4*1+0+0,
+			DQZL   =>  4*1+0+0,
+			WWNL   =>  4*1-4+0,
+			STRXL  =>  0,
+			DQSZXL =>  2,
+			DQSXL  =>  2,
+			DQZXL  =>  0,
+			WWNXL  =>  2,
+			WIDL   =>  4),
 		sdram_tcp      => 2.0*sdram_tcp,
 		-- mark         => MT41K8G107,
 		mark         => MT41K8G125,

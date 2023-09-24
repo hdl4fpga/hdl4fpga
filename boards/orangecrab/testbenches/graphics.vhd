@@ -45,7 +45,7 @@ architecture orangecrab_graphics of testbench is
     		usr_btn         : in  std_logic := 'Z';
             rgb_led         : out std_logic_vector(3-1 downto 0);
             gpio            : inout std_logic_vector(14-1 downto 0);
-            gpio_a          : inout std_logic_vector( 4-1 downto 0);
+            gpio_a          : inout std_logic_vector( 6-1 downto 0);
 
     		usb_d_p         : inout std_logic := 'Z';
     		usb_d_n         : inout std_logic := 'Z';
