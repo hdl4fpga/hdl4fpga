@@ -8,10 +8,3 @@ DIGILENT Nexys2
        * 16 MB fast Micron PSDRAM
        * 16 MB Intel StrataFlash Flash 
        * VGA, PS/2, and serial ports
-
-
-
-
-
-
-

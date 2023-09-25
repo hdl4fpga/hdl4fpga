@@ -257,8 +257,8 @@ begin
 			so_trdy   => so_trdy,
 			so_data   => so_data);
 
-		led(7) <= usb_fpga_dp;
-		led(6) <= usb_fpga_dn;
+		-- led(7) <= usb_fpga_dp;
+		-- led(6) <= usb_fpga_dn;
 	end generate;
 
 	ipoe_e : if io_link=io_ipoe generate
@@ -376,7 +376,7 @@ begin
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
 		debug        => debug, -- true,
-		ena_burstref => false,
+		ena_burstref => true,
 		profile      => 2,
 		phy_latencies => (
 			STRL   =>  0,
@@ -407,6 +407,7 @@ begin
 		blue_length  => 8,
 		fifo_size    => mem_size)
 	port map (
+		tp => tp,
 		sin_clk      => sio_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,
@@ -432,7 +433,6 @@ begin
 		ctlr_wrl     => sdram_params.wrl,
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
-		ctlr_inirdy  => tp(1),
 
 		ctlrphy_wlreq => ctlrphy_wlreq,
 		ctlrphy_wlrdy => ctlrphy_wlrdy,
@@ -476,7 +476,8 @@ begin
 	process (clk_25mhz)
 	begin
 		if rising_edge(clk_25mhz) then
-			led(0) <= sdrphy_locked;
+			
+			led <= reverse(tp(1 to 8));
 		end if;
 	end process;
 
@@ -571,20 +572,20 @@ begin
 		sys_sti    => ctlrphy_sto,
 		sys_sto    => ctlrphy_sti,
 
-		sdram_rst    => ddram_reset_n,
-		sdram_clk    => ddram_clk,
-		sdram_cke    => ddram_cke,
-		sdram_cs     => ddram_cs_n,
-		sdram_ras    => ddram_ras_n,
-		sdram_cas    => ddram_cas_n,
-		sdram_we     => ddram_we_n,
-		sdram_odt    => ddram_odt,
-		sdram_b      => ddram_ba,
-		sdram_a      => ddram_a,
+		sdram_rst  => ddram_reset_n,
+		sdram_clk  => ddram_clk,
+		sdram_cke  => ddram_cke,
+		sdram_cs   => ddram_cs_n,
+		sdram_ras  => ddram_ras_n,
+		sdram_cas  => ddram_cas_n,
+		sdram_we   => ddram_we_n,
+		sdram_odt  => ddram_odt,
+		sdram_b    => ddram_ba,
+		sdram_a    => ddram_a,
 
-		sdram_dm     => open,
-		sdram_dq     => ddram_dq,
-		sdram_dqs    => ddram_dqs,
+		sdram_dm   => open,
+		sdram_dq   => ddram_dq,
+		sdram_dqs  => ddram_dqs,
 		tp         => tp_phy);
 	ddram_dm <= (others => '0');
 
@@ -656,9 +657,5 @@ begin
 			q1       := not q1;
 		end if;
 	end process;
-
-	tp(2) <= not (ctlrphy_wlreq xor ctlrphy_wlrdy);
-	tp(3) <= not (ctlrphy_rlreq xor ctlrphy_rlrdy);
-	tp(4) <= ctlrphy_ini;
 
 end;

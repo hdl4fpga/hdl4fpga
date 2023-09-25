@@ -1,6 +1,6 @@
-Basic block to create USB devices.
+Basic block to create USB devices
 
-the core named **usbdev* is a bidirectional link
+the core named usbdev is a bidirectional link
 
 Notes
 -----

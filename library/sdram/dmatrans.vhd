@@ -38,6 +38,7 @@ entity dmatrans is
 		addr_size      : natural;
 		coln_size      : natural);
 	port (
+		tp             : out std_logic_vector(1 to 32);
 		dmatrans_clk   : in  std_logic;
 		dmatrans_req   : in  std_logic;
 		dmatrans_rdy   : buffer std_logic;
@@ -87,6 +88,7 @@ architecture def of dmatrans is
 	signal refreq       : std_logic;
 begin
 
+	tp(1) <= refreq;
 	process (
 		ctlr_alat,
 		ctlr_inirdy,

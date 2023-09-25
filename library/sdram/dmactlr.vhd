@@ -37,6 +37,7 @@ entity dmactlr is
 		coln_size    : natural);
 	port (
 
+		tp           : out std_logic_vector(1 to 32);
 		devcfg_clk   : in  std_logic;
 		devcfg_req   : in  std_logic_vector;
 		devcfg_rdy   : buffer std_logic_vector;
@@ -215,6 +216,7 @@ begin
 		addr_size     => addr_size,
 		coln_size     => coln_size)
 	port map (
+		tp             => tp,
 		dmatrans_clk   => ctlr_clk,
 		dmatrans_req   => dmatrans_req,
 		dmatrans_rdy   => dmatrans_rdy,

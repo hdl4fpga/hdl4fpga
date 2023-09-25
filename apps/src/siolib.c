@@ -490,6 +490,7 @@ int usb_rcvd(char *buffer, int maxlen)
 		} else if (!transferred) {
 			for (req.tv_sec = 0, req.tv_nsec = 1e3; nanosleep(&req, &rem) && errno == EINTR; req = rem);
 			if (retry++ > 64) {
+				if (LOG0) fprintf(stderr, "to many retries\n");
 				return -1;
 			}
 		} else {
