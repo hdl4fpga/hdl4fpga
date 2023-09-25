@@ -41,7 +41,7 @@ architecture graphics of ulx4m_ls is
 	--------------------------------------
 	--     Set your profile here        --
 	constant io_link      : io_comms     := io_usb;
-	constant sdram_speed  : sdram_speeds := sdram225MHz;
+	constant sdram_speed  : sdram_speeds := sdram200MHz;
 	constant video_mode   : video_modes  := mode600p24bpp;
 	--------------------------------------
 

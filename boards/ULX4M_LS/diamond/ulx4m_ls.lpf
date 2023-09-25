@@ -81,9 +81,9 @@ LOCATE COMP "sd_pwr_on" SITE "E15"; IOBUF PORT "sd_pwr_on" PULLMODE=NONE IO_TYPE
 
 LOCATE COMP "usb_fpga_dp"     SITE "A6";  IOBUF PORT "usb_fpga_dp"     IO_TYPE=LVCMOS33 PULLMODE=NONE DRIVE=16; # same on ULX3S and ULX4M
 LOCATE COMP "usb_fpga_dn"     SITE "B6";  IOBUF PORT "usb_fpga_dn"     IO_TYPE=LVCMOS33 PULLMODE=NONE DRIVE=16; # same on ULX3S and ULX4M
-LOCATE COMP "usb_fpga_bd_d"   SITE "F4";  IOBUF PORT "usb_fpga_bd_d"   IO_TYPE=LVCMOS33 PULLMODE=NONE DRIVE=4;  # single-ended bidirectional same on ULX3S and ULX4M
-LOCATE COMP "usb_fpga_pu_d"   SITE "F5";  IOBUF PORT "usb_fpga_pu_d"   IO_TYPE=LVCMOS33 PULLMODE=NONE DRIVE=16; # pull up/down control
+LOCATE COMP "usb_fpga_bd_dp"  SITE "F4";  IOBUF PORT "usb_fpga_bd_d"   IO_TYPE=LVCMOS33 PULLMODE=NONE DRIVE=4;  # single-ended bidirectional same on ULX3S and ULX4M
 LOCATE COMP "usb_fpga_bd_dn"  SITE "E3";  IOBUF PORT "usb_fpga_bd_dn"  IO_TYPE=LVCMOS33 PULLMODE=NONE DRIVE=4;  # single-ended bidirectional same on ULX3S and ULX4M
+LOCATE COMP "usb_fpga_pu_dp"  SITE "F5";  IOBUF PORT "usb_fpga_pu_dp"  IO_TYPE=LVCMOS33 PULLMODE=NONE DRIVE=16; # pull up/down control
 LOCATE COMP "usb_fpga_pu_dn"  SITE "E5";  IOBUF PORT "usb_fpga_pu_dn"  IO_TYPE=LVCMOS33 PULLMODE=NONE DRIVE=16;
 LOCATE COMP "usb_fpga_otg_id" SITE "D9";  IOBUF PORT "usb_fpga_otg_id" IO_TYPE=LVCMOS33 PULLMODE=UP   DRIVE=4;
 LOCATE COMP "n_extrst"        SITE "U16"; IOBUF PORT "n_extrst"        IO_TYPE=LVCMOS33 PULLMODE=UP   DRIVE=4;
@@ -266,8 +266,7 @@ LOCATE COMP "dsiRX1_d[1]" SITE "E4";  IOBUF PORT "dsiRX1_d[1]"  IO_TYPE=LVDS DIF
 # ######################################################### #
 
 # on PCB v1.7 shutdown is not connected to FPGA
-LOCATE COMP "shutdown" SITE "U20"; # FPGA receives
-IOBUF  PORT "shutdown" PULLMODE=DOWN IO_TYPE=LVCMOS33 DRIVE=4;
+LOCATE COMP "shutdown" SITE "U20"; IOBUF  PORT "shutdown" PULLMODE=DOWN IO_TYPE=LVCMOS33 DRIVE=4; # FPGA receives
 
 # ################## #
 # JTAG and SPI FLASH #
