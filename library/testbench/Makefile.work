@@ -24,8 +24,8 @@ HDL4FPGA__hdlcdll_rx = $(LIB_HDL4FPGA)/hdlcdll_rx/_primary.dat
 HDL4FPGA__eth_tb = $(LIB_HDL4FPGA)/eth_tb/_primary.dat
 HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
 MICRON__ddr_model = $(LIB_MICRON)/ddr_model/_primary.dat
-MICRON__ddr2 = $(LIB_MICRON)/ddr2/_primary.dat
 IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
+MICRON__ddr2 = $(LIB_MICRON)/ddr2/_primary.dat
 HDL4FPGA__tx_manchester = $(LIB_HDL4FPGA)/tx_manchester/_primary.dat
 HDL4FPGA__rx_manchester = $(LIB_HDL4FPGA)/rx_manchester/_primary.dat
 HDL4FPGA__usbdev = $(LIB_HDL4FPGA)/usbdev/_primary.dat
@@ -79,7 +79,6 @@ WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
 WORK__testbench__manchester = $(LIB_WORK)/testbench/manchester.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
-WORK__testbench__arty_graphics = $(LIB_WORK)/testbench/arty_graphics.dat
 WORK__testbench__ecp3versa_graphics = $(LIB_WORK)/testbench/ecp3versa_graphics.dat
 WORK__testbench__ml509_graphics = $(LIB_WORK)/testbench/ml509_graphics.dat
 WORK__testbench__s3estarter_graphics = $(LIB_WORK)/testbench/s3estarter_graphics.dat
@@ -90,6 +89,7 @@ WORK__testbench__usbfrwk = $(LIB_WORK)/testbench/usbfrwk.dat
 WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
 WORK__testbench__orangecrab_graphics = $(LIB_WORK)/testbench/orangecrab_graphics.dat
 WORK__testbench__ulx4mls_graphics = $(LIB_WORK)/testbench/ulx4mls_graphics.dat
+WORK__testbench__arty_graphics = $(LIB_WORK)/testbench/arty_graphics.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__s3estarter_structure_md = $(LIB_WORK)/s3estarter_structure_md/_primary.dat
 WORK__s3estarter_graphics_md = $(LIB_WORK)/s3estarter_graphics_md/_primary.dat
@@ -137,7 +137,6 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__ulx3s) \
     $(WORK__testbench__manchester) \
     $(WORK__testbench__nuhs3adsp_graphics) \
-    $(WORK__testbench__arty_graphics) \
     $(WORK__testbench__ecp3versa_graphics) \
     $(WORK__testbench__ml509_graphics) \
     $(WORK__testbench__s3estarter_graphics) \
@@ -148,6 +147,7 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__testbench__ulx4mld_graphics) \
     $(WORK__testbench__orangecrab_graphics) \
     $(WORK__testbench__ulx4mls_graphics) \
+    $(WORK__testbench__arty_graphics) \
     $(WORK__testbench) \
     $(WORK__s3estarter_structure_md) \
     $(WORK__s3estarter_graphics_md) \
@@ -289,6 +289,23 @@ $(WORK__testbench) : testbench.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 testbench.vhd
 
+$(WORK__arty_graphics_md) \
+$(WORK__arty_graphics_structure_md) \
+$(WORK__testbench__arty_graphics) : ../../boards/arty/testbenches/graphics.vhd \
+		$(VERILOG__vl_types) \
+		$(MICRON__ddr3) \
+		$(WORK__arty) \
+		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__ipoepkg) \
+		$(WORK__ipoe_tb) \
+		$(WORK__testbench) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(HDL4FPGA__base) \
+		$(STD__textio)
+	$(VCOM) -2002  ../../boards/arty/testbenches/graphics.vhd
+
 $(WORK__orangecrab_graphics_md) \
 $(WORK__orangecrab_graphics_structure_md) \
 $(WORK__testbench__orangecrab_graphics) : ../../boards/orangecrab/testbenches/graphics.vhd \
@@ -387,23 +404,6 @@ $(WORK__testbench__ecp3versa_graphics) : ../../boards/ecp3versa/testbenches/grap
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 ../../boards/ecp3versa/testbenches/graphics.vhd
-
-$(WORK__arty_graphics_md) \
-$(WORK__arty_graphics_structure_md) \
-$(WORK__testbench__arty_graphics) : ../../boards/arty/testbenches/graphics.vhd \
-		$(VERILOG__vl_types) \
-		$(MICRON__ddr3) \
-		$(WORK__arty) \
-		$(HDL4FPGA__ethpkg) \
-		$(HDL4FPGA__ipoepkg) \
-		$(WORK__ipoe_tb) \
-		$(WORK__testbench) \
-		$(IEEE__std_logic_textio) \
-		$(IEEE__numeric_std) \
-		$(IEEE__std_logic_1164) \
-		$(HDL4FPGA__base) \
-		$(STD__textio)
-	$(VCOM) -2002 ../../boards/arty/testbenches/graphics.vhd
 
 $(WORK__nuhs3adsp_graphic_structure_md) \
 $(WORK__nuhs3adsp_graphics_md) \
