@@ -732,7 +732,7 @@ begin
 		end generate;
 		
 		assert wr_fifo and gear/=4
-		report "direct write fifo unfinished"
+		report boolean'image(wr_fifo) & " : " & integer'image(gear) & " : " & "direct write fifo unfinished"
 		severity FAILURE;
 
 		no_wrfifo_g : if not wr_fifo generate
