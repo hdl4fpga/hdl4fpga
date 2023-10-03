@@ -177,7 +177,7 @@ begin
 
 	du_e : arty
 	generic map (
-		debug => true)
+		debug => false)
 	port map (
 		sw          => "0000",
 

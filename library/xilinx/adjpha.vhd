@@ -63,7 +63,7 @@ architecture beh of adjpha is
 
 begin
 
-	process(clk)
+	process(trail, edge, clk)
 
 		constant num_of_taps  : natural := setif(taps < 2**delay'length-1, taps, 2**delay'length-1);
 		constant num_of_steps : natural := unsigned_num_bits(num_of_taps);
