@@ -328,7 +328,7 @@ architecture arch of sdram_mpu is
 				end if;
 			end loop;
 			assert false
-			report ">>>select_latword<<< latency register is invalid"
+			report "select_latword : latency register '" & to_string(lat_val) & "' is invalid"
 			severity failure;
 			return val;
 		end;
