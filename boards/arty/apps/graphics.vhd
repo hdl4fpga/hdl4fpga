@@ -709,7 +709,6 @@ begin
     		DQZXL  =>  0,
     		WWNXL  =>  0,
     		WIDL   =>  4),
-		ena_burstref => false,
 		dvid_fifo    => true,
 		timing_id    => videoparam(video_mode).timing,
 		video_gear   => video_gear,
@@ -820,7 +819,7 @@ begin
 		device      => xc7a,
 		taps        => natural(floor(sdram_tcp/((gclk100_per/2.0)/(32.0*2.0))))-1,
 		dqs_highz   => false,
-		bufio       => false,
+		bufio       => true,
 		bypass      => false,
 		wr_fifo     => true)
 		-- dqs_delay => (0 to 0 => 1.35 ns),
