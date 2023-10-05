@@ -289,6 +289,7 @@ architecture graphics of arty is
 	-- Select link --
 	-----------------
 
+	constant bufiog     : boolean  := true;
 	constant io_link    : io_comms := profile_tab(app_profile).comms;
 
 begin
@@ -410,15 +411,29 @@ begin
 			clkout3          => ddr_clk90_mmce2,
 			locked           => locked);
 
-		ddr_clk0x2_bufg : bufio
-		port map (
-			i => ddr_clk0x2_mmce2,
-			o => ddr_clk0x2);
+		bufio_g : if bufiog generate
+    		ddr_clk0x2_bufg : bufio
+    		port map (
+    			i => ddr_clk0x2_mmce2,
+    			o => ddr_clk0x2);
 
-		ddr_clk90x2_bufg : bufio
-		port map (
-			i => ddr_clk90x2_mmce2,
-			o => ddr_clk90x2);
+    		ddr_clk90x2_bufg : bufio
+    		port map (
+    			i => ddr_clk90x2_mmce2,
+    			o => ddr_clk90x2);
+		end generate;
+
+		bufg_g : if not bufiog generate
+    		ddr_clk0x2_bufg : bufg
+    		port map (
+    			i => ddr_clk0x2_mmce2,
+    			o => ddr_clk0x2);
+
+    		ddr_clk90x2_bufg : bufg
+    		port map (
+    			i => ddr_clk90x2_mmce2,
+    			o => ddr_clk90x2);
+		end generate;
 
 		ddr_clk0_bufg : bufg
 		port map (
@@ -819,7 +834,7 @@ begin
 		device      => xc7a,
 		taps        => natural(floor(sdram_tcp/((gclk100_per/2.0)/(32.0*2.0))))-1,
 		dqs_highz   => false,
-		bufio       => true,
+		bufio       => bufiog,
 		bypass      => false,
 		wr_fifo     => true)
 		-- dqs_delay => (0 to 0 => 1.35 ns),
