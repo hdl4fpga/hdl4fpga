@@ -653,7 +653,7 @@ begin
 				'1'           when    status_rw='0' else
 				sodata_irdy;
 
-			tp(1 to 5) <= (meta_end, siodmaio_end, status_rw, sodata_end, ctlr_refreq );
+			tp(1 to 7) <= (meta_end, siodmaio_end, status_rw, acktx_irdy, acktx_trdy, sodata_end, ctlr_refreq );
 
 			sout_end  <=
 				'0' when     meta_end='0' else
