@@ -150,10 +150,12 @@ int main (int argc, char *argv[])
 
 	bool h;
 	bool u;
+	bool s;
 
+	s = false;
 	h = false;
 	u = false;
-	for (int c = getopt (argc, argv, "lh:u:"); c != -1; c = getopt (argc, argv, "lh:u:")) {
+	for (int c = getopt (argc, argv, "lh:u:d"); c != -1; c = getopt (argc, argv, "lh:u:")) {
 		switch (c) {
 		case 'l':
 			sio_setloglevel(8|4|2|1);
@@ -169,6 +171,9 @@ int main (int argc, char *argv[])
 				sscanf(optarg,  "%hx%c%hx%c%hhx", &vendor, &colon, &product, &dot, &endp);
 				u = true;
 			}
+			break;
+		case 'd':
+			s = true;
 			break;
 		case '?':
 			exit(1);
@@ -209,6 +214,7 @@ int main (int argc, char *argv[])
 			seq_fill(wr_buffer, length);
 			sio_memwrite(address, wr_buffer, length);
 			sio_memread (address, rd_buffer, length);
+			if (s) getchar();
 
 			for(int i = 0; i < length; i += sizeof(lfsr_word)) {
 				lfsr_word data_rd;
