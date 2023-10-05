@@ -66,6 +66,7 @@ architecture graphics of ulx4m_ld is
 		real(sdram_params.pll.clki_div*sdram_params.pll.clkop_div)/
 		(real(sdram_params.pll.clkos_div*sdram_params.pll.clkfb_div)*clk25mhz_freq);
 
+	constant ba_latency  : natural := 1;
 	constant bank_size   : natural := ddram_ba'length;
 	constant addr_size   : natural := ddram_a'length;
 	constant word_size   : natural := ddram_dq'length;
@@ -379,17 +380,17 @@ begin
 		ena_burstref => true,
 		profile      => 2,
 		phy_latencies => (
-			STRL   =>  0,
-			DQSL   =>  4*1-2+2, -- ulx4ld
-			DQSZL  =>  4*1+0+2,
-			DQZL   =>  4*1+0+2,
-			WWNL   =>  4*1-4+2,
-			STRXL  =>  0,
-			DQSZXL =>  2,
-			DQSXL  =>  2,
-			DQZXL  =>  0,
-			WWNXL  =>  2,
-			WIDL   =>  4),
+			STRL   => 0,
+			DQSL   => 4*ba_latency-2+2,
+			DQSZL  => 4*ba_latency+0+2,
+			DQZL   => 4*ba_latency+0+2,
+			WWNL   => 4*ba_latency-4+2,
+			STRXL  => 0,
+			DQSZXL => 2,
+			DQSXL  => 2,
+			DQZXL  => 0,
+			WWNXL  => 2,
+			WIDL   => 4),
 		sdram_tcp    => 2.0*sdram_tcp,
 		mark         => MT41K8G125, -- MT41K8G107,
 		gear         => sdram_gear,
@@ -527,7 +528,7 @@ begin
 		word_size  => word_size,
 		byte_size  => byte_size,
 		gear       => sdram_gear,
-		ba_latency => 1,
+		ba_latency => ba_latency,
 		rd_fifo    => false,
 		wr_fifo    => true,
 		bypass     => false,

@@ -142,6 +142,7 @@ architecture graphics of orangecrab is
 	signal ms_pause      : std_logic;
 	signal ddrdel        : std_logic;
 
+	constant ba_latency : natural := 1;
 begin
 
 	sys_rst <= not rst_n;
@@ -252,22 +253,22 @@ begin
 
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
-		ena_burstref  => false,
+		ena_burstref => false,
 		debug        => debug,
 		profile      => 2,
 		phy_latencies => (
-			STRL   =>  0,
-			DQSL   =>  4*1-2+0, -- orangecrab
-			DQSZL  =>  4*1+0+0,
-			DQZL   =>  4*1+0+0,
-			WWNL   =>  4*1-4+0,
-			STRXL  =>  0,
-			DQSZXL =>  2,
-			DQSXL  =>  2,
-			DQZXL  =>  0,
-			WWNXL  =>  2,
-			WIDL   =>  4),
-		sdram_tcp      => 2.0*sdram_tcp,
+			STRL   => 0,
+			DQSL   => 4*ba_latency-2+0,
+			DQSZL  => 4*ba_latency+0+0,
+			DQZL   => 4*ba_latency+0+0,
+			WWNL   => 4*ba_latency-4+0,
+			STRXL  => 0,
+			DQSZXL => 2,
+			DQSXL  => 2,
+			DQZXL  => 0,
+			WWNXL  => 2,
+			WIDL   => 4),
+		sdram_tcp    => 2.0*sdram_tcp,
 		-- mark         => MT41K8G107,
 		mark         => MT41K8G125,
 		gear         => sdram_gear,
@@ -405,7 +406,7 @@ begin
 		word_size    => word_size,
 		byte_size    => byte_size,
 		gear         => sdram_gear,
-		ba_latency   => 1,
+		ba_latency   => ba_latency,
 		rd_fifo      => false,
 		wr_fifo      => true,
 		bypass       => false,
