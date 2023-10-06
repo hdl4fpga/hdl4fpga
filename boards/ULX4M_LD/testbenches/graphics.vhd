@@ -120,6 +120,7 @@ architecture ulx4mld_graphics of testbench is
 			odt     : in std_logic);
 	end component;
 
+	constant usb_freq     : real := 12.0e6;
 	constant snd_data : std_logic_vector := 
 		x"01007e" &
 		x"18ff"   &
@@ -132,7 +133,10 @@ architecture ulx4mld_graphics of testbench is
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
 		x"1702_0000ff_1603_0000_0000";
-	constant req_data : std_logic_vector := x"010000_1702_0000ff_1603_8000_0000";
+	-- constant req_data : std_logic_vector := x"010000_1702_0000ff_1603_8000_0000";
+	constant req_data  : std_logic_vector :=
+		x"010008_1702_0003ff_1603_8000_0000";
+
 
 	signal rst_n      : std_logic;
 	signal cke        : std_logic;
@@ -167,10 +171,14 @@ architecture ulx4mld_graphics of testbench is
 	signal gmii_txen  : std_logic;
 	signal gmii_txd   : std_logic_vector(0 to 8-1);
 
+	signal usb_fpga_dp : std_logic;
+	signal usb_fpga_dn : std_logic;
+
 	signal ftdi_txd   : std_logic;
 	signal ftdi_rxd   : std_logic;
 
 	signal uart_clk   : std_logic := '0';
+	signal usb_clk     : std_logic := '0';
 
 	signal rst        : std_logic;
 	signal xtal       : std_logic := '0';
@@ -178,9 +186,10 @@ architecture ulx4mld_graphics of testbench is
 	signal txc : std_logic;
 begin
 
-	rst      <= '1', '0' after 17.5 us when debug else '1', '0' after 100 us;
+	rst      <= '1', '0' after 17.5 us when debug else '1', '0' after 10 us;
 	xtal     <= not xtal after 20 ns;
 	uart_clk <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
+	usb_clk <= not usb_clk after 1 sec/(2.0*usb_freq);
 
 	hdlctb_e : entity work.hdlc_tb
 	generic map (
@@ -194,6 +203,22 @@ begin
 		uart_clk  => uart_clk,
 		uart_sin  => ftdi_rxd,
 		uart_sout => ftdi_txd);
+
+	usb_fpga_dp <= 'H';
+	usb_fpga_dn <= 'L';
+
+	usbtb_e : entity work.usb_tb
+	generic map (
+		debug   => debug,
+		-- payload_segments => (0 => snd_data'length, 1 => req_data'length),
+		-- payload   => snd_data & req_data)
+		payload_segments => (0 => req_data'length),
+		payload   => req_data)
+	port map (
+		rst     => rst,
+		usb_clk => usb_clk,
+		usb_dp  => usb_fpga_dp,
+		usb_dn  => usb_fpga_dn);
 
     ipoetb_e : entity work.ipoe_tb
 	generic map (
@@ -229,13 +254,15 @@ begin
 
 	du_e : ulx4m_ld
 	generic map (
-		debug => debug)
-		-- debug => true)
+		-- debug => debug)
+		debug => true)
 	port map (
 		clk_25mhz    => xtal,
 		btn(1)       => '0',
 		btn(2 to 3)  => (others => '-'),
 
+		usb_fpga_dp => usb_fpga_dp,
+		usb_fpga_dn => usb_fpga_dn,
 		eth_resetn   => open,
 		eth_mdc      => open,
 		rgmii_tx_clk => rgmii_txc,

@@ -645,7 +645,7 @@ begin
 					so_end    => sodata_end,
 					so_data   => sodata_data);
 
-			tp(1 to 8) <= (acktx_irdy, acktx_trdy, meta_end, siodmaio_end, status_rw, fifo_frm, fifo_irdy, fifo_trdy);
+			tp(1 to 8) <= (acktx_irdy, acktx_trdy, meta_end, siodmaio_end, status_rw, fifo_frm, dmaso_irdy, dmaso_trdy);
 			end block;
 
 			sout_irdy <=
