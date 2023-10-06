@@ -4,7 +4,7 @@
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="strategy1">
-        <Options def_top="hdl4fpga.sio_usb">
+        <Options def_top="hdl4fpga.phy_rl">
             <Option name="include path" value="../../../../../../../opt/diamond/3.11_x64/ispfpga/sa5p00/data"/>
             <Option name="lib" value="hdl4fpga"/>
             <Option name="top" value="ulx4m_ld"/>
@@ -364,9 +364,6 @@
             <Options/>
         </Source>
         <Source name="../../../library/sio/sio_dayusb.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/sio/sio_usb.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/latticesemi/ecp5/mem_sync.v" type="Verilog" type_short="Verilog">

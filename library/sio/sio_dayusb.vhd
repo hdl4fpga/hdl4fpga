@@ -162,7 +162,7 @@ begin
 	begin
 		dst_trdy <= usb_cken and not usb_txbs;
 		process (usbtx_frm, usb_clk)
-			variable q : std_logic;
+			variable q : std_logic := '0';
 		begin
 			if rising_edge(usb_clk) then
 				if usbtx_frm='1' then

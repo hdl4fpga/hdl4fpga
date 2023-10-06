@@ -52,17 +52,31 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/usb_g/usb_e/so_data
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/dmactlr_b/dmactlr_e/ctlr_refreq
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/dmaso_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/dmaso_trdy
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/fifo_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/fifo_trdy
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/sodata_e/low_cntr
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/sodata_e/high_cntr
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_trdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_end
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/sout_clk
+add wave -noupdate /testbench/du_e/graphics_e/sout_frm
+add wave -noupdate /testbench/du_e/graphics_e/sout_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sout_trdy
+add wave -noupdate /testbench/du_e/graphics_e/sout_end
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {86432930 ps} 0}
+WaveRestoreCursors {{Cursor 1} {271463410 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 214
 configure wave -valuecolwidth 178
@@ -78,4 +92,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {85366460 ps} {87007100 ps}
+WaveRestoreZoom {0 ps} {630 us}
