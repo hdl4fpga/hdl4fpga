@@ -206,6 +206,7 @@ int main (int argc, char *argv[])
 
 	seq_init();
 	length  = 1*1024;
+	// length  = 1*96;
 	gettimeofday(&start_time, NULL);
 	for(int pass = 1; pass < 2 || 0; pass++) {
 		for (address = 0; address < MAX_ADDRESS; address += length) {
