@@ -87,7 +87,10 @@ architecture def of usb_tb is
 	signal usb_rxdv      : std_logic := '0';
 	signal usb_rxbs      : std_logic;
 	signal usb_rxd       : std_logic;
-	signal usb_cfgd      : std_logic;
+
+	signal req           : std_logic := '0';
+	signal rdy           : std_logic := '0';
+	signal rdy1          : std_logic := '0';
 
 begin
 
@@ -96,7 +99,7 @@ begin
 		variable total   : natural;
 		variable addr    : natural;
 	begin
-		if usb_cfgd='0' then
+		if (rdy xor req)='0' then
 			hdlctx_frm <= '0';
 			hdlctx_end <= '0';
 			addr       := 0;
@@ -118,11 +121,11 @@ begin
 			elsif segment < payload_segments'length then
 				if segment > 0 then
 					if hdlctx_trdy='1' then
-						if debug then
-							wait for 5 us;
-						else
-							wait for 100 us;
-						end if;
+						-- if debug then
+							-- wait for 5 us;
+						-- else
+							-- wait for 100 us;
+						-- end if;
 						hdlctx_frm <= '0';
 						hdlctx_end <= '0';
 						total   := total + payload_segments(segment);
@@ -133,7 +136,9 @@ begin
 					total   := total + payload_segments(segment);
 					segment := segment + 1;
 				end if;
-			else
+			elsif slzrtx_irdy='0' then
+				rdy <= req;
+				rdy1 <= req;
 				hdlctx_data <= (others => '-');
 			end if;
 
@@ -154,25 +159,28 @@ begin
 		uart_trdy   => usbtx_trdy,
 		uart_data   => usbtx_data);
 
-	process (usb_clk)
+	piddata_e : block
 	begin
-		if rising_edge(usb_clk) then
-			if hdlctx_frm='0' then
-				srctx_sel <= '0';
-			elsif srctx_trdy='1' then
-				srctx_sel <= '1';
+		process (usb_clk)
+		begin
+			if rising_edge(usb_clk) then
+				if hdlctx_frm='0' then
+					srctx_sel <= '0';
+				elsif srctx_trdy='1' then
+					srctx_sel <= '1';
+				end if;
 			end if;
-		end if;
-	end process;
+		end process;
 
-	srctx_data <=
-		x"c3" when srctx_sel='0' else
-		reverse(usbtx_data);
-	usbtx_trdy <=
-		'0'	when srctx_sel='0' else
-		srctx_trdy;
+		srctx_data <=
+			x"c3" when srctx_sel='0' else
+			reverse(usbtx_data);
+		usbtx_trdy <=
+			'0'	when srctx_sel='0' else
+			srctx_trdy;
+	end block;
 
-	slzrtx_trdy <= usb_cfgd and not usb_txbs;
+	slzrtx_trdy <= (req xor rdy) and not usb_txbs;
 	txserlzr_e : entity hdl4fpga.serlzr
 	port map (
 		src_clk  => usb_clk,
@@ -223,12 +231,10 @@ begin
 			variable txen  : std_logic := '0';
 			variable txbs  : std_logic;
 			variable txd   : std_logic := '0';
-			variable q : std_logic;
 		begin
 			if rising_edge(clk) then
 				if rst='1' then
-					usb_cfgd <= '0';
-					q := '0';
+					req <= rdy;
 					txen := '0';
 					i     := 0;
 					j     := 0;
@@ -242,27 +248,19 @@ begin
 				elsif usb_txbs='0' then
 					txen := '0';
 					if idle='1' then
-						-- if  i < delays'length then
 						if  i < delays'length then
 							wait for delays(i);
 							right := right + length(i);
 							i     := i + 1;
 						else
-							usb_cfgd <= '1';
+							req <= not rdy;
 							-- wait;
 						end if;
 					end if;
 				end if;
 			end if;
-			if usb_cfgd='1' then
-				if usbtx_irdy='1' then
-					q := '1';
-				elsif slzrtx_irdy='0' then
-					q := '0';
-				end if;
-			end if;
 
-			if usb_cfgd='0' then
+			if (req xor rdy)='0' then
 				usb_txen <= txen;
 				usb_txd  <= txd;
 			else
@@ -270,7 +268,7 @@ begin
 				usb_txd  <= slzrtx_data(0);
 			end if;
 
-			wait on usb_cfgd, usbtx_irdy, slzrtx_irdy, slzrtx_data, clk;
+			wait on req, rdy, usbtx_irdy, slzrtx_irdy, slzrtx_data, clk;
 		end process;
 
 	  	host_e : entity hdl4fpga.usbphycrc
