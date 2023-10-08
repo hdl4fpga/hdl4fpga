@@ -127,6 +127,7 @@ begin
 						hdlctx_end <= '0';
 						total   := total + payload_segments(segment);
 						segment := segment + 1;
+						wait;
 					end if;
 				else
 					total   := total + payload_segments(segment);
@@ -241,6 +242,7 @@ begin
 				elsif usb_txbs='0' then
 					txen := '0';
 					if idle='1' then
+						-- if  i < delays'length then
 						if  i < delays'length then
 							wait for delays(i);
 							right := right + length(i);
