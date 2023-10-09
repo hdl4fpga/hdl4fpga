@@ -45,11 +45,19 @@ add wave -noupdate -group sdrphy_e -expand -group byte_g0 -radix hexadecimal /te
 add wave -noupdate -group sdrphy_e -expand -group byte_g0 -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrphy_i/sys_dqi
 add wave -noupdate -group sdrphy_e -expand -group byte_g0 -radix hexadecimal /testbench/du_e/sdrphy_e/byte_g(0)/sdrphy_i/sdram_dq
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/usbtb_e/dev_cfgd
+add wave -noupdate -radix hexadecimal /testbench/usbtb_e/hdlctx_data
+add wave -noupdate /testbench/usbtb_e/hdlctx_trdy
 add wave -noupdate /testbench/du_e/usb_g/usb_e/so_frm
 add wave -noupdate /testbench/du_e/usb_g/usb_e/so_irdy
 add wave -noupdate /testbench/du_e/usb_g/usb_e/so_trdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/usb_g/usb_e/so_data
+add wave -noupdate /testbench/usbtb_e/usb_txen
+add wave -noupdate /testbench/usbtb_e/usb_txbs
+add wave -noupdate /testbench/usbtb_e/usb_txd
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/usbtb_e/data_req
+add wave -noupdate /testbench/usbtb_e/data_rdy
 add wave -noupdate /testbench/du_e/graphics_e/dmactlr_b/dmactlr_e/ctlr_refreq
 add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/sdram_pgm_e/sdram_ref_req
 add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/sdram_pgm_e/sdram_ref_rdy
@@ -81,7 +89,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {89102389480 fs} 0}
+WaveRestoreCursors {{Cursor 1} {75950660 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 214
 configure wave -valuecolwidth 178
@@ -97,4 +105,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {73380823680 fs} {125880894080 fs}
+WaveRestoreZoom {68394 ns} {86769 ns}
