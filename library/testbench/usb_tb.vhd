@@ -93,10 +93,15 @@ architecture def of usb_tb is
 	signal cfg_txen      : std_logic := '0';
 	signal cfg_txd       : std_logic := '0';
 
-	signal data_req      : std_logic := '0';
-	signal data_rdy      : std_logic := '0';
-	signal data_txen     : std_logic := '0';
-	signal data_txd      : std_logic := '0';
+	signal indata_req    : std_logic := '0';
+	signal indata_rdy    : std_logic := '0';
+	signal indata_txen   : std_logic := '0';
+	signal indata_txd    : std_logic := '0';
+
+	signal outdata_req   : std_logic := '0';
+	signal outdata_rdy   : std_logic := '0';
+	signal outdata_txen  : std_logic := '0';
+	signal outdata_txd   : std_logic := '0';
 
 begin
 
@@ -105,7 +110,7 @@ begin
 		variable total   : natural;
 		variable addr    : natural;
 	begin
-		if (data_rdy xor data_req)='0' then
+		if (outdata_rdy xor outdata_req)='0' then
 			hdlctx_frm <= '0';
 			hdlctx_end <= '0';
 			addr       := 0;
@@ -139,11 +144,12 @@ begin
 				end if;
 			elsif slzrtx_irdy='0' then
 				wait for 3 us;
-				data_rdy <= data_req;
+				-- outdata_rdy <= outdata_req;
+				indata_req <= not indata_rdy;
 				hdlctx_data <= (others => '-');
 			end if;
-
 		end if;
+
 		wait on rst, usb_clk;
 	end process;
 
@@ -160,9 +166,60 @@ begin
 		uart_trdy   => usbtx_trdy,
 		uart_data   => usbtx_data);
 
-	piddata_e : block
+	indata_e : block
 	begin
 		process 
+			type time_vector is array (natural range <>) of time;
+			constant data   : std_logic_vector := 
+				reverse(x"691530",8)(0 to 19-1) &
+				reverse(x"d2",8);
+			constant length : natural_vector   := (19, 8);
+			constant delays : time_vector      := (5 us, 55 us);
+
+			variable right  : natural;
+			variable i      : natural;
+			variable j      : natural;
+		begin
+			if rising_edge(usb_clk) then
+				if dev_cfgd='0' then
+					indata_rdy <= indata_req;
+					indata_txen <= '0';
+					i     := 0;
+					j     := 0;
+					right := 0;
+				elsif (indata_req xor indata_rdy)='1' then
+    				if j < right then
+    					if usb_txbs='0' then
+    						indata_txen <= '1';
+    						indata_txd  <= data(j);
+    						j := j + 1;
+    					end if;
+    				elsif usb_txbs='0' then
+    					indata_txen <= '0';
+    					if usb_idle='1' then
+    						if  i < delays'length then
+    							wait for delays(i);
+    							right := right + length(i);
+    							i     := i + 1;
+    						else
+								indata_txen <= '0';
+								-- i     := 0;
+								-- j     := 0;
+								-- right := 0;
+    							-- indata_req <= not indata_rdy;
+    						end if;
+    					end if;
+    				end if;
+				end if;
+			end if;
+			wait on usb_clk;
+		end process;
+	end block;
+
+	outata_e : block
+		signal pid : std_logic_vector(0 to 8-1) := x"c3";
+	begin
+		process (usb_clk)
 			type time_vector is array (natural range <>) of time;
 			constant data   : std_logic_vector := reverse(x"e11530",8)(0 to 19-1);
 			constant length : natural_vector   := (0 => 19);
@@ -174,46 +231,53 @@ begin
 		begin
 			if rising_edge(usb_clk) then
 				if dev_cfgd='0' then
-					data_req  <= data_rdy;
-					data_txen <= '0';
+					outdata_req  <= outdata_rdy;
+					outdata_txen <= '0';
 					i     := 0;
 					j     := 0;
 					right := 0;
-				elsif j < right then
-						if usb_txbs='0' then
-							data_txen <= '1';
-							data_txd  <= data(j);
-							j := j + 1;
-						end if;
-				elsif usb_txbs='0' then
-					data_txen <= '0';
-					if usb_idle='1' then
-						if  i < delays'length then
-							wait for delays(i);
-							right := right + length(i);
-							i     := i + 1;
-						else
-							data_req <= not data_rdy;
-						end if;
-					end if;
+				elsif (outdata_req xor outdata_rdy)='0' then
+    				if j < right then
+    					if usb_txbs='0' then
+    						outdata_txen <= '1';
+    						outdata_txd  <= data(j);
+    						j := j + 1;
+    					end if;
+    				elsif usb_txbs='0' then
+    					outdata_txen <= '0';
+    					if usb_idle='1' then
+    						if  i < delays'length then
+    							right := right + length(i);
+    							i     := i + 1;
+    						else
+								outdata_txen <= '0';
+								i     := 0;
+								j     := 0;
+								right := 0;
+    							outdata_req <= not outdata_rdy;
+    						end if;
+    					end if;
+    				end if;
 				end if;
 			end if;
-			wait on usb_clk;
 		end process;
 
 		process (usb_clk)
+			variable npid : std_logic_vector(0 to 8-1) := x"c3";
 		begin
 			if rising_edge(usb_clk) then
 				if hdlctx_frm='0' then
 					srctx_sel <= '0';
+					pid <= npid;
 				elsif srctx_trdy='1' then
 					srctx_sel <= '1';
+					npid := pid xor x"88"; 
 				end if;
 			end if;
 		end process;
 
 		usbtx_trdy <= '0'	when srctx_sel='0' else srctx_trdy;
-		srctx_data <= x"c3" when srctx_sel='0' else reverse(usbtx_data);
+		srctx_data <= pid when srctx_sel='0' else reverse(usbtx_data);
 
 	end block;
 
@@ -292,7 +356,8 @@ begin
 
 	(usb_txen, usb_txd) <= 
 		std_logic_vector'(cfg_txen,  cfg_txd)  when dev_cfgd='0'                else
-		std_logic_vector'(data_txen, data_txd) when (data_req xor data_rdy)='0' else
+		std_logic_vector'(outdata_txen, outdata_txd) when (outdata_req xor outdata_rdy)='0' else
+		std_logic_vector'(indata_txen,  indata_txd)  when (indata_req  xor indata_rdy)='1' else
 		std_logic_vector'(slzrtx_irdy, slzrtx_data(0));
 
   	host_e : entity hdl4fpga.usbphycrc
