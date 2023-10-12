@@ -470,6 +470,7 @@ int usb_rcvd(char *buffer, int maxlen)
 	ptr = buffer;
 	retry =0;
 	esc = 0;
+	fprintf(stderr, "\nentre");
 	do {
 		int result;
 		int transferred;
@@ -478,19 +479,52 @@ int usb_rcvd(char *buffer, int maxlen)
 
 		for (req.tv_sec = 0, req.tv_nsec = 1e3; nanosleep(&req, &rem) && errno == EINTR; req = rem);
 
-		if (result = libusb_bulk_transfer(usbdev, usbendp | 0x80, ptr, maxlen-(ptr-buffer), &transferred, 0)) {
-			if (result == LIBUSB_ERROR_PIPE) {
-				fprintf(stderr, "READING PIPE ERROR\n");
-				libusb_clear_halt(usbdev, usbendp);
-				abort();
+
+		int len64; 
+		char *ptr64;
+		ptr64 = ptr;
+		transferred = 0;
+		int k = 0;
+		do {
+			len64 = maxlen-(ptr64-buffer);
+			if (len64 > 64) len64 = 64;
+
+			if (result = libusb_bulk_transfer(usbdev, usbendp | 0x80, ptr64, len64, &len64, 0)) {
+				if (result == LIBUSB_ERROR_PIPE) {
+					fprintf(stderr, "READING PIPE ERROR\n");
+					libusb_clear_halt(usbdev, usbendp);
+					abort();
+				} else {
+					fprintf(stderr, "Error in bulk transfer. Error code: %d\n", result);
+					abort();
+				}
 			} else {
-				fprintf(stderr, "Error in bulk transfer. Error code: %d\n", result);
-				abort();
+				fprintf (stderr, "\nk -----> %d, %d, %p, %d\n", k++, len64, ptr64, transferred);
+				for (int i = 0; i < len64; i++) {
+					fprintf (stderr, "%02hhx ", ptr64[i]);
+					if (i % 8 == 7) fprintf (stderr, "\n");
+				}
+				getchar();
+				ptr64 += len64;
+				transferred += len64;
 			}
-		} else if (!transferred) {
+		} while (len64 > 0);
+
+		// if (result = libusb_bulk_transfer(usbdev, usbendp | 0x80, ptr, maxlen-(ptr-buffer), &transferred, 0)) {
+			// if (result == LIBUSB_ERROR_PIPE) {
+				// fprintf(stderr, "READING PIPE ERROR\n");
+				// libusb_clear_halt(usbdev, usbendp);
+				// abort();
+			// } else {
+				// fprintf(stderr, "Error in bulk transfer. Error code: %d\n", result);
+				// abort();
+			// }
+		// } else 
+		if (!transferred) {
 			for (req.tv_sec = 0, req.tv_nsec = 1e3; nanosleep(&req, &rem) && errno == EINTR; req = rem);
 			if (retry++ > 64) {
 				if (LOG0) fprintf(stderr, "to many retries\n");
+	fprintf(stderr, "sali\n");
 				return -1;
 			}
 		} else {
@@ -526,6 +560,7 @@ int usb_rcvd(char *buffer, int maxlen)
 		if (LOG1) fprintf(stderr, "fcs 0x%04x", fcs);
 		if (LOG0 | LOG1) fputc('\n', stderr);
 		pkt_lost--;
+	fprintf(stderr, "sali\n");
 		return ptr-buffer;
 	}
 
@@ -539,6 +574,7 @@ int usb_rcvd(char *buffer, int maxlen)
 		delete_queue(print_queue);
 	}
 
+	fprintf(stderr, "sali\n");
 	return -1;
 }
 
