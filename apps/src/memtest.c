@@ -208,7 +208,7 @@ int main (int argc, char *argv[])
 	length  = 1*1024;
 	// length  = 1*96;
 	// length  = 1*32;
-	length  = 1*48;
+	// length  = 1*48;
 	gettimeofday(&start_time, NULL);
 	for(int pass = 1; pass < 2 || 0; pass++) {
 		for (address = 0; address < MAX_ADDRESS; address += length) {

@@ -907,7 +907,8 @@ begin
 						end if;
 					when data =>
 						if ctlr_do_dv(0)='0' then
-							gnt_dv := dev_gnt;
+							state := idle;
+							-- gnt_dv := dev_gnt;
 						elsif ctlr_di_dv='0' then
 							state := data;
 						end if;
