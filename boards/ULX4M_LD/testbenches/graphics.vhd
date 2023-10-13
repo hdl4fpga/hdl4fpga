@@ -135,8 +135,7 @@ architecture ulx4mld_graphics of testbench is
 		x"1702_0000ff_1603_0000_0000";
 	-- constant req_data : std_logic_vector := x"010000_1702_0000ff_1603_8000_0000";
 	constant req_data  : std_logic_vector :=
-		x"010008_1702_0003ff_1603_8000_0000";
-
+		x"010008_1702_00003f_1603_8000_0000";
 
 	signal rst_n      : std_logic;
 	signal cke        : std_logic;

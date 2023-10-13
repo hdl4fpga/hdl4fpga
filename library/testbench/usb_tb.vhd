@@ -174,7 +174,7 @@ begin
 				reverse(x"691530",8)(0 to 19-1) &
 				reverse(x"d2",8);
 			constant length : natural_vector   := (19, 8);
-			constant delays : time_vector      := (5 us, 55 us);
+			constant delays : time_vector      := (45 us, 45 us);
 
 			variable right  : natural;
 			variable i      : natural;
@@ -206,7 +206,7 @@ begin
 								-- i     := 0;
 								-- j     := 0;
 								-- right := 0;
-    							-- indata_req <= not indata_rdy;
+    							indata_rdy <= indata_req;
     						end if;
     					end if;
     				end if;
