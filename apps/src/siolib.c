@@ -470,7 +470,6 @@ int usb_rcvd(char *buffer, int maxlen)
 	ptr = buffer;
 	retry =0;
 	esc = 0;
-	// fprintf(stderr, "\nentre");
 	do {
 		int result;
 		int transferred;
@@ -520,12 +519,10 @@ int usb_rcvd(char *buffer, int maxlen)
 				fprintf(stderr, "Error in bulk transfer. Error code: %d\n", result);
 				abort();
 			}
-		} else 
-		if (!transferred) {
+		} else if (!transferred) {
 			for (req.tv_sec = 0, req.tv_nsec = 1e3; nanosleep(&req, &rem) && errno == EINTR; req = rem);
 			if (retry++ > 64) {
 				if (LOG0) fprintf(stderr, "to many retries\n");
-	// fprintf(stderr, "sali\n");
 				return -1;
 			}
 		} else {
@@ -561,7 +558,6 @@ int usb_rcvd(char *buffer, int maxlen)
 		if (LOG1) fprintf(stderr, "fcs 0x%04x", fcs);
 		if (LOG0 | LOG1) fputc('\n', stderr);
 		pkt_lost--;
-	// fprintf(stderr, "sali\n");
 		return ptr-buffer;
 	}
 
@@ -575,7 +571,6 @@ int usb_rcvd(char *buffer, int maxlen)
 		delete_queue(print_queue);
 	}
 
-	// fprintf(stderr, "sali\n");
 	return -1;
 }
 

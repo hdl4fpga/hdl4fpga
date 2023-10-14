@@ -159,6 +159,11 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv
 add wave -noupdate /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/dev_gnt(1)
+add wave -noupdate /testbench/du_e/graphics_e/dmactlr_b/burst_ref
+add wave -noupdate /testbench/du_e/graphics_e/dmactlr_b/line__891/state
+add wave -noupdate /testbench/du_e/graphics_e/ctlr_do_dv(0)
+add wave -noupdate /testbench/du_e/graphics_e/ctlr_di_dv
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
@@ -168,7 +173,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {52896031 ps} 0} {{Cursor 2} {52919780 ps} 0} {{Cursor 3} {29577892 ps} 0} {{Cursor 4} {38013100 ps} 0}
+WaveRestoreCursors {{Cursor 1} {52896031 ps} 0} {{Cursor 2} {38013100 ps} 0} {{Cursor 3} {29577892 ps} 0} {{Cursor 4} {38061131 ps} 0}
 quietly wave cursor active 4
 configure wave -namecolwidth 228
 configure wave -valuecolwidth 254
@@ -184,4 +189,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {37987947 ps} {38038253 ps}
+WaveRestoreZoom {37932894 ps} {38093306 ps}

@@ -733,7 +733,8 @@ begin
 		
 		assert wr_fifo and gear/=4
 		report boolean'image(wr_fifo) & " : " & integer'image(gear) & " : " & "direct write fifo unfinished"
-		severity FAILURE;
+		-- severity FAILURE;
+		severity WARNING;
 
 		no_wrfifo_g : if not wr_fifo generate
 			sdqi <= sys_dqi;

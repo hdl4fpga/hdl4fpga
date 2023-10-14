@@ -904,13 +904,20 @@ begin
 							state := data;
 						elsif ctlr_di_dv='1' then
 							state := data;
+						elsif dev_gnt=(dev_gnt'range => '0') then
+							state := data;
 						end if;
 					when data =>
 						if ctlr_do_dv(0)='0' then
-							state := idle;
-							-- gnt_dv := dev_gnt;
+							if dev_gnt=(dev_gnt'range => '0') then
+								state := idle;
+							else
+								state := active;
+							end if;
 						elsif ctlr_di_dv='0' then
-							state := data;
+							if dev_gnt=(dev_gnt'range => '0') then
+								state := idle;
+							end if;
 						end if;
 					when idle =>
 						if dev_gnt/=(dev_gnt'range => '0') then
