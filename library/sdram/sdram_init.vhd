@@ -918,8 +918,8 @@ begin
 					(tddr3_mod, sdram_latency(stdr, MODu)),
 					(tddr3_dll, sdram_latency(stdr, cDLL)),
 					(tddr3_zqinit, sdram_latency(DDR3, ZQINIT)),
-					(tddr3_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 13796)));
-					-- (tddr3_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 13885)));
+					-- (tddr3_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 13796)));
+					(tddr3_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 13885)));
 			end case;
 		end;
 	

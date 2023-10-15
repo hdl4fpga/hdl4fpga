@@ -75,6 +75,7 @@ add wave -noupdate /testbench/du_e/graphics_e/dmactlr_b/line__891/gnt_dv(1)
 add wave -noupdate /testbench/du_e/graphics_e/dmaio_do_dv
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/dmaso_irdy
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/dmaso_trdy
+add wave -noupdate -expand /testbench/du_e/graphics_e/dmactlr_b/dev_do_dv
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/fifo_irdy
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/fifo_trdy
@@ -98,8 +99,9 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/ctlrphy_cke
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {86798890 ps} 0}
+WaveRestoreCursors {{Cursor 1} {86848030 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 214
 configure wave -valuecolwidth 178
@@ -115,4 +117,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {70217250 ps} {161462250 ps}
+WaveRestoreZoom {86310230 ps} {87270070 ps}
