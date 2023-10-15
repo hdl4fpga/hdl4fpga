@@ -911,6 +911,8 @@ begin
 							state := s_idle;
 						elsif ctlr_do_dv(0)='1' then
 							state := s_data;
+						elsif dev_gnt=(dev_gnt'range => '0') then
+							state := s_idle;
 						end if;
 					when s_data =>
 						if ctlr_di_dv='1' then
