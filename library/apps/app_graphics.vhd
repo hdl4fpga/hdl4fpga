@@ -889,7 +889,7 @@ begin
 			ctlr_a       => ctlr_a);
 
 		process (ctlr_do_dv, ctlr_clk)
-			type states is (s_idle, s_data, s_intrpd);
+			type states is (s_idle, s_data);
 			variable state : states;
 			-- variable lat : unsigned(0 to dev_gnt'length*2-1);
 			variable lat : unsigned(0 to dev_gnt'length*4-1);
@@ -898,32 +898,6 @@ begin
 			if rising_edge(ctlr_clk) then
 				gnt_dv := unsigned(dev_gnt);
 				lat := rotate_left(lat, dev_gnt'length);
-				if ctlr_inirdy='0' then
-					state  := s_idle;
-				else
-					case state is
-					when s_idle =>
-						if gnt_dv/=(gnt_dv'range => '0') then
-							if ctlr_do_dv(0)='1' then
-								state := s_data;
-							end if;
-						end if;
-					when s_data =>
-						if ctlr_do_dv(0)='0' then
-							if gnt_dv=(gnt_dv'range => '0') then
-								state := s_idle;
-							end if;
-						elsif ctlr_di_dv='1' then
-							state := s_idle;
-						end if;
-					when s_intrpd =>
-						if ctlr_do_dv(0)='1' then
-							state := s_data;
-						elsif ctlr_di_dv='1' then
-							state := s_idle;
-						end if;
-					end case;
-				end if;
 			end if;
 			dev_do_dv <= (dev_gnt'range => ctlr_do_dv(0)) and std_logic_vector(gnt_dv);
 		end process;
