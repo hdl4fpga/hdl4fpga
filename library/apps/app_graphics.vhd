@@ -848,6 +848,7 @@ begin
 	dmactlr_b : block
 		constant buffdo_lat : natural := latencies_tab(profile).ddro;
 		signal   dev_do_dv  : std_logic_vector(dev_gnt'range);
+		signal   gnt_dv     : std_logic_vector(dev_gnt'range);
 		signal   dma_rdy    : std_logic_vector(dev_rdy'range);
 		signal   burst_ref  : std_logic;
 	begin
@@ -888,18 +889,15 @@ begin
 			ctlr_b       => ctlr_b,
 			ctlr_a       => ctlr_a);
 
-		process (ctlr_do_dv, ctlr_clk)
-			type states is (s_idle, s_data);
-			variable state : states;
-			variable lat : unsigned(0 to dev_gnt'length*4-1);
-			alias gnt_dv is lat(0 to dev_gnt'length-1);
-		begin
-			if rising_edge(ctlr_clk) then
-				gnt_dv := unsigned(dev_gnt);
-				lat := rotate_left(lat, dev_gnt'length);
-			end if;
-			dev_do_dv <= (dev_gnt'range => ctlr_do_dv(0)) and std_logic_vector(gnt_dv);
-		end process;
+		gntlat_e : entity hdl4fpga.latency
+		generic map (
+			n => dev_gnt'length,               -- Latency value depends on DRAM CAS latency.
+			d => (0 to dev_gnt'length-1 => 4)) -- It should be dynamic. A fix value of 4 seems to work.
+		port map (                             -- A wrong value jams transfer between host and fpga.
+			clk => ctlr_clk,
+			di  => dev_gnt,
+			do  => gnt_dv);
+		dev_do_dv <= (dev_gnt'range => ctlr_do_dv(0)) and gnt_dv;
 
 		dmadv_e : entity hdl4fpga.latency
 		generic map (
