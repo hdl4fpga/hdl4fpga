@@ -36,7 +36,7 @@ entity app_graphics is
 		debug        : boolean := false;
 		profile      : natural;
 		fifo_size    : natural := 8*8192;
-		ena_burstref : boolean := true;
+		intrp_trans  : boolean := true;
 
 		sdram_tcp    : real;
 		phy_latencies : latency_vector := (others => 0);
@@ -852,7 +852,7 @@ begin
 		signal   dma_rdy    : std_logic_vector(dev_rdy'range);
 		signal   burst_ref  : std_logic;
 	begin
-		burst_ref <= ctlr_refreq when ena_burstref else '0';
+		burst_ref <= ctlr_refreq when intrp_trans else '0';
 		dmactlr_e : entity hdl4fpga.dmactlr
 		generic map (
 			burst_length => burst_length,

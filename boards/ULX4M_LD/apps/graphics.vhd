@@ -42,7 +42,7 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------
 	-- Set your profile here             --
-	constant io_link      : io_comms     := io_usb;
+	constant io_link      : io_comms     := io_ipoe;
 	constant sdram_speed  : sdram_speeds := sdram400MHz;
 	constant video_mode   : video_modes  := mode600p24bpp;
 	-- constant video_mode   : video_modes  := mode720p24bpp;
@@ -377,7 +377,6 @@ begin
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
 		debug        => debug, -- true,
-		-- ena_burstref => false,
 		profile      => 2,
 		phy_latencies => (
 			STRL   => 0,
@@ -626,7 +625,7 @@ begin
 		reg_e : entity hdl4fpga.latency
 		generic map (
 			n => dvid_crgb'length,
-			d => (dvid_crgb'range => 1))
+			d => (dvid_crgb'range => 2))
 		port map (
 			clk => video_shift_clk,
 			di  => dvid_crgb,
