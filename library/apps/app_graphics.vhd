@@ -891,7 +891,6 @@ begin
 		process (ctlr_do_dv, ctlr_clk)
 			type states is (s_idle, s_data);
 			variable state : states;
-			-- variable lat : unsigned(0 to dev_gnt'length*2-1);
 			variable lat : unsigned(0 to dev_gnt'length*4-1);
 			alias gnt_dv is lat(0 to dev_gnt'length-1);
 		begin
