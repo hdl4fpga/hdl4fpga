@@ -642,20 +642,12 @@ package body textboxpkg is
 		constant id   : string)
 		return integer is
 	begin
-		-- assert false
-		-- report "ID ---> : " & id
-		-- severity warning;
 		for i in tags'range loop
-			-- assert false
-			-- report "Tags(" & natural'image(i) & ") ---> " & "'" & tags(i).id & "'"
-			-- severity warning;
 			if strcmp(tags(i).id,id) then
-				-- assert false
-				-- report "--------------------- Sali"
-				-- severity warning;
 				return i;
 			end if;
 		end loop;
+
 		assert false
 		report "Invalid tag : " & id & " " & natural'image(tags'length)
 		severity FAILURE;

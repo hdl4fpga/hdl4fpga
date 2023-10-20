@@ -180,7 +180,7 @@ begin
 		default_sgmntbg  => b"1_011",
 		default_bg       => b"1_111")
 	port map (
-		sio_clk      => si_clk,
+		sio_clk     => si_clk,
 		si_frm      => si_frm,
 		si_irdy     => si_irdy,
 		si_data     => si_data,
