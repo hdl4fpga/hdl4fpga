@@ -35,11 +35,11 @@ use hdl4fpga.textboxpkg.all;
 
 package scopeiopkg is
 
-	constant femto : real := 1.0e0;
-	constant pico  : real := 1.0e3*femto;
-	constant nano  : real := 1.0e3*pico;
-	constant micro : real := 1.0e3*nano;
-	constant milli : real := 1.0e3*micro;
+	constant femto : real := 1.0e-15;
+	constant pico  : real := 1.0e-12;
+	constant nano  : real := 1.0e-9;
+	constant micro : real := 1.0e-6;
+	constant milli : real := 1.0e-3;
 
 	subtype i18n_langs is natural range 0 to 2-1;
 	constant lang_EN : i18n_langs := 0;

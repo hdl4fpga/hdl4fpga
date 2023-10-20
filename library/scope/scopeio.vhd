@@ -213,8 +213,7 @@ begin
 				constant gains : natural_vector;
 				constant unit  : real;
 				constant step  : real)
-				return natural_vector
-			is
+				return natural_vector is
 				constant df_gains  : natural_vector := (
 					 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
 					 4 => 2**17/(2**(0+1)*5**(0+1)),  5 => 2**17/(2**(1+1)*5**(0+1)),  6 => 2**17/(2**(2+1)*5**(0+1)),  7 => 2**17/(2**(0+1)*5**(1+1)),
@@ -231,7 +230,8 @@ begin
 				end if;
 
 				assert k < 1.0
-				report "unit should be increase"
+				report "unit " & real'image(unit) & " : " & real'image(32.0*step) & " unit should be increase"
+				-- report real'image(k) & "   unit should be increase"
 				severity FAILURE;
 
 				if k > 0.0 then

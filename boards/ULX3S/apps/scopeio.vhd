@@ -59,42 +59,40 @@ architecture scopeio of ulx3s is
 	signal video_lck     : std_logic;
 	signal video_shift_clk : std_logic;
 	signal video_eclk    : std_logic;
+	signal video_hzsync  : std_logic;
+	signal video_vtsync  : std_logic;
+	signal video_blank   : std_logic;
 	signal video_pixel   : std_logic_vector(0 to setif(
 		video_params.pixel=rgb565, 16, setif(
 		video_params.pixel=rgb888, 24, 0))-1);
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk   : std_logic;
-	signal video_hzsync : std_logic;
-	signal video_vtsync : std_logic;
-	signal video_blank  : std_logic;
 
-	constant sample_size : natural := 14;
+	constant sample_size : natural := 16;
 
-	constant inputs  : natural := 9;
 
-	signal sample    : std_logic_vector(inputs*sample_size-1 downto 0);
-
-	signal si_clk    : std_logic;
-	signal si_frm    : std_logic;
-	signal si_irdy   : std_logic;
+	signal si_clk        : std_logic;
+	signal si_frm        : std_logic;
+	signal si_irdy       : std_logic;
 	signal si_data       : std_logic_vector(0 to 8-1);
 
 	constant max_delay   : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-	signal hz_slider : std_logic_vector(hzoffset_bits-1 downto 0);
-	signal hz_scale  : std_logic_vector(4-1 downto 0);
-	signal hz_dv     : std_logic;
+	signal hz_slider     : std_logic_vector(hzoffset_bits-1 downto 0);
+	signal hz_scale      : std_logic_vector(4-1 downto 0);
+	signal hz_dv         : std_logic;
 
-	constant vt_step : real := 1.0e3*milli/2.0**16; -- Volts
-	signal so_clk    : std_logic;
-	signal so_frm    : std_logic;
-	signal so_trdy   : std_logic;
-	signal so_irdy   : std_logic;
-	signal so_data   : std_logic_vector(8-1 downto 0);
+	constant vt_step     : real := 1.0e3*milli/2.0**16; -- Volts
+	signal so_clk        : std_logic;
+	signal so_frm        : std_logic;
+	signal so_trdy       : std_logic;
+	signal so_irdy       : std_logic;
+	signal so_data       : std_logic_vector(8-1 downto 0);
 
-	signal input_clk : std_logic;
-	signal input_ena : std_logic;
-	signal samples  : std_logic_vector(0 to inputs*sample_size-1);
+	constant inputs      : natural := 8;
+	signal input_clk     : std_logic;
+	signal input_ena     : std_logic;
+	signal samples       : std_logic_vector(0 to inputs*sample_size-1);
 begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
@@ -113,6 +111,7 @@ begin
 		video_eclk  => video_eclk,
 		video_lck   => video_lck);
 
+	si_clk <= videoio_clk;
 	scopeio_export_b : block
 
 		signal rgtr_id   : std_logic_vector(8-1 downto 0);
@@ -148,19 +147,18 @@ begin
 	generic map (
 		videotiming_id   => video_params.timing,
 		hz_unit          => 31.25*micro,
-		vt_steps         => (0 to 3 => vt_step, 4 to inputs-1 => 3.32 * vt_step),
+		vt_steps         => (0 to inputs-1 => vt_step),
 		vt_unit          => 500.0*micro,
 		inputs           => inputs,
 		input_names      => (
-			text(id => "vt(0).text", content => "V_P(+) V_N(-)"),
-			text(id => "vt(1).text", content => "A6(+)  A7(-)"),
-			text(id => "vt(2).text", content => "A8(+)  A9(-)"),
-			text(id => "vt(3).text", content => "A10(+) A11(-)"),
-			text(id => "vt(4).text", content => "A0(+)"),
-			text(id => "vt(5).text", content => "A1(+)"),
-			text(id => "vt(6).text", content => "A2(+)"),
-			text(id => "vt(7).text", content => "A3(+)"),
-			text(id => "vt(8).text", content => "A4(+)")),
+			text(id => "vt(0).text", content => "GN14"),
+			text(id => "vt(1).text", content => "GP14"),
+			text(id => "vt(2).text", content => "GN15"),
+			text(id => "vt(3).text", content => "GP15"),
+			text(id => "vt(4).text", content => "GN16"),
+			text(id => "vt(5).text", content => "GP16"),
+			text(id => "vt(6).text", content => "GN17"),
+			text(id => "vt(7).text", content => "GP17")),
 		layout           => displaylayout_tab(sd600),
 		hz_factors       => (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
@@ -198,35 +196,36 @@ begin
 	------------------
 
 	dvi_b : block
-		signal dvid_blank : std_logic;
-		signal rgb : std_logic_vector(0 to 3*8-1) := (others => '0');
-		constant red_length : natural := 8;
+		constant red_length   : natural := 8;
 		constant green_length : natural := 8;
-		constant blue_length : natural := 8;
+		constant blue_length  : natural := 8;
 
+		
+		signal dvid_blank : std_logic;
+		signal rgb : std_logic_vector(0 to red_length+green_length+blue_length-1) := (others => '0');
 	begin
 
 		dvid_blank <= video_blank;
-			process (video_pixel)
-				variable urgb  : unsigned(0 to 3*8-1);
-				variable pixel : unsigned(0 to video_pixel'length-1);
-			begin
-				pixel := unsigned(video_pixel);
+		process (video_pixel)
+			variable urgb  : unsigned(rgb'range);
+			variable pixel : unsigned(0 to video_pixel'length-1);
+		begin
+			pixel := unsigned(video_pixel);
 
-				urgb(0 to red_length-1)  := pixel(0 to red_length-1);
-				urgb  := urgb rol 8;
-				pixel := pixel sll red_length;
+			urgb(0 to red_length-1)  := pixel(0 to red_length-1);
+			urgb  := urgb rol 8;
+			pixel := pixel sll red_length;
 
-				urgb(0 to green_length-1) := pixel(0 to green_length-1);
-				urgb  := urgb rol 8;
-				pixel := pixel sll green_length;
+			urgb(0 to green_length-1) := pixel(0 to green_length-1);
+			urgb  := urgb rol 8;
+			pixel := pixel sll green_length;
 
-				urgb(0 to blue_length-1) := pixel(0 to blue_length-1);
-				urgb  := urgb rol 8;
-				pixel := pixel sll blue_length;
+			urgb(0 to blue_length-1) := pixel(0 to blue_length-1);
+			urgb  := urgb rol 8;
+			pixel := pixel sll blue_length;
 
-				rgb <= std_logic_vector(urgb);
-		   end process;
+			rgb <= std_logic_vector(urgb);
+		end process;
 
 		dvi_e : entity hdl4fpga.dvi
 		generic map (
