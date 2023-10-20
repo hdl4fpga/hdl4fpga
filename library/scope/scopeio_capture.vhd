@@ -134,7 +134,7 @@ begin
 
 	process (input_clk)
 
-		function init_waddr(
+		impure function init_waddr(
 			constant delay        : signed;
 			constant downsampling : std_logic;
 			constant mem_size     : natural)

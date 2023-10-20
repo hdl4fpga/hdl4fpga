@@ -673,7 +673,7 @@
         </Source>
     </Implementation>
     <Implementation title="hdlc_debug" dir="hdlc_debug" description="hdlc_debug" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.sio_ff" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.sio_dayhdlc" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
@@ -692,13 +692,7 @@
         <Source name="../../../library/video/videopkg.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/video/vga2dvid.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
         <Source name="../../../library/video/tmds_encoder.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/video/modeline_calculator.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../../library/video/cgafonts.vhd" type="VHDL" type_short="VHDL">
@@ -779,9 +773,6 @@
         <Source name="../../../library/sio/sio_rgtr.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/basic/et.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/uart/uart_tx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -817,9 +808,9 @@
         </Source>
     </Implementation>
     <Implementation title="scopeio" dir="scopeio" description="scopeio" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.tmds_encoder" top="ulx3s"/>
+        <Options def_top="hdl4fpga.ecp5_ogbx" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
-            <Options top_module="ulx3s"/>
+            <Options lib="work" top_module="ulx3s"/>
         </Source>
         <Source name="../../../library/basic/latency.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
@@ -979,6 +970,36 @@
         </Source>
         <Source name="../../../library/video/cga_adapter.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/sio/sio_sin.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../apps/scopeio.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="work"/>
+        </Source>
+        <Source name="../../../library/apps/app_profiles.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/apps/ecp5_profiles.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/apps/ecp5_videopll.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/video/dvi.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/serlzr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/phy_iofifo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/barrel.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_ogbx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
         </Source>
         <Source name="apps.lpf" type="Logic Preference" type_short="LPF">
             <Options/>

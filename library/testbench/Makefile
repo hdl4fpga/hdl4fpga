@@ -197,6 +197,10 @@ HDL4FPGA__scopeio_btof__def = $(LIB_HDL4FPGA)/scopeio_btof/def.dat
 HDL4FPGA__scopeio_btof = $(LIB_HDL4FPGA)/scopeio_btof/_primary.dat
 HDL4FPGA__scopeio_axis__def = $(LIB_HDL4FPGA)/scopeio_axis/def.dat
 HDL4FPGA__scopeio_axis = $(LIB_HDL4FPGA)/scopeio_axis/_primary.dat
+HDL4FPGA__scopeio_amp__beh = $(LIB_HDL4FPGA)/scopeio_amp/beh.dat
+HDL4FPGA__scopeio_amp = $(LIB_HDL4FPGA)/scopeio_amp/_primary.dat
+HDL4FPGA__scopeio__beh = $(LIB_HDL4FPGA)/scopeio/beh.dat
+HDL4FPGA__scopeio = $(LIB_HDL4FPGA)/scopeio/_primary.dat
 HDL4FPGA__rx_manchester__def = $(LIB_HDL4FPGA)/rx_manchester/def.dat
 HDL4FPGA__rx_manchester = $(LIB_HDL4FPGA)/rx_manchester/_primary.dat
 HDL4FPGA__rom7seg__mixed = $(LIB_HDL4FPGA)/rom7seg/mixed.dat
@@ -560,6 +564,10 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__scopeio_btof) \
     $(HDL4FPGA__scopeio_axis__def) \
     $(HDL4FPGA__scopeio_axis) \
+    $(HDL4FPGA__scopeio_amp__beh) \
+    $(HDL4FPGA__scopeio_amp) \
+    $(HDL4FPGA__scopeio__beh) \
+    $(HDL4FPGA__scopeio) \
     $(HDL4FPGA__rx_manchester__def) \
     $(HDL4FPGA__rx_manchester) \
     $(HDL4FPGA__rom7seg__mixed) \
@@ -1636,6 +1644,30 @@ $(HDL4FPGA__rom__def) : ../basic/rom.vhd \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../basic/rom.vhd
+
+$(HDL4FPGA__scopeio) \
+$(HDL4FPGA__scopeio__beh) : ../scope/scopeio.vhd \
+		$(HDL4FPGA__scopeio_video) \
+		$(HDL4FPGA__scopeio_amp) \
+		$(HDL4FPGA__scopeio_rgtrgain) \
+		$(HDL4FPGA__sio_sin) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio.vhd
+
+$(HDL4FPGA__scopeio_amp) \
+$(HDL4FPGA__scopeio_amp__beh) : ../scope/scopeio_amp.vhd \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_amp.vhd
 
 $(HDL4FPGA__scopeio_axis) \
 $(HDL4FPGA__scopeio_axis__def) : ../scope/scopeio_axis.vhd \

@@ -76,9 +76,9 @@ entity scopeio is
 		default_bg       : std_logic_vector := b"1_111");
 	port (
 		sio_clk           : in  std_logic := '-';
-		sin_frm           : in  std_logic := '0';
-		sin_irdy          : in  std_logic := '0';
-		sin_data          : in  std_logic_vector;
+		si_frm           : in  std_logic := '0';
+		si_irdy          : in  std_logic := '0';
+		si_data          : in  std_logic_vector;
 		so_clk           : in  std_logic := '-';
 		so_frm           : out std_logic;
 		so_irdy          : out std_logic;
@@ -146,9 +146,9 @@ begin
 	siosin_e : entity hdl4fpga.sio_sin
 	port map (
 		sin_clk   => sio_clk,
-		sin_frm   => sin_frm,
-		sin_irdy  => sin_irdy,
-		sin_data  => sin_data,
+		sin_frm   => si_frm,
+		sin_irdy  => si_irdy,
+		sin_data  => si_data,
 		-- data_frm  => data_frm,
 		-- data_ptr  => data_ptr,
 		-- data_irdy => data_irdy,

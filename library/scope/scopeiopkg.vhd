@@ -1392,6 +1392,10 @@ package body scopeiopkg is
 		vt_tag := vt0_tags;
 		if input_names'length > 0 then 
 			if isvalidbyid(input_names, "vt(0).text") then
+		assert false
+		report "******************************"
+		severity failure;
+
 				vt_tag(tagindexbyid(vt_tag,"vt(0).text")).content := input_names(tagindexbyid(input_names,"vt(0).text")).content;
 			end if;
 		end if;
@@ -1399,19 +1403,23 @@ package body scopeiopkg is
 		for i in 1 to inputs-1 loop
 			vt_tag := vt0_tags;
 			if input_names'length > 0 then 
-				if isvalidbyid(input_names, "vt(" & itoa(i) & ").text") then
+				if isvalidbyid(input_names, "vt(" & integer'image(i) & ").text") then
 					vt_tag(tagindexbyid(vt_tag, "vt(0).text")).content := input_names(tagindexbyid(input_names, "vt(" & itoa(i) & ").text")).content;
-					vt_tag(tagindexbyid(vt_tag,"vt(0).text")).id := strfill("vt(" & itoa(i) & ").text", 16);
+					vt_tag(tagindexbyid(vt_tag, "vt(0).text")).id := strfill("vt(" & itoa(i) & ").text", 16);
 				end if;
 			end if;
 
-			vt_tag(tagindexbyid(vt_tag,"vt(0)")).style(key_textpalette) := i+pltid_order'length;
-
-			vt_tag(tagindexbyid(vt_tag,"vt(0)")).id        := strfill("vt(" & itoa(i) & ")", 16);
-			vt_tag(tagindexbyid(vt_tag,"vt(0).text")).id   := strfill("vt(" & itoa(i) & ").text", 16);
-			vt_tag(tagindexbyid(vt_tag,"vt(0).offset")).id := strfill("vt(" & itoa(i) & ").offset", 16);
-			vt_tag(tagindexbyid(vt_tag,"vt(0).div")).id    := strfill("vt(" & itoa(i) & ").div", 16);
-			vt_tag(tagindexbyid(vt_tag,"vt(0).mag")).id    := strfill("vt(" & itoa(i) & ").mag", 16);
+			vt_tag(tagindexbyid(vt_tag, "vt(0)")).style(key_textpalette) := i+pltid_order'length;
+			vt_tag(tagindexbyid(vt_tag, "vt(0)")).id        := strfill("vt(" & itoa(i) & ")", 16);
+			for i in vt_tag'range loop
+				assert false
+				report integer'image(i) & " ---> " & vt_tag(i).id
+				severity warning;
+			end loop;
+			-- vt_tag(tagindexbyid(vt_tag, "vt(0).text")).id   := strfill("vt(" & itoa(i) & ").text", 16);
+			vt_tag(tagindexbyid(vt_tag, "vt(0).offset")).id := strfill("vt(" & itoa(i) & ").offset", 16);
+			vt_tag(tagindexbyid(vt_tag, "vt(0).div")).id    := strfill("vt(" & itoa(i) & ").div", 16);
+			vt_tag(tagindexbyid(vt_tag, "vt(0).mag")).id    := strfill("vt(" & itoa(i) & ").mag", 16);
 
 			vt_tags(i*vt_tag'length to (i+1)*vt_tag'length-1) := vt_tag;
 		end loop;

@@ -26,14 +26,18 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-library unisim;
-use unisim.vcomponents.all;
-
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
+use hdl4fpga.app_profiles.all;
+use hdl4fpga.ecp5_profiles.all;
+use hdl4fpga.videopkg.all;
+use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 
-architecture scopio of ulx3s is
+library ecp5u;
+use ecp5u.components.all;
+
+architecture scopeio of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
@@ -46,22 +50,34 @@ architecture scopio of ulx3s is
 	-- constant video_mode   : video_modes  := mode1080p24bpp30;
 	-- constant video_mode   : video_modes  := mode1080p24bpp;
 	-- constant video_mode   : video_modes  := mode1440p24bpp30;
-	constant baudrate     : natural      := 3000000;
 	--------------------------------------
 
-	signal sys_clk    : std_logic;
-	signal vga_clk    : std_logic;
+	constant usb_oversampling : natural := 3;
+
+	constant video_params : video_record := videoparam(video_mode, clk25mhz_freq);
+	signal video_clk     : std_logic;
+	signal video_lck     : std_logic;
+	signal video_shift_clk : std_logic;
+	signal video_eclk    : std_logic;
+	signal video_pixel   : std_logic_vector(0 to setif(
+		video_params.pixel=rgb565, 16, setif(
+		video_params.pixel=rgb888, 24, 0))-1);
+	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
+	signal videoio_clk   : std_logic;
+	signal video_hzsync : std_logic;
+	signal video_vtsync : std_logic;
+	signal video_blank  : std_logic;
 
 	constant sample_size : natural := 14;
 
-	constant inputs  : natural := 8;
+	constant inputs  : natural := 9;
 
 	signal sample    : std_logic_vector(inputs*sample_size-1 downto 0);
 
 	signal si_clk    : std_logic;
 	signal si_frm    : std_logic;
 	signal si_irdy   : std_logic;
-	signal si_data   : std_logic_vector(e_rxd'range);
+	signal si_data       : std_logic_vector(0 to 8-1);
 
 	constant max_delay   : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
@@ -69,17 +85,16 @@ architecture scopio of ulx3s is
 	signal hz_scale  : std_logic_vector(4-1 downto 0);
 	signal hz_dv     : std_logic;
 
+	constant vt_step : real := 1.0e3*milli/2.0**16; -- Volts
 	signal so_clk    : std_logic;
 	signal so_frm    : std_logic;
 	signal so_trdy   : std_logic;
 	signal so_irdy   : std_logic;
 	signal so_data   : std_logic_vector(8-1 downto 0);
 
-	type displayparam_vector is array (layout_mode) of display_param;
-	constant video_params  : video_record := videoparam(video_modes'POS(video_mode), clk25mhz_freq);
-
-	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
-
+	signal input_clk : std_logic;
+	signal input_ena : std_logic;
+	signal samples  : std_logic_vector(0 to inputs*sample_size-1);
 begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
@@ -106,7 +121,7 @@ begin
 
 	begin
 
-		scopeio_sin_e : entity hdl4fpga.scopeio_sin
+		scopeio_sin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => si_clk,
 			sin_frm   => si_frm,
@@ -131,7 +146,7 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		videotiming_id   => video_params(video_mode).timing_id,
+		videotiming_id   => video_params.timing,
 		hz_unit          => 31.25*micro,
 		vt_steps         => (0 to 3 => vt_step, 4 to inputs-1 => 3.32 * vt_step),
 		vt_unit          => 500.0*micro,
@@ -146,7 +161,7 @@ begin
 			text(id => "vt(6).text", content => "A2(+)"),
 			text(id => "vt(7).text", content => "A3(+)"),
 			text(id => "vt(8).text", content => "A4(+)")),
-		vlayout_id       => video_params(video_mode).layout,
+		layout           => displaylayout_tab(sd600),
 		hz_factors       => (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
 			 4 => 2**(0+0)*5**(0+0),  5 => 2**(1+0)*5**(0+0),  6 => 2**(2+0)*5**(0+0),  7 => 2**(0+0)*5**(1+0),
@@ -165,7 +180,7 @@ begin
 		default_sgmntbg  => b"1_011",
 		default_bg       => b"1_111")
 	port map (
-		si_clk      => si_clk,
+		sio_clk      => si_clk,
 		si_frm      => si_frm,
 		si_irdy     => si_irdy,
 		si_data     => si_data,
@@ -175,8 +190,8 @@ begin
 		input_data  => samples,
 		video_clk   => video_clk,
 		video_pixel => video_pixel,
-		video_hsync => video_hsync,
-		video_vsync => video_vsync,
+		video_hsync => video_hzsync,
+		video_vsync => video_vtsync,
 		video_blank => video_blank);
 
 	-- HDMI/DVI VGA --
@@ -185,6 +200,9 @@ begin
 	dvi_b : block
 		signal dvid_blank : std_logic;
 		signal rgb : std_logic_vector(0 to 3*8-1) := (others => '0');
+		constant red_length : natural := 8;
+		constant green_length : natural := 8;
+		constant blue_length : natural := 8;
 
 	begin
 

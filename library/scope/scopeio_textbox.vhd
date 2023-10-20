@@ -584,24 +584,24 @@ begin
 		video_addr'length));
 
 	cga_on <= text_on and sgmntbox_ena(0);
-	cga_adapter_e : entity hdl4fpga.cga_adapter
-	generic map (
-		display_width  => 0,
-		display_height => 0,
-		cga_bitrom   => cga_bitrom,
-		font_bitrom  => font_bitrom,
-		font_height  => font_height,
-		font_width   => font_width)
-	port map (
-		cga_clk      => rgtr_clk,
-		cga_we       => cga_we,
-		cga_addr     => std_logic_vector(cga_addr),
-		cga_data     => cga_code,
-
-		video_clk    => video_clk,
-		video_hon => '-',
-		video_von => '-',
-		video_dot    => char_dot);
+	-- cga_adapter_e : entity hdl4fpga.cga_adapter
+	-- generic map (
+		-- display_width  => 0,
+		-- display_height => 0,
+		-- cga_bitrom   => cga_bitrom,
+		-- font_bitrom  => font_bitrom,
+		-- font_height  => font_height,
+		-- font_width   => font_width)
+	-- port map (
+		-- cga_clk      => rgtr_clk,
+		-- cga_we       => cga_we,
+		-- cga_addr     => std_logic_vector(cga_addr),
+		-- cga_data     => cga_code,
+-- 
+		-- video_clk    => video_clk,
+		-- video_hon => '-',
+		-- video_von => '-',
+		-- video_dot    => char_dot);
 
 	lat_e : entity hdl4fpga.latency
 	generic map (

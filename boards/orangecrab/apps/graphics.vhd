@@ -253,7 +253,6 @@ begin
 
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
-		ena_burstref => false,
 		debug        => debug,
 		profile      => 2,
 		phy_latencies => (
