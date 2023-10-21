@@ -55,6 +55,7 @@ architecture scopeio of ulx3s is
 	constant usb_oversampling : natural := 3;
 
 	constant video_params : video_record := videoparam(video_mode, clk25mhz_freq);
+
 	signal video_clk     : std_logic;
 	signal video_lck     : std_logic;
 	signal video_shift_clk : std_logic;
@@ -70,8 +71,7 @@ architecture scopeio of ulx3s is
 
 	constant sample_size : natural := 16;
 
-
-	signal si_clk        : std_logic;
+	alias  si_clk        is videoio_clk;
 	signal si_frm        : std_logic;
 	signal si_irdy       : std_logic;
 	signal si_data       : std_logic_vector(0 to 8-1);
@@ -90,9 +90,10 @@ architecture scopeio of ulx3s is
 	signal so_data       : std_logic_vector(8-1 downto 0);
 
 	constant inputs      : natural := 8;
-	signal input_clk     : std_logic;
+	signal input_clk     is videoio_clk;
 	signal input_ena     : std_logic;
 	signal samples       : std_logic_vector(0 to inputs*sample_size-1);
+
 begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
@@ -111,7 +112,6 @@ begin
 		video_eclk  => video_eclk,
 		video_lck   => video_lck);
 
-	si_clk <= videoio_clk;
 	scopeio_export_b : block
 
 		signal rgtr_id   : std_logic_vector(8-1 downto 0);
@@ -140,6 +140,43 @@ begin
 			hz_dv     => hz_dv,
 			hz_scale  => hz_scale,
 			hz_slider => hz_slider);
+
+	end block;
+
+	max1112x_b : block
+	begin
+
+        desser_e : entity hdl4fpga.serlzr
+       	port map (
+       		src_clk   => input_clk,
+       		src_frm   => open,
+       		src_irdy  : in  std_logic := '1';
+       		src_trdy  : out std_logic := '1';
+       		src_data  : in  std_logic_vector;
+       		dst_clk   => input_clk,
+       		dst_frm   : in  std_logic := '1';
+       		dst_irdy  : buffer std_logic;
+       		dst_trdy  : in  std_logic := '1';
+       		dst_data  => adc_mosi);
+
+		process (input_clk)
+		begin
+			if rising_edge(input_clk) then
+			end if;
+		end process;
+
+        serdes_e : entity hdl4fpga.serlzr
+       	port map (
+       		src_clk   => input_clk,
+       		src_frm   => open,
+       		src_irdy  : in  std_logic := '1';
+       		src_trdy  : out std_logic := '1';
+       		src_data  => adc_miso,
+       		dst_clk   => input_clk,
+       		dst_frm   : in  std_logic := '1';
+       		dst_irdy  : buffer std_logic;
+       		dst_trdy  : in  std_logic := '1';
+       		dst_data  => open);
 
 	end block;
 
