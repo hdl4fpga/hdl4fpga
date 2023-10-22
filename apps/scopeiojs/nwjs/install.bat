@@ -25,7 +25,13 @@ CALL NPM INSTALL SERIALPORT
 CALL NPM VIEW NW VERSION > NWJS.VER
 SETLOCAL ENABLEDELAYEDEXPANSION
 SET /P "_NWJSVER=" < NWJS.VER
-PUSHD NODE_MODULES\@SERIALPORT\BINDINGS\
+@REM sed -i 's/var config = process.config || {}/var config = JSON.parse(JSON.stringify(process.config)) || {}/' ./node_modules/nw-gyp/lib/configure.js
+SETLOCAL
+SET "file_path=your_file.js"
+@REM See https://github.com/nwjs/nw-gyp/issues/155
+POWERSHELL -Command "(Get-Content -Path '%file_path%') | ForEach-Object { $_ -replace 'var config = process.config \|\| {}', 'var config = JSON.parse(JSON.stringify(process.config)) \|\| {}' } | Set-Content -Path '%file_path%'"
+ENDLOCAL
+PUSHD NODE_MODULES\@SERIALPORT\BINDINGS-CPP\
 CALL NW-GYP REBUILD --TARGET=%_NWJSVER% --ARCH=X64
 POPD
 DEL NWJS.VER
