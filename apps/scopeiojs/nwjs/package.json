@@ -10,6 +10,7 @@
 	},
 	"dependencies": {
 		"nw": "^0.81.0",
+		"nw-gyp": "^3.6.6",
 		"serialport": "^12.0.0",
 		"usb": "^2.11.0"
 	}

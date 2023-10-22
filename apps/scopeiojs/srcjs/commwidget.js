@@ -25,7 +25,9 @@ commWidget.prototype.uartOnChange = function (e) {
 	let uart     = this.uart.options[this.uart.selectedIndex].text;
 	let baudrate = this.baudrate.options[this.baudrate.selectedIndex].text;
 
-	createUART( uart, { baudRate : parseInt(baudrate) });
+	createUART( { 
+		path     : uart, 
+		baudRate : parseInt(baudrate) });
 }
 
 commWidget.prototype.hostOnInput = function (e) {
@@ -80,8 +82,8 @@ function commWidget(commOption) {
 			}
 
 			return createUART(
-				u.options[u.selectedIndex].text, 
-				{ baudRate : parseInt(b.options[b.selectedIndex].text) });
+				{ path     : u.options[u.selectedIndex].text, 
+				  baudRate : parseInt(b.options[b.selectedIndex].text) });
 		});
 		break;
 	case 'TCPIP': // TCPIP
@@ -110,5 +112,7 @@ commWidget.prototype.uartOnChange =  function (e) {
 	let uart     = this.uart.options[this.uart.selectedIndex].text;
 	let baudrate = this.baudrate.options[this.baudrate.selectedIndex].text;
 
-	createUART(uart, { baudRate : parseInt(baudrate) });
+	createUART( { 
+		path     : uart, 
+		baudRate : parseInt(baudrate) });
 }

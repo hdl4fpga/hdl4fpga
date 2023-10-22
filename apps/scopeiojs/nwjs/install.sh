@@ -28,16 +28,16 @@ if [ ! -f "`which sudo 2> /dev/null`" ] ; then
 	exit -1
 fi
 
-#sudo npm -g install nw-gyp
+npm install nw-gyp
 npm install nw --nwjs_build_type=sdk
-#npm install serialport
+npm install serialport
 npm_config_target=`npm view nw version`
 npm_config_arch="x64"
 npm_config_traget_arch="x64"
 export npm_config_target npm_config_arch npm_config_traget_arch
 npm_config_node_gyp=`which nw-gyp`
 export npm_config_node_gyp
-
-#cd node_modules/\@serialport/bindings-cpp
-#nw-gyp rebuild --target=`npm view nw version` --arch=x64
-#cd -
+sed -i 's/var config = process.config || {}/var config = JSON.parse(JSON.stringify(process.config)) || {}/' ./node_modules/nw-gyp/lib/configure.js # See https://github.com/nwjs/nw-gyp/issues/155
+cd node_modules/\@serialport/bindings-cpp
+npx nw-gyp rebuild --target=`npm view nw version` --arch=x64
+cd -

@@ -36,9 +36,9 @@ function getCommOption() {
 
 var uart;
 
-const SerialPort = require('serialport');
+const { SerialPort } = require('serialport');
+const Readline = SerialPort.ReadlineParser;
 try{
-const Readline = SerialPort.parsers.Readline;
 } catch(error) {
 }
 
@@ -102,7 +102,7 @@ function listUART () {
 	return SerialPort.list();
 }
 
-function createUART (uartName, options) {
+function createUART (args) {
 	if (typeof uart !== 'undefined')
 		if (uart.err === false) {
 			console.log("closed : " + uart.path);
@@ -110,7 +110,7 @@ function createUART (uartName, options) {
 		}
 
 	let uartError;
-	uart = new SerialPort(uartName, options, function(err) {
+	uart = new SerialPort(args, function(err) {
 		uart.err = false;
 		if (err) {
 			console.log(err);
