@@ -24,14 +24,25 @@
 // Asynchronous communication
 //
 
-const SerialPort = require('serialport');
-const Readline = SerialPort.parsers.Readline;
+var commOption;
 
-const baudRates  = [ 9600, 38400, 115200 ];
+function setCommOption(option) {
+	commOption = option;
+}
+
+function getCommOption() {
+	return commOption;
+}
 
 var uart;
-var hostName;
-var commOption;
+
+const SerialPort = require('serialport');
+try{
+const Readline = SerialPort.parsers.Readline;
+} catch(error) {
+}
+
+const baudRates  = [ 9600, 38400, 115200 ];
 
 function toHex(buffer)
 {
@@ -87,8 +98,40 @@ function streamout (data) {
 	return toHex(buffer);
 }
 
-// TCP/IP communication
+function listUART () {
+	return SerialPort.list();
+}
+
+function createUART (uartName, options) {
+	if (typeof uart !== 'undefined')
+		if (uart.err === false) {
+			console.log("closed : " + uart.path);
+			uart.close();
+		}
+
+	let uartError;
+	uart = new SerialPort(uartName, options, function(err) {
+		uart.err = false;
+		if (err) {
+			console.log(err);
+			uart.err = true;
+		}
+	});
+	return uart;
+}
+
+// UDP communication
 //
+
+var hostName;
+
+function getHost() {
+	return hostName;
+}
+
+function setHost(name) {
+	hostName = name;
+}
 
 const dgram = require('dgram');
 var udpsckt = dgram.createSocket('udp4');
@@ -126,6 +169,17 @@ function send(data) {
 	}
 }
 
+// USB
+const usb = require('usb');
+const usbdev = usb.findByIds(0x1234, 0xabcd);
+
+if (usbdev) {
+	usbdev.open();
+	console.log(usbdev.interface(0));
+	console.log(usbdev);
+}
+
+
 function close() {
 	switch (commOption) {
 	case 'UART':
@@ -140,44 +194,6 @@ function close() {
 		udpsckt.close();
 		break;
 	}
-}
-
-function createUART (uartName, options) {
-	if (typeof uart !== 'undefined')
-		if (uart.err === false) {
-			console.log("closed : " + uart.path);
-			uart.close();
-		}
-
-	let uartError;
-	uart = new SerialPort(uartName, options, function(err) {
-		uart.err = false;
-		if (err) {
-			console.log(err);
-			uart.err = true;
-		}
-	});
-	return uart;
-}
-
-function listUART () {
-	return SerialPort.list();
-}
-
-function getHost() {
-	return hostName;
-}
-
-function setHost(name) {
-	hostName = name;
-}
-
-function setCommOption(option) {
-	commOption = option;
-}
-
-function getCommOption() {
-	return commOption;
 }
 
 try {

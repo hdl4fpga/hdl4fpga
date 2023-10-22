@@ -43,7 +43,6 @@ architecture scopeio of ulx3s is
 	--     Set your profile here        --
 	constant io_link      : io_comms     := io_usb;
 	constant sdram_speed  : sdram_speeds := sdram225MHz; 
-	constant video_gear   : natural      := 2;
 	constant video_mode   : video_modes  := mode600p24bpp;
 	-- constant video_mode   : video_modes  := mode720p24bpp;
 	-- constant video_mode   : video_modes  := mode900p24bpp;
@@ -56,6 +55,7 @@ architecture scopeio of ulx3s is
 
 	constant video_params : video_record := videoparam(video_mode, clk25mhz_freq);
 
+	constant video_gear  : natural      := 2;
 	signal video_clk     : std_logic;
 	signal video_lck     : std_logic;
 	signal video_shift_clk : std_logic;
@@ -63,17 +63,15 @@ architecture scopeio of ulx3s is
 	signal video_hzsync  : std_logic;
 	signal video_vtsync  : std_logic;
 	signal video_blank   : std_logic;
-	signal video_pixel   : std_logic_vector(0 to setif(
-		video_params.pixel=rgb565, 16, setif(
-		video_params.pixel=rgb888, 24, 0))-1);
+	signal video_pixel   : std_logic_vector(0 to 24-1);
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk   : std_logic;
 
-	constant sample_size : natural := 16;
 
-	alias  si_clk        is videoio_clk;
+	alias  sio_clk       is videoio_clk;
 	signal si_frm        : std_logic;
 	signal si_irdy       : std_logic;
+	signal si_trdy       : std_logic;
 	signal si_data       : std_logic_vector(0 to 8-1);
 
 	constant max_delay   : natural := 2**14;
@@ -87,10 +85,14 @@ architecture scopeio of ulx3s is
 	signal so_frm        : std_logic;
 	signal so_trdy       : std_logic;
 	signal so_irdy       : std_logic;
+	signal so_end        : std_logic;
 	signal so_data       : std_logic_vector(8-1 downto 0);
 
+	constant sample_size : natural := 12;
 	constant inputs      : natural := 8;
-	signal input_clk     is videoio_clk;
+	alias input_clk     is videoio_clk;
+	signal input_chn     : std_logic_vector(4-1 downto 0);
+	signal input_sample  : std_logic_vector(12-1 downto 0);
 	signal input_ena     : std_logic;
 	signal samples       : std_logic_vector(0 to inputs*sample_size-1);
 
@@ -112,6 +114,49 @@ begin
 		video_eclk  => video_eclk,
 		video_lck   => video_lck);
 
+	usb_g : if io_link=io_usb generate
+		signal tp : std_logic_vector(1 to 32);
+		signal usb_cken : std_logic;
+		signal fltr_en : std_logic;
+		signal fltr_bs : std_logic;
+		signal fltr_d  : std_logic;
+
+	begin
+
+		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
+		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
+		usb_fpga_dp    <= 'Z'; -- when up='0' else '0';
+		usb_fpga_dn    <= 'Z'; -- when up='0' else '0';
+		usb_fpga_bd_dp <= 'Z';
+		usb_fpga_bd_dn <= 'Z';
+
+		sio_clk  <= videoio_clk;
+
+		led(7) <= tp(4);
+
+		usb_e : entity hdl4fpga.sio_dayusb
+		generic map (
+			usb_oversampling => usb_oversampling)
+		port map (
+			tp        => tp,
+			usb_clk   => videoio_clk,
+			usb_cken  => usb_cken,
+			usb_dp    => usb_fpga_dp,
+			usb_dn    => usb_fpga_dn,
+
+			sio_clk   => sio_clk,
+			si_frm    => so_frm,
+			si_irdy   => so_irdy,
+			si_trdy   => so_trdy,
+			si_end    => so_end,
+			si_data   => so_data,
+	
+			so_frm    => si_frm,
+			so_irdy   => si_irdy,
+			so_trdy   => si_trdy,
+			so_data   => si_data);
+	end generate;
+
 	scopeio_export_b : block
 
 		signal rgtr_id   : std_logic_vector(8-1 downto 0);
@@ -122,7 +167,7 @@ begin
 
 		scopeio_sin_e : entity hdl4fpga.sio_sin
 		port map (
-			sin_clk   => si_clk,
+			sin_clk   => sio_clk,
 			sin_frm   => si_frm,
 			sin_irdy  => si_irdy,
 			sin_data  => si_data,
@@ -132,7 +177,7 @@ begin
 
 		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
 		port map (
-			rgtr_clk  => si_clk,
+			rgtr_clk  => sio_clk,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
@@ -143,42 +188,61 @@ begin
 
 	end block;
 
-	max1112x_b : block
-	begin
-
-        desser_e : entity hdl4fpga.serlzr
-       	port map (
-       		src_clk   => input_clk,
-       		src_frm   => open,
-       		src_irdy  : in  std_logic := '1';
-       		src_trdy  : out std_logic := '1';
-       		src_data  : in  std_logic_vector;
-       		dst_clk   => input_clk,
-       		dst_frm   : in  std_logic := '1';
-       		dst_irdy  : buffer std_logic;
-       		dst_trdy  : in  std_logic := '1';
-       		dst_data  => adc_mosi);
-
-		process (input_clk)
-		begin
-			if rising_edge(input_clk) then
-			end if;
-		end process;
-
-        serdes_e : entity hdl4fpga.serlzr
-       	port map (
-       		src_clk   => input_clk,
-       		src_frm   => open,
-       		src_irdy  : in  std_logic := '1';
-       		src_trdy  : out std_logic := '1';
-       		src_data  => adc_miso,
-       		dst_clk   => input_clk,
-       		dst_frm   : in  std_logic := '1';
-       		dst_irdy  : buffer std_logic;
-       		dst_trdy  : in  std_logic := '1';
-       		dst_data  => open);
-
-	end block;
+	-- max1112x_b : block
+		-- port (
+			-- input_clk    : in std_logic;
+			-- input_ena    : buffer std_logic;
+			-- input_chn    : out std_logic_vector( 4-1 downto 0);
+			-- input_sample : out std_logic_vector(12-1 downto 0);
+-- 
+			-- adc_sclk     : out std_logic;
+			-- adc_csn      : out std_logic;
+			-- adc_miso     : in  std_logic;
+			-- adc_mosi     : out std_logic);
+		-- port map (
+			-- input_clk    => input_clk,
+			-- input_ena    => input_ena,
+			-- input_chn    => input_chn,
+			-- input_sample => input_sample,
+			-- adc_sclk     => adc_sclk,
+			-- adc_csn      => adc_csn,
+			-- adc_miso     => adc_miso,
+			-- adc_mosi     => adc_mosi);
+-- 
+		-- signal adc_din  : std_logic_vector(16-1 downto 0);
+		-- signal adc_dout : std_logic_vector(16-1 downto 0);
+		-- signal adc_sin  : std_logic_vector(0 to 0);
+		-- signal adc_sout : std_logic_vector(0 to 0);
+-- 
+	-- begin
+-- 
+		-- process (input_clk)
+		-- begin
+			-- if rising_edge(input_clk) then
+			-- end if;
+		-- end process;
+-- 
+		-- desser_e : entity hdl4fpga.serlzr
+	   	-- port map (
+			-- src_clk   => input_clk,
+			-- src_irdy  => input_ena,
+			-- src_data  => adc_din,
+			-- dst_clk   => input_clk,
+			-- dst_data  => adc_sout);
+		-- adc_mosi <= adc_sout(0);
+-- 
+		-- adc_sin(0) <= adc_miso;
+		-- serdes_e : entity hdl4fpga.serlzr
+	   	-- port map (
+			-- src_clk   => input_clk,
+			-- src_data  => adc_sin,
+			-- dst_clk   => input_clk,
+			-- dst_irdy  => input_ena,
+			-- dst_data  => adc_dout);
+		-- input_chn    <= adc_dout(input_chn'length+12-1 downto input_sample'length);
+		-- input_sample <= adc_dout(input_sample'length-1 downto 0);
+-- 
+	-- end block;
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
@@ -203,19 +267,27 @@ begin
 			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
 			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)),
 
-		default_tracesfg => b"1_111" & b"0_110" & b"0_101" & b"0_100" & b"0_011" & b"0_010" & b"0_001" & b"0_111" & b"0_110",
-		default_gridfg   => b"1_100",
-		default_gridbg   => b"1_000",
-		default_hzfg     => b"1_111",
-		default_hzbg     => b"1_001",
-		default_vtfg     => b"0_111",
-		default_vtbg     => b"1_001",
-		default_textfg   => b"1_111",
-		default_textbg   => b"1_000",
-		default_sgmntbg  => b"1_011",
-		default_bg       => b"1_111")
+		default_tracesfg =>
+			b"1" & x"ff_ff_ff" & -- vt(0)
+			b"0" & x"ff_ff_00" & -- vt(1)
+			b"0" & x"ff_00_ff" & -- vt(2)
+			b"0" & x"ff_00_00" & -- vt(3)
+			b"0" & x"00_ff_ff" & -- vt(4)
+			b"0" & x"00_ff_00" & -- vt(5)
+			b"0" & x"00_00_ff" & -- vt(6)
+			b"0" & x"ff_ff_ff",  -- vt(7)
+		default_gridfg   => b"1" & x"ff_00_00",
+		default_gridbg   => b"1" & x"00_00_00",
+		default_hzfg     => b"1" & x"ff_ff_ff",
+		default_hzbg     => b"1" & x"00_00_ff",
+		default_vtfg     => b"0" & x"ff_ff_ff",
+		default_vtbg     => b"1" & x"00_00_ff",
+		default_textfg   => b"1" & x"ff_ff_ff",
+		default_textbg   => b"1" & x"00_00_00",
+		default_sgmntbg  => b"1" & x"00_ff_ff",
+		default_bg       => b"1" & x"ff_ff_ff")
 	port map (
-		sio_clk     => si_clk,
+		sio_clk     => sio_clk,
 		si_frm      => si_frm,
 		si_irdy     => si_irdy,
 		si_data     => si_data,
@@ -236,13 +308,10 @@ begin
 		constant red_length   : natural := 8;
 		constant green_length : natural := 8;
 		constant blue_length  : natural := 8;
-
 		
-		signal dvid_blank : std_logic;
 		signal rgb : std_logic_vector(0 to red_length+green_length+blue_length-1) := (others => '0');
 	begin
 
-		dvid_blank <= video_blank;
 		process (video_pixel)
 			variable urgb  : unsigned(rgb'range);
 			variable pixel : unsigned(0 to video_pixel'length-1);
@@ -273,7 +342,7 @@ begin
 			rgb   => rgb,
 			hsync => video_hzsync,
 			vsync => video_vtsync,
-			blank => dvid_blank,
+			blank => video_blank,
 			cclk  => video_shift_clk,
 			chnc  => dvid_crgb(video_gear*4-1 downto video_gear*3),
 			chn2  => dvid_crgb(video_gear*3-1 downto video_gear*2),  

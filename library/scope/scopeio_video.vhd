@@ -502,7 +502,8 @@ begin
 		video_vtcntr => video_vtcntr,
 		video_dot    => pointer_dot);
 
-	video_color <= scope_color or (video_color'range => pointer_dot);
+	-- video_color <= scope_color or (video_color'range => pointer_dot);
+	video_color <= scope_color
 	video_pixel <= (video_pixel'range => video_io(2)) and video_color;
 	video_blank <= not video_io(2);
 	video_hsync <= video_io(0);
