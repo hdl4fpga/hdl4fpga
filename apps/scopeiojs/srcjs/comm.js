@@ -166,17 +166,100 @@ function send(data) {
 			}
 		});
 		break;
+	case 'USB':
+		break;
 	}
 }
 
 // USB
 const usb = require('usb');
-const usbdev = usb.findByIds(0x1234, 0xabcd);
+var  usbdev;
 
-if (usbdev) {
-	usbdev.open();
-	console.log(usbdev.interface(0));
-	console.log(usbdev);
+function openUSB() {
+	if (typeof usbdev !== 'undefined') {
+		usbdev = usb.findByIds(0x1234, 0xabcd);
+	}
+
+	if (usbdev) {
+		usbdev.open();
+		console.log(usbdev.interface(0));
+		console.log(usbdev);
+	}
+	return usbdev;
+}
+
+function usbSend (data) {
+	var fcs = ~pppfcs16(PPPINITFCS16, data, len);
+
+	var buffer = [];
+	var ptr = 0;
+
+	buffer[ptr++] = 0x7e;
+	for (int i = 0; i < len+sizeof(fcs); i++) {
+		char c;
+
+		if (i < len) {
+			c = data[i];
+		} else {
+			c = ((char *) &fcs)[i-len];
+		}
+
+		if (c == 0x7e) {
+			buffer[ptr++] = 0x7d;
+			c ^= 0x20;
+		} else if(c == 0x7d) {
+			buffer[ptr++] = 0x7d;
+			c ^= 0x20;
+		}
+		buffer[ptr++] = c;
+	}
+	buffer[ptr++] = 0x7e;
+
+// Read data from the USB device
+inEndpoint.transferIn(64, (error, data) => {
+  if (error) {
+    console.error('Error reading data:', error);
+  } else {
+    console.log('Data received:', data);
+  }
+});
+
+// Write data to the USB device
+const dataToWrite = Buffer.from('Hello, USB Device!');
+outEndpoint.transferOut(dataToWrite, (error) => {
+  if (error) {
+    console.error('Error writing data:', error);
+  } else {
+    console.log('Data sent successfully.');
+  }
+});
+
+// Handle errors and clean up when done
+process.on('SIGINT', () => {
+  inEndpoint.stop();
+  outEndpoint.stop();
+  interface.release(() => {
+    device.close();
+    process.exit();
+  });
+});
+
+console.log('Listening for data. Press Ctrl+C to exit.');
+
+	int result;
+	int transferred;
+	while ((result = libusb_bulk_transfer(usbdev, usbendp & ~0x80, buffer, ptr-buffer, &transferred, 0))!=0) {
+		if (result == LIBUSB_ERROR_PIPE) {
+			libusb_clear_halt(usbdev, usbendp);
+			fprintf(stderr, "WRITING PIPE ERROR\n");
+			abort();
+		} else {
+			fprintf(stderr, "Error in bulk transfer. Error code: %d\n", result);
+			perror ("sending packet");
+			abort();
+		}
+	}
+	pkt_sent++;
 }
 
 
@@ -205,6 +288,7 @@ exports.getHost       = getHost;
 exports.setHost       = setHost;
 exports.send          = send;
 exports.close         = close;
+exports.openUSB       = openUSB;
 }
 catch(e) {
 }

@@ -104,6 +104,10 @@ function commWidget(commOption) {
 		this.main.appendChild(o);
 
 		break; 
+	case 'USB':
+		console.log("***************");
+		openUSB();
+		break;
 	}
 	return commOption;
 }
