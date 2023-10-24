@@ -71,7 +71,7 @@ architecture scopeio of ulx3s is
 	alias  sio_clk       is videoio_clk;
 	signal si_frm        : std_logic;
 	signal si_irdy       : std_logic;
-	signal si_trdy       : std_logic;
+	signal si_trdy       : std_logic := '1';
 	signal si_data       : std_logic_vector(0 to 8-1);
 
 	constant max_delay   : natural := 2**14;
