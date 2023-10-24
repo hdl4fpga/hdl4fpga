@@ -310,7 +310,8 @@ function send(data) {
 		break;
 	case 'USB':
 		usbSend( 
-			[...alignValues( registers.ack, { value : ack++  | 0x80 } ),
+			// [...alignValues( registers.ack, { value : ack++  | 0x80 } ),
+			[...alignValues( registers.ack, { value : ack++  & 0x7f } ),
 			 ...data ]);
 		break;
 	}

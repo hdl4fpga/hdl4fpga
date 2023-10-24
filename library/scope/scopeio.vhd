@@ -75,7 +75,8 @@ entity scopeio is
 		default_sgmntbg  : std_logic_vector := b"1_011";
 		default_bg       : std_logic_vector := b"1_111");
 	port (
-		sio_clk           : in  std_logic := '-';
+		tp               : out std_logic_vector(1 to 32);
+		sio_clk          : in  std_logic := '-';
 		si_frm           : in  std_logic := '0';
 		si_irdy          : in  std_logic := '0';
 		si_data          : in  std_logic_vector;
@@ -162,17 +163,6 @@ begin
 		rgtr_data => rgtr_data);
 	-- rgtr_revs <= reverse(rgtr_data,8);
 
-	-- scopeio_sin_e : entity hdl4fpga.scopeio_sin
-	-- port map (
-	-- 	sin_clk   => sio_clk,
-	-- 	sin_frm   => sin_frm,
-	-- 	sin_irdy  => sin_irdy,
-	-- 	sin_data  => sin_data,
-
-	-- 	rgtr_dv   => rgtr_dv,
-	-- 	rgtr_id   => rgtr_id,
-	-- 	rgtr_data => rgtr_data);
-
 	amp_b : block
 
 		constant sample_size : natural := input_data'length/inputs;
@@ -195,6 +185,7 @@ begin
 			chan_id   => chan_id,
 			gain_id   => gain_id);
 		
+		-- tp(1 to 8) <= std_logic_vector(resize(unsigned(gain_id),8));
 		process(sio_clk)
 		begin
 			if rising_edge(sio_clk) then

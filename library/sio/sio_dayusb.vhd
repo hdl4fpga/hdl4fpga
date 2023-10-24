@@ -86,8 +86,8 @@ architecture beh of sio_dayusb is
 	signal sohdlc_data : std_logic_vector(so_data'range);
 
 	signal tp_usb : std_logic_vector(1 to 32);
-		signal src_irdy : std_logic;
-		signal dst_trdy : std_logic;
+	signal src_irdy : std_logic;
+	signal dst_trdy : std_logic;
 begin
 
 	usb_rxbs <= '0';
