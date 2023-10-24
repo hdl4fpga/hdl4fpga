@@ -277,6 +277,7 @@ function usbSend (data) {
 	// pkt_sent++;
 
 
+var ack = 0x00;
 function send(data) {
 	var i;
 
@@ -309,7 +310,7 @@ function send(data) {
 		break;
 	case 'USB':
 		usbSend( 
-			[...alignValues( registers.ack, { value : 0x80 } ),
+			[...alignValues( registers.ack, { value : ack++  | 0x80 } ),
 			 ...data ]);
 		break;
 	}
