@@ -202,9 +202,7 @@ function openUSB() {
 }
 
 function usbSend (data) {
-	console.log("Pase");
 	var fcs = (~pppfcs16(PPPINITFCS16, data)) & 0xffff;
-	console.log(fcs);
 
 	var buffer = [];
 	var ptr = 0;

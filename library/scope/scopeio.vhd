@@ -113,6 +113,7 @@ architecture beh of scopeio is
 	signal rgtr_id            : std_logic_vector(8-1 downto 0);
 	signal rgtr_dv            : std_logic;
 	signal rgtr_data          : std_logic_vector(32-1 downto 0);
+	signal rgtr_revs          : std_logic_vector(0 to 32-1);
 
 	signal ampsample_dv       : std_logic;
 	signal ampsample_data     : std_logic_vector(0 to input_data'length-1);
@@ -161,7 +162,7 @@ begin
 		-- rgtr_len  => rgtr_len,
 		rgtr_dv   => rgtr_dv,
 		rgtr_data => rgtr_data);
-	-- rgtr_revs <= reverse(rgtr_data,8);
+	rgtr_revs <= reverse(rgtr_data,8);
 
 	amp_b : block
 
@@ -314,10 +315,11 @@ begin
 		dflt_sgmntbg   => default_sgmntbg,
 		dflt_bg        => default_bg)
 	port map (
+		tp => tp,
 		rgtr_clk       => sio_clk,
 		rgtr_dv        => rgtr_dv,
 		rgtr_id        => rgtr_id,
-		rgtr_data      => rgtr_data,
+		rgtr_data      => rgtr_revs,
 
 		time_scale     => time_scale,
 		time_offset    => time_offset,

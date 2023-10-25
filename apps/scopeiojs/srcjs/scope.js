@@ -24,7 +24,6 @@
 
 function mouseWheel (e) {
 	if (typeof this.value !== 'undefined') {
-		console.log(typeof this.value);
 		this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
 	}
 	sendCommand.call(this, e);
@@ -37,7 +36,6 @@ function onClick(e) {
 
 function sendCommand(e) {
 	var param = this.id.split(':');
-	var value = this.value;
 
 	switch(param[0]) {
 	case 'gain':
@@ -115,13 +113,13 @@ function sendCommand(e) {
 			this.colors.hzaxis.style['border']  = 'solid ' + colorTab[this.colors.value];
 			break;
 		}
+		// console.log("hola " + this.colors.value);
 		sendRegister(registers.palette, { 
 			opacityena  : 0,
 			colorena    : 1,
 			opacity     : 1,
 			pid         : pid,
 			color       : this.colors.value });
-		console.log(param);
 		break;
 	case 'color' :
 
@@ -131,6 +129,7 @@ function sendCommand(e) {
 		this.colors.value %= colorTab.length;
 
 		this.colors.color.style['background-color']  = colorTab[this.colors.value];
+		console.log("hola " + this.colors.value);
 		sendRegister(registers.palette, { 
 			opacityena  : 0,
 			colorena    : 1,

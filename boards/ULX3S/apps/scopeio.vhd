@@ -212,7 +212,7 @@ begin
 -- 
 	-- end block;
 
-	-- led <= tp(1 to 8);
+	led <= tp(1 to 8);
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		videotiming_id   => video_params.timing,
