@@ -67,7 +67,6 @@ architecture scopeio of ulx3s is
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk   : std_logic;
 
-
 	alias  sio_clk       is videoio_clk;
 	signal si_frm        : std_logic;
 	signal si_irdy       : std_logic;

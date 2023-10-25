@@ -19,10 +19,10 @@
 @REM FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for  
 @REM more details at http://www.gnu.org/licenses/.                             
 
-CALL NPM INSTALL NW --NWJS_BUILD_TYPE=SDK
-CALL NPM -G INSTALL NW-GYP
-CALL NPM INSTALL SERIALPORT
-CALL NPM VIEW NW VERSION > NWJS.VER
+CALL npm install nw --nwjs_build_type=sdk
+CALL npm -g install nw-gyp
+CALL npm install serialport
+CALL npm view nw version > nwjs.ver
 SETLOCAL ENABLEDELAYEDEXPANSION
 SET /P "_NWJSVER=" < NWJS.VER
 @REM sed -i 's/var config = process.config || {}/var config = JSON.parse(JSON.stringify(process.config)) || {}/' ./node_modules/nw-gyp/lib/configure.js
@@ -31,9 +31,9 @@ SET "file_path=your_file.js"
 @REM See https://github.com/nwjs/nw-gyp/issues/155
 POWERSHELL -Command "(Get-Content -Path '%file_path%') | ForEach-Object { $_ -replace 'var config = process.config \|\| {}', 'var config = JSON.parse(JSON.stringify(process.config)) \|\| {}' } | Set-Content -Path '%file_path%'"
 ENDLOCAL
-PUSHD NODE_MODULES\@SERIALPORT\BINDINGS-CPP\
-CALL NW-GYP REBUILD --TARGET=%_NWJSVER% --ARCH=X64
+PUSHD node_modules\@serialport\bindings-cpp\
+CALL nw-gyp rebuild --target=%_NWJSVER% --arch=x64
 POPD
 DEL NWJS.VER
-MKLINK /D HTML  ..\HTML
-MKLINK /D SRCJS ..\SRCJS
+MKLINK /D html  ..\html
+MKLINK /D srcjs ..\srcjs
