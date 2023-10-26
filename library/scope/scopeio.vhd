@@ -112,8 +112,8 @@ architecture beh of scopeio is
 
 	signal rgtr_id            : std_logic_vector(8-1 downto 0);
 	signal rgtr_dv            : std_logic;
-	signal rgtr_data          : std_logic_vector(32-1 downto 0);
-	signal rgtr_revs          : std_logic_vector(0 to 32-1);
+	signal rgtr_data          : std_logic_vector(0 to 4*8-1);
+	signal rgtr_revs          : std_logic_vector(rgtr_data'reverse_range);
 
 	signal ampsample_dv       : std_logic;
 	signal ampsample_data     : std_logic_vector(0 to input_data'length-1);

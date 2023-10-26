@@ -106,11 +106,11 @@ function sendCommand(e) {
 		switch(param[1]) {
 		case 'channel' :
 			pid += Object.keys(objects).length;
-			this.colors.vtaxis.style['border']  = 'solid ' + colorTab[this.colors.value];
+			this.colors.vtaxis.style['border']  = 'solid #' + colorTab[this.colors.value];
 			break;
 		case 'hzaxis' :
 			pid = objects.horizontalfg.pid; 
-			this.colors.hzaxis.style['border']  = 'solid ' + colorTab[this.colors.value];
+			this.colors.hzaxis.style['border']  = 'solid #' + colorTab[this.colors.value];
 			break;
 		}
 		// console.log("hola " + this.colors.value);
@@ -119,7 +119,7 @@ function sendCommand(e) {
 			colorena    : 1,
 			opacity     : 1,
 			pid         : pid,
-			color       : this.colors.value });
+			color       : parseInt("0x" + colorTab[this.colors.value]) });
 		break;
 	case 'color' :
 
@@ -127,6 +127,7 @@ function sendCommand(e) {
 		this.colors.value  = parseInt(this.colors.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
 		this.colors.value += colorTab.length;
 		this.colors.value %= colorTab.length;
+		console.log("color : " + this.colors.value + " : " + parseInt("0x" + colorTab[this.colors.value]));
 
 		this.colors.color.style['background-color']  = colorTab[this.colors.value];
 		sendRegister(registers.palette, { 
@@ -134,7 +135,8 @@ function sendCommand(e) {
 			colorena    : 1,
 			opacity     : 1,
 			pid         : pid,
-			color       : this.colors.value });
+			color       : parseInt("0x" + colorTab[this.colors.value]) });
+			// color       : this.colors.value });
 		break;
 	default :
 		console.log("Invalid : " + param[0]);
