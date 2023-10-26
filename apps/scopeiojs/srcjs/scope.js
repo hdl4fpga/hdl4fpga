@@ -129,7 +129,6 @@ function sendCommand(e) {
 		this.colors.value %= colorTab.length;
 
 		this.colors.color.style['background-color']  = colorTab[this.colors.value];
-		console.log("hola " + this.colors.value);
 		sendRegister(registers.palette, { 
 			opacityena  : 0,
 			colorena    : 1,

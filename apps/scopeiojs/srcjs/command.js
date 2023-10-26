@@ -37,7 +37,6 @@ function reverse (value, size) {
 function alignValues (reg, data) {
 	const byteSize = 8;
 	var   buffer   = [];
-	var   byteNum  = 0;
 	var   bitOffs  = 0;
 
 	Object.keys(reg).forEach (function(key) {
@@ -46,33 +45,28 @@ function alignValues (reg, data) {
 		case 'size':
 			break;
 		default:
-			console.log(key+ " : " + reg[key]  + " : " + data[key]);
 			for (var i = 0; i < reg[key]; i++) {
-				if (bitOffs == byteSize) {
-					buffer[byteNum+1] = buffer[byteNum];
-					byteNum++;
-					bitOffs %= byteSize;
-				}
 				if (bitOffs == 0)
-					buffer[byteNum] = 0;
-				buffer[byteNum] |= (data[key] & (1 << (reg[key]-i-1))) ? (1 << (byteSize-1-bitOffs)) : 0;
-				bitOffs         += 1;
-				if (bitOffs == byteSize)
-					console.log("bytenum : " + byteNum);
+					buffer.unshift(0);
+				buffer[0] |= ((data[key]) & (1 << (reg[key]-i-1))) ? (1 << (byteSize-1-bitOffs)) : 0;
+				bitOffs   += 1;
+				bitOffs   %= byteSize;
 			}
-			console.log("--------------> " + buffer);
 		};
 	});
 	bitOffs %= byteSize;
 	if (bitOffs) {
-		for (var i = 0; i < buffer.length; i++) {
-			var octet = buffer[i];
+		var octet;
+		for (var i = 0; i < buffer.length-1; i++) {
+			octet       = buffer[i+1];
+			octet     <<= bitOffs;
+			octet      &= ((1<< byteSize)-1);
 			buffer[i] >>= (byteSize - bitOffs);
-			octet 
+			buffer[i]  |= octet;
 		}
+		buffer[buffer.length-1] >>= (byteSize - bitOffs);
 	}
-	console.log("Sali" + bitOffs);
-	return [ reg.rid, reg.size-1, ...buffer ];
+	return [ reg.rid, reg.size-1, ...buffer.slice().reverse() ];
 }
 
 function sendRegister(reg, values) {
