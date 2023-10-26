@@ -94,7 +94,7 @@ architecture scopeio of ulx3s is
 	signal input_sample  : std_logic_vector(12-1 downto 0);
 	signal input_ena     : std_logic;
 	signal samples       : std_logic_vector(0 to inputs*sample_size-1);
-	signal tp : std_logic_vector(1 to 32);
+	signal tp            : std_logic_vector(1 to 32);
 begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll

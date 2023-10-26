@@ -339,6 +339,8 @@ HDL4FPGA__cp850x8x16x128to255 = $(LIB_HDL4FPGA)/cp850x8x16x128to255/_primary.dat
 HDL4FPGA__cp850x8x16x0to127 = $(LIB_HDL4FPGA)/cp850x8x16x0to127/_primary.dat
 HDL4FPGA__cntrcs__def = $(LIB_HDL4FPGA)/cntrcs/def.dat
 HDL4FPGA__cntrcs = $(LIB_HDL4FPGA)/cntrcs/_primary.dat
+HDL4FPGA__cgaram__struct = $(LIB_HDL4FPGA)/cgaram/struct.dat
+HDL4FPGA__cgaram = $(LIB_HDL4FPGA)/cgaram/_primary.dat
 HDL4FPGA__cgafonts__body = $(LIB_HDL4FPGA)/cgafonts/body.dat
 HDL4FPGA__cgafonts = $(LIB_HDL4FPGA)/cgafonts/_primary.dat
 HDL4FPGA__cga_rom__beh = $(LIB_HDL4FPGA)/cga_rom/beh.dat
@@ -706,6 +708,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__cp850x8x16x0to127) \
     $(HDL4FPGA__cntrcs__def) \
     $(HDL4FPGA__cntrcs) \
+    $(HDL4FPGA__cgaram__struct) \
+    $(HDL4FPGA__cgaram) \
     $(HDL4FPGA__cgafonts__body) \
     $(HDL4FPGA__cgafonts) \
     $(HDL4FPGA__cga_rom__beh) \
@@ -964,6 +968,23 @@ $(HDL4FPGA__cgafonts__body) : ../video/cgafonts.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../video/cgafonts.vhd
+
+$(HDL4FPGA__cgaram) \
+$(HDL4FPGA__cgaram__struct) : ../video/cgaram.vhd \
+		$(HDL4FPGA__cga_rom) \
+		$(HDL4FPGA__latency) \
+		$(HDL4FPGA__dpram) \
+		$(HDL4FPGA__bcdfonts) \
+		$(HDL4FPGA__cp850x8x16x128to255) \
+		$(HDL4FPGA__cp850x8x16x0to127) \
+		$(HDL4FPGA__cp850x8x8x128to255) \
+		$(HDL4FPGA__cp850x8x8x0to127) \
+		$(HDL4FPGA__cgafonts) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../video/cgaram.vhd
 
 $(HDL4FPGA__cntrcs) \
 $(HDL4FPGA__cntrcs__def) : ../basic/cntrcs.vhd \
@@ -1939,7 +1960,6 @@ $(HDL4FPGA__scopeio_tds__mix) : ../scope/scopeio_tds.vhd \
 $(HDL4FPGA__scopeio_textbox) \
 $(HDL4FPGA__scopeio_textbox__def) : ../scope/scopeio_textbox.vhd \
 		$(HDL4FPGA__latency) \
-		$(HDL4FPGA__cga_adapter) \
 		$(HDL4FPGA__scopeio_float2btof) \
 		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__scopeio_rgtrvtaxis) \

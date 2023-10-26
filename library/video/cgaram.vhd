@@ -26,7 +26,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
+use hdl4fpga.base.all;
 use hdl4fpga.cgafonts.all;
 
 entity cgaram is
@@ -50,12 +50,13 @@ entity cgaram is
 		video_dot    : out std_logic);
 end;
 
-architecture struct of cga_adapter is
+architecture struct of cgaram is
 	signal font_col : std_logic_vector(font_hcntr'range);
 	signal font_row : std_logic_vector(font_vcntr'range);
 
 	signal cga_codes : std_logic_vector(cga_data'range);
 	signal cga_code  : std_logic_vector(unsigned_num_bits(font_bitrom'length/font_height/font_width-1)-1 downto 0);
+	signal mux_code  : std_logic_vector(cga_code'range);
 
 	signal char_addr : unsigned(cga_addr'length-1+(unsigned_num_bits(cga_codes'length/cga_code'length)-1) downto 0);
 	signal char_on   : std_logic;
@@ -93,7 +94,7 @@ begin
 	end generate;
 	cga_code <= mux_code when char_addr'length > cga_addr'length else cga_codes; 
 
-	vsync_e : entity hdl4fpga.align
+	vsync_e : entity hdl4fpga.latency
 	generic map (
 		n   => font_row'length,
 		d   => (font_row'range => 2))
@@ -102,7 +103,7 @@ begin
 		di  => font_vcntr,
 		do  => font_row);
 
-	hsync_e : entity hdl4fpga.align
+	hsync_e : entity hdl4fpga.latency
 	generic map (
 		n   => font_col'length,
 		d   => (font_col'range => 2))
@@ -123,7 +124,7 @@ begin
 		char_code   => cga_code,
 		char_dot    => char_dot);
 
-	don_e : entity hdl4fpga.align
+	don_e : entity hdl4fpga.latency
 	generic map (
 		n     => 1,
 		d     => (1 to 1 => 4))
