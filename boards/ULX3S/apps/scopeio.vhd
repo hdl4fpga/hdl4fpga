@@ -70,14 +70,10 @@ architecture scopeio of ulx3s is
 	alias  sio_clk       is videoio_clk;
 	signal si_frm        : std_logic;
 	signal si_irdy       : std_logic;
-	signal si_trdy       : std_logic := '1';
 	signal si_data       : std_logic_vector(0 to 8-1);
 
 	constant max_delay   : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-	signal hz_slider     : std_logic_vector(hzoffset_bits-1 downto 0);
-	signal hz_scale      : std_logic_vector(4-1 downto 0);
-	signal hz_dv         : std_logic;
 
 	constant vt_step     : real := 1.0e3*milli/2.0**16; -- Volts
 	signal so_clk        : std_logic;
@@ -89,12 +85,21 @@ architecture scopeio of ulx3s is
 
 	constant sample_size : natural := 12;
 	constant inputs      : natural := 8;
-	alias input_clk     is videoio_clk;
+	alias  input_clk     is videoio_clk;
 	signal input_chn     : std_logic_vector(4-1 downto 0);
 	signal input_sample  : std_logic_vector(12-1 downto 0);
 	signal input_ena     : std_logic;
 	signal samples       : std_logic_vector(0 to inputs*sample_size-1);
 	signal tp            : std_logic_vector(1 to 32);
+
+	signal usb_frm       : std_logic;
+	signal usb_irdy      : std_logic;
+	signal usb_trdy      : std_logic := '1';
+	signal usb_data      : std_logic_vector(si_data'range);
+
+	signal opacity_frm   : std_logic;
+	signal opacity_data  : std_logic_vector(si_data'range);
+
 begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
@@ -150,10 +155,10 @@ begin
 			si_end    => so_end,
 			si_data   => so_data,
 	
-			so_frm    => si_frm,
-			so_irdy   => si_irdy,
-			so_trdy   => si_trdy,
-			so_data   => si_data);
+			so_frm    => usb_frm,
+			so_irdy   => usb_irdy,
+			so_trdy   => usb_trdy,
+			so_data   => usb_data);
 	end generate;
 
 	-- max1112x_b : block
@@ -212,7 +217,86 @@ begin
 -- 
 	-- end block;
 
-	led <= tp(1 to 8);
+	-- led <= tp(1 to 8);
+
+	inputs_b : block
+
+		signal rgtr_id   : std_logic_vector(8-1 downto 0);
+		signal rgtr_dv   : std_logic;
+		signal rgtr_data : std_logic_vector(32-1 downto 0);
+		signal rgtr_revs : std_logic_vector(rgtr_data'reverse_range);
+
+		signal hz_dv     : std_logic;
+		signal hz_slider : std_logic_vector(hzoffset_bits-1 downto 0);
+		signal hz_scale  : std_logic_vector(4-1 downto 0);
+		signal opacity : unsigned(0 to inputs-1);
+
+	begin
+
+		sio_sin_e : entity hdl4fpga.sio_sin
+		port map (
+			sin_clk   => sio_clk,
+			sin_frm   => usb_frm,
+			sin_irdy  => usb_irdy,
+			sin_data  => usb_data,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data);
+		rgtr_revs <= reverse(rgtr_data,8);
+
+		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
+		port map (
+			rgtr_clk  => sio_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_revs,
+
+			hz_dv     => hz_dv,
+			hz_scale  => hz_scale,
+			hz_slider => hz_slider);
+
+		led(4-1 downto 0) <= hz_scale;
+		with hz_scale select
+		opacity <= 
+			b"1000_0000" when "0000",
+			b"1100_0000" when "0001",
+			b"1111_0000" when "0010",
+			b"1111_1000" when "0011",
+			b"1111_1111" when others;
+			
+		process (opacity, sio_clk)
+			variable data : unsigned(0 to inputs*32-1);
+			variable xxxx : natural := (data'length+opacity_data'length-1)/opacity_data'length;
+			variable cntr : unsigned(0 to unsigned_num_bits((data'length+opacity_data'length-1)/opacity_data'length)-1);
+		begin
+			if rising_edge(sio_clk) then
+				if cntr < (data'length+opacity_data'length-1)/opacity_data'length then
+					opacity_frm <= '1';
+					cntr := cntr + 1;
+				elsif hz_dv='1' then
+					opacity_frm <= '1';
+					cntr := (others => '0');
+				end if;
+				if cntr < (data'length+opacity_data'length-1)/opacity_data'length then
+					opacity_frm <= '1';
+				else
+					opacity_frm <= '0';
+				end if;
+			end if;
+
+			for i in 0 to inputs-1 loop
+				data(0 to 32-1) := unsigned(rid_palette) & x"01" & to_unsigned(pltid_order'length+i,13) & opacity(i) & b"01";
+				data := data rol 32;
+			end loop;
+			opacity_data <= multiplex(std_logic_vector(data), std_logic_vector(cntr), opacity_data'length);
+		end process;
+
+	end block;
+
+	si_frm  <= usb_frm  when opacity_frm='0' else '1';
+	si_irdy <= usb_irdy when opacity_frm='0' else '1';
+	si_data <= usb_data when opacity_frm='0' else reverse(opacity_data);
+
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		videotiming_id   => video_params.timing,
@@ -251,7 +335,7 @@ begin
 		default_hzbg     => b"1" & x"00_00_ff",
 		default_vtfg     => b"1" & x"ff_ff_ff",
 		default_vtbg     => b"1" & x"00_00_ff",
-		default_textfg   => b"1" & x"ff_ff_ff",
+		default_textfg   => b"0" & x"ff_ff_ff",
 		default_textbg   => b"1" & x"00_00_00",
 		default_sgmntbg  => b"1" & x"00_ff_ff",
 		default_bg       => b"1" & x"00_00_00")
