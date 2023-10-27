@@ -238,18 +238,18 @@ begin
 
 		default_tracesfg =>
 			b"1" & x"ff_ff_ff" & -- vt(0)
-			b"0" & x"ff_ff_00" & -- vt(1)
-			b"0" & x"ff_00_ff" & -- vt(2)
-			b"0" & x"ff_00_00" & -- vt(3)
-			b"0" & x"00_ff_ff" & -- vt(4)
-			b"0" & x"00_ff_00" & -- vt(5)
-			b"0" & x"00_00_ff" & -- vt(6)
-			b"0" & x"ff_ff_ff",  -- vt(7)
+			b"1" & x"ff_ff_00" & -- vt(1)
+			b"1" & x"ff_00_ff" & -- vt(2)
+			b"1" & x"ff_00_00" & -- vt(3)
+			b"1" & x"00_ff_ff" & -- vt(4)
+			b"1" & x"00_ff_00" & -- vt(5)
+			b"1" & x"00_00_ff" & -- vt(6)
+			b"1" & x"ff_ff_ff",  -- vt(7)
 		default_gridfg   => b"1" & x"ff_00_00",
 		default_gridbg   => b"1" & x"00_00_00",
 		default_hzfg     => b"1" & x"ff_ff_ff",
 		default_hzbg     => b"1" & x"00_00_ff",
-		default_vtfg     => b"0" & x"ff_ff_ff",
+		default_vtfg     => b"1" & x"ff_ff_ff",
 		default_vtbg     => b"1" & x"00_00_ff",
 		default_textfg   => b"1" & x"ff_ff_ff",
 		default_textbg   => b"1" & x"00_00_00",
