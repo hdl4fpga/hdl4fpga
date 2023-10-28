@@ -277,7 +277,7 @@ begin
 		default_hzbg     => b"1" & x"00_00_ff",
 		default_vtfg     => b"1" & x"ff_ff_ff",
 		default_vtbg     => b"1" & x"00_00_ff",
-		default_textfg   => b"0" & x"ff_ff_ff",
+		default_textfg   => b"1" & x"ff_ff_ff",
 		default_textbg   => b"1" & x"00_00_00",
 		default_sgmntbg  => b"1" & x"00_ff_ff",
 		default_bg       => b"1" & x"00_00_00")

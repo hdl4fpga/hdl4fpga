@@ -151,15 +151,7 @@ begin
 		sin_frm   => si_frm,
 		sin_irdy  => si_irdy,
 		sin_data  => si_data,
-		-- data_frm  => data_frm,
-		-- data_ptr  => data_ptr,
-		-- data_irdy => data_irdy,
-		-- rgtr_frm  => rgtr_frm,
-		-- rgtr_irdy => rgtr_irdy,
-		-- rgtr_idv  => rgtr_idv,
 		rgtr_id   => rgtr_id,
-		-- rgtr_lv   => rgtr_lv,
-		-- rgtr_len  => rgtr_len,
 		rgtr_dv   => rgtr_dv,
 		rgtr_data => rgtr_data);
 	rgtr_revs <= reverse(rgtr_data,8);
@@ -179,7 +171,7 @@ begin
 			rgtr_clk  => sio_clk,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_data,
+			rgtr_data => rgtr_revs,
 
 			gain_ena  => gain_ena,
 			gain_dv   => gain_dv,
