@@ -178,7 +178,6 @@ begin
 			chan_id   => chan_id,
 			gain_id   => gain_id);
 		
-		-- tp(1 to 8) <= std_logic_vector(resize(unsigned(gain_id),8));
 		process(sio_clk)
 		begin
 			if rising_edge(sio_clk) then

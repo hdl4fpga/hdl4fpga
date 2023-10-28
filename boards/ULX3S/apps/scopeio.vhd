@@ -169,12 +169,21 @@ begin
 		signal rgtr_revs : std_logic_vector(rgtr_data'reverse_range);
 
 		signal hz_dv     : std_logic;
-		signal hz_slider : std_logic_vector(hzoffset_bits-1 downto 0);
-		signal hz_scale  : std_logic_vector(4-1 downto 0);
-		signal opacity : unsigned(0 to inputs-1);
+		signal hz_scale  : std_logic_vector(0 to 4-1);
+		signal hz_slider : std_logic_vector(0 to hzoffset_bits-1);
+		signal rev_scale : std_logic_vector(hz_scale'reverse_range);
+		signal opacity   : unsigned(0 to inputs-1);
 
 	begin
 
+		with rev_scale select
+		opacity <= 
+			b"1000_0000" when "0000",
+			b"1100_0000" when "0001",
+			b"1111_0000" when "0010",
+			b"1111_1000" when "0011",
+			b"1111_1111" when others;
+			
 		sio_sin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
@@ -196,16 +205,8 @@ begin
 			hz_dv     => hz_dv,
 			hz_scale  => hz_scale,
 			hz_slider => hz_slider);
+		rev_scale <= reverse(hz_scale);
 
-		led(4-1 downto 0) <= hz_scale;
-		with hz_scale select
-		opacity <= 
-			b"1000_0000" when "0000",
-			b"1100_0000" when "0001",
-			b"1111_0000" when "0010",
-			b"1111_1000" when "0011",
-			b"1111_1111" when others;
-			
 		process (opacity, sio_clk)
 			variable data : unsigned(0 to inputs*32-1);
 			variable xxxx : natural := (data'length+opacity_data'length-1)/opacity_data'length;
