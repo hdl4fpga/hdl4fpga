@@ -377,34 +377,35 @@ begin
 	end generate;
 
 	max1112x_b : block
-		-- port (
-			-- input_clk    : in std_logic;
-			-- input_ena    : buffer std_logic;
-			-- input_chn    : out std_logic_vector( 4-1 downto 0);
-			-- input_sample : out std_logic_vector(12-1 downto 0);
--- 
-			-- adc_sclk     : out std_logic;
-			-- adc_csn      : out std_logic;
-			-- adc_miso     : in  std_logic;
-			-- adc_mosi     : out std_logic);
-		-- port map (
-			-- input_clk    => input_clk,
-			-- input_ena    => input_ena,
-			-- input_chn    => input_chn,
-			-- input_sample => input_sample,
-			-- adc_sclk     => adc_sclk,
-			-- adc_csn      => adc_csn,
-			-- adc_miso     => adc_miso,
-			-- adc_mosi     => adc_mosi);
--- 
-		constant clkref_freq : real := 25.0e6;
+		port (
+			clk_25mhz    : in  std_logic;
+			input_clk    : buffer std_logic;
+			input_ena    : buffer std_logic;
+			input_chn    : out std_logic_vector( 4-1 downto 0);
+			input_sample : out std_logic_vector(12-1 downto 0);
+
+			adc_sclk     : out std_logic;
+			adc_csn      : out std_logic;
+			adc_miso     : in  std_logic;
+			adc_mosi     : out std_logic);
+		port map (
+			clk_25mhz    => clk_25mhz,
+			input_clk    => input_clk,
+			input_ena    => input_ena,
+			input_chn    => input_chn,
+			input_sample => input_sample,
+			adc_sclk     => adc_sclk,
+			adc_csn      => adc_csn,
+			adc_miso     => adc_miso,
+			adc_mosi     => adc_mosi);
+
     	attribute FREQUENCY_PIN_CLKOS  : string;
     	attribute FREQUENCY_PIN_CLKOS2 : string;
     	attribute FREQUENCY_PIN_CLKOS3 : string;
     	attribute FREQUENCY_PIN_CLKI   : string;
     	attribute FREQUENCY_PIN_CLKOP  : string;
 
-		signal clk_rst : std_logic;
+		constant clkref_freq : real := clk25mhz_freq;
 		constant clkos_div   : natural := 16;
 		constant clkos2_div  : natural := 25;
     	constant clkos_freq  : real := clkref_freq;
@@ -416,10 +417,16 @@ begin
 
     	signal clkos  : std_logic;
 
+		signal adc_din  : std_logic_vector(16-1 downto 0);
+		signal adc_dout : std_logic_vector(16-1 downto 0);
+		signal adc_sin  : std_logic_vector(0 to 0);
+		signal adc_sout : std_logic_vector(0 to 0);
+-- 
     begin
 
     	assert false
     	report CR &
+    		"max1112x  : " & pll_i'FREQUENCY_PIN_CLKOS  & " MHz "  & CR &
     		"CLKOS  : " & pll_i'FREQUENCY_PIN_CLKOS  & " MHz "  & CR &
     		"CLKOS2 : " & pll_i'FREQUENCY_PIN_CLKOS2 & " MHz "
     	severity NOTE;
@@ -447,7 +454,6 @@ begin
     		CLKOS_DIV        => clkos_div,
     		CLKOS2_DIV       => clkos2_div)
     	port map (
-			rst      => '0',
 			clki      => clk_25mhz,
     		CLKFB     => clkos,
     		PHASESEL0 => '0', PHASESEL1 => '0',
@@ -465,41 +471,33 @@ begin
     		REFCLK    => open,
     		CLKINTFB  => open);
 
-		-- signal adc_din  : std_logic_vector(16-1 downto 0);
-		-- signal adc_dout : std_logic_vector(16-1 downto 0);
-		-- signal adc_sin  : std_logic_vector(0 to 0);
-		-- signal adc_sout : std_logic_vector(0 to 0);
--- 
-	-- begin
--- 
-		-- process (input_clk)
-		-- begin
-			-- if rising_edge(input_clk) then
-			-- end if;
-		-- end process;
--- 
-		-- desser_e : entity hdl4fpga.serlzr
-	   	-- port map (
-			-- src_clk   => input_clk,
-			-- src_irdy  => input_ena,
-			-- src_data  => adc_din,
-			-- dst_clk   => input_clk,
-			-- dst_data  => adc_sout);
-		-- adc_mosi <= adc_sout(0);
--- 
-		-- adc_sin(0) <= adc_miso;
-		-- serdes_e : entity hdl4fpga.serlzr
-	   	-- port map (
-			-- src_clk   => input_clk,
-			-- src_data  => adc_sin,
-			-- dst_clk   => input_clk,
-			-- dst_irdy  => input_ena,
-			-- dst_data  => adc_dout);
-		-- input_chn    <= adc_dout(input_chn'length+12-1 downto input_sample'length);
-		-- input_sample <= adc_dout(input_sample'length-1 downto 0);
--- 
+		process (input_clk)
+		begin
+			if rising_edge(input_clk) then
+			end if;
+		end process;
+
+		desser_e : entity hdl4fpga.serlzr
+	   	port map (
+			src_clk   => input_clk,
+			src_irdy  => input_ena,
+			src_data  => adc_din,
+			dst_clk   => input_clk,
+			dst_data  => adc_sout);
+		adc_mosi <= adc_sout(0);
+
+		adc_sin(0) <= adc_miso;
+		serdes_e : entity hdl4fpga.serlzr
+	   	port map (
+			src_clk   => input_clk,
+			src_data  => adc_sin,
+			dst_clk   => input_clk,
+			dst_irdy  => input_ena,
+			dst_data  => adc_dout);
+
+		input_chn    <= adc_dout(input_chn'length+12-1 downto input_sample'length);
+		input_sample <= adc_dout(input_sample'length-1 downto 0);
 	end block;
 
-	-- led <= tp(1 to 8);
 
 end;
