@@ -85,7 +85,8 @@ architecture scopeio of ulx3s is
 
 	constant sample_size : natural := 12;
 	constant inputs      : natural := 8;
-	alias  input_clk     is videoio_clk;
+	signal input_clk     : std_logic;
+	signal input_lck     : std_logic;
 	signal input_chn     : std_logic_vector(4-1 downto 0);
 	signal input_sample  : std_logic_vector(12-1 downto 0);
 	signal input_ena     : std_logic;
@@ -176,14 +177,16 @@ begin
 
 	begin
 
-		with rev_scale select
-		opacity <= 
-			b"1000_0000" when "0000",
-			b"1100_0000" when "0001",
-			b"1111_0000" when "0010",
-			b"1111_1000" when "0011",
-			b"1111_1111" when others;
-			
+		process (hz_scale)
+		begin
+			opacity <= (others => '0');
+			for i in 0 to opacity'length-1 loop
+				if to_integer(unsigned(reverse(hz_scale)))>=i then
+					opacity(i) <= '1';
+				end if;
+			end loop;
+		end process;
+
 		sio_sin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
@@ -205,11 +208,9 @@ begin
 			hz_dv     => hz_dv,
 			hz_scale  => hz_scale,
 			hz_slider => hz_slider);
-		rev_scale <= reverse(hz_scale);
 
 		process (opacity, sio_clk)
 			variable data : unsigned(0 to inputs*32-1);
-			variable xxxx : natural := (data'length+opacity_data'length-1)/opacity_data'length;
 			variable cntr : unsigned(0 to unsigned_num_bits((data'length+opacity_data'length-1)/opacity_data'length)-1);
 		begin
 			if rising_edge(sio_clk) then
@@ -375,7 +376,7 @@ begin
 
 	end generate;
 
-	-- max1112x_b : block
+	max1112x_b : block
 		-- port (
 			-- input_clk    : in std_logic;
 			-- input_ena    : buffer std_logic;
@@ -396,6 +397,74 @@ begin
 			-- adc_miso     => adc_miso,
 			-- adc_mosi     => adc_mosi);
 -- 
+		constant clkref_freq : real := 25.0e6;
+    	attribute FREQUENCY_PIN_CLKOS  : string;
+    	attribute FREQUENCY_PIN_CLKOS2 : string;
+    	attribute FREQUENCY_PIN_CLKOS3 : string;
+    	attribute FREQUENCY_PIN_CLKI   : string;
+    	attribute FREQUENCY_PIN_CLKOP  : string;
+
+		signal clk_rst : std_logic;
+		constant clkos_div   : natural := 16;
+		constant clkos2_div  : natural := 25;
+    	constant clkos_freq  : real := clkref_freq;
+    	constant clkos2_freq : real := (real(clkos_div)*clkref_freq)/(real(clkos2_div));
+		constant input_freq  : real := clkos2_freq;
+
+    	attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(clkos_freq/1.0e6, 10);
+    	attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(clkos2_freq/1.0e6, 10);
+
+    	signal clkos  : std_logic;
+
+    begin
+
+    	assert false
+    	report CR &
+    		"CLKOS  : " & pll_i'FREQUENCY_PIN_CLKOS  & " MHz "  & CR &
+    		"CLKOS2 : " & pll_i'FREQUENCY_PIN_CLKOS2 & " MHz "
+    	severity NOTE;
+
+    	pll_i : EHXPLLL
+    	generic map (
+    		PLLRST_ENA       => "DISABLED",
+    		-- PLLRST_ENA       => "ENABLED",
+    		INTFB_WAKE       => "DISABLED",
+    		STDBY_ENABLE     => "DISABLED",
+    		DPHASE_SOURCE    => "DISABLED",
+    		PLL_LOCK_MODE    =>  0,
+    		FEEDBK_PATH      => "CLKOS",
+    		CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => clkos_div-1,
+    		CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
+    		CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
+    		CLKOP_ENABLE     => "DISABLED", CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
+    		CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
+    		CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
+    		OUTDIVIDER_MUXD  => "DIVD",
+    		OUTDIVIDER_MUXC  => "DIVC",
+    		OUTDIVIDER_MUXB  => "DIVB",
+    		OUTDIVIDER_MUXA  => "DIVA",
+
+    		CLKOS_DIV        => clkos_div,
+    		CLKOS2_DIV       => clkos2_div)
+    	port map (
+			rst      => '0',
+			clki      => clk_25mhz,
+    		CLKFB     => clkos,
+    		PHASESEL0 => '0', PHASESEL1 => '0',
+    		PHASEDIR  => '0',
+    		PHASESTEP => '0', PHASELOADREG => '0',
+    		STDBY     => '0', PLLWAKESYNC  => '0',
+    		ENCLKOP   => '0',
+    		ENCLKOS   => '0',
+    		ENCLKOS2  => '0',
+    		ENCLKOS3  => '0',
+    		CLKOS     => clkos,
+    		CLKOS2    => input_clk,
+    		LOCK      => input_lck,
+    		INTLOCK   => open,
+    		REFCLK    => open,
+    		CLKINTFB  => open);
+
 		-- signal adc_din  : std_logic_vector(16-1 downto 0);
 		-- signal adc_dout : std_logic_vector(16-1 downto 0);
 		-- signal adc_sin  : std_logic_vector(0 to 0);
@@ -429,7 +498,7 @@ begin
 		-- input_chn    <= adc_dout(input_chn'length+12-1 downto input_sample'length);
 		-- input_sample <= adc_dout(input_sample'length-1 downto 0);
 -- 
-	-- end block;
+	end block;
 
 	-- led <= tp(1 to 8);
 
