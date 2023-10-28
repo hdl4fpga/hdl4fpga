@@ -56,6 +56,7 @@ entity scopeio_video is
 		dflt_sgmntbg     : std_logic_vector;
 		dflt_bg          : std_logic_vector);
 	port (
+		tp : out std_logic_vector(1 to 32);
 		rgtr_clk         : in  std_logic;
 		rgtr_dv          : in  std_logic;
 		rgtr_id          : in  std_logic_vector(8-1 downto 0);
@@ -220,7 +221,7 @@ begin
 		hz_dv     => hz_dv,
 		hz_scale  => hz_scale,
 		hz_slider => hz_slider);
-
+	tp(1 to 8) <= std_logic_vector(resize(unsigned(hz_slider),8));
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
@@ -502,7 +503,8 @@ begin
 		video_vtcntr => video_vtcntr,
 		video_dot    => pointer_dot);
 
-	video_color <= scope_color or (video_color'range => pointer_dot);
+	-- video_color <= scope_color or (video_color'range => pointer_dot);
+	video_color <= scope_color;
 	video_pixel <= (video_pixel'range => video_io(2)) and video_color;
 	video_blank <= not video_io(2);
 	video_hsync <= video_io(0);

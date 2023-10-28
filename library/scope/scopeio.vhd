@@ -75,10 +75,11 @@ entity scopeio is
 		default_sgmntbg  : std_logic_vector := b"1_011";
 		default_bg       : std_logic_vector := b"1_111");
 	port (
-		sio_clk           : in  std_logic := '-';
-		sin_frm           : in  std_logic := '0';
-		sin_irdy          : in  std_logic := '0';
-		sin_data          : in  std_logic_vector;
+		tp               : out std_logic_vector(1 to 32);
+		sio_clk          : in  std_logic := '-';
+		si_frm           : in  std_logic := '0';
+		si_irdy          : in  std_logic := '0';
+		si_data          : in  std_logic_vector;
 		so_clk           : in  std_logic := '-';
 		so_frm           : out std_logic;
 		so_irdy          : out std_logic;
@@ -111,7 +112,8 @@ architecture beh of scopeio is
 
 	signal rgtr_id            : std_logic_vector(8-1 downto 0);
 	signal rgtr_dv            : std_logic;
-	signal rgtr_data          : std_logic_vector(32-1 downto 0);
+	signal rgtr_data          : std_logic_vector(0 to 4*8-1);
+	signal rgtr_revs          : std_logic_vector(rgtr_data'reverse_range);
 
 	signal ampsample_dv       : std_logic;
 	signal ampsample_data     : std_logic_vector(0 to input_data'length-1);
@@ -146,32 +148,13 @@ begin
 	siosin_e : entity hdl4fpga.sio_sin
 	port map (
 		sin_clk   => sio_clk,
-		sin_frm   => sin_frm,
-		sin_irdy  => sin_irdy,
-		sin_data  => sin_data,
-		-- data_frm  => data_frm,
-		-- data_ptr  => data_ptr,
-		-- data_irdy => data_irdy,
-		-- rgtr_frm  => rgtr_frm,
-		-- rgtr_irdy => rgtr_irdy,
-		-- rgtr_idv  => rgtr_idv,
+		sin_frm   => si_frm,
+		sin_irdy  => si_irdy,
+		sin_data  => si_data,
 		rgtr_id   => rgtr_id,
-		-- rgtr_lv   => rgtr_lv,
-		-- rgtr_len  => rgtr_len,
 		rgtr_dv   => rgtr_dv,
 		rgtr_data => rgtr_data);
-	-- rgtr_revs <= reverse(rgtr_data,8);
-
-	-- scopeio_sin_e : entity hdl4fpga.scopeio_sin
-	-- port map (
-	-- 	sin_clk   => sio_clk,
-	-- 	sin_frm   => sin_frm,
-	-- 	sin_irdy  => sin_irdy,
-	-- 	sin_data  => sin_data,
-
-	-- 	rgtr_dv   => rgtr_dv,
-	-- 	rgtr_id   => rgtr_id,
-	-- 	rgtr_data => rgtr_data);
+	rgtr_revs <= reverse(rgtr_data,8);
 
 	amp_b : block
 
@@ -188,7 +171,7 @@ begin
 			rgtr_clk  => sio_clk,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_data,
+			rgtr_data => rgtr_revs,
 
 			gain_ena  => gain_ena,
 			gain_dv   => gain_dv,
@@ -213,8 +196,7 @@ begin
 				constant gains : natural_vector;
 				constant unit  : real;
 				constant step  : real)
-				return natural_vector
-			is
+				return natural_vector is
 				constant df_gains  : natural_vector := (
 					 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
 					 4 => 2**17/(2**(0+1)*5**(0+1)),  5 => 2**17/(2**(1+1)*5**(0+1)),  6 => 2**17/(2**(2+1)*5**(0+1)),  7 => 2**17/(2**(0+1)*5**(1+1)),
@@ -231,7 +213,8 @@ begin
 				end if;
 
 				assert k < 1.0
-				report "unit should be increase"
+				report "unit " & real'image(unit) & " : " & real'image(32.0*step) & " unit should be increase"
+				-- report real'image(k) & "   unit should be increase"
 				severity FAILURE;
 
 				if k > 0.0 then
@@ -323,10 +306,11 @@ begin
 		dflt_sgmntbg   => default_sgmntbg,
 		dflt_bg        => default_bg)
 	port map (
+		tp => tp,
 		rgtr_clk       => sio_clk,
 		rgtr_dv        => rgtr_dv,
 		rgtr_id        => rgtr_id,
-		rgtr_data      => rgtr_data,
+		rgtr_data      => rgtr_revs,
 
 		time_scale     => time_scale,
 		time_offset    => time_offset,

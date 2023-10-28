@@ -377,7 +377,6 @@ begin
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
 		debug        => debug, -- true,
-		-- ena_burstref => false,
 		profile      => 2,
 		phy_latencies => (
 			STRL   => 0,
@@ -626,7 +625,7 @@ begin
 		reg_e : entity hdl4fpga.latency
 		generic map (
 			n => dvid_crgb'length,
-			d => (dvid_crgb'range => 1))
+			d => (dvid_crgb'range => 2))
 		port map (
 			clk => video_shift_clk,
 			di  => dvid_crgb,

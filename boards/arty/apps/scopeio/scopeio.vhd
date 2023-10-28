@@ -11,7 +11,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 
-architecture beh of arty is
+architecture scopio of arty is
 
 	constant vt_step : real := 1.0e3*milli/2.0**16; -- Volts
 

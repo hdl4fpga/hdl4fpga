@@ -12,7 +12,7 @@ use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.videopkg.all;
 
-architecture beh of nuhs3adsp is
+architecture scopeio of nuhs3adsp is
 
 	constant sys_per  : real := 50.0;
 	signal sys_clk    : std_logic;

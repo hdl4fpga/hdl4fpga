@@ -9,8 +9,9 @@
 		"start": "nw"
 	},
 	"dependencies": {
-		"nw": "^0.46.2",
-		"serialport": "^9.0.0"
-	},
-	"devDependencies": {}
+		"nw": "^0.81.0",
+		"nw-gyp": "^3.6.6",
+		"serialport": "^12.0.0",
+		"usb": "^2.11.0"
+	}
 }

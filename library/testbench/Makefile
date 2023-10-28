@@ -197,6 +197,10 @@ HDL4FPGA__scopeio_btof__def = $(LIB_HDL4FPGA)/scopeio_btof/def.dat
 HDL4FPGA__scopeio_btof = $(LIB_HDL4FPGA)/scopeio_btof/_primary.dat
 HDL4FPGA__scopeio_axis__def = $(LIB_HDL4FPGA)/scopeio_axis/def.dat
 HDL4FPGA__scopeio_axis = $(LIB_HDL4FPGA)/scopeio_axis/_primary.dat
+HDL4FPGA__scopeio_amp__beh = $(LIB_HDL4FPGA)/scopeio_amp/beh.dat
+HDL4FPGA__scopeio_amp = $(LIB_HDL4FPGA)/scopeio_amp/_primary.dat
+HDL4FPGA__scopeio__beh = $(LIB_HDL4FPGA)/scopeio/beh.dat
+HDL4FPGA__scopeio = $(LIB_HDL4FPGA)/scopeio/_primary.dat
 HDL4FPGA__rx_manchester__def = $(LIB_HDL4FPGA)/rx_manchester/def.dat
 HDL4FPGA__rx_manchester = $(LIB_HDL4FPGA)/rx_manchester/_primary.dat
 HDL4FPGA__rom7seg__mixed = $(LIB_HDL4FPGA)/rom7seg/mixed.dat
@@ -335,6 +339,8 @@ HDL4FPGA__cp850x8x16x128to255 = $(LIB_HDL4FPGA)/cp850x8x16x128to255/_primary.dat
 HDL4FPGA__cp850x8x16x0to127 = $(LIB_HDL4FPGA)/cp850x8x16x0to127/_primary.dat
 HDL4FPGA__cntrcs__def = $(LIB_HDL4FPGA)/cntrcs/def.dat
 HDL4FPGA__cntrcs = $(LIB_HDL4FPGA)/cntrcs/_primary.dat
+HDL4FPGA__cgaram__struct = $(LIB_HDL4FPGA)/cgaram/struct.dat
+HDL4FPGA__cgaram = $(LIB_HDL4FPGA)/cgaram/_primary.dat
 HDL4FPGA__cgafonts__body = $(LIB_HDL4FPGA)/cgafonts/body.dat
 HDL4FPGA__cgafonts = $(LIB_HDL4FPGA)/cgafonts/_primary.dat
 HDL4FPGA__cga_rom__beh = $(LIB_HDL4FPGA)/cga_rom/beh.dat
@@ -560,6 +566,10 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__scopeio_btof) \
     $(HDL4FPGA__scopeio_axis__def) \
     $(HDL4FPGA__scopeio_axis) \
+    $(HDL4FPGA__scopeio_amp__beh) \
+    $(HDL4FPGA__scopeio_amp) \
+    $(HDL4FPGA__scopeio__beh) \
+    $(HDL4FPGA__scopeio) \
     $(HDL4FPGA__rx_manchester__def) \
     $(HDL4FPGA__rx_manchester) \
     $(HDL4FPGA__rom7seg__mixed) \
@@ -698,6 +708,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__cp850x8x16x0to127) \
     $(HDL4FPGA__cntrcs__def) \
     $(HDL4FPGA__cntrcs) \
+    $(HDL4FPGA__cgaram__struct) \
+    $(HDL4FPGA__cgaram) \
     $(HDL4FPGA__cgafonts__body) \
     $(HDL4FPGA__cgafonts) \
     $(HDL4FPGA__cga_rom__beh) \
@@ -956,6 +968,23 @@ $(HDL4FPGA__cgafonts__body) : ../video/cgafonts.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../video/cgafonts.vhd
+
+$(HDL4FPGA__cgaram) \
+$(HDL4FPGA__cgaram__struct) : ../video/cgaram.vhd \
+		$(HDL4FPGA__cga_rom) \
+		$(HDL4FPGA__latency) \
+		$(HDL4FPGA__dpram) \
+		$(HDL4FPGA__bcdfonts) \
+		$(HDL4FPGA__cp850x8x16x128to255) \
+		$(HDL4FPGA__cp850x8x16x0to127) \
+		$(HDL4FPGA__cp850x8x8x128to255) \
+		$(HDL4FPGA__cp850x8x8x0to127) \
+		$(HDL4FPGA__cgafonts) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../video/cgaram.vhd
 
 $(HDL4FPGA__cntrcs) \
 $(HDL4FPGA__cntrcs__def) : ../basic/cntrcs.vhd \
@@ -1637,6 +1666,30 @@ $(HDL4FPGA__rom__def) : ../basic/rom.vhd \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../basic/rom.vhd
 
+$(HDL4FPGA__scopeio) \
+$(HDL4FPGA__scopeio__beh) : ../scope/scopeio.vhd \
+		$(HDL4FPGA__scopeio_video) \
+		$(HDL4FPGA__scopeio_amp) \
+		$(HDL4FPGA__scopeio_rgtrgain) \
+		$(HDL4FPGA__sio_sin) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio.vhd
+
+$(HDL4FPGA__scopeio_amp) \
+$(HDL4FPGA__scopeio_amp__beh) : ../scope/scopeio_amp.vhd \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_amp.vhd
+
 $(HDL4FPGA__scopeio_axis) \
 $(HDL4FPGA__scopeio_axis__def) : ../scope/scopeio_axis.vhd \
 		$(HDL4FPGA__cga_rom) \
@@ -1907,7 +1960,6 @@ $(HDL4FPGA__scopeio_tds__mix) : ../scope/scopeio_tds.vhd \
 $(HDL4FPGA__scopeio_textbox) \
 $(HDL4FPGA__scopeio_textbox__def) : ../scope/scopeio_textbox.vhd \
 		$(HDL4FPGA__latency) \
-		$(HDL4FPGA__cga_adapter) \
 		$(HDL4FPGA__scopeio_float2btof) \
 		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__scopeio_rgtrvtaxis) \

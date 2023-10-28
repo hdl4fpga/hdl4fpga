@@ -392,8 +392,7 @@ package body textboxpkg is
 		constant content : string := "";
 		constant style   : style_t := nostyle;
 		constant id      : string := "")
-		return tag 
-	is
+		return tag is
 		variable retval : tag_vector(0 to 0);
 	begin
 		retval(0).tid     := tid_text;
@@ -408,8 +407,7 @@ package body textboxpkg is
 		variable ctnt_ptr : inout natural;
 		variable content  : inout string;
 		variable tag_ptr  : inout natural;
-		variable tags     : inout tag_vector)
-	is
+		variable tags     : inout tag_vector) is
 		variable left    : natural;
 		variable right   : natural;
 		variable str     : string(1 to tags(0).content'length); -- Xilinx
@@ -453,8 +451,7 @@ package body textboxpkg is
 		variable ctnt_ptr : inout natural;
 		variable content  : inout string;
 		variable tag_ptr  : inout natural;
-		variable tags     : inout tag_vector)
-	is
+		variable tags     : inout tag_vector) is
 		variable cptr    : natural;
 		variable tptr    : natural;
 		variable width   : natural;                   -- Xilinx messes
@@ -519,8 +516,7 @@ package body textboxpkg is
 
 	procedure process_page (
 		variable content  : inout string;
-		variable tags     : inout tag_vector)
-	is
+		variable tags     : inout tag_vector) is
 		variable tag_ptr : natural;
 		variable left    : natural;
 		variable right   : natural;
@@ -598,8 +594,7 @@ package body textboxpkg is
 	function render_content (
 		constant tags : tag_vector;
 		constant size : natural)
-		return string 
-	is
+		return string is
 		variable retval  : string(1 to size);
 		variable tag_ptr : natural;
 		variable vtags   : tag_vector(0 to tags'length-1);
@@ -615,8 +610,7 @@ package body textboxpkg is
 
 	function render_tags (
 		constant tags : tag_vector)
-		return tag_vector 
-	is
+		return tag_vector is
 		variable content : string(1 to 0);
 		variable vtags   : tag_vector(tags'range);
 		 
@@ -633,8 +627,7 @@ package body textboxpkg is
 	function isvalidbyid (
 		constant tags : tag_vector;
 		constant id   : string)
-		return boolean
-	is
+		return boolean is
 	begin
 		for i in tags'range loop
 			if strcmp(tags(i).id,id) then
@@ -647,24 +640,23 @@ package body textboxpkg is
 	function tagindexbyid (
 		constant tags : tag_vector;
 		constant id   : string)
-		return integer
-	is
+		return integer is
 	begin
 		for i in tags'range loop
 			if strcmp(tags(i).id,id) then
 				return i;
 			end if;
 		end loop;
+
 		assert false
-		report "Invalid tag : " & id & " " & itoa(tags'length)
+		report "Invalid tag : " & id & " " & natural'image(tags'length)
 		severity FAILURE;
 	end;
 
 	function tagbyid (
 		constant tags : tag_vector;
 		constant id   : string)
-		return tag
-	is
+		return tag is
 	begin
 		return tags(tagindexbyid(tags, id));
 	end;
@@ -672,8 +664,7 @@ package body textboxpkg is
 	function memaddr (
 		constant tag  : tag;
 		constant size : natural)
-		return std_logic_vector
-	is
+		return std_logic_vector is
 	begin
 		return std_logic_vector(to_unsigned(tag.mem_ptr, size));
 	end;
@@ -681,8 +672,7 @@ package body textboxpkg is
 	function memaddr (
 		constant tag  : tag;
 		constant size : natural)
-		return natural
-	is
+		return natural is
 	begin
 		return tag.mem_ptr;
 	end;
@@ -690,14 +680,12 @@ package body textboxpkg is
 	function tagattr_tab(
 		constant tags : tag_vector;
 		constant attr : style_keys)
-		return attr_table
-	is
+		return attr_table is
 		function get_attr (
 			constant tags : tag_vector;
 			constant tag  : natural;
 			constant attr : style_keys)
-			return integer
-		is
+			return integer is
 			variable inherit : natural;
 		begin
 			case attr is

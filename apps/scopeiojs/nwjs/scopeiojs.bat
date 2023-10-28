@@ -19,4 +19,4 @@
 @REM FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for  
 @REM more details at http://www.gnu.org/licenses/.                             
 
-NPM START
+npm start

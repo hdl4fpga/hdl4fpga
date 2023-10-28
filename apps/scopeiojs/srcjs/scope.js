@@ -24,7 +24,6 @@
 
 function mouseWheel (e) {
 	if (typeof this.value !== 'undefined') {
-		console.log(typeof this.value);
 		this.value = parseInt(this.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
 	}
 	sendCommand.call(this, e);
@@ -37,7 +36,6 @@ function onClick(e) {
 
 function sendCommand(e) {
 	var param = this.id.split(':');
-	var value = this.value;
 
 	switch(param[0]) {
 	case 'gain':
@@ -108,20 +106,20 @@ function sendCommand(e) {
 		switch(param[1]) {
 		case 'channel' :
 			pid += Object.keys(objects).length;
-			this.colors.vtaxis.style['border']  = 'solid ' + colorTab[this.colors.value];
+			this.colors.vtaxis.style['border']  = 'solid #' + colorTab[this.colors.value];
 			break;
 		case 'hzaxis' :
 			pid = objects.horizontalfg.pid; 
-			this.colors.hzaxis.style['border']  = 'solid ' + colorTab[this.colors.value];
+			this.colors.hzaxis.style['border']  = 'solid #' + colorTab[this.colors.value];
 			break;
 		}
+		// console.log("hola " + this.colors.value);
 		sendRegister(registers.palette, { 
 			opacityena  : 0,
 			colorena    : 1,
 			opacity     : 1,
 			pid         : pid,
-			color       : this.colors.value });
-		console.log(param);
+			color       : parseInt("0x" + colorTab[this.colors.value]) });
 		break;
 	case 'color' :
 
@@ -129,6 +127,7 @@ function sendCommand(e) {
 		this.colors.value  = parseInt(this.colors.value) + parseInt(((e.deltaY > 0) ? 1 : -1));
 		this.colors.value += colorTab.length;
 		this.colors.value %= colorTab.length;
+		console.log("color : " + this.colors.value + " : " + parseInt("0x" + colorTab[this.colors.value]));
 
 		this.colors.color.style['background-color']  = colorTab[this.colors.value];
 		sendRegister(registers.palette, { 
@@ -136,7 +135,8 @@ function sendCommand(e) {
 			colorena    : 1,
 			opacity     : 1,
 			pid         : pid,
-			color       : this.colors.value });
+			color       : parseInt("0x" + colorTab[this.colors.value]) });
+			// color       : this.colors.value });
 		break;
 	default :
 		console.log("Invalid : " + param[0]);

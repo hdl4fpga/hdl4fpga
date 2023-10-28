@@ -35,11 +35,11 @@ use hdl4fpga.textboxpkg.all;
 
 package scopeiopkg is
 
-	constant femto : real := 1.0e0;
-	constant pico  : real := 1.0e3*femto;
-	constant nano  : real := 1.0e3*pico;
-	constant micro : real := 1.0e3*nano;
-	constant milli : real := 1.0e3*micro;
+	constant femto : real := 1.0e-15;
+	constant pico  : real := 1.0e-12;
+	constant nano  : real := 1.0e-9;
+	constant micro : real := 1.0e-6;
+	constant milli : real := 1.0e-3;
 
 	subtype i18n_langs is natural range 0 to 2-1;
 	constant lang_EN : i18n_langs := 0;
@@ -92,18 +92,7 @@ package scopeiopkg is
 		sd480,
 		sd600,
 		hd720,
-		hd1080,
-		sd600x16,
-		sd600x16fs,
-		lcd480x272seg1,
-		lcd480x272seg2,
-		lcd1280x1024seg4,
-		oled96x64,
-		oled96x64ongrid,
-		lcd240x240,
-		lcd800x480,
-		lcd800x480ongrid,
-		lcd1024x600);
+		hd1080);
 
 	type displaylayout_vector is array (displaylayout_ids) of display_layout;
 
@@ -138,7 +127,7 @@ package scopeiopkg is
 			axis_fontsize   =>    8,
 			textbox_fontwidth =>  8,
 			hzaxis_height   =>  8,
-			hzaxis_within   => true,
+			hzaxis_within   => false,
 			vtaxis_width    =>  1*8,
 			vtaxis_within   => false,
 			vttick_rotate   => ccw90,
@@ -148,226 +137,6 @@ package scopeiopkg is
 			main_gap        => (vertical => 16, others => 0),
 			sgmnt_margin    => (top => 1, bottom => 1, others => 0),
 			sgmnt_gap       => (horizontal => 1, others => 0)),
-		sd600x16 => (            
-			display_width    =>  96,
-			display_height   =>  64,
-			num_of_segments  =>   1,
-			division_size    =>   8,
-			grid_width       => 12*8,
-			grid_height      =>  8*8,
-			axis_fontsize    =>    8,
-			textbox_fontwidth   =>  8,
-			hzaxis_height   =>  8,
-			hzaxis_within   => true,
-			vtaxis_width    =>  1*8,
-			vtaxis_within   => true,
-			vttick_rotate    => ccw90,
-			textbox_width    => 8,
-			textbox_within   => true,
-			main_margin      => (others => 0),
-			main_gap         => (others => 0),
-			sgmnt_margin     => (others => 0),
-			sgmnt_gap        => (others => 0)),
-		sd600x16fs => (
-			display_width    =>   800,
-			display_height   =>   600,
-			num_of_segments  =>     4,
-			division_size    =>    32,
-			grid_width       => 46*16,
-			grid_height      =>  8*16+1,
-			axis_fontsize    =>     8,
-			textbox_fontwidth=>     8,
-			hzaxis_height    =>     8,
-			hzaxis_within    => false,
-			vtaxis_width     =>   6*8,
-			vtaxis_within    => false,
-			vttick_rotate    =>  ccw0,
-			textbox_width    =>  32*8,
-			textbox_within   =>  true,
-			main_margin      => (others => 0),
-			main_gap         => (others => 4),
-			sgmnt_margin     => (others => 0),
-			sgmnt_gap        => (others => 0)),
-		lcd480x272seg1 => (
-			display_width    =>   480,
-			display_height   =>   272,
-			num_of_segments  =>     1,
-			division_size    =>    16,
-			grid_width       => 27*16,
-			grid_height      => 16*16+1,
-			axis_fontsize    =>     8,
-			textbox_fontwidth=>     8,
-			hzaxis_height    =>     8,
-			hzaxis_within    => false,
-			vtaxis_width     =>   6*8,
-			vtaxis_within    => false,
-			vttick_rotate    =>  ccw0,
-			textbox_width    =>  32*8,
-			textbox_within   =>  true,
-			main_margin      => (others => 0),
-			main_gap         => (others => 0),
-			sgmnt_margin     => (others => 0),
-			sgmnt_gap        => (others => 0)),
-		lcd480x272seg2 => (
-			display_width    =>   480,
-			display_height   =>   272,
-			num_of_segments  =>     2,
-			division_size    =>    16,
-			grid_width       => 27*16,
-			grid_height      =>  8*16,
-			axis_fontsize    =>     8,
-			textbox_fontwidth=>     8,
-			hzaxis_height    =>     8,
-			hzaxis_within    => false,
-			vtaxis_width     =>   6*8,
-			vtaxis_within    => false,
-			vttick_rotate    =>  ccw0,
-			textbox_width    =>  32*8,
-			textbox_within   =>  true,
-			main_margin      => (others => 0),
-			main_gap         => (others => 0),
-			sgmnt_margin     => (others => 0),
-			sgmnt_gap        => (others => 0)),
-		oled96x64 => (
-			display_width    =>   96,
-			display_height   =>   64,
-			num_of_segments  =>    1,
-			division_size    =>    8,
-			grid_width       => 11*8+1,
-			grid_height      =>  7*8+1,
-			axis_fontsize    =>    8,
-			textbox_fontwidth   =>  8,
-			hzaxis_height    =>    7,
-			hzaxis_within   =>  false,
-			vtaxis_width     =>    7,
-			vtaxis_within    => false,
-			vttick_rotate    => ccw90,
-			textbox_width    => 0,
-			textbox_within   => false,
-			main_margin      => (others => 0),
-			main_gap         => (others => 0),
-			sgmnt_margin     => (others => 0),
-			sgmnt_gap        => (others => 0)),
-		oled96x64ongrid => (
-			display_width    =>   96,
-			display_height   =>   64,
-			num_of_segments  =>    1,
-			division_size    =>   16,
-			grid_width       => 6*16,
-			grid_height      => 4*16,
-			axis_fontsize    =>    8,
-			textbox_fontwidth   =>  8,
-			hzaxis_height    =>    8,
-			hzaxis_within   =>  true,
-			vtaxis_width     =>    8,
-			vtaxis_within   =>  true,
-			vttick_rotate    => ccw90,
-			textbox_width    => 0,
-			textbox_within   => true,
-			main_margin      => (others => 0),
-			main_gap         => (others => 0),
-			sgmnt_margin     => (others => 0),
-			sgmnt_gap        => (others => 0)),
-		lcd240x240 => (
-			display_width    =>  240,
-			display_height   =>  240,
-			num_of_segments  =>    1,
-			division_size    =>   16,
-			grid_width       =>  240,
-			grid_height      => 7*32+1,
-			axis_fontsize    =>    8,
-			hzaxis_height    =>    8,
-			hzaxis_within    => false,
-			vtaxis_width     =>    8,
-			vtaxis_within    => true,
-			vttick_rotate    => ccw90,
-			textbox_fontwidth=>    8,
-			textbox_width    =>  240,
-			textbox_within   => true,
-			main_margin      => (others => 0),
-			main_gap         => (others => 0),
-			sgmnt_margin     => (others => 0),
-			sgmnt_gap        => (others => 0)),
-		lcd800x480 => (
-			display_width    =>  800,
-			display_height   =>  480,
-			num_of_segments  =>    3,
-			division_size    =>   16,
-			grid_width       => 46*16+1,
-			grid_height      =>  9*16+1,
-			axis_fontsize    =>    8,
-			textbox_fontwidth   =>  8,
-			hzaxis_height    =>    8,
-			hzaxis_within   =>  false,
-			vtaxis_width     =>  6*8,
-			vtaxis_within   =>  false,
-			vttick_rotate    => ccw0,
-			textbox_width    => 33*8,
-			textbox_within   => true,
-			main_margin      => (others => 0),
-			main_gap         => (others => 4),
-			sgmnt_margin     => (others => 0),
-			sgmnt_gap        => (others => 0)),
-		lcd800x480ongrid => (
-			display_width    =>  800,
-			display_height   =>  480,
-			num_of_segments  =>    3,
-			division_size    =>   32,
-			grid_width       =>   32*25,
-			grid_height      =>   32*5,
-			axis_fontsize    =>    8,
-			textbox_fontwidth   =>  8,
-			hzaxis_height    =>    8,
-			hzaxis_within   =>  true,
-			vtaxis_width     =>  6*8,
-			vttick_rotate    => ccw0,
-			vtaxis_within   =>  true,
-			textbox_width    => 33*8,
-			textbox_within   => true,
-			main_margin      => (others => 0),
-			main_gap         => (others => 0),
-			sgmnt_margin     => (others => 0),
-			sgmnt_gap        => (others => 0)),
-		lcd1024x600 => (
-			display_width    => 1024,
-			display_height   =>  600,
-			num_of_segments  =>    1,
-			division_size    =>   32,
-			grid_width       => 30*32+1,
-			grid_height      => 18*32+1,
-			axis_fontsize    =>    8,
-			textbox_fontwidth   =>  8,
-			hzaxis_height    =>    8,
-			hzaxis_within   =>  false,
-			vtaxis_width     =>  6*8,
-			vtaxis_within   =>  false,
-			vttick_rotate    => ccw0,
-			textbox_width    => 33*8,
-			textbox_within   => true,
-			main_margin      => (others => 0),
-			main_gap         => (others => 4),
-			sgmnt_margin     => (others => 0),
-			sgmnt_gap        => (others => 0)),
-		lcd1280x1024seg4 => (
-			display_width    => 1280,
-			display_height   => 1024,
-			num_of_segments  =>    4,
-			division_size    =>   32,
-			grid_width       => 38*32+1,
-			grid_height      =>  8*32,
-			axis_fontsize    =>    8,
-			textbox_fontwidth=>    8,
-			hzaxis_height    =>    8,
-			hzaxis_within    => true,
-			vtaxis_width     =>  6*8,
-			vttick_rotate    => ccw0,
-			textbox_width    => 33*8,
-			vtaxis_within    => false,
-			textbox_within   => true,
-			main_margin      => (others => 0),
-			main_gap         => (others => 0),
-			sgmnt_margin     => (others => 0),
-			sgmnt_gap        => (others => 0)),
 		hd720 => (
 			display_width    => 1280,
 			display_height   =>  720,
@@ -496,9 +265,9 @@ package scopeiopkg is
 		8 => pltid_sgmntbg,
 		9 => pltid_scopeiobg);
 
-	constant max_inputs    : natural := 64-pltid_order'length;
+	constant max_inputs     : natural := 32-pltid_order'length;
 	constant maxinputs_bits : natural := unsigned_num_bits(max_inputs-1);
-	constant chanid_maxsize  : natural := unsigned_num_bits(max_inputs-1);
+	constant chanid_maxsize : natural := unsigned_num_bits(max_inputs-1);
 
 	function bitfield (
 		constant bf_rgtr   : std_logic_vector;
@@ -1395,23 +1164,29 @@ package body scopeiopkg is
 				vt_tag(tagindexbyid(vt_tag,"vt(0).text")).content := input_names(tagindexbyid(input_names,"vt(0).text")).content;
 			end if;
 		end if;
+
 		vt_tags(0 to vt0_tags'length-1) := vt_tag;
 		for i in 1 to inputs-1 loop
 			vt_tag := vt0_tags;
 			if input_names'length > 0 then 
-				if isvalidbyid(input_names, "vt(" & itoa(i) & ").text") then
+				if isvalidbyid(input_names, "vt(" & integer'image(i) & ").text") then
 					vt_tag(tagindexbyid(vt_tag, "vt(0).text")).content := input_names(tagindexbyid(input_names, "vt(" & itoa(i) & ").text")).content;
-					vt_tag(tagindexbyid(vt_tag,"vt(0).text")).id := strfill("vt(" & itoa(i) & ").text", 16);
+        			vt_tag(tagindexbyid(vt_tag, "vt(0)")).style(key_textpalette) := i+pltid_order'length;
+        			vt_tag(tagindexbyid(vt_tag, "vt(0)")).id        := strfill("vt(" & itoa(i) & ")", 16);
+        			vt_tag(tagindexbyid(vt_tag, "vt(0).text")).id   := strfill("vt(" & itoa(i) & ").text", 16);
+        			vt_tag(tagindexbyid(vt_tag, "vt(0).offset")).id := strfill("vt(" & itoa(i) & ").offset", 16);
+        			vt_tag(tagindexbyid(vt_tag, "vt(0).div")).id    := strfill("vt(" & itoa(i) & ").div", 16);
+        			vt_tag(tagindexbyid(vt_tag, "vt(0).mag")).id    := strfill("vt(" & itoa(i) & ").mag", 16);
+				else
+					report input_names(i).id & " is not valid tag" 
+					severity FAILURE;
 				end if;
 			end if;
 
-			vt_tag(tagindexbyid(vt_tag,"vt(0)")).style(key_textpalette) := i+pltid_order'length;
-
-			vt_tag(tagindexbyid(vt_tag,"vt(0)")).id        := strfill("vt(" & itoa(i) & ")", 16);
-			vt_tag(tagindexbyid(vt_tag,"vt(0).text")).id   := strfill("vt(" & itoa(i) & ").text", 16);
-			vt_tag(tagindexbyid(vt_tag,"vt(0).offset")).id := strfill("vt(" & itoa(i) & ").offset", 16);
-			vt_tag(tagindexbyid(vt_tag,"vt(0).div")).id    := strfill("vt(" & itoa(i) & ").div", 16);
-			vt_tag(tagindexbyid(vt_tag,"vt(0).mag")).id    := strfill("vt(" & itoa(i) & ").mag", 16);
+			-- for i in vt_tag'range loop
+				-- report CR & LF & integer'image(i) & " ---> " & vt_tag(i).id
+				-- severity warning;
+			-- end loop;
 
 			vt_tags(i*vt_tag'length to (i+1)*vt_tag'length-1) := vt_tag;
 		end loop;

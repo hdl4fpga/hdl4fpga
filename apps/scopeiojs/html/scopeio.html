@@ -27,6 +27,10 @@
 		<title>ScopeIO</title>
 		<link rel="stylesheet" href="scopeio.css">
 		<meta charset="utf-8">
+		<script>
+			require('nw.gui').Window.get().showDevTools();
+		  </script>
+
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
 		<script src="../srcjs/i18n.js"></script>
 		<script src="../srcjs/registers.js"></script>
@@ -38,7 +42,7 @@
 		<script src="../srcjs/scope.js"></script>
 	</head>
 	<body style="background-color:#444444;text-align:left;vertical-align:top;font-family:verdana;font-size:10pt;font-weight:bold;">
-		<div style="text-align:left;padding:0pt;margin:1pt;background-color:#444444;display:vertical-align:middle;border:solid #404040 1pt;">
+		<div style="text-align:left;padding:0pt;margin:1pt;background-color:#444444;display:inline-block;vertical-align:middle;border:solid #404040 1pt;">
 			<!-- Languages -->
 			<div style="background-color:#000000;padding:2pt;margin:0pt;display:inline-block;vertical-align:middle;border:solid #888888 2pt;text-align:left">
 				<select id="lang-select" style="display:inline-block;">
@@ -54,8 +58,9 @@
 			<!-- Communication container -->
 			<div id="comm" style="background-color:#000000;padding:2pt;margin:0pt;display:inline-block;vertical-align:middle;border:solid #888888 1pt;text-align:left">
 				<select id="comm-select" style="display:inline-block;">
-					<option id="UART" value="0">UART</option>
-					<option id="TCPIP" value="1">TCPIP</option>
+					<option id="USB" value="2">USB</option>
+					<option id="TCPIP" value="0">TCPIP</option>
+					<option id="UART" value="1">UART</option>
 				</select>
 				<div id="comm-param" style="text-align:center;color:#ffffff;display:inline-block;vertical-align:middle;">
 				</div>
