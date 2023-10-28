@@ -385,7 +385,7 @@ begin
 			input_sample : out std_logic_vector(12-1 downto 0);
 
 			adc_sclk     : out std_logic;
-			adc_csn      : out std_logic;
+			adc_csn      : buffer std_logic;
 			adc_miso     : in  std_logic;
 			adc_mosi     : out std_logic);
 		port map (
@@ -415,20 +415,18 @@ begin
     	attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(clkos_freq/1.0e6, 10);
     	attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(clkos2_freq/1.0e6, 10);
 
-    	signal clkos  : std_logic;
-
+    	signal clkos    : std_logic;
+    	signal clkos2   : std_logic;
 		signal adc_din  : std_logic_vector(16-1 downto 0);
 		signal adc_dout : std_logic_vector(16-1 downto 0);
-		signal adc_sin  : std_logic_vector(0 to 0);
-		signal adc_sout : std_logic_vector(0 to 0);
--- 
+
     begin
 
     	assert false
     	report CR &
-    		"max1112x  : " & pll_i'FREQUENCY_PIN_CLKOS  & " MHz "  & CR &
-    		"CLKOS  : " & pll_i'FREQUENCY_PIN_CLKOS  & " MHz "  & CR &
-    		"CLKOS2 : " & pll_i'FREQUENCY_PIN_CLKOS2 & " MHz "
+    		"MAX1112X" & CR &
+    		"CLKOS     : " & pll_i'FREQUENCY_PIN_CLKOS  & " MHz "  & CR &
+    		"CLKOS2    : " & pll_i'FREQUENCY_PIN_CLKOS2 & " MHz "
     	severity NOTE;
 
     	pll_i : EHXPLLL
@@ -465,39 +463,55 @@ begin
     		ENCLKOS2  => '0',
     		ENCLKOS3  => '0',
     		CLKOS     => clkos,
-    		CLKOS2    => input_clk,
+    		CLKOS2    => clkos2,
     		LOCK      => input_lck,
     		INTLOCK   => open,
     		REFCLK    => open,
     		CLKINTFB  => open);
+		adc_sclk <= clkos2;
 
-		process (input_clk)
+		process (clkos, clkos2)
+			constant n    : natural := 16-1;
+			variable cntr : unsigned(0 to unsigned_num_bits(n));
 		begin
-			if rising_edge(input_clk) then
+			if rising_edge(clkos2) then
+				if cntr(0)/='0' then
+					cntr := to_unsigned(n-1, cntr'length);
+				else
+					cntr := cntr - 1;
+				end if;
+				adc_csn <= cntr(0);
 			end if;
 		end process;
 
-		desser_e : entity hdl4fpga.serlzr
-	   	port map (
-			src_clk   => input_clk,
-			src_irdy  => input_ena,
-			src_data  => adc_din,
-			dst_clk   => input_clk,
-			dst_data  => adc_sout);
-		adc_mosi <= adc_sout(0);
+		--                SCAN     CHSEL      RESET   PM      CHAN_ID UNSED
+		adc_din <= b"1" & b"0000" & b"0000" & b"00" & b"00" & b"11" & "-";
+		desser_p : process (clkos2)
+			variable shr : unsigned(adc_din'range);
+		begin
+			if rising_edge(clkos2) then
+				if adc_csn='1' then
+					shr := unsigned(adc_din);
+				end if;
+				shr := shr rol 1;
+				adc_mosi <= shr(0);
+			end if;
+		end process;
 
-		adc_sin(0) <= adc_miso;
-		serdes_e : entity hdl4fpga.serlzr
-	   	port map (
-			src_clk   => input_clk,
-			src_data  => adc_sin,
-			dst_clk   => input_clk,
-			dst_irdy  => input_ena,
-			dst_data  => adc_dout);
+		serdes_p : process (adc_din, clkos2)
+			variable shr : unsigned(adc_din'range);
+		begin
+			if rising_edge(clkos2) then
+				shr    := shr rol 1;
+				shr(0) := adc_miso;
+				if adc_csn='1' then
+					adc_dout <= std_logic_vector(shr);
+				end if;
+			end if;
+		end process;
 
-		input_chn    <= adc_dout(input_chn'length+12-1 downto input_sample'length);
-		input_sample <= adc_dout(input_sample'length-1 downto 0);
+		input_sample <= std_logic_vector(resize(shift_right(unsigned(adc_dout), 3), input_sample'length)); -- MAX11120–MAX11128 Pgae 22
+
 	end block;
-
 
 end;

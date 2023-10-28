@@ -463,6 +463,7 @@ $(WORK__ulx3s) : ../../boards/ULX3S/common/ulx3s.vhd \
 	$(VCOM) -2002 ../../boards/ULX3S/common/ulx3s.vhd
 
 $(WORK__ulx3s__scopeio) : ../../boards/ULX3S/apps/scopeio.vhd \
+		$(HDL4FPGA__serlzr) \
 		$(HDL4FPGA__ecp5_ogbx) \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__dvi) \
@@ -558,7 +559,7 @@ $(WORK__ulx3s_scopeio_structure_md) : ../../boards/ULX3S/testbenches/scopeio.vhd
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(WORK__testbench)
-	$(VCOM) -2002  ../../boards/ULX3S/testbenches/scopeio.vhd
+	$(VCOM) -2002 ../../boards/ULX3S/testbenches/scopeio.vhd
 
 $(WORK__ulx4m_ld) : ../../boards/ULX4M_LD/common/ulx4m_ld.vhd \
 		$(IEEE__std_logic_arith) \

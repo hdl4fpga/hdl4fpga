@@ -195,6 +195,8 @@ architecture ulx3s_scopeio of testbench is
 	alias   mii_rxdv   : std_logic is gn(10);
 	signal 	mii_rxd    : std_logic_vector(0 to 2-1);
 
+	signal adc_mosi    : std_logic;
+	signal adc_miso    : std_logic;
 begin
 
 	rst      <= '1', '0' after 10 us;
@@ -250,6 +252,7 @@ begin
 		mii_txen  => mii_txen,
 		mii_txd   => mii_txd); 
 
+	adc_miso <= adc_mosi;
 	du_e : ulx3s
 	generic map (
 		debug => debug)
@@ -264,6 +267,8 @@ begin
 		fire2      => fire2,
 		gp         => gp,
 		gn         => gn,
+		adc_mosi   => adc_mosi,
+		adc_miso   => adc_mosi,
 		sdram_clk  => sdram_clk,
 		sdram_cke  => sdram_cke,
 		sdram_csn  => sdram_cs_n,
@@ -292,7 +297,7 @@ end;
 library micron;
 
 configuration ulx3s_scopeio_structure_md of testbench is
-	for ulx3s_graphics
+	for ulx3s_scopeio
 		for all : ulx3s
 			use entity work.ulx3s(structure);
 		end for;
@@ -316,7 +321,7 @@ end;
 library micron;
 
 configuration ulx3s_scopeio_md of testbench is
-	for ulx3s_graphics
+	for ulx3s_scopeio
 		for all : ulx3s
 			use entity work.ulx3s(scopeio);
 		end for;
