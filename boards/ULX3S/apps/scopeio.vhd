@@ -88,9 +88,10 @@ architecture scopeio of ulx3s is
 	signal input_clk     : std_logic;
 	signal input_lck     : std_logic;
 	signal input_chn     : std_logic_vector(4-1 downto 0);
-	signal input_sample  : std_logic_vector(12-1 downto 0);
 	signal input_ena     : std_logic;
-	signal samples       : std_logic_vector(0 to inputs*sample_size-1);
+	signal input_sample  : std_logic_vector(12-1 downto 0);
+	signal input_enas    : std_logic;
+	signal input_samples : std_logic_vector(0 to inputs*sample_size-1);
 	signal tp            : std_logic_vector(1 to 32);
 
 	signal usb_frm       : std_logic;
@@ -100,6 +101,8 @@ architecture scopeio of ulx3s is
 
 	signal opacity_frm   : std_logic;
 	signal opacity_data  : std_logic_vector(si_data'range);
+
+	signal adc_clk       : std_logic;
 
 begin
 
@@ -161,6 +164,10 @@ begin
 			so_trdy   => usb_trdy,
 			so_data   => usb_data);
 	end generate;
+
+	assert io_link=io_usb
+	report "unsupported implementation "
+	severity FAILURE;
 
 	inputs_b : block
 
@@ -291,8 +298,8 @@ begin
 		si_data     => si_data,
 		so_data     => so_data,
 		input_clk   => input_clk,
-		input_ena   => input_ena,
-		input_data  => samples,
+		input_ena   => input_enas,
+		input_data  => input_samples,
 		video_clk   => video_clk,
 		video_pixel => video_pixel,
 		video_hsync => video_hzsync,
@@ -376,15 +383,32 @@ begin
 
 	end generate;
 
+	input_chn <= (others => '0');
+	process (input_clk)
+	begin
+		if rising_edge(input_clk) then
+			if input_ena='1' then
+				for i in 0 to inputs-1 loop
+					if unsigned(input_chn)=i then
+						input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;
+						input_enas <= '1';
+					end if;
+				end loop;
+			else
+				input_enas <= '0';
+			end if;
+		end if;
+	end process;
+
 	max1112x_b : block
 		port (
 			clk_25mhz    : in  std_logic;
-			input_clk    : buffer std_logic;
-			input_ena    : buffer std_logic;
-			input_chn    : out std_logic_vector( 4-1 downto 0);
+			input_clk    : out std_logic;
+			input_ena    : out std_logic;
+			input_chn    : in  std_logic_vector( 4-1 downto 0);
 			input_sample : out std_logic_vector(12-1 downto 0);
 
-			adc_sclk     : out std_logic;
+			adc_clk      : out std_logic;
 			adc_csn      : buffer std_logic;
 			adc_miso     : in  std_logic;
 			adc_mosi     : out std_logic);
@@ -394,7 +418,7 @@ begin
 			input_ena    => input_ena,
 			input_chn    => input_chn,
 			input_sample => input_sample,
-			adc_sclk     => adc_sclk,
+			adc_clk      => adc_clk,
 			adc_csn      => adc_csn,
 			adc_miso     => adc_miso,
 			adc_mosi     => adc_mosi);
@@ -468,7 +492,8 @@ begin
     		INTLOCK   => open,
     		REFCLK    => open,
     		CLKINTFB  => open);
-		adc_sclk <= clkos2;
+		adc_clk <= clkos2;
+		input_clk <= clkos2;
 
 		process (clkos, clkos2)
 			constant n    : natural := 16-1;
@@ -480,12 +505,13 @@ begin
 				else
 					cntr := cntr - 1;
 				end if;
-				adc_csn <= cntr(0);
+				adc_csn   <= cntr(0);
+				input_ena <= adc_csn;
 			end if;
 		end process;
 
-		--                SCAN     CHSEL      RESET   PM      CHAN_ID UNSED
-		adc_din <= b"1" & b"0000" & b"0000" & b"00" & b"00" & b"11" & "-";
+		--                SCAN      CHSEL       RESET   PM      CHAN_ID UNuSED
+		adc_din <= b"1" & b"0000" & input_chn & b"00" & b"00" & b"11" & "-";
 		desser_p : process (clkos2)
 			variable shr : unsigned(adc_din'range);
 		begin
@@ -513,5 +539,13 @@ begin
 		input_sample <= std_logic_vector(resize(shift_right(unsigned(adc_dout), 3), input_sample'length)); -- MAX11120–MAX11128 Pgae 22
 
 	end block;
+
+	adcsclk_i : oddrx1f
+	port map(
+		sclk => adc_clk,
+		rst  => '0',
+		d0   => '0',
+		d1   => '1',
+		q    => adc_sclk);
 
 end;
