@@ -83,7 +83,6 @@ architecture scopeio of ulx3s is
 	signal so_end        : std_logic;
 	signal so_data       : std_logic_vector(8-1 downto 0);
 
-	constant sample_size : natural := 12;
 	constant inputs      : natural := 8;
 	signal input_clk     : std_logic;
 	signal input_lck     : std_logic;
@@ -91,7 +90,7 @@ architecture scopeio of ulx3s is
 	signal input_ena     : std_logic;
 	signal input_sample  : std_logic_vector(12-1 downto 0);
 	signal input_enas    : std_logic;
-	signal input_samples : std_logic_vector(0 to inputs*sample_size-1);
+	signal input_samples : std_logic_vector(0 to inputs*input_sample'length-1);
 	signal tp            : std_logic_vector(1 to 32);
 
 	signal usb_frm       : std_logic;
@@ -406,7 +405,7 @@ begin
 			input_clk    : out std_logic;
 			input_ena    : out std_logic;
 			input_chn    : in  std_logic_vector( 4-1 downto 0);
-			input_sample : out std_logic_vector(12-1 downto 0);
+			input_sample : buffer std_logic_vector(12-1 downto 0);
 
 			adc_clk      : out std_logic;
 			adc_csn      : buffer std_logic;
@@ -531,10 +530,11 @@ begin
 						adc_din <= b"0" & b"0001" & input_chn & b"00" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
 					end case;
 				end if;
+				-- adc_din <= b"0" & b"0001" & input_chn & b"00" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
 			end if;
 		end process;
 
-		adc_din <= b"0" & b"0001" & input_chn & b"00" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
+		-- adc_din <= b"0" & b"0001" & input_chn & b"00" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
 		-- adc_din <= b"1" & b"0001" & b"0000"   & b"00" & b"00" & b"0" &  b"-" & "-"; -- Unipolar
 		-- adc_din <= b"1" & b"0010" & b"0000"   & b"00" & b"00" & b"0" &  b"-" & "-"; -- Unipolar
 		desser_p : process (clkos2)
@@ -561,7 +561,9 @@ begin
 			end if;
 		end process;
 
-		input_sample <= std_logic_vector(resize(shift_right(unsigned(adc_dout), 0), input_sample'length)); -- MAX11120–MAX11128 Pgae 22
+		-- led <= adc_dout(16-1 downto 8);
+		input_sample <= std_logic_vector(resize(shift_right(unsigned(adc_dout), 3), input_sample'length)); -- MAX11120–MAX11128 Pgae 22
+		led <= b"0000" & input_sample(12-1 downto 8) when left='1' else input_sample(8-1 downto 0);
 
 	end block;
 
