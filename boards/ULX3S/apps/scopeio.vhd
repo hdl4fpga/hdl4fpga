@@ -510,8 +510,33 @@ begin
 			end if;
 		end process;
 
-		--                SCAN      CHSEL       RESET   PM      CHAN_ID UNuSED
-		adc_din <= b"1" & b"0000" & input_chn & b"00" & b"00" & b"11" & "-";
+		process (clkos)
+			                                         --     SCAN      CHSEL     RESET   PM      CHAN_ID SWCNV  UNUSED
+			constant reset_all : std_logic_vector := b"0" & b"0000" & b"0000" & b"10" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
+			constant unipolar  : std_logic_vector := b"1" & b"0001" & b"0000" & b"00" & b"00" & b"0" &  b"0" & "0"; -- Unipolar
+			constant bipolar   : std_logic_vector := b"1" & b"0010" & b"0000" & b"00" & b"00" & b"0" &  b"1" & "0"; -- Bipolar
+			-- constant range     : std_logic_vector := b"1" & b"0011" & b"0000" & b"00" & b"00" & b"0" &  b"1" & "0"; -- Bipolar
+			type states is (s_init, s_running);
+			variable state : states := s_init;
+		begin
+			if rising_edge(clkos) then
+				if input_lck='0' then
+					state := s_init;
+				elsif adc_csn='1' then
+					case state is
+					when s_init =>
+						adc_din <= reset_all;
+						state := s_running;
+					when s_running =>
+						adc_din <= b"0" & b"0001" & input_chn & b"00" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
+					end case;
+				end if;
+			end if;
+		end process;
+
+		adc_din <= b"0" & b"0001" & input_chn & b"00" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
+		-- adc_din <= b"1" & b"0001" & b"0000"   & b"00" & b"00" & b"0" &  b"-" & "-"; -- Unipolar
+		-- adc_din <= b"1" & b"0010" & b"0000"   & b"00" & b"00" & b"0" &  b"-" & "-"; -- Unipolar
 		desser_p : process (clkos2)
 			variable shr : unsigned(adc_din'range);
 		begin
@@ -536,7 +561,7 @@ begin
 			end if;
 		end process;
 
-		input_sample <= std_logic_vector(resize(shift_right(unsigned(adc_dout), 3), input_sample'length)); -- MAX11120–MAX11128 Pgae 22
+		input_sample <= std_logic_vector(resize(shift_right(unsigned(adc_dout), 0), input_sample'length)); -- MAX11120–MAX11128 Pgae 22
 
 	end block;
 
@@ -544,8 +569,8 @@ begin
 	port map(
 		sclk => adc_clk,
 		rst  => '0',
-		d0   => '0',
-		d1   => '1',
+		d0   => '1',
+		d1   => '0',
 		q    => adc_sclk);
 
 end;
