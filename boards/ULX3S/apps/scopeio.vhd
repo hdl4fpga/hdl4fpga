@@ -75,7 +75,6 @@ architecture scopeio of ulx3s is
 	constant max_delay   : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 
-	constant vt_step     : real := 1.0e3*milli/2.0**16; -- Volts
 	signal so_clk        : std_logic;
 	signal so_frm        : std_logic;
 	signal so_trdy       : std_logic;
@@ -83,13 +82,16 @@ architecture scopeio of ulx3s is
 	signal so_end        : std_logic;
 	signal so_data       : std_logic_vector(8-1 downto 0);
 
-	constant sample_size : natural := 12;
 	constant inputs      : natural := 8;
-	alias  input_clk     is videoio_clk;
-	signal input_chn     : std_logic_vector(4-1 downto 0);
-	signal input_sample  : std_logic_vector(12-1 downto 0);
+	signal input_clk     : std_logic;
+	signal input_lck     : std_logic;
+	signal input_chni    : std_logic_vector(4-1 downto 0);
+	signal input_chno    : std_logic_vector(4-1 downto 0);
 	signal input_ena     : std_logic;
-	signal samples       : std_logic_vector(0 to inputs*sample_size-1);
+	signal input_sample  : std_logic_vector(13-1 downto 0);
+	constant vt_step     : real := 3.3e3*milli/2.0**(input_sample'length-1); -- Volts
+	signal input_enas    : std_logic;
+	signal input_samples : std_logic_vector(0 to inputs*input_sample'length-1);
 	signal tp            : std_logic_vector(1 to 32);
 
 	signal usb_frm       : std_logic;
@@ -99,6 +101,8 @@ architecture scopeio of ulx3s is
 
 	signal opacity_frm   : std_logic;
 	signal opacity_data  : std_logic_vector(si_data'range);
+
+	signal adc_clk       : std_logic;
 
 begin
 
@@ -161,6 +165,10 @@ begin
 			so_data   => usb_data);
 	end generate;
 
+	assert io_link=io_usb
+	report "unsupported implementation "
+	severity FAILURE;
+
 	inputs_b : block
 
 		signal rgtr_id   : std_logic_vector(8-1 downto 0);
@@ -176,14 +184,42 @@ begin
 
 	begin
 
-		with rev_scale select
-		opacity <= 
-			b"1000_0000" when "0000",
-			b"1100_0000" when "0001",
-			b"1111_0000" when "0010",
-			b"1111_1000" when "0011",
-			b"1111_1111" when others;
-			
+		process (hz_scale)
+		begin
+			case hz_scale is
+			when b"0000" =>
+				opacity <= b"1000_0000";
+			when b"1000" =>
+				opacity <= b"1100_0000";
+			when b"0100" =>
+				opacity <= b"1111_0000";
+			when others =>
+				opacity <= b"1111_1111";
+			end case;
+		end process;
+
+		process(input_clk)
+			variable cntr : unsigned(input_chni'range) := (others => '0');
+		begin
+			if rising_edge(input_clk) then
+				if input_ena='1' then
+					if cntr >= unsigned(reverse(hz_scale)) then
+						cntr := (others => '0');
+						input_enas <= '1';
+					elsif cntr >= opacity'length-1 then
+						cntr := (others => '0');
+						input_enas <= '1';
+					else
+						cntr := cntr + 1;
+						input_enas <= '0';
+					end if;
+					input_chni <= std_logic_vector(cntr);
+				else
+					input_enas <= '0';
+				end if;
+			end if;
+		end process;
+
 		sio_sin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
@@ -205,11 +241,9 @@ begin
 			hz_dv     => hz_dv,
 			hz_scale  => hz_scale,
 			hz_slider => hz_slider);
-		rev_scale <= reverse(hz_scale);
 
 		process (opacity, sio_clk)
 			variable data : unsigned(0 to inputs*32-1);
-			variable xxxx : natural := (data'length+opacity_data'length-1)/opacity_data'length;
 			variable cntr : unsigned(0 to unsigned_num_bits((data'length+opacity_data'length-1)/opacity_data'length)-1);
 		begin
 			if rising_edge(sio_clk) then
@@ -245,7 +279,7 @@ begin
 		videotiming_id   => video_params.timing,
 		hz_unit          => 31.25*micro,
 		vt_steps         => (0 to inputs-1 => vt_step),
-		vt_unit          => 500.0*micro,
+		vt_unit          => 50.0*milli,
 		inputs           => inputs,
 		input_names      => (
 			text(id => "vt(0).text", content => "GN14"),
@@ -290,8 +324,8 @@ begin
 		si_data     => si_data,
 		so_data     => so_data,
 		input_clk   => input_clk,
-		input_ena   => input_ena,
-		input_data  => samples,
+		input_ena   => input_enas,
+		input_data  => input_samples,
 		video_clk   => video_clk,
 		video_pixel => video_pixel,
 		video_hsync => video_hzsync,
@@ -375,62 +409,213 @@ begin
 
 	end generate;
 
-	-- max1112x_b : block
-		-- port (
-			-- input_clk    : in std_logic;
-			-- input_ena    : buffer std_logic;
-			-- input_chn    : out std_logic_vector( 4-1 downto 0);
-			-- input_sample : out std_logic_vector(12-1 downto 0);
--- 
-			-- adc_sclk     : out std_logic;
-			-- adc_csn      : out std_logic;
-			-- adc_miso     : in  std_logic;
-			-- adc_mosi     : out std_logic);
-		-- port map (
-			-- input_clk    => input_clk,
-			-- input_ena    => input_ena,
-			-- input_chn    => input_chn,
-			-- input_sample => input_sample,
-			-- adc_sclk     => adc_sclk,
-			-- adc_csn      => adc_csn,
-			-- adc_miso     => adc_miso,
-			-- adc_mosi     => adc_mosi);
--- 
-		-- signal adc_din  : std_logic_vector(16-1 downto 0);
-		-- signal adc_dout : std_logic_vector(16-1 downto 0);
-		-- signal adc_sin  : std_logic_vector(0 to 0);
-		-- signal adc_sout : std_logic_vector(0 to 0);
--- 
-	-- begin
--- 
-		-- process (input_clk)
-		-- begin
-			-- if rising_edge(input_clk) then
-			-- end if;
-		-- end process;
--- 
-		-- desser_e : entity hdl4fpga.serlzr
-	   	-- port map (
-			-- src_clk   => input_clk,
-			-- src_irdy  => input_ena,
-			-- src_data  => adc_din,
-			-- dst_clk   => input_clk,
-			-- dst_data  => adc_sout);
-		-- adc_mosi <= adc_sout(0);
--- 
-		-- adc_sin(0) <= adc_miso;
-		-- serdes_e : entity hdl4fpga.serlzr
-	   	-- port map (
-			-- src_clk   => input_clk,
-			-- src_data  => adc_sin,
-			-- dst_clk   => input_clk,
-			-- dst_irdy  => input_ena,
-			-- dst_data  => adc_dout);
-		-- input_chn    <= adc_dout(input_chn'length+12-1 downto input_sample'length);
-		-- input_sample <= adc_dout(input_sample'length-1 downto 0);
--- 
-	-- end block;
+	process (input_clk)
+	begin
+		if rising_edge(input_clk) then
+			if input_ena='1' then
+				for i in 0 to inputs-1 loop
+					if unsigned(input_chno)=i then
+						assert false
+						report integer'image(i) & " : " & to_string(input_chno) & ": " & std_logic'image(input_ena)
+						severity WARNING;
+						input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;
+					end if;
+				end loop;
+			end if;
+		end if;
+	end process;
 
-	-- led <= tp(1 to 8);
+	max1112x_b : block
+		port (
+			clk_25mhz    : in  std_logic;
+			input_clk    : buffer std_logic;
+			input_ena    : buffer std_logic;
+			input_chni   : in  std_logic_vector( 4-1 downto 0);
+			input_chno   : out std_logic_vector( 4-1 downto 0);
+			input_sample : buffer std_logic_vector;
+
+			adc_clk      : out std_logic;
+			adc_csn      : out std_logic;
+			adc_miso     : in  std_logic;
+			adc_mosi     : out std_logic);
+		port map (
+			clk_25mhz    => clk_25mhz,
+			input_clk    => input_clk,
+			input_ena    => input_ena,
+			input_chni   => input_chni,
+			input_chno   => input_chno,
+			input_sample => input_sample,
+			adc_clk      => adc_clk,
+			adc_csn      => adc_csn,
+			adc_miso     => adc_miso,
+			adc_mosi     => adc_mosi);
+
+		constant clkref_freq : real := clk25mhz_freq;
+		constant clkos_div   : natural := 16;
+		constant clkos2_div  : natural := 25;
+    	constant clkos_freq  : real := clkref_freq;
+    	constant clkos2_freq : real := (real(clkos_div)*clkref_freq)/(real(clkos2_div));
+		constant input_freq  : real := clkos2_freq;
+
+    	signal clkos    : std_logic;
+    	signal clkos2   : std_logic;
+		signal adc_din  : std_logic_vector(16-1 downto 0);
+		signal adc_dout : std_logic_vector(16-1 downto 0);
+
+    	attribute FREQUENCY_PIN_CLKOS  : string;
+    	attribute FREQUENCY_PIN_CLKOS2 : string;
+    	attribute FREQUENCY_PIN_CLKOS3 : string;
+    	attribute FREQUENCY_PIN_CLKI   : string;
+    	attribute FREQUENCY_PIN_CLKOP  : string;
+
+    	attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa( clkos_freq/1.0e6, 10);
+    	attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(clkos2_freq/1.0e6, 10);
+
+    begin
+
+    	assert false
+    	report CR &
+    		"MAX1112X" & CR &
+    		"CLKOS     : " & pll_i'FREQUENCY_PIN_CLKOS  & " MHz "  & CR &
+    		"CLKOS2    : " & pll_i'FREQUENCY_PIN_CLKOS2 & " MHz "
+    	severity NOTE;
+
+    	pll_i : EHXPLLL
+    	generic map (
+    		PLLRST_ENA       => "DISABLED",
+    		INTFB_WAKE       => "DISABLED",
+    		STDBY_ENABLE     => "DISABLED",
+    		DPHASE_SOURCE    => "DISABLED",
+    		PLL_LOCK_MODE    =>  0,
+    		FEEDBK_PATH      => "CLKOS",
+    		CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => clkos_div-1,
+    		CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
+    		CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
+    		CLKOP_ENABLE     => "DISABLED", CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
+    		CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
+    		CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
+    		OUTDIVIDER_MUXD  => "DIVD",
+    		OUTDIVIDER_MUXC  => "DIVC",
+    		OUTDIVIDER_MUXB  => "DIVB",
+    		OUTDIVIDER_MUXA  => "DIVA",
+
+    		CLKOS_DIV        => clkos_div,
+    		CLKOS2_DIV       => clkos2_div)
+    	port map (
+			clki      => clk_25mhz,
+    		CLKFB     => clkos,
+    		PHASESEL0 => '0', PHASESEL1 => '0',
+    		PHASEDIR  => '0',
+    		PHASESTEP => '0', PHASELOADREG => '0',
+    		STDBY     => '0', PLLWAKESYNC  => '0',
+    		ENCLKOP   => '0',
+    		ENCLKOS   => '0',
+    		ENCLKOS2  => '0',
+    		ENCLKOS3  => '0',
+    		CLKOS     => clkos,
+    		CLKOS2    => clkos2,
+    		LOCK      => input_lck,
+    		INTLOCK   => open,
+    		REFCLK    => open,
+    		CLKINTFB  => open);
+		adc_clk   <= clkos2;
+		input_clk <= clkos2;
+
+		process (input_clk)
+			constant n    : natural := 16;
+			variable cntr : unsigned(0 to unsigned_num_bits(n-1)-1);
+		begin
+			if rising_edge(input_clk) then
+				if input_lck='0' then
+					cntr := to_unsigned(n-1, cntr'length);
+					adc_csn   <= '1';
+					input_ena <= '0';
+				elsif cntr=0 then
+					cntr := to_unsigned(n-1, cntr'length);
+					adc_csn   <= '1';
+					input_ena <= '1';
+				else
+					cntr := cntr - 1;
+					adc_csn   <= '0';
+					input_ena <= '0';
+				end if;
+			end if;
+		end process;
+
+		adccfg_p : process (input_clk)
+			constant adc_reset : std_logic_vector := b"0" & b"0000" & b"0000" & b"10" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
+			type states is (s_init, s_run);
+			variable state : states := s_init;
+		begin
+			if rising_edge(input_clk) then
+				if input_lck='0' then
+					adc_din <= adc_reset;
+					state   := s_init;
+				elsif input_ena='1' then
+					case state is
+					when s_init =>
+						adc_din <= adc_reset;
+						state := s_run;
+					when s_run =>
+						adc_din <= b"0" & b"0001" & input_chni & b"00" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
+					end case;
+				end if;
+			end if;
+		end process;
+
+		desser_p : process (input_clk)
+			variable shr : unsigned(0 to adc_din'length-1);
+		begin
+			if rising_edge(input_clk) then
+				if input_ena='1' then
+					shr := unsigned(adc_din);
+				end if;
+				adc_mosi <= shr(0);
+				shr := shr sll 1;
+			end if;
+		end process;
+
+		serdes_p : process (adc_din, input_clk)
+			variable shr : unsigned(adc_din'range);
+			variable chni : std_logic_vector(input_chni'range);
+			variable chnm : std_logic_vector(input_chni'range);
+			variable chno : std_logic_vector(input_chni'range);
+		begin
+			if rising_edge(input_clk) then
+				shr    := shr rol 1;
+				shr(0) := adc_miso;
+				if input_ena='1' then
+					input_chno <= chno;
+					chno := chnm;
+					chnm := chni;
+					chni := input_chni;
+					adc_dout <= std_logic_vector(shr);
+				end if;
+			end if;
+		end process;
+
+		input_sample <= std_logic_vector(resize(shift_right(unsigned(adc_dout), 3), input_sample'length)); -- MAX11120–MAX11128 Pgae 22
+
+	end block;
+
+	process (input_clk)
+		variable cntr : unsigned(0 to 12-1);
+	begin
+		if rising_edge(input_clk) then
+			if input_ena='1' then
+				cntr := cntr + 1;
+			end if;
+			-- (gp(17), gn(17), gp(16), gn(16), gp(15), gn(15), gp(14), gn(14)) <= std_logic_vector(cntr(0 to 8-1));
+			(gp(24), gn(24), gp(25), gn(25), gp(26), gn(26), gp(27), gn(27)) <= std_logic_vector(cntr(0 to 8-1));
+		end if;
+	end process;
+
+	adcsclk_i : oddrx1f
+	port map(
+		sclk => adc_clk,
+		rst  => '0',
+		d0   => '1',
+		d1   => '0',
+		q    => adc_sclk);
 
 end;

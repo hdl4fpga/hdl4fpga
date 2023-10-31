@@ -31,22 +31,22 @@ entity ulx3s is
 		clk_25mhz      : in    std_logic;
 
 		ftdi_rxd       : out   std_logic;
-		ftdi_txd       : in    std_logic := 'U';
-		ftdi_nrts      : inout std_logic := 'U';
-		ftdi_ndtr      : inout std_logic := 'U';
-		ftdi_txden     : inout std_logic := 'U';
+		ftdi_txd       : in    std_logic := 'Z';
+		ftdi_nrts      : inout std_logic := 'Z';
+		ftdi_ndtr      : inout std_logic := 'Z';
+		ftdi_txden     : inout std_logic := 'Z';
 
 
-		btn_pwr_n      : in  std_logic := 'U';
-		fire1          : in  std_logic := 'U';
-		fire2          : in  std_logic := 'U';
-		up             : in  std_logic := 'U';
-		down           : in  std_logic := 'U';
-		left           : in  std_logic := 'U';
-		right          : in  std_logic := 'U';
+		btn_pwr_n      : in  std_logic := 'Z';
+		fire1          : in  std_logic := 'Z';
+		fire2          : in  std_logic := 'Z';
+		up             : in  std_logic := 'Z';
+		down           : in  std_logic := 'Z';
+		left           : in  std_logic := 'Z';
+		right          : in  std_logic := 'Z';
 
 		led            : out std_logic_vector(8-1 downto 0);
-		sw             : in  std_logic_vector(4-1 downto 0) := (others => 'U');
+		sw             : in  std_logic_vector(4-1 downto 0) := (others => 'Z');
 
 
 		oled_clk       : out   std_logic;
@@ -62,15 +62,15 @@ entity ulx3s is
 		--flash_holdn    : out   std_logic;
 		--flash_wpn      : out   std_logic;
 
-		sd_clk         : in    std_logic := '-';
+		sd_clk         : in    std_logic := 'Z';
 		sd_cmd         : out   std_logic; -- sd_cmd=MOSI (out)
 		sd_d           : inout std_logic_vector(4-1 downto 0) := (others => 'U'); -- sd_d(0)=MISO (in), sd_d(3)=CSn (out)
-		sd_wp          : in    std_logic := '-';
-		sd_cdn         : in    std_logic := '-'; -- card detect not connected
+		sd_wp          : in    std_logic := 'Z';
+		sd_cdn         : in    std_logic := 'Z'; -- card detect not connected
 
 		adc_csn        : out   std_logic;
 		adc_mosi       : out   std_logic;
-		adc_miso       : in    std_logic := '-';
+		adc_miso       : in    std_logic := 'Z';
 		adc_sclk       : out   std_logic;
 
 		audio_l        : out   std_logic_vector(4-1 downto 0);
@@ -79,20 +79,20 @@ entity ulx3s is
 
 		wifi_en        : out   std_logic := '1'; -- '0' disables ESP32
 		wifi_rxd       : out   std_logic;
-		wifi_txd       : in    std_logic := '-';
+		wifi_txd       : in    std_logic := 'Z';
 		wifi_gpio0     : out   std_logic := '1'; -- '0' requests ESP32 to upload "passthru" bitstream
-		wifi_gpio5     : inout std_logic := '-';
-		wifi_gpio16    : inout std_logic := '-';
-		wifi_gpio17    : inout std_logic := '-';
+		wifi_gpio5     : inout std_logic := 'Z';
+		wifi_gpio16    : inout std_logic := 'Z';
+		wifi_gpio17    : inout std_logic := 'Z';
 
 		ant_433mhz     : out   std_logic;
 
-		usb_fpga_dp    : inout std_logic := 'U';  
-		usb_fpga_dn    : inout std_logic := 'U';  
-		usb_fpga_bd_dp : inout std_logic := 'U';
-		usb_fpga_bd_dn : inout std_logic := 'U';
-		usb_fpga_pu_dp : inout std_logic := 'U';
-		usb_fpga_pu_dn : inout std_logic := 'U';
+		usb_fpga_dp    : inout std_logic := 'Z';  
+		usb_fpga_dn    : inout std_logic := 'Z';  
+		usb_fpga_bd_dp : inout std_logic := 'Z';
+		usb_fpga_bd_dn : inout std_logic := 'Z';
+		usb_fpga_pu_dp : inout std_logic := 'Z';
+		usb_fpga_pu_dn : inout std_logic := 'Z';
 					   
 		sdram_clk      : inout std_logic;  
 		sdram_cke      : out   std_logic;
@@ -101,9 +101,9 @@ entity ulx3s is
 		sdram_rasn     : out   std_logic;
 		sdram_casn     : out   std_logic;
 		sdram_a        : out   std_logic_vector(13-1 downto 0);
-		sdram_ba       : out   std_logic_vector(2-1 downto 0);
-		sdram_dqm      : inout std_logic_vector(2-1 downto 0) := (others => 'U');
-		sdram_d        : inout std_logic_vector(16-1 downto 0) := (others => 'U');
+		sdram_ba       : out   std_logic_vector( 2-1 downto 0);
+		sdram_dqm      : inout std_logic_vector( 2-1 downto 0) := (others => 'Z');
+		sdram_d        : inout std_logic_vector(16-1 downto 0) := (others => 'Z');
 
 		gpdi_d         : out   std_logic_vector(4-1 downto 0);
 		gpdi_cec       : inout std_logic := '-';

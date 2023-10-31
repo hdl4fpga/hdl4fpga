@@ -25,26 +25,19 @@ use std.textio.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_textio.all;
+-- use ieee.std_logic_textio.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-library hdl4fpga;
-use hdl4fpga.base.all;
+-- library hdl4fpga;
+-- use hdl4fpga.base.all;
 
 entity main is
 end;
 
 architecture def of main is
 begin
-	main_p : process
-		variable msg : line;
-
-
-	begin
-		write(msg, ftoa(999.89, 5));
-		writeline(output, msg);
-		wait;
-	end process;
-
+	assert false
+	report "Hello world"
+	severity NOTE;
 end;
