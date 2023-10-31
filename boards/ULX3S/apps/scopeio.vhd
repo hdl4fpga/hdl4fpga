@@ -177,7 +177,6 @@ begin
 		signal rgtr_revs : std_logic_vector(rgtr_data'reverse_range);
 
 		signal hz_dv     : std_logic;
-		signal hz_scale1  : std_logic_vector(0 to 4-1);
 		signal hz_scale  : std_logic_vector(0 to 4-1);
 		signal hz_slider : std_logic_vector(0 to hzoffset_bits-1);
 		signal rev_scale : std_logic_vector(hz_scale'reverse_range);
@@ -187,14 +186,17 @@ begin
 
 		process (hz_scale)
 		begin
-			opacity <= (others => '0');
-			for i in 0 to opacity'length-1 loop
-				if to_integer(unsigned(reverse(hz_scale)))>=i then
-					opacity(i) <= '1';
-				end if;
-			end loop;
+			case hz_scale is
+			when b"0000" =>
+				opacity <= b"1000_0000";
+			when b"1000" =>
+				opacity <= b"1100_0000";
+			when b"0100" =>
+				opacity <= b"1111_0000";
+			when others =>
+				opacity <= b"1111_1111";
+			end case;
 		end process;
-
 
 		process(input_clk)
 			variable cntr : unsigned(input_chni'range) := (others => '0');
@@ -213,7 +215,7 @@ begin
 					end if;
 					input_chni <= std_logic_vector(cntr);
 				else
-						input_enas <= '0';
+					input_enas <= '0';
 				end if;
 			end if;
 		end process;
@@ -229,7 +231,6 @@ begin
 			rgtr_data => rgtr_data);
 		rgtr_revs <= reverse(rgtr_data,8);
 
-		-- hz_scale <= reverse(b"0000");
 		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
 		port map (
 			rgtr_clk  => sio_clk,
@@ -238,7 +239,6 @@ begin
 			rgtr_data => rgtr_revs,
 
 			hz_dv     => hz_dv,
-			-- hz_scale  => hz_scale1,
 			hz_scale  => hz_scale,
 			hz_slider => hz_slider);
 
@@ -429,13 +429,13 @@ begin
 		port (
 			clk_25mhz    : in  std_logic;
 			input_clk    : buffer std_logic;
-			input_ena    : out std_logic;
+			input_ena    : buffer std_logic;
 			input_chni   : in  std_logic_vector( 4-1 downto 0);
 			input_chno   : out std_logic_vector( 4-1 downto 0);
 			input_sample : buffer std_logic_vector;
 
 			adc_clk      : out std_logic;
-			adc_csn      : buffer std_logic;
+			adc_csn      : out std_logic;
 			adc_miso     : in  std_logic;
 			adc_mosi     : out std_logic);
 		port map (
@@ -450,12 +450,6 @@ begin
 			adc_miso     => adc_miso,
 			adc_mosi     => adc_mosi);
 
-    	attribute FREQUENCY_PIN_CLKOS  : string;
-    	attribute FREQUENCY_PIN_CLKOS2 : string;
-    	attribute FREQUENCY_PIN_CLKOS3 : string;
-    	attribute FREQUENCY_PIN_CLKI   : string;
-    	attribute FREQUENCY_PIN_CLKOP  : string;
-
 		constant clkref_freq : real := clk25mhz_freq;
 		constant clkos_div   : natural := 16;
 		constant clkos2_div  : natural := 25;
@@ -463,13 +457,19 @@ begin
     	constant clkos2_freq : real := (real(clkos_div)*clkref_freq)/(real(clkos2_div));
 		constant input_freq  : real := clkos2_freq;
 
-    	attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(clkos_freq/1.0e6, 10);
-    	attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(clkos2_freq/1.0e6, 10);
-
     	signal clkos    : std_logic;
     	signal clkos2   : std_logic;
 		signal adc_din  : std_logic_vector(16-1 downto 0);
 		signal adc_dout : std_logic_vector(16-1 downto 0);
+
+    	attribute FREQUENCY_PIN_CLKOS  : string;
+    	attribute FREQUENCY_PIN_CLKOS2 : string;
+    	attribute FREQUENCY_PIN_CLKOS3 : string;
+    	attribute FREQUENCY_PIN_CLKI   : string;
+    	attribute FREQUENCY_PIN_CLKOP  : string;
+
+    	attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa( clkos_freq/1.0e6, 10);
+    	attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(clkos2_freq/1.0e6, 10);
 
     begin
 
@@ -483,7 +483,6 @@ begin
     	pll_i : EHXPLLL
     	generic map (
     		PLLRST_ENA       => "DISABLED",
-    		-- PLLRST_ENA       => "ENABLED",
     		INTFB_WAKE       => "DISABLED",
     		STDBY_ENABLE     => "DISABLED",
     		DPHASE_SOURCE    => "DISABLED",
@@ -522,39 +521,42 @@ begin
 		adc_clk   <= clkos2;
 		input_clk <= clkos2;
 
-		process (clkos, input_clk)
-			constant n    : natural := 16-1;
-			variable cntr : unsigned(0 to unsigned_num_bits(n));
+		process (input_clk)
+			constant n    : natural := 16;
+			variable cntr : unsigned(0 to unsigned_num_bits(n-1)-1);
 		begin
 			if rising_edge(input_clk) then
-				if cntr(0)/='0' then
+				if input_lck='0' then
 					cntr := to_unsigned(n-1, cntr'length);
+					adc_csn   <= '1';
+					input_ena <= '0';
+				elsif cntr=0 then
+					cntr := to_unsigned(n-1, cntr'length);
+					adc_csn   <= '1';
+					input_ena <= '1';
 				else
 					cntr := cntr - 1;
+					adc_csn   <= '0';
+					input_ena <= '0';
 				end if;
-				adc_csn   <= cntr(0);
 			end if;
 		end process;
-		input_ena <= adc_csn;
 
-		process (input_clk)
+		adccfg_p : process (input_clk)
 			constant adc_reset : std_logic_vector := b"0" & b"0000" & b"0000" & b"10" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
-			type states is (s_init, s_init1, s_run);
+			type states is (s_init, s_run);
 			variable state : states := s_init;
 		begin
 			if rising_edge(input_clk) then
 				if input_lck='0' then
-					state := s_init;
-				elsif adc_csn='1' then
+					adc_din <= adc_reset;
+					state   := s_init;
+				elsif input_ena='1' then
 					case state is
 					when s_init =>
 						adc_din <= adc_reset;
-						state := s_init1;
-					when s_init1 =>
-						adc_din <= adc_reset;
 						state := s_run;
 					when s_run =>
-			                       --     SCAN      CHSEL        RESET  uPM      CHAN_ID CSCNV  UNUSED
 						adc_din <= b"0" & b"0001" & input_chni & b"00" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
 					end case;
 				end if;
@@ -562,14 +564,14 @@ begin
 		end process;
 
 		desser_p : process (input_clk)
-			variable shr : unsigned(adc_din'range);
+			variable shr : unsigned(0 to adc_din'length-1);
 		begin
 			if rising_edge(input_clk) then
-				if adc_csn='1' then
+				if input_ena='1' then
 					shr := unsigned(adc_din);
 				end if;
-				shr := shr rol 1;
 				adc_mosi <= shr(0);
+				shr := shr sll 1;
 			end if;
 		end process;
 
@@ -582,7 +584,7 @@ begin
 			if rising_edge(input_clk) then
 				shr    := shr rol 1;
 				shr(0) := adc_miso;
-				if adc_csn='1' then
+				if input_ena='1' then
 					input_chno <= chno;
 					chno := chnm;
 					chnm := chni;
@@ -592,10 +594,7 @@ begin
 			end if;
 		end process;
 
-		-- led <= adc_dout(16-1 downto 8) when left='1' else adc_out(8-1 downto 0);
 		input_sample <= std_logic_vector(resize(shift_right(unsigned(adc_dout), 3), input_sample'length)); -- MAX11120–MAX11128 Pgae 22
-		-- input_sample <= input_chno & "0" & x"0" & x"0";
-		led <= b"000" & input_sample(13-1 downto 8) when left='1' else input_sample(8-1 downto 0);
 
 	end block;
 
