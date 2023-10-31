@@ -576,7 +576,7 @@ begin
 		serdes_p : process (adc_din, input_clk)
 			variable shr : unsigned(adc_din'range);
 			variable chni : std_logic_vector(input_chni'range);
-			variable chni : std_logic_vector(input_chni'range);
+			variable chnm : std_logic_vector(input_chni'range);
 			variable chno : std_logic_vector(input_chni'range);
 		begin
 			if rising_edge(input_clk) then
@@ -584,7 +584,8 @@ begin
 				shr(0) := adc_miso;
 				if adc_csn='1' then
 					input_chno <= chno;
-					chno := chni;
+					chno := chnm;
+					chnm := chni;
 					chni := input_chni;
 					adc_dout <= std_logic_vector(shr);
 				end if;
