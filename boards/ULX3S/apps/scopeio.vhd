@@ -75,7 +75,6 @@ architecture scopeio of ulx3s is
 	constant max_delay   : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 
-	constant vt_step     : real := 1.0e3*milli/2.0**16; -- Volts
 	signal so_clk        : std_logic;
 	signal so_frm        : std_logic;
 	signal so_trdy       : std_logic;
@@ -86,9 +85,11 @@ architecture scopeio of ulx3s is
 	constant inputs      : natural := 8;
 	signal input_clk     : std_logic;
 	signal input_lck     : std_logic;
-	signal input_chn     : std_logic_vector(4-1 downto 0);
+	signal input_chni    : std_logic_vector(4-1 downto 0);
+	signal input_chno    : std_logic_vector(4-1 downto 0);
 	signal input_ena     : std_logic;
-	signal input_sample  : std_logic_vector(12-1 downto 0);
+	signal input_sample  : std_logic_vector(13-1 downto 0);
+	constant vt_step     : real := 3.3e3*milli/2.0**(input_sample'length-1); -- Volts
 	signal input_enas    : std_logic;
 	signal input_samples : std_logic_vector(0 to inputs*input_sample'length-1);
 	signal tp            : std_logic_vector(1 to 32);
@@ -176,6 +177,7 @@ begin
 		signal rgtr_revs : std_logic_vector(rgtr_data'reverse_range);
 
 		signal hz_dv     : std_logic;
+		signal hz_scale1  : std_logic_vector(0 to 4-1);
 		signal hz_scale  : std_logic_vector(0 to 4-1);
 		signal hz_slider : std_logic_vector(0 to hzoffset_bits-1);
 		signal rev_scale : std_logic_vector(hz_scale'reverse_range);
@@ -193,6 +195,29 @@ begin
 			end loop;
 		end process;
 
+
+		process(input_clk)
+			variable cntr : unsigned(input_chni'range) := (others => '0');
+		begin
+			if rising_edge(input_clk) then
+				if input_ena='1' then
+					if cntr >= unsigned(reverse(hz_scale)) then
+						cntr := (others => '0');
+						input_enas <= '1';
+					elsif cntr >= opacity'length-1 then
+						cntr := (others => '0');
+						input_enas <= '1';
+					else
+						cntr := cntr + 1;
+						input_enas <= '0';
+					end if;
+					input_chni <= std_logic_vector(cntr);
+				else
+						input_enas <= '0';
+				end if;
+			end if;
+		end process;
+
 		sio_sin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
@@ -204,6 +229,7 @@ begin
 			rgtr_data => rgtr_data);
 		rgtr_revs <= reverse(rgtr_data,8);
 
+		-- hz_scale <= reverse(b"0000");
 		hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
 		port map (
 			rgtr_clk  => sio_clk,
@@ -212,6 +238,7 @@ begin
 			rgtr_data => rgtr_revs,
 
 			hz_dv     => hz_dv,
+			-- hz_scale  => hz_scale1,
 			hz_scale  => hz_scale,
 			hz_slider => hz_slider);
 
@@ -252,7 +279,7 @@ begin
 		videotiming_id   => video_params.timing,
 		hz_unit          => 31.25*micro,
 		vt_steps         => (0 to inputs-1 => vt_step),
-		vt_unit          => 500.0*micro,
+		vt_unit          => 50.0*milli,
 		inputs           => inputs,
 		input_names      => (
 			text(id => "vt(0).text", content => "GN14"),
@@ -382,19 +409,18 @@ begin
 
 	end generate;
 
-	input_chn <= (others => '0');
 	process (input_clk)
 	begin
 		if rising_edge(input_clk) then
 			if input_ena='1' then
 				for i in 0 to inputs-1 loop
-					if unsigned(input_chn)=i then
+					if unsigned(input_chno)=i then
+						assert false
+						report integer'image(i) & " : " & to_string(input_chno) & ": " & std_logic'image(input_ena)
+						severity WARNING;
 						input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;
-						input_enas <= '1';
 					end if;
 				end loop;
-			else
-				input_enas <= '0';
 			end if;
 		end if;
 	end process;
@@ -402,10 +428,11 @@ begin
 	max1112x_b : block
 		port (
 			clk_25mhz    : in  std_logic;
-			input_clk    : out std_logic;
+			input_clk    : buffer std_logic;
 			input_ena    : out std_logic;
-			input_chn    : in  std_logic_vector( 4-1 downto 0);
-			input_sample : buffer std_logic_vector(12-1 downto 0);
+			input_chni   : in  std_logic_vector( 4-1 downto 0);
+			input_chno   : out std_logic_vector( 4-1 downto 0);
+			input_sample : buffer std_logic_vector;
 
 			adc_clk      : out std_logic;
 			adc_csn      : buffer std_logic;
@@ -415,7 +442,8 @@ begin
 			clk_25mhz    => clk_25mhz,
 			input_clk    => input_clk,
 			input_ena    => input_ena,
-			input_chn    => input_chn,
+			input_chni   => input_chni,
+			input_chno   => input_chno,
 			input_sample => input_sample,
 			adc_clk      => adc_clk,
 			adc_csn      => adc_csn,
@@ -491,56 +519,52 @@ begin
     		INTLOCK   => open,
     		REFCLK    => open,
     		CLKINTFB  => open);
-		adc_clk <= clkos2;
+		adc_clk   <= clkos2;
 		input_clk <= clkos2;
 
-		process (clkos, clkos2)
+		process (clkos, input_clk)
 			constant n    : natural := 16-1;
 			variable cntr : unsigned(0 to unsigned_num_bits(n));
 		begin
-			if rising_edge(clkos2) then
+			if rising_edge(input_clk) then
 				if cntr(0)/='0' then
 					cntr := to_unsigned(n-1, cntr'length);
 				else
 					cntr := cntr - 1;
 				end if;
 				adc_csn   <= cntr(0);
-				input_ena <= adc_csn;
 			end if;
 		end process;
+		input_ena <= adc_csn;
 
-		process (clkos)
-			                                         --     SCAN      CHSEL     RESET   PM      CHAN_ID SWCNV  UNUSED
-			constant reset_all : std_logic_vector := b"0" & b"0000" & b"0000" & b"10" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
-			constant unipolar  : std_logic_vector := b"1" & b"0001" & b"0000" & b"00" & b"00" & b"0" &  b"0" & "0"; -- Unipolar
-			constant bipolar   : std_logic_vector := b"1" & b"0010" & b"0000" & b"00" & b"00" & b"0" &  b"1" & "0"; -- Bipolar
-			-- constant range     : std_logic_vector := b"1" & b"0011" & b"0000" & b"00" & b"00" & b"0" &  b"1" & "0"; -- Bipolar
-			type states is (s_init, s_running);
+		process (input_clk)
+			constant adc_reset : std_logic_vector := b"0" & b"0000" & b"0000" & b"10" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
+			type states is (s_init, s_init1, s_run);
 			variable state : states := s_init;
 		begin
-			if rising_edge(clkos) then
+			if rising_edge(input_clk) then
 				if input_lck='0' then
 					state := s_init;
 				elsif adc_csn='1' then
 					case state is
 					when s_init =>
-						adc_din <= reset_all;
-						state := s_running;
-					when s_running =>
-						adc_din <= b"0" & b"0001" & input_chn & b"00" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
+						adc_din <= adc_reset;
+						state := s_init1;
+					when s_init1 =>
+						adc_din <= adc_reset;
+						state := s_run;
+					when s_run =>
+			                       --     SCAN      CHSEL        RESET  uPM      CHAN_ID CSCNV  UNUSED
+						adc_din <= b"0" & b"0001" & input_chni & b"00" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
 					end case;
 				end if;
-				-- adc_din <= b"0" & b"0001" & input_chn & b"00" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
 			end if;
 		end process;
 
-		-- adc_din <= b"0" & b"0001" & input_chn & b"00" & b"00" & b"0" &  b"1" & "0"; -- ADC Mode Control
-		-- adc_din <= b"1" & b"0001" & b"0000"   & b"00" & b"00" & b"0" &  b"-" & "-"; -- Unipolar
-		-- adc_din <= b"1" & b"0010" & b"0000"   & b"00" & b"00" & b"0" &  b"-" & "-"; -- Unipolar
-		desser_p : process (clkos2)
+		desser_p : process (input_clk)
 			variable shr : unsigned(adc_din'range);
 		begin
-			if rising_edge(clkos2) then
+			if rising_edge(input_clk) then
 				if adc_csn='1' then
 					shr := unsigned(adc_din);
 				end if;
@@ -549,23 +573,42 @@ begin
 			end if;
 		end process;
 
-		serdes_p : process (adc_din, clkos2)
+		serdes_p : process (adc_din, input_clk)
 			variable shr : unsigned(adc_din'range);
+			variable chni : std_logic_vector(input_chni'range);
+			variable chni : std_logic_vector(input_chni'range);
+			variable chno : std_logic_vector(input_chni'range);
 		begin
-			if rising_edge(clkos2) then
+			if rising_edge(input_clk) then
 				shr    := shr rol 1;
 				shr(0) := adc_miso;
 				if adc_csn='1' then
+					input_chno <= chno;
+					chno := chni;
+					chni := input_chni;
 					adc_dout <= std_logic_vector(shr);
 				end if;
 			end if;
 		end process;
 
-		-- led <= adc_dout(16-1 downto 8);
+		-- led <= adc_dout(16-1 downto 8) when left='1' else adc_out(8-1 downto 0);
 		input_sample <= std_logic_vector(resize(shift_right(unsigned(adc_dout), 3), input_sample'length)); -- MAX11120–MAX11128 Pgae 22
-		led <= b"0000" & input_sample(12-1 downto 8) when left='1' else input_sample(8-1 downto 0);
+		-- input_sample <= input_chno & "0" & x"0" & x"0";
+		led <= b"000" & input_sample(13-1 downto 8) when left='1' else input_sample(8-1 downto 0);
 
 	end block;
+
+	process (input_clk)
+		variable cntr : unsigned(0 to 12-1);
+	begin
+		if rising_edge(input_clk) then
+			if input_ena='1' then
+				cntr := cntr + 1;
+			end if;
+			-- (gp(17), gn(17), gp(16), gn(16), gp(15), gn(15), gp(14), gn(14)) <= std_logic_vector(cntr(0 to 8-1));
+			(gp(24), gn(24), gp(25), gn(25), gp(26), gn(26), gp(27), gn(27)) <= std_logic_vector(cntr(0 to 8-1));
+		end if;
+	end process;
 
 	adcsclk_i : oddrx1f
 	port map(

@@ -103,7 +103,7 @@ architecture def of scopeio_textbox is
 		retval := 0; --table(table'left).attr;
 		for i in table'range loop
 			if unsigned(addr) >= table(i).addr then
-				report "*****************  " & itoa(table(i).attr);
+				-- report "*****************  " & itoa(table(i).attr);
 				retval := table(i).attr;
 			end if;
 		end loop;
