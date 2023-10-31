@@ -176,11 +176,12 @@ begin
 		signal rgtr_data : std_logic_vector(32-1 downto 0);
 		signal rgtr_revs : std_logic_vector(rgtr_data'reverse_range);
 
-		signal hz_dv     : std_logic;
-		signal hz_scale  : std_logic_vector(0 to 4-1);
-		signal hz_slider : std_logic_vector(0 to hzoffset_bits-1);
-		signal rev_scale : std_logic_vector(hz_scale'reverse_range);
-		signal opacity   : unsigned(0 to inputs-1);
+		signal hz_dv      : std_logic;
+		signal hz_scale   : std_logic_vector(0 to 4-1);
+		signal hz_slider  : std_logic_vector(0 to hzoffset_bits-1);
+		signal rev_scale  : std_logic_vector(hz_scale'reverse_range);
+		signal opacity    : unsigned(0 to inputs-1);
+		signal input_max  : natural range 0 to inputs-1;
 
 	begin
 
@@ -188,13 +189,17 @@ begin
 		begin
 			case hz_scale is
 			when b"0000" =>
-				opacity <= b"1000_0000";
+				opacity   <= b"1000_0000";
+				input_max <= 1-1;
 			when b"1000" =>
-				opacity <= b"1100_0000";
+				opacity   <= b"1100_0000";
+				input_max <= 2-1;
 			when b"0100" =>
-				opacity <= b"1111_0000";
+				opacity   <= b"1111_0000";
+				input_max <= 4-1;
 			when others =>
-				opacity <= b"1111_1111";
+				opacity   <= b"1111_1111";
+				input_max <= 8-1;
 			end case;
 		end process;
 
@@ -203,7 +208,7 @@ begin
 		begin
 			if rising_edge(input_clk) then
 				if input_ena='1' then
-					if cntr >= unsigned(reverse(hz_scale)) then
+					if cntr >= input_max then
 						cntr := (others => '0');
 						input_enas <= '1';
 					elsif cntr >= opacity'length-1 then
