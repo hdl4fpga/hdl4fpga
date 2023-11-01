@@ -46,27 +46,21 @@ architecture scopio of arty is
 	signal video_blank     : std_logic;
 	signal video_pixel     : std_logic_vector(0 to 3-1);
 
-	signal ipcfg_req       : std_logic;
-	signal txd             : std_logic_vector(eth_txd'range);
-	signal txdv            : std_logic;
-
-	alias  sio_clk         is eth_rx_clk;
+	alias  sio_clk         is eth_tx_clk;
 	signal si_frm          : std_logic;
 	signal si_irdy         : std_logic;
-	signal si_trdy         : std_logic;
-	signal si_end          : std_logic;
 	signal si_data         : std_logic_vector(eth_rxd'range);
+
 	signal so_frm          : std_logic;
 	signal so_irdy         : std_logic;
 	signal so_trdy         : std_logic;
+	signal so_end          : std_logic;
 	signal so_data         : std_logic_vector(eth_txd'range);
 
 	signal udpip_frm       : std_logic;
 	signal udpip_irdy      : std_logic;
 	signal udpip_data      : std_logic_vector(eth_rxd'range);
 
-	signal opacity_frm     : std_logic;
-	signal opacity_data    : std_logic_vector(si_data'range);
 	signal xadccfg_req     : bit;
 	signal xadccfg_rdy     : bit;
 
@@ -143,10 +137,6 @@ begin
 	end block;
    
 	ipoe_e : if io_link=io_ipoe generate
-		alias  mii_rxc    : std_logic is eth_rx_clk;
-		alias  mii_rxdv   : std_logic is eth_rx_dv;
-		alias  mii_rxd    : std_logic_vector(eth_rxd'range) is eth_rxd;
-
 		signal mii_txd    : std_logic_vector(eth_txd'range);
 		signal mii_txen   : std_logic;
 		signal dhcpcd_req : std_logic := '0';
@@ -154,7 +144,7 @@ begin
 
 		signal miirx_frm  : std_logic;
 		signal miirx_irdy : std_logic;
-		signal miirx_data : std_logic_vector(mii_rxd'range);
+		signal miirx_data : std_logic_vector(eth_rxd'range);
 
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
@@ -196,17 +186,17 @@ begin
 
 		sync_b : block
 
-			signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
-			signal txc_rxbus : std_logic_vector(0 to mii_rxd'length);
+			signal rxc_rxbus : std_logic_vector(0 to eth_rxd'length);
+			signal txc_rxbus : std_logic_vector(0 to eth_rxd'length);
 			signal dst_irdy  : std_logic;
 			signal dst_trdy  : std_logic;
 
 		begin
 
-			process (mii_rxc)
+			process (eth_rx_clk)
 			begin
-				if rising_edge(mii_rxc) then
-					rxc_rxbus <= mii_rxdv & mii_rxd;
+				if rising_edge(eth_rx_clk) then
+					rxc_rxbus <= eth_rx_dv & eth_rxd;
 				end if;
 			end process;
 
@@ -220,7 +210,7 @@ begin
 				check_dov  => true,
 				gray_code  => false)
 			port map (
-				src_clk  => mii_rxc,
+				src_clk  => eth_rx_clk,
 				src_data => rxc_rxbus,
 				dst_clk  => eth_tx_clk,
 				dst_irdy => dst_irdy,
@@ -233,7 +223,7 @@ begin
 					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
 					miirx_frm  <= txc_rxbus(0);
 					miirx_irdy <= txc_rxbus(0);
-					miirx_data <= txc_rxbus(1 to mii_rxd'length);
+					miirx_data <= txc_rxbus(1 to eth_rxd'length);
 				end if;
 			end process;
 		end block;
@@ -260,17 +250,16 @@ begin
 			miitx_end  => miitx_end,
 			miitx_data => miitx_data,
 
-			si_frm     => si_frm,
-			si_irdy    => si_irdy,
-			si_trdy    => si_trdy,
-			si_end     => si_end,
-			si_data    => si_data,
+			si_frm     => so_frm,
+			si_irdy    => so_irdy,
+			si_trdy    => so_trdy,
+			si_end     => so_end,
+			si_data    => so_data,
 
 			so_clk     => sio_clk,
-			so_frm     => so_frm,
-			so_irdy    => so_irdy,
-			so_trdy    => so_trdy,
-			so_data    => so_data);
+			so_frm     => udpip_frm,
+			so_irdy    => udpip_irdy,
+			so_data    => udpip_data);
 
 		desser_e: entity hdl4fpga.desser
 		port map (
@@ -306,6 +295,8 @@ begin
 		signal hz_slider  : std_logic_vector(0 to hzoffset_bits-1);
 		signal rev_scale  : std_logic_vector(hz_scale'reverse_range);
 		signal opacity    : unsigned(0 to inputs-1);
+		signal opacity_frm  : std_logic;
+		signal opacity_data : std_logic_vector(si_data'range);
 	begin
 
 		sio_sin_e : entity hdl4fpga.sio_sin
@@ -331,19 +322,18 @@ begin
 			hz_slider => hz_slider);
 
 		process (hz_scale)
-			variable opacity : unsigned(0 to inputs-1);
 		begin
 			case hz_scale is
 			when "0000" =>
-				opacity := b"1_0000_0000";
+				opacity <= b"1_0000_0000";
 			when "1000" =>
-				opacity := b"1_1000_0000";
+				opacity <= b"1_1000_0000";
 			when "0100" =>
-				opacity := b"1_1110_0000";
+				opacity <= b"1_1110_0000";
 			when "1100" =>
-				opacity := b"1_1111_0000";
+				opacity <= b"1_1111_0000";
 			when others =>
-				opacity := b"1_1111_1111";
+				opacity <= b"1_1111_1111";
 			end case;
 		end process;
 
@@ -353,14 +343,14 @@ begin
 		begin
 			if rising_edge(sio_clk) then
 				if cntr < (data'length+opacity_data'length-1)/opacity_data'length then
-					opacity_frm <= '1';
-					cntr := cntr + 1;
+					if opacity_frm='1' then
+						cntr := cntr + 1;
+					end if;
 				elsif hz_dv='1' then
-					opacity_frm <= '1';
 					cntr := (others => '0');
 				end if;
 				if cntr < (data'length+opacity_data'length-1)/opacity_data'length then
-					opacity_frm <= '1';
+					opacity_frm <= not udpip_frm;
 				else
 					opacity_frm <= '0';
 				end if;
@@ -370,8 +360,12 @@ begin
 				data(0 to 32-1) := unsigned(rid_palette) & x"01" & to_unsigned(pltid_order'length+i,13) & opacity(i) & b"01";
 				data := data rol 32;
 			end loop;
-			opacity_data <= multiplex(std_logic_vector(data), std_logic_vector(cntr), opacity_data'length);
+			opacity_data <= multiplex(reverse(std_logic_vector(data),8), std_logic_vector(cntr), opacity_data'length);
 		end process;
+
+		si_frm  <= udpip_frm  when opacity_frm='0' else '1';
+		si_irdy <= udpip_irdy when opacity_frm='0' else '1';
+		si_data <= udpip_data when opacity_frm='0' else opacity_data;
 
 		process (sio_clk)
 		begin
@@ -384,11 +378,8 @@ begin
 				end if;
 			end if;
 		end process;
-	end block;
 
-	si_frm  <= udpip_frm  when opacity_frm='0' else '1';
-	si_irdy <= udpip_irdy when opacity_frm='0' else '1';
-	si_data <= udpip_data when opacity_frm='0' else reverse(opacity_data);
+	end block;
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (

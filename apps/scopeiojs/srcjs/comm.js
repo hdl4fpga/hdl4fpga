@@ -285,14 +285,17 @@ function send(data) {
 		break;
 	case 'TCPIP':
 		const ipport = 57001;
-		var buffer   = new Uint8Array(data.length+2);
+		const data1 = [...alignValues( registers.ack, { value : ack++  & 0x7f } ), ...data ];
+		var buffer  = new Uint8Array(data1.length+2);
 	
-		if (data instanceof Uint8Array) {
-			for (i=0; i < data.length; i++)
-				buffer[i] = data[i];
+		if (data1 instanceof Uint8Array) {
+			for (i=0; i < data1.length; i++) {
+				buffer[i] = data1[i];
+			}
 		} else {
-			for (i=0; i < data.length; i++)
-				buffer[i] = data.charCodeAt(i);
+			for (i=0; i < data1.length; i++) {
+				buffer[i] = data1[i] & 0xff;
+			}
 		}
 
 		buffer[i++] = 0xff;

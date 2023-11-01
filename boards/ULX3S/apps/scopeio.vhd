@@ -98,8 +98,6 @@ architecture scopeio of ulx3s is
 	signal usb_trdy      : std_logic := '1';
 	signal usb_data      : std_logic_vector(si_data'range);
 
-	signal opacity_frm   : std_logic;
-	signal opacity_data  : std_logic_vector(si_data'range);
 
 	signal adc_clk       : std_logic;
 
@@ -179,8 +177,10 @@ begin
 		signal hz_scale   : std_logic_vector(0 to 4-1);
 		signal hz_slider  : std_logic_vector(0 to hzoffset_bits-1);
 		signal rev_scale  : std_logic_vector(hz_scale'reverse_range);
-		signal opacity    : unsigned(0 to inputs-1);
 		signal input_max  : natural range 0 to inputs-1;
+		signal opacity    : unsigned(0 to inputs-1);
+		signal opacity_frm  : std_logic;
+		signal opacity_data : std_logic_vector(si_data'range);
 
 	begin
 
@@ -252,14 +252,12 @@ begin
 		begin
 			if rising_edge(sio_clk) then
 				if cntr < (data'length+opacity_data'length-1)/opacity_data'length then
-					opacity_frm <= '1';
 					cntr := cntr + 1;
 				elsif hz_dv='1' then
-					opacity_frm <= '1';
 					cntr := (others => '0');
 				end if;
 				if cntr < (data'length+opacity_data'length-1)/opacity_data'length then
-					opacity_frm <= '1';
+					opacity_frm <= not usb_frm;
 				else
 					opacity_frm <= '0';
 				end if;
@@ -269,14 +267,14 @@ begin
 				data(0 to 32-1) := unsigned(rid_palette) & x"01" & to_unsigned(pltid_order'length+i,13) & opacity(i) & b"01";
 				data := data rol 32;
 			end loop;
-			opacity_data <= multiplex(std_logic_vector(data), std_logic_vector(cntr), opacity_data'length);
+			opacity_data <= multiplex(reverse(std_logic_vector(data),8), std_logic_vector(cntr), opacity_data'length);
 		end process;
 
-	end block;
+		si_frm  <= usb_frm  when opacity_frm='0' else '1';
+		si_irdy <= usb_irdy when opacity_frm='0' else '1';
+		si_data <= usb_data when opacity_frm='0' else opacity_data;
 
-	si_frm  <= usb_frm  when opacity_frm='0' else '1';
-	si_irdy <= usb_irdy when opacity_frm='0' else '1';
-	si_data <= usb_data when opacity_frm='0' else reverse(opacity_data);
+	end block;
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
