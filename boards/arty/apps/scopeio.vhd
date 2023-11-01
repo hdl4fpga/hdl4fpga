@@ -17,6 +17,17 @@ use hdl4fpga.app_profiles.all;
 
 architecture scopio of arty is
 
+	type layout_mode is (
+		mode600p, 
+		mode1080p,
+		mode480p);
+
+	--------------------------------------
+	--     Set your profile here        --
+	constant video_mode : layout_mode := mode1080p;
+	constant io_link    : io_comms := io_ipoe;
+	--------------------------------------
+
 	constant max_delay     : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant vt_step       : real := 1.0e3*milli/2.0**16; -- Volts
@@ -26,6 +37,7 @@ architecture scopio of arty is
 	signal input_ena       : std_logic;
 	signal input_sample    : std_logic_vector(16-1 downto 0);
 	signal input_samples   : std_logic_vector(0 to inputs*input_sample'length-1);
+	signal input_maxchn    : std_logic_vector(4-1 downto 0);
 
 	signal sys_clk         : std_logic;
 	signal video_clk       : std_logic;
@@ -55,6 +67,8 @@ architecture scopio of arty is
 
 	signal opacity_frm     : std_logic;
 	signal opacity_data    : std_logic_vector(si_data'range);
+	signal xadccfg_req     : bit;
+	signal xadccfg_rdy     : bit;
 
 	type display_param is record
 		layout_id : displaylayout_ids;
@@ -63,20 +77,12 @@ architecture scopio of arty is
 		div       : natural;
 	end record;
 
-	type layout_mode is (
-		mode600p, 
-		mode1080p,
-		mode480p);
-
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
 		mode480p  => (timing_id => pclk25_00m640x480at60,    layout_id => sd480,    mul => 3, div => 5),
 		mode600p  => (timing_id => pclk40_00m800x600at60,    layout_id => sd600,    mul => 4, div => 5),
 		mode1080p => (timing_id => pclk150_00m1920x1080at60, layout_id => hd1080,   mul => 3, div => 1));
 
-	constant video_mode : layout_mode := mode1080p;
-
-	constant io_link    : io_comms := io_ipoe;
 begin
 
 	clkin_ibufg : ibufg
@@ -367,6 +373,17 @@ begin
 			opacity_data <= multiplex(std_logic_vector(data), std_logic_vector(cntr), opacity_data'length);
 		end process;
 
+		process (sio_clk)
+		begin
+			if rising_edge(sio_clk) then
+				if (xadccfg_req xor xadccfg_rdy)='0' then
+					if input_maxchn /= reverse(hz_scale) then
+						xadccfg_req  <= not xadccfg_rdy;
+						input_maxchn <= reverse(hz_scale);
+					end if;
+				end if;
+			end if;
+		end process;
 	end block;
 
 	si_frm  <= udpip_frm  when opacity_frm='0' else '1';
@@ -390,7 +407,7 @@ begin
 			text(id => "vt(6).text", content => "A2(+)"),
 			text(id => "vt(7).text", content => "A3(+)"),
 			text(id => "vt(8).text", content => "A4(+)")),
-		vlayout_id       => video_params(video_mode).layout,
+		layout           => displaylayout_tab(hd1080),
 		hz_factors       => (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
 			 4 => 2**(0+0)*5**(0+0),  5 => 2**(1+0)*5**(0+0),  6 => 2**(2+0)*5**(0+0),  7 => 2**(0+0)*5**(1+0),
@@ -539,17 +556,14 @@ begin
 		process(input_clk)
 			variable reset     : std_logic := '1';
 			variable den_req   : std_logic := '1';
-			variable scale     : std_logic_vector(hz_scale'range);
-			variable cfg_req   : std_logic := '0';
 			variable cfg_state : unsigned(0 to 1) := "00";
 			variable drp_rdy   : std_logic;
-			variable aux       : std_logic_vector(scale'range);
 		begin
 			if rising_edge(input_clk) then
-				if reset='0' and ipcfg_req='0' then 
+				if reset='0' then 
 					den <= '0';
 					dwe <= '0';
-					if cfg_req='1' then
+					if (xadccfg_rdy xor xadccfg_req)='1' then
 						dwe <= '0';
 						den <= '0';
 						if drp_rdy='1' then
@@ -560,12 +574,11 @@ begin
 								dwe       <= '1';
 								di        <= x"0000";
 								cfg_state := "01";
-								cfg_req   := '1';
 							when "01" =>
 								den       <= '1';
 								daddr     <= b"100_1001";
 								dwe       <= '1';
-								case hz_scale is
+								case input_maxchn is
 								when "0000" =>
 									di <= x"0000";
 								when "0001" =>
@@ -578,14 +591,13 @@ begin
 									di <= x"f0f1";
 								end case;
 								cfg_state := "10";
-								cfg_req   := '1';
 							when "10" =>
 								den       <= '1';
 								daddr     <= b"100_0001";
 								dwe       <= '1';
 								di        <= x"2000";
+								xadccfg_rdy  <= xadccfg_req;
 								cfg_state := "00";
-								cfg_req   := '0';
 							when others =>
 							end case;
 							drp_rdy := '0';
@@ -596,13 +608,9 @@ begin
 							den     <= '1';
 							drp_rdy := '0';
 						end if;
-						if scale /= hz_scale then
-							cfg_req := '1';
-						end if;
-						scale := hz_scale;
 					end if;
 				else
-					den <= '1';
+					den     <= '1';
 					drp_rdy := '1';
 					reset   := '0';
 				end if;
