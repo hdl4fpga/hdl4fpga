@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Product Version: Vivado v2021.2 (64-bit)              -->
+<!-- Product Version: Vivado v2022.2 (64-bit)              -->
 <!--                                                         -->
-<!-- Copyright 1986-2021 Xilinx, Inc. All Rights Reserved.   -->
+<!-- Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.   -->
 
-<Project Version="7" Minor="56" Path="/home/msagre/work/hdl4fpga.dev/boards/arty/vivado/scopeio/scopeio.xpr">
+<Project Version="7" Minor="61" Path="/home/msagre/work/hdl4fpga.dev/boards/arty/vivado/scopeio/scopeio.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="df387da547134d9dbd8743c7d41975b6"/>
@@ -28,19 +28,19 @@
     <Option Name="SimulatorGccInstallDirVCS" Val=""/>
     <Option Name="SimulatorGccInstallDirRiviera" Val=""/>
     <Option Name="SimulatorGccInstallDirActiveHdl" Val=""/>
-    <Option Name="SimulatorVersionXsim" Val="2021.2"/>
-    <Option Name="SimulatorVersionModelSim" Val="2020.4"/>
-    <Option Name="SimulatorVersionQuesta" Val="2020.4"/>
-    <Option Name="SimulatorVersionXcelium" Val="20.09.006"/>
-    <Option Name="SimulatorVersionVCS" Val="R-2020.12"/>
-    <Option Name="SimulatorVersionRiviera" Val="2020.10"/>
+    <Option Name="SimulatorVersionXsim" Val="2022.2"/>
+    <Option Name="SimulatorVersionModelSim" Val="2022.2"/>
+    <Option Name="SimulatorVersionQuesta" Val="2022.2"/>
+    <Option Name="SimulatorVersionXcelium" Val="21.09.009"/>
+    <Option Name="SimulatorVersionVCS" Val="S-2021.09"/>
+    <Option Name="SimulatorVersionRiviera" Val="2022.04"/>
     <Option Name="SimulatorVersionActiveHdl" Val="12.0"/>
     <Option Name="SimulatorGccVersionXsim" Val="6.2.0"/>
-    <Option Name="SimulatorGccVersionModelSim" Val="5.3.0"/>
-    <Option Name="SimulatorGccVersionQuesta" Val="5.3.0"/>
-    <Option Name="SimulatorGccVersionXcelium" Val="6.3"/>
-    <Option Name="SimulatorGccVersionVCS" Val="6.2.0"/>
-    <Option Name="SimulatorGccVersionRiviera" Val="6.2.0"/>
+    <Option Name="SimulatorGccVersionModelSim" Val="7.4.0"/>
+    <Option Name="SimulatorGccVersionQuesta" Val="7.4.0"/>
+    <Option Name="SimulatorGccVersionXcelium" Val="9.3.0"/>
+    <Option Name="SimulatorGccVersionVCS" Val="9.2.0"/>
+    <Option Name="SimulatorGccVersionRiviera" Val="9.3.0"/>
     <Option Name="SimulatorGccVersionActiveHdl" Val="6.2.0"/>
     <Option Name="TargetLanguage" Val="VHDL"/>
     <Option Name="TargetSimulator" Val="ModelSim"/>
@@ -52,6 +52,8 @@
     <Option Name="IPDefaultOutputPath" Val="$PGENDIR/sources_1"/>
     <Option Name="IPCachePermission" Val="disable"/>
     <Option Name="EnableCoreContainer" Val="FALSE"/>
+    <Option Name="EnableResourceEstimation" Val="FALSE"/>
+    <Option Name="SimCompileState" Val="TRUE"/>
     <Option Name="CreateRefXciForCoreContainers" Val="FALSE"/>
     <Option Name="IPUserFilesDir" Val="$PPRDIR/scopeio1.ip_user_files"/>
     <Option Name="IPStaticSourceDir" Val="$PPRDIR/scopeio1.ip_user_files/ipstatic"/>
@@ -80,18 +82,12 @@
     <Option Name="MEMEnableMemoryMapGeneration" Val="TRUE"/>
     <Option Name="DcpsUptoDate" Val="TRUE"/>
     <Option Name="ClassicSocBoot" Val="FALSE"/>
+    <Option Name="LocalIPRepoLeafDirName" Val="ip_repo"/>
   </Configuration>
   <FileSets Version="1" Minor="31">
     <FileSet Name="sources_1" Type="DesignSrcs" RelSrcDir="$PSRCDIR/sources_1" RelGenDir="$PGENDIR/sources_1">
       <Filter Type="Srcs"/>
       <File Path="$PPRDIR/../../../../library/basic/base.vhd">
-        <FileInfo>
-          <Attr Name="Library" Val="hdl4fpga"/>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../../../../library/basic/latency.vhd">
         <FileInfo>
           <Attr Name="Library" Val="hdl4fpga"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -106,12 +102,6 @@
         </FileInfo>
       </File>
       <File Path="$PPRDIR/../../../../library/video/video.vhd">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../../../../library/xilinx/ff.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -172,12 +162,6 @@
         </FileInfo>
       </File>
       <File Path="$PPRDIR/../../../../library/scope/scopeio.vhd">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../../apps/scopeio/scopeio.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -375,12 +359,6 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/video/cga_adapter.vhd">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../../../../library/video/fonts/cp850x8x16x0to127.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -549,6 +527,132 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PPRDIR/../../apps/scopeio.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/sio/sio_sin.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/basic/fifo.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/basic/txn_buffer.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/basic/sync_transfer.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/sio/sio_dayudp.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/basic/serdes.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/basic/desser.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/sio/sio_udp.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/sio/sio_flow.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/sio/sio_rgtr.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/sio/sio_mux.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/apps/app_profiles.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/basic/profiles.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/sio/sio_cmp.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/sio/sio_muxcmp.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/sio/sio_ram.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/basic/latency.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/mii/ipv4_adjlen.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/basic/adder.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../../../library/video/cgaram.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
         <Option Name="TopModule" Val="arty"/>
@@ -556,6 +660,30 @@
     </FileSet>
     <FileSet Name="constrs_1" Type="Constrs" RelSrcDir="$PSRCDIR/constrs_1" RelGenDir="$PGENDIR/constrs_1">
       <Filter Type="Constrs"/>
+      <File Path="$PPRDIR/../../common/arty.xdc">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/ddr.xdc">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../common/mii.xdc">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/scopeio.xdc">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+        </FileInfo>
+      </File>
       <Config>
         <Option Name="ConstrsType" Val="XDC"/>
       </Config>
@@ -604,24 +732,24 @@
       <Option Name="Description" Val="Riviera-PRO Simulator"/>
     </Simulator>
   </Simulators>
-  <Runs Version="1" Minor="15">
-    <Run Id="synth_1" Type="Ft3:Synth" SrcSet="sources_1" Part="xc7a35ticsg324-1L" ConstrsSet="constrs_1" Description="Higher performance designs, resource sharing is turned off, the global fanout guide is set to a lower number, FSM extraction forced to one-hot, LUT combining is disabled, equivalent registers are preserved, SRL are inferred  with a larger threshold" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" State="current" Dir="$PRUNDIR/synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/synth_1">
+  <Runs Version="1" Minor="19">
+    <Run Id="synth_1" Type="Ft3:Synth" SrcSet="sources_1" Part="xc7a35ticsg324-1L" ConstrsSet="constrs_1" Description="Higher performance designs, resource sharing is turned off, the global fanout guide is set to a lower number, FSM extraction forced to one-hot, LUT combining is disabled, equivalent registers are preserved, SRL are inferred  with a larger threshold" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" State="current" Dir="$PRUNDIR/synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/synth_1">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Flow_PerfOptimized_high" Flow="Vivado Synthesis 2016"/>
         <Step Id="synth_design">
-          <Option Id="RepFanoutThreshold">400</Option>
-          <Option Id="NoCombineLuts">1</Option>
-          <Option Id="KeepEquivalentRegisters">1</Option>
           <Option Id="ShregMinSize">5</Option>
-          <Option Id="FsmExtraction">1</Option>
+          <Option Id="KeepEquivalentRegisters">1</Option>
           <Option Id="ResourceSharing">2</Option>
+          <Option Id="RepFanoutThreshold">400</Option>
+          <Option Id="FsmExtraction">1</Option>
+          <Option Id="NoCombineLuts">1</Option>
         </Step>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
       <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2017" CtrlBit="true">
         <ReportConfig DisplayName="synth_1_synth_report_utilization_0" Name="synth_1_synth_report_utilization_0" Spec="report_utilization" RunStep="synth_design" ReportFile="arty_utilization_synth.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="dummy_option" Type="string"/>
-          <ReportConfigOutputOption Name="pb" Type="string" Value=""/>
+          <ReportConfigOutputOption Name="pb" Type="string" Value="arty_utilization_synth.pb"/>
         </ReportConfig>
         <ReportConfig DisplayName="synth_1_synth_synthesis_report_0" Name="synth_1_synth_synthesis_report_0" Spec="" RunStep="synth_design" ReportFile="arty.vds">
           <ReportConfigOption Name="dummy_option" Type="string"/>
@@ -630,7 +758,7 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="impl_1" Type="Ft2:EntireDesign" Part="xc7a35ticsg324-1L" ConstrsSet="constrs_1" Description="Uses multiple algorithms for optimization, placement, and routing to get potentially better results." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" State="current" SynthRun="synth_1" IncludeInArchive="true" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/impl_1">
+    <Run Id="impl_1" Type="Ft2:EntireDesign" Part="xc7a35ticsg324-1L" ConstrsSet="constrs_1" Description="Uses multiple algorithms for optimization, placement, and routing to get potentially better results." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" State="current" Dir="$PRUNDIR/impl_1" SynthRun="synth_1" IncludeInArchive="true" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/impl_1">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Performance_Explore" Flow="Vivado Implementation 2016"/>
         <Step Id="init_design"/>
@@ -651,6 +779,7 @@
         <Step Id="post_route_phys_opt_design"/>
         <Step Id="write_bitstream"/>
       </Strategy>
+      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
       <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2017" CtrlBit="true">
         <ReportConfig DisplayName="impl_1_init_report_timing_summary_0" Name="impl_1_init_report_timing_summary_0" Spec="report_timing_summary" RunStep="init_design" Version="1" Minor="0" IsDisabled="true">
           <ReportConfigOption Name="max_paths" Type="" Value="10"/>
@@ -659,8 +788,8 @@
         </ReportConfig>
         <ReportConfig DisplayName="impl_1_opt_report_drc_0" Name="impl_1_opt_report_drc_0" Spec="report_drc" RunStep="opt_design" ReportFile="arty_drc_opted.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="dummy_option" Type="string"/>
-          <ReportConfigOutputOption Name="pb" Type="string" Value=""/>
-          <ReportConfigOutputOption Name="rpx" Type="string" Value=""/>
+          <ReportConfigOutputOption Name="pb" Type="string" Value="arty_drc_opted.pb"/>
+          <ReportConfigOutputOption Name="rpx" Type="string" Value="arty_drc_opted.rpx"/>
         </ReportConfig>
         <ReportConfig DisplayName="impl_1_opt_report_timing_summary_0" Name="impl_1_opt_report_timing_summary_0" Spec="report_timing_summary" RunStep="opt_design" Version="1" Minor="0" IsDisabled="true">
           <ReportConfigOption Name="max_paths" Type="" Value="10"/>
@@ -677,7 +806,7 @@
         </ReportConfig>
         <ReportConfig DisplayName="impl_1_place_report_utilization_0" Name="impl_1_place_report_utilization_0" Spec="report_utilization" RunStep="place_design" ReportFile="arty_utilization_placed.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="dummy_option" Type="string"/>
-          <ReportConfigOutputOption Name="pb" Type="string" Value=""/>
+          <ReportConfigOutputOption Name="pb" Type="string" Value="arty_utilization_placed.pb"/>
         </ReportConfig>
         <ReportConfig DisplayName="impl_1_place_report_control_sets_0" Name="impl_1_place_report_control_sets_0" Spec="report_control_sets" RunStep="place_design" ReportFile="arty_control_sets_placed.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="verbose" Type="" Value="true"/>
@@ -705,27 +834,27 @@
         </ReportConfig>
         <ReportConfig DisplayName="impl_1_route_report_drc_0" Name="impl_1_route_report_drc_0" Spec="report_drc" RunStep="route_design" ReportFile="arty_drc_routed.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="dummy_option" Type="string"/>
-          <ReportConfigOutputOption Name="pb" Type="string" Value=""/>
-          <ReportConfigOutputOption Name="rpx" Type="string" Value=""/>
+          <ReportConfigOutputOption Name="pb" Type="string" Value="arty_drc_routed.pb"/>
+          <ReportConfigOutputOption Name="rpx" Type="string" Value="arty_drc_routed.rpx"/>
         </ReportConfig>
         <ReportConfig DisplayName="impl_1_route_report_methodology_0" Name="impl_1_route_report_methodology_0" Spec="report_methodology" RunStep="route_design" ReportFile="arty_methodology_drc_routed.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="dummy_option" Type="string"/>
-          <ReportConfigOutputOption Name="pb" Type="string" Value=""/>
-          <ReportConfigOutputOption Name="rpx" Type="string" Value=""/>
+          <ReportConfigOutputOption Name="pb" Type="string" Value="arty_methodology_drc_routed.pb"/>
+          <ReportConfigOutputOption Name="rpx" Type="string" Value="arty_methodology_drc_routed.rpx"/>
         </ReportConfig>
         <ReportConfig DisplayName="impl_1_route_report_power_0" Name="impl_1_route_report_power_0" Spec="report_power" RunStep="route_design" ReportFile="arty_power_routed.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="dummy_option" Type="string"/>
-          <ReportConfigOutputOption Name="pb" Type="string" Value=""/>
-          <ReportConfigOutputOption Name="rpx" Type="string" Value=""/>
+          <ReportConfigOutputOption Name="pb" Type="string" Value="arty_power_summary_routed.pb"/>
+          <ReportConfigOutputOption Name="rpx" Type="string" Value="arty_power_routed.rpx"/>
         </ReportConfig>
         <ReportConfig DisplayName="impl_1_route_report_route_status_0" Name="impl_1_route_report_route_status_0" Spec="report_route_status" RunStep="route_design" ReportFile="arty_route_status.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="dummy_option" Type="string"/>
-          <ReportConfigOutputOption Name="pb" Type="string" Value=""/>
+          <ReportConfigOutputOption Name="pb" Type="string" Value="arty_route_status.pb"/>
         </ReportConfig>
         <ReportConfig DisplayName="impl_1_route_report_timing_summary_0" Name="impl_1_route_report_timing_summary_0" Spec="report_timing_summary" RunStep="route_design" ReportFile="arty_timing_summary_routed.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="max_paths" Type="" Value="10"/>
-          <ReportConfigOutputOption Name="pb" Type="string" Value=""/>
-          <ReportConfigOutputOption Name="rpx" Type="string" Value=""/>
+          <ReportConfigOutputOption Name="pb" Type="string" Value="arty_timing_summary_routed.pb"/>
+          <ReportConfigOutputOption Name="rpx" Type="string" Value="arty_timing_summary_routed.rpx"/>
         </ReportConfig>
         <ReportConfig DisplayName="impl_1_route_report_incremental_reuse_0" Name="impl_1_route_report_incremental_reuse_0" Spec="report_incremental_reuse" RunStep="route_design" ReportFile="arty_incremental_reuse_routed.rpt" Version="1" Minor="0">
           <ReportConfigOption Name="dummy_option" Type="string"/>

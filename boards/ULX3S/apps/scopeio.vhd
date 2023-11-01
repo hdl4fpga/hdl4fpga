@@ -42,13 +42,13 @@ architecture scopeio of ulx3s is
 	--------------------------------------
 	--     Set your profile here        --
 	constant io_link      : io_comms     := io_usb;
-	constant sdram_speed  : sdram_speeds := sdram225MHz; 
 	constant video_mode   : video_modes  := mode600p24bpp;
 	-- constant video_mode   : video_modes  := mode720p24bpp;
 	-- constant video_mode   : video_modes  := mode900p24bpp;
 	-- constant video_mode   : video_modes  := mode1080p24bpp30;
 	-- constant video_mode   : video_modes  := mode1080p24bpp;
 	-- constant video_mode   : video_modes  := mode1440p24bpp30;
+	-- constant sdram_speed  : sdram_speeds := sdram225MHz; 
 	--------------------------------------
 
 	constant usb_oversampling : natural := 3;
@@ -57,30 +57,29 @@ architecture scopeio of ulx3s is
 
 	constant video_gear  : natural      := 2;
 	signal video_clk     : std_logic;
-	signal video_lck     : std_logic;
-	signal video_shift_clk : std_logic;
 	signal video_eclk    : std_logic;
+	signal video_shift_clk : std_logic;
+	signal videoio_clk   : std_logic;
+	signal video_lck     : std_logic;
 	signal video_hzsync  : std_logic;
 	signal video_vtsync  : std_logic;
 	signal video_blank   : std_logic;
 	signal video_pixel   : std_logic_vector(0 to 24-1);
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
-	signal videoio_clk   : std_logic;
 
 	alias  sio_clk       is videoio_clk;
 	signal si_frm        : std_logic;
 	signal si_irdy       : std_logic;
 	signal si_data       : std_logic_vector(0 to 8-1);
 
-	constant max_delay   : natural := 2**14;
-	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-
-	signal so_clk        : std_logic;
 	signal so_frm        : std_logic;
 	signal so_trdy       : std_logic;
 	signal so_irdy       : std_logic;
 	signal so_end        : std_logic;
 	signal so_data       : std_logic_vector(8-1 downto 0);
+
+	constant max_delay   : natural := 2**14;
+	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 
 	constant inputs      : natural := 8;
 	signal input_clk     : std_logic;
@@ -99,8 +98,6 @@ architecture scopeio of ulx3s is
 	signal usb_trdy      : std_logic := '1';
 	signal usb_data      : std_logic_vector(si_data'range);
 
-	signal opacity_frm   : std_logic;
-	signal opacity_data  : std_logic_vector(si_data'range);
 
 	signal adc_clk       : std_logic;
 
@@ -176,11 +173,14 @@ begin
 		signal rgtr_data : std_logic_vector(32-1 downto 0);
 		signal rgtr_revs : std_logic_vector(rgtr_data'reverse_range);
 
-		signal hz_dv     : std_logic;
-		signal hz_scale  : std_logic_vector(0 to 4-1);
-		signal hz_slider : std_logic_vector(0 to hzoffset_bits-1);
-		signal rev_scale : std_logic_vector(hz_scale'reverse_range);
-		signal opacity   : unsigned(0 to inputs-1);
+		signal hz_dv      : std_logic;
+		signal hz_scale   : std_logic_vector(0 to 4-1);
+		signal hz_slider  : std_logic_vector(0 to hzoffset_bits-1);
+		signal rev_scale  : std_logic_vector(hz_scale'reverse_range);
+		signal input_max  : natural range 0 to inputs-1;
+		signal opacity    : unsigned(0 to inputs-1);
+		signal opacity_frm  : std_logic;
+		signal opacity_data : std_logic_vector(si_data'range);
 
 	begin
 
@@ -188,13 +188,17 @@ begin
 		begin
 			case hz_scale is
 			when b"0000" =>
-				opacity <= b"1000_0000";
+				opacity   <= b"1000_0000";
+				input_max <= 1-1;
 			when b"1000" =>
-				opacity <= b"1100_0000";
+				opacity   <= b"1100_0000";
+				input_max <= 2-1;
 			when b"0100" =>
-				opacity <= b"1111_0000";
+				opacity   <= b"1111_0000";
+				input_max <= 4-1;
 			when others =>
-				opacity <= b"1111_1111";
+				opacity   <= b"1111_1111";
+				input_max <= 8-1;
 			end case;
 		end process;
 
@@ -203,7 +207,7 @@ begin
 		begin
 			if rising_edge(input_clk) then
 				if input_ena='1' then
-					if cntr >= unsigned(reverse(hz_scale)) then
+					if cntr >= input_max then
 						cntr := (others => '0');
 						input_enas <= '1';
 					elsif cntr >= opacity'length-1 then
@@ -248,14 +252,12 @@ begin
 		begin
 			if rising_edge(sio_clk) then
 				if cntr < (data'length+opacity_data'length-1)/opacity_data'length then
-					opacity_frm <= '1';
 					cntr := cntr + 1;
 				elsif hz_dv='1' then
-					opacity_frm <= '1';
 					cntr := (others => '0');
 				end if;
 				if cntr < (data'length+opacity_data'length-1)/opacity_data'length then
-					opacity_frm <= '1';
+					opacity_frm <= not usb_frm;
 				else
 					opacity_frm <= '0';
 				end if;
@@ -265,14 +267,14 @@ begin
 				data(0 to 32-1) := unsigned(rid_palette) & x"01" & to_unsigned(pltid_order'length+i,13) & opacity(i) & b"01";
 				data := data rol 32;
 			end loop;
-			opacity_data <= multiplex(std_logic_vector(data), std_logic_vector(cntr), opacity_data'length);
+			opacity_data <= multiplex(reverse(std_logic_vector(data),8), std_logic_vector(cntr), opacity_data'length);
 		end process;
 
-	end block;
+		si_frm  <= usb_frm  when opacity_frm='0' else '1';
+		si_irdy <= usb_irdy when opacity_frm='0' else '1';
+		si_data <= usb_data when opacity_frm='0' else opacity_data;
 
-	si_frm  <= usb_frm  when opacity_frm='0' else '1';
-	si_irdy <= usb_irdy when opacity_frm='0' else '1';
-	si_data <= usb_data when opacity_frm='0' else reverse(opacity_data);
+	end block;
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
@@ -598,6 +600,14 @@ begin
 
 	end block;
 
+	adcsclk_i : oddrx1f
+	port map(
+		sclk => adc_clk,
+		rst  => '0',
+		d0   => '1',
+		d1   => '0',
+		q    => adc_sclk);
+
 	process (input_clk)
 		variable cntr : unsigned(0 to 12-1);
 	begin
@@ -609,13 +619,5 @@ begin
 			(gp(24), gn(24), gp(25), gn(25), gp(26), gn(26), gp(27), gn(27)) <= std_logic_vector(cntr(0 to 8-1));
 		end if;
 	end process;
-
-	adcsclk_i : oddrx1f
-	port map(
-		sclk => adc_clk,
-		rst  => '0',
-		d0   => '1',
-		d1   => '0',
-		q    => adc_sclk);
 
 end;

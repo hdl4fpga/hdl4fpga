@@ -39,6 +39,7 @@ set_clock_groups -asynchronous -group { eth_tx_clk } -group { ddr_clk0_mmce2 }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { video_clk }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { dd_clk }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { eth_rx_clk }
+set_clock_groups -asynchronous -group { eth_rx_clk } -group { video_clk }
 set_clock_groups -asynchronous -group { sys_clk    } -group { sdrampll_b.ddr_clk0_mmce2  }
 set_clock_groups -asynchronous -group { sys_clk    } -group { sdrampll_b.ddr_clk90_mmce2 }
 set_clock_groups -asynchronous -group { video_clk  } -group { eth_tx_clk  }

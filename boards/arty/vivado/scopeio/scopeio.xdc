@@ -21,8 +21,16 @@
 # more details at http://www.gnu.org/licenses/.                              #
 #                                                                            #
 
-create_clock -name eth_tx_clk -period 40 -waveform { 0.0 20.0 } [ get_ports eth_tx_clk ]
-create_clock -name eth_rx_clk -period 40 -waveform { 0.0 20.0 } [ get_ports eth_rx_clk ]
-set_input_delay -clock eth_rx_clk 0.0 [get_ports [list eth_rx_dv eth_rxd[*]] ]
+create_clock -name sys_clk -period 10     -waveform { 0.0 5.000 } [ get_ports gclk100       ]
 
-set_clock_groups -asynchronous -group { eth_tx_clk } -group { eth_rx_clk }
+create_clock -name eth_rx_clk -period 40 -waveform { 0 20 } [ get_ports eth_rx_clk ]
+ 
+set_clock_groups -asynchronous -group { eth_rx_clk  } -group { sys_clk   }
+set_clock_groups -asynchronous -group { eth_rx_clk  } -group { video_clk }
+set_clock_groups -asynchronous -group { eth_rx_clk  } -group { input_clk }
+set_clock_groups -asynchronous -group { eth_tx_clk  } -group { video_clk }
+set_clock_groups -asynchronous -group { eth_tx_clk  } -group { input_clk }
+set_clock_groups -asynchronous -group { eth_tx_clk  } -group { eth_rx_clk }
+set_clock_groups -asynchronous -group { video_clk   } -group { sys_clk   }
+set_clock_groups -asynchronous -group { video_clk   } -group { input_clk }
+set_clock_groups -asynchronous -group { input_clk   } -group { video_clk }
