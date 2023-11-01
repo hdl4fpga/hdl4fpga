@@ -8,8 +8,12 @@ use unisim.vcomponents.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.profiles.all;
+use hdl4fpga.ipoepkg.all;
+use hdl4fpga.videopkg.all;
 use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
+use hdl4fpga.app_profiles.all;
 
 architecture scopio of arty is
 
@@ -37,7 +41,12 @@ architecture scopio of arty is
 	alias  sio_clk         is eth_rx_clk;
 	signal si_frm          : std_logic;
 	signal si_irdy         : std_logic;
+	signal si_trdy         : std_logic;
+	signal si_end          : std_logic;
 	signal si_data         : std_logic_vector(eth_rxd'range);
+	signal so_frm          : std_logic;
+	signal so_irdy         : std_logic;
+	signal so_trdy         : std_logic;
 	signal so_data         : std_logic_vector(eth_txd'range);
 
 	signal udpip_frm       : std_logic;
@@ -67,6 +76,7 @@ architecture scopio of arty is
 
 	constant video_mode : layout_mode := mode1080p;
 
+	constant io_link    : io_comms := io_ipoe;
 begin
 
 	clkin_ibufg : ibufg
@@ -157,11 +167,11 @@ begin
     		end if;
     	end process;
 
-		dhcp_p : process(mii_txc)
+		dhcp_p : process(eth_tx_clk)
 			type states is (s_request, s_wait);
 			variable state : states;
 		begin
-			if rising_edge(mii_txc) then
+			if rising_edge(eth_tx_clk) then
 				case state is
 				when s_request =>
 					if btn(0)='1' then
@@ -206,14 +216,14 @@ begin
 			port map (
 				src_clk  => mii_rxc,
 				src_data => rxc_rxbus,
-				dst_clk  => mii_txc,
+				dst_clk  => eth_tx_clk,
 				dst_irdy => dst_irdy,
 				dst_trdy => dst_trdy,
 				dst_data => txc_rxbus);
 
-			process (mii_txc)
+			process (eth_tx_clk)
 			begin
-				if rising_edge(mii_txc) then
+				if rising_edge(eth_tx_clk) then
 					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
 					miirx_frm  <= txc_rxbus(0);
 					miirx_irdy <= txc_rxbus(0);
@@ -258,7 +268,7 @@ begin
 
 		desser_e: entity hdl4fpga.desser
 		port map (
-			desser_clk => mii_txc,
+			desser_clk => eth_tx_clk,
 
 			des_frm    => miitx_frm,
 			des_irdy   => miitx_irdy,
@@ -269,9 +279,9 @@ begin
 			ser_data   => mii_txd);
 
 		mii_txen <= miitx_frm and not miitx_end;
-		process (mii_txc)
+		process (eth_tx_clk)
 		begin
-			if rising_edge(mii_txc) then
+			if rising_edge(eth_tx_clk) then
 				eth_tx_en <= mii_txen;
 				eth_txd   <= mii_txd;
 			end if;
@@ -295,9 +305,9 @@ begin
 		sio_sin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
-			sin_frm   => usb_frm,
-			sin_irdy  => usb_irdy,
-			sin_data  => usb_data,
+			sin_frm   => udpip_frm,
+			sin_irdy  => udpip_irdy,
+			sin_data  => udpip_data,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
@@ -399,7 +409,7 @@ begin
 		default_sgmntbg  => b"1_011",
 		default_bg       => b"1_111")
 	port map (
-		si_clk      => sio_clk,
+		sio_clk     => sio_clk,
 		si_frm      => si_frm,
 		si_irdy     => si_irdy,
 		si_data     => si_data,

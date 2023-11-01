@@ -185,7 +185,6 @@ architecture graphics of arty is
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (gclk100_per*real(sdram_params.pll.divclk_divide))/sdram_params.pll.clkfbout_mult_f; -- 1 ns /1ps
 
-
 	constant bank_size    : natural := ddr3_ba'length;
 	constant addr_size    : natural := ddr3_a'length;
 	constant coln_size    : natural := 10;
