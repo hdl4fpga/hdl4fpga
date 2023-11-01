@@ -164,14 +164,14 @@ begin
 
 	begin
 
-    	process (sys_clk)
-    		variable div : unsigned(0 to 1) := (others => '0');
-    	begin
-    		if rising_edge(sys_clk) then
-    			div := div + 1;
-    			eth_ref_clk <= div(0);
-    		end if;
-    	end process;
+		process (sys_clk)
+			variable div : unsigned(0 to 1) := (others => '0');
+		begin
+			if rising_edge(sys_clk) then
+				div := div + 1;
+				eth_ref_clk <= div(0);
+			end if;
+		end process;
 
 		dhcp_p : process(eth_tx_clk)
 			type states is (s_request, s_wait);
@@ -440,14 +440,6 @@ begin
 		video_vsync => video_vtsync,
 		video_blank => video_blank);
 
-	process (eth_tx_clk)
-	begin
-		if rising_edge(eth_tx_clk) then
-			eth_txd   <= txd;
-			eth_tx_en <= txdv;
-		end if;
-	end process;
-
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
@@ -635,8 +627,6 @@ begin
 	eth_mdio <= '0';
 
 	ddr3_reset <= 'Z';
-	ddr3_clk_p <= 'Z';
-	ddr3_clk_n <= 'Z';
 	ddr3_cke   <= 'Z';
 	ddr3_cs    <= 'Z';
 	ddr3_ras   <= 'Z';
@@ -648,7 +638,30 @@ begin
 	ddr3_dq    <= (others => 'Z');
 	ddr3_odt   <= 'Z';
 
-	ddr3_dqs_p <= (others => 'Z');
-	ddr3_dqs_n <= (others => 'Z');
+	ddr_ck_i : obufds
+	generic map (
+		iostandard => "DIFF_SSTL135")
+	port map (
+		i  => '0',
+		o  => ddr3_clk_p,
+		ob => ddr3_clk_n);
+
+	ddr_dqs0_i : iobufds
+	generic map (
+		iostandard => "DIFF_SSTL135")
+	port map (
+		t   => '1',
+		i   => '0',
+		io  => ddr3_dqs_p(0),
+		iob => ddr3_dqs_n(0));
+
+	ddr_dqs1_i : iobufds
+	generic map (
+		iostandard => "DIFF_SSTL135")
+	port map (
+		t   => '1',
+		i   => '0',
+		io  => ddr3_dqs_p(1),
+		iob => ddr3_dqs_n(1));
 
 end;
