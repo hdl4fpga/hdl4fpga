@@ -57,30 +57,29 @@ architecture scopeio of ulx3s is
 
 	constant video_gear  : natural      := 2;
 	signal video_clk     : std_logic;
-	signal video_lck     : std_logic;
-	signal video_shift_clk : std_logic;
 	signal video_eclk    : std_logic;
+	signal video_shift_clk : std_logic;
+	signal videoio_clk   : std_logic;
+	signal video_lck     : std_logic;
 	signal video_hzsync  : std_logic;
 	signal video_vtsync  : std_logic;
 	signal video_blank   : std_logic;
 	signal video_pixel   : std_logic_vector(0 to 24-1);
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
-	signal videoio_clk   : std_logic;
 
 	alias  sio_clk       is videoio_clk;
 	signal si_frm        : std_logic;
 	signal si_irdy       : std_logic;
 	signal si_data       : std_logic_vector(0 to 8-1);
 
-	constant max_delay   : natural := 2**14;
-	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-
-	signal so_clk        : std_logic;
 	signal so_frm        : std_logic;
 	signal so_trdy       : std_logic;
 	signal so_irdy       : std_logic;
 	signal so_end        : std_logic;
 	signal so_data       : std_logic_vector(8-1 downto 0);
+
+	constant max_delay   : natural := 2**14;
+	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 
 	constant inputs      : natural := 8;
 	signal input_clk     : std_logic;
@@ -603,6 +602,14 @@ begin
 
 	end block;
 
+	adcsclk_i : oddrx1f
+	port map(
+		sclk => adc_clk,
+		rst  => '0',
+		d0   => '1',
+		d1   => '0',
+		q    => adc_sclk);
+
 	process (input_clk)
 		variable cntr : unsigned(0 to 12-1);
 	begin
@@ -614,13 +621,5 @@ begin
 			(gp(24), gn(24), gp(25), gn(25), gp(26), gn(26), gp(27), gn(27)) <= std_logic_vector(cntr(0 to 8-1));
 		end if;
 	end process;
-
-	adcsclk_i : oddrx1f
-	port map(
-		sclk => adc_clk,
-		rst  => '0',
-		d0   => '1',
-		d1   => '0',
-		q    => adc_sclk);
 
 end;
