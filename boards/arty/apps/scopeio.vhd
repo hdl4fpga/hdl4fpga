@@ -34,6 +34,7 @@ architecture scopio of arty is
 
 	constant inputs        : natural := 9;
 	signal input_clk       : std_logic;
+	signal input_lck       : std_logic;
 	signal input_ena       : std_logic;
 	signal input_sample    : std_logic_vector(16-1 downto 0);
 	signal input_samples   : std_logic_vector(0 to inputs*input_sample'length-1);
@@ -85,11 +86,11 @@ begin
 		O => sys_clk);
 
 	dcm_e : block
-		signal video_clkfb  : std_logic;
-		signal adc_clkfb1 : std_logic;
-		signal adc_clkin1 : std_logic;
-		signal adc_clkfb2 : std_logic;
-		signal adc_clkin2 : std_logic;
+		signal video_clkfb : std_logic;
+		signal adc_clkfb1  : std_logic;
+		signal adc_clkin1  : std_logic;
+		signal adc_clkfb2  : std_logic;
+		signal adc_clkin2  : std_logic;
 	begin
 		video_i : mmcme2_base
 		generic map (
@@ -133,7 +134,8 @@ begin
 			clkin1   => adc_clkin2,
 			clkfbin  => adc_clkfb2,
 			clkfbout => adc_clkfb2,
-			clkout0  => input_clk);
+			clkout0  => input_clk,
+			locked   => input_lck);
 	end block;
    
 	ipoe_e : if io_link=io_ipoe generate
@@ -536,69 +538,40 @@ begin
 			end if;
 		end process;
 
-		process(input_clk)
-			variable reset     : std_logic := '1';
-			variable den_req   : std_logic := '1';
-			variable cfg_state : unsigned(0 to 1) := "00";
-			variable drp_rdy   : std_logic;
+		process(input_lck, input_clk)
 		begin
-			if rising_edge(input_clk) then
-				if reset='0' then 
-					den <= '0';
-					dwe <= '0';
-					if (xadccfg_rdy xor xadccfg_req)='1' then
+			if input_lck='0' then
+				den   <= '1';
+				dwe   <= '1';
+				daddr <= b"100_0001";
+				di    <= x"2000";
+			elsif rising_edge(input_clk) then
+				if (xadccfg_rdy xor xadccfg_req)='1' then
+					if drdy='1' then
+						den   <= '1';
+						daddr <= b"100_1001";
+						dwe   <= '1';
+						case input_maxchn is
+						when "0000" =>
+							di <= x"0000";
+						when "0001" =>
+							di <= x"1000";
+						when "0010" =>
+							di <= x"7000";
+						when "0011" =>
+							di <= x"7010";
+						when others =>
+							di <= x"f0f1";
+						end case;
+						xadccfg_rdy <= xadccfg_req;
+					else
 						dwe <= '0';
 						den <= '0';
-						if drp_rdy='1' then
-							case cfg_state is 
-							when "00" => 
-								den       <= '1';
-								daddr     <= b"100_0001";
-								dwe       <= '1';
-								di        <= x"0000";
-								cfg_state := "01";
-							when "01" =>
-								den       <= '1';
-								daddr     <= b"100_1001";
-								dwe       <= '1';
-								case input_maxchn is
-								when "0000" =>
-									di <= x"0000";
-								when "0001" =>
-									di <= x"1000";
-								when "0010" =>
-									di <= x"7000";
-								when "0011" =>
-									di <= x"7010";
-								when others =>
-									di <= x"f0f1";
-								end case;
-								cfg_state := "10";
-							when "10" =>
-								den       <= '1';
-								daddr     <= b"100_0001";
-								dwe       <= '1';
-								di        <= x"2000";
-								xadccfg_rdy  <= xadccfg_req;
-								cfg_state := "00";
-							when others =>
-							end case;
-							drp_rdy := '0';
-						end if;
-					elsif eoc='1' then
-						daddr <= std_logic_vector(resize(unsigned(channel), daddr'length));
-						if drp_rdy='1' then
-							den     <= '1';
-							drp_rdy := '0';
-						end if;
 					end if;
-				else
-					den     <= '1';
-					drp_rdy := '1';
-					reset   := '0';
-				end if;
-				if drdy='1' then
-					drp_rdy := '1';
+				elsif eoc='1' then
+					daddr <= std_logic_vector(resize(unsigned(channel), daddr'length));
+					den   <= drdy;
+					dwe   <= '0';
 				end if;
 			end if;
 		end process;
