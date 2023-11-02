@@ -723,7 +723,7 @@ package body textboxpkg is
 			if tags(i).tid = tid_end then
 				inherit := tags(tags(i).inherit).inherit;
 				if get_attr(tags, inherit, attr) /= get_attr(tags, current_attr, attr) then
-					report "** " & itoa(i) &  " *** -> " & itoa(tags(i).mem_ptr) & " ==> " & itoa(get_attr(tags, inherit, attr));
+					-- report "** " & itoa(i) &  " *** -> " & itoa(tags(i).mem_ptr) & " ==> " & itoa(get_attr(tags, inherit, attr));
 					retval(tab_length).addr := tags(i).mem_ptr;
 					retval(tab_length).attr := get_attr(tags, inherit, attr);
 					tab_length := tab_length + 1;
@@ -731,7 +731,7 @@ package body textboxpkg is
 				current_attr := tags(tags(i).inherit).inherit; --tags(i).inherit;
 			else
 				if get_attr(tags, i, attr) /= get_attr(tags, current_attr, attr) then
-					report "++ " & itoa(i) &  " +++ -> " & itoa(tags(i).mem_ptr) & " ==> " & itoa(get_attr(tags, i, attr));
+					-- report "++ " & itoa(i) &  " +++ -> " & itoa(tags(i).mem_ptr) & " ==> " & itoa(get_attr(tags, i, attr));
 					retval(tab_length).addr := tags(i).mem_ptr;
 					retval(tab_length).attr := get_attr(tags, i, attr);
 					tab_length := tab_length + 1;

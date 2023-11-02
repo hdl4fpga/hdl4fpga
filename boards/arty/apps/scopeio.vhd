@@ -15,7 +15,7 @@ use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.app_profiles.all;
 
-architecture scopio of arty is
+architecture scopeio of arty is
 
 	type layout_mode is (
 		mode600p, 
@@ -34,6 +34,7 @@ architecture scopio of arty is
 
 	constant inputs        : natural := 9;
 	signal input_clk       : std_logic;
+	signal input_lck       : std_logic;
 	signal input_ena       : std_logic;
 	signal input_sample    : std_logic_vector(16-1 downto 0);
 	signal input_samples   : std_logic_vector(0 to inputs*input_sample'length-1);
@@ -85,11 +86,11 @@ begin
 		O => sys_clk);
 
 	dcm_e : block
-		signal video_clkfb  : std_logic;
-		signal adc_clkfb1 : std_logic;
-		signal adc_clkin1 : std_logic;
-		signal adc_clkfb2 : std_logic;
-		signal adc_clkin2 : std_logic;
+		signal video_clkfb : std_logic;
+		signal adc_clkfb1  : std_logic;
+		signal adc_clkin1  : std_logic;
+		signal adc_clkfb2  : std_logic;
+		signal adc_clkin2  : std_logic;
 	begin
 		video_i : mmcme2_base
 		generic map (
@@ -133,7 +134,8 @@ begin
 			clkin1   => adc_clkin2,
 			clkfbin  => adc_clkfb2,
 			clkfbout => adc_clkfb2,
-			clkout0  => input_clk);
+			clkout0  => input_clk,
+			locked   => input_lck);
 	end block;
    
 	ipoe_e : if io_link=io_ipoe generate
@@ -350,7 +352,9 @@ begin
 					cntr := (others => '0');
 				end if;
 				if cntr < (data'length+opacity_data'length-1)/opacity_data'length then
-					opacity_frm <= not udpip_frm;
+					if opacity_frm='0' then
+						opacity_frm <= not udpip_frm;
+					end if;
 				else
 					opacity_frm <= '0';
 				end if;
@@ -367,9 +371,9 @@ begin
 		si_irdy <= udpip_irdy when opacity_frm='0' else '1';
 		si_data <= udpip_data when opacity_frm='0' else opacity_data;
 
-		process (sio_clk)
+		process (input_clk)
 		begin
-			if rising_edge(sio_clk) then
+			if rising_edge(input_clk) then
 				if (xadccfg_req xor xadccfg_rdy)='0' then
 					if input_maxchn /= reverse(hz_scale) then
 						xadccfg_req  <= not xadccfg_rdy;
@@ -443,12 +447,13 @@ begin
 	end process;
   
 	xadcctlr_b : block
-		signal drdy    : std_logic;
-		signal eoc     : std_logic;
+		signal rst     : std_logic;
 		signal di      : std_logic_vector(0 to 16-1);
 		signal dwe     : std_logic;
 		signal den     : std_logic;
 		signal daddr   : std_logic_vector(7-1 downto 0);
+		signal drdy    : std_logic;
+		signal eoc     : std_logic;
 		signal channel : std_logic_vector(5-1 downto 0);
 		signal vauxp   : std_logic_vector(16-1 downto 0);
 		signal vauxn   : std_logic_vector(16-1 downto 0);
@@ -456,6 +461,7 @@ begin
 		vauxp <= vaux_p(16-1 downto 12) & "0000" & vaux_p(8-1 downto 4) & "0000";
 		vauxn <= vaux_n(16-1 downto 12) & "0000" & vaux_n(8-1 downto 4) & "0000";
 
+		rst <= not input_lck;
 		xadc_e : xadc
 		generic map (
 		
@@ -487,7 +493,7 @@ begin
 			INIT_5C => X"0000",
 			SIM_MONITOR_FILE => "design.txt")
 		port map (
-			reset     => '0',
+			reset     => rst,
 			vauxp     => vauxp,
 			vauxn     => vauxn,
 			vp        => v_p(0),
@@ -506,7 +512,7 @@ begin
 			di        => di,
 			do        => input_sample); 
 
-		process(input_clk)
+		sample_rgtr_p : process(input_clk)
 		begin
 			if rising_edge(input_clk) then
 				if drdy='1' then
@@ -536,80 +542,75 @@ begin
 			end if;
 		end process;
 
-		process(input_clk)
-			variable reset     : std_logic := '1';
-			variable den_req   : std_logic := '1';
-			variable cfg_state : unsigned(0 to 1) := "00";
-			variable drp_rdy   : std_logic;
+		xadccfg_p : process(input_lck, input_clk)
+			type states is (s_dfltmode, s_setseq, s_contmode);
+			variable state : states;
+			variable data_req : bit;
+			variable data_rdy : bit;
 		begin
-			if rising_edge(input_clk) then
-				if reset='0' then 
-					den <= '0';
+			if input_lck='0' then
+				dwe <= '0';
+				den <= '0';
+				data_rdy := data_req;
+				state := s_dfltmode;
+			elsif rising_edge(input_clk) then
+				if drdy='1' then
+					data_rdy := data_req;
+				end if;
+				if (den or dwe)='1' then
 					dwe <= '0';
+					den <= '0';
+				elsif (data_req xor data_rdy)='0' then
 					if (xadccfg_rdy xor xadccfg_req)='1' then
-						dwe <= '0';
-						den <= '0';
-						if drp_rdy='1' then
-							case cfg_state is 
-							when "00" => 
-								den       <= '1';
-								daddr     <= b"100_0001";
-								dwe       <= '1';
-								di        <= x"0000";
-								cfg_state := "01";
-							when "01" =>
-								den       <= '1';
-								daddr     <= b"100_1001";
-								dwe       <= '1';
-								case input_maxchn is
-								when "0000" =>
-									di <= x"0000";
-								when "0001" =>
-									di <= x"1000";
-								when "0010" =>
-									di <= x"7000";
-								when "0011" =>
-									di <= x"7010";
-								when others =>
-									di <= x"f0f1";
-								end case;
-								cfg_state := "10";
-							when "10" =>
-								den       <= '1';
-								daddr     <= b"100_0001";
-								dwe       <= '1';
-								di        <= x"2000";
-								xadccfg_rdy  <= xadccfg_req;
-								cfg_state := "00";
+						-- 7 Series FPGAs and Zynq-7000 All Programmable SoC 
+						-- XADC Dual 12-Bit 1 MSPS Analog-to-Digital Converter User Guide
+						-- Chapter 4 XADC Operating Modes Continuos Sequence Mode
+						den <= '1';
+						dwe <= '1';
+						case state is
+						when s_dfltmode =>
+							daddr <= b"100_0001";
+							di <= x"0000";
+							state := s_setseq;
+						when s_setseq =>
+							daddr <= b"100_1001";
+							case input_maxchn is
+							when "0000" =>
+								di <= x"0000";
+							when "0001" =>
+								di <= x"1000";
+							when "0010" =>
+								di <= x"7000";
+							when "0011" =>
+								di <= x"7010";
 							when others =>
+								di <= x"f0f1";
 							end case;
-							drp_rdy := '0';
-						end if;
+							state := s_contmode;
+						when s_contmode =>
+							daddr <= b"100_0001";
+							di <= x"2000";
+							xadccfg_rdy <= xadccfg_req;
+							state := s_dfltmode;
+						end case;
+						data_req := not data_rdy;
 					elsif eoc='1' then
 						daddr <= std_logic_vector(resize(unsigned(channel), daddr'length));
-						if drp_rdy='1' then
-							den     <= '1';
-							drp_rdy := '0';
-						end if;
+						den   <= '1';
+						dwe   <= '0';
+						data_req := not data_rdy;
 					end if;
-				else
-					den     <= '1';
-					drp_rdy := '1';
-					reset   := '0';
-				end if;
-				if drdy='1' then
-					drp_rdy := '1';
 				end if;
 			end if;
 		end process;
 	end block;
 
-	process (sys_clk)
+	tp_cntr_p : process (sys_clk)
 		variable cntr : unsigned(0 to 22-1);
 	begin
 		if rising_edge(sys_clk) then
 			(jd(9), jd(8), jd(7), jc(1), jd(10), jd(4), jd(3), jd(2), jd(1)) <= std_logic_vector(cntr(0 to 9-1));
-			cntr   := cntr + 1;
+			cntr := cntr + 1;
 		end if;
 	end process;
 
@@ -629,30 +630,8 @@ begin
 	ddr3_dq    <= (others => 'Z');
 	ddr3_odt   <= 'Z';
 
-	ddr_ck_i : obufds
-	generic map (
-		iostandard => "DIFF_SSTL135")
-	port map (
-		i  => '0',
-		o  => ddr3_clk_p,
-		ob => ddr3_clk_n);
-
-	ddr_dqs0_i : iobufds
-	generic map (
-		iostandard => "DIFF_SSTL135")
-	port map (
-		t   => '1',
-		i   => '0',
-		io  => ddr3_dqs_p(0),
-		iob => ddr3_dqs_n(0));
-
-	ddr_dqs1_i : iobufds
-	generic map (
-		iostandard => "DIFF_SSTL135")
-	port map (
-		t   => '1',
-		i   => '0',
-		io  => ddr3_dqs_p(1),
-		iob => ddr3_dqs_n(1));
+	ddr_ck_i   : obufds  generic map ( iostandard => "DIFF_SSTL135") port map ( i => '0', o => ddr3_clk_p, ob => ddr3_clk_n);
+	ddr_dqs0_i : iobufds generic map ( iostandard => "DIFF_SSTL135") port map ( t => '1', i => '0', io => ddr3_dqs_p(0), iob => ddr3_dqs_n(0));
+	ddr_dqs1_i : iobufds generic map ( iostandard => "DIFF_SSTL135") port map ( t => '1', i => '0', io => ddr3_dqs_p(1), iob => ddr3_dqs_n(1));
 
 end;
