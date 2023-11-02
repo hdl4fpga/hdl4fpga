@@ -445,13 +445,14 @@ begin
 	end process;
   
 	xadcctlr_b : block
-		signal adc_rst : std_logic;
-		signal drdy    : std_logic;
-		signal eoc     : std_logic;
+		signal rst     : std_logic;
 		signal di      : std_logic_vector(0 to 16-1);
 		signal dwe     : std_logic;
 		signal den     : std_logic;
-		signal daddr   : std_logic_vector(7-1 downto 0);
+		signal daddr   : std_logic_vector(8-1 downto 0);
+		signal drdy    : std_logic;
+		signal busy    : std_logic;
+		signal eoc     : std_logic;
 		signal channel : std_logic_vector(5-1 downto 0);
 		signal vauxp   : std_logic_vector(16-1 downto 0);
 		signal vauxn   : std_logic_vector(16-1 downto 0);
@@ -459,7 +460,7 @@ begin
 		vauxp <= vaux_p(16-1 downto 12) & "0000" & vaux_p(8-1 downto 4) & "0000";
 		vauxn <= vaux_n(16-1 downto 12) & "0000" & vaux_n(8-1 downto 4) & "0000";
 
-		adc_rst <= not input_lck;
+		rst <= not input_lck;
 		xadc_e : xadc
 		generic map (
 		
@@ -491,7 +492,7 @@ begin
 			INIT_5C => X"0000",
 			SIM_MONITOR_FILE => "design.txt")
 		port map (
-			reset     => adc_rst,
+			reset     => rst,
 			vauxp     => vauxp,
 			vauxn     => vauxn,
 			vp        => v_p(0),
@@ -499,12 +500,13 @@ begin
 			convstclk => '0',
 			convst    => '0',
 
+			busy      => busy,
 			eos       => input_ena,
 			eoc       => eoc,
 			dclk      => input_clk,
 			drdy      => drdy,
 			channel   => channel,
-			daddr     => daddr,
+			daddr     => daddr(7-1 downto 0),
 			den       => den,
 			dwe       => dwe,
 			di        => di,
@@ -541,43 +543,64 @@ begin
 		end process;
 
 		process(input_lck, input_clk)
-			variable cfg_req : bit;
-			variable cfg_rdy : bit;
+			type states is (s_rstseq, s_setseq, s_contmode);
+			variable state : states;
+			variable data_req : bit;
+			variable data_rdy : bit;
 		begin
 			if input_lck='0' then
 				dwe <= '0';
 				den <= '0';
 			elsif rising_edge(input_clk) then
-				if dwe='1' then
+				if (den or dwe)='1' then
 					dwe <= '0';
 					den <= '0';
-				elsif (cfg_req xor cfg_rdy)='0' then
-					if (xadccfg_rdy xor xadccfg_req)='1' then
-						den   <= '1';
-						dwe   <= '1';
-						daddr <= b"100_1001";
-						case input_maxchn is
-						when "0000" =>
+				elsif (data_req xor data_rdy)='0' then
+					if (xadccfg_rdy xor xadccfg_req)='1' and busy='0' then
+						-- 7 Series FPGAs and Zynq-7000 All Programmable SoC 
+						-- XADC Dual 12-Bit 1 MSPS Analog-to-Digital Converter User Guide
+						-- Chapter 4 XADC Operating Modes Continuos Sequence Mode
+						case state is
+						when s_dfltmode =>
+							den <= '1';
+							dwe <= '1';
+    						daddr <= x"41";
 							di <= x"0000";
-						when "0001" =>
-							di <= x"1000";
-						when "0010" =>
-							di <= x"7000";
-						when "0011" =>
-							di <= x"7010";
-						when others =>
-							di <= x"f0f1";
+							state := s_setseq;
+						when s_setseq =>
+    						den   <= '1';
+    						dwe   <= '1';
+    						daddr <= x"49";
+    						case input_maxchn is
+    						when "0000" =>
+    							di <= x"0000";
+    						when "0001" =>
+    							di <= x"1000";
+    						when "0010" =>
+    							di <= x"7000";
+    						when "0011" =>
+    							di <= x"7010";
+    						when others =>
+    							di <= x"f0f1";
+    						end case;
+							state := s_contmode;
+						when s_contmode =>
+							den <= '1';
+							dwe <= '1';
+    						daddr <= x"41";
+							di <= x"2000";
+							xadccfg_rdy <= xadccfg_req;
+							state := s_dfltmode;
 						end case;
-						xadccfg_rdy <= xadccfg_req;
-						cfg_req := not cfg_rdy;
+						data_req := not data_rdy;
 					elsif eoc='1' then
 						daddr <= std_logic_vector(resize(unsigned(channel), daddr'length));
-						den   <= drdy;
+						den   <= '1';
 						dwe   <= '0';
-						cfg_req := not cfg_rdy;
+						data_req := not data_rdy;
 					end if;
 				elsif drdy='1' then
-					cfg_rdy := cfg_req;
+					data_rdy := data_req;
 				end if;
 			end if;
 		end process;
