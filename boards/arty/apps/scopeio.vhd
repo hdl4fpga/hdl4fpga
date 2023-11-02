@@ -15,7 +15,7 @@ use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.app_profiles.all;
 
-architecture scopio of arty is
+architecture scopeio of arty is
 
 	type layout_mode is (
 		mode600p, 
@@ -62,7 +62,7 @@ architecture scopio of arty is
 	signal udpip_irdy      : std_logic;
 	signal udpip_data      : std_logic_vector(eth_rxd'range);
 
-	signal xadccfg_req     : bit;
+	signal xadccfg_req     : bit := '1';
 	signal xadccfg_rdy     : bit;
 
 	type display_param is record
@@ -445,6 +445,7 @@ begin
 	end process;
   
 	xadcctlr_b : block
+		signal adc_rst : std_logic;
 		signal drdy    : std_logic;
 		signal eoc     : std_logic;
 		signal di      : std_logic_vector(0 to 16-1);
@@ -458,6 +459,7 @@ begin
 		vauxp <= vaux_p(16-1 downto 12) & "0000" & vaux_p(8-1 downto 4) & "0000";
 		vauxn <= vaux_n(16-1 downto 12) & "0000" & vaux_n(8-1 downto 4) & "0000";
 
+		adc_rst <= not input_lck;
 		xadc_e : xadc
 		generic map (
 		
@@ -489,7 +491,7 @@ begin
 			INIT_5C => X"0000",
 			SIM_MONITOR_FILE => "design.txt")
 		port map (
-			reset     => '0',
+			reset     => adc_rst,
 			vauxp     => vauxp,
 			vauxn     => vauxn,
 			vp        => v_p(0),
@@ -539,18 +541,21 @@ begin
 		end process;
 
 		process(input_lck, input_clk)
+			variable cfg_req : bit;
+			variable cfg_rdy : bit;
 		begin
 			if input_lck='0' then
-				den   <= '1';
-				dwe   <= '1';
-				daddr <= b"100_0001";
-				di    <= x"2000";
+				dwe <= '0';
+				den <= '0';
 			elsif rising_edge(input_clk) then
-				if (xadccfg_rdy xor xadccfg_req)='1' then
-					if drdy='1' then
+				if dwe='1' then
+					dwe <= '0';
+					den <= '0';
+				elsif (cfg_req xor cfg_rdy)='0' then
+					if (xadccfg_rdy xor xadccfg_req)='1' then
 						den   <= '1';
-						daddr <= b"100_1001";
 						dwe   <= '1';
+						daddr <= b"100_1001";
 						case input_maxchn is
 						when "0000" =>
 							di <= x"0000";
@@ -564,14 +569,15 @@ begin
 							di <= x"f0f1";
 						end case;
 						xadccfg_rdy <= xadccfg_req;
-					else
-						dwe <= '0';
-						den <= '0';
+						cfg_req := not cfg_rdy;
+					elsif eoc='1' then
+						daddr <= std_logic_vector(resize(unsigned(channel), daddr'length));
+						den   <= drdy;
+						dwe   <= '0';
+						cfg_req := not cfg_rdy;
 					end if;
-				elsif eoc='1' then
-					daddr <= std_logic_vector(resize(unsigned(channel), daddr'length));
-					den   <= drdy;
-					dwe   <= '0';
+				elsif drdy='1' then
+					cfg_rdy := cfg_req;
 				end if;
 			end if;
 		end process;

@@ -127,7 +127,7 @@ WORK__arty_scopeio_md = $(LIB_WORK)/arty_scopeio_md/_primary.dat
 WORK__arty_graphics_structure_md = $(LIB_WORK)/arty_graphics_structure_md/_primary.dat
 WORK__arty_graphics_md = $(LIB_WORK)/arty_graphics_md/_primary.dat
 WORK__arty__graphics = $(LIB_WORK)/arty/graphics.dat
-WORK__arty__scopio = $(LIB_WORK)/arty/scopio.dat
+WORK__arty__scopeio = $(LIB_WORK)/arty/scopeio.dat
 WORK__arty = $(LIB_WORK)/arty/_primary.dat
 VCOM = vcom
 VLOG = vlog
@@ -193,7 +193,7 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__arty_graphics_structure_md) \
     $(WORK__arty_graphics_md) \
     $(WORK__arty__graphics) \
-    $(WORK__arty__scopio) \
+    $(WORK__arty__scopeio) \
     $(WORK__arty)
 
 $(WORK__arty) : ../../boards/arty/common/arty.vhd \
@@ -201,7 +201,7 @@ $(WORK__arty) : ../../boards/arty/common/arty.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ../../boards/arty/common/arty.vhd
 
-$(WORK__arty__scopio) : ../../boards/arty/apps/scopeio.vhd \
+$(WORK__arty__scopeio) : ../../boards/arty/apps/scopeio.vhd \
 		$(HDL4FPGA__scopeio) \
 		$(HDL4FPGA__scopeio_rgtrhzaxis) \
 		$(HDL4FPGA__sio_sin) \
