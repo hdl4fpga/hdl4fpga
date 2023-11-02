@@ -62,7 +62,7 @@ architecture scopeio of arty is
 	signal udpip_irdy      : std_logic;
 	signal udpip_data      : std_logic_vector(eth_rxd'range);
 
-	signal xadccfg_req     : bit := '1';
+	signal xadccfg_req     : bit;
 	signal xadccfg_rdy     : bit;
 
 	type display_param is record
@@ -352,7 +352,9 @@ begin
 					cntr := (others => '0');
 				end if;
 				if cntr < (data'length+opacity_data'length-1)/opacity_data'length then
-					opacity_frm <= not udpip_frm;
+					if opacity_frm='0' then
+						opacity_frm <= not udpip_frm;
+					end if;
 				else
 					opacity_frm <= '0';
 				end if;
@@ -369,9 +371,9 @@ begin
 		si_irdy <= udpip_irdy when opacity_frm='0' else '1';
 		si_data <= udpip_data when opacity_frm='0' else opacity_data;
 
-		process (sio_clk)
+		process (input_clk)
 		begin
-			if rising_edge(sio_clk) then
+			if rising_edge(input_clk) then
 				if (xadccfg_req xor xadccfg_rdy)='0' then
 					if input_maxchn /= reverse(hz_scale) then
 						xadccfg_req  <= not xadccfg_rdy;
@@ -449,9 +451,8 @@ begin
 		signal di      : std_logic_vector(0 to 16-1);
 		signal dwe     : std_logic;
 		signal den     : std_logic;
-		signal daddr   : std_logic_vector(8-1 downto 0);
+		signal daddr   : std_logic_vector(7-1 downto 0);
 		signal drdy    : std_logic;
-		signal busy    : std_logic;
 		signal eoc     : std_logic;
 		signal channel : std_logic_vector(5-1 downto 0);
 		signal vauxp   : std_logic_vector(16-1 downto 0);
@@ -500,19 +501,18 @@ begin
 			convstclk => '0',
 			convst    => '0',
 
-			busy      => busy,
 			eos       => input_ena,
 			eoc       => eoc,
 			dclk      => input_clk,
 			drdy      => drdy,
 			channel   => channel,
-			daddr     => daddr(7-1 downto 0),
+			daddr     => daddr,
 			den       => den,
 			dwe       => dwe,
 			di        => di,
 			do        => input_sample); 
 
-		process(input_clk)
+		sample_rgtr_p : process(input_clk)
 		begin
 			if rising_edge(input_clk) then
 				if drdy='1' then
@@ -542,8 +542,8 @@ begin
 			end if;
 		end process;
 
-		process(input_lck, input_clk)
-			type states is (s_rstseq, s_setseq, s_contmode);
+		xadccfg_p : process(input_lck, input_clk)
+			type states is (s_dfltmode, s_setseq, s_contmode);
 			variable state : states;
 			variable data_req : bit;
 			variable data_rdy : bit;
@@ -551,43 +551,44 @@ begin
 			if input_lck='0' then
 				dwe <= '0';
 				den <= '0';
+				data_rdy := data_req;
+				state := s_dfltmode;
 			elsif rising_edge(input_clk) then
+				if drdy='1' then
+					data_rdy := data_req;
+				end if;
 				if (den or dwe)='1' then
 					dwe <= '0';
 					den <= '0';
 				elsif (data_req xor data_rdy)='0' then
-					if (xadccfg_rdy xor xadccfg_req)='1' and busy='0' then
+					if (xadccfg_rdy xor xadccfg_req)='1' then
 						-- 7 Series FPGAs and Zynq-7000 All Programmable SoC 
 						-- XADC Dual 12-Bit 1 MSPS Analog-to-Digital Converter User Guide
 						-- Chapter 4 XADC Operating Modes Continuos Sequence Mode
+						den <= '1';
+						dwe <= '1';
 						case state is
 						when s_dfltmode =>
-							den <= '1';
-							dwe <= '1';
-    						daddr <= x"41";
+							daddr <= b"100_0001";
 							di <= x"0000";
 							state := s_setseq;
 						when s_setseq =>
-    						den   <= '1';
-    						dwe   <= '1';
-    						daddr <= x"49";
-    						case input_maxchn is
-    						when "0000" =>
-    							di <= x"0000";
-    						when "0001" =>
-    							di <= x"1000";
-    						when "0010" =>
-    							di <= x"7000";
-    						when "0011" =>
-    							di <= x"7010";
-    						when others =>
-    							di <= x"f0f1";
-    						end case;
+							daddr <= b"100_1001";
+							case input_maxchn is
+							when "0000" =>
+								di <= x"0000";
+							when "0001" =>
+								di <= x"1000";
+							when "0010" =>
+								di <= x"7000";
+							when "0011" =>
+								di <= x"7010";
+							when others =>
+								di <= x"f0f1";
+							end case;
 							state := s_contmode;
 						when s_contmode =>
-							den <= '1';
-							dwe <= '1';
-    						daddr <= x"41";
+							daddr <= b"100_0001";
 							di <= x"2000";
 							xadccfg_rdy <= xadccfg_req;
 							state := s_dfltmode;
@@ -599,19 +600,17 @@ begin
 						dwe   <= '0';
 						data_req := not data_rdy;
 					end if;
-				elsif drdy='1' then
-					data_rdy := data_req;
 				end if;
 			end if;
 		end process;
 	end block;
 
-	process (sys_clk)
+	tp_cntr_p : process (sys_clk)
 		variable cntr : unsigned(0 to 22-1);
 	begin
 		if rising_edge(sys_clk) then
 			(jd(9), jd(8), jd(7), jc(1), jd(10), jd(4), jd(3), jd(2), jd(1)) <= std_logic_vector(cntr(0 to 9-1));
-			cntr   := cntr + 1;
+			cntr := cntr + 1;
 		end if;
 	end process;
 
@@ -631,30 +630,8 @@ begin
 	ddr3_dq    <= (others => 'Z');
 	ddr3_odt   <= 'Z';
 
-	ddr_ck_i : obufds
-	generic map (
-		iostandard => "DIFF_SSTL135")
-	port map (
-		i  => '0',
-		o  => ddr3_clk_p,
-		ob => ddr3_clk_n);
-
-	ddr_dqs0_i : iobufds
-	generic map (
-		iostandard => "DIFF_SSTL135")
-	port map (
-		t   => '1',
-		i   => '0',
-		io  => ddr3_dqs_p(0),
-		iob => ddr3_dqs_n(0));
-
-	ddr_dqs1_i : iobufds
-	generic map (
-		iostandard => "DIFF_SSTL135")
-	port map (
-		t   => '1',
-		i   => '0',
-		io  => ddr3_dqs_p(1),
-		iob => ddr3_dqs_n(1));
+	ddr_ck_i   : obufds  generic map ( iostandard => "DIFF_SSTL135") port map ( i => '0', o => ddr3_clk_p, ob => ddr3_clk_n);
+	ddr_dqs0_i : iobufds generic map ( iostandard => "DIFF_SSTL135") port map ( t => '1', i => '0', io => ddr3_dqs_p(0), iob => ddr3_dqs_n(0));
+	ddr_dqs1_i : iobufds generic map ( iostandard => "DIFF_SSTL135") port map ( t => '1', i => '0', io => ddr3_dqs_p(1), iob => ddr3_dqs_n(1));
 
 end;
