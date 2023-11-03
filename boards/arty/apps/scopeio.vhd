@@ -97,8 +97,8 @@ begin
 			clkin1_period    => 10.0,
 			clkfbout_mult_f  => 12.0,
 			clkout0_divide_f =>  8.0,
-			clkout1_divide   => 75,
-			bandwidth        => "LOW")
+			clkout1_divide   => 75)
+			-- bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
 			rst      => '0',
@@ -112,8 +112,8 @@ begin
 		generic map (
 			clkin1_period    => 10.0*75.0/12.0,
 			clkfbout_mult_f  => 13.0*4.0,
-			clkout0_divide_f => 25.0,
-			bandwidth        => "LOW")
+			clkout0_divide_f => 25.0)
+			-- bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
 			rst      => '0',
@@ -126,8 +126,8 @@ begin
 		generic map (
 			clkin1_period    => (10.0*75.0/12.0)*25.0/(13.0*4.0),
 			clkfbout_mult_f  => 32.0,
-			clkout0_divide_f => 10.0,
-			bandwidth        => "LOW")
+			clkout0_divide_f => 10.0)
+			-- bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
 			rst      => '0',
@@ -289,13 +289,12 @@ begin
 	inputs_b : block
 		signal rgtr_id   : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv   : std_logic;
-		signal rgtr_data : std_logic_vector(32-1 downto 0);
+		signal rgtr_data : std_logic_vector(0 to 4*32-1);
 		signal rgtr_revs : std_logic_vector(rgtr_data'reverse_range);
 
 		signal hz_dv      : std_logic;
-		signal hz_scale   : std_logic_vector(0 to 4-1);
-		signal hz_slider  : std_logic_vector(0 to hzoffset_bits-1);
-		signal rev_scale  : std_logic_vector(hz_scale'reverse_range);
+		signal hz_scale   : std_logic_vector(4-1 downto 0);
+		signal hz_slider  : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal opacity    : unsigned(0 to inputs-1);
 		signal opacity_frm  : std_logic;
 		signal opacity_data : std_logic_vector(si_data'range);
@@ -326,13 +325,13 @@ begin
 		process (hz_scale)
 		begin
 			case hz_scale is
-			when "0000" =>
+			when x"0" =>
 				opacity <= b"1_0000_0000";
-			when "1000" =>
+			when x"1" =>
 				opacity <= b"1_1000_0000";
-			when "0100" =>
+			when x"2" =>
 				opacity <= b"1_1110_0000";
-			when "1100" =>
+			when x"3" =>
 				opacity <= b"1_1111_0000";
 			when others =>
 				opacity <= b"1_1111_1111";
@@ -375,9 +374,9 @@ begin
 		begin
 			if rising_edge(input_clk) then
 				if (xadccfg_req xor xadccfg_rdy)='0' then
-					if input_maxchn /= reverse(hz_scale) then
+					if input_maxchn /= hz_scale then
 						xadccfg_req  <= not xadccfg_rdy;
-						input_maxchn <= reverse(hz_scale);
+						input_maxchn <= hz_scale;
 					end if;
 				end if;
 			end if;
@@ -409,7 +408,7 @@ begin
 			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
 			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)),
 
-		default_tracesfg => b"1_111" & b"0_110" & b"0_101" & b"0_100" & b"0_011" & b"0_010" & b"0_001" & b"0_111" & b"0_110",
+		default_tracesfg => b"1_110" & b"0_011" & b"0_101" & b"0_111" & b"0_110" & b"0_011" & b"0_101" & b"0_111" & b"0_001",
 		default_gridfg   => b"1_100",
 		default_gridbg   => b"1_000",
 		default_hzfg     => b"1_111",
@@ -606,10 +605,11 @@ begin
 	end block;
 
 	tp_cntr_p : process (sys_clk)
+		constant n : natural := 4;
 		variable cntr : unsigned(0 to 22-1);
 	begin
 		if rising_edge(sys_clk) then
-			(jd(9), jd(8), jd(7), jc(1), jd(10), jd(4), jd(3), jd(2), jd(1)) <= std_logic_vector(cntr(0 to 9-1));
+			(jd(9), jd(8), jd(7), jc(1), jd(10), jd(4), jd(3), jd(2), jd(1)) <= std_logic_vector(cntr(0+n to 9+n-1));
 			cntr := cntr + 1;
 		end if;
 	end process;
