@@ -265,7 +265,7 @@ begin
 		rgtr_clk     => sio_clk,
 		rgtr_dv      => rgtr_dv,
 		rgtr_id      => rgtr_id,
-		rgtr_data    => rgtr_data,
+		rgtr_data    => rgtr_revs,
 
 		input_clk    => input_clk,
 		input_dv     => ampsample_dv,
