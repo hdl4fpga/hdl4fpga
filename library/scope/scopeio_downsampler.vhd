@@ -95,7 +95,7 @@ begin
 				else
 					output_dv <= scaler(0);
 				end if;
-				a0 <= not a0;
+				a0 <= not to_stdulogic(to_bit(a0));
 			else
 				output_dv <= '0';
 			end if;
