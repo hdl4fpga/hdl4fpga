@@ -27,6 +27,7 @@ architecture scopeio of arty is
 	constant video_mode : layout_mode := mode1080p;
 	constant io_link    : io_comms := io_ipoe;
 	--------------------------------------
+	constant tsttab : boolean := false;
 
 	constant max_delay     : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
@@ -62,7 +63,7 @@ architecture scopeio of arty is
 	signal udpip_irdy      : std_logic;
 	signal udpip_data      : std_logic_vector(eth_rxd'range);
 
-	signal xadccfg_req     : bit := '1';
+	signal xadccfg_req     : bit;
 	signal xadccfg_rdy     : bit;
 
 	type display_param is record
@@ -101,8 +102,8 @@ begin
 			clkin1_period    => 10.0,
 			clkfbout_mult_f  => 12.0,
 			clkout0_divide_f =>  8.0,
-			clkout1_divide   => 75)
-			-- bandwidth        => "LOW")
+			clkout1_divide   => 75,
+			bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
 			rst      => '0',
@@ -118,8 +119,8 @@ begin
 		generic map (
 			clkin1_period    => 10.0*75.0/12.0,
 			clkfbout_mult_f  => 13.0*4.0,
-			clkout0_divide_f => 25.0)
-			-- bandwidth        => "LOW")
+			clkout0_divide_f => 25.0,
+			bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
 			rst      => adc1_rst,
@@ -134,8 +135,8 @@ begin
 		generic map (
 			clkin1_period    => (10.0*75.0/12.0)*25.0/(13.0*4.0),
 			clkfbout_mult_f  => 32.0,
-			clkout0_divide_f => 10.0)
-			-- bandwidth        => "LOW")
+			clkout0_divide_f => 10.0,
+			bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
 			rst      => adc2_rst,
@@ -453,7 +454,46 @@ begin
 		end if;
 	end process;
   
-	xadcctlr_b : block
+	synth_g : if tsttab generate
+		constant size : natural := 256;
+
+		function sintab (
+			constant size       : natural;
+			constant resolution : natural := 16;
+			constant unipolar   : boolean := false)
+			return std_logic_vector  is
+			constant pi     : real := 4.0*arctan(1.0);
+			variable retval : std_logic_vector(0 to size*resolution-1);
+		begin
+			for i in 0 to size-1 loop
+				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer((2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i)/real(size))), resolution));
+			end loop;
+			return retval;
+		end;
+
+		signal addr : unsigned(0 to unsigned_num_bits(size-1)-1);
+
+	begin
+		process (input_clk)
+		begin
+			if rising_edge(input_clk) then
+				addr <= addr + 1;
+			end if;
+		end process;
+
+		rom_e : entity hdl4fpga.rom
+		generic map (
+			bitrom => sintab(size => 2**addr'length, resolution => input_sample'length))
+		port map (
+			addr => std_logic_vector(addr),
+			data => input_sample);
+
+		input_ena <= '1';
+		input_samples(0*input_sample'length to (0+1)*input_sample'length-1) <= input_sample;
+
+	end generate;
+
+	xadcctlr_b : if not tsttab generate
 		signal rst     : std_logic;
 		signal di      : std_logic_vector(0 to 16-1);
 		signal dwe     : std_logic;
@@ -464,7 +504,6 @@ begin
 		signal channel : std_logic_vector(5-1 downto 0);
 		signal vauxp   : std_logic_vector(16-1 downto 0);
 		signal vauxn   : std_logic_vector(16-1 downto 0);
-		signal busy : std_logic;
 	begin
 		vauxp <= vaux_p(16-1 downto 12) & "0000" & vaux_p(8-1 downto 4) & "0000";
 		vauxn <= vaux_n(16-1 downto 12) & "0000" & vaux_n(8-1 downto 4) & "0000";
@@ -550,25 +589,20 @@ begin
 			end if;
 		end process;
 
-		xadccfg_p : process(input_lck, input_clk)
+		xadccfg_p : process(input_clk)
 			type states is (s_dfltmode, s_setseq, s_contmode);
 			variable state : states;
 			variable data_req : bit;
 			variable data_rdy : bit;
 		begin
-			if input_lck='0' then
-				dwe <= '0';
-				den <= '0';
-				data_rdy := data_req;
-				state := s_dfltmode;
-			elsif rising_edge(input_clk) then
+			if rising_edge(input_clk) then
 				if drdy='1' then
 					data_rdy := data_req;
 				end if;
 				if (den or dwe)='1' then
 					dwe <= '0';
 					den <= '0';
-				elsif (data_req xor data_rdy)='0' then
+				elsif (data_req xor data_rdy)='0' and drdy='0' then
 					if (xadccfg_rdy xor xadccfg_req)='1' then
 						-- 7 Series FPGAs and Zynq-7000 All Programmable SoC 
 						-- XADC Dual 12-Bit 1 MSPS Analog-to-Digital Converter User Guide
@@ -602,16 +636,19 @@ begin
 							state := s_dfltmode;
 						end case;
 						data_req := not data_rdy;
-					elsif eoc='1' then
-						daddr <= std_logic_vector(resize(unsigned(channel), daddr'length));
-						den   <= '1';
-						dwe   <= '0';
-						data_req := not data_rdy;
+					else
+						if eoc='1' then
+							daddr <= std_logic_vector(resize(unsigned(channel), daddr'length));
+							den   <= '1';
+							dwe   <= '0';
+							data_req := not data_rdy;
+						end if;
+						state := s_dfltmode;
 					end if;
 				end if;
 			end if;
 		end process;
-	end block;
+	end generate;
 
 	tp_cntr_p : process (sys_clk)
 		constant n : natural := 0;
