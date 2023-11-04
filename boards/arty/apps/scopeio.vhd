@@ -62,7 +62,7 @@ architecture scopeio of arty is
 	signal udpip_irdy      : std_logic;
 	signal udpip_data      : std_logic_vector(eth_rxd'range);
 
-	signal xadccfg_req     : bit;
+	signal xadccfg_req     : bit := '1';
 	signal xadccfg_rdy     : bit;
 
 	type display_param is record
@@ -87,18 +87,22 @@ begin
 
 	dcm_e : block
 		signal video_clkfb : std_logic;
-		signal adc_clkfb1  : std_logic;
-		signal adc_clkin1  : std_logic;
-		signal adc_clkfb2  : std_logic;
-		signal adc_clkin2  : std_logic;
+		signal video_lck   : std_logic;
+		signal adc1_rst    : std_logic;
+		signal adc1_clkfb  : std_logic;
+		signal adc1_clkin  : std_logic;
+		signal adc1_lck    : std_logic;
+		signal adc2_rst    : std_logic;
+		signal adc2_clkfb  : std_logic;
+		signal adc2_clkin  : std_logic;
 	begin
 		video_i : mmcme2_base
 		generic map (
 			clkin1_period    => 10.0,
 			clkfbout_mult_f  => 12.0,
 			clkout0_divide_f =>  8.0,
-			clkout1_divide   => 75,
-			bandwidth        => "LOW")
+			clkout1_divide   => 75)
+			-- bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
 			rst      => '0',
@@ -106,34 +110,38 @@ begin
 			clkfbin  => video_clkfb,
 			clkfbout => video_clkfb,
 			clkout0  => video_clk,
-			clkout1  => adc_clkin1);
+			clkout1  => adc1_clkin,
+			locked   => video_lck);
 
+		adc1_rst <= not video_lck or btn(1);
 		adc1_i : mmcme2_base
 		generic map (
 			clkin1_period    => 10.0*75.0/12.0,
 			clkfbout_mult_f  => 13.0*4.0,
-			clkout0_divide_f => 25.0,
-			bandwidth        => "LOW")
+			clkout0_divide_f => 25.0)
+			-- bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
-			rst      => '0',
-			clkin1   => adc_clkin1,
-			clkfbin  => adc_clkfb1,
-			clkfbout => adc_clkfb1,
-			clkout0  => adc_clkin2);
+			rst      => adc1_rst,
+			clkin1   => adc1_clkin,
+			clkfbin  => adc1_clkfb,
+			clkfbout => adc1_clkfb,
+			clkout0  => adc2_clkin,
+			locked   => adc1_lck);
 
+		adc2_rst <= not adc1_lck;
 		adc2_i : mmcme2_base
 		generic map (
 			clkin1_period    => (10.0*75.0/12.0)*25.0/(13.0*4.0),
 			clkfbout_mult_f  => 32.0,
-			clkout0_divide_f => 10.0,
-			bandwidth        => "LOW")
+			clkout0_divide_f => 10.0)
+			-- bandwidth        => "LOW")
 		port map (
 			pwrdwn   => '0',
-			rst      => '0',
-			clkin1   => adc_clkin2,
-			clkfbin  => adc_clkfb2,
-			clkfbout => adc_clkfb2,
+			rst      => adc2_rst,
+			clkin1   => adc2_clkin,
+			clkfbin  => adc2_clkfb,
+			clkfbout => adc2_clkfb,
 			clkout0  => input_clk,
 			locked   => input_lck);
 	end block;
@@ -289,13 +297,12 @@ begin
 	inputs_b : block
 		signal rgtr_id   : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv   : std_logic;
-		signal rgtr_data : std_logic_vector(32-1 downto 0);
+		signal rgtr_data : std_logic_vector(0 to 4*32-1);
 		signal rgtr_revs : std_logic_vector(rgtr_data'reverse_range);
 
 		signal hz_dv      : std_logic;
-		signal hz_scale   : std_logic_vector(0 to 4-1);
-		signal hz_slider  : std_logic_vector(0 to hzoffset_bits-1);
-		signal rev_scale  : std_logic_vector(hz_scale'reverse_range);
+		signal hz_scale   : std_logic_vector(4-1 downto 0);
+		signal hz_slider  : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal opacity    : unsigned(0 to inputs-1);
 		signal opacity_frm  : std_logic;
 		signal opacity_data : std_logic_vector(si_data'range);
@@ -326,13 +333,13 @@ begin
 		process (hz_scale)
 		begin
 			case hz_scale is
-			when "0000" =>
+			when x"0" =>
 				opacity <= b"1_0000_0000";
-			when "1000" =>
+			when x"1" =>
 				opacity <= b"1_1000_0000";
-			when "0100" =>
+			when x"2" =>
 				opacity <= b"1_1110_0000";
-			when "1100" =>
+			when x"3" =>
 				opacity <= b"1_1111_0000";
 			when others =>
 				opacity <= b"1_1111_1111";
@@ -375,9 +382,9 @@ begin
 		begin
 			if rising_edge(input_clk) then
 				if (xadccfg_req xor xadccfg_rdy)='0' then
-					if input_maxchn /= reverse(hz_scale) then
+					if input_maxchn /= to_stdlogicvector(to_bitvector(hz_scale)) then
 						xadccfg_req  <= not xadccfg_rdy;
-						input_maxchn <= reverse(hz_scale);
+						input_maxchn <= to_stdlogicvector(to_bitvector(hz_scale));
 					end if;
 				end if;
 			end if;
@@ -409,7 +416,7 @@ begin
 			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
 			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)),
 
-		default_tracesfg => b"1_111" & b"0_110" & b"0_101" & b"0_100" & b"0_011" & b"0_010" & b"0_001" & b"0_111" & b"0_110",
+		default_tracesfg => b"1_110" & b"0_011" & b"0_101" & b"0_111" & b"0_110" & b"0_011" & b"0_101" & b"0_111" & b"0_001",
 		default_gridfg   => b"1_100",
 		default_gridbg   => b"1_000",
 		default_hzfg     => b"1_111",
@@ -457,6 +464,7 @@ begin
 		signal channel : std_logic_vector(5-1 downto 0);
 		signal vauxp   : std_logic_vector(16-1 downto 0);
 		signal vauxn   : std_logic_vector(16-1 downto 0);
+		signal busy : std_logic;
 	begin
 		vauxp <= vaux_p(16-1 downto 12) & "0000" & vaux_p(8-1 downto 4) & "0000";
 		vauxn <= vaux_n(16-1 downto 12) & "0000" & vaux_n(8-1 downto 4) & "0000";
@@ -575,13 +583,13 @@ begin
 						when s_setseq =>
 							daddr <= b"100_1001";
 							case input_maxchn is
-							when "0000" =>
+							when x"0" =>
 								di <= x"0000";
-							when "0001" =>
+							when x"1" =>
 								di <= x"1000";
-							when "0010" =>
+							when x"2" =>
 								di <= x"7000";
-							when "0011" =>
+							when x"3" =>
 								di <= x"7010";
 							when others =>
 								di <= x"f0f1";
@@ -606,10 +614,11 @@ begin
 	end block;
 
 	tp_cntr_p : process (sys_clk)
+		constant n : natural := 0;
 		variable cntr : unsigned(0 to 22-1);
 	begin
 		if rising_edge(sys_clk) then
-			(jd(9), jd(8), jd(7), jc(1), jd(10), jd(4), jd(3), jd(2), jd(1)) <= std_logic_vector(cntr(0 to 9-1));
+			(jd(9), jd(8), jd(7), jc(1), jd(10), jd(4), jd(3), jd(2), jd(1)) <= std_logic_vector(cntr(0+n to 9+n-1));
 			cntr := cntr + 1;
 		end if;
 	end process;

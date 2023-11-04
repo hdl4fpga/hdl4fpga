@@ -269,8 +269,21 @@ begin
 		end if;
 	end process;
 
-	palette_data <= std_logic_vector(resize(unsigned(palette_color), palette_data'length));
-	palette_addr <= std_logic_vector(resize(unsigned(palette_id),    palette_addr'length));
+	-- palette_data <= std_logic_vector(resize(unsigned(palette_color), palette_data'length));
+	process (palette_color)
+		alias color : std_logic_vector(0 to palette_color'length-1) is palette_color;
+		alias pixel : std_logic_vector(0 to palette_data'length-1)  is palette_data;
+	begin
+		case palette_data'length is
+		when 3*1 =>
+			pixel <= color(0*8) & color(1*8) & color(2*8);
+		when 3*8 =>
+			pixel <= color;
+		when others =>
+			pixel <= (others => '-');
+		end case;
+	end process;
+	palette_addr <= std_logic_vector(resize(unsigned(palette_id), palette_addr'length));
 
 	trigger_opacity <= multiplex(color_opacity(pltid_order'length to pltid_order'length+trace_dots'length-1), trigger_chanid);
 	color_addr <= primux(

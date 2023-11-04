@@ -167,16 +167,14 @@ begin
 	severity FAILURE;
 
 	inputs_b : block
-
 		signal rgtr_id   : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv   : std_logic;
-		signal rgtr_data : std_logic_vector(32-1 downto 0);
+		signal rgtr_data : std_logic_vector(0 to 32-1);
 		signal rgtr_revs : std_logic_vector(rgtr_data'reverse_range);
 
 		signal hz_dv      : std_logic;
-		signal hz_scale   : std_logic_vector(0 to 4-1);
-		signal hz_slider  : std_logic_vector(0 to hzoffset_bits-1);
-		signal rev_scale  : std_logic_vector(hz_scale'reverse_range);
+		signal hz_scale   : std_logic_vector(4-1 downto 0);
+		signal hz_slider  : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal input_max  : natural range 0 to inputs-1;
 		signal opacity    : unsigned(0 to inputs-1);
 		signal opacity_frm  : std_logic;
@@ -187,13 +185,13 @@ begin
 		process (hz_scale)
 		begin
 			case hz_scale is
-			when b"0000" =>
+			when x"0" =>
 				opacity   <= b"1000_0000";
 				input_max <= 1-1;
-			when b"1000" =>
+			when x"1" =>
 				opacity   <= b"1100_0000";
 				input_max <= 2-1;
-			when b"0100" =>
+			when x"2" =>
 				opacity   <= b"1111_0000";
 				input_max <= 4-1;
 			when others =>

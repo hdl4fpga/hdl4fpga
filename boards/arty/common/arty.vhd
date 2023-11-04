@@ -35,10 +35,10 @@ entity arty is
 		jb           : inout  std_logic_vector(   1 to     10) := (others => 'Z');
 		jc           : inout  std_logic_vector(   1 to     10) := (others => 'Z');
 		jd           : inout  std_logic_vector(   1 to     10) := (others => 'Z');
-		vaux_p       : in     std_logic_vector(16-1 downto  0) := (others => '-');
-		vaux_n       : in     std_logic_vector(16-1 downto  0) := (others => '-');
-		v_p          : in     std_logic_vector(    0 to   1-1) := (others => '-');
-		v_n          : in     std_logic_vector(    0 to   1-1) := (others => '-');
+		vaux_p       : in     std_logic_vector(16-1 downto  0) := (others => 'Z');
+		vaux_n       : in     std_logic_vector(16-1 downto  0) := (others => 'Z');
+		v_p          : in     std_logic_vector(    0 to   1-1) := (others => 'Z');
+		v_n          : in     std_logic_vector(    0 to   1-1) := (others => 'Z');
 		btn          : in     std_logic_vector(  4-1 downto 0) := (others => '0');
 		sw           : in     std_logic_vector(  4-1 downto 0) := (others => '0');
 		led          : out    std_logic_vector(  4-1 downto 0);
