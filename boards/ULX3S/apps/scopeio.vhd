@@ -450,76 +450,134 @@ begin
 			adc_miso     => adc_miso,
 			adc_mosi     => adc_mosi);
 
-		constant clkref_freq : real := clk25mhz_freq;
-		constant clkos_div   : natural := 16;
-		constant clkos2_div  : natural := 25;
-    	constant clkos_freq  : real := clkref_freq;
-    	constant clkos2_freq : real := (real(clkos_div)*clkref_freq)/(real(clkos2_div));
-		constant input_freq  : real := clkos2_freq;
+		constant adc1clkref_freq : real := clk25mhz_freq;
+		constant adc1clkos_div   : natural := 32;
+		constant adc1clkos2_div  : natural := 25;
+		constant adc1clkos_freq  : real := adc1clkref_freq;
+		constant adc1clkos2_freq : real := (real(adc1clkos_div)*adc1clkref_freq)/(real(adc1clkos2_div));
 
-    	signal clkos    : std_logic;
-    	signal clkos2   : std_logic;
-		signal adc_din  : std_logic_vector(16-1 downto 0);
-		signal adc_dout : std_logic_vector(16-1 downto 0);
+		constant adc2clki_div    : natural := 25;
+		constant adc2clkref_freq : real := adc1clkos2_freq/real(adc2clki_div);
+		constant adc2clkos_div   : natural := 128;
+		constant adc2clkfb_div   : natural :=  4;
+		constant adc2clkos2_div  : natural := 40;
+		constant adc2clkos_freq  : real := adc2clkref_freq;
+		constant adc2clkos2_freq : real := (real(adc2clkos_div)*real(adc2clkfb_div)*adc2clkref_freq)/(real(adc2clkos2_div));
 
-    	attribute FREQUENCY_PIN_CLKOS  : string;
-    	attribute FREQUENCY_PIN_CLKOS2 : string;
-    	attribute FREQUENCY_PIN_CLKOS3 : string;
-    	attribute FREQUENCY_PIN_CLKI   : string;
-    	attribute FREQUENCY_PIN_CLKOP  : string;
+		constant input_freq      : real := adc1clkos2_freq;
 
-    	attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa( clkos_freq/1.0e6, 10);
-    	attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(clkos2_freq/1.0e6, 10);
+		signal adc1_clkos        : std_logic;
+		signal adc1_clkos2       : std_logic;
+		signal adc1_lock         : std_logic;
+		signal adc2_clkos        : std_logic;
+		signal adc2_clkos2       : std_logic;
+		signal adc_din           : std_logic_vector(16-1 downto 0);
+		signal adc_dout          : std_logic_vector(16-1 downto 0);
 
-    begin
+		attribute FREQUENCY_PIN_CLKOS  : string;
+		attribute FREQUENCY_PIN_CLKOS2 : string;
+		attribute FREQUENCY_PIN_CLKOS3 : string;
+		attribute FREQUENCY_PIN_CLKI   : string;
+		attribute FREQUENCY_PIN_CLKOP  : string;
 
-    	assert false
-    	report CR &
-    		"MAX1112X" & CR &
-    		"CLKOS     : " & pll_i'FREQUENCY_PIN_CLKOS  & " MHz "  & CR &
-    		"CLKOS2    : " & pll_i'FREQUENCY_PIN_CLKOS2 & " MHz "
-    	severity NOTE;
+		attribute FREQUENCY_PIN_CLKOS  of adc1_i : label is ftoa( adc1clkos_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOS2 of adc1_i : label is ftoa(adc1clkos2_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOS  of adc2_i : label is ftoa( adc2clkos_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOS2 of adc2_i : label is ftoa(adc2clkos2_freq/1.0e6, 10);
 
-    	pll_i : EHXPLLL
-    	generic map (
-    		PLLRST_ENA       => "DISABLED",
-    		INTFB_WAKE       => "DISABLED",
-    		STDBY_ENABLE     => "DISABLED",
-    		DPHASE_SOURCE    => "DISABLED",
-    		PLL_LOCK_MODE    =>  0,
-    		FEEDBK_PATH      => "CLKOS",
-    		CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => clkos_div-1,
-    		CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
-    		CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
-    		CLKOP_ENABLE     => "DISABLED", CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
-    		CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
-    		CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
-    		OUTDIVIDER_MUXD  => "DIVD",
-    		OUTDIVIDER_MUXC  => "DIVC",
-    		OUTDIVIDER_MUXB  => "DIVB",
-    		OUTDIVIDER_MUXA  => "DIVA",
+	begin
 
-    		CLKOS_DIV        => clkos_div,
-    		CLKOS2_DIV       => clkos2_div)
-    	port map (
+		assert false
+		report CR &
+			"MAX1112X" & CR &
+			"ADC1_CLKOS     : " & adc1_i'FREQUENCY_PIN_CLKOS  & " MHz " & CR &
+			"ADC1_CLKOS2    : " & adc1_i'FREQUENCY_PIN_CLKOS2 & " MHz " & CR &
+			"ADC2_CLKOS     : " & adc2_i'FREQUENCY_PIN_CLKOS  & " MHz " & CR &
+			"ADC2_CLKOS2    : " & adc2_i'FREQUENCY_PIN_CLKOS2 & " MHz "
+		severity NOTE;
+
+		adc1_i : EHXPLLL
+		generic map (
+			PLLRST_ENA       => "DISABLED",
+			INTFB_WAKE       => "DISABLED",
+			STDBY_ENABLE     => "DISABLED",
+			DPHASE_SOURCE    => "DISABLED",
+			PLL_LOCK_MODE    =>  0,
+			FEEDBK_PATH      => "CLKOS",
+			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => adc1clkos_div-1,
+			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
+			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
+			CLKOP_ENABLE     => "DISABLED", CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
+			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
+			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
+			OUTDIVIDER_MUXD  => "DIVD",
+			OUTDIVIDER_MUXC  => "DIVC",
+			OUTDIVIDER_MUXB  => "DIVB",
+			OUTDIVIDER_MUXA  => "DIVA",
+
+			CLKOS_DIV        => adc1clkos_div,
+			CLKOS2_DIV       => adc1clkos2_div)
+		port map (
 			clki      => clk_25mhz,
-    		CLKFB     => clkos,
-    		PHASESEL0 => '0', PHASESEL1 => '0',
-    		PHASEDIR  => '0',
-    		PHASESTEP => '0', PHASELOADREG => '0',
-    		STDBY     => '0', PLLWAKESYNC  => '0',
-    		ENCLKOP   => '0',
-    		ENCLKOS   => '0',
-    		ENCLKOS2  => '0',
-    		ENCLKOS3  => '0',
-    		CLKOS     => clkos,
-    		CLKOS2    => clkos2,
-    		LOCK      => input_lck,
-    		INTLOCK   => open,
-    		REFCLK    => open,
-    		CLKINTFB  => open);
-		adc_clk   <= clkos2;
-		input_clk <= clkos2;
+			CLKFB     => adc1_clkos,
+			PHASESEL0 => '0', PHASESEL1 => '0',
+			PHASEDIR  => '0',
+			PHASESTEP => '0', PHASELOADREG => '0',
+			STDBY     => '0', PLLWAKESYNC  => '0',
+			ENCLKOP   => '0',
+			ENCLKOS   => '0',
+			ENCLKOS2  => '0',
+			ENCLKOS3  => '0',
+			CLKOS     => adc1_clkos,
+			CLKOS2    => adc1_clkos2,
+			LOCK      => adc1_lock,
+			INTLOCK   => open,
+			REFCLK    => open,
+			CLKINTFB  => open);
+		
+		adc2_i : EHXPLLL
+		generic map (
+			PLLRST_ENA       => "DISABLED",
+			INTFB_WAKE       => "DISABLED",
+			STDBY_ENABLE     => "DISABLED",
+			DPHASE_SOURCE    => "DISABLED",
+			PLL_LOCK_MODE    =>  0,
+			FEEDBK_PATH      => "CLKOS",
+			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => adc2clkos_div-1,
+			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
+			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
+			CLKOP_ENABLE     => "DISABLED", CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
+			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
+			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
+			OUTDIVIDER_MUXD  => "DIVD",
+			OUTDIVIDER_MUXC  => "DIVC",
+			OUTDIVIDER_MUXB  => "DIVB",
+			OUTDIVIDER_MUXA  => "DIVA",
+
+			CLKI_DIV         => adc2clki_div,
+			CLKFB_DIV        => adc2clkfb_div,
+			CLKOS_DIV        => adc2clkos_div,
+			CLKOS2_DIV       => adc2clkos2_div)
+		port map (
+			clki      => adc1_clkos2,
+			CLKFB     => adc2_clkos,
+			PHASESEL0 => '0', PHASESEL1 => '0',
+			PHASEDIR  => '0',
+			PHASESTEP => '0', PHASELOADREG => '0',
+			STDBY     => '0', PLLWAKESYNC  => '0',
+			ENCLKOP   => '0',
+			ENCLKOS   => '0',
+			ENCLKOS2  => '0',
+			ENCLKOS3  => '0',
+			CLKOS     => adc2_clkos,
+			CLKOS2    => adc2_clkos2,
+			LOCK      => input_lck,
+			INTLOCK   => open,
+			REFCLK    => open,
+			CLKINTFB  => open);
+		
+		adc_clk   <= adc2_clkos2;
+		input_clk <= adc2_clkos2;
 
 		process (input_clk)
 			constant n    : natural := 16;
