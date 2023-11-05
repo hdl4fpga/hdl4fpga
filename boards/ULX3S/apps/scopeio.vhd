@@ -290,7 +290,7 @@ begin
 			text(id => "vt(5).text", content => "GP16"),
 			text(id => "vt(6).text", content => "GN17"),
 			text(id => "vt(7).text", content => "GP17")),
-		layout           => displaylayout_tab(sd600),
+		layout           => displaylayout_tab(hd720),
 		hz_factors       => (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
 			 4 => 2**(0+0)*5**(0+0),  5 => 2**(1+0)*5**(0+0),  6 => 2**(2+0)*5**(0+0),  7 => 2**(0+0)*5**(1+0),
