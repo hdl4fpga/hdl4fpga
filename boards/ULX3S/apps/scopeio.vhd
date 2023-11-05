@@ -613,9 +613,9 @@ begin
 		variable cntr : unsigned(0 to 20-1);
 	begin
 		if rising_edge(clk_25mhz) then
-			cntr := cntr + 1;
 			-- (gp(17), gn(17), gp(16), gn(16), gp(15), gn(15), gp(14), gn(14)) <= std_logic_vector(cntr(0 to 8-1));
 			(gp(24), gn(24), gp(25), gn(25), gp(26), gn(26), gp(27), gn(27)) <= std_logic_vector(cntr(0 to 8-1));
+			cntr := cntr + 1;
 		end if;
 	end process;
 
