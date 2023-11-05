@@ -631,7 +631,7 @@ begin
 							state := s_contmode;
 						when s_contmode =>
 							daddr <= b"100_0001";
-							di <= x"2000";
+							di    <= x"2000";
 							xadccfg_rdy <= xadccfg_req;
 							state := s_dfltmode;
 						end case;
