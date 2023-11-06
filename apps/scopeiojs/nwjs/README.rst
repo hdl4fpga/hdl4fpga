@@ -14,7 +14,7 @@ Installing steps
 - Download and install python2 
 - Download and install python3
 - Download and install `node.js <http://nodejs.org>`_. 
-- Open a CLI such as PowerSell or Command as **Admistrator**.
+- Open a CLI such as PowerSell or Command as **Administrator**.
 - Run `<./install.bat>`_ on the `<../nwjs>`_ directory.
 
 
