@@ -8,7 +8,7 @@ On Windows
 Installing steps
 ****************
 
- `serialport <https://github.com/serialport/node-serialport>`_ and `node_usb <https://github.com/node-usb/node-usb>`_ 
+`serialport <https://github.com/serialport/node-serialport>`_ and `node_usb <https://github.com/node-usb/node-usb>`_ 
  are required to control UART and USB interfaces. Follow the next steps to add them to nwjs `nwjs <https://nwjs.io`_ 
 
 - Download and install Microsoft Visual Studio 2019 to compile:
