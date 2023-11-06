@@ -18,22 +18,20 @@
 @REM ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or     
 @REM FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for  
 @REM more details at http://www.gnu.org/licenses/.                             
-
+@SET PYTHON=C:\Python27\python.exe
+@SET PATH=C:\Python27;%PATH%
 CALL npm install nw --nwjs_build_type=sdk
-CALL npm -g install nw-gyp
+CALL npm install nw-gyp
 CALL npm install serialport
 CALL npm view nw version > nwjs.ver
-SETLOCAL ENABLEDELAYEDEXPANSION
+CALL npm install ----msvs_version=2019
 SET /P "_NWJSVER=" < NWJS.VER
-@REM sed -i 's/var config = process.config || {}/var config = JSON.parse(JSON.stringify(process.config)) || {}/' ./node_modules/nw-gyp/lib/configure.js
-SETLOCAL
-SET "file_path=your_file.js"
-@REM See https://github.com/nwjs/nw-gyp/issues/155
-POWERSHELL -Command "(Get-Content -Path '%file_path%') | ForEach-Object { $_ -replace 'var config = process.config \|\| {}', 'var config = JSON.parse(JSON.stringify(process.config)) \|\| {}' } | Set-Content -Path '%file_path%'"
-ENDLOCAL
+SET "file_path=./node_modules/nw-gyp/lib/configure.js"
+REM See https://github.com/nwjs/nw-gyp/issues/155
+POWERSHELL -Command "(Get-Content -Path '%file_path%') | ForEach-Object { $_ -replace 'var config = process.config', 'var config = JSON.parse(JSON.stringify(process.config))' } | Set-Content -Path '%file_path%'"
 PUSHD node_modules\@serialport\bindings-cpp\
-CALL nw-gyp rebuild --target=%_NWJSVER% --arch=x64
+CALL npx nw-gyp rebuild --target=%_NWJSVER% --arch=x64
 POPD
 DEL NWJS.VER
-MKLINK /D html  ..\html
+MKLINK /D html  ..\html 
 MKLINK /D srcjs ..\srcjs
