@@ -45,4 +45,7 @@ PATH=`pwd`/bin:$PATH
 cd node_modules/\@serialport/bindings-cpp
 PATH=$PATH npx nw-gyp rebuild --target=`npm view nw version` --arch=x64
 cd -
+cd node_modules\usb
+PATH=$PATH npx nw-gyp rebuild --target==`npm view nw version` --arch=x64
+cd -
 rm -r ./bin

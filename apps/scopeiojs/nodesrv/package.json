@@ -1,8 +1,2 @@
 {
-  "dependencies": {
-    "bufferutil": "^4.0.8",
-    "serialport": "^8.0.8",
-    "socket.io": "^2.5.0",
-    "utf-8-validate": "^5.0.10"
-  }
 }
