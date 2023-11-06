@@ -22,18 +22,16 @@
 @SET PATH=C:\Python27;%PATH%
 CALL npm install nw-gyp
 CALL npm install nw --nwjs_build_type=sdk
-CALL npm install serialport
-CALL npm install usb
 CALL npm view nw version > nwjs.ver
 CALL npm install ----msvs_version=2019
+CALL npm install serialport
+CALL npm install usb
 SET /P "_NWJSVER=" < NWJS.VER
 SET "file_path=./node_modules/nw-gyp/lib/configure.js"
 REM See https://github.com/nwjs/nw-gyp/issues/155
 POWERSHELL -Command "(Get-Content -Path '%file_path%') | ForEach-Object { $_ -replace 'var config = process.config', 'var config = JSON.parse(JSON.stringify(process.config))' } | Set-Content -Path '%file_path%'"
 PUSHD node_modules\@serialport\bindings-cpp\
 @ECHO %_NWJSVER%
-set npm_config_runtime=node-webkit
-set npm_config_build_from_source=true
 CALL npx nw-gyp rebuild --target=%_NWJSVER% --arch=x64
 POPD
 rem DEL NWJS.VER
