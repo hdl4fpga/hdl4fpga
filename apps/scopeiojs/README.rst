@@ -4,6 +4,7 @@ ScopeIOjs
 ScopeIOjs is a javascript control application of ScopeIO. 
 The following are the available hardware interface:
 
+- `node_usb <https://github.com/node-usb/node-usb>`_
 - `serialport <https://github.com/serialport/node-serialport>`_
 - UDP
 
