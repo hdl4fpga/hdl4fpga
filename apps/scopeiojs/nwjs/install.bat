@@ -20,6 +20,7 @@
 @REM more details at http://www.gnu.org/licenses/.                             
 @SET PYTHON=C:\Python27\python.exe
 @SET PATH=C:\Python27;%PATH%
+DEL package-lock.json
 CALL npm install nw-gyp
 CALL npm install nw --nwjs_build_type=sdk
 CALL npm view nw version > nwjs.ver
@@ -37,5 +38,6 @@ POPD
 PUSHD node_modules\usb
 CALL npx nw-gyp rebuild --target=%_NWJSVER% --arch=x64
 POPD
+DEL nwjs.ver
 MKLINK /D html  ..\html 
 MKLINK /D srcjs ..\srcjs
