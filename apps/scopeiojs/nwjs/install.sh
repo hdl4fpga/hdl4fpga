@@ -24,7 +24,7 @@
 ln -fs ../html
 ln -fs ../srcjs
 npm install nw-gyp
-sed -i 's/var config = process.config || {}/var config = JSON.parse(JSON.stringify(process.config)) || {}/' ./node_modules/nw-gyp/lib/configure.js # See https://github.com/nwjs/nw-gyp/issues/155
+sed -i 's/var config = process.config/var config = JSON.parse(JSON.stringify(process.config))/' ./node_modules/nw-gyp/lib/configure.js # See https://github.com/nwjs/nw-gyp/issues/155
 npm install nw --nwjs_build_type=sdk
 npm install usb
 npm install serialport
@@ -34,11 +34,12 @@ export npm_config_traget_arch="x64"
 export npm_config_node_gyp=`npx which nw-gyp`
 rm -rf ./bin
 mkdir bin
-if which python2 > /dev/null; then
+if which python2 > /dev/null 2>&1 ; then
 	ln -s `which python2` bin/python
 	ln -s `which python2-config` bin/python-config
 else
-	exit 0
+	echo "python2 not found, it is required to compile serialport and usb"
+	exit 1
 fi
 PATH=`pwd`/bin:$PATH 
 cd node_modules/\@serialport/bindings-cpp
