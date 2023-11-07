@@ -33,17 +33,37 @@ package body jso is
 		start : natural;
 		last  : natural;
 	end record;
-	type object_vector is array(natural range <>) of object;
 
 	type object_node is record
-		obj  : object;
+		objt : object;
 		succ : natural;
 	end record;
 	type objectnode_vector is array(natural range <>) of object_node;
 
-	type pool is record
-		free   : natural;
-		vector : object_vector(0 to 256);
+	type object_pool is record
+		avail : natural;
+		data : objectnode_vector(1 to 256);
 	end record;
+
+	function new_object (
+		const pool : object_pool)
+		return int is
+		variable retval : natural;
+	begin
+		int object;
+
+		if pool.avail = 0 then
+			init_pool(pool);
+		end if;
+
+		assert pool.avail <= 256
+		report "No available object";
+		severity FAILURE;
+
+		retval = pool.avail;
+		pool.avail = pool.data[pool.avail];
+
+		return retval;
+	end;
 
 end;
