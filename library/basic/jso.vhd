@@ -24,32 +24,50 @@
 
 package jso is
 	function get(
-		constant key : string;
-		constant jso : string)
+		constant jso : string;
+		constant key : string)
 		return string;
 end;
 
 package body jso is
 
 	function isspace (
-		constant char : character)
+		constant char : character;
+		constant wspc : string := (' ', HT, LF, CR, FF))
 		return boolean is
 	begin
-		return true;
+		for i in wspc'range loop
+			if wspc(i)=char then
+				return true;
+			end if;
+		end loop;
+		return false;
 	end;
 
 	function isdigit (
-		constant char : character)
+		constant char  : character;
+		constant digit : string := "0123456789")
 		return boolean is
 	begin
-		return true;
+		for i in digit'range loop
+			if digit(i)=char then
+				return true;
+			end if;
+		end loop;
+		return false;
 	end;
 
 	function isalpha (
 		constant char : character)
 		return boolean is
 	begin
-		return true;
+		if    character'pos('A') <= character'pos(char) and character'pos(char) <= character'pos('Z') then
+			return true;
+		elsif character'pos('a') <= character'pos(char) and character'pos(char) <= character'pos('z') then
+			return true;
+		else
+			return false;
+		end if;
 	end;
 
 	function to_integer (
@@ -60,51 +78,57 @@ package body jso is
 	end;
 
 	function get(
-		constant key : string;
-		constant jso : string)
+		constant jso : string;
+		constant key : string)
 		return string is
 		type key_types is (is_undefined, is_position, is_property);
-		variable key_type    : key_types;
 		type jso_types is (is_undefined, is_array, is_object);
-		variable jso_type : jso_types;
+		variable key_type    : key_types;
+		variable jso_type    : jso_types;
 		variable numeric_key : natural;
 		variable string_key  : string(1 to key'length);
 		variable index_array : natural;
-		variable i           : natural;
-		variable j           : natural;
+		variable key_index   : natural;
+		variable jso_index   : natural;
+		variable index       : natural;
+		variable length      : natural;
 	begin
-		i := 0;
-		j := 0;
-		while i < key'length loop
-			if not isspace(key(i)) then
+		key_index := 1;
+		jso_index := 1;
+		index     := key_index;
+		length    := 0;
+		while key_index < key'length loop
+			if not isspace(key(key_index)) then
+				report "key_type " & key_types'image(key_type) & LF;
+				report "jso_type " & jso_types'image(jso_type) & LF;
 				case key_type is
 				when is_undefined =>
-					if key(i)='[' then
-					elsif isdigit(key(i)) then
-						numeric_key := to_integer(key(i));
+					case key(key_index) is
+					when '[' =>
+						numeric_key := 0;
 						key_type    := is_position;
-					elsif isalpha(key(i)) then
+					when '.' =>
 						key_type    := is_property;
-					else
+					when others =>
 						assert false
 						report "Error"
 						severity failure;
-					end if;
+					end case;
 				when is_position =>
-					if isdigit(key(i)) then
-						numeric_key := 10*numeric_key + to_integer(key(i));
+					if isdigit(key(key_index)) then
+						numeric_key := 10*numeric_key + to_integer(key(key_index));
 					else
-						while j < jso'length loop
-							if not isspace(jso(j)) then
+						while jso_index < jso'length loop
+							if not isspace(jso(jso_index)) then
 								case jso_type is
 								when is_undefined =>
-									if jso(j)='[' then
+									if jso(jso_index)='[' then
 										jso_type    := is_array;
 										index_array := 0;
 									end if;
 								when is_array =>
 									if numeric_key/=index_array then
-										if jso(j)=',' then
+										if jso(jso_index)=',' then
 											index_array := index_array + 1;
 										end if;
 									else
@@ -112,14 +136,14 @@ package body jso is
 								when others =>
 								end case;
 							end if;
-							j := j + 1;
+							jso_index := jso_index + 1;
 						end loop;
 					end if;
 				when others =>
 				end case;
 			end if;
-			i := i + 1;
+			key_index := key_index + 1;
 		end loop;
-		return "hola";
+		return jso(index to index+length-1);
 	end;
 end;

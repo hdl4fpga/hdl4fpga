@@ -25,12 +25,11 @@ use std.textio.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
--- use ieee.std_logic_textio.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
--- library hdl4fpga;
--- use hdl4fpga.base.all;
+library hdl4fpga;
+use work.jso.all;
 
 entity main is
 end;
@@ -40,7 +39,7 @@ begin
 	process 
 	begin
 		assert false
-		report "Hello world"
+		report "******* " & integer'image(work.jso.get("[ hola : 4 ]", "hola")'length)
 		severity NOTE;
 		wait;
 	end process;
