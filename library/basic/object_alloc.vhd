@@ -21,27 +21,44 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
+package object_alloc is
+	generic (
+		type o);
 
-library ieee;
-use ieee.std_logic_1164.all;
--- use ieee.std_logic_textio.all;
-use ieee.numeric_std.all;
-use ieee.math_real.all;
+	type pooltab is record
+		following : natural;
+		available : integer_vector(1 to 256);
+	end record;
 
--- library hdl4fpga;
--- use hdl4fpga.base.all;
-
-entity main is
+	procedure new_object (
+		variable pool      : inout pooltab;
+		variable following : out   natural);
 end;
 
-architecture def of main is
-begin
-	process 
+package body object_alloc is
+
+	procedure init_pool (
+		variable pool : inout pooltab) is
 	begin
-		assert false
-		report "Hello world"
-		severity NOTE;
-		wait;
-	end process;
+		pool.following := 1;
+		for i in pool.available'range loop
+			pool.available(i) := i+1;
+		end loop;
+	end;
+
+	procedure new_object (
+		variable pool      : inout pooltab;
+		variable following : out   natural) is
+	begin
+		assert pool.following <= 256
+		report "No available object"
+		severity FAILURE;
+
+		if pool.following=0 then
+			init_pool(pool);
+		end if;
+		following      := pool.following;
+		pool.following := pool.available(pool.following);
+	end;
+
 end;

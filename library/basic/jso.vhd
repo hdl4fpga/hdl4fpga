@@ -21,49 +21,105 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 package jso is
+	function get(
+		constant key : string;
+		constant jso : string)
+		return string;
 end;
 
 package body jso is
-	type object is record
-		start : natural;
-		last  : natural;
-	end record;
 
-	type object_node is record
-		objt : object;
-		succ : natural;
-	end record;
-	type objectnode_vector is array(natural range <>) of object_node;
-
-	type object_pool is record
-		avail : natural;
-		data : objectnode_vector(1 to 256);
-	end record;
-
-	function new_object (
-		const pool : object_pool)
-		return int is
-		variable retval : natural;
+	function isspace (
+		constant char : character)
+		return boolean is
 	begin
-		int object;
-
-		if pool.avail = 0 then
-			init_pool(pool);
-		end if;
-
-		assert pool.avail <= 256
-		report "No available object";
-		severity FAILURE;
-
-		retval = pool.avail;
-		pool.avail = pool.data[pool.avail];
-
-		return retval;
+		return true;
 	end;
 
+	function isdigit (
+		constant char : character)
+		return boolean is
+	begin
+		return true;
+	end;
+
+	function isalpha (
+		constant char : character)
+		return boolean is
+	begin
+		return true;
+	end;
+
+	function to_integer (
+		constant char : character)
+		return integer is
+	begin
+		return character'pos(char)-character'pos('0');
+	end;
+
+	function get(
+		constant key : string;
+		constant jso : string)
+		return string is
+		type key_types is (is_undefined, is_position, is_property);
+		variable key_type    : key_types;
+		type jso_types is (is_undefined, is_array, is_object);
+		variable jso_type : jso_types;
+		variable numeric_key : natural;
+		variable string_key  : string(1 to key'length);
+		variable index_array : natural;
+		variable i           : natural;
+		variable j           : natural;
+	begin
+		i := 0;
+		j := 0;
+		while i < key'length loop
+			if not isspace(key(i)) then
+				case key_type is
+				when is_undefined =>
+					if key(i)='[' then
+					elsif isdigit(key(i)) then
+						numeric_key := to_integer(key(i));
+						key_type    := is_position;
+					elsif isalpha(key(i)) then
+						key_type    := is_property;
+					else
+						assert false
+						report "Error"
+						severity failure;
+					end if;
+				when is_position =>
+					if isdigit(key(i)) then
+						numeric_key := 10*numeric_key + to_integer(key(i));
+					else
+						while j < jso'length loop
+							if not isspace(jso(j)) then
+								case jso_type is
+								when is_undefined =>
+									if jso(j)='[' then
+										jso_type    := is_array;
+										index_array := 0;
+									end if;
+								when is_array =>
+									if numeric_key/=index_array then
+										if jso(j)=',' then
+											index_array := index_array + 1;
+										end if;
+									else
+									end if;
+								when others =>
+								end case;
+							end if;
+							j := j + 1;
+						end loop;
+					end if;
+				when others =>
+				end case;
+			end if;
+			i := i + 1;
+		end loop;
+		return "hola";
+	end;
 end;
