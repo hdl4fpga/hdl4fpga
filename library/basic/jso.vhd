@@ -77,73 +77,38 @@ package body jso is
 		return character'pos(char)-character'pos('0');
 	end;
 
+	function stripws (
+		constant va : string;
+		constant slc : slice) 
+		return slice is
+	begin
+		while isspace(val(slc.index)) loop
+			slc.index := slc.index + 1;
+		end loop;
+		return slc;
+	end;
+
+	type slice is record
+		offset : natural;
+		length : natural;
+	end record;
+
 	function get(
 		constant jso : string;
 		constant key : string)
 		return string is
-		type key_types is (is_undefined, is_position, is_property);
-		type jso_types is (is_undefined, is_array, is_object);
-		variable key_type    : key_types;
-		variable jso_type    : jso_types;
-		variable numeric_key : natural;
-		variable string_key  : string(1 to key'length);
-		variable index_array : natural;
-		variable key_index   : natural;
-		variable jso_index   : natural;
-		variable index       : natural;
-		variable length      : natural;
+
+		variable key_slice : slice;
+		variable jso_slice : slice;
+
+		type tokens is (is_string, is_number);
+		type token_data is record
+			token  : tokens;
+			index  : natural;
+			length : natural;
+		end record;
 	begin
-		key_index := 1;
-		jso_index := 1;
-		index     := key_index;
-		length    := 0;
-		while key_index < key'length loop
-			if not isspace(key(key_index)) then
-				report "key_type " & key_types'image(key_type) & LF;
-				report "jso_type " & jso_types'image(jso_type) & LF;
-				case key_type is
-				when is_undefined =>
-					case key(key_index) is
-					when '[' =>
-						numeric_key := 0;
-						key_type    := is_position;
-					when '.' =>
-						key_type    := is_property;
-					when others =>
-						assert false
-						report "Error"
-						severity failure;
-					end case;
-				when is_position =>
-					if isdigit(key(key_index)) then
-						numeric_key := 10*numeric_key + to_integer(key(key_index));
-					else
-						while jso_index < jso'length loop
-							if not isspace(jso(jso_index)) then
-								case jso_type is
-								when is_undefined =>
-									if jso(jso_index)='[' then
-										jso_type    := is_array;
-										index_array := 0;
-									end if;
-								when is_array =>
-									if numeric_key/=index_array then
-										if jso(jso_index)=',' then
-											index_array := index_array + 1;
-										end if;
-									else
-									end if;
-								when others =>
-								end case;
-							end if;
-							jso_index := jso_index + 1;
-						end loop;
-					end if;
-				when others =>
-				end case;
-			end if;
-			key_index := key_index + 1;
-		end loop;
-		return jso(index to index+length-1);
+		key_slice := stripws(key, key_slice);
+		key_slice := getkey_token (key, key_slice);
 	end;
 end;
