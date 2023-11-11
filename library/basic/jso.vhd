@@ -137,6 +137,15 @@ package body jso is
 		end case;
 	end;
 
+	function get_value (
+		constant jso : string;
+		constant key : string)
+		return string is
+	begin
+
+
+	end;
+
 	function get(
 		constant jso : string;
 		constant key : string)
@@ -146,7 +155,10 @@ package body jso is
 		variable key_length : natural;
 
 	begin
-		stripws    (key, key_offset);
+		stripws (key, key_offset);
 		get_subkey (key, key_offset, key_length);
+		stripws (jso, jso_offset);
+		get_value (subkey, jso);
+
 	end;
 end;
