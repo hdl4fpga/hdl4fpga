@@ -142,6 +142,11 @@ package body jso is
 		constant key : string)
 		return string is
 	begin
+		case jso(jso_offset)
+		case '[' =>
+			
+		case '{' =>
+		end case;
 
 
 	end;
