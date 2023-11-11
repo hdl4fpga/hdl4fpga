@@ -77,38 +77,76 @@ package body jso is
 		return character'pos(char)-character'pos('0');
 	end;
 
-	function stripws (
-		constant va : string;
-		constant slc : slice) 
-		return slice is
-	begin
-		while isspace(val(slc.index)) loop
-			slc.index := slc.index + 1;
-		end loop;
-		return slc;
-	end;
-
 	type slice is record
 		offset : natural;
 		length : natural;
 	end record;
+
+	procedure stripws (
+		constant string : string;
+		variable offset : inout natural) is
+	begin
+		while isspace(string(offset)) loop
+			offset := offset + 1;
+		end loop;
+	end;
+
+	procedure parse_natural (
+		constant key    : in    string;
+		variable offset : in    natural;
+		variable length : inout natural) is
+	begin
+		length := 0;
+		while offset+length <= key'right loop
+			if isdigit(key(offset+length)) then
+				length := length + 1;
+			else
+				return;
+			end if;
+		end loop;
+	end;
+
+	procedure get_subkey (
+		constant key    : in    string;
+		constant offset : in    natural;
+		variable length : inout natural) is
+	begin
+		length := 0;
+		case key(offset + length) is
+		when '[' =>
+			length := length + 1;
+			-- stripws ;
+			if isalpha(key(offset + length)) then
+			elsif isdigit(key(offset + length)) then
+			end if;
+			-- parse_natural;
+			-- stripws ;
+			if key(offset + length) /= ']' then
+				assert false
+				report "error"
+				severity FAILURE;
+			end if;
+			length := length + 1;
+		when '.' =>
+			-- stripws ;
+			-- parse_string;
+		when others =>
+			assert false
+			report "w"
+			severity failure;
+		end case;
+	end;
 
 	function get(
 		constant jso : string;
 		constant key : string)
 		return string is
 
-		variable key_slice : slice;
-		variable jso_slice : slice;
+		variable key_offset : natural;
+		variable key_length : natural;
 
-		type tokens is (is_string, is_number);
-		type token_data is record
-			token  : tokens;
-			index  : natural;
-			length : natural;
-		end record;
 	begin
-		key_slice := stripws(key, key_slice);
-		key_slice := getkey_token (key, key_slice);
+		stripws    (key, key_offset);
+		get_subkey (key, key_offset, key_length);
 	end;
 end;
