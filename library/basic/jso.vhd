@@ -77,32 +77,12 @@ package body jso is
 		return character'pos(char)-character'pos('0');
 	end;
 
-	type slice is record
-		offset : natural;
-		length : natural;
-	end record;
-
 	procedure stripws (
 		constant string : string;
 		variable offset : inout natural) is
 	begin
 		while isspace(string(offset)) loop
 			offset := offset + 1;
-		end loop;
-	end;
-
-	procedure parse_natural (
-		constant key    : in    string;
-		variable offset : in    natural;
-		variable length : inout natural) is
-	begin
-		length := 0;
-		while offset+length <= key'right loop
-			if isdigit(key(offset+length)) then
-				length := length + 1;
-			else
-				return;
-			end if;
 		end loop;
 	end;
 
@@ -131,9 +111,7 @@ package body jso is
 			-- stripws ;
 			-- parse_string;
 		when others =>
-			assert false
-			report "w"
-			severity failure;
+			assert false report "Wrong key format" severity failure;
 		end case;
 	end;
 
@@ -141,14 +119,19 @@ package body jso is
 		constant jso : string;
 		constant key : string)
 		return string is
+		variable position : natural;
 	begin
-		case jso(jso_offset)
-		case '[' =>
-			
-		case '{' =>
+		case jso(jso_offset) is
+		when '[' =>
+			position := 0;
+			stripws;
+			get_positionvalue;
+			end case;
+		when '{' =>
+			stripws;
+			get_propertyvaule;
+		when others =>
 		end case;
-
-
 	end;
 
 	function get(
@@ -160,10 +143,13 @@ package body jso is
 		variable key_length : natural;
 
 	begin
-		stripws (key, key_offset);
-		get_subkey (key, key_offset, key_length);
-		stripws (jso, jso_offset);
-		get_value (subkey, jso);
-
+		while key_offset < key_length loop
+			if stripws (key, key_offset) then
+			end if;
+			get_subkey (key, key_offset, key_length);
+			if stripws (jso, jso_offset) then
+			end if;
+			get_value (subkey, jso);
+		end loop;
 	end;
 end;
