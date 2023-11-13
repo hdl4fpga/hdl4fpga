@@ -95,24 +95,110 @@ package body jso is
 		case key(offset + length) is
 		when '[' =>
 			length := length + 1;
-			-- stripws ;
+			-- stripws;
 			if isalpha(key(offset + length)) then
 			elsif isdigit(key(offset + length)) then
 			end if;
 			-- parse_natural;
-			-- stripws ;
+			-- stripws;
 			if key(offset + length) /= ']' then
-				assert false
-				report "error"
-				severity FAILURE;
+				assert false report "error" severity failure;
 			end if;
 			length := length + 1;
 		when '.' =>
-			-- stripws ;
+			-- stripws;
 			-- parse_string;
 		when others =>
 			assert false report "Wrong key format" severity failure;
 		end case;
+	end;
+
+	function get_value (
+		constant key : string;
+		constant jso : string)
+		return natural is
+		variable offset : natural;
+		variable length : natural;
+	begin
+		while offset < length loop
+			if get_alphanum=key then
+				skipws;
+				case jso(offset) is
+				when '[' =>
+					
+				when '{'
+				when others =>
+					assert false report "Wrong key format" severity failure;
+				end case;
+			end if;
+		end loop;
+	end;
+
+	function get_keyvalue (
+		constant key : string;
+		constant jso : string)
+		return natural is
+		variable offset : natural;
+		variable length : natural;
+	begin
+		while offset < length loop
+			if get_alphanum=key then
+				skipws;
+				case jso(offset) is
+				when ':' =>
+					skipws;
+					get_value;
+				when others =>
+					assert false report "Wrong key format" severity failure;
+				end case;
+			end if;
+		end loop;
+	end;
+
+	function lookup_keyvalue (
+		constant key : string;
+		constant jso : string)
+		return natural is
+		variable offset : natural;
+		variable length : natural;
+	begin
+		while offset < length loop
+			case jso(offset) is
+			when ',' =>
+				skipws;
+				if get_keyvalue(key) then
+					return value;
+				end if;
+			when ']'|'}' =>
+				assert false report "Wrong key format" severity failure;
+			when others =>
+				assert false report "Wrong key format" severity failure;
+			end case;
+	end;
+
+	function lookup_value (
+		constant key : string;
+		constant jso : string)
+		return natural is
+		variable offset : natural;
+		variable length : natural;
+	begin
+		while offset < length loop
+			if i < position then
+				case jso(offset) is
+				when ',' =>
+					i := i + 1;
+				when ']' =>
+					assert false report "Wrong key format" severity failure;
+				when others =>
+					assert false report "Wrong key format" severity failure;
+				end case;
+			else
+				skipws;
+				get_value;
+			end if;
+		end loop;
+		return ;
 	end;
 
 	function get_value (
@@ -125,7 +211,7 @@ package body jso is
 		when '[' =>
 			position := 0;
 			stripws;
-			get_positionvalue;
+			lookup;
 			end case;
 		when '{' =>
 			stripws;
