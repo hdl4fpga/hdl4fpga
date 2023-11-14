@@ -119,14 +119,56 @@ package body jso is
 		return natural is
 		variable offset : natural;
 		variable length : natural;
+		variable escchr : boolean;
+		variable strqto : boolean;
+		variable straph : boolean;
+		variable clybrc : natural;
+		variable sqrbkt : natural;
 	begin
 		while offset < length loop
 			if get_alphanum=key then
 				skipws;
 				case jso(offset) is
 				when '[' =>
-					
-				when '{'
+					if not strqto and not straph then
+						sqrbkt := sqrbkt + 1;
+					end if;
+				when ']' =>
+					if not strqto and not straph then
+						if sqrbkt > 0 then
+							sqrbkt := sqrbkt - 1;
+						else
+							return;
+						end if;
+					end if;
+				when '{' =>
+					if not strqto and not straph then
+						clybrc := clybrc + 1;
+					end if;
+				when '}' =>
+					if not strqto and not straph then
+						if clybrc > 0 then
+							clybrc := clybrc - 1;
+						else
+							return;
+						end if;
+					end if;
+				when '"' =>
+					if strqto then
+						if not escchr then
+							strqto := false;
+						end if;
+					else
+						strqto := true;
+					end if;
+				when ''' =>
+					if straph then
+						if not escchr then
+							straph := false;
+						end if;
+					else
+						straph := true;
+					end if;
 				when others =>
 					assert false report "Wrong key format" severity failure;
 				end case;
