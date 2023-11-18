@@ -77,57 +77,65 @@ package body jso is
 		return character'pos(char)-character'pos('0');
 	end;
 
-	procedure stripws (
+	procedure skippws (
 		constant string : string;
-		variable offset : inout natural) is
+		variable offset : inout natural;
+		variable lenght : inout natural) is
 	begin
-		while isspace(string(offset)) loop
-			offset := offset + 1;
+		while length > 0 loop
+			if isspace(string(offset)) then
+				offset := offset + 1;
+				length := length - 1;
+			else
+				return;
+			end if;
 		end loop;
 	end;
 
 	procedure get_subkey (
 		constant key    : in    string;
-		constant offset : in    natural;
+		variable offset : inout natural;
 		variable length : inout natural) is
 	begin
-		length := 0;
-		case key(offset + length) is
-		when '[' =>
-			length := length + 1;
-			-- stripws;
-			if isalpha(key(offset + length)) then
-			elsif isdigit(key(offset + length)) then
-			end if;
-			-- parse_natural;
-			-- stripws;
-			if key(offset + length) /= ']' then
-				assert false report "error" severity failure;
-			end if;
-			length := length + 1;
-		when '.' =>
-			-- stripws;
-			-- parse_string;
-		when others =>
-			assert false report "Wrong key format" severity failure;
-		end case;
+		while (length > 0) loop
+			case key(offset) is
+			when '[' =>
+				length := length - 1;
+				skipws(offset, length);
+				if isalpha(key(offset)) then
+					parse_property(offset, length);
+				elsif isdigit(key(offset)) then
+					parse_natural(offset, length);
+				else
+					assert false report "get_subkey" severity failure;
+				end if;
+				skipws(offset, length);
+				if key(offset) /= ']' then
+					assert false report "get_subkey" severity failure;
+				end if;
+				length := length - 1;
+			when '.' =>
+				skipws(offset, length);
+				parse_property(offset, length);
+			when others =>
+				assert false report "Wrong key format" severity failure;
+			end case;
+		end loop;
 	end;
 
-	function get_value (
-		constant key : string;
-		constant jso : string)
-		return natural is
-		variable offset : natural;
-		variable length : natural;
+	procedure get_value (
+		constant key    : in string;
+		constant jso    : in string;
+		variable offset : inout natural;
+		varibale length : inout natual) is
 		variable escchr : boolean;
 		variable strqto : boolean;
 		variable straph : boolean;
-		variable clybrc : natural;
+		variable clybce : natural;
 		variable sqrbkt : natural;
 	begin
-		while offset < length loop
+		while length > 0 loop
 			if get_alphanum=key then
-				skipws;
 				case jso(offset) is
 				when '[' =>
 					if not strqto and not straph then
@@ -137,7 +145,7 @@ package body jso is
 					if not strqto and not straph then
 						if sqrbkt > 0 then
 							sqrbkt := sqrbkt - 1;
-						else
+						elsif clybrc=0 then
 							return;
 						end if;
 					end if;
@@ -149,7 +157,7 @@ package body jso is
 					if not strqto and not straph then
 						if clybrc > 0 then
 							clybrc := clybrc - 1;
-						else
+						elsif sqrbkt=0 then
 							return;
 						end if;
 					end if;
@@ -173,6 +181,9 @@ package body jso is
 					assert false report "Wrong key format" severity failure;
 				end case;
 			end if;
+			offset := offset + 1;
+			length := length - 1;
+			skipws(offset, length);
 		end loop;
 	end;
 
