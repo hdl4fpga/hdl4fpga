@@ -93,7 +93,7 @@ package body jso is
 	end;
 
 	procedure get_subkey (
-		constant key    : in    string;
+		constant key    : string;
 		variable offset : inout natural;
 		variable length : inout natural) is
 	begin
