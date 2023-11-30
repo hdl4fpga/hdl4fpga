@@ -37,10 +37,14 @@ end;
 architecture def of main is
 begin
 	process 
+		constant key   : string := ".hola.";
+		variable right : natural;
+		variable left  : natural;
 	begin
-		assert false
-		report "******* " & integer'image(work.jso.get("[ hola : 4 ]", "hola")'length)
-		severity NOTE;
+		left  := key'left;
+		right := key'right;
+		get_subkey(key, left, right);
+		report "******* " & key(left to right);
 		wait;
 	end process;
 end;
