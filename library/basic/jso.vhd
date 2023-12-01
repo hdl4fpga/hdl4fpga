@@ -25,12 +25,13 @@
 package jso is
 	procedure get_subkey (
 		constant key    : string;
-		variable left  : inout natural;
-		variable right : inout natural);
+		variable offset : inout natural;
+		variable length : inout natural);
 end;
 
 package body jso is
 
+	shared variable index : natural;
 	function isspace (
 		constant char : character;
 		constant wspc : string := (' ', HT, LF, CR, FF))
@@ -91,13 +92,11 @@ package body jso is
 	end;
 
 	procedure skipws (
-		constant string : string;
-		variable left  : inout natural;
-		variable right : inout natural) is
+		constant string : string) is
 	begin
-		while left <= right loop
-			if isspace(string(left)) then
-				left := left + 1;
+		while index <= string'length loop
+			if isspace(string(index)) then
+				index := index + 1;
 			else
 				return;
 			end if;
@@ -106,33 +105,33 @@ package body jso is
 
 	procedure parse_property (
 		constant string : string;
-		variable left  : inout natural;
-		variable right : inout natural) is
-		variable index : natural;
+		variable offset : inout natural;
+		variable length : inout natural) is
 	begin
-		index := left;
+		offset := index;
+		length := 0;
 		if isalpha(string(index)) then
-			while index <= right loop
+			while index-offset < string'length loop
 				if isalnum(string(index)) then
-					index := index + 1;
+					index  := index  + 1;
+					length := length + 1;
 				else
-					right := index - 1;
 					return;
 				end if;
 			end loop;
 		else
-			report character'image(string(left));
+			report character'image(string(offset));
 		end if;
 	end;
 
 	procedure parse_natural (
 		constant string : string;
-		variable left  : inout natural;
+		variable offset  : inout natural;
 		variable right : inout natural) is
 	begin
-		while left <= right loop
-			if isalnum(string(left)) then
-				left := left + 1;
+		while offset <= right loop
+			if isalnum(string(offset)) then
+				offset := offset + 1;
 			else
 				return;
 			end if;
@@ -140,29 +139,30 @@ package body jso is
 	end;
 
 	procedure get_subkey (
-		constant key   : string;
-		variable left  : inout natural;
-		variable right : inout natural) is
+		constant key    : string;
+		variable offset : inout natural;
+		variable length : inout natural) is
 	begin
-		while left <= right loop
-			case key(left) is
+		index := offset;
+		while offset < length loop
+			case key(offset) is
 			when '[' =>
-				skipws(key, left, right);
-				if isalpha(key(left)) then
-					parse_property(key, left, right);
-				elsif isdigit(key(left)) then
-					parse_natural(key, left, right);
+				skipws(key);
+				if isalpha(key(index)) then
+					parse_property(key, index, length);
+				elsif isdigit(key(offset)) then
+					parse_natural(key, offset, length);
 				else
 					assert false report "get_subkey" severity failure;
 				end if;
-				skipws(key, left, right);
-				if key(left) /= ']' then
+				skipws(key);
+				if key(offset) /= ']' then
 					assert false report "get_subkey" severity failure;
 				end if;
 			when '.' =>
-				left := left + 1;
-				skipws(key, left, right);
-				parse_property(key, left, right);
+				offset := offset + 1;
+				skipws(key);
+				parse_property(key, offset, length);
 				return;
 			when others =>
 				assert false report "Wrong key format" severity failure;

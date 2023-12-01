@@ -38,13 +38,13 @@ architecture def of main is
 begin
 	process 
 		constant key   : string := ".hola.";
-		variable right : natural;
-		variable left  : natural;
+		variable offset : natural;
+		variable length : natural;
 	begin
-		left  := key'left;
-		right := key'right;
-		get_subkey(key, left, right);
-		report "******* " & key(left to right);
+		offset := key'left;
+		length := key'length;
+		get_subkey(key, offset, length);
+		report "******* " & key(offset to offset+length-1);
 		wait;
 	end process;
 end;
