@@ -35,7 +35,7 @@ end;
 package body jso is
 
 	constant debug : boolean := not false;
-	shared variable index : natural;
+	shared variable key_index : natural;
 	function isspace (
 		constant char : character;
 		constant wspc : string := (' ', HT, LF, CR, FF))
@@ -98,9 +98,9 @@ package body jso is
 	procedure skipws (
 		constant string : string) is
 	begin
-		while index <= string'right loop
-			if isspace(string(index)) then
-				index := index + 1;
+		while key_index <= string'right loop
+			if isspace(string(key_index)) then
+				key_index := key_index + 1;
 			else
 				return;
 			end if;
@@ -112,12 +112,12 @@ package body jso is
 		variable offset : inout natural;
 		variable length : inout natural) is
 	begin
-		offset := index;
+		offset := key_index;
 		length := 0;
-		if isalpha(string(index)) then
-			while index <= string'right loop
-				if isalnum(string(index)) then
-					index  := index  + 1;
+		if isalpha(string(key_index)) then
+			while key_index <= string'right loop
+				if isalnum(string(key_index)) then
+					key_index  := key_index  + 1;
 					length := length + 1;
 				else
 					return;
@@ -133,11 +133,11 @@ package body jso is
 		variable offset : inout natural;
 		variable length : inout natural) is
 	begin
-		offset := index;
+		offset := key_index;
 		length := 0;
-		while index <= string'right loop
-			if isalnum(string(index)) then
-				index  := index + 1;
+		while key_index <= string'right loop
+			if isalnum(string(key_index)) then
+				key_index  := key_index + 1;
 				length := length + 1;
 			else
 				return;
@@ -148,7 +148,7 @@ package body jso is
 	procedure set_index (
 		constant value : natural) is
 	begin
-		index := value;
+		key_index := value;
 	end;
 
 	procedure next_key (
@@ -157,29 +157,29 @@ package body jso is
 		variable length : inout natural) is
 	begin
 		skipws(key);
-		assert debug report integer'image(index) severity note;
-		assert debug report "-------------------- " & character'image(key(index)) severity note;
-		while index <= key'right loop
-			case key(index) is
+		assert debug report integer'image(key_index) severity note;
+		assert debug report "-------------------- " & character'image(key(key_index)) severity note;
+		while key_index <= key'right loop
+			case key(key_index) is
 			when '[' =>
-				index := index + 1;
+				key_index := key_index + 1;
 				skipws(key);
-				if isalpha(key(index)) then
+				if isalpha(key(key_index)) then
 					parse_property(key, offset, length);
-				elsif isdigit(key(index)) then
+				elsif isdigit(key(key_index)) then
 					parse_natural(key, offset, length);
 				else
 					assert false report "next_key" severity failure;
 				end if;
 				skipws(key);
-				if key(index)=']' then
-					index := index + 1;
+				if key(key_index)=']' then
+					key_index := key_index + 1;
 				else
 					assert false report "next_key" severity failure;
 				end if;
 				exit;
 			when '.' =>
-				index := index + 1;
+				key_index := key_index + 1;
 				skipws(key);
 				parse_property(key, offset, length);
 				exit;
@@ -187,6 +187,6 @@ package body jso is
 				assert false report "Wrong key format" severity failure;
 			end case;
 		end loop;
-		assert debug report "=====> " & integer'image(index) & ":" & integer'image(offset) & ':' & integer'image(length);
+		assert debug report "=====> " & integer'image(key_index) & ":" & integer'image(offset) & ':' & integer'image(length);
 	end;
 end;
