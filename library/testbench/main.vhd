@@ -38,7 +38,7 @@ architecture def of main is
 begin
 	process 
 		-- constant key    : string := " . hola . hello";
-		constant key    : string := "[ 123 ] . hola . hello[ 345 ]";
+		constant key    : string := "[ xyz ] . hola . hello[ 345 ]";
 		variable offset : natural;
 		variable length : natural;
 	begin

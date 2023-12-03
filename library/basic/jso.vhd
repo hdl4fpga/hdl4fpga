@@ -165,17 +165,17 @@ package body jso is
 				index := index + 1;
 				skipws(key);
 				if isalpha(key(index)) then
-					parse_property(key, index, length);
+					parse_property(key, offset, length);
 				elsif isdigit(key(index)) then
 					parse_natural(key, offset, length);
 				else
-					assert false report "get_subkey" severity failure;
+					assert false report "next_key" severity failure;
 				end if;
 				skipws(key);
 				if key(index)=']' then
 					index := index + 1;
 				else
-					assert false report "get_subkey" severity failure;
+					assert false report "next_key" severity failure;
 				end if;
 				exit;
 			when '.' =>
