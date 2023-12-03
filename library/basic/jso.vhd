@@ -23,7 +23,10 @@
 
 
 package jso is
-	procedure get_subkey (
+	procedure set_index(
+		constant value : natural);
+
+	procedure next_key (
 		constant key    : string;
 		variable offset : inout natural;
 		variable length : inout natural);
@@ -31,6 +34,7 @@ end;
 
 package body jso is
 
+	constant debug : boolean := not false;
 	shared variable index : natural;
 	function isspace (
 		constant char : character;
@@ -94,7 +98,7 @@ package body jso is
 	procedure skipws (
 		constant string : string) is
 	begin
-		while index <= string'length loop
+		while index <= string'right loop
 			if isspace(string(index)) then
 				index := index + 1;
 			else
@@ -111,7 +115,7 @@ package body jso is
 		offset := index;
 		length := 0;
 		if isalpha(string(index)) then
-			while index-offset < string'length loop
+			while index <= string'right loop
 				if isalnum(string(index)) then
 					index  := index  + 1;
 					length := length + 1;
@@ -126,48 +130,63 @@ package body jso is
 
 	procedure parse_natural (
 		constant string : string;
-		variable offset  : inout natural;
-		variable right : inout natural) is
+		variable offset : inout natural;
+		variable length : inout natural) is
 	begin
-		while offset <= right loop
-			if isalnum(string(offset)) then
-				offset := offset + 1;
+		offset := index;
+		length := 0;
+		while index <= string'right loop
+			if isalnum(string(index)) then
+				index  := index + 1;
+				length := length + 1;
 			else
 				return;
 			end if;
 		end loop;
 	end;
 
-	procedure get_subkey (
+	procedure set_index (
+		constant value : natural) is
+	begin
+		index := value;
+	end;
+
+	procedure next_key (
 		constant key    : string;
 		variable offset : inout natural;
 		variable length : inout natural) is
 	begin
-		index := offset;
-		while offset < length loop
-			case key(offset) is
+		skipws(key);
+		assert debug report integer'image(index) severity note;
+		assert debug report "-------------------- " & character'image(key(index)) severity note;
+		while index <= key'right loop
+			case key(index) is
 			when '[' =>
+				index := index + 1;
 				skipws(key);
 				if isalpha(key(index)) then
 					parse_property(key, index, length);
-				elsif isdigit(key(offset)) then
+				elsif isdigit(key(index)) then
 					parse_natural(key, offset, length);
 				else
 					assert false report "get_subkey" severity failure;
 				end if;
 				skipws(key);
-				if key(offset) /= ']' then
+				if key(index)=']' then
+					index := index + 1;
+				else
 					assert false report "get_subkey" severity failure;
 				end if;
+				exit;
 			when '.' =>
-				offset := offset + 1;
+				index := index + 1;
 				skipws(key);
 				parse_property(key, offset, length);
-				return;
+				exit;
 			when others =>
 				assert false report "Wrong key format" severity failure;
 			end case;
 		end loop;
+		assert debug report "=====> " & integer'image(index) & ":" & integer'image(offset) & ':' & integer'image(length);
 	end;
-
 end;
