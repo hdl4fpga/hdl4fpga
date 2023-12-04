@@ -97,11 +97,12 @@ package body jso is
 	end;
 
 	procedure skipws (
-		constant string : string) is
+		constant string : string;
+		variable index  : natural) is
 	begin
-		while key_index <= string'right loop
-			if isspace(string(key_index)) then
-				key_index := key_index + 1;
+		while index <= string'right loop
+			if isspace(string(index)) then
+				index := index + 1;
 			else
 				return;
 			end if;
@@ -157,14 +158,14 @@ package body jso is
 		variable offset : inout natural;
 		variable length : inout natural) is
 	begin
-		skipws(key);
+		skipws(key, key_index);
 		assert debug report integer'image(key_index) severity note;
 		assert debug report "-------------------- " & character'image(key(key_index)) severity note;
 		while key_index <= key'right loop
 			case key(key_index) is
 			when '[' =>
 				key_index := key_index + 1;
-				skipws(key);
+				skipws(key, key_index);
 				if isalpha(key(key_index)) then
 					parse_property(key, offset, length);
 				elsif isdigit(key(key_index)) then
@@ -172,7 +173,7 @@ package body jso is
 				else
 					assert false report "next_key" severity failure;
 				end if;
-				skipws(key);
+				skipws(key, key_index);
 				if key(key_index)=']' then
 					key_index := key_index + 1;
 				else
@@ -181,20 +182,71 @@ package body jso is
 				exit;
 			when '.' =>
 				key_index := key_index + 1;
-				skipws(key);
+				skipws(key, key_index);
 				parse_property(key, offset, length);
 				exit;
 			when others =>
 				assert false report "Wrong key format" severity failure;
 			end case;
 		end loop;
-		assert debug report "=====> " & integer'image(key_index) & ":" & integer'image(offset) & ':' & integer'image(length);
+		skipws(key, key_index);
+		assert debug 
+		report "=====> " & 
+			integer'image(key_index) & ":" & integer'image(offset) & ':' & integer'image(length);
 	end;
 
+	procedure get_arrayvalue (
+		constant jso : string;
+		constant key : string;
+		variable offset : inout natural;
+		variable length : inout natura) is
+		variable index  : natural;
+	begin
+		index := 0;
+		while jso_index <= jso'right loop
+			if index < key then
+				skipws(jso, jso_index);
+				case jso(jso_index) is
+				when ',' =>
+					if obj_pointer=0 then
+						index := index + 1;
+					else 
+						jso_index := jso_index + 1;
+					end if;
+				when '[' =>
+					jso_index := jso_index + 1;
+				when '{' =>
+					jso_index := jso_index + 1;
+				when others =>
+					jso_index := jso_index + 1;
+				end case;
+			else
+			end if;
+		end loop;
+		
+	end;
+			-- case jso(jso_index) is
 	procedure get_value (
 		constant jso : string;
+		constant key : string;
 		variable offset : inout natural;
-		variable lenght : inout natura) is
+		variable length : inout natura) is
+		variable obj_level   : string(jso'range);
+		variable obj_pointer : positive := jso'left;
 	begin
+		skipws(jso, jso_index);
+		while jso_index <= jso'right loop
+			if key=natural then
+
+			end if;
+		end loop;
+		
 	end;
+			-- case jso(jso_index) is
+			-- when '['|'{' =>
+				-- obj_level(obj_pointer) := jso(jso_index);
+			-- when others =>
+				-- assert false report "Wrong jso format" severity failure;
+			-- end case;
+			-- end case;
 end;
