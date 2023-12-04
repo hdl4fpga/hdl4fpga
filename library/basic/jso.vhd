@@ -36,6 +36,7 @@ package body jso is
 
 	constant debug : boolean := not false;
 	shared variable key_index : natural;
+	shared variable js0_index : natural;
 	function isspace (
 		constant char : character;
 		constant wspc : string := (' ', HT, LF, CR, FF))
@@ -188,5 +189,12 @@ package body jso is
 			end case;
 		end loop;
 		assert debug report "=====> " & integer'image(key_index) & ":" & integer'image(offset) & ':' & integer'image(length);
+	end;
+
+	procedure get_value (
+		constant jso : string;
+		variable offset : inout natural;
+		variable lenght : inout natura) is
+	begin
 	end;
 end;
