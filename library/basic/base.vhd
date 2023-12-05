@@ -38,7 +38,6 @@ package base is
 	subtype byte is std_logic_vector(8-1 downto 0);
 	type byte_vector is array (natural range <>) of byte;
 
-
 	subtype integer64 is time;
 	type integer64_vector is array (natural range <>) of integer64;
 
