@@ -37,10 +37,15 @@ end;
 architecture def of main is
 begin
 	process 
+		-- constant key    : string := " . hola . hello";
+		constant key    : string := "[ 2 ]";
+		variable offset : natural;
+		variable length : natural;
 	begin
-		assert false
-		report "******* " & integer'image(work.jso.get("[ hola : 4 ]", "hola")'length)
-		severity NOTE;
+		set_index(key'left);
+		next_key(key, offset, length);
+		report "subkey : " & '"' & key(offset to offset+length-1) & '"';
+		get_arrayvalue(" 1, 2, 3, ,4", key(offset to offset+length-1), offset, length);
 		wait;
 	end process;
 end;

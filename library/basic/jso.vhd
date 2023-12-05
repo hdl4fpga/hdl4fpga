@@ -23,14 +23,27 @@
 
 
 package jso is
-	function get(
+	procedure set_index(
+		constant value : natural);
+
+	procedure next_key (
+		constant key    : string;
+		variable offset : inout natural;
+		variable length : inout natural);
+
+	procedure get_arrayvalue (
 		constant jso : string;
-		constant key : string)
-		return string;
+		constant key : string;
+		variable offset : inout natural;
+		variable length : inout natural);
+
 end;
 
 package body jso is
 
+	constant debug : boolean := not false;
+	shared variable key_index : natural;
+	shared variable jso_index : natural;
 	function isspace (
 		constant char : character;
 		constant wspc : string := (' ', HT, LF, CR, FF))
@@ -70,6 +83,19 @@ package body jso is
 		end if;
 	end;
 
+	function isalnum (
+		constant char : character)
+		return boolean is
+	begin
+		if isdigit(char) then
+			return true;
+		elsif isalpha(char) then
+			return true;
+		else
+			return false;
+		end if;
+	end;
+
 	function to_integer (
 		constant char : character)
 		return integer is
@@ -77,207 +103,164 @@ package body jso is
 		return character'pos(char)-character'pos('0');
 	end;
 
-	procedure stripws (
+	procedure skipws (
 		constant string : string;
-		variable offset : inout natural) is
+		variable index  : inout natural) is
 	begin
-		while isspace(string(offset)) loop
-			offset := offset + 1;
+		while index <= string'right loop
+			if isspace(string(index)) then
+				index := index + 1;
+			else
+				return;
+			end if;
 		end loop;
 	end;
 
-	procedure get_subkey (
-		constant key    : in    string;
-		constant offset : in    natural;
+	procedure parse_property (
+		constant string : string;
+		variable offset : inout natural;
 		variable length : inout natural) is
 	begin
+		offset := key_index;
 		length := 0;
-		case key(offset + length) is
-		when '[' =>
-			length := length + 1;
-			-- stripws;
-			if isalpha(key(offset + length)) then
-			elsif isdigit(key(offset + length)) then
-			end if;
-			-- parse_natural;
-			-- stripws;
-			if key(offset + length) /= ']' then
-				assert false report "error" severity failure;
-			end if;
-			length := length + 1;
-		when '.' =>
-			-- stripws;
-			-- parse_string;
-		when others =>
-			assert false report "Wrong key format" severity failure;
-		end case;
-	end;
-
-	function get_value (
-		constant key : string;
-		constant jso : string)
-		return natural is
-		variable offset : natural;
-		variable length : natural;
-		variable escchr : boolean;
-		variable strqto : boolean;
-		variable straph : boolean;
-		variable clybrc : natural;
-		variable sqrbkt : natural;
-	begin
-		while offset < length loop
-			if get_alphanum=key then
-				skipws;
-				case jso(offset) is
-				when '[' =>
-					if not strqto and not straph then
-						sqrbkt := sqrbkt + 1;
-					end if;
-				when ']' =>
-					if not strqto and not straph then
-						if sqrbkt > 0 then
-							sqrbkt := sqrbkt - 1;
-						else
-							return;
-						end if;
-					end if;
-				when '{' =>
-					if not strqto and not straph then
-						clybrc := clybrc + 1;
-					end if;
-				when '}' =>
-					if not strqto and not straph then
-						if clybrc > 0 then
-							clybrc := clybrc - 1;
-						else
-							return;
-						end if;
-					end if;
-				when '"' =>
-					if strqto then
-						if not escchr then
-							strqto := false;
-						end if;
-					else
-						strqto := true;
-					end if;
-				when ''' =>
-					if straph then
-						if not escchr then
-							straph := false;
-						end if;
-					else
-						straph := true;
-					end if;
-				when others =>
-					assert false report "Wrong key format" severity failure;
-				end case;
-			end if;
-		end loop;
-	end;
-
-	function get_keyvalue (
-		constant key : string;
-		constant jso : string)
-		return natural is
-		variable offset : natural;
-		variable length : natural;
-	begin
-		while offset < length loop
-			if get_alphanum=key then
-				skipws;
-				case jso(offset) is
-				when ':' =>
-					skipws;
-					get_value;
-				when others =>
-					assert false report "Wrong key format" severity failure;
-				end case;
-			end if;
-		end loop;
-	end;
-
-	function lookup_keyvalue (
-		constant key : string;
-		constant jso : string)
-		return natural is
-		variable offset : natural;
-		variable length : natural;
-	begin
-		while offset < length loop
-			case jso(offset) is
-			when ',' =>
-				skipws;
-				if get_keyvalue(key) then
-					return value;
+		if isalpha(string(key_index)) then
+			while key_index <= string'right loop
+				if isalnum(string(key_index)) then
+					key_index  := key_index  + 1;
+					length := length + 1;
+				else
+					return;
 				end if;
-			when ']'|'}' =>
-				assert false report "Wrong key format" severity failure;
+			end loop;
+		else
+			report character'image(string(offset));
+		end if;
+	end;
+
+	procedure parse_natural (
+		constant string : string;
+		variable offset : inout natural;
+		variable length : inout natural) is
+	begin
+		offset := key_index;
+		length := 0;
+		while key_index <= string'right loop
+			if isalnum(string(key_index)) then
+				key_index  := key_index + 1;
+				length := length + 1;
+			else
+				return;
+			end if;
+		end loop;
+	end;
+
+	procedure set_index (
+		constant value : natural) is
+	begin
+		key_index := value;
+	end;
+
+	procedure next_key (
+		constant key    : string;
+		variable offset : inout natural;
+		variable length : inout natural) is
+	begin
+		skipws(key, key_index);
+		assert debug report integer'image(key_index) severity note;
+		assert debug report "-------------------- " & character'image(key(key_index)) severity note;
+		while key_index <= key'right loop
+			case key(key_index) is
+			when '[' =>
+				key_index := key_index + 1;
+				skipws(key, key_index);
+				if isalpha(key(key_index)) then
+					parse_property(key, offset, length);
+				elsif isdigit(key(key_index)) then
+					parse_natural(key, offset, length);
+				else
+					assert false report "next_key" severity failure;
+				end if;
+				skipws(key, key_index);
+				if key(key_index)=']' then
+					key_index := key_index + 1;
+				else
+					assert false report "next_key" severity failure;
+				end if;
+				exit;
+			when '.' =>
+				key_index := key_index + 1;
+				skipws(key, key_index);
+				parse_property(key, offset, length);
+				exit;
 			when others =>
 				assert false report "Wrong key format" severity failure;
 			end case;
+		end loop;
+		skipws(key, key_index);
+		assert debug 
+		report "=====> " & 
+			integer'image(key_index) & ":" & integer'image(offset) & ':' & integer'image(length);
 	end;
 
-	function lookup_value (
-		constant key : string;
-		constant jso : string)
+	function to_natural (
+		constant value : string;
+		constant base  : natural := 10) 
 		return natural is
-		variable offset : natural;
-		variable length : natural;
+		variable retval : natural;
 	begin
-		while offset < length loop
-			if i < position then
-				case jso(offset) is
+		retval := 0;
+		for i in value'range loop
+			retval := base*retval;
+			retval := (character'pos(value(i))-character'pos('0')) + retval;
+		end loop;
+		assert debug report "---> " & natural'image(retval);
+		return retval;
+	end;
+
+	procedure locate_arrayvalue (
+		constant jso : string;
+		constant key : string;
+		variable offset : inout natural;
+		variable length : inout natural) is
+
+		variable jso_stack : string(jso'range);
+		variable jso_stptr : natural := 0;
+		procedure push (
+			constant char : character) is
+		begin
+			jso_stptr := jso_stptr + 1;
+			jso_stack(jso_stptr) := char;
+		end;
+
+		procedure pop (
+			constant char : character) is
+		begin
+			jso_stptr := jso_stptr - 1;
+		end;
+
+		variable index : natural;
+	begin
+		index := 0;
+		jso_index := jso'left;
+		while jso_index <= jso'right loop
+			if index < to_natural(key) then
+				skipws(jso, jso_index);
+				case jso(jso_index) is
 				when ',' =>
-					i := i + 1;
-				when ']' =>
-					assert false report "Wrong key format" severity failure;
+					if jso_stptr=0 then
+						index := index + 1;
+					end if;
+				when '['|'{' =>
+					push(jso(jso_index));
+				when ']'|'}' =>
+					pop(jso(jso_index));
 				when others =>
-					assert false report "Wrong key format" severity failure;
 				end case;
 			else
-				skipws;
-				get_value;
+				report "index " & natural'image(index);
+				exit;
 			end if;
-		end loop;
-		return ;
-	end;
-
-	function get_value (
-		constant jso : string;
-		constant key : string)
-		return string is
-		variable position : natural;
-	begin
-		case jso(jso_offset) is
-		when '[' =>
-			position := 0;
-			stripws;
-			lookup;
-			end case;
-		when '{' =>
-			stripws;
-			get_propertyvaule;
-		when others =>
-		end case;
-	end;
-
-	function get(
-		constant jso : string;
-		constant key : string)
-		return string is
-
-		variable key_offset : natural;
-		variable key_length : natural;
-
-	begin
-		while key_offset < key_length loop
-			if stripws (key, key_offset) then
-			end if;
-			get_subkey (key, key_offset, key_length);
-			if stripws (jso, jso_offset) then
-			end if;
-			get_value (subkey, jso);
+			jso_index := jso_index + 1;
 		end loop;
 	end;
 end;
