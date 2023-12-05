@@ -38,17 +38,14 @@ architecture def of main is
 begin
 	process 
 		-- constant key    : string := " . hola . hello";
-		constant key    : string := "[ xyz ] . hola . hello[ 345 ]";
+		constant key    : string := "[ 2 ]";
 		variable offset : natural;
 		variable length : natural;
 	begin
 		set_index(key'left);
-		for i in 0 to 4-1 loop
-			next_key(key, offset, length);
-		-- report character'image(key(offset+length));
-			report "subkey : " & '"' & key(offset to offset+length-1) & '"';
-		-- report integer'image(offset+length);
-		end loop;
+		next_key(key, offset, length);
+		report "subkey : " & '"' & key(offset to offset+length-1) & '"';
+		get_arrayvalue(" 1, 2, 3, ,4", key(offset to offset+length-1), offset, length);
 		wait;
 	end process;
 end;
