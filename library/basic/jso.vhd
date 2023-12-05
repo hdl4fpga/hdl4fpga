@@ -30,13 +30,20 @@ package jso is
 		constant key    : string;
 		variable offset : inout natural;
 		variable length : inout natural);
+
+	procedure get_arrayvalue (
+		constant jso : string;
+		constant key : string;
+		variable offset : inout natural;
+		variable length : inout natural);
+
 end;
 
 package body jso is
 
 	constant debug : boolean := not false;
 	shared variable key_index : natural;
-	shared variable js0_index : natural;
+	shared variable jso_index : natural;
 	function isspace (
 		constant char : character;
 		constant wspc : string := (' ', HT, LF, CR, FF))
@@ -98,7 +105,7 @@ package body jso is
 
 	procedure skipws (
 		constant string : string;
-		variable index  : natural) is
+		variable index  : inout natural) is
 	begin
 		while index <= string'right loop
 			if isspace(string(index)) then
@@ -195,58 +202,65 @@ package body jso is
 			integer'image(key_index) & ":" & integer'image(offset) & ':' & integer'image(length);
 	end;
 
-	procedure get_arrayvalue (
+	function to_natural (
+		constant value : string;
+		constant base  : natural := 10) 
+		return natural is
+		variable retval : natural;
+	begin
+		retval := 0;
+		for i in value'range loop
+			retval := base*retval;
+			retval := (character'pos(value(i))-character'pos('0')) + retval;
+		end loop;
+		assert debug report "---> " & natural'image(retval);
+		return retval;
+	end;
+
+	procedure locate_arrayvalue (
 		constant jso : string;
 		constant key : string;
 		variable offset : inout natural;
-		variable length : inout natura) is
-		variable index  : natural;
+		variable length : inout natural) is
+
+		variable jso_stack : string(jso'range);
+		variable jso_stptr : natural := 0;
+		procedure push (
+			constant char : character) is
+		begin
+			jso_stptr := jso_stptr + 1;
+			jso_stack(jso_stptr) := char;
+		end;
+
+		procedure pop (
+			constant char : character) is
+		begin
+			jso_stptr := jso_stptr - 1;
+		end;
+
+		variable index : natural;
 	begin
 		index := 0;
+		jso_index := jso'left;
 		while jso_index <= jso'right loop
-			if index < key then
+			if index < to_natural(key) then
 				skipws(jso, jso_index);
 				case jso(jso_index) is
 				when ',' =>
-					if obj_pointer=0 then
+					if jso_stptr=0 then
 						index := index + 1;
-					else 
-						jso_index := jso_index + 1;
 					end if;
-				when '[' =>
-					jso_index := jso_index + 1;
-				when '{' =>
-					jso_index := jso_index + 1;
+				when '['|'{' =>
+					push(jso(jso_index));
+				when ']'|'}' =>
+					pop(jso(jso_index));
 				when others =>
-					jso_index := jso_index + 1;
 				end case;
 			else
+				report "index " & natural'image(index);
+				exit;
 			end if;
+			jso_index := jso_index + 1;
 		end loop;
-		
 	end;
-			-- case jso(jso_index) is
-	procedure get_value (
-		constant jso : string;
-		constant key : string;
-		variable offset : inout natural;
-		variable length : inout natura) is
-		variable obj_level   : string(jso'range);
-		variable obj_pointer : positive := jso'left;
-	begin
-		skipws(jso, jso_index);
-		while jso_index <= jso'right loop
-			if key=natural then
-
-			end if;
-		end loop;
-		
-	end;
-			-- case jso(jso_index) is
-			-- when '['|'{' =>
-				-- obj_level(obj_pointer) := jso(jso_index);
-			-- when others =>
-				-- assert false report "Wrong jso format" severity failure;
-			-- end case;
-			-- end case;
 end;
