@@ -31,7 +31,7 @@ package jso is
 		variable offset : inout natural;
 		variable length : inout natural);
 
-	procedure get_arrayvalue (
+	procedure locate_value (
 		constant jso : string;
 		constant key : string;
 		variable offset : inout natural;
@@ -44,7 +44,7 @@ package body jso is
 	constant debug : boolean := not false;
 	shared variable key_index : natural;
 	shared variable jso_index : natural;
-	function isspace (
+	function isws (
 		constant char : character;
 		constant wspc : string := (' ', HT, LF, CR, FF))
 		return boolean is
@@ -108,8 +108,43 @@ package body jso is
 		variable index  : inout natural) is
 	begin
 		while index <= string'right loop
-			if isspace(string(index)) then
+			if isws(string(index)) then
 				index := index + 1;
+			else
+				return;
+			end if;
+		end loop;
+	end;
+
+	procedure parse_string (
+		constant string : string;
+		variable offset : inout natural;
+		variable length : inout natural) is
+		variable index  : natural;
+		variable aphos  : boolean := false;
+	begin
+		index  := string'left;
+		skipws(string, index);
+		offset := index;
+		length := 0;
+		while index <= string'right loop
+			if length=0 then
+				if string(index)=''' then
+					aphos  := true;
+					index  := index  + 1;
+					length := length + 1;
+					next;
+				end if;
+			end if;
+			if aphos then
+				index  := index  + 1;
+				length := length + 1;
+				if string(index)=''' then
+					return;
+				end if;
+			elsif isalnum(string(index)) then
+				index  := index  + 1;
+				length := length + 1;
 			else
 				return;
 			end if;
@@ -217,9 +252,8 @@ package body jso is
 		return retval;
 	end;
 
-	procedure locate_arrayvalue (
+	procedure parse_value (
 		constant jso : string;
-		constant key : string;
 		variable offset : inout natural;
 		variable length : inout natural) is
 
@@ -238,29 +272,78 @@ package body jso is
 			jso_stptr := jso_stptr - 1;
 		end;
 
-		variable index : natural;
 	begin
-		index := 0;
-		jso_index := jso'left;
+		jso_stptr := 0;
+		offset := jso_index;
+		length := 0;
 		while jso_index <= jso'right loop
-			if index < to_natural(key) then
-				skipws(jso, jso_index);
-				case jso(jso_index) is
-				when ',' =>
-					if jso_stptr=0 then
-						index := index + 1;
-					end if;
-				when '['|'{' =>
-					push(jso(jso_index));
-				when ']'|'}' =>
+			case jso(jso_index) is
+			when '['|'{' =>
+				push(jso(jso_index));
+			when ',' =>
+				if jso_stptr=0 then
+					exit;
+				end if;
+			when ']'|'}' =>
+				if jso_stptr=0 then
+					exit;
+				else
 					pop(jso(jso_index));
-				when others =>
-				end case;
-			else
-				report "index " & natural'image(index);
-				exit;
-			end if;
+				end if;
+			when others =>
+			end case;
+			length := length + 1;
 			jso_index := jso_index + 1;
 		end loop;
+	end;
+
+	function get_key(
+		constant data   : string;
+		constant offset : natural;
+		constant length : natural)
+		return string is
+		variable key_offset : natural;
+		variable key_length : natural;
+	begin
+		key_offset := offset;
+		key_length := 0;
+		parse_string(data, key_offset, key_length);
+		return data(key_offset to key_offset+key_length-1);
+	end;
+		
+	procedure locate_value (
+		constant jso : string;
+		constant key : string;
+		variable offset : inout natural;
+		variable length : inout natural) is
+
+		variable index : natural;
+	begin
+		jso_index := jso'left;
+		index  := 0;
+		offset := 0;
+		length := 0;
+		while jso_index <= jso'right loop
+			skipws(jso, jso_index);
+			case jso(jso_index) is
+			when '['|'{' =>
+			when ',' =>
+				if index < to_natural(key)+1 then
+					index := index + 1;
+				end if;
+			when ']'|'}' =>
+			when others =>
+			end case;
+			jso_index := jso_index + 1;
+			parse_value(jso, offset, length);
+			if to_natural(key) <= index then
+			-- elsif key=get_valuekey(jso, offset, length) then
+				exit;
+			end if;
+		end loop;
+		report "index " & natural'image(index);
+		report natural'image(offset) & ':' & natural'image(length);
+		report '"' & jso(offset to offset+length-1) & '"';
+
 	end;
 end;

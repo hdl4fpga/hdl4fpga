@@ -38,14 +38,14 @@ architecture def of main is
 begin
 	process 
 		-- constant key    : string := " . hola . hello";
-		constant key    : string := "[ 2 ]";
+		constant key    : string := "[ 0 ]";
 		variable offset : natural;
 		variable length : natural;
 	begin
 		set_index(key'left);
 		next_key(key, offset, length);
 		report "subkey : " & '"' & key(offset to offset+length-1) & '"';
-		get_arrayvalue(" 1, 2, 3, ,4", key(offset to offset+length-1), offset, length);
+		locate_value("[ hola, mundo : [ 12345,  [ 67890 ] ] , hello, world ]", key(offset to offset+length-1), offset, length);
 		wait;
 	end process;
 end;
