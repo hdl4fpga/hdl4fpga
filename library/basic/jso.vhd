@@ -37,6 +37,11 @@ package jso is
 		variable offset : inout natural;
 		variable length : inout natural);
 
+	procedure parse_string (
+		constant string : string;
+		variable offset : inout natural;
+		variable length :   out natural);
+
 end;
 
 package body jso is
@@ -135,12 +140,14 @@ package body jso is
 				end if;
 			end if;
 			if aphos then
-				index := index  + 1;
 				if string(index)=''' then
-					return;
+					index := index + 1;
+					exit;
+				else
+					index := index + 1;
 				end if;
 			elsif isalnum(string(index)) then
-				index := index  + 1;
+				index := index + 1;
 			else
 				exit;
 			end if;
@@ -247,7 +254,7 @@ package body jso is
 		return retval;
 	end;
 
-	procedure parse_value (
+	procedure get_value (
 		constant jso : string;
 		variable offset : inout natural;
 		variable length : inout natural) is
@@ -267,42 +274,56 @@ package body jso is
 			jso_stptr := jso_stptr - 1;
 		end;
 
+		variable aphos  : boolean := false;
 	begin
 		jso_stptr := 0;
 		offset := jso_index;
 		while jso_index <= jso'right loop
-			case jso(jso_index) is
-			when '['|'{' =>
-				push(jso(jso_index));
-			when ',' =>
-				if jso_stptr=0 then
-					exit;
-				end if;
-			when ']'|'}' =>
-				if jso_stptr=0 then
-					exit;
-				else
-					pop(jso(jso_index));
-				end if;
-			when others =>
-			end case;
+			if not aphos then
+				case jso(jso_index) is
+				when '['|'{' =>
+					push(jso(jso_index));
+				when ',' =>
+					if jso_stptr=0 then
+						exit;
+					end if;
+				when ']'|'}' =>
+					if jso_stptr=0 then
+						exit;
+					else
+						pop(jso(jso_index));
+					end if;
+				when others =>
+				end case;
+			end if;
+			if jso(jso_index)=''' then
+				aphos := not aphos;
+			end if;
 			jso_index := jso_index + 1;
 		end loop;
-		length := jso_index-offset+1;
+		length := jso_index-offset;
 	end;
 
-	function get_key(
-		constant data   : string;
-		constant offset : natural;
-		constant length : natural)
-		return string is
-		variable key_offset : natural;
-		variable key_length : natural;
+	procedure key_value (
+		constant key_value    : string;
+		variable key_offset   : inout natural;
+		variable key_length   : inout natural;
+		variable value_offset : inout natural;
+		variable value_length : inout natural) is
+		variable index        : natural;
 	begin
-		key_offset := offset;
-		key_length := 0;
-		parse_string(data, key_offset, key_length);
-		return data(key_offset to key_offset+key_length-1);
+		parse_string(key_value, value_offset, value_length);
+		index := value_offset + value_length;
+		skipws(key_value, index);
+		if key_value(index)/=':' then
+			key_length := 0;
+		else
+			key_offset := value_offset;
+			key_length := value_length;
+			index := index + 1;
+			value_offset := index;
+			value_length := key_value'right-index+1; 
+		end if;
 	end;
 		
 	procedure locate_value (
@@ -312,6 +333,10 @@ package body jso is
 		variable length : inout natural) is
 
 		variable index : natural;
+		variable key_offset   : natural;
+		variable key_length   : natural;
+		variable value_offset : natural;
+		variable value_length : natural;
 	begin
 		jso_index := jso'left;
 		index  := 0;
@@ -329,15 +354,18 @@ package body jso is
 			when others =>
 			end case;
 			jso_index := jso_index + 1;
-			parse_value(jso, offset, length);
+			get_value(jso, offset, length);
 			if to_natural(key) <= index then
 			-- elsif key=get_valuekey(jso, offset, length) then
 				exit;
 			end if;
 		end loop;
-		report "index " & natural'image(index);
-		report natural'image(offset) & ':' & natural'image(length);
-		report '"' & jso(offset to offset+length-1) & '"';
+		key_value(jso(offset to offset+length-1), key_offset, key_length, value_offset, value_length);
+		-- report "index " & natural'image(index);
+		-- report natural'image(offset) & ':' & natural'image(length);
+		report '"' & jso(key_offset to key_offset+key_length-1) & '"';
+		report natural'image(value_offset) & ':' & natural'image(value_length);
+		report '"' & jso(value_offset to value_offset+value_length-1) & '"';
 
 	end;
 end;
