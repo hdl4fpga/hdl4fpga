@@ -119,52 +119,48 @@ package body jso is
 	procedure parse_string (
 		constant string : string;
 		variable offset : inout natural;
-		variable length : inout natural) is
+		variable length :   out natural) is
 		variable index  : natural;
 		variable aphos  : boolean := false;
 	begin
 		index  := string'left;
 		skipws(string, index);
 		offset := index;
-		length := 0;
 		while index <= string'right loop
-			if length=0 then
+			if (index-offset)=0 then
 				if string(index)=''' then
-					aphos  := true;
-					index  := index  + 1;
-					length := length + 1;
+					aphos := true;
+					index := index  + 1;
 					next;
 				end if;
 			end if;
 			if aphos then
-				index  := index  + 1;
-				length := length + 1;
+				index := index  + 1;
 				if string(index)=''' then
 					return;
 				end if;
 			elsif isalnum(string(index)) then
-				index  := index  + 1;
-				length := length + 1;
+				index := index  + 1;
 			else
-				return;
+				exit;
 			end if;
 		end loop;
+		length := index-offset;
 	end;
 
 	procedure parse_property (
 		constant string : string;
 		variable offset : inout natural;
-		variable length : inout natural) is
+		variable length :   out natural) is
 	begin
 		offset := key_index;
-		length := 0;
 		if isalpha(string(key_index)) then
 			while key_index <= string'right loop
 				if isalnum(string(key_index)) then
 					key_index  := key_index  + 1;
-					length := length + 1;
 				else
-					return;
+					length := key_index-offset;
+					exit;
 				end if;
 			end loop;
 		else
@@ -175,16 +171,15 @@ package body jso is
 	procedure parse_natural (
 		constant string : string;
 		variable offset : inout natural;
-		variable length : inout natural) is
+		variable length :   out natural) is
 	begin
 		offset := key_index;
-		length := 0;
 		while key_index <= string'right loop
 			if isalnum(string(key_index)) then
-				key_index  := key_index + 1;
-				length := length + 1;
+				key_index := key_index + 1;
 			else
-				return;
+				length    := key_index-offset;
+				exit;
 			end if;
 		end loop;
 	end;
@@ -275,7 +270,6 @@ package body jso is
 	begin
 		jso_stptr := 0;
 		offset := jso_index;
-		length := 0;
 		while jso_index <= jso'right loop
 			case jso(jso_index) is
 			when '['|'{' =>
@@ -292,9 +286,9 @@ package body jso is
 				end if;
 			when others =>
 			end case;
-			length := length + 1;
 			jso_index := jso_index + 1;
 		end loop;
+		length := jso_index-offset+1;
 	end;
 
 	function get_key(
