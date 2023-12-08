@@ -37,15 +37,9 @@ end;
 architecture def of main is
 begin
 	process 
-		-- constant key    : string := " . hola . hello";
-		constant key    : string := "[ 1 ]";
-		variable offset : natural;
-		variable length : natural;
+		constant value : string := get_value("[ hola, mundo : [ 12345,  [ 67890 ] ], hello, world ]", "[ 1 ]");
 	begin
-		set_index(key'left);
-		next_key(key, offset, length);
-		report "subkey : " & '"' & key(offset to offset+length-1) & '"';
-		locate_value("[ hola, mundo : [ 12345,  [ 67890 ] ], hello, world ]", key(offset to offset+length-1), offset, length);
+		report "> VALUE < : " & value;
 		wait;
 	end process;
 end;
