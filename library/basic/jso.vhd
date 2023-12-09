@@ -34,8 +34,6 @@ end;
 package body jso is
 
 	constant debug : boolean := not false;
-	shared variable key_index : natural;
-	shared variable jso_index : natural;
 	function isws (
 		constant char : character;
 		constant wspc : string := (' ', HT, LF, CR, FF))
@@ -115,6 +113,13 @@ package body jso is
 		constant key : string)
 		return string is
 
+		variable key_offset : natural;
+		variable key_length : natural;
+		variable key_index  : natural;
+
+		variable jso_offset : natural;
+		variable jso_length : natural;
+		variable jso_index  : natural;
 
     	procedure skipws (
     		constant string : string;
@@ -362,5 +367,11 @@ package body jso is
 
     	end;
 	begin
+		set_index(key'left);
+		next_key(key, key_offset, key_length);
+		-- report "subkey : " & '"' & key(key_offset to key_offset+key_length-1) & '"';
+		locate_value(jso, key(key_offset to key_offset+key_length-1), jso_offset, jso_length);
+		return jso(jso_offset to jso_offset+jso_length-1);
+
 	end;
 end;
