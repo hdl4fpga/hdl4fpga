@@ -1960,6 +1960,7 @@ $(HDL4FPGA__scopeio_tds__mix) : ../scope/scopeio_tds.vhd \
 $(HDL4FPGA__scopeio_textbox) \
 $(HDL4FPGA__scopeio_textbox__def) : ../scope/scopeio_textbox.vhd \
 		$(HDL4FPGA__latency) \
+		$(HDL4FPGA__cgaram) \
 		$(HDL4FPGA__scopeio_float2btof) \
 		$(HDL4FPGA__arbiter) \
 		$(HDL4FPGA__scopeio_rgtrvtaxis) \

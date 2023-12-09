@@ -204,12 +204,6 @@ package body jso is
     		end loop;
     	end;
 
-    	procedure set_index (
-    		constant value : natural) is
-    	begin
-    		key_index := value;
-    	end;
-
     	procedure next_key (
     		constant key    : string;
     		variable offset : inout natural;
@@ -358,20 +352,22 @@ package body jso is
     				exit;
     			end if;
     		end loop;
+    		-- key_value(jso(offset to offset+length-1), key_offset, key_length, value_offset, value_length);
     		key_value(jso(offset to offset+length-1), key_offset, key_length, value_offset, value_length);
     		-- report "index " & natural'image(index);
     		-- report natural'image(offset) & ':' & natural'image(length);
-    		report '"' & jso(key_offset to key_offset+key_length-1) & '"';
-    		report natural'image(value_offset) & ':' & natural'image(value_length);
-    		report '"' & jso(value_offset to value_offset+value_length-1) & '"';
+    		-- report '"' & jso(key_offset to key_offset+key_length-1) & '"';
+    		-- report natural'image(value_offset) & ':' & natural'image(value_length);
+    		-- report '"' & jso(value_offset to value_offset+value_length-1) & '"';
 
     	end;
 	begin
-		set_index(key'left);
+		key_index := key'left;
 		next_key(key, key_offset, key_length);
 		-- report "subkey : " & '"' & key(key_offset to key_offset+key_length-1) & '"';
 		locate_value(jso, key(key_offset to key_offset+key_length-1), jso_offset, jso_length);
-		return jso(jso_offset to jso_offset+jso_length-1);
+		-- report "> VALUE < : " & jso(jso_offset to jso_offset+jso_length-1);
+		return " ";
 
 	end;
 end;

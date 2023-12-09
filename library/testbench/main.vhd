@@ -37,9 +37,10 @@ end;
 architecture def of main is
 begin
 	process 
-		constant value : string := get_value("[ hola, mundo : [ 12345,  [ 67890 ] ], hello, world ]", "[ 1 ]");
+		variable value : string(1 to 1);
+		-- constant value : string := get_value("[ hola, mundo : [ 12345,  [ 67890 ] ], hello, world ]", "[ 0 ]");
 	begin
-		report "> VALUE < : " & value;
+		report "> VALUE < : " & get_value("[ hola, mundo : [ 12345,  [ 67890 ] ], hello, world ]", "[ 0 ]");
 		wait;
 	end process;
 end;

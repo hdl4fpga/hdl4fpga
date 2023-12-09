@@ -87,9 +87,11 @@ WORK__ulx3s__ser_debug = $(LIB_WORK)/ulx3s/ser_debug.dat
 WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s__scopeio = $(LIB_WORK)/ulx3s/scopeio.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
-WORK__testbench__manchester = $(LIB_WORK)/testbench/manchester.dat
 WORK__testbench__ulx4mls_graphics = $(LIB_WORK)/testbench/ulx4mls_graphics.dat
 WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
+WORK__testbench__ulx3s_scopeio = $(LIB_WORK)/testbench/ulx3s_scopeio.dat
+WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
+WORK__testbench__manchester = $(LIB_WORK)/testbench/manchester.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench__ecp3versa_graphics = $(LIB_WORK)/testbench/ecp3versa_graphics.dat
 WORK__testbench__ml509_graphics = $(LIB_WORK)/testbench/ml509_graphics.dat
@@ -98,8 +100,6 @@ WORK__testbench__serlzr = $(LIB_WORK)/testbench/serlzr.dat
 WORK__testbench__usbfrwk = $(LIB_WORK)/testbench/usbfrwk.dat
 WORK__testbench__orangecrab_graphics = $(LIB_WORK)/testbench/orangecrab_graphics.dat
 WORK__testbench__ulx3s_serdebug = $(LIB_WORK)/testbench/ulx3s_serdebug.dat
-WORK__testbench__ulx3s_scopeio = $(LIB_WORK)/testbench/ulx3s_scopeio.dat
-WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
 WORK__testbench__arty_scopeio = $(LIB_WORK)/testbench/arty_scopeio.dat
 WORK__testbench__arty_graphics = $(LIB_WORK)/testbench/arty_graphics.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
@@ -110,7 +110,6 @@ WORK__orangecrab_graphics_structure_md = $(LIB_WORK)/orangecrab_graphics_structu
 WORK__orangecrab_graphics_md = $(LIB_WORK)/orangecrab_graphics_md/_primary.dat
 WORK__orangecrab__graphics = $(LIB_WORK)/orangecrab/graphics.dat
 WORK__orangecrab = $(LIB_WORK)/orangecrab/_primary.dat
-WORK__oo = $(LIB_WORK)/oo/_primary.dat
 WORK__object_alloc__body = $(LIB_WORK)/object_alloc/body.dat
 WORK__object_alloc = $(LIB_WORK)/object_alloc/_primary.dat
 WORK__nuhs3adsp_graphics_md = $(LIB_WORK)/nuhs3adsp_graphics_md/_primary.dat
@@ -160,9 +159,11 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__ulx3s__graphics) \
     $(WORK__ulx3s__scopeio) \
     $(WORK__ulx3s) \
-    $(WORK__testbench__manchester) \
     $(WORK__testbench__ulx4mls_graphics) \
     $(WORK__testbench__ulx4mld_graphics) \
+    $(WORK__testbench__ulx3s_scopeio) \
+    $(WORK__testbench__ulx3s_graphics) \
+    $(WORK__testbench__manchester) \
     $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench__ecp3versa_graphics) \
     $(WORK__testbench__ml509_graphics) \
@@ -171,8 +172,6 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__testbench__usbfrwk) \
     $(WORK__testbench__orangecrab_graphics) \
     $(WORK__testbench__ulx3s_serdebug) \
-    $(WORK__testbench__ulx3s_scopeio) \
-    $(WORK__testbench__ulx3s_graphics) \
     $(WORK__testbench__arty_scopeio) \
     $(WORK__testbench__arty_graphics) \
     $(WORK__testbench) \
@@ -183,7 +182,6 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__orangecrab_graphics_md) \
     $(WORK__orangecrab__graphics) \
     $(WORK__orangecrab) \
-    $(WORK__oo) \
     $(WORK__object_alloc__body) \
     $(WORK__object_alloc) \
     $(WORK__nuhs3adsp_graphics_md) \
@@ -297,6 +295,10 @@ $(WORK__ipoe_tb__def) : ipoe_tb.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ipoe_tb.vhd
 
+$(WORK__jso) \
+$(WORK__jso__body) : ../basic/jso.vhd
+	$(VCOM) -2008 ../basic/jso.vhd
+
 $(WORK__main) \
 $(WORK__main__def) : main.vhd \
 		$(WORK__jso) \
@@ -304,7 +306,7 @@ $(WORK__main__def) : main.vhd \
 		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
-	$(VCOM) -2002  main.vhd
+	$(VCOM) -2002 main.vhd
 
 $(WORK__ml509) : /home/msagre/work/hdl4fpga.dev/boards/ml509/common/ml509.vhd \
 		$(IEEE__numeric_std) \
@@ -320,12 +322,6 @@ $(WORK__nuhs3adsp) : ../../boards/nuhs3adsp/common/nuhs3adsp.vhd \
 $(WORK__object_alloc) \
 $(WORK__object_alloc__body) : ../basic/object_alloc.vhd
 	$(VCOM) -2008 ../basic/object_alloc.vhd
-
-$(WORK__jso) \
-$(WORK__jso__body) \
-$(WORK__oo) : ../basic/jso.vhd \
-		$(WORK__object_alloc__body)
-	$(VCOM) -2008 ../basic/jso.vhd
 
 $(WORK__orangecrab) : ../../boards/orangecrab/common/orangecrab.vhd \
 		$(IEEE__std_logic_arith) \
