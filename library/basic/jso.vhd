@@ -210,8 +210,8 @@ package body jso is
     		variable length : inout natural) is
     	begin
     		skipws(key, key_index);
-    		assert debug report integer'image(key_index) severity note;
-    		assert debug report "-------------------- " & character'image(key(key_index)) severity note;
+    		assert false report integer'image(key_index) severity note;
+    		assert false report "-------------------- " & natural'image(key_index) & " : " & character'image(key(key_index)) severity note;
     		while key_index <= key'right loop
     			case key(key_index) is
     			when '[' =>
@@ -307,15 +307,17 @@ package body jso is
     		parse_string(key_value, value_offset, value_length);
     		index := value_offset + value_length;
     		skipws(key_value, index);
-    		if key_value(index)/=':' then
-    			key_length := 0;
-    		else
-    			key_offset := value_offset;
-    			key_length := value_length;
-    			index := index + 1;
-    			value_offset := index;
-    			value_length := key_value'right-index+1; 
-    		end if;
+			if index <= key_value'right then
+				if key_value(index)/=':' then
+					key_length := 0;
+				else
+					key_offset := value_offset;
+					key_length := value_length;
+					index := index + 1;
+					value_offset := index;
+					value_length := key_value'right-index+1; 
+				end if;
+			end if;
     	end;
     		
     	procedure locate_value (
@@ -362,12 +364,17 @@ package body jso is
 
     	end;
 	begin
-		key_index := key'left;
-		next_key(key, key_offset, key_length);
-		-- report "subkey : " & '"' & key(key_offset to key_offset+key_length-1) & '"';
-		locate_value(jso, key(key_offset to key_offset+key_length-1), jso_offset, jso_length);
-		-- report "> VALUE < : " & jso(jso_offset to jso_offset+jso_length-1);
-		return " ";
+		key_index  := key'left;
+		jso_offset := jso'left;
+		jso_length := jso'length;
+		for i in 0 to 1 loop
+			next_key(key, key_offset, key_length);
+			report "key   : '" & key(key_offset to key_offset+key_length-1) & "' " & natural'image(key_offset) & " : " & natural'image(key_length);
+			locate_value(jso(jso_offset to jso_offset+jso_length-1), key(key_offset to key_offset+key_length-1), jso_offset, jso_length);
+			report "value : '" & jso(jso_offset to jso_offset+jso_length-1) & ''';
+		end loop;
+		return jso(jso_offset to jso_offset+jso_length-1);
+		-- return " ";
 
 	end;
 end;
