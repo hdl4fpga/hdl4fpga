@@ -370,7 +370,7 @@ package body jso is
 			-- report natural'image(offset) & ':' & natural'image(length);
 			-- report '"' & jso(key_offset to key_offset+key_length-1) & '"';
 			-- report natural'image(value_offset) & ':' & natural'image(value_length);
-			report "-----------> " & jso(key_offset to key_offset+key_length-1) & " ---> " & jso(value_offset to value_offset+value_length-1) & '"';
+			report "-----------> " & jso(key_offset to key_offset+key_length-1) & " ---> '" & jso(value_offset to value_offset+value_length-1) & ''';
 
 		end;
 	begin
