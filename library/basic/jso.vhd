@@ -104,7 +104,6 @@ package body jso is
 			retval := base*retval;
 			retval := (character'pos(value(i))-character'pos('0')) + retval;
 		end loop;
-		assert debug report "---> " & natural'image(retval);
 		return retval;
 	end;
 
@@ -177,7 +176,6 @@ package body jso is
 			if isalpha(string(key_index)) then
 				while key_index <= string'right loop
 					if isalnum(string(key_index)) then
-			-- report "***** : " & character'image(string(offset));
 						key_index := key_index + 1;
 					else
 						exit;
@@ -187,8 +185,6 @@ package body jso is
 			else
 				report character'image(string(offset));
 			end if;
-			-- report "***** : " & natural'image(length);
-			-- report "+++++ : " & character'image(string(offset));
 		end;
 
 		procedure parse_natural (
@@ -308,7 +304,6 @@ package body jso is
 			variable index        : natural;
 		begin
 			parse_string(key_value, value_offset, value_length);
-			report "KEY VALUE " & key_value;
 			index := value_offset + value_length;
 			skipws(key_value, index);
 			if index <= key_value'right then
@@ -340,7 +335,6 @@ package body jso is
 			index  := 0;
 			offset := 0;
 			length := 0;
-			report "-----> jso : '" & jso & ''';
 			while jso_index <= jso'right loop
 				skipws(jso, jso_index);
 				case jso(jso_index) is
@@ -355,33 +349,31 @@ package body jso is
 				jso_index := jso_index + 1;
 				when others =>
 				end case;
-				report "jso I " & jso;
-				report "jso I " & character'image(jso(jso_index));
+				assert debug report "jso I " & jso;
+				assert debug report "jso I " & character'image(jso(jso_index));
 				parse_value(jso, offset, length);
-				report "jso II " & jso(offset to offset+length-1);
+				assert debug report "jso II " & jso(offset to offset+length-1);
 				if to_natural(key) <= index then
 				-- elsif key=get_valuekey(jso, offset, length) then
 					exit;
 				end if;
 			end loop;
-			-- key_value(jso(offset to offset+length-1), key_offset, key_length, value_offset, value_length);
 			key_value(jso(offset to offset+length-1), key_offset, key_length, value_offset, value_length);
-			-- report "index " & natural'image(index);
-			-- report natural'image(offset) & ':' & natural'image(length);
-			-- report '"' & jso(key_offset to key_offset+key_length-1) & '"';
-			-- report natural'image(value_offset) & ':' & natural'image(value_length);
-			report "-----------> " & jso(key_offset to key_offset+key_length-1) & " ---> '" & jso(value_offset to value_offset+value_length-1) & ''';
+			assert false report "-----------> " & jso(key_offset to key_offset+key_length-1) & " ---> '" & jso(value_offset to value_offset+value_length-1) & ''';
+			offset := value_offset;
+			length := value_length;
 
 		end;
 	begin
 		key_index  := key'left;
 		jso_offset := jso'left;
 		jso_length := jso'length;
-		for i in 0 to 1 loop
+		while key_index <= key'right loop
 			next_key(key, key_offset, key_length);
 			report "key   : '" & key(key_offset to key_offset+key_length-1) & "' " & natural'image(key_offset) & " : " & natural'image(key_length);
 			locate_value(jso(jso_offset to jso_offset+jso_length-1), key(key_offset to key_offset+key_length-1), jso_offset, jso_length);
 			report "value : '" & jso(jso_offset to jso_offset+jso_length-1) & ''';
+			report "key_index : " & natural'image(key_index);
 		end loop;
 		return jso(jso_offset to jso_offset+jso_length-1);
 		-- return " ";
