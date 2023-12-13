@@ -339,23 +339,24 @@ package body jso is
 				skipws(jso, jso_index);
 				case jso(jso_index) is
 				when '['|'{' =>
-				jso_index := jso_index + 1;
+					jso_index := jso_index + 1;
 				when ',' =>
-					if index < to_natural(key)+1 then
-						index := index + 1;
-					end if;
-				jso_index := jso_index + 1;
+					index := index + 1;
+					jso_index := jso_index + 1;
 				when ']'|'}' =>
-				jso_index := jso_index + 1;
+					jso_index := jso_index + 1;
 				when others =>
 				end case;
-				assert debug report "jso I " & jso;
-				assert debug report "jso I " & character'image(jso(jso_index));
 				parse_value(jso, offset, length);
-				assert debug report "jso II " & jso(offset to offset+length-1);
-				if to_natural(key) <= index then
-				-- elsif key=get_valuekey(jso, offset, length) then
-					exit;
+				if isdigit(key(key'left)) then
+					if to_natural(key) <= index then
+						exit;
+					end if;
+				elsif isalnum(key(key'left)) then
+					key_value(jso(offset to offset+length-1), key_offset, key_length, value_offset, value_length);
+					if key=jso(key_offet to key_offset+key_length-1) then
+						exit;
+					end if;
 				end if;
 			end loop;
 			key_value(jso(offset to offset+length-1), key_offset, key_length, value_offset, value_length);
