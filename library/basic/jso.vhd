@@ -320,21 +320,21 @@ package body jso is
 		end;
 			
 		procedure locate_value (
-			constant jso : string;
-			constant key : string;
-			variable offset : inout natural;
-			variable length : inout natural) is
+			constant jso          : in    string;
+			constant key          : in    string;
+			variable offset       : inout natural;
+			variable length       : inout natural) is
 
-			variable index : natural;
+			variable index        : natural;
 			variable key_offset   : natural;
 			variable key_length   : natural;
 			variable value_offset : natural;
 			variable value_length : natural;
 		begin
 			jso_index := jso'left;
-			index  := 0;
-			offset := 0;
-			length := 0;
+			index     := 0;
+			offset    := 0;
+			length    := 0;
 			while jso_index <= jso'right loop
 				skipws(jso, jso_index);
 				case jso(jso_index) is
@@ -350,6 +350,7 @@ package body jso is
 				parse_value(jso, offset, length);
 				if isdigit(key(key'left)) then
 					if to_natural(key) <= index then
+						key_value(jso(offset to offset+length-1), key_offset, key_length, value_offset, value_length);
 						exit;
 					end if;
 				elsif isalnum(key(key'left)) then
@@ -359,11 +360,9 @@ package body jso is
 					end if;
 				end if;
 			end loop;
-			key_value(jso(offset to offset+length-1), key_offset, key_length, value_offset, value_length);
 			assert false report "-----------> " & jso(key_offset to key_offset+key_length-1) & " ---> '" & jso(value_offset to value_offset+value_length-1) & ''';
 			offset := value_offset;
 			length := value_length;
-
 		end;
 	begin
 		key_index  := key'left;
@@ -371,13 +370,11 @@ package body jso is
 		jso_length := jso'length;
 		while key_index <= key'right loop
 			next_key(key, key_offset, key_length);
-			report "key   : '" & key(key_offset to key_offset+key_length-1) & "' " & natural'image(key_offset) & " : " & natural'image(key_length);
+			report "key       : '" & key(key_offset to key_offset+key_length-1) & "' " & natural'image(key_offset) & " : " & natural'image(key_length);
 			locate_value(jso(jso_offset to jso_offset+jso_length-1), key(key_offset to key_offset+key_length-1), jso_offset, jso_length);
-			report "value : '" & jso(jso_offset to jso_offset+jso_length-1) & ''';
-			report "key_index : " & natural'image(key_index);
+			report "value     : '" & jso(jso_offset to jso_offset+jso_length-1) & ''';
+			report "key_index : '" & natural'image(key_index);
 		end loop;
 		return jso(jso_offset to jso_offset+jso_length-1);
-		-- return " ";
-
 	end;
 end;
