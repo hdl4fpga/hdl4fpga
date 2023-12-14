@@ -136,7 +136,7 @@ package body jso is
 		procedure parse_string (
 			constant string : string;
 			variable offset : inout natural;
-			variable length :   out natural) is
+			variable length : out   natural) is
 			variable index  : natural;
 			variable aphos  : boolean := false;
 		begin
@@ -299,7 +299,7 @@ package body jso is
 						end if;
 					when '}' =>
 						if jso_stptr/=0 then
-							assert jso_stack(jso_stptr)='['
+							assert jso_stack(jso_stptr)='{'
 								report "parse_value : wrong close key " & jso_stack(jso_stptr) & jso(jso_index)
 								severity failure;
 								exit;
