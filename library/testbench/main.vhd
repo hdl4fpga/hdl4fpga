@@ -37,10 +37,8 @@ end;
 architecture def of main is
 begin
 	process 
-		-- variable value : string(1 to 1);
-		-- constant value : string := get_value("[ hola, mundo : [ 12345,  [ 67890 ] ], hello, world ]", "[ 0 ]");
 	begin
-		report "***** '" & get_value("[hola,mundo:[12345,[67890]],hello,world]", "[0]") & ''';
+		report "VALUE : " & ''' & get_value("[hola,mundo:[kkkk:12345,dddd: [67890]],hello,world]", ".mundo.dddd") & ''';
 		wait;
 	end process;
 end;

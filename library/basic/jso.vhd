@@ -355,12 +355,13 @@ package body jso is
 					end if;
 				elsif isalnum(key(key'left)) then
 					key_value(jso(offset to offset+length-1), key_offset, key_length, value_offset, value_length);
-					if key=jso(key_offet to key_offset+key_length-1) then
+					if key=jso(key_offset to key_offset+key_length-1) then
 						exit;
 					end if;
 				end if;
 			end loop;
 			assert false report "-----------> " & jso(key_offset to key_offset+key_length-1) & " ---> '" & jso(value_offset to value_offset+value_length-1) & ''';
+			skipws(jso, value_offset);
 			offset := value_offset;
 			length := value_length;
 		end;
