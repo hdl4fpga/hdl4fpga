@@ -111,6 +111,7 @@ package body jso is
 		constant key : string)
 		return string is
 
+		constant log        : boolean := not true;
 		variable key_offset : natural;
 		variable key_length : natural;
 		variable key_index  : natural;
@@ -166,26 +167,6 @@ package body jso is
 			length := index-offset;
 		end;
 
-		procedure parse_property (
-			constant string : string;
-			variable offset : inout natural;
-			variable length :   out natural) is
-		begin
-			offset := key_index;
-			if isalpha(string(key_index)) then
-				while key_index <= string'right loop
-					if isalnum(string(key_index)) then
-						key_index := key_index + 1;
-					else
-						exit;
-					end if;
-				end loop;
-				length := key_index-offset;
-			else
-				report character'image(string(offset));
-			end if;
-		end;
-
 		procedure parse_natural (
 			constant string : string;
 			variable offset : inout natural;
@@ -206,44 +187,72 @@ package body jso is
 			constant key    : string;
 			variable offset : inout natural;
 			variable length : inout natural) is
-			constant log    : boolean := not false;
+			constant log    : boolean := not true;
+			variable close_key : character;
 		begin
 			skipws(key, key_index);
 			assert log 
-			report natural'image(key_index) & "->" & ''' & character'image(key(key_index)) & '''
-			severity note;
+				report "next_key => " & natural'image(key_index) & "->" & ''' & character'image(key(key_index)) & '''
+				severity note;
 			while key_index <= key'right loop
 				case key(key_index) is
-				when '[' =>
+				when '['|'{' =>
+					close_key := key(key_index);
 					key_index := key_index + 1;
 					skipws(key, key_index);
-					if isalpha(key(key_index)) then
-						parse_property(key, offset, length);
-					elsif isdigit(key(key_index)) then
+					if isdigit(key(key_index)) then
+						assert log
+							 report "next_key [ is digit"
+							 severity note;
 						parse_natural(key, offset, length);
 					else
-						assert false
-						report "next_key"
-						severity failure;
+						assert log 
+							report "next_key [ is not digit" 
+							severity note;
+						parse_string(key(key_index to key'right), offset, length);
+						assert length/=0 report "next_key -> invalid key : " & key(key_index to key'right) severity failure;
+						key_index := offset+length;
+						assert log 
+							report "next_key => " & natural'image(key_index) & "->" & ''' & character'image(key(key_index)) & '''
+							severity note;
 					end if;
 					skipws(key, key_index);
-					if key(key_index)=']' then
+					case key(key_index) is
+					when ']' => 
+						assert close_key='['
+							report "next_key : wrong close key " & close_key & " " & key(key_index)
+							severity failure;
 						key_index := key_index + 1;
-					else
-						assert false report "next_key" severity failure;
-					end if;
+					when '}' => 
+						assert close_key='{'
+							report "next_key : wrong close key " & close_key & " " & key(key_index)
+							severity failure;
+						key_index := key_index + 1;
+					when others =>
+						assert false
+							report "next_key"
+							severity failure;
+					end case;
 					exit;
 				when '.' =>
 					key_index := key_index + 1;
 					skipws(key, key_index);
-					parse_property(key, offset, length);
+					parse_string(key(key_index to key'right), offset, length);
+					assert length/=0
+						report "next_key -> invalid key : " & key(key_index to key'right)
+						severity failure;
+					key_index := offset+length;
 					exit;
 				when others =>
-					assert false report "Wrong key format" severity failure;
+					assert false
+						report "Wrong key format"
+						severity failure;
 				end case;
 			end loop;
 			skipws(key, key_index);
-			assert log report "key " & integer'image(offset) & ':' & integer'image(length);
+			assert log
+				report "key " & integer'image(offset) & ':' & integer'image(length)
+				severity note;
 		end;
 
 		procedure parse_value (
@@ -279,11 +288,24 @@ package body jso is
 						if jso_stptr=0 then
 							exit;
 						end if;
-					when ']'|'}' =>
-						if jso_stptr=0 then
-							exit;
-						else
+					when ']' =>
+						if jso_stptr/=0 then
+							assert jso_stack(jso_stptr)='['
+								report "parse_value : wrong close key " & jso_stack(jso_stptr) & jso(jso_index)
+								severity failure;
 							pop(jso(jso_index));
+						else
+							exit;
+						end if;
+					when '}' =>
+						if jso_stptr/=0 then
+							assert jso_stack(jso_stptr)='['
+								report "parse_value : wrong close key " & jso_stack(jso_stptr) & jso(jso_index)
+								severity failure;
+								exit;
+							pop(jso(jso_index));
+						else
+							exit;
 						end if;
 					when others =>
 					end case;
@@ -361,8 +383,9 @@ package body jso is
 					end if;
 				end if;
 			end loop;
-			assert false report "-----------> " & jso(key_offset to key_offset+key_length-1) & " ---> '" & jso(value_offset to value_offset+value_length-1) & ''';
-			-- skipws(jso, value_offset);
+			assert log 
+				report "locate_value -> " & jso(key_offset to key_offset+key_length-1) & " : '" & jso(value_offset to value_offset+value_length-1) & '''
+				severity note;
 			offset := value_offset;
 			length := value_length;
 		end;
@@ -372,10 +395,10 @@ package body jso is
 		jso_length := jso'length;
 		while key_index <= key'right loop
 			next_key(key, key_offset, key_length);
-			report "key       : '" & key(key_offset to key_offset+key_length-1) & "' " & natural'image(key_offset) & " : " & natural'image(key_length);
 			locate_value(jso(jso_offset to jso_offset+jso_length-1), key(key_offset to key_offset+key_length-1), jso_offset, jso_length);
-			report "value     : '" & jso(jso_offset to jso_offset+jso_length-1) & ''';
-			report "key_index : '" & natural'image(key_index);
+			assert log
+				report "key -> value " & ''' & key(key_offset to key_offset+key_length-1) & ''' & "->" & ''' & jso(jso_offset to jso_offset+jso_length-1) & '''
+				severity note;
 		end loop;
 		return jso(jso_offset to jso_offset+jso_length-1);
 	end;
