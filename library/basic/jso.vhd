@@ -33,7 +33,6 @@ end;
 
 package body jso is
 
-	constant debug : boolean := not false;
 	function isws (
 		constant char : character;
 		constant wspc : string := (' ', HT, LF, CR, FF))
@@ -207,10 +206,12 @@ package body jso is
 			constant key    : string;
 			variable offset : inout natural;
 			variable length : inout natural) is
+			constant log    : boolean := not false;
 		begin
 			skipws(key, key_index);
-			assert debug report integer'image(key_index) severity note;
-			assert debug report "-------------------- " & natural'image(key_index) & " : " & character'image(key(key_index)) severity note;
+			assert log 
+			report natural'image(key_index) & "->" & ''' & character'image(key(key_index)) & '''
+			severity note;
 			while key_index <= key'right loop
 				case key(key_index) is
 				when '[' =>
@@ -221,7 +222,9 @@ package body jso is
 					elsif isdigit(key(key_index)) then
 						parse_natural(key, offset, length);
 					else
-						assert false report "next_key" severity failure;
+						assert false
+						report "next_key"
+						severity failure;
 					end if;
 					skipws(key, key_index);
 					if key(key_index)=']' then
@@ -240,9 +243,7 @@ package body jso is
 				end case;
 			end loop;
 			skipws(key, key_index);
-			assert debug 
-			report "=====> " & 
-				integer'image(key_index) & ":" & integer'image(offset) & ':' & integer'image(length);
+			assert log report "key " & integer'image(offset) & ':' & integer'image(length);
 		end;
 
 		procedure parse_value (
@@ -361,7 +362,7 @@ package body jso is
 				end if;
 			end loop;
 			assert false report "-----------> " & jso(key_offset to key_offset+key_length-1) & " ---> '" & jso(value_offset to value_offset+value_length-1) & ''';
-			skipws(jso, value_offset);
+			-- skipws(jso, value_offset);
 			offset := value_offset;
 			length := value_length;
 		end;
