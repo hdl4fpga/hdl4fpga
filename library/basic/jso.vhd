@@ -276,6 +276,7 @@ package body jso is
 			end;
 
 			variable aphos  : boolean := false;
+			variable list   : boolean := false;
 		begin
 			jso_stptr := 0;
 			offset := jso_index;
@@ -283,6 +284,14 @@ package body jso is
 				if not aphos then
 					case jso(jso_index) is
 					when '['|'{' =>
+						if jso_stptr=0 then 
+							if offset=jso_index then
+								list := true;
+								assert log
+									report "parse_value => list"
+									severity note;
+							end if;
+						end if;
 						push(jso(jso_index));
 					when ',' =>
 						if jso_stptr=0 then
@@ -291,7 +300,7 @@ package body jso is
 					when ']' =>
 						if jso_stptr/=0 then
 							assert jso_stack(jso_stptr)='['
-								report "parse_value : wrong close key " & jso_stack(jso_stptr) & jso(jso_index)
+								report "parse_value => close key " & jso_stack(jso_stptr) & jso(jso_index)
 								severity failure;
 							pop(jso(jso_index));
 						else
@@ -300,7 +309,7 @@ package body jso is
 					when '}' =>
 						if jso_stptr/=0 then
 							assert jso_stack(jso_stptr)='{'
-								report "parse_value : wrong close key " & jso_stack(jso_stptr) & jso(jso_index)
+								report "parse_value => close key " & jso_stack(jso_stptr) & jso(jso_index)
 								severity failure;
 								exit;
 							pop(jso(jso_index));
@@ -314,6 +323,11 @@ package body jso is
 					aphos := not aphos;
 				end if;
 				jso_index := jso_index + 1;
+				if list then
+					if jso_stptr=0 then
+						exit;
+					end if;
+				end if;
 			end loop;
 			length := jso_index-offset;
 		end;
