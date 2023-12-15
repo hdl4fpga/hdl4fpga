@@ -256,7 +256,7 @@ package body jso is
 		end;
 
 		procedure parse_value (
-			constant jso : string;
+			constant jso    : in    string;
 			variable offset : inout natural;
 			variable length : inout natural) is
 
@@ -356,6 +356,39 @@ package body jso is
 			end if;
 		end;
 			
+		procedure value_key (
+			constant jso          : in string;
+			variable value_offset : inout natural;
+			variable value_length : inout natural;
+			variable key_offset   : inout natural;
+			variable key_length   : inout natural) is
+		begin
+			jso_index := jso'left;
+			parse_value(jso, value_offset, value_length);
+			skipws(jso, jso_index);
+			key_offset := value_offset + value_length;
+			key_length := 0;
+			if jso_index <= jso'right then
+				case jso(jso_index) is
+				when '.'|'[' =>
+					key_length := jso'right-key_offset+1;
+					assert log
+						report "value_key => value.key => " & ''' & 
+							jso(value_offset to value_offset+value_length-1) & ''' & "->" & ''' &
+							jso(key_offset to key_offset+key_length-1) & '''
+						severity note;
+				when others =>
+					assert false
+						report "value_key => wrong access key"
+						severity failure;
+				end case;
+			else
+				assert log
+					report "value_key => value -> " & ''' & jso(value_offset to value_offset+value_length-1) & ''' & "->" & '''
+					severity note;
+			end if;
+		end;
+
 		procedure locate_value (
 			constant jso          : in    string;
 			constant key          : in    string;
@@ -404,16 +437,18 @@ package body jso is
 			length := value_length;
 		end;
 	begin
-		key_index  := key'left;
-		jso_offset := jso'left;
-		jso_length := jso'length;
-		while key_index <= key'right loop
-			next_key(key, key_offset, key_length);
-			locate_value(jso(jso_offset to jso_offset+jso_length-1), key(key_offset to key_offset+key_length-1), jso_offset, jso_length);
-			assert log
-				report "key -> value " & ''' & key(key_offset to key_offset+key_length-1) & ''' & "->" & ''' & jso(jso_offset to jso_offset+jso_length-1) & '''
-				severity note;
-		end loop;
-		return jso(jso_offset to jso_offset+jso_length-1);
+		value_key(jso, jso_offset, jso_length, key_offset, key_length);
+		return "";
+		-- key_index  := key'left;
+		-- jso_offset := jso'left;
+		-- jso_length := jso'length;
+		-- while key_index <= key'right loop
+			-- next_key(key, key_offset, key_length);
+			-- locate_value(jso(jso_offset to jso_offset+jso_length-1), key(key_offset to key_offset+key_length-1), jso_offset, jso_length);
+			-- assert log
+				-- report "key -> value " & ''' & key(key_offset to key_offset+key_length-1) & ''' & "->" & ''' & jso(jso_offset to jso_offset+jso_length-1) & '''
+				-- severity note;
+		-- end loop;
+		-- return jso(jso_offset to jso_offset+jso_length-1);
 	end;
 end;

@@ -38,7 +38,8 @@ architecture def of main is
 begin
 	process 
 	begin
-		report "VALUE : " & ''' & get_value("[hola,mundo:[kkkk:12345,dddd:[67890]],hello,world]", "[mundo].dddd") & ''';
+		-- report "VALUE : " & ''' & get_value("[hola,mundo:[kkkk:12345,dddd:[67890]],hello,world].kkk", "[mundo].dddd") & ''';
+		report "VALUE : " & ''' & get_value("kkkk:12345.dddd", "") & ''';
 		wait;
 	end process;
 end;
