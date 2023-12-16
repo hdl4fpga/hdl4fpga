@@ -105,17 +105,16 @@ package body jso is
 		return retval;
 	end;
 
-	function get_jso (
-		constant jso : string)
-		return string is
+	procedure get_jso (
+		constant jso        : in    string;
+		variable jso_offset : inout natural;
+		variable jso_length : inout natural) is
 
 		constant log        : boolean := not true;
 		variable key_offset : natural;
 		variable key_length : natural;
 		variable key_index  : natural;
 
-		variable jso_offset : natural;
-		variable jso_length : natural;
 		variable jso_index  : natural;
 		variable tag_offset : natural;
 		variable tag_length : natural;
@@ -468,10 +467,14 @@ package body jso is
 		jso_length := jso'length;
 		value_key(jso, jso_offset, jso_length, key_offset, key_length);
 		key_index  := key_offset;
+		assert log
+			report "get_jso => key_length-> " & natural'image(key_length)
+			severity note;
 		if key_length/=0 then
 			while key_index < key_offset+key_length loop
 				next_tag(jso(key_offset to key_offset+key_length-1), tag_offset, tag_length);
 				locate_value(jso(jso_offset to jso_offset+jso_length-1), jso(tag_offset to tag_offset+tag_length-1), jso_offset, jso_length);
+				get_jso(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
 				assert log
 					report "get_jso => key:value -> " & 
 						''' & jso(tag_offset to tag_offset+tag_length-1) & ''' & ":" &
@@ -479,6 +482,16 @@ package body jso is
 					severity note;
 			end loop;
 		end if;
+	end;
+
+	function get_jso (
+		constant jso : string)
+		return string is
+		variable jso_offset : natural;
+		variable jso_length : natural;
+	begin
+		get_jso (jso, jso_offset, jso_length);
 		return jso(jso_offset to jso_offset+jso_length-1);
 	end;
+
 end;
