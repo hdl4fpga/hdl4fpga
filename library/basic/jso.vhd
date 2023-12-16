@@ -377,6 +377,9 @@ package body jso is
 			variable key_offset   : inout natural;
 			variable key_length   : inout natural) is
 		begin
+			assert log
+				report "value_key => entry" 
+				severity note;
 			jso_index := jso'left;
 			parse_value(jso, value_offset, value_length);
 			skipws(jso, jso_index);
@@ -462,6 +465,7 @@ package body jso is
 			offset := value_offset;
 			length := value_length;
 		end;
+
 	begin
 		jso_offset := jso'left;
 		jso_length := jso'length;
@@ -474,12 +478,12 @@ package body jso is
 			while key_index < key_offset+key_length loop
 				next_tag(jso(key_offset to key_offset+key_length-1), tag_offset, tag_length);
 				locate_value(jso(jso_offset to jso_offset+jso_length-1), jso(tag_offset to tag_offset+tag_length-1), jso_offset, jso_length);
-				-- get_jso(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
 				assert log
 					report "get_jso => key:value -> " & 
 						'"' & jso(tag_offset to tag_offset+tag_length-1) & '"' & ":" &
 						'"' & jso(jso_offset to jso_offset+jso_length-1) & '"'
 					severity note;
+				-- get_jso(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
 			end loop;
 		end if;
 	end;
