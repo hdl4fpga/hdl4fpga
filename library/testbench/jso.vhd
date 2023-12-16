@@ -28,18 +28,14 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-library hdl4fpga;
 use work.jso.all;
 
-entity main is
-end;
-
-architecture def of main is
+architecture jso of testbench is
 begin
 	process 
 	begin
 		-- report "VALUE : " & ''' & get_value("[hola,mundo:[kkkk:12345,dddd:[67890]],hello,world].kkk", "[mundo].dddd") & ''';
-		report "VALUE : " & ''' & get_value("kkkk:'12345'.dddd", "") & ''';
+		report "VALUE : " & ''' & get_jso("[0,[kkkk:12345]][1].kkkk") & ''';
 		wait;
 	end process;
 end;
