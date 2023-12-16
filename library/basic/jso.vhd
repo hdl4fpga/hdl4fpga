@@ -468,17 +468,17 @@ package body jso is
 		value_key(jso, jso_offset, jso_length, key_offset, key_length);
 		key_index  := key_offset;
 		assert log
-			report "get_jso => key_length-> " & natural'image(key_length)
+			report "get_jso => key_length, key -> " & natural'image(key_length) & ", " & '"' & jso(key_offset to key_offset+key_length-1) & '"'
 			severity note;
 		if key_length/=0 then
 			while key_index < key_offset+key_length loop
 				next_tag(jso(key_offset to key_offset+key_length-1), tag_offset, tag_length);
 				locate_value(jso(jso_offset to jso_offset+jso_length-1), jso(tag_offset to tag_offset+tag_length-1), jso_offset, jso_length);
-				get_jso(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
+				-- get_jso(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
 				assert log
 					report "get_jso => key:value -> " & 
-						''' & jso(tag_offset to tag_offset+tag_length-1) & ''' & ":" &
-						''' & jso(jso_offset to jso_offset+jso_length-1) & '''
+						'"' & jso(tag_offset to tag_offset+tag_length-1) & '"' & ":" &
+						'"' & jso(jso_offset to jso_offset+jso_length-1) & '"'
 					severity note;
 			end loop;
 		end if;
