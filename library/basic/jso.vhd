@@ -179,7 +179,10 @@ package body jso is
 	begin
 		skipws(jso, jso_index);
 		assert log or jso_index > jso'right
-			report "parse_keytag => " & natural'image(jso_index) & "->" & ''' & jso(jso_index) & '''
+			report "parse_keytag => jso_index -> " & natural'image(jso_index)
+			severity note;
+		assert log or jso_index > jso'right
+			report "parse_keytag => jso(jso_index) -> " & ''' & jso(jso_index) & '''
 			severity note;
 		length := 0;
 		while jso_index <= jso'right loop
@@ -364,11 +367,10 @@ package body jso is
 			severity note;
 		parse_string(jso, jso_index, value_offset, value_length);
 		skipws(jso, jso_index);
-		key_offset := value_offset + value_length;
-		key_length := 0;
 		assert log
 			report "parse_tagvaluekey => value_length -> " & natural'image(value_length)
 			severity note;
+		tag_offset := value_offset;
 		if jso_index <= jso'right then
 			if value_length=0 then
 				assert log
@@ -379,8 +381,9 @@ package body jso is
 				value_length := jso'right-jso_index+1; 
 				parse_value(jso, jso_index, value_offset, value_length);
 			elsif jso(jso_index)/=':' then
-				report "Pase -> " & jso(jso_index);
+				report "parse_tagvaluekey => pase -> " & jso(jso_index);
 				tag_length := 0;
+				tag_offset := value_offset;
 			else
 				assert log
 					report "parse_tagvaluekey => tag"
@@ -391,7 +394,7 @@ package body jso is
 				value_offset := jso_index;
 				value_length := jso'right-jso_index+1; 
 				skipws(jso, jso_index);
-				parse_value(jso(value_offset to value_offset+value_length-1), jso_index, value_offset, value_length);
+				parse_value(jso, jso_index, value_offset, value_length);
 			end if;
 		end if;
 		assert log 
@@ -403,6 +406,9 @@ package body jso is
 		parse_key(jso, jso_index, key_offset, key_length);
 		assert log 
 			report "parse_tagvaluekey => key -> " & '"' & jso(key_offset to key_offset+key_length-1) & '"'
+			severity note;
+		assert log 
+			report "parse_tagvaluekey => jso_index -> " & natural'image(jso_index)
 			severity note;
 	end;
 		
@@ -423,7 +429,7 @@ package body jso is
 		variable open_char    : character;
 	begin
 		assert log 
-			report "locate_value => tag -> " & '"' & tag & '"'
+			report "locate_value => jso -> " & '"' & jso(jso_index to jso'right) & '"'
 			severity note;
 		assert log 
 			report "locate_value => jso_index -> " & ''' & jso(jso_index) & '''
@@ -432,6 +438,9 @@ package body jso is
 		length    := 0;
 		position  := 0;
 		while jso_index <= jso'right loop
+			assert log 
+				report "locale_value => jso_index start loop-> " & natural'image(jso_index)
+				severity note;
 			skipws(jso, jso_index);
 			case jso(jso_index) is
 			when '['|'{' =>
@@ -464,20 +473,23 @@ package body jso is
 				jso_index := jso_index + 1;
 			when others =>
 			end case;
-				parse_tagvaluekey(jso, jso_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length);
-				report jso;
-				if isdigit(tag(tag'left)) then
-					if to_natural(tag) <= position then
-						assert log 
-							report "locate_value => tag -> " & jso(tag_offset to tag_offset+tag_length-1)
-							severity note;
-						exit;
-					end if;
-				elsif isalnum(tag(tag'left)) then
-					if tag=jso(tag_offset to tag_offset+tag_length-1) then
-						exit;
-					end if;
+			parse_tagvaluekey(jso, jso_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length);
+			report "locale_value => jso -> " & jso;
+			if isdigit(tag(tag'left)) then
+				if to_natural(tag) <= position then
+					assert log 
+						report "locate_value => tag -> " & jso(tag_offset to tag_offset+tag_length-1)
+						severity note;
+					exit;
 				end if;
+			elsif isalnum(tag(tag'left)) then
+				if tag=jso(tag_offset to tag_offset+tag_length-1) then
+					exit;
+				end if;
+			end if;
+			assert log 
+				report "locale_value => jso_index end loop-> " & natural'image(jso_index) & character'image(jso(jso_index))
+				severity note;
 		end loop;
 		assert log 
 			report "locate_value -> " & jso(tag_offset to tag_offset+tag_length-1) & " : '" & jso(value_offset to jso_index-1) & '''
@@ -510,6 +522,7 @@ package body jso is
 		if key_length/=0 then
 			key_index := key_offset;
 			while key_index < key_offset+key_length loop
+				report "-----------------------";
 				parse_keytag(jso, key_index, tag_offset, tag_length);
 				report "jso_index " & natural'image(jso_index);
 				locate_value(jso, value_offset, jso(tag_offset to tag_offset+tag_length-1), jso_offset, jso_length);
