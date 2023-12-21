@@ -524,19 +524,19 @@ package body jso is
 		if keytag_length/=0 then
 			keytag_index := keytag_offset;
 			while keytag_index < keytag_offset+keytag_length loop
-				asset log
-					report "-----------------------";
+				assert log
+					report "get_jso => keytag -> " & jso(keytag_offset to keytag_offset+keytag_length-1)
 					severity note;
 				parse_keytag(jso, keytag_index, tag_offset, tag_length);
 				report "jso_index " & natural'image(jso_index);
 				locate_value(jso, value_offset, jso(tag_offset to tag_offset+tag_length-1), jso_offset, jso_length);
-				value_offset := jso_offset;
 				assert log
 					report "get_jso => key:value -> " & 
 						'"' & jso(tag_offset to tag_offset+tag_length-1) & '"' & ":" &
 						'"' & jso(jso_offset to jso_offset+jso_length-1) & '"'
 					severity note;
 				-- get_jso(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
+				value_offset := jso_offset;
 			end loop;
 		end if;
 		jso_index := jso_offset;
