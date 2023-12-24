@@ -530,15 +530,21 @@ package body jso is
 		jso_index := jso'left;
 		parse_tagvaluekey (jso, jso_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length);
 		assert log
-			report "get_jso => key_length, key -> " & natural'image(keytag_length) & ", " & '"' & jso(keytag_offset to keytag_offset+keytag_length-1) & '"'
+			report "get_jso => keytag_length, keytag -> " & natural'image(keytag_length) & ", " & '"' & jso(keytag_offset to keytag_offset+keytag_length-1) & '"'
+			severity note;
+		assert log
+			report "get_jso => value_offset, value_length -> " & natural'image(value_offset) & " : " & natural'image(value_length)
+			severity note;
+		assert log
+			report "get_jso => keytag -> " & jso(keytag_offset to keytag_offset+keytag_length-1)
 			severity note;
 		if keytag_length/=0 then
 			keytag_index := keytag_offset;
 			while keytag_index < keytag_offset+keytag_length loop
-				assert log
-					report "get_jso => keytag -> " & jso(keytag_offset to keytag_offset+keytag_length-1)
-					severity note;
 				parse_keytag(jso, keytag_index, tag_offset, tag_length);
+				assert log
+					report "get_jso => keytag -> " & jso(tag_offset to tag_offset+tag_length-1)
+					severity note;
 				report "jso_index " & natural'image(jso_index);
 				locate_value(jso, value_offset, jso(tag_offset to tag_offset+tag_length-1), jso_offset, jso_length);
 				assert log
@@ -546,9 +552,12 @@ package body jso is
 						'"' & jso(tag_offset to tag_offset+tag_length-1) & '"' & ":" &
 						'"' & jso(jso_offset to jso_offset+jso_length-1) & '"'
 					severity note;
-				get_jso(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
 				value_offset := jso_offset;
+				get_jso(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
 			end loop;
+		else
+			jso_offset := jso'left;
+			jso_length := jso'length;
 		end if;
 		jso_index := jso_offset;
 		parse_tagvaluekey (jso(jso_offset to jso_offset+jso_length-1), jso_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length);
