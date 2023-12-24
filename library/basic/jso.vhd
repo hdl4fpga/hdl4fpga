@@ -131,15 +131,20 @@ package body jso is
 		while jso_index <= jso'right loop
 			if (jso_index-offset)=0 then
 				if jso(jso_index)=''' then
-					aphos := true;
+					aphos     := true;
 					jso_index := jso_index  + 1;
+					offset    := jso_index;
 					next;
 				end if;
 			end if;
 			if aphos then
 				if jso(jso_index)=''' then
+					length    := jso_index-offset;
 					jso_index := jso_index + 1;
-					exit;
+					assert log
+						report "parse_string => " & '"' & jso(offset to offset+length-1) & '"'
+						severity note;
+					return;
 				else
 					jso_index := jso_index + 1;
 				end if;
@@ -150,6 +155,9 @@ package body jso is
 			end if;
 		end loop;
 		length := jso_index-offset;
+		assert log
+			report "parse_string => " & '"' & jso(offset to offset+length-1) & '"'
+			severity note;
 	end;
 
 	procedure parse_natural (
@@ -168,6 +176,9 @@ package body jso is
 			end if;
 		end loop;
 		length := jso_index-offset;
+		assert log
+			report "parse_string => " & '"' & jso(offset to offset+length-1) & '"'
+			severity note;
 	end;
 
 	procedure parse_keytag (
@@ -535,7 +546,7 @@ package body jso is
 						'"' & jso(tag_offset to tag_offset+tag_length-1) & '"' & ":" &
 						'"' & jso(jso_offset to jso_offset+jso_length-1) & '"'
 					severity note;
-				-- get_jso(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
+				get_jso(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
 				value_offset := jso_offset;
 			end loop;
 		end if;
