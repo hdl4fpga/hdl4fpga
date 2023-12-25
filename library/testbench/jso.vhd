@@ -35,8 +35,9 @@ begin
 	process 
 	begin
 		-- report "VALUE : " & ''' & get_value("[hola,mundo:[kkkk:12345,dddd:[67890]],hello,world].kkk", "[mundo].dddd") & ''';
-		report "VALUE : " & ''' & get_jso("xxxx : [0,[kkkk:12345]][1].kkkk") & ''';
---		                                   1234567890123456789012345678
+		report "VALUE : " & ''' & get_jso("xxxx : [0,[xxxx:abcde,kkkk:12345]][1]['xxxx']") & ''';
+--		                                            111111111122222222223333333333
+--		                                   123456789012345678901234567890123456789
 		wait;
 	end process;
 end;
