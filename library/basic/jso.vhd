@@ -131,7 +131,7 @@ package body jso is
 		constant jso       : in    string;
 		variable jso_index : inout natural;
 		variable offset    : inout natural;
-		variable length    : out   natural) is
+		variable length    : inout natural) is
 		variable aphos     : boolean := false;
 	begin
 		skipws(jso, jso_index);
@@ -172,7 +172,7 @@ package body jso is
 		constant jso       : in    string;
 		variable jso_index : inout natural;
 		variable offset    : inout natural;
-		variable length    : out   natural) is
+		variable length    : inout natural) is
 	begin
 		skipws(jso, jso_index);
 		offset := jso_index;

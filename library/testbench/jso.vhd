@@ -34,9 +34,9 @@ architecture jso of testbench is
 begin
 	process 
 	begin
-		report "VALUE : " & ''' & resolve("tag1 : [ 0, [ tag2 : abcde, tag3 : 12345 ]][1]['tag3']") & ''';
---		                                            111111111122222222223333333333
---		                                   123456789012345678901234567890123456789
+--		                                            11111111112222222222333333333333333333334444444444
+--		                                   12345678901234567890123456789012345678901234567890123456789
+		report "VALUE : " & ''' & resolve("[ 0, [ tag2 : abcde, tag3 : 12345 ]][1]['tag3']") & ''';
 		wait;
 	end process;
 end;
