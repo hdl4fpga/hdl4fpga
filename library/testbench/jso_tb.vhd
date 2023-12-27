@@ -30,7 +30,7 @@ use ieee.math_real.all;
 
 use work.jso.all;
 
-architecture jso of testbench is
+architecture jso_tb of testbench is
 begin
 	process 
 	begin
