@@ -23,7 +23,7 @@
 
 package jso is
 
-	function get_jso (
+	function resolve (
 		constant jso : string)
 		return string;
 
@@ -523,7 +523,7 @@ package body jso is
 		length := jso_index-tag_offset;
 	end;
 
-	procedure get_jso (
+	procedure resolve (
 		constant jso           : in    string;
 		variable value_offset  : inout natural;
 		variable value_length  : inout natural) is
@@ -544,32 +544,32 @@ package body jso is
 		jso_index := jso'left;
 		parse_tagvaluekey (jso, jso_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length);
 		assert ((log/log_getjso) mod 2=0)
-			report "get_jso => keytag_length, keytag -> " & natural'image(keytag_length) & ", " & '"' & jso(keytag_offset to keytag_offset+keytag_length-1) & '"'
+			report "resolve => keytag_length, keytag -> " & natural'image(keytag_length) & ", " & '"' & jso(keytag_offset to keytag_offset+keytag_length-1) & '"'
 			severity note;
 		assert ((log/log_getjso) mod 2=0)
-			report "get_jso => value_offset, value_length -> " & natural'image(value_offset) & " : " & natural'image(value_length)
+			report "resolve => value_offset, value_length -> " & natural'image(value_offset) & " : " & natural'image(value_length)
 			severity note;
 		assert ((log/log_getjso) mod 2=0)
-			report "get_jso => keytag -> " & jso(keytag_offset to keytag_offset+keytag_length-1)
+			report "resolve => keytag -> " & jso(keytag_offset to keytag_offset+keytag_length-1)
 			severity note;
 		if keytag_length/=0 then
 			keytag_index := keytag_offset;
 			while keytag_index < keytag_offset+keytag_length loop
 				parse_keytag(jso, keytag_index, tag_offset, tag_length);
 				assert ((log/log_getjso) mod 2=0)
-					report "get_jso => keytag -> " & jso(tag_offset to tag_offset+tag_length-1)
+					report "resolve => keytag -> " & jso(tag_offset to tag_offset+tag_length-1)
 					severity note;
 				assert ((log/log_getjso) mod 2=0)
 					report "jso_index " & natural'image(jso_index)
 					severity note;
 				locate_value(jso, value_offset, jso(tag_offset to tag_offset+tag_length-1), jso_offset, jso_length);
 				assert ((log/log_getjso) mod 2=0)
-					report "get_jso => key:value -> " & 
+					report "resolve => key:value -> " & 
 						'"' & jso(tag_offset to tag_offset+tag_length-1) & '"' & ":" &
 						'"' & jso(jso_offset to jso_offset+jso_length-1) & '"'
 					severity note;
 				value_offset := jso_offset;
-				get_jso(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
+				resolve(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
 			end loop;
 		else
 			jso_offset := jso'left;
@@ -579,13 +579,13 @@ package body jso is
 		parse_tagvaluekey (jso(jso_offset to jso_offset+jso_length-1), jso_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length);
 	end;
 
-	function get_jso (
+	function resolve (
 		constant jso : string)
 		return string is
 		variable jso_offset : natural;
 		variable jso_length : natural;
 	begin
-		get_jso (jso, jso_offset, jso_length);
+		resolve (jso, jso_offset, jso_length);
 		return jso(jso_offset to jso_offset+jso_length-1);
 	end;
 
