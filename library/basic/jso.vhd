@@ -38,8 +38,8 @@ package body jso is
 	constant log_parsevalue       : natural := 2**4;
 	constant log_parsetagvaluekey : natural := 2**5;
 	constant log_locatevalue      : natural := 2**6;
-	constant log_getjso           : natural := 2**7;
-	constant log                  : natural := log_locatevalue    + log_parsevalue ;
+	constant log_resolve          : natural := 2**7;
+	constant log                  : natural := 0; --log_parsetagvaluekey + log_resolve + log_locatevalue    + log_parsevalue ;
 
 	function isws (
 		constant char : character;
@@ -452,7 +452,9 @@ package body jso is
 		variable position     : natural;
 		variable open_char    : character;
 	begin
-		report "vvvvvvvvvvvvvvvvvvvv";
+		assert ((log/log_locatevalue) mod 2=0)
+			report "vvvvvvvvvvvvvvvvvvvv"
+			severity note;
 		assert ((log/log_locatevalue) mod 2=0)
 			report "locate_value => jso -> " & '"' & jso(jso_index to jso'right) & '"'
 			severity note;
@@ -463,6 +465,8 @@ package body jso is
 		length    := 0;
 		position  := 0;
 		open_char := '+';
+		parse_tagvaluekey(jso, jso_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length);
+		jso_index := value_offset;
 		while jso_index <= jso'right loop
 			assert ((log/log_locatevalue) mod 2=0)
 				report "locale_value => jso_index start loop-> " & natural'image(jso_index) & " '" &jso(jso_index) & "'"
@@ -473,7 +477,6 @@ package body jso is
 				assert ((log/log_locatevalue) mod 2=0)
 					report "locate_value => open"
 					severity note;
-				report "Pase";
 				open_char := jso(jso_index);
 				jso_index := jso_index + 1;
 			when ',' =>
@@ -523,7 +526,9 @@ package body jso is
 		assert ((log/log_locatevalue) mod 2=0)
 			report "locate_value -> " & jso(tag_offset to tag_offset+tag_length-1) & " : '" & jso(value_offset to jso_index-1) & '''
 			severity note;
-		report "--------------------";
+		assert ((log/log_locatevalue) mod 2=0)
+			report "^^^^^^^^^^^^^^^^^^^^"
+			severity note;
 		offset := tag_offset;
 		length := jso_index-tag_offset;
 	end;
@@ -548,33 +553,33 @@ package body jso is
 	begin
 		jso_index := jso'left;
 		parse_tagvaluekey (jso, jso_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length);
-		assert ((log/log_getjso) mod 2=0)
+		assert ((log/log_resolve) mod 2=0)
 			report "resolve => keytag_length, keytag -> " & natural'image(keytag_length) & ", " & '"' & jso(keytag_offset to keytag_offset+keytag_length-1) & '"'
 			severity note;
-		assert ((log/log_getjso) mod 2=0)
+		assert ((log/log_resolve) mod 2=0)
 			report "resolve => value_offset, value_length -> " & natural'image(value_offset) & " : " & natural'image(value_length)
 			severity note;
-		assert ((log/log_getjso) mod 2=0)
+		assert ((log/log_resolve) mod 2=0)
 			report "resolve => keytag -> " & jso(keytag_offset to keytag_offset+keytag_length-1)
 			severity note;
 		if keytag_length/=0 then
 			keytag_index := keytag_offset;
 			while keytag_index < keytag_offset+keytag_length loop
 				parse_keytag(jso, keytag_index, tag_offset, tag_length);
-				assert ((log/log_getjso) mod 2=0)
+				assert ((log/log_resolve) mod 2=0)
 					report "resolve => keytag -> " & jso(tag_offset to tag_offset+tag_length-1)
 					severity note;
-				assert ((log/log_getjso) mod 2=0)
-					report "jso_index " & natural'image(jso_index)
+				assert ((log/log_resolve) mod 2=0)
+					report "resolve => jso_index " & natural'image(jso_index)
 					severity note;
 				locate_value(jso, value_offset, jso(tag_offset to tag_offset+tag_length-1), jso_offset, jso_length);
-				assert ((log/log_getjso) mod 2=0)
+				assert ((log/log_resolve) mod 2=0)
 					report "resolve => key:value -> " & 
 						'"' & jso(tag_offset to tag_offset+tag_length-1) & '"' & ":" &
 						'"' & jso(jso_offset to jso_offset+jso_length-1) & '"'
 					severity note;
 				value_offset := jso_offset;
-				-- resolve(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
+				resolve(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
 			end loop;
 		else
 			jso_offset := jso'left;
