@@ -39,7 +39,7 @@ begin
            "    display : {               " &
            "         width : 1280,        " &
            "         height : 720},       " &
-           "       grid : {               " &
+           "    grid : {                  " &
            "        unit   : 32,          " &
            "        width  : 31,          " &
            "        height :  6},         " &
