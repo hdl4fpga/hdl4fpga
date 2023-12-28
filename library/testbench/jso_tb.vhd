@@ -33,11 +33,28 @@ use work.jso.all;
 architecture jso_tb of testbench is
 begin
 	process 
+		constant test : string :=
+			"{"                             &
+		    	"display : {width : 1280, height : 720 }," &
+		    	"num_of_segments   :    3, " &
+		    	"division_size     :   32, " &
+		    	"grid : {width : 31, height :  6}, " &
+		    	"axis_fontsize     :    8, " &
+		    	"hzaxis_height     :    8, " &
+		    	"hzaxis_within     : false," &
+		    	"vtaxis_width      :    6, " &
+		    	"vtaxis_inside     : false," &
+		    	"vttick_rotate     :  ccw0," &
+		    	"textbox_fontwidth :    8, " &
+		    	"textbox_width     :   32, " &
+		    	"textbox_inside    : false," &
+		    	"main    : {left : 3, top : 23, right : 0, bottom : 0, vertical :16, horizontal : 0}," &
+		    	"segment : {left : 1, top :  1, right : 1, bottom : 1, vertical : 0, horizontal : 1} " &
+			"}";
 	begin
-
 --		                                            11111111112222222222333333333333333333334444444444
 --		                                   12345678901234567890123456789012345678901234567890123456789
-		report "VALUE : " & ''' & resolve("[ 0, [ tag2 : abcde, tag3 : 12345 ]][1]['tag3']") & ''';
+		report "VALUE : " & ''' & resolve(test & "[main][vertical]") & ''';
 		wait;
 	end process;
 end;
