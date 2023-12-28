@@ -39,7 +39,7 @@ package body jso is
 	constant log_parsetagvaluekey : natural := 2**5;
 	constant log_locatevalue      : natural := 2**6;
 	constant log_getjso           : natural := 2**7;
-	constant log                  : natural := 0;
+	constant log                  : natural := log_locatevalue    + log_parsevalue ;
 
 	function isws (
 		constant char : character;
@@ -71,7 +71,9 @@ package body jso is
 		constant char : character)
 		return boolean is
 	begin
-		if    character'pos('A') <= character'pos(char) and character'pos(char) <= character'pos('Z') then
+		if char='_' then
+			return true;
+		elsif character'pos('A') <= character'pos(char) and character'pos(char) <= character'pos('Z') then
 			return true;
 		elsif character'pos('a') <= character'pos(char) and character'pos(char) <= character'pos('z') then
 			return true;
@@ -349,7 +351,6 @@ package body jso is
 						assert jso_stack(jso_stptr)='{'
 							report "parse_value => close key " & jso_stack(jso_stptr) & jso(jso_index)
 							severity failure;
-							exit;
 						pop(jso(jso_index));
 					else
 						exit;
@@ -451,6 +452,7 @@ package body jso is
 		variable position     : natural;
 		variable open_char    : character;
 	begin
+		report "vvvvvvvvvvvvvvvvvvvv";
 		assert ((log/log_locatevalue) mod 2=0)
 			report "locate_value => jso -> " & '"' & jso(jso_index to jso'right) & '"'
 			severity note;
@@ -460,9 +462,10 @@ package body jso is
 		offset    := 0;
 		length    := 0;
 		position  := 0;
+		open_char := '+';
 		while jso_index <= jso'right loop
 			assert ((log/log_locatevalue) mod 2=0)
-				report "locale_value => jso_index start loop-> " & natural'image(jso_index)
+				report "locale_value => jso_index start loop-> " & natural'image(jso_index) & " '" &jso(jso_index) & "'"
 				severity note;
 			skipws(jso, jso_index);
 			case jso(jso_index) is
@@ -470,6 +473,7 @@ package body jso is
 				assert ((log/log_locatevalue) mod 2=0)
 					report "locate_value => open"
 					severity note;
+				report "Pase";
 				open_char := jso(jso_index);
 				jso_index := jso_index + 1;
 			when ',' =>
@@ -513,12 +517,13 @@ package body jso is
 				end if;
 			end if;
 			assert ((log/log_locatevalue) mod 2=0)
-				report "locale_value => jso_index end loop-> " & natural'image(jso_index) & character'image(jso(jso_index))
+				report "locale_value => jso_index end loop-> " & natural'image(jso_index) & " '" &jso(jso_index) & "'"
 				severity note;
 		end loop;
 		assert ((log/log_locatevalue) mod 2=0)
 			report "locate_value -> " & jso(tag_offset to tag_offset+tag_length-1) & " : '" & jso(value_offset to jso_index-1) & '''
 			severity note;
+		report "--------------------";
 		offset := tag_offset;
 		length := jso_index-tag_offset;
 	end;
@@ -569,7 +574,7 @@ package body jso is
 						'"' & jso(jso_offset to jso_offset+jso_length-1) & '"'
 					severity note;
 				value_offset := jso_offset;
-				resolve(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
+				-- resolve(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
 			end loop;
 		else
 			jso_offset := jso'left;
