@@ -721,21 +721,21 @@ package body scopeiopkg is
 		constant layout : string)
 		return natural is
 	begin
-		return layout.sgmnt_margin(top);
+		return resolve(layout&".segment.top");
 	end;
 
 	function textbox_width (
 		constant layout : string)
 		return natural is
 	begin
-		return layout.textbox_width;
+		return resolve(layout&".textbox.width");
 	end;
 
 	function textbox_height (
 		constant layout : string)
 		return natural is
 	begin
-		return layout.grid_height;
+		return resolve(layout&".grid.height");
 	end;
 
 	function hzaxis_x (
@@ -751,11 +751,11 @@ package body scopeiopkg is
 		variable retval : natural := 0;
 	begin
 		retval := retval + grid_y(layout);
-		if layout.hzaxis_within=false then
-			retval := retval + grid_height(layout);
-			retval := retval + layout.sgmnt_gap(vertical);
+		if not resolve(layout&".axis.horizontal.inside")=false then
+			retval := retval + resolve(layout&".grid.height");
+			retval := retval + resolve(layout&".segment.vertical");
 		else
-			retval := retval + grid_height(layout)-hzaxis_height(layout);
+			retval := retval + grid_height(layout)-resolve(layout&".axis.horizontal.height");
 		end if;
 		return retval;
 	end;
@@ -771,7 +771,7 @@ package body scopeiopkg is
 		constant layout : string)
 		return natural is
 	begin
-		return layout.hzaxis_height;
+		return resolve(layout&".axis.horizontal.height");
 	end;
 
 	function sgmnt_height (
@@ -779,8 +779,8 @@ package body scopeiopkg is
 		return natural is
 		variable retval : natural := 0;
 	begin
-		retval := retval + layout.sgmnt_margin(top);
-		retval := retval + grid_height(layout);
+		retval := retval + resolve(layout&".segment.top");
+		retval := retval + resolve(layout&".grid.height");
 		if not resolve(layout&".axis.horizontal.inside") then
 			retval := retval + resolve(layout&".segment.vertical");
 			retval := retval + resolve(layout&".axis.horizontal.height");
