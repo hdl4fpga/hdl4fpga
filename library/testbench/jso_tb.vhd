@@ -34,7 +34,7 @@ architecture jso_tb of testbench is
 begin
     process 
         constant test : string :=
-           "{                             " &   
+           " 720 : {                      " &   
            "    num_of_segments : 3,      " &
            "    display : {               " &
            "         width : 1280,        " &
@@ -56,22 +56,20 @@ begin
            "        width      : 32,      " &
            "        font_width :  8,      " &
            "        inside     : false},  " &
-           "    windows : {               " &
-           "        main : {              " &
-           "            top        : 23,  " & 
-           "            left       :  3,  " & 
-           "            right      :  0,  " & 
-           "            bottom     :  0,  " & 
-           "            vertical   : 16,  " & 
-           "            horizontal : 0},  " &
-           "        segment : {           " &
-           "            top        : 1,   " &
-           "            left       : 1,   " &
-           "            right      : 1,   " &
-           "            bottom     : 1,   " &
-           "            vertical   : 0,   " &
-           "            horizontal : 1}   " &
-           "    }                         " &
+           "    main : {                  " &
+           "        top        : 23,      " & 
+           "        left       :  3,      " & 
+           "        right      :  0,      " & 
+           "        bottom     :  0,      " & 
+           "        vertical   : 16,      " & 
+           "        horizontal : 0},      " &
+           "    segment : {               " &
+           "        top        : 1,       " &
+           "        left       : 1,       " &
+           "        right      : 1,       " &
+           "        bottom     : 1,       " &
+           "        vertical   : 0,       " &
+           "        horizontal : 1}       " &
            "}                             ";
     begin
         report "VALUE : " & ''' & resolve(test & ".windows.main.top") & ''';

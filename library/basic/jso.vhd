@@ -27,6 +27,14 @@ package jso is
 		constant jso : string)
 		return string;
 
+	function resolve (
+		constant jso : string)
+		return natural;
+
+	function resolve (
+		constant jso : string)
+		return boolean;
+
 end;
 
 package body jso is
@@ -597,6 +605,30 @@ package body jso is
 	begin
 		resolve (jso, jso_offset, jso_length);
 		return jso(jso_offset to jso_offset+jso_length-1);
+	end;
+
+	function resolve (
+		constant jso : string)
+		return natural is
+		variable jso_offset : natural;
+		variable jso_length : natural;
+	begin
+		resolve (jso, jso_offset, jso_length);
+		return to_natural(jso(jso_offset to jso_offset+jso_length-1));
+	end;
+
+	function resolve (
+		constant jso : string)
+		return boolean is
+		variable jso_offset : natural;
+		variable jso_length : natural;
+	begin
+		resolve (jso, jso_offset, jso_length);
+		if jso(jso_offset to jso_offset+jso_length-1)="true" then
+			return true;
+		else
+			return false;
+		end if;
 	end;
 
 end;
