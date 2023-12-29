@@ -195,7 +195,7 @@ package scopeiopkg is
 	function grid_y            (constant layout : string) return natural;
 	function grid_width        (constant layout : string) return natural;
 	function grid_height       (constant layout : string) return natural;
-	function grid_divisionsize (constant layout : string) return natural;
+	function grid_unit         (constant layout : string) return natural;
 
 	function textbox_x         (constant layout : string) return natural;
 	function textbox_y         (constant layout : string) return natural;
@@ -782,10 +782,10 @@ package body scopeiopkg is
 		retval := retval + resolve(layout&".segment.top");
 		retval := retval + resolve(layout&".grid.height");
 		if not resolve(layout&".axis.horizontal.inside") then
-			retval := retval + resolve(layout&".segment.vertical");
 			retval := retval + resolve(layout&".axis.horizontal.height");
+			retval := retval + resolve(layout&".segment.vertical");
 		end if;
-		retval := retval + layout.sgmnt_margin(bottom);
+		retval := retval +  resolve(layout&".segment.bottom");
 		return retval;
 	end;
 
@@ -794,17 +794,17 @@ package body scopeiopkg is
 		return natural is
 		variable retval : natural := 0;
 	begin
-		retval := retval + layout.sgmnt_margin(left);
-		if not layout.vtaxis_within then
-			retval := retval + layout.vtaxis_width;
-			retval := retval + layout.sgmnt_gap(horizontal);
+		retval := retval + resolve(layout&".segment.left");
+		if not resolve(layout&".axis.vertical.indise") then
+			retval := retval + resolve(layout&".axis.vertical.width");
+			retval := retval + resolve(layout&".segment.horizontal");
 		end if;
 		retval := retval + grid_width(layout);
-		if not layout.textbox_within then
-			retval := retval + layout.sgmnt_gap(horizontal);
-			retval := retval + layout.textbox_width;
+		if not resolve(layout&".textbox.inside") then
+			retval := retval + resolve(layout&".textbox.width");
+			retval := retval + resolve(layout&".segment.horizontal");
 		end if;
-		retval := retval + layout.sgmnt_margin(right);
+		retval := retval + resolve(layout&".segment.right");
 		return retval;
 	end;
 
@@ -816,12 +816,12 @@ package body scopeiopkg is
 
 		return to_edges(boxes_sides(
 			sides        => (
-				vtaxis_boxid => setif(not layout.vtaxis_within, vtaxis_width(layout)), 
+				vtaxis_boxid => setif(not resolve(layout&".axis.verticali.inside"), vtaxis_width(layout)), 
 				grid_boxid   => grid_width(layout), 
-				text_boxid   => setif(not layout.textbox_within, textbox_width(layout))),
-			margin_start => layout.sgmnt_margin(left),
-			margin_end   => layout.sgmnt_margin(right),
-			gap          => layout.sgmnt_gap(horizontal)));
+				text_boxid   => setif(not resolve(layout&".textbox.within"), textbox_width(layout))),
+			margin_start => resolve(layout&".segment.left"),
+			margin_end   => resolve(layout&".segment.right"),
+			gap          => resolve(layout&".segment.horizontal")));
 	end;
 
 	function sgmnt_yedges(
@@ -832,10 +832,10 @@ package body scopeiopkg is
 		return to_edges(boxes_sides(
 			sides        => (
 				0 => grid_height(layout),
-				1 => setif(not layout.hzaxis_within, hzaxis_height(layout))),
-			margin_start => layout.sgmnt_margin(top),
-			margin_end   => layout.sgmnt_margin(bottom),
-			gap          => layout.sgmnt_gap(vertical)));
+				1 => setif(not resolve(layout&".hzaxis_within"), hzaxis_height(layout))),
+			margin_start => resolve(layout&".segment.top"),
+			margin_end   => resolve(layout&".segment.bottom"),
+			gap          => resolve(layout&".segment.vertical")));
 	end;
 
 	function sgmnt_boxon (
@@ -845,16 +845,16 @@ package body scopeiopkg is
 		constant layout : string)
 		return std_logic is
 		constant x_sides  : natural_vector := (
-			vtaxis_boxid => setif(not layout.vtaxis_within, vtaxis_width(layout)),
+			vtaxis_boxid => setif(not resolve(layout&".vtaxis.within"), vtaxis_width(layout)),
 			grid_boxid   => grid_width(layout),
-			text_boxid   => setif(not layout.textbox_within, textbox_width(layout)),
-			hzaxis_boxid => setif(not layout.hzaxis_within,  hzaxis_width(layout)));
+			text_boxid   => setif(not resolve(layout&".textbox_within"), textbox_width(layout)),
+			hzaxis_boxid => setif(not resolve(layout&".hzaxis_within"),  hzaxis_width(layout)));
 
 		constant y_sides  : natural_vector := (
-			vtaxis_boxid => setif(not layout.vtaxis_within,  vtaxis_height(layout)),
+			vtaxis_boxid => setif(not resolve(layout&".vtaxis_within"),  vtaxis_height(layout)),
 			grid_boxid   => grid_height(layout),
-			text_boxid   => setif(not layout.textbox_within, textbox_height(layout)),
-			hzaxis_boxid => setif(not layout.hzaxis_within,  hzaxis_height(layout)));
+			text_boxid   => setif(not resolve(layout&".textbox_within"), textbox_height(layout)),
+			hzaxis_boxid => setif(not resolve(layout&".hzaxis_within"),  hzaxis_height(layout)));
 
 		variable retval   : std_logic;
 		variable x_margin : natural;
@@ -879,10 +879,10 @@ package body scopeiopkg is
 	begin
 
 		retval   := '0';
-		x_margin := pos(layout.sgmnt_margin(left));
-		y_margin := pos(layout.sgmnt_margin(top));
-		x_gap    := pos(layout.sgmnt_gap(horizontal));
-		y_gap    := pos(layout.sgmnt_gap(vertical));
+		x_margin := pos(resolve(layout&".segment.left"));
+		y_margin := pos(resolve(layout&".segment.top"));
+		x_gap    := pos(resolve(layout&".segment.horizontal"));
+		y_gap    := pos(resolve(layout&".segment.vertical)"));
 
 		case box_id is
 		when vtaxis_boxid | grid_boxid | text_boxid =>                 
@@ -903,14 +903,14 @@ package body scopeiopkg is
 		constant layout : string)
 		return natural is
 	begin
-		return layout.display_width;
+		return resolve(layout&".display.width");
 	end;
 
 	function main_height (
 		constant layout : string)
 		return natural is
 	begin
-		return layout.display_height;
+		return resolve(layout&".display.height");
 	end;
 
 	function main_xedges(
@@ -918,9 +918,9 @@ package body scopeiopkg is
 		return natural_vector is
 		constant sides : natural_vector := boxes_sides(
 			sides        => (0 => sgmnt_width(layout)),
-			margin_start => layout.main_margin(left),
-			margin_end   => layout.main_margin(right),
-			gap          => layout.main_gap(horizontal));
+			margin_start => resolve(layout&".main.left"),
+			margin_end   => resolve(layout&".main.right"),
+			gap          => resolve(layout&".main.horizontal"));
 
 	begin
 		assert sides(sides'right)<=main_width(layout)
@@ -933,10 +933,10 @@ package body scopeiopkg is
 		constant layout : string)
 		return natural_vector is
 		constant sides : natural_vector := boxes_sides(
-			sides        => (0 to layout.num_of_segments-1 => sgmnt_height(layout)),
-			margin_start => layout.main_margin(top),
-			margin_end   => layout.main_margin(bottom),
-			gap          => layout.main_gap(vertical));
+			sides        => (0 to resolve(layout&".num_of_segments")-1 => sgmnt_height(layout)),
+			margin_start => resolve(layout&".main.top"),
+			margin_end   => resolve(layout&".main.bottom"),
+			gap          => resolve(layout&".main.vertical"));
 	begin
 		assert sides(sides'right)<=main_height(layout)
 		report "Boxes' Height sum up cannot be greater than Display's Height"
@@ -956,10 +956,10 @@ package body scopeiopkg is
 		variable y_gap    : natural;
 	begin
 
-		x_margin := pos(layout.main_margin(left));
-		y_margin := pos(layout.main_margin(top));
-		x_gap    := pos(layout.main_gap(horizontal));
-		y_gap    := pos(layout.main_gap(vertical));
+		x_margin := pos(resolve(layout&".main.left"));
+		y_margin := pos(resolve(layout&".main.top"));
+		x_gap    := pos(resolve(layout&".main.horizontal"));
+		y_gap    := pos(resolve(layout&".main.vertical"));
 
 		return setif(unsigned(y_div)=box_id*(y_gap+1)+y_margin and unsigned(x_div)=0*(x_gap+1)+x_margin);
 	end;

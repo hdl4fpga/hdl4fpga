@@ -28,6 +28,7 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.jso.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
@@ -40,7 +41,7 @@ entity scopeio is
 		height         : natural         := 0;
 		fps            : real            := 0.0;
 		pclk           : real            := 0.0;
-		layout         : display_layout  := displaylayout_tab(sd480);
+		layout         : string;
 		max_delay      : natural         := 2**14;
 		vt_steps       : real_vector     := (1 to 0 => 0.0);
 		hz_step        : real            := 0.0;
@@ -118,7 +119,7 @@ architecture beh of scopeio is
 	signal ampsample_dv       : std_logic;
 	signal ampsample_data     : std_logic_vector(0 to input_data'length-1);
 
-	constant capture_bits     : natural := unsigned_num_bits(max(layout.num_of_segments*grid_width(layout),min_storage)-1);
+	constant capture_bits     : natural := unsigned_num_bits(max(resolve(layout&".num_of_segments")*grid_width(layout),min_storage)-1);
 
 	signal video_addr         : std_logic_vector(0 to capture_bits-1);
 	signal video_frm          : std_logic;

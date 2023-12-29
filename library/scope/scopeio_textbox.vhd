@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.jso.all;
 use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.textboxpkg.all;
 use hdl4fpga.cgafonts.all;
@@ -12,7 +13,7 @@ entity scopeio_textbox is
 	generic(
 		inputs        : natural;
 		input_names   : tag_vector;
-		layout        : display_layout;
+		layout        : string;
 		latency       : natural;
 		max_delay     : natural;
 		font_bitrom   : std_logic_vector := psf1cp850x8x16;
@@ -61,14 +62,14 @@ entity scopeio_textbox is
 
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
-	constant font_width    : natural := layout.textbox_fontwidth;
+	constant font_width    : natural := resolve(layout&".textbox.font_width");
 end;
 
 architecture def of scopeio_textbox is
 
 	subtype ascii is std_logic_vector(8-1 downto 0);
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
-	constant division_bits : natural := unsigned_num_bits(grid_divisionsize(layout)-1);
+	constant division_bits : natural := unsigned_num_bits(grid_unit(layout)-1);
 	constant cgaadapter_latency : natural := 4;
 
 	constant fontwidth_bits  : natural    := unsigned_num_bits(font_width-1);

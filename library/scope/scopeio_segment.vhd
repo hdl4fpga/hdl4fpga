@@ -10,7 +10,7 @@ entity scopeio_segment is
 	generic(
 		input_latency : natural;
 		latency       : natural;
-		layout        : display_layout;
+		layout        : string;
 		hz_unit       : real;
 		vt_unit       : real;
 		inputs        : natural);
@@ -76,13 +76,13 @@ architecture def of scopeio_segment is
 	signal vt_offset       : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 	signal vt_chanid       : std_logic_vector(chanid_maxsize-1 downto 0);
 
-	constant division_size : natural := grid_divisionsize(layout);
+	constant division_size : natural := grid_unit(layout);
 	constant font_size     : natural := axis_fontsize(layout);
 	constant vt_height     : natural := grid_height(layout);
 
 	constant division_bits : natural := unsigned_num_bits(division_size-1);
 	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
-	constant vtstep_bits   : natural := setif(vtaxis_tickrotate(layout)=ccw0, division_bits, vttick_bits);
+	constant vtstep_bits   : natural := setif(vtaxis_tickrotate(layout)="ccw0", division_bits, vttick_bits);
 	constant vtheight_bits : natural := unsigned_num_bits((vt_height-1)-1);
 
 

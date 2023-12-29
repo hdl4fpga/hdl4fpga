@@ -35,7 +35,7 @@ entity scopeio_axis is
 		latency       : natural;
 		hz_unit       : real;
 		vt_unit       : real;
-		layout        : display_layout);
+		layout        : string);
 	port (
 		clk           : in  std_logic;
 
@@ -76,7 +76,7 @@ end;
 
 architecture def of scopeio_axis is
 
-	constant division_size : natural := grid_divisionsize(layout);
+	constant division_size : natural := grid_unit(layout);
 	constant font_size     : natural := axis_fontsize(layout);
 
 	constant division_bits : natural := unsigned_num_bits(division_size-1);
@@ -89,7 +89,7 @@ architecture def of scopeio_axis is
 
 	constant vt_height     : natural := grid_height(layout);
 	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
-	constant vtstep_bits   : natural := setif(vtaxis_tickrotate(layout)=ccw0, division_bits, vttick_bits);
+	constant vtstep_bits   : natural := setif(vtaxis_tickrotate(layout)="ccw0", division_bits, vttick_bits);
 	constant vtheight_bits : natural := unsigned_num_bits(2**vtstep_bits*((vt_height+2**vtstep_bits-1)/2**vtstep_bits)+2**vtstep_bits);
 
 	signal binvalue : signed(4*4-1 downto 0);
@@ -430,7 +430,7 @@ begin
 								vt_offset'length-vt_taddr'right);
 						vt_stop  <= to_unsigned(2**vtheight_bits/2**vtstep_bits-1, vt_stop'length); 
 						vt_step  <= -signed(resize(frac, vt_step'length));
-						vt_align <= setif(vtaxis_tickrotate(layout)=ccw90);
+						vt_align <= setif(vtaxis_tickrotate(layout)="ccw90");
 						vt_sign  <= '1';
 					end if;
 				end if;
@@ -464,8 +464,8 @@ begin
 			end process;
 
 			rot_vcol <= 
-				video_hcntr(vcol'range) when vtaxis_tickrotate(layout)=ccw0 else
-				vaddr(vcol'range) when vtaxis_tickrotate(layout)=ccw270 else
+				video_hcntr(vcol'range) when vtaxis_tickrotate(layout)="ccw0" else
+				vaddr(vcol'range) when vtaxis_tickrotate(layout)="ccw270" else
 				not vaddr(vcol'range);
 
 			col_e : entity hdl4fpga.latency
@@ -478,8 +478,8 @@ begin
 				do  => vcol);
 
 			rot_crow <= 
-				std_logic_vector(y(vt_crow'range)) when vtaxis_tickrotate(layout)=ccw0 else
-				not video_hcntr(vt_ccol'range) when vtaxis_tickrotate(layout)=ccw270 else
+				std_logic_vector(y(vt_crow'range)) when vtaxis_tickrotate(layout)="ccw0" else
+				not video_hcntr(vt_ccol'range) when vtaxis_tickrotate(layout)="ccw270" else
 				video_hcntr(vt_ccol'range);
 
 			crow_e : entity hdl4fpga.latency
@@ -492,8 +492,8 @@ begin
 				do  => vt_crow);
 
 			rot_ccol <= 
-				video_hcntr(vt_ccol'range) when vtaxis_tickrotate(layout)=ccw0 else
-				std_logic_vector(y(vt_crow'range)) when vtaxis_tickrotate(layout)=ccw270 else
+				video_hcntr(vt_ccol'range) when vtaxis_tickrotate(layout)="ccw0" else
+				std_logic_vector(y(vt_crow'range)) when vtaxis_tickrotate(layout)="ccw270" else
 				not std_logic_vector(y(vt_crow'range));
 
 			ccol_e : entity hdl4fpga.latency
@@ -506,7 +506,7 @@ begin
 				do  => vt_ccol);
 
 			vton <= 
-				video_vton and setif(y(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1')) when vtaxis_tickrotate(layout)=ccw0 else
+				video_vton and setif(y(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1')) when vtaxis_tickrotate(layout)="ccw0" else
 				video_vton;
 
 			on_e : entity hdl4fpga.latency
@@ -519,7 +519,7 @@ begin
 				do(0) => vt_on);
 
 			vt_bcd <= 
-				multiplex(std_logic_vector(unsigned(tick) rol 2*char_code'length), vcol, char_code'length) when vtaxis_tickrotate(layout)=ccw0 else
+				multiplex(std_logic_vector(unsigned(tick) rol 2*char_code'length), vcol, char_code'length) when vtaxis_tickrotate(layout)="ccw0" else
 				multiplex(std_logic_vector(unsigned(tick) rol 0*char_code'length), vcol, char_code'length);
 
 		end block;

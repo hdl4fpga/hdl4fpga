@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.jso.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
@@ -39,7 +40,7 @@ entity scopeio_video is
 		height           : natural := 0;
 		fps              : real    := 0.0;
 		pclk             : real    := 0.0;
-		layout           : display_layout;
+		layout           : string;
 		hz_unit          : real;
 		vt_unit          : real;
 		inputs           : natural;
@@ -180,7 +181,7 @@ architecture beh of scopeio_video is
 	signal text_fg       : std_logic_vector(0 to unsigned_num_bits(pltid_order'length+inputs+1-1)-1);
 	signal text_bg       : std_logic_vector(text_fg'range);
 	signal sgmntbox_bgon : std_logic;
-	signal sgmntbox_ena  : std_logic_vector(0 to layout.num_of_segments-1);
+	signal sgmntbox_ena  : std_logic_vector(0 to resolve(layout&".num_of_segments")-1);
 	signal pointer_dot   : std_logic;
 
 	signal vdv   : std_logic;
