@@ -67,7 +67,6 @@ architecture scopeio of arty is
 	signal xadccfg_rdy     : bit;
 
 	type display_param is record
-		layout_id : displaylayout_ids;
 		timing_id : videotiming_ids;
 		mul       : natural;
 		div       : natural;
@@ -75,9 +74,9 @@ architecture scopeio of arty is
 
 	type displayparam_vector is array (layout_mode) of display_param;
 	constant video_params : displayparam_vector := (
-		mode480p  => (timing_id => pclk25_00m640x480at60,    layout_id => sd480,    mul => 3, div => 5),
-		mode600p  => (timing_id => pclk40_00m800x600at60,    layout_id => sd600,    mul => 4, div => 5),
-		mode1080p => (timing_id => pclk150_00m1920x1080at60, layout_id => hd1080,   mul => 3, div => 1));
+		mode480p  => (timing_id => pclk25_00m640x480at60,       mul => 3, div => 5),
+		mode600p  => (timing_id => pclk40_00m800x600at60,       mul => 4, div => 5),
+		mode1080p => (timing_id => pclk150_00m1920x1080at60,    mul => 3, div => 1));
 
 begin
 
@@ -410,7 +409,7 @@ begin
 			text(id => "vt(6).text", content => "A2(+)"),
 			text(id => "vt(7).text", content => "A3(+)"),
 			text(id => "vt(8).text", content => "A4(+)")),
-		layout           => displaylayout_tab(hd1080),
+		layout => "",
 		hz_factors       => (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
 			 4 => 2**(0+0)*5**(0+0),  5 => 2**(1+0)*5**(0+0),  6 => 2**(2+0)*5**(0+0),  7 => 2**(0+0)*5**(1+0),

@@ -290,7 +290,44 @@ begin
 			text(id => "vt(5).text", content => "GP16"),
 			text(id => "vt(6).text", content => "GN17"),
 			text(id => "vt(7).text", content => "GP17")),
-		layout           => displaylayout_tab(hd720),
+		layout           => 
+           " 720 : {                      " &   
+           "    num_of_segments : 3,      " &
+           "    display : {               " &
+           "         width : 1280,        " &
+           "         height : 720},       " &
+           "    grid : {                  " &
+           "        unit   : 32,          " &
+           "        width  : 31,          " &
+           "        height :  6},         " &
+           "    axis : {                  " &
+           "        fontsize   : 8,       " &
+           "        horizontal : {        " &
+           "            height : 8,       " &
+           "            inside : false},  " &
+           "        vertical : {          " &
+           "            width  :    6,    " &
+           "            rotate :  ccw0,   " &
+           "            inside : false}}, " &
+           "    textbox : {               " &
+           "        width      : 32,      " &
+           "        font_width :  8,      " &
+           "        inside     : false},  " &
+           "    main : {                  " &
+           "        top        : 23,      " & 
+           "        left       :  3,      " & 
+           "        right      :  0,      " & 
+           "        bottom     :  0,      " & 
+           "        vertical   : 16,      " & 
+           "        horizontal : 0},      " &
+           "    segment : {               " &
+           "        top        : 1,       " &
+           "        left       : 1,       " &
+           "        right      : 1,       " &
+           "        bottom     : 1,       " &
+           "        vertical   : 0,       " &
+           "        horizontal : 1}       " &
+           "}                             ",
 		hz_factors       => (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
 			 4 => 2**(0+0)*5**(0+0),  5 => 2**(1+0)*5**(0+0),  6 => 2**(2+0)*5**(0+0),  7 => 2**(0+0)*5**(1+0),
