@@ -72,7 +72,7 @@ begin
            "        horizontal : 1}       " &
            "}                             ";
     begin
-        report "VALUE : " & ''' & resolve(test & "[4].top") & ''';
+        report "VALUE : " & ''' & resolve(test & "[4].top ") & ''';
         wait;
     end process;
 end;
