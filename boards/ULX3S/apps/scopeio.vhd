@@ -289,8 +289,8 @@ begin
 			"         height : 720},       " &
 			"    grid : {                  " &
 			"        unit   : 32,          " &
-			"        width  :              " & natural'image(31*32+1) & ','  &
-			"        height :              " & natural'image( 6*32+1) & "," &
+			"        width  :              " & natural'image(31*32+1) & ',' &
+			"        height :              " & natural'image( 6*32+1) & ',' &
 			"        color  : 0x01_ff_00_00" &
 			"	     background-color : 0x01_00_00_00}," &
 			"    axis : {                  " &
@@ -344,7 +344,7 @@ begin
 			"    { label : GN17,           " &
 			"      color : 0x01_00_00_ff}, " & -- vt(6)
 			"    { label : GP17,           " &
-			"      color : 0x01_ff_ff_ff}]} ", -- vt(7)
+			"      color : 0x01_ff_ff_ff}]}", -- vt(7)
 		hz_factors       => (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
 			 4 => 2**(0+0)*5**(0+0),  5 => 2**(1+0)*5**(0+0),  6 => 2**(2+0)*5**(0+0),  7 => 2**(0+0)*5**(1+0),
