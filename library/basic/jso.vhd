@@ -35,6 +35,12 @@ package jso is
 		constant jso : string)
 		return boolean;
 
+	subtype jso is string;
+
+	function "&" (
+		constant jso : jso;
+		constant key : string)
+		return natural;
 end;
 
 package body jso is
@@ -651,6 +657,14 @@ package body jso is
 		else
 			return false;
 		end if;
+	end;
+
+	function "&" (
+		constant jso : jso;
+		constant key : string)
+		return natural is
+	begin
+		return resolve(string(jso) & key);
 	end;
 
 end;
