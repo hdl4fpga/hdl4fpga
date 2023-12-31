@@ -310,7 +310,7 @@ begin
            "            rotate :  ccw0,   " &
            "            inside : false}}, " &
            "    textbox : {               " &
-           "        width      : 32,      " &
+           "        width      :" & natural'image(32*6+1) & ','&
            "        font_width :  8,      " &
            "        inside     : false},  " &
            "    main : {                  " &

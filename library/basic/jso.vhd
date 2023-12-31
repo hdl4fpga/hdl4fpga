@@ -47,7 +47,7 @@ package body jso is
 	constant log_parsetagvaluekey : natural := 2**5;
 	constant log_locatevalue      : natural := 2**6;
 	constant log_resolve          : natural := 2**7;
-	constant log                  : natural := log_parsetagvaluekey; -- + log_resolve + log_locatevalue    + log_parsevalue ;
+	constant log                  : natural := 0; --log_parsetagvaluekey; -- + log_resolve + log_locatevalue    + log_parsevalue ;
 
 	function isws (
 		constant char : character;

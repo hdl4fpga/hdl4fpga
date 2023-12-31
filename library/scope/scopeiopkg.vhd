@@ -706,7 +706,7 @@ package body scopeiopkg is
 		else
 			if 2**unsigned_num_bits(resolve(layout&".textbox.width")-1)=resolve(layout&".textbox.width") then
 				if resolve(layout&".textbox.font_width")*(grid_width(layout)/resolve(layout&".textbox.font_width")) mod resolve(layout&".textbox.width")=0 then
-					retval := retval + resolve(layout&".grid.width")-resolve(layout&".textbox.width")-resolve(layout&".grid.width") mod resolve(layout&".texbox.font_width");
+					retval := retval + resolve(layout&".grid.width")-resolve(layout&".textbox.width")-resolve(layout&".grid.width") mod resolve(layout&".textbox.font_width");
 				else
 					retval := retval + grid_width(layout)-textbox_width(layout);
 				end if;
@@ -795,7 +795,7 @@ package body scopeiopkg is
 		variable retval : natural := 0;
 	begin
 		retval := retval + resolve(layout&".segment.left");
-		if not resolve(layout&".axis.vertical.indise") then
+		if not resolve(layout&".axis.vertical.inside") then
 			retval := retval + resolve(layout&".axis.vertical.width");
 			retval := retval + resolve(layout&".segment.horizontal");
 		end if;
@@ -816,9 +816,9 @@ package body scopeiopkg is
 
 		return to_edges(boxes_sides(
 			sides        => (
-				vtaxis_boxid => setif(not resolve(layout&".axis.verticali.inside"), vtaxis_width(layout)), 
+				vtaxis_boxid => setif(not resolve(layout&".axis.vertical.inside"), vtaxis_width(layout)), 
 				grid_boxid   => grid_width(layout), 
-				text_boxid   => setif(not resolve(layout&".textbox.within"), textbox_width(layout))),
+				text_boxid   => setif(not resolve(layout&".textbox.inside"), textbox_width(layout))),
 			margin_start => resolve(layout&".segment.left"),
 			margin_end   => resolve(layout&".segment.right"),
 			gap          => resolve(layout&".segment.horizontal")));
@@ -832,7 +832,7 @@ package body scopeiopkg is
 		return to_edges(boxes_sides(
 			sides        => (
 				0 => grid_height(layout),
-				1 => setif(not resolve(layout&".hzaxis_within"), hzaxis_height(layout))),
+				1 => setif(not resolve(layout&".axis.horizontal.inside"), hzaxis_height(layout))),
 			margin_start => resolve(layout&".segment.top"),
 			margin_end   => resolve(layout&".segment.bottom"),
 			gap          => resolve(layout&".segment.vertical")));
@@ -845,16 +845,16 @@ package body scopeiopkg is
 		constant layout : string)
 		return std_logic is
 		constant x_sides  : natural_vector := (
-			vtaxis_boxid => setif(not resolve(layout&".vtaxis.within"), vtaxis_width(layout)),
+			vtaxis_boxid => setif(not resolve(layout&".axis.vertical.inside"), vtaxis_width(layout)),
 			grid_boxid   => grid_width(layout),
-			text_boxid   => setif(not resolve(layout&".textbox_within"), textbox_width(layout)),
-			hzaxis_boxid => setif(not resolve(layout&".hzaxis_within"),  hzaxis_width(layout)));
+			text_boxid   => setif(not resolve(layout&".textbox.inside"), textbox_width(layout)),
+			hzaxis_boxid => setif(not resolve(layout&".axis.horizontal.inside"),  hzaxis_width(layout)));
 
 		constant y_sides  : natural_vector := (
-			vtaxis_boxid => setif(not resolve(layout&".vtaxis_within"),  vtaxis_height(layout)),
+			vtaxis_boxid => setif(not resolve(layout&".axis.vertical.inside"),  vtaxis_height(layout)),
 			grid_boxid   => grid_height(layout),
-			text_boxid   => setif(not resolve(layout&".textbox_within"), textbox_height(layout)),
-			hzaxis_boxid => setif(not resolve(layout&".hzaxis_within"),  hzaxis_height(layout)));
+			text_boxid   => setif(not resolve(layout&".textbox.inside"), textbox_height(layout)),
+			hzaxis_boxid => setif(not resolve(layout&".axis.horizontal.inside"),  hzaxis_height(layout)));
 
 		variable retval   : std_logic;
 		variable x_margin : natural;
