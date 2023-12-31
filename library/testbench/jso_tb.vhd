@@ -33,7 +33,7 @@ use work.jso.all;
 architecture jso_tb of testbench is
 begin
     process 
-        constant test : string :=
+        constant test : jso :=
            " 720 : {                      " &   
            "    num_of_segments : 3,      " &
            "    display : {               " &
@@ -72,7 +72,7 @@ begin
            "        horizontal : 1}       " &
            "}                             ";
     begin
-        report "VALUE : " & ''' & resolve(test & "[4].top ") & ''';
+        report "VALUE : " & ''' & test & "[4].top " & ''';
         wait;
     end process;
 end;

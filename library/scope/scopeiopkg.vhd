@@ -617,9 +617,11 @@ package body scopeiopkg is
 		variable retval : natural := 0;
 	begin
 		retval := retval + vtaxis_x(layout);
-		if not resolve(layout&".axis.vertical.inside") then
+		-- if not resolve(layout&".axis.vertical.inside") then
+		if not (jso'(layout)&".axis.vertical.inside") then
 			retval := retval + vtaxis_width(layout);
-			retval := retval + resolve(layout&".segment.horizontal");
+			-- retval := retval + resolve(layout&".segment.horizontal");
+			retval := retval + (jso'(layout)&".segment.horizontal");
 		end if;
 		return retval;
 	end;
