@@ -281,78 +281,75 @@ begin
 		vt_steps         => (0 to inputs-1 => vt_step),
 		vt_unit          => 50.0*milli,
 		inputs           => inputs,
-		input_names      => (
-			text(id => "vt(0).text", content => "GN14"),
-			text(id => "vt(1).text", content => "GP14"),
-			text(id => "vt(2).text", content => "GN15"),
-			text(id => "vt(3).text", content => "GP15"),
-			text(id => "vt(4).text", content => "GN16"),
-			text(id => "vt(5).text", content => "GP16"),
-			text(id => "vt(6).text", content => "GN17"),
-			text(id => "vt(7).text", content => "GP17")),
-		layout           => 
-           " 720 : {                      " &   
-           "    num_of_segments : 3,      " &
-           "    display : {               " &
-           "         width : 1280,        " &
-           "         height : 720},       " &
-           "    grid : {                  " &
-           "        unit   : 32,          " &
-           "        width  :              " & natural'image(31*32+1) & ','  &
-           "        height :              " & natural'image( 6*32+1) & "}," &
-           "    axis : {                  " &
-           "        fontsize   : 8,       " &
-           "        horizontal : {        " &
-           "            height : 8,       " &
-           "            inside : false},  " &
-           "        vertical : {          " &
-           "            width  :          " & natural'image(6*8) & ','  &
-           "            rotate :  ccw0,   " &
-           "            inside : false}}, " &
-           "    textbox : {               " &
-           "        width      :          " & natural'image(32*6+1) & ','&
-           "        font_width :  8,      " &
-           "        inside     : false},  " &
-           "    main : {                  " &
-           "        top        : 23,      " & 
-           "        left       :  3,      " & 
-           "        right      :  0,      " & 
-           "        bottom     :  0,      " & 
-           "        vertical   : 16,      " & 
-           "        horizontal : 0},      " &
-           "    segment : {               " &
-           "        top        : 1,       " &
-           "        left       : 1,       " &
-           "        right      : 1,       " &
-           "        bottom     : 1,       " &
-           "        vertical   : 0,       " &
-           "        horizontal : 1}       " &
-           "}                             ",
+		layout           =>
+			"{ 720 : {                     " &   
+			"    num_of_segments : 3,      " &
+			"    display : {               " &
+			"         width : 1280,        " &
+			"         height : 720},       " &
+			"    grid : {                  " &
+			"        unit   : 32,          " &
+			"        width  :              " & natural'image(31*32+1) & ','  &
+			"        height :              " & natural'image( 6*32+1) & "," &
+			"        color  : 0x01_ff_00_00" &
+			"	     background-color : 0x01_00_00_00}," &
+			"    axis : {                  " &
+			"        fontsize   : 8,       " &
+			"        horizontal : {        " &
+			"            height : 8,       " &
+			"            inside : false,   " &
+			"            color  : 0x01_ff_ff_ff" &
+			"	         background-color : 0x01_00_00_ff}," &
+			"        vertical : {          " &
+			"            width  :          " & natural'image(6*8) & ','  &
+			"            rotate :  ccw0,   " &
+			"            inside : false,   " &
+			"            color  : 0x01_ff_ff_ff" &
+			"	         background-color : 0x01_00_00_ff}}," &
+			"    textbox : {               " &
+			"        width      :          " & natural'image(32*6+1) & ','&
+			"        font_width :  8,      " &
+			"        inside     : false,   " &
+			"        color      : 0x01_ff_ff_ff" &
+			"	     background-color : 0x01_00_00_00}," &
+			"    main : {                  " &
+			"        top        : 23,      " & 
+			"        left       :  3,      " & 
+			"        right      :  0,      " & 
+			"        bottom     :  0,      " & 
+			"        vertical   : 16,      " & 
+			"        horizontal : 0,      " &
+			"	     background-color : 0x01_00_00_00}," &
+			"    segment : {               " &
+			"        top        : 1,       " &
+			"        left       : 1,       " &
+			"        right      : 1,       " &
+			"        bottom     : 1,       " &
+			"        vertical   : 0,       " &
+			"        horizontal : 1,       " &
+			"	     background-color : 0x01_00_00_00}}," &
+			"  vt : [                      " &
+			"    { label : GN14,           " &
+			"      color : 0x01_ff_ff_ff}, " &
+			"    { label : GP14,           " &
+			"      color : 0x01_ff_ff_00}, " & -- vt(1)
+			"    { label : GN15,           " &
+			"      color : 0x01_ff_00_ff}, " & -- vt(2)
+			"    { label : GP15,           " &
+			"      color : 0x01_ff_00_00}, " & -- vt(3)
+			"    { label : GN16,           " &
+			"      color : 0x01_00_ff_ff}, " & -- vt(4)
+			"    { label : GP16,           " &
+			"      color : 0x01_00_ff_00}, " & -- vt(5)
+			"    { label : GN17,           " &
+			"      color : 0x01_00_00_ff}, " & -- vt(6)
+			"    { label : GP17,           " &
+			"      color : 0x01_ff_ff_ff}]} ", -- vt(7)
 		hz_factors       => (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
 			 4 => 2**(0+0)*5**(0+0),  5 => 2**(1+0)*5**(0+0),  6 => 2**(2+0)*5**(0+0),  7 => 2**(0+0)*5**(1+0),
 			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
-			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)),
-
-		default_tracesfg =>
-			b"1" & x"ff_ff_ff" & -- vt(0)
-			b"1" & x"ff_ff_00" & -- vt(1)
-			b"1" & x"ff_00_ff" & -- vt(2)
-			b"1" & x"ff_00_00" & -- vt(3)
-			b"1" & x"00_ff_ff" & -- vt(4)
-			b"1" & x"00_ff_00" & -- vt(5)
-			b"1" & x"00_00_ff" & -- vt(6)
-			b"1" & x"ff_ff_ff",  -- vt(7)
-		default_gridfg   => b"1" & x"ff_00_00",
-		default_gridbg   => b"1" & x"00_00_00",
-		default_hzfg     => b"1" & x"ff_ff_ff",
-		default_hzbg     => b"1" & x"00_00_ff",
-		default_vtfg     => b"1" & x"ff_ff_ff",
-		default_vtbg     => b"1" & x"00_00_ff",
-		default_textfg   => b"1" & x"ff_ff_ff",
-		default_textbg   => b"1" & x"00_00_00",
-		default_sgmntbg  => b"1" & x"00_ff_ff",
-		default_bg       => b"1" & x"00_00_00")
+			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)))
 	port map (
 		tp          => tp,
 		sio_clk     => sio_clk,

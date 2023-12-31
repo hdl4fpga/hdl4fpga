@@ -42,55 +42,16 @@ package scopeiopkg is
 	constant micro : real := 1.0e-6;
 	constant milli : real := 1.0e-3;
 
-	subtype i18n_langs is natural range 0 to 2-1;
-	constant lang_EN : i18n_langs := 0;
-	constant lang_ES : i18n_langs := 1;
-
-	subtype i18n_labelids is natural range 0 to 5-1;
-	type i18nlabelid_vector is array (natural range <>) of i18n_labelids;
-	constant label_hzdiv    : i18n_labelids := 0;
-	constant label_hzoffset : i18n_labelids := 1;
-	constant label_trigger  : i18n_labelids := 2;
-	constant label_vtdiv    : i18n_labelids := 3;
-	constant label_vtoffset : i18n_labelids := 4;
-
 	constant axisy_backscale : natural := 0;
 	constant axisx_backscale : natural := 1;
 	constant max_pixelsize : natural := 24;
 
-	constant textfont_width  : natural :=  8;
-	constant textfont_height : natural := 16;
 
-	-- type display_layout is record 
-		-- display_width    : natural;            -- Display's width
-		-- display_height   : natural;            -- Display's height
-		-- num_of_segments  : natural;	           -- Number of segments to display
-		-- division_size    : natural;            -- Length in pixels
-		-- grid_width       : natural;            -- Width of the grid in divisions
-		-- grid_height      : natural;            -- Width of the grid in divisions
-		-- axis_fontsize    : natural;            -- Axis font size
-		-- textbox_fontwidth : natural;            -- Textbox fontsize
-		-- hzaxis_height    : natural;            -- Height of the horizontal axis 
-		-- hzaxis_within    : boolean;            -- Horizontal axis within grid
-		-- vtaxis_width     : natural;            -- Width of the vetical axis 
-		-- vtaxis_within    : boolean;            -- Vertical axis within grid
-		-- vttick_rotate    : rotate;             -- Vertical label rotating
-		-- textbox_width    : natural;            -- Width of the text box
-		-- textbox_within   : boolean;            -- Textbox within grid
-		-- main_margin      : margin_vector;      -- Main Margin
-		-- main_gap         : gap_vector;         -- Main Padding
-		-- sgmnt_margin     : margin_vector;      -- Segment Margin
-		-- sgmnt_gap        : gap_vector;         -- Segment Padding
-	-- end record;
--- 
 	-- type displaylayout_ids is (
 		-- sd480,
 		-- sd600,
 		-- hd720,
 		-- hd1080);
--- 
-	-- type displaylayout_vector is array (displaylayout_ids) of display_layout;
--- 
 	-- constant displaylayout_tab : displaylayout_vector := (
 		-- sd480 => (            
 			-- display_width     =>  640,
