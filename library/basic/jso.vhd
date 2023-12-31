@@ -41,6 +41,16 @@ package jso is
 		constant jso : jso;
 		constant key : string)
 		return natural;
+
+	function "&" (
+		constant jso : jso;
+		constant key : string)
+		return boolean;
+
+	-- function "&" (
+		-- constant obj : jso;
+		-- constant key : string)
+		-- return jso;
 end;
 
 package body jso is
@@ -666,5 +676,21 @@ package body jso is
 	begin
 		return resolve(string(jso) & key);
 	end;
+
+	function "&" (
+		constant jso : jso;
+		constant key : string)
+		return boolean is
+	begin
+		return resolve(string(jso) & key);
+	end;
+
+	-- function "&" (
+		-- constant obj : jso;
+		-- constant key : string)
+		-- return jso is
+	-- begin
+		-- return resolve(string(obj) & key);
+	-- end;
 
 end;

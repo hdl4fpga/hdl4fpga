@@ -306,7 +306,7 @@ begin
            "            height : 8,       " &
            "            inside : false},  " &
            "        vertical : {          " &
-           "            width  :    6,    " &
+           "            width  :          " & natural'image(6*8) & ','  &
            "            rotate :  ccw0,   " &
            "            inside : false}}, " &
            "    textbox : {               " &
