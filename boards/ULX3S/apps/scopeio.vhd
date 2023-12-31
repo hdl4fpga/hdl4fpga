@@ -298,8 +298,8 @@ begin
            "         height : 720},       " &
            "    grid : {                  " &
            "        unit   : 32,          " &
-           "        width  : 31,          " &
-           "        height :  6},         " &
+           "        width  :              " & natural'image(31*32+1) & ','  &
+           "        height :              " & natural'image( 6*32+1) & "}," &
            "    axis : {                  " &
            "        fontsize   : 8,       " &
            "        horizontal : {        " &
@@ -310,7 +310,7 @@ begin
            "            rotate :  ccw0,   " &
            "            inside : false}}, " &
            "    textbox : {               " &
-           "        width      :" & natural'image(32*6+1) & ','&
+           "        width      :          " & natural'image(32*6+1) & ','&
            "        font_width :  8,      " &
            "        inside     : false},  " &
            "    main : {                  " &
