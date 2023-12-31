@@ -32,29 +32,47 @@ use work.jso.all;
 
 architecture jso_tb of testbench is
 begin
-	process 
-		constant test : string :=
-			"{"                             &
-		    	"display : {width : 1280, height : 720 }," &
-		    	"num_of_segments   :    3, " &
-		    	"division_size     :   32, " &
-		    	"grid : {width : 31, height :  6}, " &
-		    	"axis_fontsize     :    8, " &
-		    	"hzaxis_height     :    8, " &
-		    	"hzaxis_within     : false," &
-		    	"vtaxis_width      :    6, " &
-		    	"vtaxis_inside     : false," &
-		    	"vttick_rotate     :  ccw0," &
-		    	"textbox_fontwidth :    8, " &
-		    	"textbox_width     :   32, " &
-		    	"textbox_inside    : false," &
-		    	"main    : {left : 3, top : 23, right : 0, bottom : 0, vertical :16, horizontal : 0}," &
-		    	"segment : {left : 1, top :  1, right : 1, bottom : 1, vertical : 0, horizontal : 1} " &
-			"}";
-	begin
---		                                            11111111112222222222333333333333333333334444444444
---		                                   12345678901234567890123456789012345678901234567890123456789
-		report "VALUE : " & ''' & resolve(test & "[main][vertical]") & ''';
-		wait;
-	end process;
+    process 
+        constant test : string :=
+           " 720 : {                      " &   
+           "    num_of_segments : 3,      " &
+           "    display : {               " &
+           "         width : 1280,        " &
+           "         height : 720},       " &
+           "    grid : {                  " &
+           "        unit   : 32,          " &
+           "        width  : 31,          " &
+           "        height :  6},         " &
+           "    axis : {                  " &
+           "        fontsize   : 8,       " &
+           "        horizontal : {        " &
+           "            height : 8,       " &
+           "            inside : false},  " &
+           "        vertical : {          " &
+           "            width  :    6,    " &
+           "            rotate :  ccw0,   " &
+           "            inside : false}}, " &
+           "    textbox : {               " &
+           "        width      : 32,      " &
+           "        font_width :  8,      " &
+           "        inside     : false},  " &
+           "    main : {                  " &
+           "        top        : 23,      " & 
+           "        left       :  3,      " & 
+           "        right      :  0,      " & 
+           "        bottom     :  0,      " & 
+           "        vertical   : 16,      " & 
+           "        horizontal : 0},      " &
+           "    segment : {               " &
+           "        top        : 1,       " &
+           "        left       : 1,       " &
+           "        right      : 1,       " &
+           "        bottom     : 1,       " &
+           "        vertical   : 0,       " &
+           "        horizontal : 1}       " &
+           "}                             ";
+    begin
+        report "VALUE : " & ''' & resolve(test & "[4].top ") & ''';
+        wait;
+    end process;
 end;

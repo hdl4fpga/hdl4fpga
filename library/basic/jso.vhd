@@ -27,6 +27,20 @@ package jso is
 		constant jso : string)
 		return string;
 
+	function resolve (
+		constant jso : string)
+		return natural;
+
+	function resolve (
+		constant jso : string)
+		return boolean;
+
+	subtype jso is string;
+
+	function "&" (
+		constant jso : jso;
+		constant key : string)
+		return natural;
 end;
 
 package body jso is
@@ -39,7 +53,7 @@ package body jso is
 	constant log_parsetagvaluekey : natural := 2**5;
 	constant log_locatevalue      : natural := 2**6;
 	constant log_resolve          : natural := 2**7;
-	constant log                  : natural := 0; --log_parsetagvaluekey + log_resolve + log_locatevalue    + log_parsevalue ;
+	constant log                  : natural := 0; --log_parsetagvaluekey; -- + log_resolve + log_locatevalue    + log_parsevalue ;
 
 	function isws (
 		constant char : character;
@@ -199,12 +213,12 @@ package body jso is
 		variable open_char : character;
 	begin
 		skipws(jso, jso_index);
-		assert ((log/log_parsekeytag) mod 2=0) or jso_index > jso'right
+		assert ((log/log_parsekeytag) mod 2=0)
 			report "parse_keytag => jso_index -> " & natural'image(jso_index)
 			severity note;
-		assert ((log/log_parsekeytag) mod 2=0) or jso_index > jso'right
-			report "parse_keytag => jso_index -> " & natural'image(jso_index) & " -> " & ''' & jso(jso_index) & '''
-			severity note;
+		-- assert ((log/log_parsekeytag) mod 2=0) or jso_index > jso'right
+			-- report "parse_keytag => jso_index -> " & natural'image(jso_index) & " -> " & ''' & jso(jso_index) & '''
+			-- severity note;
 		length := 0;
 		while jso_index <= jso'right loop
 			case jso(jso_index) is
@@ -216,7 +230,7 @@ package body jso is
 					 report "parse_keytag => [ is position"
 					 severity note;
 				assert ((log/log_parsekeytag) mod 2=0) or length/=0 
-					report "parse_keytag  => [ is label" 
+					report "parse_keytag  => [ is string" 
 					severity note;
 				if length=0 then
 					parse_string(jso, jso_index, offset, length);
@@ -300,7 +314,7 @@ package body jso is
 		variable jso_index : inout natural;
 		variable offset    : inout natural;
 		variable length    : inout natural) is
-		variable jso_stack : string(1 to jso'length);
+		variable jso_stack : string(1 to 32);
 		variable jso_stptr : natural := 0;
 		procedure push (
 			constant char : character) is
@@ -388,51 +402,64 @@ package body jso is
 			report "parse_tagvaluekey => jso -> " & '"' & jso(jso_index to jso'right) & '"'
 			severity note;
 		parse_string(jso, jso_index, value_offset, value_length);
-		skipws(jso, jso_index);
-		assert ((log/log_parsetagvaluekey) mod 2=0)
-			report "parse_tagvaluekey => value_length -> " & natural'image(value_length)
-			severity note;
 		tag_offset := value_offset;
+		tag_length := 0;
+		skipws(jso, jso_index);
 		if jso_index <= jso'right then
 			if value_length=0 then
-				assert ((log/log_parsetagvaluekey) mod 2=0)
-					report "parse_tagvaluekey => no tag"
-					severity note;
-				tag_length := 0;
+				tag_length   := 0;
 				value_offset := jso_index;
 				value_length := jso'right-jso_index+1; 
 				parse_value(jso, jso_index, value_offset, value_length);
+				-- assert ((log/log_parsetagvaluekey) mod 2=0)
+					-- report
+						-- "parse_tagvaluekey => no tag" & LF &
+						-- "parse_tagvaluekey => value          -> " & '"' & jso(value_offset to value_offset+value_length-1) & '"' & LF &
+						-- "parse_tagvaluekey => jso(jso_index) -> " & natural'image(jso_index) & ':' & character'image(jso(jso_index))
+					-- severity note;
 			elsif jso(jso_index)/=':' then
 				assert ((log/log_parsetagvaluekey) mod 2=0)
-					report "parse_tagvaluekey => it's value -> " & jso(jso_index)
+					report
+						"parse_tagvaluekey => tag token not found" & LF &
+						"parse_tagvaluekey => value     -> " & '"' & jso(value_offset to value_offset+value_length-1) & '"' & LF &
+						"parse_tagvaluekey => jso_index -> " & natural'image(jso_index) & ':' & character'image(jso(jso_index))
 					severity note;
-				tag_length := 0;
-				tag_offset := value_offset;
+				tag_length   := 0;
+				tag_offset   := value_offset;
 			else
-				assert ((log/log_parsetagvaluekey) mod 2=0)
-					report "parse_tagvaluekey => tag"
-					severity note;
-				tag_offset := value_offset;
-				tag_length := value_length;
-				jso_index  := jso_index + 1;
+				tag_offset   := value_offset;
+				tag_length   := value_length;
+				jso_index    := jso_index + 1;
 				value_offset := jso_index;
 				value_length := jso'right-jso_index+1; 
 				skipws(jso, jso_index);
 				parse_value(jso, jso_index, value_offset, value_length);
+				assert ((log/log_parsetagvaluekey) mod 2=0)
+					report LF &
+						"parse_tagvaluekey => tag       -> " & '"' & jso(tag_offset to tag_offset+tag_length-1) & '"' & LF &
+						"parse_tagvaluekey => value     -> " & '"' & jso(value_offset to value_offset+value_length-1) & '"' 
+					severity note;
+				assert ((log/log_parsetagvaluekey) mod 2=0) or jso_index <= jso'right
+					report LF &
+						"parse_tagvaluekey => jso_index passed end of the jso -> " & natural'image(jso_index)
+					severity note;
+				-- assert ((log/log_parsetagvaluekey) mod 2=0) or jso_index > jso'right
+					-- report LF &
+						-- "parse_tagvaluekey => jso(jso_index) -> " & natural'image(jso_index) & ':' & character'image(jso(jso_index))
+					-- severity note;
 			end if;
+		else
+			assert ((log/log_parsetagvaluekey) mod 2=0)
+				report LF &
+					"parse_tagvaluekey => string value -> " & '"' & jso(value_offset to value_offset+value_length-1) & '"' & LF &
+					"parse_tagvaluekey => jso_index passed end of the jso -> " & natural'image(jso_index)
+				severity note;
 		end if;
-		assert ((log/log_parsetagvaluekey) mod 2=0)
-			report "parse_tagvaluekey => tag -> " & '"' & jso(tag_offset to tag_offset+tag_length-1) & '"'
-			severity note;
-		assert ((log/log_parsetagvaluekey) mod 2=0)
-			report "parse_tagvaluekey => value -> " & '"' & jso(value_offset to value_offset+value_length-1) & '"'
-			severity note;
 		parse_key(jso, jso_index, key_offset, key_length);
 		assert ((log/log_parsetagvaluekey) mod 2=0)
-			report "parse_tagvaluekey => key -> " & '"' & jso(key_offset to key_offset+key_length-1) & '"'
-			severity note;
-		assert ((log/log_parsetagvaluekey) mod 2=0)
-			report "parse_tagvaluekey => jso_index -> " & natural'image(jso_index)
+			report LF &
+				"parse_tagvaluekey => key       -> " & '"' & jso(key_offset to key_offset+key_length-1) & '"' & LF &
+				"parse_tagvaluekey => jso_index -> " & natural'image(jso_index)
 			severity note;
 	end;
 		
@@ -451,86 +478,97 @@ package body jso is
 		variable value_length : natural;
 		variable position     : natural;
 		variable open_char    : character;
+		variable valid        : boolean;
 	begin
 		assert ((log/log_locatevalue) mod 2=0)
-			report "vvvvvvvvvvvvvvvvvvvv"
+			report LF &
+				"locaye_value => vvvvvvvvvvvvvvvvvvvv" & LF &
+				"locate_value => jso       -> " & natural'image(jso_index) & ':' & natural'image(jso'right) & " " & '"' & jso(jso_index to jso'right) & '"'
 			severity note;
-		assert ((log/log_locatevalue) mod 2=0)
-			report "locate_value => jso -> " & '"' & jso(jso_index to jso'right) & '"'
-			severity note;
-		assert ((log/log_locatevalue) mod 2=0)
-			report "locate_value => jso_index -> " & ''' & jso(jso_index) & '''
-			severity note;
-		offset    := 0;
-		length    := 0;
-		position  := 0;
-		open_char := '+';
 		parse_tagvaluekey(jso, jso_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length);
 		jso_index := value_offset;
+		offset    := tag_offset;
+		length    := 0;
+		position  := 0;
 		while jso_index <= jso'right loop
 			assert ((log/log_locatevalue) mod 2=0)
-				report "locale_value => jso_index start loop-> " & natural'image(jso_index) & " '" &jso(jso_index) & "'"
+				report LF &
+					"locale_value.loop => jso(jso_index) -> " & natural'image(jso_index) & ':' & character'image(jso(jso_index))
 				severity note;
 			skipws(jso, jso_index);
 			case jso(jso_index) is
 			when '['|'{' =>
 				assert ((log/log_locatevalue) mod 2=0)
-					report "locate_value => open"
+					report LF &
+						"locate_value => start -> " & natural'image(jso_index) & ':' & character'image(jso(jso_index))
 					severity note;
 				open_char := jso(jso_index);
 				jso_index := jso_index + 1;
 			when ',' =>
 				assert ((log/log_locatevalue) mod 2=0)
-					report "locate_value => next"
+					report LF & 
+						"locate_value => next position -> " & natural'image(jso_index) & ':' & character'image(jso(jso_index))
 					severity note;
 				position  := position + 1;
 				jso_index := jso_index + 1;
 			when ']' =>
 				assert open_char='['
-					report "locate_value => wrong close key " & ''' & open_char & ''' & " " & ''' & jso(jso_index) & '''
+					report LF & 
+						"locate_value => wrong close key at " & natural'image(jso_index) & " open with  " & ''' & open_char & ''' & " close by " & character'image(jso(jso_index))
 					severity failure;
 				assert ((log/log_locatevalue) mod 2=0)
-					report "locate_value => close"
+					report LF & 
+						"locate_value => close -> " & natural'image(jso_index) & ':' & character'image(jso(jso_index))
 					severity note;
 				jso_index := jso_index + 1;
 			when '}' =>
 				assert open_char='{'
-					report "locate_value => wrong close key " & ''' & open_char & ''' & " " & ''' & jso(jso_index) & '''
+					report LF & 
+						"locate_value => wrong close key " & ''' & open_char & ''' & " "  & natural'image(jso_index) & ':' & character'image(jso(jso_index))
 					severity failure;
 				assert ((log/log_locatevalue) mod 2=0)
-					report "locate_value => close"
+					report LF & 
+						"locate_value => close -> " & natural'image(jso_index) & ':' & character'image(jso(jso_index))
 					severity note;
 				jso_index := jso_index + 1;
 			when others =>
 			end case;
 			parse_tagvaluekey(jso, jso_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length);
 			assert ((log/log_locatevalue) mod 2=0)
-				report "locale_value => jso -> " & jso(value_offset to value_offset+value_length-1)
+				report LF & 
+					"locate_value => jso -> " & natural'image(value_offset) & ':' & natural'image(value_offset+value_length-1) & " " & '"' & jso(value_offset to value_offset+value_length-1) & '"'
 				severity note;
 			if isdigit(tag(tag'left)) then
 				if to_natural(tag) <= position then
 					assert ((log/log_locatevalue) mod 2=0)
-						report "locate_value => tag -> " & jso(tag_offset to tag_offset+tag_length-1)
+						report LF & 
+						"locate_value => tag -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & jso(tag_offset to tag_offset+tag_length-1)
 						severity note;
+					offset := tag_offset;
+					length := jso_index-offset;
 					exit;
 				end if;
 			elsif isalnum(tag(tag'left)) then
 				if tag=jso(tag_offset to tag_offset+tag_length-1) then
+					offset := tag_offset;
+					length := jso_index-offset;
 					exit;
 				end if;
 			end if;
-			assert ((log/log_locatevalue) mod 2=0)
-				report "locale_value => jso_index end loop-> " & natural'image(jso_index) & " '" &jso(jso_index) & "'"
-				severity note;
+			-- assert ((log/log_locatevalue) mod 2=0)
+				-- report LF & 
+					-- "locale_value => jso_index end loop-> " & natural'image(jso_index) & " '" &jso(jso_index) & "'"
+				-- severity note;
 		end loop;
 		assert ((log/log_locatevalue) mod 2=0)
-			report "locate_value -> " & jso(tag_offset to tag_offset+tag_length-1) & " : '" & jso(value_offset to jso_index-1) & '''
+			report LF & 
+				"locate_value => tag   -> " & natural'image(tag_offset)   & ':' & natural'image(tag_offset+tag_length-1) & '"' & jso(tag_offset   to tag_offset+tag_length-1) & '"' & LF & 
+				"locate_value -> value -> " & natural'image(value_offset) & ':' & natural'image(jso_index-1)             & '"' & jso(value_offset to jso_index-1) & '"'
 			severity note;
 		assert ((log/log_locatevalue) mod 2=0)
-			report "^^^^^^^^^^^^^^^^^^^^"
+			report LF & 
+				"locate_value => ^^^^^^^^^^^^^^^^^^^^"
 			severity note;
-		offset := tag_offset;
-		length := jso_index-tag_offset;
 	end;
 
 	procedure resolve (
@@ -553,30 +591,28 @@ package body jso is
 	begin
 		jso_index := jso'left;
 		parse_tagvaluekey (jso, jso_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length);
-		assert ((log/log_resolve) mod 2=0)
-			report "resolve => keytag_length, keytag -> " & natural'image(keytag_length) & ", " & '"' & jso(keytag_offset to keytag_offset+keytag_length-1) & '"'
-			severity note;
-		assert ((log/log_resolve) mod 2=0)
-			report "resolve => value_offset, value_length -> " & natural'image(value_offset) & " : " & natural'image(value_length)
-			severity note;
-		assert ((log/log_resolve) mod 2=0)
-			report "resolve => keytag -> " & jso(keytag_offset to keytag_offset+keytag_length-1)
+		assert ((log/log_resolve) mod 2=0) 
+			report "resolve => keytag -> " & natural'image(keytag_offset) & ":" & natural'image(keytag_length) & ":" & '"' & jso(keytag_offset to keytag_offset+keytag_length-1) & '"' & LF &
+			       "resolve => value  -> " & natural'image(value_offset)  & ":" & natural'image(value_length)  & ":" & '"' & jso(value_offset  to value_offset+value_length-1)   & '"' & LF
 			severity note;
 		if keytag_length/=0 then
 			keytag_index := keytag_offset;
-			while keytag_index < keytag_offset+keytag_length loop
+			loop
 				parse_keytag(jso, keytag_index, tag_offset, tag_length);
+				if tag_length=0 then
+					exit;
+				end if;
 				assert ((log/log_resolve) mod 2=0)
-					report "resolve => keytag -> " & jso(tag_offset to tag_offset+tag_length-1)
-					severity note;
-				assert ((log/log_resolve) mod 2=0)
-					report "resolve => jso_index " & natural'image(jso_index)
+					report "resolve => tag         -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & jso(tag_offset to tag_offset+tag_length-1) & LF &
+					       "resolve => jso_index   -> " & natural'image(jso_index)
 					severity note;
 				locate_value(jso, value_offset, jso(tag_offset to tag_offset+tag_length-1), jso_offset, jso_length);
+				assert jso_length/=0
+					report "resolve => invalid key -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & jso(tag_offset to tag_offset+tag_length-1)
+					severity failure;
 				assert ((log/log_resolve) mod 2=0)
-					report "resolve => key:value -> " & 
-						'"' & jso(tag_offset to tag_offset+tag_length-1) & '"' & ":" &
-						'"' & jso(jso_offset to jso_offset+jso_length-1) & '"'
+					report "resolve => key         -> " & '"' & natural'image(tag_offset) & ":" & natural'image(tag_length) & jso(tag_offset to tag_offset+tag_length-1) & '"' & LF &
+					       "resolve => value       -> " & '"' & natural'image(jso_offset) & ":" & natural'image(jso_length) & jso(jso_offset to jso_offset+jso_length-1) & '"'
 					severity note;
 				value_offset := jso_offset;
 				resolve(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
@@ -597,6 +633,38 @@ package body jso is
 	begin
 		resolve (jso, jso_offset, jso_length);
 		return jso(jso_offset to jso_offset+jso_length-1);
+	end;
+
+	function resolve (
+		constant jso : string)
+		return natural is
+		variable jso_offset : natural;
+		variable jso_length : natural;
+	begin
+		resolve (jso, jso_offset, jso_length);
+		return to_natural(jso(jso_offset to jso_offset+jso_length-1));
+	end;
+
+	function resolve (
+		constant jso : string)
+		return boolean is
+		variable jso_offset : natural;
+		variable jso_length : natural;
+	begin
+		resolve (jso, jso_offset, jso_length);
+		if jso(jso_offset to jso_offset+jso_length-1)="true" then
+			return true;
+		else
+			return false;
+		end if;
+	end;
+
+	function "&" (
+		constant jso : jso;
+		constant key : string)
+		return natural is
+	begin
+		return resolve(string(jso) & key);
 	end;
 
 end;

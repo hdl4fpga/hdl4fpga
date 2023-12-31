@@ -228,6 +228,8 @@ HDL4FPGA__link_mii__graphics = $(LIB_HDL4FPGA)/link_mii/graphics.dat
 HDL4FPGA__link_mii = $(LIB_HDL4FPGA)/link_mii/_primary.dat
 HDL4FPGA__latency__def = $(LIB_HDL4FPGA)/latency/def.dat
 HDL4FPGA__latency = $(LIB_HDL4FPGA)/latency/_primary.dat
+HDL4FPGA__jso__body = $(LIB_HDL4FPGA)/jso/body.dat
+HDL4FPGA__jso = $(LIB_HDL4FPGA)/jso/_primary.dat
 HDL4FPGA__ipv4_tx__def = $(LIB_HDL4FPGA)/ipv4_tx/def.dat
 HDL4FPGA__ipv4_tx = $(LIB_HDL4FPGA)/ipv4_tx/_primary.dat
 HDL4FPGA__ipv4_rx__def = $(LIB_HDL4FPGA)/ipv4_rx/def.dat
@@ -597,6 +599,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__link_mii) \
     $(HDL4FPGA__latency__def) \
     $(HDL4FPGA__latency) \
+    $(HDL4FPGA__jso__body) \
+    $(HDL4FPGA__jso) \
     $(HDL4FPGA__ipv4_tx__def) \
     $(HDL4FPGA__ipv4_tx) \
     $(HDL4FPGA__ipv4_rx__def) \
@@ -1548,6 +1552,10 @@ $(HDL4FPGA__ipv4_tx__def) : ../mii/ipv4_tx.vhd \
 		$(STD__textio)
 	$(VCOM) -2002 -work hdl4fpga ../mii/ipv4_tx.vhd
 
+$(HDL4FPGA__jso) \
+$(HDL4FPGA__jso__body) : ../basic/jso.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/jso.vhd
+
 $(HDL4FPGA__latency) \
 $(HDL4FPGA__latency__def) : ../basic/latency.vhd \
 		$(IEEE__numeric_std) \
@@ -1668,6 +1676,7 @@ $(HDL4FPGA__rom__def) : ../basic/rom.vhd \
 
 $(HDL4FPGA__scopeio) \
 $(HDL4FPGA__scopeio__beh) : ../scope/scopeio.vhd \
+		$(HDL4FPGA__jso) \
 		$(HDL4FPGA__scopeio_video) \
 		$(HDL4FPGA__scopeio_amp) \
 		$(HDL4FPGA__scopeio_rgtrgain) \
@@ -1959,6 +1968,7 @@ $(HDL4FPGA__scopeio_tds__mix) : ../scope/scopeio_tds.vhd \
 
 $(HDL4FPGA__scopeio_textbox) \
 $(HDL4FPGA__scopeio_textbox__def) : ../scope/scopeio_textbox.vhd \
+		$(HDL4FPGA__jso) \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__cgaram) \
 		$(HDL4FPGA__scopeio_float2btof) \
@@ -2002,6 +2012,7 @@ $(HDL4FPGA__scopeio_trigger__beh) : ../scope/scopeio_trigger.vhd \
 
 $(HDL4FPGA__scopeio_video) \
 $(HDL4FPGA__scopeio_video__beh) : ../scope/scopeio_video.vhd \
+		$(HDL4FPGA__jso) \
 		$(HDL4FPGA__scopeio_pointer) \
 		$(HDL4FPGA__scopeio_palette) \
 		$(HDL4FPGA__scopeio_segment) \
@@ -2030,6 +2041,7 @@ $(HDL4FPGA__scopeio_video__beh) : ../scope/scopeio_video.vhd \
 
 $(HDL4FPGA__scopeiopkg) \
 $(HDL4FPGA__scopeiopkg__body) : ../scope/scopeiopkg.vhd \
+		$(HDL4FPGA__jso) \
 		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__base) \
