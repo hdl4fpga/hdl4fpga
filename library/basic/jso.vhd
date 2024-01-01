@@ -37,20 +37,20 @@ package jso is
 
 	subtype jso is string;
 
-	function "&" (
+	function "**" (
 		constant jso : jso;
 		constant key : string)
 		return natural;
 
-	function "&" (
+	function "**" (
 		constant jso : jso;
 		constant key : string)
 		return boolean;
 
-	-- function "&" (
-		-- constant obj : jso;
-		-- constant key : string)
-		-- return jso;
+	function "**" (
+		constant obj : jso;
+		constant key : string)
+		return jso;
 end;
 
 package body jso is
@@ -669,7 +669,7 @@ package body jso is
 		end if;
 	end;
 
-	function "&" (
+	function "**" (
 		constant jso : jso;
 		constant key : string)
 		return natural is
@@ -677,7 +677,7 @@ package body jso is
 		return resolve(string(jso) & key);
 	end;
 
-	function "&" (
+	function "**" (
 		constant jso : jso;
 		constant key : string)
 		return boolean is
@@ -685,12 +685,12 @@ package body jso is
 		return resolve(string(jso) & key);
 	end;
 
-	-- function "&" (
-		-- constant obj : jso;
-		-- constant key : string)
-		-- return jso is
-	-- begin
-		-- return resolve(string(obj) & key);
-	-- end;
+	function "**" (
+		constant obj : jso;
+		constant key : string)
+		return jso is
+	begin
+		return resolve(string(obj) & key);
+	end;
 
 end;
