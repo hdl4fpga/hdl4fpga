@@ -128,18 +128,102 @@ package body jso is
 
 	function to_natural (
 		constant value : string;
-		constant base  : natural := 10) 
+		constant base  : natural) 
 		return natural is
 		variable retval : natural;
 	begin
 		retval := 0;
 		for i in value'range loop
-			retval := base*retval;
-			retval := (character'pos(value(i))-character'pos('0')) + retval;
+			if value(i)/='_' then
+				retval := base*retval;
+				if character'pos(value(i)) >= character'pos('0') and (character'pos(value(i))-character'pos('0')) <= (base-1) mod 10 then
+					retval := (character'pos(value(i))-character'pos('0')) + retval;
+				elsif character'pos(value(i)) >= character'pos('a') and (character'pos(value(i))-character'pos('a')) < (base-10) then
+					retval := (character'pos(value(i))-character'pos('a')) + 10 + retval;
+				elsif character'pos(value(i)) >= character'pos('A') and (character'pos(value(i))-character'pos('A')) < (base-10) then
+					retval := (character'pos(value(i))-character'pos('A')) + 10 + retval;
+				else
+					assert false
+						report "Wrong number " & character'image(value(i)) & " " & natural'image(base)
+						severity failure;
+				end if;
+			end if;
 		end loop;
 		return retval;
 	end;
 
+	function to_natural (
+		constant value : string)
+		return natural is
+		variable retval : natural;
+	begin
+		if value'length > 1 then
+			if value(value'left)='0' then
+				case value(value'left+1) is
+				when 'x'|'X' =>
+					return to_natural(value(value'left+2 to value'right), 16);
+				when 'b'|'B' =>
+					return to_natural(value(value'left+2 to value'right), 2);
+				when others =>
+					return to_natural(value(value'left+2 to value'right), 10);
+				end case;
+			else
+				return to_natural(value, 10);
+			end if;
+		else
+			return to_natural(value, 10);
+		end if;
+	end;
+
+	function to_real(
+		constant value : string) 
+		return real is
+		variable idx  : natural;
+		variable sign : real;
+		variable mant : real;
+		variable exp  : integer;
+	begin
+		idx := value'left;
+		if value(idx) = '-' then
+			sign := -1.0;
+			idx  := idx + 1;
+		else
+			sign := 1.0;
+			if value(idx) = '+' then
+				idx := idx + 1;
+			end if;
+		end if;
+
+		mant := 0.0;
+		exp  := 0;
+		while idx < value'right loop
+			if value(idx)='.' then
+				idx := idx + 1;
+				exit;
+			end if;
+			mant := 10.0*mant + real(character'pos(value(idx))-character'pos('0'));
+			idx  := idx + 1;
+		end loop;
+
+		while idx < value'right loop
+			if value(idx)='e' then
+				idx := idx + 1;
+				exit;
+			end if;
+			mant := 10.0*mant + real(character'pos(value(idx))-character'pos('0'));
+			exp  := exp - 1;
+			idx  := idx + 1;
+		end loop;
+
+		exp := 0;
+		while idx < value'right loop
+			exp := 10*exp + (character'pos(value(idx))-character'pos('0'));
+			idx := idx + 1;
+		end loop;
+
+		return 0.0;
+	end;
+	
 	procedure skipws (
 		constant jso       : in    string;
 		variable jso_index : inout natural) is

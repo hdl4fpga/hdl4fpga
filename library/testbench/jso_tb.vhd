@@ -57,7 +57,7 @@ begin
            "        font_width :  8,      " &
            "        inside     : false},  " &
            "    main : {                  " &
-           "        top        : 23,      " & 
+           "        top        : 0x2_3,      " & 
            "        left       :  3,      " & 
            "        right      :  0,      " & 
            "        bottom     :  0,      " & 
@@ -72,7 +72,7 @@ begin
            "        horizontal : 1}       " &
            "}                             ";
     begin
-        report "VALUE : " & ''' & test**"[5].top " & ''';
+        report "VALUE : " & ''' & natural'image(test**"[5].top") & ''';
         wait;
     end process;
 end;

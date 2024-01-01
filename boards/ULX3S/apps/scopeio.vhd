@@ -334,22 +334,16 @@ begin
             "       background-color : 0xff_00_00_00}}," &
             "  vt : [                      " &
             "   { label : GN14,            " &
-                  vt_step              & ',' &
             "     color : 0xff_ff_ff_ff},  " &
             "   { label : GP14,            " &
-                  vt_step              & ',' &
             "     color : 0xff_ff_ff_00},  " & -- vt(1)
             "   { label : GN15,            " &
-                  vt_step              & ',' &
             "     color : 0xff_ff_00_ff},  " & -- vt(2)
             "   { label : GP15,            " &
-                  vt_step              & ',' &
             "     color : 0xff_ff_00_00},  " & -- vt(3)
             "   { label : GN16,            " &
-                  vt_step              & ',' &
             "     color : 0xff_00_ff_ff},  " & -- vt(4)
             "   { label : GP16,            " &
-                  vt_step              & ',' &
             "     color : 0xff_00_ff_00},  " & -- vt(5)
             "   { label : GN17,            " &
             "     color : 0xff_00_00_ff},  " & -- vt(6)
