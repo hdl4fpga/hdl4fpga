@@ -277,7 +277,6 @@ begin
     scopeio_e : entity hdl4fpga.scopeio
     generic map (
         videotiming_id   => video_params.timing,
-        vt_steps         => (0 to inputs-1 => vt_step),
         inputs           => inputs,
         layout           =>
             "{ 720 : {                     " &   
@@ -294,19 +293,15 @@ begin
             "   axis : {                   " &
             "       fontsize   : 8,        " &
             "       horizontal : {         " &
-            "           unit {             " &
-            "               magnitud : 31.25,"
-            "               ratio    : micro},"
-            "           height : 8,       " &
-            "           inside : false,   " &
+            "           unit   : '31.25e-6', " &
+            "           height : 8,        " &
+            "           inside : false,    " &
             "           color  : 0xff_ff_ff_ff" &
             "           background-color : 0xff_00_00_ff}," &
-            "       vertical : {          " &
-            "           unit {             " &
-            "               magnitud : 50.0,"
-            "               ratio    : milli},"
+            "       vertical : {           " &
+            "           unit   : '50.00e-6'" &
             "           width  :           " & natural'image(6*8) & ','  &
-            "           rotate :  ccw0,    " &
+            "           rotate : ccw0,     " &
             "           inside : false,    " &
             "           color  : 0xff_ff_ff_ff" &
             "           background-color : 0xff_00_00_ff}}," &
@@ -334,20 +329,28 @@ begin
             "       background-color : 0xff_00_00_00}}," &
             "  vt : [                      " &
             "   { label : GN14,            " &
+            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_ff_ff_ff},  " &
             "   { label : GP14,            " &
+            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_ff_ff_00},  " & -- vt(1)
             "   { label : GN15,            " &
+            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_ff_00_ff},  " & -- vt(2)
             "   { label : GP15,            " &
+            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_ff_00_00},  " & -- vt(3)
             "   { label : GN16,            " &
+            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_00_ff_ff},  " & -- vt(4)
             "   { label : GP16,            " &
+            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_00_ff_00},  " & -- vt(5)
             "   { label : GN17,            " &
+            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_00_00_ff},  " & -- vt(6)
             "   { label : GP17,            " &
+            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_ff_ff_ff}]}",   -- vt(7)
         hz_factors       => (
              0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),

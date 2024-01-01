@@ -40,12 +40,17 @@ package jso is
 	function "**" (
 		constant jso : jso;
 		constant key : string)
+		return boolean;
+
+	function "**" (
+		constant jso : jso;
+		constant key : string)
 		return natural;
 
 	function "**" (
 		constant jso : jso;
 		constant key : string)
-		return boolean;
+		return real;
 
 	function "**" (
 		constant obj : jso;
@@ -179,24 +184,21 @@ package body jso is
 		constant value : string) 
 		return real is
 		variable idx  : natural;
-		variable sign : real;
+		variable sign : character;
 		variable mant : real;
 		variable exp  : integer;
 	begin
 		idx := value'left;
-		if value(idx) = '-' then
-			sign := -1.0;
+		case value(idx) is
+		when '+'|'-' =>
+			sign := value(idx);
 			idx  := idx + 1;
-		else
-			sign := 1.0;
-			if value(idx) = '+' then
-				idx := idx + 1;
-			end if;
-		end if;
+		when others =>
+			sign := '+';
+		end case;
 
 		mant := 0.0;
-		exp  := 0;
-		while idx < value'right loop
+		while idx <= value'right loop
 			if value(idx)='.' then
 				idx := idx + 1;
 				exit;
@@ -205,23 +207,48 @@ package body jso is
 			idx  := idx + 1;
 		end loop;
 
-		while idx < value'right loop
+		exp := 0;
+		while idx <= value'right loop
 			if value(idx)='e' then
 				idx := idx + 1;
 				exit;
 			end if;
 			mant := 10.0*mant + real(character'pos(value(idx))-character'pos('0'));
-			exp  := exp - 1;
+			exp  := exp + 1;
 			idx  := idx + 1;
 		end loop;
+		while exp > 0 loop
+			mant := mant / 10.0;
+			exp  := exp - 1;
+		end loop;
+		if sign='-' then
+			mant := -mant;
+		end if;
+
+		if idx > value'right then
+			return mant;
+		end if;
+
+		case value(idx) is
+		when '+'|'-' =>
+			sign := value(idx);
+			idx  := idx + 1;
+		when others =>
+			sign := '+';
+		end case;
+
+		report real'image(mant);
 
 		exp := 0;
-		while idx < value'right loop
+		while idx <= value'right loop
 			exp := 10*exp + (character'pos(value(idx))-character'pos('0'));
 			idx := idx + 1;
 		end loop;
+		if sign='-' then
+			exp := -exp;
+		end if;
 
-		return 0.0;
+		return mant*10.0**exp;
 	end;
 	
 	procedure skipws (
@@ -731,16 +758,6 @@ package body jso is
 
 	function resolve (
 		constant jso : string)
-		return natural is
-		variable jso_offset : natural;
-		variable jso_length : natural;
-	begin
-		resolve (jso, jso_offset, jso_length);
-		return to_natural(jso(jso_offset to jso_offset+jso_length-1));
-	end;
-
-	function resolve (
-		constant jso : string)
 		return boolean is
 		variable jso_offset : natural;
 		variable jso_length : natural;
@@ -751,6 +768,34 @@ package body jso is
 		else
 			return false;
 		end if;
+	end;
+
+	function resolve (
+		constant jso : string)
+		return natural is
+		variable jso_offset : natural;
+		variable jso_length : natural;
+	begin
+		resolve (jso, jso_offset, jso_length);
+		return to_natural(jso(jso_offset to jso_offset+jso_length-1));
+	end;
+
+	function resolve (
+		constant jso : string)
+		return real is
+		variable jso_offset : natural;
+		variable jso_length : natural;
+	begin
+		resolve (jso, jso_offset, jso_length);
+		return to_real(jso(jso_offset to jso_offset+jso_length-1));
+	end;
+
+	function "**" (
+		constant jso : jso;
+		constant key : string)
+		return boolean is
+	begin
+		return resolve(string(jso) & key);
 	end;
 
 	function "**" (
@@ -764,7 +809,7 @@ package body jso is
 	function "**" (
 		constant jso : jso;
 		constant key : string)
-		return boolean is
+		return real is
 	begin
 		return resolve(string(jso) & key);
 	end;

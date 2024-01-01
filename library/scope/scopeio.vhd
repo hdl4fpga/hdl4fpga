@@ -44,8 +44,6 @@ entity scopeio is
 		layout         : string;
 		max_delay      : natural         := 2**14;
 		vt_steps       : real_vector     := (1 to 0 => 0.0);
-		hz_step        : real            := 0.0;
-		hz_unit        : real            := 25.0;
 		vt_unit        : real            := 20.0;
 		min_storage    : natural         := 256; -- samples, storage size will be equal or larger than this
 
@@ -61,20 +59,8 @@ entity scopeio is
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(1+0)*5**(0+0),  2 => 2**(2+0)*5**(0+0),  3 => 2**(0+0)*5**(1+0),
 			 4 => 2**(0+1)*5**(0+1),  5 => 2**(1+1)*5**(0+1),  6 => 2**(2+1)*5**(0+1),  7 => 2**(0+1)*5**(1+1),
 			 8 => 2**(0+2)*5**(0+2),  9 => 2**(1+2)*5**(0+2), 10 => 2**(2+2)*5**(0+2), 11 => 2**(0+2)*5**(1+2),
-			12 => 2**(0+3)*5**(0+3), 13 => 2**(1+3)*5**(0+3), 14 => 2**(2+3)*5**(0+3), 15 => 2**(0+3)*5**(1+3));
+			12 => 2**(0+3)*5**(0+3), 13 => 2**(1+3)*5**(0+3), 14 => 2**(2+3)*5**(0+3), 15 => 2**(0+3)*5**(1+3)));
 		
-		input_names      : tag_vector := (1 to 0 => notext);
-		default_tracesfg : std_logic_vector := b"1_111";
-		default_gridfg   : std_logic_vector := b"1_100";
-		default_gridbg   : std_logic_vector := b"1_000";
-		default_hzfg     : std_logic_vector := b"1_111";
-		default_hzbg     : std_logic_vector := b"1_001";
-		default_vtfg     : std_logic_vector := b"1_111";
-		default_vtbg     : std_logic_vector := b"1_001";
-		default_textfg   : std_logic_vector := b"1_111";
-		default_textbg   : std_logic_vector := b"1_000";
-		default_sgmntbg  : std_logic_vector := b"1_011";
-		default_bg       : std_logic_vector := b"1_111");
 	port (
 		tp               : out std_logic_vector(1 to 32);
 		sio_clk          : in  std_logic := '-';
@@ -292,20 +278,7 @@ begin
 		pclk           => pclk,
 		layout         => layout,
 		inputs         => inputs,
-		hz_unit        => hz_unit/femto,
-		vt_unit        => vt_unit/femto,
-		input_names    => input_names,
-		dflt_tracesfg  => default_tracesfg,
-		dflt_gridfg    => default_gridfg,
-		dflt_gridbg    => default_gridbg,
-		dflt_hzfg      => default_hzfg,
-		dflt_hzbg      => default_hzbg,
-		dflt_vtfg      => default_vtfg,
-		dflt_vtbg      => default_vtbg,
-		dflt_textfg    => default_textfg,
-		dflt_textbg    => default_textbg,
-		dflt_sgmntbg   => default_sgmntbg,
-		dflt_bg        => default_bg)
+		vt_unit        => vt_unit/femto)
 	port map (
 		tp => tp,
 		rgtr_clk       => sio_clk,
