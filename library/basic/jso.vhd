@@ -157,6 +157,73 @@ package body jso is
 		return retval;
 	end;
 
+	function to_stdlogicvector (
+		constant value : string)
+		return std_logic_vector is
+
+		function bin_to_bin(
+			constant value : string)
+			return std_logic_vector is
+			variable retval : std_logic_vector(0 to value'length-1);
+			variable j : natural;
+		begin
+			j := value'left;
+			for i in retval'range loop
+				if value(j)='0' then
+					retval(i) := '0';
+				elsif value(j)='1' then
+					retval(i) := '1';
+				else
+					assert false
+						report "wrong character value -> " & character'value(value(i))
+						severity failure;
+				end if;
+				j := j + 1;
+			end loop;
+			return retval;
+		end;
+
+		function hex_to_bin(
+			constant value : string)
+			return std_logic_vector is
+			variable retval : std_logic_vector(0 to 4*value'length-1);
+			variable j : natural;
+		begin
+			j := 0;
+			for i in value'range loop
+				if to_integer(value(i))/(i mod 4)='0' then
+					retval(j) := '0';
+				elsif value(i)='1' then
+					retval(j) := '1';
+				else
+					assert false
+						report "wrong character value -> " & character'value(value(i))
+						severity failure;
+				end if;
+				if i mod 4 = 3 then
+					j := j + 1;
+				end if;
+			end loop;
+			return retval;
+		end;
+
+	begin
+		if value'length > 1 then
+			if value(value'left)='0' then
+				case value(value'left+1) is
+				when 'x'|'X' =>
+				when 'b'|'B' =>
+				when others =>
+				end case;
+			else
+			end if;
+		else
+			assert false
+				report "value'range is nul"
+				severity failure;
+		end if;
+	end;
+
 	function to_natural (
 		constant value : string)
 		return natural is
@@ -170,7 +237,7 @@ package body jso is
 				when 'b'|'B' =>
 					return to_natural(value(value'left+2 to value'right), 2);
 				when others =>
-					return to_natural(value(value'left+2 to value'right), 10);
+					return to_natural(value(value'left+1 to value'right), 10);
 				end case;
 			else
 				return to_natural(value, 10);
