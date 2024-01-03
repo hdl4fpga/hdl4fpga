@@ -145,7 +145,7 @@ package body jso is
 			return character'pos(char)-character'pos('A')+10;
 		when others =>
 			assert false
-				report "wrong digit"
+				report "wrong digit " & character'image(char)
 				severity failure;
 		end case;
 	end;
@@ -187,15 +187,24 @@ package body jso is
 			variable j        : natural;
 			variable retval   : std_logic_vector(0 to log2base*value'length-1);
 		begin
-			j := 0;
-			for i in value'range loop
-				if (to_integer(value(i))/2**(i mod log2base)) mod 2=0 then
-					retval(j) := '0';
+			j := value'left;
+			for i in retval'range loop
+				while value(j)='_' loop
+					j := j + 1;
+					if j > value'right then
+						return retval(0 to i-1);
+					end if;
+				end loop;
+				if (to_integer(value(j))/2**((log2base-1)-i mod log2base)) mod 2=0 then
+					retval(i) := '0';
 				else
-					retval(j) := '1';
+					retval(i) := '1';
 				end if;
 				if i mod log2base = log2base-1 then
 					j := j + 1;
+				end if;
+				if j > value'right then
+					return retval(0 to i);
 				end if;
 			end loop;
 			return retval;
@@ -206,11 +215,11 @@ package body jso is
 			if value(value'left)='0' then
 				case value(value'left+1) is
 				when 'x'|'X' =>
-					return to_bin(value, 4);
+					return to_bin(value(value'left+2 to value'right), 4);
 				when 'b'|'B' =>
-					return to_bin(value, 1);
+					return to_bin(value(value'left+2 to value'right), 1);
 				when others =>
-					return to_bin(value, 1);
+					return to_bin(value(value'left+1 to value'right), 1);
 				end case;
 			else
 				return to_bin(value, 1);
@@ -862,6 +871,7 @@ package body jso is
 		variable jso_length : natural;
 	begin
 		resolve (jso, jso_offset, jso_length);
+		report jso(jso_offset to jso_offset+jso_length-1);
 		return to_stdlogicvector(jso(jso_offset to jso_offset+jso_length-1));
 	end;
 

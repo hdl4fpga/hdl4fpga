@@ -76,7 +76,7 @@ begin
            "        inside     : false},  " &
            "    main : {                  " &
            "        top        : '.2331e-2'," & 
-           "        color      : 0xfabc,  " &
+           "        color      : 0b10_01,  " &
            "        left       :  3,      " & 
            "        right      :  0,      " & 
            "        bottom     :  0,      " & 
@@ -92,7 +92,7 @@ begin
            "}                             ";
     begin
         -- report "VALUE : " & ''' & real'image(test**"[5].top") & ''';
-        report "VALUE : " & ''' & to_string(std_logic_vector'(test**".main.top")) & ''';
+        report "VALUE : " & ''' & to_string(std_logic_vector'(test**".main.color")) & ''';
         wait;
     end process;
 end;
