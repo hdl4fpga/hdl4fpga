@@ -21,6 +21,9 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
+library ieee;
+use ieee.std_logic_1164.all;
+
 package jso is
 
 	function resolve (
@@ -51,6 +54,11 @@ package jso is
 		constant jso : jso;
 		constant key : string)
 		return real;
+
+	function "**" (
+		constant jso : jso;
+		constant key : string)
+		return std_logic_vector;
 
 	function "**" (
 		constant obj : jso;
@@ -128,7 +136,18 @@ package body jso is
 		constant char : character)
 		return integer is
 	begin
-		return character'pos(char)-character'pos('0');
+		case char is
+		when '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9' =>
+			return character'pos(char)-character'pos('0');
+		when 'A'|'B'|'C'|'D'|'E'|'F' =>
+			return character'pos(char)-character'pos('A')+10;
+		when 'a'|'b'|'c'|'d'|'e'|'f' =>
+			return character'pos(char)-character'pos('A')+10;
+		when others =>
+			assert false
+				report "wrong digit"
+				severity failure;
+		end case;
 	end;
 
 	function to_natural (
@@ -161,46 +180,21 @@ package body jso is
 		constant value : string)
 		return std_logic_vector is
 
-		function bin_to_bin(
-			constant value : string)
+		function to_bin(
+			constant value    : string;
+			constant log2base : natural)
 			return std_logic_vector is
-			variable retval : std_logic_vector(0 to value'length-1);
-			variable j : natural;
-		begin
-			j := value'left;
-			for i in retval'range loop
-				if value(j)='0' then
-					retval(i) := '0';
-				elsif value(j)='1' then
-					retval(i) := '1';
-				else
-					assert false
-						report "wrong character value -> " & character'value(value(i))
-						severity failure;
-				end if;
-				j := j + 1;
-			end loop;
-			return retval;
-		end;
-
-		function hex_to_bin(
-			constant value : string)
-			return std_logic_vector is
-			variable retval : std_logic_vector(0 to 4*value'length-1);
-			variable j : natural;
+			variable j        : natural;
+			variable retval   : std_logic_vector(0 to log2base*value'length-1);
 		begin
 			j := 0;
 			for i in value'range loop
-				if to_integer(value(i))/(i mod 4)='0' then
+				if (to_integer(value(i))/2**(i mod log2base)) mod 2=0 then
 					retval(j) := '0';
-				elsif value(i)='1' then
-					retval(j) := '1';
 				else
-					assert false
-						report "wrong character value -> " & character'value(value(i))
-						severity failure;
+					retval(j) := '1';
 				end if;
-				if i mod 4 = 3 then
+				if i mod log2base = log2base-1 then
 					j := j + 1;
 				end if;
 			end loop;
@@ -212,10 +206,14 @@ package body jso is
 			if value(value'left)='0' then
 				case value(value'left+1) is
 				when 'x'|'X' =>
+					return to_bin(value, 4);
 				when 'b'|'B' =>
+					return to_bin(value, 1);
 				when others =>
+					return to_bin(value, 1);
 				end case;
 			else
+				return to_bin(value, 1);
 			end if;
 		else
 			assert false
@@ -857,6 +855,16 @@ package body jso is
 		return to_real(jso(jso_offset to jso_offset+jso_length-1));
 	end;
 
+	function resolve (
+		constant jso : string)
+		return std_logic_vector is
+		variable jso_offset : natural;
+		variable jso_length : natural;
+	begin
+		resolve (jso, jso_offset, jso_length);
+		return to_stdlogicvector(jso(jso_offset to jso_offset+jso_length-1));
+	end;
+
 	function "**" (
 		constant jso : jso;
 		constant key : string)
@@ -877,6 +885,14 @@ package body jso is
 		constant jso : jso;
 		constant key : string)
 		return real is
+	begin
+		return resolve(string(jso) & key);
+	end;
+
+	function "**" (
+		constant jso : jso;
+		constant key : string)
+		return std_logic_vector is
 	begin
 		return resolve(string(jso) & key);
 	end;

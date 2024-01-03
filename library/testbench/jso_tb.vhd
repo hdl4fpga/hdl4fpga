@@ -31,6 +31,24 @@ use ieee.math_real.all;
 use work.jso.all;
 
 architecture jso_tb of testbench is
+    function to_string (
+        constant value : std_logic_vector)
+        return string is
+        variable retval : string(1 to value'length);
+        variable j : natural;
+    begin
+        j := retval'left;
+        for i in value'range loop
+            if value(i)='1' then
+                retval(j) := '1';
+            else
+                retval(j) := '0';
+            end if;
+            j := j + 1;
+        end loop;
+        return retval;
+    end;
+
 begin
     process 
         constant test : jso :=
@@ -57,7 +75,8 @@ begin
            "        font_width :  8,      " &
            "        inside     : false},  " &
            "    main : {                  " &
-           "        top        : '.2331e-2',      " & 
+           "        top        : '.2331e-2'," & 
+           "        color      : 0xfabc,  " &
            "        left       :  3,      " & 
            "        right      :  0,      " & 
            "        bottom     :  0,      " & 
@@ -72,7 +91,8 @@ begin
            "        horizontal : 1}       " &
            "}                             ";
     begin
-        report "VALUE : " & ''' & real'image(test**"[5].top") & ''';
+        -- report "VALUE : " & ''' & real'image(test**"[5].top") & ''';
+        report "VALUE : " & ''' & to_string(std_logic_vector'(test**".main.top")) & ''';
         wait;
     end process;
 end;
