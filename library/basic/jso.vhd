@@ -76,7 +76,7 @@ package body jso is
 	constant log_parsetagvaluekey : natural := 2**5;
 	constant log_locatevalue      : natural := 2**6;
 	constant log_resolve          : natural := 2**7;
-	constant log                  : natural := 0; --log_parsetagvaluekey; -- + log_resolve + log_locatevalue    + log_parsevalue ;
+	constant log                  : natural := log_parsestring; --log_parsetagvaluekey; -- + log_resolve + log_locatevalue    + log_parsevalue ;
 
 	function isws (
 		constant char : character;
@@ -108,9 +108,7 @@ package body jso is
 		constant char : character)
 		return boolean is
 	begin
-		if char='_' then
-			return true;
-		elsif character'pos('A') <= character'pos(char) and character'pos(char) <= character'pos('Z') then
+		if character'pos('A') <= character'pos(char) and character'pos(char) <= character'pos('Z') then
 			return true;
 		elsif character'pos('a') <= character'pos(char) and character'pos(char) <= character'pos('z') then
 			return true;
@@ -187,6 +185,7 @@ package body jso is
 			variable j        : natural;
 			variable retval   : std_logic_vector(0 to log2base*value'length-1);
 		begin
+			report value;
 			j := value'left;
 			for i in retval'range loop
 				while value(j)='_' loop
@@ -370,7 +369,12 @@ package body jso is
 			elsif isalnum(jso(jso_index)) then
 				jso_index := jso_index + 1;
 			else
-				exit;
+				case jso(jso_index) is
+				when '-'|'_' =>
+					jso_index := jso_index + 1;
+				when others =>
+					exit;
+				end case;
 			end if;
 		end loop;
 		length := jso_index-offset;
