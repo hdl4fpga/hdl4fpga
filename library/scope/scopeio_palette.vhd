@@ -34,8 +34,8 @@ entity scopeio_palette is
 		trace_dots  : in  std_logic_vector;
 		video_color : out std_logic_vector);
 
-		constant palette_size   : natural := pltid_order'length+trace_dots'length+1;
-		constant paletteid_size : natural := unsigned_num_bits(palette_size-1);
+		constant palette_size               : natural := pltid_order'length+trace_dots'length+1;
+		constant paletteid_size             : natural := unsigned_num_bits(palette_size-1);
 
 		constant inputs                     : natural          := jso(layout)**".inputs";
 		constant grid_color                 : std_logic_vector := jso(layout)**".grid.color";
