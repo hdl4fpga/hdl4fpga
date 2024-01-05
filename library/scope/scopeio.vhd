@@ -47,8 +47,6 @@ entity scopeio is
 		vt_unit        : real            := 20.0;
 		min_storage    : natural         := 256; -- samples, storage size will be equal or larger than this
 
-		inputs         : natural;
-
 		vt_gains       : natural_vector := (
 			 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
 			 4 => 2**17/(2**(0+1)*5**(0+1)),  5 => 2**17/(2**(1+1)*5**(0+1)),  6 => 2**17/(2**(2+1)*5**(0+1)),  7 => 2**17/(2**(0+1)*5**(1+1)),
@@ -88,6 +86,7 @@ entity scopeio is
 		video_sync       : out std_logic);
 
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
+	constant inputs        : natural := jso(layout)**(".inputs");
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 
 end;

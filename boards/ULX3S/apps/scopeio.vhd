@@ -98,7 +98,6 @@ architecture scopeio of ulx3s is
     signal usb_trdy      : std_logic := '1';
     signal usb_data      : std_logic_vector(si_data'range);
 
-
     signal adc_clk       : std_logic;
 
 begin
@@ -277,9 +276,9 @@ begin
     scopeio_e : entity hdl4fpga.scopeio
     generic map (
         videotiming_id   => video_params.timing,
-        inputs           => inputs,
         layout           =>
             "{ 720 : {                     " &   
+            "   inputs  : 8,               " &
             "   num_of_segments : 3,       " &
             "   display : {                " &
             "       width  : 1280,         " &

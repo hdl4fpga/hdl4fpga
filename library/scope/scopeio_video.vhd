@@ -303,7 +303,6 @@ begin
 	textbox_g : if textbox_width(layout)/=0 generate
 		scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
 		generic map (
-			inputs        => inputs,
 			max_delay     => max_delay, 
 			latency       => segmment_latency+input_latency,
 			layout        => layout,
