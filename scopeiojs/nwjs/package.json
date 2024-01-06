@@ -9,6 +9,7 @@
 		"start": "nw"
 	},
 	"dependencies": {
-	},
-	"devDependencies": {}
+		"nw": "^0.82.0",
+		"serialport": "^12.0.0"
+	}
 }

@@ -24,7 +24,7 @@
 // Asynchronous communication
 //
 
-const SerialPort = require('serialport');
+//const SerialPort = require('serialport');
 const Readline = SerialPort.parsers.Readline;
 
 const baudRates  = [ 9600, 38400, 115200 ];
@@ -109,7 +109,7 @@ function send(data) {
 				buffer[i] = data[i];
 		} else {
 			for (i=0; i < data.length; i++)
-				buffer[i] = data.charCodeAt(i);
+				buffer[i] = data[i] & 0xff;
 		}
 
 		buffer[i++] = 0xff;
