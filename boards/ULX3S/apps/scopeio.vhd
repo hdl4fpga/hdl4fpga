@@ -277,7 +277,7 @@ begin
     generic map (
         videotiming_id   => video_params.timing,
         layout           =>
-            "{ 720 : {                     " &   
+            "{                             " &   
             "   inputs  : 8,               " &
             "   num_of_segments : 3,       " &
             "   display : {                " &
@@ -325,7 +325,7 @@ begin
             "       bottom     : 1,        " &
             "       vertical   : 0,        " &
             "       horizontal : 1,        " &
-            "       background-color : 0xff_00_00_00}}," &
+            "       background-color : 0xff_00_00_00}," &
             "  vt : [                      " &
             "   { label : GN14,            " &
             "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
