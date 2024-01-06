@@ -305,8 +305,7 @@ begin
 		generic map (
 			max_delay     => max_delay, 
 			latency       => segmment_latency+input_latency,
-			layout        => layout,
-			vt_unit       => vt_unit)
+			layout        => layout)
 		port map (
 			rgtr_clk      => rgtr_clk,
 			rgtr_dv       => rgtr_dv,
@@ -366,8 +365,6 @@ begin
 	generic map (
 		input_latency => input_latency,
 		latency       => segmment_latency+input_latency,
-		inputs        => inputs,
-		vt_unit       => vt_unit,
 		layout        => layout)
 	port map (
 		rgtr_clk      => rgtr_clk,
@@ -439,17 +436,7 @@ begin
 
 	scopeio_palette_e : entity hdl4fpga.scopeio_palette
 	generic map (
-		dflt_tracesfg => dflt_tracesfg,
-		dflt_gridfg   => dflt_gridfg, 
-		dflt_gridbg   => dflt_gridbg, 
-		dflt_hzfg     => dflt_hzfg,
-		dflt_hzbg     => dflt_hzbg, 
-		dflt_vtfg     => dflt_vtfg,
-		dflt_vtbg     => dflt_vtbg, 
-		dflt_textbg   => dflt_textbg, 
-		dflt_textfg   => dflt_textfg, 
-		dflt_sgmntbg  => dflt_sgmntbg, 
-		dflt_bg       => dflt_bg)
+		layout        => layout)
 	port map (
 		rgtr_clk       => rgtr_clk,
 		rgtr_dv        => rgtr_dv,

@@ -112,7 +112,6 @@ package scopeiopkg is
 	constant rid_dmadata  : std_logic_vector := x"18";
 
 	constant pltid_gridfg    : natural :=  0;
-	constant pltid_gridbg    : natural :=  6;
 	constant pltid_vtfg      : natural :=  1;
 	constant pltid_vtbg      : natural :=  2;
 	constant pltid_hzfg      : natural :=  3;
@@ -120,6 +119,7 @@ package scopeiopkg is
 	constant pltid_textfg    : natural :=  9;
 	constant pltid_textbg    : natural :=  5;
 	constant pltid_sgmntbg   : natural :=  7;
+	constant pltid_gridbg    : natural :=  6;
 	constant pltid_scopeiobg : natural :=  8;
 
 	constant pltid_order : natural_vector := (
