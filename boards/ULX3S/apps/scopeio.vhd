@@ -287,7 +287,7 @@ begin
             "       unit   : 32,           " &
             "       width  :               " & natural'image(31*32+1) & ',' &
             "       height :               " & natural'image( 6*32+1) & ',' &
-            "       color  : 0xff_ff_00_00 " &
+            "       color  : 0xff_ff_00_00, " &
             "       background-color : 0xff_00_00_00}," &
             "   axis : {                   " &
             "       fontsize   : 8,        " &
@@ -295,20 +295,20 @@ begin
             "           unit   : '31.25e-6', " &
             "           height : 8,        " &
             "           inside : false,    " &
-            "           color  : 0xff_ff_ff_ff" &
+            "           color  : 0xff_ff_ff_ff," &
             "           background-color : 0xff_00_00_ff}," &
             "       vertical : {           " &
-            "           unit   : '50.00e-6'" &
+            "           unit   : '50.00e-6'," &
             "           width  :           " & natural'image(6*8) & ','  &
             "           rotate : ccw0,     " &
             "           inside : false,    " &
-            "           color  : 0xff_ff_ff_ff" &
+            "           color  : 0xff_ff_ff_ff," &
             "           background-color : 0xff_00_00_ff}}," &
             "   textbox : {                " &
-            "       width      :           " & natural'image(32*6+1) & ','&
             "       font_width :  8,       " &
+            "       width      :           " & natural'image(32*6+1) & ','&
             "       inside     : false,    " &
-            "       color      : 0xff_ff_ff_ff" &
+            "       color      : 0xff_ff_ff_ff," &
             "       background-color : 0xff_00_00_00}," &
             "   main : {                   " &
             "       top        : 23,       " & 

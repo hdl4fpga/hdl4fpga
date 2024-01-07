@@ -876,7 +876,7 @@ package body scopeiopkg is
 		variable mult  : real;
 	begin
 		assert unit >= 1.0  
-			report "Invalid unit value"
+			report "Invalid unit value " & real'image(unit)
 			severity failure;
 
 		mult  := 1.0;

@@ -76,7 +76,7 @@ package body jso is
 	constant log_parsetagvaluekey : natural := 2**5;
 	constant log_locatevalue      : natural := 2**6;
 	constant log_resolve          : natural := 2**7;
-	constant log                  : natural := log_parsestring; --log_parsetagvaluekey; -- + log_resolve + log_locatevalue    + log_parsevalue ;
+	constant log                  : natural := 0; --og_parsestring; --log_parsetagvaluekey; -- + log_resolve + log_locatevalue    + log_parsevalue ;
 
 	function isws (
 		constant char : character;
@@ -185,7 +185,7 @@ package body jso is
 			variable j        : natural;
 			variable retval   : std_logic_vector(0 to log2base*value'length-1);
 		begin
-			report value;
+			-- report value;
 			j := value'left;
 			for i in retval'range loop
 				while value(j)='_' loop
@@ -286,6 +286,9 @@ package body jso is
 				idx := idx + 1;
 				exit;
 			end if;
+			assert isdigit(value(idx))
+				report "wrong character to_real"
+				severity failure;
 			mant := 10.0*mant + real(character'pos(value(idx))-character'pos('0'));
 			exp  := exp + 1;
 			idx  := idx + 1;
@@ -294,6 +297,7 @@ package body jso is
 			mant := mant / 10.0;
 			exp  := exp - 1;
 		end loop;
+
 		if sign='-' then
 			mant := -mant;
 		end if;
@@ -309,8 +313,6 @@ package body jso is
 		when others =>
 			sign := '+';
 		end case;
-
-		report real'image(mant);
 
 		exp := 0;
 		while idx <= value'right loop
@@ -794,6 +796,7 @@ package body jso is
 			report "resolve => keytag -> " & natural'image(keytag_offset) & ":" & natural'image(keytag_length) & ":" & '"' & jso(keytag_offset to keytag_offset+keytag_length-1) & '"' & LF &
 			       "resolve => value  -> " & natural'image(value_offset)  & ":" & natural'image(value_length)  & ":" & '"' & jso(value_offset  to value_offset+value_length-1)   & '"' & LF
 			severity note;
+		-- report "resolve => keytag -> " & natural'image(keytag_offset) & ":" & natural'image(keytag_length) & ":" & '"' & jso(keytag_offset to keytag_offset+keytag_length-1) & '"';
 		if keytag_length/=0 then
 			keytag_index := keytag_offset;
 			loop
@@ -807,7 +810,8 @@ package body jso is
 					severity note;
 				locate_value(jso, value_offset, jso(tag_offset to tag_offset+tag_length-1), jso_offset, jso_length);
 				assert jso_length/=0
-					report "resolve => invalid key -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & jso(tag_offset to tag_offset+tag_length-1)
+					report "resolve => invalid key -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & jso(tag_offset to tag_offset+tag_length-1) & '"' & LF &
+					jso
 					severity failure;
 				assert ((log/log_resolve) mod 2=0)
 					report "resolve => key         -> " & '"' & natural'image(tag_offset) & ":" & natural'image(tag_length) & jso(tag_offset to tag_offset+tag_length-1) & '"' & LF &
@@ -875,7 +879,7 @@ package body jso is
 		variable jso_length : natural;
 	begin
 		resolve (jso, jso_offset, jso_length);
-		report jso(jso_offset to jso_offset+jso_length-1);
+		-- report jso(jso_offset to jso_offset+jso_length-1);
 		return to_stdlogicvector(jso(jso_offset to jso_offset+jso_length-1));
 	end;
 

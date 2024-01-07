@@ -43,7 +43,7 @@ entity scopeio_palette is
 		constant vertical_color             : std_logic_vector := jso(layout)**".axis.vertical.color";
 		constant vertical_backgroundcolor   : std_logic_vector := jso(layout)**".axis.vertical.background-color";
 		constant horizontal_color           : std_logic_vector := jso(layout)**".axis.horizontal.color";
-		constant horizontal_backgroundcolor : std_logic_vector := jso(layout)**".axis.horizontal.background.color";
+		constant horizontal_backgroundcolor : std_logic_vector := jso(layout)**".axis.horizontal.background-color";
 		constant textbox_color              : std_logic_vector := jso(layout)**".textbox.color";
 		constant textbox_backgroundcolor    : std_logic_vector := jso(layout)**".textbox.background-color";
 		constant segment_backgroundcolor    : std_logic_vector := jso(layout)**".segment.background-color";
@@ -83,7 +83,7 @@ architecture beh of scopeio_palette is
 		variable traces : std_logic_vector(0 to inputs-1);
 	begin
 		for i in 0 to inputs-1 loop
-			traces(i) := opacity(jso(layout)**("vt[" & natural'image(i) & "].color"));
+			traces(i) := opacity(jso(layout)**(".vt[" & natural'image(i) & "].color"));
 		end loop;
 		return gui & traces;
 	end;
@@ -113,17 +113,17 @@ architecture beh of scopeio_palette is
     		color(segment_backgroundcolor)    &
     		color(main_backgroundcolor)       &
     		color(textbox_backgroundcolor));
-		variable traces : std_logic_vector(0 to inputs*32*3/4-1);
+		variable traces : unsigned(0 to inputs*32*3/4-1);
 	begin
 		for i in 0 to inputs-1 loop
-			traces := jso(layout)**("vt[" & natural'image(i) & "].color");
-			traces := std_logic_vector(rotate_left(unsigned(traces), 32*3/4));
+			traces(0 to 32*3/4-1) := resize(unsigned(std_logic_vector'(jso(layout)**(".vt[" & natural'image(i) & "].color"))), 32*3/4);
+			traces := rotate_left(traces, 32*3/4);
 		end loop;
-		return gui & traces;
+		return gui & std_logic_vector(traces);
 	end;
 
 	signal trigger_opacity : std_logic := '1';
-	signal color_opacity   : std_logic_vector(0 to pltid_order'length+trace_dots'length) := init_opacity(layout);
+	signal color_opacity   : std_logic_vector(0 to pltid_order'length+trace_dots'length-1) := init_opacity(layout);
 
 	signal palette_dv         : std_logic;
 	signal palette_id         : std_logic_vector(0 to unsigned_num_bits(pltid_order'length+trace_dots'length+1-1)-1);

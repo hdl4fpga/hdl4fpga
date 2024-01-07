@@ -43,7 +43,6 @@ entity scopeio is
 		pclk           : real            := 0.0;
 		layout         : string;
 		max_delay      : natural         := 2**14;
-		vt_steps       : real_vector     := (1 to 0 => 0.0);
 		vt_unit        : real            := 20.0;
 		min_storage    : natural         := 256; -- samples, storage size will be equal or larger than this
 
@@ -212,7 +211,7 @@ begin
 				return retval;
 			end;
 
-			constant vt_step : real := vt_steps(i); -- diamond 3.7 workaround to avoid step => vt_steps(i)
+			constant vt_step : real := jso(layout)**(".vt[" & natural'image(i) & "].step"); -- diamond 3.7 workaround to avoid step => vt_steps(i)
 			constant gains  : natural_vector(vt_gains'range) := init_gains (
 				gains => vt_gains,
 				unit  => vt_unit,
