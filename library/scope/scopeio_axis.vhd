@@ -109,7 +109,7 @@ architecture def of scopeio_axis is
 	signal hz_ena   : std_logic;
 	signal hz_tv    : std_logic;
 
-	constant vt_float1245 : siofloat_vector := get_float1245(vt_unit*1.0e6);
+	constant vt_float1245 : siofloat_vector := get_float1245(vt_unit*1.0e12);
 
 	signal v_offset : std_logic_vector(vt_offset'range);
 	signal vt_exp   : signed(4-1 downto 0);

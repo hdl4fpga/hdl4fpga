@@ -486,7 +486,7 @@ package body scopeiopkg is
 	end;
 
 	function grid_x (
-		constant layout : string)
+		constant layout : jso)
 		return natural is
 		variable retval : natural := 0;
 	begin
@@ -506,21 +506,21 @@ package body scopeiopkg is
 	end;
 
 	function grid_width (
-		constant layout : string)
+		constant layout : jso)
 		return natural is
 	begin
 		return layout**".grid.width";
 	end;
 
 	function grid_height (
-		constant layout : string)
+		constant layout : jso)
 		return natural is
 	begin
 		return layout**".grid.height";
 	end;
 
 	function grid_unit (
-		constant layout : string)
+		constant layout : jso)
 		return natural is
 	begin
 		return layout**".grid.unit";

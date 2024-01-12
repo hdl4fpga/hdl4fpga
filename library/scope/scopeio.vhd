@@ -103,7 +103,7 @@ architecture beh of scopeio is
 	signal ampsample_dv       : std_logic;
 	signal ampsample_data     : std_logic_vector(0 to input_data'length-1);
 
-	constant capture_bits     : natural := unsigned_num_bits(max(resolve(layout&".num_of_segments")*grid_width(layout),min_storage)-1);
+	constant capture_bits     : natural := unsigned_num_bits(max(jso(layout)**".num_of_segments"*grid_width(layout),min_storage)-1);
 
 	signal video_addr         : std_logic_vector(0 to capture_bits-1);
 	signal video_frm          : std_logic;

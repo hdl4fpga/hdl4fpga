@@ -77,7 +77,7 @@ architecture beh of scopeio_layout is
 	signal mainbox_xon   : std_logic;
 	signal mainbox_yon   : std_logic;
 
-	signal sgmnt_decode  : std_logic_vector(0 to resolve(layout&".num_of_segments")-1);
+	signal sgmnt_decode  : std_logic_vector(0 to jso(layout)**".num_of_segments"-1);
 
 begin
 
@@ -105,7 +105,7 @@ begin
 		if rising_edge(video_clk) then
 			sgmntbox_on   <= '0';
 			sgmnt_decode <= (others => '0');
-			for i in 0 to resolve(layout&".num_of_segments")-1 loop
+			for i in 0 to jso(layout)**".num_of_segments"-1 loop
 				if main_boxon(box_id => i, x_div => mainbox_xdiv, y_div => mainbox_ydiv, layout => layout)='1' then
 					sgmntbox_on     <= mainbox_xon;
 					sgmnt_decode(i) <= '1';
@@ -251,7 +251,7 @@ begin
 					box_on  := xon and yon;
 
 					if vtaxis_width(layout)/=0  then
-						if resolve(layout&".axis.vertical.inside")  then
+						if jso(layout)**".axis.vertical.inside" then
 							vt_mask := unsigned(sgmntbox_x) srl font_bits;
 							if vtaxis_tickrotate(layout)="ccw90" or vtaxis_tickrotate(layout)="ccw270" then
 								vt_on <= setif(vt_mask=(vt_mask'range => '0')) and sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
@@ -291,7 +291,7 @@ begin
 					grid_on <= sgmnt_boxon(box_id => grid_boxid,   x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 
 					if textbox_width(layout)/=0  then
-						if resolve(layout&".textbox.inside") then
+						if jso(layout)**".textbox.inside" then
 							if 2**unsigned_num_bits(textbox_width(layout)-1)=textbox_width(layout) and (2**font_bits*(grid_width(layout)/2**font_bits)) mod textbox_width(layout)=0 then
 								vt_mask := unsigned(sgmntbox_x) srl textwidth_bits;
 								if unsigned(vt_mask)=to_unsigned(grid_width(layout)/textbox_width(layout)-1, vt_mask'length) then
@@ -340,7 +340,7 @@ begin
 		begin
 			if rising_edge(video_clk) then
 				base := (others => '0');
-				for i in 0 to resolve(layout&".num_of_segments")-1 loop
+				for i in 0 to jso(layout)**".num_of_segments"-1 loop
 					if sgmntbox_sel(i)='1' then
 						base := base or to_unsigned((grid_width(layout)-grid_width(layout) mod grid_unit(layout))*i, base'length);
 					end if;

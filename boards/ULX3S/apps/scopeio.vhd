@@ -162,8 +162,8 @@ begin
     end generate;
 
     assert io_link=io_usb
-    report "unsupported implementation "
-    severity FAILURE;
+        report "unsupported implementation "
+        severity FAILURE;
 
     inputs_b : block
         signal rgtr_id   : std_logic_vector(8-1 downto 0);
@@ -292,13 +292,13 @@ begin
             "   axis : {                   " &
             "       fontsize   : 8,        " &
             "       horizontal : {         " &
-            "           unit   : '31.25e-6', " &
+            "           unit   : 31.25e-6, " &
             "           height : 8,        " &
             "           inside : false,    " &
             "           color  : 0xff_ff_ff_ff," &
             "           background-color : 0xff_00_00_ff}," &
             "       vertical : {           " &
-            "           unit   : '50.00e-6'," &
+            "           unit   : 50.00e-6," &
             "           width  :           " & natural'image(6*8) & ','  &
             "           rotate : ccw0,     " &
             "           inside : false,    " &
