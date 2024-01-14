@@ -42,62 +42,188 @@ package scopeiopkg is
 	constant micro : real := 1.0e-6;
 	constant milli : real := 1.0e-3;
 
+	subtype i18n_langs is natural range 0 to 2-1;
+	constant lang_EN : i18n_langs := 0;
+	constant lang_ES : i18n_langs := 1;
+
+	subtype i18n_labelids is natural range 0 to 5-1;
+	type i18nlabelid_vector is array (natural range <>) of i18n_labelids;
+	constant label_hzdiv    : i18n_labelids := 0;
+	constant label_hzoffset : i18n_labelids := 1;
+	constant label_trigger  : i18n_labelids := 2;
+	constant label_vtdiv    : i18n_labelids := 3;
+	constant label_vtoffset : i18n_labelids := 4;
+
 	constant axisy_backscale : natural := 0;
 	constant axisx_backscale : natural := 1;
 	constant max_pixelsize : natural := 24;
 
+	constant textfont_width  : natural :=  8;
+	constant textfont_height : natural := 16;
+
+	-- type display_layout is record 
+		-- display_width    : natural;            -- Display's width
+		-- display_height   : natural;            -- Display's height
+		-- num_of_segments  : natural;	           -- Number of segments to display
+		-- division_size    : natural;            -- Length in pixels
+		-- grid_width       : natural;            -- Width of the grid in divisions
+		-- grid_height      : natural;            -- Width of the grid in divisions
+		-- axis_fontsize    : natural;            -- Axis font size
+		-- textbox_fontwidth : natural;            -- Textbox fontsize
+		-- hzaxis_height    : natural;            -- Height of the horizontal axis 
+		-- hzaxis_within    : boolean;            -- Horizontal axis within grid
+		-- vtaxis_width     : natural;            -- Width of the vetical axis 
+		-- vtaxis_within    : boolean;            -- Vertical axis within grid
+		-- vttick_rotate    : rotate;             -- Vertical label rotating
+		-- textbox_width    : natural;            -- Width of the text box
+		-- textbox_within   : boolean;            -- Textbox within grid
+		-- main_margin      : margin_vector;      -- Main Margin
+		-- main_gap         : gap_vector;         -- Main Padding
+		-- sgmnt_margin     : margin_vector;      -- Segment Margin
+		-- sgmnt_gap        : gap_vector;         -- Segment Padding
+	-- end record;
+-- 
+	-- type displaylayout_ids is (
+		-- sd480,
+		-- sd600,
+		-- hd720,
+		-- hd1080);
+-- 
+	-- type displaylayout_vector is array (displaylayout_ids) of display_layout;
+-- 
+	-- constant displaylayout_tab : displaylayout_vector := (
+		-- sd480 => (            
+			-- display_width     =>  640,
+			-- display_height    =>  480,
+			-- num_of_segments   =>    1,
+			-- division_size     =>   32,
+			-- grid_width        => 19*32+1,
+			-- grid_height       => 14*32+1,
+			-- axis_fontsize     =>    8,
+			-- textbox_fontwidth =>    8,
+			-- hzaxis_height     =>    8,
+			-- hzaxis_within     => false,
+			-- vtaxis_width      =>  1*8,
+			-- vtaxis_within     => false,
+			-- vttick_rotate     => ccw90,
+			-- textbox_width     => 32*8,
+			-- textbox_within    => true,
+			-- main_margin       => (left       => 12, top    => 12, others => 0),
+			-- main_gap          => (vertical   => 0, others => 0),
+			-- sgmnt_margin      => (top        => 0, bottom => 0, others => 0),
+			-- sgmnt_gap         => (horizontal => 0, others => 0)),
+		-- sd600 => (            
+			-- display_width   =>  800,
+			-- display_height  =>  600,
+			-- num_of_segments =>    2,
+			-- division_size   =>   32,
+			-- grid_width      => 16*32+1,
+			-- grid_height     =>  6*32+1,
+			-- axis_fontsize   =>    8,
+			-- textbox_fontwidth =>  8,
+			-- hzaxis_height   =>  8,
+			-- hzaxis_within   => false,
+			-- vtaxis_width    =>  1*8,
+			-- vtaxis_within   => false,
+			-- vttick_rotate   => ccw90,
+			-- textbox_width   => 32*8,
+			-- textbox_within  => false,
+			-- main_margin     => (left => 3, top => 23, others => 0),
+			-- main_gap        => (vertical => 16, others => 0),
+			-- sgmnt_margin    => (top => 1, bottom => 1, others => 0),
+			-- sgmnt_gap       => (horizontal => 1, others => 0)),
+		-- hd720 => (
+			-- display_width    => 1280,
+			-- display_height   =>  720,
+			-- num_of_segments  =>    3,
+			-- division_size    =>   32,
+			-- grid_width       => 31*32+1,
+			-- grid_height      =>  6*32+1,
+			-- axis_fontsize    =>    8,
+			-- textbox_fontwidth=>    8,
+			-- hzaxis_height    =>    8,
+			-- hzaxis_within    => false,
+			-- vtaxis_width     =>  6*8,
+			-- vttick_rotate    => ccw0,
+			-- textbox_width    => 32*6+1,
+			-- vtaxis_within    => false,
+			-- textbox_within   => false,
+			-- main_margin     => (left => 3, top => 23, others => 0),
+			-- main_gap        => (vertical => 16, others => 0),
+			-- sgmnt_margin    => (top => 1, bottom => 1, left => 1, right => 1),
+			-- sgmnt_gap       => (horizontal => 1, others => 0)),
+		-- hd1080 => (
+			-- display_width    => 1920,
+			-- display_height   => 1080,
+			-- num_of_segments  =>    4,
+			-- division_size    =>   32,
+			-- grid_width       => 50*32+1,
+			-- grid_height      =>  8*32+1,
+			-- axis_fontsize    =>    8,
+			-- textbox_fontwidth   =>  8,
+			-- hzaxis_height    =>    8,
+			-- hzaxis_within   =>  false,
+			-- vtaxis_width     =>  6*8,
+			-- vttick_rotate    => ccw0,
+			-- vtaxis_within   =>  false,
+			-- textbox_width    => 33*8,
+			-- textbox_within   => false,
+			-- main_margin      => (top => 5, left => 1, others => 0),
+			-- main_gap         => (others => 1),
+			-- sgmnt_margin     => (others => 1),
+			-- sgmnt_gap        => (horizontal => 1, others => 0)));
 
 	constant vtaxis_boxid : natural := 0;
 	constant grid_boxid   : natural := 1;
 	constant text_boxid   : natural := 2;
 	constant hzaxis_boxid : natural := 3;
 
-	function axis_fontsize     (constant layout : jso) return natural;
+	function axis_fontsize     (constant layout : string) return natural;
 
-	function hzaxis_x          (constant layout : jso) return natural;
-	function hzaxis_y          (constant layout : jso) return natural;
-	function hzaxis_width      (constant layout : jso) return natural;
-	function hzaxis_height     (constant layout : jso) return natural;
+	function hzaxis_x          (constant layout : string) return natural;
+	function hzaxis_y          (constant layout : string) return natural;
+	function hzaxis_width      (constant layout : string) return natural;
+	function hzaxis_height     (constant layout : string) return natural;
 
-	function vtaxis_y          (constant layout : jso) return natural;
-	function vtaxis_x          (constant layout : jso) return natural;
-	function vtaxis_width      (constant layout : jso) return natural;
-	function vtaxis_height     (constant layout : jso) return natural;
-	function vtaxis_tickrotate (constant layout : jso) return string;
+	function vtaxis_y          (constant layout : string) return natural;
+	function vtaxis_x          (constant layout : string) return natural;
+	function vtaxis_width      (constant layout : string) return natural;
+	function vtaxis_height     (constant layout : string) return natural;
+	function vtaxis_tickrotate (constant layout : string) return string;
 
-	function grid_x            (constant layout : jso) return natural;
-	function grid_y            (constant layout : jso) return natural;
-	function grid_width        (constant layout : jso) return natural;
-	function grid_height       (constant layout : jso) return natural;
-	function grid_unit         (constant layout : jso) return natural;
+	function grid_x            (constant layout : string) return natural;
+	function grid_y            (constant layout : string) return natural;
+	function grid_width        (constant layout : string) return natural;
+	function grid_height       (constant layout : string) return natural;
+	function grid_unit         (constant layout : string) return natural;
 
-	function textbox_x         (constant layout : jso) return natural;
-	function textbox_y         (constant layout : jso) return natural;
-	function textbox_width     (constant layout : jso) return natural;
-	function textbox_height    (constant layout : jso) return natural;
+	function textbox_x         (constant layout : string) return natural;
+	function textbox_y         (constant layout : string) return natural;
+	function textbox_width     (constant layout : string) return natural;
+	function textbox_height    (constant layout : string) return natural;
 
-	function sgmnt_width       (constant layout : jso) return natural;
-	function sgmnt_height      (constant layout : jso) return natural;
-	function sgmnt_xedges      (constant layout : jso) return natural_vector;
-	function sgmnt_yedges      (constant layout : jso) return natural_vector;
+	function sgmnt_width       (constant layout : string) return natural;
+	function sgmnt_height      (constant layout : string) return natural;
+	function sgmnt_xedges      (constant layout : string) return natural_vector;
+	function sgmnt_yedges      (constant layout : string) return natural_vector;
 
 	function sgmnt_boxon (
 		constant box_id : natural;
 		constant x_div  : std_logic_vector;
 		constant y_div  : std_logic_vector;
-		constant layout : jso)
+		constant layout : string)
 		return std_logic;
 
-	function main_width  (constant layout : jso) return natural;
-	function main_height (constant layout : jso) return natural;
-	function main_xedges (constant layout : jso) return natural_vector;
-	function main_yedges (constant layout : jso) return natural_vector;
+	function main_width  (constant layout : string) return natural;
+	function main_height (constant layout : string) return natural;
+	function main_xedges (constant layout : string) return natural_vector;
+	function main_yedges (constant layout : string) return natural_vector;
 
 	function main_boxon (
 		constant box_id : natural;
 		constant x_div  : std_logic_vector;
 		constant y_div  : std_logic_vector;
-		constant layout : jso)
+		constant layout : string)
 		return std_logic;
 
 	constant rid_ipaddr   : std_logic_vector := x"1f";
@@ -112,6 +238,7 @@ package scopeiopkg is
 	constant rid_dmadata  : std_logic_vector := x"18";
 
 	constant pltid_gridfg    : natural :=  0;
+	constant pltid_gridbg    : natural :=  6;
 	constant pltid_vtfg      : natural :=  1;
 	constant pltid_vtbg      : natural :=  2;
 	constant pltid_hzfg      : natural :=  3;
@@ -119,7 +246,6 @@ package scopeiopkg is
 	constant pltid_textfg    : natural :=  9;
 	constant pltid_textbg    : natural :=  5;
 	constant pltid_sgmntbg   : natural :=  7;
-	constant pltid_gridbg    : natural :=  6;
 	constant pltid_scopeiobg : natural :=  8;
 
 	constant pltid_order : natural_vector := (
@@ -486,101 +612,101 @@ package body scopeiopkg is
 	end;
 
 	function grid_x (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 		variable retval : natural := 0;
 	begin
 		retval := retval + vtaxis_x(layout);
-		if not (jso'(layout)**".axis.vertical.inside") then
+		if not (jso(layout)**".axis.vertical.inside") then
 			retval := retval + vtaxis_width(layout);
-			retval := retval + jso'(layout)**".segment.horizontal";
+			retval := retval + jso(layout)**".segment.horizontal";
 		end if;
 		return retval;
 	end;
 
 	function grid_y (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
-		return layout**".segment.top";
+		return jso(layout)**".segment.top";
 	end;
 
 	function grid_width (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
-		return layout**".grid.width";
+		return jso(layout)**".grid.width";
 	end;
 
 	function grid_height (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
-		return layout**".grid.height";
+		return jso(layout)**".grid.height";
 	end;
 
 	function grid_unit (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
-		return layout**".grid.unit";
+		return jso(layout)**".grid.unit";
 	end;
 
 	function axis_fontsize (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
-		return layout**".axis.fontsize";
+		return jso(layout)**".axis.fontsize";
 	end;
 
 	function vtaxis_x (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
-		return layout**".segment.left";
+		return jso(layout)**".segment.left";
 	end;
 
 	function vtaxis_y (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
-		return layout**".segment.top";
+		return jso(layout)**".segment.top";
 	end;
 
 	function vtaxis_width (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
-		return layout**".axis.vertical.width";
+		return jso(layout)**".axis.vertical.width";
 	end;
 
 	function vtaxis_height (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
-		return layout**".grid.height";
+		return jso(layout)**".grid.height";
 	end;
 
 	function vtaxis_tickrotate (
-		constant layout : jso)
+		constant layout : string)
 		return string is
 	begin
-		return layout**".axis.vertical.rotate";
+		return jso(layout)**".axis.vertical.rotate";
 	end;
 
 	function textbox_x (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 		variable retval : natural := 0;
 	begin
 		retval := retval + grid_x(layout);
-		if not (layout**".textbox.inside") then
-			retval := retval + layout**".grid.width";
-			retval := retval + layout**".segment.horizontal";
+		if not (jso(layout)**".textbox.inside") then
+			retval := retval + jso(layout)**".grid.width";
+			retval := retval + jso(layout)**".segment.horizontal";
 		else
-			if 2**unsigned_num_bits(layout**".textbox.width"-1)=layout**".textbox.width" then
-				if layout**".textbox.font_width"*(grid_width(layout)/layout**".textbox.font_width") mod layout**".textbox.width"=0 then
-					retval := retval +layout**".grid.width"-layout**".textbox.width"-layout**".grid.width" mod layout**".textbox.font_width";
+			if 2**unsigned_num_bits(jso(layout)**".textbox.width"-1)=jso(layout)**".textbox.width" then
+				if jso(layout)**".textbox.font_width"*(grid_width(layout)/jso(layout)**".textbox.font_width") mod jso(layout)**"textbox.width"=0 then
+					retval := retval + jso(layout)**".grid.width"-jso(layout)**".textbox.width"-jso(layout)**".grid.width" mod jso(layout)**".textbox.font_width";
 				else
 					retval := retval + grid_width(layout)-textbox_width(layout);
 				end if;
@@ -592,143 +718,143 @@ package body scopeiopkg is
 	end;
 
 	function textbox_y (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
-		return layout**".segment.top";
+		return jso(layout)**".segment.top";
 	end;
 
 	function textbox_width (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
-		return layout**".textbox.width";
+		return jso(layout)**".textbox.width";
 	end;
 
 	function textbox_height (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
-		return layout**".grid.height";
+		return jso(layout)**".grid.height";
 	end;
 
 	function hzaxis_x (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
 		return grid_x(layout);
 	end;
 
 	function hzaxis_y (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 		variable retval : natural := 0;
 	begin
 		retval := retval + grid_y(layout);
-		if not (layout**".axis.horizontal.inside")=false then
-			retval := retval + layout**".grid.height";
-			retval := retval + layout**".segment.vertical";
+		if not (jso(layout)**".axis.horizontal.inside")=false then
+			retval := retval + jso(layout)**".grid.height";
+			retval := retval + jso(layout)**".segment.vertical";
 		else
-			retval := retval + grid_height(layout)-layout**".axis.horizontal.height";
+			retval := retval + grid_height(layout)-jso(layout)**".axis.horizontal.height";
 		end if;
 		return retval;
 	end;
 
 	function hzaxis_width (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
 		return grid_width(layout);
 	end;
 
 	function hzaxis_height (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
-		return layout**".axis.horizontal.height";
+		return jso(layout)**".axis.horizontal.height";
 	end;
 
 	function sgmnt_height (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 		variable retval : natural := 0;
 	begin
-		retval := retval + layout**".segment.top";
-		retval := retval + layout**".grid.height";
-		if not (layout**".axis.horizontal.inside") then
-			retval := retval + layout**".axis.horizontal.height";
-			retval := retval + layout**".segment.vertical";
+		retval := retval + jso(layout)**".segment.top";
+		retval := retval + jso(layout)**".grid.height";
+		if not (jso(layout)**".axis.horizontal.inside") then
+			retval := retval + jso(layout)**".axis.horizontal.height";
+			retval := retval + jso(layout)**".segment.vertical";
 		end if;
-		retval := retval + layout**".segment.bottom";
+		retval := retval + jso(layout)**".segment.bottom";
 		return retval;
 	end;
 
 	function sgmnt_width (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 		variable retval : natural := 0;
 	begin
-		retval := retval + layout**".segment.left";
-		if not (layout**".axis.vertical.inside") then
-			retval := retval + layout**".axis.vertical.width";
-			retval := retval + layout**".segment.horizontal";
+		retval := retval + jso(layout)**".segment.left";
+		if not (jso(layout)**".axis.vertical.inside") then
+			retval := retval + jso(layout)**".axis.vertical.width";
+			retval := retval + jso(layout)**".segment.horizontal";
 		end if;
 		retval := retval + grid_width(layout);
-		if not (layout**".textbox.inside") then
-			retval := retval + layout**".textbox.width";
-			retval := retval + layout**".segment.horizontal";
+		if not (jso(layout)**".textbox.inside") then
+			retval := retval + jso(layout)**".textbox.width";
+			retval := retval + jso(layout)**".segment.horizontal";
 		end if;
-		retval := retval + layout**".segment.right";
+		retval := retval + jso(layout)**".segment.right";
 		return retval;
 	end;
 
 	function sgmnt_xedges(
-		constant layout : jso)
+		constant layout : string)
 		return natural_vector is
 
 	begin
 
 		return to_edges(boxes_sides(
 			sides        => (
-				vtaxis_boxid => setif(not (layout**".axis.vertical.inside"), vtaxis_width(layout)), 
+				vtaxis_boxid => setif(not (jso(layout)**".axis.vertical.inside"), vtaxis_width(layout)), 
 				grid_boxid   => grid_width(layout), 
-				text_boxid   => setif(not (layout**".textbox.inside"), textbox_width(layout))),
-			margin_start => layout**".segment.left",
-			margin_end   => layout**".segment.right",
-			gap          => layout**".segment.horizontal"));
+				text_boxid   => setif(not (jso(layout)**".textbox.inside"), textbox_width(layout))),
+			margin_start => jso(layout)**".segment.left",
+			margin_end   => jso(layout)**".segment.right",
+			gap          => jso(layout)**".segment.horizontal"));
 	end;
 
 	function sgmnt_yedges(
-		constant layout : jso)
+		constant layout : string)
 		return natural_vector is
 	begin
 
 		return to_edges(boxes_sides(
 			sides        => (
 				0 => grid_height(layout),
-				1 => setif(not (layout**".axis.horizontal.inside"), hzaxis_height(layout))),
-			margin_start => layout**".segment.top",
-			margin_end   => layout**".segment.bottom",
-			gap          => layout**".segment.vertical"));
+				1 => setif(not (jso(layout)**".axis.horizontal.inside"), hzaxis_height(layout))),
+			margin_start => jso(layout)**".segment.top",
+			margin_end   => jso(layout)**".segment.bottom",
+			gap          => jso(layout)**".segment.vertical"));
 	end;
 
 	function sgmnt_boxon (
 		constant box_id : natural;
 		constant x_div  : std_logic_vector;
 		constant y_div  : std_logic_vector;
-		constant layout : jso)
+		constant layout : string)
 		return std_logic is
 		constant x_sides  : natural_vector := (
-			vtaxis_boxid => setif(not (layout**".axis.vertical.inside"), vtaxis_width(layout)),
+			vtaxis_boxid => setif(not (jso(layout)**".axis.vertical.inside"), vtaxis_width(layout)),
 			grid_boxid   => grid_width(layout),
-			text_boxid   => setif(not (layout**".textbox.inside"), textbox_width(layout)),
-			hzaxis_boxid => setif(not (layout**".axis.horizontal.inside"),  hzaxis_width(layout)));
+			text_boxid   => setif(not (jso(layout)**".textbox.inside"), textbox_width(layout)),
+			hzaxis_boxid => setif(not (jso(layout)**".axis.horizontal.inside"),  hzaxis_width(layout)));
 
 		constant y_sides  : natural_vector := (
-			vtaxis_boxid => setif(not (layout**".axis.vertical.inside"),  vtaxis_height(layout)),
+			vtaxis_boxid => setif(not (jso(layout)**".axis.vertical.inside"), vtaxis_height(layout)),
 			grid_boxid   => grid_height(layout),
-			text_boxid   => setif(not (layout**".textbox.inside"), textbox_height(layout)),
-			hzaxis_boxid => setif(not (layout**".axis.horizontal.inside"),  hzaxis_height(layout)));
+			text_boxid   => setif(not (jso(layout)**".textbox.inside"), textbox_height(layout)),
+			hzaxis_boxid => setif(not (jso(layout)**".axis.horizontal.inside"), hzaxis_height(layout)));
 
 		variable retval   : std_logic;
 		variable x_margin : natural;
@@ -753,10 +879,10 @@ package body scopeiopkg is
 	begin
 
 		retval   := '0';
-		x_margin := pos(layout**".segment.left");
-		y_margin := pos(layout**".segment.top");
-		x_gap    := pos(layout**".segment.horizontal");
-		y_gap    := pos(layout**".segment.vertical)");
+		x_margin := pos(jso(layout)**".segment.left");
+		y_margin := pos(jso(layout)**".segment.top");
+		x_gap    := pos(jso(layout)**".segment.horizontal");
+		y_gap    := pos(jso(layout)**".segment.vertical)");
 
 		case box_id is
 		when vtaxis_boxid | grid_boxid | text_boxid =>                 
@@ -774,27 +900,27 @@ package body scopeiopkg is
 	end;
 
 	function main_width (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
-		return layout**".display.width";
+		return jso(layout)**".display.width";
 	end;
 
 	function main_height (
-		constant layout : jso)
+		constant layout : string)
 		return natural is
 	begin
-		return layout**".display.height";
+		return jso(layout)**".display.height";
 	end;
 
 	function main_xedges(
-		constant layout : jso)
+		constant layout : string)
 		return natural_vector is
 		constant sides : natural_vector := boxes_sides(
 			sides        => (0 => sgmnt_width(layout)),
-			margin_start => layout**".main.left",
-			margin_end   => layout**".main.right",
-			gap          => layout**".main.horizontal");
+			margin_start => jso(layout)**".main.left",
+			margin_end   => jso(layout)**".main.right",
+			gap          => jso(layout)**".main.horizontal");
 
 	begin
 		assert sides(sides'right)<=main_width(layout)
@@ -804,13 +930,14 @@ package body scopeiopkg is
 	end;
 
 	function main_yedges(
-		constant layout : jso)
+		constant layout : string)
 		return natural_vector is
 		constant sides : natural_vector := boxes_sides(
-			sides        => (0 to layout**".num_of_segments"-1 => sgmnt_height(layout)),
-			margin_start => layout**".main.top",
-			margin_end   => layout**".main.bottom",
-			gap          => layout**".main.vertical");
+			-- sides        => (0 to natural'(jso(layout)**".num_of_segments")-1 => sgmnt_height(layout)),
+			sides        => (0 to resolve(layout&".num_of_segments")-1 => sgmnt_height(layout)),
+			margin_start => jso(layout)**".main.top",
+			margin_end   => jso(layout)**".main.bottom",
+			gap          => jso(layout)**".main.vertical");
 	begin
 		assert sides(sides'right)<=main_height(layout)
 		report "Boxes' Height sum up cannot be greater than Display's Height"
@@ -822,7 +949,7 @@ package body scopeiopkg is
 		constant box_id   : natural;
 		constant x_div    : std_logic_vector;
 		constant y_div    : std_logic_vector;
-		constant layout   : jso)
+		constant layout   : string)
 		return std_logic is
 		variable x_margin : natural;
 		variable y_margin : natural;
@@ -830,10 +957,10 @@ package body scopeiopkg is
 		variable y_gap    : natural;
 	begin
 
-		x_margin := pos(layout**".main.left");
-		y_margin := pos(layout**".main.top");
-		x_gap    := pos(layout**".main.horizontal");
-		y_gap    := pos(layout**".main.vertical");
+		x_margin := pos(jso(layout)**".main.left");
+		y_margin := pos(jso(layout)**".main.top");
+		x_gap    := pos(jso(layout)**".main.horizontal");
+		y_gap    := pos(jso(layout)**".main.vertical");
 
 		return setif(unsigned(y_div)=box_id*(y_gap+1)+y_margin and unsigned(x_div)=0*(x_gap+1)+x_margin);
 	end;
@@ -876,7 +1003,7 @@ package body scopeiopkg is
 		variable mult  : real;
 	begin
 		assert unit >= 1.0  
-			report "Invalid unit value " & real'image(unit)
+			report "Invalid unit value"
 			severity failure;
 
 		mult  := 1.0;
