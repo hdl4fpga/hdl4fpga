@@ -43,8 +43,13 @@ entity scopeio is
 		pclk           : real            := 0.0;
 		layout         : string;
 		max_delay      : natural         := 2**14;
+		vt_steps       : real_vector     := (1 to 0 => 0.0);
+		hz_step        : real            := 0.0;
+		hz_unit        : real            := 25.0;
 		vt_unit        : real            := 20.0;
 		min_storage    : natural         := 256; -- samples, storage size will be equal or larger than this
+
+		inputs         : natural;
 
 		vt_gains       : natural_vector := (
 			 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
@@ -56,8 +61,9 @@ entity scopeio is
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(1+0)*5**(0+0),  2 => 2**(2+0)*5**(0+0),  3 => 2**(0+0)*5**(1+0),
 			 4 => 2**(0+1)*5**(0+1),  5 => 2**(1+1)*5**(0+1),  6 => 2**(2+1)*5**(0+1),  7 => 2**(0+1)*5**(1+1),
 			 8 => 2**(0+2)*5**(0+2),  9 => 2**(1+2)*5**(0+2), 10 => 2**(2+2)*5**(0+2), 11 => 2**(0+2)*5**(1+2),
-			12 => 2**(0+3)*5**(0+3), 13 => 2**(1+3)*5**(0+3), 14 => 2**(2+3)*5**(0+3), 15 => 2**(0+3)*5**(1+3)));
+			12 => 2**(0+3)*5**(0+3), 13 => 2**(1+3)*5**(0+3), 14 => 2**(2+3)*5**(0+3), 15 => 2**(0+3)*5**(1+3));
 		
+		input_names      : tag_vector := (1 to 0 => notext));
 	port (
 		tp               : out std_logic_vector(1 to 32);
 		sio_clk          : in  std_logic := '-';
@@ -85,7 +91,6 @@ entity scopeio is
 		video_sync       : out std_logic);
 
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-	constant inputs        : natural := jso(layout)**(".inputs");
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 
 end;
@@ -103,7 +108,7 @@ architecture beh of scopeio is
 	signal ampsample_dv       : std_logic;
 	signal ampsample_data     : std_logic_vector(0 to input_data'length-1);
 
-	constant capture_bits     : natural := unsigned_num_bits(max(jso(layout)**".num_of_segments"*grid_width(layout),min_storage)-1);
+	constant capture_bits     : natural := unsigned_num_bits(max(resolve(layout&".num_of_segments")*grid_width(layout),min_storage)-1);
 
 	signal video_addr         : std_logic_vector(0 to capture_bits-1);
 	signal video_frm          : std_logic;
@@ -211,7 +216,7 @@ begin
 				return retval;
 			end;
 
-			constant vt_step : real := jso(layout)**(".vt[" & natural'image(i) & "].step"); -- diamond 3.7 workaround to avoid step => vt_steps(i)
+			constant vt_step : real := vt_steps(i); -- diamond 3.7 workaround to avoid step => vt_steps(i)
 			constant gains  : natural_vector(vt_gains'range) := init_gains (
 				gains => vt_gains,
 				unit  => vt_unit,
@@ -276,7 +281,9 @@ begin
 		pclk           => pclk,
 		layout         => layout,
 		inputs         => inputs,
-		vt_unit        => vt_unit/femto)
+		hz_unit        => hz_unit/femto,
+		vt_unit        => vt_unit/femto,
+		input_names    => input_names)
 	port map (
 		tp => tp,
 		rgtr_clk       => sio_clk,

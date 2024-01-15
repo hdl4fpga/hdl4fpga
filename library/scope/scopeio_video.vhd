@@ -41,8 +41,10 @@ entity scopeio_video is
 		fps              : real    := 0.0;
 		pclk             : real    := 0.0;
 		layout           : string;
+		hz_unit          : real;
 		vt_unit          : real;
-		inputs           : natural);
+		inputs           : natural;
+		input_names      : tag_vector);
 	port (
 		tp : out std_logic_vector(1 to 32);
 		rgtr_clk         : in  std_logic;
@@ -303,9 +305,13 @@ begin
 	textbox_g : if textbox_width(layout)/=0 generate
 		scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
 		generic map (
+			inputs        => inputs,
+			input_names   => input_names,
 			max_delay     => max_delay, 
 			latency       => segmment_latency+input_latency,
-			layout        => layout)
+			layout        => layout,
+			hz_unit       => hz_unit,
+			vt_unit       => vt_unit)
 		port map (
 			rgtr_clk      => rgtr_clk,
 			rgtr_dv       => rgtr_dv,
@@ -365,6 +371,9 @@ begin
 	generic map (
 		input_latency => input_latency,
 		latency       => segmment_latency+input_latency,
+		inputs        => inputs,
+		hz_unit       => hz_unit,
+		vt_unit       => vt_unit,
 		layout        => layout)
 	port map (
 		rgtr_clk      => rgtr_clk,

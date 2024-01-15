@@ -177,53 +177,6 @@ architecture scopeio of ulx3s is
             "   { label : GP17,            " &
             "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_ff_ff_ff}]}";   -- vt(7)
-        --    " 720 : {                      " &   
-        --    "    num_of_segments : 3,      " &
-        --    "    display : {               " &
-        --    "         width : 1280,        " &
-        --    "         height : 720},       " &
-        --    "    grid : {                  " &
-        --    "        unit   : 32,          " &
-        --    "        width  :              " & natural'image(31*32+1) & ','  &
-        --    "        height :              " & natural'image( 6*32+1) & "}," &
-        --    "    axis : {                  " &
-        --    "        fontsize   : 8,       " &
-        --    "        horizontal : {        " &
-        --    "            height : 8,       " &
-        --    "            inside : false},  " &
-        --    "        vertical : {          " &
-        --    "            width  :          " & natural'image(6*8) & ','  &
-        --    "            rotate :  ccw0,   " &
-        --    "            inside : false}}, " &
-        --    "    textbox : {               " &
-        --    "        width      :          " & natural'image(32*6+1) & ','&
-        --    "        font_width :  8,      " &
-        --    "        inside     : false},  " &
-        --    "    main : {                  " &
-        --    "        top        : 23,      " & 
-        --    "        left       :  3,      " & 
-        --    "        right      :  0,      " & 
-        --    "        bottom     :  0,      " & 
-        --    "        vertical   : 16,      " & 
-        --    "        horizontal : 0},      " &
-        --    "    segment : {               " &
-        --    "        top        : 1,       " &
-        --    "        left       : 1,       " &
-        --    "        right      : 1,       " &
-        --    "        bottom     : 1,       " &
-        --    "        vertical   : 0,       " &
-        --    "        horizontal : 1}       " &
-        --    "}                             ";
-		constant default_gridfg   : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".grid.color")),25));
-		constant default_gridbg   : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".grid.background-color")),25));
-		constant default_hzfg     : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".axis.horizontal.color")),25));
-		constant default_hzbg     : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".axis.horizontal.background-color")),25));
-		constant default_vtfg     : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".axis.vertical.color")),25));
-		constant default_vtbg     : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".axis.vertical.background-color")),25));
-		constant default_textfg   : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".textbox.color")),25));
-		constant default_textbg   : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".textbox.background-color")),25));
-		constant default_sgmntbg  : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".segment.background-color")),25));
-		constant default_bg       : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".main.background-color")),25));
 begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
@@ -418,27 +371,8 @@ begin
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
 			 4 => 2**(0+0)*5**(0+0),  5 => 2**(1+0)*5**(0+0),  6 => 2**(2+0)*5**(0+0),  7 => 2**(0+0)*5**(1+0),
 			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
-			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)),
+			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)))
 
-		default_tracesfg =>
-			b"1" & x"ff_ff_ff" & -- vt(0)
-			b"1" & x"ff_ff_00" & -- vt(1)
-			b"1" & x"ff_00_ff" & -- vt(2)
-			b"1" & x"ff_00_00" & -- vt(3)
-			b"1" & x"00_ff_ff" & -- vt(4)
-			b"1" & x"00_ff_00" & -- vt(5)
-			b"1" & x"00_00_ff" & -- vt(6)
-			b"1" & x"ff_ff_ff",  -- vt(7)
-		default_gridfg   => default_gridfg,  --b"1" & x"ff_00_00",
-		default_gridbg   => default_gridbg,  --b"1" & x"00_00_00",
-		default_hzfg     => default_hzfg,    --b"1" & x"ff_ff_ff",
-		default_hzbg     => default_hzbg,    --b"1" & x"00_00_ff",
-		default_vtfg     => default_vtfg,    --b"1" & x"ff_ff_ff",
-		default_vtbg     => default_vtbg,    --b"1" & x"00_00_ff",
-		default_textfg   => default_textfg,  --b"1" & x"ff_ff_ff",
-		default_textbg   => default_textbg,  --b"1" & x"00_00_00",
-		default_sgmntbg  => default_sgmntbg, --b"1" & x"00_ff_ff",
-		default_bg       => default_bg)      --b"1" & x"00_00_00")
 	port map (
 		tp          => tp,
 		sio_clk     => sio_clk,
