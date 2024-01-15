@@ -28,6 +28,7 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.jso.all;
 use hdl4fpga.app_profiles.all;
 use hdl4fpga.ecp5_profiles.all;
 use hdl4fpga.videopkg.all;
@@ -101,6 +102,81 @@ architecture scopeio of ulx3s is
 
 	signal adc_clk       : std_logic;
 
+	constant layout      : string := 
+            "{                             " &   
+            "   inputs  : 8,               " &
+            "   num_of_segments : 3,       " &
+            "   display : {                " &
+            "       width  : 1280,         " &
+            "       height : 720},         " &
+            "   grid : {                   " &
+            "       unit   : 32,           " &
+            "       width  :               " & natural'image(31*32+1) & ',' &
+            "       height :               " & natural'image( 6*32+1) & ',' &
+            "       color  : 0xff_ff_00_00, " &
+            "       background-color : 0xff_00_00_00}," &
+            "   axis : {                   " &
+            "       fontsize   : 8,        " &
+            "       horizontal : {         " &
+            "           unit   : 31.25e-6, " &
+            "           height : 8,        " &
+            "           inside : false,    " &
+            "           color  : 0xff_ff_ff_ff," &
+            "           background-color : 0xff_00_00_ff}," &
+            "       vertical : {           " &
+            "           unit   : 50.00e-3," &
+            "           width  :           " & natural'image(6*8) & ','  &
+            "           rotate : ccw0,     " &
+            "           inside : false,    " &
+            "           color  : 0xff_ff_ff_ff," &
+            "           background-color : 0xff_00_00_ff}}," &
+            "   textbox : {                " &
+            "       font_width :  8,       " &
+            "       width      :           " & natural'image(32*6+1) & ','&
+            "       inside     : false,    " &
+            "       color      : 0xff_ff_ff_ff," &
+            "       background-color : 0xff_00_00_00}," &
+            "   main : {                   " &
+            "       top        : 23,       " & 
+            "       left       :  3,       " & 
+            "       right      :  0,       " & 
+            "       bottom     :  0,       " & 
+            "       vertical   : 16,       " & 
+            "       horizontal :  0,       " &
+            "       background-color : 0xff_00_00_00}," &
+            "   segment : {                " &
+            "       top        : 1,        " &
+            "       left       : 1,        " &
+            "       right      : 1,        " &
+            "       bottom     : 1,        " &
+            "       vertical   : 0,        " &
+            "       horizontal : 1,        " &
+            "       background-color : 0xff_00_00_00}," &
+            "  vt : [                      " &
+            "   { label : GN14,            " &
+            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
+            "     color : 0xff_ff_ff_ff},  " &
+            "   { label : GP14,            " &
+            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
+            "     color : 0xff_ff_ff_00},  " & -- vt(1)
+            "   { label : GN15,            " &
+            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
+            "     color : 0xff_ff_00_ff},  " & -- vt(2)
+            "   { label : GP15,            " &
+            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
+            "     color : 0xff_ff_00_00},  " & -- vt(3)
+            "   { label : GN16,            " &
+            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
+            "     color : 0xff_00_ff_ff},  " & -- vt(4)
+            "   { label : GP16,            " &
+            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
+            "     color : 0xff_00_ff_00},  " & -- vt(5)
+            "   { label : GN17,            " &
+            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
+            "     color : 0xff_00_00_ff},  " & -- vt(6)
+            "   { label : GP17,            " &
+            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
+            "     color : 0xff_ff_ff_ff}]}";   -- vt(7)
 begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
@@ -277,9 +353,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		videotiming_id   => video_params.timing,
-		hz_unit          => 31.25*micro,
 		vt_steps         => (0 to inputs-1 => vt_step),
-		vt_unit          => 50.0*milli,
 		inputs           => inputs,
 		input_names      => (
 			text(id => "vt(0).text", content => "GN14"),
@@ -290,69 +364,13 @@ begin
 			text(id => "vt(5).text", content => "GP16"),
 			text(id => "vt(6).text", content => "GN17"),
 			text(id => "vt(7).text", content => "GP17")),
-		layout           => 
-           " 720 : {                      " &   
-           "    num_of_segments : 3,      " &
-           "    display : {               " &
-           "         width : 1280,        " &
-           "         height : 720},       " &
-           "    grid : {                  " &
-           "        unit   : 32,          " &
-           "        width  :              " & natural'image(31*32+1) & ','  &
-           "        height :              " & natural'image( 6*32+1) & "}," &
-           "    axis : {                  " &
-           "        fontsize   : 8,       " &
-           "        horizontal : {        " &
-           "            height : 8,       " &
-           "            inside : false},  " &
-           "        vertical : {          " &
-           "            width  :          " & natural'image(6*8) & ','  &
-           "            rotate :  ccw0,   " &
-           "            inside : false}}, " &
-           "    textbox : {               " &
-           "        width      :          " & natural'image(32*6+1) & ','&
-           "        font_width :  8,      " &
-           "        inside     : false},  " &
-           "    main : {                  " &
-           "        top        : 23,      " & 
-           "        left       :  3,      " & 
-           "        right      :  0,      " & 
-           "        bottom     :  0,      " & 
-           "        vertical   : 16,      " & 
-           "        horizontal : 0},      " &
-           "    segment : {               " &
-           "        top        : 1,       " &
-           "        left       : 1,       " &
-           "        right      : 1,       " &
-           "        bottom     : 1,       " &
-           "        vertical   : 0,       " &
-           "        horizontal : 1}       " &
-           "}                             ",
+		layout           =>  layout,
 		hz_factors       => (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
 			 4 => 2**(0+0)*5**(0+0),  5 => 2**(1+0)*5**(0+0),  6 => 2**(2+0)*5**(0+0),  7 => 2**(0+0)*5**(1+0),
 			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
-			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)),
+			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)))
 
-		default_tracesfg =>
-			b"1" & x"ff_ff_ff" & -- vt(0)
-			b"1" & x"ff_ff_00" & -- vt(1)
-			b"1" & x"ff_00_ff" & -- vt(2)
-			b"1" & x"ff_00_00" & -- vt(3)
-			b"1" & x"00_ff_ff" & -- vt(4)
-			b"1" & x"00_ff_00" & -- vt(5)
-			b"1" & x"00_00_ff" & -- vt(6)
-			b"1" & x"ff_ff_ff",  -- vt(7)
-		default_gridfg   => b"1" & x"ff_00_00",
-		default_gridbg   => b"1" & x"00_00_00",
-		default_hzfg     => b"1" & x"ff_ff_ff",
-		default_hzbg     => b"1" & x"00_00_ff",
-		default_vtfg     => b"1" & x"ff_ff_ff",
-		default_vtbg     => b"1" & x"00_00_ff",
-		default_textfg   => b"1" & x"ff_ff_ff",
-		default_textbg   => b"1" & x"00_00_00",
-		default_sgmntbg  => b"1" & x"00_ff_ff",
-		default_bg       => b"1" & x"00_00_00")
 	port map (
 		tp          => tp,
 		sio_clk     => sio_clk,

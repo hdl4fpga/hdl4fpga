@@ -27,14 +27,13 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.jso.all;
 use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.cgafonts.all;
 
 entity scopeio_axis is
 	generic (
 		latency       : natural;
-		hz_unit       : real;
-		vt_unit       : real;
 		layout        : string);
 	port (
 		clk           : in  std_logic;
@@ -72,6 +71,8 @@ entity scopeio_axis is
 		video_vton    : in  std_logic;
 		video_vtdot   : out std_logic);
 
+	constant hz_unit : real := jso(layout)**".axis.horizontal.unit";
+	constant vt_unit : real := jso(layout)**".axis.vertical.unit";
 end;
 
 architecture def of scopeio_axis is
@@ -95,7 +96,7 @@ architecture def of scopeio_axis is
 	signal binvalue : signed(4*4-1 downto 0);
 	signal bcdvalue : unsigned(8*btof_bcddo'length-1 downto 0);
 
-	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit);
+	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit*1.0e15);
 
 	signal hz_exp   : signed(4-1 downto 0);
 	signal hz_order : signed(4-1 downto 0);
@@ -109,7 +110,7 @@ architecture def of scopeio_axis is
 	signal hz_ena   : std_logic;
 	signal hz_tv    : std_logic;
 
-	constant vt_float1245 : siofloat_vector := get_float1245(vt_unit);
+	constant vt_float1245 : siofloat_vector := get_float1245(vt_unit*1.0e15);
 
 	signal v_offset : std_logic_vector(vt_offset'range);
 	signal vt_exp   : signed(4-1 downto 0);

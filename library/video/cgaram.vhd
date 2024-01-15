@@ -61,6 +61,8 @@ architecture struct of cgaram is
 	signal char_addr : unsigned(cga_addr'length-1+(unsigned_num_bits(cga_codes'length/cga_code'length)-1) downto 0);
 	signal char_on   : std_logic;
 	signal char_dot  : std_logic;
+
+	constant instant_mux  : boolean := char_addr'length > cga_addr'length; -- Xilinx work around
 begin
 
 	cgamem_e : entity hdl4fpga.dpram
@@ -78,16 +80,17 @@ begin
 		rd_addr => video_addr,
 		rd_data => cga_codes);
 
-	muxcode_g : if char_addr'length > cga_addr'length generate
+	muxcode_g : if instant_mux generate
+		constant n : natural := char_addr'length-cga_addr'length;
 		signal sel : std_logic_vector(char_addr'length-cga_addr'length-1 downto 0);
 	begin
 		lat_e : entity hdl4fpga.latency
 		generic map (
-			n => char_addr'length-cga_addr'length,
-			d => (0 to char_addr'length-cga_addr'length => 2))
+			n => n,
+			d => (0 to n-1 => 2))
 		port map (
 			clk => video_clk,
-			di  => std_logic_vector(char_addr(char_addr'length-cga_addr'length-1 downto 0)),
+			di  => std_logic_vector(char_addr(n-1 downto 0)),
 			do  => sel);
 
 		mux_code <= multiplex(cga_codes, sel, mux_code'length);

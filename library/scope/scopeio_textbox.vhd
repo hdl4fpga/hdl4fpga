@@ -17,9 +17,7 @@ entity scopeio_textbox is
 		latency       : natural;
 		max_delay     : natural;
 		font_bitrom   : std_logic_vector := psf1cp850x8x16;
-		font_height   : natural := 16;
-		hz_unit       : real;
-		vt_unit       : real);
+		font_height   : natural := 16);
 	port (
 		rgtr_clk      : in  std_logic;
 		rgtr_dv       : in  std_logic;
@@ -62,7 +60,10 @@ entity scopeio_textbox is
 
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
-	constant font_width    : natural := resolve(layout&".textbox.font_width");
+	constant font_width    : natural := jso(layout)**".textbox.font_width";
+
+	constant hz_unit : real := jso(layout)**".axis.horizontal.unit";
+	constant vt_unit : real := jso(layout)**".axis.vertical.unit";
 end;
 
 architecture def of scopeio_textbox is
@@ -204,7 +205,7 @@ begin
 			return rval;
 		end;
 
-		constant hz_float1245  : siofloat_vector := get_float1245(hz_unit);
+		constant hz_float1245  : siofloat_vector := get_float1245(hz_unit*1.0e15);
 		constant hz_precs      : natural_vector := get_precs(hz_float1245);
 		constant hz_units      : integer_vector := get_units(hz_float1245);
 		constant hz_multps     : natural_vector := get_multps(hz_float1245);
@@ -214,7 +215,7 @@ begin
 		signal   hz_scalevalue : natural;
 		signal   hz_multp      : std_logic_vector(0 to 3-1);
 
-		constant vt_float1245  : siofloat_vector := get_float1245(vt_unit);
+		constant vt_float1245  : siofloat_vector := get_float1245(vt_unit*1.0e15);
 		constant vt_precs      : natural_vector := get_precs(vt_float1245);
 		constant vt_units      : integer_vector := get_units(vt_float1245);
 		constant vt_multps     : natural_vector := get_multps(vt_float1245);

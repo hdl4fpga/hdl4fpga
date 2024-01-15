@@ -41,21 +41,8 @@ entity scopeio_video is
 		fps              : real    := 0.0;
 		pclk             : real    := 0.0;
 		layout           : string;
-		hz_unit          : real;
-		vt_unit          : real;
 		inputs           : natural;
-		input_names      : tag_vector;
-		dflt_tracesfg    : std_logic_vector;
-		dflt_gridfg      : std_logic_vector;
-		dflt_gridbg      : std_logic_vector;
-		dflt_hzfg        : std_logic_vector;
-		dflt_hzbg        : std_logic_vector;
-		dflt_vtfg        : std_logic_vector;
-		dflt_vtbg        : std_logic_vector;
-		dflt_textfg      : std_logic_vector;
-		dflt_textbg      : std_logic_vector;
-		dflt_sgmntbg     : std_logic_vector;
-		dflt_bg          : std_logic_vector);
+		input_names      : tag_vector);
 	port (
 		tp : out std_logic_vector(1 to 32);
 		rgtr_clk         : in  std_logic;
@@ -320,9 +307,7 @@ begin
 			input_names   => input_names,
 			max_delay     => max_delay, 
 			latency       => segmment_latency+input_latency,
-			layout        => layout,
-			hz_unit       => hz_unit,
-			vt_unit       => vt_unit)
+			layout        => layout)
 		port map (
 			rgtr_clk      => rgtr_clk,
 			rgtr_dv       => rgtr_dv,
@@ -383,8 +368,6 @@ begin
 		input_latency => input_latency,
 		latency       => segmment_latency+input_latency,
 		inputs        => inputs,
-		hz_unit       => hz_unit,
-		vt_unit       => vt_unit,
 		layout        => layout)
 	port map (
 		rgtr_clk      => rgtr_clk,
@@ -456,17 +439,7 @@ begin
 
 	scopeio_palette_e : entity hdl4fpga.scopeio_palette
 	generic map (
-		dflt_tracesfg => dflt_tracesfg,
-		dflt_gridfg   => dflt_gridfg, 
-		dflt_gridbg   => dflt_gridbg, 
-		dflt_hzfg     => dflt_hzfg,
-		dflt_hzbg     => dflt_hzbg, 
-		dflt_vtfg     => dflt_vtfg,
-		dflt_vtbg     => dflt_vtbg, 
-		dflt_textbg   => dflt_textbg, 
-		dflt_textfg   => dflt_textfg, 
-		dflt_sgmntbg  => dflt_sgmntbg, 
-		dflt_bg       => dflt_bg)
+		layout        => layout)
 	port map (
 		rgtr_clk       => rgtr_clk,
 		rgtr_dv        => rgtr_dv,
