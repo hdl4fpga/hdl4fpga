@@ -3,13 +3,14 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.jso.all;
 use hdl4fpga.base.all;
+use hdl4fpga.jso.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_palette is
 	generic (
-		layout      : string);
+		dflt_tracesfg  : std_logic_vector;
+		layout        : string);
 	port (
 		rgtr_clk    : in  std_logic;
 		rgtr_dv     : in  std_logic;
@@ -34,21 +35,22 @@ entity scopeio_palette is
 		trace_dots  : in  std_logic_vector;
 		video_color : out std_logic_vector);
 
-		constant palette_size               : natural := pltid_order'length+trace_dots'length+1;
-		constant paletteid_size             : natural := unsigned_num_bits(palette_size-1);
+		constant palette_size   : natural := pltid_order'length+trace_dots'length+1;
+		constant paletteid_size : natural := unsigned_num_bits(palette_size-1);
 
-		constant inputs                     : natural          := jso(layout)**".inputs";
-		constant grid_color                 : std_logic_vector := jso(layout)**".grid.color";
-		constant grid_backgroundcolor       : std_logic_vector := jso(layout)**".grid.background-color";
-		constant vertical_color             : std_logic_vector := jso(layout)**".axis.vertical.color";
-		constant vertical_backgroundcolor   : std_logic_vector := jso(layout)**".axis.vertical.background-color";
-		constant horizontal_color           : std_logic_vector := jso(layout)**".axis.horizontal.color";
-		constant horizontal_backgroundcolor : std_logic_vector := jso(layout)**".axis.horizontal.background-color";
-		constant textbox_color              : std_logic_vector := jso(layout)**".textbox.color";
-		constant textbox_backgroundcolor    : std_logic_vector := jso(layout)**".textbox.background-color";
-		constant segment_backgroundcolor    : std_logic_vector := jso(layout)**".segment.background-color";
-		constant main_backgroundcolor       : std_logic_vector := jso(layout)**".main.background-color";
-end;
+		constant inputs                     : natural := jso(layout)**".inputs";
+
+		constant grid_color                 : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".grid.color")),25));
+		constant grid_backgroundcolor       : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".grid.background-color")),25));
+		constant horizontal_color           : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".axis.horizontal.color")),25));
+		constant horizontal_backgroundcolor : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".axis.horizontal.background-color")),25));
+		constant vertical_color             : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".axis.vertical.color")),25));
+		constant vertical_backgroundcolor   : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".axis.vertical.background-color")),25));
+		constant textbox_color              : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".textbox.color")),25));
+		constant textbox_backgroundcolor    : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".textbox.background-color")),25));
+		constant segment_backgroundcolor    : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".segment.background-color")),25));
+		constant main_backgroundcolor       : std_logic_vector := std_logic_vector(resize(unsigned(std_logic_vector'(jso(layout)**".main.background-color")),25));
+end;   
 
 architecture beh of scopeio_palette is
 
@@ -59,15 +61,59 @@ architecture beh of scopeio_palette is
 		constant pixel : std_logic_vector)
 		return std_logic is
 	begin
-		assert pixel'length mod 4=0
-			report "wrong pixel size"
-			severity failure;
+		-- assert pixel'length mod 4=0
+			-- report "wrong pixel size"
+			-- severity failure;
 
 		return pixel(pixel'left);
 	end;
 
-	function init_opacity (
-		constant layout : string)
+	-- impure function init_opacity (
+		-- constant dflt_tracesfg              : std_logic_vector;
+		-- constant grid_color                 : std_logic_vector;
+		-- constant grid_backgroundcolor       : std_logic_vector;
+		-- constant horizontal_color           : std_logic_vector;
+		-- constant horizontal_backgroundcolor : std_logic_vector;
+		-- constant vertical_color             : std_logic_vector;
+		-- constant vertical_backgroundcolor   : std_logic_vector;
+		-- constant textbox_color              : std_logic_vector;
+		-- constant textbox_backgroundcolor    : std_logic_vector;
+		-- constant segment_backgroundcolor    : std_logic_vector;
+		-- constant main_backgroundcolor       : std_logic_vector)
+		-- return std_logic_vector
+	-- is
+		-- variable tracesfg      : std_logic_vector(0 to dflt_tracesfg'length-1);
+		-- variable retval        : std_logic_vector(0 to pltid_order'length+trace_dots'length);
+	-- begin
+		-- retval(pltid_gridfg)    := grid_color(grid_color'left);
+		-- retval(pltid_gridbg)    := grid_backgroundcolor(grid_backgroundcolor'left);
+		-- retval(pltid_vtfg)      := vertical_color(vertical_color'left);
+		-- retval(pltid_vtbg)      := vertical_backgroundcolor(vertical_backgroundcolor'left);
+		-- retval(pltid_hzfg)      := horizontal_color(horizontal_color'left);
+		-- retval(pltid_hzbg)      := horizontal_backgroundcolor(horizontal_backgroundcolor'left);
+		-- retval(pltid_textfg)    := textbox_color(textbox_color'left);
+		-- retval(pltid_textbg)    := textbox_backgroundcolor(textbox_backgroundcolor'left);
+		-- retval(pltid_sgmntbg)   := segment_backgroundcolor(segment_backgroundcolor'left);
+		-- retval(pltid_scopeiobg) := main_backgroundcolor(main_backgroundcolor'left);
+		-- tracesfg := dflt_tracesfg;
+		-- for i in 0 to tracesfg'length/(pixel_size+1)-1 loop
+			-- retval(pltid_order'length+i) := tracesfg(i*(pixel_size+1));
+		-- end loop;
+		-- return retval;
+	-- end;
+		
+	impure function init_opacity ( -- Lattice Diamond complains about recursive limite if function is not set impure
+		constant dflt_tracesfg              : std_logic_vector;
+		constant grid_color                 : std_logic_vector;
+		constant grid_backgroundcolor       : std_logic_vector;
+		constant horizontal_color           : std_logic_vector;
+		constant horizontal_backgroundcolor : std_logic_vector;
+		constant vertical_color             : std_logic_vector;
+		constant vertical_backgroundcolor   : std_logic_vector;
+		constant textbox_color              : std_logic_vector;
+		constant textbox_backgroundcolor    : std_logic_vector;
+		constant segment_backgroundcolor    : std_logic_vector;
+		constant main_backgroundcolor       : std_logic_vector)
 		return std_logic_vector is
 		constant gui : std_logic_vector(0 to pltid_order'length-1) := (
     		pltid_gridfg    => opacity(grid_color),
@@ -80,50 +126,28 @@ architecture beh of scopeio_palette is
     		pltid_sgmntbg   => opacity(segment_backgroundcolor),
     		pltid_gridbg    => opacity(grid_backgroundcolor),
     		pltid_scopeiobg => opacity(main_backgroundcolor));
-		variable traces : std_logic_vector(0 to inputs-1);
+		-- constant inputs : natural := dflt_tracesfg'length/(pixel_size+1);
+		variable traces_color : std_logic_vector(0 to inputs);
 	begin
 		for i in 0 to inputs-1 loop
-			traces(i) := opacity(jso(layout)**(".vt[" & natural'image(i) & "].color"));
+			traces_color(i) := opacity(jso(layout)**(".vt[" & natural'image(i) & "].color"));
 		end loop;
-		return gui & traces;
+		return gui & traces_color;
 	end;
 		
-	function color (
-		constant pixel : std_logic_vector)
-		return std_logic_vector is
-	begin
-		assert pixel'length mod 4=0
-			report "wrong pixel size"
-			severity failure;
-
-		return std_logic_vector(resize(unsigned(pixel), pixel'length*3/4));
-	end;
-
-	function init_color (
-		constant layout : string)
-		return std_logic_vector is
-		constant gui : std_logic_vector := (
-    		color(grid_color)                 &
-    		color(vertical_color)             &
-    		color(vertical_backgroundcolor)   &
-    		color(horizontal_color)           &
-    		color(horizontal_backgroundcolor) &
-    		color(textbox_color)              &
-    		color(grid_backgroundcolor)       &
-    		color(segment_backgroundcolor)    &
-    		color(main_backgroundcolor)       &
-    		color(textbox_backgroundcolor));
-		variable traces : unsigned(0 to inputs*32*3/4-1);
-	begin
-		for i in 0 to inputs-1 loop
-			traces(0 to 32*3/4-1) := resize(unsigned(std_logic_vector'(jso(layout)**(".vt[" & natural'image(i) & "].color"))), 32*3/4);
-			traces := rotate_left(traces, 32*3/4);
-		end loop;
-		return gui & std_logic_vector(traces);
-	end;
-
 	signal trigger_opacity : std_logic := '1';
-	signal color_opacity   : std_logic_vector(0 to pltid_order'length+trace_dots'length-1) := init_opacity(layout);
+	signal color_opacity   : std_logic_vector(0 to pltid_order'length+trace_dots'length) := init_opacity (
+		dflt_tracesfg => dflt_tracesfg,
+		grid_color   => grid_color,
+		grid_backgroundcolor   => grid_backgroundcolor,
+		horizontal_color     => horizontal_color,
+		horizontal_backgroundcolor     => horizontal_backgroundcolor,
+		vertical_color     => vertical_color,
+		vertical_backgroundcolor     => vertical_backgroundcolor,
+		textbox_color   => textbox_color,
+		textbox_backgroundcolor   => textbox_backgroundcolor,
+		segment_backgroundcolor  => segment_backgroundcolor,
+		main_backgroundcolor       => main_backgroundcolor);
 
 	signal palette_dv         : std_logic;
 	signal palette_id         : std_logic_vector(0 to unsigned_num_bits(pltid_order'length+trace_dots'length+1-1)-1);
@@ -195,6 +219,36 @@ architecture beh of scopeio_palette is
 			retval(0) := temp(pltid_order(i));
 			retval := retval rol 1;
 		end loop;
+		return std_logic_vector(retval);
+	end;
+
+	function color (
+		constant arg : std_logic_vector)
+		return std_logic_vector
+	is
+		variable retval : std_logic_vector(0 to arg'length-1);
+	begin
+		retval := arg;
+		return retval(1 to retval'right);
+	end ;
+
+	impure function colors (
+		constant arg : std_logic_vector)
+		return std_logic_vector
+	is
+		constant n      : natural := arg'length/(pixel_size+1);
+		variable aux    : std_logic_vector(0 to arg'length-1);
+		variable retval : unsigned(0 to n*pixel_size-1);
+	begin
+		aux := arg;
+		for i in 0 to n-1 loop
+			retval(0 to pixel_size-1) := unsigned(color(aux(0 to pixel_size)));
+			retval := retval rol pixel_size;
+			aux    := std_logic_vector(unsigned(aux) rol (pixel_size+1));
+		end loop;
+--		assert false
+--		report "-----> " & itoa(n) & " " & itoa(arg'length) & " " & itoa(dflt_tracesfg'length)
+--		severity failure;
 		return std_logic_vector(retval);
 	end;
 
@@ -300,13 +354,14 @@ begin
 	lookup_b : block
 		signal rd_addr : std_logic_vector(palette_addr'range);
 		signal rd_data : std_logic_vector(video_color'range);
-		constant bitrom : std_logic_vector := init_color(layout);
+		constant bitrom : std_logic_vector := colors(grid_color & vertical_color & vertical_backgroundcolor & horizontal_color & horizontal_backgroundcolor & textbox_backgroundcolor & grid_backgroundcolor & segment_backgroundcolor & main_backgroundcolor & textbox_color & dflt_tracesfg);
 	begin
 
 		wr_ena <= palette_colorena and palette_dv;
 		mem_e : entity hdl4fpga.dpram
 		generic map (
 			bitrom => bitrom)
+--			bitrom => colors(grid_color & vertical_color & vertical_backgroundcolor & horizontal_color & horizontal_backgroundcolor & textbox_backgroundcolor & grid_backgroundcolor & segment_backgroundcolor & main_backgroundcolor & textbox_color & dflt_tracesfg))
 		port map (
 			wr_clk  => rgtr_clk,
 			wr_addr => palette_addr,
