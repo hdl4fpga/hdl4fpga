@@ -153,28 +153,28 @@ architecture scopeio of ulx3s is
             "       horizontal : 1,        " &
             "       background-color : 0xff_00_00_00}," &
             "  vt : [                      " &
-            "   { label : GN14,            " &
+            "   { text : GN14,            " &
             "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_ff_ff_ff},  " &
-            "   { label : GP14,            " &
+            "   { text : GP14,            " &
             "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_ff_ff_00},  " & -- vt(1)
-            "   { label : GN15,            " &
+            "   { text : GN15,            " &
             "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_ff_00_ff},  " & -- vt(2)
-            "   { label : GP15,            " &
+            "   { text : GP15,            " &
             "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_ff_00_00},  " & -- vt(3)
-            "   { label : GN16,            " &
+            "   { text : GN16,            " &
             "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_00_ff_ff},  " & -- vt(4)
-            "   { label : GP16,            " &
+            "   { text : GP16,            " &
             "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_00_ff_00},  " & -- vt(5)
-            "   { label : GN17,            " &
+            "   { text : GN17,            " &
             "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_00_00_ff},  " & -- vt(6)
-            "   { label : GP17,            " &
+            "   { text : GP17,            " &
             "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
             "     color : 0xff_ff_ff_ff}]}";   -- vt(7)
 begin
