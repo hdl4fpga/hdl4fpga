@@ -11,6 +11,8 @@ use hdl4fpga.cgafonts.all;
 
 entity scopeio_textbox is
 	generic(
+		inputs        : natural;
+		input_names   : tag_vector;
 		layout        : string;
 		latency       : natural;
 		max_delay     : natural;
@@ -56,12 +58,12 @@ entity scopeio_textbox is
 		text_bg       : out std_logic_vector;
 		text_fgon     : out std_logic);
 
-	constant inputs        : natural := jso(layout)**(".inputs");
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
-	constant font_width    : natural := resolve(layout&".textbox.font_width");
-	constant hz_unit       : real := jso(layout)**".axis.horizontal.unit";
-	constant vt_unit       : real := jso(layout)**".axis.vertical.unit";
+	constant font_width    : natural := jso(layout)**".textbox.font_width";
+
+	constant hz_unit : real := jso(layout)**".axis.horizontal.unit";
+	constant vt_unit : real := jso(layout)**".axis.vertical.unit";
 end;
 
 architecture def of scopeio_textbox is
@@ -78,22 +80,20 @@ architecture def of scopeio_textbox is
 	constant cga_rows    : natural    := textbox_height(layout)/font_height;
 	constant cga_size    : natural    := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
 
-	-- constant tags : tag_vector := render_tags(
-		-- analogreadings(
-			-- style  => styles(
-				-- width(cga_cols) & alignment(right_alignment) &
-				-- text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
-			-- input_names => input_names,
-	   		-- inputs => inputs));
--- 
-	-- constant cga_bitrom  : std_logic_vector := to_ascii(render_content(
-		-- analogreadings(
-			-- style  => styles(width(cga_cols) & alignment(right_alignment)),
-			-- input_names => input_names,
-			-- inputs => inputs),
-		-- cga_size));
-	 constant cga_bitrom  : std_logic_vector := to_ascii("hola");
+	constant tags : tag_vector := render_tags(
+		analogreadings(
+			style  => styles(
+				width(cga_cols) & alignment(right_alignment) &
+				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
+			input_names => input_names,
+	   		inputs => inputs));
 
+	constant cga_bitrom  : std_logic_vector := to_ascii(render_content(
+		analogreadings(
+			style  => styles(width(cga_cols) & alignment(right_alignment)),
+			input_names => input_names,
+			inputs => inputs),
+		cga_size));
 
 	function addr_attr (
 		constant table : attr_table;
@@ -156,353 +156,353 @@ architecture def of scopeio_textbox is
 	signal textbg       : std_logic_vector(text_bg'range);
 begin
 
-	-- rgtr_b : block
--- 
-		-- signal myip_ena       : std_logic;
-		-- signal myip_dv        : std_logic;
-		-- signal myip_num1      : std_logic_vector(8-1 downto 0);
-		-- signal myip_num2      : std_logic_vector(8-1 downto 0);
-		-- signal myip_num3      : std_logic_vector(8-1 downto 0);
-		-- signal myip_num4      : std_logic_vector(8-1 downto 0);
--- 
-		-- signal trigger_ena    : std_logic;
-		-- signal trigger_freeze : std_logic;
-		-- signal trigger_slope  : std_logic;
-		-- signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
-		-- signal trigger_level  : std_logic_vector(storage_word'range);
-		-- signal tgr_exp        : integer;
--- 
-		-- signal chan_id        : std_logic_vector(chanid_maxsize-1 downto 0);
-		-- signal vt_exp         : integer;
-		-- signal vt_dv          : std_logic;
-		-- signal vt_ena         : std_logic;
-		-- signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
-		-- signal vt_offsets     : std_logic_vector(0 to inputs*vt_offset'length-1);
-		-- signal vt_chanid      : std_logic_vector(chan_id'range);
-		-- signal vt_scale       : std_logic_vector(4-1 downto 0);
-		-- signal tgr_scale      : std_logic_vector(4-1 downto 0);
--- 
-		-- signal hz_exp         : integer;
--- 
-		-- function get_multps (
-			-- constant floats : siofloat_vector)
-			-- return natural_vector is
-			-- constant precs : natural_vector := get_precs(floats);
-			-- variable point : natural;
-			-- variable multp : natural;
-			-- variable rval  : natural_vector(0 to 16-1);
-		-- begin
-			-- for i in floats'range loop
-				-- rval(i) := floats(i).multp + (precs(i) / 3);
-			-- end loop;
-			-- for i in 1 to 4-1 loop
-				-- for j in 0 to 4-1 loop
-					-- rval(4*i+j) := 
-						-- (3*floats(j).multp+floats(j).point+i)/3 + 
-						-- precs(4*i+j) / 3;
-				-- end loop;
-			-- end loop;
-			-- return rval;
-		-- end;
--- 
-		-- constant hz_float1245  : siofloat_vector := get_float1245(hz_unit);
-		-- constant hz_precs      : natural_vector := get_precs(hz_float1245);
-		-- constant hz_units      : integer_vector := get_units(hz_float1245);
-		-- constant hz_multps     : natural_vector := get_multps(hz_float1245);
--- 
-		-- constant hzfrac_length : natural := max(unsigned_num_bits(hz_float1245(0).frac),5);
-		-- signal   hz_frac       : unsigned(0 to hzfrac_length-1);
-		-- signal   hz_scalevalue : natural;
-		-- signal   hz_multp      : std_logic_vector(0 to 3-1);
--- 
-		-- constant vt_float1245  : siofloat_vector := get_float1245(vt_unit);
-		-- constant vt_precs      : natural_vector := get_precs(vt_float1245);
-		-- constant vt_units      : integer_vector := get_units(vt_float1245);
-		-- constant vt_multps     : natural_vector := get_multps(vt_float1245);
--- 
-		-- constant vtfrac_length : natural := max(unsigned_num_bits(vt_float1245(0).frac),5);
-		-- signal   vt_frac       : unsigned(0 to vtfrac_length-1);
-		-- signal   tgr_frac      : unsigned(0 to vtfrac_length-1);
-		-- signal   vt_scalevalue : natural;
-		-- signal   vt_multp      : std_logic_vector(0 to 3-1);
-		-- signal   tgr_multp     : std_logic_vector(0 to 3-1);
--- 
-	-- begin
--- 
-		-- myip4_e : entity hdl4fpga.scopeio_rgtrmyip
-		-- port map (
-			-- rgtr_clk  => rgtr_clk,
-			-- rgtr_dv   => rgtr_dv,
-			-- rgtr_id   => rgtr_id,
-			-- rgtr_data => rgtr_data,
--- 
-			-- ip4_ena   => myip_ena,
-			-- ip4_dv    => myip_dv,
-			-- ip4_num1  => myip_num1,
-			-- ip4_num2  => myip_num2,
-			-- ip4_num3  => myip_num3,
-			-- ip4_num4  => myip_num4);
--- 
-		-- trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
-		-- port map (
-			-- rgtr_clk       => rgtr_clk,
-			-- rgtr_dv        => rgtr_dv,
-			-- rgtr_id        => rgtr_id,
-			-- rgtr_data      => rgtr_data,
--- 
-			-- trigger_ena    => trigger_ena,
-			-- trigger_slope  => trigger_slope,
-			-- trigger_freeze => trigger_freeze,
-			-- trigger_chanid => trigger_chanid,
-			-- trigger_level  => trigger_level);
--- 
-		-- rgtrvtaxis_b : block
-			-- signal offset : std_logic_vector(vt_offset'range);
-			-- signal chanid : std_logic_vector(vt_chanid'range);
-		-- begin
-			-- vtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
-			-- generic map (
-				-- rgtr      => false)
-			-- port map (
-				-- rgtr_clk  => rgtr_clk,
-				-- rgtr_dv   => rgtr_dv,
-				-- rgtr_id   => rgtr_id,
-				-- rgtr_data => rgtr_data,
-				-- vt_dv     => vt_dv,
-				-- vt_ena    => vt_ena,
-				-- vt_chanid => chanid,
-				-- vt_offset => offset);
--- 
-			-- vtoffsets_p : process(rgtr_clk)
-			-- begin
-				-- if rising_edge(rgtr_clk) then
-					-- if vt_ena='1' then
-						-- vt_chanid  <= chanid;
-						-- vt_offsets <= byte2word(vt_offsets, chanid, offset);
-					-- end if;
-				-- end if;
-			-- end process;
-		-- end block;
--- 
-		-- chainid_p : process (rgtr_clk)
-		-- begin
-			-- if rising_edge(rgtr_clk) then
-				-- if vt_dv='1' then
-					-- chan_id <= vt_chanid;
-				-- elsif gain_dv='1' then
-					-- chan_id <= std_logic_vector(resize(unsigned(gain_cid),chan_id'length));
-				-- end if;
-			-- end if;
-		-- end process;
-		-- vt_offset <= multiplex(vt_offsets, chan_id,        vt_offset'length);
-		-- vt_scale  <= multiplex(gain_ids,   chan_id,        vt_scale'length);
-		-- tgr_scale <= multiplex(gain_ids,   trigger_chanid, tgr_scale'length);
--- 
-		-- process (rgtr_clk)
-			-- variable bcd_req  : std_logic_vector(cgabcd_req'range);
-			-- variable char_req : std_logic_vector(cgachr_req'range);
-		-- begin
-			-- if rising_edge(rgtr_clk) then
-				-- bcd_req := cgabcd_req or (
-					-- 0 => myip_ena,
-					-- 1 => myip_ena,
-					-- 2 => myip_ena,
-					-- 3 => myip_ena,
-					-- 4 => time_ena,
-					-- 5 => time_ena,
-					-- 6 => trigger_ena or vt_dv or gain_ena,
-					-- 7 => vt_dv or gain_ena,
-					-- 8 => gain_ena);
-				-- cgabcd_req <= bcd_req and not (cgabcd_frm and (cgabcd_frm'range => cgabcd_end));
--- 
-				-- char_req := cgachr_req or (
-					-- 0 => time_ena,
-					-- 1 => trigger_ena,
-					-- 2 => trigger_ena,
-					-- 3 => trigger_ena or vt_dv or gain_ena,
-					-- 4 => gain_ena);
-				-- cgachr_req <= char_req and not (cgachr_frm and (cgachr_frm'range => cgachr_end));
-			-- end if;
-		-- end process;
-		-- bcd_type <= setif(cgabcd_req/=(cgabcd_req'range => '0'));
--- 
-		-- cga_req <= cgabcd_req & cgachr_req;
-		-- cga_arbiter_e : entity hdl4fpga.arbiter
-		-- port map (
-			-- clk => rgtr_clk,
-			-- req => cga_req,
-			-- gnt => cga_frm);
-		-- cgabcd_frm  <= cga_frm(0 to cgabcd_frm'length-1);
-		-- cgachr_frm <= cga_frm(cgabcd_frm'length to cgachr_frm'length+cgabcd_frm'length-1);
--- 
-		-- bcd_width <= wirebus (natural_vector'(
-			-- width(tagbyid(tags, "ip4.num1"    )),
-			-- width(tagbyid(tags, "ip4.num2"    )),
-			-- width(tagbyid(tags, "ip4.num3"    )),
-			-- width(tagbyid(tags, "ip4.num4"    )),
-			-- width(tagbyid(tags, "hz.offset"   )),
-			-- width(tagbyid(tags, "hz.div"      )),
-			-- width(tagbyid(tags, "tgr.level"   )),
-			-- width(tagbyid(tags, "vt(0).offset")),
-			-- width(tagbyid(tags, "vt(0).div"   ))),
-			-- cgabcd_frm);
--- 
-		-- vtoffsetmemaddr_p : process (chan_id)
-		-- begin
-			-- vtoffset_memaddr <= (others => '-');
-			-- for i in 0 to inputs-1 loop
-				-- if i=to_integer(unsigned(chan_id)) then
-					-- vtoffset_memaddr <= memaddr(tagbyid(tags, "vt(" & itoa(i)  & ").offset"), vtoffset_memaddr'length);
-				-- end if;
-			-- end loop;
-		-- end process;
--- 
-		-- vtdivmemaddr_p : process (chan_id)
-		-- begin
-			-- vtdiv_memaddr <= (others => '-');
-			-- for i in 0 to inputs-1 loop
-				-- if i=to_integer(unsigned(chan_id)) then
-					-- vtdiv_memaddr <= memaddr(tagbyid(tags, "vt(" & itoa(i)  & ").div"), vtdiv_memaddr'length);
-				-- end if;
-			-- end loop;
-		-- end process;
--- 
-		-- vtmagmemaddr_p: process (chan_id)
-		-- begin
-			-- vtmag_memaddr <= (others => '-');
-			-- for i in 0 to inputs-1 loop
-				-- if i=to_integer(unsigned(chan_id)) then
-					-- vtmag_memaddr <= memaddr(tagbyid(tags, "vt(" & itoa(i)  & ").mag"), vtmag_memaddr'length);
-				-- end if;
-			-- end loop;
-		-- end process;
--- 
-		-- hz_frac  <= to_unsigned(hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).frac, hz_frac'length);
-		-- vt_frac  <= to_unsigned(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac,   vt_frac'length);
-		-- tgr_frac <= to_unsigned(vt_float1245(to_integer(unsigned(tgr_scale(2-1 downto 0)))).frac,  tgr_frac'length);
--- 
-		-- hz_exp  <= hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).exp;
-		-- vt_exp  <= vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).exp;
-		-- tgr_exp <= vt_float1245(to_integer(unsigned(tgr_scale(2-1 downto 0)))).exp;
--- 
-		-- hz_scalevalue <= hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).frac;
-		-- vt_scalevalue <= vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac;
--- 
-		-- bcd_binvalue <= wirebus(
-			-- std_logic_vector(resize(unsigned(myip_num1),      bcd_binvalue'length))  &
-			-- std_logic_vector(resize(unsigned(myip_num2),      bcd_binvalue'length))  &
-			-- std_logic_vector(resize(unsigned(myip_num3),      bcd_binvalue'length))  &
-			-- std_logic_vector(resize(unsigned(myip_num4),      bcd_binvalue'length))  &
-			-- std_logic_vector(resize(mul(signed(time_offset), hz_frac),   bcd_binvalue'length))      &
-			-- std_logic_vector(to_unsigned(hz_scalevalue,                  bcd_binvalue'length))      &
-			-- std_logic_vector(resize(mul(-signed(trigger_level), tgr_frac), bcd_binvalue'length))      &
-			-- std_logic_vector(resize(mul(signed(vt_offset), vt_frac),     bcd_binvalue'length))      &
-			-- std_logic_vector(to_unsigned(vt_scalevalue,                  bcd_binvalue'length)),
-			-- cgabcd_frm);
-				 	-- 
-		-- bcd_expvalue <= wirebus(integer_vector'(
-			-- 0, 0, 0, 0,
-			-- hz_exp-division_bits,
-			-- hz_exp,
-			-- tgr_exp-division_bits,
-			-- vt_exp-division_bits,
-			-- vt_exp),
-			-- cgabcd_frm);
-				 	-- 
-		-- bcd_unitvalue <= wirebus(integer_vector'(
-			-- 0, 0, 0, 0,
-			-- hz_units(to_integer(unsigned(time_scale))),
-			-- hz_units(to_integer(unsigned(time_scale))),
-			-- vt_units(to_integer(unsigned(tgr_scale))), 
-			-- vt_units(to_integer(unsigned(vt_scale))),
-			-- vt_units(to_integer(unsigned(vt_scale)))),
-			-- cgabcd_frm);
--- 
-		-- bcd_precvalue <= wirebus(integer_vector'(
-			-- 0, 0, 0, 0,
-			-- -hz_precs(to_integer(unsigned(time_scale))),
-			-- -hz_precs(to_integer(unsigned(time_scale))),
-			-- -vt_precs(to_integer(unsigned(tgr_scale))),  
-			-- -vt_precs(to_integer(unsigned(vt_scale))),  
-			-- -vt_precs(to_integer(unsigned(vt_scale)))),  
-			-- cgabcd_frm);
--- 
-		-- bcd_sign <= wirebus(std_logic_vector'(
-			-- '0',
-			-- '0',
-			-- '0',
-			-- '0',
-			-- '1',
-			-- '1',
-			-- '1',
-			-- '1',
-			-- '1'),
-			-- cgabcd_frm);
--- 
-		-- bcd_alignment <= wirebus (std_logic_vector'(
-			-- setif(left_alignment=alignment(tagbyid(tags, "ip4.num1"    ))),
-			-- setif(left_alignment=alignment(tagbyid(tags, "ip4.num2"    ))),
-			-- setif(left_alignment=alignment(tagbyid(tags, "ip4.num3"    ))),
-			-- setif(left_alignment=alignment(tagbyid(tags, "ip4.num4"    ))),
-			-- setif(left_alignment=alignment(tagbyid(tags, "hz.offset"   ))),
-			-- setif(left_alignment=alignment(tagbyid(tags, "hz.div"      ))),
-			-- setif(left_alignment=alignment(tagbyid(tags, "tgr.level"   ))),
-			-- setif(left_alignment=alignment(tagbyid(tags, "vt(0).offset"))),
-			-- setif(left_alignment=alignment(tagbyid(tags, "vt(0).div"   )))),
-			-- cgabcd_frm);
-		-- btof_bcdalign <= bcd_alignment(0);
--- 
-		-- bcd_memaddr <= wirebus (
-			-- memaddr(tagbyid(tags, "ip4.num1"),  bcd_memaddr'length) &
-			-- memaddr(tagbyid(tags, "ip4.num2"),  bcd_memaddr'length) &
-			-- memaddr(tagbyid(tags, "ip4.num3"),  bcd_memaddr'length) &
-			-- memaddr(tagbyid(tags, "ip4.num4"),  bcd_memaddr'length) &
-			-- memaddr(tagbyid(tags, "hz.offset"), bcd_memaddr'length) &
-			-- memaddr(tagbyid(tags, "hz.div"   ), bcd_memaddr'length) &
-			-- memaddr(tagbyid(tags, "tgr.level"), bcd_memaddr'length) &
-			-- vtoffset_memaddr                                        &
-			-- vtdiv_memaddr,
-			-- cgabcd_frm);
--- 
-		-- hz_multp  <= std_logic_vector(to_unsigned(hz_multps(to_integer(unsigned(time_scale))), hz_multp'length));
-		-- vt_multp  <= std_logic_vector(to_unsigned(vt_multps(to_integer(unsigned(vt_scale))),   vt_multp'length));
-		-- tgr_multp <= std_logic_vector(to_unsigned(vt_multps(to_integer(unsigned(tgr_scale))),  tgr_multp'length));
--- 
-		-- chr_value <= wirebus(
-			-- std_logic_vector'(multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), hz_multp,       ascii'length)) &
-			-- std_logic_vector'(multiplex(x"1819",                                trigger_slope))                 &
-			-- std_logic_vector'(multiplex(to_ascii(" *"),                         trigger_freeze))                &
-			-- std_logic_vector'(multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), tgr_multp,      ascii'length)) &
-			-- std_logic_vector'(multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), vt_multp,       ascii'length)),
-			-- cgachr_frm);
--- 
-		-- chr_memaddr <= wirebus (
-			-- memaddr(tagbyid(tags, "hz.mag"),     chr_memaddr'length) &
-			-- memaddr(tagbyid(tags, "tgr.edge"),   chr_memaddr'length) &
-			-- memaddr(tagbyid(tags, "tgr.freeze"), chr_memaddr'length) &
-			-- memaddr(tagbyid(tags, "tgr.mag"),    chr_memaddr'length) &
-			-- vtmag_memaddr,
-			-- cgachr_frm);
--- 
-		-- tag_memaddr <= wirebus (
-			-- memaddr(tagbyid(tags, "ip4.num1"),   tag_memaddr'length) &
-			-- memaddr(tagbyid(tags, "ip4.num2"),   tag_memaddr'length) &
-			-- memaddr(tagbyid(tags, "ip4.num3"),   tag_memaddr'length) &
-			-- memaddr(tagbyid(tags, "ip4.num4"),   tag_memaddr'length) &
-			-- memaddr(tagbyid(tags, "hz.offset"),  tag_memaddr'length) &
-			-- memaddr(tagbyid(tags, "hz.div"   ),  tag_memaddr'length) &
-			-- memaddr(tagbyid(tags, "tgr.level"),  tag_memaddr'length) &
-			-- vtoffset_memaddr                                         &
-			-- vtdiv_memaddr                                            &
--- 
-			-- memaddr(tagbyid(tags, "hz.mag"),     tag_memaddr'length) &
-			-- memaddr(tagbyid(tags, "tgr.edge"),   tag_memaddr'length) &
-			-- memaddr(tagbyid(tags, "tgr.freeze"), tag_memaddr'length) &
-			-- memaddr(tagbyid(tags, "tgr.mag"),    tag_memaddr'length) &
-			-- vtmag_memaddr,
-			-- cga_frm);
--- 
-	-- end block;
+	rgtr_b : block
+
+		signal myip_ena       : std_logic;
+		signal myip_dv        : std_logic;
+		signal myip_num1      : std_logic_vector(8-1 downto 0);
+		signal myip_num2      : std_logic_vector(8-1 downto 0);
+		signal myip_num3      : std_logic_vector(8-1 downto 0);
+		signal myip_num4      : std_logic_vector(8-1 downto 0);
+
+		signal trigger_ena    : std_logic;
+		signal trigger_freeze : std_logic;
+		signal trigger_slope  : std_logic;
+		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
+		signal trigger_level  : std_logic_vector(storage_word'range);
+		signal tgr_exp        : integer;
+
+		signal chan_id        : std_logic_vector(chanid_maxsize-1 downto 0);
+		signal vt_exp         : integer;
+		signal vt_dv          : std_logic;
+		signal vt_ena         : std_logic;
+		signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
+		signal vt_offsets     : std_logic_vector(0 to inputs*vt_offset'length-1);
+		signal vt_chanid      : std_logic_vector(chan_id'range);
+		signal vt_scale       : std_logic_vector(4-1 downto 0);
+		signal tgr_scale      : std_logic_vector(4-1 downto 0);
+
+		signal hz_exp         : integer;
+
+		function get_multps (
+			constant floats : siofloat_vector)
+			return natural_vector is
+			constant precs : natural_vector := get_precs(floats);
+			variable point : natural;
+			variable multp : natural;
+			variable rval  : natural_vector(0 to 16-1);
+		begin
+			for i in floats'range loop
+				rval(i) := floats(i).multp + (precs(i) / 3);
+			end loop;
+			for i in 1 to 4-1 loop
+				for j in 0 to 4-1 loop
+					rval(4*i+j) := 
+						(3*floats(j).multp+floats(j).point+i)/3 + 
+						precs(4*i+j) / 3;
+				end loop;
+			end loop;
+			return rval;
+		end;
+
+		constant hz_float1245  : siofloat_vector := get_float1245(hz_unit*1.0e15);
+		constant hz_precs      : natural_vector := get_precs(hz_float1245);
+		constant hz_units      : integer_vector := get_units(hz_float1245);
+		constant hz_multps     : natural_vector := get_multps(hz_float1245);
+
+		constant hzfrac_length : natural := max(unsigned_num_bits(hz_float1245(0).frac),5);
+		signal   hz_frac       : unsigned(0 to hzfrac_length-1);
+		signal   hz_scalevalue : natural;
+		signal   hz_multp      : std_logic_vector(0 to 3-1);
+
+		constant vt_float1245  : siofloat_vector := get_float1245(vt_unit*1.0e15);
+		constant vt_precs      : natural_vector := get_precs(vt_float1245);
+		constant vt_units      : integer_vector := get_units(vt_float1245);
+		constant vt_multps     : natural_vector := get_multps(vt_float1245);
+
+		constant vtfrac_length : natural := max(unsigned_num_bits(vt_float1245(0).frac),5);
+		signal   vt_frac       : unsigned(0 to vtfrac_length-1);
+		signal   tgr_frac      : unsigned(0 to vtfrac_length-1);
+		signal   vt_scalevalue : natural;
+		signal   vt_multp      : std_logic_vector(0 to 3-1);
+		signal   tgr_multp     : std_logic_vector(0 to 3-1);
+
+	begin
+
+		myip4_e : entity hdl4fpga.scopeio_rgtrmyip
+		port map (
+			rgtr_clk  => rgtr_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+
+			ip4_ena   => myip_ena,
+			ip4_dv    => myip_dv,
+			ip4_num1  => myip_num1,
+			ip4_num2  => myip_num2,
+			ip4_num3  => myip_num3,
+			ip4_num4  => myip_num4);
+
+		trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
+		port map (
+			rgtr_clk       => rgtr_clk,
+			rgtr_dv        => rgtr_dv,
+			rgtr_id        => rgtr_id,
+			rgtr_data      => rgtr_data,
+
+			trigger_ena    => trigger_ena,
+			trigger_slope  => trigger_slope,
+			trigger_freeze => trigger_freeze,
+			trigger_chanid => trigger_chanid,
+			trigger_level  => trigger_level);
+
+		rgtrvtaxis_b : block
+			signal offset : std_logic_vector(vt_offset'range);
+			signal chanid : std_logic_vector(vt_chanid'range);
+		begin
+			vtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+			generic map (
+				rgtr      => false)
+			port map (
+				rgtr_clk  => rgtr_clk,
+				rgtr_dv   => rgtr_dv,
+				rgtr_id   => rgtr_id,
+				rgtr_data => rgtr_data,
+				vt_dv     => vt_dv,
+				vt_ena    => vt_ena,
+				vt_chanid => chanid,
+				vt_offset => offset);
+
+			vtoffsets_p : process(rgtr_clk)
+			begin
+				if rising_edge(rgtr_clk) then
+					if vt_ena='1' then
+						vt_chanid  <= chanid;
+						vt_offsets <= byte2word(vt_offsets, chanid, offset);
+					end if;
+				end if;
+			end process;
+		end block;
+
+		chainid_p : process (rgtr_clk)
+		begin
+			if rising_edge(rgtr_clk) then
+				if vt_dv='1' then
+					chan_id <= vt_chanid;
+				elsif gain_dv='1' then
+					chan_id <= std_logic_vector(resize(unsigned(gain_cid),chan_id'length));
+				end if;
+			end if;
+		end process;
+		vt_offset <= multiplex(vt_offsets, chan_id,        vt_offset'length);
+		vt_scale  <= multiplex(gain_ids,   chan_id,        vt_scale'length);
+		tgr_scale <= multiplex(gain_ids,   trigger_chanid, tgr_scale'length);
+
+		process (rgtr_clk)
+			variable bcd_req  : std_logic_vector(cgabcd_req'range);
+			variable char_req : std_logic_vector(cgachr_req'range);
+		begin
+			if rising_edge(rgtr_clk) then
+				bcd_req := cgabcd_req or (
+					0 => myip_ena,
+					1 => myip_ena,
+					2 => myip_ena,
+					3 => myip_ena,
+					4 => time_ena,
+					5 => time_ena,
+					6 => trigger_ena or vt_dv or gain_ena,
+					7 => vt_dv or gain_ena,
+					8 => gain_ena);
+				cgabcd_req <= bcd_req and not (cgabcd_frm and (cgabcd_frm'range => cgabcd_end));
+
+				char_req := cgachr_req or (
+					0 => time_ena,
+					1 => trigger_ena,
+					2 => trigger_ena,
+					3 => trigger_ena or vt_dv or gain_ena,
+					4 => gain_ena);
+				cgachr_req <= char_req and not (cgachr_frm and (cgachr_frm'range => cgachr_end));
+			end if;
+		end process;
+		bcd_type <= setif(cgabcd_req/=(cgabcd_req'range => '0'));
+
+		cga_req <= cgabcd_req & cgachr_req;
+		cga_arbiter_e : entity hdl4fpga.arbiter
+		port map (
+			clk => rgtr_clk,
+			req => cga_req,
+			gnt => cga_frm);
+		cgabcd_frm  <= cga_frm(0 to cgabcd_frm'length-1);
+		cgachr_frm <= cga_frm(cgabcd_frm'length to cgachr_frm'length+cgabcd_frm'length-1);
+
+		bcd_width <= wirebus (natural_vector'(
+			width(tagbyid(tags, "ip4.num1"    )),
+			width(tagbyid(tags, "ip4.num2"    )),
+			width(tagbyid(tags, "ip4.num3"    )),
+			width(tagbyid(tags, "ip4.num4"    )),
+			width(tagbyid(tags, "hz.offset"   )),
+			width(tagbyid(tags, "hz.div"      )),
+			width(tagbyid(tags, "tgr.level"   )),
+			width(tagbyid(tags, "vt(0).offset")),
+			width(tagbyid(tags, "vt(0).div"   ))),
+			cgabcd_frm);
+
+		vtoffsetmemaddr_p : process (chan_id)
+		begin
+			vtoffset_memaddr <= (others => '-');
+			for i in 0 to inputs-1 loop
+				if i=to_integer(unsigned(chan_id)) then
+					vtoffset_memaddr <= memaddr(tagbyid(tags, "vt(" & itoa(i)  & ").offset"), vtoffset_memaddr'length);
+				end if;
+			end loop;
+		end process;
+
+		vtdivmemaddr_p : process (chan_id)
+		begin
+			vtdiv_memaddr <= (others => '-');
+			for i in 0 to inputs-1 loop
+				if i=to_integer(unsigned(chan_id)) then
+					vtdiv_memaddr <= memaddr(tagbyid(tags, "vt(" & itoa(i)  & ").div"), vtdiv_memaddr'length);
+				end if;
+			end loop;
+		end process;
+
+		vtmagmemaddr_p: process (chan_id)
+		begin
+			vtmag_memaddr <= (others => '-');
+			for i in 0 to inputs-1 loop
+				if i=to_integer(unsigned(chan_id)) then
+					vtmag_memaddr <= memaddr(tagbyid(tags, "vt(" & itoa(i)  & ").mag"), vtmag_memaddr'length);
+				end if;
+			end loop;
+		end process;
+
+		hz_frac  <= to_unsigned(hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).frac, hz_frac'length);
+		vt_frac  <= to_unsigned(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac,   vt_frac'length);
+		tgr_frac <= to_unsigned(vt_float1245(to_integer(unsigned(tgr_scale(2-1 downto 0)))).frac,  tgr_frac'length);
+
+		hz_exp  <= hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).exp;
+		vt_exp  <= vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).exp;
+		tgr_exp <= vt_float1245(to_integer(unsigned(tgr_scale(2-1 downto 0)))).exp;
+
+		hz_scalevalue <= hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).frac;
+		vt_scalevalue <= vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac;
+
+		bcd_binvalue <= wirebus(
+			std_logic_vector(resize(unsigned(myip_num1),      bcd_binvalue'length))  &
+			std_logic_vector(resize(unsigned(myip_num2),      bcd_binvalue'length))  &
+			std_logic_vector(resize(unsigned(myip_num3),      bcd_binvalue'length))  &
+			std_logic_vector(resize(unsigned(myip_num4),      bcd_binvalue'length))  &
+			std_logic_vector(resize(mul(signed(time_offset), hz_frac),   bcd_binvalue'length))      &
+			std_logic_vector(to_unsigned(hz_scalevalue,                  bcd_binvalue'length))      &
+			std_logic_vector(resize(mul(-signed(trigger_level), tgr_frac), bcd_binvalue'length))      &
+			std_logic_vector(resize(mul(signed(vt_offset), vt_frac),     bcd_binvalue'length))      &
+			std_logic_vector(to_unsigned(vt_scalevalue,                  bcd_binvalue'length)),
+			cgabcd_frm);
+				 	
+		bcd_expvalue <= wirebus(integer_vector'(
+			0, 0, 0, 0,
+			hz_exp-division_bits,
+			hz_exp,
+			tgr_exp-division_bits,
+			vt_exp-division_bits,
+			vt_exp),
+			cgabcd_frm);
+				 	
+		bcd_unitvalue <= wirebus(integer_vector'(
+			0, 0, 0, 0,
+			hz_units(to_integer(unsigned(time_scale))),
+			hz_units(to_integer(unsigned(time_scale))),
+			vt_units(to_integer(unsigned(tgr_scale))), 
+			vt_units(to_integer(unsigned(vt_scale))),
+			vt_units(to_integer(unsigned(vt_scale)))),
+			cgabcd_frm);
+
+		bcd_precvalue <= wirebus(integer_vector'(
+			0, 0, 0, 0,
+			-hz_precs(to_integer(unsigned(time_scale))),
+			-hz_precs(to_integer(unsigned(time_scale))),
+			-vt_precs(to_integer(unsigned(tgr_scale))),  
+			-vt_precs(to_integer(unsigned(vt_scale))),  
+			-vt_precs(to_integer(unsigned(vt_scale)))),  
+			cgabcd_frm);
+
+		bcd_sign <= wirebus(std_logic_vector'(
+			'0',
+			'0',
+			'0',
+			'0',
+			'1',
+			'1',
+			'1',
+			'1',
+			'1'),
+			cgabcd_frm);
+
+		bcd_alignment <= wirebus (std_logic_vector'(
+			setif(left_alignment=alignment(tagbyid(tags, "ip4.num1"    ))),
+			setif(left_alignment=alignment(tagbyid(tags, "ip4.num2"    ))),
+			setif(left_alignment=alignment(tagbyid(tags, "ip4.num3"    ))),
+			setif(left_alignment=alignment(tagbyid(tags, "ip4.num4"    ))),
+			setif(left_alignment=alignment(tagbyid(tags, "hz.offset"   ))),
+			setif(left_alignment=alignment(tagbyid(tags, "hz.div"      ))),
+			setif(left_alignment=alignment(tagbyid(tags, "tgr.level"   ))),
+			setif(left_alignment=alignment(tagbyid(tags, "vt(0).offset"))),
+			setif(left_alignment=alignment(tagbyid(tags, "vt(0).div"   )))),
+			cgabcd_frm);
+		btof_bcdalign <= bcd_alignment(0);
+
+		bcd_memaddr <= wirebus (
+			memaddr(tagbyid(tags, "ip4.num1"),  bcd_memaddr'length) &
+			memaddr(tagbyid(tags, "ip4.num2"),  bcd_memaddr'length) &
+			memaddr(tagbyid(tags, "ip4.num3"),  bcd_memaddr'length) &
+			memaddr(tagbyid(tags, "ip4.num4"),  bcd_memaddr'length) &
+			memaddr(tagbyid(tags, "hz.offset"), bcd_memaddr'length) &
+			memaddr(tagbyid(tags, "hz.div"   ), bcd_memaddr'length) &
+			memaddr(tagbyid(tags, "tgr.level"), bcd_memaddr'length) &
+			vtoffset_memaddr                                        &
+			vtdiv_memaddr,
+			cgabcd_frm);
+
+		hz_multp  <= std_logic_vector(to_unsigned(hz_multps(to_integer(unsigned(time_scale))), hz_multp'length));
+		vt_multp  <= std_logic_vector(to_unsigned(vt_multps(to_integer(unsigned(vt_scale))),   vt_multp'length));
+		tgr_multp <= std_logic_vector(to_unsigned(vt_multps(to_integer(unsigned(tgr_scale))),  tgr_multp'length));
+
+		chr_value <= wirebus(
+			std_logic_vector'(multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), hz_multp,       ascii'length)) &
+			std_logic_vector'(multiplex(x"1819",                                trigger_slope))                 &
+			std_logic_vector'(multiplex(to_ascii(" *"),                         trigger_freeze))                &
+			std_logic_vector'(multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), tgr_multp,      ascii'length)) &
+			std_logic_vector'(multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), vt_multp,       ascii'length)),
+			cgachr_frm);
+
+		chr_memaddr <= wirebus (
+			memaddr(tagbyid(tags, "hz.mag"),     chr_memaddr'length) &
+			memaddr(tagbyid(tags, "tgr.edge"),   chr_memaddr'length) &
+			memaddr(tagbyid(tags, "tgr.freeze"), chr_memaddr'length) &
+			memaddr(tagbyid(tags, "tgr.mag"),    chr_memaddr'length) &
+			vtmag_memaddr,
+			cgachr_frm);
+
+		tag_memaddr <= wirebus (
+			memaddr(tagbyid(tags, "ip4.num1"),   tag_memaddr'length) &
+			memaddr(tagbyid(tags, "ip4.num2"),   tag_memaddr'length) &
+			memaddr(tagbyid(tags, "ip4.num3"),   tag_memaddr'length) &
+			memaddr(tagbyid(tags, "ip4.num4"),   tag_memaddr'length) &
+			memaddr(tagbyid(tags, "hz.offset"),  tag_memaddr'length) &
+			memaddr(tagbyid(tags, "hz.div"   ),  tag_memaddr'length) &
+			memaddr(tagbyid(tags, "tgr.level"),  tag_memaddr'length) &
+			vtoffset_memaddr                                         &
+			vtdiv_memaddr                                            &
+
+			memaddr(tagbyid(tags, "hz.mag"),     tag_memaddr'length) &
+			memaddr(tagbyid(tags, "tgr.edge"),   tag_memaddr'length) &
+			memaddr(tagbyid(tags, "tgr.freeze"), tag_memaddr'length) &
+			memaddr(tagbyid(tags, "tgr.mag"),    tag_memaddr'length) &
+			vtmag_memaddr,
+			cga_frm);
+
+	end block;
 
 	cgabcd_end <= btof_binfrm and btof_bcdtrdy and btof_bcdend;
 	frmbcd_p : process (rgtr_clk)
@@ -560,15 +560,15 @@ begin
 		end if;
 	end process;
 
-	-- process (video_clk)
-		-- variable addr : std_logic_vector(video_addr'range);
-	-- begin
-		-- if rising_edge(video_clk) then
-			-- textfg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_textpalette), addr), textfg'length));
-			-- textbg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_bgpalette),   addr), textbg'length));
-			-- addr := video_addr;
-		-- end if;
-	-- end process;
+	process (video_clk)
+		variable addr : std_logic_vector(video_addr'range);
+	begin
+		if rising_edge(video_clk) then
+			textfg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_textpalette), addr), textfg'length));
+			textbg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_bgpalette),   addr), textbg'length));
+			addr := video_addr;
+		end if;
+	end process;
 
 	cga_we <=
 		cga_av when btof_binfrm='1' and btof_bcdtrdy='1'  else

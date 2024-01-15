@@ -4,14 +4,14 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.jso.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_segment is
 	generic(
 		input_latency : natural;
 		latency       : natural;
-		layout        : string);
+		layout        : string;
+		inputs        : natural);
 	port (
 		rgtr_clk      : in  std_logic;
 		rgtr_dv       : in  std_logic;
@@ -63,9 +63,6 @@ entity scopeio_segment is
 		trigger_dot   : out std_logic;
 		trace_dots    : out std_logic_vector);
 
-	constant inputs        : natural := jso(layout)**".inputs";
-	constant hz_unit       : real    := jso(layout)**".axis.horizontal.unit";
-	constant vt_unit       : real    := jso(layout)**".axis.vertical.unit";
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 end;
 
@@ -177,8 +174,6 @@ begin
 		axis_e : entity hdl4fpga.scopeio_axis
 		generic map (
 			latency       => latency,
-			hz_unit       => hz_unit,
-			vt_unit       => vt_unit,
 			layout        => layout)
 		port map (
 			clk           => rgtr_clk,

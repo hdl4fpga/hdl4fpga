@@ -124,7 +124,7 @@ architecture scopeio of ulx3s is
             "           color  : 0xff_ff_ff_ff," &
             "           background-color : 0xff_00_00_ff}," &
             "       vertical : {           " &
-            "           unit   : 50.00e-6," &
+            "           unit   : 50.00e-3," &
             "           width  :           " & natural'image(6*8) & ','  &
             "           rotate : ccw0,     " &
             "           inside : false,    " &
@@ -353,9 +353,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		videotiming_id   => video_params.timing,
-		hz_unit          => 31.25*micro,
 		vt_steps         => (0 to inputs-1 => vt_step),
-		vt_unit          => 50.0*milli,
 		inputs           => inputs,
 		input_names      => (
 			text(id => "vt(0).text", content => "GN14"),

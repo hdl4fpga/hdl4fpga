@@ -45,8 +45,6 @@ entity scopeio is
 		max_delay      : natural         := 2**14;
 		vt_steps       : real_vector     := (1 to 0 => 0.0);
 		hz_step        : real            := 0.0;
-		hz_unit        : real            := 25.0;
-		vt_unit        : real            := 20.0;
 		min_storage    : natural         := 256; -- samples, storage size will be equal or larger than this
 
 		inputs         : natural;
@@ -148,6 +146,7 @@ begin
 
 	amp_b : block
 
+		constant vt_unit     : real := jso(layout)**".axis.vertical.unit";
 		constant sample_size : natural := input_data'length/inputs;
 		signal chan_id       : std_logic_vector(0 to chanid_bits-1);
 		signal gain_id       : std_logic_vector(0 to gainid_bits-1);
@@ -281,8 +280,6 @@ begin
 		pclk           => pclk,
 		layout         => layout,
 		inputs         => inputs,
-		hz_unit        => hz_unit/femto,
-		vt_unit        => vt_unit/femto,
 		input_names    => input_names)
 	port map (
 		tp => tp,

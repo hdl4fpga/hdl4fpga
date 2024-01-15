@@ -41,8 +41,6 @@ entity scopeio_video is
 		fps              : real    := 0.0;
 		pclk             : real    := 0.0;
 		layout           : string;
-		hz_unit          : real;
-		vt_unit          : real;
 		inputs           : natural;
 		input_names      : tag_vector);
 	port (
@@ -309,9 +307,7 @@ begin
 			input_names   => input_names,
 			max_delay     => max_delay, 
 			latency       => segmment_latency+input_latency,
-			layout        => layout,
-			hz_unit       => hz_unit,
-			vt_unit       => vt_unit)
+			layout        => layout)
 		port map (
 			rgtr_clk      => rgtr_clk,
 			rgtr_dv       => rgtr_dv,
@@ -372,8 +368,6 @@ begin
 		input_latency => input_latency,
 		latency       => segmment_latency+input_latency,
 		inputs        => inputs,
-		hz_unit       => hz_unit,
-		vt_unit       => vt_unit,
 		layout        => layout)
 	port map (
 		rgtr_clk      => rgtr_clk,
