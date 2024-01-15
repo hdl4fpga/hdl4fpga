@@ -102,18 +102,6 @@ architecture beh of scopeio_palette is
 			return std_logic_vector(resize(unsigned(pixel), pixel'length*3/4));
 		end;
 
-	constant pltid_order : natural_vector := (
-		0 => pltid_vtfg,
-		1 => pltid_hzfg,
-		2 => pltid_textfg,      
-		3 => pltid_gridfg,
-		4 => pltid_vtbg,
-		5 => pltid_hzbg,
-		6 => pltid_textbg,      
-		7 => pltid_gridbg,
-		8 => pltid_sgmntbg,
-		9 => pltid_scopeiobg);
-
 		constant gui : std_logic_vector := (
     		color(grid_color)                 &
     		color(vertical_color)             &
