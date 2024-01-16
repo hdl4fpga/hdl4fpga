@@ -95,7 +95,6 @@ begin
 		   var attr= div.attributes[i]
 		   tag['@'+attr.name] = attr.value
 		}
-
 		return tag    
 	   }
 	cgaram_e : entity hdl4fpga.cgaram
