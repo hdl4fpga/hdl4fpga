@@ -104,7 +104,7 @@ architecture scopeio of ulx3s is
 
 	constant layout      : string := 
             "{                             " &   
-            "   inputs  : 8,               " &
+            "   inputs  :                  " & natural'image(inputs) & ',' &
             "   num_of_segments : 3,       " &
             "   display : {                " &
             "       width  : 1280,         " &
@@ -354,7 +354,6 @@ begin
 	generic map (
 		videotiming_id   => video_params.timing,
 		vt_steps         => (0 to inputs-1 => vt_step),
-		inputs           => inputs,
 		layout           => layout,
 		hz_factors       => (
 			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),

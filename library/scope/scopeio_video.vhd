@@ -34,48 +34,48 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_video is
 	generic (
-		timing_id        : videotiming_ids;
-		modeline         : natural_vector(0 to 9-1) := (others => 0);
-		width            : natural := 0;
-		height           : natural := 0;
-		fps              : real    := 0.0;
-		pclk             : real    := 0.0;
-		layout           : string;
-		inputs           : natural);
+		timing_id          : videotiming_ids;
+		modeline           : natural_vector(0 to 9-1) := (others => 0);
+		width              : natural := 0;
+		height             : natural := 0;
+		fps                : real    := 0.0;
+		pclk               : real    := 0.0;
+		layout             : string);
 	port (
-		tp : out std_logic_vector(1 to 32);
-		rgtr_clk         : in  std_logic;
-		rgtr_dv          : in  std_logic;
-		rgtr_id          : in  std_logic_vector(8-1 downto 0);
-		rgtr_data        : in  std_logic_vector;
+		tp                 : out std_logic_vector(1 to 32);
+		rgtr_clk           : in  std_logic;
+		rgtr_dv            : in  std_logic;
+		rgtr_id            : in  std_logic_vector(8-1 downto 0);
+		rgtr_data          : in  std_logic_vector;
 
-		time_scale       : buffer std_logic_vector;
-		time_offset      : buffer std_logic_vector;
+		time_scale         : buffer std_logic_vector;
+		time_offset        : buffer std_logic_vector;
 
-		gain_dv          : in  std_logic;
-		gain_ena         : in  std_logic;
-		gain_cid         : in  std_logic_vector;
-		gain_ids         : in  std_logic_vector;
+		gain_dv            : in  std_logic;
+		gain_ena           : in  std_logic;
+		gain_cid           : in  std_logic_vector;
+		gain_ids           : in  std_logic_vector;
 
-		video_addr       : out std_logic_vector;
-		video_frm        : out std_logic;
-		video_data       : in  std_logic_vector;
-		video_dv         : in  std_logic;
+		video_addr         : out std_logic_vector;
+		video_frm          : out std_logic;
+		video_data         : in  std_logic_vector;
+		video_dv           : in  std_logic;
 
-		video_clk        : in  std_logic;
-		video_pixel      : out std_logic_vector;
-		extern_video     : in  std_logic := '0';
+		video_clk          : in  std_logic;
+		video_pixel        : out std_logic_vector;
+		extern_video       : in  std_logic := '0';
 		extern_videohzsync : in std_logic := '-';
 		extern_videovtsync : in std_logic := '-';
 		extern_videoblankn : in std_logic := '-';
-		video_hsync      : out std_logic;
-		video_vsync      : out std_logic;
+		video_hsync        : out std_logic;
+		video_vsync        : out std_logic;
 
-		video_vton       : buffer std_logic;
-		video_hzon       : buffer std_logic;
-		video_blank      : out std_logic;
-		video_sync       : out std_logic);
+		video_vton         : buffer std_logic;
+		video_hzon         : buffer std_logic;
+		video_blank        : out std_logic;
+		video_sync         : out std_logic);
 
+	constant inputs        : natural := jso(layout)**".inputs";
 	constant chanid_bits : natural := unsigned_num_bits(inputs-1);
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
 
@@ -365,7 +365,6 @@ begin
 	generic map (
 		input_latency => input_latency,
 		latency       => segmment_latency+input_latency,
-		inputs        => inputs,
 		layout        => layout)
 	port map (
 		rgtr_clk      => rgtr_clk,
