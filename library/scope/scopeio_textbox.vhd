@@ -11,7 +11,6 @@ use hdl4fpga.cgafonts.all;
 
 entity scopeio_textbox is
 	generic(
-		inputs        : natural;
 		layout        : string;
 		latency       : natural;
 		max_delay     : natural;
@@ -57,6 +56,7 @@ entity scopeio_textbox is
 		text_bg       : out std_logic_vector;
 		text_fgon     : out std_logic);
 
+	constant inputs        : natural := jso(layout)**".inputs";
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 	constant font_width    : natural := jso(layout)**".textbox.font_width";
