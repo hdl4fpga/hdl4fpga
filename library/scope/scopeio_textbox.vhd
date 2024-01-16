@@ -84,32 +84,45 @@ end;
 architecture def of scopeio_textbox is
 	subtype ascii is std_logic_vector(8-1 downto 0);
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
-	constant division_bits : natural := unsigned_num_bits(grid_unit(layout)-1);
+	constant division_bits      : natural := unsigned_num_bits(grid_unit(layout)-1);
 	constant cgaadapter_latency : natural := 4;
 
-	constant fontwidth_bits  : natural    := unsigned_num_bits(font_width-1);
-	constant fontheight_bits  : natural    := unsigned_num_bits(font_height-1);
-	constant textwidth_bits : natural := unsigned_num_bits(textbox_width(layout)-1);
-	constant cga_cols    : natural    := textbox_width(layout)/font_width;
-	constant cga_rows    : natural    := textbox_height(layout)/font_height;
-	constant cga_size    : natural    := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
-	constant cga_bitrom  : std_logic_vector := to_ascii("hello world!");
+	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
+	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
+	constant textwidth_bits  : natural := unsigned_num_bits(textbox_width(layout)-1);
+	constant cga_cols        : natural := textbox_width(layout)/font_width;
+	constant cga_rows        : natural := textbox_height(layout)/font_height;
+	constant cga_size        : natural := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
+	constant cga_bitrom      : std_logic_vector := to_ascii("hello world!");
 
-	signal cga_we        : std_logic := '0';
-	signal cga_addr      : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
-	signal video_addr    : std_logic_vector(cga_addr'range);
-	signal char_dot      : std_logic;
-	signal cga_code      : ascii;
-	signal cga_on        : std_logic;
-	signal textfg        : std_logic_vector(text_fg'range);
-	signal textbg        : std_logic_vector(text_bg'range);
+	signal cga_we            : std_logic := '0';
+	signal cga_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
+	signal cga_code          : ascii;
+
+	signal textfg            : std_logic_vector(text_fg'range);
+	signal textbg            : std_logic_vector(text_bg'range);
+	signal video_on          : std_logic;
+	signal video_addr        : std_logic_vector(cga_addr'range);
+	signal video_dot         : std_logic;
+
+	impure function xxxx
+		return string is
+		variable data : string(1 to 1);
+		variable i : natural;
+	begin
+		loop
+			resolve(layout&".vt["&natural'image(i)&"]");
+		end loop;
+		return "";
+	end;
+
 begin
 
 	video_addr <= std_logic_vector(resize(
 		mul(unsigned(video_vcntr) srl fontheight_bits, textbox_width(layout)/font_width) +
 		(unsigned(video_hcntr(textwidth_bits-1 downto 0)) srl fontwidth_bits),
 		video_addr'length));
-	cga_on <= text_on and sgmntbox_ena(0);
+	video_on <= text_on and sgmntbox_ena(0);
 
 	cgaram_e : entity hdl4fpga.cgaram
 	generic map (
@@ -127,8 +140,8 @@ begin
 		video_addr   => video_addr,
 		font_hcntr   => video_hcntr(unsigned_num_bits(font_width-1)-1 downto 0),
 		font_vcntr   => video_vcntr(unsigned_num_bits(font_height-1)-1 downto 0),
-		video_on     => cga_on,
-		video_dot    => char_dot);
+		video_on     => video_on,
+		video_dot    => video_dot);
 
 	lat_e : entity hdl4fpga.latency
 	generic map (
@@ -136,7 +149,7 @@ begin
 		d => (0 => latency-cgaadapter_latency))
 	port map (
 		clk => video_clk,
-		di(0) => char_dot,
+		di(0) => video_dot,
 		do(0) => text_fgon);
 
 	textfg <= std_logic_vector(to_unsigned(pltid_textfg, textfg'length));

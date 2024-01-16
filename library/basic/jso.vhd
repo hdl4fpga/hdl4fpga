@@ -28,6 +28,11 @@ use ieee.std_logic_1164.all;
 
 package jso is
 
+	procedure resolve (
+		constant jso           : in    string;
+		variable value_offset  : inout natural;
+		variable value_length  : inout natural);
+
 	function resolve (
 		constant jso : string)
 		return string;
