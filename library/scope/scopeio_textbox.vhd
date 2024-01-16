@@ -12,7 +12,6 @@ use hdl4fpga.cgafonts.all;
 entity scopeio_textbox is
 	generic(
 		inputs        : natural;
-		input_names   : tag_vector;
 		layout        : string;
 		latency       : natural;
 		max_delay     : natural;
@@ -78,25 +77,31 @@ architecture def of scopeio_textbox is
 	constant cga_cols    : natural    := textbox_width(layout)/font_width;
 	constant cga_rows    : natural    := textbox_height(layout)/font_height;
 	constant cga_size    : natural    := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
+	constant cga_bitrom  : std_logic_vector := to_ascii("hello world!");
 
 	signal cga_we : std_logic := '0';
-	signal cga_addr      : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0)
+	signal cga_addr      : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
+	signal video_addr    : std_logic_vector(cga_addr'range);
+	signal char_dot      : std_logic;
 	signal cga_code      : ascii;
+	signal cga_on        : std_logic;
+	signal textfg       : std_logic_vector(text_fg'range);
+	signal textbg       : std_logic_vector(text_bg'range);
 begin
-	function htmlToJson(div,obj){
-		if(!obj){obj=[]}
-		var tag = {}
-		tag['tagName']=div.tagName
-		tag['children'] = []
-		for(var i = 0; i< div.children.length;i++){
-		   tag['children'].push(htmlToJson(div.children[i]))
-		}
-		for(var i = 0; i< div.attributes.length;i++){
-		   var attr= div.attributes[i]
-		   tag['@'+attr.name] = attr.value
-		}
-		return tag    
-	   }
+	-- function htmlToJson(div,obj){
+		-- if(!obj){obj=[]}
+		-- var tag = {}
+		-- tag['tagName']=div.tagName
+		-- tag['children'] = []
+		-- for(var i = 0; i< div.children.length;i++){
+		--    tag['children'].push(htmlToJson(div.children[i]))
+		-- }
+		-- for(var i = 0; i< div.attributes.length;i++){
+		--    var attr= div.attributes[i]
+		--    tag['@'+attr.name] = attr.value
+		-- }
+		-- return tag    
+	--    }
 	cgaram_e : entity hdl4fpga.cgaram
 	generic map (
 		cga_bitrom   => cga_bitrom,

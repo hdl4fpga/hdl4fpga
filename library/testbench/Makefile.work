@@ -28,9 +28,9 @@ IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
 MICRON__ddr2 = $(LIB_MICRON)/ddr2/_primary.dat
 HDL4FPGA__tx_manchester = $(LIB_HDL4FPGA)/tx_manchester/_primary.dat
 HDL4FPGA__rx_manchester = $(LIB_HDL4FPGA)/rx_manchester/_primary.dat
+HDL4FPGA__jso = $(LIB_HDL4FPGA)/jso/_primary.dat
 HDL4FPGA__textboxpkg = $(LIB_HDL4FPGA)/textboxpkg/_primary.dat
 HDL4FPGA__scopeiopkg = $(LIB_HDL4FPGA)/scopeiopkg/_primary.dat
-HDL4FPGA__jso = $(LIB_HDL4FPGA)/jso/_primary.dat
 HDL4FPGA__sio_sin = $(LIB_HDL4FPGA)/sio_sin/_primary.dat
 HDL4FPGA__scopeio_rgtrhzaxis = $(LIB_HDL4FPGA)/scopeio_rgtrhzaxis/_primary.dat
 HDL4FPGA__scopeio = $(LIB_HDL4FPGA)/scopeio/_primary.dat
@@ -255,11 +255,11 @@ $(WORK__ipoe_tb__def) : ipoe_tb.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ipoe_tb.vhd
 
-$(WORK__ml509) : /home/msagre/work/hdl4fpga.dev/boards/ml509/common/ml509.vhd \
+$(WORK__ml509) : ../../boards/ml509/common/ml509.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga.dev/boards/ml509/common/ml509.vhd
+	$(VCOM) -2002  ../../boards/ml509/common/ml509.vhd
 
 $(WORK__nuhs3adsp) : ../../boards/nuhs3adsp/common/nuhs3adsp.vhd \
 		$(STD__textio) \
@@ -470,12 +470,12 @@ $(WORK__ulx3s__scopeio) : ../../boards/ULX3S/apps/scopeio.vhd \
 		$(WORK__ulx3s) \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
-		$(HDL4FPGA__jso) \
 		$(HDL4FPGA__scopeiopkg) \
 		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__ecp5_profiles) \
 		$(HDL4FPGA__app_profiles) \
+		$(HDL4FPGA__jso) \
 		$(HDL4FPGA__base) \
 		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
