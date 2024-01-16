@@ -83,7 +83,20 @@ architecture def of scopeio_textbox is
 	signal cga_addr      : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0)
 	signal cga_code      : ascii;
 begin
-
+	function htmlToJson(div,obj){
+		if(!obj){obj=[]}
+		var tag = {}
+		tag['tagName']=div.tagName
+		tag['children'] = []
+		for(var i = 0; i< div.children.length;i++){
+		   tag['children'].push(htmlToJson(div.children[i]))
+		}
+		for(var i = 0; i< div.attributes.length;i++){
+		   var attr= div.attributes[i]
+		   tag['@'+attr.name] = attr.value
+		}
+		return tag    
+	   }
 	cgaram_e : entity hdl4fpga.cgaram
 	generic map (
 		cga_bitrom   => cga_bitrom,
