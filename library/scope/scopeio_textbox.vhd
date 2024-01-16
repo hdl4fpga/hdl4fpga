@@ -67,6 +67,21 @@ entity scopeio_textbox is
 end;
 
 architecture def of scopeio_textbox is
+	subtype ascii is std_logic_vector(8-1 downto 0);
+	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
+	constant division_bits : natural := unsigned_num_bits(grid_unit(layout)-1);
+	constant cgaadapter_latency : natural := 4;
+
+	constant fontwidth_bits  : natural    := unsigned_num_bits(font_width-1);
+	constant fontheight_bits  : natural    := unsigned_num_bits(font_height-1);
+	constant textwidth_bits : natural := unsigned_num_bits(textbox_width(layout)-1);
+	constant cga_cols    : natural    := textbox_width(layout)/font_width;
+	constant cga_rows    : natural    := textbox_height(layout)/font_height;
+	constant cga_size    : natural    := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
+
+	signal cga_we : std_logic := '0';
+	signal cga_addr      : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0)
+	signal cga_code      : ascii;
 begin
 
 	cgaram_e : entity hdl4fpga.cgaram
