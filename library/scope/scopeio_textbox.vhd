@@ -80,13 +80,31 @@ entity scopeio_textbox is
 	--    }
 
 	impure function textbox_mask(
-		constant size : natural)
+		constant width : natural;
+		constant size  : natural)
 		return string is
 		variable data   : string(1 to size);
 		variable offset : positive;
 		variable length : natural;
 		variable i      : natural;
 		variable j      : natural;
+
+    	function stralign (
+    		constant str       : string;
+    		constant width     : natural;
+    		constant textalign : string := "left")
+    		return string is
+    		variable retval : string(1 to width);
+    	begin
+    		
+			retval := strfill(str, width);
+			if textalign="right" then
+				retval := rotate_left(retval, width-str'length);
+			end if; 
+
+    		return retval;
+    	end;
+
 	begin
 		i := 0;
 		j := data'left;
@@ -95,8 +113,8 @@ entity scopeio_textbox is
 			if length=0 then
 				exit;
 			else
-				data(j to j+length-1) := layout(offset to offset+length-1);
-				j := j + length;
+				data(j to j+width-1) := stralign(layout(offset to offset+length-1), width);
+				j := j + width;
 			end if;
 		end loop;
 		return data;
@@ -116,7 +134,7 @@ architecture def of scopeio_textbox is
 	constant cga_cols        : natural := textbox_width(layout)/font_width;
 	constant cga_rows        : natural := textbox_height(layout)/font_height;
 	constant cga_size        : natural := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
-	constant cga_bitrom      : std_logic_vector := to_ascii(textbox_mask(cga_size));
+	constant cga_bitrom      : std_logic_vector := to_ascii(textbox_mask(cga_cols, cga_size));
 
 	signal cga_we            : std_logic := '0';
 	signal cga_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);

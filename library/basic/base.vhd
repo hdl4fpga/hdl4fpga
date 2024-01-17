@@ -70,6 +70,11 @@ package base is
 		constant str2 : in string)
 		return boolean;
 
+	function rotate_left (
+		constant arg1 : string;
+		constant arg2 : natural)
+		return string;
+
 	function strstr(
 		constant key    : string;
 		constant domain : string)
@@ -575,6 +580,18 @@ package body base is
 			end loop;
 			return true;
 		end if;
+	end;
+
+	function rotate_left (
+		constant arg1 : string;
+		constant arg2 : natural)
+		return string is
+		variable retval : string(arg1'range);
+	begin
+		for i in arg1'range loop
+			retval(i) := arg1(arg1'left+(i-arg1'left+arg2) mod arg1'length);
+		end loop;
+		return retval;
 	end;
 
 	procedure strcmp (
