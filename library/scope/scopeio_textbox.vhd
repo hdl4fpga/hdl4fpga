@@ -90,15 +90,11 @@ entity scopeio_textbox is
 	begin
 		i := 0;
 		j := data'left;
-		loop
+		for i in 0 to inputs-1 loop
 			resolve(layout&".vt["&natural'image(i)&"].text", offset, length);
 			if length=0 then
 				exit;
 			else
-				-- report layout(offset to offset+length-1);
-				assert false
-				report natural'image(i)
-				severity failure;
 				data(j to j+length-1) := layout(offset to offset+length-1);
 				j := j + length;
 			end if;
