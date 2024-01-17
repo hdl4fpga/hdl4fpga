@@ -98,7 +98,6 @@ entity scopeio_textbox is
 				data(j to j+length-1) := layout(offset to offset+length-1);
 				j := j + length;
 			end if;
-			i := i + 1;
 		end loop;
 		return data;
 	end;
