@@ -79,7 +79,7 @@ entity scopeio_textbox is
 		-- return tag    
 	--    }
 
-	impure function xxxx(
+	impure function textbox_mask(
 		constant size : natural)
 		return string is
 		variable data   : string(1 to size);
@@ -116,7 +116,7 @@ architecture def of scopeio_textbox is
 	constant cga_cols        : natural := textbox_width(layout)/font_width;
 	constant cga_rows        : natural := textbox_height(layout)/font_height;
 	constant cga_size        : natural := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
-	constant cga_bitrom      : std_logic_vector := to_ascii(xxxx(cga_size));
+	constant cga_bitrom      : std_logic_vector := to_ascii(textbox_mask(cga_size));
 
 	signal cga_we            : std_logic := '0';
 	signal cga_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
