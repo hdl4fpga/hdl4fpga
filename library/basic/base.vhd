@@ -75,28 +75,13 @@ package base is
 		constant arg2 : natural)
 		return string;
 
-	function strstr(
-		constant key    : string;
-		constant domain : string)
-		return natural;
-
-	function strrev (
-		constant arg : string)
-		return string;
-
-	function strfill (
-		constant s    : string;
-		constant size : natural;
-		constant char : character := NUL)
-		return string;
-
 	function shift_right (
 		constant arg1 : string;
 		constant arg2 : natural)
 		return string;
 
-	function itoa (
-		constant arg : integer)
+	function reverse (
+		constant arg : string)
 		return string;
 
 	function ftoa (
@@ -547,19 +532,6 @@ package body base is
 		return stream'right;
 	end;
 
-	function strfill (
-		constant s    : string;
-		constant size : natural;
-		constant char : character := NUL)
-		return string
-	is
-		variable retval : string(1 to size);
-	begin
-		retval := (others => char);
-		retval(1 to s'length) := s;
-		return retval;
-	end;
-
 	function strcmp (
 		constant str1 : in string;
 		constant str2 : in string)
@@ -568,8 +540,6 @@ package body base is
 		alias astr1 : string(1 to str1'length) is str1;
 		alias astr2 : string(1 to str2'length) is str2;
 	begin
---		report astr2 & " " & astr1;
---		report integer'image(astr2'length) & " " & integer'image(astr1'length);
 		if strlen(str1)/=strlen(str2) then
 			return false;
 		else
@@ -580,75 +550,6 @@ package body base is
 			end loop;
 			return true;
 		end if;
-	end;
-
-	function rotate_left (
-		constant arg1 : string;
-		constant arg2 : natural)
-		return string is
-		variable retval : string(arg1'range);
-	begin
-		for i in arg1'range loop
-			retval(i) := arg1(arg1'left+(i-arg1'left+arg2) mod arg1'length);
-		end loop;
-		return retval;
-	end;
-
-	procedure strcmp (
-		variable sucess : inout boolean;
-		variable index  : inout natural;
-		constant key    : in    string;
-		constant domain : in    string)
-	is
-	begin
-		sucess := false;
-		for i in key'range loop
-			if index < domain'length then
-				if key(i)/=domain(index) then
-					return;
-				else
-					index := index + 1;
-				end if;
-			elsif key(i)=NUL then
-				sucess := true;
-				return;
-			else
-				return;
-			end if;
-		end loop;
-		if index < domain'length then
-			if domain(index)=NUL then
-				sucess := true;
-				return;
-			else
-				return;
-			end if;
-		else
-			sucess := true;
-			return;
-		end if;
-	end;
-
-	function strstr(
-		constant key    : string;
-		constant domain : string)
-		return natural is
-		variable sucess : boolean;
-		variable index  : natural;
-		variable ref    : natural;
-	begin
-		ref   := 0;
-		index := domain'left;
-		while index < domain'right loop
-			strcmp(sucess, index, key, domain);
-			if sucess then
-				return ref;
-			end if;
-			while domain(index) /= NUL loop
-				index := index + 1;
-			end loop;
-			index := index + 1;
-		end loop;
 	end;
 
 	function strlen (
@@ -663,19 +564,6 @@ package body base is
 				return retval;
 			end if;
 			retval := retval + 1;
-		end loop;
-		return retval;
-	end;
-
-	function strrev (
-		constant arg : string)
-		return string
-	is
-		variable retval : string(1 to arg'length);
-	begin
-		retval := arg;
-		for i in 1 to retval'length/2 loop
-			swap(retval(i), retval(retval'length+1-i));
 		end loop;
 		return retval;
 	end;
@@ -698,26 +586,29 @@ package body base is
 		return retval;
 	end;
 
-	function itoa (
-		constant arg : integer)
+	function rotate_left (
+		constant arg1 : string;
+		constant arg2 : natural)
+		return string is
+		variable retval : string(arg1'range);
+	begin
+		for i in arg1'range loop
+			retval(i) := arg1(arg1'left+(i-arg1'left+arg2) mod arg1'length);
+		end loop;
+		return retval;
+	end;
+
+	function reverse (
+		constant arg : string)
 		return string
 	is
-		constant asciitab : string(1 to 10) := "0123456789";
-		variable retval   : string(1 to 256) := (others => NUL);
-		variable value    : natural;
+		variable retval : string(1 to arg'length);
 	begin
-		value := abs(arg);
-		for i in retval'range loop
-			retval(i) := asciitab((value mod 10)+1);
-			value     := value / 10;
-			if value=0 then
-				if arg < 0 then
-					retval(i+1) := '-';
-				end if;
-				exit;
-			end if;
+		retval := arg;
+		for i in 1 to retval'length/2 loop
+			swap(retval(i), retval(retval'length+1-i));
 		end loop;
-		return strrev(retval(1 to strlen(retval)));
+		return retval;
 	end;
 
 	function ftoa (
@@ -732,8 +623,6 @@ package body base is
 		variable cy     : natural range 0 to 1;
 		variable digit  : natural range 0 to 9;
 		variable n      : natural;
-
-		variable msg    : line;
 	begin
 		mant := abs(num);
 		exp  := 0;
@@ -814,12 +703,6 @@ package body base is
 			retval := shift_right(retval,1);
 		end if;
 
---		write(msg, string'(" -> ") & retval(1 to ndigits));
---		writeline(output, msg);
---		write(msg, mant);
---		write(msg, string'(" : "));
---		write(msg, exp);
---		writeline(output, msg);
 		return retval(1 to ndigits);
 	end;
 
@@ -1177,7 +1060,7 @@ package body base is
 		variable retval : std_logic_vector(0 to arg1'length/arg2'length-1);
 	begin
 		assert arg1'length mod arg2'length = 0
-			report "std_logic wirebus " & itoa(arg1'length) & " " & itoa(arg2'length)
+			report "std_logic wirebus " & natural'image(arg1'length) & " " & natural'image(arg2'length)
 			severity failure;
 
 		aux(0 to arg1'length-1) := unsigned(arg1);
@@ -1200,7 +1083,7 @@ package body base is
 		variable retval : natural;
 	begin
 		assert arg1'length mod arg2'length = 0
-			report "natural wirebus " & itoa(arg1'length) & " " & itoa(arg2'length)
+			report "natural wirebus " & natural'image(arg1'length) & " " & natural'image(arg2'length)
 			severity failure;
 
 		aux1 := arg1;
@@ -1222,7 +1105,7 @@ package body base is
 		variable retval : integer;
 	begin
 		assert arg1'length mod arg2'length = 0
-			report "integer wirebus " & itoa(arg1'length) & " " & itoa(arg2'length)
+			report "integer wirebus " & natural'image(arg1'length) & " " & natural'image(arg2'length)
 			severity failure;
 
 

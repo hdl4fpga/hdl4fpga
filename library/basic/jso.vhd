@@ -831,7 +831,6 @@ package body jso is
 		variable tag_length    : natural;
 
 	begin
-		assert false report "entre" severity note;
 		jso_index := jso'left;
 		parse_tagvaluekey (jso, jso'left, jso'right, jso_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length);
 		assert ((log/log_resolve) mod 2=0) 
@@ -875,7 +874,6 @@ package body jso is
 				"resolve => value -> " & natural'image(value_offset) & ":" & natural'image(value_length) & ' ' & '"' & jso(value_offset to value_offset+value_length-1) & '"' & LF &
 				"resolve => key   -> " & natural'image(key_offset)   & ":" & natural'image(key_length)   & ' ' & '"' & jso(key_offset   to key_offset+key_length-1)     & '"' & LF
 			severity note;
-		assert false report "sali" severity note;
 		-- assert false report "*******************************" severity failure;
 	end;
 

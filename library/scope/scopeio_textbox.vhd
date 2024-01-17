@@ -64,20 +64,23 @@ entity scopeio_textbox is
 	constant hz_unit : real := jso(layout)**".axis.horizontal.unit";
 	constant vt_unit : real := jso(layout)**".axis.vertical.unit";
 
-	-- function htmlToJson(div,obj){
-		-- if(!obj){obj=[]}
-		-- var tag = {}
-		-- tag['tagName']=div.tagName
-		-- tag['children'] = []
-		-- for(var i = 0; i< div.children.length;i++){
-		--    tag['children'].push(htmlToJson(div.children[i]))
-		-- }
-		-- for(var i = 0; i< div.attributes.length;i++){
-		--    var attr= div.attributes[i]
-		--    tag['@'+attr.name] = attr.value
-		-- }
-		-- return tag    
-	--    }
+   	function textalign (
+   		constant text  : string;
+   		constant width : natural;
+   		constant align : string := "left")
+   		return string is
+   		variable retval : string(1 to width);
+   	begin
+		retval := (others => ' ');
+		retval(1 to text'length) := text;
+		if align="right" then
+			retval := rotate_left(retval, text'length);
+		elsif align="center" then
+			retval := rotate_left(retval, (text'length+width)/2);
+		end if; 
+
+		return retval;
+	end;
 
 	impure function textbox_mask(
 		constant width : natural;
@@ -89,22 +92,6 @@ entity scopeio_textbox is
 		variable i      : natural;
 		variable j      : natural;
 
-    	function stralign (
-    		constant str       : string;
-    		constant width     : natural;
-    		constant textalign : string := "left")
-    		return string is
-    		variable retval : string(1 to width);
-    	begin
-    		
-			retval := strfill(str, width);
-			if textalign="right" then
-				retval := rotate_left(retval, width-str'length);
-			end if; 
-
-    		return retval;
-    	end;
-
 	begin
 		i := 0;
 		j := data'left;
@@ -113,19 +100,16 @@ entity scopeio_textbox is
 			if length=0 then
 				exit;
 			else
-				data(j to j+width-1) := stralign(layout(offset to offset+length-1), width);
+				data(j to j+width-1) := textalign(layout(offset to offset+length-1), width);
 				j := j + width;
 			end if;
 		end loop;
 		return data;
 	end;
-
 end;
 
 architecture def of scopeio_textbox is
 	subtype ascii is std_logic_vector(8-1 downto 0);
-	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
-	constant division_bits      : natural := unsigned_num_bits(grid_unit(layout)-1);
 	constant cgaadapter_latency : natural := 4;
 
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
