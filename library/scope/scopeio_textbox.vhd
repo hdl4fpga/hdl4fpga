@@ -79,6 +79,34 @@ entity scopeio_textbox is
 		-- return tag    
 	--    }
 
+	impure function xxxx(
+		constant size : natural)
+		return string is
+		variable data   : string(1 to size);
+		variable offset : positive;
+		variable length : natural;
+		variable i      : natural;
+		variable j      : natural;
+	begin
+		i := 0;
+		j := data'left;
+		loop
+			resolve(layout&".vt["&natural'image(i)&"].text", offset, length);
+			if length=0 then
+				exit;
+			else
+				-- report layout(offset to offset+length-1);
+				assert false
+				report natural'image(i)
+				severity failure;
+				data(j to j+length-1) := layout(offset to offset+length-1);
+				j := j + length;
+			end if;
+			i := i + 1;
+		end loop;
+		return data;
+	end;
+
 end;
 
 architecture def of scopeio_textbox is
@@ -93,7 +121,7 @@ architecture def of scopeio_textbox is
 	constant cga_cols        : natural := textbox_width(layout)/font_width;
 	constant cga_rows        : natural := textbox_height(layout)/font_height;
 	constant cga_size        : natural := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
-	constant cga_bitrom      : std_logic_vector := to_ascii("hello world!");
+	constant cga_bitrom      : std_logic_vector := to_ascii(xxxx(cga_size));
 
 	signal cga_we            : std_logic := '0';
 	signal cga_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
@@ -104,17 +132,6 @@ architecture def of scopeio_textbox is
 	signal video_on          : std_logic;
 	signal video_addr        : std_logic_vector(cga_addr'range);
 	signal video_dot         : std_logic;
-
-	impure function xxxx
-		return string is
-		variable data : string(1 to 1);
-		variable i : natural;
-	begin
-		loop
-			resolve(layout&".vt["&natural'image(i)&"]");
-		end loop;
-		return "";
-	end;
 
 begin
 
