@@ -106,8 +106,8 @@ architecture scopeio of ulx3s is
 			"{                             " &   
 			"   inputs          : " & natural'image(inputs) & ',' &
 			"   max_delay       : " & natural'image(2**14)  & ',' &
-			"   min_storage     : 25       " & -- samples, storage size will be equal or larger than this
-			"   num_of_segments :  3,      " &
+			"   min_storage     : 256,     " & -- samples, storage size will be equal or larger than this
+			"   num_of_segments :   3,     " &
 			"   display : {                " &
 			"       width  : 1280,         " &
 			"       height : 720},         " &
