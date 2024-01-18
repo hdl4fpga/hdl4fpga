@@ -47,13 +47,7 @@ entity scopeio is
 			 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
 			 4 => 2**17/(2**(0+1)*5**(0+1)),  5 => 2**17/(2**(1+1)*5**(0+1)),  6 => 2**17/(2**(2+1)*5**(0+1)),  7 => 2**17/(2**(0+1)*5**(1+1)),
 			 8 => 2**17/(2**(0+2)*5**(0+2)),  9 => 2**17/(2**(1+2)*5**(0+2)), 10 => 2**17/(2**(2+2)*5**(0+2)), 11 => 2**17/(2**(0+2)*5**(1+2)),
-			12 => 2**17/(2**(0+3)*5**(0+3)), 13 => 2**17/(2**(1+3)*5**(0+3)), 14 => 2**17/(2**(2+3)*5**(0+3)), 15 => 2**17/(2**(0+3)*5**(1+3)));
-
-		hz_factors     : natural_vector := (
-			 0 => 2**(0+0)*5**(0+0),  1 => 2**(1+0)*5**(0+0),  2 => 2**(2+0)*5**(0+0),  3 => 2**(0+0)*5**(1+0),
-			 4 => 2**(0+1)*5**(0+1),  5 => 2**(1+1)*5**(0+1),  6 => 2**(2+1)*5**(0+1),  7 => 2**(0+1)*5**(1+1),
-			 8 => 2**(0+2)*5**(0+2),  9 => 2**(1+2)*5**(0+2), 10 => 2**(2+2)*5**(0+2), 11 => 2**(0+2)*5**(1+2),
-			12 => 2**(0+3)*5**(0+3), 13 => 2**(1+3)*5**(0+3), 14 => 2**(2+3)*5**(0+3), 15 => 2**(0+3)*5**(1+3)));
+			12 => 2**17/(2**(0+3)*5**(0+3)), 13 => 2**17/(2**(1+3)*5**(0+3)), 14 => 2**17/(2**(2+3)*5**(0+3)), 15 => 2**17/(2**(0+3)*5**(1+3))));
 	port (
 		tp               : out std_logic_vector(1 to 32);
 		sio_clk          : in  std_logic := '-';
@@ -81,6 +75,20 @@ entity scopeio is
 		video_sync       : out std_logic);
 
 	constant inputs        : natural := jso(layout)**".inputs";
+
+	function to_naturalvector (
+		constant object : jso)
+		return natural_vector is
+		constant length : natural := jso(object)**".length";
+		variable retval : natural_vector(0 to length-1);
+	begin
+		for i in 0 to length-1 loop
+			retval(i) := object**("["&natural'image(i)&"]");
+		end loop;
+		return retval;
+	end;
+
+	constant time_factors  : natural_vector := to_naturalvector(jso(layout)**".axis.horizontal.scales");
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 
@@ -242,7 +250,7 @@ begin
 	generic map  (
 		inputs       => inputs,
 		storageword_size => storage_word'length,
-		time_factors => hz_factors)
+		time_factors => time_factors)
 	port map (
 		rgtr_clk     => sio_clk,
 		rgtr_dv      => rgtr_dv,
