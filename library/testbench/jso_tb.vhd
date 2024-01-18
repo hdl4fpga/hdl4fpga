@@ -130,7 +130,7 @@ begin
     process 
     begin
         -- report "VALUE : " & ''' & real'image(test**"[5].top") & ''';
-        report "VALUE : " & ''' & test**".vt[9].text" & ''';
+        report "VALUE : " & ''' & test**".vt[4].text" & ''';
         wait;
     end process;
 end;
