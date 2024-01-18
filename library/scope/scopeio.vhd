@@ -66,23 +66,11 @@ entity scopeio is
 	constant inputs        : natural := jso(layout)**".inputs";
 	constant max_delay     : natural := jso(layout)**".max_delay";
 	constant min_storage   : natural := jso(layout)**".min_storage";
-
-	-- function to_naturalvector (
-		-- constant object : string)
-		-- return natural_vector is
-		-- constant length : natural := jso(object)**".length";
-		-- variable retval : natural_vector(0 to length-1);
-	-- begin
-		-- for i in 0 to length-1 loop
-			-- retval(i) := jso(object)**("["&natural'image(i)&"]");
-		-- end loop;
-		-- return retval;
-	-- end;
+	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
+	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 
 	constant time_factors  : natural_vector := to_naturalvector(jso(layout)**".axis.horizontal.scales");
 	constant vt_gains      : natural_vector := to_naturalvector(jso(layout)**".axis.vertical.gains");
-	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 
 end;
 
