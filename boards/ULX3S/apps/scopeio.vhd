@@ -102,55 +102,75 @@ architecture scopeio of ulx3s is
 
 	signal adc_clk       : std_logic;
 
-	constant layout : string := 
+	constant layout      : string := 
 			"{                             " &   
-			"   inputs  :                  " & natural'image(inputs) & ',' &
-			"   num_of_segments : 3,       " &
+			"   inputs          : " & natural'image(inputs) & ',' &
+			"   max_delay       : " & natural'image(2**14)  & ',' &
+			"   min_storage     : 25       " & -- samples, storage size will be equal or larger than this
+			"   num_of_segments :  3,      " &
 			"   display : {                " &
 			"       width  : 1280,         " &
 			"       height : 720},         " &
 			"   grid : {                   " &
 			"       unit   : 32,           " &
-			"       width  :               " & natural'image(31*32+1) & ',' &
-			"       height :               " & natural'image( 6*32+1) & ',' &
+			"       width  : " & natural'image(31*32+1) & ',' &
+			"       height : " & natural'image( 6*32+1) & ',' &
 			"       color  : 0xff_ff_00_00," &
 			"       background-color : 0xff_00_00_00}," &
 			"   axis : {                   " &
 			"       fontsize   : 8,        " &
 			"       horizontal : {         " &
-    		"scales : [                    " &
-    			natural'image(2**(0+0)*5**(0+0)) & "," &
-    			natural'image(2**(0+0)*5**(0+0)) & "," &
-    			natural'image(2**(0+0)*5**(0+0)) & "," &
-    			natural'image(2**(0+0)*5**(0+0)) & "," &
-    			natural'image(2**(0+0)*5**(0+0)) & "," &
-    			natural'image(2**(1+0)*5**(0+0)) & "," &
-    			natural'image(2**(2+0)*5**(0+0)) & "," &
-    			natural'image(2**(0+0)*5**(1+0)) & "," &
-    			natural'image(2**(0+1)*5**(0+1)) & "," &
-    			natural'image(2**(1+1)*5**(0+1)) & "," &
-    			natural'image(2**(2+1)*5**(0+1)) & "," &
-    			natural'image(2**(0+1)*5**(1+1)) & "," &
-    			natural'image(2**(0+2)*5**(0+2)) & "," &
-    			natural'image(2**(1+2)*5**(0+2)) & "," &
-    			natural'image(2**(2+2)*5**(0+2)) & "," &
-    			natural'image(2**(0+2)*5**(1+2)) & "," &
-    		"   length : 16],                        " &
+			"           scales : [         " &
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [0]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [1]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [2]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [3]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [4]
+							natural'image(2**(1+0)*5**(0+0)) & "," & -- [5]
+							natural'image(2**(2+0)*5**(0+0)) & "," & -- [6]
+							natural'image(2**(0+0)*5**(1+0)) & "," & -- [7]
+							natural'image(2**(0+1)*5**(0+1)) & "," & -- [8]
+							natural'image(2**(1+1)*5**(0+1)) & "," & -- [9]
+							natural'image(2**(2+1)*5**(0+1)) & "," & -- [10]
+							natural'image(2**(0+1)*5**(1+1)) & "," & -- [11]
+							natural'image(2**(0+2)*5**(0+2)) & "," & -- [12]
+							natural'image(2**(1+2)*5**(0+2)) & "," & -- [13]
+							natural'image(2**(2+2)*5**(0+2)) & "," & -- [14]
+							natural'image(2**(0+2)*5**(1+2)) & "," & -- [15]
+			"               length : 16],  " &
 			"           unit   : 31.25e-6, " &
 			"           height : 8,        " &
 			"           inside : false,    " &
 			"           color  : 0xff_ff_ff_ff," &
 			"           background-color : 0xff_00_00_ff}," &
 			"       vertical : {           " &
-			"           unit   : 50.00e-3," &
-			"           width  :           " & natural'image(6*8) & ','  &
+			"           gains : [         " &
+							natural'image(2**17/(2**(0+0)*5**(0+0))) & "," & -- [0]
+							natural'image(2**17/(2**(1+0)*5**(0+0))) & "," & -- [1]
+							natural'image(2**17/(2**(2+0)*5**(0+0))) & "," & -- [2]
+							natural'image(2**17/(2**(0+0)*5**(1+0))) & "," & -- [3]
+							natural'image(2**17/(2**(0+1)*5**(0+1))) & "," & -- [4]
+							natural'image(2**17/(2**(1+1)*5**(0+1))) & "," & -- [5]
+							natural'image(2**17/(2**(2+1)*5**(0+1))) & "," & -- [6]
+							natural'image(2**17/(2**(0+1)*5**(1+1))) & "," & -- [7]
+							natural'image(2**17/(2**(0+2)*5**(0+2))) & "," & -- [8]
+							natural'image(2**17/(2**(1+2)*5**(0+2))) & "," & -- [9]
+							natural'image(2**17/(2**(2+2)*5**(0+2))) & "," & -- [10]
+							natural'image(2**17/(2**(0+2)*5**(1+2))) & "," & -- [11]
+							natural'image(2**17/(2**(0+3)*5**(0+3))) & "," & -- [12]
+							natural'image(2**17/(2**(1+3)*5**(0+3))) & "," & -- [13]
+							natural'image(2**17/(2**(2+3)*5**(0+3))) & "," & -- [14]
+							natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
+			"               length : 16],  " &
+			"           unit   : 50.00e-3, " &
+			"           width  : " & natural'image(6*8) & ','  &
 			"           rotate : ccw0,     " &
 			"           inside : false,    " &
 			"           color  : 0xff_ff_ff_ff," &
 			"           background-color : 0xff_00_00_ff}}," &
 			"   textbox : {                " &
 			"       font_width :  8,       " &
-			"       width      :           " & natural'image(32*6+1) & ','&
+			"       width      : " & natural'image(32*6+1) & ','&
 			"       inside     : false,    " &
 			"       color      : 0xff_ff_ff_ff," &
 			"       background-color : 0xff_00_00_00}," &
@@ -370,14 +390,8 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		videotiming_id   => video_params.timing,
-		layout           => layout)
-		-- hz_factors       => (
-			--  0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
-			--  4 => 2**(0+0)*5**(0+0),  5 => 2**(1+0)*5**(0+0),  6 => 2**(2+0)*5**(0+0),  7 => 2**(0+0)*5**(1+0),
-			--  8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
-			-- 12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)))
-
+		videotiming_id => video_params.timing,
+		layout         => layout)
 	port map (
 		tp          => tp,
 		sio_clk     => sio_clk,

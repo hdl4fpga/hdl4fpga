@@ -35,19 +35,8 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio is
 	generic (
-		videotiming_id : videotiming_ids;
-		modeline       : natural_vector(0 to 9-1) := (others => 0);
-		fps            : real            := 0.0;
-		pclk           : real            := 0.0;
-		layout         : string;
-		max_delay      : natural         := 2**14;
-		min_storage    : natural         := 256; -- samples, storage size will be equal or larger than this
-
-		vt_gains       : natural_vector := (
-			 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
-			 4 => 2**17/(2**(0+1)*5**(0+1)),  5 => 2**17/(2**(1+1)*5**(0+1)),  6 => 2**17/(2**(2+1)*5**(0+1)),  7 => 2**17/(2**(0+1)*5**(1+1)),
-			 8 => 2**17/(2**(0+2)*5**(0+2)),  9 => 2**17/(2**(1+2)*5**(0+2)), 10 => 2**17/(2**(2+2)*5**(0+2)), 11 => 2**17/(2**(0+2)*5**(1+2)),
-			12 => 2**17/(2**(0+3)*5**(0+3)), 13 => 2**17/(2**(1+3)*5**(0+3)), 14 => 2**17/(2**(2+3)*5**(0+3)), 15 => 2**17/(2**(0+3)*5**(1+3))));
+		videotiming_id   : videotiming_ids;
+		layout           : string);
 	port (
 		tp               : out std_logic_vector(1 to 32);
 		sio_clk          : in  std_logic := '-';
@@ -75,20 +64,23 @@ entity scopeio is
 		video_sync       : out std_logic);
 
 	constant inputs        : natural := jso(layout)**".inputs";
+	constant max_delay     : natural := jso(layout)**".max_delay";
+	constant min_storage   : natural := jso(layout)**".min_storage";
 
-	function to_naturalvector (
-		constant object : jso)
-		return natural_vector is
-		constant length : natural := jso(object)**".length";
-		variable retval : natural_vector(0 to length-1);
-	begin
-		for i in 0 to length-1 loop
-			retval(i) := object**("["&natural'image(i)&"]");
-		end loop;
-		return retval;
-	end;
+	-- function to_naturalvector (
+		-- constant object : string)
+		-- return natural_vector is
+		-- constant length : natural := jso(object)**".length";
+		-- variable retval : natural_vector(0 to length-1);
+	-- begin
+		-- for i in 0 to length-1 loop
+			-- retval(i) := jso(object)**("["&natural'image(i)&"]");
+		-- end loop;
+		-- return retval;
+	-- end;
 
 	constant time_factors  : natural_vector := to_naturalvector(jso(layout)**".axis.horizontal.scales");
+	constant vt_gains      : natural_vector := to_naturalvector(jso(layout)**".axis.vertical.gains");
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 
@@ -97,35 +89,35 @@ end;
 architecture beh of scopeio is
 
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
-	constant gainid_bits : natural := unsigned_num_bits(vt_gains'length-1);
+	constant gainid_bits  : natural := unsigned_num_bits(vt_gains'length-1);
 
-	signal rgtr_id            : std_logic_vector(8-1 downto 0);
-	signal rgtr_dv            : std_logic;
-	signal rgtr_data          : std_logic_vector(0 to 4*8-1);
-	signal rgtr_revs          : std_logic_vector(rgtr_data'reverse_range);
+	signal rgtr_id        : std_logic_vector(8-1 downto 0);
+	signal rgtr_dv        : std_logic;
+	signal rgtr_data      : std_logic_vector(0 to 4*8-1);
+	signal rgtr_revs      : std_logic_vector(rgtr_data'reverse_range);
 
-	signal ampsample_dv       : std_logic;
-	signal ampsample_data     : std_logic_vector(0 to input_data'length-1);
+	signal ampsample_dv   : std_logic;
+	signal ampsample_data : std_logic_vector(0 to input_data'length-1);
 
-	constant capture_bits     : natural := unsigned_num_bits(max(resolve(layout&".num_of_segments")*grid_width(layout),min_storage)-1);
+	constant capture_bits : natural := unsigned_num_bits(max(resolve(layout&".num_of_segments")*grid_width(layout),min_storage)-1);
 
-	signal video_addr         : std_logic_vector(0 to capture_bits-1);
-	signal video_frm          : std_logic;
-	signal video_dv           : std_logic;
-	signal video_data         : std_logic_vector(0 to 2*inputs*storage_word'length-1);
+	signal video_addr     : std_logic_vector(0 to capture_bits-1);
+	signal video_frm      : std_logic;
+	signal video_dv       : std_logic;
+	signal video_data     : std_logic_vector(0 to 2*inputs*storage_word'length-1);
 
-	signal video_vton         : std_logic;
+	signal video_vton     : std_logic;
 
-	signal time_offset        : std_logic_vector(hzoffset_bits-1 downto 0);
-	signal time_scale         : std_logic_vector(4-1 downto 0);
-	signal time_dv              : std_logic;
+	signal time_offset    : std_logic_vector(hzoffset_bits-1 downto 0);
+	signal time_scale     : std_logic_vector(4-1 downto 0);
+	signal time_dv          : std_logic;
 
-	signal trigger_freeze     : std_logic;
+	signal trigger_freeze : std_logic;
 
-	signal gain_ena           : std_logic;
-	signal gain_dv            : std_logic;
-	signal gain_cid           : std_logic_vector(0 to chanid_bits-1);
-	signal gain_ids           : std_logic_vector(0 to inputs*gainid_bits-1);
+	signal gain_ena       : std_logic;
+	signal gain_dv        : std_logic;
+	signal gain_cid       : std_logic_vector(0 to chanid_bits-1);
+	signal gain_ids       : std_logic_vector(0 to inputs*gainid_bits-1);
 
 
 begin
@@ -274,9 +266,6 @@ begin
 	scopeio_video_e : entity hdl4fpga.scopeio_video
 	generic map (
 		timing_id      => videotiming_id,
-		modeline       => modeline,
-		fps            => fps,
-		pclk           => pclk,
 		layout         => layout)
 	port map (
 		tp => tp,

@@ -35,9 +35,6 @@ use hdl4fpga.scopeiopkg.all;
 entity scopeio_video is
 	generic (
 		timing_id          : videotiming_ids;
-		modeline           : natural_vector(0 to 9-1) := (others => 0);
-		fps                : real    := 0.0;
-		pclk               : real    := 0.0;
 		layout             : string);
 	port (
 		tp                 : out std_logic_vector(1 to 32);
@@ -241,11 +238,8 @@ begin
 	video_e : entity hdl4fpga.video_sync
 	generic map (
 		timing_id     => timing_id,
-		modeline      => modeline,
 		width         => main_width(layout),
-		height        => main_height(layout),
-		fps           => fps,
-		pclk          => pclk)
+		height        => main_height(layout))
 	port map (
 		video_clk     => video_clk,
 		extern_video  => extern_video,
