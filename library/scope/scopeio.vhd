@@ -37,14 +37,10 @@ entity scopeio is
 	generic (
 		videotiming_id : videotiming_ids;
 		modeline       : natural_vector(0 to 9-1) := (others => 0);
-		width          : natural         := 0;
-		height         : natural         := 0;
 		fps            : real            := 0.0;
 		pclk           : real            := 0.0;
 		layout         : string;
 		max_delay      : natural         := 2**14;
-		vt_steps       : real_vector     := (1 to 0 => 0.0);
-		hz_step        : real            := 0.0;
 		min_storage    : natural         := 256; -- samples, storage size will be equal or larger than this
 
 		vt_gains       : natural_vector := (
@@ -143,6 +139,7 @@ begin
 
 	amp_b : block
 
+		constant vt          : string := jso(layout)**".vt";
 		constant vt_unit     : real := jso(layout)**".axis.vertical.unit";
 		constant sample_size : natural := input_data'length/inputs;
 		signal chan_id       : std_logic_vector(0 to chanid_bits-1);
@@ -199,9 +196,8 @@ begin
 				end if;
 
 				assert k < 1.0
-				report "unit " & real'image(unit) & " : " & real'image(32.0*step) & " unit should be increase"
-				-- report real'image(k) & "   unit should be increase"
-				severity FAILURE;
+					report "unit " & real'image(unit) & " : " & real'image(32.0*step) & " unit should be increase"
+					severity FAILURE;
 
 				if k > 0.0 then
 					for i in retval'range loop
@@ -212,7 +208,7 @@ begin
 				return retval;
 			end;
 
-			constant vt_step : real := vt_steps(i); -- diamond 3.7 workaround to avoid step => vt_steps(i)
+			constant vt_step : real := jso(vt)**("["&natural'image(i)&"].step");
 			constant gains  : natural_vector(vt_gains'range) := init_gains (
 				gains => vt_gains,
 				unit  => vt_unit,
@@ -271,8 +267,6 @@ begin
 	generic map (
 		timing_id      => videotiming_id,
 		modeline       => modeline,
-		width          => width,
-		height         => height,
 		fps            => fps,
 		pclk           => pclk,
 		layout         => layout)

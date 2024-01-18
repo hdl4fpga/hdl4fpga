@@ -36,8 +36,6 @@ entity scopeio_video is
 	generic (
 		timing_id          : videotiming_ids;
 		modeline           : natural_vector(0 to 9-1) := (others => 0);
-		width              : natural := 0;
-		height             : natural := 0;
 		fps                : real    := 0.0;
 		pclk               : real    := 0.0;
 		layout             : string);
@@ -244,8 +242,8 @@ begin
 	generic map (
 		timing_id     => timing_id,
 		modeline      => modeline,
-		width         => setif(width=0,  main_width(layout),   width),
-		height        => setif(height=0, main_height(layout), height),
+		width         => main_width(layout),
+		height        => main_height(layout),
 		fps           => fps,
 		pclk          => pclk)
 	port map (
