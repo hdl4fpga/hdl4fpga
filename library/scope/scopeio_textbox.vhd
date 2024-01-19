@@ -182,10 +182,19 @@ begin
 
 	process (video_clk)
 		variable addr : std_logic_vector(video_addr'range);
+		constant xxx : natural_vector := textbox_field(cga_cols, cga_size);
+		variable yyy : unsigned(0 to unsigned_num_bits(xxx'length-1)-1);
 	begin
 		if rising_edge(video_clk) then
 			textfg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_textpalette), addr), textfg'length));
 			textbg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_bgpalette),   addr), textbg'length));
+			if unsigned(addr)=xxx(to_integer(yyy)) then
+				if yyy>=xxx'length-1 then
+					yyy := yyy + 1;
+				else
+					yyy := 0;
+				end if;
+			end if;
 			addr := video_addr;
 		end if;
 	end process;
