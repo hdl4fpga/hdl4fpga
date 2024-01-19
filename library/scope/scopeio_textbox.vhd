@@ -186,13 +186,12 @@ begin
 		variable yyy : unsigned(0 to unsigned_num_bits(xxx'length-1)-1);
 	begin
 		if rising_edge(video_clk) then
-			textfg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_textpalette), addr), textfg'length));
-			textbg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_bgpalette),   addr), textbg'length));
+			textfg <= std_logic_vector(yyy+pltid_order'length);
 			if unsigned(addr)=xxx(to_integer(yyy)) then
-				if yyy>=xxx'length-1 then
+				if yyy >= xxx'length-1 then
 					yyy := yyy + 1;
 				else
-					yyy := 0;
+					yyy := (others => '0');
 				end if;
 			end if;
 			addr := video_addr;
@@ -200,7 +199,6 @@ begin
 	end process;
 
 	textfg <= std_logic_vector(to_unsigned(pltid_textfg, textfg'length));
-	textbg <= std_logic_vector(to_unsigned(pltid_textbg, textbg'length));
 
 	latfg_e : entity hdl4fpga.latency
 	generic map (
