@@ -82,7 +82,7 @@ entity scopeio_textbox is
 		return retval;
 	end;
 
-	impure function textbox_mask(
+	impure function textbox_rom (
 		constant width : natural;
 		constant size  : natural)
 		return string is
@@ -106,6 +106,20 @@ entity scopeio_textbox is
 		end loop;
 		return data;
 	end;
+
+	impure function textbox_field (
+		constant width  : natural;
+		constant size   : natural)
+		return natural_vector is
+		variable retval : natural_vector(0 to inputs-1);
+	begin
+		retval(0) := 0;
+		for i in 1 to inputs-1 loop
+			retval(i) := retval(i-1) + width;
+		end loop;
+		return retval;
+	end;
+
 end;
 
 architecture def of scopeio_textbox is
@@ -118,7 +132,7 @@ architecture def of scopeio_textbox is
 	constant cga_cols        : natural := textbox_width(layout)/font_width;
 	constant cga_rows        : natural := textbox_height(layout)/font_height;
 	constant cga_size        : natural := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
-	constant cga_bitrom      : std_logic_vector := to_ascii(textbox_mask(cga_cols, cga_size));
+	constant cga_bitrom      : std_logic_vector := to_ascii(textbox_rom(cga_cols, cga_size));
 
 	signal cga_we            : std_logic := '0';
 	signal cga_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
@@ -166,7 +180,19 @@ begin
 		di(0) => video_dot,
 		do(0) => text_fgon);
 
+	process (video_clk)
+		variable addr : std_logic_vector(video_addr'range);
+	begin
+		if rising_edge(video_clk) then
+			textfg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_textpalette), addr), textfg'length));
+			textbg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_bgpalette),   addr), textbg'length));
+			addr := video_addr;
+		end if;
+	end process;
+
 	textfg <= std_logic_vector(to_unsigned(pltid_textfg, textfg'length));
+	textbg <= std_logic_vector(to_unsigned(pltid_textbg, textbg'length));
+
 	latfg_e : entity hdl4fpga.latency
 	generic map (
 		n =>  text_fg'length,
@@ -175,7 +201,6 @@ begin
 		clk => video_clk,
 		di => textfg,
 		do => text_fg);
-	textbg <= std_logic_vector(to_unsigned(pltid_textbg, textbg'length));
 	latbg_e : entity hdl4fpga.latency
 	generic map (
 		n => text_bg'length,
