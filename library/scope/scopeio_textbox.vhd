@@ -113,7 +113,7 @@ entity scopeio_textbox is
 		return natural_vector is
 		variable retval : natural_vector(0 to inputs-1);
 	begin
-		retval(0) := 0;
+		retval(0) := width;
 		for i in 1 to inputs-1 loop
 			retval(i) := retval(i-1) + width;
 		end loop;
