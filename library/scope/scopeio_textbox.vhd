@@ -125,6 +125,7 @@ end;
 architecture def of scopeio_textbox is
 	subtype ascii is std_logic_vector(8-1 downto 0);
 	constant cgaadapter_latency : natural := 4;
+	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
 
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
@@ -145,6 +146,104 @@ architecture def of scopeio_textbox is
 	signal video_dot         : std_logic;
 
 begin
+
+	rgtr_b : block
+
+		signal myip_ena       : std_logic;
+		signal myip_dv        : std_logic;
+		signal myip_num1      : std_logic_vector(8-1 downto 0);
+		signal myip_num2      : std_logic_vector(8-1 downto 0);
+		signal myip_num3      : std_logic_vector(8-1 downto 0);
+		signal myip_num4      : std_logic_vector(8-1 downto 0);
+
+		signal trigger_ena    : std_logic;
+		signal trigger_freeze : std_logic;
+		signal trigger_slope  : std_logic;
+		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
+		signal trigger_level  : std_logic_vector(storage_word'range);
+
+		signal chan_id        : std_logic_vector(chanid_maxsize-1 downto 0);
+		signal vt_exp         : integer;
+		signal vt_dv          : std_logic;
+		signal vt_ena         : std_logic;
+		signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
+		signal vt_offsets     : std_logic_vector(0 to inputs*vt_offset'length-1);
+		signal vt_chanid      : std_logic_vector(chan_id'range);
+		signal vt_scale       : std_logic_vector(4-1 downto 0);
+		signal tgr_scale      : std_logic_vector(4-1 downto 0);
+
+	begin
+
+		myip4_e : entity hdl4fpga.scopeio_rgtrmyip
+		port map (
+			rgtr_clk  => rgtr_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+
+			ip4_ena   => myip_ena,
+			ip4_dv    => myip_dv,
+			ip4_num1  => myip_num1,
+			ip4_num2  => myip_num2,
+			ip4_num3  => myip_num3,
+			ip4_num4  => myip_num4);
+
+		trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
+		port map (
+			rgtr_clk       => rgtr_clk,
+			rgtr_dv        => rgtr_dv,
+			rgtr_id        => rgtr_id,
+			rgtr_data      => rgtr_data,
+
+			trigger_ena    => trigger_ena,
+			trigger_slope  => trigger_slope,
+			trigger_freeze => trigger_freeze,
+			trigger_chanid => trigger_chanid,
+			trigger_level  => trigger_level);
+
+		rgtrvtaxis_b : block
+			signal offset : std_logic_vector(vt_offset'range);
+			signal chanid : std_logic_vector(vt_chanid'range);
+		begin
+			vtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+			generic map (
+				rgtr      => false)
+			port map (
+				rgtr_clk  => rgtr_clk,
+				rgtr_dv   => rgtr_dv,
+				rgtr_id   => rgtr_id,
+				rgtr_data => rgtr_data,
+				vt_dv     => vt_dv,
+				vt_ena    => vt_ena,
+				vt_chanid => chanid,
+				vt_offset => offset);
+
+			vtoffsets_p : process(rgtr_clk)
+			begin
+				if rising_edge(rgtr_clk) then
+					if vt_ena='1' then
+						vt_chanid  <= chanid;
+						vt_offsets <= byte2word(vt_offsets, chanid, offset);
+					end if;
+				end if;
+			end process;
+		end block;
+
+		chainid_p : process (rgtr_clk)
+		begin
+			if rising_edge(rgtr_clk) then
+				if vt_dv='1' then
+					chan_id <= vt_chanid;
+				elsif gain_dv='1' then
+					chan_id <= std_logic_vector(resize(unsigned(gain_cid),chan_id'length));
+				end if;
+			end if;
+		end process;
+		vt_offset <= multiplex(vt_offsets, chan_id,        vt_offset'length);
+		vt_scale  <= multiplex(gain_ids,   chan_id,        vt_scale'length);
+		tgr_scale <= multiplex(gain_ids,   trigger_chanid, tgr_scale'length);
+
+	end block;
 
 	video_addr <= std_logic_vector(resize(
 		mul(unsigned(video_vcntr) srl fontheight_bits, textbox_width(layout)/font_width) +
