@@ -192,7 +192,7 @@ begin
 					if yyy /= xxx'length-1 then
 						yyy := yyy + 1;
 					else
-						yyy := (others => '1');
+						yyy := (others => '0');
 					end if;
 				end if;
 			end if;
