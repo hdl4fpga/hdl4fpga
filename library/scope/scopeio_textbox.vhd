@@ -181,18 +181,18 @@ begin
 		do(0) => text_fgon);
 
 	process (video_clk)
-		variable addr : std_logic_vector(video_addr'range);
-		constant xxx : natural_vector := textbox_field(cga_cols, cga_size);
-		variable yyy : unsigned(0 to unsigned_num_bits(xxx'length-1)-1);
+		constant field_addr : natural_vector := textbox_field(cga_cols, cga_size);
+		variable field_id   : unsigned(0 to unsigned_num_bits(field_addr'length-1)-1);
+		variable addr       : std_logic_vector(video_addr'range);
 	begin
 		if rising_edge(video_clk) then
-			textfg <= std_logic_vector(resize(yyy, textfg'length)+pltid_order'length);
-			if unsigned(addr)=xxx(to_integer(yyy)) then
+			textfg <= std_logic_vector(resize(field_id, textfg'length)+pltid_order'length);
+			if unsigned(addr)=field_addr(to_integer(field_id)) then
 				if video_on='1' then
-					if yyy /= xxx'length-1 then
-						yyy := yyy + 1;
+					if field_id /= field_addr'length-1 then
+						field_id := field_id + 1;
 					else
-						yyy := (others => '0');
+						field_id := (others => '0');
 					end if;
 				end if;
 			end if;
