@@ -188,10 +188,12 @@ begin
 		if rising_edge(video_clk) then
 			textfg <= std_logic_vector(resize(yyy, textfg'length)+pltid_order'length);
 			if unsigned(addr)=xxx(to_integer(yyy)) then
-				if yyy < xxx'length-1 then
-					yyy := yyy + 1;
-				else
-					yyy := (others => '0');
+				if video_on='1' then
+					if yyy /= xxx'length-1 then
+						yyy := yyy + 1;
+					else
+						yyy := (others => '1');
+					end if;
 				end if;
 			end if;
 			addr := video_addr;
