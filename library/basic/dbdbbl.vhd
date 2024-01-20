@@ -3,6 +3,34 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+
+entity dbdbbl_bcd is
+	port (
+		ci      : in  std_logic;
+		bcd_in  : in  std_logic_vector(4-1 downto 0);
+		bcd_out : out std_logic_vector(4-1 downto 0);
+		co      : out std_logic);
+end;
+
+
+architecture beh of dbdbbl_bcd is
+	signal b : std_logic_vector(bcd_in'range);
+begin
+	b <= x"0" when unsigned(bcd_in) < x"5" else x"3";
+	adder_e : entity hdl4fpga.adder
+	port map (
+		ci => ci,
+		a  => bcd_in(3-1 downto 0),
+		b  => b(3-1 downto 0),
+		s  => bcd_out(3-1 downto 0),
+		co => bcd_out(4-1));
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library hdl4fpga;
 use hdl4fpga.base.all;
 
 entity dbdbbl is
@@ -20,7 +48,7 @@ end;
 
 architecture def of dbdbbl is
 
-	procedure dbdbbl_p(
+	procedure dbdbbl_bcd (
 		variable shtio : inout std_logic;
 		variable digit : inout unsigned) is
 		variable save  : std_logic;
@@ -63,7 +91,7 @@ begin
 		for k in tmp_shtio'range loop
 			tmp_shtio := tmp_shtio rol 1;
 			for i in 0 to tmp_value'length/4-1 loop
-				dbdbbl_p(tmp_shtio(0), tmp_value(4-1 downto 0));
+				dbdbbl_bcd(tmp_shtio(0), tmp_value(4-1 downto 0));
 				tmp_value := tmp_value ror 4;
 			end loop;
 		end loop;
