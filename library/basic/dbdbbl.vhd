@@ -4,26 +4,25 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-entity dbdbbl_bcd is
+entity dbdbbl_digit is
 	port (
-		ci      : in  std_logic;
-		bcd_in  : in  std_logic_vector(4-1 downto 0);
-		bcd_out : out std_logic_vector(4-1 downto 0);
+		bcd_in  : in  std_logic_vector(3-1 downto 0);
+		bcd_out : out std_logic_vector(3-1 downto 0);
 		co      : out std_logic);
 end;
 
 
-architecture beh of dbdbbl_bcd is
-	signal b : std_logic_vector(bcd_in'range);
+architecture beh of dbdbbl_digit is
+	signal b : std_logic_vector(3-1 downto 0);
+	signal s : std_logic_vector(b'range);
 begin
-	b <= x"0" when unsigned(bcd_in) < x"5" else x"3";
+	b <= b"000" when unsigned(bcd_in) < b"101" else b"011";
 	adder_e : entity hdl4fpga.adder
 	port map (
-		ci => ci,
-		a  => bcd_in(3-1 downto 0),
-		b  => b(3-1 downto 0),
-		s  => bcd_out(3-1 downto 0),
-		co => bcd_out(4-1));
+		a  => bcd_in,
+		b  => b,
+		s  => bcd_out,
+		co => co);
 end;
 
 library ieee;
