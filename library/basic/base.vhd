@@ -35,9 +35,6 @@ package base is
 	function signed_num_bits (arg: integer) return natural;
 	function unsigned_num_bits (arg: natural) return natural;
 
-	subtype byte is std_logic_vector(8-1 downto 0);
-	type byte_vector is array (natural range <>) of byte;
-
 	subtype integer64 is time;
 	type integer64_vector is array (natural range <>) of integer64;
 
@@ -96,14 +93,6 @@ package base is
 	function to_stdlogicvector (
 		constant arg : string)
 		return std_logic_vector;
-
-	function to_bytevector (
-		constant arg : string)
-		return byte_vector;
-
-	function to_bytevector (
-		constant arg : std_logic_vector)
-		return byte_vector;
 
 	function to_bitrom (
 		constant data : natural_vector;
@@ -362,10 +351,6 @@ package base is
 		constant arg : unsigned)
 		return string;
 
-	function to_stdlogicvector (
-		constant arg : byte_vector)
-		return std_logic_vector;
-
 	function max (
 		constant data : natural_vector)
 		return natural;
@@ -464,7 +449,6 @@ end;
 use std.textio.all;
 
 library ieee;
-use ieee.std_logic_textio.all;
 use ieee.math_real.all;
 
 library hdl4fpga;
@@ -586,8 +570,8 @@ package body base is
 			if i > arg2 then
 				retval(i) := arg1(i-arg2);
 			end if;
-			for i in 1 to arg2 loop
-				retval(i) := ' ';
+			for j in 1 to arg2 loop
+				retval(j) := ' ';
 			end loop;
 		end loop;
 		return retval;
@@ -665,13 +649,13 @@ package body base is
 					mant  := mant * 2.0;
 					cy    := setif(mant >= 1.0, 1, 0);
 					mant  := mant - real(cy);
-					for i in n downto 1 loop
-						digit := character'pos(retval(i))-character'pos('0');
+					for j in n downto 1 loop
+						digit := character'pos(retval(j))-character'pos('0');
 						if digit < 5 then
-							retval(i) := lookup(2*digit+cy+1);
+							retval(j) := lookup(2*digit+cy+1);
 							cy := 0;
 						else
-							retval(i) := lookup(2*digit+cy-10+1);
+							retval(j) := lookup(2*digit+cy-10+1);
 							cy := 1;
 						end if;
 					end loop;
@@ -947,20 +931,6 @@ package body base is
 		return std_logic_vector(retval);
 	end;
 
-	function to_bytevector (
-		constant arg : std_logic_vector)
-		return byte_vector is
-		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : byte_vector(arg'length/byte'length-1 downto 0);
-	begin
-		dat := unsigned(arg);
-		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(byte'length-1 downto 0));
-			dat := dat srl byte'length;
-		end loop;
-		return val;
-	end;
-
 	function to_string(
 		constant arg : std_logic_vector)
 		return string is
@@ -988,35 +958,24 @@ package body base is
 	end;
 
 	function to_stdlogicvector (
-		constant arg : character)
+		constant arg : string)
 		return std_logic_vector is
-		variable val : unsigned(byte'length-1 downto 0);
+		subtype code is std_logic_vector(8-1 downto 0);
+		variable val : unsigned(arg'length*code'length-1 downto 0);
 	begin
-		val(byte'range) := to_unsigned(character'pos(arg),byte'length);
+		for i in arg'range loop
+			val := val sll code'length-1;
+			val(code'range) := to_unsigned(character'pos(arg(i)), code'length);
+		end loop;
 		return std_logic_vector(val);
 	end function;
 
 	function to_stdlogicvector (
-		constant arg : string)
+		constant arg : character)
 		return std_logic_vector is
-		variable val : unsigned(arg'length*byte'length-1 downto 0);
+		subtype code is std_logic_vector(8-1 downto 0);
 	begin
-		for i in arg'range loop
-			val := val sll byte'length;
-			val(byte'range) := to_unsigned(character'pos(arg(i)),byte'length);
-		end loop;
-		return std_logic_vector(val);
-	end function;
-
-	function to_bytevector (
-		constant arg : string)
-		return byte_vector is
-		variable val : byte_vector(arg'range);
-	begin
-		for i in arg'range loop
-			val(i) := std_logic_vector(unsigned'(to_unsigned(character'pos(arg(i)),byte'length)));
-		end loop;
-		return val;
+		return std_logic_vector(to_unsigned(character'pos(arg),code'length));
 	end function;
 
 	function to_bitrom (
@@ -1554,20 +1513,6 @@ package body base is
 	-----------
 	-- ASCII --
 	-----------
-
-	function to_stdlogicvector (
-		constant arg : byte_vector)
-		return std_logic_vector is
-		variable dat : byte_vector(arg'length-1 downto 0);
-		variable val : unsigned(byte'length*arg'length-1 downto 0);
-	begin
-		dat := arg;
-		for i in dat'range loop
-			val := val sll byte'length;
-			val(byte'range) := unsigned(dat(i));
-		end loop;
-		return std_logic_vector(val);
-	end;
 
 	function max (
 		constant data : natural_vector)
