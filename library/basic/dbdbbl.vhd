@@ -6,23 +6,22 @@ library hdl4fpga;
 
 entity dbdbbl_digit is
 	port (
-		bcd_in  : in  std_logic_vector(3-1 downto 0);
-		bcd_out : out std_logic_vector(3-1 downto 0);
-		co      : out std_logic);
+		digit_in  : in  std_logic_vector(3-1 downto 0);
+		digit_out : out std_logic_vector(3-1 downto 0));
 end;
 
 
 architecture beh of dbdbbl_digit is
-	signal b : std_logic_vector(3-1 downto 0);
-	signal s : std_logic_vector(b'range);
+	signal b  : std_logic_vector(3-1 downto 0);
+	signal s  : std_logic_vector(b'range);
 begin
-	b <= b"000" when unsigned(bcd_in) < b"101" else b"011";
-	adder_e : entity hdl4fpga.adder
-	port map (
-		a  => bcd_in,
-		b  => b,
-		s  => bcd_out,
-		co => co);
+	with digit_in select
+	digit_out <= 
+		digit_in when "000"|"001"|"010"|"011"|"100",
+		"100"    when "101",
+		"101"    when "110",
+		"110"    when "111",
+		"---"    when others;
 end;
 
 library ieee;
@@ -34,70 +33,27 @@ use hdl4fpga.base.all;
 
 entity dbdbbl is
 	port (
-		clk     : in  std_logic := '0';
-		ena     : in  std_logic := '1';
-
-		bin_di  : in  std_logic_vector;
-
-		bcd_ini : in  std_logic;
-		bcd_di  : in  std_logic_vector;
-		bcd_do  : out std_logic_vector;
-		bcd_cy  : out std_logic);
+		clk  : in  std_logic;
+		ena  : in  std_logic := '1';
+		bin  : in  std_logic;
+		bcd  : out std_logic_vector);
 end;
 
 architecture def of dbdbbl is
-
-	procedure dbdbbl_bcd (
-		variable shtio : inout std_logic;
-		variable digit : inout unsigned) is
-		variable save  : std_logic;
-	begin
-		if digit >= "0101" then
-			digit := digit + "0011";
-		end if;
-		digit    := digit rol 1;
-		save     := digit(0);
-		digit(0) := shtio;
-		shtio    := save;
-	end;
-
-	signal shtio_d : unsigned(bin_di'length-1 downto 0);
-	signal shtio_q : unsigned(bin_di'length-1 downto 0);
-
+	subtype bcd_word : std_logic_vector(3*((bcd'lenth+3-1)/3)-1 downto 0);
+	type bcdword_vector is array(natural range <>) of bcd_word;
+	signal bcd_in  : bcdword_vector(bin'range);
+	signal bcd_out : bcdword_vector(bin'range);;
 begin
 
-	reg_p : process (clk)
+	g : for k in bin'range loop
 	begin
-		if rising_edge(clk) then
-			if ena='1' then
-				shtio_q <= shtio_d;
-			end if;
-		end if;
-	end process;
-
-	comb_p : process (bcd_ini, bin_di, bcd_di, shtio_q)
-		variable tmp_value : unsigned(bcd_di'length-1 downto 0);
-		variable tmp_shtio : unsigned(bin_di'length-1 downto 0);
-	begin
-		tmp_value := unsigned(bcd_di);
-
-		if bcd_ini='1' then
-			tmp_shtio := unsigned(bin_di);
-		else
-			tmp_shtio := shtio_q;
-		end if;
-
-		for k in tmp_shtio'range loop
-			tmp_shtio := tmp_shtio rol 1;
-			for i in 0 to tmp_value'length/4-1 loop
-				dbdbbl_bcd(tmp_shtio(0), tmp_value(4-1 downto 0));
-				tmp_value := tmp_value ror 4;
-			end loop;
-		end loop;
-
-		bcd_do  <= std_logic_vector(tmp_value);
-		shtio_d <= tmp_shtio;
-	end process;
-	bcd_cy <= setif(shtio_d /= (shtio_d'range => '0'));
+		dbdbbl_g : for i in bcd'range generate
+			digit_e : entity hdl4fpga.dbdbbl_digit 
+			port (
+				digit_in  => bcd_in (k)(3*(i+1)-1 downto 3*i),
+				digit_out => bcd_out(k)(3*(i+1)-1 downto 3*i));
+		end generate;
+	end generate;
 
 end;
