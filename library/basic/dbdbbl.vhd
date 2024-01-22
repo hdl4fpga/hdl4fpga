@@ -12,39 +12,37 @@ entity dbdbbl is
 end;
 
 architecture def of dbdbbl is
-	subtype digit_word is std_logic_vector(4*((bcd'length+4-1)/4)-1 downto 0);
+	constant bcd_length : natural := 4;
+	subtype digit_word is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
 	type bcdword_vector is array(natural range <>) of digit_word;
 	signal digits_out : bcdword_vector(bin'range);
 begin
 
 	digits_g : for k in bin'range generate
-		signal digits_in  : digit_word;
-		signal digits     : digit_word;
+		signal digits_in : digit_word;
+		signal digits    : digit_word;
 	begin
+
 		process (bin(k), digits_out)
-			subtype bin_range is natural range bin'range;
 		begin
 			if k=bin'left then
 				digits_in <= (others => '0');
+			elsif bin'ascending then
+				digits_in <= digits_out(k-1);
 			else
-				digits_in <= digits_out(bin_range'pred(k));
+				digits_in <= digits_out(k+1);
 			end if;
 		end process;
 
-		dbdbbl_g : for i in 0 to digit_word'length/4-1 generate
+		dbdbbl_g : for i in 0 to digit_word'length/bcd_length-1 generate
 		begin
-			process(digits_out(k)(4*(i+1)-1 downto 4*i))
-			begin
-				report "digits_in  " & natural'image(k) & " : " & natural'image(i) & " : " & to_string(digits_in(4*(i+1)-1 downto 4*i));
-				report "digits_out " & natural'image(k) & " : " & natural'image(i) & " : " & to_string(digits_out(k)(4*(i+1)-1 downto 4*i));
-			end process;
 
     		process (digits_in)
     		begin
-    			if unsigned(digits_in(4*(i+1)-1 downto 4*i)) < x"5" then
-    				digits(4*(i+1)-1 downto 4*i) <= digits_in(4*(i+1)-1 downto 4*i);
+    			if digits_in(bcd_length*(i+1)-1 downto bcd_length*i) < x"5" then
+    				digits(bcd_length*(i+1)-1 downto bcd_length*i) <= digits_in(bcd_length*(i+1)-1 downto bcd_length*i);
     			else
-    				digits(4*(i+1)-1 downto 4*i) <= std_logic_vector(unsigned(digits_in(4*(i+1)-1 downto 4*i)) + x"3");
+    				digits(bcd_length*(i+1)-1 downto bcd_length*i) <= digits_in(bcd_length*(i+1)-1 downto bcd_length*i) + x"3";
     			end if;
     		end process;
 
@@ -57,13 +55,14 @@ begin
     			-- "1011"   when "1000",
     			-- "1100"   when "1001",
     			-- "----"   when others;
+
 		end generate;
 		process (digits)
 		begin
-			digits_out(k) <= std_logic_vector(shift_left(unsigned(digits),1));
+			digits_out(k) <= shift_left(unsigned(digits),1);
 			digits_out(k)(digits'right) <= bin(k);
 		end process;
 	end generate;
-	bcd <= digits_out(digits_out'right); 
+	bcd <= std_logic_vector(resize(digits_out(digits_out'right), bcd'length)); 
 
 end;

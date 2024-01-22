@@ -28,11 +28,11 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 architecture dbdbbl_tb of testbench is
-    signal bcd : std_logic_vector(8-1 downto 0);
+    signal bcd : std_logic_vector(5*4-1 downto 0);
 begin
     du_e : entity hdl4fpga.dbdbbl 
     port map (
-        bin => b"111111",
+        bin => std_logic_vector(to_unsigned(65035,16)), -- b"1001110",
         bcd => bcd);
 
     process (bcd)
