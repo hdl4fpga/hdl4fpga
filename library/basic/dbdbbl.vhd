@@ -2,23 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity dbdbbl_digit is
-	port (
-		digit_in  : in  std_logic_vector(4-1 downto 0);
-		digit_out : out std_logic_vector(4-1 downto 0));
-end;
-
-architecture beh of dbdbbl_digit is
-	signal b  : unsigned(digit_in'range);
-begin
-	b <= x"0" when unsigned(digit_in) < x"5" else x"3";
-	digit_out <= std_logic_vector(unsigned(digit_in)+b);
-end;
-
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
 library hdl4fpga;
 use hdl4fpga.base.all;
 
@@ -35,8 +18,8 @@ architecture def of dbdbbl is
 begin
 
 	digits_g : for k in bin'range generate
-		signal digits_in  : bcdword_vector(bin'range);
-		signal digits : digit_word;
+		signal digits_in  : digit_word;
+		signal digits     : digit_word;
 	begin
 		process (bin(k), digits_out)
 			subtype bin_range is natural range bin'range;
@@ -56,10 +39,24 @@ begin
 				report "digits_out " & natural'image(k) & " : " & natural'image(i) & " : " & to_string(digits_out(k)(4*(i+1)-1 downto 4*i));
 			end process;
 
-			digit_e : entity hdl4fpga.dbdbbl_digit 
-			port map (
-				digit_in  => digits_in(k)(4*(i+1)-1 downto 4*i),
-				digit_out => digits(4*(i+1)-1 downto 4*i));
+    		process (digits_in)
+    		begin
+    			if unsigned(digits_in(4*(i+1)-1 downto 4*i)) < x"5" then
+    				digits(4*(i+1)-1 downto 4*i) <= digits_in(4*(i+1)-1 downto 4*i);
+    			else
+    				digits(4*(i+1)-1 downto 4*i) <= std_logic_vector(unsigned(digits_in(4*(i+1)-1 downto 4*i)) + x"3");
+    			end if;
+    		end process;
+
+    		-- with digit_in select
+    		-- digit_out <= 
+    			-- digit_in when "0000"|"0001"|"0010"|"0011"|"0100",
+    			-- "1000"   when "0101",
+    			-- "1001"   when "0110",
+    			-- "1010"   when "0111",
+    			-- "1011"   when "1000",
+    			-- "1100"   when "1001",
+    			-- "----"   when others;
 		end generate;
 		process (digits)
 		begin
