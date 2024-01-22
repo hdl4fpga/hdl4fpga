@@ -7,9 +7,10 @@ use hdl4fpga.base.all;
 
 entity dbdbbl is
 	generic (
-		adder : boolean := true);
+		adder : boolean := false);
 	port (
 		bin   : in  std_logic_vector;
+		ini   : in  std_logic_vector := (0 to 0 => '0');
 		bcd   : out std_logic_vector);
 end;
 
@@ -28,7 +29,7 @@ begin
 		process (bin(k), digits_out)
 		begin
 			if k=bin'left then
-				digits_in <= (others => '0');
+				digits_in <= resize(unsigned(ini), digits'length);
 			elsif bin'ascending then
 				digits_in <= digits_out(k-1);
 			else
@@ -37,25 +38,25 @@ begin
 		end process;
 
 		dbdbbl_g : for i in 0 to digit_word'length/bcd_length-1 generate
+			alias digit_in  : unsigned(bcd_length-1 downto 0) is digits_in(bcd_length*(i+1)-1 downto bcd_length*i);
+			alias digit_out : unsigned(bcd_length-1 downto 0) is digits   (bcd_length*(i+1)-1 downto bcd_length*i);
 		begin
 
 			adder_g : if adder generate
-				process (digits_in(bcd_length*(i+1)-1 downto bcd_length*i))
+				process (digit_in)
 				begin
-					if digits_in(bcd_length*(i+1)-1 downto bcd_length*i) < x"5" then
-						digits(bcd_length*(i+1)-1 downto bcd_length*i) <= digits_in(bcd_length*(i+1)-1 downto bcd_length*i);
+					if digit_in < x"5" then
+						digit_out <= digit_in;
 					else
-						digits(bcd_length*(i+1)-1 downto bcd_length*i) <= digits_in(bcd_length*(i+1)-1 downto bcd_length*i) + x"3";
+						digit_out <= digit_in + x"3";
 					end if;
 				end process;
 			end generate;
 
 			lut_e : if not adder generate
-				alias sel : unsigned(bcd_length-1 downto 0) is digits_in(bcd_length*(i+1)-1 downto bcd_length*i);
-			begin
-				with sel select
-				digits(bcd_length*(i+1)-1 downto bcd_length*i) <= 
-					digits_in(bcd_length*(i+1)-1 downto bcd_length*i) when "0000"|"0001"|"0010"|"0011"|"0100",
+				with digit_in select
+				digit_out <= 
+					digit_in when "0000"|"0001"|"0010"|"0011"|"0100",
 					"1000"  when "0101",
 					"1001"  when "0110",
 					"1010"  when "0111",
@@ -65,6 +66,7 @@ begin
 			end generate;
 
 		end generate;
+
 		process (digits)
 		begin
 			digits_out(k) <= shift_left(unsigned(digits),1);
