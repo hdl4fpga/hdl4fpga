@@ -51,18 +51,17 @@ begin
 			end generate;
 
 			lut_e : if not adder generate
-				signal sel : unsigned(bcd_length-1 downto 0);
+				alias sel : unsigned(bcd_length-1 downto 0) is digits_in(bcd_length*(i+1)-1 downto bcd_length*i);
 			begin
-				sel <= digits_in(bcd_length*(i+1)-1 downto bcd_length*i);
 				with sel select
 				digits(bcd_length*(i+1)-1 downto bcd_length*i) <= 
 					digits_in(bcd_length*(i+1)-1 downto bcd_length*i) when "0000"|"0001"|"0010"|"0011"|"0100",
-					"1000"   when "0101",
-					"1001"   when "0110",
-					"1010"   when "0111",
-					"1011"   when "1000",
-					"1100"   when "1001",
-					"----"   when others;
+					"1000"  when "0101",
+					"1001"  when "0110",
+					"1010"  when "0111",
+					"1011"  when "1000",
+					"1100"  when "1001",
+					"----"  when others;
 			end generate;
 
 		end generate;
