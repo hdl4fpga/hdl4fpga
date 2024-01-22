@@ -6,9 +6,11 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 entity dbdbbl is
+	generic (
+		adder : boolean := true);
 	port (
-		bin  : in  std_logic_vector;
-		bcd  : out std_logic_vector);
+		bin   : in  std_logic_vector;
+		bcd   : out std_logic_vector);
 end;
 
 architecture def of dbdbbl is
@@ -37,24 +39,31 @@ begin
 		dbdbbl_g : for i in 0 to digit_word'length/bcd_length-1 generate
 		begin
 
-    		process (digits_in)
-    		begin
-    			if digits_in(bcd_length*(i+1)-1 downto bcd_length*i) < x"5" then
-    				digits(bcd_length*(i+1)-1 downto bcd_length*i) <= digits_in(bcd_length*(i+1)-1 downto bcd_length*i);
-    			else
-    				digits(bcd_length*(i+1)-1 downto bcd_length*i) <= digits_in(bcd_length*(i+1)-1 downto bcd_length*i) + x"3";
-    			end if;
-    		end process;
+			adder_g : if adder generate
+				process (digits_in(bcd_length*(i+1)-1 downto bcd_length*i))
+				begin
+					if digits_in(bcd_length*(i+1)-1 downto bcd_length*i) < x"5" then
+						digits(bcd_length*(i+1)-1 downto bcd_length*i) <= digits_in(bcd_length*(i+1)-1 downto bcd_length*i);
+					else
+						digits(bcd_length*(i+1)-1 downto bcd_length*i) <= digits_in(bcd_length*(i+1)-1 downto bcd_length*i) + x"3";
+					end if;
+				end process;
+			end generate;
 
-    		-- with digit_in select
-    		-- digit_out <= 
-    			-- digit_in when "0000"|"0001"|"0010"|"0011"|"0100",
-    			-- "1000"   when "0101",
-    			-- "1001"   when "0110",
-    			-- "1010"   when "0111",
-    			-- "1011"   when "1000",
-    			-- "1100"   when "1001",
-    			-- "----"   when others;
+			lut_e : if not adder generate
+				signal sel : unsigned(bcd_length-1 downto 0);
+			begin
+				sel <= digits_in(bcd_length*(i+1)-1 downto bcd_length*i);
+				with sel select
+				digits(bcd_length*(i+1)-1 downto bcd_length*i) <= 
+					digits_in(bcd_length*(i+1)-1 downto bcd_length*i) when "0000"|"0001"|"0010"|"0011"|"0100",
+					"1000"   when "0101",
+					"1001"   when "0110",
+					"1010"   when "0111",
+					"1011"   when "1000",
+					"1100"   when "1001",
+					"----"   when others;
+			end generate;
 
 		end generate;
 		process (digits)
