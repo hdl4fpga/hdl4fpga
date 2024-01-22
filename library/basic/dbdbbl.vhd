@@ -2,9 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library hdl4fpga;
-use hdl4fpga.base.all;
-
 entity dbdbbl is
 	generic (
 		adder : boolean := false);
@@ -74,5 +71,48 @@ begin
 		end process;
 	end generate;
 	bcd <= std_logic_vector(resize(digits_out(digits_out'right), bcd'length)); 
+
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity dbdbbl_seq is
+	port (
+		clk : in  std_logic;
+		ena : in  std_logic := '1';
+		bin : in  std_logic_vector;
+		ini : in  std_logic_vector := (0 to 0 => '0');
+		bcd : buffer std_logic_vector);
+end;
+
+architecture beh of dbdbbl_seq is
+	component dbdbbl
+		generic (
+			adder : boolean := false);
+		port (
+			bin   : in  std_logic_vector;
+			ini   : in  std_logic_vector := (0 to 0 => '0');
+			bcd   : out std_logic_vector);
+	end component;
+
+	signal bcd_dbbl : std_logic_vector(bcd'range);
+
+begin
+
+	dbdbbl_i : dbdbbl
+	port map (
+		bin => bin,
+		ini => ini,
+		bcd => bcd_dbbl);
+
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			if ena='1' then
+				bcd <= bcd_dbbl;
+			end if;
+		end if;
+	end process;
 
 end;
