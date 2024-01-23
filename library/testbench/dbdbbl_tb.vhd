@@ -82,7 +82,7 @@ begin
         clk => clk,
         ena => ena,
         ld  => ld,
-        ini => x"00009",
+        ini => x"00089",
         bin => bin, -- b"1001110",
         bcd => bcd);
 

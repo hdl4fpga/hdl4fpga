@@ -104,17 +104,17 @@ architecture beh of dbdbbl_seq is
 
 	signal ini_als  : std_logic_vector(bcd'length-1 downto 0);
 	signal ini_shr  : std_logic_vector(bcd'length-1 downto 0);
+	signal bin_cy   : std_logic_vector(bin'length-1   downto 0);
 	signal bin_dbbl : std_logic_vector(bin'range);
 	signal ini_dbbl : std_logic_vector(n-1 downto 0);
 	signal bcd_dbbl : std_logic_vector(bin'length+n-1 downto 0);
-	signal bin_shr  : std_logic_vector(bin'length-1   downto 0);
 
 begin
 
 	ini_als <= std_logic_vector(resize(unsigned(ini), ini_als'length));
 	bin_dbbl <= 
 		bin when ld='1' else
-		bin_shr(bin'length-1 downto 0);
+		bin_cy(bin'length-1 downto 0);
 		
 	ini_dbbl <= 
 		ini_als(n-1 downto 0) when ld='1' else
@@ -135,7 +135,7 @@ begin
 					shr := unsigned(ini_als);
 				end if;
 				shr(n-1 downto 0) := unsigned(bcd_dbbl(n-1 downto 0));
-				bin_shr <= bcd_dbbl(bin'length+n-1 downto n);
+				bin_cy <= bcd_dbbl(bin'length+n-1 downto n);
 				shr := rotate_right(shr, n);
 				ini_shr <= std_logic_vector(shr);
 			end if;
