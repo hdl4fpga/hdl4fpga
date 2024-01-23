@@ -55,8 +55,8 @@ architecture dbdbbl_seq_tb of testbench is
     signal nxt : std_logic := '0';
     signal ena : std_logic := '1';
     signal bin : std_logic_vector(2-1 downto 0);
-    signal bcd : std_logic_vector(5*4-1 downto 0);
-    constant n : natural := 4;
+    signal bcd : std_logic_vector(6*4-1 downto 0);
+    constant n : natural := 8;
 begin
     clk <= not clk after 1 ns;
 

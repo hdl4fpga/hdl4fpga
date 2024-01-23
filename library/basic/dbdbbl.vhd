@@ -138,9 +138,9 @@ begin
 					shr := unsigned(ini_als);
 				end if;
 				shr(n-1 downto 0) := unsigned(bcd_dbbl(n-1 downto 0));
-				bin_cy <= bcd_dbbl(bin'length+n-1 downto n);
 				shr := rotate_right(shr, n);
 				ini_shr <= std_logic_vector(shr);
+				bin_cy  <= bcd_dbbl(bin'length+n-1 downto n);
 			end if;
 		end if;
 	end process;
