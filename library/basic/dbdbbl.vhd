@@ -23,7 +23,7 @@ begin
 		signal digits    : digit_word;
 	begin
 
-		process (bin(k), digits_out)
+		process (digits_out, ini)
 		begin
 			if k=bin'left then
 				digits_in <= resize(unsigned(ini), digits'length);
@@ -64,7 +64,7 @@ begin
 
 		end generate;
 
-		process (digits)
+		process (bin(k), digits)
 		begin
 			digits_out(k) <= shift_left(unsigned(digits),1);
 			digits_out(k)(digits'right) <= bin(k);
@@ -76,6 +76,9 @@ end;
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library hdl4fpga;
 
 entity dbdbbl_seq is
 	generic (
@@ -99,39 +102,45 @@ architecture beh of dbdbbl_seq is
 			bcd   : out std_logic_vector);
 	end component;
 
+	signal ini_als  : std_logic_vector(bcd'length-1 downto 0);
+	signal ini_shr  : std_logic_vector(bcd'length-1 downto 0);
 	signal bin_dbbl : std_logic_vector(bin'range);
 	signal ini_dbbl : std_logic_vector(n-1 downto 0);
 	signal bcd_dbbl : std_logic_vector(bin'length+n-1 downto 0);
+	signal bin_shr  : std_logic_vector(bin'length-1   downto 0);
 
 begin
 
+	ini_als <= std_logic_vector(resize(unsigned(ini), ini_als'length));
 	bin_dbbl <= 
 		bin when ld='1' else
-		bcd(bin'length-1 donwnto 0);
+		bin_shr(bin'length-1 downto 0);
 		
 	ini_dbbl <= 
-		ini(n-1 downto 0) when ld='1' else
+		ini_als(n-1 downto 0) when ld='1' else
 		ini_shr(n-1 downto 0);
 
-	dbdbbl_i : dbdbbl
+	dbdbbl_i : entity hdl4fpga.dbdbbl
 	port map (
 		bin => bin_dbbl,
-		ini => ini_dbbl(n-1 downto 0),
+		ini => ini_dbbl,
 		bcd => bcd_dbbl);
 
 	process (clk)
+		variable shr : unsigned(ini_shr'length-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if ena='1' then
 				if ld='1' then
-					ini_shr <= rotate_left(ini, n);
-				else
-					ini_shr <= rotate_left(ini_shr, n);
+					shr := unsigned(ini_als);
 				end if;
-				bcd(bcd_dbbl'length-1 donwnto 0) := bcd_dbbl;
-				bcd <= rotate_left(bcd, bin'length);
+				shr(n-1 downto 0) := unsigned(bcd_dbbl(n-1 downto 0));
+				bin_shr <= bcd_dbbl(bin'length+n-1 downto n);
+				shr := rotate_right(shr, n);
+				ini_shr <= std_logic_vector(shr);
 			end if;
 		end if;
 	end process;
 
+	bcd <= ini_shr;
 end;
