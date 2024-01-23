@@ -81,6 +81,7 @@ entity dbdbbl_seq is
 	port (
 		clk : in  std_logic;
 		ena : in  std_logic := '1';
+		ld  : in  std_logic;
 		bin : in  std_logic_vector;
 		ini : in  std_logic_vector := (0 to 0 => '0');
 		bcd : buffer std_logic_vector);
@@ -96,15 +97,32 @@ architecture beh of dbdbbl_seq is
 			bcd   : out std_logic_vector);
 	end component;
 
+	signal bin_dbbl : std_logic_vector(bcd'range);
+	signal ini_dbbl : std_logic_vector(bcd'range);
 	signal bcd_dbbl : std_logic_vector(bcd'range);
 
 begin
 
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			if ena='1' then
+				ini <= rotate_left(ini, bin'length);
+				bcd(bcd_dbbl'length-1 donwnto 0) := bcd_dbbl;
+				bcd <= rotate_left(bcd, bin'length);
+			end if;
+		end if;
+	end process;
+
+	bin_dbbl <= 
+		bin when ld='1' else
+		bcd_dbbl(bin'length-1 donwnto 0);
+		
 	dbdbbl_i : dbdbbl
 	port map (
-		bin => bin,
-		ini => ini,
-		bcd => bcd_dbbl);
+		bin => bin_dbbl,
+		ini => ini_dbbl,
+		bcd => bcd_dbbl(bin'length+n-1 downto 0));
 
 	process (clk)
 	begin
