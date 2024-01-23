@@ -78,6 +78,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity dbdbbl_seq is
+	generic (
+		n : natural);
 	port (
 		clk : in  std_logic;
 		ena : in  std_logic := '1';
@@ -97,38 +99,37 @@ architecture beh of dbdbbl_seq is
 			bcd   : out std_logic_vector);
 	end component;
 
-	signal bin_dbbl : std_logic_vector(bcd'range);
-	signal ini_dbbl : std_logic_vector(bcd'range);
-	signal bcd_dbbl : std_logic_vector(bcd'range);
+	signal bin_dbbl : std_logic_vector(bin'range);
+	signal ini_dbbl : std_logic_vector(n-1 downto 0);
+	signal bcd_dbbl : std_logic_vector(bin'length+n-1 downto 0);
 
 begin
 
-	process (clk)
-	begin
-		if rising_edge(clk) then
-			if ena='1' then
-				ini <= rotate_left(ini, bin'length);
-				bcd(bcd_dbbl'length-1 donwnto 0) := bcd_dbbl;
-				bcd <= rotate_left(bcd, bin'length);
-			end if;
-		end if;
-	end process;
-
 	bin_dbbl <= 
 		bin when ld='1' else
-		bcd_dbbl(bin'length-1 donwnto 0);
+		bcd(bin'length-1 donwnto 0);
 		
+	ini_dbbl <= 
+		ini(n-1 downto 0) when ld='1' else
+		ini_shr(n-1 downto 0);
+
 	dbdbbl_i : dbdbbl
 	port map (
 		bin => bin_dbbl,
-		ini => ini_dbbl,
-		bcd => bcd_dbbl(bin'length+n-1 downto 0));
+		ini => ini_dbbl(n-1 downto 0),
+		bcd => bcd_dbbl);
 
 	process (clk)
 	begin
 		if rising_edge(clk) then
 			if ena='1' then
-				bcd <= bcd_dbbl;
+				if ld='1' then
+					ini_shr <= rotate_left(ini, n);
+				else
+					ini_shr <= rotate_left(ini_shr, n);
+				end if;
+				bcd(bcd_dbbl'length-1 donwnto 0) := bcd_dbbl;
+				bcd <= rotate_left(bcd, bin'length);
 			end if;
 		end if;
 	end process;
