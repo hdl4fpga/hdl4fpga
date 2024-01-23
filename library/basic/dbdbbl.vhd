@@ -86,7 +86,9 @@ entity dbdbbl_seq is
 	port (
 		clk : in  std_logic;
 		ena : in  std_logic := '1';
+		rdy : out std_logic;
 		ld  : in  std_logic;
+		nxt : in  std_logic;
 		bin : in  std_logic_vector;
 		ini : in  std_logic_vector := (0 to 0 => '0');
 		bcd : buffer std_logic_vector);
@@ -114,6 +116,7 @@ begin
 	ini_als <= std_logic_vector(resize(unsigned(ini), ini_als'length));
 	bin_dbbl <= 
 		bin when ld='1' else
+		bin when nxt='1' else
 		bin_cy(bin'length-1 downto 0);
 		
 	ini_dbbl <= 

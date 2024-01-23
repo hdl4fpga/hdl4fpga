@@ -52,9 +52,11 @@ use hdl4fpga.base.all;
 architecture dbdbbl_seq_tb of testbench is
     signal clk : std_logic := '0';
     signal ld  : std_logic := '1';
+    signal nxt : std_logic := '0';
     signal ena : std_logic := '1';
     signal bin : std_logic_vector(2-1 downto 0);
     signal bcd : std_logic_vector(5*4-1 downto 0);
+    constant n : natural := 4;
 begin
     clk <= not clk after 1 ns;
 
@@ -63,12 +65,13 @@ begin
         variable xxx : unsigned(0 to 16-1) := to_unsigned(65035,16);
     begin
         if rising_edge(clk) then
-            if cntr < bcd'length/bin'length-1 then
+            if cntr < bcd'length/n-1 then
                 cntr := cntr + 1;
                 ld <= '0';
+                nxt <= '0';
             else
                 xxx := xxx sll bin'length;
-                ld <= '1';
+                nxt <= '1';
                 cntr := 0;
             end if;
         end if;
@@ -77,12 +80,13 @@ begin
 
     du_e : entity hdl4fpga.dbdbbl_seq
     generic map (
-        n => 4)
+        n => n)
     port map (
         clk => clk,
         ena => ena,
         ld  => ld,
-        ini => x"00089",
+        nxt => nxt,
+        ini => x"00000",
         bin => bin, -- b"1001110",
         bcd => bcd);
 
