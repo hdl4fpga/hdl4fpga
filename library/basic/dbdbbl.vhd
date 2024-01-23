@@ -82,7 +82,7 @@ library hdl4fpga;
 
 entity dbdbbl_seq is
 	generic (
-		n : natural);
+		dgs : natural);
 	port (
 		clk : in  std_logic;
 		ena : in  std_logic := '1';
@@ -92,6 +92,9 @@ entity dbdbbl_seq is
 		bin : in  std_logic_vector;
 		ini : in  std_logic_vector := (0 to 0 => '0');
 		bcd : buffer std_logic_vector);
+
+	constant bcd_length : natural := 4;
+	constant n : natural := bcd_length*dgs;
 end;
 
 architecture beh of dbdbbl_seq is
