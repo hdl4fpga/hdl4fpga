@@ -28,17 +28,17 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 architecture dbdbbl_tb of testbench is
-    signal bcd : std_logic_vector(5*4-1 downto 0);
+	signal bcd : std_logic_vector(5*4-1 downto 0);
 begin
-    du_e : entity hdl4fpga.dbdbbl
-    port map (
-        bin => std_logic_vector(to_unsigned(32035,15)), -- b"1001110",
-        bcd => bcd);
+	du_e : entity hdl4fpga.dbdbbl
+	port map (
+		bin => std_logic_vector(to_unsigned(32035,15)), -- b"1001110",
+		bcd => bcd);
 
-    process (bcd)
-    begin
-        report to_string(bcd);
-    end process;
+	process (bcd)
+	begin
+		report to_string(bcd);
+	end process;
 
 end;
 
@@ -50,50 +50,47 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 architecture dbdbbl_seq_tb of testbench is
-    signal clk : std_logic := '0';
-    signal ld  : std_logic := '1';
-    signal nxt : std_logic := '0';
-    signal ena : std_logic := '1';
-    signal bin : std_logic_vector(3-1 downto 0);
-    constant bcd_length : natural := 4;
-    constant dgs : natural := 1;
-    signal bcd : std_logic_vector(bcd_length*dgs*((10+dgs-1)/dgs)-1 downto 0);
+	signal clk : std_logic := '0';
+	signal ld  : std_logic := '1';
+	signal nxt : std_logic := '0';
+	signal ena : std_logic := '1';
+	signal bin : std_logic_vector(3-1 downto 0);
+	constant bcd_length : natural := 4;
+	constant dgs : natural := 1;
+	signal bcd : std_logic_vector(bcd_length*dgs*((5+dgs-1)/dgs)-1 downto 0);
 begin
-    clk <= not clk after 1 ns;
+	clk <= not clk after 1 ns;
 
-    process (clk)
-        variable cntr : natural;
-        variable xxx : unsigned(0 to 15-1) := to_unsigned(32065,15);
-    begin
-        if rising_edge(clk) then
-            if cntr < bcd'length/(dgs*bcd_length)-1 then
-                cntr := cntr + 1;
-                ld <= '0';
-                nxt <= '0';
-            else
-                xxx := xxx sll bin'length;
-                nxt <= '1';
-                cntr := 0;
-            end if;
-        end if;
-        bin <= std_logic_vector(xxx(0 to bin'length-1));
-    end process;
+	process (clk)
+		variable xxx : unsigned(0 to 15-1) := to_unsigned(32065,15);
+	begin
+		if rising_edge(clk) then
+			if ld='1' then
+				ld <= '0';
+				xxx := xxx sll bin'length;
+			elsif nxt='1' then
+				xxx := xxx sll bin'length;
+			end if;
+		end if;
+		bin <= std_logic_vector(xxx(0 to bin'length-1));
+	end process;
 
-    du_e : entity hdl4fpga.dbdbbl_seq
-    generic map (
-        dgs => dgs)
-    port map (
-        clk => clk,
-        ena => ena,
-        ld  => ld,
-        nxt => nxt,
-        ini => x"00000",
-        bin => bin, -- b"1001110",
-        bcd => bcd);
+	du_e : entity hdl4fpga.dbdbbl_seq
+	generic map (
+		dgs => dgs)
+	port map (
+		clk => clk,
+		ena => ena,
+		ld  => ld,
+		rdy => nxt,
+		nxt => nxt,
+		ini => x"00000",
+		bin => bin, -- b"1001110",
+		bcd => bcd);
 
-    process (bcd)
-    begin
-        report to_string(bcd);
-    end process;
+	process (bcd)
+	begin
+		report to_string(bcd);
+	end process;
 
 end;
