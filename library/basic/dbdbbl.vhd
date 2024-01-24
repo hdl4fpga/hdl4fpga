@@ -86,9 +86,9 @@ entity dbdbbl_seq is
 	port (
 		clk : in  std_logic;
 		ena : in  std_logic := '1';
+		nxt : in  std_logic;
 		rdy : out std_logic;
 		ld  : in  std_logic;
-		nxt : in  std_logic;
 		bin : in  std_logic_vector;
 		ini : in  std_logic_vector := (0 to 0 => '0');
 		bcd : buffer std_logic_vector);
@@ -118,7 +118,7 @@ begin
 
 	ini_als <= std_logic_vector(resize(unsigned(ini), ini_als'length));
 	bin_dbbl <= 
-		bin when ld='1' else
+		bin when  ld='1' else
 		bin when nxt='1' else
 		cy;
 		
@@ -132,8 +132,8 @@ begin
 		ini => ini_dbbl,
 		bcd => bcd_dbbl);
 
-	assert (9*2**bin'length+2**bin'length) < 10**(dgs+1)
-		report "Constrains parameter do not match : " &
+	assert ((10-1)*2**bin'length+2**bin'length) < 10**(dgs+1)
+		report "Constraint parameters do not match : " &
 			natural'image(9*2**bin'length+2**bin'length) & " : " & natural'image(10**(dgs+1))
 		severity failure;
 
@@ -148,11 +148,12 @@ begin
 					shr1(0) := '1';
 					shr0 := unsigned(ini_als);
 				end if;
-				shr1 := rotate_left(shr1, 1);
 				shr0(n-1 downto 0) := unsigned(bcd_dbbl(n-1 downto 0));
 				shr0 := rotate_right(shr0, n);
 				ini_shr <= std_logic_vector(shr0);
 				cy  <= bcd_dbbl(bin'length+n-1 downto n);
+				shr1 := rotate_left(shr1, 1);
+				rdy <= shr1(0);
 			end if;
 		end if;
 	end process;
