@@ -107,9 +107,9 @@ architecture beh of dbdbbl_seq is
 			bcd   : out std_logic_vector);
 	end component;
 
+	signal cy       : std_logic_vector(bin'length-1 downto 0);
 	signal ini_als  : std_logic_vector(bcd'length-1 downto 0);
 	signal ini_shr  : std_logic_vector(bcd'length-1 downto 0);
-	signal bin_cy   : std_logic_vector(bin'length-1   downto 0);
 	signal bin_dbbl : std_logic_vector(bin'range);
 	signal ini_dbbl : std_logic_vector(n-1 downto 0);
 	signal bcd_dbbl : std_logic_vector(bin'length+n-1 downto 0);
@@ -120,7 +120,7 @@ begin
 	bin_dbbl <= 
 		bin when ld='1' else
 		bin when nxt='1' else
-		bin_cy(bin'length-1 downto 0);
+		cy;
 		
 	ini_dbbl <= 
 		ini_als(n-1 downto 0) when ld='1' else
@@ -132,18 +132,27 @@ begin
 		ini => ini_dbbl,
 		bcd => bcd_dbbl);
 
+	assert (9*2**bin'length+2**bin'length) < 10**(dgs+1)
+		report "Constrains parameter do not match : " &
+			natural'image(9*2**bin'length+2**bin'length) & " : " & natural'image(10**(dgs+1))
+		severity failure;
+
 	process (clk)
-		variable shr : unsigned(ini_shr'length-1 downto 0);
+		variable shr0 : unsigned(ini_shr'length-1 downto 0);
+		variable shr1 : unsigned(0 to bcd'length/(dgs*bcd_length)-1);
 	begin
 		if rising_edge(clk) then
 			if ena='1' then
 				if ld='1' then
-					shr := unsigned(ini_als);
+					shr1 := (others => '0');
+					shr1(0) := '1';
+					shr0 := unsigned(ini_als);
 				end if;
-				shr(n-1 downto 0) := unsigned(bcd_dbbl(n-1 downto 0));
-				shr := rotate_right(shr, n);
-				ini_shr <= std_logic_vector(shr);
-				bin_cy  <= bcd_dbbl(bin'length+n-1 downto n);
+				shr1 := rotate_left(shr1, 1);
+				shr0(n-1 downto 0) := unsigned(bcd_dbbl(n-1 downto 0));
+				shr0 := rotate_right(shr0, n);
+				ini_shr <= std_logic_vector(shr0);
+				cy  <= bcd_dbbl(bin'length+n-1 downto n);
 			end if;
 		end if;
 	end process;

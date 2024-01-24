@@ -32,7 +32,7 @@ architecture dbdbbl_tb of testbench is
 begin
     du_e : entity hdl4fpga.dbdbbl
     port map (
-        bin => std_logic_vector(to_unsigned(65035,16)), -- b"1001110",
+        bin => std_logic_vector(to_unsigned(32035,15)), -- b"1001110",
         bcd => bcd);
 
     process (bcd)
@@ -54,16 +54,16 @@ architecture dbdbbl_seq_tb of testbench is
     signal ld  : std_logic := '1';
     signal nxt : std_logic := '0';
     signal ena : std_logic := '1';
-    signal bin : std_logic_vector(2-1 downto 0);
+    signal bin : std_logic_vector(3-1 downto 0);
     constant bcd_length : natural := 4;
-    constant dgs : natural := 2;
+    constant dgs : natural := 1;
     signal bcd : std_logic_vector(bcd_length*dgs*((10+dgs-1)/dgs)-1 downto 0);
 begin
     clk <= not clk after 1 ns;
 
     process (clk)
         variable cntr : natural;
-        variable xxx : unsigned(0 to 32-1) := (others => '1') ; --to_unsigned(2**31-1,32);
+        variable xxx : unsigned(0 to 15-1) := to_unsigned(32065,15);
     begin
         if rising_edge(clk) then
             if cntr < bcd'length/(dgs*bcd_length)-1 then
