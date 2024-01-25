@@ -39,8 +39,6 @@ HDL4FPGA__videobox__def = $(LIB_HDL4FPGA)/videobox/def.dat
 HDL4FPGA__videobox = $(LIB_HDL4FPGA)/videobox/_primary.dat
 HDL4FPGA__video_sync__mix = $(LIB_HDL4FPGA)/video_sync/mix.dat
 HDL4FPGA__video_sync = $(LIB_HDL4FPGA)/video_sync/_primary.dat
-HDL4FPGA__vector__def = $(LIB_HDL4FPGA)/vector/def.dat
-HDL4FPGA__vector = $(LIB_HDL4FPGA)/vector/_primary.dat
 HDL4FPGA__usbpkt_tx__def = $(LIB_HDL4FPGA)/usbpkt_tx/def.dat
 HDL4FPGA__usbpkt_tx = $(LIB_HDL4FPGA)/usbpkt_tx/_primary.dat
 HDL4FPGA__usbpkt_rx__def = $(LIB_HDL4FPGA)/usbpkt_rx/def.dat
@@ -331,8 +329,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__videobox) \
     $(HDL4FPGA__video_sync__mix) \
     $(HDL4FPGA__video_sync) \
-    $(HDL4FPGA__vector__def) \
-    $(HDL4FPGA__vector) \
     $(HDL4FPGA__usbpkt_tx__def) \
     $(HDL4FPGA__usbpkt_tx) \
     $(HDL4FPGA__usbpkt_rx__def) \
@@ -1910,15 +1906,6 @@ $(HDL4FPGA__usbpkt_tx__def) : ../usb/usbpkt_tx.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../usb/usbpkt_tx.vhd
-
-$(HDL4FPGA__vector) \
-$(HDL4FPGA__vector__def) : ../basic/vector.vhd \
-		$(HDL4FPGA__dpram) \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../basic/vector.vhd
 
 $(HDL4FPGA__box_edges) \
 $(HDL4FPGA__box_edges__def) \
