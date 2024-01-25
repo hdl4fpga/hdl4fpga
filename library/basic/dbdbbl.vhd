@@ -174,40 +174,44 @@ entity dbdbbl_seq is
 		clk  : in  std_logic;
 		ena  : in  std_logic := '1';
 		load : in  std_logic;
-		rdy  : out std_logic;
+		last : out std_logic;
 		bin  : in  std_logic_vector;
 		ini  : in  std_logic_vector := (0 to 0 => '0');
 		bcd  : out std_logic_vector);
 
 	constant bcd_length : natural := 4;
+	alias bin_als    : std_logic_vector(0 to bin'length-1) is bin;
 end;
 
 architecture def of dbdbbl_seq is
 	signal feed : std_logic := '0';
 	signal bin_slice : std_logic_vector(0 to bin_digits-1);
+	signal cntr : integer range -1 to bin'length/bin_digits-2;
 begin
-	process (clk)
-		variable cntr : integer range -1 to bin'length/bin_digits-2;
+	process (load, clk)
 		variable shr  : unsigned(0 to bin'length-1);
 	begin
 		if rising_edge(clk) then
 			if ena='1' then
 				if load='1' then
 					shr  := unsigned(bin);
-					shr  := shr sll bin'length;
-					cntr := bin'length/bin_digits-2;
+					shr  := shr sll bin_slice'length;
+					cntr <= bin'length/bin_digits-2;
 				elsif feed='1' then
-					shr := shr sll bin'length;
-					if cntr < 0 then
-						cntr := bin'length/bin_digits-2;
-					else
-						cntr := cntr - 1;
+					shr := shr sll bin_slice'length;
+					if cntr >= 0 then
+						cntr <= cntr - 1;
 					end if;
 				end if;
 			end if;
 		end if;
-		bin_slice <= std_logic_vector(shr(0 to bin'length-1));
+		if load='1' then
+			bin_slice <= bin_als(0 to bin_slice'length-1);
+		else
+			bin_slice <= std_logic_vector(shr(0 to bin_slice'length-1));
+		end if;
 	end process;
+	last <= '1' when cntr < 0 else '0';
 
 	dbdbblser_e : entity hdl4fpga.dbdbbl_ser
 	generic map (
