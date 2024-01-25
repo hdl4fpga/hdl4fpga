@@ -114,6 +114,7 @@ use hdl4fpga.base.all;
 architecture dbdbbl_seq_tb of testbench is
 	constant bcd_length : natural := 4;
 	constant bcd_digits : natural := 1;
+	constant bin_digits : natural := 3;
 
 	signal clk  : std_logic := '0';
 	signal ena  : std_logic := '1';
@@ -133,6 +134,7 @@ begin
 
 	du_e : entity hdl4fpga.dbdbbl_seq
 	generic map (
+		bin_digits => bin_digits,
 		bcd_digits => bcd_digits)
 	port map (
 		clk  => clk,

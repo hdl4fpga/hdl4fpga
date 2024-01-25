@@ -83,15 +83,14 @@ entity scopeio_textbox is
 	end;
 
 	impure function textbox_rom (
-		constant width : natural;
-		constant size  : natural)
+		constant width  : natural;
+		constant size   : natural)
 		return string is
 		variable data   : string(1 to size);
 		variable offset : positive;
 		variable length : natural;
 		variable i      : natural;
 		variable j      : natural;
-
 	begin
 		i := 0;
 		j := data'left;
@@ -145,6 +144,8 @@ architecture def of scopeio_textbox is
 	signal video_addr        : std_logic_vector(cga_addr'range);
 	signal video_dot         : std_logic;
 
+	signal bcd_code          : ascii;
+	signal xxx               : std_logic;
 begin
 
 	rgtr_b : block
@@ -172,6 +173,13 @@ begin
 		signal vt_scale       : std_logic_vector(4-1 downto 0);
 		signal tgr_scale      : std_logic_vector(4-1 downto 0);
 
+		constant bin_digits   : natural := 3;
+		constant bcd_length   : natural := 4;
+		constant bcd_digits   : natural := 1;
+		signal bcd            : std_logic_vector(0 to bcd_length*bcd_digits*((5+bcd_digits-1)/bcd_digits)-1);
+		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+bin_digits-1)/bin_digits)-1);
+		signal load           : std_logic;
+		signal last           : std_logic;
 	begin
 
 		myip4_e : entity hdl4fpga.scopeio_rgtrmyip
@@ -243,6 +251,40 @@ begin
 		vt_scale  <= multiplex(gain_ids,   chan_id,        vt_scale'length);
 		tgr_scale <= multiplex(gain_ids,   trigger_chanid, tgr_scale'length);
 
+		process (rgtr_clk)
+		begin
+			if rising_edge(rgtr_clk) then
+				if vt_dv='1' then
+					load <= '1';
+				elsif gain_dv='1' then
+					load <= '1';
+				else
+					load <= '0';
+				end if;
+			end if;
+		end process;
+
+		bin <= std_logic_vector(resize(unsigned(vt_offset), bin'length));
+		bin2bcd_e : entity hdl4fpga.dbdbbl_seq
+		generic map (
+			bcd_digits => bcd_digits)
+		port map (
+			clk  => rgtr_clk,
+			load => load,
+			last => last,
+			bin  => bin,
+			bcd  => bcd);
+
+		process (rgtr_clk)
+		begin
+			if rising_edge(rgtr_clk) then
+				if last='1' then
+					bcd_code <= x"3" & bcd(0 to 4-1);
+				end if;
+			end if;
+		end process;
+
+		xxx <= last;
 	end block;
 
 	video_addr <= std_logic_vector(resize(
@@ -250,6 +292,28 @@ begin
 		(unsigned(video_hcntr(textwidth_bits-1 downto 0)) srl fontwidth_bits),
 		video_addr'length));
 	video_on <= text_on and sgmntbox_ena(0);
+
+	process (rgtr_clk)
+		constant up : std_logic := '1';
+	begin
+		if rising_edge(rgtr_clk) then
+			if cga_we='1' then
+				if up='0' then
+					cga_addr <= cga_addr + 1;
+				else
+					cga_addr <= cga_addr - 1;
+				end if;
+			end if;
+			if xxx='1' then
+				cga_addr <= (others => '0');
+				cga_we   <= '1';
+			else
+				cga_addr <= (others => '-');
+				cga_we   <= '0';
+			end if;
+		end if;
+	end process;
+	cga_code <= bcd_code;
 
 	cgaram_e : entity hdl4fpga.cgaram
 	generic map (

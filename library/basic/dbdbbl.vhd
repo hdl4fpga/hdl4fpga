@@ -97,14 +97,6 @@ entity dbdbbl_ser is
 end;
 
 architecture beh of dbdbbl_ser is
-	component dbdbbl
-		generic (
-			adder : boolean := false);
-		port (
-			bin   : in  std_logic_vector;
-			ini   : in  std_logic_vector := (0 to 0 => '0');
-			bcd   : out std_logic_vector);
-	end component;
 
 	signal cy       : std_logic_vector(bin'length-1 downto 0);
 	signal ini_als  : std_logic_vector(bcd'length-1 downto 0);
@@ -125,7 +117,7 @@ begin
 		ini_als(n-1 downto 0) when load='1' else
 		ini_shr(n-1 downto 0);
 
-	dbdbbl_i : dbdbbl
+	dbdbbl_e : entity hdl4fpga.dbdbbl
 	port map (
 		bin => bin_dbbl,
 		ini => ini_dbbl,
@@ -187,6 +179,7 @@ architecture def of dbdbbl_seq is
 	signal feed : std_logic := '0';
 	signal bin_slice : std_logic_vector(0 to bin_digits-1);
 	signal cntr : integer range -1 to bin'length/bin_digits-2;
+	signal rdy  : std_logic;
 begin
 	process (load, clk)
 		variable shr  : unsigned(0 to bin'length-1);
@@ -197,8 +190,12 @@ begin
 					shr  := unsigned(bin);
 					shr  := shr sll bin_slice'length;
 					cntr <= bin'length/bin_digits-2;
+					rdy  <= '0';
 				elsif feed='1' then
 					shr := shr sll bin_slice'length;
+					if cntr < 0 then
+						rdy <= '1';
+					end if;
 					if cntr >= 0 then
 						cntr <= cntr - 1;
 					end if;
@@ -211,7 +208,7 @@ begin
 			bin_slice <= std_logic_vector(shr(0 to bin_slice'length-1));
 		end if;
 	end process;
-	last <= '1' when cntr < 0 else '0';
+	last <= not rdy when cntr < 0 else '0';
 
 	dbdbblser_e : entity hdl4fpga.dbdbbl_ser
 	generic map (
