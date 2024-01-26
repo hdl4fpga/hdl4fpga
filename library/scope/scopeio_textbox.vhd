@@ -273,7 +273,6 @@ begin
 			load => load,
 			last => last,
 			bin  => bin,
-		-- bin  => std_logic_vector(to_unsigned(32035,15)), -- b"1001110",
 			bcd  => bcd);
 
 		process (rgtr_clk)
@@ -307,9 +306,6 @@ begin
 					cga_addr <= cga_addr - 1;
 				end if;
 			end if;
-			case state is
-			when s_init =>
-				if xxx='1' then
 			if xxx='1' then
 				cga_we   <= '1';
 			else
