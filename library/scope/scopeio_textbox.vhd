@@ -295,7 +295,7 @@ begin
 	video_on <= text_on and sgmntbox_ena(0);
 
 	process (rgtr_clk)
-		constant dn : std_logic := '0';
+		constant dn : std_logic := '1';
 	begin
 		if rising_edge(rgtr_clk) then
 			if cga_we='1' then
@@ -308,7 +308,7 @@ begin
 			if xxx='1' then
 				cga_we   <= '1';
 			else
-				cga_addr <= (others => '0');
+				cga_addr <= to_unsigned(5, cga_addr'length);
 				cga_we   <= '0';
 			end if;
 		end if;
