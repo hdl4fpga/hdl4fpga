@@ -294,11 +294,11 @@ begin
 	video_on <= text_on and sgmntbox_ena(0);
 
 	process (rgtr_clk)
-		constant up : std_logic := '1';
+		constant dn : std_logic := '0';
 	begin
 		if rising_edge(rgtr_clk) then
 			if cga_we='1' then
-				if up='0' then
+				if dn='0' then
 					cga_addr <= cga_addr + 1;
 				else
 					cga_addr <= cga_addr - 1;
