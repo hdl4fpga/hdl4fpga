@@ -216,25 +216,6 @@ begin
 		end if;
 	end process;
 
-	scopeio_btof_e : entity hdl4fpga.scopeio_btof
-	port map (
-		clk       => rgtr_clk,
-		bin_frm   => btof_binfrm,
-		bin_irdy  => btof_binirdy,
-		bin_trdy  => btof_bintrdy,
-		bin_di    => btof_bindi,
-		bin_neg   => btof_binneg,
-		bin_exp   => btof_binexp,
-		bcd_width => btof_bcdwidth,
-		bcd_sign  => btof_bcdsign,
-		bcd_unit  => btof_bcdunit,
-		bcd_align => btof_bcdalign,
-		bcd_prec  => btof_bcdprec,
-		bcd_irdy  => btof_bcdirdy,
-		bcd_trdy  => btof_bcdtrdy,
-		bcd_end   => btof_bcdend,
-		bcd_do    => btof_bcddo);
-
 	video_e : entity hdl4fpga.video_sync
 	generic map (
 		timing_id     => timing_id,
