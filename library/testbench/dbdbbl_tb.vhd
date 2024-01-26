@@ -124,11 +124,20 @@ begin
 	clk <= not clk after 1 ns;
 
 	process (clk)
+		type states is (s_reset, s_load, s_run);
+		variable state : states := s_reset;
 	begin
 		if rising_edge(clk) then
-			if load='1' then
+			case state is
+			when s_reset =>
 				load <= '0';
-			end if;
+				state := s_load;
+			when s_load =>
+				load <= '1';
+				state := s_run;
+			when s_run =>
+				load <= '0';
+			end case;
 		end if;
 	end process;
 
