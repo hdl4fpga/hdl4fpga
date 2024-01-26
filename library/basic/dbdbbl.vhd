@@ -168,7 +168,7 @@ entity dbdbbl_seq is
 		load : in  std_logic;
 		last : out std_logic;
 		bin  : in  std_logic_vector;
-		ini  : in  std_logic_vector := (0 to 0 => '0');
+		ini  : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
 		bcd  : out std_logic_vector);
 
 	constant bcd_length : natural := 4;
