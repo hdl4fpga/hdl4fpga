@@ -296,6 +296,8 @@ begin
 
 	process (rgtr_clk)
 		constant dn : std_logic := '1';
+		type states is (s_init, s_convert);
+		variable state : states;
 	begin
 		if rising_edge(rgtr_clk) then
 			if cga_we='1' then
@@ -305,10 +307,13 @@ begin
 					cga_addr <= cga_addr - 1;
 				end if;
 			end if;
+			case state is
+			when s_init =>
+				if xxx='1' then
 			if xxx='1' then
 				cga_we   <= '1';
 			else
-				cga_addr <= to_unsigned(5, cga_addr'length);
+				cga_addr <= to_unsigned(5-1, cga_addr'length);
 				cga_we   <= '0';
 			end if;
 		end if;
