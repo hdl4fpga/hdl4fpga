@@ -31,22 +31,6 @@ entity scopeio_textbox is
 		time_scale    : in  std_logic_vector;
 		time_offset   : in  std_logic_vector;
 
-		btof_binfrm   : buffer std_logic;
-		btof_binirdy  : out std_logic;
-		btof_bintrdy  : in  std_logic;
-		btof_bindi    : out std_logic_vector;
-		btof_binneg   : out std_logic;
-		btof_binexp   : out std_logic;
-		btof_bcdwidth : out std_logic_vector;
-		btof_bcdprec  : out std_logic_vector;
-		btof_bcdunit  : out std_logic_vector;
-		btof_bcdsign  : out std_logic;
-		btof_bcdalign : out std_logic;
-		btof_bcdirdy  : buffer std_logic;
-		btof_bcdtrdy  : in  std_logic;
-		btof_bcdend   : in  std_logic;
-		btof_bcddo    : in  std_logic_vector;
-
 		video_clk     : in  std_logic;
 		video_hcntr   : in  std_logic_vector;
 		video_vcntr   : in  std_logic_vector;

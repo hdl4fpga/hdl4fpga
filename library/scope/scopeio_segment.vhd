@@ -18,22 +18,6 @@ entity scopeio_segment is
 		rgtr_id       : in  std_logic_vector(8-1 downto 0);
 		rgtr_data     : in  std_logic_vector;
 
-		btof_binfrm   : buffer std_logic;
-		btof_binirdy  : out std_logic;
-		btof_bintrdy  : in  std_logic;
-		btof_bindi    : out std_logic_vector;
-		btof_binneg   : out std_logic;
-		btof_binexp   : out std_logic;
-		btof_bcdunit  : out std_logic_vector;
-		btof_bcdwidth : out std_logic_vector;
-		btof_bcdprec  : out std_logic_vector;
-		btof_bcdsign  : out std_logic;
-		btof_bcdalign : out std_logic;
-		btof_bcdirdy  : buffer  std_logic;
-		btof_bcdtrdy  : in  std_logic;
-		btof_bcdend   : in  std_logic;
-		btof_bcddo    : in  std_logic_vector;
-
 		hz_dv         : in  std_logic;
 		hz_scale      : in  std_logic_vector;
 		hz_base       : in  std_logic_vector;
@@ -183,22 +167,6 @@ begin
 			axis_sel      => axis_sel,
 			axis_base     => axis_base,
 			axis_scale    => axis_scale,
-
-			btof_binfrm   => btof_binfrm,
-			btof_binirdy  => btof_binirdy,
-			btof_bintrdy  => btof_bintrdy,
-			btof_bindi    => btof_bindi,
-			btof_binneg   => btof_binneg,
-			btof_binexp   => btof_binexp,
-			btof_bcdwidth => btof_bcdwidth,
-			btof_bcdprec  => btof_bcdprec,
-			btof_bcdunit  => btof_bcdunit,
-			btof_bcdsign  => btof_bcdsign,
-			btof_bcdalign => btof_bcdalign,
-			btof_bcdirdy  => btof_bcdirdy,
-			btof_bcdtrdy  => btof_bcdtrdy,
-			btof_bcdend   => btof_bcdend,
-			btof_bcddo    => btof_bcddo,
 
 			video_clk     => video_clk,
 			video_hcntr   => x,

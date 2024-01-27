@@ -43,22 +43,6 @@ entity scopeio_axis is
 		axis_scale    : in  std_logic_vector;
 		axis_base     : in  std_logic_vector;
 
-		btof_binfrm   : buffer std_logic;
-		btof_binirdy  : out std_logic;
-		btof_bintrdy  : in  std_logic;
-		btof_bindi    : out std_logic_vector;
-		btof_binneg   : out std_logic;
-		btof_binexp   : out std_logic;
-		btof_bcdunit  : out std_logic_vector;
-		btof_bcdwidth : out std_logic_vector;
-		btof_bcdprec  : out std_logic_vector;
-		btof_bcdsign  : out std_logic;
-		btof_bcdalign : out std_logic;
-		btof_bcdirdy  : buffer std_logic := '1';
-		btof_bcdtrdy  : in  std_logic;
-		btof_bcdend   : in  std_logic;
-		btof_bcddo    : in  std_logic_vector;
-
 		video_clk     : in  std_logic;
 		video_hcntr   : in  std_logic_vector;
 		video_vcntr   : in  std_logic_vector;
@@ -94,7 +78,8 @@ architecture def of scopeio_axis is
 	constant vtheight_bits : natural := unsigned_num_bits(2**vtstep_bits*((vt_height+2**vtstep_bits-1)/2**vtstep_bits)+2**vtstep_bits);
 
 	signal binvalue : signed(4*4-1 downto 0);
-	signal bcdvalue : unsigned(8*btof_bcddo'length-1 downto 0);
+	constant bcd_length : natural := 4;
+	signal bcdvalue : unsigned(8*bcd_length-1 downto 0);
 
 	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit*1.0e15);
 
@@ -127,159 +112,6 @@ architecture def of scopeio_axis is
 	signal vt_tv    : std_logic;
 
 begin
-	ticks_b : block
-
-		constant hz_precs : natural_vector := get_precs(hz_float1245);
-		constant hz_units : integer_vector := get_units(hz_float1245);
-		constant vt_precs : natural_vector := get_precs(vt_float1245);
-		constant vt_units : integer_vector := get_units(vt_float1245);
-		signal dv       : std_logic;
-		signal scale    : std_logic_vector(axis_scale'range);
-		signal init     : std_logic;
-		signal ena      : std_logic;
-		signal exp      : signed(btof_bindi'range);
-		signal order    : signed(4-1 downto 0);
-		signal prec    : signed(4-1 downto 0);
-		signal start    : signed(binvalue'range);
-		signal stop     : unsigned(binvalue'range);
-		signal step     : signed(binvalue'range);
-		signal iterator : unsigned(stop'range);
-		signal complete : std_logic;
-
-		signal taddr  : unsigned(max(vt_taddr'length, hz_taddr'length)-1 downto 0);
-	begin
-
-		rgtr_p : process (clk)
-		begin
-			if rising_edge(clk) then
-				dv <= axis_dv;
-				if axis_dv='1' then
-					v_offset <= vt_offset;
-					scale <= axis_scale;
-				end if;
-			end if;
-		end process;
-
-		init_p : process (clk)
-		begin
-			if rising_edge(clk) then
-				if dv='1' then
-					init <= '0';
-				elsif complete='1' then
-					init <= '1';
-				end if;
-			end if;
-		end process;
-
-		start <= hz_start when vt_ena='0' else vt_start;
-		stop  <= hz_stop  when vt_ena='0' else vt_stop;
-		step  <= hz_step  when vt_ena='0' else vt_step;
-
-		hz_exp   <= to_signed(hz_float1245(to_integer(unsigned(scale))).exp, exp'length);
-		hz_order <= to_signed(hz_units(to_integer(unsigned(scale))), order'length);
-		hz_prec  <= to_signed(-hz_precs(to_integer(unsigned(scale))), prec'length);
-
-		vt_exp   <= to_signed(vt_float1245(to_integer(unsigned(scale))).exp, exp'length);
-		vt_order <= to_signed(vt_units(to_integer(unsigned(scale))), order'length);
-		vt_prec  <= to_signed(-vt_precs(to_integer(unsigned(scale))), prec'length);
-
-		exp   <= hz_exp   when vt_ena='0' else vt_exp;
-		order <= hz_order when vt_ena='0' else vt_order;
-		prec  <= hz_prec  when vt_ena='0' else vt_prec;
-
-		ena <= btof_binfrm and btof_bcdirdy and btof_bcdtrdy and btof_bcdend;
-		iterator_e : process(clk)
-		begin
-			if rising_edge(clk) then
-				if init='1' then
-					iterator <= (others => '0');
-					binvalue <= start;
-				elsif ena='1' then
-					if iterator  < unsigned(stop) then
-						iterator <= iterator + 1;
-						binvalue <= binvalue + step;
-					end if;
-				end if;
-			end if;
-		end process;
-		complete <= not setif(iterator < stop) and ena;
-
-		frm_p : process (clk)
-		begin
-			if rising_edge(clk) then
-				if btof_binfrm='1' then
-					if btof_bcdtrdy <= '1' then
-						if btof_bcdend='1' then
-							btof_binfrm  <= '0';
-						end if;
-					end if;
-				elsif axis_dv='1' then
-					btof_binfrm  <= '1';
-				elsif init='0' then
-					btof_binfrm  <= '1';
-				else
-					btof_binfrm  <= '0';
-				end if;
-			end if;
-		end process;
-		btof_binirdy <= btof_binfrm;
-		btof_bcdirdy <= btof_binfrm; 
-
-		btof_binneg   <= binvalue(binvalue'left);
-		btof_bcdprec  <= std_logic_vector(prec);
-		btof_bcdunit  <= std_logic_vector(order);
-		btof_bcdwidth <= b"1000";
-		btof_bcdalign <= hz_align when vt_ena='0' else vt_align;
-		btof_bcdsign  <= hz_sign  when vt_ena='0' else vt_sign;
-
-		bindi_p : process (clk)
-			variable sel : unsigned(0 to unsigned_num_bits(binvalue'length/btof_bindi'length)-1) := (others => '0');
-		begin
-			if rising_edge(clk) then
-				if btof_binfrm='0' then
-					sel := (others => '0');
-				elsif btof_bintrdy='1' then
-					sel := sel + 1;
-				end if;
-
-				btof_bindi <= multiplex(
-					std_logic_vector(neg(binvalue, binvalue(binvalue'left)) & exp),
-					std_logic_vector(sel), 
-					btof_bindi'length);
-				btof_binexp <= setif(sel >= binvalue'length/btof_bindi'length);
-
-			end if;
-		end process;
-
-		taddr_p : process (clk)
-		begin
-			if rising_edge(clk) then
-				if init='1' then
-					taddr <= (others => '1');
-				elsif ena='1' then
-					taddr <= taddr + 1;
-				end if;
-				hz_taddr <= taddr(hz_taddr'length-1 downto 0);
-				vt_taddr <= taddr(vt_taddr'length-1 downto 0);
-			end if;
-		end process;
-
-		bcdvalue_p : process (clk)
-			variable value : unsigned(bcdvalue'range);
-		begin
-			if rising_edge(clk) then
-				if btof_bcdtrdy='1' then
-					value    := value sll btof_bcddo'length;
-					value(btof_bcddo'length-1 downto 0) := unsigned(btof_bcddo);
-				end if;
-				bcdvalue <= value;
-				hz_tv <= btof_bcdend and btof_bcdtrdy and hz_ena;
-				vt_tv <= btof_bcdend and btof_bcdtrdy and vt_ena;
-			end if;
-		end process;
-
-	end block;
-
 	video_b : block
 
 		signal char_code : std_logic_vector(4-1 downto 0);
