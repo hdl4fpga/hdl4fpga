@@ -41,3 +41,26 @@ begin
 	s   <= std_logic_vector(sum(1 to s'length));
 	co  <= sum(0);
 end;
+
+entity adder_ser is
+	port (
+		clk  : in  std_logic;
+		ena  : in  std_logic;
+		load : in  std_logic;
+		feed : out std_logic;
+		ci   : in  std_logic := '0';
+		a    : in  std_logic_vector;
+		b    : in  std_logic_vector;
+		s    : out std_logic_vector;
+		co   : out std_logic);
+end;
+
+architecture def of adder is
+	signal sum : unsigned(0 to s'length+1);
+begin
+	adder_e : entity hdl4fpga.adder
+	port map (
+		ci => cy,
+		a  => a,
+	)
+end;
