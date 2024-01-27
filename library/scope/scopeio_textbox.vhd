@@ -248,6 +248,25 @@ begin
 			end if;
 		end process;
 
+		xxx_b : block
+			constant a : std_logic_vector := b"000";
+			signal   b : std_logic_vector(a'range);
+			signal   s : std_logic_vector(a'range);
+		begin
+			process (rgtr_clk)
+			begin
+			end process;
+
+			resize(unsigned(vt_offset), bin'length));
+			adder_ser_e : entity hdl4fpga.adder_ser
+			port map (
+				clk => rgtr_clk,
+				ena => '1',
+				a   => b"000",
+				b   => b,
+				s   => s);
+		end block;
+
 		bin <= std_logic_vector(resize(unsigned(vt_offset), bin'length));
 		bin2bcd_e : entity hdl4fpga.dbdbbl_seq
 		generic map (

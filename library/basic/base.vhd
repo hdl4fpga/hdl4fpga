@@ -444,6 +444,10 @@ package base is
 		constant b : natural)
 		return natural;
 		
+	function roundup (
+		constant number : natural;
+		constant round  : natural)
+		return natural;
 end;
 
 use std.textio.all;
@@ -1802,6 +1806,14 @@ package body base is
 		return (a*b)/gcd(a,b);
 	end function;
 		
+	function roundup (
+		constant number : natural;
+		constant round  : natural)
+		return natural is
+	begin
+		return ((number+round-1)/round)*round;
+	end;
+
 	function galois_crc(
 		constant m : std_logic_vector;
 		constant r : std_logic_vector;
