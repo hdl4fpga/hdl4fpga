@@ -89,7 +89,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.base.vhd;
+use hdl4fpga.base.all;
 
 entity adder_seq is
 	generic (
@@ -111,18 +111,17 @@ architecture def of adder_seq is
 	alias  b_als : std_logic_vector(b'length-1 downto 0) is b;
 	alias  s_als : std_logic_vector(s'length-1 downto 0) is s;
 
-	signal a_rgtr : unsigned(0 to roundup(b'legth, digits)-1);
-	signal b_rgtr : unsigned(0 to roundup(a'legth, digits)-1);
-	signal s_rgtr : unsigned(0 to roundup(s'legth, digits)-1);
-	begin
+	signal a_rgtr : std_logic_vector(0 to roundup(b'length, digits)-1);
+	signal b_rgtr : std_logic_vector(0 to roundup(a'length, digits)-1);
+	signal s_rgtr : std_logic_vector(0 to roundup(s'length, digits)-1);
 	signal a_ser : std_logic_vector(digits-1 downto 0);
 	signal b_ser : std_logic_vector(digits-1 downto 0);
 	signal s_ser : std_logic_vector(digits-1 downto 0);
 begin
 	process (load, clk)
-		variable a_shr : unsigned(a_shr'range);
-		variable b_shr : unsigned(b_shr'range);
-		variable s_shr : unsigned(s_shr'range);
+		variable a_shr : unsigned(a_rgtr'range);
+		variable b_shr : unsigned(b_rgtr'range);
+		variable s_shr : unsigned(s_rgtr'range);
 	begin
 		if rising_edge(clk) then
 			if ena='1' then
@@ -133,8 +132,8 @@ begin
 				a_shr := shift_right(a_shr, digits);
 				b_shr := shift_right(b_shr, digits);
 
-				s_shr := shift_rigth(s_shr, digits);
-				s_shr := s_ser;
+				s_shr := shift_right(s_shr, digits);
+				s_shr := unsigned(s_ser);
 
 				a_rgtr <= std_logic_vector(a_ser);
 				b_rgtr <= std_logic_vector(b_ser);

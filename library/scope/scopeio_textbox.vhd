@@ -257,14 +257,14 @@ begin
 			begin
 			end process;
 
-			resize(unsigned(vt_offset), bin'length));
-			adder_ser_e : entity hdl4fpga.adder_ser
-			port map (
-				clk => rgtr_clk,
-				ena => '1',
-				a   => b"000",
-				b   => b,
-				s   => s);
+			-- resize(unsigned(vt_offset), bin'length));
+			-- adder_ser_e : entity hdl4fpga.adder_ser
+			-- port map (
+				-- clk => rgtr_clk,
+				-- ena => '1',
+				-- a   => b"000",
+				-- b   => b,
+				-- s   => s);
 		end block;
 
 		bin <= std_logic_vector(resize(unsigned(vt_offset), bin'length));

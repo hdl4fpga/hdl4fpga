@@ -39,9 +39,32 @@ entity mul_ser is
 end;
 
 architecture def of mul_ser is
+	function mul (
+		constant op1 : unsigned;
+		constant op2 : unsigned)
+		return unsigned is
+		variable retval : unsigned(op1'length+op2'length-1 downto 0);
+	begin
+		retval := (others => '0');
+		for i in op2'reverse_range loop
+			if op2(i)='1' then
+				retval := retval + op1;
+			elsif op2(i)/='0' then
+				retval := (others => 'X');
+			end if;
+		end loop;
+		return retval;
+	end;
+
 	signal p : unsigned(a'length+b'length-1 downto 0);
 begin
 	p <= mul(a,b);
+	process (clk)
+	begin
+		if rising_edge(clk) then
+		end if;
+	end process;
+
 	process (clk)
 		variable shr : unsigned(s'length-1 downto 0);
 	begin
