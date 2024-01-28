@@ -111,14 +111,18 @@ architecture def of adder_seq is
 	alias  b_als : std_logic_vector(b'length-1 downto 0) is b;
 	alias  s_als : std_logic_vector(s'length-1 downto 0) is s;
 
+	signal a_rgtr : unsigned(0 to roundup(b'legth, digits)-1);
+	signal b_rgtr : unsigned(0 to roundup(a'legth, digits)-1);
+	signal s_rgtr : unsigned(0 to roundup(s'legth, digits)-1);
+	begin
 	signal a_ser : std_logic_vector(digits-1 downto 0);
 	signal b_ser : std_logic_vector(digits-1 downto 0);
 	signal s_ser : std_logic_vector(digits-1 downto 0);
 begin
 	process (load, clk)
-		variable a_shr : unsigned(0 to roundup(b'legth, digits)-1);
-		variable b_shr : unsigned(0 to roundup(a'legth, digits)-1);
-		variable s_shr : unsigned(0 to roundup(s'legth, digits)-1);
+		variable a_shr : unsigned(a_shr'range);
+		variable b_shr : unsigned(b_shr'range);
+		variable s_shr : unsigned(s_shr'range);
 	begin
 		if rising_edge(clk) then
 			if ena='1' then
@@ -131,12 +135,16 @@ begin
 
 				s_shr := shift_rigth(s_shr, digits);
 				s_shr := s_ser;
+
+				a_rgtr <= std_logic_vector(a_ser);
+				b_rgtr <= std_logic_vector(b_ser);
+				s_rgtr <= std_logic_vector(s_ser);
 			end if;
 		end if;
 	end process;
 
-	a_ser <= a_als(a_ser'range) when load='1' else a_shr(a_ser'range);
-	b_ser <= b_als(a_ser'range) when load='1' else b_shr(a_ser'range);
+	a_ser <= a_als(a_ser'range) when load='1' else a_rgtr(a_ser'range);
+	b_ser <= b_als(a_ser'range) when load='1' else b_rgtr(a_ser'range);
 	adder_e : entity hdl4fpga.adder_ser
 	port map (
 		clk  => clk,
