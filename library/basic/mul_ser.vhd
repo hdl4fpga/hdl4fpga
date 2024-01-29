@@ -71,7 +71,7 @@ begin
 				acc := acc + resize(p(0 to a'length-1), acc'length);
 				p := shift_right(p, 1);
 				p(acc'range) := acc;
-				s <= std_logic_vector(p);
+				s <= std_logic_vector(p(0 to s'length-1));
 			end if;	
 		end if;
 	end process;
