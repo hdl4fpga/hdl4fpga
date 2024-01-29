@@ -32,44 +32,27 @@ entity mul_ser is
 		clk  : in  std_logic;
 		ena  : in  std_logic;
 		load : in  std_logic;
-		feed : out  std_logic;
 		a    : in  unsigned;
 		b    : in  unsigned;
 		s    : out unsigned);
 end;
 
 architecture def of mul_ser is
-	function mul (
-		constant op1 : unsigned;
-		constant op2 : unsigned)
-		return unsigned is
-		variable retval : unsigned(op1'length+op2'length-1 downto 0);
-	begin
-		retval := (others => '0');
-		for i in op2'reverse_range loop
-			if op2(i)='1' then
-				retval := retval + op1;
-			elsif op2(i)/='0' then
-				retval := (others => 'X');
-			end if;
-		end loop;
-		return retval;
-	end;
-
-	signal p : unsigned(a'length+b'length-1 downto 0);
 begin
 
-	p <= mul(a_p,b_p);
 	process (clk)
-		variable s_shr : unsigned(s'length-1 downto 0);
+		variable shr : unsigned(s'length-1 downto 0);
+		alias acc : unsigned(0 to s'lenght) is s_shr;
 	begin
 		if rising_edge(clk) then
 			if ena='1' then
 				if load='1' then
-					s_shr := (others => '0');
+					shr := a & b;
 				end if;
-				s_shr(p'range) := s_shr(p'range) + p;
-				s_shr := rotate_right(s_shr, b_p'length);
+				s_shr := shift_right(s_shr);
+				if shr(0)='1' then
+					acc  := acc + a;
+				end if;
 				s <= s_shr;
 			end if;
 		end if;
