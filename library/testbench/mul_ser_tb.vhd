@@ -33,7 +33,7 @@ architecture mul_ser_tb of testbench is
 	signal init : std_logic := '1';
 	signal load : std_logic := '1';
 	signal feed : std_logic := '1';
-	signal p : std_logic_vector(0 to 8-1);
+	signal p : std_logic_vector(0 to 10-1);
 begin
 	clk <= not clk after 1 ns;
 
@@ -53,8 +53,8 @@ begin
 		ena  => ena,
 		load => load,
 		feed => feed,
-		a  => x"f",
-		b  => x"8",
+		a  => b"01111",
+		b  => b"01001",
 		s  => p);
 
 	process (p)
