@@ -24,6 +24,7 @@ HDL4FPGA__hdlcdll_rx = $(LIB_HDL4FPGA)/hdlcdll_rx/_primary.dat
 HDL4FPGA__eth_tb = $(LIB_HDL4FPGA)/eth_tb/_primary.dat
 HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
 MICRON__ddr_model = $(LIB_MICRON)/ddr_model/_primary.dat
+HDL4FPGA__mul_ser = $(LIB_HDL4FPGA)/mul_ser/_primary.dat
 HDL4FPGA__dbdbbl_seq = $(LIB_HDL4FPGA)/dbdbbl_seq/_primary.dat
 HDL4FPGA__dbdbbl_ser = $(LIB_HDL4FPGA)/dbdbbl_ser/_primary.dat
 HDL4FPGA__dbdbbl = $(LIB_HDL4FPGA)/dbdbbl/_primary.dat
@@ -107,6 +108,7 @@ WORK__testbench__arty_graphics = $(LIB_WORK)/testbench/arty_graphics.dat
 WORK__testbench__dbdbbl_tb = $(LIB_WORK)/testbench/dbdbbl_tb.dat
 WORK__testbench__dbdbbl_ser_tb = $(LIB_WORK)/testbench/dbdbbl_ser_tb.dat
 WORK__testbench__dbdbbl_seq_tb = $(LIB_WORK)/testbench/dbdbbl_seq_tb.dat
+WORK__testbench__mul_ser_tb = $(LIB_WORK)/testbench/mul_ser_tb.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__s3estarter_structure_md = $(LIB_WORK)/s3estarter_structure_md/_primary.dat
 WORK__s3estarter_graphics_md = $(LIB_WORK)/s3estarter_graphics_md/_primary.dat
@@ -172,6 +174,7 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__testbench__dbdbbl_tb) \
     $(WORK__testbench__dbdbbl_ser_tb) \
     $(WORK__testbench__dbdbbl_seq_tb) \
+    $(WORK__testbench__mul_ser_tb) \
     $(WORK__testbench) \
     $(WORK__s3estarter_structure_md) \
     $(WORK__s3estarter_graphics_md) \
@@ -312,6 +315,15 @@ $(WORK__testbench) : testbench.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 testbench.vhd
+
+$(WORK__testbench__mul_ser_tb) : mul_ser_tb.vhd \
+		$(HDL4FPGA__mul_ser) \
+		$(WORK__testbench) \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__base) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002  mul_ser_tb.vhd
 
 $(WORK__testbench__dbdbbl_seq_tb) \
 $(WORK__testbench__dbdbbl_ser_tb) \
@@ -495,7 +507,7 @@ $(WORK__ulx3s__scopeio) : ../../boards/ULX3S/apps/scopeio.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../boards/ULX3S/apps/scopeio.vhd
+	$(VCOM) -2002 ../../boards/ULX3S/apps/scopeio.vhd
 
 $(WORK__ulx3s__graphics) : ../../boards/ULX3S/apps/graphics.vhd \
 		$(HDL4FPGA__ser_debug) \

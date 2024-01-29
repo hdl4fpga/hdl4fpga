@@ -40,37 +40,44 @@ entity mul_ser is
 end;
 
 architecture def of mul_ser is
+	signal cntr : unsigned(0 to unsigned_num_bits(b'length-2));
 begin
-	process (clk)
-		variable cntr : unsigned(0 to unsigned_num_bits(b'length-2));
+	process (clk, load)
+		type states is (s_init, s_run);
+		variable state : states;
 	begin
 		if rising_edge(clk) then
 			if load='1' then
-				cntr := to_unsigned(b'length-2, cntr'length);
+				cntr <= to_unsigned(b'length-2, cntr'length);
 			elsif cntr(0)='0' then
-				cntr := cntr - 1;
+				cntr <= cntr - 1;
 			end if;
-			feed <= cntr(0);
 		end if;
 	end process;
+	feed <= cntr(0);
 
 	process (clk)
 		variable acc : unsigned(0 to a'length);
 		variable p   : unsigned(0 to a'length+b'length-1);
+		variable frz : std_logic := '0';
 	begin
 		if rising_edge(clk) then
 			if ena='1' then
 				if load='1' then	
-					p := resize(unsigned(b), p'length);
-				end if;
-				if p(p'right)='1' then
-					acc := resize(unsigned(a), acc'length);
+					p   := resize(unsigned(b), p'length);
+					frz := '0';
 				else
-					acc := (others => '0');
+					frz := cntr(0);
 				end if;
-				acc := acc + resize(p(0 to a'length-1), acc'length);
-				p := shift_right(p, 1);
-				p(acc'range) := acc;
+				acc := (others => '0');
+				if frz='0' then
+					if p(p'right)='1' then
+						acc := resize(unsigned(a), acc'length);
+					end if;
+					acc := acc + resize(p(0 to a'length-1), acc'length);
+					p := shift_right(p, 1);
+					p(acc'range) := acc;
+				end if;
 				s <= std_logic_vector(p(0 to s'length-1));
 			end if;	
 		end if;

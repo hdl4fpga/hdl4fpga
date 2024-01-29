@@ -30,7 +30,9 @@ use hdl4fpga.base.all;
 architecture mul_ser_tb of testbench is
 	signal clk  : std_logic := '0';
 	signal ena  : std_logic := '1';
+	signal init : std_logic := '1';
 	signal load : std_logic := '1';
+	signal feed : std_logic := '1';
 	signal p : std_logic_vector(0 to 8-1);
 begin
 	clk <= not clk after 1 ns;
@@ -38,19 +40,21 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			if load='1' then
-				load <= '0';
+			if init='1' then
+				init <= '0';
 			end if;
 		end if;
 	end process;
 
+	load <= init or feed;
 	du_e : entity hdl4fpga.mul_ser
 	port map (
 		clk  => clk,
 		ena  => ena,
 		load => load,
-		a  => x"5",
-		b  => x"5",
+		feed => feed,
+		a  => x"f",
+		b  => x"8",
 		s  => p);
 
 	process (p)
