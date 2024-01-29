@@ -58,24 +58,19 @@ architecture def of mul_ser is
 
 	signal p : unsigned(a'length+b'length-1 downto 0);
 begin
-	p <= mul(a,b);
-	process (clk)
-	begin
-		if rising_edge(clk) then
-		end if;
-	end process;
 
+	p <= mul(a_p,b_p);
 	process (clk)
-		variable shr : unsigned(s'length-1 downto 0);
+		variable s_shr : unsigned(s'length-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if ena='1' then
 				if load='1' then
-					shr := (others => '0');
+					s_shr := (others => '0');
 				end if;
-				shr(p'range) := shr(p'range) + p;
-				shr := rotate_right(shr, b'length);
-				s <= shr;
+				s_shr(p'range) := s_shr(p'range) + p;
+				s_shr := rotate_right(s_shr, b_p'length);
+				s <= s_shr;
 			end if;
 		end if;
 	end process;
