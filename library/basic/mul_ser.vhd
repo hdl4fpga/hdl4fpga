@@ -26,12 +26,14 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.base.all;
 
 entity mul_ser is
 	port (
 		clk  : in  std_logic;
 		ena  : in  std_logic;
 		load : in  std_logic;
+		feed : out std_logic;
 		a    : in  std_logic_vector;
 		b    : in  std_logic_vector;
 		s    : out std_logic_vector);
@@ -39,6 +41,19 @@ end;
 
 architecture def of mul_ser is
 begin
+	process (clk)
+		variable cntr : unsigned(0 to unsigned_num_bits(b'length-2));
+	begin
+		if rising_edge(clk) then
+			if load='1' then
+				cntr := to_unsigned(b'length-2, cntr'length);
+			elsif cntr(0)='0' then
+				cntr := cntr - 1;
+			end if;
+			feed <= cntr(0);
+		end if;
+	end process;
+
 	process (clk)
 		variable acc : unsigned(0 to a'length);
 		variable p   : unsigned(0 to a'length+b'length-1);
