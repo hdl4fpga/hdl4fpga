@@ -32,30 +32,33 @@ entity mul_ser is
 		clk  : in  std_logic;
 		ena  : in  std_logic;
 		load : in  std_logic;
-		a    : in  unsigned;
-		b    : in  unsigned;
-		s    : out unsigned);
+		a    : in  std_logic_vector;
+		b    : in  std_logic_vector;
+		s    : out std_logic_vector);
 end;
 
 architecture def of mul_ser is
 begin
-
 	process (clk)
-		variable shr : unsigned(s'length-1 downto 0);
-		alias acc : unsigned(0 to s'lenght) is s_shr;
+		variable acc : unsigned(0 to a'length);
+		variable p   : unsigned(0 to a'length+b'length-1);
 	begin
 		if rising_edge(clk) then
 			if ena='1' then
-				if load='1' then
-					shr := a & b;
+				if load='1' then	
+					p := resize(unsigned(b), p'length);
 				end if;
-				s_shr := shift_right(s_shr);
-				if shr(0)='1' then
-					acc  := acc + a;
+				if p(p'right)='1' then
+					acc := resize(unsigned(a), acc'length);
+				else
+					acc := (others => '0');
 				end if;
-				s <= s_shr;
-			end if;
+				acc := acc + resize(p(0 to a'length-1), acc'length);
+				p := shift_right(p, 1);
+				p(acc'range) := acc;
+				s <= std_logic_vector(p);
+			end if;	
 		end if;
 	end process;
 
-end;
+end;	
