@@ -53,9 +53,9 @@ begin
 		ena  => ena,
 		load => load,
 		feed => feed,
-		a  => b"01111",
-		b  => b"01001",
-		s  => p);
+		a    => b"01111",
+		b    => b"01001",
+		s    => p);
 
 	process (p)
 	begin
