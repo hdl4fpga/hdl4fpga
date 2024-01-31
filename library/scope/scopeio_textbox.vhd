@@ -251,8 +251,6 @@ begin
 
 		xxx_b : block
 			signal positive : signed(vt_offset'range);
-			-- type states is ();
-			-- signal state : states;
 			signal mul_load : std_logic;
 			signal mul_feed : std_logic;
 			signal dbdbbl_load : std_logic;
@@ -272,6 +270,7 @@ begin
 			port map (
 				clk => rgtr_clk,
 				req => '-',
+				rdy => 
 				a   => vt_scale,
 				b   => std_logic_vector(positive),
 				s   => bin);
