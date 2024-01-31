@@ -36,7 +36,12 @@ architecture mul_ser_tb of testbench is
 begin
 	clk <= not clk after 1 ns;
 
-	req <= not to_stdulogic(to_bit(rdy));
+	process (clk)
+	begin
+		if rising_edge(clk) then
+		end if;
+	end process;
+			req <= not to_stdulogic(to_bit(rdy));
 	du_e : entity hdl4fpga.mul_ser
 	port map (
 		clk => clk,

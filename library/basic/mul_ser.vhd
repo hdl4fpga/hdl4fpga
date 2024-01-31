@@ -36,57 +36,54 @@ entity mul_ser is
 		rdy  : buffer std_logic;
 		a    : in  std_logic_vector;
 		b    : in  std_logic_vector;
-		s    : out std_logic_vector);
+		s    : buffer std_logic_vector);
 end;
 
 architecture def of mul_ser is
 	signal last : std_logic;
 begin
 	process (clk, last)
-		variable cntr : unsigned(0 to unsigned_num_bits(b'length-2)) := (others => '0');
+		variable cntr : unsigned(0 to unsigned_num_bits(b'length-2));
 	begin
 		if rising_edge(clk) then
 			if (to_bit(req) xor to_bit(rdy))='1' then
-				if cntr(0)/='1' then
+				if cntr(0)='0' then
 					cntr := cntr - 1;
 				else
 					cntr := to_unsigned(b'length-2, cntr'length);
-					rdy <= req;
 				end if;
 			else
 				cntr := to_unsigned(b'length-2, cntr'length);
+			end if;
+			if cntr(0)='1' then
+				rdy <= req;
 			end if;
 			last <= cntr(0);
 		end if;
 	end process;
 
 	process (clk)
-		type states is (s_init, s_mul, s_xxx);
-		variable state is state;
 		variable acc : unsigned(0 to a'length);
 		variable p   : unsigned(0 to a'length+b'length-1);
 	begin
 		if rising_edge(clk) then
 			if ena='1' then
-				case state is
-				when s_init =>
-					if (to_bit(req) xor to_bit(rdy))='0' then
-						p := resize(unsigned(b), p'length);
-					end if;
-				when s_mul =>
-					if last='1' then
-						p := resize(unsigned(b), p'length);
-				end case;
-					acc := (others => '0');
-					if p(p'right)='1' then
-						acc := resize(unsigned(a), acc'length);
-					end if;
-					acc := acc + resize(p(0 to a'length-1), acc'length);
-					p := shift_right(p, 1);
-					p(acc'range) := acc;
-					if (to_bit(req) xor to_bit(rdy))='1' then
-					end if;
-				s <= std_logic_vector(p(0 to s'length-1));
+				p := unsigned(s);
+				if (to_bit(req) xor to_bit(rdy))='0' then
+					p := resize(unsigned(b), p'length);
+				elsif last='1' then
+					p := resize(unsigned(b), p'length);
+				end if;
+				acc := (others => '0');
+				if p(p'right)='1' then
+					acc := resize(unsigned(a), acc'length);
+				end if;
+				acc := acc + resize(p(0 to a'length-1), acc'length);
+				p := shift_right(p, 1);
+				p(acc'range) := acc;
+				if (to_bit(req) xor to_bit(rdy))='1' then
+					s <= std_logic_vector(p(0 to s'length-1));
+				end if;
 			end if;	
 		end if;
 	end process;
