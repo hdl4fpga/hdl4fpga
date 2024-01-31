@@ -127,10 +127,10 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			req <= not to_stdulogic(to_bit(rdy));
 		end if;
 	end process;
 
+	req <= not to_stdulogic(to_bit(rdy));
 	du_e : entity hdl4fpga.dbdbbl_seq
 	generic map (
 		bin_digits => bin_digits,

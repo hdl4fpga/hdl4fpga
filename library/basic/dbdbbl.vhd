@@ -180,24 +180,30 @@ architecture def of dbdbbl_seq is
 	signal feed : std_logic;
 	signal bin_slice : std_logic_vector(0 to bin_digits-1);
 	signal cntr : integer range -1 to bin'length/bin_digits-2;
+	signal in_rdy : std_logic;
+	signal in_req : std_logic;
 begin
-	process (load, clk)
+	process (rdy, req, clk)
 		variable shr  : unsigned(0 to bin'length-1);
 	begin
 		if rising_edge(clk) then
 			if ena='1' then
-				if (to_bit(req) xor to_bit(rdy))='0' then
+				if (to_bit(req) xor to_bit(in_rdy))='0' then
 					shr  := unsigned(bin);
 					shr  := shr sll bin_slice'length;
 					cntr <= bin'length/bin_digits-2;
-				elsif feed='1' then
-					shr := shr sll bin_slice'length;
-					if cntr >= 0 then
-						cntr <= cntr - 1;
+				-- elsif (to_bit(req) xor to_bit(rdy))='0' then
+				else
+					if feed='1' then
+						shr := shr sll bin_slice'length;
+						if cntr < 0 then
+							in_rdy <= to_stdulogic(to_bit(in_req));
+						end if;
+						if cntr >= 0 then
+							cntr <= cntr - 1;
+						end if;
 					end if;
-					if cntr < 0 then
-						rdy <= req;
-					end if;
+					in_req <= req;
 				end if;
 			end if;
 		end if;
@@ -207,6 +213,9 @@ begin
 			bin_slice <= std_logic_vector(shr(0 to bin_slice'length-1));
 		end if;
 	end process;
+	rdy <= 
+		in_req when cntr < 0 and feed='1' else
+		in_rdy;
 
 	load <= not (to_stdulogic(to_bit(req) xor to_bit(rdy)));
 	dbdbblser_e : entity hdl4fpga.dbdbbl_ser
