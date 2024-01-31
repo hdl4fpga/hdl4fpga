@@ -251,8 +251,8 @@ begin
 
 		xxx_b : block
 			signal positive : signed(vt_offset'range);
-			signal mul_load : std_logic;
-			signal mul_feed : std_logic;
+			signal mul_req : std_logic;
+			signal mul_rdy : std_logic;
 			signal dbdbbl_load : std_logic;
 
 		begin
@@ -269,8 +269,8 @@ begin
 			mul_ser_e : entity hdl4fpga.mul_ser
 			port map (
 				clk => rgtr_clk,
-				req => '-',
-				rdy => 
+				req => mul_req,
+				rdy => mul_rdy,
 				a   => vt_scale,
 				b   => std_logic_vector(positive),
 				s   => bin);
@@ -282,8 +282,8 @@ begin
 			bcd_digits => bcd_digits)
 		port map (
 			clk  => rgtr_clk,
-			load => dbdbbl_load,
-			last => last,
+			req => dbdbbl_load,
+			rdy => last,
 			bin  => bin,
 			bcd  => bcd);
 		end block;

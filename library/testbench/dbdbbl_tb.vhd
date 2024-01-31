@@ -118,26 +118,16 @@ architecture dbdbbl_seq_tb of testbench is
 
 	signal clk  : std_logic := '0';
 	signal ena  : std_logic := '1';
-	signal load : std_logic := '1';
+	signal req  : std_logic := '0';
+	signal rdy  : std_logic := '1';
 	signal bcd  : std_logic_vector(bcd_length*bcd_digits*((5+bcd_digits-1)/bcd_digits)-1 downto 0);
 begin
 	clk <= not clk after 1 ns;
 
 	process (clk)
-		type states is (s_reset, s_load, s_run);
-		variable state : states := s_reset;
 	begin
 		if rising_edge(clk) then
-			case state is
-			when s_reset =>
-				load <= '0';
-				state := s_load;
-			when s_load =>
-				load <= '1';
-				state := s_run;
-			when s_run =>
-				load <= '0';
-			end case;
+			req <= not to_stdulogic(to_bit(rdy));
 		end if;
 	end process;
 
@@ -146,11 +136,12 @@ begin
 		bin_digits => bin_digits,
 		bcd_digits => bcd_digits)
 	port map (
-		clk  => clk,
-		ena  => ena,
-		load => load,
-		bin  => std_logic_vector(to_unsigned(32035,15)), -- b"1001110",
-		bcd  => bcd);
+		clk => clk,
+		ena => ena,
+		req => req,
+		rdy => rdy,
+		bin => std_logic_vector(to_unsigned(32035,15)), -- b"1001110",
+		bcd => bcd);
 
 	process (bcd)
 	begin
