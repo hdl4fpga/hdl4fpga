@@ -40,45 +40,52 @@ entity mul_ser is
 end;
 
 architecture def of mul_ser is
-	signal freeze : std_logic;
-	signal load : std_logic;
+	signal last : std_logic;
 begin
-	load <= req xor to_stdulogic(to_bit(rdy));
-	process (clk, load)
-		variable cntr : unsigned(0 to unsigned_num_bits(b'length-2));
+	process (clk, last)
+		variable cntr : unsigned(0 to unsigned_num_bits(b'length-2)) := (others => '0');
 	begin
 		if rising_edge(clk) then
-			if cntr(0)='0' then
-				cntr := cntr - 1;
-			elsif load='1' then
-				cntr := to_unsigned(b'length-2, cntr'length);
+			if (to_bit(req) xor to_bit(rdy))='1' then
+				if cntr(0)/='1' then
+					cntr := cntr - 1;
+				else
+					cntr := to_unsigned(b'length-2, cntr'length);
+					rdy <= req;
+				end if;
 			else
-				rdy <= req;
+				cntr := to_unsigned(b'length-2, cntr'length);
 			end if;
-			freeze <= cntr(0);
+			last <= cntr(0);
 		end if;
 	end process;
 
 	process (clk)
+		type states is (s_init, s_mul, s_xxx);
+		variable state is state;
 		variable acc : unsigned(0 to a'length);
 		variable p   : unsigned(0 to a'length+b'length-1);
 	begin
 		if rising_edge(clk) then
 			if ena='1' then
-				if freeze='1' then
-					if load='1' then	
-						p   := resize(unsigned(b), p'length);
+				case state is
+				when s_init =>
+					if (to_bit(req) xor to_bit(rdy))='0' then
+						p := resize(unsigned(b), p'length);
 					end if;
-				end if;
-				acc := (others => '0');
-				if freeze='0' then
+				when s_mul =>
+					if last='1' then
+						p := resize(unsigned(b), p'length);
+				end case;
+					acc := (others => '0');
 					if p(p'right)='1' then
 						acc := resize(unsigned(a), acc'length);
 					end if;
 					acc := acc + resize(p(0 to a'length-1), acc'length);
 					p := shift_right(p, 1);
 					p(acc'range) := acc;
-				end if;
+					if (to_bit(req) xor to_bit(rdy))='1' then
+					end if;
 				s <= std_logic_vector(p(0 to s'length-1));
 			end if;	
 		end if;
