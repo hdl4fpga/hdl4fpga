@@ -1708,6 +1708,7 @@ $(HDL4FPGA__scopeio_textbox__def) : ../scope/scopeio_textbox.vhd \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__cgaram) \
 		$(HDL4FPGA__dbdbbl_seq) \
+		$(HDL4FPGA__mul_ser) \
 		$(HDL4FPGA__scopeio_rgtrvtaxis) \
 		$(HDL4FPGA__scopeio_rgtrtrigger) \
 		$(HDL4FPGA__scopeio_rgtrmyip) \

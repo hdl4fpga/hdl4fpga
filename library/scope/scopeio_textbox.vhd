@@ -163,6 +163,7 @@ begin
 		signal bcd            : std_logic_vector(0 to bcd_length*bcd_digits*((5+bcd_digits-1)/bcd_digits)-1);
 		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+bin_digits-1)/bin_digits)-1);
 		signal load           : std_logic;
+		signal feed           : std_logic;
 		signal last           : std_logic;
 	begin
 
@@ -250,24 +251,31 @@ begin
 
 		xxx_b : block
 			signal positive : signed(vt_offset'range);
+			-- type states is ();
+			-- signal state : states;
+			signal mul_load : std_logic;
+			signal mul_feed : std_logic;
+			signal dbdbbl_load : std_logic;
+
 		begin
-			positive <= 
-				-signed(vt_offset) when vt_offset(vt_offset'left)='1' else
-				 signed(vt_offset);
-			mul_ser_e : entity hdl4fpga.mul_ser_e
-			port map (
-				clk => rgtr_clk,
-				a   => vt_scale,
-				b   => std_logic_vector(positive),
-				s   => bin);
 			process (rgtr_clk)
 			begin
 				if rising_edge(rgtr_clk) then
-
 				end if;
 			end process;
 
-		end block;
+			positive <= 
+				-signed(vt_offset) when vt_offset(vt_offset'left)='1' else
+				 signed(vt_offset);
+
+			mul_ser_e : entity hdl4fpga.mul_ser
+			port map (
+				clk => rgtr_clk,
+				req => '-',
+				a   => vt_scale,
+				b   => std_logic_vector(positive),
+				s   => bin);
+
 
 		bin <= std_logic_vector(resize(unsigned(vt_offset), bin'length));
 		bin2bcd_e : entity hdl4fpga.dbdbbl_seq
@@ -275,10 +283,11 @@ begin
 			bcd_digits => bcd_digits)
 		port map (
 			clk  => rgtr_clk,
-			load => load,
+			load => dbdbbl_load,
 			last => last,
 			bin  => bin,
 			bcd  => bcd);
+		end block;
 
 		process (rgtr_clk)
 		begin
