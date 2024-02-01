@@ -162,9 +162,6 @@ begin
 		constant bcd_digits   : natural := 1;
 		signal bcd            : std_logic_vector(0 to bcd_length*bcd_digits*((5+bcd_digits-1)/bcd_digits)-1);
 		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+bin_digits-1)/bin_digits)-1);
-		signal load           : std_logic;
-		signal feed           : std_logic;
-		signal last           : std_logic;
 	begin
 
 		myip4_e : entity hdl4fpga.scopeio_rgtrmyip
@@ -255,6 +252,7 @@ begin
 			signal mul_rdy : std_logic;
 			signal dbdbbl_req : std_logic;
 			signal dbdbbl_rdy : std_logic;
+			signal dbdbbl_trdy : std_logic;
 
 		begin
 			process (rgtr_clk)
@@ -286,6 +284,7 @@ begin
 			clk  => rgtr_clk,
 			req => dbdbbl_req,
 			rdy => dbdbbl_rdy,
+			trdy => dbdbbl_trdy,
 			bin  => bin,
 			bcd  => bcd);
 		end block;
@@ -293,13 +292,13 @@ begin
 		process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
-				if last='1' then
+				if dbdbbl_trdy='1' then
 					bcd_code <= x"3" & bcd(0 to 4-1);
 				end if;
 			end if;
 		end process;
 
-		xxx <= last;
+		xxx <= dbdbbl_trdy;
 	end block;
 
 	video_addr <= std_logic_vector(resize(
