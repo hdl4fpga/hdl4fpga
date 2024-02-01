@@ -253,7 +253,8 @@ begin
 			signal positive : signed(vt_offset'range);
 			signal mul_req : std_logic;
 			signal mul_rdy : std_logic;
-			signal dbdbbl_load : std_logic;
+			signal dbdbbl_req : std_logic;
+			signal dbdbbl_rdy : std_logic;
 
 		begin
 			process (rgtr_clk)
@@ -276,14 +277,15 @@ begin
 				s   => bin);
 
 
+		dbdbbl_req <= dbdbbl_rdy;
 		bin <= std_logic_vector(resize(unsigned(vt_offset), bin'length));
 		bin2bcd_e : entity hdl4fpga.dbdbbl_seq
 		generic map (
 			bcd_digits => bcd_digits)
 		port map (
 			clk  => rgtr_clk,
-			req => dbdbbl_load,
-			rdy => last,
+			req => dbdbbl_req,
+			rdy => dbdbbl_rdy,
 			bin  => bin,
 			bcd  => bcd);
 		end block;

@@ -163,13 +163,14 @@ entity dbdbbl_seq is
 		bcd_digits : natural := 1;
 		bin_digits : natural := 3);
 	port (
-		clk : in  std_logic;
-		ena : in  std_logic := '1';
-		req : in  std_logic;
-		rdy : buffer std_logic;
-		bin : in  std_logic_vector;
-		ini : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
-		bcd : out std_logic_vector);
+		clk  : in  std_logic;
+		req  : in  std_logic;
+		rdy  : buffer std_logic;
+		irdy : in  std_logic := '1';
+		trdy : out std_logic;
+		bin  : in  std_logic_vector;
+		ini  : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
+		bcd  : out std_logic_vector);
 
 	constant bcd_length : natural := 4;
 	alias bin_als    : std_logic_vector(0 to bin'length-1) is bin;
@@ -187,7 +188,7 @@ begin
 		variable in_req : std_logic;
 	begin
 		if rising_edge(clk) then
-			if ena='1' then
+			if irdy='1' then
 				if (to_bit(req) xor to_bit(rdy))='0' then
 					shr    := unsigned(bin);
 					shr    := shr sll bin_slice'length;
@@ -207,6 +208,11 @@ begin
 					end if;
 				end if;
 				in_req := to_stdulogic(to_bit(req));
+				if cntr < 0 then
+					trdy <= '1';
+				else
+					trdy <= '0';
+				end if;
 			end if;
 		end if;
 
@@ -237,7 +243,7 @@ begin
 		bcd_digits => bcd_digits)
 	port map (
 		clk  => clk,
-		ena  => ena,
+		ena  => irdy,
 		load => load,
 		feed => feed,
 		ini  => ini,

@@ -117,7 +117,6 @@ architecture dbdbbl_seq_tb of testbench is
 	constant bin_digits : natural := 3;
 
 	signal clk  : std_logic := '0';
-	signal ena  : std_logic := '1';
 	signal req  : std_logic := '0';
 	signal rdy  : std_logic := '1';
 	signal bcd  : std_logic_vector(bcd_length*bcd_digits*((5+bcd_digits-1)/bcd_digits)-1 downto 0);
@@ -137,7 +136,6 @@ begin
 		bcd_digits => bcd_digits)
 	port map (
 		clk => clk,
-		ena => ena,
 		req => req,
 		rdy => rdy,
 		bin => std_logic_vector(to_unsigned(32035,15)), -- b"1001110",
