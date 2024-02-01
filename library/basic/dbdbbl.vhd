@@ -183,7 +183,7 @@ architecture def of dbdbbl_seq is
 	signal in_rdy : std_logic;
 	signal in_req : std_logic;
 begin
-	process (rdy, req, clk)
+	process (rdy, req, in_req, clk)
 		variable shr  : unsigned(0 to bin'length-1);
 	begin
 		if rising_edge(clk) then
@@ -192,22 +192,26 @@ begin
 					shr  := unsigned(bin);
 					shr  := shr sll bin_slice'length;
 					cntr <= bin'length/bin_digits-2;
-				-- elsif (to_bit(req) xor to_bit(rdy))='0' then
-				else
-					if feed='1' then
-						shr := shr sll bin_slice'length;
-						if cntr < 0 then
-							in_rdy <= to_stdulogic(to_bit(in_req));
-						end if;
-						if cntr >= 0 then
-							cntr <= cntr - 1;
-						end if;
-					end if;
 					in_req <= req;
+				elsif (to_bit(req) xor to_bit(in_req))='1' then
+					shr  := unsigned(bin);
+					shr  := shr sll bin_slice'length;
+					cntr <= bin'length/bin_digits-2;
+					in_req <= req;
+				elsif feed='1' then
+					shr := shr sll bin_slice'length;
+					if cntr < 0 then
+						in_rdy <= to_stdulogic(to_bit(in_req));
+					end if;
+					if cntr >= 0 then
+						cntr <= cntr - 1;
+					end if;
 				end if;
 			end if;
 		end if;
 		if (to_bit(req) xor to_bit(rdy))='0' then
+			bin_slice <= bin_als(0 to bin_slice'length-1);
+		elsif (to_bit(req) xor to_bit(in_req))='1' then
 			bin_slice <= bin_als(0 to bin_slice'length-1);
 		else
 			bin_slice <= std_logic_vector(shr(0 to bin_slice'length-1));
@@ -217,7 +221,9 @@ begin
 		in_req when cntr < 0 and feed='1' else
 		in_rdy;
 
-	load <= not (to_stdulogic(to_bit(req) xor to_bit(rdy)));
+	load <=
+		not (to_stdulogic(to_bit(req)    xor to_bit(rdy))) or
+		    (to_stdulogic(to_bit(in_req) xor to_bit(req)));
 	dbdbblser_e : entity hdl4fpga.dbdbbl_ser
 	generic map (
 		bcd_digits => bcd_digits)
