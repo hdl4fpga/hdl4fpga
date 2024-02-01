@@ -163,13 +163,13 @@ entity dbdbbl_seq is
 		bcd_digits : natural := 1;
 		bin_digits : natural := 3);
 	port (
-		clk  : in  std_logic;
-		ena  : in  std_logic := '1';
+		clk : in  std_logic;
+		ena : in  std_logic := '1';
 		req : in  std_logic;
-		rdy  : buffer std_logic;
-		bin  : in  std_logic_vector;
-		ini  : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
-		bcd  : out std_logic_vector);
+		rdy : buffer std_logic;
+		bin : in  std_logic_vector;
+		ini : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
+		bcd : out std_logic_vector);
 
 	constant bcd_length : natural := 4;
 	alias bin_als    : std_logic_vector(0 to bin'length-1) is bin;
@@ -181,8 +181,8 @@ architecture def of dbdbbl_seq is
 	signal bin_slice : std_logic_vector(0 to bin_digits-1);
 begin
 	process (rdy, req, feed, clk)
-		variable shr  : unsigned(0 to bin'length-1);
-		variable cntr : integer range -1 to bin'length/bin_digits-2;
+		variable shr    : unsigned(0 to bin'length-1);
+		variable cntr   : integer range -1 to bin'length/bin_digits-2;
 		variable in_rdy : std_logic;
 		variable in_req : std_logic;
 	begin
@@ -192,7 +192,7 @@ begin
 					shr    := unsigned(bin);
 					shr    := shr sll bin_slice'length;
 					cntr   := bin'length/bin_digits-2;
-					in_req := to_stdulogic(to_bit(req));
+					in_rdy := to_stdulogic(to_bit(req));
 				elsif feed/='0' then
 					shr := shr sll bin_slice'length;
 					if cntr < 0 then
@@ -206,22 +206,27 @@ begin
 						cntr := cntr - 1;
 					end if;
 				end if;
+				in_req := to_stdulogic(to_bit(req));
+			end if;
+		end if;
+
+		rdy <= to_stdulogic(to_bit(in_rdy));
+		if feed/='0' then
+			if cntr < 0 then
+				rdy <= to_stdulogic(to_bit(in_req));
 			end if;
 		end if;
 
 		load <= '0';
 		bin_slice <= std_logic_vector(shr(0 to bin_slice'length-1));
-		rdy  <= to_stdulogic(to_bit(in_rdy));
 		if (to_bit(req) xor to_bit(rdy))='0' then
 			load <= '1';
 			bin_slice <= bin_als(0 to bin_slice'length-1);
-			rdy  <= in_rdy;
 		elsif feed/='0' then
 			if cntr < 0 then
 				if (to_bit(req) xor to_bit(rdy))='1' then
 					load <= '1';
 					bin_slice <= bin_als(0 to bin_slice'length-1);
-					rdy  <= to_stdulogic(to_bit(in_req));
 				end if;
 			end if;
 		end if;
