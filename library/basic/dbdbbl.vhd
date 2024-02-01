@@ -202,7 +202,7 @@ begin
 							cntr := bin'length/bin_digits-2;
 						end if;
 						in_rdy := to_stdulogic(to_bit(in_req));
-					elsif cntr >= 0 then
+					else
 						cntr := cntr - 1;
 					end if;
 				end if;
