@@ -233,31 +233,25 @@ begin
 		vt_scale  <= multiplex(gain_ids,   chan_id,        vt_scale'length);
 		tgr_scale <= multiplex(gain_ids,   trigger_chanid, tgr_scale'length);
 
-		process (rgtr_clk)
-		begin
-			if rising_edge(rgtr_clk) then
-				if vt_dv='1' then
-					load <= '1';
-				elsif gain_dv='1' then
-					load <= '1';
-				else
-					load <= '0';
-				end if;
-			end if;
-		end process;
-
 		xxx_b : block
-			signal positive : signed(vt_offset'range);
-			signal mul_req : std_logic;
-			signal mul_rdy : std_logic;
-			signal dbdbbl_req : std_logic;
-			signal dbdbbl_rdy : std_logic;
+
+			signal positive    : signed(vt_offset'range);
+			signal mul_req     : std_logic;
+			signal mul_rdy     : std_logic;
+			signal dbdbbl_req  : std_logic;
+			signal dbdbbl_rdy  : std_logic;
 			signal dbdbbl_trdy : std_logic;
 
 		begin
+
 			process (rgtr_clk)
 			begin
 				if rising_edge(rgtr_clk) then
+					if vt_dv='1' then
+						mul_req <= not mul_rdy;
+					elsif gain_dv='1' then
+						mul_req <= not mul_rdy;
+					end if;
 				end if;
 			end process;
 
@@ -274,31 +268,30 @@ begin
 				b   => std_logic_vector(positive),
 				s   => bin);
 
-
-		dbdbbl_req <= dbdbbl_rdy;
-		bin <= std_logic_vector(resize(unsigned(vt_offset), bin'length));
-		bin2bcd_e : entity hdl4fpga.dbdbbl_seq
-		generic map (
-			bcd_digits => bcd_digits)
-		port map (
-			clk  => rgtr_clk,
-			req => dbdbbl_req,
-			rdy => dbdbbl_rdy,
-			trdy => dbdbbl_trdy,
-			bin  => bin,
-			bcd  => bcd);
+			dbdbbl_req <= dbdbbl_rdy;
+			-- bin <= std_logic_vector(resize(unsigned(vt_offset), bin'length));
+			bin2bcd_e : entity hdl4fpga.dbdbbl_seq
+			generic map (
+				bcd_digits => bcd_digits)
+			port map (
+				clk  => rgtr_clk,
+				req  => dbdbbl_req,
+				rdy  => dbdbbl_rdy,
+				trdy => dbdbbl_trdy,
+				bin  => bin,
+				bcd  => bcd);
+	
+			process (rgtr_clk)
+			begin
+				if rising_edge(rgtr_clk) then
+					if dbdbbl_trdy='1' then
+						bcd_code <= x"3" & bcd(0 to 4-1);
+					end if;
+				end if;
+			end process;
+			xxx <= dbdbbl_trdy;
 		end block;
 
-		process (rgtr_clk)
-		begin
-			if rising_edge(rgtr_clk) then
-				if dbdbbl_trdy='1' then
-					bcd_code <= x"3" & bcd(0 to 4-1);
-				end if;
-			end if;
-		end process;
-
-		xxx <= dbdbbl_trdy;
 	end block;
 
 	video_addr <= std_logic_vector(resize(

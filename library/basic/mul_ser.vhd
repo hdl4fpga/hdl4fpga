@@ -68,7 +68,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			if ena='1' then
-				p := unsigned(s);
+				-- p(0 to s'length-1) := unsigned(s);
 				if (to_bit(req) xor to_bit(rdy))='0' then
 					p := resize(unsigned(b), p'length);
 				elsif last='1' then
