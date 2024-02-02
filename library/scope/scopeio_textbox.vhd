@@ -161,7 +161,7 @@ begin
 		constant bcd_length   : natural := 4;
 		constant bcd_digits   : natural := 1;
 		signal bcd            : std_logic_vector(0 to bcd_length*bcd_digits*((5+bcd_digits-1)/bcd_digits)-1);
-		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+bin_digits-1)/bin_digits)-1);
+		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+vt_scale'length+bin_digits-1)/bin_digits)-1);
 	begin
 
 		myip4_e : entity hdl4fpga.scopeio_rgtrmyip
