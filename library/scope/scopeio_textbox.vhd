@@ -268,7 +268,7 @@ begin
 				b   => std_logic_vector(positive),
 				s   => bin);
 
-			dbdbbl_req <= dbdbbl_rdy;
+			dbdbbl_req <= mul_rdy;
 			-- bin <= std_logic_vector(resize(unsigned(vt_offset), bin'length));
 			bin2bcd_e : entity hdl4fpga.dbdbbl_seq
 			generic map (
