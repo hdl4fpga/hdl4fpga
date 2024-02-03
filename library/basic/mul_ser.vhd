@@ -29,6 +29,8 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 entity mul_ser is
+	generic (
+		lsb : boolean := false);
 	port (
 		clk  : in  std_logic;
 		ena  : in  std_logic := '1';
@@ -82,7 +84,11 @@ begin
 				p := shift_right(p, 1);
 				p(acc'range) := acc;
 				if (to_bit(req) xor to_bit(rdy))='1' then
-					s <= std_logic_vector(resize(p(0 to hdl4fpga.base.min(s'length,p'length)-1), s'length));
+					if not lsb then
+						s <= std_logic_vector(resize(p(0 to hdl4fpga.base.min(s'length,p'length)-1), s'length));
+					else
+						s <= std_logic_vector(resize(p, s'length));
+					end if;
 				end if;
 			end if;	
 		end if;

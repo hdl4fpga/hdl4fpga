@@ -260,11 +260,13 @@ begin
 				 signed(vt_offset);
 
 			mul_ser_e : entity hdl4fpga.mul_ser
+			generic map (
+				lsb => true)
 			port map (
 				clk => rgtr_clk,
 				req => mul_req,
 				rdy => mul_rdy,
-				a   => vt_scale,
+				a   => b"0001", --vt_scale,
 				b   => std_logic_vector(positive),
 				s   => bin);
 
