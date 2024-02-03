@@ -255,7 +255,7 @@ begin
 				end if;
 			end process;
 
-			positive <= 
+			positive <=
 				-signed(vt_offset) when vt_offset(vt_offset'left)='1' else
 				 signed(vt_offset);
 
@@ -266,12 +266,17 @@ begin
 				clk => rgtr_clk,
 				req => mul_req,
 				rdy => mul_rdy,
-				a   => b"0001", --vt_scale,
+				a   => vt_scale,
 				b   => std_logic_vector(positive),
 				s   => bin);
 
-			dbdbbl_req <= mul_rdy;
-			-- bin <= std_logic_vector(resize(unsigned(vt_offset), bin'length));
+			process (rgtr_clk)
+			begin
+				if rising_edge(rgtr_clk) then
+					dbdbbl_req <= mul_rdy;
+				end if;
+			end process;
+
 			bin2bcd_e : entity hdl4fpga.dbdbbl_seq
 			generic map (
 				bcd_digits => bcd_digits)
@@ -283,17 +288,28 @@ begin
 				bin  => bin,
 				bcd  => bcd);
 	
-			process (rgtr_clk)
-			begin
-				if rising_edge(rgtr_clk) then
-					if dbdbbl_trdy='1' then
-						bcd_code <= x"3" & bcd(0 to 4-1);
-					end if;
-				end if;
-			end process;
-			xxx <= dbdbbl_trdy;
+			cga_code <= x"3" & bcd(0 to 4-1);
+			cga_we   <= dbdbbl_trdy;
 		end block;
 
+		process (rgtr_clk)
+			constant dn : std_logic := '1';
+			type states is (s_init, s_convert);
+			variable state : states;
+		begin
+			if rising_edge(rgtr_clk) then
+				if cga_we='1' then
+					if dn='0' then
+						cga_addr <= cga_addr + 1;
+					else
+						cga_addr <= cga_addr - 1;
+					end if;
+				else
+					cga_addr <= to_unsigned(5-1, cga_addr'length);
+				end if;
+			end if;
+		end process;
+	
 	end block;
 
 	video_addr <= std_logic_vector(resize(
@@ -301,29 +317,6 @@ begin
 		(unsigned(video_hcntr(textwidth_bits-1 downto 0)) srl fontwidth_bits),
 		video_addr'length));
 	video_on <= text_on and sgmntbox_ena(0);
-
-	process (rgtr_clk)
-		constant dn : std_logic := '1';
-		type states is (s_init, s_convert);
-		variable state : states;
-	begin
-		if rising_edge(rgtr_clk) then
-			if cga_we='1' then
-				if dn='0' then
-					cga_addr <= cga_addr + 1;
-				else
-					cga_addr <= cga_addr - 1;
-				end if;
-			end if;
-			if xxx='1' then
-				cga_we   <= '1';
-			else
-				cga_addr <= to_unsigned(5-1, cga_addr'length);
-				cga_we   <= '0';
-			end if;
-		end if;
-	end process;
-	cga_code <= bcd_code;
 
 	cgaram_e : entity hdl4fpga.cgaram
 	generic map (
