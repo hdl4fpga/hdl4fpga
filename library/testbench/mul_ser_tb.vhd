@@ -33,6 +33,12 @@ architecture mul_ser_tb of testbench is
 	signal req : std_logic := '1';
 	signal rdy : std_logic := '1';
 	signal p : std_logic_vector(0 to 10-1);
+	signal bcd : std_logic_vector(0 to 5*4-1);
+
+	signal dbdbbl_req  : std_logic;
+	signal dbdbbl_rdy  : std_logic;
+	signal dbdbbl_trdy : std_logic;
+
 begin
 	clk <= not clk after 1 ns;
 
@@ -43,15 +49,30 @@ begin
 		end if;
 	end process;
 	du_e : entity hdl4fpga.mul_ser
+	generic map (
+		lsb => true
+	)
 	port map (
 		clk => clk,
 		ena => ena,
 		req => req,
 		rdy => rdy,
 		a   => b"01111",
-		b   => b"01001",
+		b   => b"0000_0000_01001",
 		s   => p);
 
+	dbdbbl_req <= mul_rdy;
+	bin2bcd_e : entity hdl4fpga.dbdbbl_seq
+	generic map (
+		bcd_digits => 1)
+	port map (
+		clk  => rgtr_clk,
+		req  => dbdbbl_req,
+		rdy  => dbdbbl_rdy,
+		trdy => dbdbbl_trdy,
+		bin  => p,
+		bcd  => bcd);
+	
 	process (p)
 	begin
 		report to_string(p);
