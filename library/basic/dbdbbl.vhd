@@ -181,7 +181,7 @@ architecture def of dbdbbl_seq is
 	signal feed : std_logic;
 	signal bin_slice : std_logic_vector(0 to bin_digits-1);
 begin
-	process (rdy, req, feed, clk)
+	process (bin_als, rdy, req, feed, clk)
 		variable shr    : unsigned(0 to bin'length-1);
 		variable cntr   : integer range -1 to bin'length/bin_digits-2;
 		variable in_rdy : std_logic;
