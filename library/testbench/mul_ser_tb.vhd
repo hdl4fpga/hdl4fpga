@@ -53,9 +53,9 @@ begin
 			if mul_req='0' then
 				mul_req <= '1'; --not to_stdulogic(to_bit(mul_rdy));
 			end if;
-	dbdbbl_req <= to_stdulogic(to_bit(mul_rdy));
 		end if;
 	end process;
+	dbdbbl_req <= to_stdulogic(to_bit(mul_rdy));
 	du_e : entity hdl4fpga.mul_ser
 	generic map (
 		lsb => true
