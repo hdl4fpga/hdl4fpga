@@ -273,9 +273,9 @@ begin
 			process (rgtr_clk)
 			begin
 				if rising_edge(rgtr_clk) then
-					dbdbbl_req <= mul_rdy;
 				end if;
 			end process;
+					dbdbbl_req <= mul_rdy;
 
 			bin2bcd_e : entity hdl4fpga.dbdbbl_seq
 			generic map (

@@ -85,8 +85,8 @@ entity dbdbbl_ser is
 		bcd_digits : natural);
 	port (
 		clk  : in  std_logic;
-		ena  : in  std_logic := '1';
-		feed : buffer std_logic;
+		irdy : in  std_logic := '1';
+		trdy : buffer std_logic;
 		load : in  std_logic;
 		bin  : in  std_logic_vector;
 		ini  : in  std_logic_vector := (0 to 0 => '0');
@@ -110,7 +110,7 @@ begin
 	ini_als <= std_logic_vector(resize(unsigned(ini), ini_als'length));
 	bin_dbbl <= 
 		bin when load='1' else
-		bin when feed='1' else
+		bin when trdy='1' else
 		cy;
 		
 	ini_dbbl <= 
@@ -133,7 +133,7 @@ begin
 		variable shr1 : unsigned(0 to bcd'length/(bcd_digits*bcd_length)-1);
 	begin
 		if rising_edge(clk) then
-			if ena='1' then
+			if irdy='1' then
 				if load='1' then
 					shr1 := (others => '0');
 					shr1(0) := '1';
@@ -144,7 +144,7 @@ begin
 				ini_shr <= std_logic_vector(shr0);
 				cy  <= bcd_dbbl(bin'length+n-1 downto n);
 				shr1 := rotate_left(shr1, 1);
-				feed <= shr1(0);
+				trdy <= shr1(0);
 			end if;
 		end if;
 	end process;
@@ -177,11 +177,12 @@ entity dbdbbl_seq is
 end;
 
 architecture def of dbdbbl_seq is
+	signal ser_irdy : std_logic;
 	signal load : std_logic;
-	signal feed : std_logic;
+	signal ser_trdy : std_logic;
 	signal bin_slice : std_logic_vector(0 to bin_digits-1);
 begin
-	process (bin_als, rdy, req, feed, clk)
+	process (bin_als, rdy, req, ser_trdy, clk)
 		variable shr    : unsigned(0 to bin'length-1);
 		variable cntr   : integer range -1 to bin'length/bin_digits-2;
 		variable in_rdy : std_logic;
@@ -190,11 +191,13 @@ begin
 		if rising_edge(clk) then
 			if irdy='1' then
 				if (to_bit(req) xor to_bit(rdy))='0' then
-					shr    := unsigned(bin);
-					shr    := shr sll bin_slice'length;
 					cntr   := bin'length/bin_digits-2;
 					in_rdy := to_stdulogic(to_bit(req));
-				elsif feed/='0' then
+				elsif (to_bit(in_rdy) xor to_bit(in_req))='0' then
+					cntr   := bin'length/bin_digits-2;
+					shr    := unsigned(bin);
+					shr    := shr sll bin_slice'length;
+				elsif ser_trdy/='0' then
 					shr := shr sll bin_slice'length;
 					if cntr < 0 then
 						if (to_bit(req) xor to_bit(rdy))='1' then
@@ -217,7 +220,7 @@ begin
 		end if;
 
 		rdy <= to_stdulogic(to_bit(in_rdy));
-		if feed/='0' then
+		if ser_trdy/='0' then
 			if cntr < 0 then
 				rdy <= to_stdulogic(to_bit(in_req));
 			end if;
@@ -226,9 +229,12 @@ begin
 		load <= '0';
 		bin_slice <= std_logic_vector(shr(0 to bin_slice'length-1));
 		if (to_bit(req) xor to_bit(rdy))='0' then
+			load <= '0';
+			bin_slice <= std_logic_vector(shr(0 to bin_slice'length-1));
+		elsif (to_bit(in_req) xor to_bit(in_rdy))='0' then
 			load <= '1';
 			bin_slice <= bin_als(0 to bin_slice'length-1);
-		elsif feed/='0' then
+		elsif ser_trdy/='0' then
 			if cntr < 0 then
 				if (to_bit(req) xor to_bit(rdy))='1' then
 					load <= '1';
@@ -238,14 +244,19 @@ begin
 		end if;
 	end process;
 
+	ser_irdy <= 
+		'0' when irdy='0' else
+		'0' when (to_bit(req) xor to_bit(rdy))='0' else
+		'1';
+
 	dbdbblser_e : entity hdl4fpga.dbdbbl_ser
 	generic map (
 		bcd_digits => bcd_digits)
 	port map (
 		clk  => clk,
-		ena  => irdy,
+		irdy => ser_irdy,
 		load => load,
-		feed => feed,
+		trdy => ser_trdy,
 		ini  => ini,
 		bin  => bin_slice,
 		bcd  => bcd);

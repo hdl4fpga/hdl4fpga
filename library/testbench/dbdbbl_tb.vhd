@@ -91,9 +91,9 @@ begin
 		bcd_digits => bcd_digits)
 	port map (
 		clk  => clk,
-		ena  => ena,
+		irdy  => ena,
 		load => load,
-		feed => feed,
+		trdy => feed,
 		bin  => bin_slice,
 		bcd  => bcd);
 
@@ -126,10 +126,13 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-	req <= not to_stdulogic(to_bit(rdy));
+			if req='0' then
+				-- req <= '1';
+			end if;
 		end if;
 	end process;
 
+	req <= not to_stdulogic(to_bit(rdy));
 	du_e : entity hdl4fpga.dbdbbl_seq
 	generic map (
 		bin_digits => bin_digits,
