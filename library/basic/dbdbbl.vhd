@@ -226,18 +226,6 @@ begin
 			end if;
 		end if;
 
-		-- if (to_bit(req) xor to_bit(rdy))='0' then
-			-- frm <= '0';
-		-- elsif (to_bit(in_req) xor to_bit(in_rdy))='0' then
-			-- frm <= '1';
-		-- elsif ser_trdy='1' then
-			-- if cntr < 0 then
-				-- if (to_bit(req) xor to_bit(rdy))='1' then
-					-- frm <= '0';
-				-- end if;
-			-- end if;
-		-- end if;
-
 		load <= '0';
 		bin_slice <= std_logic_vector(shr(0 to bin_slice'length-1));
 		if (to_bit(req) xor to_bit(rdy))='0' then
@@ -285,9 +273,9 @@ entity dbdbbl_ser1 is
 		bcd_digits : natural);
 	port (
 		clk  : in  std_logic;
-		frm  : in  std_logic;
+		req  : in  std_logic;
+		rdy  : buffer  std_logic;
 		irdy : in  std_logic := '1';
-		trdy : buffer std_logic;
 		bin  : in  std_logic_vector;
 		ini  : in  std_logic_vector := (0 to 0 => '0');
 		bcd  : out std_logic_vector);
@@ -298,7 +286,6 @@ end;
 
 architecture beh of dbdbbl_ser1 is
 
-	signal load     : std_logic;
 	signal cy       : std_logic_vector(bin'length-1 downto 0);
 	signal ini_als  : std_logic_vector(bcd'length-1 downto 0);
 	signal ini_shr  : std_logic_vector(bcd'length-1 downto 0);
@@ -308,42 +295,53 @@ architecture beh of dbdbbl_ser1 is
 
 begin
 
-	process (frm, clk)
+	ini_als  <= std_logic_vector(resize(unsigned(ini), ini_als'length));
+	process (ini_als, clk)
 		type states is (s_load, s_run);
 		variable state : states;
+		variable shr0 : unsigned(ini_shr'length-1 downto 0);
+		variable shr1 : unsigned(0 to bcd'length/(bcd_digits*bcd_length)-1);
 	begin
 		if rising_edge(clk) then
 			case state is
 			when s_load =>
-				if frm='1' then
+				if (to_bit(req) xor to_bit(rdy))='1' then
+					shr0  := unsigned(ini_als);
+					shr1  := rotate_left(shr1, 1);
 					state := s_run;
+				else
+					shr1 := (others => '0');
+					shr1(0) := '1';
 				end if;
 			when s_run =>
-				if frm='0' then
+				if (to_bit(req) xor to_bit(rdy))='1' then
+					shr1 := rotate_left(shr1, 1);
+				else
+					shr1 := (others => '0');
+					shr1(0) := '1';
 					state := s_load;
 				end if;
 			end case;
+			if shr1(0)='1' then
+			end if;
+
+			shr0(n-1 downto 0) := unsigned(bcd_dbbl(n-1 downto 0));
+			shr0 := rotate_right(shr0, n);
+			ini_shr <= std_logic_vector(shr0);
 		end if;
 
 		case state is
 		when s_load =>
-			load <= frm;
+			ini_dbbl <= ini_als(n-1 downto 0);
+			bin_dbbl <= bin;
 		when s_run =>
-			load <= '0';
+			ini_dbbl <= std_logic_vector(shr0(n-1 downto 0));
+			bin_dbbl <= cy;
 		end case;
-
 	end process;
 
-	ini_als <= std_logic_vector(resize(unsigned(ini), ini_als'length));
-	bin_dbbl <= 
-		bin when load='1' else
-		bin when trdy='1' else
-		cy;
+			cy   <= bcd_dbbl(bin'length+n-1 downto n);
 		
-	ini_dbbl <= 
-		ini_als(n-1 downto 0) when load='1' else
-		ini_shr(n-1 downto 0);
-
 	dbdbbl_e : entity hdl4fpga.dbdbbl
 	port map (
 		bin => bin_dbbl,
@@ -355,26 +353,111 @@ begin
 			natural'image(9*2**bin'length+2**bin'length) & " : " & natural'image(10**(bcd_digits+1))
 		severity failure;
 
-	process (clk)
-		variable shr0 : unsigned(ini_shr'length-1 downto 0);
-		variable shr1 : unsigned(0 to bcd'length/(bcd_digits*bcd_length)-1);
+	bcd <= ini_shr;
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library hdl4fpga;
+
+entity dbdbbl_seq1 is
+	generic (
+		bcd_digits : natural := 1;
+		bin_digits : natural := 3);
+	port (
+		clk  : in  std_logic;
+		req  : in  std_logic;
+		rdy  : buffer std_logic;
+		irdy : in  std_logic := '1';
+		trdy : out std_logic;
+		bin  : in  std_logic_vector;
+		ini  : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
+		bcd  : out std_logic_vector);
+
+	constant bcd_length : natural := 4;
+	alias bin_als    : std_logic_vector(0 to bin'length-1) is bin;
+end;
+
+architecture def of dbdbbl_seq1 is
+	signal ser_req  : std_logic;
+	signal ser_rdy : std_logic;
+	signal ser_irdy : std_logic;
+	signal ser_bin  : std_logic_vector(0 to bin_digits-1);
+begin
+	process (bin_als, rdy, req, ser_rdy, ser_req, clk)
+		variable shr    : unsigned(0 to bin'length-1);
+		variable cntr   : integer range -1 to bin'length/bin_digits-2;
+		variable in_rdy : std_logic;
+		variable in_req : std_logic;
 	begin
 		if rising_edge(clk) then
 			if irdy='1' then
-				if load='1' then
-					shr1 := (others => '0');
-					shr1(0) := '1';
-					shr0 := unsigned(ini_als);
+				if (to_bit(req) xor to_bit(rdy))='0' then
+					cntr   := bin'length/bin_digits-2;
+					in_rdy := to_stdulogic(to_bit(req));
+				elsif (to_bit(in_rdy) xor to_bit(in_req))='0' then
+					cntr   := bin'length/bin_digits-2;
+					shr    := unsigned(bin);
+					shr    := shr sll ser_bin'length;
+				elsif (to_bit(ser_rdy) xor to_bit(ser_rdy))='0' then
+					shr := shr sll ser_bin'length;
+					if cntr < 0 then
+						if (to_bit(req) xor to_bit(rdy))='1' then
+							shr  := unsigned(bin);
+							shr  := shr sll ser_bin'length;
+							cntr := bin'length/bin_digits-2;
+						end if;
+						in_rdy := to_stdulogic(to_bit(in_req));
+					else
+						cntr := cntr - 1;
+					end if;
 				end if;
-				shr0(n-1 downto 0) := unsigned(bcd_dbbl(n-1 downto 0));
-				shr0 := rotate_right(shr0, n);
-				ini_shr <= std_logic_vector(shr0);
-				cy  <= bcd_dbbl(bin'length+n-1 downto n);
-				shr1 := rotate_left(shr1, 1);
-				trdy <= shr1(0);
+				in_req := to_stdulogic(to_bit(req));
+				if cntr < 0 then
+					trdy <= '1';
+				else
+					trdy <= '0';
+				end if;
 			end if;
 		end if;
+
+		rdy <= to_stdulogic(to_bit(in_rdy));
+		if (to_bit(ser_rdy) xor to_bit(ser_rdy))='0' then
+			if cntr < 0 then
+				rdy <= to_stdulogic(to_bit(in_req));
+			end if;
+		end if;
+
+		ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
+		if (to_bit(req) xor to_bit(rdy))='0' then
+		elsif (to_bit(in_req) xor to_bit(in_rdy))='0' then
+			ser_req <= to_stdulogic(to_bit(ser_rdy));
+			ser_bin <= bin_als(0 to ser_bin'length-1);
+		elsif (to_bit(ser_rdy) xor to_bit(ser_rdy))='0' then
+			if cntr < 0 then
+				if (to_bit(req) xor to_bit(rdy))='1' then
+				end if;
+			end if;
+		end if;
+
 	end process;
 
-	bcd <= ini_shr;
+	ser_irdy <= 
+		'0' when irdy='0' else
+		'0' when (to_bit(req) xor to_bit(rdy))='0' else
+		'1';
+
+	dbdbblser_e : entity hdl4fpga.dbdbbl_ser1
+	generic map (
+		bcd_digits => bcd_digits)
+	port map (
+		clk  => clk,
+		ini  => ini,
+		req  => ser_req,
+		rdy  => ser_rdy,
+		irdy => ser_irdy,
+		bin  => ser_bin,
+		bcd  => bcd);
 end;
