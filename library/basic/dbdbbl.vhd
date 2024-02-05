@@ -226,6 +226,18 @@ begin
 			end if;
 		end if;
 
+		-- if (to_bit(req) xor to_bit(rdy))='0' then
+			-- frm <= '0';
+		-- elsif (to_bit(in_req) xor to_bit(in_rdy))='0' then
+			-- frm <= '1';
+		-- elsif ser_trdy='1' then
+			-- if cntr < 0 then
+				-- if (to_bit(req) xor to_bit(rdy))='1' then
+					-- frm <= '0';
+				-- end if;
+			-- end if;
+		-- end if;
+
 		load <= '0';
 		bin_slice <= std_logic_vector(shr(0 to bin_slice'length-1));
 		if (to_bit(req) xor to_bit(rdy))='0' then
@@ -260,4 +272,109 @@ begin
 		ini  => ini,
 		bin  => bin_slice,
 		bcd  => bcd);
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library hdl4fpga;
+
+entity dbdbbl_ser1 is
+	generic (
+		bcd_digits : natural);
+	port (
+		clk  : in  std_logic;
+		frm  : in  std_logic;
+		irdy : in  std_logic := '1';
+		trdy : buffer std_logic;
+		bin  : in  std_logic_vector;
+		ini  : in  std_logic_vector := (0 to 0 => '0');
+		bcd  : out std_logic_vector);
+
+	constant bcd_length : natural := 4;
+	constant n : natural := bcd_length*bcd_digits;
+end;
+
+architecture beh of dbdbbl_ser1 is
+
+	signal load     : std_logic;
+	signal cy       : std_logic_vector(bin'length-1 downto 0);
+	signal ini_als  : std_logic_vector(bcd'length-1 downto 0);
+	signal ini_shr  : std_logic_vector(bcd'length-1 downto 0);
+	signal bin_dbbl : std_logic_vector(bin'range);
+	signal ini_dbbl : std_logic_vector(n-1 downto 0);
+	signal bcd_dbbl : std_logic_vector(bin'length+n-1 downto 0);
+
+begin
+
+	process (frm, clk)
+		type states is (s_load, s_run);
+		variable state : states;
+	begin
+		if rising_edge(clk) then
+			case state is
+			when s_load =>
+				if frm='1' then
+					state := s_run;
+				end if;
+			when s_run =>
+				if frm='0' then
+					state := s_load;
+				end if;
+			end case;
+		end if;
+
+		case state is
+		when s_load =>
+			load <= frm;
+		when s_run =>
+			load <= '0';
+		end case;
+
+	end process;
+
+	ini_als <= std_logic_vector(resize(unsigned(ini), ini_als'length));
+	bin_dbbl <= 
+		bin when load='1' else
+		bin when trdy='1' else
+		cy;
+		
+	ini_dbbl <= 
+		ini_als(n-1 downto 0) when load='1' else
+		ini_shr(n-1 downto 0);
+
+	dbdbbl_e : entity hdl4fpga.dbdbbl
+	port map (
+		bin => bin_dbbl,
+		ini => ini_dbbl,
+		bcd => bcd_dbbl);
+
+	assert ((10-1)*2**bin'length+2**bin'length) < 10**(bcd_digits+1)
+		report "Constraint parameters do not match : " &
+			natural'image(9*2**bin'length+2**bin'length) & " : " & natural'image(10**(bcd_digits+1))
+		severity failure;
+
+	process (clk)
+		variable shr0 : unsigned(ini_shr'length-1 downto 0);
+		variable shr1 : unsigned(0 to bcd'length/(bcd_digits*bcd_length)-1);
+	begin
+		if rising_edge(clk) then
+			if irdy='1' then
+				if load='1' then
+					shr1 := (others => '0');
+					shr1(0) := '1';
+					shr0 := unsigned(ini_als);
+				end if;
+				shr0(n-1 downto 0) := unsigned(bcd_dbbl(n-1 downto 0));
+				shr0 := rotate_right(shr0, n);
+				ini_shr <= std_logic_vector(shr0);
+				cy  <= bcd_dbbl(bin'length+n-1 downto n);
+				shr1 := rotate_left(shr1, 1);
+				trdy <= shr1(0);
+			end if;
+		end if;
+	end process;
+
+	bcd <= ini_shr;
 end;
