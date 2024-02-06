@@ -273,9 +273,9 @@ entity dbdbbl_ser1 is
 		bcd_digits : natural);
 	port (
 		clk  : in  std_logic;
-		req  : in  std_logic;
-		rdy  : buffer  std_logic;
+		frm  : in  std_logic;
 		irdy : in  std_logic := '1';
+		trdy : buffer std_logic := '1';
 		bin  : in  std_logic_vector;
 		ini  : in  std_logic_vector := (0 to 0 => '0');
 		bcd  : out std_logic_vector);
@@ -296,7 +296,7 @@ architecture beh of dbdbbl_ser1 is
 begin
 
 	ini_als  <= std_logic_vector(resize(unsigned(ini), ini_als'length));
-	process (ini_als, clk)
+	process (bin, ini_als, clk)
 		type states is (s_load, s_run);
 		variable state : states;
 		variable shr0 : unsigned(ini_shr'length-1 downto 0);
@@ -305,7 +305,7 @@ begin
 		if rising_edge(clk) then
 			case state is
 			when s_load =>
-				if (to_bit(req) xor to_bit(rdy))='1' then
+				if frm='1' then
 					shr0  := unsigned(ini_als);
 					shr1  := rotate_left(shr1, 1);
 					state := s_run;
@@ -314,7 +314,7 @@ begin
 					shr1(0) := '1';
 				end if;
 			when s_run =>
-				if (to_bit(req) xor to_bit(rdy))='1' then
+				if frm='1' then
 					shr1 := rotate_left(shr1, 1);
 				else
 					shr1 := (others => '0');
@@ -322,25 +322,27 @@ begin
 					state := s_load;
 				end if;
 			end case;
-			if shr1(0)='1' then
-			end if;
-
+			trdy <= shr1(0);
 			shr0(n-1 downto 0) := unsigned(bcd_dbbl(n-1 downto 0));
 			shr0 := rotate_right(shr0, n);
 			ini_shr <= std_logic_vector(shr0);
+			cy   <= bcd_dbbl(bin'length+n-1 downto n);
 		end if;
 
 		case state is
-		when s_load =>
+		when s_load => 
 			ini_dbbl <= ini_als(n-1 downto 0);
 			bin_dbbl <= bin;
-		when s_run =>
-			ini_dbbl <= std_logic_vector(shr0(n-1 downto 0));
-			bin_dbbl <= cy;
+		when s_run => 
+				ini_dbbl <= std_logic_vector(shr0(n-1 downto 0));
+			if shr1(0)='1' then
+				bin_dbbl <= bin;
+			else
+				bin_dbbl <= cy;
+			end if;
 		end case;
 	end process;
 
-			cy   <= bcd_dbbl(bin'length+n-1 downto n);
 		
 	dbdbbl_e : entity hdl4fpga.dbdbbl
 	port map (
@@ -381,12 +383,12 @@ entity dbdbbl_seq1 is
 end;
 
 architecture def of dbdbbl_seq1 is
-	signal ser_req  : std_logic;
-	signal ser_rdy : std_logic;
+	signal ser_frm  : std_logic;
 	signal ser_irdy : std_logic;
+	signal ser_trdy : std_logic;
 	signal ser_bin  : std_logic_vector(0 to bin_digits-1);
 begin
-	process (bin_als, rdy, req, ser_rdy, ser_req, clk)
+	process (bin_als, rdy, req, ser_frm, clk)
 		variable shr    : unsigned(0 to bin'length-1);
 		variable cntr   : integer range -1 to bin'length/bin_digits-2;
 		variable in_rdy : std_logic;
@@ -397,11 +399,13 @@ begin
 				if (to_bit(req) xor to_bit(rdy))='0' then
 					cntr   := bin'length/bin_digits-2;
 					in_rdy := to_stdulogic(to_bit(req));
+					ser_frm <= '1';
 				elsif (to_bit(in_rdy) xor to_bit(in_req))='0' then
 					cntr   := bin'length/bin_digits-2;
 					shr    := unsigned(bin);
 					shr    := shr sll ser_bin'length;
-				elsif (to_bit(ser_rdy) xor to_bit(ser_rdy))='0' then
+					ser_frm <= '1';
+				elsif ser_trdy='1' then
 					shr := shr sll ser_bin'length;
 					if cntr < 0 then
 						if (to_bit(req) xor to_bit(rdy))='1' then
@@ -412,6 +416,7 @@ begin
 						in_rdy := to_stdulogic(to_bit(in_req));
 					else
 						cntr := cntr - 1;
+						ser_frm <= '1';
 					end if;
 				end if;
 				in_req := to_stdulogic(to_bit(req));
@@ -424,18 +429,17 @@ begin
 		end if;
 
 		rdy <= to_stdulogic(to_bit(in_rdy));
-		if (to_bit(ser_rdy) xor to_bit(ser_rdy))='0' then
+		if ser_trdy='1' then
 			if cntr < 0 then
-				rdy <= to_stdulogic(to_bit(in_req));
+				ser_frm <= '0';
 			end if;
 		end if;
 
 		ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
 		if (to_bit(req) xor to_bit(rdy))='0' then
 		elsif (to_bit(in_req) xor to_bit(in_rdy))='0' then
-			ser_req <= to_stdulogic(to_bit(ser_rdy));
 			ser_bin <= bin_als(0 to ser_bin'length-1);
-		elsif (to_bit(ser_rdy) xor to_bit(ser_rdy))='0' then
+		elsif ser_trdy='1' then
 			if cntr < 0 then
 				if (to_bit(req) xor to_bit(rdy))='1' then
 				end if;
@@ -455,9 +459,8 @@ begin
 	port map (
 		clk  => clk,
 		ini  => ini,
-		req  => ser_req,
-		rdy  => ser_rdy,
-		irdy => ser_irdy,
+		frm  => ser_frm,
+		trdy  => ser_trdy,
 		bin  => ser_bin,
 		bcd  => bcd);
 end;
