@@ -178,9 +178,9 @@ begin
 			if req='0' then
 				-- req <= '1';
 			end if;
-	req <= not to_stdulogic(to_bit(rdy));
 		end if;
 	end process;
+	req <= not to_stdulogic(to_bit(rdy));
 
 	du_e : entity hdl4fpga.dbdbbl_seq1
 	generic map (

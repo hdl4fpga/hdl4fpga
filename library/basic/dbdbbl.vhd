@@ -414,6 +414,7 @@ begin
 							cntr := bin'length/bin_digits-2;
 						end if;
 						in_rdy := to_stdulogic(to_bit(in_req));
+						ser_frm <= '0';
 					else
 						cntr := cntr - 1;
 						ser_frm <= '1';
@@ -425,16 +426,11 @@ begin
 				else
 					trdy <= '0';
 				end if;
+
 			end if;
 		end if;
 
 		rdy <= to_stdulogic(to_bit(in_rdy));
-		if ser_trdy='1' then
-			if cntr < 0 then
-				ser_frm <= '0';
-			end if;
-		end if;
-
 		ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
 		if (to_bit(req) xor to_bit(rdy))='0' then
 		elsif (to_bit(in_req) xor to_bit(in_rdy))='0' then
