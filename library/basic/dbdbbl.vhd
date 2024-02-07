@@ -296,15 +296,15 @@ begin
 
 	ini_als  <= std_logic_vector(resize(unsigned(ini), ini_als'length));
 	process (bin, ini_als, clk)
-		type states is (s_load, s_run);
+		type states is (s_init, s_run);
 		variable state : states;
-		variable shr0 : unsigned(ini_shr'length-1 downto 0);
-		variable shr1 : unsigned(0 to bcd'length/(bcd_digits*bcd_length)-1);
-	variable cy       : std_logic_vector(bin'length-1 downto 0);
+		variable shr0  : unsigned(ini_shr'length-1 downto 0);
+		variable shr1  : unsigned(0 to bcd'length/(bcd_digits*bcd_length)-1);
+		variable cy    : std_logic_vector(bin'length-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			case state is
-			when s_load =>
+			when s_init =>
 				if frm='1' then
 					shr0  := unsigned(ini_als);
 					shr1  := rotate_left(shr1, 1);
@@ -319,7 +319,7 @@ begin
 				else
 					shr1 := (others => '0');
 					shr1(0) := '1';
-					state := s_load;
+					state := s_init;
 				end if;
 			end case;
 			trdy <= shr1(0);
@@ -330,7 +330,7 @@ begin
 		end if;
 
 		case state is
-		when s_load => 
+		when s_init => 
 			ini_dbbl <= ini_als(n-1 downto 0);
 			bin_dbbl <= bin;
 		when s_run => 
