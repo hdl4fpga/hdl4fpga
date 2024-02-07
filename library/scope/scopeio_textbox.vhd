@@ -270,13 +270,7 @@ begin
 				b   => std_logic_vector(positive),
 				s   => bin);
 
-			process (rgtr_clk)
-			begin
-				if rising_edge(rgtr_clk) then
-				end if;
-			end process;
-					dbdbbl_req <= mul_rdy;
-
+			dbdbbl_req <= mul_rdy;
 			bin2bcd_e : entity hdl4fpga.dbdbbl_seq
 			generic map (
 				bcd_digits => bcd_digits)
