@@ -288,8 +288,6 @@ begin
 
 		process (rgtr_clk)
 			constant dn : std_logic := '1';
-			type states is (s_init, s_convert);
-			variable state : states;
 		begin
 			if rising_edge(rgtr_clk) then
 				if cga_we='1' then
