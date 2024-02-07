@@ -388,48 +388,51 @@ architecture def of dbdbbl_seq1 is
 	signal ser_trdy : std_logic;
 	signal ser_bin  : std_logic_vector(0 to bin_digits-1);
 begin
-	process (bin_als, rdy, req, ser_frm, clk)
-		variable shr    : unsigned(bin'length-1 downto 0);
-		variable cntr   : integer range -1 to bin'length/bin_digits-2;
-		variable in_rdy : std_logic;
-		variable in_req : std_logic;
+	process (clk)
+		type states is (s_init, s_run);
+		variable state : states;
+		variable shr  : unsigned(0 to bin'length-1);
+		variable cntr : integer range -1 to bin'length/bin_digits-1;
 	begin
 		if rising_edge(clk) then
-			if irdy='1' then
-				if (to_bit(req) xor to_bit(rdy))='0' then
-					cntr   := bin'length/bin_digits-2;
-					in_rdy := to_stdulogic(to_bit(req));
-					shr    := unsigned(bin);
-					shr    := rotate_left(shr, ser_bin'length);
-					ser_frm <= '1';
-				elsif (to_bit(in_rdy) xor to_bit(in_req))='0' then
-					cntr   := bin'length/bin_digits-2;
-					shr    := unsigned(bin);
-					shr    := rotate_left(shr, ser_bin'length);
-					ser_frm <= '1';
-				elsif ser_trdy='1' then
-					shr := rotate_left(shr, ser_bin'length);
-					if cntr < 0 then
-						if (to_bit(req) xor to_bit(rdy))='1' then
-							shr  := unsigned(bin);
-							shr  := rotate_left(shr, ser_bin'length);
-							cntr := bin'length/bin_digits-2;
+			if (to_bit(req) xor to_bit(rdy))='1' then
+    			case state is
+    			when s_init =>
+    				ser_frm <= '1';
+    				ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
+    				shr     := unsigned(bin);
+    				cntr    := bin'length/bin_digits-1;
+					trdy    <= '0';
+					state   := s_run;
+    			when s_run =>
+        			if irdy='1' then
+        				if ser_trdy='1' then
+        					if cntr < 0 then
+        						ser_frm <= '0';
+								trdy  <= '0';
+        						rdy   <= to_stdulogic(to_bit(req));
+								state := s_init;
+        					else
+        						ser_frm <= '1';
+        						cntr := cntr - 1;
+								if cntr < 0 then
+									trdy <= '1';
+								end if;
+        					end if;
+        				end if;
+
+						if ser_frm='1' then
+							if ser_trdy='1' then
+        						ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
+        						shr     := shift_left(shr, ser_bin'length);
+        					end if;
 						end if;
-						in_rdy := to_stdulogic(to_bit(in_req));
-						ser_frm <= '0';
-					else
-						cntr := cntr - 1;
-						ser_frm <= '1';
 					end if;
-				end if;
-				in_req := to_stdulogic(to_bit(req));
-				if cntr < 0 then
-					trdy <= '1';
-				else
-					trdy <= '0';
-				end if;
-				ser_bin <= std_logic_vector(shr(ser_bin'length-1 downto 0));
+    			end case;
+			else
+				state := s_init;
 			end if;
+
 		end if;
 
 	end process;

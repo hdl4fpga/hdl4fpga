@@ -177,10 +177,10 @@ begin
 		if rising_edge(clk) then
 			if req='0' then
 				-- req <= '1';
-	req <= not to_stdulogic(to_bit(rdy));
 			end if;
 		end if;
 	end process;
+	req <= not to_stdulogic(to_bit(rdy));
 
 	du_e : entity hdl4fpga.dbdbbl_seq1
 	generic map (
