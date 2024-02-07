@@ -427,6 +427,7 @@ begin
         						ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
         					end if;
 						end if;
+
 					end if;
     			end case;
 			else
