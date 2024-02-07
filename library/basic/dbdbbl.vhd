@@ -398,9 +398,9 @@ begin
 			if (to_bit(req) xor to_bit(rdy))='1' then
     			case state is
     			when s_init =>
+    				shr     := unsigned(bin);
     				ser_frm <= '1';
     				ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
-    				shr     := unsigned(bin);
     				cntr    := bin'length/bin_digits-1;
 					trdy    <= '0';
 					state   := s_run;
@@ -423,8 +423,8 @@ begin
 
 						if ser_frm='1' then
 							if ser_trdy='1' then
-        						ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
         						shr     := shift_left(shr, ser_bin'length);
+        						ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
         					end if;
 						end if;
 					end if;
