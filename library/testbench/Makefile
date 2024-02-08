@@ -240,6 +240,8 @@ HDL4FPGA__hdlcdll_rx__def = $(LIB_HDL4FPGA)/hdlcdll_rx/def.dat
 HDL4FPGA__hdlcdll_rx = $(LIB_HDL4FPGA)/hdlcdll_rx/_primary.dat
 HDL4FPGA__hdlc_link__def = $(LIB_HDL4FPGA)/hdlc_link/def.dat
 HDL4FPGA__hdlc_link = $(LIB_HDL4FPGA)/hdlc_link/_primary.dat
+HDL4FPGA__graphics__def = $(LIB_HDL4FPGA)/graphics/def.dat
+HDL4FPGA__graphics = $(LIB_HDL4FPGA)/graphics/_primary.dat
 HDL4FPGA__g4_phdata270__inference = $(LIB_HDL4FPGA)/g4_phdata270/inference.dat
 HDL4FPGA__g4_phdata270 = $(LIB_HDL4FPGA)/g4_phdata270/_primary.dat
 HDL4FPGA__g4_phdata__inference = $(LIB_HDL4FPGA)/g4_phdata/inference.dat
@@ -335,6 +337,7 @@ HDL4FPGA__arbiter__mix = $(LIB_HDL4FPGA)/arbiter/mix.dat
 HDL4FPGA__arbiter = $(LIB_HDL4FPGA)/arbiter/_primary.dat
 HDL4FPGA__app_profiles__body = $(LIB_HDL4FPGA)/app_profiles/body.dat
 HDL4FPGA__app_profiles = $(LIB_HDL4FPGA)/app_profiles/_primary.dat
+HDL4FPGA__app_graphics__mix = $(LIB_HDL4FPGA)/app_graphics/mix.dat
 HDL4FPGA__app_graphics = $(LIB_HDL4FPGA)/app_graphics/_primary.dat
 HDL4FPGA__adjsto__def = $(LIB_HDL4FPGA)/adjsto/def.dat
 HDL4FPGA__adjsto = $(LIB_HDL4FPGA)/adjsto/_primary.dat
@@ -577,6 +580,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__hdlcdll_rx) \
     $(HDL4FPGA__hdlc_link__def) \
     $(HDL4FPGA__hdlc_link) \
+    $(HDL4FPGA__graphics__def) \
+    $(HDL4FPGA__graphics) \
     $(HDL4FPGA__g4_phdata270__inference) \
     $(HDL4FPGA__g4_phdata270) \
     $(HDL4FPGA__g4_phdata__inference) \
@@ -672,6 +677,7 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__arbiter) \
     $(HDL4FPGA__app_profiles__body) \
     $(HDL4FPGA__app_profiles) \
+    $(HDL4FPGA__app_graphics__mix) \
     $(HDL4FPGA__app_graphics) \
     $(HDL4FPGA__adjsto__def) \
     $(HDL4FPGA__adjsto) \
@@ -733,7 +739,21 @@ $(HDL4FPGA__adjsto__def) : ../xilinx/adjsto.vhd \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/adjsto.vhd
 
-$(HDL4FPGA__app_graphics) : ../apps/app_graphics.vhd \
+$(HDL4FPGA__app_graphics) \
+$(HDL4FPGA__app_graphics__mix) : ../apps/app_graphics.vhd \
+		$(HDL4FPGA__sdram_ctlr) \
+		$(HDL4FPGA__dmactlr) \
+		$(HDL4FPGA__dvi) \
+		$(HDL4FPGA__graphics) \
+		$(HDL4FPGA__video_sync) \
+		$(HDL4FPGA__so_data) \
+		$(HDL4FPGA__latency) \
+		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__sio_dmahdsk) \
+		$(HDL4FPGA__fifo) \
+		$(HDL4FPGA__sio_rgtr) \
+		$(HDL4FPGA__txn_buffer) \
+		$(HDL4FPGA__sio_sin) \
 		$(HDL4FPGA__videopkg) \
 		$(IEEE__math_real) \
 		$(HDL4FPGA__sdram_db) \
@@ -1177,6 +1197,17 @@ $(HDL4FPGA__fifo__def) : ../basic/fifo.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/fifo.vhd
+
+$(HDL4FPGA__graphics) \
+$(HDL4FPGA__graphics__def) : ../video/graphics.vhd \
+		$(HDL4FPGA__fifo) \
+		$(HDL4FPGA__serlzr) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../video/graphics.vhd
 
 $(HDL4FPGA__hdlc_link) \
 $(HDL4FPGA__hdlc_link__def) : ../apps/link_hdlc.vhd \
