@@ -98,68 +98,66 @@ end;
 
 architecture beh of dbdbbl_ser is
 
-	signal ini_als  : std_logic_vector(bcd'length-1 downto 0);
-	signal ini_shr  : std_logic_vector(bcd'length-1 downto 0);
 	signal bin_dbbl : std_logic_vector(bin'range);
 	signal ini_dbbl : std_logic_vector(n-1 downto 0);
 	signal bcd_dbbl : std_logic_vector(bin'length+n-1 downto 0);
 
 begin
 
-	ini_als  <= std_logic_vector(resize(unsigned(ini), ini_als'length));
-	process (bin, ini_als, clk)
+	process (bin, ini, clk)
 		type states is (s_init, s_run);
 		variable state : states;
-		variable shr0  : unsigned(ini_shr'length-1 downto 0);
-		variable shr1  : unsigned(0 to bcd'length/(bcd_digits*bcd_length)-1);
-		variable cy    : std_logic_vector(bin'length-1 downto 0);
+		variable shr  : unsigned(bcd'length-1 downto 0);
+		variable cntr : integer range -1 to bcd'length/(bcd_digits*bcd_length)-2;
+		variable cy   : std_logic_vector(bin'length-1 downto 0);
 	begin
-		if rising_edge(clk) then
-			shr0 := unsigned(ini_shr);
+		mem : if rising_edge(clk) then
 			case state is
 			when s_init =>
 				if frm='1' then
-					shr0  := unsigned(ini_als);
-					shr1  := rotate_left(shr1, 1);
+					shr := resize(unsigned(ini), shr'length);
+					shr(n-1 downto 0) := unsigned(bcd_dbbl(n-1 downto 0));
+					shr := rotate_right(shr, n);
+					bcd <= std_logic_vector(shr);
+					cntr := bcd'length/(bcd_digits*bcd_length)-2;
 					state := s_run;
 				else
-					shr1 := (others => '0');
-					shr1(0) := '1';
+					cntr := -1;
 				end if;
 			when s_run =>
-				if frm='1' then
-					shr1 := rotate_left(shr1, 1);
-				elsif shr1(0)='1' then
-					if frm='0' then
-						shr1 := (others => '0');
-						shr1(0) := '1';
-						state := s_init;
-					else
-						shr1 := rotate_left(shr1, 1);
-					end if;
+				shr(n-1 downto 0) := unsigned(bcd_dbbl(n-1 downto 0));
+				shr := rotate_right(shr, n);
+				if cntr >= 0 then
+					bcd <= std_logic_vector(shr);
+					cntr := cntr -1;
+				elsif frm='1' then
+					cntr := bcd'length/(bcd_digits*bcd_length)-2;
+					bcd <= std_logic_vector(shr);
 				else
-					shr1 := rotate_left(shr1, 1);
+					state := s_init;
 				end if;
 			end case;
-			trdy <= shr1(0);
-			shr0(n-1 downto 0) := unsigned(bcd_dbbl(n-1 downto 0));
-			shr0 := rotate_right(shr0, n);
-			ini_shr <= std_logic_vector(shr0);
-			cy   := bcd_dbbl(bin'length+n-1 downto n);
+			if cntr < 0 then
+				trdy <= '1';
+			else
+				trdy <= '0';
+			end if;
+			cy  := bcd_dbbl(bin'length+n-1 downto n);
 		end if;
 
-		case state is
+		comb : case state is
 		when s_init => 
-			ini_dbbl <= ini_als(n-1 downto 0);
+			ini_dbbl <= std_logic_vector(resize(rotate_left(resize(unsigned(ini), bcd'length), ini_dbbl'length), ini_dbbl'length));
 			bin_dbbl <= bin;
 		when s_run => 
-				ini_dbbl <= std_logic_vector(shr0(n-1 downto 0));
-				if shr1(0)='1' then
-					bin_dbbl <= bin;
-				else
-					bin_dbbl <= cy;
-				end if;
+			ini_dbbl <= std_logic_vector(shr(n-1 downto 0));
+			if cntr < 0 then
+				bin_dbbl <= bin;
+			else
+				bin_dbbl <= cy;
+			end if;
 		end case;
+
 	end process;
 
 		
@@ -174,7 +172,6 @@ begin
 			natural'image(9*2**bin'length+2**bin'length) & " : " & natural'image(10**(bcd_digits+1))
 		severity failure;
 
-	bcd <= ini_shr;
 end;
 
 library ieee;
@@ -226,16 +223,17 @@ begin
         			if irdy='1' then
         				if ser_trdy='1' then
         					if cntr < 0 then
+								if ser_frm='0' then
+									trdy  <= '0';
+									rdy   <= to_stdulogic(to_bit(req));
+									state := s_init;
+								else
+									trdy  <= '1';
+								end if;
         						ser_frm <= '0';
-								trdy  <= '0';
-        						rdy   <= to_stdulogic(to_bit(req));
-								state := s_init;
         					else
         						ser_frm <= '1';
         						cntr := cntr - 1;
-								if cntr < 0 then
-									trdy <= '1';
-								end if;
         					end if;
         				end if;
 
