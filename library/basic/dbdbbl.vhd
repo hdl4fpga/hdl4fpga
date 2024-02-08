@@ -115,6 +115,7 @@ begin
 		variable cy    : std_logic_vector(bin'length-1 downto 0);
 	begin
 		if rising_edge(clk) then
+			shr0 := unsigned(ini_shr);
 			case state is
 			when s_init =>
 				if frm='1' then
@@ -128,10 +129,16 @@ begin
 			when s_run =>
 				if frm='1' then
 					shr1 := rotate_left(shr1, 1);
+				elsif shr1(0)='1' then
+					if frm='0' then
+						shr1 := (others => '0');
+						shr1(0) := '1';
+						state := s_init;
+					else
+						shr1 := rotate_left(shr1, 1);
+					end if;
 				else
-					shr1 := (others => '0');
-					shr1(0) := '1';
-					state := s_init;
+					shr1 := rotate_left(shr1, 1);
 				end if;
 			end case;
 			trdy <= shr1(0);
@@ -203,7 +210,7 @@ begin
 		type states is (s_init, s_run);
 		variable state : states;
 		variable shr  : unsigned(0 to bin'length-1);
-		variable cntr : integer range -1 to bin'length/bin_digits-1;
+		variable cntr : integer range -1 to bin'length/bin_digits-2;
 	begin
 		if rising_edge(clk) then
 			if (to_bit(req) xor to_bit(rdy))='1' then
@@ -212,7 +219,7 @@ begin
     				shr     := unsigned(bin);
     				ser_frm <= '1';
     				ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
-    				cntr    := bin'length/bin_digits-1;
+    				cntr    := bin'length/bin_digits-2;
 					trdy    <= '0';
 					state   := s_run;
     			when s_run =>
@@ -256,7 +263,7 @@ begin
 		clk  => clk,
 		ini  => ini,
 		frm  => ser_frm,
-		trdy  => ser_trdy,
+		trdy => ser_trdy,
 		bin  => ser_bin,
 		bcd  => bcd);
 end;
