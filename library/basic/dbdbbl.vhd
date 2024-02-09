@@ -80,7 +80,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-entity dbdbbl_ser is
+entity dbdbbl_ser1 is
 	generic (
 		bcd_digits : natural);
 	port (
@@ -96,7 +96,7 @@ entity dbdbbl_ser is
 	constant n : natural := bcd_length*bcd_digits;
 end;
 
-architecture beh of dbdbbl_ser is
+architecture beh of dbdbbl_ser1 is
 
 	signal bin_dbbl : std_logic_vector(bin'range);
 	signal ini_dbbl : std_logic_vector(n-1 downto 0);
@@ -180,7 +180,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-entity dbdbbl_seq is
+entity dbdbbl_seq1 is
 	generic (
 		bcd_digits : natural := 1;
 		bin_digits : natural := 3);
@@ -197,7 +197,7 @@ entity dbdbbl_seq is
 	constant bcd_length : natural := 4;
 end;
 
-architecture def of dbdbbl_seq is
+architecture def of dbdbbl_seq1 is
 	signal ser_frm  : std_logic;
 	signal ser_irdy : std_logic;
 	signal ser_trdy : std_logic;
@@ -254,7 +254,7 @@ begin
 
 	end process;
 
-	dbdbblser_e : entity hdl4fpga.dbdbbl_ser
+	dbdbblser_e : entity hdl4fpga.dbdbbl_ser1
 	generic map (
 		bcd_digits => bcd_digits)
 	port map (
@@ -273,7 +273,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-entity dbdbbl_ser1 is
+entity dbdbbl_ser is
 	generic (
 		bcd_width  : natural;
 		bcd_digits : natural);
@@ -290,7 +290,7 @@ entity dbdbbl_ser1 is
 	constant n : natural := bcd_length*bcd_digits;
 end;
 
-architecture beh of dbdbbl_ser1 is
+architecture beh of dbdbbl_ser is
 
 	signal bin_dbbl : std_logic_vector(bin'range);
 	signal ini_dbbl : std_logic_vector(n-1 downto 0);
@@ -304,7 +304,7 @@ begin
 		variable cntr : integer range -1 to bcd_width/bcd_digits-2;
 		variable cy   : std_logic_vector(bin'length-1 downto 0);
 		type ram is array (natural range <>) of std_logic_vector(0 to n-1);
-		variable mem : ram(0 to bcd_width/bcd_digits-1) := (others => (others => '0'));
+		variable mem : ram(0 to bcd_width/bcd_digits-1) := (others => (others => '-'));
 		variable init : boolean;
 	begin
 		if rising_edge(clk) then
@@ -379,7 +379,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-entity dbdbbl_seq1 is
+entity dbdbbl_seq is
 	generic (
 		bcd_width  : natural;
 		bcd_digits : natural := 1;
@@ -397,7 +397,7 @@ entity dbdbbl_seq1 is
 	constant bcd_length : natural := 4;
 end;
 
-architecture def of dbdbbl_seq1 is
+architecture def of dbdbbl_seq is
 	signal ser_frm  : std_logic;
 	signal ser_irdy : std_logic;
 	signal ser_trdy : std_logic;
@@ -454,7 +454,7 @@ begin
 
 	end process;
 
-	dbdbblser_e : entity hdl4fpga.dbdbbl_ser1
+	dbdbblser_e : entity hdl4fpga.dbdbbl_ser
 	generic map (
 		bcd_width  => bcd_width,
 		bcd_digits => bcd_digits)

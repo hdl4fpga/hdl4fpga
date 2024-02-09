@@ -49,7 +49,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-architecture dbdbbl_seq_tb of testbench is
+architecture dbdbbl_seq1_tb of testbench is
 	constant bcd_length : natural := 4;
 	constant bcd_digits : natural := 1;
 	constant bin_digits : natural := 3;
@@ -71,7 +71,7 @@ begin
 	end process;
 	req <= not to_stdulogic(to_bit(rdy));
 
-	du_e : entity hdl4fpga.dbdbbl_seq
+	du_e : entity hdl4fpga.dbdbbl_seq1
 	generic map (
 		bin_digits => bin_digits,
 		bcd_digits => bcd_digits)
@@ -96,7 +96,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-architecture dbdbbl_seq1_tb of testbench is
+architecture dbdbbl_seq_tb of testbench is
 	constant bcd_length : natural := 4;
 	constant bcd_digits : natural := 1;
 	constant bin_digits : natural := 3;
@@ -118,7 +118,7 @@ begin
 	end process;
 	req <= not to_stdulogic(to_bit(rdy));
 
-	du_e : entity hdl4fpga.dbdbbl_seq1
+	du_e : entity hdl4fpga.dbdbbl_seq
 	generic map (
 		bcd_width  => 5,
 		bin_digits => bin_digits,

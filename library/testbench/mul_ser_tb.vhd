@@ -30,7 +30,7 @@ use hdl4fpga.base.all;
 architecture mul_ser_tb of testbench is
 	signal clk : std_logic := '0';
 	signal ena : std_logic := '1';
-	signal bcd : std_logic_vector(0 to 5*4-1);
+	signal bcd : std_logic_vector(0 to 4-1);
 
 	signal a : std_logic_vector(4-1 downto 0) := b"0001";
 	signal b : std_logic_vector((5+8)-1 downto 0) := b"0000_0000_01001";
@@ -57,9 +57,7 @@ begin
 	end process;
 	dbdbbl_req <= to_stdulogic(to_bit(mul_rdy));
 	du_e : entity hdl4fpga.mul_ser
-	generic map (
-		lsb => true
-	)
+	generic map ( lsb => true)
 	port map (
 		clk => clk,
 		ena => ena,
@@ -72,6 +70,7 @@ begin
 	-- bin <= b"000_000_000_000_00_1001";
 	bin2bcd_e : entity hdl4fpga.dbdbbl_seq
 	generic map (
+		bcd_width => 5,
 		bcd_digits => 1)
 	port map (
 		clk  => clk,

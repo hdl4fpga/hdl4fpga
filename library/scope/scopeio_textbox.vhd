@@ -160,7 +160,7 @@ begin
 		constant bin_digits   : natural := 3;
 		constant bcd_length   : natural := 4;
 		constant bcd_digits   : natural := 1;
-		signal bcd            : std_logic_vector(0 to bcd_length*bcd_digits*((5+bcd_digits-1)/bcd_digits)-1);
+		signal bcd            : std_logic_vector(0 to bcd_length-1);
 		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+vt_scale'length+bin_digits-1)/bin_digits)-1);
 	begin
 
@@ -273,6 +273,7 @@ begin
 			dbdbbl_req <= mul_rdy;
 			bin2bcd_e : entity hdl4fpga.dbdbbl_seq
 			generic map (
+				bcd_width  => 5,
 				bcd_digits => bcd_digits)
 			port map (
 				clk  => rgtr_clk,
@@ -282,7 +283,7 @@ begin
 				bin  => bin,
 				bcd  => bcd);
 	
-			cga_code <= x"3" & bcd(0 to 4-1);
+			cga_code <= x"3" & bcd;
 			cga_we   <= dbdbbl_trdy;
 		end block;
 
