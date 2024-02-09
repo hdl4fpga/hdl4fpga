@@ -158,6 +158,7 @@ begin
 		signal tgr_scale      : std_logic_vector(4-1 downto 0);
 
 		constant bin_digits   : natural := 3;
+		constant bcd_width    : natural := 8;
 		constant bcd_length   : natural := 4;
 		constant bcd_digits   : natural := 1;
 		-- signal bcd            : std_logic_vector(0 to bcd_length*bcd_digits*((5+bcd_digits-1)/bcd_digits)-1);
@@ -274,7 +275,7 @@ begin
 			dbdbbl_req <= mul_rdy;
 			bin2bcd_e : entity hdl4fpga.dbdbbl_seq
 			generic map (
-				bcd_width => 5,
+				bcd_width => bcd_width,
 				bcd_digits => bcd_digits)
 			port map (
 				clk  => rgtr_clk,
@@ -299,7 +300,7 @@ begin
 						cga_addr <= cga_addr - 1;
 					end if;
 				else
-					cga_addr <= to_unsigned(5-1, cga_addr'length);
+					cga_addr <= to_unsigned(bcd_width-1, cga_addr'length);
 				end if;
 			end if;
 		end process;
