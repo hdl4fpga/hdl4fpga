@@ -88,3 +88,51 @@ begin
 	end process;
 
 end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library hdl4fpga;
+use hdl4fpga.base.all;
+
+architecture dbdbbl_seq1_tb of testbench is
+	constant bcd_length : natural := 4;
+	constant bcd_digits : natural := 1;
+	constant bin_digits : natural := 3;
+
+	signal clk  : std_logic := '0';
+	signal req  : std_logic := '0';
+	signal rdy  : std_logic := '1';
+	signal bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+begin
+	clk <= not clk after 1 ns;
+
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			if req='0' then
+				-- req <= '1';
+			end if;
+		end if;
+	end process;
+	req <= not to_stdulogic(to_bit(rdy));
+
+	du_e : entity hdl4fpga.dbdbbl_seq1
+	generic map (
+		bcd_width  => 5,
+		bin_digits => bin_digits,
+		bcd_digits => bcd_digits)
+	port map (
+		clk => clk,
+		req => req,
+		rdy => rdy,
+		bin => std_logic_vector(to_unsigned(32035,15)), -- b"1001110",
+		bcd => bcd);
+
+	process (bcd)
+	begin
+		-- report to_string(bcd);
+	end process;
+
+end;
