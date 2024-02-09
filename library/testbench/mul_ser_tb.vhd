@@ -28,22 +28,23 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 architecture mul_ser_tb of testbench is
-	signal clk : std_logic := '0';
-	signal ena : std_logic := '1';
-	signal bcd : std_logic_vector(0 to 4-1);
+	constant bin_digits : natural := 3;
+	constant bcd_length : natural := 4;
+	constant bcd_digits : natural := 1;
 
-	signal a : std_logic_vector(4-1 downto 0) := b"0001";
-	signal b : std_logic_vector((5+8)-1 downto 0) := b"0000_0000_01001";
+	signal clk         : std_logic := '0';
+	signal ena         : std_logic := '1';
+	signal bcd         : std_logic_vector(0 to 4-1);
+
 	signal mul_req     : std_logic := '0';
 	signal mul_rdy     : std_logic;
 	signal dbdbbl_req  : std_logic;
 	signal dbdbbl_rdy  : std_logic;
 	signal dbdbbl_trdy : std_logic;
 
-	constant bin_digits   : natural := 3;
-	constant bcd_length   : natural := 4;
-	constant bcd_digits   : natural := 1;
-	signal bin            : std_logic_vector(0 to bin_digits*((b'length+a'length+bin_digits-1)/bin_digits)-1);
+	signal a           : std_logic_vector(4-1 downto 0) := b"0111";
+	signal b           : std_logic_vector((5+8)-1 downto 0) := b"0100_0000_01001";
+	signal bin         : std_logic_vector(0 to bin_digits*((b'length+a'length+bin_digits-1)/bin_digits)-1);
 begin
 	clk <= not clk after 1 ns;
 
@@ -51,11 +52,11 @@ begin
 	begin
 		if rising_edge(clk) then
 			if mul_req='0' then
-				mul_req <= '1'; --not to_stdulogic(to_bit(mul_rdy));
+				-- mul_req <= '1'; --not to_stdulogic(to_bit(mul_rdy));
 			end if;
 		end if;
 	end process;
-	dbdbbl_req <= to_stdulogic(to_bit(mul_rdy));
+	mul_req <= not to_stdulogic(to_bit(dbdbbl_rdy));
 	du_e : entity hdl4fpga.mul_ser
 	generic map ( lsb => true)
 	port map (
@@ -67,7 +68,7 @@ begin
 		b   => b,
 		s   => bin);
 
-	-- bin <= b"000_000_000_000_00_1001";
+	dbdbbl_req <= to_stdulogic(to_bit(mul_rdy));
 	bin2bcd_e : entity hdl4fpga.dbdbbl_seq
 	generic map (
 		bcd_width => 5,

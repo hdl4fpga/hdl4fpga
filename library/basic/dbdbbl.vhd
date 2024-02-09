@@ -111,7 +111,7 @@ begin
 		variable cntr : integer range -1 to bcd'length/(bcd_digits*bcd_length)-2;
 		variable cy   : std_logic_vector(bin'length-1 downto 0);
 	begin
-		mem : if rising_edge(clk) then
+		ff_l : if rising_edge(clk) then
 			case state is
 			when s_init =>
 				if frm='1' then
@@ -145,7 +145,7 @@ begin
 			cy  := bcd_dbbl(bin'length+n-1 downto n);
 		end if;
 
-		comb : case state is
+		com_l : case state is
 		when s_init => 
 			ini_dbbl <= std_logic_vector(resize(rotate_left(resize(unsigned(ini), bcd'length), ini_dbbl'length), ini_dbbl'length));
 			bin_dbbl <= bin;
@@ -199,7 +199,6 @@ end;
 
 architecture def of dbdbbl_seq1 is
 	signal ser_frm  : std_logic;
-	signal ser_irdy : std_logic;
 	signal ser_trdy : std_logic;
 	signal ser_bin  : std_logic_vector(0 to bin_digits-1);
 begin
@@ -272,6 +271,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.base.all;
 
 entity dbdbbl_ser is
 	generic (
@@ -296,62 +296,60 @@ architecture beh of dbdbbl_ser is
 	signal ini_dbbl : std_logic_vector(n-1 downto 0);
 	signal bcd_dbbl : std_logic_vector(bin'length+n-1 downto 0);
 
+	constant addr_size : natural := unsigned_num_bits(bcd_width/bcd_digits-1);
+	signal addr        : std_logic_vector(1 to addr_size);
+	signal rd_data     : std_logic_vector(bcd'range);
+	signal init        : boolean;
 begin
 
-	process (bin, ini, clk)
+	mem_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => clk,
+		wr_addr => addr,
+		wr_data => bcd_dbbl(n-1 downto 0),
+		rd_addr => addr,
+		rd_data => rd_data);
+
+	process (bin, clk)
 		type states is (s_init, s_run);
 		variable state : states;
-		variable cntr : integer range -1 to bcd_width/bcd_digits-2;
-		variable cy   : std_logic_vector(bin'length-1 downto 0);
-		type ram is array (natural range <>) of std_logic_vector(0 to n-1);
-		variable mem : ram(0 to bcd_width/bcd_digits-1) := (others => (others => '-'));
-		variable init : boolean;
+		variable cntr  : unsigned(0 to addr'length);
+		variable cy    : std_logic_vector(bin'length-1 downto 0);
 	begin
-		if rising_edge(clk) then
+		ff_l : if rising_edge(clk) then
 			case state is
 			when s_init =>
 				if frm='1' then
-					mem(cntr mod mem'length) := bcd_dbbl(n-1 downto 0);
-					cntr := bcd_width/bcd_digits-2;
+					cntr := to_unsigned(bcd_width/bcd_digits-2, cntr'length);
 					state := s_run;
 				else
-					cntr := -1;
+					cntr := (others => '1');
 				end if;
-				init := true;
+				init <= true;
 			when s_run =>
-				mem(cntr mod mem'length) := bcd_dbbl(n-1 downto 0);
-				if cntr >= 0 then
+				if cntr(0)='0' then
 					cntr := cntr - 1;
+					if cntr(0)='1' then
+						init <= false;
+					end if;
 				elsif frm='1' then
-					cntr := bcd_width/bcd_digits-2;
+					cntr := to_unsigned(bcd_width/bcd_digits-2, cntr'length);
 				else
-					init := false;
+					init  <= true;
 					state := s_init;
 				end if;
-				if cntr < 0 then
-					init := false;
-				end if;
 			end case;
-			if cntr < 0 then
-				trdy <= '1';
-			else
-				trdy <= '0';
-			end if;
-			cy  := bcd_dbbl(bin'length+n-1 downto n);
-			bcd <= bcd_dbbl(n-1 downto 0);
+			trdy <= cntr(0);
+			cy   := bcd_dbbl(bin'length+n-1 downto n);
+			bcd  <= bcd_dbbl(n-1 downto 0);
+			addr <= std_logic_vector(cntr(addr'range));
 		end if;
 
-		if init then
-			ini_dbbl <= std_logic_vector(resize(unsigned(ini), ini_dbbl'length));
-		else
-			ini_dbbl <= mem(cntr mod mem'length);
-		end if;
-
-		case state is
+		comb_l : case state is
 		when s_init => 
 			bin_dbbl <= bin;
 		when s_run => 
-			if cntr < 0 then
+			if cntr(0)='1' then
 				bin_dbbl <= bin;
 			else
 				bin_dbbl <= cy;
@@ -359,6 +357,10 @@ begin
 		end case;
 
 	end process;
+
+	ini_dbbl <= 
+		std_logic_vector(resize(unsigned(ini), ini_dbbl'length)) when init else
+		rd_data;
 
 	dbdbbl_e : entity hdl4fpga.dbdbbl
 	port map (
@@ -372,6 +374,9 @@ begin
 		severity failure;
 
 end;
+
+-- Lattice Diamond wrong synthesis 
+-- https://github.com/hdl4fpga/hdl4fpga/blob/ba3f85bc17be9a722309060171e843c23c38b3a1/library/basic/dbdbbl.vhd#L276
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -399,7 +404,6 @@ end;
 
 architecture def of dbdbbl_seq is
 	signal ser_frm  : std_logic;
-	signal ser_irdy : std_logic;
 	signal ser_trdy : std_logic;
 	signal ser_bin  : std_logic_vector(0 to bin_digits-1);
 begin
