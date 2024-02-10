@@ -935,6 +935,8 @@ $(HDL4FPGA__dbdbbl_seq) \
 $(HDL4FPGA__dbdbbl_seq__def) \
 $(HDL4FPGA__dbdbbl_ser) \
 $(HDL4FPGA__dbdbbl_ser__beh) : ../basic/dbdbbl.vhd \
+		$(HDL4FPGA__dpram) \
+		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)

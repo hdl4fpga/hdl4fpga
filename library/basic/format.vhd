@@ -29,18 +29,37 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 entity format is
+	generic (
+		bcd_width  : natural);
 	port (
-		code_blank : in  std_logic_vector := to_ascii(" ");
-		code_tab   : in  std_logic_vector := to_ascii("0123456789");
-		bcd        : in  std_logic_vector;
-		code       : out std_logic_vector);
+		tab  : in  std_logic_vector := to_ascii("0123456789 ");
+		clk  : in  std_logic;
+		frm  : in  std_logic;
+		irdy : in  std_logic := '1';
+		trdy : buffer std_logic := '1';
+		bcd  : in  std_logic_vector;
+		code : out std_logic_vector);
 
 	constant bcd_length  : natural := 4;
 	constant code_length : natural := code'length*bcd_length/bcd'length;
 end;
 
 architecture def of format is
+	constant addr_size : natural := unsigned_num_bits(bcd_width/bcd_digits-1);
+	signal wr_addr  : std_logic_vector(1 to addr_size);
+	signal wr_data  : std_logic_vector(bcd'range);
+	signal rd_addr  : std_logic_vector(1 to addr_size);
+	signal rd_data  : std_logic_vector(bcd'range);
 begin
+
+	mem_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => clk,
+		wr_addr => wr_addr,
+		wr_data => wr_data,
+		rd_addr => rd_addr,
+		rd_data => rd_data);
+
 	process (code_blank, code_tab, bcd)
 		variable bcd_shr  : unsigned(0 to bcd'length-1);
 		variable code_shr : unsigned(0 to code'length-1);

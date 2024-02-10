@@ -80,7 +80,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-entity dbdbbl_ser1 is
+entity dbdbbl_shr is
 	generic (
 		bcd_digits : natural);
 	port (
@@ -96,7 +96,7 @@ entity dbdbbl_ser1 is
 	constant n : natural := bcd_length*bcd_digits;
 end;
 
-architecture beh of dbdbbl_ser1 is
+architecture beh of dbdbbl_shr is
 
 	signal bin_dbbl : std_logic_vector(bin'range);
 	signal ini_dbbl : std_logic_vector(n-1 downto 0);
@@ -180,7 +180,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-entity dbdbbl_seq1 is
+entity dbdbbl_seqshr is
 	generic (
 		bcd_digits : natural := 1;
 		bin_digits : natural := 3);
@@ -197,7 +197,7 @@ entity dbdbbl_seq1 is
 	constant bcd_length : natural := 4;
 end;
 
-architecture def of dbdbbl_seq1 is
+architecture def of dbdbbl_seqshr is
 	signal ser_frm  : std_logic;
 	signal ser_trdy : std_logic;
 	signal ser_bin  : std_logic_vector(0 to bin_digits-1);
@@ -253,7 +253,7 @@ begin
 
 	end process;
 
-	dbdbblser_e : entity hdl4fpga.dbdbbl_ser1
+	dbdbblser_e : entity hdl4fpga.dbdbbl_shr
 	generic map (
 		bcd_digits => bcd_digits)
 	port map (
