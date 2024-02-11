@@ -32,16 +32,22 @@ entity format is
 	generic (
 		bcd_width  : natural);
 	port (
-		tab  : in  std_logic_vector := to_ascii("0123456789 ");
+		tab  : in  std_logic_vector := to_ascii("0123456789 +-");
 		clk  : in  std_logic;
 		frm  : in  std_logic;
 		irdy : in  std_logic := '1';
 		trdy : buffer std_logic := '1';
+		neg  : in  std_logic;
+		sign : in  std_logic;
 		bcd  : in  std_logic_vector;
 		code : out std_logic_vector);
 
-	constant bcd_length  : natural := 4;
-	constant blank : natural := 10;
+	constant bcd_length : natural := 4;
+	constant bcd_digits : natural := 1;
+	constant blank      : natural := 10;
+	constant plus       : natural := 11;
+	constant minus      : natural := 12;
+
 end;
 
 -- Combinatorial version
@@ -53,6 +59,9 @@ architecture def of format is
 	signal bcd_wrdata  : std_logic_vector(bcd'range);
 	signal bcd_rdaddr  : std_logic_vector(1 to addr_size);
 	signal bcd_rddata  : std_logic_vector(bcd'range);
+
+	signal code_req    : std_logic;
+	signal code_rdy    : std_logic;
 
 	signal code_wraddr : std_logic_vector(1 to addr_size);
 	signal code_wrdata : std_logic_vector(code'range);
@@ -77,7 +86,7 @@ begin
 		rd_data => code_rddata);
 
 	bcd_write_p : process (clk)
-		type states is (s_nozero, s_sign, s_blanked);
+		type states is (s_nozero);
 		variable state : states;
 		variable bcd_wrcntr : unsigned(0 to addr_size);
 	begin
@@ -87,17 +96,18 @@ begin
 					bcd_wrcntr := bcd_wrcntr + 1;
 					if bcd/=x"0" then
 					end if;
-					case state is
-					when =>
-						:= bcd_wrcntr;
-					when s_nozero =>
-					end case;
+					-- case state is
+					-- when =>
+						-- := bcd_wrcntr;
+					-- when s_nozero =>
+					-- end case;
 				end if;
 			else
 				bcd_wrcntr := (others => '1');
 			end if;
 			bcd_wraddr <= std_logic_vector(bcd_wrcntr);
 		end if;
+	end process;
 
 	bcd_read_p : process (clk)
 		type states is (s_blank, s_sign, s_blanked);
@@ -120,27 +130,30 @@ begin
 
 				case state is
 				when s_blank =>
-					if bcd_rdata=x"0" then
+					if bcd_rddata=x"0" then
 						code_wrdata <= multiplex(tab, blank, code'length);
 						code_wraddr <= std_logic_vector(bcd_rdaddr);
 						bcd_rdaddr  <= std_logic_vector(bcd_rdcntr);
-					else
-						code_wrdata <= multiplex(tab, sign, code'length);
+					elsif neg='1' then
+						code_wrdata <= multiplex(tab, minus, code'length);
+						state := s_sign;
+					elsif sign='1' then
+						code_wrdata <= multiplex(tab, plus, code'length);
 						state := s_sign;
 					end if;
 				when s_sign =>
-					code_wrdata <= multiplex(tab, bcd_rdata, code'length);
+					code_wrdata <= multiplex(tab, bcd_rddata, code'length);
 					code_wraddr <= std_logic_vector(bcd_rdaddr);
 					bcd_rdaddr  <= std_logic_vector(bcd_rdcntr);
 					state := s_blanked;
 				when s_blanked =>
-					code_wrdata <= multiplex(tab, bcd_rdata, code'length);
+					code_wrdata <= multiplex(tab, bcd_rddata, code'length);
 					code_wraddr <= std_logic_vector(bcd_rdaddr);
 					bcd_rdaddr  <= std_logic_vector(bcd_rdcntr);
 				end case;
 
 			else
-				bcd_rdcntr := bcd_wrrcntr;
+				bcd_rdcntr := unsigned(bcd_wraddr);
 				bcd_rdaddr <= std_logic_vector(bcd_rdcntr);
 			end if;
 		else
