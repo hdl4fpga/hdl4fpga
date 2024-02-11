@@ -32,7 +32,7 @@ entity format is
 	generic (
 		bcd_width  : natural);
 	port (
-		tab  : in  std_logic_vector := to_ascii("0123456789 +-");
+		tab  : in  std_logic_vector := to_ascii("0123456789 +-,.");
 		clk  : in  std_logic;
 		frm  : in  std_logic;
 		irdy : in  std_logic := '1';
@@ -44,9 +44,12 @@ entity format is
 
 	constant bcd_length : natural := 4;
 	constant bcd_digits : natural := 1;
+
 	constant blank      : natural := 10;
 	constant plus       : natural := 11;
 	constant minus      : natural := 12;
+	constant comma      : natural := 13;
+	constant dot        : natural := 14;
 
 end;
 
@@ -67,22 +70,6 @@ architecture def of format is
 	signal code_rdaddr : std_logic_vector(1 to addr_size);
 	signal code_rddata : std_logic_vector(code'range);
 begin
-
-	bcdmem_e : entity hdl4fpga.dpram
-	port map (
-		wr_clk  => clk,
-		wr_addr => bcd_wraddr,
-		wr_data => bcd,
-		rd_addr => bcd_rdaddr,
-		rd_data => bcd_rddata);
-
-	codemem_e : entity hdl4fpga.dpram
-	port map (
-		wr_clk  => clk,
-		wr_addr => code_wraddr,
-		wr_data => code_wrdata,
-		rd_addr => code_rdaddr,
-		rd_data => code_rddata);
 
 	bcd_write_p : process (clk)
 		variable bcd_req    : std_logic;
@@ -106,6 +93,14 @@ begin
 			bcd_wraddr <= std_logic_vector(bcd_wrcntr(bcd_wraddr'range));
 		end if;
 	end process;
+
+	bcdmem_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => clk,
+		wr_addr => bcd_wraddr,
+		wr_data => bcd,
+		rd_addr => bcd_rdaddr,
+		rd_data => bcd_rddata);
 
 	bcd_read_p : process (code_rdy, clk)
 		type states is (s_blank, s_sign, s_blanked);
@@ -161,5 +156,13 @@ begin
 			end if;
 		end if;
 	end process;
+
+	codemem_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => clk,
+		wr_addr => code_wraddr,
+		wr_data => code_wrdata,
+		rd_addr => code_rdaddr,
+		rd_data => code_rddata);
 
 end;
