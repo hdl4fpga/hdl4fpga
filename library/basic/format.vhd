@@ -76,18 +76,22 @@ begin
 		rd_addr => code_rdaddr,
 		rd_data => code_rddata);
 
-	process (clk)
-		variable bcd_wrcntr : unsigned(0 to addr_size);
-		variable bcd_rdcntr : unsigned(0 to addr_size);
-		variable bcd_last   : std_logic_vector(bcd_rddata'range);
-
-		type states is (s_blank, s_sign, s_blanked);
+	bcd_write_p : process (clk)
+		type states is (s_nozero, s_sign, s_blanked);
 		variable state : states;
+		variable bcd_wrcntr : unsigned(0 to addr_size);
 	begin
-		bcd_write_l : if rising_edge(clk) then
+		if rising_edge(clk) then
 			if frm='1' then
 				if irdy='1' then
 					bcd_wrcntr := bcd_wrcntr + 1;
+					if bcd/=x"0" then
+					end if;
+					case state is
+					when =>
+						:= bcd_wrcntr;
+					when s_nozero =>
+					end case;
 				end if;
 			else
 				bcd_wrcntr := (others => '1');
@@ -95,14 +99,24 @@ begin
 			bcd_wraddr <= std_logic_vector(bcd_wrcntr);
 		end if;
 
-		bcd_read_l : if rising_edge(clk) then
+	bcd_read_p : process (clk)
+		type states is (s_blank, s_sign, s_blanked);
+		variable state : states;
+
+		variable bcd_rdcntr : unsigned(0 to addr_size);
+	begin
+		if rising_edge(clk) then
 			if (to_bit(code_rdy) xor to_bit(code_req))='1' then
 
-				if state/=s_sign then
+				case state is
+				when s_sign =>
+				when others =>
 					if bcd_rdcntr(0)='0' then
 						bcd_rdcntr := bcd_rdcntr - 1;
+					else
+						code_rdy <= to_stdulogic(to_bit(code_req));
 					end if;
-				end if;
+				end case;
 
 				case state is
 				when s_blank =>
@@ -120,12 +134,17 @@ begin
 					bcd_rdaddr  <= std_logic_vector(bcd_rdcntr);
 					state := s_blanked;
 				when s_blanked =>
+					code_wrdata <= multiplex(tab, bcd_rdata, code'length);
+					code_wraddr <= std_logic_vector(bcd_rdaddr);
+					bcd_rdaddr  <= std_logic_vector(bcd_rdcntr);
 				end case;
+
 			else
 				bcd_rdcntr := bcd_wrrcntr;
 				bcd_rdaddr <= std_logic_vector(bcd_rdcntr);
 			end if;
-
+		else
+			state := s_blank;
 		end if;
 	end process;
 
