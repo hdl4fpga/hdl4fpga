@@ -24,12 +24,14 @@ HDL4FPGA__hdlcdll_rx = $(LIB_HDL4FPGA)/hdlcdll_rx/_primary.dat
 HDL4FPGA__eth_tb = $(LIB_HDL4FPGA)/eth_tb/_primary.dat
 HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
 MICRON__ddr_model = $(LIB_MICRON)/ddr_model/_primary.dat
+HDL4FPGA__dbdbbl_seqshr = $(LIB_HDL4FPGA)/dbdbbl_seqshr/_primary.dat
+HDL4FPGA__dbdbbl = $(LIB_HDL4FPGA)/dbdbbl/_primary.dat
 HDL4FPGA__mul_ser = $(LIB_HDL4FPGA)/mul_ser/_primary.dat
 HDL4FPGA__dbdbbl_seq = $(LIB_HDL4FPGA)/dbdbbl_seq/_primary.dat
-HDL4FPGA__dbdbbl_ser = $(LIB_HDL4FPGA)/dbdbbl_ser/_primary.dat
-HDL4FPGA__dbdbbl = $(LIB_HDL4FPGA)/dbdbbl/_primary.dat
+HDL4FPGA__format = $(LIB_HDL4FPGA)/format/_primary.dat
 IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
 MICRON__ddr2 = $(LIB_MICRON)/ddr2/_primary.dat
+HDL4FPGA__dbdbbl_ser = $(LIB_HDL4FPGA)/dbdbbl_ser/_primary.dat
 HDL4FPGA__tx_manchester = $(LIB_HDL4FPGA)/tx_manchester/_primary.dat
 HDL4FPGA__rx_manchester = $(LIB_HDL4FPGA)/rx_manchester/_primary.dat
 HDL4FPGA__jso = $(LIB_HDL4FPGA)/jso/_primary.dat
@@ -91,11 +93,12 @@ WORK__ulx3s__ser_debug = $(LIB_WORK)/ulx3s/ser_debug.dat
 WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s__scopeio = $(LIB_WORK)/ulx3s/scopeio.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
+WORK__testbench__manchester = $(LIB_WORK)/testbench/manchester.dat
+WORK__testbench__dbdbbl_ser_tb = $(LIB_WORK)/testbench/dbdbbl_ser_tb.dat
 WORK__testbench__ulx4mls_graphics = $(LIB_WORK)/testbench/ulx4mls_graphics.dat
 WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
 WORK__testbench__ulx3s_scopeio = $(LIB_WORK)/testbench/ulx3s_scopeio.dat
 WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
-WORK__testbench__manchester = $(LIB_WORK)/testbench/manchester.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench__ecp3versa_graphics = $(LIB_WORK)/testbench/ecp3versa_graphics.dat
 WORK__testbench__ml509_graphics = $(LIB_WORK)/testbench/ml509_graphics.dat
@@ -105,10 +108,11 @@ WORK__testbench__usbfrwk = $(LIB_WORK)/testbench/usbfrwk.dat
 WORK__testbench__orangecrab_graphics = $(LIB_WORK)/testbench/orangecrab_graphics.dat
 WORK__testbench__ulx3s_serdebug = $(LIB_WORK)/testbench/ulx3s_serdebug.dat
 WORK__testbench__arty_graphics = $(LIB_WORK)/testbench/arty_graphics.dat
-WORK__testbench__dbdbbl_tb = $(LIB_WORK)/testbench/dbdbbl_tb.dat
-WORK__testbench__dbdbbl_ser_tb = $(LIB_WORK)/testbench/dbdbbl_ser_tb.dat
-WORK__testbench__dbdbbl_seq_tb = $(LIB_WORK)/testbench/dbdbbl_seq_tb.dat
+WORK__testbench__format_tb = $(LIB_WORK)/testbench/format_tb.dat
 WORK__testbench__mul_ser_tb = $(LIB_WORK)/testbench/mul_ser_tb.dat
+WORK__testbench__dbdbbl_tb = $(LIB_WORK)/testbench/dbdbbl_tb.dat
+WORK__testbench__dbdbbl_seqshr_tb = $(LIB_WORK)/testbench/dbdbbl_seqshr_tb.dat
+WORK__testbench__dbdbbl_seq_tb = $(LIB_WORK)/testbench/dbdbbl_seq_tb.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__s3estarter_structure_md = $(LIB_WORK)/s3estarter_structure_md/_primary.dat
 WORK__s3estarter_graphics_md = $(LIB_WORK)/s3estarter_graphics_md/_primary.dat
@@ -157,11 +161,12 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__ulx3s__graphics) \
     $(WORK__ulx3s__scopeio) \
     $(WORK__ulx3s) \
+    $(WORK__testbench__manchester) \
+    $(WORK__testbench__dbdbbl_ser_tb) \
     $(WORK__testbench__ulx4mls_graphics) \
     $(WORK__testbench__ulx4mld_graphics) \
     $(WORK__testbench__ulx3s_scopeio) \
     $(WORK__testbench__ulx3s_graphics) \
-    $(WORK__testbench__manchester) \
     $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench__ecp3versa_graphics) \
     $(WORK__testbench__ml509_graphics) \
@@ -171,10 +176,11 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__testbench__orangecrab_graphics) \
     $(WORK__testbench__ulx3s_serdebug) \
     $(WORK__testbench__arty_graphics) \
-    $(WORK__testbench__dbdbbl_tb) \
-    $(WORK__testbench__dbdbbl_ser_tb) \
-    $(WORK__testbench__dbdbbl_seq_tb) \
+    $(WORK__testbench__format_tb) \
     $(WORK__testbench__mul_ser_tb) \
+    $(WORK__testbench__dbdbbl_tb) \
+    $(WORK__testbench__dbdbbl_seqshr_tb) \
+    $(WORK__testbench__dbdbbl_seq_tb) \
     $(WORK__testbench) \
     $(WORK__s3estarter_structure_md) \
     $(WORK__s3estarter_graphics_md) \
@@ -326,18 +332,15 @@ $(WORK__testbench__mul_ser_tb) : mul_ser_tb.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 mul_ser_tb.vhd
 
-$(WORK__testbench__dbdbbl_seq_tb) \
-$(WORK__testbench__dbdbbl_ser_tb) \
-$(WORK__testbench__dbdbbl_tb) : dbdbbl_tb.vhd \
+$(WORK__testbench__format_tb) : format_tb.vhd \
+		$(HDL4FPGA__format) \
 		$(HDL4FPGA__dbdbbl_seq) \
-		$(HDL4FPGA__dbdbbl_ser) \
-		$(HDL4FPGA__dbdbbl) \
 		$(WORK__testbench) \
 		$(IEEE__numeric_std) \
 		$(HDL4FPGA__base) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 dbdbbl_tb.vhd
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002  format_tb.vhd
 
 $(WORK__arty_graphics_md) \
 $(WORK__arty_graphics_structure_md) \
@@ -470,6 +473,21 @@ $(WORK__testbench__nuhs3adsp_graphics) : /home/msagre/work/hdl4fpga/boards/nuhs3
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 /home/msagre/work/hdl4fpga/boards/nuhs3adsp/testbenches/graphics.vhd
+
+$(WORK__testbench__dbdbbl_seq_tb) \
+$(WORK__testbench__dbdbbl_seqshr_tb) \
+$(WORK__testbench__dbdbbl_tb) \
+$(WORK__testbench__dbdbbl_ser_tb) : dbdbbl_tb.vhd \
+		$(HDL4FPGA__dbdbbl_seq) \
+		$(HDL4FPGA__dbdbbl_seqshr) \
+		$(HDL4FPGA__dbdbbl) \
+		$(HDL4FPGA__dbdbbl_ser) \
+		$(WORK__testbench) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 dbdbbl_tb.vhd
 
 $(WORK__testbench__manchester) : /home/msagre/work/hdl4fpga/library/testbench/manchester.vhd \
 		$(HDL4FPGA__rx_manchester) \

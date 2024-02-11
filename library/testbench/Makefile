@@ -246,6 +246,8 @@ HDL4FPGA__g4_phdata270__inference = $(LIB_HDL4FPGA)/g4_phdata270/inference.dat
 HDL4FPGA__g4_phdata270 = $(LIB_HDL4FPGA)/g4_phdata270/_primary.dat
 HDL4FPGA__g4_phdata__inference = $(LIB_HDL4FPGA)/g4_phdata/inference.dat
 HDL4FPGA__g4_phdata = $(LIB_HDL4FPGA)/g4_phdata/_primary.dat
+HDL4FPGA__format__def = $(LIB_HDL4FPGA)/format/def.dat
+HDL4FPGA__format = $(LIB_HDL4FPGA)/format/_primary.dat
 HDL4FPGA__fifo__def = $(LIB_HDL4FPGA)/fifo/def.dat
 HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
 HDL4FPGA__ethpkg__body = $(LIB_HDL4FPGA)/ethpkg/body.dat
@@ -298,8 +300,12 @@ HDL4FPGA__dhcpc_dscb__def = $(LIB_HDL4FPGA)/dhcpc_dscb/def.dat
 HDL4FPGA__dhcpc_dscb = $(LIB_HDL4FPGA)/dhcpc_dscb/_primary.dat
 HDL4FPGA__desser__mux = $(LIB_HDL4FPGA)/desser/mux.dat
 HDL4FPGA__desser = $(LIB_HDL4FPGA)/desser/_primary.dat
+HDL4FPGA__dbdbbl_shr__beh = $(LIB_HDL4FPGA)/dbdbbl_shr/beh.dat
+HDL4FPGA__dbdbbl_shr = $(LIB_HDL4FPGA)/dbdbbl_shr/_primary.dat
 HDL4FPGA__dbdbbl_ser__beh = $(LIB_HDL4FPGA)/dbdbbl_ser/beh.dat
 HDL4FPGA__dbdbbl_ser = $(LIB_HDL4FPGA)/dbdbbl_ser/_primary.dat
+HDL4FPGA__dbdbbl_seqshr__def = $(LIB_HDL4FPGA)/dbdbbl_seqshr/def.dat
+HDL4FPGA__dbdbbl_seqshr = $(LIB_HDL4FPGA)/dbdbbl_seqshr/_primary.dat
 HDL4FPGA__dbdbbl_seq__def = $(LIB_HDL4FPGA)/dbdbbl_seq/def.dat
 HDL4FPGA__dbdbbl_seq = $(LIB_HDL4FPGA)/dbdbbl_seq/_primary.dat
 HDL4FPGA__dbdbbl__def = $(LIB_HDL4FPGA)/dbdbbl/def.dat
@@ -586,6 +592,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__g4_phdata270) \
     $(HDL4FPGA__g4_phdata__inference) \
     $(HDL4FPGA__g4_phdata) \
+    $(HDL4FPGA__format__def) \
+    $(HDL4FPGA__format) \
     $(HDL4FPGA__fifo__def) \
     $(HDL4FPGA__fifo) \
     $(HDL4FPGA__ethpkg__body) \
@@ -638,8 +646,12 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__dhcpc_dscb) \
     $(HDL4FPGA__desser__mux) \
     $(HDL4FPGA__desser) \
+    $(HDL4FPGA__dbdbbl_shr__beh) \
+    $(HDL4FPGA__dbdbbl_shr) \
     $(HDL4FPGA__dbdbbl_ser__beh) \
     $(HDL4FPGA__dbdbbl_ser) \
+    $(HDL4FPGA__dbdbbl_seqshr__def) \
+    $(HDL4FPGA__dbdbbl_seqshr) \
     $(HDL4FPGA__dbdbbl_seq__def) \
     $(HDL4FPGA__dbdbbl_seq) \
     $(HDL4FPGA__dbdbbl__def) \
@@ -933,8 +945,12 @@ $(HDL4FPGA__dbdbbl) \
 $(HDL4FPGA__dbdbbl__def) \
 $(HDL4FPGA__dbdbbl_seq) \
 $(HDL4FPGA__dbdbbl_seq__def) \
+$(HDL4FPGA__dbdbbl_seqshr) \
+$(HDL4FPGA__dbdbbl_seqshr__def) \
 $(HDL4FPGA__dbdbbl_ser) \
-$(HDL4FPGA__dbdbbl_ser__beh) : ../basic/dbdbbl.vhd \
+$(HDL4FPGA__dbdbbl_ser__beh) \
+$(HDL4FPGA__dbdbbl_shr) \
+$(HDL4FPGA__dbdbbl_shr__beh) : ../basic/dbdbbl.vhd \
 		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -1199,6 +1215,15 @@ $(HDL4FPGA__fifo__def) : ../basic/fifo.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/fifo.vhd
+
+$(HDL4FPGA__format) \
+$(HDL4FPGA__format__def) : ../basic/format.vhd \
+		$(HDL4FPGA__dpram) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../basic/format.vhd
 
 $(HDL4FPGA__graphics) \
 $(HDL4FPGA__graphics__def) : ../video/graphics.vhd \

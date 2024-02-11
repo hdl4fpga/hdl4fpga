@@ -30,11 +30,52 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 architecture format_tb of testbench is
-    signal code : std_logic_vector(0 to 8*5-1);
+	constant bcd_length : natural := 4;
+	constant bcd_digits : natural := 1;
+	constant bin_digits : natural := 3;
+
+	signal clk  : std_logic := '0';
+	signal dbdbbl_req  : std_logic := '0';
+	signal dbdbbl_rdy  : std_logic := '1';
+	signal format_req  : std_logic := '0';
+	signal format_rdy  : std_logic := '1';
+	signal bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+    signal frm  : std_logic;
+
+    signal code : std_logic_vector(0 to 8-1);
 begin
-    du_e : entity work.format
+
+	clk <= not clk after 1 ns;
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			if dbdbbl_req='0' then
+				dbdbbl_req <= '1';
+			end if;
+		end if;
+	end process;
+	-- dbdbbl_req <= not to_stdulogic(to_bit(dbdbbl_rdy));
+
+	dbdbbl_seq_e : entity hdl4fpga.dbdbbl_seq
+	generic map (
+		bcd_width  => 5,
+		bin_digits => bin_digits,
+		bcd_digits => bcd_digits)
+	port map (
+		clk => clk,
+		req => dbdbbl_req,
+		rdy => dbdbbl_rdy,
+		bin => std_logic_vector(to_unsigned(32035,15)), -- b"1001110",
+		trdy => frm,
+		bcd => bcd);
+
+    du_e : entity hdl4fpga.format
+    generic map (
+        bcd_width => 5)
     port map (
-        bcd => x"00145",
+        clk  => clk,
+        frm  => frm,
+        bcd  => bcd,
         code => code);
 
     process 
