@@ -34,6 +34,8 @@ entity format is
 	port (
 		tab  : in  std_logic_vector := to_ascii("0123456789 +-,.");
 		clk  : in  std_logic;
+		req  : in  std_logic := '0';
+		rdy  : buffer std_logic;
 		frm  : in  std_logic;
 		irdy : in  std_logic := '1';
 		trdy : buffer std_logic := '1';
@@ -45,11 +47,11 @@ entity format is
 	constant bcd_length : natural := 4;
 	constant bcd_digits : natural := 1;
 
-	constant blank      : natural := 10;
-	constant plus       : natural := 11;
-	constant minus      : natural := 12;
-	constant comma      : natural := 13;
-	constant dot        : natural := 14;
+	constant blank      : std_logic_vector(0 to bcd_length-1) := x"a";
+	constant plus       : std_logic_vector(0 to bcd_length-1) := x"b";
+	constant minus      : std_logic_vector(0 to bcd_length-1) := x"c";
+	constant comma      : std_logic_vector(0 to bcd_length-1) := x"d";
+	constant dot        : std_logic_vector(0 to bcd_length-1) := x"e";
 
 end;
 
@@ -62,13 +64,13 @@ architecture def of format is
 	signal bcd_rdaddr  : std_logic_vector(1 to addr_size);
 	signal bcd_rddata  : std_logic_vector(bcd'range);
 
-	signal code_req    : std_logic;
-	signal code_rdy    : std_logic;
+	signal fmt_req    : std_logic;
+	signal fmt_rdy    : std_logic;
 
-	signal code_wraddr : std_logic_vector(1 to addr_size);
-	signal code_wrdata : std_logic_vector(code'range);
-	signal code_rdaddr : std_logic_vector(1 to addr_size);
-	signal code_rddata : std_logic_vector(code'range);
+	signal fmt_wraddr : std_logic_vector(1 to addr_size);
+	signal fmt_wrdata : std_logic_vector(bcd'range);
+	signal fmt_rdaddr : std_logic_vector(1 to addr_size);
+	signal fmt_rddata : std_logic_vector(bcd'range);
 begin
 
 	bcd_write_p : process (clk)
@@ -77,7 +79,7 @@ begin
 		variable bcd_wrcntr : unsigned(0 to addr_size);
 	begin
 		if rising_edge(clk) then
-			if (to_bit(code_req) xor to_bit(code_rdy))='0' then
+			if (to_bit(fmt_req) xor to_bit(fmt_rdy))='0' then
 				if to_bit(frm)='1' then
 					if irdy='1' then
 						bcd_wrcntr := bcd_wrcntr + 1;
@@ -85,7 +87,7 @@ begin
 					bcd_req := not to_stdulogic(to_bit(bcd_rdy));
 				elsif (to_bit(bcd_req) xor to_bit(bcd_rdy))='1' then
 					bcd_rdy := bcd_req;
-					code_req <= not to_stdulogic(to_bit(code_rdy));
+					fmt_req <= not to_stdulogic(to_bit(fmt_rdy));
 				else
 					bcd_wrcntr := (others => '1');
 				end if;
@@ -102,14 +104,14 @@ begin
 		rd_addr => bcd_rdaddr,
 		rd_data => bcd_rddata);
 
-	bcd_read_p : process (code_rdy, clk)
+	bcd_read_p : process (fmt_rdy, clk)
 		type states is (s_blank, s_sign, s_blanked);
 		variable state : states;
 
 		variable bcd_rdcntr : unsigned(0 to addr_size);
 	begin
 		if rising_edge(clk) then
-			if (to_bit(code_rdy) xor to_bit(code_req))='1' then
+			if (to_bit(fmt_rdy) xor to_bit(fmt_req))='1' then
 
 				case state is
 				when s_sign =>
@@ -117,36 +119,36 @@ begin
 					if bcd_rdcntr(0)='0' then
 						bcd_rdcntr := bcd_rdcntr - 1;
 					else
-						code_rdy <= to_stdulogic(to_bit(code_req));
+						fmt_rdy <= to_stdulogic(to_bit(fmt_req));
 					end if;
 				end case;
 
 				case state is
 				when s_blank =>
 					if bcd_rddata=x"0" then
-						code_wraddr <= std_logic_vector(bcd_rdaddr);
-						code_wrdata <= multiplex(tab, blank, code'length);
+						fmt_wraddr <= std_logic_vector(bcd_rdaddr);
+						fmt_wrdata <= multiplex(tab, blank, bcd'length);
 						bcd_rdaddr  <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
 					elsif neg='1' then
-						code_wrdata <= multiplex(tab, minus, code'length);
+						fmt_wrdata <= multiplex(tab, minus, bcd'length);
 						state := s_sign;
 					elsif sign='1' then
-						code_wrdata <= multiplex(tab, plus, code'length);
+						fmt_wrdata <= multiplex(tab, plus, bcd'length);
 						state := s_sign;
 					else 
-						code_wraddr <= std_logic_vector(bcd_rdaddr);
-						code_wrdata <= multiplex(tab, bcd_rddata, code'length);
+						fmt_wraddr <= std_logic_vector(bcd_rdaddr);
+						fmt_wrdata <= multiplex(tab, bcd_rddata, bcd'length);
 						bcd_rdaddr  <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
 						state := s_blanked;
 					end if;
 				when s_sign =>
-					code_wrdata <= multiplex(tab, bcd_rddata, code'length);
-					code_wraddr <= std_logic_vector(bcd_rdaddr);
+					fmt_wrdata <= multiplex(tab, bcd_rddata, bcd'length);
+					fmt_wraddr <= std_logic_vector(bcd_rdaddr);
 					bcd_rdaddr  <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
 					state := s_blanked;
 				when s_blanked =>
-					code_wrdata <= multiplex(tab, bcd_rddata, code'length);
-					code_wraddr <= std_logic_vector(bcd_rdaddr);
+					fmt_wrdata <= multiplex(tab, bcd_rddata, bcd'length);
+					fmt_wraddr <= std_logic_vector(bcd_rdaddr);
 					bcd_rdaddr  <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
 				end case;
 			else
@@ -157,12 +159,19 @@ begin
 		end if;
 	end process;
 
-	codemem_e : entity hdl4fpga.dpram
+	fmtmem_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => clk,
-		wr_addr => code_wraddr,
-		wr_data => code_wrdata,
-		rd_addr => code_rdaddr,
-		rd_data => code_rddata);
+		wr_addr => fmt_wraddr,
+		wr_data => fmt_wrdata,
+		rd_addr => fmt_rdaddr,
+		rd_data => fmt_rddata);
 
+	fmt_read_p : process (fmt_rdy, clk)
+		variable fmt_rdcntr : unsigned(0 to addr_size);
+	begin
+		if rising_edge(clk) then
+			-- if fmt
+		end if;
+	end process;
 end;
