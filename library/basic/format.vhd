@@ -107,67 +107,67 @@ begin
 		rd_data => bcd_rddata);
 
 	bcd_read_p : process (fmt_rdy, clk)
-		type states is (s_init, s_blank, s_sign, s_blanked);
+		type states is (s_init, s_blank, s_blanked);
 		variable state : states;
 
 		variable bcd_rdcntr : unsigned(0 to addr_size);
+		variable fmt_wrcntr : unsigned(0 to addr_size);
 	begin
 		if rising_edge(clk) then
 			if (to_bit(fmt_rdy) xor to_bit(fmt_req))='1' then
 
-				case state is
-				when s_sign =>
-				when others =>
-					if bcd_rdcntr(0)='0' then
-						bcd_rdcntr := bcd_rdcntr - 1;
-					else
-						fmt_rdy <= to_stdulogic(to_bit(fmt_req));
-						code_req <= not to_stdulogic(to_bit(code_rdy));
-					end if;
-				end case;
+				if bcd_rdcntr(0)='1' then
+					fmt_rdy  <= to_stdulogic(to_bit(fmt_req));
+					code_req <= not to_stdulogic(to_bit(code_rdy));
+				end if;
 
 				case state is
 				when s_init =>
 					if bcd_rddata=x"0" then
-						fmt_wraddr <= std_logic_vector(bcd_rdaddr);
+						fmt_wrcntr := fmt_wrcntr - 1;
+						fmt_wraddr <= std_logic_vector(fmt_wrcntr(fmt_wraddr'range));
 						fmt_wrdata <= multiplex(bcd_tab, blank, bcd'length);
-						bcd_rdaddr <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
+						bcd_rdcntr := bcd_rdcntr - 1;
 						state := s_blank;
-					-- elsif neg='1' then
+					elsif neg='1' then
+						fmt_wrdata <= multiplex(bcd_tab, minus, bcd'length);
+						state := s_blanked;
+					elsif sign='1' then
+						fmt_wrdata <= multiplex(bcd_tab, plus, bcd'length);
+						state := s_blanked;
 					else
-						fmt_wraddr <= std_logic_vector(bcd_rdaddr);
 						fmt_wrdata <= multiplex(bcd_tab, bcd_rddata, bcd'length);
-						bcd_rdaddr <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
+						bcd_rdcntr := bcd_rdcntr - 1;
 						state := s_blanked;
 					end if;
 				when s_blank =>
 					if bcd_rddata=x"0" then
-						fmt_wraddr <= std_logic_vector(bcd_rdaddr);
+						fmt_wrcntr := fmt_wrcntr - 1;
+						fmt_wraddr <= std_logic_vector(fmt_wrcntr(fmt_wraddr'range));
 						fmt_wrdata <= multiplex(bcd_tab, blank, bcd'length);
-						bcd_rdaddr <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
+						bcd_rdcntr := bcd_rdcntr - 1;
 					elsif neg='1' then
 						fmt_wrdata <= multiplex(bcd_tab, minus, bcd'length);
-						state := s_sign;
+						state := s_blanked;
 					elsif sign='1' then
 						fmt_wrdata <= multiplex(bcd_tab, plus, bcd'length);
-						state := s_sign;
+						state := s_blanked;
 					else 
-						fmt_wraddr <= std_logic_vector(bcd_rdaddr);
+						fmt_wrcntr := fmt_wrcntr - 1;
+						fmt_wraddr <= std_logic_vector(fmt_wrcntr(fmt_wraddr'range));
 						fmt_wrdata <= multiplex(bcd_tab, bcd_rddata, bcd'length);
-						bcd_rdaddr <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
 						state := s_blanked;
 					end if;
-				when s_sign =>
-					fmt_wrdata <= multiplex(bcd_tab, bcd_rddata, bcd'length);
-					fmt_wraddr <= std_logic_vector(bcd_rdaddr);
-					bcd_rdaddr  <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
-					state := s_blanked;
 				when s_blanked =>
+					fmt_wrcntr := fmt_wrcntr - 1;
+					fmt_wraddr <= std_logic_vector(fmt_wrcntr(fmt_wraddr'range));
 					fmt_wrdata <= multiplex(bcd_tab, bcd_rddata, bcd'length);
-					fmt_wraddr <= std_logic_vector(bcd_rdaddr);
-					bcd_rdaddr  <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
+					bcd_rdcntr := bcd_rdcntr - 1;
 				end case;
+				bcd_rdaddr <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
+				fmt_wraddr <= std_logic_vector(fmt_wrcntr(fmt_wraddr'range));
 			else
+				fmt_wrcntr := resize(unsigned(bcd_wraddr),   fmt_wrcntr'length);
 				bcd_rdcntr := resize(unsigned(bcd_wraddr)-1, bcd_rdcntr'length);
 				bcd_rdaddr <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
 				state := s_init;
