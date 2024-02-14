@@ -156,6 +156,7 @@ begin
 						fmt_wrcntr := fmt_wrcntr - 1;
 						fmt_wraddr <= std_logic_vector(fmt_wrcntr(fmt_wraddr'range));
 						fmt_wrdata <= multiplex(bcd_tab, bcd_rddata, bcd'length);
+						bcd_rdcntr := bcd_rdcntr - 1;
 						state := s_blanked;
 					end if;
 				when s_blanked =>
@@ -167,7 +168,7 @@ begin
 				bcd_rdaddr <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
 				fmt_wraddr <= std_logic_vector(fmt_wrcntr(fmt_wraddr'range));
 			else
-				fmt_wrcntr := resize(unsigned(bcd_wraddr),   fmt_wrcntr'length);
+				fmt_wrcntr := resize(unsigned(bcd_wraddr), fmt_wrcntr'length);
 				bcd_rdcntr := resize(unsigned(bcd_wraddr)-1, bcd_rdcntr'length);
 				bcd_rdaddr <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
 				state := s_init;
