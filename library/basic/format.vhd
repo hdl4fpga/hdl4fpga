@@ -36,7 +36,7 @@ entity format is
 		clk  : in  std_logic;
 		frm  : in  std_logic;
 		irdy : in  std_logic := '1';
-		trdy : buffer std_logic := '1';
+		trdy : out std_logic := '1';
 		neg  : in  std_logic := '-';
 		sign : in  std_logic := '0';
 		bcd  : in  std_logic_vector(0 to 4-1);
@@ -69,6 +69,7 @@ architecture def of format is
 	signal code_rdy    : std_logic;
 
 	signal fmt_wraddr  : std_logic_vector(1 to addr_size);
+	signal fmt_wrena   : std_logic;
 	signal fmt_wrdata  : std_logic_vector(bcd'range);
 	signal fmt_rdaddr  : std_logic_vector(1 to addr_size);
 	signal fmt_rddata  : std_logic_vector(bcd'range);
@@ -101,6 +102,7 @@ begin
 	port map (
 		wr_clk  => clk,
 		wr_addr => bcd_wraddr,
+		wr_ena  => irdy,
 		wr_data => bcd,
 		rd_addr => bcd_rdaddr,
 		rd_data => bcd_rddata);
@@ -175,6 +177,7 @@ begin
 	port map (
 		wr_clk  => clk,
 		wr_addr => fmt_wraddr,
+		wr_ena  => fmt_wrena,
 		wr_data => fmt_wrdata,
 		rd_addr => fmt_rdaddr,
 		rd_data => fmt_rddata);
