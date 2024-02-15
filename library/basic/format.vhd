@@ -34,14 +34,13 @@ entity format is
 	port (
 		tab  : in  std_logic_vector := to_ascii("0123456789 +-,.");
 		clk  : in  std_logic;
-		req  : in  std_logic := '0';
-		rdy  : buffer std_logic;
 		frm  : in  std_logic;
 		irdy : in  std_logic := '1';
 		trdy : buffer std_logic := '1';
 		neg  : in  std_logic := '-';
 		sign : in  std_logic := '0';
 		bcd  : in  std_logic_vector(0 to 4-1);
+		code_frm : out std_logic;
 		code : out std_logic_vector);
 
 	constant bcd_digits : natural := 1;
@@ -64,15 +63,15 @@ architecture def of format is
 	signal bcd_rdaddr  : std_logic_vector(1 to addr_size);
 	signal bcd_rddata  : std_logic_vector(bcd'range);
 
-	signal fmt_req    : std_logic;
-	signal fmt_rdy    : std_logic;
-	signal code_req   : std_logic;
-	signal code_rdy   : std_logic;
+	signal fmt_req     : std_logic;
+	signal fmt_rdy     : std_logic;
+	signal code_req    : std_logic;
+	signal code_rdy    : std_logic;
 
-	signal fmt_wraddr : std_logic_vector(1 to addr_size);
-	signal fmt_wrdata : std_logic_vector(bcd'range);
-	signal fmt_rdaddr : std_logic_vector(1 to addr_size);
-	signal fmt_rddata : std_logic_vector(bcd'range);
+	signal fmt_wraddr  : std_logic_vector(1 to addr_size);
+	signal fmt_wrdata  : std_logic_vector(bcd'range);
+	signal fmt_rdaddr  : std_logic_vector(1 to addr_size);
+	signal fmt_rddata  : std_logic_vector(bcd'range);
 begin
 
 	bcd_write_p : process (fmt_req, clk)
@@ -197,4 +196,6 @@ begin
 			fmt_rdaddr <= std_logic_vector(fmt_rdcntr(fmt_rdaddr'range));
 		end if;
 	end process;
+	code_frm <= to_stdulogic(to_bit(code_rdy) xor to_bit(code_req));
+	code <= multiplex(tab, fmt_rddata, code'length);
 end;

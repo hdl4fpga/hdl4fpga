@@ -285,12 +285,22 @@ begin
 				bin  => bin,
 				bcd  => bcd);
 	
-			cga_code <= x"3" & bcd(0 to 4-1);
-			cga_we   <= dbdbbl_trdy;
+			format_e : entity hdl4fpga.format
+			generic map (
+				bcd_width => bcd_width)
+			port map (
+				tab  => to_ascii("0123456789 +-,."),
+				clk  => rgtr_clk,
+				frm  => dbdbbl_trdy,
+				neg  => vt_offset(vt_offset'left),
+				bcd  => bcd,
+				code_frm => cga_we,
+				code => cga_code);
+
 		end block;
 
 		process (rgtr_clk)
-			constant dn : std_logic := '1';
+			constant dn : std_logic := '0';
 		begin
 			if rising_edge(rgtr_clk) then
 				if cga_we='1' then
@@ -300,7 +310,7 @@ begin
 						cga_addr <= cga_addr - 1;
 					end if;
 				else
-					cga_addr <= to_unsigned(bcd_width-1, cga_addr'length);
+					cga_addr <= to_unsigned(0, cga_addr'length);
 				end if;
 			end if;
 		end process;
