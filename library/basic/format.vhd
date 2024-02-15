@@ -177,7 +177,6 @@ begin
 	port map (
 		wr_clk  => clk,
 		wr_addr => fmt_wraddr,
-		wr_ena  => fmt_wrena,
 		wr_data => fmt_wrdata,
 		rd_addr => fmt_rdaddr,
 		rd_data => fmt_rddata);
