@@ -66,8 +66,8 @@ architecture def of format is
 
 	signal fmt_req    : std_logic;
 	signal fmt_rdy    : std_logic;
-	signal code_req    : std_logic;
-	signal code_rdy    : std_logic;
+	signal code_req   : std_logic;
+	signal code_rdy   : std_logic;
 
 	signal fmt_wraddr : std_logic_vector(1 to addr_size);
 	signal fmt_wrdata : std_logic_vector(bcd'range);
@@ -185,13 +185,14 @@ begin
 	begin
 		if rising_edge(clk) then
 			if (to_bit(code_rdy) xor to_bit(code_req))='1' then
-				if fmt_rdcntr(0)='0' then
-					fmt_rdcntr := fmt_rdcntr - 1;
-				else
+				if fmt_rdcntr(0)='1' then
 					code_rdy <= to_stdulogic(to_bit(code_req));
 				end if;
 			elsif (to_bit(fmt_rdy) xor to_bit(fmt_req))='1' then
 				fmt_rdcntr := resize(unsigned(bcd_wraddr), fmt_rdcntr'length);
+			end if;
+			if fmt_rdcntr(0)='0' then
+				fmt_rdcntr := fmt_rdcntr - 1;
 			end if;
 			fmt_rdaddr <= std_logic_vector(fmt_rdcntr(fmt_rdaddr'range));
 		end if;
