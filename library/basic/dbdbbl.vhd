@@ -199,6 +199,7 @@ end;
 
 architecture def of dbdbbl_seqshr is
 	signal ser_frm  : std_logic;
+	signal ser_irdy : std_logic := '1';
 	signal ser_trdy : std_logic;
 	signal ser_bin  : std_logic_vector(0 to bin_digits-1);
 begin
@@ -320,8 +321,10 @@ begin
 			case state is
 			when s_init =>
 				if frm='1' then
-					cntr := to_unsigned(bcd_width/bcd_digits-2, cntr'length);
-					state := s_run;
+					if irdy='1' then
+						cntr := to_unsigned(bcd_width/bcd_digits-2, cntr'length);
+						state := s_run;
+					end if;
 				else
 					cntr := (others => '1');
 				end if;
@@ -333,7 +336,9 @@ begin
 						init <= false;
 					end if;
 				elsif frm='1' then
-					cntr := to_unsigned(bcd_width/bcd_digits-2, cntr'length);
+					if irdy='1' then
+						cntr := to_unsigned(bcd_width/bcd_digits-2, cntr'length);
+					end if;
 				else
 					init  <= true;
 					state := s_init;
@@ -394,8 +399,9 @@ entity dbdbbl_seq is
 		req  : in  std_logic;
 		rdy  : buffer std_logic;
 		bin_irdy : in  std_logic := '1';
-		bcd_irdy : out std_logic;
 		bin  : in  std_logic_vector;
+		bcd_irdy : out std_logic;
+		bcd_trdy : in  std_logic := '1';
 		ini  : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
 		bcd  : out std_logic_vector);
 
@@ -424,7 +430,7 @@ begin
 					bcd_irdy <= '0';
 					state   := s_run;
     			when s_run =>
-        			if bin_irdy='1' then
+        			if (bin_irdy and bcd_trdy)='1' then
         				if ser_trdy='1' then
         					if cntr < 0 then
 								if ser_frm='0' then
@@ -466,6 +472,7 @@ begin
 		clk  => clk,
 		ini  => ini,
 		frm  => ser_frm,
+		irdy => ser_irdy,
 		trdy => ser_trdy,
 		bin  => ser_bin,
 		bcd  => bcd);
