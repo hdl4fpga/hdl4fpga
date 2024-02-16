@@ -67,7 +67,7 @@ begin
 		req => dbdbbl_req,
 		rdy => dbdbbl_rdy,
 		bin => std_logic_vector(to_unsigned(00000,15)), -- b"1001110",
-		trdy => frm,
+		bcd_irdy => frm,
 		bcd => bcd);
 
     du_e : entity hdl4fpga.format

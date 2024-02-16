@@ -393,8 +393,8 @@ entity dbdbbl_seq is
 		clk  : in  std_logic;
 		req  : in  std_logic;
 		rdy  : buffer std_logic;
-		irdy : in  std_logic := '1';
-		trdy : out std_logic;
+		bin_irdy : in  std_logic := '1';
+		bcd_irdy : out std_logic;
 		bin  : in  std_logic_vector;
 		ini  : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
 		bcd  : out std_logic_vector);
@@ -421,18 +421,18 @@ begin
     				ser_frm <= '1';
     				ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
     				cntr    := bin'length/bin_digits-2;
-					trdy    <= '0';
+					bcd_irdy <= '0';
 					state   := s_run;
     			when s_run =>
-        			if irdy='1' then
+        			if bin_irdy='1' then
         				if ser_trdy='1' then
         					if cntr < 0 then
 								if ser_frm='0' then
-									trdy  <= '0';
+									bcd_irdy <= '0';
 									rdy   <= to_stdulogic(to_bit(req));
 									state := s_init;
 								else
-									trdy  <= '1';
+									bcd_irdy <= '1';
 								end if;
         						ser_frm <= '0';
         					else

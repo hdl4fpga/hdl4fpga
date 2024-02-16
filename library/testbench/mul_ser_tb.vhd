@@ -77,7 +77,7 @@ begin
 		clk  => clk,
 		req  => dbdbbl_req,
 		rdy  => dbdbbl_rdy,
-		trdy => dbdbbl_trdy,
+		bcd_irdy => dbdbbl_trdy,
 		bin  => bin,
 		bcd  => bcd);
 	

@@ -242,7 +242,8 @@ begin
 			signal mul_rdy     : std_logic;
 			signal dbdbbl_req  : std_logic;
 			signal dbdbbl_rdy  : std_logic;
-			signal dbdbbl_trdy : std_logic;
+			signal bin_irdy : std_logic;
+			signal bcd_irdy : std_logic;
 
 		begin
 
@@ -281,7 +282,8 @@ begin
 				clk  => rgtr_clk,
 				req  => dbdbbl_req,
 				rdy  => dbdbbl_rdy,
-				trdy => dbdbbl_trdy,
+				bin_irdy => bin_irdy,
+				bcd_irdy => bcd_irdy,
 				bin  => bin,
 				bcd  => bcd);
 	
@@ -291,8 +293,8 @@ begin
 			port map (
 				tab  => to_ascii("0123456789 +-,."),
 				clk  => rgtr_clk,
-				frm  => dbdbbl_trdy,
-				irdy => dbdbbl_trdy,
+				frm  => bcd_irdy,
+				irdy => bcd_irdy,
 				neg  => vt_offset(vt_offset'left),
 				bcd  => bcd,
 				code_frm => cga_we,
