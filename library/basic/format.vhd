@@ -37,7 +37,7 @@ entity format is
 		frm  : in  std_logic;
 		irdy : in  std_logic := '1';
 		trdy : out std_logic := '1';
-		neg  : in  std_logic := '-';
+		neg  : in  std_logic := '0';
 		sign : in  std_logic := '0';
 		bcd  : in  std_logic_vector(0 to 4-1);
 		code_frm : out std_logic;
@@ -117,11 +117,6 @@ begin
 		if rising_edge(clk) then
 			if (to_bit(fmt_rdy) xor to_bit(fmt_req))='1' then
 
-				if bcd_rdcntr(0)='1' then
-					fmt_rdy  <= to_stdulogic(to_bit(fmt_req));
-					code_req <= not to_stdulogic(to_bit(code_rdy));
-				end if;
-
 				case state is
 				when s_init =>
 					if bcd_rddata=x"0" then
@@ -141,7 +136,7 @@ begin
 						state := s_blanked;
 					end if;
 				when s_blank =>
-					if bcd_rddata=x"0" then
+					if bcd_rddata=x"0" and bcd_rdaddr/=(bcd_rdaddr'range => '1') then
 						fmt_wrcntr := fmt_wrcntr - 1;
 						fmt_wrdata <= multiplex(bcd_tab, blank, bcd'length);
 						bcd_rdcntr := bcd_rdcntr - 1;
@@ -158,6 +153,11 @@ begin
 						state := s_blanked;
 					end if;
 				when s_blanked =>
+					if bcd_rdcntr(0)='1' then
+						fmt_rdy  <= to_stdulogic(to_bit(fmt_req));
+						code_req <= not to_stdulogic(to_bit(code_rdy));
+					end if;
+
 					fmt_wrcntr := fmt_wrcntr - 1;
 					fmt_wrdata <= multiplex(bcd_tab, bcd_rddata, bcd'length);
 					bcd_rdcntr := bcd_rdcntr - 1;

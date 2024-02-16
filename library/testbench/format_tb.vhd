@@ -66,7 +66,7 @@ begin
 		clk => clk,
 		req => dbdbbl_req,
 		rdy => dbdbbl_rdy,
-		bin => std_logic_vector(to_unsigned(00012,15)), -- b"1001110",
+		bin => std_logic_vector(to_unsigned(00000,15)), -- b"1001110",
 		trdy => frm,
 		bcd => bcd);
 
@@ -77,7 +77,7 @@ begin
         clk  => clk,
         frm  => frm,
         irdy  => frm,
-		neg  => '0',
+		neg  => '1',
         bcd  => bcd,
         code => code);
 

@@ -292,6 +292,7 @@ begin
 				tab  => to_ascii("0123456789 +-,."),
 				clk  => rgtr_clk,
 				frm  => dbdbbl_trdy,
+				irdy => dbdbbl_trdy,
 				neg  => vt_offset(vt_offset'left),
 				bcd  => bcd,
 				code_frm => cga_we,
