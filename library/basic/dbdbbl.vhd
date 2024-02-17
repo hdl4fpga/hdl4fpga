@@ -307,6 +307,7 @@ begin
 	port map (
 		wr_clk  => clk,
 		wr_addr => addr,
+		wr_ena  => irdy,
 		wr_data => bcd_dbbl(n-1 downto 0),
 		rd_addr => addr,
 		rd_data => rd_data);
@@ -330,24 +331,26 @@ begin
 				end if;
 				init <= true;
 			when s_run =>
-				if cntr(0)='0' then
-					cntr := cntr - 1;
-					if cntr(0)='1' then
-						init <= false;
-					end if;
-				elsif frm='1' then
-					if irdy='1' then
+				if irdy='1' then
+					if cntr(0)='0' then
+						cntr := cntr - 1;
+						if cntr(0)='1' then
+							init <= false;
+						end if;
+					elsif frm='1' then
 						cntr := to_unsigned(bcd_width/bcd_digits-2, cntr'length);
+					else
+						init  <= true;
+						state := s_init;
 					end if;
-				else
-					init  <= true;
-					state := s_init;
 				end if;
 			end case;
 			trdy <= cntr(0);
-			cy   := bcd_dbbl(bin'length+n-1 downto n);
-			bcd  <= bcd_dbbl(n-1 downto 0);
-			addr <= std_logic_vector(cntr(addr'range));
+			if irdy='1' then
+				cy   := bcd_dbbl(bin'length+n-1 downto n);
+				bcd  <= bcd_dbbl(n-1 downto 0);
+				addr <= std_logic_vector(cntr(addr'range));
+			end if;
 		end if;
 
 		comb_l : case state is
@@ -450,7 +453,7 @@ begin
         				end if;
 
 						if ser_frm='1' then
-							if ser_trdy='1' then
+							if ser_trdy='1' and ser_irdy='1' then
         						shr     := shift_left(shr, ser_bin'length);
         						ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
         					end if;

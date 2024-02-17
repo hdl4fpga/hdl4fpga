@@ -242,8 +242,8 @@ begin
 			signal mul_rdy     : std_logic;
 			signal dbdbbl_req  : std_logic;
 			signal dbdbbl_rdy  : std_logic;
-			signal bin_irdy : std_logic;
 			signal bcd_irdy : std_logic;
+			signal bcd_trdy : std_logic;
 
 		begin
 
@@ -282,19 +282,20 @@ begin
 				clk  => rgtr_clk,
 				req  => dbdbbl_req,
 				rdy  => dbdbbl_rdy,
-				bin_irdy => bin_irdy,
 				bcd_irdy => bcd_irdy,
+				bcd_trdy => bcd_trdy,
 				bin  => bin,
 				bcd  => bcd);
 	
 			format_e : entity hdl4fpga.format
 			generic map (
-				bcd_width => bcd_width)
+				bcd_width => bcd_width+1)
 			port map (
 				tab  => to_ascii("0123456789 +-,."),
 				clk  => rgtr_clk,
 				frm  => bcd_irdy,
 				irdy => bcd_irdy,
+				trdy => bcd_trdy,
 				neg  => vt_offset(vt_offset'left),
 				bcd  => bcd,
 				code_frm => cga_we,

@@ -35,6 +35,7 @@ entity format is
 		tab  : in  std_logic_vector := to_ascii("0123456789 +-,.");
 		clk  : in  std_logic;
 		frm  : in  std_logic;
+		dec  : in  std_logic_vector := (0 to 0 => '0');
 		irdy : in  std_logic := '1';
 		trdy : out std_logic := '1';
 		neg  : in  std_logic := '0';
@@ -75,12 +76,10 @@ architecture def of format is
 	signal fmt_rdaddr  : std_logic_vector(1 to addr_size);
 	signal fmt_rddata  : std_logic_vector(bcd'range);
 
-	signal xxx : std_logic_vector(bcd_wraddr'range);
-	signal yyy : std_logic_vector(bcd_wraddr'range);
+	signal pnt         : std_logic_vector(bcd_wraddr'range);
+	signal blkd        : std_logic_vector(bcd_wraddr'range);
 begin
 
-	xxx <= std_logic_vector(to_unsigned(1, xxx'length));
-	yyy <= std_logic_vector(unsigned(xxx)+1);
 	bcd_write_p : process (fmt_req, clk)
 		variable bcd_req    : std_logic;
 		variable bcd_rdy    : std_logic;
@@ -109,14 +108,15 @@ begin
 		end if;
 	end process;
 
+	pnt  <= std_logic_vector(unsigned(blkd)-1);
 	trdy <=
 		'1' when bcd_wraddr=(bcd_wraddr'range => '1') else
-		'0' when bcd_wraddr=xxx else
+		'0' when bcd_wraddr=pnt else
 		'1';
 
 	bcd_wrdata <=
 		bcd when bcd_wraddr=(bcd_wraddr'range => '1') else
-		dot when bcd_wraddr=xxx else
+		dot when bcd_wraddr=pnt else
 		bcd;
 
 	bcdmem_e : entity hdl4fpga.dpram
@@ -128,6 +128,7 @@ begin
 		rd_addr => bcd_rdaddr,
 		rd_data => bcd_rddata);
 
+	blkd <= std_logic_vector(resize(unsigned(dec), blkd'length));
 	bcd_read_p : process (fmt_rdy, clk)
 		type states is (s_init, s_blank, s_blanked);
 		variable state : states;
@@ -157,7 +158,7 @@ begin
 						state := s_blanked;
 					end if;
 				when s_blank =>
-					if bcd_rddata=x"0" and bcd_rdaddr/=yyy then
+					if bcd_rddata=x"0" and bcd_rdaddr/=blkd then
 						fmt_wrcntr := fmt_wrcntr - 1;
 						fmt_wrdata <= multiplex(bcd_tab, blank, bcd'length);
 						bcd_rdcntr := bcd_rdcntr - 1;
