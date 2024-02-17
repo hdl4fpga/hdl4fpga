@@ -292,6 +292,7 @@ begin
 				bcd_width => bcd_width+1)
 			port map (
 				tab  => to_ascii("0123456789 +-,."),
+				dec  => vt_chanid ,
 				clk  => rgtr_clk,
 				frm  => bcd_irdy,
 				irdy => bcd_irdy,
