@@ -400,7 +400,7 @@ entity dbdbbl_seq is
 		rdy  : buffer std_logic;
 		bin_irdy : in  std_logic := '1';
 		bin  : in  std_logic_vector;
-		bcd_irdy : out std_logic;
+		bcd_irdy : buffer std_logic;
 		bcd_trdy : in  std_logic := '1';
 		ini  : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
 		bcd  : out std_logic_vector);
@@ -410,9 +410,11 @@ end;
 
 architecture def of dbdbbl_seq is
 	signal ser_frm  : std_logic;
+	signal ser_irdy : std_logic; -- : '1';
 	signal ser_trdy : std_logic;
 	signal ser_bin  : std_logic_vector(0 to bin_digits-1);
 begin
+	ser_irdy <= not bcd_irdy or bcd_trdy;
 	process (clk)
 		type states is (s_init, s_run);
 		variable state : states;

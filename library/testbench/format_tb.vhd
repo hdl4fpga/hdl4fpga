@@ -42,6 +42,7 @@ architecture format_tb of testbench is
 	signal format_rdy  : std_logic := '1';
 	signal bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
     signal frm  : std_logic;
+    signal trdy : std_logic;
 
     signal code : std_logic_vector(0 to 8-1);
 begin
@@ -66,8 +67,9 @@ begin
 		clk => clk,
 		req => dbdbbl_req,
 		rdy => dbdbbl_rdy,
-		bin => std_logic_vector(to_unsigned(00000,15)), -- b"1001110",
+		bin => std_logic_vector(to_unsigned(00101,15)), -- b"1001110",
 		bcd_irdy => frm,
+		bcd_trdy => trdy,
 		bcd => bcd);
 
     du_e : entity hdl4fpga.format
@@ -76,7 +78,8 @@ begin
     port map (
         clk  => clk,
         frm  => frm,
-        irdy  => frm,
+        irdy => frm,
+        trdy => trdy,
 		neg  => '1',
         bcd  => bcd,
         code => code);

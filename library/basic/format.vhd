@@ -60,6 +60,7 @@ end;
 architecture def of format is
 	constant addr_size : natural := unsigned_num_bits(bcd_width/bcd_digits-1);
 	signal bcd_wraddr  : std_logic_vector(1 to addr_size);
+	signal bcd_wrdata  : std_logic_vector(bcd'range);
 	signal bcd_rdaddr  : std_logic_vector(1 to addr_size);
 	signal bcd_rddata  : std_logic_vector(bcd'range);
 
@@ -73,12 +74,20 @@ architecture def of format is
 	signal fmt_wrdata  : std_logic_vector(bcd'range);
 	signal fmt_rdaddr  : std_logic_vector(1 to addr_size);
 	signal fmt_rddata  : std_logic_vector(bcd'range);
+
+	signal xxx : std_logic_vector(bcd_wraddr'range);
+	signal yyy : std_logic_vector(bcd_wraddr'range);
 begin
 
+	xxx <= std_logic_vector(to_unsigned(1, xxx'length));
+	yyy <= std_logic_vector(unsigned(xxx)+1);
 	bcd_write_p : process (fmt_req, clk)
 		variable bcd_req    : std_logic;
 		variable bcd_rdy    : std_logic;
 		variable bcd_wrcntr : unsigned(0 to addr_size);
+		type states is (s_frac, s_int);
+		variable state : states;
+
 	begin
 		if rising_edge(clk) then
 			if (to_bit(fmt_req) xor to_bit(fmt_rdy))='0' then
@@ -93,17 +102,29 @@ begin
 				else
 					bcd_wrcntr := (others => '1');
 				end if;
+			else 
+				state := s_frac;
 			end if;
 			bcd_wraddr <= std_logic_vector(bcd_wrcntr(bcd_wraddr'range));
 		end if;
 	end process;
 
+	trdy <=
+		'1' when bcd_wraddr=(bcd_wraddr'range => '1') else
+		'0' when bcd_wraddr=xxx else
+		'1';
+
+	bcd_wrdata <=
+		bcd when bcd_wraddr=(bcd_wraddr'range => '1') else
+		dot when bcd_wraddr=xxx else
+		bcd;
+
 	bcdmem_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => clk,
-		wr_addr => bcd_wraddr,
 		wr_ena  => irdy,
-		wr_data => bcd,
+		wr_addr => bcd_wraddr,
+		wr_data => bcd_wrdata,
 		rd_addr => bcd_rdaddr,
 		rd_data => bcd_rddata);
 
@@ -136,7 +157,7 @@ begin
 						state := s_blanked;
 					end if;
 				when s_blank =>
-					if bcd_rddata=x"0" and bcd_rdaddr/=(bcd_rdaddr'range => '1') then
+					if bcd_rddata=x"0" and bcd_rdaddr/=yyy then
 						fmt_wrcntr := fmt_wrcntr - 1;
 						fmt_wrdata <= multiplex(bcd_tab, blank, bcd'length);
 						bcd_rdcntr := bcd_rdcntr - 1;
