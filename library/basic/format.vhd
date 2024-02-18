@@ -61,6 +61,7 @@ end;
 architecture def of format is
 	constant addr_size : natural := unsigned_num_bits(bcd_width/bcd_digits-1);
 	signal bcd_wraddr  : std_logic_vector(1 to addr_size);
+	signal bcd_wrena   : std_logic;
 	signal bcd_wrdata  : std_logic_vector(bcd'range);
 	signal bcd_rdaddr  : std_logic_vector(1 to addr_size);
 	signal bcd_rddata  : std_logic_vector(bcd'range);
@@ -76,8 +77,8 @@ architecture def of format is
 	signal fmt_rdaddr  : std_logic_vector(1 to addr_size);
 	signal fmt_rddata  : std_logic_vector(bcd'range);
 
-	signal pnt         : std_logic_vector(bcd_wraddr'range);
-	signal blkd        : std_logic_vector(bcd_wraddr'range);
+	signal ov : std_logic;
+	signal point       : std_logic_vector(bcd_wraddr'range);
 begin
 
 	bcd_write_p : process (fmt_req, clk)
@@ -92,47 +93,52 @@ begin
 			if (to_bit(fmt_req) xor to_bit(fmt_rdy))='0' then
 				if to_bit(frm)='1' then
 					if irdy='1' then
-						bcd_wrcntr := bcd_wrcntr + 1;
+						if bcd_wrcntr(0)='0' then
+							bcd_wrcntr := bcd_wrcntr + 1;
+						end if;
 					end if;
 					bcd_req := not to_stdulogic(to_bit(bcd_rdy));
 				elsif (to_bit(bcd_req) xor to_bit(bcd_rdy))='1' then
 					bcd_rdy := bcd_req;
 					fmt_req <= not to_stdulogic(to_bit(fmt_rdy));
 				else
-					bcd_wrcntr := (others => '1');
+					bcd_wrcntr := (others => '0');
 				end if;
 			else 
 				state := s_frac;
 			end if;
+			ov <= not bcd_wrcntr(0);
+
 			bcd_wraddr <= std_logic_vector(bcd_wrcntr(bcd_wraddr'range));
 		end if;
 	end process;
 
-	pnt  <= std_logic_vector(unsigned(blkd)-1);
+	point <= std_logic_vector(resize(unsigned(dec), point'length));
 	trdy <=
-		'1' when bcd_wraddr=(bcd_wraddr'range => '1') else
-		'0' when bcd_wraddr=pnt else
+		'1' when bcd_wraddr=(bcd_wraddr'range => '0') else
+		'0' when bcd_wraddr=point else
 		'1';
 
 	bcd_wrdata <=
-		bcd when bcd_wraddr=(bcd_wraddr'range => '1') else
-		dot when bcd_wraddr=pnt else
+		bcd when bcd_wraddr=(bcd_wraddr'range => '0') else
+		dot when bcd_wraddr=point else
 		bcd;
 
+	bcd_wrena <= irdy and ov;
 	bcdmem_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => clk,
-		wr_ena  => irdy,
+		wr_ena  => bcd_wrena,
 		wr_addr => bcd_wraddr,
 		wr_data => bcd_wrdata,
 		rd_addr => bcd_rdaddr,
 		rd_data => bcd_rddata);
 
-	blkd <= std_logic_vector(resize(unsigned(dec), blkd'length));
 	bcd_read_p : process (fmt_rdy, clk)
 		type states is (s_init, s_blank, s_blanked);
 		variable state : states;
 
+		variable unit       : std_logic_vector(bcd_rdaddr'range);
 		variable bcd_rdcntr : unsigned(0 to addr_size);
 		variable fmt_wrcntr : unsigned(0 to addr_size);
 	begin
@@ -158,7 +164,7 @@ begin
 						state := s_blanked;
 					end if;
 				when s_blank =>
-					if bcd_rddata=x"0" and bcd_rdaddr/=blkd then
+					if bcd_rddata=x"0" and bcd_rdaddr/=unit then
 						fmt_wrcntr := fmt_wrcntr - 1;
 						fmt_wrdata <= multiplex(bcd_tab, blank, bcd'length);
 						bcd_rdcntr := bcd_rdcntr - 1;
@@ -175,18 +181,23 @@ begin
 						state := s_blanked;
 					end if;
 				when s_blanked =>
+					fmt_wrcntr := fmt_wrcntr - 1;
+					fmt_wrdata <= multiplex(bcd_tab, bcd_rddata, bcd'length);
+					bcd_rdcntr := bcd_rdcntr - 1;
 					if bcd_rdcntr(0)='1' then
 						fmt_rdy  <= to_stdulogic(to_bit(fmt_req));
 						code_req <= not to_stdulogic(to_bit(code_rdy));
 					end if;
 
-					fmt_wrcntr := fmt_wrcntr - 1;
-					fmt_wrdata <= multiplex(bcd_tab, bcd_rddata, bcd'length);
-					bcd_rdcntr := bcd_rdcntr - 1;
 				end case;
 				bcd_rdaddr <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
 				fmt_wraddr <= std_logic_vector(fmt_wrcntr(fmt_wraddr'range));
 			else
+				if dec=(dec'range => '0') then
+					unit := (others => '0');
+				else
+					unit := std_logic_vector(resize(unsigned(dec), unit'length)+1);
+				end if;
 				fmt_wrcntr := resize(unsigned(bcd_wraddr),   fmt_wrcntr'length);
 				bcd_rdcntr := resize(unsigned(bcd_wraddr)-1, bcd_rdcntr'length);
 				bcd_rdaddr <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
@@ -208,13 +219,12 @@ begin
 	begin
 		if rising_edge(clk) then
 			if (to_bit(code_rdy) xor to_bit(code_req))='1' then
-				if fmt_rdcntr(0)='1' then
+				if unsigned(fmt_rdaddr)=0 then
 					code_rdy <= to_stdulogic(to_bit(code_req));
 				end if;
+				fmt_rdcntr := fmt_rdcntr - 1;
 			elsif (to_bit(fmt_rdy) xor to_bit(fmt_req))='1' then
 				fmt_rdcntr := resize(unsigned(bcd_wraddr), fmt_rdcntr'length);
-			end if;
-			if fmt_rdcntr(0)='0' then
 				fmt_rdcntr := fmt_rdcntr - 1;
 			end if;
 			fmt_rdaddr <= std_logic_vector(fmt_rdcntr(fmt_rdaddr'range));

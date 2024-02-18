@@ -289,7 +289,7 @@ begin
 	
 			format_e : entity hdl4fpga.format
 			generic map (
-				bcd_width => bcd_width+1)
+				bcd_width => bcd_width)
 			port map (
 				tab  => to_ascii("0123456789 +-,."),
 				dec  => vt_chanid ,
