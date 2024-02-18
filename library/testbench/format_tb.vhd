@@ -41,10 +41,10 @@ architecture format_tb of testbench is
 	signal format_req  : std_logic := '0';
 	signal format_rdy  : std_logic := '1';
 	signal bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
-    signal frm  : std_logic;
-    signal trdy : std_logic;
+	signal frm  : std_logic;
+	signal trdy : std_logic;
 
-    signal code : std_logic_vector(0 to 8-1);
+	signal code : std_logic_vector(0 to 8-1);
 begin
 
 	clk <= not clk after 1 ns;
@@ -67,29 +67,29 @@ begin
 		clk => clk,
 		req => dbdbbl_req,
 		rdy => dbdbbl_rdy,
-		bin => std_logic_vector(to_unsigned(000001,15)), -- b"1001110",
+		bin => std_logic_vector(to_unsigned(000664,15)), -- b"1001110",
 		bcd_irdy => frm,
 		bcd_trdy => trdy,
 		bcd => bcd);
 
-    du_e : entity hdl4fpga.format
-    generic map (
-        max_width => bcd_width)
-    port map (
-		tab  => to_ascii("0123456789 +-,."),
-        clk  => clk,
-		width => x"5",
-		dec  => b"0",
-        bcd_frm  => frm,
-        bcd_irdy => frm,
-        bcd_trdy => trdy,
-		neg  => '1',
-        bcd  => bcd,
-        code => code);
+	du_e : entity hdl4fpga.format
+	generic map (
+		max_width => bcd_width)
+	port map (
+		tab      => to_ascii("0123456789 +-,."),
+		clk      => clk,
+		width    => x"3",
+		dec      => b"0",
+		bcd_frm  => frm,
+		bcd_irdy => frm,
+		bcd_trdy => trdy,
+		neg      => '1',
+		bcd      => bcd,
+		code     => code);
 
-    process 
-    begin
-        report "VALUE : " & ''' & to_string(code) & ''';
-        wait on code;
-    end process;
+	process 
+	begin
+		report "VALUE : " & ''' & to_string(code) & ''';
+		wait on code;
+	end process;
 end;

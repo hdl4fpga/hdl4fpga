@@ -80,8 +80,9 @@ architecture def of format is
 	signal fmt_wrdata  : std_logic_vector(bcd'range);
 	signal fmt_rdaddr  : std_logic_vector(1 to addr_size);
 	signal fmt_rddata  : std_logic_vector(bcd'range);
+	signal fmt_error   : boolean;
 
-	signal ov : std_logic;
+	signal ov          : std_logic;
 	signal point       : std_logic_vector(bcd_wraddr'range);
 begin
 
@@ -90,19 +91,22 @@ begin
 		resize(unsigned(width), bcd_width'length);
 
 	bcd_write_p : process (fmt_req, clk)
+		type states is (s_frac, s_int);
+		variable state      : states;
+
 		variable bcd_req    : std_logic;
 		variable bcd_rdy    : std_logic;
 		variable bcd_wrcntr : unsigned(0 to addr_size);
-		type states is (s_frac, s_int);
-		variable state : states;
-
 	begin
 		if rising_edge(clk) then
 			if (to_bit(fmt_req) xor to_bit(fmt_rdy))='0' then
 				if to_bit(bcd_frm)='1' then
 					if bcd_irdy='1' then
-						if bcd_wrcntr(0)='0' then
+						if bcd_wrcntr < bcd_width then
 							bcd_wrcntr := bcd_wrcntr + 1;
+							fmt_error <= false;
+						elsif bcd/=multiplex(bcd_tab,0, bcd'length) then
+							fmt_error <= true;
 						end if;
 					end if;
 					bcd_req := not to_stdulogic(to_bit(bcd_rdy));
@@ -119,7 +123,12 @@ begin
 			else 
 				state := s_frac;
 			end if;
-			ov <= bcd_wrcntr(0);
+
+			if bcd_wrcntr < bcd_width then
+				ov <= '0';
+			else
+				ov <= '1';
+			end if;
 
 			bcd_wraddr <= std_logic_vector(bcd_wrcntr(bcd_wraddr'range));
 		end if;
@@ -152,7 +161,7 @@ begin
 
 	bcd_read_p : process (fmt_rdy, clk)
 		type states is (s_init, s_blank, s_blanked);
-		variable state : states;
+		variable state      : states;
 
 		variable unit       : std_logic_vector(bcd_rdaddr'range);
 		variable bcd_rdcntr : unsigned(0 to addr_size);
@@ -252,5 +261,5 @@ begin
 	end process;
 	code_frm  <= to_stdulogic(to_bit(code_rdy) xor to_bit(code_req));
 	code_irdy <= code_frm;
-	code      <= multiplex(tab, fmt_rddata, code'length);
+	code      <= multiplex(tab, setif(fmt_error, plus, fmt_rddata), code'length);
 end;
