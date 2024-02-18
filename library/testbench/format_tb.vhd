@@ -74,9 +74,11 @@ begin
 
     du_e : entity hdl4fpga.format
     generic map (
-        bcd_width => bcd_width)
+        max_width => bcd_width)
     port map (
+		tab  => to_ascii("0123456789 +-,."),
         clk  => clk,
+		width => x"5",
 		dec  => b"0",
         bcd_frm  => frm,
         bcd_irdy => frm,

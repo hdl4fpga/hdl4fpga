@@ -30,19 +30,22 @@ use hdl4fpga.base.all;
 
 entity format is
 	generic (
-		bcd_width  : natural);
+		max_width : natural);
 	port (
-		tab  : in  std_logic_vector := to_ascii("0123456789 +-,.");
-		clk  : in  std_logic;
-		dec  : in  std_logic_vector := (0 to 0 => '0');
-		neg  : in  std_logic := '0';
-		sign : in  std_logic := '0';
-		bcd_frm  : in  std_logic;
-		bcd_irdy : in  std_logic := '1';
-		bcd_trdy : out std_logic := '1';
-		bcd  : in  std_logic_vector(0 to 4-1);
-		code_frm : out std_logic;
-		code : out std_logic_vector);
+		tab       : in  std_logic_vector := x"0123456789abcde";
+		clk       : in  std_logic;
+		dec       : in  std_logic_vector := (0 to 0 => '0');
+		neg       : in  std_logic := '0';
+		sign      : in  std_logic := '0';
+		width     : in  std_logic_vector := (0 to 0 => '0');
+		bcd_frm   : in  std_logic;
+		bcd_irdy  : in  std_logic := '1';
+		bcd_trdy  : out std_logic := '1';
+		bcd       : in  std_logic_vector(0 to 4-1);
+		code_frm  : buffer std_logic;
+		code_irdy : out std_logic;
+		code_trdy : in  std_logic := '1';
+		code      : out std_logic_vector);
 
 	constant bcd_digits : natural := 1;
 	constant bcd_tab    : std_logic_vector := x"0123456789abcdef";
@@ -59,7 +62,8 @@ end;
 -- https://github.com/hdl4fpga/hdl4fpga/blob/62b576a8d626e379257136259202cbcdf41c3a45/library/basic/format.vhd#L24
 
 architecture def of format is
-	constant addr_size : natural := unsigned_num_bits(bcd_width/bcd_digits-1);
+	constant addr_size : natural := unsigned_num_bits(max_width/bcd_digits-1);
+	signal bcd_width   : unsigned(0 to addr_size);
 	signal bcd_wraddr  : std_logic_vector(1 to addr_size);
 	signal bcd_wrena   : std_logic;
 	signal bcd_wrdata  : std_logic_vector(bcd'range);
@@ -80,6 +84,10 @@ architecture def of format is
 	signal ov : std_logic;
 	signal point       : std_logic_vector(bcd_wraddr'range);
 begin
+
+	bcd_width <= 
+		to_unsigned(max_width,  bcd_width'length) when width=(width'range => '0') else
+		resize(unsigned(width), bcd_width'length);
 
 	bcd_write_p : process (fmt_req, clk)
 		variable bcd_req    : std_logic;
@@ -230,14 +238,19 @@ begin
 				if unsigned(fmt_rdaddr)=0 then
 					code_rdy <= to_stdulogic(to_bit(code_req));
 				end if;
-				fmt_rdcntr := fmt_rdcntr - 1;
+				if code_trdy='1' then
+					fmt_rdcntr := fmt_rdcntr - 1;
+				end if;
 			elsif (to_bit(fmt_rdy) xor to_bit(fmt_req))='1' then
 				fmt_rdcntr := resize(unsigned(bcd_wraddr), fmt_rdcntr'length);
-				fmt_rdcntr := fmt_rdcntr - 1;
+				if code_trdy='1' then
+					fmt_rdcntr := fmt_rdcntr - 1;
+				end if;
 			end if;
 			fmt_rdaddr <= std_logic_vector(fmt_rdcntr(fmt_rdaddr'range));
 		end if;
 	end process;
-	code_frm <= to_stdulogic(to_bit(code_rdy) xor to_bit(code_req));
-	code <= multiplex(tab, fmt_rddata, code'length);
+	code_frm  <= to_stdulogic(to_bit(code_rdy) xor to_bit(code_req));
+	code_irdy <= code_frm;
+	code      <= multiplex(tab, fmt_rddata, code'length);
 end;

@@ -403,6 +403,7 @@ entity dbdbbl_seq is
 		rdy  : buffer std_logic;
 		bin_irdy : in  std_logic := '1';
 		bin  : in  std_logic_vector;
+		bcd_frm  : out std_logic;
 		bcd_irdy : buffer std_logic;
 		bcd_trdy : in  std_logic := '1';
 		ini  : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
@@ -417,6 +418,7 @@ architecture def of dbdbbl_seq is
 	signal ser_trdy : std_logic;
 	signal ser_bin  : std_logic_vector(0 to bin_digits-1);
 begin
+	bcd_frm  <= bcd_irdy;
 	ser_irdy <= not bcd_irdy or bcd_trdy;
 	process (clk)
 		type states is (s_init, s_run);

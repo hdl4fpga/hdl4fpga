@@ -129,7 +129,6 @@ architecture def of scopeio_textbox is
 	signal video_dot         : std_logic;
 
 	signal bcd_code          : ascii;
-	signal xxx               : std_logic;
 begin
 
 	rgtr_b : block
@@ -289,10 +288,10 @@ begin
 	
 			format_e : entity hdl4fpga.format
 			generic map (
-				bcd_width => bcd_width)
+				max_width => bcd_width)
 			port map (
 				tab  => to_ascii("0123456789 +-,."),
-				dec  => vt_chanid ,
+				dec  => vt_chanid,
 				clk  => rgtr_clk,
 				bcd_frm  => bcd_irdy,
 				bcd_irdy => bcd_irdy,
