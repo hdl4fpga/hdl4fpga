@@ -34,12 +34,12 @@ entity format is
 	port (
 		tab  : in  std_logic_vector := to_ascii("0123456789 +-,.");
 		clk  : in  std_logic;
-		frm  : in  std_logic;
 		dec  : in  std_logic_vector := (0 to 0 => '0');
-		irdy : in  std_logic := '1';
-		trdy : out std_logic := '1';
 		neg  : in  std_logic := '0';
 		sign : in  std_logic := '0';
+		bcd_frm  : in  std_logic;
+		bcd_irdy : in  std_logic := '1';
+		bcd_trdy : out std_logic := '1';
 		bcd  : in  std_logic_vector(0 to 4-1);
 		code_frm : out std_logic;
 		code : out std_logic_vector);
@@ -91,45 +91,53 @@ begin
 	begin
 		if rising_edge(clk) then
 			if (to_bit(fmt_req) xor to_bit(fmt_rdy))='0' then
-				if to_bit(frm)='1' then
-					if irdy='1' then
+				if to_bit(bcd_frm)='1' then
+					if bcd_irdy='1' then
 						if bcd_wrcntr(0)='0' then
 							bcd_wrcntr := bcd_wrcntr + 1;
 						end if;
 					end if;
 					bcd_req := not to_stdulogic(to_bit(bcd_rdy));
 				elsif (to_bit(bcd_req) xor to_bit(bcd_rdy))='1' then
-					bcd_rdy := bcd_req;
-					fmt_req <= not to_stdulogic(to_bit(fmt_rdy));
+					if bcd_wrcntr/=bcd_width then
+						bcd_wrcntr := bcd_wrcntr + 1;
+					else
+						bcd_rdy := bcd_req;
+						fmt_req <= not to_stdulogic(to_bit(fmt_rdy));
+					end if;
 				else
 					bcd_wrcntr := (others => '0');
 				end if;
 			else 
 				state := s_frac;
 			end if;
-			ov <= not bcd_wrcntr(0);
+			ov <= bcd_wrcntr(0);
 
 			bcd_wraddr <= std_logic_vector(bcd_wrcntr(bcd_wraddr'range));
 		end if;
 	end process;
 
 	point <= std_logic_vector(resize(unsigned(dec), point'length));
-	trdy <=
+	bcd_trdy <=
 		'1' when bcd_wraddr=(bcd_wraddr'range => '0') else
 		'0' when bcd_wraddr=point else
 		'1';
 
+	bcd_wrena <= 
+		not ov and bcd_irdy when bcd_frm='1' else 
+		not ov;
+
 	bcd_wrdata <=
 		bcd when bcd_wraddr=(bcd_wraddr'range => '0') else
 		dot when bcd_wraddr=point else
-		bcd;
+		bcd when bcd_frm='1' else
+		blank;
 
-	bcd_wrena <= irdy and ov;
 	bcdmem_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => clk,
-		wr_ena  => bcd_wrena,
 		wr_addr => bcd_wraddr,
+		wr_ena  => bcd_wrena,
 		wr_data => bcd_wrdata,
 		rd_addr => bcd_rdaddr,
 		rd_data => bcd_rddata);

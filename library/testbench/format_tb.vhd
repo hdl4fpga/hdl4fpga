@@ -67,20 +67,20 @@ begin
 		clk => clk,
 		req => dbdbbl_req,
 		rdy => dbdbbl_rdy,
-		bin => std_logic_vector(to_unsigned(000000,15)), -- b"1001110",
+		bin => std_logic_vector(to_unsigned(000001,15)), -- b"1001110",
 		bcd_irdy => frm,
 		bcd_trdy => trdy,
 		bcd => bcd);
 
     du_e : entity hdl4fpga.format
     generic map (
-        bcd_width => bcd_width+1)
+        bcd_width => bcd_width)
     port map (
         clk  => clk,
 		dec  => b"0",
-        frm  => frm,
-        irdy => frm,
-        trdy => trdy,
+        bcd_frm  => frm,
+        bcd_irdy => frm,
+        bcd_trdy => trdy,
 		neg  => '1',
         bcd  => bcd,
         code => code);
