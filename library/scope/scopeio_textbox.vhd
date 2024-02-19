@@ -131,6 +131,19 @@ entity scopeio_textbox is
 		return "{mant:" & real'image(mant) & ",exp:" & integer'image(exp) & "}";
 	end;
 
+	function yyy (
+		constant unit : real)
+		return real_vector is
+		constant zzz    : natural_vector(0 to 4-1) := (1, 2, 4, 5);
+		variable retval : real_vector(0 to 4-1);
+	begin
+
+		for i in xxx'range loop
+			retval(i) := jso(zzz(unit*zzz(i)))**".mant";
+		end loop;
+		return retval;
+	end;
+
 	constant hhh : real := jso(xxx(5.1))**".mant";
 end;
 
