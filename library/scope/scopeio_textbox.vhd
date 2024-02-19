@@ -134,17 +134,17 @@ entity scopeio_textbox is
 	function yyy (
 		constant unit : real)
 		return real_vector is
-		constant zzz    : natural_vector(0 to 4-1) := (1, 2, 4, 5);
+		constant zzz    : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
 		variable retval : real_vector(0 to 4-1);
 	begin
 
-		for i in xxx'range loop
-			retval(i) := jso(zzz(unit*zzz(i)))**".mant";
+		for i in zzz'range loop
+			retval(i) := jso(xxx(unit*zzz(i)))**".mant";
 		end loop;
 		return retval;
 	end;
 
-	constant hhh : real := jso(xxx(5.1))**".mant";
+	constant hhh : real_vector := yyy(vt_unit);
 end;
 
 architecture def of scopeio_textbox is
