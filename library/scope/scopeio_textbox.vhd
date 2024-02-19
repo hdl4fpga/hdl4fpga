@@ -290,17 +290,17 @@ begin
 			generic map (
 				max_width => bcd_width)
 			port map (
-				tab  => to_ascii("0123456789 +-,."),
-				width => x"3",
-				dec  => vt_chanid,
-				clk  => rgtr_clk,
+				tab      => to_ascii("0123456789 +-,."),
+				width    => x"3",
+				dec      => vt_chanid,
+				neg      => vt_offset(vt_offset'left),
+				clk      => rgtr_clk,
 				bcd_frm  => bcd_irdy,
 				bcd_irdy => bcd_irdy,
 				bcd_trdy => bcd_trdy,
-				neg  => vt_offset(vt_offset'left),
-				bcd  => bcd,
+				bcd      => bcd,
 				code_frm => cga_we,
-				code => cga_code);
+				code     => cga_code);
 
 		end block;
 

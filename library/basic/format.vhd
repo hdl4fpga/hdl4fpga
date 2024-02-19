@@ -32,7 +32,7 @@ entity format is
 	generic (
 		max_width : natural);
 	port (
-		tab       : in  std_logic_vector := x"0123456789abcde";
+		tab       : in  std_logic_vector; -- := x"0123456789abcde";
 		clk       : in  std_logic;
 		dec       : in  std_logic_vector := (0 to 0 => '0');
 		neg       : in  std_logic := '0';
