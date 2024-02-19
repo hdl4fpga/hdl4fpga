@@ -81,7 +81,7 @@ begin
 		clk => clk,
 		req => dbdbbl_req,
 		rdy => dbdbbl_rdy,
-		bin => std_logic_vector(to_unsigned(400,15)), -- b"1001110",
+		bin => std_logic_vector(to_unsigned(40,15)), -- b"1001110",
 		bcd_irdy => frm,
 		bcd_trdy => trdy,
 		bcd => bcd);
@@ -93,11 +93,11 @@ begin
 		tab      => to_ascii("0123456789 +-,."),
 		clk      => clk,
 		width    => x"4",
-		dec      => x"3",
+		dec      => x"2",
 		bcd_frm  => frm,
 		bcd_irdy => frm,
 		bcd_trdy => trdy,
-		neg      => '0',
+		neg      => '1',
 		bcd      => bcd,
 		code_frm => code_frm,
 		code     => code);

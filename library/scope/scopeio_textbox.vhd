@@ -1,6 +1,8 @@
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
@@ -103,6 +105,33 @@ entity scopeio_textbox is
 		return retval;
 	end;
 
+	function xxx (
+		constant unit : real)
+		return string is
+		variable exp  : integer;
+		variable mant : real;
+	begin
+		exp  := 0;
+		mant := unit;
+		assert unit > 0.0 
+			report "unit <= 0.0"
+			severity failure;
+		loop
+			report integer'image(exp);
+			if mant-floor(mant) /= 0.0 then
+				mant := mant * 10.0;
+				exp  := exp + 1;
+			elsif exp mod 3/=0 then
+				mant := mant * 10.0;
+				exp  := exp + 1;
+			else
+				exit;
+			end if;
+		end loop;
+		return "{mant:" & real'image(mant) & ",exp:" & integer'image(exp) & "}";
+	end;
+
+	constant hhh : real := jso(xxx(5.1))**".mant";
 end;
 
 architecture def of scopeio_textbox is
@@ -292,7 +321,7 @@ begin
 			port map (
 				tab      => to_ascii("0123456789 +-,."),
 				width    => x"4",
-				dec      => vt_chanid,
+				dec      => x"0",
 				neg      => vt_offset(vt_offset'left),
 				clk      => rgtr_clk,
 				bcd_frm  => bcd_irdy,
