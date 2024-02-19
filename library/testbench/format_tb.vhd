@@ -44,7 +44,9 @@ architecture format_tb of testbench is
 	signal frm  : std_logic;
 	signal trdy : std_logic;
 
+	signal code_frm : std_logic;
 	signal code : std_logic_vector(0 to 8-1);
+	shared variable xxx : unsigned(0 to 8*8-1);
 begin
 
 	clk <= not clk after 1 ns;
@@ -52,10 +54,22 @@ begin
 	begin
 		if rising_edge(clk) then
 			if dbdbbl_req='0' then
+				xxx := unsigned(to_ascii("        "));
 				dbdbbl_req <= '1';
 			end if;
 		end if;
 	end process;
+
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			if code_frm='1' then
+				xxx(0 to 8-1) := unsigned(code);
+				xxx := xxx rol 8;
+			end if;
+		end if;
+	end process;
+
 	-- dbdbbl_req <= not to_stdulogic(to_bit(dbdbbl_rdy));
 
 	dbdbbl_seq_e : entity hdl4fpga.dbdbbl_seq
@@ -67,7 +81,7 @@ begin
 		clk => clk,
 		req => dbdbbl_req,
 		rdy => dbdbbl_rdy,
-		bin => std_logic_vector(to_unsigned(9664,15)), -- b"1001110",
+		bin => std_logic_vector(to_unsigned(400,15)), -- b"1001110",
 		bcd_irdy => frm,
 		bcd_trdy => trdy,
 		bcd => bcd);
@@ -78,18 +92,19 @@ begin
 	port map (
 		tab      => to_ascii("0123456789 +-,."),
 		clk      => clk,
-		width    => x"3",
-		dec      => b"0",
+		width    => x"4",
+		dec      => x"3",
 		bcd_frm  => frm,
 		bcd_irdy => frm,
 		bcd_trdy => trdy,
-		neg      => '1',
+		neg      => '0',
 		bcd      => bcd,
+		code_frm => code_frm,
 		code     => code);
 
-	process 
-	begin
-		report "VALUE : " & ''' & to_string(code) & ''';
-		wait on code;
-	end process;
+	-- process 
+	-- begin
+		-- report "VALUE : " & ''' & to_string(code) & ''';
+		-- wait on code;
+	-- end process;
 end;

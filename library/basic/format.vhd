@@ -24,6 +24,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use std.textio.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
@@ -50,6 +51,7 @@ entity format is
 	constant bcd_digits : natural := 1;
 	constant bcd_tab    : std_logic_vector := x"0123456789abcdef";
 
+	constant zero       : std_logic_vector(0 to bcd'length-1) := x"0";
 	constant blank      : std_logic_vector(0 to bcd'length-1) := x"a";
 	constant plus       : std_logic_vector(0 to bcd'length-1) := x"b";
 	constant minus      : std_logic_vector(0 to bcd'length-1) := x"c";
@@ -97,16 +99,19 @@ begin
 		variable bcd_req    : std_logic;
 		variable bcd_rdy    : std_logic;
 		variable bcd_wrcntr : unsigned(0 to addr_size);
+		variable is_zero    : boolean;
 	begin
 		if rising_edge(clk) then
 			if (to_bit(fmt_req) xor to_bit(fmt_rdy))='0' then
 				if to_bit(bcd_frm)='1' then
 					if bcd_irdy='1' then
 						if bcd_wrcntr < bcd_width then
-							bcd_wrcntr := bcd_wrcntr + 1;
 							fmt_error <= false;
-						elsif bcd/=multiplex(bcd_tab,0, bcd'length) then
+						elsif bcd/=zero then
 							fmt_error <= true;
+						end if;
+						if bcd_wrcntr < bcd_width then
+							bcd_wrcntr := bcd_wrcntr + 1;
 						end if;
 					end if;
 					bcd_req := not to_stdulogic(to_bit(bcd_rdy));
@@ -133,6 +138,10 @@ begin
 			bcd_wraddr <= std_logic_vector(bcd_wrcntr(bcd_wraddr'range));
 		end if;
 	end process;
+
+	assert unsigned(dec) < unsigned(width)
+		report "dec >= width"
+		severity failure;
 
 	point <= std_logic_vector(resize(unsigned(dec), point'length));
 	bcd_trdy <=
@@ -172,7 +181,10 @@ begin
 
 				case state is
 				when s_init =>
-					if bcd_rddata=x"0" then
+					if bcd_rdaddr=unit then
+						report "bcd_read_p : bcd_rdaddr=unit";
+						state := s_blanked;
+					elsif bcd_rddata=x"0" then
 						fmt_wrcntr := fmt_wrcntr - 1;
 						fmt_wrdata <= multiplex(bcd_tab, blank, bcd'length);
 						bcd_rdcntr := bcd_rdcntr - 1;
@@ -184,6 +196,7 @@ begin
 						fmt_wrdata <= multiplex(bcd_tab, plus, bcd'length);
 						state := s_blanked;
 					else
+						fmt_wrcntr := fmt_wrcntr - 1;
 						fmt_wrdata <= multiplex(bcd_tab, bcd_rddata, bcd'length);
 						bcd_rdcntr := bcd_rdcntr - 1;
 						state := s_blanked;
