@@ -281,9 +281,9 @@ begin
 				clk  => rgtr_clk,
 				req  => dbdbbl_req,
 				rdy  => dbdbbl_rdy,
+				bin  => bin,
 				bcd_irdy => bcd_irdy,
 				bcd_trdy => bcd_trdy,
-				bin  => bin,
 				bcd  => bcd);
 	
 			format_e : entity hdl4fpga.format
