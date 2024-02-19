@@ -291,7 +291,7 @@ begin
 				max_width => bcd_width)
 			port map (
 				tab      => to_ascii("0123456789 +-,."),
-				width    => x"3",
+				width    => x"4",
 				dec      => vt_chanid,
 				neg      => vt_offset(vt_offset'left),
 				clk      => rgtr_clk,
