@@ -117,10 +117,10 @@ entity scopeio_textbox is
 			report "unit <= 0.0"
 			severity failure;
 		loop
-			report integer'image(exp);
 			if mant-floor(mant) /= 0.0 then
 				mant := mant * 10.0;
 				exp  := exp + 1;
+				report "------>    "  & real'image(mant-floor(mant));
 			elsif exp mod 3/=0 then
 				mant := mant * 10.0;
 				exp  := exp + 1;
