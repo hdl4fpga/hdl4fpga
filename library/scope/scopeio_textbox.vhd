@@ -110,6 +110,7 @@ entity scopeio_textbox is
 		return string is
 		variable exp  : integer;
 		variable mant : real;
+		variable rndd : natural; --Lattice Diamond fix
 	begin
 		exp  := 0;
 		mant := unit;
@@ -124,8 +125,8 @@ entity scopeio_textbox is
 				exit;
 			end if;
 		end loop;
-		report real'image(abs(mant-round(mant)));
-		return "{mant:" & natural'image(natural(round(mant))) & ",exp:" & integer'image(exp) & "}";
+		rndd := natural(round(mant)); --Lattice Diamond fix
+		return "{mant:" & natural'image(rndd) & ",exp:" & integer'image(exp) & "}";
 	end;
 
 	function yyy (
@@ -136,12 +137,13 @@ entity scopeio_textbox is
 	begin
 
 		for i in zzz'range loop
-			retval(i) := jso(xxx(unit*zzz(i)))**".mant";
+			retval(i) := (jso(xxx(unit*zzz(i)/32.0))**".mant");
 		end loop;
 		return retval;
 	end;
 
 	constant hhh : natural_vector := yyy(vt_unit);
+	constant hhh_length : natural := unsigned_num_bits(max(hhh)-1);
 end;
 
 architecture def of scopeio_textbox is
@@ -199,9 +201,9 @@ begin
 		constant bcd_width    : natural := 8;
 		constant bcd_length   : natural := 4;
 		constant bcd_digits   : natural := 1;
-		-- signal bcd            : std_logic_vector(0 to bcd_length*bcd_digits*((5+bcd_digits-1)/bcd_digits)-1);
 		signal bcd            : std_logic_vector(0 to bcd_digits*bcd_length-1);
-		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+vt_scale'length+bin_digits-1)/bin_digits)-1);
+		-- signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+vt_scale'length+bin_digits-1)/bin_digits)-1);
+		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+hhh_length+bin_digits-1)/bin_digits)-1);
 	begin
 
 		myip4_e : entity hdl4fpga.scopeio_rgtrmyip
@@ -283,6 +285,7 @@ begin
 			signal bcd_irdy : std_logic;
 			signal bcd_trdy : std_logic;
 
+			signal yyy : std_logic_vector(0 to hhh_length-1);
 		begin
 
 			process (rgtr_clk)
@@ -300,6 +303,7 @@ begin
 				-signed(vt_offset) when vt_offset(vt_offset'left)='1' else
 				 signed(vt_offset);
 
+			yyy <= std_logic_vector(to_unsigned(hhh(0), yyy'length));
 			mul_ser_e : entity hdl4fpga.mul_ser
 			generic map (
 				lsb => true)
@@ -307,7 +311,8 @@ begin
 				clk => rgtr_clk,
 				req => mul_req,
 				rdy => mul_rdy,
-				a   => vt_scale,
+				-- a   => vt_scale,
+				a   => yyy,
 				b   => std_logic_vector(positive),
 				s   => bin);
 
