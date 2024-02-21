@@ -132,7 +132,7 @@ entity scopeio_textbox is
 		constant unit : real)
 		return natural_vector is
 		constant zzz    : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
-		variable retval : natura_vector(0 to 4-1);
+		variable retval : natural_vector(0 to 4-1);
 	begin
 
 		for i in zzz'range loop
