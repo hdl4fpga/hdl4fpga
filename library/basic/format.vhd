@@ -39,6 +39,7 @@ entity format is
 		neg       : in  std_logic := '0';
 		sign      : in  std_logic := '0';
 		width     : in  std_logic_vector := (0 to 0 => '0');
+		width1    : in  std_logic_vector := (0 to 0 => '0');
 		bcd_frm   : in  std_logic;
 		bcd_irdy  : in  std_logic := '1';
 		bcd_trdy  : out std_logic := '1';
@@ -259,6 +260,10 @@ begin
 			if (to_bit(code_rdy) xor to_bit(code_req))='1' then
 				if unsigned(fmt_rdaddr)=0 then
 					code_rdy <= to_stdulogic(to_bit(code_req));
+				elsif unsigned(width1)/=0 then
+					if unsigned(fmt_rdaddr)+unsigned(width1)=unsigned(bcd_wraddr) then
+						code_rdy <= to_stdulogic(to_bit(code_req));
+					end if;
 				end if;
 				if code_trdy='1' then
 					fmt_rdcntr := fmt_rdcntr - 1;
