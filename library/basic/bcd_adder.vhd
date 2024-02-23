@@ -36,45 +36,44 @@ entity bcd_adder is
 	constant bcd_length : natural := 4;
 end;
 
-architecture def of bcdadder is
-	subtype digit_vector is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
+architecture def of bcd_adder is
+	subtype digit_vector is unsigned(bcd_length*((s'length+bcd_length-1)/bcd_length)-1 downto 0);
 begin
 
 	process (a, b)
+		variable opa  : unsigned(0 to a'length-1);
+		variable opb  : unsigned(0 to b'length-1);
+		variable ops  : unsigned(0 to s'length-1);
+
 		variable sum  : unsigned(0 to bcd_length+1);
 		variable sum6 : unsigned(0 to bcd_length);
 		variable op1  : unsigned(sum'range);
-		variable op1  : unsigned(sum'range);
-		alias digit is sum(0 to bcd_length);
+		variable op2  : unsigned(sum'range);
+		variable cy   : std_logic;
 	begin
-		op1  := resize(unsigned(a_op(bcd_length-1 downto 0) & '1'), op1'length);
-		op2  := resize(unsigned(b_op(bcd_length-1 downto 0) &  cy), op2'length);
-		sum  := op1 + op2;
-		sum6 := sum(sum6'range) + 6;
-		if sum6 >= 16 then
-			sum6 := rotate_left(sum6, 1);
-		else
-			sum  := rotate_left(sum,  1);
-		end if;
-		s_op <= sum(0 to bcd_length-1);
+		opa  := unsigned(a);
+		opb  := unsigned(b);
+
+		for i in 0 to s'length/bcd_length-1 loop
+    		opa  := rotate_right(opa, bcd_length);
+    		opb  := rotate_right(opb, bcd_length);
+    		op1  := resize(unsigned(opa(0 to bcd_length-1) & '1'), op1'length);
+    		op2  := resize(unsigned(opa(0 to bcd_length-1) &  cy), op2'length);
+    		sum  := op1 + op2;
+    		sum6 := sum(sum6'range) + 6;
+    		if sum6 >= 16 then
+    			sum6 := rotate_left(sum6, 1);
+				cy   := '1';
+    		else
+    			sum  := rotate_left(sum,  1);
+				cy   := '0';
+    		end if;
+
+    		ops := shift_right(ops, bcd_length);
+    		ops := sum(0 to bcd_length-1);
+    		opa(0 to bcd_length-1) := (others => '0');
+    		opb(0 to bcd_length-1) := (others => '0');
+		end loop;
 	end process;
-	dbdbbl_g : for i in 0 to digit_vector'length/bcd_length-1 generate
-
-		digit_in <= unsigned(a) + unsgine
-		adder_g : if adder generate
-			process (digit_in)
-			begin
-				if digit_in < x"5" then
-					digit_out <= digit_in;
-				else
-					digit_out <= digit_in - x"3";
-				end if;
-			end process;
-		end generate;
-
-		lut_e : if not adder generate
-		end generate;
-
-	end generate;
 
 end;
