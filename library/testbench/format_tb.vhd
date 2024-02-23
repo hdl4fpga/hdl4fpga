@@ -81,7 +81,7 @@ begin
 		clk => clk,
 		req => dbdbbl_req,
 		rdy => dbdbbl_rdy,
-		bin => std_logic_vector(to_unsigned(40,15)), -- b"1001110",
+		bin => std_logic_vector(to_unsigned(1234567,15)), -- b"1001110",
 		bcd_irdy => frm,
 		bcd_trdy => trdy,
 		bcd => bcd);
@@ -92,7 +92,7 @@ begin
 	port map (
 		tab      => to_ascii("0123456789 +-,."),
 		clk      => clk,
-		width    => x"4",
+		width    => x"0",
 		dec      => x"2",
 		bcd_frm  => frm,
 		bcd_irdy => frm,

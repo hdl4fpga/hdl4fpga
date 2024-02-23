@@ -2,6 +2,76 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+entity dbdbbl_srl is
+	generic (
+		cnt   : natural;
+		adder : boolean := false);
+	port (
+		ini   : in  std_logic_vector := (0 to 0 => '0');
+		bcd   : out std_logic_vector);
+end;
+
+architecture def of dbdbbl_srl is
+	constant bcd_length : natural := 4;
+	subtype digit_vector is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
+	type bcdword_vector is array(natural range <>) of digit_vector;
+	signal digits_out : bcdword_vector(0 to cnt-1);
+begin
+
+	digits_g : for k in 0 to cnt-1 generate
+		signal digits_in : digit_vector;
+		signal digits    : digit_vector;
+	begin
+
+		process (digits_out, ini)
+		begin
+			if k=0 then
+				digits_in <= shift_right(resize(unsigned(ini), digits'length),1);
+			else
+				digits_in <= shift_right(digits_out(k-1),1);
+			end if;
+		end process;
+
+		dbdbbl_g : for i in 0 to digit_vector'length/bcd_length-1 generate
+			alias digit_in  : unsigned(bcd_length-1 downto 0) is digits_in(bcd_length*(i+1)-1 downto bcd_length*i);
+			alias digit_out : unsigned(bcd_length-1 downto 0) is digits   (bcd_length*(i+1)-1 downto bcd_length*i);
+		begin
+
+			adder_g : if adder generate
+				process (digit_in)
+				begin
+					if digit_in < x"5" then
+						digit_out <= digit_in;
+					else
+						digit_out <= digit_in - x"3";
+					end if;
+				end process;
+			end generate;
+
+			lut_e : if not adder generate
+				with digit_in select
+				digit_out <= 
+					digit_in when "0000"|"0001"|"0010"|"0011"|"0100",
+					"0101"  when "1000",
+					"0110"  when "1001",
+					"0111"  when "1010",
+					"1000"  when "1011",
+					"1001"  when "1100",
+					"----"  when others;
+			end generate;
+
+			digits_out(k) <= unsigned(digits);
+		end generate;
+
+	end generate;
+	bcd <= std_logic_vector(resize(digits_out(digits_out'right), bcd'length)); 
+
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
 entity dbdbbl is
 	generic (
 		adder : boolean := false);
@@ -13,14 +83,14 @@ end;
 
 architecture def of dbdbbl is
 	constant bcd_length : natural := 4;
-	subtype digit_word is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
-	type bcdword_vector is array(natural range <>) of digit_word;
+	subtype digit_vector is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
+	type bcdword_vector is array(natural range <>) of digit_vector;
 	signal digits_out : bcdword_vector(bin'range);
 begin
 
 	digits_g : for k in bin'range generate
-		signal digits_in : digit_word;
-		signal digits    : digit_word;
+		signal digits_in : digit_vector;
+		signal digits    : digit_vector;
 	begin
 
 		process (digits_out, ini)
@@ -34,7 +104,7 @@ begin
 			end if;
 		end process;
 
-		dbdbbl_g : for i in 0 to digit_word'length/bcd_length-1 generate
+		dbdbbl_g : for i in 0 to digit_vector'length/bcd_length-1 generate
 			alias digit_in  : unsigned(bcd_length-1 downto 0) is digits_in(bcd_length*(i+1)-1 downto bcd_length*i);
 			alias digit_out : unsigned(bcd_length-1 downto 0) is digits   (bcd_length*(i+1)-1 downto bcd_length*i);
 		begin
