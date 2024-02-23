@@ -27,10 +27,10 @@ begin
 		process (digits_out, ini)
 		begin
 			if k=0 then
-				round  <= ini(ini'right);
+				round     <= ini(ini'right);
 				digits_in <= shift_right(resize(unsigned(ini), digits'length),1);
 			else
-				round  <= digits_out(k-1)(digit_vector'right);
+				round     <= digits_out(k-1)(digit_vector'right);
 				digits_in <= shift_right(digits_out(k-1),1);
 			end if;
 		end process;

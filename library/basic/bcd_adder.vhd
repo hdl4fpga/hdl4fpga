@@ -25,57 +25,56 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity bcdadder is
+entity bcd_adder is
 	port (
-		clk : in  std_logic := '-';
-		ini : in  std_logic := '1';
 		ci  : in  std_logic := '0' ;
 		a   : in  std_logic_vector;
 		b   : in  std_logic_vector;
 		co  : out std_logic;
 		s   : out std_logic_vector);
+
+	constant bcd_length : natural := 4;
 end;
 
 architecture def of bcdadder is
-	signal cy_q : std_logic;
-	signal cy_d : std_logic;
+	subtype digit_vector is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
 begin
 
-	process (clk)
+	process (a, b)
+		variable sum  : unsigned(0 to bcd_length+1);
+		variable sum6 : unsigned(0 to bcd_length);
+		variable op1  : unsigned(sum'range);
+		variable op1  : unsigned(sum'range);
+		alias digit is sum(0 to bcd_length);
 	begin
-		if rising_edge(clk) then
-			cy_q <= cy_d;
+		op1  := resize(unsigned(a_op(bcd_length-1 downto 0) & '1'), op1'length);
+		op2  := resize(unsigned(b_op(bcd_length-1 downto 0) &  cy), op2'length);
+		sum  := op1 + op2;
+		sum6 := sum(sum6'range) + 6;
+		if sum6 >= 16 then
+			sum6 := rotate_left(sum6, 1);
+		else
+			sum  := rotate_left(sum,  1);
 		end if;
+		s_op <= sum(0 to bcd_length-1);
 	end process;
+	dbdbbl_g : for i in 0 to digit_vector'length/bcd_length-1 generate
 
-	process (ini, ci, a, b, cy_q)
-		variable op1 : unsigned(a'length-1 downto 0);
-		variable op2 : unsigned(b'length-1 downto 0);
-		variable add : unsigned(s'length-1 downto 0);
-		variable bcd : unsigned(0 to 4+1);
-	begin
+		digit_in <= unsigned(a) + unsgine
+		adder_g : if adder generate
+			process (digit_in)
+			begin
+				if digit_in < x"5" then
+					digit_out <= digit_in;
+				else
+					digit_out <= digit_in - x"3";
+				end if;
+			end process;
+		end generate;
 
-		bcd := (1 to 5 => '0') & ((cy_q and not ini) or (ci and ini));
-		op1 := unsigned(a);
-		op2 := unsigned(b);
-		add := (others => '0');
+		lut_e : if not adder generate
+		end generate;
 
-		for i in 0 to s'length/4-1 loop
-			bcd := ('0' & op1(4-1 downto 0) & bcd(0));
-			bcd := ('0' & op2(4-1 downto 0) & '1') + bcd;
-			if bcd(1 to 4) > 9 then
-				bcd := bcd + (2*6+1);
-			end if;
-			add(4-1 downto 0) := bcd(1 to 4);
-			op1 := op1 ror 4;
-			op2 := op2 ror 4;
-			add := add ror 4;
-		end loop;
-
-		cy_d <= bcd(0);
-		s    <= std_logic_vector(add);
-	end process;
-
-	co <= cy_d;
+	end generate;
 
 end;
