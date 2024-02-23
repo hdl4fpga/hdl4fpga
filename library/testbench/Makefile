@@ -300,6 +300,8 @@ HDL4FPGA__dhcpc_dscb__def = $(LIB_HDL4FPGA)/dhcpc_dscb/def.dat
 HDL4FPGA__dhcpc_dscb = $(LIB_HDL4FPGA)/dhcpc_dscb/_primary.dat
 HDL4FPGA__desser__mux = $(LIB_HDL4FPGA)/desser/mux.dat
 HDL4FPGA__desser = $(LIB_HDL4FPGA)/desser/_primary.dat
+HDL4FPGA__dbdbbl_srl__def = $(LIB_HDL4FPGA)/dbdbbl_srl/def.dat
+HDL4FPGA__dbdbbl_srl = $(LIB_HDL4FPGA)/dbdbbl_srl/_primary.dat
 HDL4FPGA__dbdbbl_shr__beh = $(LIB_HDL4FPGA)/dbdbbl_shr/beh.dat
 HDL4FPGA__dbdbbl_shr = $(LIB_HDL4FPGA)/dbdbbl_shr/_primary.dat
 HDL4FPGA__dbdbbl_ser__beh = $(LIB_HDL4FPGA)/dbdbbl_ser/beh.dat
@@ -329,6 +331,8 @@ HDL4FPGA__cga_adapter = $(LIB_HDL4FPGA)/cga_adapter/_primary.dat
 HDL4FPGA__box_edges__def = $(LIB_HDL4FPGA)/box_edges/def.dat
 HDL4FPGA__box_edges = $(LIB_HDL4FPGA)/box_edges/_primary.dat
 HDL4FPGA__bcdfonts = $(LIB_HDL4FPGA)/bcdfonts/_primary.dat
+HDL4FPGA__bcd_adder__def = $(LIB_HDL4FPGA)/bcd_adder/def.dat
+HDL4FPGA__bcd_adder = $(LIB_HDL4FPGA)/bcd_adder/_primary.dat
 HDL4FPGA__base__body = $(LIB_HDL4FPGA)/base/body.dat
 HDL4FPGA__base = $(LIB_HDL4FPGA)/base/_primary.dat
 HDL4FPGA__barrel__beh = $(LIB_HDL4FPGA)/barrel/beh.dat
@@ -646,6 +650,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__dhcpc_dscb) \
     $(HDL4FPGA__desser__mux) \
     $(HDL4FPGA__desser) \
+    $(HDL4FPGA__dbdbbl_srl__def) \
+    $(HDL4FPGA__dbdbbl_srl) \
     $(HDL4FPGA__dbdbbl_shr__beh) \
     $(HDL4FPGA__dbdbbl_shr) \
     $(HDL4FPGA__dbdbbl_ser__beh) \
@@ -675,6 +681,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__box_edges__def) \
     $(HDL4FPGA__box_edges) \
     $(HDL4FPGA__bcdfonts) \
+    $(HDL4FPGA__bcd_adder__def) \
+    $(HDL4FPGA__bcd_adder) \
     $(HDL4FPGA__base__body) \
     $(HDL4FPGA__base) \
     $(HDL4FPGA__barrel__beh) \
@@ -838,6 +846,13 @@ $(HDL4FPGA__base__body) : ../basic/base.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/base.vhd
 
+$(HDL4FPGA__bcd_adder) \
+$(HDL4FPGA__bcd_adder__def) : ../basic/bcd_adder.vhd \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../basic/bcd_adder.vhd
+
 $(HDL4FPGA__bcdfonts) : ../video/fonts/bcdfonts.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
@@ -950,7 +965,9 @@ $(HDL4FPGA__dbdbbl_seqshr__def) \
 $(HDL4FPGA__dbdbbl_ser) \
 $(HDL4FPGA__dbdbbl_ser__beh) \
 $(HDL4FPGA__dbdbbl_shr) \
-$(HDL4FPGA__dbdbbl_shr__beh) : ../basic/dbdbbl.vhd \
+$(HDL4FPGA__dbdbbl_shr__beh) \
+$(HDL4FPGA__dbdbbl_srl) \
+$(HDL4FPGA__dbdbbl_srl__def) : ../basic/dbdbbl.vhd \
 		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -1765,6 +1782,7 @@ $(HDL4FPGA__scopeio_textbox) \
 $(HDL4FPGA__scopeio_textbox__def) : ../scope/scopeio_textbox.vhd \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__cgaram) \
+		$(HDL4FPGA__format) \
 		$(HDL4FPGA__dbdbbl_seq) \
 		$(HDL4FPGA__mul_ser) \
 		$(HDL4FPGA__scopeio_rgtrvtaxis) \
@@ -1778,10 +1796,10 @@ $(HDL4FPGA__scopeio_textbox__def) : ../scope/scopeio_textbox.vhd \
 		$(HDL4FPGA__cgafonts) \
 		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__videopkg) \
-		$(IEEE__math_real) \
 		$(HDL4FPGA__scopeiopkg) \
 		$(HDL4FPGA__jso) \
 		$(HDL4FPGA__base) \
+		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)

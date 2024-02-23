@@ -2,6 +2,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library hdl4fpga;
+
 entity dbdbbl_srl is
 	generic (
 		cnt   : natural;
@@ -63,7 +65,11 @@ begin
 					"----"  when others;
 			end generate;
 
-			digits_out(k) <= unsigned(digits);
+			bcd_adder_e : entity hdl4fpga.bcd_adder
+			port map (
+				a => std_logic_vector(digits),
+				s => digits_out(k));
+			-- digits_out(k) <= unsigned(digits);
 		end generate;
 
 	end generate;
