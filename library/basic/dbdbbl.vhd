@@ -6,9 +6,9 @@ library hdl4fpga;
 
 entity dbdbbl_srlfix is
 	generic (
-		round : boolean := false;
 		adder : boolean := false);
 	port (
+		rnd   : in  std_logic := '0';
 		ini   : in  std_logic_vector := (0 to 0 => '0');
 		bin   : buffer std_logic_vector;
 		bcd   : out std_logic_vector);
@@ -22,6 +22,7 @@ architecture def of dbdbbl_srlfix is
 	type bcdword_vector is array(natural range <>) of digit_word;
 
 	signal digits_out : bcdword_vector(bin'range);
+	signal s          : std_logic_vector(digit_word'range);
 begin
 
 	digits_g : for k in bin'range generate
@@ -78,21 +79,14 @@ begin
 
 	end generate;
 
-	noround_g : if not round generate
-	begin
-		bcd <= std_logic_vector(resize(digits_out(digits_out'right), bcd'length)); 
-	end generate;
-
-	round_g : if round generate
-		signal s : std_logic_vector(digit_word'range);
-	begin
-		bcd_adder_e : entity hdl4fpga.bcd_adder
-		port map (
-			ci => bin(bin'left),
-			a  => std_logic_vector(digits_out(digits_out'right)),
-			s  => s);
-		bcd <= std_logic_vector(resize(unsigned(s), bcd'length)); 
-	end generate;
+	bcd_adder_e : entity hdl4fpga.bcd_adder
+	port map (
+		ci => bin(bin'left),
+		a  => std_logic_vector(digits_out(digits_out'right)),
+		s  => s);
+	bcd <= 
+		s when rnd='1' else
+		std_logic_vector(resize(digits_out(digits_out'right), bcd'length)); 
 
 end;
 
@@ -109,29 +103,144 @@ entity dbdbbl_srl is
 	port (
 		ini   : in  std_logic_vector := (0 to 0 => '0');
 		cnt   : in  std_logic_vector;
-		bin   : buffer std_logic_vector;
 		bcd   : out std_logic_vector);
 
 	constant bcd_length : natural := 4;
-	alias    bin_rev    : std_logic_vector(bin'reverse_range) is bin;
 end;
 
 architecture def of dbdbbl_srl is
-	subtype digit_word  is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
+	subtype digit_word  is std_logic_vector(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
 	type bcdword_vector is array(natural range <>) of digit_word;
 
-	signal digits_out : bcdword_vector(bin'range);
+	alias sel : std_logic_vector(cnt'length-1 downto 0) is cnt;
+	signal digits : bcdword_vector(0 to cnt'length);
 begin
-	-- for i in cnt'range generate
-	-- begin
-    	-- dbdbbl_srlfix_e : entity hdl4fpga.dbdbbl_srlfix
-    	-- generic map (
-    		-- round => true)
-    	-- port map (
-    		-- ini => ,
-    		-- bin => bin,
-    		-- bcd => bcd);
-	-- end generate;
+	digits(0) <= std_logic_vector(resize(unsigned(ini), digit_word'length));
+	g : for i in sel'range generate
+		signal bin : std_logic_vector(0 to 2**i-1);
+		signal bcd : digit_word;
+	begin
+		dbdbbl_srlfix_e : entity hdl4fpga.dbdbbl_srlfix
+		port map (
+			ini => digits(i),
+			bin => bin,
+			bcd => bcd);
+
+		digits(i+1) <= bcd when sel(i)='1' else digits(i);
+	end generate;
+	bcd <= std_logic_vector(resize(unsigned(digits(digits'right)), bcd'length));
+
+end;
+
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library hdl4fpga;
+use hdl4fpga.base.all;
+
+entity dbdbblsrl_ser is
+	generic (
+		bcd_width  : natural;
+		bcd_digits : natural);
+	port (
+		clk  : in  std_logic;
+		frm  : in  std_logic;
+		irdy : in  std_logic := '1';
+		trdy : buffer std_logic := '1';
+		bin  : out std_logic_vector;
+		ini  : in  std_logic_vector := (0 to 0 => '0');
+		bcd  : out std_logic_vector);
+
+	constant bcd_length : natural := 4;
+	constant n : natural := bcd_length*bcd_digits;
+end;
+
+architecture beh of dbdbblsrl_ser is
+
+	signal bin_dbbl : std_logic_vector(bin'range);
+	signal ini_dbbl : std_logic_vector(n-1 downto 0);
+	signal bcd_dbbl : std_logic_vector(bin'length+n-1 downto 0);
+
+	constant addr_size : natural := unsigned_num_bits(bcd_width/bcd_digits-1);
+	signal addr        : std_logic_vector(1 to addr_size);
+	signal rd_data     : std_logic_vector(bcd'range);
+	signal init        : boolean;
+begin
+
+	mem_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => clk,
+		wr_addr => addr,
+		wr_ena  => irdy,
+		wr_data => bcd_dbbl(n-1 downto 0),
+		rd_addr => addr,
+		rd_data => rd_data);
+
+	process (bin_dbbl, clk)
+		type states is (s_init, s_run);
+		variable state : states;
+		variable cntr  : unsigned(0 to addr'length);
+		variable cy    : std_logic_vector(bin'length-1 downto 0);
+	begin
+		ff_l : if rising_edge(clk) then
+			case state is
+			when s_init =>
+				if frm='1' then
+					if irdy='1' then
+						cntr := to_unsigned(bcd_width/bcd_digits-2, cntr'length);
+						state := s_run;
+					end if;
+				else
+					cntr := (others => '1');
+				end if;
+				init <= true;
+			when s_run =>
+				if irdy='1' then
+					if cntr(0)='0' then
+						cntr := cntr - 1;
+						if cntr(0)='1' then
+							init <= false;
+						end if;
+					elsif frm='1' then
+						cntr := to_unsigned(bcd_width/bcd_digits-2, cntr'length);
+					else
+						init  <= true;
+						state := s_init;
+					end if;
+				end if;
+			end case;
+			trdy <= cntr(0);
+			if irdy='1' then
+				cy   := bcd_dbbl(bin'length+n-1 downto n);
+				bcd  <= bcd_dbbl(n-1 downto 0);
+				addr <= std_logic_vector(cntr(addr'range));
+			end if;
+		end if;
+
+		comb_l : case state is
+		when s_init => 
+			cy := (others => '0');
+		when s_run => 
+			if cntr(0)='1' then
+				bin <= cy;
+			else
+				cy := bin_dbbl;
+			end if;
+		end case;
+
+	end process;
+
+	ini_dbbl <= 
+		std_logic_vector(resize(unsigned(ini), ini_dbbl'length)) when init else
+		rd_data;
+
+	dbdbbl_e : entity hdl4fpga.dbdbbl_srlfix
+	port map (
+		bin => bin_dbbl,
+		ini => ini_dbbl,
+		bcd => bcd_dbbl);
 
 end;
 
@@ -348,18 +457,18 @@ begin
 	begin
 		if rising_edge(clk) then
 			if (to_bit(req) xor to_bit(rdy))='1' then
-    			case state is
-    			when s_init =>
-    				shr     := unsigned(bin);
-    				ser_frm <= '1';
-    				ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
-    				cntr    := bin'length/bin_digits-2;
+				case state is
+				when s_init =>
+					shr     := unsigned(bin);
+					ser_frm <= '1';
+					ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
+					cntr    := bin'length/bin_digits-2;
 					trdy    <= '0';
 					state   := s_run;
-    			when s_run =>
-        			if irdy='1' then
-        				if ser_trdy='1' then
-        					if cntr < 0 then
+				when s_run =>
+					if irdy='1' then
+						if ser_trdy='1' then
+							if cntr < 0 then
 								if ser_frm='0' then
 									trdy  <= '0';
 									rdy   <= to_stdulogic(to_bit(req));
@@ -367,22 +476,22 @@ begin
 								else
 									trdy  <= '1';
 								end if;
-        						ser_frm <= '0';
-        					else
-        						ser_frm <= '1';
-        						cntr := cntr - 1;
-        					end if;
-        				end if;
+								ser_frm <= '0';
+							else
+								ser_frm <= '1';
+								cntr := cntr - 1;
+							end if;
+						end if;
 
 						if ser_frm='1' then
 							if ser_trdy='1' then
-        						shr     := shift_left(shr, ser_bin'length);
-        						ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
-        					end if;
+								shr     := shift_left(shr, ser_bin'length);
+								ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
+							end if;
 						end if;
 
 					end if;
-    			end case;
+				end case;
 			else
 				state := s_init;
 			end if;
@@ -565,18 +674,18 @@ begin
 	begin
 		if rising_edge(clk) then
 			if (to_bit(req) xor to_bit(rdy))='1' then
-    			case state is
-    			when s_init =>
-    				shr     := unsigned(bin);
-    				ser_frm <= '1';
-    				ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
-    				cntr    := bin'length/bin_digits-2;
+				case state is
+				when s_init =>
+					shr     := unsigned(bin);
+					ser_frm <= '1';
+					ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
+					cntr    := bin'length/bin_digits-2;
 					bcd_irdy <= '0';
 					state   := s_run;
-    			when s_run =>
-        			if (bin_irdy and bcd_trdy)='1' then
-        				if ser_trdy='1' then
-        					if cntr < 0 then
+				when s_run =>
+					if (bin_irdy and bcd_trdy)='1' then
+						if ser_trdy='1' then
+							if cntr < 0 then
 								if ser_frm='0' then
 									bcd_irdy <= '0';
 									rdy   <= to_stdulogic(to_bit(req));
@@ -584,22 +693,22 @@ begin
 								else
 									bcd_irdy <= '1';
 								end if;
-        						ser_frm <= '0';
-        					else
-        						ser_frm <= '1';
-        						cntr := cntr - 1;
-        					end if;
-        				end if;
+								ser_frm <= '0';
+							else
+								ser_frm <= '1';
+								cntr := cntr - 1;
+							end if;
+						end if;
 
 						if ser_frm='1' then
 							if ser_trdy='1' and ser_irdy='1' then
-        						shr     := shift_left(shr, ser_bin'length);
-        						ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
-        					end if;
+								shr     := shift_left(shr, ser_bin'length);
+								ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
+							end if;
 						end if;
 
 					end if;
-    			end case;
+				end case;
 			else
 				state := s_init;
 			end if;
