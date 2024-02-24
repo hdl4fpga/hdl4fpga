@@ -48,13 +48,15 @@ use ieee.std_logic_1164.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-architecture dbdbbl_srl_tb of testbench is
+architecture dbdbbl_srlfix_tb of testbench is
 	signal bcd : std_logic_vector(6*4-1 downto 0);
-	signal bin : std_logic_vector(0 to 8-1);
+	signal bin : std_logic_vector(0 to 4-1);
 begin
-	du_e : entity hdl4fpga.dbdbbl_srl
+	du_e : entity hdl4fpga.dbdbbl_srlfix
+	generic map (
+		round => true)
 	port map (
-		ini => x"128",
+		ini => b"0001_0010_0000",
 		bin => bin,
 		bcd => bcd);
 end;

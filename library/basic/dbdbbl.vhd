@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 
-entity dbdbbl_srl is
+entity dbdbbl_srlfix is
 	generic (
 		round : boolean := false;
 		adder : boolean := false);
@@ -17,7 +17,7 @@ entity dbdbbl_srl is
 	alias    bin_rev    : std_logic_vector(bin'reverse_range) is bin;
 end;
 
-architecture def of dbdbbl_srl is
+architecture def of dbdbbl_srlfix is
 	subtype digit_word  is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
 	type bcdword_vector is array(natural range <>) of digit_word;
 
@@ -93,6 +93,45 @@ begin
 			s  => s);
 		bcd <= std_logic_vector(resize(unsigned(s), bcd'length)); 
 	end generate;
+
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library hdl4fpga;
+
+entity dbdbbl_srl is
+	generic (
+		round : boolean := false;
+		adder : boolean := false);
+	port (
+		ini   : in  std_logic_vector := (0 to 0 => '0');
+		cnt   : in  std_logic_vector;
+		bin   : buffer std_logic_vector;
+		bcd   : out std_logic_vector);
+
+	constant bcd_length : natural := 4;
+	alias    bin_rev    : std_logic_vector(bin'reverse_range) is bin;
+end;
+
+architecture def of dbdbbl_srl is
+	subtype digit_word  is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
+	type bcdword_vector is array(natural range <>) of digit_word;
+
+	signal digits_out : bcdword_vector(bin'range);
+begin
+	-- for i in cnt'range generate
+	-- begin
+    	-- dbdbbl_srlfix_e : entity hdl4fpga.dbdbbl_srlfix
+    	-- generic map (
+    		-- round => true)
+    	-- port map (
+    		-- ini => ,
+    		-- bin => bin,
+    		-- bcd => bcd);
+	-- end generate;
 
 end;
 
