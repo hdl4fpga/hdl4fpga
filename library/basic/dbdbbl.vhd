@@ -15,14 +15,14 @@ end;
 
 architecture def of dbdbbl_srl is
 	constant bcd_length : natural := 4;
-	subtype digit_vector is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
-	type bcdword_vector is array(natural range <>) of digit_vector;
+	subtype digit_word is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
+	type bcdword_vector is array(natural range <>) of digit_word;
 	signal digits_out : bcdword_vector(0 to cnt-1);
 begin
 
 	digits_g : for k in 0 to cnt-1 generate
-		signal digits_in : digit_vector;
-		signal digits    : digit_vector;
+		signal digits_in : digit_word;
+		signal digits    : digit_word;
 		signal round     : std_logic;
 	begin
 
@@ -32,14 +32,16 @@ begin
 				round     <= ini(ini'right);
 				digits_in <= shift_right(resize(unsigned(ini), digits'length),1);
 			else
-				round     <= digits_out(k-1)(digit_vector'right);
+				round     <= digits_out(k-1)(digit_word'right);
 				digits_in <= shift_right(digits_out(k-1),1);
 			end if;
 		end process;
 
-		dbdbbl_g : for i in 0 to digit_vector'length/bcd_length-1 generate
+		dbdbbl_g : for i in 0 to digit_word'length/bcd_length-1 generate
 			alias digit_in  : unsigned(bcd_length-1 downto 0) is digits_in(bcd_length*(i+1)-1 downto bcd_length*i);
 			alias digit_out : unsigned(bcd_length-1 downto 0) is digits   (bcd_length*(i+1)-1 downto bcd_length*i);
+			signal a : std_logic_vector(digit_word'range);
+			signal s : std_logic_vector(digit_word'range);
 		begin
 
 			adder_g : if adder generate
@@ -65,11 +67,13 @@ begin
 					"----"  when others;
 			end generate;
 
+			a <= std_logic_vector(digits);
 			bcd_adder_e : entity hdl4fpga.bcd_adder
 			port map (
+				ci => round,
 				a => std_logic_vector(digits),
-				s => digits_out(k));
-			-- digits_out(k) <= unsigned(digits);
+				s => s);
+			digits_out(k) <= unsigned(s);
 		end generate;
 
 	end generate;
@@ -92,14 +96,14 @@ end;
 
 architecture def of dbdbbl is
 	constant bcd_length : natural := 4;
-	subtype digit_vector is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
-	type bcdword_vector is array(natural range <>) of digit_vector;
+	subtype digit_word is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
+	type bcdword_vector is array(natural range <>) of digit_word;
 	signal digits_out : bcdword_vector(bin'range);
 begin
 
 	digits_g : for k in bin'range generate
-		signal digits_in : digit_vector;
-		signal digits    : digit_vector;
+		signal digits_in : digit_word;
+		signal digits    : digit_word;
 	begin
 
 		process (digits_out, ini)
@@ -113,7 +117,7 @@ begin
 			end if;
 		end process;
 
-		dbdbbl_g : for i in 0 to digit_vector'length/bcd_length-1 generate
+		dbdbbl_g : for i in 0 to digit_word'length/bcd_length-1 generate
 			alias digit_in  : unsigned(bcd_length-1 downto 0) is digits_in(bcd_length*(i+1)-1 downto bcd_length*i);
 			alias digit_out : unsigned(bcd_length-1 downto 0) is digits   (bcd_length*(i+1)-1 downto bcd_length*i);
 		begin
