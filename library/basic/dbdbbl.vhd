@@ -6,34 +6,40 @@ library hdl4fpga;
 
 entity dbdbbl_srl is
 	generic (
-		cnt   : natural;
+		round : boolean := false;
 		adder : boolean := false);
 	port (
 		ini   : in  std_logic_vector := (0 to 0 => '0');
+		bin   : buffer std_logic_vector;
 		bcd   : out std_logic_vector);
+
+	constant bcd_length : natural := 4;
+	alias    bin_rev    : std_logic_vector(bin'reverse_range) is bin;
 end;
 
 architecture def of dbdbbl_srl is
-	constant bcd_length : natural := 4;
-	subtype digit_word is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
+	subtype digit_word  is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
 	type bcdword_vector is array(natural range <>) of digit_word;
-	signal digits_out : bcdword_vector(0 to cnt-1);
+
+	signal digits_out : bcdword_vector(bin'range);
 begin
 
-	digits_g : for k in 0 to cnt-1 generate
+	digits_g : for k in bin'range generate
 		signal digits_in : digit_word;
 		signal digits    : digit_word;
-		signal round     : std_logic;
 	begin
 
 		process (digits_out, ini)
 		begin
-			if k=0 then
-				round     <= ini(ini'right);
-				digits_in <= shift_right(resize(unsigned(ini), digits'length),1);
+			if k=bin'left then
+				bin_rev(k) <= ini(ini'right);
+				digits_in  <= shift_right(resize(unsigned(ini), digits'length),1);
+			elsif bin'ascending then
+				bin_rev(k) <= digits_out(k-1)(digit_word'right);
+				digits_in  <= shift_right(digits_out(k-1),1);
 			else
-				round     <= digits_out(k-1)(digit_word'right);
-				digits_in <= shift_right(digits_out(k-1),1);
+				bin_rev(k) <= digits_out(k+1)(digit_word'right);
+				digits_in  <= shift_right(digits_out(k+1),1);
 			end if;
 		end process;
 
@@ -67,17 +73,26 @@ begin
 					"----"  when others;
 			end generate;
 
-			a <= std_logic_vector(digits);
-			bcd_adder_e : entity hdl4fpga.bcd_adder
-			port map (
-				ci => round,
-				a => std_logic_vector(digits),
-				s => s);
-			digits_out(k) <= unsigned(s);
+			digits_out(k) <= digits;
 		end generate;
 
 	end generate;
-	bcd <= std_logic_vector(resize(digits_out(digits_out'right), bcd'length)); 
+
+	noround_g : if not round generate
+	begin
+		bcd <= std_logic_vector(resize(digits_out(digits_out'right), bcd'length)); 
+	end generate;
+
+	round_g : if round generate
+		signal s : std_logic_vector(digit_word'range);
+	begin
+		bcd_adder_e : entity hdl4fpga.bcd_adder
+		port map (
+			ci => bin(bin'left),
+			a  => std_logic_vector(digits_out(digits_out'right)),
+			s  => s);
+		bcd <= std_logic_vector(resize(unsigned(s), bcd'length)); 
+	end generate;
 
 end;
 
@@ -85,7 +100,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity dbdbbl is
+entity dbdbbl_sll is
 	generic (
 		adder : boolean := false);
 	port (
@@ -94,7 +109,7 @@ entity dbdbbl is
 		bcd   : out std_logic_vector);
 end;
 
-architecture def of dbdbbl is
+architecture def of dbdbbl_sll is
 	constant bcd_length : natural := 4;
 	subtype digit_word is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
 	type bcdword_vector is array(natural range <>) of digit_word;
@@ -244,7 +259,7 @@ begin
 	end process;
 
 		
-	dbdbbl_e : entity hdl4fpga.dbdbbl
+	dbdbbl_e : entity hdl4fpga.dbdbbl_sll
 	port map (
 		bin => bin_dbbl,
 		ini => ini_dbbl,
@@ -453,7 +468,7 @@ begin
 		std_logic_vector(resize(unsigned(ini), ini_dbbl'length)) when init else
 		rd_data;
 
-	dbdbbl_e : entity hdl4fpga.dbdbbl
+	dbdbbl_e : entity hdl4fpga.dbdbbl_sll
 	port map (
 		bin => bin_dbbl,
 		ini => ini_dbbl,

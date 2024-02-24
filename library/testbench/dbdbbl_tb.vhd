@@ -30,7 +30,7 @@ use hdl4fpga.base.all;
 architecture dbdbbl_tb of testbench is
 	signal bcd : std_logic_vector(5*4-1 downto 0);
 begin
-	du_e : entity hdl4fpga.dbdbbl
+	du_e : entity hdl4fpga.dbdbbl_sll
 	port map (
 		bin => std_logic_vector(to_unsigned(32035,15)), -- b"1001110",
 		bcd => bcd);
@@ -50,19 +50,13 @@ use hdl4fpga.base.all;
 
 architecture dbdbbl_srl_tb of testbench is
 	signal bcd : std_logic_vector(6*4-1 downto 0);
+	signal bin : std_logic_vector(0 to 8-1);
 begin
 	du_e : entity hdl4fpga.dbdbbl_srl
-	generic map (
-		cnt => 4)
 	port map (
-		ini => x"500000",
+		ini => x"128",
+		bin => bin,
 		bcd => bcd);
-
-	process (bcd)
-	begin
-		report to_string(bcd);
-	end process;
-
 end;
 
 library ieee;
