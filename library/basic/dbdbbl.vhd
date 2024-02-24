@@ -160,8 +160,8 @@ end;
 architecture beh of dbdbblsrl_ser is
 
 	signal bin_dbbl : std_logic_vector(bin'range);
-	signal ini_dbbl : std_logic_vector(n-1 downto 0);
-	signal bcd_dbbl : std_logic_vector(bin'length+n-1 downto 0);
+	signal bcd_dbbl : std_logic_vector(n-1 downto 0);
+	signal ini_dbbl : std_logic_vector(bin'length+n-1 downto 0);
 
 	constant addr_size : natural := unsigned_num_bits(bcd_width/bcd_digits-1);
 	signal addr        : std_logic_vector(1 to addr_size);
