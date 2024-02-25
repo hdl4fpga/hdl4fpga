@@ -126,6 +126,49 @@ end;
 
 library ieee;
 use ieee.std_logic_1164.all;
+
+library hdl4fpga;
+use hdl4fpga.base.all;
+
+architecture dbdbblsrlser_tb of testbench is
+	constant bcd_length : natural := 4;
+	constant bcd_digits : natural := 2;
+	constant bin_digits : natural := 4;
+
+	signal clk  : std_logic := '0';
+	signal frm  : std_logic := '0';
+	signal ini  : std_logic_vector(bcd_length*bcd_digits-1 downto 0) := x"01";
+	signal bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+	signal bin : std_logic_vector(0 to bin_digits-1);
+begin
+	clk <= not clk after 1 ns;
+
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			if frm='0' then
+				frm <= '1';
+			else
+				ini <= (others => '0');
+			end if;
+
+		end if;
+	end process;
+
+	du_e : entity hdl4fpga.dbdbblsrl_ser
+	generic map (
+		bcd_width  => 5,
+		bcd_digits => bcd_digits)
+	port map (
+		clk => clk,
+		frm => frm,
+		ini => ini,
+		bin => bin,
+		bcd => bcd);
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
