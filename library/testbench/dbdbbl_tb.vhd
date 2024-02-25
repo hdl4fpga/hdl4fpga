@@ -132,12 +132,13 @@ use hdl4fpga.base.all;
 
 architecture dbdbblsrlser_tb of testbench is
 	constant bcd_length : natural := 4;
-	constant bcd_digits : natural := 2;
-	constant bin_digits : natural := 4;
+	constant bcd_width  : natural := 6;
+	constant bcd_digits : natural := 1;
+	constant bin_digits : natural := 3;
 
 	signal clk  : std_logic := '0';
 	signal frm  : std_logic := '0';
-	signal ini  : std_logic_vector(bcd_length*bcd_digits-1 downto 0) := x"01";
+	signal ini  : std_logic_vector(bcd_length*bcd_digits-1 downto 0) := std_logic_vector(resize(unsigned'(x"8"), bcd_length*bcd_digits));
 	signal bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 	signal bin : std_logic_vector(0 to bin_digits-1);
 begin
@@ -157,7 +158,7 @@ begin
 
 	du_e : entity hdl4fpga.dbdbblsrl_ser
 	generic map (
-		bcd_width  => 5,
+		bcd_width  => bcd_width,
 		bcd_digits => bcd_digits)
 	port map (
 		clk => clk,

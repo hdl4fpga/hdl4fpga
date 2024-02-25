@@ -224,7 +224,8 @@ begin
 			ini_dbbl <= std_logic_vector(resize(unsigned(ini), ini_dbbl'length));
 		when s_run => 
 			if cntr(0)='1' then
-				ini_dbbl <= cy & std_logic_vector(resize(unsigned(ini), n));
+				-- ini_dbbl <= std_logic_vector(resize(unsigned(rd_data), ini_dbbl'length));
+				ini_dbbl <= std_logic_vector(resize(unsigned(ini), ini_dbbl'length));
 			else
 				ini_dbbl <= cy & rd_data;
 			end if;
