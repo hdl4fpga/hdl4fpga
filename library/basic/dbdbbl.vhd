@@ -165,20 +165,12 @@ architecture beh of dbdbblsrl_ser is
 
 	constant addr_size : natural := unsigned_num_bits(bcd_width/bcd_digits-1);
 	signal addr        : std_logic_vector(1 to addr_size);
+	signal wr_data     : std_logic_vector(bcd'range);
 	signal rd_data     : std_logic_vector(bcd'range);
 	signal init        : boolean;
 begin
 
-	mem_e : entity hdl4fpga.dpram
-	port map (
-		wr_clk  => clk,
-		wr_addr => addr,
-		wr_ena  => irdy,
-		wr_data => bcd_dbbl(n-1 downto 0),
-		rd_addr => addr,
-		rd_data => rd_data);
-
-	process (bin_dbbl, rd_data, clk)
+	process (bin_dbbl, clk)
 		type states is (s_init, s_run);
 		variable state : states;
 		variable cntr  : unsigned(0 to addr'length);
@@ -228,6 +220,7 @@ begin
 				ini_dbbl <= std_logic_vector(resize(unsigned(ini), ini_dbbl'length));
 			else
 				ini_dbbl <= cy & rd_data;
+				ini_dbbl <= cy & (0 to n-1 => '0');
 			end if;
 		end case;
 
@@ -238,6 +231,17 @@ begin
 		bin => bin_dbbl,
 		ini => ini_dbbl,
 		bcd => bcd_dbbl);
+
+	wr_data <= bcd_dbbl(n-1 downto 0);
+	mem_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => clk,
+		wr_addr => addr,
+		wr_ena  => irdy,
+		wr_data => wr_data,
+		rd_addr => addr,
+		rd_data => rd_data);
+
 	bin <= bin_dbbl;
 
 end;
