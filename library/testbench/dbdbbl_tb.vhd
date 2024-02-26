@@ -69,12 +69,12 @@ use hdl4fpga.base.all;
 architecture dbdbbl_srl_tb of testbench is
 	signal bcd : std_logic_vector(6*4-1 downto 0);
 	signal cnt : std_logic_vector(0 to 3-1);
-	signal bin : std_logic_vector(1 to 2**cnt'length-1);
+	signal bin : std_logic_vector(0 to 6-1);
 begin
 	du_e : entity hdl4fpga.dbdbbl_srl
 	port map (
-		ini => b"0001_0010_1000",
-		cnt => b"100",
+		ini => x"31",
+		cnt => b"101",
 		bin => bin,
 		bcd => bcd);
 end;

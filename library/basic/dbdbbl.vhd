@@ -112,9 +112,9 @@ architecture def of dbdbbl_srl is
 	subtype digit_word  is std_logic_vector(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
 	type bcdword_vector is array(natural range <>) of digit_word;
 
-	alias sel : std_logic_vector(cnt'length-1 downto 0) is cnt;
+	alias  sel    : std_logic_vector(cnt'length-1 downto 0) is cnt;
 	signal digits : bcdword_vector(0 to cnt'length);
-	signal xxx : std_logic_vector(1 to 2**cnt'length-1);
+	signal xxx    : std_logic_vector(2**cnt'length-1 downto 1);
 begin
 	digits(0) <= std_logic_vector(resize(unsigned(ini), digit_word'length));
 	g : for i in sel'range generate
@@ -127,11 +127,27 @@ begin
 			bin => bin,
 			bcd => bcd);
 
-		xxx(2**i to 2**(i+1)-1) <= bin;
+		xxx(2**(i+1)-1 downto 2**i) <= bin when sel(i)='1' else (others => '0');
 		digits(i+1) <= bcd when sel(i)='1' else digits(i);
 	end generate;
+
 	bcd <= std_logic_vector(resize(unsigned(digits(digits'right)), bcd'length));
-	bin <= xxx;
+	process (xxx, sel)
+		variable zzz : unsigned(xxx'range);
+		variable yyy : unsigned(xxx'reverse_range);
+	begin
+		zzz := unsigned(xxx);
+		yyy := (others => '0');
+		for i in sel'range loop
+			if sel(i)='1' then
+				yyy(1 to 2**i) := zzz(2**(i+1)-1 downto 2**i);
+				yyy := rotate_left(yyy, 2**i);
+			end if;
+			zzz := rotate_right(zzz, 2**i);
+		end loop;
+		bin <= std_logic_vector(resize(yyy, bin'length));
+	end process;
+
 
 end;
 
