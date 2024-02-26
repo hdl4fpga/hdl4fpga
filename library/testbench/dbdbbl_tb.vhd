@@ -170,6 +170,7 @@ begin
 	port map (
 		clk => clk,
 		frm => frm,
+		cnt => b"101",
 		ini => ini,
 		bin => bin,
 		bcd => bcd);

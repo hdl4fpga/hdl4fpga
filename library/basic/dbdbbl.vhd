@@ -133,19 +133,16 @@ begin
 
 	bcd <= std_logic_vector(resize(unsigned(digits(digits'right)), bcd'length));
 	process (bins, sel)
-		variable aux1 : unsigned(bins'range);
-		variable aux2 : unsigned(bins'reverse_range);
+		variable aux : unsigned(bins'reverse_range);
 	begin
-		aux1 := unsigned(bins);
-		aux2 := (others => '0');
+		aux := (others => '0');
 		for i in sel'range loop
 			if sel(i)='1' then
-				aux2(1 to 2**i) := aux1(2**(i+1)-1 downto 2**i);
-				aux2 := rotate_left(aux2, 2**i);
+				aux(1 to 2**i) := unsigned(bins(2**(i+1)-1 downto 2**i));
+				aux := rotate_left(aux, 2**i);
 			end if;
-			aux1 := rotate_right(aux1, 2**i);
 		end loop;
-		bin <= std_logic_vector(resize(aux2, bin'length));
+		bin <= std_logic_vector(resize(aux, bin'length));
 	end process;
 end;
 
@@ -166,6 +163,7 @@ entity dbdbblsrl_ser is
 		frm  : in  std_logic;
 		irdy : in  std_logic := '1';
 		trdy : buffer std_logic := '1';
+		cnt  : in  std_logic_vector := (0 to 0 => '0');
 		bin  : out std_logic_vector;
 		ini  : in  std_logic_vector := (0 to 0 => '0');
 		bcd  : out std_logic_vector);
@@ -176,7 +174,7 @@ end;
 
 architecture beh of dbdbblsrl_ser is
 
-	constant m : natural := 6;
+	constant m : natural := 6; --- WARNING should be parametrized
 	signal bin_dbbl : std_logic_vector(bin'range);
 	signal ini_dbbl : std_logic_vector(m+n-1 downto 0);
 	signal bcd_dbbl : std_logic_vector(ini_dbbl'range);
@@ -197,15 +195,14 @@ begin
 				cy := (others => '0');
 			end if;
 		end if;
-
 		ini_dbbl <= cy & ini;
-
 	end process;
 
-	srl_e : entity hdl4fpga.dbdbbl_srlfix
+	srl_e : entity hdl4fpga.dbdbbl_srl
 	port map (
 		bin => bin_dbbl,
 		ini => ini_dbbl,
+		cnt => cnt,
 		bcd => bcd_dbbl);
 
 	sll_e : entity hdl4fpga.dbdbbl_sllfix
@@ -232,9 +229,9 @@ end;
 
 architecture def of dbdbbl_sllfix is
 	constant bcd_length : natural := 4;
-	subtype digit_word is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
-	type bcdword_vector is array(natural range <>) of digit_word;
-	signal digits_out : bcdword_vector(bin'range);
+	subtype  digit_word     is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
+	type     bcdword_vector is array(natural range <>) of digit_word;
+	signal   digits_out : bcdword_vector(bin'range);
 begin
 
 	digits_g : for k in bin'range generate
