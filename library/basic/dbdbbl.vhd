@@ -98,11 +98,11 @@ library hdl4fpga;
 
 entity dbdbbl_srl is
 	generic (
-		round : boolean := false;
 		adder : boolean := false);
 	port (
 		ini   : in  std_logic_vector := (0 to 0 => '0');
 		cnt   : in  std_logic_vector;
+		bin   : out std_logic_vector;
 		bcd   : out std_logic_vector);
 
 	constant bcd_length : natural := 4;
@@ -114,6 +114,7 @@ architecture def of dbdbbl_srl is
 
 	alias sel : std_logic_vector(cnt'length-1 downto 0) is cnt;
 	signal digits : bcdword_vector(0 to cnt'length);
+	signal xxx : std_logic_vector(1 to 2**cnt'length-1);
 begin
 	digits(0) <= std_logic_vector(resize(unsigned(ini), digit_word'length));
 	g : for i in sel'range generate
@@ -126,9 +127,11 @@ begin
 			bin => bin,
 			bcd => bcd);
 
+		xxx(2**i to 2**(i+1)-1) <= bin;
 		digits(i+1) <= bcd when sel(i)='1' else digits(i);
 	end generate;
 	bcd <= std_logic_vector(resize(unsigned(digits(digits'right)), bcd'length));
+	bin <= xxx;
 
 end;
 
@@ -165,88 +168,36 @@ architecture beh of dbdbblsrl_ser is
 	signal bcd_dbbl : std_logic_vector(ini_dbbl'range);
 	signal bcd_cy   : std_logic_vector(m-1 downto 0);
 
-	constant addr_size : natural := unsigned_num_bits(bcd_width/bcd_digits-1);
-	signal addr        : std_logic_vector(1 to addr_size);
-	signal wr_data     : std_logic_vector(bcd'range);
-	signal rd_data     : std_logic_vector(bcd'range);
-	signal init        : boolean;
 begin
 
-	process (ini, bcd_cy, clk)
-		type states is (s_init, s_run);
-		variable state : states;
-		variable cntr  : unsigned(0 to addr'length);
-		variable cy    : std_logic_vector(m-1 downto 0);
+	process (ini, clk)
+		variable cy : std_logic_vector(m-1 downto 0);
 	begin
-		ff_l : if rising_edge(clk) then
-			case state is
-			when s_init =>
-				if frm='1' then
-					if irdy='1' then
-						cntr := to_unsigned(bcd_width/bcd_digits-2, cntr'length);
-						state := s_run;
-					end if;
-				else
-					cntr := (others => '1');
-				end if;
-				init <= true;
-			when s_run =>
+		if rising_edge(clk) then
+			if frm='1' then
 				if irdy='1' then
-					if cntr(0)='0' then
-						cntr := cntr - 1;
-						if cntr(0)='1' then
-							init <= false;
-						end if;
-					elsif frm='1' then
-						cntr := to_unsigned(bcd_width/bcd_digits-2, cntr'length);
-					else
-						init  <= true;
-						state := s_init;
-					end if;
+					cy   := bcd_cy;
+					bcd  <= bcd_dbbl(n-1 downto 0);
 				end if;
-			end case;
-			trdy <= cntr(0);
-			if irdy='1' then
-				cy   := bcd_cy;
-				bcd  <= bcd_dbbl(n-1 downto 0);
-				addr <= std_logic_vector(cntr(addr'range));
+			else
+				cy := (others => '0');
 			end if;
 		end if;
 
-		comb_l : case state is
-		when s_init => 
-			ini_dbbl <= std_logic_vector(resize(unsigned(ini), ini_dbbl'length));
-		when s_run => 
-			if cntr(0)='1' then
-				-- ini_dbbl <= std_logic_vector(resize(unsigned(rd_data), ini_dbbl'length));
-				ini_dbbl <= std_logic_vector(resize(unsigned(ini), ini_dbbl'length));
-			else
-				ini_dbbl <= cy & ini;
-			end if;
-		end case;
+		ini_dbbl <= cy & ini;
 
 	end process;
 
-	dbdbbl_e : entity hdl4fpga.dbdbbl_srlfix
+	srl_e : entity hdl4fpga.dbdbbl_srlfix
 	port map (
 		bin => bin_dbbl,
 		ini => ini_dbbl,
 		bcd => bcd_dbbl);
 
-	du_e : entity hdl4fpga.dbdbbl_sllfix
+	sll_e : entity hdl4fpga.dbdbbl_sllfix
 	port map (
 		bin => bin_dbbl,
 		bcd => bcd_cy);
-
-	wr_data <= bcd_dbbl(n-1 downto 0);
-	mem_e : entity hdl4fpga.dpram
-	port map (
-		wr_clk  => clk,
-		wr_addr => addr,
-		wr_ena  => irdy,
-		wr_data => wr_data,
-		rd_addr => addr,
-		rd_data => rd_data);
 
 	bin <= bin_dbbl;
 
