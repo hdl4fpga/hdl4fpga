@@ -30,7 +30,7 @@ use hdl4fpga.base.all;
 architecture dbdbbl_tb of testbench is
 	signal bcd : std_logic_vector(5*4-1 downto 0);
 begin
-	du_e : entity hdl4fpga.dbdbbl_sll
+	du_e : entity hdl4fpga.dbdbbl_sllfix
 	port map (
 		bin => std_logic_vector(to_unsigned(32035,15)), -- b"1001110",
 		bcd => bcd);
@@ -132,27 +132,32 @@ use hdl4fpga.base.all;
 
 architecture dbdbblsrlser_tb of testbench is
 	constant bcd_length : natural := 4;
-	constant bcd_width  : natural := 6;
-	constant bcd_digits : natural := 2;
-	constant bin_digits : natural := 3;
+	constant bcd_width  : natural := 7;
+	constant bcd_digits : natural := 1;
+	constant bin_digits : natural := 5;
 
 	signal clk  : std_logic := '0';
 	signal frm  : std_logic := '0';
-	signal ini  : std_logic_vector(bcd_length*bcd_digits-1 downto 0) := std_logic_vector(resize(unsigned'(x"7"), bcd_length*bcd_digits));
+	signal ini  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 	signal bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 	signal bin : std_logic_vector(0 to bin_digits-1);
 begin
 	clk <= not clk after 1 ns;
 
 	process (clk)
+		constant num  : unsigned := x"111100";
+		variable var  : unsigned(0 to bcd_length*bcd_width-1);
 	begin
 		if rising_edge(clk) then
-			if frm='0' then
+			if frm='1' then
 				frm <= '1';
+				var := shift_left(var, ini'length);
 			else
-				ini <= (others => '0');
+				var := (others => '0');
+				var(num'range) := num;
+				frm <= '1';
 			end if;
-
+			ini <= std_logic_vector(var(0 to ini'length-1));
 		end if;
 	end process;
 

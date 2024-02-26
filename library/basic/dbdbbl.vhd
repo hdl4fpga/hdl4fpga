@@ -159,9 +159,11 @@ end;
 
 architecture beh of dbdbblsrl_ser is
 
+	constant m : natural := 6;
 	signal bin_dbbl : std_logic_vector(bin'range);
-	signal ini_dbbl : std_logic_vector(bin'length+n-1 downto 0);
+	signal ini_dbbl : std_logic_vector(m+n-1 downto 0);
 	signal bcd_dbbl : std_logic_vector(ini_dbbl'range);
+	signal bcd_cy   : std_logic_vector(m-1 downto 0);
 
 	constant addr_size : natural := unsigned_num_bits(bcd_width/bcd_digits-1);
 	signal addr        : std_logic_vector(1 to addr_size);
@@ -170,11 +172,11 @@ architecture beh of dbdbblsrl_ser is
 	signal init        : boolean;
 begin
 
-	process (bin_dbbl, clk)
+	process (ini, bcd_cy, clk)
 		type states is (s_init, s_run);
 		variable state : states;
 		variable cntr  : unsigned(0 to addr'length);
-		variable cy    : std_logic_vector(bin'length-1 downto 0);
+		variable cy    : std_logic_vector(m-1 downto 0);
 	begin
 		ff_l : if rising_edge(clk) then
 			case state is
@@ -205,7 +207,7 @@ begin
 			end case;
 			trdy <= cntr(0);
 			if irdy='1' then
-				cy   := bin_dbbl;
+				cy   := bcd_cy;
 				bcd  <= bcd_dbbl(n-1 downto 0);
 				addr <= std_logic_vector(cntr(addr'range));
 			end if;
@@ -219,8 +221,7 @@ begin
 				-- ini_dbbl <= std_logic_vector(resize(unsigned(rd_data), ini_dbbl'length));
 				ini_dbbl <= std_logic_vector(resize(unsigned(ini), ini_dbbl'length));
 			else
-				ini_dbbl <= cy & rd_data;
-				ini_dbbl <= cy & (0 to n-1 => '0');
+				ini_dbbl <= cy & ini;
 			end if;
 		end case;
 
@@ -231,6 +232,11 @@ begin
 		bin => bin_dbbl,
 		ini => ini_dbbl,
 		bcd => bcd_dbbl);
+
+	du_e : entity hdl4fpga.dbdbbl_sllfix
+	port map (
+		bin => bin_dbbl,
+		bcd => bcd_cy);
 
 	wr_data <= bcd_dbbl(n-1 downto 0);
 	mem_e : entity hdl4fpga.dpram
@@ -250,7 +256,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity dbdbbl_sll is
+entity dbdbbl_sllfix is
 	generic (
 		adder : boolean := false);
 	port (
@@ -259,7 +265,7 @@ entity dbdbbl_sll is
 		bcd   : out std_logic_vector);
 end;
 
-architecture def of dbdbbl_sll is
+architecture def of dbdbbl_sllfix is
 	constant bcd_length : natural := 4;
 	subtype digit_word is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
 	type bcdword_vector is array(natural range <>) of digit_word;
@@ -409,7 +415,7 @@ begin
 	end process;
 
 		
-	dbdbbl_e : entity hdl4fpga.dbdbbl_sll
+	dbdbbl_e : entity hdl4fpga.dbdbbl_sllfix
 	port map (
 		bin => bin_dbbl,
 		ini => ini_dbbl,
@@ -514,7 +520,6 @@ begin
 		bcd  => bcd);
 end;
 
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -618,7 +623,7 @@ begin
 		std_logic_vector(resize(unsigned(ini), ini_dbbl'length)) when init else
 		rd_data;
 
-	dbdbbl_e : entity hdl4fpga.dbdbbl_sll
+	dbdbbl_e : entity hdl4fpga.dbdbbl_sllfix
 	port map (
 		bin => bin_dbbl,
 		ini => ini_dbbl,
