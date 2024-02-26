@@ -147,8 +147,6 @@ begin
 		end loop;
 		bin <= std_logic_vector(resize(yyy, bin'length));
 	end process;
-
-
 end;
 
 
