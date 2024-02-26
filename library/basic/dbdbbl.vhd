@@ -114,7 +114,7 @@ architecture def of dbdbbl_srl is
 
 	alias  sel    : std_logic_vector(cnt'length-1 downto 0) is cnt;
 	signal digits : bcdword_vector(0 to cnt'length);
-	signal xxx    : std_logic_vector(2**cnt'length-1 downto 1);
+	signal bins   : std_logic_vector(2**cnt'length-1 downto 1);
 begin
 	digits(0) <= std_logic_vector(resize(unsigned(ini), digit_word'length));
 	g : for i in sel'range generate
@@ -127,25 +127,25 @@ begin
 			bin => bin,
 			bcd => bcd);
 
-		xxx(2**(i+1)-1 downto 2**i) <= bin when sel(i)='1' else (others => '0');
+		bins(2**(i+1)-1 downto 2**i) <= bin when sel(i)='1' else (others => '0');
 		digits(i+1) <= bcd when sel(i)='1' else digits(i);
 	end generate;
 
 	bcd <= std_logic_vector(resize(unsigned(digits(digits'right)), bcd'length));
-	process (xxx, sel)
-		variable zzz : unsigned(xxx'range);
-		variable yyy : unsigned(xxx'reverse_range);
+	process (bins, sel)
+		variable aux1 : unsigned(bins'range);
+		variable aux2 : unsigned(bins'reverse_range);
 	begin
-		zzz := unsigned(xxx);
-		yyy := (others => '0');
+		aux1 := unsigned(bins);
+		aux2 := (others => '0');
 		for i in sel'range loop
 			if sel(i)='1' then
-				yyy(1 to 2**i) := zzz(2**(i+1)-1 downto 2**i);
-				yyy := rotate_left(yyy, 2**i);
+				aux2(1 to 2**i) := aux1(2**(i+1)-1 downto 2**i);
+				aux2 := rotate_left(aux2, 2**i);
 			end if;
-			zzz := rotate_right(zzz, 2**i);
+			aux1 := rotate_right(aux1, 2**i);
 		end loop;
-		bin <= std_logic_vector(resize(yyy, bin'length));
+		bin <= std_logic_vector(resize(aux2, bin'length));
 	end process;
 end;
 
