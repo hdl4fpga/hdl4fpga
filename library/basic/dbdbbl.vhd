@@ -146,74 +146,6 @@ begin
 	end process;
 end;
 
-
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-library hdl4fpga;
-use hdl4fpga.base.all;
-
-entity dbdbblsrl_ser is
-	generic (
-		bcd_width  : natural;
-		bcd_digits : natural);
-	port (
-		clk  : in  std_logic;
-		frm  : in  std_logic;
-		irdy : in  std_logic := '1';
-		trdy : buffer std_logic := '1';
-		cnt  : in  std_logic_vector := (0 to 0 => '0');
-		bin  : out std_logic_vector;
-		ini  : in  std_logic_vector := (0 to 0 => '0');
-		bcd  : out std_logic_vector);
-
-	constant bcd_length : natural := 4;
-	constant n : natural := bcd_length*bcd_digits;
-end;
-
-architecture beh of dbdbblsrl_ser is
-
-	constant m : natural := 6; --- WARNING should be parametrized
-	signal bin_dbbl : std_logic_vector(bin'range);
-	signal ini_dbbl : std_logic_vector(m+n-1 downto 0);
-	signal bcd_dbbl : std_logic_vector(ini_dbbl'range);
-	signal bcd_cy   : std_logic_vector(m-1 downto 0);
-
-begin
-
-	process (ini, clk)
-		variable cy : std_logic_vector(m-1 downto 0);
-	begin
-		if rising_edge(clk) then
-			if frm='1' then
-				if irdy='1' then
-					cy   := bcd_cy;
-					bcd  <= bcd_dbbl(n-1 downto 0);
-				end if;
-			else
-				cy := (others => '0');
-			end if;
-		end if;
-		ini_dbbl <= cy & ini;
-	end process;
-
-	srl_e : entity hdl4fpga.dbdbbl_srl
-	port map (
-		bin => bin_dbbl,
-		ini => ini_dbbl,
-		cnt => cnt,
-		bcd => bcd_dbbl);
-
-	sll_e : entity hdl4fpga.dbdbbl_sllfix
-	port map (
-		bin => bin_dbbl,
-		bcd => bcd_cy);
-
-	bin <= bin_dbbl;
-
-end;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -295,16 +227,19 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.base.all;
 
-entity dbdbbl_shr is
+entity dbdbblsrl_ser is
 	generic (
+		max_count  : natural := 0;
+		bcd_width  : natural;
 		bcd_digits : natural);
 	port (
 		clk  : in  std_logic;
 		frm  : in  std_logic;
 		irdy : in  std_logic := '1';
 		trdy : buffer std_logic := '1';
-		bin  : in  std_logic_vector;
+		cnt  : in  std_logic_vector := (0 to 0 => '0');
 		ini  : in  std_logic_vector := (0 to 0 => '0');
 		bcd  : out std_logic_vector);
 
@@ -312,174 +247,46 @@ entity dbdbbl_shr is
 	constant n : natural := bcd_length*bcd_digits;
 end;
 
-architecture beh of dbdbbl_shr is
+architecture beh of dbdbblsrl_ser is
 
-	signal bin_dbbl : std_logic_vector(bin'range);
-	signal ini_dbbl : std_logic_vector(n-1 downto 0);
-	signal bcd_dbbl : std_logic_vector(bin'length+n-1 downto 0);
+	constant m : natural := 6; --- WARNING should be parametrized
+	signal bin_dbbl : std_logic_vector(0 to setif(max_count=0, 2**cnt'length, max_count)-1);
+	signal ini_dbbl : std_logic_vector(m+n-1 downto 0);
+	signal bcd_dbbl : std_logic_vector(ini_dbbl'range);
+	signal bcd_cy   : std_logic_vector(m-1 downto 0);
 
 begin
 
-	process (bin, ini, clk)
-		type states is (s_init, s_run);
-		variable state : states;
-		variable shr  : unsigned(bcd'length-1 downto 0);
-		variable cntr : integer range -1 to bcd'length/(bcd_digits*bcd_length)-2;
-		variable cy   : std_logic_vector(bin'length-1 downto 0);
+	process (ini, clk)
+		variable cy : std_logic_vector(m-1 downto 0);
 	begin
-		ff_l : if rising_edge(clk) then
-			case state is
-			when s_init =>
-				if frm='1' then
-					shr := resize(unsigned(ini), shr'length);
-					shr(n-1 downto 0) := unsigned(bcd_dbbl(n-1 downto 0));
-					shr := rotate_right(shr, n);
-					bcd <= std_logic_vector(shr);
-					cntr := bcd'length/(bcd_digits*bcd_length)-2;
-					state := s_run;
-				else
-					cntr := -1;
+		if rising_edge(clk) then
+			if frm='1' then
+				if irdy='1' then
+					cy   := bcd_cy;
+					bcd  <= bcd_dbbl(n-1 downto 0);
 				end if;
-			when s_run =>
-				shr(n-1 downto 0) := unsigned(bcd_dbbl(n-1 downto 0));
-				shr := rotate_right(shr, n);
-				if cntr >= 0 then
-					bcd <= std_logic_vector(shr);
-					cntr := cntr -1;
-				elsif frm='1' then
-					cntr := bcd'length/(bcd_digits*bcd_length)-2;
-					bcd <= std_logic_vector(shr);
-				else
-					state := s_init;
-				end if;
-			end case;
-			if cntr < 0 then
-				trdy <= '1';
 			else
-				trdy <= '0';
+				cy := (others => '0');
 			end if;
-			cy  := bcd_dbbl(bin'length+n-1 downto n);
 		end if;
-
-		com_l : case state is
-		when s_init => 
-			ini_dbbl <= std_logic_vector(resize(rotate_left(resize(unsigned(ini), bcd'length), ini_dbbl'length), ini_dbbl'length));
-			bin_dbbl <= bin;
-		when s_run => 
-			ini_dbbl <= std_logic_vector(shr(n-1 downto 0));
-			if cntr < 0 then
-				bin_dbbl <= bin;
-			else
-				bin_dbbl <= cy;
-			end if;
-		end case;
-
+		ini_dbbl <= cy & ini;
 	end process;
 
-		
-	dbdbbl_e : entity hdl4fpga.dbdbbl_sllfix
+	srl_e : entity hdl4fpga.dbdbbl_srl
 	port map (
 		bin => bin_dbbl,
 		ini => ini_dbbl,
+		cnt => cnt,
 		bcd => bcd_dbbl);
 
-	assert ((10-1)*2**bin'length+2**bin'length) < 10**(bcd_digits+1)
-		report "Constraint parameters do not match : " &
-			natural'image(9*2**bin'length+2**bin'length) & " : " & natural'image(10**(bcd_digits+1))
-		severity failure;
-
-end;
-
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-library hdl4fpga;
-
-entity dbdbbl_seqshr is
-	generic (
-		bcd_digits : natural := 1;
-		bin_digits : natural := 3);
-	port (
-		clk  : in  std_logic;
-		req  : in  std_logic;
-		rdy  : buffer std_logic;
-		irdy : in  std_logic := '1';
-		trdy : out std_logic;
-		bin  : in  std_logic_vector;
-		ini  : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
-		bcd  : out std_logic_vector);
-
-	constant bcd_length : natural := 4;
-end;
-
-architecture def of dbdbbl_seqshr is
-	signal ser_frm  : std_logic;
-	signal ser_irdy : std_logic := '1';
-	signal ser_trdy : std_logic;
-	signal ser_bin  : std_logic_vector(0 to bin_digits-1);
-begin
-	process (clk)
-		type states is (s_init, s_run);
-		variable state : states;
-		variable shr  : unsigned(0 to bin'length-1);
-		variable cntr : integer range -1 to bin'length/bin_digits-2;
-	begin
-		if rising_edge(clk) then
-			if (to_bit(req) xor to_bit(rdy))='1' then
-				case state is
-				when s_init =>
-					shr     := unsigned(bin);
-					ser_frm <= '1';
-					ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
-					cntr    := bin'length/bin_digits-2;
-					trdy    <= '0';
-					state   := s_run;
-				when s_run =>
-					if irdy='1' then
-						if ser_trdy='1' then
-							if cntr < 0 then
-								if ser_frm='0' then
-									trdy  <= '0';
-									rdy   <= to_stdulogic(to_bit(req));
-									state := s_init;
-								else
-									trdy  <= '1';
-								end if;
-								ser_frm <= '0';
-							else
-								ser_frm <= '1';
-								cntr := cntr - 1;
-							end if;
-						end if;
-
-						if ser_frm='1' then
-							if ser_trdy='1' then
-								shr     := shift_left(shr, ser_bin'length);
-								ser_bin <= std_logic_vector(shr(0 to ser_bin'length-1));
-							end if;
-						end if;
-
-					end if;
-				end case;
-			else
-				state := s_init;
-			end if;
-
-		end if;
-
-	end process;
-
-	dbdbblser_e : entity hdl4fpga.dbdbbl_shr
-	generic map (
-		bcd_digits => bcd_digits)
+	sll_e : entity hdl4fpga.dbdbbl_sllfix
 	port map (
-		clk  => clk,
-		ini  => ini,
-		frm  => ser_frm,
-		trdy => ser_trdy,
-		bin  => ser_bin,
-		bcd  => bcd);
+		bin => bin_dbbl,
+		bcd => bcd_cy);
+
+	-- bin <= bin_dbbl;
+
 end;
 
 library ieee;

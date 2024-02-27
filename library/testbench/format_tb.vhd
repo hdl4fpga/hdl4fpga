@@ -30,8 +30,8 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 architecture format_tb of testbench is
-	constant bcd_width  : natural := 8;
 	constant bcd_length : natural := 4;
+	constant bcd_width  : natural := 8;
 	constant bcd_digits : natural := 1;
 	constant bin_digits : natural := 3;
 
@@ -40,6 +40,7 @@ architecture format_tb of testbench is
 	signal dbdbbl_rdy  : std_logic := '1';
 	signal format_req  : std_logic := '0';
 	signal format_rdy  : std_logic := '1';
+	signal bin2bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 	signal bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 	signal frm  : std_logic;
 	signal trdy : std_logic;
@@ -81,9 +82,20 @@ begin
 		clk => clk,
 		req => dbdbbl_req,
 		rdy => dbdbbl_rdy,
-		bin => std_logic_vector(to_unsigned(1234567,15)), -- b"1001110",
+		bin => std_logic_vector(to_unsigned(4567,15)), -- b"1001110",
 		bcd_irdy => frm,
 		bcd_trdy => trdy,
+		bcd => bin2bcd);
+
+	dbdbblsrl_ser_e : entity hdl4fpga.dbdbblsrl_ser
+	generic map (
+		bcd_width  => bcd_width,
+		bcd_digits => bcd_digits)
+	port map (
+		clk => clk,
+		frm => frm,
+		cnt => b"101",
+		ini => bin2bcd,
 		bcd => bcd);
 
 	du_e : entity hdl4fpga.format

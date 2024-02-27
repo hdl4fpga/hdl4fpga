@@ -298,20 +298,18 @@ HDL4FPGA__dhcpc_offer__def = $(LIB_HDL4FPGA)/dhcpc_offer/def.dat
 HDL4FPGA__dhcpc_offer = $(LIB_HDL4FPGA)/dhcpc_offer/_primary.dat
 HDL4FPGA__dhcpc_dscb__def = $(LIB_HDL4FPGA)/dhcpc_dscb/def.dat
 HDL4FPGA__dhcpc_dscb = $(LIB_HDL4FPGA)/dhcpc_dscb/_primary.dat
-HDL4FPGA__desser__mux = $(LIB_HDL4FPGA)/desser/mux.dat
-HDL4FPGA__desser = $(LIB_HDL4FPGA)/desser/_primary.dat
+HDL4FPGA__dbdbblsrl_ser__beh = $(LIB_HDL4FPGA)/dbdbblsrl_ser/beh.dat
+HDL4FPGA__dbdbblsrl_ser = $(LIB_HDL4FPGA)/dbdbblsrl_ser/_primary.dat
+HDL4FPGA__dbdbbl_srlfix__def = $(LIB_HDL4FPGA)/dbdbbl_srlfix/def.dat
+HDL4FPGA__dbdbbl_srlfix = $(LIB_HDL4FPGA)/dbdbbl_srlfix/_primary.dat
 HDL4FPGA__dbdbbl_srl__def = $(LIB_HDL4FPGA)/dbdbbl_srl/def.dat
 HDL4FPGA__dbdbbl_srl = $(LIB_HDL4FPGA)/dbdbbl_srl/_primary.dat
-HDL4FPGA__dbdbbl_shr__beh = $(LIB_HDL4FPGA)/dbdbbl_shr/beh.dat
-HDL4FPGA__dbdbbl_shr = $(LIB_HDL4FPGA)/dbdbbl_shr/_primary.dat
+HDL4FPGA__dbdbbl_sllfix__def = $(LIB_HDL4FPGA)/dbdbbl_sllfix/def.dat
+HDL4FPGA__dbdbbl_sllfix = $(LIB_HDL4FPGA)/dbdbbl_sllfix/_primary.dat
 HDL4FPGA__dbdbbl_ser__beh = $(LIB_HDL4FPGA)/dbdbbl_ser/beh.dat
 HDL4FPGA__dbdbbl_ser = $(LIB_HDL4FPGA)/dbdbbl_ser/_primary.dat
-HDL4FPGA__dbdbbl_seqshr__def = $(LIB_HDL4FPGA)/dbdbbl_seqshr/def.dat
-HDL4FPGA__dbdbbl_seqshr = $(LIB_HDL4FPGA)/dbdbbl_seqshr/_primary.dat
 HDL4FPGA__dbdbbl_seq__def = $(LIB_HDL4FPGA)/dbdbbl_seq/def.dat
 HDL4FPGA__dbdbbl_seq = $(LIB_HDL4FPGA)/dbdbbl_seq/_primary.dat
-HDL4FPGA__dbdbbl__def = $(LIB_HDL4FPGA)/dbdbbl/def.dat
-HDL4FPGA__dbdbbl = $(LIB_HDL4FPGA)/dbdbbl/_primary.dat
 HDL4FPGA__crc__def = $(LIB_HDL4FPGA)/crc/def.dat
 HDL4FPGA__crc = $(LIB_HDL4FPGA)/crc/_primary.dat
 HDL4FPGA__cp850x8x8x128to255 = $(LIB_HDL4FPGA)/cp850x8x8x128to255/_primary.dat
@@ -648,20 +646,18 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__dhcpc_offer) \
     $(HDL4FPGA__dhcpc_dscb__def) \
     $(HDL4FPGA__dhcpc_dscb) \
-    $(HDL4FPGA__desser__mux) \
-    $(HDL4FPGA__desser) \
+    $(HDL4FPGA__dbdbblsrl_ser__beh) \
+    $(HDL4FPGA__dbdbblsrl_ser) \
+    $(HDL4FPGA__dbdbbl_srlfix__def) \
+    $(HDL4FPGA__dbdbbl_srlfix) \
     $(HDL4FPGA__dbdbbl_srl__def) \
     $(HDL4FPGA__dbdbbl_srl) \
-    $(HDL4FPGA__dbdbbl_shr__beh) \
-    $(HDL4FPGA__dbdbbl_shr) \
+    $(HDL4FPGA__dbdbbl_sllfix__def) \
+    $(HDL4FPGA__dbdbbl_sllfix) \
     $(HDL4FPGA__dbdbbl_ser__beh) \
     $(HDL4FPGA__dbdbbl_ser) \
-    $(HDL4FPGA__dbdbbl_seqshr__def) \
-    $(HDL4FPGA__dbdbbl_seqshr) \
     $(HDL4FPGA__dbdbbl_seq__def) \
     $(HDL4FPGA__dbdbbl_seq) \
-    $(HDL4FPGA__dbdbbl__def) \
-    $(HDL4FPGA__dbdbbl) \
     $(HDL4FPGA__crc__def) \
     $(HDL4FPGA__crc) \
     $(HDL4FPGA__cp850x8x8x128to255) \
@@ -956,32 +952,25 @@ $(HDL4FPGA__crc__def) : ../basic/crc.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/crc.vhd
 
-$(HDL4FPGA__dbdbbl) \
-$(HDL4FPGA__dbdbbl__def) \
 $(HDL4FPGA__dbdbbl_seq) \
 $(HDL4FPGA__dbdbbl_seq__def) \
-$(HDL4FPGA__dbdbbl_seqshr) \
-$(HDL4FPGA__dbdbbl_seqshr__def) \
 $(HDL4FPGA__dbdbbl_ser) \
 $(HDL4FPGA__dbdbbl_ser__beh) \
-$(HDL4FPGA__dbdbbl_shr) \
-$(HDL4FPGA__dbdbbl_shr__beh) \
+$(HDL4FPGA__dbdbbl_sllfix) \
+$(HDL4FPGA__dbdbbl_sllfix__def) \
 $(HDL4FPGA__dbdbbl_srl) \
-$(HDL4FPGA__dbdbbl_srl__def) : ../basic/dbdbbl.vhd \
+$(HDL4FPGA__dbdbbl_srl__def) \
+$(HDL4FPGA__dbdbbl_srlfix) \
+$(HDL4FPGA__dbdbbl_srlfix__def) \
+$(HDL4FPGA__dbdbblsrl_ser) \
+$(HDL4FPGA__dbdbblsrl_ser__beh) : ../basic/dbdbbl.vhd \
 		$(HDL4FPGA__dpram) \
+		$(HDL4FPGA__bcd_adder) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/dbdbbl.vhd
-
-$(HDL4FPGA__desser) \
-$(HDL4FPGA__desser__mux) : ../basic/desser.vhd \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../basic/desser.vhd
 
 $(HDL4FPGA__dhcpc_dscb) \
 $(HDL4FPGA__dhcpc_dscb__def) : ../mii/dhcp_dscb.vhd \
