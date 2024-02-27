@@ -108,9 +108,10 @@ entity scopeio_textbox is
 	function xxx (
 		constant unit : real)
 		return string is
-		variable exp  : integer;
-		variable mant : real;
-		variable rndd : natural; --Lattice Diamond fix
+		variable exp   : integer;
+		variable mant  : real;
+		variable rndd  : natural; --Lattice Diamond fix
+		constant tenth : real := 1.0/10.0;
 	begin
 		exp  := 0;
 		mant := unit;
@@ -118,9 +119,9 @@ entity scopeio_textbox is
 			report "unit <= 0.0"
 			severity failure;
 		loop
-			if mant < 1.0 or abs(mant-round(mant)) > 1.0e-5 then
-				mant := mant * 10.0;
-				exp  := exp + 1;
+			if abs(mant-round(mant)) > 1.0e-12 then
+				mant := mant / tenth;
+				exp  := exp  + 1;
 			else
 				exit;
 			end if;
@@ -137,7 +138,7 @@ entity scopeio_textbox is
 	begin
 
 		for i in zzz'range loop
-			retval(i) := (jso(xxx(unit*zzz(i)/32.0))**".mant");
+			retval(i) := (jso(xxx(unit*zzz(i)))**".mant");
 		end loop;
 		return retval;
 	end;
@@ -336,7 +337,6 @@ begin
 			port map (
 				tab      => to_ascii("0123456789 +-,."),
 				width    => x"0",
-				width1   => x"5",
 				dec      => x"0",
 				neg      => vt_offset(vt_offset'left),
 				clk      => rgtr_clk,
