@@ -48,6 +48,9 @@ architecture format_tb of testbench is
 	signal code_frm : std_logic;
 	signal code : std_logic_vector(0 to 8-1);
 	shared variable xxx : unsigned(0 to 8*8-1);
+
+	signal empty : std_logic;
+	signal full  : std_logic;
 begin
 
 	clk <= not clk after 1 ns;
@@ -84,7 +87,7 @@ begin
 		rdy => dbdbbl_rdy,
 		bin => std_logic_vector(to_unsigned(4567,15)), -- b"1001110",
 		bcd_irdy => frm,
-		bcd_trdy => trdy,
+		bcd_trdy => '1',
 		bcd => bin2bcd);
 
 	lifo_b : block
@@ -92,21 +95,23 @@ begin
 			size : natural := 16);
 		port (
 			clk       : in  std_logic;
+			empty     : out std_logic;
 			push_irdy : in  std_logic;
 			push_data : in  std_logic_vector;
 			pop_irdy  : in  std_logic;
-			pop_data  : out  std_logic_vector);
+			pop_data  : out std_logic_vector);
 		port map (
 			clk       => clk,
-			push_irdy => '1',
+			empty     => empty,
+			push_irdy => frm,
 			push_data => bin2bcd,
-			pop_irdy => '1',
-			pop_data  => bin2bcd);
+			pop_irdy  => '0',
+			pop_data  => bcd);
 
 		constant addr_size : natural := unsigned_num_bits(size-1);
 		signal wr_addr : std_logic_vector(0 to addr_size-1);
 		signal rd_addr : std_logic_vector(0 to addr_size-1);
-		signal sk_ptr  : unsigned(0 to addr_size-1);
+		signal sk_ptr  : unsigned(0 to addr_size-1) := (others => '1');
 
 	begin
 
@@ -122,26 +127,61 @@ begin
     		rd_data => pop_data);
 
 		process (clk)
+			variable yyy : unsigned(0 to addr_size) := (others => '0');
+			type states is (s_pushing, s_popping);
+			variable state : states;
 		begin
 			if rising_edge(clk) then
 				if (push_irdy xor pop_irdy)='1' then
 					if push_irdy='1' then
+						if state=s_popping then
+							yyy := (others => '0');
+						else
+							yyy := yyy + 1;
+						end if;
 						sk_ptr <= unsigned(wr_addr);
 					elsif pop_irdy='1' then
+						if state=s_pushing then
+						end if;
+						if yyy(0)='0' then
+							yyy := yyy - 1;
+						end if;
 						sk_ptr <= sk_ptr - 1;
 					end if;
 				end if;
 			end if;
+			empty <= yyy(0);
 		end process;
 	
 	end block;
+
+	process (frm, empty, clk)
+		type state is (s_pushed, s_poopped);
+		variable state is states;
+	begin
+		if rising_edge(clk) then
+			if frm='1' then
+				state := s_pushed;
+			elsif state=s_pushed then
+				if empty='1' then
+					state := s_popped;
+				end if;
+			end if;
+		end if;
+		case state is
+		when s_pushed =>
+			full <= empty;
+		when s_popped =>
+		end case;
+
+	end process;
 	dbdbblsrl_ser_e : entity hdl4fpga.dbdbblsrl_ser
 	generic map (
 		bcd_width  => bcd_width,
 		bcd_digits => bcd_digits)
 	port map (
 		clk => clk,
-		frm => frm,
+		frm => full,
 		cnt => b"101",
 		ini => bin2bcd,
 		bcd => bcd);
