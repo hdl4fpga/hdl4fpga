@@ -87,6 +87,54 @@ begin
 		bcd_trdy => trdy,
 		bcd => bin2bcd);
 
+	lifo_b : block
+		generic (
+			size : natural := 16);
+		port (
+			clk       : in  std_logic;
+			push_irdy : in  std_logic;
+			push_data : in  std_logic_vector;
+			pop_irdy  : in  std_logic;
+			pop_data  : out  std_logic_vector);
+		port map (
+			clk       => clk,
+			push_irdy => '1',
+			push_data => bin2bcd,
+			pop_irdy => '1',
+			pop_data  => bin2bcd);
+
+		constant addr_size : natural := unsigned_num_bits(size-1);
+		signal wr_addr : std_logic_vector(0 to addr_size-1);
+		signal rd_addr : std_logic_vector(0 to addr_size-1);
+		signal sk_ptr  : unsigned(0 to addr_size-1);
+
+	begin
+
+		wr_addr <= std_logic_vector(sk_ptr + 1);
+		rd_addr <= std_logic_vector(sk_ptr);
+    	mem_e : entity hdl4fpga.dpram
+    	port map (
+    		wr_clk  => clk,
+    		wr_addr => wr_addr,
+    		wr_ena  => push_irdy,
+    		wr_data => push_data,
+    		rd_addr => rd_addr,
+    		rd_data => pop_data);
+
+		process (clk)
+		begin
+			if rising_edge(clk) then
+				if (push_irdy xor pop_irdy)='1' then
+					if push_irdy='1' then
+						sk_ptr <= unsigned(wr_addr);
+					elsif pop_irdy='1' then
+						sk_ptr <= sk_ptr - 1;
+					end if;
+				end if;
+			end if;
+		end process;
+	
+	end block;
 	dbdbblsrl_ser_e : entity hdl4fpga.dbdbblsrl_ser
 	generic map (
 		bcd_width  => bcd_width,
