@@ -263,8 +263,7 @@ begin
 		if rising_edge(clk) then
 			if frm='1' then
 				if irdy='1' then
-					cy   := bcd_cy;
-					bcd  <= bcd_dbbl(n-1 downto 0);
+					cy := bcd_cy;
 				end if;
 			else
 				cy := (others => '0');
@@ -272,6 +271,7 @@ begin
 		end if;
 		ini_dbbl <= cy & ini;
 	end process;
+	bcd <= bcd_dbbl(n-1 downto 0);
 
 	srl_e : entity hdl4fpga.dbdbbl_srl
 	port map (

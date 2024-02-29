@@ -51,6 +51,7 @@ architecture format_tb of testbench is
 	shared variable xxx : unsigned(0 to 8*8-1);
 
 	signal pop : std_logic;
+	signal pop1 : std_logic;
 	signal ov  : std_logic;
 begin
 
@@ -133,7 +134,7 @@ begin
 			variable state : states;
 		begin
 			if rising_edge(clk) then
-				if (push_ena  xor pop_ena)='1' then
+				if (push_ena xor pop_ena)='1' then
 					if push_ena ='1' then
 						if state=s_popping then
 							length := (others => '0');
@@ -168,6 +169,7 @@ begin
 					state := s_popped;
 				end if;
 			end if;
+			pop1 <= pop;
 		end if;
 
 		case state is
@@ -184,7 +186,7 @@ begin
 		bcd_digits => bcd_digits)
 	port map (
 		clk => clk,
-		frm => pop,
+		frm => pop1,
 		cnt => b"101",
 		ini => bcd_lifo,
 		bcd => bcd);
