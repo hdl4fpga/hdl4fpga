@@ -42,6 +42,7 @@ architecture format_tb of testbench is
 	signal format_rdy  : std_logic := '1';
 	signal bin2bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 	signal bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+	signal bcd_lifo  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 	signal frm  : std_logic;
 	signal trdy : std_logic;
 
@@ -49,8 +50,8 @@ architecture format_tb of testbench is
 	signal code : std_logic_vector(0 to 8-1);
 	shared variable xxx : unsigned(0 to 8*8-1);
 
-	signal empty : std_logic;
-	signal full  : std_logic;
+	signal pop : std_logic;
+	signal ov  : std_logic;
 begin
 
 	clk <= not clk after 1 ns;
@@ -95,18 +96,18 @@ begin
 			size : natural := 16);
 		port (
 			clk       : in  std_logic;
-			empty     : out std_logic;
-			push_irdy : in  std_logic;
+			ov        : out std_logic;
+			push_ena  : in  std_logic;
 			push_data : in  std_logic_vector;
-			pop_irdy  : in  std_logic;
+			pop_ena   : in  std_logic;
 			pop_data  : out std_logic_vector);
 		port map (
 			clk       => clk,
-			empty     => empty,
-			push_irdy => frm,
+			ov        => ov,
+			push_ena  => frm,
 			push_data => bin2bcd,
-			pop_irdy  => '0',
-			pop_data  => bcd);
+			pop_ena   => pop,
+			pop_data  => bcd_lifo);
 
 		constant addr_size : natural := unsigned_num_bits(size-1);
 		signal wr_addr : std_logic_vector(0 to addr_size-1);
@@ -121,69 +122,71 @@ begin
     	port map (
     		wr_clk  => clk,
     		wr_addr => wr_addr,
-    		wr_ena  => push_irdy,
+    		wr_ena  => push_ena ,
     		wr_data => push_data,
     		rd_addr => rd_addr,
     		rd_data => pop_data);
 
 		process (clk)
-			variable yyy : unsigned(0 to addr_size) := (others => '0');
+			variable length : unsigned(0 to addr_size) := (others => '0');
 			type states is (s_pushing, s_popping);
 			variable state : states;
 		begin
 			if rising_edge(clk) then
-				if (push_irdy xor pop_irdy)='1' then
-					if push_irdy='1' then
+				if (push_ena  xor pop_ena)='1' then
+					if push_ena ='1' then
 						if state=s_popping then
-							yyy := (others => '0');
+							length := (others => '0');
 						else
-							yyy := yyy + 1;
+							length := length + 1;
 						end if;
 						sk_ptr <= unsigned(wr_addr);
-					elsif pop_irdy='1' then
+					elsif pop_ena='1' then
 						if state=s_pushing then
 						end if;
-						if yyy(0)='0' then
-							yyy := yyy - 1;
+						if length(0)='0' then
+							length := length - 1;
 						end if;
 						sk_ptr <= sk_ptr - 1;
 					end if;
 				end if;
 			end if;
-			empty <= yyy(0);
+			ov <= length(0);
 		end process;
 	
 	end block;
 
-	process (frm, empty, clk)
-		type state is (s_pushed, s_poopped);
-		variable state is states;
+	process (frm, ov, clk)
+		type states is (s_popped, s_pushed);
+		variable state : states;
 	begin
 		if rising_edge(clk) then
 			if frm='1' then
 				state := s_pushed;
 			elsif state=s_pushed then
-				if empty='1' then
+				if ov='1' then
 					state := s_popped;
 				end if;
 			end if;
 		end if;
-		case state is
-		when s_pushed =>
-			full <= empty;
-		when s_popped =>
-		end case;
 
+		case state is
+		when s_popped =>
+			pop <= '0';
+		when s_pushed =>
+			pop <= not frm and not ov;
+		end case;
 	end process;
+
 	dbdbblsrl_ser_e : entity hdl4fpga.dbdbblsrl_ser
 	generic map (
 		bcd_width  => bcd_width,
 		bcd_digits => bcd_digits)
 	port map (
 		clk => clk,
-		frm => full,
+		frm => pop,
 		cnt => b"101",
-		ini => bin2bcd,
+		ini => bcd_lifo,
 		bcd => bcd);
 
 	du_e : entity hdl4fpga.format
@@ -193,9 +196,8 @@ begin
 		tab      => to_ascii("0123456789 +-,."),
 		clk      => clk,
 		width    => x"0",
-		dec      => x"2",
-		bcd_frm  => frm,
-		bcd_irdy => frm,
+		bcd_frm  => pop,
+		bcd_irdy => pop,
 		bcd_trdy => trdy,
 		neg      => '1',
 		bcd      => bcd,

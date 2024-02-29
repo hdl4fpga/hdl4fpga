@@ -337,7 +337,6 @@ begin
 			port map (
 				tab      => to_ascii("0123456789 +-,."),
 				width    => x"0",
-				dec      => x"0",
 				neg      => vt_offset(vt_offset'left),
 				clk      => rgtr_clk,
 				bcd_frm  => bcd_irdy,

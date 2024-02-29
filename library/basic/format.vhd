@@ -35,7 +35,6 @@ entity format is
 	port (
 		tab       : in  std_logic_vector; -- := x"0123456789abcde";
 		clk       : in  std_logic;
-		dec       : in  std_logic_vector := (0 to 0 => '0');
 		neg       : in  std_logic := '0';
 		sign      : in  std_logic := '0';
 		width     : in  std_logic_vector := (0 to 0 => '0');
@@ -85,7 +84,6 @@ architecture def of format is
 	signal fmt_error   : boolean;
 
 	signal ov          : std_logic;
-	signal point       : std_logic_vector(bcd_wraddr'range);
 begin
 
 	bcd_width <= 
@@ -139,14 +137,8 @@ begin
 		end if;
 	end process;
 
-	assert unsigned(dec) < unsigned(width) or unsigned(dec)=0 or unsigned(width)=0
-		report "dec >= width"
-		severity failure;
-
-	point <= std_logic_vector(resize(unsigned(dec), point'length));
 	bcd_trdy <=
 		'1' when bcd_wraddr=(bcd_wraddr'range => '0') else
-		'0' when bcd_wraddr=point else
 		'1';
 
 	bcd_wrena <= 
@@ -155,7 +147,6 @@ begin
 
 	bcd_wrdata <=
 		bcd when bcd_wraddr=(bcd_wraddr'range => '0') else
-		dot when bcd_wraddr=point else
 		bcd when bcd_frm='1' else
 		blank;
 
@@ -172,7 +163,6 @@ begin
 		type states is (s_init, s_blank, s_blanked);
 		variable state      : states;
 
-		variable unit       : std_logic_vector(bcd_rdaddr'range);
 		variable bcd_rdcntr : unsigned(0 to addr_size);
 		variable fmt_wrcntr : unsigned(0 to addr_size);
 	begin
@@ -181,10 +171,7 @@ begin
 
 				case state is
 				when s_init =>
-					if bcd_rdaddr=unit then
-						report "bcd_read_p : bcd_rdaddr=unit";
-						state := s_blanked;
-					elsif bcd_rddata=x"0" then
+					if bcd_rddata=x"0" then
 						fmt_wrcntr := fmt_wrcntr - 1;
 						fmt_wrdata <= multiplex(bcd_tab, blank, bcd'length);
 						bcd_rdcntr := bcd_rdcntr - 1;
@@ -202,7 +189,7 @@ begin
 						state := s_blanked;
 					end if;
 				when s_blank =>
-					if bcd_rddata=x"0" and bcd_rdaddr/=unit then
+					if bcd_rddata=x"0" then
 						fmt_wrcntr := fmt_wrcntr - 1;
 						fmt_wrdata <= multiplex(bcd_tab, blank, bcd'length);
 						bcd_rdcntr := bcd_rdcntr - 1;
@@ -231,11 +218,6 @@ begin
 				bcd_rdaddr <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
 				fmt_wraddr <= std_logic_vector(fmt_wrcntr(fmt_wraddr'range));
 			else
-				if dec=(dec'range => '0') then
-					unit := (others => '0');
-				else
-					unit := std_logic_vector(resize(unsigned(dec), unit'length)+1);
-				end if;
 				fmt_wrcntr := resize(unsigned(bcd_wraddr),   fmt_wrcntr'length);
 				bcd_rdcntr := resize(unsigned(bcd_wraddr)-1, bcd_rdcntr'length);
 				bcd_rdaddr <= std_logic_vector(bcd_rdcntr(bcd_rdaddr'range));
