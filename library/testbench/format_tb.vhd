@@ -40,20 +40,20 @@ architecture format_tb of testbench is
 	signal dbdbbl_rdy  : std_logic := '1';
 	signal format_req  : std_logic := '0';
 	signal format_rdy  : std_logic := '1';
-	signal bin2bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+	signal sll_bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 	signal bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 	signal bcd_lifo  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
-	signal frm  : std_logic;
+	signal sll_frm  : std_logic;
 	signal trdy : std_logic;
 	signal trdy1 : std_logic;
 
 	signal code_frm : std_logic;
-	signal code : std_logic_vector(0 to 8-1);
+	signal code     : std_logic_vector(0 to 8-1);
 	shared variable xxx : unsigned(0 to 8*8-1);
 
-	signal pop  : std_logic;
-	signal pop1 : std_logic;
-	signal ov   : std_logic;
+	signal slr_frm  : std_logic;
+	signal slr_trdy : std_logic;
+	signal lifo_ov  : std_logic;
 begin
 
 	clk <= not clk after 1 ns;
@@ -85,102 +85,45 @@ begin
 		bin_digits => bin_digits,
 		bcd_digits => bcd_digits)
 	port map (
-		clk => clk,
-		req => dbdbbl_req,
-		rdy => dbdbbl_rdy,
-		bin => std_logic_vector(to_unsigned(4967,15)), -- b"1001110",
-		bcd_irdy => frm,
-		bcd_trdy => '1',
-		bcd => bin2bcd);
+		clk      => clk,
+		req      => dbdbbl_req,
+		rdy      => dbdbbl_rdy,
+		bin      => std_logic_vector(to_unsigned(4967,15)), -- b"1001110",
+		bcd_frm  => sll_frm,
+		bcd      => sll_bcd);
 
-	lifo_b : block
-		generic (
-			size : natural := 16);
-		port (
-			clk       : in  std_logic;
-			ov        : out std_logic;
-			push_ena  : in  std_logic;
-			push_data : in  std_logic_vector;
-			pop_ena   : in  std_logic;
-			pop_data  : out std_logic_vector);
-		port map (
-			clk       => clk,
-			ov        => ov,
-			push_ena  => frm,
-			push_data => bin2bcd,
-			pop_ena   => pop,
-			pop_data  => bcd_lifo);
+	lifo_e : entity hdl4fpga.lifo
+	port map (
+		clk       => clk,
+		ov        => lifo_ov,
+		push_ena  => sll_frm,
+		push_data => sll_bcd,
+		pop_ena   => slr_trdy,
+		pop_data  => bcd_lifo);
 
-		constant addr_size : natural := unsigned_num_bits(size-1);
-		signal wr_addr : std_logic_vector(0 to addr_size-1);
-		signal rd_addr : std_logic_vector(0 to addr_size-1);
-		signal sk_ptr  : unsigned(0 to addr_size-1) := (others => '1');
-
-	begin
-
-		wr_addr <= std_logic_vector(sk_ptr + 1);
-		rd_addr <= std_logic_vector(sk_ptr);
-    	mem_e : entity hdl4fpga.dpram
-    	port map (
-    		wr_clk  => clk,
-    		wr_addr => wr_addr,
-    		wr_ena  => push_ena ,
-    		wr_data => push_data,
-    		rd_addr => rd_addr,
-    		rd_data => pop_data);
-
-		process (clk)
-			variable length : unsigned(0 to addr_size) := (others => '0');
-			type states is (s_pushing, s_popping);
-			variable state : states;
-		begin
-			if rising_edge(clk) then
-				if (push_ena xor pop_ena)='1' then
-					if push_ena ='1' then
-						if state=s_popping then
-							length := (others => '0');
-						else
-							length := length + 1;
-						end if;
-						sk_ptr <= unsigned(wr_addr);
-					elsif pop_ena='1' then
-						if state=s_pushing then
-						end if;
-						if length(0)='0' then
-							length := length - 1;
-						end if;
-						sk_ptr <= sk_ptr - 1;
-					end if;
-				end if;
-			end if;
-			ov <= length(0);
-		end process;
-	
-	end block;
-
-	process (frm, ov, pop, clk)
+	process (sll_frm, lifo_ov, clk)
 		type states is (s_popped, s_pushed);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
-			if frm='1' then
+			if sll_frm='1' then
 				state := s_pushed;
-				pop1 <= '0';
+				slr_frm <= '0';
 			elsif state=s_pushed then
-				if ov='1' then
+				if lifo_ov='1' then
 					state := s_popped;
 				end if;
-				pop1 <= (not frm and not ov);
+				slr_frm <= not lifo_ov;
 			else
-				pop1 <= '0';
+				slr_frm <= '0';
 			end if;
 		end if;
 
 		case state is
 		when s_popped =>
-			pop <= '0';
+			slr_trdy <= '0';
 		when s_pushed =>
-			pop <= (not frm and not ov) and trdy1;
+			slr_trdy <= (not sll_frm and not lifo_ov) and trdy1;
 		end case;
 	end process;
 
@@ -189,13 +132,13 @@ begin
 		bcd_width  => bcd_width,
 		bcd_digits => bcd_digits)
 	port map (
-		clk => clk,
-		frm => pop1,
+		clk  => clk,
+		frm  => slr_frm,
 		trdy => trdy1,
-		cnt => b"001",
-		ini => bcd_lifo,
+		cnt  => b"001",
+		ini  => bcd_lifo,
 		bcd_trdy => trdy,
-		bcd => bcd);
+		bcd  => bcd);
 
 	du_e : entity hdl4fpga.format
 	generic map (
@@ -204,8 +147,8 @@ begin
 		tab      => to_ascii("0123456789 +-,."),
 		clk      => clk,
 		width    => x"0",
-		bcd_frm  => pop1,
-		bcd_irdy => pop1,
+		bcd_frm  => slr_frm,
+		bcd_irdy => slr_frm,
 		bcd_trdy => trdy,
 		neg      => '0',
 		bcd      => bcd,
