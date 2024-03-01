@@ -71,33 +71,21 @@ architecture def of format is
 	signal code_req    : std_logic;
 	signal code_rdy    : std_logic;
 
-	signal fmt_wraddr  : std_logic_vector(1 to addr_size);
-	signal fmt_wrena   : std_logic;
-	signal fmt_wrdata  : std_logic_vector(bcd'range);
-	signal fmt_rdaddr  : std_logic_vector(1 to addr_size);
-	signal fmt_rddata  : std_logic_vector(bcd'range);
-	signal fmt_error   : boolean;
-
-	signal ov          : std_logic;
 begin
 
 	bcd_read_p : process (fmt_rdy, clk)
 		type states is (s_init, s_blank, s_blanked);
-		variable state      : states;
-
-		variable fmt_wrcntr : unsigned(0 to addr_size) := (others => '1');
+		variable state : states;
+		variable buff  : std_logic_vector(bcd'range);
 	begin
 		if rising_edge(clk) then
 			if bcd_frm='1' then
 				case state is
 				when s_init =>
 					if bcd=x"0" then
-						trdy <= '0';
-						data <= fmt_wrdata;
-						fmt_wrdata <= multiplex(bcd_tab, blank, bcd'length);
+						buff  := multiplex(bcd_tab, blank, bcd'length);
 						state := s_blank;
 					elsif neg='1' then
-						trdy <= '0';
 						data <= fmt_wrdata;
 						fmt_wrdata <= multiplex(bcd_tab, minus, bcd'length);
 						state := s_blanked;
@@ -110,8 +98,8 @@ begin
 					end if;
 				when s_blank =>
 					if bcd=x"0" then
-						trdy <= '1';
-						fmt_wrdata <= multiplex(bcd_tab, blank, bcd'length);
+						fmt_wrdata := buff;
+						buff := multiplex(bcd_tab, blank, bcd'length);
 					elsif neg='1' then
 						fmt_wrdata <= multiplex(bcd_tab, minus, bcd'length);
 						state := s_blanked;
@@ -132,27 +120,7 @@ begin
 		end if;
 	end process;
 
-	fmtmem_e : entity hdl4fpga.dpram
-	port map (
-		wr_clk  => clk,
-		wr_addr => fmt_wraddr,
-		wr_data => fmt_wrdata,
-		rd_addr => fmt_rdaddr,
-		rd_data => fmt_rddata);
-
-	fmt_read_p : process (clk)
-		variable fmt_rdcntr : unsigned(0 to addr_size) := (others => '1');
-	begin
-		if rising_edge(clk) then
-			if bcd_frm='0' then
-				if fmt_wraddr/=fmt_rdaddr then
-					fmt_rdcntr := fmt_rdcntr + 1;
-				end if;
-			end if;
-			fmt_rdaddr <= std_logic_vector(fmt_rdcntr(fmt_rdaddr'range));
-		end if;
-	end process;
 	code_frm  <= not bcd_frm when fmt_wraddr/=fmt_rdaddr else '0';
 	code_irdy <= code_frm;
-	code      <= multiplex(tab, setif(fmt_error, plus, fmt_rddata), code'length);
+	code      <= multiplex(tab, fmt_wrdata, code'length);
 end;
