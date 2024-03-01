@@ -63,17 +63,12 @@ end;
 -- https://github.com/hdl4fpga/hdl4fpga/blob/62b576a8d626e379257136259202cbcdf41c3a45/library/basic/format.vhd#L24
 
 architecture def of format is
-	constant addr_size : natural := unsigned_num_bits(max_width/bcd_digits-1);
-	signal bcd_wraddr  : std_logic_vector(1 to addr_size);
 
-	signal fmt_req     : std_logic;
-	signal fmt_rdy     : std_logic;
-	signal code_req    : std_logic;
-	signal code_rdy    : std_logic;
+	signal fmt_bcd : std_logic_vector(bcd'range);
 
 begin
 
-	bcd_read_p : process (fmt_rdy, clk)
+	bcd_read_p : process (clk)
 		type states is (s_init, s_blank, s_blanked);
 		variable state : states;
 		variable buff  : std_logic_vector(bcd'range);
@@ -84,43 +79,48 @@ begin
 				when s_init =>
 					if bcd=x"0" then
 						buff  := multiplex(bcd_tab, blank, bcd'length);
+						code_irdy <= '0';
 						state := s_blank;
 					elsif neg='1' then
-						data <= fmt_wrdata;
-						fmt_wrdata <= multiplex(bcd_tab, minus, bcd'length);
+						fmt_bcd <= multiplex(bcd_tab, minus, bcd'length);
+						code_irdy <= '1';
 						state := s_blanked;
 					elsif sign='1' then
-						fmt_wrdata <= multiplex(bcd_tab, plus, bcd'length);
+						fmt_bcd <= multiplex(bcd_tab, plus, bcd'length);
+						code_irdy <= '1';
 						state := s_blanked;
 					else
-						fmt_wrdata <= multiplex(bcd_tab, bcd, bcd'length);
+						fmt_bcd <= multiplex(bcd_tab, bcd, bcd'length);
+						code_irdy <= '1';
 						state := s_blanked;
 					end if;
 				when s_blank =>
 					if bcd=x"0" then
-						fmt_wrdata := buff;
+						code_irdy <= '1';
+						fmt_bcd <= buff;
 						buff := multiplex(bcd_tab, blank, bcd'length);
 					elsif neg='1' then
-						fmt_wrdata <= multiplex(bcd_tab, minus, bcd'length);
+						code_irdy <= '1';
+						fmt_bcd <= multiplex(bcd_tab, minus, bcd'length);
 						state := s_blanked;
 					elsif sign='1' then
-						fmt_wrdata <= multiplex(bcd_tab, plus, bcd'length);
+						code_irdy <= '1';
+						fmt_bcd <= multiplex(bcd_tab, plus, bcd'length);
 						state := s_blanked;
 					else 
-						fmt_wrdata <= multiplex(bcd_tab, bcd, bcd'length);
+						fmt_bcd <= multiplex(bcd_tab, bcd, bcd'length);
 						state := s_blanked;
 					end if;
 				when s_blanked =>
-					fmt_wrdata <= multiplex(bcd_tab, bcd, bcd'length);
+					code_irdy <= '1';
+					fmt_bcd <= multiplex(bcd_tab, bcd, bcd'length);
 				end case;
-				fmt_wraddr <= std_logic_vector(fmt_wrcntr(fmt_wraddr'range));
 			else
 				state := s_init;
 			end if;
 		end if;
 	end process;
 
-	code_frm  <= not bcd_frm when fmt_wraddr/=fmt_rdaddr else '0';
-	code_irdy <= code_frm;
-	code      <= multiplex(tab, fmt_wrdata, code'length);
+	code_frm  <= bcd_frm;
+	code      <= multiplex(tab, fmt_bcd, code'length);
 end;
