@@ -59,16 +59,11 @@ entity format is
 
 end;
 
--- Combinatorial version
--- https://github.com/hdl4fpga/hdl4fpga/blob/62b576a8d626e379257136259202cbcdf41c3a45/library/basic/format.vhd#L24
-
 architecture def of format is
-
 	signal fmt_bcd : std_logic_vector(bcd'range);
-
 begin
 
-	bcd_read_p : process (clk)
+	process (clk)
 		type states is (s_init, s_blank, s_blanked);
 		variable state : states;
 		variable buff  : std_logic_vector(bcd'range);
@@ -137,7 +132,6 @@ begin
 			end if;
 		end if;
 	end process;
-
 	code_frm  <= bcd_frm;
 	code      <= multiplex(tab, fmt_bcd, code'length);
 end;

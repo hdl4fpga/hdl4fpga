@@ -88,7 +88,7 @@ begin
 		clk => clk,
 		req => dbdbbl_req,
 		rdy => dbdbbl_rdy,
-		bin => std_logic_vector(to_unsigned(4567,15)), -- b"1001110",
+		bin => std_logic_vector(to_unsigned(4967,15)), -- b"1001110",
 		bcd_irdy => frm,
 		bcd_trdy => '1',
 		bcd => bin2bcd);
