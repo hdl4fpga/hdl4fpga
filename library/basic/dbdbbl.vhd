@@ -238,9 +238,10 @@ entity dbdbblsrl_ser is
 		clk  : in  std_logic;
 		frm  : in  std_logic;
 		irdy : in  std_logic := '1';
-		trdy : buffer std_logic := '1';
+		trdy : out std_logic := '1';
 		cnt  : in  std_logic_vector := (0 to 0 => '0');
 		ini  : in  std_logic_vector := (0 to 0 => '0');
+		bcd_trdy : in std_logic := '1';
 		bcd  : out std_logic_vector);
 
 	constant bcd_length : natural := 4;
@@ -262,7 +263,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			if frm='1' then
-				if irdy='1' then
+				if (irdy and bcd_trdy)='1' then
 					cy := bcd_cy;
 				end if;
 			else
@@ -285,6 +286,7 @@ begin
 		bin => bin_dbbl,
 		bcd => bcd_cy);
 
+	trdy <= bcd_trdy;
 	-- bin <= bin_dbbl;
 
 end;

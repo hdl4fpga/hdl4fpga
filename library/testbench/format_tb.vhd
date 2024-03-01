@@ -45,14 +45,15 @@ architecture format_tb of testbench is
 	signal bcd_lifo  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 	signal frm  : std_logic;
 	signal trdy : std_logic;
+	signal trdy1 : std_logic;
 
 	signal code_frm : std_logic;
 	signal code : std_logic_vector(0 to 8-1);
 	shared variable xxx : unsigned(0 to 8*8-1);
 
-	signal pop : std_logic;
+	signal pop  : std_logic;
 	signal pop1 : std_logic;
-	signal ov  : std_logic;
+	signal ov   : std_logic;
 begin
 
 	clk <= not clk after 1 ns;
@@ -157,26 +158,29 @@ begin
 	
 	end block;
 
-	process (frm, ov, clk)
+	process (frm, ov, pop, clk)
 		type states is (s_popped, s_pushed);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
 			if frm='1' then
 				state := s_pushed;
+				pop1 <= '0';
 			elsif state=s_pushed then
 				if ov='1' then
 					state := s_popped;
 				end if;
+				pop1 <= (not frm and not ov);
+			else
+				pop1 <= '0';
 			end if;
-			pop1 <= pop;
 		end if;
 
 		case state is
 		when s_popped =>
 			pop <= '0';
 		when s_pushed =>
-			pop <= not frm and not ov;
+			pop <= (not frm and not ov) and trdy1;
 		end case;
 	end process;
 
@@ -187,8 +191,10 @@ begin
 	port map (
 		clk => clk,
 		frm => pop1,
-		cnt => b"101",
+		trdy => trdy1,
+		cnt => b"001",
 		ini => bcd_lifo,
+		bcd_trdy => trdy,
 		bcd => bcd);
 
 	du_e : entity hdl4fpga.format
@@ -198,10 +204,10 @@ begin
 		tab      => to_ascii("0123456789 +-,."),
 		clk      => clk,
 		width    => x"0",
-		bcd_frm  => pop,
-		bcd_irdy => pop,
+		bcd_frm  => pop1,
+		bcd_irdy => pop1,
 		bcd_trdy => trdy,
-		neg      => '1',
+		neg      => '0',
 		bcd      => bcd,
 		code_frm => code_frm,
 		code     => code);

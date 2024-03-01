@@ -79,43 +79,60 @@ begin
 				when s_init =>
 					if bcd=x"0" then
 						buff  := multiplex(bcd_tab, blank, bcd'length);
+						bcd_trdy  <= '1';
 						code_irdy <= '0';
 						state := s_blank;
 					elsif neg='1' then
-						fmt_bcd <= multiplex(bcd_tab, minus, bcd'length);
+						buff := multiplex(bcd_tab, minus, bcd'length);
+						fmt_bcd   <= multiplex(bcd_tab, bcd, bcd'length);
+						bcd_trdy  <= '1';
 						code_irdy <= '1';
 						state := s_blanked;
 					elsif sign='1' then
-						fmt_bcd <= multiplex(bcd_tab, plus, bcd'length);
+						fmt_bcd   <= multiplex(bcd_tab, plus, bcd'length);
+						bcd_trdy  <= '1';
 						code_irdy <= '1';
 						state := s_blanked;
 					else
 						fmt_bcd <= multiplex(bcd_tab, bcd, bcd'length);
+						bcd_trdy  <= '1';
 						code_irdy <= '1';
 						state := s_blanked;
 					end if;
 				when s_blank =>
 					if bcd=x"0" then
+						bcd_trdy  <= '1';
 						code_irdy <= '1';
 						fmt_bcd <= buff;
-						buff := multiplex(bcd_tab, blank, bcd'length);
+						buff    := multiplex(bcd_tab, blank, bcd'length);
 					elsif neg='1' then
+						fmt_bcd   <= multiplex(bcd_tab, minus, bcd'length);
+						buff      := multiplex(bcd_tab,   bcd, bcd'length);
+						bcd_trdy  <= '1';
 						code_irdy <= '1';
-						fmt_bcd <= multiplex(bcd_tab, minus, bcd'length);
 						state := s_blanked;
 					elsif sign='1' then
+						bcd_trdy  <= '1';
 						code_irdy <= '1';
-						fmt_bcd <= multiplex(bcd_tab, plus, bcd'length);
+						fmt_bcd   <= multiplex(bcd_tab, plus, bcd'length);
+						buff      := multiplex(bcd_tab,  bcd, bcd'length);
 						state := s_blanked;
 					else 
-						fmt_bcd <= multiplex(bcd_tab, bcd, bcd'length);
+						bcd_trdy  <= '1';
+						code_irdy <= '1';
+						fmt_bcd <= buff;
+						buff    := multiplex(bcd_tab, bcd, bcd'length);
 						state := s_blanked;
 					end if;
 				when s_blanked =>
 					code_irdy <= '1';
-					fmt_bcd <= multiplex(bcd_tab, bcd, bcd'length);
+					bcd_trdy  <= '1';
+					fmt_bcd <= buff;
+					buff    := multiplex(bcd_tab, bcd, bcd'length);
 				end case;
 			else
+				bcd_trdy  <= '0';
+				code_irdy <= '0';
 				state := s_init;
 			end if;
 		end if;
