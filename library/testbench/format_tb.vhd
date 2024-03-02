@@ -46,8 +46,6 @@ architecture format_tb of testbench is
 	signal sll_frm  : std_logic;
 	signal sll_bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 
-	signal lifo_ov  : std_logic;
-
 	signal slr_frm  : std_logic;
 	signal slr_irdy : std_logic;
 	signal slr_trdy : std_logic;
@@ -59,7 +57,7 @@ architecture format_tb of testbench is
 	signal code     : std_logic_vector(0 to 8-1);
 begin
 
-	clk <= not clk after 1 ns;
+	clk <= not clk after 0.5 ns;
 
 	process (clk)
 		variable xxx : unsigned(0 to 8*8-1);
@@ -90,51 +88,58 @@ begin
 		bcd_frm  => sll_frm,
 		bcd      => sll_bcd);
 
-	lifo_e : entity hdl4fpga.lifo
-	port map (
-		clk       => clk,
-		ov        => lifo_ov,
-		push_ena  => sll_frm,
-		push_data => sll_bcd,
-		pop_ena   => slr_irdy,
-		pop_data  => slr_bcd);
-
-	process (sll_frm, lifo_ov, clk)
-		type states is (s_popped, s_pushed);
-		variable state : states;
+	lifo_b : block
+		signal lifo_ov  : std_logic;
 	begin
-		if rising_edge(clk) then
-			if sll_frm='1' then
-				state := s_pushed;
-				slr_frm <= '0';
-			elsif state=s_pushed then
-				if lifo_ov='1' then
-					slr_frm <= '0';
-					state := s_popped;
+		lifo_e : entity hdl4fpga.lifo
+		port map (
+			clk       => clk,
+			ov        => lifo_ov,
+			push_ena  => sll_frm,
+			push_data => sll_bcd,
+			pop_ena   => slr_irdy,
+			pop_data  => slr_bcd);
+
+		process (sll_frm, slr_trdy, lifo_ov, clk)
+			type states is (s_popped, s_pushed);
+			variable state : states;
+		begin
+			if rising_edge(clk) then
+				if sll_frm='0' then
+					case state is
+					when s_pushed =>
+						if lifo_ov='1' then
+							state := s_popped;
+						end if;
+					when s_popped =>
+					end case;
 				else
-					slr_frm <= '1';
+					state := s_pushed;
 				end if;
-			else
-				slr_frm <= '0';
 			end if;
-		end if;
 
-		case state is
-		when s_popped =>
-			slr_irdy <= '0';
-		when s_pushed =>
-			if sll_frm='1' then
+			case state is
+			when s_popped =>
 				slr_irdy <= '0';
-			elsif lifo_ov='1' then
-				slr_irdy <= '0';
-			elsif slr_trdy='0' then
-				slr_irdy <= '0';
-			else
-				slr_irdy <= '1';
-			end if;
-		end case;
+			when s_pushed =>
+				if sll_frm='1' then
+					slr_frm  <= '0';
+					slr_irdy <= '0';
+				elsif lifo_ov='1' then
+					slr_frm  <= '0';
+					slr_irdy <= '0';
+				else
+					slr_frm  <= '1';
+					if slr_trdy='0' then
+						slr_irdy <= '0';
+					else
+						slr_irdy <= '1';
+					end if;
+				end if;
+			end case;
 
-	end process;
+		end process;
+	end block;
 
 	dbdbblsrl_ser_e : entity hdl4fpga.dbdbblsrl_ser
 	generic map (
@@ -158,7 +163,7 @@ begin
 		clk      => clk,
 		width    => x"0",
 		bcd_frm  => slr_frm,
-		bcd_irdy => slr_frm,
+		bcd_irdy => slr_irdy,
 		bcd_trdy => slrbcd_trdy,
 		neg      => '0',
 		bcd      => slrbcd,

@@ -43,7 +43,7 @@ entity format is
 		bcd_trdy  : out std_logic := '1';
 		bcd       : in  std_logic_vector(0 to 4-1);
 		code_frm  : buffer std_logic;
-		code_irdy : out std_logic;
+		code_irdy : buffer std_logic;
 		code_trdy : in  std_logic := '1';
 		code      : out std_logic_vector);
 
@@ -67,71 +67,75 @@ begin
 		type states is (s_init, s_blank, s_blanked);
 		variable state : states;
 		variable buff  : std_logic_vector(bcd'range);
+		variable frm   : std_logic;
 	begin
 		if rising_edge(clk) then
+			code_irdy <= frm;
+			code_frm  <= frm;
 			if bcd_frm='1' then
 				case state is
 				when s_init =>
 					if bcd=x"0" then
-						buff  := multiplex(bcd_tab, blank, bcd'length);
-						bcd_trdy  <= '1';
-						code_irdy <= '0';
+						buff := multiplex(bcd_tab, blank, bcd'length);
+						bcd_trdy <= '1';
+						frm  := '0';
 						state := s_blank;
 					elsif neg='1' then
 						buff := multiplex(bcd_tab, minus, bcd'length);
-						fmt_bcd   <= multiplex(bcd_tab, bcd, bcd'length);
-						bcd_trdy  <= '1';
-						code_irdy <= '1';
+						fmt_bcd  <= multiplex(bcd_tab, bcd, bcd'length);
+						bcd_trdy <= '1';
+						frm  := '1';
 						state := s_blanked;
 					elsif sign='1' then
-						fmt_bcd   <= multiplex(bcd_tab, plus, bcd'length);
-						bcd_trdy  <= '1';
-						code_irdy <= '1';
+						fmt_bcd  <= multiplex(bcd_tab, plus, bcd'length);
+						bcd_trdy <= '1';
+						frm := '1';
 						state := s_blanked;
 					else
-						fmt_bcd <= multiplex(bcd_tab, bcd, bcd'length);
-						bcd_trdy  <= '1';
-						code_irdy <= '1';
+						fmt_bcd  <= multiplex(bcd_tab, bcd, bcd'length);
+						bcd_trdy <= '1';
+						frm := '1';
 						state := s_blanked;
 					end if;
 				when s_blank =>
 					if bcd=x"0" then
-						bcd_trdy  <= '1';
-						code_irdy <= '1';
+						bcd_trdy <= '1';
+						frm  := '1';
 						fmt_bcd <= buff;
-						buff    := multiplex(bcd_tab, blank, bcd'length);
+						buff := multiplex(bcd_tab, blank, bcd'length);
 					elsif neg='1' then
-						fmt_bcd   <= multiplex(bcd_tab, minus, bcd'length);
-						buff      := multiplex(bcd_tab,   bcd, bcd'length);
-						bcd_trdy  <= '1';
-						code_irdy <= '1';
+						fmt_bcd <= multiplex(bcd_tab, minus, bcd'length);
+						buff  := multiplex(bcd_tab,   bcd, bcd'length);
+						bcd_trdy <= '1';
+						frm   := '1';
 						state := s_blanked;
 					elsif sign='1' then
+						fmt_bcd <= multiplex(bcd_tab, plus, bcd'length);
+						buff  := multiplex(bcd_tab,  bcd, bcd'length);
 						bcd_trdy  <= '1';
-						code_irdy <= '1';
-						fmt_bcd   <= multiplex(bcd_tab, plus, bcd'length);
-						buff      := multiplex(bcd_tab,  bcd, bcd'length);
+						frm   := '1';
 						state := s_blanked;
 					else 
-						bcd_trdy  <= '1';
-						code_irdy <= '1';
 						fmt_bcd <= buff;
-						buff    := multiplex(bcd_tab, bcd, bcd'length);
+						buff := multiplex(bcd_tab, bcd, bcd'length);
+						bcd_trdy  <= '1';
+						frm  := '1';
 						state := s_blanked;
 					end if;
 				when s_blanked =>
-					code_irdy <= '1';
-					bcd_trdy  <= '1';
 					fmt_bcd <= buff;
-					buff    := multiplex(bcd_tab, bcd, bcd'length);
+					buff := multiplex(bcd_tab, bcd, bcd'length);
+					bcd_trdy  <= '1';
+					frm := '1';
 				end case;
 			else
+				fmt_bcd <= buff;
+				buff := multiplex(bcd_tab, bcd, bcd'length);
 				bcd_trdy  <= '0';
-				code_irdy <= '0';
+				frm := '0';
 				state := s_init;
 			end if;
 		end if;
 	end process;
-	code_frm  <= bcd_frm;
-	code      <= multiplex(tab, fmt_bcd, code'length);
+	code     <= multiplex(tab, fmt_bcd, code'length);
 end;
