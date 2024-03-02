@@ -283,10 +283,24 @@ begin
 			signal mul_rdy     : std_logic;
 			signal dbdbbl_req  : std_logic;
 			signal dbdbbl_rdy  : std_logic;
-			signal bcd_irdy : std_logic;
-			signal bcd_trdy : std_logic;
 
 			signal yyy : std_logic_vector(0 to hhh_length-1);
+
+       		signal slr_bcd : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+
+        	signal sll_frm  : std_logic;
+        	signal sll_bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+
+        	signal slr_frm  : std_logic;
+        	signal slr_irdy : std_logic;
+        	signal slr_trdy : std_logic;
+
+        	signal slrbcd_trdy : std_logic;
+        	signal slrbcd      : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+
+        	signal code_frm : std_logic;
+        	signal code     : std_logic_vector(0 to 8-1);
+
 		begin
 
 			process (rgtr_clk)
@@ -318,7 +332,7 @@ begin
 				s   => bin);
 
 			dbdbbl_req <= mul_rdy;
-			bin2bcd_e : entity hdl4fpga.dbdbbl_seq
+			dbdbbl_seq_e : entity hdl4fpga.dbdbbl_seq
 			generic map (
 				bcd_width => bcd_width,
 				bcd_digits => bcd_digits)
@@ -327,10 +341,76 @@ begin
 				req  => dbdbbl_req,
 				rdy  => dbdbbl_rdy,
 				bin  => bin,
-				bcd_irdy => bcd_irdy,
-				bcd_trdy => bcd_trdy,
-				bcd  => bcd);
+				bcd_frm => sll_frm,
+				bcd  => sll_bcd);
 	
+        	lifo_b : block
+        		signal lifo_ov  : std_logic;
+        	begin
+        		lifo_e : entity hdl4fpga.lifo
+        		port map (
+        			clk       => rgtr_clk,
+        			ov        => lifo_ov,
+        			push_ena  => sll_frm,
+        			push_data => sll_bcd,
+        			pop_ena   => slr_irdy,
+        			pop_data  => slr_bcd);
+
+        		process (sll_frm, slr_trdy, lifo_ov, rgtr_clk)
+        			type states is (s_popped, s_pushed);
+        			variable state : states;
+        		begin
+        			if rising_edge(rgtr_clk) then
+        				if sll_frm='0' then
+        					case state is
+        					when s_pushed =>
+        						if lifo_ov='1' then
+        							state := s_popped;
+        						end if;
+        					when s_popped =>
+        					end case;
+        				else
+        					state := s_pushed;
+        				end if;
+        			end if;
+
+        			case state is
+        			when s_popped =>
+        				slr_irdy <= '0';
+        			when s_pushed =>
+        				if sll_frm='1' then
+        					slr_frm  <= '0';
+        					slr_irdy <= '0';
+        				elsif lifo_ov='1' then
+        					slr_frm  <= '0';
+        					slr_irdy <= '0';
+        				else
+        					slr_frm  <= '1';
+        					if slr_trdy='0' then
+        						slr_irdy <= '0';
+        					else
+        						slr_irdy <= '1';
+        					end if;
+        				end if;
+        			end case;
+
+        		end process;
+        	end block;
+
+        	dbdbblsrl_ser_e : entity hdl4fpga.dbdbblsrl_ser
+        	generic map (
+        		bcd_width  => bcd_width,
+        		bcd_digits => bcd_digits)
+        	port map (
+        		clk  => rgtr_clk,
+        		frm  => slr_frm,
+        		irdy => slr_irdy,
+        		trdy => slr_trdy,
+        		cnt  => b"001",
+        		ini  => slr_bcd,
+        		bcd_trdy => slrbcd_trdy,
+        		bcd  => slrbcd);
+
 			format_e : entity hdl4fpga.format
 			generic map (
 				max_width => bcd_width)
@@ -339,13 +419,12 @@ begin
 				width    => x"0",
 				neg      => vt_offset(vt_offset'left),
 				clk      => rgtr_clk,
-				bcd_frm  => bcd_irdy,
-				bcd_irdy => bcd_irdy,
-				bcd_trdy => bcd_trdy,
-				bcd      => bcd,
+				bcd_frm  => slr_frm,
+				bcd_irdy => slr_irdy,
+				bcd_trdy => slrbcd_trdy,
+				bcd      => slrbcd,
 				code_frm => cga_we,
 				code     => cga_code);
-
 		end block;
 
 		process (rgtr_clk)

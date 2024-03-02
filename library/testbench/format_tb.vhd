@@ -38,8 +38,6 @@ architecture format_tb of testbench is
 	signal clk  : std_logic := '0';
 	signal dbdbbl_req  : std_logic := '0';
 	signal dbdbbl_rdy  : std_logic := '1';
-	signal format_req  : std_logic := '0';
-	signal format_rdy  : std_logic := '1';
 
 	signal slr_bcd : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 
