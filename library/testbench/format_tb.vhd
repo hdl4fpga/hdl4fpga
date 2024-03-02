@@ -40,37 +40,35 @@ architecture format_tb of testbench is
 	signal dbdbbl_rdy  : std_logic := '1';
 	signal format_req  : std_logic := '0';
 	signal format_rdy  : std_logic := '1';
-	signal sll_bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
-	signal bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
-	signal bcd_lifo  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+
+	signal slr_bcd : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+
 	signal sll_frm  : std_logic;
-	signal trdy : std_logic;
-	signal trdy1 : std_logic;
+	signal sll_bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+
+	signal lifo_ov  : std_logic;
+
+	signal slr_frm  : std_logic;
+	signal slr_irdy : std_logic;
+	signal slr_trdy : std_logic;
+
+	signal slrbcd_trdy : std_logic;
+	signal slrbcd      : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 
 	signal code_frm : std_logic;
 	signal code     : std_logic_vector(0 to 8-1);
-	shared variable xxx : unsigned(0 to 8*8-1);
-
-	signal slr_frm  : std_logic;
-	signal slr_trdy : std_logic;
-	signal lifo_ov  : std_logic;
 begin
 
 	clk <= not clk after 1 ns;
+
 	process (clk)
+		variable xxx : unsigned(0 to 8*8-1);
 	begin
 		if rising_edge(clk) then
 			if dbdbbl_req='0' then
 				xxx := unsigned(to_ascii("        "));
 				dbdbbl_req <= '1';
-			end if;
-		end if;
-	end process;
-
-	process (clk)
-	begin
-		if rising_edge(clk) then
-			if code_frm='1' then
+			elsif code_frm='1' then
 				xxx(0 to 8-1) := unsigned(code);
 				xxx := xxx rol 8;
 			end if;
@@ -98,8 +96,8 @@ begin
 		ov        => lifo_ov,
 		push_ena  => sll_frm,
 		push_data => sll_bcd,
-		pop_ena   => slr_trdy,
-		pop_data  => bcd_lifo);
+		pop_ena   => slr_irdy,
+		pop_data  => slr_bcd);
 
 	process (sll_frm, lifo_ov, clk)
 		type states is (s_popped, s_pushed);
@@ -111,9 +109,11 @@ begin
 				slr_frm <= '0';
 			elsif state=s_pushed then
 				if lifo_ov='1' then
+					slr_frm <= '0';
 					state := s_popped;
+				else
+					slr_frm <= '1';
 				end if;
-				slr_frm <= not lifo_ov;
 			else
 				slr_frm <= '0';
 			end if;
@@ -121,10 +121,19 @@ begin
 
 		case state is
 		when s_popped =>
-			slr_trdy <= '0';
+			slr_irdy <= '0';
 		when s_pushed =>
-			slr_trdy <= (not sll_frm and not lifo_ov) and trdy1;
+			if sll_frm='1' then
+				slr_irdy <= '0';
+			elsif lifo_ov='1' then
+				slr_irdy <= '0';
+			elsif slr_trdy='0' then
+				slr_irdy <= '0';
+			else
+				slr_irdy <= '1';
+			end if;
 		end case;
+
 	end process;
 
 	dbdbblsrl_ser_e : entity hdl4fpga.dbdbblsrl_ser
@@ -134,11 +143,12 @@ begin
 	port map (
 		clk  => clk,
 		frm  => slr_frm,
-		trdy => trdy1,
+		irdy => slr_irdy,
+		trdy => slr_trdy,
 		cnt  => b"001",
-		ini  => bcd_lifo,
-		bcd_trdy => trdy,
-		bcd  => bcd);
+		ini  => slr_bcd,
+		bcd_trdy => slrbcd_trdy,
+		bcd  => slrbcd);
 
 	du_e : entity hdl4fpga.format
 	generic map (
@@ -149,15 +159,10 @@ begin
 		width    => x"0",
 		bcd_frm  => slr_frm,
 		bcd_irdy => slr_frm,
-		bcd_trdy => trdy,
+		bcd_trdy => slrbcd_trdy,
 		neg      => '0',
-		bcd      => bcd,
+		bcd      => slrbcd,
 		code_frm => code_frm,
 		code     => code);
 
-	-- process 
-	-- begin
-		-- report "VALUE : " & ''' & to_string(code) & ''';
-		-- wait on code;
-	-- end process;
 end;
