@@ -28,8 +28,8 @@ use ieee.numeric_std.all;
 entity bcd_adder is
 	port (
 		ci  : in  std_logic := '0' ;
-		a   : in  std_logic_vector := (0 to 0 => '0');
-		b   : in  std_logic_vector := (0 to 0 => '0');
+		a   : in  std_logic_vector;-- := std_logic_vector'(0 to 0 => '0'); Latticesemi Diamond bug
+		b   : in  std_logic_vector;-- := std_logic_vector'(0 to 0 => '0'); Latticesemi Diamond bug
 		s   : out std_logic_vector;
 		co  : out std_logic);
 

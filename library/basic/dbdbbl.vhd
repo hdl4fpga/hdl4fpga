@@ -9,15 +9,16 @@ entity dbdbbl_srlfix is
 		adder : boolean := false);
 	port (
 		rnd   : in  std_logic := '0';
-		ini   : in  std_logic_vector := (0 to 0 => '0');
-		bin   : buffer std_logic_vector;
+		ini   : in  std_logic_vector; -- := (0 to 0 => '0'); -- Latticesemi Diamond bug
+		bin   : out std_logic_vector;
 		bcd   : out std_logic_vector);
 
+	-- alias    bin_rev    : std_logic_vector(bin'reverse_range) is bin; Diamong Latticesemi crashes
 	constant bcd_length : natural := 4;
-	alias    bin_rev    : std_logic_vector(bin'reverse_range) is bin;
 end;
 
 architecture def of dbdbbl_srlfix is
+	signal  bin_rev    : std_logic_vector(bin'reverse_range); -- is bin;
 	subtype digit_word  is unsigned(bcd_length*((bcd'length+bcd_length-1)/bcd_length)-1 downto 0);
 	type bcdword_vector is array(natural range <>) of digit_word;
 
@@ -81,9 +82,11 @@ begin
 
 	bcd_adder_e : entity hdl4fpga.bcd_adder
 	port map (
-		ci => bin(bin'left),
+		ci => bin_rev(bin_rev'left),
+		b  => (digit_word'range => '0'),
 		a  => std_logic_vector(digits_out(digits_out'right)),
 		s  => s);
+	bin <= bin_rev;
 	bcd <= 
 		s when rnd='1' else
 		std_logic_vector(resize(digits_out(digits_out'right), bcd'length)); 
@@ -100,7 +103,7 @@ entity dbdbbl_srl is
 	generic (
 		adder : boolean := false);
 	port (
-		ini   : in  std_logic_vector := (0 to 0 => '0');
+		ini   : in  std_logic_vector; -- := std_logic_vector'(0 to 0 => '0'); -- Latticesemi Diamond bug
 		cnt   : in  std_logic_vector;
 		bin   : out std_logic_vector;
 		bcd   : out std_logic_vector);
@@ -155,7 +158,7 @@ entity dbdbbl_sllfix is
 		adder : boolean := false);
 	port (
 		bin   : in  std_logic_vector;
-		ini   : in  std_logic_vector := (0 to 0 => '0');
+		ini   : in  std_logic_vector; -- := std_logic_vector'(0 to 0 => '0'); -- Latticesemi Diamond bug
 		bcd   : out std_logic_vector);
 end;
 
@@ -239,8 +242,8 @@ entity dbdbblsrl_ser is
 		frm  : in  std_logic;
 		irdy : in  std_logic := '1';
 		trdy : out std_logic := '1';
-		cnt  : in  std_logic_vector := (0 to 0 => '0');
-		ini  : in  std_logic_vector := (0 to 0 => '0');
+		cnt  : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
+		ini  : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
 		bcd_trdy : in std_logic := '1';
 		bcd  : out std_logic_vector);
 
@@ -284,10 +287,10 @@ begin
 	sll_e : entity hdl4fpga.dbdbbl_sllfix
 	port map (
 		bin => bin_dbbl,
+		ini => b"0",
 		bcd => bcd_cy);
 
 	trdy <= bcd_trdy;
-	-- bin <= bin_dbbl;
 
 end;
 
