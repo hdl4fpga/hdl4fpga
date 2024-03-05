@@ -242,8 +242,8 @@ entity dbdbblsrl_ser is
 		frm  : in  std_logic;
 		irdy : in  std_logic := '1';
 		trdy : out std_logic := '1';
-		cnt  : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
-		ini  : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
+		cnt  : in  std_logic_vector; -- := std_logic_vector'(0 to 0 => '0'); -- Latticesemi Diamond bug
+		ini  : in  std_logic_vector; -- := std_logic_vector'(0 to 0 => '0'); -- Latticesemi Diamond bug
 		bcd_trdy : in std_logic := '1';
 		bcd  : out std_logic_vector);
 
