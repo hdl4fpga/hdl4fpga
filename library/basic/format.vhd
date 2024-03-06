@@ -37,7 +37,6 @@ entity format is
 		clk       : in  std_logic;
 		neg       : in  std_logic := '0';
 		sign      : in  std_logic := '0';
-		width     : in  std_logic_vector := (0 to 0 => '0');
 		bcd_frm   : in  std_logic;
 		bcd_irdy  : in  std_logic := '1';
 		bcd_trdy  : out std_logic := '1';

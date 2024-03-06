@@ -318,7 +318,7 @@ begin
 				-signed(vt_offset) when vt_offset(vt_offset'left)='1' else
 				 signed(vt_offset);
 
-			yyy <= std_logic_vector(to_unsigned(hhh(0), yyy'length));
+			yyy <= std_logic_vector(to_unsigned(hhh(to_integer(unsigned(vt_scale))), yyy'length));
 			mul_ser_e : entity hdl4fpga.mul_ser
 			generic map (
 				lsb => true)
@@ -406,7 +406,7 @@ begin
         		frm  => slr_frm,
         		irdy => slr_irdy,
         		trdy => slr_trdy,
-        		cnt  => b"001",
+        		cnt  => b"000",
         		ini  => slr_bcd,
         		bcd_trdy => slrbcd_trdy,
         		bcd  => slrbcd);
@@ -415,9 +415,8 @@ begin
 			generic map (
 				max_width => bcd_width)
 			port map (
-				tab      => to_ascii("0123456789 +-,."),
-				width    => x"0",
-				neg      => vt_offset(vt_offset'left),
+				tab      => to_ascii("0123456789*+-,."),
+				neg      => '0', --vt_offset(vt_offset'left),
 				clk      => rgtr_clk,
 				bcd_frm  => slr_frm,
 				bcd_irdy => slr_irdy,

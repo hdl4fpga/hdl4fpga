@@ -82,7 +82,7 @@ begin
 		clk      => clk,
 		req      => dbdbbl_req,
 		rdy      => dbdbbl_rdy,
-		bin      => std_logic_vector(to_unsigned(4967,15)), -- b"1001110",
+		bin      => std_logic_vector(to_unsigned(1,15)), -- b"1001110",
 		bcd_frm  => sll_frm,
 		bcd      => sll_bcd);
 
@@ -148,7 +148,7 @@ begin
 		frm  => slr_frm,
 		irdy => slr_irdy,
 		trdy => slr_trdy,
-		cnt  => b"001",
+		cnt  => b"000",
 		ini  => slr_bcd,
 		bcd_trdy => slrbcd_trdy,
 		bcd  => slrbcd);
@@ -159,7 +159,6 @@ begin
 	port map (
 		tab      => to_ascii("0123456789 +-,."),
 		clk      => clk,
-		width    => x"0",
 		bcd_frm  => slr_frm,
 		bcd_irdy => slr_irdy,
 		bcd_trdy => slrbcd_trdy,

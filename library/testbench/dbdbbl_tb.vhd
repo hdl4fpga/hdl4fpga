@@ -33,6 +33,7 @@ begin
 	du_e : entity hdl4fpga.dbdbbl_sllfix
 	port map (
 		bin => std_logic_vector(to_unsigned(32035,15)), -- b"1001110",
+		ini => "0",
 		bcd => bcd);
 
 	process (bcd)
