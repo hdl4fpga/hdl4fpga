@@ -326,7 +326,6 @@ begin
 				clk => rgtr_clk,
 				req => mul_req,
 				rdy => mul_rdy,
-				-- a   => vt_scale,
 				a   => yyy,
 				b   => std_logic_vector(positive),
 				s   => bin);
@@ -334,7 +333,7 @@ begin
 			dbdbbl_req <= mul_rdy;
 			dbdbbl_seq_e : entity hdl4fpga.dbdbbl_seq
 			generic map (
-				bcd_width => bcd_width,
+				bcd_width  => bcd_width,
 				bcd_digits => bcd_digits)
 			port map (
 				clk  => rgtr_clk,
@@ -416,7 +415,7 @@ begin
 				max_width => bcd_width)
 			port map (
 				tab      => to_ascii("0123456789*+-,."),
-				neg      => '0', --vt_offset(vt_offset'left),
+				neg      => vt_offset(vt_offset'left),
 				clk      => rgtr_clk,
 				bcd_frm  => slr_frm,
 				bcd_irdy => slr_irdy,

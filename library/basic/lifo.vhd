@@ -32,6 +32,8 @@ begin
 	wr_addr <= std_logic_vector(sk_ptr + 1);
 	rd_addr <= std_logic_vector(sk_ptr);
    	mem_e : entity hdl4fpga.dpram
+	generic map (
+		bitrom => x"aaaa_aaaa_aaaa_aaaa")
    	port map (
    		wr_clk  => clk,
    		wr_addr => wr_addr,
