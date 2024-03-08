@@ -261,21 +261,27 @@ architecture beh of dbdbblsrl_ser is
 
 begin
 
+	assert n=bcd_length
+		report "n greater than 8"
+		severity failure;
+
 	process (ini, clk)
 		variable cy : std_logic_vector(m-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if frm='1' then
 				if (irdy and bcd_trdy)='1' then
-					cy := bcd_cy;
+					if unsigned(ini)<=x"9" then
+						cy := bcd_cy;
+					end if;
 				end if;
 			else
 				cy := (others => '0');
 			end if;
 		end if;
-		ini_dbbl <= cy & ini;
+		ini_dbbl <= cy & std_logic_vector(resize(unsigned(ini), n));
 	end process;
-	bcd <= bcd_dbbl(n-1 downto 0);
+	bcd <= bcd_dbbl(n-1 downto 0) when unsigned(ini)<=9 else std_logic_vector(resize(unsigned(ini), n));
 
 	srl_e : entity hdl4fpga.dbdbbl_srl
 	port map (

@@ -40,6 +40,7 @@ architecture format_tb of testbench is
 	signal dbdbbl_rdy  : std_logic := '1';
 
 	signal slr_bcd : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+	signal slr_ini : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 
 	signal sll_frm  : std_logic;
 	signal sll_bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
@@ -98,18 +99,27 @@ begin
 			pop_ena   => slr_irdy,
 			pop_data  => slr_bcd);
 
-		process (sll_frm, slr_trdy, lifo_ov, clk)
+		process (sll_frm, slr_trdy, slr_bcd, lifo_ov, clk)
 			type states is (s_popped, s_pushed);
 			variable state : states;
+			variable cntr : integer range -1 to 4;
 		begin
 			if rising_edge(clk) then
 				if sll_frm='0' then
 					case state is
 					when s_pushed =>
 						if lifo_ov='1' then
+							if cntr >= 0 then
+								cntr := cntr - 1;
+							end if;
 							state := s_popped;
+						else
+							cntr := 4;
 						end if;
 					when s_popped =>
+						if cntr >= 0 then
+							cntr := cntr - 1;
+						end if;
 					end case;
 				else
 					state := s_pushed;
@@ -118,14 +128,29 @@ begin
 
 			case state is
 			when s_popped =>
-				slr_irdy <= '0';
+				if cntr >= 0 then 
+					slr_frm  <= '1';
+					slr_irdy <= '1';
+				else
+					slr_frm  <= '0';
+					slr_irdy <= '0';
+				end if;
+				slr_ini  <= (others => '0');
 			when s_pushed =>
 				if sll_frm='1' then
 					slr_frm  <= '0';
 					slr_irdy <= '0';
+					slr_ini  <= slr_bcd;
 				elsif lifo_ov='1' then
-					slr_frm  <= '0';
-					slr_irdy <= '0';
+					if cntr >= 0 then 
+						slr_frm  <= '1';
+						slr_irdy <= '1';
+						slr_ini  <= x"e";
+					else
+						slr_frm  <= '0';
+						slr_irdy <= '0';
+						slr_ini  <= (others => '0');
+					end if;
 				else
 					slr_frm  <= '1';
 					if slr_trdy='0' then
@@ -133,6 +158,7 @@ begin
 					else
 						slr_irdy <= '1';
 					end if;
+					slr_ini  <= slr_bcd;
 				end if;
 			end case;
 
@@ -148,8 +174,8 @@ begin
 		frm  => slr_frm,
 		irdy => slr_irdy,
 		trdy => slr_trdy,
-		cnt  => b"000",
-		ini  => slr_bcd,
+		cnt  => b"101",
+		ini  => slr_ini,
 		bcd_trdy => slrbcd_trdy,
 		bcd  => slrbcd);
 

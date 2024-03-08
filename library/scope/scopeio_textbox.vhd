@@ -284,12 +284,13 @@ begin
 			signal dbdbbl_req  : std_logic;
 			signal dbdbbl_rdy  : std_logic;
 
-			signal yyy : std_logic_vector(0 to hhh_length-1);
-
-       		signal slr_bcd : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+			signal scale : std_logic_vector(0 to hhh_length-1);
 
         	signal sll_frm  : std_logic;
         	signal sll_bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+
+       		signal slr_bcd : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+			signal slr_ini : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 
         	signal slr_frm  : std_logic;
         	signal slr_irdy : std_logic;
@@ -318,7 +319,7 @@ begin
 				-signed(vt_offset) when vt_offset(vt_offset'left)='1' else
 				 signed(vt_offset);
 
-			yyy <= std_logic_vector(to_unsigned(hhh(to_integer(unsigned(vt_scale))), yyy'length));
+			scale <= std_logic_vector(to_unsigned(hhh(to_integer(unsigned(vt_scale))), scale'length));
 			mul_ser_e : entity hdl4fpga.mul_ser
 			generic map (
 				lsb => true)
@@ -326,7 +327,7 @@ begin
 				clk => rgtr_clk,
 				req => mul_req,
 				rdy => mul_rdy,
-				a   => yyy,
+				a   => scale,
 				b   => std_logic_vector(positive),
 				s   => bin);
 
@@ -355,18 +356,28 @@ begin
         			pop_ena   => slr_irdy,
         			pop_data  => slr_bcd);
 
-        		process (sll_frm, slr_trdy, lifo_ov, rgtr_clk)
+        		process (sll_frm, slr_trdy, slr_bcd, lifo_ov, rgtr_clk)
+					constant xxx : natural := 4;
         			type states is (s_popped, s_pushed);
         			variable state : states;
+        			variable cntr : integer range -1 to xxx;
         		begin
         			if rising_edge(rgtr_clk) then
         				if sll_frm='0' then
         					case state is
         					when s_pushed =>
         						if lifo_ov='1' then
+        							if cntr >= 0 then
+        								cntr := cntr - 1;
+        							end if;
         							state := s_popped;
+        						else
+        							cntr := xxx;
         						end if;
         					when s_popped =>
+        						if cntr >= 0 then
+        							cntr := cntr - 1;
+        						end if;
         					end case;
         				else
         					state := s_pushed;
@@ -375,14 +386,29 @@ begin
 
         			case state is
         			when s_popped =>
-        				slr_irdy <= '0';
+        				if cntr >= 0 then 
+        					slr_frm  <= '1';
+        					slr_irdy <= '1';
+        				else
+        					slr_frm  <= '0';
+        					slr_irdy <= '0';
+        				end if;
+        				slr_ini  <= (others => '0');
         			when s_pushed =>
         				if sll_frm='1' then
         					slr_frm  <= '0';
         					slr_irdy <= '0';
+        					slr_ini  <= slr_bcd;
         				elsif lifo_ov='1' then
-        					slr_frm  <= '0';
-        					slr_irdy <= '0';
+        					if cntr >= 0 then 
+        						slr_frm  <= '1';
+        						slr_irdy <= '1';
+        						slr_ini  <= x"e";
+        					else
+        						slr_frm  <= '0';
+        						slr_irdy <= '0';
+        						slr_ini  <= (others => '0');
+        					end if;
         				else
         					slr_frm  <= '1';
         					if slr_trdy='0' then
@@ -390,6 +416,7 @@ begin
         					else
         						slr_irdy <= '1';
         					end if;
+        					slr_ini  <= slr_bcd;
         				end if;
         			end case;
 
@@ -405,7 +432,7 @@ begin
         		frm  => slr_frm,
         		irdy => slr_irdy,
         		trdy => slr_trdy,
-        		cnt  => b"000",
+        		cnt  => b"101",
         		ini  => slr_bcd,
         		bcd_trdy => slrbcd_trdy,
         		bcd  => slrbcd);
@@ -414,7 +441,7 @@ begin
 			generic map (
 				max_width => bcd_width)
 			port map (
-				tab      => to_ascii("0123456789*+-,."),
+				tab      => to_ascii("0123456789 +-,."),
 				neg      => vt_offset(vt_offset'left),
 				clk      => rgtr_clk,
 				bcd_frm  => slr_frm,

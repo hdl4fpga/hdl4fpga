@@ -114,6 +114,12 @@ begin
 						bcd_trdy  <= '1';
 						frm   := '1';
 						state := s_blanked;
+					elsif bcd=x"e" then 
+						fmt_bcd <= multiplex(bcd_tab, x"0", bcd'length);
+						buff := multiplex(bcd_tab, bcd, bcd'length);
+						bcd_trdy  <= '1';
+						frm  := '1';
+						state := s_blanked;
 					else 
 						fmt_bcd <= buff;
 						buff := multiplex(bcd_tab, bcd, bcd'length);
