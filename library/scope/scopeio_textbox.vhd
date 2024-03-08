@@ -360,7 +360,7 @@ begin
 					constant xxx : natural := 4;
         			type states is (s_popped, s_pushed);
         			variable state : states;
-        			variable cntr : integer range -1 to xxx;
+        			variable cntr : integer range -1 to xxx := 1;
         		begin
         			if rising_edge(rgtr_clk) then
         				if sll_frm='0' then

@@ -102,7 +102,7 @@ begin
 		process (sll_frm, slr_trdy, slr_bcd, lifo_ov, clk)
 			type states is (s_popped, s_pushed);
 			variable state : states;
-			variable cntr : integer range -1 to 4;
+			variable cntr : integer range -1 to 4 := -1;
 		begin
 			if rising_edge(clk) then
 				if sll_frm='0' then
