@@ -331,6 +331,16 @@ begin
 				b   => std_logic_vector(positive),
 				s   => bin);
 
+            btof_e : entity hdl4fpga.scopeio_btof
+           	port map (
+           		clk      =>  rgtr_clk,
+           		btof_req => mul_rdy,
+           		btof_rdy => open,
+				neg      => vt_offset(vt_offset'left),
+           		bin      => bin,
+           		code_frm => cga_we,
+           		code     => cga_code);
+
 			dbdbbl_req <= mul_rdy;
 			dbdbbl_seq_e : entity hdl4fpga.dbdbbl_seq
 			generic map (

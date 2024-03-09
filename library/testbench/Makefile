@@ -173,6 +173,8 @@ HDL4FPGA__scopeio_layout__beh = $(LIB_HDL4FPGA)/scopeio_layout/beh.dat
 HDL4FPGA__scopeio_layout = $(LIB_HDL4FPGA)/scopeio_layout/_primary.dat
 HDL4FPGA__scopeio_grid__def = $(LIB_HDL4FPGA)/scopeio_grid/def.dat
 HDL4FPGA__scopeio_grid = $(LIB_HDL4FPGA)/scopeio_grid/_primary.dat
+HDL4FPGA__scopeio_btof__def = $(LIB_HDL4FPGA)/scopeio_btof/def.dat
+HDL4FPGA__scopeio_btof = $(LIB_HDL4FPGA)/scopeio_btof/_primary.dat
 HDL4FPGA__scopeio_axis__def = $(LIB_HDL4FPGA)/scopeio_axis/def.dat
 HDL4FPGA__scopeio_axis = $(LIB_HDL4FPGA)/scopeio_axis/_primary.dat
 HDL4FPGA__scopeio_amp__beh = $(LIB_HDL4FPGA)/scopeio_amp/beh.dat
@@ -525,6 +527,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__scopeio_layout) \
     $(HDL4FPGA__scopeio_grid__def) \
     $(HDL4FPGA__scopeio_grid) \
+    $(HDL4FPGA__scopeio_btof__def) \
+    $(HDL4FPGA__scopeio_btof) \
     $(HDL4FPGA__scopeio_axis__def) \
     $(HDL4FPGA__scopeio_axis) \
     $(HDL4FPGA__scopeio_amp__beh) \
@@ -1617,6 +1621,18 @@ $(HDL4FPGA__scopeio_axis__def) : ../scope/scopeio_axis.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_axis.vhd
 
+$(HDL4FPGA__scopeio_btof) \
+$(HDL4FPGA__scopeio_btof__def) : ../scope/scopeio_btof.vhd \
+		$(HDL4FPGA__format) \
+		$(HDL4FPGA__dbdbblsrl_ser) \
+		$(HDL4FPGA__lifo) \
+		$(HDL4FPGA__dbdbbl_seq) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_btof.vhd
+
 $(HDL4FPGA__scopeio_grid) \
 $(HDL4FPGA__scopeio_grid__def) : ../scope/scopeio_grid.vhd \
 		$(HDL4FPGA__latency) \
@@ -1796,7 +1812,10 @@ $(HDL4FPGA__scopeio_textbox__def) : ../scope/scopeio_textbox.vhd \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__cgaram) \
 		$(HDL4FPGA__format) \
+		$(HDL4FPGA__dbdbblsrl_ser) \
+		$(HDL4FPGA__lifo) \
 		$(HDL4FPGA__dbdbbl_seq) \
+		$(HDL4FPGA__scopeio_btof) \
 		$(HDL4FPGA__mul_ser) \
 		$(HDL4FPGA__scopeio_rgtrvtaxis) \
 		$(HDL4FPGA__scopeio_rgtrtrigger) \
