@@ -13,6 +13,7 @@ entity scopeio_btof is
 		clk      : in  std_logic;
 		btof_req : in  std_logic;
 		btof_rdy : out std_logic;
+		dec      : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
 		neg      : in  std_logic;
 		bin      : in  std_logic_vector;
 		code_frm : out std_logic;
@@ -74,7 +75,7 @@ begin
 			sll_frm  => sll_frm,
 			sll_bcd  => sll_bcd,
 			slr_frm  => slr_frm,
-			slr_dec  => b"01",
+			slr_dec  => dec,
 			slr_irdy => slr_irdy,
 			slr_trdy => slr_trdy,
 			slr_bcd  => slr_bcd);
