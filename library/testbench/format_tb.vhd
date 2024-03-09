@@ -89,11 +89,14 @@ begin
 		bcd      => sll_bcd);
 
 	lifo_b : block
+		generic (
+			max_decimal : natural := 2);
 		port (
 			clk      : in  std_logic;
 			sll_frm  : in  std_logic;
 			sll_bcd  : in  std_logic_vector;
 			slr_frm  : buffer std_logic;
+			slr_dec  : in std_logic_vector := std_logic_vector'(0 to 0 => '0');
 			slr_irdy : buffer std_logic;
 			slr_trdy : in  std_logic;
 			slr_bcd  : buffer std_logic_vector);
@@ -102,6 +105,7 @@ begin
 			sll_frm  => sll_frm,
 			sll_bcd  => sll_bcd,
 			slr_frm  => slr_frm,
+			slr_dec  => b"11",
 			slr_irdy => slr_irdy,
 			slr_trdy => slr_trdy,
 			slr_bcd  => slr_bcd);
@@ -119,7 +123,7 @@ begin
 		process (sll_frm, slr_trdy, slr_bcd, lifo_ov, clk)
 			type states is (s_popped, s_pushed);
 			variable state : states;
-			variable cntr : integer range -1 to 4 := -1;
+			variable cntr : integer range -1 to max_decimal := -1;
 		begin
 			if rising_edge(clk) then
 				if sll_frm='0' then
@@ -131,7 +135,7 @@ begin
 							end if;
 							state := s_popped;
 						else
-							cntr := 4;
+							cntr := to_integer(unsigned(slr_dec));
 						end if;
 					when s_popped =>
 						if cntr >= 0 then
