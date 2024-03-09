@@ -36,8 +36,9 @@ architecture format_tb of testbench is
 	constant bin_digits : natural := 3;
 
 	signal clk  : std_logic := '0';
-	signal dbdbbl_req  : std_logic := '0';
-	signal dbdbbl_rdy  : std_logic := '1';
+	alias rgtr_clk is clk;
+	signal dbdbbl_req  : std_logic;
+	signal dbdbbl_rdy  : std_logic;
 
 	signal slr_bcd : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 	signal slr_ini : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
@@ -62,9 +63,9 @@ begin
 		variable xxx : unsigned(0 to 8*8-1);
 	begin
 		if rising_edge(clk) then
-			if dbdbbl_req='0' then
+			if (to_bit(dbdbbl_rdy) xor to_bit(dbdbbl_req))='0' then
 				xxx := unsigned(to_ascii("        "));
-				dbdbbl_req <= '1';
+				dbdbbl_req <= not to_stdulogic(to_bit(dbdbbl_rdy));
 			elsif code_frm='1' then
 				xxx(0 to 8-1) := unsigned(code);
 				xxx := xxx rol 8;
@@ -88,6 +89,22 @@ begin
 		bcd      => sll_bcd);
 
 	lifo_b : block
+		port (
+			clk      : in  std_logic;
+			sll_frm  : in  std_logic;
+			sll_bcd  : in  std_logic_vector;
+			slr_frm  : buffer std_logic;
+			slr_irdy : buffer std_logic;
+			slr_trdy : in  std_logic;
+			slr_bcd  : buffer std_logic_vector);
+		port map (
+			clk      => rgtr_clk,
+			sll_frm  => sll_frm,
+			sll_bcd  => sll_bcd,
+			slr_frm  => slr_frm,
+			slr_irdy => slr_irdy,
+			slr_trdy => slr_trdy,
+			slr_bcd  => slr_bcd);
 		signal lifo_ov  : std_logic;
 	begin
 		lifo_e : entity hdl4fpga.lifo
