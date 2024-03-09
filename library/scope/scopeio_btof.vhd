@@ -8,12 +8,13 @@ use hdl4fpga.base.all;
 
 entity scopeio_btof is
 	generic (
+		max_decimal : natural := 2;
 		tab      : std_logic_vector := to_ascii("0123456789 +-,."));
 	port (
 		clk      : in  std_logic;
 		btof_req : in  std_logic;
 		btof_rdy : out std_logic;
-		dec      : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
+		dec      : in  std_logic_vector;
 		neg      : in  std_logic;
 		bin      : in  std_logic_vector;
 		code_frm : out std_logic;
@@ -60,13 +61,13 @@ begin
 		generic (
 			max_decimal : natural := 2);
 		generic map (
-			max_decimal => 2);
+			max_decimal => max_decimal);
 		port (
 			clk      : in  std_logic;
 			sll_frm  : in  std_logic;
 			sll_bcd  : in  std_logic_vector;
 			slr_frm  : buffer std_logic;
-			slr_dec  : in std_logic_vector := std_logic_vector'(0 to 0 => '0');
+			slr_dec  : in std_logic_vector;
 			slr_irdy : buffer std_logic;
 			slr_trdy : in  std_logic;
 			slr_bcd  : buffer std_logic_vector);
