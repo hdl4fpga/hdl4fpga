@@ -331,16 +331,16 @@ begin
 				b   => std_logic_vector(positive),
 				s   => bin);
 
-            btof_e : entity hdl4fpga.scopeio_btof
-           	port map (
-           		clk      =>  rgtr_clk,
-           		btof_req => mul_rdy,
-           		btof_rdy => open,
-				dec      => b"0",
+			btof_e : entity hdl4fpga.scopeio_btof
+			port map (
+				clk      => rgtr_clk,
+				btof_req => mul_rdy,
+				btof_rdy => open,
+				dec      => b"1",
 				neg      => vt_offset(vt_offset'left),
-           		bin      => bin,
-           		code_frm => cga_we,
-           		code     => cga_code);
+				bin      => bin,
+				code_frm => cga_we,
+				code     => cga_code);
 
 		end block;
 
