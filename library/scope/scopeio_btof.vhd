@@ -8,7 +8,8 @@ use hdl4fpga.base.all;
 
 entity scopeio_btof is
 	generic (
-		max_decimal : natural := 2;
+		max_decimal : natural := 3;
+		min_decimal : integer := -4;
 		tab      : std_logic_vector := to_ascii("0123456789 +-,."));
 	port (
 		clk      : in  std_logic;
@@ -80,78 +81,86 @@ begin
 			slr_irdy => slr_irdy,
 			slr_trdy => slr_trdy,
 			slr_bcd  => slr_bcd);
-		signal lifo_ov  : std_logic;
+
+		signal lifo_ov   : std_logic;
+		signal push_ena  : std_logic;
+		signal push_data : std_logic_vector(sll_bcd'range);
+		signal pop_ena   : std_logic;
+
 	begin
 		lifo_e : entity hdl4fpga.lifo
 		port map (
 			clk       => clk,
 			ov        => lifo_ov,
-			push_ena  => sll_frm,
-			push_data => sll_bcd,
-			pop_ena   => slr_irdy,
+			push_ena  => push_ena,
+			push_data => push_data,
+			pop_ena   => pop_ena,
 			pop_data  => slr_bcd);
 
+		push_data <= sll_bcd;
 		process (sll_frm, slr_trdy, slr_bcd, lifo_ov, clk)
-			type states is (s_popped, s_pushed);
+			type states is (s_push, s_pop);
 			variable state : states;
-			variable cntr : integer range -1 to max_decimal := -1;
+			variable cntr : integer range 0 to max_decimal;
 		begin
 			if rising_edge(clk) then
 				if sll_frm='0' then
 					case state is
-					when s_pushed =>
-						if lifo_ov='1' then
-							if cntr >= 0 then
+					when s_push =>
+						if sll_frm='1' then
+							if cntr > 0 then
 								cntr := cntr - 1;
 							end if;
-							state := s_popped;
 						else
 							cntr := to_integer(unsigned(slr_dec));
 						end if;
-					when s_popped =>
-						if cntr >= 0 then
-							cntr := cntr - 1;
+					when s_pop =>
+						if lifo_ov='1' then
+							if cntr > 0 then
+								cntr := cntr - 1;
+							end if;
+							state := s_push;
+						else
 						end if;
+						pop_ena <= '1';
 					end case;
 				else
-					state := s_pushed;
+					state := s_pop;
 				end if;
 			end if;
 
 			case state is
-			when s_popped =>
-				if cntr >= 0 then 
-					slr_frm  <= '1';
-					slr_irdy <= '1';
+			when s_push =>
+				if cntr > 0 then
+					push_ena <= '0';
+				elsif sll_frm='0' then
+					push_ena <= '0';
 				else
-					slr_frm  <= '0';
-					slr_irdy <= '0';
+					push_ena <= '1';
 				end if;
+				pop_ena  <= '0';
+				slr_frm  <= '0';
+				slr_irdy <= '0';
 				slr_ini  <= (others => '0');
-			when s_pushed =>
-				if sll_frm='1' then
-					slr_frm  <= '0';
-					slr_irdy <= '0';
-					slr_ini  <= slr_bcd;
-				elsif lifo_ov='1' then
-					if cntr >= 0 then 
-						slr_frm  <= '1';
-						slr_irdy <= '1';
-						slr_ini  <= x"e";
-					else
+			when s_pop =>
+				slr_frm <= '1';
+				if lifo_ov='0' then
+					if cntr > 0 then
+						cntr := cntr - 1;
+						slr_ini  <= slr_bcd;
+					elsE
+						slr_ini <= x"e";
+					end if;
+				else
+					if cntr > 0 then 
 						slr_frm  <= '0';
 						slr_irdy <= '0';
-						slr_ini  <= (others => '0');
-					end if;
-				else
-					slr_frm  <= '1';
-					if slr_trdy='0' then
-						slr_irdy <= '0';
 					else
+						slr_frm  <= '1';
 						slr_irdy <= '1';
 					end if;
-					slr_ini  <= slr_bcd;
 				end if;
+				push_ena <= '0';
 			end case;
 
 		end process;

@@ -105,46 +105,61 @@ entity scopeio_textbox is
 		return retval;
 	end;
 
-	function xxx (
+	function normalize (
 		constant unit : real)
 		return string is
 		variable exp   : integer;
-		variable mant  : real;
-		variable rndd  : natural; --Lattice Diamond fix
+		variable norm  : real;
+		variable rnd   : natural; --Lattice Diamond fix
 		constant tenth : real := 1.0/10.0;
 	begin
 		exp  := 0;
-		mant := unit;
+		norm := unit;
 		assert unit > 0.0 
 			report "unit <= 0.0"
 			severity failure;
 		loop
-			if abs(mant-round(mant)) > 1.0e-12 then
-				mant := mant / tenth;
+			if abs(norm-round(norm)) > 1.0e-12 then
+				norm := norm / tenth;
 				exp  := exp  + 1;
 			else
 				exit;
 			end if;
 		end loop;
-		rndd := natural(round(mant)); --Lattice Diamond fix
-		return "{mant:" & natural'image(rndd) & ",exp:" & integer'image(exp) & "}";
+		rnd := natural(round(norm)); --Lattice Diamond fix
+		return "{norm:" & natural'image(rnd) & ",exp:" & integer'image(exp) & "}";
 	end;
 
-	function yyy (
+	function normalized_mant (
 		constant unit : real)
 		return natural_vector is
-		constant zzz    : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
+		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
 		variable retval : natural_vector(0 to 4-1);
 	begin
 
-		for i in zzz'range loop
-			retval(i) := (jso(xxx(unit*zzz(i)))**".mant");
+		for i in coefs'range loop
+			retval(i) := (jso(normalize(unit*coefs(i)))**".norm");
 		end loop;
 		return retval;
 	end;
 
-	constant hhh : natural_vector := yyy(vt_unit);
-	constant hhh_length : natural := unsigned_num_bits(max(hhh)-1);
+	function normalized_exp (
+		constant unit : real)
+		return natural_vector is
+		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
+		variable retval : natural_vector(0 to 4-1);
+	begin
+
+		for i in coefs'range loop
+			retval(i) := (jso(normalize(unit*coefs(i)))**".exp");
+		end loop;
+		return retval;
+	end;
+
+	constant mants : natural_vector := normalized_mant(vt_unit);
+	constant mant_length : natural := unsigned_num_bits(max(mants));
+	constant exps  : natural_vector := normalized_exp(vt_unit);
+	constant exp_length  : natural := unsigned_num_bits(max(exps));
 end;
 
 architecture def of scopeio_textbox is
@@ -204,7 +219,7 @@ begin
 		constant bcd_digits   : natural := 1;
 		signal bcd            : std_logic_vector(0 to bcd_digits*bcd_length-1);
 		-- signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+vt_scale'length+bin_digits-1)/bin_digits)-1);
-		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+hhh_length+bin_digits-1)/bin_digits)-1);
+		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+mant_length+bin_digits-1)/bin_digits)-1);
 	begin
 
 		myip4_e : entity hdl4fpga.scopeio_rgtrmyip
@@ -284,23 +299,11 @@ begin
 			signal dbdbbl_req  : std_logic;
 			signal dbdbbl_rdy  : std_logic;
 
-			signal scale : std_logic_vector(0 to hhh_length-1);
-
-			signal sll_frm  : std_logic;
-			signal sll_bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
-
-	   		signal slr_bcd : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
-			signal slr_ini : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
-
-			signal slr_frm  : std_logic;
-			signal slr_irdy : std_logic;
-			signal slr_trdy : std_logic;
-
-			signal slrbcd_trdy : std_logic;
-			signal slrbcd      : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+			signal scale : std_logic_vector(0 to mant_length-1);
 
 			signal code_frm : std_logic;
 			signal code     : std_logic_vector(0 to 8-1);
+			signal dec : std_logic_vector(0 to exp_length-1);
 
 		begin
 
@@ -319,7 +322,7 @@ begin
 				-signed(vt_offset) when vt_offset(vt_offset'left)='1' else
 				 signed(vt_offset);
 
-			scale <= std_logic_vector(to_unsigned(hhh(to_integer(unsigned(vt_scale))), scale'length));
+			scale <= std_logic_vector(to_unsigned(mants(to_integer(unsigned(vt_scale))), scale'length));
 			mul_ser_e : entity hdl4fpga.mul_ser
 			generic map (
 				lsb => true)
@@ -331,12 +334,13 @@ begin
 				b   => std_logic_vector(positive),
 				s   => bin);
 
+			dec <= std_logic_vector(to_unsigned(exps(to_integer(unsigned(vt_scale))), dec'length));
 			btof_e : entity hdl4fpga.scopeio_btof
 			port map (
 				clk      => rgtr_clk,
 				btof_req => mul_rdy,
 				btof_rdy => open,
-				dec      => b"1",
+				dec      => dec,
 				neg      => vt_offset(vt_offset'left),
 				bin      => bin,
 				code_frm => cga_we,
