@@ -88,6 +88,8 @@ begin
 		signal pop_ena   : std_logic;
 
 	begin
+
+		push_ena <= sll_frm;
 		lifo_e : entity hdl4fpga.lifo
 		port map (
 			clk       => clk,
@@ -104,59 +106,52 @@ begin
 			variable cntr : integer range 0 to max_decimal;
 		begin
 			if rising_edge(clk) then
-				if sll_frm='0' then
-					case state is
-					when s_push =>
-						if sll_frm='1' then
-							if cntr > 0 then
-								cntr := cntr - 1;
-							end if;
-						else
-							cntr := to_integer(unsigned(slr_dec));
-						end if;
-					when s_pop =>
+				case state is
+				when s_push =>
+					pop_ena <= '0';
+					if sll_frm='0' then
+						state := s_pop;
+					end if;
+				when s_pop =>
+					if sll_frm='1' then
+						cntr    := to_integer(unsigned(slr_dec));
+						pop_ena <= '0';
+						state   := s_push;
+					else
+						slr_frm <= '1';
 						if lifo_ov='1' then
-							if cntr > 0 then
-								cntr := cntr - 1;
-							end if;
-							state := s_push;
-						else
-						end if;
 						pop_ena <= '1';
-					end case;
-				else
-					state := s_pop;
-				end if;
+							if cntr >= 0 then
+								cntr  := cntr - 1;
+								state := s_pop;
+							else
+								cntr  := to_integer(unsigned(slr_dec));
+								state := s_push;
+							end if;
+						else
+							pop_ena <= '1';
+							state   := s_pop;
+						end if;
+					end if;
+				end case;
 			end if;
 
 			case state is
 			when s_push =>
-				if cntr > 0 then
-					push_ena <= '0';
-				elsif sll_frm='0' then
-					push_ena <= '0';
-				else
-					push_ena <= '1';
-				end if;
-				pop_ena  <= '0';
-				slr_frm  <= '0';
 				slr_irdy <= '0';
-				slr_ini  <= (others => '0');
+				slr_ini  <= (others => '-');
 			when s_pop =>
 				slr_frm <= '1';
 				if lifo_ov='0' then
-					slr_ini  <= slr_bcd;
-					elsE
-						slr_ini <= x"e";
-					end if;
+					slr_ini <= slr_bcd;
 				else
-					if cntr > 0 then 
-						slr_irdy <= '0';
-					else
+					if cntr >= 0 then 
 						slr_irdy <= '1';
+					else
+						slr_irdy <= '0';
 					end if;
+					
 				end if;
-				push_ena <= '0';
 			end case;
 
 		end process;
