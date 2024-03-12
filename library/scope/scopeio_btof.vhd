@@ -145,18 +145,14 @@ begin
 			when s_pop =>
 				slr_frm <= '1';
 				if lifo_ov='0' then
-					if cntr > 0 then
-						cntr := cntr - 1;
-						slr_ini  <= slr_bcd;
+					slr_ini  <= slr_bcd;
 					elsE
 						slr_ini <= x"e";
 					end if;
 				else
 					if cntr > 0 then 
-						slr_frm  <= '0';
 						slr_irdy <= '0';
 					else
-						slr_frm  <= '1';
 						slr_irdy <= '1';
 					end if;
 				end if;
