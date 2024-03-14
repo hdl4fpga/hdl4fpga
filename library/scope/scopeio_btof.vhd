@@ -85,13 +85,17 @@ begin
 			slr_ini  => slr_ini);
 
 		signal lifo_ov   : std_logic;
-		alias  push_ena  is sll_frm;
-		alias  push_data is sll_bcd;
+		-- alias  push_ena  is sll_frm; -- tools crashes
+		-- alias  push_data is sll_bcd; -- tools crashes
+		signal push_ena  : std_logic;
+		signal push_data : std_logic_vector(sll_bcd'range);
 		signal pop_ena   : std_logic;
 		signal pop_data  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 
 	begin
 
+		push_ena  <= sll_frm;
+		push_data <= sll_bcd;
 		lifo_e : entity hdl4fpga.lifo
 		port map (
 			clk       => clk,
