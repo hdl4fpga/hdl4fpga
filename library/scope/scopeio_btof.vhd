@@ -37,16 +37,14 @@ architecture def of scopeio_btof is
 	signal   slr_frm     : std_logic;
 	signal   slr_irdy    : std_logic;
 	signal   slr_trdy    : std_logic;
-	signal   slr_bcd     : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 	signal   slr_ini     : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
-
-	signal   slrbcd_trdy : std_logic;
-	signal   slrbcd      : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
-	signal   xxx      : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+	signal   slr_bcd     : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 
 	signal   format_frm  : std_logic;
 	signal   format_irdy : std_logic;
 	signal   format_trdy : std_logic;
+	signal   format_bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+
 begin
 
 	dbdbbl_req <= btof_req;
@@ -75,7 +73,7 @@ begin
 			slr_dec  : in std_logic_vector;
 			slr_irdy : buffer std_logic;
 			slr_trdy : in  std_logic;
-			slr_bcd  : buffer std_logic_vector);
+			slr_ini  : out std_logic_vector);
 		port map (
 			clk      => clk,
 			sll_frm  => sll_frm,
@@ -84,17 +82,16 @@ begin
 			slr_dec  => dec,
 			slr_irdy => slr_irdy,
 			slr_trdy => slr_trdy,
-			slr_bcd  => slr_bcd);
+			slr_ini  => slr_ini);
 
 		signal lifo_ov   : std_logic;
-		signal push_ena  : std_logic;
-		signal push_data : std_logic_vector(sll_bcd'range);
+		alias  push_ena  is sll_frm;
+		alias  push_data is sll_bcd;
 		signal pop_ena   : std_logic;
+		signal pop_data  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 
 	begin
 
-		push_ena  <= sll_frm;
-		push_data <= sll_bcd;
 		lifo_e : entity hdl4fpga.lifo
 		port map (
 			clk       => clk,
@@ -102,7 +99,7 @@ begin
 			push_ena  => push_ena,
 			push_data => push_data,
 			pop_ena   => pop_ena,
-			pop_data  => slr_bcd);
+			pop_data  => pop_data);
 
 		process (clk)
 			type states is (s_push, s_pop);
@@ -116,7 +113,7 @@ begin
 						if lifo_ov='0' then
 							slr_frm  <= '1';
 							slr_irdy <= '1';
-							slr_ini  <= slr_bcd;
+							slr_ini  <= pop_data;
 							pop_ena  <= '1';
 						else
 							slr_frm  <= '1';
@@ -129,7 +126,7 @@ begin
 						slr_frm  <= '0';
 						slr_irdy <= '0';
 						pop_ena  <= '0';
-						slr_ini  <= (others => '-');
+						slr_ini  <= (slr_ini'range => '-');
 						cntr := to_integer(unsigned(slr_dec));
 					end if;
 				when s_pop =>
@@ -138,7 +135,7 @@ begin
 						slr_irdy <= '0';
 						cntr     := to_integer(unsigned(slr_dec));
 						pop_ena  <= '0';
-						slr_ini  <= (others => '-');
+						slr_ini  <= (slr_ini'range => '-');
 						state    := s_push;
 					else
 						if lifo_ov='1' then
@@ -158,7 +155,7 @@ begin
 							slr_irdy <= '1';
 							cntr     := to_integer(unsigned(slr_dec));
 							pop_ena  <= '1';
-							slr_ini <= slr_bcd;
+							slr_ini <= pop_data;
 						end if;
 					end if;
 				end case;
@@ -176,8 +173,8 @@ begin
 		irdy => slr_irdy,
 		trdy => slr_trdy,
 		cnt  => b"101",
-		bcd_ini  => slr_ini,
-		bcd  => slrbcd);
+		bcd_ini => slr_ini,
+		bcd  => slr_bcd);
 
 	process (clk)
 		variable cntr : integer range -1 to max_decimal;
@@ -193,11 +190,11 @@ begin
 					cntr := cntr - 1;
 				end if;
 			else
-				format_frm <= '0';
+				format_frm  <= '0';
 				format_irdy <= '0';
 				cntr := to_integer(unsigned(dec));
 			end if;
-			xxx <= slrbcd;
+			format_bcd <= slr_bcd;
 		end if;
 	end process;
 
@@ -211,7 +208,7 @@ begin
 		bcd_frm  => format_frm,
 		bcd_irdy => format_irdy,
 		bcd_trdy => format_trdy,
-		bcd      => xxx,
+		bcd      => format_bcd,
 		code_frm => code_frm,
 		code     => code);
 end;
