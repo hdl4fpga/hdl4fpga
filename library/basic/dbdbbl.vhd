@@ -243,7 +243,7 @@ entity dbdbblsrl_ser is
 		irdy : in  std_logic := '1';
 		trdy : out std_logic := '1';
 		cnt  : in  std_logic_vector; -- := std_logic_vector'(0 to 0 => '0'); -- Latticesemi Diamond bug
-		ini  : in  std_logic_vector; -- := std_logic_vector'(0 to 0 => '0'); -- Latticesemi Diamond bug
+		bcd_ini  : in  std_logic_vector; -- := std_logic_vector'(0 to 0 => '0'); -- Latticesemi Diamond bug
 		bcd_trdy : in std_logic := '1';
 		bcd  : out std_logic_vector);
 
@@ -265,13 +265,13 @@ begin
 		report "n greater than 8"
 		severity failure;
 
-	process (ini, clk)
+	process (bcd_ini, clk)
 		variable cy : std_logic_vector(m-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if frm='1' then
 				if (irdy and bcd_trdy)='1' then
-					if unsigned(ini)<=x"9" then
+					if unsigned(bcd_ini)<=x"9" then
 						cy := bcd_cy;
 					end if;
 				end if;
@@ -279,9 +279,9 @@ begin
 				cy := (others => '0');
 			end if;
 		end if;
-		ini_dbbl <= cy & std_logic_vector(resize(unsigned(ini), n));
+		ini_dbbl <= cy & std_logic_vector(resize(unsigned(bcd_ini), n));
 	end process;
-	bcd <= bcd_dbbl(n-1 downto 0) when unsigned(ini)<=9 else std_logic_vector(resize(unsigned(ini), n));
+	bcd <= bcd_dbbl(n-1 downto 0) when unsigned(bcd_ini)<=9 else std_logic_vector(resize(unsigned(bcd_ini), n));
 
 	srl_e : entity hdl4fpga.dbdbbl_srl
 	port map (

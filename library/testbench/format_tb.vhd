@@ -196,7 +196,7 @@ begin
 		irdy => slr_irdy,
 		trdy => slr_trdy,
 		cnt  => b"101",
-		ini  => slr_ini,
+		bcd_ini  => slr_ini,
 		bcd_trdy => slrbcd_trdy,
 		bcd  => slrbcd);
 

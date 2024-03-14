@@ -125,7 +125,7 @@ begin
 		clk => clk,
 		frm => frm,
 		cnt => b"101",
-		ini => ini,
+		bcd_ini => ini,
 		bcd => bcd);
 end;
 

@@ -42,7 +42,11 @@ architecture def of scopeio_btof is
 
 	signal   slrbcd_trdy : std_logic;
 	signal   slrbcd      : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
+	signal   xxx      : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 
+	signal   format_frm  : std_logic;
+	signal   format_irdy : std_logic;
+	signal   format_trdy : std_logic;
 begin
 
 	dbdbbl_req <= btof_req;
@@ -89,7 +93,8 @@ begin
 
 	begin
 
-		push_ena <= sll_frm;
+		push_ena  <= sll_frm;
+		push_data <= sll_bcd;
 		lifo_e : entity hdl4fpga.lifo
 		port map (
 			clk       => clk,
@@ -99,61 +104,65 @@ begin
 			pop_ena   => pop_ena,
 			pop_data  => slr_bcd);
 
-		push_data <= sll_bcd;
-		process (sll_frm, slr_trdy, slr_bcd, lifo_ov, clk)
+		process (clk)
 			type states is (s_push, s_pop);
 			variable state : states;
-			variable cntr : integer range 0 to max_decimal;
+			variable cntr : integer range -1 to max_decimal;
 		begin
 			if rising_edge(clk) then
 				case state is
 				when s_push =>
-					pop_ena <= '0';
 					if sll_frm='0' then
-						state := s_pop;
+						if lifo_ov='0' then
+							slr_frm  <= '1';
+							slr_irdy <= '1';
+							slr_ini  <= slr_bcd;
+							pop_ena  <= '1';
+						else
+							slr_frm  <= '1';
+							slr_irdy <= '1';
+							slr_ini  <= x"e";
+							pop_ena  <= '1';
+							state := s_pop;
+						end if;
+					else
+						slr_frm  <= '0';
+						slr_irdy <= '0';
+						pop_ena  <= '0';
+						slr_ini  <= (others => '-');
+						cntr := to_integer(unsigned(slr_dec));
 					end if;
 				when s_pop =>
 					if sll_frm='1' then
-						cntr    := to_integer(unsigned(slr_dec));
-						pop_ena <= '0';
-						state   := s_push;
+						slr_frm  <= '0';
+						slr_irdy <= '0';
+						cntr     := to_integer(unsigned(slr_dec));
+						pop_ena  <= '0';
+						slr_ini  <= (others => '-');
+						state    := s_push;
 					else
-						slr_frm <= '1';
 						if lifo_ov='1' then
-						pop_ena <= '1';
-							if cntr >= 0 then
-								cntr  := cntr - 1;
-								state := s_pop;
+							if cntr > 0 then
+								slr_frm  <= '1';
+								slr_irdy <= '1';
+								pop_ena  <= '1';
+								cntr     := cntr - 1;
 							else
-								cntr  := to_integer(unsigned(slr_dec));
-								state := s_push;
+								slr_frm  <= '0';
+								slr_irdy <= '0';
+								pop_ena  <= '0';
 							end if;
+							slr_ini <= x"0";
 						else
-							pop_ena <= '1';
-							state   := s_pop;
+							slr_frm  <= '1';
+							slr_irdy <= '1';
+							cntr     := to_integer(unsigned(slr_dec));
+							pop_ena  <= '1';
+							slr_ini <= slr_bcd;
 						end if;
 					end if;
 				end case;
 			end if;
-
-			case state is
-			when s_push =>
-				slr_irdy <= '0';
-				slr_ini  <= (others => '-');
-			when s_pop =>
-				slr_frm <= '1';
-				if lifo_ov='0' then
-					slr_ini <= slr_bcd;
-				else
-					if cntr >= 0 then 
-						slr_irdy <= '1';
-					else
-						slr_irdy <= '0';
-					end if;
-					
-				end if;
-			end case;
-
 		end process;
 	end block;
 
@@ -167,9 +176,30 @@ begin
 		irdy => slr_irdy,
 		trdy => slr_trdy,
 		cnt  => b"101",
-		ini  => slr_ini,
-		bcd_trdy => slrbcd_trdy,
+		bcd_ini  => slr_ini,
 		bcd  => slrbcd);
+
+	process (clk)
+		variable cntr : integer range -1 to max_decimal;
+	begin
+		if rising_edge(clk) then
+			if slr_frm='1' then
+				if cntr < 0 then
+					format_frm  <= '1';
+					format_irdy <= '1';
+				else
+					format_frm  <= '0';
+					format_irdy <= '0';
+					cntr := cntr - 1;
+				end if;
+			else
+				format_frm <= '0';
+				format_irdy <= '0';
+				cntr := to_integer(unsigned(dec));
+			end if;
+			xxx <= slrbcd;
+		end if;
+	end process;
 
 	format_e : entity hdl4fpga.format
 	generic map (
@@ -178,10 +208,10 @@ begin
 		tab      => tab,
 		neg      => neg,
 		clk      => clk,
-		bcd_frm  => slr_frm,
-		bcd_irdy => slr_irdy,
-		bcd_trdy => slrbcd_trdy,
-		bcd      => slrbcd,
+		bcd_frm  => format_frm,
+		bcd_irdy => format_irdy,
+		bcd_trdy => format_trdy,
+		bcd      => xxx,
 		code_frm => code_frm,
 		code     => code);
 end;
