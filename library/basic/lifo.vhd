@@ -43,7 +43,7 @@ begin
    		rd_data => pop_data);
 
 	process (clk)
-		variable length : unsigned(0 to addr_size) := (others => '0');
+		variable length : unsigned(0 to addr_size) := (others => '1');
 		type states is (s_pushing, s_popping);
 		variable state : states;
 	begin
@@ -51,7 +51,7 @@ begin
 			if (push_ena xor pop_ena)='1' then
 				if push_ena ='1' then
 					if state=s_popping then
-						length := (others => '0');
+						length := (others => '1');
 					else
 						length := length + 1;
 					end if;

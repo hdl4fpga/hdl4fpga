@@ -106,63 +106,42 @@ begin
 			pop_data  => pop_data);
 
 		process (clk)
-			type states is (s_push, s_pop);
-			variable state : states;
 			variable cntr : integer range -1 to max_decimal;
 		begin
 			if rising_edge(clk) then
-				case state is
-				when s_push =>
-					if sll_frm='0' then
-						if lifo_ov='0' then
-							slr_frm  <= '1';
-							slr_irdy <= '1';
-							slr_ini  <= pop_data;
-							pop_ena  <= '1';
+				if sll_frm='0' then
+					if lifo_ov='0' then
+						slr_frm  <= pop_ena;
+						slr_irdy <= pop_ena;
+						slr_ini  <= pop_data;
+						pop_ena  <= '1';
+					elsif cntr > 0 then
+						slr_frm  <= '1';
+						slr_irdy <= '1';
+						pop_ena  <= '-';
+						if cntr=to_integer(unsigned(slr_dec)) then
+							slr_ini <= x"e";
 						else
-							slr_frm  <= '1';
-							slr_irdy <= '1';
-							slr_ini  <= x"e";
-							pop_ena  <= '1';
-							state := s_pop;
-						end if;
-					else
-						slr_frm  <= '0';
-						slr_irdy <= '0';
-						pop_ena  <= '0';
-						slr_ini  <= (slr_ini'range => '-');
-						cntr := to_integer(unsigned(slr_dec));
-					end if;
-				when s_pop =>
-					if sll_frm='1' then
-						slr_frm  <= '0';
-						slr_irdy <= '0';
-						cntr     := to_integer(unsigned(slr_dec));
-						pop_ena  <= '0';
-						slr_ini  <= (slr_ini'range => '-');
-						state    := s_push;
-					else
-						if lifo_ov='1' then
-							if cntr > 0 then
-								slr_frm  <= '1';
-								slr_irdy <= '1';
-								pop_ena  <= '1';
-								cntr     := cntr - 1;
-							else
-								slr_frm  <= '0';
-								slr_irdy <= '0';
-								pop_ena  <= '0';
-							end if;
 							slr_ini <= x"0";
-						else
-							slr_frm  <= '1';
-							slr_irdy <= '1';
-							cntr     := to_integer(unsigned(slr_dec));
-							pop_ena  <= '1';
-							slr_ini <= pop_data;
 						end if;
+						cntr := cntr - 1;
+					else
+						slr_frm  <= '0';
+						slr_irdy <= '0';
+						slr_ini  <= (slr_ini'range => '-');
+						pop_ena  <= '0';
 					end if;
-				end case;
+				else
+					slr_frm  <= '0';
+					slr_irdy <= '0';
+					slr_ini  <= (slr_ini'range => '-');
+					pop_ena  <= '0';
+					if unsigned(slr_dec) > 0 then
+						cntr := to_integer(unsigned(slr_dec));
+					else
+						cntr := -1;
+					end if;
+				end if;
 			end if;
 		end process;
 	end block;
@@ -176,7 +155,7 @@ begin
 		frm  => slr_frm,
 		irdy => slr_irdy,
 		trdy => slr_trdy,
-		cnt  => b"101",
+		cnt  => b"000",
 		bcd_ini => slr_ini,
 		bcd  => slr_bcd);
 
@@ -196,7 +175,11 @@ begin
 			else
 				format_frm  <= '0';
 				format_irdy <= '0';
-				cntr := to_integer(unsigned(dec));
+				if unsigned(dec) > 0 then
+					cntr := to_integer(unsigned(dec));
+				else
+					cntr := -1;
+				end if;
 			end if;
 			format_bcd <= slr_bcd;
 		end if;
