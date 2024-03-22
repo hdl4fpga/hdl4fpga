@@ -148,8 +148,8 @@ begin
 				code_frm <= buff_frm;
 				fmt_bcd  <= buff;
 				buff     := multiplex(bcd_tab, bcd, bcd'length);
-				bcd_trdy <= '0';
 				buff_frm := '0';
+				bcd_trdy <= '0';
 				state := s_init;
 			end if;
 		end if;

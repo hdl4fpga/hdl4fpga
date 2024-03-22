@@ -115,10 +115,10 @@ begin
 						slr_irdy <= pop_ena;
 						slr_ini  <= pop_data;
 						pop_ena  <= '1';
-					elsif cntr > 0 then
+					elsif cntr >= 0 then
 						slr_frm  <= '1';
 						slr_irdy <= '1';
-						pop_ena  <= '-';
+						pop_ena  <= '0';
 						if cntr=to_integer(unsigned(slr_dec)) then
 							slr_ini <= x"e";
 						else
@@ -155,7 +155,7 @@ begin
 		frm  => slr_frm,
 		irdy => slr_irdy,
 		trdy => slr_trdy,
-		cnt  => b"000",
+		cnt  => b"101",
 		bcd_ini => slr_ini,
 		bcd  => slr_bcd);
 

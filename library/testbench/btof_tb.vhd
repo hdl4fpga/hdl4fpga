@@ -62,9 +62,9 @@ begin
    		clk      => clk,
    		btof_req => btof_req,
    		btof_rdy => open,
-		dec      => b"0",
+		dec      => b"10",
 		neg      => '0',
-		bin      => std_logic_vector(to_unsigned(02345678,24)), -- b"1001110",
+		bin      => std_logic_vector(to_unsigned(00000678,24)), -- b"1001110",
    		code_frm => code_frm,
    		code     => code);
 
