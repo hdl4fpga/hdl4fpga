@@ -6,7 +6,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity scopeio_btof is
+entity btof is
 	generic (
 		max_decimal : natural := 3;
 		min_decimal : integer := -4;
@@ -22,7 +22,7 @@ entity scopeio_btof is
 		code     : out std_logic_vector);
 end;
 
-architecture def of scopeio_btof is
+architecture def of btof is
 	constant bcd_length  : natural := 4;
 	constant bcd_width   : natural := 8;
 	constant bcd_digits  : natural := 1;

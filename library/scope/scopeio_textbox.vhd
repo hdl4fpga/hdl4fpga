@@ -335,7 +335,7 @@ begin
 				s   => bin);
 
 			dec <= std_logic_vector(to_unsigned(exps(to_integer(unsigned(vt_scale))), dec'length));
-			btof_e : entity hdl4fpga.scopeio_btof
+			btof_e : entity hdl4fpga.btof
 			port map (
 				clk      => rgtr_clk,
 				btof_req => mul_rdy,
