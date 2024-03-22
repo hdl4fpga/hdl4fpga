@@ -64,7 +64,7 @@ begin
    		btof_rdy => open,
 		dec      => b"0",
 		neg      => '0',
-		bin      => std_logic_vector(to_unsigned(5,15)), -- b"1001110",
+		bin      => std_logic_vector(to_unsigned(02345678,24)), -- b"1001110",
    		code_frm => code_frm,
    		code     => code);
 
