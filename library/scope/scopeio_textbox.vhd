@@ -302,7 +302,7 @@ begin
 
 			signal code_frm : std_logic;
 			signal code     : std_logic_vector(0 to 8-1);
-			signal dec : std_logic_vector(0 to exp_length-1);
+			signal dec      : std_logic_vector(0 to exp_length-1);
 
 		begin
 
@@ -349,21 +349,27 @@ begin
 		end block;
 
 		process (rgtr_clk)
-			constant dn : std_logic := '0';
+			function xxx (
+				constant yyy : std_logic_vector)
+				return natural is 
+				variable retval : natural;
+			begin
+				retval := 0;
+				for i in 0 to inputs-1 loop
+					if i=unsigned(yyy) then
+						return retval;
+					end if;
+					retval := retval + textbox_width(layout)/font_width;
+				end loop;
+				return retval;
+			end; 
 		begin
 			if rising_edge(rgtr_clk) then
 				if cga_we='1' then
-					if dn='0' then
-						cga_addr <= cga_addr + 1;
-					else
-						cga_addr <= cga_addr - 1;
-					end if;
+					cga_addr <= cga_addr + 1;
 				else
-					case vt_chanid is
-					when others => 
-						cga_addr <= (others => '-');
-					end case;
-					cga_addr <= to_unsigned(0, cga_addr'length);
+					cga_addr <= to_unsigned(xxx(vt_chanid), cga_addr'length);
+					-- cga_addr <= to_unsigned(h, cga_addr'length);
 				end if;
 			end if;
 		end process;
