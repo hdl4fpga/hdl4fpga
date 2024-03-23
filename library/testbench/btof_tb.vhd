@@ -57,12 +57,13 @@ begin
 
 	-- btof_req <= not to_stdulogic(to_bit(btof_rdy));
 
-	du_e : entity hdl4fpga.scopeio_btof
+	du_e : entity hdl4fpga.btof
    	port map (
    		clk      => clk,
    		btof_req => btof_req,
    		btof_rdy => open,
 		dec      => b"10",
+		exp      => b"101",
 		neg      => '0',
 		bin      => std_logic_vector(to_unsigned(00000678,24)), -- b"1001110",
    		code_frm => code_frm,

@@ -26,7 +26,7 @@ HDL4FPGA__hdlcdll_rx = $(LIB_HDL4FPGA)/hdlcdll_rx/_primary.dat
 HDL4FPGA__eth_tb = $(LIB_HDL4FPGA)/eth_tb/_primary.dat
 HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
 MICRON__ddr_model = $(LIB_MICRON)/ddr_model/_primary.dat
-HDL4FPGA__scopeio_btof = $(LIB_HDL4FPGA)/scopeio_btof/_primary.dat
+HDL4FPGA__btof = $(LIB_HDL4FPGA)/btof/_primary.dat
 HDL4FPGA__lifo = $(LIB_HDL4FPGA)/lifo/_primary.dat
 HDL4FPGA__format = $(LIB_HDL4FPGA)/format/_primary.dat
 HDL4FPGA__dbdbblsrl_ser = $(LIB_HDL4FPGA)/dbdbblsrl_ser/_primary.dat
@@ -379,7 +379,7 @@ $(WORK__testbench) : /home/msagre/work/hdl4fpga/library/testbench/testbench.vhd 
 	$(VCOM) -2002 /home/msagre/work/hdl4fpga/library/testbench/testbench.vhd
 
 $(WORK__testbench__btof_tb) : btof_tb.vhd \
-		$(HDL4FPGA__scopeio_btof) \
+		$(HDL4FPGA__btof) \
 		$(WORK__testbench) \
 		$(IEEE__numeric_std) \
 		$(HDL4FPGA__base) \
