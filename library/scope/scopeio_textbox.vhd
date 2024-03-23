@@ -369,7 +369,6 @@ begin
 					cga_addr <= cga_addr + 1;
 				else
 					cga_addr <= to_unsigned(xxx(vt_chanid), cga_addr'length);
-					-- cga_addr <= to_unsigned(h, cga_addr'length);
 				end if;
 			end if;
 		end process;
