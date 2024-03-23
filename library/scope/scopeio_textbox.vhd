@@ -218,7 +218,6 @@ begin
 		constant bcd_length   : natural := 4;
 		constant bcd_digits   : natural := 1;
 		signal bcd            : std_logic_vector(0 to bcd_digits*bcd_length-1);
-		-- signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+vt_scale'length+bin_digits-1)/bin_digits)-1);
 		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+mant_length+bin_digits-1)/bin_digits)-1);
 	begin
 
@@ -360,6 +359,10 @@ begin
 						cga_addr <= cga_addr - 1;
 					end if;
 				else
+					case vt_chanid is
+					when others => 
+						cga_addr <= (others => '-');
+					end case;
 					cga_addr <= to_unsigned(0, cga_addr'length);
 				end if;
 			end if;
