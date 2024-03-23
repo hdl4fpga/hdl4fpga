@@ -16,6 +16,7 @@ entity btof is
 		btof_req : in  std_logic;
 		btof_rdy : out std_logic;
 		dec      : in  std_logic_vector;
+		exp      : in  std_logic_vector;
 		neg      : in  std_logic;
 		bin      : in  std_logic_vector;
 		code_frm : out std_logic;
@@ -155,7 +156,7 @@ begin
 		frm  => slr_frm,
 		irdy => slr_irdy,
 		trdy => slr_trdy,
-		cnt  => b"101",
+		cnt  => exp,
 		bcd_ini => slr_ini,
 		bcd  => slr_bcd);
 

@@ -341,6 +341,7 @@ begin
 				btof_req => mul_rdy,
 				btof_rdy => open,
 				dec      => dec,
+				exp      => b"101",
 				neg      => vt_offset(vt_offset'left),
 				bin      => bin,
 				code_frm => cga_we,
