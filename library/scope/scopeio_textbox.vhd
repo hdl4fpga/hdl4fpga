@@ -307,13 +307,13 @@ begin
 		begin
 
 			process (rgtr_clk)
+				variable q : std_logic;
 			begin
 				if rising_edge(rgtr_clk) then
-					if vt_dv='1' then
-						mul_req <= not mul_rdy;
-					elsif gain_dv='1' then
+					if q='1' then
 						mul_req <= not mul_rdy;
 					end if;
+					q := vt_dv or gain_dv;
 				end if;
 			end process;
 
@@ -349,26 +349,20 @@ begin
 		end block;
 
 		process (rgtr_clk)
-			function xxx (
-				constant yyy : std_logic_vector)
-				return natural is 
-				variable retval : natural;
-			begin
-				retval := 0;
-				for i in 0 to inputs-1 loop
-					if i=unsigned(yyy) then
-						return retval;
-					end if;
-					retval := retval + textbox_width(layout)/font_width;
-				end loop;
-				return retval;
-			end; 
+			variable addr : natural;
 		begin
 			if rising_edge(rgtr_clk) then
 				if cga_we='1' then
 					cga_addr <= cga_addr + 1;
 				else
-					cga_addr <= to_unsigned(xxx(vt_chanid), cga_addr'length);
+					addr := 0;
+					for i in 0 to inputs-1 loop
+						if i=unsigned(vt_chanid) then
+							exit;
+						end if;
+						addr := addr + textbox_width(layout)/font_width;
+					end loop;
+					cga_addr <= to_unsigned(addr, cga_addr'length);
 				end if;
 			end if;
 		end process;
