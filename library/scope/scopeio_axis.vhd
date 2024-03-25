@@ -142,53 +142,63 @@ begin
 			signal vdata    : std_logic_vector(tick'range);
 			signal vcol     : std_logic_vector(hztick_bits-1 downto font_bits);
 
+			signal code_frm : std_logic;
+			signal code : std_logic_vector(0 to 0);
+			signal bin : std_logic_vector(0 to 0);
+			signal btof_req : std_logic;
+			signal btof_rdy : std_logic;
 		begin 
 
 			init_p : process (clk)
-				constant frac_length : natural := unsigned_num_bits(hz_float1245(0).frac)+3+1;
-				variable frac : unsigned(0 to frac_length-1);
 			begin
 				if rising_edge(clk) then
 					if axis_dv='1' then
-						frac := to_unsigned(hz_float1245(to_integer(unsigned(axis_scale))).frac, frac'length) sll (hztick_bits-division_bits);
-						hz_ena   <= not axis_sel;
-						hz_start <= 
-							mul(to_signed(1,1), frac) +
-							shift_left(
-								resize(mul(signed(axis_base), frac), hz_start'length),
-								axisx_backscale+hztick_bits-hz_taddr'right);
-						hz_stop  <= resize(unsigned'(x"7e"), hz_stop'length);
-						hz_step  <= signed(resize(frac, hz_step'length));
-						hz_align <= '1';
-						hz_sign  <= '0';
 					end if;
 				end if;
 			end process;
 
-			x <= resize(unsigned(video_hcntr) + unsigned(hz_offset), x'length);
 
-			hzvaddr_p : process (video_clk)
+			process (clk)
+				variable xxx : unsigned(bin'range);
+				variable i : natural;
 			begin
-				if rising_edge(video_clk) then
-					vaddr <= std_logic_vector(x);
+				if rising_edge(clk) then
+					if (to_bit(btof_req) xor to_bit(btof_rdy))='0' then
+						xxx := xxx + 4;
+						btof_req <= not to_stdulogic(to_bit(btof_rdy));
+					end if;
 				end if;
 			end process;
 
-			hzmem_e : entity hdl4fpga.dpram
+			btof_e : entity hdl4fpga.btof
+			port map (
+				clk      => clk,
+				btof_req => '0',
+				btof_rdy => open,
+				dec      => b"0",
+				exp      => b"000",
+				neg      => '0',
+				bin      => bin,
+				code_frm => code_frm,
+				code     => code);
+
+			mem_e : entity hdl4fpga.dpram
 			generic map (
 				bitrom => (0 to 2**hz_taddr'length*bcdvalue'length-1 => '1'))
 			port map (
 				wr_clk  => clk,
-				wr_ena  => hz_tv,
+				wr_ena  => code_frm,
 				wr_addr => std_logic_vector(hz_taddr),
-				wr_data => std_logic_vector(bcdvalue),
+				wr_data => code,
 
 				rd_addr => vaddr(hz_taddr'range),
 				rd_data => vdata);
 
+			x <= resize(unsigned(video_hcntr) + unsigned(hz_offset), x'length);
 			hztick_p : process (video_clk)
 			begin
 				if rising_edge(video_clk) then
+					vaddr <= std_logic_vector(x);
 					tick  <= vdata;
 				end if;
 			end process;
