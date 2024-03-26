@@ -143,29 +143,34 @@ begin
 			signal vcol     : std_logic_vector(hztick_bits-1 downto font_bits);
 
 			signal code_frm : std_logic;
-			signal code : std_logic_vector(0 to 0);
-			signal bin : std_logic_vector(0 to 0);
+			signal code     : std_logic_vector(0 to 0);
+			signal bin      : std_logic_vector(0 to 0);
+			signal tick_req : std_logic;
+			signal tick_rdy : std_logic;
 			signal btof_req : std_logic;
 			signal btof_rdy : std_logic;
 		begin 
-
-			init_p : process (clk)
-			begin
-				if rising_edge(clk) then
-					if axis_dv='1' then
-					end if;
-				end if;
-			end process;
-
 
 			process (clk)
 				variable xxx : unsigned(bin'range);
 				variable i : natural;
 			begin
 				if rising_edge(clk) then
-					if (to_bit(btof_req) xor to_bit(btof_rdy))='0' then
-						xxx := xxx + 4;
-						btof_req <= not to_stdulogic(to_bit(btof_rdy));
+					if (to_bit(tick_req) xor to_bit(tick_rdy))='1' then
+						if (to_bit(btof_req) xor to_bit(btof_rdy))='0' then
+							if i < 20 then
+								xxx := xxx + 4;
+								i   := i + 1;
+								btof_req <= not to_stdulogic(to_bit(btof_rdy));
+							else
+								tick_rdy <= to_stdulogic(to_bit(tick_req));
+							end if;
+						end if;
+					else
+						if axis_dv='1' then
+							tick_req <= not to_stdulogic(to_bit(tick_rdy));
+						end if;
+						i := 0;
 					end if;
 				end if;
 			end process;
