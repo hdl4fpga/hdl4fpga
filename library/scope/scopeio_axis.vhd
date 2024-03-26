@@ -142,13 +142,13 @@ begin
 			signal vdata    : std_logic_vector(tick'range);
 			signal vcol     : std_logic_vector(hztick_bits-1 downto font_bits);
 
-			signal code_frm : std_logic;
-			signal code     : std_logic_vector(0 to 0);
-			signal bin      : std_logic_vector(0 to 0);
 			signal tick_req : std_logic;
 			signal tick_rdy : std_logic;
 			signal btof_req : std_logic;
 			signal btof_rdy : std_logic;
+			signal bin      : std_logic_vector(0 to 16-1);
+			signal code_frm : std_logic;
+			signal code     : std_logic_vector(0 to 0);
 		begin 
 
 			process (clk)
@@ -159,6 +159,7 @@ begin
 					if (to_bit(tick_req) xor to_bit(tick_rdy))='1' then
 						if (to_bit(btof_req) xor to_bit(btof_rdy))='0' then
 							if i < 20 then
+								bin <= std_logic_vector(xxx);
 								xxx := xxx + 4;
 								i   := i + 1;
 								btof_req <= not to_stdulogic(to_bit(btof_rdy));
@@ -178,8 +179,8 @@ begin
 			btof_e : entity hdl4fpga.btof
 			port map (
 				clk      => clk,
-				btof_req => '0',
-				btof_rdy => open,
+				btof_req => btof_req,
+				btof_rdy => btof_rdy,
 				dec      => b"0",
 				exp      => b"000",
 				neg      => '0',
