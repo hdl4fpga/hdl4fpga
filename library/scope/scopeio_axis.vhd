@@ -68,7 +68,7 @@ architecture def of scopeio_axis is
 	constant font_bits     : natural := unsigned_num_bits(font_size-1);
 
 	constant hz_width      : natural := grid_width(layout);
-	constant hztick_bits   : natural := unsigned_num_bits(8*font_size-1);
+	constant hztick_bits   : natural := unsigned_num_bits(font_size-1);
 	constant hzstep_bits   : natural := hztick_bits;
 	constant hzwidth_bits  : natural := unsigned_num_bits(2**hzstep_bits*((hz_width +2**hzstep_bits-1)/2**hzstep_bits)+2**hzstep_bits);
 
@@ -171,9 +171,9 @@ begin
 							hz_taddr <= hz_taddr + 1;
 						end if;
 					else
-						if axis_dv='1' then
+						-- if axis_dv='1' then
 							tick_req <= not to_stdulogic(to_bit(tick_rdy));
-						end if;
+						-- end if;
 						xxx := (others => '0');
 						hz_taddr <= (others => '0');
 						i := 0;
@@ -183,7 +183,7 @@ begin
 
 			btof_e : entity hdl4fpga.btof
 			generic map (
-				tab      => x"0123456789abcdef")
+				tab      => x"0123456789fbcdef")
 			port map (
 				clk      => clk,
 				btof_req => btof_req,
@@ -191,7 +191,7 @@ begin
 				dec      => b"0",
 				exp      => b"000",
 				neg      => '0',
-				bin      => bin,
+				bin      => bin(1 to 16-1),
 				code_frm => code_frm,
 				code     => code);
 
@@ -216,43 +216,51 @@ begin
 				end if;
 			end process;
 
-			col_e : entity hdl4fpga.latency
-			generic map (
-				n => vcol'length,
-				d => (vcol'range => 2))
-			port map (
-				clk => video_clk,
-				di  => std_logic_vector(x(vcol'range)),
-				do  => vcol);
+   			crow_e : entity hdl4fpga.latency
+   			generic map (
+   				n => hz_crow'length,
+   				d => (hz_crow'range => 2))
+   			port map (
+   				clk => video_clk,
+   				di  => video_vcntr(hz_crow'range),
+   				do  => hz_crow);
 
-			crow_e : entity hdl4fpga.latency
-			generic map (
-				n => hz_crow'length,
-				d => (hz_crow'range => 2))
-			port map (
-				clk => video_clk,
-				di  => video_vcntr(hz_crow'range),
-				do  => hz_crow);
+   			ccol_e : entity hdl4fpga.latency
+   			generic map (
+   				n => hz_ccol'length,
+   				d => (hz_ccol'range => 2))
+   			port map (
+   				clk => video_clk,
+   				di  => std_logic_vector(x(hz_ccol'range)),
+   				do  => hz_ccol);
 
-			ccol_e : entity hdl4fpga.latency
-			generic map (
-				n => hz_ccol'length,
-				d => (hz_ccol'range => 2))
-			port map (
-				clk => video_clk,
-				di  => std_logic_vector(x(hz_ccol'range)),
-				do  => hz_ccol);
+   			on_e : entity hdl4fpga.latency
+   			generic map (
+   				n => 1,
+   				d => (0 to 0 => 2))
+   			port map (
+   				clk   => video_clk,
+   				di(0) => video_hzon,
+   				do(0) => hz_on);
 
-			on_e : entity hdl4fpga.latency
-			generic map (
-				n => 1,
-				d => (0 to 0 => 2))
-			port map (
-				clk   => video_clk,
-				di(0) => video_hzon,
-				do(0) => hz_on);
+			xxx_g : if hztick_bits > font_bits generate
+				signal vcol : std_logic_vector(hztick_bits-1 downto font_bits);
+			begin
+    			col_e : entity hdl4fpga.latency
+    			generic map (
+    				n => vcol'length,
+    				d => (vcol'range => 2))
+    			port map (
+    				clk => video_clk,
+    				di  => std_logic_vector(x(vcol'range)),
+    				do  => vcol);
 
-			hz_bcd <= multiplex(tick, vcol, char_code'length);
+    			hz_bcd <= multiplex(tick, vcol, char_code'length);
+			end generate;
+
+			xxx1_g :if hztick_bits <= font_bits generate
+    			hz_bcd <= tick;
+			end generate;
 		end block;
 
 		vt_b : block
