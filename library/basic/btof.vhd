@@ -60,6 +60,7 @@ begin
 		bin  => bin,
 		bcd_frm => sll_frm,
 		bcd  => sll_bcd);
+	btof_rdy <= dbdbbl_rdy;
 
 	lifo_b : block
 		generic (

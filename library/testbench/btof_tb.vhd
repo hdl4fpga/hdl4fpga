@@ -36,6 +36,7 @@ architecture btof_tb of testbench is
 
 	signal code_frm : std_logic;
 	signal code     : std_logic_vector(0 to 8-1);
+	signal bin      : std_logic_vector(0 to 9-1);
 
 begin
 
@@ -43,17 +44,23 @@ begin
 
 	process (clk)
 		variable xxx : unsigned(0 to 8*8-1);
+		variable yyy : natural;
 	begin
 		if rising_edge(clk) then
 			if (to_bit(btof_rdy) xor to_bit(btof_req))='0' then
 				xxx := unsigned(to_ascii("        "));
+				bin<= std_logic_vector(to_unsigned(yyy,bin'length));
+
+				yyy := yyy + 8;
 				btof_req <= not to_stdulogic(to_bit(btof_rdy));
 			elsif code_frm='1' then
 				xxx(0 to 8-1) := unsigned(code);
 				xxx := xxx rol 8;
+				-- btof_rdy <= t to_stdulogic(to_bit(btof_rdy));
 			end if;
 		end if;
 	end process;
+	-- bin <= std_logic_vector(to_unsigned(492,bin'length)); -- b"1001110",
 
 	-- btof_req <= not to_stdulogic(to_bit(btof_rdy));
 
@@ -61,11 +68,11 @@ begin
    	port map (
    		clk      => clk,
    		btof_req => btof_req,
-   		btof_rdy => open,
+   		btof_rdy => btof_rdy,
 		dec      => b"10",
 		exp      => b"101",
 		neg      => '0',
-		bin      => std_logic_vector(to_unsigned(00000678,24)), -- b"1001110",
+		bin      => bin, 
    		code_frm => code_frm,
    		code     => code);
 

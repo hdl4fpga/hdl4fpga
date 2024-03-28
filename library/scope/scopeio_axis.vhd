@@ -79,7 +79,7 @@ architecture def of scopeio_axis is
 
 	signal binvalue : signed(4*4-1 downto 0);
 	constant bcd_length : natural := 4;
-	signal bcdvalue : unsigned(8*bcd_length-1 downto 0);
+	signal bcdvalue : unsigned(bcd_length-1 downto 0);
 
 	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit*1.0e15);
 
@@ -89,7 +89,6 @@ architecture def of scopeio_axis is
 	signal hz_start : signed(binvalue'range);
 	signal hz_stop  : unsigned(binvalue'range);
 	signal hz_step  : signed(binvalue'range);
-	signal hz_taddr : unsigned(13-1 downto hzstep_bits);
 	signal hz_align : std_logic;
 	signal hz_sign  : std_logic;
 	signal hz_ena   : std_logic;
@@ -135,6 +134,7 @@ begin
 
 		hz_b : block
 
+			signal hz_taddr : unsigned(13-1 downto hzstep_bits);
 			signal x        : unsigned(hz_taddr'left downto 0);
 			signal tick     : std_logic_vector(bcdvalue'range);
 
@@ -148,10 +148,10 @@ begin
 			signal btof_rdy : std_logic;
 			signal bin      : std_logic_vector(0 to 16-1);
 			signal code_frm : std_logic;
-			signal code     : std_logic_vector(0 to 0);
+			signal code     : std_logic_vector(0 to bcd_length-1);
 		begin 
 
-			process (clk)
+			xxxx_p : process (code_frm, clk)
 				variable xxx : unsigned(bin'range);
 				variable i : natural;
 			begin
@@ -167,16 +167,23 @@ begin
 								tick_rdy <= to_stdulogic(to_bit(tick_req));
 							end if;
 						end if;
+						if code_frm='1' then
+							hz_taddr <= hz_taddr + 1;
+						end if;
 					else
 						if axis_dv='1' then
 							tick_req <= not to_stdulogic(to_bit(tick_rdy));
 						end if;
+						xxx := (others => '0');
+						hz_taddr <= (others => '0');
 						i := 0;
 					end if;
 				end if;
 			end process;
 
 			btof_e : entity hdl4fpga.btof
+			generic map (
+				tab      => x"0123456789abcdef")
 			port map (
 				clk      => clk,
 				btof_req => btof_req,

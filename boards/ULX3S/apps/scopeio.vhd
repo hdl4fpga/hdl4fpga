@@ -249,7 +249,6 @@ begin
 		usb_fpga_bd_dp <= 'Z';
 		usb_fpga_bd_dn <= 'Z';
 
-		sio_clk  <= videoio_clk;
 
 		-- led(7) <= tp(4);
 
