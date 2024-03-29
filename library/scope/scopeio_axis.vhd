@@ -73,7 +73,7 @@ architecture def of scopeio_axis is
 	constant hzwidth_bits  : natural := unsigned_num_bits(2**hzstep_bits*((hz_width +2**hzstep_bits-1)/2**hzstep_bits)+2**hzstep_bits);
 
 	constant vt_height     : natural := grid_height(layout);
-	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
+	constant vttick_bits   : natural := unsigned_num_bits(font_size-1);
 	constant vtstep_bits   : natural := setif(vtaxis_tickrotate(layout)="ccw0", division_bits, vttick_bits);
 	constant vtheight_bits : natural := unsigned_num_bits(2**vtstep_bits*((vt_height+2**vtstep_bits-1)/2**vtstep_bits)+2**vtstep_bits);
 
@@ -104,11 +104,9 @@ architecture def of scopeio_axis is
 	signal vt_start : signed(binvalue'range);
 	signal vt_stop  : unsigned(binvalue'range);
 	signal vt_step  : signed(binvalue'range);
-	signal vt_taddr : unsigned(vtheight_bits-1 downto vtstep_bits);
 	signal vt_align : std_logic;
 	signal vt_sign  : std_logic;
 	signal vt_ena   : std_logic;
-	signal vt_tv    : std_logic;
 
 begin
 	video_b : block
@@ -130,18 +128,6 @@ begin
 		signal vt_on    : std_logic;
 		signal vt_don   : std_logic;
 
-	begin
-
-		hz_b : block
-
-			signal hz_taddr : unsigned(13-1 downto hzstep_bits);
-			signal x        : unsigned(hz_taddr'left downto 0);
-			signal tick     : std_logic_vector(bcdvalue'range);
-
-			signal vaddr    : std_logic_vector(x'range);
-			signal vdata    : std_logic_vector(tick'range);
-			signal vcol     : std_logic_vector(hztick_bits-1 downto font_bits);
-
 			signal tick_req : std_logic;
 			signal tick_rdy : std_logic;
 			signal btof_req : std_logic;
@@ -149,7 +135,9 @@ begin
 			signal bin      : std_logic_vector(0 to 16-1);
 			signal code_frm : std_logic;
 			signal code     : std_logic_vector(0 to bcd_length-1);
-		begin 
+			signal hz_taddr : unsigned(13-1 downto hzstep_bits);
+			signal vt_taddr : unsigned(vtheight_bits-1 downto vtstep_bits);
+	begin
 
 			xxxx_p : process (code_frm, clk)
 				variable xxx : unsigned(bin'range);
@@ -158,7 +146,7 @@ begin
 				if rising_edge(clk) then
 					if (to_bit(tick_req) xor to_bit(tick_rdy))='1' then
 						if (to_bit(btof_req) xor to_bit(btof_rdy))='0' then
-							if i < 20 then
+							if i < 40 then
 								bin <= std_logic_vector(xxx);
 								xxx := xxx + 4;
 								i   := i + 1;
@@ -169,6 +157,7 @@ begin
 						end if;
 						if code_frm='1' then
 							hz_taddr <= hz_taddr + 1;
+							vt_taddr <= vt_taddr + 1;
 						end if;
 					else
 						-- if axis_dv='1' then
@@ -176,6 +165,7 @@ begin
 						-- end if;
 						xxx := (others => '0');
 						hz_taddr <= (others => '0');
+						vt_taddr <= (others => '0');
 						i := 0;
 					end if;
 				end if;
@@ -195,9 +185,20 @@ begin
 				code_frm => code_frm,
 				code     => code);
 
+		hz_b : block
+
+			signal x        : unsigned(hz_taddr'left downto 0);
+			signal tick     : std_logic_vector(bcd_length-1 downto 0);
+
+			signal vaddr    : std_logic_vector(x'range);
+			signal vdata    : std_logic_vector(tick'range);
+			signal vcol     : std_logic_vector(hztick_bits-1 downto font_bits);
+
+		begin 
+
 			mem_e : entity hdl4fpga.dpram
 			generic map (
-				bitrom => (0 to 2**hz_taddr'length*bcdvalue'length-1 => '1'))
+				bitrom => (0 to 2**hz_taddr'length*bcd_length-1 => '1'))
 			port map (
 				wr_clk  => clk,
 				wr_ena  => code_frm,
@@ -266,39 +267,16 @@ begin
 		vt_b : block
 
 			signal y      : unsigned(vt_taddr'left downto 0);
-			signal tick   : std_logic_vector(bcdvalue'range);
+			signal tick   : std_logic_vector(bcd_length-1 downto 0);
 
 			signal vaddr  : std_logic_vector(y'range);
 			signal vdata  : std_logic_vector(tick'range);
-			signal vcol   : std_logic_vector(vttick_bits-1 downto font_bits);
 			signal vton   : std_logic;
 
-			signal rot_vcol   : std_logic_vector(vcol'range);
 			signal rot_crow   : std_logic_vector(vt_crow'range);
 			signal rot_ccol   : std_logic_vector(vt_ccol'range);
 
 		begin 
-
-			init_p : process (clk)
-				constant frac_length : natural := unsigned_num_bits(vt_float1245(0).frac)+3;
-				variable frac : unsigned(0 to frac_length-1);
-			begin
-				if rising_edge(clk) then
-					if axis_dv='1' then
-						frac := to_unsigned(vt_float1245(to_integer(unsigned(axis_scale))).frac, frac'length) sll (vtstep_bits-division_bits);
-						vt_ena   <= axis_sel;
-						vt_start <= 
-							mul(to_signed((vt_height/2)/2**vtstep_bits,5), frac) +
-							shift_left(
-								resize(mul(-signed(axis_base), frac), vt_start'length),
-								vt_offset'length-vt_taddr'right);
-						vt_stop  <= to_unsigned(2**vtheight_bits/2**vtstep_bits-1, vt_stop'length); 
-						vt_step  <= -signed(resize(frac, vt_step'length));
-						vt_align <= setif(vtaxis_tickrotate(layout)="ccw90");
-						vt_sign  <= '1';
-					end if;
-				end if;
-			end process;
 
 			y <= resize(unsigned(video_vcntr), y'length) + unsigned(v_offset);
 			vtvaddr_p : process (video_clk)
@@ -310,12 +288,12 @@ begin
 
 			vt_mem_e : entity hdl4fpga.dpram
 			generic map (
-				bitrom => (0 to 2**vt_taddr'length*bcdvalue'length-1 => '1'))
+				bitrom => (0 to 2**vt_taddr'length*bcd_length-1 => '1'))
 			port map (
 				wr_clk  => clk,
-				wr_ena  => vt_tv,
+				wr_ena  => code_frm,
 				wr_addr => std_logic_vector(vt_taddr),
-				wr_data => std_logic_vector(bcdvalue),
+				wr_data => code,
 
 				rd_addr => vaddr(vt_taddr'range),
 				rd_data => vdata);
@@ -326,20 +304,6 @@ begin
 					tick  <= vdata;
 				end if;
 			end process;
-
-			rot_vcol <= 
-				video_hcntr(vcol'range) when vtaxis_tickrotate(layout)="ccw0" else
-				vaddr(vcol'range) when vtaxis_tickrotate(layout)="ccw270" else
-				not vaddr(vcol'range);
-
-			col_e : entity hdl4fpga.latency
-			generic map (
-				n => vcol'length,
-				d => (vcol'range => 2))
-			port map (
-				clk => video_clk,
-				di  => rot_vcol,
-				do  => vcol);
 
 			rot_crow <= 
 				std_logic_vector(y(vt_crow'range)) when vtaxis_tickrotate(layout)="ccw0" else
@@ -382,9 +346,34 @@ begin
 				di(0) => vton,
 				do(0) => vt_on);
 
-			vt_bcd <= 
-				multiplex(std_logic_vector(unsigned(tick) rol 2*char_code'length), vcol, char_code'length) when vtaxis_tickrotate(layout)="ccw0" else
-				multiplex(std_logic_vector(unsigned(tick) rol 0*char_code'length), vcol, char_code'length);
+
+			-- xxx_g : if vttick_bits > font_bits generate
+				-- signal vcol     : std_logic_vector(vttick_bits-1 downto font_bits);
+				-- signal rot_vcol : std_logic_vector(vcol'range);
+			-- begin
+				-- rot_vcol <= 
+					-- video_hcntr(vcol'range) when vtaxis_tickrotate(layout)="ccw0" else
+					-- vaddr(vcol'range) when vtaxis_tickrotate(layout)="ccw270" else
+					-- not vaddr(vcol'range);
+-- 
+				-- col_e : entity hdl4fpga.latency
+				-- generic map (
+					-- n => vcol'length,
+					-- d => (vcol'range => 2))
+				-- port map (
+					-- clk => video_clk,
+					-- di  => rot_vcol,
+					-- do  => vcol);
+-- 
+				-- vt_bcd <= 
+					-- multiplex(std_logic_vector(unsigned(tick) rol 2*char_code'length), vcol, char_code'length) when vtaxis_tickrotate(layout)="ccw0" else
+					-- multiplex(std_logic_vector(unsigned(tick) rol 0*char_code'length), vcol, char_code'length);
+			-- end generate;
+
+			xxx1_g :if vttick_bits <= font_bits generate
+				vt_bcd <= tick;
+			end generate;
+
 
 		end block;
 
