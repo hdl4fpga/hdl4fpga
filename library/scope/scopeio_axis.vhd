@@ -347,28 +347,28 @@ begin
 				do(0) => vt_on);
 
 
-			-- xxx_g : if vttick_bits > font_bits generate
-				-- signal vcol     : std_logic_vector(vttick_bits-1 downto font_bits);
-				-- signal rot_vcol : std_logic_vector(vcol'range);
-			-- begin
-				-- rot_vcol <= 
-					-- video_hcntr(vcol'range) when vtaxis_tickrotate(layout)="ccw0" else
-					-- vaddr(vcol'range) when vtaxis_tickrotate(layout)="ccw270" else
-					-- not vaddr(vcol'range);
--- 
-				-- col_e : entity hdl4fpga.latency
-				-- generic map (
-					-- n => vcol'length,
-					-- d => (vcol'range => 2))
-				-- port map (
-					-- clk => video_clk,
-					-- di  => rot_vcol,
-					-- do  => vcol);
--- 
-				-- vt_bcd <= 
-					-- multiplex(std_logic_vector(unsigned(tick) rol 2*char_code'length), vcol, char_code'length) when vtaxis_tickrotate(layout)="ccw0" else
-					-- multiplex(std_logic_vector(unsigned(tick) rol 0*char_code'length), vcol, char_code'length);
-			-- end generate;
+			xxx_g : if vttick_bits > font_bits generate
+				signal vcol     : std_logic_vector(vttick_bits-1 downto font_bits);
+				signal rot_vcol : std_logic_vector(vttick_bits-1 downto font_bits);
+			begin
+				rot_vcol <= 
+					video_hcntr(vcol'range) when vtaxis_tickrotate(layout)="ccw0" else
+					vaddr(vcol'range) when vtaxis_tickrotate(layout)="ccw270" else
+					not vaddr(vcol'range);
+
+				col_e : entity hdl4fpga.latency
+				generic map (
+					n => vcol'length,
+					d => (vcol'range => 2))
+				port map (
+					clk => video_clk,
+					di  => rot_vcol,
+					do  => vcol);
+
+				vt_bcd <= 
+					multiplex(std_logic_vector(unsigned(tick) rol 2*char_code'length), vcol, char_code'length) when vtaxis_tickrotate(layout)="ccw0" else
+					multiplex(std_logic_vector(unsigned(tick) rol 0*char_code'length), vcol, char_code'length);
+			end generate;
 
 			xxx1_g :if vttick_bits <= font_bits generate
 				vt_bcd <= tick;
