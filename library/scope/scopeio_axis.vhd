@@ -73,7 +73,7 @@ architecture def of scopeio_axis is
 	constant hzwidth_bits  : natural := unsigned_num_bits(2**hzstep_bits*((hz_width +2**hzstep_bits-1)/2**hzstep_bits)+2**hzstep_bits);
 
 	constant vt_height     : natural := grid_height(layout);
-	constant vttick_bits   : natural := unsigned_num_bits(font_size-1);
+	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
 	constant vtstep_bits   : natural := division_bits;
 	constant vtheight_bits : natural := unsigned_num_bits(2**vtstep_bits*((vt_height+2**vtstep_bits-1)/2**vtstep_bits)+2**vtstep_bits);
 
@@ -128,19 +128,19 @@ begin
 		signal vt_on    : std_logic;
 		signal vt_don   : std_logic;
 
-			signal tick_req : std_logic;
-			signal tick_rdy : std_logic;
+			signal tick_req : std_logic := '1';
+			signal tick_rdy : std_logic := '0';
 			signal btof_req : std_logic;
 			signal btof_rdy : std_logic;
 			signal bin      : std_logic_vector(0 to 16-1);
 			signal code_frm : std_logic;
 			signal code     : std_logic_vector(0 to bcd_length-1);
 			signal hz_taddr : unsigned(13-1 downto hzstep_bits);
-			signal vt_taddr : unsigned(vtheight_bits-1 downto vtstep_bits);
+			signal vt_taddr : unsigned(vtheight_bits-1 downto font_bits) := (others => '0');
 	begin
 
 			xxxx_p : process (code_frm, clk)
-				variable xxx : unsigned(bin'range);
+				variable xxx : unsigned(bin'range) := (others => '0');
 				variable i : natural;
 			begin
 				if rising_edge(clk) then
@@ -160,9 +160,9 @@ begin
 							vt_taddr <= vt_taddr + 1;
 						end if;
 					else
-						-- if axis_dv='1' then
+						if axis_dv='1' then
 							tick_req <= not to_stdulogic(to_bit(tick_rdy));
-						-- end if;
+						end if;
 						xxx := (others => '0');
 						hz_taddr <= (others => '0');
 						vt_taddr <= (others => '0');
@@ -192,7 +192,6 @@ begin
 
 			signal vaddr    : std_logic_vector(x'range);
 			signal vdata    : std_logic_vector(tick'range);
-			signal vcol     : std_logic_vector(hztick_bits-1 downto font_bits);
 
 		begin 
 
@@ -269,12 +268,9 @@ begin
 			signal y      : unsigned(vt_taddr'left downto 0);
 			signal tick   : std_logic_vector(bcd_length-1 downto 0);
 
-			signal vaddr  : std_logic_vector(y'length+3-1 downto 0);
+			signal vaddr  : std_logic_vector(y'length+vttick_bits-1 downto font_bits);
 			signal vdata  : std_logic_vector(tick'range);
 			signal vton   : std_logic;
-
-			signal rot_crow   : std_logic_vector(vt_crow'range);
-			signal rot_ccol   : std_logic_vector(vt_ccol'range);
 
 		begin 
 
@@ -294,16 +290,13 @@ begin
 			process (video_clk)
 			begin
 				if rising_edge(video_clk) then
-					vaddr <= std_logic_vector(y) & video_hcntr(3-1 downto 0);
+					vaddr <= std_logic_vector(y) & video_hcntr(vttick_bits-1 downto font_bits);
 					tick  <= vdata;
 				end if;
 			end process;
-
-
-			std_logic_vector(y(vt_crow'range)) & video_hcntr(vt_ccol'range);
-
-			vton <= 
-				video_vton and setif(y(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1'));
+			vt_ccol <= video_hcntr(font_bits-1 downto 0);
+			vt_crow <= std_logic_vector(y(font_bits-1 downto 0));
+			vton <= video_vton; -- and setif(y(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1'));
 
 			on_e : entity hdl4fpga.latency
 			generic map (
@@ -315,29 +308,7 @@ begin
 				do(0) => vt_on);
 
 
-			xxx_g : if vttick_bits > font_bits generate
-				signal vcol     : std_logic_vector(vttick_bits-1 downto font_bits);
-				signal rot_vcol : std_logic_vector(vttick_bits-1 downto font_bits);
-			begin
-				rot_vcol <= video_hcntr(vcol'range);
-
-				col_e : entity hdl4fpga.latency
-				generic map (
-					n => vcol'length,
-					d => (vcol'range => 2))
-				port map (
-					clk => video_clk,
-					di  => rot_vcol,
-					do  => vcol);
-
-				vt_bcd <= 
-					multiplex(std_logic_vector(unsigned(tick) rol 2*char_code'length), vcol, char_code'length) when vtaxis_tickrotate(layout)="ccw0" else
-					multiplex(std_logic_vector(unsigned(tick) rol 0*char_code'length), vcol, char_code'length);
-			end generate;
-
-			xxx1_g :if vttick_bits <= font_bits generate
-				vt_bcd <= tick;
-			end generate;
+			vt_bcd <= tick;
 
 
 		end block;
