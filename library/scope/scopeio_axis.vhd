@@ -96,7 +96,7 @@ architecture def of scopeio_axis is
 
 	constant vt_float1245 : siofloat_vector := get_float1245(vt_unit*1.0e15);
 
-	signal v_offset : std_logic_vector(vt_offset'range);
+	signal v_offset : std_logic_vector(vt_offset'range) := (others => '0');
 	signal vt_exp   : signed(4-1 downto 0);
 	signal vt_order : signed(4-1 downto 0);
 	signal vt_prec  : signed(4-1 downto 0);
@@ -268,7 +268,7 @@ begin
 			signal y      : unsigned(vt_taddr'left downto 0);
 			signal tick   : std_logic_vector(bcd_length-1 downto 0);
 
-			signal vaddr  : std_logic_vector(y'length+vttick_bits-1 downto font_bits);
+			signal vaddr  : std_logic_vector(y'length-1 downto font_bits);
 			signal vdata  : std_logic_vector(tick'range);
 			signal vton   : std_logic;
 
@@ -286,29 +286,49 @@ begin
 				rd_addr => vaddr(vt_taddr'range),
 				rd_data => vdata);
 
-			y <= resize(unsigned(video_vcntr), y'length) + unsigned(v_offset);
+			y <= resize(unsigned(video_vcntr) + unsigned(v_offset), y'length);
 			process (video_clk)
 			begin
 				if rising_edge(video_clk) then
-					vaddr <= std_logic_vector(y) & video_hcntr(vttick_bits-1 downto font_bits);
+					vaddr <= std_logic_vector(y(y'left downto vttick_bits)) & video_hcntr(vttick_bits-1 downto font_bits);
 					tick  <= vdata;
 				end if;
 			end process;
-			vt_ccol <= video_hcntr(font_bits-1 downto 0);
-			vt_crow <= std_logic_vector(y(font_bits-1 downto 0));
 			vton <= video_vton; -- and setif(y(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1'));
+
+			vt_ccol <= video_hcntr(font_bits-1 downto 0);
+			-- xxx_e : entity hdl4fpga.latency
+			-- generic map (
+				-- n => font_bits,
+				-- d => (0 to font_bits-1 => 2))
+			-- port map (
+				-- clk   => video_clk,
+				-- di => video_hcntr(font_bits-1 downto 0),
+				-- do => vt_ccol);
+
+			vt_crow <= std_logic_vector(y(font_bits-1 downto 0));
+			-- vt_crow <= video_vcntr(font_bits-1 downto 0);
+			-- xxx1_e : entity hdl4fpga.latency
+			-- generic map (
+				-- n => font_bits,
+				-- d => (0 to font_bits-1 => 2))
+			-- port map (
+				-- clk   => video_clk,
+				-- di => std_logic_vector(y(font_bits-1 downto 0)),
+				-- do => vt_crow);
 
 			on_e : entity hdl4fpga.latency
 			generic map (
 				n => 1,
-				d => (0 to 0 => 2))
+				-- d => (0 to 0 => 2))
+				d => (0 to 0 => 0))
 			port map (
 				clk   => video_clk,
 				di(0) => vton,
 				do(0) => vt_on);
 
 
-			vt_bcd <= tick;
+			vt_bcd <= x"2"; --tick;
 
 
 		end block;
