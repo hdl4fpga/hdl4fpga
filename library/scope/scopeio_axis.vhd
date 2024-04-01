@@ -128,7 +128,7 @@ begin
 		signal vt_on    : std_logic;
 		signal vt_don   : std_logic;
 
-			signal tick_req : std_logic := '1';
+			signal tick_req : std_logic := '0';
 			signal tick_rdy : std_logic := '0';
 			signal btof_req : std_logic;
 			signal btof_rdy : std_logic;
@@ -146,7 +146,7 @@ begin
 				if rising_edge(clk) then
 					if (to_bit(tick_req) xor to_bit(tick_rdy))='1' then
 						if (to_bit(btof_req) xor to_bit(btof_rdy))='0' then
-							if i < 40 then
+							if i < 10 then
 								bin <= std_logic_vector(xxx);
 								xxx := xxx + 4;
 								i   := i + 1;
@@ -163,7 +163,7 @@ begin
 						if axis_dv='1' then
 							tick_req <= not to_stdulogic(to_bit(tick_rdy));
 						end if;
-						xxx := (others => '0');
+						xxx := to_unsigned(24, xxx'length);
 						hz_taddr <= (others => '0');
 						vt_taddr <= (others => '0');
 						i := 0;
@@ -283,52 +283,51 @@ begin
 				wr_addr => std_logic_vector(vt_taddr),
 				wr_data => code,
 
-				rd_addr => vaddr(vt_taddr'range),
+				rd_addr => vaddr,
 				rd_data => vdata);
 
+			v_offset <= vt_offset;
 			y <= resize(unsigned(video_vcntr) + unsigned(v_offset), y'length);
+			-- y <= resize(unsigned(video_vcntr), y'length);
 			process (video_clk)
 			begin
 				if rising_edge(video_clk) then
-					vaddr <= std_logic_vector(y(y'left downto vttick_bits)) & video_hcntr(vttick_bits-1 downto font_bits);
+					vaddr <= std_logic_vector(y(y'left+division_bits-vttick_bits downto division_bits)) & video_hcntr(vttick_bits-1 downto font_bits);
+					-- vaddr <= (y'left downto vttick_bits =>'0') & video_hcntr(vttick_bits-1 downto font_bits);
 					tick  <= vdata;
 				end if;
 			end process;
-			vton <= video_vton; -- and setif(y(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1'));
+			vton <= video_vton and setif(y(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1'));
 
-			vt_ccol <= video_hcntr(font_bits-1 downto 0);
-			-- xxx_e : entity hdl4fpga.latency
-			-- generic map (
-				-- n => font_bits,
-				-- d => (0 to font_bits-1 => 2))
-			-- port map (
-				-- clk   => video_clk,
-				-- di => video_hcntr(font_bits-1 downto 0),
-				-- do => vt_ccol);
+			ccol_e : entity hdl4fpga.latency
+			generic map (
+				n => font_bits,
+				d => (0 to font_bits-1 => 2))
+			port map (
+				clk   => video_clk,
+				di => video_hcntr(font_bits-1 downto 0),
+				do => vt_ccol);
 
-			vt_crow <= std_logic_vector(y(font_bits-1 downto 0));
-			-- vt_crow <= video_vcntr(font_bits-1 downto 0);
-			-- xxx1_e : entity hdl4fpga.latency
-			-- generic map (
-				-- n => font_bits,
-				-- d => (0 to font_bits-1 => 2))
-			-- port map (
-				-- clk   => video_clk,
-				-- di => std_logic_vector(y(font_bits-1 downto 0)),
-				-- do => vt_crow);
+			crow_e : entity hdl4fpga.latency
+			generic map (
+				n => font_bits,
+				d => (0 to font_bits-1 => 2))
+			port map (
+				clk   => video_clk,
+				di => std_logic_vector(y(font_bits-1 downto 0)),
+				do => vt_crow);
 
 			on_e : entity hdl4fpga.latency
 			generic map (
 				n => 1,
-				-- d => (0 to 0 => 2))
-				d => (0 to 0 => 0))
+				d => (0 to 0 => 2))
 			port map (
 				clk   => video_clk,
 				di(0) => vton,
 				do(0) => vt_on);
 
 
-			vt_bcd <= x"2"; --tick;
+			vt_bcd <= tick;
 
 
 		end block;

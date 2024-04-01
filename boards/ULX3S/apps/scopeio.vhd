@@ -163,14 +163,14 @@ architecture scopeio of ulx3s is
 							natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
 			"               length : 16],  " &
 			"           unit   : 50.00e-3, " &
-			"           width  : " & natural'image(6*8) & ','  &
+			"           width  : " & natural'image(8*8) & ','  &
 			"           rotate : ccw0,     " &
 			"           inside : false,    " &
 			"           color  : 0xff_ff_ff_ff," &
 			"           background-color : 0xff_00_00_ff}}," &
 			"   textbox : {                " &
 			"       font_width :  8,       " &
-			"       width      : " & natural'image(32*6+1) & ','&
+			"       width      : " & natural'image(32*4+1) & ','&
 			"       inside     : false,    " &
 			"       color      : 0xff_ff_ff_ff," &
 			"       background-color : 0xff_00_00_00}," &
