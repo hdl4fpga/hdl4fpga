@@ -146,7 +146,7 @@ begin
 				if rising_edge(clk) then
 					if (to_bit(tick_req) xor to_bit(tick_rdy))='1' then
 						if (to_bit(btof_req) xor to_bit(btof_rdy))='0' then
-							if i < 10 then
+							if i < 8 then
 								bin <= std_logic_vector(xxx);
 								xxx := xxx + 4;
 								i   := i + 1;
@@ -160,13 +160,15 @@ begin
 							vt_taddr <= vt_taddr + 1;
 						end if;
 					else
-						if axis_dv='1' then
+						-- if axis_dv='1' then
+						if i=0 then
 							tick_req <= not to_stdulogic(to_bit(tick_rdy));
 						end if;
-						xxx := to_unsigned(24, xxx'length);
+						-- end if;
+						xxx := to_unsigned(0, xxx'length);
 						hz_taddr <= (others => '0');
 						vt_taddr <= (others => '0');
-						i := 0;
+						-- i := 0;
 					end if;
 				end if;
 			end process;
