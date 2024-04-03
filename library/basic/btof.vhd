@@ -19,7 +19,7 @@ entity btof is
 		exp      : in  std_logic_vector;
 		neg      : in  std_logic;
 		bin      : in  std_logic_vector;
-		code_frm : out std_logic;
+		code_frm : buffer std_logic;
 		code     : out std_logic_vector);
 end;
 
@@ -200,15 +200,24 @@ begin
 		code_frm => code_frm,
 		code     => code);
 	
-	process (clk)
+	process (code_frm, clk)
 		type states is (s_dbdbbl, s_fmt);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
-			if (to_bit(btof_rdy) xor to_bit(btof_req))='1' then
-				state := s_fmt;
-			else
-			end if;
+			case state is
+			when s_dbdbbl =>
+				if (to_bit(dbdbbl_rdy) xor to_bit(dbdbbl_req))='0' then
+					if code_frm='1' then
+						state := s_fmt;
+					end if;
+				end if;
+			when s_fmt =>
+				if code_frm='0' then
+					btof_rdy <= to_stdulogic(to_bit(btof_req));
+					state := s_dbdbbl;
+				end if;
+			end case;
 		end if;
 	end process;
 end;

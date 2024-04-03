@@ -1616,6 +1616,7 @@ $(HDL4FPGA__scopeio_axis__def) : ../scope/scopeio_axis.vhd \
 		$(HDL4FPGA__cga_rom) \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__dpram) \
+		$(HDL4FPGA__btof) \
 		$(HDL4FPGA__bcdfonts) \
 		$(HDL4FPGA__cp850x8x16x128to255) \
 		$(HDL4FPGA__cp850x8x16x0to127) \

@@ -160,15 +160,13 @@ begin
 							vt_taddr <= vt_taddr + 1;
 						end if;
 					else
-						-- if axis_dv='1' then
-						if i=0 then
+						if axis_dv='1' then
 							tick_req <= not to_stdulogic(to_bit(tick_rdy));
 						end if;
-						-- end if;
 						xxx := to_unsigned(4, xxx'length);
 						hz_taddr <= (others => '0');
 						vt_taddr <= (others => '0');
-						-- i := 0;
+						i := 0;
 					end if;
 				end if;
 			end process;
