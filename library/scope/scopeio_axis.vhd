@@ -163,7 +163,7 @@ begin
 						if axis_dv='1' then
 							tick_req <= not to_stdulogic(to_bit(tick_rdy));
 						end if;
-						xxx := to_unsigned(4, xxx'length);
+						xxx := (others => '0');
 						hz_taddr <= (others => '0');
 						vt_taddr <= (others => '0');
 						i := 0;
