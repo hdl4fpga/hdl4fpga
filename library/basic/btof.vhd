@@ -60,7 +60,6 @@ begin
 		bin  => bin,
 		bcd_frm => sll_frm,
 		bcd  => sll_bcd);
-	btof_rdy <= dbdbbl_rdy;
 
 	lifo_b : block
 		generic (
@@ -200,4 +199,16 @@ begin
 		bcd      => format_bcd,
 		code_frm => code_frm,
 		code     => code);
+	
+	process (clk)
+		type states is (s_dbdbbl, s_fmt);
+		variable state : states;
+	begin
+		if rising_edge(clk) then
+			if (to_bit(btof_rdy) xor to_bit(btof_req))='1' then
+				state := s_fmt;
+			else
+			end if;
+		end if;
+	end process;
 end;
