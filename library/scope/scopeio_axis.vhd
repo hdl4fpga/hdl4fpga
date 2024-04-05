@@ -38,20 +38,19 @@ entity scopeio_axis is
 	port (
 		clk           : in  std_logic;
 
-		axis_dv       : in  std_logic;
-		axis_sel      : in  std_logic;
-		axis_scale    : in  std_logic_vector;
-		axis_base     : in  std_logic_vector;
 
 		video_clk     : in  std_logic;
-		video_hcntr   : in  std_logic_vector;
-		video_vcntr   : in  std_logic_vector;
-
+		hz_dv       : in  std_logic;
+		hz_scale    : in  std_logic_vector;
 		hz_offset     : in  std_logic_vector;
+		video_hcntr   : in  std_logic_vector;
 		video_hzon    : in  std_logic;
 		video_hzdot   : out std_logic;
 
+		vt_dv       : in  std_logic;
+		vt_scale    : in  std_logic_vector;
 		vt_offset     : in  std_logic_vector;
+		video_vcntr   : in  std_logic_vector;
 		video_vton    : in  std_logic;
 		video_vtdot   : out std_logic);
 
@@ -110,6 +109,11 @@ architecture def of scopeio_axis is
 begin
 	video_b : block
 
+		signal char_code  : std_logic_vector(4-1 downto 0);
+		signal char_row   : std_logic_vector(font_bits-1 downto 0);
+		signal char_col   : std_logic_vector(font_bits-1 downto 0);
+		signal char_dot   : std_logic;
+
 		signal tick_req   : std_logic;
 		signal tick_rdy   : std_logic;
 		signal btof_req   : std_logic;
@@ -129,11 +133,6 @@ begin
 		signal vt_charcol : std_logic_vector(font_bits-1 downto 0);
 		signal vt_on      : std_logic;
 		signal vt_don     : std_logic;
-
-		signal char_code  : std_logic_vector(4-1 downto 0);
-		signal char_row   : std_logic_vector(font_bits-1 downto 0);
-		signal char_col   : std_logic_vector(font_bits-1 downto 0);
-		signal char_dot   : std_logic;
 
 		signal hz_taddr : unsigned(13-1 downto hzstep_bits);
 		signal vt_taddr : unsigned(vtheight_bits-1 downto font_bits) := (others => '0');
@@ -161,7 +160,7 @@ begin
 						vt_taddr <= vt_taddr + 1;
 					end if;
 				else
-					if axis_dv='1' then
+					if hz_dv='1' then
 						tick_req <= not to_stdulogic(to_bit(tick_rdy));
 					end if;
 					xxx := (others => '0');
