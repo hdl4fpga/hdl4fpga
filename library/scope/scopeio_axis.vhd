@@ -123,12 +123,14 @@ begin
 		signal code       : std_logic_vector(0 to bcd_length-1);
 
 		signal hz_bcd     : std_logic_vector(char_code'range);
+		signal hz_codefrm : std_logic;
 		signal hz_charrow : std_logic_vector(font_bits-1 downto 0);
 		signal hz_charcol : std_logic_vector(font_bits-1 downto 0);
 		signal hz_don     : std_logic;
 		signal hz_on      : std_logic;
 
 		signal vt_bcd     : std_logic_vector(char_code'range);
+		signal vt_codefrm : std_logic;
 		signal vt_charrow : std_logic_vector(font_bits-1 downto 0);
 		signal vt_charcol : std_logic_vector(font_bits-1 downto 0);
 		signal vt_on      : std_logic;
@@ -147,10 +149,10 @@ begin
 			if rising_edge(clk) then
 				if (to_bit(tick_req) xor to_bit(tick_rdy))='1' then
 					if (to_bit(btof_req) xor to_bit(btof_rdy))='0' then
-						if tick_no < 0 then
+						if tick_no >= 0 then
 							bin      <= std_logic_vector(to_unsigned(tick, bin'length));
 							tick     := tick    + 4;
-							tick_no  := tick_no + 1;
+							tick_no  := tick_no - 1;
 							btof_req <= not to_stdulogic(to_bit(btof_rdy));
 						else
 							tick_rdy <= to_stdulogic(to_bit(tick_req));
@@ -199,6 +201,7 @@ begin
 
 		begin 
 
+			hz_codefrm <= '1' when else '0';
 			mem_e : entity hdl4fpga.dpram
 			generic map (
 				bitrom => (0 to 2**hz_taddr'length*bcd_length-1 => '1'))
