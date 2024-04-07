@@ -81,32 +81,10 @@ architecture def of scopeio_axis is
 	signal bcdvalue : unsigned(bcd_length-1 downto 0);
 
 	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit*1.0e15);
-
-	signal hz_exp   : signed(4-1 downto 0);
-	signal hz_order : signed(4-1 downto 0);
-	signal hz_prec  : signed(4-1 downto 0);
-	signal hz_start : signed(binvalue'range);
-	signal hz_stop  : unsigned(binvalue'range);
-	signal hz_step  : signed(binvalue'range);
-	signal hz_align : std_logic;
-	signal hz_sign  : std_logic;
-	signal hz_ena   : std_logic;
-	signal hz_tv    : std_logic;
-
 	constant vt_float1245 : siofloat_vector := get_float1245(vt_unit*1.0e15);
 
-	signal vt_exp   : signed(4-1 downto 0);
-	signal vt_order : signed(4-1 downto 0);
-	signal vt_prec  : signed(4-1 downto 0);
-
-	signal vt_start : signed(binvalue'range);
-	signal vt_stop  : unsigned(binvalue'range);
-	signal vt_step  : signed(binvalue'range);
-	signal vt_align : std_logic;
-	signal vt_sign  : std_logic;
-	signal vt_ena   : std_logic;
-
 begin
+
 	video_b : block
 
 		signal char_code  : std_logic_vector(4-1 downto 0);
@@ -122,13 +100,14 @@ begin
 		signal code_frm   : std_logic;
 		signal code       : std_logic_vector(0 to bcd_length-1);
 
+		signal hz_sel     : std_logic;
 		signal hz_bcd     : std_logic_vector(char_code'range);
-		signal hz_codefrm : std_logic;
 		signal hz_charrow : std_logic_vector(font_bits-1 downto 0);
 		signal hz_charcol : std_logic_vector(font_bits-1 downto 0);
 		signal hz_don     : std_logic;
 		signal hz_on      : std_logic;
 
+		signal vt_sel     : std_logic;
 		signal vt_bcd     : std_logic_vector(char_code'range);
 		signal vt_codefrm : std_logic;
 		signal vt_charrow : std_logic_vector(font_bits-1 downto 0);
@@ -162,15 +141,25 @@ begin
 						addr := addr + 1;
 					end if;
 				elsif vt_dv='1' then
+					hz_sel   <= '0';
+					vt_sel   <= '1';
 					addr     := 0;
 					tick     := 0;
 					tick_no  := 4;
 					tick_req <= not to_stdulogic(to_bit(tick_rdy));
 				elsif hz_dv='1' then
+					hz_sel   <= '1';
+					vt_sel   <= '0';
 					addr     := 0;
 					tick     := 0;
 					tick_no  := 30;
 					tick_req <= not to_stdulogic(to_bit(tick_rdy));
+				else
+					hz_sel   <= '0';
+					vt_sel   <= '0';
+					addr     := 0;
+					tick     := 0;
+					tick_no  := -1;
 				end if;
 				hz_taddr <= to_unsigned(addr, hz_taddr'length);
 				vt_taddr <= to_unsigned(addr, vt_taddr'length);
@@ -193,21 +182,22 @@ begin
 
 		hz_b : block
 
-			signal x        : unsigned(hz_taddr'left downto 0);
-			signal tick     : std_logic_vector(bcd_length-1 downto 0);
+			signal x      : unsigned(hz_taddr'left downto 0);
+			signal tick   : std_logic_vector(bcd_length-1 downto 0);
 
-			signal vaddr    : std_logic_vector(x'range);
-			signal vdata    : std_logic_vector(tick'range);
+			signal we_ena : std_logic;
+			signal vaddr  : std_logic_vector(x'range);
+			signal vdata  : std_logic_vector(tick'range);
 
 		begin 
 
-			hz_codefrm <= '1' when else '0';
+			we_ena <= code_frm when hz_sel='1' else '0';
 			mem_e : entity hdl4fpga.dpram
 			generic map (
 				bitrom => (0 to 2**hz_taddr'length*bcd_length-1 => '1'))
 			port map (
 				wr_clk  => clk,
-				wr_ena  => code_frm,
+				wr_ena  => we_ena,
 				wr_addr => std_logic_vector(hz_taddr),
 				wr_data => code,
 
@@ -276,18 +266,20 @@ begin
 			signal y      : unsigned(vt_taddr'left downto 0);
 			signal tick   : std_logic_vector(bcd_length-1 downto 0);
 
+			signal we_ena : std_logic;
 			signal vaddr  : std_logic_vector(y'length-1 downto font_bits);
 			signal vdata  : std_logic_vector(tick'range);
 			signal vton   : std_logic;
 
 		begin 
 
+			we_ena <= code_frm when vt_sel='1' else '0';
 			vt_mem_e : entity hdl4fpga.dpram
 			generic map (
 				bitrom => (0 to 2**vt_taddr'length*bcd_length-1 => '1'))
 			port map (
 				wr_clk  => clk,
-				wr_ena  => code_frm,
+				wr_ena  => we_ena,
 				wr_addr => std_logic_vector(vt_taddr),
 				wr_data => code,
 
