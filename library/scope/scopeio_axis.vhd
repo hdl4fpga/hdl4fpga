@@ -120,6 +120,7 @@ begin
 	begin
 
 		process (code_frm, clk)
+			variable q : std_logic := '1';
 			variable addr    : natural range 0 to 2**max(vt_taddr'length,hz_taddr'length)-1;
 			variable tick    : integer range -2**bin'length to 2**bin'length-1;
 			variable tick_no : integer range -1 to max(2**vt_taddr'length/2**vttick_bits-1, 2**hz_taddr'length/2**hzstep_bits-1);
@@ -140,13 +141,15 @@ begin
 						addr := addr + 1;
 					end if;
 				elsif vt_dv='1' then
+					q := '0';
 					hz_sel   <= '0';
 					vt_sel   <= '1';
 					addr     := 0;
 					tick     := 0;
 					tick_no  := 2**vt_taddr'length/2**vttick_bits-1;
 					tick_req <= not to_stdulogic(to_bit(tick_rdy));
-				elsif hz_dv='1' then
+				elsif hz_dv='1' or q='1' then
+					q := '0';
 					hz_sel   <= '1';
 					vt_sel   <= '0';
 					addr     := 0;
@@ -262,7 +265,7 @@ begin
 
 		vt_b : block
 
-			signal y      : unsigned(vt_taddr'left downto 0);
+			signal y      : unsigned(unsigned_num_bits((vt_height-1))-1 downto 0);
 			signal tick   : std_logic_vector(bcd_length-1 downto 0);
 
 			signal we_ena : std_logic;
@@ -289,7 +292,7 @@ begin
 			process (video_clk)
 			begin
 				if rising_edge(video_clk) then
-					vaddr <= std_logic_vector(y(y'left downto division_bits+vttick_bits)) & video_hcntr(vttick_bits+font_bits-1 downto font_bits);
+					vaddr <= std_logic_vector(y(y'left downto division_bits)) & video_hcntr(vttick_bits+font_bits-1 downto font_bits);
 					tick  <= vdata;
 				end if;
 			end process;
