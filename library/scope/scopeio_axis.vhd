@@ -130,7 +130,7 @@ begin
 					if (to_bit(btof_req) xor to_bit(btof_rdy))='0' then
 						if tick_no >= 0 then
 							bin      <= std_logic_vector(to_unsigned(tick, bin'length));
-							tick     := tick    + 4;
+							tick     := tick    + 1;
 							tick_no  := tick_no - 1;
 							btof_req <= not to_stdulogic(to_bit(btof_rdy));
 						else
@@ -148,12 +148,12 @@ begin
 					tick     := 0;
 					tick_no  := 2**vt_taddr'length/2**vttick_bits-1;
 					tick_req <= not to_stdulogic(to_bit(tick_rdy));
-				elsif hz_dv='1' or q='1' then
+				elsif hz_dv='1' then
 					q := '0';
 					hz_sel   <= '1';
 					vt_sel   <= '0';
 					addr     := 0;
-					tick     := 0;
+					tick     := to_integer(shift_right(unsigned(hz_offset), hztick_bits+font_bits));
 					tick_no  := 2**hz_taddr'length/2**hzstep_bits-1;
 					tick_req <= not to_stdulogic(to_bit(tick_rdy));
 				else
@@ -206,7 +206,7 @@ begin
 				rd_addr => vaddr(hz_taddr'range),
 				rd_data => vdata);
 
-			x <= resize(unsigned(video_hcntr) + unsigned(hz_offset), x'length);
+			x <= resize(unsigned(video_hcntr) + unsigned(hz_offset(hztick_bits+font_bits-1 downto 0)), x'length); -- + resize(), x'length);
 			hztick_p : process (video_clk)
 			begin
 				if rising_edge(video_clk) then
