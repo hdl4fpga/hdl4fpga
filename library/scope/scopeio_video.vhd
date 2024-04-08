@@ -190,7 +190,7 @@ begin
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
-			if hz_ena='1'  then
+			if hz_ena='1' then
 				if trigger_freeze='0' then
 					time_scale <= hz_scale;
 				end if;

@@ -54,6 +54,7 @@ entity scopeio_layout is
 		hz_on        : out std_logic;
 		vt_on        : out std_logic;
 		textbox_on   : out std_logic);
+	constant num_of_segments : natural := jso(layout)**".num_of_segments";
 end;
 
 architecture beh of scopeio_layout is
@@ -77,7 +78,7 @@ architecture beh of scopeio_layout is
 	signal mainbox_xon   : std_logic;
 	signal mainbox_yon   : std_logic;
 
-	signal sgmnt_decode  : std_logic_vector(0 to jso(layout)**".num_of_segments"-1);
+	signal sgmnt_decode  : std_logic_vector(0 to num_of_segments-1);
 
 begin
 
@@ -105,7 +106,7 @@ begin
 		if rising_edge(video_clk) then
 			sgmntbox_on   <= '0';
 			sgmnt_decode <= (others => '0');
-			for i in 0 to jso(layout)**".num_of_segments"-1 loop
+			for i in 0 to num_of_segments-1 loop
 				if main_boxon(box_id => i, x_div => mainbox_xdiv, y_div => mainbox_ydiv, layout => layout)='1' then
 					sgmntbox_on     <= mainbox_xon;
 					sgmnt_decode(i) <= '1';
@@ -340,7 +341,7 @@ begin
 		begin
 			if rising_edge(video_clk) then
 				base := (others => '0');
-				for i in 0 to jso(layout)**".num_of_segments"-1 loop
+				for i in 0 to num_of_segments-1 loop
 					if sgmntbox_sel(i)='1' then
 						base := base or to_unsigned((grid_width(layout)-grid_width(layout) mod grid_unit(layout))*i, base'length);
 					end if;
@@ -349,7 +350,7 @@ begin
 									   
 				video_addr <= std_logic_vector(base + resize(unsigned(x), video_addr'length));
 				video_frm  <= grid_on;
-				hz_segment <= std_logic_vector(base + resize(unsigned(hz_slider(axisx_backscale+hztick_bits-1 downto 0)), hz_segment'length));
+				hz_segment <= std_logic_vector(base + resize(unsigned(hz_slider), hz_segment'length));
 													  
 			end if;
 		end process;

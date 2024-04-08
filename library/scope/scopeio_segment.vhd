@@ -68,11 +68,6 @@ architecture def of scopeio_segment is
 	constant vtstep_bits   : natural := setif(vtaxis_tickrotate(layout)="ccw0", division_bits, vttick_bits);
 	constant vtheight_bits : natural := unsigned_num_bits((vt_height-1)-1);
 
-
-	signal axis_scale   : std_logic_vector(4-1 downto 0);
-	signal axis_base    : std_logic_vector(max(hz_base'length, vtheight_bits-(vtstep_bits+axisy_backscale))-1 downto 0);
-
-
 begin
 
 	rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis

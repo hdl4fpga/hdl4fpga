@@ -54,8 +54,9 @@ entity scopeio_axis is
 		video_vton    : in  std_logic;
 		video_vtdot   : out std_logic);
 
-	constant hz_unit : real := jso(layout)**".axis.horizontal.unit";
-	constant vt_unit : real := jso(layout)**".axis.vertical.unit";
+	constant num_of_segments : natural := jso(layout)**".num_of_segments";
+	constant hz_unit         : real    := jso(layout)**".axis.horizontal.unit";
+	constant vt_unit         : real    := jso(layout)**".axis.vertical.unit";
 end;
 
 architecture def of scopeio_axis is
@@ -67,18 +68,16 @@ architecture def of scopeio_axis is
 	constant font_bits     : natural := unsigned_num_bits(font_size-1);
 
 	constant hz_width      : natural := grid_width(layout);
-	constant hztick_bits   : natural := unsigned_num_bits(font_size-1);
+	constant hztick_bits   : natural := 3;
 	constant hzstep_bits   : natural := hztick_bits;
-	constant hzwidth_bits  : natural := unsigned_num_bits(2**hzstep_bits*((hz_width +2**hzstep_bits-1)/2**hzstep_bits)+2**hzstep_bits);
 
 	constant vt_height     : natural := grid_height(layout);
-	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
+	constant vttick_bits   : natural := 3;
 	constant vtstep_bits   : natural := division_bits;
-	constant vtheight_bits : natural := unsigned_num_bits(2**vtstep_bits*((vt_height+2**vtstep_bits-1)/2**vtstep_bits)+2**vtstep_bits);
 
-	signal binvalue : signed(4*4-1 downto 0);
-	constant bcd_length : natural := 4;
-	signal bcdvalue : unsigned(bcd_length-1 downto 0);
+	constant bcd_length    : natural := 4;
+	signal binvalue        : signed(4*4-1 downto 0);
+	signal bcdvalue        : unsigned(bcd_length-1 downto 0);
 
 	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit*1.0e15);
 	constant vt_float1245 : siofloat_vector := get_float1245(vt_unit*1.0e15);
@@ -115,15 +114,15 @@ begin
 		signal vt_on      : std_logic;
 		signal vt_don     : std_logic;
 
-		signal hz_taddr : unsigned(13-1 downto hzstep_bits);
-		signal vt_taddr : unsigned(vtheight_bits-1 downto font_bits) := (others => '0');
+		signal hz_taddr : unsigned(unsigned_num_bits(num_of_segments*(hz_width-1))-1 downto hzstep_bits);
+		signal vt_taddr : unsigned(unsigned_num_bits((vt_height-1))+vttick_bits-1 downto division_bits);
 
 	begin
 
 		process (code_frm, clk)
 			variable addr    : natural range 0 to 2**max(vt_taddr'length,hz_taddr'length)-1;
 			variable tick    : integer range -2**bin'length to 2**bin'length-1;
-			variable tick_no : integer range -1 to 30;
+			variable tick_no : integer range -1 to max(2**vt_taddr'length/2**vttick_bits-1, 2**hz_taddr'length/2**hzstep_bits-1);
 		begin
 			if rising_edge(clk) then
 				if (to_bit(tick_req) xor to_bit(tick_rdy))='1' then
@@ -145,14 +144,14 @@ begin
 					vt_sel   <= '1';
 					addr     := 0;
 					tick     := 0;
-					tick_no  := 4;
+					tick_no  := 2**vt_taddr'length/2**vttick_bits-1;
 					tick_req <= not to_stdulogic(to_bit(tick_rdy));
 				elsif hz_dv='1' then
 					hz_sel   <= '1';
 					vt_sel   <= '0';
 					addr     := 0;
 					tick     := 0;
-					tick_no  := 30;
+					tick_no  := 2**hz_taddr'length/2**hzstep_bits-1;
 					tick_req <= not to_stdulogic(to_bit(tick_rdy));
 				else
 					hz_sel   <= '0';
@@ -267,7 +266,7 @@ begin
 			signal tick   : std_logic_vector(bcd_length-1 downto 0);
 
 			signal we_ena : std_logic;
-			signal vaddr  : std_logic_vector(y'length-1 downto font_bits);
+			signal vaddr  : std_logic_vector(vt_taddr'range);
 			signal vdata  : std_logic_vector(tick'range);
 			signal vton   : std_logic;
 
@@ -290,7 +289,7 @@ begin
 			process (video_clk)
 			begin
 				if rising_edge(video_clk) then
-					vaddr <= std_logic_vector(y(y'left+division_bits-vttick_bits downto division_bits)) & video_hcntr(vttick_bits-1 downto font_bits);
+					vaddr <= std_logic_vector(y(y'left downto division_bits+vttick_bits)) & video_hcntr(vttick_bits+font_bits-1 downto font_bits);
 					tick  <= vdata;
 				end if;
 			end process;
