@@ -20,8 +20,8 @@ entity scopeio_segment is
 
 		hz_dv         : in  std_logic;
 		hz_scale      : in  std_logic_vector;
-		hz_base       : in  std_logic_vector;
 		hz_offset     : in  std_logic_vector;
+		hz_segment    : in  std_logic_vector;
 
 		gain_dv       : in  std_logic;
 		gain_cid      : in  std_logic_vector;
@@ -151,6 +151,7 @@ begin
 			hz_dv         => hz_dv,
 			hz_scale      => vt_scale,
 			hz_offset     => hz_offset,
+			hz_segment    => hz_segment,
 			video_hcntr   => x,
 			video_hzon    => hz_on,
 			video_hzdot   => hz_dot,

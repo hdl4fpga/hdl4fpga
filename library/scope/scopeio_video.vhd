@@ -113,7 +113,7 @@ architecture beh of scopeio_video is
 	signal hz_dv         : std_logic;
 	signal hz_scale      : std_logic_vector(4-1 downto 0);
 	signal hz_slider     : std_logic_vector(time_offset'range);
-	signal hz_segment    : std_logic_vector(hz_slider'range);
+	signal hz_segment    : std_logic_vector(video_addr'range);
 	constant max_delay : natural := 2**hz_slider'length;
 
 	constant sgmnt_id : natural := 0;
@@ -240,7 +240,7 @@ begin
 		video_hzon   => video_hzon,
 		video_vton   => video_vton,
 
-		hz_slider    => time_offset,
+		-- hz_slider    => time_offset,
 		hz_segment   => hz_segment,
 		x            => x,
 		y            => y,
@@ -299,8 +299,8 @@ begin
 
 		hz_dv         => hz_dv,
 		hz_scale      => time_scale,
-		hz_base       => time_offset(time_offset'left downto axisx_backscale+hztick_bits),
-		hz_offset     => hz_segment,
+		hz_offset     => time_offset,
+		hz_segment    => hz_segment,
 
 		gain_cid      => gain_cid,
 		gain_dv       => gain_dv,

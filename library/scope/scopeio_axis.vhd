@@ -38,17 +38,17 @@ entity scopeio_axis is
 	port (
 		clk           : in  std_logic;
 
-
 		video_clk     : in  std_logic;
-		hz_dv       : in  std_logic;
-		hz_scale    : in  std_logic_vector;
+		hz_dv         : in  std_logic;
+		hz_scale      : in  std_logic_vector;
 		hz_offset     : in  std_logic_vector;
+		hz_segment    : in  std_logic_vector;
 		video_hcntr   : in  std_logic_vector;
 		video_hzon    : in  std_logic;
 		video_hzdot   : out std_logic;
 
-		vt_dv       : in  std_logic;
-		vt_scale    : in  std_logic_vector;
+		vt_dv         : in  std_logic;
+		vt_scale      : in  std_logic_vector;
 		vt_offset     : in  std_logic_vector;
 		video_vcntr   : in  std_logic_vector;
 		video_vton    : in  std_logic;

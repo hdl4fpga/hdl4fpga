@@ -40,7 +40,7 @@ entity scopeio_layout is
 		video_vton   : in  std_logic;
 		video_hzon   : in  std_logic;
 
-		hz_slider    : in  std_logic_vector;
+		-- hz_slider    : in  std_logic_vector;
 		hz_segment   : out std_logic_vector;
 		x            : buffer std_logic_vector;
 		y            : buffer std_logic_vector;
@@ -337,7 +337,7 @@ begin
 			do  => sgmntbox_sel);
 
 		capture_addr_p : process (video_clk)
-			variable base : unsigned(0 to video_addr'length-1);
+			variable base : unsigned(video_addr'range);
 		begin
 			if rising_edge(video_clk) then
 				base := (others => '0');
@@ -350,7 +350,7 @@ begin
 									   
 				video_addr <= std_logic_vector(base + resize(unsigned(x), video_addr'length));
 				video_frm  <= grid_on;
-				hz_segment <= std_logic_vector(base + resize(unsigned(hz_slider), hz_segment'length));
+				hz_segment <= std_logic_vector(base);
 													  
 			end if;
 		end process;
