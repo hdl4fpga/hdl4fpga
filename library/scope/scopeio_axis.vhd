@@ -187,6 +187,7 @@ begin
 			signal x      : unsigned(hz_taddr'left downto 0);
 			signal tick   : std_logic_vector(bcd_length-1 downto 0);
 
+			signal disp   : unsigned(x'range);
 			signal we_ena : std_logic;
 			signal vaddr  : std_logic_vector(x'range);
 			signal vdata  : std_logic_vector(tick'range);
@@ -206,8 +207,16 @@ begin
 				rd_addr => vaddr(hz_taddr'range),
 				rd_data => vdata);
 
-			x <= resize(unsigned(video_hcntr) + unsigned(hz_offset(hztick_bits+font_bits-1 downto 0)), x'length); -- + resize(), x'length);
-			hztick_p : process (video_clk)
+			-- x <= resize(unsigned(video_hcntr) + unsigned(hz_segment) + unsigned(hz_offset(hztick_bits+font_bits-1 downto 0)), x'length); -- + resize(), x'length);
+			process (video_clk)
+			begin
+				if rising_edge(video_clk) then
+					disp <= resize(unsigned(hz_segment) + unsigned(hz_offset(hztick_bits+font_bits-1 downto 0)), x'length);
+				end if;
+			end process;
+			x <= resize(unsigned(video_hcntr) + disp, x'length);
+
+			process (video_clk)
 			begin
 				if rising_edge(video_clk) then
 					vaddr <= std_logic_vector(x);
