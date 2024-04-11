@@ -133,7 +133,7 @@ begin
 							else
 								bin <= '0' & std_logic_vector(to_unsigned(tick, bin'length-1));
 							end if;
-							tick     := tick    + 1;
+							tick     := tick    + 5;
 							tick_no  := tick_no - 1;
 							btof_req <= not to_stdulogic(to_bit(btof_rdy));
 						else
@@ -154,7 +154,7 @@ begin
 					hz_sel   <= '1';
 					vt_sel   <= '0';
 					addr     := 0;
-					tick     := to_integer(shift_right(signed(hz_offset), hztick_bits+font_bits));
+					tick     := to_integer(mul(shift_right(signed(hz_offset), hztick_bits+font_bits), 5));
 					tick_no  := 2**hz_taddr'length/2**hzstep_bits-1;
 					tick_req <= not to_stdulogic(to_bit(tick_rdy));
 				else
@@ -178,8 +178,8 @@ begin
 			btof_rdy => btof_rdy,
 			dec      => b"0",
 			exp      => b"000",
-			neg      => bin(0),
-			bin      => bin(1 to 16-1),
+			neg      => bin(bin'left),
+			bin      => bin(bin'left+1 to bin'right),
 			code_frm => code_frm,
 			code     => code);
 
