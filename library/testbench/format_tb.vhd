@@ -64,7 +64,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			if (to_bit(dbdbbl_rdy) xor to_bit(dbdbbl_req))='0' then
-				xxx := unsigned(to_ascii("        "));
+				xxx := unsigned(std_logic_vector'(to_ascii("        ")));
 				dbdbbl_req <= not to_stdulogic(to_bit(dbdbbl_rdy));
 			elsif code_frm='1' then
 				xxx(0 to 8-1) := unsigned(code);

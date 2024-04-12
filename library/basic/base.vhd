@@ -347,6 +347,14 @@ package base is
 		constant arg : std_logic_vector)
 		return string;
 
+	function to_hex(
+		constant arg : std_logic_vector)
+		return string;
+
+	function to_ascii(
+		constant arg : std_logic_vector)
+		return string;
+
 	function to_string (
 		constant arg : unsigned)
 		return string;
@@ -931,6 +939,35 @@ package body base is
 		return std_logic_vector(retval);
 	end;
 
+	function to_ascii(
+		constant arg : std_logic_vector)
+		return string is
+		variable aux    : unsigned(0 to 8*((arg'length+8-1)/8)-1);
+		variable retval : string(1 to aux'length/8);
+	begin
+		aux := resize(unsigned(arg), aux'length);
+		for i in retval'range loop
+			retval(i) := character'val(to_integer(aux(0 to 8-1)));
+			aux := aux sll 8;
+		end loop;
+		return retval;
+	end;
+
+	function to_hex(
+		constant arg : std_logic_vector)
+		return string is
+		constant tab    : string :="01234567890ABCDEF"; 
+		variable aux    : unsigned(0 to 4*((arg'length+4-1)/4)-1);
+		variable retval : string(1 to aux'length/4);
+	begin
+		aux := resize(unsigned(arg), aux'length);
+		for i in retval'range loop
+			retval(i) := tab(to_integer(aux(0 to 4-1))+1);
+			aux := aux sll 4;
+		end loop;
+		return retval;
+	end;
+
 	function to_string(
 		constant arg : std_logic_vector)
 		return string is
@@ -944,7 +981,6 @@ package body base is
 			else
 				retval(i) := '0';
 			end if;
---			retval(i) := std_logic'image(aux(0))(2);
 			aux := aux sll 1;
 		end loop;
 		return retval;
