@@ -344,13 +344,6 @@ package scopeiopkg is
 		pointery_id => pointery_maxsize, 
 		pointerx_id => pointerx_maxsize);
 
-	type sio_float is record
-		frac  : natural;
-		exp   : integer;
-		point : natural;
-		multp : natural;
-	end record;
-
 	component scopeio_tds
 		generic (
 			inputs           : natural;
@@ -376,34 +369,6 @@ package scopeiopkg is
 			video_data       : out std_logic_vector);
 	end component;
 
-	function to_siofloat (
-		constant unit : real)
-		return sio_float;
-
-	type siofloat_vector is array(natural range <>) of sio_float;
-
-	function get_float1245 (
-		constant unit : real)
-		return siofloat_vector;
-
-	function get_precs(
-		constant floats : siofloat_vector)
-		return natural_vector;
-
-	function get_units(
-		constant floats : siofloat_vector)
-		return integer_vector;
-
-	function scale_1245 (
-		constant val   : signed;
-		constant scale : std_logic_vector)
-		return signed;
-		
-	function scale_1245 (
-		constant val   : unsigned;
-		constant scale : std_logic_vector)
-		return unsigned;
-		
 	constant var_hzdivid      : natural := 0;
 	constant var_hzunitid     : natural := 1;
 	constant var_hzoffsetid   : natural := 2;
@@ -414,9 +379,122 @@ package scopeiopkg is
 	constant var_vtunitid     : natural := 7;
 	constant var_vtoffsetid   : natural := 8;
 
+	function normalize (
+		constant unit : real)
+		return string;
+
+	function get_mant1245 (
+		constant unit : real)
+		return natural_vector;
+
+	function get_unit1245 (
+		constant unit : real)
+		return natural_vector;
+
+	function get_point1245 (
+		constant unit : real)
+		return natural_vector;
+
 end;
 
 package body scopeiopkg is
+
+	function normalize (
+		constant unit : real)
+		return string is
+		constant tenth : real := 1.0/10.0;
+		variable exp10 : integer;
+		variable dec10 : integer;
+		variable norm  : real;
+		variable rnd   : natural; --Lattice Diamond fix
+		variable pow10 : real;
+	begin
+		assert unit > 0.0 
+			report "unit <= 0.0"
+			severity failure;
+
+		exp10 := 0;
+		pow10 := 1.0;
+		norm  := unit;
+		loop
+			if abs(norm-round(norm)) > 4.0e-9 then
+				-- report "norm " & real'image(norm) & " diff " & real'image(abs(norm-round(norm)));
+				-- report "norm " & real'image(norm) & " diff " & real'image(pow10);
+				exp10 := exp10 + 1;
+				pow10 := pow10 * tenth;
+				norm  := unit  / pow10;
+			else
+				exit;
+			end if;
+		end loop;
+
+		dec10 := 0;
+		pow10 := 1.0;
+		while (unit/pow10) < 1.0 loop
+			dec10 := dec10 + 1;
+			pow10 := pow10 * tenth;
+		end loop;
+		report "dec10 " & natural'image(dec10) & " exp10 " & natural'image(exp10);
+
+		case dec10 mod 3 is
+		when 2 =>
+		when 1 =>
+		when others =>
+		end case;
+			
+		rnd := natural(round(norm)); --Lattice Diamond fix
+		return "{norm:" & natural'image(rnd) & ",exp:" & integer'image(exp10)  & ",point:" & integer'image(dec10) & "}";
+	end;
+
+	function get_mant1245 (
+		constant unit   : real)
+		return natural_vector is
+		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
+		variable retval : natural_vector(0 to 4-1);
+	begin
+
+		for i in coefs'range loop
+			retval(i) :=(jso(normalize(unit*coefs(i)))**".norm");
+		end loop;
+		return retval;
+	end;
+
+	function get_unit1245 (
+		constant unit   : real)
+		return natural_vector is
+		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
+		variable retval : natural_vector(0 to 4-1);
+	begin
+
+		report "===== > " & real'image(unit);
+		for i in coefs'range loop
+			retval(i) := (jso(normalize(unit*coefs(i)))**".exp");
+			case (3-retval(i) mod 3) mod 3 is
+			when 1 =>
+				-- report "***** " & natural'image(i) & " ------" & natural'image(retval(i));
+			when 2 =>
+				-- report "***** " & natural'image(i) & " ------" & natural'image(retval(i));
+			when others =>
+				-- report "***** " & natural'image(i) & " ------" & natural'image(retval(i));
+			end case;
+		end loop;
+		return retval;
+	end;
+
+	function get_point1245 (
+		constant unit   : real)
+		return natural_vector is
+		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
+		variable retval : natural_vector(0 to 4-1);
+	begin
+
+		for i in coefs'range loop
+			retval(i) := (jso(normalize(unit*coefs(i)))**".exp");
+			-- case retval(i)
+			-- report "********** " & natural'image(retval(i) mod 3);
+		end loop;
+		return retval;
+	end;
 
 	function pos(
 		constant val : natural)
@@ -852,98 +930,6 @@ package body scopeiopkg is
 			end loop;
 		end if;
 		return (0 to 0 => '-');
-	end;
-
-	function to_siofloat (
-		constant unit : real)
-		return sio_float is
-		variable frac : real;
-		variable exp   : integer;
-		variable point : natural;
-		variable multp : natural;
-		variable mult  : real;
-	begin
-		assert unit >= 1.0  
-			report "Invalid unit value"
-			severity failure;
-
-		mult  := 1.0;
-		point := 0;
-		while unit >= mult loop
-			mult  := mult * 1.0e1;
-			point := point + 1;
-		end loop;
-		mult  := mult / 1.0e1;
-		point := point - 1;
-		frac  := unit / mult;
-
-		exp := 0;
-		for i in 0 to 3-1 loop
-			exit when floor(frac)=(frac);
-
-			assert i /= 4
-			report "Invalid unit value"
-			severity failure;
-
-			frac := frac * 2.0;
-			exp  := exp - 1;
-		end loop;
-
-		return sio_float'(frac => natural(frac), exp => exp, point => point mod 3, multp => point / 3);
-	end;
-
-	function get_float1245 (
-		constant unit : real)
-		return siofloat_vector is
-		constant mult : natural_vector (0 to 4-1) := (1, 2, 4, 5);
-		variable rval : siofloat_vector(0 to 4-1);
-	begin
-		for i in 0 to 4-1 loop
-			rval(i) := to_siofloat(unit*real(mult(i)));
-		end loop;
-		return rval;
-	end;
-
-	function get_precs(
-		constant floats : siofloat_vector)
-		return natural_vector is
-		variable rval : natural_vector(0 to 16-1);
-	begin
-		for i in floats'range loop
-			case floats(i).point is
-			when 0 =>
-				rval(i) := 2;
-			when 1 =>
-				rval(i) := 1;
-			when others =>
-				rval(i) := 3;
-			end case;
-		end loop;
-		for i in 4 to 16-1 loop
-			rval(i) := ((rval(i-4) + 1) mod 3) + 1;
-		end loop;
-		return rval;
-	end;
-
-	function get_units(
-		constant floats : siofloat_vector)
-		return integer_vector is
-		variable rval : integer_vector(0 to 16-1);
-	begin
-		for i in floats'range loop
-			case floats(i).point is
-			when 0 =>
-				rval(i) := 0;
-			when 1 =>
-				rval(i) := 1;
-			when others =>
-				rval(i) := -1;
-			end case;
-		end loop;
-		for i in 4 to 16-1 loop
-			rval(i) := ((rval(i-4) + 2) mod 3) - 1;
-		end loop;
-		return rval;
 	end;
 
 	function scale_1245 (

@@ -133,6 +133,8 @@ WORK__nuhs3adsp = $(LIB_WORK)/nuhs3adsp/_primary.dat
 WORK__ml509_graphics_structure_md = $(LIB_WORK)/ml509_graphics_structure_md/_primary.dat
 WORK__ml509_graphics_md = $(LIB_WORK)/ml509_graphics_md/_primary.dat
 WORK__ml509 = $(LIB_WORK)/ml509/_primary.dat
+WORK__main__def = $(LIB_WORK)/main/def.dat
+WORK__main = $(LIB_WORK)/main/_primary.dat
 WORK__ipoe_tb__def = $(LIB_WORK)/ipoe_tb/def.dat
 WORK__ipoe_tb = $(LIB_WORK)/ipoe_tb/_primary.dat
 WORK__hdlc_tb__def = $(LIB_WORK)/hdlc_tb/def.dat
@@ -215,6 +217,8 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__ml509_graphics_structure_md) \
     $(WORK__ml509_graphics_md) \
     $(WORK__ml509) \
+    $(WORK__main__def) \
+    $(WORK__main) \
     $(WORK__ipoe_tb__def) \
     $(WORK__ipoe_tb) \
     $(WORK__hdlc_tb__def) \
@@ -325,6 +329,19 @@ $(WORK__ipoe_tb__def) : ipoe_tb.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ipoe_tb.vhd
 
+$(WORK__main) \
+$(WORK__main__def) : main.vhd \
+		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__jso) \
+		$(HDL4FPGA__base) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002  main.vhd
+
 $(WORK__ml509) : ../../boards/ml509/common/ml509.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -385,7 +402,7 @@ $(WORK__testbench__btof_tb) : btof_tb.vhd \
 		$(HDL4FPGA__base) \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
-	$(VCOM) -2002  btof_tb.vhd
+	$(VCOM) -2002 btof_tb.vhd
 
 $(WORK__testbench__format_tb) : format_tb.vhd \
 		$(HDL4FPGA__format) \

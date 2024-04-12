@@ -29,7 +29,8 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library hdl4fpga;
-use work.jso.all;
+use hdl4fpga.scopeiopkg.all;
+use hdl4fpga.jso.all;
 
 entity main is
 end;
@@ -37,9 +38,10 @@ end;
 architecture def of main is
 begin
 	process 
+		constant c : string := normalize(0.99);
+		variable x : string(c'range);
 	begin
 		-- report "VALUE : " & ''' & get_value("[hola,mundo:[kkkk:12345,dddd:[67890]],hello,world].kkk", "[mundo].dddd") & ''';
-		report "VALUE : " & ''' & get_value("kkkk:'12345'.dddd", "") & ''';
 		wait;
 	end process;
 end;

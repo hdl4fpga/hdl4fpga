@@ -57,6 +57,7 @@ entity scopeio_axis is
 	constant num_of_segments : natural := jso(layout)**".num_of_segments";
 	constant hz_unit         : real    := jso(layout)**".axis.horizontal.unit";
 	constant vt_unit         : real    := jso(layout)**".axis.vertical.unit";
+
 end;
 
 architecture def of scopeio_axis is
@@ -78,9 +79,6 @@ architecture def of scopeio_axis is
 	constant bcd_length    : natural := 4;
 	signal binvalue        : signed(4*4-1 downto 0);
 	signal bcdvalue        : unsigned(bcd_length-1 downto 0);
-
-	constant hz_float1245 : siofloat_vector := get_float1245(hz_unit*1.0e15);
-	constant vt_float1245 : siofloat_vector := get_float1245(vt_unit*1.0e15);
 
 begin
 
