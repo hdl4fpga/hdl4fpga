@@ -8,7 +8,7 @@ use hdl4fpga.base.all;
 
 entity btof is
 	generic (
-		max_decimal : natural := 3;
+		max_decimal : natural := 4;
 		min_decimal : integer := -4;
 		tab      : std_logic_vector := to_ascii("0123456789 +-,."));
 	port (
@@ -107,7 +107,7 @@ begin
 			pop_data  => pop_data);
 
 		process (clk)
-			variable cntr : integer range -1 to max_decimal;
+			variable cntr : integer range -(max_decimal+1) to max_decimal;
 		begin
 			if rising_edge(clk) then
 				if sll_frm='0' then
@@ -116,11 +116,11 @@ begin
 						slr_irdy <= pop_ena;
 						slr_ini  <= pop_data;
 						pop_ena  <= '1';
-					elsif cntr >= 0 then
+					elsif cntr > 0 then
 						slr_frm  <= '1';
 						slr_irdy <= '1';
 						pop_ena  <= '0';
-						if cntr=to_integer(unsigned(slr_dec)) then
+						if cntr>to_integer(signed(slr_dec)) then
 							slr_ini <= x"e";
 						else
 							slr_ini <= x"0";
@@ -137,10 +137,10 @@ begin
 					slr_irdy <= '0';
 					slr_ini  <= (slr_ini'range => '-');
 					pop_ena  <= '0';
-					if unsigned(slr_dec) > 0 then
-						cntr := to_integer(unsigned(slr_dec));
+					if signed(slr_dec) > 0 then
+						cntr := to_integer(signed(slr_dec)+1);
 					else
-						cntr := -1;
+						cntr := to_integer(signed(slr_dec));
 					end if;
 				end if;
 			end if;

@@ -73,7 +73,7 @@ begin
    		clk      => clk,
    		btof_req => btof_req,
    		btof_rdy => btof_rdy,
-		dec      => b"10",
+		dec      => b"001",
 		exp      => b"000",
 		neg      => '0',
 		bin      => bin, 
