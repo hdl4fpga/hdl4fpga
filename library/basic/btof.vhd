@@ -181,26 +181,36 @@ begin
 		bcd  => slr_bcd);
 
 	process (format_frm , clk)
-		variable cntr : integer range -1 to max_decimal;
+		variable cntr : integer range -(1+max_decimal) to max_decimal;
 	begin
 		if rising_edge(clk) then
 			if slr_frm='1' then
-				if cntr < 0 then
+				if signed(dec) > 0 then
+					if cntr < 0 then
+						format_frm  <= '1';
+						format_irdy <= '1';
+					else
+						format_frm  <= '0';
+						format_irdy <= '0';
+						cntr := cntr - 1;
+					end if;
+				elsif signed(dec) < 0 then
+					if cntr >= 0 then
+						format_frm  <= '1';
+						format_irdy <= '1';
+					else
+						format_frm  <= '0';
+						format_irdy <= '0';
+						cntr := cntr + 1;
+					end if;
+				else
 					format_frm  <= '1';
 					format_irdy <= '1';
-				else
-					format_frm  <= '0';
-					format_irdy <= '0';
-					cntr := cntr - 1;
 				end if;
 			else
 				format_frm  <= '0';
 				format_irdy <= '0';
-				if signed(dec) > 0 then
-					cntr := to_integer(signed(dec));
-				else
-					cntr := -1;
-				end if;
+				cntr := to_integer(signed(dec));
 			end if;
 			format_bcd <= slr_bcd;
 		end if;
