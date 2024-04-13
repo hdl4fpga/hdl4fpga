@@ -8,7 +8,7 @@ use hdl4fpga.base.all;
 
 entity btof is
 	generic (
-		max_decimal : natural := 4;
+		max_decimal : natural := 3;
 		min_decimal : integer := -4;
 		tab      : std_logic_vector := to_ascii("0123456789 +-,."));
 	port (
@@ -33,6 +33,7 @@ architecture def of btof is
 	signal   dbdbbl_rdy  : std_logic;
 
 	signal   sll_frm     : std_logic;
+	signal   sll_trdy    : std_logic;
 	signal   sll_bcd     : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 
 	signal   slr_frm     : std_logic;
@@ -59,6 +60,7 @@ begin
 		rdy  => dbdbbl_rdy,
 		bin  => bin,
 		bcd_frm => sll_frm,
+		bcd_trdy =>  sll_trdy,
 		bcd  => sll_bcd);
 
 	lifo_b : block
@@ -116,21 +118,29 @@ begin
 						slr_irdy <= pop_ena;
 						slr_ini  <= pop_data;
 						pop_ena  <= '1';
-					elsif cntr > 0 then
-						slr_frm  <= '1';
-						slr_irdy <= '1';
-						pop_ena  <= '0';
-						if cntr>to_integer(signed(slr_dec)) then
-							slr_ini <= x"e";
-						else
-							slr_ini <= x"0";
-						end if;
-						cntr := cntr - 1;
+					elsif signed(slr_dec) > 0 then
+    					if cntr >= 0 then
+    						slr_frm  <= '1';
+    						slr_irdy <= '1';
+    						pop_ena  <= '0';
+    						if cntr=to_integer(signed(slr_dec)) then
+    							slr_ini <= x"e";
+    						else
+    							slr_ini <= x"0";
+    						end if;
+    						cntr := cntr - 1;
+    					else
+    						slr_frm  <= '0';
+    						slr_irdy <= '0';
+    						slr_ini  <= (slr_ini'range => '-');
+    						pop_ena  <= '0';
+    					end if;
 					else
-						slr_frm  <= '0';
-						slr_irdy <= '0';
-						slr_ini  <= (slr_ini'range => '-');
-						pop_ena  <= '0';
+   						slr_frm  <= '0';
+   						slr_irdy <= '0';
+   						slr_ini  <= (slr_ini'range => '-');
+   						pop_ena  <= '0';
+						cntr := to_integer(signed(slr_dec));
 					end if;
 				else
 					slr_frm  <= '0';
@@ -138,9 +148,14 @@ begin
 					slr_ini  <= (slr_ini'range => '-');
 					pop_ena  <= '0';
 					if signed(slr_dec) > 0 then
-						cntr := to_integer(signed(slr_dec)+1);
-					else
 						cntr := to_integer(signed(slr_dec));
+					else
+						if cntr < 0 then
+							cntr := cntr + 1;
+						end if;
+						if cntr=-1 then
+							report "hola";
+						end if;
 					end if;
 				end if;
 			end if;
@@ -160,7 +175,7 @@ begin
 		bcd_ini => slr_ini,
 		bcd  => slr_bcd);
 
-	process (clk)
+	process (format_frm , clk)
 		variable cntr : integer range -1 to max_decimal;
 	begin
 		if rising_edge(clk) then
@@ -176,8 +191,8 @@ begin
 			else
 				format_frm  <= '0';
 				format_irdy <= '0';
-				if unsigned(dec) > 0 then
-					cntr := to_integer(unsigned(dec));
+				if signed(dec) > 0 then
+					cntr := to_integer(signed(dec));
 				else
 					cntr := -1;
 				end if;
