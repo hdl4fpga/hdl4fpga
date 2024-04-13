@@ -33,7 +33,7 @@ architecture def of btof is
 	signal   dbdbbl_rdy  : std_logic;
 
 	signal   sll_frm     : std_logic;
-	signal   sll_trdy    : std_logic;
+	signal   sll_trdy    : std_logic := '1';
 	signal   sll_bcd     : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 
 	signal   slr_frm     : std_logic;
@@ -71,6 +71,7 @@ begin
 		port (
 			clk      : in  std_logic;
 			sll_frm  : in  std_logic;
+			sll_trdy : buffer std_logic;
 			sll_bcd  : in  std_logic_vector;
 			slr_frm  : buffer std_logic;
 			slr_dec  : in std_logic_vector;
@@ -80,6 +81,7 @@ begin
 		port map (
 			clk      => clk,
 			sll_frm  => sll_frm,
+			sll_trdy => sll_trdy,
 			sll_bcd  => sll_bcd,
 			slr_frm  => slr_frm,
 			slr_dec  => dec,
@@ -98,7 +100,8 @@ begin
 	begin
 
 		push_ena  <= sll_frm;
-		push_data <= sll_bcd;
+		push_data <= sll_bcd when sll_trdy='1' else x"f";
+		
 		lifo_e : entity hdl4fpga.lifo
 		port map (
 			clk       => clk,
@@ -150,11 +153,13 @@ begin
 					if signed(slr_dec) > 0 then
 						cntr := to_integer(signed(slr_dec));
 					else
+						if cntr=-1 then
+							sll_trdy <= '0';
+						else
+							sll_trdy <= '1';
+						end if;
 						if cntr < 0 then
 							cntr := cntr + 1;
-						end if;
-						if cntr=-1 then
-							report "hola";
 						end if;
 					end if;
 				end if;
