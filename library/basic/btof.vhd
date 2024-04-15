@@ -101,7 +101,7 @@ begin
 	begin
 
 		process (clk)
-			variable xxx : std_logic_vector(push_data'range);
+			variable data : std_logic_vector(push_data'range);
 		begin
 			if rising_edge(clk) then
 				if sll_frm='1' then
@@ -109,24 +109,24 @@ begin
 						sll_trdy  <= '0';
 						push_ena  <= '1';
 						push_data <= x"e";
-						xxx       := sll_bcd;
+						data      := sll_bcd;
 					elsif signed(cntr) >= 0 then
 						sll_trdy  <= '1';
 						push_ena  <= '1';
-						push_data <= xxx;
-						xxx       := sll_bcd;
+						push_data <= data;
+						data       := sll_bcd;
 					elsif signed(cntr) < 0 then
 						sll_trdy  <= '0';
 						push_ena  <= sll_trdy;
 						push_data <= x"0";
-						xxx       := sll_bcd;
+						data      := sll_bcd;
 					end if;
 					cntr := cntr + 1;
 				else
 					sll_trdy  <= '0';
 					push_ena  <= '0';
 					push_data <= (others => '-');
-					xxx       := sll_bcd;
+					data      := sll_bcd;
 					cntr      := to_integer(signed(sht));
 				end if;
 			end if;
