@@ -15,6 +15,7 @@ entity btof is
 		clk      : in  std_logic;
 		btof_req : in  std_logic;
 		btof_rdy : out std_logic;
+		sht      : in  std_logic_vector := (0 to 0 => '0'),
 		dec      : in  std_logic_vector;
 		exp      : in  std_logic_vector;
 		neg      : in  std_logic;
@@ -99,9 +100,38 @@ begin
 
 	begin
 
-		push_ena  <= sll_frm;
-		push_data <= sll_bcd when sll_trdy='1' else x"f";
-		
+		process (clk)
+			variable xxx : std_logic_vector(push_data'range);
+		begin
+			if rising_edge(clk) then
+				if sll_frm='1' then
+					if cntr=signed(dec) then
+						sll_trdy  <= '0';
+						push_ena  <= '1';
+						push_data <= x"e";
+						xxx       := sll_bcd;
+					elsif signed(cntr) >= 0 then
+						sll_trdy  <= '1';
+						push_ena  <= '1';
+						push_data <= xxx;
+						xxx       := sll_bcd;
+					elsif signed(cntr) < 0 then
+						sll_trdy  <= '0';
+						push_ena  <= sll_trdy;
+						push_data <= x"0";
+						xxx       := sll_bcd;
+					end if;
+					cntr := cntr + 1;
+				else
+					sll_trdy  <= '0';
+					push_ena  <= '0';
+					push_data <= (others => '-');
+					xxx       := sll_bcd;
+					cntr      := to_integer(signed(sht));
+				end if;
+			end if;
+		end process;
+
 		lifo_e : entity hdl4fpga.lifo
 		port map (
 			clk       => clk,
@@ -112,7 +142,6 @@ begin
 			pop_data  => pop_data);
 
 		process (clk)
-			variable cntr : integer range -(max_decimal+1) to max_decimal;
 		begin
 			if rising_edge(clk) then
 				if sll_frm='0' then
@@ -121,23 +150,6 @@ begin
 						slr_irdy <= pop_ena;
 						slr_ini  <= pop_data;
 						pop_ena  <= '1';
-					elsif signed(slr_dec) > 0 then
-    					if cntr >= 0 then
-    						slr_frm  <= '1';
-    						slr_irdy <= '1';
-    						pop_ena  <= '0';
-    						if cntr=to_integer(signed(slr_dec)) then
-    							slr_ini <= x"e";
-    						else
-    							slr_ini <= x"0";
-    						end if;
-    						cntr := cntr - 1;
-    					else
-    						slr_frm  <= '0';
-    						slr_irdy <= '0';
-    						slr_ini  <= (slr_ini'range => '-');
-    						pop_ena  <= '0';
-    					end if;
 					else
    						slr_frm  <= '0';
    						slr_irdy <= '0';
@@ -150,18 +162,6 @@ begin
 					slr_irdy <= '0';
 					slr_ini  <= (slr_ini'range => '-');
 					pop_ena  <= '0';
-					if signed(slr_dec) > 0 then
-						cntr := to_integer(signed(slr_dec));
-					else
-						if cntr=-1 then
-							sll_trdy <= '0';
-						else
-							sll_trdy <= '1';
-						end if;
-						if cntr < 0 then
-							cntr := cntr + 1;
-						end if;
-					end if;
 				end if;
 			end if;
 		end process;
