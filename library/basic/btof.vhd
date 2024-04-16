@@ -15,7 +15,7 @@ entity btof is
 		clk      : in  std_logic;
 		btof_req : in  std_logic;
 		btof_rdy : out std_logic;
-		sht      : in  std_logic_vector := (0 to 0 => '0'),
+		sht      : in  std_logic_vector := (0 to 0 => '0');
 		dec      : in  std_logic_vector;
 		exp      : in  std_logic_vector;
 		neg      : in  std_logic;
@@ -102,20 +102,26 @@ begin
 
 		process (clk)
 			variable data : std_logic_vector(push_data'range);
+			variable cntr : integer range -(1+max_decimal) to max_decimal;
 		begin
 			if rising_edge(clk) then
 				if sll_frm='1' then
-					if cntr=signed(dec) then
+					if signed(sht) > cntr then
+						sll_trdy  <= '0';
+						push_ena  <= '0';
+						push_data <= (others => '-');
+						data      := (others => '-');
+					elsif cntr=signed(dec) then
 						sll_trdy  <= '0';
 						push_ena  <= '1';
 						push_data <= x"e";
 						data      := sll_bcd;
-					elsif signed(cntr) >= 0 then
+					elsif cntr >= 0 then
 						sll_trdy  <= '1';
 						push_ena  <= '1';
 						push_data <= data;
 						data       := sll_bcd;
-					elsif signed(cntr) < 0 then
+					elsif cntr < 0 then
 						sll_trdy  <= '0';
 						push_ena  <= sll_trdy;
 						push_data <= x"0";
@@ -127,7 +133,11 @@ begin
 					push_ena  <= '0';
 					push_data <= (others => '-');
 					data      := sll_bcd;
-					cntr      := to_integer(signed(sht));
+					if signed(sht) < 0 then
+						cntr := to_integer(signed(sht));
+					else 
+						cntr := 0;
+					end if;
 				end if;
 			end if;
 		end process;
@@ -141,30 +151,6 @@ begin
 			pop_ena   => pop_ena,
 			pop_data  => pop_data);
 
-		process (clk)
-		begin
-			if rising_edge(clk) then
-				if sll_frm='0' then
-					if lifo_ov='0' then
-						slr_frm  <= pop_ena;
-						slr_irdy <= pop_ena;
-						slr_ini  <= pop_data;
-						pop_ena  <= '1';
-					else
-   						slr_frm  <= '0';
-   						slr_irdy <= '0';
-   						slr_ini  <= (slr_ini'range => '-');
-   						pop_ena  <= '0';
-						cntr := to_integer(signed(slr_dec));
-					end if;
-				else
-					slr_frm  <= '0';
-					slr_irdy <= '0';
-					slr_ini  <= (slr_ini'range => '-');
-					pop_ena  <= '0';
-				end if;
-			end if;
-		end process;
 	end block;
 
 	dbdbblsrl_ser_e : entity hdl4fpga.dbdbblsrl_ser
