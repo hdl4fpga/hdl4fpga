@@ -127,6 +127,7 @@ begin
 						push_data <= x"0";
 						data      := sll_bcd;
 					end if;
+
 					cntr := cntr + 1;
 				else
 					sll_trdy  <= '0';
