@@ -151,6 +151,30 @@ begin
 			pop_ena   => pop_ena,
 			pop_data  => pop_data);
 
+		process (clk)
+		begin
+			if rising_edge(clk) then
+				if sll_frm='0' then
+					if lifo_ov='0' then
+						slr_frm  <= pop_ena;
+						slr_irdy <= pop_ena;
+						slr_ini  <= pop_data;
+						pop_ena  <= '1';
+					else
+   						slr_frm  <= '0';
+   						slr_irdy <= '0';
+   						slr_ini  <= (slr_ini'range => '-');
+   						pop_ena  <= '0';
+					end if;
+				else
+					slr_frm  <= '0';
+					slr_irdy <= '0';
+					slr_ini  <= (slr_ini'range => '-');
+					pop_ena  <= '0';
+				end if;
+			end if;
+		end process;
+
 	end block;
 
 	dbdbblsrl_ser_e : entity hdl4fpga.dbdbblsrl_ser
