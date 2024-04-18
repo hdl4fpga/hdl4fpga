@@ -470,7 +470,7 @@ begin
 					bcd_irdy <= '0';
 					state   := s_run;
 				when s_run =>
-					if (bin_irdy and bcd_trdy)='1' then
+					if (bin_irdy and (not bcd_irdy or bcd_trdy))='1' then
 						if ser_trdy='1' then
 							if cntr < 0 then
 								if ser_frm='0' then

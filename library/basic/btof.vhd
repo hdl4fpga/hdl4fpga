@@ -8,7 +8,7 @@ use hdl4fpga.base.all;
 
 entity btof is
 	generic (
-		max_decimal : natural := 3;
+		max_decimal : natural := 15;
 		min_decimal : integer := -4;
 		tab      : std_logic_vector := to_ascii("0123456789 +-,."));
 	port (
@@ -61,7 +61,7 @@ begin
 		rdy  => dbdbbl_rdy,
 		bin  => bin,
 		bcd_frm => sll_frm,
-		bcd_trdy =>  sll_trdy,
+		bcd_trdy => sll_trdy,
 		bcd  => sll_bcd);
 
 	lifo_b : block
@@ -110,24 +110,25 @@ begin
 						sll_trdy  <= '0';
 						push_ena  <= '0';
 						push_data <= (others => '-');
-						data      := (others => '-');
 					elsif cntr=signed(dec) then
-						sll_trdy  <= '0';
 						push_ena  <= '1';
 						push_data <= x"e";
-						data      := sll_bcd;
+						sll_trdy  <= '0';
 					elsif cntr >= 0 then
+						push_ena  <=  '1';
+						if sll_trdy='0' then
+							push_data <= data;
+						else
+							push_data <= sll_bcd;
+						end if;
 						sll_trdy  <= '1';
-						push_ena  <= '1';
-						push_data <= data;
-						data       := sll_bcd;
 					elsif cntr < 0 then
 						sll_trdy  <= '0';
-						push_ena  <= sll_trdy;
+						push_ena  <= '1';
 						push_data <= x"0";
-						data      := sll_bcd;
 					end if;
 					cntr := cntr + 1;
+					data := sll_bcd;
 				else
 					sll_trdy  <= '0';
 					push_ena  <= '0';
