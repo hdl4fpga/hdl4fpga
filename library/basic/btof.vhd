@@ -125,29 +125,31 @@ begin
 						cntr     := cntr + 1;
 						dv       := '0';
 						sll_trdy <= '0';
-					elsif dv='1' then
-						push_ena  <= '1';
-						push_data <= data;
-						cntr      := cntr + 1;
-						dv        := '0';
-						sll_trdy  <= '1';
-					elsif cntr=signed(dec) then
-						push_ena  <= '1';
-						push_data <= x"e";
-						cntr      := cntr + 1;
-						dv        := '1';
-						sll_trdy  <= '0';
-					elsif sll_trdy='1' then
-						push_ena  <= '1';
-                           push_data <= sll_bcd;
-						cntr      := cntr + 1;
-						dv        := '0';
-						sll_trdy  <= '1';
 					else
-						push_ena  <= '0';
-						push_data <= (others => '-');
-						dv        := '0';
-						sll_trdy  <= '1';
+						if dv='1' then
+							push_ena  <= '1';
+							push_data <= data;
+							cntr      := cntr + 1;
+							dv        := '0';
+							sll_trdy  <= '1';
+						elsif cntr=signed(dec) then
+							push_ena  <= '1';
+							push_data <= x"e";
+							cntr      := cntr + 1;
+							dv        := sll_trdy;
+							sll_trdy  <= '0';
+						elsif sll_trdy='1' then
+							push_ena  <= '1';
+                            push_data <= sll_bcd;
+							cntr      := cntr + 1;
+							dv        := '0';
+							sll_trdy  <= '1';
+						else
+							push_ena  <= '0';
+							push_data <= (others => '-');
+							dv        := '0';
+							sll_trdy  <= '1';
+						end if;
 					end if;
 					data := sll_bcd;
 				else
