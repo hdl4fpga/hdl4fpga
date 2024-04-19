@@ -54,7 +54,7 @@ begin
 				bin <= std_logic_vector(to_unsigned(yyy,bin'length));
 				yyy := yyy + 18;
 				btof_req <= not to_stdulogic(to_bit(btof_rdy));
-			elsif code_frm='1' then
+			elsif code_frm='0' then
 				xxx(0 to 8-1) := unsigned(code);
 				xxx := xxx rol 8;
 			end if;
@@ -73,7 +73,8 @@ begin
    		clk      => clk,
    		btof_req => btof_req,
    		btof_rdy => btof_rdy,
-		dec      => b"111",
+		sht      => x"f",
+		dec      => x"1",
 		exp      => b"000",
 		neg      => '0',
 		bin      => bin, 

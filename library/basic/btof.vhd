@@ -103,43 +103,65 @@ begin
 		process (clk)
 			variable data : std_logic_vector(push_data'range);
 			variable cntr : integer range -(1+max_decimal) to max_decimal;
+			variable dv   : std_logic;
 		begin
 			if rising_edge(clk) then
 				if sll_frm='1' then
-					if signed(sht) > cntr then
-						sll_trdy  <= '0';
+					if cntr < signed(sht) then
 						push_ena  <= '0';
 						push_data <= (others => '-');
+						if sll_trdy= '1' then
+							cntr := cntr + 1;
+						end if;
+						dv       := '0';
+						sll_trdy <= '1';
+					elsif cntr < 0 then
+						push_ena  <= '1';
+						if cntr=signed(dec) then
+							push_data <= x"e";
+						else
+							push_data <= x"0";
+						end if;
+						cntr     := cntr + 1;
+						dv       := '0';
+						sll_trdy <= '0';
+					elsif dv='1' then
+						push_ena  <= '1';
+						push_data <= data;
+						cntr      := cntr + 1;
+						dv        := '0';
+						sll_trdy  <= '1';
 					elsif cntr=signed(dec) then
 						push_ena  <= '1';
 						push_data <= x"e";
+						cntr      := cntr + 1;
+						dv        := '1';
 						sll_trdy  <= '0';
-					elsif cntr >= 0 then
-						push_ena  <=  '1';
-						if sll_trdy='0' then
-							push_data <= data;
-						else
-							push_data <= sll_bcd;
-						end if;
-						sll_trdy  <= '1';
-					elsif cntr < 0 then
-						sll_trdy  <= '0';
+					elsif sll_trdy='1' then
 						push_ena  <= '1';
-						push_data <= x"0";
+                           push_data <= sll_bcd;
+						cntr      := cntr + 1;
+						dv        := '0';
+						sll_trdy  <= '1';
+					else
+						push_ena  <= '0';
+						push_data <= (others => '-');
+						dv        := '0';
+						sll_trdy  <= '1';
 					end if;
-					cntr := cntr + 1;
 					data := sll_bcd;
 				else
+					dv        := '0';
 					sll_trdy  <= '0';
 					push_ena  <= '0';
 					push_data <= (others => '-');
-					data      := sll_bcd;
 					if signed(sht) < 0 then
 						cntr := to_integer(signed(sht));
 					else 
 						cntr := 0;
 					end if;
 				end if;
+				data := sll_bcd;
 			end if;
 		end process;
 
