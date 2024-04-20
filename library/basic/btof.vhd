@@ -118,7 +118,11 @@ begin
 					elsif cntr < 0 then
 						push_ena  <= '1';
 						if cntr=signed(dec) then
-							push_data <= x"e";
+							if signed(sht)/=signed(dec) then
+								push_data <= x"e";
+							else
+								push_data <= x"0";
+							end if;
 						else
 							push_data <= x"0";
 						end if;
@@ -133,11 +137,19 @@ begin
 							dv        := '0';
 							sll_trdy  <= '1';
 						elsif cntr=signed(dec) then
-							push_ena  <= '1';
-							push_data <= x"e";
-							cntr      := cntr + 1;
-							dv        := sll_trdy;
-							sll_trdy  <= '0';
+							if signed(sht)/=signed(dec) then
+								push_ena  <= '1';
+								push_data <= x"e";
+								cntr      := cntr + 1;
+								dv        := sll_trdy;
+								sll_trdy  <= '0';
+							else
+								push_ena  <= '0';
+								push_data <= (others => '-');
+								cntr      := cntr + 1;
+								dv        := '0';
+								sll_trdy  <= '0';
+							end if;
 						elsif sll_trdy='1' then
 							push_ena  <= '1';
                             push_data <= sll_bcd;
