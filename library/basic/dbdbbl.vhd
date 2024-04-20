@@ -281,7 +281,9 @@ begin
 		end if;
 		ini_dbbl <= cy & std_logic_vector(resize(unsigned(bcd_ini), n));
 	end process;
-	bcd <= bcd_dbbl(n-1 downto 0) when unsigned(bcd_ini)<=9 else std_logic_vector(resize(unsigned(bcd_ini), n));
+	bcd <= 
+		bcd_dbbl(n-1 downto 0) when unsigned(bcd_ini) <= 9 else 
+		std_logic_vector(resize(unsigned(bcd_ini), n));
 
 	srl_e : entity hdl4fpga.dbdbbl_srl
 	port map (

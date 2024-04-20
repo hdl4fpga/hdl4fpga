@@ -36,7 +36,7 @@ architecture btof_tb of testbench is
 
 	signal code_frm : std_logic;
 	signal code     : std_logic_vector(0 to 8-1);
-	signal bin      : std_logic_vector(0 to 9-1);
+	signal bin      : std_logic_vector(0 to 18-1);
 
 	signal btof_ack : std_logic;
 
@@ -51,8 +51,9 @@ begin
 		if rising_edge(clk) then
 			if (to_bit(btof_rdy) xor to_bit(btof_req))='0' then
 				xxx := unsigned(std_logic_vector'(to_ascii("        ")));
-				bin <= std_logic_vector(to_unsigned(yyy,bin'length));
-				yyy := yyy + 18;
+				-- bin <= std_logic_vector(to_unsigned(yyy,bin'length));
+				bin <= std_logic_vector(to_unsigned(32767,bin'length));
+				-- yyy := yyy + 18;
 				btof_req <= not to_stdulogic(to_bit(btof_rdy));
 			elsif code_frm='0' then
 				xxx(0 to 8-1) := unsigned(code);
@@ -74,7 +75,7 @@ begin
    		btof_req => btof_req,
    		btof_rdy => btof_rdy,
 		sht      => x"0",
-		dec      => x"0",
+		dec      => x"f",
 		exp      => b"000",
 		neg      => '0',
 		bin      => bin, 

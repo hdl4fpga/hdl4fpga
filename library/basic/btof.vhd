@@ -26,7 +26,7 @@ end;
 
 architecture def of btof is
 	constant bcd_length  : natural := 4;
-	constant bcd_width   : natural := 8;
+	constant bcd_width   : natural := 5;
 	constant bcd_digits  : natural := 1;
 	constant bin_digits  : natural := 3;
 
@@ -101,8 +101,8 @@ begin
 	begin
 
 		process (clk)
-			variable data : std_logic_vector(push_data'range);
 			variable cntr : integer range -(1+max_decimal) to max_decimal;
+			variable data : std_logic_vector(push_data'range);
 			variable dv   : std_logic;
 		begin
 			if rising_edge(clk) then
@@ -116,7 +116,7 @@ begin
 						dv       := '0';
 						sll_trdy <= '1';
 					elsif cntr < 0 then
-						push_ena  <= '1';
+						push_ena <= '1';
 						if cntr=signed(dec) then
 							if signed(sht)/=signed(dec) then
 								push_data <= x"e";
@@ -192,17 +192,10 @@ begin
 		begin
 			if rising_edge(clk) then
 				if sll_frm='0' then
-					if lifo_ov='0' then
-						slr_frm  <= pop_ena;
-						slr_irdy <= pop_ena;
-						slr_ini  <= pop_data;
-						pop_ena  <= '1';
-					else
-   						slr_frm  <= '0';
-   						slr_irdy <= '0';
-   						slr_ini  <= (slr_ini'range => '-');
-   						pop_ena  <= '0';
-					end if;
+					slr_frm  <= not sll_trdy and not lifo_ov;
+					slr_irdy <= not sll_trdy and not lifo_ov;
+					slr_ini  <= pop_data;
+					pop_ena  <= not sll_trdy and not lifo_ov;
 				else
 					slr_frm  <= '0';
 					slr_irdy <= '0';
@@ -222,46 +215,10 @@ begin
 		clk  => clk,
 		frm  => slr_frm,
 		irdy => slr_irdy,
-		trdy => slr_trdy,
+		-- trdy => slr_trdy,
 		cnt  => exp,
 		bcd_ini => slr_ini,
 		bcd  => slr_bcd);
-
-	process (format_frm , clk)
-		variable cntr : integer range -(1+max_decimal) to max_decimal;
-	begin
-		if rising_edge(clk) then
-			if slr_frm='1' then
-				if signed(dec) > 0 then
-					if cntr < 0 then
-						format_frm  <= '1';
-						format_irdy <= '1';
-					else
-						format_frm  <= '0';
-						format_irdy <= '0';
-						cntr := cntr - 1;
-					end if;
-				elsif signed(dec) < 0 then
-					if cntr >= 0 then
-						format_frm  <= '1';
-						format_irdy <= '1';
-					else
-						format_frm  <= '0';
-						format_irdy <= '0';
-						cntr := cntr + 1;
-					end if;
-				else
-					format_frm  <= '1';
-					format_irdy <= '1';
-				end if;
-			else
-				format_frm  <= '0';
-				format_irdy <= '0';
-				cntr := to_integer(signed(dec));
-			end if;
-			format_bcd <= slr_bcd;
-		end if;
-	end process;
 
 	format_e : entity hdl4fpga.format
 	generic map (
@@ -270,10 +227,10 @@ begin
 		tab      => tab,
 		neg      => neg,
 		clk      => clk,
-		bcd_frm  => format_frm,
-		bcd_irdy => format_irdy,
-		bcd_trdy => format_trdy,
-		bcd      => format_bcd,
+		bcd_frm  => slr_frm,
+		bcd_irdy => slr_irdy,
+		bcd_trdy => slr_trdy,
+		bcd      => slr_bcd,
 		code_frm => code_frm,
 		code     => code);
 	
