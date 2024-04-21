@@ -52,7 +52,7 @@ begin
 			if (to_bit(btof_rdy) xor to_bit(btof_req))='0' then
 				xxx := unsigned(std_logic_vector'(to_ascii("        ")));
 				-- bin <= std_logic_vector(to_unsigned(yyy,bin'length));
-				bin <= std_logic_vector(to_unsigned(32767,bin'length));
+				bin <= std_logic_vector(to_unsigned(0,bin'length));
 				-- yyy := yyy + 18;
 				btof_req <= not to_stdulogic(to_bit(btof_rdy));
 			elsif code_frm='1' then

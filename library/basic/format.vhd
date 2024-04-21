@@ -150,7 +150,11 @@ begin
 				end case;
 			else
 				code_frm <= buff_frm;
-				fmt_bcd  <= buff;
+				if buff=x"a" then
+					fmt_bcd  <= x"0";
+				else
+					fmt_bcd  <= buff;
+				end if;
 				buff     := multiplex(bcd_tab, bcd, bcd'length);
 				buff_frm := '0';
 				bcd_trdy <= '0';
