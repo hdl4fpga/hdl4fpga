@@ -83,7 +83,7 @@ begin
 						fmt_bcd  <= multiplex(bcd_tab, minus, bcd'length);
 						fmt_bcd  <= (others => '-');
 						buff_frm := '1';
-						buff     := multiplex(bcd_tab, bcd, bcd'length);
+						buff     := multiplex(bcd_tab, bcd,   bcd'length);
 						buff     := multiplex(bcd_tab, minus, bcd'length);
 						bcd_trdy <= '1';
 						state := s_blanked;
@@ -91,7 +91,7 @@ begin
 						code_frm <= '1';
 						fmt_bcd  <= multiplex(bcd_tab, plus, bcd'length);
 						buff_frm := '1';
-						buff     := multiplex(bcd_tab, bcd, bcd'length);
+						buff     := multiplex(bcd_tab, bcd,  bcd'length);
 						bcd_trdy <= '1';
 						state := s_blanked;
 					else
