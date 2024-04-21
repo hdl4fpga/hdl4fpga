@@ -79,10 +79,12 @@ begin
 						bcd_trdy <= '1';
 						state := s_blank;
 					elsif neg='1' then
-						code_frm <= '1';
+						code_frm <= '0';
 						fmt_bcd  <= multiplex(bcd_tab, minus, bcd'length);
+						fmt_bcd  <= (others => '-');
 						buff_frm := '1';
 						buff     := multiplex(bcd_tab, bcd, bcd'length);
+						buff     := multiplex(bcd_tab, minus, bcd'length);
 						bcd_trdy <= '1';
 						state := s_blanked;
 					elsif sign='1' then
@@ -93,10 +95,12 @@ begin
 						bcd_trdy <= '1';
 						state := s_blanked;
 					else
-						code_frm <= '1';
-						fmt_bcd  <= multiplex(bcd_tab, minus, bcd'length);
+						code_frm <= '0';
+						fmt_bcd  <= multiplex(bcd_tab, bcd, bcd'length);
+						fmt_bcd  <= (others => '-');
 						buff_frm := '0';
 						buff     := (others => '-');
+						buff     := multiplex(bcd_tab, bcd, bcd'length);
 						bcd_trdy <= '1';
 						bcd_trdy <= '1';
 						state := s_blanked;

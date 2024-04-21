@@ -55,17 +55,17 @@ begin
 				bin <= std_logic_vector(to_unsigned(32767,bin'length));
 				-- yyy := yyy + 18;
 				btof_req <= not to_stdulogic(to_bit(btof_rdy));
-			elsif code_frm='0' then
+			elsif code_frm='1' then
 				xxx(0 to 8-1) := unsigned(code);
 				xxx := xxx rol 8;
 			end if;
 		end if;
-		if falling_edge(btof_ack) then
+		if falling_edge(code_frm) then
 			report "======>  '" & string'(to_ascii(std_logic_vector(xxx))) & ''';
 			wait;
 		end if;
 		clk <= not clk after 0.5 ns;
-		wait on clk, btof_ack;
+		wait on clk, code_frm;
 	end process;
 
 
@@ -77,7 +77,7 @@ begin
 		sht      => x"0",
 		dec      => x"f",
 		exp      => b"000",
-		neg      => '0',
+		neg      => '1',
 		bin      => bin, 
    		code_frm => code_frm,
    		code     => code);
