@@ -75,7 +75,7 @@ begin
    		btof_req => btof_req,
    		btof_rdy => btof_rdy,
 		sht      => x"0",
-		dec      => x"f",
+		dec      => x"0",
 		exp      => b"000",
 		neg      => '1',
 		bin      => bin, 
