@@ -76,14 +76,14 @@ begin
 				when s_init =>
 					if bcd=x"0" then
 						fmt_ena(1) <= '0';
-						fmt_bcd(2) <= multiplex(bcd_tab, blank, bcd'length);
 						fmt_ena(2) <= '1';
+						fmt_bcd(2) <= multiplex(bcd_tab, blank, bcd'length);
 						state := s_blank;
 					elsif neg='1' then
 						fmt_ena(1) <= '0';
 						fmt_bcd(1) <= multiplex(bcd_tab, minus, bcd'length);
 						fmt_ena(2) <= '1';
-						fmt_bcd(2) <= multiplex(tab,     bcd,   bcd'length);
+						fmt_bcd(2) <= multiplex(bcd_tab,   bcd,   bcd'length);
 						state := s_blanked;
 					elsif sign='1' then
 						fmt_ena(1) <= '1';
