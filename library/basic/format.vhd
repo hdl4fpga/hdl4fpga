@@ -59,100 +59,101 @@ entity format is
 end;
 
 architecture def of format is
-	signal fmt_bcd : std_logic_vector(bcd'range);
+	type xxx is array (0 to 3-1) of std_logic_vector(bcd'range);
+	signal fmt_bcd : xxx;
+	signal fmt_ena : std_logic_vector(xxx'range);
 begin
 
 	process (clk)
 		type states is (s_init, s_blank, s_blanked);
 		variable state : states;
-		variable buff  : std_logic_vector(bcd'range);
-		variable buff_frm : std_logic;
 	begin
 		if rising_edge(clk) then
+			fmt_ena(0) <= fmt_ena(1);
+			fmt_bcd(0) <= fmt_bcd(1);
 			if bcd_frm='1' then
 				case state is
 				when s_init =>
 					if bcd=x"0" then
-						code_frm  <= '0';
-						buff := multiplex(bcd_tab, blank, bcd'length);
-						buff_frm := '1';
+						fmt_ena(1) <= '0';
+						fmt_bcd(2) <= multiplex(bcd_tab, blank, bcd'length);
+						fmt_ena(2) <= '1';
 						state := s_blank;
 					elsif neg='1' then
-						code_frm <= '0';
-						fmt_bcd  <= multiplex(bcd_tab, minus, bcd'length);
-						fmt_bcd  <= (others => '-');
-						buff_frm := '1';
-						buff     := multiplex(bcd_tab, bcd,   bcd'length);
-						buff     := multiplex(bcd_tab, minus, bcd'length);
+						fmt_ena(1) <= '0';
+						fmt_bcd(1) <= multiplex(bcd_tab, minus, bcd'length);
+						fmt_ena(2) <= '1';
+						fmt_bcd(2) <= multiplex(tab,     bcd,   bcd'length);
 						state := s_blanked;
 					elsif sign='1' then
-						code_frm <= '1';
-						fmt_bcd  <= multiplex(bcd_tab, plus, bcd'length);
-						buff_frm := '1';
-						buff     := multiplex(bcd_tab, bcd,  bcd'length);
+						fmt_ena(1) <= '1';
+						fmt_bcd(1) <= multiplex(bcd_tab, plus, bcd'length);
+						fmt_ena(2) <= '1';
+						fmt_bcd(2) <= multiplex(bcd_tab, bcd,  bcd'length);
 						state := s_blanked;
 					else
-						code_frm <= '0';
-						fmt_bcd  <= multiplex(bcd_tab, bcd, bcd'length);
-						fmt_bcd  <= (others => '-');
-						buff_frm := '0';
-						buff     := (others => '-');
-						buff     := multiplex(bcd_tab, bcd, bcd'length);
+						fmt_ena(1) <= '0';
+						fmt_bcd(1) <= multiplex(bcd_tab, bcd, bcd'length);
+						fmt_ena(2) <= '0';
+						fmt_bcd(2) <= multiplex(bcd_tab, bcd, bcd'length);
 						state := s_blanked;
 					end if;
 				when s_blank =>
 					if bcd=x"0" then
-						fmt_bcd  <= buff;
-						code_frm <= buff_frm;
-						buff_frm := '1';
-						buff     := multiplex(bcd_tab, blank, bcd'length);
+						fmt_ena(1) <= fmt_ena(2);
+						fmt_bcd(1) <= fmt_bcd(2);
+						fmt_ena(2) <= '1';
+						fmt_bcd(2) <= multiplex(bcd_tab, blank, bcd'length);
 					elsif neg='1' then
-						code_frm <= '1';
-						if fmt_bcd=x"a" then
-							report "*************************";
+						fmt_ena(1) <= '1';
+						if fmt_bcd(1)=x"a" then
+							fmt_bcd(0) <= multiplex(bcd_tab, minus, bcd'length);
+							fmt_bcd(1) <= x"0";
+						else
+							fmt_bcd(1) <= multiplex(bcd_tab, minus, bcd'length);
 						end if;
-						fmt_bcd  <= multiplex(bcd_tab, minus, bcd'length);
-						buff_frm := '1';
-						buff     := multiplex(bcd_tab,   bcd, bcd'length);
+						fmt_ena(2) <= '1';
+						fmt_bcd(2) <= multiplex(bcd_tab,   bcd, bcd'length);
 						state := s_blanked;
 					elsif sign='1' then
-						code_frm <= '1';
-						fmt_bcd  <= multiplex(bcd_tab, plus, bcd'length);
-						buff_frm := '1';
-						buff     := multiplex(bcd_tab,  bcd, bcd'length);
+						fmt_ena(1) <= '1';
+						fmt_bcd(1) <= multiplex(bcd_tab, plus, bcd'length);
+						fmt_ena(2) <= '1';
+						fmt_bcd(2) <= multiplex(bcd_tab,  bcd, bcd'length);
 						state := s_blanked;
 					elsif bcd=x"e" then 
-						code_frm <= '1';
-						fmt_bcd  <= multiplex(bcd_tab, x"0", bcd'length);
-						buff_frm := '1';
-						buff     := multiplex(bcd_tab, bcd, bcd'length);
+						fmt_ena(1) <= '1';
+						fmt_bcd(1) <= multiplex(bcd_tab, x"0", bcd'length);
+						fmt_ena(2) <= '1';
+						fmt_bcd(2) <= multiplex(bcd_tab, bcd, bcd'length);
 						state := s_blanked;
 					else 
-						code_frm <= buff_frm;
-						fmt_bcd  <= buff;
-						buff_frm := '1';
-						buff     := multiplex(bcd_tab, bcd, bcd'length);
+						fmt_ena(1) <= fmt_ena(2);
+						fmt_bcd(1) <= fmt_bcd(2);
+						fmt_ena(2) <= '1';
+						fmt_bcd(2) <= multiplex(bcd_tab, bcd, bcd'length);
 						state := s_blanked;
 					end if;
 				when s_blanked =>
-					code_frm <= buff_frm;
-					fmt_bcd  <= buff;
-					buff_frm := '1';
-					buff     := multiplex(bcd_tab, bcd, bcd'length);
+					fmt_ena(1) <= fmt_ena(2);
+					fmt_bcd(1) <= fmt_bcd(2);
+					fmt_ena(2) <= '1';
+					fmt_bcd(2) <= multiplex(bcd_tab, bcd, bcd'length);
 				end case;
 			else
-				code_frm <= buff_frm;
-				if buff=x"a" then
-					fmt_bcd  <= x"0";
+				fmt_ena(1) <= fmt_ena(2);
+				if fmt_bcd(2)=x"a" then
+					fmt_bcd(1) <= x"0";
 				else
-					fmt_bcd  <= buff;
+					fmt_bcd(1) <= fmt_bcd(2);
 				end if;
-				buff     := multiplex(bcd_tab, bcd, bcd'length);
-				buff_frm := '0';
+				fmt_ena(2) <= '0';
+				fmt_bcd(2) <= multiplex(bcd_tab, bcd, bcd'length);
 				state := s_init;
 			end if;
 		end if;
 	end process;
 	bcd_trdy <= bcd_frm;
-	code <= multiplex(tab, fmt_bcd, code'length);
+	code_frm <= fmt_ena(0);
+	code     <= multiplex(tab, fmt_bcd(0), code'length);
 end;
