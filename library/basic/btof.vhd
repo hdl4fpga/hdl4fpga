@@ -26,7 +26,7 @@ end;
 
 architecture def of btof is
 	constant bcd_length  : natural := 4;
-	constant bcd_width   : natural := 5;
+	constant bcd_width   : natural := 8;
 	constant bcd_digits  : natural := 1;
 	constant bin_digits  : natural := 3;
 
@@ -165,6 +165,9 @@ begin
 					end if;
 					data := sll_bcd;
 				else
+					if signed(dec) > signed(sht) then
+						report ">>>>>> SUMO + 1 <<<<<<<<";
+					end if;
 					dv        := '0';
 					sll_trdy  <= '0';
 					push_ena  <= '0';

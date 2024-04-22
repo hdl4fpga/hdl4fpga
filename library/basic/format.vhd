@@ -106,12 +106,7 @@ begin
 						fmt_bcd(2) <= multiplex(bcd_tab, blank, bcd'length);
 					elsif neg='1' then
 						fmt_ena(1) <= '1';
-						if fmt_bcd(1)=x"a" then
-							fmt_bcd(0) <= multiplex(bcd_tab, minus, bcd'length);
-							fmt_bcd(1) <= x"0";
-						else
-							fmt_bcd(1) <= multiplex(bcd_tab, minus, bcd'length);
-						end if;
+						fmt_bcd(1) <= multiplex(bcd_tab, minus, bcd'length);
 						fmt_ena(2) <= '1';
 						fmt_bcd(2) <= multiplex(bcd_tab,   bcd, bcd'length);
 						state := s_blanked;
@@ -142,11 +137,7 @@ begin
 				end case;
 			else
 				fmt_ena(1) <= fmt_ena(2);
-				if fmt_bcd(2)=x"a" then
-					fmt_bcd(1) <= x"0";
-				else
-					fmt_bcd(1) <= fmt_bcd(2);
-				end if;
+				fmt_bcd(1) <= fmt_bcd(2);
 				fmt_ena(2) <= '0';
 				fmt_bcd(2) <= multiplex(bcd_tab, bcd, bcd'length);
 				state := s_init;
@@ -154,6 +145,6 @@ begin
 		end if;
 	end process;
 	bcd_trdy <= bcd_frm;
-	code_frm <= fmt_ena(0);
+	code_frm <= '0' when fmt_bcd(0)=x"a" else fmt_ena(0);
 	code     <= multiplex(tab, fmt_bcd(0), code'length);
 end;
