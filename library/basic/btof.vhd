@@ -191,16 +191,21 @@ begin
 		process (clk)
 		begin
 			if rising_edge(clk) then
-				if sll_frm='0' then
-					slr_frm  <= not sll_trdy and not lifo_ov;
-					slr_irdy <= not sll_trdy and not lifo_ov;
-					slr_ini  <= pop_data;
-					pop_ena  <= not sll_trdy and not lifo_ov;
-				else
+				if (sll_frm or sll_trdy)='1' then
 					slr_frm  <= '0';
 					slr_irdy <= '0';
 					slr_ini  <= (slr_ini'range => '-');
 					pop_ena  <= '0';
+				elsif lifo_ov='1' then
+					slr_frm  <= '0';
+					slr_irdy <= '0';
+					slr_ini  <= (slr_ini'range => '-');
+					pop_ena  <= '0';
+				else
+					slr_frm  <= pop_ena;
+					slr_irdy <= pop_ena;
+					slr_ini  <= pop_data;
+					pop_ena  <= '1';
 				end if;
 			end if;
 		end process;
