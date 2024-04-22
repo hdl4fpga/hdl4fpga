@@ -119,14 +119,20 @@ begin
 						push_ena <= '1';
 						if cntr=signed(dec) then
 							if signed(sht)/=signed(dec) then
-								push_data <= x"e";
+								if push_data=x"e" then
+									push_data <= x"0";
+									cntr := cntr + 1;
+								else
+									push_data <= x"e";
+								end if;
 							else
 								push_data <= x"0";
+								cntr := cntr + 1;
 							end if;
 						else
 							push_data <= x"0";
+							cntr := cntr + 1;
 						end if;
-						cntr     := cntr + 1;
 						dv       := '0';
 						sll_trdy <= '0';
 					else
