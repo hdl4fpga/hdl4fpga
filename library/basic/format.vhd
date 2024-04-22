@@ -76,7 +76,6 @@ begin
 						code_frm  <= '0';
 						buff := multiplex(bcd_tab, blank, bcd'length);
 						buff_frm := '1';
-						bcd_trdy <= '1';
 						state := s_blank;
 					elsif neg='1' then
 						code_frm <= '0';
@@ -85,14 +84,12 @@ begin
 						buff_frm := '1';
 						buff     := multiplex(bcd_tab, bcd,   bcd'length);
 						buff     := multiplex(bcd_tab, minus, bcd'length);
-						bcd_trdy <= '1';
 						state := s_blanked;
 					elsif sign='1' then
 						code_frm <= '1';
 						fmt_bcd  <= multiplex(bcd_tab, plus, bcd'length);
 						buff_frm := '1';
 						buff     := multiplex(bcd_tab, bcd,  bcd'length);
-						bcd_trdy <= '1';
 						state := s_blanked;
 					else
 						code_frm <= '0';
@@ -101,8 +98,6 @@ begin
 						buff_frm := '0';
 						buff     := (others => '-');
 						buff     := multiplex(bcd_tab, bcd, bcd'length);
-						bcd_trdy <= '1';
-						bcd_trdy <= '1';
 						state := s_blanked;
 					end if;
 				when s_blank =>
@@ -111,34 +106,32 @@ begin
 						code_frm <= buff_frm;
 						buff_frm := '1';
 						buff     := multiplex(bcd_tab, blank, bcd'length);
-						bcd_trdy <= '1';
 					elsif neg='1' then
 						code_frm <= '1';
+						if fmt_bcd=x"a" then
+							report "*************************";
+						end if;
 						fmt_bcd  <= multiplex(bcd_tab, minus, bcd'length);
 						buff_frm := '1';
 						buff     := multiplex(bcd_tab,   bcd, bcd'length);
-						bcd_trdy <= '1';
 						state := s_blanked;
 					elsif sign='1' then
 						code_frm <= '1';
 						fmt_bcd  <= multiplex(bcd_tab, plus, bcd'length);
 						buff_frm := '1';
 						buff     := multiplex(bcd_tab,  bcd, bcd'length);
-						bcd_trdy <= '1';
 						state := s_blanked;
 					elsif bcd=x"e" then 
 						code_frm <= '1';
 						fmt_bcd  <= multiplex(bcd_tab, x"0", bcd'length);
 						buff_frm := '1';
 						buff     := multiplex(bcd_tab, bcd, bcd'length);
-						bcd_trdy <= '1';
 						state := s_blanked;
 					else 
 						code_frm <= buff_frm;
 						fmt_bcd  <= buff;
 						buff_frm := '1';
 						buff     := multiplex(bcd_tab, bcd, bcd'length);
-						bcd_trdy <= '1';
 						state := s_blanked;
 					end if;
 				when s_blanked =>
@@ -146,7 +139,6 @@ begin
 					fmt_bcd  <= buff;
 					buff_frm := '1';
 					buff     := multiplex(bcd_tab, bcd, bcd'length);
-					bcd_trdy <= '1';
 				end case;
 			else
 				code_frm <= buff_frm;
@@ -157,10 +149,10 @@ begin
 				end if;
 				buff     := multiplex(bcd_tab, bcd, bcd'length);
 				buff_frm := '0';
-				bcd_trdy <= '0';
 				state := s_init;
 			end if;
 		end if;
 	end process;
+	bcd_trdy <= bcd_frm;
 	code <= multiplex(tab, fmt_bcd, code'length);
 end;
