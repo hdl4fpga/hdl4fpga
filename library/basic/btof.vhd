@@ -144,8 +144,8 @@ begin
 								dv        := sll_trdy;
 								sll_trdy  <= '0';
 							else
-								push_ena  <= '0';
-								push_data <= (others => '-');
+								-- push_ena  <= '0';
+								-- push_data <= (others => '-');
 								push_ena  <= sll_trdy;
 								push_data <= sll_bcd;
 								cntr      := cntr + 1;
