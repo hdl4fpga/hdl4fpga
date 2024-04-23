@@ -74,7 +74,7 @@ begin
    		clk      => clk,
    		btof_req => btof_req,
    		btof_rdy => btof_rdy,
-		sht      => x"0",
+		sht      => x"f",
 		dec      => x"1",
 		exp      => b"000",
 		neg      => '1',
