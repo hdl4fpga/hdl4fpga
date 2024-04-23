@@ -248,8 +248,6 @@ HDL4FPGA__g4_phdata270__inference = $(LIB_HDL4FPGA)/g4_phdata270/inference.dat
 HDL4FPGA__g4_phdata270 = $(LIB_HDL4FPGA)/g4_phdata270/_primary.dat
 HDL4FPGA__g4_phdata__inference = $(LIB_HDL4FPGA)/g4_phdata/inference.dat
 HDL4FPGA__g4_phdata = $(LIB_HDL4FPGA)/g4_phdata/_primary.dat
-HDL4FPGA__format__def = $(LIB_HDL4FPGA)/format/def.dat
-HDL4FPGA__format = $(LIB_HDL4FPGA)/format/_primary.dat
 HDL4FPGA__fifo__def = $(LIB_HDL4FPGA)/fifo/def.dat
 HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
 HDL4FPGA__ethpkg__body = $(LIB_HDL4FPGA)/ethpkg/body.dat
@@ -602,8 +600,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__g4_phdata270) \
     $(HDL4FPGA__g4_phdata__inference) \
     $(HDL4FPGA__g4_phdata) \
-    $(HDL4FPGA__format__def) \
-    $(HDL4FPGA__format) \
     $(HDL4FPGA__fifo__def) \
     $(HDL4FPGA__fifo) \
     $(HDL4FPGA__ethpkg__body) \
@@ -868,7 +864,6 @@ $(HDL4FPGA__bcdfonts) : ../video/fonts/bcdfonts.vhd \
 
 $(HDL4FPGA__btof) \
 $(HDL4FPGA__btof__def) : ../basic/btof.vhd \
-		$(HDL4FPGA__format) \
 		$(HDL4FPGA__dbdbblsrl_ser) \
 		$(HDL4FPGA__lifo) \
 		$(HDL4FPGA__dbdbbl_seq) \
@@ -1253,14 +1248,6 @@ $(HDL4FPGA__fifo__def) : ../basic/fifo.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/fifo.vhd
-
-$(HDL4FPGA__format) \
-$(HDL4FPGA__format__def) : ../basic/format.vhd \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../basic/format.vhd
 
 $(HDL4FPGA__graphics) \
 $(HDL4FPGA__graphics__def) : ../video/graphics.vhd \

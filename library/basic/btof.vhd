@@ -8,8 +8,7 @@ use hdl4fpga.base.all;
 
 entity btof is
 	generic (
-		max_decimal : natural := 15;
-		min_decimal : integer := -4;
+		max_width : natural := 16;
 		tab      : std_logic_vector := to_ascii("0123456789 +-,."));
 	port (
 		clk      : in  std_logic;
@@ -25,8 +24,8 @@ entity btof is
 end;
 
 architecture def of btof is
+
 	constant bcd_length  : natural := 4;
-	constant bcd_width   : natural := 8;
 	constant bcd_digits  : natural := 1;
 	constant bin_digits  : natural := 3;
 
@@ -53,7 +52,7 @@ begin
 	dbdbbl_req <= btof_req;
 	dbdbbl_seq_e : entity hdl4fpga.dbdbbl_seq
 	generic map (
-		bcd_width  => bcd_width,
+		bcd_width  => max_width-2,
 		bcd_digits => bcd_digits)
 	port map (
 		clk  => clk,
@@ -66,9 +65,9 @@ begin
 
 	lifo_b : block
 		generic (
-			max_decimal : natural := 2);
+			max_width : natural);
 		generic map (
-			max_decimal => max_decimal);
+			max_width => max_width);
 		port (
 			clk      : in  std_logic;
 			sll_frm  : in  std_logic;
@@ -101,7 +100,7 @@ begin
 	begin
 
 		process (clk)
-			variable cntr : integer range -(1+max_decimal) to max_decimal;
+			variable cntr : integer range -(max_width) to max_width;
 			variable data : std_logic_vector(push_data'range);
 			variable dv   : std_logic;
 		begin
@@ -193,11 +192,13 @@ begin
 		process (sll_frm)
 		begin
 			if rising_edge(sll_frm) then
-				report natural'image(bcd_width-to_integer(signed(sht)));
+				report natural'image(max_width-to_integer(signed(sht)));
 			end if;
 		end process;
 
 		lifo_e : entity hdl4fpga.lifo
+		generic map (
+			size => max_width)
 		port map (
 			clk       => clk,
 			ov        => lifo_ov,
@@ -232,7 +233,7 @@ begin
 
 	dbdbblsrl_ser_e : entity hdl4fpga.dbdbblsrl_ser
 	generic map (
-		bcd_width  => bcd_width,
+		bcd_width  => max_width-2,
 		bcd_digits => bcd_digits)
 	port map (
 		clk  => clk,
@@ -247,7 +248,7 @@ begin
 		generic (
 			max_width : natural);
 		generic map (
-			max_width => bcd_width);
+			max_width => max_width);
 		port (
 			tab       : in  std_logic_vector; -- := x"0123456789abcde";
 			clk       : in  std_logic;

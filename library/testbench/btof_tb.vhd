@@ -68,7 +68,6 @@ begin
 		wait on clk, code_frm;
 	end process;
 
-
 	du_e : entity hdl4fpga.btof
    	port map (
    		clk      => clk,
