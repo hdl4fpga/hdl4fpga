@@ -19,6 +19,7 @@ entity btof is
 		exp      : in  std_logic_vector;
 		neg      : in  std_logic;
 		bin      : in  std_logic_vector;
+		width    : in  std_logic_vector := (0 to 0 => '0');
 		code_frm : buffer std_logic;
 		code     : out std_logic_vector);
 end;
@@ -103,8 +104,18 @@ begin
 			variable cntr : integer range -(max_width) to max_width;
 			variable data : std_logic_vector(push_data'range);
 			variable dv   : std_logic;
+			variable xxx  : natural range 0 to max_width;
+			variable yyy  : std_logic;
 		begin
 			if rising_edge(clk) then
+				if xxx < unsigned(width) then
+					yyy := '1';
+				else
+					yyy := '0';
+				end if;
+				if push_ena='1' then
+					xxx := xxx + 1;
+				end if;
 				if sll_frm='1' then
 					if cntr < signed(sht) then
 						push_ena  <= '0';
@@ -184,6 +195,7 @@ begin
 					else 
 						cntr := 0;
 					end if;
+					xxx := 0;
 				end if;
 				data := sll_bcd;
 			end if;

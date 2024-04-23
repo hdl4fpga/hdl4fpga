@@ -21,8 +21,6 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -41,7 +39,6 @@ architecture btof_tb of testbench is
 	signal btof_ack : std_logic;
 
 begin
-
 
 	btof_ack <= (btof_rdy xor btof_req);
 	process 
@@ -73,6 +70,7 @@ begin
    		clk      => clk,
    		btof_req => btof_req,
    		btof_rdy => btof_rdy,
+		width    => "1",
 		sht      => x"f",
 		dec      => x"1",
 		exp      => b"000",
@@ -80,6 +78,5 @@ begin
 		bin      => bin, 
    		code_frm => code_frm,
    		code     => code);
-
 
 end;
