@@ -101,78 +101,86 @@ begin
 	begin
 
 		process (clk)
-			variable cntr : integer range -(max_width) to max_width;
-			variable data : std_logic_vector(push_data'range);
-			variable dv   : std_logic;
-			variable xxx  : natural range 0 to max_width;
-			variable yyy  : std_logic;
+			variable state : integer range -(max_width) to max_width;
+			variable data  : std_logic_vector(push_data'range);
+			variable dv    : std_logic;
+			variable len   : natural range 0 to max_width;
+			variable push  : std_logic;
 		begin
 			if rising_edge(clk) then
-				if xxx < unsigned(width) then
-					yyy := '1';
-				else
-					yyy := '0';
-				end if;
-				if push_ena='1' then
-					xxx := xxx + 1;
-				end if;
 				if sll_frm='1' then
-					if cntr < signed(sht) then
+					if push_ena='1' then
+						len := len + 1;
+					end if;
+					if unsigned(width)=0 then
+						push := '1';
+					elsif len < unsigned(width) then
+						push := '1';
+					else
+						push := '0';
+					end if;
+
+					if state < signed(sht) then
 						push_ena  <= '0';
 						push_data <= (others => '-');
 						if sll_trdy= '1' then
-							cntr := cntr + 1;
+							state := state + 1;
 						end if;
 						dv       := '0';
 						sll_trdy <= '1';
-					elsif cntr < 0 then
+					elsif state < 0 then
 						push_ena <= '1';
-						if cntr=signed(dec) then
+						push_ena <= push;
+						if state=signed(dec) then
 							if signed(sht)/=signed(dec) then
 								if push_data=x"e" then
 									push_data <= x"0";
-									cntr := cntr + 1;
+									state := state + 1;
 								else
 									push_data <= x"e";
 								end if;
 							else
 								push_data <= x"0";
-								cntr := cntr + 1;
+								state := state + 1;
 							end if;
 						else
 							push_data <= x"0";
-							cntr := cntr + 1;
+							state := state + 1;
 						end if;
 						dv       := '0';
 						sll_trdy <= '0';
 					else
 						if dv='1' then
 							push_ena  <= '1';
+							push_ena  <= push;
 							push_data <= data;
-							cntr      := cntr + 1;
-							dv        := '0';
+							state := state + 1;
+							dv    := '0';
 							sll_trdy  <= '1';
-						elsif cntr=signed(dec) then
+						elsif state=signed(dec) then
 							if signed(sht)/=signed(dec) then
 								push_ena  <= '1';
+								push_ena  <= push;
 								push_data <= x"e";
-								cntr      := cntr + 1;
-								dv        := sll_trdy;
+								state := state + 1;
+								dv    := sll_trdy;
 								sll_trdy  <= '0';
 							else
 								-- push_ena  <= '0';
 								-- push_data <= (others => '-');
 								push_ena  <= sll_trdy;
+								push_ena  <= sll_trdy and push;
 								push_data <= sll_bcd;
-								cntr      := cntr + 1;
-								dv        := '0';
+								state := state + 1;
+								dv    := '0';
 								sll_trdy  <= '0';
 							end if;
 						elsif sll_trdy='1' then
 							push_ena  <= '1';
+							push_ena  <= push;
 							push_data <= sll_bcd;
-							cntr      := cntr + 1;
-							dv        := '0';
+							state := state + 1;
+							dv    := '0';
 							sll_trdy  <= '1';
 						else
 							push_ena  <= '0';
@@ -191,11 +199,12 @@ begin
 					push_ena  <= '0';
 					push_data <= (others => '-');
 					if signed(sht) < 0 then
-						cntr := to_integer(signed(sht));
+						state := to_integer(signed(sht));
 					else 
-						cntr := 0;
+						state := 0;
 					end if;
-					xxx := 0;
+					len :=  0;
+					push := '0';
 				end if;
 				data := sll_bcd;
 			end if;
@@ -264,6 +273,8 @@ begin
 		port (
 			tab       : in  std_logic_vector; -- := x"0123456789abcde";
 			clk       : in  std_logic;
+			padd      : in  std_logic_vecotr;
+			left      : in  std_logic := '0';
 			neg       : in  std_logic := '0';
 			sign      : in  std_logic := '0';
 			bcd_frm   : in  std_logic;
@@ -277,6 +288,7 @@ begin
 		port map (
 			tab      => tab,
 			neg      => neg,
+			width    => ,
 			clk      => clk,
 			bcd_frm  => slr_frm,
 			bcd_irdy => slr_irdy,
@@ -295,8 +307,8 @@ begin
 		constant comma      : std_logic_vector(0 to bcd'length-1) := x"d";
 		constant dot        : std_logic_vector(0 to bcd'length-1) := x"e";
 
-		type xxx is array (0 to 3-1) of std_logic_vector(bcd'range);
-		signal fmt_bcd : xxx;
+		type bcd_vector is array (0 to 3-1) of std_logic_vector(bcd'range);
+		signal fmt_bcd : bcd_vector;
 		signal fmt_ena : std_logic_vector(xxx'range);
 
 	begin
@@ -382,7 +394,7 @@ begin
 			end if;
 		end process;
 		bcd_trdy <= bcd_frm;
-		code_frm <= '0' when fmt_bcd(0)=x"a" else fmt_ena(0);
+		code_frm <= '0' when fmt_bcd(0)=x"a" and left='1' else fmt_ena(0);
 		code     <= multiplex(tab, fmt_bcd(0), code'length);
 	end block;
 
