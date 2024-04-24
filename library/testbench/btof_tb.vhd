@@ -59,7 +59,7 @@ begin
 		end if;
 		if falling_edge(code_frm) then
 			report "======>  '" & string'(to_ascii(std_logic_vector(xxx))) & ''';
-			wait;
+			-- wait;
 		end if;
 		clk <= not clk after 0.5 ns;
 		wait on clk, code_frm;
@@ -71,7 +71,7 @@ begin
    		btof_req => btof_req,
    		btof_rdy => btof_rdy,
 		width    => x"5",
-		sht      => x"1",
+		sht      => x"0",
 		dec      => x"0",
 		exp      => b"000",
 		neg      => '1',

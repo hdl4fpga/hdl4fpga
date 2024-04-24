@@ -273,8 +273,8 @@ begin
 		port (
 			tab       : in  std_logic_vector; -- := x"0123456789abcde";
 			clk       : in  std_logic;
-			padd      : in  std_logic_vecotr;
-			left      : in  std_logic := '0';
+			padd      : in  std_logic_vector;
+			left      : in  std_logic := '1';
 			neg       : in  std_logic := '0';
 			sign      : in  std_logic := '0';
 			bcd_frm   : in  std_logic;
@@ -288,7 +288,7 @@ begin
 		port map (
 			tab      => tab,
 			neg      => neg,
-			width    => ,
+			padd     => x"a",
 			clk      => clk,
 			bcd_frm  => slr_frm,
 			bcd_irdy => slr_irdy,
@@ -309,8 +309,9 @@ begin
 
 		type bcd_vector is array (0 to 3-1) of std_logic_vector(bcd'range);
 		signal fmt_bcd : bcd_vector;
-		signal fmt_ena : std_logic_vector(xxx'range);
+		signal fmt_ena : std_logic_vector(bcd_vector'range);
 
+		signal xxx : natural range 0 to 2**padd'length-1;
 	begin
 
 		process (clk)
@@ -388,13 +389,46 @@ begin
 					fmt_ena(1) <= fmt_ena(2);
 					fmt_bcd(1) <= fmt_bcd(2);
 					fmt_ena(2) <= '0';
-					fmt_bcd(2) <= multiplex(bcd_tab, bcd, bcd'length);
+					fmt_bcd(2) <= x"a";
 					state := s_init;
 				end if;
 			end if;
 		end process;
+
+		process(bcd_frm, clk)
+			type states is (s_idle, s_padding);
+			variable state : states;
+		begin
+			if rising_edge(clk) then
+				case state is
+				when s_idle =>
+					if fmt_ena(1)='1' then
+						xxx <= xxx - 1;
+						state := s_padding;
+					else
+						xxx <= to_integer(unsigned(padd));
+					end if;
+				when s_padding =>
+					if fmt_ena(1)='1' then
+						if xxx/=0 then
+							xxx <= xxx - 1;
+						end if;
+					elsif xxx/=0 then
+						report "Pase";
+						xxx <= xxx - 1;
+					else
+						state := s_idle;
+					end if;
+				end case;
+			end if;
+		end process;
+
 		bcd_trdy <= bcd_frm;
-		code_frm <= '0' when fmt_bcd(0)=x"a" and left='1' else fmt_ena(0);
+		code_frm <= 
+			'0' when fmt_bcd(0)=x"a" and left='1' else 
+			'0' when xxx=0 else
+			'1' when xxx < unsigned(padd) else
+			fmt_ena(0);
 		code     <= multiplex(tab, fmt_bcd(0), code'length);
 	end block;
 
