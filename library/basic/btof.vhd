@@ -307,7 +307,7 @@ begin
 		constant comma      : std_logic_vector(0 to bcd'length-1) := x"d";
 		constant dot        : std_logic_vector(0 to bcd'length-1) := x"e";
 
-		type bcd_vector is array (0 to 3-1) of std_logic_vector(bcd'range);
+		type bcd_vector is array (0 to 4-1) of std_logic_vector(bcd'range);
 		signal fmt_bcd : bcd_vector;
 		signal fmt_ena : std_logic_vector(bcd_vector'range);
 
@@ -320,77 +320,89 @@ begin
 			variable state : states;
 		begin
 			if rising_edge(clk) then
-				fmt_ena(0) <= fmt_ena(1);
-				fmt_bcd(0) <= fmt_bcd(1);
+				fmt_ena(1) <= fmt_ena(2);
+				fmt_bcd(1) <= fmt_bcd(2);
 				if bcd_frm='1' then
 					case state is
 					when s_init =>
 						if bcd=x"0" then
-							fmt_ena(1) <= '0';
-							fmt_ena(2) <= '1';
-							fmt_bcd(2) <= multiplex(bcd_tab, blank, bcd'length);
+							fmt_ena(2) <= '0';
+							fmt_ena(3) <= '1';
+							fmt_bcd(3) <= multiplex(bcd_tab, blank, bcd'length);
 							state := s_blank;
 						elsif neg='1' then
-							fmt_ena(1) <= '0';
-							fmt_bcd(1) <= multiplex(bcd_tab, minus, bcd'length);
-							fmt_ena(2) <= '1';
-							fmt_bcd(2) <= multiplex(bcd_tab,   bcd,   bcd'length);
+							fmt_ena(2) <= '0';
+							fmt_ena(3) <= '1';
+							fmt_bcd(2) <= multiplex(bcd_tab, minus, bcd'length);
+							fmt_bcd(3) <= multiplex(bcd_tab,   bcd,   bcd'length);
 							state := s_blanked;
 						elsif sign='1' then
-							fmt_ena(1) <= '1';
-							fmt_bcd(1) <= multiplex(bcd_tab, plus, bcd'length);
 							fmt_ena(2) <= '1';
-							fmt_bcd(2) <= multiplex(bcd_tab, bcd,  bcd'length);
+							fmt_ena(3) <= '1';
+							fmt_bcd(2) <= multiplex(bcd_tab, plus, bcd'length);
+							fmt_bcd(3) <= multiplex(bcd_tab, bcd,  bcd'length);
 							state := s_blanked;
 						else
-							fmt_ena(1) <= '0';
-							fmt_bcd(1) <= multiplex(bcd_tab, bcd, bcd'length);
 							fmt_ena(2) <= '0';
+							fmt_ena(3) <= '0';
 							fmt_bcd(2) <= multiplex(bcd_tab, bcd, bcd'length);
+							fmt_bcd(3) <= multiplex(bcd_tab, bcd, bcd'length);
 							state := s_blanked;
 						end if;
 					when s_blank =>
 						if bcd=x"0" then
-							fmt_ena(1) <= fmt_ena(2);
-							fmt_bcd(1) <= fmt_bcd(2);
-							fmt_ena(2) <= '1';
-							fmt_bcd(2) <= multiplex(bcd_tab, blank, bcd'length);
+							fmt_ena(2) <= fmt_ena(3);
+							fmt_ena(3) <= '1';
+							fmt_bcd(2) <= fmt_bcd(3);
+							fmt_bcd(3) <= multiplex(bcd_tab, blank, bcd'length);
 						elsif neg='1' then
-							fmt_ena(1) <= '1';
-							fmt_bcd(1) <= multiplex(bcd_tab, minus, bcd'length);
 							fmt_ena(2) <= '1';
-							fmt_bcd(2) <= multiplex(bcd_tab,   bcd, bcd'length);
+							fmt_ena(3) <= '1';
+							if bcd=x"e" then
+								fmt_bcd(1) <= multiplex(bcd_tab, minus, bcd'length);
+								fmt_bcd(2) <= multiplex(bcd_tab, x"0", bcd'length);
+								fmt_bcd(3) <= multiplex(bcd_tab,   bcd, bcd'length);
+							else
+								fmt_bcd(2) <= multiplex(bcd_tab, minus, bcd'length);
+								fmt_bcd(3) <= multiplex(bcd_tab,   bcd, bcd'length);
+							end if;
 							state := s_blanked;
 						elsif sign='1' then
-							fmt_ena(1) <= '1';
-							fmt_bcd(1) <= multiplex(bcd_tab, plus, bcd'length);
 							fmt_ena(2) <= '1';
-							fmt_bcd(2) <= multiplex(bcd_tab,  bcd, bcd'length);
+							fmt_ena(3) <= '1';
+							if bcd=x"e" then
+								fmt_bcd(1) <= multiplex(bcd_tab, plus, bcd'length);
+								fmt_bcd(2) <= multiplex(bcd_tab, x"0", bcd'length);
+								fmt_bcd(3) <= multiplex(bcd_tab,  bcd, bcd'length);
+							else
+								fmt_bcd(2) <= multiplex(bcd_tab, plus, bcd'length);
+								fmt_bcd(3) <= multiplex(bcd_tab,  bcd, bcd'length);
+							end if;
 							state := s_blanked;
 						elsif bcd=x"e" then 
-							fmt_ena(1) <= '1';
-							fmt_bcd(1) <= multiplex(bcd_tab, x"0", bcd'length);
 							fmt_ena(2) <= '1';
-							fmt_bcd(2) <= multiplex(bcd_tab, bcd, bcd'length);
+							fmt_ena(3) <= '1';
+							fmt_bcd(2) <= multiplex(bcd_tab, x"0", bcd'length);
+							fmt_bcd(3) <= multiplex(bcd_tab, bcd, bcd'length);
 							state := s_blanked;
 						else 
-							fmt_ena(1) <= fmt_ena(2);
-							fmt_bcd(1) <= fmt_bcd(2);
-							fmt_ena(2) <= '1';
-							fmt_bcd(2) <= multiplex(bcd_tab, bcd, bcd'length);
+							fmt_ena(2) <= fmt_ena(3);
+							fmt_ena(3) <= '1';
+							fmt_bcd(2) <= fmt_bcd(3);
+							fmt_bcd(3) <= multiplex(bcd_tab, bcd, bcd'length);
 							state := s_blanked;
 						end if;
 					when s_blanked =>
-						fmt_ena(1) <= fmt_ena(2);
-						fmt_bcd(1) <= fmt_bcd(2);
-						fmt_ena(2) <= '1';
-						fmt_bcd(2) <= multiplex(bcd_tab, bcd, bcd'length);
+						fmt_ena(2) <= fmt_ena(3);
+						fmt_ena(3) <= '1';
+						fmt_bcd(2) <= fmt_bcd(3);
+						fmt_bcd(3) <= multiplex(bcd_tab, bcd, bcd'length);
 					end case;
 				else
-					fmt_ena(1) <= fmt_ena(2);
-					fmt_bcd(1) <= fmt_bcd(2);
-					fmt_ena(2) <= '0';
-					fmt_bcd(2) <= x"a";
+					fmt_ena(2) <= fmt_ena(3);
+					fmt_ena(3) <= '0';
+					fmt_bcd(2) <= fmt_bcd(3);
+					fmt_bcd(3) <= x"a";
 					state := s_init;
 				end if;
 			end if;
@@ -403,8 +415,8 @@ begin
 			if rising_edge(clk) then
 				case state is
 				when s_idle =>
-					if fmt_ena(1)='1' then
-						if fmt_bcd(1)/=x"a" then
+					if fmt_ena(2)='1' then
+						if fmt_bcd(2)/=x"a" then
 							frm <= '1';
 							xxx <= xxx - 1;
 						else
@@ -416,8 +428,8 @@ begin
 						xxx <= to_integer(unsigned(padd));
 					end if;
 				when s_padding =>
-					if fmt_ena(1)='1' then
-						if fmt_bcd(1)/=x"a" then
+					if fmt_ena(2)='1' then
+						if fmt_bcd(2)/=x"a" then
 							frm <= '1';
 							if xxx/=0 then
 								xxx <= xxx - 1;
@@ -437,8 +449,8 @@ begin
 		end process;
 
 		bcd_trdy <= bcd_frm;
-		code_frm <= '0' when fmt_bcd(0)=x"a" and left='1' else frm;
-		code     <= multiplex(tab, fmt_bcd(0), code'length);
+		code_frm <= '0' when fmt_bcd(1)=x"a" and left='1' else frm;
+		code     <= multiplex(tab, fmt_bcd(1), code'length);
 	end block;
 
 	process (code_frm, clk)
