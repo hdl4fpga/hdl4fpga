@@ -309,7 +309,7 @@ begin
 		signal fmt_bcd : bcd_vector;
 		signal fmt_ena : std_logic_vector(bcd_vector'range);
 
-		signal xxx : natural range 0 to 2**padd'length-1;
+		signal cntr : natural range 0 to 2**padd'length-1;
 		signal frm : std_logic;
 	begin
 
@@ -397,9 +397,17 @@ begin
 						fmt_bcd(3) <= multiplex(bcd_tab, bcd, bcd'length);
 					end case;
 				else
+					if fmt_ena(3)='1' then
+						if fmt_bcd(3)=x"a" then
+							fmt_bcd(2) <= multiplex(bcd_tab, x"0", bcd'length);
+						else
+							fmt_bcd(2) <= fmt_bcd(3);
+						end if;
+					else
+						fmt_bcd(2) <= fmt_bcd(3);
+					end if;
 					fmt_ena(2) <= fmt_ena(3);
 					fmt_ena(3) <= '0';
-					fmt_bcd(2) <= fmt_bcd(3);
 					fmt_bcd(3) <= x"a";
 					state := s_init;
 				end if;
@@ -417,37 +425,37 @@ begin
 						if left='1' then
 							if fmt_bcd(1)/=x"a" then
 								frm <= '1';
-								xxx <= xxx - 1;
+								cntr <= cntr - 1;
 							else
 								frm <= '0';
 							end if;
 						else
 							frm <= '1';
-							xxx <= xxx - 1;
+							cntr <= cntr - 1;
 						end if;
 						state := s_padding;
 					else
 						frm <= '0';
-						xxx <= to_integer(unsigned(padd));
+						cntr <= to_integer(unsigned(padd));
 					end if;
 				when s_padding =>
 					if fmt_ena(1)='1' then
 						if left='1' then
 							if fmt_bcd(1)/=x"a" then
 								frm <= '1';
-								if xxx/=0 then
-									xxx <= xxx - 1;
+								if cntr/=0 then
+									cntr <= cntr - 1;
 								end if;
 							else
 								frm <= '0';
 							end if;
 						else
 							frm <= '1';
-							xxx <= xxx - 1;
+							cntr <= cntr - 1;
 						end if;
-					elsif xxx/=0 then
+					elsif cntr/=0 then
 						frm <= '1';
-						xxx <= xxx - 1;
+						cntr <= cntr - 1;
 					else
 						frm <= '0';
 						state := s_idle;
