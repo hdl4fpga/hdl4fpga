@@ -19,6 +19,7 @@ entity btof is
 		exp      : in  std_logic_vector;
 		neg      : in  std_logic;
 		bin      : in  std_logic_vector;
+		left     : in  std_logic := '1';
 		width    : in  std_logic_vector := (0 to 0 => '0');
 		code_frm : buffer std_logic;
 		code     : out std_logic_vector);
@@ -53,7 +54,7 @@ begin
 	dbdbbl_req <= btof_req;
 	dbdbbl_seq_e : entity hdl4fpga.dbdbbl_seq
 	generic map (
-		bcd_width  => max_width-2,
+		bcd_width  => max_width-4,
 		bcd_digits => bcd_digits)
 	port map (
 		clk  => clk,
@@ -101,10 +102,10 @@ begin
 	begin
 
 		process (clk)
-			variable state : integer range -(max_width) to max_width;
+			variable state : integer range -(max_width) to max_width-1;
 			variable data  : std_logic_vector(push_data'range);
 			variable dv    : std_logic;
-			variable len   : natural range 0 to max_width;
+			variable len   : natural range 0 to max_width-1;
 			variable push  : std_logic;
 		begin
 			if rising_edge(clk) then
@@ -254,7 +255,7 @@ begin
 
 	dbdbblsrl_ser_e : entity hdl4fpga.dbdbblsrl_ser
 	generic map (
-		bcd_width  => max_width-2,
+		bcd_width  => max_width-4,
 		bcd_digits => bcd_digits)
 	port map (
 		clk  => clk,
@@ -266,15 +267,11 @@ begin
 		bcd  => slr_bcd);
 
 	align_b : block
-		generic (
-			max_width : natural);
-		generic map (
-			max_width => max_width);
 		port (
 			tab       : in  std_logic_vector; -- := x"0123456789abcde";
 			clk       : in  std_logic;
 			padd      : in  std_logic_vector;
-			left      : in  std_logic := '0';
+			left      : in  std_logic;
 			neg       : in  std_logic := '0';
 			sign      : in  std_logic := '0';
 			bcd_frm   : in  std_logic;
@@ -288,6 +285,7 @@ begin
 		port map (
 			tab      => tab,
 			neg      => neg,
+			left     => left,
 			padd     => width,
 			clk      => clk,
 			bcd_frm  => slr_frm,
@@ -415,12 +413,17 @@ begin
 			if rising_edge(clk) then
 				case state is
 				when s_idle =>
-					if fmt_ena(2)='1' then
-						if fmt_bcd(2)/=x"a" then
+					if fmt_ena(1)='1' then
+						if left='1' then
+							if fmt_bcd(1)/=x"a" then
+								frm <= '1';
+								xxx <= xxx - 1;
+							else
+								frm <= '0';
+							end if;
+						else
 							frm <= '1';
 							xxx <= xxx - 1;
-						else
-							frm <= '0';
 						end if;
 						state := s_padding;
 					else
@@ -428,14 +431,19 @@ begin
 						xxx <= to_integer(unsigned(padd));
 					end if;
 				when s_padding =>
-					if fmt_ena(2)='1' then
-						if fmt_bcd(2)/=x"a" then
-							frm <= '1';
-							if xxx/=0 then
-								xxx <= xxx - 1;
+					if fmt_ena(1)='1' then
+						if left='1' then
+							if fmt_bcd(1)/=x"a" then
+								frm <= '1';
+								if xxx/=0 then
+									xxx <= xxx - 1;
+								end if;
+							else
+								frm <= '0';
 							end if;
 						else
-							frm <= '0';
+							frm <= '1';
+							xxx <= xxx - 1;
 						end if;
 					elsif xxx/=0 then
 						frm <= '1';
@@ -445,12 +453,15 @@ begin
 						state := s_idle;
 					end if;
 				end case;
+
+				fmt_ena(0) <= fmt_ena(1);
+				fmt_bcd(0) <= fmt_bcd(1);
 			end if;
 		end process;
 
 		bcd_trdy <= bcd_frm;
-		code_frm <= '0' when fmt_bcd(1)=x"a" and left='1' else frm;
-		code     <= multiplex(tab, fmt_bcd(1), code'length);
+		code_frm <= frm;
+		code     <= multiplex(tab, fmt_bcd(0), code'length);
 	end block;
 
 	process (code_frm, clk)
