@@ -20,7 +20,7 @@ entity btof is
 		neg      : in  std_logic;
 		bin      : in  std_logic_vector;
 		lft     : in  std_logic := '1';
-		width    : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
+		width    : in  std_logic_vector; -- := std_logic_vector'(0 to 0 => '0');
 		code_frm : buffer std_logic;
 		code     : out std_logic_vector);
 end;

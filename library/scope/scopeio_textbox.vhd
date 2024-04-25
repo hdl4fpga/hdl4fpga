@@ -290,6 +290,7 @@ begin
 				btof_req => mul_rdy,
 				btof_rdy => open,
 				-- dec      => dec,
+				width    => x"8",
 				dec      => "00",
 				exp      => b"000",
 				neg      => vt_offset(vt_offset'left),

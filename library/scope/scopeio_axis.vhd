@@ -174,6 +174,7 @@ begin
 			clk      => clk,
 			btof_req => btof_req,
 			btof_rdy => btof_rdy,
+			width    => x"8",
 			dec      => b"0",
 			exp      => b"000",
 			neg      => bin(bin'left),
