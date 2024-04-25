@@ -70,7 +70,7 @@ begin
    		clk      => clk,
    		btof_req => btof_req,
    		btof_rdy => btof_rdy,
-		width    => x"5",
+		width    => x"7",
 		sht      => x"0",
 		dec      => x"0",
 		exp      => b"000",

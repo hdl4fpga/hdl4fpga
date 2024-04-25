@@ -274,7 +274,7 @@ begin
 			tab       : in  std_logic_vector; -- := x"0123456789abcde";
 			clk       : in  std_logic;
 			padd      : in  std_logic_vector;
-			left      : in  std_logic := '1';
+			left      : in  std_logic := '0';
 			neg       : in  std_logic := '0';
 			sign      : in  std_logic := '0';
 			bcd_frm   : in  std_logic;
@@ -288,7 +288,7 @@ begin
 		port map (
 			tab      => tab,
 			neg      => neg,
-			padd     => x"a",
+			padd     => width,
 			clk      => clk,
 			bcd_frm  => slr_frm,
 			bcd_irdy => slr_irdy,
@@ -312,6 +312,7 @@ begin
 		signal fmt_ena : std_logic_vector(bcd_vector'range);
 
 		signal xxx : natural range 0 to 2**padd'length-1;
+		signal frm : std_logic;
 	begin
 
 		process (clk)
@@ -403,20 +404,32 @@ begin
 				case state is
 				when s_idle =>
 					if fmt_ena(1)='1' then
-						xxx <= xxx - 1;
+						if fmt_bcd(1)/=x"a" then
+							frm <= '1';
+							xxx <= xxx - 1;
+						else
+							frm <= '0';
+						end if;
 						state := s_padding;
 					else
+						frm <= '0';
 						xxx <= to_integer(unsigned(padd));
 					end if;
 				when s_padding =>
 					if fmt_ena(1)='1' then
-						if xxx/=0 then
-							xxx <= xxx - 1;
+						if fmt_bcd(1)/=x"a" then
+							frm <= '1';
+							if xxx/=0 then
+								xxx <= xxx - 1;
+							end if;
+						else
+							frm <= '0';
 						end if;
 					elsif xxx/=0 then
-						report "Pase";
+						frm <= '1';
 						xxx <= xxx - 1;
 					else
+						frm <= '0';
 						state := s_idle;
 					end if;
 				end case;
@@ -424,11 +437,7 @@ begin
 		end process;
 
 		bcd_trdy <= bcd_frm;
-		code_frm <= 
-			'0' when fmt_bcd(0)=x"a" and left='1' else 
-			'0' when xxx=0 else
-			'1' when xxx < unsigned(padd) else
-			fmt_ena(0);
+		code_frm <= '0' when fmt_bcd(0)=x"a" and left='1' else frm;
 		code     <= multiplex(tab, fmt_bcd(0), code'length);
 	end block;
 
