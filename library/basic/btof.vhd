@@ -14,13 +14,13 @@ entity btof is
 		clk      : in  std_logic;
 		btof_req : in  std_logic;
 		btof_rdy : out std_logic;
-		sht      : in  std_logic_vector := (0 to 0 => '0');
+		sht      : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
 		dec      : in  std_logic_vector;
 		exp      : in  std_logic_vector;
 		neg      : in  std_logic;
 		bin      : in  std_logic_vector;
-		left     : in  std_logic := '1';
-		width    : in  std_logic_vector := (0 to 0 => '0');
+		lft     : in  std_logic := '1';
+		width    : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
 		code_frm : buffer std_logic;
 		code     : out std_logic_vector);
 end;
@@ -192,9 +192,6 @@ begin
 					end if;
 					data := sll_bcd;
 				else
-					if signed(dec) > signed(sht) then
-						-- report ">>>>>> SUMO + 1 <<<<<<<<";
-					end if;
 					dv        := '0';
 					sll_trdy  <= '0';
 					push_ena  <= '0';
@@ -261,31 +258,29 @@ begin
 		clk  => clk,
 		frm  => slr_frm,
 		irdy => slr_irdy,
-		-- trdy => slr_trdy,
 		cnt  => exp,
 		bcd_ini => slr_ini,
 		bcd  => slr_bcd);
 
 	align_b : block
 		port (
-			tab       : in  std_logic_vector; -- := x"0123456789abcde";
+			tab       : in  std_logic_vector; 
 			clk       : in  std_logic;
 			padd      : in  std_logic_vector;
-			left      : in  std_logic;
-			neg       : in  std_logic := '0';
-			sign      : in  std_logic := '0';
+			lft       : in  std_logic;
+			neg       : in  std_logic := std_logic'('0'); -- Lattice Diamond complains if no quialifier
+			sgn       : in  std_logic := std_logic'('0');
 			bcd_frm   : in  std_logic;
-			bcd_irdy  : in  std_logic := '1';
-			bcd_trdy  : out std_logic := '1';
+			bcd_irdy  : in  std_logic;
+			bcd_trdy  : out std_logic;
 			bcd       : in  std_logic_vector(0 to 4-1);
 			code_frm  : buffer std_logic;
-			code_irdy : buffer std_logic;
-			code_trdy : in  std_logic := '1';
+			code_trdy : in  std_logic := std_logic'('1');
 			code      : out std_logic_vector);
 		port map (
 			tab      => tab,
 			neg      => neg,
-			left     => left,
+			lft     => lft,
 			padd     => width,
 			clk      => clk,
 			bcd_frm  => slr_frm,
@@ -332,9 +327,9 @@ begin
 							fmt_ena(2) <= '0';
 							fmt_ena(3) <= '1';
 							fmt_bcd(2) <= multiplex(bcd_tab, minus, bcd'length);
-							fmt_bcd(3) <= multiplex(bcd_tab,   bcd,   bcd'length);
+							fmt_bcd(3) <= multiplex(bcd_tab, bcd,   bcd'length);
 							state := s_blanked;
-						elsif sign='1' then
+						elsif sgn='1' then
 							fmt_ena(2) <= '1';
 							fmt_ena(3) <= '1';
 							fmt_bcd(2) <= multiplex(bcd_tab, plus, bcd'length);
@@ -358,19 +353,19 @@ begin
 							fmt_ena(3) <= '1';
 							if bcd=x"e" then
 								fmt_bcd(1) <= multiplex(bcd_tab, minus, bcd'length);
-								fmt_bcd(2) <= multiplex(bcd_tab, x"0", bcd'length);
+								fmt_bcd(2) <= multiplex(bcd_tab,  zero, bcd'length);
 								fmt_bcd(3) <= multiplex(bcd_tab,   bcd, bcd'length);
 							else
 								fmt_bcd(2) <= multiplex(bcd_tab, minus, bcd'length);
 								fmt_bcd(3) <= multiplex(bcd_tab,   bcd, bcd'length);
 							end if;
 							state := s_blanked;
-						elsif sign='1' then
+						elsif sgn='1' then
 							fmt_ena(2) <= '1';
 							fmt_ena(3) <= '1';
 							if bcd=x"e" then
 								fmt_bcd(1) <= multiplex(bcd_tab, plus, bcd'length);
-								fmt_bcd(2) <= multiplex(bcd_tab, x"0", bcd'length);
+								fmt_bcd(2) <= multiplex(bcd_tab, zero, bcd'length);
 								fmt_bcd(3) <= multiplex(bcd_tab,  bcd, bcd'length);
 							else
 								fmt_bcd(2) <= multiplex(bcd_tab, plus, bcd'length);
@@ -380,8 +375,8 @@ begin
 						elsif bcd=x"e" then 
 							fmt_ena(2) <= '1';
 							fmt_ena(3) <= '1';
-							fmt_bcd(2) <= multiplex(bcd_tab, x"0", bcd'length);
-							fmt_bcd(3) <= multiplex(bcd_tab, bcd, bcd'length);
+							fmt_bcd(2) <= multiplex(bcd_tab, zero, bcd'length);
+							fmt_bcd(3) <= multiplex(bcd_tab, bcd,  bcd'length);
 							state := s_blanked;
 						else 
 							fmt_ena(2) <= fmt_ena(3);
@@ -398,8 +393,8 @@ begin
 					end case;
 				else
 					if fmt_ena(3)='1' then
-						if fmt_bcd(3)=x"a" then
-							fmt_bcd(2) <= multiplex(bcd_tab, x"0", bcd'length);
+						if fmt_bcd(3)=blank then
+							fmt_bcd(2) <= multiplex(bcd_tab, zero, bcd'length);
 						else
 							fmt_bcd(2) <= fmt_bcd(3);
 						end if;
@@ -408,7 +403,7 @@ begin
 					end if;
 					fmt_ena(2) <= fmt_ena(3);
 					fmt_ena(3) <= '0';
-					fmt_bcd(3) <= x"a";
+					fmt_bcd(3) <= blank;
 					state := s_init;
 				end if;
 			end if;
@@ -422,8 +417,8 @@ begin
 				case state is
 				when s_idle =>
 					if fmt_ena(1)='1' then
-						if left='1' then
-							if fmt_bcd(1)/=x"a" then
+						if lft='1' then
+							if fmt_bcd(1)/=blank then
 								frm <= '1';
 								cntr <= cntr - 1;
 							else
@@ -440,8 +435,8 @@ begin
 					end if;
 				when s_padding =>
 					if fmt_ena(1)='1' then
-						if left='1' then
-							if fmt_bcd(1)/=x"a" then
+						if lft='1' then
+							if fmt_bcd(1)/=blank then
 								frm <= '1';
 								if cntr/=0 then
 									cntr <= cntr - 1;
