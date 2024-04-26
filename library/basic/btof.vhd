@@ -14,12 +14,12 @@ entity btof is
 		clk      : in  std_logic;
 		btof_req : in  std_logic;
 		btof_rdy : out std_logic;
-		sht      : in  std_logic_vector := std_logic_vector'(0 to 0 => '0');
+		sht      : in  std_logic_vector; -- := std_logic_vector'(0 to 0 => '0');
 		dec      : in  std_logic_vector;
 		exp      : in  std_logic_vector;
 		neg      : in  std_logic;
 		bin      : in  std_logic_vector;
-		lft     : in  std_logic := '1';
+		left     : in  std_logic := '1';
 		width    : in  std_logic_vector; -- := std_logic_vector'(0 to 0 => '0');
 		code_frm : buffer std_logic;
 		code     : out std_logic_vector);
@@ -267,9 +267,9 @@ begin
 			tab       : in  std_logic_vector; 
 			clk       : in  std_logic;
 			padd      : in  std_logic_vector;
-			lft       : in  std_logic;
+			left      : in  std_logic;
 			neg       : in  std_logic := std_logic'('0'); -- Lattice Diamond complains if no quialifier
-			sgn       : in  std_logic := std_logic'('0');
+			sign      : in  std_logic := std_logic'('0');
 			bcd_frm   : in  std_logic;
 			bcd_irdy  : in  std_logic;
 			bcd_trdy  : out std_logic;
@@ -280,7 +280,7 @@ begin
 		port map (
 			tab      => tab,
 			neg      => neg,
-			lft     => lft,
+			left     => left,
 			padd     => width,
 			clk      => clk,
 			bcd_frm  => slr_frm,
@@ -329,7 +329,7 @@ begin
 							fmt_bcd(2) <= multiplex(bcd_tab, minus, bcd'length);
 							fmt_bcd(3) <= multiplex(bcd_tab, bcd,   bcd'length);
 							state := s_blanked;
-						elsif sgn='1' then
+						elsif sign='1' then
 							fmt_ena(2) <= '1';
 							fmt_ena(3) <= '1';
 							fmt_bcd(2) <= multiplex(bcd_tab, plus, bcd'length);
@@ -360,7 +360,7 @@ begin
 								fmt_bcd(3) <= multiplex(bcd_tab,   bcd, bcd'length);
 							end if;
 							state := s_blanked;
-						elsif sgn='1' then
+						elsif sign='1' then
 							fmt_ena(2) <= '1';
 							fmt_ena(3) <= '1';
 							if bcd=x"e" then
@@ -417,7 +417,7 @@ begin
 				case state is
 				when s_idle =>
 					if fmt_ena(1)='1' then
-						if lft='1' then
+						if left='1' then
 							if fmt_bcd(1)/=blank then
 								frm <= '1';
 								cntr <= cntr - 1;
@@ -435,7 +435,7 @@ begin
 					end if;
 				when s_padding =>
 					if fmt_ena(1)='1' then
-						if lft='1' then
+						if left='1' then
 							if fmt_bcd(1)/=blank then
 								frm <= '1';
 								if cntr/=0 then

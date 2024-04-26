@@ -112,9 +112,12 @@ begin
 		signal vt_on      : std_logic;
 		signal vt_don     : std_logic;
 
-		signal hz_taddr : unsigned(unsigned_num_bits(num_of_segments*(hz_width-1))-1 downto hzstep_bits);
-		signal vt_taddr : unsigned(unsigned_num_bits((vt_height-1))+vttick_bits-1 downto division_bits);
+		signal hz_taddr   : unsigned(unsigned_num_bits(num_of_segments*(hz_width-1))-1 downto hzstep_bits);
+		signal vt_taddr   : unsigned(unsigned_num_bits((vt_height-1))+vttick_bits-1 downto division_bits);
 
+		signal left       : std_logic;
+		signal dec        : std_logic_vector(0 to 2-1);
+		signal sht        : std_logic_vector(0 to 2-1);
 	begin
 
 		process (code_frm, clk)
@@ -148,6 +151,9 @@ begin
 					tick     := 0;
 					tick_no  := 2**vt_taddr'length/2**vttick_bits-1;
 					tick_req <= not to_stdulogic(to_bit(tick_rdy));
+					left     <= '0';
+					dec      <= "01";
+					sht      <= "11";
 				elsif hz_dv='1' then
 					hz_sel   <= '1';
 					vt_sel   <= '0';
@@ -155,12 +161,18 @@ begin
 					tick     := to_integer(mul(shift_right(signed(hz_offset), hztick_bits+font_bits), 5));
 					tick_no  := 2**hz_taddr'length/2**hzstep_bits-1;
 					tick_req <= not to_stdulogic(to_bit(tick_rdy));
+					left     <= '1';
+					dec      <= "00";
+					sht      <= "00";
 				else
 					hz_sel   <= '0';
 					vt_sel   <= '0';
 					addr     := 0;
 					tick     := 0;
 					tick_no  := -1;
+					left     <= '-';
+					dec      <= (others => '-');
+					sht      <= (others => '-');
 				end if;
 				hz_taddr <= to_unsigned(addr, hz_taddr'length);
 				vt_taddr <= to_unsigned(addr, vt_taddr'length);
@@ -174,8 +186,10 @@ begin
 			clk      => clk,
 			btof_req => btof_req,
 			btof_rdy => btof_rdy,
+			left     => left,
 			width    => x"8",
-			dec      => b"0",
+			sht      => sht,
+			dec      => dec,
 			exp      => b"000",
 			neg      => bin(bin'left),
 			bin      => bin(bin'left+1 to bin'right),

@@ -71,7 +71,7 @@ begin
    		btof_req => btof_req,
    		btof_rdy => btof_rdy,
 		width    => x"8",
-		lft     => '0',
+		left     => '0',
 		sht      => x"0",
 		dec      => x"0",
 		exp      => b"000",
