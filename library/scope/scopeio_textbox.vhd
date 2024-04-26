@@ -108,7 +108,7 @@ entity scopeio_textbox is
 	constant mants : natural_vector := get_mant1245(vt_unit);
 	constant mant_length : natural  := unsigned_num_bits(max(mants));
 	constant unit : natural_vector := get_unit1245(vt_unit);
-	-- constant exps  : natural_vector := get_exp1245(vt_unit);
+	-- constant exps : natural_vector := get_exp1245(vt_unit);
 	-- constant exp_length  : natural  := unsigned_num_bits(max(exps));
 end;
 
@@ -252,7 +252,7 @@ begin
 
 			signal code_frm : std_logic;
 			signal code     : std_logic_vector(0 to 8-1);
-			-- signal dec      : std_logic_vector(0 to exp_length-1);
+			signal dec      : std_logic_vector(2-1 downto 0);
 
 		begin
 
@@ -271,7 +271,7 @@ begin
 				-signed(vt_offset) when vt_offset(vt_offset'left)='1' else
 				 signed(vt_offset);
 
-			scale <= std_logic_vector(to_unsigned(mants(to_integer(unsigned(vt_scale))), scale'length));
+			scale <= b"0_0001"; --std_logic_vector(to_unsigned(mants(to_integer(unsigned(vt_scale))), scale'length));
 			mul_ser_e : entity hdl4fpga.mul_ser
 			generic map (
 				lsb => true)
@@ -283,16 +283,15 @@ begin
 				b   => std_logic_vector(positive),
 				s   => bin);
 
-			-- dec <= std_logic_vector(to_unsigned(exps(to_integer(unsigned(vt_scale))), dec'length));
+			dec <= vt_scale(2-1 downto 0);
 			btof_e : entity hdl4fpga.btof
 			port map (
 				clk      => rgtr_clk,
 				btof_req => mul_rdy,
 				btof_rdy => open,
 				sht      => "0",
-				-- dec      => dec,
+				dec      => dec,
 				width    => x"8",
-				dec      => "00",
 				exp      => b"000",
 				neg      => vt_offset(vt_offset'left),
 				bin      => bin,
