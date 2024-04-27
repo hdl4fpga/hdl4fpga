@@ -38,7 +38,7 @@ end;
 architecture def of main is
 begin
 	process 
-		constant c : string := normalize(0.99);
+		constant c : string := normalize(0.001);
 		variable x : string(c'range);
 	begin
 		-- report "VALUE : " & ''' & get_value("[hola,mundo:[kkkk:12345,dddd:[67890]],hello,world].kkk", "[mundo].dddd") & ''';

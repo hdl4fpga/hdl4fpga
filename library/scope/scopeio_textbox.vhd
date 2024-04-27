@@ -289,7 +289,7 @@ begin
 				clk      => rgtr_clk,
 				btof_req => mul_rdy,
 				btof_rdy => open,
-				sht      => "0",
+				sht      => dec,
 				dec      => dec,
 				width    => x"8",
 				exp      => b"000",

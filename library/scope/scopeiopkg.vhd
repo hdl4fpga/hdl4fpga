@@ -428,13 +428,17 @@ package body scopeiopkg is
 			end if;
 		end loop;
 
+		report CR &
+			"exp10 => " & natural'image(exp10) & CR &
+			"pow10 => " & real'image(pow10);
 		dec10 := 0;
 		pow10 := 1.0;
 		while (unit/pow10) < 1.0 loop
 			dec10 := dec10 + 1;
 			pow10 := pow10 * tenth;
 		end loop;
-		report "dec10 " & natural'image(dec10) & " exp10 " & natural'image(exp10);
+		report CR &
+			"dec10 => " & natural'image(dec10);
 
 		case dec10 mod 3 is
 		when 2 =>
