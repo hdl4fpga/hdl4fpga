@@ -21,8 +21,6 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -38,9 +36,10 @@ end;
 architecture def of main is
 begin
 	process 
-		constant c : string := normalize(0.001);
+		constant c : string := normalize(0.0025);
 		variable x : string(c'range);
 	begin
+			-- "value => " & (jso(normalize(*coefs(i)))**".norm");
 		-- report "VALUE : " & ''' & get_value("[hola,mundo:[kkkk:12345,dddd:[67890]],hello,world].kkk", "[mundo].dddd") & ''';
 		wait;
 	end process;

@@ -413,14 +413,14 @@ package body scopeiopkg is
 			report "unit <= 0.0"
 			severity failure;
 
-		exp10 := 0;
+		dec10 := 0;
 		pow10 := 1.0;
 		norm  := unit;
 		loop
 			if abs(norm-round(norm)) > 4.0e-9 then
 				-- report "norm " & real'image(norm) & " diff " & real'image(abs(norm-round(norm)));
 				-- report "norm " & real'image(norm) & " diff " & real'image(pow10);
-				exp10 := exp10 + 1;
+				dec10 := dec10 + 1;
 				pow10 := pow10 * tenth;
 				norm  := unit  / pow10;
 			else
@@ -428,25 +428,26 @@ package body scopeiopkg is
 			end if;
 		end loop;
 
-		report CR &
-			"exp10 => " & natural'image(exp10) & CR &
-			"pow10 => " & real'image(pow10);
-		dec10 := 0;
+		report
+			CR & "pow10 => " & real'image(pow10);
+
+		exp10 := 0;
 		pow10 := 1.0;
 		while (unit/pow10) < 1.0 loop
-			dec10 := dec10 + 1;
+			exp10 := exp10 + 1;
 			pow10 := pow10 * tenth;
 		end loop;
-		report CR &
-			"dec10 => " & natural'image(dec10);
-
-		case dec10 mod 3 is
-		when 2 =>
-		when 1 =>
-		when others =>
-		end case;
-			
 		rnd := natural(round(norm)); --Lattice Diamond fix
+		dec10 := ((3-(exp10 mod 3) mod 3));
+		dec10 := dec10;
+		report CR &
+			-- "dec10 => " & natural'image(dec10);
+			-- "dec10 => " & natural'image((3-(exp10 mod 3) mod 3));
+			"norm  => " & natural'image(rnd) & CR &
+			"exp10 => " & natural'image(exp10) & CR &
+			"exp10 => " & natural'image(((3-(exp10 mod 3)) mod 3)) & CR &
+			"exp10 => " & natural'image(((3-(exp10 mod 3)) mod 3)+exp10);
+
 		return "{norm:" & natural'image(rnd) & ",exp:" & integer'image(exp10)  & ",point:" & integer'image(dec10) & "}";
 	end;
 
