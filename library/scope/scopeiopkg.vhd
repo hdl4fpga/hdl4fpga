@@ -403,11 +403,13 @@ package body scopeiopkg is
 		constant unit : real)
 		return string is
 		constant tenth : real := 1.0/10.0;
-		variable exp10 : integer;
-		variable dec10 : integer;
-		variable norm  : real;
-		variable rnd   : natural; --Lattice Diamond fix
-		variable pow10 : real;
+		constant scales : string := "munp";
+		variable scale  : integer;
+		variable exp10  : integer;
+		variable dec10  : integer;
+		variable pow10  : real;
+		variable norm   : real;
+		variable rnd    : natural; --Lattice Diamond fix
 	begin
 		assert unit > 0.0 
 			report "unit <= 0.0"
@@ -418,8 +420,6 @@ package body scopeiopkg is
 		norm  := unit;
 		loop
 			if abs(norm-round(norm)) > 4.0e-9 then
-				-- report "norm " & real'image(norm) & " diff " & real'image(abs(norm-round(norm)));
-				-- report "norm " & real'image(norm) & " diff " & real'image(pow10);
 				dec10 := dec10 + 1;
 				pow10 := pow10 * tenth;
 				norm  := unit  / pow10;
@@ -428,25 +428,25 @@ package body scopeiopkg is
 			end if;
 		end loop;
 
-		report
-			CR & "pow10 => " & real'image(pow10);
-
 		exp10 := 0;
 		pow10 := 1.0;
 		while (unit/pow10) < 1.0 loop
 			exp10 := exp10 + 1;
 			pow10 := pow10 * tenth;
 		end loop;
+
 		rnd := natural(round(norm)); --Lattice Diamond fix
-		dec10 := ((3-(exp10 mod 3) mod 3));
-		dec10 := dec10;
+
+		scale := ((3-(exp10 mod 3)) mod 3)+exp10;
 		report CR &
-			-- "dec10 => " & natural'image(dec10);
-			-- "dec10 => " & natural'image((3-(exp10 mod 3) mod 3));
-			"norm  => " & natural'image(rnd) & CR &
+			"norm  => " & natural'image(rnd)   & CR &
 			"exp10 => " & natural'image(exp10) & CR &
-			"exp10 => " & natural'image(((3-(exp10 mod 3)) mod 3)) & CR &
-			"exp10 => " & natural'image(((3-(exp10 mod 3)) mod 3)+exp10);
+			"dec10 => " & natural'image(dec10) & CR &
+			"scale => " & natural'image(scale) & CR &
+			"unit  => " & scales((((3-(exp10 mod 3)) mod 3)+exp10)/3) & CR &
+			"shr   => " & integer'image(-2+dec10-exp10) & CR &
+			"pnt   => " & integer'image(dec10-scale);
+			-- "exp10 => " & natural'image(((3-(exp10 mod 3)) mod 3)+exp10);
 
 		return "{norm:" & natural'image(rnd) & ",exp:" & integer'image(exp10)  & ",point:" & integer'image(dec10) & "}";
 	end;
