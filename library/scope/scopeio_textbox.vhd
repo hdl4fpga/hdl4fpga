@@ -105,11 +105,10 @@ entity scopeio_textbox is
 		return retval;
 	end;
 
-	constant mants : natural_vector := get_mant1245(vt_unit);
-	constant mant_length : natural  := unsigned_num_bits(max(mants));
-	constant unit : natural_vector := get_unit1245(vt_unit);
-	-- constant exps : natural_vector := get_exp1245(vt_unit);
-	-- constant exp_length  : natural  := unsigned_num_bits(max(exps));
+	constant norms : natural_vector := get_norm1245(vt_unit);
+	constant norm_length : natural  := unsigned_num_bits(max(norms));
+	constant shrs : integer_vector  := get_shr1245(vt_unit);
+	constant pnts : integer_vector  := get_pnt1245(vt_unit);
 end;
 
 architecture def of scopeio_textbox is
@@ -168,7 +167,7 @@ begin
 		constant bcd_length   : natural := 4;
 		constant bcd_digits   : natural := 1;
 		signal bcd            : std_logic_vector(0 to bcd_digits*bcd_length-1);
-		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+mant_length+bin_digits-1)/bin_digits)-1);
+		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+norm_length+bin_digits-1)/bin_digits)-1);
 	begin
 
 		myip4_e : entity hdl4fpga.scopeio_rgtrmyip
@@ -248,11 +247,12 @@ begin
 			signal dbdbbl_req  : std_logic;
 			signal dbdbbl_rdy  : std_logic;
 
-			signal scale : std_logic_vector(0 to mant_length-1);
+			signal scale : std_logic_vector(0 to norm_length-1);
 
 			signal code_frm : std_logic;
 			signal code     : std_logic_vector(0 to 8-1);
-			signal dec      : std_logic_vector(2-1 downto 0);
+			signal shr      : std_logic_vector(2-1 downto 0);
+			signal pnt      : std_logic_vector(2-1 downto 0);
 
 		begin
 
@@ -271,7 +271,7 @@ begin
 				-signed(vt_offset) when vt_offset(vt_offset'left)='1' else
 				 signed(vt_offset);
 
-			scale <= b"0_0001"; --std_logic_vector(to_unsigned(mants(to_integer(unsigned(vt_scale))), scale'length));
+			scale <= b"0_0001"; --std_logic_vector(to_unsigned(norms(to_integer(unsigned(vt_scale))), scale'length));
 			mul_ser_e : entity hdl4fpga.mul_ser
 			generic map (
 				lsb => true)
@@ -283,14 +283,15 @@ begin
 				b   => std_logic_vector(positive),
 				s   => bin);
 
-			dec <= vt_scale(2-1 downto 0);
+			shr <= std_logic_vector(to_signed(shrs(to_integer(unsigned(scale))), shr'length));
+			pnt <= std_logic_vector(to_signed(pnts(to_integer(unsigned(scale))), pnt'length));
 			btof_e : entity hdl4fpga.btof
 			port map (
 				clk      => rgtr_clk,
 				btof_req => mul_rdy,
 				btof_rdy => open,
-				sht      => dec,
-				dec      => "0",
+				sht      => shr,
+				dec      => pnt,
 				width    => x"8",
 				exp      => b"101",
 				neg      => vt_offset(vt_offset'left),

@@ -383,17 +383,17 @@ package scopeiopkg is
 		constant unit : real)
 		return string;
 
-	function get_mant1245 (
+	function get_norm1245 (
 		constant unit : real)
 		return natural_vector;
 
-	function get_unit1245 (
+	function get_shr1245 (
 		constant unit : real)
-		return natural_vector;
+		return integer_vector;
 
-	function get_point1245 (
+	function get_pnt1245 (
 		constant unit : real)
-		return natural_vector;
+		return integer_vector;
 
 end;
 
@@ -457,7 +457,7 @@ package body scopeiopkg is
 			"  pnt:"  & integer'image(dec10) & "}";
 	end;
 
-	function get_mant1245 (
+	function get_norm1245 (
 		constant unit   : real)
 		return natural_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
@@ -470,39 +470,32 @@ package body scopeiopkg is
 		return retval;
 	end;
 
-	function get_unit1245 (
+	function get_shr1245 (
 		constant unit   : real)
-		return natural_vector is
+		return integer_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
-		variable retval : natural_vector(0 to 4-1);
+		variable retval : integer_vector(0 to 4*4-1);
 	begin
 
-		report "===== > " & real'image(unit);
 		for i in coefs'range loop
-			retval(i) := (jso(normalize(unit*coefs(i)))**".exp");
-			case (3-retval(i) mod 3) mod 3 is
-			when 1 =>
-				-- report "***** " & natural'image(i) & " ------" & natural'image(retval(i));
-			when 2 =>
-				-- report "***** " & natural'image(i) & " ------" & natural'image(retval(i));
-			when others =>
-				-- report "***** " & natural'image(i) & " ------" & natural'image(retval(i));
-			end case;
+			for j in 0 to 4-1 loop
+				retval(4*j+i) := (jso(normalize(10.0**j*unit*coefs(i)))**".exp");
+			end loop;
 		end loop;
 		return retval;
 	end;
 
-	function get_point1245 (
+	function get_pnt1245 (
 		constant unit   : real)
-		return natural_vector is
+		return integer_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
-		variable retval : natural_vector(0 to 4-1);
+		variable retval : integer_vector(0 to 4-1);
 	begin
 
 		for i in coefs'range loop
-			retval(i) := (jso(normalize(unit*coefs(i)))**".exp");
-			-- case retval(i)
-			-- report "********** " & natural'image(retval(i) mod 3);
+			for j in 0 to 4-1 loop
+				retval(i) := (jso(normalize(10.0**j*unit*coefs(i)))**".pnt");
+			end loop;
 		end loop;
 		return retval;
 	end;
