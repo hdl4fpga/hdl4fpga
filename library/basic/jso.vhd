@@ -39,7 +39,7 @@ package jso is
 
 	function resolve (
 		constant jso : string)
-		return natural;
+		return integer;
 
 	function resolve (
 		constant jso : string)
@@ -158,10 +158,12 @@ package body jso is
 	function to_natural (
 		constant value : string;
 		constant base  : natural) 
-		return natural is
-		variable retval : natural;
+		return integer is
+		variable sign   : integer;
+		variable retval : integer;
 	begin
 		retval := 0;
+		sign   := 1;
 		for i in value'range loop
 			if value(i)/='_' then
 				retval := base*retval;
@@ -171,6 +173,14 @@ package body jso is
 					retval := (character'pos(value(i))-character'pos('a')) + 10 + retval;
 				elsif character'pos(value(i)) >= character'pos('A') and (character'pos(value(i))-character'pos('A')) < (base-10) then
 					retval := (character'pos(value(i))-character'pos('A')) + 10 + retval;
+				elsif i=value'left then
+					if value(i)='-' then
+						sign := -1;
+					else
+						assert false
+							report "Wrong number " & character'image(value(i)) & " " & natural'image(base)
+							severity failure;
+					end if;
 				else
 					assert false
 						report "Wrong number " & character'image(value(i)) & " " & natural'image(base)
@@ -178,7 +188,7 @@ package body jso is
 				end if;
 			end if;
 		end loop;
-		return retval;
+		return sign*retval;
 	end;
 
 	function to_stdlogicvector (
@@ -239,8 +249,8 @@ package body jso is
 
 	function to_natural (
 		constant value : string)
-		return natural is
-		variable retval : natural;
+		return integer is
+		variable retval : integer;
 	begin
 		if value'length > 1 then
 			if value(value'left)='0' then
@@ -903,7 +913,7 @@ package body jso is
 
 	function resolve (
 		constant jso : string)
-		return natural is
+		return integer is
 		variable jso_offset : natural;
 		variable jso_length : natural;
 	begin
@@ -943,8 +953,8 @@ package body jso is
 	function "**" (
 		constant jso : jso;
 		constant key : string)
-		return natural is
-		variable xxx : natural;
+		return integer is
+		variable xxx : integer;
 	begin
 		-- assert false report "==========================> " & key severity note;
 		xxx :=  resolve(string(jso) & key);

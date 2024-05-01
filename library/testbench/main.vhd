@@ -41,6 +41,8 @@ begin
 	begin
 			-- "value => " & (jso(normalize(*coefs(i)))**".norm");
 		-- report "VALUE : " & ''' & get_value("[hola,mundo:[kkkk:12345,dddd:[67890]],hello,world].kkk", "[mundo].dddd") & ''';
+			-- report "VALUE : " & ''' & jso(c)**".norm" & ''';
+			report CR & "VALUE : " & ''' & integer'image(jso(c)**".shr"+1) & ''';
 		wait;
 	end process;
 end;

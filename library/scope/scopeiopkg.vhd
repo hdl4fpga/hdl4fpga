@@ -409,6 +409,8 @@ package body scopeiopkg is
 		variable dec10  : integer;
 		variable pow10  : real;
 		variable norm   : real;
+		variable shr    : integer;
+		variable pnt    : integer;
 		variable rnd    : natural; --Lattice Diamond fix
 	begin
 		assert unit > 0.0 
@@ -438,6 +440,8 @@ package body scopeiopkg is
 		rnd := natural(round(norm)); --Lattice Diamond fix
 
 		scale := ((3-(exp10 mod 3)) mod 3)+exp10;
+		shr   := -2+dec10-exp10;
+		pnt   := dec10-scale;
 		report CR &
 			"norm  => " & natural'image(rnd)   & CR &
 			"exp10 => " & natural'image(exp10) & CR &
@@ -446,9 +450,11 @@ package body scopeiopkg is
 			"unit  => " & scales((((3-(exp10 mod 3)) mod 3)+exp10)/3) & CR &
 			"shr   => " & integer'image(-2+dec10-exp10) & CR &
 			"pnt   => " & integer'image(dec10-scale);
-			-- "exp10 => " & natural'image(((3-(exp10 mod 3)) mod 3)+exp10);
 
-		return "{norm:" & natural'image(rnd) & ",exp:" & integer'image(exp10)  & ",point:" & integer'image(dec10) & "}";
+		return 
+			"{ norm:" & natural'image(rnd)   & "," & 
+			"  shr:"  & integer'image(shr)   & "," & 
+			"  pnt:"  & integer'image(dec10) & "}";
 	end;
 
 	function get_mant1245 (
