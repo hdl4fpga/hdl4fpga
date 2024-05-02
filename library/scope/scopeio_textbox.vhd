@@ -267,6 +267,7 @@ begin
 				end if;
 			end process;
 
+			scale <= std_logic_vector(to_unsigned(norms(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
 			positive <=
 				-signed(vt_offset) when vt_offset(vt_offset'left)='1' else
 				 signed(vt_offset);
@@ -278,14 +279,12 @@ begin
 				clk => rgtr_clk,
 				req => mul_req,
 				rdy => mul_rdy,
-				a   => b"0001",
+				a   => scale,
 				b   => std_logic_vector(positive),
 				s   => bin);
 
 			shr <= std_logic_vector(to_signed(shrs(to_integer(unsigned(vt_scale))), shr'length));
-			-- shr <= std_logic_vector(to_signed(-2, shr'length));
 			pnt <= std_logic_vector(to_signed(pnts(to_integer(unsigned(vt_scale))), pnt'length));
-			-- pnt <= std_logic_vector(to_signed(-1, pnt'length));
 			btof_e : entity hdl4fpga.btof
 			port map (
 				clk      => rgtr_clk,

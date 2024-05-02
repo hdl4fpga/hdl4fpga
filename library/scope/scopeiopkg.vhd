@@ -417,9 +417,13 @@ package body scopeiopkg is
 			report "unit <= 0.0"
 			severity failure;
 
+		norm := unit;
+		while norm >= 1.0 loop
+			norm := norm / 1.0e3;
+		end loop;
+
 		dec10 := 0;
 		pow10 := 1.0;
-		norm  := unit;
 		loop
 			if abs(norm-round(norm)) > 4.0e-9 then
 				dec10 := dec10 + 1;
