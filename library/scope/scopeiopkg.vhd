@@ -402,13 +402,14 @@ package body scopeiopkg is
 	function normalize (
 		constant unit : real)
 		return string is
-		constant tenth : real := 1.0/10.0;
+		constant tenth  : real := 1.0/10.0;
 		constant scales : string := "munp";
 		variable scale  : integer;
 		variable exp10  : integer;
 		variable dec10  : integer;
 		variable pow10  : real;
 		variable norm   : real;
+		variable var   : real;
 		variable shr    : integer;
 		variable pnt    : integer;
 		variable rnd    : natural; --Lattice Diamond fix
@@ -417,18 +418,19 @@ package body scopeiopkg is
 			report "unit <= 0.0"
 			severity failure;
 
-		norm := unit;
-		while norm >= 1.0 loop
-			norm := norm / 1.0e3;
+		var := unit;
+		while var >= 1.0 loop
+			var := var / 1.0e3;
 		end loop;
 
 		dec10 := 0;
 		pow10 := 1.0;
+		norm  := var;
 		loop
 			if abs(norm-round(norm)) > 4.0e-9 then
 				dec10 := dec10 + 1;
 				pow10 := pow10 * tenth;
-				norm  := unit  / pow10;
+				norm  := var  / pow10;
 			else
 				exit;
 			end if;
@@ -436,7 +438,7 @@ package body scopeiopkg is
 
 		exp10 := 0;
 		pow10 := 1.0;
-		while (unit/pow10) < 1.0 loop
+		while abs(var/pow10-1.0) > 4.0e-9 loop
 			exp10 := exp10 + 1;
 			pow10 := pow10 * tenth;
 		end loop;
@@ -447,16 +449,16 @@ package body scopeiopkg is
 		shr   := -2+dec10-exp10;
 		pnt   := dec10-scale;
 		report CR &
-			"norm  => " & natural'image(rnd)   & CR &
-			"exp10 => " & natural'image(exp10) & CR &
-			"dec10 => " & natural'image(dec10) & CR &
-			"scale => " & natural'image(scale) & CR &
+			"norm  => " & integer'image(rnd)   & CR &
+			"exp10 => " & integer'image(exp10) & CR &
+			"dec10 => " & integer'image(dec10) & CR &
+			"scale => " & integer'image(scale) & CR &
 			-- "unit  => " & scales((((3-(exp10 mod 3)) mod 3)+exp10)/3) & CR &
 			"shr   => " & integer'image(-2+dec10-exp10) & CR &
 			"pnt   => " & integer'image(dec10-scale);
 
 		return 
-			"{ norm:" & natural'image(rnd) & "," & 
+			"{ norm:" & integer'image(rnd) & "," & 
 			"  shr:"  & integer'image(shr) & "," & 
 			"  pnt:"  & integer'image(pnt) & "}";
 	end;
