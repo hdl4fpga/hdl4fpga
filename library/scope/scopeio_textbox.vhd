@@ -271,7 +271,6 @@ begin
 				-signed(vt_offset) when vt_offset(vt_offset'left)='1' else
 				 signed(vt_offset);
 
-			scale <= b"0_0001"; --std_logic_vector(to_unsigned(norms(to_integer(unsigned(vt_scale))), scale'length));
 			mul_ser_e : entity hdl4fpga.mul_ser
 			generic map (
 				lsb => true)
@@ -279,12 +278,14 @@ begin
 				clk => rgtr_clk,
 				req => mul_req,
 				rdy => mul_rdy,
-				a   => scale,
+				a   => b"0001",
 				b   => std_logic_vector(positive),
 				s   => bin);
 
-			shr <= std_logic_vector(to_signed(shrs(to_integer(unsigned(scale))), shr'length));
-			pnt <= std_logic_vector(to_signed(pnts(to_integer(unsigned(scale))), pnt'length));
+			shr <= std_logic_vector(to_signed(shrs(to_integer(unsigned(vt_scale))), shr'length));
+			-- shr <= std_logic_vector(to_signed(-2, shr'length));
+			pnt <= std_logic_vector(to_signed(pnts(to_integer(unsigned(vt_scale))), pnt'length));
+			-- pnt <= std_logic_vector(to_signed(-1, pnt'length));
 			btof_e : entity hdl4fpga.btof
 			port map (
 				clk      => rgtr_clk,

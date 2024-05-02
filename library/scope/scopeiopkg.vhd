@@ -447,14 +447,14 @@ package body scopeiopkg is
 			"exp10 => " & natural'image(exp10) & CR &
 			"dec10 => " & natural'image(dec10) & CR &
 			"scale => " & natural'image(scale) & CR &
-			"unit  => " & scales((((3-(exp10 mod 3)) mod 3)+exp10)/3) & CR &
+			-- "unit  => " & scales((((3-(exp10 mod 3)) mod 3)+exp10)/3) & CR &
 			"shr   => " & integer'image(-2+dec10-exp10) & CR &
 			"pnt   => " & integer'image(dec10-scale);
 
 		return 
-			"{ norm:" & natural'image(rnd)   & "," & 
-			"  shr:"  & integer'image(shr)   & "," & 
-			"  pnt:"  & integer'image(dec10) & "}";
+			"{ norm:" & natural'image(rnd) & "," & 
+			"  shr:"  & integer'image(shr) & "," & 
+			"  pnt:"  & integer'image(pnt) & "}";
 	end;
 
 	function get_norm1245 (
@@ -474,13 +474,16 @@ package body scopeiopkg is
 		constant unit   : real)
 		return integer_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
+		variable xxx : real;
 		variable retval : integer_vector(0 to 4*4-1);
 	begin
 
-		for i in coefs'range loop
-			for j in 0 to 4-1 loop
-				retval(4*j+i) := (jso(normalize(10.0**j*unit*coefs(i)))**".exp");
+		xxx := unit;
+		for i in 0 to 4-1 loop
+			for j in coefs'range loop
+				retval(4*i+j) := (jso(normalize(xxx*coefs(j)))**".shr");
 			end loop;
+			xxx := xxx * 10.0;
 		end loop;
 		return retval;
 	end;
@@ -489,13 +492,16 @@ package body scopeiopkg is
 		constant unit   : real)
 		return integer_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
-		variable retval : integer_vector(0 to 4-1);
+		variable xxx : real;
+		variable retval : integer_vector(0 to 4*4-1);
 	begin
 
-		for i in coefs'range loop
-			for j in 0 to 4-1 loop
-				retval(i) := (jso(normalize(10.0**j*unit*coefs(i)))**".pnt");
+		xxx := unit;
+		for i in 0 to 4-1 loop
+			for j in coefs'range loop
+				retval(4*i+j) := (jso(normalize(xxx*coefs(j)))**".pnt");
 			end loop;
+			xxx := xxx * 10.0;
 		end loop;
 		return retval;
 	end;
