@@ -409,7 +409,7 @@ package body scopeiopkg is
 		variable dec10  : integer;
 		variable pow10  : real;
 		variable norm   : real;
-		variable var   : real;
+		variable unt   : real;
 		variable shr    : integer;
 		variable pnt    : integer;
 		variable rnd    : natural; --Lattice Diamond fix
@@ -418,19 +418,18 @@ package body scopeiopkg is
 			report "unit <= 0.0"
 			severity failure;
 
-		var := unit;
-		while var >= 1.0 loop
-			var := var / 1.0e3;
+		unt := unit;
+		while unt >= 1.0 loop
+			unt := unt / 1.0e3;
 		end loop;
 
 		dec10 := 0;
 		pow10 := 1.0;
-		norm  := var;
+		norm  := unt;
 		loop
 			if abs(norm-round(norm)) > 4.0e-9 then
 				dec10 := dec10 + 1;
-				pow10 := pow10 * tenth;
-				norm  := var  / pow10;
+				norm  := norm  / tenth;
 			else
 				exit;
 			end if;
@@ -438,9 +437,10 @@ package body scopeiopkg is
 
 		exp10 := 0;
 		pow10 := 1.0;
-		while abs(var/pow10-1.0) > 4.0e-9 loop
+		while (1.0-unt) > 4.0e-9 loop
 			exp10 := exp10 + 1;
 			pow10 := pow10 * tenth;
+			unt   := unt / tenth;
 		end loop;
 
 		rnd := natural(round(norm)); --Lattice Diamond fix
@@ -448,14 +448,14 @@ package body scopeiopkg is
 		scale := ((3-(exp10 mod 3)) mod 3)+exp10;
 		shr   := -2+dec10-exp10;
 		pnt   := dec10-scale;
-		report CR &
-			"norm  => " & integer'image(rnd)   & CR &
-			"exp10 => " & integer'image(exp10) & CR &
-			"dec10 => " & integer'image(dec10) & CR &
-			"scale => " & integer'image(scale) & CR &
+		-- report CR &
+			-- "norm  => " & integer'image(rnd)   & CR &
+			-- "exp10 => " & integer'image(exp10) & CR &
+			-- "dec10 => " & integer'image(dec10) & CR &
+			-- "scale => " & integer'image(scale) & CR &
 			-- "unit  => " & scales((((3-(exp10 mod 3)) mod 3)+exp10)/3) & CR &
-			"shr   => " & integer'image(-2+dec10-exp10) & CR &
-			"pnt   => " & integer'image(dec10-scale);
+			-- "shr   => " & integer'image(-2+dec10-exp10) & CR &
+			-- "pnt   => " & integer'image(dec10-scale);
 
 		return 
 			"{ norm:" & integer'image(rnd) & "," & 
