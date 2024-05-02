@@ -118,6 +118,15 @@ begin
 		signal left       : std_logic;
 		signal dec        : std_logic_vector(0 to 2-1);
 		signal sht        : std_logic_vector(0 to 2-1);
+
+		constant norms    : natural_vector := get_norm1245(vt_unit);
+		constant norm_length : natural  := unsigned_num_bits(max(norms));
+		constant shrs     : integer_vector  := get_shr1245(vt_unit);
+		constant pnts     : integer_vector  := get_pnt1245(vt_unit);
+
+		signal shr        : std_logic_vector(2-1 downto 0);
+		signal pnt        : std_logic_vector(2-1 downto 0);
+
 	begin
 
 		process (code_frm, clk)
@@ -149,6 +158,7 @@ begin
 					vt_sel   <= '1';
 					addr     := 0;
 					tick     := 0;
+					tick     := to_integer(mul(shift_right(signed(vt_offset), vttick_bits+font_bits), 5));
 					tick_no  := 2**vt_taddr'length/2**vttick_bits-1;
 					tick_req <= not to_stdulogic(to_bit(tick_rdy));
 					left     <= '0';
@@ -179,6 +189,8 @@ begin
 			end if;
 		end process;
 
+		shr <= std_logic_vector(to_signed(shrs(to_integer(unsigned(vt_scale))), shr'length));
+		pnt <= std_logic_vector(to_signed(pnts(to_integer(unsigned(vt_scale))), pnt'length));
 		btof_e : entity hdl4fpga.btof
 		generic map (
 			tab      => x"0123456789fbcdef")
@@ -188,8 +200,8 @@ begin
 			btof_rdy => btof_rdy,
 			left     => left,
 			width    => x"8",
-			sht      => sht,
-			dec      => dec,
+			sht      => shr,
+			dec      => pnt,
 			exp      => b"000",
 			neg      => bin(bin'left),
 			bin      => bin(bin'left+1 to bin'right),
