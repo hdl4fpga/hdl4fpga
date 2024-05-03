@@ -124,11 +124,13 @@ begin
 		constant shrs     : integer_vector  := get_shr1245(vt_unit);
 		constant pnts     : integer_vector  := get_pnt1245(vt_unit);
 
+		signal norm       : unsigned(norm_length-1 downto 0);
 		signal shr        : std_logic_vector(2-1 downto 0);
 		signal pnt        : std_logic_vector(2-1 downto 0);
 
 	begin
 
+		norm <= to_unsigned(norms(to_integer(unsigned(vt_scale(2-1 downto 0)))), norm'length);
 		process (code_frm, clk)
 			variable addr    : natural range  0 to 2**max(vt_taddr'length,hz_taddr'length)-1;
 			variable tick    : integer range -2**bin'length to 2**bin'length-1;
@@ -158,7 +160,7 @@ begin
 					vt_sel   <= '1';
 					addr     := 0;
 					tick     := 0;
-					tick     := to_integer(mul(shift_right(signed(vt_offset), vttick_bits+font_bits), 5));
+					tick     := to_integer(mul(shift_right(signed(vt_offset), vttick_bits+font_bits), norm));
 					tick_no  := 2**vt_taddr'length/2**vttick_bits-1;
 					tick_req <= not to_stdulogic(to_bit(tick_rdy));
 					left     <= '0';
