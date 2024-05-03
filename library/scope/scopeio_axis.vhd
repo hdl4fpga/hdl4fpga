@@ -133,8 +133,10 @@ begin
 		norm <= to_unsigned(norms(to_integer(unsigned(vt_scale(2-1 downto 0)))), norm'length);
 		process (code_frm, clk)
 			variable addr    : natural range  0 to 2**max(vt_taddr'length,hz_taddr'length)-1;
+			variable xxx     : signed(0 to norm_length-1);
 			variable tick    : integer range -2**bin'length to 2**bin'length-1;
 			variable tick_no : integer range -1 to max(2**vt_taddr'length/2**vttick_bits-1, 2**hz_taddr'length/2**hzstep_bits-1);
+			variable yyy : std_logic 
 		begin
 			if rising_edge(clk) then
 				if (to_bit(tick_req) xor to_bit(tick_rdy))='1' then
@@ -145,7 +147,7 @@ begin
 							else
 								bin <= '0' & std_logic_vector(to_unsigned(tick, bin'length-1));
 							end if;
-							tick     := tick    + 5;
+							tick     := tick    + to_integer(xxx);
 							tick_no  := tick_no - 1;
 							btof_req <= not to_stdulogic(to_bit(btof_rdy));
 						else
@@ -160,12 +162,15 @@ begin
 					vt_sel   <= '1';
 					addr     := 0;
 					tick     := 0;
-					tick     := to_integer(mul(shift_right(signed(vt_offset), vttick_bits+font_bits), norm));
+					tick     := -to_integer(mul(shift_right(signed(vt_offset), division_bits), norm));
 					tick_no  := 2**vt_taddr'length/2**vttick_bits-1;
 					tick_req <= not to_stdulogic(to_bit(tick_rdy));
 					left     <= '0';
 					dec      <= "01";
 					sht      <= "11";
+					xxx      := -resize(signed(norm), xxx'length);
+					shr <= std_logic_vector(to_signed(shrs(to_integer(unsigned(vt_scale))), shr'length));
+					pnt <= std_logic_vector(to_signed(pnts(to_integer(unsigned(vt_scale))), pnt'length));
 				elsif hz_dv='1' then
 					hz_sel   <= '1';
 					vt_sel   <= '0';
@@ -176,6 +181,8 @@ begin
 					left     <= '1';
 					dec      <= "00";
 					sht      <= "00";
+					shr <= std_logic_vector(to_signed(shrs(to_integer(unsigned(hz_scale))), shr'length));
+					pnt <= std_logic_vector(to_signed(pnts(to_integer(unsigned(hz_scale))), pnt'length));
 				else
 					hz_sel   <= '0';
 					vt_sel   <= '0';
@@ -185,14 +192,14 @@ begin
 					left     <= '-';
 					dec      <= (others => '-');
 					sht      <= (others => '-');
+					shr      <= (others => '-');
+					pnt      <= (others => '-');
 				end if;
 				hz_taddr <= to_unsigned(addr, hz_taddr'length);
 				vt_taddr <= to_unsigned(addr, vt_taddr'length);
 			end if;
 		end process;
 
-		shr <= std_logic_vector(to_signed(shrs(to_integer(unsigned(vt_scale))), shr'length));
-		pnt <= std_logic_vector(to_signed(pnts(to_integer(unsigned(vt_scale))), pnt'length));
 		btof_e : entity hdl4fpga.btof
 		generic map (
 			tab      => x"0123456789fbcdef")
@@ -325,7 +332,7 @@ begin
 				rd_addr => vaddr,
 				rd_data => vdata);
 
-			y <= resize(unsigned(video_vcntr) + unsigned(vt_offset), y'length);
+			y <= resize(unsigned(video_vcntr) + unsigned(vt_offset(division_bits-1 downto 0)), y'length);
 			process (video_clk)
 			begin
 				if rising_edge(video_clk) then

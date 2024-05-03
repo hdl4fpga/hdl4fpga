@@ -149,9 +149,9 @@ package body jso is
 		when 'a'|'b'|'c'|'d'|'e'|'f' =>
 			return character'pos(char)-character'pos('A')+10;
 		when others =>
-			assert false
-				report "wrong digit " & character'image(char)
-				severity failure;
+			-- assert false
+				-- report "wrong digit " & character'image(char)
+				-- severity failure;
 		end case;
 	end;
 
@@ -177,14 +177,14 @@ package body jso is
 					if value(i)='-' then
 						sign := -1;
 					else
-						assert false
-							report "Wrong number " & character'image(value(i)) & " " & natural'image(base)
-							severity failure;
+						-- assert false
+							-- report "Wrong number " & character'image(value(i)) & " " & natural'image(base)
+							-- severity failure;
 					end if;
 				else
-					assert false
-						report "Wrong number " & character'image(value(i)) & " " & natural'image(base)
-						severity failure;
+					-- assert false
+						-- report "Wrong number " & character'image(value(i)) & " " & natural'image(base)
+						-- severity failure;
 				end if;
 			end if;
 		end loop;
@@ -241,9 +241,9 @@ package body jso is
 				return to_bin(value, 1);
 			end if;
 		else
-			assert false
-				report "value'range is nul"
-				severity failure;
+			-- assert false
+				-- report "value'range is nul"
+				-- severity failure;
 		end if;
 	end;
 
@@ -303,9 +303,9 @@ package body jso is
 				idx := idx + 1;
 				exit;
 			end if;
-			assert isdigit(value(idx))
-				report "wrong character to_real"
-				severity failure;
+			-- assert isdigit(value(idx))
+				-- report "wrong character to_real"
+				-- severity failure;
 			mant := 10.0*mant + real(character'pos(value(idx))-character'pos('0'));
 			exp  := exp + 1;
 			idx  := idx + 1;
@@ -400,9 +400,9 @@ package body jso is
 				if jso(jso_index)=''' then
 					length    := jso_index-offset;
 					jso_index := jso_index + 1;
-					assert (log/log_parsestring) mod 2=0
-						report "parse_string => " & '"' & jso(offset to offset+length-1) & '"'
-						severity note;
+					-- assert (log/log_parsestring) mod 2=0
+						-- report "parse_string => " & '"' & jso(offset to offset+length-1) & '"'
+						-- severity note;
 					return;
 				else
 					jso_index := jso_index + 1;
@@ -419,9 +419,9 @@ package body jso is
 			end if;
 		end loop;
 		length := jso_index-offset;
-		assert (log/log_parsestring) mod 2=0
-			report "parse_string => " & '"' & jso(offset to offset+length-1) & '"'
-			severity note;
+		-- assert (log/log_parsestring) mod 2=0
+			-- report "parse_string => " & '"' & jso(offset to offset+length-1) & '"'
+			-- severity note;
 	end;
 
 	procedure parse_natural (
@@ -440,9 +440,9 @@ package body jso is
 			end if;
 		end loop;
 		length := jso_index-offset;
-		assert (log/log_parsenatural) mod 2=0
-			report "parse_string => " & '"' & jso(offset to offset+length-1) & '"'
-			severity note;
+		-- assert (log/log_parsenatural) mod 2=0
+			-- report "parse_string => " & '"' & jso(offset to offset+length-1) & '"'
+			-- severity note;
 	end;
 
 	procedure parse_keytag (
@@ -456,9 +456,9 @@ package body jso is
 		assert ((log/log_parsekeytag) mod 2=0)
 			report "parse_keytag => jso_index -> " & natural'image(jso_index)
 			severity note;
-		-- assert ((log/log_parsekeytag) mod 2=0) or jso_index > jso'right
-			-- report "parse_keytag => jso_index -> " & natural'image(jso_index) & " -> " & ''' & jso(jso_index) & '''
-			-- severity note;
+		-- -- assert ((log/log_parsekeytag) mod 2=0) or jso_index > jso'right
+			-- -- report "parse_keytag => jso_index -> " & natural'image(jso_index) & " -> " & ''' & jso(jso_index) & '''
+			-- -- severity note;
 		length := 0;
 		while jso_index <= jso'right loop
 			case jso(jso_index) is
