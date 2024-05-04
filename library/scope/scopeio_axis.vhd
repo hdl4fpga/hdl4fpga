@@ -161,8 +161,7 @@ begin
 					vt_sel   <= '1';
 					addr     := 0;
 					tick     := 0;
-					tick     := -to_integer(mul(shift_right(signed(vt_offset), division_bits), norm));
-					-- tick     := -to_integer(norm);
+					tick     := -to_integer(mul(shift_right(signed(vt_offset), division_bits)+vt_height/division_size, norm));
 					tick_no  := 2**vt_taddr'length/2**vttick_bits-1;
 					tick_req <= not to_stdulogic(to_bit(tick_rdy));
 					left     <= '0';
