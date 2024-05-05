@@ -129,8 +129,8 @@ begin
 		constant hz_shrs  : integer_vector  := get_shr1245(hz_unit);
 		constant hz_pnts  : integer_vector  := get_pnt1245(hz_unit);
 
-		signal shr        : std_logic_vector(2-1 downto 0);
-		signal pnt        : std_logic_vector(2-1 downto 0);
+		signal shr        : std_logic_vector(3-1 downto 0);
+		signal pnt        : std_logic_vector(3-1 downto 0);
 
 	begin
 

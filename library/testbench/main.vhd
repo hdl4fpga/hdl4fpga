@@ -36,13 +36,13 @@ end;
 architecture def of main is
 begin
 	process 
-		constant c : string := normalize(0.002);
+		constant c : string := normalize(31.25e-6);
 		variable x : string(c'range);
 	begin
 			-- "value => " & (jso(normalize(*coefs(i)))**".norm");
 		-- report "VALUE : " & ''' & get_value("[hola,mundo:[kkkk:12345,dddd:[67890]],hello,world].kkk", "[mundo].dddd") & ''';
 			-- report "VALUE : " & ''' & jso(c)**".norm" & ''';
-			report CR & "VALUE : " & ''' & integer'image(jso(c)**".shr"+1) & ''';
+			report CR & "VALUE : " & ''' & c & ''';
 		wait;
 	end process;
 end;
