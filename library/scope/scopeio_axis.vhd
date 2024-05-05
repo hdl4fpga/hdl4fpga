@@ -55,7 +55,7 @@ entity scopeio_axis is
 		video_vtdot   : out std_logic);
 
 	constant num_of_segments : natural := jso(layout)**".num_of_segments";
-	constant hz_unit         : real    := jso(layout)**".axis.horizontal.unit";
+	constant hz_unit         : real    := 2.0*real'(jso(layout)**".axis.horizontal.unit");
 	constant vt_unit         : real    := jso(layout)**".axis.vertical.unit";
 
 end;
