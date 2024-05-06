@@ -664,7 +664,6 @@ package body jso is
 				end if;
 				locate_value(jso, value_offset, jso(tag_offset to tag_offset+tag_length-1), jso_offset, jso_length);
 				value_offset := jso_offset;
-
 				-- resolve(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
 			end loop;
 		else
