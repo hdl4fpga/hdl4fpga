@@ -149,7 +149,7 @@ begin
 			video_clk     => video_clk,
 
 			hz_dv         => hz_dv,
-			hz_scale      => vt_scale,
+			hz_scale      => hz_scale,
 			hz_offset     => hz_offset,
 			hz_segment    => hz_segment,
 			video_hcntr   => x,
