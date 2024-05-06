@@ -170,6 +170,29 @@ begin
 		constant bcd_digits   : natural := 1;
 		signal bcd            : std_logic_vector(0 to bcd_digits*bcd_length-1);
 		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+norm_length+bin_digits-1)/bin_digits)-1);
+			function label_width (
+				constant layout : string)
+				return natural is
+				variable offset : positive;
+				variable length : natural;
+				variable i      : natural;
+				variable retval : natural;
+			begin
+				i := 0;
+				retval := 0;
+				for i in 0 to inputs-1 loop
+					resolve(layout&".vt["&natural'image(i)&"].text", offset, length);
+					if length=0 then
+						exit;
+					elsif retval < length then
+						retval := length;
+					end if;
+				end loop;
+				return retval;
+			end;
+
+			constant width : natural := label_width(layout) + 1;
+	
 	begin
 
 		myip4_e : entity hdl4fpga.scopeio_rgtrmyip
@@ -243,7 +266,7 @@ begin
 
 		xxx_b : block
 
-			signal positive    : signed(vt_offset'range);
+			signal magnitud    : signed(vt_offset'range);
 			signal mul_req     : std_logic;
 			signal mul_rdy     : std_logic;
 			signal dbdbbl_req  : std_logic;
@@ -270,7 +293,7 @@ begin
 			end process;
 
 			scale <= std_logic_vector(to_unsigned(norms(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
-			positive <=
+			magnitud <=
 				-signed(vt_offset) when vt_offset(vt_offset'left)='1' else
 				 signed(vt_offset);
 
@@ -282,7 +305,7 @@ begin
 				req => mul_req,
 				rdy => mul_rdy,
 				a   => scale,
-				b   => std_logic_vector(positive),
+				b   => std_logic_vector(magnitud),
 				s   => bin);
 
 			shr <= std_logic_vector(to_signed(shrs(to_integer(unsigned(vt_scale))), shr'length));
@@ -306,29 +329,6 @@ begin
 
 		process (rgtr_clk)
 
-			function label_width (
-				constant layout : string)
-				return natural is
-				variable offset : positive;
-				variable length : natural;
-				variable i      : natural;
-				variable retval : natural;
-			begin
-				i := 0;
-				retval := 0;
-				for i in 0 to inputs-1 loop
-					resolve(layout&".vt["&natural'image(i)&"].text", offset, length);
-					if length=0 then
-						exit;
-					elsif retval < length then
-						retval := length;
-					end if;
-				end loop;
-				return retval;
-			end;
-
-			constant width : natural := label_width(layout) + 1;
-	
 		begin
 			if rising_edge(rgtr_clk) then
 				if cga_we='1' then

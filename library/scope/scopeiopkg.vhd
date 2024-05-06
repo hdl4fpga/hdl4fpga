@@ -408,7 +408,7 @@ package body scopeiopkg is
 		variable exp10  : integer;
 		variable dec10  : integer;
 		variable pow10  : real;
-		variable norm   : real;
+		variable sgfc   : real;
 		variable unt   : real;
 		variable shr    : integer;
 		variable pnt    : integer;
@@ -425,11 +425,11 @@ package body scopeiopkg is
 
 		dec10 := 0;
 		pow10 := 1.0;
-		norm  := unt;
+		sgfc  := unt;
 		loop
-			if abs(norm-round(norm)) > 4.0e-9 then
+			if abs(sgfc-round(sgfc)) > 4.0e-9 then
 				dec10 := dec10 + 1;
-				norm  := norm  / tenth;
+				sgfc  := sgfc  / tenth;
 			else
 				exit;
 			end if;
@@ -443,13 +443,13 @@ package body scopeiopkg is
 			unt   := unt / tenth;
 		end loop;
 
-		rnd := natural(round(norm)); --Lattice Diamond fix
+		rnd := natural(round(sgfc)); --Lattice Diamond fix
 
 		scale := ((3-(exp10 mod 3)) mod 3)+exp10;
 		shr   := -2+dec10-exp10;
 		pnt   := dec10-scale;
 		-- report CR &
-			-- "norm  => " & integer'image(rnd)   & CR &
+			-- "sgfc  => " & integer'image(rnd)   & CR &
 			-- "exp10 => " & integer'image(exp10) & CR &
 			-- "dec10 => " & integer'image(dec10) & CR &
 			-- "scale => " & integer'image(scale) & CR &
@@ -458,7 +458,7 @@ package body scopeiopkg is
 			-- "pnt   => " & integer'image(dec10-scale);
 
 		return 
-			"{ norm:" & integer'image(rnd) & "," & 
+			"{ sgfc:" & integer'image(rnd) & "," & 
 			"  shr:"  & integer'image(shr) & "," & 
 			"  pnt:"  & integer'image(pnt) & "}";
 	end;
@@ -471,7 +471,7 @@ package body scopeiopkg is
 	begin
 
 		for i in coefs'range loop
-			retval(i) :=(jso(normalize(unit*coefs(i)))**".norm");
+			retval(i) :=(jso(normalize(unit*coefs(i)))**".sgfc");
 		end loop;
 		return retval;
 	end;
