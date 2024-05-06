@@ -68,7 +68,33 @@ entity scopeio_textbox is
 		return retval;
 	end;
 
-	impure function textbox_rom (
+	function label_width (
+		constant width  : natural;
+		constant size   : natural)
+		return string is
+		variable data   : string(1 to size);
+		variable offset : positive;
+		variable length : natural;
+		variable i      : natural;
+		variable j      : natural;
+		variable retval : natural;
+	begin
+		i := 0;
+		j := data'left;
+		retval := 0;
+		for i in 0 to inputs-1 loop
+			resolve(layout&".vt["&natural'image(i)&"].text", offset, length);
+			if length=0 then
+				exit;
+			else
+				data(j to j+width-1) := textalign(layout(offset to offset+length-1), width);
+				j := j + width;
+			end if;
+		end loop;
+		return data;
+	end;
+
+	function textbox_rom (
 		constant width  : natural;
 		constant size   : natural)
 		return string is
@@ -302,20 +328,12 @@ begin
 		end block;
 
 		process (rgtr_clk)
-			variable addr : natural;
 		begin
 			if rising_edge(rgtr_clk) then
 				if cga_we='1' then
 					cga_addr <= cga_addr + 1;
 				else
-					addr := 0;
-					for i in 0 to inputs-1 loop
-						if i=unsigned(vt_chanid) then
-							exit;
-						end if;
-						addr := addr + textbox_width(layout)/font_width;
-					end loop;
-					cga_addr <= to_unsigned(addr, cga_addr'length);
+					cga_addr <= resize(mul(unsigned(chan_id), cga_cols), cga_addr'length) + 4;
 				end if;
 			end if;
 		end process;
@@ -323,7 +341,7 @@ begin
 	end block;
 
 	video_addr <= std_logic_vector(resize(
-		mul(unsigned(video_vcntr) srl fontheight_bits, textbox_width(layout)/font_width) +
+		mul(unsigned(video_vcntr) srl fontheight_bits, cga_cols) +
 		(unsigned(video_hcntr(textwidth_bits-1 downto 0)) srl fontwidth_bits),
 		video_addr'length));
 	video_on <= text_on and sgmntbox_ena(0);
