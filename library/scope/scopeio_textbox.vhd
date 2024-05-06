@@ -50,59 +50,35 @@ entity scopeio_textbox is
 	constant hz_unit : real := jso(layout)**".axis.horizontal.unit";
 	constant vt_unit : real := jso(layout)**".axis.vertical.unit";
 
-   	function textalign (
-   		constant text  : string;
-   		constant width : natural;
-   		constant align : string := "left")
-   		return string is
-   		variable retval : string(1 to width);
-   	begin
-		retval := (others => ' ');
-		retval(1 to text'length) := text;
-		if align="right" then
-			retval := rotate_left(retval, text'length);
-		elsif align="center" then
-			retval := rotate_left(retval, (text'length+width)/2);
-		end if; 
-
-		return retval;
-	end;
-
-	function label_width (
-		constant width  : natural;
-		constant size   : natural)
-		return string is
-		variable data   : string(1 to size);
-		variable offset : positive;
-		variable length : natural;
-		variable i      : natural;
-		variable j      : natural;
-		variable retval : natural;
-	begin
-		i := 0;
-		j := data'left;
-		retval := 0;
-		for i in 0 to inputs-1 loop
-			resolve(layout&".vt["&natural'image(i)&"].text", offset, length);
-			if length=0 then
-				exit;
-			else
-				data(j to j+width-1) := textalign(layout(offset to offset+length-1), width);
-				j := j + width;
-			end if;
-		end loop;
-		return data;
-	end;
-
 	function textbox_rom (
 		constant width  : natural;
 		constant size   : natural)
 		return string is
+
+    	function textalign (
+    		constant text  : string;
+    		constant width : natural;
+    		constant align : string := "left")
+    		return string is
+    		variable retval : string(1 to width);
+    	begin
+    		retval := (others => ' ');
+    		retval(1 to text'length) := text;
+    		if align="right" then
+    			retval := rotate_left(retval, text'length);
+    		elsif align="center" then
+    			retval := rotate_left(retval, (text'length+width)/2);
+    		end if; 
+
+    		return retval;
+    	end;
+
 		variable data   : string(1 to size);
 		variable offset : positive;
 		variable length : natural;
 		variable i      : natural;
 		variable j      : natural;
+
 	begin
 		i := 0;
 		j := data'left;
@@ -318,6 +294,7 @@ begin
 				btof_rdy => open,
 				sht      => shr,
 				dec      => pnt,
+				left     => '0',
 				width    => x"8",
 				exp      => b"101",
 				neg      => vt_offset(vt_offset'left),
@@ -328,12 +305,36 @@ begin
 		end block;
 
 		process (rgtr_clk)
+
+			function label_width (
+				constant layout : string)
+				return natural is
+				variable offset : positive;
+				variable length : natural;
+				variable i      : natural;
+				variable retval : natural;
+			begin
+				i := 0;
+				retval := 0;
+				for i in 0 to inputs-1 loop
+					resolve(layout&".vt["&natural'image(i)&"].text", offset, length);
+					if length=0 then
+						exit;
+					elsif retval < length then
+						retval := length;
+					end if;
+				end loop;
+				return retval;
+			end;
+
+			constant width : natural := label_width(layout) + 1;
+	
 		begin
 			if rising_edge(rgtr_clk) then
 				if cga_we='1' then
 					cga_addr <= cga_addr + 1;
 				else
-					cga_addr <= resize(mul(unsigned(chan_id), cga_cols), cga_addr'length) + 4;
+					cga_addr <= resize(mul(unsigned(chan_id), cga_cols), cga_addr'length) + width;
 				end if;
 			end if;
 		end process;

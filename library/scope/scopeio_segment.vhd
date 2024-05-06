@@ -127,11 +127,6 @@ begin
 		signal v_sel    : std_logic;
 		signal v_dv     : std_logic;
 	begin
-		process (rgtr_clk)
-		begin
-			if rising_edge(rgtr_clk) then
-			end if;
-		end process;
 		v_sel      <= gain_dv or vt_dv;
 		v_dv       <= gain_dv or vt_dv;
 		vt_scale   <= multiplex(gain_ids, gain_cid, vt_scale'length);
