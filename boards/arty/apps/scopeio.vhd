@@ -8,6 +8,7 @@ use unisim.vcomponents.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.jso.all;
 use hdl4fpga.profiles.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
@@ -78,6 +79,124 @@ architecture scopeio of arty is
 		mode600p  => (timing_id => pclk40_00m800x600at60,       mul => 4, div => 5),
 		mode1080p => (timing_id => pclk150_00m1920x1080at60,    mul => 3, div => 1));
 
+	constant layout      : string := 
+			"{                             " &   
+			"   inputs          : " & natural'image(inputs) & ',' &
+			"   max_delay       : " & natural'image(2**14)  & ',' &
+			"   min_storage     : 256,     " & -- samples, storage size will be equal or larger than this
+			"   num_of_segments :   3,     " &
+			"   display : {                " &
+			"       width  : 1280,         " &
+			"       height : 720},         " &
+			"   grid : {                   " &
+			"       unit   : 32,           " &
+			"       width  : " & natural'image(31*32+1) & ',' &
+			"       height : " & natural'image( 6*32+1) & ',' &
+			"       color  : 0xff_ff_00_00," &
+			"       background-color : 0xff_00_00_00}," &
+			"   axis : {                   " &
+			"       fontsize   : 8,        " &
+			"       horizontal : {         " &
+			"           scales : [         " &
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [0]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [1]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [2]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [3]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [4]
+							natural'image(2**(1+0)*5**(0+0)) & "," & -- [5]
+							natural'image(2**(2+0)*5**(0+0)) & "," & -- [6]
+							natural'image(2**(0+0)*5**(1+0)) & "," & -- [7]
+							natural'image(2**(0+1)*5**(0+1)) & "," & -- [8]
+							natural'image(2**(1+1)*5**(0+1)) & "," & -- [9]
+							natural'image(2**(2+1)*5**(0+1)) & "," & -- [10]
+							natural'image(2**(0+1)*5**(1+1)) & "," & -- [11]
+							natural'image(2**(0+2)*5**(0+2)) & "," & -- [12]
+							natural'image(2**(1+2)*5**(0+2)) & "," & -- [13]
+							natural'image(2**(2+2)*5**(0+2)) & "," & -- [14]
+							natural'image(2**(0+2)*5**(1+2)) & "," & -- [15]
+			"               length : 16],  " &
+			"           unit   : 31.25e-6, " &
+			"           height : 8,        " &
+			"           inside : false,    " &
+			"           color  : 0xff_ff_ff_ff," &
+			"           background-color : 0xff_00_00_ff}," &
+			"       vertical : {           " &
+			"           gains : [         " &
+							natural'image(2**17/(2**(0+0)*5**(0+0))) & "," & -- [0]
+							natural'image(2**17/(2**(1+0)*5**(0+0))) & "," & -- [1]
+							natural'image(2**17/(2**(2+0)*5**(0+0))) & "," & -- [2]
+							natural'image(2**17/(2**(0+0)*5**(1+0))) & "," & -- [3]
+							natural'image(2**17/(2**(0+1)*5**(0+1))) & "," & -- [4]
+							natural'image(2**17/(2**(1+1)*5**(0+1))) & "," & -- [5]
+							natural'image(2**17/(2**(2+1)*5**(0+1))) & "," & -- [6]
+							natural'image(2**17/(2**(0+1)*5**(1+1))) & "," & -- [7]
+							natural'image(2**17/(2**(0+2)*5**(0+2))) & "," & -- [8]
+							natural'image(2**17/(2**(1+2)*5**(0+2))) & "," & -- [9]
+							natural'image(2**17/(2**(2+2)*5**(0+2))) & "," & -- [10]
+							natural'image(2**17/(2**(0+2)*5**(1+2))) & "," & -- [11]
+							natural'image(2**17/(2**(0+3)*5**(0+3))) & "," & -- [12]
+							natural'image(2**17/(2**(1+3)*5**(0+3))) & "," & -- [13]
+							natural'image(2**17/(2**(2+3)*5**(0+3))) & "," & -- [14]
+							natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
+			"               length : 16],  " &
+			"           unit   : 500.00e-6, " &
+			"           width  : " & natural'image(6*8) & ','  &
+			"           rotate : ccw0,     " &
+			"           inside : false,    " &
+			"           color  : 0xff_ff_ff_ff," &
+			"           background-color : 0xff_00_00_ff}}," &
+			"   textbox : {                " &
+			"       font_width :  8,       " &
+			"       width      : " & natural'image(32*4+1) & ','&
+			"       inside     : false,    " &
+			"       color      : 0xff_ff_ff_ff," &
+			"       background-color : 0xff_00_00_00}," &
+			"   main : {                   " &
+			"       top        : 23,       " & 
+			"       left       :  3,       " & 
+			"       right      :  0,       " & 
+			"       bottom     :  0,       " & 
+			"       vertical   : 16,       " & 
+			"       horizontal :  0,       " &
+			"       background-color : 0xff_00_00_00}," &
+			"   segment : {                " &
+			"       top        : 1,        " &
+			"       left       : 1,        " &
+			"       right      : 1,        " &
+			"       bottom     : 1,        " &
+			"       vertical   : 0,        " &
+			"       horizontal : 1,        " &
+			"       background-color : 0xff_00_00_00}," &
+			"  vt : [                      " &
+			"   { text  : 'V_P(+) V_N(-)', " &
+			"     step  : " & real'image(vt_step) & "," &
+			"     color : 0xff_ff_ff_ff},  " &
+			"   { text  : 'A6(+)  A7(-)',  " &
+			"     step  : " & real'image(vt_step) & "," &
+			"     color : 0xff_ff_ff_00},  " & -- vt(1)
+			"   { text  : 'A8(+)  A9(-)'', " &
+			"     step  : " & real'image(vt_step) & "," &
+			"     color : 0xff_ff_00_ff},  " & -- vt(2)
+			"   { text  : 'A10(+) A11(-)', " &
+			"     step  : " & real'image(vt_step) & "," &
+			"     color : 0xff_ff_00_00},  " & -- vt(3)
+			"   { text  : A0(+)GN16,       " &
+			"     step  : " & real'image(3.32*vt_step) & "," &
+			"     color : 0xff_00_ff_ff},  " & -- vt(4)
+			"   { text  : A1(+)GP16,       " &
+			"     step  : " & real'image(3.32*vt_step) & "," &
+			"     color : 0xff_00_ff_00},  " & -- vt(5)
+			"   { text  : A2(+)GN17,       " &
+			"     step  : " & real'image(3.32*vt_step) & "," &
+			"     color : 0xff_00_00_ff},  " & -- vt(6)
+			"   { text  : A3(+)GP17,       " &
+			"     step  : " & real'image(3.32*vt_step) & "," &
+			"     color : 0xff_ff_ff_ff},  " &  -- vt(7)
+			"   { text  : A4(+),           " &
+			"     step  : " & real'image(3.32*vt_step) & "," &
+			"     color : 0xff_ff_ff_00}]}";   -- vt(8)
+	signal max_delay1     : natural := jso(layout)**".max_delay";
+	-- constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 begin
 
 	clkin_ibufg : ibufg
@@ -392,55 +511,24 @@ begin
 
 	end block;
 
-	scopeio_e : entity hdl4fpga.scopeio
-	generic map (
-		videotiming_id   => video_params(video_mode).timing_id,
-		hz_unit          => 31.25*micro,
-		vt_steps         => (0 to 3 => vt_step, 4 to inputs-1 => 3.32 * vt_step),
-		vt_unit          => 500.0*micro,
-		inputs           => inputs,
-		input_names      => (
-			text(id => "vt(0).text", content => "V_P(+) V_N(-)"),
-			text(id => "vt(1).text", content => "A6(+)  A7(-)"),
-			text(id => "vt(2).text", content => "A8(+)  A9(-)"),
-			text(id => "vt(3).text", content => "A10(+) A11(-)"),
-			text(id => "vt(4).text", content => "A0(+)"),
-			text(id => "vt(5).text", content => "A1(+)"),
-			text(id => "vt(6).text", content => "A2(+)"),
-			text(id => "vt(7).text", content => "A3(+)"),
-			text(id => "vt(8).text", content => "A4(+)")),
-		layout => "",
-		hz_factors       => (
-			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
-			 4 => 2**(0+0)*5**(0+0),  5 => 2**(1+0)*5**(0+0),  6 => 2**(2+0)*5**(0+0),  7 => 2**(0+0)*5**(1+0),
-			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
-			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)),
-
-		default_tracesfg => b"1_110" & b"0_011" & b"0_101" & b"0_111" & b"0_110" & b"0_011" & b"0_101" & b"0_111" & b"0_001",
-		default_gridfg   => b"1_100",
-		default_gridbg   => b"1_000",
-		default_hzfg     => b"1_111",
-		default_hzbg     => b"1_001",
-		default_vtfg     => b"0_111",
-		default_vtbg     => b"1_001",
-		default_textfg   => b"1_111",
-		default_textbg   => b"1_000",
-		default_sgmntbg  => b"1_011",
-		default_bg       => b"1_111")
-	port map (
-		sio_clk     => sio_clk,
-		si_frm      => si_frm,
-		si_irdy     => si_irdy,
-		si_data     => si_data,
-		so_data     => so_data,
-		input_clk   => input_clk,
-		input_ena   => input_ena,
-		input_data  => input_samples,
-		video_clk   => video_clk,
-		video_pixel => video_pixel,
-		video_hsync => video_hzsync,
-		video_vsync => video_vtsync,
-		video_blank => video_blank);
+	-- scopeio_e : entity hdl4fpga.scopeio
+	-- generic map (
+		-- videotiming_id   => video_params(video_mode).timing_id,
+		-- layout         => layout)
+	-- port map (
+		-- sio_clk     => sio_clk,
+		-- si_frm      => si_frm,
+		-- si_irdy     => si_irdy,
+		-- si_data     => si_data,
+		-- so_data     => so_data,
+		-- input_clk   => input_clk,
+		-- input_ena   => input_ena,
+		-- input_data  => input_samples,
+		-- video_clk   => video_clk,
+		-- video_pixel => video_pixel,
+		-- video_hsync => video_hzsync,
+		-- video_vsync => video_vtsync,
+		-- video_blank => video_blank);
 
 	process (video_clk)
 	begin
