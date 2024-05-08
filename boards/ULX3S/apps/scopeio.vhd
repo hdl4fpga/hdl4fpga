@@ -82,7 +82,7 @@ architecture scopeio of ulx3s is
 	constant max_delay   : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 
-	constant inputs      : natural := 4;
+	constant inputs      : natural := 2;
 	constant max_inputs  : natural := 8;
 	signal input_clk     : std_logic;
 	signal input_lck     : std_logic;
@@ -164,7 +164,7 @@ architecture scopeio of ulx3s is
 							natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
 			"               length : 16],  " &
 			"           unit   : 50.00e-3, " &
-			"           width  : " & natural'image(8*8) & ','  &
+			"           width  : " & natural'image(6*8) & ','  &
 			"           rotate : ccw0,     " &
 			"           inside : false,    " &
 			"           color  : 0xff_ff_ff_ff," &
@@ -192,7 +192,7 @@ architecture scopeio of ulx3s is
 			"       horizontal : 1,        " &
 			"       background-color : 0xff_00_00_00}," &
 			"  vt : [                      " &
-			"   { text : GN14M,            " &
+			"   { text : GN14,            " &
 			"     step  : " & real'image(3.3/2.0**(input_sample'length-1)) & "," &
 			"     color : 0xff_ff_ff_ff},  " &
 			"   { text : GP14,            " &

@@ -318,7 +318,7 @@ begin
 				sht      => shr,
 				dec      => pnt,
 				left     => '0',
-				width    => x"8",
+				width    => x"6",
 				exp      => b"101",
 				neg      => vt_offset(vt_offset'left),
 				bin      => bin,

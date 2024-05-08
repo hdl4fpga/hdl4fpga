@@ -57,6 +57,7 @@ entity scopeio_axis is
 	constant num_of_segments : natural := jso(layout)**".num_of_segments";
 	constant hz_unit         : real    := 2.0*real'(jso(layout)**".axis.horizontal.unit");
 	constant vt_unit         : real    := jso(layout)**".axis.vertical.unit";
+	constant vt_width        : natural := jso(layout)**".axis.vertical.width";
 
 end;
 
@@ -131,6 +132,7 @@ begin
 
 		signal shr        : std_logic_vector(3-1 downto 0);
 		signal pnt        : std_logic_vector(3-1 downto 0);
+		signal wth        : std_logic_vector(4-1 downto 0);
 
 	begin
 
@@ -175,6 +177,7 @@ begin
 					xxx      := -signed(resize(norm, xxx'length));
 					shr      <= std_logic_vector(to_signed(vt_shrs(to_integer(unsigned(vt_scale))), shr'length));
 					pnt      <= std_logic_vector(to_signed(vt_pnts(to_integer(unsigned(vt_scale))), pnt'length));
+					wth      <= std_logic_vector(to_unsigned(vt_width/font_size, wth'length));
 				elsif hz_dv='1' then
 					hz_sel   <= '1';
 					vt_sel   <= '0';
@@ -189,6 +192,7 @@ begin
 					xxx      := signed(resize(norm, xxx'length));
 					shr      <= std_logic_vector(to_signed(hz_shrs(to_integer(unsigned(hz_scale))), shr'length));
 					pnt      <= std_logic_vector(to_signed(hz_pnts(to_integer(unsigned(hz_scale))), pnt'length));
+					wth      <= x"8";
 				else
 					hz_sel   <= '0';
 					vt_sel   <= '0';
@@ -214,7 +218,7 @@ begin
 			btof_req => btof_req,
 			btof_rdy => btof_rdy,
 			left     => left,
-			width    => x"8",
+			width    => wth,
 			sht      => shr,
 			dec      => pnt,
 			exp      => b"000",
@@ -342,7 +346,7 @@ begin
 			process (video_clk)
 			begin
 				if rising_edge(video_clk) then
-					vaddr <= std_logic_vector(y(y'left downto division_bits)) & video_hcntr(vttick_bits+font_bits-1 downto font_bits);
+					vaddr <= std_logic_vector(mul(y(y'left downto division_bits),(vt_width/font_size))+ unsigned(video_hcntr(vttick_bits+font_bits-1 downto font_bits)));
 					tick  <= vdata;
 				end if;
 			end process;
@@ -375,9 +379,7 @@ begin
 				di(0) => vton,
 				do(0) => vt_on);
 
-
 			vt_bcd <= tick;
-
 
 		end block;
 
