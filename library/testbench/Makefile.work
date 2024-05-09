@@ -118,6 +118,7 @@ WORK__testbench__dbdbblsrlser_tb = $(LIB_WORK)/testbench/dbdbblsrlser_tb.dat
 WORK__testbench__dbdbbl_seq_tb = $(LIB_WORK)/testbench/dbdbbl_seq_tb.dat
 WORK__testbench__btof_tb = $(LIB_WORK)/testbench/btof_tb.dat
 WORK__testbench__arty_scopeio = $(LIB_WORK)/testbench/arty_scopeio.dat
+WORK__testbench__jso_tb = $(LIB_WORK)/testbench/jso_tb.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__s3estarter_structure_md = $(LIB_WORK)/s3estarter_structure_md/_primary.dat
 WORK__s3estarter_graphics_md = $(LIB_WORK)/s3estarter_graphics_md/_primary.dat
@@ -205,6 +206,7 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__testbench__dbdbbl_seq_tb) \
     $(WORK__testbench__btof_tb) \
     $(WORK__testbench__arty_scopeio) \
+    $(WORK__testbench__jso_tb) \
     $(WORK__testbench) \
     $(WORK__s3estarter_structure_md) \
     $(WORK__s3estarter_graphics_md) \
@@ -255,6 +257,7 @@ $(WORK__arty) : ../../boards/arty/common/arty.vhd \
 
 $(WORK__arty__scopeio) : ../../boards/arty/apps/scopeio.vhd \
 		$(HDL4FPGA__rom) \
+		$(HDL4FPGA__scopeio) \
 		$(HDL4FPGA__scopeio_rgtrhzaxis) \
 		$(HDL4FPGA__sio_sin) \
 		$(HDL4FPGA__desser) \
@@ -275,7 +278,7 @@ $(WORK__arty__scopeio) : ../../boards/arty/apps/scopeio.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../boards/arty/apps/scopeio.vhd
+	$(VCOM) -2002 ../../boards/arty/apps/scopeio.vhd
 
 $(WORK__arty__graphics) : ../../boards/arty/apps/graphics.vhd \
 		$(HDL4FPGA__ser_debug) \
@@ -424,11 +427,18 @@ $(WORK__testbench) : /home/msagre/work/hdl4fpga/library/testbench/testbench.vhd 
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 /home/msagre/work/hdl4fpga/library/testbench/testbench.vhd
 
+$(WORK__testbench__jso_tb) : jso_tb.vhd \
+		$(WORK__testbench) \
+		$(HDL4FPGA__jso) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002 jso_tb.vhd
+
 $(WORK__arty_scopeio_md) \
 $(WORK__arty_scopeio_structure_md) \
 $(WORK__testbench__arty_scopeio) : ../../boards/arty/testbenches/scopeio.vhd \
-		$(VERILOG__vl_types) \
-		$(MICRON__ddr3) \
 		$(WORK__arty) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
@@ -439,7 +449,7 @@ $(WORK__testbench__arty_scopeio) : ../../boards/arty/testbenches/scopeio.vhd \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base) \
 		$(STD__textio)
-	$(VCOM) -2002  ../../boards/arty/testbenches/scopeio.vhd
+	$(VCOM) -2002 ../../boards/arty/testbenches/scopeio.vhd
 
 $(WORK__testbench__btof_tb) : btof_tb.vhd \
 		$(HDL4FPGA__btof) \

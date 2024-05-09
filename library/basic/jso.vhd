@@ -149,6 +149,9 @@ package body jso is
 		when 'a'|'b'|'c'|'d'|'e'|'f' =>
 			return character'pos(char)-character'pos('A')+10;
 		when others =>
+			assert false --|
+				report "wrong digit " & character'image(char) --|
+				severity failure; --|
 		end case;
 	end;
 
@@ -174,8 +177,14 @@ package body jso is
 					if value(i)='-' then
 						sign := -1;
 					else
+						assert false --|
+							report "Wrong number " & character'image(value(i)) & " " & natural'image(base) --|
+							severity failure; --|
 					end if;
 				else
+					assert false --|
+						report "Wrong number " & character'image(value(i)) & " " & natural'image(base) --|
+						severity failure; --|
 				end if;
 			end if;
 		end loop;
@@ -231,6 +240,9 @@ package body jso is
 				return to_bin(value, 1);
 			end if;
 		else
+			assert false --|
+				report "value'range is nul" --|
+				severity failure; --|
 		end if;
 	end;
 
@@ -290,6 +302,9 @@ package body jso is
 				idx := idx + 1;
 				exit;
 			end if;
+			assert isdigit(value(idx)) --|
+				report "wrong character to_real" --|
+				severity failure; --|
 			mant := 10.0*mant + real(character'pos(value(idx))-character'pos('0'));
 			exp  := exp + 1;
 			idx  := idx + 1;
@@ -431,19 +446,34 @@ package body jso is
 				if length=0 then
 					parse_string(jso, jso_index, offset, length);
 				end if;
+				assert length/=0 --|
+					report "parse_keytag -> invalid key : " & jso(jso_index to jso'right)  --|
+					severity failure; --|
 				skipws(jso, jso_index);
 				case jso(jso_index) is
 				when ']' => 
+					assert open_char='[' --|
+						report "parse_keytag => wrong close key " & ''' & open_char & ''' & " " & ''' & jso(jso_index) & ''' --|
+						severity failure; --|
 					jso_index := jso_index + 1;
 				when '}' => 
+					assert open_char='{' --|
+						report "parse_keytag => wrong close key " & ''' & open_char & ''' & " " & ''' & jso(jso_index) & ''' --|
+						severity failure; --|
 					jso_index := jso_index + 1;
 				when others =>
+					assert false --|
+						report "parse_keytag => wrong token -> " & jso(jso_index) --|
+						severity failure; --|
 				end case;
 				exit;
 			when '.' =>
 				jso_index := jso_index + 1;
 				skipws(jso, jso_index);
 				parse_string(jso, jso_index, offset, length);
+				assert length/=0 --|
+					report "parse_keytag => invalid key : " & jso(jso_index to jso'right) --|
+					severity failure; --|
 				jso_index := offset+length;
 				exit;
 			when others =>
@@ -514,12 +544,18 @@ package body jso is
 					end if;
 				when ']' =>
 					if jso_stptr/=jso_stack'left then
+						assert jso_stack(jso_stptr-1)='[' --|
+							report "parse_value => close key " & jso_stack(jso_stptr-1) & jso(jso_index) --|
+							severity failure; --|
 						pop(jso_stptr);
 					else
 						exit;
 					end if;
 				when '}' =>
 					if jso_stptr/=jso_stack'left then
+						assert jso_stack(jso_stptr-1)='{' --|
+							report "parse_value => close key " & jso_stack(jso_stptr-1) & jso(jso_index) --|
+							severity failure; --|
 						pop(jso_stptr);
 					else
 						exit;
@@ -613,8 +649,16 @@ package body jso is
 				position  := position + 1;
 				jso_index := jso_index + 1;
 			when ']' =>
+				assert open_char='[' --|
+					report LF &  --|
+						"locate_value => wrong close key at " & natural'image(jso_index) & " open with  " & ''' & open_char & ''' & " close by " & character'image(jso(jso_index)) --|
+					severity failure; --|
 				jso_index := jso_index + 1;
 			when '}' =>
+				assert open_char='{' --|
+					report LF &  --|
+						"locate_value => wrong close key " & ''' & open_char & ''' & " "  & natural'image(jso_index) & ':' & character'image(jso(jso_index)) --|
+					severity failure; --|
 				jso_index := jso_index + 1;
 			when others =>
 			end case;
@@ -663,6 +707,10 @@ package body jso is
 					exit;
 				end if;
 				locate_value(jso, value_offset, jso(tag_offset to tag_offset+tag_length-1), jso_offset, jso_length);
+				assert jso_length/=0 --|
+					report "resolve => invalid key -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & jso(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|
+					jso --|
+					severity failure; --|
 				value_offset := jso_offset;
 				-- resolve(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
 			end loop;
