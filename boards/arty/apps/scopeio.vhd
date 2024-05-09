@@ -82,7 +82,7 @@ architecture scopeio of arty is
 	constant layout      : string := 
 			"{                             " &   
 			"   inputs          : " & natural'image(inputs) & ',' &
-			"   max_delay       : " & natural'image(2**14)  & ',' &
+			"   max_delay       : " & natural'image(max_delay)  & ',' &
 			"   min_storage     : 256,     " & -- samples, storage size will be equal or larger than this
 			"   num_of_segments :   3,     " &
 			"   display : {                " &
@@ -174,29 +174,28 @@ architecture scopeio of arty is
 			"   { text  : 'A6(+)  A7(-)',  " &
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_00},  " & -- vt(1)
-			"   { text  : 'A8(+)  A9(-)'', " &
+			"   { text  : 'A8(+)  A9(-)', " &
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_00_ff},  " & -- vt(2)
 			"   { text  : 'A10(+) A11(-)', " &
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_00_00},  " & -- vt(3)
-			"   { text  : A0(+)GN16,       " &
+			"   { text  : 'A0(+)',       " &
 			"     step  : " & real'image(3.32*vt_step) & "," &
 			"     color : 0xff_00_ff_ff},  " & -- vt(4)
-			"   { text  : A1(+)GP16,       " &
+			"   { text  : 'A1(+)',       " &
 			"     step  : " & real'image(3.32*vt_step) & "," &
 			"     color : 0xff_00_ff_00},  " & -- vt(5)
-			"   { text  : A2(+)GN17,       " &
+			"   { text  : 'A2(+)',       " &
 			"     step  : " & real'image(3.32*vt_step) & "," &
 			"     color : 0xff_00_00_ff},  " & -- vt(6)
-			"   { text  : A3(+)GP17,       " &
+			"   { text  : 'A3(+)',       " &
 			"     step  : " & real'image(3.32*vt_step) & "," &
 			"     color : 0xff_ff_ff_ff},  " &  -- vt(7)
-			"   { text  : A4(+),           " &
+			"   { text  : 'A4(+)',           " &
 			"     step  : " & real'image(3.32*vt_step) & "," &
 			"     color : 0xff_ff_ff_00}]}";   -- vt(8)
-	signal max_delay1     : natural := jso(layout)**".max_delay";
-	-- constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
+		constant vt          : string := jso(layout)**".vt";
 begin
 
 	clkin_ibufg : ibufg
@@ -511,24 +510,24 @@ begin
 
 	end block;
 
-	-- scopeio_e : entity hdl4fpga.scopeio
-	-- generic map (
-		-- videotiming_id   => video_params(video_mode).timing_id,
-		-- layout         => layout)
-	-- port map (
-		-- sio_clk     => sio_clk,
-		-- si_frm      => si_frm,
-		-- si_irdy     => si_irdy,
-		-- si_data     => si_data,
-		-- so_data     => so_data,
-		-- input_clk   => input_clk,
-		-- input_ena   => input_ena,
-		-- input_data  => input_samples,
-		-- video_clk   => video_clk,
-		-- video_pixel => video_pixel,
-		-- video_hsync => video_hzsync,
-		-- video_vsync => video_vtsync,
-		-- video_blank => video_blank);
+	scopeio_e : entity hdl4fpga.scopeio
+	generic map (
+		videotiming_id   => video_params(video_mode).timing_id,
+		layout         => layout)
+	port map (
+		sio_clk     => sio_clk,
+		si_frm      => si_frm,
+		si_irdy     => si_irdy,
+		si_data     => si_data,
+		so_data     => so_data,
+		input_clk   => input_clk,
+		input_ena   => input_ena,
+		input_data  => input_samples,
+		video_clk   => video_clk,
+		video_pixel => video_pixel,
+		video_hsync => video_hzsync,
+		video_vsync => video_vtsync,
+		video_blank => video_blank);
 
 	process (video_clk)
 	begin
