@@ -43,12 +43,14 @@ entity scopeio_textbox is
 		text_fgon     : out std_logic);
 
 	constant inputs        : natural := jso(layout)**".inputs";
+	constant hz_unit       : real    := jso(layout)**".axis.horizontal.unit";
+	constant vt_unit       : real    := jso(layout)**".axis.vertical.unit";
+	constant font_width    : natural := jso(layout)**".textbox.font_width";
+	constant textbox_width : natural := jso(layout)**".textbox.width";
+
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
-	constant font_width    : natural := jso(layout)**".textbox.font_width";
 
-	constant hz_unit : real := jso(layout)**".axis.horizontal.unit";
-	constant vt_unit : real := jso(layout)**".axis.vertical.unit";
 
 	function textbox_rom (
 		constant width  : natural;
@@ -120,10 +122,10 @@ architecture def of scopeio_textbox is
 
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
-	constant textwidth_bits  : natural := unsigned_num_bits(textbox_width(layout)-1);
-	constant cga_cols        : natural := textbox_width(layout)/font_width;
+	constant textwidth_bits  : natural := unsigned_num_bits(textbox_width-1);
+	constant cga_cols        : natural := textbox_width/font_width;
 	constant cga_rows        : natural := textbox_height(layout)/font_height;
-	constant cga_size        : natural := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
+	constant cga_size        : natural := (textbox_width/font_width)*(textbox_height(layout)/font_height);
 	constant cga_bitrom      : std_logic_vector := to_ascii(textbox_rom(cga_cols, cga_size));
 
 	signal cga_we            : std_logic := '0';

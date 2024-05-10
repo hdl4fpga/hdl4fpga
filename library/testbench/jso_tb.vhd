@@ -249,7 +249,7 @@ begin
     process 
     begin
         -- report "VALUE : " & ''' & real'image(test**"[5].top") & ''';
-        report "VALUE : " & ''' & ((jso(layout)**".vt")**"[7]")**".text" & ''';
+        report "VALUE : " & ''' & ((jso(layout)**".vt")**"[0]")**".step" & ''';
         wait;
     end process;
 end;

@@ -70,8 +70,13 @@ entity scopeio_video is
 		video_blank        : out std_logic;
 		video_sync         : out std_logic);
 
-	constant inputs        : natural := jso(layout)**".inputs";
-	constant chanid_bits : natural := unsigned_num_bits(inputs-1);
+	constant inputs          : natural := jso(layout)**".inputs";
+	constant num_of_segments : natural := jso(layout)**".num_of_segments";
+	constant axis_fontsize   : natural := jso(layout)**".axis.fontsize";
+	constant main_width      : natural := jso(layout)**".display.width";
+	constant main_height     : natural := jso(layout)**".display.height";
+	constant textbox_width   : natural := jso(layout)**".textbox.width";
+	constant chanid_bits     : natural := unsigned_num_bits(inputs-1);
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
 
 end;
@@ -91,7 +96,7 @@ architecture beh of scopeio_video is
 	constant segmment_latency     : natural := 5;
 	constant palette_latency      : natural := 2;
 	constant vgaio_latency        : natural := input_latency+mainrgtrio_latency+sgmntrgtrio_latency+segmment_latency+palette_latency;
-	constant hztick_bits : natural := unsigned_num_bits(8*axis_fontsize(layout)-1);
+	constant hztick_bits          : natural := unsigned_num_bits(8*axis_fontsize-1);
 
 	signal video_hzsync  : std_logic;
 	signal video_vtsync  : std_logic;
@@ -119,13 +124,13 @@ architecture beh of scopeio_video is
 	constant sgmnt_id : natural := 0;
 	constant text_id  : natural := 1;
 
-	constant sgmntboxx_bits : natural := unsigned_num_bits(sgmnt_width(layout)-1);
-	constant sgmntboxy_bits : natural := unsigned_num_bits(sgmnt_height(layout)-1);
+	constant mainwidth_bits : natural  := unsigned_num_bits(main_width-1);
+	constant mainheight_bits : natural := unsigned_num_bits(main_height-1);
 
-	signal x             : std_logic_vector(sgmntboxx_bits-1 downto 0);
-	signal y             : std_logic_vector(sgmntboxy_bits-1 downto 0);
-	signal textbox_x     : std_logic_vector(sgmntboxx_bits-1 downto 0);
-	signal textbox_y     : std_logic_vector(sgmntboxy_bits-1 downto 0);
+	signal x             : std_logic_vector(mainwidth_bits-1  downto 0);
+	signal y             : std_logic_vector(mainheight_bits-1 downto 0);
+	signal textbox_x     : std_logic_vector(mainwidth_bits-1  downto 0);
+	signal textbox_y     : std_logic_vector(mainheight_bits-1 downto 0);
 	signal sgmntbox_on   : std_logic;
 	signal grid_on       : std_logic;
 	signal hz_on         : std_logic;
@@ -145,7 +150,7 @@ architecture beh of scopeio_video is
 	signal text_fg       : std_logic_vector(0 to unsigned_num_bits(pltid_order'length+inputs+1-1)-1);
 	signal text_bg       : std_logic_vector(text_fg'range);
 	signal sgmntbox_bgon : std_logic;
-	signal sgmntbox_ena  : std_logic_vector(0 to resolve(layout&".num_of_segments")-1);
+	signal sgmntbox_ena  : std_logic_vector(0 to num_of_segments-1);
 	signal pointer_dot   : std_logic;
 
 	signal vdv   : std_logic;
@@ -202,8 +207,8 @@ begin
 	video_e : entity hdl4fpga.video_sync
 	generic map (
 		timing_id     => timing_id,
-		width         => main_width(layout),
-		height        => main_height(layout))
+		width         => main_width,
+		height        => main_height)
 	port map (
 		video_clk     => video_clk,
 		extern_video  => extern_video,
@@ -255,7 +260,7 @@ begin
 		vt_on        => vt_on,
 		textbox_on   => text_on);
 
-	textbox_g : if textbox_width(layout)/=0 generate
+	textbox_g : if textbox_width/=0 generate
 		scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
 		generic map (
 			max_delay     => max_delay, 
@@ -323,7 +328,7 @@ begin
 		vt_dot        => vt_dot,
 		trigger_dot   => trigger_dot,
 		trace_dots    => trace_dots);
-
+-- 
 	bg_e : entity hdl4fpga.latency
 	generic map (
 		n => 5,

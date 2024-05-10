@@ -58,13 +58,14 @@ entity scopeio_axis is
 	constant hz_unit         : real    := 2.0*real'(jso(layout)**".axis.horizontal.unit");
 	constant vt_unit         : real    := jso(layout)**".axis.vertical.unit";
 	constant vt_width        : natural := jso(layout)**".axis.vertical.width";
+	constant axis_fontsize   : natural := jso(layout)**".axis.fontsize";
 
 end;
 
 architecture def of scopeio_axis is
 
 	constant division_size : natural := grid_unit(layout);
-	constant font_size     : natural := axis_fontsize(layout);
+	constant font_size     : natural := axis_fontsize;
 
 	constant division_bits : natural := unsigned_num_bits(division_size-1);
 	constant font_bits     : natural := unsigned_num_bits(font_size-1);

@@ -66,34 +66,36 @@ begin
 		bcd  => sll_bcd);
 
 	lifo_b : block
-		generic (
-			max_width : natural);
-		generic map (
-			max_width => max_width);
-		port (
-			clk      : in  std_logic;
-			sll_frm  : in  std_logic;
-			sll_trdy : buffer std_logic;
-			sll_bcd  : in  std_logic_vector;
-			slr_frm  : buffer std_logic;
-			slr_dec  : in std_logic_vector;
-			slr_irdy : buffer std_logic;
-			slr_trdy : in  std_logic;
-			slr_ini  : out std_logic_vector);
-		port map (
-			clk      => clk,
-			sll_frm  => sll_frm,
-			sll_trdy => sll_trdy,
-			sll_bcd  => sll_bcd,
-			slr_frm  => slr_frm,
-			slr_dec  => dec,
-			slr_irdy => slr_irdy,
-			slr_trdy => slr_trdy,
-			slr_ini  => slr_ini);
+		-- Vivado : [Synth 8-26] block statement with generics or ports not implemented
+		-- generic (
+			-- max_width : natural);
+		-- generic map (
+			-- max_width => max_width);
+		-- port (
+			-- clk      : in  std_logic;
+			-- sll_frm  : in  std_logic;
+			-- sll_trdy : buffer std_logic;
+			-- sll_bcd  : in  std_logic_vector;
+			-- slr_frm  : buffer std_logic;
+			-- slr_dec  : in std_logic_vector;
+			-- slr_irdy : buffer std_logic;
+			-- slr_trdy : in  std_logic;
+			-- slr_ini  : out std_logic_vector);
+		-- port map (
+			-- clk      => clk,
+			-- sll_frm  => sll_frm,
+			-- sll_trdy => sll_trdy,
+			-- sll_bcd  => sll_bcd,
+			-- slr_frm  => slr_frm,
+			-- slr_dec  => dec,
+			-- slr_irdy => slr_irdy,
+			-- slr_trdy => slr_trdy,
+			-- slr_ini  => slr_ini);
 
-		signal lifo_ov   : std_logic;
+		alias slr_dec is dec;
 		-- alias  push_ena  is sll_frm; -- tools crashes
 		-- alias  push_data is sll_bcd; -- tools crashes
+		signal lifo_ov   : std_logic;
 		signal push_ena  : std_logic;
 		signal push_data : std_logic_vector(sll_bcd'range);
 		signal pop_ena   : std_logic;
@@ -263,32 +265,40 @@ begin
 		bcd  => slr_bcd);
 
 	align_b : block
-		port (
-			tab       : in  std_logic_vector; 
-			clk       : in  std_logic;
-			padd      : in  std_logic_vector;
-			left      : in  std_logic;
-			neg       : in  std_logic := std_logic'('0'); -- Lattice Diamond complains if no quialifier
-			sign      : in  std_logic := std_logic'('0');
-			bcd_frm   : in  std_logic;
-			bcd_irdy  : in  std_logic;
-			bcd_trdy  : out std_logic;
-			bcd       : in  std_logic_vector(0 to 4-1);
-			code_frm  : buffer std_logic;
-			code_trdy : in  std_logic := std_logic'('1');
-			code      : out std_logic_vector);
-		port map (
-			tab      => tab,
-			neg      => neg,
-			left     => left,
-			padd     => width,
-			clk      => clk,
-			bcd_frm  => slr_frm,
-			bcd_irdy => slr_irdy,
-			bcd_trdy => slr_trdy,
-			bcd      => slr_bcd,
-			code_frm => code_frm,
-			code     => code);
+		-- Vivado [Synth 8-26] block statement with generics or ports not implemented ["/home/msagre/work/hdl4fpga/library/basic/btof.vhd":267]
+		-- port (
+			-- tab       : in  std_logic_vector; 
+			-- clk       : in  std_logic;
+			-- padd      : in  std_logic_vector;
+			-- left      : in  std_logic;
+			-- neg       : in  std_logic := std_logic'('0'); -- Lattice Diamond complains if no quialifier
+			-- sign      : in  std_logic := std_logic'('0');
+			-- bcd_frm   : in  std_logic;
+			-- bcd_irdy  : in  std_logic;
+			-- bcd_trdy  : out std_logic;
+			-- bcd       : in  std_logic_vector(0 to 4-1);
+			-- code_frm  : buffer std_logic;
+			-- code_trdy : in  std_logic := std_logic'('1');
+			-- code      : out std_logic_vector);
+		-- port map (
+			-- tab      => tab,
+			-- neg      => neg,
+			-- left     => left,
+			-- padd     => width,
+			-- clk      => clk,
+			-- bcd_frm  => slr_frm,
+			-- bcd_irdy => slr_irdy,
+			-- bcd_trdy => slr_trdy,
+			-- bcd      => slr_bcd,
+			-- code_frm => code_frm,
+			-- code     => code);
+	
+		signal sign     : std_logic := '0';
+		alias  padd     is width;
+		alias  bcd_frm  is slr_frm;
+		alias  bcd_irdy is slr_irdy;
+		alias  bcd_trdy is slr_trdy;
+		alias  bcd      is slr_bcd;
 	
 		constant bcd_digits : natural := 1;
 		constant bcd_tab    : std_logic_vector := x"0123456789abcdef";

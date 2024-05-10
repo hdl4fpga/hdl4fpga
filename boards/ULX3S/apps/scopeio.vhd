@@ -82,7 +82,7 @@ architecture scopeio of ulx3s is
 	constant max_delay   : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 
-	constant inputs      : natural := 2;
+	constant inputs      : natural := 8;
 	constant max_inputs  : natural := 8;
 	signal input_clk     : std_logic;
 	signal input_lck     : std_logic;
@@ -90,7 +90,7 @@ architecture scopeio of ulx3s is
 	signal input_chno    : std_logic_vector(4-1 downto 0);
 	signal input_ena     : std_logic;
 	signal input_sample  : std_logic_vector(13-1 downto 0);
-	constant vt_step     : real := 3.3e3*milli/2.0**(input_sample'length-1); -- Volts
+	constant vt_step     : real := 3.3/2.0**(input_sample'length-1); -- Volts
 	signal input_enas    : std_logic;
 	signal input_samples : std_logic_vector(0 to inputs*input_sample'length-1);
 	signal tp            : std_logic_vector(1 to 32);

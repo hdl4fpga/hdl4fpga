@@ -48,6 +48,7 @@ entity scopeio_segment is
 		trace_dots    : out std_logic_vector);
 
 	constant inputs        : natural := jso(layout)**".inputs";
+	constant axis_fontsize   : natural := jso(layout)**".axis.fontsize";
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 end;
 
@@ -60,7 +61,7 @@ architecture def of scopeio_segment is
 	signal vt_chanid       : std_logic_vector(chanid_maxsize-1 downto 0);
 
 	constant division_size : natural := grid_unit(layout);
-	constant font_size     : natural := axis_fontsize(layout);
+	constant font_size     : natural := axis_fontsize;
 	constant vt_height     : natural := grid_height(layout);
 
 	constant division_bits : natural := unsigned_num_bits(division_size-1);

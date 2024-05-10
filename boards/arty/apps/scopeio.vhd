@@ -32,7 +32,7 @@ architecture scopeio of arty is
 
 	constant max_delay     : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-	constant vt_step       : real := 1.0e3*milli/2.0**16; -- Volts
+	constant vt_step       : real := 1.0/2.0**16; -- Volts
 
 	constant inputs        : natural := 9;
 	signal input_clk       : std_logic;
@@ -84,14 +84,14 @@ architecture scopeio of arty is
 			"   inputs          : " & natural'image(inputs) & ',' &
 			"   max_delay       : " & natural'image(max_delay)  & ',' &
 			"   min_storage     : 256,     " & -- samples, storage size will be equal or larger than this
-			"   num_of_segments :   3,     " &
+			"   num_of_segments :   4,     " &
 			"   display : {                " &
-			"       width  : 1280,         " &
-			"       height : 720},         " &
+			"       width  : 1920,         " &
+			"       height : 1080},         " &
 			"   grid : {                   " &
 			"       unit   : 32,           " &
-			"       width  : " & natural'image(31*32+1) & ',' &
-			"       height : " & natural'image( 6*32+1) & ',' &
+			"       width  : " & natural'image(50*32+1) & ',' &
+			"       height : " & natural'image( 8*32+1) & ',' &
 			"       color  : 0xff_ff_00_00," &
 			"       background-color : 0xff_00_00_00}," &
 			"   axis : {                   " &
@@ -147,17 +147,17 @@ architecture scopeio of arty is
 			"           background-color : 0xff_00_00_ff}}," &
 			"   textbox : {                " &
 			"       font_width :  8,       " &
-			"       width      : " & natural'image(32*4+1) & ','&
+			"       width      : " & natural'image(33*8+1) & ','&
 			"       inside     : false,    " &
 			"       color      : 0xff_ff_ff_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   main : {                   " &
-			"       top        : 23,       " & 
-			"       left       :  3,       " & 
+			"       top        :  5,       " & 
+			"       left       :  1,       " & 
 			"       right      :  0,       " & 
 			"       bottom     :  0,       " & 
-			"       vertical   : 16,       " & 
-			"       horizontal :  0,       " &
+			"       vertical   :  1,       " & 
+			"       horizontal :  1,       " &
 			"       background-color : 0xff_00_00_00}," &
 			"   segment : {                " &
 			"       top        : 1,        " &
