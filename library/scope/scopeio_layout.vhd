@@ -122,18 +122,25 @@ entity scopeio_layout is
 
 		return retval(0 to index-1);
 	end;
+
+	constant segment_top           : natural := jso(layout)**".segment.top";
+	constant axishorizontal_inside : boolean := jso(layout)**".axis.horizontal.inside";
+	constant axishorizontal_height : natural := jso(layout)**".axis.horizontal.height";
+	constant segment_vertical      : natural := jso(layout)**".segment.vertical";
+	constant segment_bottom        : natural := jso(layout)**".segment.bottom";
+
 	function sgmnt_height (
 		constant layout : string)
 		return natural is
 		variable retval : natural := 0;
 	begin
-		retval := retval + jso(layout)**".segment.top";
-		retval := retval + jso(layout)**".grid.height";
-		if not (jso(layout)**".axis.horizontal.inside") then
-			retval := retval + jso(layout)**".axis.horizontal.height";
-			retval := retval + jso(layout)**".segment.vertical";
+		retval := retval + segment_top;
+		retval := retval + grid_height;
+		if not axishorizontal_inside then
+			retval := retval + axishorizontal_height;
+			retval := retval + segment_vertical;
 		end if;
-		retval := retval + jso(layout)**".segment.bottom";
+		retval := retval + segment_bottom;
 		return retval;
 	end;
 
@@ -280,11 +287,15 @@ entity scopeio_layout is
 		return to_edges(sides);
 	end;
 
+	constant main_left       : natural := jso(layout)**".main.left";
+	constant main_top        : natural := jso(layout)**".main.top";
+	constant main_horizontal : natural := jso(layout)**".main.horizontal";
+	constant main_vertical   : natural := jso(layout)**".main.vertical";
+
 	function main_boxon (
 		constant box_id   : natural;
 		constant x_div    : std_logic_vector;
-		constant y_div    : std_logic_vector;
-		constant layout   : string)
+		constant y_div    : std_logic_vector)
 		return std_logic is
 		variable x_margin : natural;
 		variable y_margin : natural;
@@ -292,10 +303,10 @@ entity scopeio_layout is
 		variable y_gap    : natural;
 	begin
 
-		x_margin := pos(jso(layout)**".main.left");
-		y_margin := pos(jso(layout)**".main.top");
-		x_gap    := pos(jso(layout)**".main.horizontal");
-		y_gap    := pos(jso(layout)**".main.vertical");
+		x_margin := pos(main_left);
+		y_margin := pos(main_top);
+		x_gap    := pos(main_horizontal);
+		y_gap    := pos(main_vertical);
 
 		return setif(unsigned(y_div)=box_id*(y_gap+1)+y_margin and unsigned(x_div)=0*(x_gap+1)+x_margin);
 	end;
@@ -352,7 +363,7 @@ begin
 			sgmntbox_on   <= '0';
 			sgmnt_decode <= (others => '0');
 			for i in 0 to num_of_segments-1 loop
-				if main_boxon(box_id => i, x_div => mainbox_xdiv, y_div => mainbox_ydiv, layout => layout)='1' then
+				if main_boxon(box_id => i, x_div => mainbox_xdiv, y_div => mainbox_ydiv)='1' then
 					sgmntbox_on     <= mainbox_xon;
 					sgmnt_decode(i) <= '1';
 				end if;
