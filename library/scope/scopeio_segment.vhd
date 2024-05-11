@@ -48,8 +48,12 @@ entity scopeio_segment is
 		trace_dots    : out std_logic_vector);
 
 	constant inputs        : natural := jso(layout)**".inputs";
-	constant axis_fontsize   : natural := jso(layout)**".axis.fontsize";
+	constant axis_fontsize : natural := jso(layout)**".axis.fontsize";
+	constant grid_height   : natural := jso(layout)**".grid.height";
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
+	constant vtaxis_tickrotate : string := jso(layout)**".axis.vertical.rotate";
+	constant grid_unit       : natural := jso(layout)**".grid.unit";
+
 end;
 
 architecture def of scopeio_segment is
@@ -60,13 +64,13 @@ architecture def of scopeio_segment is
 	signal vt_offset       : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 	signal vt_chanid       : std_logic_vector(chanid_maxsize-1 downto 0);
 
-	constant division_size : natural := grid_unit(layout);
+	constant division_size : natural := grid_unit;
 	constant font_size     : natural := axis_fontsize;
-	constant vt_height     : natural := grid_height(layout);
+	constant vt_height     : natural := grid_height;
 
 	constant division_bits : natural := unsigned_num_bits(division_size-1);
 	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
-	constant vtstep_bits   : natural := setif(vtaxis_tickrotate(layout)="ccw0", division_bits, vttick_bits);
+	constant vtstep_bits   : natural := setif(vtaxis_tickrotate="ccw0", division_bits, vttick_bits);
 	constant vtheight_bits : natural := unsigned_num_bits((vt_height-1)-1);
 
 begin

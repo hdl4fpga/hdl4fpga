@@ -68,6 +68,8 @@ entity scopeio is
 	constant min_storage   : natural := jso(layout)**".min_storage";
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
+	constant grid_height   : natural := jso(layout)**".grid.height";
+	constant grid_width    : natural := jso(layout)**".grid.width";
 
 	constant time_factors  : natural_vector := to_naturalvector(jso(layout)**".axis.horizontal.scales");
 	constant vt_gains      : natural_vector := to_naturalvector(jso(layout)**".axis.vertical.gains");
@@ -76,7 +78,7 @@ end;
 
 architecture beh of scopeio is
 
-	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
+	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 	constant gainid_bits  : natural := unsigned_num_bits(vt_gains'length-1);
 
 	signal rgtr_id        : std_logic_vector(8-1 downto 0);
@@ -87,7 +89,7 @@ architecture beh of scopeio is
 	signal ampsample_dv   : std_logic;
 	signal ampsample_data : std_logic_vector(0 to input_data'length-1);
 
-	constant capture_bits : natural := unsigned_num_bits(max(resolve(layout&".num_of_segments")*grid_width(layout),min_storage)-1);
+	constant capture_bits : natural := unsigned_num_bits(max(resolve(layout&".num_of_segments")*grid_width,min_storage)-1);
 
 	signal video_addr     : std_logic_vector(0 to capture_bits-1);
 	signal video_frm      : std_logic;

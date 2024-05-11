@@ -59,8 +59,69 @@ entity scopeio_layout is
 	constant num_of_segments : natural := jso(layout)**".num_of_segments";
 	constant axis_fontsize   : natural := jso(layout)**".axis.fontsize";
 	constant textbox_width   : natural := jso(layout)**".textbox.width";
-	constant hzaxis_height : natural := jso(layout)**".axis.horizontal.height";
+	constant hzaxis_height   : natural := jso(layout)**".axis.horizontal.height";
+	constant vtaxis_height   : natural := jso(layout)**".grid.height";
+	constant textbox_height  : natural := jso(layout)**".grid.height";
+	constant grid_width      : natural := jso(layout)**".grid.width";
+	constant grid_height     : natural := jso(layout)**".grid.height";
+	constant vtaxis_tickrotate : string := jso(layout)**".axis.vertical.rotate";
+	constant vtaxis_width    : natural := jso(layout)**".axis.vertical.width";
+	constant grid_unit       : natural := jso(layout)**".grid.unit";
 
+
+		function pos(
+			constant val : natural)
+			return natural is
+		begin
+			if val > 0 then
+				return 1;
+			end if;
+			return 0;
+		end;
+
+	function boxes_sides(
+		constant sides        : natural_vector;
+		constant margin_start : natural := 0;
+		constant margin_end   : natural := 0;
+		constant gap          : natural := 0)
+		return natural_vector is
+
+		variable edge   : natural;
+		variable index  : natural;
+		variable edges  : natural_vector(0 to sides'length+(sides'length-1)*gap+pos(margin_end)-1);
+		variable retval : natural_vector(0 to sides'length+(sides'length-1)*gap+pos(margin_start)+pos(margin_end)-1);
+	begin
+
+		index := 0;
+		edge  := margin_start;
+		for i in sides'range loop
+			if sides(i)/=0 then
+				if index > 0 then
+					if gap/=0 then
+						edges(index) := gap + edge;
+						edge  := edges(index);
+						index := index + 1;
+					end if;
+				end if;
+				edges(index) := sides(i) + edge;
+				edge  := edges(index);
+				index := index + 1;
+			end if;
+		end loop;
+		if margin_end > 0 then
+			edges(index) := margin_end + edge;
+			index := index + 1;
+		end if;
+		if margin_start > 0 then
+			retval(0) := margin_start;
+			retval(1 to index) := edges(0 to index-1);
+			index := index + 1;
+		else
+			retval(0 to index-1) := edges(0 to index-1);
+		end if;
+
+		return retval(0 to index-1);
+	end;
 	function sgmnt_height (
 		constant layout : string)
 		return natural is
@@ -86,7 +147,7 @@ entity scopeio_layout is
 			retval := retval + jso(layout)**".axis.vertical.width";
 			retval := retval + jso(layout)**".segment.horizontal";
 		end if;
-		retval := retval + grid_width(layout);
+		retval := retval + grid_width;
 		if not (jso(layout)**".textbox.inside") then
 			retval := retval + jso(layout)**".textbox.width";
 			retval := retval + jso(layout)**".segment.horizontal";
@@ -103,8 +164,8 @@ entity scopeio_layout is
 
 		return to_edges(boxes_sides(
 			sides        => (
-				vtaxis_boxid => setif(not (jso(layout)**".axis.vertical.inside"), vtaxis_width(layout)), 
-				grid_boxid   => grid_width(layout), 
+				vtaxis_boxid => setif(not (jso(layout)**".axis.vertical.inside"), vtaxis_width), 
+				grid_boxid   => grid_width, 
 				text_boxid   => setif(not (jso(layout)**".textbox.inside"), textbox_width)),
 			margin_start => jso(layout)**".segment.left",
 			margin_end   => jso(layout)**".segment.right",
@@ -118,7 +179,7 @@ entity scopeio_layout is
 
 		return to_edges(boxes_sides(
 			sides        => (
-				0 => grid_height(layout),
+				0 => grid_height,
 				1 => setif(not (jso(layout)**".axis.horizontal.inside"), hzaxis_height)),
 			margin_start => jso(layout)**".segment.top",
 			margin_end   => jso(layout)**".segment.bottom",
@@ -133,15 +194,15 @@ entity scopeio_layout is
 		return std_logic is
 		constant textbox_width : natural := jso(layout)**".textbox.width";
 		constant x_sides  : natural_vector := (
-			vtaxis_boxid => setif(not (jso(layout)**".axis.vertical.inside"), vtaxis_width(layout)),
-			grid_boxid   => grid_width(layout),
+			vtaxis_boxid => setif(not (jso(layout)**".axis.vertical.inside"), vtaxis_width),
+			grid_boxid   => grid_width,
 			text_boxid   => setif(not (jso(layout)**".textbox.inside"), textbox_width),
 			hzaxis_boxid => setif(not (jso(layout)**".axis.horizontal.inside"),  hzaxis_height));
 
 		constant y_sides  : natural_vector := (
-			vtaxis_boxid => setif(not (jso(layout)**".axis.vertical.inside"), vtaxis_height(layout)),
-			grid_boxid   => grid_height(layout),
-			text_boxid   => setif(not (jso(layout)**".textbox.inside"), textbox_height(layout)),
+			vtaxis_boxid => setif(not (jso(layout)**".axis.vertical.inside"), vtaxis_height),
+			grid_boxid   => grid_height,
+			text_boxid   => setif(not (jso(layout)**".textbox.inside"), textbox_height),
 			hzaxis_boxid => setif(not (jso(layout)**".axis.horizontal.inside"), hzaxis_height));
 
 		variable retval   : std_logic;
@@ -163,16 +224,6 @@ entity scopeio_layout is
 				end if;
 			end loop;
 			return div;
-		end;
-
-		function pos(
-			constant val : natural)
-			return natural is
-		begin
-			if val > 0 then
-				return 1;
-			end if;
-			return 0;
 		end;
 
 	begin
@@ -227,6 +278,26 @@ entity scopeio_layout is
 			report "Boxes' Height sum up cannot be greater than Display's Height"
 			severity FAILURE;
 		return to_edges(sides);
+	end;
+
+	function main_boxon (
+		constant box_id   : natural;
+		constant x_div    : std_logic_vector;
+		constant y_div    : std_logic_vector;
+		constant layout   : string)
+		return std_logic is
+		variable x_margin : natural;
+		variable y_margin : natural;
+		variable x_gap    : natural;
+		variable y_gap    : natural;
+	begin
+
+		x_margin := pos(jso(layout)**".main.left");
+		y_margin := pos(jso(layout)**".main.top");
+		x_gap    := pos(jso(layout)**".main.horizontal");
+		y_gap    := pos(jso(layout)**".main.vertical");
+
+		return setif(unsigned(y_div)=box_id*(y_gap+1)+y_margin and unsigned(x_div)=0*(x_gap+1)+x_margin);
 	end;
 
 end;
@@ -425,10 +496,10 @@ begin
 				if rising_edge(video_clk) then
 					box_on  := xon and yon;
 
-					if vtaxis_width(layout)/=0  then
+					if vtaxis_width/=0  then
 						if jso(layout)**".axis.vertical.inside" then
 							vt_mask := unsigned(sgmntbox_x) srl font_bits;
-							if vtaxis_tickrotate(layout)="ccw90" or vtaxis_tickrotate(layout)="ccw270" then
+							if vtaxis_tickrotate="ccw90" or vtaxis_tickrotate="ccw270" then
 								vt_on <= setif(vt_mask=(vt_mask'range => '0')) and sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 							else
 								vt_on <= setif(vt_mask < 6) and sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
@@ -444,7 +515,7 @@ begin
 						hz_mask := unsigned(y) srl font_bits;
 						if resolve(layout&".axis.horizontal.inside") then
 							if true then -- scale at the bottom
-								if unsigned(hz_mask)=to_unsigned(grid_height(layout)/axis_fontsize-1, hz_mask'length) then
+								if unsigned(hz_mask)=to_unsigned(grid_height/axis_fontsize-1, hz_mask'length) then
 									hz_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 								else
 									hz_on <= '0';
@@ -467,9 +538,9 @@ begin
 
 					if textbox_width/=0  then
 						if jso(layout)**".textbox.inside" then
-							if 2**unsigned_num_bits(textbox_width-1)=textbox_width and (2**font_bits*(grid_width(layout)/2**font_bits)) mod textbox_width=0 then
+							if 2**unsigned_num_bits(textbox_width-1)=textbox_width and (2**font_bits*(grid_width/2**font_bits)) mod textbox_width=0 then
 								vt_mask := unsigned(sgmntbox_x) srl textwidth_bits;
-								if unsigned(vt_mask)=to_unsigned(grid_width(layout)/textbox_width-1, vt_mask'length) then
+								if unsigned(vt_mask)=to_unsigned(grid_width/textbox_width-1, vt_mask'length) then
 									textbox_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 								else
 									textbox_on <= '0';
@@ -478,12 +549,12 @@ begin
 								textbox_y <= sgmntbox_y;
 							else
 								vt_mask := unsigned(sgmntbox_x) srl font_bits;
-								if vt_mask >= (grid_width(layout)-textbox_width)/2**font_bits then
+								if vt_mask >= (grid_width-textbox_width)/2**font_bits then
 									textbox_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv, layout => layout) and box_on;
 								else
 									textbox_on <= '0';
 								end if;
-								textbox_x <= std_logic_vector(unsigned(sgmntbox_x)-(grid_width(layout)-textbox_width));
+								textbox_x <= std_logic_vector(unsigned(sgmntbox_x)-(grid_width-textbox_width));
 								textbox_y <= sgmntbox_y;
 							end if;
 						else
@@ -517,7 +588,7 @@ begin
 				base := (others => '0');
 				for i in 0 to num_of_segments-1 loop
 					if sgmntbox_sel(i)='1' then
-						base := base or to_unsigned((grid_width(layout)-grid_width(layout) mod grid_unit(layout))*i, base'length);
+						base := base or to_unsigned((grid_width-grid_width mod grid_unit)*i, base'length);
 					end if;
 				end loop;
 				sgmntbox_ena <= sgmntbox_sel;

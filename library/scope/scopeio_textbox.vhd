@@ -42,11 +42,13 @@ entity scopeio_textbox is
 		text_bg       : out std_logic_vector;
 		text_fgon     : out std_logic);
 
-	constant inputs        : natural := jso(layout)**".inputs";
-	constant hz_unit       : real    := jso(layout)**".axis.horizontal.unit";
-	constant vt_unit       : real    := jso(layout)**".axis.vertical.unit";
-	constant font_width    : natural := jso(layout)**".textbox.font_width";
-	constant textbox_width : natural := jso(layout)**".textbox.width";
+	constant inputs         : natural := jso(layout)**".inputs";
+	constant hz_unit        : real    := jso(layout)**".axis.horizontal.unit";
+	constant vt_unit        : real    := jso(layout)**".axis.vertical.unit";
+	constant font_width     : natural := jso(layout)**".textbox.font_width";
+	constant textbox_width  : natural := jso(layout)**".textbox.width";
+	constant textbox_height : natural := jso(layout)**".grid.height";
+	constant grid_height    : natural := jso(layout)**".grid.height";
 
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
@@ -118,14 +120,14 @@ end;
 architecture def of scopeio_textbox is
 	subtype ascii is std_logic_vector(8-1 downto 0);
 	constant cgaadapter_latency : natural := 4;
-	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
+	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
 	constant textwidth_bits  : natural := unsigned_num_bits(textbox_width-1);
 	constant cga_cols        : natural := textbox_width/font_width;
-	constant cga_rows        : natural := textbox_height(layout)/font_height;
-	constant cga_size        : natural := (textbox_width/font_width)*(textbox_height(layout)/font_height);
+	constant cga_rows        : natural := textbox_height/font_height;
+	constant cga_size        : natural := (textbox_width/font_width)*(textbox_height/font_height);
 	constant cga_bitrom      : std_logic_vector := to_ascii(textbox_rom(cga_cols, cga_size));
 
 	signal cga_we            : std_logic := '0';

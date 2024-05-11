@@ -76,8 +76,9 @@ entity scopeio_video is
 	constant main_width      : natural := jso(layout)**".display.width";
 	constant main_height     : natural := jso(layout)**".display.height";
 	constant textbox_width   : natural := jso(layout)**".textbox.width";
+	constant grid_height    : natural := jso(layout)**".grid.height";
 	constant chanid_bits     : natural := unsigned_num_bits(inputs-1);
-	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
+	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 
 end;
 
