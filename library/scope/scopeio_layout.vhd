@@ -129,8 +129,7 @@ entity scopeio_layout is
 	constant segment_vertical      : natural := jso(layout)**".segment.vertical";
 	constant segment_bottom        : natural := jso(layout)**".segment.bottom";
 
-	function sgmnt_height (
-		constant layout : string)
+	function sgmnt_height
 		return natural is
 		variable retval : natural := 0;
 	begin
@@ -275,7 +274,7 @@ entity scopeio_layout is
 		return natural_vector is
 		constant sides : natural_vector := boxes_sides(
 			-- sides        => (0 to natural'(jso(layout)**".num_of_segments")-1 => sgmnt_height(layout)),
-			sides        => (0 to resolve(layout&".num_of_segments")-1 => sgmnt_height(layout)),
+			sides        => (0 to resolve(layout&".num_of_segments")-1 => sgmnt_height),
 			margin_start => jso(layout)**".main.top",
 			margin_end   => jso(layout)**".main.bottom",
 			gap          => jso(layout)**".main.vertical");
@@ -323,7 +322,7 @@ architecture beh of scopeio_layout is
 	constant hztick_bits : natural := unsigned_num_bits(8*axis_fontsize-1);
 
 	constant sgmntboxx_bits : natural := unsigned_num_bits(sgmnt_width(layout)-1);
-	constant sgmntboxy_bits : natural := unsigned_num_bits(sgmnt_height(layout)-1);
+	constant sgmntboxy_bits : natural := unsigned_num_bits(sgmnt_height-1);
 
 	signal mainbox_xdiv  : std_logic_vector(0 to 2-1);
 	signal mainbox_ydiv  : std_logic_vector(0 to 4-1);
