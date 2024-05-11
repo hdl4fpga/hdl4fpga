@@ -246,7 +246,6 @@ begin
 		video_hzon   => video_hzon,
 		video_vton   => video_vton,
 
-		-- hz_slider    => time_offset,
 		hz_segment   => hz_segment,
 		x            => x,
 		y            => y,

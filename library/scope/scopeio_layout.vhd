@@ -41,7 +41,6 @@ entity scopeio_layout is
 		video_vton   : in  std_logic;
 		video_hzon   : in  std_logic;
 
-		-- hz_slider    : in  std_logic_vector;
 		hz_segment   : out std_logic_vector;
 		x            : buffer std_logic_vector;
 		y            : buffer std_logic_vector;
