@@ -21,7 +21,9 @@ architecture scopeio of nuhs3adsp is
 	constant io_link    : io_comms := io_ipoe;
 	constant sys_per  : real := 50.0;
 	signal sys_clk    : std_logic;
+	signal sysclk_n    : std_logic;
 	signal vga_clk    : std_logic;
+	signal vgaclk_n    : std_logic;
 	signal vga_hsync  : std_logic;
 	signal vga_vsync  : std_logic;
 	signal vga_rgb    : std_logic_vector(0 to 3*8-1);
@@ -464,24 +466,24 @@ begin
 	end process;
 	psave <= '1';
 
-	adcclkab_e : oddr
-	generic map (
-		ddr_clk_edge => "SAME_EDGE")
+	sysclk_n <= not sys_clk;
+	adcclkab_e : oddr2
 	port map (
-		c  => sys_clk,
+		c0  => sys_clk,
+		c1  =>sysclk_n,
 		ce => '1',
-		d1 => '1',
-		d2 => '0',
+		d0 => '1',
+		d1 => '0',
 		q  => adc_clkab);
 
-	videodac_i: oddr
-	generic map (
-		ddr_clk_edge => "SAME_EDGE")
+	vgaclk_n <= not vga_clk;
+	videodac_i: oddr2
 	port map (
-		c   => vga_clk,
+		c0   => vga_clk,
+		c1  => vgaclk_n,
 		ce  => '1',
-		d1  => '0',
-		d2  => '1',
+		d0  => '0',
+		d1  => '1',
 		q   => clk_videodac);
 
 	hd_t_data <= 'Z';
@@ -489,13 +491,14 @@ begin
 	-- LEDs DAC --
 	--------------
 		
---	led18 <= '0';
+	led18 <= '0';
 	led16 <= '0';
 	led15 <= '0';
 	led13 <= '0';
 	led11 <= '0';
 	led9  <= '0';
 	led8  <= '0';
+	led7  <= '0';
 
 	-- RS232 Transceiver --
 	-----------------------
