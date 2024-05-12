@@ -24,6 +24,10 @@ architecture def of dbdbbl_srlfix is
 
 	signal digits_out : bcdword_vector(bin'range);
 	signal s          : std_logic_vector(digit_word'range);
+	constant digitsout_right : natural := digits_out'right; -- Xilinx ISE 14.7 HDLParsers:852 Value of index is not static.
+	constant binrev_left : natural := bin_rev'left; -- Xilinx ISE 14.7 HDLParsers:852 Value of index is not static.
+	constant b_length : natural := digit_word'length;-- Xilinx ISE 14.7 HDLParsers:852 Value of index is not static.
+	constant b : std_logic_vector(0 to b_length-1) := (others => '0');-- Xilinx ISE 14.7 HDLParsers:852 Value of index is not static.
 begin
 
 	digits_g : for k in bin'range generate
@@ -82,9 +86,9 @@ begin
 
 	bcd_adder_e : entity hdl4fpga.bcd_adder
 	port map (
-		ci => bin_rev(bin_rev'left),
-		b  => (digit_word'range => '0'),
-		a  => std_logic_vector(digits_out(digits_out'right)),
+		ci => bin_rev(binrev_left),
+		b  => b,
+		a  => std_logic_vector(digits_out(digitsout_right)),
 		s  => s);
 	bin <= bin_rev;
 	bcd <= 
@@ -136,7 +140,7 @@ begin
 
 	bcd <= std_logic_vector(resize(unsigned(digits(digits'right)), bcd'length));
 	process (bins, sel)
-		variable aux : unsigned(bins'reverse_range);
+		variable aux : unsigned(bins'right to bins'left); -- Xilinx ISE 14.7 doesn't comply unsigned(bins'reverse_range);
 	begin
 		aux := (others => '0');
 		for i in sel'range loop

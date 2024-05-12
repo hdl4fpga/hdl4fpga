@@ -178,7 +178,7 @@ package body jso is
 						sign := -1;
 					else
 						assert false --|
-							report "Wrong number " & character'image(value(i)) & " " & natural'image(base) --|
+							report "Wrong number " & character'image(value(i)) & " " & natural'image(base)  & " @ " & value--|
 							severity failure; --|
 					end if;
 				else
@@ -493,7 +493,7 @@ package body jso is
 					jso_index := jso_index + 1;
 				when others =>
 					assert false --|
-						report "parse_keytag => wrong token -> " & jso(jso_index) --|
+						report "parse_keytag => wrong token -> " & jso(jso_index) & " @ " & jso --|
 						severity failure; --|
 				end case;
 				exit;
@@ -792,10 +792,12 @@ package body jso is
 					exit;
 				end if;
 			elsif isalnum(tag(tag'left)) then
-				if tag=jso(tag_offset to tag_offset+tag_length-1) then
-					offset := tag_offset;
-					length := jso_index-offset;
-					exit;
+				if tag_length/=0 then
+					if tag=jso(tag_offset to tag_offset+tag_length-1) then
+						offset := tag_offset;
+						length := jso_index-offset;
+						exit;
+					end if;
 				end if;
 			end if;
 			assert ((log/log_locatevalue) mod 2=0) --|note

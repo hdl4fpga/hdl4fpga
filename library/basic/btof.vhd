@@ -49,6 +49,7 @@ architecture def of btof is
 	signal   format_trdy : std_logic;
 	signal   format_bcd  : std_logic_vector(bcd_length*bcd_digits-1 downto 0);
 
+	signal  ini : std_logic_vector(0 to 0) := (others => '0'); -- Xilinx ISE 14.7 ini is not constrainted in definition <dbdbbl_seq>
 begin
 
 	dbdbbl_req <= btof_req;
@@ -63,6 +64,7 @@ begin
 		bin  => bin,
 		bcd_frm => sll_frm,
 		bcd_trdy => sll_trdy,
+		ini  => ini,
 		bcd  => sll_bcd);
 
 	lifo_b : block
@@ -77,7 +79,6 @@ begin
 			-- sll_trdy : buffer std_logic;
 			-- sll_bcd  : in  std_logic_vector;
 			-- slr_frm  : buffer std_logic;
-			-- slr_dec  : in std_logic_vector;
 			-- slr_irdy : buffer std_logic;
 			-- slr_trdy : in  std_logic;
 			-- slr_ini  : out std_logic_vector);
@@ -87,12 +88,10 @@ begin
 			-- sll_trdy => sll_trdy,
 			-- sll_bcd  => sll_bcd,
 			-- slr_frm  => slr_frm,
-			-- slr_dec  => dec,
 			-- slr_irdy => slr_irdy,
 			-- slr_trdy => slr_trdy,
 			-- slr_ini  => slr_ini);
 
-		alias slr_dec is dec;
 		-- alias  push_ena  is sll_frm; -- tools crashes
 		-- alias  push_data is sll_bcd; -- tools crashes
 		signal lifo_ov   : std_logic;
@@ -269,7 +268,7 @@ begin
 		-- port (
 			-- tab       : in  std_logic_vector; 
 			-- clk       : in  std_logic;
-			-- padd      : in  std_logic_vector;
+			-- width     : in  std_logic_vector;
 			-- left      : in  std_logic;
 			-- neg       : in  std_logic := std_logic'('0'); -- Lattice Diamond complains if no quialifier
 			-- sign      : in  std_logic := std_logic'('0');
@@ -284,7 +283,7 @@ begin
 			-- tab      => tab,
 			-- neg      => neg,
 			-- left     => left,
-			-- padd     => width,
+			-- width    => width,
 			-- clk      => clk,
 			-- bcd_frm  => slr_frm,
 			-- bcd_irdy => slr_irdy,
@@ -294,7 +293,6 @@ begin
 			-- code     => code);
 	
 		signal sign     : std_logic := '0';
-		alias  padd     is width;
 		alias  bcd_frm  is slr_frm;
 		alias  bcd_irdy is slr_irdy;
 		alias  bcd_trdy is slr_trdy;
@@ -314,7 +312,7 @@ begin
 		signal fmt_bcd : bcd_vector;
 		signal fmt_ena : std_logic_vector(bcd_vector'range);
 
-		signal cntr : natural range 0 to 2**padd'length-1;
+		signal cntr : natural range 0 to 2**width'length-1;
 		signal frm : std_logic;
 	begin
 
@@ -441,7 +439,7 @@ begin
 						state := s_padding;
 					else
 						frm <= '0';
-						cntr <= to_integer(unsigned(padd));
+						cntr <= to_integer(unsigned(width));
 					end if;
 				when s_padding =>
 					if fmt_ena(1)='1' then

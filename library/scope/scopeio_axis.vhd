@@ -256,7 +256,6 @@ begin
 				rd_addr => vaddr(hz_taddr'range),
 				rd_data => vdata);
 
-			-- x <= resize(unsigned(video_hcntr) + unsigned(hz_segment) + unsigned(hz_offset(hztick_bits+font_bits-1 downto 0)), x'length); -- + resize(), x'length);
 			process (video_clk)
 			begin
 				if rising_edge(video_clk) then

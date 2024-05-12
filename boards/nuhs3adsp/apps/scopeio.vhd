@@ -28,6 +28,7 @@ architecture scopeio of nuhs3adsp is
 	signal vga_blank  : std_logic;
 
 	constant inputs : natural := 2;
+	constant vt_step   : string := "6.103515625e-10"; --1.0/2.0**14; -- Volts
 	alias  input_sample is adc_da;
 	signal samples_doa : std_logic_vector(input_sample'length-1 downto 0);
 	signal samples_dib : std_logic_vector(input_sample'length-1 downto 0);
@@ -335,7 +336,9 @@ begin
         layout           =>
             "{                             " &   
             "   inputs  :                  " & natural'image(inputs) & ',' &
-            "   num_of_segments : 3,       " &
+            "   num_of_segments : 4,       " &
+			"   max_delay       : " & natural'image(2**14)  & ',' &
+			"   min_storage     : 256,     " & -- samples, storage size will be equal or larger than this
             "   display : {                " &
             "       width  : 1920,         " &
             "       height : 1080},        " &
@@ -348,12 +351,48 @@ begin
             "   axis : {                   " &
             "       fontsize   : 8,        " &
             "       horizontal : {         " &
+			"           scales : [         " &
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [0]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [1]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [2]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [3]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [4]
+							natural'image(2**(1+0)*5**(0+0)) & "," & -- [5]
+							natural'image(2**(2+0)*5**(0+0)) & "," & -- [6]
+							natural'image(2**(0+0)*5**(1+0)) & "," & -- [7]
+							natural'image(2**(0+1)*5**(0+1)) & "," & -- [8]
+							natural'image(2**(1+1)*5**(0+1)) & "," & -- [9]
+							natural'image(2**(2+1)*5**(0+1)) & "," & -- [10]
+							natural'image(2**(0+1)*5**(1+1)) & "," & -- [11]
+							natural'image(2**(0+2)*5**(0+2)) & "," & -- [12]
+							natural'image(2**(1+2)*5**(0+2)) & "," & -- [13]
+							natural'image(2**(2+2)*5**(0+2)) & "," & -- [14]
+							natural'image(2**(0+2)*5**(1+2)) & "," & -- [15]
+			"               length : 16],  " &
             "           unit   : 250.0e-9, " &
             "           height : 8,        " &
             "           inside : false,    " &
             "           color  : 0xff_ff_ff_ff," &
             "           background-color : 0xff_00_00_ff}," &
             "       vertical : {           " &
+			"           gains : [         " &
+							natural'image(2**17/(2**(0+0)*5**(0+0))) & "," & -- [0]
+							natural'image(2**17/(2**(1+0)*5**(0+0))) & "," & -- [1]
+							natural'image(2**17/(2**(2+0)*5**(0+0))) & "," & -- [2]
+							natural'image(2**17/(2**(0+0)*5**(1+0))) & "," & -- [3]
+							natural'image(2**17/(2**(0+1)*5**(0+1))) & "," & -- [4]
+							natural'image(2**17/(2**(1+1)*5**(0+1))) & "," & -- [5]
+							natural'image(2**17/(2**(2+1)*5**(0+1))) & "," & -- [6]
+							natural'image(2**17/(2**(0+1)*5**(1+1))) & "," & -- [7]
+							natural'image(2**17/(2**(0+2)*5**(0+2))) & "," & -- [8]
+							natural'image(2**17/(2**(1+2)*5**(0+2))) & "," & -- [9]
+							natural'image(2**17/(2**(2+2)*5**(0+2))) & "," & -- [10]
+							natural'image(2**17/(2**(0+2)*5**(1+2))) & "," & -- [11]
+							natural'image(2**17/(2**(0+3)*5**(0+3))) & "," & -- [12]
+							natural'image(2**17/(2**(1+3)*5**(0+3))) & "," & -- [13]
+							natural'image(2**17/(2**(2+3)*5**(0+3))) & "," & -- [14]
+							natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
+			"               length : 16],  " &
             "           unit   : 2.0e-3, " &
             "           width  :           " & natural'image(6*8) & ','  &
             "           rotate : ccw0,     " &
@@ -383,11 +422,11 @@ begin
             "       vertical   : 0,        " &
             "       background-color : 0xff_00_00_00}," &
             "  vt : [                      " &
-            "   { label : channel1,        " &
-            "     step  : '" & real'image(1.0/2.0**14) & "'," &
+            "   { text : channel1,        " &
+            "     step  : " & vt_step & "," &
             "     color : 0xff_ff_ff_00},  " & -- vt(6)
-            "   { label : channel2,          " &
-            "     step  : '" & real'image(1.0/2.0**14) & "'," &
+            "   { text : channel2,          " &
+            "     step  : " & vt_step & "," &
             "     color : 0xff_00_ff_ff}]}")   -- vt(7)
 	port map (
 		sio_clk     => sio_clk,
