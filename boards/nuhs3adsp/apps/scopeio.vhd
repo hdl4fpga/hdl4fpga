@@ -335,7 +335,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		videotiming_id   => display_tab(video_mode).timing_id,
-        layout           =>
+        layout           => compact(
             "{                             " &   
             "   inputs  :                  " & natural'image(inputs) & ',' &
             "   num_of_segments : 4,       " &
@@ -429,7 +429,7 @@ begin
             "     color : 0xff_ff_ff_00},  " & -- vt(6)
             "   { text : channel2,          " &
             "     step  : " & vt_step & "," &
-            "     color : 0xff_00_ff_ff}]}")   -- vt(7)
+            "     color : 0xff_00_ff_ff}]}"))   -- vt(7)
 	port map (
 		sio_clk     => sio_clk,
 		si_frm      => si_frm,

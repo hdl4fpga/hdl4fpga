@@ -29,7 +29,7 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library hdl4fpga;
-use hdl4fpga.jso.all;
+use work.jso.all;
 
 architecture jso_tb of testbench is
     constant inputs : natural := 2;
@@ -249,7 +249,8 @@ begin
     process 
     begin
         -- report "VALUE : " & ''' & real'image(test**"[5].top") & ''';
-        report "VALUE : " & ''' & ((jso(layout)**".vt")**"[0]")**".step" & ''';
+        -- report "VALUE : " & ''' & ((jso(layout)**".vt")**"[0]")**".step" & ''';
+        report "VALUE : " & compact(layout);
         wait;
     end process;
 end;

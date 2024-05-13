@@ -193,28 +193,28 @@ architecture scopeio of ulx3s is
 			"       background-color : 0xff_00_00_00}," &
 			"  vt : [                      " &
 			"   { text : GN14,            " &
-			"     step  : " & real'image(3.3/2.0**(input_sample'length-1)) & "," &
+			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff},  " &
 			"   { text : GP14,            " &
-			"     step  : " & real'image(3.3/2.0**(input_sample'length-1)) & "," &
+			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_00},  " & -- vt(1)
 			"   { text : GN15,            " &
-			"     step  : " & real'image(3.3/2.0**(input_sample'length-1)) & "," &
+			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_00_ff},  " & -- vt(2)
 			"   { text : GP15,            " &
-			"     step  : " & real'image(3.3/2.0**(input_sample'length-1)) & "," &
+			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_00_00},  " & -- vt(3)
 			"   { text : GN16,            " &
-			"     step  : " & real'image(3.3/2.0**(input_sample'length-1)) & "," &
+			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_00_ff_ff},  " & -- vt(4)
 			"   { text : GP16,            " &
-			"     step  : " & real'image(3.3/2.0**(input_sample'length-1)) & "," &
+			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_00_ff_00},  " & -- vt(5)
 			"   { text : GN17,            " &
-			"     step  : " & real'image(3.3/2.0**(input_sample'length-1)) & "," &
+			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_00_00_ff},  " & -- vt(6)
 			"   { text : GP17,            " &
-			"     step  : " & real'image(3.3/2.0**(input_sample'length-1)) & "," &
+			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff}]}";   -- vt(7)
 begin
 
@@ -391,7 +391,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		videotiming_id => video_params.timing,
-		layout         => layout)
+		layout         => compact(layout))
 	port map (
 		tp          => tp,
 		sio_clk     => sio_clk,

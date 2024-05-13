@@ -28,6 +28,10 @@ use ieee.std_logic_1164.all;
 
 package jso is
 
+	function compact (
+		constant jso : string)
+		return string;
+
 	procedure resolve (
 		constant jso           : in    string;
 		variable value_offset  : inout natural;
@@ -679,6 +683,30 @@ package body jso is
 				end if;
 			end if;
 		end loop;
+	end;
+
+	function compact (
+		constant jso : string)
+		return string is
+		variable retval : string(1 to jso'length);
+		variable escape : boolean;
+		variable j      : positive;
+	begin
+		escape := false;
+		j      := retval'left;
+		for i in jso'range loop
+			if escape then
+				retval(j) := jso(i);
+				j := j + 1;
+			elsif not isws(jso(i)) then
+				retval(j) := jso(i);
+				j := j + 1;
+			end if;
+			if jso(i)=''' or jso(i)='"' then
+				escape := not escape;
+			end if;
+		end loop;
+		return retval(1 to j-1);
 	end;
 
 	procedure resolve (
