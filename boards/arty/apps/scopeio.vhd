@@ -513,7 +513,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		videotiming_id   => video_params(video_mode).timing_id,
-		layout         => layout)
+		layout         => compact(layout))
 	port map (
 		sio_clk     => sio_clk,
 		si_frm      => si_frm,
