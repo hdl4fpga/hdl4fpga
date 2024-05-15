@@ -95,11 +95,11 @@ begin
 	port map (
 		mii_data4 => snd_data,
 		mii_data5 => req_data,
-		mii_frm1  => '0', -- arp
+		mii_frm1  => mii_req, --'0', -- arp
 		mii_frm2  => '0', --mii_req, -- ping
 		mii_frm3  => '0',
-		mii_frm4  => mii_req, --mii_req, -- write
-		mii_frm5  => mii_req1, -- read
+		mii_frm4  => '0', -- mii_req, --mii_req, -- write
+		mii_frm5  => '0', -- mii_req1, -- read
 
 		mii_txc   => mii_clk,
 		mii_txen  => mii_txen,

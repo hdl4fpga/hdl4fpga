@@ -287,7 +287,7 @@ begin
 	uart_sin <= rs232_rd;
 	uart_rxc <= mii_rxc;
 
-	ipoe_e : if io_link=io_ipoe generate
+	ipoe_b : if io_link=io_ipoe generate
 		alias  mii_clk    is mii_txc;
 		signal txen       : std_logic;
 		signal txd        : std_logic_vector(mii_txd'range);
