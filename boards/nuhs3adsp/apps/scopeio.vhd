@@ -427,23 +427,23 @@ begin
 
 	end generate;
 
-	-- scopeio_e : entity hdl4fpga.scopeio
-	-- generic map (
-		-- videotiming_id   => display_tab(video_mode).timing_id,
-		-- layout           => compact(layout))
-	-- port map (
-		-- sio_clk     => sio_clk,
-		-- si_frm      => si_frm,
-		-- si_irdy     => si_irdy,
-		-- si_data     => si_data,
-		-- so_data     => so_data,
-		-- input_clk   => input_clk,
-		-- input_data  => samples,
-		-- video_clk   => vga_clk,
-		-- video_pixel => vga_rgb,
-		-- video_hsync => vga_hsync,
-		-- video_vsync => vga_vsync,
-		-- video_blank => vga_blank);
+	scopeio_e : entity hdl4fpga.scopeio
+	generic map (
+		videotiming_id => display_tab(video_mode).timing_id,
+		layout         => layout)
+	port map (
+		sio_clk     => sio_clk,
+		si_frm      => si_frm,
+		si_irdy     => si_irdy,
+		si_data     => si_data,
+		so_data     => so_data,
+		input_clk   => input_clk,
+		input_data  => samples,
+		video_clk   => vga_clk,
+		video_pixel => vga_rgb,
+		video_hsync => vga_hsync,
+		video_vsync => vga_vsync,
+		video_blank => vga_blank);
 
 	process (vga_clk)
 		variable vga_rgb1   : std_logic_vector(vga_rgb'range);
