@@ -103,7 +103,7 @@ architecture scopeio of ulx3s is
 
 	signal adc_clk       : std_logic;
 
-	constant layout      : string := 
+	constant layout      : string := compact(
 			"{                             " &   
 			"   inputs          : " & natural'image(inputs) & ',' &
 			"   max_delay       : " & natural'image(2**14)  & ',' &
@@ -215,7 +215,7 @@ architecture scopeio of ulx3s is
 			"     color : 0xff_00_00_ff},  " & -- vt(6)
 			"   { text : GP17,            " &
 			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_ff_ff}]}";   -- vt(7)
+			"     color : 0xff_ff_ff_ff}]}");   -- vt(7)
 begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
@@ -391,7 +391,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		videotiming_id => video_params.timing,
-		layout         => compact(layout))
+		layout         => layout)
 	port map (
 		tp          => tp,
 		sio_clk     => sio_clk,

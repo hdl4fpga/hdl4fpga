@@ -79,7 +79,7 @@ architecture scopeio of arty is
 		mode600p  => (timing_id => pclk40_00m800x600at60,       mul => 4, div => 5),
 		mode1080p => (timing_id => pclk150_00m1920x1080at60,    mul => 3, div => 1));
 
-	constant layout      : string := 
+	constant layout      : string := compact(
 			"{                             " &   
 			"   inputs          : " & natural'image(inputs) & ',' &
 			"   max_delay       : " & natural'image(max_delay)  & ',' &
@@ -194,7 +194,7 @@ architecture scopeio of arty is
 			"     color : 0xff_ff_ff_ff},  " &  -- vt(7)
 			"   { text  : 'A4(+)',           " &
 			"     step  : " & real'image(3.32*vt_step) & "," &
-			"     color : 0xff_ff_ff_00}]}";   -- vt(8)
+			"     color : 0xff_ff_ff_00}]}");   -- vt(8)
 		constant vt          : string := jso(layout)**".vt";
 begin
 
@@ -513,7 +513,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		videotiming_id   => video_params(video_mode).timing_id,
-		layout         => compact(layout))
+		layout         => layout)
 	port map (
 		sio_clk     => sio_clk,
 		si_frm      => si_frm,
