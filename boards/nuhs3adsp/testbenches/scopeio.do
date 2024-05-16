@@ -22,8 +22,9 @@ add wave -noupdate -group ddr -expand /testbench/du_e/ddr_dm
 add wave -noupdate -group ddr /testbench/du_e/ddr_st_dqs
 add wave -noupdate -group ddr /testbench/du_e/ddr_st_lp_dqs
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cga_bitrom
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {75241714 ps} 0} {{Cursor 2} {82735191 ps} 0} {{Cursor 3} {98958050 ps} 0}
+WaveRestoreCursors {{Cursor 1} {75241714 ps} 0} {{Cursor 2} {19975650 ps} 0} {{Cursor 3} {19974988 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 254
 configure wave -valuecolwidth 119
@@ -39,4 +40,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {82726576 ps} {82761760 ps}
+WaveRestoreZoom {19966576 ps} {20001760 ps}

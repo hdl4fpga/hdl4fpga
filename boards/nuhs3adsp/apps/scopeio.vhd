@@ -170,10 +170,10 @@ architecture scopeio of nuhs3adsp is
 			"       vertical   : 0,        " &
 			"       background-color : 0xff_00_00_00}," &
 			"  vt : [                      " &
-			"   { text  : cha,        " &
+			"   { text  : 'AN A',        " &
 			"     step  : " & vt_step & ","  &
 			"     color : 0xff_ff_ff_00},  " &
-			"   { text  : cha,        " &
+			"   { text  : 'AN B',        " &
 			"     step  : " & vt_step & ","  &
 			"     color : 0xff_00_ff_ff}]}");
 begin
