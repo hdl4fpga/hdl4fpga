@@ -324,9 +324,6 @@ architecture beh of scopeio_layout is
 
 	constant hztick_bits : natural := unsigned_num_bits(8*axis_fontsize-1);
 
-	constant sgmntboxx_bits : natural := unsigned_num_bits(sgmnt_width(layout)-1);
-	constant sgmntboxy_bits : natural := unsigned_num_bits(sgmnt_height-1);
-
 	signal mainbox_xdiv  : std_logic_vector(0 to 2-1);
 	signal mainbox_ydiv  : std_logic_vector(0 to 4-1);
 	signal mainbox_xedge : std_logic;
@@ -377,8 +374,8 @@ begin
 
 		signal sgmntbox_vyon   : std_logic;
 		signal sgmntbox_vxon   : std_logic;
-		signal sgmntbox_vx     : std_logic_vector(sgmntboxx_bits-1 downto 0);
-		signal sgmntbox_vy     : std_logic_vector(sgmntboxy_bits-1 downto 0);
+		signal sgmntbox_vx     : std_logic_vector(x'range);
+		signal sgmntbox_vy     : std_logic_vector(y'range);
 
 		signal sgmntbox_xedge  : std_logic;
 		signal sgmntbox_yedge  : std_logic;
@@ -398,8 +395,8 @@ begin
 			signal xedge : std_logic;
 			signal yedge : std_logic;
 			signal nexty : std_logic;
-			signal x     : std_logic_vector(sgmntboxx_bits-1 downto 0);
-			signal y     : std_logic_vector(sgmntboxy_bits-1 downto 0);
+			signal box_x : std_logic_vector(x'range);
+			signal box_y : std_logic_vector(y'range);
 		begin 
 
 			rgtrin_p : process (video_clk)
@@ -422,8 +419,8 @@ begin
 				video_eox => eox,
 				box_xedge => xedge,
 				box_yedge => yedge,
-				box_x     => x,
-				box_y     => y);
+				box_x     => box_x,
+				box_y     => box_y);
 
 			rgtrout_p : process (video_clk)
 				variable init_layout : std_logic;
@@ -431,8 +428,8 @@ begin
 				if rising_edge(video_clk) then
 					sgmntbox_vxon <= xon;
 					sgmntbox_vyon <= yon and not init_layout;
-					sgmntbox_vx   <= x;
-					sgmntbox_vy   <= y;
+					sgmntbox_vx   <= box_x;
+					sgmntbox_vy   <= box_y;
 					init_layout   := nexty;
 				end if;
 			end process;

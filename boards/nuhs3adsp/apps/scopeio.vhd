@@ -30,7 +30,7 @@ architecture scopeio of nuhs3adsp is
 	signal vga_blank  : std_logic;
 
 	constant inputs : natural := 2;
-	constant vt_step   : string := "6.103515625e-10"; --1.0/2.0**14; -- Volts
+	constant vt_step   : string := "6.103515625e-10"; --1.0/2.0**14; -- Volts real'image() does not work on Xilinx ISE
 	alias  input_sample is adc_da;
 	signal samples_doa : std_logic_vector(input_sample'length-1 downto 0);
 	signal samples_dib : std_logic_vector(input_sample'length-1 downto 0);
@@ -76,6 +76,7 @@ architecture scopeio of nuhs3adsp is
 		mode600p    => (timing_id => pclk40_00m800x600at60,    dcm_mul => 2, dcm_div => 1),
 		mode600px16 => (timing_id => pclk40_00m800x600at60,    dcm_mul => 2, dcm_div => 1),
 		mode1080p   => (timing_id => pclk140_00m1920x1080at60, dcm_mul => 7, dcm_div => 1));
+		-- mode1080p   => (timing_id => pclk150_00m1920x1080at60, dcm_mul => 15, dcm_div => 2));
 
 	constant video_mode : display_modes := mode1080p;
 
@@ -147,7 +148,7 @@ architecture scopeio of nuhs3adsp is
 			"           background-color : 0xff_00_00_ff}}," &
 			"   textbox : {                " &
 			"       font_width :  8,       " &
-			"       width      :           " & natural'image(33*8) & ','&
+			"       width      :           " & natural'image(8*32+1) & ','&
 			"       inside     : false,    " &
 			"       color      : 0xff_ff_ff_ff," &
 			"       background-color : 0xff_00_00_00}," &
@@ -168,12 +169,12 @@ architecture scopeio of nuhs3adsp is
 			"       vertical   : 0,        " &
 			"       background-color : 0xff_00_00_00}," &
 			"  vt : [                      " &
-			"   { text : channel1,        " &
-			"     step  : " & vt_step & "," &
-			"     color : 0xff_ff_ff_00},  " & -- vt(6)
-			"   { text : channel2,          " &
-			"     step  : " & vt_step & "," &
-			"     color : 0xff_00_ff_ff}]}");   -- vt(7)
+			"   { text  : cha,        " &
+			"     step  : " & vt_step & ","  &
+			"     color : 0xff_ff_ff_00},  " &
+			"   { text  : cha,        " &
+			"     step  : " & vt_step & ","  &
+			"     color : 0xff_00_ff_ff}]}");
 begin
 
 	clkin_ibufg : ibufg

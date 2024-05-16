@@ -65,6 +65,7 @@ architecture def of ipoe_tb is
 begin
 
 	process
+		constant max : natural := 1;
 	begin
 		req  <= '0';
 		wait for delay1;
@@ -77,7 +78,7 @@ begin
 					wait for delay2;
 				end if;
 			else
-				if segment > 1 then
+				if segment > max then
 					wait;
 				end if;
 				req <= '1';
