@@ -326,7 +326,7 @@ begin
 				exp      => b"101",
 				neg      => vt_offset(vt_offset'left),
 				bin      => bin,
-				code_frm => cga_we,
+				code_frm => open, --cga_we,
 				code     => cga_code);
 
 		end block;

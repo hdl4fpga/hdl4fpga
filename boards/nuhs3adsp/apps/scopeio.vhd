@@ -30,7 +30,7 @@ architecture scopeio of nuhs3adsp is
 	signal vga_blank  : std_logic;
 
 	constant inputs : natural := 2;
-	constant vt_step   : string := "6.103515625e-10"; --1.0/2.0**14; -- Volts real'image() does not work on Xilinx ISE
+	constant vt_step   : string := "6.103515625e-10"; --1.0/2.0**14; -- real'image() does not work on Xilinx ISE
 	alias  input_sample is adc_da;
 	signal samples_doa : std_logic_vector(input_sample'length-1 downto 0);
 	signal samples_dib : std_logic_vector(input_sample'length-1 downto 0);
@@ -75,8 +75,9 @@ architecture scopeio of nuhs3adsp is
 		mode480p    => (timing_id => pclk25_00m640x480at60,    dcm_mul => 5, dcm_div => 4),
 		mode600p    => (timing_id => pclk40_00m800x600at60,    dcm_mul => 2, dcm_div => 1),
 		mode600px16 => (timing_id => pclk40_00m800x600at60,    dcm_mul => 2, dcm_div => 1),
-		mode1080p   => (timing_id => pclk140_00m1920x1080at60, dcm_mul => 7, dcm_div => 1));
-		-- mode1080p   => (timing_id => pclk150_00m1920x1080at60, dcm_mul => 15, dcm_div => 2));
+		-- mode1080p   => (timing_id => pclk133_32m1920x1080at60 , dcm_mul => 20, dcm_div => 3));
+		-- mode1080p   => (timing_id => pclk138_50m1920x1080at60 , dcm_mul => 7, dcm_div => 1));
+		mode1080p   => (timing_id => pclk150_00m1920x1080at60, dcm_mul => 15, dcm_div => 2));
 
 	constant video_mode : display_modes := mode1080p;
 
@@ -154,7 +155,7 @@ architecture scopeio of nuhs3adsp is
 			"       background-color : 0xff_00_00_00}," &
 			"   main : {                   " &
 			"       top        :  5,       " & 
-			"       left       :  1,       " & 
+			"       left       :  5,       " & 
 			"       right      :  0,       " & 
 			"       bottom     :  0,       " & 
 			"       horizontal :  1,       " &
