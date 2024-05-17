@@ -29,12 +29,12 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library hdl4fpga;
-use work.jso.all;
+use work.hdo.all;
 
-architecture jso_tb of testbench is
+architecture hso_tb of testbench is
     constant inputs : natural := 2;
     signal input_sample  : std_logic_vector(13-1 downto 0);
-	constant test      : jso := 
+	constant test      : hso := 
             "{                             " &   
             "   inputs  :                  " & natural'image(inputs) & ',' &
             "   num_of_segments : 3,       " &
@@ -249,7 +249,7 @@ begin
     process 
     begin
         -- report "VALUE : " & ''' & real'image(test**"[5].top") & ''';
-        -- report "VALUE : " & ''' & ((jso(layout)**".vt")**"[0]")**".step" & ''';
+        -- report "VALUE : " & ''' & ((hso(layout)**".vt")**"[0]")**".step" & ''';
         report "VALUE : " & compact(layout);
         wait;
     end process;
