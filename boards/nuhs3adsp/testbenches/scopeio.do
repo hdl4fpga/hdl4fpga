@@ -22,14 +22,35 @@ add wave -noupdate -group ddr -expand /testbench/du_e/ddr_dm
 add wave -noupdate -group ddr /testbench/du_e/ddr_st_dqs
 add wave -noupdate -group ddr /testbench/du_e/ddr_st_lp_dqs
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix ascii /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cga_bitrom
 add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cgaram_e/video_clk
 add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cgaram_e/video_on
-add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cgaram_e/video_addr
+add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cgaram_e/video_addr
 add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cgaram_e/font_vcntr
-add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cgaram_e/font_hcntr
+add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cgaram_e/font_hcntr
+add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/text_on
+add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/textfg
+add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/textbg
+add wave -noupdate -expand /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/sgmntbox_ena
+add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/video_hcntr
+add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/video_vcntr
+add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/textbox_x
+add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/textbox_y
+add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_b/sgmntbox_x
+add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_b/sgmntbox_y
+add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_b/box_e/video_xon
+add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_b/box_e/video_yon
+add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_b/box_e/video_eox
+add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_b/box_e/box_xedge
+add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_b/box_e/box_yedge
+add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_b/box_e/box_x
+add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_b/box_e/box_y
+add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_b/box_e/line__335/x
+add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_b/box_e/line__335/y
+add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_xedge
+add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_xedge
+add wave -noupdate -radix ascii /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cgaram_e/cga_code
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {75241714 ps} 0} {{Cursor 2} {9976831 ps} 0} {{Cursor 3} {19974988 ps} 0}
+WaveRestoreCursors {{Cursor 1} {114185192 ps} 1} {{Cursor 4} {114208330 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 254
 configure wave -valuecolwidth 119
@@ -45,4 +66,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {9966576 ps} {10001760 ps}
+WaveRestoreZoom {114134496 ps} {114257544 ps}

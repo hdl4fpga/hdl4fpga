@@ -119,7 +119,8 @@ end;
 
 architecture def of scopeio_textbox is
 	subtype ascii is std_logic_vector(8-1 downto 0);
-	constant cgaadapter_latency : natural := 4;
+	constant cga_latency  : natural := 4;
+	constant fgbg_latency : natural := 2;
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
@@ -134,13 +135,13 @@ architecture def of scopeio_textbox is
 	signal cga_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
 	signal cga_code          : ascii;
 
-	signal textfg            : std_logic_vector(text_fg'range);
-	signal textbg            : std_logic_vector(text_bg'range);
+	signal fg_color          : std_logic_vector(text_fg'range);
+	signal bg_color          : std_logic_vector(text_bg'range);
+
 	signal video_on          : std_logic;
 	signal video_addr        : std_logic_vector(cga_addr'range);
 	signal video_dot         : std_logic;
 
-	signal bcd_code          : ascii;
 begin
 
 	rgtr_b : block
@@ -373,19 +374,19 @@ begin
 	lat_e : entity hdl4fpga.latency
 	generic map (
 		n => 1,
-		d => (0 => latency-cgaadapter_latency))
+		d => (0 => latency-cga_latency))
 	port map (
-		clk => video_clk,
+		clk   => video_clk,
 		di(0) => video_dot,
 		do(0) => text_fgon);
 
 	process (video_clk)
 		constant field_addr : natural_vector := textbox_field(cga_cols, cga_size);
-		variable field_id   : unsigned(0 to unsigned_num_bits(field_addr'length-1)-1);
+		variable field_id   : unsigned(0 to unsigned_num_bits(field_addr'length-1)-1) := (others => '0');
 		variable addr       : std_logic_vector(video_addr'range);
 	begin
 		if rising_edge(video_clk) then
-			textfg <= std_logic_vector(resize(field_id, textfg'length)+pltid_order'length);
+			fg_color <= std_logic_vector(resize(field_id, fg_color'length)+pltid_order'length);
 			if unsigned(addr)=field_addr(to_integer(field_id)) then
 				if video_on='1' then
 					if field_id /= field_addr'length-1 then
@@ -399,22 +400,22 @@ begin
 		end if;
 	end process;
 
-	textbg <= std_logic_vector(to_unsigned(pltid_textbg, textbg'length));
+	bg_color <= std_logic_vector(to_unsigned(pltid_textbg, bg_color'length));
 
 	latfg_e : entity hdl4fpga.latency
 	generic map (
-		n =>  text_fg'length,
-		d => (0 to text_fg'length-1 => latency-cgaadapter_latency+2))
+		n  =>  text_fg'length,
+		d  => (0 to text_fg'length-1 => latency-fgbg_latency))
 	port map (
 		clk => video_clk,
-		di => textfg,
-		do => text_fg);
+		di  => fg_color,
+		do  => text_fg);
 	latbg_e : entity hdl4fpga.latency
 	generic map (
-		n => text_bg'length,
-		d => (0 to text_bg'length-1 => latency-cgaadapter_latency+2))
+		n  => text_bg'length,
+		d  => (0 to text_bg'length-1 => latency-fgbg_latency))
 	port map (
 		clk => video_clk,
-		di => textbg,
-		do => text_bg);
+		di  => bg_color,
+		do  => text_bg);
 end;

@@ -115,8 +115,7 @@ entity scopeio_layout is
 		return retval;
 	end;
 
-	function sgmnt_width (
-		constant layout : string)
+	function sgmnt_width
 		return natural is
 		variable retval : natural := 0;
 	begin
@@ -269,7 +268,7 @@ entity scopeio_layout is
 	function main_hzedges
 		return natural_vector is
 		constant sides : natural_vector := boxes_sides(
-			sides        => (0 => sgmnt_width(layout)),
+			sides        => (0 => sgmnt_width),
 			margin_start => main_left,
 			margin_end   => main_right,
 			gap          => main_horizontal);
@@ -507,7 +506,7 @@ begin
 					box_on  := xon and yon;
 
 					if vtaxis_width/=0  then
-						if jso(layout)**".axis.vertical.inside" then
+						if axisvertical_inside then
 							vt_mask := unsigned(sgmntbox_x) srl font_bits;
 							if vtaxis_tickrotate="ccw90" or vtaxis_tickrotate="ccw270" then
 								vt_on <= setif(vt_mask=(vt_mask'range => '0')) and sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv) and box_on;
@@ -523,7 +522,7 @@ begin
 
 					if hzaxis_height/=0  then
 						hz_mask := unsigned(y) srl font_bits;
-						if resolve(layout&".axis.horizontal.inside") then
+						if axishorizontal_inside then
 							if true then -- scale at the bottom
 								if unsigned(hz_mask)=to_unsigned(grid_height/axis_fontsize-1, hz_mask'length) then
 									hz_on <= sgmnt_boxon(box_id => grid_boxid, x_div => xdiv, y_div => ydiv) and box_on;
@@ -547,7 +546,7 @@ begin
 					grid_on <= sgmnt_boxon(box_id => grid_boxid,   x_div => xdiv, y_div => ydiv) and box_on;
 
 					if textbox_width/=0  then
-						if jso(layout)**".textbox.inside" then
+						if textbox_inside then
 							if 2**unsigned_num_bits(textbox_width-1)=textbox_width and (2**font_bits*(grid_width/2**font_bits)) mod textbox_width=0 then
 								vt_mask := unsigned(sgmntbox_x) srl textwidth_bits;
 								if unsigned(vt_mask)=to_unsigned(grid_width/textbox_width-1, vt_mask'length) then
