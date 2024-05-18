@@ -30,7 +30,6 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.jso.all;
 use hdl4fpga.videopkg.all;
-use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio is

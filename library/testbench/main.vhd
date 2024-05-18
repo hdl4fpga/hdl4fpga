@@ -36,7 +36,7 @@ end;
 architecture def of main is
 begin
 	process 
-		constant c : string := normalize(31.25e-6);
+		constant c : string := significand(31.25e-6);
 		variable x : string(c'range);
 	begin
 			-- "value => " & (jso(normalize(*coefs(i)))**".norm");

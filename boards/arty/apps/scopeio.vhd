@@ -12,7 +12,6 @@ use hdl4fpga.jso.all;
 use hdl4fpga.profiles.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
-use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.app_profiles.all;
 

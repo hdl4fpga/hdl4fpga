@@ -38,7 +38,6 @@ HDL4FPGA__mul_ser = $(LIB_HDL4FPGA)/mul_ser/_primary.dat
 HDL4FPGA__dbdbbl_seq = $(LIB_HDL4FPGA)/dbdbbl_seq/_primary.dat
 HDL4FPGA__bcd_adder = $(LIB_HDL4FPGA)/bcd_adder/_primary.dat
 HDL4FPGA__jso = $(LIB_HDL4FPGA)/jso/_primary.dat
-HDL4FPGA__textboxpkg = $(LIB_HDL4FPGA)/textboxpkg/_primary.dat
 HDL4FPGA__scopeiopkg = $(LIB_HDL4FPGA)/scopeiopkg/_primary.dat
 HDL4FPGA__sio_sin = $(LIB_HDL4FPGA)/sio_sin/_primary.dat
 HDL4FPGA__scopeio_rgtrhzaxis = $(LIB_HDL4FPGA)/scopeio_rgtrhzaxis/_primary.dat
@@ -97,6 +96,10 @@ WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s__scopeio = $(LIB_WORK)/ulx3s/scopeio.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
 WORK__testbench__bcd_adder_tb = $(LIB_WORK)/testbench/bcd_adder_tb.dat
+WORK__testbench__ulx4mls_graphics = $(LIB_WORK)/testbench/ulx4mls_graphics.dat
+WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
+WORK__testbench__ulx3s_scopeio = $(LIB_WORK)/testbench/ulx3s_scopeio.dat
+WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
 WORK__testbench__serlzr = $(LIB_WORK)/testbench/serlzr.dat
 WORK__testbench__usbfrwk = $(LIB_WORK)/testbench/usbfrwk.dat
 WORK__testbench__orangecrab_graphics = $(LIB_WORK)/testbench/orangecrab_graphics.dat
@@ -107,10 +110,6 @@ WORK__testbench__dbdbbl_srl_tb = $(LIB_WORK)/testbench/dbdbbl_srl_tb.dat
 WORK__testbench__dbdbblsrlser_tb = $(LIB_WORK)/testbench/dbdbblsrlser_tb.dat
 WORK__testbench__dbdbbl_seq_tb = $(LIB_WORK)/testbench/dbdbbl_seq_tb.dat
 WORK__testbench__btof_tb = $(LIB_WORK)/testbench/btof_tb.dat
-WORK__testbench__ulx4mls_graphics = $(LIB_WORK)/testbench/ulx4mls_graphics.dat
-WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
-WORK__testbench__ulx3s_scopeio = $(LIB_WORK)/testbench/ulx3s_scopeio.dat
-WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench__ecp3versa_graphics = $(LIB_WORK)/testbench/ecp3versa_graphics.dat
 WORK__testbench__ml509_graphics = $(LIB_WORK)/testbench/ml509_graphics.dat
@@ -140,6 +139,8 @@ WORK__main__def = $(LIB_WORK)/main/def.dat
 WORK__main = $(LIB_WORK)/main/_primary.dat
 WORK__ipoe_tb__def = $(LIB_WORK)/ipoe_tb/def.dat
 WORK__ipoe_tb = $(LIB_WORK)/ipoe_tb/_primary.dat
+WORK__hdo__body = $(LIB_WORK)/hdo/body.dat
+WORK__hdo = $(LIB_WORK)/hdo/_primary.dat
 WORK__hdlc_tb__def = $(LIB_WORK)/hdlc_tb/def.dat
 WORK__hdlc_tb = $(LIB_WORK)/hdlc_tb/_primary.dat
 WORK__ecp3versa_graphic_structure_md = $(LIB_WORK)/ecp3versa_graphic_structure_md/_primary.dat
@@ -188,6 +189,10 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__ulx3s__scopeio) \
     $(WORK__ulx3s) \
     $(WORK__testbench__bcd_adder_tb) \
+    $(WORK__testbench__ulx4mls_graphics) \
+    $(WORK__testbench__ulx4mld_graphics) \
+    $(WORK__testbench__ulx3s_scopeio) \
+    $(WORK__testbench__ulx3s_graphics) \
     $(WORK__testbench__serlzr) \
     $(WORK__testbench__usbfrwk) \
     $(WORK__testbench__orangecrab_graphics) \
@@ -198,10 +203,6 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__testbench__dbdbblsrlser_tb) \
     $(WORK__testbench__dbdbbl_seq_tb) \
     $(WORK__testbench__btof_tb) \
-    $(WORK__testbench__ulx4mls_graphics) \
-    $(WORK__testbench__ulx4mld_graphics) \
-    $(WORK__testbench__ulx3s_scopeio) \
-    $(WORK__testbench__ulx3s_graphics) \
     $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench__ecp3versa_graphics) \
     $(WORK__testbench__ml509_graphics) \
@@ -231,6 +232,8 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__main) \
     $(WORK__ipoe_tb__def) \
     $(WORK__ipoe_tb) \
+    $(WORK__hdo__body) \
+    $(WORK__hdo) \
     $(WORK__hdlc_tb__def) \
     $(WORK__hdlc_tb) \
     $(WORK__ecp3versa_graphic_structure_md) \
@@ -355,6 +358,12 @@ $(WORK__hdlc_tb__def) : hdlc_tb.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 hdlc_tb.vhd
 
+$(WORK__hdo) \
+$(WORK__hdo__body) : ../basic/hdo-dbg.vhd \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -2002  ../basic/hdo-dbg.vhd
+
 $(WORK__ipoe_tb) \
 $(WORK__ipoe_tb__def) : ipoe_tb.vhd \
 		$(HDL4FPGA__eth_rx) \
@@ -369,6 +378,7 @@ $(WORK__ipoe_tb__def) : ipoe_tb.vhd \
 
 $(WORK__main) \
 $(WORK__main__def) : main.vhd \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__jso) \
@@ -679,7 +689,6 @@ $(WORK__ulx3s__scopeio) : ../../boards/ULX3S/apps/scopeio.vhd \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
 		$(HDL4FPGA__scopeiopkg) \
-		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__ecp5_profiles) \
 		$(HDL4FPGA__app_profiles) \
@@ -689,7 +698,7 @@ $(WORK__ulx3s__scopeio) : ../../boards/ULX3S/apps/scopeio.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ULX3S/apps/scopeio.vhd
+	$(VCOM) -2002  ../../boards/ULX3S/apps/scopeio.vhd
 
 $(WORK__ulx3s__graphics) : ../../boards/ULX3S/apps/graphics.vhd \
 		$(HDL4FPGA__ser_debug) \

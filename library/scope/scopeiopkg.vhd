@@ -32,7 +32,6 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.jso.all;
 use hdl4fpga.videopkg.all;
-use hdl4fpga.textboxpkg.all;
 
 package scopeiopkg is
 
@@ -289,7 +288,11 @@ package body scopeiopkg is
 
 		for i in coefs'range loop
 			retval(i) :=(jso(significand(unit*coefs(i)))**".sgfc");
+			report (jso(significand(unit*coefs(i)))**".sgfc");
 		end loop;
+		assert false
+		report "hola"
+		severity failure;
 		return retval;
 	end;
 

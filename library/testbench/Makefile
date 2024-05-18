@@ -83,8 +83,6 @@ HDL4FPGA__tmds_encoder__def = $(LIB_HDL4FPGA)/tmds_encoder/def.dat
 HDL4FPGA__tmds_encoder = $(LIB_HDL4FPGA)/tmds_encoder/_primary.dat
 HDL4FPGA__timer__def = $(LIB_HDL4FPGA)/timer/def.dat
 HDL4FPGA__timer = $(LIB_HDL4FPGA)/timer/_primary.dat
-HDL4FPGA__textboxpkg__body = $(LIB_HDL4FPGA)/textboxpkg/body.dat
-HDL4FPGA__textboxpkg = $(LIB_HDL4FPGA)/textboxpkg/_primary.dat
 HDL4FPGA__sync_transfer__def = $(LIB_HDL4FPGA)/sync_transfer/def.dat
 HDL4FPGA__sync_transfer = $(LIB_HDL4FPGA)/sync_transfer/_primary.dat
 HDL4FPGA__so_data__def = $(LIB_HDL4FPGA)/so_data/def.dat
@@ -445,8 +443,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__tmds_encoder) \
     $(HDL4FPGA__timer__def) \
     $(HDL4FPGA__timer) \
-    $(HDL4FPGA__textboxpkg__body) \
-    $(HDL4FPGA__textboxpkg) \
     $(HDL4FPGA__sync_transfer__def) \
     $(HDL4FPGA__sync_transfer) \
     $(HDL4FPGA__so_data__def) \
@@ -1595,6 +1591,7 @@ $(HDL4FPGA__rom__def) : ../basic/rom.vhd \
 
 $(HDL4FPGA__scopeio) \
 $(HDL4FPGA__scopeio__beh) : ../scope/scopeio.vhd \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__scopeio_video) \
 		$(HDL4FPGA__scopeio_amp) \
 		$(HDL4FPGA__scopeio_rgtrgain) \
@@ -1620,6 +1617,7 @@ $(HDL4FPGA__scopeio_amp__beh) : ../scope/scopeio_amp.vhd \
 
 $(HDL4FPGA__scopeio_axis) \
 $(HDL4FPGA__scopeio_axis__def) : ../scope/scopeio_axis.vhd \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__cga_rom) \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__dpram) \
@@ -1643,6 +1641,7 @@ $(HDL4FPGA__scopeio_axis__def) : ../scope/scopeio_axis.vhd \
 
 $(HDL4FPGA__scopeio_capture) \
 $(HDL4FPGA__scopeio_capture__beh) : ../scope/scopeio_capture.vhd \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__textboxpkg) \
@@ -1677,6 +1676,7 @@ $(HDL4FPGA__scopeio_grid__def) : ../scope/scopeio_grid.vhd \
 
 $(HDL4FPGA__scopeio_layout) \
 $(HDL4FPGA__scopeio_layout__beh) : ../scope/scopeio_layout.vhd \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__videobox) \
 		$(HDL4FPGA__videobox_layout) \
@@ -1693,6 +1693,7 @@ $(HDL4FPGA__scopeio_layout__beh) : ../scope/scopeio_layout.vhd \
 
 $(HDL4FPGA__scopeio_palette) \
 $(HDL4FPGA__scopeio_palette__beh) : ../scope/scopeio_palette.vhd \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__scopeio_rgtrpalette) \
 		$(HDL4FPGA__scopeio_rgtrgain) \
@@ -1726,6 +1727,7 @@ $(HDL4FPGA__scopeio_pointer__beh) : ../scope/scopeio_pointer.vhd \
 $(HDL4FPGA__scopeio_resize) \
 $(HDL4FPGA__scopeio_resize__beh) : ../scope/scopeio_resize.vhd \
 		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__jso) \
 		$(IEEE__math_real) \
@@ -1738,6 +1740,7 @@ $(HDL4FPGA__scopeio_resize__beh) : ../scope/scopeio_resize.vhd \
 
 $(HDL4FPGA__scopeio_rgtrgain) \
 $(HDL4FPGA__scopeio_rgtrgain__def) : ../scope/scopeio_rgtrgain.vhd \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__jso) \
@@ -1752,6 +1755,7 @@ $(HDL4FPGA__scopeio_rgtrgain__def) : ../scope/scopeio_rgtrgain.vhd \
 $(HDL4FPGA__scopeio_rgtrhzaxis) \
 $(HDL4FPGA__scopeio_rgtrhzaxis__def) : ../scope/scopeio_rgtrhzaxis.vhd \
 		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__jso) \
 		$(IEEE__math_real) \
@@ -1764,6 +1768,7 @@ $(HDL4FPGA__scopeio_rgtrhzaxis__def) : ../scope/scopeio_rgtrhzaxis.vhd \
 
 $(HDL4FPGA__scopeio_rgtrmyip) \
 $(HDL4FPGA__scopeio_rgtrmyip__def) : ../scope/scopeio_rgtrmyip.vhd \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__jso) \
@@ -1778,6 +1783,7 @@ $(HDL4FPGA__scopeio_rgtrmyip__def) : ../scope/scopeio_rgtrmyip.vhd \
 $(HDL4FPGA__scopeio_rgtrpalette) \
 $(HDL4FPGA__scopeio_rgtrpalette__def) : ../scope/scopeio_rgtrpalette.vhd \
 		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__jso) \
 		$(IEEE__math_real) \
@@ -1790,6 +1796,7 @@ $(HDL4FPGA__scopeio_rgtrpalette__def) : ../scope/scopeio_rgtrpalette.vhd \
 
 $(HDL4FPGA__scopeio_rgtrpointer) \
 $(HDL4FPGA__scopeio_rgtrpointer__def) : ../scope/scopeio_rgtrpointer.vhd \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__jso) \
@@ -1804,6 +1811,7 @@ $(HDL4FPGA__scopeio_rgtrpointer__def) : ../scope/scopeio_rgtrpointer.vhd \
 $(HDL4FPGA__scopeio_rgtrtrigger) \
 $(HDL4FPGA__scopeio_rgtrtrigger__def) : ../scope/scopeio_rgtrtrigger.vhd \
 		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__jso) \
 		$(IEEE__math_real) \
@@ -1817,6 +1825,7 @@ $(HDL4FPGA__scopeio_rgtrtrigger__def) : ../scope/scopeio_rgtrtrigger.vhd \
 $(HDL4FPGA__scopeio_rgtrvtaxis) \
 $(HDL4FPGA__scopeio_rgtrvtaxis__def) : ../scope/scopeio_rgtrvtaxis.vhd \
 		$(HDL4FPGA__textboxpkg) \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__jso) \
 		$(IEEE__math_real) \
@@ -1829,6 +1838,7 @@ $(HDL4FPGA__scopeio_rgtrvtaxis__def) : ../scope/scopeio_rgtrvtaxis.vhd \
 
 $(HDL4FPGA__scopeio_segment) \
 $(HDL4FPGA__scopeio_segment__def) : ../scope/scopeio_segment.vhd \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__scopeio_tracer) \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__draw_line) \
@@ -1854,6 +1864,7 @@ $(HDL4FPGA__scopeio_segment__def) : ../scope/scopeio_segment.vhd \
 
 $(HDL4FPGA__scopeio_tds) \
 $(HDL4FPGA__scopeio_tds__mix) : ../scope/scopeio_tds.vhd \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__scopeio_capture) \
 		$(HDL4FPGA__scopeio_downsampler) \
 		$(HDL4FPGA__scopeio_resize) \
@@ -1872,6 +1883,7 @@ $(HDL4FPGA__scopeio_tds__mix) : ../scope/scopeio_tds.vhd \
 
 $(HDL4FPGA__scopeio_textbox) \
 $(HDL4FPGA__scopeio_textbox__def) : ../scope/scopeio_textbox.vhd \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__cgaram) \
 		$(HDL4FPGA__btof) \
@@ -1916,6 +1928,7 @@ $(HDL4FPGA__scopeio_trigger__beh) : ../scope/scopeio_trigger.vhd \
 
 $(HDL4FPGA__scopeio_video) \
 $(HDL4FPGA__scopeio_video__beh) : ../scope/scopeio_video.vhd \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__scopeio_pointer) \
 		$(HDL4FPGA__scopeio_palette) \
 		$(HDL4FPGA__scopeio_segment) \
@@ -1944,6 +1957,7 @@ $(HDL4FPGA__scopeio_video__beh) : ../scope/scopeio_video.vhd \
 
 $(HDL4FPGA__scopeiopkg) \
 $(HDL4FPGA__scopeiopkg__body) : ../scope/scopeiopkg.vhd \
+		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__textboxpkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__jso) \
@@ -2250,14 +2264,6 @@ $(HDL4FPGA__sync_transfer__def) : ../basic/sync_transfer.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/sync_transfer.vhd
-
-$(HDL4FPGA__textboxpkg) \
-$(HDL4FPGA__textboxpkg__body) : ../scope/textboxpkg.vhd \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../scope/textboxpkg.vhd
 
 $(HDL4FPGA__timer) \
 $(HDL4FPGA__timer__def) : ../basic/timer.vhd \

@@ -11,7 +11,6 @@ use hdl4fpga.base.all;
 use hdl4fpga.profiles.all;
 use hdl4fpga.jso.all;
 use hdl4fpga.ipoepkg.all;
-use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.app_profiles.all;
@@ -141,7 +140,8 @@ architecture scopeio of nuhs3adsp is
 							natural'image(2**17/(2**(2+3)*5**(0+3))) & "," & -- [14]
 							natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
 			"               length : 16],  " &
-			"           unit   : 2.0e-3, " &
+			-- "           unit   : 2.0e-3, " &
+			"           unit   : 250.0e-9, " &
 			"           width  : " & natural'image(6*8) & ','  &
 			"           rotate : ccw0,     " &
 			"           inside : false,    " &
