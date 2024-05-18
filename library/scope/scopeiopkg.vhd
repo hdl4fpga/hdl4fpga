@@ -297,16 +297,16 @@ package body scopeiopkg is
 		constant unit   : real)
 		return integer_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
-		variable xxx : real;
+		variable unit1245 : real;
 		variable retval : integer_vector(0 to 4*4-1);
 	begin
 
-		xxx := unit;
+		unit1245 := unit;
 		for i in 0 to 4-1 loop
 			for j in coefs'range loop
-				retval(4*i+j) := (jso(significand(xxx*coefs(j)))**".shr");
+				retval(4*i+j) := (jso(significand(unit1245*coefs(j)))**".shr");
 			end loop;
-			xxx := xxx * 10.0;
+			unit1245 := unit1245 * 10.0;
 		end loop;
 		return retval;
 	end;
@@ -315,16 +315,16 @@ package body scopeiopkg is
 		constant unit   : real)
 		return integer_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
-		variable xxx : real;
+		variable unit1245 : real;
 		variable retval : integer_vector(0 to 4*4-1);
 	begin
 
-		xxx := unit;
+		unit1245 := unit;
 		for i in 0 to 4-1 loop
 			for j in coefs'range loop
-				retval(4*i+j) := (jso(significand(xxx*coefs(j)))**".pnt");
+				retval(4*i+j) := (jso(significand(unit1245*coefs(j)))**".pnt");
 			end loop;
-			xxx := xxx * 10.0;
+			unit1245 := unit1245 * 10.0;
 		end loop;
 		return retval;
 	end;
