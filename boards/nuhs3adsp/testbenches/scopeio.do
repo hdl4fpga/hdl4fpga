@@ -22,14 +22,13 @@ add wave -noupdate -group ddr -expand /testbench/du_e/ddr_dm
 add wave -noupdate -group ddr /testbench/du_e/ddr_st_dqs
 add wave -noupdate -group ddr /testbench/du_e/ddr_st_lp_dqs
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix ascii /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cgaram_e/cga_bitrom
 add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cgaram_e/video_clk
 add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cgaram_e/video_on
 add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cgaram_e/video_addr
 add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cgaram_e/font_vcntr
 add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cgaram_e/font_hcntr
 add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/text_on
-add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/textfg
-add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/textbg
 add wave -noupdate -expand /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/sgmntbox_ena
 add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/video_hcntr
 add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/video_vcntr
@@ -45,7 +44,7 @@ add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/ma
 add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_b/box_e/box_x
 add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_b/box_e/box_y
 add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_b/box_e/line__335/x
-add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_b/box_e/line__335/y
+add wave -noupdate -radix hexadecimal /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_b/box_e/line__335/y
 add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_xedge
 add wave -noupdate /testbench/du_e/scopeio_e/scopeio_video_e/scopeio_layout_e/mainbox_b/sgmntbox_xedge
 add wave -noupdate -radix ascii /testbench/du_e/scopeio_e/scopeio_video_e/textbox_g/scopeio_texbox_e/cgaram_e/cga_code
@@ -66,4 +65,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {114134496 ps} {114257544 ps}
+WaveRestoreZoom {0 ps} {168 us}

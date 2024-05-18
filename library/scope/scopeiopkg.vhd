@@ -196,11 +196,11 @@ package scopeiopkg is
 	constant var_vtunitid     : natural := 7;
 	constant var_vtoffsetid   : natural := 8;
 
-	function normalize (
+	function significand (
 		constant unit : real)
 		return string;
 
-	function get_norm1245 (
+	function get_significand1245 (
 		constant unit : real)
 		return natural_vector;
 
@@ -208,7 +208,7 @@ package scopeiopkg is
 		constant unit : real)
 		return integer_vector;
 
-	function get_pnt1245 (
+	function get_characteristic1245 (
 		constant unit : real)
 		return integer_vector;
 
@@ -216,7 +216,7 @@ end;
 
 package body scopeiopkg is
 
-	function normalize (
+	function significand (
 		constant unit : real)
 		return string is
 		constant tenth  : real := 1.0/10.0;
@@ -280,7 +280,7 @@ package body scopeiopkg is
 			"  pnt:"  & integer'image(pnt) & "}";
 	end;
 
-	function get_norm1245 (
+	function get_significand1245 (
 		constant unit   : real)
 		return natural_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
@@ -288,7 +288,7 @@ package body scopeiopkg is
 	begin
 
 		for i in coefs'range loop
-			retval(i) :=(jso(normalize(unit*coefs(i)))**".sgfc");
+			retval(i) :=(jso(significand(unit*coefs(i)))**".sgfc");
 		end loop;
 		return retval;
 	end;
@@ -304,14 +304,14 @@ package body scopeiopkg is
 		xxx := unit;
 		for i in 0 to 4-1 loop
 			for j in coefs'range loop
-				retval(4*i+j) := (jso(normalize(xxx*coefs(j)))**".shr");
+				retval(4*i+j) := (jso(significand(xxx*coefs(j)))**".shr");
 			end loop;
 			xxx := xxx * 10.0;
 		end loop;
 		return retval;
 	end;
 
-	function get_pnt1245 (
+	function get_characteristic1245 (
 		constant unit   : real)
 		return integer_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
@@ -322,7 +322,7 @@ package body scopeiopkg is
 		xxx := unit;
 		for i in 0 to 4-1 loop
 			for j in coefs'range loop
-				retval(4*i+j) := (jso(normalize(xxx*coefs(j)))**".pnt");
+				retval(4*i+j) := (jso(significand(xxx*coefs(j)))**".pnt");
 			end loop;
 			xxx := xxx * 10.0;
 		end loop;

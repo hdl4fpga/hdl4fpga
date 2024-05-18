@@ -83,17 +83,17 @@ architecture scopeio of nuhs3adsp is
 
 	constant layout : string := compact(
 			"{                             " &   
-			"   inputs  :                  " & natural'image(inputs) & ',' &
-			"   num_of_segments : 4,       " &
+			"   inputs          : " & natural'image(inputs) & ',' &
 			"   max_delay       : " & natural'image(2**14)  & ',' &
 			"   min_storage     : 256,     " & -- samples, storage size will be equal or larger than this
+			"   num_of_segments :   4,     " &
 			"   display : {                " &
 			"       width  : 1920,         " &
 			"       height : 1080},        " &
 			"   grid : {                   " &
 			"       unit   : 32,           " &
-			"       width  :               " & natural'image(50*32+1) & ',' &
-			"       height :               " & natural'image( 8*32+1) & ',' &
+			"       width  : " & natural'image(50*32+1) & ',' &
+			"       height : " & natural'image( 8*32+1) & ',' &
 			"       color  : 0xff_ff_00_00, " &
 			"       background-color : 0xff_00_00_00}," &
 			"   axis : {                   " &
@@ -142,14 +142,14 @@ architecture scopeio of nuhs3adsp is
 							natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
 			"               length : 16],  " &
 			"           unit   : 2.0e-3, " &
-			"           width  :           " & natural'image(6*8) & ','  &
+			"           width  : " & natural'image(6*8) & ','  &
 			"           rotate : ccw0,     " &
 			"           inside : false,    " &
 			"           color  : 0xff_ff_ff_ff," &
 			"           background-color : 0xff_00_00_ff}}," &
 			"   textbox : {                " &
-			"       font_width :  8,       " &
-			"       width      :           " & natural'image(8*32+1) & ','&
+			"       font_width : 8,        " &
+			"       width      : " & natural'image(8*32) & ','&
 			"       inside     : false,    " &
 			"       color      : 0xff_ff_ff_ff," &
 			"       background-color : 0xff_00_00_00}," &
@@ -158,22 +158,22 @@ architecture scopeio of nuhs3adsp is
 			"       left       :  5,       " & 
 			"       right      :  0,       " & 
 			"       bottom     :  0,       " & 
-			"       horizontal :  1,       " &
 			"       vertical   :  1,       " & 
+			"       horizontal :  1,       " &
 			"       background-color : 0xff_00_00_00}," &
 			"   segment : {                " &
 			"       top        : 1,        " &
 			"       left       : 1,        " &
 			"       right      : 1,        " &
 			"       bottom     : 1,        " &
-			"       horizontal : 1,        " &
 			"       vertical   : 0,        " &
+			"       horizontal : 1,        " &
 			"       background-color : 0xff_00_00_00}," &
 			"  vt : [                      " &
-			"   { text  : 'AN A',        " &
+			"   { text  : ANA,        " &
 			"     step  : " & vt_step & ","  &
 			"     color : 0xff_ff_ff_00},  " &
-			"   { text  : 'AN B',        " &
+			"   { text  : ANB,        " &
 			"     step  : " & vt_step & ","  &
 			"     color : 0xff_00_ff_ff}]}");
 begin

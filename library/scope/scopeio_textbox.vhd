@@ -49,6 +49,7 @@ entity scopeio_textbox is
 	constant textbox_width  : natural := jso(layout)**".textbox.width";
 	constant textbox_height : natural := jso(layout)**".grid.height";
 	constant grid_height    : natural := jso(layout)**".grid.height";
+	constant vt             : string  := jso(layout)**".vt";
 
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
@@ -87,18 +88,13 @@ entity scopeio_textbox is
 		i := 0;
 		j := data'left;
 		for i in 0 to inputs-1 loop
-			resolve(layout&".vt["&natural'image(i)&"].text", offset, length);
-			if length=0 then
-				exit;
-			else
-				data(j to j+width-1) := textalign(layout(offset to offset+length-1), width);
-				j := j + width;
-			end if;
+			data(j to j+width-1) := textalign(jso(vt)**("["&natural'image(i)&"].text"), width);
+			j := j + width;
 		end loop;
 		return data;
 	end;
 
-	impure function textbox_field (
+	function textbox_field (
 		constant width  : natural;
 		constant size   : natural)
 		return natural_vector is
@@ -111,10 +107,10 @@ entity scopeio_textbox is
 		return retval;
 	end;
 
-	constant norms : natural_vector := get_norm1245(vt_unit);
-	constant norm_length : natural  := unsigned_num_bits(max(norms));
+	constant signfcnds : natural_vector := get_significand1245(vt_unit);
+	constant signfcnd_length : natural  := unsigned_num_bits(max(signfcnds));
 	constant shrs : integer_vector  := get_shr1245(vt_unit);
-	constant pnts : integer_vector  := get_pnt1245(vt_unit);
+	constant pnts : integer_vector  := get_characteristic1245(vt_unit);
 end;
 
 architecture def of scopeio_textbox is
@@ -129,7 +125,7 @@ architecture def of scopeio_textbox is
 	constant cga_cols        : natural := textbox_width/font_width;
 	constant cga_rows        : natural := textbox_height/font_height;
 	constant cga_size        : natural := (textbox_width/font_width)*(textbox_height/font_height);
-	constant cga_bitrom      : std_logic_vector := to_ascii(textbox_rom(cga_cols, cga_size));
+	constant cga_bitrom      : std_logic_vector :=  to_ascii(textbox_rom(cga_cols, cga_size));
 
 	signal cga_we            : std_logic := '0';
 	signal cga_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
@@ -174,7 +170,7 @@ begin
 		constant bcd_length   : natural := 4;
 		constant bcd_digits   : natural := 1;
 		signal bcd            : std_logic_vector(0 to bcd_digits*bcd_length-1);
-		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+norm_length+bin_digits-1)/bin_digits)-1);
+		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+signfcnd_length+bin_digits-1)/bin_digits)-1);
 			function label_width (
 				constant layout : string)
 				return natural is
@@ -277,7 +273,7 @@ begin
 			signal dbdbbl_req  : std_logic;
 			signal dbdbbl_rdy  : std_logic;
 
-			signal scale : std_logic_vector(0 to norm_length-1);
+			signal scale : std_logic_vector(0 to signfcnd_length-1);
 
 			signal code_frm : std_logic;
 			signal code     : std_logic_vector(0 to 8-1);
@@ -297,7 +293,7 @@ begin
 				end if;
 			end process;
 
-			scale <= std_logic_vector(to_unsigned(norms(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
+			scale <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
 			magnitud <=
 				-signed(vt_offset) when vt_offset(vt_offset'left)='1' else
 				 signed(vt_offset);

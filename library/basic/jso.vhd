@@ -845,6 +845,7 @@ package body jso is
 		constant key : string)
 		return jso is
 	begin
+		report "pase " & obj;
 		return resolve(string(obj) & key);
 	end;
 

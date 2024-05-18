@@ -171,15 +171,15 @@ architecture scopeio of ulx3s is
 			"           background-color : 0xff_00_00_ff}}," &
 			"   textbox : {                " &
 			"       font_width :  8,       " &
-			"       width      : " & natural'image(4*32+0) & ','&
+			"       width      : " & natural'image(4*32) & ','&
 			"       inside     : false,    " &
 			"       color      : 0xff_ff_ff_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   main : {                   " &
 			"       top        : 27,       " & 
+			"       bottom     :  0,       " & 
 			"       left       :  5,       " & 
 			"       right      :  0,       " & 
-			"       bottom     :  0,       " & 
 			"       vertical   : 27,       " & 
 			"       horizontal :  1,       " &
 			"       background-color : 0xff_00_00_00}," &
