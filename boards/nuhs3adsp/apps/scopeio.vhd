@@ -166,7 +166,7 @@ architecture scopeio of nuhs3adsp is
 			"       left       : 1,        " &
 			"       right      : 1,        " &
 			"       bottom     : 1,        " &
-			"       vertical   : 0,        " &
+			"       vertical   : 1,        " &
 			"       horizontal : 1,        " &
 			"       background-color : 0xff_00_00_00}," &
 			"  vt : [                      " &
