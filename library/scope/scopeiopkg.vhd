@@ -200,7 +200,7 @@ package scopeiopkg is
 		return string;
 
 	function get_significand1245 (
-		constant unit : real)
+		constant unit : real; constant xxx : boolean := true)
 		return natural_vector;
 
 	function get_shr1245 (
@@ -280,7 +280,8 @@ package body scopeiopkg is
 	end;
 
 	function get_significand1245 (
-		constant unit   : real)
+		constant unit   : real;
+		constant xxx : boolean := true)
 		return natural_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
 		variable retval : natural_vector(0 to 4-1);
@@ -288,9 +289,9 @@ package body scopeiopkg is
 
 		for i in coefs'range loop
 			retval(i) :=(jso(significand(unit*coefs(i)))**".sgfc");
-			report (jso(significand(unit*coefs(i)))**".sgfc");
+			report "=======> "& (jso(significand(unit*coefs(i))));
 		end loop;
-		assert false
+		assert xxx
 		report "hola"
 		severity failure;
 		return retval;

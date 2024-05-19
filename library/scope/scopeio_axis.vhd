@@ -127,13 +127,13 @@ begin
 		constant vt_shrs  : integer_vector  := get_shr1245(vt_unit);
 		constant vt_pnts  : integer_vector  := get_characteristic1245(vt_unit);
 
-		constant hz_signfcnds : natural_vector := get_significand1245(hz_unit);
+		constant hz_signfcnds : natural_vector := get_significand1245(hz_unit, true);
 		constant hzsignfcnd_length : natural  := unsigned_num_bits(max(hz_signfcnds));
 		constant hz_shrs  : integer_vector  := get_shr1245(hz_unit);
 		constant hz_pnts  : integer_vector  := get_characteristic1245(hz_unit);
 
-		signal shr        : std_logic_vector(3-1 downto 0);
-		signal pnt        : std_logic_vector(3-1 downto 0);
+		signal shr        : std_logic_vector(4-1 downto 0);
+		signal pnt        : std_logic_vector(4-1 downto 0);
 		signal wth        : std_logic_vector(4-1 downto 0);
 
 	begin
