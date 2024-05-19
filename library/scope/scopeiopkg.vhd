@@ -200,7 +200,7 @@ package scopeiopkg is
 		return string;
 
 	function get_significand1245 (
-		constant unit : real; constant xxx : boolean := true)
+		constant unit : real)
 		return natural_vector;
 
 	function get_shr1245 (
@@ -208,7 +208,7 @@ package scopeiopkg is
 		return integer_vector;
 
 	function get_characteristic1245 (
-		constant unit : real)
+		constant unit : real; constant xxx : boolean := true)
 		return integer_vector;
 
 end;
@@ -280,8 +280,7 @@ package body scopeiopkg is
 	end;
 
 	function get_significand1245 (
-		constant unit   : real;
-		constant xxx : boolean := true)
+		constant unit   : real)
 		return natural_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
 		variable retval : natural_vector(0 to 4-1);
@@ -289,11 +288,7 @@ package body scopeiopkg is
 
 		for i in coefs'range loop
 			retval(i) :=(jso(significand(unit*coefs(i)))**".sgfc");
-			report "=======> "& (jso(significand(unit*coefs(i))));
 		end loop;
-		assert xxx
-		report "hola"
-		severity failure;
 		return retval;
 	end;
 
@@ -316,7 +311,7 @@ package body scopeiopkg is
 	end;
 
 	function get_characteristic1245 (
-		constant unit   : real)
+		constant unit   : real; constant xxx : boolean := true)
 		return integer_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
 		variable unit1245 : real;
@@ -327,9 +322,13 @@ package body scopeiopkg is
 		for i in 0 to 4-1 loop
 			for j in coefs'range loop
 				retval(4*i+j) := (jso(significand(unit1245*coefs(j)))**".pnt");
+				report "=======> "& (jso(significand(unit*coefs(i))));
 			end loop;
 			unit1245 := unit1245 * 10.0;
 		end loop;
+		assert xxx
+		report "hola"
+		severity failure;
 		return retval;
 	end;
 
