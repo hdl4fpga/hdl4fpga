@@ -154,7 +154,7 @@ architecture scopeio of nuhs3adsp is
 			"       color      : 0xff_ff_ff_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   main : {                   " &
-			"       top        :  5,       " & 
+			"       top        :  3,       " & 
 			"       left       :  5,       " & 
 			"       right      :  0,       " & 
 			"       bottom     :  0,       " & 

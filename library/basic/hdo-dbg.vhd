@@ -154,8 +154,8 @@ package body hdo is
 			return character'pos(char)-character'pos('A')+10;
 		when others =>
 			assert false --|
-				report "wrong digit " & character'image(char) --|
-				severity failure; --|
+			report "wrong digit " & character'image(char) --|
+			severity failure; --|
 		end case;
 	end;
 
@@ -182,13 +182,13 @@ package body hdo is
 						sign := -1;
 					else
 						assert false --|
-							report "Wrong number " & character'image(value(i)) & " " & natural'image(base)  & " @ " & value--|
-							severity failure; --|
+						report "Wrong number " & character'image(value(i)) & " " & natural'image(base)  & " @ " & value--|
+						severity failure; --|
 					end if;
 				else
 					assert false --|
-						report "Wrong number " & character'image(value(i)) & " " & natural'image(base) --|
-						severity failure; --|
+					report "Wrong number " & character'image(value(i)) & " " & natural'image(base) --|
+					severity failure; --|
 				end if;
 			end if;
 		end loop;
@@ -245,8 +245,8 @@ package body hdo is
 			end if;
 		else
 			assert false --|
-				report "value'range is nul" --|
-				severity failure; --|
+			report "value'range is nul" --|
+			severity failure; --|
 		end if;
 	end;
 
@@ -306,9 +306,10 @@ package body hdo is
 				idx := idx + 1;
 				exit;
 			end if;
-			assert isdigit(value(idx)) --|
+			if not isdigit(value(idx)) then --| Xilinx ISE 14.7 warning complain
 				report "wrong character to_real" --|
 				severity failure; --|
+			end if; --|
 			mant := 10.0*mant + real(character'pos(value(idx))-character'pos('0'));
 			exp  := exp + 1;
 			idx  := idx + 1;
@@ -472,52 +473,60 @@ package body hdo is
 				open_char := hdo(hdo_index);
 				hdo_index := hdo_index + 1;
 				parse_natural(hdo, hdo_index, offset, length);
-				assert ((log/log_parsekeytag) mod 2=0) or length=0  --|note
-					 report "parse_keytag => [ is position" --|note
-					 severity note; --|note
+				assert ((log/log_parsekeytag) mod 2=0) or length=0   --|note
+				report "parse_keytag => [ is position" --|note
+				severity note; --|note
 				assert ((log/log_parsekeytag) mod 2=0) or length/=0  --|note
-					report "parse_keytag  => [ is string"  --|note
-					severity note; --|note
+				report "parse_keytag  => [ is string"  --|note
+				severity note; --|note
 				if length=0 then
 					parse_string(hdo, hdo_index, offset, length);
 				end if;
-				assert length/=0 --|
+				if length=0 then --| Xilinx ISE 14.7 warning complain
+					assert false
 					report "parse_keytag -> invalid key : " & hdo(hdo_index to hdo'right)  --|
 					severity failure; --|
+				end if; --|
 				assert ((log/log_parsekeytag) mod 2=0) --|note
-					report "parse_keytag => " & natural'image(hdo_index) & "->" & ''' & hdo(hdo_index) & ''' --|note
-					severity note; --|note
+				report "parse_keytag => " & natural'image(hdo_index) & "->" & ''' & hdo(hdo_index) & ''' --|note
+				severity note; --|note
 				skipws(hdo, hdo_index);
 				case hdo(hdo_index) is
 				when ']' => 
-					assert open_char='[' --|
+					if open_char/='[' then --| Xilinx ISE 14.7 warning complain
+						assert false
 						report "parse_keytag => wrong close key " & ''' & open_char & ''' & " " & ''' & hdo(hdo_index) & ''' --|
 						severity failure; --|
+					end if; --|
 					assert ((log/log_parsekeytag) mod 2=0) --|note
-						report "parse_keytag => ]" --|note
-						severity note; --|note
+					report "parse_keytag => ]" --|note
+					severity note; --|note
 					hdo_index := hdo_index + 1;
 				when '}' => 
-					assert open_char='{' --|
+					if open_char/='{' then --| Xilinx ISE 14.7 warning complain
+						assert false
 						report "parse_keytag => wrong close key " & ''' & open_char & ''' & " " & ''' & hdo(hdo_index) & ''' --|
 						severity failure; --|
+					end if; --|
 					assert ((log/log_parsekeytag) mod 2=0) --|note
-						report "parse_keytag => }" --|note
-						severity note; --|note
+					report "parse_keytag => }" --|note
+					severity note; --|note
 					hdo_index := hdo_index + 1;
 				when others =>
 					assert false --|
-						report "parse_keytag => wrong token -> " & hdo(hdo_index) & " @ " & hdo --|
-						severity failure; --|
+					report "parse_keytag => wrong token -> " & hdo(hdo_index) & " @ " & hdo --|
+					severity failure; --|
 				end case;
 				exit;
 			when '.' =>
 				hdo_index := hdo_index + 1;
 				skipws(hdo, hdo_index);
 				parse_string(hdo, hdo_index, offset, length);
-				assert length/=0 --|
+				if length=0 then --| Xilinx ISE 14.7 warning complain
+					assert false
 					report "parse_keytag => invalid key : " & hdo(hdo_index to hdo'right) --|
 					severity failure; --|
+				end if; --|
 				hdo_index := offset+length;
 				exit;
 			when others =>
@@ -607,18 +616,22 @@ package body hdo is
 					end if;
 				when ']' =>
 					if hdo_stptr/=hdo_stack'left then
-						assert hdo_stack(hdo_stptr-1)='[' --|
+						if hdo_stack(hdo_stptr-1)/='[' then --| Xilinx ISE 14.7 warning complain
+							assert false --|
 							report "parse_value => close key " & hdo_stack(hdo_stptr-1) & hdo(hdo_index) --|
 							severity failure; --|
+						end if; --|
 						pop(hdo_stptr);
 					else
 						exit;
 					end if;
 				when '}' =>
 					if hdo_stptr/=hdo_stack'left then
-						assert hdo_stack(hdo_stptr-1)='{' --|
+						if hdo_stack(hdo_stptr-1)/='{' then --| Xilinx ISE 14.7 warning complain
+							assert false --|
 							report "parse_value => close key " & hdo_stack(hdo_stptr-1) & hdo(hdo_index) --|
 							severity failure; --|
+						end if; --|
 						pop(hdo_stptr);
 					else
 						exit;
@@ -776,20 +789,24 @@ package body hdo is
 				position  := position + 1;
 				hdo_index := hdo_index + 1;
 			when ']' =>
-				assert open_char='[' --|
+				if open_char/='[' then --| Xilinx ISE 14.7 warning complain
+					assert false --|
 					report LF &  --|
 						"locate_value => wrong close key at " & natural'image(hdo_index) & " open with  " & ''' & open_char & ''' & " close by " & character'image(hdo(hdo_index)) --|
 					severity failure; --|
+				end if; --|
 				assert ((log/log_locatevalue) mod 2=0) --|note
-					report LF &  --|note
-						"locate_value => close -> " & natural'image(hdo_index) & ':' & character'image(hdo(hdo_index)) --|note
-					severity note; --|note
+				report LF &  --|note
+					"locate_value => close -> " & natural'image(hdo_index) & ':' & character'image(hdo(hdo_index)) --|note
+				severity note; --|note
 				hdo_index := hdo_index + 1;
 			when '}' =>
-				assert open_char='{' --|
+				if open_char/='{' then --| Xilinx ISE 14.7 warning complain
+					assert false --|
 					report LF &  --|
 						"locate_value => wrong close key " & ''' & open_char & ''' & " "  & natural'image(hdo_index) & ':' & character'image(hdo(hdo_index)) --|
 					severity failure; --|
+				end if; --|
 				assert ((log/log_locatevalue) mod 2=0) --|note
 					report LF &  --|note
 						"locate_value => close -> " & natural'image(hdo_index) & ':' & character'image(hdo(hdo_index)) --|note
@@ -897,15 +914,17 @@ package body hdo is
 					       "resolve => hdo_index   -> " & natural'image(hdo_index) --|note
 					severity note; --|note
 				locate_value(hdo, value_offset, hdo(tag_offset to tag_offset+tag_length-1), hdo_offset, hdo_length);
-				assert hdo_length/=0 --|
+				if hdo_length=0 then --| Xilinx ISE 14.7 warning complain
+					assert false --|
 					report "resolve => invalid key -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|
 					hdo --|
 					severity failure; --|
+				end if; --|
 				assert ((log/log_resolve) mod 2=0) --|note
-					report LF & --|note
-						"resolve => key         -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ' ' & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|note
-					    "resolve => value       -> " & natural'image(hdo_offset) & ":" & natural'image(hdo_length) & ' ' & '"' & hdo(hdo_offset to hdo_offset+hdo_length-1) & '"' --|note
-					severity note; --|note
+				report LF & --|note
+					"resolve => key         -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ' ' & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|note
+				    "resolve => value       -> " & natural'image(hdo_offset) & ":" & natural'image(hdo_length) & ' ' & '"' & hdo(hdo_offset to hdo_offset+hdo_length-1) & '"' --|note
+				severity note; --|note
 				value_offset := hdo_offset;
 				-- resolve(hdo(hdo_offset to hdo_offset+hdo_length-1), hdo_offset, hdo_length);
 			end loop;
