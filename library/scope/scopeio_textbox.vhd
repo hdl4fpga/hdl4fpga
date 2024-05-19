@@ -6,7 +6,7 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.jso.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.cgafonts.all;
 
@@ -41,14 +41,14 @@ entity scopeio_textbox is
 		text_bg       : out std_logic_vector;
 		text_fgon     : out std_logic);
 
-	constant inputs         : natural := jso(layout)**".inputs";
-	constant hz_unit        : real    := jso(layout)**".axis.horizontal.unit";
-	constant vt_unit        : real    := jso(layout)**".axis.vertical.unit";
-	constant font_width     : natural := jso(layout)**".textbox.font_width";
-	constant textbox_width  : natural := jso(layout)**".textbox.width";
-	constant textbox_height : natural := jso(layout)**".grid.height";
-	constant grid_height    : natural := jso(layout)**".grid.height";
-	constant vt             : string  := jso(layout)**".vt";
+	constant inputs         : natural := hdo(layout)**".inputs";
+	constant hz_unit        : real    := hdo(layout)**".axis.horizontal.unit";
+	constant vt_unit        : real    := hdo(layout)**".axis.vertical.unit";
+	constant font_width     : natural := hdo(layout)**".textbox.font_width";
+	constant textbox_width  : natural := hdo(layout)**".textbox.width";
+	constant textbox_height : natural := hdo(layout)**".grid.height";
+	constant grid_height    : natural := hdo(layout)**".grid.height";
+	constant vt             : string  := hdo(layout)**".vt";
 
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
@@ -87,7 +87,7 @@ entity scopeio_textbox is
 		i := 0;
 		j := data'left;
 		for i in 0 to inputs-1 loop
-			data(j to j+width-1) := textalign(jso(vt)**("["&natural'image(i)&"].text"), width);
+			data(j to j+width-1) := textalign(hdo(vt)**("["&natural'image(i)&"].text"), width);
 			j := j + width;
 		end loop;
 		return data;
@@ -276,8 +276,8 @@ begin
 
 			signal code_frm : std_logic;
 			signal code     : std_logic_vector(0 to 8-1);
-			signal shr      : std_logic_vector(2-1 downto 0);
-			signal pnt      : std_logic_vector(2-1 downto 0);
+			signal shr      : std_logic_vector(4-1 downto 0);
+			signal pnt      : std_logic_vector(4-1 downto 0);
 
 		begin
 
@@ -322,7 +322,7 @@ begin
 				exp      => b"101",
 				neg      => vt_offset(vt_offset'left),
 				bin      => bin,
-				code_frm => open, --cga_we,
+				code_frm => cga_we,
 				code     => cga_code);
 
 		end block;

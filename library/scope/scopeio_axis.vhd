@@ -27,7 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.jso.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.cgafonts.all;
 
@@ -54,14 +54,14 @@ entity scopeio_axis is
 		video_vton    : in  std_logic;
 		video_vtdot   : out std_logic);
 
-	constant num_of_segments : natural := jso(layout)**".num_of_segments";
-	constant hz_unit         : real    := 2.0*real'(jso(layout)**".axis.horizontal.unit");
-	constant vt_unit         : real    := jso(layout)**".axis.vertical.unit";
-	constant vt_width        : natural := jso(layout)**".axis.vertical.width";
-	constant axis_fontsize   : natural := jso(layout)**".axis.fontsize";
-	constant grid_width      : natural := jso(layout)**".grid.width";
-	constant grid_height     : natural := jso(layout)**".grid.height";
-	constant grid_unit       : natural := jso(layout)**".grid.unit";
+	constant num_of_segments : natural := hdo(layout)**".num_of_segments";
+	constant hz_unit         : real    := 2.0*real'(hdo(layout)**".axis.horizontal.unit");
+	constant vt_unit         : real    := hdo(layout)**".axis.vertical.unit";
+	constant vt_width        : natural := hdo(layout)**".axis.vertical.width";
+	constant axis_fontsize   : natural := hdo(layout)**".axis.fontsize";
+	constant grid_width      : natural := hdo(layout)**".grid.width";
+	constant grid_height     : natural := hdo(layout)**".grid.height";
+	constant grid_unit       : natural := hdo(layout)**".grid.unit";
 
 end;
 

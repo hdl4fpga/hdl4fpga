@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.jso.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_segment is
@@ -47,12 +47,12 @@ entity scopeio_segment is
 		trigger_dot   : out std_logic;
 		trace_dots    : out std_logic_vector);
 
-	constant inputs        : natural := jso(layout)**".inputs";
-	constant axis_fontsize : natural := jso(layout)**".axis.fontsize";
-	constant grid_height   : natural := jso(layout)**".grid.height";
+	constant inputs        : natural := hdo(layout)**".inputs";
+	constant axis_fontsize : natural := hdo(layout)**".axis.fontsize";
+	constant grid_height   : natural := hdo(layout)**".grid.height";
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
-	constant vtaxis_tickrotate : string := jso(layout)**".axis.vertical.rotate";
-	constant grid_unit       : natural := jso(layout)**".grid.unit";
+	constant vtaxis_tickrotate : string := hdo(layout)**".axis.vertical.rotate";
+	constant grid_unit       : natural := hdo(layout)**".grid.unit";
 
 end;
 

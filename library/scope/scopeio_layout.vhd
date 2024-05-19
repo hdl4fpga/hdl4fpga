@@ -27,7 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.jso.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.scopeiopkg.all;
 
@@ -55,41 +55,41 @@ entity scopeio_layout is
 		vt_on        : out std_logic;
 		textbox_on   : out std_logic);
 
-	constant num_of_segments       : natural := jso(layout)**".num_of_segments";
-	constant main_top              : natural := jso(layout)**".main.top";
-	constant main_bottom           : natural := jso(layout)**".main.bottom";
-	constant main_height           : natural := jso(layout)**".display.height";
-	constant main_width            : natural := jso(layout)**".display.width";
-	constant main_left             : natural := jso(layout)**".main.left";
-	constant main_right            : natural := jso(layout)**".main.right";
-	constant main_horizontal       : natural := jso(layout)**".main.horizontal";
-	constant main_vertical         : natural := jso(layout)**".main.vertical";
+	constant num_of_segments       : natural := hdo(layout)**".num_of_segments";
+	constant main_top              : natural := hdo(layout)**".main.top";
+	constant main_bottom           : natural := hdo(layout)**".main.bottom";
+	constant main_height           : natural := hdo(layout)**".display.height";
+	constant main_width            : natural := hdo(layout)**".display.width";
+	constant main_left             : natural := hdo(layout)**".main.left";
+	constant main_right            : natural := hdo(layout)**".main.right";
+	constant main_horizontal       : natural := hdo(layout)**".main.horizontal";
+	constant main_vertical         : natural := hdo(layout)**".main.vertical";
 
-	constant segment_vertical      : natural := jso(layout)**".segment.vertical";
-	constant segment_horizontal    : natural := jso(layout)**".segment.horizontal";
-	constant segment_top           : natural := jso(layout)**".segment.top";
-	constant segment_bottom        : natural := jso(layout)**".segment.bottom";
-	constant segment_left          : natural := jso(layout)**".segment.left";
-	constant segment_right         : natural := jso(layout)**".segment.right";
+	constant segment_vertical      : natural := hdo(layout)**".segment.vertical";
+	constant segment_horizontal    : natural := hdo(layout)**".segment.horizontal";
+	constant segment_top           : natural := hdo(layout)**".segment.top";
+	constant segment_bottom        : natural := hdo(layout)**".segment.bottom";
+	constant segment_left          : natural := hdo(layout)**".segment.left";
+	constant segment_right         : natural := hdo(layout)**".segment.right";
 
-	constant grid_width            : natural := jso(layout)**".grid.width";
-	constant grid_height           : natural := jso(layout)**".grid.height";
-	constant grid_unit             : natural := jso(layout)**".grid.unit";
+	constant grid_width            : natural := hdo(layout)**".grid.width";
+	constant grid_height           : natural := hdo(layout)**".grid.height";
+	constant grid_unit             : natural := hdo(layout)**".grid.unit";
 
-	constant hzaxis_height         : natural := jso(layout)**".axis.horizontal.height";
-	constant vtaxis_width          : natural := jso(layout)**".axis.vertical.width";
-	constant vtaxis_height         : natural := jso(layout)**".grid.height";
-	constant vtaxis_tickrotate     : string  := jso(layout)**".axis.vertical.rotate";
+	constant hzaxis_height         : natural := hdo(layout)**".axis.horizontal.height";
+	constant vtaxis_width          : natural := hdo(layout)**".axis.vertical.width";
+	constant vtaxis_height         : natural := hdo(layout)**".grid.height";
+	constant vtaxis_tickrotate     : string  := hdo(layout)**".axis.vertical.rotate";
 
-	constant axishorizontal_inside : boolean := jso(layout)**".axis.horizontal.inside";
-	constant axishorizontal_height : natural := jso(layout)**".axis.horizontal.height";
-	constant axisvertical_inside   : boolean := jso(layout)**".axis.vertical.inside";
-	constant axisvertical_width    : natural := jso(layout)**".axis.vertical.width";
-	constant axis_fontsize         : natural := jso(layout)**".axis.fontsize";
+	constant axishorizontal_inside : boolean := hdo(layout)**".axis.horizontal.inside";
+	constant axishorizontal_height : natural := hdo(layout)**".axis.horizontal.height";
+	constant axisvertical_inside   : boolean := hdo(layout)**".axis.vertical.inside";
+	constant axisvertical_width    : natural := hdo(layout)**".axis.vertical.width";
+	constant axis_fontsize         : natural := hdo(layout)**".axis.fontsize";
 
-	constant textbox_width         : natural := jso(layout)**".textbox.width";
-	constant textbox_height        : natural := jso(layout)**".grid.height";
-	constant textbox_inside        : boolean := jso(layout)**".textbox.inside";
+	constant textbox_width         : natural := hdo(layout)**".textbox.width";
+	constant textbox_height        : natural := hdo(layout)**".grid.height";
+	constant textbox_inside        : boolean := hdo(layout)**".textbox.inside";
 
 	function is_postive(
 		constant val : natural)

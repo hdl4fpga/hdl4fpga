@@ -27,7 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.jso.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.scopeiopkg.all;
 
@@ -69,13 +69,13 @@ entity scopeio_video is
 		video_blank        : out std_logic;
 		video_sync         : out std_logic);
 
-	constant inputs          : natural := jso(layout)**".inputs";
-	constant num_of_segments : natural := jso(layout)**".num_of_segments";
-	constant axis_fontsize   : natural := jso(layout)**".axis.fontsize";
-	constant main_width      : natural := jso(layout)**".display.width";
-	constant main_height     : natural := jso(layout)**".display.height";
-	constant textbox_width   : natural := jso(layout)**".textbox.width";
-	constant grid_height     : natural := jso(layout)**".grid.height";
+	constant inputs          : natural := hdo(layout)**".inputs";
+	constant num_of_segments : natural := hdo(layout)**".num_of_segments";
+	constant axis_fontsize   : natural := hdo(layout)**".axis.fontsize";
+	constant main_width      : natural := hdo(layout)**".display.width";
+	constant main_height     : natural := hdo(layout)**".display.height";
+	constant textbox_width   : natural := hdo(layout)**".textbox.width";
+	constant grid_height     : natural := hdo(layout)**".grid.height";
 	constant chanid_bits     : natural := unsigned_num_bits(inputs-1);
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 

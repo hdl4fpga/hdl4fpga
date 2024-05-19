@@ -8,7 +8,7 @@ use unisim.vcomponents.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.jso.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.profiles.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
@@ -194,7 +194,7 @@ architecture scopeio of arty is
 			"   { text  : 'A4(+)',           " &
 			"     step  : " & real'image(3.32*vt_step) & "," &
 			"     color : 0xff_ff_ff_00}]}");   -- vt(8)
-		constant vt          : string := jso(layout)**".vt";
+		constant vt          : string := hdo(layout)**".vt";
 begin
 
 	clkin_ibufg : ibufg

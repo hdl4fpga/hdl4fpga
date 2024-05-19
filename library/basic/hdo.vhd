@@ -26,58 +26,62 @@ use std.textio.all;
 library ieee;
 use ieee.std_logic_1164.all;
 
-package jso is
+package hdo is
 
 	function compact (
-		constant jso : string)
+		constant hdo : string)
 		return string;
 
 	procedure resolve (
-		constant jso           : in    string;
+		constant hdo           : in    string;
 		variable value_offset  : inout natural;
 		variable value_length  : inout natural);
 
 	function resolve (
-		constant jso : string)
+		constant hdo : string)
 		return string;
 
 	function resolve (
-		constant jso : string)
+		constant hdo : string)
 		return integer;
 
 	function resolve (
-		constant jso : string)
+		constant hdo : string)
 		return boolean;
 
-	subtype jso is string;
+	-- function to_integervector (
+		-- constant object : string)
+		-- return integer_vector;
+
+	subtype hdo is string;
 
 	function "**" (
-		constant jso : jso;
+		constant hdo : hdo;
 		constant key : string)
 		return boolean;
 
 	function "**" (
-		constant jso : jso;
+		constant hdo : hdo;
 		constant key : string)
 		return natural;
 
 	function "**" (
-		constant jso : jso;
+		constant hdo : hdo;
 		constant key : string)
 		return real;
 
 	function "**" (
-		constant jso : jso;
+		constant hdo : hdo;
 		constant key : string)
 		return std_logic_vector;
 
 	function "**" (
-		constant obj : jso;
+		constant obj : hdo;
 		constant key : string)
-		return jso;
+		return hdo;
 end;
 
-package body jso is
+package body hdo is
 
 	constant log_parsestring      : natural := 2**0;
 	constant log_parsenatural     : natural := 2**1;
@@ -154,8 +158,8 @@ package body jso is
 			return character'pos(char)-character'pos('A')+10;
 		when others =>
 			assert false --|
-				report "wrong digit " & character'image(char) --|
-				severity failure; --|
+			report "wrong digit " & character'image(char) --|
+			severity failure; --|
 		end case;
 	end;
 
@@ -182,13 +186,13 @@ package body jso is
 						sign := -1;
 					else
 						assert false --|
-							report "Wrong number " & character'image(value(i)) & " " & natural'image(base)  & " @ " & value--|
-							severity failure; --|
+						report "Wrong number " & character'image(value(i)) & " " & natural'image(base)  & " @ " & value--|
+						severity failure; --|
 					end if;
 				else
 					assert false --|
-						report "Wrong number " & character'image(value(i)) & " " & natural'image(base) --|
-						severity failure; --|
+					report "Wrong number " & character'image(value(i)) & " " & natural'image(base) --|
+					severity failure; --|
 				end if;
 			end if;
 		end loop;
@@ -245,8 +249,8 @@ package body jso is
 			end if;
 		else
 			assert false --|
-				report "value'range is nul" --|
-				severity failure; --|
+			report "value'range is nul" --|
+			severity failure; --|
 		end if;
 	end;
 
@@ -306,9 +310,10 @@ package body jso is
 				idx := idx + 1;
 				exit;
 			end if;
-			assert isdigit(value(idx)) --|
+			if not isdigit(value(idx)) then --| Xilinx ISE 14.7 warning complain
 				report "wrong character to_real" --|
 				severity failure; --|
+			end if; --|
 			mant := 10.0*mant + real(character'pos(value(idx))-character'pos('0'));
 			exp  := exp + 1;
 			idx  := idx + 1;
@@ -347,138 +352,156 @@ package body jso is
 	end;
 	
 	function skipws (
-		constant jso       : in string;
-		constant jso_index : in natural)
+		constant hdo       : in string;
+		constant hdo_index : in natural)
 		return positive is
 		variable retval : natural;
 	begin
-		for i in jso_index to jso'right loop
-			if not isws(jso(i)) then
+		for i in hdo_index to hdo'right loop
+			if not isws(hdo(i)) then
 				return i;
 			end if;
 		end loop;
-		return jso'right+1;
+		return hdo'right+1;
 	end;
 
 	procedure skipws (
-		constant jso       : in    string;
-		variable jso_index : inout natural) is
+		constant hdo       : in    string;
+		variable hdo_index : inout natural) is
 	begin
-		for i in jso'range loop
-			if i >= jso_index then 
-				if not isws(jso(i)) then
+		for i in hdo'range loop
+			if i >= hdo_index then 
+				if not isws(hdo(i)) then
 					exit;
 				end if;
-				jso_index := jso_index + 1;
+				hdo_index := hdo_index + 1;
 			end if;
 		end loop;
 	end;
 
 	procedure parse_string (
-		constant jso       : in    string;
-		variable jso_index : inout natural;
+		constant hdo       : in    string;
+		variable hdo_index : inout natural;
 		variable offset    : inout natural;
 		variable length    : inout natural) is
 		variable aphos     : boolean := false;
+		variable bkslh     : boolean := false;
 	begin
-		skipws(jso, jso_index);
-		offset := jso_index;
-		while jso_index <= jso'right loop
-			if (jso_index-offset)=0 then
-				if jso(jso_index)=''' then
+		skipws(hdo, hdo_index);
+		offset := hdo_index;
+		while hdo_index <= hdo'right loop
+			if hdo(hdo_index)='\' then
+				bkslh := true;
+				hdo_index := hdo_index  + 1;
+				next;
+			elsif (hdo_index-offset)=0 then
+				if hdo(hdo_index)=''' then
 					aphos     := true;
-					jso_index := jso_index  + 1;
-					offset    := jso_index;
+					hdo_index := hdo_index  + 1;
+					offset    := hdo_index;
 					next;
 				end if;
 			end if;
-			if aphos then
-				if jso(jso_index)=''' then
-					length    := jso_index-offset;
-					jso_index := jso_index + 1;
-					return;
+			if not bkslh then
+				if aphos then
+					if hdo(hdo_index)=''' then
+						length    := hdo_index-offset;
+						hdo_index := hdo_index + 1;
+						return;
+					else
+						hdo_index := hdo_index + 1;
+					end if;
+				elsif isalnum(hdo(hdo_index)) then
+					hdo_index := hdo_index + 1;
 				else
-					jso_index := jso_index + 1;
+					case hdo(hdo_index) is
+					when '-'|'_' =>
+						hdo_index := hdo_index + 1;
+					when others =>
+						exit;
+					end case;
 				end if;
-			elsif isalnum(jso(jso_index)) then
-				jso_index := jso_index + 1;
 			else
-				case jso(jso_index) is
-				when '-'|'_' =>
-					jso_index := jso_index + 1;
-				when others =>
-					exit;
-				end case;
+				hdo_index := hdo_index + 1;
+				bkslh := false;
 			end if;
 		end loop;
-		length := jso_index-offset;
+		length := hdo_index-offset;
 	end;
 
 	procedure parse_natural (
-		constant jso       : in    string;
-		variable jso_index : inout natural;
+		constant hdo       : in    string;
+		variable hdo_index : inout natural;
 		variable offset    : inout natural;
 		variable length    : inout natural) is
 	begin
-		skipws(jso, jso_index);
-		offset := jso_index;
-		while jso_index <= jso'right loop
-			if isalnum(jso(jso_index)) then
-				jso_index := jso_index + 1;
+		skipws(hdo, hdo_index);
+		offset := hdo_index;
+		while hdo_index <= hdo'right loop
+			if isalnum(hdo(hdo_index)) then
+				hdo_index := hdo_index + 1;
 			else
 				exit;
 			end if;
 		end loop;
-		length := jso_index-offset;
+		length := hdo_index-offset;
 	end;
 
 	procedure parse_keytag (
-		constant jso       : in    string;
-		variable jso_index : inout natural;
+		constant hdo       : in    string;
+		variable hdo_index : inout natural;
 		variable offset    : inout natural;
 		variable length    : inout natural) is
 		variable open_char : character;
 	begin
-		skipws(jso, jso_index);
+		skipws(hdo, hdo_index);
 		length := 0;
-		while jso_index <= jso'right loop
-			case jso(jso_index) is
+		while hdo_index <= hdo'right loop
+			case hdo(hdo_index) is
 			when '['|'{' =>
-				open_char := jso(jso_index);
-				jso_index := jso_index + 1;
-				parse_natural(jso, jso_index, offset, length);
+				open_char := hdo(hdo_index);
+				hdo_index := hdo_index + 1;
+				parse_natural(hdo, hdo_index, offset, length);
 				if length=0 then
-					parse_string(jso, jso_index, offset, length);
+					parse_string(hdo, hdo_index, offset, length);
 				end if;
-				assert length/=0 --|
-					report "parse_keytag -> invalid key : " & jso(jso_index to jso'right)  --|
+				if length=0 then --| Xilinx ISE 14.7 warning complain
+					assert false
+					report "parse_keytag -> invalid key : " & hdo(hdo_index to hdo'right)  --|
 					severity failure; --|
-				skipws(jso, jso_index);
-				case jso(jso_index) is
+				end if; --|
+				skipws(hdo, hdo_index);
+				case hdo(hdo_index) is
 				when ']' => 
-					assert open_char='[' --|
-						report "parse_keytag => wrong close key " & ''' & open_char & ''' & " " & ''' & jso(jso_index) & ''' --|
+					if open_char/='[' then --| Xilinx ISE 14.7 warning complain
+						assert false
+						report "parse_keytag => wrong close key " & ''' & open_char & ''' & " " & ''' & hdo(hdo_index) & ''' --|
 						severity failure; --|
-					jso_index := jso_index + 1;
+					end if; --|
+					hdo_index := hdo_index + 1;
 				when '}' => 
-					assert open_char='{' --|
-						report "parse_keytag => wrong close key " & ''' & open_char & ''' & " " & ''' & jso(jso_index) & ''' --|
+					if open_char/='{' then --| Xilinx ISE 14.7 warning complain
+						assert false
+						report "parse_keytag => wrong close key " & ''' & open_char & ''' & " " & ''' & hdo(hdo_index) & ''' --|
 						severity failure; --|
-					jso_index := jso_index + 1;
+					end if; --|
+					hdo_index := hdo_index + 1;
 				when others =>
 					assert false --|
-						report "parse_keytag => wrong token -> " & jso(jso_index) & " @ " & jso --|
-						severity failure; --|
+					report "parse_keytag => wrong token -> " & hdo(hdo_index) & " @ " & hdo --|
+					severity failure; --|
 				end case;
 				exit;
 			when '.' =>
-				jso_index := jso_index + 1;
-				skipws(jso, jso_index);
-				parse_string(jso, jso_index, offset, length);
-				assert length/=0 --|
-					report "parse_keytag => invalid key : " & jso(jso_index to jso'right) --|
+				hdo_index := hdo_index + 1;
+				skipws(hdo, hdo_index);
+				parse_string(hdo, hdo_index, offset, length);
+				if length=0 then --| Xilinx ISE 14.7 warning complain
+					assert false
+					report "parse_keytag => invalid key : " & hdo(hdo_index to hdo'right) --|
 					severity failure; --|
-				jso_index := offset+length;
+				end if; --|
+				hdo_index := offset+length;
 				exit;
 			when others =>
 				length := 0;
@@ -488,103 +511,114 @@ package body jso is
 	end;
 
 	procedure parse_key (
-		constant jso        : in string;
-		variable jso_index  : inout natural;
+		constant hdo        : in string;
+		variable hdo_index  : inout natural;
 		variable offset     : inout natural;
 		variable length     : inout natural) is
 		variable tag_offset : natural;
 		variable tag_length : natural;
 	begin
-		skipws(jso, jso_index);
-		offset := jso_index;
+		skipws(hdo, hdo_index);
+		offset := hdo_index;
 		loop
-			parse_keytag(jso, jso_index, tag_offset, tag_length);
+			parse_keytag(hdo, hdo_index, tag_offset, tag_length);
 			if tag_length=0 then
-				length := jso_index-offset;
+				length := hdo_index-offset;
 				exit;
 			end if;
 		end loop;
 	end;
 
 	procedure parse_value (
-		constant jso       : in    string;
-		variable jso_index : inout natural;
+		constant hdo       : in    string;
+		variable hdo_index : inout natural;
 		variable offset    : inout natural;
 		variable length    : inout natural) is
-		variable jso_stack : string(1 to 32);
-		variable jso_stptr : positive := jso_stack'left;
+		variable hdo_stack : string(1 to 32);
+		variable hdo_stptr : positive := hdo_stack'left;
 		procedure push (
-			variable jso_stptr : inout positive;
+			variable hdo_stptr : inout positive;
 			constant char : in character) is
 		begin
-			jso_stack(jso_stptr) := char;
-			jso_stptr := jso_stptr + 1;
+			hdo_stack(hdo_stptr) := char;
+			hdo_stptr := hdo_stptr + 1;
 		end;
 
 		procedure pop (
-			variable jso_stptr : inout positive) is
+			variable hdo_stptr : inout positive) is
 		begin
-			jso_stptr := jso_stptr - 1;
+			hdo_stptr := hdo_stptr - 1;
 		end;
 
 		variable aphos  : boolean := false;
+		variable bkslh  : boolean := false;
 		variable list   : boolean := false;
 	begin
-		skipws(jso, jso_index);
-		offset := jso_index;
-		for i in offset to jso'right loop
-			if not aphos then
-				case jso(jso_index) is
+		skipws(hdo, hdo_index);
+		offset := hdo_index;
+		for i in offset to hdo'right loop
+			if not aphos and not bkslh then
+				case hdo(hdo_index) is
 				when '['|'{' =>
-					if jso_stptr=jso_stack'left then 
-						if offset=jso_index then
+					if hdo_stptr=hdo_stack'left then 
+						if offset=hdo_index then
 							list := true;
 						end if;
 					end if;
-					push(jso_stptr, jso(jso_index));
+					push(hdo_stptr, hdo(hdo_index));
 				when ',' =>
-					if jso_stptr=jso_stack'left then
+					if hdo_stptr=hdo_stack'left then
 						exit;
 					end if;
 				when ']' =>
-					if jso_stptr/=jso_stack'left then
-						assert jso_stack(jso_stptr-1)='[' --|
-							report "parse_value => close key " & jso_stack(jso_stptr-1) & jso(jso_index) --|
+					if hdo_stptr/=hdo_stack'left then
+						if hdo_stack(hdo_stptr-1)/='[' then --| Xilinx ISE 14.7 warning complain
+							assert false --|
+							report "parse_value => close key " & hdo_stack(hdo_stptr-1) & hdo(hdo_index) --|
 							severity failure; --|
-						pop(jso_stptr);
+						end if; --|
+						pop(hdo_stptr);
 					else
 						exit;
 					end if;
 				when '}' =>
-					if jso_stptr/=jso_stack'left then
-						assert jso_stack(jso_stptr-1)='{' --|
-							report "parse_value => close key " & jso_stack(jso_stptr-1) & jso(jso_index) --|
+					if hdo_stptr/=hdo_stack'left then
+						if hdo_stack(hdo_stptr-1)/='{' then --| Xilinx ISE 14.7 warning complain
+							assert false --|
+							report "parse_value => close key " & hdo_stack(hdo_stptr-1) & hdo(hdo_index) --|
 							severity failure; --|
-						pop(jso_stptr);
+						end if; --|
+						pop(hdo_stptr);
 					else
 						exit;
 					end if;
 				when others =>
 				end case;
 			end if;
-			if jso(jso_index)=''' then
-				aphos := not aphos;
+			if not bkslh then
+				if hdo(hdo_index)='\' then
+					bkslh := true;
+				elsif hdo(hdo_index)=''' then
+					aphos := not aphos;
+				end if;
+			else
+				bkslh := false;
 			end if;
-			jso_index := jso_index + 1;
+			hdo_index := hdo_index + 1;
 			if list then
-				if jso_stptr=jso_stack'left then
+				if hdo_stptr=hdo_stack'left then
 					exit;
 				end if;
 			end if;
 		end loop;
-		length := jso_index-offset;
+		length := hdo_index-offset;
 	end;
 
 	procedure parse_tagvaluekey (
-		constant jso          : string; -- Xilinx ISE bug left and right are not sent according slice
-		constant jso_left     : natural; -- Xilinx ISE bug. left and right are not sent according slice
-		constant jso_right    : natural; -- Xilinx ISE bug. left and right are not sent according slice
-		variable jso_index    : inout natural;
+		constant hdo          : string; -- Xilinx ISE bug left and right are not sent according slice
+		constant hdo_left     : natural; -- Xilinx ISE bug. left and right are not sent according slice
+		constant hdo_right    : natural; -- Xilinx ISE bug. left and right are not sent according slice
+		variable hdo_index    : inout natural;
 		variable tag_offset   : inout natural;
 		variable tag_length   : inout natural;
 		variable value_offset : inout natural;
@@ -592,38 +626,38 @@ package body jso is
 		variable key_offset   : inout natural;
 		variable key_length   : inout natural) is
 	begin
-		parse_string(jso, jso_index, value_offset, value_length);
-		skipws(jso, jso_index);
+		parse_string(hdo, hdo_index, value_offset, value_length);
+		skipws(hdo, hdo_index);
 		tag_offset := value_offset;
 		tag_length := 0;
-		skipws(jso, jso_index);
-		if jso_index <= jso_right then
+		skipws(hdo, hdo_index);
+		if hdo_index <= hdo_right then
 			if value_length=0 then
 				tag_length   := 0;
-				value_offset := jso_index;
-				value_length := jso_right-jso_index+1; 
-				parse_value(jso, jso_index, value_offset, value_length);
-			elsif jso(jso_index)/=':' then
+				value_offset := hdo_index;
+				value_length := hdo_right-hdo_index+1; 
+				parse_value(hdo, hdo_index, value_offset, value_length);
+			elsif hdo(hdo_index)/=':' then
 				tag_length   := 0;
 				tag_offset   := value_offset;
 			else
 				tag_offset   := value_offset;
 				tag_length   := value_length;
-				jso_index    := jso_index + 1;
-				value_offset := jso_index;
-				value_length := jso_right-jso_index+1; 
-				skipws(jso, jso_index);
-				parse_value(jso, jso_index, value_offset, value_length);
+				hdo_index    := hdo_index + 1;
+				value_offset := hdo_index;
+				value_length := hdo_right-hdo_index+1; 
+				skipws(hdo, hdo_index);
+				parse_value(hdo, hdo_index, value_offset, value_length);
 			end if;
 		else
 		end if;
-		skipws(jso, jso_index);
-		parse_key(jso, jso_index, key_offset, key_length);
+		skipws(hdo, hdo_index);
+		parse_key(hdo, hdo_index, key_offset, key_length);
 	end;
 		
 	procedure locate_value (
-		constant jso          : in    string;
-		variable jso_index    : inout natural;
+		constant hdo          : in    string;
+		variable hdo_index    : inout natural;
 		constant tag          : in    string;
 		variable offset       : inout natural;
 		variable length       : inout natural) is
@@ -638,46 +672,50 @@ package body jso is
 		variable open_char    : character;
 		variable valid        : boolean;
 	begin
-		parse_tagvaluekey(jso, jso'left, jso'right, jso_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length);
-		jso_index := value_offset;
+		parse_tagvaluekey(hdo, hdo'left, hdo'right, hdo_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length);
+		hdo_index := value_offset;
 		offset    := tag_offset;
 		length    := 0;
 		position  := 0;
-		while jso_index <= jso'right loop
-			skipws(jso, jso_index);
-			case jso(jso_index) is
+		while hdo_index <= hdo'right loop
+			skipws(hdo, hdo_index);
+			case hdo(hdo_index) is
 			when '['|'{' =>
-				open_char := jso(jso_index);
-				jso_index := jso_index + 1;
+				open_char := hdo(hdo_index);
+				hdo_index := hdo_index + 1;
 			when ',' =>
 				position  := position + 1;
-				jso_index := jso_index + 1;
+				hdo_index := hdo_index + 1;
 			when ']' =>
-				assert open_char='[' --|
+				if open_char/='[' then --| Xilinx ISE 14.7 warning complain
+					assert false --|
 					report LF &  --|
-						"locate_value => wrong close key at " & natural'image(jso_index) & " open with  " & ''' & open_char & ''' & " close by " & character'image(jso(jso_index)) --|
+						"locate_value => wrong close key at " & natural'image(hdo_index) & " open with  " & ''' & open_char & ''' & " close by " & character'image(hdo(hdo_index)) --|
 					severity failure; --|
-				jso_index := jso_index + 1;
+				end if; --|
+				hdo_index := hdo_index + 1;
 			when '}' =>
-				assert open_char='{' --|
+				if open_char/='{' then --| Xilinx ISE 14.7 warning complain
+					assert false --|
 					report LF &  --|
-						"locate_value => wrong close key " & ''' & open_char & ''' & " "  & natural'image(jso_index) & ':' & character'image(jso(jso_index)) --|
+						"locate_value => wrong close key " & ''' & open_char & ''' & " "  & natural'image(hdo_index) & ':' & character'image(hdo(hdo_index)) --|
 					severity failure; --|
-				jso_index := jso_index + 1;
+				end if; --|
+				hdo_index := hdo_index + 1;
 			when others =>
 			end case;
-			parse_tagvaluekey(jso, jso'left, jso'right, jso_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length);
+			parse_tagvaluekey(hdo, hdo'left, hdo'right, hdo_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length);
 			if isdigit(tag(tag'left)) then
 				if to_natural(tag) <= position then
 					offset := tag_offset;
-					length := jso_index-offset;
+					length := hdo_index-offset;
 					exit;
 				end if;
 			elsif isalnum(tag(tag'left)) then
 				if tag_length/=0 then
-					if tag=jso(tag_offset to tag_offset+tag_length-1) then
+					if tag=hdo(tag_offset to tag_offset+tag_length-1) then
 						offset := tag_offset;
-						length := jso_index-offset;
+						length := hdo_index-offset;
 						exit;
 					end if;
 				end if;
@@ -686,23 +724,23 @@ package body jso is
 	end;
 
 	function compact (
-		constant jso : string)
+		constant hdo : string)
 		return string is
-		variable retval : string(1 to jso'length);
+		variable retval : string(1 to hdo'length);
 		variable escape : boolean;
 		variable j      : positive;
 	begin
 		escape := false;
 		j      := retval'left;
-		for i in jso'range loop
+		for i in hdo'range loop
 			if escape then
-				retval(j) := jso(i);
+				retval(j) := hdo(i);
 				j := j + 1;
-			elsif not isws(jso(i)) then
-				retval(j) := jso(i);
+			elsif not isws(hdo(i)) then
+				retval(j) := hdo(i);
 				j := j + 1;
 			end if;
-			if jso(i)=''' or jso(i)='"' then
+			if hdo(i)=''' or hdo(i)='"' then
 				escape := not escape;
 			end if;
 		end loop;
@@ -710,66 +748,68 @@ package body jso is
 	end;
 
 	procedure resolve (
-		constant jso           : in    string;
+		constant hdo           : in    string;
 		variable value_offset  : inout natural;
 		variable value_length  : inout natural) is
 
-		variable jso_index     : natural;
+		variable hdo_index     : natural;
 		variable key_offset    : natural;
 		variable key_length    : natural;
 		variable keytag_offset : natural;
 		variable keytag_length : natural;
 		variable keytag_index  : natural;
 
-		variable jso_offset    : natural;
-		variable jso_length    : natural;
+		variable hdo_offset    : natural;
+		variable hdo_length    : natural;
 		variable tag_offset    : natural;
 		variable tag_length    : natural;
 
 	begin
-		jso_index := jso'left;
-		parse_tagvaluekey (jso, jso'left, jso'right, jso_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length);
+		hdo_index := hdo'left;
+		parse_tagvaluekey (hdo, hdo'left, hdo'right, hdo_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length);
 		if keytag_length/=0 then
 			keytag_index := keytag_offset;
 			loop
-				parse_keytag(jso, keytag_index, tag_offset, tag_length);
+				parse_keytag(hdo, keytag_index, tag_offset, tag_length);
 				if tag_length=0 then
 					exit;
 				end if;
-				locate_value(jso, value_offset, jso(tag_offset to tag_offset+tag_length-1), jso_offset, jso_length);
-				assert jso_length/=0 --|
-					report "resolve => invalid key -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & jso(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|
-					jso --|
+				locate_value(hdo, value_offset, hdo(tag_offset to tag_offset+tag_length-1), hdo_offset, hdo_length);
+				if hdo_length=0 then --| Xilinx ISE 14.7 warning complain
+					assert false --|
+					report "resolve => invalid key -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|
+					hdo --|
 					severity failure; --|
-				value_offset := jso_offset;
-				-- resolve(jso(jso_offset to jso_offset+jso_length-1), jso_offset, jso_length);
+				end if; --|
+				value_offset := hdo_offset;
+				-- resolve(hdo(hdo_offset to hdo_offset+hdo_length-1), hdo_offset, hdo_length);
 			end loop;
 		else
-			jso_offset := jso'left;
-			jso_length := jso'length;
+			hdo_offset := hdo'left;
+			hdo_length := hdo'length;
 		end if;
-		jso_index := jso_offset;
-		parse_tagvaluekey (jso, jso_offset, jso_offset+jso_length-1, jso_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length);
+		hdo_index := hdo_offset;
+		parse_tagvaluekey (hdo, hdo_offset, hdo_offset+hdo_length-1, hdo_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length);
 	end;
 
 	function resolve (
-		constant jso : string)
+		constant hdo : string)
 		return string is
-		variable jso_offset : natural;
-		variable jso_length : natural;
+		variable hdo_offset : natural;
+		variable hdo_length : natural;
 	begin
-		resolve (jso, jso_offset, jso_length);
-		return jso(jso_offset to jso_offset+jso_length-1);
+		resolve (hdo, hdo_offset, hdo_length);
+		return hdo(hdo_offset to hdo_offset+hdo_length-1);
 	end;
 
 	function resolve (
-		constant jso : string)
+		constant hdo : string)
 		return boolean is
-		variable jso_offset : natural;
-		variable jso_length : natural;
+		variable hdo_offset : natural;
+		variable hdo_length : natural;
 	begin
-		resolve (jso, jso_offset, jso_length);
-		if jso(jso_offset to jso_offset+jso_length-1)="true" then
+		resolve (hdo, hdo_offset, hdo_length);
+		if hdo(hdo_offset to hdo_offset+hdo_length-1)="true" then
 			return true;
 		else
 			return false;
@@ -777,75 +817,86 @@ package body jso is
 	end;
 
 	function resolve (
-		constant jso : string)
+		constant hdo : string)
 		return integer is
-		variable jso_offset : natural;
-		variable jso_length : natural;
+		variable hdo_offset : natural;
+		variable hdo_length : natural;
 	begin
-		resolve (jso, jso_offset, jso_length);
-		return to_natural(jso(jso_offset to jso_offset+jso_length-1));
+		resolve (hdo, hdo_offset, hdo_length);
+		return to_natural(hdo(hdo_offset to hdo_offset+hdo_length-1));
 	end;
 
 	function resolve (
-		constant jso : string)
+		constant hdo : string)
 		return real is
-		variable jso_offset : natural;
-		variable jso_length : natural;
+		variable hdo_offset : natural;
+		variable hdo_length : natural;
 	begin
-		resolve (jso, jso_offset, jso_length);
-		return to_real(jso(jso_offset to jso_offset+jso_length-1));
+		resolve (hdo, hdo_offset, hdo_length);
+		return to_real(hdo(hdo_offset to hdo_offset+hdo_length-1));
 	end;
 
 	function resolve (
-		constant jso : string)
+		constant hdo : string)
 		return std_logic_vector is
-		variable jso_offset : natural;
-		variable jso_length : natural;
+		variable hdo_offset : natural;
+		variable hdo_length : natural;
 	begin
-		resolve (jso, jso_offset, jso_length);
-		return to_stdlogicvector(jso(jso_offset to jso_offset+jso_length-1));
+		resolve (hdo, hdo_offset, hdo_length);
+		return to_stdlogicvector(hdo(hdo_offset to hdo_offset+hdo_length-1));
 	end;
+
+	-- function to_integervector (
+		-- constant object : string)
+		-- return integer_vector is
+		-- constant length : natural := jso(object)**".length";
+		-- variable retval : integer_vector(0 to length-1);
+	-- begin
+		-- for i in 0 to length-1 loop
+			-- retval(i) := jso(object)**("["&natural'image(i)&"]");
+		-- end loop;
+		-- return retval;
+	-- end;
 
 	function "**" (
-		constant jso : jso;
+		constant hdo : hdo;
 		constant key : string)
 		return boolean is
 	begin
-		return resolve(string(jso) & key);
+		return resolve(string(hdo) & key);
 	end;
 
 	function "**" (
-		constant jso : jso;
+		constant hdo : hdo;
 		constant key : string)
 		return integer is
 		variable xxx : integer;
 	begin
-		xxx :=  resolve(string(jso) & key);
+		xxx :=  resolve(string(hdo) & key);
 		return xxx;
 	end;
 
 	function "**" (
-		constant jso : jso;
+		constant hdo : hdo;
 		constant key : string)
 		return real is
 	begin
-		return resolve(string(jso) & key);
+		return resolve(string(hdo) & key);
 	end;
 
 	function "**" (
-		constant jso : jso;
+		constant hdo : hdo;
 		constant key : string)
 		return std_logic_vector is
 	begin
-		return resolve(string(jso) & key);
+		return resolve(string(hdo) & key);
 	end;
 
 	function "**" (
-		constant obj : jso;
+		constant obj : hdo;
 		constant key : string)
-		return jso is
+		return hdo is
 	begin
-		report "pase " & obj;
 		return resolve(string(obj) & key);
 	end;
 

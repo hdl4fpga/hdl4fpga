@@ -49,6 +49,10 @@ package hdo is
 		constant hdo : string)
 		return boolean;
 
+	-- function to_integervector (
+		-- constant object : string)
+		-- return integer_vector;
+
 	subtype hdo is string;
 
 	function "**" (

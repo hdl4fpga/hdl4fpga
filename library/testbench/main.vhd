@@ -28,7 +28,7 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.scopeiopkg.all;
-use hdl4fpga.jso.all;
+use hdl4fpga.hdo.all;
 
 entity main is
 end;
@@ -39,9 +39,9 @@ begin
 		constant c : string := significand(31.25e-6);
 		variable x : string(c'range);
 	begin
-			-- "value => " & (jso(normalize(*coefs(i)))**".norm");
+			-- "value => " & (hdo(normalize(*coefs(i)))**".norm");
 		-- report "VALUE : " & ''' & get_value("[hola,mundo:[kkkk:12345,dddd:[67890]],hello,world].kkk", "[mundo].dddd") & ''';
-			-- report "VALUE : " & ''' & jso(c)**".norm" & ''';
+			-- report "VALUE : " & ''' & hdo(c)**".norm" & ''';
 			report CR & "VALUE : " & ''' & c & ''';
 		wait;
 	end process;

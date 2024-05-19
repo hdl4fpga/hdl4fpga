@@ -30,7 +30,7 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.jso.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.videopkg.all;
 
 package scopeiopkg is
@@ -208,7 +208,7 @@ package scopeiopkg is
 		return integer_vector;
 
 	function get_characteristic1245 (
-		constant unit : real; constant xxx : boolean := true)
+		constant unit : real; constant log : boolean := true)
 		return integer_vector;
 
 end;
@@ -287,7 +287,7 @@ package body scopeiopkg is
 	begin
 
 		for i in coefs'range loop
-			retval(i) :=(jso(significand(unit*coefs(i)))**".sgfc");
+			retval(i) :=(hdo(significand(unit*coefs(i)))**".sgfc");
 		end loop;
 		return retval;
 	end;
@@ -303,7 +303,7 @@ package body scopeiopkg is
 		unit1245 := unit;
 		for i in 0 to 4-1 loop
 			for j in coefs'range loop
-				retval(4*i+j) := (jso(significand(unit1245*coefs(j)))**".shr");
+				retval(4*i+j) := (hdo(significand(unit1245*coefs(j)))**".shr");
 			end loop;
 			unit1245 := unit1245 * 10.0;
 		end loop;
@@ -311,7 +311,7 @@ package body scopeiopkg is
 	end;
 
 	function get_characteristic1245 (
-		constant unit   : real; constant xxx : boolean := true)
+		constant unit   : real; constant log : boolean := true)
 		return integer_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
 		variable unit1245 : real;
@@ -321,13 +321,15 @@ package body scopeiopkg is
 		unit1245 := unit;
 		for i in 0 to 4-1 loop
 			for j in coefs'range loop
-				retval(4*i+j) := (jso(significand(unit1245*coefs(j)))**".pnt");
-				report "=======> "& (jso(significand(unit*coefs(i))));
+				retval(4*i+j) := (hdo(significand(unit1245*coefs(j)))**".pnt");
+				if not log then 
+					report "=======> "& (hdo(significand(unit*coefs(i))));
+				end if;
 			end loop;
 			unit1245 := unit1245 * 10.0;
 		end loop;
-		assert xxx
-		report "hola"
+		assert log
+		report "Failure"
 		severity failure;
 		return retval;
 	end;

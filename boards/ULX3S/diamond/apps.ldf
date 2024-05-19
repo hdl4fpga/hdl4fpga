@@ -908,9 +908,6 @@
         <Source name="../../../library/scope/scopeio_layout.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/scope/textboxpkg.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
         <Source name="../../../library/video/video.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
@@ -1055,9 +1052,6 @@
         <Source name="../../../library/video/cgaram.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/basic/jso.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/basic/mul_ser.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -1068,6 +1062,9 @@
             <Options/>
         </Source>
         <Source name="../../../library/basic/btof.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/hdo.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="apps.lpf" type="Logic Preference" type_short="LPF">

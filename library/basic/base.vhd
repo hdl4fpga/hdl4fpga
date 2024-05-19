@@ -81,10 +81,6 @@ package base is
 		constant arg : string)
 		return string;
 
-	function to_naturalvector (
-		constant object : string)
-		return natural_vector;
-
 	function ftoa (
 		constant num     : real;
 		constant ndigits : natural)
@@ -460,7 +456,6 @@ library ieee;
 use ieee.math_real.all;
 
 library hdl4fpga;
-use hdl4fpga.jso.all;
 
 package body base is
 
@@ -606,18 +601,6 @@ package body base is
 		retval := arg;
 		for i in 1 to retval'length/2 loop
 			swap(retval(i), retval(retval'length+1-i));
-		end loop;
-		return retval;
-	end;
-
-	function to_naturalvector (
-		constant object : string)
-		return natural_vector is
-		constant length : natural := jso(object)**".length";
-		variable retval : natural_vector(0 to length-1);
-	begin
-		for i in 0 to length-1 loop
-			retval(i) := jso(object)**("["&natural'image(i)&"]");
 		end loop;
 		return retval;
 	end;

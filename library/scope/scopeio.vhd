@@ -28,7 +28,7 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.jso.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.scopeiopkg.all;
 
@@ -62,16 +62,28 @@ entity scopeio is
 		video_blank      : out std_logic;
 		video_sync       : out std_logic);
 
-	constant inputs        : natural := jso(layout)**".inputs";
-	constant max_delay     : natural := jso(layout)**".max_delay";
-	constant min_storage   : natural := jso(layout)**".min_storage";
+	constant inputs        : natural := hdo(layout)**".inputs";
+	constant max_delay     : natural := hdo(layout)**".max_delay";
+	constant min_storage   : natural := hdo(layout)**".min_storage";
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
-	constant grid_height   : natural := jso(layout)**".grid.height";
-	constant grid_width    : natural := jso(layout)**".grid.width";
+	constant grid_height   : natural := hdo(layout)**".grid.height";
+	constant grid_width    : natural := hdo(layout)**".grid.width";
 
-	constant time_factors  : natural_vector := to_naturalvector(jso(layout)**".axis.horizontal.scales");
-	constant vt_gains      : natural_vector := to_naturalvector(jso(layout)**".axis.vertical.gains");
+	function to_naturalvector (
+		constant object : string)
+		return natural_vector is
+		constant length : natural := hdo(object)**".length";
+		variable retval : natural_vector(0 to length-1);
+	begin
+		for i in 0 to length-1 loop
+			retval(i) := hdo(object)**("["&natural'image(i)&"]");
+		end loop;
+		return retval;
+	end;
+
+	constant time_factors  : natural_vector := to_naturalvector(hdo(layout)**".axis.horizontal.scales");
+	constant vt_gains      : natural_vector := to_naturalvector(hdo(layout)**".axis.vertical.gains");
 
 end;
 
@@ -128,8 +140,8 @@ begin
 
 	amp_b : block
 
-		constant vt          : string := jso(layout)**".vt";
-		constant vt_unit     : real := jso(layout)**".axis.vertical.unit";
+		constant vt          : string := hdo(layout)**".vt";
+		constant vt_unit     : real := hdo(layout)**".axis.vertical.unit";
 		constant sample_size : natural := input_data'length/inputs;
 		signal chan_id       : std_logic_vector(0 to chanid_bits-1);
 		signal gain_id       : std_logic_vector(0 to gainid_bits-1);
@@ -197,7 +209,7 @@ begin
 				return retval;
 			end;
 
-			constant vt_step : real := jso(vt)**("["&natural'image(i)&"].step");
+			constant vt_step : real := hdo(vt)**("["&natural'image(i)&"].step");
 			constant gains  : natural_vector(vt_gains'range) := init_gains (
 				gains => vt_gains,
 				unit  => vt_unit,
