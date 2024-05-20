@@ -99,7 +99,6 @@ architecture scopeio of ulx3s is
 	signal usb_trdy      : std_logic := '1';
 	signal usb_data      : std_logic_vector(si_data'range);
 
-
 	signal adc_clk       : std_logic;
 
 	constant layout      : string := compact(

@@ -170,28 +170,28 @@ begin
 		constant bcd_digits   : natural := 1;
 		signal bcd            : std_logic_vector(0 to bcd_digits*bcd_length-1);
 		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+signfcnd_length+bin_digits-1)/bin_digits)-1);
-			function label_width (
-				constant layout : string)
-				return natural is
-				variable offset : positive;
-				variable length : natural;
-				variable i      : natural;
-				variable retval : natural;
-			begin
-				i := 0;
-				retval := 0;
-				for i in 0 to inputs-1 loop
-					resolve(layout&".vt["&natural'image(i)&"].text", offset, length);
-					if length=0 then
-						exit;
-					elsif retval < length then
-						retval := length;
-					end if;
-				end loop;
-				return retval;
-			end;
 
-			constant width : natural := label_width(layout) + 1;
+		function label_width 
+			return natural is
+			variable offset : positive;
+			variable length : natural;
+			variable i      : natural;
+			variable retval : natural;
+		begin
+			i := 0;
+			retval := 0;
+			for i in 0 to inputs-1 loop
+				resolve(layout&".vt["&natural'image(i)&"].text", offset, length);
+				if length=0 then
+					exit;
+				elsif retval < length then
+					retval := length;
+				end if;
+			end loop;
+			return retval;
+		end;
+
+		constant width : natural := label_width + 1;
 	
 	begin
 
@@ -264,7 +264,7 @@ begin
 		vt_scale  <= multiplex(gain_ids,   chan_id,        vt_scale'length);
 		tgr_scale <= multiplex(gain_ids,   trigger_chanid, tgr_scale'length);
 
-		xxx_b : block
+		btof_b : block
 
 			signal magnitud    : signed(vt_offset'range);
 			signal mul_req     : std_logic;

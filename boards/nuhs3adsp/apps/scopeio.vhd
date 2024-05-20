@@ -16,12 +16,13 @@ use hdl4fpga.app_profiles.all;
 
 architecture scopeio of nuhs3adsp is
 
-	constant io_link    : io_comms := io_ipoe;
+	constant io_link  : io_comms := io_ipoe;
 	constant sys_per  : real := 50.0;
+
 	signal sys_clk    : std_logic;
-	signal sysclk_n    : std_logic;
+	signal sysclk_n   : std_logic;
 	signal vga_clk    : std_logic;
-	signal vgaclk_n    : std_logic;
+	signal vgaclk_n   : std_logic;
 	signal vga_hsync  : std_logic;
 	signal vga_vsync  : std_logic;
 	signal vga_rgb    : std_logic_vector(0 to 3*8-1);
@@ -73,8 +74,6 @@ architecture scopeio of nuhs3adsp is
 		mode480p    => (timing_id => pclk25_00m640x480at60,    dcm_mul => 5, dcm_div => 4),
 		mode600p    => (timing_id => pclk40_00m800x600at60,    dcm_mul => 2, dcm_div => 1),
 		mode600px16 => (timing_id => pclk40_00m800x600at60,    dcm_mul => 2, dcm_div => 1),
-		-- mode1080p   => (timing_id => pclk133_32m1920x1080at60 , dcm_mul => 20, dcm_div => 3));
-		-- mode1080p   => (timing_id => pclk138_50m1920x1080at60 , dcm_mul => 7, dcm_div => 1));
 		mode1080p   => (timing_id => pclk150_00m1920x1080at60, dcm_mul => 15, dcm_div => 2));
 
 	constant video_mode : display_modes := mode1080p;
@@ -139,7 +138,6 @@ architecture scopeio of nuhs3adsp is
 							natural'image(2**17/(2**(2+3)*5**(0+3))) & "," & -- [14]
 							natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
 			"               length : 16],  " &
-			-- "           unit   : 2.0e-3, " &
 			"           unit   : 250.0e-9, " &
 			"           width  : " & natural'image(6*8) & ','  &
 			"           rotate : ccw0,     " &
@@ -167,12 +165,12 @@ architecture scopeio of nuhs3adsp is
 			"       bottom     : 1,        " &
 			"       vertical   : 1,        " &
 			"       horizontal : 1,        " &
-			"       background-color : 0xff_00_00_00}," &
+			"       background-color : 0xff_ff_ff_ff}," &
 			"  vt : [                      " &
-			"   { text  : ANA,        " &
+			"   { text  : J3,        " &
 			"     step  : " & vt_step & ","  &
 			"     color : 0xff_ff_ff_00},  " &
-			"   { text  : ANB,        " &
+			"   { text  : J4,        " &
 			"     step  : " & vt_step & ","  &
 			"     color : 0xff_00_ff_ff}]}");
 begin

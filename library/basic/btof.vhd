@@ -313,7 +313,7 @@ begin
 		signal fmt_ena : std_logic_vector(bcd_vector'range);
 
 		signal cntr : natural range 0 to 2**width'length-1;
-		signal frm : std_logic;
+		signal frm  : std_logic := '0';
 	begin
 
 		process (clk)
@@ -453,14 +453,14 @@ begin
 								frm <= '0';
 							end if;
 						else
-							frm <= '1';
+							frm  <= '1';
 							cntr <= cntr - 1;
 						end if;
 					elsif cntr/=0 then
-						frm <= '1';
+						frm  <= '1';
 						cntr <= cntr - 1;
 					else
-						frm <= '0';
+						frm   <= '0';
 						state := s_idle;
 					end if;
 				end case;

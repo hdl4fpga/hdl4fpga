@@ -504,6 +504,7 @@ begin
 				end case;
 			else
 				state := s_init;
+				bcd_irdy <= '0';
 			end if;
 
 		end if;
