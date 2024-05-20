@@ -218,25 +218,28 @@ package body scopeiopkg is
 	function significand (
 		constant unit : real)
 		return string is
-		constant tenth  : real := 1.0/10.0;
-		constant scales : string := "munp";
-		variable scale  : integer;
-		variable exp10  : integer;
-		variable dec10  : integer;
-		variable pow10  : real;
-		variable sgfc   : real;
-		variable unt   : real;
-		variable shr    : integer;
-		variable pnt    : integer;
-		variable rnd    : natural; --Lattice Diamond fix
+		constant tenth   : real := 1.0/10.0;
+		constant prefixes: string := " munp";
+		variable prefix  : integer;
+		variable xxx     : integer;
+		variable exp10   : integer;
+		variable dec10   : integer;
+		variable pow10   : real;
+		variable sgfc    : real;
+		variable unt     : real;
+		variable shr     : integer;
+		variable pnt     : integer;
+		variable rnd     : natural; --Lattice Diamond fix
 	begin
 		assert unit > 0.0 
 			report "unit <= 0.0"
 			severity failure;
 
 		unt := unit;
+		xxx := 1;
 		while unt >= 1.0 loop
 			unt := unt / 1.0e3;
+			xxx := xxx - 1;
 		end loop;
 
 		dec10 := 0;
@@ -256,27 +259,29 @@ package body scopeiopkg is
 		while (1.0-unt) > 4.0e-9 loop
 			exp10 := exp10 + 1;
 			pow10 := pow10 * tenth;
-			unt   := unt / tenth;
+			unt   := unt   / tenth;
 		end loop;
 
 		rnd := natural(round(sgfc)); --Lattice Diamond fix
 
-		scale := ((3-(exp10 mod 3)) mod 3)+exp10;
-		shr   := -2+dec10-exp10;
-		pnt   := dec10-scale;
-		-- report CR &
-			-- "sgfc  => " & integer'image(rnd)   & CR &
-			-- "exp10 => " & integer'image(exp10) & CR &
-			-- "dec10 => " & integer'image(dec10) & CR &
-			-- "scale => " & integer'image(scale) & CR &
-			-- "unit  => " & scales((((3-(exp10 mod 3)) mod 3)+exp10)/3) & CR &
-			-- "shr   => " & integer'image(-2+dec10-exp10) & CR &
-			-- "pnt   => " & integer'image(dec10-scale);
+		prefix := ((3-(exp10 mod 3)) mod 3)+exp10;
+		shr    := -2+dec10-exp10;
+		pnt    := dec10-prefix;
+		report CR &
+			"unit   => " & real'image(unit)      & CR &
+			"sgfc   => " & integer'image(rnd)    & CR &
+			"exp10  => " & integer'image(exp10)  & CR &
+			"dec10  => " & integer'image(dec10)  & CR &
+			"prefix => " & integer'image(prefix) & CR &
+			"unit   => " & prefixes(prefix/3+xxx)    & CR &
+			"shr    => " & integer'image(-2+dec10-exp10) & CR &
+			"pnt    => " & integer'image(dec10-prefix);
 
 		return 
 			"{ sgfc:" & integer'image(rnd) & "," & 
 			"  shr:"  & integer'image(shr) & "," & 
-			"  pnt:"  & integer'image(pnt) & "}";
+			"  pnt:"  & integer'image(pnt) & "," & 
+			"  pfx:"  & prefixes((((3-(exp10 mod 3)) mod 3)+exp10)/3) & "}";
 	end;
 
 	function get_significand1245 (
@@ -372,62 +377,4 @@ package body scopeiopkg is
 		return (0 to 0 => '-');
 	end;
 
-	function scale_1245 (
-		constant val   : signed;
-		constant scale : std_logic_vector)
-		return signed is
-		variable sel  : std_logic_vector(scale'length-1 downto 0);
-		variable by1  : signed(val'range);
-		variable by2  : signed(val'range);
-		variable by4  : signed(val'range);
-		variable rval : signed(val'range);
-	begin
-		by1 := shift_left(val, 0);
-		by2 := shift_left(val, 1);
-		by4 := shift_left(val, 2);
-		sel := scale;
-		case sel(2-1 downto 0) is
-		when "00" =>
-			rval := by1;
-		when "01" =>
-			rval := by2;
-		when "10" =>
-			rval := by4;
-		when "11" =>
-			rval := by4 + by1;
-		when others =>
-			rval := (others => '-');
-		end case;
-		return rval;
-	end;
-		
-	function scale_1245 (
-		constant val   : unsigned;
-		constant scale : std_logic_vector)
-		return unsigned is
-		variable sel  : std_logic_vector(scale'length-1 downto 0);
-		variable by1  : unsigned(val'range);
-		variable by2  : unsigned(val'range);
-		variable by4  : unsigned(val'range);
-		variable rval : unsigned(val'range);
-	begin
-		by1 := shift_left(val, 0);
-		by2 := shift_left(val, 1);
-		by4 := shift_left(val, 2);
-		sel := scale;
-		case sel(2-1 downto 0) is
-		when "00" =>
-			rval := by1;
-		when "01" =>
-			rval := by2;
-		when "10" =>
-			rval := by4;
-		when "11" =>
-			rval := by4 + by1;
-		when others =>
-			rval := (others => '1');
-		end case;
-		return rval;
-	end;
-		
 end;
