@@ -339,14 +339,11 @@ package body scopeiopkg is
 		return retval;
 	end;
 
-	function pos(
-		constant val : natural)
-		return natural is
+	function get_smpfx1234 (
+		constant unit : real)
+		return string is
+		variable retval : string (1 to 4*4);
 	begin
-		if val > 0 then
-			return 1;
-		end if;
-		return 0;
 	end;
 
 	function bitfield (
