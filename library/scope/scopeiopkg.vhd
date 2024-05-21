@@ -221,7 +221,7 @@ package body scopeiopkg is
 		constant tenth   : real := 1.0/10.0;
 		constant prefixes: string := " munp";
 		variable prefix  : integer;
-		variable xxx     : integer;
+		variable pfxdec  : integer;
 		variable exp10   : integer;
 		variable dec10   : integer;
 		variable pow10   : real;
@@ -236,10 +236,10 @@ package body scopeiopkg is
 			severity failure;
 
 		unt := unit;
-		xxx := 1;
+		pfxdec := 1;
 		while unt >= 1.0 loop
 			unt := unt / 1.0e3;
-			xxx := xxx - 1;
+			pfxdec := pfxdec - 1;
 		end loop;
 
 		dec10 := 0;
@@ -267,21 +267,21 @@ package body scopeiopkg is
 		prefix := ((3-(exp10 mod 3)) mod 3)+exp10;
 		shr    := -2+dec10-exp10;
 		pnt    := dec10-prefix;
-		report CR &
-			"unit   => " & real'image(unit)      & CR &
-			"sgfc   => " & integer'image(rnd)    & CR &
-			"exp10  => " & integer'image(exp10)  & CR &
-			"dec10  => " & integer'image(dec10)  & CR &
-			"prefix => " & integer'image(prefix) & CR &
-			"unit   => " & prefixes(prefix/3+xxx)    & CR &
-			"shr    => " & integer'image(-2+dec10-exp10) & CR &
-			"pnt    => " & integer'image(dec10-prefix);
+		-- report CR &
+			-- "unit   => " & real'image(unit)      & CR &
+			-- "sgfc   => " & integer'image(rnd)    & CR &
+			-- "exp10  => " & integer'image(exp10)  & CR &
+			-- "dec10  => " & integer'image(dec10)  & CR &
+			-- "prefix => " & integer'image(prefix) & CR &
+			-- "unit   => " & prefixes(prefix/3+pfxdec)    & CR &
+			-- "shr    => " & integer'image(-2+dec10-exp10) & CR &
+			-- "pnt    => " & integer'image(dec10-prefix);
 
-		return 
+		return compact(
 			"{ sgfc:" & integer'image(rnd) & "," & 
 			"  shr:"  & integer'image(shr) & "," & 
 			"  pnt:"  & integer'image(pnt) & "," & 
-			"  pfx:"  & prefixes((((3-(exp10 mod 3)) mod 3)+exp10)/3) & "}";
+			"  pfx:"  & prefixes(prefix/3+pfxdec) & "}");
 	end;
 
 	function get_significand1245 (
