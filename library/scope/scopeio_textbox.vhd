@@ -131,7 +131,7 @@ architecture def of scopeio_textbox is
 	signal btof_code         : ascii;
 	signal cga_we            : std_logic := '0';
 	signal cga_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
-	signal cga_code          : ascii;
+	signal cga_data          : ascii;
 
 	signal fg_color          : std_logic_vector(text_fg'range);
 	signal bg_color          : std_logic_vector(text_bg'range);
@@ -330,24 +330,65 @@ begin
 
 		end block;
 
-		-- process (cga_addr)
-		-- begin
-		-- end if;
-
-		cga_code <= btof_code when btof_frm='1' else to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
-		process (btof_frm, rgtr_clk)
-			variable q : std_logic := '0';
+		vtwidget_b : block
 		begin
-			if rising_edge(rgtr_clk) then
-				if (btof_frm or q)='1' then
-					cga_addr <= cga_addr + 1;
-				else
-					cga_addr <= resize(mul(unsigned(chan_id), cga_cols), cga_addr'length) + width;
-				end if;
-				q := btof_frm;
-			end if;
-			cga_we <= btof_frm or q;
-		end process;
+
+    		vtoffset_p : process (btof_frm, rgtr_clk)
+    			type states is (s_wait, s_trigger);
+    			variable state : states;
+    		begin
+    			if rising_edge(rgtr_clk) then
+    				case state is
+    				when s_wait  =>
+    					if btof_frm='1' then
+    						cga_we   <= '1';
+    						cga_data <= btof_code;
+    						cga_addr <= cga_addr + 1;
+    						state := s_trigger;
+    					else
+    						cga_we   <= '0';
+    						cga_addr <= resize(mul(unsigned(chan_id), cga_cols), cga_addr'length) + width;
+    						cga_data <= (others => '0');
+    					end if;
+    				when s_trigger =>
+    					if btof_frm='1' then
+    						cga_we   <= '0';
+    						cga_data <= btof_code;
+						else
+    						cga_data <= (others => '0');
+    						state    := s_wait;
+    					end if;
+    				end case;
+    			end if;
+    		end process;
+
+    		vtprefix_p : process (rgtr_clk)
+    			type states is (s_wait, s_trigger);
+    			variable state : states;
+    		begin
+    			if rising_edge(rgtr_clk) then
+    				case state is
+    				when s_wait  =>
+    					if btof_frm='1' then
+    						cga_we   <= '1';
+    						cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
+    						cga_addr <= cga_addr + 1;
+    						state    := s_trigger;
+    					else
+    						cga_we   <= '0';
+    						cga_data <= (others => '-');
+    						cga_addr <= resize(mul(unsigned(chan_id), cga_cols), cga_addr'length) + width + 1;
+    					end if;
+    				when s_trigger =>
+    					cga_we   <= '0';
+    					cga_data <= btof_code;
+    					state    := s_wait;
+    				end case;
+
+    			end if;
+    		end process;
+
+		end block;
 	
 	end block;
 
@@ -367,7 +408,7 @@ begin
 		cga_clk      => rgtr_clk,
 		cga_we       => cga_we,
 		cga_addr     => std_logic_vector(cga_addr),
-		cga_data     => cga_code,
+		cga_data     => cga_data,
 
 		video_clk    => video_clk,
 		video_addr   => video_addr,
