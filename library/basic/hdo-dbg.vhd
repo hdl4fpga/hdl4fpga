@@ -890,8 +890,9 @@ package body hdo is
 				retval(j) := hdo(i);
 				j := j + 1;
 			end if;
-			bkslh := false;
-			if hdo(i)='\' then
+			if bkslh then
+				bkslh := false;
+			elsif hdo(i)='\' then
 				bkslh := true;
 			elsif hdo(i)=''' or hdo(i)='"' then
 				escape := not escape;
@@ -1096,8 +1097,9 @@ package body hdo is
 				retval(retval'left+length) := obj(i);
 				length := length + 1;
 			end if;
-			bkslh := false;
-			if obj(i)='\' then
+			if bkslh then
+				bkslh := false;
+			elsif obj(i)='\' then
 				bkslh := true;
 			elsif obj(i)=''' or obj(i)='"' then
 				escape := not escape;
