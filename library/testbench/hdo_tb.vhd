@@ -247,12 +247,13 @@ architecture hdo_tb of testbench is
 
 begin
     process 
-		constant xx : string  := "{ h : a(0)\ s(1) }";
+		constant xx : string  := "{ h : \'a(0)\ \'s(1) }";
 		constant xxx : string := hdo(compact(xx))**".h";
     begin
         -- report "VALUE : " & ''' & real'image(test**"[5].top") & ''';
         -- report "VALUE : " & ''' & ((hso(layout)**".vt")**"[0]")**".step" & ''';
-        report '"' & xxx & '"';
+
+        report '"' & escaped(xxx) & '"';
         wait;
     end process;
 end;

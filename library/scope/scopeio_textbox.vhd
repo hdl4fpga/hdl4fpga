@@ -88,7 +88,7 @@ entity scopeio_textbox is
 		i := 0;
 		j := data'left;
 		for i in 0 to inputs-1 loop
-			data(j to j+width-1) := textalign(hdo(vt)**("["&natural'image(i)&"].text"), width);
+			data(j to j+width-1) := textalign(escaped(hdo(vt)**("["&natural'image(i)&"].text")), width);
 			j := j + width;
 		end loop;
 		return data;

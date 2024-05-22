@@ -84,6 +84,11 @@ package hdo is
 		constant obj : hdo;
 		constant key : string)
 		return hdo;
+
+	function escaped (
+		constant obj : string)
+		return string;
+
 end;
 
 package body hdo is
@@ -911,6 +916,44 @@ package body hdo is
 		return hdo is
 	begin
 		return resolve(string(obj) & key);
+	end;
+
+	function escaped (
+		constant obj : string)
+		return string is
+		variable length : natural;
+		variable retval : string(1 to obj'length);
+		variable escape : boolean;
+		variable bkslh  : boolean;
+	begin
+		length := 0;
+		escape := false;
+		bkslh  := false;
+		for i in obj'range loop
+			if bkslh then
+				retval(retval'left+length) := obj(i);
+				length := length + 1;
+			elsif escape then
+				if not (obj(i)=''' or obj(i)='"' or obj(i)='\') then
+					retval(retval'left+length) := obj(i);
+					length := length + 1;
+				end if;
+			elsif not (obj(i)=''' or obj(i)='"' or obj(i)='\' or isws(obj(i))) then
+				retval(retval'left+length) := obj(i);
+				length := length + 1;
+			end if;
+			bkslh := false;
+			if obj(i)='\' then
+				bkslh := true;
+			elsif obj(i)=''' or obj(i)='"' then
+				escape := not escape;
+			end if;
+		end loop;
+		if length/=0 then
+			return retval(retval'left to retval'left+length-1);
+		else
+			return "";
+		end if;
 	end;
 
 end;
