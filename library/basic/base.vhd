@@ -129,6 +129,10 @@ package base is
 		return unsigned;
 
 	function to_ascii(
+		constant arg : character)
+		return std_logic_vector;
+
+	function to_ascii(
 		constant arg : string)
 		return std_logic_vector;
 
@@ -875,13 +879,21 @@ package body base is
 	end;
 
 	function to_ascii(
+		constant arg : character)
+		return std_logic_vector is
+		subtype ascii is std_logic_vector(0 to 8-1);
+	begin
+		return std_logic_vector(to_unsigned(character'pos(arg), ascii'length));
+	end;
+
+	function to_ascii(
 		constant arg : string)
 		return std_logic_vector is
 		subtype ascii is std_logic_vector(0 to 8-1);
 		variable retval : unsigned(0 to ascii'length*arg'length-1) := (others => '0');
 	begin
 		for i in arg'range loop
-			retval(ascii'range) := to_unsigned(character'pos(arg(i)), ascii'length);
+			retval(ascii'range) := unsigned(to_ascii(arg(i)));
 			retval := retval rol ascii'length;
 		end loop;
 		return std_logic_vector(retval);

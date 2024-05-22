@@ -208,9 +208,12 @@ package scopeiopkg is
 		return integer_vector;
 
 	function get_characteristic1245 (
-		constant unit : real; constant log : boolean := true)
+		constant unit : real)
 		return integer_vector;
 
+	function get_prefix1235 (
+		constant unit : real)
+		return string;
 end;
 
 package body scopeiopkg is
@@ -230,6 +233,7 @@ package body scopeiopkg is
 		variable shr     : integer;
 		variable pnt     : integer;
 		variable rnd     : natural; --Lattice Diamond fix
+
 	begin
 		assert unit > 0.0 
 			report "unit <= 0.0"
@@ -281,7 +285,7 @@ package body scopeiopkg is
 			"{ sgfc:" & integer'image(rnd) & "," & 
 			"  shr:"  & integer'image(shr) & "," & 
 			"  pnt:"  & integer'image(pnt) & "," & 
-			"  pfx:"  & prefixes(prefix/3+pfxdec) & "}");
+			"  pfx:"  & '\' & prefixes(prefix/3+pfxdec) & "}");
 	end;
 
 	function get_significand1245 (
@@ -292,7 +296,7 @@ package body scopeiopkg is
 	begin
 
 		for i in coefs'range loop
-			retval(i) :=(hdo(significand(unit*coefs(i)))**".sgfc");
+			retval(i) := hdo(significand(unit*coefs(i)))**".sgfc";
 		end loop;
 		return retval;
 	end;
@@ -308,7 +312,7 @@ package body scopeiopkg is
 		unit1245 := unit;
 		for i in 0 to 4-1 loop
 			for j in coefs'range loop
-				retval(4*i+j) := (hdo(significand(unit1245*coefs(j)))**".shr");
+				retval(4*i+j) := hdo(significand(unit1245*coefs(j)))**".shr";
 			end loop;
 			unit1245 := unit1245 * 10.0;
 		end loop;
@@ -316,34 +320,37 @@ package body scopeiopkg is
 	end;
 
 	function get_characteristic1245 (
-		constant unit   : real; constant log : boolean := true)
+		constant unit   : real)
 		return integer_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
 		variable unit1245 : real;
 		variable retval : integer_vector(0 to 4*4-1);
 	begin
-
 		unit1245 := unit;
 		for i in 0 to 4-1 loop
 			for j in coefs'range loop
-				retval(4*i+j) := (hdo(significand(unit1245*coefs(j)))**".pnt");
-				if not log then 
-					report "=======> "& (hdo(significand(unit*coefs(i))));
-				end if;
+				retval(4*i+j) := hdo(significand(unit1245*coefs(j)))**".pnt";
 			end loop;
 			unit1245 := unit1245 * 10.0;
 		end loop;
-		assert log
-		report "Failure"
-		severity failure;
 		return retval;
 	end;
 
-	function get_smpfx1234 (
+	function get_prefix1235 (
 		constant unit : real)
 		return string is
+		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
+		variable unit1245 : real;
 		variable retval : string (1 to 4*4);
 	begin
+		unit1245 := unit;
+		for i in 0 to 4-1 loop
+			for j in coefs'range loop
+				retval(4*i+j+1) := hdo(significand(unit1245*coefs(j)))**".pfx";
+			end loop;
+			unit1245 := unit1245 * 10.0;
+		end loop;
+		return retval;
 	end;
 
 	function bitfield (

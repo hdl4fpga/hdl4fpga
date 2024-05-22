@@ -50,8 +50,9 @@ entity scopeio_textbox is
 	constant grid_height    : natural := hdo(layout)**".grid.height";
 	constant vt             : string  := hdo(layout)**".vt";
 
-	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
+	constant vt_prefix      : string  := get_prefix1235(vt_unit);
+	constant hzoffset_bits  : natural := unsigned_num_bits(max_delay-1);
+	constant chanid_bits    : natural := unsigned_num_bits(inputs-1);
 
 
 	function textbox_rom (
@@ -126,6 +127,8 @@ architecture def of scopeio_textbox is
 	constant cga_size        : natural := (textbox_width/font_width)*(textbox_height/font_height);
 	constant cga_bitrom      : std_logic_vector :=  to_ascii(textbox_rom(cga_cols, cga_size));
 
+	signal btof_frm          : std_logic;
+	signal btof_code         : ascii;
 	signal cga_we            : std_logic := '0';
 	signal cga_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
 	signal cga_code          : ascii;
@@ -322,21 +325,28 @@ begin
 				exp      => b"101",
 				neg      => vt_offset(vt_offset'left),
 				bin      => bin,
-				code_frm => cga_we,
-				code     => cga_code);
+				code_frm => btof_frm,
+				code     => btof_code);
 
 		end block;
 
-		process (rgtr_clk)
+		-- process (cga_addr)
+		-- begin
+		-- end if;
 
+		cga_code <= btof_code when btof_frm='1' else to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
+		process (btof_frm, rgtr_clk)
+			variable q : std_logic := '0';
 		begin
 			if rising_edge(rgtr_clk) then
-				if cga_we='1' then
+				if (btof_frm or q)='1' then
 					cga_addr <= cga_addr + 1;
 				else
 					cga_addr <= resize(mul(unsigned(chan_id), cga_cols), cga_addr'length) + width;
 				end if;
+				q := btof_frm;
 			end if;
+			cga_we <= btof_frm or q;
 		end process;
 	
 	end block;

@@ -78,6 +78,11 @@ package hdo is
 	function "**" (
 		constant obj : hdo;
 		constant key : string)
+		return character;
+
+	function "**" (
+		constant obj : hdo;
+		constant key : string)
 		return hdo;
 end;
 
@@ -863,19 +868,27 @@ package body hdo is
 		return string is
 		variable retval : string(1 to hdo'length);
 		variable escape : boolean;
+		variable bkslh  : boolean;
 		variable j      : positive;
 	begin
+		bkslh  := false;
 		escape := false;
 		j      := retval'left;
 		for i in hdo'range loop
-			if escape then
+			if bkslh then
+				retval(j) := hdo(i);
+				j := j + 1;
+			elsif escape then
 				retval(j) := hdo(i);
 				j := j + 1;
 			elsif not isws(hdo(i)) then
 				retval(j) := hdo(i);
 				j := j + 1;
 			end if;
-			if hdo(i)=''' or hdo(i)='"' then
+			bkslh := false;
+			if hdo(i)='\' then
+				bkslh := true;
+			elsif hdo(i)=''' or hdo(i)='"' then
 				escape := not escape;
 			end if;
 		end loop;
@@ -1032,6 +1045,18 @@ package body hdo is
 		return std_logic_vector is
 	begin
 		return resolve(string(hdo) & key);
+	end;
+
+	function "**" (
+		constant obj : hdo;
+		constant key : string)
+		return character is
+		constant retval : string := resolve(string(obj) & key);
+	begin
+		if retval(retval'left)='\' then
+			return retval(retval'left+1);
+		end if;
+		return retval(retval'left);
 	end;
 
 	function "**" (

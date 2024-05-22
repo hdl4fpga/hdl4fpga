@@ -31,10 +31,10 @@ use ieee.math_real.all;
 library hdl4fpga;
 use work.hdo.all;
 
-architecture hso_tb of testbench is
+architecture hdo_tb of testbench is
     constant inputs : natural := 2;
     signal input_sample  : std_logic_vector(13-1 downto 0);
-	constant test      : hso := 
+	constant test      : hdo := 
             "{                             " &   
             "   inputs  :                  " & natural'image(inputs) & ',' &
             "   num_of_segments : 3,       " &
@@ -247,10 +247,12 @@ architecture hso_tb of testbench is
 
 begin
     process 
+		constant xx : string  := "{ h : a(0)\ s(1) }";
+		constant xxx : string := hdo(compact(xx))**".h";
     begin
         -- report "VALUE : " & ''' & real'image(test**"[5].top") & ''';
         -- report "VALUE : " & ''' & ((hso(layout)**".vt")**"[0]")**".step" & ''';
-        report "VALUE : " & compact(layout);
+        report '"' & xxx & '"';
         wait;
     end process;
 end;
