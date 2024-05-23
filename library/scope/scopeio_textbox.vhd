@@ -341,7 +341,7 @@ begin
  						cga_we   <= '1';
  						cga_data <= btof_code;
  						cga_addr <= resize(mul(unsigned(chan_id), cga_cols), cga_addr'length) + width;
- 						state    := s_trigger;
+ 						state    := s_vtevent;
  					else
  						cga_we   <= '0';
  						cga_addr <= (others => '-')
