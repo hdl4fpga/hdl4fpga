@@ -330,66 +330,37 @@ begin
 
 		end block;
 
-		vtwidget_b : block
-		begin
-
-    		vtoffset_p : process (btof_frm, rgtr_clk)
-    			type states is (s_wait, s_trigger);
-    			variable state : states;
-    		begin
-    			if rising_edge(rgtr_clk) then
-    				case state is
-    				when s_wait  =>
-    					if btof_frm='1' then
-    						cga_we   <= '1';
-    						cga_data <= btof_code;
-    						cga_addr <= cga_addr + 1;
-    						state := s_trigger;
-    					else
-    						cga_we   <= '0';
-    						cga_addr <= resize(mul(unsigned(chan_id), cga_cols), cga_addr'length) + width;
-    						cga_data <= (others => '0');
-    					end if;
-    				when s_trigger =>
-    					if btof_frm='1' then
-    						cga_we   <= '0';
-    						cga_data <= btof_code;
-						else
-    						cga_data <= (others => '0');
-    						state    := s_wait;
-    					end if;
-    				end case;
-    			end if;
-    		end process;
-
-    		vtprefix_p : process (rgtr_clk)
-    			type states is (s_wait, s_trigger);
-    			variable state : states;
-    		begin
-    			if rising_edge(rgtr_clk) then
-    				case state is
-    				when s_wait  =>
-    					if btof_frm='1' then
-    						cga_we   <= '1';
-    						cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
-    						cga_addr <= cga_addr + 1;
-    						state    := s_trigger;
-    					else
-    						cga_we   <= '0';
-    						cga_data <= (others => '-');
-    						cga_addr <= resize(mul(unsigned(chan_id), cga_cols), cga_addr'length) + width + 1;
-    					end if;
-    				when s_trigger =>
-    					cga_we   <= '0';
-    					cga_data <= btof_code;
-    					state    := s_wait;
-    				end case;
-
-    			end if;
-    		end process;
-
-		end block;
-	
+ 		widget_p : process (btof_frm, rgtr_clk)
+ 			type states is (s_wait, s_vtevent);
+ 			variable state : states;
+ 		begin
+ 			if rising_edge(rgtr_clk) then
+ 				case state is
+ 				when s_wait  =>
+ 					if btof_frm='1' then
+ 						cga_we   <= '1';
+ 						cga_data <= btof_code;
+ 						cga_addr <= resize(mul(unsigned(chan_id), cga_cols), cga_addr'length) + width;
+ 						state    := s_trigger;
+ 					else
+ 						cga_we   <= '0';
+ 						cga_addr <= (others => '-')
+ 						cga_data <= (others => '-');
+ 					end if;
+ 				when s_vtevent =>
+ 					if btof_frm='1' then
+ 						cga_we   <= '1';
+ 						cga_addr <= cga_addr + 1;
+ 						cga_data <= btof_code;
+					else
+ 						cga_we   <= '1';
+ 						cga_addr <= cga_addr + 1;
+ 						cga_data <= cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
+ 						state    := s_wait;
+ 					end if;
+ 				end case;
+ 			end if;
+ 		end process;
 	end block;
 
 	video_addr <= std_logic_vector(resize(
