@@ -50,10 +50,13 @@ entity scopeio_textbox is
 	constant grid_height    : natural := hdo(layout)**".grid.height";
 	constant vt             : string  := hdo(layout)**".vt";
 
+	constant hz_text        : string  := "time";
 	constant vt_prefix      : string  := get_prefix1235(vt_unit);
 	constant hzoffset_bits  : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits    : natural := unsigned_num_bits(inputs-1);
 
+	constant cga_cols        : natural := textbox_width/font_width;
+	constant cga_rows        : natural := textbox_height/font_height;
 
 	function textbox_rom (
 		constant width  : natural;
@@ -85,8 +88,9 @@ entity scopeio_textbox is
 		variable j      : natural;
 
 	begin
+		data(1 to hz_text'length) := hz_text;
 		i := 0;
-		j := data'left;
+		j := data'left+cga_cols;
 		for i in 0 to inputs-1 loop
 			data(j to j+width-1) := textalign(escaped(hdo(vt)**("["&natural'image(i)&"].text")), width);
 			j := j + width;
@@ -98,11 +102,11 @@ entity scopeio_textbox is
 		constant width  : natural;
 		constant size   : natural)
 		return natural_vector is
-		variable retval : natural_vector(0 to inputs-1);
+		variable retval : natural_vector(0 to inputs);
 	begin
-		retval(0) := width;
-		for i in 1 to inputs-1 loop
-			retval(i) := retval(i-1) + width;
+		retval(0) := width + cga_cols;
+		for i in 1 to inputs loop
+			retval(i) := retval(i-1) + width ;
 		end loop;
 		return retval;
 	end;
@@ -122,8 +126,6 @@ architecture def of scopeio_textbox is
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
 	constant textwidth_bits  : natural := unsigned_num_bits(textbox_width-1);
-	constant cga_cols        : natural := textbox_width/font_width;
-	constant cga_rows        : natural := textbox_height/font_height;
 	constant cga_size        : natural := (textbox_width/font_width)*(textbox_height/font_height);
 	constant cga_bitrom      : std_logic_vector :=  to_ascii(textbox_rom(cga_cols, cga_size));
 
@@ -356,7 +358,7 @@ begin
 						if (vt_ena or gain_ena)='1' then
 							cga_addr <= resize(mul(unsigned(vt_chanid), cga_cols), cga_addr'length) + (width + cga_cols);
 						elsif hz_dv='1' then
-							cga_addr <= resize(mul(unsigned'(x"8"), cga_cols), cga_addr'length) + width;
+							cga_addr <= to_unsigned(width, cga_addr'length);
 						end if;
  					end if;
  				when s_vtevent =>
