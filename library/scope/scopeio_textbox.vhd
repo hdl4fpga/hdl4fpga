@@ -28,9 +28,9 @@ entity scopeio_textbox is
 		gain_cid      : in  std_logic_vector;
 		gain_ids      : in  std_logic_vector;
 
-		time_ena      : in  std_logic;
-		time_scale    : in  std_logic_vector;
-		time_offset   : in  std_logic_vector;
+		hz_dv         : in  std_logic;
+		hz_scale      : in  std_logic_vector;
+		hz_offset     : in  std_logic_vector;
 
 		video_clk     : in  std_logic;
 		video_hcntr   : in  std_logic_vector;
@@ -157,13 +157,12 @@ begin
 		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
 		signal trigger_level  : std_logic_vector(storage_word'range);
 
-		signal chan_id        : std_logic_vector(chanid_maxsize-1 downto 0);
 		signal vt_exp         : integer;
 		signal vt_dv          : std_logic;
 		signal vt_ena         : std_logic;
 		signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
 		signal vt_offsets     : std_logic_vector(0 to inputs*vt_offset'length-1);
-		signal vt_chanid      : std_logic_vector(chan_id'range);
+		signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
 		signal vt_scale       : std_logic_vector(4-1 downto 0);
 		signal tgr_scale      : std_logic_vector(4-1 downto 0);
 
@@ -242,34 +241,28 @@ begin
 				vt_chanid => chanid,
 				vt_offset => offset);
 
-			vtoffsets_p : process(rgtr_clk)
-			begin
-				if rising_edge(rgtr_clk) then
-					if vt_ena='1' then
-						vt_chanid  <= chanid;
-						vt_offsets <= byte2word(vt_offsets, chanid, offset);
-					end if;
-				end if;
-			end process;
-		end block;
-
-		chainid_p : process (rgtr_clk)
+		vtgain_p : process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
-				if vt_dv='1' then
-					chan_id <= vt_chanid;
+				if vt_ena='1' then
+					vt_offset  <= offset;
+					vt_chanid  <= chanid;
+					vt_scale   <= multiplex(gain_ids,   chanid, vt_scale'length);
+					vt_offsets <= byte2word(vt_offsets, chanid, offset);
 				elsif gain_dv='1' then
-					chan_id <= std_logic_vector(resize(unsigned(gain_cid),chan_id'length));
+					vt_chanid  <= std_logic_vector(resize(unsigned(gain_cid), vt_chanid'length));
+					vt_offset  <= multiplex(vt_offsets, gain_cid, vt_offset'length);
+					vt_scale   <= multiplex(gain_ids,   gain_cid, vt_scale'length);
 				end if;
 			end if;
 		end process;
-		vt_offset <= multiplex(vt_offsets, chan_id,        vt_offset'length);
-		vt_scale  <= multiplex(gain_ids,   chan_id,        vt_scale'length);
+		end block;
 		tgr_scale <= multiplex(gain_ids,   trigger_chanid, tgr_scale'length);
 
 		btof_b : block
 
-			signal magnitud    : signed(vt_offset'range);
+			signal offset      : signed(0 to max(vt_offset'length, hz_offset'length)-1);
+			signal magnitud    : signed(offset'range);
 			signal mul_req     : std_logic;
 			signal mul_rdy     : std_logic;
 			signal dbdbbl_req  : std_logic;
@@ -285,21 +278,38 @@ begin
 		begin
 
 			process (rgtr_clk)
+				type states is (s_init, s_btof, s_run);
+				variable state : states;
 				variable q : std_logic;
 			begin
 				if rising_edge(rgtr_clk) then
-					if q='1' then
-						mul_req <= not mul_rdy;
-					end if;
-					q := vt_dv or gain_dv;
+					case state is
+					when s_init =>
+						if vt_dv='1' then
+							offset <= resize(signed(vt_offset), offset'length);
+							scale  <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
+							state := s_btof;
+						elsif gain_dv='1' then
+							offset <= resize(signed(vt_offset), offset'length);
+							scale  <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
+							state := s_btof;
+						elsif hz_dv='1' then
+							offset <= resize(signed(hz_offset), offset'length);
+							scale  <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(hz_scale(2-1 downto 0)))), scale'length));
+							state  := s_btof;
+						end if;
+					when s_btof =>
+						mul_req <= not to_stdulogic(to_bit(mul_rdy));
+						state := s_run;
+					when s_run =>
+						if (to_bit(mul_rdy) xor to_bit(mul_req))='0' then
+							state := s_init;
+						end if;
+					end case;
 				end if;
 			end process;
 
-			scale <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
-			magnitud <=
-				-signed(vt_offset) when vt_offset(vt_offset'left)='1' else
-				 signed(vt_offset);
-
+			magnitud <= -offset when offset(offset'left)='1' else offset;
 			mul_ser_e : entity hdl4fpga.mul_ser
 			generic map (
 				lsb => true)
@@ -323,7 +333,7 @@ begin
 				left     => '0',
 				width    => x"6",
 				exp      => b"101",
-				neg      => vt_offset(vt_offset'left),
+				neg      => offset(offset'left),
 				bin      => bin,
 				code_frm => btof_frm,
 				code     => btof_code);
@@ -331,7 +341,7 @@ begin
 		end block;
 
  		widget_p : process (btof_frm, rgtr_clk)
- 			type states is (s_wait, s_vtevent);
+ 			type states is (s_wait, s_vtevent, s_hzevent);
  			variable state : states;
  		begin
  			if rising_edge(rgtr_clk) then
@@ -340,12 +350,14 @@ begin
  					if btof_frm='1' then
  						cga_we   <= '1';
  						cga_data <= btof_code;
- 						cga_addr <= resize(mul(unsigned(chan_id), cga_cols), cga_addr'length) + width;
  						state    := s_vtevent;
  					else
  						cga_we   <= '0';
- 						cga_addr <= (others => '-')
- 						cga_data <= (others => '-');
+						if (vt_ena or gain_ena)='1' then
+							cga_addr <= resize(mul(unsigned(vt_chanid), cga_cols), cga_addr'length) + width;
+						elsif hz_dv='1' then
+							cga_addr <= resize(mul(unsigned'(x"8"), cga_cols), cga_addr'length) + width;
+						end if;
  					end if;
  				when s_vtevent =>
  					if btof_frm='1' then
@@ -355,9 +367,10 @@ begin
 					else
  						cga_we   <= '1';
  						cga_addr <= cga_addr + 1;
- 						cga_data <= cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
+ 						cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
  						state    := s_wait;
  					end if;
+				when s_hzevent =>
  				end case;
  			end if;
  		end process;
