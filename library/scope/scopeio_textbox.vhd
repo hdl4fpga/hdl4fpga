@@ -354,7 +354,7 @@ begin
  					else
  						cga_we   <= '0';
 						if (vt_ena or gain_ena)='1' then
-							cga_addr <= resize(mul(unsigned(vt_chanid), cga_cols), cga_addr'length) + width;
+							cga_addr <= resize(mul(unsigned(vt_chanid), cga_cols), cga_addr'length) + (width + cga_cols);
 						elsif hz_dv='1' then
 							cga_addr <= resize(mul(unsigned'(x"8"), cga_cols), cga_addr'length) + width;
 						end if;
