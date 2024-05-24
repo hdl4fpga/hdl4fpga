@@ -144,7 +144,7 @@ architecture def of scopeio_textbox is
 	signal wdt_req           : bit;
 	signal wdt_rdy           : bit;
 
-	type wdt_types is (wdt_vtoffset, wdt_vtunit);
+	type wdt_types is (wdt_offset, wdt_unit);
 	signal wdt_type : wdt_types;
 begin
 
@@ -292,14 +292,17 @@ begin
 					case state is
 					when s_init =>
 						if vt_dv='1' then
+							wdt_type <= wdt_offset;
 							offset <= resize(signed(vt_offset), offset'length);
 							scale  <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
 							state := s_btof;
 						elsif gain_dv='1' then
+							wdt_type <= wdt_offset;
 							offset <= resize(signed(vt_offset), offset'length);
 							scale  <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
 							state := s_btof;
 						elsif hz_dv='1' then
+							wdt_type <= wdt_offset;
 							offset <= resize(signed(hz_offset), offset'length);
 							scale  <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(hz_scale(2-1 downto 0)))), scale'length));
 							state  := s_btof;
@@ -368,7 +371,7 @@ begin
  					end if;
  				when s_vtevent =>
 					case wdt_type is
-					when others =>
+					when wdt_offset =>
 	 					if btof_frm='1' then
 	 						cga_we   <= '1';
 	 						cga_addr <= cga_addr + 1;
@@ -380,6 +383,7 @@ begin
 	 						state    := s_wait;
 							wdt_rdy  <= wdt_req;
 	 					end if;
+					when others =>
 					end case;
 				when s_hzevent =>
  				end case;
