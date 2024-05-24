@@ -112,7 +112,7 @@ architecture scopeio of ulx3s is
 			"       height : 720},         " &
 			"   grid : {                   " &
 			"       unit   : 32,           " &
-			"       width  : " & natural'image(34*32+1) & ',' &
+			"       width  : " & natural'image(32*32+1) & ',' &
 			"       height : " & natural'image( 6*32+1) & ',' &
 			"       color  : 0xff_ff_00_00," &
 			"       background-color : 0xff_00_00_00}," &
@@ -169,7 +169,7 @@ architecture scopeio of ulx3s is
 			"           background-color : 0xff_00_00_ff}}," &
 			"   textbox : {                " &
 			"       font_width :  8,       " &
-			"       width      : " & natural'image(4*32) & ','&
+			"       width      : " & natural'image(6*32) & ','&
 			"       inside     : false,    " &
 			"       color      : 0xff_ff_ff_ff," &
 			"       background-color : 0xff_00_00_00}," &

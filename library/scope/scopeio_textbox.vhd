@@ -50,7 +50,7 @@ entity scopeio_textbox is
 	constant grid_height    : natural := hdo(layout)**".grid.height";
 	constant vt             : string  := hdo(layout)**".vt";
 
-	constant hz_text        : string  := "time";
+	constant hz_text        : string  := "Hztl";
 	constant vt_prefix      : string  := get_prefix1235(vt_unit);
 	constant hzoffset_bits  : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits    : natural := unsigned_num_bits(inputs-1);
