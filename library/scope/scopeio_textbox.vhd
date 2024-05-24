@@ -63,23 +63,23 @@ entity scopeio_textbox is
 		constant size   : natural)
 		return string is
 
-    	function textalign (
-    		constant text  : string;
-    		constant width : natural;
-    		constant align : string := "left")
-    		return string is
-    		variable retval : string(1 to width);
-    	begin
-    		retval := (others => ' ');
-    		retval(1 to text'length) := text;
-    		if align="right" then
-    			retval := rotate_left(retval, text'length);
-    		elsif align="center" then
-    			retval := rotate_left(retval, (text'length+width)/2);
-    		end if; 
+		function textalign (
+			constant text  : string;
+			constant width : natural;
+			constant align : string := "left")
+			return string is
+			variable retval : string(1 to width);
+		begin
+			retval := (others => ' ');
+			retval(1 to text'length) := text;
+			if align="right" then
+				retval := rotate_left(retval, text'length);
+			elsif align="center" then
+				retval := rotate_left(retval, (text'length+width)/2);
+			end if; 
 
-    		return retval;
-    	end;
+			return retval;
+		end;
 
 		variable data   : string(1 to size);
 		variable offset : positive;
@@ -144,7 +144,7 @@ architecture def of scopeio_textbox is
 	signal wdt_req           : bit;
 	signal wdt_rdy           : bit;
 
-	type wdt_types is (wdt_vtoffse);
+	type wdt_types is (wdt_vtoffset, wdt_vtunit);
 	signal wdt_type : wdt_types;
 begin
 
@@ -367,17 +367,20 @@ begin
 						end if;
  					end if;
  				when s_vtevent =>
- 					if btof_frm='1' then
- 						cga_we   <= '1';
- 						cga_addr <= cga_addr + 1;
- 						cga_data <= btof_code;
-					else
- 						cga_we   <= '1';
- 						cga_addr <= cga_addr + 1;
- 						cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
- 						state    := s_wait;
-						wdt_rdy  <= wdt_req;
- 					end if;
+					case wdt_type is
+					when others =>
+	 					if btof_frm='1' then
+	 						cga_we   <= '1';
+	 						cga_addr <= cga_addr + 1;
+	 						cga_data <= btof_code;
+						else
+	 						cga_we   <= '1';
+	 						cga_addr <= cga_addr + 1;
+	 						cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
+	 						state    := s_wait;
+							wdt_rdy  <= wdt_req;
+	 					end if;
+					end case;
 				when s_hzevent =>
  				end case;
  			end if;
