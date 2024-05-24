@@ -141,7 +141,11 @@ architecture def of scopeio_textbox is
 	signal video_on          : std_logic;
 	signal video_addr        : std_logic_vector(cga_addr'range);
 	signal video_dot         : std_logic;
+	signal wdt_req           : bit;
+	signal wdt_rdy           : bit;
 
+	type wdt_types is (wdt_vtoffse);
+	signal wdt_type : wdt_types;
 begin
 
 	rgtr_b : block
@@ -301,10 +305,11 @@ begin
 							state  := s_btof;
 						end if;
 					when s_btof =>
+						wdt_req <= not wdt_rdy;
 						mul_req <= not to_stdulogic(to_bit(mul_rdy));
 						state := s_run;
 					when s_run =>
-						if (to_bit(mul_rdy) xor to_bit(mul_req))='0' then
+						if (wdt_rdy xor wdt_req)='0' then
 							state := s_init;
 						end if;
 					end case;
@@ -371,6 +376,7 @@ begin
  						cga_addr <= cga_addr + 1;
  						cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
  						state    := s_wait;
+						wdt_rdy  <= wdt_req;
  					end if;
 				when s_hzevent =>
  				end case;
