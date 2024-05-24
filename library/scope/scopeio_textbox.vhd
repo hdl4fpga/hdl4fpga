@@ -141,11 +141,13 @@ architecture def of scopeio_textbox is
 	signal video_on          : std_logic;
 	signal video_addr        : std_logic_vector(cga_addr'range);
 	signal video_dot         : std_logic;
-	signal wdt_req           : bit;
-	signal wdt_rdy           : bit;
 
 	type wdt_types is (wdt_offset, wdt_unit);
-	signal wdt_type : wdt_types;
+	signal wdt_type          : wdt_types;
+	signal wdt_req           : bit;
+	signal wdt_rdy           : bit;
+	signal wdt_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
+
 begin
 
 	rgtr_b : block
@@ -284,7 +286,7 @@ begin
 		begin
 
 			process (rgtr_clk)
-				type states is (s_init, s_btof, s_run);
+				type states is (s_init, s_wdtoffset, s_wdtunit);
 				variable state : states;
 				variable q : std_logic;
 			begin
@@ -293,25 +295,38 @@ begin
 					when s_init =>
 						if vt_dv='1' then
 							wdt_type <= wdt_offset;
-							offset <= resize(signed(vt_offset), offset'length);
-							scale  <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
-							state := s_btof;
+							offset   <= resize(signed(vt_offset), offset'length);
+							scale    <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
+							wdt_addr <= resize(mul(unsigned(vt_chanid), cga_cols), wdt_addr'length) + (width + cga_cols);
+							mul_req  <= not to_stdulogic(to_bit(mul_rdy));
+							wdt_req  <= not wdt_rdy;
+							state    := s_wdtoffset;
 						elsif gain_dv='1' then
 							wdt_type <= wdt_offset;
-							offset <= resize(signed(vt_offset), offset'length);
-							scale  <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
-							state := s_btof;
+							offset   <= resize(signed(vt_offset), offset'length);
+							scale    <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
+							wdt_addr <= resize(mul(unsigned(vt_chanid), cga_cols), wdt_addr'length) + (width + cga_cols);
+							mul_req  <= not to_stdulogic(to_bit(mul_rdy));
+							wdt_req  <= not wdt_rdy;
+							state    := s_wdtoffset;
 						elsif hz_dv='1' then
 							wdt_type <= wdt_offset;
-							offset <= resize(signed(hz_offset), offset'length);
-							scale  <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(hz_scale(2-1 downto 0)))), scale'length));
-							state  := s_btof;
+							offset   <= resize(signed(hz_offset), offset'length);
+							scale    <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(hz_scale(2-1 downto 0)))), scale'length));
+							wdt_addr <= to_unsigned(width, wdt_addr'length);
+							mul_req  <= not to_stdulogic(to_bit(mul_rdy));
+							wdt_req  <= not wdt_rdy;
+							state    := s_wdtoffset;
 						end if;
-					when s_btof =>
-						wdt_req <= not wdt_rdy;
-						mul_req <= not to_stdulogic(to_bit(mul_rdy));
-						state := s_run;
-					when s_run =>
+					when s_wdtoffset =>
+						if (wdt_rdy xor wdt_req)='0' then
+							wdt_addr <= cga_addr;
+							offset   <= to_signed(32, offset'length);
+							mul_req  <= not to_stdulogic(to_bit(mul_rdy));
+							wdt_req  <= not wdt_rdy;
+							state    := s_wdtunit;
+						end if;
+					when s_wdtunit =>
 						if (wdt_rdy xor wdt_req)='0' then
 							state := s_init;
 						end if;
@@ -351,41 +366,31 @@ begin
 		end block;
 
  		widget_p : process (btof_frm, rgtr_clk)
- 			type states is (s_wait, s_vtevent, s_hzevent);
+ 			type states is (s_wait, s_vtevent);
  			variable state : states;
  		begin
  			if rising_edge(rgtr_clk) then
  				case state is
  				when s_wait  =>
+					cga_we   <= btof_frm;
+					cga_data <= btof_code;
+					cga_addr <= wdt_addr;
  					if btof_frm='1' then
- 						cga_we   <= '1';
- 						cga_data <= btof_code;
- 						state    := s_vtevent;
- 					else
- 						cga_we   <= '0';
-						if (vt_ena or gain_ena)='1' then
-							cga_addr <= resize(mul(unsigned(vt_chanid), cga_cols), cga_addr'length) + (width + cga_cols);
-						elsif hz_dv='1' then
-							cga_addr <= to_unsigned(width, cga_addr'length);
-						end if;
+ 						state := s_vtevent;
  					end if;
  				when s_vtevent =>
-					case wdt_type is
-					when wdt_offset =>
-	 					if btof_frm='1' then
-	 						cga_we   <= '1';
-	 						cga_addr <= cga_addr + 1;
-	 						cga_data <= btof_code;
-						else
-	 						cga_we   <= '1';
-	 						cga_addr <= cga_addr + 1;
-	 						cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
-	 						state    := s_wait;
-							wdt_rdy  <= wdt_req;
-	 					end if;
-					when others =>
-					end case;
-				when s_hzevent =>
+	 				if btof_frm='1' then
+	 					cga_we   <= '1';
+	 					cga_addr <= cga_addr + 1;
+	 					cga_data <= btof_code;
+					else
+	 					cga_we   <= '1';
+	 					cga_addr <= cga_addr + 1;
+	 					cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
+	 					state    := s_wait;
+						wdt_rdy  <= wdt_req;
+						state    := s_wait;
+	 				end if;
  				end case;
  			end if;
  		end process;

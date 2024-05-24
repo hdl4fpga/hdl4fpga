@@ -42,54 +42,47 @@ entity mul_ser is
 end;
 
 architecture def of mul_ser is
-	signal last : std_logic;
 begin
-	process (clk, last)
-		variable cntr : unsigned(0 to unsigned_num_bits(b'length-2));
+
+	process (clk)
+		type states is (s_init, s_mul);
+		variable state : states;
+		variable cntr : unsigned(0 to unsigned_num_bits(b'length-3));
+		variable acc  : unsigned(0 to a'length);
+		variable p    : unsigned(0 to a'length+b'length-1);
 	begin
 		if rising_edge(clk) then
 			if (to_bit(req) xor to_bit(rdy))='1' then
-				if cntr(0)='0' then
-					cntr := cntr - 1;
-				else
-					cntr := to_unsigned(b'length-2, cntr'length);
-				end if;
-			else
-				cntr := to_unsigned(b'length-2, cntr'length);
-			end if;
-			if cntr(0)='1' then
-				rdy <= req;
-			end if;
-			last <= cntr(0);
-		end if;
-	end process;
-
-	process (clk)
-		variable acc : unsigned(0 to a'length);
-		variable p   : unsigned(0 to a'length+b'length-1);
-	begin
-		if rising_edge(clk) then
-			if ena='1' then
-				-- p(0 to s'length-1) := unsigned(s);
-				if (to_bit(req) xor to_bit(rdy))='0' then
-					p := resize(unsigned(b), p'length);
-				elsif last='1' then
-					p := resize(unsigned(b), p'length);
-				end if;
-				acc := (others => '0');
-				if p(p'right)='1' then
-					acc := resize(unsigned(a), acc'length);
-				end if;
-				acc := acc + resize(p(0 to a'length-1), acc'length);
-				p := shift_right(p, 1);
-				p(acc'range) := acc;
-				if (to_bit(req) xor to_bit(rdy))='1' then
+				if ena='1' then
+					case state is
+					when s_init =>
+						p     := resize(unsigned(b), p'length);
+						cntr  := to_unsigned(b'length-3, cntr'length);
+						state := s_mul;
+					when s_mul =>
+						if cntr(0)='0' then
+							cntr := cntr - 1;
+						else
+							rdy   <= req;
+							state := s_init;
+						end if;
+					end case;
+					if p(p'right)='0' then
+						acc := (others => '0');
+					else
+						acc := resize(unsigned(a), acc'length);
+					end if;
+					acc := acc + resize(p(0 to a'length-1), acc'length);
+					p   := shift_right(p, 1);
+					p(acc'range) := acc;
 					if not lsb then
 						s <= std_logic_vector(resize(p(0 to hdl4fpga.base.min(s'length,p'length)-1), s'length));
 					else
 						s <= std_logic_vector(resize(p, s'length));
 					end if;
 				end if;
+			else
+				state := s_init;
 			end if;	
 		end if;
 	end process;
