@@ -48,6 +48,7 @@ entity scopeio_textbox is
 	constant textbox_width  : natural := hdo(layout)**".textbox.width";
 	constant textbox_height : natural := hdo(layout)**".grid.height";
 	constant grid_height    : natural := hdo(layout)**".grid.height";
+	constant grid_unit      : natural := hdo(layout)**".grid.unit";
 	constant vt             : string  := hdo(layout)**".vt";
 
 	constant hz_text        : string  := "Hztl";
@@ -104,7 +105,7 @@ entity scopeio_textbox is
 		return natural_vector is
 		variable retval : natural_vector(0 to inputs);
 	begin
-		retval(0) := width + cga_cols;
+		retval(0) := width;
 		for i in 1 to inputs loop
 			retval(i) := retval(i-1) + width ;
 		end loop;
@@ -320,8 +321,8 @@ begin
 						end if;
 					when s_wdtoffset =>
 						if (wdt_rdy xor wdt_req)='0' then
-							wdt_addr <= cga_addr;
-							offset   <= to_signed(32, offset'length);
+							wdt_addr <= cga_addr + 2;
+							offset   <= to_signed(grid_unit, offset'length);
 							mul_req  <= not to_stdulogic(to_bit(mul_rdy));
 							wdt_req  <= not wdt_rdy;
 							state    := s_wdtunit;
@@ -432,19 +433,21 @@ begin
 
 	process (video_clk)
 		constant field_addr : natural_vector := textbox_field(cga_cols, cga_size);
-		variable field_id   : unsigned(0 to unsigned_num_bits(field_addr'length-1)-1) := (others => '0');
+		variable field_id   : natural range 0 to 2**fg_color'length-1;
 		variable addr       : std_logic_vector(video_addr'range);
 	begin
 		if rising_edge(video_clk) then
-			fg_color <= std_logic_vector(resize(field_id, fg_color'length)+pltid_order'length);
-			if unsigned(addr)=field_addr(to_integer(field_id)) then
-				if video_on='1' then
-					if field_id /= field_addr'length-1 then
-						field_id := field_id + 1;
-					else
-						field_id := (others => '0');
+			fg_color <= std_logic_vector(to_unsigned(field_id, fg_color'length));
+			if video_on='1' then
+				field_id := pltid_textfg;
+				for i in field_addr'range loop
+					if unsigned(addr)<field_addr(i) then
+						if i/=0 then 
+							field_id := i-1+pltid_order'length;
+						end if;
+						exit;
 					end if;
-				end if;
+				end loop;
 			end if;
 			addr := video_addr;
 		end if;
