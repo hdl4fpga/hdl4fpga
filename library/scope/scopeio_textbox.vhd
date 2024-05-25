@@ -143,6 +143,8 @@ architecture def of scopeio_textbox is
 	signal video_addr        : std_logic_vector(cga_addr'range);
 	signal video_dot         : std_logic;
 
+	signal vttxt_req         : bit;
+	signal vttxt_rdy         : bit;
 	type wdt_types is (wdt_offset, wdt_unit);
 	signal wdt_type          : wdt_types;
 	signal wdt_req           : bit;
@@ -258,10 +260,12 @@ begin
 					vt_chanid  <= chanid;
 					vt_scale   <= multiplex(gain_ids,   chanid, vt_scale'length);
 					vt_offsets <= byte2word(vt_offsets, chanid, offset);
+					vttxt_req  <= not vttxt_rdy;
 				elsif gain_dv='1' then
-					vt_chanid  <= std_logic_vector(resize(unsigned(gain_cid), vt_chanid'length));
 					vt_offset  <= multiplex(vt_offsets, gain_cid, vt_offset'length);
+					vt_chanid  <= std_logic_vector(resize(unsigned(gain_cid), vt_chanid'length));
 					vt_scale   <= multiplex(gain_ids,   gain_cid, vt_scale'length);
+					vttxt_req  <= not vttxt_rdy;
 				end if;
 			end if;
 		end process;
@@ -294,16 +298,7 @@ begin
 				if rising_edge(rgtr_clk) then
 					case state is
 					when s_init =>
-						if vt_dv='1' then
-							wdt_type <= wdt_offset;
-							offset   <= resize(signed(vt_offset), offset'length);
-							scale    <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
-							wdt_addr <= resize(mul(unsigned(vt_chanid), cga_cols), wdt_addr'length) + (width + cga_cols);
-							mul_req  <= not to_stdulogic(to_bit(mul_rdy));
-							wdt_req  <= not wdt_rdy;
-							state    := s_wdtoffset;
-						elsif gain_dv='1' then
-							wdt_type <= wdt_offset;
+						if (vttxt_req xor vttxt_rdy)='1' then
 							offset   <= resize(signed(vt_offset), offset'length);
 							scale    <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
 							wdt_addr <= resize(mul(unsigned(vt_chanid), cga_cols), wdt_addr'length) + (width + cga_cols);
@@ -311,7 +306,6 @@ begin
 							wdt_req  <= not wdt_rdy;
 							state    := s_wdtoffset;
 						elsif hz_dv='1' then
-							wdt_type <= wdt_offset;
 							offset   <= resize(signed(hz_offset), offset'length);
 							scale    <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(hz_scale(2-1 downto 0)))), scale'length));
 							wdt_addr <= to_unsigned(width, wdt_addr'length);
@@ -329,6 +323,7 @@ begin
 						end if;
 					when s_wdtunit =>
 						if (wdt_rdy xor wdt_req)='0' then
+							vttxt_rdy <= vttxt_req;
 							state := s_init;
 						end if;
 					end case;

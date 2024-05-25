@@ -82,7 +82,6 @@ architecture scopeio of ulx3s is
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 
 	constant inputs      : natural := 8;
-	constant max_inputs  : natural := 8;
 	signal input_clk     : std_logic;
 	signal input_lck     : std_logic;
 	signal input_chni    : std_logic_vector(4-1 downto 0);
@@ -288,28 +287,33 @@ begin
 		signal hz_scale   : std_logic_vector(4-1 downto 0);
 		signal hz_slider  : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal max_input  : natural range 0 to inputs-1;
-		signal opacity    : unsigned(0 to max_inputs-1);
+		signal opacity    : unsigned(0 to inputs-1);
 		signal opacity_frm  : std_logic;
 		signal opacity_data : std_logic_vector(si_data'range);
 
 	begin
 
 		process (hz_scale)
+			variable no_inputs : natural range 0 to inputs-1;
 		begin
 			case hz_scale is
 			when x"0" =>
-				opacity   <= b"1000_0000";
-				max_input <= hdl4fpga.base.min(inputs-1, 1-1);
+				no_inputs := hdl4fpga.base.min(inputs-1, 1-1);
 			when x"1" =>
-				opacity   <= b"1100_0000";
-				max_input <= hdl4fpga.base.min(inputs-1, 2-1);
+				no_inputs := hdl4fpga.base.min(inputs-1, 2-1);
 			when x"2" =>
-				opacity   <= b"1111_0000";
-				max_input <= hdl4fpga.base.min(inputs-1, 4-1);
+				no_inputs := hdl4fpga.base.min(inputs-1, 4-1);
 			when others =>
-				opacity   <= b"1111_1111";
-				max_input <= hdl4fpga.base.min(inputs-1, max_inputs-1);
+				no_inputs := inputs-1;
 			end case;
+			for i in opacity'range loop
+				if i <= no_inputs then
+					opacity(i) <= '1';
+				else
+					opacity(i) <= '0';
+				end if;
+			end loop;
+			max_input <= no_inputs;
 		end process;
 
 		process(input_clk)
