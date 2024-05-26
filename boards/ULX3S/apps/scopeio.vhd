@@ -113,7 +113,7 @@ architecture scopeio of ulx3s is
 			"       unit   : 32,           " &
 			"       width  : " & natural'image(32*32+1) & ',' &
 			"       height : " & natural'image( 6*32+1) & ',' &
-			"       color  : 0xff_ff_00_00," &
+			"       color  : 0xff_ff_00_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   axis : {                   " &
 			"       fontsize   : 8,        " &
@@ -139,8 +139,8 @@ architecture scopeio of ulx3s is
 			"           unit   : 31.25e-6, " &
 			"           height : 8,        " &
 			"           inside : false,    " &
-			"           color  : 0xff_ff_ff_ff," &
-			"           background-color : 0xff_00_00_ff}," &
+			"           color  : 0xff_00_00_00," &
+			"           background-color : 0xff_00_ff_ff}," &
 			"       vertical : {           " &
 			"           gains : [         " &
 							natural'image(2**17/(2**(0+0)*5**(0+0))) & "," & -- [0]
@@ -164,13 +164,13 @@ architecture scopeio of ulx3s is
 			"           width  : " & natural'image(6*8) & ','  &
 			"           rotate : ccw0,     " &
 			"           inside : false,    " &
-			"           color  : 0xff_ff_ff_ff," &
-			"           background-color : 0xff_00_00_ff}}," &
+			"           color  : 0xff_00_00_00," &
+			"           background-color : 0xff_00_ff_ff}}," &
 			"   textbox : {                " &
 			"       font_width :  8,       " &
 			"       width      : " & natural'image(6*32) & ','&
 			"       inside     : false,    " &
-			"       color      : 0xff_ff_ff_ff," &
+			"       color      : 0xff_ff_00_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   main : {                   " &
 			"       top        : 27,       " & 
@@ -191,25 +191,25 @@ architecture scopeio of ulx3s is
 			"  vt : [                      " &
 			"   { text  : GN14,            " &
 			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_00_ff},  " &
+			"     color : 0xff_00_ff_ff},  " &
 			"   { text  : GP14,            " &
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff},  " & -- vt(1)
 			"   { text  : GN15,            " &
 			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_00_ff},  " & -- vt(2)
+			"     color : 0xff_00_ff_ff},  " & -- vt(2)
 			"   { text  : GP15,            " &
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff},  " & -- vt(3)
 			"   { text  : GN16,            " &
 			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_00_ff},  " & -- vt(4)
+			"     color : 0xff_00_ff_ff},  " & -- vt(4)
 			"   { text  : GP16,            " &
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff},  " & -- vt(5)
 			"   { text  : GN17,            " &
 			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_00_ff},  " & -- vt(6)
+			"     color : 0xff_00_ff_ff},  " & -- vt(6)
 			"   { text  : GP17,            " &
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff}]}");   -- vt(7)
