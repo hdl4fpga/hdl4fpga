@@ -117,10 +117,10 @@ entity scopeio_textbox is
 	constant vt_shrs      : integer_vector := get_shr1245(vt_unit);
 	constant vt_pnts      : integer_vector := get_characteristic1245(vt_unit);
 
-	constant hz_signfcnds : natural_vector := get_significand1245(2.0*hz_unit);
+	constant hz_signfcnds : natural_vector := get_significand1245(hz_unit);
 	constant hzsignfcnd_length : natural   := unsigned_num_bits(max(hz_signfcnds));
-	constant hz_shrs      : integer_vector := get_shr1245(2.0*hz_unit);
-	constant hz_pnts      : integer_vector := get_characteristic1245(2.0*hz_unit);
+	constant hz_shrs      : integer_vector := get_shr1245(hz_unit);
+	constant hz_pnts      : integer_vector := get_characteristic1245(hz_unit);
 end;
 
 architecture def of scopeio_textbox is
@@ -144,7 +144,7 @@ architecture def of scopeio_textbox is
 	constant signfcnd_length : natural := max(vtsignfcnd_length, hzsignfcnd_length);
 	constant offset_length   : natural := max(vt_offset'length, hz_offset'length);
 
-	signal bin            : std_logic_vector(0 to bin_digits*((offset_length+signfcnd_length+bin_digits-1)/bin_digits)-1);
+	signal bin               : std_logic_vector(0 to bin_digits*((offset_length+signfcnd_length+bin_digits-1)/bin_digits)-1);
 	signal btof_frm          : std_logic;
 	signal btof_code         : ascii;
 	signal cga_we            : std_logic := '0';
@@ -362,7 +362,7 @@ begin
 				sht      => shr,
 				dec      => pnt,
 				left     => '0',
-				width    => x"6",
+				width    => x"8",
 				exp      => b"101",
 				neg      => offset(offset'left),
 				bin      => bin,
