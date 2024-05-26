@@ -112,10 +112,15 @@ entity scopeio_textbox is
 		return retval;
 	end;
 
-	constant signfcnds : natural_vector := get_significand1245(vt_unit);
-	constant signfcnd_length : natural  := unsigned_num_bits(max(signfcnds));
-	constant shrs : integer_vector  := get_shr1245(vt_unit);
-	constant pnts : integer_vector  := get_characteristic1245(vt_unit);
+	constant vt_signfcnds : natural_vector := get_significand1245(vt_unit);
+	constant vtsignfcnd_length : natural   := unsigned_num_bits(max(vt_signfcnds));
+	constant vt_shrs      : integer_vector := get_shr1245(vt_unit);
+	constant vt_pnts      : integer_vector := get_characteristic1245(vt_unit);
+
+	constant hz_signfcnds : natural_vector := get_significand1245(2.0*hz_unit);
+	constant hzsignfcnd_length : natural   := unsigned_num_bits(max(hz_signfcnds));
+	constant hz_shrs      : integer_vector := get_shr1245(2.0*hz_unit);
+	constant hz_pnts      : integer_vector := get_characteristic1245(2.0*hz_unit);
 end;
 
 architecture def of scopeio_textbox is
@@ -130,6 +135,16 @@ architecture def of scopeio_textbox is
 	constant cga_size        : natural := (textbox_width/font_width)*(textbox_height/font_height);
 	constant cga_bitrom      : std_logic_vector :=  to_ascii(textbox_rom(cga_cols, cga_size));
 
+	constant bin_digits      : natural := 3;
+	constant bcd_width       : natural := 8;
+	constant bcd_length      : natural := 4;
+	constant bcd_digits      : natural := 1;
+
+	signal vt_offset         : std_logic_vector((5+8)-1 downto 0);
+	constant signfcnd_length : natural := max(vtsignfcnd_length, hzsignfcnd_length);
+	constant offset_length   : natural := max(vt_offset'length, hz_offset'length);
+
+	signal bin            : std_logic_vector(0 to bin_digits*((offset_length+signfcnd_length+bin_digits-1)/bin_digits)-1);
 	signal btof_frm          : std_logic;
 	signal btof_code         : ascii;
 	signal cga_we            : std_logic := '0';
@@ -171,18 +186,11 @@ begin
 		signal vt_exp         : integer;
 		signal vt_dv          : std_logic;
 		signal vt_ena         : std_logic;
-		signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
 		signal vt_offsets     : std_logic_vector(0 to inputs*vt_offset'length-1);
 		signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
 		signal vt_scale       : std_logic_vector(4-1 downto 0);
 		signal tgr_scale      : std_logic_vector(4-1 downto 0);
 
-		constant bin_digits   : natural := 3;
-		constant bcd_width    : natural := 8;
-		constant bcd_length   : natural := 4;
-		constant bcd_digits   : natural := 1;
-		signal bcd            : std_logic_vector(0 to bcd_digits*bcd_length-1);
-		signal bin            : std_logic_vector(0 to bin_digits*((vt_offset'length+signfcnd_length+bin_digits-1)/bin_digits)-1);
 
 		function label_width 
 			return natural is
@@ -300,15 +308,19 @@ begin
 					when s_init =>
 						if (vttxt_req xor vttxt_rdy)='1' then
 							offset   <= resize(signed(vt_offset), offset'length);
-							scale    <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
+							scale    <= std_logic_vector(to_unsigned(vt_signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
 							wdt_addr <= resize(mul(unsigned(vt_chanid), cga_cols), wdt_addr'length) + (width + cga_cols);
+							shr      <= std_logic_vector(to_signed(vt_shrs(to_integer(unsigned(vt_scale))), shr'length));
+							pnt      <= std_logic_vector(to_signed(vt_pnts(to_integer(unsigned(vt_scale))), pnt'length));
 							mul_req  <= not to_stdulogic(to_bit(mul_rdy));
 							wdt_req  <= not wdt_rdy;
 							state    := s_wdtoffset;
 						elsif hz_dv='1' then
 							offset   <= resize(signed(hz_offset), offset'length);
-							scale    <= std_logic_vector(to_unsigned(signfcnds(to_integer(unsigned(hz_scale(2-1 downto 0)))), scale'length));
+							scale    <= std_logic_vector(to_unsigned(hz_signfcnds(to_integer(unsigned(hz_scale(2-1 downto 0)))), scale'length));
 							wdt_addr <= to_unsigned(width, wdt_addr'length);
+							shr      <= std_logic_vector(to_signed(hz_shrs(to_integer(unsigned(hz_scale))), shr'length));
+							pnt      <= std_logic_vector(to_signed(hz_pnts(to_integer(unsigned(hz_scale))), pnt'length));
 							mul_req  <= not to_stdulogic(to_bit(mul_rdy));
 							wdt_req  <= not wdt_rdy;
 							state    := s_wdtoffset;
@@ -342,8 +354,6 @@ begin
 				b   => std_logic_vector(magnitud),
 				s   => bin);
 
-			shr <= std_logic_vector(to_signed(shrs(to_integer(unsigned(vt_scale))), shr'length));
-			pnt <= std_logic_vector(to_signed(pnts(to_integer(unsigned(vt_scale))), pnt'length));
 			btof_e : entity hdl4fpga.btof
 			port map (
 				clk      => rgtr_clk,
