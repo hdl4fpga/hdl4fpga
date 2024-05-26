@@ -191,25 +191,25 @@ architecture scopeio of ulx3s is
 			"  vt : [                      " &
 			"   { text  : GN14,            " &
 			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_ff_ff},  " &
+			"     color : 0xff_ff_00_ff},  " &
 			"   { text  : GP14,            " &
 			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_ff_00},  " & -- vt(1)
+			"     color : 0xff_ff_ff_ff},  " & -- vt(1)
 			"   { text  : GN15,            " &
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_00_ff},  " & -- vt(2)
 			"   { text  : GP15,            " &
 			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_00_00},  " & -- vt(3)
+			"     color : 0xff_ff_ff_ff},  " & -- vt(3)
 			"   { text  : GN16,            " &
 			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_00_ff_ff},  " & -- vt(4)
+			"     color : 0xff_ff_00_ff},  " & -- vt(4)
 			"   { text  : GP16,            " &
 			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_00_ff_00},  " & -- vt(5)
+			"     color : 0xff_ff_ff_ff},  " & -- vt(5)
 			"   { text  : GN17,            " &
 			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_00_00_ff},  " & -- vt(6)
+			"     color : 0xff_ff_00_ff},  " & -- vt(6)
 			"   { text  : GP17,            " &
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff}]}");   -- vt(7)
