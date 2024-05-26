@@ -96,7 +96,7 @@ begin
 		signal tick_rdy   : std_logic;
 		signal btof_req   : std_logic;
 		signal btof_rdy   : std_logic;
-		signal bin        : std_logic_vector(0 to 19-1);
+		signal bin        : std_logic_vector(0 to 22-1);
 		signal code_frm   : std_logic;
 		signal code       : std_logic_vector(0 to bcd_length-1);
 
