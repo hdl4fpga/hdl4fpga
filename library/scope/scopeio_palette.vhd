@@ -70,16 +70,16 @@ architecture beh of scopeio_palette is
 		end;
 
 		constant gui : std_logic_vector(0 to pltid_order'length-1) := (
-    		pltid_vtfg      => opacity(vertical_color),
-    		pltid_hzfg      => opacity(horizontal_color),
-    		pltid_textfg    => opacity(textbox_color),
-    		pltid_gridfg    => opacity(grid_color),
-    		pltid_vtbg      => opacity(vertical_backgroundcolor),
-    		pltid_hzbg      => opacity(horizontal_backgroundcolor),
-    		pltid_textbg    => opacity(textbox_backgroundcolor),
-    		pltid_gridbg    => opacity(grid_backgroundcolor),
-    		pltid_sgmntbg   => opacity(segment_backgroundcolor),
-    		pltid_scopeiobg => opacity(main_backgroundcolor));
+			pltid_vtfg      => opacity(vertical_color),
+			pltid_hzfg      => opacity(horizontal_color),
+			pltid_textfg    => opacity(textbox_color),
+			pltid_gridfg    => opacity(grid_color),
+			pltid_vtbg      => opacity(vertical_backgroundcolor),
+			pltid_hzbg      => opacity(horizontal_backgroundcolor),
+			pltid_textbg    => opacity(textbox_backgroundcolor),
+			pltid_gridbg    => opacity(grid_backgroundcolor),
+			pltid_sgmntbg   => opacity(segment_backgroundcolor),
+			pltid_scopeiobg => opacity(main_backgroundcolor));
 		variable traces : std_logic_vector(0 to inputs);
 	begin
 		for i in 0 to inputs-1 loop
@@ -88,40 +88,6 @@ architecture beh of scopeio_palette is
 		return gui & traces;
 	end;
 		
-	impure function init_color
-		return std_logic_vector is
-
-		function color (
-			constant pixel : std_logic_vector)
-			return std_logic_vector is
-		begin
-			assert pixel'length mod 4=0
-				report "wrong pixel size"
-				severity failure;
-	
-			return std_logic_vector(resize(unsigned(pixel), pixel'length*3/4));
-		end;
-
-		constant gui : std_logic_vector := (
-    		color(grid_color)                 &
-    		color(vertical_color)             &
-    		color(vertical_backgroundcolor)   &
-    		color(horizontal_color)           &
-    		color(horizontal_backgroundcolor) &
-    		color(textbox_backgroundcolor)    &
-    		color(grid_backgroundcolor)       &
-    		color(segment_backgroundcolor)    &
-    		color(main_backgroundcolor)       &
-    		color(textbox_color));
-		variable traces : std_logic_vector(0 to inputs*32*3/4-1);
-	begin
-		for i in 0 to inputs-1 loop
-			traces(0 to 32*3/4-1) := color(hdo(layout)**(".vt[" & natural'image(i) & "].color"));
-			traces := std_logic_vector(rotate_left(unsigned(traces), 32*3/4));
-		end loop;
-		return gui & traces;
-	end;
-
 	signal trigger_opacity : std_logic := '1';
 	signal color_opacity   : std_logic_vector(0 to pltid_order'length+trace_dots'length) := init_opacity;
 
@@ -144,6 +110,28 @@ architecture beh of scopeio_palette is
 	signal vt_ena       : std_logic;
 	signal vt_cid       : std_logic_vector(vt_fg'range);
 	signal vt_offset    : std_logic_vector(0 to 13-1);
+
+	function to_rgb(
+		constant palette_color : std_logic_vector;
+		constant pixel_length  : natural) 
+		return std_logic_vector is
+		constant colorsubpixel_length : natural := palette_color'length/3;
+		constant pixelsubpixel_length : natural := pixel_length/3;
+
+		subtype color_subpixel is natural range 0 to colorsubpixel_length-1;
+		subtype pixel_subpixel is natural range 0 to pixelsubpixel_length-1;
+
+		variable color : unsigned(0 to palette_color'length-1);
+		variable pixel : unsigned(0 to pixel_length-1);
+	begin
+		color := unsigned(palette_color);
+		for i in 0 to 3-1 loop -- R(0)G(1)B(2)
+			pixel(pixel_subpixel) := color(pixel_subpixel);
+			pixel := pixel rol pixelsubpixel_length;
+			color := color rol colorsubpixel_length;
+		end loop;
+		return std_logic_vector(pixel);
+	end;
 
 	impure function palette_ids 
 		return std_logic_vector is
@@ -264,20 +252,7 @@ begin
 		end if;
 	end process;
 
-	-- palette_data <= std_logic_vector(resize(unsigned(palette_color), palette_data'length));
-	process (palette_color)
-		alias color : std_logic_vector(0 to palette_color'length-1) is palette_color;
-		alias pixel : std_logic_vector(0 to palette_data'length-1)  is palette_data;
-	begin
-		case palette_data'length is
-		when 3*1 =>
-			pixel <= color(0*8) & color(1*8) & color(2*8);
-		when 3*8 =>
-			pixel <= color;
-		when others =>
-			pixel <= (others => '-');
-		end case;
-	end process;
+	palette_data <= to_rgb(palette_color, video_color'length);
 	palette_addr <= std_logic_vector(resize(unsigned(palette_id), palette_addr'length));
 
 	trigger_opacity <= multiplex(color_opacity(pltid_order'length to pltid_order'length+trace_dots'length-1), trigger_chanid);
@@ -298,6 +273,40 @@ begin
 		(trigger_dot and trigger_opacity)));
 	
 	lookup_b : block
+    	impure function init_color
+    		return std_logic_vector is
+
+    		function color (
+    			constant pixel : std_logic_vector)
+    			return std_logic_vector is
+    		begin
+    			assert pixel'length mod 4=0
+    				report "wrong pixel size"
+    				severity failure;
+    	
+    			return to_rgb(std_logic_vector(resize(unsigned(pixel), pixel'length*3/4)), video_color'length);
+    		end;
+
+    		constant gui : std_logic_vector := (
+    			color(grid_color)                 &
+    			color(vertical_color)             &
+    			color(vertical_backgroundcolor)   &
+    			color(horizontal_color)           &
+    			color(horizontal_backgroundcolor) &
+    			color(textbox_backgroundcolor)    &
+    			color(grid_backgroundcolor)       &
+    			color(segment_backgroundcolor)    &
+    			color(main_backgroundcolor)       &
+    			color(textbox_color));
+    		variable traces : unsigned(0 to inputs*video_color'length-1);
+    	begin
+    		for i in 0 to inputs-1 loop
+    			traces(0 to video_color'length-1) := unsigned(color(hdo(layout)**(".vt[" & natural'image(i) & "].color")));
+    			traces := rotate_left(unsigned(traces), video_color'length);
+    		end loop;
+    		return gui & std_logic_vector(traces);
+    	end;
+
 		signal rd_addr  : std_logic_vector(palette_addr'range);
 		signal rd_data  : std_logic_vector(video_color'range);
 		constant bitrom : std_logic_vector := init_color;
