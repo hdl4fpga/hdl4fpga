@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.jso.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_palette is
@@ -37,17 +37,17 @@ entity scopeio_palette is
 		constant palette_size   : natural := pltid_order'length+trace_dots'length+1;
 		constant paletteid_size : natural := unsigned_num_bits(palette_size-1);
 
-		constant inputs                     : natural := jso(layout)**".inputs";
-		constant grid_color                 : std_logic_vector := jso(layout)**".grid.color";
-		constant grid_backgroundcolor       : std_logic_vector := jso(layout)**".grid.background-color";
-		constant horizontal_color           : std_logic_vector := jso(layout)**".axis.horizontal.color";
-		constant horizontal_backgroundcolor : std_logic_vector := jso(layout)**".axis.horizontal.background-color";
-		constant vertical_color             : std_logic_vector := jso(layout)**".axis.vertical.color";
-		constant vertical_backgroundcolor   : std_logic_vector := jso(layout)**".axis.vertical.background-color";
-		constant textbox_color              : std_logic_vector := jso(layout)**".textbox.color";
-		constant textbox_backgroundcolor    : std_logic_vector := jso(layout)**".textbox.background-color";
-		constant segment_backgroundcolor    : std_logic_vector := jso(layout)**".segment.background-color";
-		constant main_backgroundcolor       : std_logic_vector := jso(layout)**".main.background-color";
+		constant inputs                     : natural := hdo(layout)**".inputs";
+		constant grid_color                 : std_logic_vector := hdo(layout)**".grid.color";
+		constant grid_backgroundcolor       : std_logic_vector := hdo(layout)**".grid.background-color";
+		constant horizontal_color           : std_logic_vector := hdo(layout)**".axis.horizontal.color";
+		constant horizontal_backgroundcolor : std_logic_vector := hdo(layout)**".axis.horizontal.background-color";
+		constant vertical_color             : std_logic_vector := hdo(layout)**".axis.vertical.color";
+		constant vertical_backgroundcolor   : std_logic_vector := hdo(layout)**".axis.vertical.background-color";
+		constant textbox_color              : std_logic_vector := hdo(layout)**".textbox.color";
+		constant textbox_backgroundcolor    : std_logic_vector := hdo(layout)**".textbox.background-color";
+		constant segment_backgroundcolor    : std_logic_vector := hdo(layout)**".segment.background-color";
+		constant main_backgroundcolor       : std_logic_vector := hdo(layout)**".main.background-color";
 end;   
 
 architecture beh of scopeio_palette is
@@ -83,7 +83,7 @@ architecture beh of scopeio_palette is
 		variable traces : std_logic_vector(0 to inputs);
 	begin
 		for i in 0 to inputs-1 loop
-			traces(i) := opacity(jso(layout)**(".vt[" & natural'image(i) & "].color"));
+			traces(i) := opacity(hdo(layout)**(".vt[" & natural'image(i) & "].color"));
 		end loop;
 		return gui & traces;
 	end;
@@ -116,7 +116,7 @@ architecture beh of scopeio_palette is
 		variable traces : std_logic_vector(0 to inputs*32*3/4-1);
 	begin
 		for i in 0 to inputs-1 loop
-			traces(0 to 32*3/4-1) := color(jso(layout)**(".vt[" & natural'image(i) & "].color"));
+			traces(0 to 32*3/4-1) := color(hdo(layout)**(".vt[" & natural'image(i) & "].color"));
 			traces := std_logic_vector(rotate_left(unsigned(traces), 32*3/4));
 		end loop;
 		return gui & traces;

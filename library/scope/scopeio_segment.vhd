@@ -4,40 +4,24 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_segment is
 	generic(
 		input_latency : natural;
 		latency       : natural;
-		layout        : string;
-		inputs        : natural);
+		layout        : string);
 	port (
 		rgtr_clk      : in  std_logic;
 		rgtr_dv       : in  std_logic;
 		rgtr_id       : in  std_logic_vector(8-1 downto 0);
 		rgtr_data     : in  std_logic_vector;
 
-		btof_binfrm   : buffer std_logic;
-		btof_binirdy  : out std_logic;
-		btof_bintrdy  : in  std_logic;
-		btof_bindi    : out std_logic_vector;
-		btof_binneg   : out std_logic;
-		btof_binexp   : out std_logic;
-		btof_bcdunit  : out std_logic_vector;
-		btof_bcdwidth : out std_logic_vector;
-		btof_bcdprec  : out std_logic_vector;
-		btof_bcdsign  : out std_logic;
-		btof_bcdalign : out std_logic;
-		btof_bcdirdy  : buffer  std_logic;
-		btof_bcdtrdy  : in  std_logic;
-		btof_bcdend   : in  std_logic;
-		btof_bcddo    : in  std_logic_vector;
-
 		hz_dv         : in  std_logic;
 		hz_scale      : in  std_logic_vector;
-		hz_base       : in  std_logic_vector;
 		hz_offset     : in  std_logic_vector;
+		hz_segment    : in  std_logic_vector;
 
 		gain_dv       : in  std_logic;
 		gain_cid      : in  std_logic_vector;
@@ -63,7 +47,13 @@ entity scopeio_segment is
 		trigger_dot   : out std_logic;
 		trace_dots    : out std_logic_vector);
 
+	constant inputs        : natural := hdo(layout)**".inputs";
+	constant axis_fontsize : natural := hdo(layout)**".axis.fontsize";
+	constant grid_height   : natural := hdo(layout)**".grid.height";
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
+	constant vtaxis_tickrotate : string := hdo(layout)**".axis.vertical.rotate";
+	constant grid_unit       : natural := hdo(layout)**".grid.unit";
+
 end;
 
 architecture def of scopeio_segment is
@@ -74,21 +64,14 @@ architecture def of scopeio_segment is
 	signal vt_offset       : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 	signal vt_chanid       : std_logic_vector(chanid_maxsize-1 downto 0);
 
-	constant division_size : natural := grid_unit(layout);
-	constant font_size     : natural := axis_fontsize(layout);
-	constant vt_height     : natural := grid_height(layout);
+	constant division_size : natural := grid_unit;
+	constant font_size     : natural := axis_fontsize;
+	constant vt_height     : natural := grid_height;
 
 	constant division_bits : natural := unsigned_num_bits(division_size-1);
 	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
-	constant vtstep_bits   : natural := setif(vtaxis_tickrotate(layout)="ccw0", division_bits, vttick_bits);
+	constant vtstep_bits   : natural := setif(vtaxis_tickrotate="ccw0", division_bits, vttick_bits);
 	constant vtheight_bits : natural := unsigned_num_bits((vt_height-1)-1);
-
-
-	signal axis_dv      : std_logic;
-	signal axis_sel     : std_logic;
-	signal axis_scale   : std_logic_vector(4-1 downto 0);
-	signal axis_base    : std_logic_vector(max(hz_base'length, vtheight_bits-(vtstep_bits+axisy_backscale))-1 downto 0);
-
 
 begin
 
@@ -149,27 +132,12 @@ begin
 		signal v_sel    : std_logic;
 		signal v_dv     : std_logic;
 	begin
-		process (rgtr_clk)
-		begin
-			if rising_edge(rgtr_clk) then
-			end if;
-		end process;
 		v_sel      <= gain_dv or vt_dv;
 		v_dv       <= gain_dv or vt_dv;
-		axis_sel   <= v_sel;
-		axis_dv    <= v_dv or hz_dv;
 		vt_scale   <= multiplex(gain_ids, gain_cid, vt_scale'length);
-		axis_scale <= multiplex(hz_scale & std_logic_vector(resize(unsigned(vt_scale), axis_scale'length)), axis_sel);
 
 		g_offset <= multiplex(vt_offsets, gain_cid, vt_offset'length);
 		v_offset <= std_logic_vector(unsigned(std_logic_vector'(multiplex(vt_offset & g_offset, gain_dv))) - bias);
-
-		process (axis_sel, hz_base, v_offset)
-			variable vt_base : std_logic_vector(v_offset'range);
-		begin
-			vt_base   := std_logic_vector(shift_right(signed(v_offset), vtstep_bits+axisy_backscale));
-			axis_base <= multiplex(hz_base & vt_base(axis_base'range), axis_sel);
-		end process;
 
 		axis_e : entity hdl4fpga.scopeio_axis
 		generic map (
@@ -178,38 +146,23 @@ begin
 		port map (
 			clk           => rgtr_clk,
 
-			axis_dv       => axis_dv,
-			axis_sel      => axis_sel,
-			axis_base     => axis_base,
-			axis_scale    => axis_scale,
-
-			btof_binfrm   => btof_binfrm,
-			btof_binirdy  => btof_binirdy,
-			btof_bintrdy  => btof_bintrdy,
-			btof_bindi    => btof_bindi,
-			btof_binneg   => btof_binneg,
-			btof_binexp   => btof_binexp,
-			btof_bcdwidth => btof_bcdwidth,
-			btof_bcdprec  => btof_bcdprec,
-			btof_bcdunit  => btof_bcdunit,
-			btof_bcdsign  => btof_bcdsign,
-			btof_bcdalign => btof_bcdalign,
-			btof_bcdirdy  => btof_bcdirdy,
-			btof_bcdtrdy  => btof_bcdtrdy,
-			btof_bcdend   => btof_bcdend,
-			btof_bcddo    => btof_bcddo,
-
 			video_clk     => video_clk,
-			video_hcntr   => x,
-			video_vcntr   => y,
 
+			hz_dv         => hz_dv,
+			hz_scale      => hz_scale,
 			hz_offset     => hz_offset,
+			hz_segment    => hz_segment,
+			video_hcntr   => x,
 			video_hzon    => hz_on,
 			video_hzdot   => hz_dot,
 
-			vt_offset     => v_offset(vtstep_bits+axisy_backscale-1 downto 0),
+			vt_dv         => v_dv,
+			vt_scale      => vt_scale,
+			vt_offset     => v_offset,
+			video_vcntr   => y,
 			video_vton    => vt_on,
 			video_vtdot   => vt_dot);
+
 	end block;
 
 	trigger_b : block 

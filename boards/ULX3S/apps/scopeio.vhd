@@ -28,11 +28,10 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.jso.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.app_profiles.all;
 use hdl4fpga.ecp5_profiles.all;
 use hdl4fpga.videopkg.all;
-use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 
 library ecp5u;
@@ -89,7 +88,7 @@ architecture scopeio of ulx3s is
 	signal input_chno    : std_logic_vector(4-1 downto 0);
 	signal input_ena     : std_logic;
 	signal input_sample  : std_logic_vector(13-1 downto 0);
-	constant vt_step     : real := 3.3e3*milli/2.0**(input_sample'length-1); -- Volts
+	constant vt_step     : real := 3.3/2.0**(input_sample'length-1); -- Volts
 	signal input_enas    : std_logic;
 	signal input_samples : std_logic_vector(0 to inputs*input_sample'length-1);
 	signal tp            : std_logic_vector(1 to 32);
@@ -99,84 +98,121 @@ architecture scopeio of ulx3s is
 	signal usb_trdy      : std_logic := '1';
 	signal usb_data      : std_logic_vector(si_data'range);
 
-
 	signal adc_clk       : std_logic;
 
-	constant layout      : string := 
-            "{                             " &   
-            "   inputs  : 8,               " &
-            "   num_of_segments : 3,       " &
-            "   display : {                " &
-            "       width  : 1280,         " &
-            "       height : 720},         " &
-            "   grid : {                   " &
-            "       unit   : 32,           " &
-            "       width  :               " & natural'image(31*32+1) & ',' &
-            "       height :               " & natural'image( 6*32+1) & ',' &
-            "       color  : 0xff_ff_00_00, " &
-            "       background-color : 0xff_00_00_00}," &
-            "   axis : {                   " &
-            "       fontsize   : 8,        " &
-            "       horizontal : {         " &
-            "           unit   : 31.25e-6, " &
-            "           height : 8,        " &
-            "           inside : false,    " &
-            "           color  : 0xff_ff_ff_ff," &
-            "           background-color : 0xff_00_00_ff}," &
-            "       vertical : {           " &
-            "           unit   : 50.00e-3," &
-            "           width  :           " & natural'image(6*8) & ','  &
-            "           rotate : ccw0,     " &
-            "           inside : false,    " &
-            "           color  : 0xff_ff_ff_ff," &
-            "           background-color : 0xff_00_00_ff}}," &
-            "   textbox : {                " &
-            "       font_width :  8,       " &
-            "       width      :           " & natural'image(32*6+1) & ','&
-            "       inside     : false,    " &
-            "       color      : 0xff_ff_ff_ff," &
-            "       background-color : 0xff_00_00_00}," &
-            "   main : {                   " &
-            "       top        : 23,       " & 
-            "       left       :  3,       " & 
-            "       right      :  0,       " & 
-            "       bottom     :  0,       " & 
-            "       vertical   : 16,       " & 
-            "       horizontal :  0,       " &
-            "       background-color : 0xff_00_00_00}," &
-            "   segment : {                " &
-            "       top        : 1,        " &
-            "       left       : 1,        " &
-            "       right      : 1,        " &
-            "       bottom     : 1,        " &
-            "       vertical   : 0,        " &
-            "       horizontal : 1,        " &
-            "       background-color : 0xff_00_00_00}," &
-            "  vt : [                      " &
-            "   { label : GN14,            " &
-            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
-            "     color : 0xff_ff_ff_ff},  " &
-            "   { label : GP14,            " &
-            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
-            "     color : 0xff_ff_ff_00},  " & -- vt(1)
-            "   { label : GN15,            " &
-            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
-            "     color : 0xff_ff_00_ff},  " & -- vt(2)
-            "   { label : GP15,            " &
-            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
-            "     color : 0xff_ff_00_00},  " & -- vt(3)
-            "   { label : GN16,            " &
-            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
-            "     color : 0xff_00_ff_ff},  " & -- vt(4)
-            "   { label : GP16,            " &
-            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
-            "     color : 0xff_00_ff_00},  " & -- vt(5)
-            "   { label : GN17,            " &
-            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
-            "     color : 0xff_00_00_ff},  " & -- vt(6)
-            "   { label : GP17,            " &
-            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
-            "     color : 0xff_ff_ff_ff}]}";   -- vt(7)
+	constant layout      : string := compact(
+			"{                             " &   
+			"   inputs          : " & natural'image(inputs) & ',' &
+			"   max_delay       : " & natural'image(2**14)  & ',' &
+			"   min_storage     : 256,     " & -- samples, storage size will be equal or larger than this
+			"   num_of_segments :   3,     " &
+			"   display : {                " &
+			"       width  : 1280,         " &
+			"       height : 720},         " &
+			"   grid : {                   " &
+			"       unit   : 32,           " &
+			"       width  : " & natural'image(32*32+1) & ',' &
+			"       height : " & natural'image( 6*32+1) & ',' &
+			"       color  : 0xff_ff_00_ff," &
+			"       background-color : 0xff_00_00_00}," &
+			"   axis : {                   " &
+			"       fontsize   : 8,        " &
+			"       horizontal : {         " &
+			"           scales : [         " &
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [0]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [1]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [2]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [3]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [4]
+							natural'image(2**(1+0)*5**(0+0)) & "," & -- [5]
+							natural'image(2**(2+0)*5**(0+0)) & "," & -- [6]
+							natural'image(2**(0+0)*5**(1+0)) & "," & -- [7]
+							natural'image(2**(0+1)*5**(0+1)) & "," & -- [8]
+							natural'image(2**(1+1)*5**(0+1)) & "," & -- [9]
+							natural'image(2**(2+1)*5**(0+1)) & "," & -- [10]
+							natural'image(2**(0+1)*5**(1+1)) & "," & -- [11]
+							natural'image(2**(0+2)*5**(0+2)) & "," & -- [12]
+							natural'image(2**(1+2)*5**(0+2)) & "," & -- [13]
+							natural'image(2**(2+2)*5**(0+2)) & "," & -- [14]
+							natural'image(2**(0+2)*5**(1+2)) & "," & -- [15]
+			"               length : 16],  " &
+			"           unit   : 31.25e-6, " &
+			"           height : 8,        " &
+			"           inside : false,    " &
+			"           color  : 0xff_00_00_00," &
+			"           background-color : 0xff_00_ff_ff}," &
+			"       vertical : {           " &
+			"           gains : [         " &
+							natural'image(2**17/(2**(0+0)*5**(0+0))) & "," & -- [0]
+							natural'image(2**17/(2**(1+0)*5**(0+0))) & "," & -- [1]
+							natural'image(2**17/(2**(2+0)*5**(0+0))) & "," & -- [2]
+							natural'image(2**17/(2**(0+0)*5**(1+0))) & "," & -- [3]
+							natural'image(2**17/(2**(0+1)*5**(0+1))) & "," & -- [4]
+							natural'image(2**17/(2**(1+1)*5**(0+1))) & "," & -- [5]
+							natural'image(2**17/(2**(2+1)*5**(0+1))) & "," & -- [6]
+							natural'image(2**17/(2**(0+1)*5**(1+1))) & "," & -- [7]
+							natural'image(2**17/(2**(0+2)*5**(0+2))) & "," & -- [8]
+							natural'image(2**17/(2**(1+2)*5**(0+2))) & "," & -- [9]
+							natural'image(2**17/(2**(2+2)*5**(0+2))) & "," & -- [10]
+							natural'image(2**17/(2**(0+2)*5**(1+2))) & "," & -- [11]
+							natural'image(2**17/(2**(0+3)*5**(0+3))) & "," & -- [12]
+							natural'image(2**17/(2**(1+3)*5**(0+3))) & "," & -- [13]
+							natural'image(2**17/(2**(2+3)*5**(0+3))) & "," & -- [14]
+							natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
+			"               length : 16],  " &
+			"           unit   : 50.00e-3, " &
+			"           width  : " & natural'image(6*8) & ','  &
+			"           rotate : ccw0,     " &
+			"           inside : false,    " &
+			"           color  : 0xff_00_00_00," &
+			"           background-color : 0xff_00_ff_ff}}," &
+			"   textbox : {                " &
+			"       font_width :  8,       " &
+			"       width      : " & natural'image(6*32) & ','&
+			"       inside     : false,    " &
+			"       color      : 0xff_ff_00_ff," &
+			"       background-color : 0xff_00_00_00}," &
+			"   main : {                   " &
+			"       top        : 27,       " & 
+			"       bottom     :  0,       " & 
+			"       left       :  5,       " & 
+			"       right      :  0,       " & 
+			"       vertical   : 27,       " & 
+			"       horizontal :  1,       " &
+			"       background-color : 0xff_00_00_00}," &
+			"   segment : {                " &
+			"       top        : 1,        " &
+			"       left       : 1,        " &
+			"       right      : 1,        " &
+			"       bottom     : 1,        " &
+			"       vertical   : 1,        " &
+			"       horizontal : 1,        " &
+			"       background-color : 0xff_ff_ff_ff}," &
+			"  vt : [                      " &
+			"   { text  : GN14,            " &
+			"     step  : " & real'image(vt_step) & "," &
+			"     color : 0xff_00_ff_ff},  " &
+			"   { text  : GP14,            " &
+			"     step  : " & real'image(vt_step) & "," &
+			"     color : 0xff_ff_ff_ff},  " & -- vt(1)
+			"   { text  : GN15,            " &
+			"     step  : " & real'image(vt_step) & "," &
+			"     color : 0xff_00_ff_ff},  " & -- vt(2)
+			"   { text  : GP15,            " &
+			"     step  : " & real'image(vt_step) & "," &
+			"     color : 0xff_ff_ff_ff},  " & -- vt(3)
+			"   { text  : GN16,            " &
+			"     step  : " & real'image(vt_step) & "," &
+			"     color : 0xff_00_ff_ff},  " & -- vt(4)
+			"   { text  : GP16,            " &
+			"     step  : " & real'image(vt_step) & "," &
+			"     color : 0xff_ff_ff_ff},  " & -- vt(5)
+			"   { text  : GN17,            " &
+			"     step  : " & real'image(vt_step) & "," &
+			"     color : 0xff_00_ff_ff},  " & -- vt(6)
+			"   { text  : GP17,            " &
+			"     step  : " & real'image(vt_step) & "," &
+			"     color : 0xff_ff_ff_ff}]}");   -- vt(7)
 begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
@@ -211,7 +247,6 @@ begin
 		usb_fpga_bd_dp <= 'Z';
 		usb_fpga_bd_dn <= 'Z';
 
-		sio_clk  <= videoio_clk;
 
 		-- led(7) <= tp(4);
 
@@ -243,6 +278,8 @@ begin
 	severity FAILURE;
 
 	inputs_b : block
+		constant mux_sampling : natural := 10;
+
 		signal rgtr_id   : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv   : std_logic;
 		signal rgtr_data : std_logic_vector(0 to 32-1);
@@ -251,7 +288,7 @@ begin
 		signal hz_dv      : std_logic;
 		signal hz_scale   : std_logic_vector(4-1 downto 0);
 		signal hz_slider  : std_logic_vector(hzoffset_bits-1 downto 0);
-		signal input_max  : natural range 0 to inputs-1;
+		signal max_input  : natural range 0 to mux_sampling-1;
 		signal opacity    : unsigned(0 to inputs-1);
 		signal opacity_frm  : std_logic;
 		signal opacity_data : std_logic_vector(si_data'range);
@@ -259,21 +296,28 @@ begin
 	begin
 
 		process (hz_scale)
+			variable no_inputs : natural range 0 to mux_sampling-1;
 		begin
 			case hz_scale is
 			when x"0" =>
-				opacity   <= b"1000_0000";
-				input_max <= 1-1;
+				no_inputs := hdl4fpga.base.min(inputs-1, 1-1);
 			when x"1" =>
-				opacity   <= b"1100_0000";
-				input_max <= 2-1;
+				no_inputs := hdl4fpga.base.min(inputs-1, 2-1);
 			when x"2" =>
-				opacity   <= b"1111_0000";
-				input_max <= 4-1;
+				no_inputs := hdl4fpga.base.min(inputs-1, 4-1);
+			when x"3" =>
+				no_inputs := hdl4fpga.base.min(inputs-1, 5-1);
 			when others =>
-				opacity   <= b"1111_1111";
-				input_max <= 8-1;
+				no_inputs := 10-1;
 			end case;
+			for i in opacity'range loop
+				if i <= no_inputs then
+					opacity(i) <= '1';
+				else
+					opacity(i) <= '0';
+				end if;
+			end loop;
+			max_input <= no_inputs;
 		end process;
 
 		process(input_clk)
@@ -281,10 +325,10 @@ begin
 		begin
 			if rising_edge(input_clk) then
 				if input_ena='1' then
-					if cntr >= input_max then
+					if cntr >= max_input then
 						cntr := (others => '0');
 						input_enas <= '1';
-					elsif cntr >= opacity'length-1 then
+					elsif cntr >= mux_sampling-1 then  --inputs-1 then
 						cntr := (others => '0');
 						input_enas <= '1';
 					else
@@ -352,25 +396,8 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		videotiming_id   => video_params.timing,
-		vt_steps         => (0 to inputs-1 => vt_step),
-		inputs           => inputs,
-		input_names      => (
-			text(id => "vt(0).text", content => "GN14"),
-			text(id => "vt(1).text", content => "GP14"),
-			text(id => "vt(2).text", content => "GN15"),
-			text(id => "vt(3).text", content => "GP15"),
-			text(id => "vt(4).text", content => "GN16"),
-			text(id => "vt(5).text", content => "GP16"),
-			text(id => "vt(6).text", content => "GN17"),
-			text(id => "vt(7).text", content => "GP17")),
-		layout           =>  layout,
-		hz_factors       => (
-			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
-			 4 => 2**(0+0)*5**(0+0),  5 => 2**(1+0)*5**(0+0),  6 => 2**(2+0)*5**(0+0),  7 => 2**(0+0)*5**(1+0),
-			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
-			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)))
-
+		videotiming_id => video_params.timing,
+		layout         => layout)
 	port map (
 		tp          => tp,
 		sio_clk     => sio_clk,

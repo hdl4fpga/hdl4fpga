@@ -21,44 +21,63 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-package object_alloc is
-	generic (
-		type o);
+library ieee;
+use ieee.std_logic_1164.all;
 
-	type pooltab is record
-		following : natural;
-		available : integer_vector(1 to 256);
-	end record;
+library hdl4fpga;
+use hdl4fpga.base.all;
 
-	procedure new_object (
-		variable pool      : inout pooltab;
-		variable following : out   natural);
-end;
+architecture btof_tb of testbench is
+	signal clk      : std_logic := '0';
+	signal btof_req : std_logic;
+	signal btof_rdy : std_logic;
 
-package body object_alloc is
+	signal code_frm : std_logic;
+	signal code     : std_logic_vector(0 to 8-1);
+	signal bin      : std_logic_vector(0 to 18-1);
 
-	procedure init_pool (
-		variable pool : inout pooltab) is
+	signal btof_ack : std_logic;
+
+begin
+
+	btof_ack <= (btof_rdy xor btof_req);
+	process 
+		variable xxx : unsigned(0 to 8*8-1);
+		variable yyy : natural;
 	begin
-		pool.following := 1;
-		for i in pool.available'range loop
-			pool.available(i) := i+1;
-		end loop;
-	end;
-
-	procedure new_object (
-		variable pool      : inout pooltab;
-		variable following : out   natural) is
-	begin
-		assert pool.following <= 256
-		report "No available object"
-		severity FAILURE;
-
-		if pool.following=0 then
-			init_pool(pool);
+		if rising_edge(clk) then
+			if (to_bit(btof_rdy) xor to_bit(btof_req))='0' then
+				xxx := unsigned(std_logic_vector'(to_ascii("        ")));
+				-- bin <= std_logic_vector(to_unsigned(yyy,bin'length));
+				bin <= std_logic_vector(to_unsigned(3125,bin'length));
+				-- yyy := yyy + 18;
+				btof_req <= not to_stdulogic(to_bit(btof_rdy));
+			elsif code_frm='1' then
+				xxx(0 to 8-1) := unsigned(code);
+				xxx := xxx rol 8;
+			end if;
 		end if;
-		following      := pool.following;
-		pool.following := pool.available(pool.following);
-	end;
+		if falling_edge(code_frm) then
+			report "======>  '" & string'(to_ascii(std_logic_vector(xxx))) & ''';
+			-- wait;
+		end if;
+		clk <= not clk after 0.5 ns;
+		wait on clk, code_frm;
+	end process;
+
+	du_e : entity hdl4fpga.btof
+   	port map (
+   		clk      => clk,
+   		btof_req => btof_req,
+   		btof_rdy => btof_rdy,
+		width    => x"8",
+		left     => '0',
+		sht      => x"1",
+		dec      => x"2",
+		exp      => b"000",
+		neg      => '1',
+		bin      => bin, 
+   		code_frm => code_frm,
+   		code     => code);
 
 end;

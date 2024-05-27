@@ -9,25 +9,27 @@ use unisim.vcomponents.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.profiles.all;
-use hdl4fpga.jso.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.ipoepkg.all;
-use hdl4fpga.textboxpkg.all;
-use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.app_profiles.all;
 
 architecture scopeio of nuhs3adsp is
 
-	constant io_link    : io_comms := io_ipoe;
+	constant io_link  : io_comms := io_ipoe;
 	constant sys_per  : real := 50.0;
+
 	signal sys_clk    : std_logic;
+	signal sysclk_n   : std_logic;
 	signal vga_clk    : std_logic;
+	signal vgaclk_n   : std_logic;
 	signal vga_hsync  : std_logic;
 	signal vga_vsync  : std_logic;
 	signal vga_rgb    : std_logic_vector(0 to 3*8-1);
 	signal vga_blank  : std_logic;
 
 	constant inputs : natural := 2;
+	constant vt_step   : string := "6.103515625e-10"; --1.0/2.0**14; -- real'image() does not work on Xilinx ISE
 	alias  input_sample is adc_da;
 	signal samples_doa : std_logic_vector(input_sample'length-1 downto 0);
 	signal samples_dib : std_logic_vector(input_sample'length-1 downto 0);
@@ -72,10 +74,105 @@ architecture scopeio of nuhs3adsp is
 		mode480p    => (timing_id => pclk25_00m640x480at60,    dcm_mul => 5, dcm_div => 4),
 		mode600p    => (timing_id => pclk40_00m800x600at60,    dcm_mul => 2, dcm_div => 1),
 		mode600px16 => (timing_id => pclk40_00m800x600at60,    dcm_mul => 2, dcm_div => 1),
-		mode1080p   => (timing_id => pclk140_00m1920x1080at60, dcm_mul => 7, dcm_div => 1));
+		mode1080p   => (timing_id => pclk150_00m1920x1080at60, dcm_mul => 15, dcm_div => 2));
 
 	constant video_mode : display_modes := mode1080p;
 
+	constant layout : string := compact(
+			"{                             " &   
+			"   inputs          : " & natural'image(inputs) & ',' &
+			"   max_delay       : " & natural'image(2**14)  & ',' &
+			"   min_storage     : 256,     " & -- samples, storage size will be equal or larger than this
+			"   num_of_segments :   4,     " &
+			"   display : {                " &
+			"       width  : 1920,         " &
+			"       height : 1080},        " &
+			"   grid : {                   " &
+			"       unit   : 32,           " &
+			"       width  : " & natural'image(50*32+1) & ',' &
+			"       height : " & natural'image( 8*32+1) & ',' &
+			"       color  : 0xff_ff_00_00, " &
+			"       background-color : 0xff_00_00_00}," &
+			"   axis : {                   " &
+			"       fontsize   : 8,        " &
+			"       horizontal : {         " &
+			"           scales : [         " &
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [0]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [1]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [2]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [3]
+							natural'image(2**(0+0)*5**(0+0)) & "," & -- [4]
+							natural'image(2**(1+0)*5**(0+0)) & "," & -- [5]
+							natural'image(2**(2+0)*5**(0+0)) & "," & -- [6]
+							natural'image(2**(0+0)*5**(1+0)) & "," & -- [7]
+							natural'image(2**(0+1)*5**(0+1)) & "," & -- [8]
+							natural'image(2**(1+1)*5**(0+1)) & "," & -- [9]
+							natural'image(2**(2+1)*5**(0+1)) & "," & -- [10]
+							natural'image(2**(0+1)*5**(1+1)) & "," & -- [11]
+							natural'image(2**(0+2)*5**(0+2)) & "," & -- [12]
+							natural'image(2**(1+2)*5**(0+2)) & "," & -- [13]
+							natural'image(2**(2+2)*5**(0+2)) & "," & -- [14]
+							natural'image(2**(0+2)*5**(1+2)) & "," & -- [15]
+			"               length : 16],  " &
+			"           unit   : 250.0e-9, " &
+			"           height : 8,        " &
+			"           inside : false,    " &
+			"           color  : 0xff_ff_ff_ff," &
+			"           background-color : 0xff_00_00_ff}," &
+			"       vertical : {           " &
+			"           gains : [         " &
+							natural'image(2**17/(2**(0+0)*5**(0+0))) & "," & -- [0]
+							natural'image(2**17/(2**(1+0)*5**(0+0))) & "," & -- [1]
+							natural'image(2**17/(2**(2+0)*5**(0+0))) & "," & -- [2]
+							natural'image(2**17/(2**(0+0)*5**(1+0))) & "," & -- [3]
+							natural'image(2**17/(2**(0+1)*5**(0+1))) & "," & -- [4]
+							natural'image(2**17/(2**(1+1)*5**(0+1))) & "," & -- [5]
+							natural'image(2**17/(2**(2+1)*5**(0+1))) & "," & -- [6]
+							natural'image(2**17/(2**(0+1)*5**(1+1))) & "," & -- [7]
+							natural'image(2**17/(2**(0+2)*5**(0+2))) & "," & -- [8]
+							natural'image(2**17/(2**(1+2)*5**(0+2))) & "," & -- [9]
+							natural'image(2**17/(2**(2+2)*5**(0+2))) & "," & -- [10]
+							natural'image(2**17/(2**(0+2)*5**(1+2))) & "," & -- [11]
+							natural'image(2**17/(2**(0+3)*5**(0+3))) & "," & -- [12]
+							natural'image(2**17/(2**(1+3)*5**(0+3))) & "," & -- [13]
+							natural'image(2**17/(2**(2+3)*5**(0+3))) & "," & -- [14]
+							natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
+			"               length : 16],  " &
+			"           unit   : 250.0e-9, " &
+			"           width  : " & natural'image(6*8) & ','  &
+			"           rotate : ccw0,     " &
+			"           inside : false,    " &
+			"           color  : 0xff_ff_ff_ff," &
+			"           background-color : 0xff_00_00_ff}}," &
+			"   textbox : {                " &
+			"       font_width : 8,        " &
+			"       width      : " & natural'image(8*32) & ','&
+			"       inside     : false,    " &
+			"       color      : 0xff_ff_ff_ff," &
+			"       background-color : 0xff_00_00_00}," &
+			"   main : {                   " &
+			"       top        :  3,       " & 
+			"       left       :  5,       " & 
+			"       right      :  0,       " & 
+			"       bottom     :  0,       " & 
+			"       vertical   :  1,       " & 
+			"       horizontal :  1,       " &
+			"       background-color : 0xff_00_00_00}," &
+			"   segment : {                " &
+			"       top        : 1,        " &
+			"       left       : 1,        " &
+			"       right      : 1,        " &
+			"       bottom     : 1,        " &
+			"       vertical   : 1,        " &
+			"       horizontal : 1,        " &
+			"       background-color : 0xff_ff_ff_ff}," &
+			"  vt : [                      " &
+			"   { text  : J3,        " &
+			"     step  : " & vt_step & ","  &
+			"     color : 0xff_ff_ff_00},  " &
+			"   { text  : J4,        " &
+			"     step  : " & vt_step & ","  &
+			"     color : 0xff_00_ff_ff}]}");
 begin
 
 	clkin_ibufg : ibufg
@@ -189,7 +286,7 @@ begin
 	uart_sin <= rs232_rd;
 	uart_rxc <= mii_rxc;
 
-	ipoe_e : if io_link=io_ipoe generate
+	ipoe_b : if io_link=io_ipoe generate
 		alias  mii_clk    is mii_txc;
 		signal txen       : std_logic;
 		signal txd        : std_logic_vector(mii_txd'range);
@@ -331,64 +428,8 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		videotiming_id   => display_tab(video_mode).timing_id,
-        layout           =>
-            "{                             " &   
-            "   inputs  :                  " & natural'image(inputs) & ',' &
-            "   num_of_segments : 3,       " &
-            "   display : {                " &
-            "       width  : 1920,         " &
-            "       height : 1080},        " &
-            "   grid : {                   " &
-            "       unit   : 32,           " &
-            "       width  :               " & natural'image(50*32+1) & ',' &
-            "       height :               " & natural'image( 8*32+1) & ',' &
-            "       color  : 0xff_ff_00_00, " &
-            "       background-color : 0xff_00_00_00}," &
-            "   axis : {                   " &
-            "       fontsize   : 8,        " &
-            "       horizontal : {         " &
-            "           unit   : 250.0e-9, " &
-            "           height : 8,        " &
-            "           inside : false,    " &
-            "           color  : 0xff_ff_ff_ff," &
-            "           background-color : 0xff_00_00_ff}," &
-            "       vertical : {           " &
-            "           unit   : 2.0e-3, " &
-            "           width  :           " & natural'image(6*8) & ','  &
-            "           rotate : ccw0,     " &
-            "           inside : false,    " &
-            "           color  : 0xff_ff_ff_ff," &
-            "           background-color : 0xff_00_00_ff}}," &
-            "   textbox : {                " &
-            "       font_width :  8,       " &
-            "       width      :           " & natural'image(33*8) & ','&
-            "       inside     : false,    " &
-            "       color      : 0xff_ff_ff_ff," &
-            "       background-color : 0xff_00_00_00}," &
-            "   main : {                   " &
-            "       top        :  5,       " & 
-            "       left       :  1,       " & 
-            "       right      :  0,       " & 
-            "       bottom     :  0,       " & 
-            "       horizontal :  1,       " &
-            "       vertical   :  1,       " & 
-            "       background-color : 0xff_00_00_00}," &
-            "   segment : {                " &
-            "       top        : 1,        " &
-            "       left       : 1,        " &
-            "       right      : 1,        " &
-            "       bottom     : 1,        " &
-            "       horizontal : 1,        " &
-            "       vertical   : 0,        " &
-            "       background-color : 0xff_00_00_00}," &
-            "  vt : [                      " &
-            "   { label : channel1,        " &
-            "     step  : '" & real'image(1.0/2.0**14) & "'," &
-            "     color : 0xff_ff_ff_00},  " & -- vt(6)
-            "   { label : channel2,          " &
-            "     step  : '" & real'image(1.0/2.0**14) & "'," &
-            "     color : 0xff_00_ff_ff}]}")   -- vt(7)
+		videotiming_id => display_tab(video_mode).timing_id,
+		layout         => layout)
 	port map (
 		sio_clk     => sio_clk,
 		si_frm      => si_frm,
@@ -418,31 +459,31 @@ begin
 			vsync      <= vga_vsync1;
 			sync       <= not vga_hsync1 and not vga_vsync1;
 			vga_rgb1   := vga_rgb;
-            vga_hsync1 := vga_hsync;
-            vga_vsync1 := vga_vsync;
-            vga_blank1 := vga_blank;
+			vga_hsync1 := vga_hsync;
+			vga_vsync1 := vga_vsync;
+			vga_blank1 := vga_blank;
 		end if;
 	end process;
 	psave <= '1';
 
-	adcclkab_e : oddr
-	generic map (
-		ddr_clk_edge => "SAME_EDGE")
+	sysclk_n <= not sys_clk;
+	adcclkab_e : oddr2
 	port map (
-		c  => clk,
+		c0  => sys_clk,
+		c1  =>sysclk_n,
 		ce => '1',
-		d1 => '1',
-		d2 => '0',
+		d0 => '1',
+		d1 => '0',
 		q  => adc_clkab);
 
-	videodac_i: oddr
-	generic map (
-		ddr_clk_edge => "SAME_EDGE")
+	vgaclk_n <= not vga_clk;
+	videodac_i: oddr2
 	port map (
-		c   => vga_clk,
+		c0   => vga_clk,
+		c1  => vgaclk_n,
 		ce  => '1',
-		d1  => '0',
-		d2  => '1',
+		d0  => '0',
+		d1  => '1',
 		q   => clk_videodac);
 
 	hd_t_data <= 'Z';
@@ -450,13 +491,14 @@ begin
 	-- LEDs DAC --
 	--------------
 		
---	led18 <= '0';
+	led18 <= '0';
 	led16 <= '0';
 	led15 <= '0';
 	led13 <= '0';
 	led11 <= '0';
 	led9  <= '0';
 	led8  <= '0';
+	led7  <= '0';
 
 	-- RS232 Transceiver --
 	-----------------------
@@ -471,6 +513,8 @@ begin
 	mii_rstn <= '1';
 	mii_mdc  <= '0';
 	mii_mdio <= 'Z';
+	-- mii_txen <= '0';
+	-- mii_txd  <= (others => '0');
 
 	-- LCD --
 	---------
@@ -491,6 +535,7 @@ begin
 		i  => 'Z',
 		o  => ddr_ckp,
 		ob => ddr_ckn);
+
 
 	ddr_st_dqs <= 'Z';
 	ddr_cke    <= 'Z';

@@ -27,58 +27,57 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.jso.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.videopkg.all;
-use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_video is
 	generic (
-		timing_id        : videotiming_ids;
-		modeline         : natural_vector(0 to 9-1) := (others => 0);
-		width            : natural := 0;
-		height           : natural := 0;
-		fps              : real    := 0.0;
-		pclk             : real    := 0.0;
-		layout           : string;
-		inputs           : natural;
-		input_names      : tag_vector);
+		timing_id          : videotiming_ids;
+		layout             : string);
 	port (
-		tp : out std_logic_vector(1 to 32);
-		rgtr_clk         : in  std_logic;
-		rgtr_dv          : in  std_logic;
-		rgtr_id          : in  std_logic_vector(8-1 downto 0);
-		rgtr_data        : in  std_logic_vector;
+		tp                 : out std_logic_vector(1 to 32);
+		rgtr_clk           : in  std_logic;
+		rgtr_dv            : in  std_logic;
+		rgtr_id            : in  std_logic_vector(8-1 downto 0);
+		rgtr_data          : in  std_logic_vector;
 
-		time_scale       : buffer std_logic_vector;
-		time_offset      : buffer std_logic_vector;
+		time_scale         : buffer std_logic_vector;
+		time_offset        : buffer std_logic_vector;
 
-		gain_dv          : in  std_logic;
-		gain_ena         : in  std_logic;
-		gain_cid         : in  std_logic_vector;
-		gain_ids         : in  std_logic_vector;
+		gain_dv            : in  std_logic;
+		gain_ena           : in  std_logic;
+		gain_cid           : in  std_logic_vector;
+		gain_ids           : in  std_logic_vector;
 
-		video_addr       : out std_logic_vector;
-		video_frm        : out std_logic;
-		video_data       : in  std_logic_vector;
-		video_dv         : in  std_logic;
+		video_addr         : out std_logic_vector;
+		video_frm          : out std_logic;
+		video_data         : in  std_logic_vector;
+		video_dv           : in  std_logic;
 
-		video_clk        : in  std_logic;
-		video_pixel      : out std_logic_vector;
-		extern_video     : in  std_logic := '0';
+		video_clk          : in  std_logic;
+		video_pixel        : out std_logic_vector;
+		extern_video       : in  std_logic := '0';
 		extern_videohzsync : in std_logic := '-';
 		extern_videovtsync : in std_logic := '-';
 		extern_videoblankn : in std_logic := '-';
-		video_hsync      : out std_logic;
-		video_vsync      : out std_logic;
+		video_hsync        : out std_logic;
+		video_vsync        : out std_logic;
 
-		video_vton       : buffer std_logic;
-		video_hzon       : buffer std_logic;
-		video_blank      : out std_logic;
-		video_sync       : out std_logic);
+		video_vton         : buffer std_logic;
+		video_hzon         : buffer std_logic;
+		video_blank        : out std_logic;
+		video_sync         : out std_logic);
 
-	constant chanid_bits : natural := unsigned_num_bits(inputs-1);
-	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
+	constant inputs          : natural := hdo(layout)**".inputs";
+	constant num_of_segments : natural := hdo(layout)**".num_of_segments";
+	constant axis_fontsize   : natural := hdo(layout)**".axis.fontsize";
+	constant main_width      : natural := hdo(layout)**".display.width";
+	constant main_height     : natural := hdo(layout)**".display.height";
+	constant textbox_width   : natural := hdo(layout)**".textbox.width";
+	constant grid_height     : natural := hdo(layout)**".grid.height";
+	constant chanid_bits     : natural := unsigned_num_bits(inputs-1);
+	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 
 end;
 
@@ -97,8 +96,7 @@ architecture beh of scopeio_video is
 	constant segmment_latency     : natural := 5;
 	constant palette_latency      : natural := 2;
 	constant vgaio_latency        : natural := input_latency+mainrgtrio_latency+sgmntrgtrio_latency+segmment_latency+palette_latency;
-
-	constant hztick_bits : natural := unsigned_num_bits(8*axis_fontsize(layout)-1);
+	constant hztick_bits          : natural := unsigned_num_bits(8*axis_fontsize-1);
 
 	signal video_hzsync  : std_logic;
 	signal video_vtsync  : std_logic;
@@ -120,35 +118,19 @@ architecture beh of scopeio_video is
 	signal hz_dv         : std_logic;
 	signal hz_scale      : std_logic_vector(4-1 downto 0);
 	signal hz_slider     : std_logic_vector(time_offset'range);
-	signal hz_segment    : std_logic_vector(hz_slider'range);
+	signal hz_segment    : std_logic_vector(video_addr'range);
 	constant max_delay : natural := 2**hz_slider'length;
 
 	constant sgmnt_id : natural := 0;
 	constant text_id  : natural := 1;
 
-	signal btof_binfrm   : std_logic_vector(0 to text_id);
-	signal btof_binirdy  : std_logic_vector(btof_binfrm'range);
-	signal btof_bintrdy  : std_logic_vector(btof_binfrm'range);
-	signal btof_binexp   : std_logic_vector(btof_binfrm'range);
-	signal btof_binneg   : std_logic_vector(btof_binfrm'range);
-	signal btof_bindi    : std_logic_vector(4*btof_binfrm'left to 4*(btof_binfrm'right+1)-1);
-	signal btof_bcdprec  : std_logic_vector(4*btof_binfrm'left to 4*(btof_binfrm'right+1)-1);
-	signal btof_bcdunit  : std_logic_vector(4*btof_binfrm'left to 4*(btof_binfrm'right+1)-1);
-	signal btof_bcdwidth : std_logic_vector(4*btof_binfrm'left to 4*(btof_binfrm'right+1)-1);
-	signal btof_bcdalign : std_logic_vector(btof_binfrm'range);
-	signal btof_bcdsign  : std_logic_vector(btof_binfrm'range);
-	signal btof_bcdtrdy  : std_logic_vector(btof_binfrm'range);
-	signal btof_bcdirdy  : std_logic_vector(btof_binfrm'range);
-	signal btof_bcdend   : std_logic;
-	signal btof_bcddo    : std_logic_vector(4-1 downto 0);
+	constant mainwidth_bits  : natural  := unsigned_num_bits(main_width-1);
+	constant mainheight_bits : natural := unsigned_num_bits(main_height-1);
 
-	constant sgmntboxx_bits : natural := unsigned_num_bits(sgmnt_width(layout)-1);
-	constant sgmntboxy_bits : natural := unsigned_num_bits(sgmnt_height(layout)-1);
-
-	signal x             : std_logic_vector(sgmntboxx_bits-1 downto 0);
-	signal y             : std_logic_vector(sgmntboxy_bits-1 downto 0);
-	signal textbox_x     : std_logic_vector(sgmntboxx_bits-1 downto 0);
-	signal textbox_y     : std_logic_vector(sgmntboxy_bits-1 downto 0);
+	signal x             : std_logic_vector(mainwidth_bits-1  downto 0);
+	signal y             : std_logic_vector(mainheight_bits-1 downto 0);
+	signal textbox_x     : std_logic_vector(mainwidth_bits-1  downto 0);
+	signal textbox_y     : std_logic_vector(mainheight_bits-1 downto 0);
 	signal sgmntbox_on   : std_logic;
 	signal grid_on       : std_logic;
 	signal hz_on         : std_logic;
@@ -168,7 +150,7 @@ architecture beh of scopeio_video is
 	signal text_fg       : std_logic_vector(0 to unsigned_num_bits(pltid_order'length+inputs+1-1)-1);
 	signal text_bg       : std_logic_vector(text_fg'range);
 	signal sgmntbox_bgon : std_logic;
-	signal sgmntbox_ena  : std_logic_vector(0 to resolve(layout&".num_of_segments")-1);
+	signal sgmntbox_ena  : std_logic_vector(0 to num_of_segments-1);
 	signal pointer_dot   : std_logic;
 
 	signal vdv   : std_logic;
@@ -213,7 +195,7 @@ begin
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
-			if hz_ena='1'  then
+			if hz_ena='1' then
 				if trigger_freeze='0' then
 					time_scale <= hz_scale;
 				end if;
@@ -222,33 +204,11 @@ begin
 		end if;
 	end process;
 
-	scopeio_btof_e : entity hdl4fpga.scopeio_btof
-	port map (
-		clk       => rgtr_clk,
-		bin_frm   => btof_binfrm,
-		bin_irdy  => btof_binirdy,
-		bin_trdy  => btof_bintrdy,
-		bin_di    => btof_bindi,
-		bin_neg   => btof_binneg,
-		bin_exp   => btof_binexp,
-		bcd_width => btof_bcdwidth,
-		bcd_sign  => btof_bcdsign,
-		bcd_unit  => btof_bcdunit,
-		bcd_align => btof_bcdalign,
-		bcd_prec  => btof_bcdprec,
-		bcd_irdy  => btof_bcdirdy,
-		bcd_trdy  => btof_bcdtrdy,
-		bcd_end   => btof_bcdend,
-		bcd_do    => btof_bcddo);
-
 	video_e : entity hdl4fpga.video_sync
 	generic map (
 		timing_id     => timing_id,
-		modeline      => modeline,
-		width         => setif(width=0,  main_width(layout),   width),
-		height        => setif(height=0, main_height(layout), height),
-		fps           => fps,
-		pclk          => pclk)
+		width         => main_width,
+		height        => main_height)
 	port map (
 		video_clk     => video_clk,
 		extern_video  => extern_video,
@@ -285,7 +245,6 @@ begin
 		video_hzon   => video_hzon,
 		video_vton   => video_vton,
 
-		hz_slider    => time_offset,
 		hz_segment   => hz_segment,
 		x            => x,
 		y            => y,
@@ -300,11 +259,9 @@ begin
 		vt_on        => vt_on,
 		textbox_on   => text_on);
 
-	textbox_g : if textbox_width(layout)/=0 generate
+	textbox_g : if textbox_width/=0 generate
 		scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
 		generic map (
-			inputs        => inputs,
-			input_names   => input_names,
 			max_delay     => max_delay, 
 			latency       => segmment_latency+input_latency,
 			layout        => layout)
@@ -319,25 +276,9 @@ begin
 			gain_cid      => gain_cid,
 			gain_ids      => gain_ids,
 
-			time_ena      => hz_ena,
-			time_scale    => time_scale,
-			time_offset   => time_offset,
-
-			btof_binfrm   => btof_binfrm(text_id),
-			btof_binirdy  => btof_binirdy(text_id),
-			btof_bintrdy  => btof_bintrdy(text_id),
-			btof_bindi    => btof_bindi(4*text_id to 4*(text_id+1)-1),
-			btof_binneg   => btof_binneg(text_id),
-			btof_binexp   => btof_binexp(text_id),
-			btof_bcdwidth => btof_bcdwidth(4*text_id to 4*(text_id+1)-1),
-			btof_bcdprec  => btof_bcdprec(4*text_id to 4*(text_id+1)-1),
-			btof_bcdunit  => btof_bcdunit(4*text_id to 4*(text_id+1)-1),
-			btof_bcdsign  => btof_bcdsign(text_id),
-			btof_bcdalign => btof_bcdalign(text_id),
-			btof_bcdirdy  => btof_bcdirdy(text_id),
-			btof_bcdtrdy  => btof_bcdtrdy(text_id),
-			btof_bcdend   => btof_bcdend,
-			btof_bcddo    => btof_bcddo,
+			hz_dv         => hz_dv,
+			hz_scale      => time_scale,
+			hz_offset     => time_offset,
 
 			video_clk     => video_clk,
 			video_hcntr   => textbox_x,
@@ -349,25 +290,10 @@ begin
 			text_fgon     => text_fgon);
 	end generate;
 
-	notextbox_g : if textbox_width(layout)=0 generate
-		btof_binfrm(text_id)  <= '0';
-		btof_binirdy(text_id) <= '-';
-		btof_bindi(4*text_id to 4*(text_id+1)-1) <= (others => '-');
-		btof_binneg(text_id)  <= '-';
-		btof_binexp(text_id)  <= '-';
-		btof_bcdsign(text_id) <= '-';
-		btof_bcdwidth(4*text_id to 4*(text_id+1)-1) <= (others => '-');
-		btof_bcdprec(4*text_id to 4*(text_id+1)-1)  <= (others => '-');
-		btof_bcdunit(4*text_id to 4*(text_id+1)-1)  <= (others => '-');
-		btof_bcdalign(text_id) <= '-';
-		btof_bcdirdy(text_id)  <= '-';
-	end generate;
-
 	scopeio_segment_e : entity hdl4fpga.scopeio_segment
 	generic map (
 		input_latency => input_latency,
 		latency       => segmment_latency+input_latency,
-		inputs        => inputs,
 		layout        => layout)
 	port map (
 		rgtr_clk      => rgtr_clk,
@@ -375,26 +301,10 @@ begin
 		rgtr_id       => rgtr_id,
 		rgtr_data     => rgtr_data,
 
-		btof_binfrm   => btof_binfrm(sgmnt_id),
-		btof_binirdy  => btof_binirdy(sgmnt_id),
-		btof_bintrdy  => btof_bintrdy(sgmnt_id),
-		btof_bindi    => btof_bindi(4*sgmnt_id to 4*(sgmnt_id+1)-1),
-		btof_binneg   => btof_binneg(sgmnt_id),
-		btof_binexp   => btof_binexp(sgmnt_id),
-		btof_bcdunit  => btof_bcdunit(4*sgmnt_id to 4*(sgmnt_id+1)-1),
-		btof_bcdwidth => btof_bcdwidth(4*sgmnt_id to 4*(sgmnt_id+1)-1),
-		btof_bcdprec  => btof_bcdprec(4*sgmnt_id to 4*(sgmnt_id+1)-1),
-		btof_bcdsign  => btof_bcdsign(sgmnt_id),
-		btof_bcdalign => btof_bcdalign(sgmnt_id),
-		btof_bcdtrdy  => btof_bcdtrdy(sgmnt_id),
-		btof_bcdirdy  => btof_bcdirdy(sgmnt_id),
-		btof_bcdend   => btof_bcdend,
-		btof_bcddo    => btof_bcddo,
-
 		hz_dv         => hz_dv,
 		hz_scale      => time_scale,
-		hz_base       => time_offset(time_offset'left downto axisx_backscale+hztick_bits),
-		hz_offset     => hz_segment,
+		hz_offset     => time_offset,
+		hz_segment    => hz_segment,
 
 		gain_cid      => gain_cid,
 		gain_dv       => gain_dv,
@@ -417,7 +327,7 @@ begin
 		vt_dot        => vt_dot,
 		trigger_dot   => trigger_dot,
 		trace_dots    => trace_dots);
-
+-- 
 	bg_e : entity hdl4fpga.latency
 	generic map (
 		n => 5,

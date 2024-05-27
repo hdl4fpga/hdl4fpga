@@ -21,15 +21,14 @@
 -- more details at http://www.gnu.org/licenses/.                              --
 --                                                                            --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library hdl4fpga;
-use work.jso.all;
+use hdl4fpga.scopeiopkg.all;
+use hdl4fpga.hdo.all;
 
 entity main is
 end;
@@ -37,9 +36,13 @@ end;
 architecture def of main is
 begin
 	process 
+		constant c : string := significand(31.25e-6);
+		variable x : string(c'range);
 	begin
+			-- "value => " & (hdo(normalize(*coefs(i)))**".norm");
 		-- report "VALUE : " & ''' & get_value("[hola,mundo:[kkkk:12345,dddd:[67890]],hello,world].kkk", "[mundo].dddd") & ''';
-		report "VALUE : " & ''' & get_value("kkkk:'12345'.dddd", "") & ''';
+			-- report "VALUE : " & ''' & hdo(c)**".norm" & ''';
+			report CR & "VALUE : " & ''' & c & ''';
 		wait;
 	end process;
 end;

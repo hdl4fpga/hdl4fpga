@@ -101,9 +101,7 @@ entity video_sync is
 		timing_id : videotiming_ids;
 		modeline  : natural_vector(0 to 9-1) := (others => 0);
 		width     : natural := 0;
-		height    : natural := 0;
-		fps       : real    := 0.0;
-		pclk      : real    := 0.0);
+		height    : natural := 0);
 	port (
 		video_clk     : in std_logic;
 		extern_video  : in  std_logic := '0';

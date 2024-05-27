@@ -35,9 +35,6 @@ package base is
 	function signed_num_bits (arg: integer) return natural;
 	function unsigned_num_bits (arg: natural) return natural;
 
-	subtype byte is std_logic_vector(8-1 downto 0);
-	type byte_vector is array (natural range <>) of byte;
-
 	subtype integer64 is time;
 	type integer64_vector is array (natural range <>) of integer64;
 
@@ -70,19 +67,9 @@ package base is
 		constant str2 : in string)
 		return boolean;
 
-	function strstr(
-		constant key    : string;
-		constant domain : string)
-		return natural;
-
-	function strrev (
-		constant arg : string)
-		return string;
-
-	function strfill (
-		constant s    : string;
-		constant size : natural;
-		constant char : character := NUL)
+	function rotate_left (
+		constant arg1 : string;
+		constant arg2 : natural)
 		return string;
 
 	function shift_right (
@@ -90,8 +77,8 @@ package base is
 		constant arg2 : natural)
 		return string;
 
-	function itoa (
-		constant arg : integer)
+	function reverse (
+		constant arg : string)
 		return string;
 
 	function ftoa (
@@ -102,14 +89,6 @@ package base is
 	function to_stdlogicvector (
 		constant arg : string)
 		return std_logic_vector;
-
-	function to_bytevector (
-		constant arg : string)
-		return byte_vector;
-
-	function to_bytevector (
-		constant arg : std_logic_vector)
-		return byte_vector;
 
 	function to_bitrom (
 		constant data : natural_vector;
@@ -148,6 +127,10 @@ package base is
 		constant arg  : unsigned;
 		constant size : natural)
 		return unsigned;
+
+	function to_ascii(
+		constant arg : character)
+		return std_logic_vector;
 
 	function to_ascii(
 		constant arg : string)
@@ -364,13 +347,17 @@ package base is
 		constant arg : std_logic_vector)
 		return string;
 
+	function to_hex(
+		constant arg : std_logic_vector)
+		return string;
+
+	function to_ascii(
+		constant arg : std_logic_vector)
+		return string;
+
 	function to_string (
 		constant arg : unsigned)
 		return string;
-
-	function to_stdlogicvector (
-		constant arg : byte_vector)
-		return std_logic_vector;
 
 	function max (
 		constant data : natural_vector)
@@ -445,10 +432,6 @@ package base is
 		constant value : std_logic := '-')
 		return std_logic_vector;
 
-	function bcd2ascii (
-		constant arg : std_logic_vector)
-		return std_logic_vector;
-
 	function galois_crc (
 		constant m : std_logic_vector;
 		constant r : std_logic_vector;
@@ -465,13 +448,18 @@ package base is
 		constant b : natural)
 		return natural;
 		
+	function roundup (
+		constant number : natural;
+		constant round  : natural)
+		return natural;
 end;
 
 use std.textio.all;
 
 library ieee;
-use ieee.std_logic_textio.all;
 use ieee.math_real.all;
+
+library hdl4fpga;
 
 package body base is
 
@@ -542,19 +530,6 @@ package body base is
 		return stream'right;
 	end;
 
-	function strfill (
-		constant s    : string;
-		constant size : natural;
-		constant char : character := NUL)
-		return string
-	is
-		variable retval : string(1 to size);
-	begin
-		retval := (others => char);
-		retval(1 to s'length) := s;
-		return retval;
-	end;
-
 	function strcmp (
 		constant str1 : in string;
 		constant str2 : in string)
@@ -563,8 +538,6 @@ package body base is
 		alias astr1 : string(1 to str1'length) is str1;
 		alias astr2 : string(1 to str2'length) is str2;
 	begin
---		report astr2 & " " & astr1;
---		report integer'image(astr2'length) & " " & integer'image(astr1'length);
 		if strlen(str1)/=strlen(str2) then
 			return false;
 		else
@@ -575,63 +548,6 @@ package body base is
 			end loop;
 			return true;
 		end if;
-	end;
-
-	procedure strcmp (
-		variable sucess : inout boolean;
-		variable index  : inout natural;
-		constant key    : in    string;
-		constant domain : in    string)
-	is
-	begin
-		sucess := false;
-		for i in key'range loop
-			if index < domain'length then
-				if key(i)/=domain(index) then
-					return;
-				else
-					index := index + 1;
-				end if;
-			elsif key(i)=NUL then
-				sucess := true;
-				return;
-			else
-				return;
-			end if;
-		end loop;
-		if index < domain'length then
-			if domain(index)=NUL then
-				sucess := true;
-				return;
-			else
-				return;
-			end if;
-		else
-			sucess := true;
-			return;
-		end if;
-	end;
-
-	function strstr(
-		constant key    : string;
-		constant domain : string)
-		return natural is
-		variable sucess : boolean;
-		variable index  : natural;
-		variable ref    : natural;
-	begin
-		ref   := 0;
-		index := domain'left;
-		while index < domain'right loop
-			strcmp(sucess, index, key, domain);
-			if sucess then
-				return ref;
-			end if;
-			while domain(index) /= NUL loop
-				index := index + 1;
-			end loop;
-			index := index + 1;
-		end loop;
 	end;
 
 	function strlen (
@@ -650,19 +566,6 @@ package body base is
 		return retval;
 	end;
 
-	function strrev (
-		constant arg : string)
-		return string
-	is
-		variable retval : string(1 to arg'length);
-	begin
-		retval := arg;
-		for i in 1 to retval'length/2 loop
-			swap(retval(i), retval(retval'length+1-i));
-		end loop;
-		return retval;
-	end;
-
 	function shift_right (
 		constant arg1 : string;
 		constant arg2 : natural)
@@ -674,33 +577,36 @@ package body base is
 			if i > arg2 then
 				retval(i) := arg1(i-arg2);
 			end if;
-			for i in 1 to arg2 loop
-				retval(i) := ' ';
+			for j in 1 to arg2 loop
+				retval(j) := ' ';
 			end loop;
 		end loop;
 		return retval;
 	end;
 
-	function itoa (
-		constant arg : integer)
+	function rotate_left (
+		constant arg1 : string;
+		constant arg2 : natural)
+		return string is
+		variable retval : string(arg1'range);
+	begin
+		for i in arg1'range loop
+			retval(i) := arg1(arg1'left+(i-arg1'left+arg2) mod arg1'length);
+		end loop;
+		return retval;
+	end;
+
+	function reverse (
+		constant arg : string)
 		return string
 	is
-		constant asciitab : string(1 to 10) := "0123456789";
-		variable retval   : string(1 to 256) := (others => NUL);
-		variable value    : natural;
+		variable retval : string(1 to arg'length);
 	begin
-		value := abs(arg);
-		for i in retval'range loop
-			retval(i) := asciitab((value mod 10)+1);
-			value     := value / 10;
-			if value=0 then
-				if arg < 0 then
-					retval(i+1) := '-';
-				end if;
-				exit;
-			end if;
+		retval := arg;
+		for i in 1 to retval'length/2 loop
+			swap(retval(i), retval(retval'length+1-i));
 		end loop;
-		return strrev(retval(1 to strlen(retval)));
+		return retval;
 	end;
 
 	function ftoa (
@@ -715,8 +621,6 @@ package body base is
 		variable cy     : natural range 0 to 1;
 		variable digit  : natural range 0 to 9;
 		variable n      : natural;
-
-		variable msg    : line;
 	begin
 		mant := abs(num);
 		exp  := 0;
@@ -740,13 +644,13 @@ package body base is
 					mant  := mant * 2.0;
 					cy    := setif(mant >= 1.0, 1, 0);
 					mant  := mant - real(cy);
-					for i in n downto 1 loop
-						digit := character'pos(retval(i))-character'pos('0');
+					for j in n downto 1 loop
+						digit := character'pos(retval(j))-character'pos('0');
 						if digit < 5 then
-							retval(i) := lookup(2*digit+cy+1);
+							retval(j) := lookup(2*digit+cy+1);
 							cy := 0;
 						else
-							retval(i) := lookup(2*digit+cy-10+1);
+							retval(j) := lookup(2*digit+cy-10+1);
 							cy := 1;
 						end if;
 					end loop;
@@ -797,12 +701,6 @@ package body base is
 			retval := shift_right(retval,1);
 		end if;
 
---		write(msg, string'(" -> ") & retval(1 to ndigits));
---		writeline(output, msg);
---		write(msg, mant);
---		write(msg, string'(" : "));
---		write(msg, exp);
---		writeline(output, msg);
 		return retval(1 to ndigits);
 	end;
 
@@ -981,13 +879,21 @@ package body base is
 	end;
 
 	function to_ascii(
+		constant arg : character)
+		return std_logic_vector is
+		subtype ascii is std_logic_vector(0 to 8-1);
+	begin
+		return std_logic_vector(to_unsigned(character'pos(arg), ascii'length));
+	end;
+
+	function to_ascii(
 		constant arg : string)
 		return std_logic_vector is
 		subtype ascii is std_logic_vector(0 to 8-1);
 		variable retval : unsigned(0 to ascii'length*arg'length-1) := (others => '0');
 	begin
 		for i in arg'range loop
-			retval(ascii'range) := to_unsigned(character'pos(arg(i)), ascii'length);
+			retval(ascii'range) := unsigned(to_ascii(arg(i)));
 			retval := retval rol ascii'length;
 		end loop;
 		return std_logic_vector(retval);
@@ -1028,18 +934,33 @@ package body base is
 		return std_logic_vector(retval);
 	end;
 
-	function to_bytevector (
+	function to_ascii(
 		constant arg : std_logic_vector)
-		return byte_vector is
-		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : byte_vector(arg'length/byte'length-1 downto 0);
+		return string is
+		variable aux    : unsigned(0 to 8*((arg'length+8-1)/8)-1);
+		variable retval : string(1 to aux'length/8);
 	begin
-		dat := unsigned(arg);
-		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(byte'length-1 downto 0));
-			dat := dat srl byte'length;
+		aux := resize(unsigned(arg), aux'length);
+		for i in retval'range loop
+			retval(i) := character'val(to_integer(aux(0 to 8-1)));
+			aux := aux sll 8;
 		end loop;
-		return val;
+		return retval;
+	end;
+
+	function to_hex(
+		constant arg : std_logic_vector)
+		return string is
+		constant tab    : string :="01234567890ABCDEF"; 
+		variable aux    : unsigned(0 to 4*((arg'length+4-1)/4)-1);
+		variable retval : string(1 to aux'length/4);
+	begin
+		aux := resize(unsigned(arg), aux'length);
+		for i in retval'range loop
+			retval(i) := tab(to_integer(aux(0 to 4-1))+1);
+			aux := aux sll 4;
+		end loop;
+		return retval;
 	end;
 
 	function to_string(
@@ -1055,7 +976,6 @@ package body base is
 			else
 				retval(i) := '0';
 			end if;
---			retval(i) := std_logic'image(aux(0))(2);
 			aux := aux sll 1;
 		end loop;
 		return retval;
@@ -1069,35 +989,24 @@ package body base is
 	end;
 
 	function to_stdlogicvector (
-		constant arg : character)
+		constant arg : string)
 		return std_logic_vector is
-		variable val : unsigned(byte'length-1 downto 0);
+		subtype code is std_logic_vector(8-1 downto 0);
+		variable val : unsigned(arg'length*code'length-1 downto 0);
 	begin
-		val(byte'range) := to_unsigned(character'pos(arg),byte'length);
+		for i in arg'range loop
+			val := val sll code'length-1;
+			val(code'range) := to_unsigned(character'pos(arg(i)), code'length);
+		end loop;
 		return std_logic_vector(val);
 	end function;
 
 	function to_stdlogicvector (
-		constant arg : string)
+		constant arg : character)
 		return std_logic_vector is
-		variable val : unsigned(arg'length*byte'length-1 downto 0);
+		subtype code is std_logic_vector(8-1 downto 0);
 	begin
-		for i in arg'range loop
-			val := val sll byte'length;
-			val(byte'range) := to_unsigned(character'pos(arg(i)),byte'length);
-		end loop;
-		return std_logic_vector(val);
-	end function;
-
-	function to_bytevector (
-		constant arg : string)
-		return byte_vector is
-		variable val : byte_vector(arg'range);
-	begin
-		for i in arg'range loop
-			val(i) := std_logic_vector(unsigned'(to_unsigned(character'pos(arg(i)),byte'length)));
-		end loop;
-		return val;
+		return std_logic_vector(to_unsigned(character'pos(arg),code'length));
 	end function;
 
 	function to_bitrom (
@@ -1160,7 +1069,7 @@ package body base is
 		variable retval : std_logic_vector(0 to arg1'length/arg2'length-1);
 	begin
 		assert arg1'length mod arg2'length = 0
-			report "std_logic wirebus " & itoa(arg1'length) & " " & itoa(arg2'length)
+			report "std_logic wirebus " & natural'image(arg1'length) & " " & natural'image(arg2'length)
 			severity failure;
 
 		aux(0 to arg1'length-1) := unsigned(arg1);
@@ -1183,7 +1092,7 @@ package body base is
 		variable retval : natural;
 	begin
 		assert arg1'length mod arg2'length = 0
-			report "natural wirebus " & itoa(arg1'length) & " " & itoa(arg2'length)
+			report "natural wirebus " & natural'image(arg1'length) & " " & natural'image(arg2'length)
 			severity failure;
 
 		aux1 := arg1;
@@ -1205,7 +1114,7 @@ package body base is
 		variable retval : integer;
 	begin
 		assert arg1'length mod arg2'length = 0
-			report "integer wirebus " & itoa(arg1'length) & " " & itoa(arg2'length)
+			report "integer wirebus " & natural'image(arg1'length) & " " & natural'image(arg2'length)
 			severity failure;
 
 
@@ -1636,20 +1545,6 @@ package body base is
 	-- ASCII --
 	-----------
 
-	function to_stdlogicvector (
-		constant arg : byte_vector)
-		return std_logic_vector is
-		variable dat : byte_vector(arg'length-1 downto 0);
-		variable val : unsigned(byte'length*arg'length-1 downto 0);
-	begin
-		dat := arg;
-		for i in dat'range loop
-			val := val sll byte'length;
-			val(byte'range) := unsigned(dat(i));
-		end loop;
-		return std_logic_vector(val);
-	end;
-
 	function max (
 		constant data : natural_vector)
 		return natural is
@@ -1888,28 +1783,6 @@ package body base is
 		end if;
 	end;
 
-	function bcd2ascii (
-		constant arg : std_logic_vector)
-		return std_logic_vector is
-		variable aux : unsigned(0 to arg'length-1);
-		variable val : unsigned(8*arg'length/4-1 downto 0);
-	begin
-		val := (others => '-');
-		aux := unsigned(arg);
-		for i in 0 to aux'length/4-1 loop
-			val := val sll 8;
-			if to_integer(unsigned(aux(0 to 4-1))) < 10 then
-				val(8-1 downto 0) := unsigned'("0011") & unsigned(aux(0 to 4-1));
-			elsif to_integer(unsigned(aux(0 to 4-1))) < 15 then
-				val(8-1 downto 0) := unsigned'("0010") & unsigned(aux(0 to 4-1));
-			else
-				val(8-1 downto 0) := x"20";
-			end if;
-			aux := aux sll 4;
-		end loop;
-		return std_logic_vector(val);
-	end;
-
 	function gcd(
 		constant a : natural; 
 		constant b : natural)
@@ -1938,6 +1811,14 @@ package body base is
 		return (a*b)/gcd(a,b);
 	end function;
 		
+	function roundup (
+		constant number : natural;
+		constant round  : natural)
+		return natural is
+	begin
+		return ((number+round-1)/round)*round;
+	end;
+
 	function galois_crc(
 		constant m : std_logic_vector;
 		constant r : std_logic_vector;

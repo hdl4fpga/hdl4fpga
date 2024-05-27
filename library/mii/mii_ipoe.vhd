@@ -491,7 +491,7 @@ begin
 		ipv4sawr_frm  => ipv4sawr_frm,
 		ipv4sawr_irdy => ipv4sawr_irdy,
 		ipv4sawr_trdy => ipv4sawr_trdy,
-		ipv4sawr_end  => ipv4sawr_end,
+		ipv4sawr_end  => open, --ipv4sawr_end,
 		ipv4sawr_data => ipv4sawr_data,
 	
 		arptx_frm  => arptx_frm,
