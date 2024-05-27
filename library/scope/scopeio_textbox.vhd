@@ -53,6 +53,7 @@ entity scopeio_textbox is
 
 	constant hz_text        : string  := "Hztl";
 	constant vt_prefix      : string  := get_prefix1235(vt_unit);
+	constant hz_prefix      : string  := get_prefix1235(hz_unit);
 	constant hzoffset_bits  : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits    : natural := unsigned_num_bits(inputs-1);
 
@@ -392,7 +393,11 @@ begin
 					else
 	 					cga_we   <= '1';
 	 					cga_addr <= cga_addr + 1;
-	 					cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
+						if (vttxt_rdy xor vttxt_req)='1' then
+							cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
+						else
+							cga_data <= to_ascii(hz_prefix(to_integer(unsigned(hz_scale))+1));
+						end if;
 	 					state    := s_wait;
 						wdt_rdy  <= wdt_req;
 						state    := s_wait;

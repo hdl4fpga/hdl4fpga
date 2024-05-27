@@ -278,6 +278,8 @@ begin
 	severity FAILURE;
 
 	inputs_b : block
+		constant mux_sampling : natural := 10;
+
 		signal rgtr_id   : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv   : std_logic;
 		signal rgtr_data : std_logic_vector(0 to 32-1);
@@ -286,7 +288,7 @@ begin
 		signal hz_dv      : std_logic;
 		signal hz_scale   : std_logic_vector(4-1 downto 0);
 		signal hz_slider  : std_logic_vector(hzoffset_bits-1 downto 0);
-		signal max_input  : natural range 0 to inputs-1;
+		signal max_input  : natural range 0 to mux_sampling-1;
 		signal opacity    : unsigned(0 to inputs-1);
 		signal opacity_frm  : std_logic;
 		signal opacity_data : std_logic_vector(si_data'range);
@@ -294,7 +296,7 @@ begin
 	begin
 
 		process (hz_scale)
-			variable no_inputs : natural range 0 to inputs-1;
+			variable no_inputs : natural range 0 to mux_sampling-1;
 		begin
 			case hz_scale is
 			when x"0" =>
@@ -303,8 +305,10 @@ begin
 				no_inputs := hdl4fpga.base.min(inputs-1, 2-1);
 			when x"2" =>
 				no_inputs := hdl4fpga.base.min(inputs-1, 4-1);
+			when x"3" =>
+				no_inputs := hdl4fpga.base.min(inputs-1, 5-1);
 			when others =>
-				no_inputs := inputs-1;
+				no_inputs := 10-1;
 			end case;
 			for i in opacity'range loop
 				if i <= no_inputs then
@@ -324,7 +328,7 @@ begin
 					if cntr >= max_input then
 						cntr := (others => '0');
 						input_enas <= '1';
-					elsif cntr >= inputs-1 then
+					elsif cntr >= mux_sampling-1 then  --inputs-1 then
 						cntr := (others => '0');
 						input_enas <= '1';
 					else
