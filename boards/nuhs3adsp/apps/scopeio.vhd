@@ -146,7 +146,7 @@ architecture scopeio of nuhs3adsp is
 			"           background-color : 0xff_00_ff_ff}}," &
 			"   textbox : {                " &
 			"       font_width : 8,        " &
-			"       width      : " & natural'image(8*32) & ','&
+			"       width      : " & natural'image(33*8) & ','&
 			"       inside     : false,    " &
 			"       color      : 0xff_ff_00_ff," &
 			"       background-color : 0xff_00_00_00}," &
