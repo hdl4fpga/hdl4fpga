@@ -521,7 +521,7 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		videotiming_id   => video_params(video_mode).timing_id,
+		videotiming_id => video_params(video_mode).timing_id,
 		layout         => layout)
 	port map (
 		sio_clk     => sio_clk,
@@ -544,8 +544,8 @@ begin
 			ja(1)  <= multiplex(video_pixel, std_logic_vector(to_unsigned(0,2)), 1)(0);
 			ja(2)  <= multiplex(video_pixel, std_logic_vector(to_unsigned(1,2)), 1)(0);
 			ja(3)  <= multiplex(video_pixel, std_logic_vector(to_unsigned(2,2)), 1)(0);
-			ja(4)  <= video_hzsync;
-			ja(10) <= video_vtsync;
+			ja(4)  <= not video_hzsync;
+			ja(10) <= not video_vtsync;
 		end if;
 	end process;
   
