@@ -78,7 +78,7 @@ architecture scopeio of arty is
 		mode600p  => (timing_id => pclk40_00m800x600at60,       mul => 4, div => 5),
 		mode1080p => (timing_id => pclk150_00m1920x1080at60,    mul => 3, div => 1));
 
-	constant layout      : string := compact(
+	constant layout : string := compact(
 			"{                             " &   
 			"   inputs          : " & natural'image(inputs) & ',' &
 			"   max_delay       : " & natural'image(max_delay)  & ',' &
@@ -194,7 +194,7 @@ architecture scopeio of arty is
 			"   { text  : 'A4(+)',           " &
 			"     step  : " & real'image(3.32*vt_step) & "," &
 			"     color : 0xff_00_ff_ff}]}");   -- vt(8)
-		constant vt          : string := hdo(layout)**".vt";
+		constant vt : string := hdo(layout)**".vt";
 begin
 
 	clkin_ibufg : ibufg
