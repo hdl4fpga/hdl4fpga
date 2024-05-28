@@ -17,17 +17,11 @@ use hdl4fpga.app_profiles.all;
 
 architecture scopeio of arty is
 
-	type layout_mode is (
-		mode600p, 
-		mode1080p,
-		mode480p);
-
 	--------------------------------------
-	--     Set your profile here        --
-	constant video_mode : layout_mode := mode1080p;
-	constant io_link    : io_comms := io_ipoe;
+	--         Set profile here         --
+	constant io_link      : io_comms := io_ipoe;
 	--------------------------------------
-	constant tsttab : boolean := false;
+	constant tsttab       : boolean := false;
 
 	constant max_delay     : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
@@ -71,12 +65,6 @@ architecture scopeio of arty is
 		mul       : natural;
 		div       : natural;
 	end record;
-
-	type displayparam_vector is array (layout_mode) of display_param;
-	constant video_params : displayparam_vector := (
-		mode480p  => (timing_id => pclk25_00m640x480at60,       mul => 3, div => 5),
-		mode600p  => (timing_id => pclk40_00m800x600at60,       mul => 4, div => 5),
-		mode1080p => (timing_id => pclk150_00m1920x1080at60,    mul => 3, div => 1));
 
 	constant layout : string := compact(
 			"{                             " &   
@@ -521,7 +509,7 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		videotiming_id => video_params(video_mode).timing_id,
+		videotiming_id => pclk150_00m1920x1080at60,
 		layout         => layout)
 	port map (
 		sio_clk     => sio_clk,

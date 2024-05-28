@@ -91,7 +91,7 @@ architecture scopeio of nuhs3adsp is
 			"       unit   : 32,           " &
 			"       width  : " & natural'image(50*32+1) & ',' &
 			"       height : " & natural'image( 8*32+1) & ',' &
-			"       color  : 0xff_ff_00_00, " &
+			"       color  : 0xff_ff_00_ff, " &
 			"       background-color : 0xff_00_00_00}," &
 			"   axis : {                   " &
 			"       fontsize   : 8,        " &
@@ -117,8 +117,8 @@ architecture scopeio of nuhs3adsp is
 			"           unit   : 250.0e-9, " &
 			"           height : 8,        " &
 			"           inside : false,    " &
-			"           color  : 0xff_ff_ff_ff," &
-			"           background-color : 0xff_00_00_ff}," &
+			"           color  : 0xff_00_00_00," &
+			"           background-color : 0xff_00_ff_ff}," &
 			"       vertical : {           " &
 			"           gains : [         " &
 							natural'image(2**17/(2**(0+0)*5**(0+0))) & "," & -- [0]
@@ -142,13 +142,13 @@ architecture scopeio of nuhs3adsp is
 			"           width  : " & natural'image(6*8) & ','  &
 			"           rotate : ccw0,     " &
 			"           inside : false,    " &
-			"           color  : 0xff_ff_ff_ff," &
-			"           background-color : 0xff_00_00_ff}}," &
+			"           color  : 0xff_00_00_00," &
+			"           background-color : 0xff_00_ff_ff}}," &
 			"   textbox : {                " &
 			"       font_width : 8,        " &
 			"       width      : " & natural'image(8*32) & ','&
 			"       inside     : false,    " &
-			"       color      : 0xff_ff_ff_ff," &
+			"       color      : 0xff_ff_00_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   main : {                   " &
 			"       top        :  3,       " & 
@@ -169,10 +169,10 @@ architecture scopeio of nuhs3adsp is
 			"  vt : [                      " &
 			"   { text  : J3,        " &
 			"     step  : " & vt_step & ","  &
-			"     color : 0xff_ff_ff_00},  " &
+			"     color : 0xff_00_ff_ff},  " &
 			"   { text  : J4,        " &
 			"     step  : " & vt_step & ","  &
-			"     color : 0xff_00_ff_ff}]}");
+			"     color : 0xff_ff_ff_ff}]}");
 begin
 
 	clkin_ibufg : ibufg
