@@ -191,7 +191,7 @@ architecture scopeio of ulx3s is
 			"  vt : [                      " &
 			"   { text  : GN14,            " &
 			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_00_ff_ff},  " &
+			"     color : 0xff_00_ff_ff},  " & -- vt(0)
 			"   { text  : GP14,            " &
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff},  " & -- vt(1)

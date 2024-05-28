@@ -78,7 +78,7 @@ architecture scopeio of arty is
 		mode600p  => (timing_id => pclk40_00m800x600at60,       mul => 4, div => 5),
 		mode1080p => (timing_id => pclk150_00m1920x1080at60,    mul => 3, div => 1));
 
-	constant layout      : string := compact(
+	constant layout : string := compact(
 			"{                             " &   
 			"   inputs          : " & natural'image(inputs) & ',' &
 			"   max_delay       : " & natural'image(max_delay)  & ',' &
@@ -91,7 +91,7 @@ architecture scopeio of arty is
 			"       unit   : 32,           " &
 			"       width  : " & natural'image(50*32+1) & ',' &
 			"       height : " & natural'image( 8*32+1) & ',' &
-			"       color  : 0xff_ff_00_00," &
+			"       color  : 0xff_ff_00_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   axis : {                   " &
 			"       fontsize   : 8,        " &
@@ -117,8 +117,8 @@ architecture scopeio of arty is
 			"           unit   : 31.25e-6, " &
 			"           height : 8,        " &
 			"           inside : false,    " &
-			"           color  : 0xff_ff_ff_ff," &
-			"           background-color : 0xff_00_00_ff}," &
+			"           color  : 0xff_00_00_00," &
+			"           background-color : 0xff_00_ff_ff}," &
 			"       vertical : {           " &
 			"           gains : [         " &
 							natural'image(2**17/(2**(0+0)*5**(0+0))) & "," & -- [0]
@@ -142,13 +142,13 @@ architecture scopeio of arty is
 			"           width  : " & natural'image(6*8) & ','  &
 			"           rotate : ccw0,     " &
 			"           inside : false,    " &
-			"           color  : 0xff_ff_ff_ff," &
-			"           background-color : 0xff_00_00_ff}}," &
+			"           color  : 0xff_00_00_00," &
+			"           background-color : 0xff_00_ff_ff}}," &
 			"   textbox : {                " &
 			"       font_width :  8,       " &
-			"       width      : " & natural'image(33*8+1) & ','&
+			"       width      : " & natural'image(33*8) & ','&
 			"       inside     : false,    " &
-			"       color      : 0xff_ff_ff_ff," &
+			"       color      : 0xff_ff_00_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   main : {                   " &
 			"       top        :  5,       " & 
@@ -165,36 +165,36 @@ architecture scopeio of arty is
 			"       bottom     : 1,        " &
 			"       vertical   : 0,        " &
 			"       horizontal : 1,        " &
-			"       background-color : 0xff_00_00_00}," &
+			"       background-color : 0xff_ff_ff_ff}," &
 			"  vt : [                      " &
-			"   { text  : 'V_P(+) V_N(-)', " &
+			"   { text  : 'V_P(+) V_N(-)', " &  
 			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_ff_ff},  " &
+			"     color : 0xff_00_ff_ff},  " & -- vt(0)
 			"   { text  : 'A6(+)  A7(-)',  " &
 			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_ff_00},  " & -- vt(1)
+			"     color : 0xff_ff_ff_ff},  " & -- vt(1)
 			"   { text  : 'A8(+)  A9(-)', " &
 			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_00_ff},  " & -- vt(2)
+			"     color : 0xff_00_ff_ff},  " & -- vt(2)
 			"   { text  : 'A10(+) A11(-)', " &
 			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_00_00},  " & -- vt(3)
+			"     color : 0xff_ff_ff_ff},  " & -- vt(3)
 			"   { text  : 'A0(+)',       " &
 			"     step  : " & real'image(3.32*vt_step) & "," &
 			"     color : 0xff_00_ff_ff},  " & -- vt(4)
 			"   { text  : 'A1(+)',       " &
 			"     step  : " & real'image(3.32*vt_step) & "," &
-			"     color : 0xff_00_ff_00},  " & -- vt(5)
+			"     color : 0xff_ff_ff_ff},  " & -- vt(5)
 			"   { text  : 'A2(+)',       " &
 			"     step  : " & real'image(3.32*vt_step) & "," &
-			"     color : 0xff_00_00_ff},  " & -- vt(6)
+			"     color : 0xff_00_ff_ff},  " & -- vt(6)
 			"   { text  : 'A3(+)',       " &
 			"     step  : " & real'image(3.32*vt_step) & "," &
 			"     color : 0xff_ff_ff_ff},  " &  -- vt(7)
 			"   { text  : 'A4(+)',           " &
 			"     step  : " & real'image(3.32*vt_step) & "," &
-			"     color : 0xff_ff_ff_00}]}");   -- vt(8)
-		constant vt          : string := hdo(layout)**".vt";
+			"     color : 0xff_00_ff_ff}]}");   -- vt(8)
+		constant vt : string := hdo(layout)**".vt";
 begin
 
 	clkin_ibufg : ibufg
@@ -412,6 +412,8 @@ begin
 	end generate;
 
 	inputs_b : block
+		constant mux_sampling : natural := 10;
+
 		signal rgtr_id   : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv   : std_logic;
 		signal rgtr_data : std_logic_vector(0 to 4*32-1);
@@ -448,19 +450,27 @@ begin
 			hz_slider => hz_slider);
 
 		process (hz_scale)
+			variable no_inputs : natural range 0 to mux_sampling-1;
 		begin
 			case hz_scale is
 			when x"0" =>
-				opacity <= b"1_0000_0000";
+				no_inputs := hdl4fpga.base.min(inputs-1, 1-1);
 			when x"1" =>
-				opacity <= b"1_1000_0000";
+				no_inputs := hdl4fpga.base.min(inputs-1, 2-1);
 			when x"2" =>
-				opacity <= b"1_1110_0000";
+				no_inputs := hdl4fpga.base.min(inputs-1, 4-1);
 			when x"3" =>
-				opacity <= b"1_1111_0000";
+				no_inputs := hdl4fpga.base.min(inputs-1, 5-1);
 			when others =>
-				opacity <= b"1_1111_1111";
+				no_inputs := 10-1;
 			end case;
+			for i in opacity'range loop
+				if i <= no_inputs then
+					opacity(i) <= '1';
+				else
+					opacity(i) <= '0';
+				end if;
+			end loop;
 		end process;
 
 		process (opacity, sio_clk)

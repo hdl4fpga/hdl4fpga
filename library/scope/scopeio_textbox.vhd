@@ -363,7 +363,7 @@ begin
 				sht      => shr,
 				dec      => pnt,
 				left     => '0',
-				width    => x"8",
+				width    => x"7",
 				exp      => b"101",
 				neg      => offset(offset'left),
 				bin      => bin,
