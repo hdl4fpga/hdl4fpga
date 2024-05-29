@@ -30,6 +30,7 @@ architecture scopeio of nuhs3adsp is
 
 	constant inputs : natural := 2;
 	constant vt_step   : string := "6.103515625e-10"; --1.0/2.0**14; -- real'image() does not work on Xilinx ISE
+	-- constant vt_step   : string := "2.0e-10"; --1.0/2.0**14; -- real'image() does not work on Xilinx ISE
 	alias  input_sample is adc_da;
 	signal samples_doa : std_logic_vector(input_sample'length-1 downto 0);
 	signal samples_dib : std_logic_vector(input_sample'length-1 downto 0);
@@ -152,7 +153,7 @@ architecture scopeio of nuhs3adsp is
 			"       background-color : 0xff_00_00_00}," &
 			"   main : {                   " &
 			"       top        :  5,       " & 
-			"       left       :  1,       " & 
+			"       left       :  2,       " & 
 			"       right      :  0,       " & 
 			"       bottom     :  0,       " & 
 			"       vertical   :  1,       " & 
