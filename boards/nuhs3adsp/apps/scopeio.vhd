@@ -29,8 +29,7 @@ architecture scopeio of nuhs3adsp is
 	signal vga_blank  : std_logic;
 
 	constant inputs : natural := 2;
-	constant vt_step   : string := "6.103515625e-10"; --1.0/2.0**14; -- real'image() does not work on Xilinx ISE
-	-- constant vt_step   : string := "2.0e-10"; --1.0/2.0**14; -- real'image() does not work on Xilinx ISE
+	constant vt_step   : string := "1.220703125e-4"; --2.0V/2.0**14; -- real'image() does not work on Xilinx ISE
 	alias  input_sample is adc_da;
 	signal samples_doa : std_logic_vector(input_sample'length-1 downto 0);
 	signal samples_dib : std_logic_vector(input_sample'length-1 downto 0);
@@ -134,7 +133,7 @@ architecture scopeio of nuhs3adsp is
 							natural'image(2**17/(2**(2+3)*5**(0+3))) & "," & -- [14]
 							natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
 			"               length : 16],  " &
-			"           unit   : 2.0e-3, " &
+			"           unit   : 5.0e-3, " &
 			"           width  : " & natural'image(6*8) & ','  &
 			"           rotate : ccw0,     " &
 			"           inside : false,    " &
@@ -257,11 +256,12 @@ begin
 		clkfx    => mii_refclk);
 
 	process (input_clk)
-		variable ff : std_logic_vector(samples'range);
+		variable adc_dab : std_logic_vector(samples'range);
 	begin
 		if rising_edge(input_clk) then
-			samples <= ff;
-			ff     := (input_sample xor (1 => '1', 2 to input_sample'length => '0')) & (adc_db xor (1 => '1', 2 to adc_db'length => '0'));
+			samples <= adc_dab xor ((1 => '1', 2 to input_sample'length => '0') & ((1 => '1', 2 to adc_db'length => '0')));
+			-- samples <= std_logic_vector(to_signed(2**13-1, input_sample'length) & to_signed(2**13, input_sample'length));
+			adc_dab := adc_da & adc_db;
 		end if;
 	end process;
 

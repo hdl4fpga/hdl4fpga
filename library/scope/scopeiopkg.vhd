@@ -288,7 +288,7 @@ package body scopeiopkg is
 			"{ sgfc:" & integer'image(rnd) & "," & 
 			"  shr:"  & integer'image(shr) & "," & 
 			"  pnt:"  & integer'image(pnt) & "," & 
-			"  pfx:"  & '\' & prefixes(prefix/3+pfxdec+1) & "}");
+			"  pfx:"  & '\' & prefixes(prefix/3+pfxdec) & "}");
 	end;
 
 	function get_significand1245 (
