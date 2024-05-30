@@ -65,16 +65,10 @@ architecture scopeio of nuhs3adsp is
 	end record;
 
 	type display_modes is (
-		mode480p,
-		mode600p, 
-		mode600px16,
 		mode1080p);
 
 	type displayparam_vector is array (display_modes) of display_param;
 	constant display_tab : displayparam_vector := (
-		mode480p    => (timing_id => pclk25_00m640x480at60,    dcm_mul => 5, dcm_div => 4),
-		mode600p    => (timing_id => pclk40_00m800x600at60,    dcm_mul => 2, dcm_div => 1),
-		mode600px16 => (timing_id => pclk40_00m800x600at60,    dcm_mul => 2, dcm_div => 1),
 		mode1080p   => (timing_id => pclk150_00m1920x1080at60, dcm_mul => 15, dcm_div => 2));
 
 	constant video_mode : display_modes := mode1080p;
@@ -139,7 +133,7 @@ architecture scopeio of nuhs3adsp is
 							natural'image(2**17/(2**(2+3)*5**(0+3))) & "," & -- [14]
 							natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
 			"               length : 16],  " &
-			"           unit   : 250.0e-9, " &
+			"           unit   : 250.0e-3, " &
 			"           width  : " & natural'image(6*8) & ','  &
 			"           rotate : ccw0,     " &
 			"           inside : false,    " &

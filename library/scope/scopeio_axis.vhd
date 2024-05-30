@@ -96,7 +96,6 @@ begin
 		signal tick_rdy   : std_logic;
 		signal btof_req   : std_logic;
 		signal btof_rdy   : std_logic;
-		signal bin        : std_logic_vector(0 to 22-1);
 		signal code_frm   : std_logic;
 		signal code       : std_logic_vector(0 to bcd_length-1);
 
@@ -119,8 +118,6 @@ begin
 		signal vt_taddr   : unsigned(unsigned_num_bits((vt_height-1))+vttick_bits-1 downto division_bits);
 
 		signal left       : std_logic;
-		signal dec        : std_logic_vector(0 to 2-1);
-		signal sht        : std_logic_vector(0 to 2-1);
 
 		constant vt_signfcnds : natural_vector := get_significand1245(vt_unit);
 		constant vtsignfcnd_length : natural   := unsigned_num_bits(max(vt_signfcnds));
@@ -136,23 +133,29 @@ begin
 		signal pnt        : std_logic_vector(4-1 downto 0);
 		signal wth        : std_logic_vector(4-1 downto 0);
 
+	constant bin_digits      : natural := 3;
+	constant signfcnd_length : natural := max(vtsignfcnd_length, hzsignfcnd_length);
+	constant offset_length   : natural := max(vt_offset'length, hz_offset'length);
+	signal bin               : signed(0 to bin_digits*((offset_length+signfcnd_length+bin_digits-1)/bin_digits));
 	begin
 
 		process (code_frm, clk)
 			variable signfcnd : unsigned(max(vtsignfcnd_length, hzsignfcnd_length)-1 downto 0);
 			variable start    : signed(0 to signfcnd'length);
-			variable tick     : integer range -2**bin'length to 2**bin'length-1;
+			variable tick     : signed(0 to bin'length-1); -- to 2**bin'length-1;
 			variable tick_no  : integer range -1 to max(2**vt_taddr'length/2**vttick_bits-1, 2**hz_taddr'length/2**hzstep_bits-1);
 			variable addr     : natural range  0 to 2**max(vt_taddr'length,hz_taddr'length)-1;
+			variable xxx : boolean := true;
+			constant yyy : signed(vt_offset'range) := (others => '1');
 		begin
 			if rising_edge(clk) then
 				if (to_bit(tick_req) xor to_bit(tick_rdy))='1' then
 					if (to_bit(btof_req) xor to_bit(btof_rdy))='0' then
 						if tick_no >= 0 then
 							if tick < 0 then
-								bin <= '1' & std_logic_vector(to_unsigned(-tick, bin'length-1));
+								bin <= '1' & (-tick(1 to bin'length-1));
 							else
-								bin <= '0' & std_logic_vector(to_unsigned(tick, bin'length-1));
+								bin <= '0' &  tick(1 to bin'length-1);
 							end if;
 							tick     := tick    + to_integer(start);
 							tick_no  := tick_no - 1;
@@ -164,33 +167,30 @@ begin
 					if code_frm='1' then
 						addr := addr + 1;
 					end if;
+					xxx := false;
 				elsif vt_dv='1' then
 					hz_sel   <= '0';
 					vt_sel   <= '1';
 					addr     := 0;
 					signfcnd := to_unsigned(vt_signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), signfcnd'length);
-					tick     := 0;
-					tick     := -to_integer(mul(shift_right(signed(vt_offset), division_bits)-(vt_height/2/division_size-1), signfcnd));
+					tick     := -resize(mul(shift_right(signed(vt_offset), division_bits)-(vt_height/2/division_size-1), signfcnd), tick'length);
 					tick_no  := 2**vt_taddr'length/2**vttick_bits-1;
 					tick_req <= not to_stdulogic(to_bit(tick_rdy));
 					left     <= '0';
-					dec      <= "01";
-					sht      <= "11";
 					start    := -signed(resize(signfcnd, start'length));
 					shr      <= std_logic_vector(to_signed(vt_shrs(to_integer(unsigned(vt_scale))), shr'length));
 					pnt      <= std_logic_vector(to_signed(vt_pnts(to_integer(unsigned(vt_scale))), pnt'length));
 					wth      <= std_logic_vector(to_unsigned(vt_width/font_size, wth'length));
+					-- tick     := 0;
 				elsif hz_dv='1' then
 					hz_sel   <= '1';
 					vt_sel   <= '0';
 					addr     := 0;
 					signfcnd := to_unsigned(hz_signfcnds(to_integer(unsigned(hz_scale(2-1 downto 0)))), signfcnd'length);
-					tick     := to_integer(mul(shift_right(signed(hz_offset), hztick_bits+font_bits), signfcnd));
+					tick     := resize(mul(shift_right(signed(hz_offset), hztick_bits+font_bits), signfcnd), tick'length);
 					tick_no  := 2**hz_taddr'length/2**hzstep_bits-1;
 					tick_req <= not to_stdulogic(to_bit(tick_rdy));
 					left     <= '1';
-					dec      <= "00";
-					sht      <= "00";
 					start    := signed(resize(signfcnd, start'length));
 					shr      <= std_logic_vector(to_signed(hz_shrs(to_integer(unsigned(hz_scale))), shr'length));
 					pnt      <= std_logic_vector(to_signed(hz_pnts(to_integer(unsigned(hz_scale))), pnt'length));
@@ -199,11 +199,8 @@ begin
 					hz_sel   <= '0';
 					vt_sel   <= '0';
 					addr     := 0;
-					tick     := 0;
 					tick_no  := -1;
 					left     <= '-';
-					dec      <= (others => '-');
-					sht      <= (others => '-');
 					shr      <= (others => '-');
 					pnt      <= (others => '-');
 				end if;
@@ -225,7 +222,7 @@ begin
 			dec      => pnt,
 			exp      => b"000",
 			neg      => bin(bin'left),
-			bin      => bin(bin'left+1 to bin'right),
+			bin      => std_logic_vector(bin(bin'left+1 to bin'right)),
 			code_frm => code_frm,
 			code     => code);
 
