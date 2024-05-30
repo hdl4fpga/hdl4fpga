@@ -181,7 +181,6 @@ begin
 					shr      <= std_logic_vector(to_signed(vt_shrs(to_integer(unsigned(vt_scale))), shr'length));
 					pnt      <= std_logic_vector(to_signed(vt_pnts(to_integer(unsigned(vt_scale))), pnt'length));
 					wth      <= std_logic_vector(to_unsigned(vt_width/font_size, wth'length));
-					-- tick     := 0;
 				elsif hz_dv='1' then
 					hz_sel   <= '1';
 					vt_sel   <= '0';

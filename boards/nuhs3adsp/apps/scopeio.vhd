@@ -36,8 +36,9 @@ architecture scopeio of nuhs3adsp is
 	signal samples_dib : std_logic_vector(input_sample'length-1 downto 0);
 	signal samples     : std_logic_vector(inputs*input_sample'length-1 downto 0);
 	signal adc_clk     : std_logic;
+	signal adcclk_n    : std_logic;
 
-	signal input_clk : std_logic;
+	signal input_clk   : std_logic;
 
 	constant baudrate : natural := 115200;
 
@@ -133,7 +134,6 @@ architecture scopeio of nuhs3adsp is
 							natural'image(2**17/(2**(2+3)*5**(0+3))) & "," & -- [14]
 							natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
 			"               length : 16],  " &
---			"           unit   : 250.0e-3, " &
 			"           unit   : 2.0e-3, " &
 			"           width  : " & natural'image(6*8) & ','  &
 			"           rotate : ccw0,     " &
@@ -201,7 +201,8 @@ begin
 		clkin    => sys_clk,
 		clkfb    => '0',
 		clkfx    => adc_clk);
-	input_clk <= not adc_clk;
+	adcclk_n  <= not adc_clk;
+	input_clk <= not adc_clkout;
 
 	videodfs_i : dcm_sp
 	generic map(
@@ -462,11 +463,10 @@ begin
 	end process;
 	psave <= '1';
 
-	sysclk_n <= not sys_clk;
 	adcclkab_e : oddr2
 	port map (
-		c0  => sys_clk,
-		c1  =>sysclk_n,
+		c0 => adc_clk,
+		c1 => adcclk_n,
 		ce => '1',
 		d0 => '1',
 		d1 => '0',
