@@ -24,17 +24,17 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.math_real.all;
-
-library unisim;
-use unisim.vcomponents.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
+use hdl4fpga.profiles.all;
 use hdl4fpga.app_profiles.all;
+
+library unisim;
+use unisim.vcomponents.all;
 
 architecture beh of s3estarter is
 
@@ -63,20 +63,8 @@ architecture beh of s3estarter is
 	signal dac_sdi   : std_logic;
 	signal input_ena : std_logic;
 	signal vga_rgb   : std_logic_vector(3-1 downto 0);
-	signal ipcfg_req : std_logic;
 
-	signal uart_rxc  : std_logic;
-	signal uart_sin  : std_logic;
-	signal uart_ena  : std_logic;
-	signal uart_rxdv : std_logic;
-	signal uart_rxd  : std_logic_vector(8-1 downto 0);
-
-	signal toudpdaisy_clk  : std_logic;
-	signal toudpdaisy_frm  : std_logic;
-	signal toudpdaisy_irdy : std_logic;
-	signal toudpdaisy_data : std_logic_vector(e_rxd'range);
-
-	signal sio_clk    : std_logic;
+	alias  sio_clk   is e_tx_clk;
 	signal si_frm    : std_logic;
 	signal si_irdy   : std_logic;
 	signal si_data   : std_logic_vector(e_rxd'range);
@@ -100,17 +88,17 @@ architecture beh of s3estarter is
 
 	type video_params is record
 		id     : video_modes;
-		dcm    : dcm_params;
+		cmn    : dcm_params;
 		timing : videotiming_ids;
 	end record;
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,      timing => pclk_debug,               dcm => (dcm_mul =>  4, dcm_div => 2)),
-		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    dcm => (dcm_mul =>  2, dcm_div => 4)),
-		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    dcm => (dcm_mul =>  4, dcm_div => 5)),
-		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   dcm => (dcm_mul =>  3, dcm_div => 2)),
-		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, dcm => (dcm_mul =>  3, dcm_div => 1)));
+		(id => modedebug,      timing => pclk_debug,               cmn => (dcm_mul =>  4, dcm_div => 2)),
+		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    cmn => (dcm_mul =>  2, dcm_div => 4)),
+		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    cmn => (dcm_mul =>  4, dcm_div => 5)),
+		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   cmn => (dcm_mul =>  3, dcm_div => 2)),
+		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, cmn => (dcm_mul =>  3, dcm_div => 1)));
 
 	function videoparam (
 		constant id  : video_modes)
@@ -249,8 +237,8 @@ begin
 		generic map(
 			clk_feedback   => "1x",
 			clkdv_divide   => 2.0,
-			clkfx_divide   => videoparam(video_mode).dcm.dcm_div,
-			clkfx_multiply => videoparam(video_mode).dcm.dcm_mul,
+			clkfx_divide   => videoparam(video_mode).cmn.dcm_div,
+			clkfx_multiply => videoparam(video_mode).cmn.dcm_mul,
 			clkin_divide_by_2 => false,
 			clkin_period   => sys_per*1.0e9,
 			clkout_phase_shift => "none",
