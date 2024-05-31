@@ -45,14 +45,7 @@ architecture s3estarter_graphics of testbench is
 			--------------
 			-- switches --
 
-			led0 : out std_logic := '0';
-			led1 : out std_logic := '0';
-			led2 : out std_logic := '0';
-			led3 : out std_logic := '0';
-			led4 : out std_logic := '0';
-			led5 : out std_logic := '0';
-			led6 : out std_logic := '0';
-			led7 : out std_logic := '0';
+			led : out std_logic_vector(8-1 downto 0) := (others => '0');
 
 			------------------------------
 			-- MII ethernet Transceiver --
