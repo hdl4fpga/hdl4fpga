@@ -306,6 +306,8 @@ HDL4FPGA__dhcpc_offer__def = $(LIB_HDL4FPGA)/dhcpc_offer/def.dat
 HDL4FPGA__dhcpc_offer = $(LIB_HDL4FPGA)/dhcpc_offer/_primary.dat
 HDL4FPGA__dhcpc_dscb__def = $(LIB_HDL4FPGA)/dhcpc_dscb/def.dat
 HDL4FPGA__dhcpc_dscb = $(LIB_HDL4FPGA)/dhcpc_dscb/_primary.dat
+HDL4FPGA__dfs2dfs__behavioral = $(LIB_HDL4FPGA)/dfs2dfs/behavioral.dat
+HDL4FPGA__dfs2dfs = $(LIB_HDL4FPGA)/dfs2dfs/_primary.dat
 HDL4FPGA__desser__mux = $(LIB_HDL4FPGA)/desser/mux.dat
 HDL4FPGA__desser = $(LIB_HDL4FPGA)/desser/_primary.dat
 HDL4FPGA__dbdbblsrl_ser__beh = $(LIB_HDL4FPGA)/dbdbblsrl_ser/beh.dat
@@ -666,6 +668,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__dhcpc_offer) \
     $(HDL4FPGA__dhcpc_dscb__def) \
     $(HDL4FPGA__dhcpc_dscb) \
+    $(HDL4FPGA__dfs2dfs__behavioral) \
+    $(HDL4FPGA__dfs2dfs) \
     $(HDL4FPGA__desser__mux) \
     $(HDL4FPGA__desser) \
     $(HDL4FPGA__dbdbblsrl_ser__beh) \
@@ -859,7 +863,6 @@ $(HDL4FPGA__barrel__beh) : ../basic/barrel.vhd \
 
 $(HDL4FPGA__base) \
 $(HDL4FPGA__base__body) : ../basic/base.vhd \
-		$(HDL4FPGA__jso) \
 		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -1014,6 +1017,14 @@ $(HDL4FPGA__desser__mux) : ../basic/desser.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/desser.vhd
+
+$(HDL4FPGA__dfs2dfs) \
+$(HDL4FPGA__dfs2dfs__behavioral) : ../xilinx/dfs2dfs.vhd \
+		$(UNISIM__vcomponents) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/dfs2dfs.vhd
 
 $(HDL4FPGA__dhcpc_dscb) \
 $(HDL4FPGA__dhcpc_dscb__def) : ../mii/dhcp_dscb.vhd \

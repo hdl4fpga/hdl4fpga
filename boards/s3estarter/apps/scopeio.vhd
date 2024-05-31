@@ -30,10 +30,16 @@ library unisim;
 use unisim.vcomponents.all;
 
 library hdl4fpga;
-use hdl4fpga.std.all;
-use hdl4fpga.scopeiopkg.all;
+use hdl4fpga.base.all;
+use hdl4fpga.hdo.all;
+use hdl4fpga.videopkg.all;
+use hdl4fpga.ipoepkg.all;
+use hdl4fpga.app_profiles.all;
 
 architecture beh of s3estarter is
+
+	constant baudrate : natural := 115200;
+	constant io_link  : io_comms := io_ipoe;
 
 	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
@@ -41,7 +47,6 @@ architecture beh of s3estarter is
 	constant sample_size : natural := 14;
 
 	constant inputs  : natural := 2;
-	constant baudrate : natural := 115200;
 
 	signal sample    : std_logic_vector(inputs*sample_size-1 downto 0);
 	signal spi_clk   : std_logic;
@@ -71,7 +76,7 @@ architecture beh of s3estarter is
 	signal toudpdaisy_irdy : std_logic;
 	signal toudpdaisy_data : std_logic_vector(e_rxd'range);
 
-	signal si_clk    : std_logic;
+	signal sio_clk    : std_logic;
 	signal si_frm    : std_logic;
 	signal si_irdy   : std_logic;
 	signal si_data   : std_logic_vector(e_rxd'range);
@@ -82,33 +87,52 @@ architecture beh of s3estarter is
 	signal hz_scale  : std_logic_vector(4-1 downto 0);
 	signal hz_dv     : std_logic;
 
-	signal so_clk    : std_logic;
 	signal so_frm    : std_logic;
-	signal so_trdy   : std_logic;
 	signal so_irdy   : std_logic;
-	signal so_data   : std_logic_vector(8-1 downto 0);
+	signal so_trdy   : std_logic;
+	signal so_end    : std_logic;
+	signal so_data   : std_logic_vector(e_txd'range);
 
-	type display_param is record
-		layout : natural;
-		dcm_mul    : natural;
-		dcm_div    : natural;
+	type dcm_params is record
+		dcm_mul : natural;
+		dcm_div : natural;
 	end record;
 
-	type layout_mode is (
-		mode600p, 
-		mode1080p,
-		mode600px16,
-		mode480p);
+	type video_params is record
+		id     : video_modes;
+		dcm    : dcm_params;
+		timing : videotiming_ids;
+	end record;
 
-	type displayparam_vector is array (layout_mode) of display_param;
-	constant video_params : displayparam_vector := (
-		mode600p    => (layout => 1, dcm_mul => 4, dcm_div => 5),
-		mode1080p   => (layout => 0, dcm_mul => 3, dcm_div => 1),
-		mode480p    => (layout => 8, dcm_mul => 3, dcm_div => 5),
-		mode600px16 => (layout => 6, dcm_mul => 2, dcm_div => 4));
+	type videoparams_vector is array (natural range <>) of video_params;
+	constant video_tab : videoparams_vector := (
+		(id => modedebug,      timing => pclk_debug,               dcm => (dcm_mul =>  4, dcm_div => 2)),
+		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    dcm => (dcm_mul =>  2, dcm_div => 4)),
+		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    dcm => (dcm_mul =>  4, dcm_div => 5)),
+		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   dcm => (dcm_mul =>  3, dcm_div => 2)),
+		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, dcm => (dcm_mul =>  3, dcm_div => 1)));
 
-	constant video_mode : layout_mode := mode1080p;
+	function videoparam (
+		constant id  : video_modes)
+		return video_params is
+		constant tab : videoparams_vector := video_tab;
+	begin
+		for i in tab'range loop
+			if id=tab(i).id then
+				return tab(i);
+			end if;
+		end loop;
 
+		assert false 
+		report ">>>videoparam<<< : video id not available"
+		severity failure;
+
+		return tab(tab'left);
+	end;
+
+	constant video_mode : video_modes := mode1080p24bpp;
+
+	constant vt_step : string := "0.000152587890625";  -- 2.5V/ 2.0**14 real'image() does not work on Xilinx ISE
 	constant layout : string := compact(
 			"{                             " &   
 			"   inputs          : " & natural'image(inputs) & ',' &
@@ -128,24 +152,24 @@ architecture beh of s3estarter is
 			"       fontsize   : 8,        " &
 			"       horizontal : {         " &
 			"           scales : [         " &
-							natural'image(2**(0+0)*5**(0+0)) & "," & -- [0]
-							natural'image(2**(0+0)*5**(0+0)) & "," & -- [1]
-							natural'image(2**(0+0)*5**(0+0)) & "," & -- [2]
-							natural'image(2**(0+0)*5**(0+0)) & "," & -- [3]
-							natural'image(2**(0+0)*5**(0+0)) & "," & -- [4]
-							natural'image(2**(1+0)*5**(0+0)) & "," & -- [5]
-							natural'image(2**(2+0)*5**(0+0)) & "," & -- [6]
-							natural'image(2**(0+0)*5**(1+0)) & "," & -- [7]
-							natural'image(2**(0+1)*5**(0+1)) & "," & -- [8]
-							natural'image(2**(1+1)*5**(0+1)) & "," & -- [9]
-							natural'image(2**(2+1)*5**(0+1)) & "," & -- [10]
-							natural'image(2**(0+1)*5**(1+1)) & "," & -- [11]
-							natural'image(2**(0+2)*5**(0+2)) & "," & -- [12]
-							natural'image(2**(1+2)*5**(0+2)) & "," & -- [13]
-							natural'image(2**(2+2)*5**(0+2)) & "," & -- [14]
-							natural'image(2**(0+2)*5**(1+2)) & "," & -- [15]
+							natural'image(     2**(0+0)*5**(0+0)) & "," & -- [0]
+							natural'image(     2**(0+0)*5**(0+0)) & "," & -- [1]
+							natural'image(2**((-1)+2+0)*5**(0+0)) & "," & -- [2]
+							natural'image(2**((-1)+1+0)*5**(0+1)) & "," & -- [3]
+							natural'image(2**((-1)+0+1)*5**(1+0)) & "," & -- [4]
+							natural'image(2**((-1)+1+1)*5**(1+0)) & "," & -- [5]
+							natural'image(2**((-1)+2+1)*5**(0+1)) & "," & -- [6]
+							natural'image(2**((-1)+0+1)*5**(1+1)) & "," & -- [7]
+							natural'image(2**((-1)+0+2)*5**(2+0)) & "," & -- [8]
+							natural'image(2**((-1)+1+2)*5**(2+0)) & "," & -- [9]
+							natural'image(2**((-1)+2+2)*5**(0+2)) & "," & -- [10]
+							natural'image(2**((-1)+0+2)*5**(1+2)) & "," & -- [11]
+							natural'image(2**((-1)+0+3)*5**(3+0)) & "," & -- [12]
+							natural'image(2**((-1)+1+3)*5**(3+0)) & "," & -- [13]
+							natural'image(2**((-1)+2+3)*5**(0+3)) & "," & -- [14]
+							natural'image(2**((-1)+0+3)*5**(1+3)) & "," & -- [15]
 			"               length : 16],  " &
-			"           unit   : 250.0e-9, " &
+			"           unit   : 25.0e-6, " &
 			"           height : 8,        " &
 			"           inside : false,    " &
 			"           color  : 0xff_00_00_00," &
@@ -169,7 +193,7 @@ architecture beh of s3estarter is
 							natural'image(2**17/(2**(2+3)*5**(0+3))) & "," & -- [14]
 							natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
 			"               length : 16],  " &
-			"           unit   : 250.0e-9, " &
+			"           unit   : 5.0e-3, " &
 			"           width  : " & natural'image(6*8) & ','  &
 			"           rotate : ccw0,     " &
 			"           inside : false,    " &
@@ -198,31 +222,63 @@ architecture beh of s3estarter is
 			"       horizontal : 1,        " &
 			"       background-color : 0xff_ff_ff_ff}," &
 			"  vt : [                      " &
-			"   { text  : J3,        " &
+			"   { text  : VINA,        " &
 			"     step  : " & vt_step & ","  &
 			"     color : 0xff_00_ff_ff},  " &
-			"   { text  : J4,        " &
+			"   { text  : VINB,        " &
 			"     step  : " & vt_step & ","  &
 			"     color : 0xff_ff_ff_ff}]}");
 begin
 
 	clkin_ibufg : ibufg
 	port map (
-		I => xtal,
+		I => clk_50mhz,
 		O => sys_clk);
 
-	videodcm_e : entity hdl4fpga.dfs
-	generic map (
-		dfs_frequency_mode => "low",
-		dcm_per => 20.0,
-		dfs_mul => video_params(video_mode).dcm_mul,
-		dfs_div => video_params(video_mode).dcm_div)
-	port map(
-		dcm_rst => '0',
-		dcm_clk => sys_clk,
-		dfs_clk => vga_clk);
+	videodcm_b : if not debug generate
+		signal dcm_clkfb : std_logic;
+		signal dcm_clk0  : std_logic;
+	begin
+	
+		bug_i : bufg
+		port map (
+			I => dcm_clk0,
+			O => dcm_clkfb);
+	
+		dcm_i : dcm
+		generic map(
+			clk_feedback   => "1x",
+			clkdv_divide   => 2.0,
+			clkfx_divide   => videoparam(video_mode).dcm.dcm_div,
+			clkfx_multiply => videoparam(video_mode).dcm.dcm_mul,
+			clkin_divide_by_2 => false,
+			clkin_period   => sys_per*1.0e9,
+			clkout_phase_shift => "none",
+			deskew_adjust  => "system_synchronous",
+			dfs_frequency_mode => "LOW",
+			duty_cycle_correction => true,
+			factory_jf   => x"c080",
+			phase_shift  => 0,
+			startup_wait => false)
+		port map (
+			rst      => '0',
+			dssen    => '0',
+			psclk    => '0',
+			psen     => '0',
+			psincdec => '0',
+			clkfb    => dcm_clkfb,
+			clkin    => sys_clk,
+			clkfx    => vga_clk,
+			clkfx180 => open,
+			clk0     => dcm_clk0,
+			locked   => open,
+			psdone   => open,
+			status   => open);
+
+	end generate;
 
 	spi_b: block
+		signal spiclk_n : std_logic;
 	begin
 
 		spidcm_e : entity hdl4fpga.dfs2dfs
@@ -237,6 +293,7 @@ begin
 			dcm_clk  => sys_clk,
 			dfs_clk  => spi_clk,
 			dcm_lck  => spi_rst);
+		spiclk_n <= not sys_clk;
 --		spi_clk <= sys_clk;
 --		spi_rst <= not dfs_rst;
 
@@ -245,12 +302,14 @@ begin
 		spiclk_fd <= '0' when spi_rst='0' else sckamp_fd when amp_spi='1' else '1' ;
 		spi_mosi  <= amp_sdi when amp_spi='1' else dac_sdi;
 
-		spi_sck_e : entity hdl4fpga.ddro
+		adcclkab_e : oddr2
 		port map (
-			clk => spi_clk,
-			dr  => spiclk_rd,
-			df  => spiclk_fd,
-			q   => spi_sck);
+			c0 => spi_clk,
+			c1 => spiclk_n,
+			ce => '1',
+			d0 => spiclk_rd,
+			d1 => spiclk_fd,
+			q  => spi_sck);
 
 		ampclkr_p : process (spi_rst, spi_clk)
 			variable cntr : unsigned(0 to 4-1);
@@ -364,59 +423,16 @@ begin
 		end process;
 	end block;
 
-	scopeio_e : entity hdl4fpga.scopeio
-	generic map (
-		inputs           => inputs,
---		input_names      => (
---			hdl4fpga.textboxpkg.text(id => "vt(0).text", content => "channel 1"),
---			hdl4fpga.textboxpkg.text(id => "vt(1).text", content => "channel 2")),
-		hz_unit          => 25.0*micro,
-		vt_steps         => (0 to inputs-1 => 2.5e3*milli / 2.0**14),
-		vt_unit          => 5.0*milli,
-		vlayout_id       => video_params(video_mode).layout,
-		hz_factors       => (
-			 0 => 2**(0+0)*5**(0+0),       1 => 2**(0+0)*5**(0+0),       2 => 2**((-1)+2+0)*5**(0+0),  3 => 2**((-1)+0+0)*5**(0+1),
-			 4 => 2**((-1)+0+1)*5**(1+0),  5 => 2**((-1)+1+1)*5**(1+0),  6 => 2**((-1)+2+1)*5**(0+1),  7 => 2**((-1)+0+1)*5**(1+1),
-			 8 => 2**((-1)+0+2)*5**(2+0),  9 => 2**((-1)+1+2)*5**(2+0), 10 => 2**((-1)+2+2)*5**(0+2), 11 => 2**((-1)+0+2)*5**(1+2),
-			12 => 2**((-1)+0+3)*5**(3+0), 13 => 2**((-1)+1+3)*5**(3+0), 14 => 2**((-1)+2+3)*5**(0+3), 15 => 2**((-1)+0+3)*5**(1+3)),
-
-		default_tracesfg => b"1_110" & b"1_011",
-		default_gridfg   => b"1_100",
-		default_gridbg   => b"1_000",
-		default_hzfg     => b"1_111",
-		default_hzbg     => b"1_001",
-		default_vtfg     => b"1_111",
-		default_vtbg     => b"1_001",
-		default_textfg   => b"0_000",
-		default_textbg   => b"1_000",
-		default_sgmntbg  => b"1_011",
-		default_bg       => b"1_111")
-	port map (
-		si_clk      => si_clk,
-		si_frm      => si_frm,
-		si_irdy     => si_irdy,
-		si_data     => si_data,
-		so_irdy     => so_irdy,
-		so_data     => so_data,
-		input_clk   => spi_clk,
-		input_ena   => input_ena,
-		input_data  => sample,
-		video_clk   => vga_clk,
-		video_pixel => vga_rgb,
-		video_hsync => vga_hsync,
-		video_vsync => vga_vsync,
-		video_blank => open);
-
 	ipoe_b : if io_link=io_ipoe generate
-		alias  mii_clk    is mii_txc;
+		alias  mii_clk    is e_tx_clk;
 		signal txen       : std_logic;
-		signal txd        : std_logic_vector(mii_txd'range);
+		signal txd        : std_logic_vector(e_txd'range);
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
 
 		signal miirx_frm  : std_logic;
 		signal miirx_irdy : std_logic;
-		signal miirx_data : std_logic_vector(mii_rxd'range);
+		signal miirx_data : std_logic_vector(e_rxd'range);
 
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
@@ -433,13 +449,13 @@ begin
 			if rising_edge(mii_clk) then
 				case state is
 				when s_request =>
-					if sw1='0' then
+					if sw0='1' then
 						dhcpcd_req <= not dhcpcd_rdy;
 						state := s_wait;
 					end if;
 				when s_wait =>
 					if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-						if sw1='1' then
+						if sw0='0' then
 							state := s_request;
 						end if;
 					end if;
@@ -449,17 +465,17 @@ begin
 
 		sync_b : block
 
-			signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
-			signal txc_rxbus : std_logic_vector(0 to mii_rxd'length);
+			signal rxc_rxbus : std_logic_vector(0 to e_rxd'length);
+			signal txc_rxbus : std_logic_vector(0 to e_rxd'length);
 			signal dst_irdy  : std_logic;
 			signal dst_trdy  : std_logic;
 
 		begin
 
-			process (mii_rxc)
+			process (e_rx_clk)
 			begin
-				if rising_edge(mii_rxc) then
-					rxc_rxbus <= mii_rxdv & mii_rxd;
+				if rising_edge(e_rx_clk) then
+					rxc_rxbus <= e_rx_dv & e_rxd;
 				end if;
 			end process;
 
@@ -473,7 +489,7 @@ begin
 				check_dov  => true,
 				gray_code  => false)
 			port map (
-				src_clk  => mii_rxc,
+				src_clk  => e_rx_clk,
 				src_data => rxc_rxbus,
 				dst_clk  => mii_clk,
 				dst_irdy => dst_irdy,
@@ -486,7 +502,7 @@ begin
 					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
 					miirx_frm  <= txc_rxbus(0);
 					miirx_irdy <= txc_rxbus(0);
-					miirx_data <= txc_rxbus(1 to mii_rxd'length);
+					miirx_data <= txc_rxbus(1 to e_rxd'length);
 				end if;
 			end process;
 		end block;
@@ -540,8 +556,8 @@ begin
 		process (mii_clk)
 		begin
 			if rising_edge(mii_clk) then
-				mii_txen <= txen;
-				mii_txd  <= txd;
+				e_txen <= txen;
+				e_txd  <= txd;
 			end if;
 		end process;
 
@@ -549,7 +565,7 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		videotiming_id => display_tab(video_mode).timing_id,
+		videotiming_id => videoparam(video_mode).timing,
 		layout         => layout)
 	port map (
 		sio_clk     => sio_clk,
@@ -557,13 +573,13 @@ begin
 		si_irdy     => si_irdy,
 		si_data     => si_data,
 		so_data     => so_data,
-		input_clk   => input_clk,
-		input_data  => samples,
+		input_clk   => spi_clk,
+		input_data  => sample,
 		video_clk   => vga_clk,
 		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,
 		video_vsync => vga_vsync,
-		video_blank => vga_blank);
+		video_blank => open);
 
 	vga_red   <= vga_rgb(2);
 	vga_green <= vga_rgb(1);
