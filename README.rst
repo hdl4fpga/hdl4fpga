@@ -15,11 +15,11 @@ Goals
 Branches
 --------
 
-dev : https://github.com/hdl4fpga/hdl4fpga/tree/dev
+**dev** : https://github.com/hdl4fpga/hdl4fpga/tree/dev
 Development code: mostly broken. Merged to snapshot when working
 
-legacy : https://github.com/hdl4fpga/hdl4fpga/tree/legacy
-very mature code
+**snapshot** : https://github.com/hdl4fpga/hdl4fpga
+unstable working code from the development branch
 
-legacy : https://github.com/hdl4fpga/hdl4fpga/tree/legacy
+**legacy** : https://github.com/hdl4fpga/hdl4fpga/tree/legacy
 very mature code
