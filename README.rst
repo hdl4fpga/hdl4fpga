@@ -11,3 +11,8 @@ Goals
 
 - Portability
 - Small footprint
+
+Branches
+--------
+
+Legacy : https://github.com/hdl4fpga/hdl4fpga/tree/legacy
