@@ -38,14 +38,7 @@ entity s3estarter is
 		--------------
 		-- switches --
 
-		led0 : out std_logic := '0';
-		led1 : out std_logic := '0';
-		led2 : out std_logic := '0';
-		led3 : out std_logic := '0';
-		led4 : out std_logic := '0';
-		led5 : out std_logic := '0';
-		led6 : out std_logic := '0';
-		led7 : out std_logic := '0';
+		led : out std_logic_vector(8-1 downto 0) := (others => '0');
 
 		-----------------
 		-- Rotary shat --
@@ -138,6 +131,15 @@ entity s3estarter is
 	constant clk50hmz_per : real := 20.0e-9;
 	constant sys_per  : real := clk50hmz_per;
 
+	alias led0 is led(0);
+	alias led1 is led(1);
+	alias led2 is led(2);
+	alias led3 is led(3);
+	alias led4 is led(4);
+	alias led5 is led(5);
+	alias led6 is led(6);
+	alias led7 is led(7);
+
 	attribute loc        : string;
 	attribute iostandard : string;
 	attribute fast       : string;
@@ -168,41 +170,10 @@ entity s3estarter is
 	attribute drive      of clk_50mhz  : signal is "4";
 	attribute slew       of clk_50mhz  : signal is "fast";
 
-	attribute loc        of led0       : signal is "F12";
-	attribute loc        of led1       : signal is "E12";
-	attribute loc        of led2       : signal is "E11";
-	attribute loc        of led3       : signal is "F11";
-	attribute loc        of led4       : signal is "C11";
-	attribute loc        of led5       : signal is "D11";
-	attribute loc        of led6       : signal is "E9";
-	attribute loc        of led7       : signal is "F9";
-
-	attribute iostandard of led0       : signal is "LVCMOS25";
-	attribute iostandard of led1       : signal is "LVCMOS25";
-	attribute iostandard of led2       : signal is "LVCMOS25";
-	attribute iostandard of led3       : signal is "LVCMOS25";
-	attribute iostandard of led4       : signal is "LVCMOS25";
-	attribute iostandard of led5       : signal is "LVCMOS25";
-	attribute iostandard of led6       : signal is "LVCMOS25";
-	attribute iostandard of led7       : signal is "LVCMOS25";
-
-	attribute drive      of led0       : signal is "8";
-	attribute drive      of led1       : signal is "8";
-	attribute drive      of led2       : signal is "8";
-	attribute drive      of led3       : signal is "8";
-	attribute drive      of led4       : signal is "8";
-	attribute drive      of led5       : signal is "8";
-	attribute drive      of led6       : signal is "8";
-	attribute drive      of led7       : signal is "8";
-
-	attribute slew       of led0       : signal is "fast";
-	attribute slew       of led1       : signal is "fast";
-	attribute slew       of led2       : signal is "fast";
-	attribute slew       of led3       : signal is "fast";
-	attribute slew       of led4       : signal is "fast";
-	attribute slew       of led5       : signal is "fast";
-	attribute slew       of led6       : signal is "fast";
-	attribute slew       of led7       : signal is "fast";
+	attribute loc        of led : signal is "F9 E9 D11 C11 F11 E11 E12 F12";
+	attribute iostandard of led : signal is "LVCMOS25";
+	attribute drive      of led : signal is "8";
+	attribute slew       of led : signal is "fast";
 
 	attribute loc        of rot_a      : signal is "K18";
 	attribute loc        of rot_b      : signal is "G18";
