@@ -29,7 +29,7 @@ entity s3estarter is
 	generic (
 		debug     : boolean := false);
 	port (
-		xtal      : in std_logic := '0';
+		clk_50mhz : in std_logic := '0';
 		sw0       : in std_logic := '0';
 		btn_north : in std_logic := '0';
 		btn_east  : in std_logic := '0';
@@ -135,8 +135,8 @@ entity s3estarter is
 		rs232_dce_rxd : in  std_logic := 'Z';
 		rs232_dce_txd : out std_logic := 'Z');
 
-	constant xtal_per : real := 20.0e-9;
-	constant sys_per  : real := xtal_per;
+	constant clk50hmz_per : real := 20.0e-9;
+	constant sys_per  : real := clk50hmz_per;
 
 	attribute loc        : string;
 	attribute iostandard : string;
@@ -147,26 +147,26 @@ entity s3estarter is
 	attribute pulldown   : string;
 	attribute pullup     : string;
 
-	attribute loc of xtal              : signal is "C9";
+	attribute loc of clk_50mhz         : signal is "C9";
 	attribute loc of sw0               : signal is "L13";
 	attribute loc of btn_north         : signal is "V4";
 	attribute loc of btn_east          : signal is "H3";
 	attribute loc of btn_west          : signal is "D18";
 
-	attribute iostandard of xtal       : signal is "LVCMOS33";
+	attribute iostandard of clk_50mhz  : signal is "LVCMOS33";
 	attribute iostandard of sw0        : signal is "LVCMOS33";
 	attribute iostandard of btn_north  : signal is "LVCMOS33";
 	attribute iostandard of btn_east   : signal is "LVCMOS33";
 	attribute iostandard of btn_west   : signal is "LVCMOS33";
 
-	attribute pulldown   of xtal       : signal is "YES";
+	attribute pulldown   of clk_50mhz  : signal is "YES";
 	attribute pulldown   of sw0        : signal is "YES";
 	attribute pulldown   of btn_north  : signal is "YES";
 	attribute pulldown   of btn_east   : signal is "YES";
 	attribute pulldown   of btn_west   : signal is "YES";
 
-	attribute drive      of xtal       : signal is "4";
-	attribute slew       of xtal       : signal is "fast";
+	attribute drive      of clk_50mhz  : signal is "4";
+	attribute slew       of clk_50mhz  : signal is "fast";
 
 	attribute loc        of led0       : signal is "F12";
 	attribute loc        of led1       : signal is "E12";

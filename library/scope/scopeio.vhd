@@ -69,6 +69,7 @@ entity scopeio is
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 	constant grid_height   : natural := hdo(layout)**".grid.height";
 	constant grid_width    : natural := hdo(layout)**".grid.width";
+	constant grid_unit     : natural := hdo(layout)**".grid.unit";
 
 	function to_naturalvector (
 		constant object : string)
@@ -187,7 +188,7 @@ begin
 					 8 => 2**17/(2**(0+2)*5**(0+2)),  9 => 2**17/(2**(1+2)*5**(0+2)), 10 => 2**17/(2**(2+2)*5**(0+2)), 11 => 2**17/(2**(0+2)*5**(1+2)),
 					12 => 2**17/(2**(0+3)*5**(0+3)), 13 => 2**17/(2**(1+3)*5**(0+3)), 14 => 2**17/(2**(2+3)*5**(0+3)), 15 => 2**17/(2**(0+3)*5**(1+3)));
 
-				constant k      : real := (32.0*step)/unit;
+				constant k      : real := (real(grid_unit)*step)/unit;
 				variable retval : natural_vector(0 to setif(gains'length >0, gains'length, df_gains'length)-1);
 
 			begin
@@ -197,7 +198,7 @@ begin
 				end if;
 
 				assert k < 1.0
-					report "unit " & real'image(unit) & " : " & real'image(32.0*step) & " unit should be increase"
+					report "unit " & real'image(unit) & " : " & real'image(real(grid_unit)*step) & " unit should be increase"
 					severity FAILURE;
 
 				if k > 0.0 then

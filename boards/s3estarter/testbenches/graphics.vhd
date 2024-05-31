@@ -38,7 +38,7 @@ architecture s3estarter_graphics of testbench is
 		generic (
 			debug : boolean);
 		port (
-			xtal       : in std_logic := '0';
+			clk_50mhz  : in std_logic := '0';
 			sw0        : in std_logic := '1';
 			btn_west   : in std_logic := '1';
 
@@ -157,7 +157,7 @@ architecture s3estarter_graphics of testbench is
 	constant baudrate : natural := 1e6;
 
 	signal rst        : std_logic;
-	signal xtal       : std_logic := '0';
+	signal clk        : std_logic := '0';
 
 	signal dq         : std_logic_vector (data_bits - 1 downto 0) := (others => 'Z');
 	signal dqs        : std_logic_vector (1 downto 0) := "00";
@@ -180,8 +180,8 @@ architecture s3estarter_graphics of testbench is
 
 begin
 
-	xtal <= not xtal after 10 ns;
-	rst  <= '0', '1' after 300 ns;
+	clk <= not clk after 10 ns;
+	rst <= '0', '1' after 300 ns;
 
 	mii_refclk <= not mii_refclk after 20 ns;
 
@@ -202,7 +202,7 @@ begin
 		debug => true)
 	port map (
 		btn_west => rst,
-		xtal     => xtal,
+		clk_50mhz => clk,
 
 		spi_miso => '-',
 		amp_dout => '-',

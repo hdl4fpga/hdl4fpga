@@ -193,6 +193,7 @@ architecture nuhs3adsp_scopeio of testbench is
 	signal mii_txd    : std_logic_vector(0 to 4-1);
 	signal mii_txen   : std_logic;
 
+	signal adc_clk    : std_logic;
 	signal ddr_lp_dqs : std_logic;
 
 begin
@@ -226,6 +227,8 @@ begin
 
 		adc_da => (others => '0'),
 		adc_db => (others => '0'),
+		adc_clkab => adc_clk,
+		adc_clkout => adc_clk,
 
 
 		hd_t_clock => rst,

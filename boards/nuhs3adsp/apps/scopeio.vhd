@@ -29,14 +29,15 @@ architecture scopeio of nuhs3adsp is
 	signal vga_blank  : std_logic;
 
 	constant inputs : natural := 2;
-	constant vt_step   : string := "6.103515625e-10"; --1.0/2.0**14; -- real'image() does not work on Xilinx ISE
+	constant vt_step   : string := "1.220703125e-4"; --2.0V/2.0**14; -- real'image() does not work on Xilinx ISE
 	alias  input_sample is adc_da;
 	signal samples_doa : std_logic_vector(input_sample'length-1 downto 0);
 	signal samples_dib : std_logic_vector(input_sample'length-1 downto 0);
 	signal samples     : std_logic_vector(inputs*input_sample'length-1 downto 0);
 	signal adc_clk     : std_logic;
+	signal adcclk_n    : std_logic;
 
-	signal input_clk : std_logic;
+	signal input_clk   : std_logic;
 
 	constant baudrate : natural := 115200;
 
@@ -64,16 +65,10 @@ architecture scopeio of nuhs3adsp is
 	end record;
 
 	type display_modes is (
-		mode480p,
-		mode600p, 
-		mode600px16,
 		mode1080p);
 
 	type displayparam_vector is array (display_modes) of display_param;
 	constant display_tab : displayparam_vector := (
-		mode480p    => (timing_id => pclk25_00m640x480at60,    dcm_mul => 5, dcm_div => 4),
-		mode600p    => (timing_id => pclk40_00m800x600at60,    dcm_mul => 2, dcm_div => 1),
-		mode600px16 => (timing_id => pclk40_00m800x600at60,    dcm_mul => 2, dcm_div => 1),
 		mode1080p   => (timing_id => pclk150_00m1920x1080at60, dcm_mul => 15, dcm_div => 2));
 
 	constant video_mode : display_modes := mode1080p;
@@ -91,7 +86,7 @@ architecture scopeio of nuhs3adsp is
 			"       unit   : 32,           " &
 			"       width  : " & natural'image(50*32+1) & ',' &
 			"       height : " & natural'image( 8*32+1) & ',' &
-			"       color  : 0xff_ff_00_00, " &
+			"       color  : 0xff_ff_00_ff, " &
 			"       background-color : 0xff_00_00_00}," &
 			"   axis : {                   " &
 			"       fontsize   : 8,        " &
@@ -117,8 +112,8 @@ architecture scopeio of nuhs3adsp is
 			"           unit   : 250.0e-9, " &
 			"           height : 8,        " &
 			"           inside : false,    " &
-			"           color  : 0xff_ff_ff_ff," &
-			"           background-color : 0xff_00_00_ff}," &
+			"           color  : 0xff_00_00_00," &
+			"           background-color : 0xff_00_ff_ff}," &
 			"       vertical : {           " &
 			"           gains : [         " &
 							natural'image(2**17/(2**(0+0)*5**(0+0))) & "," & -- [0]
@@ -138,21 +133,21 @@ architecture scopeio of nuhs3adsp is
 							natural'image(2**17/(2**(2+3)*5**(0+3))) & "," & -- [14]
 							natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
 			"               length : 16],  " &
-			"           unit   : 250.0e-9, " &
+			"           unit   : 5.0e-3, " &
 			"           width  : " & natural'image(6*8) & ','  &
 			"           rotate : ccw0,     " &
 			"           inside : false,    " &
-			"           color  : 0xff_ff_ff_ff," &
-			"           background-color : 0xff_00_00_ff}}," &
+			"           color  : 0xff_00_00_00," &
+			"           background-color : 0xff_00_ff_ff}}," &
 			"   textbox : {                " &
 			"       font_width : 8,        " &
-			"       width      : " & natural'image(8*32) & ','&
+			"       width      : " & natural'image(33*8) & ','&
 			"       inside     : false,    " &
-			"       color      : 0xff_ff_ff_ff," &
+			"       color      : 0xff_ff_00_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   main : {                   " &
-			"       top        :  3,       " & 
-			"       left       :  5,       " & 
+			"       top        :  5,       " & 
+			"       left       :  2,       " & 
 			"       right      :  0,       " & 
 			"       bottom     :  0,       " & 
 			"       vertical   :  1,       " & 
@@ -163,16 +158,16 @@ architecture scopeio of nuhs3adsp is
 			"       left       : 1,        " &
 			"       right      : 1,        " &
 			"       bottom     : 1,        " &
-			"       vertical   : 1,        " &
+			"       vertical   : 0,        " &
 			"       horizontal : 1,        " &
 			"       background-color : 0xff_ff_ff_ff}," &
 			"  vt : [                      " &
 			"   { text  : J3,        " &
 			"     step  : " & vt_step & ","  &
-			"     color : 0xff_ff_ff_00},  " &
+			"     color : 0xff_00_ff_ff},  " &
 			"   { text  : J4,        " &
 			"     step  : " & vt_step & ","  &
-			"     color : 0xff_00_ff_ff}]}");
+			"     color : 0xff_ff_ff_ff}]}");
 begin
 
 	clkin_ibufg : ibufg
@@ -205,7 +200,8 @@ begin
 		clkin    => sys_clk,
 		clkfb    => '0',
 		clkfx    => adc_clk);
-	input_clk <= not adc_clk;
+	adcclk_n  <= not adc_clk;
+	input_clk <= not adc_clkout;
 
 	videodfs_i : dcm_sp
 	generic map(
@@ -260,11 +256,12 @@ begin
 		clkfx    => mii_refclk);
 
 	process (input_clk)
-		variable ff : std_logic_vector(samples'range);
+		variable adc_dab : std_logic_vector(samples'range);
 	begin
 		if rising_edge(input_clk) then
-			samples <= ff;
-			ff     := (input_sample xor (1 => '1', 2 to input_sample'length => '0')) & (adc_db xor (1 => '1', 2 to adc_db'length => '0'));
+			samples <= adc_dab xor ((1 => '1', 2 to input_sample'length => '0') & ((1 => '1', 2 to adc_db'length => '0')));
+			-- samples <= std_logic_vector(to_signed(2**13-1, input_sample'length) & to_signed(2**13, input_sample'length));
+			adc_dab := adc_da & adc_db;
 		end if;
 	end process;
 
@@ -466,11 +463,10 @@ begin
 	end process;
 	psave <= '1';
 
-	sysclk_n <= not sys_clk;
 	adcclkab_e : oddr2
 	port map (
-		c0  => sys_clk,
-		c1  =>sysclk_n,
+		c0 => adc_clk,
+		c1 => adcclk_n,
 		ce => '1',
 		d0 => '1',
 		d1 => '0',

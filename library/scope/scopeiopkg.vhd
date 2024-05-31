@@ -196,11 +196,13 @@ package scopeiopkg is
 	constant var_vtoffsetid   : natural := 8;
 
 	function significand (
-		constant unit : real)
+		constant unit  : real;
+		constant debug : boolean := false)
 		return string;
 
 	function get_significand1245 (
-		constant unit : real)
+		constant unit  : real;
+		constant debug : boolean := false)
 		return natural_vector;
 
 	function get_shr1245 (
@@ -219,7 +221,8 @@ end;
 package body scopeiopkg is
 
 	function significand (
-		constant unit : real)
+		constant unit  : real;
+		constant debug : boolean := false)
 		return string is
 		constant tenth   : real := 1.0/10.0;
 		constant prefixes: string := " munp";
@@ -289,15 +292,19 @@ package body scopeiopkg is
 	end;
 
 	function get_significand1245 (
-		constant unit   : real)
+		constant unit  : real;
+		constant debug : boolean := false)
 		return natural_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
 		variable retval : natural_vector(0 to 4-1);
 	begin
 
 		for i in coefs'range loop
-			retval(i) := hdo(significand(unit*coefs(i)))**".sgfc";
+			retval(i) := hdo(significand(unit*coefs(i), debug))**".sgfc";
 		end loop;
+		assert not debug
+		report "here"
+		severity failure;
 		return retval;
 	end;
 
