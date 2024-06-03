@@ -101,18 +101,33 @@ entity scopeio_textbox is
 	end;
 
 	constant textbox_fields : string := compact (
-		"{" &
-		"	horizontal : { top  : 0, left : 0, }," &
-		"	trigger    : { top : 1, left : 0}" &
+		"{"                                       &
+		"    horizontal : { top : 0, left : 0 }," &
+		"    trigger    : { top : 1, left : 0 }," &
+		"    inputs     : { top : 2, left : 0 }"  &
 		"}"
-
 	);
+
 	function textbox_field (
-		constant width  : natural;
-		constant size   : natural)
+		constant width          : natural)
 		return natural_vector is
-		variable retval : natural_vector(0 to 1+inputs);
+		constant wdt_horizontal : string  := hdo(textbox_fields)**".horizontal";
+		constant wdt_trigger    : string  := hdo(textbox_fields)**".trigger";
+		constant wdt_inputs     : string  := hdo(textbox_fields)**".inputs";
+		constant wdtinputs_top  : natural := hdo(wdt_inputs)**".top";
+		constant wdtinputs_left : natural := hdo(wdt_inputs)**".left";
+		variable retval         : natural_vector(0 to 2+inputs);
 	begin
+		retval(0) := hdo(wdt_horizontal)**".top"*width;
+		retval(0) := hdo(wdt_horizontal)**".left" + retval(0);
+		retval(1) := hdo(wdt_trigger)**".top"*width;
+		retval(1) := hdo(wdt_trigger)**".left" + retval(1);
+		for i in 0 to inputs-1 loop
+			retval(i+2) := wdtinputs_top*width;
+			retval(i+2) := wdtinputs_left + retval(i+2);
+		end loop;
+		return retval;
+
 		retval(0) := width;
 		for i in 1 to retval'right loop
 			retval(i) := retval(i-1) + width ;
@@ -449,7 +464,7 @@ begin
 		do(0) => text_fgon);
 
 	process (video_clk)
-		constant field_addr : natural_vector := textbox_field(cga_cols, cga_size);
+		constant field_addr : natural_vector := textbox_field(cga_cols);
 		variable field_id   : natural range 0 to 2**fg_color'length-1;
 		variable addr       : std_logic_vector(video_addr'range);
 	begin
