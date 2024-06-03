@@ -127,12 +127,6 @@ entity scopeio_textbox is
 			retval(i+2) := wdtinputs_left + retval(i+2);
 		end loop;
 		return retval;
-
-		retval(0) := width;
-		for i in 1 to retval'right loop
-			retval(i) := retval(i-1) + width ;
-		end loop;
-		return retval;
 	end;
 
 	constant vt_signfcnds : natural_vector := get_significand1245(vt_unit);
@@ -464,6 +458,7 @@ begin
 		do(0) => text_fgon);
 
 	process (video_clk)
+		constant xxx : natural := 2;
 		constant field_addr : natural_vector := textbox_field(cga_cols);
 		variable field_id   : natural range 0 to 2**fg_color'length-1;
 		variable addr       : std_logic_vector(video_addr'range);
@@ -474,8 +469,8 @@ begin
 				field_id := pltid_textfg;
 				for i in field_addr'range loop
 					if unsigned(addr)<field_addr(i) then
-						if i/=0 then 
-							field_id := i-1+pltid_order'length;
+						if i >= xxx then 
+							field_id := (i-xxx)+pltid_order'length;
 						end if;
 						exit;
 					end if;
