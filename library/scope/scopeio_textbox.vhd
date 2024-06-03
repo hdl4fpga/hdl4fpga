@@ -100,14 +100,21 @@ entity scopeio_textbox is
 		return data;
 	end;
 
+	constant textbox_fields : string := compact (
+		"{" &
+		"	horizontal : { top  : 0, left : 0, }," &
+		"	trigger    : { top : 1, left : 0}" &
+		"}"
+
+	);
 	function textbox_field (
 		constant width  : natural;
 		constant size   : natural)
 		return natural_vector is
-		variable retval : natural_vector(0 to inputs);
+		variable retval : natural_vector(0 to 1+inputs);
 	begin
 		retval(0) := width;
-		for i in 1 to inputs loop
+		for i in 1 to retval'right loop
 			retval(i) := retval(i-1) + width ;
 		end loop;
 		return retval;
@@ -126,8 +133,8 @@ end;
 
 architecture def of scopeio_textbox is
 	subtype ascii is std_logic_vector(8-1 downto 0);
-	constant cga_latency  : natural := 4;
-	constant fgbg_latency : natural := 2;
+	constant cga_latency   : natural := 4;
+	constant color_latency : natural := 2;
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
@@ -468,7 +475,7 @@ begin
 	latfg_e : entity hdl4fpga.latency
 	generic map (
 		n  =>  text_fg'length,
-		d  => (0 to text_fg'length-1 => latency-fgbg_latency))
+		d  => (0 to text_fg'length-1 => latency-color_latency))
 	port map (
 		clk => video_clk,
 		di  => fg_color,
@@ -476,7 +483,7 @@ begin
 	latbg_e : entity hdl4fpga.latency
 	generic map (
 		n  => text_bg'length,
-		d  => (0 to text_bg'length-1 => latency-fgbg_latency))
+		d  => (0 to text_bg'length-1 => latency-color_latency))
 	port map (
 		clk => video_clk,
 		di  => bg_color,
