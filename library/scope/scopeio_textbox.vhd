@@ -60,28 +60,35 @@ entity scopeio_textbox is
 	constant cga_cols        : natural := textbox_width/font_width;
 	constant cga_rows        : natural := textbox_height/font_height;
 
+	constant textbox_fields : string := compact (
+		"{"                                       &
+		"    horizontal : { top : 0, left : 0 }," &
+		"    trigger    : { top : 1, left : 0 }," &
+		"    inputs     : { top : 2, left : 0 }"  &
+		"}"
+	);
+
+	function textalign (
+		constant text   : string;
+		constant width  : natural;
+		constant align  : string := "left")
+		return string is
+		variable retval : string(1 to width);
+	begin
+		retval := (others => ' ');
+		retval(1 to text'length) := text;
+		if align="right" then
+			retval := rotate_left(retval, text'length);
+		elsif align="center" then
+			retval := rotate_left(retval, (text'length+width)/2);
+		end if; 
+		return retval;
+	end;
+
 	function textbox_rom (
 		constant width  : natural;
 		constant size   : natural)
 		return string is
-
-		function textalign (
-			constant text  : string;
-			constant width : natural;
-			constant align : string := "left")
-			return string is
-			variable retval : string(1 to width);
-		begin
-			retval := (others => ' ');
-			retval(1 to text'length) := text;
-			if align="right" then
-				retval := rotate_left(retval, text'length);
-			elsif align="center" then
-				retval := rotate_left(retval, (text'length+width)/2);
-			end if; 
-
-			return retval;
-		end;
 
 		variable data   : string(1 to size);
 		variable offset : positive;
@@ -92,21 +99,13 @@ entity scopeio_textbox is
 	begin
 		data(1 to hz_text'length) := hz_text;
 		i := 0;
-		j := data'left+cga_cols;
+		j := data'left+2*cga_cols;
 		for i in 0 to inputs-1 loop
 			data(j to j+width-1) := textalign(escaped(hdo(vt)**("["&natural'image(i)&"].text")), width);
 			j := j + width;
 		end loop;
 		return data;
 	end;
-
-	constant textbox_fields : string := compact (
-		"{"                                       &
-		"    horizontal : { top : 0, left : 0 }," &
-		"    trigger    : { top : 1, left : 0 }," &
-		"    inputs     : { top : 2, left : 0 }"  &
-		"}"
-	);
 
 	function textbox_field (
 		constant width          : natural)
@@ -116,14 +115,14 @@ entity scopeio_textbox is
 		constant wdt_inputs     : string  := hdo(textbox_fields)**".inputs";
 		constant wdtinputs_top  : natural := hdo(wdt_inputs)**".top";
 		constant wdtinputs_left : natural := hdo(wdt_inputs)**".left";
-		variable retval         : natural_vector(0 to 2+inputs);
+		variable retval         : natural_vector(0 to 2+inputs-1);
 	begin
 		retval(0) := hdo(wdt_horizontal)**".top"*width;
 		retval(0) := hdo(wdt_horizontal)**".left" + retval(0);
 		retval(1) := hdo(wdt_trigger)**".top"*width;
 		retval(1) := hdo(wdt_trigger)**".left" + retval(1);
 		for i in 0 to inputs-1 loop
-			retval(i+2) := wdtinputs_top*width;
+			retval(i+2) := (wdtinputs_top+i)*width;
 			retval(i+2) := wdtinputs_left + retval(i+2);
 		end loop;
 		return retval;
@@ -277,25 +276,65 @@ begin
 				vt_chanid => chanid,
 				vt_offset => offset);
 
-		vtgain_p : process (rgtr_clk)
+			vtgain_p : process (rgtr_clk)
+			begin
+				if rising_edge(rgtr_clk) then
+					if vt_ena='1' then
+						vt_offset  <= offset;
+						vt_chanid  <= chanid;
+						vt_scale   <= multiplex(gain_ids,   chanid, vt_scale'length);
+						vt_offsets <= byte2word(vt_offsets, chanid, offset);
+						vttxt_req  <= not vttxt_rdy;
+					elsif gain_dv='1' then
+						vt_offset  <= multiplex(vt_offsets, gain_cid, vt_offset'length);
+						vt_chanid  <= std_logic_vector(resize(unsigned(gain_cid), vt_chanid'length));
+						vt_scale   <= multiplex(gain_ids,   gain_cid, vt_scale'length);
+						vttxt_req  <= not vttxt_rdy;
+					end if;
+				end if;
+			end process;
+		end block;
+
+		tgr_scale <= multiplex(gain_ids, trigger_chanid, tgr_scale'length);
+		triggerwdt_p : process(rgtr_clk)
+
+			function zzz (
+				constant obj : string)
+				return string is
+			begin
+				return compact(
+					"{" &
+					"    length : " & natural'image(obj'length) & "," &
+					"    string : " & obj                             &
+					"}");
+			end;
+
+			function rom_data (
+				constant obj   : string;
+				constant width : natural;
+				constant size  : natural)
+				return string is
+
+				variable offset : positive;
+				variable length : natural;
+
+				variable data  : string(1 to size);
+				variable left  : natural;
+				variable right : natural;
+			begin
+				left := data'left;
+				for i in 0 to inputs-1 loop
+					right := left + width-1;
+					data(left to right) := textalign(escaped(hdo(obj)**("["&natural'image(i)&"].text")), width);
+					left := right + 1;
+				end loop;
+				return data;
+			end;
+
 		begin
 			if rising_edge(rgtr_clk) then
-				if vt_ena='1' then
-					vt_offset  <= offset;
-					vt_chanid  <= chanid;
-					vt_scale   <= multiplex(gain_ids,   chanid, vt_scale'length);
-					vt_offsets <= byte2word(vt_offsets, chanid, offset);
-					vttxt_req  <= not vttxt_rdy;
-				elsif gain_dv='1' then
-					vt_offset  <= multiplex(vt_offsets, gain_cid, vt_offset'length);
-					vt_chanid  <= std_logic_vector(resize(unsigned(gain_cid), vt_chanid'length));
-					vt_scale   <= multiplex(gain_ids,   gain_cid, vt_scale'length);
-					vttxt_req  <= not vttxt_rdy;
-				end if;
 			end if;
 		end process;
-		end block;
-		tgr_scale <= multiplex(gain_ids,   trigger_chanid, tgr_scale'length);
 
 		btof_b : block
 
@@ -468,7 +507,7 @@ begin
 			if video_on='1' then
 				field_id := pltid_textfg;
 				for i in field_addr'range loop
-					if unsigned(addr)<field_addr(i) then
+					if unsigned(addr) < (field_addr(i)+cga_cols) then
 						if i >= xxx then 
 							field_id := (i-xxx)+pltid_order'length;
 						end if;
