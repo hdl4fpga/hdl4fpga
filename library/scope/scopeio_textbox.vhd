@@ -298,6 +298,13 @@ begin
 		tgr_scale <= multiplex(gain_ids, trigger_chanid, tgr_scale'length);
 		triggerwdt_p : process(rgtr_clk)
 
+			function hdo_length (
+				constant obj : string)
+				return natural is
+			begin
+				return obj'length;
+			end;
+
 			function zzz (
 				constant obj : string)
 				return string is
