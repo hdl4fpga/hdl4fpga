@@ -316,7 +316,7 @@ begin
 					"}");
 			end;
 
-			function rom_data (
+			function init_rom (
 				constant obj   : string;
 				constant width : natural;
 				constant size  : natural)
@@ -338,6 +338,7 @@ begin
 				return data;
 			end;
 
+			constant data : std_logic_vector := to_ascii(init_rom(layout, 10, 10));
 		begin
 			if rising_edge(rgtr_clk) then
 			end if;
