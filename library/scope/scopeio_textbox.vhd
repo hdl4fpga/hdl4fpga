@@ -296,35 +296,35 @@ begin
 		end block;
 
 		tgr_scale <= multiplex(gain_ids, trigger_chanid, tgr_scale'length);
-		-- triggerwdt_p : process(rgtr_clk)
--- 
-			-- function init_rom (
-				-- constant obj   : string;
-				-- constant width : natural;
-				-- constant size  : natural)
-				-- return string is
--- 
-				-- variable offset : positive;
-				-- variable length : natural;
--- 
-				-- variable data  : string(1 to size);
-				-- variable left  : natural;
-				-- variable right : natural;
-			-- begin
-				-- left := data'left;
-				-- for i in 0 to inputs-1 loop
-					-- right := left + width-1;
-					-- data(left to right) := textalign(escaped(hdo(obj)**("["&natural'image(i)&"].text")), width);
-					-- left := right + 1;
-				-- end loop;
-				-- return data;
-			-- end;
--- 
-			-- constant data : std_logic_vector := to_ascii(init_rom(layout, 4, inputs*4));
-		-- begin
-			-- if rising_edge(rgtr_clk) then
-			-- end if;
-		-- end process;
+		triggerwdt_p : process(rgtr_clk)
+
+			function init_rom (
+				constant obj   : string;
+				constant width : natural;
+				constant size  : natural)
+				return string is
+
+				variable offset : positive;
+				variable length : natural;
+
+				variable data  : string(1 to size);
+				variable left  : natural;
+				variable right : natural;
+			begin
+				left := data'left;
+				for i in 0 to inputs-1 loop
+					right := left + width-1;
+					data(left to right) := textalign(escaped(hdo(obj)**("["&natural'image(i)&"].text")), width);
+					left := right + 1;
+				end loop;
+				return data;
+			end;
+
+			constant data : std_logic_vector := to_ascii(init_rom(layout, 4, inputs*4));
+		begin
+			if rising_edge(rgtr_clk) then
+			end if;
+		end process;
 
 		wdt_b : block
 
