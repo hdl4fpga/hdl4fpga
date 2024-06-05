@@ -56,22 +56,22 @@ package hdo is
 	subtype hdo is string;
 
 	function "**" (
-		constant hdo : hdo;
+		constant obj : hdo;
 		constant key : string)
 		return boolean;
 
 	function "**" (
-		constant hdo : hdo;
+		constant obj : hdo;
 		constant key : string)
 		return natural;
 
 	function "**" (
-		constant hdo : hdo;
+		constant obj : hdo;
 		constant key : string)
 		return real;
 
 	function "**" (
-		constant hdo : hdo;
+		constant obj : hdo;
 		constant key : string)
 		return std_logic_vector;
 
@@ -170,6 +170,7 @@ package body hdo is
 			assert false --|
 			report "wrong digit " & character'image(char) --|
 			severity failure; --|
+			return -1;
 		end case;
 	end;
 
@@ -263,6 +264,7 @@ package body hdo is
 			assert false --|
 			report "value'range is nul" --|
 			severity failure; --|
+			return "X";
 		end if;
 	end;
 
@@ -999,7 +1001,7 @@ package body hdo is
 		variable hdo_length : natural;
 	begin
 		resolve (hdo, hdo_offset, hdo_length);
-		if hdo_length=true_value'length then          -- to avoid synthesizes tools length-warnings
+		if hdo_length/=true_value'length then          -- to avoid synthesizes tools length-warnings
 			return false;
         elsif hdo(hdo_offset to hdo_offset+hdo_length-1)/=true_value then
 			return false;
@@ -1018,57 +1020,57 @@ package body hdo is
 	end;
 
 	function resolve (
-		constant hdo : string)
+		constant obj : string)
 		return real is
 		variable hdo_offset : natural;
 		variable hdo_length : natural;
 	begin
-		resolve (hdo, hdo_offset, hdo_length);
-		return to_real(hdo(hdo_offset to hdo_offset+hdo_length-1));
+		resolve (obj, hdo_offset, hdo_length);
+		return to_real(obj(hdo_offset to hdo_offset+hdo_length-1));
 	end;
 
 	function resolve (
-		constant hdo : string)
+		constant obj : string)
 		return std_logic_vector is
 		variable hdo_offset : natural;
 		variable hdo_length : natural;
 	begin
-		resolve (hdo, hdo_offset, hdo_length);
-		return to_stdlogicvector(hdo(hdo_offset to hdo_offset+hdo_length-1));
+		resolve (obj, hdo_offset, hdo_length);
+		return to_stdlogicvector(obj(hdo_offset to hdo_offset+hdo_length-1));
 	end;
 
 	function "**" (
-		constant hdo : hdo;
+		constant obj : hdo;
 		constant key : string)
 		return boolean is
 	begin
-		return resolve(string(hdo) & key);
+		return resolve(string(obj) & key);
 	end;
 
 	function "**" (
-		constant hdo : hdo;
+		constant obj : hdo;
 		constant key : string)
 		return integer is
-		variable xxx : integer;
+		variable retval : integer;
 	begin
-		xxx :=  resolve(string(hdo) & key);
-		return xxx;
+		retval := resolve(string(obj) & key);
+		return retval;
 	end;
 
 	function "**" (
-		constant hdo : hdo;
+		constant obj : hdo;
 		constant key : string)
 		return real is
 	begin
-		return resolve(string(hdo) & key);
+		return resolve(string(obj) & key);
 	end;
 
 	function "**" (
-		constant hdo : hdo;
+		constant obj : hdo;
 		constant key : string)
 		return std_logic_vector is
 	begin
-		return resolve(string(hdo) & key);
+		return resolve(string(obj) & key);
 	end;
 
 	function "**" (
