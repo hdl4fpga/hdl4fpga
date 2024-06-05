@@ -222,7 +222,9 @@ package body hdo is
 		begin
 			j := value'left;
 			for i in retval'range loop
-				while value(j)='_' loop
+				for l in value'range loop -- to avoid synthesizes tools loop-warnings
+					exit when value(j)/='_'; -- to avoid synthesizes tools loop-warnings
+
 					j := j + 1;
 					if j > value'right then
 						return retval(0 to i-1);
@@ -305,7 +307,9 @@ package body hdo is
 		end case;
 
 		mant := 0.0;
-		while idx <= value'right loop
+		for l in value'range loop -- to avoid synthesizes tools loop-warnings
+			exit when idx > value'right; -- to avoid synthesizes tools loop-warnings
+
 			if value(idx)='.' then
 				idx := idx + 1;
 				exit;
@@ -315,7 +319,9 @@ package body hdo is
 		end loop;
 
 		exp := 0;
-		while idx <= value'right loop
+		for l in value'range loop -- to avoid synthesizes tools loop-warnings
+			exit when idx > value'right; -- to avoid synthesizes tools loop-warnings
+
 			if value(idx)='e' then
 				idx := idx + 1;
 				exit;
@@ -350,7 +356,9 @@ package body hdo is
 		end case;
 
 		exp := 0;
-		while idx <= value'right loop
+		for l in value'range loop           -- to avoid synthesizes tools loop-warnings
+			exit when idx > value'right;    -- to avoid synthesizes tools loop-warnings
+
 			exp := 10*exp + (character'pos(value(idx))-character'pos('0'));
 			idx := idx + 1;
 		end loop;
@@ -399,7 +407,9 @@ package body hdo is
 	begin
 		skipws(hdo, hdo_index);
 		offset := hdo_index;
-		while hdo_index <= hdo'right loop
+		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
+			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
+
 			if hdo(hdo_index)='\' then
 				bkslh := true;
 				hdo_index := hdo_index  + 1;
@@ -453,7 +463,9 @@ package body hdo is
 	begin
 		skipws(hdo, hdo_index);
 		offset := hdo_index;
-		while hdo_index <= hdo'right loop
+		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
+			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
+
 			if isalnum(hdo(hdo_index)) then
 				hdo_index := hdo_index + 1;
 			else
@@ -481,7 +493,9 @@ package body hdo is
 			report "parse_keytag => hdo_index -> " & natural'image(hdo_index) & " -> " & ''' & hdo(hdo_index) & ''' --|note
 			severity note; --|note
 		length := 0;
-		while hdo_index <= hdo'right loop
+		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
+			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
+
 			case hdo(hdo_index) is
 			when '['|'{' =>
 				open_char := hdo(hdo_index);
@@ -781,7 +795,9 @@ package body hdo is
 		offset    := tag_offset;
 		length    := 0;
 		position  := 0;
-		while hdo_index <= hdo'right loop
+		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
+			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
+		
 			assert ((log/log_locatevalue) mod 2=0) --|note
 				report LF & --|note
 					"locale_value.loop => hdo(hdo_index) -> " & natural'image(hdo_index) & ':' & character'image(hdo(hdo_index)) --|note
