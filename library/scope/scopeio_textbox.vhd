@@ -298,24 +298,6 @@ begin
 		tgr_scale <= multiplex(gain_ids, trigger_chanid, tgr_scale'length);
 		triggerwdt_p : process(rgtr_clk)
 
-			function hdo_length (
-				constant obj : string)
-				return natural is
-			begin
-				return obj'length;
-			end;
-
-			function zzz (
-				constant obj : string)
-				return string is
-			begin
-				return compact(
-					"{" &
-					"    length : " & natural'image(obj'length) & "," &
-					"    string : " & obj                             &
-					"}");
-			end;
-
 			function init_rom (
 				constant obj   : string;
 				constant width : natural;
@@ -338,13 +320,13 @@ begin
 				return data;
 			end;
 
-			constant data : std_logic_vector := to_ascii(init_rom(layout, 10, 10));
+			constant data : std_logic_vector := to_ascii(init_rom(layout, 4, inputs*4));
 		begin
 			if rising_edge(rgtr_clk) then
 			end if;
 		end process;
 
-		btof_b : block
+		wdt_b : block
 
 			signal offset      : signed(0 to max(vt_offset'length, hz_offset'length)-1);
 			signal magnitud    : signed(offset'range);
@@ -406,32 +388,35 @@ begin
 				end if;
 			end process;
 
-			magnitud <= -offset when offset(offset'left)='1' else offset;
-			mul_ser_e : entity hdl4fpga.mul_ser
-			generic map (
-				lsb => true)
-			port map (
-				clk => rgtr_clk,
-				req => mul_req,
-				rdy => mul_rdy,
-				a   => scale,
-				b   => std_logic_vector(magnitud),
-				s   => bin);
+			btof_b : block
+			begin
+    			magnitud <= -offset when offset(offset'left)='1' else offset;
+    			mul_ser_e : entity hdl4fpga.mul_ser
+    			generic map (
+    				lsb => true)
+    			port map (
+    				clk => rgtr_clk,
+    				req => mul_req,
+    				rdy => mul_rdy,
+    				a   => scale,
+    				b   => std_logic_vector(magnitud),
+    				s   => bin);
 
-			btof_e : entity hdl4fpga.btof
-			port map (
-				clk      => rgtr_clk,
-				btof_req => mul_rdy,
-				btof_rdy => open,
-				sht      => shr,
-				dec      => pnt,
-				left     => '0',
-				width    => x"7",
-				exp      => b"101",
-				neg      => offset(offset'left),
-				bin      => bin,
-				code_frm => btof_frm,
-				code     => btof_code);
+    			btof_e : entity hdl4fpga.btof
+    			port map (
+    				clk      => rgtr_clk,
+    				btof_req => mul_rdy,
+    				btof_rdy => open,
+    				sht      => shr,
+    				dec      => pnt,
+    				left     => '0',
+    				width    => x"7",
+    				exp      => b"101",
+    				neg      => offset(offset'left),
+    				bin      => bin,
+    				code_frm => btof_frm,
+    				code     => btof_code);
+			end block;
 
 		end block;
 
