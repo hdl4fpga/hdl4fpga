@@ -296,35 +296,35 @@ begin
 		end block;
 
 		tgr_scale <= multiplex(gain_ids, trigger_chanid, tgr_scale'length);
-		triggerwdt_p : process(rgtr_clk)
-
-			function init_rom (
-				constant obj   : string;
-				constant width : natural;
-				constant size  : natural)
-				return string is
-
-				variable offset : positive;
-				variable length : natural;
-
-				variable data  : string(1 to size);
-				variable left  : natural;
-				variable right : natural;
-			begin
-				left := data'left;
-				for i in 0 to inputs-1 loop
-					right := left + width-1;
-					data(left to right) := textalign(escaped(hdo(obj)**("["&natural'image(i)&"].text")), width);
-					left := right + 1;
-				end loop;
-				return data;
-			end;
-
-			constant data : std_logic_vector := to_ascii(init_rom(layout, 4, inputs*4));
-		begin
-			if rising_edge(rgtr_clk) then
-			end if;
-		end process;
+		-- triggerwdt_p : process(rgtr_clk)
+-- 
+			-- function init_rom (
+				-- constant obj   : string;
+				-- constant width : natural;
+				-- constant size  : natural)
+				-- return string is
+-- 
+				-- variable offset : positive;
+				-- variable length : natural;
+-- 
+				-- variable data  : string(1 to size);
+				-- variable left  : natural;
+				-- variable right : natural;
+			-- begin
+				-- left := data'left;
+				-- for i in 0 to inputs-1 loop
+					-- right := left + width-1;
+					-- data(left to right) := textalign(escaped(hdo(obj)**("["&natural'image(i)&"].text")), width);
+					-- left := right + 1;
+				-- end loop;
+				-- return data;
+			-- end;
+-- 
+			-- constant data : std_logic_vector := to_ascii(init_rom(layout, 4, inputs*4));
+		-- begin
+			-- if rising_edge(rgtr_clk) then
+			-- end if;
+		-- end process;
 
 		wdt_b : block
 
@@ -355,7 +355,7 @@ begin
 						if (vttxt_req xor vttxt_rdy)='1' then
 							offset   <= resize(signed(vt_offset), offset'length);
 							scale    <= std_logic_vector(to_unsigned(vt_signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
-							wdt_addr <= resize(mul(unsigned(vt_chanid), cga_cols), wdt_addr'length) + (width + cga_cols);
+							wdt_addr <= resize(mul(unsigned(vt_chanid), cga_cols), wdt_addr'length) + (width + 2*cga_cols);
 							shr      <= std_logic_vector(to_signed(vt_shrs(to_integer(unsigned(vt_scale))), shr'length));
 							pnt      <= std_logic_vector(to_signed(vt_pnts(to_integer(unsigned(vt_scale))), pnt'length));
 							mul_req  <= not to_stdulogic(to_bit(mul_rdy));

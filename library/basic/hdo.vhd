@@ -222,7 +222,9 @@ package body hdo is
 		begin
 			j := value'left;
 			for i in retval'range loop
-				while value(j)='_' loop
+				for l in value'range loop -- to avoid synthesizes tools loop-warnings
+					exit when value(j)/='_'; -- to avoid synthesizes tools loop-warnings
+
 					j := j + 1;
 					if j > value'right then
 						return retval(0 to i-1);
@@ -305,7 +307,9 @@ package body hdo is
 		end case;
 
 		mant := 0.0;
-		while idx <= value'right loop
+		for l in value'range loop -- to avoid synthesizes tools loop-warnings
+			exit when idx > value'right; -- to avoid synthesizes tools loop-warnings
+
 			if value(idx)='.' then
 				idx := idx + 1;
 				exit;
@@ -315,7 +319,9 @@ package body hdo is
 		end loop;
 
 		exp := 0;
-		while idx <= value'right loop
+		for l in value'range loop -- to avoid synthesizes tools loop-warnings
+			exit when idx > value'right; -- to avoid synthesizes tools loop-warnings
+
 			if value(idx)='e' then
 				idx := idx + 1;
 				exit;
@@ -350,7 +356,9 @@ package body hdo is
 		end case;
 
 		exp := 0;
-		while idx <= value'right loop
+		for l in value'range loop           -- to avoid synthesizes tools loop-warnings
+			exit when idx > value'right;    -- to avoid synthesizes tools loop-warnings
+
 			exp := 10*exp + (character'pos(value(idx))-character'pos('0'));
 			idx := idx + 1;
 		end loop;
@@ -399,7 +407,9 @@ package body hdo is
 	begin
 		skipws(hdo, hdo_index);
 		offset := hdo_index;
-		while hdo_index <= hdo'right loop
+		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
+			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
+
 			if hdo(hdo_index)='\' then
 				bkslh := true;
 				hdo_index := hdo_index  + 1;
@@ -447,7 +457,9 @@ package body hdo is
 	begin
 		skipws(hdo, hdo_index);
 		offset := hdo_index;
-		while hdo_index <= hdo'right loop
+		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
+			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
+
 			if isalnum(hdo(hdo_index)) then
 				hdo_index := hdo_index + 1;
 			else
@@ -466,7 +478,9 @@ package body hdo is
 	begin
 		skipws(hdo, hdo_index);
 		length := 0;
-		while hdo_index <= hdo'right loop
+		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
+			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
+
 			case hdo(hdo_index) is
 			when '['|'{' =>
 				open_char := hdo(hdo_index);
@@ -687,7 +701,9 @@ package body hdo is
 		offset    := tag_offset;
 		length    := 0;
 		position  := 0;
-		while hdo_index <= hdo'right loop
+		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
+			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
+		
 			skipws(hdo, hdo_index);
 			case hdo(hdo_index) is
 			when '['|'{' =>
@@ -722,7 +738,7 @@ package body hdo is
 					exit;
 				end if;
 			elsif isalnum(tag(tag'left)) then
-				if tag_length/=0 then
+				if tag_length/=0 and tag'length=tag_length then -- to avoid synthesizes tools loop-warnings
 					if tag=hdo(tag_offset to tag_offset+tag_length-1) then
 						offset := tag_offset;
 						length := hdo_index-offset;
@@ -755,8 +771,9 @@ package body hdo is
 				retval(j) := hdo(i);
 				j := j + 1;
 			end if;
-			bkslh := false;
-			if hdo(i)='\' then
+			if bkslh then
+				bkslh := false;
+			elsif hdo(i)='\' then
 				bkslh := true;
 			elsif hdo(i)=''' or hdo(i)='"' then
 				escape := not escape;
@@ -823,15 +840,17 @@ package body hdo is
 	function resolve (
 		constant hdo : string)
 		return boolean is
+        constant true_value : string := "true";
 		variable hdo_offset : natural;
 		variable hdo_length : natural;
 	begin
 		resolve (hdo, hdo_offset, hdo_length);
-		if hdo(hdo_offset to hdo_offset+hdo_length-1)="true" then
-			return true;
-		else
+		if hdo_length=true_value'length then
+			return false;
+        elsif hdo(hdo_offset to hdo_offset+hdo_length-1)/=true_value then
 			return false;
 		end if;
+		return true;
 	end;
 
 	function resolve (
@@ -942,8 +961,9 @@ package body hdo is
 				retval(retval'left+length) := obj(i);
 				length := length + 1;
 			end if;
-			bkslh := false;
-			if obj(i)='\' then
+			if bkslh then
+				bkslh := false;
+			elsif obj(i)='\' then
 				bkslh := true;
 			elsif obj(i)=''' or obj(i)='"' then
 				escape := not escape;

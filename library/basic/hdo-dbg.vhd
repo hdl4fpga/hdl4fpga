@@ -860,7 +860,7 @@ package body hdo is
 					exit;
 				end if;
 			elsif isalnum(tag(tag'left)) then
-				if tag_length/=0 then
+				if tag_length/=0 and tag'length=tag_length then -- to avoid synthesizes tools loop-warnings
 					if tag=hdo(tag_offset to tag_offset+tag_length-1) then
 						offset := tag_offset;
 						length := hdo_index-offset;
@@ -994,15 +994,17 @@ package body hdo is
 	function resolve (
 		constant hdo : string)
 		return boolean is
+        constant true_value : string := "true";
 		variable hdo_offset : natural;
 		variable hdo_length : natural;
 	begin
 		resolve (hdo, hdo_offset, hdo_length);
-		if hdo(hdo_offset to hdo_offset+hdo_length-1)="true" then
-			return true;
-		else
+		if hdo_length=true_value'length then          -- to avoid synthesizes tools length-warnings
+			return false;
+        elsif hdo(hdo_offset to hdo_offset+hdo_length-1)/=true_value then
 			return false;
 		end if;
+		return true;
 	end;
 
 	function resolve (
