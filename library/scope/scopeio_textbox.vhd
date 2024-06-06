@@ -76,7 +76,11 @@ entity scopeio_textbox is
 		variable retval : string(1 to width);
 	begin
 		retval := (others => ' ');
-		retval(1 to text'length) := text;
+		if retval'length < text'length then
+			retval := text(text'left to text'left+retval'length-1);
+		else
+			retval(retval'left to retval'left+text'length-1) := text;
+		end if;
 		if align="right" then
 			retval := rotate_left(retval, text'length);
 		elsif align="center" then
@@ -320,7 +324,7 @@ begin
 				return data;
 			end;
 
-			constant data : std_logic_vector := to_ascii(init_rom(layout, 4, inputs*4));
+			constant data : std_logic_vector := to_ascii(init_rom(hdo(layout)**".vt", 4, inputs*4));
 		begin
 			if rising_edge(rgtr_clk) then
 			end if;
