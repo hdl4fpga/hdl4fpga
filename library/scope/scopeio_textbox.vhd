@@ -164,10 +164,12 @@ architecture def of scopeio_textbox is
 	constant signfcnd_length : natural := max(vtsignfcnd_length, hzsignfcnd_length);
 	constant offset_length   : natural := max(vt_offset'length, hz_offset'length);
 
+	signal str_frm           : std_logic := '0';
+	signal str_code          : ascii;
 	signal bin               : std_logic_vector(0 to bin_digits*((offset_length+signfcnd_length+bin_digits-1)/bin_digits)-1);
 	signal btof_frm          : std_logic;
 	signal btof_code         : ascii;
-	signal cga_frm           : std_logic := '0';
+	signal cga_we            : std_logic := '0';
 	signal cga_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
 	signal cga_data          : ascii;
 
@@ -397,8 +399,13 @@ begin
 							wdt_req  <= not wdt_rdy;
 							state    := s_wdtoffset;
 						elsif (tgwdt_req xor tgwdt_rdy)='1' then
+							wdt_req  <= not wdt_rdy;
 							wdt_addr <= to_unsigned(cga_cols, wdt_addr'length);
+							str_frm  <= '1';
+							str_code <= to_ascii("a");
 							state    := s_wdtoffset;
+						else
+							str_frm  <= '0';
 						end if;
 					when s_wdtoffset =>
 						if (wdt_rdy xor wdt_req)='0' then
@@ -408,12 +415,14 @@ begin
 							wdt_req  <= not wdt_rdy;
 							state    := s_wdtunit;
 						end if;
+						str_frm  <= '0';
 					when s_wdtunit =>
 						if (wdt_rdy xor wdt_req)='0' then
 							vtwdt_rdy <= vtwdt_req;
 							hzwdt_rdy <= hzwdt_req;
 							tgwdt_rdy <= tgwdt_req;
 							state     := s_init;
+							str_frm  <= '0';
 						end if;
 					end case;
 				end if;
@@ -459,29 +468,44 @@ begin
  				case state is
  				when s_wait  =>
 					if btof_frm='1' then
-						cga_frm  <= btof_frm;
+						cga_we   <= '1';
+						cga_addr <= wdt_addr;
 						cga_data <= btof_code;
  						state    := s_action;
 					elsif str_frm='1' then
-						cga_frm  <= str_frm;
+						cga_we   <= '1';
+						cga_addr <= wdt_addr;
 						cga_data <= str_code;
  						state    := s_action;
+					else
+						cga_we   <= '0';
+						cga_addr <= (others => '-');
+						cga_data <= (others => '-');
 					end if;
-					cga_addr <= wdt_addr;
  				when s_action =>
 	 				if btof_frm='1' then
-	 					cga_frm  <= '1';
+	 					cga_we   <= '1';
 	 					cga_addr <= cga_addr + 1;
 	 					cga_data <= btof_code;
-					else
-	 					cga_frm   <= '1';
+					elsif str_frm='1' then
+	 					cga_we   <= '1';
 	 					cga_addr <= cga_addr + 1;
-						if (vtwdt_rdy xor vtwdt_req)='1' then
-							cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
-						else
-							cga_data <= to_ascii(hz_prefix(to_integer(unsigned(hz_scale))+1));
-						end if;
-	 					state    := s_wait;
+						cga_data <= str_code;
+					elsif (vtwdt_rdy xor vtwdt_req)='1' then
+						cga_we   <= '1';
+						cga_addr <= cga_addr + 1;
+						cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
+						wdt_rdy  <= wdt_req;
+						state    := s_wait;
+					elsif (hzwdt_rdy xor hzwdt_req)='1' then
+						cga_we   <= '1';
+						cga_addr <= cga_addr + 1;
+						cga_data <= to_ascii(hz_prefix(to_integer(unsigned(hz_scale))+1));
+						wdt_rdy  <= wdt_req;
+						state    := s_wait;
+					elsif (tgwdt_rdy xor tgwdt_req)='1' then
+						cga_we   <= '1';
+						cga_addr <= cga_addr + 1;
 						wdt_rdy  <= wdt_req;
 						state    := s_wait;
 	 				end if;
@@ -504,7 +528,7 @@ begin
 		font_width   => font_width)
 	port map (
 		cga_clk      => rgtr_clk,
-		cga_we       => cga_frm,
+		cga_we       => cga_we,
 		cga_addr     => std_logic_vector(cga_addr),
 		cga_data     => cga_data,
 
