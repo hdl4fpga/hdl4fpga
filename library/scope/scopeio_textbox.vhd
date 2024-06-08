@@ -329,9 +329,11 @@ begin
 
 			tgr_scale <= multiplex(gain_ids, trigger_chanid, tgr_scale'length);
 			triggerwdt_p : process(rgtr_clk)
+
+				constant width : natural := label_width;
+
 				function init_rom (
 					constant obj   : string;
-					constant width : natural;
 					constant size  : natural)
 					return string is
 	
@@ -351,9 +353,9 @@ begin
 					return data;
 				end;
 	
-				constant data : string := init_rom(hdo(layout)**".vt", 4, inputs*4);
-				variable ptr  : positive range 1 to data'length;
-				variable cnt  : natural  range 0 to width-1;
+				constant data : string := init_rom(hdo(layout)**".vt", inputs*width);
+				variable ptr  : natural range 0 to data'length-1;
+				variable cnt  : natural range 0 to label_width-1;
 
 			begin
 				if rising_edge(rgtr_clk) then
@@ -361,16 +363,16 @@ begin
 						if cnt < 3 then
 							ptr := ptr + 1;
 							cnt := cnt + 1;
-							str_code <= to_ascii(data(ptr));
+							str_code <= to_ascii(data(ptr+1));
 						else
-							ptr := to_integer(unsigned(trigger_chanid))*width+1;
+							ptr := to_integer(mul(unsigned(trigger_chanid), width));
 							cnt := 0;
 							str_rdy <= str_req;
 						end if;
 					else
 						cnt := 0;
-						ptr := to_integer(unsigned(trigger_chanid))*width+1;
-						str_code <= to_ascii(data(ptr));
+						ptr := to_integer(mul(unsigned(trigger_chanid), width));
+						str_code <= to_ascii(data(ptr+1));
 					end if;
 				end if;
 
