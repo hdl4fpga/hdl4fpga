@@ -754,7 +754,6 @@ begin
 
 		topixel_e : entity hdl4fpga.latency
 		generic map (
-			style => "register",
 			n => pixel_width,
 			d => (0 to pixel_width => sync_lat))
 		port map (
@@ -765,7 +764,6 @@ begin
 
 		tosync_e : entity hdl4fpga.latency
 		generic map (
-			style => "register",
 			n => 4,
 			d => (0 to 4-1 => sync_lat))
 		port map (
@@ -901,7 +899,6 @@ begin
 
 		dmadv_e : entity hdl4fpga.latency
 		generic map (
-			style => "register",
 			n => 2,
 			d => (0 to 2-1 => buffdo_lat))
 		port map (
@@ -911,7 +908,6 @@ begin
 
 		dma_rdy_e : entity hdl4fpga.latency
 		generic map (
-			style => "register",
 			n => 2,
 			d => (0 to 2-1 => buffdo_lat))
 		port map (
@@ -921,7 +917,6 @@ begin
 
 		dmado_e : entity hdl4fpga.latency
 		generic map (
-			style => "register",
 			n => ctlr_do'length,
 			d => (0 to ctlr_do'length-1 => buffdo_lat))
 		port map (
@@ -1007,7 +1002,6 @@ begin
 
 		inirdy_e : entity hdl4fpga.latency
 		generic map (
-			style => "register",
 			n => 1,
 			d => (0 to 0 => 0))
 		port map (

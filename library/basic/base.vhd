@@ -1687,7 +1687,9 @@ package body base is
 	begin
 		n := arg;
 		nbits := 1;
-		while n > 1 loop
+		for i in 0 to n loop          -- to avoid synthesizes tools loop-warnings
+			exit when n < 2;          -- to avoid synthesizes tools loop-warnings
+		-- while n > 1 loop
 			nbits := nbits+1;
 			n := n / 2;
 		end loop;

@@ -60,28 +60,39 @@ entity scopeio_textbox is
 	constant cga_cols        : natural := textbox_width/font_width;
 	constant cga_rows        : natural := textbox_height/font_height;
 
+	constant textbox_fields : string := compact (
+		"{"                                       &
+		"    horizontal : { top : 0, left : 0 }," &
+		"    trigger    : { top : 1, left : 0 }," &
+		"    inputs     : { top : 2, left : 0 }"  &
+		"}"
+	);
+
+	function textalign (
+		constant text   : string;
+		constant width  : natural;
+		constant align  : string := "left")
+		return string is
+		variable retval : string(1 to width);
+	begin
+		retval := (others => ' ');
+		if retval'length < text'length then
+			retval := text(text'left to text'left+retval'length-1);
+		else
+			retval(retval'left to retval'left+text'length-1) := text;
+		end if;
+		if align="right" then
+			retval := rotate_left(retval, text'length);
+		elsif align="center" then
+			retval := rotate_left(retval, (text'length+width)/2);
+		end if; 
+		return retval;
+	end;
+
 	function textbox_rom (
 		constant width  : natural;
 		constant size   : natural)
 		return string is
-
-		function textalign (
-			constant text  : string;
-			constant width : natural;
-			constant align : string := "left")
-			return string is
-			variable retval : string(1 to width);
-		begin
-			retval := (others => ' ');
-			retval(1 to text'length) := text;
-			if align="right" then
-				retval := rotate_left(retval, text'length);
-			elsif align="center" then
-				retval := rotate_left(retval, (text'length+width)/2);
-			end if; 
-
-			return retval;
-		end;
 
 		variable data   : string(1 to size);
 		variable offset : positive;
@@ -92,7 +103,7 @@ entity scopeio_textbox is
 	begin
 		data(1 to hz_text'length) := hz_text;
 		i := 0;
-		j := data'left+cga_cols;
+		j := data'left+2*cga_cols;
 		for i in 0 to inputs-1 loop
 			data(j to j+width-1) := textalign(escaped(hdo(vt)**("["&natural'image(i)&"].text")), width);
 			j := j + width;
@@ -101,14 +112,22 @@ entity scopeio_textbox is
 	end;
 
 	function textbox_field (
-		constant width  : natural;
-		constant size   : natural)
+		constant width          : natural)
 		return natural_vector is
-		variable retval : natural_vector(0 to inputs);
+		constant wdt_horizontal : string  := hdo(textbox_fields)**".horizontal";
+		constant wdt_trigger    : string  := hdo(textbox_fields)**".trigger";
+		constant wdt_inputs     : string  := hdo(textbox_fields)**".inputs";
+		constant wdtinputs_top  : natural := hdo(wdt_inputs)**".top";
+		constant wdtinputs_left : natural := hdo(wdt_inputs)**".left";
+		variable retval         : natural_vector(0 to 2+inputs-1);
 	begin
-		retval(0) := width;
-		for i in 1 to inputs loop
-			retval(i) := retval(i-1) + width ;
+		retval(0) := hdo(wdt_horizontal)**".top"*width;
+		retval(0) := hdo(wdt_horizontal)**".left" + retval(0);
+		retval(1) := hdo(wdt_trigger)**".top"*width;
+		retval(1) := hdo(wdt_trigger)**".left" + retval(1);
+		for i in 0 to inputs-1 loop
+			retval(i+2) := (wdtinputs_top+i)*width;
+			retval(i+2) := wdtinputs_left + retval(i+2);
 		end loop;
 		return retval;
 	end;
@@ -126,8 +145,8 @@ end;
 
 architecture def of scopeio_textbox is
 	subtype ascii is std_logic_vector(8-1 downto 0);
-	constant cga_latency  : natural := 4;
-	constant fgbg_latency : natural := 2;
+	constant cga_latency   : natural := 4;
+	constant color_latency : natural := 2;
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
@@ -145,6 +164,9 @@ architecture def of scopeio_textbox is
 	constant signfcnd_length : natural := max(vtsignfcnd_length, hzsignfcnd_length);
 	constant offset_length   : natural := max(vt_offset'length, hz_offset'length);
 
+	signal str_req           : std_logic := '0';
+	signal str_rdy           : std_logic := '0';
+	signal str_code          : ascii;
 	signal bin               : std_logic_vector(0 to bin_digits*((offset_length+signfcnd_length+bin_digits-1)/bin_digits)-1);
 	signal btof_frm          : std_logic;
 	signal btof_code         : ascii;
@@ -159,8 +181,12 @@ architecture def of scopeio_textbox is
 	signal video_addr        : std_logic_vector(cga_addr'range);
 	signal video_dot         : std_logic;
 
-	signal vttxt_req         : bit;
-	signal vttxt_rdy         : bit;
+	signal vtwdt_req         : bit;
+	signal vtwdt_rdy         : bit;
+	signal hzwdt_req         : bit;
+	signal hzwdt_rdy         : bit;
+	signal tgwdt_req         : bit;
+	signal tgwdt_rdy         : bit;
 	type wdt_types is (wdt_offset, wdt_unit);
 	signal wdt_type          : wdt_types;
 	signal wdt_req           : bit;
@@ -261,27 +287,98 @@ begin
 				vt_chanid => chanid,
 				vt_offset => offset);
 
-		vtgain_p : process (rgtr_clk)
-		begin
-			if rising_edge(rgtr_clk) then
-				if vt_ena='1' then
-					vt_offset  <= offset;
-					vt_chanid  <= chanid;
-					vt_scale   <= multiplex(gain_ids,   chanid, vt_scale'length);
-					vt_offsets <= byte2word(vt_offsets, chanid, offset);
-					vttxt_req  <= not vttxt_rdy;
-				elsif gain_dv='1' then
-					vt_offset  <= multiplex(vt_offsets, gain_cid, vt_offset'length);
-					vt_chanid  <= std_logic_vector(resize(unsigned(gain_cid), vt_chanid'length));
-					vt_scale   <= multiplex(gain_ids,   gain_cid, vt_scale'length);
-					vttxt_req  <= not vttxt_rdy;
+			vtscale_p : process (rgtr_clk)
+			begin
+				if rising_edge(rgtr_clk) then
+					if vt_ena='1' then
+						vt_offset  <= offset;
+						vt_chanid  <= chanid;
+						vt_scale   <= multiplex(gain_ids,   chanid, vt_scale'length);
+						vt_offsets <= byte2word(vt_offsets, chanid, offset);
+						vtwdt_req  <= not vtwdt_rdy;
+					elsif gain_dv='1' then
+						vt_offset  <= multiplex(vt_offsets, gain_cid, vt_offset'length);
+						vt_chanid  <= std_logic_vector(resize(unsigned(gain_cid), vt_chanid'length));
+						vt_scale   <= multiplex(gain_ids,   gain_cid, vt_scale'length);
+						vtwdt_req  <= not vtwdt_rdy;
+					end if;
 				end if;
-			end if;
-		end process;
-		end block;
-		tgr_scale <= multiplex(gain_ids,   trigger_chanid, tgr_scale'length);
+			end process;
 
-		btof_b : block
+			hzscale_p : process (rgtr_clk)
+			begin
+				if rising_edge(rgtr_clk) then
+					if (hzwdt_req xor hzwdt_rdy)='0' then
+						if hz_dv='1' then
+							hzwdt_req <= not hzwdt_rdy;
+						end if;
+					end if;
+				end if;
+			end process;
+
+			process(rgtr_clk)
+			begin
+				if rising_edge(rgtr_clk) then
+					if (tgwdt_req xor tgwdt_rdy)='0' then
+						if trigger_ena='1' then
+							tgwdt_req <= not tgwdt_rdy;
+						end if;
+					end if;
+				end if;
+			end process;
+
+			tgr_scale <= multiplex(gain_ids, trigger_chanid, tgr_scale'length);
+			triggerwdt_p : process(rgtr_clk)
+				function init_rom (
+					constant obj   : string;
+					constant width : natural;
+					constant size  : natural)
+					return string is
+	
+					variable offset : positive;
+					variable length : natural;
+	
+					variable data  : string(1 to size);
+					variable left  : natural;
+					variable right : natural;
+				begin
+					left := data'left;
+					for i in 0 to inputs-1 loop
+						right := left + width-1;
+						data(left to right) := textalign(escaped(hdo(obj)**("["&natural'image(i)&"].text")), width);
+						left := right + 1;
+					end loop;
+					return data;
+				end;
+	
+				constant data : string := init_rom(hdo(layout)**".vt", 4, inputs*4);
+				variable ptr  : positive range 1 to data'length;
+				variable cnt  : natural  range 0 to 4-1;
+
+			begin
+				if rising_edge(rgtr_clk) then
+					if (str_rdy xor str_req)='1' then
+						if cnt < 3 then
+							ptr := ptr + 1;
+							cnt := cnt + 1;
+							str_code <= to_ascii(data(ptr));
+						else
+							ptr := 1;
+							cnt := 0;
+							str_rdy <= str_req;
+						end if;
+					else
+						cnt := 0;
+						ptr := 1+to_integer(unsigned(trigger_chanid))*4;
+						str_code <= to_ascii(data(ptr));
+					end if;
+				end if;
+
+			end process;
+
+		end block;
+
+		wdt_b : block
 
 			signal offset      : signed(0 to max(vt_offset'length, hz_offset'length)-1);
 			signal magnitud    : signed(offset'range);
@@ -307,16 +404,16 @@ begin
 				if rising_edge(rgtr_clk) then
 					case state is
 					when s_init =>
-						if (vttxt_req xor vttxt_rdy)='1' then
+						if (vtwdt_req xor vtwdt_rdy)='1' then
 							offset   <= resize(signed(vt_offset), offset'length);
 							scale    <= std_logic_vector(to_unsigned(vt_signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
-							wdt_addr <= resize(mul(unsigned(vt_chanid), cga_cols), wdt_addr'length) + (width + cga_cols);
+							wdt_addr <= resize(mul(unsigned(vt_chanid), cga_cols), wdt_addr'length) + (width + 2*cga_cols);
 							shr      <= std_logic_vector(to_signed(vt_shrs(to_integer(unsigned(vt_scale))), shr'length));
 							pnt      <= std_logic_vector(to_signed(vt_pnts(to_integer(unsigned(vt_scale))), pnt'length));
 							mul_req  <= not to_stdulogic(to_bit(mul_rdy));
 							wdt_req  <= not wdt_rdy;
 							state    := s_wdtoffset;
-						elsif hz_dv='1' then
+						elsif (hzwdt_req xor hzwdt_rdy)='1' then
 							offset   <= resize(signed(hz_offset), offset'length);
 							scale    <= std_logic_vector(to_unsigned(hz_signfcnds(to_integer(unsigned(hz_scale(2-1 downto 0)))), scale'length));
 							wdt_addr <= to_unsigned(width, wdt_addr'length);
@@ -325,80 +422,114 @@ begin
 							mul_req  <= not to_stdulogic(to_bit(mul_rdy));
 							wdt_req  <= not wdt_rdy;
 							state    := s_wdtoffset;
+						elsif (tgwdt_rdy xor tgwdt_req)='1' then
+							wdt_req  <= not wdt_rdy;
+							wdt_addr <= to_unsigned(cga_cols, wdt_addr'length);
+							str_req  <= not str_rdy;
+							state    := s_wdtoffset;
 						end if;
 					when s_wdtoffset =>
-						if (wdt_rdy xor wdt_req)='0' then
-							wdt_addr <= cga_addr + 2;
-							offset   <= to_signed(grid_unit, offset'length);
-							mul_req  <= not to_stdulogic(to_bit(mul_rdy));
-							wdt_req  <= not wdt_rdy;
-							state    := s_wdtunit;
+						if (wdt_req xor wdt_rdy)='0' then
+							if (tgwdt_rdy xor tgwdt_req)='1' then
+								tgwdt_rdy <= tgwdt_req;
+								state     := s_init;
+							else
+								wdt_addr <= cga_addr + 2;
+								offset   <= to_signed(grid_unit, offset'length);
+								mul_req  <= not to_stdulogic(to_bit(mul_rdy));
+								wdt_req  <= not wdt_rdy;
+								state    := s_wdtunit;
+							end if;
 						end if;
 					when s_wdtunit =>
 						if (wdt_rdy xor wdt_req)='0' then
-							vttxt_rdy <= vttxt_req;
-							state := s_init;
+							tgwdt_rdy <= tgwdt_req;
+							vtwdt_rdy <= vtwdt_req;
+							hzwdt_rdy <= hzwdt_req;
+							state     := s_init;
 						end if;
 					end case;
 				end if;
 			end process;
 
-			magnitud <= -offset when offset(offset'left)='1' else offset;
-			mul_ser_e : entity hdl4fpga.mul_ser
-			generic map (
-				lsb => true)
-			port map (
-				clk => rgtr_clk,
-				req => mul_req,
-				rdy => mul_rdy,
-				a   => scale,
-				b   => std_logic_vector(magnitud),
-				s   => bin);
+			btof_b : block
+			begin
+    			magnitud <= -offset when offset(offset'left)='1' else offset;
+    			mul_ser_e : entity hdl4fpga.mul_ser
+    			generic map (
+    				lsb => true)
+    			port map (
+    				clk => rgtr_clk,
+    				req => mul_req,
+    				rdy => mul_rdy,
+    				a   => scale,
+    				b   => std_logic_vector(magnitud),
+    				s   => bin);
 
-			btof_e : entity hdl4fpga.btof
-			port map (
-				clk      => rgtr_clk,
-				btof_req => mul_rdy,
-				btof_rdy => open,
-				sht      => shr,
-				dec      => pnt,
-				left     => '0',
-				width    => x"7",
-				exp      => b"101",
-				neg      => offset(offset'left),
-				bin      => bin,
-				code_frm => btof_frm,
-				code     => btof_code);
+    			btof_e : entity hdl4fpga.btof
+    			port map (
+    				clk      => rgtr_clk,
+    				btof_req => mul_rdy,
+    				btof_rdy => open,
+    				sht      => shr,
+    				dec      => pnt,
+    				left     => '0',
+    				width    => x"7",
+    				exp      => b"101",
+    				neg      => offset(offset'left),
+    				bin      => bin,
+    				code_frm => btof_frm,
+    				code     => btof_code);
+			end block;
 
 		end block;
 
- 		widget_p : process (btof_frm, rgtr_clk)
- 			type states is (s_wait, s_vtevent);
+ 		widget_p : process (rgtr_clk)
+ 			type states is (s_wait, s_action);
  			variable state : states;
  		begin
  			if rising_edge(rgtr_clk) then
  				case state is
  				when s_wait  =>
-					cga_we   <= btof_frm;
-					cga_data <= btof_code;
-					cga_addr <= wdt_addr;
- 					if btof_frm='1' then
- 						state := s_vtevent;
- 					end if;
- 				when s_vtevent =>
+					if btof_frm='1' then
+						cga_we   <= '1';
+						cga_addr <= wdt_addr;
+						cga_data <= btof_code;
+ 						state    := s_action;
+					elsif (str_rdy xor str_req)='1' then
+						cga_we   <= '1';
+						cga_addr <= wdt_addr;
+						cga_data <= str_code;
+ 						state    := s_action;
+					else
+						cga_we   <= '0';
+						cga_addr <= (others => '-');
+						cga_data <= (others => '-');
+					end if;
+ 				when s_action =>
 	 				if btof_frm='1' then
 	 					cga_we   <= '1';
 	 					cga_addr <= cga_addr + 1;
 	 					cga_data <= btof_code;
-					else
+					elsif (str_rdy xor str_req)='1' then
 	 					cga_we   <= '1';
 	 					cga_addr <= cga_addr + 1;
-						if (vttxt_rdy xor vttxt_req)='1' then
-							cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
-						else
-							cga_data <= to_ascii(hz_prefix(to_integer(unsigned(hz_scale))+1));
-						end if;
-	 					state    := s_wait;
+						cga_data <= str_code;
+					elsif (vtwdt_rdy xor vtwdt_req)='1' then
+						cga_we   <= '1';
+						cga_addr <= cga_addr + 1;
+						cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
+						wdt_rdy  <= wdt_req;
+						state    := s_wait;
+					elsif (hzwdt_rdy xor hzwdt_req)='1' then
+						cga_we   <= '1';
+						cga_addr <= cga_addr + 1;
+						cga_data <= to_ascii(hz_prefix(to_integer(unsigned(hz_scale))+1));
+						wdt_rdy  <= wdt_req;
+						state    := s_wait;
+					elsif (tgwdt_rdy xor tgwdt_req)='1' then
+						cga_we   <= '0';
+						cga_addr <= cga_addr + 1;
 						wdt_rdy  <= wdt_req;
 						state    := s_wait;
 	 				end if;
@@ -442,7 +573,8 @@ begin
 		do(0) => text_fgon);
 
 	process (video_clk)
-		constant field_addr : natural_vector := textbox_field(cga_cols, cga_size);
+		constant xxx : natural := 2;
+		constant field_addr : natural_vector := textbox_field(cga_cols);
 		variable field_id   : natural range 0 to 2**fg_color'length-1;
 		variable addr       : std_logic_vector(video_addr'range);
 	begin
@@ -451,9 +583,9 @@ begin
 			if video_on='1' then
 				field_id := pltid_textfg;
 				for i in field_addr'range loop
-					if unsigned(addr)<field_addr(i) then
-						if i/=0 then 
-							field_id := i-1+pltid_order'length;
+					if unsigned(addr) < (field_addr(i)+cga_cols) then
+						if i >= xxx then 
+							field_id := (i-xxx)+pltid_order'length;
 						end if;
 						exit;
 					end if;
@@ -468,7 +600,7 @@ begin
 	latfg_e : entity hdl4fpga.latency
 	generic map (
 		n  =>  text_fg'length,
-		d  => (0 to text_fg'length-1 => latency-fgbg_latency))
+		d  => (0 to text_fg'length-1 => latency-color_latency))
 	port map (
 		clk => video_clk,
 		di  => fg_color,
@@ -476,7 +608,7 @@ begin
 	latbg_e : entity hdl4fpga.latency
 	generic map (
 		n  => text_bg'length,
-		d  => (0 to text_bg'length-1 => latency-fgbg_latency))
+		d  => (0 to text_bg'length-1 => latency-color_latency))
 	port map (
 		clk => video_clk,
 		di  => bg_color,
