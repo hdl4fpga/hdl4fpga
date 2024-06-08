@@ -164,7 +164,8 @@ architecture def of scopeio_textbox is
 	constant signfcnd_length : natural := max(vtsignfcnd_length, hzsignfcnd_length);
 	constant offset_length   : natural := max(vt_offset'length, hz_offset'length);
 
-	signal str_frm           : std_logic := '0';
+	signal str_req           : std_logic := '0';
+	signal str_rdy           : std_logic := '0';
 	signal str_code          : ascii;
 	signal bin               : std_logic_vector(0 to bin_digits*((offset_length+signfcnd_length+bin_digits-1)/bin_digits)-1);
 	signal btof_frm          : std_logic;
@@ -315,9 +316,19 @@ begin
 				end if;
 			end process;
 
+			process(rgtr_clk)
+			begin
+				if rising_edge(rgtr_clk) then
+					if (tgwdt_req xor tgwdt_rdy)='0' then
+						if trigger_ena='1' then
+							tgwdt_req <= not tgwdt_rdy;
+						end if;
+					end if;
+				end if;
+			end process;
+
 			tgr_scale <= multiplex(gain_ids, trigger_chanid, tgr_scale'length);
 			triggerwdt_p : process(rgtr_clk)
-	
 				function init_rom (
 					constant obj   : string;
 					constant width : natural;
@@ -340,16 +351,29 @@ begin
 					return data;
 				end;
 	
-				constant data : std_logic_vector := to_ascii(init_rom(hdo(layout)**".vt", 4, inputs*4));
+				constant data : string := init_rom(hdo(layout)**".vt", 4, inputs*4);
+				variable ptr  : positive range 1 to data'length;
+				variable cnt  : natural  range 0 to 4-1;
 
 			begin
 				if rising_edge(rgtr_clk) then
-					if (tgwdt_req xor tgwdt_rdy)='0' then
-						if trigger_ena='1' then
-							tgwdt_req <= not tgwdt_rdy;
+					if (str_rdy xor str_req)='1' then
+						if cnt < 3 then
+							ptr := ptr + 1;
+							cnt := cnt + 1;
+							str_code <= to_ascii(data(ptr));
+						else
+							ptr := 1;
+							cnt := 0;
+							str_rdy <= str_req;
 						end if;
+					else
+						cnt := 0;
+						ptr := 1+to_integer(unsigned(trigger_chanid))*4;
+						str_code <= to_ascii(data(ptr));
 					end if;
 				end if;
+
 			end process;
 
 		end block;
@@ -398,31 +422,31 @@ begin
 							mul_req  <= not to_stdulogic(to_bit(mul_rdy));
 							wdt_req  <= not wdt_rdy;
 							state    := s_wdtoffset;
-						elsif (tgwdt_req xor tgwdt_rdy)='1' then
+						elsif (tgwdt_rdy xor tgwdt_req)='1' then
 							wdt_req  <= not wdt_rdy;
 							wdt_addr <= to_unsigned(cga_cols, wdt_addr'length);
-							str_frm  <= '1';
-							str_code <= to_ascii("a");
+							str_req  <= not str_rdy;
 							state    := s_wdtoffset;
-						else
-							str_frm  <= '0';
 						end if;
 					when s_wdtoffset =>
-						if (wdt_rdy xor wdt_req)='0' then
-							wdt_addr <= cga_addr + 2;
-							offset   <= to_signed(grid_unit, offset'length);
-							mul_req  <= not to_stdulogic(to_bit(mul_rdy));
-							wdt_req  <= not wdt_rdy;
-							state    := s_wdtunit;
+						if (wdt_req xor wdt_rdy)='0' then
+							if (tgwdt_rdy xor tgwdt_req)='1' then
+								tgwdt_rdy <= tgwdt_req;
+								state     := s_init;
+							else
+								wdt_addr <= cga_addr + 2;
+								offset   <= to_signed(grid_unit, offset'length);
+								mul_req  <= not to_stdulogic(to_bit(mul_rdy));
+								wdt_req  <= not wdt_rdy;
+								state    := s_wdtunit;
+							end if;
 						end if;
-						str_frm  <= '0';
 					when s_wdtunit =>
 						if (wdt_rdy xor wdt_req)='0' then
+							tgwdt_rdy <= tgwdt_req;
 							vtwdt_rdy <= vtwdt_req;
 							hzwdt_rdy <= hzwdt_req;
-							tgwdt_rdy <= tgwdt_req;
 							state     := s_init;
-							str_frm  <= '0';
 						end if;
 					end case;
 				end if;
@@ -472,7 +496,7 @@ begin
 						cga_addr <= wdt_addr;
 						cga_data <= btof_code;
  						state    := s_action;
-					elsif str_frm='1' then
+					elsif (str_rdy xor str_req)='1' then
 						cga_we   <= '1';
 						cga_addr <= wdt_addr;
 						cga_data <= str_code;
@@ -487,7 +511,7 @@ begin
 	 					cga_we   <= '1';
 	 					cga_addr <= cga_addr + 1;
 	 					cga_data <= btof_code;
-					elsif str_frm='1' then
+					elsif (str_rdy xor str_req)='1' then
 	 					cga_we   <= '1';
 	 					cga_addr <= cga_addr + 1;
 						cga_data <= str_code;
@@ -504,7 +528,7 @@ begin
 						wdt_rdy  <= wdt_req;
 						state    := s_wait;
 					elsif (tgwdt_rdy xor tgwdt_req)='1' then
-						cga_we   <= '1';
+						cga_we   <= '0';
 						cga_addr <= cga_addr + 1;
 						wdt_rdy  <= wdt_req;
 						state    := s_wait;
