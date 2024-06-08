@@ -353,7 +353,7 @@ begin
 	
 				constant data : string := init_rom(hdo(layout)**".vt", 4, inputs*4);
 				variable ptr  : positive range 1 to data'length;
-				variable cnt  : natural  range 0 to 4-1;
+				variable cnt  : natural  range 0 to width-1;
 
 			begin
 				if rising_edge(rgtr_clk) then
@@ -363,13 +363,13 @@ begin
 							cnt := cnt + 1;
 							str_code <= to_ascii(data(ptr));
 						else
-							ptr := 1;
+							ptr := to_integer(unsigned(trigger_chanid))*width+1;
 							cnt := 0;
 							str_rdy <= str_req;
 						end if;
 					else
 						cnt := 0;
-						ptr := 1+to_integer(unsigned(trigger_chanid))*4;
+						ptr := to_integer(unsigned(trigger_chanid))*width+1;
 						str_code <= to_ascii(data(ptr));
 					end if;
 				end if;
