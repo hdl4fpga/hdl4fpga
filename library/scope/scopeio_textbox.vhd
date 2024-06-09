@@ -352,7 +352,7 @@ begin
 			begin
 				if rising_edge(rgtr_clk) then
 					if (str_rdy xor str_req)='1' then
-						if cnt < 3 then
+						if cnt < label_width-1 then
 							ptr := ptr + 1;
 							cnt := cnt + 1;
 							str_code <= to_ascii(data(ptr+1));
@@ -439,12 +439,14 @@ begin
 						if (wdt_req xor wdt_rdy)='0' then
 							if (vtwdt_req xor vtwdt_rdy)='1' then
 								wdt_addr <= cga_addr + 2;
+								wdt_addr <= resize(mul(unsigned(vt_chanid), cga_cols), wdt_addr'length) + (width + 2*cga_cols + 7);
 								offset   <= to_signed(grid_unit, offset'length);
 								mul_req  <= not to_stdulogic(to_bit(mul_rdy));
 								wdt_req  <= not wdt_rdy;
 								state    := s_wdtunit;
 							elsif (hzwdt_req xor hzwdt_rdy)='1' then
 								wdt_addr <= cga_addr + 2;
+								wdt_addr <= to_unsigned(width + 7, wdt_addr'length);
 								offset   <= to_signed(grid_unit, offset'length);
 								mul_req  <= not to_stdulogic(to_bit(mul_rdy));
 								wdt_req  <= not wdt_rdy;
