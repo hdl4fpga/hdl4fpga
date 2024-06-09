@@ -301,6 +301,9 @@ begin
 						vt_chanid  <= std_logic_vector(resize(unsigned(gain_cid), vt_chanid'length));
 						vt_scale   <= multiplex(gain_ids,   gain_cid, vt_scale'length);
 						vtwdt_req  <= not vtwdt_rdy;
+						tgwdt_req  <= not tgwdt_rdy;
+					elsif trigger_ena='1' then
+						tgwdt_req <= not tgwdt_rdy;
 					end if;
 				end if;
 			end process;
@@ -316,22 +319,13 @@ begin
 				end if;
 			end process;
 
-			process(rgtr_clk)
-			begin
-				if rising_edge(rgtr_clk) then
-					if (tgwdt_req xor tgwdt_rdy)='0' then
-						if trigger_ena='1' then
-							tgwdt_req <= not tgwdt_rdy;
-						end if;
-					end if;
-				end if;
-			end process;
-
 			tgr_scale <= multiplex(gain_ids, trigger_chanid, tgr_scale'length);
 			triggerwdt_p : process(rgtr_clk)
+
+				constant width : natural := label_width;
+
 				function init_rom (
 					constant obj   : string;
-					constant width : natural;
 					constant size  : natural)
 					return string is
 	
@@ -351,9 +345,9 @@ begin
 					return data;
 				end;
 	
-				constant data : string := init_rom(hdo(layout)**".vt", 4, inputs*4);
-				variable ptr  : positive range 1 to data'length;
-				variable cnt  : natural  range 0 to 4-1;
+				constant data : string := init_rom(hdo(layout)**".vt", inputs*width);
+				variable ptr  : natural range 0 to data'length-1;
+				variable cnt  : natural range 0 to label_width-1;
 
 			begin
 				if rising_edge(rgtr_clk) then
@@ -361,16 +355,16 @@ begin
 						if cnt < 3 then
 							ptr := ptr + 1;
 							cnt := cnt + 1;
-							str_code <= to_ascii(data(ptr));
+							str_code <= to_ascii(data(ptr+1));
 						else
-							ptr := 1;
+							ptr := to_integer(mul(unsigned(trigger_chanid), width));
 							cnt := 0;
 							str_rdy <= str_req;
 						end if;
 					else
 						cnt := 0;
-						ptr := 1+to_integer(unsigned(trigger_chanid))*4;
-						str_code <= to_ascii(data(ptr));
+						ptr := to_integer(mul(unsigned(trigger_chanid), width));
+						str_code <= to_ascii(data(ptr+1));
 					end if;
 				end if;
 
@@ -397,7 +391,7 @@ begin
 		begin
 
 			process (rgtr_clk)
-				type states is (s_init, s_wdtoffset, s_wdtunit);
+				type states is (s_init, s_wdtstring, s_wdtoffset, s_wdtunit);
 				variable state : states;
 				variable q : std_logic;
 			begin
@@ -426,24 +420,44 @@ begin
 							wdt_req  <= not wdt_rdy;
 							wdt_addr <= to_unsigned(cga_cols, wdt_addr'length);
 							str_req  <= not str_rdy;
-							state    := s_wdtoffset;
+							state    := s_wdtstring;
+						end if;
+					when s_wdtstring =>
+						if (wdt_req xor wdt_rdy)='0' then
+							if (tgwdt_rdy xor tgwdt_req)='1' then
+								offset   <= resize(signed(trigger_level), offset'length);
+								scale    <= std_logic_vector(to_unsigned(vt_signfcnds(to_integer(unsigned(tgr_scale(2-1 downto 0)))), scale'length));
+								shr      <= std_logic_vector(to_signed(vt_shrs(to_integer(unsigned(tgr_scale))), shr'length));
+								pnt      <= std_logic_vector(to_signed(vt_pnts(to_integer(unsigned(tgr_scale))), pnt'length));
+								mul_req  <= not to_stdulogic(to_bit(mul_rdy));
+								wdt_req  <= not wdt_rdy;
+								wdt_addr <= to_unsigned(cga_cols, wdt_addr'length) + width;
+								state    := s_wdtoffset;
+							end if;
 						end if;
 					when s_wdtoffset =>
 						if (wdt_req xor wdt_rdy)='0' then
-							if (tgwdt_rdy xor tgwdt_req)='1' then
-								tgwdt_rdy <= tgwdt_req;
-								state     := s_init;
-							else
+							if (vtwdt_req xor vtwdt_rdy)='1' then
 								wdt_addr <= cga_addr + 2;
 								offset   <= to_signed(grid_unit, offset'length);
 								mul_req  <= not to_stdulogic(to_bit(mul_rdy));
 								wdt_req  <= not wdt_rdy;
 								state    := s_wdtunit;
+							elsif (hzwdt_req xor hzwdt_rdy)='1' then
+								wdt_addr <= cga_addr + 2;
+								offset   <= to_signed(grid_unit, offset'length);
+								mul_req  <= not to_stdulogic(to_bit(mul_rdy));
+								wdt_req  <= not wdt_rdy;
+								state    := s_wdtunit;
+							elsif (tgwdt_rdy xor tgwdt_req)='1' then
+								tgwdt_rdy <= tgwdt_req;
+								state     := s_init;
+							else
+								state     := s_init;
 							end if;
 						end if;
 					when s_wdtunit =>
 						if (wdt_rdy xor wdt_req)='0' then
-							tgwdt_rdy <= tgwdt_req;
 							vtwdt_rdy <= vtwdt_req;
 							hzwdt_rdy <= hzwdt_req;
 							state     := s_init;
