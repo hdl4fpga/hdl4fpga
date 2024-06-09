@@ -542,8 +542,9 @@ begin
 						wdt_rdy  <= wdt_req;
 						state    := s_wait;
 					elsif (tgwdt_rdy xor tgwdt_req)='1' then
-						cga_we   <= '0';
+						cga_we   <= '1';
 						cga_addr <= cga_addr + 1;
+						cga_data <= to_ascii(vt_prefix(to_integer(unsigned(tgr_scale))+1));
 						wdt_rdy  <= wdt_req;
 						state    := s_wait;
 	 				end if;
