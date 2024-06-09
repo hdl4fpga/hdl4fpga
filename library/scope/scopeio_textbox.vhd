@@ -399,7 +399,7 @@ begin
 		begin
 
 			process (rgtr_clk)
-				type states is (s_init, s_wdtoffset, s_wdtunit);
+				type states is (s_init, s_wdtstring, s_wdtoffset, s_wdtunit);
 				variable state : states;
 				variable q : std_logic;
 			begin
@@ -428,7 +428,20 @@ begin
 							wdt_req  <= not wdt_rdy;
 							wdt_addr <= to_unsigned(cga_cols, wdt_addr'length);
 							str_req  <= not str_rdy;
-							state    := s_wdtoffset;
+							state    := s_wdtstring;
+						end if;
+					when s_wdtstring =>
+						if (wdt_req xor wdt_rdy)='0' then
+							if (tgwdt_rdy xor tgwdt_req)='1' then
+								offset   <= resize(signed(trigger_level), offset'length);
+								scale    <= std_logic_vector(to_unsigned(vt_signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
+								shr      <= std_logic_vector(to_signed(vt_shrs(to_integer(unsigned(vt_scale))), shr'length));
+								pnt      <= std_logic_vector(to_signed(vt_pnts(to_integer(unsigned(vt_scale))), pnt'length));
+								mul_req  <= not to_stdulogic(to_bit(mul_rdy));
+								wdt_req  <= not wdt_rdy;
+								wdt_addr <= cga_addr + 2;
+								state    := s_wdtoffset;
+							end if;
 						end if;
 					when s_wdtoffset =>
 						if (wdt_req xor wdt_rdy)='0' then
