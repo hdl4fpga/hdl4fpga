@@ -434,12 +434,12 @@ begin
 						if (wdt_req xor wdt_rdy)='0' then
 							if (tgwdt_rdy xor tgwdt_req)='1' then
 								offset   <= resize(signed(trigger_level), offset'length);
-								scale    <= std_logic_vector(to_unsigned(vt_signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
-								shr      <= std_logic_vector(to_signed(vt_shrs(to_integer(unsigned(vt_scale))), shr'length));
-								pnt      <= std_logic_vector(to_signed(vt_pnts(to_integer(unsigned(vt_scale))), pnt'length));
+								scale    <= std_logic_vector(to_unsigned(vt_signfcnds(to_integer(unsigned(tgr_scale(2-1 downto 0)))), scale'length));
+								shr      <= std_logic_vector(to_signed(vt_shrs(to_integer(unsigned(tgr_scale))), shr'length));
+								pnt      <= std_logic_vector(to_signed(vt_pnts(to_integer(unsigned(tgr_scale))), pnt'length));
 								mul_req  <= not to_stdulogic(to_bit(mul_rdy));
 								wdt_req  <= not wdt_rdy;
-								wdt_addr <= cga_addr + 2;
+								wdt_addr <= cga_addr + 1;
 								state    := s_wdtoffset;
 							end if;
 						end if;
@@ -458,10 +458,21 @@ begin
 						end if;
 					when s_wdtunit =>
 						if (wdt_rdy xor wdt_req)='0' then
-							tgwdt_rdy <= tgwdt_req;
-							vtwdt_rdy <= vtwdt_req;
-							hzwdt_rdy <= hzwdt_req;
-							state     := s_init;
+							if (vtwdt_rdy xor vtwdt_req)='1' then
+								offset   <= resize(signed(trigger_level), offset'length);
+								scale    <= std_logic_vector(to_unsigned(vt_signfcnds(to_integer(unsigned(tgr_scale(2-1 downto 0)))), scale'length));
+								shr      <= std_logic_vector(to_signed(vt_shrs(to_integer(unsigned(tgr_scale))), shr'length));
+								pnt      <= std_logic_vector(to_signed(vt_pnts(to_integer(unsigned(tgr_scale))), pnt'length));
+								mul_req  <= not to_stdulogic(to_bit(mul_rdy));
+								wdt_req  <= not wdt_rdy;
+								wdt_addr <= to_unsigned(width, wdt_addr'length);
+								state    := s_wdtoffset;
+							else
+								tgwdt_rdy <= tgwdt_req;
+								vtwdt_rdy <= vtwdt_req;
+								hzwdt_rdy <= hzwdt_req;
+								state     := s_init;
+							end if;
 						end if;
 					end case;
 				end if;
