@@ -393,7 +393,23 @@ begin
 			process (rgtr_clk)
 				type states is (s_init, s_wdtstring, s_wdtoffset, s_wdtunit);
 				variable state : states;
-				variable q : std_logic;
+				type xxx is (hz_offset, hz_unit, tgr_channel);
+
+				type natural_matrix is array (natural range <>, natural range <>) of natural;
+				
+				function xxx (
+					constant inputs      : natural;
+					constant label_width : natural ) is
+					return natural_matrix is
+					variable retval : natural_vectro(0 to 2*inputs-1, 0 to 5-1);
+				begin
+					for i 0 to inputs-1 loop
+						for j 0 to 5-1 loop
+							retval(i,j) := 
+						end loop;
+					end loop;
+					return retval;
+				end;
 			begin
 				if rising_edge(rgtr_clk) then
 					case state is
