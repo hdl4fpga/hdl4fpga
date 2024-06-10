@@ -168,7 +168,8 @@ architecture def of scopeio_textbox is
 	signal str_rdy           : std_logic := '0';
 	signal str_code          : ascii;
 	signal bin               : std_logic_vector(0 to bin_digits*((offset_length+signfcnd_length+bin_digits-1)/bin_digits)-1);
-	signal btof_frm          : std_logic;
+	signal btof_req          : bit := '0';
+	signal btof_rdy          : bit := '0';
 	signal btof_code         : ascii;
 	signal cga_we            : std_logic := '0';
 	signal cga_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
@@ -381,54 +382,59 @@ begin
 			signal dbdbbl_req  : std_logic;
 			signal dbdbbl_rdy  : std_logic;
 
-			signal scale : std_logic_vector(0 to signfcnd_length-1);
+			signal scale       : unsigned(0 to signfcnd_length-1);
 
+			signal shr      : signed(4-1 downto 0);
+			signal pnt      : signed(4-1 downto 0);
 			signal code_frm : std_logic;
 			signal code     : std_logic_vector(0 to 8-1);
-			signal shr      : std_logic_vector(4-1 downto 0);
-			signal pnt      : std_logic_vector(4-1 downto 0);
 
 		begin
 
 			process (rgtr_clk)
 				type states is (s_init, s_wdtstring, s_wdtoffset, s_wdtunit);
 				variable state : states;
-				type xxx is (hz_offset, hz_unit, tgr_channel);
 
 				type natural_matrix is array (natural range <>, natural range <>) of natural;
-				
-				function xxx (
-					constant inputs      : natural;
-					constant label_width : natural ) is
+				constant inputss_col0 : natural := 0;
+				function init_inputss
 					return natural_matrix is
-					variable retval : natural_vectro(0 to 2*inputs-1, 0 to 5-1);
+					variable retval : natural_matrix(0 to 2*inputs-1, 0 to 5-1);
+					constant offset_width : natural := 7;
+					constant unit_width   : natural := 2;
+					constant scale_width  : natural := 7;
 				begin
-					for i 0 to inputs-1 loop
-						for j 0 to 5-1 loop
-							retval(i,j) := 
-						end loop;
+					for i in 0 to inputs-1 loop
+						retval(i,0) := cga_cols*i;
+						retval(i,1) := retval(i,0) + label_width;
+						retval(i,2) := retval(i,1) + offset_width;
+						retval(i,3) := retval(i,2) + unit_width;
+						retval(i,4) := retval(i,3) + scale_width;
 					end loop;
 					return retval;
 				end;
+
+				constant input_ss : natural_matrix := init_inputss;
+
 			begin
 				if rising_edge(rgtr_clk) then
 					case state is
 					when s_init =>
 						if (vtwdt_req xor vtwdt_rdy)='1' then
+							wdt_addr <= to_unsigned(input_ss(to_integer(unsigned(vt_chanid)), inputss_col0), wdt_addr'length);
 							offset   <= resize(signed(vt_offset), offset'length);
-							scale    <= std_logic_vector(to_unsigned(vt_signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length));
-							wdt_addr <= resize(mul(unsigned(vt_chanid), cga_cols), wdt_addr'length) + (width + 2*cga_cols);
-							shr      <= std_logic_vector(to_signed(vt_shrs(to_integer(unsigned(vt_scale))), shr'length));
-							pnt      <= std_logic_vector(to_signed(vt_pnts(to_integer(unsigned(vt_scale))), pnt'length));
+							scale    <= to_unsigned(vt_signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length);
+							shr      <= to_signed(vt_shrs(to_integer(unsigned(vt_scale))), shr'length);
+							pnt      <= to_signed(vt_pnts(to_integer(unsigned(vt_scale))), pnt'length);
 							mul_req  <= not to_stdulogic(to_bit(mul_rdy));
 							wdt_req  <= not wdt_rdy;
 							state    := s_wdtoffset;
 						elsif (hzwdt_req xor hzwdt_rdy)='1' then
 							offset   <= resize(signed(hz_offset), offset'length);
-							scale    <= std_logic_vector(to_unsigned(hz_signfcnds(to_integer(unsigned(hz_scale(2-1 downto 0)))), scale'length));
+							scale    <= to_unsigned(hz_signfcnds(to_integer(unsigned(hz_scale(2-1 downto 0)))), scale'length);
 							wdt_addr <= to_unsigned(width, wdt_addr'length);
-							shr      <= std_logic_vector(to_signed(hz_shrs(to_integer(unsigned(hz_scale))), shr'length));
-							pnt      <= std_logic_vector(to_signed(hz_pnts(to_integer(unsigned(hz_scale))), pnt'length));
+							shr      <= to_signed(hz_shrs(to_integer(unsigned(hz_scale))), shr'length);
+							pnt      <= to_signed(hz_pnts(to_integer(unsigned(hz_scale))), pnt'length);
 							mul_req  <= not to_stdulogic(to_bit(mul_rdy));
 							wdt_req  <= not wdt_rdy;
 							state    := s_wdtoffset;
@@ -442,9 +448,9 @@ begin
 						if (wdt_req xor wdt_rdy)='0' then
 							if (tgwdt_rdy xor tgwdt_req)='1' then
 								offset   <= resize(signed(trigger_level), offset'length);
-								scale    <= std_logic_vector(to_unsigned(vt_signfcnds(to_integer(unsigned(tgr_scale(2-1 downto 0)))), scale'length));
-								shr      <= std_logic_vector(to_signed(vt_shrs(to_integer(unsigned(tgr_scale))), shr'length));
-								pnt      <= std_logic_vector(to_signed(vt_pnts(to_integer(unsigned(tgr_scale))), pnt'length));
+								scale    <= to_unsigned(vt_signfcnds(to_integer(unsigned(tgr_scale(2-1 downto 0)))), scale'length);
+								shr      <= to_signed(vt_shrs(to_integer(unsigned(tgr_scale))), shr'length);
+								pnt      <= to_signed(vt_pnts(to_integer(unsigned(tgr_scale))), pnt'length);
 								mul_req  <= not to_stdulogic(to_bit(mul_rdy));
 								wdt_req  <= not wdt_rdy;
 								wdt_addr <= to_unsigned(cga_cols, wdt_addr'length) + width;
@@ -483,6 +489,7 @@ begin
 			end process;
 
 			btof_b : block
+				signal btof_frm : std_logic;
 			begin
     			magnitud <= -offset when offset(offset'left)='1' else offset;
     			mul_ser_e : entity hdl4fpga.mul_ser
@@ -492,7 +499,7 @@ begin
     				clk => rgtr_clk,
     				req => mul_req,
     				rdy => mul_rdy,
-    				a   => scale,
+    				a   => std_logic_vector(scale),
     				b   => std_logic_vector(magnitud),
     				s   => bin);
 
@@ -501,8 +508,8 @@ begin
     				clk      => rgtr_clk,
     				btof_req => mul_rdy,
     				btof_rdy => open,
-    				sht      => shr,
-    				dec      => pnt,
+    				sht      => std_logic_vector(shr),
+    				dec      => std_logic_vector(pnt),
     				left     => '0',
     				width    => x"7",
     				exp      => b"101",
@@ -510,6 +517,7 @@ begin
     				bin      => bin,
     				code_frm => btof_frm,
     				code     => btof_code);
+					btof_req <= to_bit(btof_frm) xor btof_rdy;
 			end block;
 
 		end block;
@@ -521,7 +529,7 @@ begin
  			if rising_edge(rgtr_clk) then
  				case state is
  				when s_wait  =>
-					if btof_frm='1' then
+					if (btof_rdy xor btof_req)='1' then
 						cga_we   <= '1';
 						cga_addr <= wdt_addr;
 						cga_data <= btof_code;
@@ -537,7 +545,7 @@ begin
 						cga_data <= (others => '-');
 					end if;
  				when s_action =>
-	 				if btof_frm='1' then
+					if (btof_rdy xor btof_req)='1' then
 	 					cga_we   <= '1';
 	 					cga_addr <= cga_addr + 1;
 	 					cga_data <= btof_code;

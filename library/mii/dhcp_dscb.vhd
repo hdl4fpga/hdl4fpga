@@ -53,6 +53,7 @@ entity dhcpc_dscb is
 		dhcpdscb_trdy : in  std_logic;
 		dhcpdscb_end  : out std_logic;
 		dhcpdscb_data : out std_logic_vector);
+
 end;
 
 architecture def of dhcpc_dscb is

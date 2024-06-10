@@ -118,6 +118,51 @@ architecture def of sdram_sch is
 			return val;
 		end;
 
+    	function pulse_delay (
+    		constant phase     : std_logic_vector;
+    		constant latency   : natural := 0;
+    		constant extension : natural := 0;
+    		constant word_size : natural := 4;
+    		constant width     : natural := 1)
+    		return std_logic_vector is
+
+    		variable latency_mod : natural;
+    		variable latency_quo : natural;
+    		variable delay     : natural;
+    		variable pulse     : std_logic;
+
+    		variable distance  : natural;
+    		variable width_quo : natural;
+    		variable width_mod : natural;
+    		variable tail      : natural;
+    		variable tail_quo  : natural;
+    		variable tail_mod  : natural;
+    		variable pulses    : std_logic_vector(0 to word_size-1);
+    	begin
+
+    		latency_mod := latency mod pulses'length;
+    		latency_quo := latency  /  pulses'length;
+    		for j in pulses'range loop
+    			distance  := (extension-j+pulses'length-1)/pulses'length;
+    			width_quo := (distance+width-1)/width;
+    			width_mod := (width_quo*width-distance) mod width;
+
+    			delay := latency_quo+(j+latency_mod)/pulses'length;
+    			pulse := phase(delay);
+
+    			if width_quo /= 0 then
+    				tail_quo := width_mod  /  width_quo;
+    				tail_mod := width_mod mod width_quo;
+    				for l in 1 to width_quo loop
+    					tail  := tail_quo + (l*tail_mod) / width_quo;
+    					pulse := pulse or phase(delay+l*width-tail);
+    				end loop;
+    			end if;
+    			pulses((latency+j) mod pulses'length) := pulse;
+    		end loop;
+    		return pulses;
+    	end;
+
 		constant lat_cod1 : latword_vector := to_latwordvector(lat_cod);
 		variable sel_sch : word_vector(lat_cod1'range);
 

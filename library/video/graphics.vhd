@@ -241,8 +241,7 @@ begin
     		async_mode => false,
     		latency    => 1,
     		check_sov  => false,
-    		check_dov  => true,
-    		gray_code  => false)
+    		check_dov  => true)
     	port map (
     		src_clk  => ctlr_clk,
     		src_frm  => slzr_frm,
@@ -265,8 +264,7 @@ begin
     		async_mode => true,
     		latency    => 1,
     		check_sov  => false,
-    		check_dov  => true,
-    		gray_code  => false)
+    		check_dov  => true)
     	port map (
     		src_clk  => ctlr_clk,
     		src_data => ctlr_di,

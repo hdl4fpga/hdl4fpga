@@ -276,8 +276,7 @@ begin
 			sync_read => false, 
 			latency   => 1, -- RCD latency greater than 2
 			check_sov => false,
-			check_dov => true,
-			gray_code => false)
+			check_dov => true)
 		port map (
 			src_clk   => dmatrans_clk,
 			src_irdy  => ena,

@@ -48,6 +48,19 @@ architecture def of box_edges is
 --	signal wr_addr : std_logic_vector(rd_addr'range);
 --	signal wr_data : std_logic_vector(rd_data'range);
 
+	function to_bitrom (
+		constant data : natural_vector;
+		constant size : natural)
+		return std_logic_vector is
+		alias    dataa  : natural_vector(0 to data'length-1) is data;
+		variable retval : unsigned(0 to data'length*size-1);
+	begin
+		for i in dataa'range loop
+			retval(i*size to (i+1)*size-1) := to_unsigned(dataa(i), size);
+		end loop;
+		return std_logic_vector(retval);
+	end;
+
 begin
 
 	process (video_clk)

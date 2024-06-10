@@ -38,6 +38,10 @@ package base is
 	subtype integer64 is time;
 	type integer64_vector is array (natural range <>) of integer64;
 
+	-------------
+	-- string --
+	-------------
+
 	function toupper(
 		constant char : character)
 		return character;
@@ -45,27 +49,6 @@ package base is
 	function tolower(
 		constant char : character)
 		return character;
-
-	function isalpha (
-		constant char : character)
-		return boolean;
-
-	function isspace (
-		constant char : character)
-		return boolean;
-
-	function isword (
-		constant stream : string)
-		return natural;
-
-	function strlen (
-		constant str : string)
-		return natural;
-
-	function strcmp (
-		constant str1 : in string;
-		constant str2 : in string)
-		return boolean;
 
 	function rotate_left (
 		constant arg1 : string;
@@ -77,37 +60,112 @@ package base is
 		constant arg2 : natural)
 		return string;
 
-	function reverse (
-		constant arg : string)
-		return string;
-
 	function ftoa (
 		constant num     : real;
 		constant ndigits : natural)
 		return string;
 
-	function to_stdlogicvector (
+	function to_string (
+		constant arg : std_logic_vector)
+		return string;
+
+	function to_hex(
+		constant arg : std_logic_vector)
+		return string;
+
+	function to_ascii(
+		constant arg : std_logic_vector)
+		return string;
+
+	function to_string (
+		constant arg : unsigned)
+		return string;
+
+	function to_ascii(
+		constant arg : character)
+		return std_logic_vector;
+
+	function to_ascii(
 		constant arg : string)
 		return std_logic_vector;
 
-	function to_bitrom (
-		constant data : natural_vector;
-		constant size : natural)
+	function to_utf16(
+		constant arg : string)
 		return std_logic_vector;
 
-	function to_bitrom (
-		constant data : integer_vector;
-		constant size : natural)
+	function to_bcd (
+		constant arg : string)
 		return std_logic_vector;
+
+	-----------
+	-- arith --
+	-----------
 
 	function summation (
 		constant elements : natural_vector)
 		return natural;
 
-	function push_left (
-		constant queue   : std_logic_vector;
-		constant element : std_logic_vector)
-		return std_logic_vector;
+	function mul (
+		constant op1 : signed;
+		constant op2 : unsigned)
+		return signed;
+
+	function mul (
+		constant op1 : signed;
+		constant op2 : natural)
+		return signed;
+
+	function mul (
+		constant op1 : unsigned;
+		constant op2 : natural)
+		return unsigned;
+
+	function max (
+		constant data : natural_vector)
+		return natural;
+
+	function max (
+		constant data : integer_vector)
+		return integer;
+
+	function max (
+		constant arg1 : integer;
+		constant arg2 : integer)
+		return integer;
+
+	function max (
+		constant arg1 : signed;
+		constant arg2 : signed)
+		return signed;
+
+	function min (
+		constant arg1 : integer;
+		constant arg2 : integer)
+		return integer;
+
+	function min (
+		constant arg1 : signed;
+		constant arg2 : signed)
+		return signed;
+
+	function gcd(
+		constant a : natural; 
+		constant b : natural)
+		return natural;
+		
+	function mcm(
+		constant a : natural; 
+		constant b : natural)
+		return natural;
+		
+	function roundup (
+		constant number : natural;
+		constant round  : natural)
+		return natural;
+
+	-----------------
+	-- bit-shuffle --
+	-----------------
 
 	function reverse (
 		constant arg : std_logic_vector;
@@ -128,48 +186,9 @@ package base is
 		constant size : natural)
 		return unsigned;
 
-	function to_ascii(
-		constant arg : character)
-		return std_logic_vector;
-
-	function to_ascii(
-		constant arg : string)
-		return std_logic_vector;
-
-	function to_utf16(
-		constant arg : string)
-		return std_logic_vector;
-
-	function to_bcd (
-		constant arg : string)
-		return std_logic_vector;
-
-	function neg (
-		constant arg : signed;
-		constant ena : std_logic := '1')
-		return signed;
-
-	function mul (
-		constant op1 : signed;
-		constant op2 : unsigned)
-		return signed;
-
-	function mul (
-		constant op1 : signed;
-		constant op2 : natural)
-		return signed;
-
-	function mul (
-		constant op1 : unsigned;
-		constant op2 : natural)
-		return unsigned;
-
-	-- Logic Functions
-	------------------
-
-	function wor (
-		constant arg : std_logic_vector)
-		return std_logic;
+	---------------------
+	-- Logic Functions --
+	---------------------
 
 	function wirebus (					-- Solve Xilinx XST bug
 		constant arg1 : std_logic_vector;
@@ -190,60 +209,6 @@ package base is
 		constant arg1 : integer_vector;
 		constant arg2 : std_logic_vector)
 		return integer;
-
-	function setif (
-		constant arg  : boolean;
-		constant argt : boolean := true;
-		constant argf : boolean := false)
-		return boolean;
-
-	function setif (
-		constant arg  : boolean;
-		constant argt : bit := '1';
-		constant argf : bit := '0')
-		return bit;
-
-	function setif (
-		constant arg  : boolean;
-		constant argt : std_logic := '1';
-		constant argf : std_logic := '0')
-		return std_logic;
-
-	function setif (
-		constant arg   : boolean;
-		constant argt  : std_logic_vector;
-		constant argf  : std_logic_vector)
-		return std_logic_vector;
-
-	function setif (
-		constant arg   : boolean;
-		constant argt  : unsigned;
-		constant argf  : unsigned)
-		return unsigned;
-
-	function setif (
-		constant arg   : boolean;
-		constant argt  : unsigned;
-		constant argf  : unsigned)
-		return std_logic_vector;
-
-	function setif (
-		constant arg  : boolean;
-		constant argt : integer := 1;
-		constant argf : integer := 0)
-		return integer;
-
-	function setif (
-		constant arg  : boolean;
-		constant argt : real;
-		constant argf : real)
-		return real;
-
-	function setif (
-		constant arg  : boolean;
-		constant argt : string;
-		constant argf : string)
-		return string;
 
 	function primux (
 		constant inp  : std_logic_vector;
@@ -325,101 +290,6 @@ package base is
 		constant data : std_logic_vector)
 		return std_logic_vector;
 
-	subtype gray is std_logic_vector;
-
-	function inc (
-		constant arg : gray)
-		return gray;
-
-	function pulse_delay (
-		constant phase     : std_logic_vector;
-		constant latency   : natural := 0;
-		constant extension : natural := 0;
-		constant word_size : natural := 4;
-		constant width     : natural := 1)
-		return std_logic_vector;
-
-	-----------
-	-- ASCII --
-	-----------
-
-	function to_string (
-		constant arg : std_logic_vector)
-		return string;
-
-	function to_hex(
-		constant arg : std_logic_vector)
-		return string;
-
-	function to_ascii(
-		constant arg : std_logic_vector)
-		return string;
-
-	function to_string (
-		constant arg : unsigned)
-		return string;
-
-	function max (
-		constant data : natural_vector)
-		return natural;
-
-	function max (
-		constant data : integer_vector)
-		return integer;
-
-	function max (
-		constant arg1 : integer;
-		constant arg2 : integer)
-		return integer;
-
-	function max (
-		constant arg1 : signed;
-		constant arg2 : signed)
-		return signed;
-
-	function min (
-		constant arg1 : integer;
-		constant arg2 : integer)
-		return integer;
-
-	function min (
-		constant arg1 : signed;
-		constant arg2 : signed)
-		return signed;
-
-	procedure swap (
-		variable arg1 : inout character;
-		variable arg2 : inout character);
-
-	procedure swap (
-		variable arg1 : inout std_logic_vector;
-		variable arg2 : inout std_logic_vector);
-
-	function ispower2(
-		constant value : natural)
-		return boolean;
-
-	function oneschecksum (
-		constant data : std_logic_vector;
-		constant size : natural)
-		return std_logic_vector;
-
-	function ipheader_checksummed (
-		constant ipheader : std_logic_vector)
-		return std_logic_vector;
-
-	function udp_checksum (
-		constant src : std_logic_vector(0 to 32-1);
-		constant dst : std_logic_vector(0 to 32-1);
-		constant udp : std_logic_vector)
-		return std_logic_vector;
-
-	function udp_checksummed (
-		constant src : std_logic_vector(0 to 32-1);
-		constant dst : std_logic_vector(0 to 32-1);
-		constant udp : std_logic_vector)
-		return std_logic_vector;
-
 	function encoder (
 		constant arg : std_logic_vector)
 		return         std_logic_vector;
@@ -438,20 +308,64 @@ package base is
 		constant g : std_logic_vector)
 		return std_logic_vector;
 
-	function gcd(
-		constant a : natural; 
-		constant b : natural)
-		return natural;
-		
-	function mcm(
-		constant a : natural; 
-		constant b : natural)
-		return natural;
-		
-	function roundup (
-		constant number : natural;
-		constant round  : natural)
-		return natural;
+	-------------
+	-- boolean --
+	-------------
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : boolean := true;
+		constant argf : boolean := false)
+		return boolean;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : bit := '1';
+		constant argf : bit := '0')
+		return bit;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : std_logic := '1';
+		constant argf : std_logic := '0')
+		return std_logic;
+
+	function setif (
+		constant arg   : boolean;
+		constant argt  : std_logic_vector;
+		constant argf  : std_logic_vector)
+		return std_logic_vector;
+
+	function setif (
+		constant arg   : boolean;
+		constant argt  : unsigned;
+		constant argf  : unsigned)
+		return unsigned;
+
+	function setif (
+		constant arg   : boolean;
+		constant argt  : unsigned;
+		constant argf  : unsigned)
+		return std_logic_vector;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : integer := 1;
+		constant argf : integer := 0)
+		return integer;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : real;
+		constant argf : real)
+		return real;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : string;
+		constant argf : string)
+		return string;
+
 end;
 
 use std.textio.all;
@@ -489,83 +403,6 @@ package body base is
 		end if;
 	end;
 
-	function isalpha (
-		constant char : character)
-		return boolean is
-	begin
-		if    character'pos('a') > character'pos(tolower(char)) then
-			return false;
-		elsif character'pos('z') < character'pos(tolower(char)) then
-			return false;
-		else 
-			return true;
-		end if;
-	end;
-
-	function isspace (
-		constant char : character)
-		return boolean is
-	begin
-		case char is
-		when ' ' =>
-			return true;
-		when others =>
-			return false;
-		end case;
-	end;
-
-	function isword (
-		constant stream : string)
-		return natural is
-	begin
-		for i in stream'range loop
-			if isalpha(stream(i)) then
-				next;
-			elsif stream(i)='-' then
-				next;
-			else
-				return i-1;
-			end if;
-		end loop;
-		return stream'right;
-	end;
-
-	function strcmp (
-		constant str1 : in string;
-		constant str2 : in string)
-		return boolean
-	is
-		alias astr1 : string(1 to str1'length) is str1;
-		alias astr2 : string(1 to str2'length) is str2;
-	begin
-		if strlen(str1)/=strlen(str2) then
-			return false;
-		else
-		 	for i in 1 to strlen(str1) loop
-				if astr1(i)/=astr2(i) then
-					return false;
-				end if;
-			end loop;
-			return true;
-		end if;
-	end;
-
-	function strlen (
-		constant str : string)
-		return natural
-	is
-		variable retval : natural;
-	begin
-		retval := 0;
-		for i in str'range loop
-			if str(i)=NUL then
-				return retval;
-			end if;
-			retval := retval + 1;
-		end loop;
-		return retval;
-	end;
-
 	function shift_right (
 		constant arg1 : string;
 		constant arg2 : natural)
@@ -592,19 +429,6 @@ package body base is
 	begin
 		for i in arg1'range loop
 			retval(i) := arg1(arg1'left+(i-arg1'left+arg2) mod arg1'length);
-		end loop;
-		return retval;
-	end;
-
-	function reverse (
-		constant arg : string)
-		return string
-	is
-		variable retval : string(1 to arg'length);
-	begin
-		retval := arg;
-		for i in 1 to retval'length/2 loop
-			swap(retval(i), retval(retval'length+1-i));
 		end loop;
 		return retval;
 	end;
@@ -719,87 +543,6 @@ package body base is
 		return val;
 	end;
 
-	function oneschecksum (
-		constant data : std_logic_vector;
-		constant size : natural)
-		return std_logic_vector is
-		constant n        : natural := (data'length+size-1)/size;
-		variable aux      : unsigned(0 to n*size-1);
-		variable checksum : unsigned(0 to size);
-		variable retval   : std_logic_vector(0 to size-1);
-	begin
-		aux := (others => '0');
-		aux(0 to data'length-1) := unsigned(data);
-		checksum := ('0', others => '1');
-		for i in 0 to n-1 loop
-			checksum := checksum + resize(aux(0 to size-1), checksum'length);
-			if checksum(0)='1' then
-				checksum := checksum + to_unsigned(1, checksum'length); -- Xilinx's bug
-			end if;
-			checksum(0) := '0';
-			aux := aux sll size;
-		end loop;
-		return std_logic_vector(checksum(1 to size));
-	end;
-
-	function ipheader_checksummed(
-		constant ipheader : std_logic_vector)
-		return std_logic_vector is
-		variable aux : std_logic_vector(0 to ipheader'length-1);
-	begin
-		aux := ipheader;
-		aux(80 to 96-1) := (others => '0');
-		aux(80 to 96-1) := not oneschecksum(aux, 16);
-		return aux;
-	end;
-
-	function udp_checksum(
-		constant src : std_logic_vector(0 to 32-1);
-		constant dst : std_logic_vector(0 to 32-1);
-		constant udp : std_logic_vector)
-		return std_logic_vector is
-		variable aux : unsigned(0 to 32+src'length+dst'length+udp'length-1) := (others => '0');
-		variable retval : std_logic_vector(0 to 16-1);
-	begin
-		aux(src'range) := unsigned(src);
-		aux := aux rol src'length;
-		aux(dst'range) := unsigned(dst);
-		aux := aux rol dst'length;
-		aux( 0 to 16-1) := x"0011";
-		aux(16 to 32-1) := to_unsigned(udp'length/8, 16);
-		aux := aux rol 32;
-
-		aux(0 to udp'length-1) := unsigned(udp);
-		retval := not oneschecksum(std_logic_vector(aux), 16);
-		if retval=(retval'range => '0') then
-			retval := (others => '1');
-		end if;
-		return retval;
-	end;
-
-	function udp_checksummed(
-		constant src  : std_logic_vector(0 to 32-1);
-		constant dst  : std_logic_vector(0 to 32-1);
-		constant udp  : std_logic_vector)
-		return std_logic_vector is
-		variable len : unsigned(0 to 16-1);
-		variable aux : unsigned(0 to udp'length+src'length+32+dst'length-1) := (others => '0');
-	begin
-		aux(0 to udp'length-1) := unsigned(udp);
-		len := aux(32 to 48-1);
-		aux := aux rol udp'length;
-		aux(src'range) := unsigned(src);
-		aux := aux rol src'length;
-		aux(dst'range) := unsigned(dst);
-		aux := aux rol dst'length;
-		aux( 0 to 16-1) := x"0011";
-		aux(16 to 32-1) := len;
-		aux := aux rol 32;
-
-		aux(48 to 64-1) := unsigned(oneschecksum(not std_logic_vector(aux), 16));
-		return std_logic_vector(aux(0 to udp'length-1));
-	end;
-
 	------------------
 	-- Array functions
 	------------------
@@ -864,18 +607,6 @@ package body base is
 			retval := retval + elements(i);
 		end loop;
 		return retval;
-	end;
-
-	function push_left (
-		constant queue   : std_logic_vector;
-		constant element : std_logic_vector)
-		return std_logic_vector is
-		variable retval  : unsigned(0 to queue'length-1);
-	begin
-		retval := unsigned(queue);
-		retval := retval srl element'length;
-		retval(0 to element'length-1) := unsigned(element);
-		return std_logic_vector(retval);
 	end;
 
 	function to_ascii(
@@ -989,19 +720,6 @@ package body base is
 	end;
 
 	function to_stdlogicvector (
-		constant arg : string)
-		return std_logic_vector is
-		subtype code is std_logic_vector(8-1 downto 0);
-		variable val : unsigned(arg'length*code'length-1 downto 0);
-	begin
-		for i in arg'range loop
-			val := val sll code'length-1;
-			val(code'range) := to_unsigned(character'pos(arg(i)), code'length);
-		end loop;
-		return std_logic_vector(val);
-	end function;
-
-	function to_stdlogicvector (
 		constant arg : character)
 		return std_logic_vector is
 		subtype code is std_logic_vector(8-1 downto 0);
@@ -1009,47 +727,9 @@ package body base is
 		return std_logic_vector(to_unsigned(character'pos(arg),code'length));
 	end function;
 
-	function to_bitrom (
-		constant data : natural_vector;
-		constant size : natural)
-		return std_logic_vector is
-		alias    dataa  : natural_vector(0 to data'length-1) is data;
-		variable retval : unsigned(0 to data'length*size-1);
-	begin
-		for i in dataa'range loop
-			retval(i*size to (i+1)*size-1) := to_unsigned(dataa(i), size);
-		end loop;
-		return std_logic_vector(retval);
-	end;
-
-	function to_bitrom (
-		constant data : integer_vector;
-		constant size : natural)
-		return std_logic_vector is
-		alias    dataa  : integer_vector(0 to data'length-1) is data;
-		variable retval : signed(0 to data'length*size-1);
-	begin
-		for i in dataa'range loop
-			retval(i*size to (i+1)*size-1) := to_signed(dataa(i), size);
-		end loop;
-		return std_logic_vector(retval);
-	end;
-
 	--------------------
 	-- Logical functions
 	--------------------
-
-	function wor (
-		constant arg : std_logic_vector)
-		return std_logic is
-	begin
-		for i in arg'range loop
-			if arg(i)='1' then
-				return '1';
-			end if;
-		end loop;
-		return '0';
-	end;
 
 	function wirebus (
 		constant arg1 : std_logic_vector;
@@ -1235,17 +915,6 @@ package body base is
 		end if;
 		return argf;
 	end function;
-
-	function neg (
-		constant arg : signed;
-		constant ena : std_logic := '1')
-		return signed is
-	begin
-		if ena='1' then
-			return -arg;
-		end if;
-		return arg;
-	end;
 
 	function mul (
 		constant op1 : signed;
@@ -1513,34 +1182,6 @@ package body base is
 		return std_logic_vector(retval(0 to word'length-1));
 	end;
 
-	function inc (
-		constant arg : gray)
-		return gray is
-		variable a : std_logic_vector(arg'length-1 downto 0);
-		variable t : std_logic_vector(a'range) := (others => '0');
-	begin
-		a := std_logic_vector(arg);
-		for i in a'reverse_range loop
-			for j in i to a'left loop
-				t(i) := t(i) xor a(j);
-			end loop;
-			t(i) := not t(i);
-			if i > 0 then
-				for j in 0 to i-1 loop
-					t(i) := t(i) and (not t(j));
-				end loop;
-			end if;
-		end loop;
-		if t'length > 1 then
-			if t(a'left-1 downto 0)=(1 to a'left => '0') then
-				t(a'left) := '1';
-			end if;
-		else
-			t(a'left) := '1';
-		end if;
-		return gray(a xor t);
-	end function;
-
 	-----------
 	-- ASCII --
 	-----------
@@ -1619,47 +1260,6 @@ package body base is
 		end if;
 	end;
 
-	procedure swap (
-		variable arg1 : inout character;
-		variable arg2 : inout character)
-	is
-		variable aux : character;
-	begin
-		aux  := arg1;
-		arg1 := arg2;
-		arg2 := aux;
-	end;
-
-	procedure swap (
-		variable arg1 : inout std_logic_vector;
-		variable arg2 : inout std_logic_vector)
-	is
-		variable aux : std_logic_vector(arg1'range);
-	begin
-		aux  := arg1;
-		arg1 := arg2;
-		arg2 := aux;
-	end;
-
-	function ispower2(
-		constant value : natural)
-		return boolean is
-		variable div  : natural;
-		variable rmdr : natural;
-	begin
-		rmdr := 0;
-		div  := value;
-		while div /= 0 loop
-			exit when rmdr /= 0;
-			rmdr := div mod 2;
-			div  := div  /  2;
-		end loop;
-		if div /= 0 then
-			return false;
-		end if;
-		return true;
-	end;
-
 	function signed_num_bits (
 		arg: integer)
 		return natural is
@@ -1689,56 +1289,10 @@ package body base is
 		nbits := 1;
 		for i in 0 to n loop          -- to avoid synthesizes tools loop-warnings
 			exit when n < 2;          -- to avoid synthesizes tools loop-warnings
-		-- while n > 1 loop
 			nbits := nbits+1;
 			n := n / 2;
 		end loop;
 		return nbits;
-	end;
-
-	function pulse_delay (
-		constant phase     : std_logic_vector;
-		constant latency   : natural := 0;
-		constant extension : natural := 0;
-		constant word_size : natural := 4;
-		constant width     : natural := 1)
-		return std_logic_vector is
-
-		variable latency_mod : natural;
-		variable latency_quo : natural;
-		variable delay     : natural;
-		variable pulse     : std_logic;
-
-		variable distance  : natural;
-		variable width_quo : natural;
-		variable width_mod : natural;
-		variable tail      : natural;
-		variable tail_quo  : natural;
-		variable tail_mod  : natural;
-		variable pulses    : std_logic_vector(0 to word_size-1);
-	begin
-
-		latency_mod := latency mod pulses'length;
-		latency_quo := latency  /  pulses'length;
-		for j in pulses'range loop
-			distance  := (extension-j+pulses'length-1)/pulses'length;
-			width_quo := (distance+width-1)/width;
-			width_mod := (width_quo*width-distance) mod width;
-
-			delay := latency_quo+(j+latency_mod)/pulses'length;
-			pulse := phase(delay);
-
-			if width_quo /= 0 then
-				tail_quo := width_mod  /  width_quo;
-				tail_mod := width_mod mod width_quo;
-				for l in 1 to width_quo loop
-					tail  := tail_quo + (l*tail_mod) / width_quo;
-					pulse := pulse or phase(delay+l*width-tail);
-				end loop;
-			end if;
-			pulses((latency+j) mod pulses'length) := pulse;
-		end loop;
-		return pulses;
 	end;
 
 	function fill (
