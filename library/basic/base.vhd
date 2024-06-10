@@ -190,6 +190,16 @@ package base is
 	-- Logic Functions --
 	---------------------
 
+	function "and" (
+		constant arg1 : std_logic_vector;
+		constant arg2 : std_logic)
+		return std_logic_vector;
+
+	function "or" (
+		constant arg1 : std_logic_vector;
+		constant arg2 : std_logic)
+		return std_logic_vector;
+
 	function wirebus (					-- Solve Xilinx XST bug
 		constant arg1 : std_logic_vector;
 		constant arg2 : std_logic_vector)
@@ -377,6 +387,45 @@ library hdl4fpga;
 
 package body base is
 
+	function signed_num_bits (
+		arg: integer)
+		return natural is
+		variable nbits : natural;
+		variable n : natural;
+	begin
+		if arg>= 0 then
+			n := arg;
+		else
+			n := -(arg+1);
+		end if;
+		nbits := 1;
+		while n>0 loop
+			nbits := nbits + 1;
+			n := n / 2;
+		end loop;
+		return nbits;
+	end;
+
+	function unsigned_num_bits (
+		arg: natural)
+		return natural is
+		variable nbits: natural;
+		variable n: natural;
+	begin
+		n := arg;
+		nbits := 1;
+		for i in 0 to n loop          -- to avoid synthesizes tools loop-warnings
+			exit when n < 2;          -- to avoid synthesizes tools loop-warnings
+			nbits := nbits+1;
+			n := n / 2;
+		end loop;
+		return nbits;
+	end;
+
+	-------------
+	-- string --
+	-------------
+
 	function toupper(
 		constant char : character)
 		return character is
@@ -528,87 +577,6 @@ package body base is
 		return retval(1 to ndigits);
 	end;
 
-	function encoder (
-		constant arg : std_logic_vector)
-		return   std_logic_vector is
-		variable val : std_logic_vector(0 to unsigned_num_bits(arg'length-1)-1) := (others => '-');
-		variable aux : unsigned(0 to arg'length-1) := (0 => '1', others => '0');
-	begin
-		for i in aux'range loop
-			if arg=std_logic_vector(aux) then
-				val := std_logic_vector(to_unsigned(i, val'length));
-			end if;
-			aux := aux ror 1;
-		end loop;
-		return val;
-	end;
-
-	------------------
-	-- Array functions
-	------------------
-
-	function reverse (
-		constant arg : std_logic_vector;
-		constant keep_range : boolean := true)
-		return std_logic_vector is
-		variable range_inverted  : std_logic_vector(arg'reverse_range);
-		variable range_unchanged : std_logic_vector(arg'range);
-	begin
-		-- Possible Xilinx ISE's bug
-		for i in arg'range loop
-			range_inverted(i) := arg(i);
-		end loop;
-
-		range_unchanged := range_inverted;
-		if keep_range then
-			return range_unchanged;
-		else
-			return range_inverted;
-		end if;
-	end;
-
-	function reverse (
-		constant arg  : std_logic_vector;
-		constant size : natural)
-		return std_logic_vector is
-		variable aux : std_logic_vector(0 to size*((arg'length+size-1)/size)-1);
-	begin
-
-		aux(0 to arg'length-1) := arg;
-		for i in 0 to aux'length/size-1 loop
-			aux(0 to size-1) := reverse(aux(0 to size-1));
-			aux:= std_logic_vector(unsigned(aux) rol size);
-		end loop;
-		return aux(0 to arg'length-1);
-	end;
-
-	function reverse (
-		constant arg  : unsigned)
-		return unsigned is
-	begin
-		return unsigned(reverse(std_logic_vector(arg)));
-	end;
-
-	function reverse (
-		constant arg  : unsigned;
-		constant size : natural)
-		return unsigned is
-	begin
-		return unsigned(reverse(std_logic_vector(arg), size));
-	end;
-
-	function summation (
-		constant elements : natural_vector)
-		return natural is
-		variable retval : natural;
-	begin
-		retval := 0;
-		for i in elements'range loop
-			retval := retval + elements(i);
-		end loop;
-		return retval;
-	end;
-
 	function to_ascii(
 		constant arg : character)
 		return std_logic_vector is
@@ -719,17 +687,293 @@ package body base is
 		return to_string(std_logic_vector(arg));
 	end;
 
-	function to_stdlogicvector (
-		constant arg : character)
-		return std_logic_vector is
-		subtype code is std_logic_vector(8-1 downto 0);
+	function encoder (
+		constant arg : std_logic_vector)
+		return   std_logic_vector is
+		variable val : std_logic_vector(0 to unsigned_num_bits(arg'length-1)-1) := (others => '-');
+		variable aux : unsigned(0 to arg'length-1) := (0 => '1', others => '0');
 	begin
-		return std_logic_vector(to_unsigned(character'pos(arg),code'length));
+		for i in aux'range loop
+			if arg=std_logic_vector(aux) then
+				val := std_logic_vector(to_unsigned(i, val'length));
+			end if;
+			aux := aux ror 1;
+		end loop;
+		return val;
+	end;
+
+	-----------------
+	-- bit-shuffle --
+	-----------------
+
+	function reverse (
+		constant arg : std_logic_vector;
+		constant keep_range : boolean := true)
+		return std_logic_vector is
+		variable range_inverted  : std_logic_vector(arg'reverse_range);
+		variable range_unchanged : std_logic_vector(arg'range);
+	begin
+		-- Possible Xilinx ISE's bug
+		for i in arg'range loop
+			range_inverted(i) := arg(i);
+		end loop;
+
+		range_unchanged := range_inverted;
+		if keep_range then
+			return range_unchanged;
+		else
+			return range_inverted;
+		end if;
+	end;
+
+	function reverse (
+		constant arg  : std_logic_vector;
+		constant size : natural)
+		return std_logic_vector is
+		variable aux : std_logic_vector(0 to size*((arg'length+size-1)/size)-1);
+	begin
+
+		aux(0 to arg'length-1) := arg;
+		for i in 0 to aux'length/size-1 loop
+			aux(0 to size-1) := reverse(aux(0 to size-1));
+			aux:= std_logic_vector(unsigned(aux) rol size);
+		end loop;
+		return aux(0 to arg'length-1);
+	end;
+
+	function reverse (
+		constant arg  : unsigned)
+		return unsigned is
+	begin
+		return unsigned(reverse(std_logic_vector(arg)));
+	end;
+
+	function reverse (
+		constant arg  : unsigned;
+		constant size : natural)
+		return unsigned is
+	begin
+		return unsigned(reverse(std_logic_vector(arg), size));
+	end;
+
+	-----------
+	-- arith --
+	-----------
+
+	function summation (
+		constant elements : natural_vector)
+		return natural is
+		variable retval : natural;
+	begin
+		retval := 0;
+		for i in elements'range loop
+			retval := retval + elements(i);
+		end loop;
+		return retval;
+	end;
+
+	function mul (
+		constant op1 : signed;
+		constant op2 : unsigned)
+		return signed is
+		variable muld : signed(op1'length-1 downto 0);
+		variable mulr : unsigned(op2'length-1 downto 0);
+		variable rval : signed(0 to muld'length+mulr'length-1);
+	begin
+		muld := op1;
+		mulr := op2;
+		rval := (others => '0');
+		for i in mulr'range loop
+			rval := shift_right(rval, 1);
+			if mulr(0)='1' then
+				rval(0 to muld'length) := rval(0 to muld'length) + resize(muld, muld'length+1);
+			end if;
+			mulr := mulr srl 1;
+		end loop;
+		return rval;
+	end;
+
+	function mul (
+		constant op1 : signed;
+		constant op2 : natural)
+		return signed is
+		variable mulr : natural;
+		variable muld : signed(op1'length-1 downto 0);
+		variable rval : signed(0 to muld'length+unsigned_num_bits(op2)-1);
+	begin
+		muld := op1;
+		mulr := op2;
+		rval := (others => '0');
+		for i in 0 to unsigned_num_bits(op2)-1 loop
+			rval := shift_right(rval, 1);
+			if (mulr mod 2)=1 then
+				rval(0 to muld'length) := rval(0 to muld'length) + resize(muld, muld'length+1);
+			end if;
+			mulr := mulr / 2;
+		end loop;
+		return rval;
+	end;
+
+	function mul (
+		constant op1 : unsigned;
+		constant op2 : natural)
+		return unsigned is
+		variable mulr : natural;
+		variable muld : unsigned(op1'length-1 downto 0);
+		variable rval : unsigned(0 to muld'length+unsigned_num_bits(op2)-1);
+	begin
+		muld := op1;
+		mulr := op2;
+		rval := (others => '0');
+		while mulr /= 0 loop
+			rval := shift_right(rval, 1);
+			if (mulr mod 2)=1 then
+				rval(0 to muld'length) := rval(0 to muld'length) + resize(muld, muld'length+1);
+			end if;
+			mulr := mulr / 2;
+		end loop;
+		return rval;
+	end;
+
+	function max (
+		constant data : natural_vector)
+		return natural is
+		variable val : natural:= data(data'left);
+	begin
+		for i in data'range loop
+			if val < data(i) then
+				val := data(i);
+			end if;
+		end loop;
+		return val;
+	end;
+
+	function max (
+		constant data : integer_vector)
+		return integer is
+		variable val : integer:= data(data'left);
+	begin
+		for i in data'range loop
+			if val < data(i) then
+				val := data(i);
+			end if;
+		end loop;
+		return val;
+	end;
+
+	function max (
+		constant arg1 : integer;
+		constant arg2 : integer)
+		return integer is
+	begin
+		if arg1 > arg2 then
+			return arg1;
+		else
+			return arg2;
+		end if;
+	end;
+
+	function max (
+		constant arg1 : signed;
+		constant arg2 : signed)
+		return signed is
+	begin
+		if arg1 > arg2 then
+			return arg1;
+		else
+			return arg2;
+		end if;
+	end;
+
+	function min (
+		constant arg1 : integer;
+		constant arg2 : integer)
+		return integer is
+	begin
+		if arg1 < arg2 then
+			return arg1;
+		else
+			return arg2;
+		end if;
+	end;
+
+	function min (
+		constant arg1 : signed;
+		constant arg2 : signed)
+		return signed is
+	begin
+		if arg1 < arg2 then
+			return arg1;
+		else
+			return arg2;
+		end if;
+	end;
+
+	function gcd(
+		constant a : natural; 
+		constant b : natural)
+		return natural is
+		variable var_a : natural;
+		variable var_b : natural;
+		variable aux   : natural;
+	begin
+		var_a := a;
+		var_b := b;
+		while var_b /= 0 loop
+			aux   := var_b;
+			var_b := var_a mod var_b;
+			var_a := aux;
+		end loop;
+		return var_a;
 	end function;
+		
+	function mcm(
+		constant a : natural; 
+		constant b : natural)
+		return natural is
+		variable var_a : natural;
+		variable var_b : natural;
+	begin
+		return (a*b)/gcd(a,b);
+	end function;
+		
+	function roundup (
+		constant number : natural;
+		constant round  : natural)
+		return natural is
+	begin
+		return ((number+round-1)/round)*round;
+	end;
 
 	--------------------
 	-- Logical functions
 	--------------------
+
+	function "and" (
+		constant arg1 : std_logic_vector;
+		constant arg2 : std_logic)
+		return std_logic_vector is
+		variable retval : std_logic_vector(arg1'range);
+	begin
+		retval := arg1;
+		for i in retval'range loop
+			retval(i) := retval(i) and arg2;
+		end loop;
+		return retval;
+	end;
+
+	function "or" (
+		constant arg1 : std_logic_vector;
+		constant arg2 : std_logic)
+		return std_logic_vector is
+		variable retval : std_logic_vector(arg1'range);
+	begin
+		retval := arg1;
+		for i in retval'range loop
+			retval(i) := retval(i) or arg2;
+		end loop;
+		return retval;
+	end;
 
 	function wirebus (
 		constant arg1 : std_logic_vector;
@@ -806,177 +1050,6 @@ package body base is
 			end if;
 		end loop;
 		return retval;
-	end;
-
-	function setif (
-		constant arg  : boolean;
-		constant argt : boolean := true;
-		constant argf : boolean := false)
-		return boolean is
-	begin
-		if arg then
-			return argt;
-		end if;
-		return argf;
-	end function;
-
-	function setif (
-		constant arg  : boolean;
-		constant argt : bit := '1';
-		constant argf : bit := '0')
-		return bit is
-	begin
-		if arg then
-			return argt;
-		end if;
-		return argf;
-	end function;
-
-	function setif (
-		constant arg  : boolean;
-		constant argt : std_logic := '1';
-		constant argf : std_logic := '0')
-		return std_logic is
-	begin
-		if arg then
-			return argt;
-		end if;
-		return argf;
-	end function;
-
-	function setif (
-		constant arg  : boolean;
-		constant argt : unsigned;
-		constant argf : unsigned)
-		return unsigned is
-	begin
-		if arg then
-			return argt;
-		end if;
-		return argf;
-	end function;
-
-	function setif (
-		constant arg  : boolean;
-		constant argt : unsigned;
-		constant argf : unsigned)
-		return std_logic_vector is
-	begin
-		if arg then
-			return std_logic_vector(argt);
-		end if;
-		return std_logic_vector(argf);
-	end function;
-
-	function setif (
-		constant arg  : boolean;
-		constant argt : std_logic_vector;
-		constant argf : std_logic_vector)
-		return std_logic_vector is
-	begin
-		if arg then
-			return argt;
-		end if;
-		return argf;
-	end function;
-
-	function setif (
-		constant arg  : boolean;
-		constant argt : integer := 1;
-		constant argf : integer := 0)
-		return integer is
-	begin
-		if arg then
-			return argt;
-		end if;
-		return argf;
-	end function;
-
-	function setif (
-		constant arg  : boolean;
-		constant argt : real;
-		constant argf : real)
-		return real is
-	begin
-		if arg then
-			return argt;
-		end if;
-		return argf;
-	end function;
-
-	function setif (
-		constant arg  : boolean;
-		constant argt : string;
-		constant argf : string)
-		return string is
-	begin
-		if arg then
-			return argt;
-		end if;
-		return argf;
-	end function;
-
-	function mul (
-		constant op1 : signed;
-		constant op2 : unsigned)
-		return signed is
-		variable muld : signed(op1'length-1 downto 0);
-		variable mulr : unsigned(op2'length-1 downto 0);
-		variable rval : signed(0 to muld'length+mulr'length-1);
-	begin
-		muld := op1;
-		mulr := op2;
-		rval := (others => '0');
-		for i in mulr'range loop
-			rval := shift_right(rval, 1);
-			if mulr(0)='1' then
-				rval(0 to muld'length) := rval(0 to muld'length) + resize(muld, muld'length+1);
-			end if;
-			mulr := mulr srl 1;
-		end loop;
-		return rval;
-	end;
-
-	function mul (
-		constant op1 : signed;
-		constant op2 : natural)
-		return signed is
-		variable mulr : natural;
-		variable muld : signed(op1'length-1 downto 0);
-		variable rval : signed(0 to muld'length+unsigned_num_bits(op2)-1);
-	begin
-		muld := op1;
-		mulr := op2;
-		rval := (others => '0');
-		for i in 0 to unsigned_num_bits(op2)-1 loop
-			rval := shift_right(rval, 1);
-			if (mulr mod 2)=1 then
-				rval(0 to muld'length) := rval(0 to muld'length) + resize(muld, muld'length+1);
-			end if;
-			mulr := mulr / 2;
-		end loop;
-		return rval;
-	end;
-
-	function mul (
-		constant op1 : unsigned;
-		constant op2 : natural)
-		return unsigned is
-		variable mulr : natural;
-		variable muld : unsigned(op1'length-1 downto 0);
-		variable rval : unsigned(0 to muld'length+unsigned_num_bits(op2)-1);
-	begin
-		muld := op1;
-		mulr := op2;
-		rval := (others => '0');
-		while mulr /= 0 loop
-			rval := shift_right(rval, 1);
-			if (mulr mod 2)=1 then
-				rval(0 to muld'length) := rval(0 to muld'length) + resize(muld, muld'length+1);
-			end if;
-			mulr := mulr / 2;
-		end loop;
-		return rval;
 	end;
 
 	function primux (
@@ -1182,119 +1255,6 @@ package body base is
 		return std_logic_vector(retval(0 to word'length-1));
 	end;
 
-	-----------
-	-- ASCII --
-	-----------
-
-	function max (
-		constant data : natural_vector)
-		return natural is
-		variable val : natural:= data(data'left);
-	begin
-		for i in data'range loop
-			if val < data(i) then
-				val := data(i);
-			end if;
-		end loop;
-		return val;
-	end;
-
-	function max (
-		constant data : integer_vector)
-		return integer is
-		variable val : integer:= data(data'left);
-	begin
-		for i in data'range loop
-			if val < data(i) then
-				val := data(i);
-			end if;
-		end loop;
-		return val;
-	end;
-
-	function max (
-		constant arg1 : integer;
-		constant arg2 : integer)
-		return integer is
-	begin
-		if arg1 > arg2 then
-			return arg1;
-		else
-			return arg2;
-		end if;
-	end;
-
-	function max (
-		constant arg1 : signed;
-		constant arg2 : signed)
-		return signed is
-	begin
-		if arg1 > arg2 then
-			return arg1;
-		else
-			return arg2;
-		end if;
-	end;
-
-	function min (
-		constant arg1 : integer;
-		constant arg2 : integer)
-		return integer is
-	begin
-		if arg1 < arg2 then
-			return arg1;
-		else
-			return arg2;
-		end if;
-	end;
-
-	function min (
-		constant arg1 : signed;
-		constant arg2 : signed)
-		return signed is
-	begin
-		if arg1 < arg2 then
-			return arg1;
-		else
-			return arg2;
-		end if;
-	end;
-
-	function signed_num_bits (
-		arg: integer)
-		return natural is
-		variable nbits : natural;
-		variable n : natural;
-	begin
-		if arg>= 0 then
-			n := arg;
-		else
-			n := -(arg+1);
-		end if;
-		nbits := 1;
-		while n>0 loop
-			nbits := nbits + 1;
-			n := n / 2;
-		end loop;
-		return nbits;
-	end;
-
-	function unsigned_num_bits (
-		arg: natural)
-		return natural is
-		variable nbits: natural;
-		variable n: natural;
-	begin
-		n := arg;
-		nbits := 1;
-		for i in 0 to n loop          -- to avoid synthesizes tools loop-warnings
-			exit when n < 2;          -- to avoid synthesizes tools loop-warnings
-			nbits := nbits+1;
-			n := n / 2;
-		end loop;
-		return nbits;
-	end;
-
 	function fill (
 		constant data  : std_logic_vector;
 		constant size  : natural;
@@ -1339,42 +1299,6 @@ package body base is
 		end if;
 	end;
 
-	function gcd(
-		constant a : natural; 
-		constant b : natural)
-		return natural is
-		variable var_a : natural;
-		variable var_b : natural;
-		variable aux   : natural;
-	begin
-		var_a := a;
-		var_b := b;
-		while var_b /= 0 loop
-			aux   := var_b;
-			var_b := var_a mod var_b;
-			var_a := aux;
-		end loop;
-		return var_a;
-	end function;
-		
-	function mcm(
-		constant a : natural; 
-		constant b : natural)
-		return natural is
-		variable var_a : natural;
-		variable var_b : natural;
-	begin
-		return (a*b)/gcd(a,b);
-	end function;
-		
-	function roundup (
-		constant number : natural;
-		constant round  : natural)
-		return natural is
-	begin
-		return ((number+round-1)/round)*round;
-	end;
-
 	function galois_crc(
 		constant m : std_logic_vector;
 		constant r : std_logic_vector;
@@ -1389,5 +1313,117 @@ package body base is
 		end loop;
 		return std_logic_vector(aux_r);
 	end;
+
+	-------------
+	-- boolean --
+	-------------
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : boolean := true;
+		constant argf : boolean := false)
+		return boolean is
+	begin
+		if arg then
+			return argt;
+		end if;
+		return argf;
+	end function;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : bit := '1';
+		constant argf : bit := '0')
+		return bit is
+	begin
+		if arg then
+			return argt;
+		end if;
+		return argf;
+	end function;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : std_logic := '1';
+		constant argf : std_logic := '0')
+		return std_logic is
+	begin
+		if arg then
+			return argt;
+		end if;
+		return argf;
+	end function;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : unsigned;
+		constant argf : unsigned)
+		return unsigned is
+	begin
+		if arg then
+			return argt;
+		end if;
+		return argf;
+	end function;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : unsigned;
+		constant argf : unsigned)
+		return std_logic_vector is
+	begin
+		if arg then
+			return std_logic_vector(argt);
+		end if;
+		return std_logic_vector(argf);
+	end function;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : std_logic_vector;
+		constant argf : std_logic_vector)
+		return std_logic_vector is
+	begin
+		if arg then
+			return argt;
+		end if;
+		return argf;
+	end function;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : integer := 1;
+		constant argf : integer := 0)
+		return integer is
+	begin
+		if arg then
+			return argt;
+		end if;
+		return argf;
+	end function;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : real;
+		constant argf : real)
+		return real is
+	begin
+		if arg then
+			return argt;
+		end if;
+		return argf;
+	end function;
+
+	function setif (
+		constant arg  : boolean;
+		constant argt : string;
+		constant argf : string)
+		return string is
+	begin
+		if arg then
+			return argt;
+		end if;
+		return argf;
+	end function;
 
 end;
