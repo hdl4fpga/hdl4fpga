@@ -295,7 +295,7 @@ begin
 						vt_offset  <= offset;
 						vt_chanid  <= chanid;
 						vt_scale   <= multiplex(gain_ids,   chanid, vt_scale'length);
-						vt_offsets <= insert(vt_offsets, chanid, offset);
+						vt_offsets <= replace(vt_offsets, chanid, offset);
 						vtwdt_req  <= not vtwdt_rdy;
 					elsif gain_dv='1' then
 						vt_offset  <= multiplex(vt_offsets, gain_cid, vt_offset'length);

@@ -217,7 +217,7 @@ package scopeiopkg is
 		constant unit : real)
 		return string;
 
-	function insert (
+	function replace (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector;
 		constant data : std_logic_vector)
@@ -394,7 +394,7 @@ package body scopeiopkg is
 		return (0 to 0 => '-');
 	end;
 
-	function insert (
+	function replace (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector;
 		constant data : std_logic_vector)
@@ -402,7 +402,7 @@ package body scopeiopkg is
 		variable retval : unsigned(0 to data'length*((word'length+data'length-1)/data'length)-1);
 	begin
 		assert word'length mod data'length=0
-		report "insert"
+		report "replace"
 		severity failure;
 		retval(0 to word'length-1) := unsigned(word);
 		for i in 0 to retval'length/data'length-1 loop

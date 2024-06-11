@@ -90,7 +90,7 @@ begin
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
-			vt_offsets <= insert(vt_offsets, vt_chanid, vt_offset);
+			vt_offsets <= replace(vt_offsets, vt_chanid, vt_offset);
 		end if;
 	end process;
 
