@@ -491,17 +491,17 @@ begin
 				end if;
 			end process;
 
-    			magnitud <= -offset when offset(offset'left)='1' else offset;
-    			mul_ser_e : entity hdl4fpga.mul_ser
-    			generic map (
-    				lsb => true)
-    			port map (
-    				clk => rgtr_clk,
-    				req => mul_req,
-    				rdy => mul_rdy,
-    				a   => std_logic_vector(scale),
-    				b   => std_logic_vector(magnitud),
-    				s   => bin);
+   			magnitud <= -offset when offset(offset'left)='1' else offset;
+   			mul_ser_e : entity hdl4fpga.mul_ser
+   			generic map (
+   				lsb => true)
+   			port map (
+   				clk => rgtr_clk,
+   				req => mul_req,
+   				rdy => mul_rdy,
+   				a   => std_logic_vector(scale),
+   				b   => std_logic_vector(magnitud),
+   				s   => bin);
 
    			btof_e : entity hdl4fpga.btof
    			port map (
@@ -518,7 +518,6 @@ begin
    				code_frm => btof_frm,
    				code     => btof_code);
 			btof_req <= to_bit(btof_frm) xor btof_rdy;
-
 
 			process (rgtr_clk)
 				type states is (s_wait, s_action);
