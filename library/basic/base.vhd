@@ -378,8 +378,6 @@ package base is
 
 end;
 
-use std.textio.all;
-
 library ieee;
 use ieee.math_real.all;
 
