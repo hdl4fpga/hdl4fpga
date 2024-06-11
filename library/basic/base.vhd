@@ -65,25 +65,21 @@ package base is
 		constant ndigits : natural)
 		return string;
 
-	function to_string (
-		constant arg : std_logic_vector)
-		return string;
+	function to_bcd (
+		constant arg : string)
+		return std_logic_vector;
 
 	function to_hex(
 		constant arg : std_logic_vector)
 		return string;
 
 	function to_ascii(
-		constant arg : std_logic_vector)
-		return string;
-
-	function to_string (
-		constant arg : unsigned)
-		return string;
-
-	function to_ascii(
 		constant arg : character)
 		return std_logic_vector;
+
+	function to_ascii(
+		constant arg : std_logic_vector)
+		return string;
 
 	function to_ascii(
 		constant arg : string)
@@ -93,9 +89,13 @@ package base is
 		constant arg : string)
 		return std_logic_vector;
 
-	function to_bcd (
-		constant arg : string)
-		return std_logic_vector;
+	function to_string (
+		constant arg : std_logic_vector)
+		return string;
+
+	function to_string (
+		constant arg : unsigned)
+		return string;
 
 	-----------
 	-- arith --
@@ -577,40 +577,6 @@ package body base is
 		return retval(1 to ndigits);
 	end;
 
-	function to_ascii(
-		constant arg : character)
-		return std_logic_vector is
-		subtype ascii is std_logic_vector(0 to 8-1);
-	begin
-		return std_logic_vector(to_unsigned(character'pos(arg), ascii'length));
-	end;
-
-	function to_ascii(
-		constant arg : string)
-		return std_logic_vector is
-		subtype ascii is std_logic_vector(0 to 8-1);
-		variable retval : unsigned(0 to ascii'length*arg'length-1) := (others => '0');
-	begin
-		for i in arg'range loop
-			retval(ascii'range) := unsigned(to_ascii(arg(i)));
-			retval := retval rol ascii'length;
-		end loop;
-		return std_logic_vector(retval);
-	end;
-
-	function to_utf16(
-		constant arg : string)
-		return std_logic_vector is
-		subtype utf16 is std_logic_vector(0 to 16-1);
-		variable retval : unsigned(0 to utf16'length*arg'length-1) := (others => '0');
-	begin
-		for i in arg'range loop
-			retval(utf16'range) := to_unsigned(character'pos(arg(i)), utf16'length);
-			retval := retval rol utf16'length;
-		end loop;
-		return std_logic_vector(retval);
-	end;
-
 	function to_bcd(
 		constant arg    : string)
 		return std_logic_vector is
@@ -633,6 +599,42 @@ package body base is
 		return std_logic_vector(retval);
 	end;
 
+	function to_hex(
+		constant arg : std_logic_vector)
+		return string is
+		constant tab    : string :="01234567890ABCDEF"; 
+		variable aux    : unsigned(0 to 4*((arg'length+4-1)/4)-1);
+		variable retval : string(1 to aux'length/4);
+	begin
+		aux := resize(unsigned(arg), aux'length);
+		for i in retval'range loop
+			retval(i) := tab(to_integer(aux(0 to 4-1))+1);
+			aux := aux sll 4;
+		end loop;
+		return retval;
+	end;
+
+	function to_ascii(
+		constant arg : character)
+		return std_logic_vector is
+		subtype ascii is std_logic_vector(0 to 8-1);
+	begin
+		return std_logic_vector(to_unsigned(character'pos(arg), ascii'length));
+	end;
+
+	function to_ascii(
+		constant arg : string)
+		return std_logic_vector is
+		subtype ascii is std_logic_vector(0 to 8-1);
+		variable retval : unsigned(0 to ascii'length*arg'length-1) := (others => '0');
+	begin
+		for i in arg'range loop
+			retval(ascii'range) := unsigned(to_ascii(arg(i)));
+			retval := retval rol ascii'length;
+		end loop;
+		return std_logic_vector(retval);
+	end;
+
 	function to_ascii(
 		constant arg : std_logic_vector)
 		return string is
@@ -647,19 +649,17 @@ package body base is
 		return retval;
 	end;
 
-	function to_hex(
-		constant arg : std_logic_vector)
-		return string is
-		constant tab    : string :="01234567890ABCDEF"; 
-		variable aux    : unsigned(0 to 4*((arg'length+4-1)/4)-1);
-		variable retval : string(1 to aux'length/4);
+	function to_utf16(
+		constant arg : string)
+		return std_logic_vector is
+		subtype utf16 is std_logic_vector(0 to 16-1);
+		variable retval : unsigned(0 to utf16'length*arg'length-1) := (others => '0');
 	begin
-		aux := resize(unsigned(arg), aux'length);
-		for i in retval'range loop
-			retval(i) := tab(to_integer(aux(0 to 4-1))+1);
-			aux := aux sll 4;
+		for i in arg'range loop
+			retval(utf16'range) := to_unsigned(character'pos(arg(i)), utf16'length);
+			retval := retval rol utf16'length;
 		end loop;
-		return retval;
+		return std_logic_vector(retval);
 	end;
 
 	function to_string(
@@ -700,60 +700,6 @@ package body base is
 			aux := aux ror 1;
 		end loop;
 		return val;
-	end;
-
-	-----------------
-	-- bit-shuffle --
-	-----------------
-
-	function reverse (
-		constant arg : std_logic_vector;
-		constant keep_range : boolean := true)
-		return std_logic_vector is
-		variable range_inverted  : std_logic_vector(arg'reverse_range);
-		variable range_unchanged : std_logic_vector(arg'range);
-	begin
-		-- Possible Xilinx ISE's bug
-		for i in arg'range loop
-			range_inverted(i) := arg(i);
-		end loop;
-
-		range_unchanged := range_inverted;
-		if keep_range then
-			return range_unchanged;
-		else
-			return range_inverted;
-		end if;
-	end;
-
-	function reverse (
-		constant arg  : std_logic_vector;
-		constant size : natural)
-		return std_logic_vector is
-		variable aux : std_logic_vector(0 to size*((arg'length+size-1)/size)-1);
-	begin
-
-		aux(0 to arg'length-1) := arg;
-		for i in 0 to aux'length/size-1 loop
-			aux(0 to size-1) := reverse(aux(0 to size-1));
-			aux:= std_logic_vector(unsigned(aux) rol size);
-		end loop;
-		return aux(0 to arg'length-1);
-	end;
-
-	function reverse (
-		constant arg  : unsigned)
-		return unsigned is
-	begin
-		return unsigned(reverse(std_logic_vector(arg)));
-	end;
-
-	function reverse (
-		constant arg  : unsigned;
-		constant size : natural)
-		return unsigned is
-	begin
-		return unsigned(reverse(std_logic_vector(arg), size));
 	end;
 
 	-----------
@@ -943,6 +889,60 @@ package body base is
 		return natural is
 	begin
 		return ((number+round-1)/round)*round;
+	end;
+
+	-----------------
+	-- bit-shuffle --
+	-----------------
+
+	function reverse (
+		constant arg : std_logic_vector;
+		constant keep_range : boolean := true)
+		return std_logic_vector is
+		variable range_inverted  : std_logic_vector(arg'reverse_range);
+		variable range_unchanged : std_logic_vector(arg'range);
+	begin
+		-- Possible Xilinx ISE's bug
+		for i in arg'range loop
+			range_inverted(i) := arg(i);
+		end loop;
+
+		range_unchanged := range_inverted;
+		if keep_range then
+			return range_unchanged;
+		else
+			return range_inverted;
+		end if;
+	end;
+
+	function reverse (
+		constant arg  : std_logic_vector;
+		constant size : natural)
+		return std_logic_vector is
+		variable aux : std_logic_vector(0 to size*((arg'length+size-1)/size)-1);
+	begin
+
+		aux(0 to arg'length-1) := arg;
+		for i in 0 to aux'length/size-1 loop
+			aux(0 to size-1) := reverse(aux(0 to size-1));
+			aux:= std_logic_vector(unsigned(aux) rol size);
+		end loop;
+		return aux(0 to arg'length-1);
+	end;
+
+	function reverse (
+		constant arg  : unsigned)
+		return unsigned is
+	begin
+		return unsigned(reverse(std_logic_vector(arg)));
+	end;
+
+	function reverse (
+		constant arg  : unsigned;
+		constant size : natural)
+		return unsigned is
+	begin
+		return unsigned(reverse(std_logic_vector(arg), size));
 	end;
 
 	--------------------
