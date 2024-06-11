@@ -164,10 +164,13 @@ architecture def of scopeio_textbox is
 	constant signfcnd_length : natural := max(vtsignfcnd_length, hzsignfcnd_length);
 	constant offset_length   : natural := max(vt_offset'length, hz_offset'length);
 
-	signal str_req           : std_logic := '0';
-	signal str_rdy           : std_logic := '0';
-	signal str_code          : ascii;
 	signal bin               : std_logic_vector(0 to bin_digits*((offset_length+signfcnd_length+bin_digits-1)/bin_digits)-1);
+
+	signal str_frm           : bit := '0';
+	signal str_req           : bit := '0';
+	signal str_rdy           : bit := '0';
+	signal str_code          : ascii;
+	signal btof_frm          : std_logic;
 	signal btof_req          : bit := '0';
 	signal btof_rdy          : bit := '0';
 	signal btof_code         : ascii;
@@ -488,9 +491,6 @@ begin
 				end if;
 			end process;
 
-			btof_b : block
-				signal btof_frm : std_logic;
-			begin
     			magnitud <= -offset when offset(offset'left)='1' else offset;
     			mul_ser_e : entity hdl4fpga.mul_ser
     			generic map (
@@ -503,78 +503,64 @@ begin
     				b   => std_logic_vector(magnitud),
     				s   => bin);
 
-    			btof_e : entity hdl4fpga.btof
-    			port map (
-    				clk      => rgtr_clk,
-    				btof_req => mul_rdy,
-    				btof_rdy => open,
-    				sht      => std_logic_vector(shr),
-    				dec      => std_logic_vector(pnt),
-    				left     => '0',
-    				width    => x"7",
-    				exp      => b"101",
-    				neg      => offset(offset'left),
-    				bin      => bin,
-    				code_frm => btof_frm,
-    				code     => btof_code);
-					btof_req <= to_bit(btof_frm) xor btof_rdy;
-			end block;
+   			btof_e : entity hdl4fpga.btof
+   			port map (
+   				clk      => rgtr_clk,
+   				btof_req => mul_rdy,
+   				btof_rdy => open,
+   				sht      => std_logic_vector(shr),
+   				dec      => std_logic_vector(pnt),
+   				left     => '0',
+   				width    => x"7",
+   				exp      => b"101",
+   				neg      => offset(offset'left),
+   				bin      => bin,
+   				code_frm => btof_frm,
+   				code     => btof_code);
+			btof_req <= to_bit(btof_frm) xor btof_rdy;
+
+
+			process (rgtr_clk)
+				type states is (s_wait, s_action);
+				variable state : states;
+			begin
+				if rising_edge(rgtr_clk) then
+					case state is
+					when s_wait  =>
+						if (btof_rdy xor btof_req)='1' then
+							cga_we   <= '1';
+							cga_addr <= wdt_addr;
+							cga_data <= btof_code;
+							state    := s_action;
+						elsif (str_rdy xor str_req)='1' then
+							cga_we   <= '1';
+							cga_addr <= wdt_addr;
+							cga_data <= str_code;
+							state    := s_action;
+						else
+							cga_we   <= '0';
+							cga_addr <= (others => '-');
+							cga_data <= (others => '-');
+						end if;
+					when s_action =>
+						if (btof_rdy xor btof_req)='1' then
+							cga_we   <= '1';
+							cga_addr <= cga_addr + 1;
+							cga_data <= btof_code;
+						elsif (str_rdy xor str_req)='1' then
+							cga_we   <= '1';
+							cga_addr <= cga_addr + 1;
+							cga_data <= str_code;
+						elsif (tgwdt_rdy xor tgwdt_req)='1' then
+							cga_we   <= '0';
+							wdt_rdy  <= wdt_req;
+							state    := s_wait;
+						end if;
+					end case;
+				end if;
+			end process;
 
 		end block;
-
- 		widget_p : process (rgtr_clk)
- 			type states is (s_wait, s_action);
- 			variable state : states;
- 		begin
- 			if rising_edge(rgtr_clk) then
- 				case state is
- 				when s_wait  =>
-					if (btof_rdy xor btof_req)='1' then
-						cga_we   <= '1';
-						cga_addr <= wdt_addr;
-						cga_data <= btof_code;
- 						state    := s_action;
-					elsif (str_rdy xor str_req)='1' then
-						cga_we   <= '1';
-						cga_addr <= wdt_addr;
-						cga_data <= str_code;
- 						state    := s_action;
-					else
-						cga_we   <= '0';
-						cga_addr <= (others => '-');
-						cga_data <= (others => '-');
-					end if;
- 				when s_action =>
-					if (btof_rdy xor btof_req)='1' then
-	 					cga_we   <= '1';
-	 					cga_addr <= cga_addr + 1;
-	 					cga_data <= btof_code;
-					elsif (str_rdy xor str_req)='1' then
-	 					cga_we   <= '1';
-	 					cga_addr <= cga_addr + 1;
-						cga_data <= str_code;
-					elsif (vtwdt_rdy xor vtwdt_req)='1' then
-						cga_we   <= '1';
-						cga_addr <= cga_addr + 1;
-						cga_data <= to_ascii(vt_prefix(to_integer(unsigned(vt_scale))+1));
-						wdt_rdy  <= wdt_req;
-						state    := s_wait;
-					elsif (hzwdt_rdy xor hzwdt_req)='1' then
-						cga_we   <= '1';
-						cga_addr <= cga_addr + 1;
-						cga_data <= to_ascii(hz_prefix(to_integer(unsigned(hz_scale))+1));
-						wdt_rdy  <= wdt_req;
-						state    := s_wait;
-					elsif (tgwdt_rdy xor tgwdt_req)='1' then
-						cga_we   <= '1';
-						cga_addr <= cga_addr + 1;
-						cga_data <= to_ascii(vt_prefix(to_integer(unsigned(tgr_scale))+1));
-						wdt_rdy  <= wdt_req;
-						state    := s_wait;
-	 				end if;
- 				end case;
- 			end if;
- 		end process;
 	end block;
 
 	video_addr <= std_logic_vector(resize(
