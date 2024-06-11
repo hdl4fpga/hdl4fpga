@@ -169,7 +169,7 @@ begin
 				if gain_ena='1' then
 					gain_cid <= chan_id;
 					if trigger_freeze='0' then
-						gain_ids <= byte2word(gain_ids, chan_id, gain_id);
+						gain_ids <= insert(gain_ids, chan_id, gain_id);
 					end if;
 				end if;
 			end if;

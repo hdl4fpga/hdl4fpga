@@ -294,12 +294,6 @@ package base is
 		constant addr  : std_logic_vector)
 		return natural;
 
-	function byte2word (
-		constant word : std_logic_vector;
-		constant addr : std_logic_vector;
-		constant data : std_logic_vector)
-		return std_logic_vector;
-
 	function encoder (
 		constant arg : std_logic_vector)
 		return         std_logic_vector;
@@ -1231,26 +1225,6 @@ package body base is
 		end if;
 
 		return retval(to_integer(unsigned(addr)));
-	end;
-
-	function byte2word (
-		constant word : std_logic_vector;
-		constant addr : std_logic_vector;
-		constant data : std_logic_vector)
-		return std_logic_vector is
-		variable retval : unsigned(0 to data'length*((word'length+data'length-1)/data'length)-1);
-	begin
-		assert word'length mod data'length=0
-		report "byte2word"
-		severity failure;
-		retval(0 to word'length-1) := unsigned(word);
-		for i in 0 to retval'length/data'length-1 loop
-			if to_unsigned(i,addr'length)=unsigned(addr) then
-				retval(0 to data'length-1) := unsigned(data);
-			end if;
-			retval := retval rol data'length;
-		end loop;
-		return std_logic_vector(retval(0 to word'length-1));
 	end;
 
 	function fill (
