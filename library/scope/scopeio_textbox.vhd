@@ -166,7 +166,7 @@ architecture def of scopeio_textbox is
 
 	signal bin               : std_logic_vector(0 to bin_digits*((offset_length+signfcnd_length+bin_digits-1)/bin_digits)-1);
 
-	signal str_frm           : bit := '0';
+	signal str_frm           : std_logic := '0';
 	signal str_req           : bit := '0';
 	signal str_rdy           : bit := '0';
 	signal str_code          : ascii;
@@ -518,49 +518,14 @@ begin
    				code_frm => btof_frm,
    				code     => btof_code);
 			btof_req <= to_bit(btof_frm) xor btof_rdy;
-
-			process (rgtr_clk)
-				type states is (s_wait, s_action);
-				variable state : states;
-			begin
-				if rising_edge(rgtr_clk) then
-					case state is
-					when s_wait  =>
-						if (btof_rdy xor btof_req)='1' then
-							cga_we   <= '1';
-							cga_addr <= wdt_addr;
-							cga_data <= btof_code;
-							state    := s_action;
-						elsif (str_rdy xor str_req)='1' then
-							cga_we   <= '1';
-							cga_addr <= wdt_addr;
-							cga_data <= str_code;
-							state    := s_action;
-						else
-							cga_we   <= '0';
-							cga_addr <= (others => '-');
-							cga_data <= (others => '-');
-						end if;
-					when s_action =>
-						if (btof_rdy xor btof_req)='1' then
-							cga_we   <= '1';
-							cga_addr <= cga_addr + 1;
-							cga_data <= btof_code;
-						elsif (str_rdy xor str_req)='1' then
-							cga_we   <= '1';
-							cga_addr <= cga_addr + 1;
-							cga_data <= str_code;
-						elsif (tgwdt_rdy xor tgwdt_req)='1' then
-							cga_we   <= '0';
-							wdt_rdy  <= wdt_req;
-							state    := s_wait;
-						end if;
-					end case;
-				end if;
-			end process;
-
 		end block;
 	end block;
+
+	cga_addr <= wdt_addr;
+	cga_we   <= btof_frm or str_frm;
+	cga_data <= 
+		(btof_code and btof_frm) or 
+		(str_code  and str_frm);
 
 	video_addr <= std_logic_vector(resize(
 		mul(unsigned(video_vcntr) srl fontheight_bits, cga_cols) +
