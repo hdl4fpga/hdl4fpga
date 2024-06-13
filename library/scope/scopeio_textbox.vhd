@@ -171,8 +171,6 @@ architecture def of scopeio_textbox is
 	signal str_rdy           : bit := '0';
 	signal str_code          : ascii;
 	signal btof_frm          : std_logic;
-	signal btof_req          : bit := '0';
-	signal btof_rdy          : bit := '0';
 	signal btof_code         : ascii;
 	signal cga_we            : std_logic := '0';
 	signal cga_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
@@ -517,15 +515,24 @@ begin
    				bin      => bin,
    				code_frm => btof_frm,
    				code     => btof_code);
-			btof_req <= to_bit(btof_frm) xor btof_rdy;
+
 		end block;
 	end block;
 
-	cga_addr <= wdt_addr;
-	cga_we   <= btof_frm or str_frm;
-	cga_data <= 
-		(btof_code and btof_frm) or 
-		(str_code  and str_frm);
+	process (rgtr_clk)
+	begin
+		if rising_edge(rgtr_clk) then
+			if cga_we='0' then
+				cga_addr <= cga_addr + 1;
+			else
+				cga_addr <= wdt_addr;
+			end if;
+			cga_we   <= btof_frm or str_frm;
+			cga_data <= 
+				(btof_code and btof_frm) or 
+				(str_code  and str_frm);
+		end if;
+	end process;
 
 	video_addr <= std_logic_vector(resize(
 		mul(unsigned(video_vcntr) srl fontheight_bits, cga_cols) +
