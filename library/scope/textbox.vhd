@@ -25,6 +25,7 @@ end;
 architecture def of scopeio_textbox is
 	signal mul_req : std_logic;
 	signal mul_rdy : std_logic;
+	signal a       : std_logic_vector(0 to offset'length-1);
 	signal b       : signed(0 to offset'length-1);
 begin
 
@@ -42,6 +43,7 @@ begin
 				end if;
 			when s_offset =>
 				if (str_req xor str_rdy)='0' then
+					a <= scale;
 					if signed(offset) >= 0 then
 						b <=  signed(offset);
 					else 
@@ -60,6 +62,7 @@ begin
 			when s_scale =>
 				if (wdt_req xor wdt_rdy)='0' then
 					if (txtwdt_req xor txtwdt_rdy)='1' then
+						a <= scale;
 						b <= to_signed(grid_unit, b'length);
 						mul_req <= not to_stdulogic(to_bit(mul_rdy));
 						wdt_req <= not wdt_rdy;
@@ -77,7 +80,7 @@ begin
 		clk => rgtr_clk,
 		req => mul_req,
 		rdy => mul_rdy,
-		a   => scale,
+		a   => a,
 		b   => std_logic_vector(b(1 to b'right)),
 		s   => value);
 
