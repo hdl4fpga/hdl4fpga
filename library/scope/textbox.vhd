@@ -25,7 +25,7 @@ end;
 architecture def of scopeio_textbox is
 	signal mul_req : std_logic;
 	signal mul_rdy : std_logic;
-	signal b : signed(0 to offset'length-1);
+	signal b       : signed(0 to offset'length-1);
 begin
 
 	process (rgtr_clk)
