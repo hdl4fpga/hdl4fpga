@@ -164,7 +164,6 @@ architecture def of scopeio_textbox is
 	constant signfcnd_length : natural := max(vtsignfcnd_length, hzsignfcnd_length);
 	constant offset_length   : natural := max(vt_offset'length, hz_offset'length);
 
-	signal bin               : std_logic_vector(0 to bin_digits*((offset_length+signfcnd_length+bin_digits-1)/bin_digits)-1);
 
 	signal str_frm           : std_logic := '0';
 	signal str_req           : bit := '0';
@@ -376,6 +375,7 @@ begin
 
 		wdt_b : block
 
+			signal binary      : std_logic_vector(0 to bin_digits*((offset_length+signfcnd_length+bin_digits-1)/bin_digits)-1);
 			signal offset      : signed(0 to max(vt_offset'length, hz_offset'length)-1);
 			signal magnitud    : signed(offset'range);
 			signal mul_req     : std_logic;
@@ -489,17 +489,20 @@ begin
 				end if;
 			end process;
 
-   			magnitud <= -offset when offset(offset'left)='1' else offset;
-   			mul_ser_e : entity hdl4fpga.mul_ser
-   			generic map (
-   				lsb => true)
-   			port map (
-   				clk => rgtr_clk,
-   				req => mul_req,
-   				rdy => mul_rdy,
-   				a   => std_logic_vector(scale),
-   				b   => std_logic_vector(magnitud),
-   				s   => bin);
+			xxx_e : entity hdl4fpga.scopeio_axisreading
+			generic map (
+				grid_unit => grid_unit)
+			port map (
+				rgtr_clk => rgtr_clk,
+        		txt_req  : in  std_logic;
+        		txt_rdy  : buffer std_logic;
+        		offset   => offset,
+        		scale    => scale,
+        		str_req  => str_req,
+        		str_rdy  => str_rdy
+        		btod_req => btod_req,
+        		btod_rdy => btod_rdy,
+        		binary   => binary);
 
    			btof_e : entity hdl4fpga.btof
    			port map (
@@ -511,8 +514,8 @@ begin
    				left     => '0',
    				width    => x"7",
    				exp      => b"101",
-   				neg      => offset(offset'left),
-   				bin      => bin,
+   				neg      => sign,
+   				bin      => binary,
    				code_frm => btof_frm,
    				code     => btof_code);
 
