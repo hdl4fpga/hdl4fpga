@@ -6,7 +6,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity scopeio_textbox is
+entity scopeio_axisreading is
 	generic (
 		grid_unit  : natural);
 	port (
@@ -17,12 +17,12 @@ entity scopeio_textbox is
 		scale      : in  std_logic_vector;
 		str_req    : buffer std_logic;
 		str_rdy    : in  std_logic;
-		wdt_req    : buffer std_logic;
-		wdt_rdy    : in  std_logic;
-		value      : out std_logic_vector);
+		btod_req   : buffer std_logic;
+		btod_rdy   : in  std_logic;
+		bin_value  : out std_logic_vector);
 end;
 
-architecture def of scopeio_textbox is
+architecture def of scopeio_axisreading is
 	signal mul_req : std_logic;
 	signal mul_rdy : std_logic;
 	signal a       : std_logic_vector(0 to offset'length-1);
@@ -37,39 +37,37 @@ begin
 			case state is
 			when s_label =>
 				if (txtwdt_rdy xor txtwdt_req)='1' then
-					if signed(offset) >= 0 then
 					a <= scale;
+					if signed(offset) >= 0 then
 						b <=  signed(offset);
 					else 
-					a <= scale;
 						b <= -signed(offset);
 					end if;
 					mul_req <= not mul_rdy;
-					wdt_req <= not wdt_rdy;
 					str_req <= not str_rdy;
 					state   := s_label;
 				end if;
 			when s_offset =>
-				if (str_req xor str_rdy)='0' then
+				if (btod_req xor btod_rdy)='0' then
 					if (mul_req xor mul_rdy)='0' then
-						wdt_req <= not wdt_rdy;
+						btod_req <= not btod_rdy;
 						state   := s_unit;
 					end if;
 				end if;
 			when s_unit =>
-				if (wdt_req xor wdt_rdy)='0' then
+				if (btod_req xor btod_rdy)='0' then
 					a <= scale;
 					b <= to_signed(grid_unit, b'length);
 					mul_req <= not mul_rdy;
 					str_req <= not str_rdy;
-					wdt_req <= not wdt_rdy;
+					btod_req <= not btod_rdy;
 					state   := s_scale;
 				end if;
 			when s_scale =>
-				if (wdt_req xor wdt_rdy)='0' then
-					if (txtwdt_req xor txtwdt_rdy)='1' then
-						mul_req <= not to_stdulogic(to_bit(mul_rdy));
-						wdt_req <= not wdt_rdy;
+				if (btod_req xor btod_rdy)='0' then
+					if (mul_req xor mul_rdy)='0' then
+						btod_req <= not btod_rdy;
+						txtwdt_rdy <= txtwdt_req;
 						state   := s_unit;
 					end if;
 				end if;
@@ -86,6 +84,6 @@ begin
 		rdy => mul_rdy,
 		a   => a,
 		b   => std_logic_vector(b(1 to b'right)),
-		s   => value);
+		s   => bin_value);
 
 end;
