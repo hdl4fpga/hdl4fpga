@@ -10,16 +10,16 @@ entity scopeio_axisreading is
 	generic (
 		grid_unit  : natural);
 	port (
-		rgtr_clk   : in  std_logic;
-		txtwdt_req : in  std_logic;
-		txtwdt_rdy : buffer std_logic;
-		offset     : in  std_logic_vector;
-		scale      : in  std_logic_vector;
-		str_req    : buffer std_logic;
-		str_rdy    : in  std_logic;
-		btod_req   : buffer std_logic;
-		btod_rdy   : in  std_logic;
-		bin_value  : out std_logic_vector);
+		rgtr_clk : in  std_logic;
+		txt_req  : in  std_logic;
+		txt_rdy  : buffer std_logic;
+		offset   : in  std_logic_vector;
+		scale    : in  std_logic_vector;
+		str_req  : buffer std_logic;
+		str_rdy  : in  std_logic;
+		btod_req : buffer std_logic;
+		btod_rdy : in  std_logic;
+		binary   : out std_logic_vector);
 end;
 
 architecture def of scopeio_axisreading is
@@ -36,7 +36,7 @@ begin
 		if rising_edge(rgtr_clk) then
 			case state is
 			when s_label =>
-				if (txtwdt_rdy xor txtwdt_req)='1' then
+				if (txt_rdy xor txt_req)='1' then
 					a <= scale;
 					if signed(offset) >= 0 then
 						b <=  signed(offset);
@@ -67,7 +67,7 @@ begin
 				if (btod_req xor btod_rdy)='0' then
 					if (mul_req xor mul_rdy)='0' then
 						btod_req <= not btod_rdy;
-						txtwdt_rdy <= txtwdt_req;
+						txt_rdy <= txt_req;
 						state   := s_unit;
 					end if;
 				end if;
@@ -84,6 +84,6 @@ begin
 		rdy => mul_rdy,
 		a   => a,
 		b   => std_logic_vector(b(1 to b'right)),
-		s   => bin_value);
+		s   => binary);
 
 end;
