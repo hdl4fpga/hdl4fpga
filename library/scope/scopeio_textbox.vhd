@@ -494,30 +494,30 @@ begin
 				grid_unit => grid_unit)
 			port map (
 				rgtr_clk => rgtr_clk,
-        		txt_req  : in  std_logic;
-        		txt_rdy  : buffer std_logic;
-        		offset   => offset,
-        		scale    => scale,
-        		str_req  => str_req,
-        		str_rdy  => str_rdy
-        		btod_req => btod_req,
-        		btod_rdy => btod_rdy,
-        		binary   => binary);
+				txt_req  : in  std_logic;
+				txt_rdy  : buffer std_logic;
+				offset   => offset,
+				scale    => scale,
+				str_req  => str_req,
+				str_rdy  => str_rdy
+				btod_req => btod_req,
+				btod_rdy => btod_rdy,
+				binary   => binary);
 
    			btof_e : entity hdl4fpga.btof
-   			port map (
-   				clk      => rgtr_clk,
-   				btof_req => mul_rdy,
-   				btof_rdy => open,
-   				sht      => std_logic_vector(shr),
-   				dec      => std_logic_vector(pnt),
-   				left     => '0',
-   				width    => x"7",
-   				exp      => b"101",
-   				neg      => sign,
-   				bin      => binary,
-   				code_frm => btof_frm,
-   				code     => btof_code);
+			port map (
+				clk      => rgtr_clk,
+				btof_req => mul_rdy,
+				btof_rdy => open,
+				sht      => std_logic_vector(shr),
+				dec      => std_logic_vector(pnt),
+				left     => '0',
+				width    => x"7",
+				exp      => b"101",
+				neg      => sign,
+				bin      => binary,
+				code_frm => btof_frm,
+				code     => btof_code);
 
 		end block;
 	end block;
