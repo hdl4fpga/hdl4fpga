@@ -132,15 +132,13 @@ entity scopeio_textbox is
 		return retval;
 	end;
 
-	constant vt_signfcnds : natural_vector := get_significand1245(vt_unit);
-	constant vtsignfcnd_length : natural   := unsigned_num_bits(max(vt_signfcnds));
-	constant vt_shrs      : integer_vector := get_shr1245(vt_unit);
-	constant vt_pnts      : integer_vector := get_characteristic1245(vt_unit);
+	constant vt_sfcnds : natural_vector := get_significand1245(vt_unit);
+	constant vt_shts   : integer_vector := get_shr1245(vt_unit);
+	constant vt_pnts   : integer_vector := get_characteristic1245(vt_unit);
 
-	constant hz_signfcnds : natural_vector := get_significand1245(hz_unit);
-	constant hzsignfcnd_length : natural   := unsigned_num_bits(max(hz_signfcnds));
-	constant hz_shrs      : integer_vector := get_shr1245(hz_unit);
-	constant hz_pnts      : integer_vector := get_characteristic1245(hz_unit);
+	constant hz_sfcnds : natural_vector := get_significand1245(hz_unit);
+	constant hz_shrs   : integer_vector := get_shr1245(hz_unit);
+	constant hz_pnts   : integer_vector := get_characteristic1245(hz_unit);
 end;
 
 architecture def of scopeio_textbox is
@@ -167,9 +165,8 @@ architecture def of scopeio_textbox is
 	signal vt_sht            : signed(btof_sht'range);
 	signal vt_dec            : signed(btof_dec'range);
 
-	constant signfcnd_length : natural := max(vtsignfcnd_length, hzsignfcnd_length);
+	constant sfcnd_length    : natural := max(unsigned_num_bits(vt_sfcnds), unsigned_num_bits(hz_sfcnds));
 	constant offset_length   : natural := max(vt_offset'length, hz_offset'length);
-
 
 	signal str_frm           : std_logic := '0';
 	signal str_req           : bit := '0';
@@ -222,9 +219,8 @@ begin
 		signal vt_ena         : std_logic;
 		signal vt_offsets     : std_logic_vector(0 to inputs*vt_offset'length-1);
 		signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
-		signal vt_scale       : std_logic_vector(4-1 downto 0);
+		signal vt_scale       : unsigned(4-1 downto 0);
 		signal tgr_scale      : std_logic_vector(4-1 downto 0);
-
 
 		function label_width 
 			return natural is
@@ -299,22 +295,22 @@ begin
 			begin
 				if rising_edge(rgtr_clk) then
 					if vt_ena='1' then
-						scale      := multiplex(gain_ids, chanid, vt_scale'length);
-						vt_sht     <= to_signed(vt_shrs(to_integer(scale)), btof_sht'length);
+						scale      := unsigned(multiplex(gain_ids, chanid, vt_scale'length));
+						vt_sht     <= to_signed(vt_shts(to_integer(scale)), btof_sht'length);
 						vt_dec     <= to_signed(vt_pnts(to_integer(scale)), btof_dec'length);
 						vt_scale   <= scale;
 						vt_offset  <= offset;
-						vt_chanid  <= chanid;
 						vt_offsets <= replace(vt_offsets, chanid, offset);
+						vt_chanid  <= chanid;
 						vtwdt_req  <= not vtwdt_rdy;
 					elsif gain_dv='1' then
+						scale      := unsigned(multiplex(gain_ids, gain_cid, vt_scale'length));
+						vt_sht     <= to_signed(vt_shts(to_integer(scale)), btof_sht'length);
+						vt_dec     <= to_signed(vt_pnts(to_integer(scale)), btof_dec'length);
+						vt_scale   <= scale;
 						vt_offset  <= multiplex(vt_offsets, gain_cid, vt_offset'length);
 						vt_chanid  <= std_logic_vector(resize(unsigned(gain_cid), vt_chanid'length));
-						vt_scale   <= multiplex(gain_ids,   gain_cid, vt_scale'length);
 						vtwdt_req  <= not vtwdt_rdy;
-						tgwdt_req  <= not tgwdt_rdy;
-					elsif trigger_ena='1' then
-						tgwdt_req <= not tgwdt_rdy;
 					end if;
 				end if;
 			end process;
@@ -385,7 +381,7 @@ begin
 
 		wdt_b : block
 
-			signal binary      : std_logic_vector(0 to bin_digits*((offset_length+signfcnd_length+bin_digits-1)/bin_digits)-1);
+			signal binary      : std_logic_vector(0 to bin_digits*((offset_length+sfcnd_length+bin_digits-1)/bin_digits)-1);
 			signal offset      : signed(0 to max(vt_offset'length, hz_offset'length)-1);
 			signal magnitud    : signed(offset'range);
 			signal mul_req     : std_logic;
@@ -393,7 +389,7 @@ begin
 			signal dbdbbl_req  : std_logic;
 			signal dbdbbl_rdy  : std_logic;
 
-			signal scale       : unsigned(0 to signfcnd_length-1);
+			signal scale       : unsigned(0 to sfcnd_length-1);
 
 			signal code_frm : std_logic;
 			signal code     : std_logic_vector(0 to 8-1);
@@ -404,10 +400,10 @@ begin
 			begin
 				if rising_edge(rgtr_clk) then
 					if (vtwdt_req xor vtwdt_rdy)='1' then
-						offset <= resize(signed(vt_offset), offset'length);
-						scale  <= to_unsigned(vt_signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), scale'length);
-						btof_sht    <= to_signed(vt_shrs(to_integer(unsigned(vt_scale))), btof_sht'length);
-						btof_dec    <= to_signed(vt_pnts(to_integer(unsigned(vt_scale))), btof_dec'length);
+						offset   <= resize(signed(vt_offset), offset'length);
+						scale    <= to_unsigned(vt_sfcds(to_integer(vt_scale(2-1 downto 0))), scale'length);
+						btof_sht <= to_signed(vt_shts(to_integer(vt_scale)), btof_sht'length);
+						btof_dec <= to_signed(vt_pnts(to_integer(vt_scale)), btof_dec'length);
 					end if;
 				end if;
 			end process;
