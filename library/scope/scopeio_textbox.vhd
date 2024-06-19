@@ -2,7 +2,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
@@ -165,12 +164,12 @@ architecture def of scopeio_textbox is
 	signal vt_sht            : signed(btof_sht'range);
 	signal vt_dec            : signed(btof_dec'range);
 
-	constant sfcnd_length    : natural := max(unsigned_num_bits(vt_sfcnds), unsigned_num_bits(hz_sfcnds));
+	constant sfcnd_length    : natural := max(unsigned_num_bits(max(vt_sfcnds)), unsigned_num_bits(max(hz_sfcnds)));
 	constant offset_length   : natural := max(vt_offset'length, hz_offset'length);
 
 	signal str_frm           : std_logic := '0';
-	signal str_req           : bit := '0';
-	signal str_rdy           : bit := '0';
+	signal str_req           : std_logic := '0';
+	signal str_rdy           : std_logic := '0';
 	signal str_code          : ascii;
 	signal btof_frm          : std_logic;
 	signal btof_code         : ascii;
@@ -291,90 +290,28 @@ begin
 				vt_offset => offset);
 
 			vtscale_p : process (rgtr_clk)
-				variable scale : unsigned(vt_offset'range);
+				variable gain_id : unsigned(4-1 downto 0);
 			begin
 				if rising_edge(rgtr_clk) then
 					if vt_ena='1' then
-						scale      := unsigned(multiplex(gain_ids, chanid, vt_scale'length));
-						vt_sht     <= to_signed(vt_shts(to_integer(scale)), btof_sht'length);
-						vt_dec     <= to_signed(vt_pnts(to_integer(scale)), btof_dec'length);
-						vt_scale   <= scale;
+						gain_id    := unsigned(multiplex(gain_ids, chanid, gain_id'length));
+						vt_sht     <= to_signed(vt_shts(to_integer(gain_id)), btof_sht'length);
+						vt_dec     <= to_signed(vt_pnts(to_integer(gain_id)), btof_dec'length);
+						vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), gain_id'length);
 						vt_offset  <= offset;
 						vt_offsets <= replace(vt_offsets, chanid, offset);
 						vt_chanid  <= chanid;
 						vtwdt_req  <= not vtwdt_rdy;
 					elsif gain_dv='1' then
-						scale      := unsigned(multiplex(gain_ids, gain_cid, vt_scale'length));
-						vt_sht     <= to_signed(vt_shts(to_integer(scale)), btof_sht'length);
-						vt_dec     <= to_signed(vt_pnts(to_integer(scale)), btof_dec'length);
-						vt_scale   <= scale;
+						gain_id    := unsigned(multiplex(gain_ids, gain_cid, vt_scale'length));
+						vt_sht     <= to_signed(vt_shts(to_integer(gain_id)), btof_sht'length);
+						vt_dec     <= to_signed(vt_pnts(to_integer(gain_id)), btof_dec'length);
+						vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), gain_id'length);
 						vt_offset  <= multiplex(vt_offsets, gain_cid, vt_offset'length);
 						vt_chanid  <= std_logic_vector(resize(unsigned(gain_cid), vt_chanid'length));
 						vtwdt_req  <= not vtwdt_rdy;
 					end if;
 				end if;
-			end process;
-
-			hzscale_p : process (rgtr_clk)
-			begin
-				if rising_edge(rgtr_clk) then
-					if (hzwdt_req xor hzwdt_rdy)='0' then
-						if hz_dv='1' then
-							hzwdt_req <= not hzwdt_rdy;
-						end if;
-					end if;
-				end if;
-			end process;
-
-			tgr_scale <= multiplex(gain_ids, trigger_chanid, tgr_scale'length);
-			triggerwdt_p : process(rgtr_clk)
-
-				constant width : natural := label_width;
-
-				function init_rom (
-					constant obj   : string;
-					constant size  : natural)
-					return string is
-	
-					variable offset : positive;
-					variable length : natural;
-	
-					variable data  : string(1 to size);
-					variable left  : natural;
-					variable right : natural;
-				begin
-					left := data'left;
-					for i in 0 to inputs-1 loop
-						right := left + width-1;
-						data(left to right) := textalign(escaped(hdo(obj)**("["&natural'image(i)&"].text")), width);
-						left := right + 1;
-					end loop;
-					return data;
-				end;
-	
-				constant data : string := init_rom(hdo(layout)**".vt", inputs*width);
-				variable ptr  : natural range 0 to data'length-1;
-				variable cnt  : natural range 0 to label_width-1;
-
-			begin
-				if rising_edge(rgtr_clk) then
-					if (str_rdy xor str_req)='1' then
-						if cnt < label_width-1 then
-							ptr := ptr + 1;
-							cnt := cnt + 1;
-							str_code <= to_ascii(data(ptr+1));
-						else
-							ptr := to_integer(mul(unsigned(trigger_chanid), width));
-							cnt := 0;
-							str_rdy <= str_req;
-						end if;
-					else
-						cnt := 0;
-						ptr := to_integer(mul(unsigned(trigger_chanid), width));
-						str_code <= to_ascii(data(ptr+1));
-					end if;
-				end if;
-
 			end process;
 
 		end block;
@@ -384,8 +321,8 @@ begin
 			signal binary      : std_logic_vector(0 to bin_digits*((offset_length+sfcnd_length+bin_digits-1)/bin_digits)-1);
 			signal offset      : signed(0 to max(vt_offset'length, hz_offset'length)-1);
 			signal magnitud    : signed(offset'range);
-			signal mul_req     : std_logic;
-			signal mul_rdy     : std_logic;
+			signal btod_req     : std_logic;
+			signal btod_rdy     : std_logic;
 			signal dbdbbl_req  : std_logic;
 			signal dbdbbl_rdy  : std_logic;
 
@@ -401,9 +338,9 @@ begin
 				if rising_edge(rgtr_clk) then
 					if (vtwdt_req xor vtwdt_rdy)='1' then
 						offset   <= resize(signed(vt_offset), offset'length);
-						scale    <= to_unsigned(vt_sfcds(to_integer(vt_scale(2-1 downto 0))), scale'length);
-						btof_sht <= to_signed(vt_shts(to_integer(vt_scale)), btof_sht'length);
-						btof_dec <= to_signed(vt_pnts(to_integer(vt_scale)), btof_dec'length);
+						scale    <= to_unsigned(vt_sfcnds(to_integer(vt_scale(2-1 downto 0))), scale'length);
+						btof_sht <= vt_sht;
+						btof_dec <= vt_dec;
 					end if;
 				end if;
 			end process;
@@ -413,12 +350,12 @@ begin
 				grid_unit => grid_unit)
 			port map (
 				rgtr_clk => rgtr_clk,
-				txt_req  : in  std_logic;
-				txt_rdy  : buffer std_logic;
-				offset   => offset,
-				scale    => scale,
+				txt_req  => '0',
+				txt_rdy  => open,
+				offset   => std_logic_vector(offset),
+				scale    => std_logic_vector(scale),
 				str_req  => str_req,
-				str_rdy  => str_rdy
+				str_rdy  => str_rdy,
 				btod_req => btod_req,
 				btod_rdy => btod_rdy,
 				binary   => binary);
@@ -426,14 +363,14 @@ begin
    			btof_e : entity hdl4fpga.btof
 			port map (
 				clk      => rgtr_clk,
-				btof_req => mul_rdy,
+				btof_req => btod_rdy,
 				btof_rdy => open,
 				sht      => std_logic_vector(btof_sht),
 				dec      => std_logic_vector(btof_dec),
 				left     => '0',
 				width    => x"7",
 				exp      => b"101",
-				neg      => sign,
+				neg      => '0', --sign,
 				bin      => binary,
 				code_frm => btof_frm,
 				code     => btof_code);
@@ -450,9 +387,7 @@ begin
 				cga_addr <= wdt_addr;
 			end if;
 			cga_we   <= btof_frm or str_frm;
-			cga_data <= 
-				(btof_code and btof_frm) or 
-				(str_code  and str_frm);
+			cga_data <= multiplex(btof_code & str_code, str_code);
 		end if;
 	end process;
 

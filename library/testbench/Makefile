@@ -181,6 +181,8 @@ HDL4FPGA__scopeio_downsampler__beh = $(LIB_HDL4FPGA)/scopeio_downsampler/beh.dat
 HDL4FPGA__scopeio_downsampler = $(LIB_HDL4FPGA)/scopeio_downsampler/_primary.dat
 HDL4FPGA__scopeio_capture__beh = $(LIB_HDL4FPGA)/scopeio_capture/beh.dat
 HDL4FPGA__scopeio_capture = $(LIB_HDL4FPGA)/scopeio_capture/_primary.dat
+HDL4FPGA__scopeio_axisreading__def = $(LIB_HDL4FPGA)/scopeio_axisreading/def.dat
+HDL4FPGA__scopeio_axisreading = $(LIB_HDL4FPGA)/scopeio_axisreading/_primary.dat
 HDL4FPGA__scopeio_axis__def = $(LIB_HDL4FPGA)/scopeio_axis/def.dat
 HDL4FPGA__scopeio_axis = $(LIB_HDL4FPGA)/scopeio_axis/_primary.dat
 HDL4FPGA__scopeio_amp__beh = $(LIB_HDL4FPGA)/scopeio_amp/beh.dat
@@ -543,6 +545,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__scopeio_downsampler) \
     $(HDL4FPGA__scopeio_capture__beh) \
     $(HDL4FPGA__scopeio_capture) \
+    $(HDL4FPGA__scopeio_axisreading__def) \
+    $(HDL4FPGA__scopeio_axisreading) \
     $(HDL4FPGA__scopeio_axis__def) \
     $(HDL4FPGA__scopeio_axis) \
     $(HDL4FPGA__scopeio_amp__beh) \
@@ -1646,6 +1650,15 @@ $(HDL4FPGA__scopeio_axis__def) : ../scope/scopeio_axis.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_axis.vhd
 
+$(HDL4FPGA__scopeio_axisreading) \
+$(HDL4FPGA__scopeio_axisreading__def) : ../scope/scopeio_axisreading.vhd \
+		$(HDL4FPGA__mul_ser) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_axisreading.vhd
+
 $(HDL4FPGA__scopeio_capture) \
 $(HDL4FPGA__scopeio_capture__beh) : ../scope/scopeio_capture.vhd \
 		$(HDL4FPGA__latency) \
@@ -1866,7 +1879,7 @@ $(HDL4FPGA__scopeio_textbox__def) : ../scope/scopeio_textbox.vhd \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__cgaram) \
 		$(HDL4FPGA__btof) \
-		$(HDL4FPGA__mul_ser) \
+		$(HDL4FPGA__scopeio_axisreading) \
 		$(HDL4FPGA__scopeio_rgtrvtaxis) \
 		$(HDL4FPGA__scopeio_rgtrtrigger) \
 		$(HDL4FPGA__scopeio_rgtrmyip) \
@@ -1877,10 +1890,10 @@ $(HDL4FPGA__scopeio_textbox__def) : ../scope/scopeio_textbox.vhd \
 		$(HDL4FPGA__cp850x8x8x0to127) \
 		$(HDL4FPGA__cgafonts) \
 		$(HDL4FPGA__videopkg) \
+		$(IEEE__math_real) \
 		$(HDL4FPGA__scopeiopkg) \
 		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__base) \
-		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
