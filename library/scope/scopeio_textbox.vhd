@@ -387,7 +387,7 @@ begin
 				cga_addr <= wdt_addr;
 			end if;
 			cga_we   <= btof_frm or str_frm;
-			cga_data <= multiplex(btof_code & str_code, str_code);
+			cga_data <= multiplex(btof_code & str_code, str_frm);
 		end if;
 	end process;
 
