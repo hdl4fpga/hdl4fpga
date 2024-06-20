@@ -12,19 +12,19 @@ entity scopeio_axisreading is
 	port (
 		rgtr_clk : in  std_logic;
 		txt_req  : in  std_logic;
-		txt_rdy  : buffer std_logic;
+		txt_rdy  : buffer std_logic := '0';
 		offset   : in  std_logic_vector;
 		scale    : in  std_logic_vector;
 		str_req  : buffer std_logic;
 		str_rdy  : in  std_logic;
-		btod_req : buffer std_logic;
+		btod_req : buffer std_logic := '0';
 		btod_rdy : in  std_logic;
 		binary   : out std_logic_vector);
 end;
 
 architecture def of scopeio_axisreading is
-	signal mul_req : std_logic;
-	signal mul_rdy : std_logic;
+	signal mul_req : std_logic := '0';
+	signal mul_rdy : std_logic := '0';
 	signal a       : std_logic_vector(0 to offset'length-1);
 	signal b       : signed(0 to offset'length-1);
 begin
@@ -43,19 +43,19 @@ begin
 					else 
 						b <= -signed(offset);
 					end if;
-					mul_req <= not mul_rdy;
-					str_req <= not str_rdy;
-					state   := s_label;
+					mul_req <= not to_stdulogic(to_bit(mul_rdy));
+					str_req <= not to_stdulogic(to_bit(str_rdy));
+					state   := s_offset;
 				end if;
 			when s_offset =>
-				if (btod_req xor btod_rdy)='0' then
-					if (mul_req xor mul_rdy)='0' then
-						btod_req <= not btod_rdy;
+				if (to_bit(btod_req) xor to_bit(btod_rdy))='0' then
+					if (to_bit(mul_req) xor to_bit(mul_rdy))='0' then
+						btod_req <= not to_stdulogic(to_bit(btod_rdy));
 						state   := s_unit;
 					end if;
 				end if;
 			when s_unit =>
-				if (btod_req xor btod_rdy)='0' then
+				if (to_bit(btod_req) xor to_bit(btod_rdy))='0' then
 					a <= scale;
 					b <= to_signed(grid_unit, b'length);
 					mul_req <= not mul_rdy;

@@ -184,7 +184,7 @@ architecture def of scopeio_textbox is
 	signal video_addr        : std_logic_vector(cga_addr'range);
 	signal video_dot         : std_logic;
 
-	signal vtwdt_req         : bit;
+	signal vtwdt_req         : bit := '1';
 	signal vtwdt_rdy         : bit;
 	signal hzwdt_req         : bit;
 	signal hzwdt_rdy         : bit;
@@ -330,6 +330,8 @@ begin
 
 			signal code_frm : std_logic;
 			signal code     : std_logic_vector(0 to 8-1);
+			signal txt_rdy  : std_logic := '0';
+			signal txt_req  : std_logic := '0';
 
 		begin
 
@@ -341,17 +343,19 @@ begin
 						scale    <= to_unsigned(vt_sfcnds(to_integer(vt_scale(2-1 downto 0))), scale'length);
 						btof_sht <= vt_sht;
 						btof_dec <= vt_dec;
+						txt_req <= not to_stdulogic(to_bit(txt_rdy));
 					end if;
 				end if;
 			end process;
 
+			str_rdy <= str_req;
 			xxx_e : entity hdl4fpga.scopeio_axisreading
 			generic map (
 				grid_unit => grid_unit)
 			port map (
 				rgtr_clk => rgtr_clk,
-				txt_req  => '0',
-				txt_rdy  => open,
+				txt_req  => txt_req,
+				txt_rdy  => txt_rdy,
 				offset   => std_logic_vector(offset),
 				scale    => std_logic_vector(scale),
 				str_req  => str_req,
@@ -363,8 +367,8 @@ begin
    			btof_e : entity hdl4fpga.btof
 			port map (
 				clk      => rgtr_clk,
-				btof_req => btod_rdy,
-				btof_rdy => open,
+				btof_req => btod_req,
+				btof_rdy => btod_rdy,
 				sht      => std_logic_vector(btof_sht),
 				dec      => std_logic_vector(btof_dec),
 				left     => '0',
