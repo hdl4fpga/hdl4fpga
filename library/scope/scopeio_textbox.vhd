@@ -157,12 +157,12 @@ architecture def of scopeio_textbox is
 	constant bcd_length      : natural := 4;
 	constant bcd_digits      : natural := 1;
 
-	signal btof_sht          : signed(4-1 downto 0);
-	signal btof_dec          : signed(4-1 downto 0);
+	signal botd_sht          : signed(4-1 downto 0);
+	signal botd_dec          : signed(4-1 downto 0);
 
 	signal vt_offset         : std_logic_vector((5+8)-1 downto 0);
-	signal vt_sht            : signed(btof_sht'range);
-	signal vt_dec            : signed(btof_dec'range);
+	signal vt_sht            : signed(botd_sht'range);
+	signal vt_dec            : signed(botd_dec'range);
 
 	constant sfcnd_length    : natural := max(unsigned_num_bits(max(vt_sfcnds)), unsigned_num_bits(max(hz_sfcnds)));
 	constant offset_length   : natural := max(vt_offset'length, hz_offset'length);
@@ -171,8 +171,8 @@ architecture def of scopeio_textbox is
 	signal str_req           : std_logic := '0';
 	signal str_rdy           : std_logic := '0';
 	signal str_code          : ascii;
-	signal btof_frm          : std_logic;
-	signal btof_code         : ascii;
+	signal botd_frm          : std_logic;
+	signal botd_code         : ascii;
 	signal cga_we            : std_logic := '0';
 	signal cga_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
 	signal cga_data          : ascii;
@@ -184,7 +184,7 @@ architecture def of scopeio_textbox is
 	signal video_addr        : std_logic_vector(cga_addr'range);
 	signal video_dot         : std_logic;
 
-	signal vtwdt_req         : bit := '1';
+	signal vtwdt_req         : bit;
 	signal vtwdt_rdy         : bit;
 	signal hzwdt_req         : bit;
 	signal hzwdt_rdy         : bit;
@@ -295,8 +295,8 @@ begin
 				if rising_edge(rgtr_clk) then
 					if vt_ena='1' then
 						gain_id    := unsigned(multiplex(gain_ids, chanid, gain_id'length));
-						vt_sht     <= to_signed(vt_shts(to_integer(gain_id)), btof_sht'length);
-						vt_dec     <= to_signed(vt_pnts(to_integer(gain_id)), btof_dec'length);
+						vt_sht     <= to_signed(vt_shts(to_integer(gain_id)), botd_sht'length);
+						vt_dec     <= to_signed(vt_pnts(to_integer(gain_id)), botd_dec'length);
 						vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), gain_id'length);
 						vt_offset  <= offset;
 						vt_offsets <= replace(vt_offsets, chanid, offset);
@@ -304,8 +304,8 @@ begin
 						vtwdt_req  <= not vtwdt_rdy;
 					elsif gain_dv='1' then
 						gain_id    := unsigned(multiplex(gain_ids, gain_cid, vt_scale'length));
-						vt_sht     <= to_signed(vt_shts(to_integer(gain_id)), btof_sht'length);
-						vt_dec     <= to_signed(vt_pnts(to_integer(gain_id)), btof_dec'length);
+						vt_sht     <= to_signed(vt_shts(to_integer(gain_id)), botd_sht'length);
+						vt_dec     <= to_signed(vt_pnts(to_integer(gain_id)), botd_dec'length);
 						vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), gain_id'length);
 						vt_offset  <= multiplex(vt_offsets, gain_cid, vt_offset'length);
 						vt_chanid  <= std_logic_vector(resize(unsigned(gain_cid), vt_chanid'length));
@@ -328,8 +328,6 @@ begin
 
 			signal scale       : unsigned(0 to sfcnd_length-1);
 
-			signal code_frm : std_logic;
-			signal code     : std_logic_vector(0 to 8-1);
 			signal txt_rdy  : std_logic := '0';
 			signal txt_req  : std_logic := '0';
 
@@ -338,12 +336,15 @@ begin
 			process (rgtr_clk)
 			begin
 				if rising_edge(rgtr_clk) then
-					if (vtwdt_req xor vtwdt_rdy)='1' then
+					if (vtwdt_rdy xor vtwdt_req)='1' then
 						offset   <= resize(signed(vt_offset), offset'length);
 						scale    <= to_unsigned(vt_sfcnds(to_integer(vt_scale(2-1 downto 0))), scale'length);
-						btof_sht <= vt_sht;
-						btof_dec <= vt_dec;
+						botd_sht <= vt_sht;
+						botd_dec <= vt_dec;
+						vtwdt_rdy <= vtwdt_req;
 						txt_req <= not to_stdulogic(to_bit(txt_rdy));
+						wdt_addr <= (others => '0');
+
 					end if;
 				end if;
 			end process;
@@ -364,36 +365,38 @@ begin
 				btod_rdy => btod_rdy,
 				binary   => binary);
 
-   			btof_e : entity hdl4fpga.btof
+   			botd_e : entity hdl4fpga.btof
 			port map (
 				clk      => rgtr_clk,
 				btof_req => btod_req,
 				btof_rdy => btod_rdy,
-				sht      => std_logic_vector(btof_sht),
-				dec      => std_logic_vector(btof_dec),
+				sht      => std_logic_vector(botd_sht),
+				dec      => std_logic_vector(botd_dec),
 				left     => '0',
 				width    => x"7",
 				exp      => b"101",
 				neg      => '0', --sign,
 				bin      => binary,
-				code_frm => btof_frm,
-				code     => btof_code);
+				code_frm => botd_frm,
+				code     => botd_code);
 
-		end block;
-	end block;
 
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
-			if cga_we='0' then
+			if cga_we='1' then
 				cga_addr <= cga_addr + 1;
-			else
-				cga_addr <= wdt_addr;
+			elsif (txt_req xor txt_rdy)='0' then
+				if (btod_req xor btod_rdy)='0' then
+					cga_addr <= wdt_addr;
+				end if;
 			end if;
-			cga_we   <= btof_frm or str_frm;
-			cga_data <= multiplex(btof_code & str_code, str_frm);
+			cga_we   <= botd_frm or str_frm;
+			cga_data <= multiplex(botd_code & str_code, not botd_frm);
 		end if;
 	end process;
+		end block;
+	end block;
 
 	video_addr <= std_logic_vector(resize(
 		mul(unsigned(video_vcntr) srl fontheight_bits, cga_cols) +
