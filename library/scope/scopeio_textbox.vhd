@@ -218,7 +218,7 @@ begin
 		signal vt_ena         : std_logic;
 		signal vt_offsets     : std_logic_vector(0 to inputs*vt_offset'length-1);
 		signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
-		signal vt_scale       : unsigned(4-1 downto 0);
+		signal vt_scale       : unsigned(0 to sfcnd_length-1);
 		signal tgr_scale      : std_logic_vector(4-1 downto 0);
 
 		function label_width 
@@ -297,16 +297,16 @@ begin
 						gain_id    := unsigned(multiplex(gain_ids, chanid, gain_id'length));
 						vt_sht     <= to_signed(vt_shts(to_integer(gain_id)), botd_sht'length);
 						vt_dec     <= to_signed(vt_pnts(to_integer(gain_id)), botd_dec'length);
-						vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), gain_id'length);
+						vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), vt_scale'length);
 						vt_offset  <= offset;
 						vt_offsets <= replace(vt_offsets, chanid, offset);
 						vt_chanid  <= chanid;
 						vtwdt_req  <= not vtwdt_rdy;
 					elsif gain_dv='1' then
-						gain_id    := unsigned(multiplex(gain_ids, gain_cid, vt_scale'length));
+						gain_id    := unsigned(multiplex(gain_ids, chanid, gain_id'length));
 						vt_sht     <= to_signed(vt_shts(to_integer(gain_id)), botd_sht'length);
 						vt_dec     <= to_signed(vt_pnts(to_integer(gain_id)), botd_dec'length);
-						vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), gain_id'length);
+						vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), vt_scale'length);
 						vt_offset  <= multiplex(vt_offsets, gain_cid, vt_offset'length);
 						vt_chanid  <= std_logic_vector(resize(unsigned(gain_cid), vt_chanid'length));
 						vtwdt_req  <= not vtwdt_rdy;
@@ -338,7 +338,7 @@ begin
 				if rising_edge(rgtr_clk) then
 					if (vtwdt_rdy xor vtwdt_req)='1' then
 						offset   <= resize(signed(vt_offset), offset'length);
-						scale    <= to_unsigned(vt_sfcnds(to_integer(vt_scale(2-1 downto 0))), scale'length);
+						scale    <= vt_scale;
 						botd_sht <= vt_sht;
 						botd_dec <= vt_dec;
 						vtwdt_rdy <= vtwdt_req;
