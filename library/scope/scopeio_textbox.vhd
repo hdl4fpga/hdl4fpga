@@ -343,7 +343,7 @@ begin
 						botd_dec <= vt_dec;
 						vtwdt_rdy <= vtwdt_req;
 						txt_req <= not to_stdulogic(to_bit(txt_rdy));
-						wdt_addr <= (others => '0');
+						wdt_addr <= mul(unsigned(vt_chanid), cga_cols, wdt_addr'length); --(others => '0');
 
 					end if;
 				end if;

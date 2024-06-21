@@ -116,8 +116,9 @@ package base is
 		return signed;
 
 	function mul (
-		constant op1 : unsigned;
-		constant op2 : natural)
+		constant op1  : unsigned;
+		constant op2  : natural;
+		constant size : natural := 0)
 		return unsigned;
 
 	function max (
@@ -732,8 +733,8 @@ package body base is
 	end;
 
 	function mul (
-		constant op1 : signed;
-		constant op2 : natural)
+		constant op1  : signed;
+		constant op2  : natural)
 		return signed is
 		variable mulr : natural;
 		variable muld : signed(op1'length-1 downto 0);
@@ -754,7 +755,8 @@ package body base is
 
 	function mul (
 		constant op1 : unsigned;
-		constant op2 : natural)
+		constant op2 : natural;
+		constant size : natural := 0)
 		return unsigned is
 		variable mulr : natural;
 		variable muld : unsigned(op1'length-1 downto 0);
@@ -770,7 +772,11 @@ package body base is
 			end if;
 			mulr := mulr / 2;
 		end loop;
-		return rval;
+		if size=0 then
+			return rval;
+		else
+			return resize(rval, size);
+		end if;
 	end;
 
 	function max (
