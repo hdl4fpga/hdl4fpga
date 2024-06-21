@@ -67,27 +67,6 @@ entity scopeio_textbox is
 		"}"
 	);
 
-	function textalign (
-		constant text   : string;
-		constant width  : natural;
-		constant align  : string := "left")
-		return string is
-		variable retval : string(1 to width);
-	begin
-		retval := (others => ' ');
-		if retval'length < text'length then
-			retval := text(text'left to text'left+retval'length-1);
-		else
-			retval(retval'left to retval'left+text'length-1) := text;
-		end if;
-		if align="right" then
-			retval := rotate_left(retval, text'length);
-		elsif align="center" then
-			retval := rotate_left(retval, (text'length+width)/2);
-		end if; 
-		return retval;
-	end;
-
 	function textbox_rom (
 		constant width  : natural;
 		constant size   : natural)
@@ -141,7 +120,6 @@ entity scopeio_textbox is
 end;
 
 architecture def of scopeio_textbox is
-	subtype ascii is std_logic_vector(8-1 downto 0);
 	constant cga_latency   : natural := 4;
 	constant color_latency : natural := 2;
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
@@ -343,8 +321,7 @@ begin
 						botd_dec <= vt_dec;
 						vtwdt_rdy <= vtwdt_req;
 						txt_req <= not to_stdulogic(to_bit(txt_rdy));
-						wdt_addr <= mul(unsigned(vt_chanid), cga_cols, wdt_addr'length); --(others => '0');
-
+						wdt_addr <= mul(unsigned(vt_chanid), cga_cols, wdt_addr'length);
 					end if;
 				end if;
 			end process;
@@ -352,15 +329,21 @@ begin
 			str_rdy <= str_req;
 			xxx_e : entity hdl4fpga.scopeio_axisreading
 			generic map (
+				inputs   => inputs,
+				vt_labels => vt,
+				hz_label  => hz_text,
 				grid_unit => grid_unit)
 			port map (
 				rgtr_clk => rgtr_clk,
 				txt_req  => txt_req,
 				txt_rdy  => txt_rdy,
+				vt_chanid => vt_chanid,
 				offset   => std_logic_vector(offset),
 				scale    => std_logic_vector(scale),
-				str_req  => str_req,
-				str_rdy  => str_rdy,
+				-- str_req  => str_req,
+				-- str_rdy  => str_rdy,
+				str_frm  => str_frm,
+				str_code => str_code,
 				btod_req => btod_req,
 				btod_rdy => btod_rdy,
 				binary   => binary);

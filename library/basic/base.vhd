@@ -42,6 +42,8 @@ package base is
 	-- string --
 	-------------
 
+	subtype ascii is std_logic_vector(8-1 downto 0);
+
 	function toupper(
 		constant char : character)
 		return character;
@@ -95,6 +97,12 @@ package base is
 
 	function to_string (
 		constant arg : unsigned)
+		return string;
+
+	function textalign (
+		constant text   : string;
+		constant width  : natural;
+		constant align  : string := "left")
 		return string;
 
 	-----------
@@ -680,19 +688,25 @@ package body base is
 		return to_string(std_logic_vector(arg));
 	end;
 
-	function encoder (
-		constant arg : std_logic_vector)
-		return   std_logic_vector is
-		variable val : std_logic_vector(0 to unsigned_num_bits(arg'length-1)-1) := (others => '-');
-		variable aux : unsigned(0 to arg'length-1) := (0 => '1', others => '0');
+	function textalign (
+		constant text   : string;
+		constant width  : natural;
+		constant align  : string := "left")
+		return string is
+		variable retval : string(1 to width);
 	begin
-		for i in aux'range loop
-			if arg=std_logic_vector(aux) then
-				val := std_logic_vector(to_unsigned(i, val'length));
-			end if;
-			aux := aux ror 1;
-		end loop;
-		return val;
+		retval := (others => ' ');
+		if retval'length < text'length then
+			retval := text(text'left to text'left+retval'length-1);
+		else
+			retval(retval'left to retval'left+text'length-1) := text;
+		end if;
+		if align="right" then
+			retval := rotate_left(retval, text'length);
+		elsif align="center" then
+			retval := rotate_left(retval, (text'length+width)/2);
+		end if; 
+		return retval;
 	end;
 
 	-----------
@@ -1275,6 +1289,21 @@ package body base is
     		retval_left(data'length-1 downto 0) := unsigned(data);
     		return std_logic_vector(retval_left);
 		end if;
+	end;
+
+	function encoder (
+		constant arg : std_logic_vector)
+		return   std_logic_vector is
+		variable val : std_logic_vector(0 to unsigned_num_bits(arg'length-1)-1) := (others => '-');
+		variable aux : unsigned(0 to arg'length-1) := (0 => '1', others => '0');
+	begin
+		for i in aux'range loop
+			if arg=std_logic_vector(aux) then
+				val := std_logic_vector(to_unsigned(i, val'length));
+			end if;
+			aux := aux ror 1;
+		end loop;
+		return val;
 	end;
 
 	function galois_crc(
