@@ -296,19 +296,20 @@ begin
 
 		wdt_b : block
 
-			signal binary      : std_logic_vector(0 to bin_digits*((offset_length+sfcnd_length+bin_digits-1)/bin_digits)-1);
-			signal offset      : signed(0 to max(vt_offset'length, hz_offset'length)-1);
-			signal magnitud    : signed(offset'range);
-			signal btod_req     : std_logic;
-			signal btod_rdy     : std_logic;
-			signal dbdbbl_req  : std_logic;
-			signal dbdbbl_rdy  : std_logic;
+			signal binary     : std_logic_vector(0 to bin_digits*((offset_length+sfcnd_length+bin_digits-1)/bin_digits)-1);
+			signal offset     : signed(0 to max(vt_offset'length, hz_offset'length)-1);
+			signal magnitud   : signed(offset'range);
+			signal btod_req   : std_logic;
+			signal btod_rdy   : std_logic;
+			signal dbdbbl_req : std_logic;
+			signal dbdbbl_rdy : std_logic;
 
-			signal scale       : unsigned(0 to sfcnd_length-1);
+			signal scale      : unsigned(0 to sfcnd_length-1);
 
 			signal txt_rdy  : std_logic := '0';
 			signal txt_req  : std_logic := '0';
 
+			signal xxx : std_logic;
 		begin
 
 			process (rgtr_clk)
@@ -346,7 +347,8 @@ begin
 				str_code => str_code,
 				btod_req => btod_req,
 				btod_rdy => btod_rdy,
-				binary   => binary);
+				binary   => binary,
+				xxx => xxx);
 
    			botd_e : entity hdl4fpga.btof
 			port map (
@@ -369,10 +371,8 @@ begin
 		if rising_edge(rgtr_clk) then
 			if cga_we='1' then
 				cga_addr <= cga_addr + 1;
-			elsif (txt_req xor txt_rdy)='0' then
-				if (btod_req xor btod_rdy)='0' then
-					cga_addr <= wdt_addr;
-				end if;
+			elsif xxx='0' then
+				cga_addr <= wdt_addr;
 			end if;
 			cga_we   <= botd_frm or str_frm;
 			cga_data <= multiplex(botd_code & str_code, not botd_frm);

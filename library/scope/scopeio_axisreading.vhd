@@ -22,6 +22,7 @@ entity scopeio_axisreading is
 		scale    : in  std_logic_vector;
 		btod_req : buffer std_logic;
 		btod_rdy : in  std_logic;
+		xxx : out std_logic;
 		str_frm  : out std_logic;
 		str_code : out ascii;
 		binary   : out std_logic_vector);
@@ -32,7 +33,6 @@ architecture def of scopeio_axisreading is
 	signal str_req  : bit;
 	signal str_rdy  : bit;
 
-	constant width : natural := 4;
 	signal mul_req : std_logic := '0';
 	signal mul_rdy : std_logic := '0';
 	signal a       : std_logic_vector(0 to offset'length-1);
@@ -53,6 +53,7 @@ begin
     		return data;
     	end;
 
+		constant width : natural := 4;
 		constant textrom : string := textrom_init (width);
 		variable i : natural range 0 to width-1;
 		variable cptr : natural range 0 to (1+inputs)*width;
@@ -91,7 +92,10 @@ begin
 					mul_req  <= not to_stdulogic(to_bit(mul_rdy));
 					str_req  <= not str_rdy;
 					btod_req <= to_stdulogic(to_bit(btod_rdy));
-					state   := s_offset;
+					state    := s_offset;
+					xxx      <= '1';
+				elsif (to_bit(btod_req) xor to_bit(btod_rdy))='0' then
+					xxx      <= '0';
 				end if;
 			when s_offset =>
 				if (to_bit(mul_req) xor to_bit(mul_rdy))='0' then
