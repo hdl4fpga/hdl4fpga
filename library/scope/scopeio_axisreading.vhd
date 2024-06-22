@@ -48,7 +48,7 @@ begin
     	begin
     		data(1 to hz_label'length) := hz_label;
     		for i in 1 to inputs loop
-    			data(i*width to (i+1)*width-1) := textalign(escaped(hdo(vt_labels)**("["&natural'image(i-1)&"].text")), width);
+    			data(i*width+1 to (i+1)*width) := textalign(escaped(hdo(vt_labels)**("["&natural'image(i-1)&"].text")), width);
     		end loop;
     		return data;
     	end;
@@ -59,16 +59,18 @@ begin
 
 	begin
 		if rising_edge(rgtr_clk) then
+			str_frm  <= to_stdulogic(str_req xor str_rdy);
+			str_code <= to_ascii(textrom(cptr));
 			if (str_rdy xor str_req)='1' then
-				i := i + 1;
 				if i >= width-1 then
 					str_rdy <= str_req;
 				end if;
+				i    := i + 1;
+				cptr := cptr + 1;
 			else
-				i := 0;
-			--	cptr := width*
+				i    := 0;
+				cptr := width*to_integer(unsigned(vt_chanid))+1;
 			end if;
-			str_frm <= to_stdulogic(str_req xor str_rdy);
 		end if;
 	end process;
 

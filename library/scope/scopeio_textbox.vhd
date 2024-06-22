@@ -315,13 +315,13 @@ begin
 			begin
 				if rising_edge(rgtr_clk) then
 					if (vtwdt_rdy xor vtwdt_req)='1' then
-						offset   <= resize(signed(vt_offset), offset'length);
-						scale    <= vt_scale;
-						botd_sht <= vt_sht;
-						botd_dec <= vt_dec;
+						offset    <= resize(signed(vt_offset), offset'length);
+						scale     <= vt_scale;
+						botd_sht  <= vt_sht;
+						botd_dec  <= vt_dec;
+						wdt_addr  <= mul(unsigned(vt_chanid), cga_cols, wdt_addr'length);
+						txt_req   <= not to_stdulogic(to_bit(txt_rdy));
 						vtwdt_rdy <= vtwdt_req;
-						txt_req <= not to_stdulogic(to_bit(txt_rdy));
-						wdt_addr <= mul(unsigned(vt_chanid), cga_cols, wdt_addr'length);
 					end if;
 				end if;
 			end process;
