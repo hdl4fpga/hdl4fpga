@@ -12,44 +12,53 @@ entity scopeio_axisreading is
 		inputs    : natural;
 		vt_labels : string;
 		hz_label  : string := "hztl";
+		binary_length : natural;
 		grid_unit : natural);
 	port (
-		rgtr_clk : in  std_logic;
-		txt_req  : in  std_logic;
-		txt_rdy  : buffer std_logic;
+		rgtr_clk  : in  std_logic;
+		txt_req   : in  std_logic;
+		txt_rdy   : buffer std_logic;
 		vt_chanid : in std_logic_vector;
-		offset   : in  std_logic_vector;
-		scale    : in  std_logic_vector;
-		btod_req : buffer std_logic;
-		btod_rdy : in  std_logic;
-		xxx : out std_logic;
-		str_frm  : out std_logic;
-		str_code : out ascii;
-		binary   : out std_logic_vector);
+		botd_sht  : in std_logic_vector;
+		botd_dec  : in std_logic_vector;
+		offset    : in  std_logic_vector;
+		scale     : in  std_logic_vector;
+		code_frm  : out std_logic := '0';
+		code_irdy : out std_logic := '0';
+		code_data : out ascii);
 end;
 
 architecture def of scopeio_axisreading is
 
-	signal str_req  : bit;
-	signal str_rdy  : bit;
+	signal str_req   : std_logic;
+	signal str_rdy   : std_logic;
+	signal btod_frm  : std_logic;
+	signal btod_code : ascii;
 
-	signal mul_req : std_logic := '0';
-	signal mul_rdy : std_logic := '0';
-	signal a       : std_logic_vector(0 to offset'length-1);
-	signal b       : signed(0 to offset'length-1);
+	signal btod_req : std_logic;
+	signal btod_rdy : std_logic;
+	signal mul_req   : std_logic := '0';
+	signal mul_rdy   : std_logic := '0';
+	signal a         : std_logic_vector(0 to offset'length-1);
+	signal b         : signed(0 to offset'length-1);
 
+	signal binary    : std_logic_vector(0 to binary_length-1);
+	signal botd_frm  : std_logic;
+	signal botd_code : ascii;
+	signal str_frm   : std_logic;
+	signal str_code  : ascii;
 begin
 
 	process (rgtr_clk)
     	function textrom_init (
     		constant width : natural)
     		return string is
-    		variable data  : string(1 to (1+inputs)*width);
+    		variable data  : string(1 to (inputs+2)*width);
     	begin
-    		data(1 to hz_label'length) := hz_label;
-    		for i in 1 to inputs loop
-    			data(i*width+1 to (i+1)*width) := textalign(escaped(hdo(vt_labels)**("["&natural'image(i-1)&"].text")), width);
+    		for i in 0 to inputs-1 loop
+    			data(i*width+1 to (i+1)*width) := textalign(escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")), width);
     		end loop;
+    		data(width*inputs+1 to width*inputs+hz_label'length) := hz_label;
     		return data;
     	end;
 
@@ -60,7 +69,7 @@ begin
 
 	begin
 		if rising_edge(rgtr_clk) then
-			str_frm  <= to_stdulogic(str_req xor str_rdy);
+			str_frm  <= str_req xor str_rdy;
 			str_code <= to_ascii(textrom(cptr));
 			if (str_rdy xor str_req)='1' then
 				if i >= width-1 then
@@ -93,9 +102,6 @@ begin
 					str_req  <= not str_rdy;
 					btod_req <= to_stdulogic(to_bit(btod_rdy));
 					state    := s_offset;
-					xxx      <= '1';
-				elsif (to_bit(btod_req) xor to_bit(btod_rdy))='0' then
-					xxx      <= '0';
 				end if;
 			when s_offset =>
 				if (to_bit(mul_req) xor to_bit(mul_rdy))='0' then
@@ -133,5 +139,24 @@ begin
 		a   => a,
 		b   => std_logic_vector(b(1 to b'right)),
 		s   => binary);
+
+	botd_e : entity hdl4fpga.btof
+	port map (
+		clk      => rgtr_clk,
+		btof_req => btod_req,
+		btof_rdy => btod_rdy,
+		sht      => botd_sht,
+		dec      => botd_dec,
+		left     => '0',
+		width    => x"7",
+		exp      => b"101",
+		neg      => '0', --sign,
+		bin      => binary,
+		code_frm => botd_frm,
+		code     => botd_code);
+
+	code_frm  <= (txt_req xor txt_rdy) or (btod_req xor btod_rdy) or (str_req xor str_rdy);
+	code_irdy <= botd_frm or str_frm;
+	code_data <= multiplex(botd_code & str_code, not botd_frm);
 
 end;

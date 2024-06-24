@@ -145,12 +145,9 @@ architecture def of scopeio_textbox is
 	constant sfcnd_length    : natural := max(unsigned_num_bits(max(vt_sfcnds)), unsigned_num_bits(max(hz_sfcnds)));
 	constant offset_length   : natural := max(vt_offset'length, hz_offset'length);
 
-	signal str_frm           : std_logic := '0';
-	signal str_req           : std_logic := '0';
-	signal str_rdy           : std_logic := '0';
-	signal str_code          : ascii;
-	signal botd_frm          : std_logic;
-	signal botd_code         : ascii;
+	signal code_frm          : std_logic;
+	signal code_irdy         : std_logic;
+	signal code_data         : ascii;
 	signal cga_we            : std_logic := '0';
 	signal cga_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
 	signal cga_data          : ascii;
@@ -279,6 +276,7 @@ begin
 						vt_offset  <= offset;
 						vt_offsets <= replace(vt_offsets, chanid, offset);
 						vt_chanid  <= chanid;
+						wdt_addr   <= mul(unsigned(chanid), cga_cols, wdt_addr'length)+ 2*cga_cols;
 						vtwdt_req  <= not vtwdt_rdy;
 					elsif gain_dv='1' then
 						gain_id    := unsigned(multiplex(gain_ids, chanid, gain_id'length));
@@ -287,6 +285,7 @@ begin
 						vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), vt_scale'length);
 						vt_offset  <= multiplex(vt_offsets, gain_cid, vt_offset'length);
 						vt_chanid  <= std_logic_vector(resize(unsigned(gain_cid), vt_chanid'length));
+						wdt_addr   <= mul(unsigned(gain_cid), cga_cols, wdt_addr'length)+ 2*cga_cols;
 						vtwdt_req  <= not vtwdt_rdy;
 					end if;
 				end if;
@@ -296,7 +295,6 @@ begin
 
 		wdt_b : block
 
-			signal binary     : std_logic_vector(0 to bin_digits*((offset_length+sfcnd_length+bin_digits-1)/bin_digits)-1);
 			signal offset     : signed(0 to max(vt_offset'length, hz_offset'length)-1);
 			signal magnitud   : signed(offset'range);
 			signal btod_req   : std_logic;
@@ -309,7 +307,6 @@ begin
 			signal txt_rdy  : std_logic := '0';
 			signal txt_req  : std_logic := '0';
 
-			signal xxx : std_logic;
 		begin
 
 			process (rgtr_clk)
@@ -320,50 +317,31 @@ begin
 						scale     <= vt_scale;
 						botd_sht  <= vt_sht;
 						botd_dec  <= vt_dec;
-						wdt_addr  <= mul(unsigned(vt_chanid), cga_cols, wdt_addr'length);
 						txt_req   <= not to_stdulogic(to_bit(txt_rdy));
 						vtwdt_rdy <= vtwdt_req;
 					end if;
 				end if;
 			end process;
 
-			str_rdy <= str_req;
 			xxx_e : entity hdl4fpga.scopeio_axisreading
 			generic map (
 				inputs   => inputs,
+				binary_length => bin_digits*((offset_length+sfcnd_length+bin_digits-1)/bin_digits),
 				vt_labels => vt,
 				hz_label  => hz_text,
 				grid_unit => grid_unit)
 			port map (
-				rgtr_clk => rgtr_clk,
-				txt_req  => txt_req,
-				txt_rdy  => txt_rdy,
+				rgtr_clk  => rgtr_clk,
+				txt_req   => txt_req,
+				txt_rdy   => txt_rdy,
 				vt_chanid => vt_chanid,
-				offset   => std_logic_vector(offset),
-				scale    => std_logic_vector(scale),
-				-- str_req  => str_req,
-				-- str_rdy  => str_rdy,
-				str_frm  => str_frm,
-				str_code => str_code,
-				btod_req => btod_req,
-				btod_rdy => btod_rdy,
-				binary   => binary,
-				xxx => xxx);
-
-   			botd_e : entity hdl4fpga.btof
-			port map (
-				clk      => rgtr_clk,
-				btof_req => btod_req,
-				btof_rdy => btod_rdy,
-				sht      => std_logic_vector(botd_sht),
-				dec      => std_logic_vector(botd_dec),
-				left     => '0',
-				width    => x"7",
-				exp      => b"101",
-				neg      => '0', --sign,
-				bin      => binary,
-				code_frm => botd_frm,
-				code     => botd_code);
+				botd_sht  => std_logic_vector(botd_sht),
+				botd_dec  => std_logic_vector(botd_dec),
+				offset    => std_logic_vector(offset),
+				scale     => std_logic_vector(scale),
+				code_frm  => code_frm,
+				code_irdy => code_irdy,
+				code_data => code_data);
 
 
 	process (rgtr_clk)
@@ -371,11 +349,11 @@ begin
 		if rising_edge(rgtr_clk) then
 			if cga_we='1' then
 				cga_addr <= cga_addr + 1;
-			elsif xxx='0' then
+			elsif code_frm='0' then
 				cga_addr <= wdt_addr;
 			end if;
-			cga_we   <= botd_frm or str_frm;
-			cga_data <= multiplex(botd_code & str_code, not botd_frm);
+			cga_we   <= code_irdy;
+			cga_data <= code_data;
 		end if;
 	end process;
 		end block;
