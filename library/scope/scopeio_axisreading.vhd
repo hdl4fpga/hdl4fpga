@@ -53,12 +53,20 @@ begin
     	function textrom_init (
     		constant width : natural)
     		return string is
+			variable left  : natural;
+			variable right : natural;
     		variable data  : string(1 to (inputs+2)*width);
     	begin
+			left  := data'left;
+			right := left + (width-1);
     		for i in 0 to inputs-1 loop
-    			data(i*width+1 to (i+1)*width) := textalign(escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")), width);
+    			data(left to right) := textalign(escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")), width);
+				left  := left  + width;
+				right := right + width;
     		end loop;
-    		data(width*inputs+1 to width*inputs+hz_label'length) := hz_label;
+			right := left + (hz_label'length-1);
+    		data(left to right) := hz_label;
+			left := left + hz_label'length;
     		return data;
     	end;
 
