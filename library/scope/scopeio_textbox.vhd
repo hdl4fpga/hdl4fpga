@@ -27,9 +27,9 @@ entity scopeio_textbox is
 		gain_cid      : in  std_logic_vector;
 		gain_ids      : in  std_logic_vector;
 
-		hz_dv         : in  std_logic;
-		hz_scale      : in  std_logic_vector;
-		hz_offset     : in  std_logic_vector;
+		time_dv       : in  std_logic;
+		time_id       : in  std_logic_vector;
+		time_offset   : in  std_logic_vector;
 
 		video_clk     : in  std_logic;
 		video_hcntr   : in  std_logic_vector;
@@ -138,11 +138,18 @@ architecture def of scopeio_textbox is
 	signal botd_sht          : signed(4-1 downto 0);
 	signal botd_dec          : signed(4-1 downto 0);
 
+	constant sfcnd_length    : natural := max(unsigned_num_bits(max(vt_sfcnds)), unsigned_num_bits(max(hz_sfcnds)));
+
 	signal vt_offset         : std_logic_vector((5+8)-1 downto 0);
+	signal hz_scale          : unsigned(0 to sfcnd_length-1);
 	signal vt_sht            : signed(botd_sht'range);
 	signal vt_dec            : signed(botd_dec'range);
 
-	constant sfcnd_length    : natural := max(unsigned_num_bits(max(vt_sfcnds)), unsigned_num_bits(max(hz_sfcnds)));
+	signal hz_offset         : std_logic_vector(time_offset'range);
+	signal vt_scale          : unsigned(0 to sfcnd_length-1);
+	signal hz_sht            : signed(botd_sht'range);
+	signal hz_dec            : signed(botd_dec'range);
+
 	constant offset_length   : natural := max(vt_offset'length, hz_offset'length);
 
 	signal code_frm          : std_logic;
@@ -171,6 +178,7 @@ architecture def of scopeio_textbox is
 	signal wdt_rdy           : bit;
 	signal wdt_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
 
+	signal wdt_id      : std_logic_vector(chanid_maxsize-1 downto 0);
 begin
 
 	rgtr_b : block
@@ -192,8 +200,6 @@ begin
 		signal vt_dv          : std_logic;
 		signal vt_ena         : std_logic;
 		signal vt_offsets     : std_logic_vector(0 to inputs*vt_offset'length-1);
-		signal vt_chanid      : std_logic_vector(chanid_maxsize-1 downto 0);
-		signal vt_scale       : unsigned(0 to sfcnd_length-1);
 		signal tgr_scale      : std_logic_vector(4-1 downto 0);
 
 		function label_width 
@@ -249,7 +255,7 @@ begin
 
 		rgtrvtaxis_b : block
 			signal offset : std_logic_vector(vt_offset'range);
-			signal chanid : std_logic_vector(vt_chanid'range);
+			signal chanid : std_logic_vector(chanid_maxsize-1 downto 0);
 		begin
 			vtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
 			generic map (
@@ -275,7 +281,7 @@ begin
 						vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), vt_scale'length);
 						vt_offset  <= offset;
 						vt_offsets <= replace(vt_offsets, chanid, offset);
-						vt_chanid  <= chanid;
+						wdt_id     <= std_logic_vector(resize(unsigned(chanid), wdt_id'length));
 						wdt_addr   <= mul(unsigned(chanid), cga_cols, wdt_addr'length)+ 2*cga_cols;
 						vtwdt_req  <= not vtwdt_rdy;
 					elsif gain_dv='1' then
@@ -284,13 +290,20 @@ begin
 						vt_dec     <= to_signed(vt_pnts(to_integer(gain_id)), botd_dec'length);
 						vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), vt_scale'length);
 						vt_offset  <= multiplex(vt_offsets, gain_cid, vt_offset'length);
-						vt_chanid  <= std_logic_vector(resize(unsigned(gain_cid), vt_chanid'length));
+						wdt_id     <= std_logic_vector(resize(unsigned(gain_cid), wdt_id'length));
 						wdt_addr   <= mul(unsigned(gain_cid), cga_cols, wdt_addr'length)+ 2*cga_cols;
 						vtwdt_req  <= not vtwdt_rdy;
+					elsif time_dv='1' then
+						hz_sht     <= to_signed(hz_shrs(to_integer(unsigned(time_id))), botd_sht'length);
+						hz_dec     <= to_signed(hz_pnts(to_integer(unsigned(time_id))), botd_dec'length);
+						hz_scale   <= to_unsigned(hz_sfcnds(to_integer(unsigned(time_id(2-1 downto 0)))), hz_scale'length);
+						hz_offset  <= time_offset;
+						hzwdt_req  <= not hzwdt_rdy;
+						wdt_id     <= std_logic_vector(to_unsigned(inputs, wdt_id'length));
+						wdt_addr   <= (others => '0');
 					end if;
 				end if;
 			end process;
-
 		end block;
 
 		wdt_b : block
@@ -319,6 +332,13 @@ begin
 						botd_dec  <= vt_dec;
 						txt_req   <= not to_stdulogic(to_bit(txt_rdy));
 						vtwdt_rdy <= vtwdt_req;
+					elsif (hzwdt_rdy xor hzwdt_req)='1' then
+						offset    <= resize(signed(hz_offset), offset'length);
+						scale     <= hz_scale;
+						botd_sht  <= hz_sht;
+						botd_dec  <= hz_dec;
+						txt_req   <= not to_stdulogic(to_bit(txt_rdy));
+						hzwdt_rdy <= hzwdt_req;
 					end if;
 				end if;
 			end process;
@@ -334,7 +354,7 @@ begin
 				rgtr_clk  => rgtr_clk,
 				txt_req   => txt_req,
 				txt_rdy   => txt_rdy,
-				vt_chanid => vt_chanid,
+				wdt_id => wdt_id,
 				botd_sht  => std_logic_vector(botd_sht),
 				botd_dec  => std_logic_vector(botd_dec),
 				offset    => std_logic_vector(offset),

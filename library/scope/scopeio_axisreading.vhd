@@ -18,7 +18,7 @@ entity scopeio_axisreading is
 		rgtr_clk  : in  std_logic;
 		txt_req   : in  std_logic;
 		txt_rdy   : buffer std_logic;
-		vt_chanid : in std_logic_vector;
+		wdt_id : in std_logic_vector;
 		botd_sht  : in std_logic_vector;
 		botd_dec  : in std_logic_vector;
 		offset    : in  std_logic_vector;
@@ -79,7 +79,7 @@ begin
 				cptr := cptr + 1;
 			else
 				i    := 0;
-				cptr := width*to_integer(unsigned(vt_chanid))+1;
+				cptr := width*to_integer(unsigned(wdt_id))+1;
 			end if;
 		end if;
 	end process;

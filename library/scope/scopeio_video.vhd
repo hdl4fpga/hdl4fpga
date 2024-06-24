@@ -276,9 +276,9 @@ begin
 			gain_cid      => gain_cid,
 			gain_ids      => gain_ids,
 
-			hz_dv         => hz_dv,
-			hz_scale      => time_scale,
-			hz_offset     => time_offset,
+			time_dv       => hz_dv,
+			time_id       => time_scale,
+			time_offset   => time_offset,
 
 			video_clk     => video_clk,
 			video_hcntr   => textbox_x,
