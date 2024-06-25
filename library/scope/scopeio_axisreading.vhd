@@ -97,6 +97,21 @@ begin
 		variable state : states;
 	begin
 		if rising_edge(rgtr_clk) then
+			if (txt_req xor txt_rdy)='1' then
+				if unsigned(wdt_id) <= inputs then
+					axis_req <= not axis_rdy;
+				else 
+					tgr_req <= not axis_rdy;
+				end if;
+			end if;
+		end if;
+	end process;
+
+	axis_p : process (rgtr_clk)
+		type states is (s_label, s_offset, s_unit, s_scale);
+		variable state : states;
+	begin
+		if rising_edge(rgtr_clk) then
 			case state is
 			when s_label =>
 				a <= scale;
@@ -105,35 +120,53 @@ begin
 				else 
 					b <= -signed(offset);
 				end if;
-				if (to_bit(txt_rdy) xor to_bit(txt_req))='1' then
-					mul_req  <= not to_stdulogic(to_bit(mul_rdy));
-					str_req  <= not str_rdy;
-					btod_req <= to_stdulogic(to_bit(btod_rdy));
-					state    := s_offset;
+				if (axis_rdy xor axis_req)='1' then
+					axism_req <= not axism_rdy;
+					str_req   <= not str_rdy;
+					btod_req  <= btod_rdy;
+					state     := s_offset;
 				end if;
 			when s_offset =>
-				if (to_bit(mul_req) xor to_bit(mul_rdy))='0' then
+				if (mul_req xor mul_rdy)='0' then
 					a <= scale;
 					b <= to_signed(grid_unit, b'length);
-					btod_req <= not to_stdulogic(to_bit(btod_rdy));
+					btod_req <= not btod_rdy;
 					state   := s_unit;
 				end if;
 			when s_unit =>
-				if (to_bit(btod_req) xor to_bit(btod_rdy))='0' then
+				if (btod_req xor btod_rdy)='0' then
 					mul_req  <= not mul_rdy;
 					str_req  <= str_rdy;
-					btod_req <= to_stdulogic(to_bit(btod_rdy));
-					state   := s_scale;
+					btod_req <= btod_rdy;
+					state    := s_scale;
 				end if;
 			when s_scale =>
 				if (str_req xor str_rdy)='0' then
 					if (mul_req xor mul_rdy)='0' then
 						btod_req <= not btod_rdy;
-						txt_rdy  <= txt_req;
+						axis_rdy  <= axis_req;
 						state   := s_label;
 					end if;
 				end if;
 			end case;
+		end if;
+	end process;
+
+
+	process (rgtr_clk)
+		type states is (s_event, s_wait);
+		variable wid : natural range 0 to mul_reqs'length-1;
+	begin
+		if rising_edge(rgtr_clk) then
+			for i in mul_reqs'range loop
+				if (mul_req xor mul_rdy)='0' then
+					if (mul_rdys(i) xor mul_reqs(i))='1' then
+						mul_rdys(i) <= mul_reqs(i)
+						mul_req <= not mul_rdy;
+						exit;
+					end if;
+				end if;
+			end loop;
 		end if;
 	end process;
 
