@@ -158,15 +158,18 @@ begin
 		variable wid : natural range 0 to mul_reqs'length-1;
 	begin
 		if rising_edge(rgtr_clk) then
+			z := '0';
 			for i in mul_reqs'range loop
-				if (mul_req xor mul_rdy)='0' then
-					if (mul_rdys(i) xor mul_reqs(i))='1' then
-						mul_rdys(i) <= mul_reqs(i)
+				if (mul_rdys(i) xor mul_reqs(i))='0' then
+					z := '0';
+				end if;
+			end loop;
+			if z
+					if (mul_req xor mul_rdy)='0' then
 						mul_req <= not mul_rdy;
 						exit;
 					end if;
 				end if;
-			end loop;
 		end if;
 	end process;
 
