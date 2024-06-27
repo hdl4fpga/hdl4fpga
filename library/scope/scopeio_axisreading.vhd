@@ -51,13 +51,11 @@ architecture def of scopeio_axisreading is
 	signal axis_rdy  : std_logic;
 	signal tgr_req   : std_logic;
 	signal tgr_rdy   : std_logic;
-	signal mul_reqs  : std_logic_vector(0 to 0);
-	signal mul_rdys  : std_logic_vector(0 to 0);
+	signal mul_reqs  : std_logic_vector(0 to 1);
+	signal mul_rdys  : std_logic_vector(0 to 1);
 
-	alias axism_req is mul_reqs(0);
-	alias axism_rdy is mul_rdys(0);
-	alias tgrm_req  is mul_reqs(0);
-	alias tgrm_rdy  is mul_rdys(0);
+	alias tgrm_req  is mul_reqs(1);
+	alias tgrm_rdy  is mul_rdys(1);
 
 begin
 
@@ -131,6 +129,8 @@ begin
 	end process;
 
 	axis_p : process (rgtr_clk)
+		alias axism_req is mul_reqs(0);
+		alias axism_rdy is mul_rdys(0);
 		type states is (s_label, s_offset, s_unit, s_scale);
 		variable state : states;
 	begin
