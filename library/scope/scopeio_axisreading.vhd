@@ -58,6 +58,11 @@ architecture def of scopeio_axisreading is
 	signal str_reqs  : std_logic_vector(0 to 1); -- := (others => '0');
 	signal str_rdys  : std_logic_vector(0 to 1); -- := (others => '0');
 
+	type a_vector is array(0 to 1) of std_logic_vector(a'range);
+	type b_vector is array(0 to 1) of std_logic_vector(b'range);
+	signal as : a_vector;
+	signal bs : b_vector;
+
 	constant axis_id : natural := 0;
 	constant tgr_id  : natural := 1;
 
@@ -218,6 +223,7 @@ begin
 						id := i;
 						str_req <= not str_rdy;
 						state := s_req;
+						exit;
 					end if;
 				end loop;
 			when s_req =>
@@ -242,6 +248,7 @@ begin
 						wdtyp := i;
 						btod_req <= not btod_rdy;
 						state := s_req;
+						exit;
 					end if;
 				end loop;
 			when s_req =>
@@ -261,17 +268,18 @@ begin
 		if rising_edge(rgtr_clk) then
 			case state is
 			when s_rdy =>
-				a <= scale;
-				if signed(offset) >= 0 then
-					b <=  signed(offset);
-				else 
-					b <= -signed(offset);
-				end if;
 				for i in mul_reqs'range loop
 					if (mul_rdys(i) xor mul_reqs(i))='1' then
+						a <= as(i);
+						if signed(offset) >= 0 then
+							b <=  signed(bs(i));
+						else 
+							b <= -signed(bs(i));
+						end if;
 						mid := i;
 						mul_req <= not mul_rdy;
 						state := s_req;
+						exit;
 					end if;
 				end loop;
 			when s_req =>
