@@ -39,7 +39,7 @@ architecture def of scopeio_axisreading is
 	signal btod_rdy  : std_logic;
 	signal mul_req   : std_logic := '0';
 	signal mul_rdy   : std_logic := '0';
-	signal a         : std_logic_vector(0 to offset'length-1);
+	signal a         : std_logic_vector(0 to scale'length-1);
 	signal b         : signed(0 to offset'length-1);
 
 	signal binary    : std_logic_vector(0 to binary_length-1);
@@ -59,7 +59,7 @@ architecture def of scopeio_axisreading is
 	signal str_rdys  : std_logic_vector(0 to 1); -- := (others => '0');
 
 	type a_vector is array(0 to 1) of std_logic_vector(a'range);
-	type b_vector is array(0 to 1) of std_logic_vector(b'range);
+	type b_vector is array(0 to 1) of signed(b'range);
 	signal as : a_vector;
 	signal bs : b_vector;
 
@@ -150,6 +150,7 @@ begin
 		if rising_edge(rgtr_clk) then
 			case state is
 			when s_label =>
+				bs(axis_id)<= signed(offset);
 				if (axis_rdy xor axis_req)='1' then
 					mul_req  <= not mul_rdy;
 					str_req  <= not str_rdy;
@@ -161,6 +162,7 @@ begin
 					state   := s_unit;
 				end if;
 			when s_unit =>
+				bs(axis_id)<= to_signed(grid_unit, b'length);
 				if (btod_req xor btod_rdy)='0' then
 					mul_req <= not mul_rdy;
 					state    := s_scale;
@@ -238,14 +240,14 @@ begin
 	btodreq_p : process (rgtr_clk)
 		type states is (s_rdy, s_req);
 		variable state : states;
-		variable wdtyp : natural range 0 to btod_reqs'length-1;
+		variable id : natural range 0 to btod_reqs'length-1;
 	begin
 		if rising_edge(rgtr_clk) then
 			case state is
 			when s_rdy =>
 				for i in btod_reqs'range loop
 					if (btod_rdys(i) xor btod_reqs(i))='1' then
-						wdtyp := i;
+						id := i;
 						btod_req <= not btod_rdy;
 						state := s_req;
 						exit;
@@ -253,30 +255,30 @@ begin
 				end loop;
 			when s_req =>
 				if (btod_req xor btod_rdy)='0' then
-					btod_rdys(wdtyp) <= btod_reqs(wdtyp);
+					btod_rdys(id) <= btod_reqs(id);
 					state := s_rdy;
 				end if;
 			end case;
 		end if;
 	end process;
 
+	a <= scale;
 	mulreq_p : process (rgtr_clk)
 		type states is (s_rdy, s_req);
 		variable state : states;
-		variable mid   : natural range 0 to mul_reqs'length-1;
+		variable id    : natural range 0 to mul_reqs'length-1;
 	begin
 		if rising_edge(rgtr_clk) then
 			case state is
 			when s_rdy =>
 				for i in mul_reqs'range loop
 					if (mul_rdys(i) xor mul_reqs(i))='1' then
-						a <= as(i);
 						if signed(offset) >= 0 then
-							b <=  signed(bs(i));
+							b <=  bs(i);
 						else 
-							b <= -signed(bs(i));
+							b <= -bs(i);
 						end if;
-						mid := i;
+						id := i;
 						mul_req <= not mul_rdy;
 						state := s_req;
 						exit;
@@ -284,7 +286,7 @@ begin
 				end loop;
 			when s_req =>
 				if (mul_req xor mul_rdy)='0' then
-					mul_rdys(mid) <= mul_reqs(mid);
+					mul_rdys(id) <= mul_reqs(id);
 					state := s_rdy;
 				end if;
 			end case;
