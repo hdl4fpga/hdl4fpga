@@ -308,7 +308,7 @@ begin
 						vt_sht     <= to_signed(vt_shts(to_integer(gain_id)), botd_sht'length);
 						vt_dec     <= to_signed(vt_pnts(to_integer(gain_id)), botd_dec'length);
 						vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), vt_scale'length);
-						hz_offset  <= std_logic_vector(resize(unsigned(trigger_level), vt_offset'length));
+						hz_offset  <= std_logic_vector(resize(signed(trigger_level), hz_offset'length));
 						wdt_id     <= std_logic_vector(to_unsigned(inputs+1, wdt_id'length));
 						wdt_addr   <= to_unsigned(cga_cols, wdt_addr'length);
 						tgwdt_req  <= not tgwdt_rdy;

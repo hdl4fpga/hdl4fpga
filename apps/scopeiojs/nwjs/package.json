@@ -3,7 +3,7 @@
 	"main": "html/scopeio.html",
 	"window": {
 		"width": 1600,
-		"height": 520
+		"height": 800
 	},
 	"scripts": {
 		"start": "nw"
