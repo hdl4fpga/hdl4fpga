@@ -241,6 +241,8 @@ begin
 			ip4_num4  => myip_num4);
 
 		trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
+			generic map (
+				rgtr      => false)
 		port map (
 			rgtr_clk       => rgtr_clk,
 			rgtr_dv        => rgtr_dv,
@@ -301,6 +303,15 @@ begin
 						hzwdt_req  <= not hzwdt_rdy;
 						wdt_id     <= std_logic_vector(to_unsigned(inputs, wdt_id'length));
 						wdt_addr   <= (others => '0');
+					elsif trigger_ena='1' then
+						gain_id    := unsigned(multiplex(gain_ids, trigger_chanid, gain_id'length));
+						vt_sht     <= to_signed(vt_shts(to_integer(gain_id)), botd_sht'length);
+						vt_dec     <= to_signed(vt_pnts(to_integer(gain_id)), botd_dec'length);
+						vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), vt_scale'length);
+						vt_offset  <= std_logic_vector(resize(unsigned(trigger_level), vt_offset'length));
+						wdt_id     <= std_logic_vector(to_unsigned(inputs+1, wdt_id'length));
+						wdt_addr   <= to_unsigned(cga_cols, wdt_addr'length);
+						tgwdt_req  <= not tgwdt_rdy;
 					end if;
 				end if;
 			end process;
@@ -332,6 +343,13 @@ begin
 						botd_dec  <= vt_dec;
 						txt_req   <= not to_stdulogic(to_bit(txt_rdy));
 						vtwdt_rdy <= vtwdt_req;
+					elsif (tgwdt_rdy xor tgwdt_req)='1' then
+						offset    <= resize(signed(vt_offset), offset'length);
+						scale     <= vt_scale;
+						botd_sht  <= vt_sht;
+						botd_dec  <= vt_dec;
+						txt_req   <= not to_stdulogic(to_bit(txt_rdy));
+						tgwdt_rdy <= tgwdt_req;
 					elsif (hzwdt_rdy xor hzwdt_req)='1' then
 						offset    <= resize(signed(hz_offset), offset'length);
 						scale     <= hz_scale;

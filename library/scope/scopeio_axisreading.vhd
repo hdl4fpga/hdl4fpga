@@ -83,15 +83,16 @@ begin
 				left  := left  + width;
 				right := right + width;
     		end loop;
-			right := left + (hz_label'length-1);
-    		data(left to right) := hz_label;
-			left := left + hz_label'length;
+    		data(left to right) := textalign(hz_label, width);
+			left  := left  + width;
+			right := right + width;
+    		data(left to right) := textalign("tgz", width);
     		return data;
     	end;
 
 		constant width : natural := 4;
 		constant textrom : string := textrom_init (width);
-		variable i : natural range 0 to width-1;
+		variable i    : natural range 0 to width-1;
 		variable cptr : natural range 0 to (1+inputs)*width;
 
 	begin
@@ -165,7 +166,7 @@ begin
 				bs(axis_id)<= to_signed(grid_unit, b'length);
 				if (btod_req xor btod_rdy)='0' then
 					mul_req <= not mul_rdy;
-					state    := s_scale;
+					state   := s_scale;
 				end if;
 			when s_scale =>
 				if (str_req xor str_rdy)='0' then
@@ -192,6 +193,7 @@ begin
 		if rising_edge(rgtr_clk) then
 			case state is
 			when s_label =>
+				bs(tgr_id)<= signed(offset);
 				if (tgr_rdy xor tgr_req)='1' then
 					mul_req  <= not mul_rdy;
 					str_req  <= not str_rdy;
@@ -204,7 +206,7 @@ begin
 				end if;
 			when s_unit =>
 				if (btod_req xor btod_rdy)='0' then
-					str_req  <= not str_rdy;
+					-- str_req  <= not str_rdy;
 					tgr_rdy  <= tgr_req;
 					state    := s_label;
 				end if;
