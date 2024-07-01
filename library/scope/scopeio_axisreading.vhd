@@ -130,8 +130,12 @@ begin
 			when s_req =>
 				if (axis_req xor axis_rdy)='0' then
 					if (tgr_req xor tgr_rdy)='0' then
+						if (btod_req xor btod_rdy)='0' then
+							if (str_req xor str_rdy)='0' then
 						txt_rdy <= txt_req;
 						state   := s_rdy;
+							end if;
+						end if;
 					end if;
 				end if;
 			end case;

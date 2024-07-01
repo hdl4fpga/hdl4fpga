@@ -166,6 +166,8 @@ architecture def of scopeio_textbox is
 	signal video_addr        : std_logic_vector(cga_addr'range);
 	signal video_dot         : std_logic;
 
+			signal txt_rdy  : std_logic := '0';
+			signal txt_req  : std_logic := '0';
 	signal vtwdt_req         : bit;
 	signal vtwdt_rdy         : bit;
 	signal hzwdt_req         : bit;
@@ -241,15 +243,13 @@ begin
 			ip4_num4  => myip_num4);
 
 		trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
-			generic map (
-				rgtr      => false)
 		port map (
 			rgtr_clk       => rgtr_clk,
 			rgtr_dv        => rgtr_dv,
 			rgtr_id        => rgtr_id,
 			rgtr_data      => rgtr_data,
 
-			trigger_ena    => trigger_ena,
+			trigger_dv    => trigger_ena,
 			trigger_slope  => trigger_slope,
 			trigger_freeze => trigger_freeze,
 			trigger_chanid => trigger_chanid,
@@ -285,6 +285,7 @@ begin
 						vt_offsets <= replace(vt_offsets, chanid, offset);
 						wdt_id     <= std_logic_vector(resize(unsigned(chanid), wdt_id'length));
 						wdt_addr   <= mul(unsigned(chanid), cga_cols, wdt_addr'length)+ 2*cga_cols;
+						tgwdt_req  <= not tgwdt_rdy;
 						vtwdt_req  <= not vtwdt_rdy;
 					elsif gain_dv='1' then
 						gain_id    := unsigned(multiplex(gain_ids, chanid, gain_id'length));
@@ -294,6 +295,7 @@ begin
 						vt_offset  <= multiplex(vt_offsets, gain_cid, vt_offset'length);
 						wdt_id     <= std_logic_vector(resize(unsigned(gain_cid), wdt_id'length));
 						wdt_addr   <= mul(unsigned(gain_cid), cga_cols, wdt_addr'length)+ 2*cga_cols;
+						tgwdt_req  <= not tgwdt_rdy;
 						vtwdt_req  <= not vtwdt_rdy;
 					elsif time_dv='1' then
 						hz_sht     <= to_signed(hz_shrs(to_integer(unsigned(time_id))), botd_sht'length);
@@ -328,14 +330,13 @@ begin
 
 			signal scale      : unsigned(0 to sfcnd_length-1);
 
-			signal txt_rdy  : std_logic := '0';
-			signal txt_req  : std_logic := '0';
 
 		begin
 
 			process (rgtr_clk)
 			begin
 				if rising_edge(rgtr_clk) then
+					if (txt_rdy xor txt_req)='0' then
 					if (vtwdt_rdy xor vtwdt_req)='1' then
 						offset    <= resize(signed(vt_offset), offset'length);
 						scale     <= vt_scale;
@@ -358,6 +359,7 @@ begin
 						txt_req   <= not to_stdulogic(to_bit(txt_rdy));
 						hzwdt_rdy <= hzwdt_req;
 					end if;
+				end if;
 				end if;
 			end process;
 
