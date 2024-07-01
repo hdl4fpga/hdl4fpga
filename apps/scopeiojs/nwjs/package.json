@@ -2,7 +2,7 @@
 	"name": "ScopeIO",
 	"main": "html/scopeio.html",
 	"window": {
-		"width": 500,
+		"width": 1600,
 		"height": 520
 	},
 	"scripts": {
