@@ -13,7 +13,6 @@ entity scopeio_textbox is
 	generic(
 		layout        : string;
 		latency       : natural;
-		max_delay     : natural;
 		font_bitrom   : std_logic_vector := psf1cp850x8x16;
 		font_height   : natural := 16);
 	port (
@@ -53,7 +52,6 @@ entity scopeio_textbox is
 	constant hz_text        : string  := "Hztl";
 	constant vt_prefix      : string  := get_prefix1235(vt_unit);
 	constant hz_prefix      : string  := get_prefix1235(hz_unit);
-	constant hzoffset_bits  : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits    : natural := unsigned_num_bits(inputs-1);
 
 	constant cga_cols        : natural := textbox_width/font_width;
@@ -198,8 +196,6 @@ begin
 		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
 		signal trigger_level  : std_logic_vector(storage_word'range);
 
-		signal vt_exp         : integer;
-		signal vt_dv          : std_logic;
 		signal vt_ena         : std_logic;
 		signal vt_offsets     : std_logic_vector(0 to inputs*vt_offset'length-1);
 		signal tgr_scale      : std_logic_vector(4-1 downto 0);
@@ -267,7 +263,6 @@ begin
 				rgtr_dv   => rgtr_dv,
 				rgtr_id   => rgtr_id,
 				rgtr_data => rgtr_data,
-				vt_dv     => vt_dv,
 				vt_ena    => vt_ena,
 				vt_chanid => chanid,
 				vt_offset => offset);

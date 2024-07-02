@@ -9,54 +9,76 @@ use hdl4fpga.hdo.all;
 
 entity scopeio_axisreading is
 	generic (
-		inputs    : natural;
-		vt_labels : string;
-		hz_label  : string := "hztl";
-		binary_length : natural;
-		grid_unit : natural);
+		layout        : string);
 	port (
-		rgtr_clk  : in  std_logic;
-		txt_req   : in  std_logic;
-		txt_rdy   : buffer std_logic;
-		wdt_id    : in std_logic_vector;
-		botd_sht  : in std_logic_vector;
-		botd_dec  : in std_logic_vector;
-		offset    : in  std_logic_vector;
-		scale     : in  std_logic_vector;
-		code_frm  : out std_logic := '0';
-		code_irdy : out std_logic := '0';
-		code_data : out ascii);
+		rgtr_clk    : in  std_logic;
+		rgtr_dv     : in  std_logic;
+		rgtr_id     : in  std_logic_vector(8-1 downto 0);
+		rgtr_data   : in  std_logic_vector;
+
+		gain_ena    : in  std_logic;
+		gain_dv     : in  std_logic;
+		gain_cid    : in  std_logic_vector;
+		gain_ids    : in  std_logic_vector;
+
+		time_dv     : in  std_logic;
+		time_id     : in  std_logic_vector;
+		time_offset : in  std_logic_vector;
+
+		txt_req     : in  std_logic;
+		txt_rdy     : buffer std_logic;
+		wdt_id      : in std_logic_vector;
+		botd_sht    : in std_logic_vector;
+		botd_dec    : in std_logic_vector;
+		offset      : in  std_logic_vector;
+		scale       : in  std_logic_vector;
+		code_frm    : out std_logic := '0';
+		code_irdy   : out std_logic := '0';
+		code_data   : out ascii);
+
+	constant offset_length   : natural := max(vt_offset'length, time_offset'length);
+
 end;
 
 architecture def of scopeio_axisreading is
 
-	signal str_req   : std_logic;
-	signal str_rdy   : std_logic;
-	signal btod_frm  : std_logic;
-	signal btod_code : ascii;
+	signal tgr_dv     : std_logic;
+	signal tgr_freeze : std_logic;
+	signal tgr_slope  : std_logic;
+	signal tgr_chanid : std_logic_vector(chanid_bits-1 downto 0);
+	signal tgr_level  : std_logic_vector(storage_word'range);
 
-	signal btod_req  : std_logic;
-	signal btod_rdy  : std_logic;
-	signal mul_req   : std_logic := '0';
-	signal mul_rdy   : std_logic := '0';
-	signal a         : std_logic_vector(0 to scale'length-1);
-	signal b         : signed(0 to offset'length-1);
+	signal vt_dv      : std_logic;
+	signal vt_offsets : std_logic_vector(0 to inputs*vt_offset'length-1);
+	signal tgr_scale  : std_logic_vector(4-1 downto 0);
 
-	signal binary    : std_logic_vector(0 to binary_length-1);
-	signal botd_frm  : std_logic;
-	signal botd_code : ascii;
-	signal str_frm   : std_logic;
-	signal str_code  : ascii;
-	signal axis_req  : std_logic;
-	signal axis_rdy  : std_logic;
-	signal tgr_req   : std_logic; -- := '0';
-	signal tgr_rdy   : std_logic; -- := '0';
-	signal mul_reqs  : std_logic_vector(0 to 1); -- := (others => '0');
-	signal mul_rdys  : std_logic_vector(0 to 1); -- := (others => '0');
-	signal btod_reqs : std_logic_vector(0 to 1); -- := (others => '0');
-	signal btod_rdys : std_logic_vector(0 to 1); -- := (others => '0');
-	signal str_reqs  : std_logic_vector(0 to 1); -- := (others => '0');
-	signal str_rdys  : std_logic_vector(0 to 1); -- := (others => '0');
+	signal str_req    : std_logic;
+	signal str_rdy    : std_logic;
+	signal btod_frm   : std_logic;
+	signal btod_code  : ascii;
+
+	signal btod_req   : std_logic;
+	signal btod_rdy   : std_logic;
+	signal mul_req    : std_logic := '0';
+	signal mul_rdy    : std_logic := '0';
+	signal a          : std_logic_vector(0 to scale'length-1);
+	signal b          : signed(0 to offset'length-1);
+
+	signal binary     : std_logic_vector(0 to binary_length-1);
+	signal botd_frm   : std_logic;
+	signal botd_code  : ascii;
+	signal str_frm    : std_logic;
+	signal str_code   : ascii;
+	signal axis_req   : std_logic;
+	signal axis_rdy   : std_logic;
+	signal tgr_req    : std_logic; -- := '0';
+	signal tgr_rdy    : std_logic; -- := '0';
+	signal mul_reqs   : std_logic_vector(0 to 1); -- := (others => '0');
+	signal mul_rdys   : std_logic_vector(0 to 1); -- := (others => '0');
+	signal btod_reqs  : std_logic_vector(0 to 1); -- := (others => '0');
+	signal btod_rdys  : std_logic_vector(0 to 1); -- := (others => '0');
+	signal str_reqs   : std_logic_vector(0 to 1); -- := (others => '0');
+	signal str_rdys   : std_logic_vector(0 to 1); -- := (others => '0');
 
 	type a_vector is array(0 to 1) of std_logic_vector(a'range);
 	type b_vector is array(0 to 1) of signed(b'range);
@@ -67,6 +89,23 @@ architecture def of scopeio_axisreading is
 	constant tgr_id  : natural := 1;
 
 begin
+
+	rgtr_b : block
+
+	begin
+
+		trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
+		port map (
+			rgtr_clk       => rgtr_clk,
+			rgtr_dv        => rgtr_dv,
+			rgtr_id        => rgtr_id,
+			rgtr_data      => rgtr_data,
+
+			trigger_dv     => tgr_dv,
+			trigger_slope  => tgr_slope,
+			trigger_freeze => tgr_freeze,
+			trigger_chanid => tgr_chanid,
+			trigger_level  => tgr_level);
 
 	process (rgtr_clk)
     	function textrom_init (
