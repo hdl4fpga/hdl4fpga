@@ -211,9 +211,9 @@ begin
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
 
-		gain_ena  => gain_ena,
-		chan_id   => gain_cid,
-		gain_id   => gain_id);
+		vtgain_ena  => gain_ena,
+		vtchan_id   => gain_cid,
+		vtgain_id   => gain_id);
 		
 	scopeio_rgtrpalette_e : entity hdl4fpga.scopeio_rgtrpalette
 	port map (

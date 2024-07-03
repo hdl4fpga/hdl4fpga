@@ -158,10 +158,10 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_revs,
 
-			gain_ena  => gain_ena,
-			gain_dv   => gain_dv,
-			chan_id   => chan_id,
-			gain_id   => gain_id);
+			vtgain_ena => gain_ena,
+			vtgain_dv  => gain_dv,
+			vtchan_id  => chan_id,
+			vtgain_id  => gain_id);
 		
 		process(sio_clk)
 		begin

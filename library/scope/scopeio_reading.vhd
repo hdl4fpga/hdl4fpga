@@ -108,6 +108,14 @@ begin
 		vt_chanid => offset_id,
 		vt_offset => offset);
 
+	vtoffsets_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => rgtr_clk,
+		wr_addr => offset_id,
+		wr_data => offset,
+		rd_addr => gain_id,
+		rd_data => vt_offset);
+
 	vtgain_e : entity hdl4fpga.scopeio_rgtrvtgain
 	port map (
 		rgtr_clk  => sio_clk,
@@ -119,11 +127,11 @@ begin
 		chan_id   => chan_id,
 		gain_id   => gain_id);
 
-	vtoffsets_e : entity hdl4fpga.dpram
+	vtgains_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => rgtr_clk,
-		wr_addr => offset_id,
-		wr_data => offset,
+		wr_addr => chan_id,
+		wr_data => gain_id,
 		rd_addr => gain_id,
 		rd_data => vt_offset);
 
