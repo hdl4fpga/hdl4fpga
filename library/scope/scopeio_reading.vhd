@@ -16,11 +16,6 @@ entity scopeio_axisreading is
 		rgtr_id     : in  std_logic_vector(8-1 downto 0);
 		rgtr_data   : in  std_logic_vector;
 
-		gain_ena    : in  std_logic;
-		gain_dv     : in  std_logic;
-		gain_cid    : in  std_logic_vector;
-		gain_ids    : in  std_logic_vector;
-
 		time_dv     : in  std_logic;
 		time_id     : in  std_logic_vector;
 		time_offset : in  std_logic_vector;
@@ -90,22 +85,100 @@ architecture def of scopeio_axisreading is
 
 begin
 
-	rgtr_b : block
+	trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
+	port map (
+		rgtr_clk       => rgtr_clk,
+		rgtr_dv        => rgtr_dv,
+		rgtr_id        => rgtr_id,
+		rgtr_data      => rgtr_data,
 
+		trigger_dv     => tgr_dv,
+		trigger_slope  => tgr_slope,
+		trigger_freeze => tgr_freeze,
+		trigger_chanid => tgr_chanid,
+		trigger_level  => tgr_level);
+
+	vtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+	port map (
+		rgtr_clk  => rgtr_clk,
+		rgtr_dv   => rgtr_dv,
+		rgtr_id   => rgtr_id,
+		rgtr_data => rgtr_data,
+		vt_dv     => vt_dv,
+		vt_chanid => offset_id,
+		vt_offset => offset);
+
+	vtgain_e : entity hdl4fpga.scopeio_rgtrvtgain
+	port map (
+		rgtr_clk  => sio_clk,
+		rgtr_dv   => rgtr_dv,
+		rgtr_id   => rgtr_id,
+		rgtr_data => rgtr_revs,
+
+		gain_dv   => gain_dv,
+		chan_id   => chan_id,
+		gain_id   => gain_id);
+
+	vtoffsets_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => rgtr_clk,
+		wr_addr => offset_id,
+		wr_data => offset,
+		rd_addr => gain_id,
+		rd_data => vt_offset);
+
+	vt_gainid  <= unsigned(multiplex(gain_ids, chanid, gain_id'length));
+	vt_sht     <= to_signed(vt_shts(to_integer(vt_gainid)), botd_sht'length);
+	vt_dec     <= to_signed(vt_pnts(to_integer(vt_gainid)), botd_dec'length);
+	vt_scale   <= to_unsigned(vt_sfcnds(to_integer(vt_gainid(2-1 downto 0))), vt_scale'length);
+
+	vtscales_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => rgtr_clk,
+		wr_addr => vt_chanid,
+		wr_data => vt_scale,
+		rd_addr => gain_id,
+		rd_data => vt_scale);
+
+	vtscale_p : process (rgtr_clk)
+		variable gain_id : unsigned(4-1 downto 0);
 	begin
-
-		trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
-		port map (
-			rgtr_clk       => rgtr_clk,
-			rgtr_dv        => rgtr_dv,
-			rgtr_id        => rgtr_id,
-			rgtr_data      => rgtr_data,
-
-			trigger_dv     => tgr_dv,
-			trigger_slope  => tgr_slope,
-			trigger_freeze => tgr_freeze,
-			trigger_chanid => tgr_chanid,
-			trigger_level  => tgr_level);
+		if rising_edge(rgtr_clk) then
+			if vt_dv='1' then
+				vt_offsets <= replace(vt_offsets, chanid, offset);
+				wdt_id     <= std_logic_vector(resize(unsigned(chanid), wdt_id'length));
+				wdt_addr   <= mul(unsigned(chanid), cga_cols, wdt_addr'length)+ 2*cga_cols;
+				vtwdt_req  <= not vtwdt_rdy;
+			elsif gain_dv='1' then
+				gain_id    := unsigned(multiplex(gain_ids, chanid, gain_id'length));
+				vt_sht     <= to_signed(vt_shts(to_integer(gain_id)), botd_sht'length);
+				vt_dec     <= to_signed(vt_pnts(to_integer(gain_id)), botd_dec'length);
+				vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), vt_scale'length);
+				vt_offset  <= multiplex(vt_offsets, gain_id, vt_offset'length);
+				wdt_id     <= std_logic_vector(resize(unsigned(gain_id), wdt_id'length));
+				wdt_addr   <= mul(unsigned(gain_id), cga_cols, wdt_addr'length)+ 2*cga_cols;
+				tgwdt_req  <= not tgwdt_rdy;
+				vtwdt_req  <= not vtwdt_rdy;
+			elsif time_dv='1' then
+				hz_sht     <= to_signed(hz_shrs(to_integer(unsigned(time_id))), botd_sht'length);
+				hz_dec     <= to_signed(hz_pnts(to_integer(unsigned(time_id))), botd_dec'length);
+				hz_scale   <= to_unsigned(hz_sfcnds(to_integer(unsigned(time_id(2-1 downto 0)))), hz_scale'length);
+				hz_offset  <= time_offset;
+				hzwdt_req  <= not hzwdt_rdy;
+				wdt_id     <= std_logic_vector(to_unsigned(inputs, wdt_id'length));
+				wdt_addr   <= (others => '0');
+			elsif trigger_ena='1' then
+				gain_id    := unsigned(multiplex(gain_ids, trigger_chanid, gain_id'length));
+				vt_sht     <= to_signed(vt_shts(to_integer(gain_id)), botd_sht'length);
+				vt_dec     <= to_signed(vt_pnts(to_integer(gain_id)), botd_dec'length);
+				vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), vt_scale'length);
+				hz_offset  <= std_logic_vector(resize(signed(trigger_level), hz_offset'length));
+				wdt_id     <= std_logic_vector(to_unsigned(inputs+1, wdt_id'length));
+				wdt_addr   <= to_unsigned(cga_cols, wdt_addr'length);
+				tgwdt_req  <= not tgwdt_rdy;
+			end if;
+		end if;
+	end process;
 
 	process (rgtr_clk)
     	function textrom_init (

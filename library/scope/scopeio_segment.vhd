@@ -75,7 +75,7 @@ architecture def of scopeio_segment is
 
 begin
 
-	rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+	rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtoffset
 	port map (
 		rgtr_clk  => rgtr_clk,
 		rgtr_dv   => rgtr_dv,

@@ -255,7 +255,7 @@ begin
 			signal offset : std_logic_vector(vt_offset'range);
 			signal chanid : std_logic_vector(chanid_maxsize-1 downto 0);
 		begin
-			vtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+			vtaxis_e : entity hdl4fpga.scopeio_rgtrvtoffset
 			generic map (
 				rgtr      => false)
 			port map (

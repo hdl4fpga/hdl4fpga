@@ -189,7 +189,7 @@ architecture beh of scopeio_palette is
 	signal wr_ena  : std_logic;
 begin
 
-	rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+	vtoffset_e : entity hdl4fpga.scopeio_rgtrvtoffset
 	generic map (
 		rgtr      => false)
 	port map (
@@ -202,7 +202,7 @@ begin
 		vt_chanid => vt_cid,
 		vt_offset => vt_offset);
 
-	scopeio_rgtrgain_e : entity hdl4fpga.scopeio_rgtrgain
+	vtgain_e : entity hdl4fpga.scopeio_rgtrvtgain
 	generic map (
 		rgtr      => false)
 	port map (

@@ -149,7 +149,7 @@ begin
 		signal output_ena    : std_logic_vector(0 to inputs-1);
 	begin
 
-		scopeio_rgtrgain_e : entity hdl4fpga.scopeio_rgtrgain
+		scopeio_rgtrgain_e : entity hdl4fpga.scopeio_rgtrvtgain
 		generic map (
 			rgtr      => false)
 		port map (
