@@ -7,7 +7,7 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
 
-entity scopeio_axisreading is
+entity scopeio_reading is
 	generic (
 		layout        : string);
 	port (
@@ -16,15 +16,11 @@ entity scopeio_axisreading is
 		rgtr_id     : in  std_logic_vector(8-1 downto 0);
 		rgtr_data   : in  std_logic_vector;
 
-		time_dv     : in  std_logic;
-		time_id     : in  std_logic_vector;
-		time_offset : in  std_logic_vector;
-
 		txt_req     : in  std_logic;
 		txt_rdy     : buffer std_logic;
-		wdt_id      : in std_logic_vector;
-		botd_sht    : in std_logic_vector;
-		botd_dec    : in std_logic_vector;
+		wdt_id      : in  std_logic_vector;
+		botd_sht    : in  std_logic_vector;
+		botd_dec    : in  std_logic_vector;
 		offset      : in  std_logic_vector;
 		scale       : in  std_logic_vector;
 		code_frm    : out std_logic := '0';
@@ -35,7 +31,7 @@ entity scopeio_axisreading is
 
 end;
 
-architecture def of scopeio_axisreading is
+architecture def of scopeio_reading is
 
 	signal tgr_dv     : std_logic;
 	signal tgr_freeze : std_logic;
@@ -85,6 +81,18 @@ architecture def of scopeio_axisreading is
 
 begin
 
+	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
+	port map (
+		rgtr_clk  => rgtr_clk,
+		rgtr_dv   => rgtr_dv,
+		rgtr_id   => rgtr_id,
+		rgtr_data => rgtr_data,
+
+		hz_ena    => hz_ena,
+		hz_dv     => hz_dv,
+		hz_scale  => hz_scaleid,
+		hz_slider => hz_offset);
+
 	trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
 	port map (
 		rgtr_clk       => rgtr_clk,
@@ -98,55 +106,64 @@ begin
 		trigger_chanid => tgr_chanid,
 		trigger_level  => tgr_level);
 
-	vtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+	vtgain_e : entity hdl4fpga.scopeio_rgtrvtgain
+	generic map (
+		rgtr      => false)
 	port map (
 		rgtr_clk  => rgtr_clk,
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
-		vt_dv     => vt_dv,
-		vt_chanid => offset_id,
+
+		vt_ena    => vtoffset_ena,
+		vt_chanid => offset_cid,
 		vt_offset => offset);
 
-	vtoffsets_e : entity hdl4fpga.dpram
-	port map (
-		wr_clk  => rgtr_clk,
-		wr_addr => offset_id,
-		wr_data => offset,
-		rd_addr => gain_id,
-		rd_data => vt_offset);
-
-	vtgain_e : entity hdl4fpga.scopeio_rgtrvtgain
+	vtoffset_e : entity hdl4fpga.scopeio_rgtrvtoffset
+	generic map (
+		rgtr      => false)
 	port map (
 		rgtr_clk  => sio_clk,
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
-		rgtr_data => rgtr_revs,
+		rgtr_data => rgtr_data,
 
-		gain_dv   => gain_dv,
-		chan_id   => chan_id,
-		gain_id   => gain_id);
+		vt_ena    => vtscale_ena,
+		vt_chanid => scale_cid
+		vt_scale  => scaleid);
+
+	vtoffsets_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => rgtr_clk,
+		wr_ena  => vtoffset_ena,
+		wr_addr => offset_cid,
+		wr_data => offset,
+		rd_addr => vtscale_cid,
+		rd_data => tbl_vtoffset);
 
 	vtgains_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => rgtr_clk,
-		wr_addr => chan_id,
-		wr_data => gain_id,
-		rd_addr => gain_id,
-		rd_data => vt_offset);
+		wr_ena  => vtscale_ena,
+		wr_addr => scale_cid,
+		wr_data => scaleid,
+		rd_addr => offset_cid,
+		rd_data => tbl_vtscaleid);
+
+	process (rgtr_clk)
+	begin
+		if rising_edge(rgtr_clk) then
+			if vtscale_ena='1' then
+				vtoffset <= tbl_vtoffset;
+			elsif vtoffset_ena='1' then
+			end if;
+		end if;
+	end process;
 
 	vt_gainid  <= unsigned(multiplex(gain_ids, chanid, gain_id'length));
 	vt_sht     <= to_signed(vt_shts(to_integer(vt_gainid)), botd_sht'length);
 	vt_dec     <= to_signed(vt_pnts(to_integer(vt_gainid)), botd_dec'length);
 	vt_scale   <= to_unsigned(vt_sfcnds(to_integer(vt_gainid(2-1 downto 0))), vt_scale'length);
-
-	vtscales_e : entity hdl4fpga.dpram
-	port map (
-		wr_clk  => rgtr_clk,
-		wr_addr => vt_chanid,
-		wr_data => vt_scale,
-		rd_addr => gain_id,
-		rd_data => vt_scale);
 
 	vtscale_p : process (rgtr_clk)
 		variable gain_id : unsigned(4-1 downto 0);
