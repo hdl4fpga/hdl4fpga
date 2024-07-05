@@ -22,7 +22,7 @@ entity scopeio_rgtrvtscale is
 
 end;
 
-architecture def of scopeio_rgtrvtgain is
+architecture def of scopeio_rgtrvtscale is
 
 	signal ena     : std_logic;
 	signal chanid : std_logic_vector(maxinputs_bits-1 downto 0);
