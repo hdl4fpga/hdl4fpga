@@ -190,7 +190,7 @@ begin
 		hz_ena    => hz_ena,
 		hz_dv     => hz_dv,
 		hz_scale  => hz_scale,
-		hz_slider => hz_slider);
+		hz_offset => hz_slider);
 	tp(1 to 8) <= std_logic_vector(resize(unsigned(hz_slider),8));
 	process (rgtr_clk)
 	begin

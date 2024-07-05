@@ -18,7 +18,7 @@ entity scopeio_rgtrvtscale is
 		vtscale_ena : out std_logic;
 		vtscale_dv  : out std_logic;
 		vtchan_id  : out std_logic_vector;
-		vtgain_id  : out std_logic_vector);
+		vtscale_id  : out std_logic_vector);
 
 end;
 
@@ -26,7 +26,7 @@ architecture def of scopeio_rgtrvtscale is
 
 	signal ena     : std_logic;
 	signal chanid : std_logic_vector(maxinputs_bits-1 downto 0);
-	signal gainid : std_logic_vector(vtgain_id'range);
+	signal gainid : std_logic_vector(vtscale_id'range);
 
 begin
 
@@ -48,7 +48,7 @@ begin
 			if rising_edge(rgtr_clk) then
 				if ena='1' then
 					vtchan_id <= std_logic_vector(resize(unsigned(chanid), vtchan_id'length));
-					vtgain_id <= std_logic_vector(resize(unsigned(gainid), vtgain_id'length));
+					vtscale_id <= std_logic_vector(resize(unsigned(gainid), vtscale_id'length));
 				end if;
 			end if;
 		end process;
@@ -56,7 +56,7 @@ begin
 
 	norgtr_e : if not rgtr generate
 		vtchan_id <= std_logic_vector(resize(unsigned(chanid), vtchan_id'length));
-		vtgain_id <= std_logic_vector(resize(unsigned(gainid), vtgain_id'length));
+		vtscale_id <= std_logic_vector(resize(unsigned(gainid), vtscale_id'length));
 	end generate;
 
 end;

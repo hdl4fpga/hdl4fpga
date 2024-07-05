@@ -202,7 +202,7 @@ begin
 		vt_chanid => vt_cid,
 		vt_offset => vt_offset);
 
-	vtgain_e : entity hdl4fpga.scopeio_rgtrvtgain
+	vtscale_e : entity hdl4fpga.scopeio_rgtrvtscale
 	generic map (
 		rgtr      => false)
 	port map (
@@ -211,9 +211,9 @@ begin
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
 
-		vtgain_ena  => gain_ena,
+		vtscale_ena  => gain_ena,
 		vtchan_id   => gain_cid,
-		vtgain_id   => gain_id);
+		vtscale_id   => gain_id);
 		
 	scopeio_rgtrpalette_e : entity hdl4fpga.scopeio_rgtrpalette
 	port map (
