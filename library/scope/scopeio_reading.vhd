@@ -18,8 +18,8 @@ entity scopeio_reading is
 		rgtr_data : in  std_logic_vector;
 
 		code_frm  : out std_logic := '0';
+		video_row : out std_logic_vector;
 		code_irdy : out std_logic := '0';
-		wdt_row   : out std_logic_vector;
 		code_data : out ascii);
 
 	constant inputs        : natural := hdo(layout)**".inputs";
@@ -93,7 +93,7 @@ architecture def of scopeio_reading is
 	signal vt_dec         : signed(4-1 downto 0);
 	signal vt_scale       : unsigned(scale'range);
 	signal vt_wdtid       : wdtid_range;
-	signal vt_wdtrow      : unsigned(wdt_row'range);
+	signal vt_wdtrow      : unsigned(video_row'range);
 	signal vtwdt_req      : std_logic;
 	signal vtwdt_rdy      : std_logic;
 
@@ -102,7 +102,7 @@ architecture def of scopeio_reading is
 	signal tgr_scale      : unsigned(scale'range);
 	signal tgr_offset     : unsigned(trigger_level'range);
 	signal tgr_wdtid      : wdtid_range;
-	signal tgr_wdtrow     : unsigned(wdt_row'range);
+	signal tgr_wdtrow     : unsigned(video_row'range);
 	signal tgrwdt_req     : std_logic;
 	signal tgrwdt_rdy     : std_logic;
 
@@ -111,7 +111,7 @@ architecture def of scopeio_reading is
 	signal hz_scale       : unsigned(scale'range);
 	signal hz_offset      : unsigned(hztl_offset'range);
 	signal hz_wdtid       : wdtid_range;
-	signal hz_wdtrow      : unsigned(wdt_row'range);
+	signal hz_wdtrow      : unsigned(video_row'range);
 	signal hzwdt_req      : std_logic;
 	signal hzwdt_rdy      : std_logic;
 
@@ -317,9 +317,9 @@ begin
 					btod_sht   <= vt_sht;
 					btod_dec   <= vt_dec;
 					scale      <= vt_scale;
-					offset       <= resize(vt_offset, offset'length);
+					offset     <= resize(vt_offset, offset'length);
 					wdt_id     <= vt_wdtid;
-					wdt_row    <= std_logic_vector(vt_wdtrow);
+					video_row  <= std_logic_vector(vt_wdtrow);
 					vtwdt_req  <= vtwdt_rdy;
 					txt_req    <= not txt_req;
 				elsif (tgrwdt_req xor tgrwdt_rdy)='1' then
@@ -328,16 +328,16 @@ begin
 					scale      <= tgr_scale;
 					offset     <= resize(tgr_offset, offset'length);
 					wdt_id     <= tgr_wdtid;
-					wdt_row    <= std_logic_vector(tgr_wdtrow);
+					video_row  <= std_logic_vector(tgr_wdtrow);
 					tgrwdt_req <= tgrwdt_rdy;
 					txt_req    <= not txt_req;
 				elsif (hzwdt_req xor hzwdt_rdy)='1' then
 					btod_sht   <= hz_sht;
 					btod_dec   <= hz_dec;
 					scale      <= hz_scale;
-					offset       <= resize(unsigned(hz_offset), offset'length);
+					offset     <= resize(unsigned(hz_offset), offset'length);
 					wdt_id     <= hz_wdtid;
-					wdt_row    <= std_logic_vector(hz_wdtrow);
+					video_row  <= std_logic_vector(hz_wdtrow);
 					hzwdt_req  <= hzwdt_rdy;
 					txt_req    <= not txt_req;
 				end if;

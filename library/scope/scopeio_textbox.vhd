@@ -164,220 +164,22 @@ architecture def of scopeio_textbox is
 	signal video_addr        : std_logic_vector(cga_addr'range);
 	signal video_dot         : std_logic;
 
-			signal txt_rdy  : std_logic := '0';
-			signal txt_req  : std_logic := '0';
-	signal vtwdt_req         : bit;
-	signal vtwdt_rdy         : bit;
-	signal hzwdt_req         : bit;
-	signal hzwdt_rdy         : bit;
-	signal tgwdt_req         : bit;
-	signal tgwdt_rdy         : bit;
-	type wdt_types is (wdt_offset, wdt_unit);
-	signal wdt_type          : wdt_types;
-	signal wdt_req           : bit;
-	signal wdt_rdy           : bit;
-	signal wdt_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
+	signal video_row         : std_logic_vector(unsigned_num_bits(textbox_height-1)-1 downto 0);
 
-	signal wdt_id      : std_logic_vector(chanid_maxsize-1 downto 0);
 begin
 
-	rgtr_b : block
-
-		signal myip_ena       : std_logic;
-		signal myip_dv        : std_logic;
-		signal myip_num1      : std_logic_vector(8-1 downto 0);
-		signal myip_num2      : std_logic_vector(8-1 downto 0);
-		signal myip_num3      : std_logic_vector(8-1 downto 0);
-		signal myip_num4      : std_logic_vector(8-1 downto 0);
-
-		signal trigger_ena    : std_logic;
-		signal trigger_freeze : std_logic;
-		signal trigger_slope  : std_logic;
-		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
-		signal trigger_level  : std_logic_vector(storage_word'range);
-
-		signal vt_ena         : std_logic;
-		signal vt_offsets     : std_logic_vector(0 to inputs*vt_offset'length-1);
-		signal tgr_scale      : std_logic_vector(4-1 downto 0);
-
-		function label_width 
-			return natural is
-			variable offset : positive;
-			variable length : natural;
-			variable i      : natural;
-			variable retval : natural;
-		begin
-			i := 0;
-			retval := 0;
-			for i in 0 to inputs-1 loop
-				resolve(layout&".vt["&natural'image(i)&"].text", offset, length);
-				if length=0 then
-					exit;
-				elsif retval < length then
-					retval := length;
-				end if;
-			end loop;
-			return retval;
-		end;
-
-		constant width : natural := label_width + 1;
-	
-	begin
-
-		myip4_e : entity hdl4fpga.scopeio_rgtrmyip
-		port map (
-			rgtr_clk  => rgtr_clk,
-			rgtr_dv   => rgtr_dv,
-			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_data,
-
-			ip4_ena   => myip_ena,
-			ip4_dv    => myip_dv,
-			ip4_num1  => myip_num1,
-			ip4_num2  => myip_num2,
-			ip4_num3  => myip_num3,
-			ip4_num4  => myip_num4);
-
-		trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
-		port map (
-			rgtr_clk       => rgtr_clk,
-			rgtr_dv        => rgtr_dv,
-			rgtr_id        => rgtr_id,
-			rgtr_data      => rgtr_data,
-
-			trigger_dv    => trigger_ena,
-			trigger_slope  => trigger_slope,
-			trigger_freeze => trigger_freeze,
-			trigger_chanid => trigger_chanid,
-			trigger_level  => trigger_level);
-
-		rgtrvtaxis_b : block
-			signal offset : std_logic_vector(vt_offset'range);
-			signal chanid : std_logic_vector(chanid_maxsize-1 downto 0);
-		begin
-			vtaxis_e : entity hdl4fpga.scopeio_rgtrvtoffset
-			generic map (
-				rgtr      => false)
-			port map (
-				rgtr_clk  => rgtr_clk,
-				rgtr_dv   => rgtr_dv,
-				rgtr_id   => rgtr_id,
-				rgtr_data => rgtr_data,
-				vt_ena    => vt_ena,
-				vt_chanid => chanid,
-				vt_offset => offset);
-
-			vtscale_p : process (rgtr_clk)
-				variable gain_id : unsigned(4-1 downto 0);
-			begin
-				if rising_edge(rgtr_clk) then
-					if vt_ena='1' then
-						gain_id    := unsigned(multiplex(gain_ids, chanid, gain_id'length));
-						vt_sht     <= to_signed(vt_shts(to_integer(gain_id)), botd_sht'length);
-						vt_dec     <= to_signed(vt_pnts(to_integer(gain_id)), botd_dec'length);
-						vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), vt_scale'length);
-						vt_offset  <= offset;
-						vt_offsets <= replace(vt_offsets, chanid, offset);
-						wdt_id     <= std_logic_vector(resize(unsigned(chanid), wdt_id'length));
-						wdt_addr   <= mul(unsigned(chanid), cga_cols, wdt_addr'length)+ 2*cga_cols;
-						tgwdt_req  <= not tgwdt_rdy;
-						vtwdt_req  <= not vtwdt_rdy;
-					elsif gain_dv='1' then
-						gain_id    := unsigned(multiplex(gain_ids, chanid, gain_id'length));
-						vt_sht     <= to_signed(vt_shts(to_integer(gain_id)), botd_sht'length);
-						vt_dec     <= to_signed(vt_pnts(to_integer(gain_id)), botd_dec'length);
-						vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), vt_scale'length);
-						vt_offset  <= multiplex(vt_offsets, gain_cid, vt_offset'length);
-						wdt_id     <= std_logic_vector(resize(unsigned(gain_cid), wdt_id'length));
-						wdt_addr   <= mul(unsigned(gain_cid), cga_cols, wdt_addr'length)+ 2*cga_cols;
-						tgwdt_req  <= not tgwdt_rdy;
-						vtwdt_req  <= not vtwdt_rdy;
-					elsif time_dv='1' then
-						hz_sht     <= to_signed(hz_shrs(to_integer(unsigned(time_id))), botd_sht'length);
-						hz_dec     <= to_signed(hz_pnts(to_integer(unsigned(time_id))), botd_dec'length);
-						hz_scale   <= to_unsigned(hz_sfcnds(to_integer(unsigned(time_id(2-1 downto 0)))), hz_scale'length);
-						hz_offset  <= time_offset;
-						hzwdt_req  <= not hzwdt_rdy;
-						wdt_id     <= std_logic_vector(to_unsigned(inputs, wdt_id'length));
-						wdt_addr   <= (others => '0');
-					elsif trigger_ena='1' then
-						gain_id    := unsigned(multiplex(gain_ids, trigger_chanid, gain_id'length));
-						vt_sht     <= to_signed(vt_shts(to_integer(gain_id)), botd_sht'length);
-						vt_dec     <= to_signed(vt_pnts(to_integer(gain_id)), botd_dec'length);
-						vt_scale   <= to_unsigned(vt_sfcnds(to_integer(gain_id(2-1 downto 0))), vt_scale'length);
-						hz_offset  <= std_logic_vector(resize(signed(trigger_level), hz_offset'length));
-						wdt_id     <= std_logic_vector(to_unsigned(inputs+1, wdt_id'length));
-						wdt_addr   <= to_unsigned(cga_cols, wdt_addr'length);
-						tgwdt_req  <= not tgwdt_rdy;
-					end if;
-				end if;
-			end process;
-		end block;
-
-		wdt_b : block
-
-			signal offset     : signed(0 to max(vt_offset'length, hz_offset'length)-1);
-			signal magnitud   : signed(offset'range);
-			signal btod_req   : std_logic;
-			signal btod_rdy   : std_logic;
-			signal dbdbbl_req : std_logic;
-			signal dbdbbl_rdy : std_logic;
-
-			signal scale      : unsigned(0 to sfcnd_length-1);
-
-
-		begin
-
-			process (rgtr_clk)
-			begin
-				if rising_edge(rgtr_clk) then
-					if (txt_rdy xor txt_req)='0' then
-					if (vtwdt_rdy xor vtwdt_req)='1' then
-						offset    <= resize(signed(vt_offset), offset'length);
-						scale     <= vt_scale;
-						botd_sht  <= vt_sht;
-						botd_dec  <= vt_dec;
-						txt_req   <= not to_stdulogic(to_bit(txt_rdy));
-						vtwdt_rdy <= vtwdt_req;
-					elsif (tgwdt_rdy xor tgwdt_req)='1' then
-						offset    <= resize(signed(hz_offset), offset'length);
-						scale     <= vt_scale;
-						botd_sht  <= vt_sht;
-						botd_dec  <= vt_dec;
-						txt_req   <= not to_stdulogic(to_bit(txt_rdy));
-						tgwdt_rdy <= tgwdt_req;
-					elsif (hzwdt_rdy xor hzwdt_req)='1' then
-						offset    <= resize(signed(hz_offset), offset'length);
-						scale     <= hz_scale;
-						botd_sht  <= hz_sht;
-						botd_dec  <= hz_dec;
-						txt_req   <= not to_stdulogic(to_bit(txt_rdy));
-						hzwdt_rdy <= hzwdt_req;
-					end if;
-				end if;
-				end if;
-			end process;
-
-			xxx_e : entity hdl4fpga.scopeio_axisreading
-			generic map (
-				inputs   => inputs,
-				binary_length => bin_digits*((offset_length+sfcnd_length+bin_digits-1)/bin_digits),
-				vt_labels => vt,
-				hz_label  => hz_text,
-				grid_unit => grid_unit)
-			port map (
-				rgtr_clk  => rgtr_clk,
-				txt_req   => txt_req,
-				txt_rdy   => txt_rdy,
-				wdt_id => wdt_id,
-				botd_sht  => std_logic_vector(botd_sht),
-				botd_dec  => std_logic_vector(botd_dec),
-				offset    => std_logic_vector(offset),
-				scale     => std_logic_vector(scale),
-				code_frm  => code_frm,
-				code_irdy => code_irdy,
-				code_data => code_data);
-
+	xxx_e : entity hdl4fpga.scopeio_reading
+	generic map (
+		layout => layout)
+	port map (
+		rgtr_clk  => rgtr_clk,
+		rgtr_dv   => rgtr_dv,
+		rgtr_id   => rgtr_id,
+		rgtr_data => rgtr_data,
+		video_row => video_row,
+		code_frm  => code_frm,
+		code_irdy => code_irdy,
+		code_data => code_data);
 
 	process (rgtr_clk)
 	begin
@@ -385,14 +187,12 @@ begin
 			if cga_we='1' then
 				cga_addr <= cga_addr + 1;
 			elsif code_frm='0' then
-				cga_addr <= wdt_addr;
+				cga_addr <= unsigned(video_row)*cga_cols;
 			end if;
 			cga_we   <= code_irdy;
 			cga_data <= code_data;
 		end if;
 	end process;
-		end block;
-	end block;
 
 	video_addr <= std_logic_vector(resize(
 		mul(unsigned(video_vcntr) srl fontheight_bits, cga_cols) +
