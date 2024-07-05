@@ -6,6 +6,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
+use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_reading is
 	generic (
@@ -20,32 +21,74 @@ entity scopeio_reading is
 		code_irdy : out std_logic := '0';
 		code_data : out ascii);
 
-	constant offset_length   : natural := max(vt_offset'length, time_offset'length);
+	constant inputs        : natural := hdo(layout)**".inputs";
+	constant max_delay     : natural := hdo(layout)**".max_delay";
+	constant min_storage   : natural := hdo(layout)**".min_storage";
+	constant hz_unit       : real    := hdo(layout)**".axis.horizontal.unit";
+	constant vt_unit       : real    := hdo(layout)**".axis.vertical.unit";
+	constant grid_height   : natural := hdo(layout)**".grid.height";
+	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
+	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 
+	constant bin_digits      : natural := 3;
+	constant bcd_width       : natural := 8;
+	constant bcd_length      : natural := 4;
+	constant bcd_digits      : natural := 1;
+
+	constant vt_sfcnds : natural_vector := get_significand1245(vt_unit);
+	constant vt_shts   : integer_vector := get_shr1245(vt_unit);
+	constant vt_pnts   : integer_vector := get_characteristic1245(vt_unit);
+
+	constant hz_sfcnds : natural_vector := get_significand1245(hz_unit);
+	constant hz_shts   : integer_vector := get_shr1245(hz_unit);
+	constant hz_pnts   : integer_vector := get_characteristic1245(hz_unit);
+
+	constant sfcnd_length    : natural := max(unsigned_num_bits(max(vt_sfcnds)), unsigned_num_bits(max(hz_sfcnds)));
 end;
 
 architecture def of scopeio_reading is
 
-	signal wdt_id     : natural range 0 to (inputs+2)-1;
-	signal botd_sht   : std_logic_vector;
-	signal botd_dec   : std_logic_vector;
-	signal offset     : std_logic_vector;
-	signal scale      : std_logic_vector;
-	signal txt_req    : std_logic;
-	signal txt_rdy    : std_logic;
+	signal vtscale_ena    : std_logic;
+	signal scale_cid      : std_logic_vector(chanid_bits-1 downto 0);
+	signal vt_cid         : std_logic_vector(chanid_bits-1 downto 0);
+	signal vt_scaleid     : std_logic_vector(4-1 downto 0);
+	signal tbl_scaleid    : std_logic_vector(vt_scaleid'range);
+
+	signal vtoffset_ena   : std_logic;
+	signal offset_cid     : std_logic_vector(vt_cid'range);
+	signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
+	signal tbl_offset     : std_logic_vector(vt_offset'range);
+	signal offset         : std_logic_vector(vt_offset'range);
 
 	signal trigger_ena    : std_logic;
 	signal trigger_freeze : std_logic;
 	signal trigger_slope  : std_logic;
-	signal trigger_cid : std_logic_vector(chanid_bits-1 downto 0);
-	signal trigger_level  : std_logic_vector(storage_word'range);
+	signal trigger_cid    : std_logic_vector(vt_cid'range);
+	signal trigger_level  : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 
-	signal vt_dv      : std_logic;
-	signal vt_offsets : std_logic_vector(0 to inputs*vt_offset'length-1);
-	signal tgr_scale  : std_logic_vector(4-1 downto 0);
+	signal hz_ena         : std_logic;
+	signal hz_scaleid     : std_logic_vector(4-1 downto 0);
+	signal hz_offset      : std_logic_vector(hzoffset_bits-1 to 0);
 
-	signal str_req    : std_logic;
-	signal str_rdy    : std_logic;
+	signal tgr_scale      : std_logic_vector(4-1 downto 0);
+
+	signal txt_req        : std_logic;
+	signal txt_rdy        : std_logic;
+	signal position       : std_logic_vector(max(vt_offset'length, hz_offset'length)-1 downto 0);
+	signal scale          : unsigned(0 to sfcnd_length-1);
+
+	signal str_req        : std_logic;
+	signal str_rdy        : std_logic;
+	subtype wdtid_range is natural range 0 to (inputs+2)-1;
+	signal wdt_id         : wdtid_range;
+
+	signal botd_sht       : std_logic_vector(4-1 downto 0);
+	signal botd_dec       : std_logic_vector(4-1 downto 0);
+	signal vt_sht         : signed(4-1 downto 0);
+	signal vt_dec         : signed(4-1 downto 0);
+	signal vt_scale       : unsigned(scale'range);
+	signal vt_wdtid       : wdtid_range;
+
 	signal btod_frm   : std_logic;
 	signal btod_code  : ascii;
 
@@ -54,8 +97,10 @@ architecture def of scopeio_reading is
 	signal mul_req    : std_logic := '0';
 	signal mul_rdy    : std_logic := '0';
 	signal a          : std_logic_vector(0 to scale'length-1);
-	signal b          : signed(0 to offset'length-1);
+	signal b          : signed(0 to position'length-1);
 
+	constant offset_length : natural := max(vt_offset'length, hz_offset'length);
+	constant binary_length : natural := bin_digits*((offset_length+sfcnd_length+bin_digits-1)/bin_digits);
 	signal binary     : std_logic_vector(0 to binary_length-1);
 	signal botd_frm   : std_logic;
 	signal botd_code  : ascii;
@@ -104,22 +149,22 @@ begin
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
 
-		vt_ena    => vtoffset_ena,
-		vt_chanid => offset_cid,
-		vt_offset => offset);
+		vtgain_ena => vtscale_ena,
+		vtchan_id  => scale_cid,
+		vtgain_id  => vt_scaleid);
 
 	vtoffset_e : entity hdl4fpga.scopeio_rgtrvtoffset
 	generic map (
 		rgtr      => false)
 	port map (
-		rgtr_clk  => sio_clk,
+		rgtr_clk  => rgtr_clk,
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
 
-		vt_ena    => vtscale_ena,
-		vt_chanid => scale_cid
-		vt_scale  => vt_scaleid);
+		vt_ena    => vtoffset_ena,
+		vt_chanid => offset_cid,
+		vt_offset => offset);
 
 	tgr_e : entity hdl4fpga.scopeio_rgtrtrigger
 	port map (
@@ -161,9 +206,9 @@ begin
 			if (txt_req xor txt_rdy)='0' then
     			if vtscale_ena='1' then
     				scaleid    := to_integer(unsigned(vt_scaleid));
-    				vt_sht     <= to_signed(vt_shts(to_integer(scaleid)), botd_sht'length);
-    				vt_dec     <= to_signed(vt_pnts(to_integer(scaleid)), botd_dec'length);
-    				vt_scale   <= to_unsigned(vt_sfcnds(to_integer(scaleid mod 4)), vt_scale'length);
+    				vt_sht     <= to_signed(vt_shts(scaleid), botd_sht'length);
+    				vt_dec     <= to_signed(vt_pnts(scaleid), botd_dec'length);
+    				vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
     				vt_offset  <= tbl_offset;
     				vt_wdtid   <= scaleid+2;
     				vt_wdtaddr <= mul(unsigned(scale_cid), cga_cols, wdt_addr'length) + 2*cga_cols;
@@ -448,7 +493,7 @@ begin
 			when s_rdy =>
 				for i in mul_reqs'range loop
 					if (mul_rdys(i) xor mul_reqs(i))='1' then
-						if signed(offset) >= 0 then
+						if signed(position) >= 0 then
 							b <=  bs(i);
 						else 
 							b <= -bs(i);

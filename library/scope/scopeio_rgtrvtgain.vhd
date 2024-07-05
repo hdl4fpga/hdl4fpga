@@ -6,7 +6,7 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.scopeiopkg.all;
 
-entity scopeio_rgtrvtgain is
+entity scopeio_rgtrvtscale is
 	generic (
 		rgtr       : boolean := true);
 	port (
@@ -15,8 +15,8 @@ entity scopeio_rgtrvtgain is
 		rgtr_id    : in  std_logic_vector(8-1 downto 0);
 		rgtr_data  : in  std_logic_vector;
 
-		vtgain_ena : out std_logic;
-		vtgain_dv  : out std_logic;
+		vtscale_ena : out std_logic;
+		vtscale_dv  : out std_logic;
 		vtchan_id  : out std_logic_vector;
 		vtgain_id  : out std_logic_vector);
 
@@ -37,10 +37,10 @@ begin
 	dv_p : process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
-			vtgain_dv <= ena;
+			vtscale_dv <= ena;
 		end if;
 	end process;
-	vtgain_ena <= ena;
+	vtscale_ena <= ena;
 
 	rgtr_e : if rgtr generate
 		process (rgtr_clk)
