@@ -169,6 +169,7 @@ HDL4FPGA__scopeio_rgtrhzaxis__def = $(LIB_HDL4FPGA)/scopeio_rgtrhzaxis/def.dat
 HDL4FPGA__scopeio_rgtrhzaxis = $(LIB_HDL4FPGA)/scopeio_rgtrhzaxis/_primary.dat
 HDL4FPGA__scopeio_resize__beh = $(LIB_HDL4FPGA)/scopeio_resize/beh.dat
 HDL4FPGA__scopeio_resize = $(LIB_HDL4FPGA)/scopeio_resize/_primary.dat
+HDL4FPGA__scopeio_reading__def = $(LIB_HDL4FPGA)/scopeio_reading/def.dat
 HDL4FPGA__scopeio_reading = $(LIB_HDL4FPGA)/scopeio_reading/_primary.dat
 HDL4FPGA__scopeio_pointer__beh = $(LIB_HDL4FPGA)/scopeio_pointer/beh.dat
 HDL4FPGA__scopeio_pointer = $(LIB_HDL4FPGA)/scopeio_pointer/_primary.dat
@@ -534,6 +535,7 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__scopeio_rgtrhzaxis) \
     $(HDL4FPGA__scopeio_resize__beh) \
     $(HDL4FPGA__scopeio_resize) \
+    $(HDL4FPGA__scopeio_reading__def) \
     $(HDL4FPGA__scopeio_reading) \
     $(HDL4FPGA__scopeio_pointer__beh) \
     $(HDL4FPGA__scopeio_pointer) \
@@ -1750,6 +1752,25 @@ $(HDL4FPGA__scopeio_reading) : ../scope/scopeio_reading.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_reading.vhd
+
+$(HDL4FPGA__scopeio_reading__def) : ../scope/scopeio_reading.vhd \
+		$(HDL4FPGA__btof) \
+		$(HDL4FPGA__mul_ser) \
+		$(HDL4FPGA__dpram) \
+		$(HDL4FPGA__scopeio_rgtrtrigger) \
+		$(HDL4FPGA__scopeio_rgtrvtoffset) \
+		$(HDL4FPGA__scopeio_rgtrvtscale) \
+		$(HDL4FPGA__scopeio_rgtrhzaxis) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__hdo) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(HDL4FPGA__scopeio_reading)
 	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_reading.vhd
 
 $(HDL4FPGA__scopeio_resize) \
