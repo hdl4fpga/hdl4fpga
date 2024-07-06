@@ -46,18 +46,17 @@ entity scopeio_textbox is
 
 	constant cga_cols       : natural := textbox_width/font_width;
 	constant cga_rows       : natural := textbox_height/font_height;
+	constant cga_size       : natural := cga_rows*cga_cols;
 
 end;
 
 architecture def of scopeio_textbox is
-	constant cga_latency   : natural := 4;
-	constant color_latency : natural := 2;
-	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
+	constant cga_latency    : natural := 4;
+	constant color_latency  : natural := 2;
 
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
 	constant textwidth_bits  : natural := unsigned_num_bits(textbox_width-1);
-	constant cga_size        : natural := (textbox_width/font_width)*(textbox_height/font_height);
 
 	signal code_frm          : std_logic;
 	signal code_irdy         : std_logic;
@@ -73,7 +72,7 @@ architecture def of scopeio_textbox is
 	signal video_addr        : std_logic_vector(cga_addr'range);
 	signal video_dot         : std_logic;
 
-	signal video_row         : std_logic_vector(0 to 3-1);
+	signal video_row         : std_logic_vector(0 to unsigned_num_bits(cga_rows-1)-1);
 
 begin
 

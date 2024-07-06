@@ -86,6 +86,7 @@ architecture def of scopeio_reading is
 	signal str_rdy        : std_logic;
 	subtype wdtid_range is natural range 0 to (inputs+2)-1;
 	signal wdt_id         : wdtid_range;
+	signal wdt_row      : unsigned(0 to unsigned_num_bits(inputs+2-1)-1);
 
 	signal btod_sht       : signed(4-1 downto 0);
 	signal btod_dec       : signed(4-1 downto 0);
@@ -93,7 +94,7 @@ architecture def of scopeio_reading is
 	signal vt_dec         : signed(4-1 downto 0);
 	signal vt_scale       : unsigned(scale'range);
 	signal vt_wdtid       : wdtid_range;
-	signal vt_wdtrow      : unsigned(video_row'range);
+	signal vt_wdtrow      : unsigned(wdt_row'range);
 	signal vtwdt_req      : std_logic;
 	signal vtwdt_rdy      : std_logic;
 
@@ -102,7 +103,7 @@ architecture def of scopeio_reading is
 	signal tgr_scale      : unsigned(scale'range);
 	signal tgr_offset     : unsigned(trigger_level'range);
 	signal tgr_wdtid      : wdtid_range;
-	signal tgr_wdtrow     : unsigned(video_row'range);
+	signal tgr_wdtrow     : unsigned(wdt_row'range);
 	signal tgrwdt_req     : std_logic;
 	signal tgrwdt_rdy     : std_logic;
 
@@ -111,7 +112,7 @@ architecture def of scopeio_reading is
 	signal hz_scale       : unsigned(scale'range);
 	signal hz_offset      : unsigned(hztl_offset'range);
 	signal hz_wdtid       : wdtid_range;
-	signal hz_wdtrow      : unsigned(video_row'range);
+	signal hz_wdtrow      : unsigned(wdt_row'range);
 	signal hzwdt_req      : std_logic;
 	signal hzwdt_rdy      : std_logic;
 
@@ -230,7 +231,7 @@ begin
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_offset  <= unsigned(tbl_offset);
 					vt_wdtid   <= scaleid+2;
-					vt_wdtrow  <= unsigned(vtl_scalecid)+2;
+					vt_wdtrow  <= resize(unsigned(vtl_scalecid)+2, vt_wdtrow'length);
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif vtoffset_ena='1' then
 					scaleid    := to_integer(unsigned(tbl_scaleid));
@@ -239,7 +240,7 @@ begin
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_offset  <= unsigned(vtl_offset);
 					vt_wdtid   <= scaleid+2;
-					vt_wdtrow  <= unsigned(vtl_scalecid)+2;
+					vt_wdtrow  <= resize(unsigned(vtl_scalecid)+2, vt_wdtrow'length);
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif trigger_ena='1' then
 					scaleid     := to_integer(unsigned(tbl_scaleid));
@@ -248,7 +249,7 @@ begin
 					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					tgr_offset  <= unsigned(trigger_level);
 					tgr_wdtid   <= inputs+1;
-					tgr_wdtrow  <= to_unsigned(1, vt_wdtrow'length);
+					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
 					tgrwdt_req  <= not tgrwdt_rdy;
 				end if;
 				if hz_ena='1' then
@@ -310,6 +311,7 @@ begin
 	end process;
 
 	process (rgtr_clk)
+		variable row : unsigned(wdt_row'range);
 	begin
 		if rising_edge(rgtr_clk) then
 			if (txt_req xor txt_rdy)='0' then
@@ -319,7 +321,7 @@ begin
 					scale      <= vt_scale;
 					offset     <= resize(vt_offset, offset'length);
 					wdt_id     <= vt_wdtid;
-					video_row  <= std_logic_vector(vt_wdtrow);
+					wdt_row    <= vt_wdtrow;
 					vtwdt_req  <= vtwdt_rdy;
 					txt_req    <= not txt_req;
 				elsif (tgrwdt_req xor tgrwdt_rdy)='1' then
@@ -328,7 +330,7 @@ begin
 					scale      <= tgr_scale;
 					offset     <= resize(tgr_offset, offset'length);
 					wdt_id     <= tgr_wdtid;
-					video_row  <= std_logic_vector(tgr_wdtrow);
+					wdt_row    <= tgr_wdtrow;
 					tgrwdt_req <= tgrwdt_rdy;
 					txt_req    <= not txt_req;
 				elsif (hzwdt_req xor hzwdt_rdy)='1' then
@@ -337,13 +339,14 @@ begin
 					scale      <= hz_scale;
 					offset     <= resize(unsigned(hz_offset), offset'length);
 					wdt_id     <= hz_wdtid;
-					video_row  <= std_logic_vector(hz_wdtrow);
+					wdt_row    <= hz_wdtrow;
 					hzwdt_req  <= hzwdt_rdy;
 					txt_req    <= not txt_req;
 				end if;
 			end if;
 		end if;
 	end process;
+	video_row <= std_logic_vector(resize(wdt_row, video_row'length));
 
 	process (rgtr_clk)
 		type states is (s_rdy, s_req);
@@ -557,7 +560,7 @@ begin
 		code_frm => btod_frm,
 		code     => btod_code);
 
-	code_frm  <= (txt_req xor txt_rdy) or (btod_req xor btod_rdy) or (str_req xor str_rdy);
+	code_frm  <= '0'; --(txt_req xor txt_rdy) or (btod_req xor btod_rdy) or (str_req xor str_rdy);
 	code_irdy <= btod_frm or str_frm;
 	code_data <= multiplex(btod_code & str_code, not btod_frm);
 
