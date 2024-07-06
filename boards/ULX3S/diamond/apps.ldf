@@ -808,7 +808,7 @@
         </Source>
     </Implementation>
     <Implementation title="scopeio" dir="scopeio" description="scopeio" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.ecp5_ogbx" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.scopeio_axisreading" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
@@ -863,13 +863,7 @@
         <Source name="../../../library/scope/scopeio_rgtrtrigger.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/scope/scopeio_rgtrgain.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
         <Source name="../../../library/scope/scopeio_rgtrpointer.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/scope/scopeio_rgtrvtaxis.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../../library/scope/scopeio_rgtrpalette.vhd" type="VHDL" type_short="VHDL">
@@ -1068,6 +1062,15 @@
             <Options/>
         </Source>
         <Source name="../../../library/scope/scopeio_axisreading.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_reading.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_rgtrvtscale.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_rgtrvtoffset.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="apps.lpf" type="Logic Preference" type_short="LPF">
