@@ -1743,17 +1743,7 @@ $(HDL4FPGA__scopeio_pointer__beh) : ../scope/scopeio_pointer.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_pointer.vhd
 
-$(HDL4FPGA__scopeio_reading) : ../scope/scopeio_reading.vhd \
-		$(HDL4FPGA__videopkg) \
-		$(IEEE__math_real) \
-		$(HDL4FPGA__scopeiopkg) \
-		$(HDL4FPGA__hdo) \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_reading.vhd
-
+$(HDL4FPGA__scopeio_reading) \
 $(HDL4FPGA__scopeio_reading__def) : ../scope/scopeio_reading.vhd \
 		$(HDL4FPGA__btof) \
 		$(HDL4FPGA__mul_ser) \
@@ -1769,8 +1759,7 @@ $(HDL4FPGA__scopeio_reading__def) : ../scope/scopeio_reading.vhd \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
-		$(IEEE__std_logic_1164) \
-		$(HDL4FPGA__scopeio_reading)
+		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_reading.vhd
 
 $(HDL4FPGA__scopeio_resize) \
@@ -1914,10 +1903,7 @@ $(HDL4FPGA__scopeio_textbox) \
 $(HDL4FPGA__scopeio_textbox__def) : ../scope/scopeio_textbox.vhd \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__cgaram) \
-		$(HDL4FPGA__scopeio_axisreading) \
-		$(HDL4FPGA__scopeio_rgtrvtoffset) \
-		$(HDL4FPGA__scopeio_rgtrtrigger) \
-		$(HDL4FPGA__scopeio_rgtrmyip) \
+		$(HDL4FPGA__scopeio_reading) \
 		$(HDL4FPGA__bcdfonts) \
 		$(HDL4FPGA__cp850x8x16x128to255) \
 		$(HDL4FPGA__cp850x8x16x0to127) \

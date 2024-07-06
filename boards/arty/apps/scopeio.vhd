@@ -434,7 +434,7 @@ begin
 
 			hz_dv     => hz_dv,
 			hz_scale  => hz_scale,
-			hz_slider => hz_slider);
+			hz_offset => hz_slider);
 
 		process (hz_scale)
 			variable no_inputs : natural range 0 to mux_sampling-1;

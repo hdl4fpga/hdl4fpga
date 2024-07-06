@@ -362,7 +362,7 @@ begin
 
 			hz_dv     => hz_dv,
 			hz_scale  => hz_scale,
-			hz_slider => hz_slider);
+			hz_offset => hz_slider);
 
 		process (opacity, sio_clk)
 			variable data : unsigned(0 to inputs*32-1);

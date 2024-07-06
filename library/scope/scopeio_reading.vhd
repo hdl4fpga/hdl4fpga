@@ -430,7 +430,7 @@ begin
 		if rising_edge(rgtr_clk) then
 			case state is
 			when s_label =>
-				bs(tgr_id)<= signed(tgr_offset);
+				bs(tgr_id)<= resize(signed(tgr_offset), offset'length);
 				if (tgr_rdy xor tgr_req)='1' then
 					mul_req  <= not mul_rdy;
 					str_req  <= not str_rdy;

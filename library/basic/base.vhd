@@ -109,26 +109,6 @@ package base is
 	-- arith --
 	-----------
 
-	function summation (
-		constant elements : natural_vector)
-		return natural;
-
-	function mul (
-		constant op1 : signed;
-		constant op2 : unsigned)
-		return signed;
-
-	function mul (
-		constant op1 : signed;
-		constant op2 : natural)
-		return signed;
-
-	function mul (
-		constant op1  : unsigned;
-		constant op2  : natural;
-		constant size : natural := 0)
-		return unsigned;
-
 	function max (
 		constant data : natural_vector)
 		return natural;
@@ -147,6 +127,11 @@ package base is
 		constant arg2 : signed)
 		return signed;
 
+	function gcd(
+		constant a : natural; 
+		constant b : natural)
+		return natural;
+		
 	function min (
 		constant arg1 : integer;
 		constant arg2 : integer)
@@ -157,11 +142,22 @@ package base is
 		constant arg2 : signed)
 		return signed;
 
-	function gcd(
-		constant a : natural; 
-		constant b : natural)
-		return natural;
-		
+	function mul (
+		constant op1 : signed;
+		constant op2 : unsigned)
+		return signed;
+
+	function mul (
+		constant op1 : signed;
+		constant op2 : natural)
+		return signed;
+
+	function mul (
+		constant op1  : unsigned;
+		constant op2  : natural;
+		constant size : natural := 0)
+		return unsigned;
+
 	function mcm(
 		constant a : natural; 
 		constant b : natural)
@@ -170,6 +166,10 @@ package base is
 	function roundup (
 		constant number : natural;
 		constant round  : natural)
+		return natural;
+
+	function summation (
+		constant elements : natural_vector)
 		return natural;
 
 	-----------------
@@ -768,8 +768,8 @@ package body base is
 	end;
 
 	function mul (
-		constant op1 : unsigned;
-		constant op2 : natural;
+		constant op1  : unsigned;
+		constant op2  : natural;
 		constant size : natural := 0)
 		return unsigned is
 		variable mulr : natural;
