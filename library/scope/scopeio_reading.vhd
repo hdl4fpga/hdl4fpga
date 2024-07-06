@@ -366,12 +366,8 @@ begin
 			when s_req =>
 				if (axis_req xor axis_rdy)='0' then
 					if (tgr_req xor tgr_rdy)='0' then
-						if (btod_req xor btod_rdy)='0' then
-							if (str_req xor str_rdy)='0' then
 						txt_rdy <= txt_req;
 						state   := s_rdy;
-							end if;
-						end if;
 					end if;
 				end if;
 			end case;
@@ -564,7 +560,7 @@ begin
 		code_frm => btod_frm,
 		code     => btod_code);
 
-	code_frm  <= (txt_req xor txt_rdy) or (btod_req xor btod_rdy) or (str_req xor str_rdy);
+	code_frm  <= (txt_req xor txt_rdy);
 	code_irdy <= btod_frm or str_frm;
 	code_data <= multiplex(btod_code & str_code, not btod_frm);
 
