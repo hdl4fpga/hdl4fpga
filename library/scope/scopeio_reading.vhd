@@ -385,7 +385,7 @@ begin
 		alias mul_rdy  is mul_rdys(axis_id);
 		alias str_req  is str_reqs(axis_id);
 		alias str_rdy  is str_rdys(axis_id);
-		type states is (s_label, s_offset, s_unit, s_scale);
+		type states is (s_label, s_offset, s_unit, s_scale, s_wait);
 		variable state : states;
 	begin
 		if rising_edge(rgtr_clk) then
@@ -412,9 +412,13 @@ begin
 				if (str_req xor str_rdy)='0' then
 					if (mul_req xor mul_rdy)='0' then
 						btod_req <= not btod_rdy;
-						axis_rdy <= axis_req;
-						state    := s_label;
+						state    := s_wait;
 					end if;
+				end if;
+			when s_wait =>
+				if (btod_req xor btod_rdy)='0' then
+					axis_rdy <= axis_req;
+					state    := s_label;
 				end if;
 			end case;
 		end if;
@@ -560,7 +564,7 @@ begin
 		code_frm => btod_frm,
 		code     => btod_code);
 
-	code_frm  <= '0'; --(txt_req xor txt_rdy) or (btod_req xor btod_rdy) or (str_req xor str_rdy);
+	code_frm  <= (txt_req xor txt_rdy) or (btod_req xor btod_rdy) or (str_req xor str_rdy);
 	code_irdy <= btod_frm or str_frm;
 	code_data <= multiplex(btod_code & str_code, not btod_frm);
 
