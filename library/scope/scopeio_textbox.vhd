@@ -77,7 +77,7 @@ architecture def of scopeio_textbox is
 
 begin
 
-	xxx_e : entity hdl4fpga.scopeio_reading
+	readings_e : entity hdl4fpga.scopeio_reading
 	generic map (
 		layout => layout)
 	port map (
