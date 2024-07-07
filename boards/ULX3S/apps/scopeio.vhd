@@ -413,6 +413,8 @@ begin
 		video_hsync => video_hzsync,
 		video_vsync => video_vtsync,
 		video_blank => video_blank);
+		led(0) <= tp(1);
+		led(1) <= tp(2);
 
 	-- HDMI/DVI VGA --
 	------------------

@@ -191,7 +191,7 @@ begin
 		hz_dv     => hz_dv,
 		hz_scale  => hz_scale,
 		hz_offset => hz_slider);
-	tp(1 to 8) <= std_logic_vector(resize(unsigned(hz_slider),8));
+	-- tp(1 to 8) <= std_logic_vector(resize(unsigned(hz_slider),8));
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
@@ -265,6 +265,7 @@ begin
 			latency       => segmment_latency+input_latency,
 			layout        => layout)
 		port map (
+			tp => tp,
 			rgtr_clk      => rgtr_clk,
 			rgtr_dv       => rgtr_dv,
 			rgtr_id       => rgtr_id,

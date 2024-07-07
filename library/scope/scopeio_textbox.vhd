@@ -16,6 +16,7 @@ entity scopeio_textbox is
 		font_bitrom   : std_logic_vector := psf1cp850x8x16;
 		font_height   : natural := 16);
 	port (
+		tp            : out std_logic_vector(1 to 32);
 		rgtr_clk      : in  std_logic;
 		rgtr_dv       : in  std_logic;
 		rgtr_id       : in  std_logic_vector(8-1 downto 0);
@@ -80,6 +81,7 @@ begin
 	generic map (
 		layout => layout)
 	port map (
+		tp => tp,
 		rgtr_clk  => rgtr_clk,
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,

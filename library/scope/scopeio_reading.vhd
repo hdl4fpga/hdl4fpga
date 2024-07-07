@@ -12,6 +12,7 @@ entity scopeio_reading is
 	generic (
 		layout    : string);
 	port (
+		tp            : out std_logic_vector(1 to 32);
 		rgtr_clk  : in  std_logic;
 		rgtr_dv   : in  std_logic;
 		rgtr_id   : in  std_logic_vector(8-1 downto 0);
@@ -62,7 +63,7 @@ architecture def of scopeio_reading is
 	signal tbl_scaleid    : std_logic_vector(vt_scaleid'range);
 
 	signal vtoffset_ena   : std_logic;
-	signal vtl_offsetid   : std_logic_vector(vt_cid'range);
+	signal vtl_offsetcid  : std_logic_vector(vt_cid'range);
 	signal vtl_offset     : std_logic_vector((5+8)-1 downto 0);
 	signal tbl_offset     : std_logic_vector(vtl_offset'range);
 	signal vt_offset      : unsigned(vtl_offset'range);
@@ -127,16 +128,16 @@ architecture def of scopeio_reading is
 	signal btod_code      : ascii;
 	signal str_frm        : std_logic;
 	signal str_code       : ascii;
-	signal axis_req       : std_logic;
-	signal axis_rdy       : std_logic;
-	signal tgr_req        : std_logic; -- := '0';
-	signal tgr_rdy        : std_logic; -- := '0';
-	signal mul_reqs       : std_logic_vector(0 to 1); -- := (others => '0');
-	signal mul_rdys       : std_logic_vector(0 to 1); -- := (others => '0');
-	signal btod_reqs      : std_logic_vector(0 to 1); -- := (others => '0');
-	signal btod_rdys      : std_logic_vector(0 to 1); -- := (others => '0');
-	signal str_reqs       : std_logic_vector(0 to 1); -- := (others => '0');
-	signal str_rdys       : std_logic_vector(0 to 1); -- := (others => '0');
+	signal axis_req       : std_logic := '0';
+	signal axis_rdy       : std_logic := '0';
+	signal tgr_req        : std_logic := '0';
+	signal tgr_rdy        : std_logic := '0';
+	signal mul_reqs       : std_logic_vector(0 to 1) := (others => '0');
+	signal mul_rdys       : std_logic_vector(0 to 1) := (others => '0');
+	signal btod_reqs      : std_logic_vector(0 to 1) := (others => '0');
+	signal btod_rdys      : std_logic_vector(0 to 1) := (others => '0');
+	signal str_reqs       : std_logic_vector(0 to 1) := (others => '0');
+	signal str_rdys       : std_logic_vector(0 to 1) := (others => '0');
 
 	type offset_vector is array(0 to 1) of signed(offset'range);
 	signal bs : offset_vector;
@@ -147,6 +148,8 @@ architecture def of scopeio_reading is
 
 begin
 
+		tp(1) <= vtwdt_req;
+		tp(2) <= vtwdt_rdy;
 	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
 	generic map (
 		rgtr      => false)
@@ -170,7 +173,7 @@ begin
 		rgtr_data => rgtr_data,
 
 		vtscale_ena => vtscale_ena,
-		vtchan_id  => vtl_scalecid,
+		vtchan_id   => vtl_scalecid,
 		vtscale_id  => vt_scaleid);
 
 	vtoffset_e : entity hdl4fpga.scopeio_rgtrvtoffset
@@ -183,7 +186,7 @@ begin
 		rgtr_data => rgtr_data,
 
 		vt_ena    => vtoffset_ena,
-		vt_chanid => vtl_offsetid,
+		vt_chanid => vtl_offsetcid,
 		vt_offset => vtl_offset);
 
 	tgr_e : entity hdl4fpga.scopeio_rgtrtrigger
@@ -203,12 +206,12 @@ begin
 	port map (
 		wr_clk  => rgtr_clk,
 		wr_ena  => vtoffset_ena,
-		wr_addr => vtl_offsetid,
+		wr_addr => vtl_offsetcid,
 		wr_data => vtl_offset,
 		rd_addr => vtl_scalecid,
 		rd_data => tbl_offset);
 
-	vt_cid <= vtl_offsetid when vtoffset_ena='1' else trigger_cid;
+	vt_cid <= vtl_offsetcid when vtoffset_ena='1' else trigger_cid;
 	vtgains_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => rgtr_clk,
@@ -229,8 +232,8 @@ begin
 					vt_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
 					vt_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-					vt_offset  <= unsigned(tbl_offset);
-					vt_wdtid   <= scaleid+2;
+					vt_offset  <= to_unsigned(100,vt_offset'length); --unsigned(tbl_offset);
+					vt_wdtid   <= to_integer(unsigned(vtl_scalecid));
 					vt_wdtrow  <= resize(unsigned(vtl_scalecid)+2, vt_wdtrow'length);
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif vtoffset_ena='1' then
@@ -239,7 +242,7 @@ begin
 					vt_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_offset  <= unsigned(vtl_offset);
-					vt_wdtid   <= scaleid+2;
+					vt_wdtid   <= to_integer(unsigned(vtl_offsetcid));
 					vt_wdtrow  <= resize(unsigned(vtl_scalecid)+2, vt_wdtrow'length);
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif trigger_ena='1' then
@@ -420,39 +423,39 @@ begin
 		end if;
 	end process;
 
-	trigger_p : process (rgtr_clk)
-		type states is (s_label, s_offset, s_unit);
-		variable state : states;
-		alias btod_req  is btod_reqs(tgr_id);
-		alias btod_rdy  is btod_rdys(tgr_id);
-		alias mul_req   is mul_reqs(tgr_id);
-		alias mul_rdy   is mul_rdys(tgr_id);
-		alias str_req   is str_reqs(tgr_id);
-		alias str_rdy   is str_rdys(tgr_id);
-	begin
-		if rising_edge(rgtr_clk) then
-			case state is
-			when s_label =>
-				bs(tgr_id)<= resize(signed(tgr_offset), offset'length);
-				if (tgr_rdy xor tgr_req)='1' then
-					mul_req  <= not mul_rdy;
-					str_req  <= not str_rdy;
-					state    := s_offset;
-				end if;
-			when s_offset =>
-				if (mul_req xor mul_rdy)='0' then
-					btod_req <= not btod_rdy;
-					state    := s_unit;
-				end if;
-			when s_unit =>
-				if (btod_req xor btod_rdy)='0' then
+	-- trigger_p : process (rgtr_clk)
+		-- type states is (s_label, s_offset, s_unit);
+		-- variable state : states;
+		-- alias btod_req  is btod_reqs(tgr_id);
+		-- alias btod_rdy  is btod_rdys(tgr_id);
+		-- alias mul_req   is mul_reqs(tgr_id);
+		-- alias mul_rdy   is mul_rdys(tgr_id);
+		-- alias str_req   is str_reqs(tgr_id);
+		-- alias str_rdy   is str_rdys(tgr_id);
+	-- begin
+		-- if rising_edge(rgtr_clk) then
+			-- case state is
+			-- when s_label =>
+				-- bs(tgr_id)<= resize(signed(tgr_offset), offset'length);
+				-- if (tgr_rdy xor tgr_req)='1' then
+					-- mul_req  <= not mul_rdy;
 					-- str_req  <= not str_rdy;
-					tgr_rdy  <= tgr_req;
-					state    := s_label;
-				end if;
-			end case;
-		end if;
-	end process;
+					-- state    := s_offset;
+				-- end if;
+			-- when s_offset =>
+				-- if (mul_req xor mul_rdy)='0' then
+					-- btod_req <= not btod_rdy;
+					-- state    := s_unit;
+				-- end if;
+			-- when s_unit =>
+				-- if (btod_req xor btod_rdy)='0' then
+					-- str_req  <= not str_rdy;
+					-- tgr_rdy  <= tgr_req;
+					-- state    := s_label;
+				-- end if;
+			-- end case;
+		-- end if;
+	-- end process;
 
 	strreq_p : process (rgtr_clk)
 		type states is (s_rdy, s_req);
