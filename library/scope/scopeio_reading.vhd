@@ -66,7 +66,7 @@ architecture def of scopeio_reading is
 	signal vtl_offsetcid  : std_logic_vector(vt_cid'range);
 	signal vtl_offset     : std_logic_vector((5+8)-1 downto 0);
 	signal tbl_offset     : std_logic_vector(vtl_offset'range);
-	signal vt_offset      : unsigned(vtl_offset'range);
+	signal vt_offset      : signed(vtl_offset'range);
 
 	signal trigger_ena    : std_logic;
 	signal trigger_freeze : std_logic;
@@ -76,12 +76,12 @@ architecture def of scopeio_reading is
 
 	signal hz_ena         : std_logic;
 	signal hz_scaleid     : std_logic_vector(4-1 downto 0);
-	signal hztl_offset    : std_logic_vector(hzoffset_bits-1 to 0);
+	signal hztl_offset    : std_logic_vector(hzoffset_bits-1 downto 0);
 
 	signal txt_req        : std_logic;
 	signal txt_rdy        : std_logic;
 	signal scale          : unsigned(0 to sfcnd_length-1);
-	signal offset         : unsigned(0 to max(vtl_offset'length, hztl_offset'length)-1);
+	signal offset         : signed(0 to max(vtl_offset'length, hztl_offset'length)-1);
 
 	signal str_req        : std_logic;
 	signal str_rdy        : std_logic;
@@ -102,7 +102,7 @@ architecture def of scopeio_reading is
 	signal tgr_sht        : signed(4-1 downto 0);
 	signal tgr_dec        : signed(4-1 downto 0);
 	signal tgr_scale      : unsigned(scale'range);
-	signal tgr_offset     : unsigned(trigger_level'range);
+	signal tgr_offset     : signed(trigger_level'range);
 	signal tgr_wdtid      : wdtid_range;
 	signal tgr_wdtrow     : unsigned(wdt_row'range);
 	signal tgrwdt_req     : std_logic;
@@ -111,7 +111,7 @@ architecture def of scopeio_reading is
 	signal hz_sht         : signed(4-1 downto 0);
 	signal hz_dec         : signed(4-1 downto 0);
 	signal hz_scale       : unsigned(scale'range);
-	signal hz_offset      : unsigned(hztl_offset'range);
+	signal hz_offset      : signed(hztl_offset'range);
 	signal hz_wdtid       : wdtid_range;
 	signal hz_wdtrow      : unsigned(wdt_row'range);
 	signal hzwdt_req      : std_logic;
@@ -148,8 +148,11 @@ architecture def of scopeio_reading is
 
 begin
 
-		tp(1) <= vtwdt_req;
-		tp(2) <= vtwdt_rdy;
+	--  tp <= (others => '1');
+		tp(1) <= txt_req;
+		tp(2) <= txt_rdy;
+		tp(3) <= vtwdt_req;
+		tp(4) <= vtwdt_rdy;
 	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
 	generic map (
 		rgtr      => false)
@@ -224,6 +227,8 @@ begin
 	process (rgtr_clk)
 		variable scaleid : natural range 0 to vt_shts'length-1;
 		variable timeid  : natural range 0 to hz_shts'length-1;
+		variable ref_req : bit;
+		variable ref_rdy : bit;
 	begin
 		if rising_edge(rgtr_clk) then
 			if (txt_req xor txt_rdy)='0' then
@@ -232,27 +237,41 @@ begin
 					vt_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
 					vt_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-					vt_offset  <= to_unsigned(100,vt_offset'length); --unsigned(tbl_offset);
+					vt_offset  <= signed(tbl_offset);
 					vt_wdtid   <= to_integer(unsigned(vtl_scalecid));
 					vt_wdtrow  <= resize(unsigned(vtl_scalecid)+2, vt_wdtrow'length);
+					wdt_row    <= resize(unsigned(vtl_scalecid)+2, vt_wdtrow'length);
+					ref_req    := not ref_rdy;
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif vtoffset_ena='1' then
 					scaleid    := to_integer(unsigned(tbl_scaleid));
 					vt_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
 					vt_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-					vt_offset  <= unsigned(vtl_offset);
+					vt_offset  <= signed(vtl_offset);
 					vt_wdtid   <= to_integer(unsigned(vtl_offsetcid));
-					vt_wdtrow  <= resize(unsigned(vtl_scalecid)+2, vt_wdtrow'length);
+					wdt_row    <= resize(unsigned(vtl_offsetcid)+2, vt_wdtrow'length);
+					ref_req    := not ref_rdy;
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif trigger_ena='1' then
 					scaleid     := to_integer(unsigned(tbl_scaleid));
 					tgr_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
 					tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-					tgr_offset  <= unsigned(trigger_level);
+					tgr_offset  <= signed(trigger_level);
 					tgr_wdtid   <= inputs+1;
 					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
+					wdt_row     <= to_unsigned(1, tgr_wdtrow'length);
+					tgrwdt_req  <= not tgrwdt_rdy;
+				elsif (ref_rdy xor ref_req)='1' then
+					scaleid     := to_integer(unsigned(tbl_scaleid));
+					tgr_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
+					tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
+					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
+					tgr_wdtid   <= inputs+1;
+					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
+					wdt_row     <= to_unsigned(1, tgr_wdtrow'length);
+					ref_rdy := ref_req;
 					tgrwdt_req  <= not tgrwdt_rdy;
 				end if;
 				if hz_ena='1' then
@@ -260,8 +279,9 @@ begin
 					hz_sht     <= to_signed(hz_shts(timeid), btod_sht'length);
 					hz_dec     <= to_signed(hz_pnts(timeid), btod_dec'length);
 					hz_scale   <= to_unsigned(hz_sfcnds(timeid mod 4), hz_scale'length);
-					hz_offset  <= unsigned(hztl_offset);
+					hz_offset  <= signed(hztl_offset);
 					hz_wdtrow  <= to_unsigned(0, hz_wdtrow'length);
+					wdt_row  <= to_unsigned(0, hz_wdtrow'length);
 					hz_wdtid   <= inputs+0;
 					hzwdt_req  <= not hzwdt_rdy;
 				end if;
@@ -287,14 +307,14 @@ begin
 			data(left to right) := textalign(hz_label, width);
 			left  := left  + width;
 			right := right + width;
-			data(left to right) := textalign("tgz", width);
+			data(left to right) := textalign("tggr", width);
 			return data;
 		end;
 
 		constant width : natural := 4;
 		constant textrom : string := textrom_init (width);
 		variable i    : natural range 0 to width-1;
-		variable cptr : natural range 0 to (1+inputs)*width;
+		variable cptr : natural range 1 to (1+inputs)*width;
 
 	begin
 		if rising_edge(rgtr_clk) then
@@ -314,7 +334,6 @@ begin
 	end process;
 
 	process (rgtr_clk)
-		variable row : unsigned(wdt_row'range);
 	begin
 		if rising_edge(rgtr_clk) then
 			if (txt_req xor txt_rdy)='0' then
@@ -324,8 +343,8 @@ begin
 					scale      <= vt_scale;
 					offset     <= resize(vt_offset, offset'length);
 					wdt_id     <= vt_wdtid;
-					wdt_row    <= vt_wdtrow;
-					vtwdt_req  <= vtwdt_rdy;
+					-- wdt_row    <= vt_wdtrow;
+					vtwdt_rdy  <= vtwdt_req;
 					txt_req    <= not txt_req;
 				elsif (tgrwdt_req xor tgrwdt_rdy)='1' then
 					btod_sht   <= tgr_sht;
@@ -333,17 +352,17 @@ begin
 					scale      <= tgr_scale;
 					offset     <= resize(tgr_offset, offset'length);
 					wdt_id     <= tgr_wdtid;
-					wdt_row    <= tgr_wdtrow;
-					tgrwdt_req <= tgrwdt_rdy;
+					-- wdt_row    <= tgr_wdtrow;
+					tgrwdt_rdy <= tgrwdt_req;
 					txt_req    <= not txt_req;
 				elsif (hzwdt_req xor hzwdt_rdy)='1' then
 					btod_sht   <= hz_sht;
 					btod_dec   <= hz_dec;
 					scale      <= hz_scale;
-					offset     <= resize(unsigned(hz_offset), offset'length);
+					offset     <= resize(hz_offset, offset'length);
 					wdt_id     <= hz_wdtid;
-					wdt_row    <= hz_wdtrow;
-					hzwdt_req  <= hzwdt_rdy;
+					-- wdt_row    <= hz_wdtrow;
+					hzwdt_rdy  <= hzwdt_req;
 					txt_req    <= not txt_req;
 				end if;
 			end if;
@@ -423,39 +442,39 @@ begin
 		end if;
 	end process;
 
-	-- trigger_p : process (rgtr_clk)
-		-- type states is (s_label, s_offset, s_unit);
-		-- variable state : states;
-		-- alias btod_req  is btod_reqs(tgr_id);
-		-- alias btod_rdy  is btod_rdys(tgr_id);
-		-- alias mul_req   is mul_reqs(tgr_id);
-		-- alias mul_rdy   is mul_rdys(tgr_id);
-		-- alias str_req   is str_reqs(tgr_id);
-		-- alias str_rdy   is str_rdys(tgr_id);
-	-- begin
-		-- if rising_edge(rgtr_clk) then
-			-- case state is
-			-- when s_label =>
-				-- bs(tgr_id)<= resize(signed(tgr_offset), offset'length);
-				-- if (tgr_rdy xor tgr_req)='1' then
-					-- mul_req  <= not mul_rdy;
+	trigger_p : process (rgtr_clk)
+		type states is (s_label, s_offset, s_unit);
+		variable state : states;
+		alias btod_req  is btod_reqs(tgr_id);
+		alias btod_rdy  is btod_rdys(tgr_id);
+		alias mul_req   is mul_reqs(tgr_id);
+		alias mul_rdy   is mul_rdys(tgr_id);
+		alias str_req   is str_reqs(tgr_id);
+		alias str_rdy   is str_rdys(tgr_id);
+	begin
+		if rising_edge(rgtr_clk) then
+			case state is
+			when s_label =>
+				bs(tgr_id)<= resize(signed(tgr_offset), offset'length);
+				if (tgr_rdy xor tgr_req)='1' then
+					mul_req  <= not mul_rdy;
+					str_req  <= not str_rdy;
+					state    := s_offset;
+				end if;
+			when s_offset =>
+				if (mul_req xor mul_rdy)='0' then
+					btod_req <= not btod_rdy;
+					state    := s_unit;
+				end if;
+			when s_unit =>
+				if (btod_req xor btod_rdy)='0' then
 					-- str_req  <= not str_rdy;
-					-- state    := s_offset;
-				-- end if;
-			-- when s_offset =>
-				-- if (mul_req xor mul_rdy)='0' then
-					-- btod_req <= not btod_rdy;
-					-- state    := s_unit;
-				-- end if;
-			-- when s_unit =>
-				-- if (btod_req xor btod_rdy)='0' then
-					-- str_req  <= not str_rdy;
-					-- tgr_rdy  <= tgr_req;
-					-- state    := s_label;
-				-- end if;
-			-- end case;
-		-- end if;
-	-- end process;
+					tgr_rdy  <= tgr_req;
+					state    := s_label;
+				end if;
+			end case;
+		end if;
+	end process;
 
 	strreq_p : process (rgtr_clk)
 		type states is (s_rdy, s_req);
