@@ -101,6 +101,7 @@ architecture def of scopeio_reading is
 
 	signal tgr_sht        : signed(4-1 downto 0);
 	signal tgr_dec        : signed(4-1 downto 0);
+	signal tgr_cid        : std_logic_vector(trigger_cid'range);
 	signal tgr_scale      : unsigned(scale'range);
 	signal tgr_offset     : signed(trigger_level'range);
 	signal tgr_wdtid      : wdtid_range;
@@ -214,7 +215,7 @@ begin
 		rd_addr => vtl_scalecid,
 		rd_data => tbl_offset);
 
-	vt_cid <= vtl_offsetcid when vtoffset_ena='1' else trigger_cid;
+	vt_cid <= vtl_offsetcid when vtoffset_ena='1' else trigger_cid when trigger_ena='1' else tgr_cid;
 	vtgains_e : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => rgtr_clk,
@@ -254,6 +255,7 @@ begin
 					ref_req    := not ref_rdy;
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif trigger_ena='1' then
+					tgr_cid     <= trigger_cid;
 					scaleid     := to_integer(unsigned(tbl_scaleid));
 					tgr_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
 					tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
