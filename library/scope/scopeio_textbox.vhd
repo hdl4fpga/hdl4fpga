@@ -137,30 +137,59 @@ begin
 		di(0) => video_dot,
 		do(0) => text_fgon);
 
-	-- process (video_clk)
-		-- constant xxx : natural := 2;
-		-- constant field_addr : natural_vector := textbox_field(cga_cols);
-		-- variable field_id   : natural range 0 to 2**fg_color'length-1;
-		-- variable addr       : std_logic_vector(video_addr'range);
-	-- begin
-		-- if rising_edge(video_clk) then
-			-- fg_color <= std_logic_vector(to_unsigned(field_id, fg_color'length));
-			-- if video_on='1' then
-				-- field_id := pltid_textfg;
-				-- for i in field_addr'range loop
-					-- if unsigned(addr) < (field_addr(i)+cga_cols) then
-						-- if i >= xxx then 
-							-- field_id := (i-xxx)+pltid_order'length;
-						-- end if;
-						-- exit;
-					-- end if;
-				-- end loop;
-			-- end if;
-			-- addr := video_addr;
-		-- end if;
-	-- end process;
+	process (video_clk)
+		function textbox_field (
+			constant width          : natural)
+			return natural_vector is
+			constant inputs         : natural := hdo(layout)**".inputs";
+			constant textbox_fields : string := compact (
+				"{"                                       &
+				"    horizontal : { top : 0, left : 0 }," &
+				"    trigger    : { top : 1, left : 0 }," &
+				"    inputs     : { top : 2, left : 0 }"  &
+				"}");
 
-	fg_color <= std_logic_vector(to_unsigned(pltid_textfg, fg_color'length));
+			constant wdt_horizontal : string  := hdo(textbox_fields)**".horizontal";
+			constant wdt_trigger    : string  := hdo(textbox_fields)**".trigger";
+			constant wdt_inputs     : string  := hdo(textbox_fields)**".inputs";
+			constant wdtinputs_top  : natural := hdo(wdt_inputs)**".top";
+			constant wdtinputs_left : natural := hdo(wdt_inputs)**".left";
+			variable retval         : natural_vector(0 to 2+inputs-1);
+		begin
+			retval(0) := hdo(wdt_horizontal)**".top"*width;
+			retval(0) := hdo(wdt_horizontal)**".left" + retval(0);
+			retval(1) := hdo(wdt_trigger)**".top"*width;
+			retval(1) := hdo(wdt_trigger)**".left" + retval(1);
+			for i in 0 to inputs-1 loop
+				retval(i+2) := (wdtinputs_top+i)*width;
+				retval(i+2) := wdtinputs_left + retval(i+2);
+			end loop;
+			return retval;
+		end;
+
+		constant xxx : natural := 2;
+		constant field_addr : natural_vector := textbox_field(cga_cols);
+		variable field_id   : natural range 0 to 2**fg_color'length-1;
+		variable addr       : std_logic_vector(video_addr'range);
+	begin
+		if rising_edge(video_clk) then
+			fg_color <= std_logic_vector(to_unsigned(field_id, fg_color'length));
+			if video_on='1' then
+				field_id := pltid_textfg;
+				for i in field_addr'range loop
+					if unsigned(addr) < (field_addr(i)+cga_cols) then
+						if i >= xxx then 
+							field_id := (i-xxx)+pltid_order'length;
+						end if;
+						exit;
+					end if;
+				end loop;
+			end if;
+			addr := video_addr;
+		end if;
+	end process;
+
+	-- fg_color <= std_logic_vector(to_unsigned(pltid_textfg, fg_color'length));
 	bg_color <= std_logic_vector(to_unsigned(pltid_textbg, bg_color'length));
 
 	latfg_e : entity hdl4fpga.latency
