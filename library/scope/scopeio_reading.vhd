@@ -140,13 +140,14 @@ architecture def of scopeio_reading is
 	signal str_reqs       : std_logic_vector(0 to 1) := (others => '0');
 	signal str_rdys       : std_logic_vector(0 to 1) := (others => '0');
 
-	type offset_vector is array(0 to 1) of signed(offset'range);
-	signal bs : offset_vector;
 	signal b  : signed(0 to offset'length-1);
+	type b_vector is array(0 to 1) of signed(b'range);
+	signal bs : b_vector;
 
 	constant axis_id : natural := 0;
 	constant tgr_id  : natural := 1;
 
+	signal sign : std_logic;
 begin
 
 	--  tp <= (others => '1');
@@ -194,6 +195,8 @@ begin
 		vt_offset => vtl_offset);
 
 	tgr_e : entity hdl4fpga.scopeio_rgtrtrigger
+	generic map (
+		rgtr      => false)
 	port map (
 		rgtr_clk       => rgtr_clk,
 		rgtr_dv        => rgtr_dv,
@@ -264,7 +267,7 @@ begin
 					tgr_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
 					tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-					tgr_offset  <= signed(trigger_level);
+					tgr_offset  <= -signed(trigger_level);
 					tgr_wdtid   <= inputs+1;
 					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
 					wdt_row     <= to_unsigned(1, tgr_wdtrow'length);
@@ -415,7 +418,7 @@ begin
 		if rising_edge(rgtr_clk) then
 			case state is
 			when s_label =>
-				bs(axis_id)<= signed(offset);
+				bs(axis_id)<= offset;
 				if (axis_rdy xor axis_req)='1' then
 					mul_req  <= not mul_rdy;
 					str_req  <= not str_rdy;
@@ -542,7 +545,8 @@ begin
 			when s_rdy =>
 				for i in mul_reqs'range loop
 					if (mul_rdys(i) xor mul_reqs(i))='1' then
-						if signed(offset) >= 0 then
+						sign <= bs(i)(0);
+						if bs(i) >= 0 then
 							b <=  bs(i);
 						else 
 							b <= -bs(i);
@@ -583,7 +587,7 @@ begin
 		left     => '0',
 		width    => x"7",
 		exp      => b"101",
-		neg      => '0', --sign,
+		neg      => sign,
 		bin      => binary,
 		code_frm => btod_frm,
 		code     => btod_code);
