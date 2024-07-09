@@ -299,45 +299,45 @@ begin
 	end process;
 
 	process (rgtr_clk)
+
 		function textrom_init (
 			constant width : natural)
 			return string is
 			variable left  : natural;
 			variable right : natural;
-			variable data  : string(1 to (inputs+2)*width);
+			variable data  : string(1 to (inputs+1)*(width+1)+(7+1));
 		begin
 			left  := data'left;
-			right := left + (width-1);
+			right := left + (width-1)+1;
 			for i in 0 to inputs-1 loop
-				data(left to right) := textalign(escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")), width);
-				left  := left  + width;
-				right := right + width;
+				data(left to right) := textalign(escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")), width) & NUL;
+				left  := left  + width+1;
+				right := right + width+1;
 			end loop;
-			data(left to right) := textalign(hz_label, width);
-			left  := left  + width;
-			right := right + width;
-			data(left to right) := textalign("tggr", width);
+			data(left to right) := textalign(hz_label, width) & NUL;
+			left  := left  + (width+1);
+			right := right + (7+1);
+			data(left to right) := textalign("trigger", 7) & NUL;
 			return data;
 		end;
 
 		constant width : natural := 4;
 		constant textrom : string := textrom_init (width);
-		variable i    : natural range 0 to width-1;
 		variable cptr : natural range 1 to (1+inputs)*width;
 
 	begin
 		if rising_edge(rgtr_clk) then
-			str_frm  <= str_req xor str_rdy;
 			str_code <= to_ascii(textrom(cptr));
 			if (str_rdy xor str_req)='1' then
-				if i >= width-1 then
+				if textrom(cptr)=NUL then
+					str_frm <= '0';
 					str_rdy <= str_req;
+				else
+					str_frm <= '1';
 				end if;
-				i    := i + 1;
 				cptr := cptr + 1;
 			else
-				i    := 0;
-				cptr := width*wdt_id+1;
+				cptr := (width+1)*wdt_id+1;
 			end if;
 		end if;
 	end process;
