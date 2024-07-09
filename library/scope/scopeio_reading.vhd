@@ -220,7 +220,7 @@ begin
 
 	vt_cid <= 
 		vtl_offsetcid  when vtoffset_ena='1' else 
-		trigger_chanid when trigger_ena='1'  else 
+		trigger_chanid when  trigger_ena='1' else 
 		tgr_cid;
 
 	vtgains_e : entity hdl4fpga.dpram
