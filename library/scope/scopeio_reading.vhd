@@ -34,7 +34,7 @@ entity scopeio_reading is
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 	constant vt_labels     : string  := hdo(layout)**".vt";
-	constant hz_label      : string  := "hztl";
+	constant hz_label      : string  := "horizontal";
 
 	constant vt_sfcnds     : natural_vector := get_significand1245(vt_unit);
 	constant vt_shts       : integer_vector := get_shr1245(vt_unit);
@@ -302,22 +302,22 @@ begin
 			return string is
 			variable left  : natural;
 			variable right : natural;
-			variable data  : string(1 to (inputs+1)*(width+1));
+			variable data  : string(1 to inputs*(width+1)+hz_label'length+1);
 		begin
 			left  := data'left;
-			right := left + (width-1)+1;
 			for i in 0 to inputs-1 loop
+				right := left + (width+1)-1;
 				data(left to right) := textalign(escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")), width) & NUL;
-				left  := left  + width+1;
-				right := right + width+1;
+				left  := left  + (width+1);
 			end loop;
-			data(left to right) := textalign(hz_label, width) & NUL;
+			right := left + (hz_label'length+1)-1;
+			data(left to right) := hz_label & NUL;
 			return data;
 		end;
 
-		constant width : natural := 4;
+		constant width   : natural := 4;
 		constant textrom : string := textrom_init (width);
-		variable cptr : natural range 1 to (1+inputs)*width;
+		variable cptr    : natural range 1 to inputs*width;
 
 	begin
 		if rising_edge(rgtr_clk) then
