@@ -296,7 +296,7 @@ begin
 		end if;
 	end process;
 
-	process (rgtr_clk)
+	process (rgtr_dv, rgtr_clk)
 
 		function textrom_init (
 			constant width : natural)
@@ -317,8 +317,8 @@ begin
 		end;
 
 		constant width   : natural := 4;
-		constant textrom : string := textrom_init (width);
-		variable cptr    : natural range 1 to inputs*width;
+		constant textrom : string := textrom_init(width);
+		variable cptr    : natural range 1 to inputs*(width+1)+(hz_label'length+1);
 
 	begin
 		if rising_edge(rgtr_clk) then
