@@ -69,11 +69,11 @@ architecture def of scopeio_textbox is
 begin
 
 	assert false
-		report 
-		"********************         " & natural'image(cga_rows) & CR &
-		"********************         " & natural'image(cga_cols) & CR &
-		"********************         " & natural'image(cga_size) & CR &
-		"********************         " & natural'image(cga_addr'length) 
+		report CR &
+		"textbox rows " & natural'image(cga_rows) & CR &
+		"textbox cols " & natural'image(cga_cols) & CR &
+		"textbox size " & natural'image(cga_size) & CR &
+		"textbox mem  " & natural'image(2**cga_addr'length) 
 		severity note;
 
 	readings_e : entity hdl4fpga.scopeio_reading
