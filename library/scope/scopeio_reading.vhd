@@ -39,6 +39,7 @@ entity scopeio_reading is
 	constant vt_sfcnds     : natural_vector := get_significand1245(vt_unit);
 	constant vt_shts       : integer_vector := get_shr1245(vt_unit);
 	constant vt_pnts       : integer_vector := get_characteristic1245(vt_unit);
+	constant vt_pfxs       : string         := get_prefix1235(vt_unit);
 
 	constant hz_sfcnds     : natural_vector := get_significand1245(hz_unit);
 	constant hz_shts       : integer_vector := get_shr1245(hz_unit);
@@ -84,9 +85,9 @@ architecture def of scopeio_reading is
 
 	signal str_req        : std_logic;
 	signal str_rdy        : std_logic;
-	subtype wdtid_range is natural range 0 to (inputs+2)-1;
+	subtype wdtid_range is natural range 0 to (inputs+1)-1;
 	signal wdt_id         : wdtid_range;
-	signal wdt_row      : unsigned(0 to unsigned_num_bits(inputs+2-1)-1);
+	signal wdt_row        : unsigned(0 to unsigned_num_bits(inputs+2-1)-1);
 
 	signal btod_sht       : signed(4-1 downto 0);
 	signal btod_dec       : signed(4-1 downto 0);
@@ -246,7 +247,7 @@ begin
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_offset  <= signed(tbl_offset);
 					vt_wdtid   <= to_integer(unsigned(vtl_scalecid));
-					vt_wdtrow  <= resize(unsigned(vtl_scalecid)+2, vt_wdtrow'length);
+					vt_wdtrow  <= resize(unsigned(vtl_scalecid), vt_wdtrow'length)+2;
 					ref_req    := not ref_rdy;
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif vtoffset_ena='1' then
@@ -256,7 +257,7 @@ begin
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_offset  <= signed(vtl_offset);
 					vt_wdtid   <= to_integer(unsigned(vtl_offsetcid));
-					vt_wdtrow  <= resize(unsigned(vtl_offsetcid)+2, vt_wdtrow'length);
+					vt_wdtrow  <= resize(unsigned(vtl_offsetcid), vt_wdtrow'length)+2;
 					ref_req    := not ref_rdy;
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif trigger_ena='1' then

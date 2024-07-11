@@ -271,15 +271,6 @@ begin
 			rgtr_id       => rgtr_id,
 			rgtr_data     => rgtr_data,
 
-			gain_ena      => gain_ena,
-			gain_dv       => gain_dv,
-			gain_cid      => gain_cid,
-			gain_ids      => gain_ids,
-
-			time_dv       => hz_dv,
-			time_id       => time_scale,
-			time_offset   => time_offset,
-
 			video_clk     => video_clk,
 			video_hcntr   => textbox_x,
 			video_vcntr   => textbox_y,
