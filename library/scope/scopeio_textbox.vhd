@@ -98,12 +98,12 @@ begin
 		if rising_edge(rgtr_clk) then
 			case state is
 			when s_init =>
+				cga_addr <= mul(unsigned(video_row), cga_cols, cga_addr'length);
 				if code_frm='1' then
+					cga_we <= code_irdy;
                     if code_irdy='1' then
-						cga_addr <= mul(unsigned(video_row), cga_cols, cga_addr'length);
                         state := s_run;
                     end if;
-					cga_we <= code_irdy;
 				else
 					cga_we <= '0';
 				end if;
@@ -111,8 +111,9 @@ begin
 				if code_irdy='1' then
 					cga_addr <= cga_addr + 1;
 				end if;
-				cga_we  <= code_irdy;
-				if code_frm='0' then
+				if code_frm='1' then
+					cga_we <= code_irdy;
+				else
 					state := s_init;
 				end if;
 			end case;
