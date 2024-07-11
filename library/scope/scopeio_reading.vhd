@@ -248,7 +248,6 @@ begin
 					vt_offset  <= signed(tbl_offset);
 					vt_wdtid   <= to_integer(unsigned(vtl_scalecid));
 					vt_wdtrow  <= resize(unsigned(vtl_scalecid)+2, vt_wdtrow'length);
-					-- wdt_row    <= resize(unsigned(vtl_scalecid)+2, vt_wdtrow'length);
 					ref_req    := not ref_rdy;
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif vtoffset_ena='1' then
@@ -258,8 +257,7 @@ begin
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_offset  <= signed(vtl_offset);
 					vt_wdtid   <= to_integer(unsigned(vtl_offsetcid));
-					vt_wdtrow  <= resize(unsigned(vtl_scalecid)+2, vt_wdtrow'length);
-					-- wdt_row    <= resize(unsigned(vtl_offsetcid)+2, vt_wdtrow'length);
+					vt_wdtrow  <= resize(unsigned(vtl_offsetcid)+2, vt_wdtrow'length);
 					ref_req    := not ref_rdy;
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif trigger_ena='1' then
@@ -269,20 +267,20 @@ begin
 					tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					tgr_offset  <= -signed(trigger_level);
-					tgr_wdtid   <= inputs+1;
+					tgr_wdtid   <= to_integer(unsigned(trigger_chanid));
 					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
-					-- wdt_row     <= to_unsigned(1, tgr_wdtrow'length);
 					tgrwdt_req  <= not tgrwdt_rdy;
 				elsif (ref_rdy xor ref_req)='1' then
-					scaleid     := to_integer(unsigned(tbl_scaleid));
-					tgr_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
-					tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
-					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-					tgr_wdtid   <= inputs+1;
-					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
-					-- wdt_row     <= to_unsigned(1, tgr_wdtrow'length);
-					ref_rdy := ref_req;
-					tgrwdt_req  <= not tgrwdt_rdy;
+					if (vtwdt_rdy xor vtwdt_req)='0' then
+						scaleid     := to_integer(unsigned(tbl_scaleid));
+						tgr_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
+						tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
+						tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
+						tgr_wdtid   <= to_integer(unsigned(tgr_cid));
+						tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
+						tgrwdt_req  <= not tgrwdt_rdy;
+						ref_rdy     := ref_req;
+					end if;
 				end if;
 				if hz_ena='1' then
 					timeid     := to_integer(unsigned(hz_scaleid));
@@ -291,7 +289,6 @@ begin
 					hz_scale   <= to_unsigned(hz_sfcnds(timeid mod 4), hz_scale'length);
 					hz_offset  <= signed(hztl_offset);
 					hz_wdtrow  <= to_unsigned(0, hz_wdtrow'length);
-					-- wdt_row  <= to_unsigned(0, hz_wdtrow'length);
 					hz_wdtid   <= inputs+0;
 					hzwdt_req  <= not hzwdt_rdy;
 				end if;
