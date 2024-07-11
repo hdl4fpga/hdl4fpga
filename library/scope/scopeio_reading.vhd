@@ -35,7 +35,6 @@ entity scopeio_reading is
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 	constant vt_labels     : string  := hdo(layout)**".vt";
 	constant hz_label      : string  := "hztl";
-	constant tgr_label     : string  := "tggr";
 
 	constant vt_sfcnds     : natural_vector := get_significand1245(vt_unit);
 	constant vt_shts       : integer_vector := get_shr1245(vt_unit);
@@ -303,7 +302,7 @@ begin
 			return string is
 			variable left  : natural;
 			variable right : natural;
-			variable data  : string(1 to (inputs+1)*(width+1)+(7+1));
+			variable data  : string(1 to (inputs+1)*(width+1));
 		begin
 			left  := data'left;
 			right := left + (width-1)+1;
@@ -313,9 +312,6 @@ begin
 				right := right + width+1;
 			end loop;
 			data(left to right) := textalign(hz_label, width) & NUL;
-			left  := left  + (width+1);
-			right := right + (7+1);
-			data(left to right) := textalign("trigger", 7) & NUL;
 			return data;
 		end;
 
