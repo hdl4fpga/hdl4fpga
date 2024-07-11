@@ -34,7 +34,7 @@ entity scopeio_reading is
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 	constant vt_labels     : string  := hdo(layout)**".vt";
-	constant hz_label      : string  := "horizontal";
+	constant hz_label      : string  := "Time";
 
 	constant vt_sfcnds     : natural_vector := get_significand1245(vt_unit);
 	constant vt_shts       : integer_vector := get_shr1245(vt_unit);
