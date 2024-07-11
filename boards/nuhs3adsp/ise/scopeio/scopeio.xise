@@ -136,7 +136,7 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="81"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/scope/scopeio_rgtrgain.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/scope/scopeio_rgtrvtscale.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="105"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="60"/>
       <library xil_pn:name="hdl4fpga"/>
@@ -161,7 +161,7 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="56"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/scope/scopeio_rgtrvtaxis.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/scope/scopeio_rgtrvtoffset.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="110"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="55"/>
       <library xil_pn:name="hdl4fpga"/>
@@ -464,6 +464,11 @@
     <file xil_pn:name="../../../../library/basic/hdo.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="205"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="32"/>
+      <library xil_pn:name="hdl4fpga"/>
+    </file>
+    <file xil_pn:name="../../../../library/scope/scopeio_reading.vhd" xil_pn:type="FILE_VHDL">
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="143"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="143"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
   </files>
