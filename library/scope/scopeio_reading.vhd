@@ -248,7 +248,7 @@ begin
 					vt_offset  <= signed(tbl_offset);
 					vt_wdtid   <= to_integer(unsigned(vtl_scalecid));
 					vt_wdtrow  <= resize(unsigned(vtl_scalecid)+2, vt_wdtrow'length);
-					wdt_row    <= resize(unsigned(vtl_scalecid)+2, vt_wdtrow'length);
+					-- wdt_row    <= resize(unsigned(vtl_scalecid)+2, vt_wdtrow'length);
 					ref_req    := not ref_rdy;
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif vtoffset_ena='1' then
@@ -258,7 +258,8 @@ begin
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_offset  <= signed(vtl_offset);
 					vt_wdtid   <= to_integer(unsigned(vtl_offsetcid));
-					wdt_row    <= resize(unsigned(vtl_offsetcid)+2, vt_wdtrow'length);
+					vt_wdtrow  <= resize(unsigned(vtl_scalecid)+2, vt_wdtrow'length);
+					-- wdt_row    <= resize(unsigned(vtl_offsetcid)+2, vt_wdtrow'length);
 					ref_req    := not ref_rdy;
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif trigger_ena='1' then
@@ -270,7 +271,7 @@ begin
 					tgr_offset  <= -signed(trigger_level);
 					tgr_wdtid   <= inputs+1;
 					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
-					wdt_row     <= to_unsigned(1, tgr_wdtrow'length);
+					-- wdt_row     <= to_unsigned(1, tgr_wdtrow'length);
 					tgrwdt_req  <= not tgrwdt_rdy;
 				elsif (ref_rdy xor ref_req)='1' then
 					scaleid     := to_integer(unsigned(tbl_scaleid));
@@ -279,7 +280,7 @@ begin
 					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					tgr_wdtid   <= inputs+1;
 					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
-					wdt_row     <= to_unsigned(1, tgr_wdtrow'length);
+					-- wdt_row     <= to_unsigned(1, tgr_wdtrow'length);
 					ref_rdy := ref_req;
 					tgrwdt_req  <= not tgrwdt_rdy;
 				end if;
@@ -290,7 +291,7 @@ begin
 					hz_scale   <= to_unsigned(hz_sfcnds(timeid mod 4), hz_scale'length);
 					hz_offset  <= signed(hztl_offset);
 					hz_wdtrow  <= to_unsigned(0, hz_wdtrow'length);
-					wdt_row  <= to_unsigned(0, hz_wdtrow'length);
+					-- wdt_row  <= to_unsigned(0, hz_wdtrow'length);
 					hz_wdtid   <= inputs+0;
 					hzwdt_req  <= not hzwdt_rdy;
 				end if;
@@ -352,7 +353,7 @@ begin
 					scale      <= vt_scale;
 					offset     <= resize(vt_offset, offset'length);
 					wdt_id     <= vt_wdtid;
-					-- wdt_row    <= vt_wdtrow;
+					wdt_row    <= vt_wdtrow;
 					vtwdt_rdy  <= vtwdt_req;
 					txt_req    <= not txt_req;
 				elsif (tgrwdt_req xor tgrwdt_rdy)='1' then
@@ -361,7 +362,7 @@ begin
 					scale      <= tgr_scale;
 					offset     <= resize(tgr_offset, offset'length);
 					wdt_id     <= tgr_wdtid;
-					-- wdt_row    <= tgr_wdtrow;
+					wdt_row    <= tgr_wdtrow;
 					tgrwdt_rdy <= tgrwdt_req;
 					txt_req    <= not txt_req;
 				elsif (hzwdt_req xor hzwdt_rdy)='1' then
@@ -370,7 +371,7 @@ begin
 					scale      <= hz_scale;
 					offset     <= resize(hz_offset, offset'length);
 					wdt_id     <= hz_wdtid;
-					-- wdt_row    <= hz_wdtrow;
+					wdt_row    <= hz_wdtrow;
 					hzwdt_rdy  <= hzwdt_req;
 					txt_req    <= not txt_req;
 				end if;

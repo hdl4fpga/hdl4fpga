@@ -92,14 +92,30 @@ begin
 		code_data => code_data);
 
 	process (rgtr_clk)
+		type states is (s_init, s_run);
+		variable state : states;
 	begin
 		if rising_edge(rgtr_clk) then
-			if cga_we='1' then
-				cga_addr <= cga_addr + 1;
-			elsif code_frm='0' then
-				cga_addr <= mul(unsigned(video_row), cga_cols, cga_addr'length);
-			end if;
-			cga_we   <= code_irdy;
+			case state is
+			when s_init =>
+				if code_frm='1' then
+                    if code_irdy='1' then
+						cga_addr <= mul(unsigned(video_row), cga_cols, cga_addr'length);
+                        state := s_run;
+                    end if;
+					cga_we <= code_irdy;
+				else
+					cga_we <= '0';
+				end if;
+			when s_run =>
+				if code_irdy='1' then
+					cga_addr <= cga_addr + 1;
+				end if;
+				cga_we  <= code_irdy;
+				if code_frm='0' then
+					state := s_init;
+				end if;
+			end case;
 			cga_data <= code_data;
 		end if;
 	end process;
