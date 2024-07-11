@@ -22,15 +22,6 @@ entity scopeio_textbox is
 		rgtr_id       : in  std_logic_vector(8-1 downto 0);
 		rgtr_data     : in  std_logic_vector;
 
-		gain_ena      : in  std_logic;
-		gain_dv       : in  std_logic;
-		gain_cid      : in  std_logic_vector;
-		gain_ids      : in  std_logic_vector;
-
-		time_dv       : in  std_logic;
-		time_id       : in  std_logic_vector;
-		time_offset   : in  std_logic_vector;
-
 		video_clk     : in  std_logic;
 		video_hcntr   : in  std_logic_vector;
 		video_vcntr   : in  std_logic_vector;
@@ -76,6 +67,14 @@ architecture def of scopeio_textbox is
 	signal video_row         : std_logic_vector(0 to unsigned_num_bits(cga_rows-1)-1);
 
 begin
+
+	assert false
+		report 
+		"********************         " & natural'image(cga_rows) & CR &
+		"********************         " & natural'image(cga_cols) & CR &
+		"********************         " & natural'image(cga_size) & CR &
+		"********************         " & natural'image(cga_addr'length) 
+		severity note;
 
 	readings_e : entity hdl4fpga.scopeio_reading
 	generic map (
