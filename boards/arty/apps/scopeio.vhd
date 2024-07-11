@@ -322,8 +322,7 @@ begin
 				dst_offset => 0,
 				src_offset => 2,
 				check_sov  => false,
-				check_dov  => true,
-				gray_code  => false)
+				check_dov  => true)
 			port map (
 				src_clk  => eth_rx_clk,
 				src_data => rxc_rxbus,
@@ -435,7 +434,7 @@ begin
 
 			hz_dv     => hz_dv,
 			hz_scale  => hz_scale,
-			hz_slider => hz_slider);
+			hz_offset => hz_slider);
 
 		process (hz_scale)
 			variable no_inputs : natural range 0 to mux_sampling-1;

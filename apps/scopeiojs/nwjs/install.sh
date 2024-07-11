@@ -20,12 +20,11 @@
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or     
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for  
 # more details at http://www.gnu.org/licenses/.                             
-
 ln -fs ../html
 ln -fs ../srcjs
 npm install nw-gyp
 sed -i 's/var config = process.config/var config = JSON.parse(JSON.stringify(process.config))/' ./node_modules/nw-gyp/lib/configure.js # See https://github.com/nwjs/nw-gyp/issues/155
-npm install nw --nwjs_build_type=sdk
+npm install --save-dev nw@sdk
 npm install usb
 npm install serialport
 export npm_config_target=`npm view nw version`

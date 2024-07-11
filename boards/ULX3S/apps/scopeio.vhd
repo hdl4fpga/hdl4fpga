@@ -362,7 +362,7 @@ begin
 
 			hz_dv     => hz_dv,
 			hz_scale  => hz_scale,
-			hz_slider => hz_slider);
+			hz_offset => hz_slider);
 
 		process (opacity, sio_clk)
 			variable data : unsigned(0 to inputs*32-1);
@@ -413,6 +413,8 @@ begin
 		video_hsync => video_hzsync,
 		video_vsync => video_vtsync,
 		video_blank => video_blank);
+		led(0) <= tp(1);
+		led(1) <= tp(2);
 
 	-- HDMI/DVI VGA --
 	------------------

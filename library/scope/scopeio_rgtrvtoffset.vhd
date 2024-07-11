@@ -6,7 +6,7 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.scopeiopkg.all;
 
-entity scopeio_rgtrvtaxis is
+entity scopeio_rgtrvtoffset is
 	generic (
 		rgtr      : boolean := true);
 	port (
@@ -22,7 +22,7 @@ entity scopeio_rgtrvtaxis is
 
 end;
 
-architecture def of scopeio_rgtrvtaxis is
+architecture def of scopeio_rgtrvtoffset is
 
 	signal ena    : std_logic;
 	signal chanid : std_logic_vector(vt_chanid'range);

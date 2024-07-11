@@ -190,8 +190,8 @@ begin
 		hz_ena    => hz_ena,
 		hz_dv     => hz_dv,
 		hz_scale  => hz_scale,
-		hz_slider => hz_slider);
-	tp(1 to 8) <= std_logic_vector(resize(unsigned(hz_slider),8));
+		hz_offset => hz_slider);
+	-- tp(1 to 8) <= std_logic_vector(resize(unsigned(hz_slider),8));
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
@@ -262,10 +262,10 @@ begin
 	textbox_g : if textbox_width/=0 generate
 		scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
 		generic map (
-			max_delay     => max_delay, 
 			latency       => segmment_latency+input_latency,
 			layout        => layout)
 		port map (
+			tp => tp,
 			rgtr_clk      => rgtr_clk,
 			rgtr_dv       => rgtr_dv,
 			rgtr_id       => rgtr_id,
@@ -276,9 +276,9 @@ begin
 			gain_cid      => gain_cid,
 			gain_ids      => gain_ids,
 
-			hz_dv         => hz_dv,
-			hz_scale      => time_scale,
-			hz_offset     => time_offset,
+			time_dv       => hz_dv,
+			time_id       => time_scale,
+			time_offset   => time_offset,
 
 			video_clk     => video_clk,
 			video_hcntr   => textbox_x,

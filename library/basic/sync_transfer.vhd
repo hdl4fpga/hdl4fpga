@@ -47,6 +47,36 @@ architecture def of sync_transfer is
 	signal rd_rdy  : std_logic_vector(rd_req'range);
 	signal wr_addr : std_logic_vector(rd_req'range);
 	signal rd_addr : std_logic_vector(rd_rdy'range);
+
+	subtype gray is std_logic_vector;
+	function inc (
+		constant arg : gray)
+		return gray is
+		variable a : std_logic_vector(arg'length-1 downto 0);
+		variable t : std_logic_vector(a'range) := (others => '0');
+	begin
+		a := std_logic_vector(arg);
+		for i in a'reverse_range loop
+			for j in i to a'left loop
+				t(i) := t(i) xor a(j);
+			end loop;
+			t(i) := not t(i);
+			if i > 0 then
+				for j in 0 to i-1 loop
+					t(i) := t(i) and (not t(j));
+				end loop;
+			end if;
+		end loop;
+		if t'length > 1 then
+			if t(a'left-1 downto 0)=(1 to a'left => '0') then
+				t(a'left) := '1';
+			end if;
+		else
+			t(a'left) := '1';
+		end if;
+		return gray(a xor t);
+	end function;
+
 begin
 
 	process (src_clk)

@@ -149,7 +149,7 @@ begin
 		signal output_ena    : std_logic_vector(0 to inputs-1);
 	begin
 
-		scopeio_rgtrgain_e : entity hdl4fpga.scopeio_rgtrgain
+		vtscale_e : entity hdl4fpga.scopeio_rgtrvtscale
 		generic map (
 			rgtr      => false)
 		port map (
@@ -158,10 +158,10 @@ begin
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_revs,
 
-			gain_ena  => gain_ena,
-			gain_dv   => gain_dv,
-			chan_id   => chan_id,
-			gain_id   => gain_id);
+			vtscale_ena => gain_ena,
+			vtscale_dv  => gain_dv,
+			vtchan_id  => chan_id,
+			vtscale_id  => gain_id);
 		
 		process(sio_clk)
 		begin
@@ -169,7 +169,7 @@ begin
 				if gain_ena='1' then
 					gain_cid <= chan_id;
 					if trigger_freeze='0' then
-						gain_ids <= byte2word(gain_ids, chan_id, gain_id);
+						gain_ids <= replace(gain_ids, chan_id, gain_id);
 					end if;
 				end if;
 			end if;

@@ -216,6 +216,12 @@ package scopeiopkg is
 	function get_prefix1235 (
 		constant unit : real)
 		return string;
+
+	function replace (
+		constant word : std_logic_vector;
+		constant addr : std_logic_vector;
+		constant data : std_logic_vector)
+		return std_logic_vector;
 end;
 
 package body scopeiopkg is
@@ -386,6 +392,26 @@ package body scopeiopkg is
 			end loop;
 		end if;
 		return (0 to 0 => '-');
+	end;
+
+	function replace (
+		constant word : std_logic_vector;
+		constant addr : std_logic_vector;
+		constant data : std_logic_vector)
+		return std_logic_vector is
+		variable retval : unsigned(0 to data'length*((word'length+data'length-1)/data'length)-1);
+	begin
+		assert word'length mod data'length=0
+		report "replace"
+		severity failure;
+		retval(0 to word'length-1) := unsigned(word);
+		for i in 0 to retval'length/data'length-1 loop
+			if to_unsigned(i,addr'length)=unsigned(addr) then
+				retval(0 to data'length-1) := unsigned(data);
+			end if;
+			retval := retval rol data'length;
+		end loop;
+		return std_logic_vector(retval(0 to word'length-1));
 	end;
 
 end;

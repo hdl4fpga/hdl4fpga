@@ -50,6 +50,25 @@ entity uart_rx is
 end;
 
 architecture def of uart_rx is
+	function ispower2(
+		constant value : natural)
+		return boolean is
+		variable div  : natural;
+		variable rmdr : natural;
+	begin
+		rmdr := 0;
+		div  := value;
+		while div /= 0 loop
+			exit when rmdr /= 0;
+			rmdr := div mod 2;
+			div  := div  /  2;
+		end loop;
+		if div /= 0 then
+			return false;
+		end if;
+		return true;
+	end;
+
 	type uart_states is (idle_s, start_s, data_s, stop_s);
 	signal uart_state : uart_states;
 

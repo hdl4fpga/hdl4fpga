@@ -24,6 +24,19 @@ end;
 
 architecture beh of scopeio_downsampler is
 
+	function to_bitrom (
+		constant data : integer_vector;
+		constant size : natural)
+		return std_logic_vector is
+		alias    dataa  : integer_vector(0 to data'length-1) is data;
+		variable retval : signed(0 to data'length*size-1);
+	begin
+		for i in dataa'range loop
+			retval(i*size to (i+1)*size-1) := to_signed(dataa(i), size);
+		end loop;
+		return std_logic_vector(retval);
+	end;
+
 	function adjust (
 		constant arg : natural_vector)
 		return integer_vector is

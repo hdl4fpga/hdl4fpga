@@ -201,7 +201,6 @@ begin
 
 		constant siobyte_size : natural := 8;
 		constant dataout_size : natural := 2*1024;
-		constant fifo_gray    : boolean := false;
 
 		constant rid_ack      : std_logic_vector := x"01";
 		constant rid_dmaaddr  : std_logic_vector := x"16";
@@ -381,8 +380,7 @@ begin
 				async_mode => true,
 				latency    => latencies_tab(profile).dmaio,
 				check_sov  => true,
-				check_dov  => true,
-				gray_code  => false)
+				check_dov  => true)
 			port map (
 				src_clk    => sin_clk,
 				src_frm    => ctlr_inirdy,
@@ -585,7 +583,6 @@ begin
 					max_depth  => (dataout_size/(ctlr_di'length/siobyte_size)),
 					-- async_mode => false,
 					latency    => 0,
-					gray_code  => false,
 					check_sov  => false,
 					check_dov  => true)
 				port map (

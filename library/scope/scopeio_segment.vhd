@@ -75,7 +75,7 @@ architecture def of scopeio_segment is
 
 begin
 
-	rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+	rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtoffset
 	port map (
 		rgtr_clk  => rgtr_clk,
 		rgtr_dv   => rgtr_dv,
@@ -90,7 +90,7 @@ begin
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
-			vt_offsets <= byte2word(vt_offsets, vt_chanid, vt_offset);
+			vt_offsets <= replace(vt_offsets, vt_chanid, vt_offset);
 		end if;
 	end process;
 

@@ -39,8 +39,7 @@ entity fifo is
 		dst_offset : natural := 0;
 		src_offset : natural := 0;
 		check_sov  : boolean := false;
-		check_dov  : boolean := false;
-		gray_code  : boolean := false);
+		check_dov  : boolean := false);
 	port (
 		src_clk    : in  std_logic;
 		src_mode   : in  std_logic := '0';
@@ -327,14 +326,7 @@ begin
 				succ := wr_cntr;
 				if src_irdy='1' then
 					if src_trdy='1' or not check_sov then
-						if gray_code and addr_length > 1 then
-							if wr_cntr(1 to addr_length)=to_unsigned(2**(addr_length-1), addr_length) then
-								succ(0) := not succ(0);
-							end if;
-							succ(1 to addr_length) := unsigned(inc(gray(succ(1 to addr_length))));
-						else
-							succ := succ + 1;
-						end if;
+						succ := succ + 1;
 					end if;
 					if src_trdy='0' and not check_sov then
 						overflow <= '1';
@@ -370,14 +362,7 @@ begin
 			else
 				if feed_ena='1' then
 					if dst_irdy1='1' or not check_dov then
-						if gray_code and addr_length > 1 then
-							if rd_cntr(1 to addr_length)=to_unsigned(2**(addr_length-1), addr_length) then
-								rd_cntr(0) <= not rd_cntr(0);
-							end if;
-							rd_cntr(1 to addr_length) <= unsigned(inc(gray(rd_cntr(1 to addr_length))));
-						else
-							rd_cntr <= rd_cntr + 1;
-						end if;
+						rd_cntr <= rd_cntr + 1;
 					end if;
 				end if;
 			end if;

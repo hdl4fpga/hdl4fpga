@@ -22,7 +22,7 @@
 @SET PATH=C:\Python27;%PATH%
 DEL package-lock.json
 CALL npm install nw-gyp
-CALL npm install nw --nwjs_build_type=sdk
+CALL npm install --save-dev "nw@sdk"
 CALL npm view nw version > nwjs.ver
 CALL npm install ----msvs_version=2019
 CALL npm install serialport
