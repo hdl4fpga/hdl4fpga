@@ -85,6 +85,11 @@ package hdo is
 		constant key : string)
 		return hdo;
 
+	procedure escaped (
+		variable retval : inout string;
+		variable length : inout natural;
+		constant obj    : in    string);
+
 	function escaped (
 		constant obj : string)
 		return string;
@@ -939,11 +944,10 @@ package body hdo is
 		return resolve(string(obj) & key);
 	end;
 
-	function escaped (
-		constant obj : string)
-		return string is
-		variable length : natural;
-		variable retval : string(1 to obj'length);
+	procedure escaped (
+		variable retval : inout string;
+		variable length : inout natural;
+		constant obj    : in    string) is
 		variable escape : boolean;
 		variable bkslh  : boolean;
 	begin
@@ -971,6 +975,16 @@ package body hdo is
 				escape := not escape;
 			end if;
 		end loop;
+	end;
+
+	function escaped (
+		constant obj : string)
+		return string is
+		variable length : natural;
+		variable retval : string(1 to obj'length);
+		variable escape : boolean;
+	begin
+		escaped(retval, length, obj);
 		if length/=0 then
 			return retval(retval'left to retval'left+length-1);
 		else
