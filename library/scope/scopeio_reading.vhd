@@ -298,7 +298,7 @@ begin
 
 	process (rgtr_dv, rgtr_clk)
 
-		function textrom_init (
+		function textbase_init (
 			constant vt_labels : string;
 			constant width : natural)
 			return string is
@@ -319,24 +319,26 @@ begin
 			return data(data'left to data'left+left-1);
 		end;
 
-		function textptr_init (
-			constant xxx : string)
+		function textlut_init (
+			constant data : string)
 			return natural_vector is
-			variable ptr : natural;
-			variable yyy : natural_vector(0 to inputs);
+			variable ptr  : natural;
+			variable tbl  : natural_vector(0 to inputs);
 		begin
-			ptr := xxx'left; 
+			ptr := data'left; 
 			for i in 0 to inputs loop
-				yyy(i) := ptr;
-				report "****** " & natural'image(yyy(i));
-				ptr := ptr + character'pos(xxx(ptr));
+				tbl(i) := ptr;
+				assert false
+					report "table element " & natural'image(tbl(i))
+					severity note;
+				ptr := ptr + character'pos(data(ptr));
 			end loop;
-			return yyy;
+			return tbl;
 		end;
 
 		constant width   : natural := 4;
-		constant textrom : string := textrom_init(vt_labels, width);
-		constant zzz : natural_vector := textptr_init(textrom);
+		constant textrom : string := textbase_init(vt_labels, width);
+		constant zzz : natural_vector := textlut_init(textrom);
 		variable cptr    : natural range 1 to inputs*(width+1)+(hz_label'length+1);
 
 	begin
