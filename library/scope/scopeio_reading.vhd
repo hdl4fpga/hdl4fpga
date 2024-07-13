@@ -299,25 +299,44 @@ begin
 	process (rgtr_dv, rgtr_clk)
 
 		function textrom_init (
+			constant vt_labels : string;
 			constant width : natural)
 			return string is
-			variable left  : natural;
-			variable right : natural;
-			variable data  : string(1 to inputs*(width+1)+hz_label'length+1);
+			variable left   : natural;
+			variable length : natural;
+			variable data   : string(1 to vt_labels'length);
 		begin
-			left  := data'left;
+			left := data'left;
 			for i in 0 to inputs-1 loop
-				right := left + (width+1)-1;
-				data(left to right) := textalign(escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")), width) & NUL;
-				left  := left  + (width+1);
+				escaped(data((left+1) to data'length), length, escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")));
+				data(left) := character'val((length+1) mod (character'pos(character'high)+1));
+				left := (left+1) + length;
 			end loop;
-			right := left + (hz_label'length+1)-1;
-			data(left to right) := hz_label & NUL;
-			return data;
+			data((left+1) to (left+1)+hz_label'length-1) := hz_label;
+			length := hz_label'length;
+			data(left) := character'val((length+1) mod (character'pos(character'high)+1));
+			left := left + hz_label'length;
+			return data(data'left to data'left+left-1);
+		end;
+
+		function textptr_init (
+			constant xxx : string)
+			return natural_vector is
+			variable ptr : natural;
+			variable yyy : natural_vector(0 to inputs);
+		begin
+			ptr := xxx'left; 
+			for i in 0 to inputs loop
+				yyy(i) := ptr;
+				report "****** " & natural'image(yyy(i));
+				ptr := ptr + character'pos(xxx(ptr));
+			end loop;
+			return yyy;
 		end;
 
 		constant width   : natural := 4;
-		constant textrom : string := textrom_init(width);
+		constant textrom : string := textrom_init(vt_labels, width);
+		constant zzz : natural_vector := textptr_init(textrom);
 		variable cptr    : natural range 1 to inputs*(width+1)+(hz_label'length+1);
 
 	begin
