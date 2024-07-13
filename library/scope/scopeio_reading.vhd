@@ -338,8 +338,8 @@ begin
 
 		constant textrom : string := textbase_init(vt_labels);
 		constant texttbl : natural_vector := textlut_init(textrom);
-		variable ptr     : natural range 1 to textrom'length;
-		variable xxx     : natural range 1 to textrom'length;
+		variable ptr     : natural range textrom'range;
+		variable xxx     : natural range textrom'range;
 
 	begin
 		if rising_edge(rgtr_clk) then
