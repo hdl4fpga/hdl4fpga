@@ -308,7 +308,7 @@ begin
 		begin
 			left := data'left;
 			for i in 0 to inputs-1 loop
-				escaped(data((left+1) to data'length), length, escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")));
+				escaped(data((left+1) to data'length), length, hdo(vt_labels)**("["&natural'image(i)&"].text"));
 				data(left) := character'val((length+1) mod (character'pos(character'high)+1));
 				left := (left+1) + length;
 			end loop;

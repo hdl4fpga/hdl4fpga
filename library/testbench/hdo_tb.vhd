@@ -200,7 +200,7 @@ architecture hdo_tb of testbench is
 			"       horizontal : 1,        " &
 			"       background-color : 0xff_00_00_00}," &
 			"  vt : [                      " &
-			"   { text  : 'V_P(+) V_N(-)', " &
+			"   { text  : 'V_P(+)    V_N(-)i    ', " &
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff},  " &
 			"   { text  : 'A6(+)  A7(-)',  " &
@@ -221,7 +221,7 @@ architecture hdo_tb of testbench is
 			"   { text  : 'A2(+)',       " &
 			"     step  : " & real'image(3.32*vt_step) & "," &
 			"     color : 0xff_00_00_ff},  " & -- vt(6)
-			"   { text  : 'A3(+)',       " &
+			"   { text  : 'A3(+)           ',       " &
 			"     step  : " & real'image(3.32*vt_step) & "," &
 			"     color : 0xff_ff_ff_ff},  " &  -- vt(7)
 			"   { text  : 'A4(+)',           " &
@@ -249,11 +249,17 @@ begin
     process 
 		constant xx : string  := "{ h : \'a(0)\\\'s(1) }";
 		constant xxx : string := hdo(compact(xx))**".h";
+		variable yyy : string(layout'range);
+		variable l : natural;
+		variable s : natural;
     begin
         -- report "VALUE : " & ''' & real'image(test**"[5].top") & ''';
         -- report "VALUE : " & ''' & ((hso(layout)**".vt")**"[0]")**".step" & ''';
+        escaped(yyy, l, compact(layout)**".vt[1].text");
 
-        report '"' & compact(xx) & '"';
+        --report '"' & escaped(compact(layout)**".vt[0].text") & '"';
+		report "**************";
+        report '"' & yyy(yyy'left to yyy'left+l-1) & '"';
         wait;
     end process;
 end;
