@@ -339,13 +339,13 @@ begin
 		constant textrom : string := textbase_init(vt_labels);
 		constant texttbl : natural_vector := textlut_init(textrom);
 		variable ptr     : natural range textrom'range;
-		variable xxx     : natural range textrom'range;
+		variable fsh     : natural range textrom'range;
 
 	begin
 		if rising_edge(rgtr_clk) then
 			str_code <= to_ascii(textrom(ptr));
 			if (str_rdy xor str_req)='1' then
-				if ptr < xxx then
+				if ptr < fsh then
 					str_frm <= '1';
 				else
 					str_frm <= '0';
@@ -354,7 +354,7 @@ begin
 				ptr := ptr + 1;
 			else
 				ptr := texttbl(wdt_id) + 1;
-				xxx := texttbl(wdt_id) + character'pos(textrom(texttbl(wdt_id)));
+				fsh := texttbl(wdt_id) + character'pos(textrom(texttbl(wdt_id)));
 			end if;
 		end if;
 	end process;
