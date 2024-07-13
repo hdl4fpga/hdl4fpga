@@ -298,41 +298,63 @@ begin
 
 	process (rgtr_dv, rgtr_clk)
 
-		function textrom_init (
-			constant width : natural)
+		function textbase_init (
+			constant vt_labels : string;
+			constant width : natural := 0)
 			return string is
-			variable left  : natural;
-			variable right : natural;
-			variable data  : string(1 to inputs*(width+1)+hz_label'length+1);
+			variable left   : natural;
+			variable length : natural;
+			variable data   : string(1 to vt_labels'length);
 		begin
-			left  := data'left;
+			left := data'left;
 			for i in 0 to inputs-1 loop
-				right := left + (width+1)-1;
-				data(left to right) := textalign(escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")), width) & NUL;
-				left  := left  + (width+1);
+				escaped(data((left+1) to data'length), length, hdo(vt_labels)**("["&natural'image(i)&"].text"));
+				data(left) := character'val((length+1) mod (character'pos(character'high)+1));
+				left := (left+1) + length;
 			end loop;
-			right := left + (hz_label'length+1)-1;
-			data(left to right) := hz_label & NUL;
-			return data;
+			data((left+1) to (left+1)+hz_label'length-1) := hz_label;
+			length := hz_label'length;
+			data(left) := character'val((length+1) mod (character'pos(character'high)+1));
+			left := left + hz_label'length;
+			return data(data'left to data'left+left-1);
 		end;
 
-		constant width   : natural := 4;
-		constant textrom : string := textrom_init(width);
-		variable cptr    : natural range 1 to inputs*(width+1)+(hz_label'length+1);
+		function textlut_init (
+			constant data : string)
+			return natural_vector is
+			variable ptr  : natural;
+			variable tbl  : natural_vector(0 to inputs);
+		begin
+			ptr := data'left; 
+			for i in 0 to inputs loop
+				tbl(i) := ptr;
+				assert false
+					report "table element " & natural'image(tbl(i))
+					severity note;
+				ptr := ptr + character'pos(data(ptr));
+			end loop;
+			return tbl;
+		end;
+
+		constant textrom : string := textbase_init(vt_labels);
+		constant texttbl : natural_vector := textlut_init(textrom);
+		variable ptr     : natural range textrom'range;
+		variable fsh     : natural range textrom'range;
 
 	begin
 		if rising_edge(rgtr_clk) then
-			str_code <= to_ascii(textrom(cptr));
+			str_code <= to_ascii(textrom(ptr));
 			if (str_rdy xor str_req)='1' then
-				if textrom(cptr)=NUL then
+				if ptr < fsh then
+					str_frm <= '1';
+				else
 					str_frm <= '0';
 					str_rdy <= str_req;
-				else
-					str_frm <= '1';
 				end if;
-				cptr := cptr + 1;
+				ptr := ptr + 1;
 			else
-				cptr := (width+1)*wdt_id+1;
+				ptr := texttbl(wdt_id) + 1;
+				fsh := texttbl(wdt_id) + character'pos(textrom(texttbl(wdt_id)));
 			end if;
 		end if;
 	end process;
