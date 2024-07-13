@@ -300,7 +300,7 @@ begin
 
 		function textbase_init (
 			constant vt_labels : string;
-			constant width : natural)
+			constant width : natural := 0)
 			return string is
 			variable left   : natural;
 			variable length : natural;
@@ -336,24 +336,25 @@ begin
 			return tbl;
 		end;
 
-		constant width   : natural := 4;
-		constant textrom : string := textbase_init(vt_labels, width);
-		constant zzz : natural_vector := textlut_init(textrom);
-		variable cptr    : natural range 1 to inputs*(width+1)+(hz_label'length+1);
+		constant textrom : string := textbase_init(vt_labels);
+		constant texttbl : natural_vector := textlut_init(textrom);
+		variable ptr     : natural range 1 to textrom'length;
+		variable xxx     : natural range 1 to textrom'length;
 
 	begin
 		if rising_edge(rgtr_clk) then
-			str_code <= to_ascii(textrom(cptr));
+			str_code <= to_ascii(textrom(ptr));
 			if (str_rdy xor str_req)='1' then
-				if textrom(cptr)=NUL then
+				if ptr < xxx then
+					str_frm <= '1';
+				else
 					str_frm <= '0';
 					str_rdy <= str_req;
-				else
-					str_frm <= '1';
 				end if;
-				cptr := cptr + 1;
+				ptr := ptr + 1;
 			else
-				cptr := (width+1)*wdt_id+1;
+				ptr := texttbl(wdt_id) + 1;
+				xxx := texttbl(wdt_id) + character'pos(textrom(texttbl(wdt_id)));
 			end if;
 		end if;
 	end process;
