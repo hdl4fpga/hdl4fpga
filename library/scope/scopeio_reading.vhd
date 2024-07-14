@@ -140,6 +140,7 @@ architecture def of scopeio_reading is
 	signal btod_rdys      : std_logic_vector(0 to 1) := (others => '0');
 	signal str_reqs       : std_logic_vector(0 to 1) := (others => '0');
 	signal str_rdys       : std_logic_vector(0 to 1) := (others => '0');
+	signal str_ids        : natural_vector(0 to 1);
 
 	signal b  : signed(0 to offset'length-1);
 	type b_vector is array(0 to 1) of signed(b'range);
@@ -310,23 +311,23 @@ begin
 			left := data'left;
 			for i in 0 to inputs-1 loop
 				escaped(data((left+1) to data'length), length, hdo(vt_labels)**("["&natural'image(i)&"].text"));
-				data(left) := character'val((length+1) mod (character'pos(character'high)+1));
+				data(left) := character'val(length-1);
 				left := (left+1) + length;
 			end loop;
 			data((left+1) to (left+1)+hz_label'length-1) := hz_label;
 			length := hz_label'length;
-			data(left) := character'val((length+1) mod (character'pos(character'high)+1));
+			data(left) := character'val(length-1);
 			left := left + hz_label'length;
 			for i in vt_pfxs'range loop
 				left := left + 1;
 				data((left+1) to (left+1)+2-1) := vt_pfxs(i) & 'V';
-				data(left) := character'val(2+1);
+				data(left) := character'val(2);
 				left := left + 2;
 			end loop;
 			for i in hz_pfxs'range loop
 				left := left + 1;
 				data((left+1) to (left+1)+2-1) := hz_pfxs(i) & 's';
-				data(left) := character'val(2+1);
+				data(left) := character'val(2);
 				left := left + 2;
 			end loop;
 			return data(data'left to data'left+left-1);
@@ -344,7 +345,7 @@ begin
 				assert false
 					report "table element " & natural'image(tbl(i))
 					severity note;
-				ptr := ptr + character'pos(data(ptr));
+				ptr := ptr + character'pos(data(ptr))+2;
 			end loop;
 			return tbl;
 		end;
@@ -352,23 +353,32 @@ begin
 		constant textrom : string := textbase_init(vt_labels);
 		constant texttbl : natural_vector := textlut_init(textrom);
 		variable ptr     : natural range textrom'left to textrom'right; -- Xilinx ISE internal error bug range textrom'range;
-		variable fsh     : natural range textrom'left to textrom'right; -- Xilinx ISE internal error bug range textrom'range;
+		variable fsh     : integer range -1 to 255;
 
+		type states is (s_init, s_run);
+		variable state : states;
 	begin
 		if rising_edge(rgtr_clk) then
-			str_code <= to_ascii(textrom(ptr));
 			if (str_rdy xor str_req)='1' then
-				if ptr < fsh then
+				case state is 
+				when s_init =>
+					ptr   := texttbl(wdt_id);
+					fsh   := character'pos(textrom(texttbl(wdt_id)));
 					str_frm <= '1';
-				else
-					str_frm <= '0';
-					str_rdy <= str_req;
-				end if;
-				ptr := ptr + 1;
+					state := s_run;
+				when s_run =>
+					if fsh < 0  then
+						str_frm <= '0';
+						str_rdy <= str_req;
+					end if;
+				end case;
 			else
-				ptr := texttbl(wdt_id) + 1;
-				fsh := texttbl(wdt_id) + character'pos(textrom(texttbl(wdt_id)));
+				str_frm <= '0';
+				state := s_init;
 			end if;
+			ptr := ptr + 1;
+			fsh := fsh - 1;
+			str_code <= to_ascii(textrom(ptr));
 		end if;
 	end process;
 
@@ -442,6 +452,7 @@ begin
 		alias mul_rdy  is mul_rdys(axis_id);
 		alias str_req  is str_reqs(axis_id);
 		alias str_rdy  is str_rdys(axis_id);
+		alias str_id   is str_ids(axis_id);
 		type states is (s_label, s_offset, s_unit, s_scale, s_wait);
 		variable state : states;
 	begin
@@ -490,6 +501,7 @@ begin
 		alias mul_rdy   is mul_rdys(tgr_id);
 		alias str_req   is str_reqs(tgr_id);
 		alias str_rdy   is str_rdys(tgr_id);
+		alias str_id    is str_ids(tgr_id);
 	begin
 		if rising_edge(rgtr_clk) then
 			case state is
