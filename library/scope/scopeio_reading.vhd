@@ -99,6 +99,7 @@ architecture def of scopeio_reading is
 	signal vt_wdtrow      : unsigned(wdt_row'range);
 	signal vtwdt_req      : std_logic;
 	signal vtwdt_rdy      : std_logic;
+	signal vt_uid         : natural;
 
 	signal tgr_sht        : signed(4-1 downto 0);
 	signal tgr_dec        : signed(4-1 downto 0);
@@ -140,6 +141,7 @@ architecture def of scopeio_reading is
 	signal btod_rdys      : std_logic_vector(0 to 1) := (others => '0');
 	signal str_reqs       : std_logic_vector(0 to 1) := (others => '0');
 	signal str_rdys       : std_logic_vector(0 to 1) := (others => '0');
+	signal str_id         : natural;
 	signal str_ids        : natural_vector(0 to 1);
 
 	signal b  : signed(0 to offset'length-1);
@@ -248,6 +250,7 @@ begin
 					vt_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_offset  <= signed(tbl_offset);
+					vt_uid     <= (inputs+1)+scaleid;
 					vt_wdtid   <= to_integer(unsigned(vtl_scalecid));
 					vt_wdtrow  <= resize(unsigned(vtl_scalecid), vt_wdtrow'length)+2;
 					ref_req    := not ref_rdy;
@@ -258,6 +261,7 @@ begin
 					vt_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_offset  <= signed(vtl_offset);
+					vt_uid     <= (inputs+1)+scaleid;
 					vt_wdtid   <= to_integer(unsigned(vtl_offsetcid));
 					vt_wdtrow  <= resize(unsigned(vtl_offsetcid), vt_wdtrow'length)+2;
 					ref_req    := not ref_rdy;
@@ -321,13 +325,13 @@ begin
 			for i in vt_pfxs'range loop
 				left := left + 1;
 				data((left+1) to (left+1)+2-1) := vt_pfxs(i) & 'V';
-				data(left) := character'val(2);
+				data(left) := character'val(2-1);
 				left := left + 2;
 			end loop;
 			for i in hz_pfxs'range loop
 				left := left + 1;
 				data((left+1) to (left+1)+2-1) := hz_pfxs(i) & 's';
-				data(left) := character'val(2);
+				data(left) := character'val(2-1);
 				left := left + 2;
 			end loop;
 			return data(data'left to data'left+left-1);
@@ -337,17 +341,21 @@ begin
 			constant data : string)
 			return natural_vector is
 			variable ptr  : natural;
-			variable tbl  : natural_vector(0 to inputs);
+			variable n    : natural;
+			variable tbl  : natural_vector(0 to data'length/2-1);
 		begin
 			ptr := data'left; 
-			for i in 0 to inputs loop
+			n   := 0;
+			for i in tbl'range loop
+				exit when ptr > data'length;
 				tbl(i) := ptr;
 				assert false
 					report "table element " & natural'image(tbl(i))
 					severity note;
 				ptr := ptr + character'pos(data(ptr))+2;
+				n   := n + 1;
 			end loop;
-			return tbl;
+			return tbl(0 to n-1);
 		end;
 
 		constant textrom : string := textbase_init(vt_labels);
@@ -362,17 +370,22 @@ begin
 			if (str_rdy xor str_req)='1' then
 				case state is 
 				when s_init =>
-					ptr   := texttbl(wdt_id);
-					fsh   := character'pos(textrom(texttbl(wdt_id)));
+					ptr   := texttbl(str_id);
+					fsh   := character'pos(textrom(texttbl(str_id)));
 					str_frm <= '1';
 					state := s_run;
 				when s_run =>
 					if fsh < 0  then
-						str_frm <= '0';
 						str_rdy <= str_req;
+						ptr   := texttbl(str_id);
+						fsh   := character'pos(textrom(texttbl(str_id)));
+						str_frm <= '0';
+						state := s_init;
 					end if;
 				end case;
 			else
+				ptr   := texttbl(str_id);
+				fsh   := character'pos(textrom(texttbl(str_id)));
 				str_frm <= '0';
 				state := s_init;
 			end if;
@@ -463,6 +476,7 @@ begin
 				if (axis_rdy xor axis_req)='1' then
 					mul_req  <= not mul_rdy;
 					str_req  <= not str_rdy;
+					str_id   <= wdt_id;
 					state    := s_offset;
 				end if;
 			when s_offset =>
@@ -473,6 +487,8 @@ begin
 			when s_unit =>
 				bs(axis_id)<= to_signed(grid_unit, b'length);
 				if (btod_req xor btod_rdy)='0' then
+					str_req <= not str_rdy;
+					str_id  <= vt_uid;
 					mul_req <= not mul_rdy;
 					state   := s_scale;
 				end if;
@@ -538,6 +554,7 @@ begin
 				for i in str_reqs'range loop
 					if (str_rdys(i) xor str_reqs(i))='1' then
 						id := i;
+						str_id  <= str_ids(i);
 						str_req <= not str_rdy;
 						state := s_req;
 						exit;
