@@ -12,7 +12,7 @@ entity scopeio_reading is
 	generic (
 		layout    : string);
 	port (
-		tp            : out std_logic_vector(1 to 32);
+		tp        : out std_logic_vector(1 to 32);
 		rgtr_clk  : in  std_logic;
 		rgtr_dv   : in  std_logic;
 		rgtr_id   : in  std_logic_vector(8-1 downto 0);
@@ -338,8 +338,8 @@ begin
 
 		constant textrom : string := textbase_init(vt_labels);
 		constant texttbl : natural_vector := textlut_init(textrom);
-		variable ptr     : natural range textrom'range;
-		variable fsh     : natural range textrom'range;
+		variable ptr     : natural range textrom'left to textrom'right; -- Xilinx ISE internal error bug range textrom'range;
+		variable fsh     : natural range textrom'left to textrom'right; -- Xilinx ISE internal error bug range textrom'range;
 
 	begin
 		if rising_edge(rgtr_clk) then
