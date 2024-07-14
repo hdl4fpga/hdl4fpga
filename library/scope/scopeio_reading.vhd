@@ -44,6 +44,7 @@ entity scopeio_reading is
 	constant hz_sfcnds     : natural_vector := get_significand1245(hz_unit);
 	constant hz_shts       : integer_vector := get_shr1245(hz_unit);
 	constant hz_pnts       : integer_vector := get_characteristic1245(hz_unit);
+	constant hz_pfxs       : string         := get_prefix1235(hz_unit);
 
 	constant sfcnd_length  : natural := max(unsigned_num_bits(max(vt_sfcnds)), unsigned_num_bits(max(hz_sfcnds)));
 
@@ -316,6 +317,18 @@ begin
 			length := hz_label'length;
 			data(left) := character'val((length+1) mod (character'pos(character'high)+1));
 			left := left + hz_label'length;
+			for i in vt_pfxs'range loop
+				left := left + 1;
+				data((left+1) to (left+1)+2-1) := vt_pfxs(i) & 'V';
+				data(left) := character'val(2+1);
+				left := left + 2;
+			end loop;
+			for i in hz_pfxs'range loop
+				left := left + 1;
+				data((left+1) to (left+1)+2-1) := hz_pfxs(i) & 's';
+				data(left) := character'val(2+1);
+				left := left + 2;
+			end loop;
 			return data(data'left to data'left+left-1);
 		end;
 
