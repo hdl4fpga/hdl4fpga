@@ -119,6 +119,7 @@ architecture def of scopeio_reading is
 	signal hz_wdtrow      : unsigned(wdt_row'range);
 	signal hzwdt_req      : std_logic;
 	signal hzwdt_rdy      : std_logic;
+	signal hz_uid         : natural;
 
 	signal btod_req       : std_logic;
 	signal btod_rdy       : std_logic;
@@ -295,6 +296,7 @@ begin
 					hz_scale   <= to_unsigned(hz_sfcnds(timeid mod 4), hz_scale'length);
 					hz_offset  <= signed(hztl_offset);
 					hz_wdtrow  <= to_unsigned(0, hz_wdtrow'length);
+					hz_uid     <= (inputs+1+vt_pfxs'length)+timeid;
 					hz_wdtid   <= inputs+0;
 					hzwdt_req  <= not hzwdt_rdy;
 				end if;
@@ -488,7 +490,12 @@ begin
 				bs(axis_id)<= to_signed(grid_unit, b'length);
 				if (btod_req xor btod_rdy)='0' then
 					str_req <= not str_rdy;
-					str_id  <= vt_uid;
+					case wdt_id is
+					when inputs =>
+						str_id  <= hz_uid;
+					when others =>
+						str_id  <= vt_uid;
+					end case;
 					mul_req <= not mul_rdy;
 					state   := s_scale;
 				end if;
