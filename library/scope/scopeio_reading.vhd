@@ -251,7 +251,6 @@ begin
 					vt_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_offset  <= signed(tbl_offset);
-					vt_uid     <= (inputs+1)+scaleid;
 					vt_wdtid   <= to_integer(unsigned(vtl_scalecid));
 					vt_wdtrow  <= resize(unsigned(vtl_scalecid), vt_wdtrow'length)+2;
 					ref_req    := not ref_rdy;
@@ -262,8 +261,8 @@ begin
 					vt_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_offset  <= signed(vtl_offset);
-					vt_uid     <= (inputs+1)+scaleid;
 					vt_wdtid   <= to_integer(unsigned(vtl_offsetcid));
+					vt_uid     <= (inputs+1)+scaleid;
 					vt_wdtrow  <= resize(unsigned(vtl_offsetcid), vt_wdtrow'length)+2;
 					ref_req    := not ref_rdy;
 					vtwdt_req  <= not vtwdt_rdy;
