@@ -12,7 +12,7 @@ entity scopeio_reading is
 	generic (
 		layout    : string);
 	port (
-		tp            : out std_logic_vector(1 to 32);
+		tp        : out std_logic_vector(1 to 32);
 		rgtr_clk  : in  std_logic;
 		rgtr_dv   : in  std_logic;
 		rgtr_id   : in  std_logic_vector(8-1 downto 0);
@@ -44,6 +44,7 @@ entity scopeio_reading is
 	constant hz_sfcnds     : natural_vector := get_significand1245(hz_unit);
 	constant hz_shts       : integer_vector := get_shr1245(hz_unit);
 	constant hz_pnts       : integer_vector := get_characteristic1245(hz_unit);
+	constant hz_pfxs       : string         := get_prefix1235(hz_unit);
 
 	constant sfcnd_length  : natural := max(unsigned_num_bits(max(vt_sfcnds)), unsigned_num_bits(max(hz_sfcnds)));
 
@@ -98,6 +99,7 @@ architecture def of scopeio_reading is
 	signal vt_wdtrow      : unsigned(wdt_row'range);
 	signal vtwdt_req      : std_logic;
 	signal vtwdt_rdy      : std_logic;
+	signal vt_uid         : natural;
 
 	signal tgr_sht        : signed(4-1 downto 0);
 	signal tgr_dec        : signed(4-1 downto 0);
@@ -117,6 +119,7 @@ architecture def of scopeio_reading is
 	signal hz_wdtrow      : unsigned(wdt_row'range);
 	signal hzwdt_req      : std_logic;
 	signal hzwdt_rdy      : std_logic;
+	signal hz_uid         : natural;
 
 	signal btod_req       : std_logic;
 	signal btod_rdy       : std_logic;
@@ -139,6 +142,8 @@ architecture def of scopeio_reading is
 	signal btod_rdys      : std_logic_vector(0 to 1) := (others => '0');
 	signal str_reqs       : std_logic_vector(0 to 1) := (others => '0');
 	signal str_rdys       : std_logic_vector(0 to 1) := (others => '0');
+	signal str_id         : natural;
+	signal str_ids        : natural_vector(0 to 1);
 
 	signal b  : signed(0 to offset'length-1);
 	type b_vector is array(0 to 1) of signed(b'range);
@@ -150,11 +155,6 @@ architecture def of scopeio_reading is
 	signal sign : std_logic;
 begin
 
-	--  tp <= (others => '1');
-		tp(1) <= txt_req;
-		tp(2) <= txt_rdy;
-		tp(3) <= vtwdt_req;
-		tp(4) <= vtwdt_rdy;
 	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
 	generic map (
 		rgtr      => false)
@@ -246,6 +246,7 @@ begin
 					vt_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_offset  <= signed(tbl_offset);
+					vt_uid     <= (inputs+1)+scaleid;
 					vt_wdtid   <= to_integer(unsigned(vtl_scalecid));
 					vt_wdtrow  <= resize(unsigned(vtl_scalecid), vt_wdtrow'length)+2;
 					ref_req    := not ref_rdy;
@@ -257,6 +258,7 @@ begin
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_offset  <= signed(vtl_offset);
 					vt_wdtid   <= to_integer(unsigned(vtl_offsetcid));
+					vt_uid     <= (inputs+1)+scaleid;
 					vt_wdtrow  <= resize(unsigned(vtl_offsetcid), vt_wdtrow'length)+2;
 					ref_req    := not ref_rdy;
 					vtwdt_req  <= not vtwdt_rdy;
@@ -267,7 +269,7 @@ begin
 					tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					tgr_offset  <= -signed(trigger_level);
-					tgr_wdtid   <= to_integer(unsigned(trigger_chanid));
+					tgr_wdtid   <= inputs+1;
 					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
 					tgrwdt_req  <= not tgrwdt_rdy;
 				elsif (ref_rdy xor ref_req)='1' then
@@ -276,7 +278,7 @@ begin
 						tgr_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
 						tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 						tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-						tgr_wdtid   <= to_integer(unsigned(tgr_cid));
+						tgr_wdtid   <= inputs+1;
 						tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
 						tgrwdt_req  <= not tgrwdt_rdy;
 						ref_rdy     := ref_req;
@@ -289,6 +291,7 @@ begin
 					hz_scale   <= to_unsigned(hz_sfcnds(timeid mod 4), hz_scale'length);
 					hz_offset  <= signed(hztl_offset);
 					hz_wdtrow  <= to_unsigned(0, hz_wdtrow'length);
+					hz_uid     <= (inputs+1+vt_pfxs'length)+timeid;
 					hz_wdtid   <= inputs+0;
 					hzwdt_req  <= not hzwdt_rdy;
 				end if;
@@ -309,13 +312,25 @@ begin
 			left := data'left;
 			for i in 0 to inputs-1 loop
 				escaped(data((left+1) to data'length), length, hdo(vt_labels)**("["&natural'image(i)&"].text"));
-				data(left) := character'val((length+1) mod (character'pos(character'high)+1));
+				data(left) := character'val(length-1);
 				left := (left+1) + length;
 			end loop;
 			data((left+1) to (left+1)+hz_label'length-1) := hz_label;
 			length := hz_label'length;
-			data(left) := character'val((length+1) mod (character'pos(character'high)+1));
+			data(left) := character'val(length-1);
 			left := left + hz_label'length;
+			for i in vt_pfxs'range loop
+				left := left + 1;
+				data((left+1) to (left+1)+2-1) := vt_pfxs(i) & 'V';
+				data(left) := character'val(2-1);
+				left := left + 2;
+			end loop;
+			for i in hz_pfxs'range loop
+				left := left + 1;
+				data((left+1) to (left+1)+2-1) := hz_pfxs(i) & 's';
+				data(left) := character'val(2-1);
+				left := left + 2;
+			end loop;
 			return data(data'left to data'left+left-1);
 		end;
 
@@ -323,39 +338,57 @@ begin
 			constant data : string)
 			return natural_vector is
 			variable ptr  : natural;
-			variable tbl  : natural_vector(0 to inputs);
+			variable n    : natural;
+			variable tbl  : natural_vector(0 to data'length/2-1);
 		begin
 			ptr := data'left; 
-			for i in 0 to inputs loop
+			n   := 0;
+			for i in tbl'range loop
+				exit when ptr > data'length;
 				tbl(i) := ptr;
 				assert false
 					report "table element " & natural'image(tbl(i))
 					severity note;
-				ptr := ptr + character'pos(data(ptr));
+				ptr := ptr + character'pos(data(ptr))+2;
+				n   := n + 1;
 			end loop;
-			return tbl;
+			return tbl(0 to n-1);
 		end;
 
 		constant textrom : string := textbase_init(vt_labels);
 		constant texttbl : natural_vector := textlut_init(textrom);
-		variable ptr     : natural range textrom'range;
-		variable fsh     : natural range textrom'range;
+		variable ptr     : natural range textrom'left to textrom'right; -- Xilinx ISE internal error bug range textrom'range;
+		variable fsh     : integer range -1 to 255;
 
+		type states is (s_init, s_run);
+		variable state : states;
 	begin
 		if rising_edge(rgtr_clk) then
-			str_code <= to_ascii(textrom(ptr));
 			if (str_rdy xor str_req)='1' then
-				if ptr < fsh then
+				case state is 
+				when s_init =>
+					ptr   := texttbl(str_id);
+					fsh   := character'pos(textrom(texttbl(str_id)));
 					str_frm <= '1';
-				else
-					str_frm <= '0';
-					str_rdy <= str_req;
-				end if;
-				ptr := ptr + 1;
+					state := s_run;
+				when s_run =>
+					if fsh < 0  then
+						str_rdy <= str_req;
+						ptr   := texttbl(str_id);
+						fsh   := character'pos(textrom(texttbl(str_id)));
+						str_frm <= '0';
+						state := s_init;
+					end if;
+				end case;
 			else
-				ptr := texttbl(wdt_id) + 1;
-				fsh := texttbl(wdt_id) + character'pos(textrom(texttbl(wdt_id)));
+				ptr   := texttbl(str_id);
+				fsh   := character'pos(textrom(texttbl(str_id)));
+				str_frm <= '0';
+				state := s_init;
 			end if;
+			ptr := ptr + 1;
+			fsh := fsh - 1;
+			str_code <= to_ascii(textrom(ptr));
 		end if;
 	end process;
 
@@ -429,6 +462,7 @@ begin
 		alias mul_rdy  is mul_rdys(axis_id);
 		alias str_req  is str_reqs(axis_id);
 		alias str_rdy  is str_rdys(axis_id);
+		alias str_id   is str_ids(axis_id);
 		type states is (s_label, s_offset, s_unit, s_scale, s_wait);
 		variable state : states;
 	begin
@@ -439,6 +473,7 @@ begin
 				if (axis_rdy xor axis_req)='1' then
 					mul_req  <= not mul_rdy;
 					str_req  <= not str_rdy;
+					str_id   <= wdt_id;
 					state    := s_offset;
 				end if;
 			when s_offset =>
@@ -449,6 +484,13 @@ begin
 			when s_unit =>
 				bs(axis_id)<= to_signed(grid_unit, b'length);
 				if (btod_req xor btod_rdy)='0' then
+					str_req <= not str_rdy;
+					case wdt_id is
+					when inputs =>
+						str_id  <= hz_uid;
+					when others =>
+						str_id  <= vt_uid;
+					end case;
 					mul_req <= not mul_rdy;
 					state   := s_scale;
 				end if;
@@ -477,15 +519,17 @@ begin
 		alias mul_rdy   is mul_rdys(tgr_id);
 		alias str_req   is str_reqs(tgr_id);
 		alias str_rdy   is str_rdys(tgr_id);
+		alias str_id    is str_ids(tgr_id);
 	begin
 		if rising_edge(rgtr_clk) then
 			case state is
 			when s_label =>
 				bs(tgr_id)<= resize(signed(tgr_offset), offset'length);
 				if (tgr_rdy xor tgr_req)='1' then
-					mul_req  <= not mul_rdy;
-					str_req  <= not str_rdy;
-					state    := s_offset;
+					mul_req <= not mul_rdy;
+					str_req <= not str_rdy;
+					str_id  <= to_integer(unsigned(tgr_cid));
+					state   := s_offset;
 				end if;
 			when s_offset =>
 				if (mul_req xor mul_rdy)='0' then
@@ -494,7 +538,6 @@ begin
 				end if;
 			when s_unit =>
 				if (btod_req xor btod_rdy)='0' then
-					-- str_req  <= not str_rdy;
 					tgr_rdy  <= tgr_req;
 					state    := s_label;
 				end if;
@@ -513,6 +556,7 @@ begin
 				for i in str_reqs'range loop
 					if (str_rdys(i) xor str_reqs(i))='1' then
 						id := i;
+						str_id  <= str_ids(i);
 						str_req <= not str_rdy;
 						state := s_req;
 						exit;
