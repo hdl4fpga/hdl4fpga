@@ -155,11 +155,6 @@ architecture def of scopeio_reading is
 	signal sign : std_logic;
 begin
 
-	--  tp <= (others => '1');
-		tp(1) <= txt_req;
-		tp(2) <= txt_rdy;
-		tp(3) <= vtwdt_req;
-		tp(4) <= vtwdt_rdy;
 	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
 	generic map (
 		rgtr      => false)
@@ -251,6 +246,7 @@ begin
 					vt_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_offset  <= signed(tbl_offset);
+					vt_uid     <= (inputs+1)+scaleid;
 					vt_wdtid   <= to_integer(unsigned(vtl_scalecid));
 					vt_wdtrow  <= resize(unsigned(vtl_scalecid), vt_wdtrow'length)+2;
 					ref_req    := not ref_rdy;
@@ -273,7 +269,7 @@ begin
 					tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					tgr_offset  <= -signed(trigger_level);
-					tgr_wdtid   <= to_integer(unsigned(trigger_chanid));
+					tgr_wdtid   <= inputs+1;
 					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
 					tgrwdt_req  <= not tgrwdt_rdy;
 				elsif (ref_rdy xor ref_req)='1' then
@@ -282,7 +278,7 @@ begin
 						tgr_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
 						tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 						tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-						tgr_wdtid   <= to_integer(unsigned(tgr_cid));
+						tgr_wdtid   <= inputs+1;
 						tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
 						tgrwdt_req  <= not tgrwdt_rdy;
 						ref_rdy     := ref_req;
@@ -530,9 +526,10 @@ begin
 			when s_label =>
 				bs(tgr_id)<= resize(signed(tgr_offset), offset'length);
 				if (tgr_rdy xor tgr_req)='1' then
-					mul_req  <= not mul_rdy;
-					str_req  <= not str_rdy;
-					state    := s_offset;
+					mul_req <= not mul_rdy;
+					str_req <= not str_rdy;
+					str_id  <= to_integer(unsigned(tgr_cid));
+					state   := s_offset;
 				end if;
 			when s_offset =>
 				if (mul_req xor mul_rdy)='0' then
@@ -541,7 +538,6 @@ begin
 				end if;
 			when s_unit =>
 				if (btod_req xor btod_rdy)='0' then
-					-- str_req  <= not str_rdy;
 					tgr_rdy  <= tgr_req;
 					state    := s_label;
 				end if;
