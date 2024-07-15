@@ -86,7 +86,7 @@ architecture def of scopeio_reading is
 
 	signal str_req        : std_logic;
 	signal str_rdy        : std_logic;
-	subtype wdtid_range is natural range 0 to (inputs+1)-1;
+	subtype wdtid_range is natural range 0 to (inputs+2)-1;
 	signal wdt_id         : wdtid_range;
 	signal wdt_row        : unsigned(0 to unsigned_num_bits(inputs+2-1)-1);
 
