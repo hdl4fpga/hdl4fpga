@@ -106,6 +106,7 @@ architecture def of scopeio_reading is
 	signal tgr_cid        : std_logic_vector(trigger_chanid'range);
 	signal tgr_scale      : unsigned(scale'range);
 	signal tgr_offset     : signed(trigger_level'range);
+	signal tgr_slope      : std_logic;
 	signal tgr_wdtid      : wdtid_range;
 	signal tgr_wdtrow     : unsigned(wdt_row'range);
 	signal tgrwdt_req     : std_logic;
@@ -269,6 +270,7 @@ begin
 					tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					tgr_offset  <= -signed(trigger_level);
+					tgr_slope   <= trigger_slope;
 					tgr_wdtid   <= inputs+1;
 					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
 					tgrwdt_req  <= not tgrwdt_rdy;
@@ -365,6 +367,9 @@ begin
 				ptr := ptr + character'pos(data(ptr))+2;
 				n   := n + 1;
 			end loop;
+				assert false
+					report "total " & natural'image(n)
+					severity note;
 			return tbl(0 to n-1);
 		end;
 
@@ -551,7 +556,11 @@ begin
 				end if;
 			when s_unit =>
 				if (btod_req xor btod_rdy)='0' then
-					str_id   <= inputs+2*16+1; --to_integer(unsigned(tgr_cid));
+					if tgr_slope='0' then
+						str_id <= inputs+1+2*16;
+					else
+						str_id <= inputs+1+2*16+1;
+					end if;
 					str_req  <= not str_rdy;
 					state    := s_wait;
 				end if;
