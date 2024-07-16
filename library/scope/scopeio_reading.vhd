@@ -86,7 +86,7 @@ architecture def of scopeio_reading is
 
 	signal str_req        : std_logic;
 	signal str_rdy        : std_logic;
-	subtype wdtid_range is natural range 0 to (inputs+1)-1;
+	subtype wdtid_range is natural range 0 to (inputs+2)-1;
 	signal wdt_id         : wdtid_range;
 	signal wdt_row        : unsigned(0 to unsigned_num_bits(inputs+2-1)-1);
 
@@ -106,6 +106,7 @@ architecture def of scopeio_reading is
 	signal tgr_cid        : std_logic_vector(trigger_chanid'range);
 	signal tgr_scale      : unsigned(scale'range);
 	signal tgr_offset     : signed(trigger_level'range);
+	signal tgr_slope      : std_logic;
 	signal tgr_wdtid      : wdtid_range;
 	signal tgr_wdtrow     : unsigned(wdt_row'range);
 	signal tgrwdt_req     : std_logic;
@@ -269,6 +270,7 @@ begin
 					tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					tgr_offset  <= -signed(trigger_level);
+					tgr_slope   <= trigger_slope;
 					tgr_wdtid   <= inputs+1;
 					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
 					tgrwdt_req  <= not tgrwdt_rdy;
@@ -331,6 +333,19 @@ begin
 				data(left) := character'val(2-1);
 				left := left + 2;
 			end loop;
+
+			-- UP arrow
+			left := left + 1;
+			data(left+1) := character'val(24); -- up arrow cp437
+			data(left)   := character'val(1-1);
+			left := left + 1;
+
+			-- DOWN arrow
+			left := left + 1;
+			data(left+1) := character'val(25); -- up arrow cp437
+			data(left)   := character'val(1-1);
+			left := left + 1;
+
 			return data(data'left to data'left+left-1);
 		end;
 
@@ -352,6 +367,9 @@ begin
 				ptr := ptr + character'pos(data(ptr))+2;
 				n   := n + 1;
 			end loop;
+				assert false
+					report "total " & natural'image(n)
+					severity note;
 			return tbl(0 to n-1);
 		end;
 
@@ -511,7 +529,7 @@ begin
 	end process;
 
 	trigger_p : process (rgtr_clk)
-		type states is (s_label, s_offset, s_unit);
+		type states is (s_label, s_offset, s_unit, s_wait);
 		variable state : states;
 		alias btod_req  is btod_reqs(tgr_id);
 		alias btod_rdy  is btod_rdys(tgr_id);
@@ -538,6 +556,16 @@ begin
 				end if;
 			when s_unit =>
 				if (btod_req xor btod_rdy)='0' then
+					if tgr_slope='0' then
+						str_id <= inputs+1+2*16;
+					else
+						str_id <= inputs+1+2*16+1;
+					end if;
+					str_req  <= not str_rdy;
+					state    := s_wait;
+				end if;
+			when s_wait =>
+				if (str_req xor str_rdy)='0' then
 					tgr_rdy  <= tgr_req;
 					state    := s_label;
 				end if;
