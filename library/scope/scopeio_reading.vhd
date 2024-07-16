@@ -331,6 +331,19 @@ begin
 				data(left) := character'val(2-1);
 				left := left + 2;
 			end loop;
+
+			-- UP arrow
+			left := left + 1;
+			data(left+1) := character'val(24); -- up arrow cp437
+			data(left)   := character'val(1-1);
+			left := left + 1;
+
+			-- DOWN arrow
+			left := left + 1;
+			data(left+1) := character'val(25); -- up arrow cp437
+			data(left)   := character'val(1-1);
+			left := left + 1;
+
 			return data(data'left to data'left+left-1);
 		end;
 
@@ -511,7 +524,7 @@ begin
 	end process;
 
 	trigger_p : process (rgtr_clk)
-		type states is (s_label, s_offset, s_unit);
+		type states is (s_label, s_offset, s_unit, s_wait);
 		variable state : states;
 		alias btod_req  is btod_reqs(tgr_id);
 		alias btod_rdy  is btod_rdys(tgr_id);
@@ -538,6 +551,12 @@ begin
 				end if;
 			when s_unit =>
 				if (btod_req xor btod_rdy)='0' then
+					str_id   <= inputs+2*16+1; --to_integer(unsigned(tgr_cid));
+					str_req  <= not str_rdy;
+					state    := s_wait;
+				end if;
+			when s_wait =>
+				if (str_req xor str_rdy)='0' then
 					tgr_rdy  <= tgr_req;
 					state    := s_label;
 				end if;
