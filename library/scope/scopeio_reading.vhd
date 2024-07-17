@@ -323,28 +323,28 @@ begin
 			left := left + hz_label'length;
 			for i in vt_pfxs'range loop
 				left := left + 1;
-				data((left+1) to (left+1)+2-1) := vt_pfxs(i) & 'V';
-				data(left) := character'val(2-1);
-				left := left + 2;
+				data((left+1) to (left+1)+3-1) := ' ' & vt_pfxs(i) & 'V';
+				data(left) := character'val(3-1);
+				left := left + 3;
 			end loop;
 			for i in hz_pfxs'range loop
 				left := left + 1;
-				data((left+1) to (left+1)+2-1) := hz_pfxs(i) & 's';
-				data(left) := character'val(2-1);
-				left := left + 2;
+				data((left+1) to (left+1)+3-1) := ' ' & hz_pfxs(i) & 's';
+				data(left) := character'val(3-1);
+				left := left + 3;
 			end loop;
 
 			-- UP arrow
 			left := left + 1;
-			data(left+1) := character'val(24); -- up arrow cp437
-			data(left)   := character'val(1-1);
-			left := left + 1;
+			data(left+1 to (left+1)+2-1) := ' ' & character'val(24); -- up arrow cp437
+			data(left)  := character'val(2-1);
+			left := left + 2;
 
 			-- DOWN arrow
 			left := left + 1;
-			data(left+1) := character'val(25); -- up arrow cp437
-			data(left)   := character'val(1-1);
-			left := left + 1;
+			data(left+1 to (left+1)+2-1) := ' ' &character'val(25); -- up arrow cp437
+			data(left) := character'val(2-1);
+			left := left + 2;
 
 			return data(data'left to data'left+left-1);
 		end;
