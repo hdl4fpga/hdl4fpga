@@ -351,11 +351,11 @@ begin
 
 			insert (hz_label);
 			for i in vt_pfxs'range loop
-				insert( ' ' & vt_pfxs(i) & 'V');
+				insert( ' ' & vt_pfxs(i) & 'v');
 			end loop;
 
 			for i in hz_pfxs'range loop
-				insert( ' ' & hz_pfxs(i) & 'V');
+				insert( ' ' & hz_pfxs(i) & 's');
 			end loop;
 
 			up_pos := left+1;
