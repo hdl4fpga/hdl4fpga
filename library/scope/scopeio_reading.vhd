@@ -72,6 +72,7 @@ architecture def of scopeio_reading is
 	signal trigger_ena    : std_logic;
 	signal trigger_freeze : std_logic;
 	signal trigger_slope  : std_logic;
+	signal trigger_oneshot : std_logic;
 	signal trigger_chanid : std_logic_vector(vt_cid'range);
 	signal trigger_level  : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 
@@ -107,6 +108,8 @@ architecture def of scopeio_reading is
 	signal tgr_scale      : unsigned(scale'range);
 	signal tgr_offset     : signed(trigger_level'range);
 	signal tgr_slope      : std_logic;
+	signal tgr_freeze     : std_logic;
+	signal tgr_oneshot    : std_logic;
 	signal tgr_wdtid      : wdtid_range;
 	signal tgr_wdtrow     : unsigned(wdt_row'range);
 	signal tgrwdt_req     : std_logic;
@@ -145,6 +148,13 @@ architecture def of scopeio_reading is
 	signal str_rdys       : std_logic_vector(0 to 1) := (others => '0');
 	signal str_id         : natural;
 	signal str_ids        : natural_vector(0 to 1);
+
+	constant up_id        : natural := (inputs+1)+vt_pfxs'length+hz_pfxs'length;
+	constant dn_id        : natural := up_id+1;
+	constant free_id      : natural := dn_id+1;
+	constant norm_id      : natural := free_id+1;
+	constant freeze_id    : natural := norm_id+1;
+	constant oneshot_id   : natural := freeze_id+1;
 
 	signal b  : signed(0 to offset'length-1);
 	type b_vector is array(0 to 1) of signed(b'range);
@@ -207,6 +217,7 @@ begin
 		trigger_ena    => trigger_ena,
 		trigger_chanid => trigger_chanid,
 		trigger_slope  => trigger_slope,
+		trigger_oneshot => trigger_oneshot,
 		trigger_freeze => trigger_freeze,
 		trigger_level  => trigger_level);
 
@@ -271,6 +282,8 @@ begin
 					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					tgr_offset  <= -signed(trigger_level);
 					tgr_slope   <= trigger_slope;
+					tgr_freeze  <= trigger_freeze;
+					tgr_oneshot <= trigger_oneshot;
 					tgr_wdtid   <= inputs+1;
 					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
 					tgrwdt_req  <= not tgrwdt_rdy;
@@ -307,11 +320,11 @@ begin
 			constant width : natural := 0)
 			return std_logic_vector is
 
-			variable data       : string(1 to vt_labels'length+4*(vt_pfxs'length+hz_pfxs'length+2+4));
+			variable data       : string(1 to vt_labels'length+4*(vt_pfxs'length+hz_pfxs'length+6));
 			variable id         : natural;
 			variable left       : natural;
-			variable tbl_length : natural_vector(0 to (inputs+1)+vt_pfxs'length+hz_pfxs'length+2+2-1);
-			variable tbl_offset : natural_vector(0 to (inputs+1)+vt_pfxs'length+hz_pfxs'length+2+2-1);
+			variable tbl_length : natural_vector(0 to (inputs+1)+vt_pfxs'length+hz_pfxs'length+6-1);
+			variable tbl_offset : natural_vector(0 to (inputs+1)+vt_pfxs'length+hz_pfxs'length+6-1);
 
 			procedure insert (
 				constant value : in string) is
@@ -346,13 +359,15 @@ begin
 			end loop;
 
 			up_pos := left+1;
-			insert ("    ");
+			insert ("   ");
 
 			dn_pos := left+1;
-			insert ("    ");
+			insert ("   ");
 
-			insert (" *  ");
+			insert ("FREE");
 			insert ("NORM");
+			insert ("HOLD");
+			insert ("SHOT");
 
 			left := left - 1 ;
 			retval(0 to ascii'length*left-1) := to_ascii(data(data'left to data'left+left-1));
@@ -553,7 +568,7 @@ begin
 	end process;
 
 	trigger_p : process (rgtr_clk)
-		type states is (s_label, s_offset, s_unit, s_slope, s_wait);
+		type states is (s_label, s_offset, s_unit, s_slope, s_mode, s_wait);
 		variable state : states;
 		alias btod_req  is btod_reqs(tgr_id);
 		alias btod_rdy  is btod_rdys(tgr_id);
@@ -562,6 +577,7 @@ begin
 		alias str_req   is str_reqs(tgr_id);
 		alias str_rdy   is str_rdys(tgr_id);
 		alias str_id    is str_ids(tgr_id);
+		variable trigger_mode : std_logic_vector(0 to 2-1);
 	begin
 		if rising_edge(rgtr_clk) then
 			case state is
@@ -580,17 +596,38 @@ begin
 				end if;
 			when s_unit =>
 				if (btod_req xor btod_rdy)='0' then
+					str_id  <= (inputs+1)+to_integer(unsigned(tbl_scaleid));
 					str_req <= not str_rdy;
-					str_id  <= (inputs+1)+to_integer(unsigned(tgr_cid));
 					state   := s_slope;
 				end if;
 			when s_slope =>
 				if (str_req xor str_rdy)='0' then
 					if tgr_slope='0' then
-						str_id <= inputs+1+2*16;
+						str_id <= up_id;
 					else
-						str_id <= inputs+1+2*16+1;
+						str_id <= dn_id;
 					end if;
+					str_req <= not str_rdy;
+					state := s_mode;
+				end if;
+			when s_mode =>
+				if (str_req xor str_rdy)='0' then
+
+					trigger_mode := (tgr_freeze, tgr_oneshot);
+					case trigger_mode is
+					when "00" =>
+						str_id <= free_id;
+					when "01" =>
+						str_id <= norm_id;
+					when "10" =>
+						str_id <= freeze_id;
+					when "11" =>
+						str_id <= oneshot_id;
+					when others =>
+						report "invalid mode";
+					end case;
+					str_req <= not str_rdy;
+					state := s_wait;
 				end if;
 			when s_wait =>
 				if (str_req xor str_rdy)='0' then
