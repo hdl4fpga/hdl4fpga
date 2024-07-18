@@ -321,6 +321,12 @@ package base is
 		constant g : std_logic_vector)
 		return std_logic_vector;
 
+	function replace (
+		constant word : std_logic_vector;
+		constant pos  : natural;
+		constant data : std_logic_vector)
+		return std_logic_vector;
+
 	-------------
 	-- boolean --
 	-------------
@@ -1319,6 +1325,22 @@ package body base is
 			aux_m := aux_m sll 1;
 		end loop;
 		return std_logic_vector(aux_r);
+	end;
+
+	function replace (
+		constant word : std_logic_vector;
+		constant pos  : natural;
+		constant data : std_logic_vector)
+		return std_logic_vector is
+		variable retval : std_logic_vector(0 to data'length*((word'length+data'length-1)/data'length)-1);
+	begin
+		assert word'length mod data'length=0
+			report "replace"
+			severity failure;
+
+		retval(0 to word'length-1) := word;
+		retval(data'length*pos to data'length*(pos+1)-1) := data;
+		return retval(0 to word'length-1);
 	end;
 
 	-------------
