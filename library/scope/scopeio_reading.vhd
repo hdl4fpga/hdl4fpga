@@ -345,12 +345,12 @@ begin
 			end loop;
 
 			up_pos := left+1;
-			insert ("  ");
+			insert ("    ");
 
 			dn_pos := left+1;
-			insert ("  ");
+			insert ("    ");
 
-			insert (" *");
+			insert (" *  ");
 			insert ("NORM");
 
 			left := left - 1 ;
