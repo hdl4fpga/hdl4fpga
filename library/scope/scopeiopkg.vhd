@@ -400,11 +400,13 @@ package body scopeiopkg is
 		constant data : std_logic_vector)
 		return std_logic_vector is
 		variable retval : unsigned(0 to data'length*((word'length+data'length-1)/data'length)-1);
+		-- constant xxx : natural := retval'length/data'length;
 	begin
 		assert word'length mod data'length=0
 		report "replace"
 		severity failure;
 		retval(0 to word'length-1) := unsigned(word);
+		-- retval(xxx*to_integer(unsigned(addr) to xxx*to_integer(unsigned(addr)-1)))= unsigned(data);
 		for i in 0 to retval'length/data'length-1 loop
 			if to_unsigned(i,addr'length)=unsigned(addr) then
 				retval(0 to data'length-1) := unsigned(data);

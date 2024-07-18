@@ -301,114 +301,145 @@ begin
 		end if;
 	end process;
 
-	process (rgtr_dv, rgtr_clk)
-
+	xxx : block
 		function textbase_init (
 			constant vt_labels : string;
 			constant width : natural := 0)
-			return string is
-			variable left   : natural;
-			variable length : natural;
-			variable data   : string(1 to vt_labels'length);
+			return std_logic_vector is
+			variable left       : natural;
+			variable length     : natural;
+			variable data       : string(1 to vt_labels'length);
+			variable id         : natural;
+			variable tbl_length : natural_vector(0 to (inputs+1)+vt_pfxs'length+hz_pfxs'length+2-1);
+			variable tbl_offset : natural_vector(0 to (inputs+1)+vt_pfxs'length+hz_pfxs'length+2-1);
+			variable code       : std_logic_vector(ascii'range);
+			variable retval     : std_logic_vector(0 to ascii'length*data'length-1);
 		begin
+			id := 0;
 			left := data'left;
 			for i in 0 to inputs-1 loop
 				escaped(data((left+1) to data'length), length, hdo(vt_labels)**("["&natural'image(i)&"].text"));
-				data(left) := character'val(length-1);
+				tbl_offset(id) := left-1;
+				tbl_length(id) := length-1;
+				id   := id + 1;
 				left := (left+1) + length;
 			end loop;
+
 			data((left+1) to (left+1)+hz_label'length-1) := hz_label;
 			length := hz_label'length;
-			data(left) := character'val(length-1);
+			tbl_offset(id) := left-1;
+			tbl_length(id) := length-1;
+			id   := id + 1;
 			left := left + hz_label'length;
+
 			for i in vt_pfxs'range loop
 				left := left + 1;
-				data((left+1) to (left+1)+2-1) := vt_pfxs(i) & 'V';
-				data(left) := character'val(2-1);
-				left := left + 2;
+				data((left+1) to (left+1)+3-1) := ' ' & vt_pfxs(i) & 'V';
+				tbl_offset(id) := left-1;
+				tbl_length(id) := 3-1;
+				id   := id + 1;
+				left := left + 3;
 			end loop;
+
 			for i in hz_pfxs'range loop
 				left := left + 1;
-				data((left+1) to (left+1)+2-1) := hz_pfxs(i) & 's';
-				data(left) := character'val(2-1);
-				left := left + 2;
+				data((left+1) to (left+1)+3-1) := ' ' & hz_pfxs(i) & 's';
+				tbl_offset(id) := left-1;
+				tbl_length(id) := 3-1;
+				id  := id + 1;
+				left := left + 3;
 			end loop;
 
-			-- UP arrow
 			left := left + 1;
-			data(left+1) := character'val(24); -- up arrow cp437
-			data(left)   := character'val(1-1);
-			left := left + 1;
+			data(left+1 to (left+1)+2-1) := ' ' & character'val(24); -- up arrow cp437
+			tbl_offset(id) := left-1;
+			tbl_length(id) := 2-1;
+			id   := id + 1;
+			left := left + 2;
 
-			-- DOWN arrow
 			left := left + 1;
-			data(left+1) := character'val(25); -- up arrow cp437
-			data(left)   := character'val(1-1);
-			left := left + 1;
+			data(left+1 to (left+1)+2-1) := ' ' &character'val(25); -- up arrow cp437
+			tbl_offset(id) := left-1;
+			tbl_length(id) := 2-1;
+			id   := id + 1;
+			left := left + 2;
 
-			return data(data'left to data'left+left-1);
+			retval(0 to ascii'length*left-1) := to_ascii(data(data'left to data'left+left-1));
+			for i in tbl_offset'range loop
+				code   := std_logic_vector(to_unsigned(tbl_length(i), code'length));
+				retval := replace(retval, tbl_offset(i), code);  
+			end loop;
+
+			return retval(0 to ascii'length*left-1);
 		end;
 
 		function textlut_init (
-			constant data : string)
+			constant data : std_logic_vector)
 			return natural_vector is
 			variable ptr  : natural;
 			variable n    : natural;
-			variable tbl  : natural_vector(0 to data'length/2-1);
+			variable tbl  : natural_vector(0 to (data'length/ascii'length)/2-1);
 		begin
 			ptr := data'left; 
 			n   := 0;
 			for i in tbl'range loop
-				exit when ptr > data'length;
+				exit when (ptr*ascii'length) > data'length;
 				tbl(i) := ptr;
 				assert false
 					report "table element " & natural'image(tbl(i))
 					severity note;
-				ptr := ptr + character'pos(data(ptr))+2;
+				ptr := ptr + to_integer(unsigned(multiplex(data, ptr, ascii'length)))+2;
 				n   := n + 1;
 			end loop;
 				assert false
-					report "total " & natural'image(n)
+					report "*********************total " & natural'image(n)
 					severity note;
 			return tbl(0 to n-1);
 		end;
 
-		constant textrom : string := textbase_init(vt_labels);
-		constant texttbl : natural_vector := textlut_init(textrom);
-		variable ptr     : natural range textrom'left to textrom'right; -- Xilinx ISE internal error bug range textrom'range;
-		variable fsh     : integer range -1 to 255;
-
-		type states is (s_init, s_run);
-		variable state : states;
+		constant textrom  : std_logic_vector := textbase_init(vt_labels);
+		constant texttbl  : natural_vector   := textlut_init(textrom);
+		signal textlen : natural;
 	begin
-		if rising_edge(rgtr_clk) then
-			if (str_rdy xor str_req)='1' then
-				case state is 
-				when s_init =>
-					ptr   := texttbl(str_id);
-					fsh   := character'pos(textrom(texttbl(str_id)));
-					str_frm <= '1';
-					state := s_run;
-				when s_run =>
-					if fsh < 0  then
-						str_rdy <= str_req;
-						ptr   := texttbl(str_id);
-						fsh   := character'pos(textrom(texttbl(str_id)));
-						str_frm <= '0';
-						state := s_init;
-					end if;
-				end case;
-			else
-				ptr   := texttbl(str_id);
-				fsh   := character'pos(textrom(texttbl(str_id)));
-				str_frm <= '0';
-				state := s_init;
-			end if;
-			ptr := ptr + 1;
-			fsh := fsh - 1;
-			str_code <= to_ascii(textrom(ptr));
-		end if;
-	end process;
+
+		textlen <= to_integer(unsigned(multiplex(textrom, texttbl(str_id), ascii'length)));
+		process (rgtr_clk)
+    		variable ptr : natural range textrom'left to textrom'right; -- Xilinx ISE internal error bug range textrom'range;
+    		variable len : integer range -1 to 255;
+
+    		type states is (s_init, s_run);
+    		variable state : states;
+    	begin
+    		if rising_edge(rgtr_clk) then
+    			if (str_rdy xor str_req)='1' then
+    				case state is 
+    				when s_init =>
+    					ptr   := texttbl(str_id);
+						len   := textlen;
+    					str_frm <= '1';
+    					state := s_run;
+    				when s_run =>
+    					if len < 0  then
+    						str_rdy <= str_req;
+    						ptr   := texttbl(str_id);
+							len   := textlen;
+    						str_frm <= '0';
+    						state := s_init;
+    					end if;
+    				end case;
+    			else
+    				ptr   := texttbl(str_id);
+					len   := textlen;
+    				str_frm <= '0';
+    				state := s_init;
+    			end if;
+    			ptr := ptr + 1;
+    			len := len - 1;
+    			str_code <= multiplex(textrom, ptr, ascii'length);
+    		end if;
+    	end process;
+
+	end block;
 
 	process (rgtr_clk)
 	begin
