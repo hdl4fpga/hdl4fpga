@@ -323,12 +323,13 @@ begin
 				left := (left+1) + value'length;
 			end;
 
-			variable length     : natural;
-			variable code       : std_logic_vector(ascii'range);
-			variable retval     : std_logic_vector(0 to ascii'length*data'length-1);
-			variable up_pos    : natural;
-			variable dn_pos    : natural;
+			variable code   : std_logic_vector(ascii'range);
+			variable retval : std_logic_vector(0 to ascii'length*data'length-1);
+			variable up_pos : natural;
+			variable dn_pos : natural;
+
 		begin
+
 			id := 0;
 			left := data'left;
 			for i in 0 to inputs-1 loop
