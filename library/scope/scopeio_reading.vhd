@@ -384,15 +384,15 @@ begin
 				ptr := ptr + to_integer(unsigned(multiplex(data, ptr, ascii'length)))+2;
 				n   := n + 1;
 			end loop;
-				assert false
-					report "*********************total " & natural'image(n)
-					severity note;
+			assert true
+				report "Table size " & natural'image(n)
+				severity note;
 			return tbl(0 to n-1);
 		end;
 
 		constant textrom  : std_logic_vector := textbase_init(vt_labels);
 		constant texttbl  : natural_vector   := textlut_init(textrom);
-		signal textlen : natural;
+		signal textlen    : natural range 0 to 256-1;
 	begin
 
 		textlen <= to_integer(unsigned(multiplex(textrom, texttbl(str_id), ascii'length)));
@@ -553,7 +553,7 @@ begin
 	end process;
 
 	trigger_p : process (rgtr_clk)
-		type states is (s_label, s_offset, s_unit, s_wait);
+		type states is (s_label, s_offset, s_unit, s_slope, s_wait);
 		variable state : states;
 		alias btod_req  is btod_reqs(tgr_id);
 		alias btod_rdy  is btod_rdys(tgr_id);
@@ -580,13 +580,17 @@ begin
 				end if;
 			when s_unit =>
 				if (btod_req xor btod_rdy)='0' then
+					str_req <= not str_rdy;
+					str_id  <= (inputs+1)+to_integer(unsigned(tgr_cid));
+					state   := s_slope;
+				end if;
+			when s_slope =>
+				if (str_req xor str_rdy)='0' then
 					if tgr_slope='0' then
 						str_id <= inputs+1+2*16;
 					else
 						str_id <= inputs+1+2*16+1;
 					end if;
-					str_req  <= not str_rdy;
-					state    := s_wait;
 				end if;
 			when s_wait =>
 				if (str_req xor str_rdy)='0' then
