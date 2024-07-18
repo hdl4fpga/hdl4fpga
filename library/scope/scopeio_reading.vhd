@@ -308,12 +308,14 @@ begin
 			return std_logic_vector is
 			variable left       : natural;
 			variable length     : natural;
-			variable data       : string(1 to vt_labels'length);
+			variable data       : string(1 to vt_labels'length+4*(vt_pfxs'length+hz_pfxs'length+2));
 			variable id         : natural;
 			variable tbl_length : natural_vector(0 to (inputs+1)+vt_pfxs'length+hz_pfxs'length+2-1);
 			variable tbl_offset : natural_vector(0 to (inputs+1)+vt_pfxs'length+hz_pfxs'length+2-1);
 			variable code       : std_logic_vector(ascii'range);
 			variable retval     : std_logic_vector(0 to ascii'length*data'length-1);
+			variable up_pos    : natural;
+			variable dn_pos    : natural;
 		begin
 			id := 0;
 			left := data'left;
@@ -350,15 +352,17 @@ begin
 				left := left + 3;
 			end loop;
 
-			left := left + 1;
-			data(left+1 to (left+1)+2-1) := ' ' & character'val(24); -- up arrow cp437
+			left := left + 1; -- up arrow cp437
+			data(left+1 to (left+1)+2-1) := "  ";
+			up_pos := ((left-1)+1)+2-1;
 			tbl_offset(id) := left-1;
 			tbl_length(id) := 2-1;
 			id   := id + 1;
 			left := left + 2;
 
-			left := left + 1;
-			data(left+1 to (left+1)+2-1) := ' ' &character'val(25); -- up arrow cp437
+			left := left + 1; -- up arrow cp437
+			data(left+1 to (left+1)+2-1) := "  ";
+			dn_pos := ((left-1)+1)+2-1;
 			tbl_offset(id) := left-1;
 			tbl_length(id) := 2-1;
 			id   := id + 1;
@@ -369,6 +373,8 @@ begin
 				code   := std_logic_vector(to_unsigned(tbl_length(i), code'length));
 				retval := replace(retval, tbl_offset(i), code);  
 			end loop;
+			retval := replace(retval, up_pos, x"18");  
+			retval := replace(retval, dn_pos, x"19");  
 
 			return retval(0 to ascii'length*left-1);
 		end;

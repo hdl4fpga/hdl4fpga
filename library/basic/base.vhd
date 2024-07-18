@@ -1226,14 +1226,15 @@ package body base is
 		constant addr  : natural;
 		constant size  : natural)
 		return std_logic_vector is
-		variable aux : unsigned(0 to size*((word'length+size-1)/size)-1);
+		variable retval : unsigned(0 to ((word'length+size-1)/size)*size-1);
 	begin
 		assert word'length mod size = 0
 			report "multiplex mod"
 			severity failure;
-		aux(0 to word'length-1) := unsigned(word);
-		aux := aux rol ((addr*size) mod word'length);
-		return std_logic_vector(aux(0 to size-1));
+
+		retval(0 to word'length-1) := unsigned(word);
+		retval := retval rol (addr*size);
+		return std_logic_vector(retval(0 to size-1));
 	end;
 
 	function multiplex (
