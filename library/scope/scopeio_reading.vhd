@@ -34,7 +34,7 @@ entity scopeio_reading is
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 	constant vt_labels     : string  := hdo(layout)**".vt";
-	constant hz_label      : string  := "Time";
+	constant hz_label      : string  := "TIME";
 
 	constant vt_sfcnds     : natural_vector := get_significand1245(vt_unit);
 	constant vt_shts       : integer_vector := get_shr1245(vt_unit);
@@ -72,6 +72,7 @@ architecture def of scopeio_reading is
 	signal trigger_ena    : std_logic;
 	signal trigger_freeze : std_logic;
 	signal trigger_slope  : std_logic;
+	signal trigger_oneshot : std_logic;
 	signal trigger_chanid : std_logic_vector(vt_cid'range);
 	signal trigger_level  : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 
@@ -107,6 +108,8 @@ architecture def of scopeio_reading is
 	signal tgr_scale      : unsigned(scale'range);
 	signal tgr_offset     : signed(trigger_level'range);
 	signal tgr_slope      : std_logic;
+	signal tgr_freeze     : std_logic;
+	signal tgr_oneshot    : std_logic;
 	signal tgr_wdtid      : wdtid_range;
 	signal tgr_wdtrow     : unsigned(wdt_row'range);
 	signal tgrwdt_req     : std_logic;
@@ -145,6 +148,13 @@ architecture def of scopeio_reading is
 	signal str_rdys       : std_logic_vector(0 to 1) := (others => '0');
 	signal str_id         : natural;
 	signal str_ids        : natural_vector(0 to 1);
+
+	constant up_id        : natural := (inputs+1)+vt_pfxs'length+hz_pfxs'length;
+	constant dn_id        : natural := up_id+1;
+	constant free_id      : natural := dn_id+1;
+	constant norm_id      : natural := free_id+1;
+	constant freeze_id    : natural := norm_id+1;
+	constant oneshot_id   : natural := freeze_id+1;
 
 	signal b  : signed(0 to offset'length-1);
 	type b_vector is array(0 to 1) of signed(b'range);
@@ -207,6 +217,7 @@ begin
 		trigger_ena    => trigger_ena,
 		trigger_chanid => trigger_chanid,
 		trigger_slope  => trigger_slope,
+		trigger_oneshot => trigger_oneshot,
 		trigger_freeze => trigger_freeze,
 		trigger_level  => trigger_level);
 
@@ -271,6 +282,8 @@ begin
 					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					tgr_offset  <= -signed(trigger_level);
 					tgr_slope   <= trigger_slope;
+					tgr_freeze  <= trigger_freeze;
+					tgr_oneshot <= trigger_oneshot;
 					tgr_wdtid   <= inputs+1;
 					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
 					tgrwdt_req  <= not tgrwdt_rdy;
@@ -306,69 +319,64 @@ begin
 			constant vt_labels : string;
 			constant width : natural := 0)
 			return std_logic_vector is
-			variable left       : natural;
-			variable length     : natural;
-			variable data       : string(1 to vt_labels'length);
+
+			variable data       : string(1 to vt_labels'length+4*(vt_pfxs'length+hz_pfxs'length+6));
 			variable id         : natural;
-			variable tbl_length : natural_vector(0 to (inputs+1)+vt_pfxs'length+hz_pfxs'length+2-1);
-			variable tbl_offset : natural_vector(0 to (inputs+1)+vt_pfxs'length+hz_pfxs'length+2-1);
-			variable code       : std_logic_vector(ascii'range);
-			variable retval     : std_logic_vector(0 to ascii'length*data'length-1);
+			variable left       : natural;
+			variable tbl_length : natural_vector(0 to (inputs+1)+vt_pfxs'length+hz_pfxs'length+6-1);
+			variable tbl_offset : natural_vector(0 to (inputs+1)+vt_pfxs'length+hz_pfxs'length+6-1);
+
+			procedure insert (
+				constant value : in string) is
+			begin
+				tbl_offset(id) := left-1;
+				tbl_length(id) := value'length-1;
+				data((left+1) to (left+1)+value'length-1) := value;
+				id   := id + 1;
+				left := (left+1) + value'length;
+			end;
+
+			variable code   : std_logic_vector(ascii'range);
+			variable retval : std_logic_vector(0 to ascii'length*data'length-1);
+			variable up_pos : natural;
+			variable dn_pos : natural;
+
 		begin
+
 			id := 0;
 			left := data'left;
 			for i in 0 to inputs-1 loop
-				escaped(data((left+1) to data'length), length, hdo(vt_labels)**("["&natural'image(i)&"].text"));
-				tbl_offset(id) := left-1;
-				tbl_length(id) := length-1;
-				id   := id + 1;
-				left := (left+1) + length;
+				insert (escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")));
 			end loop;
 
-			data((left+1) to (left+1)+hz_label'length-1) := hz_label;
-			length := hz_label'length;
-			tbl_offset(id) := left-1;
-			tbl_length(id) := length-1;
-			id   := id + 1;
-			left := left + hz_label'length;
-
+			insert (hz_label);
 			for i in vt_pfxs'range loop
-				left := left + 1;
-				data((left+1) to (left+1)+3-1) := ' ' & vt_pfxs(i) & 'V';
-				tbl_offset(id) := left-1;
-				tbl_length(id) := 3-1;
-				id   := id + 1;
-				left := left + 3;
+				insert( ' ' & vt_pfxs(i) & 'V');
 			end loop;
 
 			for i in hz_pfxs'range loop
-				left := left + 1;
-				data((left+1) to (left+1)+3-1) := ' ' & hz_pfxs(i) & 's';
-				tbl_offset(id) := left-1;
-				tbl_length(id) := 3-1;
-				id  := id + 1;
-				left := left + 3;
+				insert( ' ' & hz_pfxs(i) & 'V');
 			end loop;
 
-			left := left + 1;
-			data(left+1 to (left+1)+2-1) := ' ' & character'val(24); -- up arrow cp437
-			tbl_offset(id) := left-1;
-			tbl_length(id) := 2-1;
-			id   := id + 1;
-			left := left + 2;
+			up_pos := left+1;
+			insert ("   ");
 
-			left := left + 1;
-			data(left+1 to (left+1)+2-1) := ' ' &character'val(25); -- up arrow cp437
-			tbl_offset(id) := left-1;
-			tbl_length(id) := 2-1;
-			id   := id + 1;
-			left := left + 2;
+			dn_pos := left+1;
+			insert ("   ");
 
+			insert ("FREE");
+			insert ("NORM");
+			insert ("HOLD");
+			insert ("SHOT");
+
+			left := left - 1 ;
 			retval(0 to ascii'length*left-1) := to_ascii(data(data'left to data'left+left-1));
 			for i in tbl_offset'range loop
 				code   := std_logic_vector(to_unsigned(tbl_length(i), code'length));
 				retval := replace(retval, tbl_offset(i), code);  
 			end loop;
+			retval := replace(retval, up_pos, x"18");  
+			retval := replace(retval, dn_pos, x"19");  
 
 			return retval(0 to ascii'length*left-1);
 		end;
@@ -391,15 +399,15 @@ begin
 				ptr := ptr + to_integer(unsigned(multiplex(data, ptr, ascii'length)))+2;
 				n   := n + 1;
 			end loop;
-				assert false
-					report "*********************total " & natural'image(n)
-					severity note;
+			assert true
+				report "Table size " & natural'image(n)
+				severity note;
 			return tbl(0 to n-1);
 		end;
 
 		constant textrom  : std_logic_vector := textbase_init(vt_labels);
 		constant texttbl  : natural_vector   := textlut_init(textrom);
-		signal textlen : natural;
+		signal textlen    : natural range 0 to 256-1;
 	begin
 
 		textlen <= to_integer(unsigned(multiplex(textrom, texttbl(str_id), ascii'length)));
@@ -560,7 +568,7 @@ begin
 	end process;
 
 	trigger_p : process (rgtr_clk)
-		type states is (s_label, s_offset, s_unit, s_wait);
+		type states is (s_label, s_offset, s_unit, s_slope, s_mode, s_wait);
 		variable state : states;
 		alias btod_req  is btod_reqs(tgr_id);
 		alias btod_rdy  is btod_rdys(tgr_id);
@@ -569,6 +577,7 @@ begin
 		alias str_req   is str_reqs(tgr_id);
 		alias str_rdy   is str_rdys(tgr_id);
 		alias str_id    is str_ids(tgr_id);
+		variable trigger_mode : std_logic_vector(0 to 2-1);
 	begin
 		if rising_edge(rgtr_clk) then
 			case state is
@@ -587,13 +596,38 @@ begin
 				end if;
 			when s_unit =>
 				if (btod_req xor btod_rdy)='0' then
+					str_id  <= (inputs+1)+to_integer(unsigned(tbl_scaleid));
+					str_req <= not str_rdy;
+					state   := s_slope;
+				end if;
+			when s_slope =>
+				if (str_req xor str_rdy)='0' then
 					if tgr_slope='0' then
-						str_id <= inputs+1+2*16;
+						str_id <= up_id;
 					else
-						str_id <= inputs+1+2*16+1;
+						str_id <= dn_id;
 					end if;
-					str_req  <= not str_rdy;
-					state    := s_wait;
+					str_req <= not str_rdy;
+					state := s_mode;
+				end if;
+			when s_mode =>
+				if (str_req xor str_rdy)='0' then
+
+					trigger_mode := (tgr_freeze, tgr_oneshot);
+					case trigger_mode is
+					when "00" =>
+						str_id <= free_id;
+					when "01" =>
+						str_id <= norm_id;
+					when "10" =>
+						str_id <= freeze_id;
+					when "11" =>
+						str_id <= oneshot_id;
+					when others =>
+						report "invalid mode";
+					end case;
+					str_req <= not str_rdy;
+					state := s_wait;
 				end if;
 			when s_wait =>
 				if (str_req xor str_rdy)='0' then

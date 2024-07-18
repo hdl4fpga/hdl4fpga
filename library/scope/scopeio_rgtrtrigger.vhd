@@ -68,7 +68,7 @@ begin
 	norgtr_e : if not rgtr generate
 		trigger_freeze  <= freeze(0);
 		trigger_slope   <= slope(0);
-		trigger_slope   <= slope(0);
+		trigger_oneshot <= oneshot(0);
 		trigger_level   <= level;
 		trigger_chanid  <= chanid;
 	end generate;
