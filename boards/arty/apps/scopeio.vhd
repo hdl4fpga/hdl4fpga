@@ -168,19 +168,19 @@ architecture scopeio of arty is
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff},  " & -- vt(3)
 			"   { text  : 'A0(+)        ', " &
-			"     step  : " & real'image(3.32*vt_step) & "," &
+			"     step  : " & real'image(3.33*vt_step) & "," &
 			"     color : 0xff_00_ff_ff},  " & -- vt(4)
 			"   { text  : 'A1(+)        ', " &
-			"     step  : " & real'image(3.32*vt_step) & "," &
+			"     step  : " & real'image(3.33*vt_step) & "," &
 			"     color : 0xff_ff_ff_ff},  " & -- vt(5)
 			"   { text  : 'A2(+)        ', " &
-			"     step  : " & real'image(3.32*vt_step) & "," &
+			"     step  : " & real'image(3.33*vt_step) & "," &
 			"     color : 0xff_00_ff_ff},  " & -- vt(6)
 			"   { text  : 'A3(+)        ', " &
-			"     step  : " & real'image(3.32*vt_step) & "," &
+			"     step  : " & real'image(3.33*vt_step) & "," &
 			"     color : 0xff_ff_ff_ff},  " &  -- vt(7)
 			"   { text  : 'A4(+)        ', " &
-			"     step  : " & real'image(3.32*vt_step) & "," &
+			"     step  : " & real'image(3.33*vt_step) & "," &
 			"     color : 0xff_00_ff_ff}]}");   -- vt(8)
 		constant vt : string := hdo(layout)**".vt";
 begin
