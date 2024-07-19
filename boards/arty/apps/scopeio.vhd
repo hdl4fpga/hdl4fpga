@@ -663,7 +663,7 @@ begin
 					when "11110" => -- 14
 						input_samples(3*input_sample'length to (3+1)*input_sample'length-1) <= input_sample;
 					when "11111" => -- 15
-						input_samples(4*input_sample'length to (4+1)*input_sample'length-1) <= input_sample;
+						input_samples(8*input_sample'length to (8+1)*input_sample'length-1) <= input_sample;
 					when "10000" =>	--  1                       
 					when others =>
 					end case;
