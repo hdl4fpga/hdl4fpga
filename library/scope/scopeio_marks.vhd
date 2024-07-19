@@ -42,21 +42,6 @@ entity scopeio_marks is
 		rgtr_id       : in  std_logic_vector(8-1 downto 0);
 		rgtr_data     : in  std_logic_vector;
 
-		video_clk     : in  std_logic;
-		hz_dv         : in  std_logic;
-		hz_scale      : in  std_logic_vector;
-		hz_offset     : in  std_logic_vector;
-		hz_segment    : in  std_logic_vector;
-		video_hcntr   : in  std_logic_vector;
-		video_hzon    : in  std_logic;
-		video_hzdot   : out std_logic;
-
-		vt_dv         : in  std_logic;
-		vt_scale      : in  std_logic_vector;
-		vt_offset     : in  std_logic_vector;
-		video_vcntr   : in  std_logic_vector;
-		video_vton    : in  std_logic;
-		video_vtdot   : out std_logic);
 
 	constant num_of_segments : natural := hdo(layout)**".num_of_segments";
 	constant hz_unit         : real    := 2.0*real'(hdo(layout)**".axis.horizontal.unit");
@@ -67,150 +52,178 @@ entity scopeio_marks is
 	constant grid_height     : natural := hdo(layout)**".grid.height";
 	constant grid_unit       : natural := hdo(layout)**".grid.unit";
 
+	constant vt_sfcnds     : natural_vector := get_significand1245(vt_unit);
+	constant vt_shts       : integer_vector := get_shr1245(vt_unit);
+	constant vt_pnts       : integer_vector := get_characteristic1245(vt_unit);
+	constant vt_pfxs       : string         := get_prefix1235(vt_unit);
+
+	constant hz_sfcnds     : natural_vector := get_significand1245(hz_unit);
+	constant hz_shts       : integer_vector := get_shr1245(hz_unit);
+	constant hz_pnts       : integer_vector := get_characteristic1245(hz_unit);
+	constant hz_pfxs       : string         := get_prefix1235(hz_unit);
+
 end;
 
 architecture def of scopeio_marks is
+	signal vtscale_ena    : std_logic;
+	signal vtl_scalecid   : std_logic_vector(chanid_bits-1 downto 0);
+	signal vt_cid         : std_logic_vector(chanid_bits-1 downto 0);
+	signal vt_scaleid     : std_logic_vector(4-1 downto 0);
+	signal tbl_scaleid    : std_logic_vector(vt_scaleid'range);
 
-	constant division_size : natural := grid_unit;
-	constant font_size     : natural := axis_fontsize;
-
-	constant division_bits : natural := unsigned_num_bits(division_size-1);
-	constant font_bits     : natural := unsigned_num_bits(font_size-1);
-
-	constant hz_width      : natural := grid_width;
-	constant hztick_bits   : natural := 3;
-	constant hzstep_bits   : natural := hztick_bits;
-
-	constant vt_height     : natural := grid_height;
-	constant vttick_bits   : natural := 3;
-	constant vtstep_bits   : natural := division_bits;
-
-	constant bcd_length    : natural := 4;
-
+	signal vtoffset_ena   : std_logic;
+	signal vtl_offsetcid  : std_logic_vector(vt_cid'range);
+	signal vtl_offset     : std_logic_vector((5+8)-1 downto 0);
+	signal tbl_offset     : std_logic_vector(vtl_offset'range);
+	signal vt_offset      : signed(vtl_offset'range);
+	signal tick_no  : integer range -1 to max(2**vt_taddr'length/2**vttick_bits-1, 2**hz_taddr'length/2**hzstep_bits-1);
 begin
 
-	video_b : block
+	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
+	generic map (
+		rgtr      => false)
+	port map (
+		rgtr_clk  => rgtr_clk,
+		rgtr_dv   => rgtr_dv,
+		rgtr_id   => rgtr_id,
+		rgtr_data => rgtr_data,
 
-		signal char_code  : std_logic_vector(4-1 downto 0);
-		signal char_row   : std_logic_vector(font_bits-1 downto 0);
-		signal char_col   : std_logic_vector(font_bits-1 downto 0);
-		signal char_dot   : std_logic;
+		hz_ena    => hz_ena,
+		hz_scale  => hz_scaleid,
+		hz_offset => hz_offset);
 
-		signal tick_req   : std_logic;
-		signal tick_rdy   : std_logic;
-		signal btof_req   : std_logic;
-		signal btof_rdy   : std_logic;
-		signal code_frm   : std_logic;
-		signal code       : std_logic_vector(0 to bcd_length-1);
+	vtscale_e : entity hdl4fpga.scopeio_rgtrvtscale
+	generic map (
+		rgtr      => false)
+	port map (
+		rgtr_clk  => rgtr_clk,
+		rgtr_dv   => rgtr_dv,
+		rgtr_id   => rgtr_id,
+		rgtr_data => rgtr_data,
 
-		signal hz_sel     : std_logic;
-		signal hz_bcd     : std_logic_vector(char_code'range);
-		signal hz_charrow : std_logic_vector(font_bits-1 downto 0);
-		signal hz_charcol : std_logic_vector(font_bits-1 downto 0);
-		signal hz_don     : std_logic;
-		signal hz_on      : std_logic;
+		vtscale_ena => vtscale_ena,
+		vtchan_id   => vt_scalecid,
+		vtscale_id  => vt_scaleid);
 
-		signal vt_sel     : std_logic;
-		signal vt_bcd     : std_logic_vector(char_code'range);
-		signal vt_codefrm : std_logic;
-		signal vt_charrow : std_logic_vector(font_bits-1 downto 0);
-		signal vt_charcol : std_logic_vector(font_bits-1 downto 0);
-		signal vt_on      : std_logic;
-		signal vt_don     : std_logic;
+	vtoffset_e : entity hdl4fpga.scopeio_rgtrvtoffset
+	generic map (
+		rgtr      => false)
+	port map (
+		rgtr_clk  => rgtr_clk,
+		rgtr_dv   => rgtr_dv,
+		rgtr_id   => rgtr_id,
+		rgtr_data => rgtr_data,
 
-		signal hz_taddr   : unsigned(unsigned_num_bits(num_of_segments*(hz_width-1))-1 downto hzstep_bits);
-		signal vt_taddr   : unsigned(unsigned_num_bits((vt_height-1))+vttick_bits-1 downto division_bits);
+		vt_ena    => vtoffset_ena,
+		vt_chanid => vt_offsetcid,
+		vt_offset => vt_offset);
 
-		signal left       : std_logic;
+	vtoffsets_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => rgtr_clk,
+		wr_ena  => vtoffset_ena,
+		wr_addr => vtl_offsetcid,
+		wr_data => vtl_offset,
+		rd_addr => vtl_scalecid,
+		rd_data => tbl_offset);
 
-		constant vt_signfcnds : natural_vector := get_significand1245(vt_unit);
-		constant vtsignfcnd_length : natural   := unsigned_num_bits(max(vt_signfcnds));
-		constant vt_shrs  : integer_vector     := get_shr1245(vt_unit);
-		constant vt_pnts  : integer_vector     := get_characteristic1245(vt_unit);
+	vtgains_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => rgtr_clk,
+		wr_ena  => vtscale_ena,
+		wr_addr => vtl_scalecid,
+		wr_data => vt_scaleid,
+		rd_addr => vtl_offsetcid,
+		rd_data => tbl_scaleid);
 
-		constant hz_signfcnds : natural_vector := get_significand1245(hz_unit);
-		constant hzsignfcnd_length : natural   := unsigned_num_bits(max(hz_signfcnds));
-		constant hz_shrs  : integer_vector     := get_shr1245(hz_unit);
-		constant hz_pnts  : integer_vector     := get_characteristic1245(hz_unit);
-
-		signal shr        : std_logic_vector(4-1 downto 0);
-		signal pnt        : std_logic_vector(4-1 downto 0);
-		signal wth        : std_logic_vector(4-1 downto 0);
-
-	constant bin_digits      : natural := 3;
-	constant signfcnd_length : natural := max(vtsignfcnd_length, hzsignfcnd_length);
-	constant offset_length   : natural := max(vt_offset'length, hz_offset'length);
-	signal bin               : signed(0 to bin_digits*((offset_length+signfcnd_length+bin_digits-1)/bin_digits));
+	process (rgtr_clk)
+		variable signfcnd : unsigned(max(vtsignfcnd_length, hzsignfcnd_length)-1 downto 0);
+		variable start    : signed(0 to signfcnd'length);
+		variable tick     : signed(0 to bin'length-1); -- to 2**bin'length-1;
+		variable tick_no  : integer range -1 to max(2**vt_taddr'length/2**vttick_bits-1, 2**hz_taddr'length/2**hzstep_bits-1);
+		variable addr     : natural range  0 to 2**max(vt_taddr'length,hz_taddr'length)-1;
 	begin
-
-		process (code_frm, rgtr_clk)
-			variable signfcnd : unsigned(max(vtsignfcnd_length, hzsignfcnd_length)-1 downto 0);
-			variable start    : signed(0 to signfcnd'length);
-			variable tick     : signed(0 to bin'length-1); -- to 2**bin'length-1;
-			variable tick_no  : integer range -1 to max(2**vt_taddr'length/2**vttick_bits-1, 2**hz_taddr'length/2**hzstep_bits-1);
-			variable addr     : natural range  0 to 2**max(vt_taddr'length,hz_taddr'length)-1;
-			variable xxx : boolean := true;
-			constant yyy : signed(vt_offset'range) := (others => '1');
-		begin
-			if rising_edge(rgtr_clk) then
-				if (to_bit(tick_req) xor to_bit(tick_rdy))='1' then
-					if (to_bit(btof_req) xor to_bit(btof_rdy))='0' then
-						if tick_no >= 0 then
-							if tick < 0 then
-								bin <= '1' & (-tick(1 to bin'length-1));
-							else
-								bin <= '0' &  tick(1 to bin'length-1);
-							end if;
-							tick     := tick    + to_integer(start);
-							tick_no  := tick_no - 1;
-							btof_req <= not to_stdulogic(to_bit(btof_rdy));
-						else
-							tick_rdy <= to_stdulogic(to_bit(tick_req));
-						end if;
-					end if;
-					if code_frm='1' then
-						addr := addr + 1;
-					end if;
-					xxx := false;
-				elsif vt_dv='1' then
-					hz_sel   <= '0';
-					vt_sel   <= '1';
-					addr     := 0;
-					signfcnd := to_unsigned(vt_signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), signfcnd'length);
-					tick     := -resize(mul(shift_right(signed(vt_offset), division_bits)-(vt_height/2/division_size-1), signfcnd), tick'length);
-					tick_no  := 2**vt_taddr'length/2**vttick_bits-1;
-					tick_req <= not to_stdulogic(to_bit(tick_rdy));
-					left     <= '0';
-					start    := -signed(resize(signfcnd, start'length));
-					shr      <= std_logic_vector(to_signed(vt_shrs(to_integer(unsigned(vt_scale))), shr'length));
-					pnt      <= std_logic_vector(to_signed(vt_pnts(to_integer(unsigned(vt_scale))), pnt'length));
-					wth      <= std_logic_vector(to_unsigned(vt_width/font_size, wth'length));
-				elsif hz_dv='1' then
-					hz_sel   <= '1';
-					vt_sel   <= '0';
-					addr     := 0;
-					signfcnd := to_unsigned(hz_signfcnds(to_integer(unsigned(hz_scale(2-1 downto 0)))), signfcnd'length);
-					tick     := resize(mul(shift_right(signed(hz_offset), hztick_bits+font_bits), signfcnd), tick'length);
-					tick_no  := 2**hz_taddr'length/2**hzstep_bits-1;
-					tick_req <= not to_stdulogic(to_bit(tick_rdy));
-					left     <= '1';
-					start    := signed(resize(signfcnd, start'length));
-					shr      <= std_logic_vector(to_signed(hz_shrs(to_integer(unsigned(hz_scale))), shr'length));
-					pnt      <= std_logic_vector(to_signed(hz_pnts(to_integer(unsigned(hz_scale))), pnt'length));
-					wth      <= x"8";
-				else
-					hz_sel   <= '0';
-					vt_sel   <= '0';
-					addr     := 0;
-					tick_no  := -1;
-					left     <= '-';
-					shr      <= (others => '-');
-					pnt      <= (others => '-');
+		if rising_edge(rgtr_clk) then
+			if (tick_req xor tick_rdy)='0' then
+				if (vtoffset_ena or vtscale_ena)='1' then
+					tick_from <= 2**vt_taddr'length/2**vttick_bits-1;
+					tick_req  <= not tick_rdy;
+				elsif hz_ena='1' then
+					tick_from <= 2**hz_taddr'length/2**hzstep_bits-1;
+					tick_req  <= not tick_rdy;
 				end if;
-				hz_taddr <= to_unsigned(addr, hz_taddr'length);
-				vt_taddr <= to_unsigned(addr, vt_taddr'length);
 			end if;
-		end process;
+		end if;
+	end process;
+
+	process (rgtr_clk)
+		variable signfcnd : unsigned(max(vtsignfcnd_length, hzsignfcnd_length)-1 downto 0);
+		variable start    : signed(0 to signfcnd'length);
+		variable tick     : signed(0 to bin'length-1); -- to 2**bin'length-1;
+		variable tick_no  : integer range -1 to max(2**vt_taddr'length/2**vttick_bits-1, 2**hz_taddr'length/2**hzstep_bits-1);
+		variable addr     : natural range  0 to 2**max(vt_taddr'length,hz_taddr'length)-1;
+		variable xxx : boolean := true;
+		constant yyy : signed(vt_offset'range) := (others => '1');
+	begin
+		if rising_edge(rgtr_clk) then
+			if (to_bit(tick_req) xor to_bit(tick_rdy))='1' then
+			else
+			end if;
+				if (to_bit(btof_req) xor to_bit(btof_rdy))='0' then
+					if tick_no >= 0 then
+						if tick < 0 then
+							bin <= '1' & (-tick(1 to bin'length-1));
+						else
+							bin <= '0' &  tick(1 to bin'length-1);
+						end if;
+						tick     := tick    + to_integer(start);
+						tick_no  := tick_no - 1;
+						btof_req <= not to_stdulogic(to_bit(btof_rdy));
+					else
+						tick_rdy <= to_stdulogic(to_bit(tick_req));
+					end if;
+				end if;
+				if code_frm='1' then
+					addr := addr + 1;
+				end if;
+				xxx := false;
+			elsif vt_ena='1' then
+				hz_sel   <= '0';
+				vt_sel   <= '1';
+				addr     := 0;
+				signfcnd := to_unsigned(vt_signfcnds(to_integer(unsigned(vt_scale(2-1 downto 0)))), signfcnd'length);
+				tick     := -resize(mul(shift_right(signed(vt_offset), division_bits)-(vt_height/2/division_size-1), signfcnd), tick'length);
+				tick_req <= not to_stdulogic(to_bit(tick_rdy));
+				left     <= '0';
+				start    := -signed(resize(signfcnd, start'length));
+				shr      <= std_logic_vector(to_signed(vt_shrs(to_integer(unsigned(vt_scale))), shr'length));
+				pnt      <= std_logic_vector(to_signed(vt_pnts(to_integer(unsigned(vt_scale))), pnt'length));
+				wth      <= std_logic_vector(to_unsigned(vt_width/font_size, wth'length));
+			elsif hz_ena='1' then
+				hz_sel   <= '1';
+				vt_sel   <= '0';
+				addr     := 0;
+				signfcnd := to_unsigned(hz_signfcnds(to_integer(unsigned(hz_scale(2-1 downto 0)))), signfcnd'length);
+				tick     := resize(mul(shift_right(signed(hz_offset), hztick_bits+font_bits), signfcnd), tick'length);
+				tick_req <= not to_stdulogic(to_bit(tick_rdy));
+				left     <= '1';
+				start    := signed(resize(signfcnd, start'length));
+				shr      <= std_logic_vector(to_signed(hz_shrs(to_integer(unsigned(hz_scale))), shr'length));
+				pnt      <= std_logic_vector(to_signed(hz_pnts(to_integer(unsigned(hz_scale))), pnt'length));
+				wth      <= x"8";
+			else
+				hz_sel   <= '0';
+				vt_sel   <= '0';
+				addr     := 0;
+				tick_no  := -1;
+				left     <= '-';
+				shr      <= (others => '-');
+				pnt      <= (others => '-');
+			end if;
+			hz_taddr <= to_unsigned(addr, hz_taddr'length);
+			vt_taddr <= to_unsigned(addr, vt_taddr'length);
+		end if;
+	end process;
 
 		btof_e : entity hdl4fpga.btof
 		generic map (
