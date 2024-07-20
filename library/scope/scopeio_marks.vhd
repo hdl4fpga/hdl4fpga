@@ -65,6 +65,7 @@ entity scopeio_marks is
 end;
 
 architecture def of scopeio_marks is
+	subtype iterators is integer range -1 to max(2**vt_taddr'length/2**vttick_bits-1, 2**hz_taddr'length/2**hzstep_bits-1);
 	signal vtscale_ena    : std_logic;
 	signal vtl_scalecid   : std_logic_vector(chanid_bits-1 downto 0);
 	signal vt_cid         : std_logic_vector(chanid_bits-1 downto 0);
@@ -146,10 +147,10 @@ begin
 		if rising_edge(rgtr_clk) then
 			if (tick_req xor tick_rdy)='0' then
 				if (vtoffset_ena or vtscale_ena)='1' then
-					tick_from <= 2**vt_taddr'length/2**vttick_bits-1;
+					tick_total <= 2**vt_taddr'length/2**vttick_bits-1;
 					tick_req  <= not tick_rdy;
 				elsif hz_ena='1' then
-					tick_from <= 2**hz_taddr'length/2**hzstep_bits-1;
+					tick_total <= 2**hz_taddr'length/2**hzstep_bits-1;
 					tick_req  <= not tick_rdy;
 				end if;
 			end if;
@@ -160,15 +161,28 @@ begin
 		variable signfcnd : unsigned(max(vtsignfcnd_length, hzsignfcnd_length)-1 downto 0);
 		variable start    : signed(0 to signfcnd'length);
 		variable tick     : signed(0 to bin'length-1); -- to 2**bin'length-1;
-		variable tick_no  : integer range -1 to max(2**vt_taddr'length/2**vttick_bits-1, 2**hz_taddr'length/2**hzstep_bits-1);
 		variable addr     : natural range  0 to 2**max(vt_taddr'length,hz_taddr'length)-1;
 		variable xxx : boolean := true;
 		constant yyy : signed(vt_offset'range) := (others => '1');
+		type states is (s_init, s_run);
+		variable state : states;
+		variable i : iterator;
 	begin
 		if rising_edge(rgtr_clk) then
-			if (to_bit(tick_req) xor to_bit(tick_rdy))='1' then
-			else
-			end if;
+			case state is
+			when s_init =>
+				if (tick_rdy xor tick_req)='1' then
+					state := s_run;
+				end if;
+			when s_run =>
+				if i < 0 then
+					tick_rdy <= tick_req;
+					state := s_init;
+				else
+					mark := mark + to_integer(start);
+					i := i - 1;
+				end if;
+			end case;
 				if (to_bit(btof_req) xor to_bit(btof_rdy))='0' then
 					if tick_no >= 0 then
 						if tick < 0 then
