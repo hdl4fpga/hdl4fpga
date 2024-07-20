@@ -83,8 +83,19 @@ architecture def of scopeio_axis is
 
 	constant bcd_length    : natural := 4;
 
+	signal rgtr_dv   : std_logic;
+	signal rgtr_id   : std_logic_vector(8-1 downto 0);
+	signal rgtr_data : std_logic_vector(0 to 4*8-1);
 begin
 
+	marks_e : entity hdl4fpga.scopeio_marks
+	generic map (
+		layout => layout)
+	port map (
+		rgtr_clk  => clk,
+		rgtr_dv   => rgtr_dv,
+		rgtr_id   => rgtr_id,
+		rgtr_data => rgtr_data);
 	video_b : block
 
 		signal char_code  : std_logic_vector(4-1 downto 0);
