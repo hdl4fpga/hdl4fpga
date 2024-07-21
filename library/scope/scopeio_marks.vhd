@@ -288,7 +288,7 @@ begin
 		end if;
 	end process;
 
-	mark_hzaddr <= resize(shift_right(unsigned(hz_pos), hzmark_bits+font_bits), mark_hzaddr'length);
+	mark_hzaddr <= resize(shift_right(unsigned(hz_pos+unsigned(hz_offset)), hzmark_bits+font_bits), mark_hzaddr'length);
 	hzmem_e : entity hdl4fpga.dpram
 	generic map (
 		bitrom => (0 to 2**mark_addr'length-1 => '1'),
