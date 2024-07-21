@@ -38,9 +38,9 @@ entity scopeio_marks is
 		rgtr_dv   : in  std_logic;
 		rgtr_id   : in  std_logic_vector(8-1 downto 0);
 		rgtr_data : in  std_logic_vector;
-		code_frm  : out std_logic := '0';
-		code_irdy : out std_logic := '0';
-		code_data : out ascii);
+		mark_we   : out std_logic := '0';
+		mark_addr : out std_logic_vector(0 to 7);
+		mark_data : out std_logic_vector(0 to 8*4-1));
 
 	constant bin_digits      : natural := 3;
 
@@ -94,12 +94,12 @@ architecture def of scopeio_marks is
 
 	constant offset_length : natural := max(vt_offset'length, hz_offset'length);
 
-	signal bin          : signed(0 to bin_digits*((offset_length+sfcnd_length+bin_digits-1)/bin_digits));
+	signal btod_bin     : signed(0 to bin_digits*((offset_length+sfcnd_length+bin_digits-1)/bin_digits));
 
 	signal mark_req     : bit;
 	signal mark_rdy     : bit;
 	signal mark_cnt     : natural range 0 to max(2**vtheight_bits/grid_unit, 2**hzwidth_bits/grid_unit)-1;
-	signal mark_from    : signed(0 to bin'length-1);
+	signal mark_from    : signed(0 to btod_bin'length-1);
 	signal mark_step    : signed(0 to sfcnd_length);
 
 
@@ -110,6 +110,8 @@ architecture def of scopeio_marks is
 	signal btod_rdy     : std_logic;
 	signal btod_width   : std_logic_vector(4-1 downto 0);
 
+	signal code_frm     : std_logic;
+	signal code_data    : std_logic_vector(0 to 4-1);
 begin
 
 	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
@@ -169,7 +171,7 @@ begin
 		rd_addr => vt_offsetcid,
 		rd_data => tbl_scaleid);
 
-	process (rgtr_clk)
+	process (rgtr_clk, rgtr_dv)
 		variable sfcnd   : unsigned(sfcnd_length-1 downto 0);
 		variable scaleid : natural range 0 to vt_shts'length-1;
 		variable timeid  : natural range 0 to hz_shts'length-1;
@@ -196,9 +198,11 @@ begin
 					btod_dec   <= to_signed(hz_pnts(timeid), btod_dec'length);
 					btod_left  <= '1';
 					btod_width <= x"8";
-					mark_cnt   <= 2**hzwidth_bits/grid_unit-1;
+					mark_cnt   <= 2**hzwidth_bits/(2*grid_unit)-1;
 					mark_from  <= resize(mul(shift_right(signed(hz_offset), division_bits), sfcnd),mark_from'length);
-					mark_step  <= signed(resize(sfcnd, mark_step'length));
+					mark_from  <= (others => '0');
+					mark_step  <= signed(resize(2*sfcnd, mark_step'length));
+					mark_step  <= to_signed(1, mark_step'length);
 					mark_req   <= not mark_rdy;
 				end if;
 			end if;
@@ -209,23 +213,28 @@ begin
 		type states is (s_init, s_run);
 		variable state     : states;
 		variable mark_cntr : integer range -1 to max(2**vtheight_bits/grid_unit, 2**hzwidth_bits/grid_unit)-1;
-		variable mark_val  : signed(0 to bin'length-1); -- to 2**bin'length-1;
+		variable mark_val  : signed(0 to btod_bin'length-1);
 	begin
 		if rising_edge(rgtr_clk) then
 			case state is
 			when s_init =>
 				if (mark_rdy xor mark_req)='1' then
+					mark_val  := mark_from;
+					mark_cntr := mark_cnt;
 					state := s_run;
 				end if;
 			when s_run =>
 				if mark_cntr < 0 then
 					mark_rdy <= mark_req;
 					state := s_init;
-				else
+				elsif (to_bit(btod_req) xor to_bit(btod_rdy))='0' then
 					mark_val  := mark_val  + mark_step;
 					mark_cntr := mark_cntr - 1;
+					btod_req <= not to_stdulogic(to_bit(btod_rdy));
+					btod_bin <= mark_val;
 				end if;
 			end case;
+			mark_addr <= not std_logic_vector(to_unsigned(mark_cntr, mark_addr'length));
 		end if;
 	end process;
 
@@ -238,12 +247,25 @@ begin
 		btof_rdy => btod_rdy,
 		left     => btod_left,
 		width    => btod_width,
-		sht      => std_logic_vector(btod_sht),
-		dec      => std_logic_vector(btod_dec),
+		sht      => "0", --std_logic_vector(btod_sht),
+		dec      => "0", --std_logic_vector(btod_dec),
 		exp      => b"000",
-		neg      => bin(bin'left),
-		bin      => std_logic_vector(bin(bin'left+1 to bin'right)),
+		neg      => btod_bin(btod_bin'left),
+		bin      => std_logic_vector(btod_bin(1 to btod_bin'right)),
 		code_frm => code_frm,
 		code     => code_data);
+
+	process (rgtr_clk, btod_req)
+		variable shr : unsigned(0 to 8*4-1);
+	begin
+		if rising_edge(rgtr_clk) then
+			if code_frm='1' then
+				shr(code_data'range) := unsigned(code_data);
+				shr := shr rol code_data'length;
+				mark_data <= std_logic_vector(shr);
+			end if;
+			mark_we <= not code_frm;
+		end if;
+	end process;
 
 end;
