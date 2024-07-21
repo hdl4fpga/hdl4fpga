@@ -138,7 +138,7 @@ begin
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
 
-		hz_ena    => hz_ena,
+		hz_dv    => hz_ena,
 		hz_scale  => hz_scaleid,
 		hz_offset => hz_offset);
 
@@ -215,7 +215,7 @@ begin
 					btod_width <= x"8";
 					mark_cnt   <= 2**hzwidth_bits/(2*grid_unit)-1;
 					mark_from  <= resize(mul(shift_right(signed(hz_offset), division_bits), sfcnd),mark_from'length);
-					mark_from  <= (others => '0');
+					-- mark_from  <= (others => '0');
 					mark_step  <= signed(resize(2*sfcnd, mark_step'length));
 					mark_step  <= to_signed(1, mark_step'length);
 					mark_req   <= not mark_rdy;
@@ -288,7 +288,7 @@ begin
 		end if;
 	end process;
 
-	mark_hzaddr <= resize(shift_right(unsigned(hz_pos+unsigned(hz_offset)), hzmark_bits+font_bits), mark_hzaddr'length);
+	mark_hzaddr <= resize(shift_right(unsigned(hz_pos)+unsigned(hz_offset), hzmark_bits+font_bits), mark_hzaddr'length);
 	hzmem_e : entity hdl4fpga.dpram
 	generic map (
 		bitrom => (0 to 2**mark_addr'length-1 => '1'),
