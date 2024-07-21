@@ -106,6 +106,7 @@ begin
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
+		video_clk => video_clk,
 		hz_pos    => std_logic_vector(hz_pos),
 		hz_mark   => hz_mark,
 		vt_pos    => std_logic_vector(vt_pos),
@@ -183,7 +184,7 @@ begin
    				-- di  => std_logic_vector(hz_pos(vcol'range)),
    				-- do  => );
 
-			hz_bcd <= multiplex(x"12345678", resize(shift_right(unsigned(video_hcntr), font_bits), hzmark_bits), hz_bcd'length);
+			hz_bcd <= multiplex(hz_mark, resize(shift_right(unsigned(video_hcntr), font_bits), hzmark_bits), hz_bcd'length);
 
 		end block;
 

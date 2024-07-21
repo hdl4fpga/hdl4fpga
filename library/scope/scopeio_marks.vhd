@@ -38,6 +38,7 @@ entity scopeio_marks is
 		rgtr_dv   : in  std_logic;
 		rgtr_id   : in  std_logic_vector(8-1 downto 0);
 		rgtr_data : in  std_logic_vector;
+		video_clk : in  std_logic;
 		vt_pos    : in  std_logic_vector;
 		vt_mark   : out std_logic_vector(8*4-1 downto 0);
 		hz_pos    : in  std_logic_vector;
@@ -56,6 +57,7 @@ entity scopeio_marks is
 	constant grid_height     : natural := hdo(layout)**".grid.height";
 	constant grid_unit       : natural := hdo(layout)**".grid.unit";
 
+	constant font_bits     : natural := unsigned_num_bits(font_size-1);
 	constant vt_bias         : natural := (grid_height/2)/grid_unit-1;
 
 	constant hzwidth_bits    : natural := unsigned_num_bits(num_of_segments*grid_width-1);
@@ -114,9 +116,16 @@ architecture def of scopeio_marks is
 
 	signal code_frm     : std_logic;
 	signal code_data    : std_logic_vector(0 to 4-1);
+
+	constant vtmark_bits  : natural := unsigned_num_bits(8-1);
+	constant vtaddr_bits  : natural := unsigned_num_bits(2**vtheight_bits/(1*grid_unit)-1);
+	constant hzmark_bits  : natural := unsigned_num_bits(8-1);
+	constant hzaddr_bits  : natural := unsigned_num_bits(2**hzwidth_bits/(2*grid_unit)-1);
 	signal mark_we      : std_logic;
-	signal mark_addr    : std_logic_vector(0 to unsigned_num_bits(max(2**vtheight_bits/grid_unit, 2**hzwidth_bits/(2*grid_unit))-1)-1);
+	signal mark_addr    : std_logic_vector(0 to max(vtaddr_bits, hzaddr_bits)-1);
 	signal mark_data    : std_logic_vector(0 to 8*4-1);
+
+	signal   mark_hzaddr  : unsigned(0 to hzaddr_bits-1);
 begin
 
 	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
@@ -226,20 +235,25 @@ begin
 				if (mark_rdy xor mark_req)='1' then
 					mark_val  := mark_from;
 					mark_cntr := mark_cnt;
+					mark_addr <= not std_logic_vector(to_unsigned(mark_cntr, mark_addr'length));
+					btod_bin  <= mark_val;
+					btod_req <= not to_stdulogic(to_bit(btod_rdy));
 					state := s_run;
 				end if;
 			when s_run =>
-				if mark_cntr < 0 then
-					mark_rdy <= mark_req;
-					state := s_init;
-				elsif (to_bit(btod_req) xor to_bit(btod_rdy))='0' then
-					mark_val  := mark_val  + mark_step;
-					mark_cntr := mark_cntr - 1;
-					btod_req <= not to_stdulogic(to_bit(btod_rdy));
-					btod_bin <= mark_val;
+				if (to_bit(btod_req) xor to_bit(btod_rdy))='0' then
+					if mark_cntr < 0 then
+						mark_rdy <= mark_req;
+						state := s_init;
+					else
+						mark_addr <= not std_logic_vector(to_unsigned(mark_cntr, mark_addr'length));
+						btod_bin  <= mark_val;
+						mark_val  := mark_val  + mark_step;
+						mark_cntr := mark_cntr - 1;
+						btod_req <= not to_stdulogic(to_bit(btod_rdy));
+					end if;
 				end if;
 			end case;
-			mark_addr <= not std_logic_vector(to_unsigned(mark_cntr, mark_addr'length));
 		end if;
 	end process;
 
@@ -269,10 +283,11 @@ begin
 				shr := shr rol code_data'length;
 				mark_data <= std_logic_vector(shr);
 			end if;
-			mark_we <= not code_frm;
+			mark_we <= (btod_rdy xor btod_req);
 		end if;
 	end process;
 
+	mark_hzaddr <= resize(shift_right(unsigned(hz_pos), hzmark_bits+font_bits), mark_hzaddr'length);
 	hzmem_e : entity hdl4fpga.dpram
 	generic map (
 		bitrom => (0 to 2**mark_addr'length-1 => '1'),
@@ -284,7 +299,8 @@ begin
 		wr_addr => mark_addr,
 		wr_data => mark_data,
 
-		rd_addr => mark_addr, --std_logic_vector(hz_pos),
+		rd_clk  => video_clk,
+		rd_addr => std_logic_vector(mark_hzaddr), --std_logic_vector(hz_pos),
 		rd_data => hz_mark);
 
 	vt_mem_e : entity hdl4fpga.dpram
@@ -298,6 +314,7 @@ begin
 		wr_addr => mark_addr,
 		wr_data => mark_data,
 
+		rd_clk  => video_clk,
 		rd_addr => mark_addr, --std_logic_vector(vt_pos),
 		rd_data => vt_mark);
 
