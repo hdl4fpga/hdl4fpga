@@ -38,9 +38,10 @@ entity scopeio_marks is
 		rgtr_dv   : in  std_logic;
 		rgtr_id   : in  std_logic_vector(8-1 downto 0);
 		rgtr_data : in  std_logic_vector;
-		mark_we   : out std_logic := '0';
-		mark_addr : out std_logic_vector(0 to 7);
-		mark_data : out std_logic_vector(0 to 8*4-1));
+		vt_pos    : in  std_logic_vector;
+		vt_mark   : out std_logic_vector(8*4-1 downto 0);
+		hz_pos    : in  std_logic_vector;
+		hz_mark   : out std_logic_vector(8*4-1 downto 0));
 
 	constant bin_digits      : natural := 3;
 
@@ -54,6 +55,7 @@ entity scopeio_marks is
 	constant grid_width      : natural := hdo(layout)**".grid.width";
 	constant grid_height     : natural := hdo(layout)**".grid.height";
 	constant grid_unit       : natural := hdo(layout)**".grid.unit";
+
 	constant vt_bias         : natural := (grid_height/2)/grid_unit-1;
 
 	constant hzwidth_bits    : natural := unsigned_num_bits(num_of_segments*grid_width-1);
@@ -112,6 +114,9 @@ architecture def of scopeio_marks is
 
 	signal code_frm     : std_logic;
 	signal code_data    : std_logic_vector(0 to 4-1);
+	signal mark_we      : std_logic;
+	signal mark_addr    : std_logic_vector(0 to unsigned_num_bits(max(2**vtheight_bits/grid_unit, 2**hzwidth_bits/(2*grid_unit))-1)-1);
+	signal mark_data    : std_logic_vector(0 to 8*4-1);
 begin
 
 	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
@@ -212,7 +217,7 @@ begin
 	process (rgtr_clk)
 		type states is (s_init, s_run);
 		variable state     : states;
-		variable mark_cntr : integer range -1 to max(2**vtheight_bits/grid_unit, 2**hzwidth_bits/grid_unit)-1;
+		variable mark_cntr : integer range -1 to 2**mark_addr'length-1;
 		variable mark_val  : signed(0 to btod_bin'length-1);
 	begin
 		if rising_edge(rgtr_clk) then
@@ -267,5 +272,34 @@ begin
 			mark_we <= not code_frm;
 		end if;
 	end process;
+
+	hzmem_e : entity hdl4fpga.dpram
+	generic map (
+		bitrom => (0 to 2**mark_addr'length-1 => '1'),
+		synchronous_rdaddr => true,
+		synchronous_rddata => true)
+	port map (
+		wr_clk  => rgtr_clk,
+		wr_ena  => mark_we,
+		wr_addr => mark_addr,
+		wr_data => mark_data,
+
+		rd_addr => mark_addr, --std_logic_vector(hz_pos),
+		rd_data => hz_mark);
+
+	vt_mem_e : entity hdl4fpga.dpram
+	generic map (
+		bitrom => (0 to 2**mark_addr'length-1 => '1'),
+		synchronous_rdaddr => true,
+		synchronous_rddata => true)
+	port map (
+		wr_clk  => rgtr_clk,
+		wr_ena  => mark_we,
+		wr_addr => mark_addr,
+		wr_data => mark_data,
+
+		rd_addr => mark_addr, --std_logic_vector(vt_pos),
+		rd_data => vt_mark);
+
 
 end;

@@ -294,6 +294,12 @@ package base is
 
 	function multiplex (
 		constant word  : std_logic_vector;
+		constant addr  : unsigned;
+		constant size  : natural)
+		return std_logic_vector;
+
+	function multiplex (
+		constant word  : std_logic_vector;
 		constant addr  : natural;
 		constant size  : natural)
 		return std_logic_vector;
@@ -1151,7 +1157,7 @@ package body base is
 		return std_logic is
 		variable retval : std_logic_vector(0 to 0);
 	begin
-		retval := multiplex(word, (0 to 0 => addr), 1);
+		retval := multiplex(word, std_logic_vector'(0 to 0 => addr), 1);
 		return retval(0);
 	end;
 
@@ -1219,6 +1225,18 @@ package body base is
 			report "multiplex mod"
 			severity failure;
 		return multiplex(fill(data => word, size => size*(2**addr'length), right => true), addr);
+	end;
+
+	function multiplex (
+		constant word  : std_logic_vector;
+		constant addr  : unsigned;
+		constant size  : natural)
+		return std_logic_vector is
+	begin
+		assert word'length mod size = 0
+			report "multiplex mod"
+			severity failure;
+		return multiplex(fill(data => word, size => size*(2**addr'length), right => true), std_logic_vector(addr));
 	end;
 
 	function multiplex (
