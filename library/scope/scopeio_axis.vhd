@@ -196,7 +196,7 @@ begin
 		begin 
 
 			vt_pos <= resize(unsigned(video_vcntr) + unsigned(vt_offset(division_bits-1 downto 0)), vt_pos'length);
-			vton <= video_vton and setif(vt_pos(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1'));
+			vton   <= video_vton when vt_pos(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1') else '0';
 
 			charcol_e : entity hdl4fpga.latency
 			generic map (

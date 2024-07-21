@@ -122,10 +122,11 @@ architecture def of scopeio_marks is
 	constant hzmark_bits  : natural := unsigned_num_bits(8-1);
 	constant hzaddr_bits  : natural := unsigned_num_bits(2**hzwidth_bits/(2*grid_unit)-1);
 	signal mark_we      : std_logic;
-	signal mark_addr    : std_logic_vector(0 to max(vtaddr_bits, hzaddr_bits)-1);
+	signal mark_addr    : std_logic_vector(max(vtaddr_bits, hzaddr_bits)-1 downto 0);
 	signal mark_data    : std_logic_vector(0 to 8*4-1);
 
 	signal   mark_hzaddr  : unsigned(0 to hzaddr_bits-1);
+	signal   mark_vtaddr  : unsigned(0 to vtaddr_bits-1);
 begin
 
 	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
@@ -300,9 +301,10 @@ begin
 		wr_data => mark_data,
 
 		rd_clk  => video_clk,
-		rd_addr => std_logic_vector(mark_hzaddr), --std_logic_vector(hz_pos),
+		rd_addr => std_logic_vector(mark_hzaddr),
 		rd_data => hz_mark);
 
+	mark_vtaddr <= resize(shift_right(unsigned(vt_pos), vtmark_bits+font_bits), mark_vtaddr'length);
 	vt_mem_e : entity hdl4fpga.dpram
 	generic map (
 		bitrom => (0 to 2**mark_addr'length-1 => '1'),
@@ -310,12 +312,12 @@ begin
 		synchronous_rddata => true)
 	port map (
 		wr_clk  => rgtr_clk,
-		wr_ena  => mark_we,
-		wr_addr => mark_addr,
+		wr_ena  => '0', -- mark_we,
+		wr_addr => mark_addr(vtaddr_bits-1 downto 0),
 		wr_data => mark_data,
 
 		rd_clk  => video_clk,
-		rd_addr => mark_addr, --std_logic_vector(vt_pos),
+		rd_addr => std_logic_vector(mark_vtaddr),
 		rd_data => vt_mark);
 
 
