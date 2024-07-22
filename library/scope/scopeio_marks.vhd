@@ -115,18 +115,21 @@ architecture def of scopeio_marks is
 	signal btod_width   : std_logic_vector(4-1 downto 0);
 
 	signal code_frm     : std_logic;
-	signal code_data    : std_logic_vector(0 to 4-1);
+	signal code_data    : std_logic_vector(4-1 downto 0);
 
-	constant vtmark_bits  : natural := unsigned_num_bits(8-1);
-	constant vtaddr_bits  : natural := unsigned_num_bits(2**vtheight_bits/(1*grid_unit)-1);
-	constant hzmark_bits  : natural := unsigned_num_bits(8-1);
-	constant hzaddr_bits  : natural := unsigned_num_bits(2**hzwidth_bits/(2*grid_unit)-1);
-	signal mark_we      : std_logic;
+	constant vtmark_bits : natural := unsigned_num_bits(8-1);
+	constant vtaddr_bits : natural := unsigned_num_bits(2**vtheight_bits/(1*grid_unit)-1);
+	constant hzmark_bits : natural := unsigned_num_bits(8-1);
+	constant hzaddr_bits : natural := unsigned_num_bits(2**hzwidth_bits/(2*grid_unit)-1);
+	signal hzmark_we      : std_logic;
+	signal vtmark_we      : std_logic;
 	signal mark_addr    : std_logic_vector(max(vtaddr_bits, hzaddr_bits)-1 downto 0);
 	signal mark_data    : std_logic_vector(0 to 8*4-1);
 
-	signal   mark_hzaddr  : unsigned(0 to hzaddr_bits-1);
-	signal   mark_vtaddr  : unsigned(0 to vtaddr_bits-1);
+	alias mark_hzaddr  is hz_pos(hzwidth_bits-1  downto division_bits+1);
+	alias mark_vtaddr  is vt_pos(vtheight_bits-1 downto division_bits);
+	type mark_events is (hz_event, vt_event);
+	signal mark_event : mark_events;
 begin
 
 	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
@@ -138,7 +141,7 @@ begin
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
 
-		hz_dv    => hz_ena,
+		hz_ena    => hz_ena,
 		hz_scale  => hz_scaleid,
 		hz_offset => hz_offset);
 
@@ -190,7 +193,6 @@ begin
 		variable sfcnd   : unsigned(sfcnd_length-1 downto 0);
 		variable scaleid : natural range 0 to vt_shts'length-1;
 		variable timeid  : natural range 0 to hz_shts'length-1;
-		variable xxx : std_logic := '1';
 	begin
 		if rising_edge(rgtr_clk) then
 			if (mark_req xor mark_rdy)='0' then
@@ -201,23 +203,22 @@ begin
 					btod_dec   <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					btod_left  <= '0';
 					btod_width <= std_logic_vector(to_unsigned(vt_width/font_size, btod_width'length));
-					mark_cnt   <= 2**vtheight_bits-1;
+					mark_event <= vt_event;
+					mark_cnt   <= 2**vtheight_bits/(grid_unit)-1;
 					mark_from  <= -resize(mul(shift_right(signed(vt_offset), division_bits)-vt_bias, sfcnd), mark_from'length);
 					mark_step  <= -signed(resize(sfcnd, mark_step'length));
 					mark_req   <= not mark_rdy;
-				elsif (xxx or hz_ena)='1' then
-					xxx := '0';
+				elsif hz_ena='1' then
 					timeid     := to_integer(unsigned(hz_scaleid));
 					sfcnd      := to_unsigned(hz_sfcnds(timeid mod 4), sfcnd'length);
 					btod_sht   <= to_signed(hz_shts(timeid), btod_sht'length);
 					btod_dec   <= to_signed(hz_pnts(timeid), btod_dec'length);
 					btod_left  <= '1';
 					btod_width <= x"8";
+					mark_event <= hz_event;
 					mark_cnt   <= 2**hzwidth_bits/(2*grid_unit)-1;
-					mark_from  <= resize(mul(shift_right(signed(hz_offset), division_bits), sfcnd),mark_from'length);
-					-- mark_from  <= (others => '0');
+					mark_from  <= resize(mul(shift_right(signed(hz_offset), division_bits+1), 2*sfcnd),mark_from'length);
 					mark_step  <= signed(resize(2*sfcnd, mark_step'length));
-					mark_step  <= to_signed(1, mark_step'length);
 					mark_req   <= not mark_rdy;
 				end if;
 			end if;
@@ -267,8 +268,8 @@ begin
 		btof_rdy => btod_rdy,
 		left     => btod_left,
 		width    => btod_width,
-		sht      => "0", --std_logic_vector(btod_sht),
-		dec      => "0", --std_logic_vector(btod_dec),
+		sht      => std_logic_vector(btod_sht),
+		dec      => std_logic_vector(btod_dec),
 		exp      => b"000",
 		neg      => btod_bin(btod_bin'left),
 		bin      => std_logic_vector(btod_bin(1 to btod_bin'right)),
@@ -276,49 +277,53 @@ begin
 		code     => code_data);
 
 	process (rgtr_clk, btod_req)
-		variable shr : unsigned(0 to 8*4-1);
+		variable shr : unsigned(8*4-1 downto 0);
 	begin
 		if rising_edge(rgtr_clk) then
 			if code_frm='1' then
-				shr(code_data'range) := unsigned(code_data);
 				shr := shr rol code_data'length;
+				shr(code_data'range) := unsigned(code_data);
 				mark_data <= std_logic_vector(shr);
 			end if;
-			mark_we <= (btod_rdy xor btod_req);
+			case mark_event is
+			when hz_event =>
+				vtmark_we <= '0';
+				hzmark_we <= (btod_rdy xor btod_req);
+			when vt_event =>
+				vtmark_we <= (btod_rdy xor btod_req);
+				hzmark_we <= '0';
+			end case;
 		end if;
 	end process;
 
-	mark_hzaddr <= resize(shift_right(unsigned(hz_pos)+unsigned(hz_offset), hzmark_bits+font_bits), mark_hzaddr'length);
 	hzmem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => (0 to 2**mark_addr'length-1 => '1'),
+		bitrom => (0 to 2**hzaddr_bits*hz_mark'length-1 => '1'),
 		synchronous_rdaddr => true,
 		synchronous_rddata => true)
 	port map (
 		wr_clk  => rgtr_clk,
-		wr_ena  => mark_we,
-		wr_addr => mark_addr,
+		wr_ena  => hzmark_we,
+		wr_addr => mark_addr(hzaddr_bits-1 downto 0),
 		wr_data => mark_data,
 
 		rd_clk  => video_clk,
-		rd_addr => std_logic_vector(mark_hzaddr),
+		rd_addr => mark_hzaddr,
 		rd_data => hz_mark);
 
-	mark_vtaddr <= resize(shift_right(unsigned(vt_pos), vtmark_bits+font_bits), mark_vtaddr'length);
 	vt_mem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => (0 to 2**mark_addr'length-1 => '1'),
+		bitrom => (0 to 2**vtaddr_bits*vt_mark'length-1 => '1'),
 		synchronous_rdaddr => true,
 		synchronous_rddata => true)
 	port map (
 		wr_clk  => rgtr_clk,
-		wr_ena  => '0', -- mark_we,
+		wr_ena  => vtmark_we,
 		wr_addr => mark_addr(vtaddr_bits-1 downto 0),
 		wr_data => mark_data,
 
 		rd_clk  => video_clk,
-		rd_addr => std_logic_vector(mark_vtaddr),
+		rd_addr => mark_vtaddr,
 		rd_data => vt_mark);
-
 
 end;
