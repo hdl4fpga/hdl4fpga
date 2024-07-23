@@ -42,7 +42,9 @@ entity scopeio_marks is
 		vt_pos    : in  std_logic_vector;
 		vt_mark   : out std_logic_vector(8*4-1 downto 0);
 		hz_pos    : in  std_logic_vector;
-		hz_mark   : out std_logic_vector(8*4-1 downto 0));
+		hz_mark   : out std_logic_vector(8*4-1 downto 0);
+		export_vtoffset  : out std_logic_vector;
+		export_hzoffset  : out std_logic_vector);
 
 	constant bin_digits      : natural := 3;
 
@@ -189,6 +191,22 @@ begin
 		rd_addr => vt_offsetcid,
 		rd_data => tbl_scaleid);
 
+	process (rgtr_clk)
+	begin
+		if rising_edge(rgtr_clk) then
+			if (mark_req xor mark_rdy)='0' then
+				if vtscale_ena='1' then
+					export_vtoffset <= tbl_offset;
+				elsif vtoffset_ena='1' then
+					export_vtoffset <= vt_offset;
+				end if;
+				if hz_ena='1' then
+					export_hzoffset <= hz_offset;
+				end if;
+			end if;
+		end if;
+	end process;
+
 	process (rgtr_clk, rgtr_dv)
 		variable sfcnd   : unsigned(sfcnd_length-1 downto 0);
 		variable scaleid : natural range 0 to vt_shts'length-1;
@@ -197,7 +215,11 @@ begin
 		if rising_edge(rgtr_clk) then
 			if (mark_req xor mark_rdy)='0' then
 				if (vtoffset_ena or vtscale_ena)='1' then
-					scaleid    := to_integer(unsigned(vt_scaleid));
+					if vtscale_ena='1' then
+						scaleid := to_integer(unsigned(vt_scaleid));
+					else
+						scaleid := to_integer(unsigned(tbl_scaleid));
+					end if;
 					sfcnd      := to_unsigned(vt_sfcnds(scaleid mod 4), sfcnd'length);
 					btod_sht   <= to_signed(vt_shts(scaleid), btod_sht'length);
 					btod_dec   <= to_signed(vt_pnts(scaleid), btod_dec'length);
@@ -205,7 +227,11 @@ begin
 					btod_width <= std_logic_vector(to_unsigned(vt_width/font_size, btod_width'length));
 					mark_event <= vt_event;
 					mark_cnt   <= 2**vtheight_bits/(grid_unit)-1;
-					mark_from  <= -resize(mul(shift_right(signed(vt_offset), division_bits)-vt_bias, sfcnd), mark_from'length);
+					if vtoffset_ena='1' then
+						mark_from <= -resize(mul(shift_right(signed(vt_offset), division_bits)-vt_bias, sfcnd), mark_from'length);
+					else
+						mark_from <= -resize(mul(shift_right(signed(tbl_offset), division_bits)-vt_bias, sfcnd), mark_from'length);
+					end if;
 					mark_step  <= -signed(resize(sfcnd, mark_step'length));
 					mark_req   <= not mark_rdy;
 				elsif hz_ena='1' then

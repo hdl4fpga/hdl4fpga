@@ -47,9 +47,6 @@ entity scopeio_axis is
 		video_hzon    : in  std_logic;
 		video_hzdot   : out std_logic;
 
-		vt_dv         : in  std_logic;
-		vt_scale      : in  std_logic_vector;
-		vt_offset     : in  std_logic_vector;
 		video_vcntr   : in  std_logic_vector;
 		video_vton    : in  std_logic;
 		video_vtdot   : out std_logic);
@@ -83,6 +80,7 @@ architecture def of scopeio_axis is
 
 	constant vt_height     : natural := grid_height;
 	constant vtmark_bits   : natural := unsigned_num_bits(8-1);
+	signal vt_offset       : std_logic_vector((5+8)-1 downto 0);
 
 	constant bcd_length    : natural := 4;
 
@@ -90,7 +88,7 @@ architecture def of scopeio_axis is
 	signal mark_vtwe : std_logic;
 	signal mark_hzwe : std_logic;
 	signal mark_we   : std_logic;
-	signal mark_data : std_logic_vector(8*4-1 downto 0);
+	signal mark_data : std_logic_vector(8*bcd_length-1 downto 0);
 
 	signal hz_pos : unsigned(hzoffset_bits-1 downto 0);
 	signal hz_mark : std_logic_vector(2**hzmark_bits*bcd_length-1 downto 0);
@@ -101,16 +99,6 @@ architecture def of scopeio_axis is
 	signal hz_scaleid : std_logic_vector(4-1 downto 0);
 	signal hz_offset  : std_logic_vector(hzoffset_bits-1 downto 0);
 begin
-
-	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
-	port map (
-		rgtr_clk  => rgtr_clk,
-		rgtr_dv   => rgtr_dv,
-		rgtr_id   => rgtr_id,
-		rgtr_data => rgtr_data,
-
-		hz_scale  => hz_scaleid,
-		hz_offset => hz_offset);
 
 	marks_e : entity hdl4fpga.scopeio_marks
 	generic map (
@@ -124,11 +112,13 @@ begin
 		hz_pos    => std_logic_vector(hz_pos),
 		hz_mark   => hz_mark,
 		vt_pos    => std_logic_vector(vt_pos),
-		vt_mark   => vt_mark);
+		vt_mark   => vt_mark,
+		export_vtoffset => vt_offset,
+		export_hzoffset => hz_offset);
 
 	video_b : block
 
-		signal char_code  : std_logic_vector(4-1 downto 0);
+		signal char_code  : std_logic_vector(bcd_length-1 downto 0);
 		signal char_row   : std_logic_vector(font_bits-1 downto 0);
 		signal char_col   : std_logic_vector(font_bits-1 downto 0);
 		signal char_dot   : std_logic;

@@ -156,9 +156,6 @@ begin
 			video_hzon    => hz_on,
 			video_hzdot   => hz_dot,
 
-			vt_dv         => v_dv,
-			vt_scale      => vt_scale,
-			vt_offset     => v_offset,
 			video_vcntr   => y,
 			video_vton    => vt_on,
 			video_vtdot   => vt_dot);
