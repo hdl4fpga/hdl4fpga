@@ -131,8 +131,8 @@ architecture def of scopeio_marks is
 	signal mark_addr     : std_logic_vector(max(vtaddr_bits, hzaddr_bits)-1 downto 0);
 	signal mark_data     : std_logic_vector(0 to 8*bcd_length-1);
 
-	alias mark_hzaddr  is hz_pos(hzwidth_bits-1  downto division_bits+1);
-	alias mark_vtaddr  is vt_pos(vtheight_bits-1 downto division_bits);
+	-- alias mark_hzaddr  is hz_pos; --(hzwidth_bits-1  downto division_bits+1);
+	-- alias mark_vtaddr  is vt_pos; --(vtheight_bits-1 downto division_bits);
 	type mark_events is (hz_event, vt_event);
 	signal mark_event   : mark_events;
 begin
@@ -231,9 +231,9 @@ begin
 					mark_event <= vt_event;
 					mark_cnt   <= 2**vtheight_bits/(grid_unit)-1;
 					if vtoffset_ena='1' then
-						mark_from <= -resize(mul(shift_right(signed(vt_offset), division_bits)-vt_bias, sfcnd), mark_from'length);
+						mark_from <= -resize(mul(shift_right(signed(vt_offset),  vt_pos'right)-vt_bias, sfcnd), mark_from'length);
 					else
-						mark_from <= -resize(mul(shift_right(signed(tbl_offset), division_bits)-vt_bias, sfcnd), mark_from'length);
+						mark_from <= -resize(mul(shift_right(signed(tbl_offset), vt_pos'right)-vt_bias, sfcnd), mark_from'length);
 					end if;
 					mark_step  <= -signed(resize(sfcnd, mark_step'length));
 					mark_req   <= not mark_rdy;
@@ -246,7 +246,7 @@ begin
 					btod_width <= x"8";
 					mark_event <= hz_event;
 					mark_cnt   <= 2**hzwidth_bits/(2*grid_unit)-1;
-					mark_from  <= resize(shift_left(mul(shift_right(signed(hz_offset), division_bits+1), sfcnd),1),mark_from'length);
+					mark_from  <= resize(shift_left(mul(shift_right(signed(hz_offset), hz_pos'right), sfcnd),1),mark_from'length);
 					mark_step  <= signed(resize(2*sfcnd, mark_step'length));
 					mark_req   <= not mark_rdy;
 				end if;
@@ -338,7 +338,7 @@ begin
 		wr_data => mark_data,
 
 		rd_clk  => video_clk,
-		rd_addr => mark_hzaddr,
+		rd_addr => hz_pos,
 		rd_data => hz_mark);
 
 	vt_mem_e : entity hdl4fpga.dpram
@@ -353,7 +353,7 @@ begin
 		wr_data => mark_data,
 
 		rd_clk  => video_clk,
-		rd_addr => mark_vtaddr,
+		rd_addr => vt_pos,
 		rd_data => vt_mark);
 
 end;

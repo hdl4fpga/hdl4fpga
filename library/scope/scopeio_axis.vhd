@@ -109,9 +109,9 @@ begin
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
 		video_clk => video_clk,
-		hz_pos    => std_logic_vector(hz_pos),
+		hz_pos    => std_logic_vector(hz_pos(hzwidth_bits-1  downto division_bits+1)),
 		hz_mark   => hz_mark,
-		vt_pos    => std_logic_vector(vt_pos),
+		vt_pos    => std_logic_vector(vt_pos(vtheight_bits-1 downto division_bits)),
 		vt_mark   => vt_mark,
 		export_vtoffset => vt_offset,
 		export_hzoffset => hz_offset);
