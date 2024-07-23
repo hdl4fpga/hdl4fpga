@@ -175,6 +175,8 @@ HDL4FPGA__scopeio_pointer__beh = $(LIB_HDL4FPGA)/scopeio_pointer/beh.dat
 HDL4FPGA__scopeio_pointer = $(LIB_HDL4FPGA)/scopeio_pointer/_primary.dat
 HDL4FPGA__scopeio_palette__beh = $(LIB_HDL4FPGA)/scopeio_palette/beh.dat
 HDL4FPGA__scopeio_palette = $(LIB_HDL4FPGA)/scopeio_palette/_primary.dat
+HDL4FPGA__scopeio_marks__def = $(LIB_HDL4FPGA)/scopeio_marks/def.dat
+HDL4FPGA__scopeio_marks = $(LIB_HDL4FPGA)/scopeio_marks/_primary.dat
 HDL4FPGA__scopeio_layout__beh = $(LIB_HDL4FPGA)/scopeio_layout/beh.dat
 HDL4FPGA__scopeio_layout = $(LIB_HDL4FPGA)/scopeio_layout/_primary.dat
 HDL4FPGA__scopeio_grid__def = $(LIB_HDL4FPGA)/scopeio_grid/def.dat
@@ -183,8 +185,6 @@ HDL4FPGA__scopeio_downsampler__beh = $(LIB_HDL4FPGA)/scopeio_downsampler/beh.dat
 HDL4FPGA__scopeio_downsampler = $(LIB_HDL4FPGA)/scopeio_downsampler/_primary.dat
 HDL4FPGA__scopeio_capture__beh = $(LIB_HDL4FPGA)/scopeio_capture/beh.dat
 HDL4FPGA__scopeio_capture = $(LIB_HDL4FPGA)/scopeio_capture/_primary.dat
-HDL4FPGA__scopeio_axisreading__def = $(LIB_HDL4FPGA)/scopeio_axisreading/def.dat
-HDL4FPGA__scopeio_axisreading = $(LIB_HDL4FPGA)/scopeio_axisreading/_primary.dat
 HDL4FPGA__scopeio_axis__def = $(LIB_HDL4FPGA)/scopeio_axis/def.dat
 HDL4FPGA__scopeio_axis = $(LIB_HDL4FPGA)/scopeio_axis/_primary.dat
 HDL4FPGA__scopeio_amp__beh = $(LIB_HDL4FPGA)/scopeio_amp/beh.dat
@@ -541,6 +541,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__scopeio_pointer) \
     $(HDL4FPGA__scopeio_palette__beh) \
     $(HDL4FPGA__scopeio_palette) \
+    $(HDL4FPGA__scopeio_marks__def) \
+    $(HDL4FPGA__scopeio_marks) \
     $(HDL4FPGA__scopeio_layout__beh) \
     $(HDL4FPGA__scopeio_layout) \
     $(HDL4FPGA__scopeio_grid__def) \
@@ -549,8 +551,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__scopeio_downsampler) \
     $(HDL4FPGA__scopeio_capture__beh) \
     $(HDL4FPGA__scopeio_capture) \
-    $(HDL4FPGA__scopeio_axisreading__def) \
-    $(HDL4FPGA__scopeio_axisreading) \
     $(HDL4FPGA__scopeio_axis__def) \
     $(HDL4FPGA__scopeio_axis) \
     $(HDL4FPGA__scopeio_amp__beh) \
@@ -1638,6 +1638,7 @@ $(HDL4FPGA__scopeio_axis__def) : ../scope/scopeio_axis.vhd \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__btof) \
+		$(HDL4FPGA__scopeio_marks) \
 		$(HDL4FPGA__bcdfonts) \
 		$(HDL4FPGA__cp850x8x16x128to255) \
 		$(HDL4FPGA__cp850x8x16x0to127) \
@@ -1653,17 +1654,6 @@ $(HDL4FPGA__scopeio_axis__def) : ../scope/scopeio_axis.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_axis.vhd
-
-$(HDL4FPGA__scopeio_axisreading) \
-$(HDL4FPGA__scopeio_axisreading__def) : ../scope/scopeio_axisreading.vhd \
-		$(HDL4FPGA__btof) \
-		$(HDL4FPGA__mul_ser) \
-		$(HDL4FPGA__hdo) \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_axisreading.vhd
 
 $(HDL4FPGA__scopeio_capture) \
 $(HDL4FPGA__scopeio_capture__beh) : ../scope/scopeio_capture.vhd \
@@ -1712,6 +1702,23 @@ $(HDL4FPGA__scopeio_layout__beh) : ../scope/scopeio_layout.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_layout.vhd
+
+$(HDL4FPGA__scopeio_marks) \
+$(HDL4FPGA__scopeio_marks__def) : ../scope/scopeio_marks.vhd \
+		$(HDL4FPGA__btof) \
+		$(HDL4FPGA__dpram) \
+		$(HDL4FPGA__scopeio_rgtrvtoffset) \
+		$(HDL4FPGA__scopeio_rgtrvtscale) \
+		$(HDL4FPGA__scopeio_rgtrhzaxis) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__hdo) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_marks.vhd
 
 $(HDL4FPGA__scopeio_palette) \
 $(HDL4FPGA__scopeio_palette__beh) : ../scope/scopeio_palette.vhd \

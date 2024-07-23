@@ -293,7 +293,6 @@ begin
 		rgtr_data     => rgtr_data,
 
 		hz_dv         => hz_dv,
-		hz_scale      => time_scale,
 		hz_offset     => time_offset,
 		hz_segment    => hz_segment,
 

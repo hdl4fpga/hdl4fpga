@@ -19,7 +19,6 @@ entity scopeio_segment is
 		rgtr_data     : in  std_logic_vector;
 
 		hz_dv         : in  std_logic;
-		hz_scale      : in  std_logic_vector;
 		hz_offset     : in  std_logic_vector;
 		hz_segment    : in  std_logic_vector;
 
@@ -144,21 +143,19 @@ begin
 			latency       => latency,
 			layout        => layout)
 		port map (
-			clk           => rgtr_clk,
+			rgtr_clk      => rgtr_clk,
+			rgtr_dv       => rgtr_dv,
+			rgtr_id       => rgtr_id,
+			rgtr_data     => rgtr_data,
+
 
 			video_clk     => video_clk,
 
-			hz_dv         => hz_dv,
-			hz_scale      => hz_scale,
-			hz_offset     => hz_offset,
 			hz_segment    => hz_segment,
 			video_hcntr   => x,
 			video_hzon    => hz_on,
 			video_hzdot   => hz_dot,
 
-			vt_dv         => v_dv,
-			vt_scale      => vt_scale,
-			vt_offset     => v_offset,
 			video_vcntr   => y,
 			video_vton    => vt_on,
 			video_vtdot   => vt_dot);

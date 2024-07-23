@@ -610,7 +610,7 @@ begin
 
    							lat := lat sll sys_sti'length;
    							lat(sys_sti'length-1 downto 0) := unsigned(sys_sti);
-   							st := multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), ha), "0", 4);
+   							st := multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), ha), std_logic_vector'("0"), 4);
 
 							if st=(st'range => '0') then
 								ena := '1';
@@ -632,7 +632,7 @@ begin
     						if rising_edge(clk_shift) then
     							lat := lat sll sys_sti'length;
     							lat(sys_sti'length-1 downto 0) := unsigned(ssti);
-    							sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), "0", 4);
+    							sto <= multiplex(multiplex(std_logic_vector(lat & shift_left(lat, 2)), half_align), std_logic_vector'("0"), 4);
     						end if;
     					end process;
 					end generate;
