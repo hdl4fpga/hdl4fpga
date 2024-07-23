@@ -59,12 +59,14 @@ entity scopeio_marks is
 	constant grid_height     : natural := hdo(layout)**".grid.height";
 	constant grid_unit       : natural := hdo(layout)**".grid.unit";
 
-	constant font_bits     : natural := unsigned_num_bits(font_size-1);
+	constant font_bits       : natural := unsigned_num_bits(font_size-1);
 	constant vt_bias         : natural := (grid_height/2)/grid_unit-1;
 
 	constant hzwidth_bits    : natural := unsigned_num_bits(num_of_segments*grid_width-1);
 	constant vtheight_bits   : natural := unsigned_num_bits(grid_height-1);
 	constant division_bits   : natural := unsigned_num_bits(grid_unit-1);
+
+	constant bcd_length      : natural := 4;
 
 	constant chanid_bits     : natural := unsigned_num_bits(inputs-1);
 	constant vt_sfcnds       : natural_vector := get_significand1245(vt_unit);
@@ -78,7 +80,7 @@ entity scopeio_marks is
 	constant hz_pnts         : integer_vector := get_characteristic1245(hz_unit);
 	constant hz_pfxs         : string         := get_prefix1235(hz_unit);
 
-	constant sfcnd_length    : natural := max(unsigned_num_bits(max(vt_sfcnds)), unsigned_num_bits(max(hz_sfcnds)));
+	constant sfcnd_length    : natural := max(unsigned_num_bits(max(vt_sfcnds)), unsigned_num_bits(2*max(hz_sfcnds)));
 
 end;
 
@@ -123,15 +125,16 @@ architecture def of scopeio_marks is
 	constant vtaddr_bits : natural := unsigned_num_bits(2**vtheight_bits/(1*grid_unit)-1);
 	constant hzmark_bits : natural := unsigned_num_bits(8-1);
 	constant hzaddr_bits : natural := unsigned_num_bits(2**hzwidth_bits/(2*grid_unit)-1);
-	signal hzmark_we      : std_logic;
-	signal vtmark_we      : std_logic;
-	signal mark_addr    : std_logic_vector(max(vtaddr_bits, hzaddr_bits)-1 downto 0);
-	signal mark_data    : std_logic_vector(0 to 8*4-1);
+
+	signal hzmark_we     : std_logic;
+	signal vtmark_we     : std_logic;
+	signal mark_addr     : std_logic_vector(max(vtaddr_bits, hzaddr_bits)-1 downto 0);
+	signal mark_data     : std_logic_vector(0 to 8*bcd_length-1);
 
 	alias mark_hzaddr  is hz_pos(hzwidth_bits-1  downto division_bits+1);
 	alias mark_vtaddr  is vt_pos(vtheight_bits-1 downto division_bits);
 	type mark_events is (hz_event, vt_event);
-	signal mark_event : mark_events;
+	signal mark_event   : mark_events;
 begin
 
 	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
@@ -243,7 +246,7 @@ begin
 					btod_width <= x"8";
 					mark_event <= hz_event;
 					mark_cnt   <= 2**hzwidth_bits/(2*grid_unit)-1;
-					mark_from  <= resize(mul(shift_right(signed(hz_offset), division_bits+1), 2*sfcnd),mark_from'length);
+					mark_from  <= resize(shift_left(mul(shift_right(signed(hz_offset), division_bits+1), sfcnd),1),mark_from'length);
 					mark_step  <= signed(resize(2*sfcnd, mark_step'length));
 					mark_req   <= not mark_rdy;
 				end if;
@@ -309,15 +312,16 @@ begin
 			if code_frm='1' then
 				shr := shr rol code_data'length;
 				shr(code_data'range) := unsigned(code_data);
-				mark_data <= std_logic_vector(shr);
 			end if;
 			case mark_event is
 			when hz_event =>
 				vtmark_we <= '0';
 				hzmark_we <= (btod_rdy xor btod_req);
+				mark_data <= std_logic_vector(shr);
 			when vt_event =>
 				vtmark_we <= (btod_rdy xor btod_req);
 				hzmark_we <= '0';
+				mark_data <= std_logic_vector(shift_left(shr, mark_data'length-bcd_length*vt_width/font_size));
 			end case;
 		end if;
 	end process;

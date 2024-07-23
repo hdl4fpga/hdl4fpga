@@ -217,7 +217,7 @@ begin
 				di(0) => vton,
 				do(0) => vt_on);
 
-			vt_bcd <= multiplex(std_logic_vector(unsigned(vt_mark) sll 8), vtmark_col(vtmark_bits+font_bits-1 downto font_bits), bcd_length);
+			vt_bcd <= multiplex(vt_mark, vtmark_col(vtmark_bits+font_bits-1 downto font_bits), bcd_length);
 		end block;
 
 		char_code <= multiplex(vt_bcd     & hz_bcd,     not vt_on);
