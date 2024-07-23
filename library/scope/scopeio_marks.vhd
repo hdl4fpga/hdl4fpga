@@ -277,7 +277,7 @@ begin
 		code     => code_data);
 
 	process (rgtr_clk, btod_req)
-		variable shr : unsigned(8*4-1 downto 0);
+		variable shr : unsigned(mark_data'length-1 downto 0);
 	begin
 		if rising_edge(rgtr_clk) then
 			if code_frm='1' then
