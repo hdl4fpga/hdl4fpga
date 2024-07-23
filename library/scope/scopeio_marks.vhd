@@ -267,7 +267,11 @@ begin
 					mark_val  := mark_from;
 					mark_cntr := mark_cnt;
 					mark_addr <= not std_logic_vector(to_unsigned(mark_cntr, mark_addr'length));
-					btod_bin  <= mark_val;
+					if mark_val(0)='0' then
+						btod_bin <= mark_val;
+					else
+						btod_bin <= '1' & (-signed(mark_val(1 to mark_val'right)));
+					end if;
 					btod_req <= not to_stdulogic(to_bit(btod_rdy));
 					state := s_run;
 				end if;
