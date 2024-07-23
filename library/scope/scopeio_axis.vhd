@@ -64,7 +64,7 @@ entity scopeio_axis is
 	constant hzoffset_bits   : natural := unsigned_num_bits(max_delay-1);
 	constant hzwidth_bits    : natural := unsigned_num_bits(num_of_segments*grid_width-1);
 	constant vtheight_bits   : natural := unsigned_num_bits(grid_height-1);
-	constant division_bits   : natural := unsigned_num_bits(grid_unit-1);
+	constant gridunit_bits   : natural := unsigned_num_bits(grid_unit-1);
 
 end;
 
@@ -84,7 +84,7 @@ architecture def of scopeio_axis is
 
 	constant bcd_length    : natural := 4;
 
-	signal mark_addr : std_logic_vector(max(hzwidth_bits-2*division_bits,vtheight_bits-division_bits)-1 downto 0);
+	signal mark_addr : std_logic_vector(max(hzwidth_bits-2*gridunit_bits,vtheight_bits-gridunit_bits)-1 downto 0);
 	signal mark_vtwe : std_logic;
 	signal mark_hzwe : std_logic;
 	signal mark_we   : std_logic;
@@ -109,9 +109,9 @@ begin
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
 		video_clk => video_clk,
-		hz_pos    => std_logic_vector(hz_pos(hzwidth_bits-1  downto division_bits+1)),
+		hz_pos    => std_logic_vector(hz_pos(hzwidth_bits-1  downto gridunit_bits+1)),
 		hz_mark   => hz_mark,
-		vt_pos    => std_logic_vector(vt_pos(vtheight_bits-1 downto division_bits)),
+		vt_pos    => std_logic_vector(vt_pos(vtheight_bits-1 downto gridunit_bits)),
 		vt_mark   => vt_mark,
 		export_vtoffset => vt_offset,
 		export_hzoffset => hz_offset);
@@ -187,8 +187,8 @@ begin
 			signal vton   : std_logic;
 		begin 
 
-			vt_pos <= resize(unsigned(video_vcntr) + unsigned(vt_offset(division_bits-1 downto 0)), vt_pos'length);
-			vton   <= video_vton when vt_pos(division_bits-1 downto font_bits)=(division_bits-1 downto font_bits => '1') else '0';
+			vt_pos <= resize(unsigned(video_vcntr) + unsigned(vt_offset(gridunit_bits-1 downto 0)), vt_pos'length);
+			vton   <= video_vton when vt_pos(gridunit_bits-1 downto font_bits)=(gridunit_bits-1 downto font_bits => '1') else '0';
 
 			charcol_e : entity hdl4fpga.latency
 			generic map (

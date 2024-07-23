@@ -64,7 +64,6 @@ entity scopeio_marks is
 
 	constant hzwidth_bits    : natural := unsigned_num_bits(num_of_segments*grid_width-1);
 	constant vtheight_bits   : natural := unsigned_num_bits(grid_height-1);
-	constant division_bits   : natural := unsigned_num_bits(grid_unit-1);
 
 	constant bcd_length      : natural := 4;
 
@@ -131,10 +130,9 @@ architecture def of scopeio_marks is
 	signal mark_addr     : std_logic_vector(max(vtaddr_bits, hzaddr_bits)-1 downto 0);
 	signal mark_data     : std_logic_vector(0 to 8*bcd_length-1);
 
-	-- alias mark_hzaddr  is hz_pos; --(hzwidth_bits-1  downto division_bits+1);
-	-- alias mark_vtaddr  is vt_pos; --(vtheight_bits-1 downto division_bits);
 	type mark_events is (hz_event, vt_event);
 	signal mark_event   : mark_events;
+
 begin
 
 	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
@@ -282,7 +280,11 @@ begin
 						state := s_init;
 					else
 						mark_addr <= not std_logic_vector(to_unsigned(mark_cntr, mark_addr'length));
-						btod_bin  <= mark_val;
+						if mark_val(0)='0' then
+							btod_bin <= mark_val;
+						else
+							btod_bin <= '1' & (-signed(mark_val(1 to mark_val'right)));
+						end if;
 						mark_val  := mark_val  + mark_step;
 						mark_cntr := mark_cntr - 1;
 						btod_req <= not to_stdulogic(to_bit(btod_rdy));
