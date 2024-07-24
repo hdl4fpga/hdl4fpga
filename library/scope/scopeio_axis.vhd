@@ -184,11 +184,18 @@ begin
 		end block;
 
 		vt_b : block
-			signal vton   : std_logic;
+			signal von : std_logic;
 		begin 
 
 			vt_pos <= resize(unsigned(video_vcntr) + unsigned(vt_offset(gridunit_bits-1 downto 0)), vt_pos'length);
-			vton   <= video_vton when vt_pos(gridunit_bits-1 downto font_bits)=(gridunit_bits-1 downto font_bits => '1') else '0';
+			charrow_e : entity hdl4fpga.latency
+			generic map (
+				n => vtmark_row'length,
+				d => (0 to vtmark_row'length-1 => 2))
+			port map (
+				clk   => video_clk,
+				di => std_logic_vector(vt_pos(vtmark_row'range)),
+				do => vtmark_row);
 
 			charcol_e : entity hdl4fpga.latency
 			generic map (
@@ -199,22 +206,14 @@ begin
 				di => video_hcntr(vtmark_col'range),
 				do => vtmark_col);
 
-			charrow_e : entity hdl4fpga.latency
-			generic map (
-				n => vtmark_row'length,
-				d => (0 to vtmark_row'length-1 => 2))
-			port map (
-				clk   => video_clk,
-				di => std_logic_vector(vt_pos(vtmark_row'range)),
-				do => vtmark_row);
-
+			von <= video_vton when vt_pos(gridunit_bits-1 downto font_bits)=(gridunit_bits-1 downto font_bits => '1') else '0';
 			charon_e : entity hdl4fpga.latency
 			generic map (
 				n => 1,
 				d => (0 to 0 => 2))
 			port map (
 				clk   => video_clk,
-				di(0) => vton,
+				di(0) => von,
 				do(0) => vt_on);
 
 			vt_bcd <= multiplex(vt_mark, vtmark_col(vtmark_bits+font_bits-1 downto font_bits), bcd_length);
