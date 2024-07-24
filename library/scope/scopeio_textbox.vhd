@@ -205,7 +205,6 @@ begin
 		end if;
 	end process;
 
-	-- fg_color <= std_logic_vector(to_unsigned(pltid_textfg, fg_color'length));
 	bg_color <= std_logic_vector(to_unsigned(pltid_textbg, bg_color'length));
 
 	latfg_e : entity hdl4fpga.latency

@@ -314,7 +314,7 @@ begin
 		end if;
 	end process;
 
-	xxx : block
+	text_b : block
 		function textbase_init (
 			constant vt_labels : string;
 			constant width : natural := 0)
@@ -387,32 +387,85 @@ begin
 			variable ptr  : natural;
 			variable n    : natural;
 			variable tbl  : natural_vector(0 to (data'length/ascii'length)/2-1);
+
+			function xxxx (
+				constant arg    : natural_vector)
+				return std_logic_vector is
+				constant yyy    : natural := unsigned_num_bits(max(arg)-1)+ascii'length;
+				variable retval : unsigned(0 to arg'length*yyy);
+			begin
+				for i in 0 to arg'length/2-1 loop
+					retval(yyy*i to yyy*i+ascii'length-1) := 
+				end loop;
+			end;
+
 		begin
 			ptr := data'left; 
 			n   := 0;
 			for i in tbl'range loop
 				exit when (ptr*ascii'length) > data'length;
-				tbl(i) := ptr;
+				tbl(2*i) := ptr;
 				assert false
 					report "table element " & natural'image(tbl(i))
 					severity note;
-				ptr := ptr + to_integer(unsigned(multiplex(data, ptr, ascii'length)))+2;
+				tbl(2*i+1) := to_integer(unsigned(multiplex(data, ptr, ascii'length)));
+				ptr := ptr + tbl(2*i+1)+2;
 				n   := n + 1;
 			end loop;
 			assert true
 				report "Table size " & natural'image(n)
 				severity note;
-			return tbl(0 to n-1);
+			return tbl(0 to 2*n-1);
 		end;
 
-		constant textrom  : std_logic_vector := textbase_init(vt_labels);
-		constant texttbl  : natural_vector   := textlut_init(textrom);
+		function textbit_init (
+			constant data : std_logic_vector)
+			return std_logic_vector is
+			variable sptr : natural;
+			variable sdst : natural;
+			variable len  : natural range 0 to 256-1;
+			alias src : std_logic_vector(0 to data'length-1) is data;
+			variable retval : std_logic_vector(0 to data'length-1);
+		begin
+			sptr := 0; 
+			sdst := 0;
+			for i in 0 to data'length/ascii'length-1 loop
+				exit when sptr >= data'length/ascii'length;
+				len := to_integer(unsigned(data(sptr*ascii'length to (sptr+1)*ascii'length-1)));
+				sptr := sptr + 1;
+				for j in 0 to 256-1 loop
+					exit when j > len;
+					retval(sdst*ascii'length to (sdst+1)*ascii'length-1) := data(sptr*ascii'length to (sptr+1)*ascii'length-1);
+					sptr := sptr + 1;
+					sdst := sdst + 1;
+				end loop;
+			end loop;
+			return retval(0 to ascii'length*sptr-1);
+		end;
+			
+		constant textdata : std_logic_vector := textbase_init(vt_labels);
+		constant textbit  : std_logic_vector := textbit_init(textdata);
+		constant texttbl  : natural_vector   := textlut_init(textdata);
+		signal tbl  : natural_vector(texttbl'range)   := texttbl;
 		signal textlen    : natural range 0 to 256-1;
+		signal text_addr : std_logic_vector(0 to unsigned_num_bits(textbit'length/ascii'length-1)-1);
+		signal text_data : std_logic_vector(ascii'range);
+		signal ptr : unsigned(text_addr'range); -- Xilinx ISE internal error bug range textbit'range;
 	begin
 
-		textlen <= to_integer(unsigned(multiplex(textrom, texttbl(str_id), ascii'length)));
+		text_addr <= std_logic_vector(ptr);
+		textrom_e : entity hdl4fpga.rom
+		generic map (
+			bitrom => textbit)
+		port map (
+			addr => text_addr,
+			data => text_data);
+		str_code <= text_data;
+
+		textlen <= to_integer(unsigned(text_data));
+		-- textlen <= to_integer(unsigned(multiplex(textbit, texttbl(str_id), ascii'length)));
 		process (rgtr_clk)
-    		variable ptr : natural range textrom'left to textrom'right; -- Xilinx ISE internal error bug range textrom'range;
+    		variable ptr : natural range textbit'left to textbit'right; -- Xilinx ISE internal error bug range textbit'range;
     		variable len : integer range -1 to 255;
 
     		type states is (s_init, s_run);
@@ -422,28 +475,28 @@ begin
     			if (str_rdy xor str_req)='1' then
     				case state is 
     				when s_init =>
-    					ptr   := texttbl(str_id);
+    					ptr   := texttbl(2*str_id);
 						len   := textlen;
     					str_frm <= '1';
     					state := s_run;
     				when s_run =>
     					if len < 0  then
     						str_rdy <= str_req;
-    						ptr   := texttbl(str_id);
+    						ptr   := texttbl(2*str_id);
 							len   := textlen;
     						str_frm <= '0';
     						state := s_init;
     					end if;
     				end case;
     			else
-    				ptr   := texttbl(str_id);
+    				ptr   := texttbl(2*str_id);
 					len   := textlen;
     				str_frm <= '0';
     				state := s_init;
     			end if;
     			ptr := ptr + 1;
     			len := len - 1;
-    			str_code <= multiplex(textrom, ptr, ascii'length);
+    			-- str_code <= multiplex(textbit, ptr, ascii'length);
     		end if;
     	end process;
 
