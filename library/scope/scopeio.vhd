@@ -279,11 +279,6 @@ begin
 		time_scale     => time_scale,
 		time_offset    => time_offset,
                                         
-		gain_ena       => gain_ena,
-		gain_dv        => gain_dv,
-		gain_cid       => gain_cid,
-		gain_ids       => gain_ids,
-
 		video_addr     => video_addr,
 		video_frm      => video_frm,
 		video_data     => video_data,

@@ -18,13 +18,8 @@ entity scopeio_segment is
 		rgtr_id       : in  std_logic_vector(8-1 downto 0);
 		rgtr_data     : in  std_logic_vector;
 
-		hz_dv         : in  std_logic;
 		hz_offset     : in  std_logic_vector;
 		hz_segment    : in  std_logic_vector;
-
-		gain_dv       : in  std_logic;
-		gain_cid      : in  std_logic_vector;
-		gain_ids      : in  std_logic_vector;
 
 		trigger_chanid : in std_logic_vector;
 		trigger_level  : in  std_logic_vector;
@@ -58,7 +53,6 @@ end;
 architecture def of scopeio_segment is
 
 	signal vt_ena          : std_logic;
-	signal vt_dv           : std_logic;
 	signal vt_offsets      : std_logic_vector(inputs*(5+8)-1 downto 0);
 	signal vt_offset       : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 	signal vt_chanid       : std_logic_vector(chanid_maxsize-1 downto 0);
@@ -75,6 +69,8 @@ architecture def of scopeio_segment is
 begin
 
 	rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtoffset
+	generic map (
+		rgtr      => false)
 	port map (
 		rgtr_clk  => rgtr_clk,
 		rgtr_dv   => rgtr_dv,
@@ -82,14 +78,15 @@ begin
 		rgtr_data => rgtr_data,
 
 		vt_ena    => vt_ena,
-		vt_dv     => vt_dv,
 		vt_chanid => vt_chanid,
 		vt_offset => vt_offset);
 
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
-			vt_offsets <= replace(vt_offsets, vt_chanid, vt_offset);
+			if vt_ena='1' then
+				vt_offsets <= replace(vt_offsets, vt_chanid, vt_offset);
+			end if;
 		end if;
 	end process;
 
@@ -123,44 +120,25 @@ begin
 			dot  => grid_dot);
 	end block;
 
-	axis_b : block
-		constant bias : natural := (vt_height/2) mod 2**vtstep_bits;
-		signal vt_scale : std_logic_vector(gain_ids'length/inputs-1 downto 0);
-		signal g_offset : std_logic_vector(vt_offset'range);
-		signal v_offset : std_logic_vector(vt_offset'range);
-		signal v_sel    : std_logic;
-		signal v_dv     : std_logic;
-	begin
-		v_sel      <= gain_dv or vt_dv;
-		v_dv       <= gain_dv or vt_dv;
-		vt_scale   <= multiplex(gain_ids, gain_cid, vt_scale'length);
+	axis_e : entity hdl4fpga.scopeio_axis
+	generic map (
+		latency       => latency,
+		layout        => layout)
+	port map (
+		rgtr_clk      => rgtr_clk,
+		rgtr_dv       => rgtr_dv,
+		rgtr_id       => rgtr_id,
+		rgtr_data     => rgtr_data,
 
-		g_offset <= multiplex(vt_offsets, gain_cid, vt_offset'length);
-		v_offset <= std_logic_vector(unsigned(std_logic_vector'(multiplex(vt_offset & g_offset, gain_dv))) - bias);
+		video_clk     => video_clk,
+		hz_segment    => hz_segment,
+		video_hcntr   => x,
+		video_hzon    => hz_on,
+		video_hzdot   => hz_dot,
 
-		axis_e : entity hdl4fpga.scopeio_axis
-		generic map (
-			latency       => latency,
-			layout        => layout)
-		port map (
-			rgtr_clk      => rgtr_clk,
-			rgtr_dv       => rgtr_dv,
-			rgtr_id       => rgtr_id,
-			rgtr_data     => rgtr_data,
-
-
-			video_clk     => video_clk,
-
-			hz_segment    => hz_segment,
-			video_hcntr   => x,
-			video_hzon    => hz_on,
-			video_hzdot   => hz_dot,
-
-			video_vcntr   => y,
-			video_vton    => vt_on,
-			video_vtdot   => vt_dot);
-
-	end block;
+		video_vcntr   => y,
+		video_vton    => vt_on,
+		video_vtdot   => vt_dot);
 
 	trigger_b : block 
 		signal offset : unsigned(vt_offsets'length/inputs-1 downto 0);
