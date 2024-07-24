@@ -36,13 +36,13 @@ entity scopeio_marks is
 	port (
 		rgtr_clk  : in  std_logic;
 		rgtr_dv   : in  std_logic;
-		rgtr_id   : in  std_logic_vector(8-1 downto 0);
+		rgtr_id   : in  std_logic_vector;
 		rgtr_data : in  std_logic_vector;
 		video_clk : in  std_logic;
 		vt_pos    : in  std_logic_vector;
-		vt_mark   : out std_logic_vector(8*4-1 downto 0);
+		vt_mark   : out std_logic_vector;
 		hz_pos    : in  std_logic_vector;
-		hz_mark   : out std_logic_vector(8*4-1 downto 0);
+		hz_mark   : out std_logic_vector;
 		export_vtoffset  : out std_logic_vector;
 		export_hzoffset  : out std_logic_vector);
 
@@ -118,7 +118,7 @@ architecture def of scopeio_marks is
 	signal btod_width   : std_logic_vector(4-1 downto 0);
 
 	signal code_frm     : std_logic;
-	signal code_data    : std_logic_vector(4-1 downto 0);
+	signal code_data    : std_logic_vector(bcd_length-1 downto 0);
 
 	constant vtmark_bits : natural := unsigned_num_bits(8-1);
 	constant vtaddr_bits : natural := unsigned_num_bits(2**vtheight_bits/(1*grid_unit)-1);
