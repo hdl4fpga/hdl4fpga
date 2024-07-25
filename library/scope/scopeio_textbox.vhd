@@ -183,7 +183,7 @@ begin
 			return retval;
 		end;
 
-		constant xxx : natural := 2;
+		constant input_labels : natural := 2;
 		constant field_addr : natural_vector := textbox_field(cga_cols);
 		variable field_id   : natural range 0 to 2**fg_color'length-1;
 		variable addr       : std_logic_vector(video_addr'range);
@@ -194,8 +194,8 @@ begin
 				field_id := pltid_textfg;
 				for i in field_addr'range loop
 					if unsigned(addr) < (field_addr(i)+cga_cols) then
-						if i >= xxx then 
-							field_id := (i-xxx)+pltid_order'length;
+						if i >= input_labels then 
+							field_id := (i-input_labels)+pltid_order'length;
 						end if;
 						exit;
 					end if;
@@ -205,7 +205,6 @@ begin
 		end if;
 	end process;
 
-	-- fg_color <= std_logic_vector(to_unsigned(pltid_textfg, fg_color'length));
 	bg_color <= std_logic_vector(to_unsigned(pltid_textbg, bg_color'length));
 
 	latfg_e : entity hdl4fpga.latency
