@@ -437,7 +437,6 @@ begin
 		port map (
 			addr => text_addr,
 			data => text_data);
-		str_code <= text_data;
 
 		textlen <= to_integer(unsigned(meta_data));
 		process (rgtr_clk)
@@ -449,7 +448,6 @@ begin
     				case state is 
     				when s_init =>
 						text_addr <= meta_data;
-    					str_frm <= '1';
     					state := s_run;
     				when s_run =>
     					if text_data=(text_data'range => '0') then
@@ -458,6 +456,7 @@ begin
     						str_rdy <= str_req;
     						state   := s_init;
 						else
+							str_frm   <= '1';
 							text_addr <= std_logic_vector(unsigned(text_addr) + 1);
     					end if;
     				end case;
@@ -466,6 +465,7 @@ begin
     				str_frm   <= '0';
     				state     := s_init;
     			end if;
+				str_code  <= text_data;
     		end if;
     	end process;
 
