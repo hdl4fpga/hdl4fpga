@@ -454,22 +454,21 @@ begin
 		constant texttbl  : natural_vector   := textlut_init(textdata);
 		constant textmeta : std_logic_vector := textmeta_init(texttbl);
 		signal tbl  : std_logic_vector(texttbl'range)   := textmeta;
-		signal textlen    : natural range 0 to 256-1;
+		signal textlen   : natural range 0 to 256-1;
 		signal text_addr : std_logic_vector(0 to unsigned_num_bits(textbit'length/ascii'length-1)-1);
 		signal text_data : std_logic_vector(ascii'range);
 		signal meta_addr : unsigned(0 to unsigned_num_bits(texttbl'length-1)-1);
 		signal meta_data : std_logic_vector(0 to unsigned_num_bits(textmeta'length/texttbl'length-1)-1);
-		signal ptr : unsigned(meta_addr'range); -- Xilinx ISE internal error bug range textbit'range;
 	begin
 
 		metarom_e : entity hdl4fpga.rom
 		generic map (
 			bitrom => textbit)
 		port map (
-			addr => meta_addr,
+			addr => std_logic_vector(meta_addr),
 			data => meta_data);
 
-		text_addr <= std_logic_vector(ptr);
+		-- text_addr <= std_logic_vector(ptr);
 		textrom_e : entity hdl4fpga.rom
 		generic map (
 			bitrom => textbit)
@@ -478,9 +477,9 @@ begin
 			data => text_data);
 		str_code <= text_data;
 
-		textlen <= to_integer(unsigned(text_data));
+		textlen <= to_integer(unsigned(meta_data(0 to ascii'length-1)));
 		process (rgtr_clk)
-    		variable ptr : natural range textbit'left to textbit'right; -- Xilinx ISE internal error bug range textbit'range;
+    		variable ptr : unsigned(text_addr'range);
     		variable len : integer range -1 to 255;
 
     		type states is (s_init, s_run);
@@ -490,7 +489,8 @@ begin
     			if (str_rdy xor str_req)='1' then
     				case state is 
     				when s_init =>
-    					meta_addr := texttbl(str_id);
+    					meta_addr <= to_unsigned(str_id, meta_addr'length);
+						ptr := unsigned(meta_data(ascii'length to ascii'length+8-1));
 						len   := textlen;
     					str_frm <= '1';
     					state := s_run;
@@ -498,6 +498,7 @@ begin
     					if len < 0  then
     						str_rdy <= str_req;
     						-- ptr   := texttbl(2*str_id);
+						ptr := unsigned(meta_data(ascii'length to ascii'length+8-1));
 							len   := textlen;
     						str_frm <= '0';
     						state := s_init;
@@ -505,12 +506,14 @@ begin
     				end case;
     			else
     				-- ptr   := texttbl(2*str_id);
+						ptr := unsigned(meta_data(ascii'length to ascii'length+8-1));
 					len   := textlen;
     				str_frm <= '0';
     				state := s_init;
     			end if;
     			ptr := ptr + 1;
     			len := len - 1;
+				text_addr <= std_logic_vector(ptr);
     			-- str_code <= multiplex(textbit, ptr, ascii'length);
     		end if;
     	end process;
