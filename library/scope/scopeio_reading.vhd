@@ -321,17 +321,19 @@ begin
 			constant width : natural := 0)
 			return std_logic_vector is
 
-			variable data       : string(1 to vt_labels'length+4*(vt_pfxs'length+hz_pfxs'length+6));
-			variable id         : natural;
-			variable left       : natural;
+			variable data : string(1 to vt_labels'length+4*(vt_pfxs'length+hz_pfxs'length+6));
+			variable id   : natural range 0 to vt_labels'length+vt_pfxs'length+hz_pfxs'length+6-1;
+			variable ptr  : natural range data'range;
 
 			procedure insert (
+				variable id    : inout natural;
+				variable ptr   : inout natural;
 				constant value : in string) is
 			begin
-				data(left to left+value'length-1) := value;
-				data(left+value'length) := NUL;
+				data(ptr to ptr+value'length-1) := value;
+				data(ptr+value'length) := NUL;
 				id   := id + 1;
-				left := (left+1) + value'length;
+				ptr := (ptr+1) + value'length;
 			end;
 
 			variable code   : std_logic_vector(ascii'range);
@@ -342,37 +344,37 @@ begin
 		begin
 
 			id := 0;
-			left := data'left;
+			ptr := data'left;
 			for i in 0 to inputs-1 loop
-				insert(escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")));
+				insert(id, ptr, escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")));
 			end loop;
 
-			insert (hz_label);
+			insert (id, ptr, hz_label);
 			for i in vt_pfxs'range loop
-				insert( ' ' & vt_pfxs(i) & 'v');
+				insert(id, ptr,  ' ' & vt_pfxs(i) & 'v');
 			end loop;
 
 			for i in hz_pfxs'range loop
-				insert(' ' & hz_pfxs(i) & 's');
+				insert(id, ptr, ' ' & hz_pfxs(i) & 's');
 			end loop;
 
-			up_pos := left;
-			insert("   ");
+			up_pos := ptr;
+			insert(id, ptr, "   ");
 
-			dn_pos := left;
-			insert("   ");
+			dn_pos := ptr;
+			insert(id, ptr, "   ");
 
-			insert("FREE");
-			insert("NORM");
-			insert("HOLD");
-			insert("SHOT");
+			insert(id, ptr, "FREE");
+			insert(id, ptr, "NORM");
+			insert(id, ptr, "HOLD");
+			insert(id, ptr, "SHOT");
 
-			left := left - 1 ;
-			retval(0 to ascii'length*left-1) := to_ascii(data(data'left to data'left+left-1));
+			ptr := ptr - 1 ;
+			retval(0 to ascii'length*ptr-1) := to_ascii(data(data'left to data'left+ptr-1));
 			retval := replace(retval, up_pos, x"18");  
 			retval := replace(retval, dn_pos, x"19");  
 
-			return retval(0 to ascii'length*left-1);
+			return retval(0 to ascii'length*ptr-1);
 		end;
 
 		function textlut_init (
