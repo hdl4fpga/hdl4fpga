@@ -376,19 +376,21 @@ begin
 		end;
 
 		function textlut_init (
-			constant data : std_logic_vector)
+			constant arg : std_logic_vector)
 			return natural_vector is
+			alias data : std_logic_vector(0 to arg'length-1) is arg;
 			variable lut : natural_vector(0 to 256-1);
 			variable n   : natural;
 		begin
 			n := 0;
+			lut(n) := 0;
 			for i in 0 to data'length/ascii'length-1 loop
 				if data(i*ascii'length to (i+1)*ascii'length-1)=(ascii'range => '0') then
-					lut(n) := i-1;
+					n := n + 1;
+					lut(n) := i+1;
 					assert false
 						report "table element " & natural'image(lut(n))
 						severity note;
-					n := n + 1;
 				end if;
 			end loop;
 			assert true
