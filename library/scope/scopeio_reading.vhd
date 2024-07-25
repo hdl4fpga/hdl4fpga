@@ -384,11 +384,12 @@ begin
 			n := 0;
 			for i in 0 to data'length/ascii'length-1 loop
 				if data(i*ascii'length to (i+1)*ascii'length-1)=(ascii'range => '0') then
-					lut(n) := i;
 					assert false
 						report "table element " & natural'image(lut(n))
 						severity note;
 					n := n + 1;
+				else
+					lut(n) := i;
 				end if;
 			end loop;
 			assert true
