@@ -315,7 +315,8 @@ begin
 	end process;
 
 	text_b : block
-		function textbase_init (
+
+		function textbit_init (
 			constant vt_labels : string;
 			constant width : natural := 0)
 			return std_logic_vector is
@@ -323,15 +324,12 @@ begin
 			variable data       : string(1 to vt_labels'length+4*(vt_pfxs'length+hz_pfxs'length+6));
 			variable id         : natural;
 			variable left       : natural;
-			variable tbl_length : natural_vector(0 to (inputs+1)+vt_pfxs'length+hz_pfxs'length+6-1);
-			variable tbl_offset : natural_vector(0 to (inputs+1)+vt_pfxs'length+hz_pfxs'length+6-1);
 
 			procedure insert (
 				constant value : in string) is
 			begin
-				tbl_offset(id) := left-1;
-				tbl_length(id) := value'length-1;
-				data((left+1) to (left+1)+value'length-1) := value;
+				data(left to left+value'length-1) := value;
+				data(left+value'length) := NUL;
 				id   := id + 1;
 				left := (left+1) + value'length;
 			end;
@@ -346,7 +344,7 @@ begin
 			id := 0;
 			left := data'left;
 			for i in 0 to inputs-1 loop
-				insert (escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")));
+				insert(escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")));
 			end loop;
 
 			insert (hz_label);
@@ -355,26 +353,22 @@ begin
 			end loop;
 
 			for i in hz_pfxs'range loop
-				insert( ' ' & hz_pfxs(i) & 's');
+				insert(' ' & hz_pfxs(i) & 's');
 			end loop;
 
-			up_pos := left+1;
-			insert ("   ");
+			up_pos := left;
+			insert("   ");
 
-			dn_pos := left+1;
-			insert ("   ");
+			dn_pos := left;
+			insert("   ");
 
-			insert ("FREE");
-			insert ("NORM");
-			insert ("HOLD");
-			insert ("SHOT");
+			insert("FREE");
+			insert("NORM");
+			insert("HOLD");
+			insert("SHOT");
 
 			left := left - 1 ;
 			retval(0 to ascii'length*left-1) := to_ascii(data(data'left to data'left+left-1));
-			for i in tbl_offset'range loop
-				code   := std_logic_vector(to_unsigned(tbl_length(i), code'length));
-				retval := replace(retval, tbl_offset(i), code);  
-			end loop;
 			retval := replace(retval, up_pos, x"18");  
 			retval := replace(retval, dn_pos, x"19");  
 
@@ -384,104 +378,67 @@ begin
 		function textlut_init (
 			constant data : std_logic_vector)
 			return natural_vector is
-			variable ptr  : natural;
-			variable n    : natural;
-			variable tbl  : natural_vector(0 to (data'length/ascii'length)/2-1);
-
+			variable lut : natural_vector(0 to 256-1);
+			variable n   : natural;
 		begin
-			ptr := data'left; 
-			n   := 0;
-			for i in tbl'range loop
-				exit when (ptr*ascii'length) > data'length;
-				tbl(2*i) := ptr;
-				assert false
-					report "table element " & natural'image(tbl(i))
-					severity note;
-				tbl(2*i+1) := to_integer(unsigned(multiplex(data, ptr, ascii'length)));
-				ptr := ptr + tbl(2*i+1)+2;
-				n   := n + 1;
+			n := 0;
+			for i in 0 to data'length/ascii'length-1 loop
+				if data(i*ascii'length to (i+1)*ascii'length-1)=(ascii'range => '0') then
+					lut(n) := i;
+					assert false
+						report "table element " & natural'image(lut(n))
+						severity note;
+					n := n + 1;
+				end if;
 			end loop;
 			assert true
 				report "Table size " & natural'image(n)
 				severity note;
-			return tbl(0 to 2*n-1);
+			return lut(0 to n-1);
 		end;
 
 		function textmeta_init (
-			constant arg    : natural_vector)
+			constant lut : natural_vector)
 			return std_logic_vector is
-			constant zzz    : natural := 8; --unsigned_num_bits(max(arg)-1);
-			constant yyy    : natural := zzz+ascii'length;
-			variable retval : unsigned(0 to arg'length/2*yyy-1);
+			constant size   : natural := unsigned_num_bits(max(lut)-1);
+			variable retval : unsigned(0 to lut'length*size-1);
 		begin
-			for i in 0 to arg'length/2-1 loop
-				retval(0 to ascii'length-1) := to_unsigned(arg(2*i+1), ascii'length);
-				retval := retval rol ascii'length;
-				retval(0 to zzz-1) := to_unsigned(arg(2*i), zzz);
-				retval := retval rol zzz;
+			for i in lut'range loop
+				retval(size*i to (i+1)*size-1) := to_unsigned(lut(i), ascii'length);
 			end loop;
-				report to_string(retval);
 			return std_logic_vector(retval);
 		end;
 
-		function textbit_init (
-			constant data : std_logic_vector)
-			return std_logic_vector is
-			variable sptr : natural;
-			variable sdst : natural;
-			variable len  : natural range 0 to 256-1;
-			alias src : std_logic_vector(0 to data'length-1) is data;
-			variable retval : std_logic_vector(0 to data'length-1);
-		begin
-			sptr := 0; 
-			sdst := 0;
-			for i in 0 to data'length/ascii'length-1 loop
-				exit when sptr >= data'length/ascii'length;
-				len := to_integer(unsigned(data(sptr*ascii'length to (sptr+1)*ascii'length-1)));
-				sptr := sptr + 1;
-				for j in 0 to 256-1 loop
-					exit when j > len;
-					retval(sdst*ascii'length to (sdst+1)*ascii'length-1) := data(sptr*ascii'length to (sptr+1)*ascii'length-1);
-					sptr := sptr + 1;
-					sdst := sdst + 1;
-				end loop;
-			end loop;
-			return retval(0 to ascii'length*sptr-1);
-		end;
-			
-		constant textdata : std_logic_vector := textbase_init(vt_labels);
-		constant textbit  : std_logic_vector := textbit_init(textdata);
-		constant texttbl  : natural_vector   := textlut_init(textdata);
-		constant textmeta : std_logic_vector := textmeta_init(texttbl);
-		signal tbl  : std_logic_vector(texttbl'range)   := textmeta;
+		constant textdata : std_logic_vector := textbit_init(vt_labels);
+		constant textlut  : natural_vector   := textlut_init(textdata);
+		constant textmeta : std_logic_vector := textmeta_init(textlut);
+		signal tbl       : natural_vector(textlut'range) := textlut;
+		signal meta      : std_logic_vector(textmeta'range) := textmeta;
 		signal textlen   : natural range 0 to 256-1;
-		signal text_addr : std_logic_vector(0 to unsigned_num_bits(textbit'length/ascii'length-1)-1);
+		signal meta_addr : unsigned(0 to unsigned_num_bits(textlut'length-1)-1);
+		signal meta_data : std_logic_vector(0 to textmeta'length/textlut'length-1);
+		signal text_addr : std_logic_vector(meta_data'range);
 		signal text_data : std_logic_vector(ascii'range);
-		signal meta_addr : unsigned(0 to unsigned_num_bits(texttbl'length-1)-1);
-		signal meta_data : std_logic_vector(0 to unsigned_num_bits(textmeta'length/texttbl'length-1)-1);
 	begin
 
-		metarom_e : entity hdl4fpga.rom
+		meta_addr <= to_unsigned(str_id, meta_addr'length);
+		lutrom_e : entity hdl4fpga.rom
 		generic map (
-			bitrom => textbit)
+			bitrom => textmeta)
 		port map (
 			addr => std_logic_vector(meta_addr),
 			data => meta_data);
 
-		-- text_addr <= std_logic_vector(ptr);
 		textrom_e : entity hdl4fpga.rom
 		generic map (
-			bitrom => textbit)
+			bitrom => textdata)
 		port map (
 			addr => text_addr,
 			data => text_data);
 		str_code <= text_data;
 
-		textlen <= to_integer(unsigned(meta_data(0 to ascii'length-1)));
+		textlen <= to_integer(unsigned(meta_data));
 		process (rgtr_clk)
-    		variable ptr : unsigned(text_addr'range);
-    		variable len : integer range -1 to 255;
-
     		type states is (s_init, s_run);
     		variable state : states;
     	begin
@@ -489,32 +446,24 @@ begin
     			if (str_rdy xor str_req)='1' then
     				case state is 
     				when s_init =>
-    					meta_addr <= to_unsigned(str_id, meta_addr'length);
-						ptr := unsigned(meta_data(ascii'length to ascii'length+8-1));
-						len   := textlen;
+						text_addr <= meta_data;
     					str_frm <= '1';
     					state := s_run;
     				when s_run =>
-    					if len < 0  then
-    						str_rdy <= str_req;
-    						-- ptr   := texttbl(2*str_id);
-						ptr := unsigned(meta_data(ascii'length to ascii'length+8-1));
-							len   := textlen;
+    					if text_data=(text_data'range => '0') then
+							text_addr <= meta_data;
     						str_frm <= '0';
-    						state := s_init;
+    						str_rdy <= str_req;
+    						state   := s_init;
+						else
+							text_addr <= std_logic_vector(unsigned(text_addr) + 1);
     					end if;
     				end case;
     			else
-    				-- ptr   := texttbl(2*str_id);
-						ptr := unsigned(meta_data(ascii'length to ascii'length+8-1));
-					len   := textlen;
-    				str_frm <= '0';
-    				state := s_init;
+					text_addr <= meta_data;
+    				str_frm   <= '0';
+    				state     := s_init;
     			end if;
-    			ptr := ptr + 1;
-    			len := len - 1;
-				text_addr <= std_logic_vector(ptr);
-    			-- str_code <= multiplex(textbit, ptr, ascii'length);
     		end if;
     	end process;
 
