@@ -7,7 +7,6 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
 use hdl4fpga.scopeiopkg.all;
-use hdl4fpga.cgafonts.all;
 
 entity scopeio_ctlr is
 	port (
@@ -20,42 +19,71 @@ entity scopeio_ctlr is
 		enter_req : in  std_logic;
 		enter_rdy : out std_logic;
 
-		so_frm    : out std_logic;
-		so_irdy   : out std_logic;
+		sio_clk   : in  std_logic;
+		so_frm    : buffer std_logic;
+		so_irdy   : buffer std_logic;
 		so_trdy   : in  std_logic := '0';
-		so_data   : out std_logic_vector);
-
+		so_data   : buffer std_logic_vector);
 
 end;
 
 architecture def of scopeio_ctlr is
+	signal rgtr_id          : std_logic_vector(8-1 downto 0);
+	signal rgtr_dv          : std_logic;
+	signal rgtr_revs        : std_logic_vector(0 to 4*8-1);
+	signal rgtr_data        : std_logic_vector(rgtr_revs'reverse_range);
+
+	signal	hz_scaleid      : std_logic_vector;
+	signal	hz_offset       : std_logic_vector;
+	signal	chan_id         : std_logic_vector;
+	signal	vtscale_ena     : std_logic;
+	signal	vt_scalecid     : std_logic_vector;
+	signal	vt_scaleid      : std_logic_vector(4-1 downto 0);
+	signal	vtoffset_ena    : std_logic;
+	signal	vt_offsetcid    : std_logic_vector;
+	signal	vt_offset       : std_logic_vector;
+
+	signal	trigger_ena     : std_logic;
+	signal	trigger_chanid  : std_logic_vector;
+	signal	trigger_slope   : std_logic;
+	signal	trigger_oneshot : std_logic;
+	signal	trigger_freeze  : std_logic;
+	signal	trigger_level   : std_logic_vector;
 begin
 
-	vtoffsets_e : entity hdl4fpga.dpram
+	siosin_e : entity hdl4fpga.sio_sin
 	port map (
-		wr_clk  => rgtr_clk,
-		wr_ena  => vtoffset_ena,
-		wr_addr => vt_offsetcid,
-		wr_data => vtl_offset,
-		rd_addr => vtl_scalecid,
-		rd_data => tbl_offset);
+		sin_clk   => sio_clk,
+		sin_frm   => so_frm,
+		sin_irdy  => so_trdy,
+		sin_data  => so_data,
+		rgtr_id   => rgtr_id,
+		rgtr_dv   => rgtr_dv,
+		rgtr_data => rgtr_revs);
+	rgtr_data <= reverse(rgtr_revs,8);
 
-	vtscales_e : entity hdl4fpga.dpram
+	state_e : entity hdl4fpga.scopeio_state
 	port map (
-		wr_clk  => rgtr_clk,
-		wr_ena  => vtscale_ena,
-		wr_addr => vt_scalecid,
-		wr_data => vt_scaleid,
-		rd_addr => vt_scalecid,
-		rd_data => vt_scaleid);
+		rgtr_clk        => rgtr_clk,
+		rgtr_dv         => rgtr_dv,
+		rgtr_id         => rgtr_id,
+		rgtr_data       => rgtr_data,
 
-	triggers_e : entity hdl4fpga.dpram
-	port map (
-		wr_clk  => rgtr_clk,
-		wr_ena  => vtscale_ena,
-		wr_addr => vt_scalecid,
-		wr_data => vt_scaleid,
-		rd_addr => vt_scalecid,
-		rd_data => vt_scaleid);
+		hz_scaleid      => hz_scaleid,
+		hz_offset       => hz_offset,
+		chan_id         => chan_id,
+		vtscale_ena     => vtscale_ena,
+		vt_scalecid     => vt_scalecid,
+		vt_scaleid      => vt_scaleid,
+		vtoffset_ena    => vtoffset_ena,
+		vt_offsetcid    => vt_offsetcid,
+		vt_offset       => vt_offset,
+                  
+		trigger_ena     => trigger_ena,
+		trigger_chanid  => trigger_chanid,
+		trigger_slope   => trigger_slope,
+		trigger_oneshot => trigger_oneshot,
+		trigger_freeze  => trigger_freeze,
+		trigger_level   => trigger_level);
 
 end;
