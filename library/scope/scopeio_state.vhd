@@ -12,7 +12,7 @@ entity scopeio_state is
 		rgtr_clk  : in  std_logic;
 		rgtr_dv   : in  std_logic;
 		rgtr_id   : in  std_logic_vector(8-1 downto 0);
-		rgtr_data : in  std_logic_vector;
+		rgtr_data : in  std_logic_vector);
 
 end;
 
@@ -124,8 +124,6 @@ begin
 	process (rgtr_clk)
 		variable scaleid : natural range 0 to vt_shts'length-1;
 		variable timeid  : natural range 0 to hz_shts'length-1;
-		variable ref_req : bit;
-		variable ref_rdy : bit;
 	begin
 		if rising_edge(rgtr_clk) then
 			if (txt_req xor txt_rdy)='0' then
@@ -135,24 +133,13 @@ begin
 					vt_offset  <= signed(vtl_offset);
 				elsif trigger_ena='1' then
 					scaleid     := to_integer(unsigned(tbl_scaleid));
-					tgr_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
-					tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
-					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					tgr_offset  <= -signed(trigger_level);
 					tgr_slope   <= trigger_slope;
 					tgr_freeze  <= trigger_freeze;
 					tgr_oneshot <= trigger_oneshot;
-					tgr_wdtid   <= inputs+1;
-					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
 				elsif hz_ena='1' then
 					timeid     := to_integer(unsigned(hz_scaleid));
-					hz_sht     <= to_signed(hz_shts(timeid), btod_sht'length);
-					hz_dec     <= to_signed(hz_pnts(timeid), btod_dec'length);
-					hz_scale   <= to_unsigned(hz_sfcnds(timeid mod 4), hz_scale'length);
 					hz_offset  <= signed(hztl_offset);
-					hz_wdtrow  <= to_unsigned(0, hz_wdtrow'length);
-					hz_uid     <= (inputs+1+vt_pfxs'length)+timeid;
-					hz_wdtid   <= inputs+0;
 				end if;
 			end if;
 		end if;
