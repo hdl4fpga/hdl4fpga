@@ -31,4 +31,31 @@ end;
 architecture def of scopeio_ctlr is
 begin
 
+	vtoffsets_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => rgtr_clk,
+		wr_ena  => vtoffset_ena,
+		wr_addr => vt_offsetcid,
+		wr_data => vtl_offset,
+		rd_addr => vtl_scalecid,
+		rd_data => tbl_offset);
+
+	vtscales_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => rgtr_clk,
+		wr_ena  => vtscale_ena,
+		wr_addr => vt_scalecid,
+		wr_data => vt_scaleid,
+		rd_addr => vt_scalecid,
+		rd_data => vt_scaleid);
+
+	triggers_e : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => rgtr_clk,
+		wr_ena  => vtscale_ena,
+		wr_addr => vt_scalecid,
+		wr_data => vt_scaleid,
+		rd_addr => vt_scalecid,
+		rd_data => vt_scaleid);
+
 end;
