@@ -19,16 +19,15 @@ end;
 architecture def of scopeio_reading is
 
 	signal vtscale_ena    : std_logic;
-	signal vtl_scalecid   : std_logic_vector(chanid_bits-1 downto 0);
+	signal vt_scalecid   : std_logic_vector(chanid_bits-1 downto 0);
 	signal vt_cid         : std_logic_vector(chanid_bits-1 downto 0);
 	signal vt_scaleid     : std_logic_vector(4-1 downto 0);
 	signal tbl_scaleid    : std_logic_vector(vt_scaleid'range);
 
 	signal vtoffset_ena   : std_logic;
-	signal vtl_offsetcid  : std_logic_vector(vt_cid'range);
-	signal vtl_offset     : std_logic_vector((5+8)-1 downto 0);
-	signal tbl_offset     : std_logic_vector(vtl_offset'range);
-	signal vt_offset      : signed(vtl_offset'range);
+	signal vt_offsetcid  : std_logic_vector(vt_cid'range);
+	signal vt_offset     : std_logic_vector((5+8)-1 downto 0);
+	signal tbl_offset     : std_logic_vector(vt_offset'range);
 
 	signal trigger_ena    : std_logic;
 	signal trigger_freeze : std_logic;
@@ -44,17 +43,14 @@ architecture def of scopeio_reading is
 begin
 
 	hzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
-	generic map (
-		rgtr      => false)
 	port map (
 		rgtr_clk  => rgtr_clk,
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
 
-		hz_ena    => hz_ena,
 		hz_scale  => hz_scaleid,
-		hz_offset => hztl_offset);
+		hz_offset => hzl_offset);
 
 	vtscale_e : entity hdl4fpga.scopeio_rgtrvtscale
 	generic map (
@@ -66,7 +62,7 @@ begin
 		rgtr_data => rgtr_data,
 
 		vtscale_ena => vtscale_ena,
-		vtchan_id   => vtl_scalecid,
+		vtchan_id   => vt_scalecid,
 		vtscale_id  => vt_scaleid);
 
 	vtoffset_e : entity hdl4fpga.scopeio_rgtrvtoffset
@@ -79,8 +75,8 @@ begin
 		rgtr_data => rgtr_data,
 
 		vt_ena    => vtoffset_ena,
-		vt_chanid => vtl_offsetcid,
-		vt_offset => vtl_offset);
+		vt_chanid => vt_offsetcid,
+		vt_offset => vt_offset);
 
 	tgr_e : entity hdl4fpga.scopeio_rgtrtrigger
 	generic map (
@@ -102,13 +98,13 @@ begin
 	port map (
 		wr_clk  => rgtr_clk,
 		wr_ena  => vtoffset_ena,
-		wr_addr => vtl_offsetcid,
+		wr_addr => vt_offsetcid,
 		wr_data => vtl_offset,
 		rd_addr => vtl_scalecid,
 		rd_data => tbl_offset);
 
 	vt_cid <= 
-		vtl_offsetcid  when vtoffset_ena='1' else 
+		vt_offsetcid  when vtoffset_ena='1' else 
 		trigger_chanid when  trigger_ena='1' else 
 		tgr_cid;
 
@@ -116,34 +112,22 @@ begin
 	port map (
 		wr_clk  => rgtr_clk,
 		wr_ena  => vtscale_ena,
-		wr_addr => vtl_scalecid,
+		wr_addr => vt_scalecid,
 		wr_data => vt_scaleid,
 		rd_addr => vt_cid,
 		rd_data => tbl_scaleid);
 
 	process (rgtr_clk)
-		variable scaleid : natural range 0 to vt_shts'length-1;
-		variable timeid  : natural range 0 to hz_shts'length-1;
 	begin
 		if rising_edge(rgtr_clk) then
-			if (txt_req xor txt_rdy)='0' then
+			if (mark_req xor mark_rdy)='0' then
 				if vtscale_ena='1' then
-					vt_offset  <= signed(tbl_offset);
+					export_vtoffset <= tbl_offset;
 				elsif vtoffset_ena='1' then
-					vt_offset  <= signed(vtl_offset);
-				elsif trigger_ena='1' then
-					scaleid     := to_integer(unsigned(tbl_scaleid));
-					tgr_offset  <= -signed(trigger_level);
-					tgr_slope   <= trigger_slope;
-					tgr_freeze  <= trigger_freeze;
-					tgr_oneshot <= trigger_oneshot;
-				elsif hz_ena='1' then
-					timeid     := to_integer(unsigned(hz_scaleid));
-					hz_offset  <= signed(hztl_offset);
+					export_vtoffset <= vt_offset;
 				end if;
 			end if;
 		end if;
 	end process;
-
 
 end;
