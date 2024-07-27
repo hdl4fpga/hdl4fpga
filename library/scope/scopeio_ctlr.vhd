@@ -9,6 +9,8 @@ use hdl4fpga.hdo.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_ctlr is
+	generic (
+		layout    : string);
 	port (
 		exit_req  : in  std_logic;
 		exit_rdy  : out std_logic;
@@ -37,10 +39,11 @@ entity scopeio_ctlr is
 end;
 
 architecture def of scopeio_ctlr is
-	signal rgtr_id          : std_logic_vector(8-1 downto 0);
-	signal rgtr_dv          : std_logic;
-	signal rgtr_revs        : std_logic_vector(0 to 4*8-1);
-	signal rgtr_data        : std_logic_vector(rgtr_revs'reverse_range);
+	alias  rgtr_clk        is sio_clk;
+	signal rgtr_id         : std_logic_vector(8-1 downto 0);
+	signal rgtr_dv         : std_logic;
+	signal rgtr_revs       : std_logic_vector(0 to 4*8-1);
+	signal rgtr_data       : std_logic_vector(rgtr_revs'reverse_range);
 
 	signal hz_scaleid      : std_logic_vector(4-1 downto 0);
 	signal hz_offset       : std_logic_vector(hzoffset_bits-1 downto 0);
