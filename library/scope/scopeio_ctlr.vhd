@@ -64,14 +64,14 @@ architecture def of scopeio_ctlr is
 	
 	constant xxxx : string := 
 		"{" &
-		" time        : { next : trigger,    submenu : }," &
-		" trigger     : { next : input,      submenu : }," &
-		" input       : { next : time,       submenu : }," &
-		" tm_postion  : { next : tm_scale,   submenu : }, "
-		" tm_scale    : { next : tm_postion, submenu : }, "
-		" tg_position : { next : tg_edge,    sunmenu : }," &
-		" tg_edge     : { next : tg_mode,    sunmenu : }," &
-		" tg_mode     : { next : tg_postion, sunmenu : }," &
+		" time        : { next : trigger, enter : }," &
+		" trigger     : { next : input,   enter : }," &
+		" input       : { next : time,    enter : }," &
+		" tm_postion  : { next : tm_scale,  }," &
+		" tm_scale    : { next : tm_postion,}," &
+		" tg_position : { next : tg_edge    }," &
+		" tg_edge     : { next : tg_mode    }," &
+		" tg_mode     : { next : tg_postion }," &
 
 		"}";
 begin
