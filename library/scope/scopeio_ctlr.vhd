@@ -61,6 +61,14 @@ architecture def of scopeio_ctlr is
 	signal trigger_oneshot : std_logic;
 	signal trigger_freeze  : std_logic;
 	signal trigger_level   : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
+	
+	constant xxxx : string := 
+		"{" &
+		" time    : { next : trigger, prev : input,   enter : , exit : none }," &
+		" trigger : { next : input,   prev : time,    enter : , exit : none }," &
+		" input   : { next : time,    prev : trigger, enter : , exit : none }," &
+		"{ color :, "
+		"}";
 begin
 
 	siosin_e : entity hdl4fpga.sio_sin
@@ -98,4 +106,10 @@ begin
 		trigger_freeze  => trigger_freeze,
 		trigger_level   => trigger_level);
 
+	process (rgtr_clk)
+	begin
+		if rising_edge(rgtr_clk) then
+		end if;
+	end process;
+	
 end;
