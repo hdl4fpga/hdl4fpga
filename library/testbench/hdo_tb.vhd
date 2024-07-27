@@ -255,11 +255,11 @@ begin
     begin
         -- report "VALUE : " & ''' & real'image(test**"[5].top") & ''';
         -- report "VALUE : " & ''' & ((hso(layout)**".vt")**"[0]")**".step" & ''';
-        escaped(yyy, l, compact(layout)**".vt[1].text");
+        escaped(yyy, l, compact(layout)**".vt[1].text1");
 
         --report '"' & escaped(compact(layout)**".vt[0].text") & '"';
 		report "**************";
-        report '"' & yyy(yyy'left to yyy'left+l-1) & '"';
+        -- report '"' & yyy(yyy'left to yyy'left+l-1) & '"';
         wait;
     end process;
 end;

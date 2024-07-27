@@ -106,7 +106,7 @@ package body hdo is
 	constant log_parsetagvaluekey : natural := 2**5;
 	constant log_locatevalue      : natural := 2**6;
 	constant log_resolve          : natural := 2**7;
-	constant log                  : natural := 0; --log_parsetagvaluekey + log_resolve; -- + log_locatevalue    + log_parsevalue ;
+	constant log                  : natural := log_resolve; --log_parsetagvaluekey + log_resolve; -- + log_locatevalue    + log_parsevalue ;
 
 	function isws (
 		constant char : character;
@@ -940,6 +940,7 @@ package body hdo is
 		variable hdo_length    : natural;
 		variable tag_offset    : natural;
 		variable tag_length    : natural;
+		variable xxx : natural;
 
 	begin
 		hdo_index := hdo'left;
@@ -959,12 +960,14 @@ package body hdo is
 					report "resolve => tag         -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & hdo(tag_offset to tag_offset+tag_length-1) & LF & --|note
 					       "resolve => hdo_index   -> " & natural'image(hdo_index) --|note
 					severity note; --|note
+				xxx := value_offset;
 				locate_value(hdo, value_offset, hdo(tag_offset to tag_offset+tag_length-1), hdo_offset, hdo_length);
 				if hdo_length=0 then --| Xilinx ISE 14.7 warning complain
 					assert false --|
 					report "resolve => invalid key -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|
-					hdo --|
+					hdo(xxx to 1382) --|
 					severity failure; --|
+					-- return;
 				end if; --|
 				assert ((log/log_resolve) mod 2=0) --|note
 				report LF & --|note
