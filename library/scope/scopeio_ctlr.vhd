@@ -25,6 +25,15 @@ entity scopeio_ctlr is
 		so_trdy   : in  std_logic := '0';
 		so_data   : buffer std_logic_vector);
 
+	constant inputs        : natural := hdo(layout)**".inputs";
+	constant max_delay     : natural := hdo(layout)**".max_delay";
+	constant hz_unit       : real    := hdo(layout)**".axis.horizontal.unit";
+	constant vt_unit       : real    := hdo(layout)**".axis.vertical.unit";
+	constant grid_height   : natural := hdo(layout)**".grid.height";
+
+	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
+	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
+
 end;
 
 architecture def of scopeio_ctlr is
@@ -33,22 +42,22 @@ architecture def of scopeio_ctlr is
 	signal rgtr_revs        : std_logic_vector(0 to 4*8-1);
 	signal rgtr_data        : std_logic_vector(rgtr_revs'reverse_range);
 
-	signal	hz_scaleid      : std_logic_vector;
-	signal	hz_offset       : std_logic_vector;
-	signal	chan_id         : std_logic_vector;
-	signal	vtscale_ena     : std_logic;
-	signal	vt_scalecid     : std_logic_vector;
-	signal	vt_scaleid      : std_logic_vector(4-1 downto 0);
-	signal	vtoffset_ena    : std_logic;
-	signal	vt_offsetcid    : std_logic_vector;
-	signal	vt_offset       : std_logic_vector;
+	signal hz_scaleid      : std_logic_vector(4-1 downto 0);
+	signal hz_offset       : std_logic_vector(hzoffset_bits-1 downto 0);
+	signal chan_id         : std_logic_vector(chanid_bits-1 downto 0);
+	signal vtscale_ena     : std_logic;
+	signal vt_scalecid     : std_logic_vector(chan_id'range);
+	signal vt_scaleid      : std_logic_vector(4-1 downto 0);
+	signal vtoffset_ena    : std_logic;
+	signal vt_offsetcid    : std_logic_vector(chan_id'range);
+	signal vt_offset       : std_logic_vector((5+8)-1 downto 0);
 
-	signal	trigger_ena     : std_logic;
-	signal	trigger_chanid  : std_logic_vector;
-	signal	trigger_slope   : std_logic;
-	signal	trigger_oneshot : std_logic;
-	signal	trigger_freeze  : std_logic;
-	signal	trigger_level   : std_logic_vector;
+	signal trigger_ena     : std_logic;
+	signal trigger_chanid  : std_logic_vector(chan_id'range);
+	signal trigger_slope   : std_logic;
+	signal trigger_oneshot : std_logic;
+	signal trigger_freeze  : std_logic;
+	signal trigger_level   : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 begin
 
 	siosin_e : entity hdl4fpga.sio_sin

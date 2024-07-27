@@ -25,7 +25,6 @@ entity scopeio_reading is
 
 	constant inputs        : natural := hdo(layout)**".inputs";
 	constant max_delay     : natural := hdo(layout)**".max_delay";
-	constant min_storage   : natural := hdo(layout)**".min_storage";
 	constant hz_unit       : real    := hdo(layout)**".axis.horizontal.unit";
 	constant vt_unit       : real    := hdo(layout)**".axis.vertical.unit";
 	constant grid_unit     : natural := hdo(layout)**".grid.unit";
