@@ -647,8 +647,7 @@ package body hdo is
 
 	procedure parse_tagvaluekey (
 		constant hdo          : string;  -- Xilinx ISE bug left and right are not sent according slice
-		-- constant hdo_left     : natural; -- Xilinx ISE bug. left and right are not sent according slice
-		-- constant hdo_right    : natural; -- Xilinx ISE bug. left and right are not sent according slice
+		constant hdo_right    : natural; -- Xilinx ISE bug. left and right are not sent according slice
 		variable hdo_index    : inout natural;
 		variable tag_offset   : inout natural;
 		variable tag_length   : inout natural;
@@ -688,7 +687,6 @@ package body hdo is
 		
 	procedure parse_tagvaluekeydefault (
 		constant hdo            : in    string; -- Xilinx ISE bug left and right are not sent according slice
-		constant hdo_left       : in    natural; -- Xilinx ISE bug. left and right are not sent according slice
 		constant hdo_right      : in    natural; -- Xilinx ISE bug. left and right are not sent according slice
 		variable hdo_index      : inout natural;
 		variable tag_offset     : inout natural;
@@ -700,7 +698,7 @@ package body hdo is
 		variable default_offset : inout natural;
 		variable default_length : inout natural) is
 	begin
-		parse_tagvaluekey(hdo, hdo_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length);
+		parse_tagvaluekey(hdo, hdo_right, hdo_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length);
 
 		-- skipws(hdo, hdo_index);
 		-- report "************** " & hdo(hdo_index to hdo'right);
@@ -725,7 +723,12 @@ package body hdo is
 		variable open_char      : character;
 		variable opened         : boolean;
 	begin
-		parse_tagvaluekeydefault(hdo, hdo'left, hdo'right, hdo_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length, default_offset, default_length);
+		parse_tagvaluekeydefault(
+			hdo, hdo'right, hdo_index, 
+			tag_offset,     tag_length, 
+			value_offset,   value_length, 
+			key_offset,     key_length, 
+			default_offset, default_length);
 		hdo_index := value_offset;
 		offset    := tag_offset;
 		length    := 0;
@@ -756,7 +759,6 @@ package body hdo is
 				exit;
 			when '}' =>
 				if not opened then
-						"locate_value => close " & character'image(hdo(hdo_index)) & " key at " & natural'image(hdo_index) --|
 					return;
 				elsif open_char/='{' then --| Xilinx ISE 14.7 warning complain
 					assert false --| Xilinx ISE 14.7 warning complain
@@ -771,7 +773,7 @@ package body hdo is
 			when others =>
 			end case;
 			parse_tagvaluekeydefault(
-				hdo, hdo'left,  hdo'right, hdo_index, 
+				hdo,  hdo'right, hdo_index, 
 				tag_offset,     tag_length, 
 				value_offset,   value_length, 
 				key_offset,     key_length, 
@@ -851,7 +853,7 @@ package body hdo is
 		variable default_length    : natural;
 	begin
 		hdo_index := hdo'left;
-		parse_tagvaluekeydefault(hdo, hdo'left, hdo'right, hdo_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length, default_offset, default_length);
+		parse_tagvaluekeydefault(hdo, hdo'right, hdo_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length, default_offset, default_length);
 		if keytag_length/=0 then
 			keytag_index := keytag_offset;
 			loop
@@ -874,8 +876,7 @@ package body hdo is
 			hdo_length := hdo'length;
 		end if;
 		hdo_index := hdo_offset;
-		parse_tagvaluekeydefault (hdo, hdo_offset, hdo_offset+hdo_length-1, hdo_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length, default_offset, default_length);
-		report LF & "exit resovlve" & LF;
+		parse_tagvaluekeydefault (hdo, hdo_offset+hdo_length-1, hdo_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length, default_offset, default_length);
 	end;
 
 	function resolve (
