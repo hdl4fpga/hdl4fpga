@@ -201,7 +201,7 @@ architecture hdo_tb of testbench is
 			"       background-color : 0xff_00_00_00}," &
 			"  vt : [                      " &
 			"   { text  : 'L0'},  " &
-			"   { text  : 'L1'},  " & -- vt(1)
+			"   { xxx : 10, text  : 'L1'},  " & -- vt(1)
 			"   { text1  : 'L2'}]}";   -- vt(8)
     function to_string (
         constant value : std_logic_vector)
@@ -227,7 +227,7 @@ begin
     begin
         -- report natural'image(layout'right) & LF;
         -- report natural'image(yyy'right) & '"' & " :  " & string'(hdo(yyy)**".text1") & '"';
-        report '"' & string'(hdo(yyy)**"[1].text1") & '"';
+        report '"' & string'(hdo(yyy)**"[1].text") & '"';
         wait;
     end process;
 end;

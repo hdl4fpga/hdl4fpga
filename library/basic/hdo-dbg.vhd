@@ -697,9 +697,9 @@ package body hdo is
 	end;
 
 	procedure parse_tagvaluekey (
-		constant hdo          : string; -- Xilinx ISE bug left and right are not sent according slice
-		constant hdo_left     : natural; -- Xilinx ISE bug. left and right are not sent according slice
-		constant hdo_right    : natural; -- Xilinx ISE bug. left and right are not sent according slice
+		constant hdo          : string;  -- Xilinx ISE bug left and right are not sent according slice
+		-- constant hdo_left     : natural; -- Xilinx ISE bug. left and right are not sent according slice
+		-- constant hdo_right    : natural; -- Xilinx ISE bug. left and right are not sent according slice
 		variable hdo_index    : inout natural;
 		variable tag_offset   : inout natural;
 		variable tag_length   : inout natural;
@@ -709,18 +709,18 @@ package body hdo is
 		variable key_length   : inout natural) is
 	begin
 		assert ((log/log_parsetagvaluekey) mod 2=0) --|note
-			report LF & "parse_tagvaluekey => hdo -> " & '"' & hdo(hdo_index to hdo_right) & '"' --|note
+			report LF & "parse_tagvaluekey => hdo -> " & '"' & hdo(hdo_index to hdo'right) & '"' --|note
 			severity note; --|note
 		parse_string(hdo, hdo_index, value_offset, value_length);
 		skipws(hdo, hdo_index);
 		tag_offset := value_offset;
 		tag_length := 0;
 		skipws(hdo, hdo_index);
-		if hdo_index <= hdo_right then
+		if hdo_index <= hdo'right then
 			if value_length=0 then
 				tag_length   := 0;
 				value_offset := hdo_index;
-				value_length := hdo_right-hdo_index+1; 
+				value_length := hdo'right-hdo_index+1; 
 				parse_value(hdo, hdo_index, value_offset, value_length);
 				assert ((log/log_parsetagvaluekey) mod 2=0) --|note
 					report LF & --|note
@@ -742,7 +742,7 @@ package body hdo is
 				tag_length   := value_length;
 				hdo_index    := hdo_index + 1;
 				value_offset := hdo_index;
-				value_length := hdo_right-hdo_index+1; 
+				value_length := hdo'right-hdo_index+1; 
 				skipws(hdo, hdo_index);
 				parse_value(hdo, hdo_index, value_offset, value_length);
 				assert ((log/log_parsetagvaluekey) mod 2=0) --|note
@@ -750,11 +750,11 @@ package body hdo is
 						"parse_tagvaluekey => tag       -> " & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|note
 						"parse_tagvaluekey => value     -> " & '"' & hdo(value_offset to value_offset+value_length-1) & '"'  --|note
 					severity note; --|note
-				assert ((log/log_parsetagvaluekey) mod 2=0) or hdo_index <= hdo_right --|note
+				assert ((log/log_parsetagvaluekey) mod 2=0) or hdo_index <= hdo'right --|note
 					report LF & --|note
 						"parse_tagvaluekey => hdo_index passed end of the hdo -> " & natural'image(hdo_index) --|note
 					severity note; --|note
-				assert ((log/log_parsetagvaluekey) mod 2=0) or hdo_index > hdo_right --|note
+				assert ((log/log_parsetagvaluekey) mod 2=0) or hdo_index > hdo'right --|note
 					report LF & --|note
 						"parse_tagvaluekey => hdo(hdo_index) -> " & natural'image(hdo_index) & ':' & character'image(hdo(hdo_index)) --|note
 					severity note; --|note
@@ -789,7 +789,7 @@ package body hdo is
 		variable default_offset : inout natural;
 		variable default_length : inout natural) is
 	begin
-		parse_tagvaluekey(hdo, hdo_left, hdo_right, hdo_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length);
+		parse_tagvaluekey(hdo, hdo_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length);
 
 		-- skipws(hdo, hdo_index);
 		-- report "************** " & hdo(hdo_index to hdo'right);
@@ -812,11 +812,11 @@ package body hdo is
 		variable default_length : natural;
 		variable position       : natural;
 		variable open_char      : character;
-		variable valid          : boolean;
+		variable opened         : boolean;
 	begin
 		assert ((log/log_locatevalue) mod 2=0) --|note
 			report LF & --|note
-				"locaye_value => vvvvvvvvvvvvvvvvvvvv" & LF & --|note
+				"locate_value => vvvvvvvvvvvvvvvvvvvv" & LF & --|note
 				"locate_value => hdo       -> " & natural'image(hdo_index) & ':' & natural'image(hdo'right) & " " & '"' & hdo(hdo_index to hdo'right) & '"' --|note
 			severity note; --|note
 		parse_tagvaluekeydefault(hdo, hdo'left, hdo'right, hdo_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length, default_offset, default_length);
@@ -824,6 +824,7 @@ package body hdo is
 		offset    := tag_offset;
 		length    := 0;
 		position  := 0;
+		opened    := false;
 		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
 			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
 		
@@ -839,6 +840,7 @@ package body hdo is
 						"locate_value => start -> " & natural'image(hdo_index) & ':' & character'image(hdo(hdo_index)) --|note
 					severity note; --|note
 				open_char := hdo(hdo_index);
+				opened    := true;
 				hdo_index := hdo_index + 1;
 			when ',' =>
 				position  := position + 1;
@@ -848,57 +850,80 @@ package body hdo is
 					severity note; --|note
 				hdo_index := hdo_index + 1;
 			when ']' =>
-				if open_char/='[' then --| Xilinx ISE 14.7 warning complain
+				if not opened then
 					assert false --|
 					report LF &  --|
-						"locate_value => wrong close key at " & natural'image(hdo_index) & " open with  " & ''' & open_char & ''' & " close by " & character'image(hdo(hdo_index)) & LF &--|
-						hdo(hdo_index to hdo'right) --|
+						"locate_value => close " & character'image(hdo(hdo_index)) & " key at " & natural'image(hdo_index) --|
+					severity note; --|note
+					return;
+				elsif open_char/='[' then --| Xilinx ISE 14.7 warning complain
+					assert false --| Xilinx ISE 14.7 warning complain
+					report LF &  --|
+						"locate_value => wrong close key at " & natural'image(hdo_index) & " open with  " & ''' & open_char & ''' & " close by " & character'image(hdo(hdo_index)) & " -> " & hdo(hdo_index to hdo'right) --|
 					severity failure; --|
 				end if; --|
 				assert ((log/log_locatevalue) mod 2=0) --|note
 				report LF &  --|note
 					"locate_value => close -> " & natural'image(hdo_index) & ':' & character'image(hdo(hdo_index)) --|note
 				severity note; --|note
+				opened    := false;
 				hdo_index := hdo_index + 1;
+				exit;
 			when '}' =>
-				if open_char/='{' then --| Xilinx ISE 14.7 warning complain
+				if not opened then
 					assert false --|
 					report LF &  --|
-						"locate_value => wrong close key " & ''' & open_char & ''' & " "  & natural'image(hdo_index) & ':' & character'image(hdo(hdo_index)) --|
+						"locate_value => close " & character'image(hdo(hdo_index)) & " key at " & natural'image(hdo_index) --|
+					severity note; --|note
+					return;
+				elsif open_char/='{' then --| Xilinx ISE 14.7 warning complain
+					assert false --| Xilinx ISE 14.7 warning complain
+					report LF &  --|
+						"locate_value => wrong close key at " & natural'image(hdo_index) & " open with  " & ''' & open_char & ''' & " close by " & character'image(hdo(hdo_index)) & LF &--|
+						hdo(hdo_index to hdo'right) --|
 					severity failure; --|
 				end if; --|
 				assert ((log/log_locatevalue) mod 2=0) --|note
 					report LF &  --|note
 						"locate_value => close -> " & natural'image(hdo_index) & ':' & character'image(hdo(hdo_index)) --|note
 					severity note; --|note
+				opened    := false;
 				hdo_index := hdo_index + 1;
+				exit;
 			when others =>
 			end case;
-			parse_tagvaluekeydefault(hdo, hdo'left, hdo'right, hdo_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length, default_offset, default_length);
+			parse_tagvaluekeydefault(
+				hdo, hdo'left,  hdo'right, hdo_index, 
+				tag_offset,     tag_length, 
+				value_offset,   value_length, 
+				key_offset,     key_length, 
+				default_offset, default_length);
+
 			assert ((log/log_locatevalue) mod 2=0) --|note
-				report LF &  --|note
-					"locate_value => hdo -> " & natural'image(value_offset) & ':' & natural'image(value_offset+value_length-1) & " " & '"' & hdo(value_offset to value_offset+value_length-1) & '"' --|note
+				report LF & "locate_value => hdo -> " & natural'image(value_offset) & ':' & natural'image(value_offset+value_length-1) & " " & '"' & hdo(value_offset to value_offset+value_length-1) & '"' --|note
 				severity note; --|note
+
 			if isdigit(tag(tag'left)) then
 				if to_natural(tag) <= position then
 					assert ((log/log_locatevalue) mod 2=0) --|note
-						report LF &  --|note
-						"locate_value => object position -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & hdo(tag_offset to tag_offset+tag_length-1) --|note
+						report LF & "locate_value => object position -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & hdo(tag_offset to tag_offset+tag_length-1) --|note
 						severity note; --|note
 					offset := tag_offset;
 					length := hdo_index-offset;
 					exit;
 				end if;
 			elsif isalnum(tag(tag'left)) then
-				if tag_length/=0 and tag'length=tag_length then -- to avoid synthesizes tools loop-warnings
+				if tag_length/=0 then -- to avoid synthesizes tools loop-warnings
 					assert ((log/log_locatevalue) mod 2=0) --|note
 						report LF &  --|note
-						"locate_value => object tag -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & hdo(tag_offset to tag_offset+tag_length-1) --|note
+						"locate_value => object request tag " & tag & " -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & ' ' & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' --|note
 						severity note; --|note
-					if tag=hdo(tag_offset to tag_offset+tag_length-1) then
-						offset := tag_offset;
-						length := hdo_index-offset;
-						exit;
+					if tag'length=tag_length then
+						if tag=hdo(tag_offset to tag_offset+tag_length-1) then
+							offset := tag_offset;
+							length := hdo_index-offset;
+							exit;
+						end if;
 					end if;
 				end if;
 			end if;
