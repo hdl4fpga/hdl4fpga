@@ -200,33 +200,9 @@ architecture hdo_tb of testbench is
 			"       horizontal : 1,        " &
 			"       background-color : 0xff_00_00_00}," &
 			"  vt : [                      " &
-			"   { text  : 'V_P(+)    V_N(-)i    ', " &
-			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_ff_ff},  " &
-			"   { text  : 'A6(+)  A7(-)',  " &
-			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_ff_00},  " & -- vt(1)
-			"   { text  : 'A8(+)  A9(-)', " &
-			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_00_ff},  " & -- vt(2)
-			"   { text  : 'A10(+) A11(-)', " &
-			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_00_00},  " & -- vt(3)
-			"   { text  : 'A0(+)',       " &
-			"     step  : " & real'image(3.32*vt_step) & "," &
-			"     color : 0xff_00_ff_ff},  " & -- vt(4)
-			"   { text  : 'A1(+)',       " &
-			"     step  : " & real'image(3.32*vt_step) & "," &
-			"     color : 0xff_00_ff_00},  " & -- vt(5)
-			"   { text  : 'A2(+)',       " &
-			"     step  : " & real'image(3.32*vt_step) & "," &
-			"     color : 0xff_00_00_ff},  " & -- vt(6)
-			"   { text  : 'A3(+)           ',       " &
-			"     step  : " & real'image(3.32*vt_step) & "," &
-			"     color : 0xff_ff_ff_ff},  " &  -- vt(7)
-			"   { text  : 'A4(+)',           " &
-			"     step  : " & real'image(3.32*vt_step) & "," &
-			"     color : 0xff_ff_ff_00}]}";   -- vt(8)
+			"   { text  : 'L0'},  " &
+			"   { text  : 'L1'},  " & -- vt(1)
+			"   { text1  : 'L2'}]}";   -- vt(8)
     function to_string (
         constant value : std_logic_vector)
         return string is
@@ -247,11 +223,11 @@ architecture hdo_tb of testbench is
 
 begin
     process 
-		constant yyy : string := hdo(layout)**".vt[1]";
-		constant zzz : string := hdo(layout)**".text";
-		variable xxx : string(zzz'range);
+		constant yyy : string := compact(hdo(layout))**".vt";
     begin
-        -- report '"' & zzz & '"';
+        -- report natural'image(layout'right) & LF;
+        -- report natural'image(yyy'right) & '"' & " :  " & string'(hdo(yyy)**".text1") & '"';
+        report '"' & string'(hdo(yyy)**"[1].text1") & '"';
         wait;
     end process;
 end;
