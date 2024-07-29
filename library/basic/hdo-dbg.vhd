@@ -106,7 +106,7 @@ package body hdo is
 	constant log_parsetagvaluekey : natural := 2**5;
 	constant log_locatevalue      : natural := 2**6;
 	constant log_resolve          : natural := 2**7;
-	constant log                  : natural := log_locatevalue + log_parsekey + log_parsetagvaluekey; -- + log_resolve; -- + log_locatevalue    + log_parsevalue ;
+	constant log                  : natural := log_locatevalue + log_parsekey + log_parsetagvaluekey + log_resolve; -- + log_locatevalue    + log_parsevalue ;
 
 	function isws (
 		constant char : character;
@@ -813,8 +813,6 @@ package body hdo is
 		variable position       : natural;
 		variable open_char      : character;
 		variable valid          : boolean;
-		variable stack          : string(1 to 16);
-		variable stackptr       : natural;
 	begin
 		assert ((log/log_locatevalue) mod 2=0) --|note
 			report LF & --|note
@@ -826,7 +824,6 @@ package body hdo is
 		offset    := tag_offset;
 		length    := 0;
 		position  := 0;
-		stackptr  := 0;
 		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
 			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
 		
@@ -842,19 +839,15 @@ package body hdo is
 						"locate_value => start -> " & natural'image(hdo_index) & ':' & character'image(hdo(hdo_index)) --|note
 					severity note; --|note
 				open_char := hdo(hdo_index);
-				stackptr  := stackptr + 1;
-				stack(stackptr) := hdo(hdo_index);
 				hdo_index := hdo_index + 1;
 			when ',' =>
+				position  := position + 1;
 				assert ((log/log_locatevalue) mod 2=0) --|note
 					report LF &  --|note
-						"locate_value => next position -> " & natural'image(hdo_index) & ':' & character'image(hdo(hdo_index)) --|note
+						"locate_value => next position -> [" & natural'image(position) & "] -> " & natural'image(hdo_index) & ':' & character'image(hdo(hdo_index)) --|note
 					severity note; --|note
-				position  := position + 1;
 				hdo_index := hdo_index + 1;
 			when ']' =>
-				open_char := stack(stackptr);
-				stackptr  := stackptr - 1;
 				if open_char/='[' then --| Xilinx ISE 14.7 warning complain
 					assert false --|
 					report LF &  --|
@@ -868,8 +861,6 @@ package body hdo is
 				severity note; --|note
 				hdo_index := hdo_index + 1;
 			when '}' =>
-				open_char := stack(stackptr);
-				stackptr  := stackptr - 1;
 				if open_char/='{' then --| Xilinx ISE 14.7 warning complain
 					assert false --|
 					report LF &  --|
@@ -892,7 +883,7 @@ package body hdo is
 				if to_natural(tag) <= position then
 					assert ((log/log_locatevalue) mod 2=0) --|note
 						report LF &  --|note
-						"locate_value => tag -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & hdo(tag_offset to tag_offset+tag_length-1) --|note
+						"locate_value => object position -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & hdo(tag_offset to tag_offset+tag_length-1) --|note
 						severity note; --|note
 					offset := tag_offset;
 					length := hdo_index-offset;
@@ -900,6 +891,10 @@ package body hdo is
 				end if;
 			elsif isalnum(tag(tag'left)) then
 				if tag_length/=0 and tag'length=tag_length then -- to avoid synthesizes tools loop-warnings
+					assert ((log/log_locatevalue) mod 2=0) --|note
+						report LF &  --|note
+						"locate_value => object tag -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & hdo(tag_offset to tag_offset+tag_length-1) --|note
+						severity note; --|note
 					if tag=hdo(tag_offset to tag_offset+tag_length-1) then
 						offset := tag_offset;
 						length := hdo_index-offset;
@@ -1019,6 +1014,7 @@ package body hdo is
 				"resolve => value -> " & natural'image(value_offset) & ":" & natural'image(value_length) & ' ' & '"' & hdo(value_offset to value_offset+value_length-1) & '"' & LF & --|note
 				"resolve => key   -> " & natural'image(key_offset)   & ":" & natural'image(key_length)   & ' ' & '"' & hdo(key_offset   to key_offset+key_length-1)     & '"' & LF --|note
 			severity note; --|note
+		report LF & "exit resovlve" & LF;
 	end;
 
 	function resolve (
