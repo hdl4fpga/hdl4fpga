@@ -647,8 +647,8 @@ package body hdo is
 
 	procedure parse_tagvaluekey (
 		constant hdo          : string;  -- Xilinx ISE bug left and right are not sent according slice
-		constant hdo_right    : natural; -- Xilinx ISE bug. left and right are not sent according slice
 		variable hdo_index    : inout natural;
+		constant hdo_right    : natural; -- Xilinx ISE bug. left and right are not sent according slice
 		variable tag_offset   : inout natural;
 		variable tag_length   : inout natural;
 		variable value_offset : inout natural;
@@ -687,8 +687,8 @@ package body hdo is
 		
 	procedure parse_tagvaluekeydefault (
 		constant hdo            : in    string; -- Xilinx ISE bug left and right are not sent according slice
-		constant hdo_right      : in    natural; -- Xilinx ISE bug. left and right are not sent according slice
 		variable hdo_index      : inout natural;
+		constant hdo_right      : in    natural; -- Xilinx ISE bug. left and right are not sent according slice
 		variable tag_offset     : inout natural;
 		variable tag_length     : inout natural;
 		variable value_offset   : inout natural;
@@ -698,7 +698,11 @@ package body hdo is
 		variable default_offset : inout natural;
 		variable default_length : inout natural) is
 	begin
-		parse_tagvaluekey(hdo, hdo_right, hdo_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length);
+		parse_tagvaluekey(
+			hdo, hdo_index, hdo_right, 
+			tag_offset,   tag_length, 
+			value_offset, value_length, 
+			key_offset,   key_length);
 
 		-- skipws(hdo, hdo_index);
 		-- report "************** " & hdo(hdo_index to hdo'right);
@@ -724,7 +728,7 @@ package body hdo is
 		variable opened         : boolean;
 	begin
 		parse_tagvaluekeydefault(
-			hdo, hdo'right, hdo_index, 
+			hdo, hdo_index,  hdo'right,
 			tag_offset,     tag_length, 
 			value_offset,   value_length, 
 			key_offset,     key_length, 
@@ -773,7 +777,7 @@ package body hdo is
 			when others =>
 			end case;
 			parse_tagvaluekeydefault(
-				hdo,  hdo'right, hdo_index, 
+				hdo, hdo_index, hdo'right,
 				tag_offset,     tag_length, 
 				value_offset,   value_length, 
 				key_offset,     key_length, 
@@ -853,7 +857,12 @@ package body hdo is
 		variable default_length    : natural;
 	begin
 		hdo_index := hdo'left;
-		parse_tagvaluekeydefault(hdo, hdo'right, hdo_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length, default_offset, default_length);
+		parse_tagvaluekeydefault(
+			hdo, hdo_index, hdo'right,
+			tag_offset,     tag_length, 
+			value_offset,   value_length, 
+			keytag_offset,  keytag_length, 
+			default_offset, default_length);
 		if keytag_length/=0 then
 			keytag_index := keytag_offset;
 			loop
@@ -876,7 +885,12 @@ package body hdo is
 			hdo_length := hdo'length;
 		end if;
 		hdo_index := hdo_offset;
-		parse_tagvaluekeydefault (hdo, hdo_offset+hdo_length-1, hdo_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length, default_offset, default_length);
+		parse_tagvaluekeydefault (
+			hdo, hdo_index, hdo_offset+hdo_length-1,
+			tag_offset,     tag_length, 
+			value_offset,   value_length, 
+			keytag_offset,  keytag_length, 
+			default_offset, default_length);
 	end;
 
 	function resolve (
