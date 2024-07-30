@@ -27,7 +27,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 package hdo is
-
 	function compact (
 		constant hdo : string)
 		return string;
@@ -48,10 +47,6 @@ package hdo is
 	function resolve (
 		constant hdo : string)
 		return boolean;
-
-	-- function to_integervector (
-		-- constant object : string)
-		-- return integer_vector;
 
 	subtype hdo is string;
 
@@ -93,7 +88,6 @@ package hdo is
 	function escaped (
 		constant obj : string)
 		return string;
-
 end;
 
 package body hdo is
@@ -202,13 +196,13 @@ package body hdo is
 						sign := -1;
 					else
 						assert false --|
-						report LF & "Wrong number " & character'image(value(i)) & " " & natural'image(base)  & " @ " & value--|
-						severity failure; --|
+							report LF & "Wrong number " & character'image(value(i)) & " " & natural'image(base)  & " @ " & value--|
+							severity failure; --|
 					end if;
 				else
 					assert false --|
-					report LF & "Wrong number " & character'image(value(i)) & " " & natural'image(base) --|
-					severity failure; --|
+						report LF & "Wrong number " & character'image(value(i)) & " " & natural'image(base) --|
+						severity failure; --|
 				end if;
 			end if;
 		end loop;
@@ -267,8 +261,8 @@ package body hdo is
 			end if;
 		else
 			assert false --|
-			report LF & "value'range is nul" --|
-			severity failure; --|
+				report LF & "value'range is nul" --|
+				severity failure; --|
 			return "X";
 		end if;
 	end;
@@ -493,12 +487,15 @@ package body hdo is
 		variable open_char : character;
 	begin
 		skipws(hdo, hdo_index);
+
 		assert ((log/log_parsekeytag) mod 2=0) --|note
 			report LF & "parse_keytag => hdo_index -> " & natural'image(hdo_index) --|note
 			severity note; --|note
+
 		assert ((log/log_parsekeytag) mod 2=0) or hdo_index > hdo'right --|note
 			report LF & "parse_keytag => hdo_index -> " & natural'image(hdo_index) & " -> " & ''' & hdo(hdo_index) & ''' --|note
 			severity note; --|note
+
 		length := 0;
 		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
 			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
@@ -508,19 +505,20 @@ package body hdo is
 				open_char := hdo(hdo_index);
 				hdo_index := hdo_index + 1;
 				parse_natural(hdo, hdo_index, offset, length);
+
 				assert ((log/log_parsekeytag) mod 2=0) or length=0   --|note
 					report LF & "parse_keytag => [ is position" --|note
 					severity note; --|note
+
 				assert ((log/log_parsekeytag) mod 2=0) or length/=0  --|note
 					report LF & "parse_keytag  => [ is string"  --|note
 					severity note; --|note
+
 				if length=0 then
 					parse_string(hdo, hdo_index, offset, length);
-				end if;
-				if length=0 then --| Xilinx ISE 14.7 warning complain
 					assert false
-					report LF & "parse_keytag -> invalid key : " & hdo(hdo_index to hdo'right)  --|
-					severity failure; --|
+						report LF & "parse_keytag -> invalid key : " & hdo(hdo_index to hdo'right)  --|
+						severity failure; --|
 				end if; --|
 				assert ((log/log_parsekeytag) mod 2=0) --|note
 					report LF & "parse_keytag => " & natural'image(hdo_index) & "->" & ''' & hdo(hdo_index) & ''' --|note
