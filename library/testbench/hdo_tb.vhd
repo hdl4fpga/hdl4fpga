@@ -223,11 +223,11 @@ architecture hdo_tb of testbench is
 
 begin
     process 
-		constant yyy : string := compact(hdo(layout))**".vt";
+		constant yyy : string := compact(hdo(layout))**".vt ";
     begin
         -- report natural'image(layout'right) & LF;
         -- report natural'image(yyy'right) & '"' & " :  " & string'(hdo(yyy)**".text1") & '"';
-        report '"' & string'(hdo(yyy)**"[1].text") & '"';
+        report '"' & string'(hdo(yyy)**"[1].text=") & '"';
         wait;
     end process;
 end;
