@@ -223,28 +223,28 @@ package body hdo is
 			constant value    : string;
 			constant log2base : natural)
 			return std_logic_vector is
-			variable j        : natural;
+			variable n        : natural;
 			variable retval   : std_logic_vector(0 to log2base*value'length-1);
 		begin
-			j := value'left;
+			n := value'left;
 			for i in retval'range loop
 				for l in value'range loop -- to avoid synthesizes tools loop-warnings
-					exit when value(j)/='_'; -- to avoid synthesizes tools loop-warnings
+					exit when value(n)/='_'; -- to avoid synthesizes tools loop-warnings
 
-					j := j + 1;
-					if j > value'right then
+					n := n + 1;
+					if n > value'right then
 						return retval(0 to i-1);
 					end if;
 				end loop;
-				if (to_integer(value(j))/2**((log2base-1)-i mod log2base)) mod 2=0 then
+				if (to_integer(value(n))/2**((log2base-1)-i mod log2base)) mod 2=0 then
 					retval(i) := '0';
 				else
 					retval(i) := '1';
 				end if;
 				if i mod log2base = log2base-1 then
-					j := j + 1;
+					n := n + 1;
 				end if;
-				if j > value'right then
+				if n > value'right then
 					return retval(0 to i);
 				end if;
 			end loop;
@@ -964,21 +964,21 @@ package body hdo is
 		variable retval : string(1 to hdo'length);
 		variable escape : boolean;
 		variable bkslh  : boolean;
-		variable j      : positive;
+		variable n      : positive;
 	begin
 		bkslh  := false;
 		escape := false;
-		j      := retval'left;
+		n      := retval'left;
 		for i in hdo'range loop
 			if bkslh then
-				retval(j) := hdo(i);
-				j := j + 1;
+				retval(n) := hdo(i);
+				n := n + 1;
 			elsif escape then
-				retval(j) := hdo(i);
-				j := j + 1;
+				retval(n) := hdo(i);
+				n := n + 1;
 			elsif not isws(hdo(i)) then
-				retval(j) := hdo(i);
-				j := j + 1;
+				retval(n) := hdo(i);
+				n := n + 1;
 			end if;
 			if bkslh then
 				bkslh := false;
@@ -988,7 +988,7 @@ package body hdo is
 				escape := not escape;
 			end if;
 		end loop;
-		return retval(1 to j-1);
+		return retval(1 to n-1);
 	end;
 
 	procedure resolve (
