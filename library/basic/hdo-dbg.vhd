@@ -497,8 +497,8 @@ package body hdo is
 			severity note; --|note
 
 		length := 0;
-		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
-			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
+		for l in hdo'range loop -- avoid synthesizes tools loop-warnings
+			exit when hdo_index > hdo'right; -- avoid synthesizes tools loop-warnings
 
 			case hdo(hdo_index) is
 			when '['|'{' =>
@@ -851,8 +851,8 @@ package body hdo is
 		position  := 0;
 		opened    := false;
 
-		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
-			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
+		for l in hdo'range loop -- avoid synthesizes tools loop-warnings
+			exit when hdo_index > hdo'right; -- avoid synthesizes tools loop-warnings
 		
 			assert ((log/log_locatevalue) mod 2=0) --|note
 				report LF & "locale_value.loop => hdo(hdo_index) -> " & natural'image(hdo_index) & ':' & character'image(hdo(hdo_index)) --|note
@@ -942,7 +942,7 @@ package body hdo is
 					exit;
 				end if;
 			elsif isalnum(tag(tag'left)) then
-				if tag_length/=0 then -- to avoid synthesizes tools loop-warnings
+				if tag_length/=0 then -- avoid synthesizes tools loop-warnings
 					assert ((log/log_locatevalue) mod 2=0) --|note
 						report LF &"locate_value => object request tag " & tag & " -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & ' ' & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' --|note
 						severity note; --|note
