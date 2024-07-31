@@ -100,7 +100,7 @@ package body hdo is
 	constant log_parsetagvaluekey : natural := 2**5;
 	constant log_locatevalue      : natural := 2**6;
 	constant log_resolve          : natural := 2**7;
-	constant log                  : natural := log_parsekey + log_parsekeytag + log_parsetagvaluekey; -- + log_resolve; -- + log_locatevalue    + log_parsevalue ;
+	constant log                  : natural := log_parsekey + log_parsekeytag + log_parsetagvaluekey + log_resolve; -- + log_locatevalue    + log_parsevalue ;
 
 	function isws (
 		constant char : character;
@@ -222,8 +222,8 @@ package body hdo is
 		begin
 			n := value'left;
 			for i in retval'range loop
-				for l in value'range loop -- to avoid synthesizes tools loop-warnings
-					exit when value(n)/='_'; -- to avoid synthesizes tools loop-warnings
+				for l in value'range loop -- avoid synthesizes tools loop-warnings
+					exit when value(n)/='_'; -- avoid synthesizes tools loop-warnings
 
 					n := n + 1;
 					if n > value'right then
@@ -308,8 +308,8 @@ package body hdo is
 		end case;
 
 		mant := 0.0;
-		for l in value'range loop -- to avoid synthesizes tools loop-warnings
-			exit when idx > value'right; -- to avoid synthesizes tools loop-warnings
+		for l in value'range loop -- avoid synthesizes tools loop-warnings
+			exit when idx > value'right; -- avoid synthesizes tools loop-warnings
 
 			if value(idx)='.' then
 				idx := idx + 1;
@@ -320,8 +320,8 @@ package body hdo is
 		end loop;
 
 		exp := 0;
-		for l in value'range loop -- to avoid synthesizes tools loop-warnings
-			exit when idx > value'right; -- to avoid synthesizes tools loop-warnings
+		for l in value'range loop -- avoid synthesizes tools loop-warnings
+			exit when idx > value'right; -- avoid synthesizes tools loop-warnings
 
 			if value(idx)='e' then
 				idx := idx + 1;
@@ -357,8 +357,8 @@ package body hdo is
 		end case;
 
 		exp := 0;
-		for l in value'range loop           -- to avoid synthesizes tools loop-warnings
-			exit when idx > value'right;    -- to avoid synthesizes tools loop-warnings
+		for l in value'range loop           -- avoid synthesizes tools loop-warnings
+			exit when idx > value'right;    -- avoid synthesizes tools loop-warnings
 
 			exp := 10*exp + (character'pos(value(idx))-character'pos('0'));
 			idx := idx + 1;
@@ -408,8 +408,8 @@ package body hdo is
 	begin
 		skipws(hdo, hdo_index);
 		offset := hdo_index;
-		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
-			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
+		for l in hdo'range loop -- avoid synthesizes tools loop-warnings
+			exit when hdo_index > hdo'right; -- avoid synthesizes tools loop-warnings
 
 			if hdo(hdo_index)='\' then
 				bkslh := true;
@@ -464,8 +464,8 @@ package body hdo is
 	begin
 		skipws(hdo, hdo_index);
 		offset := hdo_index;
-		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
-			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
+		for l in hdo'range loop -- avoid synthesizes tools loop-warnings
+			exit when hdo_index > hdo'right; -- avoid synthesizes tools loop-warnings
 
 			if isalnum(hdo(hdo_index)) then
 				hdo_index := hdo_index + 1;
@@ -798,15 +798,15 @@ package body hdo is
 			key_offset,   key_length);
 
 		-- skipws(hdo, hdo_index);
-		if key_length=0 then
-		else
-			assert false --|note
-				report LF & "==>" & '"' & hdo(key_offset to key_offset+key_length-1) & '"'--|note
-				severity note; --|note
+		if key_length/=0 then
 			if hdo'right >= hdo_index then
-				assert false --|note
-					report LF & "==>" & hdo(hdo_index) --|note
+				if hdo(hdo_index)='=' then
+					default_offset := hdo_index+1;
+					default_length := hdo_right-hdo_index;
+					assert false --|note
+					report LF & "parse_tagvaluekeydefault => default " & natural'image(hdo_index) & ':' & natural'image(hdo'right) & " -> " & hdo(hdo_index to hdo'right) --|note
 					severity note; --|note
+				end if;
 			end if;
 		end if;
 	end;
@@ -1037,7 +1037,7 @@ package body hdo is
 			severity note; --|note
 		if keytag_length/=0 then
 			keytag_index := keytag_offset;
-			loop
+			for i in hdo'range loop -- avoid synthesizes tools loop-warnings
 				parse_keytag(hdo, keytag_index, tag_offset, tag_length);
 				if tag_length=0 then
 					exit;
@@ -1048,10 +1048,12 @@ package body hdo is
 					severity note; --|note
 				locate_value(hdo, value_offset, hdo(tag_offset to tag_offset+tag_length-1), hdo_offset, hdo_length);
 				if hdo_length=0 then --| Xilinx ISE 14.7 warning complain
-					assert false --|
-					report "resolve => invalid key -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' & LF --|
-					severity failure; --|
-					-- return;
+					assert false --|note
+						report LF & "resolve => invalid key -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' & LF --|note
+						severity note; --|note
+					hdo_offset := default_offset;
+					hdo_length := default_length;
+					exit;
 				end if; --|
 				assert ((log/log_resolve) mod 2=0) --|note
 					report LF & --|note
@@ -1099,7 +1101,7 @@ package body hdo is
 		variable hdo_length : natural;
 	begin
 		resolve (hdo, hdo_offset, hdo_length);
-		if hdo_length/=true_value'length then          -- to avoid synthesizes tools length-warnings
+		if hdo_length/=true_value'length then          -- avoid synthesizes tools length-warnings
 			return false;
         elsif hdo(hdo_offset to hdo_offset+hdo_length-1)/=true_value then
 			return false;
