@@ -227,7 +227,7 @@ begin
     begin
         -- report natural'image(layout'right) & LF;
         -- report natural'image(yyy'right) & '"' & " :  " & string'(hdo(yyy)**".text1") & '"';
-        report '"' & string'(hdo(yyy)**"[1].text1=kkkkkk") & '"';
+        report '"' & string'(hdo(yyy)**"[1].text1={ffff : kkkkkk}") & '"';
         wait;
     end process;
 end;

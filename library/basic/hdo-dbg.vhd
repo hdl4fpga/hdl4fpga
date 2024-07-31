@@ -713,8 +713,13 @@ package body hdo is
 		variable key_offset   : inout natural;
 		variable key_length   : inout natural) is
 	begin
+		assert false
+		report "LF" & "Pase por aca"
+		severity note;
 		assert ((log/log_parsetagvaluekey) mod 2=0) --|note
-			report LF & "parse_tagvaluekey => hdo -> " & '"' & hdo(hdo_index to hdo'right) & '"' --|note
+			report LF & "parse_tagvaluekey => hdo -> " & '"' & hdo(hdo_index to hdo'right) & '"' & --|note
+			       LF & "parse_tagvaluekey => hdo_index -> " & '"' & natural'image(hdo_index) & '"' & --|note
+			       LF & "parse_tagvaluekey => hdo_right -> " & '"' & natural'image(hdo_right) & '"' --|note
 			severity note; --|note
 		parse_string(hdo, hdo_index, value_offset, value_length);
 		skipws(hdo, hdo_index);
@@ -804,7 +809,7 @@ package body hdo is
 					default_offset := hdo_index+1;
 					default_length := hdo_right-hdo_index;
 					assert false --|note
-					report LF & "parse_tagvaluekeydefault => default " & natural'image(hdo_index) & ':' & natural'image(hdo'right) & " -> " & hdo(hdo_index to hdo'right) --|note
+					report LF & "parse_tagvaluekeydefault => default " & natural'image(default_offset) & ':' & natural'image(default_length) & " -> " & hdo(default_offset to default_offset+default_length-1) --|note
 					severity note; --|note
 				end if;
 			end if;
@@ -1051,8 +1056,12 @@ package body hdo is
 					assert false --|note
 						report LF & "resolve => invalid key -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' & LF --|note
 						severity note; --|note
-					hdo_offset := default_offset;
-					hdo_length := default_length;
+					assert false --|note
+						report LF & "resolve => default_offset -> " & natural'image(default_offset) & ":" & natural'image(default_offset+default_length-1) & ":" & '"' & hdo(default_offset to default_offset+default_length-1) & '"' & LF --|note
+						severity note; --|note
+					hdo_offset   := default_offset;
+					hdo_length   := default_length;
+					value_offset := default_offset;
 					exit;
 				end if; --|
 				assert ((log/log_resolve) mod 2=0) --|note
@@ -1068,12 +1077,12 @@ package body hdo is
 			hdo_length := hdo'length;
 		end if;
 		hdo_index := hdo_offset;
-		parse_tagvaluekeydefault (
+		parse_tagvaluekey(
 			hdo, hdo_index, hdo_offset+hdo_length-1,
 			tag_offset,     tag_length, 
 			value_offset,   value_length, 
-			keytag_offset,  keytag_length, 
-			default_offset, default_length);
+			keytag_offset,  keytag_length);
+			-- default_offset, default_length);
 		assert ((log/log_resolve) mod 2=0) --|note
 			report LF & --|note
 				"resolve => tag   -> " & natural'image(tag_offset)   & ":" & natural'image(tag_length)   & ' ' & '"' & hdo(tag_offset   to tag_offset+tag_length-1)     & '"' & LF & --|note
