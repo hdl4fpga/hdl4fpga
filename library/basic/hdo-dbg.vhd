@@ -406,6 +406,7 @@ package body hdo is
 		variable aphos     : boolean := false;
 		variable bkslh     : boolean := false;
 	begin
+
 		skipws(hdo, hdo_index);
 		offset := hdo_index;
 		for l in hdo'range loop -- avoid synthesizes tools loop-warnings
@@ -562,11 +563,11 @@ package body hdo is
 				hdo_index := hdo_index + 1;
 				skipws(hdo, hdo_index);
 				parse_string(hdo, hdo_index, offset, length);
-				if length=0 then --| Xilinx ISE 14.7 warning complain
-					assert false --|
-						report LF & "parse_keytag => invalid key : " & hdo(hdo_index to hdo'right) --|
-						severity failure; --|
-				end if; --|
+				if length=0 then --|note Xilinx ISE 14.7 warning complain
+					assert false --|note
+						report LF & "parse_keytag => null key : " & hdo(hdo_index to hdo'right) --|note
+						severity note; --|note
+				end if; --|note
 				hdo_index := offset+length;
 				exit;
 			when others =>
@@ -713,9 +714,6 @@ package body hdo is
 		variable key_offset   : inout natural;
 		variable key_length   : inout natural) is
 	begin
-		assert false
-		report "LF" & "Pase por aca"
-		severity note;
 		assert ((log/log_parsetagvaluekey) mod 2=0) --|note
 			report LF & "parse_tagvaluekey => hdo -> " & '"' & hdo(hdo_index to hdo'right) & '"' & --|note
 			       LF & "parse_tagvaluekey => hdo_index -> " & '"' & natural'image(hdo_index) & '"' & --|note
@@ -725,7 +723,6 @@ package body hdo is
 		skipws(hdo, hdo_index);
 		tag_offset := value_offset;
 		tag_length := 0;
-		skipws(hdo, hdo_index);
 		if hdo_index <= hdo'right then
 			if value_length=0 then
 				tag_length   := 0;
@@ -1077,19 +1074,18 @@ package body hdo is
 			hdo_length := hdo'length;
 		end if;
 		hdo_index := hdo_offset;
-		parse_tagvaluekey(
+		parse_tagvaluekeydefault(
 			hdo, hdo_index, hdo_offset+hdo_length-1,
 			tag_offset,     tag_length, 
 			value_offset,   value_length, 
-			keytag_offset,  keytag_length);
-			-- default_offset, default_length);
+			keytag_offset,  keytag_length,
+			default_offset, default_length);
 		assert ((log/log_resolve) mod 2=0) --|note
 			report LF & --|note
 				"resolve => tag   -> " & natural'image(tag_offset)   & ":" & natural'image(tag_length)   & ' ' & '"' & hdo(tag_offset   to tag_offset+tag_length-1)     & '"' & LF & --|note
 				"resolve => value -> " & natural'image(value_offset) & ":" & natural'image(value_length) & ' ' & '"' & hdo(value_offset to value_offset+value_length-1) & '"' & LF & --|note
 				"resolve => key   -> " & natural'image(key_offset)   & ":" & natural'image(key_length)   & ' ' & '"' & hdo(key_offset   to key_offset+key_length-1)     & '"' & LF --|note
 			severity note; --|note
-		report LF & "resolve => return" & LF;--|note
 	end;
 
 	function resolve (
