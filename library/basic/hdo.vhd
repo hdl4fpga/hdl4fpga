@@ -27,7 +27,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 package hdo is
-
 	function compact (
 		constant hdo : string)
 		return string;
@@ -48,10 +47,6 @@ package hdo is
 	function resolve (
 		constant hdo : string)
 		return boolean;
-
-	-- function to_integervector (
-		-- constant object : string)
-		-- return integer_vector;
 
 	subtype hdo is string;
 
@@ -93,7 +88,6 @@ package hdo is
 	function escaped (
 		constant obj : string)
 		return string;
-
 end;
 
 package body hdo is
@@ -106,7 +100,7 @@ package body hdo is
 	constant log_parsetagvaluekey : natural := 2**5;
 	constant log_locatevalue      : natural := 2**6;
 	constant log_resolve          : natural := 2**7;
-	constant log                  : natural := 0; --log_parsetagvaluekey + log_resolve; -- + log_locatevalue    + log_parsevalue ;
+	constant log                  : natural := log_parsekey + log_parsekeytag + log_parsetagvaluekey + log_resolve; -- + log_locatevalue    + log_parsevalue ;
 
 	function isws (
 		constant char : character;
@@ -173,7 +167,7 @@ package body hdo is
 			return character'pos(char)-character'pos('A')+10;
 		when others =>
 			assert false --|
-			report "wrong digit " & character'image(char) --|
+			report LF & "wrong digit " & character'image(char) --|
 			severity failure; --|
 			return -1;
 		end case;
@@ -202,13 +196,13 @@ package body hdo is
 						sign := -1;
 					else
 						assert false --|
-						report "Wrong number " & character'image(value(i)) & " " & natural'image(base)  & " @ " & value--|
-						severity failure; --|
+							report LF & "Wrong number " & character'image(value(i)) & " " & natural'image(base)  & " @ " & value--|
+							severity failure; --|
 					end if;
 				else
 					assert false --|
-					report "Wrong number " & character'image(value(i)) & " " & natural'image(base) --|
-					severity failure; --|
+						report LF & "Wrong number " & character'image(value(i)) & " " & natural'image(base) --|
+						severity failure; --|
 				end if;
 			end if;
 		end loop;
@@ -223,28 +217,28 @@ package body hdo is
 			constant value    : string;
 			constant log2base : natural)
 			return std_logic_vector is
-			variable j        : natural;
+			variable n        : natural;
 			variable retval   : std_logic_vector(0 to log2base*value'length-1);
 		begin
-			j := value'left;
+			n := value'left;
 			for i in retval'range loop
-				for l in value'range loop -- to avoid synthesizes tools loop-warnings
-					exit when value(j)/='_'; -- to avoid synthesizes tools loop-warnings
+				for l in value'range loop -- avoid synthesizes tools loop-warnings
+					exit when value(n)/='_'; -- avoid synthesizes tools loop-warnings
 
-					j := j + 1;
-					if j > value'right then
+					n := n + 1;
+					if n > value'right then
 						return retval(0 to i-1);
 					end if;
 				end loop;
-				if (to_integer(value(j))/2**((log2base-1)-i mod log2base)) mod 2=0 then
+				if (to_integer(value(n))/2**((log2base-1)-i mod log2base)) mod 2=0 then
 					retval(i) := '0';
 				else
 					retval(i) := '1';
 				end if;
 				if i mod log2base = log2base-1 then
-					j := j + 1;
+					n := n + 1;
 				end if;
-				if j > value'right then
+				if n > value'right then
 					return retval(0 to i);
 				end if;
 			end loop;
@@ -267,8 +261,8 @@ package body hdo is
 			end if;
 		else
 			assert false --|
-			report "value'range is nul" --|
-			severity failure; --|
+				report LF & "value'range is nul" --|
+				severity failure; --|
 			return "X";
 		end if;
 	end;
@@ -314,8 +308,8 @@ package body hdo is
 		end case;
 
 		mant := 0.0;
-		for l in value'range loop -- to avoid synthesizes tools loop-warnings
-			exit when idx > value'right; -- to avoid synthesizes tools loop-warnings
+		for l in value'range loop -- avoid synthesizes tools loop-warnings
+			exit when idx > value'right; -- avoid synthesizes tools loop-warnings
 
 			if value(idx)='.' then
 				idx := idx + 1;
@@ -326,15 +320,15 @@ package body hdo is
 		end loop;
 
 		exp := 0;
-		for l in value'range loop -- to avoid synthesizes tools loop-warnings
-			exit when idx > value'right; -- to avoid synthesizes tools loop-warnings
+		for l in value'range loop -- avoid synthesizes tools loop-warnings
+			exit when idx > value'right; -- avoid synthesizes tools loop-warnings
 
 			if value(idx)='e' then
 				idx := idx + 1;
 				exit;
 			end if;
 			if not isdigit(value(idx)) then --| Xilinx ISE 14.7 warning complain
-				report "wrong character to_real" --|
+				report LF & "wrong character to_real" --|
 				severity failure; --|
 			end if; --|
 			mant := 10.0*mant + real(character'pos(value(idx))-character'pos('0'));
@@ -363,8 +357,8 @@ package body hdo is
 		end case;
 
 		exp := 0;
-		for l in value'range loop           -- to avoid synthesizes tools loop-warnings
-			exit when idx > value'right;    -- to avoid synthesizes tools loop-warnings
+		for l in value'range loop           -- avoid synthesizes tools loop-warnings
+			exit when idx > value'right;    -- avoid synthesizes tools loop-warnings
 
 			exp := 10*exp + (character'pos(value(idx))-character'pos('0'));
 			idx := idx + 1;
@@ -412,10 +406,11 @@ package body hdo is
 		variable aphos     : boolean := false;
 		variable bkslh     : boolean := false;
 	begin
+
 		skipws(hdo, hdo_index);
 		offset := hdo_index;
-		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
-			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
+		for l in hdo'range loop -- avoid synthesizes tools loop-warnings
+			exit when hdo_index > hdo'right; -- avoid synthesizes tools loop-warnings
 
 			if hdo(hdo_index)='\' then
 				bkslh := true;
@@ -464,8 +459,8 @@ package body hdo is
 	begin
 		skipws(hdo, hdo_index);
 		offset := hdo_index;
-		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
-			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
+		for l in hdo'range loop -- avoid synthesizes tools loop-warnings
+			exit when hdo_index > hdo'right; -- avoid synthesizes tools loop-warnings
 
 			if isalnum(hdo(hdo_index)) then
 				hdo_index := hdo_index + 1;
@@ -484,54 +479,60 @@ package body hdo is
 		variable open_char : character;
 	begin
 		skipws(hdo, hdo_index);
+
+
+
 		length := 0;
-		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
-			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
+		for l in hdo'range loop -- avoid synthesizes tools loop-warnings
+			exit when hdo_index > hdo'right; -- avoid synthesizes tools loop-warnings
 
 			case hdo(hdo_index) is
 			when '['|'{' =>
 				open_char := hdo(hdo_index);
 				hdo_index := hdo_index + 1;
 				parse_natural(hdo, hdo_index, offset, length);
+
+
+
 				if length=0 then
 					parse_string(hdo, hdo_index, offset, length);
-				end if;
-				if length=0 then --| Xilinx ISE 14.7 warning complain
+
 					assert false
-					report "parse_keytag -> invalid key : " & hdo(hdo_index to hdo'right)  --|
-					severity failure; --|
-				end if; --|
+						report LF & "parse_keytag -> invalid key : " & hdo(hdo_index to hdo'right)  --|
+						severity failure; --|
+				end if;
+
+
 				skipws(hdo, hdo_index);
 				case hdo(hdo_index) is
 				when ']' => 
 					if open_char/='[' then --| Xilinx ISE 14.7 warning complain
 						assert false
-						report "parse_keytag => wrong close key " & ''' & open_char & ''' & " " & ''' & hdo(hdo_index) & ''' --|
-						severity failure; --|
+							report LF & "parse_keytag => wrong close key " & ''' & open_char & ''' & " " & ''' & hdo(hdo_index) & ''' --|
+							severity failure; --|
 					end if; --|
+
 					hdo_index := hdo_index + 1;
 				when '}' => 
+
 					if open_char/='{' then --| Xilinx ISE 14.7 warning complain
 						assert false
-						report "parse_keytag => wrong close key " & ''' & open_char & ''' & " " & ''' & hdo(hdo_index) & ''' --|
-						severity failure; --|
+							report LF & "parse_keytag => wrong close key " & ''' & open_char & ''' & " " & ''' & hdo(hdo_index) & ''' --|
+							severity failure; --|
 					end if; --|
+
+
 					hdo_index := hdo_index + 1;
 				when others =>
 					assert false --|
-					report "parse_keytag => wrong token -> " & hdo(hdo_index) & " @ " & hdo --|
-					severity failure; --|
+						report LF & "parse_keytag => wrong token -> " & hdo(hdo_index) & " @ " & hdo --|
+						severity failure; --|
 				end case;
 				exit;
 			when '.' =>
 				hdo_index := hdo_index + 1;
 				skipws(hdo, hdo_index);
 				parse_string(hdo, hdo_index, offset, length);
-				if length=0 then --| Xilinx ISE 14.7 warning complain
-					assert false
-					report "parse_keytag => invalid key : " & hdo(hdo_index to hdo'right) --|
-					severity failure; --|
-				end if; --|
 				hdo_index := offset+length;
 				exit;
 			when others =>
@@ -539,10 +540,11 @@ package body hdo is
 				exit;
 			end case;
 		end loop;
+
 	end;
 
 	procedure parse_key (
-		constant hdo        : in string;
+		constant hdo        : in    string;
 		variable hdo_index  : inout natural;
 		variable offset     : inout natural;
 		variable length     : inout natural) is
@@ -605,7 +607,7 @@ package body hdo is
 					if hdo_stptr/=hdo_stack'left then
 						if hdo_stack(hdo_stptr-1)/='[' then --| Xilinx ISE 14.7 warning complain
 							assert false --|
-							report "parse_value => close key " & hdo_stack(hdo_stptr-1) & hdo(hdo_index) --|
+							report LF & "parse_value => close key " & hdo_stack(hdo_stptr-1) & hdo(hdo_index) --|
 							severity failure; --|
 						end if; --|
 						pop(hdo_stptr);
@@ -616,7 +618,7 @@ package body hdo is
 					if hdo_stptr/=hdo_stack'left then
 						if hdo_stack(hdo_stptr-1)/='{' then --| Xilinx ISE 14.7 warning complain
 							assert false --|
-							report "parse_value => close key " & hdo_stack(hdo_stptr-1) & hdo(hdo_index) --|
+							report LF & "parse_value => close key " & hdo_stack(hdo_stptr-1) & hdo(hdo_index) --|
 							severity failure; --|
 						end if; --|
 						pop(hdo_stptr);
@@ -646,10 +648,9 @@ package body hdo is
 	end;
 
 	procedure parse_tagvaluekey (
-		constant hdo          : string; -- Xilinx ISE bug left and right are not sent according slice
-		constant hdo_left     : natural; -- Xilinx ISE bug. left and right are not sent according slice
-		constant hdo_right    : natural; -- Xilinx ISE bug. left and right are not sent according slice
+		constant hdo          : string;  -- Xilinx ISE bug left and right are not sent according slice
 		variable hdo_index    : inout natural;
+		constant hdo_right    : natural; -- Xilinx ISE bug. left and right are not sent according slice
 		variable tag_offset   : inout natural;
 		variable tag_length   : inout natural;
 		variable value_offset : inout natural;
@@ -661,12 +662,11 @@ package body hdo is
 		skipws(hdo, hdo_index);
 		tag_offset := value_offset;
 		tag_length := 0;
-		skipws(hdo, hdo_index);
-		if hdo_index <= hdo_right then
+		if hdo_index <= hdo'right then
 			if value_length=0 then
 				tag_length   := 0;
 				value_offset := hdo_index;
-				value_length := hdo_right-hdo_index+1; 
+				value_length := hdo'right-hdo_index+1; 
 				parse_value(hdo, hdo_index, value_offset, value_length);
 			elsif hdo(hdo_index)/=':' then
 				tag_length   := 0;
@@ -676,7 +676,7 @@ package body hdo is
 				tag_length   := value_length;
 				hdo_index    := hdo_index + 1;
 				value_offset := hdo_index;
-				value_length := hdo_right-hdo_index+1; 
+				value_length := hdo'right-hdo_index+1; 
 				skipws(hdo, hdo_index);
 				parse_value(hdo, hdo_index, value_offset, value_length);
 			end if;
@@ -686,74 +686,148 @@ package body hdo is
 		parse_key(hdo, hdo_index, key_offset, key_length);
 	end;
 		
-	procedure locate_value (
-		constant hdo          : in    string;
-		variable hdo_index    : inout natural;
-		constant tag          : in    string;
-		variable offset       : inout natural;
-		variable length       : inout natural) is
-
-		variable tag_offset   : natural;
-		variable tag_length   : natural;
-		variable key_offset   : natural;
-		variable key_length   : natural;
-		variable value_offset : natural;
-		variable value_length : natural;
-		variable position     : natural;
-		variable open_char    : character;
-		variable valid        : boolean;
+	procedure parse_tagvaluekeydefault (
+		constant hdo            : in    string; -- Xilinx ISE bug left and right are not sent according slice
+		variable hdo_index      : inout natural;
+		constant hdo_right      : in    natural; -- Xilinx ISE bug. left and right are not sent according slice
+		variable tag_offset     : inout natural;
+		variable tag_length     : inout natural;
+		variable value_offset   : inout natural;
+		variable value_length   : inout natural;
+		variable key_offset     : inout natural;
+		variable key_length     : inout natural;
+		variable default_offset : inout natural;
+		variable default_length : inout natural) is
 	begin
-		parse_tagvaluekey(hdo, hdo'left, hdo'right, hdo_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length);
+		parse_tagvaluekey(
+			hdo, hdo_index, hdo_right, 
+			tag_offset,   tag_length, 
+			value_offset, value_length, 
+			key_offset,   key_length);
+
+		-- skipws(hdo, hdo_index);
+		if key_length/=0 then
+			if hdo'right >= hdo_index then
+				if hdo(hdo_index)='=' then
+					default_offset := hdo_index+1;
+					default_length := hdo_right-hdo_index;
+				end if;
+			end if;
+		end if;
+	end;
+
+	procedure locate_value (
+		constant hdo            : in    string;
+		variable hdo_index      : inout natural;
+		constant tag            : in    string;
+		variable offset         : inout natural;
+		variable length         : inout natural) is
+		variable tag_offset     : natural;
+		variable tag_length     : natural;
+		variable key_offset     : natural;
+		variable key_length     : natural;
+		variable value_offset   : natural;
+		variable value_length   : natural;
+		variable default_offset : natural;
+		variable default_length : natural;
+		variable position       : natural;
+		variable open_char      : character;
+		variable opened         : boolean;
+	begin
+
+
+
+		parse_tagvaluekeydefault(
+			hdo, hdo_index,  hdo'right,
+			tag_offset,     tag_length, 
+			value_offset,   value_length, 
+			key_offset,     key_length, 
+			default_offset, default_length);
+
 		hdo_index := value_offset;
 		offset    := tag_offset;
 		length    := 0;
 		position  := 0;
-		for l in hdo'range loop -- to avoid synthesizes tools loop-warnings
-			exit when hdo_index > hdo'right; -- to avoid synthesizes tools loop-warnings
+		opened    := false;
+
+		for l in hdo'range loop -- avoid synthesizes tools loop-warnings
+			exit when hdo_index > hdo'right; -- avoid synthesizes tools loop-warnings
 		
+
 			skipws(hdo, hdo_index);
 			case hdo(hdo_index) is
 			when '['|'{' =>
+
 				open_char := hdo(hdo_index);
+				opened    := true;
 				hdo_index := hdo_index + 1;
 			when ',' =>
+
 				position  := position + 1;
 				hdo_index := hdo_index + 1;
 			when ']' =>
+				if not opened then
+
+					return;
+				end if;
 				if open_char/='[' then --| Xilinx ISE 14.7 warning complain
-					assert false --|
-					report LF &  --|
-						"locate_value => wrong close key at " & natural'image(hdo_index) & " open with  " & ''' & open_char & ''' & " close by " & character'image(hdo(hdo_index)) --|
-					severity failure; --|
+					assert false --| Xilinx ISE 14.7 warning complain
+						report LF &  "locate_value => wrong close key at " & natural'image(hdo_index) & " open with  " & ''' & open_char & ''' & " close by " & character'image(hdo(hdo_index)) & " -> " & hdo(hdo_index to hdo'right) --|
+						severity failure; --|
 				end if; --|
+
+
+				opened    := false;
 				hdo_index := hdo_index + 1;
+				exit;
 			when '}' =>
+				if not opened then
+					return;
+				end if;
 				if open_char/='{' then --| Xilinx ISE 14.7 warning complain
-					assert false --|
-					report LF &  --|
-						"locate_value => wrong close key " & ''' & open_char & ''' & " "  & natural'image(hdo_index) & ':' & character'image(hdo(hdo_index)) --|
-					severity failure; --|
+					assert false --| Xilinx ISE 14.7 warning complain
+						report LF & "locate_value => wrong close key at " & natural'image(hdo_index) & " open with  " & ''' & open_char & ''' & " close by " & character'image(hdo(hdo_index)) & LF & hdo(hdo_index to hdo'right) --|
+						severity failure; --|
 				end if; --|
+
+
+				opened    := false;
 				hdo_index := hdo_index + 1;
+				exit;
 			when others =>
 			end case;
-			parse_tagvaluekey(hdo, hdo'left, hdo'right, hdo_index, tag_offset, tag_length, value_offset, value_length, key_offset, key_length);
+
+			parse_tagvaluekeydefault(
+				hdo, hdo_index, hdo'right,
+				tag_offset,     tag_length, 
+				value_offset,   value_length, 
+				key_offset,     key_length, 
+				default_offset, default_length);
+
+
 			if isdigit(tag(tag'left)) then
 				if to_natural(tag) <= position then
 					offset := tag_offset;
 					length := hdo_index-offset;
+
+
 					exit;
 				end if;
 			elsif isalnum(tag(tag'left)) then
-				if tag_length/=0 and tag'length=tag_length then -- to avoid synthesizes tools loop-warnings
-					if tag=hdo(tag_offset to tag_offset+tag_length-1) then
-						offset := tag_offset;
-						length := hdo_index-offset;
-						exit;
+				if tag_length/=0 then -- avoid synthesizes tools loop-warnings
+
+					if tag'length=tag_length then
+						if tag=hdo(tag_offset to tag_offset+tag_length-1) then
+							offset := tag_offset;
+							length := hdo_index-offset;
+							exit;
+						end if;
 					end if;
 				end if;
 			end if;
 		end loop;
+
+
 	end;
 
 	function compact (
@@ -762,21 +836,21 @@ package body hdo is
 		variable retval : string(1 to hdo'length);
 		variable escape : boolean;
 		variable bkslh  : boolean;
-		variable j      : positive;
+		variable n      : positive;
 	begin
 		bkslh  := false;
 		escape := false;
-		j      := retval'left;
+		n      := retval'left;
 		for i in hdo'range loop
 			if bkslh then
-				retval(j) := hdo(i);
-				j := j + 1;
+				retval(n) := hdo(i);
+				n := n + 1;
 			elsif escape then
-				retval(j) := hdo(i);
-				j := j + 1;
+				retval(n) := hdo(i);
+				n := n + 1;
 			elsif not isws(hdo(i)) then
-				retval(j) := hdo(i);
-				j := j + 1;
+				retval(n) := hdo(i);
+				n := n + 1;
 			end if;
 			if bkslh then
 				bkslh := false;
@@ -786,7 +860,7 @@ package body hdo is
 				escape := not escape;
 			end if;
 		end loop;
-		return retval(1 to j-1);
+		return retval(1 to n-1);
 	end;
 
 	procedure resolve (
@@ -805,23 +879,29 @@ package body hdo is
 		variable hdo_length    : natural;
 		variable tag_offset    : natural;
 		variable tag_length    : natural;
-
+		variable default_offset    : natural;
+		variable default_length    : natural;
 	begin
 		hdo_index := hdo'left;
-		parse_tagvaluekey (hdo, hdo'left, hdo'right, hdo_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length);
+		parse_tagvaluekeydefault(
+			hdo, hdo_index, hdo'right,
+			tag_offset,     tag_length, 
+			value_offset,   value_length, 
+			keytag_offset,  keytag_length, 
+			default_offset, default_length);
 		if keytag_length/=0 then
 			keytag_index := keytag_offset;
-			loop
+			for i in hdo'range loop -- avoid synthesizes tools loop-warnings
 				parse_keytag(hdo, keytag_index, tag_offset, tag_length);
 				if tag_length=0 then
 					exit;
 				end if;
 				locate_value(hdo, value_offset, hdo(tag_offset to tag_offset+tag_length-1), hdo_offset, hdo_length);
 				if hdo_length=0 then --| Xilinx ISE 14.7 warning complain
-					assert false --|
-					report "resolve => invalid key -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|
-					hdo --|
-					severity failure; --|
+					hdo_offset   := default_offset;
+					hdo_length   := default_length;
+					value_offset := default_offset;
+					exit;
 				end if; --|
 				value_offset := hdo_offset;
 				-- resolve(hdo(hdo_offset to hdo_offset+hdo_length-1), hdo_offset, hdo_length);
@@ -831,7 +911,12 @@ package body hdo is
 			hdo_length := hdo'length;
 		end if;
 		hdo_index := hdo_offset;
-		parse_tagvaluekey (hdo, hdo_offset, hdo_offset+hdo_length-1, hdo_index, tag_offset, tag_length, value_offset, value_length, keytag_offset, keytag_length);
+		parse_tagvaluekeydefault(
+			hdo, hdo_index, hdo_offset+hdo_length-1,
+			tag_offset,     tag_length, 
+			value_offset,   value_length, 
+			keytag_offset,  keytag_length,
+			default_offset, default_length);
 	end;
 
 	function resolve (
@@ -852,7 +937,7 @@ package body hdo is
 		variable hdo_length : natural;
 	begin
 		resolve (hdo, hdo_offset, hdo_length);
-		if hdo_length/=true_value'length then          -- to avoid synthesizes tools length-warnings
+		if hdo_length/=true_value'length then          -- avoid synthesizes tools length-warnings
 			return false;
         elsif hdo(hdo_offset to hdo_offset+hdo_length-1)/=true_value then
 			return false;
