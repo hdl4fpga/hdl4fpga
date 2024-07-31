@@ -407,7 +407,7 @@ begin
 			variable retval : unsigned(0 to lut'length*size-1);
 		begin
 			for i in lut'range loop
-				retval(size*i to (i+1)*size-1) := to_unsigned(lut(i), ascii'length);
+				retval(size*i to (i+1)*size-1) := to_unsigned(lut(i), size);
 			end loop;
 			return std_logic_vector(retval);
 		end;
