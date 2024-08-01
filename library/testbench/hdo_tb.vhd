@@ -32,10 +32,9 @@ library hdl4fpga;
 use work.hdo.all;
 
 architecture hdo_tb of testbench is
-    constant inputs : natural := 2;
-    signal input_sample  : std_logic_vector(13-1 downto 0);
-	constant max_delay     : natural := 2**14;
-	constant vt_step       : real := 1.0/2.0**16; -- Volts
+    constant inputs    : natural := 2;
+	constant max_delay : natural := 2**14;
+	constant vt_step   : real := 1.0/2.0**16; -- Volts
 	constant test      : string := compact(
 			"{                             " &   
 			"   inputs          : " & natural'image(inputs) & ',' &
@@ -100,16 +99,16 @@ architecture hdo_tb of testbench is
         constant value : std_logic_vector)
         return string is
         variable retval : string(1 to value'length);
-        variable j : natural;
+        variable n : natural;
     begin
-        j := retval'left;
+        n := retval'left;
         for i in value'range loop
             if value(i)='1' then
-                retval(j) := '1';
+                retval(n) := '1';
             else
-                retval(j) := '0';
+                retval(n) := '0';
             end if;
-            j := j + 1;
+            n := n + 1;
         end loop;
         return retval;
     end;
