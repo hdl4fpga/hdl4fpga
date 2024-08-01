@@ -62,17 +62,20 @@ architecture def of scopeio_ctlr is
 	signal trigger_freeze  : std_logic;
 	signal trigger_level   : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 	
-	constant xxxx : string := 
+	constant focus : string := 
 		"{" &
-		" time        : { next : trigger, enter : }," &
-		" trigger     : { next : input,   enter : }," &
-		" input       : { next : time,    enter : }," &
-		" tm_postion  : { next : tm_scale,  }," &
-		" tm_scale    : { next : tm_postion,}," &
-		" tg_position : { next : tg_edge    }," &
-		" tg_edge     : { next : tg_mode    }," &
-		" tg_mode     : { next : tg_postion }," &
-
+		" time        : { next : trigger,     enter : tm_position}," &
+		" trigger     : { next : input,       enter : tg_channel},"  &
+		" input       : { next : time,        enter : in_color},"    &
+		" tm_position : { next : tm_scale,    exit  : time},"        &
+		" tm_scale    : { next : tg_channel,  exit  : time},"        &
+		" tg_channel  : { next : tg_postion,  exit  : trigger},"     &
+		" tg_position : { next : tg_edge,     exit  : trigger},"     &
+		" tg_edge     : { next : tg_mode,     exit  : trigger},"     &
+		" tg_mode     : { next : tg_postion,  exit  : trigger},"     &
+		" in_color    : { next : in_offse,    exit  : input},"       &
+		" in_offset   : { next : in_scale,    exit  : input},"       &
+		" in_scale    : { next : tm_position, exit  : input}"        &
 		"}";
 begin
 
