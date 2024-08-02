@@ -25,7 +25,7 @@ entity scopeio_ctlr is
 		so_frm    : buffer std_logic;
 		so_irdy   : buffer std_logic;
 		so_trdy   : in  std_logic := '0';
-		so_data   : buffer std_logic_vector);
+		so_data   : buffer std_logic_vector := (0 to 7 => '-'));
 
 	constant inputs        : natural := hdo(layout)**".inputs";
 	constant max_delay     : natural := hdo(layout)**".max_delay";
@@ -62,21 +62,27 @@ architecture def of scopeio_ctlr is
 	signal trigger_freeze  : std_logic;
 	signal trigger_level   : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 	
-	constant focus : string := 
+	constant keys : string  := 
+		"[" & 
+		" time, trigger, input, tm_position, tm_scale, tg_channel," &
+		" tg_position, tg_edge, tg_mode, in_color, in_offset, in_scale" &
+		"]";
+
+	constant focus : string := compact(
 		"{" &
 		" time        : { next : trigger,     enter : tm_position}," &
 		" trigger     : { next : input,       enter : tg_channel},"  &
 		" input       : { next : time,        enter : in_color},"    &
 		" tm_position : { next : tm_scale,    exit  : time},"        &
 		" tm_scale    : { next : tg_channel,  exit  : time},"        &
-		" tg_channel  : { next : tg_postion,  exit  : trigger},"     &
+		" tg_channel  : { next : tg_position, exit  : trigger},"     &
 		" tg_position : { next : tg_edge,     exit  : trigger},"     &
 		" tg_edge     : { next : tg_mode,     exit  : trigger},"     &
-		" tg_mode     : { next : tg_postion,  exit  : trigger},"     &
-		" in_color    : { next : in_offse,    exit  : input},"       &
+		" tg_mode     : { next : in_color,    exit  : trigger},"     &
+		" in_color    : { next : in_offset,   exit  : input},"       &
 		" in_offset   : { next : in_scale,    exit  : input},"       &
 		" in_scale    : { next : tm_position, exit  : input}"        &
-		"}";
+		"}");
 begin
 
 	siosin_e : entity hdl4fpga.sio_sin
@@ -116,8 +122,11 @@ begin
 
 	process (rgtr_clk)
 	begin
-		if rising_edge(rgtr_clk) then
-		end if;
+		-- if rising_edge(rgtr_clk) then
+			for i in 0 to 8-1 loop
+				report hdo(focus)**("."&string'(hdo(focus)**".next"));
+			end loop;
+		-- end if;
 	end process;
 	
 end;

@@ -35,7 +35,7 @@ end;
 architecture def of scopeio_state is
 
 	signal rqtd_vtscalecid  : std_logic_vector(chan_id'range);
-	signal rqtd_vtscaleid   : std_logic_vector(chan_id'range);
+	signal rqtd_vtscaleid   : std_logic_vector(vt_scaleid'range);
 	signal tbl_vtscaleid    : std_logic_vector(vt_scaleid'range);
 
 	signal rqtd_vtoffsetcid : std_logic_vector(chan_id'range);
@@ -105,7 +105,7 @@ begin
 		vtscale_ena => vtscale_ena,
 		vtchan_id   => rqtd_vtscalecid,
 		vtscale_id  => rqtd_vtscaleid);
-	vt_scalecid <= rqtd_vtscaleid;
+	vt_scalecid <= rqtd_vtscalecid;
 
 	vtoffset_e : entity hdl4fpga.scopeio_rgtrvtoffset
 	generic map (
@@ -120,7 +120,6 @@ begin
 		vt_chanid => rqtd_vtoffsetcid,
 		vt_offset => rqtd_vtoffset);
 	vt_offsetcid <= rqtd_vtoffsetcid;
-
 
 	vtoffsets_e : entity hdl4fpga.dpram
 	port map (
@@ -206,7 +205,7 @@ begin
 	process (tbl_tgrdata)
 		variable tgrdata : unsigned(tbl_tgrdata'range);
 	begin
-		tgrdata := unsigned(tbl_tgrdata(0 to trigger_level'length-1));
+		tgrdata := unsigned(tbl_tgrdata);
 		trigger_level <= std_logic_vector(tgrdata(0 to trigger_level'length-1));
 		tgrdata := tgrdata sll trigger_level'length;
 		trigger_slope <= tgrdata(0);

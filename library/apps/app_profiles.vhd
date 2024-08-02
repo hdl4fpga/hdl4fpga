@@ -73,6 +73,7 @@ package app_profiles is
 		sdram600MHz);
 
 	type io_comms is (
+		io_none,
 		io_hdlc,
 		io_ipoe,
 		io_usb);

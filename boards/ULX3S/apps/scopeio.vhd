@@ -41,7 +41,7 @@ architecture scopeio of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant io_link      : io_comms     := io_usb;
+	constant io_link      : io_comms     := io_none;
 	-- constant video_mode   : video_modes  := mode600p24bpp;
 	constant video_mode   : video_modes  := mode720p24bpp;
 	-- constant video_mode   : video_modes  := mode900p24bpp;
@@ -93,10 +93,10 @@ architecture scopeio of ulx3s is
 	signal input_samples : std_logic_vector(0 to inputs*input_sample'length-1);
 	signal tp            : std_logic_vector(1 to 32);
 
-	signal usb_frm       : std_logic;
-	signal usb_irdy      : std_logic;
-	signal usb_trdy      : std_logic := '1';
-	signal usb_data      : std_logic_vector(si_data'range);
+	signal iolink_frm       : std_logic;
+	signal iolink_irdy      : std_logic;
+	signal iolink_trdy      : std_logic := '1';
+	signal iolink_data      : std_logic_vector(si_data'range);
 
 	signal adc_clk       : std_logic;
 
@@ -231,15 +231,33 @@ begin
 			si_end    => so_end,
 			si_data   => so_data,
 	
-			so_frm    => usb_frm,
-			so_irdy   => usb_irdy,
-			so_trdy   => usb_trdy,
-			so_data   => usb_data);
+			so_frm    => iolink_frm,
+			so_irdy   => iolink_irdy,
+			so_trdy   => iolink_trdy,
+			so_data   => iolink_data);
 	end generate;
 
-	assert io_link=io_usb
-	report "unsupported implementation "
-	severity FAILURE;
+	standalone_e : if io_link=io_none generate 
+        ctlr_e : entity hdl4fpga.scopeio_ctlr
+       	generic map (
+       		layout => layout)
+       	port map (
+       		exit_req  => '-',
+       		exit_rdy  => open,
+       		next_req  => '-',
+       		next_rdy  => open,
+       		prev_req  => '-',
+       		prev_rdy  => open,
+       		enter_req => '-',
+       		enter_rdy => open,
+
+       		sio_clk   => '-', --sio_clk,
+       		so_frm    => iolink_frm,
+       		so_irdy   => iolink_irdy,
+       		so_trdy   => iolink_trdy,
+       		so_data   => iolink_data);
+
+	end generate;
 
 	inputs_b : block
 		constant mux_sampling : natural := 10;
@@ -309,9 +327,9 @@ begin
 		sio_sin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
-			sin_frm   => usb_frm,
-			sin_irdy  => usb_irdy,
-			sin_data  => usb_data,
+			sin_frm   => iolink_frm,
+			sin_irdy  => iolink_irdy,
+			sin_data  => iolink_data,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
@@ -339,7 +357,7 @@ begin
 					cntr := (others => '0');
 				end if;
 				if cntr < (data'length+opacity_data'length-1)/opacity_data'length then
-					opacity_frm <= not usb_frm;
+					opacity_frm <= not iolink_frm;
 				else
 					opacity_frm <= '0';
 				end if;
@@ -352,9 +370,9 @@ begin
 			opacity_data <= multiplex(reverse(std_logic_vector(data),8), std_logic_vector(cntr), opacity_data'length);
 		end process;
 
-		si_frm  <= usb_frm  when opacity_frm='0' else '1';
-		si_irdy <= usb_irdy when opacity_frm='0' else '1';
-		si_data <= usb_data when opacity_frm='0' else opacity_data;
+		si_frm  <= iolink_frm  when opacity_frm='0' else '1';
+		si_irdy <= iolink_irdy when opacity_frm='0' else '1';
+		si_data <= iolink_data when opacity_frm='0' else opacity_data;
 
 	end block;
 
