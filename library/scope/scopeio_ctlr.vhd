@@ -70,19 +70,22 @@ architecture def of scopeio_ctlr is
 
 	constant focus : string := compact(
 		"{" &
-		" time        : { next : trigger,     enter : tm_position}," &
-		" trigger     : { next : input,       enter : tg_channel},"  &
-		" input       : { next : time,        enter : in_color},"    &
-		" tm_position : { next : tm_scale,    exit  : time},"        &
-		" tm_scale    : { next : tg_channel,  exit  : time},"        &
-		" tg_channel  : { next : tg_position, exit  : trigger},"     &
-		" tg_position : { next : tg_edge,     exit  : trigger},"     &
-		" tg_edge     : { next : tg_mode,     exit  : trigger},"     &
-		" tg_mode     : { next : in_color,    exit  : trigger},"     &
-		" in_color    : { next : in_offset,   exit  : input},"       &
-		" in_offset   : { next : in_scale,    exit  : input},"       &
-		" in_scale    : { next : tm_position, exit  : input}"        &
+		" time,       {time,        next : trigger,     enter : tm_position}," &
+		" tm_position,{tm_position, next : tm_scale,    exit  : time},"        &
+		" tm_scale,   {tm_scale,    next : tg_channel,  exit  : time},"        &
+    
+		" trigger,    {trigger,     next : input,       enter : tg_channel},"  &
+		" tg_channel, {tg_channel,  next : tg_position, exit  : trigger},"     &
+		" tg_position,{tg_position, next : tg_edge,     exit  : trigger},"     &
+		" tg_edge,    {tg_edge,     next : tg_mode,     exit  : trigger},"     &
+		" tg_mode,    {tg_mode,     next : in_color,    exit  : trigger}"      &
 		"}");
+
+		-- " {input,       next : time,        enter : in_color},"    &
+		-- " {in_color,    next : in_offset,   exit  : input},"       &
+		-- " {in_offset,   next : in_scale,    exit  : input},"       &
+		-- " {in_scale,    next : tm_position, exit  : input}"        &
+		-- "}");
 begin
 
 	siosin_e : entity hdl4fpga.sio_sin
@@ -121,10 +124,12 @@ begin
 		trigger_level   => trigger_level);
 
 	process (rgtr_clk)
+		variable ids : natural_vector(0 to (1+2)+(1+4)-1);
+		-- variable ids : natural_vector(0 to (1+2)+(1+4)+(1+3)*inputs-1);
 	begin
 		-- if rising_edge(rgtr_clk) then
-			for i in 0 to 8-1 loop
-				report hdo(focus)**("."&string'(hdo(focus)**".next"));
+			for i in ids'range loop
+				report hdo(focus)**("."&string'(hdo(focus)**(("["&natural'image(i)&"]")&".next")));
 			end loop;
 		-- end if;
 	end process;
