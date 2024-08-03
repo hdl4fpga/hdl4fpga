@@ -76,33 +76,33 @@ architecture def of scopeio_ctlr is
 
 	constant images : string := compact(
 		"[" &
-    		"key_time,"       &
-    		"key_trigger,"    &
-    		"key_tmposition," &
-    		"key_tmscale,"    &
-    		"key_tgchannel,"  &
-    		"key_tgposition," &
-    		"key_tgedge,"     &
-    		"key_tgmode,"     &
-    		"key_input,"      &
-    		"key_inposition," &
-    		"key_inscale"     &
+			"key_time,"       &
+			"key_trigger,"    &
+			"key_tmposition," &
+			"key_tmscale,"    &
+			"key_tgchannel,"  &
+			"key_tgposition," &
+			"key_tgedge,"     &
+			"key_tgmode,"     &
+			"key_input,"      &
+			"key_inposition," &
+			"key_inscale"     &
 		"]");
 
 	function next_sequence 
 		return natural_vector is
-    	variable retval : natural_vector(0 to key_inscale+3*(inputs-1)) := (
-    		key_time       => key_trigger,
-    		key_trigger    => key_input,
-    		key_tmposition => key_tmscale,   
-    		key_tmscale    => key_tgchannel, 
-    		key_tgchannel  => key_tgposition,
-    		key_tgposition => key_tgedge,    
-    		key_tgedge     => key_tgmode,    
-    		key_tgmode     => key_inposition,
-    		key_input      => key_time,
-    		key_inposition => key_inscale,
-    		key_inscale    => key_tmposition,
+		variable retval : natural_vector(0 to key_inscale+3*(inputs-1)) := (
+			key_time       => key_trigger,
+			key_trigger    => key_input,
+			key_tmposition => key_tmscale,   
+			key_tmscale    => key_tgchannel, 
+			key_tgchannel  => key_tgposition,
+			key_tgposition => key_tgedge,    
+			key_tgedge     => key_tgmode,    
+			key_tgmode     => key_inposition,
+			key_input      => key_time,
+			key_inposition => key_inscale,
+			key_inscale    => key_tmposition,
 			others         => 0);
 	begin
 		retval(3*(inputs-1)+key_input) := retval(key_input);
@@ -119,7 +119,7 @@ architecture def of scopeio_ctlr is
 	function prev_sequence (
 		constant arg : natural_vector)
 		return natural_vector is
-    	variable retval : natural_vector(arg'range);
+		variable retval : natural_vector(arg'range);
 	begin
 		for i in arg'range loop
 			retval(arg(i)) := i;
@@ -129,19 +129,19 @@ architecture def of scopeio_ctlr is
 
 	function enter_sequence 
 		return natural_vector is
-    	variable retval : natural_vector(0 to key_inscale+3*(inputs-1)) := (
-    		key_time       => key_tmposition,
-    		key_trigger    => key_tgposition,
-    		key_tmposition => key_tmposition,   
-    		key_tmscale    => key_tmscale, 
-    		key_tgchannel  => key_tgchannel,
-    		key_tgposition => key_tgposition,    
-    		key_tgedge     => key_tgedge,    
-    		key_tgmode     => key_tgedge,
-    		key_input      => key_inposition,
-    		key_inposition => key_inposition,
-    		key_inscale    => key_inscale,
-    		others         => 0);
+		variable retval : natural_vector(0 to key_inscale+3*(inputs-1)) := (
+			key_time       => key_tmposition,
+			key_trigger    => key_tgposition,
+			key_tmposition => key_tmposition,   
+			key_tmscale    => key_tmscale, 
+			key_tgchannel  => key_tgchannel,
+			key_tgposition => key_tgposition,    
+			key_tgedge     => key_tgedge,    
+			key_tgmode     => key_tgedge,
+			key_input      => key_inposition,
+			key_inposition => key_inposition,
+			key_inscale    => key_inscale,
+			others         => 0);
 	begin
 		for i in key_input+3 to key_inscale+3*(inputs-1) loop
 			retval(i) := retval(i-3) + 3;
@@ -152,7 +152,7 @@ architecture def of scopeio_ctlr is
 	function exit_sequence (
 		constant arg : natural_vector)
 		return natural_vector is
-    	variable retval : natural_vector(arg'range);
+		variable retval : natural_vector(arg'range);
 	begin
 		for i in arg'range loop
 			if arg(i)/=i then
@@ -169,11 +169,15 @@ architecture def of scopeio_ctlr is
 	constant enter_tab : natural_vector := enter_sequence;
 	constant exit_tab  : natural_vector := exit_sequence(enter_tab);
 
-	signal focus_rdy  : std_logic;
-	signal focus_req  : std_logic;
-	signal focus      : natural range 0 to next_tab'length-1;
-	signal change_rdy : std_logic;
-	signal change_req : std_logic;
+	signal focus_rdy   : std_logic;
+	signal focus_req   : std_logic;
+	signal focus       : natural range 0 to next_tab'length-1;
+	signal change_rdy  : std_logic;
+	signal change_req  : std_logic;
+	signal change_frm  : std_logic;
+	signal change_irdy : std_logic;
+	signal change_trdy : std_logic;
+	signal change_data : std_logic_vector(0 to 8-1);
 
 begin
 
@@ -204,7 +208,7 @@ begin
 		vtoffset_ena    => vtoffset_ena,
 		vt_offsetcid    => vt_offsetcid,
 		vt_offset       => vt_offset,
-                  
+				  
 		trigger_ena     => trigger_ena,
 		trigger_chanid  => trigger_chanid,
 		trigger_slope   => trigger_slope,
@@ -266,4 +270,17 @@ begin
 		end if;
 	end process;
 	
+	serlzr_e : entity hdl4fpga.serlzr
+   	port map (
+		src_clk  => rgtr_clk,
+		src_frm  => change_frm,
+		src_irdy => change_irdy,
+		src_trdy => change_trdy,
+		src_data => change_data,
+		dst_clk  => rgtr_clk,
+		dst_frm  => so_frm,
+		dst_irdy => so_irdy,
+		dst_trdy => so_trdy,
+		dst_data => so_data);
+
 end;
