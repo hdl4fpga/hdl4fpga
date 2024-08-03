@@ -71,35 +71,105 @@ architecture def of scopeio_ctlr is
 	constant key_tgedge     : natural := 6;
 	constant key_tgmode     : natural := 7;
 	constant key_input      : natural := 8;
+	constant key_inposition : natural := 9;
+	constant key_inscale    : natural := 10;
 
-	constant tbl_next : natural_vector := (
-		key_time       => key_trigger,
-		key_trigger    => key_input,
-		key_tmposition => key_tmscale,   
-		key_tmscale    => key_tgchannel, 
-		key_tgchannel  => key_tgposition,
-		key_tgposition => key_tgedge,    
-		key_tgedge     => key_tgmode,    
-		key_tgmode     => key_inposition);
+	constant images : string := compact(
+		"[" &
+    		"key_time,"       &
+    		"key_trigger,"    &
+    		"key_tmposition," &
+    		"key_tmscale,"    &
+    		"key_tgchannel,"  &
+    		"key_tgposition," &
+    		"key_tgedge,"     &
+    		"key_tgmode,"     &
+    		"key_input,"      &
+    		"key_inposition," &
+    		"key_inscale"     &
+		"]");
 
-	constant focus : string := compact(
-		"{" &
-		" time :        {next : trigger,     enter : tm_position}," &
-		" tm_position : {next : tm_scale,    exit  : time},"        &
-		" tm_scale :    {next : tg_channel,  exit  : time},"        &
-    
-		" trigger :     {next : time,        enter : tg_channel},"  &
-		" tg_channel :  {next : tg_position, exit  : trigger},"     &
-		" tg_position : {next : tg_edge,     exit  : trigger},"     &
-		" tg_edge :     {next : tg_mode,     exit  : trigger},"     &
-		" tg_mode :     {next : tm_position, exit  : trigger}"      &
-		"}");
+	function next_sequence 
+		return natural_vector is
+    	variable retval : natural_vector(0 to key_inscale+3*(inputs-1)) := (
+    		key_time       => key_trigger,
+    		key_trigger    => key_input,
+    		key_tmposition => key_tmscale,   
+    		key_tmscale    => key_tgchannel, 
+    		key_tgchannel  => key_tgposition,
+    		key_tgposition => key_tgedge,    
+    		key_tgedge     => key_tgmode,    
+    		key_tgmode     => key_inposition,
+    		key_input      => key_time,
+    		key_inposition => key_inscale,
+    		key_inscale    => key_tmposition,
+			others         => 0);
+	begin
+		retval(3*(inputs-1)+key_input) := retval(key_input);
+		retval(key_input) := key_input+3;
+		retval(3*(inputs-1)+key_inscale) := retval(key_inscale);
+		retval(key_inscale) := key_inposition+3;
+		for i in key_inscale+1 to key_inscale+3*(inputs-2) loop
+			retval(i) := retval(i-3) + 3;
+		end loop;
+		retval(3*(inputs-1)+key_inposition) := 3*(inputs-1)+key_inscale;
+		return retval;
+	end;
 
-		-- " {input,       next : time,        enter : in_color},"    &
-		-- " {in_color,    next : in_offset,   exit  : input},"       &
-		-- " {in_offset,   next : in_scale,    exit  : input},"       &
-		-- " {in_scale,    next : tm_position, exit  : input}"        &
-		-- "}");
+	function prev_sequence (
+		constant arg : natural_vector)
+		return natural_vector is
+    	variable retval : natural_vector(arg'range);
+	begin
+		for i in arg'range loop
+			retval(arg(i)) := i;
+		end loop;
+		return retval;
+	end;
+
+	function enter_sequence 
+		return natural_vector is
+    	variable retval : natural_vector(0 to key_inscale+3*(inputs-1)) := (
+    		key_time       => key_tmposition,
+    		key_trigger    => key_tgposition,
+    		key_tmposition => key_tmposition,   
+    		key_tmscale    => key_tmscale, 
+    		key_tgchannel  => key_tgchannel,
+    		key_tgposition => key_tgposition,    
+    		key_tgedge     => key_tgedge,    
+    		key_tgmode     => key_tgedge,
+    		key_input      => key_inposition,
+    		key_inposition => key_inposition,
+    		key_inscale    => key_inscale,
+    		others         => 0);
+	begin
+		for i in key_input+3 to key_inscale+3*(inputs-1) loop
+			retval(i) := retval(i-3) + 3;
+		end loop;
+		return retval;
+	end;
+
+	function exit_sequence (
+		constant arg : natural_vector)
+		return natural_vector is
+    	variable retval : natural_vector(arg'range);
+	begin
+		for i in arg'range loop
+			if arg(i)/=i then
+				retval(arg(i)) := i;
+			else
+				retval(i) := i;
+			end if;
+		end loop;
+		return retval;
+	end;
+
+	constant next_tab  : natural_vector := next_sequence;
+	constant prev_tab  : natural_vector := prev_sequence(next_tab);
+	constant enter_tab : natural_vector := enter_sequence;
+	constant exit_tab  : natural_vector := exit_sequence(enter_tab);
+
+	signal focus : natural range 0 to next_tab'length-1;
 begin
 
 	siosin_e : entity hdl4fpga.sio_sin
@@ -138,14 +208,24 @@ begin
 		trigger_level   => trigger_level);
 
 	process (rgtr_clk)
-		variable ids : natural_vector(0 to (1+2)+(1+4)-1);
 	begin
-		-- if rising_edge(rgtr_clk) then
-			for i in ids'range loop
-				report (hdo(focus)**(("["&natural'image(i)&"]")&".next"));
-				-- report hdo(focus)**("."&string'(hdo(focus)**(("["&natural'image(i)&"]")&".next")));
-			end loop;
-		-- end if;
+		if rising_edge(rgtr_clk) then
+			if (focus_req xor focus_rdy)='0' then
+    			if (next_rdy xor next_req)='1' then
+    				focus <= next_tab(focus);
+    				focus_req <= not focus_rdy;
+    			elsif (prev_rdy xor prev_req)='1' then
+    				focus <= prev_tab(focus);
+    				focus_req <= not focus_rdy;
+    			elsif (enter_rdy xor enter_req)='1' then
+    				focus <= enter_tab(focux);
+    				focus_req <= not focus_rdy;
+    			elsif (exit_rdy xor exit_req)='1' then
+    				focus <= exit_tab(focus);
+    				focus_req <= not focus_rdy;
+    			end if;
+			end if;
+		end if;
 	end process;
 	
 end;
