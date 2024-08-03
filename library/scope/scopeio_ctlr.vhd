@@ -174,10 +174,6 @@ architecture def of scopeio_ctlr is
 	signal focus       : natural range 0 to next_tab'length-1;
 	signal change_rdy  : std_logic;
 	signal change_req  : std_logic;
-	signal change_frm  : std_logic;
-	signal change_irdy : std_logic;
-	signal change_trdy : std_logic;
-	signal change_data : std_logic_vector(0 to 8-1);
 
 begin
 
@@ -270,17 +266,18 @@ begin
 		end if;
 	end process;
 	
-	serlzr_e : entity hdl4fpga.serlzr
-   	port map (
-		src_clk  => rgtr_clk,
-		src_frm  => change_frm,
-		src_irdy => change_irdy,
-		src_trdy => change_trdy,
-		src_data => change_data,
-		dst_clk  => rgtr_clk,
-		dst_frm  => so_frm,
-		dst_irdy => so_irdy,
-		dst_trdy => so_trdy,
-		dst_data => so_data);
-
+	process (rgtr_clk)
+		type states is (s_init);
+		variable state : states;
+	begin
+		if rising_edge(rgtr_clk) then
+			if (change_req xor change_rdy)='1' then
+				case state is
+				when s_init =>
+					change_data <= rid_;
+				end case;
+			end if;
+		end if;
+	end process;
+	
 end;
