@@ -62,23 +62,37 @@ architecture def of scopeio_ctlr is
 	signal trigger_freeze  : std_logic;
 	signal trigger_level   : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 	
-	constant keys : string  := 
-		"[" & 
-		" time, trigger, input, tm_position, tm_scale, tg_channel," &
-		" tg_position, tg_edge, tg_mode, in_color, in_offset, in_scale" &
-		"]";
+	constant key_time       : natural := 0;
+	constant key_trigger    : natural := 1;
+	constant key_tmposition : natural := 2;
+	constant key_tmscale    : natural := 3;
+	constant key_tgchannel  : natural := 4;
+	constant key_tgposition : natural := 5;
+	constant key_tgedge     : natural := 6;
+	constant key_tgmode     : natural := 7;
+	constant key_input      : natural := 8;
+
+	constant tbl_next : natural_vector := (
+		key_time       => key_trigger,
+		key_trigger    => key_input,
+		key_tmposition => key_tmscale,   
+		key_tmscale    => key_tgchannel, 
+		key_tgchannel  => key_tgposition,
+		key_tgposition => key_tgedge,    
+		key_tgedge     => key_tgmode,    
+		key_tgmode     => key_inposition);
 
 	constant focus : string := compact(
 		"{" &
-		" time,       {time,        next : trigger,     enter : tm_position}," &
-		" tm_position,{tm_position, next : tm_scale,    exit  : time},"        &
-		" tm_scale,   {tm_scale,    next : tg_channel,  exit  : time},"        &
+		" time :        {next : trigger,     enter : tm_position}," &
+		" tm_position : {next : tm_scale,    exit  : time},"        &
+		" tm_scale :    {next : tg_channel,  exit  : time},"        &
     
-		" trigger,    {trigger,     next : input,       enter : tg_channel},"  &
-		" tg_channel, {tg_channel,  next : tg_position, exit  : trigger},"     &
-		" tg_position,{tg_position, next : tg_edge,     exit  : trigger},"     &
-		" tg_edge,    {tg_edge,     next : tg_mode,     exit  : trigger},"     &
-		" tg_mode,    {tg_mode,     next : in_color,    exit  : trigger}"      &
+		" trigger :     {next : time,        enter : tg_channel},"  &
+		" tg_channel :  {next : tg_position, exit  : trigger},"     &
+		" tg_position : {next : tg_edge,     exit  : trigger},"     &
+		" tg_edge :     {next : tg_mode,     exit  : trigger},"     &
+		" tg_mode :     {next : tm_position, exit  : trigger}"      &
 		"}");
 
 		-- " {input,       next : time,        enter : in_color},"    &
@@ -125,11 +139,11 @@ begin
 
 	process (rgtr_clk)
 		variable ids : natural_vector(0 to (1+2)+(1+4)-1);
-		-- variable ids : natural_vector(0 to (1+2)+(1+4)+(1+3)*inputs-1);
 	begin
 		-- if rising_edge(rgtr_clk) then
 			for i in ids'range loop
-				report hdo(focus)**("."&string'(hdo(focus)**(("["&natural'image(i)&"]")&".next")));
+				report (hdo(focus)**(("["&natural'image(i)&"]")&".next"));
+				-- report hdo(focus)**("."&string'(hdo(focus)**(("["&natural'image(i)&"]")&".next")));
 			end loop;
 		-- end if;
 	end process;

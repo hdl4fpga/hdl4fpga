@@ -117,7 +117,8 @@ begin
     process 
 		constant obj : string := compact(hdo(test))**".vt";
     begin
-        report LF & '"' & string'(hdo(obj)**"[1].text1=ffff.") & '"';
+        -- report LF & '"' & string'(hdo(obj)**"[1].text1=ffff.") & '"';
+        report LF & '"' & work.hdo.tag(hdo(obj)&"[1][0]") & '"';
         wait;
     end process;
 end;
