@@ -13,13 +13,13 @@ entity scopeio_ctlr is
 		layout    : string);
 	port (
 		exit_req  : in  std_logic;
-		exit_rdy  : out std_logic;
+		exit_rdy  : buffer std_logic;
 		next_req  : in  std_logic;
-		next_rdy  : out std_logic;
+		next_rdy  : buffer std_logic;
 		prev_req  : in  std_logic;
-		prev_rdy  : out std_logic;
+		prev_rdy  : buffer std_logic;
 		enter_req : in  std_logic;
-		enter_rdy : out std_logic;
+		enter_rdy : buffer std_logic;
 
 		sio_clk   : in  std_logic;
 		so_frm    : buffer std_logic;
@@ -169,7 +169,12 @@ architecture def of scopeio_ctlr is
 	constant enter_tab : natural_vector := enter_sequence;
 	constant exit_tab  : natural_vector := exit_sequence(enter_tab);
 
-	signal focus : natural range 0 to next_tab'length-1;
+	signal focus_rdy  : std_logic;
+	signal focus_req  : std_logic;
+	signal focus      : natural range 0 to next_tab'length-1;
+	signal change_rdy : std_logic;
+	signal change_req : std_logic;
+
 begin
 
 	siosin_e : entity hdl4fpga.sio_sin
@@ -208,22 +213,55 @@ begin
 		trigger_level   => trigger_level);
 
 	process (rgtr_clk)
+		type states is (s_idle, s_focus, s_change);
+		variable state : states;
 	begin
 		if rising_edge(rgtr_clk) then
-			if (focus_req xor focus_rdy)='0' then
-    			if (next_rdy xor next_req)='1' then
-    				focus <= next_tab(focus);
-    				focus_req <= not focus_rdy;
-    			elsif (prev_rdy xor prev_req)='1' then
-    				focus <= prev_tab(focus);
-    				focus_req <= not focus_rdy;
-    			elsif (enter_rdy xor enter_req)='1' then
-    				focus <= enter_tab(focux);
-    				focus_req <= not focus_rdy;
-    			elsif (exit_rdy xor exit_req)='1' then
-    				focus <= exit_tab(focus);
-    				focus_req <= not focus_rdy;
-    			end if;
+			case state is
+			when s_idle =>
+				if (focus_req xor focus_rdy)='0' then
+					if (next_rdy xor next_req)='1' then
+						focus <= next_tab(focus);
+						if focus=next_tab(focus) then
+							change_req <= not change_rdy;
+							state := s_change;
+						else
+							focus_req <= not focus_rdy;
+							state := s_focus;
+						end if;
+					elsif (prev_rdy xor prev_req)='1' then
+						if focus=prev_tab(focus) then
+							change_req <= not change_rdy;
+							state := s_change;
+						else
+							focus_req <= not focus_rdy;
+							state := s_focus;
+						end if;
+						focus <= prev_tab(focus);
+						focus_req <= not focus_rdy;
+						state := s_focus;
+					elsif (enter_rdy xor enter_req)='1' then
+						focus <= enter_tab(focus);
+						focus_req <= not focus_rdy;
+						state := s_focus;
+					elsif (exit_rdy xor exit_req)='1' then
+						focus <= exit_tab(focus);
+						focus_req <= not focus_rdy;
+						state := s_focus;
+					end if;
+				end if;
+			when s_focus =>
+				if (focus_req xor focus_rdy)='0' then
+				end if;
+			when s_change =>
+			end case;
+		end if;
+	end process;
+	
+	process (rgtr_clk)
+	begin
+		if rising_edge(rgtr_clk) then
+			if (focus_req xor focus_rdy)='1' then
 			end if;
 		end if;
 	end process;
