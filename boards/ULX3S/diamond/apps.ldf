@@ -857,13 +857,7 @@
         <Source name="../../../library/scope/scopeio_textbox.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
-        <Source name="../../../library/scope/scopeio_pointer.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
         <Source name="../../../library/scope/scopeio_rgtrtrigger.vhd" type="VHDL" type_short="VHDL">
-            <Options lib="hdl4fpga"/>
-        </Source>
-        <Source name="../../../library/scope/scopeio_rgtrpointer.vhd" type="VHDL" type_short="VHDL">
             <Options lib="hdl4fpga"/>
         </Source>
         <Source name="../../../library/scope/scopeio_rgtrpalette.vhd" type="VHDL" type_short="VHDL">
@@ -1071,6 +1065,15 @@
             <Options/>
         </Source>
         <Source name="../../../library/scope/scopeio_marks.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_state.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_ctlr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_rgtrfocus.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="apps.lpf" type="Logic Preference" type_short="LPF">

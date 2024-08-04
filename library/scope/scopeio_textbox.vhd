@@ -50,22 +50,24 @@ architecture def of scopeio_textbox is
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
 	constant textwidth_bits  : natural := unsigned_num_bits(textbox_width-1);
 
-	signal code_frm          : std_logic;
-	signal code_irdy         : std_logic;
-	signal code_data         : ascii;
-	signal cga_we            : std_logic := '0';
-	signal cga_addr          : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
-	signal cga_data          : ascii;
+	signal code_frm  : std_logic;
+	signal code_irdy : std_logic;
+	signal code_data : ascii;
+	signal cga_we    : std_logic := '0';
+	signal cga_addr  : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
+	signal cga_data  : ascii;
 
-	signal fg_color          : std_logic_vector(text_fg'range);
-	signal bg_color          : std_logic_vector(text_bg'range);
+	signal fg_color  : std_logic_vector(text_fg'range);
+	signal bg_color  : std_logic_vector(text_bg'range);
 
-	signal video_on          : std_logic;
-	signal video_addr        : std_logic_vector(cga_addr'range);
-	signal video_dot         : std_logic;
+	signal video_on  : std_logic;
+	signal video_addr: std_logic_vector(cga_addr'range);
+	signal video_dot : std_logic;
 
-	signal video_row         : std_logic_vector(0 to unsigned_num_bits(cga_rows-1)-1);
+	signal video_row : std_logic_vector(0 to unsigned_num_bits(cga_rows-1)-1);
+	signal focus_id  : std_logic_vector(6-1 downto 0);
 
+		signal field_id   : natural range 0 to 2**fg_color'length-1;
 begin
 
 	assert false
@@ -75,6 +77,15 @@ begin
 		"textbox size " & natural'image(cga_size) & CR &
 		"textbox mem  " & natural'image(2**cga_addr'length) 
 		severity note;
+
+	focus_e : entity hdl4fpga.scopeio_rgtrfocus
+	port map (
+		rgtr_clk  => rgtr_clk,
+		rgtr_dv   => rgtr_dv,
+		rgtr_id   => rgtr_id,
+		rgtr_data => rgtr_data,
+
+		focus_wid => focus_id);
 
 	readings_e : entity hdl4fpga.scopeio_reading
 	generic map (
@@ -185,17 +196,20 @@ begin
 
 		constant input_labels : natural := 2;
 		constant field_addr : natural_vector := textbox_field(cga_cols);
-		variable field_id   : natural range 0 to 2**fg_color'length-1;
 		variable addr       : std_logic_vector(video_addr'range);
 	begin
 		if rising_edge(video_clk) then
-			fg_color <= std_logic_vector(to_unsigned(field_id, fg_color'length));
+			if focus_id(0)= '1' then
+				fg_color <= std_logic_vector(to_unsigned(field_id, fg_color'length));
+			else
+				fg_color <= std_logic_vector(to_unsigned(pltid_textbg, bg_color'length));
+			end if;
 			if video_on='1' then
-				field_id := pltid_textfg;
+				field_id <= pltid_textfg;
 				for i in field_addr'range loop
 					if unsigned(addr) < (field_addr(i)+cga_cols) then
 						if i >= input_labels then 
-							field_id := (i-input_labels)+pltid_order'length;
+							field_id <= (i-input_labels)+pltid_order'length;
 						end if;
 						exit;
 					end if;
@@ -205,7 +219,9 @@ begin
 		end if;
 	end process;
 
-	bg_color <= std_logic_vector(to_unsigned(pltid_textbg, bg_color'length));
+	bg_color <= 
+		std_logic_vector(to_unsigned(pltid_textbg, bg_color'length)) when focus_id(0)='1' else
+		std_logic_vector(to_unsigned(field_id, fg_color'length));
 
 	latfg_e : entity hdl4fpga.latency
 	generic map (

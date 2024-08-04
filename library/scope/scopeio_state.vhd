@@ -144,7 +144,7 @@ begin
 		vtoffset_ena, rqtd_vtoffsetcid, rqtd_vtoffset, 
 		chan_id, rgtr_clk)
 		variable scaleid : std_logic_vector(4-1 downto 0);
-		variable offset  : std_logic_vector(hz_offset'range);
+		variable offset  : std_logic_vector(vt_offset'range);
 	begin
 		if rising_edge(rgtr_clk) then
 			if vtscale_ena='1' then
