@@ -74,6 +74,17 @@ architecture def of scopeio_ctlr is
 	constant key_inposition : natural := 9;
 	constant key_inscale    : natural := 10;
 
+	constant tab : natural_vector(0 to key_inscale) := (
+		key_tmposition => to_integer(unsigned(rid_hzaxis)),
+		key_tmscale    => to_integer(unsigned(rid_hzaxis)),
+		key_tgchannel  => to_integer(unsigned(rid_trigger)),
+		key_tgposition => to_integer(unsigned(rid_trigger)),
+		key_tgedge     => to_integer(unsigned(rid_trigger)),
+		key_tgmode     => to_integer(unsigned(rid_trigger)),
+		key_inposition => to_integer(unsigned(rid_vtaxis)),
+		key_inscale    => to_integer(unsigned(rid_gain)),
+		others         => 0);
+
 	constant images : string := compact(
 		"[" &
 			"key_time,"       &
@@ -176,6 +187,7 @@ architecture def of scopeio_ctlr is
 	signal change_req  : std_logic;
 	signal send_rdy    : std_logic;
 	signal send_req    : std_logic;
+	signal send_data   : std_logic_vector(0 to 8-1);
 
 begin
 
@@ -277,10 +289,13 @@ begin
 				case state is
 				when s_init =>
 					if (focus_rdy xor focus_req)='1' then
-						-- send_data <= rid_focus;
+						send_data <= rid_focus;
 						state := s_send;
 					elsif (change_rdy xor change_req)='1' then
+						case focus is
 						-- send_data <= rid_xxx;
+						when others =>
+						end case;
 					end if;
 				when s_send =>
 				end case;
