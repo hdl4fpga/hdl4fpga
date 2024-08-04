@@ -180,14 +180,13 @@ architecture def of scopeio_ctlr is
 	constant enter_tab : natural_vector := enter_sequence;
 	constant exit_tab  : natural_vector := exit_sequence(enter_tab);
 
-	signal focus_rdy   : std_logic;
-	signal focus_req   : std_logic;
+	signal focus_req   : std_logic := '1';
+	signal focus_rdy   : std_logic := '0';
 	signal focus       : natural range 0 to next_tab'length-1;
 	signal change_rdy  : std_logic;
 	signal change_req  : std_logic;
-	signal send_rdy    : std_logic;
-	signal send_req    : std_logic;
-	signal send_data   : std_logic_vector(0 to 8-1);
+	signal send_req    : std_logic := '1';
+	signal send_rdy    : std_logic := '0';
 
 begin
 
@@ -272,16 +271,8 @@ begin
 		end if;
 	end process;
 	
-	process (rgtr_clk)
-	begin
-		if rising_edge(rgtr_clk) then
-			if (focus_req xor focus_rdy)='1' then
-			end if;
-		end if;
-	end process;
-	
-	process (rgtr_clk)
-		type states is (s_init, s_send);
+	process (rgtr_clk,send_req)
+		type states is (s_init, s_length, s_data);
 		variable state : states;
 	begin
 		if rising_edge(rgtr_clk) then
@@ -289,16 +280,40 @@ begin
 				case state is
 				when s_init =>
 					if (focus_rdy xor focus_req)='1' then
-						send_data <= rid_focus;
-						state := s_send;
+						so_frm  <= '1';
+						so_irdy <= '1';
+						so_data <= rid_focus;
+						state := s_length;
 					elsif (change_rdy xor change_req)='1' then
 						case focus is
-						-- send_data <= rid_xxx;
+						-- so_data <= rid_xxx;
 						when others =>
 						end case;
+					else
+						so_frm  <= '0';
+						so_irdy <= '0';
+						so_data <= (others => '-');
 					end if;
-				when s_send =>
+				when s_length =>
+					if (focus_rdy xor focus_req)='1' then
+						so_frm    <= '1';
+						so_irdy   <= '1';
+						so_data <= x"00";
+						state := s_data;
+					end if;
+				when s_data =>
+					so_frm     <= '1';
+					so_irdy    <= '1';
+					so_data  <= x"ff";
+					focus_rdy  <= focus_req;
+					change_rdy <= change_req;
+					send_rdy   <= send_req;
+					state := s_init;
 				end case;
+			else
+				so_frm  <= '0';
+				so_irdy <= '0';
+				so_data <= (others => '-');
 			end if;
 		end if;
 	end process;
