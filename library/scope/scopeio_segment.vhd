@@ -42,10 +42,10 @@ entity scopeio_segment is
 		trace_dots    : out std_logic_vector);
 
 	constant inputs        : natural := hdo(layout)**".inputs";
-	constant axis_fontsize : natural := hdo(layout)**".axis.fontsize";
+	constant axis_fontsize : natural := hdo(layout)**".axis.fontsize=8.";
 	constant grid_height   : natural := hdo(layout)**".grid.height";
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
-	constant vtaxis_tickrotate : string := hdo(layout)**".axis.vertical.rotate";
+	constant vtaxis_tickrotate : string := hdo(layout)**".axis.vertical.rotate=ccw0.";
 	constant grid_unit       : natural := hdo(layout)**".grid.unit";
 
 end;

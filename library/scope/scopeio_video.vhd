@@ -66,7 +66,7 @@ entity scopeio_video is
 
 	constant inputs          : natural := hdo(layout)**".inputs";
 	constant num_of_segments : natural := hdo(layout)**".num_of_segments";
-	constant axis_fontsize   : natural := hdo(layout)**".axis.fontsize";
+	constant axis_fontsize   : natural := hdo(layout)**".axis.fontsize=8.";
 	constant main_width      : natural := hdo(layout)**".display.width";
 	constant main_height     : natural := hdo(layout)**".display.height";
 	constant textbox_width   : natural := hdo(layout)**".textbox.width";

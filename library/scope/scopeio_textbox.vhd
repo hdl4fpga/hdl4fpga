@@ -31,7 +31,7 @@ entity scopeio_textbox is
 		text_bg       : out std_logic_vector;
 		text_fgon     : out std_logic);
 
-	constant font_width     : natural := hdo(layout)**".textbox.font_width";
+	constant font_width     : natural := hdo(layout)**".textbox.font_width=8.";
 	constant textbox_width  : natural := hdo(layout)**".textbox.width";
 	constant textbox_height : natural := hdo(layout)**".grid.height";
 	constant grid_height    : natural := hdo(layout)**".grid.height";

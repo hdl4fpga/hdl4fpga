@@ -79,17 +79,17 @@ entity scopeio_layout is
 	constant hzaxis_height         : natural := hdo(layout)**".axis.horizontal.height";
 	constant vtaxis_width          : natural := hdo(layout)**".axis.vertical.width";
 	constant vtaxis_height         : natural := hdo(layout)**".grid.height";
-	constant vtaxis_tickrotate     : string  := hdo(layout)**".axis.vertical.rotate";
+	constant vtaxis_tickrotate     : string  := hdo(layout)**".axis.vertical.rotate=ccw0.";
 
-	constant axishorizontal_inside : boolean := hdo(layout)**".axis.horizontal.inside";
+	constant axishorizontal_inside : boolean := hdo(layout)**".axis.horizontal.inside=false.";
 	constant axishorizontal_height : natural := hdo(layout)**".axis.horizontal.height";
-	constant axisvertical_inside   : boolean := hdo(layout)**".axis.vertical.inside";
+	constant axisvertical_inside   : boolean := hdo(layout)**".axis.vertical.inside=false.";
 	constant axisvertical_width    : natural := hdo(layout)**".axis.vertical.width";
-	constant axis_fontsize         : natural := hdo(layout)**".axis.fontsize";
+	constant axis_fontsize         : natural := hdo(layout)**".axis.fontsize=8.";
 
 	constant textbox_width         : natural := hdo(layout)**".textbox.width";
 	constant textbox_height        : natural := hdo(layout)**".grid.height";
-	constant textbox_inside        : boolean := hdo(layout)**".textbox.inside";
+	constant textbox_inside        : boolean := hdo(layout)**".textbox.inside=false.";
 
 	function is_postive(
 		constant val : natural)

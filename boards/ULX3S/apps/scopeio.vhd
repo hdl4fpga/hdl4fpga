@@ -41,7 +41,7 @@ architecture scopeio of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant io_link      : io_comms     := io_none;
+	constant io_link      : io_comms     := io_usb;
 	-- constant video_mode   : video_modes  := mode600p24bpp;
 	constant video_mode   : video_modes  := mode720p24bpp;
 	-- constant video_mode   : video_modes  := mode900p24bpp;
@@ -116,24 +116,18 @@ architecture scopeio of ulx3s is
 			"       color  : 0xff_ff_00_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   axis : {                   " &
-			"       fontsize   : 8,        " &
 			"       horizontal : {         " &
 			"           unit   : 31.25e-6, " &
 			"           height : 8,        " &
-			"           inside : false,    " &
 			"           color  : 0xff_00_00_00," &
 			"           background-color : 0xff_00_ff_ff}," &
 			"       vertical : {           " &
 			"           unit   : 50.00e-3, " &
 			"           width  : " & natural'image(6*8) & ','  &
-			"           rotate : ccw0,     " &
-			"           inside : false,    " &
 			"           color  : 0xff_00_00_00," &
 			"           background-color : 0xff_00_ff_ff}}," &
 			"   textbox : {                " &
-			"       font_width :  8,       " &
 			"       width      : " & natural'image(6*32) & ','&
-			"       inside     : false,    " &
 			"       color      : 0xff_ff_00_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   main : {                   " &
