@@ -174,6 +174,8 @@ architecture def of scopeio_ctlr is
 	signal focus       : natural range 0 to next_tab'length-1;
 	signal change_rdy  : std_logic;
 	signal change_req  : std_logic;
+	signal send_rdy    : std_logic;
+	signal send_req    : std_logic;
 
 begin
 
@@ -267,14 +269,20 @@ begin
 	end process;
 	
 	process (rgtr_clk)
-		type states is (s_init);
+		type states is (s_init, s_send);
 		variable state : states;
 	begin
 		if rising_edge(rgtr_clk) then
-			if (change_req xor change_rdy)='1' then
+			if (send_req xor send_rdy)='1' then
 				case state is
 				when s_init =>
-					change_data <= rid_;
+					if (focus_rdy xor focus_req)='1' then
+						-- send_data <= rid_focus;
+						state := s_send;
+					elsif (change_rdy xor change_req)='1' then
+						-- send_data <= rid_xxx;
+					end if;
+				when s_send =>
 				end case;
 			end if;
 		end if;
