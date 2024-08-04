@@ -6,7 +6,7 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.scopeiopkg.all;
 
-entity scopeio_rgtrpointer is
+entity scopeio_rgtrfocus is
 	generic (
 		rgtr       : boolean := true);
 	port (
@@ -15,28 +15,25 @@ entity scopeio_rgtrpointer is
 		rgtr_id    : in  std_logic_vector(8-1 downto 0);
 		rgtr_data  : in  std_logic_vector;
 
-		pointer_ena : out std_logic;
-		pointer_dv : out std_logic;
-		pointer_x  : out std_logic_vector;
-		pointer_y  : out std_logic_vector);
+		focus_ena  : out std_logic;
+		focus_dv   : out std_logic;
+		widget_id  : out std_logic_vector);
 
 end;
 
-architecture def of scopeio_rgtrpointer is
+architecture def of scopeio_rgtrfocus is
 
 	signal dv : std_logic;
-	signal x  : std_logic_vector(pointer_x'range);
-	signal y  : std_logic_vector(pointer_y'range);
+	signal id : std_logic_vector(widget_id'range);
 begin
 
 	dv <= setif(rgtr_id=rid_focus, rgtr_dv);
-	x  <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, pointerx_id, pointer_bf)), x'length));
-	y  <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, pointery_id, pointer_bf)), y'length));
+	id <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, focus_id, focus_bf)), id'length));
 
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
-			pointer_dv <= dv;
+			focus_dv <= dv;
 		end if;
 	end process;
 
@@ -45,17 +42,15 @@ begin
 		begin
 			if rising_edge(rgtr_clk) then
 				if dv='1' then
-					pointer_x <= x;
-					pointer_y <= y;
+					widget_id <= id;
 				end if;
 			end if;
 		end process;
 	end generate;
 
 	norgtr_e : if not rgtr generate
-		pointer_x  <= x;
-		pointer_y  <= y;
+		widget_id <= id;
 	end generate;
 
-	pointer_ena <= dv;
+	focus_ena <= dv;
 end;

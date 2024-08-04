@@ -151,14 +151,11 @@ package scopeiopkg is
 		gainid_id     => gainid_maxsize,
 		gainchanid_id => chanid_maxsize);
 
-	constant pointerx_maxsize : natural := 11;
-	constant pointery_maxsize : natural := 11;
-	constant pointerx_id      : natural := 0;
-	constant pointery_id      : natural := 1;
+	constant focus_maxsize : natural := 11;
+	constant focus_id      : natural := 0;
 
-	constant pointer_bf : natural_vector := (
-		pointery_id => pointery_maxsize, 
-		pointerx_id => pointerx_maxsize);
+	constant focus_bf : natural_vector := (
+		focus_id => focus_maxsize);
 
 	component scopeio_tds
 		generic (
