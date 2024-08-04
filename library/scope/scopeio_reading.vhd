@@ -24,10 +24,10 @@ entity scopeio_reading is
 		code_data : out ascii);
 
 	constant inputs        : natural := hdo(layout)**".inputs";
-	constant max_delay     : natural := hdo(layout)**".max_delay";
+	constant max_delay     : natural := hdo(layout)**".max_delay=16384.";
 	constant hz_unit       : real    := hdo(layout)**".axis.horizontal.unit";
 	constant vt_unit       : real    := hdo(layout)**".axis.vertical.unit";
-	constant grid_unit     : natural := hdo(layout)**".grid.unit";
+	constant grid_unit     : natural := hdo(layout)**".grid.unit=32.";
 	constant grid_height   : natural := hdo(layout)**".grid.height";
 
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);

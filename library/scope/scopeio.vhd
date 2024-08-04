@@ -63,13 +63,13 @@ entity scopeio is
 		video_sync       : out std_logic);
 
 	constant inputs        : natural := hdo(layout)**".inputs";
-	constant max_delay     : natural := hdo(layout)**".max_delay";
-	constant min_storage   : natural := hdo(layout)**".min_storage";
+	constant max_delay     : natural := hdo(layout)**".max_delay=16384.";
+	constant min_storage   : natural := hdo(layout)**".min_storage=256."; -- samples, storage size will be equal or larger than this
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 	constant grid_height   : natural := hdo(layout)**".grid.height";
 	constant grid_width    : natural := hdo(layout)**".grid.width";
-	constant grid_unit     : natural := hdo(layout)**".grid.unit";
+	constant grid_unit     : natural := hdo(layout)**".grid.unit=32.";
 
 	function to_naturalvector (
 		constant object : string)

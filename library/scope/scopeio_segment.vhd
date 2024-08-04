@@ -46,7 +46,7 @@ entity scopeio_segment is
 	constant grid_height   : natural := hdo(layout)**".grid.height";
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 	constant vtaxis_tickrotate : string := hdo(layout)**".axis.vertical.rotate=ccw0.";
-	constant grid_unit       : natural := hdo(layout)**".grid.unit";
+	constant grid_unit       : natural := hdo(layout)**".grid.unit=32.";
 
 end;
 

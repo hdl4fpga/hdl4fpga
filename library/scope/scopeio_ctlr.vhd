@@ -28,7 +28,7 @@ entity scopeio_ctlr is
 		so_data   : buffer std_logic_vector := (0 to 7 => '-'));
 
 	constant inputs        : natural := hdo(layout)**".inputs";
-	constant max_delay     : natural := hdo(layout)**".max_delay";
+	constant max_delay     : natural := hdo(layout)**".max_delay=16384.";
 	constant hz_unit       : real    := hdo(layout)**".axis.horizontal.unit";
 	constant vt_unit       : real    := hdo(layout)**".axis.vertical.unit";
 	constant grid_height   : natural := hdo(layout)**".grid.height";

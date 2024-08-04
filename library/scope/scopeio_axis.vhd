@@ -52,14 +52,14 @@ entity scopeio_axis is
 		video_vtdot   : out std_logic);
 
 	constant num_of_segments : natural := hdo(layout)**".num_of_segments";
-	constant max_delay       : natural := hdo(layout)**".max_delay";
+	constant max_delay       : natural := hdo(layout)**".max_delay=16384.";
 	constant hz_unit         : real    := hdo(layout)**".axis.horizontal.unit";
 	constant vt_unit         : real    := hdo(layout)**".axis.vertical.unit";
 	constant vt_width        : natural := hdo(layout)**".axis.vertical.width";
 	constant axis_fontsize   : natural := hdo(layout)**".axis.fontsize=8.";
 	constant grid_width      : natural := hdo(layout)**".grid.width";
 	constant grid_height     : natural := hdo(layout)**".grid.height";
-	constant grid_unit       : natural := hdo(layout)**".grid.unit";
+	constant grid_unit       : natural := hdo(layout)**".grid.unit=32.";
 
 	constant hzoffset_bits   : natural := unsigned_num_bits(max_delay-1);
 	constant hzwidth_bits    : natural := unsigned_num_bits(num_of_segments*grid_width-1);

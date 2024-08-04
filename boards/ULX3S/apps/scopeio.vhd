@@ -103,14 +103,11 @@ architecture scopeio of ulx3s is
 	constant layout      : string := compact(
 			"{                             " &   
 			"   inputs          : " & natural'image(inputs) & ',' &
-			"   max_delay       : " & natural'image(2**14)  & ',' &
-			"   min_storage     : 256,     " & -- samples, storage size will be equal or larger than this
 			"   num_of_segments :   3,     " &
 			"   display : {                " &
 			"       width  : 1280,         " &
 			"       height : 720},         " &
 			"   grid : {                   " &
-			"       unit   : 32,           " &
 			"       width  : " & natural'image(32*32+1) & ',' &
 			"       height : " & natural'image( 6*32+1) & ',' &
 			"       color  : 0xff_ff_00_ff," &
@@ -118,7 +115,6 @@ architecture scopeio of ulx3s is
 			"   axis : {                   " &
 			"       horizontal : {         " &
 			"           unit   : 31.25e-6, " &
-			"           height : 8,        " &
 			"           color  : 0xff_00_00_00," &
 			"           background-color : 0xff_00_ff_ff}," &
 			"       vertical : {           " &
