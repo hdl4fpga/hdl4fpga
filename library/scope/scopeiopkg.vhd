@@ -48,7 +48,7 @@ package scopeiopkg is
 	constant rid_trigger  : std_logic_vector := x"12";
 	constant rid_gain     : std_logic_vector := x"13";
 	constant rid_vtaxis   : std_logic_vector := x"14";
-	constant rid_pointer  : std_logic_vector := x"15";
+	constant rid_focus    : std_logic_vector := x"15";
 	constant rid_dmaaddr  : std_logic_vector := x"16";
 	constant rid_dmalen   : std_logic_vector := x"17";
 	constant rid_dmadata  : std_logic_vector := x"18";

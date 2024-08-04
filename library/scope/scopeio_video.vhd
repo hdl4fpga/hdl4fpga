@@ -353,21 +353,6 @@ begin
 		sgmnt_bgon     => sgmntbox_bgon,
 		video_color    => scope_color);
 
-	scopeio_pointer_e : entity hdl4fpga.scopeio_pointer
-	generic map (
-		latency => vgaio_latency)
-	port map (
-		rgtr_clk   => rgtr_clk,
-		rgtr_dv    => rgtr_dv,
-		rgtr_id    => rgtr_id,
-		rgtr_data  => rgtr_data,
-
-		video_clk    => video_clk,
-		video_hzcntr => video_hzcntr,
-		video_vtcntr => video_vtcntr,
-		video_dot    => pointer_dot);
-
-	-- video_color <= scope_color or (video_color'range => pointer_dot);
 	video_color <= scope_color;
 	video_pixel <= (video_pixel'range => video_io(2)) and video_color;
 	video_blank <= not video_io(2);

@@ -29,7 +29,7 @@ architecture def of scopeio_rgtrpointer is
 	signal y  : std_logic_vector(pointer_y'range);
 begin
 
-	dv <= setif(rgtr_id=rid_pointer, rgtr_dv);
+	dv <= setif(rgtr_id=rid_focus, rgtr_dv);
 	x  <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, pointerx_id, pointer_bf)), x'length));
 	y  <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, pointery_id, pointer_bf)), y'length));
 
