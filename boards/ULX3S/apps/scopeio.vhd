@@ -93,10 +93,10 @@ architecture scopeio of ulx3s is
 	signal input_samples : std_logic_vector(0 to inputs*input_sample'length-1);
 	signal tp            : std_logic_vector(1 to 32);
 
-	signal iolink_frm       : std_logic;
-	signal iolink_irdy      : std_logic;
-	signal iolink_trdy      : std_logic := '1';
-	signal iolink_data      : std_logic_vector(si_data'range);
+	signal iolink_frm    : std_logic;
+	signal iolink_irdy   : std_logic;
+	signal iolink_trdy   : std_logic := '1';
+	signal iolink_data   : std_logic_vector(si_data'range);
 
 	signal adc_clk       : std_logic;
 
