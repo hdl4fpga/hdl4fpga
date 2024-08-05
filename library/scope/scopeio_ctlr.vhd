@@ -165,7 +165,7 @@ architecture def of scopeio_ctlr is
 
 	signal focus_req   : std_logic := '0';
 	signal focus_rdy   : std_logic := '0';
-	signal focus       : natural range 0 to next_tab'length-1;
+	signal focus_wid   : natural range 0 to next_tab'length-1;
 	signal change_rdy  : std_logic;
 	signal change_req  : std_logic;
 	signal send_req    : bit := '0';
@@ -218,6 +218,7 @@ begin
 			when s_idle =>
 				if (send_req xor send_rdy)='0' then
 					if (to_bit(rdy) xor to_bit(req))='1' then
+						focus_wid <= focus_wid + 1;
 						send_req <= not send_rdy;
 						state := s_send;
 					end if;
@@ -251,11 +252,7 @@ begin
 				when s_data =>
 					so_frm     <= '1';
 					so_irdy    <= '1';
-					if event="00" then
-						send_data  <= x"ff";
-					else
-						send_data  <= x"00";
-					end if;
+					send_data  <= std_logic_vector(to_unsigned(focus_wid, send_data'length));
 					send_rdy   <= send_req;
 					state := s_init;
 				end case;
