@@ -1931,6 +1931,7 @@ $(HDL4FPGA__scopeio_textbox__def) : ../scope/scopeio_textbox.vhd \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__cgaram) \
 		$(HDL4FPGA__scopeio_reading) \
+		$(HDL4FPGA__scopeio_rgtrfocus) \
 		$(HDL4FPGA__bcdfonts) \
 		$(HDL4FPGA__cp850x8x16x128to255) \
 		$(HDL4FPGA__cp850x8x16x0to127) \

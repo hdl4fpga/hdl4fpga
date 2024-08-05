@@ -37,6 +37,18 @@ package scopeiopkg is
 
 	constant max_pixelsize : natural := 24;
 
+	constant wid_time       : natural := 0;
+	constant wid_trigger    : natural := 1;
+	constant wid_tmposition : natural := 2;
+	constant wid_tmscale    : natural := 3;
+	constant wid_tgchannel  : natural := 4;
+	constant wid_tgposition : natural := 5;
+	constant wid_tgedge     : natural := 6;
+	constant wid_tgmode     : natural := 7;
+	constant wid_input      : natural := 8;
+	constant wid_inposition : natural := 9;
+	constant wid_inscale    : natural := 10;
+
 	constant vtaxis_boxid : natural := 0;
 	constant grid_boxid   : natural := 1;
 	constant text_boxid   : natural := 2;

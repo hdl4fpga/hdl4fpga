@@ -57,68 +57,56 @@ architecture def of scopeio_ctlr is
 	signal trigger_freeze  : std_logic;
 	signal trigger_level   : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 	
-	constant key_time       : natural := 0;
-	constant key_trigger    : natural := 1;
-	constant key_tmposition : natural := 2;
-	constant key_tmscale    : natural := 3;
-	constant key_tgchannel  : natural := 4;
-	constant key_tgposition : natural := 5;
-	constant key_tgedge     : natural := 6;
-	constant key_tgmode     : natural := 7;
-	constant key_input      : natural := 8;
-	constant key_inposition : natural := 9;
-	constant key_inscale    : natural := 10;
-
-	constant tab : natural_vector(0 to key_inscale) := (
-		key_tmposition => to_integer(unsigned(rid_hzaxis)),
-		key_tmscale    => to_integer(unsigned(rid_hzaxis)),
-		key_tgchannel  => to_integer(unsigned(rid_trigger)),
-		key_tgposition => to_integer(unsigned(rid_trigger)),
-		key_tgedge     => to_integer(unsigned(rid_trigger)),
-		key_tgmode     => to_integer(unsigned(rid_trigger)),
-		key_inposition => to_integer(unsigned(rid_vtaxis)),
-		key_inscale    => to_integer(unsigned(rid_gain)),
+	constant tab : natural_vector(0 to wid_inscale) := (
+		wid_tmposition => to_integer(unsigned(rid_hzaxis)),
+		wid_tmscale    => to_integer(unsigned(rid_hzaxis)),
+		wid_tgchannel  => to_integer(unsigned(rid_trigger)),
+		wid_tgposition => to_integer(unsigned(rid_trigger)),
+		wid_tgedge     => to_integer(unsigned(rid_trigger)),
+		wid_tgmode     => to_integer(unsigned(rid_trigger)),
+		wid_inposition => to_integer(unsigned(rid_vtaxis)),
+		wid_inscale    => to_integer(unsigned(rid_gain)),
 		others         => 0);
 
 	constant images : string := compact(
 		"[" &
-			"key_time,"       &
-			"key_trigger,"    &
-			"key_tmposition," &
-			"key_tmscale,"    &
-			"key_tgchannel,"  &
-			"key_tgposition," &
-			"key_tgedge,"     &
-			"key_tgmode,"     &
-			"key_input,"      &
-			"key_inposition," &
-			"key_inscale"     &
+			"wid_time,"       &
+			"wid_trigger,"    &
+			"wid_tmposition," &
+			"wid_tmscale,"    &
+			"wid_tgchannel,"  &
+			"wid_tgposition," &
+			"wid_tgedge,"     &
+			"wid_tgmode,"     &
+			"wid_input,"      &
+			"wid_inposition," &
+			"wid_inscale"     &
 		"]");
 
 	function next_sequence 
 		return natural_vector is
-		variable retval : natural_vector(0 to key_inscale+3*(inputs-1)) := (
-			key_time       => key_trigger,
-			key_trigger    => key_input,
-			key_tmposition => key_tmscale,   
-			key_tmscale    => key_tgchannel, 
-			key_tgchannel  => key_tgposition,
-			key_tgposition => key_tgedge,    
-			key_tgedge     => key_tgmode,    
-			key_tgmode     => key_inposition,
-			key_input      => key_time,
-			key_inposition => key_inscale,
-			key_inscale    => key_tmposition,
+		variable retval : natural_vector(0 to wid_inscale+3*(inputs-1)) := (
+			wid_time       => wid_trigger,
+			wid_trigger    => wid_input,
+			wid_tmposition => wid_tmscale,   
+			wid_tmscale    => wid_tgchannel, 
+			wid_tgchannel  => wid_tgposition,
+			wid_tgposition => wid_tgedge,    
+			wid_tgedge     => wid_tgmode,    
+			wid_tgmode     => wid_inposition,
+			wid_input      => wid_time,
+			wid_inposition => wid_inscale,
+			wid_inscale    => wid_tmposition,
 			others         => 0);
 	begin
-		retval(3*(inputs-1)+key_input) := retval(key_input);
-		retval(key_input) := key_input+3;
-		retval(3*(inputs-1)+key_inscale) := retval(key_inscale);
-		retval(key_inscale) := key_inposition+3;
-		for i in key_inscale+1 to key_inscale+3*(inputs-2) loop
+		retval(3*(inputs-1)+wid_input) := retval(wid_input);
+		retval(wid_input) := wid_input+3;
+		retval(3*(inputs-1)+wid_inscale) := retval(wid_inscale);
+		retval(wid_inscale) := wid_inposition+3;
+		for i in wid_inscale+1 to wid_inscale+3*(inputs-2) loop
 			retval(i) := retval(i-3) + 3;
 		end loop;
-		retval(3*(inputs-1)+key_inposition) := 3*(inputs-1)+key_inscale;
+		retval(3*(inputs-1)+wid_inposition) := 3*(inputs-1)+wid_inscale;
 		return retval;
 	end;
 
@@ -135,21 +123,21 @@ architecture def of scopeio_ctlr is
 
 	function enter_sequence 
 		return natural_vector is
-		variable retval : natural_vector(0 to key_inscale+3*(inputs-1)) := (
-			key_time       => key_tmposition,
-			key_trigger    => key_tgposition,
-			key_tmposition => key_tmposition,   
-			key_tmscale    => key_tmscale, 
-			key_tgchannel  => key_tgchannel,
-			key_tgposition => key_tgposition,    
-			key_tgedge     => key_tgedge,    
-			key_tgmode     => key_tgedge,
-			key_input      => key_inposition,
-			key_inposition => key_inposition,
-			key_inscale    => key_inscale,
+		variable retval : natural_vector(0 to wid_inscale+3*(inputs-1)) := (
+			wid_time       => wid_tmposition,
+			wid_trigger    => wid_tgposition,
+			wid_tmposition => wid_tmposition,   
+			wid_tmscale    => wid_tmscale, 
+			wid_tgchannel  => wid_tgchannel,
+			wid_tgposition => wid_tgposition,    
+			wid_tgedge     => wid_tgedge,    
+			wid_tgmode     => wid_tgedge,
+			wid_input      => wid_inposition,
+			wid_inposition => wid_inposition,
+			wid_inscale    => wid_inscale,
 			others         => 0);
 	begin
-		for i in key_input+3 to key_inscale+3*(inputs-1) loop
+		for i in wid_input+3 to wid_inscale+3*(inputs-1) loop
 			retval(i) := retval(i-3) + 3;
 		end loop;
 		return retval;
