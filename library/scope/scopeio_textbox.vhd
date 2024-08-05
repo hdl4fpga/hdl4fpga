@@ -166,9 +166,10 @@ begin
 		do(0) => text_fgon);
 
 	widgets_b : block
-		constant inputs     : natural := hdo(layout)**".inputs";
-		constant vt         : string  := hdo(layout)**".vt";
-		function tops 
+		constant inputs : natural := hdo(layout)**".inputs";
+		constant vt     : string  := hdo(layout)**".vt";
+
+		function top_borders
 			return natural_vector is
 			variable table : natural_vector(0 to wid_inscale+3*(inputs-1));
 		begin
@@ -187,19 +188,14 @@ begin
 			for i in wid_static+1 to table'right loop
 				table(i) := table(i-3) + 1;
 			end loop;
-
+			return table;
 		end;
 
-		constant top_tab    : natural_vector(0 to wid_inscale+3*(inputs-1)) := tops;
-		shared variable left_tab   : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 0);
-		shared variable width_tab  : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 0);
-		constant height_tab : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 1);
-	begin
-		process
+		function width_borders
+			return natural_vector is
+			variable table : natural_vector(0 to wid_inscale+3*(inputs-1));
 		begin
-			height_tab := (others => 1);
-
-			width_tab(0 to wid_static) := (
+			table(0 to wid_static) := (
 				wid_time       => cga_cols,
 				wid_trigger    => cga_cols,
 				wid_tmposition => 7,
@@ -211,27 +207,39 @@ begin
 				wid_input      => cga_cols,
 				wid_inposition => 7,
 				wid_inscale    => 7);
-			for i in wid_static+1 to top_tab'right loop
-				width_tab(i) := width_tab(i-3);
+			for i in wid_static+1 to table'right loop
+				table(i) := table(i-3);
+			end loop;
+			return table;
+		end;
+
+		function left_borders
+			return natural_vector is
+			variable table : natural_vector(0 to wid_inscale+3*(inputs-1));
+		begin
+			table(wid_time)       := 0;
+			table(wid_trigger)    := 0;
+			table(wid_tmposition) := 4;
+			table(wid_tmscale)    := table(wid_tmposition)+3;
+			table(wid_tgchannel)  := 0;
+			table(wid_tgposition) := 4;
+			table(wid_tgedge)     := table(wid_tgposition)+3;
+			table(wid_tgmode)     := table(wid_tgedge)+2;
+			table(wid_input)      := 0;
+			table(wid_inposition) := 4;
+			table(wid_inscale)    := table(wid_inposition)+3;
+			for i in wid_static+1 to table'right loop
+				table(i) := table(i-3);
 			end loop;
 
-			left_tab(wid_time)       := 0;
-			left_tab(wid_trigger)    := 0;
-			left_tab(wid_tmposition) := 4;
-			left_tab(wid_tmscale)    := left_tab(wid_tmposition)+3;
-			left_tab(wid_tgchannel)  := 0;
-			left_tab(wid_tgposition) := 4;
-			left_tab(wid_tgedge)     := left_tab(wid_tgposition)+3;
-			left_tab(wid_tgmode)     := left_tab(wid_tgedge)+2;
-			left_tab(wid_input)      := 0;
-			left_tab(wid_inposition) := 4;
-			left_tab(wid_inscale)    := left_tab(wid_inposition)+3;
-			for i in wid_static+1 to top_tab'right loop
-				left_tab(i) := left_tab(i-3);
-			end loop;
+			return table;
+		end;
 
-			wait;
-		end process;
+		constant height_tab : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 1);
+		constant top_tab    : natural_vector(0 to wid_inscale+3*(inputs-1)) := top_borders;
+		constant width_tab  : natural_vector(0 to wid_inscale+3*(inputs-1)) := width_borders;
+		constant left_tab   : natural_vector(0 to wid_inscale+3*(inputs-1)) := left_borders;
+	begin
 
     	process (video_clk)
     		function textbox_field (
