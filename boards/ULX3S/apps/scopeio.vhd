@@ -177,7 +177,6 @@ begin
 		default_gear => video_gear,
 		video_params => video_params)
 	port map (
-		clk_rst     => right,
 		clk_ref     => clk_25mhz,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
@@ -228,8 +227,8 @@ begin
 	end generate;
 
 	standalone_e : if io_link=io_none generate 
-		signal req    : std_logic;
-		signal rdy    : std_logic;
+		signal req    : std_logic := '0';
+		signal rdy    : std_logic := '0';
 		signal btn    : std_logic_vector(0 to 4-1);
 		signal event : std_logic_vector(0 to 2-1);
 	begin
@@ -243,13 +242,13 @@ begin
 				when s_request =>
 					if btn/=(btn'range =>'0') then
 						event <= encoder(btn);
-						req <= not rdy;
+						req <= not to_stdulogic(to_bit(rdy));
 						state := s_wait;
 					else
 						event <= (others => '-');
 					end if;
 				when s_wait =>
-					if (req xor rdy)='0' then
+					if (to_bit(req) xor to_bit(rdy))='0' then
 						if btn(to_integer(unsigned(event)))='0' then
 							state := s_request;
 						end if;
@@ -262,14 +261,9 @@ begin
        	generic map (
        		layout => layout)
        	port map (
-       		exit_req  => '-',
-       		exit_rdy  => open,
-       		next_req  => next_req,
-       		next_rdy  => next_rdy,
-       		prev_req  => '-',
-       		prev_rdy  => open,
-       		enter_req => '-',
-       		enter_rdy => open,
+       		req  => req,
+       		rdy  => rdy,
+			event => event,
 
        		sio_clk   => sio_clk,
        		so_frm    => iolink_frm,

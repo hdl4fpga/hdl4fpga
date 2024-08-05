@@ -50,10 +50,10 @@ architecture ulx3s_scopeio of testbench is
 			btn_pwr_n      : in  std_logic := 'U';
 			fire1          : in  std_logic := 'U';
 			fire2          : in  std_logic := 'U';
-			up             : in  std_logic := 'U';
-			down           : in  std_logic := 'U';
-			left           : in  std_logic := 'U';
-			right          : in  std_logic := 'U';
+			up             : in  std_logic := '0';
+			down           : in  std_logic := '0';
+			left           : in  std_logic := '0';
+			right          : in  std_logic := '0';
 
 			led            : out   std_logic_vector(8-1 downto 0);
 			sw             : in    std_logic_vector(4-1 downto 0) := (others => '-');
@@ -197,6 +197,8 @@ architecture ulx3s_scopeio of testbench is
 
 	signal adc_mosi    : std_logic;
 	signal adc_miso    : std_logic;
+	signal up    : std_logic := '0';
+	signal down    : std_logic := '0';
 begin
 
 	rst      <= '1', '0' after 10 us;
@@ -253,6 +255,8 @@ begin
 		mii_txd   => mii_txd); 
 
 	adc_miso <= adc_mosi;
+	up   <= '0', '1' after 1 us, '0' after 2 us;
+	down <= '0', '1' after 2.1 us, '0' after 3 us;
 	du_e : ulx3s
 	generic map (
 		debug => debug)
@@ -262,7 +266,8 @@ begin
 		usb_fpga_dn => usb_fpga_dn,
 		ftdi_txd   => ftdi_txd,
 		ftdi_rxd   => ftdi_rxd,
-		up         => '0',
+		up         => up,
+		down       => down,
 		fire1      => fire1,
 		fire2      => fire2,
 		gp         => gp,

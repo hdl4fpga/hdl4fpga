@@ -180,8 +180,8 @@ architecture def of scopeio_ctlr is
 	signal focus       : natural range 0 to next_tab'length-1;
 	signal change_rdy  : std_logic;
 	signal change_req  : std_logic;
-	signal send_req    : std_logic := '0';
-	signal send_rdy    : std_logic := '0';
+	signal send_req    : bit := '0';
+	signal send_rdy    : bit := '0';
 	signal send_data   : std_logic_vector(so_data'range);
 
 begin
@@ -221,7 +221,7 @@ begin
 		trigger_freeze  => trigger_freeze,
 		trigger_level   => trigger_level);
 
-	process (rgtr_clk)
+	process (req, rgtr_clk)
 		type states is (s_idle, s_send);
 		variable state : states;
 	begin
@@ -229,19 +229,21 @@ begin
 			case state is
 			when s_idle =>
 				if (send_req xor send_rdy)='0' then
-					if (rdy xor req)='1' then
+					if (to_bit(rdy) xor to_bit(req))='1' then
 						send_req <= not send_rdy;
+						state := s_send;
 					end if;
 				end if;
 			when s_send =>
 				if (send_req xor send_rdy)='0' then
 					rdy <= to_stdulogic(to_bit(req));
+					state := s_idle;
 				end if;
 			end case;
 		end if;
 	end process;
 	
-	process (rgtr_clk,send_req)
+	process (rgtr_clk)
 		type states is (s_init, s_length, s_data);
 		variable state : states;
 	begin
@@ -261,7 +263,11 @@ begin
 				when s_data =>
 					so_frm     <= '1';
 					so_irdy    <= '1';
-					send_data  <= x"00";
+					if event="00" then
+						send_data  <= x"ff";
+					else
+						send_data  <= x"00";
+					end if;
 					send_rdy   <= send_req;
 					state := s_init;
 				end case;
