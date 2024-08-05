@@ -228,10 +228,12 @@ begin
 	end generate;
 
 	standalone_e : if io_link=io_none generate 
-		signal xxx : std_logic := '1';
-		signal next_req : std_logic;
-		signal next_rdy : std_logic;
+		signal req    : std_logic;
+		signal rdy    : std_logic;
+		signal btn    : std_logic_vector(0 to 4-1);
+		signal event : std_logic_vector(0 to 2-1);
 	begin
+		btn <= (up, down, left, right);
 		process(sio_clk)
 			type states is (s_request, s_wait);
 			variable state : states;
@@ -239,13 +241,16 @@ begin
 			if rising_edge(sio_clk) then
 				case state is
 				when s_request =>
-					if up='1' then
-						next_req <= not next_rdy;
+					if btn/=(btn'range =>'0') then
+						event <= encoder(btn);
+						req <= not rdy;
 						state := s_wait;
+					else
+						event <= (others => '-');
 					end if;
 				when s_wait =>
-					if to_bit(next_req xor next_rdy)='0' then
-						if up='0' then
+					if (req xor rdy)='0' then
+						if btn(to_integer(unsigned(event)))='0' then
 							state := s_request;
 						end if;
 					end if;

@@ -10,22 +10,17 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_ctlr is
 	generic (
-		layout    : string);
+		layout  : string);
 	port (
-		exit_req  : in  std_logic;
-		exit_rdy  : buffer std_logic;
-		next_req  : in  std_logic;
-		next_rdy  : buffer std_logic;
-		prev_req  : in  std_logic;
-		prev_rdy  : buffer std_logic;
-		enter_req : in  std_logic;
-		enter_rdy : buffer std_logic;
+		req     : in  std_logic;
+		rdy     : buffer std_logic;
+		event   : in  std_logic_vector;
 
-		sio_clk   : in  std_logic;
-		so_frm    : buffer std_logic;
-		so_irdy   : buffer std_logic;
-		so_trdy   : in  std_logic := '0';
-		so_data   : buffer std_logic_vector := (0 to 7 => '-'));
+		sio_clk : in  std_logic;
+		so_frm  : buffer std_logic;
+		so_irdy : buffer std_logic;
+		so_trdy : in  std_logic := '0';
+		so_data : buffer std_logic_vector := (0 to 7 => '-'));
 
 	constant inputs        : natural := hdo(layout)**".inputs";
 	constant max_delay     : natural := hdo(layout)**".max_delay=16384.";
@@ -234,13 +229,13 @@ begin
 			case state is
 			when s_idle =>
 				if (send_req xor send_rdy)='0' then
-					if (next_rdy xor next_req)='1' then
+					if (rdy xor req)='1' then
 						send_req <= not send_rdy;
 					end if;
 				end if;
 			when s_send =>
 				if (send_req xor send_rdy)='0' then
-					next_rdy <= to_stdulogic(to_bit(next_req));
+					rdy <= to_stdulogic(to_bit(req));
 				end if;
 			end case;
 		end if;
