@@ -31,7 +31,6 @@ entity scopeio_textbox is
 		text_bg       : out std_logic_vector;
 		text_fgon     : out std_logic);
 
-	constant inputs         : natural := hdo(layout)**".inputs";
 	constant font_width     : natural := hdo(layout)**".textbox.font_width=8.";
 	constant textbox_width  : natural := hdo(layout)**".textbox.width";
 	constant textbox_height : natural := hdo(layout)**".grid.height";
@@ -167,11 +166,67 @@ begin
 		do(0) => text_fgon);
 
 	widgets_b : block
-    	constant top_tab    : natural_vector(0 to wid_inscale+3*inputs) := (others => 0);
-    	constant left_tab   : natural_vector(0 to wid_inscale+3*inputs) := (others => 0);
-    	constant right_tab  : natural_vector(0 to wid_inscale+3*inputs) := (others => 0);
-    	constant bottom_tab : natural_vector(0 to wid_inscale+3*inputs) := (others => 0);
+		constant inputs     : natural := hdo(layout)**".inputs";
+		constant vt         : string  := hdo(layout)**".vt";
+		shared variable top_tab    : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 0);
+		shared variable left_tab   : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 0);
+		shared variable width_tab  : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 0);
+		shared variable height_tab : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 0);
 	begin
+		process
+		begin
+			top_tab(0 to wid_static) := (
+				wid_time       => 0,
+				wid_trigger    => 1,
+				wid_tmposition => 0,
+				wid_tmscale    => 0,
+				wid_tgchannel  => 1,
+				wid_tgposition => 1,
+				wid_tgedge     => 1,
+				wid_tgmode     => 1,
+				wid_input      => 2,
+				wid_inposition => 2,
+				wid_inscale    => 2);
+			for i in wid_static+1 to top_tab'right loop
+				top_tab(i) := top_tab(i-3) + 1;
+			end loop;
+
+			height_tab := (others => 1);
+
+			width_tab(0 to wid_static) := (
+				wid_time       => cga_cols,
+				wid_trigger    => cga_cols,
+				wid_tmposition => 7,
+				wid_tmscale    => 7,
+				wid_tgchannel  => 4,
+				wid_tgposition => 7,
+				wid_tgedge     => 1,
+				wid_tgmode     => 4,
+				wid_input      => cga_cols,
+				wid_inposition => 7,
+				wid_inscale    => 7);
+			for i in wid_static+1 to top_tab'right loop
+				width_tab(i) := width_tab(i-3);
+			end loop;
+
+			left_tab(wid_time)       := 0;
+			left_tab(wid_trigger)    := 0;
+			left_tab(wid_tmposition) := 4;
+			left_tab(wid_tmscale)    := left_tab(wid_tmposition)+3;
+			left_tab(wid_tgchannel)  := 0;
+			left_tab(wid_tgposition) := 4;
+			left_tab(wid_tgedge)     := left_tab(wid_tgposition)+3;
+			left_tab(wid_tgmode)     := left_tab(wid_tgedge)+2;
+			left_tab(wid_input)      := 0;
+			left_tab(wid_inposition) := 4;
+			left_tab(wid_inscale)    := left_tab(wid_inposition)+3;
+			for i in wid_static+1 to top_tab'right loop
+				left_tab(i) := left_tab(i-3);
+			end loop;
+
+			wait;
+		end process;
+
     	process (video_clk)
     		function textbox_field (
     			constant width          : natural)

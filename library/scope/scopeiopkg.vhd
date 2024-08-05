@@ -48,6 +48,7 @@ package scopeiopkg is
 	constant wid_input      : natural := 8;
 	constant wid_inposition : natural := 9;
 	constant wid_inscale    : natural := 10;
+	constant wid_static     : natural := wid_inscale;
 
 	constant vtaxis_boxid : natural := 0;
 	constant grid_boxid   : natural := 1;
