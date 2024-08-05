@@ -168,14 +168,11 @@ begin
 	widgets_b : block
 		constant inputs     : natural := hdo(layout)**".inputs";
 		constant vt         : string  := hdo(layout)**".vt";
-		shared variable top_tab    : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 0);
-		shared variable left_tab   : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 0);
-		shared variable width_tab  : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 0);
-		shared variable height_tab : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 0);
-	begin
-		process
+		function tops 
+			return natural_vector is
+			variable table : natural_vector(0 to wid_inscale+3*(inputs-1));
 		begin
-			top_tab(0 to wid_static) := (
+			table(0 to wid_static) := (
 				wid_time       => 0,
 				wid_trigger    => 1,
 				wid_tmposition => 0,
@@ -187,10 +184,19 @@ begin
 				wid_input      => 2,
 				wid_inposition => 2,
 				wid_inscale    => 2);
-			for i in wid_static+1 to top_tab'right loop
-				top_tab(i) := top_tab(i-3) + 1;
+			for i in wid_static+1 to table'right loop
+				table(i) := table(i-3) + 1;
 			end loop;
 
+		end;
+
+		constant top_tab    : natural_vector(0 to wid_inscale+3*(inputs-1)) := tops;
+		shared variable left_tab   : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 0);
+		shared variable width_tab  : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 0);
+		constant height_tab : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 1);
+	begin
+		process
+		begin
 			height_tab := (others => 1);
 
 			width_tab(0 to wid_static) := (
