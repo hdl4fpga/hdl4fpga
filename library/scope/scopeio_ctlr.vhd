@@ -180,13 +180,14 @@ architecture def of scopeio_ctlr is
 	constant enter_tab : natural_vector := enter_sequence;
 	constant exit_tab  : natural_vector := exit_sequence(enter_tab);
 
-	signal focus_req   : std_logic := '1';
+	signal focus_req   : std_logic := '0';
 	signal focus_rdy   : std_logic := '0';
 	signal focus       : natural range 0 to next_tab'length-1;
 	signal change_rdy  : std_logic;
 	signal change_req  : std_logic;
-	signal send_req    : std_logic := '1';
+	signal send_req    : std_logic := '0';
 	signal send_rdy    : std_logic := '0';
+	signal send_data   : std_logic_vector(so_data'range);
 
 begin
 
@@ -226,47 +227,21 @@ begin
 		trigger_level   => trigger_level);
 
 	process (rgtr_clk)
-		type states is (s_idle, s_focus, s_change);
+		type states is (s_idle, s_send);
 		variable state : states;
 	begin
 		if rising_edge(rgtr_clk) then
 			case state is
 			when s_idle =>
-				if (focus_req xor focus_rdy)='0' then
+				if (send_req xor send_rdy)='0' then
 					if (next_rdy xor next_req)='1' then
-						focus <= next_tab(focus);
-						if focus=next_tab(focus) then
-							change_req <= not change_rdy;
-							state := s_change;
-						else
-							focus_req <= not focus_rdy;
-							state := s_focus;
-						end if;
-					elsif (prev_rdy xor prev_req)='1' then
-						if focus=prev_tab(focus) then
-							change_req <= not change_rdy;
-							state := s_change;
-						else
-							focus_req <= not focus_rdy;
-							state := s_focus;
-						end if;
-						focus <= prev_tab(focus);
-						focus_req <= not focus_rdy;
-						state := s_focus;
-					elsif (enter_rdy xor enter_req)='1' then
-						focus <= enter_tab(focus);
-						focus_req <= not focus_rdy;
-						state := s_focus;
-					elsif (exit_rdy xor exit_req)='1' then
-						focus <= exit_tab(focus);
-						focus_req <= not focus_rdy;
-						state := s_focus;
+						send_req <= not send_rdy;
 					end if;
 				end if;
-			when s_focus =>
-				if (focus_req xor focus_rdy)='0' then
+			when s_send =>
+				if (send_req xor send_rdy)='0' then
+					next_rdy <= to_stdulogic(to_bit(next_req));
 				end if;
-			when s_change =>
 			end case;
 		end if;
 	end process;
@@ -279,43 +254,29 @@ begin
 			if (send_req xor send_rdy)='1' then
 				case state is
 				when s_init =>
-					if (focus_rdy xor focus_req)='1' then
-						so_frm  <= '1';
-						so_irdy <= '1';
-						so_data <= rid_focus;
-						state := s_length;
-					elsif (change_rdy xor change_req)='1' then
-						case focus is
-						-- so_data <= rid_xxx;
-						when others =>
-						end case;
-					else
-						so_frm  <= '0';
-						so_irdy <= '0';
-						so_data <= (others => '-');
-					end if;
+					so_frm  <= '1';
+					so_irdy <= '1';
+					send_data <= rid_focus;
+					state := s_length;
 				when s_length =>
-					if (focus_rdy xor focus_req)='1' then
-						so_frm    <= '1';
-						so_irdy   <= '1';
-						so_data <= x"00";
-						state := s_data;
-					end if;
+					so_frm    <= '1';
+					so_irdy   <= '1';
+					send_data <= x"00";
+					state := s_data;
 				when s_data =>
 					so_frm     <= '1';
 					so_irdy    <= '1';
-					so_data  <= x"ff";
-					focus_rdy  <= focus_req;
-					change_rdy <= change_req;
+					send_data  <= x"00";
 					send_rdy   <= send_req;
 					state := s_init;
 				end case;
 			else
 				so_frm  <= '0';
 				so_irdy <= '0';
-				so_data <= (others => '-');
+				send_data <= (others => '-');
 			end if;
 		end if;
 	end process;
+	so_data <= reverse(send_data);
 	
 end;

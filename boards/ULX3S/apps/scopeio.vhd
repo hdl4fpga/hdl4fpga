@@ -228,14 +228,39 @@ begin
 	end generate;
 
 	standalone_e : if io_link=io_none generate 
+		signal xxx : std_logic := '1';
+		signal next_req : std_logic;
+		signal next_rdy : std_logic;
+	begin
+		process(sio_clk)
+			type states is (s_request, s_wait);
+			variable state : states;
+		begin
+			if rising_edge(sio_clk) then
+				case state is
+				when s_request =>
+					if up='1' then
+						next_req <= not next_rdy;
+						state := s_wait;
+					end if;
+				when s_wait =>
+					if to_bit(next_req xor next_rdy)='0' then
+						if up='0' then
+							state := s_request;
+						end if;
+					end if;
+				end case;
+			end if;
+		end process;
+
         ctlr_e : entity hdl4fpga.scopeio_ctlr
        	generic map (
        		layout => layout)
        	port map (
        		exit_req  => '-',
        		exit_rdy  => open,
-       		next_req  => '-',
-       		next_rdy  => open,
+       		next_req  => next_req,
+       		next_rdy  => next_rdy,
        		prev_req  => '-',
        		prev_rdy  => open,
        		enter_req => '-',

@@ -67,7 +67,7 @@ architecture def of scopeio_textbox is
 	signal video_row : std_logic_vector(0 to unsigned_num_bits(cga_rows-1)-1);
 	signal focus_id  : std_logic_vector(6-1 downto 0);
 
-		signal field_id   : natural range 0 to 2**fg_color'length-1;
+	signal field_id   : natural range 0 to 2**fg_color'length-1;
 begin
 
 	assert false
@@ -87,11 +87,11 @@ begin
 
 		focus_wid => focus_id);
 
+	tp(1 to focus_id'length) <= focus_id;
 	readings_e : entity hdl4fpga.scopeio_reading
 	generic map (
 		layout => layout)
 	port map (
-		tp => tp,
 		rgtr_clk  => rgtr_clk,
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,

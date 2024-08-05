@@ -69,14 +69,11 @@ architecture scopeio of arty is
 	constant layout : string := compact(
 			"{                             " &   
 			"   inputs          : " & natural'image(inputs) & ',' &
-			"   max_delay       : " & natural'image(max_delay)  & ',' &
-			"   min_storage     : 256,     " & -- samples, storage size will be equal or larger than this
 			"   num_of_segments :   4,     " &
 			"   display : {                " &
 			"       width  : 1920,         " &
 			"       height : 1080},         " &
 			"   grid : {                   " &
-			"       unit   : 32,           " &
 			"       width  : " & natural'image(50*32+1) & ',' &
 			"       height : " & natural'image( 8*32+1) & ',' &
 			"       color  : 0xff_ff_00_ff," &
@@ -85,19 +82,15 @@ architecture scopeio of arty is
 			"       fontsize   : 8,        " &
 			"       horizontal : {         " &
 			"           unit   : 31.25e-6, " &
-			"           height : 8,        " &
 			"           inside : false,    " &
 			"           color  : 0xff_00_00_00," &
 			"           background-color : 0xff_00_ff_ff}," &
 			"       vertical : {           " &
 			"           unit   : 2.0e-3, " &
 			"           width  : " & natural'image(6*8) & ','  &
-			"           rotate : ccw0,     " &
-			"           inside : false,    " &
 			"           color  : 0xff_00_00_00," &
 			"           background-color : 0xff_00_ff_ff}}," &
 			"   textbox : {                " &
-			"       font_width :  8,       " &
 			"       width      : " & natural'image(33*8) & ','&
 			"       inside     : false,    " &
 			"       color      : 0xff_ff_00_ff," &

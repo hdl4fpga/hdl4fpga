@@ -27,15 +27,18 @@ begin
 	id <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, focus_id, focus_bf)), id'length));
 
 	process (dv, id, rgtr_clk)
+		variable data : std_logic_vector(focus_wid'range);
 	begin
 		if rising_edge(rgtr_clk) then
 			focus_dv <= dv;
 			if dv='1' then
-				focus_wid <= id;
+				data := id;
 			end if;
 		end if;
 		if dv='1' then
 			focus_wid <= id;
+		else
+			focus_wid <= data;
 		end if;
 	end process;
 	focus_ena <= dv;
