@@ -19,7 +19,7 @@ architecture scopeio of arty is
 
 	--------------------------------------
 	--         Set profile here         --
-	constant io_link      : io_comms := io_ipoe;
+	constant io_link      : io_comms := io_none;
 	--------------------------------------
 	constant tsttab       : boolean := false;
 
