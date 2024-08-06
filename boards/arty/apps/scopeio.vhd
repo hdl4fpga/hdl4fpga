@@ -79,10 +79,8 @@ architecture scopeio of arty is
 			"       color  : 0xff_ff_00_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   axis : {                   " &
-			"       fontsize   : 8,        " &
 			"       horizontal : {         " &
 			"           unit   : 31.25e-6, " &
-			"           inside : false,    " &
 			"           color  : 0xff_00_00_00," &
 			"           background-color : 0xff_00_ff_ff}," &
 			"       vertical : {           " &
@@ -92,7 +90,6 @@ architecture scopeio of arty is
 			"           background-color : 0xff_00_ff_ff}}," &
 			"   textbox : {                " &
 			"       width      : " & natural'image(33*8) & ','&
-			"       inside     : false,    " &
 			"       color      : 0xff_ff_00_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   main : {                   " &
