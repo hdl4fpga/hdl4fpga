@@ -218,7 +218,11 @@ begin
 			when s_idle =>
 				if (send_req xor send_rdy)='0' then
 					if (to_bit(rdy) xor to_bit(req))='1' then
-						focus_wid <= focus_wid + 1;
+						if event="00" then
+							focus_wid <= focus_wid + 1;
+						else
+							focus_wid <= focus_wid - 1;
+						end if;
 						send_req <= not send_rdy;
 						state := s_send;
 					end if;
