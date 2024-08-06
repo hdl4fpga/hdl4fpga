@@ -296,7 +296,7 @@ begin
     		variable addr       : std_logic_vector(video_addr'range);
     	begin
     		if rising_edge(video_clk) then
-    			if s='1' then
+    			if s='0' then
     				fg_color <= std_logic_vector(to_unsigned(field_id, fg_color'length));
     			else
     				fg_color <= std_logic_vector(to_unsigned(pltid_textbg, bg_color'length));
@@ -317,7 +317,7 @@ begin
     	end process;
 
     	bg_color <= 
-    		std_logic_vector(to_unsigned(pltid_textbg, bg_color'length)) when s='1' else
+    		std_logic_vector(to_unsigned(pltid_textbg, bg_color'length)) when s='0' else
     		std_logic_vector(to_unsigned(field_id, fg_color'length));
 	end block;
 
