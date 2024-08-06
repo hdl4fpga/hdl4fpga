@@ -53,9 +53,10 @@ architecture scopeio of arty is
 	signal so_end          : std_logic;
 	signal so_data         : std_logic_vector(eth_txd'range);
 
-	signal udpip_frm       : std_logic;
-	signal udpip_irdy      : std_logic;
-	signal udpip_data      : std_logic_vector(eth_rxd'range);
+	signal iolink_frm       : std_logic;
+	signal iolink_irdy      : std_logic;
+	signal iolink_trdy      : std_logic := '1';
+	signal iolink_data      : std_logic_vector(0 to setif(io_link=io_ipoe,eth_rxd'length,8)-1);
 
 	signal xadccfg_req     : bit;
 	signal xadccfg_rdy     : bit;
@@ -325,9 +326,9 @@ begin
 			si_data    => so_data,
 
 			so_clk     => sio_clk,
-			so_frm     => udpip_frm,
-			so_irdy    => udpip_irdy,
-			so_data    => udpip_data);
+			so_frm     => iolink_frm,
+			so_irdy    => iolink_irdy,
+			so_data    => iolink_data);
 
 		desser_e: entity hdl4fpga.desser
 		port map (
@@ -352,6 +353,52 @@ begin
 
 	end generate;
 
+	standalone_e : if io_link=io_none generate 
+		signal req    : std_logic := '0';
+		signal rdy    : std_logic := '0';
+		signal btn    : std_logic_vector(0 to 4-1);
+		signal event : std_logic_vector(0 to 2-1);
+	begin
+		process(sio_clk)
+			type states is (s_request, s_wait);
+			variable state : states;
+		begin
+			if rising_edge(sio_clk) then
+				case state is
+				when s_request =>
+					if btn/=(btn'range =>'0') then
+						event <= encoder(btn);
+						req <= not to_stdulogic(to_bit(rdy));
+						state := s_wait;
+					else
+						event <= (others => '-');
+					end if;
+				when s_wait =>
+					if (to_bit(req) xor to_bit(rdy))='0' then
+						if btn(to_integer(unsigned(event)))='0' then
+							state := s_request;
+						end if;
+					end if;
+				end case;
+			end if;
+		end process;
+
+        ctlr_e : entity hdl4fpga.scopeio_ctlr
+       	generic map (
+       		layout => layout)
+       	port map (
+       		req  => req,
+       		rdy  => rdy,
+			event => event,
+
+       		sio_clk   => sio_clk,
+       		so_frm    => iolink_frm,
+       		so_irdy   => iolink_irdy,
+       		so_trdy   => iolink_trdy,
+       		so_data   => iolink_data);
+
+	end generate;
+
 	inputs_b : block
 		constant mux_sampling : natural := 10;
 
@@ -371,9 +418,9 @@ begin
 		sio_sin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
-			sin_frm   => udpip_frm,
-			sin_irdy  => udpip_irdy,
-			sin_data  => udpip_data,
+			sin_frm   => iolink_frm,
+			sin_irdy  => iolink_irdy,
+			sin_data  => iolink_data,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
@@ -428,7 +475,7 @@ begin
 				end if;
 				if cntr < (data'length+opacity_data'length-1)/opacity_data'length then
 					if opacity_frm='0' then
-						opacity_frm <= not udpip_frm;
+						opacity_frm <= not iolink_frm;
 					end if;
 				else
 					opacity_frm <= '0';
@@ -442,9 +489,9 @@ begin
 			opacity_data <= multiplex(reverse(std_logic_vector(data),8), std_logic_vector(cntr), opacity_data'length);
 		end process;
 
-		si_frm  <= udpip_frm  when opacity_frm='0' else '1';
-		si_irdy <= udpip_irdy when opacity_frm='0' else '1';
-		si_data <= udpip_data when opacity_frm='0' else opacity_data;
+		si_frm  <= iolink_frm  when opacity_frm='0' else '1';
+		si_irdy <= iolink_irdy when opacity_frm='0' else '1';
+		si_data <= iolink_data when opacity_frm='0' else opacity_data;
 
 		process (input_clk)
 		begin
