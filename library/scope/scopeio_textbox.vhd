@@ -65,7 +65,7 @@ architecture def of scopeio_textbox is
 	signal video_dot : std_logic;
 
 	signal video_row : std_logic_vector(0 to unsigned_num_bits(cga_rows-1)-1);
-	signal focus_id  : std_logic_vector(6-1 downto 0);
+	signal focus_wid : std_logic_vector(6-1 downto 0);
 
 	signal field_id   : natural range 0 to 2**fg_color'length-1;
 
@@ -86,9 +86,9 @@ begin
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
 
-		focus_wid => focus_id);
+		focus_wid => focus_wid);
 
-	tp(1 to focus_id'length) <= focus_id;
+	tp(1 to focus_wid'length) <= focus_wid;
 	readings_e : entity hdl4fpga.scopeio_reading
 	generic map (
 		layout => layout)
@@ -235,12 +235,32 @@ begin
 			return table;
 		end;
 
-		constant height_tab : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 1);
 		constant top_tab    : natural_vector(0 to wid_inscale+3*(inputs-1)) := top_borders;
-		constant width_tab  : natural_vector(0 to wid_inscale+3*(inputs-1)) := width_borders;
 		constant left_tab   : natural_vector(0 to wid_inscale+3*(inputs-1)) := left_borders;
+		constant height_tab : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 1);
+		constant width_tab  : natural_vector(0 to wid_inscale+3*(inputs-1)) := width_borders;
+
+		signal left   : natural range 0 to cga_cols-1;
+		signal right  : natural range 0 to cga_cols-1;
+		signal top    : natural range 0 to cga_rows-1;
+		signal bottom : natural range 0 to cga_rows-1;
+		signal row    : natural range 0 to cga_rows-1;
+		signal col    : natural range 0 to cga_cols-1;
+		signal x : std_logic;
+		signal y : std_logic;
+		signal s : std_logic;
 	begin
 
+		top    <=  top_tab(to_integer(unsigned(focus_wid)));
+		left   <= left_tab(to_integer(unsigned(focus_wid)));
+		right  <= left + width_tab(to_integer(unsigned(focus_wid)));
+		bottom <= top  + height_tab(to_integer(unsigned(focus_wid)));
+		row <= to_integer(shift_right(unsigned(video_vcntr), fontheight_bits));
+		col <= to_integer(shift_right(unsigned(video_hcntr), fontwidth_bits));
+
+		x <= '1' when left <= col and col < right  else '0';
+		y <= '1' when top  <= row and row < bottom else '0';
+		s <= x and y;
     	process (video_clk)
     		function textbox_field (
     			constant width          : natural)
@@ -276,7 +296,7 @@ begin
     		variable addr       : std_logic_vector(video_addr'range);
     	begin
     		if rising_edge(video_clk) then
-    			if focus_id(0)= '1' then
+    			if s='1' then
     				fg_color <= std_logic_vector(to_unsigned(field_id, fg_color'length));
     			else
     				fg_color <= std_logic_vector(to_unsigned(pltid_textbg, bg_color'length));
@@ -297,7 +317,7 @@ begin
     	end process;
 
     	bg_color <= 
-    		std_logic_vector(to_unsigned(pltid_textbg, bg_color'length)) when focus_id(0)='1' else
+    		std_logic_vector(to_unsigned(pltid_textbg, bg_color'length)) when s='1' else
     		std_logic_vector(to_unsigned(field_id, fg_color'length));
 	end block;
 
