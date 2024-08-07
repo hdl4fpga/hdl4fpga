@@ -42,7 +42,7 @@ architecture scopeio of arty is
 	signal video_blank     : std_logic;
 	signal video_pixel     : std_logic_vector(0 to 3-1);
 
-	alias  sio_clk         is eth_tx_clk;
+	signal sio_clk         : std_logic;
 	signal si_frm          : std_logic;
 	signal si_irdy         : std_logic;
 	signal si_data         : std_logic_vector(0 to setif(io_link=io_ipoe,eth_rxd'length,8)-1);
@@ -206,15 +206,6 @@ begin
 			locked   => input_lck);
 	end block;
    
-		process (sys_clk)
-			variable div : unsigned(0 to 1) := (others => '0');
-		begin
-			if rising_edge(sys_clk) then
-				div := div + 1;
-				eth_ref_clk <= div(0);
-			end if;
-		end process;
-
 	ipoe_e : if io_link=io_ipoe generate
 		signal mii_txd    : std_logic_vector(eth_txd'range);
 		signal mii_txen   : std_logic;
@@ -231,7 +222,18 @@ begin
 		signal miitx_end  : std_logic;
 		signal miitx_data : std_logic_vector(si_data'range);
 
+		signal eth_tx_clk : std_logic;
 	begin
+
+		sio_clk <= eth_tx_clk;
+		process (sys_clk)
+			variable div : unsigned(0 to 1) := (others => '0');
+		begin
+			if rising_edge(sys_clk) then
+				div := div + 1;
+				eth_ref_clk <= div(0);
+			end if;
+		end process;
 
 		dhcp_p : process(eth_tx_clk)
 			type states is (s_request, s_wait);
@@ -354,11 +356,20 @@ begin
 	end generate;
 
 	standalone_e : if io_link=io_none generate 
-		signal req    : std_logic := '0';
-		signal rdy    : std_logic := '0';
-		signal btn    : std_logic_vector(0 to 4-1);
+		signal req   : std_logic := '0';
+		signal rdy   : std_logic := '0';
+		signal btn   : std_logic_vector(0 to 4-1);
 		signal event : std_logic_vector(0 to 2-1);
 	begin
+		process (sys_clk)
+			variable div : unsigned(0 to 1) := (others => '0');
+		begin
+			if rising_edge(sys_clk) then
+				div := div + 1;
+				sio_clk <= div(0);
+			end if;
+		end process;
+
 		process(sio_clk)
 			type states is (s_request, s_wait);
 			variable state : states;
@@ -387,15 +398,15 @@ begin
        	generic map (
        		layout => layout)
        	port map (
-       		req  => req,
-       		rdy  => rdy,
+       		req   => req,
+       		rdy   => rdy,
 			event => event,
 
-       		sio_clk   => sio_clk,
-       		so_frm    => iolink_frm,
-       		so_irdy   => iolink_irdy,
-       		so_trdy   => iolink_trdy,
-       		so_data   => iolink_data);
+       		sio_clk => sio_clk,
+       		so_frm  => iolink_frm,
+       		so_irdy => iolink_irdy,
+       		so_trdy => iolink_trdy,
+       		so_data => iolink_data);
 
 	end generate;
 
