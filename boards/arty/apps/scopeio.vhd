@@ -45,18 +45,18 @@ architecture scopeio of arty is
 	alias  sio_clk         is eth_tx_clk;
 	signal si_frm          : std_logic;
 	signal si_irdy         : std_logic;
-	signal si_data         : std_logic_vector(eth_rxd'range);
+	signal si_data         : std_logic_vector(0 to setif(io_link=io_ipoe,eth_rxd'length,8)-1);
 
 	signal so_frm          : std_logic;
 	signal so_irdy         : std_logic;
 	signal so_trdy         : std_logic;
 	signal so_end          : std_logic;
-	signal so_data         : std_logic_vector(eth_txd'range);
+	signal so_data         : std_logic_vector(si_data'range);
 
 	signal iolink_frm       : std_logic;
 	signal iolink_irdy      : std_logic;
 	signal iolink_trdy      : std_logic := '1';
-	signal iolink_data      : std_logic_vector(0 to setif(io_link=io_ipoe,eth_rxd'length,8)-1);
+	signal iolink_data      : std_logic_vector(si_data'range);
 
 	signal xadccfg_req     : bit;
 	signal xadccfg_rdy     : bit;
@@ -206,6 +206,15 @@ begin
 			locked   => input_lck);
 	end block;
    
+		process (sys_clk)
+			variable div : unsigned(0 to 1) := (others => '0');
+		begin
+			if rising_edge(sys_clk) then
+				div := div + 1;
+				eth_ref_clk <= div(0);
+			end if;
+		end process;
+
 	ipoe_e : if io_link=io_ipoe generate
 		signal mii_txd    : std_logic_vector(eth_txd'range);
 		signal mii_txen   : std_logic;
@@ -223,15 +232,6 @@ begin
 		signal miitx_data : std_logic_vector(si_data'range);
 
 	begin
-
-		process (sys_clk)
-			variable div : unsigned(0 to 1) := (others => '0');
-		begin
-			if rising_edge(sys_clk) then
-				div := div + 1;
-				eth_ref_clk <= div(0);
-			end if;
-		end process;
 
 		dhcp_p : process(eth_tx_clk)
 			type states is (s_request, s_wait);

@@ -241,9 +241,9 @@ begin
 		constant width_tab  : natural_vector(0 to wid_inscale+3*(inputs-1)) := width_borders;
 
 		signal left   : natural range 0 to cga_cols-1;
-		signal right  : natural range 0 to cga_cols-1;
+		signal right  : natural range 0 to cga_cols;
 		signal top    : natural range 0 to cga_rows-1;
-		signal bottom : natural range 0 to cga_rows-1;
+		signal bottom : natural range 0 to cga_rows;
 		signal row    : natural range 0 to cga_rows-1;
 		signal col    : natural range 0 to cga_cols-1;
 		signal x : std_logic;
