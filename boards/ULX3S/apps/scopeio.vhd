@@ -234,11 +234,11 @@ begin
 		signal event : std_logic_vector(0 to 2-1);
 	begin
 		btn <= (up, down, left, right);
-		bounce_g : for i in btn'range generate
+		antibounce_g : for i in btn'range generate
 			process (sio_clk)
 				type states is (s_pressed, s_released);
 				variable state : states;
-				variable cntr  : unsigned(0 to 8-1);
+				variable cntr  : unsigned(0 to 10-1);
 				alias chk is cntr(0 to 4-1);
 			begin
 				if rising_edge(sio_clk) then
