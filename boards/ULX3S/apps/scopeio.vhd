@@ -308,50 +308,51 @@ begin
 			-- so_trdy => iolink_trdy,
 			-- so_data => iolink_data);
 
-		-- startup_b : block
-			-- constant xxx : std_logic_vector := reverse(rid_hzaxis & x"02" & (0 to hzoffset_maxsize-1 => '0') & (0 to hzscale_maxsize-1 => '0'));
-			-- signal data  : std_logic_vector(0 to 8-1);
-			-- constant bitrom : std_logic_vector := std_logic_vector(resize(unsigned(xxx), data'length*((xxx'length+data'length-1)/data'length)));
-			-- signal req : std_logic := '1';
-			-- signal rdy : std_logic := '0';
-			-- constant zzz : natural := unsigned_num_bits(bitrom'length/data'length);
-			-- signal addr : unsigned(0 to zzz) := to_unsigned(bitrom'length/data'length-1, zzz+1);
-		-- begin
--- 
-			-- yyy : entity hdl4fpga.rom 
-			-- generic map (
-				-- bitrom => bitrom)
-			-- port map (
-				-- addr => std_logic_vector(addr),
-				-- data => data);
-				-- 
+		startup_b : block
+			signal req : std_logic := '1';
+			signal rdy : std_logic := '0';
+
+			constant qqq : std_logic_vector := rid_hzaxis & x"02" & (0 to hzscale_maxsize-1 => '0') & (0 to 4-1 => '0') & (0 to hzoffset_maxsize-1 => '0');
+			constant xxx : std_logic_vector(0 to qqq'length-1) := reverse(qqq);
+			signal data  : std_logic_vector(0 to 8-1);
+			constant bitrom : std_logic_vector := xxx;
+			constant zzz : natural := unsigned_num_bits(bitrom'length/data'length-1);
+			signal  addr : unsigned(0 to zzz) := to_unsigned(bitrom'length/data'length-1, zzz+1);
+		begin
+
+			mem_e : entity hdl4fpga.rom 
+			generic map (
+				bitrom => bitrom)
+			port map (
+				clk  => sio_clk,
+				addr => std_logic_vector(addr(1 to addr'right)),
+				data => data);
+				
 			-- req <= '0', '1' after 110 ns;
-			-- req <= up;
-			-- process(rdy, sio_clk)
-			-- begin
-				-- if rising_edge(sio_clk) then
-					-- if (rdy xor req)='1' then
-						-- if addr(0)='0' then
-							-- iolink_frm  <= '1';
-							-- iolink_irdy <= '1';
-							-- iolink_data <= data;
-							-- addr <= addr - 1;
-						-- else
-							-- iolink_frm  <= '0';
-							-- iolink_irdy <= '0';
-							-- iolink_data <= (others => '-');
-							-- rdy <= req;
-							-- addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
-						-- end if;
-					-- else
-						-- iolink_frm  <= '0';
-						-- iolink_irdy <= '0';
-						-- iolink_data <= (others => '-');
-						-- addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
-					-- end if;
-				-- end if;
-			-- end process;
-		-- end block;
+			req <= up;
+			process(rdy, sio_clk)
+			begin
+				if rising_edge(sio_clk) then
+					if (rdy xor req)='1' then
+						if addr(0)='0' then
+							iolink_frm  <= '1';
+							iolink_irdy <= '1';
+							addr <= addr - 1;
+						else
+							iolink_frm  <= '0';
+							iolink_irdy <= '0';
+							rdy <= req;
+							addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
+						end if;
+					else
+						iolink_frm  <= '0';
+						iolink_irdy <= '0';
+						addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
+					end if;
+					iolink_data <= data;
+				end if;
+			end process;
+		end block;
 
 	end generate;
 
