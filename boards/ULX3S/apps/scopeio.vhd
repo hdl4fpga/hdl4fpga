@@ -227,12 +227,49 @@ begin
 	end generate;
 
 	standalone_e : if io_link=io_none generate 
-		signal req    : std_logic := '0';
-		signal rdy    : std_logic := '0';
-		signal btn    : std_logic_vector(0 to 4-1);
+		signal req   : std_logic := '0';
+		signal rdy   : std_logic := '0';
+		signal btn   : std_logic_vector(0 to 4-1);
+		signal bnc   : std_logic_vector(btn'range);
 		signal event : std_logic_vector(0 to 2-1);
 	begin
 		btn <= (up, down, left, right);
+		bounce_g : for i in btn'range generate
+			process (sio_clk)
+				type states is (s_pressed, s_released);
+				variable state : states;
+				variable cntr  : unsigned(0 to 8-1);
+				alias chk is cntr(0 to 4-1);
+			begin
+				if rising_edge(sio_clk) then
+					case state is
+					when s_pressed =>
+						if btn(i)='0' then
+							if chk=(chk'range => '0') then
+								bnc(i) <= '0';
+								state := s_released;
+							else
+								cntr := cntr - 1;
+							end if;
+						elsif chk/=(chk'range => '1') then
+							cntr := cntr + 1;
+						end if;
+					when s_released =>
+						if btn(i)='1' then
+							if chk=(chk'range => '1') then
+								bnc(i) <= '1';
+								state := s_pressed;
+							else
+								cntr := cntr + 1;
+							end if;
+						elsif chk/=(chk'range => '0') then
+							cntr := cntr - 1;
+						end if;
+					end case;
+				end if;
+			end process;
+		end generate;
+
 		process(sio_clk)
 			type states is (s_request, s_wait);
 			variable state : states;
@@ -240,8 +277,8 @@ begin
 			if rising_edge(sio_clk) then
 				case state is
 				when s_request =>
-					if btn/=(btn'range =>'0') then
-						event <= encoder(btn);
+					if bnc/=(bnc'range =>'0') then
+						event <= encoder(bnc);
 						req <= not to_stdulogic(to_bit(rdy));
 						state := s_wait;
 					else
@@ -249,7 +286,7 @@ begin
 					end if;
 				when s_wait =>
 					if (to_bit(req) xor to_bit(rdy))='0' then
-						if btn(to_integer(unsigned(event)))='0' then
+						if bnc(to_integer(unsigned(event)))='0' then
 							state := s_request;
 						end if;
 					end if;
