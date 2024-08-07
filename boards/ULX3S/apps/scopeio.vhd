@@ -230,7 +230,7 @@ begin
 		signal req   : std_logic := '0';
 		signal rdy   : std_logic := '0';
 		signal btn   : std_logic_vector(0 to 4-1);
-		signal bnc   : std_logic_vector(btn'range);
+		signal debnc : std_logic_vector(btn'range);
 		signal event : std_logic_vector(0 to 2-1);
 	begin
 		btn <= (up, down, left, right);
@@ -246,7 +246,7 @@ begin
 					when s_pressed =>
 						if btn(i)='0' then
 							if chk=(chk'range => '0') then
-								bnc(i) <= '0';
+								debnc(i) <= '0';
 								state := s_released;
 							else
 								cntr := cntr - 1;
@@ -257,7 +257,7 @@ begin
 					when s_released =>
 						if btn(i)='1' then
 							if chk=(chk'range => '1') then
-								bnc(i) <= '1';
+								debnc(i) <= '1';
 								state := s_pressed;
 							else
 								cntr := cntr + 1;
@@ -277,8 +277,8 @@ begin
 			if rising_edge(sio_clk) then
 				case state is
 				when s_request =>
-					if bnc/=(bnc'range =>'0') then
-						event <= encoder(bnc);
+					if debnc/=(debnc'range =>'0') then
+						event <= encoder(debnc);
 						req <= not to_stdulogic(to_bit(rdy));
 						state := s_wait;
 					else
@@ -286,7 +286,7 @@ begin
 					end if;
 				when s_wait =>
 					if (to_bit(req) xor to_bit(rdy))='0' then
-						if bnc(to_integer(unsigned(event)))='0' then
+						if debnc(to_integer(unsigned(event)))='0' then
 							state := s_request;
 						end if;
 					end if;
