@@ -309,6 +309,18 @@ begin
 			-- so_data => iolink_data);
 
 		startup_b : block
+			port (
+				so_frm  : out std_logic,
+				so_irdy : out std_logic,
+				so_trdy : in  std_logic := '1',
+				so_data : out std_logic_vector);
+				
+			port map (
+				so_frm  => iolink_frm,
+				so_irdy => iolink_irdy,
+				so_trdy => iolink_trdy,
+				so_data => iolink_data);
+				
 			signal req : std_logic := '1';
 			signal rdy : std_logic := '0';
 
