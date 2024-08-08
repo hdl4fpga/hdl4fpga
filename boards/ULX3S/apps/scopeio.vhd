@@ -227,11 +227,16 @@ begin
 	end generate;
 
 	standalone_e : if io_link=io_none generate 
-		signal req   : std_logic := '0';
-		signal rdy   : std_logic := '0';
-		signal btn   : std_logic_vector(0 to 4-1);
-		signal debnc : std_logic_vector(btn'range);
-		signal event : std_logic_vector(0 to 2-1);
+		signal req       : std_logic := '0';
+		signal rdy       : std_logic := '0';
+		signal btn       : std_logic_vector(0 to 4-1);
+		signal debnc     : std_logic_vector(btn'range);
+		signal event     : std_logic_vector(0 to 2-1);
+
+	    signal ctlr_frm  : std_logic;
+	    signal ctlr_irdy : std_logic;
+	    signal ctlr_trdy : std_logic := '1';
+	    signal ctlr_data : std_logic_vector(si_data'range);
 	begin
 
 		btn <= (up, down, left, right);
@@ -295,27 +300,36 @@ begin
 			end if;
 		end process;
 
-		-- ctlr_e : entity hdl4fpga.scopeio_ctlr
-		-- generic map (
-			-- layout => layout)
-		-- port map (
-			-- req     => req,
-			-- rdy     => rdy,
-			-- event   => event,
-			-- sio_clk => sio_clk,
-			-- so_frm  => iolink_frm,
-			-- so_irdy => iolink_irdy,
-			-- so_trdy => iolink_trdy,
-			-- so_data => iolink_data);
+		ctlr_e : entity hdl4fpga.scopeio_ctlr
+		generic map (
+			layout => layout)
+		port map (
+			req     => req,
+			rdy     => rdy,
+			event   => event,
+			sio_clk => sio_clk,
+			so_frm  => ctlr_frm,
+			so_irdy => ctlr_irdy,
+			so_trdy => ctlr_trdy,
+			so_data => ctlr_data);
 
 		startup_b : block
 			port (
-				so_frm  : out std_logic,
-				so_irdy : out std_logic,
-				so_trdy : in  std_logic := '1',
+				sio_clk : in  std_logic;
+				si_frm  : in  std_logic;
+				si_irdy : in  std_logic := '1';
+				si_trdy : out std_logic;
+				si_data : in  std_logic_vector;
+				so_frm  : out std_logic;
+				so_irdy : out std_logic;
+				so_trdy : in  std_logic := '1';
 				so_data : out std_logic_vector);
-				
 			port map (
+				sio_clk => sio_clk,
+				si_frm  => ctlr_frm,
+				si_irdy => ctlr_irdy,
+				si_trdy => ctlr_trdy,
+				si_data => ctlr_data,
 				so_frm  => iolink_frm,
 				so_irdy => iolink_irdy,
 				so_trdy => iolink_trdy,
