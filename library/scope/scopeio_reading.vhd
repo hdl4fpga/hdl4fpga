@@ -56,14 +56,18 @@ end;
 
 architecture def of scopeio_reading is
 
+	signal hz_ena         : std_logic;
+	signal hz_scaleid     : std_logic_vector(4-1 downto 0);
+	signal hz_offset      : std_logic_vector(hzoffset_bits-1 downto 0);
+
 	signal vtscale_ena    : std_logic;
 	signal vt_scalecid    : std_logic_vector(chanid_bits-1 downto 0);
-	signal vt_cid         : std_logic_vector(chanid_bits-1 downto 0);
 	signal vt_scaleid     : std_logic_vector(4-1 downto 0);
+	signal vt_cid         : std_logic_vector(chanid_bits-1 downto 0);
 
 	signal vtoffset_ena   : std_logic;
-	signal vt_offsetcid  : std_logic_vector(vt_cid'range);
-	signal vt_offset     : std_logic_vector((5+8)-1 downto 0);
+	signal vt_offsetcid   : std_logic_vector(vt_cid'range);
+	signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
 
 	signal trigger_ena    : std_logic;
 	signal trigger_freeze : std_logic;
@@ -71,10 +75,6 @@ architecture def of scopeio_reading is
 	signal trigger_oneshot : std_logic;
 	signal trigger_chanid : std_logic_vector(vt_cid'range);
 	signal trigger_level  : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
-
-	signal hz_ena         : std_logic;
-	signal hz_scaleid     : std_logic_vector(4-1 downto 0);
-	signal hz_offset    : std_logic_vector(hzoffset_bits-1 downto 0);
 
 	signal txt_req        : std_logic;
 	signal txt_rdy        : std_logic;

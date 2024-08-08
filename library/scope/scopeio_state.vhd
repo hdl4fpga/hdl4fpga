@@ -192,6 +192,21 @@ begin
 		trigger_level   => rqtd_tgrlevel);
 	trigger_chanid <= rqtd_tgrcid;
 
+	process (trigger_ena, rgtr_clk)
+		variable cid : std_logic_vector(chan_id'range);
+	begin
+		if rising_edge(rgtr_clk) then
+			if trigger_ena='1' then
+				cid := rqtd_tgrcid;
+			end if;
+		end if;
+		if trigger_ena='1' then
+			trigger_chanid <= rqtd_hzscaleid;
+		else
+			trigger_chanid <= cid;
+		end if;
+	end process;
+
 	rqtd_tgrdata <= rqtd_tgrlevel & rqtd_tgrslope & rqtd_tgroneshot & rqtd_tgrfreeze;
 	triggers_e : entity hdl4fpga.dpram
 	port map (
