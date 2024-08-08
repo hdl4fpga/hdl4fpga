@@ -14,6 +14,7 @@ entity scopeio_state is
 		rgtr_id         : in  std_logic_vector;
 		rgtr_data       : in  std_logic_vector;
 
+		hz_ena          : buffer std_logic;
 		hz_scaleid      : out std_logic_vector;
 		hz_offset       : out std_logic_vector;
 		chan_id         : in  std_logic_vector;
@@ -52,7 +53,6 @@ architecture def of scopeio_state is
 	signal tgr_oneshot      : std_logic;
 	signal tgr_freeze       : std_logic;
 
-	signal hz_ena           : std_logic;
 	signal rqtd_hzscaleid   : std_logic_vector(4-1 downto 0);
 	signal rqtd_hzoffset    : std_logic_vector(hz_offset'range);
 
