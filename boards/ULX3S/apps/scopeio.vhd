@@ -338,6 +338,11 @@ begin
 			signal req : std_logic := '1';
 			signal rdy : std_logic := '0';
 
+	        signal startup_frm  : std_logic;
+	        signal startup_irdy : std_logic;
+	        signal startup_trdy : std_logic := '1';
+	        signal startup_data : std_logic_vector(si_data'range);
+
 			constant qqq : std_logic_vector := rid_hzaxis & x"02" & (0 to hzscale_maxsize-1 => '0') & (0 to 4-1 => '0') & (0 to hzoffset_maxsize-1 => '0');
 			constant xxx : std_logic_vector(0 to qqq'length-1) := reverse(qqq);
 			signal data  : std_logic_vector(0 to 8-1);
@@ -361,23 +366,28 @@ begin
 				if rising_edge(sio_clk) then
 					if (rdy xor req)='1' then
 						if addr(0)='0' then
-							iolink_frm  <= '1';
-							iolink_irdy <= '1';
+							startup_frm  <= '1';
+							startup_irdy <= '1';
 							addr <= addr - 1;
 						else
-							iolink_frm  <= '0';
-							iolink_irdy <= '0';
+							startup_frm  <= '0';
+							startup_irdy <= '0';
 							rdy <= req;
 							addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
 						end if;
 					else
-						iolink_frm  <= '0';
-						iolink_irdy <= '0';
+						startup_frm  <= '0';
+						startup_irdy <= '0';
 						addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
 					end if;
-					iolink_data <= data;
+					startup_data <= data;
 				end if;
 			end process;
+    		so_frm  <= si_frm  when si_frm='1' else startup_frm;
+    		so_irdy <= si_irdy when si_frm='1' else startup_irdy;
+    		si_trdy <= so_trdy when si_frm='1' else '0';
+    		so_data <= si_data when si_frm='1' else startup_data;
+
 		end block;
 
 	end generate;
