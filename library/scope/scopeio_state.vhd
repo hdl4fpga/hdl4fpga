@@ -190,7 +190,6 @@ begin
 		trigger_oneshot => rqtd_tgroneshot,
 		trigger_freeze  => rqtd_tgrfreeze,
 		trigger_level   => rqtd_tgrlevel);
-	trigger_chanid <= rqtd_tgrcid;
 
 	process (trigger_ena, rgtr_clk)
 		variable cid : std_logic_vector(chan_id'range);
@@ -201,7 +200,7 @@ begin
 			end if;
 		end if;
 		if trigger_ena='1' then
-			trigger_chanid <= rqtd_hzscaleid;
+			trigger_chanid <= rqtd_tgrcid;
 		else
 			trigger_chanid <= cid;
 		end if;

@@ -41,7 +41,7 @@ architecture scopeio of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant io_link      : io_comms     := io_none;
+	constant io_link      : io_comms     := io_usb;
 	-- constant video_mode   : video_modes  := mode600p24bpp;
 	constant video_mode   : video_modes  := mode720p24bpp;
 	-- constant video_mode   : video_modes  := mode900p24bpp;
