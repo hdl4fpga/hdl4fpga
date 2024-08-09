@@ -151,6 +151,9 @@ architecture def of scopeio_reading is
 	constant freeze_id    : natural := norm_id+1;
 	constant oneshot_id   : natural := freeze_id+1;
 
+	signal ref_req        : bit;
+	signal ref_rdy        : bit;
+
 	signal b  : signed(0 to offset'length-1);
 	type b_vector is array(0 to 1) of signed(b'range);
 	signal bs : b_vector;
@@ -191,11 +194,29 @@ begin
 		trigger_freeze  => trigger_freeze,
 		trigger_level   => trigger_level);
 
-	process (rgtr_clk)
+	vt_p : process (rgtr_clk)
+		variable req : std_logic := '1';
+		variable rdy : std_logic := '0';
+		variable chan : natural range -1 to inputs-1 := 0;
+	begin
+		if rising_edge(rgtr_clk) then
+			if (rdy xor req)='1' then
+				if (vtstup_req xor vtstup_rdy)='0' then
+					if chan > 0 then
+						chan := chan - 1;
+						vtstup_req <= not vtstup_rdy;
+					else
+						rdy <= req;
+					end if;
+				end if;
+			else
+				chan := inputs-1;
+			end if;
+		end if;
+	end process;
+
+	vt_p : process (rgtr_clk)
 		variable scaleid : natural range 0 to vt_shts'length-1;
-		variable timeid  : natural range 0 to hz_shts'length-1;
-		variable ref_req : bit;
-		variable ref_rdy : bit;
 	begin
 		if rising_edge(rgtr_clk) then
 			if (txt_req xor txt_rdy)='0' then
@@ -207,7 +228,7 @@ begin
 					vt_uid     <= (inputs+1)+scaleid;
 					vt_wdtid   <= to_integer(unsigned(vt_scalecid));
 					vt_wdtrow  <= resize(unsigned(vt_scalecid), vt_wdtrow'length)+2;
-					ref_req    := not ref_rdy;
+					ref_req    <= not ref_rdy;
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif vtoffset_ena='1' then
 					scaleid    := to_integer(unsigned(vt_scaleid));
@@ -217,9 +238,38 @@ begin
 					vt_wdtid   <= to_integer(unsigned(vt_offsetcid));
 					vt_uid     <= (inputs+1)+scaleid;
 					vt_wdtrow  <= resize(unsigned(vt_offsetcid), vt_wdtrow'length)+2;
-					ref_req    := not ref_rdy;
+					ref_req    <= not ref_rdy;
 					vtwdt_req  <= not vtwdt_rdy;
-				elsif trigger_ena='1' then
+				elsif vtoffset_ena='1' then
+					scaleid    := to_integer(unsigned(vt_scaleid));
+					vt_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
+					vt_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
+					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
+					vt_wdtid   <= to_integer(unsigned(vt_offsetcid));
+					vt_uid     <= (inputs+1)+scaleid;
+					vt_wdtrow  <= resize(unsigned(vt_offsetcid), vt_wdtrow'length)+2;
+					ref_req    <= not ref_rdy;
+					vtwdt_req  <= not vtwdt_rdy;
+				elsif (vtstup_rdy xor vtstup_req)='1' then
+					scaleid    := to_integer(unsigned(vt_scaleid));
+					vt_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
+					vt_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
+					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
+					vt_uid     <= (inputs+1)+scaleid;
+					vt_wdtid   <= to_integer(unsigned(vt_scalecid));
+					vt_wdtrow  <= resize(unsigned(vt_scalecid), vt_wdtrow'length)+2;
+					vtstup_rdy  <= vtstup_rdy;
+				end if;
+			end if;
+		end if;
+	end process;
+
+	tgr_p : process (rgtr_clk)
+		variable scaleid : natural range 0 to vt_shts'length-1;
+	begin
+		if rising_edge(rgtr_clk) then
+			if (txt_req xor txt_rdy)='0' then
+				if trigger_ena='1' then
 					tgr_cid     <= trigger_chanid;
 					scaleid     := to_integer(unsigned(vt_scaleid));
 					tgr_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
@@ -241,9 +291,18 @@ begin
 						tgr_wdtid   <= inputs+1;
 						tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
 						tgrwdt_req  <= not tgrwdt_rdy;
-						ref_rdy     := ref_req;
+						ref_rdy     <= ref_req;
 					end if;
 				end if;
+			end if;
+		end if;
+	end process;
+
+	hz_p : process (rgtr_clk)
+		variable timeid  : natural range 0 to hz_shts'length-1;
+	begin
+		if rising_edge(rgtr_clk) then
+			if (txt_req xor txt_rdy)='0' then
 				if hz_ena='1' then
 					timeid     := to_integer(unsigned(hz_scaleid));
 					hz_sht     <= to_signed(hz_shts(timeid), btod_sht'length);

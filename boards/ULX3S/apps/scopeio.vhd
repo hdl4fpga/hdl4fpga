@@ -93,6 +93,11 @@ architecture scopeio of ulx3s is
 	signal input_samples : std_logic_vector(0 to inputs*input_sample'length-1);
 	signal tp            : std_logic_vector(1 to 32);
 
+	signal usblnk_frm    : std_logic;
+	signal usblnk_irdy   : std_logic;
+	signal usblnk_trdy   : std_logic := '1';
+	signal usblnk_data   : std_logic_vector(si_data'range);
+
 	signal iolink_frm    : std_logic;
 	signal iolink_irdy   : std_logic;
 	signal iolink_trdy   : std_logic := '1';
@@ -220,23 +225,44 @@ begin
 			si_end    => so_end,
 			si_data   => so_data,
 	
-			so_frm    => iolink_frm,
-			so_irdy   => iolink_irdy,
-			so_trdy   => iolink_trdy,
-			so_data   => iolink_data);
+			so_frm    => usblnk_frm,
+			so_irdy   => usblnk_irdy,
+			so_trdy   => usblnk_trdy,
+			so_data   => usblnk_data);
 	end generate;
 
-	standalone_e : if io_link=io_none generate 
+	standalone_e : block
+		port (
+			sio_clk : in  std_logic;
+			si_frm  : in  std_logic := '0';
+			si_irdy : in  std_logic := '1';
+			si_trdy : out std_logic := '0';
+			si_data : in  std_logic_vector;
+			so_frm  : out std_logic;
+			so_irdy : out std_logic;
+			so_trdy : in  std_logic := '1';
+			so_data : out std_logic_vector);
+		port map (
+			sio_clk => sio_clk,
+			si_frm  => usblnk_frm,
+			si_irdy => usblnk_irdy,
+			si_trdy => usblnk_trdy,
+			si_data => usblnk_data,
+			so_frm  => iolink_frm,
+			so_irdy => iolink_irdy,
+			so_trdy => iolink_trdy,
+			so_data => iolink_data);
+				
 		signal req       : std_logic := '0';
 		signal rdy       : std_logic := '0';
 		signal btn       : std_logic_vector(0 to 4-1);
 		signal debnc     : std_logic_vector(btn'range);
 		signal event     : std_logic_vector(0 to 2-1);
 
-	    signal ctlr_frm  : std_logic;
-	    signal ctlr_irdy : std_logic;
-	    signal ctlr_trdy : std_logic := '1';
-	    signal ctlr_data : std_logic_vector(si_data'range);
+        signal ctlr_frm  : std_logic;
+        signal ctlr_irdy : std_logic;
+        signal ctlr_trdy : std_logic := '1';
+        signal ctlr_data : std_logic_vector(si_data'range);
 	begin
 
 		btn <= (up, down, left, right);
@@ -313,84 +339,12 @@ begin
 			so_trdy => ctlr_trdy,
 			so_data => ctlr_data);
 
-		startup_b : block
-			port (
-				sio_clk : in  std_logic;
-				si_frm  : in  std_logic;
-				si_irdy : in  std_logic := '1';
-				si_trdy : out std_logic;
-				si_data : in  std_logic_vector;
-				so_frm  : out std_logic;
-				so_irdy : out std_logic;
-				so_trdy : in  std_logic := '1';
-				so_data : out std_logic_vector);
-			port map (
-				sio_clk => sio_clk,
-				si_frm  => ctlr_frm,
-				si_irdy => ctlr_irdy,
-				si_trdy => ctlr_trdy,
-				si_data => ctlr_data,
-				so_frm  => iolink_frm,
-				so_irdy => iolink_irdy,
-				so_trdy => iolink_trdy,
-				so_data => iolink_data);
-				
-			signal req : std_logic := '1';
-			signal rdy : std_logic := '0';
+		so_frm  <= si_frm  when si_frm='1' else ctlr_frm;
+		so_irdy <= si_irdy when si_frm='1' else ctlr_irdy;
+		si_trdy <= so_trdy when si_frm='1' else '0';
+		so_data <= si_data when si_frm='1' else ctlr_data;
 
-	        signal startup_frm  : std_logic;
-	        signal startup_irdy : std_logic;
-	        signal startup_trdy : std_logic := '1';
-	        signal startup_data : std_logic_vector(si_data'range);
-
-			constant qqq : std_logic_vector := rid_hzaxis & x"02" & (0 to hzscale_maxsize-1 => '0') & (0 to 4-1 => '0') & (0 to hzoffset_maxsize-1 => '0');
-			constant xxx : std_logic_vector(0 to qqq'length-1) := reverse(qqq);
-			signal data  : std_logic_vector(0 to 8-1);
-			constant bitrom : std_logic_vector := xxx;
-			constant zzz : natural := unsigned_num_bits(bitrom'length/data'length-1);
-			signal  addr : unsigned(0 to zzz) := to_unsigned(bitrom'length/data'length-1, zzz+1);
-		begin
-
-			mem_e : entity hdl4fpga.rom 
-			generic map (
-				bitrom => bitrom)
-			port map (
-				clk  => sio_clk,
-				addr => std_logic_vector(addr(1 to addr'right)),
-				data => data);
-				
-			-- req <= '0', '1' after 110 ns;
-			req <= up;
-			process(rdy, sio_clk)
-			begin
-				if rising_edge(sio_clk) then
-					if (rdy xor req)='1' then
-						if addr(0)='0' then
-							startup_frm  <= '1';
-							startup_irdy <= '1';
-							addr <= addr - 1;
-						else
-							startup_frm  <= '0';
-							startup_irdy <= '0';
-							rdy <= req;
-							addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
-						end if;
-					else
-						startup_frm  <= '0';
-						startup_irdy <= '0';
-						addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
-					end if;
-					startup_data <= data;
-				end if;
-			end process;
-    		so_frm  <= si_frm  when si_frm='1' else startup_frm;
-    		so_irdy <= si_irdy when si_frm='1' else startup_irdy;
-    		si_trdy <= so_trdy when si_frm='1' else '0';
-    		so_data <= si_data when si_frm='1' else startup_data;
-
-		end block;
-
-	end generate;
+	end block;
 
 	inputs_b : block
 		constant mux_sampling : natural := 10;

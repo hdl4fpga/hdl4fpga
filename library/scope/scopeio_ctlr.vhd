@@ -219,9 +219,9 @@ begin
 				if (send_req xor send_rdy)='0' then
 					if (to_bit(rdy) xor to_bit(req))='1' then
 						if event="00" then
-							focus_wid <= focus_wid + 1;
+							focus_wid <= (focus_wid + 1) mod next_tab'length;
 						else
-							focus_wid <= focus_wid - 1;
+							focus_wid <= (focus_wid - 1) mod next_tab'length;
 						end if;
 						send_req <= not send_rdy;
 						state := s_send;
