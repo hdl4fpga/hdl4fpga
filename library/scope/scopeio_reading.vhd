@@ -162,6 +162,9 @@ architecture def of scopeio_reading is
 	constant tgr_id  : natural := 1;
 
 	signal sign : std_logic;
+	signal vtstup_req : bit := '0';
+	signal vtstup_rdy : bit := '0';
+	signal chan : natural range -1 to inputs-1 := inputs-1;
 begin
 
 	vt_cid <= 
@@ -194,23 +197,26 @@ begin
 		trigger_freeze  => trigger_freeze,
 		trigger_level   => trigger_level);
 
-	vt_p : process (rgtr_clk)
-		variable req : std_logic := '1';
-		variable rdy : std_logic := '0';
-		variable chan : natural range -1 to inputs-1 := 0;
+	vtstup_p : process (rgtr_clk)
+		variable req : bit := '1';
+		variable rdy : bit := '0';
 	begin
 		if rising_edge(rgtr_clk) then
 			if (rdy xor req)='1' then
-				if (vtstup_req xor vtstup_rdy)='0' then
-					if chan > 0 then
-						chan := chan - 1;
-						vtstup_req <= not vtstup_rdy;
-					else
-						rdy <= req;
+				if (txt_req xor txt_rdy)='0' then
+					if (vtwdt_rdy xor vtwdt_req)='0' then
+						if (vtstup_req xor vtstup_rdy)='0' then
+							if chan > 0 then
+								chan <= chan - 1;
+								vtstup_req <= not vtstup_rdy;
+							else
+								rdy := req;
+							end if;
+						end if;
 					end if;
 				end if;
 			else
-				chan := inputs-1;
+				chan <= inputs-1;
 			end if;
 		end if;
 	end process;
@@ -251,14 +257,16 @@ begin
 					ref_req    <= not ref_rdy;
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif (vtstup_rdy xor vtstup_req)='1' then
-					scaleid    := to_integer(unsigned(vt_scaleid));
+					scaleid    := chan; --to_integer(unsigned(vt_scaleid));
 					vt_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
 					vt_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_uid     <= (inputs+1)+scaleid;
-					vt_wdtid   <= to_integer(unsigned(vt_scalecid));
+					vt_wdtid   <= chan; --to_integer(unsigned(vt_scalecid));
 					vt_wdtrow  <= resize(unsigned(vt_scalecid), vt_wdtrow'length)+2;
-					vtstup_rdy  <= vtstup_rdy;
+					vt_wdtrow  <= to_unsigned(chan, vt_wdtrow'length)+2;
+					vtwdt_req  <= not vtwdt_rdy;
+					vtstup_rdy <= vtstup_req;
 				end if;
 			end if;
 		end if;
