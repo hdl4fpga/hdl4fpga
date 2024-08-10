@@ -151,8 +151,8 @@ architecture def of scopeio_reading is
 	constant freeze_id    : natural := norm_id+1;
 	constant oneshot_id   : natural := freeze_id+1;
 
-	signal ref_req        : bit;
-	signal ref_rdy        : bit;
+	signal tgrref_req        : bit;
+	signal tgrref_rdy        : bit;
 
 	signal b  : signed(0 to offset'length-1);
 	type b_vector is array(0 to 1) of signed(b'range);
@@ -169,8 +169,12 @@ begin
 
 	vt_cid <= 
 		vt_offsetcid   when vtoffset_ena='1' else 
-		trigger_chanid when  trigger_ena='1' else 
-		tgr_cid;
+		vt_scalecid    when vtscale_ena='1'  else
+		std_logic_vector(to_unsigned(chan, vt_cid'length)) when (vtstup_rdy xor vtstup_req)='1' else
+		trigger_chanid when trigger_ena='1'  else
+		trigger_chanid when (tgrref_rdy xor tgrref_req)='1'  else
+		(others => '-');
+		
 
 	state_e : entity hdl4fpga.scopeio_state
 	port map (
@@ -234,7 +238,7 @@ begin
 					vt_uid     <= (inputs+1)+scaleid;
 					vt_wdtid   <= to_integer(unsigned(vt_scalecid));
 					vt_wdtrow  <= resize(unsigned(vt_scalecid), vt_wdtrow'length)+2;
-					ref_req    <= not ref_rdy;
+					tgrref_req    <= not tgrref_rdy;
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif vtoffset_ena='1' then
 					scaleid    := to_integer(unsigned(vt_scaleid));
@@ -244,26 +248,15 @@ begin
 					vt_wdtid   <= to_integer(unsigned(vt_offsetcid));
 					vt_uid     <= (inputs+1)+scaleid;
 					vt_wdtrow  <= resize(unsigned(vt_offsetcid), vt_wdtrow'length)+2;
-					ref_req    <= not ref_rdy;
-					vtwdt_req  <= not vtwdt_rdy;
-				elsif vtoffset_ena='1' then
-					scaleid    := to_integer(unsigned(vt_scaleid));
-					vt_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
-					vt_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
-					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-					vt_wdtid   <= to_integer(unsigned(vt_offsetcid));
-					vt_uid     <= (inputs+1)+scaleid;
-					vt_wdtrow  <= resize(unsigned(vt_offsetcid), vt_wdtrow'length)+2;
-					ref_req    <= not ref_rdy;
+					tgrref_req    <= not tgrref_rdy;
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif (vtstup_rdy xor vtstup_req)='1' then
-					scaleid    := chan; --to_integer(unsigned(vt_scaleid));
+					scaleid    := to_integer(unsigned(vt_scaleid));
 					vt_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
 					vt_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_uid     <= (inputs+1)+scaleid;
-					vt_wdtid   <= chan; --to_integer(unsigned(vt_scalecid));
-					vt_wdtrow  <= resize(unsigned(vt_scalecid), vt_wdtrow'length)+2;
+					vt_wdtid   <= chan;
 					vt_wdtrow  <= to_unsigned(chan, vt_wdtrow'length)+2;
 					vtwdt_req  <= not vtwdt_rdy;
 					vtstup_rdy <= vtstup_req;
@@ -278,7 +271,6 @@ begin
 		if rising_edge(rgtr_clk) then
 			if (txt_req xor txt_rdy)='0' then
 				if trigger_ena='1' then
-					tgr_cid     <= trigger_chanid;
 					scaleid     := to_integer(unsigned(vt_scaleid));
 					tgr_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
 					tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
@@ -290,7 +282,7 @@ begin
 					tgr_wdtid   <= inputs+1;
 					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
 					tgrwdt_req  <= not tgrwdt_rdy;
-				elsif (ref_rdy xor ref_req)='1' then
+				elsif (tgrref_rdy xor tgrref_req)='1' then
 					if (vtwdt_rdy xor vtwdt_req)='0' then
 						scaleid     := to_integer(unsigned(vt_scaleid));
 						tgr_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
@@ -299,7 +291,7 @@ begin
 						tgr_wdtid   <= inputs+1;
 						tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
 						tgrwdt_req  <= not tgrwdt_rdy;
-						ref_rdy     <= ref_req;
+						tgrref_rdy  <= tgrref_req;
 					end if;
 				end if;
 			end if;

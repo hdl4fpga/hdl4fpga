@@ -140,38 +140,32 @@ begin
 		rd_data => tbl_vtscaleid);
 
 	process (
-		vtscale_ena,  rqtd_vtscalecid,  rqtd_vtscaleid,  
-		vtoffset_ena, rqtd_vtoffsetcid, rqtd_vtoffset, 
+		vtscale_ena,  rqtd_vtscalecid,  rqtd_vtscaleid, tbl_vtscaleid,
+		vtoffset_ena, rqtd_vtoffsetcid, rqtd_vtoffset,  tbl_vtoffset,
 		chan_id, rgtr_clk)
-		variable scaleid : std_logic_vector(4-1 downto 0);
-		variable offset  : std_logic_vector(vt_offset'range);
 	begin
-		if rising_edge(rgtr_clk) then
-			if vtscale_ena='1' then
-				scaleid := rqtd_vtscaleid;
-				offset  := tbl_vtoffset;
-			elsif vtoffset_ena='1' then
-				scaleid := tbl_vtscaleid;
-				offset  := rqtd_vtoffset;
-			end if;
-		end if;
-
 		if vtscale_ena='1' then
 			if rqtd_vtscalecid=chan_id then
 				vt_scaleid <= rqtd_vtscaleid;
 			else
 				vt_scaleid <= tbl_vtscaleid;
 			end if;
-			vt_offset <= offset;
+			vt_offset <= tbl_vtoffset;
+		else
+			vt_scaleid <= tbl_vtscaleid;
+			vt_offset  <= tbl_vtoffset;
 		end if;
 
 		if vtoffset_ena='1' then
-			vt_scaleid <= scaleid;
+			vt_scaleid <= tbl_vtscaleid;
 			if rqtd_vtoffsetcid=chan_id then
 				vt_offset <= rqtd_vtoffset;
 			else
-				vt_offset <= rqtd_vtoffset;
+				vt_offset <= tbl_vtoffset;
 			end if;
+		else
+			vt_scaleid <= tbl_vtscaleid;
+			vt_offset  <= tbl_vtoffset;
 		end if;
 	end process;
 
