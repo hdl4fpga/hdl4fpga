@@ -208,11 +208,11 @@ begin
 	startup_p : process (rgtr_clk)
 		type states is (s_vt, s_tgr, s_hz);
 		variable state : states;
-		variable req : bit := '0';
-		variable rdy : bit := '0';
+		variable statup_req : bit := '1';
+		variable statup_rdy : bit := '0';
 	begin
 		if rising_edge(rgtr_clk) then
-			if (rdy xor req)='1' then
+			if (statup_rdy xor statup_req)='1' then
 				if (txt_req xor txt_rdy)='0' then
 					case state is
 					when s_vt =>
@@ -238,7 +238,7 @@ begin
 					when s_hz =>
 						if (hzstup_rdy xor hzstup_req)='0' then
 							state := s_vt;
-    						rdy := req;
+    						statup_rdy := statup_req;
 						end if;
 					end case;
 				end if;
