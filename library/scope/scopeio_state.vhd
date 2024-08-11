@@ -139,35 +139,15 @@ begin
 		rd_addr => chan_id,
 		rd_data => tbl_vtscaleid);
 
-	process (
-		vtscale_ena,  rqtd_vtscalecid,  rqtd_vtscaleid, tbl_vtscaleid,
-		vtoffset_ena, rqtd_vtoffsetcid, rqtd_vtoffset,  tbl_vtoffset,
-		chan_id, rgtr_clk)
-	begin
-		if vtscale_ena='1' then
-			if rqtd_vtscalecid=chan_id then
-				vt_scaleid <= rqtd_vtscaleid;
-			else
-				vt_scaleid <= tbl_vtscaleid;
-			end if;
-			vt_offset <= tbl_vtoffset;
-		else
-			vt_scaleid <= tbl_vtscaleid;
-			vt_offset  <= tbl_vtoffset;
-		end if;
+	vt_scaleid <= 
+		tbl_vtscaleid  when vtscale_ena='0' else
+		rqtd_vtscaleid when rqtd_vtscalecid=chan_id else
+		tbl_vtscaleid;
 
-		if vtoffset_ena='1' then
-			vt_scaleid <= tbl_vtscaleid;
-			if rqtd_vtoffsetcid=chan_id then
-				vt_offset <= rqtd_vtoffset;
-			else
-				vt_offset <= tbl_vtoffset;
-			end if;
-		else
-			vt_scaleid <= tbl_vtscaleid;
-			vt_offset  <= tbl_vtoffset;
-		end if;
-	end process;
+	vt_offset <= 
+		tbl_vtoffset  when vtoffset_ena='0' else
+		rqtd_vtoffset when rqtd_vtoffsetcid=chan_id else
+		tbl_vtoffset;
 
 	trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
 	generic map (

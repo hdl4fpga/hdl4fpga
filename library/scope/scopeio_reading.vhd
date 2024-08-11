@@ -164,6 +164,10 @@ architecture def of scopeio_reading is
 	signal sign : std_logic;
 	signal vtstup_req : bit := '0';
 	signal vtstup_rdy : bit := '0';
+	signal tgrstup_req : bit := '0';
+	signal tgrstup_rdy : bit := '0';
+	signal hzstup_req : bit := '0';
+	signal hzstup_rdy : bit := '0';
 	signal chan : natural range -1 to inputs-1 := inputs-1;
 begin
 
@@ -201,25 +205,45 @@ begin
 		trigger_freeze  => trigger_freeze,
 		trigger_level   => trigger_level);
 
-	vtstup_p : process (rgtr_clk)
-		variable req : bit := '1';
+	startup_p : process (rgtr_clk)
+		type states is (s_vt, s_tgr, s_hz);
+		variable state : states;
+		variable req : bit := '0';
 		variable rdy : bit := '0';
 	begin
 		if rising_edge(rgtr_clk) then
 			if (rdy xor req)='1' then
 				if (txt_req xor txt_rdy)='0' then
-					if (vtwdt_rdy xor vtwdt_req)='0' then
-						if (vtstup_req xor vtstup_rdy)='0' then
-							if chan > 0 then
-								chan <= chan - 1;
-								vtstup_req <= not vtstup_rdy;
+					case state is
+					when s_vt =>
+    					if (vtwdt_rdy xor vtwdt_req)='0' then
+    						if (vtstup_req xor vtstup_rdy)='0' then
+    							if chan >= 0 then
+    								vtstup_req <= not vtstup_rdy;
+    							else
+									tgrstup_req <= not tgrstup_rdy;
+    								state := s_tgr;
+    							end if;
 							else
-								rdy := req;
+    							chan <= chan - 1;
+    						end if;
+    					end if;
+					when s_tgr => 
+    					if (tgrwdt_rdy xor tgrwdt_req)='0' then
+							if (tgrstup_rdy xor tgrstup_req)='0' then
+								hzstup_req <= not hzstup_rdy;
+								state := s_hz;
 							end if;
 						end if;
-					end if;
+					when s_hz =>
+						if (hzstup_rdy xor hzstup_req)='0' then
+							state := s_vt;
+    						rdy := req;
+						end if;
+					end case;
 				end if;
 			else
+				state := s_vt;
 				chan <= inputs-1;
 			end if;
 		end if;
@@ -284,15 +308,24 @@ begin
 					tgrwdt_req  <= not tgrwdt_rdy;
 				elsif (tgrref_rdy xor tgrref_req)='1' then
 					if (vtwdt_rdy xor vtwdt_req)='0' then
-						scaleid     := to_integer(unsigned(vt_scaleid));
-						tgr_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
-						tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
-						tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-						tgr_wdtid   <= inputs+1;
-						tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
-						tgrwdt_req  <= not tgrwdt_rdy;
-						tgrref_rdy  <= tgrref_req;
+						scaleid    := to_integer(unsigned(vt_scaleid));
+						tgr_sht    <= to_signed(vt_shts(scaleid), btod_sht'length);
+						tgr_dec    <= to_signed(vt_pnts(scaleid), btod_dec'length);
+						tgr_scale  <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
+						tgr_wdtid  <= inputs+1;
+						tgr_wdtrow <= to_unsigned(1, tgr_wdtrow'length);
+						tgrwdt_req <= not tgrwdt_rdy;
+						tgrref_rdy <= tgrref_req;
 					end if;
+				elsif (tgrstup_rdy xor tgrstup_req)='1' then
+					scaleid    := to_integer(unsigned(vt_scaleid));
+					tgr_sht    <= to_signed(vt_shts(scaleid), btod_sht'length);
+					tgr_dec    <= to_signed(vt_pnts(scaleid), btod_dec'length);
+					tgr_scale  <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
+					tgr_wdtid  <= inputs+1;
+					tgr_wdtrow <= to_unsigned(1, tgr_wdtrow'length);
+					tgrwdt_req <= not tgrwdt_rdy;
+					tgrstup_rdy <= tgrstup_req;
 				end if;
 			end if;
 		end if;
@@ -312,6 +345,16 @@ begin
 					hz_uid     <= (inputs+1+vt_pfxs'length)+timeid;
 					hz_wdtid   <= inputs+0;
 					hzwdt_req  <= not hzwdt_rdy;
+				elsif (hzstup_rdy xor hzstup_req)='1' then
+					timeid     := to_integer(unsigned(hz_scaleid));
+					hz_sht     <= to_signed(hz_shts(timeid), btod_sht'length);
+					hz_dec     <= to_signed(hz_pnts(timeid), btod_dec'length);
+					hz_scale   <= to_unsigned(hz_sfcnds(timeid mod 4), hz_scale'length);
+					hz_wdtrow  <= to_unsigned(0, hz_wdtrow'length);
+					hz_uid     <= (inputs+1+vt_pfxs'length)+timeid;
+					hz_wdtid   <= inputs+0;
+					hzwdt_req  <= not hzwdt_rdy;
+					hzstup_rdy <= hzstup_req;
 				end if;
 			end if;
 		end if;
