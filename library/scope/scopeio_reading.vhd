@@ -168,7 +168,7 @@ architecture def of scopeio_reading is
 	signal tgrstup_rdy : bit := '0';
 	signal hzstup_req : bit := '0';
 	signal hzstup_rdy : bit := '0';
-	signal chan : natural range -1 to inputs-1 := inputs-1;
+	signal chan : integer range -1 to inputs-1 := inputs-1;
 begin
 
 	vt_cid <= 
@@ -178,7 +178,6 @@ begin
 		trigger_chanid when trigger_ena='1'  else
 		trigger_chanid when (tgrref_rdy xor tgrref_req)='1'  else
 		(others => '-');
-		
 
 	state_e : entity hdl4fpga.scopeio_state
 	port map (
@@ -208,7 +207,7 @@ begin
 	startup_p : process (rgtr_clk)
 		type states is (s_vt, s_tgr, s_hz);
 		variable state : states;
-		variable statup_req : bit := '1';
+		variable statup_req : bit := '0';
 		variable statup_rdy : bit := '0';
 	begin
 		if rising_edge(rgtr_clk) then
