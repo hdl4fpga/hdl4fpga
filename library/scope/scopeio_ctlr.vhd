@@ -217,17 +217,17 @@ begin
 
 	process (req, rgtr_clk)
 		type states is (s_idle, s_send);
-		variable state : states;
-		variable data  : natural_vector(next_tab'range);
-		variable selected : boolean;
+		variable state  : states;
+		variable args   : natural_vector(next_tab'range);
+		variable selctd : boolean;
 	begin
 		if rising_edge(rgtr_clk) then
 			case state is
 			when s_idle =>
 				if (send_req xor send_rdy)='0' then
 					if (to_bit(rdy) xor to_bit(req))='1' then
-						if selected then
-							data := (
+						if selctd then
+							args := (
 								wid_tmposition => to_integer(unsigned(hz_offset)),
 								wid_tmscale    => to_integer(unsigned(hz_scaleid)),
 								wid_tgchannel  => to_integer(unsigned(trigger_chanid)),
@@ -237,19 +237,19 @@ begin
 								others         => 0);
 							case event is
 							when event_next =>
-								data(focus_wid) := data(focus_wid) + 1;
+								args(focus_wid) := args(focus_wid) + 1;
 							when event_prev =>
-								data(focus_wid) := data(focus_wid) - 1;
+								args(focus_wid) := args(focus_wid) - 1;
 							when others =>
-								selected := false;
+								selctd := false;
 							end case;
-							data := (
-								wid_tmposition => data(wid_tmposition) mod 2**hz_offset'length,
-								wid_tmscale    => data(wid_tmscale)    mod 2**hz_scaleid'length,
-								wid_tgchannel  => data(wid_tgchannel)  mod 2**trigger_chanid'length,
-								wid_tgposition => data(wid_tgposition) mod 2**trigger_level'length,
-								wid_tgedge     => data(wid_tgedge)     mod 2**trigger_slope'length,
-								wid_tgmode     => data(wid_tgmode)     mod 2**trigger_mode'length,
+							args := (
+								wid_tmposition => args(wid_tmposition) mod 2**hz_offset'length,
+								wid_tmscale    => args(wid_tmscale)    mod 2**hz_scaleid'length,
+								wid_tgchannel  => args(wid_tgchannel)  mod 2**trigger_chanid'length,
+								wid_tgposition => args(wid_tgposition) mod 2**trigger_level'length,
+								wid_tgedge     => args(wid_tgedge)     mod 2**trigger_slope'length,
+								wid_tgmode     => args(wid_tgmode)     mod 2**trigger_mode'length,
 								others => 0);
 
 							case focus_wid is
@@ -275,7 +275,7 @@ begin
 							case event is
 							when event_enter =>
 								if focus_wid=next_tab(focus_id) then
-									selected := true;
+									selctd := true;
 								end if;
 								focus_wid <= enter_tab(focus_wid);
 							when event_next =>
