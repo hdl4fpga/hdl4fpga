@@ -270,10 +270,11 @@ begin
 										when wid_inposition mod 3 =>
 											rid <= unsigned(rid_vtaxis);
 											reg_length <= x"02";
-											-- payload <= x"0" & hz_scaleid & hz_offset;
+											payload <= unsigned(x"0" & hz_scaleid & hz_offset);
 										when wid_inscale mod 3 =>
 											rid <= unsigned(rid_gain);
 											reg_length <= x"02";
+											payload <= unsigned(x"0" & hz_scaleid & hz_offset);
 										when others =>
 										end case;
 									end if;
