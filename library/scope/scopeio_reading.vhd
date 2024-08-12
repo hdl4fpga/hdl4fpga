@@ -116,8 +116,8 @@ architecture def of scopeio_reading is
 	signal hz_scale       : unsigned(scale'range);
 	signal hz_wdtid       : wdtid_range;
 	signal hz_wdtrow      : unsigned(wdt_row'range);
-	signal hzwdt_req      : std_logic;
-	signal hzwdt_rdy      : std_logic;
+	signal hzwdt_req      : std_logic := '0';
+	signal hzwdt_rdy      : std_logic := '0';
 	signal hz_uid         : natural;
 
 	signal btod_req       : std_logic;
@@ -204,10 +204,10 @@ begin
 		trigger_freeze  => trigger_freeze,
 		trigger_level   => trigger_level);
 
-	startup_p : process (rgtr_clk)
+	startup_p : process (chan, rgtr_clk)
 		type states is (s_vt, s_tgr, s_hz);
 		variable state : states;
-		variable statup_req : bit := '0';
+		variable statup_req : bit := '1';
 		variable statup_rdy : bit := '0';
 	begin
 		if rising_edge(rgtr_clk) then
@@ -288,7 +288,7 @@ begin
 		end if;
 	end process;
 
-	tgr_p : process (rgtr_clk)
+	tgr_p : process (trigger_ena, rgtr_clk)
 		variable scaleid : natural range 0 to vt_shts'length-1;
 	begin
 		if rising_edge(rgtr_clk) then
@@ -330,11 +330,11 @@ begin
 		end if;
 	end process;
 
-	hz_p : process (rgtr_clk)
+	hz_p : process (hz_ena, rgtr_clk)
 		variable timeid  : natural range 0 to hz_shts'length-1;
 	begin
 		if rising_edge(rgtr_clk) then
-			if (txt_req xor txt_rdy)='0' then
+			-- if (txt_req xor txt_rdy)='0' then
 				if hz_ena='1' then
 					timeid     := to_integer(unsigned(hz_scaleid));
 					hz_sht     <= to_signed(hz_shts(timeid), btod_sht'length);
@@ -355,7 +355,7 @@ begin
 					hzwdt_req  <= not hzwdt_rdy;
 					hzstup_rdy <= hzstup_req;
 				end if;
-			end if;
+			-- end if;
 		end if;
 	end process;
 

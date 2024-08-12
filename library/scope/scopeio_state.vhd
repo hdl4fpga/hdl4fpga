@@ -74,7 +74,7 @@ begin
 		hz_scale  => rqtd_hzscaleid,
 		hz_offset => rqtd_hzoffset);
 
-	process (hz_ena, rgtr_clk)
+	process (hz_ena, rqtd_hzscaleid, rqtd_hzoffset, rgtr_clk)
 		variable scaleid : std_logic_vector(4-1 downto 0);
 		variable offset  : std_logic_vector(hz_offset'range);
 	begin
