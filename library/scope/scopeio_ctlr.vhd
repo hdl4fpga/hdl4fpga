@@ -173,6 +173,7 @@ architecture def of scopeio_ctlr is
 	signal focus_wid   : natural range next_tab'range;
 	signal change_rdy  : std_logic;
 	signal change_req  : std_logic;
+	signal rid         : std_logic_vector(rid_focus'range);
 	signal send_req    : bit := '0';
 	signal send_rdy    : bit := '0';
 	signal send_data   : std_logic_vector(so_data'range);
@@ -250,6 +251,26 @@ begin
 								wid_tgedge     => data(wid_tgedge)     mod 2**trigger_slope'length,
 								wid_tgmode     => data(wid_tgmode)     mod 2**trigger_mode'length,
 								others => 0);
+
+							case focus_wid is
+							when wid_tmposition|wid_tmscale =>
+								rid <= rid_hzaxis;
+							when wid_tgchannel|wid_tgposition|wid_tgedge|wid_tgmode =>
+								rid <= rid_trigger;
+							when others =>
+								for i in wid_input to next_tab'right loop
+									if focus_wid=i then
+										case i mod 3 is
+										when wid_inposition mod 3 =>
+											rid <= rid_vtaxis;
+										when wid_inscale mod 3 =>
+											rid <= rid_gain;
+										when others =>
+										end case;
+									end if;
+								end loop;
+							end case;
+
 						else
 							case event is
 							when event_enter =>
@@ -265,6 +286,7 @@ begin
 								focus_wid <= exit_tab(focus_wid);
 							when others =>
 							end case;
+							rid <= rid_focus;
 						end if;
 						send_req <= not send_rdy;
 						state := s_send;
@@ -289,7 +311,7 @@ begin
 				when s_init =>
 					so_frm  <= '1';
 					so_irdy <= '1';
-					send_data <= rid_focus;
+					send_data <= rid;
 					state := s_length;
 				when s_length =>
 					so_frm    <= '1';
