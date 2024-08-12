@@ -148,7 +148,7 @@ architecture def of scopeio_ctlr is
 		return retval;
 	end;
 
-	function exit_sequence (
+	function up_sequence (
 		constant arg : natural_vector)
 		return natural_vector is
 		variable retval : natural_vector(arg'range);
@@ -166,7 +166,7 @@ architecture def of scopeio_ctlr is
 	constant next_tab  : natural_vector := next_sequence;
 	constant prev_tab  : natural_vector := prev_sequence(next_tab);
 	constant enter_tab : natural_vector := enter_sequence;
-	constant exit_tab  : natural_vector := exit_sequence(enter_tab);
+	constant up_tab    : natural_vector := up_sequence(enter_tab);
 
 	signal focus_req   : std_logic := '0';
 	signal focus_rdy   : std_logic := '0';
@@ -270,7 +270,6 @@ begin
 									end if;
 								end loop;
 							end case;
-
 						else
 							case event is
 							when event_enter =>
@@ -283,7 +282,7 @@ begin
 							when event_prev =>
 								focus_wid <= prev_tab(focus_wid);
 							when event_exit =>
-								focus_wid <= exit_tab(focus_wid);
+								focus_wid <= up_tab(focus_wid);
 							when others =>
 							end case;
 							rid <= rid_focus;
