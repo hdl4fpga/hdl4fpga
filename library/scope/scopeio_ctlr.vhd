@@ -173,8 +173,10 @@ architecture def of scopeio_ctlr is
 	signal focus_wid   : natural range next_tab'range;
 	signal change_rdy  : std_logic;
 	signal change_req  : std_logic;
-	signal rid         : std_logic_vector(rid_focus'range);
-	signal reg_length  : std_logic_vector(0 to 8-1);
+	signal ctrl_rgtr   : unsigned(0 to 5*8-1);
+	alias  rid         is ctrl_rgtr(0*8 to 1*8-1);
+	alias  reg_length  is ctrl_rgtr(1*8 to 2*8-1);
+	alias  payload     is ctrl_rgtr(2*8 to 5*8-1); 
 	signal send_req    : bit := '0';
 	signal send_rdy    : bit := '0';
 	signal send_data   : std_logic_vector(so_data'range);
@@ -256,20 +258,21 @@ begin
 
 							case focus_wid is
 							when wid_tmposition|wid_tmscale =>
-								rid <= rid_hzaxis;
+								rid <= unsigned(rid_hzaxis);
 								reg_length <= x"02";
 							when wid_tgchannel|wid_tgposition|wid_tgedge|wid_tgmode =>
-								rid <= rid_trigger;
+								rid <= unsigned(rid_trigger);
 								reg_length <= x"02";
 							when others =>
 								for i in wid_input to next_tab'right loop
 									if focus_wid=i then
 										case i mod 3 is
 										when wid_inposition mod 3 =>
-											rid <= rid_vtaxis;
+											rid <= unsigned(rid_vtaxis);
 											reg_length <= x"02";
+											-- payload <= x"0" & hz_scaleid & hz_offset;
 										when wid_inscale mod 3 =>
-											rid <= rid_gain;
+											rid <= unsigned(rid_gain);
 											reg_length <= x"02";
 										when others =>
 										end case;
@@ -291,7 +294,7 @@ begin
 								focus_wid <= up_tab(focus_wid);
 							when others =>
 							end case;
-							rid <= rid_focus;
+							rid <= unsigned(rid_focus);
 							reg_length <= x"00";
 						end if;
 						send_req <= not send_rdy;
@@ -317,7 +320,7 @@ begin
 				when s_init =>
 					so_frm  <= '1';
 					so_irdy <= '1';
-					send_data <= rid;
+					send_data <= std_logic_vector(rid);
 					state := s_length;
 				when s_length =>
 					so_frm    <= '1';
