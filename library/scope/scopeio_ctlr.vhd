@@ -14,7 +14,7 @@ entity scopeio_ctlr is
 	port (
 		req     : in  std_logic;
 		rdy     : buffer std_logic;
-		event   : in  std_logic_vector;
+		event   : in  std_logic_vector(0 to 2-1);
 
 		sio_clk : in  std_logic;
 		so_frm  : buffer std_logic;
@@ -31,6 +31,10 @@ entity scopeio_ctlr is
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 
+	constant event_enter : std_logic_vector := "00";
+	constant event_exit  : std_logic_vector := "01";
+	constant event_next  : std_logic_vector := "10";
+	constant event_prev  : std_logic_vector := "11";
 end;
 
 architecture def of scopeio_ctlr is
@@ -52,9 +56,10 @@ architecture def of scopeio_ctlr is
 
 	signal trigger_ena     : std_logic;
 	signal trigger_chanid  : std_logic_vector(chan_id'range);
-	signal trigger_slope   : std_logic;
-	signal trigger_oneshot : std_logic;
-	signal trigger_freeze  : std_logic;
+	signal trigger_slope   : std_logic_vector(0 to 1-1);
+	signal trigger_mode    : std_logic_vector(0 to 2-1);
+	alias  trigger_freeze  is trigger_mode(0);
+	alias  trigger_oneshot is trigger_mode(1);
 	signal trigger_level   : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 	
 	constant tab : natural_vector(0 to wid_inscale) := (
@@ -165,7 +170,7 @@ architecture def of scopeio_ctlr is
 
 	signal focus_req   : std_logic := '0';
 	signal focus_rdy   : std_logic := '0';
-	signal focus_wid   : natural range 0 to next_tab'length-1;
+	signal focus_wid   : natural range next_tab'range;
 	signal change_rdy  : std_logic;
 	signal change_req  : std_logic;
 	signal send_req    : bit := '0';
@@ -204,7 +209,7 @@ begin
 				  
 		trigger_ena     => trigger_ena,
 		trigger_chanid  => trigger_chanid,
-		trigger_slope   => trigger_slope,
+		trigger_slope   => trigger_slope(0),
 		trigger_oneshot => trigger_oneshot,
 		trigger_freeze  => trigger_freeze,
 		trigger_level   => trigger_level);
@@ -212,16 +217,54 @@ begin
 	process (req, rgtr_clk)
 		type states is (s_idle, s_send);
 		variable state : states;
+		variable data  : natural_vector(next_tab'range);
+		variable selected : boolean;
 	begin
 		if rising_edge(rgtr_clk) then
 			case state is
 			when s_idle =>
 				if (send_req xor send_rdy)='0' then
 					if (to_bit(rdy) xor to_bit(req))='1' then
-						if event="00" then
-							focus_wid <= (focus_wid + 1) mod next_tab'length;
+						if selected then
+							data := (
+								wid_tmposition => to_integer(unsigned(hz_offset)),
+								wid_tmscale    => to_integer(unsigned(hz_scaleid)),
+								wid_tgchannel  => to_integer(unsigned(trigger_chanid)),
+								wid_tgposition => to_integer(unsigned(trigger_level)),
+								wid_tgedge     => to_integer(unsigned(trigger_slope)),
+								wid_tgmode     => to_integer(unsigned(trigger_mode)),
+								others         => 0);
+							case event is
+							when event_next =>
+								data(focus_wid) := data(focus_wid) + 1;
+							when event_prev =>
+								data(focus_wid) := data(focus_wid) - 1;
+							when others =>
+								selected := false;
+							end case;
+							data := (
+								wid_tmposition => data(wid_tmposition) mod 2**hz_offset'length,
+								wid_tmscale    => data(wid_tmscale)    mod 2**hz_scaleid'length,
+								wid_tgchannel  => data(wid_tgchannel)  mod 2**trigger_chanid'length,
+								wid_tgposition => data(wid_tgposition) mod 2**trigger_level'length,
+								wid_tgedge     => data(wid_tgedge)     mod 2**trigger_slope'length,
+								wid_tgmode     => data(wid_tgmode)     mod 2**trigger_mode'length,
+								others => 0);
 						else
-							focus_wid <= (focus_wid - 1) mod next_tab'length;
+							case event is
+							when event_enter =>
+								if focus_wid=next_tab(focus_id) then
+									selected := true;
+								end if;
+								focus_wid <= enter_tab(focus_wid);
+							when event_next =>
+								focus_wid <= next_tab(focus_wid);
+							when event_prev =>
+								focus_wid <= prev_tab(focus_wid);
+							when event_exit =>
+								focus_wid <= exit_tab(focus_wid);
+							when others =>
+							end case;
 						end if;
 						send_req <= not send_rdy;
 						state := s_send;

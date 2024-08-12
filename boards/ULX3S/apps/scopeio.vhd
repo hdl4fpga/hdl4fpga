@@ -358,7 +358,7 @@ begin
         signal ctlr_data : std_logic_vector(si_data'range);
 	begin
 
-		btn <= (up, down, left, right);
+		btn <= (left, right, up, down);
 		antibounce_g : for i in btn'range generate
 			process (sio_clk)
 				type states is (s_pressed, s_released);
@@ -442,16 +442,16 @@ begin
 	inputs_b : block
 		constant mux_sampling : natural := 10;
 
-		signal rgtr_id   : std_logic_vector(8-1 downto 0);
-		signal rgtr_dv   : std_logic;
-		signal rgtr_data : std_logic_vector(0 to 32-1);
-		signal rgtr_revs : std_logic_vector(rgtr_data'reverse_range);
+		signal rgtr_id      : std_logic_vector(8-1 downto 0);
+		signal rgtr_dv      : std_logic;
+		signal rgtr_data    : std_logic_vector(0 to 32-1);
+		signal rgtr_revs    : std_logic_vector(rgtr_data'reverse_range);
 
-		signal hz_dv      : std_logic;
-		signal hz_scale   : std_logic_vector(4-1 downto 0);
-		signal hz_slider  : std_logic_vector(hzoffset_bits-1 downto 0);
-		signal max_input  : natural range 0 to mux_sampling-1;
-		signal opacity    : unsigned(0 to inputs-1);
+		signal hz_dv        : std_logic;
+		signal hz_scale     : std_logic_vector(4-1 downto 0);
+		signal hz_slider    : std_logic_vector(hzoffset_bits-1 downto 0);
+		signal max_input    : natural range 0 to mux_sampling-1;
+		signal opacity      : unsigned(0 to inputs-1);
 		signal opacity_frm  : std_logic;
 		signal opacity_data : std_logic_vector(si_data'range);
 
