@@ -345,7 +345,7 @@ begin
 					if cntr >= 0 then
 						so_frm    <= '1';
 						so_irdy   <= '1';
-						send_data <= std_logic_vector(to_unsigned(focus_wid, send_data'length));
+						send_data <= std_logic_vector(rgtr(send_data'range));
 						rgtr      := shift_left(rgtr, rid'length);
 						cntr := cntr -1;
 					else
