@@ -263,7 +263,11 @@ begin
 							when wid_tgchannel|wid_tgposition|wid_tgedge|wid_tgmode =>
 								rid <= unsigned(rid_trigger);
 								reg_length <= x"02";
-								payload <= resize(unsigned(trigger_freeze & trigger_slope & trigger_oneshot & vt_offset), 3*8);
+								payload <= resize(unsigned(
+										trigger_freeze  & 
+										trigger_slope   & 
+										trigger_oneshot & 
+										to_unsigned(args(wid_tgposition, trigger_level'length))), 3*8);
 							when others =>
 								for i in wid_input to next_tab'right loop
 									if focus_wid=i then
