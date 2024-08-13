@@ -46,7 +46,7 @@ architecture def of scopeio_ctlr is
 
 	signal hz_scaleid      : std_logic_vector(4-1 downto 0);
 	signal hz_offset       : std_logic_vector(hzoffset_bits-1 downto 0);
-	signal chan_id         : std_logic_vector(chanid_bits-1 downto 0);
+	signal chan_id         : unsigned(chanid_bits-1 downto 0);
 	signal vtscale_ena     : std_logic;
 	signal vt_scalecid     : std_logic_vector(chan_id'range);
 	signal vt_scaleid      : std_logic_vector(4-1 downto 0);
@@ -203,7 +203,7 @@ begin
 
 		hz_scaleid      => hz_scaleid,
 		hz_offset       => hz_offset,
-		chan_id         => chan_id,
+		chan_id         => std_logic_vector(chan_id),
 		vtscale_ena     => vtscale_ena,
 		vt_scalecid     => vt_scalecid,
 		vt_scaleid      => vt_scaleid,
@@ -281,7 +281,7 @@ begin
 											rid <= unsigned(rid_vtaxis);
 											reg_length <= x"02";
 											payload <= resize(
-												to_unsigned(args(wid_inposition), vt_offset'length) & chan_id);
+												to_unsigned(args(wid_inposition), vt_offset'length) & chan_id, 3*8);
 										when wid_inscale mod 3 =>
 											rid <= unsigned(rid_gain);
 											reg_length <= x"01";
@@ -297,7 +297,7 @@ begin
 							when event_enter =>
 								for i in wid_input to next_tab'right loop
 									if focus_wid=i then
-										chan_id <= std_logic_vector(to_unsigned((i-inputs)/3, chan_id'length));
+										chan_id <= to_unsigned((i-inputs)/3, chan_id'length);
 									end if;
 								end loop;
 								if focus_wid=next_tab(focus_id) then
