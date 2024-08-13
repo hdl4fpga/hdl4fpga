@@ -46,7 +46,7 @@ architecture def of scopeio_ctlr is
 
 	signal hz_scaleid      : std_logic_vector(4-1 downto 0);
 	signal hz_offset       : std_logic_vector(hzoffset_bits-1 downto 0);
-	signal chan_id         : std_logic_vector(chanid_bits-1 downto 0);
+	signal chan_id         : unsigned(chanid_bits-1 downto 0);
 	signal vtscale_ena     : std_logic;
 	signal vt_scalecid     : std_logic_vector(chan_id'range);
 	signal vt_scaleid      : std_logic_vector(4-1 downto 0);
@@ -203,7 +203,7 @@ begin
 
 		hz_scaleid      => hz_scaleid,
 		hz_offset       => hz_offset,
-		chan_id         => chan_id,
+		chan_id         => std_logic_vector(chan_id),
 		vtscale_ena     => vtscale_ena,
 		vt_scalecid     => vt_scalecid,
 		vt_scaleid      => vt_scaleid,
@@ -260,9 +260,11 @@ begin
 							when wid_tmposition|wid_tmscale =>
 								rid <= unsigned(rid_hzaxis);
 								reg_length <= x"02";
+								payload <= resize(unsigned(hz_offset & hz_scaleid), 3*8);
 							when wid_tgchannel|wid_tgposition|wid_tgedge|wid_tgmode =>
 								rid <= unsigned(rid_trigger);
 								reg_length <= x"02";
+								payload <= resize(unsigned(trigger_freeze & trigger_slope & trigger_oneshot & vt_offset), 3*8);
 							when others =>
 								for i in wid_input to next_tab'right loop
 									if focus_wid=i then
@@ -270,11 +272,11 @@ begin
 										when wid_inposition mod 3 =>
 											rid <= unsigned(rid_vtaxis);
 											reg_length <= x"02";
-											payload <= unsigned(x"0" & hz_scaleid & hz_offset);
+											payload <= resize(unsigned(vt_offset) & chan_id, 3*8);
 										when wid_inscale mod 3 =>
 											rid <= unsigned(rid_gain);
-											reg_length <= x"02";
-											payload <= unsigned(x"0" & hz_scaleid & hz_offset);
+											reg_length <= x"01";
+											payload <= resize(unsigned(vt_scalecid) & chan_id, 2*8);
 										when others =>
 										end case;
 									end if;
@@ -283,6 +285,11 @@ begin
 						else
 							case event is
 							when event_enter =>
+								for i in wid_input to next_tab'right loop
+									if focus_wid=i then
+										chan_id <= to_unsigned((i-inputs)/3, chan_id'length);
+									end if;
+								end loop;
 								if focus_wid=next_tab(focus_id) then
 									selctd := true;
 								end if;
@@ -314,31 +321,46 @@ begin
 	process (rgtr_clk)
 		type states is (s_init, s_length, s_data);
 		variable state : states;
+		variable rgtr : unsigned(ctrl_rgtr'range);
+		variable cntr : integer range -1 to 2**reg_length'length-1;
 	begin
 		if rising_edge(rgtr_clk) then
 			if (send_req xor send_rdy)='1' then
 				case state is
 				when s_init =>
-					so_frm  <= '1';
-					so_irdy <= '1';
-					send_data <= std_logic_vector(rid);
-					state := s_length;
-				when s_length =>
+					rgtr      := ctrl_rgtr;
 					so_frm    <= '1';
 					so_irdy   <= '1';
-					send_data <= x"00";
+					send_data <= std_logic_vector(rgtr(send_data'range));
+					rgtr      := shift_left(rgtr, rid'length);
+					state := s_length;
+				when s_length =>
+					cntr      := to_integer(rgtr(send_data'range));
+					so_frm    <= '1';
+					so_irdy   <= '1';
+					send_data <= std_logic_vector(rgtr(send_data'range));
+					rgtr      := shift_left(rgtr, rid'length);
 					state := s_data;
 				when s_data =>
-					so_frm     <= '1';
-					so_irdy    <= '1';
-					send_data  <= std_logic_vector(to_unsigned(focus_wid, send_data'length));
-					send_rdy   <= send_req;
-					state := s_init;
+					if cntr >= 0 then
+						so_frm    <= '1';
+						so_irdy   <= '1';
+						send_data <= std_logic_vector(to_unsigned(focus_wid, send_data'length));
+						rgtr      := shift_left(rgtr, rid'length);
+						cntr := cntr -1;
+					else
+						so_frm    <= '0';
+						so_irdy   <= '0';
+						send_data <= std_logic_vector(rgtr(send_data'range));
+						rgtr      := shift_left(rgtr, rid'length);
+						send_rdy  <= send_req;
+						state    := s_init;
+					end if;
 				end case;
 			else
-				so_frm  <= '0';
-				so_irdy <= '0';
-				send_data <= (others => '-');
+				so_frm    <= '0';
+				so_irdy   <= '0';
+				send_data <= std_logic_vector(rgtr(send_data'range));
 			end if;
 		end if;
 	end process;
