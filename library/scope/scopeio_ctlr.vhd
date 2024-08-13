@@ -223,6 +223,8 @@ begin
 		variable state  : states;
 		variable args   : natural_vector(0 to wid_input-1);
 		variable selctd : boolean;
+		variable new_vtoffset  : unsigned(vt_offset'range);
+		variable new_vtscaleid : unsigned(vt_scalecid'range);
 	begin
 		if rising_edge(rgtr_clk) then
 			case state is
@@ -242,9 +244,13 @@ begin
 							if focus_id < wid_input then 
 								case event is
     							when event_next =>
-    								args(focus_wid) := args(focus_wid) + 1;
+    								args(focus_wid) := args(focus_wid)      + 1;
+									new_vtoffset    := unsigned(vt_offset)  + 1;
+									new_vtscaleid   := unsigned(vt_scaleid) + 1;
     							when event_prev =>
-    								args(focus_wid) := args(focus_wid) - 1;
+    								args(focus_wid) := args(focus_wid)      - 1;
+									new_vtoffset    := unsigned(vt_offset)  - 1;
+									new_vtscaleid   := unsigned(vt_scaleid) - 1;
     							when others =>
     								selctd := false;
 								end case;
@@ -280,13 +286,11 @@ begin
 										when wid_inposition mod 3 =>
 											rid <= unsigned(rid_vtaxis);
 											reg_length <= x"02";
-											payload <= resize(
-												to_unsigned(args(wid_inposition), vt_offset'length) & chan_id, 3*8);
+											payload <= resize(new_vtoffset & chan_id, 3*8);
 										when wid_inscale mod 3 =>
 											rid <= unsigned(rid_gain);
 											reg_length <= x"01";
-											payload <= resize(
-												to_unsigned(args(wid_inscale), vt_scalecid'length) & chan_id, 3*8);
+											payload <= resize(new_vtscaleid & chan_id, 3*8);
 										when others =>
 										end case;
 									end if;
