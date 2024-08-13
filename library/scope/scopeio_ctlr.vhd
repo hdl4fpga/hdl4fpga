@@ -224,7 +224,7 @@ begin
 		variable args   : natural_vector(0 to wid_input-1);
 		variable selctd : boolean;
 		variable new_vtoffset  : unsigned(vt_offset'range);
-		variable new_vtscaleid : unsigned(vt_scalecid'range);
+		variable new_vtscaleid : unsigned(vt_scaleid'range);
 	begin
 		if rising_edge(rgtr_clk) then
 			case state is
