@@ -67,7 +67,7 @@ architecture def of scopeio_ctlr is
 		wid_tmscale    => to_integer(unsigned(rid_hzaxis)),
 		wid_tgchannel  => to_integer(unsigned(rid_trigger)),
 		wid_tgposition => to_integer(unsigned(rid_trigger)),
-		wid_tgedge     => to_integer(unsigned(rid_trigger)),
+		wid_tgslope    => to_integer(unsigned(rid_trigger)),
 		wid_tgmode     => to_integer(unsigned(rid_trigger)),
 		wid_inposition => to_integer(unsigned(rid_vtaxis)),
 		wid_inscale    => to_integer(unsigned(rid_gain)),
@@ -81,7 +81,7 @@ architecture def of scopeio_ctlr is
 			"wid_tmscale,"    &
 			"wid_tgchannel,"  &
 			"wid_tgposition," &
-			"wid_tgedge,"     &
+			"wid_tgslope,"     &
 			"wid_tgmode,"     &
 			"wid_input,"      &
 			"wid_inposition," &
@@ -96,8 +96,8 @@ architecture def of scopeio_ctlr is
 			wid_tmposition => wid_tmscale,   
 			wid_tmscale    => wid_tgchannel, 
 			wid_tgchannel  => wid_tgposition,
-			wid_tgposition => wid_tgedge,    
-			wid_tgedge     => wid_tgmode,    
+			wid_tgposition => wid_tgslope,    
+			wid_tgslope    => wid_tgmode,    
 			wid_tgmode     => wid_inposition,
 			wid_input      => wid_time,
 			wid_inposition => wid_inscale,
@@ -135,8 +135,8 @@ architecture def of scopeio_ctlr is
 			wid_tmscale    => wid_tmscale, 
 			wid_tgchannel  => wid_tgchannel,
 			wid_tgposition => wid_tgposition,    
-			wid_tgedge     => wid_tgedge,    
-			wid_tgmode     => wid_tgedge,
+			wid_tgslope    => wid_tgslope,    
+			wid_tgmode     => wid_tgslope,
 			wid_input      => wid_inposition,
 			wid_inposition => wid_inposition,
 			wid_inscale    => wid_inscale,
@@ -221,7 +221,7 @@ begin
 	process (req, rgtr_clk)
 		type states is (s_idle, s_send);
 		variable state  : states;
-		variable args   : natural_vector(next_tab'range);
+		variable args   : natural_vector(0 to wid_input-1);
 		variable selctd : boolean;
 	begin
 		if rising_edge(rgtr_clk) then
@@ -235,23 +235,27 @@ begin
 								wid_tmscale    => to_integer(unsigned(hz_scaleid)),
 								wid_tgchannel  => to_integer(unsigned(trigger_chanid)),
 								wid_tgposition => to_integer(unsigned(trigger_level)),
-								wid_tgedge     => to_integer(unsigned(trigger_slope)),
+								wid_tgslope    => to_integer(unsigned(trigger_slope)),
 								wid_tgmode     => to_integer(unsigned(trigger_mode)),
 								others         => 0);
-							case event is
-							when event_next =>
-								args(focus_wid) := args(focus_wid) + 1;
-							when event_prev =>
-								args(focus_wid) := args(focus_wid) - 1;
-							when others =>
-								selctd := false;
-							end case;
+
+							if focus_id < wid_input then 
+								case event is
+    							when event_next =>
+    								args(focus_wid) := args(focus_wid) + 1;
+    							when event_prev =>
+    								args(focus_wid) := args(focus_wid) - 1;
+    							when others =>
+    								selctd := false;
+								end case;
+							end if;
+
 							args := (
 								wid_tmposition => args(wid_tmposition) mod 2**hz_offset'length,
 								wid_tmscale    => args(wid_tmscale)    mod 2**hz_scaleid'length,
 								wid_tgchannel  => args(wid_tgchannel)  mod 2**trigger_chanid'length,
 								wid_tgposition => args(wid_tgposition) mod 2**trigger_level'length,
-								wid_tgedge     => args(wid_tgedge)     mod 2**trigger_slope'length,
+								wid_tgslope    => args(wid_tgslope)    mod 2**trigger_slope'length,
 								wid_tgmode     => args(wid_tgmode)     mod 2**trigger_mode'length,
 								others => 0);
 
@@ -260,13 +264,12 @@ begin
 								rid <= unsigned(rid_hzaxis);
 								reg_length <= x"02";
 								payload <= resize(unsigned(hz_offset & hz_scaleid), 3*8);
-							when wid_tgchannel|wid_tgposition|wid_tgedge|wid_tgmode =>
+							when wid_tgchannel|wid_tgposition|wid_tgslope|wid_tgmode =>
 								rid <= unsigned(rid_trigger);
 								reg_length <= x"02";
-								payload <= resize(unsigned(
-										trigger_freeze  & 
-										trigger_slope   & 
-										trigger_oneshot & 
+								payload <= resize(
+										to_unsigned(args(wid_tgmode), trigger_mode'length)  & 
+										to_unsigned(args(wid_tgslope), trigger_slope'length)   & 
 										to_unsigned(args(wid_tgposition, trigger_level'length))), 3*8);
 							when others =>
 								for i in wid_input to next_tab'right loop

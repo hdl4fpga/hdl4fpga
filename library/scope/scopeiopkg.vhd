@@ -43,7 +43,7 @@ package scopeiopkg is
 	constant wid_tmscale    : natural := 3;
 	constant wid_tgchannel  : natural := 4;
 	constant wid_tgposition : natural := 5;
-	constant wid_tgedge     : natural := 6;
+	constant wid_tgslope    : natural := 6;
 	constant wid_tgmode     : natural := 7;
 	constant wid_input      : natural := 8;
 	constant wid_inposition : natural := 9;
@@ -143,16 +143,16 @@ package scopeiopkg is
 		palettecolor_id      => palettecolor_maxsize);
 
 	constant trigger_freeze_id  : natural := 0;
-	constant trigger_slope_id   : natural := 1;
-	constant trigger_oneshot_id : natural := 2;
+	constant trigger_oneshot_id : natural := 1;
+	constant trigger_slope_id   : natural := 2;
 	constant trigger_level_id   : natural := 3;
 	constant trigger_chanid_id  : natural := 4;
 
 	constant triggerlevel_maxsize : natural := 9;
 	constant trigger_bf : natural_vector := (
 		trigger_freeze_id  => 1,
-		trigger_slope_id   => 1,
 		trigger_oneshot_id => 1,
+		trigger_slope_id   => 1,
 		trigger_level_id   => triggerlevel_maxsize,
 		trigger_chanid_id  => chanid_maxsize);
 

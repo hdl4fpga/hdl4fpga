@@ -180,7 +180,7 @@ begin
 				wid_tmscale    => 0,
 				wid_tgchannel  => 1,
 				wid_tgposition => 1,
-				wid_tgedge     => 1,
+				wid_tgslope    => 1,
 				wid_tgmode     => 1,
 				wid_input      => 2,
 				wid_inposition => 2,
@@ -202,7 +202,7 @@ begin
 				wid_tmscale    => 7,
 				wid_tgchannel  => 4,
 				wid_tgposition => 7,
-				wid_tgedge     => 1,
+				wid_tgslope    => 1,
 				wid_tgmode     => 4,
 				wid_input      => cga_cols,
 				wid_inposition => 7,
@@ -223,8 +223,8 @@ begin
 			table(wid_tmscale)    := table(wid_tmposition)+3;
 			table(wid_tgchannel)  := 0;
 			table(wid_tgposition) := 4;
-			table(wid_tgedge)     := table(wid_tgposition)+3;
-			table(wid_tgmode)     := table(wid_tgedge)+2;
+			table(wid_tgslope)    := table(wid_tgposition)+3;
+			table(wid_tgmode)     := table(wid_tgslope)+2;
 			table(wid_input)      := 0;
 			table(wid_inposition) := 4;
 			table(wid_inscale)    := table(wid_inposition)+3;
