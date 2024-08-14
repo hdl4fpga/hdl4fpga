@@ -358,7 +358,7 @@ begin
         signal ctlr_data : std_logic_vector(si_data'range);
 	begin
 
-		btn <= (left, right, up, down);
+		btn <= (right, left, down, up);
 		antibounce_g : for i in btn'range generate
 			process (sio_clk)
 				type states is (s_pressed, s_released);
@@ -423,6 +423,7 @@ begin
 		generic map (
 			layout => layout)
 		port map (
+			tp      => tp,
 			req     => req,
 			rdy     => rdy,
 			event   => event,
@@ -431,6 +432,8 @@ begin
 			so_irdy => ctlr_irdy,
 			so_trdy => ctlr_trdy,
 			so_data => ctlr_data);
+		led(0) <= tp(1);
+		led(1) <= tp(2);
 
 		so_frm  <= si_frm  when si_frm='1' else ctlr_frm;
 		so_irdy <= si_irdy when si_frm='1' else ctlr_irdy;
@@ -561,7 +564,6 @@ begin
 		videotiming_id => video_params.timing,
 		layout         => layout)
 	port map (
-		tp          => tp,
 		sio_clk     => sio_clk,
 		si_frm      => si_frm,
 		si_irdy     => si_irdy,
@@ -575,8 +577,6 @@ begin
 		video_hsync => video_hzsync,
 		video_vsync => video_vtsync,
 		video_blank => video_blank);
-		led(0) <= tp(1);
-		led(1) <= tp(2);
 
 	-- HDMI/DVI VGA --
 	------------------

@@ -12,6 +12,7 @@ entity scopeio_ctlr is
 	generic (
 		layout  : string);
 	port (
+		tp      : out std_logic_vector(1 to 32);
 		req     : in  std_logic;
 		rdy     : buffer std_logic;
 		event   : in  std_logic_vector(0 to 2-1);
@@ -32,7 +33,7 @@ entity scopeio_ctlr is
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 
 	constant event_enter : std_logic_vector := "00";
-	constant event_exit  : std_logic_vector := "01";
+	constant event_esc   : std_logic_vector := "01";
 	constant event_next  : std_logic_vector := "10";
 	constant event_prev  : std_logic_vector := "11";
 end;
@@ -56,8 +57,8 @@ architecture def of scopeio_ctlr is
 
 	signal trigger_ena     : std_logic;
 	signal trigger_chanid  : std_logic_vector(chan_id'range);
-	signal trigger_slope   : std_logic_vector(0 to 1-1);
-	signal trigger_mode    : std_logic_vector(0 to 2-1);
+	signal trigger_slope   : std_logic_vector(1-1 downto 0);
+	signal trigger_mode    : std_logic_vector(2-1 downto 0);
 	alias  trigger_freeze  is trigger_mode(0);
 	alias  trigger_oneshot is trigger_mode(1);
 	signal trigger_level   : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
@@ -148,7 +149,7 @@ architecture def of scopeio_ctlr is
 		return retval;
 	end;
 
-	function up_sequence (
+	function esc_sequence (
 		constant arg : natural_vector)
 		return natural_vector is
 		variable retval : natural_vector(arg'range);
@@ -166,7 +167,7 @@ architecture def of scopeio_ctlr is
 	constant next_tab  : natural_vector := next_sequence;
 	constant prev_tab  : natural_vector := prev_sequence(next_tab);
 	constant enter_tab : natural_vector := enter_sequence;
-	constant up_tab    : natural_vector := up_sequence(enter_tab);
+	constant up_tab    : natural_vector := esc_sequence(enter_tab);
 
 	signal focus_req   : std_logic := '0';
 	signal focus_rdy   : std_logic := '0';
@@ -221,65 +222,66 @@ begin
 	process (req, rgtr_clk)
 		type states is (s_idle, s_send);
 		variable state  : states;
-		variable args   : natural_vector(next_tab'range);
+		subtype xxx is unsigned(max(hzoffset_maxsize,  vtoffset_maxsize)-1 downto 0);
+		type xxx_vector is array (natural range <>) of xxx;
+
+		variable args   : xxx_vector(next_tab'range);
 		variable selctd : boolean;
 		constant event_mask : std_logic_vector := event_next xor event_prev;
 	begin
 		if rising_edge(rgtr_clk) then
+			if selctd then
+				tp(1) <= '1';
+			else 
+				tp(1) <= '0';
+			end if;
+
 			case state is
 			when s_idle =>
 				if (send_req xor send_rdy)='0' then
 					if (to_bit(rdy) xor to_bit(req))='1' then
 						if selctd then
 							args := (
-								wid_tmposition => to_integer(unsigned(hz_offset)),
-								wid_tmscale    => to_integer(unsigned(hz_scaleid)),
-								wid_tgchannel  => to_integer(unsigned(trigger_chanid)),
-								wid_tgposition => to_integer(unsigned(trigger_level)),
-								wid_tgslope    => to_integer(unsigned(trigger_slope)),
-								wid_tgmode     => to_integer(unsigned(trigger_mode)),
-								wid_inposition => to_integer(unsigned(vt_offset)),
-								wid_inscale    => to_integer(unsigned(vt_scaleid)),
-								others         => 0);
+								wid_tmposition => unsigned(resize(signed(hz_offset),      xxx'length)),
+								wid_tmscale    => resize(unsigned(hz_scaleid),     xxx'length),
+								wid_tgchannel  => resize(unsigned(trigger_chanid), xxx'length),
+								wid_tgposition => unsigned(resize(signed(trigger_level),  xxx'length)),
+								wid_tgslope    => resize(unsigned(trigger_slope),  xxx'length),
+								wid_tgmode     => resize(unsigned(trigger_mode),   xxx'length),
+								wid_inposition => unsigned(resize(signed(vt_offset),      xxx'length)),
+								wid_inscale    => resize(unsigned(vt_scaleid),     xxx'length),
+								others         => (others => '0'));
 
 							case event is
 							when event_next =>
 								for i in args'range loop
-									args(i) := args(i) + 1;
+									if i=wid_tmposition then
+										args(i) := args(i) + 1;
+									end if;
 								end loop;
 							when event_prev =>
 								for i in args'range loop
-									args(i) := args(i) - 1;
+									if i=wid_tmposition then
+										args(i) := args(i) - 1;
+									end if;
 								end loop;
 							when others =>
 								selctd := false;
 							end case;
-
-							args := (
-								wid_tmposition => args(wid_tmposition) mod 2**hz_offset'length,
-								wid_tmscale    => args(wid_tmscale)    mod 2**hz_scaleid'length,
-								wid_tgchannel  => args(wid_tgchannel)  mod 2**trigger_chanid'length,
-								wid_tgposition => args(wid_tgposition) mod 2**trigger_level'length,
-								wid_tgslope    => args(wid_tgslope)    mod 2**trigger_slope'length,
-								wid_tgmode     => args(wid_tgmode)     mod 2**trigger_mode'length,
-								wid_inposition => args(wid_inposition) mod 2**vt_offset'length,
-								wid_inscale    => args(wid_inscale)    mod 2**vt_scaleid'length,
-								others => 0);
-
 							case focus_wid is
 							when wid_tmposition|wid_tmscale =>
 								rid <= unsigned(rid_hzaxis);
 								reg_length <= x"02";
-								payload <= resize(
-									to_unsigned(args(wid_tmposition), hz_offset'length) & 
-									to_unsigned(args(wid_tmscale),    hz_scaleid'length), 3*8);
+								payload(0 to 3*8-1) <= resize(
+									args(wid_tmscale)(hz_scaleid'range) &
+									args(wid_tmposition)(hzoffset_maxsize-1 downto 0) , 3*8);
 							when wid_tgchannel|wid_tgposition|wid_tgslope|wid_tgmode =>
 								rid <= unsigned(rid_trigger);
 								reg_length <= x"02";
 								payload <= resize(
-									to_unsigned(args(wid_tgmode),     trigger_mode'length)  & 
-									to_unsigned(args(wid_tgslope),    trigger_slope'length) & 
-									to_unsigned(args(wid_tgposition), trigger_level'length), 3*8);
+									args(wid_tgmode)(trigger_mode'range)  & 
+									args(wid_tgslope)(trigger_slope'range) & 
+									args(wid_tgposition)(triggerlevel_maxsize-1 downto 0), 3*8);
 							when others =>
 								for i in wid_input to next_tab'right loop
 									if focus_wid=i then
@@ -288,13 +290,13 @@ begin
 											rid <= unsigned(rid_vtaxis);
 											reg_length <= x"02";
 											payload <= resize(
-												to_unsigned(args(wid_inposition), vt_offset'length) & 
+												args(wid_inposition)(vtoffset_maxsize-1 downto 0) & 
 												chan_id, 3*8);
 										when wid_inscale mod 3 =>
 											rid <= unsigned(rid_gain);
 											reg_length <= x"01";
 											payload(0 to 2*8-1) <= resize(
-												to_unsigned(args(wid_inscale), vt_scaleid'length) & 
+												args(wid_inscale)(vt_scaleid'range) & 
 												chan_id, 2*8);
 										when others =>
 										end case;
@@ -309,15 +311,15 @@ begin
 										chan_id <= to_unsigned((i-inputs)/3, chan_id'length);
 									end if;
 								end loop;
-								if focus_wid=next_tab(focus_id) then
-									selctd := true;
+								if focus_wid=enter_tab(focus_id) then
 								end if;
+									selctd := true;
 								focus_wid <= enter_tab(focus_wid);
 							when event_next =>
 								focus_wid <= next_tab(focus_wid);
 							when event_prev =>
 								focus_wid <= prev_tab(focus_wid);
-							when event_exit =>
+							when event_esc =>
 								focus_wid <= up_tab(focus_wid);
 							when others =>
 							end case;
