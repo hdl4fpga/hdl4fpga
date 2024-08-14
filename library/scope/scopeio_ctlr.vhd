@@ -221,10 +221,9 @@ begin
 	process (req, rgtr_clk)
 		type states is (s_idle, s_send);
 		variable state  : states;
-		variable args   : natural_vector(0 to wid_input-1);
+		variable args   : natural_vector(next_tab'range);
 		variable selctd : boolean;
-		variable new_vtoffset  : unsigned(vt_offset'range);
-		variable new_vtscaleid : unsigned(vt_scaleid'range);
+		constant event_mask : std_logic_vector := event_next xor event_prev;
 	begin
 		if rising_edge(rgtr_clk) then
 			case state is
@@ -239,22 +238,22 @@ begin
 								wid_tgposition => to_integer(unsigned(trigger_level)),
 								wid_tgslope    => to_integer(unsigned(trigger_slope)),
 								wid_tgmode     => to_integer(unsigned(trigger_mode)),
+								wid_inposition => to_integer(unsigned(vt_offset)),
+								wid_inscale    => to_integer(unsigned(vt_scaleid)),
 								others         => 0);
 
-							if focus_id < wid_input then 
-								case event is
-    							when event_next =>
-    								args(focus_wid) := args(focus_wid)      + 1;
-									new_vtoffset    := unsigned(vt_offset)  + 1;
-									new_vtscaleid   := unsigned(vt_scaleid) + 1;
-    							when event_prev =>
-    								args(focus_wid) := args(focus_wid)      - 1;
-									new_vtoffset    := unsigned(vt_offset)  - 1;
-									new_vtscaleid   := unsigned(vt_scaleid) - 1;
-    							when others =>
-    								selctd := false;
-								end case;
-							end if;
+							case event is
+							when event_next =>
+								for i in args'range loop
+									args(i) := args(i) + 1;
+								end loop;
+							when event_prev =>
+								for i in args'range loop
+									args(i) := args(i) - 1;
+								end loop;
+							when others =>
+								selctd := false;
+							end case;
 
 							args := (
 								wid_tmposition => args(wid_tmposition) mod 2**hz_offset'length,
@@ -263,6 +262,8 @@ begin
 								wid_tgposition => args(wid_tgposition) mod 2**trigger_level'length,
 								wid_tgslope    => args(wid_tgslope)    mod 2**trigger_slope'length,
 								wid_tgmode     => args(wid_tgmode)     mod 2**trigger_mode'length,
+								wid_inposition => args(wid_inposition) mod 2**vt_offset'length,
+								wid_inscale    => args(wid_inscale)    mod 2**vt_scaleid'length,
 								others => 0);
 
 							case focus_wid is
@@ -286,11 +287,15 @@ begin
 										when wid_inposition mod 3 =>
 											rid <= unsigned(rid_vtaxis);
 											reg_length <= x"02";
-											payload <= resize(new_vtoffset & chan_id, 3*8);
+											payload <= resize(
+												to_unsigned(args(wid_inposition), vt_offset'length) & 
+												chan_id, 3*8);
 										when wid_inscale mod 3 =>
 											rid <= unsigned(rid_gain);
 											reg_length <= x"01";
-											payload <= resize(new_vtscaleid & chan_id, 3*8);
+											payload <= resize(
+												to_unsigned(args(wid_inscale), vt_scaleid'length) & 
+												chan_id, 3*8);
 										when others =>
 										end case;
 									end if;
