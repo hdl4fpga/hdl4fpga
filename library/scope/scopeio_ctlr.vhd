@@ -174,9 +174,9 @@ architecture def of scopeio_ctlr is
 	signal change_rdy  : std_logic;
 	signal change_req  : std_logic;
 	signal ctrl_rgtr   : unsigned(0 to 5*8-1);
-	alias  rid         is ctrl_rgtr(0*8 to 1*8-1);
-	alias  reg_length  is ctrl_rgtr(1*8 to 2*8-1);
-	alias  payload     is ctrl_rgtr(2*8 to 5*8-1); 
+	alias  rid         : unsigned(0 to 1*8-1) is ctrl_rgtr(0*8 to 1*8-1);
+	alias  reg_length  : unsigned(0 to 1*8-1) is ctrl_rgtr(1*8 to 2*8-1);
+	alias  payload     : unsigned(0 to 3*8-1) is ctrl_rgtr(2*8 to 5*8-1); 
 	signal send_req    : bit := '0';
 	signal send_rdy    : bit := '0';
 	signal send_data   : std_logic_vector(so_data'range);
@@ -293,9 +293,9 @@ begin
 										when wid_inscale mod 3 =>
 											rid <= unsigned(rid_gain);
 											reg_length <= x"01";
-											payload <= resize(
+											payload(0 to 2*8-1) <= resize(
 												to_unsigned(args(wid_inscale), vt_scaleid'length) & 
-												chan_id, 3*8);
+												chan_id, 2*8);
 										when others =>
 										end case;
 									end if;
@@ -323,6 +323,7 @@ begin
 							end case;
 							rid <= unsigned(rid_focus);
 							reg_length <= x"00";
+							payload(0 to 8-1) <= unsigned(to_unsigned(focus_wid, 8));
 						end if;
 						send_req <= not send_rdy;
 						state := s_send;
