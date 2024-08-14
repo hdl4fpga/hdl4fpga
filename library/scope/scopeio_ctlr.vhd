@@ -256,13 +256,13 @@ begin
 							when event_next =>
 								for i in args'range loop
 									if i=wid_tmposition then
-										args(i) := args(i) + 1;
+										args(i) := args(i) - 1;
 									end if;
 								end loop;
 							when event_prev =>
 								for i in args'range loop
 									if i=wid_tmposition then
-										args(i) := args(i) - 1;
+										args(i) := args(i) + 1;
 									end if;
 								end loop;
 							when others =>
