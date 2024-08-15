@@ -280,15 +280,16 @@ begin
 								rid <= unsigned(rid_hzaxis);
 								reg_length <= x"02";
 								payload <= resize(
-									unsigned(to_signed(args(wid_tmposition), hzoffset_maxsize)) & 
-									to_unsigned(args(wid_tmscale),    hzscale_maxsize), 3*8);
+									to_unsigned(args(wid_tmscale), hzscale_maxsize) & 
+									unsigned(to_signed(args(wid_tmposition), hzoffset_maxsize)), 3*8);
 							when wid_tgchannel|wid_tgposition|wid_tgslope|wid_tgmode =>
 								rid <= unsigned(rid_trigger);
 								reg_length <= x"02";
 								payload <= resize(
+									resize(chan_id, chanid_maxsize)  &
+									unsigned(to_signed(args(wid_tgposition), triggerlevel_maxsize)) & 
 									to_unsigned(args(wid_tgmode),     trigger_mode'length)  & 
-									to_unsigned(args(wid_tgslope),    trigger_slope'length) & 
-									unsigned(to_signed(args(wid_tgposition), triggerlevel_maxsize)), 3*8);
+									to_unsigned(args(wid_tgslope),    trigger_slope'length), 3*8);
 							when others =>
 								for i in wid_input to next_tab'right loop
 									if focus_wid=i then
@@ -297,24 +298,19 @@ begin
 											rid <= unsigned(rid_vtaxis);
 											reg_length <= x"02";
 											payload <= resize(
-												unsigned(to_signed(args(wid_inposition), vtoffset_maxsize)) & 
-												chan_id, 3*8);
+												resize(chan_id, chanid_maxsize)  &
+												unsigned(to_signed(args(wid_inposition), vtoffset_maxsize)), 3*8);
 										when wid_inscale mod 3 =>
 											rid <= unsigned(rid_gain);
 											reg_length <= x"01";
 											payload <= resize(
-												to_unsigned(args(wid_inscale), vt_scaleid'length) & 
-												chan_id, 3*8);
+												resize(chan_id, chanid_maxsize)  &
+												to_unsigned(args(wid_inscale), vt_scaleid'length), 3*8);
 										when others =>
 										end case;
 									end if;
 								end loop;
 							end case;
-								rid <= unsigned(rid_hzaxis);
-								reg_length <= x"02";
-								payload <= resize(
-									to_unsigned(args(wid_tmscale),    hzscale_maxsize) & 
-									unsigned(to_signed(args(wid_tmposition), hzoffset_maxsize)), 3*8);
 						else
 							case event is
 							when event_enter =>
