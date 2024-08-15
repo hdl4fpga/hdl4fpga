@@ -164,10 +164,10 @@ architecture def of scopeio_ctlr is
 		return retval;
 	end;
 
-	constant next_tab  : natural_vector := next_sequence;
-	constant prev_tab  : natural_vector := prev_sequence(next_tab);
-	constant enter_tab : natural_vector := enter_sequence;
-	constant up_tab    : natural_vector := up_sequence(enter_tab);
+	constant next_tab   : natural_vector := next_sequence;
+	constant prev_tab   : natural_vector := prev_sequence(next_tab);
+	constant enter_tab  : natural_vector := enter_sequence;
+	constant escape_tab : natural_vector := up_sequence(enter_tab);
 
 	signal focus_req   : std_logic := '0';
 	signal focus_rdy   : std_logic := '0';
@@ -251,12 +251,15 @@ begin
 							case event is
 							when event_next =>
 								for i in args'range loop
-									args(i) := args(i) + 1;
+									-- args(i) := args(i) + 1;
 								end loop;
+								args(wid_tmposition) := args(wid_tmposition) - 1;
 							when event_prev =>
 								for i in args'range loop
-									args(i) := args(i) - 1;
+									-- args(i) := args(i) - 1;
 								end loop;
+								-- args(wid_tmposition) := args(wid_tmposition) + 1:
+								args(wid_tmposition) := args(wid_tmposition) + 1;
 							when others =>
 								selctd := false;
 							end case;
@@ -307,6 +310,11 @@ begin
 									end if;
 								end loop;
 							end case;
+								rid <= unsigned(rid_hzaxis);
+								reg_length <= x"02";
+								payload <= resize(
+									to_unsigned(args(wid_tmscale),    hzscale_maxsize) & 
+									unsigned(to_signed(args(wid_tmposition), hzoffset_maxsize)), 3*8);
 						else
 							case event is
 							when event_enter =>
@@ -315,16 +323,17 @@ begin
 										chan_id <= to_unsigned((i-inputs)/3, chan_id'length);
 									end if;
 								end loop;
-								if focus_wid=next_tab(focus_id) then
+								if focus_wid=enter_tab(focus_id) then
 									selctd := true;
 								end if;
+									selctd := true;
 								focus_wid <= enter_tab(focus_wid);
 							when event_next =>
 								focus_wid <= next_tab(focus_wid);
 							when event_prev =>
 								focus_wid <= prev_tab(focus_wid);
 							when event_exit =>
-								focus_wid <= up_tab(focus_wid);
+								focus_wid <= escape_tab(focus_wid);
 							when others =>
 							end case;
 							rid <= unsigned(rid_focus);
