@@ -224,6 +224,7 @@ begin
 		variable state  : states;
 		variable args   : integer_vector(next_tab'range);
 		variable selctd : boolean;
+		variable xxx : natural range 0 to wid_inscale;
 		constant event_mask : std_logic_vector := event_next xor event_prev;
 	begin
 		if rising_edge(rgtr_clk) then
@@ -250,15 +251,10 @@ begin
 
 							case event is
 							when event_next =>
-								for i in args'range loop
-									-- args(i) := args(i) + 1;
-								end loop;
+								args(xxx) := args(xxx) - 1;
 								args(wid_tmposition) := args(wid_tmposition) - 1;
 							when event_prev =>
-								for i in args'range loop
-									-- args(i) := args(i) - 1;
-								end loop;
-								-- args(wid_tmposition) := args(wid_tmposition) + 1:
+								args(xxx) := args(xxx) + 1;
 								args(wid_tmposition) := args(wid_tmposition) + 1;
 							when others =>
 								selctd := false;
@@ -275,7 +271,7 @@ begin
 								wid_inscale    => args(wid_inscale)    mod 2**vt_scaleid'length,
 								others => 0);
 
-							case focus_wid is
+							case xxx is
 							when wid_tmposition|wid_tmscale =>
 								rid <= unsigned(rid_hzaxis);
 								reg_length <= x"02";
@@ -290,26 +286,19 @@ begin
 									unsigned(to_signed(args(wid_tgposition), triggerlevel_maxsize)) & 
 									to_unsigned(args(wid_tgmode),  trigger_mode'length)  & 
 									to_unsigned(args(wid_tgslope), trigger_slope'length), 3*8);
+							when wid_inposition =>
+								rid <= unsigned(rid_vtaxis);
+								reg_length <= x"02";
+								payload <= resize(
+									resize(chan_id, chanid_maxsize) &
+									unsigned(to_signed(args(wid_inposition), vtoffset_maxsize)), 3*8);
+							when wid_inscale =>
+								rid <= unsigned(rid_gain);
+								reg_length <= x"01";
+								payload <= resize(
+									resize(chan_id, chanid_maxsize) &
+									to_unsigned(args(wid_inscale), vt_scaleid'length), 3*8);
 							when others =>
-								for i in wid_input to next_tab'right loop
-									if focus_wid=i then
-										case i mod 3 is
-										when wid_inposition mod 3 =>
-											rid <= unsigned(rid_vtaxis);
-											reg_length <= x"02";
-											payload <= resize(
-												resize(chan_id, chanid_maxsize) &
-												unsigned(to_signed(args(wid_inposition), vtoffset_maxsize)), 3*8);
-										when wid_inscale mod 3 =>
-											rid <= unsigned(rid_gain);
-											reg_length <= x"01";
-											payload <= resize(
-												resize(chan_id, chanid_maxsize) &
-												to_unsigned(args(wid_inscale), vt_scaleid'length), 3*8);
-										when others =>
-										end case;
-									end if;
-								end loop;
 							end case;
 						else
 							case event is
@@ -317,9 +306,10 @@ begin
 								for i in wid_input to next_tab'right loop
 									if focus_wid=i then
 										chan_id <= to_unsigned((i-inputs)/3, chan_id'length);
+										exit;
 									end if;
 								end loop;
-								if focus_wid=enter_tab(focus_id) then
+								if focus_wid=enter_tab(focus_wid) then
 									selctd := true;
 								end if;
 									selctd := true;
