@@ -213,17 +213,18 @@ begin
 			return table;
 		end;
 
-		function left_borders
+		function left_borders(
+			constant width_borders : natural_vector)
 			return natural_vector is
 			variable table : natural_vector(0 to wid_inscale+3*(inputs-1));
 		begin
 			table(wid_time)       := 0;
 			table(wid_trigger)    := 0;
 			table(wid_tmposition) := 4;
-			table(wid_tmscale)    := table(wid_tmposition)+3;
+			table(wid_tmscale)    := table(wid_tmposition)+3+width_borders(wid_tmposition);
 			table(wid_tgchannel)  := 0;
 			table(wid_tgposition) := 4;
-			table(wid_tgslope)    := table(wid_tgposition)+3;
+			table(wid_tgslope)    := table(wid_tgposition)+3+width_borders(wid_tgposition);
 			table(wid_tgmode)     := table(wid_tgslope)+2;
 			table(wid_input)      := 0;
 			table(wid_inposition) := 4;
