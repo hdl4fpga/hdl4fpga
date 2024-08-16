@@ -276,8 +276,7 @@ begin
     								rid <= unsigned(rid_trigger);
     								reg_length <= x"02";
     								payload <= resize(
-    									-- to_unsigned(values(wid_tgchannel), chanid_maxsize) &
-    									to_unsigned(0, chanid_maxsize) &
+    									to_unsigned(values(wid_tgchannel), chanid_maxsize) &
     									unsigned(to_signed(values(wid_tgposition), triggerlevel_maxsize)) & 
     									to_unsigned(values(wid_tgmode),  trigger_mode'length)  & 
     									to_unsigned(values(wid_tgslope), trigger_slope'length), 3*8);
