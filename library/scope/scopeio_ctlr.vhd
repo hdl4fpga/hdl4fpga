@@ -285,7 +285,6 @@ begin
 									unsigned(to_signed(values(wid_tgposition), triggerlevel_maxsize)) & 
 									to_unsigned(values(wid_tgmode),  trigger_mode'length)  & 
 									to_unsigned(values(wid_tgslope), trigger_slope'length), 3*8);
-								tp(2) <= '1';
 							when wid_inposition =>
 								rid <= unsigned(rid_vtaxis);
 								reg_length <= x"02";
@@ -303,10 +302,11 @@ begin
 							rid <= unsigned(rid_trigger);
 							reg_length <= x"02";
 							payload <= resize(
-								to_unsigned(values(wid_tgchannel), chanid_maxsize) &
+								to_unsigned(0, chanid_maxsize) &
 								unsigned(to_signed(10, triggerlevel_maxsize)) & 
 								to_unsigned(values(wid_tgmode),  trigger_mode'length)  & 
 								to_unsigned(values(wid_tgslope), trigger_slope'length), 3*8);
+								tp(2) <= '1';
 						else
 							case event is
 							when event_enter =>
