@@ -100,7 +100,6 @@ architecture def of scopeio_reading is
 
 	signal tgr_sht        : signed(4-1 downto 0);
 	signal tgr_dec        : signed(4-1 downto 0);
-	signal tgr_cid        : std_logic_vector(trigger_chanid'range);
 	signal tgr_scale      : unsigned(scale'range);
 	signal tgr_offset     : signed(trigger_level'range);
 	signal tgr_slope      : std_logic;
@@ -655,7 +654,7 @@ begin
 				if (tgr_rdy xor tgr_req)='1' then
 					mul_req <= not mul_rdy;
 					str_req <= not str_rdy;
-					str_id  <= to_integer(unsigned(tgr_cid));
+					str_id  <= to_integer(unsigned(trigger_chanid));
 					state   := s_offset;
 				end if;
 			when s_offset =>

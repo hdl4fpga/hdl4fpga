@@ -203,7 +203,7 @@ begin
 
 		hz_scaleid      => hz_scaleid,
 		hz_offset       => hz_offset,
-		chan_id         => (chan_id'range => '0'),
+		chan_id         => std_logic_vector(chan_id), --(chan_id'range => '0'),
 		vtscale_ena     => vtscale_ena,
 		vt_scalecid     => vt_scalecid,
 		vt_scaleid      => vt_scaleid,
@@ -250,6 +250,7 @@ begin
 								values(value) := values(value) + 1;
 							when event_exit =>
 								selctd := false;
+							when others =>
 							end case;
 
 							values := (
@@ -262,7 +263,7 @@ begin
 								wid_inposition => values(wid_inposition) rem 2**(vt_offset'length-1),
 								wid_inscale    => values(wid_inscale)    mod 2**vt_scaleid'length,
 								others => 0);
-							tp(1 to 8) <= std_logic_vector(to_signed(values(wid_tgposition), 8));
+							tp(1 to 8) <= std_logic_vector(to_signed(values(wid_tgchannel), 8));
 
 							if selctd then
     							case value is
@@ -278,8 +279,8 @@ begin
     								payload <= resize(
     									to_unsigned(values(wid_tgchannel), chanid_maxsize) &
     									unsigned(to_signed(values(wid_tgposition), triggerlevel_maxsize)) & 
-    									to_unsigned(values(wid_tgmode),  trigger_mode'length)  & 
-    									to_unsigned(values(wid_tgslope), trigger_slope'length), 3*8);
+    									to_unsigned(values(wid_tgslope), trigger_slope'length)  & 
+    									to_unsigned(values(wid_tgmode),  trigger_mode'length), 3*8);
     							when wid_inposition =>
     								rid <= unsigned(rid_vtaxis);
     								reg_length <= x"02";
