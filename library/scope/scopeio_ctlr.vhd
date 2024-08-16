@@ -250,10 +250,10 @@ begin
 
 							case event is
 							when event_next =>
-								-- values(value) := values(value) - 1;
+								values(value) := values(value) - 1;
 								-- values(wid_tgchannel) := values(wid_tgchannel) - 1;
 							when event_prev =>
-								-- values(value) := values(value) + 1;
+								values(value) := values(value) + 1;
 								-- values(wid_tgchannel) := values(wid_tgchannel) + 1;
 							when others =>
 								selctd := false;
@@ -299,14 +299,6 @@ begin
 									to_unsigned(values(wid_inscale), vt_scaleid'length), 3*8);
 							when others =>
 							end case;
-							rid <= unsigned(rid_trigger);
-							reg_length <= x"02";
-							payload <= resize(
-								to_unsigned(0, chanid_maxsize) &
-								unsigned(to_signed(10, triggerlevel_maxsize)) & 
-								to_unsigned(values(wid_tgmode),  trigger_mode'length)  & 
-								to_unsigned(values(wid_tgslope), trigger_slope'length), 3*8);
-								tp(2) <= '1';
 						else
 							case event is
 							when event_enter =>

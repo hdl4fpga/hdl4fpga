@@ -190,16 +190,23 @@ begin
 		rd_addr => chan_id,
 		rd_data => tbl_tgrdata);
 
-	process (tbl_tgrdata)
+	process (trigger_ena, rqtd_tgrslope, rqtd_tgroneshot, rqtd_tgrfreeze, rqtd_tgrlevel, tbl_tgrdata)
 		variable tgrdata : unsigned(tbl_tgrdata'range);
 	begin
-		tgrdata := unsigned(tbl_tgrdata);
-		trigger_level <= std_logic_vector(tgrdata(0 to trigger_level'length-1));
-		tgrdata := tgrdata sll trigger_level'length;
-		trigger_slope <= tgrdata(0);
-		tgrdata := tgrdata sll 1;
-		trigger_oneshot <= tgrdata(0);
-		tgrdata := tgrdata sll 1;
-		trigger_freeze <= tgrdata(0);
+		if trigger_ena='1' then
+			trigger_level   <= rqtd_tgrlevel;
+			trigger_slope   <= rqtd_tgrslope;
+			trigger_oneshot <= rqtd_tgroneshot;
+			trigger_freeze  <= rqtd_tgrfreeze;
+		else
+			tgrdata := unsigned(tbl_tgrdata);
+			trigger_level <= std_logic_vector(tgrdata(0 to trigger_level'length-1));
+			tgrdata := tgrdata sll trigger_level'length;
+			trigger_slope <= tgrdata(0);
+			tgrdata := tgrdata sll 1;
+			trigger_oneshot <= tgrdata(0);
+			tgrdata := tgrdata sll 1;
+			trigger_freeze <= tgrdata(0);
+		end if;
 	end process;
 end;
