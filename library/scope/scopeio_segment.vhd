@@ -22,7 +22,7 @@ entity scopeio_segment is
 		hz_segment    : in  std_logic_vector;
 
 		trigger_chanid : in std_logic_vector;
-		trigger_level  : in  std_logic_vector;
+		trigger_level  : in std_logic_vector;
 
 		video_clk     : in  std_logic;
 		x             : in  std_logic_vector;
@@ -153,7 +153,7 @@ begin
 			end if;
 		end process;
 
-		row <= resize(unsigned(trigger_level)+offset, row'length);
+		row <= resize(unsigned(signed(trigger_level))+offset, row'length);
 		ena <= grid_on when resize(unsigned(y), row'length)=row else '0';
 
 		hline_e : entity hdl4fpga.draw_line
