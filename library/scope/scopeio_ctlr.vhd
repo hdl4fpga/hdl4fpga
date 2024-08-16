@@ -254,22 +254,26 @@ begin
 								-- values(wid_tgchannel) := values(wid_tgchannel) - 1;
 							when event_prev =>
 								values(value) := values(value) + 1;
+							values(wid_tgposition) := 10;
 								-- values(wid_tgchannel) := values(wid_tgchannel) + 1;
 							when others =>
 								selctd := false;
 							end case;
 
+							-- values(wid_tgposition) := values(wid_tgposition) rem 2**(trigger_level'length-1);
 							values := (
 								wid_tmposition => values(wid_tmposition) rem 2**(hz_offset'length-1),
 								wid_tmscale    => values(wid_tmscale)    mod 2**hz_scaleid'length,
 								wid_tgchannel  => values(wid_tgchannel)  mod 2**trigger_chanid'length,
-								wid_tgposition => values(wid_tgposition) rem 2**(trigger_level'length-1),
+								-- wid_tgposition => values(wid_tgposition) rem 2**(trigger_level'length-1),
+								wid_tgposition => values(wid_tgposition),
 								wid_tgslope    => values(wid_tgslope)    mod 2**trigger_slope'length,
 								wid_tgmode     => values(wid_tgmode)     mod 2**trigger_mode'length,
 								wid_inposition => values(wid_inposition) rem 2**(vt_offset'length-1),
 								wid_inscale    => values(wid_inscale)    mod 2**vt_scaleid'length,
 								others => 0);
 
+								-- values(wid_tgposition) := 10;
 							case value is
 							when wid_tmposition|wid_tmscale =>
 								rid <= unsigned(rid_hzaxis);
@@ -283,6 +287,7 @@ begin
 								payload <= resize(
 									to_unsigned(values(wid_tgchannel), chanid_maxsize) &
 									unsigned(to_signed(values(wid_tgposition), triggerlevel_maxsize)) & 
+									-- unsigned(to_signed(10, triggerlevel_maxsize)) & 
 									to_unsigned(values(wid_tgmode),  trigger_mode'length)  & 
 									to_unsigned(values(wid_tgslope), trigger_slope'length), 3*8);
 							when wid_inposition =>
@@ -335,7 +340,7 @@ begin
 							end case;
 							rid <= unsigned(rid_focus);
 							reg_length <= x"00";
-							payload (0 to 8-1) <= to_unsigned(focus_wid, 8);
+							payload (0 to 8-1) <= to_unsigned(focus_wid, 8) or setif(selctd, x"80", x"00");
 								tp(2) <= '0';
 						end if;
 						send_req <= not send_rdy;

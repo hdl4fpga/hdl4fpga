@@ -269,6 +269,7 @@ begin
 			video_clk     => video_clk,
 			video_hcntr   => textbox_x,
 			video_vcntr   => textbox_y,
+			video_vton    => video_vton,
 			sgmntbox_ena  => sgmntbox_ena,
 			text_fg       => text_fg,
 			text_bg       => text_bg,
