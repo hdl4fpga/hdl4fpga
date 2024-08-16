@@ -35,7 +35,7 @@ begin
 			if input_dv='1' then
 				shot   := (lt and ge and not edge) or (not lt and not ge and edge);
 				lt     := not ge;
-				ge     := setif(sample >= signed(trigger_level));
+				ge     := setif(sample >= -signed(trigger_level));
 				edge   := not trigger_slope;
 				sample := signed(multiplex(input_data, trigger_chanid, sample'length));
 			end if;

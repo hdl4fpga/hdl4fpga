@@ -298,7 +298,7 @@ begin
 					tgr_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
 					tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-					tgr_offset  <= -signed(trigger_level);
+					tgr_offset  <= signed(trigger_level);
 					tgr_slope   <= trigger_slope;
 					tgr_freeze  <= trigger_freeze;
 					tgr_oneshot <= trigger_oneshot;

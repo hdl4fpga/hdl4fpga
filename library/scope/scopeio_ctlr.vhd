@@ -242,7 +242,6 @@ begin
 								wid_inposition => to_integer(signed(vt_offset)),
 								wid_inscale    => to_integer(unsigned(vt_scaleid)),
 								others         => 0);
-							tp(1 to 8) <= std_logic_vector(to_signed(values(wid_tgposition), 8));
 
 							case event is
 							when event_next =>
@@ -263,6 +262,7 @@ begin
 								wid_inposition => values(wid_inposition) rem 2**(vt_offset'length-1),
 								wid_inscale    => values(wid_inscale)    mod 2**vt_scaleid'length,
 								others => 0);
+							tp(1 to 8) <= std_logic_vector(to_signed(values(wid_tgposition), 8));
 
 							if selctd then
     							case value is

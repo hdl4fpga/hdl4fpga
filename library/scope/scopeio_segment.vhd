@@ -153,7 +153,7 @@ begin
 			end if;
 		end process;
 
-		row <= resize(unsigned(signed(trigger_level))+offset, row'length);
+		row <= resize(unsigned(-signed(trigger_level))+offset, row'length);
 		ena <= grid_on when resize(unsigned(y), row'length)=row else '0';
 
 		hline_e : entity hdl4fpga.draw_line
