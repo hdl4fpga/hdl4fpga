@@ -213,8 +213,7 @@ begin
 			return table;
 		end;
 
-		function left_borders(
-			constant width_borders : natural_vector)
+		function left_borders
 			return natural_vector is
 			variable table : natural_vector(0 to wid_inscale+3*(inputs-1));
 		begin
@@ -228,7 +227,7 @@ begin
 			table(wid_tgmode)     := table(wid_tgslope)+2;
 			table(wid_input)      := 0;
 			table(wid_inposition) := 4;
-			table(wid_inscale)    := table(wid_inposition)+3;
+			table(wid_inscale)    := table(wid_inposition)+3+width_borders(wid_inposition);
 			for i in wid_static+1 to table'right loop
 				table(i) := table(i-3);
 			end loop;

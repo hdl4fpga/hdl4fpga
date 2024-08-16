@@ -165,7 +165,7 @@ begin
 		trigger_freeze  => rqtd_tgrfreeze,
 		trigger_level   => rqtd_tgrlevel);
 
-	process (trigger_ena, rgtr_clk)
+	process (rqtd_tgrcid, trigger_ena, rgtr_clk)
 		variable cid : std_logic_vector(chan_id'range);
 	begin
 		if rising_edge(rgtr_clk) then
