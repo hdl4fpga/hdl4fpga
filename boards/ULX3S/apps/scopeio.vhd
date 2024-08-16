@@ -432,8 +432,7 @@ begin
 			so_irdy => ctlr_irdy,
 			so_trdy => ctlr_trdy,
 			so_data => ctlr_data);
-		led(0) <= tp(1);
-		led(1) <= tp(2);
+		led <= tp(1 to 8);
 
 		so_frm  <= si_frm  when si_frm='1' else ctlr_frm;
 		so_irdy <= si_irdy when si_frm='1' else ctlr_irdy;

@@ -203,7 +203,7 @@ begin
 
 		hz_scaleid      => hz_scaleid,
 		hz_offset       => hz_offset,
-		chan_id         => std_logic_vector(chan_id),
+		chan_id         => (chan_id'range => '0'),
 		vtscale_ena     => vtscale_ena,
 		vt_scalecid     => vt_scalecid,
 		vt_scaleid      => vt_scaleid,
@@ -227,11 +227,6 @@ begin
 		variable focus_wid : natural range next_tab'range;
 	begin
 		if rising_edge(rgtr_clk) then
-			if selctd then
-				tp(1) <= '1';
-			else
-				tp(1) <= '0';
-			end if;
 			case state is
 			when s_idle =>
 				if (send_req xor send_rdy)='0' then
@@ -247,63 +242,64 @@ begin
 								wid_inposition => to_integer(signed(vt_offset)),
 								wid_inscale    => to_integer(unsigned(vt_scaleid)),
 								others         => 0);
+							tp(1 to 8) <= std_logic_vector(to_signed(values(wid_tgposition), 8));
 
 							case event is
 							when event_next =>
 								values(value) := values(value) - 1;
-								-- values(wid_tgchannel) := values(wid_tgchannel) - 1;
 							when event_prev =>
 								values(value) := values(value) + 1;
-							values(wid_tgposition) := 10;
-								-- values(wid_tgchannel) := values(wid_tgchannel) + 1;
 							when others =>
 								selctd := false;
 							end case;
 
-							-- values(wid_tgposition) := values(wid_tgposition) rem 2**(trigger_level'length-1);
 							values := (
 								wid_tmposition => values(wid_tmposition) rem 2**(hz_offset'length-1),
 								wid_tmscale    => values(wid_tmscale)    mod 2**hz_scaleid'length,
 								wid_tgchannel  => values(wid_tgchannel)  mod 2**trigger_chanid'length,
-								-- wid_tgposition => values(wid_tgposition) rem 2**(trigger_level'length-1),
-								wid_tgposition => values(wid_tgposition),
+								wid_tgposition => values(wid_tgposition) rem 2**(trigger_level'length-1),
 								wid_tgslope    => values(wid_tgslope)    mod 2**trigger_slope'length,
 								wid_tgmode     => values(wid_tgmode)     mod 2**trigger_mode'length,
 								wid_inposition => values(wid_inposition) rem 2**(vt_offset'length-1),
 								wid_inscale    => values(wid_inscale)    mod 2**vt_scaleid'length,
 								others => 0);
 
-								-- values(wid_tgposition) := 10;
-							case value is
-							when wid_tmposition|wid_tmscale =>
-								rid <= unsigned(rid_hzaxis);
-								reg_length <= x"02";
-								payload <= resize(
-									to_unsigned(values(wid_tmscale), hzscale_maxsize) & 
-									unsigned(to_signed(values(wid_tmposition), hzoffset_maxsize)), 3*8);
-							when wid_tgchannel|wid_tgposition|wid_tgslope|wid_tgmode =>
-								rid <= unsigned(rid_trigger);
-								reg_length <= x"02";
-								payload <= resize(
-									to_unsigned(values(wid_tgchannel), chanid_maxsize) &
-									unsigned(to_signed(values(wid_tgposition), triggerlevel_maxsize)) & 
-									-- unsigned(to_signed(10, triggerlevel_maxsize)) & 
-									to_unsigned(values(wid_tgmode),  trigger_mode'length)  & 
-									to_unsigned(values(wid_tgslope), trigger_slope'length), 3*8);
-							when wid_inposition =>
-								rid <= unsigned(rid_vtaxis);
-								reg_length <= x"02";
-								payload <= resize(
-									resize(chan_id, chanid_maxsize) &
-									unsigned(to_signed(values(wid_inposition), vtoffset_maxsize)), 3*8);
-							when wid_inscale =>
-								rid <= unsigned(rid_gain);
-								reg_length <= x"01";
-								payload <= resize(
-									resize(chan_id, chanid_maxsize) &
-									to_unsigned(values(wid_inscale), vt_scaleid'length), 3*8);
-							when others =>
-							end case;
+							if selctd then
+    							case value is
+    							when wid_tmposition|wid_tmscale =>
+    								rid <= unsigned(rid_hzaxis);
+    								reg_length <= x"02";
+    								payload <= resize(
+    									to_unsigned(values(wid_tmscale), hzscale_maxsize) & 
+    									unsigned(to_signed(values(wid_tmposition), hzoffset_maxsize)), 3*8);
+    							when wid_tgchannel|wid_tgposition|wid_tgslope|wid_tgmode =>
+    								rid <= unsigned(rid_trigger);
+    								reg_length <= x"02";
+    								payload <= resize(
+    									-- to_unsigned(values(wid_tgchannel), chanid_maxsize) &
+    									to_unsigned(0, chanid_maxsize) &
+    									unsigned(to_signed(values(wid_tgposition), triggerlevel_maxsize)) & 
+    									to_unsigned(values(wid_tgmode),  trigger_mode'length)  & 
+    									to_unsigned(values(wid_tgslope), trigger_slope'length), 3*8);
+    							when wid_inposition =>
+    								rid <= unsigned(rid_vtaxis);
+    								reg_length <= x"02";
+    								payload <= resize(
+    									resize(chan_id, chanid_maxsize) &
+    									unsigned(to_signed(values(wid_inposition), vtoffset_maxsize)), 3*8);
+    							when wid_inscale =>
+    								rid <= unsigned(rid_gain);
+    								reg_length <= x"01";
+    								payload <= resize(
+    									resize(chan_id, chanid_maxsize) &
+    									to_unsigned(values(wid_inscale), vt_scaleid'length), 3*8);
+    							when others =>
+    							end case;
+							else
+    							rid <= unsigned(rid_focus);
+    							reg_length <= x"00";
+    							payload (0 to 8-1) <= to_unsigned(focus_wid, 8);
+							end if;
 						else
 							case event is
 							when event_enter =>
@@ -341,7 +337,6 @@ begin
 							rid <= unsigned(rid_focus);
 							reg_length <= x"00";
 							payload (0 to 8-1) <= to_unsigned(focus_wid, 8) or setif(selctd, x"80", x"00");
-								tp(2) <= '0';
 						end if;
 						send_req <= not send_rdy;
 						state := s_send;
@@ -353,6 +348,7 @@ begin
 					state := s_idle;
 				end if;
 			end case;
+			chan_id <= (others => '0');
 		end if;
 	end process;
 	
