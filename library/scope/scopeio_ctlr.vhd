@@ -248,7 +248,7 @@ begin
 								values(value) := values(value) - 1;
 							when event_prev =>
 								values(value) := values(value) + 1;
-							when others =>
+							when event_exit =>
 								selctd := false;
 							end case;
 
