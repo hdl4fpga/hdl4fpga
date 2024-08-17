@@ -137,7 +137,7 @@ architecture def of scopeio_ctlr is
 			wid_tgchannel  => wid_tgchannel,
 			wid_tgposition => wid_tgposition,    
 			wid_tgslope    => wid_tgslope,    
-			wid_tgmode     => wid_tgslope,
+			wid_tgmode     => wid_tgmode,
 			wid_input      => wid_inposition,
 			wid_inposition => wid_inposition,
 			wid_inscale    => wid_inscale,
@@ -218,7 +218,6 @@ begin
 		trigger_freeze  => trigger_freeze,
 		trigger_level   => trigger_level);
 
-						-- tp(1 to 8) <= std_logic_vector(resize(chan_id, 8));
 	process (req, rgtr_clk)
 		type states is (s_navigate, s_selected, s_tgchannel);
 		variable state     : states;
@@ -304,8 +303,6 @@ begin
     							wid_inscale    => values(wid_inscale)    mod 2**vt_scaleid'length,
     							others => 0);
 
-						-- tp(1 to 8) <= std_logic_vector(resize(unsigned(vt_offset), 8));
-						-- tp(1 to 8) <= std_logic_vector(to_signed(values(wid_inposition), 8));
     						case value is
     						when wid_tmposition|wid_tmscale =>
     							rid <= unsigned(rid_hzaxis);
@@ -334,7 +331,6 @@ begin
     								unsigned(to_signed(values(wid_inposition), vtoffset_maxsize)), 3*8);
 								send_req <= not send_rdy;
     						when wid_inscale =>
-								tp(1 to 8) <= std_logic_vector(resize(chan_id, 8));
     							rid <= unsigned(rid_gain);
     							reg_length <= x"01";
     							payload(0 to 2*8-1) <= resize(
