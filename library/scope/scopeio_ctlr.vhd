@@ -271,6 +271,7 @@ begin
 						rid <= unsigned(rid_focus);
 						reg_length <= x"00";
 						payload (0 to 8-1) <= to_unsigned(focus_wid+blink, 8);
+						tp(1 to 8) <= std_logic_vector(resize(chan_id, 8));
 						send_req <= not send_rdy;
 					when s_selected =>
 						values := (
