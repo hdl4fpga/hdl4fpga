@@ -98,6 +98,7 @@ architecture def of scopeio_reading is
 	signal vtwdt_rdy      : std_logic;
 	signal vt_uid         : natural;
 	signal vt_chanid      : std_logic_vector(vt_cid'range);
+	signal vts_chanid     : std_logic_vector(vt_cid'range);
 
 	signal tgr_sht        : signed(4-1 downto 0);
 	signal tgr_dec        : signed(4-1 downto 0);
@@ -174,10 +175,11 @@ begin
 	vt_cid <= 
 		vt_offsetcid   when vtoffset_ena='1' else 
 		vt_scalecid    when vtscale_ena='1'  else
-		std_logic_vector(to_unsigned(chan, vt_cid'length)) when (vtstup_rdy xor vtstup_req)='1' else
+		vts_chanid     when (vtstup_rdy xor vtstup_req)='1' else
+		vt_chanid      when (vtwdt_rdy xor vtwdt_req)='1' else
 		trigger_chanid when trigger_ena='1'  else
 		trigger_chanid when (tgrref_rdy xor tgrref_req)='1'  else
-		vt_chanid;
+		(others => '-');
 
 	state_e : entity hdl4fpga.scopeio_state
 	port map (
@@ -245,6 +247,7 @@ begin
 				state := s_vt;
 				chan <= inputs-1;
 			end if;
+			vts_chanid <= std_logic_vector(to_unsigned(chan, vts_chanid'length));
 		end if;
 	end process;
 
@@ -263,6 +266,7 @@ begin
 					vt_wdtrow  <= resize(unsigned(vt_scalecid), vt_wdtrow'length)+2;
 					vt_chanid  <= vt_scalecid;
 					tgrref_req <= not tgrref_rdy;
+					vt_chanid  <= vt_scalecid;
 					vtwdt_req  <= not vtwdt_rdy;
 				elsif vtoffset_ena='1' then
 					scaleid    := to_integer(unsigned(vt_scaleid));
