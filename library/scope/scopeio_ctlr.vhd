@@ -177,8 +177,8 @@ architecture def of scopeio_ctlr is
 	alias  rid         : unsigned(0 to 1*8-1) is ctrl_rgtr(0*8 to 1*8-1);
 	alias  reg_length  : unsigned(0 to 1*8-1) is ctrl_rgtr(1*8 to 2*8-1);
 	alias  payload     : unsigned(0 to 3*8-1) is ctrl_rgtr(2*8 to 5*8-1); 
-	signal send_req    : bit := '0';
-	signal send_rdy    : bit := '0';
+	signal send_req    : std_logic := '0';
+	signal send_rdy    : std_logic := '0';
 	signal send_data   : std_logic_vector(so_data'range);
 
 begin
@@ -203,7 +203,7 @@ begin
 
 		hz_scaleid      => hz_scaleid,
 		hz_offset       => hz_offset,
-		chan_id         => std_logic_vector(chan_id), --(chan_id'range => '0'),
+		chan_id         => std_logic_vector(chan_id),
 		vtscale_ena     => vtscale_ena,
 		vt_scalecid     => vt_scalecid,
 		vt_scaleid      => vt_scaleid,
@@ -220,10 +220,11 @@ begin
 
 	process (req, rgtr_clk)
 		type states is (s_navigate, s_selected, s_tgchannel);
-		variable state  : states;
-		variable values : integer_vector(0 to wid_inscale);
-		variable value  : natural range values'range;
+		variable state     : states;
+		variable values    : integer_vector(0 to wid_inscale);
+		variable value     : natural range values'range;
 		variable focus_wid : natural range next_tab'range;
+		variable blink     : natural range 0 to 2**7;
 	begin
 		if rising_edge(rgtr_clk) then
 			if (to_bit(rdy) xor to_bit(req))='1' then
@@ -252,23 +253,25 @@ begin
 								end loop;
 							end case;
 							if focus_wid=enter_tab(focus_wid) then
+								blink := 2**7;
 								state := s_selected;
 							end if;
 							focus_wid := enter_tab(focus_wid);
 						when event_next =>
+							blink := 0;
 							focus_wid := next_tab(focus_wid);
 						when event_prev =>
+							blink := 0;
 							focus_wid := prev_tab(focus_wid);
 						when event_exit =>
+							blink := 0;
 							focus_wid := escape_tab(focus_wid);
 						when others =>
 						end case;
 						rid <= unsigned(rid_focus);
 						reg_length <= x"00";
-						-- payload (0 to 8-1) <= to_unsigned(focus_wid, 8) or setif(selctd, x"80", x"00");
-						payload (0 to 8-1) <= to_unsigned(focus_wid, 8);
+						payload (0 to 8-1) <= to_unsigned(focus_wid+blink, 8);
 						send_req <= not send_rdy;
-						rdy <= req;
 					when s_selected =>
 						values := (
 							wid_tmposition => to_integer(signed(hz_offset)),
@@ -282,33 +285,24 @@ begin
 							others         => 0);
 
 						case event is
-						when event_next =>
-							values(value) := values(value) - 1;
-						when event_prev =>
-							values(value) := values(value) + 1;
-						when event_exit =>
-							state := s_navigate;
-						when others =>
-						end case;
-
-						values := (
-							wid_tmposition => values(wid_tmposition) rem 2**(hz_offset'length-1),
-							wid_tmscale    => values(wid_tmscale)    mod 2**hz_scaleid'length,
-							wid_tgchannel  => values(wid_tgchannel)  mod 2**trigger_chanid'length,
-							wid_tgposition => values(wid_tgposition) rem 2**(trigger_level'length-1),
-							wid_tgslope    => values(wid_tgslope)    mod 2**trigger_slope'length,
-							wid_tgmode     => values(wid_tgmode)     mod 2**trigger_mode'length,
-							wid_inposition => values(wid_inposition) rem 2**(vt_offset'length-1),
-							wid_inscale    => values(wid_inscale)    mod 2**vt_scaleid'length,
-							others => 0);
-
-						case event is
 						when event_next|event_prev =>
 							if event=event_next then
 								values(value) := values(value) - 1;
 							else
 								values(value) := values(value) + 1;
 							end if;
+
+    						values := (
+    							wid_tmposition => values(wid_tmposition) rem 2**(hz_offset'length-1),
+    							wid_tmscale    => values(wid_tmscale)    mod 2**hz_scaleid'length,
+    							wid_tgchannel  => values(wid_tgchannel)  mod 2**trigger_chanid'length,
+    							wid_tgposition => values(wid_tgposition) rem 2**(trigger_level'length-1),
+    							wid_tgslope    => values(wid_tgslope)    mod 2**trigger_slope'length,
+    							wid_tgmode     => values(wid_tgmode)     mod 2**trigger_mode'length,
+    							wid_inposition => values(wid_inposition) rem 2**(vt_offset'length-1),
+    							wid_inscale    => values(wid_inscale)    mod 2**vt_scaleid'length,
+    							others => 0);
+
     						case value is
     						when wid_tmposition|wid_tmscale =>
     							rid <= unsigned(rid_hzaxis);
@@ -316,6 +310,7 @@ begin
     							payload <= resize(
     								to_unsigned(values(wid_tmscale), hzscale_maxsize) & 
     								unsigned(to_signed(values(wid_tmposition), hzoffset_maxsize)), 3*8);
+								send_req <= not send_rdy;
     						when wid_tgchannel =>
     							chan_id <= to_unsigned(values(value), chan_id'length);
     							state := s_tgchannel;
@@ -327,27 +322,28 @@ begin
     								unsigned(to_signed(values(wid_tgposition), triggerlevel_maxsize)) & 
     								to_unsigned(values(wid_tgslope), trigger_slope'length)  & 
     								to_unsigned(values(wid_tgmode),  trigger_mode'length), 3*8);
+								send_req <= not send_rdy;
     						when wid_inposition =>
     							rid <= unsigned(rid_vtaxis);
     							reg_length <= x"02";
     							payload <= resize(
     								resize(chan_id, chanid_maxsize) &
     								unsigned(to_signed(values(wid_inposition), vtoffset_maxsize)), 3*8);
+								send_req <= not send_rdy;
     						when wid_inscale =>
     							rid <= unsigned(rid_gain);
     							reg_length <= x"01";
     							payload <= resize(
     								resize(chan_id, chanid_maxsize) &
     								to_unsigned(values(wid_inscale), vt_scaleid'length), 3*8);
+								send_req <= not send_rdy;
     						when others =>
     						end case;
-							rdy <= req;
-							send_req <= not send_rdy;
 						when event_exit =>
 							state := s_navigate;
 						when others =>
+							state := s_navigate;
 						end case;
-
 					when s_tgchannel =>
 						rid <= unsigned(rid_trigger);
 						reg_length <= x"02";
@@ -356,9 +352,9 @@ begin
 							unsigned(resize(signed(trigger_level), triggerlevel_maxsize)) & 
 							resize(unsigned(trigger_slope), trigger_slope'length)  & 
 							resize(unsigned(trigger_mode),  trigger_mode'length), 3*8);
+						send_req <= not send_rdy;
+						state := s_selected;
 					end case;
-					rdy <= req;
-					send_req <= not send_rdy;
 				end if;
 			end if;
 		end if;
@@ -401,6 +397,7 @@ begin
 						rgtr      := shift_left(rgtr, rid'length);
 						send_rdy  <= send_req;
 						state    := s_init;
+						rdy <= req;
 					end if;
 				end case;
 			else
