@@ -218,6 +218,7 @@ begin
 		trigger_freeze  => trigger_freeze,
 		trigger_level   => trigger_level);
 
+						-- tp(1 to 8) <= std_logic_vector(resize(chan_id, 8));
 	process (req, rgtr_clk)
 		type states is (s_navigate, s_selected, s_tgchannel);
 		variable state     : states;
@@ -271,7 +272,6 @@ begin
 						rid <= unsigned(rid_focus);
 						reg_length <= x"00";
 						payload (0 to 8-1) <= to_unsigned(focus_wid+blink, 8);
-						tp(1 to 8) <= std_logic_vector(resize(chan_id, 8));
 						send_req <= not send_rdy;
 					when s_selected =>
 						values := (
@@ -304,6 +304,8 @@ begin
     							wid_inscale    => values(wid_inscale)    mod 2**vt_scaleid'length,
     							others => 0);
 
+						-- tp(1 to 8) <= std_logic_vector(resize(unsigned(vt_offset), 8));
+						-- tp(1 to 8) <= std_logic_vector(to_signed(values(wid_inposition), 8));
     						case value is
     						when wid_tmposition|wid_tmscale =>
     							rid <= unsigned(rid_hzaxis);
@@ -327,6 +329,7 @@ begin
     						when wid_inposition =>
     							rid <= unsigned(rid_vtaxis);
     							reg_length <= x"02";
+								tp(1 to 8) <= std_logic_vector(resize(chan_id, 8));
     							payload <= resize(
     								resize(chan_id, chanid_maxsize) &
     								unsigned(to_signed(values(wid_inposition), vtoffset_maxsize)), 3*8);
