@@ -329,17 +329,17 @@ begin
     						when wid_inposition =>
     							rid <= unsigned(rid_vtaxis);
     							reg_length <= x"02";
-								tp(1 to 8) <= std_logic_vector(resize(chan_id, 8));
     							payload <= resize(
     								resize(chan_id, chanid_maxsize) &
     								unsigned(to_signed(values(wid_inposition), vtoffset_maxsize)), 3*8);
 								send_req <= not send_rdy;
     						when wid_inscale =>
+								tp(1 to 8) <= std_logic_vector(resize(chan_id, 8));
     							rid <= unsigned(rid_gain);
     							reg_length <= x"01";
-    							payload <= resize(
+    							payload(0 to 2*8-1) <= resize(
     								resize(chan_id, chanid_maxsize) &
-    								to_unsigned(values(wid_inscale), vt_scaleid'length), 3*8);
+    								to_unsigned(values(wid_inscale), vt_scaleid'length), 2*8);
 								send_req <= not send_rdy;
     						when others =>
     						end case;
