@@ -322,9 +322,6 @@ begin
     								unsigned(to_signed(values(wid_tgposition), triggerlevel_maxsize)) & 
     								to_unsigned(values(wid_tgslope), trigger_slope'length)  & 
     								to_unsigned(values(wid_tgmode),  trigger_mode'length), 3*8);
-								tp(6 to 7) <= trigger_mode;
-								tp(1 to 2) <= std_logic_vector(to_unsigned(values(wid_tgmode),  trigger_mode'length));
-								-- tp(1 to 2) <= "01";
 								send_req <= not send_rdy;
     						when wid_inposition =>
     							rid <= unsigned(rid_vtaxis);
@@ -348,7 +345,6 @@ begin
 							state := s_navigate;
 						end case;
 					when s_tgchannel =>
-								tp(1 to 2) <= "10";
 						rid <= unsigned(rid_trigger);
 						reg_length <= x"02";
 						payload <= resize(
