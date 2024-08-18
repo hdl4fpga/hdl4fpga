@@ -66,7 +66,7 @@ function sendCommand(e) {
 	case 'negative':
 		this.trigger.slope.value = param[0];
 		sendRegister(registers.trigger, { 
-			level   : -this.trigger.level.value,
+			level   : this.trigger.level.value,
 			slope   : (this.trigger.slope.value === "negative") ? 1 : 0,
 			freeze  : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "freeze") ? 1 : 0,
 			oneshot : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "normal") ? 1 : 0,
