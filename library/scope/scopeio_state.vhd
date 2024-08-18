@@ -56,7 +56,7 @@ architecture def of scopeio_state is
 	signal rqtd_hzscaleid   : std_logic_vector(4-1 downto 0);
 	signal rqtd_hzoffset    : std_logic_vector(hz_offset'range);
 
-	signal rqtd_tgrdata    : std_logic_vector(0 to (trigger_level'length+3)-1);
+	signal rqtd_tgrdata    : std_logic_vector((trigger_level'length+3)-1 downto 0);
 	signal tbl_tgrdata     : std_logic_vector(rqtd_tgrdata'range);
 
 begin
@@ -200,12 +200,13 @@ begin
 			trigger_freeze  <= rqtd_tgrfreeze;
 		else
 			tgrdata := unsigned(tbl_tgrdata);
-			trigger_level <= std_logic_vector(tgrdata(0 to trigger_level'length-1));
-			tgrdata := tgrdata sll trigger_level'length;
+			tgrdata := tgrdata rol trigger_level'length;
+			trigger_level <= std_logic_vector(tgrdata(trigger_level'length-1 downto 0));
+			tgrdata := tgrdata rol 1;
 			trigger_slope <= tgrdata(0);
-			tgrdata := tgrdata sll 1;
+			tgrdata := tgrdata rol 1;
 			trigger_oneshot <= tgrdata(0);
-			tgrdata := tgrdata sll 1;
+			tgrdata := tgrdata rol 1;
 			trigger_freeze <= tgrdata(0);
 		end if;
 	end process;

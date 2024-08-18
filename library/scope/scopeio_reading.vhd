@@ -247,7 +247,7 @@ begin
 				state := s_vt;
 				chan <= inputs-1;
 			end if;
-			vts_chanid <= std_logic_vector(to_unsigned(chan, vts_chanid'length));
+			vts_chanid <= std_logic_vector(to_unsigned(chan mod inputs, vts_chanid'length));
 		end if;
 	end process;
 

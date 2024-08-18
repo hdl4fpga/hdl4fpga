@@ -59,8 +59,8 @@ architecture def of scopeio_ctlr is
 	signal trigger_chanid  : std_logic_vector(chan_id'range);
 	signal trigger_slope   : std_logic_vector(0 to 1-1);
 	signal trigger_mode    : std_logic_vector(0 to 2-1);
-	alias  trigger_freeze  is trigger_mode(0);
-	alias  trigger_oneshot is trigger_mode(1);
+	alias  trigger_freeze  is trigger_mode(1);
+	alias  trigger_oneshot is trigger_mode(0);
 	signal trigger_level   : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 	
 	constant tab : natural_vector(0 to wid_inscale) := (
@@ -322,6 +322,9 @@ begin
     								unsigned(to_signed(values(wid_tgposition), triggerlevel_maxsize)) & 
     								to_unsigned(values(wid_tgslope), trigger_slope'length)  & 
     								to_unsigned(values(wid_tgmode),  trigger_mode'length), 3*8);
+								tp(6 to 7) <= trigger_mode;
+								tp(1 to 2) <= std_logic_vector(to_unsigned(values(wid_tgmode),  trigger_mode'length));
+								-- tp(1 to 2) <= "01";
 								send_req <= not send_rdy;
     						when wid_inposition =>
     							rid <= unsigned(rid_vtaxis);
@@ -345,6 +348,7 @@ begin
 							state := s_navigate;
 						end case;
 					when s_tgchannel =>
+								tp(1 to 2) <= "10";
 						rid <= unsigned(rid_trigger);
 						reg_length <= x"02";
 						payload <= resize(
