@@ -45,7 +45,7 @@ end;
 
 architecture def of scopeio_textbox is
 	constant cga_latency    : natural := 4;
-	constant color_latency  : natural := 2;
+	constant color_latency  : natural := 1;
 
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
@@ -70,7 +70,6 @@ architecture def of scopeio_textbox is
 	signal focus_wid : std_logic_vector(6-1 downto 0);
 	signal wid       : std_logic_vector(8-1 downto 0);
 
-	signal field_id   : natural range 0 to 2**fg_color'length-1;
 
 begin
 
@@ -258,7 +257,7 @@ begin
 			table(wid_tmscale)    := table(wid_tmposition)+3+width_borders(wid_tmposition);
 			table(wid_tgchannel)  := 0;
 			table(wid_tgposition) := 4;
-			table(wid_tgslope)    := table(wid_tgposition)+3+width_borders(wid_tgposition);
+			table(wid_tgslope)    := table(wid_tgposition)+4+width_borders(wid_tgposition);
 			table(wid_tgmode)     := table(wid_tgslope)+2;
 			table(wid_input)      := 0;
 			table(wid_inposition) := 4;
@@ -330,31 +329,33 @@ begin
 			constant input_labels : natural := 2;
 			constant field_addr : natural_vector := textbox_field(cga_cols);
 			variable addr       : std_logic_vector(video_addr'range);
+			variable bg_id      : natural range 0 to 2**fg_color'length-1;
+			variable field_id   : natural range 0 to 2**fg_color'length-1;
 		begin
 			if rising_edge(video_clk) then
 				if s='0' then
 					fg_color <= std_logic_vector(to_unsigned(field_id, fg_color'length));
+					bg_color <= std_logic_vector(to_unsigned(bg_id,    bg_color'length));
 				else
-					fg_color <= std_logic_vector(to_unsigned(pltid_textbg, bg_color'length));
+					fg_color <= std_logic_vector(to_unsigned(bg_id,    fg_color'length));
+					bg_color <= std_logic_vector(to_unsigned(field_id, bg_color'length));
 				end if;
 				if video_on='1' then
-					field_id <= pltid_textfg;
+					field_id := pltid_textfg;
 					for i in field_addr'range loop
 						if unsigned(addr) < (field_addr(i)+cga_cols) then
 							if i >= input_labels then 
-								field_id <= (i-input_labels)+pltid_order'length;
+								field_id := (i-input_labels)+pltid_order'length;
 							end if;
 							exit;
 						end if;
 					end loop;
+					bg_id := pltid_textbg;
 				end if;
 				addr := video_addr;
 			end if;
 		end process;
 
-		bg_color <= 
-			std_logic_vector(to_unsigned(pltid_textbg, bg_color'length)) when s='0' else
-			std_logic_vector(to_unsigned(field_id, fg_color'length));
 	end block;
 
 	latfg_e : entity hdl4fpga.latency
