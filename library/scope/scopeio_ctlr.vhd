@@ -149,17 +149,24 @@ architecture def of scopeio_ctlr is
 		return retval;
 	end;
 
-	function up_sequence (
-		constant arg : natural_vector)
+	function up_sequence
 		return natural_vector is
-		variable retval : natural_vector(arg'range);
+		variable retval : natural_vector(0 to wid_inscale+3*(inputs-1)) := (
+			wid_time       => wid_time,
+			wid_trigger    => wid_trigger,
+			wid_tmposition => wid_time,   
+			wid_tmscale    => wid_time, 
+			wid_tgchannel  => wid_trigger,
+			wid_tgposition => wid_trigger,    
+			wid_tgslope    => wid_trigger,    
+			wid_tgmode     => wid_trigger,
+			wid_input      => wid_input,
+			wid_inposition => wid_input,
+			wid_inscale    => wid_input,
+			others         => 0);
 	begin
-		for i in arg'range loop
-			if arg(i)/=i then
-				retval(i) := i;
-			else
-				retval(arg(i)) := i;
-			end if;
+		for i in wid_input+3 to wid_inscale+3*(inputs-1) loop
+			retval(i) := retval(i-3) + 3;
 		end loop;
 		return retval;
 	end;
@@ -167,7 +174,7 @@ architecture def of scopeio_ctlr is
 	constant next_tab   : natural_vector := next_sequence;
 	constant prev_tab   : natural_vector := prev_sequence(next_tab);
 	constant enter_tab  : natural_vector := enter_sequence;
-	constant escape_tab : natural_vector := up_sequence(enter_tab);
+	constant escape_tab : natural_vector := up_sequence;
 
 	signal focus_req   : std_logic := '0';
 	signal focus_rdy   : std_logic := '0';
@@ -264,8 +271,8 @@ begin
 							blink := 0;
 							focus_wid := prev_tab(focus_wid);
 						when event_exit =>
-							blink := 0;
 							focus_wid := escape_tab(focus_wid);
+							blink := 0;
 						when others =>
 						end case;
 						rid <= unsigned(rid_focus);
@@ -340,6 +347,10 @@ begin
     						when others =>
     						end case;
 						when event_exit =>
+							rid <= unsigned(rid_focus);
+							reg_length <= x"00";
+							payload (0 to 8-1) <= to_unsigned(focus_wid, 8);
+							send_req <= not send_rdy;
 							state := s_navigate;
 						when others =>
 							state := s_navigate;
@@ -396,8 +407,8 @@ begin
 						send_data <= std_logic_vector(rgtr(send_data'range));
 						rgtr      := shift_left(rgtr, rid'length);
 						send_rdy  <= send_req;
+						rdy       <= req;
 						state    := s_init;
-						rdy <= req;
 					end if;
 				end case;
 			else
