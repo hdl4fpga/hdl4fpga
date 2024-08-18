@@ -249,11 +249,15 @@ begin
 									if focus_wid=i then
 										chan_id <= to_unsigned((i-wid_input)/3, chan_id'length);
 										case (i-wid_input) mod 3 is
+										when 0 => 
 										when 1 => 
 											value := wid_inposition;
 										when 2 => 
 											value := wid_inscale;
 										when others =>
+											assert false
+											report "scopeio_ctlr : invalid event"
+											severity FAILURE:
 										end case;
 										exit;
 									end if;
@@ -274,6 +278,9 @@ begin
 							focus_wid := escape_tab(focus_wid);
 							blink := 0;
 						when others =>
+							assert false
+								report "scopeio_ctlr : invalid event"
+								severity FAILURE:
 						end case;
 						rid <= unsigned(rid_focus);
 						reg_length <= x"00";
@@ -345,6 +352,9 @@ begin
     								to_unsigned(values(wid_inscale), vt_scaleid'length), 2*8);
 								send_req <= not send_rdy;
     						when others =>
+								assert false
+									report "scopeio_ctlr : invalid value"
+									severity FAILURE:
     						end case;
 						when event_exit =>
 							rid <= unsigned(rid_focus);
@@ -353,7 +363,9 @@ begin
 							send_req <= not send_rdy;
 							state := s_navigate;
 						when others =>
-							state := s_navigate;
+							assert false
+								report "scopeio_ctlr : invalid event"
+								severity FAILURE:
 						end case;
 					when s_tgchannel =>
 						rid <= unsigned(rid_trigger);
