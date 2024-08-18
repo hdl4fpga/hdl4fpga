@@ -290,13 +290,21 @@ begin
 							blink := 0;
 							focus_wid := next_tab(focus_wid);
 							if focus_wid > upto(hz_scaleid) then
-								focus_wid := wid_tmposition;
+								if ((focus_wid-wid_input) mod 3)=0 then
+									focus_wid := wid_time;
+								else
+									focus_wid := wid_tmposition;
+								end if;
 							end if;
 						when event_prev =>
 							blink := 0;
 							focus_wid := prev_tab(focus_wid);
 							if focus_wid > upto(hz_scaleid) then
-								focus_wid := upto(hz_scaleid);
+								if ((focus_wid-wid_input) mod 3)=0 then
+									focus_wid := upto(hz_scaleid)-2;
+								else
+									focus_wid := upto(hz_scaleid);
+								end if;
 							end if;
 						when event_exit =>
 							focus_wid := escape_tab(focus_wid);
