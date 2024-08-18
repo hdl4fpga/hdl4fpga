@@ -188,6 +188,24 @@ architecture def of scopeio_ctlr is
 	signal send_rdy    : std_logic := '0';
 	signal send_data   : std_logic_vector(so_data'range);
 
+	function upto (
+		constant arg : std_logic_vector(0 to 4-1))
+		return natural is
+	begin
+		case arg is
+		when x"0" =>
+			return wid_input+1*3;
+		when x"1" => 
+			return wid_input+2*3;
+		when x"2" => 
+			return wid_input+4*3;
+		when x"3" => 
+			return wid_input+5*3;
+		when others =>
+			return wid_input+inputs*3;
+		end case;
+	end;
+
 begin
 
 	siosin_e : entity hdl4fpga.sio_sin
@@ -257,7 +275,7 @@ begin
 										when others =>
 											assert false
 											report "scopeio_ctlr : invalid event"
-											severity FAILURE:
+											severity FAILURE;
 										end case;
 										exit;
 									end if;
@@ -271,16 +289,22 @@ begin
 						when event_next =>
 							blink := 0;
 							focus_wid := next_tab(focus_wid);
+							if focus_wid >= upto(hz_scaleid) then
+								focus_wid := wid_tmposition;
+							end if;
 						when event_prev =>
 							blink := 0;
 							focus_wid := prev_tab(focus_wid);
+							if focus_wid >= upto(hz_scaleid) then
+								focus_wid := upto(hz_scaleid)-1;
+							end if;
 						when event_exit =>
 							focus_wid := escape_tab(focus_wid);
 							blink := 0;
 						when others =>
 							assert false
 								report "scopeio_ctlr : invalid event"
-								severity FAILURE:
+								severity FAILURE;
 						end case;
 						rid <= unsigned(rid_focus);
 						reg_length <= x"00";
@@ -354,7 +378,7 @@ begin
     						when others =>
 								assert false
 									report "scopeio_ctlr : invalid value"
-									severity FAILURE:
+									severity FAILURE;
     						end case;
 						when event_exit =>
 							rid <= unsigned(rid_focus);
@@ -365,7 +389,7 @@ begin
 						when others =>
 							assert false
 								report "scopeio_ctlr : invalid event"
-								severity FAILURE:
+								severity FAILURE;
 						end case;
 					when s_tgchannel =>
 						rid <= unsigned(rid_trigger);
