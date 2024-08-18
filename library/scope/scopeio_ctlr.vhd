@@ -156,9 +156,9 @@ architecture def of scopeio_ctlr is
 	begin
 		for i in arg'range loop
 			if arg(i)/=i then
-				retval(arg(i)) := i;
-			else
 				retval(i) := i;
+			else
+				retval(arg(i)) := i;
 			end if;
 		end loop;
 		return retval;

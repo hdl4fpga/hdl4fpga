@@ -99,8 +99,7 @@ begin
 		trigger_oneshot => trigger_oneshot,
 		trigger_slope   => trigger_slope);
 		
-	trigger_mode(0) <= trigger_freeze;
-	trigger_mode(1) <= trigger_oneshot;
+	trigger_mode <= (trigger_freeze,trigger_oneshot);
 
 	scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
 	generic map (
