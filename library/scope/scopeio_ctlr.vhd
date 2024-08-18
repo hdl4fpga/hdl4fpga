@@ -194,15 +194,15 @@ architecture def of scopeio_ctlr is
 	begin
 		case arg is
 		when x"0" =>
-			return wid_input+1*3;
+			return wid_input+1*3-1;
 		when x"1" => 
-			return wid_input+2*3;
+			return wid_input+2*3-1;
 		when x"2" => 
-			return wid_input+4*3;
+			return wid_input+4*3-1;
 		when x"3" => 
-			return wid_input+5*3;
+			return wid_input+5*3-1;
 		when others =>
-			return wid_input+inputs*3;
+			return wid_input+inputs*3-1;
 		end case;
 	end;
 
@@ -289,14 +289,14 @@ begin
 						when event_next =>
 							blink := 0;
 							focus_wid := next_tab(focus_wid);
-							if focus_wid >= upto(hz_scaleid) then
+							if focus_wid > upto(hz_scaleid) then
 								focus_wid := wid_tmposition;
 							end if;
 						when event_prev =>
 							blink := 0;
 							focus_wid := prev_tab(focus_wid);
-							if focus_wid >= upto(hz_scaleid) then
-								focus_wid := upto(hz_scaleid)-1;
+							if focus_wid > upto(hz_scaleid) then
+								focus_wid := upto(hz_scaleid);
 							end if;
 						when event_exit =>
 							focus_wid := escape_tab(focus_wid);
