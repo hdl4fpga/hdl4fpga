@@ -333,7 +333,10 @@ begin
 			variable field_id   : natural range 0 to 2**fg_color'length-1;
 		begin
 			if rising_edge(video_clk) then
-				if s='0' then
+				if sgmntbox_ena(0)='0' then
+					fg_color <= std_logic_vector(to_unsigned(field_id, fg_color'length));
+					bg_color <= std_logic_vector(to_unsigned(bg_id,    bg_color'length));
+				elsif s='0' then
 					fg_color <= std_logic_vector(to_unsigned(field_id, fg_color'length));
 					bg_color <= std_logic_vector(to_unsigned(bg_id,    bg_color'length));
 				else
