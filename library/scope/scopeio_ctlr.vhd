@@ -243,6 +243,7 @@ begin
 		trigger_freeze  => trigger_freeze,
 		trigger_level   => trigger_level);
 
+	tp(1 to 4) <= (send_req, send_rdy, req, rdy);
 	process (req, rgtr_clk)
 		type states is (s_navigate, s_selected, s_tgchannel);
 		variable state     : states;
@@ -384,6 +385,7 @@ begin
     								to_unsigned(values(wid_inscale), vt_scaleid'length), 2*8);
 								send_req <= not send_rdy;
     						when others =>
+								tp(5 to 8) <= std_logic_vector(to_unsigned(value, 4));
 								assert false
 									report "scopeio_ctlr : invalid value"
 									severity FAILURE;
