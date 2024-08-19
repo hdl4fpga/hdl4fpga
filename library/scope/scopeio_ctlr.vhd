@@ -245,7 +245,7 @@ begin
 
 	tp(1 to 4) <= (send_req, send_rdy, req, rdy);
 	process (req, rgtr_clk)
-		type states is (s_navigate, s_selected, s_tgchannel);
+		type states is (s_navigate, s_hightlight, s_selected, s_tgchannel);
 		variable state     : states;
 		variable values    : integer_vector(0 to wid_inscale);
 		variable value     : natural range values'range;
@@ -257,36 +257,15 @@ begin
 				if (send_req xor send_rdy)='0' then
 					case state is
 					when s_navigate =>
+
 						case event is
 						when event_enter =>
-							case focus_wid is
-							when wid_tmposition|wid_tmscale|wid_tgchannel|wid_tgposition|wid_tgslope|wid_tgmode =>
-								value := focus_wid;
-								chan_id <= unsigned(trigger_chanid);
-							when others =>
-								for i in wid_input to next_tab'right loop
-									if focus_wid=i then
-										chan_id <= to_unsigned((i-wid_input)/3, chan_id'length);
-										case (i-wid_input) mod 3 is
-										when 0 => 
-										when 1 => 
-											value := wid_inposition;
-										when 2 => 
-											value := wid_inscale;
-										when others =>
-											assert false
-											report "scopeio_ctlr : invalid event"
-											severity FAILURE;
-										end case;
-										exit;
-									end if;
-								end loop;
-							end case;
 							if focus_wid=enter_tab(focus_wid) then
 								blink := 2**7;
 								state := s_selected;
 							end if;
 							focus_wid := enter_tab(focus_wid);
+							rdy <= req;
 						when event_next =>
 							blink := 0;
 							focus_wid := next_tab(focus_wid);
@@ -297,6 +276,7 @@ begin
 									focus_wid := wid_tmposition;
 								end if;
 							end if;
+							state := s_hightlight;
 						when event_prev =>
 							blink := 0;
 							focus_wid := prev_tab(focus_wid);
@@ -307,14 +287,41 @@ begin
 									focus_wid := upto(hz_scaleid);
 								end if;
 							end if;
+							state := s_hightlight;
 						when event_exit =>
 							focus_wid := escape_tab(focus_wid);
 							blink := 0;
+							rdy <= req;
 						when others =>
 							assert false
 								report "scopeio_ctlr : invalid event"
 								severity FAILURE;
 						end case;
+
+						case focus_wid is
+						when wid_tmposition|wid_tmscale|wid_tgchannel|wid_tgposition|wid_tgslope|wid_tgmode =>
+							value := focus_wid;
+							chan_id <= unsigned(trigger_chanid);
+						when others =>
+							for i in wid_input to next_tab'right loop
+								if focus_wid=i then
+									chan_id <= to_unsigned((i-wid_input)/3, chan_id'length);
+									case (i-wid_input) mod 3 is
+									when 0 => 
+									when 1 => 
+										value := wid_inposition;
+									when 2 => 
+										value := wid_inscale;
+									when others =>
+										assert false
+										report "scopeio_ctlr : invalid event"
+										severity FAILURE;
+									end case;
+									exit;
+								end if;
+							end loop;
+						end case;
+
 						rid <= unsigned(rid_focus);
 						reg_length <= x"00";
 						payload (0 to 8-1) <= to_unsigned(focus_wid+blink, 8);
@@ -389,22 +396,27 @@ begin
 									report "scopeio_ctlr : invalid value"
 									severity FAILURE;
     						end case;
-						when event_exit =>
+						when event_exit |event_enter =>
 							rid <= unsigned(rid_focus);
 							reg_length <= x"00";
 							payload (0 to 8-1) <= to_unsigned(focus_wid, 8);
 							send_req <= not send_rdy;
 							state := s_navigate;
-						when event_enter =>
-							rid <= unsigned(rid_focus);
-							reg_length <= x"00";
-							payload (0 to 8-1) <= to_unsigned(focus_wid+blink, 8);
-							send_req <= not send_rdy;
 						when others =>
 							assert false
 								report "scopeio_ctlr : invalid event"
 								severity FAILURE;
 						end case;
+						rdy  <= req;
+					when s_hightlight =>
+						rid <= unsigned(rid_gain);
+						reg_length <= x"01";
+						payload(0 to 2*8-1) <= resize(
+							resize(chan_id, chanid_maxsize) &
+							resize(unsigned(vt_scaleid), vt_scaleid'length), 2*8);
+						send_req <= not send_rdy;
+						rdy <= req;
+						state := s_navigate;
 					when s_tgchannel =>
 						rid <= unsigned(rid_trigger);
 						reg_length <= x"02";
@@ -414,6 +426,7 @@ begin
 							resize(unsigned(trigger_slope), trigger_slope'length)  & 
 							resize(unsigned(trigger_mode),  trigger_mode'length), 3*8);
 						send_req <= not send_rdy;
+						rdy  <= req;
 						state := s_selected;
 					end case;
 				end if;
@@ -459,7 +472,7 @@ begin
 						send_data <= std_logic_vector(rgtr(send_data'range));
 						rgtr      := shift_left(rgtr, rid'length);
 						send_rdy  <= send_req;
-						rdy       <= req;
+						-- rdy       <= req;
 						state    := s_init;
 					end if;
 				end case;
