@@ -40,7 +40,7 @@ begin
 	freeze  <= bitfield(rgtr_data, trigger_freeze_id,  trigger_bf);
 	slope   <= bitfield(rgtr_data, trigger_slope_id,   trigger_bf);
 	oneshot <= bitfield(rgtr_data, trigger_oneshot_id, trigger_bf);
-	level   <= std_logic_vector(resize(-signed(bitfield(rgtr_data, trigger_level_id, trigger_bf)), level'length));
+	level   <= std_logic_vector(resize(signed(bitfield(rgtr_data, trigger_level_id, trigger_bf)), level'length));
 	chanid  <= std_logic_vector(resize(unsigned(bitfield(rgtr_data, trigger_chanid_id, trigger_bf)), chanid'length));
 
 	process (rgtr_clk)

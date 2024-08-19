@@ -36,13 +36,11 @@ end;
 architecture def of main is
 begin
 	process 
-		constant c : string := significand(31.25e-6);
-		variable x : string(c'range);
+		variable a : integer := 0;
 	begin
-			-- "value => " & (hdo(normalize(*coefs(i)))**".norm");
-		-- report "VALUE : " & ''' & get_value("[hola,mundo:[kkkk:12345,dddd:[67890]],hello,world].kkk", "[mundo].dddd") & ''';
-			-- report "VALUE : " & ''' & hdo(c)**".norm" & ''';
-			report CR & "VALUE : " & ''' & c & ''';
+		a := a -1;
+		a := a rem 4;
+		report CR & "VALUE : " & ''' & integer'image(a) & ''';
 		wait;
 	end process;
 end;

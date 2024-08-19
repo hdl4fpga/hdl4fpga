@@ -37,6 +37,19 @@ package scopeiopkg is
 
 	constant max_pixelsize : natural := 24;
 
+	constant wid_time       : natural := 0;
+	constant wid_trigger    : natural := 1;
+	constant wid_tmposition : natural := 2;
+	constant wid_tmscale    : natural := 3;
+	constant wid_tgchannel  : natural := 4;
+	constant wid_tgposition : natural := 5;
+	constant wid_tgslope    : natural := 6;
+	constant wid_tgmode     : natural := 7;
+	constant wid_input      : natural := 8;
+	constant wid_inposition : natural := 9;
+	constant wid_inscale    : natural := 10;
+	constant wid_static     : natural := wid_inscale;
+
 	constant vtaxis_boxid : natural := 0;
 	constant grid_boxid   : natural := 1;
 	constant text_boxid   : natural := 2;
@@ -48,7 +61,7 @@ package scopeiopkg is
 	constant rid_trigger  : std_logic_vector := x"12";
 	constant rid_gain     : std_logic_vector := x"13";
 	constant rid_vtaxis   : std_logic_vector := x"14";
-	constant rid_pointer  : std_logic_vector := x"15";
+	constant rid_focus    : std_logic_vector := x"15";
 	constant rid_dmaaddr  : std_logic_vector := x"16";
 	constant rid_dmalen   : std_logic_vector := x"17";
 	constant rid_dmadata  : std_logic_vector := x"18";
@@ -130,16 +143,16 @@ package scopeiopkg is
 		palettecolor_id      => palettecolor_maxsize);
 
 	constant trigger_freeze_id  : natural := 0;
-	constant trigger_slope_id   : natural := 1;
-	constant trigger_oneshot_id : natural := 2;
+	constant trigger_oneshot_id : natural := 1;
+	constant trigger_slope_id   : natural := 2;
 	constant trigger_level_id   : natural := 3;
 	constant trigger_chanid_id  : natural := 4;
 
 	constant triggerlevel_maxsize : natural := 9;
 	constant trigger_bf : natural_vector := (
 		trigger_freeze_id  => 1,
-		trigger_slope_id   => 1,
 		trigger_oneshot_id => 1,
+		trigger_slope_id   => 1,
 		trigger_level_id   => triggerlevel_maxsize,
 		trigger_chanid_id  => chanid_maxsize);
 
@@ -151,14 +164,11 @@ package scopeiopkg is
 		gainid_id     => gainid_maxsize,
 		gainchanid_id => chanid_maxsize);
 
-	constant pointerx_maxsize : natural := 11;
-	constant pointery_maxsize : natural := 11;
-	constant pointerx_id      : natural := 0;
-	constant pointery_id      : natural := 1;
+	constant focus_maxsize : natural := 11;
+	constant focus_id      : natural := 0;
 
-	constant pointer_bf : natural_vector := (
-		pointery_id => pointery_maxsize, 
-		pointerx_id => pointerx_maxsize);
+	constant focus_bf : natural_vector := (
+		focus_id => focus_maxsize);
 
 	component scopeio_tds
 		generic (
@@ -400,13 +410,11 @@ package body scopeiopkg is
 		constant data : std_logic_vector)
 		return std_logic_vector is
 		variable retval : unsigned(0 to data'length*((word'length+data'length-1)/data'length)-1);
-		-- constant xxx : natural := retval'length/data'length;
 	begin
 		assert word'length mod data'length=0
 		report "replace"
 		severity failure;
 		retval(0 to word'length-1) := unsigned(word);
-		-- retval(xxx*to_integer(unsigned(addr) to xxx*to_integer(unsigned(addr)-1)))= unsigned(data);
 		for i in 0 to retval'length/data'length-1 loop
 			if to_unsigned(i,addr'length)=unsigned(addr) then
 				retval(0 to data'length-1) := unsigned(data);

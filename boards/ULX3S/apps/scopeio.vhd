@@ -63,6 +63,7 @@ architecture scopeio of ulx3s is
 	signal video_lck     : std_logic;
 	signal video_hzsync  : std_logic;
 	signal video_vtsync  : std_logic;
+	signal video_vton    : std_logic;
 	signal video_blank   : std_logic;
 	signal video_pixel   : std_logic_vector(0 to 24-1);
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
@@ -93,47 +94,47 @@ architecture scopeio of ulx3s is
 	signal input_samples : std_logic_vector(0 to inputs*input_sample'length-1);
 	signal tp            : std_logic_vector(1 to 32);
 
-	signal usb_frm       : std_logic;
-	signal usb_irdy      : std_logic;
-	signal usb_trdy      : std_logic := '1';
-	signal usb_data      : std_logic_vector(si_data'range);
+	signal usblnk_frm    : std_logic;
+	signal usblnk_irdy   : std_logic;
+	signal usblnk_trdy   : std_logic := '1';
+	signal usblnk_data   : std_logic_vector(si_data'range);
+
+	signal setup_frm    : std_logic;
+	signal setup_irdy   : std_logic;
+	signal setup_trdy   : std_logic := '1';
+	signal setup_data   : std_logic_vector(si_data'range);
+
+	signal iolink_frm    : std_logic;
+	signal iolink_irdy   : std_logic;
+	signal iolink_trdy   : std_logic := '1';
+	signal iolink_data   : std_logic_vector(si_data'range);
 
 	signal adc_clk       : std_logic;
 
 	constant layout      : string := compact(
 			"{                             " &   
 			"   inputs          : " & natural'image(inputs) & ',' &
-			"   max_delay       : " & natural'image(2**14)  & ',' &
-			"   min_storage     : 256,     " & -- samples, storage size will be equal or larger than this
 			"   num_of_segments :   3,     " &
 			"   display : {                " &
 			"       width  : 1280,         " &
 			"       height : 720},         " &
 			"   grid : {                   " &
-			"       unit   : 32,           " &
 			"       width  : " & natural'image(32*32+1) & ',' &
 			"       height : " & natural'image( 6*32+1) & ',' &
 			"       color  : 0xff_ff_00_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   axis : {                   " &
-			"       fontsize   : 8,        " &
 			"       horizontal : {         " &
 			"           unit   : 31.25e-6, " &
-			"           height : 8,        " &
-			"           inside : false,    " &
 			"           color  : 0xff_00_00_00," &
 			"           background-color : 0xff_00_ff_ff}," &
 			"       vertical : {           " &
 			"           unit   : 50.00e-3, " &
 			"           width  : " & natural'image(6*8) & ','  &
-			"           rotate : ccw0,     " &
-			"           inside : false,    " &
 			"           color  : 0xff_00_00_00," &
 			"           background-color : 0xff_00_ff_ff}}," &
 			"   textbox : {                " &
-			"       font_width :  8,       " &
 			"       width      : " & natural'image(6*32) & ','&
-			"       inside     : false,    " &
 			"       color      : 0xff_ff_00_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   main : {                   " &
@@ -187,7 +188,6 @@ begin
 		default_gear => video_gear,
 		video_params => video_params)
 	port map (
-		clk_rst     => right,
 		clk_ref     => clk_25mhz,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
@@ -231,29 +231,234 @@ begin
 			si_end    => so_end,
 			si_data   => so_data,
 	
-			so_frm    => usb_frm,
-			so_irdy   => usb_irdy,
-			so_trdy   => usb_trdy,
-			so_data   => usb_data);
+			so_frm    => usblnk_frm,
+			so_irdy   => usblnk_irdy,
+			so_trdy   => usblnk_trdy,
+			so_data   => usblnk_data);
 	end generate;
 
-	assert io_link=io_usb
-	report "unsupported implementation "
-	severity FAILURE;
+	setup_b : block
+		port (
+			sio_clk : in  std_logic;
+			si_frm  : in  std_logic;
+			si_irdy : in  std_logic := '1';
+			si_trdy : out std_logic;
+			si_data : in  std_logic_vector;
+			so_frm  : out std_logic;
+			so_irdy : out std_logic;
+			so_trdy : in  std_logic := '1';
+			so_data : out std_logic_vector);
+		port map (
+			sio_clk => sio_clk,
+			si_frm  => usblnk_frm,
+			si_irdy => usblnk_irdy,
+			si_trdy => usblnk_trdy,
+			si_data => usblnk_data,
+			so_frm  => setup_frm,
+			so_irdy => setup_irdy,
+			so_trdy => setup_trdy,
+			so_data => setup_data);
+			
+		signal setup_req : std_logic := '1';
+		signal setup_rdy : std_logic := '0';
+
+        signal setup_frm  : std_logic := '0';
+        signal setup_irdy : std_logic := '0';
+        signal setup_trdy : std_logic := '1';
+        signal setup_data : std_logic_vector(si_data'range);
+
+		signal data      : std_logic_vector(0 to 8-1);
+		constant bitdata : std_logic_vector := rid_hzaxis & x"02" & x"0" & x"4" & (0 to hzoffset_maxsize-1 => '0');
+		constant bitrom_length : natural := data'length*((bitdata'length+data'length-1)/data'length);
+		constant bitrom  : std_logic_vector := std_logic_vector(resize(reverse(unsigned(bitdata)), bitrom_length));
+		constant addr_length : natural := unsigned_num_bits((bitdata'length+data'length-1)/data'length-1);
+		signal  addr     : unsigned(0 to addr_length) := to_unsigned(bitrom'length/data'length-1, addr_length+1);
+
+	begin
+
+		mem_e : entity hdl4fpga.rom 
+		generic map (
+			bitrom => bitrom)
+		port map (
+			clk  => sio_clk,
+			addr => std_logic_vector(addr(1 to addr'right)),
+			data => data);
+			
+		process(setup_rdy, sio_clk)
+		begin
+			if rising_edge(sio_clk) then
+				if video_lck='0' then
+					setup_frm  <= '0';
+					setup_irdy <= '0';
+					addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
+					setup_req <= not setup_rdy;
+				elsif si_frm='1' then 
+					setup_frm  <= '0';
+					setup_irdy <= '0';
+					addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
+				elsif (setup_rdy xor setup_req)='1' then
+					if so_trdy='1' then
+					    if addr(0)='0' then
+					    	setup_frm  <= '1';
+					    	setup_irdy <= '1';
+					    	addr <= addr - 1;
+					    else
+					    	setup_frm  <= '0';
+					    	setup_irdy <= '0';
+					    	setup_rdy  <= setup_req;
+					    	addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
+					    end if;
+					end if;
+				else
+					setup_frm  <= '0';
+					setup_irdy <= '0';
+					addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
+				end if;
+				setup_data <= data;
+			end if;
+		end process;
+
+		so_frm  <= si_frm  when si_frm='1' else setup_frm;
+		so_irdy <= si_irdy when si_frm='1' else setup_irdy;
+		si_trdy <= so_trdy when setup_frm='0' else '0';
+		so_data <= si_data when si_frm='1' else setup_data;
+
+	end block;
+
+	standalone_e : block
+		port (
+			sio_clk : in  std_logic;
+			si_frm  : in  std_logic := '0';
+			si_irdy : in  std_logic := '1';
+			si_trdy : out std_logic := '0';
+			si_data : in  std_logic_vector;
+			so_frm  : out std_logic;
+			so_irdy : out std_logic;
+			so_trdy : in  std_logic := '1';
+			so_data : out std_logic_vector);
+		port map (
+			sio_clk => sio_clk,
+			si_frm  => setup_frm,
+			si_irdy => setup_irdy,
+			si_trdy => setup_trdy,
+			si_data => setup_data,
+			so_frm  => iolink_frm,
+			so_irdy => iolink_irdy,
+			so_trdy => iolink_trdy,
+			so_data => iolink_data);
+				
+		signal req       : std_logic := '0';
+		signal rdy       : std_logic := '0';
+		signal btn       : std_logic_vector(0 to 4-1);
+		signal debnc     : std_logic_vector(btn'range);
+		signal event     : std_logic_vector(0 to 2-1);
+
+        signal ctlr_frm  : std_logic;
+        signal ctlr_irdy : std_logic;
+        signal ctlr_trdy : std_logic := '1';
+        signal ctlr_data : std_logic_vector(si_data'range);
+	begin
+
+		btn <= (right, left, down, up);
+		antibounce_g : for i in btn'range generate
+			process (sio_clk)
+				type states is (s_pressed, s_released);
+				variable state : states;
+				variable cntr  : unsigned(0 to 2-1);
+				alias chk is cntr(0 to 2-1);
+				variable edge : std_logic;
+			begin
+				if rising_edge(sio_clk) then
+					if (video_vton and not edge)='1' then
+					    case state is
+					    when s_pressed =>
+					    	if btn(i)='0' then
+					    		if chk=(chk'range => '0') then
+					    			debnc(i) <= '0';
+					    			state := s_released;
+					    		else
+					    			cntr := cntr - 1;
+					    		end if;
+					    	elsif chk/=(chk'range => '1') then
+					    		cntr := cntr + 1;
+					    	end if;
+					    when s_released =>
+					    	if btn(i)='1' then
+					    		if chk=(chk'range => '1') then
+					    			debnc(i) <= '1';
+					    			state := s_pressed;
+					    		else
+					    			cntr := cntr + 1;
+					    		end if;
+					    	elsif chk/=(chk'range => '0') then
+					    		cntr := cntr - 1;
+					    	end if;
+					    end case;
+					end if;
+					edge := video_vton;
+				end if;
+			end process;
+		end generate;
+
+		process(sio_clk)
+			type states is (s_request, s_wait);
+			variable state : states;
+		begin
+			if rising_edge(sio_clk) then
+				case state is
+				when s_request =>
+					if debnc/=(debnc'range =>'0') then
+						event <= encoder(debnc);
+						req <= not to_stdulogic(to_bit(rdy));
+						state := s_wait;
+					else
+						event <= (others => '-');
+					end if;
+				when s_wait =>
+					if (to_bit(req) xor to_bit(rdy))='0' then
+						if debnc(to_integer(unsigned(event)))='0' then
+							state := s_request;
+						end if;
+					end if;
+				end case;
+			end if;
+		end process;
+
+		ctlr_e : entity hdl4fpga.scopeio_ctlr
+		generic map (
+			layout => layout)
+		port map (
+			tp      => tp,
+			req     => req,
+			rdy     => rdy,
+			event   => event,
+			sio_clk => sio_clk,
+			so_frm  => ctlr_frm,
+			so_irdy => ctlr_irdy,
+			so_trdy => ctlr_trdy,
+			so_data => ctlr_data);
+		-- led <= tp(1 to 8);
+
+		so_frm  <= si_frm  when si_frm='1' else ctlr_frm;
+		so_irdy <= si_irdy when si_frm='1' else ctlr_irdy;
+		si_trdy <= so_trdy when ctlr_frm='0' else '0';
+		so_data <= si_data when si_frm='1' else ctlr_data;
+
+	end block;
 
 	inputs_b : block
 		constant mux_sampling : natural := 10;
 
-		signal rgtr_id   : std_logic_vector(8-1 downto 0);
-		signal rgtr_dv   : std_logic;
-		signal rgtr_data : std_logic_vector(0 to 32-1);
-		signal rgtr_revs : std_logic_vector(rgtr_data'reverse_range);
+		signal rgtr_id      : std_logic_vector(8-1 downto 0);
+		signal rgtr_dv      : std_logic;
+		signal rgtr_data    : std_logic_vector(0 to 32-1);
+		signal rgtr_revs    : std_logic_vector(rgtr_data'reverse_range);
 
-		signal hz_dv      : std_logic;
-		signal hz_scale   : std_logic_vector(4-1 downto 0);
-		signal hz_slider  : std_logic_vector(hzoffset_bits-1 downto 0);
-		signal max_input  : natural range 0 to mux_sampling-1;
-		signal opacity    : unsigned(0 to inputs-1);
+		signal hz_dv        : std_logic;
+		signal hz_scale     : std_logic_vector(4-1 downto 0);
+		signal hz_slider    : std_logic_vector(hzoffset_bits-1 downto 0);
+		signal max_input    : natural range 0 to mux_sampling-1;
+		signal opacity      : unsigned(0 to inputs-1);
 		signal opacity_frm  : std_logic;
 		signal opacity_data : std_logic_vector(si_data'range);
 
@@ -309,9 +514,9 @@ begin
 		sio_sin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
-			sin_frm   => usb_frm,
-			sin_irdy  => usb_irdy,
-			sin_data  => usb_data,
+			sin_frm   => iolink_frm,
+			sin_irdy  => iolink_irdy,
+			sin_data  => iolink_data,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data);
@@ -339,7 +544,7 @@ begin
 					cntr := (others => '0');
 				end if;
 				if cntr < (data'length+opacity_data'length-1)/opacity_data'length then
-					opacity_frm <= not usb_frm;
+					opacity_frm <= not iolink_frm;
 				else
 					opacity_frm <= '0';
 				end if;
@@ -352,9 +557,9 @@ begin
 			opacity_data <= multiplex(reverse(std_logic_vector(data),8), std_logic_vector(cntr), opacity_data'length);
 		end process;
 
-		si_frm  <= usb_frm  when opacity_frm='0' else '1';
-		si_irdy <= usb_irdy when opacity_frm='0' else '1';
-		si_data <= usb_data when opacity_frm='0' else opacity_data;
+		si_frm  <= iolink_frm  when opacity_frm='0' else '1';
+		si_irdy <= iolink_irdy when opacity_frm='0' else '1';
+		si_data <= iolink_data when opacity_frm='0' else opacity_data;
 
 	end block;
 
@@ -363,7 +568,6 @@ begin
 		videotiming_id => video_params.timing,
 		layout         => layout)
 	port map (
-		tp          => tp,
 		sio_clk     => sio_clk,
 		si_frm      => si_frm,
 		si_irdy     => si_irdy,
@@ -376,9 +580,8 @@ begin
 		video_pixel => video_pixel,
 		video_hsync => video_hzsync,
 		video_vsync => video_vtsync,
+		video_vton  => video_vton,
 		video_blank => video_blank);
-		led(0) <= tp(1);
-		led(1) <= tp(2);
 
 	-- HDMI/DVI VGA --
 	------------------
