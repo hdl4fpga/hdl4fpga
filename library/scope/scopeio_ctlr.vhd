@@ -523,7 +523,7 @@ begin
 						rdy  <= req;
     				end if;
     			else
-    				cntr := timeout0; -- frst;
+    				cntr := timeout0;
 				end if;
 			end if;
 			edge := video_vton;
