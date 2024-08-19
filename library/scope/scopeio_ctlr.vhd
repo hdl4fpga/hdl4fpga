@@ -188,22 +188,29 @@ architecture def of scopeio_ctlr is
 	signal send_rdy    : std_logic := '0';
 	signal send_data   : std_logic_vector(so_data'range);
 
-	function upto (
+	function xxx (
 		constant arg : std_logic_vector(0 to 4-1))
 		return natural is
 	begin
 		case arg is
 		when x"0" =>
-			return wid_input+1*3-1;
+			return 1;
 		when x"1" => 
-			return wid_input+2*3-1;
+			return 2;
 		when x"2" => 
-			return wid_input+4*3-1;
+			return 4;
 		when x"3" => 
-			return wid_input+5*3-1;
+			return 5;
 		when others =>
-			return wid_input+inputs*3-1;
+			return inputs;
 		end case;
+	end;
+
+	function upto (
+		constant arg : std_logic_vector(0 to 4-1))
+		return natural is
+	begin
+		return wid_input+xxx(arg)*3-1;
 	end;
 
 begin
@@ -265,7 +272,7 @@ begin
 								state := s_selected;
 							end if;
 							focus_wid := enter_tab(focus_wid);
-							rdy <= req;
+							(send_req, rdy) <= std_logic_vector'(not send_rdy, req);
 						when event_next =>
 							blink := 0;
 							focus_wid := next_tab(focus_wid);
@@ -276,6 +283,7 @@ begin
 									focus_wid := wid_tmposition;
 								end if;
 							end if;
+							send_req <= not send_rdy;
 							state := s_hightlight;
 						when event_prev =>
 							blink := 0;
@@ -287,11 +295,12 @@ begin
 									focus_wid := upto(hz_scaleid);
 								end if;
 							end if;
+							send_req <= not send_rdy;
 							state := s_hightlight;
 						when event_exit =>
 							focus_wid := escape_tab(focus_wid);
 							blink := 0;
-							rdy <= req;
+							(send_req, rdy) <= std_logic_vector'(not send_rdy, req);
 						when others =>
 							assert false
 								report "scopeio_ctlr : invalid event"
@@ -325,7 +334,6 @@ begin
 						rid <= unsigned(rid_focus);
 						reg_length <= x"00";
 						payload (0 to 8-1) <= to_unsigned(focus_wid+blink, 8);
-						send_req <= not send_rdy;
 					when s_selected =>
 						values := (
 							wid_tmposition => to_integer(signed(hz_offset)),
@@ -364,9 +372,11 @@ begin
     							payload <= resize(
     								to_unsigned(values(wid_tmscale), hzscale_maxsize) & 
     								unsigned(to_signed(values(wid_tmposition), hzoffset_maxsize)), 3*8);
-								rdy  <= req;
-								send_req <= not send_rdy;
+								(send_req, rdy) <= std_logic_vector'(not send_rdy, req);
     						when wid_tgchannel =>
+								if not (values(value) < xxx(hz_scaleid)) then 
+									values(value) := 0;
+								end if;
     							chan_id <= to_unsigned(values(value), chan_id'length);
     							state := s_tgchannel;
     						when wid_tgposition|wid_tgslope|wid_tgmode =>
@@ -377,24 +387,21 @@ begin
     								unsigned(to_signed(values(wid_tgposition), triggerlevel_maxsize)) & 
     								to_unsigned(values(wid_tgslope), trigger_slope'length)  & 
     								to_unsigned(values(wid_tgmode),  trigger_mode'length), 3*8);
-								rdy  <= req;
-								send_req <= not send_rdy;
+								(send_req, rdy) <= std_logic_vector'(not send_rdy, req);
     						when wid_inposition =>
     							rid <= unsigned(rid_vtaxis);
     							reg_length <= x"02";
     							payload <= resize(
     								resize(chan_id, chanid_maxsize) &
     								unsigned(to_signed(values(wid_inposition), vtoffset_maxsize)), 3*8);
-								rdy  <= req;
-								send_req <= not send_rdy;
+								(send_req, rdy) <= std_logic_vector'(not send_rdy, req);
     						when wid_inscale =>
     							rid <= unsigned(rid_gain);
     							reg_length <= x"01";
     							payload(0 to 2*8-1) <= resize(
     								resize(chan_id, chanid_maxsize) &
     								to_unsigned(values(wid_inscale), vt_scaleid'length), 2*8);
-								rdy  <= req;
-								send_req <= not send_rdy;
+								(send_req, rdy) <= std_logic_vector'(not send_rdy, req);
     						when others =>
 								assert false
 									report "scopeio_ctlr : invalid value"
@@ -404,8 +411,7 @@ begin
 							rid <= unsigned(rid_focus);
 							reg_length <= x"00";
 							payload (0 to 8-1) <= to_unsigned(focus_wid, 8);
-							send_req <= not send_rdy;
-							rdy  <= req;
+							(send_req, rdy) <= std_logic_vector'(not send_rdy, req);
 							state := s_navigate;
 						when others =>
 							assert false
@@ -418,8 +424,7 @@ begin
 						payload(0 to 2*8-1) <= resize(
 							resize(chan_id, chanid_maxsize) &
 							resize(unsigned(vt_scaleid), vt_scaleid'length), 2*8);
-						send_req <= not send_rdy;
-						rdy <= req;
+						(send_req, rdy) <= std_logic_vector'(not send_rdy, req);
 						state := s_navigate;
 					when s_tgchannel =>
 						rid <= unsigned(rid_trigger);
@@ -437,8 +442,7 @@ begin
 						payload(0 to 2*8-1) <= resize(
 							resize(chan_id, chanid_maxsize) &
 							resize(unsigned(vt_scaleid), vt_scaleid'length), 2*8);
-						send_req <= not send_rdy;
-						rdy <= req;
+						(send_req, rdy) <= std_logic_vector'(not send_rdy, req);
 						state := s_selected;
 					end case;
 				end if;
