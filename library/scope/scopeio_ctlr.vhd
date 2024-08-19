@@ -245,7 +245,7 @@ begin
 
 	tp(1 to 4) <= (send_req, send_rdy, req, rdy);
 	process (req, rgtr_clk)
-		type states is (s_navigate, s_hightlight, s_selected, s_tgchannel);
+		type states is (s_navigate, s_hightlight, s_selected, s_tgchannel, s_hightlight2);
 		variable state     : states;
 		variable values    : integer_vector(0 to wid_inscale);
 		variable value     : natural range values'range;
@@ -299,7 +299,7 @@ begin
 						end case;
 
 						case focus_wid is
-						when wid_tmposition|wid_tmscale|wid_tgchannel|wid_tgposition|wid_tgslope|wid_tgmode =>
+						when wid_input|wid_trigger|wid_tmposition|wid_tmscale|wid_tgchannel|wid_tgposition|wid_tgslope|wid_tgmode =>
 							value := focus_wid;
 							chan_id <= unsigned(trigger_chanid);
 						when others =>
@@ -364,6 +364,7 @@ begin
     							payload <= resize(
     								to_unsigned(values(wid_tmscale), hzscale_maxsize) & 
     								unsigned(to_signed(values(wid_tmposition), hzoffset_maxsize)), 3*8);
+								rdy  <= req;
 								send_req <= not send_rdy;
     						when wid_tgchannel =>
     							chan_id <= to_unsigned(values(value), chan_id'length);
@@ -376,6 +377,7 @@ begin
     								unsigned(to_signed(values(wid_tgposition), triggerlevel_maxsize)) & 
     								to_unsigned(values(wid_tgslope), trigger_slope'length)  & 
     								to_unsigned(values(wid_tgmode),  trigger_mode'length), 3*8);
+								rdy  <= req;
 								send_req <= not send_rdy;
     						when wid_inposition =>
     							rid <= unsigned(rid_vtaxis);
@@ -383,6 +385,7 @@ begin
     							payload <= resize(
     								resize(chan_id, chanid_maxsize) &
     								unsigned(to_signed(values(wid_inposition), vtoffset_maxsize)), 3*8);
+								rdy  <= req;
 								send_req <= not send_rdy;
     						when wid_inscale =>
     							rid <= unsigned(rid_gain);
@@ -390,6 +393,7 @@ begin
     							payload(0 to 2*8-1) <= resize(
     								resize(chan_id, chanid_maxsize) &
     								to_unsigned(values(wid_inscale), vt_scaleid'length), 2*8);
+								rdy  <= req;
 								send_req <= not send_rdy;
     						when others =>
 								assert false
@@ -401,13 +405,13 @@ begin
 							reg_length <= x"00";
 							payload (0 to 8-1) <= to_unsigned(focus_wid, 8);
 							send_req <= not send_rdy;
+							rdy  <= req;
 							state := s_navigate;
 						when others =>
 							assert false
 								report "scopeio_ctlr : invalid event"
 								severity FAILURE;
 						end case;
-						rdy  <= req;
 					when s_hightlight =>
 						rid <= unsigned(rid_gain);
 						reg_length <= x"01";
@@ -426,7 +430,15 @@ begin
 							resize(unsigned(trigger_slope), trigger_slope'length)  & 
 							resize(unsigned(trigger_mode),  trigger_mode'length), 3*8);
 						send_req <= not send_rdy;
-						rdy  <= req;
+						state := s_hightlight2;
+					when s_hightlight2 =>
+						rid <= unsigned(rid_gain);
+						reg_length <= x"01";
+						payload(0 to 2*8-1) <= resize(
+							resize(chan_id, chanid_maxsize) &
+							resize(unsigned(vt_scaleid), vt_scaleid'length), 2*8);
+						send_req <= not send_rdy;
+						rdy <= req;
 						state := s_selected;
 					end case;
 				end if;
