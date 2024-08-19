@@ -59,6 +59,8 @@ entity scopeio is
 		video_pixel      : out std_logic_vector;
 		video_hsync      : out std_logic;
 		video_vsync      : out std_logic;
+		video_vton       : buffer std_logic;
+		video_hzon       : out std_logic;
 		video_blank      : out std_logic;
 		video_sync       : out std_logic);
 
@@ -143,7 +145,6 @@ architecture beh of scopeio is
 	signal video_dv       : std_logic;
 	signal video_data     : std_logic_vector(0 to 2*inputs*storage_word'length-1);
 
-	signal video_vton     : std_logic;
 
 	signal time_offset    : std_logic_vector(hzoffset_bits-1 downto 0);
 	signal time_scale     : std_logic_vector(4-1 downto 0);
@@ -328,7 +329,7 @@ begin
 		video_hsync    => video_hsync,
 		video_vsync    => video_vsync,
 		video_vton     => video_vton,
-		video_hzon     => open,
+		video_hzon     => video_hzon,
 		video_blank    => video_blank,
 		video_sync     => video_sync);
 
