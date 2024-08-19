@@ -63,6 +63,7 @@ architecture scopeio of ulx3s is
 	signal video_lck     : std_logic;
 	signal video_hzsync  : std_logic;
 	signal video_vtsync  : std_logic;
+	signal video_vton    : std_logic;
 	signal video_blank   : std_logic;
 	signal video_pixel   : std_logic_vector(0 to 24-1);
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
@@ -359,41 +360,81 @@ begin
 	begin
 
 		btn <= (right, left, down, up);
-		antibounce_g : for i in btn'range generate
+		antibounce1_g : for i in btn'range generate
 			process (sio_clk)
 				type states is (s_pressed, s_released);
 				variable state : states;
-				variable cntr  : unsigned(0 to 10-1);
-				alias chk is cntr(0 to 4-1);
+				variable cntr  : unsigned(0 to 2-1);
+				alias chk is cntr(0 to 2-1);
+				variable edge : std_logic;
 			begin
 				if rising_edge(sio_clk) then
-					case state is
-					when s_pressed =>
-						if btn(i)='0' then
-							if chk=(chk'range => '0') then
-								debnc(i) <= '0';
-								state := s_released;
-							else
-								cntr := cntr - 1;
-							end if;
-						elsif chk/=(chk'range => '1') then
-							cntr := cntr + 1;
-						end if;
-					when s_released =>
-						if btn(i)='1' then
-							if chk=(chk'range => '1') then
-								debnc(i) <= '1';
-								state := s_pressed;
-							else
-								cntr := cntr + 1;
-							end if;
-						elsif chk/=(chk'range => '0') then
-							cntr := cntr - 1;
-						end if;
-					end case;
+					if (video_vton and not edge)='1' then
+					    case state is
+					    when s_pressed =>
+					    	if btn(i)='0' then
+					    		if chk=(chk'range => '0') then
+					    			debnc(i) <= '0';
+					    			state := s_released;
+					    		else
+					    			cntr := cntr - 1;
+					    		end if;
+					    	elsif chk/=(chk'range => '1') then
+					    		cntr := cntr + 1;
+					    	end if;
+					    when s_released =>
+					    	if btn(i)='1' then
+					    		if chk=(chk'range => '1') then
+					    			debnc(i) <= '1';
+					    			state := s_pressed;
+					    		else
+					    			cntr := cntr + 1;
+					    		end if;
+					    	elsif chk/=(chk'range => '0') then
+					    		cntr := cntr - 1;
+					    	end if;
+					    end case;
+					end if;
+					edge := video_vton;
 				end if;
 			end process;
 		end generate;
+
+		-- antibounce_g : for i in btn'range generate
+			-- process (sio_clk)
+				-- type states is (s_pressed, s_released);
+				-- variable state : states;
+				-- variable cntr  : unsigned(0 to 10-1);
+				-- alias chk is cntr(0 to 4-1);
+			-- begin
+				-- if rising_edge(sio_clk) then
+					-- case state is
+					-- when s_pressed =>
+						-- if btn(i)='0' then
+							-- if chk=(chk'range => '0') then
+								-- debnc(i) <= '0';
+								-- state := s_released;
+							-- else
+								-- cntr := cntr - 1;
+							-- end if;
+						-- elsif chk/=(chk'range => '1') then
+							-- cntr := cntr + 1;
+						-- end if;
+					-- when s_released =>
+						-- if btn(i)='1' then
+							-- if chk=(chk'range => '1') then
+								-- debnc(i) <= '1';
+								-- state := s_pressed;
+							-- else
+								-- cntr := cntr + 1;
+							-- end if;
+						-- elsif chk/=(chk'range => '0') then
+							-- cntr := cntr - 1;
+						-- end if;
+					-- end case;
+				-- end if;
+			-- end process;
+		-- end generate;
 
 		process(sio_clk)
 			type states is (s_request, s_wait);
@@ -575,6 +616,7 @@ begin
 		video_pixel => video_pixel,
 		video_hsync => video_hzsync,
 		video_vsync => video_vtsync,
+		video_vton  => video_vton,
 		video_blank => video_blank);
 
 	-- HDMI/DVI VGA --

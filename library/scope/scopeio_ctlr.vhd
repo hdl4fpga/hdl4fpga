@@ -131,7 +131,7 @@ architecture def of scopeio_ctlr is
 		return natural_vector is
 		variable retval : natural_vector(0 to wid_inscale+3*(inputs-1)) := (
 			wid_time       => wid_tmposition,
-			wid_trigger    => wid_tgposition,
+			wid_trigger    => wid_tgchannel,
 			wid_tmposition => wid_tmposition,   
 			wid_tmscale    => wid_tmscale, 
 			wid_tgchannel  => wid_tgchannel,
@@ -385,7 +385,6 @@ begin
     								to_unsigned(values(wid_inscale), vt_scaleid'length), 2*8);
 								send_req <= not send_rdy;
     						when others =>
-								tp(5 to 8) <= std_logic_vector(to_unsigned(value, 4));
 								assert false
 									report "scopeio_ctlr : invalid value"
 									severity FAILURE;
@@ -396,6 +395,11 @@ begin
 							payload (0 to 8-1) <= to_unsigned(focus_wid, 8);
 							send_req <= not send_rdy;
 							state := s_navigate;
+						when event_enter =>
+							rid <= unsigned(rid_focus);
+							reg_length <= x"00";
+							payload (0 to 8-1) <= to_unsigned(focus_wid+blink, 8);
+							send_req <= not send_rdy;
 						when others =>
 							assert false
 								report "scopeio_ctlr : invalid event"
@@ -414,6 +418,8 @@ begin
 					end case;
 				end if;
 			end if;
+
+			tp(5 to 8) <= std_logic_vector(to_unsigned(states'pos(state), 4));
 		end if;
 	end process;
 	
