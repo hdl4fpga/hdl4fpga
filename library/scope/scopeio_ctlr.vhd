@@ -16,6 +16,7 @@ entity scopeio_ctlr is
 		req     : in  std_logic;
 		rdy     : buffer std_logic;
 		event   : in  std_logic_vector(0 to 2-1);
+		video_vton : in std_logic;
 
 		sio_clk : in  std_logic;
 		so_frm  : buffer std_logic;
@@ -186,26 +187,36 @@ architecture def of scopeio_ctlr is
 	alias  payload     : unsigned(0 to 3*8-1) is ctrl_rgtr(2*8 to 5*8-1); 
 	signal send_req    : std_logic := '0';
 	signal send_rdy    : std_logic := '0';
+	signal timer_req   : std_logic := '0';
+	signal timer_rdy   : std_logic := '0';
 	signal send_data   : std_logic_vector(so_data'range);
+	constant timeout0 : natural range 0 to 59 := 30;
+	constant timeout1 : natural range 0 to 59 := 1;
 
-	function upto (
+	function input_length (
 		constant arg : std_logic_vector(0 to 4-1))
 		return natural is
 	begin
 		case arg is
 		when x"0" =>
-			return wid_input+1*3-1;
+			return 1;
 		when x"1" => 
-			return wid_input+2*3-1;
+			return 2;
 		when x"2" => 
-			return wid_input+4*3-1;
+			return 4;
 		when x"3" => 
-			return wid_input+5*3-1;
+			return 5;
 		when others =>
-			return wid_input+inputs*3-1;
+			return inputs;
 		end case;
 	end;
 
+	function upto (
+		constant arg : std_logic_vector(0 to 4-1))
+		return natural is
+	begin
+		return wid_input+input_length(arg)*3-1;
+	end;
 begin
 
 	siosin_e : entity hdl4fpga.sio_sin
@@ -245,7 +256,7 @@ begin
 
 	tp(1 to 4) <= (send_req, send_rdy, req, rdy);
 	process (req, rgtr_clk)
-		type states is (s_navigate, s_selected, s_tgchannel);
+		type states is (s_navigate, s_hightlight, s_selected, s_tgchannel, s_hightlight2);
 		variable state     : states;
 		variable values    : integer_vector(0 to wid_inscale);
 		variable value     : natural range values'range;
@@ -253,40 +264,19 @@ begin
 		variable blink     : natural range 0 to 2**7;
 	begin
 		if rising_edge(rgtr_clk) then
-			if (to_bit(rdy) xor to_bit(req))='1' then
+			if (rdy xor req)='1' and (timer_req xor timer_rdy)='0' then
 				if (send_req xor send_rdy)='0' then
 					case state is
 					when s_navigate =>
+
 						case event is
 						when event_enter =>
-							case focus_wid is
-							when wid_tmposition|wid_tmscale|wid_tgchannel|wid_tgposition|wid_tgslope|wid_tgmode =>
-								value := focus_wid;
-								chan_id <= unsigned(trigger_chanid);
-							when others =>
-								for i in wid_input to next_tab'right loop
-									if focus_wid=i then
-										chan_id <= to_unsigned((i-wid_input)/3, chan_id'length);
-										case (i-wid_input) mod 3 is
-										when 0 => 
-										when 1 => 
-											value := wid_inposition;
-										when 2 => 
-											value := wid_inscale;
-										when others =>
-											assert false
-											report "scopeio_ctlr : invalid event"
-											severity FAILURE;
-										end case;
-										exit;
-									end if;
-								end loop;
-							end case;
 							if focus_wid=enter_tab(focus_wid) then
 								blink := 2**7;
 								state := s_selected;
 							end if;
 							focus_wid := enter_tab(focus_wid);
+							(send_req, timer_req) <= std_logic_vector'(not send_rdy, not timer_rdy);
 						when event_next =>
 							blink := 0;
 							focus_wid := next_tab(focus_wid);
@@ -297,6 +287,8 @@ begin
 									focus_wid := wid_tmposition;
 								end if;
 							end if;
+							send_req <= not send_rdy;
+							state := s_hightlight;
 						when event_prev =>
 							blink := 0;
 							focus_wid := prev_tab(focus_wid);
@@ -307,18 +299,45 @@ begin
 									focus_wid := upto(hz_scaleid);
 								end if;
 							end if;
+							send_req <= not send_rdy;
+							state := s_hightlight;
 						when event_exit =>
 							focus_wid := escape_tab(focus_wid);
 							blink := 0;
+							(send_req, timer_req) <= std_logic_vector'(not send_rdy, not timer_rdy);
 						when others =>
 							assert false
 								report "scopeio_ctlr : invalid event"
 								severity FAILURE;
 						end case;
+
+						case focus_wid is
+						when wid_input|wid_trigger|wid_tmposition|wid_tmscale|wid_tgchannel|wid_tgposition|wid_tgslope|wid_tgmode =>
+							value := focus_wid;
+							chan_id <= unsigned(trigger_chanid);
+						when others =>
+							for i in wid_input to next_tab'right loop
+								if focus_wid=i then
+									chan_id <= to_unsigned((i-wid_input)/3, chan_id'length);
+									case (i-wid_input) mod 3 is
+									when 0 => 
+									when 1 => 
+										value := wid_inposition;
+									when 2 => 
+										value := wid_inscale;
+									when others =>
+										assert false
+										report "scopeio_ctlr : invalid event"
+										severity FAILURE;
+									end case;
+									exit;
+								end if;
+							end loop;
+						end case;
+
 						rid <= unsigned(rid_focus);
 						reg_length <= x"00";
 						payload (0 to 8-1) <= to_unsigned(focus_wid+blink, 8);
-						send_req <= not send_rdy;
 					when s_selected =>
 						values := (
 							wid_tmposition => to_integer(signed(hz_offset)),
@@ -357,8 +376,11 @@ begin
     							payload <= resize(
     								to_unsigned(values(wid_tmscale), hzscale_maxsize) & 
     								unsigned(to_signed(values(wid_tmposition), hzoffset_maxsize)), 3*8);
-								send_req <= not send_rdy;
+								(send_req, timer_req) <= std_logic_vector'(not send_rdy, not timer_rdy);
     						when wid_tgchannel =>
+								if not (values(value) < input_length(hz_scaleid)) then 
+									values(value) := 0;
+								end if;
     							chan_id <= to_unsigned(values(value), chan_id'length);
     							state := s_tgchannel;
     						when wid_tgposition|wid_tgslope|wid_tgmode =>
@@ -369,42 +391,45 @@ begin
     								unsigned(to_signed(values(wid_tgposition), triggerlevel_maxsize)) & 
     								to_unsigned(values(wid_tgslope), trigger_slope'length)  & 
     								to_unsigned(values(wid_tgmode),  trigger_mode'length), 3*8);
-								send_req <= not send_rdy;
+								(send_req, timer_req) <= std_logic_vector'(not send_rdy, not timer_rdy);
     						when wid_inposition =>
     							rid <= unsigned(rid_vtaxis);
     							reg_length <= x"02";
     							payload <= resize(
     								resize(chan_id, chanid_maxsize) &
     								unsigned(to_signed(values(wid_inposition), vtoffset_maxsize)), 3*8);
-								send_req <= not send_rdy;
+								(send_req, timer_req) <= std_logic_vector'(not send_rdy, not timer_rdy);
     						when wid_inscale =>
     							rid <= unsigned(rid_gain);
     							reg_length <= x"01";
     							payload(0 to 2*8-1) <= resize(
     								resize(chan_id, chanid_maxsize) &
     								to_unsigned(values(wid_inscale), vt_scaleid'length), 2*8);
-								send_req <= not send_rdy;
+								(send_req, timer_req) <= std_logic_vector'(not send_rdy, not timer_rdy);
     						when others =>
 								assert false
 									report "scopeio_ctlr : invalid value"
 									severity FAILURE;
     						end case;
-						when event_exit =>
+						when event_exit |event_enter =>
 							rid <= unsigned(rid_focus);
 							reg_length <= x"00";
 							payload (0 to 8-1) <= to_unsigned(focus_wid, 8);
-							send_req <= not send_rdy;
+							(send_req, timer_req) <= std_logic_vector'(not send_rdy, not timer_rdy);
 							state := s_navigate;
-						when event_enter =>
-							rid <= unsigned(rid_focus);
-							reg_length <= x"00";
-							payload (0 to 8-1) <= to_unsigned(focus_wid+blink, 8);
-							send_req <= not send_rdy;
 						when others =>
 							assert false
 								report "scopeio_ctlr : invalid event"
 								severity FAILURE;
 						end case;
+					when s_hightlight =>
+						rid <= unsigned(rid_gain);
+						reg_length <= x"01";
+						payload(0 to 2*8-1) <= resize(
+							resize(chan_id, chanid_maxsize) &
+							resize(unsigned(vt_scaleid), vt_scaleid'length), 2*8);
+						(send_req, timer_req) <= std_logic_vector'(not send_rdy, not timer_rdy);
+						state := s_navigate;
 					when s_tgchannel =>
 						rid <= unsigned(rid_trigger);
 						reg_length <= x"02";
@@ -414,6 +439,14 @@ begin
 							resize(unsigned(trigger_slope), trigger_slope'length)  & 
 							resize(unsigned(trigger_mode),  trigger_mode'length), 3*8);
 						send_req <= not send_rdy;
+						state := s_hightlight2;
+					when s_hightlight2 =>
+						rid <= unsigned(rid_gain);
+						reg_length <= x"01";
+						payload(0 to 2*8-1) <= resize(
+							resize(chan_id, chanid_maxsize) &
+							resize(unsigned(vt_scaleid), vt_scaleid'length), 2*8);
+						(send_req, timer_req) <= std_logic_vector'(not send_rdy, not timer_rdy);
 						state := s_selected;
 					end case;
 				end if;
@@ -459,7 +492,6 @@ begin
 						send_data <= std_logic_vector(rgtr(send_data'range));
 						rgtr      := shift_left(rgtr, rid'length);
 						send_rdy  <= send_req;
-						rdy       <= req;
 						state    := s_init;
 					end if;
 				end case;
@@ -472,4 +504,29 @@ begin
 	end process;
 	so_data <= reverse(send_data);
 	
+	process (sio_clk)
+		variable cntr : integer range -1 to 59;
+		variable edge : std_logic;
+	begin
+		if rising_edge(rgtr_clk) then
+			if (not video_vton and edge)='1' then
+    			if (timer_rdy xor timer_req)='1' then
+    				if cntr < 0 then
+						timer_rdy <= timer_req;
+						if (rdy xor req)='1' then
+							cntr := timeout1;
+						else
+							cntr := timeout0;
+						end if;
+    				else
+    					cntr := cntr - 1;
+						rdy  <= req;
+    				end if;
+    			else
+    				cntr := timeout0;
+				end if;
+			end if;
+			edge := video_vton;
+		end if;
+	end process;
 end;

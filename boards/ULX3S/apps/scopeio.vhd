@@ -418,6 +418,8 @@ begin
 					if (to_bit(req) xor to_bit(rdy))='0' then
 						if debnc(to_integer(unsigned(event)))='0' then
 							state := s_request;
+						else
+							req <= not to_stdulogic(to_bit(rdy));
 						end if;
 					end if;
 				end case;
@@ -433,6 +435,7 @@ begin
 			rdy     => rdy,
 			event   => event,
 			sio_clk => sio_clk,
+			video_vton => video_vton,
 			so_frm  => ctlr_frm,
 			so_irdy => ctlr_irdy,
 			so_trdy => ctlr_trdy,
