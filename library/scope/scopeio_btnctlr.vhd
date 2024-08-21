@@ -524,7 +524,7 @@ begin
 		constant timeout_fast    : natural := 4;
 		constant timeout_fastest : natural := 0;
 
-		type speeds is (s_quick, s_fast, s_fastest);
+		type speeds is (s_press, s_quick, s_fast, s_fastest);
 		variable speed : speeds;
 		variable cntr  : integer range -1 to 60;
 		variable edge  : std_logic;
@@ -536,6 +536,9 @@ begin
 						timer_rdy <= timer_req;
 						if (rdy xor req)='1' then
 							case speed is
+							when s_press =>
+								cntr  := timeout_press;
+								speed := s_quick;
 							when s_quick =>
 								cntr  := timeout_quick;
 								speed := s_fast;

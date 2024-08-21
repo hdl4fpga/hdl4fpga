@@ -375,12 +375,12 @@ begin
 					    		else
 					    			cntr := cntr - 1;
 					    		end if;
-					    	elsif cntr < 2**xxx-1 then
+					    	elsif cntr < 15 then
 					    		cntr := cntr + 1;
 					    	end if;
 					    when s_released =>
 					    	if btn(i)='1' then
-								cntr := 2**xxx-1;
+								cntr := 15;
 					    		debnc(i) <= '1';
 					    		state := s_pressed;
 					    	elsif cntr >= 0 then
