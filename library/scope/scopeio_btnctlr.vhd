@@ -519,8 +519,9 @@ begin
 	ctlr_data <= reverse(send_data);
 	
 	process (sio_clk)
-		variable cntr : integer range -1 to 59;
-		variable edge : std_logic;
+		variable tmout : integer range -1 to timeout0;
+		variable cntr  : integer range -1 to 59;
+		variable edge  : std_logic;
 	begin
 		if rising_edge(rgtr_clk) then
 			if (not video_vton and edge)='1' then
@@ -528,7 +529,10 @@ begin
     				if cntr < 0 then
 						timer_rdy <= timer_req;
 						if (rdy xor req)='1' then
-							cntr := timeout1;
+							cntr := tmout;
+							if tmout >=0 then
+								tmout := tmout - 1;
+							end if;
 						else
 							cntr := timeout0;
 						end if;
@@ -537,7 +541,8 @@ begin
 						rdy  <= req;
     				end if;
     			else
-    				cntr := timeout0;
+    				cntr  := timeout0;
+					tmout := timeout1;
 				end if;
 			end if;
 			edge := video_vton;

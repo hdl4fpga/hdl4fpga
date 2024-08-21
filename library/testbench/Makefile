@@ -183,10 +183,10 @@ HDL4FPGA__scopeio_grid__def = $(LIB_HDL4FPGA)/scopeio_grid/def.dat
 HDL4FPGA__scopeio_grid = $(LIB_HDL4FPGA)/scopeio_grid/_primary.dat
 HDL4FPGA__scopeio_downsampler__beh = $(LIB_HDL4FPGA)/scopeio_downsampler/beh.dat
 HDL4FPGA__scopeio_downsampler = $(LIB_HDL4FPGA)/scopeio_downsampler/_primary.dat
-HDL4FPGA__scopeio_ctlr__def = $(LIB_HDL4FPGA)/scopeio_ctlr/def.dat
-HDL4FPGA__scopeio_ctlr = $(LIB_HDL4FPGA)/scopeio_ctlr/_primary.dat
 HDL4FPGA__scopeio_capture__beh = $(LIB_HDL4FPGA)/scopeio_capture/beh.dat
 HDL4FPGA__scopeio_capture = $(LIB_HDL4FPGA)/scopeio_capture/_primary.dat
+HDL4FPGA__scopeio_btnctlr__def = $(LIB_HDL4FPGA)/scopeio_btnctlr/def.dat
+HDL4FPGA__scopeio_btnctlr = $(LIB_HDL4FPGA)/scopeio_btnctlr/_primary.dat
 HDL4FPGA__scopeio_axis__def = $(LIB_HDL4FPGA)/scopeio_axis/def.dat
 HDL4FPGA__scopeio_axis = $(LIB_HDL4FPGA)/scopeio_axis/_primary.dat
 HDL4FPGA__scopeio_amp__beh = $(LIB_HDL4FPGA)/scopeio_amp/beh.dat
@@ -551,10 +551,10 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__scopeio_grid) \
     $(HDL4FPGA__scopeio_downsampler__beh) \
     $(HDL4FPGA__scopeio_downsampler) \
-    $(HDL4FPGA__scopeio_ctlr__def) \
-    $(HDL4FPGA__scopeio_ctlr) \
     $(HDL4FPGA__scopeio_capture__beh) \
     $(HDL4FPGA__scopeio_capture) \
+    $(HDL4FPGA__scopeio_btnctlr__def) \
+    $(HDL4FPGA__scopeio_btnctlr) \
     $(HDL4FPGA__scopeio_axis__def) \
     $(HDL4FPGA__scopeio_axis) \
     $(HDL4FPGA__scopeio_amp__beh) \
@@ -1657,6 +1657,20 @@ $(HDL4FPGA__scopeio_axis__def) : ../scope/scopeio_axis.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_axis.vhd
 
+$(HDL4FPGA__scopeio_btnctlr) \
+$(HDL4FPGA__scopeio_btnctlr__def) : ../scope/scopeio_btnctlr.vhd \
+		$(HDL4FPGA__scopeio_state) \
+		$(HDL4FPGA__sio_sin) \
+		$(HDL4FPGA__videopkg) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__hdo) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_btnctlr.vhd
+
 $(HDL4FPGA__scopeio_capture) \
 $(HDL4FPGA__scopeio_capture__beh) : ../scope/scopeio_capture.vhd \
 		$(HDL4FPGA__latency) \
@@ -1670,20 +1684,6 @@ $(HDL4FPGA__scopeio_capture__beh) : ../scope/scopeio_capture.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_capture.vhd
-
-$(HDL4FPGA__scopeio_ctlr) \
-$(HDL4FPGA__scopeio_ctlr__def) : ../scope/scopeio_ctlr.vhd \
-		$(HDL4FPGA__scopeio_state) \
-		$(HDL4FPGA__sio_sin) \
-		$(HDL4FPGA__videopkg) \
-		$(IEEE__math_real) \
-		$(HDL4FPGA__scopeiopkg) \
-		$(HDL4FPGA__hdo) \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_ctlr.vhd
 
 $(HDL4FPGA__scopeio_downsampler) \
 $(HDL4FPGA__scopeio_downsampler__beh) : ../scope/scopeio_downsampler.vhd \
@@ -1757,11 +1757,7 @@ $(HDL4FPGA__scopeio_reading__def) : ../scope/scopeio_reading.vhd \
 		$(HDL4FPGA__btof) \
 		$(HDL4FPGA__mul_ser) \
 		$(HDL4FPGA__rom) \
-		$(HDL4FPGA__dpram) \
-		$(HDL4FPGA__scopeio_rgtrtrigger) \
-		$(HDL4FPGA__scopeio_rgtrvtoffset) \
-		$(HDL4FPGA__scopeio_rgtrvtscale) \
-		$(HDL4FPGA__scopeio_rgtrhzaxis) \
+		$(HDL4FPGA__scopeio_state) \
 		$(HDL4FPGA__videopkg) \
 		$(IEEE__math_real) \
 		$(HDL4FPGA__scopeiopkg) \
