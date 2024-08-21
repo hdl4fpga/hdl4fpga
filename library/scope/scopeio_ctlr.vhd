@@ -19,9 +19,13 @@ entity scopeio_ctlr is
 		video_vton : in std_logic;
 
 		sio_clk : in  std_logic;
+		si_frm  : in  std_logic := '0';
+		si_irdy : in  std_logic := '1';
+		si_trdy : out std_logic := '0';
+		si_data : in  std_logic_vector;
 		so_frm  : buffer std_logic;
 		so_irdy : buffer std_logic;
-		so_trdy : in  std_logic := '0';
+		so_trdy : in  std_logic := '1';
 		so_data : buffer std_logic_vector := (0 to 7 => '-'));
 
 	constant inputs        : natural := hdo(layout)**".inputs";
@@ -45,6 +49,11 @@ architecture def of scopeio_ctlr is
 	signal rgtr_dv         : std_logic;
 	signal rgtr_revs       : std_logic_vector(0 to 4*8-1);
 	signal rgtr_data       : std_logic_vector(rgtr_revs'reverse_range);
+
+    signal ctlr_frm  : std_logic;
+    signal ctlr_irdy : std_logic;
+    signal ctlr_trdy : std_logic := '1';
+    signal ctlr_data : std_logic_vector(si_data'range);
 
 	signal hz_scaleid      : std_logic_vector(4-1 downto 0);
 	signal hz_offset       : std_logic_vector(hzoffset_bits-1 downto 0);
@@ -218,6 +227,11 @@ architecture def of scopeio_ctlr is
 		return wid_input+input_length(arg)*3-1;
 	end;
 begin
+
+	so_frm  <= si_frm  when si_frm='1' else ctlr_frm;
+	so_irdy <= si_irdy when si_frm='1' else ctlr_irdy;
+	si_trdy <= so_trdy when ctlr_frm='0' else ctlr_trdy;
+	so_data <= si_data when si_frm='1' else ctlr_data;
 
 	siosin_e : entity hdl4fpga.sio_sin
 	port map (
@@ -467,28 +481,28 @@ begin
 				case state is
 				when s_init =>
 					rgtr      := ctrl_rgtr;
-					so_frm    <= '1';
-					so_irdy   <= '1';
+					ctlr_frm    <= '1';
+					ctlr_irdy   <= '1';
 					send_data <= std_logic_vector(rgtr(send_data'range));
 					rgtr      := shift_left(rgtr, rid'length);
 					state := s_length;
 				when s_length =>
 					cntr      := to_integer(rgtr(send_data'range));
-					so_frm    <= '1';
-					so_irdy   <= '1';
+					ctlr_frm    <= '1';
+					ctlr_irdy   <= '1';
 					send_data <= std_logic_vector(rgtr(send_data'range));
 					rgtr      := shift_left(rgtr, rid'length);
 					state := s_data;
 				when s_data =>
 					if cntr >= 0 then
-						so_frm    <= '1';
-						so_irdy   <= '1';
+						ctlr_frm    <= '1';
+						ctlr_irdy   <= '1';
 						send_data <= std_logic_vector(rgtr(send_data'range));
 						rgtr      := shift_left(rgtr, rid'length);
 						cntr := cntr -1;
 					else
-						so_frm    <= '0';
-						so_irdy   <= '0';
+						ctlr_frm    <= '0';
+						ctlr_irdy   <= '0';
 						send_data <= std_logic_vector(rgtr(send_data'range));
 						rgtr      := shift_left(rgtr, rid'length);
 						send_rdy  <= send_req;
@@ -496,13 +510,13 @@ begin
 					end if;
 				end case;
 			else
-				so_frm    <= '0';
-				so_irdy   <= '0';
+				ctlr_frm    <= '0';
+				ctlr_irdy   <= '0';
 				send_data <= std_logic_vector(rgtr(send_data'range));
 			end if;
 		end if;
 	end process;
-	so_data <= reverse(send_data);
+	ctlr_data <= reverse(send_data);
 	
 	process (sio_clk)
 		variable cntr : integer range -1 to 59;

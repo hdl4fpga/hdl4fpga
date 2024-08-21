@@ -353,10 +353,6 @@ begin
 		signal debnc     : std_logic_vector(btn'range);
 		signal event     : std_logic_vector(0 to 2-1);
 
-        signal ctlr_frm  : std_logic;
-        signal ctlr_irdy : std_logic;
-        signal ctlr_trdy : std_logic := '1';
-        signal ctlr_data : std_logic_vector(si_data'range);
 	begin
 
 		btn <= (right, left, down, up);
@@ -436,16 +432,15 @@ begin
 			event   => event,
 			sio_clk => sio_clk,
 			video_vton => video_vton,
-			so_frm  => ctlr_frm,
-			so_irdy => ctlr_irdy,
-			so_trdy => ctlr_trdy,
-			so_data => ctlr_data);
+			si_frm  => si_frm,
+			si_irdy => si_irdy,
+			si_trdy => si_trdy,
+			si_data => si_data,
+			so_frm  => so_frm,
+			so_irdy => so_irdy,
+			so_trdy => so_trdy,
+			so_data => so_data);
 		-- led <= tp(1 to 8);
-
-		so_frm  <= si_frm  when si_frm='1' else ctlr_frm;
-		so_irdy <= si_irdy when si_frm='1' else ctlr_irdy;
-		si_trdy <= so_trdy when ctlr_frm='0' else '0';
-		so_data <= si_data when si_frm='1' else ctlr_data;
 
 	end block;
 
