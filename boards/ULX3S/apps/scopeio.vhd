@@ -358,35 +358,32 @@ begin
 		btn <= (right, left, down, up);
 		antibounce_g : for i in btn'range generate
 			process (sio_clk)
+				constant xxx : natural := 5;
 				type states is (s_pressed, s_released);
 				variable state : states;
-				variable cntr  : unsigned(0 to 2-1);
-				alias chk is cntr(0 to 2-1);
-				variable edge : std_logic;
+				variable cntr  : integer range -1 to 2**xxx-1;
+				variable edge  : std_logic;
 			begin
 				if rising_edge(sio_clk) then
 					if (video_vton and not edge)='1' then
 					    case state is
 					    when s_pressed =>
 					    	if btn(i)='0' then
-					    		if chk=(chk'range => '0') then
+					    		if cntr < 0 then
 					    			debnc(i) <= '0';
 					    			state := s_released;
 					    		else
 					    			cntr := cntr - 1;
 					    		end if;
-					    	elsif chk/=(chk'range => '1') then
+					    	elsif cntr < 2**xxx-1 then
 					    		cntr := cntr + 1;
 					    	end if;
 					    when s_released =>
 					    	if btn(i)='1' then
-					    		if chk=(chk'range => '1') then
-					    			debnc(i) <= '1';
-					    			state := s_pressed;
-					    		else
-					    			cntr := cntr + 1;
-					    		end if;
-					    	elsif chk/=(chk'range => '0') then
+								cntr := 2**xxx-1;
+					    		debnc(i) <= '1';
+					    		state := s_pressed;
+					    	elsif cntr >= 0 then
 					    		cntr := cntr - 1;
 					    	end if;
 					    end case;
