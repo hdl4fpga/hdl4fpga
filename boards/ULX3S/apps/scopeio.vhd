@@ -422,7 +422,7 @@ begin
 			end if;
 		end process;
 
-		ctlr_e : entity hdl4fpga.scopeio_ctlr
+		btnctlr_e : entity hdl4fpga.scopeio_btnctlr
 		generic map (
 			layout => layout)
 		port map (

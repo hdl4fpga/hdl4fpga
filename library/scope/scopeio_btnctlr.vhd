@@ -8,7 +8,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
 use hdl4fpga.scopeiopkg.all;
 
-entity scopeio_ctlr is
+entity scopeio_btnctlr is
 	generic (
 		layout  : string);
 	port (
@@ -43,7 +43,7 @@ entity scopeio_ctlr is
 	constant event_prev  : std_logic_vector := "11";
 end;
 
-architecture def of scopeio_ctlr is
+architecture def of scopeio_btnctlr is
 	alias  rgtr_clk        is sio_clk;
 	signal rgtr_id         : std_logic_vector(8-1 downto 0);
 	signal rgtr_dv         : std_logic;
@@ -321,7 +321,7 @@ begin
 							(send_req, timer_req) <= std_logic_vector'(not send_rdy, not timer_rdy);
 						when others =>
 							assert false
-								report "scopeio_ctlr : invalid event"
+								report "scopeio_btnctlr : invalid event"
 								severity FAILURE;
 						end case;
 
@@ -341,7 +341,7 @@ begin
 										value := wid_inscale;
 									when others =>
 										assert false
-										report "scopeio_ctlr : invalid event"
+										report "scopeio_btnctlr : invalid event"
 										severity FAILURE;
 									end case;
 									exit;
@@ -422,7 +422,7 @@ begin
 								(send_req, timer_req) <= std_logic_vector'(not send_rdy, not timer_rdy);
     						when others =>
 								assert false
-									report "scopeio_ctlr : invalid value"
+									report "scopeio_btnctlr : invalid value"
 									severity FAILURE;
     						end case;
 						when event_exit |event_enter =>
@@ -433,7 +433,7 @@ begin
 							state := s_navigate;
 						when others =>
 							assert false
-								report "scopeio_ctlr : invalid event"
+								report "scopeio_btnctlr : invalid event"
 								severity FAILURE;
 						end case;
 					when s_hightlight =>
