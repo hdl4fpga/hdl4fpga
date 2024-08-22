@@ -522,7 +522,6 @@ begin
 		constant timeout_press   : natural := 30;
 		constant timeout_quick   : natural := 15;
 		constant timeout_fast    : natural := 4;
-		constant timeout_fastest : natural := 0;
 
 		type speeds is (s_press, s_quick, s_fast, s_fastest);
 		variable speed : speeds;
@@ -546,9 +545,8 @@ begin
 								cntr  := timeout_fast;
 								speed := s_fastest;
 							when s_fastest =>
-								cntr  := timeout_fastest;
-								cntr := = -1;
-						rdy  <= req;
+								cntr := -1;
+								rdy  <= req;
 							end case;
 						else
 							speed := s_quick;
