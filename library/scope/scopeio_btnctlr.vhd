@@ -391,7 +391,7 @@ begin
 								(send_req, timer_req) <= std_logic_vector'(not send_rdy, not timer_rdy);
 							when wid_tgchannel =>
 								if values(value)=2**trigger_chanid'length-1 then 
-									values(value) := inputs-1;
+									values(value) := input_length(hz_scaleid)-1;
 								elsif values(value) >= input_length(hz_scaleid) then 
 									values(value) := 0;
 								end if;
