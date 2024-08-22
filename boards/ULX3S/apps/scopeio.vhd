@@ -353,44 +353,41 @@ begin
 		signal debnc     : std_logic_vector(btn'range);
 		signal event     : std_logic_vector(0 to 2-1);
 
-        signal ctlr_frm  : std_logic;
-        signal ctlr_irdy : std_logic;
-        signal ctlr_trdy : std_logic := '1';
-        signal ctlr_data : std_logic_vector(si_data'range);
 	begin
 
 		btn <= (right, left, down, up);
 		antibounce_g : for i in btn'range generate
 			process (sio_clk)
+				constant xxx : natural := 6;
 				type states is (s_pressed, s_released);
 				variable state : states;
-				variable cntr  : unsigned(0 to 2-1);
-				alias chk is cntr(0 to 2-1);
-				variable edge : std_logic;
+				variable cntr  : integer range -1 to xxx;
+				variable edge  : std_logic;
 			begin
 				if rising_edge(sio_clk) then
 					if (video_vton and not edge)='1' then
 					    case state is
 					    when s_pressed =>
 					    	if btn(i)='0' then
-					    		if chk=(chk'range => '0') then
+					    		if cntr < 0 then
 					    			debnc(i) <= '0';
 					    			state := s_released;
 					    		else
 					    			cntr := cntr - 1;
 					    		end if;
-					    	elsif chk/=(chk'range => '1') then
+					    	elsif cntr < xxx then
 					    		cntr := cntr + 1;
 					    	end if;
 					    when s_released =>
 					    	if btn(i)='1' then
-					    		if chk=(chk'range => '1') then
+					    		if cntr >= xxx then
+									cntr := xxx;
 					    			debnc(i) <= '1';
 					    			state := s_pressed;
 					    		else
 					    			cntr := cntr + 1;
 					    		end if;
-					    	elsif chk/=(chk'range => '0') then
+					    	elsif cntr >= 0 then
 					    		cntr := cntr - 1;
 					    	end if;
 					    end case;
@@ -426,7 +423,7 @@ begin
 			end if;
 		end process;
 
-		ctlr_e : entity hdl4fpga.scopeio_ctlr
+		btnctlr_e : entity hdl4fpga.scopeio_btnctlr
 		generic map (
 			layout => layout)
 		port map (
@@ -436,16 +433,15 @@ begin
 			event   => event,
 			sio_clk => sio_clk,
 			video_vton => video_vton,
-			so_frm  => ctlr_frm,
-			so_irdy => ctlr_irdy,
-			so_trdy => ctlr_trdy,
-			so_data => ctlr_data);
+			si_frm  => si_frm,
+			si_irdy => si_irdy,
+			si_trdy => si_trdy,
+			si_data => si_data,
+			so_frm  => so_frm,
+			so_irdy => so_irdy,
+			so_trdy => so_trdy,
+			so_data => so_data);
 		-- led <= tp(1 to 8);
-
-		so_frm  <= si_frm  when si_frm='1' else ctlr_frm;
-		so_irdy <= si_irdy when si_frm='1' else ctlr_irdy;
-		si_trdy <= so_trdy when ctlr_frm='0' else '0';
-		so_data <= si_data when si_frm='1' else ctlr_data;
 
 	end block;
 

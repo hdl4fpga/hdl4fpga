@@ -1070,10 +1070,10 @@
         <Source name="../../../library/scope/scopeio_state.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/scope/scopeio_ctlr.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/scope/scopeio_rgtrfocus.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/scope/scopeio_rgtrfocus.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/scope/scopeio_btnctlr.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="apps.lpf" type="Logic Preference" type_short="LPF">

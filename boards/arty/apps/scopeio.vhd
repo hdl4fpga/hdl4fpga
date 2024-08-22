@@ -394,19 +394,19 @@ begin
 			end if;
 		end process;
 
-        ctlr_e : entity hdl4fpga.scopeio_ctlr
-       	generic map (
-       		layout => layout)
-       	port map (
-       		req   => req,
-       		rdy   => rdy,
-			event => event,
-
-       		sio_clk => sio_clk,
-       		so_frm  => iolink_frm,
-       		so_irdy => iolink_irdy,
-       		so_trdy => iolink_trdy,
-       		so_data => iolink_data);
+		-- ctlr_e : entity hdl4fpga.scopeio_btnctlr
+	   	-- generic map (
+	   		-- layout => layout)
+	   	-- port map (
+	   		-- req   => req,
+	   		-- rdy   => rdy,
+			-- event => event,
+-- 
+	   		-- sio_clk => sio_clk,
+	   		-- so_frm  => iolink_frm,
+	   		-- so_irdy => iolink_irdy,
+	   		-- so_trdy => iolink_trdy,
+	   		-- so_data => iolink_data);
 
 	end generate;
 
