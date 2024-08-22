@@ -228,7 +228,7 @@ begin
 
 	so_frm  <= si_frm  when si_frm='1' else ctlr_frm;
 	so_irdy <= si_irdy when si_frm='1' else ctlr_irdy;
-	si_trdy <= so_trdy when ctlr_frm='0' else ctlr_trdy;
+	si_trdy <= so_trdy when ctlr_frm='0' else '0';
 	so_data <= si_data when si_frm='1' else ctlr_data;
 
 	siosin_e : entity hdl4fpga.sio_sin
@@ -522,7 +522,6 @@ begin
 		constant timeout_press   : natural := 30;
 		constant timeout_quick   : natural := 15;
 		constant timeout_fast    : natural := 4;
-		constant timeout_fastest : natural := 0;
 
 		type speeds is (s_press, s_quick, s_fast, s_fastest);
 		variable speed : speeds;
@@ -546,7 +545,8 @@ begin
 								cntr  := timeout_fast;
 								speed := s_fastest;
 							when s_fastest =>
-								cntr  := timeout_fastest;
+								cntr := -1;
+								rdy  <= req;
 							end case;
 						else
 							speed := s_quick;

@@ -489,14 +489,14 @@ begin
 		end process;
 
 		process(input_clk)
-			variable cntr : unsigned(input_chni'range) := (others => '0');
+			variable cntr : unsigned(input_chni'range);
 		begin
 			if rising_edge(input_clk) then
 				if input_ena='1' then
 					if cntr >= max_input then
 						cntr := (others => '0');
 						input_enas <= '1';
-					elsif cntr >= mux_sampling-1 then  --inputs-1 then
+					elsif cntr >= mux_sampling-1 then 
 						cntr := (others => '0');
 						input_enas <= '1';
 					else
