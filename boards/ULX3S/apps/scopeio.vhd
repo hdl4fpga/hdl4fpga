@@ -358,10 +358,10 @@ begin
 		btn <= (right, left, down, up);
 		antibounce_g : for i in btn'range generate
 			process (sio_clk)
-				constant xxx : natural := 5;
+				constant xxx : natural := 6;
 				type states is (s_pressed, s_released);
 				variable state : states;
-				variable cntr  : integer range -1 to 2**xxx-1;
+				variable cntr  : integer range -1 to xxx;
 				variable edge  : std_logic;
 			begin
 				if rising_edge(sio_clk) then
@@ -375,14 +375,18 @@ begin
 					    		else
 					    			cntr := cntr - 1;
 					    		end if;
-					    	elsif cntr < 15 then
+					    	elsif cntr < xxx then
 					    		cntr := cntr + 1;
 					    	end if;
 					    when s_released =>
 					    	if btn(i)='1' then
-								cntr := 15;
-					    		debnc(i) <= '1';
-					    		state := s_pressed;
+					    		if cntr >= xxx then
+									cntr := xxx;
+					    			debnc(i) <= '1';
+					    			state := s_pressed;
+					    		else
+					    			cntr := cntr + 1;
+					    		end if;
 					    	elsif cntr >= 0 then
 					    		cntr := cntr - 1;
 					    	end if;
