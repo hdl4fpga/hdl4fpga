@@ -295,12 +295,6 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../../library/scope/scopeio_rgtrmyip.vhd">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../../../../library/mii/icmprply_tx.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
