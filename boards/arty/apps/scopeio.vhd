@@ -370,43 +370,65 @@ begin
 			end if;
 		end process;
 
-		process(sio_clk)
-			type states is (s_request, s_wait);
-			variable state : states;
-		begin
-			if rising_edge(sio_clk) then
-				case state is
-				when s_request =>
-					if btn/=(btn'range =>'0') then
-						event <= encoder(btn);
-						req <= not to_stdulogic(to_bit(rdy));
-						state := s_wait;
-					else
-						event <= (others => '-');
+		debounce_g : for i in btn'range generate
+			process (sio_clk)
+				constant rebounds : natural := 6;
+				type states is (s_pressed, s_released);
+				variable state : states;
+				variable cntr  : integer range -1 to rebounds;
+				variable edge  : std_logic;
+			begin
+				if rising_edge(sio_clk) then
+					if (video_vton and not edge)='1' then
+					    case state is
+					    when s_pressed =>
+					    	if btn(i)='0' then
+					    		if cntr < 0 then
+					    			debnc(i) <= '0';
+					    			state := s_released;
+					    		else
+					    			cntr := cntr - 1;
+					    		end if;
+					    	elsif cntr < rebounds then
+					    		cntr := cntr + 1;
+					    	end if;
+					    when s_released =>
+					    	if btn(i)='1' then
+					    		if cntr >= rebounds then
+									cntr := rebounds;
+					    			debnc(i) <= '1';
+					    			state := s_pressed;
+					    		else
+					    			cntr := cntr + 1;
+					    		end if;
+					    	elsif cntr >= 0 then
+					    		cntr := cntr - 1;
+					    	end if;
+					    end case;
 					end if;
-				when s_wait =>
-					if (to_bit(req) xor to_bit(rdy))='0' then
-						if btn(to_integer(unsigned(event)))='0' then
-							state := s_request;
-						end if;
-					end if;
-				end case;
-			end if;
-		end process;
+					edge := video_vton;
+				end if;
+			end process;
+		end generate;
 
-		-- ctlr_e : entity hdl4fpga.scopeio_btnctlr
-	   	-- generic map (
-	   		-- layout => layout)
-	   	-- port map (
-	   		-- req   => req,
-	   		-- rdy   => rdy,
-			-- event => event,
--- 
-	   		-- sio_clk => sio_clk,
-	   		-- so_frm  => iolink_frm,
-	   		-- so_irdy => iolink_irdy,
-	   		-- so_trdy => iolink_trdy,
-	   		-- so_data => iolink_data);
+		ctlr_e : entity hdl4fpga.scopeio_btnctlr
+	   	generic map (
+	   		layout => layout)
+	   	port map (
+	   		req   => req,
+	   		rdy   => rdy,
+			event => event,
+
+			video_vton => video_vton,
+	   		sio_clk => sio_clk,
+			si_frm  => si_frm,
+			si_irdy => si_irdy,
+			si_trdy => si_trdy,
+			si_data => si_data,
+	   		so_frm  => iolink_frm,
+	   		so_irdy => iolink_irdy,
+	   		so_trdy => iolink_trdy,
+	   		so_data => iolink_data);
 
 	end generate;
 
