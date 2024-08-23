@@ -39,6 +39,7 @@ architecture scopeio of arty is
 	signal video_clk       : std_logic;
 	signal video_hzsync    : std_logic;
 	signal video_vtsync    : std_logic;
+	signal video_vton      : std_logic;
 	signal video_blank     : std_logic;
 	signal video_pixel     : std_logic_vector(0 to 3-1);
 
@@ -355,82 +356,24 @@ begin
 
 	end generate;
 
-	standalone_e : if io_link=io_none generate 
-		signal req   : std_logic := '0';
-		signal rdy   : std_logic := '0';
-		signal btn   : std_logic_vector(0 to 4-1);
-		signal event : std_logic_vector(0 to 2-1);
-	begin
-		process (sys_clk)
-			variable div : unsigned(0 to 1) := (others => '0');
-		begin
-			if rising_edge(sys_clk) then
-				div := div + 1;
-				sio_clk <= div(0);
-			end if;
-		end process;
-
-		debounce_g : for i in btn'range generate
-			process (sio_clk)
-				constant rebounds : natural := 6;
-				type states is (s_pressed, s_released);
-				variable state : states;
-				variable cntr  : integer range -1 to rebounds;
-				variable edge  : std_logic;
-			begin
-				if rising_edge(sio_clk) then
-					if (video_vton and not edge)='1' then
-					    case state is
-					    when s_pressed =>
-					    	if btn(i)='0' then
-					    		if cntr < 0 then
-					    			debnc(i) <= '0';
-					    			state := s_released;
-					    		else
-					    			cntr := cntr - 1;
-					    		end if;
-					    	elsif cntr < rebounds then
-					    		cntr := cntr + 1;
-					    	end if;
-					    when s_released =>
-					    	if btn(i)='1' then
-					    		if cntr >= rebounds then
-									cntr := rebounds;
-					    			debnc(i) <= '1';
-					    			state := s_pressed;
-					    		else
-					    			cntr := cntr + 1;
-					    		end if;
-					    	elsif cntr >= 0 then
-					    		cntr := cntr - 1;
-					    	end if;
-					    end case;
-					end if;
-					edge := video_vton;
-				end if;
-			end process;
-		end generate;
-
-		ctlr_e : entity hdl4fpga.scopeio_btnctlr
-	   	generic map (
-	   		layout => layout)
-	   	port map (
-	   		req   => req,
-	   		rdy   => rdy,
-			event => event,
-
-			video_vton => video_vton,
-	   		sio_clk => sio_clk,
-			si_frm  => si_frm,
-			si_irdy => si_irdy,
-			si_trdy => si_trdy,
-			si_data => si_data,
-	   		so_frm  => iolink_frm,
-	   		so_irdy => iolink_irdy,
-	   		so_trdy => iolink_trdy,
-	   		so_data => iolink_data);
-
-	end generate;
+	stactlr_e : entity hdl4fpga.scopeio_stactlr
+	generic map (
+		layout => layout)
+	port map (
+        left    => btn(3),
+        up      => btn(2),
+        down    => btn(1),
+        right   => btn(0),
+		video_vton => video_vton,
+		sio_clk => sio_clk,
+		si_frm  => iolink_frm,
+		si_irdy => iolink_irdy,
+		si_trdy => iolink_trdy,
+		si_data => iolink_data,
+		so_frm  => iolink_frm,
+		so_irdy => iolink_irdy,
+		so_trdy => iolink_trdy,
+		so_data => iolink_data);
 
 	inputs_b : block
 		constant mux_sampling : natural := 10;
@@ -557,6 +500,7 @@ begin
 		video_pixel => video_pixel,
 		video_hsync => video_hzsync,
 		video_vsync => video_vtsync,
+		video_vton  => video_vton,
 		video_blank => video_blank);
 
 	process (video_clk)
