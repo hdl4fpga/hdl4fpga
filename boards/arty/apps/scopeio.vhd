@@ -54,6 +54,11 @@ architecture scopeio of arty is
 	signal so_end          : std_logic;
 	signal so_data         : std_logic_vector(si_data'range);
 
+	signal miilnk_frm      : std_logic := '0';
+	signal miilnk_irdy     : std_logic := '1';
+	signal miilnk_trdy     : std_logic := '1';
+	signal miilnk_data     : std_logic_vector(si_data'range);
+
 	signal iolink_frm       : std_logic;
 	signal iolink_irdy      : std_logic;
 	signal iolink_trdy      : std_logic := '1';
@@ -174,7 +179,7 @@ begin
 			clkout1  => adc1_clkin,
 			locked   => video_lck);
 
-		adc1_rst <= not video_lck or btn(1);
+		adc1_rst <= not video_lck;
 		adc1_i : mmcme2_base
 		generic map (
 			clkin1_period    => 10.0*75.0/12.0,
@@ -207,6 +212,16 @@ begin
 			locked   => input_lck);
 	end block;
    
+		sio_clk <= eth_tx_clk;
+		process (sys_clk)
+			variable div : unsigned(0 to 1) := (others => '0');
+		begin
+			if rising_edge(sys_clk) then
+				div := div + 1;
+				eth_ref_clk <= div(0);
+			end if;
+		end process;
+
 	ipoe_e : if io_link=io_ipoe generate
 		signal mii_txd    : std_logic_vector(eth_txd'range);
 		signal mii_txen   : std_logic;
@@ -226,16 +241,6 @@ begin
 		signal eth_tx_clk : std_logic;
 	begin
 
-		sio_clk <= eth_tx_clk;
-		process (sys_clk)
-			variable div : unsigned(0 to 1) := (others => '0');
-		begin
-			if rising_edge(sys_clk) then
-				div := div + 1;
-				eth_ref_clk <= div(0);
-			end if;
-		end process;
-
 		dhcp_p : process(eth_tx_clk)
 			type states is (s_request, s_wait);
 			variable state : states;
@@ -254,6 +259,7 @@ begin
 						end if;
 					end if;
 				end case;
+				dhcpcd_req <= '0';
 			end if;
 		end process;
 
@@ -366,10 +372,10 @@ begin
         right   => btn(0),
 		video_vton => video_vton,
 		sio_clk => sio_clk,
-		si_frm  => iolink_frm,
-		si_irdy => iolink_irdy,
-		si_trdy => iolink_trdy,
-		si_data => iolink_data,
+		si_frm  => miilnk_frm,
+		si_irdy => miilnk_irdy,
+		si_trdy => miilnk_trdy,
+		si_data => miilnk_data,
 		so_frm  => iolink_frm,
 		so_irdy => iolink_irdy,
 		so_trdy => iolink_trdy,
