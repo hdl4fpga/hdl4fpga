@@ -325,125 +325,24 @@ begin
 
 	end block;
 
-	standalone_e : block
-		port (
-			sio_clk : in  std_logic;
-			si_frm  : in  std_logic := '0';
-			si_irdy : in  std_logic := '1';
-			si_trdy : out std_logic := '0';
-			si_data : in  std_logic_vector;
-			so_frm  : out std_logic;
-			so_irdy : out std_logic;
-			so_trdy : in  std_logic := '1';
-			so_data : out std_logic_vector);
-		port map (
-			sio_clk => sio_clk,
-			si_frm  => setup_frm,
-			si_irdy => setup_irdy,
-			si_trdy => setup_trdy,
-			si_data => setup_data,
-			so_frm  => iolink_frm,
-			so_irdy => iolink_irdy,
-			so_trdy => iolink_trdy,
-			so_data => iolink_data);
-				
-		signal req       : std_logic := '0';
-		signal rdy       : std_logic := '0';
-		signal btn       : std_logic_vector(0 to 4-1);
-		signal debnc     : std_logic_vector(btn'range);
-		signal event     : std_logic_vector(0 to 2-1);
-
-	begin
-
-		btn <= (right, left, down, up);
-		antibounce_g : for i in btn'range generate
-			process (sio_clk)
-				constant xxx : natural := 6;
-				type states is (s_pressed, s_released);
-				variable state : states;
-				variable cntr  : integer range -1 to xxx;
-				variable edge  : std_logic;
-			begin
-				if rising_edge(sio_clk) then
-					if (video_vton and not edge)='1' then
-					    case state is
-					    when s_pressed =>
-					    	if btn(i)='0' then
-					    		if cntr < 0 then
-					    			debnc(i) <= '0';
-					    			state := s_released;
-					    		else
-					    			cntr := cntr - 1;
-					    		end if;
-					    	elsif cntr < xxx then
-					    		cntr := cntr + 1;
-					    	end if;
-					    when s_released =>
-					    	if btn(i)='1' then
-					    		if cntr >= xxx then
-									cntr := xxx;
-					    			debnc(i) <= '1';
-					    			state := s_pressed;
-					    		else
-					    			cntr := cntr + 1;
-					    		end if;
-					    	elsif cntr >= 0 then
-					    		cntr := cntr - 1;
-					    	end if;
-					    end case;
-					end if;
-					edge := video_vton;
-				end if;
-			end process;
-		end generate;
-
-		process(sio_clk)
-			type states is (s_request, s_wait);
-			variable state : states;
-		begin
-			if rising_edge(sio_clk) then
-				case state is
-				when s_request =>
-					if debnc/=(debnc'range =>'0') then
-						event <= encoder(debnc);
-						req <= not to_stdulogic(to_bit(rdy));
-						state := s_wait;
-					else
-						event <= (others => '-');
-					end if;
-				when s_wait =>
-					if (to_bit(req) xor to_bit(rdy))='0' then
-						if debnc(to_integer(unsigned(event)))='0' then
-							state := s_request;
-						else
-							req <= not to_stdulogic(to_bit(rdy));
-						end if;
-					end if;
-				end case;
-			end if;
-		end process;
-
-		btnctlr_e : entity hdl4fpga.scopeio_btnctlr
-		generic map (
-			layout => layout)
-		port map (
-			tp      => tp,
-			req     => req,
-			rdy     => rdy,
-			event   => event,
-			sio_clk => sio_clk,
-			video_vton => video_vton,
-			si_frm  => si_frm,
-			si_irdy => si_irdy,
-			si_trdy => si_trdy,
-			si_data => si_data,
-			so_frm  => so_frm,
-			so_irdy => so_irdy,
-			so_trdy => so_trdy,
-			so_data => so_data);
-		-- led <= tp(1 to 8);
-
-	end block;
+	stactlr_e : entity hdl4fpga.scopeio_stactlr
+	generic map (
+		layout => layout)
+	port map (
+        left    => left,
+        up      => up,
+        down    => down ,
+        right   => right,
+		video_vton => video_vton,
+		sio_clk => sio_clk,
+		si_frm  => setup_frm,
+		si_irdy => setup_irdy,
+		si_trdy => setup_trdy,
+		si_data => setup_data,
+		so_frm  => iolink_frm,
+		so_irdy => iolink_irdy,
+		so_trdy => iolink_trdy,
+		so_data => iolink_data);
 
 	inputs_b : block
 		constant mux_sampling : natural := 10;

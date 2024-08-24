@@ -153,6 +153,8 @@ HDL4FPGA__scopeio_tds__mix = $(LIB_HDL4FPGA)/scopeio_tds/mix.dat
 HDL4FPGA__scopeio_tds = $(LIB_HDL4FPGA)/scopeio_tds/_primary.dat
 HDL4FPGA__scopeio_state__def = $(LIB_HDL4FPGA)/scopeio_state/def.dat
 HDL4FPGA__scopeio_state = $(LIB_HDL4FPGA)/scopeio_state/_primary.dat
+HDL4FPGA__scopeio_stactlr__def = $(LIB_HDL4FPGA)/scopeio_stactlr/def.dat
+HDL4FPGA__scopeio_stactlr = $(LIB_HDL4FPGA)/scopeio_stactlr/_primary.dat
 HDL4FPGA__scopeio_segment__def = $(LIB_HDL4FPGA)/scopeio_segment/def.dat
 HDL4FPGA__scopeio_segment = $(LIB_HDL4FPGA)/scopeio_segment/_primary.dat
 HDL4FPGA__scopeio_rgtrvtscale__def = $(LIB_HDL4FPGA)/scopeio_rgtrvtscale/def.dat
@@ -521,6 +523,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__scopeio_tds) \
     $(HDL4FPGA__scopeio_state__def) \
     $(HDL4FPGA__scopeio_state) \
+    $(HDL4FPGA__scopeio_stactlr__def) \
+    $(HDL4FPGA__scopeio_stactlr) \
     $(HDL4FPGA__scopeio_segment__def) \
     $(HDL4FPGA__scopeio_segment) \
     $(HDL4FPGA__scopeio_rgtrvtscale__def) \
@@ -1887,6 +1891,21 @@ $(HDL4FPGA__scopeio_segment__def) : ../scope/scopeio_segment.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_segment.vhd
+
+$(HDL4FPGA__scopeio_stactlr) \
+$(HDL4FPGA__scopeio_stactlr__def) : ../scope/scopeio_stactlr.vhd \
+		$(HDL4FPGA__scopeio_btnctlr) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__ecp5_profiles) \
+		$(HDL4FPGA__app_profiles) \
+		$(HDL4FPGA__hdo) \
+		$(HDL4FPGA__base) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_stactlr.vhd
 
 $(HDL4FPGA__scopeio_state) \
 $(HDL4FPGA__scopeio_state__def) : ../scope/scopeio_state.vhd \

@@ -39,6 +39,7 @@ architecture scopeio of arty is
 	signal video_clk       : std_logic;
 	signal video_hzsync    : std_logic;
 	signal video_vtsync    : std_logic;
+	signal video_vton      : std_logic;
 	signal video_blank     : std_logic;
 	signal video_pixel     : std_logic_vector(0 to 3-1);
 
@@ -52,6 +53,11 @@ architecture scopeio of arty is
 	signal so_trdy         : std_logic;
 	signal so_end          : std_logic;
 	signal so_data         : std_logic_vector(si_data'range);
+
+	signal miilnk_frm      : std_logic := '0';
+	signal miilnk_irdy     : std_logic := '1';
+	signal miilnk_trdy     : std_logic := '1';
+	signal miilnk_data     : std_logic_vector(si_data'range);
 
 	signal iolink_frm       : std_logic;
 	signal iolink_irdy      : std_logic;
@@ -173,7 +179,7 @@ begin
 			clkout1  => adc1_clkin,
 			locked   => video_lck);
 
-		adc1_rst <= not video_lck or btn(1);
+		adc1_rst <= not video_lck;
 		adc1_i : mmcme2_base
 		generic map (
 			clkin1_period    => 10.0*75.0/12.0,
@@ -206,6 +212,16 @@ begin
 			locked   => input_lck);
 	end block;
    
+		sio_clk <= eth_tx_clk;
+		process (sys_clk)
+			variable div : unsigned(0 to 1) := (others => '0');
+		begin
+			if rising_edge(sys_clk) then
+				div := div + 1;
+				eth_ref_clk <= div(0);
+			end if;
+		end process;
+
 	ipoe_e : if io_link=io_ipoe generate
 		signal mii_txd    : std_logic_vector(eth_txd'range);
 		signal mii_txen   : std_logic;
@@ -225,16 +241,6 @@ begin
 		signal eth_tx_clk : std_logic;
 	begin
 
-		sio_clk <= eth_tx_clk;
-		process (sys_clk)
-			variable div : unsigned(0 to 1) := (others => '0');
-		begin
-			if rising_edge(sys_clk) then
-				div := div + 1;
-				eth_ref_clk <= div(0);
-			end if;
-		end process;
-
 		dhcp_p : process(eth_tx_clk)
 			type states is (s_request, s_wait);
 			variable state : states;
@@ -253,6 +259,7 @@ begin
 						end if;
 					end if;
 				end case;
+				dhcpcd_req <= '0';
 			end if;
 		end process;
 
@@ -355,60 +362,24 @@ begin
 
 	end generate;
 
-	standalone_e : if io_link=io_none generate 
-		signal req   : std_logic := '0';
-		signal rdy   : std_logic := '0';
-		signal btn   : std_logic_vector(0 to 4-1);
-		signal event : std_logic_vector(0 to 2-1);
-	begin
-		process (sys_clk)
-			variable div : unsigned(0 to 1) := (others => '0');
-		begin
-			if rising_edge(sys_clk) then
-				div := div + 1;
-				sio_clk <= div(0);
-			end if;
-		end process;
-
-		process(sio_clk)
-			type states is (s_request, s_wait);
-			variable state : states;
-		begin
-			if rising_edge(sio_clk) then
-				case state is
-				when s_request =>
-					if btn/=(btn'range =>'0') then
-						event <= encoder(btn);
-						req <= not to_stdulogic(to_bit(rdy));
-						state := s_wait;
-					else
-						event <= (others => '-');
-					end if;
-				when s_wait =>
-					if (to_bit(req) xor to_bit(rdy))='0' then
-						if btn(to_integer(unsigned(event)))='0' then
-							state := s_request;
-						end if;
-					end if;
-				end case;
-			end if;
-		end process;
-
-		-- ctlr_e : entity hdl4fpga.scopeio_btnctlr
-	   	-- generic map (
-	   		-- layout => layout)
-	   	-- port map (
-	   		-- req   => req,
-	   		-- rdy   => rdy,
-			-- event => event,
--- 
-	   		-- sio_clk => sio_clk,
-	   		-- so_frm  => iolink_frm,
-	   		-- so_irdy => iolink_irdy,
-	   		-- so_trdy => iolink_trdy,
-	   		-- so_data => iolink_data);
-
-	end generate;
+	stactlr_e : entity hdl4fpga.scopeio_stactlr
+	generic map (
+		layout => layout)
+	port map (
+        left    => btn(3),
+        up      => btn(2),
+        down    => btn(1),
+        right   => btn(0),
+		video_vton => video_vton,
+		sio_clk => sio_clk,
+		si_frm  => miilnk_frm,
+		si_irdy => miilnk_irdy,
+		si_trdy => miilnk_trdy,
+		si_data => miilnk_data,
+		so_frm  => iolink_frm,
+		so_irdy => iolink_irdy,
+		so_trdy => iolink_trdy,
+		so_data => iolink_data);
 
 	inputs_b : block
 		constant mux_sampling : natural := 10;
@@ -535,6 +506,7 @@ begin
 		video_pixel => video_pixel,
 		video_hsync => video_hzsync,
 		video_vsync => video_vtsync,
+		video_vton  => video_vton,
 		video_blank => video_blank);
 
 	process (video_clk)
