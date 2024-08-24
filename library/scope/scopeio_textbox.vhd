@@ -264,12 +264,8 @@ begin
 			table(wid_trigger)    := 0;
 			table(wid_tmposition) := 4;
 			table(wid_tmscale)    := table(wid_tmposition)+3+width_borders(wid_tmposition);
-			table(wid_tgchannel)  := 0;
-			table(wid_tgposition) := 4;
-			table(wid_tgslope)    := table(wid_tgposition)+4+width_borders(wid_tgposition);
-			table(wid_tgmode)     := table(wid_tgslope)+2;
 			table(wid_input)      := 0;
-			max_length := text_length(0);
+			max_length := table(wid_inposition);
 			for i in wid_static+1 to table'right loop
 				case (i-wid_input) mod 3 is
 				when 0 =>
@@ -284,9 +280,10 @@ begin
 				when others =>
 				end case;
 			end loop;
-			table(wid_inposition) := max_length;
-			table(wid_inscale)    := max_length+3+width_borders(wid_inposition);
-
+			table(wid_tgchannel)  := 0;
+			table(wid_tgposition) := max_length;
+			table(wid_tgslope)    := table(wid_tgposition)+4+width_borders(wid_tgposition);
+			table(wid_tgmode)     := table(wid_tgslope)+2;
 			return table;
 		end;
 
