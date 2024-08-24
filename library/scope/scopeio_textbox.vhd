@@ -207,6 +207,29 @@ begin
 		constant inputs : natural := hdo(layout)**".inputs";
 		constant vt     : string  := hdo(layout)**".vt";
 
+		function max_textlength 
+			return natural is
+		begin
+			function text_length (
+				constant i : natural)
+				return natural is
+				constant retval : string := escaped(hdo(vt_labels)**("["&natural'image(i)&"].text"));
+			begin
+				return retval'length;
+			end;
+			variable max_length : natural;
+			variable length     : natural;
+		begin
+			max_length := 0;
+			for i in 0 to inputs-1 loop
+				length := text_length(i);
+				if ength < text_length(i) then
+					max_length := length;
+				end if;
+			end loop;
+			return max_length;
+		end;
+
 		function top_borders
 			return natural_vector is
 			variable table : natural_vector(0 to wid_inscale+3*(inputs-1));
@@ -255,27 +278,25 @@ begin
 			return natural_vector is
 			variable table : natural_vector(0 to wid_inscale+3*(inputs-1));
 			constant vt_labels  : string  := hdo(layout)**".vt";
-			function text_length (
-				constant i : natural)
-				return natural is
-				constant retval : string := escaped(hdo(vt_labels)**("["&natural'image(i)&"].text"));
-			begin
-				return retval'length;
-			end;
-			variable max_length : natural;
 		begin
 			table(wid_time)       := 0;
 			table(wid_trigger)    := 0;
 			table(wid_tmposition) := 4;
 			table(wid_tmscale)    := table(wid_tmposition)+3+width_borders(wid_tmposition);
+			table(wid_tgchannel)  := 0;
+			table(wid_tgposition) := max_textlength;
+			table(wid_tgslope)    := table(wid_tgposition)+4+width_borders(wid_tgposition);
+			table(wid_tgmode)     := table(wid_tgslope)+2;
 			table(wid_input)      := 0;
+			table(wid_inposition) := table(wid_tgposition);
+			table(wid_inscale)    := table(wid_inposition)+3+width_borders(wid_inposition);
 			max_length := table(wid_inposition);
 			for i in wid_static+1 to table'right loop
 				case (i-wid_input) mod 3 is
 				when 0 =>
 					table(i) := table(i-3);
 				when 1 =>
-					table(i) := text_length((i-wid_input)/3);
+					table(i) := table(wid_inposition);
 					if max_length < table(i) then
 						max_length := table(i);
 					end if;
@@ -284,10 +305,6 @@ begin
 				when others =>
 				end case;
 			end loop;
-			table(wid_tgchannel)  := 0;
-			table(wid_tgposition) := max_length;
-			table(wid_tgslope)    := table(wid_tgposition)+4+width_borders(wid_tgposition);
-			table(wid_tgmode)     := table(wid_tgslope)+2;
 			return table;
 		end;
 
