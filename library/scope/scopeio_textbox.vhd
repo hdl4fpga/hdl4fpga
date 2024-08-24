@@ -258,6 +258,7 @@ begin
 			begin
 				return retval'length;
 			end;
+			variable max_length : natural;
 		begin
 			table(wid_time)       := 0;
 			table(wid_trigger)    := 0;
@@ -268,19 +269,23 @@ begin
 			table(wid_tgslope)    := table(wid_tgposition)+4+width_borders(wid_tgposition);
 			table(wid_tgmode)     := table(wid_tgslope)+2;
 			table(wid_input)      := 0;
-			table(wid_inposition) := text_length(0);
-			table(wid_inscale)    := table(wid_inposition)+3+width_borders(wid_inposition);
+			max_length := text_length(0);
 			for i in wid_static+1 to table'right loop
 				case (i-wid_input) mod 3 is
 				when 0 =>
 					table(i) := table(i-3);
 				when 1 =>
 					table(i) := text_length((i-wid_input)/3);
+					if max_length < table(i) then
+						max_length := table(i);
+					end if;
 				when 2 =>
-					table(i) := table(1-1)+3+width_borders(wid_inposition);
+					table(i) := table(i-1)+3+width_borders(wid_inposition);
 				when others =>
 				end case;
 			end loop;
+			table(wid_inposition) := max_length;
+			table(wid_inscale)    := max_length+3+width_borders(wid_inposition);
 
 			return table;
 		end;
