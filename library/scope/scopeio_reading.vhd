@@ -17,6 +17,7 @@ entity scopeio_reading is
 		rgtr_dv   : in  std_logic;
 		rgtr_id   : in  std_logic_vector(8-1 downto 0);
 		rgtr_data : in  std_logic_vector;
+		trigger_chanid : buffer std_logic_vector;
 
 		code_frm  : out std_logic := '0';
 		video_row : out std_logic_vector;
@@ -73,7 +74,6 @@ architecture def of scopeio_reading is
 	signal trigger_freeze : std_logic;
 	signal trigger_slope  : std_logic;
 	signal trigger_oneshot : std_logic;
-	signal trigger_chanid : std_logic_vector(vt_cid'range);
 	signal trigger_level  : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 
 	signal txt_req        : std_logic;

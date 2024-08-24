@@ -32,11 +32,13 @@ entity scopeio_textbox is
 		text_bg       : out std_logic_vector;
 		text_fgon     : out std_logic);
 
+	constant inputs        : natural := hdo(layout)**".inputs";
 	constant font_width     : natural := hdo(layout)**".textbox.font_width=8.";
 	constant textbox_width  : natural := hdo(layout)**".textbox.width";
 	constant textbox_height : natural := hdo(layout)**".grid.height";
 	constant grid_height    : natural := hdo(layout)**".grid.height";
 
+	constant chanid_bits    : natural := unsigned_num_bits(inputs-1);
 	constant cga_cols       : natural := textbox_width/font_width;
 	constant cga_rows       : natural := textbox_height/font_height;
 	constant cga_size       : natural := cga_rows*cga_cols;
@@ -51,6 +53,7 @@ architecture def of scopeio_textbox is
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
 	constant textwidth_bits  : natural := unsigned_num_bits(textbox_width-1);
 
+	signal trigger_chanid :  std_logic_vector(chanid_bits-1 downto 0);
 	signal code_frm  : std_logic;
 	signal code_irdy : std_logic;
 	signal code_data : ascii;
@@ -100,6 +103,7 @@ begin
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
+		trigger_chanid => trigger_chanid,
 		video_row => video_row,
 		code_frm  => code_frm,
 		code_irdy => code_irdy,
