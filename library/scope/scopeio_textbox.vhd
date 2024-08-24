@@ -250,6 +250,14 @@ begin
 		function left_borders
 			return natural_vector is
 			variable table : natural_vector(0 to wid_inscale+3*(inputs-1));
+			constant vt_labels  : string  := hdo(layout)**".vt";
+			function text_length (
+				constant i : natural)
+				return natural is
+				constant retval : string := escaped(hdo(vt_labels)**("["&natural'image(i)&"].text"));
+			begin
+				return retval'length;
+			end;
 		begin
 			table(wid_time)       := 0;
 			table(wid_trigger)    := 0;
@@ -260,10 +268,18 @@ begin
 			table(wid_tgslope)    := table(wid_tgposition)+4+width_borders(wid_tgposition);
 			table(wid_tgmode)     := table(wid_tgslope)+2;
 			table(wid_input)      := 0;
-			table(wid_inposition) := 4;
+			table(wid_inposition) := text_length(0);
 			table(wid_inscale)    := table(wid_inposition)+3+width_borders(wid_inposition);
 			for i in wid_static+1 to table'right loop
-				table(i) := table(i-3);
+				case (i-wid_input) mod 3 is
+				when 0 =>
+					table(i) := table(i-3);
+				when 1 =>
+					table(i) := text_length((i-wid_input)/3);
+				when 2 =>
+					table(i) := table(1-1)+3+width_borders(wid_inposition);
+				when others =>
+				end case;
 			end loop;
 
 			return table;
