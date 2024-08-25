@@ -392,12 +392,13 @@ begin
 			variable up_pos : natural;
 			variable dn_pos : natural;
 
+			constant label_width : natural := max_textlength(vt_labels, inputs);
 		begin
 
 			id := 0;
 			ptr := data'left;
 			for i in 0 to inputs-1 loop
-				insert(id, ptr, escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")));
+				insert(id, ptr, textalign(escaped(hdo(vt_labels)**("["&natural'image(i)&"].text")), label_width));
 			end loop;
 
 			insert (id, ptr, hz_label);
