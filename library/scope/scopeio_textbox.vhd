@@ -204,8 +204,9 @@ begin
 	end process;
 
 	widgets_b : block
-		constant inputs    : natural := hdo(layout)**".inputs";
-		constant vt_labels : string  := hdo(layout)**".vt";
+		constant inputs     : natural := hdo(layout)**".inputs";
+		constant vt_labels  : string  := hdo(layout)**".vt";
+		constant label_width : natural := max_textlength(vt_labels, inputs);
 
 		function top_borders
 			return natural_vector is
@@ -238,7 +239,7 @@ begin
 				wid_trigger    => cga_cols,
 				wid_tmposition => 7,
 				wid_tmscale    => 7,
-				wid_tgchannel  => max_textlength(vt_labels, inputs),
+				wid_tgchannel  => label_width,
 				wid_tgposition => 7,
 				wid_tgslope    => 1,
 				wid_tgmode     => 4,
@@ -260,7 +261,7 @@ begin
 			table(wid_tmposition) := 4;
 			table(wid_tmscale)    := table(wid_tmposition)+3+width_borders(wid_tmposition);
 			table(wid_tgchannel)  := 0;
-			table(wid_tgposition) := max_textlength(vt_labels, inputs);
+			table(wid_tgposition) := label_width;
 			table(wid_tgslope)    := table(wid_tgposition)+4+width_borders(wid_tgposition);
 			table(wid_tgmode)     := table(wid_tgslope)+2;
 			table(wid_input)      := 0;
