@@ -373,13 +373,13 @@ begin
 
 							values := ( -- Xilinx Vivado v2023.2 (64-bit) bug REM works as MOD
 								wid_tmposition => values(wid_tmposition) , --rem 2**(hz_offset'length-1),
-								wid_tmscale    => values(wid_tmscale)    , --mod 2**hz_scaleid'length,
-								wid_tgchannel  => values(wid_tgchannel)  , --mod 2**trigger_chanid'length,
+								wid_tmscale    => values(wid_tmscale) mod 2**hz_scaleid'length,
+								wid_tgchannel  => values(wid_tgchannel) mod 2**trigger_chanid'length,
 								wid_tgposition => values(wid_tgposition) , --rem 2**(trigger_level'length-1),
-								wid_tgslope    => values(wid_tgslope)    , --mod 2**trigger_slope'length,
-								wid_tgmode     => values(wid_tgmode)     , --mod 2**trigger_mode'length,
+								wid_tgslope    => values(wid_tgslope) mod 2**trigger_slope'length,
+								wid_tgmode     => values(wid_tgmode) mod 2**trigger_mode'length,
 								wid_inposition => values(wid_inposition) , --rem 2**(vt_offset'length-1),
-								wid_inscale    => values(wid_inscale)    , --mod 2**vt_scaleid'length,
+								wid_inscale    => values(wid_inscale) mod 2**vt_scaleid'length,
 								others => 0);
 
 							case value is
