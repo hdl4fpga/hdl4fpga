@@ -304,9 +304,7 @@ begin
 		width  <= width_tab(to_integer(unsigned(focus_wid)));
 		height <= height_tab(to_integer(unsigned(focus_wid)));
 		right  <= left + width;
-		-- right  <= left + width_tab(to_integer(unsigned(focus_wid)));
 		bottom <= top  + height;
-		-- bottom <= top  + height_tab(to_integer(unsigned(focus_wid)));
 		row <= to_integer(shift_right(unsigned(video_vcntr), fontheight_bits));
 		col <= to_integer(shift_right(unsigned(video_hcntr), fontwidth_bits));
 
