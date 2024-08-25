@@ -151,7 +151,7 @@ architecture arty_scopeio of testbench is
 	signal xtal_n     : std_logic := '0';
 	signal xtal_p     : std_logic := '0';
 
-	signal btn0       : std_logic;
+	signal btn        : std_logic_vector(4-1 downto 0) := (others => '0');
 
 begin
 
@@ -161,7 +161,10 @@ begin
 	xtal_p <= not xtal after 5 ns;
 	xtal_n <=     xtal after 5 ns;
 
-	btn0   <= '1', '1' after 2 us;
+	btn <= 
+		x"1" after 1.00 us, x"0" after  1.1 us, 
+		x"1" after 2.50 us, x"0" after  2.6 us,
+		x"2" after 4.00 us, x"0" after  4.1 us; 
 
     ipoetb_e : entity work.ipoe_tb
 	generic map (
@@ -181,6 +184,7 @@ begin
 	port map (
 		sw          => "0000",
 
+		btn         => btn,
 		gclk100     => xtal,
 		eth_rstn    => open,
 		eth_ref_clk => mii_refclk,

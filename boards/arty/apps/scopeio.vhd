@@ -238,7 +238,6 @@ begin
 		signal miitx_end  : std_logic;
 		signal miitx_data : std_logic_vector(si_data'range);
 
-		signal eth_tx_clk : std_logic;
 	begin
 
 		dhcp_p : process(eth_tx_clk)
@@ -259,7 +258,6 @@ begin
 						end if;
 					end if;
 				end case;
-				dhcpcd_req <= '0';
 			end if;
 		end process;
 
@@ -362,14 +360,16 @@ begin
 
 	end generate;
 
+	stactlr_g : if io_link=io_none generate
 	stactlr_e : entity hdl4fpga.scopeio_stactlr
 	generic map (
+		debug  => debug,
 		layout => layout)
 	port map (
-        left    => btn(3),
-        up      => btn(2),
-        down    => btn(1),
-        right   => btn(0),
+		left    => btn(3),
+		up      => btn(2),
+		down    => btn(1),
+		right   => btn(0),
 		video_vton => video_vton,
 		sio_clk => sio_clk,
 		si_frm  => miilnk_frm,
@@ -380,6 +380,7 @@ begin
 		so_irdy => iolink_irdy,
 		so_trdy => iolink_trdy,
 		so_data => iolink_data);
+	end generate;
 
 	inputs_b : block
 		constant mux_sampling : natural := 10;

@@ -32,6 +32,7 @@ use hdl4fpga.hdo.all;
 
 entity scopeio_stactlr is
 	generic (
+		debug  : boolean := false;
 		layout : string);
 	port (
 		tp      : out std_logic_Vector(1 to 32);
@@ -71,7 +72,7 @@ begin
 			variable edge  : std_logic;
 		begin
 			if rising_edge(sio_clk) then
-				if (video_vton and not edge)='1' then
+				if (video_vton and not edge)='1' or debug then
 					case state is
 					when s_pressed =>
 						if btn(i)='0' then
@@ -110,8 +111,8 @@ begin
 		if rising_edge(sio_clk) then
 			case state is
 			when s_request =>
-				if debnc/=(debnc'range =>'0') then
-					event <= encoder(debnc);
+				if to_bitvector(debnc)/=(debnc'range =>'0') then
+					event <= to_stdlogicvector(to_bitvector(encoder(debnc)));
 					req <= not to_stdulogic(to_bit(rdy));
 					state := s_wait;
 				else
@@ -131,6 +132,7 @@ begin
 
 	btnctlr_e : entity hdl4fpga.scopeio_btnctlr
 	generic map (
+		debug => debug,
 		layout => layout)
 	port map (
 		tp      => tp,
