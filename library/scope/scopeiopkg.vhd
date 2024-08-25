@@ -232,6 +232,11 @@ package scopeiopkg is
 		constant addr : std_logic_vector;
 		constant data : std_logic_vector)
 		return std_logic_vector;
+
+	function max_textlength(
+		constant labels : string;
+		constant length : natural) 
+		return natural;
 end;
 
 package body scopeiopkg is
@@ -422,6 +427,30 @@ package body scopeiopkg is
 			retval := retval rol data'length;
 		end loop;
 		return std_logic_vector(retval(0 to word'length-1));
+	end;
+
+	function max_textlength(
+		constant labels : string;
+		constant length : natural) 
+		return natural is
+		function text_length (
+			constant i : natural)
+			return natural is
+			constant retval : string := escaped(hdo(labels)**("["&natural'image(i)&"].text"));
+		begin
+			return retval'length;
+		end;
+		variable max_length   : natural;
+		variable label_length : natural;
+	begin
+		max_length := 0;
+		for i in 0 to length-1 loop
+			label_length := text_length(i);
+			if length < text_length(i) then
+				max_length := label_length;
+			end if;
+		end loop;
+		return max_length;
 	end;
 
 end;

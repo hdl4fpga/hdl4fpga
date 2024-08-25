@@ -32,11 +32,13 @@ entity scopeio_textbox is
 		text_bg       : out std_logic_vector;
 		text_fgon     : out std_logic);
 
+	constant inputs        : natural := hdo(layout)**".inputs";
 	constant font_width     : natural := hdo(layout)**".textbox.font_width=8.";
 	constant textbox_width  : natural := hdo(layout)**".textbox.width";
 	constant textbox_height : natural := hdo(layout)**".grid.height";
 	constant grid_height    : natural := hdo(layout)**".grid.height";
 
+	constant chanid_bits    : natural := unsigned_num_bits(inputs-1);
 	constant cga_cols       : natural := textbox_width/font_width;
 	constant cga_rows       : natural := textbox_height/font_height;
 	constant cga_size       : natural := cga_rows*cga_cols;
@@ -51,6 +53,7 @@ architecture def of scopeio_textbox is
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
 	constant textwidth_bits  : natural := unsigned_num_bits(textbox_width-1);
 
+	signal trigger_chanid :  std_logic_vector(chanid_bits-1 downto 0);
 	signal code_frm  : std_logic;
 	signal code_irdy : std_logic;
 	signal code_data : ascii;
@@ -100,6 +103,7 @@ begin
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
+		trigger_chanid => trigger_chanid,
 		video_row => video_row,
 		code_frm  => code_frm,
 		code_irdy => code_irdy,
@@ -200,8 +204,9 @@ begin
 	end process;
 
 	widgets_b : block
-		constant inputs : natural := hdo(layout)**".inputs";
-		constant vt     : string  := hdo(layout)**".vt";
+		constant inputs     : natural := hdo(layout)**".inputs";
+		constant vt_labels  : string  := hdo(layout)**".vt";
+		constant label_width : natural := max_textlength(vt_labels, inputs);
 
 		function top_borders
 			return natural_vector is
@@ -234,7 +239,7 @@ begin
 				wid_trigger    => cga_cols,
 				wid_tmposition => 7,
 				wid_tmscale    => 7,
-				wid_tgchannel  => 4,
+				wid_tgchannel  => label_width,
 				wid_tgposition => 7,
 				wid_tgslope    => 1,
 				wid_tgmode     => 4,
@@ -256,16 +261,23 @@ begin
 			table(wid_tmposition) := 4;
 			table(wid_tmscale)    := table(wid_tmposition)+3+width_borders(wid_tmposition);
 			table(wid_tgchannel)  := 0;
-			table(wid_tgposition) := 4;
+			table(wid_tgposition) := label_width;
 			table(wid_tgslope)    := table(wid_tgposition)+4+width_borders(wid_tgposition);
 			table(wid_tgmode)     := table(wid_tgslope)+2;
 			table(wid_input)      := 0;
-			table(wid_inposition) := 4;
+			table(wid_inposition) := table(wid_tgposition);
 			table(wid_inscale)    := table(wid_inposition)+3+width_borders(wid_inposition);
 			for i in wid_static+1 to table'right loop
-				table(i) := table(i-3);
+				case (i-wid_input) mod 3 is
+				when 0 =>
+					table(i) := table(i-3);
+				when 1 =>
+					table(i) := table(wid_inposition);
+				when 2 =>
+					table(i) := table(i-1)+3+width_borders(wid_inposition);
+				when others =>
+				end case;
 			end loop;
-
 			return table;
 		end;
 
