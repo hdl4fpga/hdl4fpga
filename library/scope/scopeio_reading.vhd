@@ -76,13 +76,13 @@ architecture def of scopeio_reading is
 	signal trigger_oneshot : std_logic;
 	signal trigger_level  : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 
-	signal txt_req        : std_logic;
-	signal txt_rdy        : std_logic;
+	signal txt_req        : bit;
+	signal txt_rdy        : bit;
 	signal scale          : unsigned(0 to sfcnd_length-1);
 	signal offset         : signed(0 to max(vt_offset'length, hz_offset'length)-1);
 
-	signal str_req        : std_logic;
-	signal str_rdy        : std_logic;
+	signal str_req        : bit;
+	signal str_rdy        : bit;
 	subtype wdtid_range is natural range 0 to (inputs+2)-1;
 	signal wdt_id         : wdtid_range;
 	signal wdt_row        : unsigned(0 to unsigned_num_bits(inputs+2-1)-1);
@@ -588,7 +588,7 @@ begin
 		end if;
 	end process;
 
-	axis_p : process (rgtr_clk)
+	axis_p : process (rgtr_clk, mul_rdy)
 		alias btod_req is btod_reqs(axis_id);
 		alias btod_rdy is btod_rdys(axis_id);
 		alias mul_req  is mul_reqs(axis_id);
@@ -611,12 +611,12 @@ begin
 				end if;
 			when s_offset =>
 				if (mul_req xor mul_rdy)='0' then
-					btod_req <= not btod_rdy;
+					btod_req <= not to_stdulogic(to_bit(btod_rdy));
 					state   := s_unit;
 				end if;
 			when s_unit =>
 				bs(axis_id)<= to_signed(grid_unit, b'length);
-				if (btod_req xor btod_rdy)='0' then
+				if (to_bit(btod_req) xor to_bit(btod_rdy))='0' then
 					str_req <= not str_rdy;
 					case wdt_id is
 					when inputs =>
@@ -751,7 +751,7 @@ begin
 				for i in btod_reqs'range loop
 					if (btod_rdys(i) xor btod_reqs(i))='1' then
 						id := i;
-						btod_req <= not btod_rdy;
+						btod_req <= not to_stdulogic(to_bit(btod_rdy));
 						state := s_req;
 						exit;
 					end if;
@@ -782,7 +782,7 @@ begin
 							b <= -bs(i);
 						end if;
 						id := i;
-						mul_req <= not mul_rdy;
+						mul_req <= not to_stdulogic(to_bit(mul_rdy));
 						state := s_req;
 						exit;
 					end if;
@@ -822,7 +822,7 @@ begin
 		code_frm => btod_frm,
 		code     => btod_code);
 
-	code_frm  <= (txt_req xor txt_rdy);
+	code_frm  <= to_stdulogic(txt_req xor txt_rdy);
 	code_irdy <= btod_frm or str_frm;
 	code_data <= multiplex(btod_code & str_code, not btod_frm);
 

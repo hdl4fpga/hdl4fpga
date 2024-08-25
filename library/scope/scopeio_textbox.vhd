@@ -288,6 +288,8 @@ begin
 
 		signal left   : natural range 0 to cga_cols-1;
 		signal right  : natural range 0 to cga_cols;
+		signal width  : natural range 0 to cga_cols;
+		signal height : natural range 0 to cga_rows;
 		signal top    : natural range 0 to cga_rows-1;
 		signal bottom : natural range 0 to cga_rows;
 		signal row    : natural range 0 to cga_rows-1;
@@ -297,12 +299,16 @@ begin
 		signal s : std_logic;
 	begin
 
-		top    <=  top_tab(to_integer(unsigned(focus_wid)));
+		top    <= top_tab(to_integer(unsigned(focus_wid)));
 		left   <= left_tab(to_integer(unsigned(focus_wid)));
-		right  <= left + width_tab(to_integer(unsigned(focus_wid)));
-		bottom <= top  + height_tab(to_integer(unsigned(focus_wid)));
+		width  <= width_tab(to_integer(unsigned(focus_wid)));
+		height <= height_tab(to_integer(unsigned(focus_wid)));
+		right  <= left + width;
+		-- right  <= left + width_tab(to_integer(unsigned(focus_wid)));
+		bottom <= top  + height;
+		-- bottom <= top  + height_tab(to_integer(unsigned(focus_wid)));
 		row <= to_integer(shift_right(unsigned(video_vcntr), fontheight_bits));
-		col <= to_integer(shift_right(unsigned(video_hcntr), fontwidth_bits));
+		col <= to_integer(shift_right(unsigned(video_hcntr), fontwidth_bits)) mod cga_cols;
 
 		x <= ('1' xor blink) when left <= col and col < right  else '0';
 		y <= ('1' xor blink) when top  <= row and row < bottom else '0';
