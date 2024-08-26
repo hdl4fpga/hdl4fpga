@@ -446,7 +446,7 @@ package body scopeiopkg is
 		max_length := 0;
 		for i in 0 to length-1 loop
 			label_length := text_length(i);
-			if length < text_length(i) then
+			if max_length < text_length(i) then
 				max_length := label_length;
 			end if;
 		end loop;
