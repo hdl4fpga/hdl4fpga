@@ -34,6 +34,7 @@ entity s3estarter is
 		btn_north : in std_logic := '0';
 		btn_east  : in std_logic := '0';
 		btn_west  : in std_logic := '0';
+		btn_south : in std_logic := '0';
 
 		--------------
 		-- switches --
@@ -154,18 +155,21 @@ entity s3estarter is
 	attribute loc of btn_north         : signal is "V4";
 	attribute loc of btn_east          : signal is "H3";
 	attribute loc of btn_west          : signal is "D18";
+	attribute loc of btn_south         : signal is "K17";
 
 	attribute iostandard of clk_50mhz  : signal is "LVCMOS33";
 	attribute iostandard of sw0        : signal is "LVCMOS33";
 	attribute iostandard of btn_north  : signal is "LVCMOS33";
 	attribute iostandard of btn_east   : signal is "LVCMOS33";
 	attribute iostandard of btn_west   : signal is "LVCMOS33";
+	attribute iostandard of btn_south  : signal is "LVCMOS33";
 
 	attribute pulldown   of clk_50mhz  : signal is "YES";
 	attribute pulldown   of sw0        : signal is "YES";
 	attribute pulldown   of btn_north  : signal is "YES";
 	attribute pulldown   of btn_east   : signal is "YES";
 	attribute pulldown   of btn_west   : signal is "YES";
+	attribute pulldown   of btn_south  : signal is "YES";
 
 	attribute drive      of clk_50mhz  : signal is "4";
 	attribute slew       of clk_50mhz  : signal is "fast";
