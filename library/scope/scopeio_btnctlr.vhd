@@ -520,9 +520,9 @@ begin
 	ctlr_data <= reverse(send_data);
 	
 	process (sio_clk)
-		constant timeout_press   : natural := 30;
-		constant timeout_quick   : natural := 15;
-		constant timeout_fast    : natural := 4;
+		constant timeout_press : natural := 30;
+		constant timeout_quick : natural := 15;
+		constant timeout_fast  : natural := 4;
 
 		type speeds is (s_press, s_quick, s_fast, s_fastest);
 		variable speed : speeds;
