@@ -107,6 +107,7 @@ begin
 		end process;
 	end generate;
 
+	tp(1 to 4) <= debnc;
 	process(sio_clk)
 		type states is (s_request, s_wait);
 		variable state : states;

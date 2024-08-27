@@ -196,7 +196,6 @@ begin
 		video_lck   => video_lck);
 
 	usb_g : if io_link=io_usb generate
-		signal tp : std_logic_vector(1 to 32);
 		signal usb_cken : std_logic;
 		signal fltr_en : std_logic;
 		signal fltr_bs : std_logic;
@@ -218,7 +217,6 @@ begin
 		generic map (
 			usb_oversampling => usb_oversampling)
 		port map (
-			tp        => tp,
 			usb_clk   => videoio_clk,
 			usb_cken  => usb_cken,
 			usb_dp    => usb_fpga_dp,
@@ -325,10 +323,12 @@ begin
 
 	end block;
 
+	led <= (left, up, down, right) &tp(1 to 4);
 	stactlr_e : entity hdl4fpga.scopeio_stactlr
 	generic map (
 		layout => layout)
 	port map (
+		tp => tp,
         left    => left,
         up      => up,
         down    => down ,
