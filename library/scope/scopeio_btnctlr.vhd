@@ -520,7 +520,7 @@ begin
 	ctlr_data <= reverse(send_data);
 	
 	process (sio_clk)
-		constant timeout_press   : natural := 36;
+		constant timeout_press   : natural := 45;
 		constant timeout_quick   : natural := 15;
 		constant timeout_fast    : natural := 4;
 
