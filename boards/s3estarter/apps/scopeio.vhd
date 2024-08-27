@@ -542,18 +542,21 @@ begin
     	signal right       : std_logic;
     	signal up          : std_logic;
     	signal down        : std_logic;
+
     	signal rot         : std_logic_vector(0 to 2-1);
     	signal derot       : std_logic_vector(0 to 2-1);
+    	signal rot_left    : std_logic;
+    	signal rot_right   : std_logic;
 	begin
 
 		rot <= (rot_a, rot_b);
-    	debounce_g : for i in  generate
+    	debounce_g : for i in rot'range  generate
     		process (sio_clk)
     			constant rebounds0 : natural := 6;
-    			constant rebounds1 : natural := 6;
+    			constant rebounds1 : natural := 0;
     			type states is (s_pressed, s_released);
     			variable state : states;
-    			variable cntr  : integer range -1 to rebounds;
+    			variable cntr  : integer range -1 to max(rebounds0, rebounds1);
     			variable edge  : std_logic;
     		begin
     			if rising_edge(sio_clk) then
@@ -562,7 +565,8 @@ begin
     					when s_pressed =>
     						if rot(i)='0' then
     							if cntr < 0 then
-    								debnc(i) <= '0';
+    								cntr := rebounds1;
+    								derot(i) <= '0';
     								state := s_released;
     							else
     								cntr := cntr - 1;
@@ -571,10 +575,10 @@ begin
     							cntr := cntr + 1;
     						end if;
     					when s_released =>
-    						if btn(i)='1' then
+    						if rot(i)='1' then
     							if cntr >= rebounds1 then
     								cntr := rebounds0;
-    								debnc(i) <= '1';
+    								derot(i) <= '1';
     								state := s_pressed;
     							else
     								cntr := cntr + 1;
@@ -589,10 +593,69 @@ begin
     		end process;
     	end generate;
 
+		process (derot)
+			type states is (s_dtnt, s_wdtnt, s_left01, s_left11, s_left10, s_right10, s_right11, s_rigth01);
+			variable state : states;
+			alias rot_a is derot(0);
+			alias rot_b is derot(1);
+		begin
+			case state is
+			when s_dtnt =>
+				rot_left  <= '0';
+				rot_right <= '0';
+				case derot is
+				when "01" =>
+					state := s_left01;
+				when "10" =>
+					state := s_right10;
+				when "11" =>
+					state := s_wdtnt;
+				when others =>
+				end case;
+			when s_wdtnt =>
+				rot_left  <= '0';
+				rot_right <= '0';
+				case derot is
+				when "00" =>
+					state := s_dtnt;
+				when others =>
+				end case;
+			when s_left01 =>
+				rot_left  <= '0';
+				rot_right <= '0';
+				case derot is
+				when "00" =>
+					state := s_dtnt;
+				when "11" => 
+					state := s_left11;
+				when others =>
+					state := s_wdtnt;
+				end case;
+			when s_left11 =>
+				rot_left  <= '0';
+				rot_right <= '0';
+				case derot is
+				when "10" =>
+					state := s_left10;
+				when others =>
+					state := s_wdtnt;
+				end case;
+			when s_left10 =>
+				case derot is
+				when "00" =>
+					rot_left  <= '1';
+				when others =>
+					rot_left  <= '0';
+				end case;
+				rot_right <= '0';
+				state := s_dtnt;
+			when others =>
+			end case;
+		end process;
 
    		left  <= btn_west;
-   		up    <= btn_north or ();
-   		down  <= btn_south;
+   		up    <= btn_north or rot_right;
+   		down  <= btn_south or rot_left;
    		right <= btn_east or rot_center;
     	stactlr_e : entity hdl4fpga.scopeio_stactlr
     	generic map (
