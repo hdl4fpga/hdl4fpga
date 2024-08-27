@@ -530,37 +530,35 @@ begin
 		variable edge  : std_logic;
 	begin
 		if rising_edge(rgtr_clk) then
-			if (not video_vton and edge)='1' or debug then
-				if (timer_rdy xor timer_req)='1' then
-					if cntr < 0 then
-						timer_rdy <= timer_req;
-						if to_bit(rdy xor req)='1' then
-							case speed is
-							when s_press =>
-								cntr  := timeout_press;
-								speed := s_quick;
-							when s_quick =>
-								cntr  := timeout_quick;
-								speed := s_fast;
-							when s_fast =>
-								cntr  := timeout_fast;
-								speed := s_fastest;
-							when s_fastest =>
-								cntr := -1;
-								rdy  <= req;
-							end case;
-						else
-							speed := s_quick;
+			if (timer_rdy xor timer_req)='1' then
+				if cntr < 0 then
+					timer_rdy <= timer_req;
+					if to_bit(rdy xor req)='1' then
+						case speed is
+						when s_press =>
 							cntr  := timeout_press;
-						end if;
+							speed := s_quick;
+						when s_quick =>
+							cntr  := timeout_quick;
+							speed := s_fast;
+						when s_fast =>
+							cntr  := timeout_fast;
+							speed := s_fastest;
+						when s_fastest =>
+							cntr := -1;
+							rdy  <= req;
+						end case;
 					else
-						cntr := cntr - 1;
-						rdy  <= req;
+						speed := s_quick;
+						cntr  := timeout_press;
 					end if;
-				else
-					speed := s_quick;
-					cntr  := timeout_press;
+				elsif (not video_vton and edge)='1' or debug then
+					cntr := cntr - 1;
+					rdy  <= req;
 				end if;
+			else
+				speed := s_quick;
+				cntr  := timeout_press;
 			end if;
 			edge := video_vton;
 		end if;
