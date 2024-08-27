@@ -65,7 +65,7 @@ begin
 	btn <= (right, left, down, up);
 	debounce_g : for i in btn'range generate
 		process (sio_clk)
-			constant rebounds0 : integer := 6;
+			constant rebounds0 : integer := 4;
 			constant rebounds1 : integer := -1;
 			type states is (s_pressed, s_released);
 			variable state : states;
