@@ -15,7 +15,7 @@ entity scopeio_btnctlr is
 	port (
 		tp      : out std_logic_vector(1 to 32);
 		req     : in  std_logic;
-		rdy     : buffer std_logic;
+		rdy     : buffer std_logic := '0';
 		event   : in  std_logic_vector(0 to 2-1);
 		video_vton : in std_logic;
 
@@ -290,6 +290,7 @@ begin
 							end if;
 							focus_wid := enter_tab(focus_wid);
 							(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+							rdy <= req;
 						when event_next =>
 							blink := 0;
 							focus_wid := next_tab(focus_wid);
@@ -318,6 +319,7 @@ begin
 							focus_wid := escape_tab(focus_wid);
 							blink := 0;
 							(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+							rdy <= req;
 						when others =>
 							assert false
 								report "scopeio_btnctlr : invalid event"
@@ -390,6 +392,7 @@ begin
 									to_unsigned(values(wid_tmscale), hzscale_maxsize) & 
 									unsigned(to_signed(values(wid_tmposition), hzoffset_maxsize)), 3*8);
 								(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+							rdy <= req;
 							when wid_tgchannel =>
 								if values(value)=2**trigger_chanid'length-1 then 
 									values(value) := input_length(hz_scaleid)-1;
@@ -407,6 +410,7 @@ begin
 									to_unsigned(values(wid_tgslope), trigger_slope'length)  & 
 									to_unsigned(values(wid_tgmode),  trigger_mode'length), 3*8);
 								(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+							rdy <= req;
 							when wid_inposition =>
 								rid <= unsigned(rid_vtaxis);
 								reg_length <= x"02";
@@ -414,6 +418,7 @@ begin
 									resize(chan_id, chanid_maxsize) &
 									unsigned(to_signed(values(wid_inposition), vtoffset_maxsize)), 3*8);
 								(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+							rdy <= req;
 							when wid_inscale =>
 								rid <= unsigned(rid_gain);
 								reg_length <= x"01";
@@ -421,6 +426,7 @@ begin
 									resize(chan_id, chanid_maxsize) &
 									to_unsigned(values(wid_inscale), vt_scaleid'length), 2*8);
 								(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+							rdy <= req;
 							when others =>
 								assert false
 									report "scopeio_btnctlr : invalid value"
@@ -431,6 +437,7 @@ begin
 							reg_length <= x"00";
 							payload (0 to 8-1) <= to_unsigned(focus_wid, 8);
 							(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+							rdy <= req;
 							state := s_navigate;
 						when others =>
 							assert false
@@ -444,6 +451,7 @@ begin
 							resize(chan_id, chanid_maxsize) &
 							resize(unsigned(vt_scaleid), vt_scaleid'length), 2*8);
 						(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+							rdy <= req;
 						state := s_navigate;
 					when s_tgchannel =>
 						rid <= unsigned(rid_trigger);
@@ -462,6 +470,7 @@ begin
 							resize(chan_id, chanid_maxsize) &
 							resize(unsigned(vt_scaleid), vt_scaleid'length), 2*8);
 						(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+							rdy <= req;
 						state := s_selected;
 					end case;
 				end if;
@@ -533,7 +542,7 @@ begin
 			if (timer_rdy xor timer_req)='1' then
 				if cntr < 0 then
 					timer_rdy <= timer_req;
-					if to_bit(rdy xor req)='1' then
+					if (rdy xor req)='1' then
 						case speed is
 						when s_press =>
 							cntr  := timeout_press;
@@ -546,17 +555,14 @@ begin
 							speed := s_fastest;
 						when s_fastest =>
 							cntr := -1;
-							rdy  <= req;
+							cntr  := timeout_fast;
+							speed := s_fastest;
 						end case;
-					else
-						speed := s_quick;
-						cntr  := timeout_press;
 					end if;
 				elsif (not video_vton and edge)='1' or debug then
 					cntr := cntr - 1;
-					rdy  <= req;
 				end if;
-			else
+			elsif (req xor rdy)='0' then
 				speed := s_quick;
 				cntr  := timeout_press;
 			end if;
