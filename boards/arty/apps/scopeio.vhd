@@ -360,7 +360,7 @@ begin
 
 	end generate;
 
-	stactlr_g : if io_link=io_none generate
+	-- stactlr_g : if io_link=io_none generate
 	stactlr_e : entity hdl4fpga.scopeio_stactlr
 	generic map (
 		debug  => debug,
@@ -380,7 +380,7 @@ begin
 		so_irdy => iolink_irdy,
 		so_trdy => iolink_trdy,
 		so_data => iolink_data);
-	end generate;
+	-- end generate;
 
 	inputs_b : block
 		constant mux_sampling : natural := 10;

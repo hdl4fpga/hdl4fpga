@@ -65,49 +65,49 @@ begin
 	btn <= (right, left, down, up);
 	debounce_g : for i in btn'range generate
 		process (sio_clk)
-			constant rebounds0 : integer := 4;
-			constant rebounds1 : integer := -1;
+			constant rebounds : natural := 6;
 			type states is (s_pressed, s_released);
 			variable state : states;
-			variable cntr  : integer range -1 to max(rebounds0, rebounds1);
+			variable cntr  : integer range -1 to rebounds;
 			variable edge  : std_logic;
 		begin
 			if rising_edge(sio_clk) then
-				case state is
-				when s_pressed =>
-					if btn(i)='0' then
-						if cntr < 0 then
-							debnc(i) <= '0';
-							state := s_released;
-						elsif (video_vton and not edge)='1' or debug then
-							cntr := cntr - 1;
-						end if;
-					elsif cntr < rebounds0 then
-						if (video_vton and not edge)='1' or debug then
+					case state is
+					when s_pressed =>
+						if btn(i)='0' then
+							if cntr < 0 then
+								debnc(i) <= '0';
+								state := s_released;
+							else
+								if (video_vton and not edge)='1' or debug then
+									cntr := cntr - 1;
+								end if;
+							end if;
+						elsif cntr < rebounds then
+							if (video_vton and not edge)='1' or debug then
 							cntr := cntr + 1;
+							end if;
 						end if;
-					end if;
-				when s_released =>
-					if btn(i)='1' then
-						if cntr >= rebounds1 then
-							cntr := rebounds0;
-							debnc(i) <= '1';
-							state := s_pressed;
-						elsif (video_vton and not edge)='1' or debug then
-							cntr := cntr + 1;
+					when s_released =>
+						if btn(i)='1' then
+							if cntr >= rebounds then
+								cntr := rebounds;
+								debnc(i) <= '1';
+								state := s_pressed;
+							elsif (video_vton and not edge)='1' or debug then
+								cntr := cntr + 1;
+							end if;
+						elsif cntr >= 0 then
+							if (video_vton and not edge)='1' or debug then
+								cntr := cntr - 1;
+							end if;
 						end if;
-					elsif cntr >= 0 then
-						if (video_vton and not edge)='1' or debug then
-							cntr := cntr - 1;
-						end if;
-					end if;
-				end case;
+					end case;
 				edge := video_vton;
 			end if;
 		end process;
 	end generate;
 
-	tp(1 to 4) <= debnc;
 	process(sio_clk)
 		type states is (s_request, s_wait);
 		variable state : states;
@@ -119,8 +119,8 @@ begin
 					event <= to_stdlogicvector(to_bitvector(encoder(debnc)));
 					req <= not to_stdulogic(to_bit(rdy));
 					state := s_wait;
-				else
-					event <= (others => '-');
+				-- else
+					-- event <= (others => '-');
 				end if;
 			when s_wait =>
 				if (to_bit(req) xor to_bit(rdy))='0' then

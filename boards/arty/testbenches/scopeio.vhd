@@ -162,9 +162,9 @@ begin
 	xtal_n <=     xtal after 5 ns;
 
 	btn <= 
-		x"1" after 1.00 us, x"0" after  1.1 us, 
-		x"1" after 2.50 us, x"0" after  2.6 us,
-		x"2" after 4.00 us, x"0" after  4.1 us; 
+		x"1" after 1.00 us; --, x"0" after  1.1 us, 
+		-- x"1" after 2.50 us, x"0" after  2.6 us,
+		-- x"2" after 4.00 us, x"0" after  4.1 us; 
 
     ipoetb_e : entity work.ipoe_tb
 	generic map (
@@ -180,7 +180,7 @@ begin
 
 	du_e : arty
 	generic map (
-		debug => true)
+		debug => false)
 	port map (
 		sw          => "0000",
 
