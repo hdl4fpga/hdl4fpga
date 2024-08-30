@@ -13,8 +13,7 @@ entity scopeio_btnctlr is
 		layout  : string);
 	port (
 		tp      : out std_logic_vector(1 to 32);
-		req     : in  std_logic;
-		rdy     : buffer std_logic := '0';
+		event_vld : in std_logic;
 		event   : in  std_logic_vector(0 to 2-1);
 		video_vton : in std_logic;
 
@@ -196,8 +195,7 @@ architecture def of scopeio_btnctlr is
 	alias  payload     : unsigned(0 to 3*8-1) is ctrl_rgtr(2*8 to 5*8-1); 
 	signal send_req    : bit := '0';
 	signal send_rdy    : bit := '0';
-	signal timer_req   : bit := '0';
-	signal timer_rdy   : bit := '0';
+	signal proceed_event : std_logic_vector(event'range) := "00";
 	signal proceed_req : bit := '0';
 	signal proceed_rdy : bit := '0';
 	signal send_data   : std_logic_vector(so_data'range);
@@ -269,7 +267,7 @@ begin
 		trigger_level   => trigger_level);
 
 	-- tp(1 to 4) <= (send_req, send_rdy, req, rdy);
-	process (req, rgtr_clk)
+	process (proceed_rdy, rgtr_clk)
 		type states is (s_navigate, s_hightlight, s_selected, s_tgchannel, s_hightlight2);
 		variable state     : states;
 		variable values    : integer_vector(0 to wid_inscale);
@@ -283,14 +281,14 @@ begin
 					case state is
 					when s_navigate =>
 
-						case event is
+						case proceed_event is
 						when event_enter =>
 							if focus_wid=enter_tab(focus_wid) then
 								blink := 2**7;
 								state := s_selected;
 							end if;
 							focus_wid := enter_tab(focus_wid);
-							send_req <= not send_rdy;
+							send_req    <= not send_rdy;
 							proceed_rdy <= proceed_req;
 						when event_next =>
 							blink := 0;
@@ -366,9 +364,9 @@ begin
 							wid_inscale    => to_integer(unsigned(vt_scaleid)),
 							others         => 0);
 
-						case event is
+						case proceed_event is
 						when event_next|event_prev =>
-							if event=event_next then
+							if proceed_event=event_next then
 								values(value) := values(value) - 1;
 							else
 								values(value) := values(value) + 1;
@@ -529,63 +527,45 @@ begin
 	end process;
 	ctlr_data <= reverse(send_data);
 	
-	xxx_b : block
-		constant cnt_tab : natural_vector := (30, 15, 4, 0);
-		signal cntid   : natural range cnt_tab'range;
-	begin
 	process (rgtr_clk, proceed_req)
-		type states is (s_idle, s_proceed, s_wait, s_release);
+		type states is (s_released, s_proceed, s_wait);
 		variable state : states;
+		constant cnt_tab : natural_vector := (30, 15, 4, 0);
+		variable cntid : natural range cnt_tab'range;
+		variable cntr  : integer range -1 to 60;
+		variable edge  : std_logic;
 	begin 
 		if rising_edge(rgtr_clk) then
 			case state is
-			when s_idle =>
-				if (rdy xor req)='1' then
-					if (timer_req xor timer_rdy)='0' then
-						proceed_req <= not proceed_req;
-						state := s_proceed;
-					end if;
+			when s_released =>
+				if event_vld='1' then
+					proceed_event <= event;
+					proceed_req <= not proceed_req;
+					cntid := 0;
+					state := s_proceed;
 				end if;
 			when s_proceed =>
 				if (proceed_req xor proceed_req)='0' then
-					timer_req <= not timer_rdy;
+					cntr  := cnt_tab(cntid);
+					if cntid < cnt_tab'right then
+						cntid := cntid + 1;
+					end if;
 					state := s_wait;
 				end if;
-				cntdn <= cnt_tab(cntid);
 			when s_wait =>
-				if (timer_req xor timer_rdy)='0' then
-					if (send_req xor send_rdy)='0' then
-						rdy   <= req;
-						state := s_release;
+				if cntr >= 0 then
+					if (not video_vton and edge)='1' then
+						cntr := cntr - 1;
 					end if;
+				elsif event_vld='1' and event=proceed_event then
+					proceed_req <= not proceed_req;
+					state := s_proceed;
+				else
+					state := s_released;
 				end if;
-			when s_release =>
 			end case;
-		end if;
-	end process;
-
-	process (sio_clk, timer_rdy)
-		constant timeout_press   : natural := 30;
-		constant timeout_quick   : natural := 15;
-		constant timeout_fast    : natural := 4;
-
-		type speeds is (s_press, s_quick, s_fast, s_fastest);
-		variable speed : speeds;
-		variable cntr  : integer range -1 to 60;
-		variable edge  : std_logic;
-	begin
-		if rising_edge(rgtr_clk) then
-			if (timer_rdy xor timer_req)='1' then
-				if cntr < 0 then
-					timer_rdy <= timer_req;
-				elsif (not video_vton and edge)='1' then
-					cntr := cntr - 1;
-				end if;
-			else
-				cntr := cnt_tab(cntid);
-			end if;
 			edge := video_vton;
 		end if;
 	end process;
-	end block;
+
 end;

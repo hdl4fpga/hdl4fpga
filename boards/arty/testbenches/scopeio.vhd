@@ -162,7 +162,7 @@ begin
 	xtal_n <=     xtal after 5 ns;
 
 	btn <= 
-		x"1" after 1.00 us, x"0" after  1.1 us; 
+		x"1" after 1.00 us, x"1" after  1.1 us; 
 	--	x"1" after 500 us, x"0" after  501 us;
 		-- x"2" after 4.00 us, x"0" after  4.1 us; 
 

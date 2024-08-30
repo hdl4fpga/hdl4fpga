@@ -58,7 +58,8 @@ architecture def of scopeio_stactlr is
 	signal rdy       : std_logic := '0';
 	signal btn       : std_logic_vector(0 to 4-1);
 	signal debnc     : std_logic_vector(btn'range);
-	signal event     : std_logic_vector(0 to 2-1) := (others => '0');
+	signal event_vld : std_logic;
+	signal event     : std_logic_vector(0 to 2-1) := "00";
 
 begin
 
@@ -109,40 +110,15 @@ begin
 		end process;
 	end generate;
 
-	process(sio_clk)
-		type states is (s_request, s_wait);
-		variable state : states;
-	begin
-		if rising_edge(sio_clk) then
-			case state is
-			when s_request =>
-				if to_bitvector(debnc)/=(debnc'range =>'0') then
-					event <= to_stdlogicvector(to_bitvector(encoder(debnc)));
-					req <= not to_stdulogic(to_bit(rdy));
-					state := s_wait;
-				-- else
-					-- event <= (others => '-');
-				end if;
-			when s_wait =>
-				if (to_bit(req) xor to_bit(rdy))='0' then
-					if debnc(to_integer(unsigned(event)))='0' then
-						state := s_request;
-					else
-						req <= not to_stdulogic(to_bit(rdy));
-					end if;
-				end if;
-			end case;
-		end if;
-	end process;
-
+	event_vld <= '1' when to_bitvector(debnc)/=(debnc'range => '0') else '0';
+	event <= to_stdlogicvector(to_bitvector(encoder(debnc)));
 	tp(1 to 4) <= debnc;
 	btnctlr_e : entity hdl4fpga.scopeio_btnctlr
 	generic map (
 		layout => layout)
 	port map (
 		-- tp      => tp,
-		req     => req,
-		rdy     => rdy,
+		event_vld => event_vld,
 		event   => event,
 		sio_clk => sio_clk,
 		video_vton => video_vton,
