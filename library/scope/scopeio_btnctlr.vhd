@@ -10,12 +10,11 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_btnctlr is
 	generic (
-		debug : boolean := false;
 		layout  : string);
 	port (
 		tp      : out std_logic_vector(1 to 32);
 		req     : in  std_logic;
-		rdy     : buffer std_logic;
+		rdy     : buffer std_logic := '0';
 		event   : in  std_logic_vector(0 to 2-1);
 		video_vton : in std_logic;
 
@@ -199,6 +198,8 @@ architecture def of scopeio_btnctlr is
 	signal send_rdy    : bit := '0';
 	signal timer_req   : bit := '0';
 	signal timer_rdy   : bit := '0';
+	signal proceed_req : bit := '0';
+	signal proceed_rdy : bit := '0';
 	signal send_data   : std_logic_vector(so_data'range);
 
 	function input_length (
@@ -277,7 +278,7 @@ begin
 		variable blink     : natural range 0 to 2**7;
 	begin
 		if rising_edge(rgtr_clk) then
-			if (to_bit(rdy) xor to_bit(req))='1' and (timer_req xor timer_rdy)='0' then
+			if (proceed_rdy xor proceed_req)='1' then
 				if (send_req xor send_rdy)='0' then
 					case state is
 					when s_navigate =>
@@ -289,7 +290,8 @@ begin
 								state := s_selected;
 							end if;
 							focus_wid := enter_tab(focus_wid);
-							(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+							send_req <= not send_rdy;
+							proceed_rdy <= proceed_req;
 						when event_next =>
 							blink := 0;
 							focus_wid := next_tab(focus_wid);
@@ -317,7 +319,8 @@ begin
 						when event_exit =>
 							focus_wid := escape_tab(focus_wid);
 							blink := 0;
-							(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+							send_req <= not send_rdy;
+							proceed_rdy <= proceed_req;
 						when others =>
 							assert false
 								report "scopeio_btnctlr : invalid event"
@@ -389,7 +392,8 @@ begin
 								payload <= resize(
 									to_unsigned(values(wid_tmscale), hzscale_maxsize) & 
 									unsigned(to_signed(values(wid_tmposition), hzoffset_maxsize)), 3*8);
-								(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+								send_req <= not send_rdy;
+								proceed_rdy <= proceed_req;
 							when wid_tgchannel =>
 								if values(value)=2**trigger_chanid'length-1 then 
 									values(value) := input_length(hz_scaleid)-1;
@@ -406,21 +410,24 @@ begin
 									unsigned(to_signed(values(wid_tgposition), triggerlevel_maxsize)) & 
 									to_unsigned(values(wid_tgslope), trigger_slope'length)  & 
 									to_unsigned(values(wid_tgmode),  trigger_mode'length), 3*8);
-								(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+								send_req <= not send_rdy;
+								proceed_rdy <= proceed_req;
 							when wid_inposition =>
 								rid <= unsigned(rid_vtaxis);
 								reg_length <= x"02";
 								payload <= resize(
 									resize(chan_id, chanid_maxsize) &
 									unsigned(to_signed(values(wid_inposition), vtoffset_maxsize)), 3*8);
-								(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+								send_req <= not send_rdy;
+								proceed_rdy <= proceed_req;
 							when wid_inscale =>
 								rid <= unsigned(rid_gain);
 								reg_length <= x"01";
 								payload(0 to 2*8-1) <= resize(
 									resize(chan_id, chanid_maxsize) &
 									to_unsigned(values(wid_inscale), vt_scaleid'length), 2*8);
-								(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+								send_req <= not send_rdy;
+								proceed_rdy <= proceed_req;
 							when others =>
 								assert false
 									report "scopeio_btnctlr : invalid value"
@@ -430,7 +437,8 @@ begin
 							rid <= unsigned(rid_focus);
 							reg_length <= x"00";
 							payload (0 to 8-1) <= to_unsigned(focus_wid, 8);
-							(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+							send_req <= not send_rdy;
+							proceed_rdy <= proceed_req;
 							state := s_navigate;
 						when others =>
 							assert false
@@ -443,7 +451,8 @@ begin
 						payload(0 to 2*8-1) <= resize(
 							resize(chan_id, chanid_maxsize) &
 							resize(unsigned(vt_scaleid), vt_scaleid'length), 2*8);
-						(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+						send_req <= not send_rdy;
+						proceed_rdy <= proceed_req;
 						state := s_navigate;
 					when s_tgchannel =>
 						rid <= unsigned(rid_trigger);
@@ -461,7 +470,8 @@ begin
 						payload(0 to 2*8-1) <= resize(
 							resize(chan_id, chanid_maxsize) &
 							resize(unsigned(vt_scaleid), vt_scaleid'length), 2*8);
-						(send_req, timer_req) <= bit_vector'(not send_rdy, not timer_rdy);
+						send_req <= not send_rdy;
+						proceed_rdy <= proceed_req;
 						state := s_selected;
 					end case;
 				end if;
@@ -519,7 +529,42 @@ begin
 	end process;
 	ctlr_data <= reverse(send_data);
 	
-	process (sio_clk)
+	xxx_b : block
+		constant cnt_tab : natural_vector := (30, 15, 4, 0);
+		signal cntid   : natural range cnt_tab'range;
+	begin
+	process (rgtr_clk, proceed_req)
+		type states is (s_idle, s_proceed, s_wait, s_release);
+		variable state : states;
+	begin 
+		if rising_edge(rgtr_clk) then
+			case state is
+			when s_idle =>
+				if (rdy xor req)='1' then
+					if (timer_req xor timer_rdy)='0' then
+						proceed_req <= not proceed_req;
+						state := s_proceed;
+					end if;
+				end if;
+			when s_proceed =>
+				if (proceed_req xor proceed_req)='0' then
+					timer_req <= not timer_rdy;
+					state := s_wait;
+				end if;
+				cntdn <= cnt_tab(cntid);
+			when s_wait =>
+				if (timer_req xor timer_rdy)='0' then
+					if (send_req xor send_rdy)='0' then
+						rdy   <= req;
+						state := s_release;
+					end if;
+				end if;
+			when s_release =>
+			end case;
+		end if;
+	end process;
+
+	process (sio_clk, timer_rdy)
 		constant timeout_press   : natural := 30;
 		constant timeout_quick   : natural := 15;
 		constant timeout_fast    : natural := 4;
@@ -530,36 +575,17 @@ begin
 		variable edge  : std_logic;
 	begin
 		if rising_edge(rgtr_clk) then
-				if (timer_rdy xor timer_req)='1' then
-					if cntr < 0 then
-						timer_rdy <= timer_req;
-						if to_bit(rdy xor req)='1' then
-							case speed is
-							when s_press =>
-								cntr  := timeout_press;
-								speed := s_quick;
-							when s_quick =>
-								cntr  := timeout_quick;
-								speed := s_fast;
-							when s_fast =>
-								cntr  := timeout_fast;
-								speed := s_fastest;
-							when s_fastest =>
-								cntr := -1;
-							end case;
-						else
-							speed := s_quick;
-							cntr  := timeout_press;
-						end if;
-					elsif (not video_vton and edge)='1' then
-						cntr := cntr - 1;
-						rdy  <= req;
-					end if;
-				else
-					speed := s_quick;
-					cntr  := timeout_press;
+			if (timer_rdy xor timer_req)='1' then
+				if cntr < 0 then
+					timer_rdy <= timer_req;
+				elsif (not video_vton and edge)='1' then
+					cntr := cntr - 1;
 				end if;
+			else
+				cntr := cnt_tab(cntid);
+			end if;
 			edge := video_vton;
 		end if;
 	end process;
+	end block;
 end;

@@ -466,6 +466,7 @@ begin
 		videotiming_id => video_params.timing,
 		layout         => layout)
 	port map (
+		-- tp => tp,
 		sio_clk     => sio_clk,
 		si_frm      => si_frm,
 		si_irdy     => si_irdy,

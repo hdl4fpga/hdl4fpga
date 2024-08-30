@@ -58,7 +58,7 @@ architecture def of scopeio_stactlr is
 	signal rdy       : std_logic := '0';
 	signal btn       : std_logic_vector(0 to 4-1);
 	signal debnc     : std_logic_vector(btn'range);
-	signal event     : std_logic_vector(0 to 2-1);
+	signal event     : std_logic_vector(0 to 2-1) := (others => '0');
 
 begin
 
@@ -81,11 +81,11 @@ begin
 							debnc(i) <= '0';
 							cntr  := rebound1s;
 							state := s_released;
-						elsif (video_vton and not edge)='1' or debug then
+						elsif (video_vton and not edge)='1' then
 							cntr := cntr - 1;
 						end if;
 					elsif cntr < rebound0s then
-						if (video_vton and not edge)='1' or debug then
+						if (video_vton and not edge)='1' then
 							cntr := cntr + 1;
 						end if;
 					end if;
@@ -95,11 +95,11 @@ begin
 							cntr := rebound0s;
 							debnc(i) <= '1';
 							state := s_pressed;
-						elsif (video_vton and not edge)='1' or debug then
+						elsif (video_vton and not edge)='1' then
 							cntr := cntr + 1;
 						end if;
 					elsif cntr >= 0 then
-						if (video_vton and not edge)='1' or debug then
+						if (video_vton and not edge)='1' then
 							cntr := cntr - 1;
 						end if;
 					end if;
@@ -135,12 +135,12 @@ begin
 		end if;
 	end process;
 
+	tp(1 to 4) <= debnc;
 	btnctlr_e : entity hdl4fpga.scopeio_btnctlr
 	generic map (
-		debug => debug,
 		layout => layout)
 	port map (
-		tp      => tp,
+		-- tp      => tp,
 		req     => req,
 		rdy     => rdy,
 		event   => event,

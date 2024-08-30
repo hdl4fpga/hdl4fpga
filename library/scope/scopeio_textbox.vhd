@@ -306,7 +306,7 @@ begin
 		right  <= left + width;
 		bottom <= top  + height;
 		row <= to_integer(shift_right(unsigned(video_vcntr), fontheight_bits));
-		col <= to_integer(shift_right(unsigned(video_hcntr), fontwidth_bits));
+		col <= to_integer(shift_right(unsigned(video_hcntr), fontwidth_bits)) mod cga_cols;
 
 		x <= ('1' xor blink) when left <= col and col < right  else '0';
 		y <= ('1' xor blink) when top  <= row and row < bottom else '0';
