@@ -39,10 +39,11 @@ use unisim.vcomponents.all;
 architecture beh of s3estarter is
 
 	constant baudrate : natural := 115200;
-	constant io_link  : io_comms := io_ipoe;
+	constant io_link  : io_comms := io_none;
 
 	signal sys_clk    : std_logic;
 	signal vga_clk    : std_logic;
+	signal video_vton : std_logic;
 
 	constant sample_size : natural := 14;
 
@@ -532,6 +533,152 @@ begin
 
 	end generate;
 
+	stactlr_g : if io_link=io_none generate
+		signal miilnk_frm  : std_logic := '0';
+		signal miilnk_irdy : std_logic := '1';
+		signal miilnk_trdy : std_logic := '1';
+		signal miilnk_data : std_logic_vector(si_data'range);
+		signal left        : std_logic;
+		signal right       : std_logic;
+		signal up          : std_logic;
+		signal down        : std_logic;
+
+		signal rot         : std_logic_vector(0 to 2-1);
+		signal derot       : std_logic_vector(0 to 2-1);
+		signal rot_left    : std_logic;
+		signal rot_right   : std_logic;
+	begin
+
+		rot <= (rot_a, rot_b);
+		debounce_g : for i in rot'range  generate
+			process (sio_clk)
+				constant rebounds0 : natural := 6;
+				constant rebounds1 : natural := 0;
+				type states is (s_pressed, s_released);
+				variable state : states;
+				variable cntr  : integer range -1 to max(rebounds0, rebounds1);
+				variable edge  : std_logic;
+			begin
+				if rising_edge(sio_clk) then
+					case state is
+					when s_pressed =>
+						if rot(i)='0' then
+							if cntr < 0 then
+								cntr := 0;
+								derot(i) <= '0';
+								state := s_released;
+							elsif (video_vton and not edge)='1' or debug then
+								cntr := cntr - 1;
+							end if;
+						elsif cntr < rebounds0 then
+							if (video_vton and not edge)='1' or debug then
+								cntr := cntr + 1;
+							end if;
+						end if;
+					when s_released =>
+						if rot(i)='1' then
+							if cntr >= rebounds1 then
+								cntr := rebounds0;
+								derot(i) <= '1';
+								state := s_pressed;
+							elsif (video_vton and not edge)='1' or debug then
+								cntr := cntr + 1;
+							end if;
+						elsif cntr >= 0 then
+							if (video_vton and not edge)='1' or debug then
+								cntr := cntr - 1;
+							end if;
+						end if;
+					end case;
+					edge := video_vton;
+				end if;
+			end process;
+		end generate;
+
+		process (derot)
+			type states is (s_dtnt, s_wdtnt, s_left01, s_left11, s_left10, s_right10, s_right11, s_rigth01);
+			variable state : states;
+			alias rot_a is derot(0);
+			alias rot_b is derot(1);
+		begin
+			case state is
+			when s_dtnt =>
+				rot_left  <= '0';
+				rot_right <= '0';
+				case derot is
+				when "01" =>
+					state := s_left01;
+				when "10" =>
+					state := s_right10;
+				when "11" =>
+					state := s_wdtnt;
+				when others =>
+				end case;
+			when s_wdtnt =>
+				rot_left  <= '0';
+				rot_right <= '0';
+				case derot is
+				when "00" =>
+					state := s_dtnt;
+				when others =>
+				end case;
+			when s_left01 =>
+				rot_left  <= '0';
+				rot_right <= '0';
+				case derot is
+				when "00" =>
+					state := s_dtnt;
+				when "11" => 
+					state := s_left11;
+				when others =>
+					state := s_wdtnt;
+				end case;
+			when s_left11 =>
+				rot_left  <= '0';
+				rot_right <= '0';
+				case derot is
+				when "10" =>
+					state := s_left10;
+				when others =>
+					state := s_wdtnt;
+				end case;
+			when s_left10 =>
+				case derot is
+				when "00" =>
+					rot_left  <= '1';
+				when others =>
+					rot_left  <= '0';
+				end case;
+				rot_right <= '0';
+				state := s_dtnt;
+			when others =>
+			end case;
+		end process;
+
+   		left  <= btn_west;
+   		up    <= btn_north or rot_right;
+   		down  <= btn_south or rot_left;
+   		right <= btn_east or rot_center;
+		stactlr_e : entity hdl4fpga.scopeio_stactlr
+		generic map (
+			debug  => debug,
+			layout => layout)
+		port map (
+			left    => left,
+			up      => up,
+			down    => down,
+			right   => right,
+			video_vton => video_vton,
+			sio_clk => sio_clk,
+			si_frm  => miilnk_frm,
+			si_irdy => miilnk_irdy,
+			si_trdy => miilnk_trdy,
+			si_data => miilnk_data,
+			so_frm  => si_frm,
+			so_irdy => si_irdy,
+			so_data => si_data);
+	end generate;
+
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		videotiming_id => videoparam(video_mode).timing,
@@ -548,6 +695,7 @@ begin
 		video_pixel => vga_rgb,
 		video_hsync => vga_hsync,
 		video_vsync => vga_vsync,
+		video_vton  => video_vton,
 		video_blank => open);
 
 	vga_red   <= vga_rgb(2);

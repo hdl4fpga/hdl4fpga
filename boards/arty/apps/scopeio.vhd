@@ -119,10 +119,10 @@ architecture scopeio of arty is
 			"   { text  : 'V P+ V N-', " &  
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_00_ff_ff},  " & -- vt(0)
-			"   { text  : 'A6+ A7-', " &
+			"   { text  : 'A6+  A7-', " &
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff},  " & -- vt(1)
-			"   { text  : 'A8+ A9-', " &
+			"   { text  : 'A8+  A9-', " &
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_00_ff_ff},  " & -- vt(2)
 			"   { text  : 'A10+ A11-', " &
@@ -360,7 +360,7 @@ begin
 
 	end generate;
 
-	stactlr_g : if io_link=io_none generate
+	-- stactlr_g : if io_link=io_none generate
 	stactlr_e : entity hdl4fpga.scopeio_stactlr
 	generic map (
 		debug  => debug,
@@ -380,7 +380,7 @@ begin
 		so_irdy => iolink_irdy,
 		so_trdy => iolink_trdy,
 		so_data => iolink_data);
-	end generate;
+	-- end generate;
 
 	inputs_b : block
 		constant mux_sampling : natural := 10;
