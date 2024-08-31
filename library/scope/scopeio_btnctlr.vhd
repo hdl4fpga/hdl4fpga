@@ -546,7 +546,7 @@ begin
 				end if;
 			when s_proceed =>
 				if (proceed_req xor proceed_req)='0' then
-					cntr  := cnt_tab(cntid);
+					cntr := cnt_tab(cntid);
 					if cntid < cnt_tab'right then
 						cntid := cntid + 1;
 					end if;
