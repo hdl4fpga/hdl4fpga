@@ -299,6 +299,7 @@ begin
 									if focus_wid=i+wid_input then
 										if ((i-wid_input) mod 3)=0 then
 											focus_wid := wid_time;
+											exit;
 										end if;
 									end if;
 								end loop;
@@ -319,6 +320,7 @@ begin
 									if focus_wid=i+wid_input then
 										if ((i-wid_input) mod 3)=0 then
 											focus_wid := upto(hz_scaleid)-2;
+											exit;
 										end if;
 									end if;
 								end loop;
