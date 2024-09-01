@@ -69,30 +69,15 @@ begin
 			constant rebound0s : natural := 6;
 			constant rebound1s : integer := -1;
 
-			type states is (s_released, s_pressed);
-			variable state : states;
+			type states is (s_pressed, s_released);
+			variable state : states; --:= s_released;
 			variable cntr  : integer range -1 to max(rebound1s, rebound0s);
 			variable edge  : std_logic;
 		begin
 			if rising_edge(sio_clk) then
 				case state is
-				when s_released =>
-					debnc(i) <= '0';
-					if btn(i)='1' then
-						if cntr >= rebound1s then
-							cntr := rebound0s;
-							debnc(i) <= '1';
-							state := s_pressed;
-						elsif (video_vton and not edge)='1' then
-							cntr := cntr + 1;
-						end if;
-					elsif cntr >= 0 then
-						if (video_vton and not edge)='1' then
-							cntr := cntr - 1;
-						end if;
-					end if;
 				when s_pressed =>
-					debnc(i) <= '1';
+					-- debnc(i) <= '1';
 					if btn(i)='0' then
 						if cntr < 0 then
 							debnc(i) <= '0';
@@ -104,6 +89,21 @@ begin
 					elsif cntr < rebound0s then
 						if (video_vton and not edge)='1' then
 							cntr := cntr + 1;
+						end if;
+					end if;
+				when s_released =>
+					-- debnc(i) <= '0';
+					if btn(i)='1' then
+						if cntr >= rebound1s then
+							cntr := rebound0s;
+							debnc(i) <= '1';
+							state := s_pressed;
+						elsif (video_vton and not edge)='1' then
+							cntr := cntr + 1;
+						end if;
+					elsif cntr >= 0 then
+						if (video_vton and not edge)='1' then
+							cntr := cntr - 1;
 						end if;
 					end if;
 				end case;
