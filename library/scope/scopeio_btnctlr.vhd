@@ -348,14 +348,14 @@ begin
 						end case;
 
 						case focus_wid is
-						when wid_input|wid_trigger|wid_tmposition|wid_tmscale|wid_tgchannel|wid_tgposition|wid_tgslope|wid_tgmode =>
+						when wid_trigger|wid_tmposition|wid_tmscale|wid_tgchannel|wid_tgposition|wid_tgslope|wid_tgmode =>
 							value := focus_wid;
 							chan_id <= unsigned(trigger_chanid);
 						when others =>
-							for i in wid_input to next_tab'right loop
-								if focus_wid=i then
-									chan_id <= to_unsigned((i-wid_input)/3, chan_id'length);
-									case (i-wid_input) mod 3 is
+							for i in 0 to 3*inputs-1 loop
+								if focus_wid=i+wid_input then
+									chan_id <= to_unsigned(i/3, chan_id'length);
+									case i mod 3 is
 									when 0 => 
 									when 1 => 
 										value := wid_inposition;
@@ -562,12 +562,12 @@ begin
 			when s_released =>
 				if event_vld='1' then
 					proceed_event <= event;
-					proceed_req <= not proceed_req;
+					proceed_req <= not proceed_rdy;
 					cntid := 0;
 					state := s_proceed;
 				end if;
 			when s_proceed =>
-				if (proceed_req xor proceed_req)='0' then
+				if (proceed_req xor proceed_rdy)='0' then
 					cntr := cnt_tab(cntid);
 					if cntid < cnt_tab'right then
 						cntid := cntid + 1;
@@ -580,7 +580,7 @@ begin
 						cntr := cntr - 1;
 					end if;
 				elsif event_vld='1' and event=proceed_event then
-					proceed_req <= not proceed_req;
+					proceed_req <= not proceed_rdy;
 					state := s_proceed;
 				else
 					state := s_released;

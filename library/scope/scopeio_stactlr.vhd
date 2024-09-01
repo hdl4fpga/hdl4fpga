@@ -57,7 +57,7 @@ architecture def of scopeio_stactlr is
 	signal req       : std_logic := '0';
 	signal rdy       : std_logic := '0';
 	signal btn       : std_logic_vector(0 to 4-1);
-	signal debnc     : std_logic_vector(btn'range);
+	signal debnc     : std_logic_vector(btn'range) := (others => '0');
 	signal event_vld : std_logic;
 	signal event     : std_logic_vector(0 to 2-1) := "00";
 
@@ -69,28 +69,13 @@ begin
 			constant rebound0s : natural := 6;
 			constant rebound1s : integer := -1;
 
-			type states is (s_pressed, s_released);
+			type states is (s_released, s_pressed);
 			variable state : states;
 			variable cntr  : integer range -1 to max(rebound1s, rebound0s);
 			variable edge  : std_logic;
 		begin
 			if rising_edge(sio_clk) then
 				case state is
-				when s_pressed =>
-					debnc(i) <= '1';
-					if btn(i)='0' then
-						if cntr < 0 then
-							debnc(i) <= '0';
-							cntr  := rebound1s;
-							state := s_released;
-						elsif (video_vton and not edge)='1' then
-							cntr := cntr - 1;
-						end if;
-					elsif cntr < rebound0s then
-						if (video_vton and not edge)='1' then
-							cntr := cntr + 1;
-						end if;
-					end if;
 				when s_released =>
 					debnc(i) <= '0';
 					if btn(i)='1' then
@@ -106,14 +91,29 @@ begin
 							cntr := cntr - 1;
 						end if;
 					end if;
+				when s_pressed =>
+					debnc(i) <= '1';
+					if btn(i)='0' then
+						if cntr < 0 then
+							debnc(i) <= '0';
+							cntr  := rebound1s;
+							state := s_released;
+						elsif (video_vton and not edge)='1' then
+							cntr := cntr - 1;
+						end if;
+					elsif cntr < rebound0s then
+						if (video_vton and not edge)='1' then
+							cntr := cntr + 1;
+						end if;
+					end if;
 				end case;
 				edge := video_vton;
 			end if;
 		end process;
 	end generate;
 
-	event_vld <= '1' when to_bitvector(debnc)/=(debnc'range => '0') else '0';
-	event <= to_stdlogicvector(to_bitvector(encoder(debnc)));
+	event_vld <= '0' when debnc=(debnc'range => '0') else '1';
+	event <= encoder(debnc);
 	tp(1 to 4) <= debnc;
 	btnctlr_e : entity hdl4fpga.scopeio_btnctlr
 	generic map (
