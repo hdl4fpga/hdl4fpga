@@ -297,9 +297,8 @@ begin
 								focus_wid := wid_tmposition;
 								for i in 0 to 3*inputs-1 loop -- Xilinx ISE 14.7 mod 3 workaround
 									if focus_wid=i+wid_input then
-										if ((i-wid_input) mod 3)=0 then
+										if (i mod 3)=0 then
 											focus_wid := wid_time;
-											exit;
 										end if;
 									end if;
 								end loop;
@@ -318,9 +317,8 @@ begin
 								focus_wid := upto(hz_scaleid);
 								for i in 0 to 3*inputs-1 loop -- Xilinx ISE 14.7 mod 3 workaround
 									if focus_wid=i+wid_input then
-										if ((i-wid_input) mod 3)=0 then
+										if (i mod 3)=0 then
 											focus_wid := upto(hz_scaleid)-2;
-											exit;
 										end if;
 									end if;
 								end loop;
