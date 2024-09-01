@@ -79,7 +79,7 @@ architecture scopeio of arty is
 			"   num_of_segments :   4,     " &
 			"   display : {                " &
 			"       width  : 1920,         " &
-			"       height : 1080},         " &
+			"       height : 1080},        " &
 			"   grid : {                   " &
 			"       width  : " & natural'image(50*32+1) & ',' &
 			"       height : " & natural'image( 8*32+1) & ',' &
@@ -143,7 +143,6 @@ architecture scopeio of arty is
 			"   { text  : 'A4', " &
 			"     step  : " & real'image(3.33*vt_step) & "," &
 			"     color : 0xff_00_ff_ff}]}");   -- vt(8)
-		constant vt : string := hdo(layout)**".vt";
 begin
 
 	clkin_ibufg : ibufg

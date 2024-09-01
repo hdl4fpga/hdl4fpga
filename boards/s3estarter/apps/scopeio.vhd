@@ -125,8 +125,6 @@ architecture beh of s3estarter is
 	constant layout : string := compact(
 			"{                             " &   
 			"   inputs          : " & natural'image(inputs) & ',' &
-			"   max_delay       : " & natural'image(2**14)  & ',' &
-			"   min_storage     : 256,     " & -- samples, storage size will be equal or larger than this
 			"   num_of_segments :   4,     " &
 			"   display : {                " &
 			"       width  : 1920,         " &
@@ -138,7 +136,6 @@ architecture beh of s3estarter is
 			"       color  : 0xff_ff_00_ff, " &
 			"       background-color : 0xff_00_00_00}," &
 			"   axis : {                   " &
-			"       fontsize   : 8,        " &
 			"       horizontal : {         " &
 			"           scales : [         " &
 							natural'image(     2**(0+0)*5**(0+0)) & "," & -- [0]
@@ -159,26 +156,20 @@ architecture beh of s3estarter is
 							natural'image(2**((-1)+0+3)*5**(1+3)) & "," & -- [15]
 			"               length : 16],  " &
 			"           unit   : 25.0e-6, " &
-			"           height : 8,        " &
-			"           inside : false,    " &
 			"           color  : 0xff_00_00_00," &
 			"           background-color : 0xff_00_ff_ff}," &
 			"       vertical : {           " &
 			"           unit   : 5.0e-3, " &
 			"           width  : " & natural'image(6*8) & ','  &
-			"           rotate : ccw0,     " &
-			"           inside : false,    " &
 			"           color  : 0xff_00_00_00," &
 			"           background-color : 0xff_00_ff_ff}}," &
 			"   textbox : {                " &
-			"       font_width : 8,        " &
 			"       width      : " & natural'image(33*8) & ','&
-			"       inside     : false,    " &
 			"       color      : 0xff_ff_00_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   main : {                   " &
 			"       top        :  5,       " & 
-			"       left       :  2,       " & 
+			"       left       :  1,       " & 
 			"       right      :  0,       " & 
 			"       bottom     :  0,       " & 
 			"       vertical   :  1,       " & 
