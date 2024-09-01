@@ -68,7 +68,7 @@ architecture beh of s3estarter is
 	alias  sio_clk   is e_tx_clk;
 	signal si_frm    : std_logic;
 	signal si_irdy   : std_logic;
-	signal si_data   : std_logic_vector(e_rxd'range);
+	signal si_data   : std_logic_vector(0 to setif(io_link=io_ipoe,e_rxd'length,8)-1);
 
 	constant max_delay   : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
@@ -80,7 +80,7 @@ architecture beh of s3estarter is
 	signal so_irdy   : std_logic;
 	signal so_trdy   : std_logic;
 	signal so_end    : std_logic;
-	signal so_data   : std_logic_vector(e_txd'range);
+	signal so_data   : std_logic_vector(0 to setif(io_link=io_ipoe,e_txd'length,8)-1);
 
 	type dcm_params is record
 		dcm_mul : natural;
@@ -547,13 +547,16 @@ begin
 		signal derot       : std_logic_vector(0 to 2-1);
 		signal rot_left    : std_logic;
 		signal rot_right   : std_logic;
+		signal xxx : unsigned(0 to 4-1);
 	begin
 
-		rot <= (rot_a, rot_b);
+		e_txen <= 'Z';
+		e_txd  <= (others => 'Z');
+		rot <= (not rot_a, not rot_b);
 		debounce_g : for i in rot'range  generate
 			process (sio_clk)
 				constant rebounds0 : natural := 6;
-				constant rebounds1 : natural := 0;
+				constant rebounds1 : integer := -1;
 				type states is (s_pressed, s_released);
 				variable state : states;
 				variable cntr  : integer range -1 to max(rebounds0, rebounds1);
@@ -562,6 +565,7 @@ begin
 				if rising_edge(sio_clk) then
 					case state is
 					when s_pressed =>
+						derot(i) <= '1';
 						if rot(i)='0' then
 							if cntr < 0 then
 								cntr := 0;
@@ -576,6 +580,7 @@ begin
 							end if;
 						end if;
 					when s_released =>
+						derot(i) <= '0';
 						if rot(i)='1' then
 							if cntr >= rebounds1 then
 								cntr := rebounds0;
@@ -595,66 +600,111 @@ begin
 			end process;
 		end generate;
 
-		process (derot)
-			type states is (s_dtnt, s_wdtnt, s_left01, s_left11, s_left10, s_right10, s_right11, s_rigth01);
+		process (sio_clk)
+			type states is (s_dtnt, s_left01, s_left11, s_left10, s_right10, s_right11, s_right01);
+			--                    0       1         2         3         4         5           6          7 
 			variable state : states;
-			alias rot_a is derot(0);
-			alias rot_b is derot(1);
+			variable edge  : std_logic;
+			variable lf : std_logic;
+			variable rt : std_logic;
 		begin
-			case state is
-			when s_dtnt =>
-				rot_left  <= '0';
-				rot_right <= '0';
-				case derot is
-				when "01" =>
-					state := s_left01;
-				when "10" =>
-					state := s_right10;
-				when "11" =>
-					state := s_wdtnt;
+			if rising_edge(sio_clk) then
+				lf := '0';
+				rt := '0';
+				case state is
+				when s_dtnt =>
+					case derot is
+					when "01" =>
+						state := s_left01;
+					when "10" =>
+						state := s_right10;
+					when "11" =>
+					when others =>
+					end case;
+				when s_left01 =>
+					case derot is
+					when "00" =>
+						state := s_dtnt;
+					when "10" =>
+						lf := '1';
+						state := s_dtnt;
+					when "11" => 
+						state := s_left11;
+					when others =>
+					end case;
+				when s_left11 =>
+					case derot is
+					when "00" =>
+						lf := '1';
+						state := s_dtnt;
+					when "10" =>
+						state := s_left10;
+					when "11" =>
+					when others =>
+						state := s_dtnt;
+					end case;
+				when s_left10 =>
+					case derot is
+					when "00" =>
+						lf := '1';
+						state := s_dtnt;
+					when "10" =>
+					when others =>
+						state := s_dtnt;
+					end case;
+				when s_right10 =>
+					case derot is
+					when "00" =>
+						state := s_dtnt;
+					when "01" =>
+						rt := '1';
+						state := s_dtnt;
+					when "11" => 
+						state := s_right11;
+					when others =>
+					end case;
+				when s_right11 =>
+					case derot is
+					when "00" =>
+						rt := '1';
+						state := s_dtnt;
+					when "01" =>
+						state := s_right01;
+					when "11" =>
+					when others =>
+						state := s_dtnt;
+					end case;
+				when s_right01 =>
+					case derot is
+					when "00" =>
+						rt := '1';
+						state := s_dtnt;
+					when "01" =>
+					when others =>
+						state := s_dtnt;
+					end case;
 				when others =>
 				end case;
-			when s_wdtnt =>
-				rot_left  <= '0';
-				rot_right <= '0';
-				case derot is
-				when "00" =>
-					state := s_dtnt;
-				when others =>
-				end case;
-			when s_left01 =>
-				rot_left  <= '0';
-				rot_right <= '0';
-				case derot is
-				when "00" =>
-					state := s_dtnt;
-				when "11" => 
-					state := s_left11;
-				when others =>
-					state := s_wdtnt;
-				end case;
-			when s_left11 =>
-				rot_left  <= '0';
-				rot_right <= '0';
-				case derot is
-				when "10" =>
-					state := s_left10;
-				when others =>
-					state := s_wdtnt;
-				end case;
-			when s_left10 =>
-				case derot is
-				when "00" =>
-					rot_left  <= '1';
-				when others =>
-					rot_left  <= '0';
-				end case;
-				rot_right <= '0';
-				state := s_dtnt;
-			when others =>
-			end case;
+
+				if lf='1' then
+					rot_left <= '1';
+				elsif (video_vton and not edge)='1' then
+					rot_left <= '0';
+				end if;
+
+				if rt='1' then
+					rot_right <= '1';
+				elsif (video_vton and not edge)='1' then
+					rot_right <= '0';
+				end if;
+
+				edge := video_vton;
+				xxx <= to_unsigned(states'pos(state), xxx'length);
+			end if;
 		end process;
 
+		led <= derot & rot & std_logic_vector(xxx);
+		-- led <= rot_left & b"000_000" & rot_right;
    		left  <= btn_west;
    		up    <= btn_north or rot_right;
    		down  <= btn_south or rot_left;
@@ -698,6 +748,8 @@ begin
 		video_vton  => video_vton,
 		video_blank => open);
 
+	-- vga_hsync <= '0';
+	-- vga_vsync <= '0';
 	vga_red   <= vga_rgb(2);
 	vga_green <= vga_rgb(1);
 	vga_blue  <= vga_rgb(0);
@@ -738,14 +790,14 @@ begin
 	fpga_init_b <= '0';
 	spi_ss_b <= '0';
 
-	led0 <= '1';
-	led1 <= '1';
-	led2 <= '1';
-	led3 <= '1';
-	led4 <= '1';
-	led5 <= '1';
-	led6 <= '1';
-	led7 <= '1';
+	-- led0 <= '1';
+	-- led1 <= '1';
+	-- led2 <= '1';
+	-- led3 <= '1';
+	-- led4 <= '1';
+	-- led5 <= '1';
+	-- led6 <= '1';
+	-- led7 <= '1';
 
 	rs232_dte_txd <= 'Z';
 	rs232_dce_txd <= 'Z';

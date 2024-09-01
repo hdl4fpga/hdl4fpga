@@ -49,7 +49,7 @@ entity scopeio_stactlr is
 		so_frm  : out std_logic;
 		so_irdy : out std_logic;
 		so_trdy : in  std_logic := '1';
-		so_data : out std_logic_vector);
+		so_data : out std_logic_vector(0 to 8-1));
 end;
 
 architecture def of scopeio_stactlr is
@@ -77,6 +77,7 @@ begin
 			if rising_edge(sio_clk) then
 				case state is
 				when s_pressed =>
+					debnc(i) <= '1';
 					if btn(i)='0' then
 						if cntr < 0 then
 							debnc(i) <= '0';
@@ -91,6 +92,7 @@ begin
 						end if;
 					end if;
 				when s_released =>
+					debnc(i) <= '0';
 					if btn(i)='1' then
 						if cntr >= rebound1s then
 							cntr := rebound0s;

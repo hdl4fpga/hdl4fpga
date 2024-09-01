@@ -25,7 +25,7 @@ entity scopeio_btnctlr is
 		so_frm  : buffer std_logic;
 		so_irdy : buffer std_logic;
 		so_trdy : in  std_logic := '1';
-		so_data : buffer std_logic_vector := (0 to 7 => '-'));
+		so_data : buffer std_logic_vector(0 to 8-1)); -- := (0 to 7 => '-'));
 
 	constant inputs        : natural := hdo(layout)**".inputs";
 	constant max_delay     : natural := hdo(layout)**".max_delay=16384.";
@@ -91,7 +91,7 @@ architecture def of scopeio_btnctlr is
 			"wid_tmscale,"    &
 			"wid_tgchannel,"  &
 			"wid_tgposition," &
-			"wid_tgslope,"     &
+			"wid_tgslope,"    &
 			"wid_tgmode,"     &
 			"wid_input,"      &
 			"wid_inposition," &
@@ -266,13 +266,13 @@ begin
 		trigger_freeze  => trigger_freeze,
 		trigger_level   => trigger_level);
 
-	-- tp(1 to 4) <= (send_req, send_rdy, req, rdy);
-	process (proceed_rdy, rgtr_clk)
+	process (rgtr_clk)
 		type states is (s_navigate, s_hightlight, s_selected, s_tgchannel, s_hightlight2);
 		variable state     : states;
 		variable values    : integer_vector(0 to wid_inscale);
 		variable value     : natural range values'range;
-		variable focus_wid : natural range next_tab'range;
+		-- variable focus_wid : natural range next_tab'range; -- Xilinx ISE 14.7 crashes
+		variable focus_wid : natural range next_tab'left to next_tab'right;
 		variable blink     : natural range 0 to 2**7;
 	begin
 		if rising_edge(rgtr_clk) then
@@ -294,11 +294,19 @@ begin
 							blink := 0;
 							focus_wid := next_tab(focus_wid);
 							if focus_wid > upto(hz_scaleid) then
-								if ((focus_wid-wid_input) mod 3)=0 then
-									focus_wid := wid_time;
-								else
-									focus_wid := wid_tmposition;
-								end if;
+								focus_wid := wid_tmposition;
+                    			for i in 0 to inputs-1 loop -- Xilinx ISE 14.7 mod 3 workaround
+                    				if (focus_wid-wid_input) = 3*i then
+										if (i mod 3)=0 then
+											focus_wid := wid_time;
+										end if;
+                    				end if;
+                    			end loop;
+								-- if ((focus_wid-wid_input) mod 3)=0 then
+									-- focus_wid := wid_time;
+								-- else
+									-- focus_wid := wid_tmposition;
+								-- end if;
 							end if;
 							send_req <= not send_rdy;
 							state := s_hightlight;
@@ -306,11 +314,19 @@ begin
 							blink := 0;
 							focus_wid := prev_tab(focus_wid);
 							if focus_wid > upto(hz_scaleid) then
-								if ((focus_wid-wid_input) mod 3)=0 then
-									focus_wid := upto(hz_scaleid)-2;
-								else
-									focus_wid := upto(hz_scaleid);
-								end if;
+								focus_wid := upto(hz_scaleid);
+                    			for i in 0 to inputs-1 loop -- Xilinx ISE 14.7 mod 3 workaround
+                    				if (focus_wid-wid_input) = 3*i then
+										if (i mod 3)=0 then
+											focus_wid := upto(hz_scaleid)-2;
+										end if;
+                    				end if;
+                    			end loop;
+								-- if ((focus_wid-wid_input) mod 3)=0 then
+									-- focus_wid := upto(hz_scaleid)-2;
+								-- else
+									-- focus_wid := upto(hz_scaleid);
+								-- end if;
 							end if;
 							send_req <= not send_rdy;
 							state := s_hightlight;
@@ -527,7 +543,7 @@ begin
 	end process;
 	ctlr_data <= reverse(send_data);
 	
-	process (rgtr_clk, proceed_req)
+	process (rgtr_clk)
 		type states is (s_released, s_proceed, s_wait);
 		variable state : states;
 		constant cnt_tab : natural_vector := (30, 15, 4, 0);
