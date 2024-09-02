@@ -1319,7 +1319,7 @@ package body base is
 	function encoder (
 		constant arg : std_logic_vector)
 		return   std_logic_vector is
-		variable val : std_logic_vector(0 to unsigned_num_bits(arg'length-1)-1) := (others => '-');
+		variable val : std_logic_vector(0 to unsigned_num_bits(arg'length-1)-1) := (others => '0');
 		variable aux : unsigned(0 to arg'length-1) := (0 => '1', others => '0');
 	begin
 		for i in aux'range loop

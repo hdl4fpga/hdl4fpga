@@ -58,8 +58,8 @@ architecture def of scopeio_stactlr is
 	signal rdy       : std_logic := '0';
 	signal btn       : std_logic_vector(0 to 4-1);
 	signal debnc     : std_logic_vector(btn'range) := (others => '0');
-	signal event_vld : std_logic;
-	signal event     : std_logic_vector(0 to 2-1) := "00";
+	signal event_vld : std_logic := '0';
+	signal event     : std_logic_vector(0 to 2-1);
 
 begin
 
@@ -114,12 +114,11 @@ begin
 
 	event_vld <= '0' when debnc=(debnc'range => '0') else '1';
 	event <= encoder(debnc);
-	tp(1 to 8) <= debnc & not debnc;
 	btnctlr_e : entity hdl4fpga.scopeio_btnctlr
 	generic map (
 		layout => layout)
 	port map (
-		-- tp      => tp,
+		tp      => tp,
 		event_vld => event_vld,
 		event   => event,
 		sio_clk => sio_clk,
