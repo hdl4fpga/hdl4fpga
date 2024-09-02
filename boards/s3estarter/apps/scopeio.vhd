@@ -525,8 +525,9 @@ begin
 	end generate;
 
 	stactlr_g : if io_link=io_none generate
+		signal tp : std_logic_vector(1 to 32);
 		signal miilnk_frm  : std_logic := '0';
-		signal miilnk_irdy : std_logic := '1';
+		signal miilnk_irdy : std_logic := '0';
 		signal miilnk_trdy : std_logic := '1';
 		signal miilnk_data : std_logic_vector(si_data'range);
 		signal left        : std_logic;
@@ -538,7 +539,6 @@ begin
 		signal derot       : std_logic_vector(0 to 2-1);
 		signal rot_left    : std_logic;
 		signal rot_right   : std_logic;
-		signal xxx : unsigned(0 to 4-1);
 	begin
 
 		e_txen <= 'Z';
@@ -690,21 +690,22 @@ begin
 				end if;
 
 				edge := video_vton;
-				xxx <= to_unsigned(states'pos(state), xxx'length);
 			end if;
 		end process;
 
-		led <= derot & rot & std_logic_vector(xxx);
+		led <= tp(1 to 8);
 		-- led <= rot_left & b"000_000" & rot_right;
+   		-- up    <= btn_north or rot_right;
+   		-- down  <= btn_south or rot_left;
+   		up    <= btn_north;
+   		down  <= btn_south;
    		left  <= btn_west;
-   		up    <= btn_north or rot_right;
-   		down  <= btn_south or rot_left;
    		right <= btn_east or rot_center;
 		stactlr_e : entity hdl4fpga.scopeio_stactlr
 		generic map (
-			debug  => debug,
 			layout => layout)
 		port map (
+			tp => tp,
 			left    => left,
 			up      => up,
 			down    => down,
