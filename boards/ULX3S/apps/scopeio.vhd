@@ -323,7 +323,8 @@ begin
 
 	end block;
 
-	led <= (left, up, down, right) &tp(1 to 4);
+	-- led <= (left, up, down, right) &tp(1 to 4);
+	led <= tp(1 to 8);
 	stactlr_e : entity hdl4fpga.scopeio_stactlr
 	generic map (
 		layout => layout)
