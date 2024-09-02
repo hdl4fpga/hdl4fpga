@@ -67,7 +67,7 @@ begin
 	debounce_g : for i in btn'range generate
 		process (sio_clk)
 			constant rebound0s : natural := 6;
-			constant rebound1s : natural := 0;
+			constant rebound1s : integer := 0;
 
 			type states is ( s_released, s_pressed);
 			variable state : states := s_released;
@@ -114,7 +114,7 @@ begin
 
 	event_vld <= '0' when debnc=(debnc'range => '0') else '1';
 	event <= encoder(debnc);
-	tp(1 to 4) <= debnc;
+	tp(1 to 8) <= debnc & not debnc;
 	btnctlr_e : entity hdl4fpga.scopeio_btnctlr
 	generic map (
 		layout => layout)
