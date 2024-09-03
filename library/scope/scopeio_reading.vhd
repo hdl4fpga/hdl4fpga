@@ -121,8 +121,8 @@ architecture def of scopeio_reading is
 	signal hzwdt_rdy      : std_logic := '0';
 	signal hz_uid         : natural;
 
-	signal btod_req       : std_logic;
-	signal btod_rdy       : std_logic;
+	signal btod_req       : std_logic := '0';
+	signal btod_rdy       : std_logic := '0';
 	signal mul_req        : std_logic := '0';
 	signal mul_rdy        : std_logic := '0';
 

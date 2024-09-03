@@ -135,6 +135,7 @@ begin
 				if code_frm='1' then
 					cga_we <= code_irdy;
 				else
+					cga_we <= '0';
 					state := s_init;
 				end if;
 			end case;
