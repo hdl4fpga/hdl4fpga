@@ -496,28 +496,28 @@ begin
 				case state is
 				when s_init =>
 					rgtr      := ctrl_rgtr;
-					ctlr_frm    <= '1';
-					ctlr_irdy   <= '1';
+					ctlr_frm  <= '1';
+					ctlr_irdy <= '1';
 					send_data <= std_logic_vector(rgtr(send_data'range));
 					rgtr      := shift_left(rgtr, rid'length);
 					state := s_length;
 				when s_length =>
 					cntr      := to_integer(rgtr(send_data'range));
-					ctlr_frm    <= '1';
-					ctlr_irdy   <= '1';
+					ctlr_frm  <= '1';
+					ctlr_irdy <= '1';
 					send_data <= std_logic_vector(rgtr(send_data'range));
 					rgtr      := shift_left(rgtr, rid'length);
 					state := s_data;
 				when s_data =>
 					if cntr >= 0 then
-						ctlr_frm    <= '1';
-						ctlr_irdy   <= '1';
+						ctlr_frm  <= '1';
+						ctlr_irdy <= '1';
 						send_data <= std_logic_vector(rgtr(send_data'range));
 						rgtr      := shift_left(rgtr, rid'length);
 						cntr := cntr -1;
 					else
-						ctlr_frm    <= '0';
-						ctlr_irdy   <= '0';
+						ctlr_frm  <= '0';
+						ctlr_irdy <= '0';
 						send_data <= std_logic_vector(rgtr(send_data'range));
 						rgtr      := shift_left(rgtr, rid'length);
 						send_rdy  <= send_req;
@@ -525,8 +525,8 @@ begin
 					end if;
 				end case;
 			else
-				ctlr_frm    <= '0';
-				ctlr_irdy   <= '0';
+				ctlr_frm  <= '0';
+				ctlr_irdy <= '0';
 				send_data <= std_logic_vector(rgtr(send_data'range));
 			end if;
 		end if;
