@@ -152,8 +152,8 @@ architecture def of scopeio_reading is
 	constant freeze_id    : natural := norm_id+1;
 	constant oneshot_id   : natural := freeze_id+1;
 
-	signal tgrref_req        : bit;
-	signal tgrref_rdy        : bit;
+	signal tgrref_req     : bit;
+	signal tgrref_rdy     : bit;
 
 	signal b  : signed(0 to offset'length-1);
 	type b_vector is array(0 to 1) of signed(b'range);
@@ -209,8 +209,8 @@ begin
 	startup_p : process (chan, rgtr_clk)
 		type states is (s_vt, s_tgr, s_hz);
 		variable state : states;
-		variable statup_req : bit := '1';
-		variable statup_rdy : bit := '0';
+		variable statup_req : std_logic := '1';
+		variable statup_rdy : std_logic := '0';
 	begin
 		if rising_edge(rgtr_clk) then
 			if (statup_rdy xor statup_req)='1' then

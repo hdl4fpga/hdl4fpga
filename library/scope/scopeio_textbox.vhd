@@ -42,6 +42,8 @@ entity scopeio_textbox is
 	constant cga_cols       : natural := textbox_width/font_width;
 	constant cga_rows       : natural := textbox_height/font_height;
 	constant cga_size       : natural := cga_rows*cga_cols;
+	constant cgarows_bits   : natural := unsigned_num_bits(cga_rows-1);
+	constant cgacols_bits   : natural := unsigned_num_bits(cga_cols-1);
 
 end;
 
@@ -69,7 +71,7 @@ architecture def of scopeio_textbox is
 	signal video_dot : std_logic;
 	signal blink     : std_logic;
 
-	signal video_row : std_logic_vector(0 to unsigned_num_bits(cga_rows-1)-1);
+	signal video_row : std_logic_vector(0 to cgarows_bits-1);
 	signal focus_wid : std_logic_vector(6-1 downto 0);
 	signal wid       : std_logic_vector(8-1 downto 0);
 
@@ -78,6 +80,7 @@ begin
 
 	assert false
 		report CR &
+		"font width " & natural'image(fontwidth_bits) & CR &
 		"textbox rows " & natural'image(cga_rows) & CR &
 		"textbox cols " & natural'image(cga_cols) & CR &
 		"textbox size " & natural'image(cga_size) & CR &
@@ -292,8 +295,8 @@ begin
 		signal height : natural range 0 to cga_rows;
 		signal top    : natural range 0 to cga_rows-1;
 		signal bottom : natural range 0 to cga_rows;
-		signal row    : natural range 0 to cga_rows-1;
-		signal col    : natural range 0 to cga_cols-1;
+		signal row    : natural range 0 to 2**cgarows_bits-1;
+		signal col    : natural range 0 to 2**cgacols_bits-1;
 		signal x : std_logic;
 		signal y : std_logic;
 		signal s : std_logic;
@@ -305,8 +308,8 @@ begin
 		height <= height_tab(to_integer(unsigned(focus_wid)));
 		right  <= left + width;
 		bottom <= top  + height;
-		row <= to_integer(shift_right(unsigned(video_vcntr), fontheight_bits));
-		col <= to_integer(shift_right(unsigned(video_hcntr), fontwidth_bits));
+		row <= to_integer(shift_right(unsigned(video_vcntr), fontheight_bits)) mod 2**cgarows_bits;
+		col <= to_integer(shift_right(unsigned(video_hcntr), fontwidth_bits)) mod 2**cgacols_bits;
 
 		x <= ('1' xor blink) when left <= col and col < right  else '0';
 		y <= ('1' xor blink) when top  <= row and row < bottom else '0';
