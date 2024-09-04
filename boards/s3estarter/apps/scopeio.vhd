@@ -36,7 +36,7 @@ use hdl4fpga.app_profiles.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture beh of s3estarter is
+architecture scopeio of s3estarter is
 
 	constant baudrate : natural := 115200;
 	constant io_link  : io_comms := io_none;
@@ -695,10 +695,10 @@ begin
 
 		led <= tp(1 to 8);
 		-- led <= rot_left & b"000_000" & rot_right;
-   		-- up    <= btn_north or rot_right;
-   		-- down  <= btn_south or rot_left;
-   		up    <= btn_north;
-   		down  <= btn_south;
+   		up    <= btn_north or rot_right;
+   		down  <= btn_south or rot_left;
+   		-- up    <= btn_north;
+   		-- down  <= btn_south;
    		left  <= btn_west;
    		right <= btn_east or rot_center;
 		stactlr_e : entity hdl4fpga.scopeio_stactlr

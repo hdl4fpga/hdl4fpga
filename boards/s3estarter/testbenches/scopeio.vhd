@@ -24,7 +24,7 @@
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-architecture s3estarter_graphics of testbench is
+architecture s3estarter_scopeio of testbench is
 	constant bank_bits  : natural := 2;
 	constant addr_bits  : natural := 13;
 	constant cols_bits  : natural := 9;
@@ -239,8 +239,8 @@ end;
 
 library micron;
 
-configuration s3estarter_graphics_structure_md of testbench is
-	for s3estarter_graphics
+configuration s3estarter_scopeio_structure_md of testbench is
+	for s3estarter_scopeio
 		for all : s3estarter
 			use entity work.s3estarter(structure);
 		end for;
@@ -265,10 +265,10 @@ end;
 
 library micron;
 
-configuration s3estarter_graphics_md of testbench is
-	for s3estarter_graphics
+configuration s3estarter_scopeio_md of testbench is
+	for s3estarter_scopeio
 		for all : s3estarter 
-			use entity work.s3estarter(graphics);
+			use entity work.s3estarter(scopeio);
 		end for;
 			for all : ddr_model 
 			use entity micron.ddr_model

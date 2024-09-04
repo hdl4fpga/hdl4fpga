@@ -85,7 +85,7 @@ architecture def of scopeio_reading is
 	signal str_rdy        : bit;
 	subtype wdtid_range is natural range 0 to (inputs+2)-1;
 	signal wdt_id         : wdtid_range;
-	signal wdt_row        : unsigned(0 to unsigned_num_bits(inputs+2-1)-1);
+	signal wdt_row        : unsigned(0 to unsigned_num_bits(inputs+2-1)-1) := (others => '0');
 
 	signal btod_sht       : signed(4-1 downto 0);
 	signal btod_dec       : signed(4-1 downto 0);
@@ -94,8 +94,8 @@ architecture def of scopeio_reading is
 	signal vt_scale       : unsigned(scale'range);
 	signal vt_wdtid       : wdtid_range;
 	signal vt_wdtrow      : unsigned(wdt_row'range);
-	signal vtwdt_req      : std_logic;
-	signal vtwdt_rdy      : std_logic;
+	signal vtwdt_req      : std_logic := '0';
+	signal vtwdt_rdy      : std_logic := '0';
 	signal vt_uid         : natural;
 	signal vt_chanid      : std_logic_vector(vt_cid'range);
 	signal vts_chanid     : std_logic_vector(vt_cid'range);
@@ -562,7 +562,7 @@ begin
 	end process;
 	video_row <= std_logic_vector(resize(wdt_row, video_row'length));
 
-	process (rgtr_clk)
+	process (tgr_wdtid,rgtr_clk)
 		type states is (s_rdy, s_req);
 		variable state : states;
 	begin
@@ -643,7 +643,7 @@ begin
 		end if;
 	end process;
 
-	trigger_p : process (rgtr_clk)
+	trigger_p : process (tgrwdt_rdy,rgtr_clk)
 		type states is (s_label, s_offset, s_unit, s_slope, s_mode, s_wait);
 		variable state : states;
 		alias btod_req  is btod_reqs(tgr_id);
@@ -714,7 +714,7 @@ begin
 		end if;
 	end process;
 
-	strreq_p : process (rgtr_clk)
+	strreq_p : process (hzwdt_rdy,rgtr_clk)
 		type states is (s_rdy, s_req);
 		variable state : states;
 		variable id   : natural range 0 to str_reqs'length-1;
@@ -740,7 +740,7 @@ begin
 		end if;
 	end process;
 
-	btodreq_p : process (rgtr_clk)
+	btodreq_p : process (vtwdt_rdy,rgtr_clk)
 		type states is (s_rdy, s_req);
 		variable state : states;
 		variable id : natural range 0 to btod_reqs'length-1;
@@ -765,7 +765,7 @@ begin
 		end if;
 	end process;
 
-	mulreq_p : process (rgtr_clk)
+	mulreq_p : process (vtwdt_req,rgtr_clk)
 		type states is (s_rdy, s_req);
 		variable state : states;
 		variable id    : natural range 0 to mul_reqs'length-1;
@@ -823,7 +823,7 @@ begin
 		code     => btod_code);
 
 	code_frm  <= txt_req xor txt_rdy;
-	code_irdy <= btod_frm or str_frm;
-	code_data <= multiplex(btod_code & str_code, not btod_frm);
+	code_irdy <= (btod_frm and (btod_req xor btod_rdy)) or str_frm;
+	code_data <= multiplex(btod_code & str_code, str_frm);
 
 end;
