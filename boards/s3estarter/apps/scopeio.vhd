@@ -36,7 +36,7 @@ use hdl4fpga.app_profiles.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture beh of s3estarter is
+architecture scopeio of s3estarter is
 
 	constant baudrate : natural := 115200;
 	constant io_link  : io_comms := io_none;
@@ -68,7 +68,7 @@ architecture beh of s3estarter is
 	alias  sio_clk   is e_tx_clk;
 	signal si_frm    : std_logic;
 	signal si_irdy   : std_logic;
-	signal si_data   : std_logic_vector(e_rxd'range);
+	signal si_data   : std_logic_vector(0 to setif(io_link=io_ipoe,e_rxd'length,8)-1);
 
 	constant max_delay   : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
@@ -80,7 +80,7 @@ architecture beh of s3estarter is
 	signal so_irdy   : std_logic;
 	signal so_trdy   : std_logic;
 	signal so_end    : std_logic;
-	signal so_data   : std_logic_vector(e_txd'range);
+	signal so_data   : std_logic_vector(0 to setif(io_link=io_ipoe,e_txd'length,8)-1);
 
 	type dcm_params is record
 		dcm_mul : natural;
@@ -125,8 +125,6 @@ architecture beh of s3estarter is
 	constant layout : string := compact(
 			"{                             " &   
 			"   inputs          : " & natural'image(inputs) & ',' &
-			"   max_delay       : " & natural'image(2**14)  & ',' &
-			"   min_storage     : 256,     " & -- samples, storage size will be equal or larger than this
 			"   num_of_segments :   4,     " &
 			"   display : {                " &
 			"       width  : 1920,         " &
@@ -138,7 +136,6 @@ architecture beh of s3estarter is
 			"       color  : 0xff_ff_00_ff, " &
 			"       background-color : 0xff_00_00_00}," &
 			"   axis : {                   " &
-			"       fontsize   : 8,        " &
 			"       horizontal : {         " &
 			"           scales : [         " &
 							natural'image(     2**(0+0)*5**(0+0)) & "," & -- [0]
@@ -159,26 +156,20 @@ architecture beh of s3estarter is
 							natural'image(2**((-1)+0+3)*5**(1+3)) & "," & -- [15]
 			"               length : 16],  " &
 			"           unit   : 25.0e-6, " &
-			"           height : 8,        " &
-			"           inside : false,    " &
 			"           color  : 0xff_00_00_00," &
 			"           background-color : 0xff_00_ff_ff}," &
 			"       vertical : {           " &
 			"           unit   : 5.0e-3, " &
 			"           width  : " & natural'image(6*8) & ','  &
-			"           rotate : ccw0,     " &
-			"           inside : false,    " &
 			"           color  : 0xff_00_00_00," &
 			"           background-color : 0xff_00_ff_ff}}," &
 			"   textbox : {                " &
-			"       font_width : 8,        " &
 			"       width      : " & natural'image(33*8) & ','&
-			"       inside     : false,    " &
 			"       color      : 0xff_ff_00_ff," &
 			"       background-color : 0xff_00_00_00}," &
 			"   main : {                   " &
 			"       top        :  5,       " & 
-			"       left       :  2,       " & 
+			"       left       :  1,       " & 
 			"       right      :  0,       " & 
 			"       bottom     :  0,       " & 
 			"       vertical   :  1,       " & 
@@ -534,8 +525,9 @@ begin
 	end generate;
 
 	stactlr_g : if io_link=io_none generate
+		signal tp : std_logic_vector(1 to 32);
 		signal miilnk_frm  : std_logic := '0';
-		signal miilnk_irdy : std_logic := '1';
+		signal miilnk_irdy : std_logic := '0';
 		signal miilnk_trdy : std_logic := '1';
 		signal miilnk_data : std_logic_vector(si_data'range);
 		signal left        : std_logic;
@@ -549,11 +541,13 @@ begin
 		signal rot_right   : std_logic;
 	begin
 
-		rot <= (rot_a, rot_b);
+		e_txen <= 'Z';
+		e_txd  <= (others => 'Z');
+		rot <= (not rot_a, not rot_b);
 		debounce_g : for i in rot'range  generate
 			process (sio_clk)
 				constant rebounds0 : natural := 6;
-				constant rebounds1 : natural := 0;
+				constant rebounds1 : integer := -1;
 				type states is (s_pressed, s_released);
 				variable state : states;
 				variable cntr  : integer range -1 to max(rebounds0, rebounds1);
@@ -562,6 +556,7 @@ begin
 				if rising_edge(sio_clk) then
 					case state is
 					when s_pressed =>
+						derot(i) <= '1';
 						if rot(i)='0' then
 							if cntr < 0 then
 								cntr := 0;
@@ -576,6 +571,7 @@ begin
 							end if;
 						end if;
 					when s_released =>
+						derot(i) <= '0';
 						if rot(i)='1' then
 							if cntr >= rebounds1 then
 								cntr := rebounds0;
@@ -595,75 +591,121 @@ begin
 			end process;
 		end generate;
 
-		process (derot)
-			type states is (s_dtnt, s_wdtnt, s_left01, s_left11, s_left10, s_right10, s_right11, s_rigth01);
+		process (sio_clk)
+			type states is (s_dtnt, s_left01, s_left11, s_left10, s_right10, s_right11, s_right01);
+			--                    0       1         2         3         4         5           6          7 
 			variable state : states;
-			alias rot_a is derot(0);
-			alias rot_b is derot(1);
+			variable edge  : std_logic;
+			variable lf : std_logic;
+			variable rt : std_logic;
 		begin
-			case state is
-			when s_dtnt =>
-				rot_left  <= '0';
-				rot_right <= '0';
-				case derot is
-				when "01" =>
-					state := s_left01;
-				when "10" =>
-					state := s_right10;
-				when "11" =>
-					state := s_wdtnt;
+			if rising_edge(sio_clk) then
+				lf := '0';
+				rt := '0';
+				case state is
+				when s_dtnt =>
+					case derot is
+					when "01" =>
+						state := s_left01;
+					when "10" =>
+						state := s_right10;
+					when "11" =>
+					when others =>
+					end case;
+				when s_left01 =>
+					case derot is
+					when "00" =>
+						state := s_dtnt;
+					when "10" =>
+						lf := '1';
+						state := s_dtnt;
+					when "11" => 
+						state := s_left11;
+					when others =>
+					end case;
+				when s_left11 =>
+					case derot is
+					when "00" =>
+						lf := '1';
+						state := s_dtnt;
+					when "10" =>
+						state := s_left10;
+					when "11" =>
+					when others =>
+						state := s_dtnt;
+					end case;
+				when s_left10 =>
+					case derot is
+					when "00" =>
+						lf := '1';
+						state := s_dtnt;
+					when "10" =>
+					when others =>
+						state := s_dtnt;
+					end case;
+				when s_right10 =>
+					case derot is
+					when "00" =>
+						state := s_dtnt;
+					when "01" =>
+						rt := '1';
+						state := s_dtnt;
+					when "11" => 
+						state := s_right11;
+					when others =>
+					end case;
+				when s_right11 =>
+					case derot is
+					when "00" =>
+						rt := '1';
+						state := s_dtnt;
+					when "01" =>
+						state := s_right01;
+					when "11" =>
+					when others =>
+						state := s_dtnt;
+					end case;
+				when s_right01 =>
+					case derot is
+					when "00" =>
+						rt := '1';
+						state := s_dtnt;
+					when "01" =>
+					when others =>
+						state := s_dtnt;
+					end case;
 				when others =>
 				end case;
-			when s_wdtnt =>
-				rot_left  <= '0';
-				rot_right <= '0';
-				case derot is
-				when "00" =>
-					state := s_dtnt;
-				when others =>
-				end case;
-			when s_left01 =>
-				rot_left  <= '0';
-				rot_right <= '0';
-				case derot is
-				when "00" =>
-					state := s_dtnt;
-				when "11" => 
-					state := s_left11;
-				when others =>
-					state := s_wdtnt;
-				end case;
-			when s_left11 =>
-				rot_left  <= '0';
-				rot_right <= '0';
-				case derot is
-				when "10" =>
-					state := s_left10;
-				when others =>
-					state := s_wdtnt;
-				end case;
-			when s_left10 =>
-				case derot is
-				when "00" =>
-					rot_left  <= '1';
-				when others =>
-					rot_left  <= '0';
-				end case;
-				rot_right <= '0';
-				state := s_dtnt;
-			when others =>
-			end case;
+
+				if lf='1' then
+					rot_left <= '1';
+				elsif (video_vton and not edge)='1' then
+					rot_left <= '0';
+				end if;
+
+				if rt='1' then
+					rot_right <= '1';
+				elsif (video_vton and not edge)='1' then
+					rot_right <= '0';
+				end if;
+
+				edge := video_vton;
+			end if;
 		end process;
 
-   		left  <= btn_west;
+		led <= tp(1 to 8);
+		-- led <= rot_left & b"000_000" & rot_right;
    		up    <= btn_north or rot_right;
    		down  <= btn_south or rot_left;
+   		-- up    <= btn_north;
+   		-- down  <= btn_south;
+   		left  <= btn_west;
    		right <= btn_east or rot_center;
 		stactlr_e : entity hdl4fpga.scopeio_stactlr
 		generic map (
-			debug  => debug,
 			layout => layout)
 		port map (
+			tp => tp,
 			left    => left,
 			up      => up,
 			down    => down,
@@ -698,6 +740,8 @@ begin
 		video_vton  => video_vton,
 		video_blank => open);
 
+	-- vga_hsync <= '0';
+	-- vga_vsync <= '0';
 	vga_red   <= vga_rgb(2);
 	vga_green <= vga_rgb(1);
 	vga_blue  <= vga_rgb(0);
@@ -738,14 +782,14 @@ begin
 	fpga_init_b <= '0';
 	spi_ss_b <= '0';
 
-	led0 <= '1';
-	led1 <= '1';
-	led2 <= '1';
-	led3 <= '1';
-	led4 <= '1';
-	led5 <= '1';
-	led6 <= '1';
-	led7 <= '1';
+	-- led0 <= '1';
+	-- led1 <= '1';
+	-- led2 <= '1';
+	-- led3 <= '1';
+	-- led4 <= '1';
+	-- led5 <= '1';
+	-- led6 <= '1';
+	-- led7 <= '1';
 
 	rs232_dte_txd <= 'Z';
 	rs232_dce_txd <= 'Z';

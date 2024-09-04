@@ -25,7 +25,7 @@ entity scopeio_btnctlr is
 		so_frm  : buffer std_logic;
 		so_irdy : buffer std_logic;
 		so_trdy : in  std_logic := '1';
-		so_data : buffer std_logic_vector := (0 to 7 => '-'));
+		so_data : buffer std_logic_vector(0 to 8-1)); -- := (0 to 7 => '-'));
 
 	constant inputs        : natural := hdo(layout)**".inputs";
 	constant max_delay     : natural := hdo(layout)**".max_delay=16384.";
@@ -57,14 +57,11 @@ architecture def of scopeio_btnctlr is
 	signal hz_scaleid      : std_logic_vector(4-1 downto 0);
 	signal hz_offset       : std_logic_vector(hzoffset_bits-1 downto 0);
 	signal chan_id         : unsigned(chanid_bits-1 downto 0);
-	signal vtscale_ena     : std_logic;
 	signal vt_scalecid     : std_logic_vector(chan_id'range);
 	signal vt_scaleid      : std_logic_vector(4-1 downto 0);
-	signal vtoffset_ena    : std_logic;
 	signal vt_offsetcid    : std_logic_vector(chan_id'range);
 	signal vt_offset       : std_logic_vector((5+8)-1 downto 0);
 
-	signal trigger_ena     : std_logic;
 	signal trigger_chanid  : std_logic_vector(chan_id'range);
 	signal trigger_slope   : std_logic_vector(0 to 1-1);
 	signal trigger_mode    : std_logic_vector(0 to 2-1);
@@ -91,7 +88,7 @@ architecture def of scopeio_btnctlr is
 			"wid_tmscale,"    &
 			"wid_tgchannel,"  &
 			"wid_tgposition," &
-			"wid_tgslope,"     &
+			"wid_tgslope,"    &
 			"wid_tgmode,"     &
 			"wid_input,"      &
 			"wid_inposition," &
@@ -193,11 +190,11 @@ architecture def of scopeio_btnctlr is
 	alias  rid         : unsigned(0 to 1*8-1) is ctrl_rgtr(0*8 to 1*8-1);
 	alias  reg_length  : unsigned(0 to 1*8-1) is ctrl_rgtr(1*8 to 2*8-1);
 	alias  payload     : unsigned(0 to 3*8-1) is ctrl_rgtr(2*8 to 5*8-1); 
-	signal send_req    : bit := '0';
-	signal send_rdy    : bit := '0';
-	signal proceed_event : std_logic_vector(event'range) := "00";
-	signal proceed_req : bit := '0';
-	signal proceed_rdy : bit := '0';
+	signal send_req    : std_logic := '0';
+	signal send_rdy    : std_logic := '0';
+	signal proceed_event : std_logic_vector(event'range);
+	signal proceed_req : std_logic := '0';
+	signal proceed_rdy : std_logic := '0';
 	signal send_data   : std_logic_vector(so_data'range);
 
 	function input_length (
@@ -252,27 +249,24 @@ begin
 		hz_scaleid      => hz_scaleid,
 		hz_offset       => hz_offset,
 		chan_id         => std_logic_vector(chan_id),
-		vtscale_ena     => vtscale_ena,
 		vt_scalecid     => vt_scalecid,
 		vt_scaleid      => vt_scaleid,
-		vtoffset_ena    => vtoffset_ena,
 		vt_offsetcid    => vt_offsetcid,
 		vt_offset       => vt_offset,
 				  
-		trigger_ena     => trigger_ena,
 		trigger_chanid  => trigger_chanid,
 		trigger_slope   => trigger_slope(0),
 		trigger_oneshot => trigger_oneshot,
 		trigger_freeze  => trigger_freeze,
 		trigger_level   => trigger_level);
 
-	-- tp(1 to 4) <= (send_req, send_rdy, req, rdy);
-	process (proceed_rdy, rgtr_clk)
+	process (rgtr_clk)
 		type states is (s_navigate, s_hightlight, s_selected, s_tgchannel, s_hightlight2);
 		variable state     : states;
 		variable values    : integer_vector(0 to wid_inscale);
 		variable value     : natural range values'range;
-		variable focus_wid : natural range next_tab'range;
+		-- variable focus_wid : natural range next_tab'range; -- Xilinx ISE 14.7 crashes
+		variable focus_wid : natural range next_tab'left to next_tab'right;
 		variable blink     : natural range 0 to 2**7;
 	begin
 		if rising_edge(rgtr_clk) then
@@ -294,11 +288,17 @@ begin
 							blink := 0;
 							focus_wid := next_tab(focus_wid);
 							if focus_wid > upto(hz_scaleid) then
-								if ((focus_wid-wid_input) mod 3)=0 then
-									focus_wid := wid_time;
-								else
-									focus_wid := wid_tmposition;
-								end if;
+								for i in 0 to 3*inputs-1 loop -- Xilinx ISE 14.7 ((focus_wid-wid_input) mod 3)=0 workaround
+									if focus_wid=i+wid_input then
+										if (i mod 3)=0 then
+											focus_wid := wid_time;
+											exit;
+										end if;
+									end if;
+									if i=3*inputs-1 then
+										focus_wid := wid_tmposition;
+									end if;
+								end loop;
 							end if;
 							send_req <= not send_rdy;
 							state := s_hightlight;
@@ -306,11 +306,17 @@ begin
 							blink := 0;
 							focus_wid := prev_tab(focus_wid);
 							if focus_wid > upto(hz_scaleid) then
-								if ((focus_wid-wid_input) mod 3)=0 then
-									focus_wid := upto(hz_scaleid)-2;
-								else
-									focus_wid := upto(hz_scaleid);
-								end if;
+								for i in 0 to 3*inputs-1 loop -- Xilinx ISE 14.7 ((focus_wid-wid_input) mod 3)=0 workaround
+									if focus_wid=i+wid_input then
+										if (i mod 3)=0 then
+											focus_wid := upto(hz_scaleid)-2;
+											exit;
+										end if;
+									end if;
+									if i=3*inputs-1 then
+										focus_wid := upto(hz_scaleid);
+									end if;
+								end loop;
 							end if;
 							send_req <= not send_rdy;
 							state := s_hightlight;
@@ -326,14 +332,14 @@ begin
 						end case;
 
 						case focus_wid is
-						when wid_input|wid_trigger|wid_tmposition|wid_tmscale|wid_tgchannel|wid_tgposition|wid_tgslope|wid_tgmode =>
+						when wid_trigger|wid_tmposition|wid_tmscale|wid_tgchannel|wid_tgposition|wid_tgslope|wid_tgmode =>
 							value := focus_wid;
 							chan_id <= unsigned(trigger_chanid);
 						when others =>
-							for i in wid_input to next_tab'right loop
-								if focus_wid=i then
-									chan_id <= to_unsigned((i-wid_input)/3, chan_id'length);
-									case (i-wid_input) mod 3 is
+							for i in 0 to 3*inputs-1 loop
+								if focus_wid=i+wid_input then
+									chan_id <= to_unsigned(i/3, chan_id'length);
+									case i mod 3 is
 									when 0 => 
 									when 1 => 
 										value := wid_inposition;
@@ -474,8 +480,8 @@ begin
 					end case;
 				end if;
 			end if;
-
-			tp(5 to 8) <= std_logic_vector(to_unsigned(states'pos(state), 4));
+			tp(1 to 8) <= std_logic_vector(to_unsigned(states'pos(state), 8));
+			tp(1 to 8) <= std_logic_Vector(to_unsigned(focus_wid, 8));
 		end if;
 	end process;
 	
@@ -490,28 +496,28 @@ begin
 				case state is
 				when s_init =>
 					rgtr      := ctrl_rgtr;
-					ctlr_frm    <= '1';
-					ctlr_irdy   <= '1';
+					ctlr_frm  <= '1';
+					ctlr_irdy <= '1';
 					send_data <= std_logic_vector(rgtr(send_data'range));
 					rgtr      := shift_left(rgtr, rid'length);
 					state := s_length;
 				when s_length =>
 					cntr      := to_integer(rgtr(send_data'range));
-					ctlr_frm    <= '1';
-					ctlr_irdy   <= '1';
+					ctlr_frm  <= '1';
+					ctlr_irdy <= '1';
 					send_data <= std_logic_vector(rgtr(send_data'range));
 					rgtr      := shift_left(rgtr, rid'length);
 					state := s_data;
 				when s_data =>
 					if cntr >= 0 then
-						ctlr_frm    <= '1';
-						ctlr_irdy   <= '1';
+						ctlr_frm  <= '1';
+						ctlr_irdy <= '1';
 						send_data <= std_logic_vector(rgtr(send_data'range));
 						rgtr      := shift_left(rgtr, rid'length);
 						cntr := cntr -1;
 					else
-						ctlr_frm    <= '0';
-						ctlr_irdy   <= '0';
+						ctlr_frm  <= '0';
+						ctlr_irdy <= '0';
 						send_data <= std_logic_vector(rgtr(send_data'range));
 						rgtr      := shift_left(rgtr, rid'length);
 						send_rdy  <= send_req;
@@ -519,15 +525,15 @@ begin
 					end if;
 				end case;
 			else
-				ctlr_frm    <= '0';
-				ctlr_irdy   <= '0';
+				ctlr_frm  <= '0';
+				ctlr_irdy <= '0';
 				send_data <= std_logic_vector(rgtr(send_data'range));
 			end if;
 		end if;
 	end process;
 	ctlr_data <= reverse(send_data);
 	
-	process (rgtr_clk, proceed_req)
+	process (rgtr_clk)
 		type states is (s_released, s_proceed, s_wait);
 		variable state : states;
 		constant cnt_tab : natural_vector := (30, 15, 4, 0);
@@ -539,13 +545,13 @@ begin
 			case state is
 			when s_released =>
 				if event_vld='1' then
-					proceed_event <= event;
-					proceed_req <= not proceed_req;
 					cntid := 0;
+					proceed_event <= event;
+					proceed_req <= not proceed_rdy;
 					state := s_proceed;
 				end if;
 			when s_proceed =>
-				if (proceed_req xor proceed_req)='0' then
+				if (proceed_req xor proceed_rdy)='0' then
 					cntr := cnt_tab(cntid);
 					if cntid < cnt_tab'right then
 						cntid := cntid + 1;
@@ -557,8 +563,12 @@ begin
 					if (not video_vton and edge)='1' then
 						cntr := cntr - 1;
 					end if;
-				elsif event_vld='1' and event=proceed_event then
-					proceed_req <= not proceed_req;
+				elsif event_vld='1' then
+					if event/=proceed_event then
+						cntid := 0;
+						proceed_event <= event;
+					end if;
+					proceed_req <= not proceed_rdy;
 					state := s_proceed;
 				else
 					state := s_released;

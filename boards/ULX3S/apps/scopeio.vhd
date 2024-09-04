@@ -106,7 +106,7 @@ architecture scopeio of ulx3s is
 
 	signal iolink_frm    : std_logic;
 	signal iolink_irdy   : std_logic;
-	signal iolink_trdy   : std_logic := '1';
+	signal iolink_trdy   : std_logic;
 	signal iolink_data   : std_logic_vector(si_data'range);
 
 	signal adc_clk       : std_logic;
@@ -257,7 +257,7 @@ begin
 			so_trdy => setup_trdy,
 			so_data => setup_data);
 			
-		signal setup_req : std_logic := '1';
+		signal setup_req : std_logic := '0';
 		signal setup_rdy : std_logic := '0';
 
         signal setup_frm  : std_logic := '0';
@@ -323,7 +323,8 @@ begin
 
 	end block;
 
-	led <= (left, up, down, right) &tp(1 to 4);
+	-- led <= (left, up, down, right) &tp(1 to 4);
+	led <= tp(1 to 8);
 	stactlr_e : entity hdl4fpga.scopeio_stactlr
 	generic map (
 		layout => layout)
@@ -349,6 +350,7 @@ begin
 
 		signal rgtr_id      : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv      : std_logic;
+		signal rgtr_trdy    : std_logic;
 		signal rgtr_data    : std_logic_vector(0 to 32-1);
 		signal rgtr_revs    : std_logic_vector(rgtr_data'reverse_range);
 
@@ -414,9 +416,11 @@ begin
 			sin_clk   => sio_clk,
 			sin_frm   => iolink_frm,
 			sin_irdy  => iolink_irdy,
+			sin_trdy  => iolink_trdy,
 			sin_data  => iolink_data,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
+			rgtr_trdy => rgtr_trdy,
 			rgtr_data => rgtr_data);
 		rgtr_revs <= reverse(rgtr_data,8);
 
@@ -442,7 +446,9 @@ begin
 					cntr := (others => '0');
 				end if;
 				if cntr < (data'length+opacity_data'length-1)/opacity_data'length then
-					opacity_frm <= not iolink_frm;
+					if opacity_frm='0' then
+						opacity_frm <= not iolink_frm;
+					end if;
 				else
 					opacity_frm <= '0';
 				end if;
@@ -455,6 +461,7 @@ begin
 			opacity_data <= multiplex(reverse(std_logic_vector(data),8), std_logic_vector(cntr), opacity_data'length);
 		end process;
 
+		rgtr_trdy <= '1' when opacity_frm='0' else '0';
 		si_frm  <= iolink_frm  when opacity_frm='0' else '1';
 		si_irdy <= iolink_irdy when opacity_frm='0' else '1';
 		si_data <= iolink_data when opacity_frm='0' else opacity_data;

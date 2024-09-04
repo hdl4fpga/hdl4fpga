@@ -49,7 +49,7 @@ entity scopeio_stactlr is
 		so_frm  : out std_logic;
 		so_irdy : out std_logic;
 		so_trdy : in  std_logic := '1';
-		so_data : out std_logic_vector);
+		so_data : out std_logic_vector(0 to 8-1));
 end;
 
 architecture def of scopeio_stactlr is
@@ -57,9 +57,9 @@ architecture def of scopeio_stactlr is
 	signal req       : std_logic := '0';
 	signal rdy       : std_logic := '0';
 	signal btn       : std_logic_vector(0 to 4-1);
-	signal debnc     : std_logic_vector(btn'range);
-	signal event_vld : std_logic;
-	signal event     : std_logic_vector(0 to 2-1) := "00";
+	signal debnc     : std_logic_vector(btn'range) := (others => '0');
+	signal event_vld : std_logic := '0';
+	signal event     : std_logic_vector(0 to 2-1);
 
 begin
 
@@ -69,14 +69,30 @@ begin
 			constant rebound0s : natural := 6;
 			constant rebound1s : integer := -1;
 
-			type states is (s_pressed, s_released);
-			variable state : states;
-			variable cntr  : integer range -1 to max(rebound1s, rebound0s);
+			type states is ( s_released, s_pressed);
+			variable state : states := s_released;
+			variable cntr  : integer range -1 to max(rebound1s, rebound0s) := -1;
 			variable edge  : std_logic;
 		begin
 			if rising_edge(sio_clk) then
 				case state is
+				when s_released =>
+					debnc(i) <= '0';
+					if btn(i)='1' then
+						if cntr < 0 then
+							cntr := rebound0s;
+							debnc(i) <= '1';
+							state := s_pressed;
+						elsif (video_vton and not edge)='1' then
+							cntr := cntr - 1;
+						end if;
+					elsif cntr < rebound1s then
+						if (video_vton and not edge)='1' then
+							cntr := cntr + 1;
+						end if;
+					end if;
 				when s_pressed =>
+					debnc(i) <= '1';
 					if btn(i)='0' then
 						if cntr < 0 then
 							debnc(i) <= '0';
@@ -90,34 +106,19 @@ begin
 							cntr := cntr + 1;
 						end if;
 					end if;
-				when s_released =>
-					if btn(i)='1' then
-						if cntr >= rebound1s then
-							cntr := rebound0s;
-							debnc(i) <= '1';
-							state := s_pressed;
-						elsif (video_vton and not edge)='1' then
-							cntr := cntr + 1;
-						end if;
-					elsif cntr >= 0 then
-						if (video_vton and not edge)='1' then
-							cntr := cntr - 1;
-						end if;
-					end if;
 				end case;
 				edge := video_vton;
 			end if;
 		end process;
 	end generate;
 
-	event_vld <= '1' when to_bitvector(debnc)/=(debnc'range => '0') else '0';
-	event <= to_stdlogicvector(to_bitvector(encoder(debnc)));
-	tp(1 to 4) <= debnc;
+	event_vld <= '0' when debnc=(debnc'range => '0') else '1';
+	event <= encoder(debnc);
 	btnctlr_e : entity hdl4fpga.scopeio_btnctlr
 	generic map (
 		layout => layout)
 	port map (
-		-- tp      => tp,
+		tp      => tp,
 		event_vld => event_vld,
 		event   => event,
 		sio_clk => sio_clk,

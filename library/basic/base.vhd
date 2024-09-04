@@ -791,7 +791,8 @@ package body base is
 		muld := op1;
 		mulr := op2;
 		rval := (others => '0');
-		while mulr /= 0 loop
+		-- while mulr /= 0 loop
+		for i in 0 to unsigned_num_bits(op2)-1 loop
 			rval := shift_right(rval, 1);
 			if (mulr mod 2)=1 then
 				rval(0 to muld'length) := rval(0 to muld'length) + resize(muld, muld'length+1);
@@ -1319,7 +1320,7 @@ package body base is
 	function encoder (
 		constant arg : std_logic_vector)
 		return   std_logic_vector is
-		variable val : std_logic_vector(0 to unsigned_num_bits(arg'length-1)-1) := (others => '-');
+		variable val : std_logic_vector(0 to unsigned_num_bits(arg'length-1)-1) := (others => '0');
 		variable aux : unsigned(0 to arg'length-1) := (0 => '1', others => '0');
 	begin
 		for i in aux'range loop
