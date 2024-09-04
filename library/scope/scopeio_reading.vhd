@@ -76,8 +76,8 @@ architecture def of scopeio_reading is
 	signal trigger_oneshot : std_logic;
 	signal trigger_level  : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 
-	signal txt_req        : bit;
-	signal txt_rdy        : bit;
+	signal txt_req        : std_logic := '0';
+	signal txt_rdy        : std_logic := '0';
 	signal scale          : unsigned(0 to sfcnd_length-1);
 	signal offset         : signed(0 to max(vt_offset'length, hz_offset'length)-1);
 
@@ -340,7 +340,7 @@ begin
 		variable timeid  : natural range 0 to hz_shts'length-1;
 	begin
 		if rising_edge(rgtr_clk) then
-			-- if (txt_req xor txt_rdy)='0' then
+			if (txt_req xor txt_rdy)='0' then
 				if hz_ena='1' then
 					timeid     := to_integer(unsigned(hz_scaleid));
 					hz_sht     <= to_signed(hz_shts(timeid), btod_sht'length);
@@ -361,7 +361,7 @@ begin
 					hzwdt_req  <= not hzwdt_rdy;
 					hzstup_rdy <= hzstup_req;
 				end if;
-			-- end if;
+			end if;
 		end if;
 	end process;
 
@@ -822,7 +822,7 @@ begin
 		code_frm => btod_frm,
 		code     => btod_code);
 
-	code_frm  <= to_stdulogic(txt_req xor txt_rdy);
+	code_frm  <= txt_req xor txt_rdy;
 	code_irdy <= btod_frm or str_frm;
 	code_data <= multiplex(btod_code & str_code, not btod_frm);
 
