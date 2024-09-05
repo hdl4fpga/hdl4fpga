@@ -437,6 +437,52 @@ begin
 		video_blank    => video_blank,
 		video_sync     => video_sync);
 
+	dviadapter_b : block
+		signal dvid_blank : std_logic;
+		signal rgb : std_logic_vector(0 to 3*8-1) := (others => '0');
+
+	begin
+
+		dvid_blank <= video_blank;
+		process (video_pixel)
+			variable urgb  : unsigned(0 to 3*8-1);
+			variable pixel : unsigned(0 to video_pixel'length-1);
+		begin
+			pixel := unsigned(video_pixel);
+
+			urgb(0 to red_length-1)  := pixel(0 to red_length-1);
+			urgb  := urgb rol 8;
+			pixel := pixel sll red_length;
+
+			urgb(0 to green_length-1) := pixel(0 to green_length-1);
+			urgb  := urgb rol 8;
+			pixel := pixel sll green_length;
+
+			urgb(0 to blue_length-1) := pixel(0 to blue_length-1);
+			urgb  := urgb rol 8;
+			pixel := pixel sll blue_length;
+
+			rgb <= std_logic_vector(urgb);
+		end process;
+
+		dvi_e : entity hdl4fpga.dvi
+		generic map (
+			fifo_mode => false, --dvid_fifo,
+			gear  => video_gear)
+		port map (
+			clk   => video_clk,
+			rgb   => rgb,
+			hsync => video_hsync,
+			vsync => video_vsync,
+			blank => dvid_blank,
+			cclk  => video_shift_clk,
+			chnc  => dvid_crgb(video_gear*4-1 downto video_gear*3),
+			chn2  => dvid_crgb(video_gear*3-1 downto video_gear*2),  
+			chn1  => dvid_crgb(video_gear*2-1 downto video_gear*1),  
+			chn0  => dvid_crgb(video_gear*1-1 downto video_gear*0));
+
+	end block;
+
 	capture_b : block
 
 		signal ctlr_frm       : std_logic;
@@ -466,12 +512,12 @@ begin
 		signal dmaio_addr     : std_logic_vector(32-1 downto 0);
 		signal dmaio_we       : std_logic;
 
-		signal dmacfgvideo_req : std_logic;
-		signal dmacfgvideo_rdy : std_logic;
-		signal dmavideo_req   : std_logic;
-		signal dmavideo_rdy   : std_logic;
-		signal dmavideo_len   : std_logic_vector(dmactlr_len'range);
-		signal dmavideo_addr  : std_logic_vector(dmactlr_addr'range);
+		signal dmacfgcapture_req : std_logic;
+		signal dmacfgcapture_rdy : std_logic;
+		signal dmacapture_req   : std_logic;
+		signal dmacapture_rdy   : std_logic;
+		signal dmacapture_len   : std_logic_vector(dmactlr_len'range);
+		signal dmacapture_addr  : std_logic_vector(dmactlr_addr'range);
 
 		signal dmacfg_req     : std_logic_vector(0 to 2-1);
 		signal dmacfg_rdy     : std_logic_vector(0 to 2-1);
@@ -484,7 +530,7 @@ begin
 		signal dev_rdy        : std_logic_vector(dev_gnt'range);
 		signal dma_do         : std_logic_vector(ctlr_do'range);
 		signal dma_do_dv      : std_logic_vector(dev_gnt'range);
-		alias  dmavideo_do_dv : std_logic is dma_do_dv(0);
+		alias  dmacapture_do_dv : std_logic is dma_do_dv(0);
 		alias  dmaio_do_dv    : std_logic is dma_do_dv(1);
 
 	begin
@@ -914,185 +960,16 @@ begin
 					meta_data     when     meta_end='0' else
 					siodmaio_data when siodmaio_end='0' else
 					reverse(sodata_data);
-
 			end block;
 		end block;
 
-		adapter_b : block
-
-			constant sync_lat  : natural := 4;
-			constant dma_lat   : natural := latencies_tab(profile).adapter;
-
-			signal hzcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(3)-1)-1 downto 0);
-			signal vtcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(7)-1)-1 downto 0);
-			signal hzsync      : std_logic;
-			signal vtsync      : std_logic;
-			signal hzon        : std_logic;
-			signal vton        : std_logic;
-			signal video_hzon  : std_logic;
-			signal video_vton  : std_logic;
-
-			signal graphics_di : std_logic_vector(ctlr_do'range);
-			signal graphics_dv : std_logic;
-			signal pixel       : std_logic_vector(video_pixel'range);
-
-			signal ctlrvideo_irdy : std_logic;
-			signal dma_rdy : std_logic;
-
-			constant pixel_width : natural := pixel'length; -- Xilinx ISE's complaint
-
-		begin
-
-			sync_e : entity hdl4fpga.video_sync
-			generic map (
-				timing_id => timing_id)
-			port map (
-				video_clk    => video_clk,
-				video_hzcntr => hzcntr,
-				video_vtcntr => vtcntr,
-				video_hzsync => hzsync,
-				video_vtsync => vtsync,
-				video_hzon   => hzon,
-				video_vton   => vton);
-
-			dmao_dv_e : entity hdl4fpga.latency
-			generic map (
-				n => 1,
-				d => (0 to 1-1 => dma_lat))
-			port map (
-				clk   => ctlr_clk,
-				di(0) => dmavideo_do_dv,
-				do(0) => graphics_dv);
-
-			dmao_data_e : entity hdl4fpga.latency
-			generic map (
-				n => graphics_di'length,
-				d => (0 to graphics_di'length-1 => dma_lat))
-			port map (
-				clk => ctlr_clk,
-				di  => dma_do,
-				do  => graphics_di);
-
-			dmao_rdy_e : entity hdl4fpga.latency
-			generic map (
-				n => 1,
-				d => (0 to 1-1 => dma_lat))
-			port map (
-				clk   => ctlr_clk,
-				di(0) => dmavideo_rdy,
-				do(0) => dma_rdy);
-
-			graphics_e : entity hdl4fpga.graphics
-			generic map (
-				video_width => modeline_tab(timing_id)(0))
-			port map (
-				ctlr_inirdy => ctlr_inirdy,
-				ctlr_clk    => ctlr_clk,
-				ctlr_di_dv  => graphics_dv,
-				ctlr_di     => graphics_di,
-				base_addr   => base_addr,
-				dmacfg_clk  => sio_clk,
-				dmacfg_req  => dmacfgvideo_req,
-				dmacfg_rdy  => dmacfgvideo_rdy,
-				dma_req     => dmavideo_req,
-				dma_rdy     => dma_rdy,
-				dma_len     => dmavideo_len,
-				dma_addr    => dmavideo_addr,
-				video_clk   => video_clk,
-				video_hzon  => hzon,
-				video_vton  => vton,
-				video_pixel => pixel);
-
-			topixel_e : entity hdl4fpga.latency
-			generic map (
-				n => pixel_width,
-				d => (0 to pixel_width => sync_lat))
-			port map (
-				clk => video_clk,
-				di  => pixel,
-				-- di  => (pixel'range => '1'),
-				do  => video_pixel);
-
-			tosync_e : entity hdl4fpga.latency
-			generic map (
-				n => 4,
-				d => (0 to 4-1 => sync_lat))
-			port map (
-				clk => video_clk,
-				di(0) => hzon,
-				di(1) => vton,
-				di(2) => hzsync,
-				di(3) => vtsync,
-				do(0) => video_hzon,
-				do(1) => video_vton,
-				do(2) => video_hsync,
-				do(3) => video_vsync);
-
-			video_blank <= not video_hzon or not video_vton;
-
-			-- HDMI/DVI VGA --
-			------------------
-
-			dvi_b : block
-				signal dvid_blank : std_logic;
-				signal rgb : std_logic_vector(0 to 3*8-1) := (others => '0');
-
-			begin
-
-				dvid_blank <= video_blank;
-				process (video_pixel)
-					variable urgb  : unsigned(0 to 3*8-1);
-					variable pixel : unsigned(0 to video_pixel'length-1);
-				begin
-					pixel := unsigned(video_pixel);
-
-					urgb(0 to red_length-1)  := pixel(0 to red_length-1);
-					urgb  := urgb rol 8;
-					pixel := pixel sll red_length;
-
-					urgb(0 to green_length-1) := pixel(0 to green_length-1);
-					urgb  := urgb rol 8;
-					pixel := pixel sll green_length;
-
-					urgb(0 to blue_length-1) := pixel(0 to blue_length-1);
-					urgb  := urgb rol 8;
-					pixel := pixel sll blue_length;
-
-					rgb <= std_logic_vector(urgb);
-				end process;
-
-				dvi_e : entity hdl4fpga.dvi
-				generic map (
-					fifo_mode => false, --dvid_fifo,
-					gear  => video_gear)
-				port map (
-					clk   => video_clk,
-					rgb   => rgb,
-					hsync => video_hsync,
-					vsync => video_vsync,
-					blank => dvid_blank,
-					cclk  => video_shift_clk,
-					chnc  => dvid_crgb(video_gear*4-1 downto video_gear*3),
-					chn2  => dvid_crgb(video_gear*3-1 downto video_gear*2),  
-					chn1  => dvid_crgb(video_gear*2-1 downto video_gear*1),  
-					chn0  => dvid_crgb(video_gear*1-1 downto video_gear*0));
-
-			end block;
-
-		end block;
-
-		dev_req    <= (0 => dmavideo_req,    1 => dmaio_req);
-		dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
-		dev_len    <= to_stdlogicvector(to_bitvector(dmavideo_len  & dmaio_len(dmactlr_len'range)));
-		dev_addr   <= to_stdlogicvector(to_bitvector(dmavideo_addr & dmaio_addr(dmactlr_addr'range)));
-		dev_we     <= '0'           & to_stdulogic(to_bit(dmaio_we));
-		(dmacfgvideo_rdy, dmacfgio_rdy) <= to_stdlogicvector(to_bitvector(dmacfg_rdy));
-		(dmavideo_rdy,    dmaio_rdy)    <= to_stdlogicvector(to_bitvector(dev_rdy));
-
-		-- dev_req    <= (0 => '0', 1 => dmaio_req);
-		-- dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
-		-- dev_addr   <= (others => '0'); --to_stdlogicvector(to_bitvector(dmavideo_addr & (dmactlr_addr'range => '0')));
-		-- dev_we     <= to_stdulogic(to_bit(dmaio_we)) & to_stdulogic(to_bit(dmaio_we));
+		dev_req    <= (0 => dmacapture_req,    1 => dmaio_req);
+		dmacfg_req <= (0 => dmacfgcapture_req, 1 => dmacfgio_req);
+		dev_len    <= to_stdlogicvector(to_bitvector(dmacapture_len  & dmaio_len(dmactlr_len'range)));
+		dev_addr   <= to_stdlogicvector(to_bitvector(dmacapture_addr & dmaio_addr(dmactlr_addr'range)));
+		dev_we     <= '1'           & to_stdulogic(to_bit(dmaio_we));
+		(dmacfgcapture_rdy, dmacfgio_rdy) <= to_stdlogicvector(to_bitvector(dmacfg_rdy));
+		(dmacapture_rdy,    dmaio_rdy)    <= to_stdlogicvector(to_bitvector(dev_rdy));
 
 		dmactlr_b : block
 			constant buffdo_lat : natural := latencies_tab(profile).ddro;
