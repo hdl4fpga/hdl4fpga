@@ -40,8 +40,6 @@ entity scopeiosdr is
 		sdram_tcp    : real;
 		gear         : natural;
 		coln_size    : natural;
-		word_size    : natural;
-		byte_size    : natural;
 		burst_length : natural := 0);
 	port (
 		tp            : out std_logic_vector(1 to 32);
