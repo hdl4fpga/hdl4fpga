@@ -127,7 +127,6 @@ WORK__s3estarter_scopeio_structure_md = $(LIB_WORK)/s3estarter_scopeio_structure
 WORK__s3estarter_scopeio_md = $(LIB_WORK)/s3estarter_scopeio_md/_primary.dat
 WORK__s3estarter_graphics_structure_md = $(LIB_WORK)/s3estarter_graphics_structure_md/_primary.dat
 WORK__s3estarter_graphics_md = $(LIB_WORK)/s3estarter_graphics_md/_primary.dat
-WORK__s3estarter__beh = $(LIB_WORK)/s3estarter/beh.dat
 WORK__s3estarter__scopeio = $(LIB_WORK)/s3estarter/scopeio.dat
 WORK__s3estarter = $(LIB_WORK)/s3estarter/_primary.dat
 WORK__orangecrab_graphics_structure_md = $(LIB_WORK)/orangecrab_graphics_structure_md/_primary.dat
@@ -226,7 +225,6 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__s3estarter_scopeio_md) \
     $(WORK__s3estarter_graphics_structure_md) \
     $(WORK__s3estarter_graphics_md) \
-    $(WORK__s3estarter__beh) \
     $(WORK__s3estarter__scopeio) \
     $(WORK__s3estarter) \
     $(WORK__orangecrab_graphics_structure_md) \
@@ -470,8 +468,7 @@ $(WORK__s3estarter) : ../../boards/s3estarter/common/s3estarter.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ../../boards/s3estarter/common/s3estarter.vhd
 
-$(WORK__s3estarter__scopeio) \
-$(WORK__s3estarter__beh) : ../../boards/s3estarter/apps/scopeio.vhd \
+$(WORK__s3estarter__scopeio) : ../../boards/s3estarter/apps/scopeio.vhd \
 		$(HDL4FPGA__scopeiopkg) \
 		$(HDL4FPGA__scopeio) \
 		$(IEEE__math_real) \
