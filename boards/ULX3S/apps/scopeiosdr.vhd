@@ -502,9 +502,10 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeiosdr
 	generic map (
+		profile => 0,
 		sdram_tcp    => 1.0/200.0e6,
 		mark         => MT48LC256MA27E ,
-		videotiming_id => video_params.timing,
+		timing_id => video_params.timing,
 		layout         => layout)
 	port map (
 		-- tp => tp,
