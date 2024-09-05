@@ -530,6 +530,56 @@ begin
 		video_vton  => video_vton,
 		video_blank => video_blank);
 
+	latsti_e : entity hdl4fpga.latency
+	generic map (
+		n => gear,
+		d => (0 to gear-1 => 0))
+	port map (
+		clk => ctlr_clk,
+		di  => ctlrphy_sto,
+		do  => sdrphy_sti);
+
+	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
+	generic map (
+		gear       => gear,
+		bank_size  => sdram_ba'length,
+		addr_size  => sdram_a'length,
+		word_size  => word_size,
+		byte_size  => byte_size,
+		wr_fifo    => false,
+		rd_fifo    => false,
+		bypass     => false)
+	port map (
+		sclk       => ctlr_clk,
+		rst        => sdrsys_rst,
+
+		sys_cs(0)  => ctlrphy_cs,
+		sys_cke(0) => ctlrphy_cke,
+		sys_ras(0) => ctlrphy_ras,
+		sys_cas(0) => ctlrphy_cas,
+		sys_we(0)  => ctlrphy_we,
+		sys_b      => ctlrphy_b,
+		sys_a      => ctlrphy_a,
+		sys_dmi    => ctlrphy_dmo,
+		sys_dqi    => ctlrphy_dqo,
+		sys_dqt    => ctlrphy_dqt,
+		sys_dqo    => ctlrphy_dqi,
+		sys_sto    => ctlrphy_sti,
+		sys_sti    => sdrphy_sti,
+
+		sdram_clk  => sdram_clk,
+		sdram_cke  => sdram_cke,
+		sdram_cs   => sdram_csn,
+		sdram_ras  => sdram_rasn,
+		sdram_cas  => sdram_casn,
+		sdram_we   => sdram_wen,
+		sdram_b    => sdram_ba,
+		sdram_a    => sdram_a,
+		sdram_dqs  => sdram_dqs,
+
+		sdram_dm   => sdram_dqm,
+		sdram_dq   => sdram_d);
+
 	-- HDMI/DVI VGA --
 	------------------
 
