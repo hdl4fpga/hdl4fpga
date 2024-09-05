@@ -37,6 +37,7 @@ HDL4FPGA__dbdbbl_srl = $(LIB_HDL4FPGA)/dbdbbl_srl/_primary.dat
 HDL4FPGA__dbdbbl_srlfix = $(LIB_HDL4FPGA)/dbdbbl_srlfix/_primary.dat
 HDL4FPGA__dbdbbl_sllfix = $(LIB_HDL4FPGA)/dbdbbl_sllfix/_primary.dat
 HDL4FPGA__bcd_adder = $(LIB_HDL4FPGA)/bcd_adder/_primary.dat
+HDL4FPGA__scopeiosdr = $(LIB_HDL4FPGA)/scopeiosdr/_primary.dat
 HDL4FPGA__hdo = $(LIB_HDL4FPGA)/hdo/_primary.dat
 HDL4FPGA__scopeiopkg = $(LIB_HDL4FPGA)/scopeiopkg/_primary.dat
 HDL4FPGA__rom = $(LIB_HDL4FPGA)/rom/_primary.dat
@@ -96,6 +97,7 @@ WORK__ulx3s_graphics_md = $(LIB_WORK)/ulx3s_graphics_md/_primary.dat
 WORK__ulx3s__ser_debug = $(LIB_WORK)/ulx3s/ser_debug.dat
 WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s__scopeio = $(LIB_WORK)/ulx3s/scopeio.dat
+WORK__ulx3s__scopeiosdr = $(LIB_WORK)/ulx3s/scopeiosdr.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
 WORK__testbench__ulx4mls_graphics = $(LIB_WORK)/testbench/ulx4mls_graphics.dat
 WORK__testbench__ulx4mld_graphics = $(LIB_WORK)/testbench/ulx4mld_graphics.dat
@@ -194,6 +196,7 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__ulx3s__ser_debug) \
     $(WORK__ulx3s__graphics) \
     $(WORK__ulx3s__scopeio) \
+    $(WORK__ulx3s__scopeiosdr) \
     $(WORK__ulx3s) \
     $(WORK__testbench__ulx4mls_graphics) \
     $(WORK__testbench__ulx4mld_graphics) \
@@ -732,6 +735,34 @@ $(WORK__ulx3s) : ../../boards/ULX3S/common/ulx3s.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ../../boards/ULX3S/common/ulx3s.vhd
+
+$(WORK__ulx3s__scopeiosdr) : ../../boards/ULX3S/apps/scopeiosdr.vhd \
+		$(HDL4FPGA__ecp5_ogbx) \
+		$(HDL4FPGA__latency) \
+		$(HDL4FPGA__dvi) \
+		$(HDL4FPGA__scopeiosdr) \
+		$(HDL4FPGA__scopeio_rgtrhzaxis) \
+		$(HDL4FPGA__sio_sin) \
+		$(HDL4FPGA__scopeio_stactlr) \
+		$(HDL4FPGA__rom) \
+		$(HDL4FPGA__sio_dayusb) \
+		$(HDL4FPGA__ecp5_videopll) \
+		$(WORK__ulx3s) \
+		$(IEEE__std_logic_arith) \
+		$(ECP5U__components) \
+		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__sdram_param) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__ecp5_profiles) \
+		$(HDL4FPGA__app_profiles) \
+		$(HDL4FPGA__hdo) \
+		$(HDL4FPGA__base) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002  ../../boards/ULX3S/apps/scopeiosdr.vhd
 
 $(WORK__ulx3s__scopeio) : ../../boards/ULX3S/apps/scopeio.vhd \
 		$(HDL4FPGA__ecp5_ogbx) \

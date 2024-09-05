@@ -33,6 +33,8 @@ use hdl4fpga.app_profiles.all;
 use hdl4fpga.ecp5_profiles.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.scopeiopkg.all;
+use hdl4fpga.sdram_param.all;
+use hdl4fpga.sdram_db.all;
 
 library ecp5u;
 use ecp5u.components.all;
@@ -178,6 +180,36 @@ architecture scopeiosdr of ulx3s is
 			"   { text  : GP17,            " &
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff}]}");   -- vt(7)
+
+	constant sdram : string := "";
+	constant gear          : natural := hdo(sdram)**".gear";
+	constant bank_size     : natural := hdo(sdram)**".bank_size";
+	constant addr_size     : natural := hdo(sdram)**".addr_size";
+	constant coln_size     : natural := hdo(sdram)**".coln_size";
+	constant word_size     : natural := hdo(sdram)**".word_size";
+	constant byte_size     : natural := hdo(sdram)**".byte_size";
+	signal ctlr_clk      : std_logic;
+	signal sdrsys_rst    : std_logic;
+
+	constant sdram_params : sdramparams_record := sdramparams(sdram133MHz, clk25mhz_freq);
+	
+	signal ctlrphy_rst   : std_logic;
+	signal ctlrphy_cke   : std_logic;
+	signal ctlrphy_cs    : std_logic;
+	signal ctlrphy_ras   : std_logic;
+	signal ctlrphy_cas   : std_logic;
+	signal ctlrphy_we    : std_logic;
+	signal ctlrphy_b     : std_logic_vector(sdram_ba'length-1 downto 0);
+	signal ctlrphy_a     : std_logic_vector(sdram_a'length-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
+	signal sdrphy_sti    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal sdram_dqs     : std_logic_vector(word_size/byte_size-1 downto 0);
+
 begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
@@ -468,8 +500,10 @@ begin
 
 	end block;
 
-	scopeio_e : entity hdl4fpga.scopeio
+	scopeio_e : entity hdl4fpga.scopeiosdr
 	generic map (
+		sdram_tcp    => 1.0/200.0e6,
+		mark         => MT48LC256MA27E ,
 		videotiming_id => video_params.timing,
 		layout         => layout)
 	port map (
@@ -482,6 +516,13 @@ begin
 		input_clk   => input_clk,
 		input_ena   => input_enas,
 		input_data  => input_samples,
+		ctlr_clk    => ctlr_clk,
+		ctlr_rst    => sdrsys_rst,
+		ctlr_bl     => "000",
+		ctlr_cl     => sdram_params.cl,
+
+		ctlrphy_dqi  => ctlrphy_dqi,
+		ctlrphy_sti  => ctlrphy_sti,
 		video_clk   => video_clk,
 		video_pixel => video_pixel,
 		video_hsync => video_hzsync,

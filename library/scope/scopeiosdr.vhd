@@ -31,15 +31,16 @@ use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.scopeiopkg.all;
+use hdl4fpga.sdram_param.all;
+use hdl4fpga.sdram_db.all;
 
 entity scopeiosdr is
 	generic (
-		sdr          : string := "";
+		sdram        : string := "";
 		videotiming_id   : videotiming_ids;
 		layout       : string;
 		sdram_tcp    : real;
-		gear         : natural;
-		coln_size    : natural;
+		mark         : sdram_chips;
 		burst_length : natural := 0);
 	port (
 		tp            : out std_logic_vector(1 to 32);
@@ -56,6 +57,18 @@ entity scopeiosdr is
 		input_clk     : in  std_logic;
 		input_ena     : in  std_logic := '1';
 		input_data    : in  std_logic_vector;
+
+		ctlr_clk      : in  std_logic;
+		ctlr_rst      : in  std_logic;
+		ctlr_al       : in  std_logic_vector(3-1 downto 0) := (others => '0');
+		ctlr_bl       : in  std_logic_vector(0 to 3-1);
+		ctlr_cl       : in  std_logic_vector;
+		ctlr_cwl      : in  std_logic_vector(0 to 3-1) := "000";
+		ctlr_wrl      : in  std_logic_vector(0 to 3-1) := "101";
+		ctlr_rtt      : in  std_logic_vector(0 to 3-1) := (others => '-');
+		ctlr_cmd      : buffer std_logic_vector(0 to 3-1);
+		ctlr_inirdy   : buffer std_logic;
+
 		ctlrphy_wlreq : out std_logic;
 		ctlrphy_wlrdy : in  std_logic := '-';
 		ctlrphy_rlreq : out std_logic;
@@ -72,18 +85,18 @@ entity scopeiosdr is
 		ctlrphy_cas   : buffer std_logic;
 		ctlrphy_we    : buffer std_logic;
 		ctlrphy_odt   : out std_logic;
-		ctlrphy_b     : out std_logic_vector(hdo(sdr)**".bank_size=1."-1 downto 0);
-		ctlrphy_a     : out std_logic_vector(hdo(sdr)**".addr_size=1."-1 downto 0);
-		ctlrphy_dqst  : out std_logic_vector(hdo(sdr)**".gear=1."-1 downto 0);
-		ctlrphy_dqso  : out std_logic_vector(hdo(sdr)**".gear=1."-1 downto 0);
-		ctlrphy_dmi   : in  std_logic_vector(hdo(sdr)**".gear=1."*hdo(sdr)**".word_size"/hdo(sdr)**".byte_size"-1 downto 0) := (others => '-');
-		ctlrphy_dmo   : out std_logic_vector(hdo(sdr)**".gear=1."*hdo(sdr)**".word_size"/hdo(sdr)**".byte_size"-1 downto 0);
-		ctlrphy_dqt   : out std_logic_vector(hdo(sdr)**".gear=1."-1 downto 0);
-		ctlrphy_dqi   : in  std_logic_vector(hdo(sdr)**".gear=1."*hdo(sdr)**".word_size"-1 downto 0);
-		ctlrphy_dqo   : out std_logic_vector(hdo(sdr)**".gear=1."*hdo(sdr)**".word_size"-1 downto 0);
-		ctlrphy_dqv   : out std_logic_vector(hdo(sdr)**".gear=1."-1 downto 0);
-		ctlrphy_sto   : out std_logic_vector(hdo(sdr)**".gear=1."-1 downto 0);
-		ctlrphy_sti   : in  std_logic_vector(hdo(sdr)**".gear=1."*hdo(sdr)**".word_size"/hdo(sdr)**".byte_size"-1 downto 0);
+		ctlrphy_b     : out std_logic_vector(hdo(sdram)**".bank_size=1."-1 downto 0);
+		ctlrphy_a     : out std_logic_vector(hdo(sdram)**".addr_size=1."-1 downto 0);
+		ctlrphy_dqst  : out std_logic_vector(hdo(sdram)**".gear=1."-1 downto 0);
+		ctlrphy_dqso  : out std_logic_vector(hdo(sdram)**".gear=1."-1 downto 0);
+		ctlrphy_dmi   : in  std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size"/hdo(sdram)**".byte_size"-1 downto 0) := (others => '-');
+		ctlrphy_dmo   : out std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size"/hdo(sdram)**".byte_size"-1 downto 0);
+		ctlrphy_dqt   : out std_logic_vector(hdo(sdram)**".gear=1."-1 downto 0);
+		ctlrphy_dqi   : in  std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size"-1 downto 0);
+		ctlrphy_dqo   : out std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size"-1 downto 0);
+		ctlrphy_dqv   : out std_logic_vector(hdo(sdram)**".gear=1."-1 downto 0);
+		ctlrphy_sto   : out std_logic_vector(hdo(sdram)**".gear=1."-1 downto 0);
+		ctlrphy_sti   : in  std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size"/hdo(sdram)**".byte_size"-1 downto 0);
 		video_clk     : in  std_logic;
 		video_pixel   : out std_logic_vector;
 		video_hsync   : out std_logic;
@@ -97,6 +110,12 @@ entity scopeiosdr is
 		extern_videovtsync : in  std_logic := '-';
 		extern_videoblankn : in  std_logic := '-');
 
+	constant gear          : natural := hdo(sdram)**".gear";
+	constant bank_size     : natural := hdo(sdram)**".bank_size";
+	constant addr_size     : natural := hdo(sdram)**".addr_size";
+	constant coln_size     : natural := hdo(sdram)**".coln_size";
+	constant word_size     : natural := hdo(sdram)**".word_size";
+	constant byte_size     : natural := hdo(sdram)**".byte_size";
 	constant inputs        : natural := hdo(layout)**".inputs";
 	constant max_delay     : natural := hdo(layout)**".max_delay=16384.";
 	constant min_storage   : natural := hdo(layout)**".min_storage=256."; -- samples, storage size will be equal or larger than this
@@ -191,6 +210,21 @@ architecture beh of scopeiosdr is
 	signal gain_ids       : std_logic_vector(0 to inputs*gainid_bits-1);
 
 
+	signal ctlr_frm       : std_logic;
+	signal ctlr_trdy      : std_logic;
+	signal ctlr_rw        : std_logic;
+	signal ctlr_refreq    : std_logic;
+	signal ctlr_alat      : std_logic_vector(2 downto 0);
+	signal ctlr_blat      : std_logic_vector(2 downto 0);
+	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
+	signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);
+	signal ctlr_di        : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlr_do        : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlr_do_dv     : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlr_di_dv     : std_logic;
+	signal ctlr_di_req    : std_logic;
+
+	signal ctlr_fch       : std_logic;
 begin
 
 	assert inputs < max_inputs
@@ -366,4 +400,88 @@ begin
 		video_blank    => video_blank,
 		video_sync     => video_sync);
 
+	sdrctlr_b : block
+		signal inirdy    : std_logic;
+	begin
+		sdrctlr_e : entity hdl4fpga.sdram_ctlr
+		generic map (
+			chip         => mark,
+			tcp          => sdram_tcp,
+
+			-- latencies    => phy_latencies,
+			latencies => (others => 0),
+			gear         => gear,
+			bank_size    => bank_size,
+			addr_size    => addr_size,
+			word_size    => word_size,
+			byte_size    => byte_size)
+		port map (
+			ctlr_alat    => ctlr_alat,
+			ctlr_blat    => ctlr_blat,
+			ctlr_al      => ctlr_al,
+			ctlr_bl      => ctlr_bl,
+			ctlr_cl      => ctlr_cl,
+
+			ctlr_cwl     => ctlr_cwl,
+			ctlr_wrl     => ctlr_wrl,
+			ctlr_rtt     => ctlr_rtt,
+
+			ctlr_rst     => ctlr_rst,
+			ctlr_clk     => ctlr_clk,
+			ctlr_inirdy  => inirdy,
+
+			ctlr_frm     => ctlr_frm,
+			ctlr_trdy    => ctlr_trdy,
+			ctlr_fch     => ctlr_fch,
+			ctlr_rw      => ctlr_rw,
+			ctlr_b       => ctlr_b,
+			ctlr_a       => ctlr_a,
+			ctlr_cmd     => ctlr_cmd,
+			ctlr_di_dv   => ctlr_di_dv,
+			ctlr_di_req  => ctlr_di_req,
+			ctlr_di      => ctlr_di,
+			ctlr_dm      => (0 to gear*word_size/byte_size-1 => '0'),
+			ctlr_do_dv   => ctlr_do_dv,
+			ctlr_do      => ctlr_do,
+			ctlr_refreq  => ctlr_refreq,
+			phy_inirdy   => ctlrphy_ini,
+			phy_frm      => ctlrphy_irdy,
+			phy_trdy     => ctlrphy_trdy,
+			phy_rw       => ctlrphy_rw,
+			phy_wlrdy    => ctlrphy_wlrdy,
+			phy_wlreq    => ctlrphy_wlreq,
+			phy_rlrdy    => ctlrphy_rlrdy,
+			phy_rlreq    => ctlrphy_rlreq,
+			phy_rst      => ctlrphy_rst,
+			phy_cke      => ctlrphy_cke,
+			phy_cs       => ctlrphy_cs,
+			phy_ras      => ctlrphy_ras,
+			phy_cas      => ctlrphy_cas,
+			phy_odt      => ctlrphy_odt,
+			phy_we       => ctlrphy_we,
+			phy_b        => ctlrphy_b,
+			phy_a        => ctlrphy_a,
+			phy_dmi      => ctlrphy_dmi,
+			phy_dmo      => ctlrphy_dmo,
+
+			phy_dqi      => ctlrphy_dqi,
+			phy_dqt      => ctlrphy_dqt,
+			phy_dqo      => ctlrphy_dqo,
+			phy_sti      => ctlrphy_sti,
+			phy_sto      => ctlrphy_sto,
+
+			phy_dqv      => ctlrphy_dqv,
+			phy_dqso     => ctlrphy_dqso,
+			phy_dqst     => ctlrphy_dqst);
+
+		inirdy_e : entity hdl4fpga.latency
+		generic map (
+			n => 1,
+			d => (0 to 0 => 0))
+		port map (
+			clk => ctlr_clk,
+			di(0) => inirdy,
+			do(0) => ctlr_inirdy);
+
+	end block;
 end;
