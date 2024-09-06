@@ -64,6 +64,7 @@ entity scopeiosdr is
 
 		input_clk     : in  std_logic;
 		input_ena     : in  std_logic := '1';
+		input_dv      : in  std_logic_vector(0 to hdo(layout)**".inputs=0.");
 		input_data    : in  std_logic_vector;
 
 		ctlr_clk      : in  std_logic;
@@ -674,6 +675,40 @@ begin
 
 				dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0'));
 				rgtr_dmadata <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmadata'length)),8);
+
+				process (input_data, input_dv)
+					variable xxxx : unsigned(input_data'range);
+					variable yyyy : unsigned(input_data'range);
+					variable cntr : natural range 0 to inputs-1;
+				begin
+					xxxx := unsigned(input_data);
+					for i in 0 to inputs-1 loop
+						if input_dv(i)='1' then
+							yyyy := yyyy rol sample'length
+							yyyy(input_sample) := xxxx(input_sample);
+							xxxx := xxx rol sample'length
+							if cntr=inputs-1 then
+								cntr := 0;
+							else
+								cntr := cntr + 1;
+							end if;
+						end if;
+					end loop;
+				end process;
+
+				xxxx_e : entity hdl4fpga.serdes
+				port map (
+            		serdes_clk => input_clk,
+            		serdes_frm => '-',
+            		ser_irdy   => input_ena,
+            		ser_trdy   => open,
+            		ser_data   => input_data,
+
+            		des_frm    => open,
+            		des_irdy   => open,
+            		des_trdy   => '-',
+            		des_data   => capture_data);
+
 				dmadata_e : entity hdl4fpga.fifo
 				generic map (
 					max_depth  => fifodata_depth,
@@ -682,11 +717,11 @@ begin
 					check_sov  => true,
 					check_dov  => true)
 				port map (
-					src_clk    => sio_clk,
+					src_clk    => input_clk,
 					src_frm    => ctlr_inirdy,
-					src_irdy   => dmadata_irdy,
-					src_trdy   => dmadata_trdy,
-					src_data   => rgtr_dmadata,
+					src_irdy   => caputure_irdy,
+					src_trdy   => caputure_trdy,
+					src_data   => caputure_data,
 
 					dst_clk    => ctlr_clk,
 					dst_irdy   => ctlr_di_rdy,
