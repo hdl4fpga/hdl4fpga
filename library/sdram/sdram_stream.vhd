@@ -29,7 +29,7 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.videopkg.all;
 
-entity graphics is
+entity sdram_stream is
 	generic (
 		stream_width : natural);
 	port (
@@ -51,7 +51,7 @@ entity graphics is
 		ctlr_do     : out std_logic_vector);
 end;
 
-architecture def of graphics is
+architecture def of sdram_stream is
 
 	constant pslice_size : natural := 2**(unsigned_num_bits(video_width-1));
 	constant ppage_size  : natural := 2*pslice_size;
@@ -73,6 +73,9 @@ architecture def of graphics is
 	signal fifo_irdy : std_logic;
 	signal fifo_trdy : std_logic;
 	signal fifo_data : std_logic_vector(ctlr_do'range);
+
+	signal wm_req : std_logic := '0';
+	signal wm_rdy : std_logic := '0';
 
 begin
 
@@ -106,35 +109,40 @@ begin
 		dst_trdy => ctlr_do_dv,
 		dst_data => ctlr_do);
 
-	dmacfg_p : process(dmacfg_clk)
-		type states is (s_idle, s_cfg, s_trans);
+	dma_p : process(dmacfg_clk)
+		type states is (s_idle, s_transfer, s_config);
 		variable state : states;
 	begin
 		if rising_edge(dmacfg_clk) then
 			if ctlr_inirdy='0' then
-				cfgdma_rdy <= cfgdma_rdy;
+				wm_rdy <= wm_req;
 				state := s_idle;
-			elsif (cfgdma_rdy xor cfgdma_req)
+			elsif (wm_rdy xor wm_req)='1' then
 				case state is
 				when s_idle =>
-					if (vrdy xor vreq)='1' then
-						dmacfg_req <= not dmacfg_rdy;
-						state := s_cfg;
-					end if;
-				when s_cfg =>
 					if (dmacfg_req xor dmacfg_rdy)='0' then
-						treq <= not trdy;
-						state := s_trans;
+						if (dma_req xor dma_rdy)='0' then
+							dma_req <= not dma_rdy;
+							state := s_transfer;
+						end if;
 					end if;
-				when s_trans =>
-					if (treq xor trdy)='0' then
-						vrdy <= vreq;
+				when s_transfer =>
+					if (dma_req xor dma_rdy)='0' then
+						if (dmacfg_req xor dmacfg_rdy)='0' then
+							dmacfg_req <= not dmacfg_rdy;
+							state := s_config;
+						end if;
+					end if;
+				when s_config =>
+					if (dmacfg_req xor dmacfg_rdy)='0' then
+						wm_rdy <= wm_req;
 						state := s_idle;
 					end if;
 				end case;
 			else
-    			dma_addr <= base_addr;
-    			dma_len  <= std_logic_vector(to_unsigned(water_mark-1), dma_len'length));
+				if stream_frm='0' then
+				end if;
+				state := s_idle;
 			end if;
 		end if;
 	end process;
