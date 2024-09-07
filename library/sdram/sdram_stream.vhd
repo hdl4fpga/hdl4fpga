@@ -31,44 +31,31 @@ use hdl4fpga.videopkg.all;
 
 entity sdram_stream is
 	generic (
-		stream_width : natural);
+		buffer_size : natural);
 	port (
 		stream_clk  : in  std_logic;
 		stream_frm  : in  std_logic;
 		stream_irdy : in  std_logic;
-		stream_data : out std_logic_vector;
+		stream_trdy : out std_logic := '1';
+		stream_data : in  std_logic_vector;
 		base_addr   : in   std_logic_vector;
 		dmacfg_clk  : in   std_logic;
 		dmacfg_req  : buffer std_logic;
 		dmacfg_rdy  : in  std_logic;
 		dma_req     : buffer std_logic;
 		dma_rdy     : in  std_logic;
-		dma_len     : out std_logic_vector;
+		dma_len     : buffer std_logic_vector;
 		dma_addr    : buffer std_logic_vector;
 		ctlr_inirdy : in  std_logic;
 		ctlr_clk    : in  std_logic;
 		ctlr_do_dv  : in  std_logic;
 		ctlr_do     : out std_logic_vector);
+
+	constant water_mark : natural := buffer_size/2;
+
 end;
 
 architecture def of sdram_stream is
-
-	constant pslice_size : natural := 2**(unsigned_num_bits(video_width-1));
-	constant ppage_size  : natural := 2*pslice_size;
-	constant pwater_mark : natural := ppage_size-pslice_size;
-
-	signal stream_frm     : std_logic;
-	signal stream_trdy    : std_logic;
-	signal stream_on      : std_logic;
-	signal stream_rdy     : std_logic;
-	signal stream_req     : std_logic;
-
-	signal src_irdy      : std_logic;
-	signal src_data      : std_logic_vector(ctlr_do'range);
-
-	signal dma_step      : unsigned(dma_addr'range);
-
-	signal stream_word : std_logic_vector(ctlr_do'range);
 
 	signal fifo_irdy : std_logic;
 	signal fifo_trdy : std_logic;
@@ -94,7 +81,7 @@ begin
 
 	fifo_e : entity hdl4fpga.fifo
 	generic map (
-		max_depth  => ppage_size,
+		max_depth  => buffer_size,
 		async_mode => false,
 		latency    => 1,
 		check_sov  => false,
@@ -148,39 +135,30 @@ begin
 	end process;
 	
 	stream_b : block
-		signal level : unsigned(0 to unsigned_num_bits(ppage_size-1));
 	begin
 		process (stream_clk)
-			constant dpage_size   : natural := ( ppage_size*stream_data'length+ctlr_do'length-1)/ctlr_do'length;
-			constant dslice_size  : natural := (pslice_size*stream_data'length+ctlr_do'length-1)/ctlr_do'length;
-	
-			type states is (s_idle, s_line);
-			variable state : states;
-
-			variable new_level : unsigned(level'range);
+			variable level : unsigned(0 to unsigned_num_bits(buffer_size-1)) := (others => '0');
 		begin
 			if rising_edge(stream_clk) then
 				if stream_frm='1' then
-    				case state is
-    				when s_stream =>
-    					if level >= water_mark then
-							dmacfg_req <= not dmscfg_rdy;
-    					end if;
-    				when s_cfgdma =>
-						if (dmacfg_req xor dmscfg_rdy)='0' then
-    					if (to_bit(stream_rdy) xor to_bit(stream_req))='0' then
-    						dma_addr  <= std_logic_vector(unsigned(dma_addr) + dma_step);
-    						dma_step  <= to_unsigned(dslice_size, dma_step'length);
-    						stream_req <= not to_stdulogic(to_bit(stream_rdy));
-    						state     := s_hzpoll;
-    					end if;
-					end case;
-				else
-					state := s_cfg;
+					if stream_irdy='1' then
+						level := level + 1;
+					end if;
+					if level >= water_mark then
+						dma_addr <= std_logic_vector(unsigned(dma_addr) + unsigned(dma_len));
+						dma_len  <= std_logic_vector(to_unsigned(water_mark, dma_len'length));
+						level    := level - water_mark;
+						if (wm_rdy xor wm_req)='1' then
+							-- overflow;
+						end if;
+						wm_req <= not wm_rdy;
+					end if;
+				elsif level > 0 then
+					dma_addr <= std_logic_vector(unsigned(dma_addr) + unsigned(dma_len));
+					dma_len  <= std_logic_vector(level);
+					wm_req <= not wm_rdy;
 				end if;
 			end if;
 		end process;
 	end block;
-
-	stream_on <= stream_irdy and stream_frm;
 end;

@@ -125,6 +125,8 @@ HDL4FPGA__ser_debug__def = $(LIB_HDL4FPGA)/ser_debug/def.dat
 HDL4FPGA__ser_debug = $(LIB_HDL4FPGA)/ser_debug/_primary.dat
 HDL4FPGA__seg7__mixed = $(LIB_HDL4FPGA)/seg7/mixed.dat
 HDL4FPGA__seg7 = $(LIB_HDL4FPGA)/seg7/_primary.dat
+HDL4FPGA__sdram_stream__def = $(LIB_HDL4FPGA)/sdram_stream/def.dat
+HDL4FPGA__sdram_stream = $(LIB_HDL4FPGA)/sdram_stream/_primary.dat
 HDL4FPGA__sdram_sch__def = $(LIB_HDL4FPGA)/sdram_sch/def.dat
 HDL4FPGA__sdram_sch = $(LIB_HDL4FPGA)/sdram_sch/_primary.dat
 HDL4FPGA__sdram_pgm__registered = $(LIB_HDL4FPGA)/sdram_pgm/registered.dat
@@ -497,6 +499,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__ser_debug) \
     $(HDL4FPGA__seg7__mixed) \
     $(HDL4FPGA__seg7) \
+    $(HDL4FPGA__sdram_stream__def) \
+    $(HDL4FPGA__sdram_stream) \
     $(HDL4FPGA__sdram_sch__def) \
     $(HDL4FPGA__sdram_sch) \
     $(HDL4FPGA__sdram_pgm__registered) \
@@ -2022,10 +2026,22 @@ $(HDL4FPGA__scopeiopkg__body) : ../scope/scopeiopkg.vhd \
 
 $(HDL4FPGA__scopeiosdr) \
 $(HDL4FPGA__scopeiosdr__beh) : ../scope/scopeiosdr.vhd \
+		$(HDL4FPGA__sdram_ctlr) \
+		$(HDL4FPGA__dmactlr) \
+		$(HDL4FPGA__so_data) \
+		$(HDL4FPGA__latency) \
+		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__sio_dmahdsk) \
+		$(HDL4FPGA__fifo) \
+		$(HDL4FPGA__sio_rgtr) \
+		$(HDL4FPGA__txn_buffer) \
+		$(HDL4FPGA__dvi) \
 		$(HDL4FPGA__scopeio_video) \
 		$(HDL4FPGA__scopeio_amp) \
 		$(HDL4FPGA__scopeio_rgtrvtscale) \
 		$(HDL4FPGA__sio_sin) \
+		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__sdram_param) \
 		$(HDL4FPGA__scopeiopkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__hdo) \
@@ -2112,6 +2128,17 @@ $(HDL4FPGA__sdram_sch__def) : ../sdram/sdram_sch.vhd \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
 	$(VCOM) -2002 -work hdl4fpga ../sdram/sdram_sch.vhd
+
+$(HDL4FPGA__sdram_stream) \
+$(HDL4FPGA__sdram_stream__def) : ../sdram/sdram_stream.vhd \
+		$(HDL4FPGA__fifo) \
+		$(HDL4FPGA__serlzr) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../sdram/sdram_stream.vhd
 
 $(HDL4FPGA__rom7seg) \
 $(HDL4FPGA__rom7seg__mixed) \

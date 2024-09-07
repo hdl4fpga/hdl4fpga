@@ -531,6 +531,7 @@ begin
 		signal dev_rdy        : std_logic_vector(dev_gnt'range);
 		signal dma_do         : std_logic_vector(ctlr_do'range);
 		signal dma_do_dv      : std_logic_vector(dev_gnt'range);
+		signal dma_di_dv      : std_logic_vector(dev_gnt'range);
 		alias  dmacapture_do_dv : std_logic is dma_do_dv(0);
 		alias  dmaio_do_dv    : std_logic is dma_do_dv(1);
 
@@ -676,18 +677,28 @@ begin
 				dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0'));
 				rgtr_dmadata <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmadata'length)),8);
 
-				xxxx_e : entity hdl4fpga.serdes
-				port map (
-            		serdes_clk => input_clk,
-            		serdes_frm => '-',
-            		ser_irdy   => input_ena,
-            		ser_trdy   => open,
-            		ser_data   => input_data,
 
-            		des_frm    => open,
-            		des_irdy   => open,
-            		des_trdy   => '-',
-            		des_data   => capture_data);
+				stream_e : entity hdl4fpga.sdram_stream is
+				generic map (
+					buffer_size => 1024)
+				port map (
+					stream_clk  => input_clk,
+					stream_frm  => '-',
+					stream_irdy => '-',
+					stream_trdy => open,
+					stream_data => input_data,
+					base_addr   => (others => '-'),
+					dmacfg_clk  => sio_clk,
+					dmacfg_req  => dmacfgcapture_req
+					dmacfg_rdy  => dmacfgcapture_rdy
+					dma_req     => dmacapture_req,
+					dma_rdy     => dmacapture_rdy,
+					dma_len     => dmacapture_len,
+					dma_addr    => dmacapture_addr,
+					ctlr_inirdy => ctlr_inirdy
+					ctlr_clk    => ctlr_clk,
+					ctlr_do_dv  => '-',
+					ctlr_do     => input_do);
 
 				dmadata_e : entity hdl4fpga.fifo
 				generic map (
@@ -708,6 +719,7 @@ begin
 					dst_trdy   => ctlr_di_req,
 					dst_data   => ctlr_di);
 				ctlr_di_dv <= ctlr_di_req;
+				ctlr_di <= input_do when 
 
 				base_addr_e : entity hdl4fpga.sio_rgtr
 				generic map (
