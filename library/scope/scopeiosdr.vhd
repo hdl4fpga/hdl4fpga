@@ -676,26 +676,6 @@ begin
 				dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0'));
 				rgtr_dmadata <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmadata'length)),8);
 
-				process (input_data, input_dv)
-					variable xxxx : unsigned(input_data'range);
-					variable yyyy : unsigned(input_data'range);
-					variable cntr : natural range 0 to inputs-1;
-				begin
-					xxxx := unsigned(input_data);
-					for i in 0 to inputs-1 loop
-						if input_dv(i)='1' then
-							yyyy := yyyy rol sample'length
-							yyyy(input_sample) := xxxx(input_sample);
-							xxxx := xxx rol sample'length
-							if cntr=inputs-1 then
-								cntr := 0;
-							else
-								cntr := cntr + 1;
-							end if;
-						end if;
-					end loop;
-				end process;
-
 				xxxx_e : entity hdl4fpga.serdes
 				port map (
             		serdes_clk => input_clk,
