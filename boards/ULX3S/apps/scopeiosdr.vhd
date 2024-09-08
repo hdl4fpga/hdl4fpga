@@ -181,7 +181,15 @@ architecture scopeiosdr of ulx3s is
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff}]}");   -- vt(7)
 
-	constant sdram : string := "";
+	constant sdram : string := compact(
+		"{" &
+		"   gear      : 1," &
+		"   bank_size : " & natural'image(sdram_ba'length) & "," &
+		"   addr_size : " & natural'image(sdram_a'length)  & "," &
+		"   coln_size : 9," &
+		"   word_size : " & natural'image(sdram_d'length)  & "," &
+		"   byte_size : " & natural'image(sdram_d'length/sdram_dqm'length) & "," &
+		"}");
 	constant gear          : natural := hdo(sdram)**".gear";
 	constant bank_size     : natural := hdo(sdram)**".bank_size";
 	constant addr_size     : natural := hdo(sdram)**".addr_size";
@@ -506,6 +514,7 @@ begin
 		sdram_tcp    => 1.0/200.0e6,
 		mark         => MT48LC256MA27E ,
 		timing_id => video_params.timing,
+		sdram     => sdram,
 		layout         => layout)
 	port map (
 		-- tp => tp,
@@ -740,7 +749,7 @@ begin
 			FEEDBK_PATH      => "CLKOS",
 			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => adc1clkos_div-1,
 			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
-			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
+			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
 			CLKOP_ENABLE     => "DISABLED", CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
 			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
 			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
@@ -765,6 +774,7 @@ begin
 			ENCLKOS3  => '0',
 			CLKOS     => adc1_clkos,
 			CLKOS2    => adc1_clkos2,
+			CLKOS3    => ctlr_clk,
 			LOCK      => adc1_lock,
 			INTLOCK   => open,
 			REFCLK    => open,

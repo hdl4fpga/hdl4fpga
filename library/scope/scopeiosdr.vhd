@@ -36,9 +36,10 @@ use hdl4fpga.sdram_db.all;
 
 entity scopeiosdr is
 	generic (
+
 		profile      : natural;
-		sdram        : string := "";
-		timing_id   : videotiming_ids;
+		sdram        : string := "{}";
+		timing_id    : videotiming_ids;
 		layout       : string;
 		sdram_tcp    : real;
 		mark         : sdram_chips;
@@ -64,7 +65,6 @@ entity scopeiosdr is
 
 		input_clk     : in  std_logic;
 		input_ena     : in  std_logic := '1';
-		input_dv      : in  std_logic_vector(0 to hdo(layout)**".inputs=0.");
 		input_data    : in  std_logic_vector;
 
 		ctlr_clk      : in  std_logic;
@@ -98,14 +98,14 @@ entity scopeiosdr is
 		ctlrphy_a     : out std_logic_vector(hdo(sdram)**".addr_size=1."-1 downto 0);
 		ctlrphy_dqst  : out std_logic_vector(hdo(sdram)**".gear=1."-1 downto 0);
 		ctlrphy_dqso  : out std_logic_vector(hdo(sdram)**".gear=1."-1 downto 0);
-		ctlrphy_dmi   : in  std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size"/hdo(sdram)**".byte_size"-1 downto 0) := (others => '-');
-		ctlrphy_dmo   : out std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size"/hdo(sdram)**".byte_size"-1 downto 0);
+		ctlrphy_dmi   : in  std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size=1."/hdo(sdram)**".byte_size=1."-1 downto 0) := (others => '-');
+		ctlrphy_dmo   : out std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size=1."/hdo(sdram)**".byte_size=1."-1 downto 0);
 		ctlrphy_dqt   : out std_logic_vector(hdo(sdram)**".gear=1."-1 downto 0);
-		ctlrphy_dqi   : in  std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size"-1 downto 0);
-		ctlrphy_dqo   : out std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size"-1 downto 0);
+		ctlrphy_dqi   : in  std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size=1."-1 downto 0) := (others => '-');
+		ctlrphy_dqo   : out std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size=1."-1 downto 0);
 		ctlrphy_dqv   : out std_logic_vector(hdo(sdram)**".gear=1."-1 downto 0);
 		ctlrphy_sto   : out std_logic_vector(hdo(sdram)**".gear=1."-1 downto 0);
-		ctlrphy_sti   : in  std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size"/hdo(sdram)**".byte_size"-1 downto 0);
+		ctlrphy_sti   : in  std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size=1."/hdo(sdram)**".byte_size=1."-1 downto 0) := (others => '-');
 		video_clk     : in  std_logic;
 		video_shift_clk :  in std_logic := '-';
 		video_pixel   : buffer std_logic_vector;
@@ -140,13 +140,13 @@ entity scopeiosdr is
 		3 => (ddro => 3, dmaio => 2, sodata => 1, adapter => 1)); -- NUHS3ADSP BOARD 166 MHz
 
 	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length));
-	constant gear          : natural := hdo(sdram)**".gear";
-	constant bank_size     : natural := hdo(sdram)**".bank_size";
-	constant addr_size     : natural := hdo(sdram)**".addr_size";
-	constant coln_size     : natural := hdo(sdram)**".coln_size";
+	constant gear          : natural := hdo(sdram)**".gear=1.";
+	constant bank_size     : natural := hdo(sdram)**".bank_size=1.";
+	constant addr_size     : natural := hdo(sdram)**".addr_size=1.";
+	constant coln_size     : natural := hdo(sdram)**".coln_size=1.";
 	constant coln_bits     : natural := coln_size-(unsigned_num_bits(gear)-1);
-	constant word_size     : natural := hdo(sdram)**".word_size";
-	constant byte_size     : natural := hdo(sdram)**".byte_size";
+	constant word_size     : natural := hdo(sdram)**".word_size=1.";
+	constant byte_size     : natural := hdo(sdram)**".byte_size=1.";
 	constant inputs        : natural := hdo(layout)**".inputs";
 	constant max_delay     : natural := hdo(layout)**".max_delay=16384.";
 	constant min_storage   : natural := hdo(layout)**".min_storage=256."; -- samples, storage size will be equal or larger than this
@@ -225,7 +225,8 @@ architecture beh of scopeiosdr is
 	signal rgtr_lv        : std_logic;
 	signal rgtr_len       : std_logic_vector(8-1 downto 0);
 	signal rgtr_dv        : std_logic;
-	signal rgtr_data      : std_logic_vector(0 to max(32,ctlrphy_dqi'length)-1);
+	signal rgtr_data      : std_logic_vector(0 to 32-1);
+	-- signal rgtr_data      : std_logic_vector(0 to max(32,ctlrphy_dqi'length)-1);
 	-- signal rgtr_revs      : std_logic_vector(rgtr_data'length-1 downto 0);	-- Xilinx ISE does'nt allow to use reverse_range
 	signal rgtr_revs      : std_logic_vector(rgtr_data'reverse_range);
 	signal data_frm       : std_logic;
@@ -543,11 +544,11 @@ begin
 			buffer_size => 1024)
 		port map (
 			stream_clk  => input_clk,
-			stream_frm  => '-',
-			stream_irdy => '-',
+			stream_frm  => '1', --'-',
+			stream_irdy => input_ena,
 			stream_trdy => open,
 			stream_data => input_data,
-			base_addr   => (0 to 0 => '-'),
+			base_addr   => (0 to 0 => '0'),
 			dmacfg_clk  => sio_clk,
 			dmacfg_req  => capturedmacfg_req,
 			dmacfg_rdy  => capturedmacfg_rdy,
@@ -573,12 +574,12 @@ begin
 			signal metaram_irdy   : std_logic;
 			signal metaram_data   : std_logic_vector(so_data'range);
 
-			signal dmasin_irdy    : std_logic;
 			signal dmadata_irdy   : std_logic;
 			signal dmadata_trdy   : std_logic;
 			signal datactlr_irdy  : std_logic;
 			signal dmaaddr_irdy   : std_logic;
 			signal dmaaddr_trdy   : std_logic;
+			signal dmaio_irdy    : std_logic;
 			signal dmaio_trdy     : std_logic;
 			signal dmaio_next     : std_logic;
 			signal dmaioaddr_irdy : std_logic;
@@ -714,17 +715,16 @@ begin
 			debug_dmaio_req    <= dmaio_req    xor  to_stdulogic(to_bit(dmaio_rdy));
 			debug_dmaio_rdy    <= dmaio_req    xnor to_stdulogic(to_bit(dmaio_rdy));
 
-			dmasin_irdy <= to_stdulogic(to_bit(dmaioaddr_irdy));
+			dmaio_irdy <= dmaioaddr_irdy;
 			sio_dmahdsk_e : entity hdl4fpga.sio_dmahdsk
 			port map (
 				dmacfg_clk  => sio_clk,
 				ctlr_inirdy => ctlr_inirdy,
-				dmaio_irdy  => dmasin_irdy,
+				dmaio_irdy  => dmaio_irdy,
 				dmaio_trdy  => dmaio_trdy,
 
 				dmacfg_req  => dmacfgio_req,
 				dmacfg_rdy  => dmacfgio_rdy,
-
 
 				ctlr_clk    => ctlr_clk,
 				dma_req     => dmaio_req,
@@ -884,7 +884,6 @@ begin
 					dmadataout_e : entity hdl4fpga.fifo
 					generic map (
 						max_depth  => (dataout_size/(ctlr_di'length/siobyte_size)),
-						-- async_mode => false,
 						latency    => 0,
 						check_sov  => false,
 						check_dov  => true)
@@ -1007,7 +1006,6 @@ begin
 
 				ctlr_inirdy  => ctlr_inirdy,
 				ctlr_refreq  => burst_ref,
-				-- ctlr_refreq  => ctlr_refreq,
 
 				ctlr_frm     => ctlr_frm,
 				ctlr_trdy    => ctlr_trdy,
@@ -1069,8 +1067,7 @@ begin
 				chip         => mark,
 				tcp          => sdram_tcp,
 
-				-- latencies    => phy_latencies,
-				latencies => (others => 0),
+				latencies => ecp5g1_latencies,
 				gear         => gear,
 				bank_size    => bank_size,
 				addr_size    => addr_size,

@@ -90,6 +90,8 @@ WORK__ulx4m_ls__graphics = $(LIB_WORK)/ulx4m_ls/graphics.dat
 WORK__ulx4m_ls = $(LIB_WORK)/ulx4m_ls/_primary.dat
 WORK__ulx4m_ld__graphics = $(LIB_WORK)/ulx4m_ld/graphics.dat
 WORK__ulx4m_ld = $(LIB_WORK)/ulx4m_ld/_primary.dat
+WORK__ulx3s_scopeiosdr_structure_md = $(LIB_WORK)/ulx3s_scopeiosdr_structure_md/_primary.dat
+WORK__ulx3s_scopeiosdr_md = $(LIB_WORK)/ulx3s_scopeiosdr_md/_primary.dat
 WORK__ulx3s_scopeio_structure_md = $(LIB_WORK)/ulx3s_scopeio_structure_md/_primary.dat
 WORK__ulx3s_scopeio_md = $(LIB_WORK)/ulx3s_scopeio_md/_primary.dat
 WORK__ulx3s_graphics_structure_md = $(LIB_WORK)/ulx3s_graphics_structure_md/_primary.dat
@@ -124,6 +126,7 @@ WORK__testbench__mul_ser_tb = $(LIB_WORK)/testbench/mul_ser_tb.dat
 WORK__testbench__nuhs3adsp_scopeio = $(LIB_WORK)/testbench/nuhs3adsp_scopeio.dat
 WORK__testbench__s3estarter_graphics = $(LIB_WORK)/testbench/s3estarter_graphics.dat
 WORK__testbench__s3estarter_scopeio = $(LIB_WORK)/testbench/s3estarter_scopeio.dat
+WORK__testbench__ulx3s_scopeiosdr = $(LIB_WORK)/testbench/ulx3s_scopeiosdr.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__s3estarter_scopeio_structure_md = $(LIB_WORK)/s3estarter_scopeio_structure_md/_primary.dat
 WORK__s3estarter_scopeio_md = $(LIB_WORK)/s3estarter_scopeio_md/_primary.dat
@@ -189,6 +192,8 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__ulx4m_ls) \
     $(WORK__ulx4m_ld__graphics) \
     $(WORK__ulx4m_ld) \
+    $(WORK__ulx3s_scopeiosdr_structure_md) \
+    $(WORK__ulx3s_scopeiosdr_md) \
     $(WORK__ulx3s_scopeio_structure_md) \
     $(WORK__ulx3s_scopeio_md) \
     $(WORK__ulx3s_graphics_structure_md) \
@@ -223,6 +228,7 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__testbench__nuhs3adsp_scopeio) \
     $(WORK__testbench__s3estarter_graphics) \
     $(WORK__testbench__s3estarter_scopeio) \
+    $(WORK__testbench__ulx3s_scopeiosdr) \
     $(WORK__testbench) \
     $(WORK__s3estarter_scopeio_structure_md) \
     $(WORK__s3estarter_scopeio_md) \
@@ -738,8 +744,9 @@ $(WORK__ulx3s) : ../../boards/ULX3S/common/ulx3s.vhd \
 
 $(WORK__ulx3s__scopeiosdr) : ../../boards/ULX3S/apps/scopeiosdr.vhd \
 		$(HDL4FPGA__ecp5_ogbx) \
-		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__dvi) \
+		$(HDL4FPGA__ecp5_sdrphy) \
+		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__scopeiosdr) \
 		$(HDL4FPGA__scopeio_rgtrhzaxis) \
 		$(HDL4FPGA__sio_sin) \
@@ -762,7 +769,7 @@ $(WORK__ulx3s__scopeiosdr) : ../../boards/ULX3S/apps/scopeiosdr.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../boards/ULX3S/apps/scopeiosdr.vhd
+	$(VCOM) -2002 ../../boards/ULX3S/apps/scopeiosdr.vhd
 
 $(WORK__ulx3s__scopeio) : ../../boards/ULX3S/apps/scopeio.vhd \
 		$(HDL4FPGA__ecp5_ogbx) \
@@ -878,6 +885,25 @@ $(WORK__ulx3s_scopeio_structure_md) : /home/msagre/work/hdl4fpga/boards/ULX3S/te
 		$(IEEE__std_logic_1164) \
 		$(WORK__testbench)
 	$(VCOM) -2002 /home/msagre/work/hdl4fpga/boards/ULX3S/testbenches/scopeio.vhd
+
+$(WORK__testbench__ulx3s_scopeiosdr) \
+$(WORK__ulx3s_scopeiosdr_md) \
+$(WORK__ulx3s_scopeiosdr_structure_md) : ../../boards/ULX3S/testbenches/scopeiosdr.vhd \
+		$(WORK__ipoe_tb) \
+		$(WORK__usb_tb) \
+		$(WORK__hdlc_tb) \
+		$(VERILOG__vl_types) \
+		$(MICRON__mt48lc32m16a2) \
+		$(WORK__ulx3s) \
+		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__base) \
+		$(WORK__testbench__ulx3s_scopeio) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(WORK__testbench)
+	$(VCOM) -2002  ../../boards/ULX3S/testbenches/scopeiosdr.vhd
 
 $(WORK__ulx4m_ld) : ../../boards/ULX4M_LD/common/ulx4m_ld.vhd \
 		$(IEEE__std_logic_arith) \
