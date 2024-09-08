@@ -523,7 +523,7 @@ begin
 		signal dev_gnt        : std_logic_vector(0 to 2-1);
 		signal dmacfg_req     : std_logic_vector(0 to 2-1);
 		signal dmacfg_rdy     : std_logic_vector(0 to 2-1);
-		signal dev_di_dv  : std_logic_vector(dev_gnt'range);
+		signal dev_di_dv      : std_logic_vector(dev_gnt'range);
 		signal dev_len        : std_logic_vector(0 to 2*dmactlr_len'length-1);
 		signal dev_addr       : std_logic_vector(0 to 2*dmactlr_addr'length-1);
 		signal dev_we         : std_logic_vector(0 to 2-1);
@@ -532,6 +532,8 @@ begin
 		signal dev_rdy        : std_logic_vector(dev_gnt'range);
 		signal dma_do         : std_logic_vector(ctlr_do'range);
 		signal dma_do_dv      : std_logic_vector(dev_gnt'range);
+		alias  devcapture_di_dv : std_logic is dev_di_dv(0);
+		alias  devsidata_di_dv  : std_logic is dev_di_dv(0);
 		alias  dmacapture_do_dv : std_logic is dma_do_dv(0);
 		alias  dmaio_do_dv    : std_logic is dma_do_dv(1);
 
@@ -552,7 +554,7 @@ begin
 			signal dmasin_irdy    : std_logic;
 			signal dmadata_irdy   : std_logic;
 			signal dmadata_trdy   : std_logic;
-			signal rgtr_dmadata   : std_logic_vector(ctlr_di'length-1 downto 0);
+			signal si_dmadata   : std_logic_vector(ctlr_di'length-1 downto 0);
 			signal datactlr_irdy  : std_logic;
 			signal dmaaddr_irdy   : std_logic;
 			signal dmaaddr_trdy   : std_logic;
@@ -675,8 +677,7 @@ begin
 				dmaio_next <= dmaio_trdy;
 
 				dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0'));
-				rgtr_dmadata <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmadata'length)),8);
-
+				si_dmadata <= reverse(std_logic_vector(resize(unsigned(rgtr_data), si_dmadata'length)),8);
 
 				stream_e : entity hdl4fpga.sdram_stream is
 				generic map (
@@ -697,29 +698,8 @@ begin
 					dma_addr    => dmacapture_addr,
 					ctlr_inirdy => ctlr_inirdy
 					ctlr_clk    => ctlr_clk,
-					ctlr_do_dv  => '-',
-					ctlr_do     => input_do);
-
-				dmadata_e : entity hdl4fpga.fifo
-				generic map (
-					max_depth  => fifodata_depth,
-					async_mode => true,
-					latency    => latencies_tab(profile).dmaio,
-					check_sov  => true,
-					check_dov  => true)
-				port map (
-					src_clk    => input_clk,
-					src_frm    => ctlr_inirdy,
-					src_irdy   => caputure_irdy,
-					src_trdy   => caputure_trdy,
-					src_data   => caputure_data,
-
-					dst_clk    => ctlr_clk,
-					dst_irdy   => ctlr_di_rdy,
-					dst_trdy   => ctlr_di_req,
-					dst_data   => ctlr_di);
-				ctlr_di_dv <= ctlr_di_req;
-				ctlr_di <= input_do when 
+					ctlr_do_dv  => devcapture_di_dv,
+					ctlr_do     => capture_do);
 
 				base_addr_e : entity hdl4fpga.sio_rgtr
 				generic map (
@@ -1051,7 +1031,7 @@ begin
 				di  => dev_gnt,
 				do  => gnt_dv);
 			dev_do_dv <= (dev_gnt'range => ctlr_do_dv(0)) and gnt_dv;
-			dev_di_dv <= (dev_gnt'range => ctlr_do_dv(0)) and gnt_dv;
+			dev_di_dv <= (dev_gnt'range => ctlr_di_req) and gnt_dv;
 
 			dmadv_e : entity hdl4fpga.latency
 			generic map (
@@ -1085,6 +1065,8 @@ begin
 		sdrctlr_b : block
 			signal inirdy    : std_logic;
 		begin
+			ctlr_di_dv <= ctlr_di_req;
+			ctlr_di    <= capture_do when devcapture_di_dv='1' else si_dmadata;
 			sdrctlr_e : entity hdl4fpga.sdram_ctlr
 			generic map (
 				chip         => mark,
