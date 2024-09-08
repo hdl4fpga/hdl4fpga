@@ -520,18 +520,18 @@ begin
 		signal dmacapture_len   : std_logic_vector(dmactlr_len'range);
 		signal dmacapture_addr  : std_logic_vector(dmactlr_addr'range);
 
+		signal dev_gnt        : std_logic_vector(0 to 2-1);
 		signal dmacfg_req     : std_logic_vector(0 to 2-1);
 		signal dmacfg_rdy     : std_logic_vector(0 to 2-1);
+		signal dev_di_dv  : std_logic_vector(dev_gnt'range);
 		signal dev_len        : std_logic_vector(0 to 2*dmactlr_len'length-1);
 		signal dev_addr       : std_logic_vector(0 to 2*dmactlr_addr'length-1);
 		signal dev_we         : std_logic_vector(0 to 2-1);
 
-		signal dev_gnt        : std_logic_vector(0 to 2-1);
 		signal dev_req        : std_logic_vector(dev_gnt'range);
 		signal dev_rdy        : std_logic_vector(dev_gnt'range);
 		signal dma_do         : std_logic_vector(ctlr_do'range);
 		signal dma_do_dv      : std_logic_vector(dev_gnt'range);
-		signal dma_di_dv      : std_logic_vector(dev_gnt'range);
 		alias  dmacapture_do_dv : std_logic is dma_do_dv(0);
 		alias  dmaio_do_dv    : std_logic is dma_do_dv(1);
 
@@ -1051,6 +1051,7 @@ begin
 				di  => dev_gnt,
 				do  => gnt_dv);
 			dev_do_dv <= (dev_gnt'range => ctlr_do_dv(0)) and gnt_dv;
+			dev_di_dv <= (dev_gnt'range => ctlr_do_dv(0)) and gnt_dv;
 
 			dmadv_e : entity hdl4fpga.latency
 			generic map (
