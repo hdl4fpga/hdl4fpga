@@ -749,8 +749,8 @@ begin
 			FEEDBK_PATH      => "CLKOS",
 			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => adc1clkos_div-1,
 			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
-			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
-			CLKOP_ENABLE     => "DISABLED", CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
+			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => adc1clkos_div-1,
+			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
 			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
 			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
 			OUTDIVIDER_MUXD  => "DIVD",
@@ -760,7 +760,8 @@ begin
 
 			CLKI_DIV         => adc1clki_div,
 			CLKOS_DIV        => adc1clkos_div,
-			CLKOS2_DIV       => adc1clkos2_div)
+			CLKOS2_DIV       => adc1clkos2_div,
+			CLKOS3_DIV       => 3)
 		port map (
 			clki      => video_clk,
 			CLKFB     => adc1_clkos,
