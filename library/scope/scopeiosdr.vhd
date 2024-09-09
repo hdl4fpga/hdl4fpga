@@ -541,7 +541,7 @@ begin
 	begin
 		stream_e : entity hdl4fpga.sdram_stream
 		generic map (
-			buffer_size => 1024)
+			buffer_size => 8)
 		port map (
 			stream_clk  => input_clk,
 			stream_frm  => '1', --'-',
@@ -556,7 +556,7 @@ begin
 			dma_rdy     => capturedma_rdy,
 			dma_len     => capturedma_len,
 			dma_addr    => capturedma_addr,
-			ctlr_inirdy => ctlr_inirdy,
+			ctlr_inirdy => '1', --ctlr_inirdy,
 			ctlr_clk    => ctlr_clk,
 			ctlr_do_dv  => capturedev_di_dv,
 			ctlr_do     => capture_ctlrdo);

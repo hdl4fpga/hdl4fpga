@@ -429,8 +429,8 @@ begin
 			max_input <= no_inputs;
 		end process;
 
-		process(input_clk)
-			variable cntr : unsigned(input_chni'range);
+		process(input_enas, input_clk)
+			variable cntr : unsigned(input_chni'range) := (others => '0');
 		begin
 			if rising_edge(input_clk) then
 				if input_ena='1' then
@@ -786,7 +786,7 @@ begin
 
 		process (input_clk)
 			constant n    : natural := 16;
-			variable cntr : unsigned(0 to unsigned_num_bits(n-1)-1);
+			variable cntr : unsigned(0 to unsigned_num_bits(n-1)-1) := (others => '0');
 		begin
 			if rising_edge(input_clk) then
 				if input_lck='0' then

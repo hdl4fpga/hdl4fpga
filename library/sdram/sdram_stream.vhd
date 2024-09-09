@@ -40,9 +40,9 @@ entity sdram_stream is
 		stream_data : in  std_logic_vector;
 		base_addr   : in   std_logic_vector;
 		dmacfg_clk  : in   std_logic;
-		dmacfg_req  : buffer std_logic;
+		dmacfg_req  : buffer std_logic := '0';
 		dmacfg_rdy  : in  std_logic;
-		dma_req     : buffer std_logic;
+		dma_req     : buffer std_logic := '0';
 		dma_rdy     : in  std_logic;
 		dma_len     : buffer std_logic_vector;
 		dma_addr    : buffer std_logic_vector;
