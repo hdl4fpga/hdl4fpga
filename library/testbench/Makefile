@@ -2035,6 +2035,7 @@ $(HDL4FPGA__scopeiosdr__beh) : ../scope/scopeiosdr.vhd \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__sio_rgtr) \
 		$(HDL4FPGA__txn_buffer) \
+		$(HDL4FPGA__sdram_stream) \
 		$(HDL4FPGA__dvi) \
 		$(HDL4FPGA__scopeio_video) \
 		$(HDL4FPGA__scopeio_amp) \

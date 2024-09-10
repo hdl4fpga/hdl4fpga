@@ -105,7 +105,6 @@ begin
 	begin
 		if rising_edge(dmacfg_clk) then
 			if ctlr_inirdy='0' then
-						dmacfg_req <= not dmacfg_rdy;
 				wm_rdy <= wm_req;
 				state := s_idle;
 			elsif (wm_rdy xor wm_req)='1' then
@@ -113,28 +112,25 @@ begin
 				when s_idle =>
 					if (dmacfg_req xor dmacfg_rdy)='0' then
 						if (dma_req xor dma_rdy)='0' then
-							dma_req <= not dma_rdy;
-							state := s_transfer;
-						end if;
-					end if;
-				when s_transfer =>
-					if (dma_req xor dma_rdy)='0' then
-						if (dmacfg_req xor dmacfg_rdy)='0' then
 							dmacfg_req <= not dmacfg_rdy;
 							state := s_config;
 						end if;
 					end if;
 				when s_config =>
 					if (dmacfg_req xor dmacfg_rdy)='0' then
+						dma_req <= not dma_rdy;
+						state := s_transfer;
+					end if;
+				when s_transfer =>
+					if (dma_req xor dma_rdy)='0' then
+						if (dmacfg_req xor dmacfg_rdy)='0' then
+							state := s_idle;
+						end if;
 						wm_rdy <= wm_req;
-						state := s_idle;
 					end if;
 				end case;
 			else
 				if stream_frm='0' then
-					if (dmacfg_req xor dmacfg_rdy)='0' then
-						dmacfg_req <= not dmacfg_rdy;
-					end if;
 				end if;
 				state := s_idle;
 			end if;
