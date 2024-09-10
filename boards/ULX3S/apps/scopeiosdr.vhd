@@ -53,6 +53,14 @@ architecture scopeiosdr of ulx3s is
 	-- constant sdram_speed  : sdram_speeds := sdram225MHz; 
 	--------------------------------------
 
+	constant adc1clkref_freq : real := 64.0e6;
+	constant adc1clki_div    : natural := 5;
+	constant adc1clkos_div   : natural := 32;
+	constant adc1clkos2_div  : natural := 25;
+	constant adc1clkos_freq  : real := adc1clkref_freq/real(adc1clki_div);
+	constant adc1clkos2_freq : real := (real(adc1clkos_div)*adc1clkref_freq)/(real(adc1clkos2_div)*real(adc1clki_div));
+	constant sdram_freq      : real := (real(adc1clkos_div)*adc1clkref_freq)/(real(3)*real(adc1clki_div));
+
 	constant usb_oversampling : natural := 3;
 
 	constant video_params : video_record := videoparam(video_mode, clk25mhz_freq);
@@ -511,7 +519,7 @@ begin
 	scopeio_e : entity hdl4fpga.scopeiosdr
 	generic map (
 		profile => 0,
-		sdram_tcp    => 1.0/200.0e6,
+		sdram_tcp    => 1.0/sdram_freq,
 		mark         => MT48LC256MA27E ,
 		timing_id => video_params.timing,
 		sdram     => sdram,
@@ -526,12 +534,25 @@ begin
 		input_clk   => input_clk,
 		input_ena   => input_enas,
 		input_data  => input_samples,
-		ctlr_clk    => ctlr_clk,
-		ctlr_rst    => sdrsys_rst,
-		ctlr_bl     => "000",
-		ctlr_cl     => sdram_params.cl,
 
+		ctlr_clk     => ctlr_clk,
+		ctlr_rst     => sdrsys_rst,
+		ctlr_bl      => "000",
+		ctlr_cl      => sdram_params.cl,
+
+		ctlrphy_rst  => ctlrphy_rst,
+		ctlrphy_cke  => ctlrphy_cke,
+		ctlrphy_cs   => ctlrphy_cs,
+		ctlrphy_ras  => ctlrphy_ras,
+		ctlrphy_cas  => ctlrphy_cas,
+		ctlrphy_we   => ctlrphy_we,
+		ctlrphy_b    => ctlrphy_b,
+		ctlrphy_a    => ctlrphy_a,
+		ctlrphy_dmo  => ctlrphy_dmo,
 		ctlrphy_dqi  => ctlrphy_dqi,
+		ctlrphy_dqt  => ctlrphy_dqt,
+		ctlrphy_dqo  => ctlrphy_dqo,
+		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
 		video_clk   => video_clk,
 		video_pixel => video_pixel,
@@ -729,6 +750,7 @@ begin
 
 		attribute FREQUENCY_PIN_CLKOS  of adc1_i : label is ftoa( adc1clkos_freq/1.0e6, 10);
 		attribute FREQUENCY_PIN_CLKOS2 of adc1_i : label is ftoa(adc1clkos2_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOS3 of adc1_i : label is ftoa(sdram_freq/1.0e6, 10);
 
 	begin
 
@@ -736,7 +758,8 @@ begin
 		report CR &
 			"MAX1112X" & CR &
 			"ADC1_CLKOS     : " & adc1_i'FREQUENCY_PIN_CLKOS  & " MHz " & CR &
-			"ADC1_CLKOS2    : " & adc1_i'FREQUENCY_PIN_CLKOS2 & " MHz "
+			"ADC1_CLKOS2    : " & adc1_i'FREQUENCY_PIN_CLKOS2 & " MHz " & CR &
+			"SDRAM_CLKOS3   : " & adc1_i'FREQUENCY_PIN_CLKOS3 & " MHz "
 		severity NOTE;
 
 		adc1_i : EHXPLLL
@@ -783,6 +806,7 @@ begin
 		
 		adc_clk   <= adc1_clkos2;
 		input_clk <= adc1_clkos2;
+		sdrsys_rst <= not adc1_lock;
 
 		process (input_clk)
 			constant n    : natural := 16;

@@ -31,6 +31,7 @@ use hdl4fpga.videopkg.all;
 
 entity sdram_stream is
 	generic (
+		byte_lanes  : natural := 2;
 		buffer_size : natural);
 	port (
 		stream_clk  : in  std_logic;
@@ -64,6 +65,7 @@ architecture def of sdram_stream is
 	signal wm_req : std_logic := '0';
 	signal wm_rdy : std_logic := '0';
 
+	constant xxx : natural := unsigned_num_bits(byte_lanes-1);
 begin
 
 	serdes_e : entity hdl4fpga.serlzr
@@ -92,6 +94,7 @@ begin
 		src_irdy => fifo_irdy,
 		src_data => fifo_data,
 
+		dst_frm  => ctlr_inirdy,
 		dst_clk  => ctlr_clk,
 		dst_trdy => ctlr_do_dv,
 		dst_data => ctlr_do);
@@ -102,6 +105,7 @@ begin
 	begin
 		if rising_edge(dmacfg_clk) then
 			if ctlr_inirdy='0' then
+						dmacfg_req <= not dmacfg_rdy;
 				wm_rdy <= wm_req;
 				state := s_idle;
 			elsif (wm_rdy xor wm_req)='1' then
@@ -128,6 +132,9 @@ begin
 				end case;
 			else
 				if stream_frm='0' then
+					if (dmacfg_req xor dmacfg_rdy)='0' then
+						dmacfg_req <= not dmacfg_rdy;
+					end if;
 				end if;
 				state := s_idle;
 			end if;
@@ -140,8 +147,9 @@ begin
 			variable level : unsigned(0 to unsigned_num_bits(buffer_size-1)) := (others => '0');
 		begin
 			if rising_edge(stream_clk) then
+				if ctlr_inirdy='1' then
 				if stream_frm='1' then
-					if stream_irdy='1' then
+					if fifo_irdy='1' then
 						level := level + 1;
 					end if;
 					if level >= water_mark then
@@ -157,6 +165,8 @@ begin
 					dma_addr <= std_logic_vector(unsigned(dma_addr) + unsigned(dma_len));
 					dma_len  <= std_logic_vector(level);
 					wm_req <= not wm_rdy;
+				end if;
+					dma_addr <= (dma_addr'range => '0');
 				end if;
 			end if;
 		end process;

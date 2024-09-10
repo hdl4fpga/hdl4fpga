@@ -556,7 +556,7 @@ begin
 			dma_rdy     => capturedma_rdy,
 			dma_len     => capturedma_len,
 			dma_addr    => capturedma_addr,
-			ctlr_inirdy => '1', --ctlr_inirdy,
+			ctlr_inirdy => ctlr_inirdy, --'1', --ctlr_inirdy,
 			ctlr_clk    => ctlr_clk,
 			ctlr_do_dv  => capturedev_di_dv,
 			ctlr_do     => capture_ctlrdo);
