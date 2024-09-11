@@ -107,7 +107,29 @@ begin
 			if ctlr_inirdy='0' then
 				wm_rdy <= wm_req;
 				state := s_idle;
-			elsif (wm_rdy xor wm_req)='1' then
+			else
+				case states is
+				when s_init =>
+					if stream_frm='1' then
+						if (dmacfg_req xor dmacfg_rdy)='0' then
+							dmacfg_req <= not dmacfg_rdy;
+							state := s_ready;
+						end if;
+					end if;
+				when s_ready =>
+					if (wm_rdy xor wm_req)='1' then
+						if (dmacfg_req xor dmacfg_rdy)='0' then
+							dma_req <= not dma_rdy;
+						end if;
+					end if;
+				when s_transfer =>
+					if (dma_req xor dma_rdy)='0' then
+						state := s_idle;
+						end if;
+						wm_rdy <= wm_req;
+					end if;
+				end case;
+				end case;
 				case state is
 				when s_idle =>
 					if (dmacfg_req xor dmacfg_rdy)='0' then
@@ -130,8 +152,6 @@ begin
 					end if;
 				end case;
 			else
-				if stream_frm='0' then
-				end if;
 				state := s_idle;
 			end if;
 		end if;
