@@ -100,13 +100,13 @@ begin
 		dst_data => ctlr_do);
 
 	dma_p : process(dmacfg_clk)
-		type states is (s_idle, s_transfer, s_config);
+		type states is (s_init, s_ready, s_transfer);
 		variable state : states;
 	begin
 		if rising_edge(dmacfg_clk) then
 			if ctlr_inirdy='0' then
 				wm_rdy <= wm_req;
-				state := s_idle;
+				state := s_init;
 			else
 				case states is
 				when s_init =>
@@ -124,35 +124,15 @@ begin
 					end if;
 				when s_transfer =>
 					if (dma_req xor dma_rdy)='0' then
-						state := s_idle;
-						end if;
+						dmacfg_req <= not dmacfg_rdy;
 						wm_rdy <= wm_req;
-					end if;
-				end case;
-				end case;
-				case state is
-				when s_idle =>
-					if (dmacfg_req xor dmacfg_rdy)='0' then
-						if (dma_req xor dma_rdy)='0' then
-							dmacfg_req <= not dmacfg_rdy;
-							state := s_config;
+						if stream_frm='1' then
+							state := s_ready;
+						elsif level < 0 then
+							state := s_init;
 						end if;
 					end if;
-				when s_config =>
-					if (dmacfg_req xor dmacfg_rdy)='0' then
-						dma_req <= not dma_rdy;
-						state := s_transfer;
-					end if;
-				when s_transfer =>
-					if (dma_req xor dma_rdy)='0' then
-						if (dmacfg_req xor dmacfg_rdy)='0' then
-							state := s_idle;
-						end if;
-						wm_rdy <= wm_req;
-					end if;
 				end case;
-			else
-				state := s_idle;
 			end if;
 		end if;
 	end process;
