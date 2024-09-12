@@ -66,6 +66,7 @@ architecture def of sdram_stream is
 	signal wm_rdy : std_logic := '0';
 
 	constant xxx : natural := unsigned_num_bits(byte_lanes-1);
+	signal level : unsigned(0 to unsigned_num_bits(buffer_size-1)) := (others => '0');
 begin
 
 	serdes_e : entity hdl4fpga.serlzr
@@ -108,10 +109,11 @@ begin
 				wm_rdy <= wm_req;
 				state := s_init;
 			else
-				case states is
+				case state is
 				when s_init =>
 					if stream_frm='1' then
 						if (dmacfg_req xor dmacfg_rdy)='0' then
+							dma_addr <= (dma_addr'range => '0');
 							dmacfg_req <= not dmacfg_rdy;
 							state := s_ready;
 						end if;
@@ -119,6 +121,7 @@ begin
 				when s_ready =>
 					if (wm_rdy xor wm_req)='1' then
 						if (dmacfg_req xor dmacfg_rdy)='0' then
+							dma_addr <= std_logic_vector(unsigned(dma_addr) + unsigned(dma_len));
 							dma_req <= not dma_rdy;
 						end if;
 					end if;
@@ -137,34 +140,27 @@ begin
 		end if;
 	end process;
 	
-	stream_b : block
+	process (stream_clk)
 	begin
-		process (stream_clk)
-			variable level : unsigned(0 to unsigned_num_bits(buffer_size-1)) := (others => '0');
-		begin
-			if rising_edge(stream_clk) then
-				if ctlr_inirdy='1' then
-				if stream_frm='1' then
-					if fifo_irdy='1' then
-						level := level + 1;
-					end if;
-					if level >= water_mark then
-						dma_addr <= std_logic_vector(unsigned(dma_addr) + unsigned(dma_len));
-						dma_len  <= std_logic_vector(to_unsigned(water_mark, dma_len'length));
-						level    := level - water_mark;
-						if (wm_rdy xor wm_req)='1' then
-							-- overflow;
+		if rising_edge(stream_clk) then
+			if ctlr_inirdy='1' then
+    			if stream_frm='1' then
+    				if level >= water_mark then
+    					dma_len <= std_logic_vector(resize(level-1, dma_len'length));
+    					wm_req <= not wm_rdy;
+    				end if;
+    				if level >= water_mark then
+						if stream_irdy='1' then
+							level <= level + 1;
 						end if;
-						wm_req <= not wm_rdy;
-					end if;
-				elsif level > 0 then
-					dma_addr <= std_logic_vector(unsigned(dma_addr) + unsigned(dma_len));
-					dma_len  <= std_logic_vector(level);
-					wm_req <= not wm_rdy;
-				end if;
-					dma_addr <= (dma_addr'range => '0');
-				end if;
-			end if;
-		end process;
-	end block;
+					elsif stream_irdy='1' then
+						level <= level + 1;
+    				end if;
+    			elsif level > 0 then
+    				dma_len <= std_logic_vector(level);
+    				wm_req  <= not wm_rdy;
+    			end if;
+    		end if;
+		end if;
+	end process;
 end;
