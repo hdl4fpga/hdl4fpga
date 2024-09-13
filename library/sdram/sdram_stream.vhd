@@ -58,6 +58,10 @@ end;
 
 architecture def of sdram_stream is
 
+	signal fifo1_irdy : std_logic;
+	signal fifo1_trdy : std_logic;
+	signal fifo1_data : std_logic_vector(stream_data'range);
+
 	signal fifo_irdy : std_logic;
 	signal fifo_trdy : std_logic;
 	signal fifo_data : std_logic_vector(ctlr_do'range);
@@ -66,20 +70,41 @@ architecture def of sdram_stream is
 	signal wm_rdy : std_logic := '0';
 
 	constant xxx : natural := unsigned_num_bits(byte_lanes-1);
-	signal level : unsigned(0 to unsigned_num_bits(buffer_size-1)) := (others => '0');
+	signal level : signed(0 to signed_num_bits(buffer_size)) := (others => '0');
 begin
+
+	fifo1_e : entity hdl4fpga.fifo
+	generic map (
+		max_depth  => 4,
+		async_mode => false,
+		latency    => 1,
+		check_sov  => false,
+		check_dov  => true)
+	port map (
+		src_clk  => stream_clk,
+		src_frm  => stream_frm,
+		src_irdy => stream_irdy,
+		src_data => stream_data,
+
+		dst_frm  => ctlr_inirdy,
+		dst_clk  => ctlr_clk,
+		dst_irdy => fifo1_irdy,
+		dst_trdy => fifo1_trdy,
+		dst_data => fifo1_data);
 
 	serdes_e : entity hdl4fpga.serlzr
 	generic map (
 		fifo_mode => false,
 		lsdfirst  => false)
 	port map (
-		src_clk   => stream_clk,
+		src_clk   => ctlr_clk,
 		src_frm   => stream_frm,
-		src_irdy  => stream_irdy,
-		src_data  => stream_data,
-		dst_clk   => stream_clk,
+		src_irdy  => fifo1_irdy,
+		src_trdy  => fifo1_trdy,
+		src_data  => fifo1_data,
+		dst_clk   => ctlr_clk,
 		dst_irdy  => fifo_irdy,
+		dst_trdy  => fifo_trdy,
 		dst_data  => fifo_data);
 
 	fifo_e : entity hdl4fpga.fifo
@@ -90,9 +115,10 @@ begin
 		check_sov  => false,
 		check_dov  => true)
 	port map (
-		src_clk  => stream_clk,
+		src_clk  => ctlr_clk,
 		src_frm  => stream_frm,
 		src_irdy => fifo_irdy,
+		src_trdy => fifo_trdy,
 		src_data => fifo_data,
 
 		dst_frm  => ctlr_inirdy,
@@ -114,6 +140,7 @@ begin
 					if stream_frm='1' then
 						if (dmacfg_req xor dmacfg_rdy)='0' then
 							dma_addr <= (dma_addr'range => '0');
+							dma_len  <= std_logic_vector(to_unsigned(water_mark-1, dma_len'length));
 							dmacfg_req <= not dmacfg_rdy;
 							state := s_ready;
 						end if;
@@ -121,17 +148,22 @@ begin
 				when s_ready =>
 					if (wm_rdy xor wm_req)='1' then
 						if (dmacfg_req xor dmacfg_rdy)='0' then
-							dma_addr <= std_logic_vector(unsigned(dma_addr) + unsigned(dma_len));
+							dma_addr <= std_logic_vector(unsigned(dma_addr) + water_mark);
 							dma_req <= not dma_rdy;
+							state   := s_transfer;
 						end if;
 					end if;
 				when s_transfer =>
 					if (dma_req xor dma_rdy)='0' then
-						dmacfg_req <= not dmacfg_rdy;
 						wm_rdy <= wm_req;
 						if stream_frm='1' then
-							state := s_ready;
-						elsif level < 0 then
+							dmacfg_req <= not dmacfg_rdy;
+							state  := s_ready;
+						elsif level >= 0 then
+							dmacfg_req <= not dmacfg_rdy;
+							dma_len <= std_logic_vector(resize(level, dma_len'length));
+							state   := s_ready;
+						else
 							state := s_init;
 						end if;
 					end if;
@@ -140,26 +172,28 @@ begin
 		end if;
 	end process;
 	
-	process (stream_clk)
+	process (ctlr_clk)
 	begin
-		if rising_edge(stream_clk) then
+		if rising_edge(ctlr_clk) then
 			if ctlr_inirdy='1' then
     			if stream_frm='1' then
     				if level >= water_mark then
-    					dma_len <= std_logic_vector(resize(level-1, dma_len'length));
     					wm_req <= not wm_rdy;
     				end if;
     				if level >= water_mark then
-						if stream_irdy='1' then
-							level <= level + 1;
+						if fifo_irdy='1' then
+							level <= level-water_mark+1;
+						else
+							level <= level-water_mark;
 						end if;
-					elsif stream_irdy='1' then
+					elsif fifo_irdy='1' then
 						level <= level + 1;
     				end if;
     			elsif level > 0 then
-    				dma_len <= std_logic_vector(level);
     				wm_req  <= not wm_rdy;
     			end if;
+			else
+				level <= (others => '1');
     		end if;
 		end if;
 	end process;
