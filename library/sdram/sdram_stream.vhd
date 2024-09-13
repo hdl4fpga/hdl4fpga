@@ -127,7 +127,7 @@ begin
 		dst_data => ctlr_do);
 
 	dma_p : process(dmacfg_clk)
-		type states is (s_init, s_ready, s_transfer);
+		type states is (s_init, s_ready0, s_ready1, s_transfer);
 		variable state : states;
 	begin
 		if rising_edge(dmacfg_clk) then
@@ -140,29 +140,34 @@ begin
 					if stream_frm='1' then
 						if (dmacfg_req xor dmacfg_rdy)='0' then
 							dma_addr <= (dma_addr'range => '0');
-							dma_len  <= std_logic_vector(to_unsigned(water_mark-1, dma_len'length));
 							dmacfg_req <= not dmacfg_rdy;
-							state := s_ready;
+							state := s_ready1;
 						end if;
 					end if;
-				when s_ready =>
-					if (wm_rdy xor wm_req)='1' then
-						if (dmacfg_req xor dmacfg_rdy)='0' then
-							dma_addr <= std_logic_vector(unsigned(dma_addr) + water_mark);
-							dma_req <= not dma_rdy;
-							state   := s_transfer;
-						end if;
+				when s_ready1 =>
+					if stream_frm='0' then
+						dmacfg_req <= not dmacfg_rdy;
+						state := s_ready0;
+   					elsif (wm_rdy xor wm_req)='1' then
+   						if (dmacfg_req xor dmacfg_rdy)='0' then
+   							dma_req <= not dma_rdy;
+    						state   := s_transfer;
+   						end if;
+					end if;
+				when s_ready0 =>
+   					if (wm_rdy xor wm_req)='1' then
+   						if (dmacfg_req xor dmacfg_rdy)='0' then
+   							dma_req <= not dma_rdy;
+    						state   := s_transfer;
+   						end if;
 					end if;
 				when s_transfer =>
 					if (dma_req xor dma_rdy)='0' then
 						wm_rdy <= wm_req;
 						if stream_frm='1' then
+   							dma_addr <= std_logic_vector(unsigned(dma_addr) + water_mark);
 							dmacfg_req <= not dmacfg_rdy;
-							state  := s_ready;
-						elsif level >= 0 then
-							dmacfg_req <= not dmacfg_rdy;
-							dma_len <= std_logic_vector(resize(level, dma_len'length));
-							state   := s_ready;
+							state := s_ready1;
 						else
 							state := s_init;
 						end if;
@@ -177,6 +182,7 @@ begin
 		if rising_edge(ctlr_clk) then
 			if ctlr_inirdy='1' then
     			if stream_frm='1' then
+					dma_len  <= std_logic_vector(to_unsigned(water_mark-1, dma_len'length));
     				if level >= water_mark then
     					wm_req <= not wm_rdy;
     				end if;
@@ -189,7 +195,9 @@ begin
 					elsif fifo_irdy='1' then
 						level <= level + 1;
     				end if;
-    			elsif level > 0 then
+    			elsif level >= 0 then
+					dma_len <= std_logic_vector(resize(level, dma_len'length));
+					level   <= (others => '1');
     				wm_req  <= not wm_rdy;
     			end if;
 			else

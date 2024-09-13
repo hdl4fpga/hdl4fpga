@@ -538,13 +538,25 @@ begin
 		alias  sidatadev_di_dv  : std_logic is dev_di_dv(0);
 		alias  dmaio_do_dv    : std_logic is dma_do_dv(1);
 
+		signal stream_frm : std_logic;
 	begin
+		process 
+		begin
+			stream_frm <='0';
+			wait on ctlr_inirdy until ctlr_inirdy='1';
+			stream_frm <= '1';
+			wait for 20 us;
+			stream_frm <= '0';
+			wait;
+
+		end process;
+
 		stream_e : entity hdl4fpga.sdram_stream
 		generic map (
 			buffer_size => 8)
 		port map (
 			stream_clk  => input_clk,
-			stream_frm  => '1', --'-',
+			stream_frm  => stream_frm, --'-',
 			stream_irdy => input_ena,
 			stream_trdy => open,
 			stream_data => input_data,
