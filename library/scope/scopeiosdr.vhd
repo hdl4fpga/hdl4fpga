@@ -60,7 +60,7 @@ entity scopeiosdr is
 		so_frm        : buffer std_logic;
 		so_irdy       : buffer std_logic;
 		so_trdy       : in  std_logic := '0';
-		so_end        : buffer std_logic := '0';
+		so_end        : buffer std_logic;
 		so_data       : out std_logic_vector;
 
 		input_clk     : in  std_logic;
