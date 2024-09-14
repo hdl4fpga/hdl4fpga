@@ -36,4 +36,7 @@ display_tp: apps.ldf
 scopeio: apps.ldf
 	echo prj_project open apps.ldf \; prj_run Export -impl $@  -task Bitgen | diamondc
 
-.PHONY: demo_displaytp display_tp ser_debug graphics scopeio clean
+scopeiosdr: apps.ldf
+	echo prj_project open apps.ldf \; prj_run Export -impl $@  -task Bitgen | diamondc
+
+.PHONY: demo_displaytp display_tp ser_debug graphics scopeiosdr scopeio clean
