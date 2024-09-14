@@ -154,7 +154,7 @@ begin
 	begin
 
 		gear1or2 : if gear=1 or gear=2 generate
-			lat : entity hdl4fpga.latency
+			lat_e : entity hdl4fpga.latency
 			generic map (
 				n => sys_sti'length,
 				d => (0 to sys_sti'length-1 => setif(bypass,0,1)))
