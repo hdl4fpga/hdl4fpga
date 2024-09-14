@@ -540,16 +540,6 @@ begin
 
 		signal stream_frm : std_logic;
 	begin
-		process 
-		begin
-			stream_frm <='0';
-			wait on ctlr_inirdy until ctlr_inirdy='1';
-			stream_frm <= '1';
-			wait for 20 us;
-			stream_frm <= '0';
-			wait;
-
-		end process;
 
 		stream_e : entity hdl4fpga.sdram_stream
 		generic map (

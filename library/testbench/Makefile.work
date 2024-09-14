@@ -903,7 +903,7 @@ $(WORK__ulx3s_scopeiosdr_structure_md) : ../../boards/ULX3S/testbenches/scopeios
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(WORK__testbench)
-	$(VCOM) -2002  ../../boards/ULX3S/testbenches/scopeiosdr.vhd
+	$(VCOM) -2002 ../../boards/ULX3S/testbenches/scopeiosdr.vhd
 
 $(WORK__ulx4m_ld) : ../../boards/ULX4M_LD/common/ulx4m_ld.vhd \
 		$(IEEE__std_logic_arith) \
