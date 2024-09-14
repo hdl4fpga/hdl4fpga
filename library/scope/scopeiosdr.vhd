@@ -237,6 +237,8 @@ architecture beh of scopeiosdr is
 	signal ampsample_data : std_logic_vector(0 to input_data'length-1);
 
 	constant capture_bits : natural := unsigned_num_bits(max(resolve(layout&".num_of_segments")*grid_width,min_storage)-1);
+	signal capture_shot   : std_logic;
+	signal capture_end    : std_logic;
 
 	signal video_addr     : std_logic_vector(0 to capture_bits-1);
 	signal video_frm      : std_logic;
@@ -399,6 +401,8 @@ begin
 		time_scale   => time_scale,
 		time_offset  => time_offset,
 		trigger_freeze => trigger_freeze,
+		capture_shot => capture_shot,
+		capture_end  => capture_end,
 
 		video_clk    => video_clk,
 		video_addr   => video_addr,  
@@ -540,6 +544,19 @@ begin
 
 		signal stream_frm : std_logic;
 	begin
+
+		process (input_clk)
+		begin
+			if rising_edge(input_clk) then
+				if capture_shot='1' then
+					stream_frm <= '1';
+				elsif capture_end='0' then
+					stream_frm <= '1';
+				else
+					stream_frm <= '0';
+				end if;
+			end if;
+		end process;
 
 		stream_e : entity hdl4fpga.sdram_stream
 		generic map (

@@ -46,6 +46,9 @@ entity scopeio_tds is
 		time_scale       : in  std_logic_vector;
 		time_offset      : in  std_logic_vector;
 		trigger_freeze   : buffer std_logic;
+		capture_shot     : buffer std_logic;
+		capture_end      : buffer std_logic;
+
 		video_clk        : in  std_logic;
 		video_vton       : in  std_logic;
 		video_frm        : in  std_logic;
@@ -72,9 +75,6 @@ architecture mix of scopeio_tds is
 	signal downsample_dv      : std_logic;
 	signal downsampling       : std_logic;
 	signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
-
-	signal capture_shot       : std_logic;
-	signal capture_end        : std_logic;
 
 	signal trigger_dv         : std_logic;
 	signal trigger_mode       : std_logic_vector(0 to 2-1);

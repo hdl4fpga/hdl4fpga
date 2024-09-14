@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="apps" device="LFE5U-12F-8BG381C" default_implementation="scopeio">
+<BaliProject version="3.2" title="apps" device="LFE5U-12F-8BG381C" default_implementation="scopeiosdr">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
@@ -1077,6 +1077,333 @@
             <Options/>
         </Source>
         <Source name="../../../library/scope/scopeio_stactlr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="apps.lpf" type="Logic Preference" type_short="LPF">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Implementation title="scopeiosdr" dir="scopeiosdr" description="scopeiosdr" synthesis="synplify" default_strategy="Strategy1">
+        <Options def_top="hdl4fpga.phy_rl" lib="hdl4fpga" top="ulx3s"/>
+        <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="work" top_module="ulx3s"/>
+        </Source>
+        <Source name="../../../library/basic/latency.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/basic/base.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/basic/bram.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/basic/dpram.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/basic/rom.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/basic/dbdbbl.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/basic/arbiter.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/basic/serdes.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeiopkg.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_capture.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_storage.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_resize.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_video.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_textbox.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_rgtrtrigger.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_rgtrpalette.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_rgtrhzaxis.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_rgtrmyip.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_amp.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_downsampler.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_grid.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_palette.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_segment.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_tracer.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_trigger.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_axis.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_layout.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/video/video.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/video/videopkg.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/video/cgafonts.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/video/fonts/cp850x8x16x0to127.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/video/fonts/cp850x8x16x128to255.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/video/fonts/cp850x8x8x0to127.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/video/fonts/cp850x8x8x128to255.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/video/fonts/bcdfonts.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/video/cga_rom.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/video/tmds_encoder.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/video/cga_adapter.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/sio/sio_sin.vhd" type="VHDL" type_short="VHDL">
+            <Options lib="hdl4fpga"/>
+        </Source>
+        <Source name="../../../library/apps/app_profiles.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/apps/ecp5_profiles.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/apps/ecp5_videopll.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/video/dvi.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/serlzr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/phy_iofifo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/barrel.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_ogbx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_tds.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/usb/usbpkt_tx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/usb/usbcrc.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/usb/usbdev.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/usb/usbdevflow.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/usb/usbdevrqst.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/usb/usbphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/usb/usbphy_rx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/usb/usbphy_tx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/usb/usbphycrc.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/usb/usbpkg.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/usb/usbpkt_rx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sio/sio_dayusb.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sio/sio_hdlc.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/hdlc/hdlcdll_rx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/hdlc/hdlcdll_tx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/hdlc/hdlcfcs_rx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/hdlc/hdlcsync_rx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/hdlc/hdlcsync_tx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/crc.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/txn_buffer.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/fifo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/sync_transfer.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sio/sio_flow.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sio/sio_rgtr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sio/sio_mux.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/video/cgaram.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/mul_ser.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/lifo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/bcd_adder.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/btof.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/hdo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_reading.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_rgtrvtscale.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_rgtrvtoffset.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_marks.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_state.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_rgtrfocus.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_btnctlr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/scope/scopeio_stactlr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../apps/scopeiosdr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/scope/scopeiosdr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/sdram_stream.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/sdram_ctlr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/sdram_db.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/sdram_init.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/sdram_mpu.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/sdram_param.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/sdram_pgm.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/sdram_sch.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/dmatrans.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/dmactlr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/dmacntr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/phy_memcycle.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/phy_rl.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_igbx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_sdrbaphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_sdrdqphy.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/latticesemi/ecp5/ecp5_sdrphy.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="apps.lpf" type="Logic Preference" type_short="LPF">
