@@ -808,6 +808,7 @@ begin
 			REFCLK    => open,
 			CLKINTFB  => open);
 		
+		sdram_dqs <= (others => ctlr_clk);
 		adc_clk   <= adc1_clkos2;
 		input_clk <= adc1_clkos2;
 		sdrsys_rst <= not adc1_lock;
