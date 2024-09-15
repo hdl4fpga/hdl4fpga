@@ -117,9 +117,9 @@ int main (int argc, char *argv[])
 			totaldata += n;
 			if (log) {
 				fprintf (stderr, "Packet read length %d\n", n);
-				for (int i=0; i < n; i++) {
-					fprintf (stderr, "%02x", buffer[i]);
-				}
+				// for (int i=0; i < n; i++) {
+					// fprintf (stderr, "%02x", buffer[i]);
+				// }
 				fprintf (stderr, "\n", n);
 			}
 
