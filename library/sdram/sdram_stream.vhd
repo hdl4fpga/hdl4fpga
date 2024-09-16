@@ -76,8 +76,8 @@ begin
 	fifo1_e : entity hdl4fpga.fifo
 	generic map (
 		max_depth  => 4,
-		async_mode => false,
-		latency    => 1,
+		async_mode => true,
+		latency    => 0,
 		check_sov  => false,
 		check_dov  => true)
 	port map (
@@ -86,11 +86,21 @@ begin
 		src_irdy => stream_irdy,
 		src_data => stream_data,
 
-		dst_frm  => ctlr_inirdy,
 		dst_clk  => ctlr_clk,
 		dst_irdy => fifo1_irdy,
 		dst_trdy => fifo1_trdy,
 		dst_data => fifo1_data);
+
+	process (stream_frm, ctlr_clk)
+		type states is ();
+		variable state : states;
+	begin
+		if rising_edge(ctlr_clk) then
+			case state is
+			end case;
+			fifo1_frm <= stream_frm;
+		end if;
+	end process;
 
 	serdes_e : entity hdl4fpga.serlzr
 	generic map (
@@ -98,7 +108,7 @@ begin
 		lsdfirst  => false)
 	port map (
 		src_clk   => ctlr_clk,
-		src_frm   => stream_frm,
+		src_frm   => fifo1_frm,
 		src_irdy  => fifo1_irdy,
 		src_trdy  => fifo1_trdy,
 		src_data  => fifo1_data,
@@ -116,7 +126,7 @@ begin
 		check_dov  => true)
 	port map (
 		src_clk  => ctlr_clk,
-		src_frm  => stream_frm,
+		src_frm  => fifo_frm,
 		src_irdy => fifo_irdy,
 		src_trdy => fifo_trdy,
 		src_data => fifo_data,

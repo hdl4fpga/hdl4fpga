@@ -543,6 +543,7 @@ begin
 		alias  dmaio_do_dv    : std_logic is dma_do_dv(1);
 
 		signal stream_frm : std_logic;
+		signal stream_data : std_logic_vector(input_data'range);
 	begin
 
 		process (input_clk)
@@ -555,6 +556,9 @@ begin
 				else
 					stream_frm <= '0';
 				end if;
+				if input_ena='1' then
+					stream_data <= stream_data xor (stream_data'range => '1');
+				end if;
 			end if;
 		end process;
 
@@ -566,7 +570,7 @@ begin
 			stream_frm  => stream_frm, --'-',
 			stream_irdy => input_ena,
 			stream_trdy => open,
-			stream_data => input_data,
+			stream_data => stream_data,
 			base_addr   => (0 to 0 => '0'),
 			dmacfg_clk  => sio_clk,
 			dmacfg_req  => capturedmacfg_req,
