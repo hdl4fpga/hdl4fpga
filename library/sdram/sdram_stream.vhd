@@ -58,6 +58,7 @@ end;
 
 architecture def of sdram_stream is
 
+	signal fifo1_frm : std_logic;
 	signal fifo1_irdy : std_logic;
 	signal fifo1_trdy : std_logic;
 	signal fifo1_data : std_logic_vector(stream_data'range);
@@ -72,6 +73,33 @@ architecture def of sdram_stream is
 	constant xxx : natural := unsigned_num_bits(byte_lanes-1);
 	signal level : signed(0 to signed_num_bits(buffer_size)) := (others => '0');
 begin
+
+	process (stream_frm, ctlr_clk)
+		type states is (s_init, s_stream);
+		variable state : states;
+	begin
+		if rising_edge(ctlr_clk) then
+			if ctlr_inirdy='1' then
+    			case state is
+    			when s_init =>
+    				if stream_frm='1' then
+    					fifo1_frm <= '1';
+    					state := s_stream;
+    				end if;
+    			when s_stream =>
+    				if stream_frm='0' then
+    					if level < 0 then 
+    						fifo1_frm <= '0';
+    						state := s_init;
+    					end if;
+    				end if;
+    			end case;
+			else
+				fifo1_frm <= '0';
+				state := s_init;
+			end if;
+		end if;
+	end process;
 
 	fifo1_e : entity hdl4fpga.fifo
 	generic map (
@@ -91,21 +119,10 @@ begin
 		dst_trdy => fifo1_trdy,
 		dst_data => fifo1_data);
 
-	process (stream_frm, ctlr_clk)
-		type states is ();
-		variable state : states;
-	begin
-		if rising_edge(ctlr_clk) then
-			case state is
-			end case;
-			fifo1_frm <= stream_frm;
-		end if;
-	end process;
-
 	serdes_e : entity hdl4fpga.serlzr
 	generic map (
 		fifo_mode => false,
-		lsdfirst  => false)
+		lsdfirst  => true)
 	port map (
 		src_clk   => ctlr_clk,
 		src_frm   => fifo1_frm,
@@ -126,12 +143,11 @@ begin
 		check_dov  => true)
 	port map (
 		src_clk  => ctlr_clk,
-		src_frm  => fifo_frm,
+		src_frm  => fifo1_frm,
 		src_irdy => fifo_irdy,
 		src_trdy => fifo_trdy,
 		src_data => fifo_data,
 
-		dst_frm  => ctlr_inirdy,
 		dst_clk  => ctlr_clk,
 		dst_trdy => ctlr_do_dv,
 		dst_data => ctlr_do);

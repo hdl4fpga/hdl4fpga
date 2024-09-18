@@ -549,15 +549,18 @@ begin
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
+				if stream_frm='1' 
+					if input_ena='1' then
+						stream_data <= stream_data xor (stream_data'range => '1');
+					end if;
+				end if;
 				if capture_shot='1' then
 					stream_frm <= '1';
 				elsif capture_end='0' then
 					stream_frm <= '1';
 				else
 					stream_frm <= '0';
-				end if;
-				if input_ena='1' then
-					stream_data <= stream_data xor (stream_data'range => '1');
+					stream_data <= (others => '1');
 				end if;
 			end if;
 		end process;
