@@ -547,21 +547,28 @@ begin
 	begin
 
 		process (input_clk)
+			variable xxx : unsigned(0 to stream_data'length-1);
 		begin
 			if rising_edge(input_clk) then
-				if stream_frm='1' 
+				if stream_frm='1' then
 					if input_ena='1' then
-						stream_data <= stream_data xor (stream_data'range => '1');
+						for i in 0 to xxx'length/8-1 loop
+							xxx(0 to 8-1) := xxx(0 to 8-1) + 1;
+							xxx := xxx rol 8;
+						end loop;
 					end if;
 				end if;
 				if capture_shot='1' then
 					stream_frm <= '1';
-				elsif capture_end='0' then
-					stream_frm <= '1';
-				else
+				elsif capture_end='1' then
 					stream_frm <= '0';
 					stream_data <= (others => '1');
+					for i in 0 to xxx'length/8 loop
+						xxx(0 to 8-1) := to_unsigned(i, 8);
+						xxx := xxx rol 8;
+					end loop;
 				end if;
+				stream_data <= std_logic_vector(xxx);
 			end if;
 		end process;
 
