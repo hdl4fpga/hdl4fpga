@@ -553,20 +553,22 @@ begin
 				if stream_frm='1' then
 					if input_ena='1' then
 						for i in 0 to xxx'length/8-1 loop
-							xxx(0 to 8-1) := xxx(0 to 8-1) + 1;
+							xxx(0 to 8-1) := xxx(0 to 8-1) + xxx'length/8;
 							xxx := xxx rol 8;
 						end loop;
 					end if;
-				end if;
-				if capture_shot='1' then
-					stream_frm <= '1';
-				elsif capture_end='1' then
-					stream_frm <= '0';
-					stream_data <= (others => '1');
+				else
 					for i in 0 to xxx'length/8 loop
 						xxx(0 to 8-1) := to_unsigned(i, 8);
 						xxx := xxx rol 8;
 					end loop;
+				end if;
+				if capture_shot='1' then
+					stream_frm <= '1';
+				elsif ctlr_inirdy='1' then
+					stream_frm <= '1';
+				elsif capture_end='1' then
+					stream_frm <= '0';
 				end if;
 				stream_data <= std_logic_vector(xxx);
 			end if;
@@ -574,7 +576,7 @@ begin
 
 		stream_e : entity hdl4fpga.sdram_stream
 		generic map (
-			buffer_size => 8)
+			buffer_size => 32)
 		port map (
 			stream_clk  => input_clk,
 			stream_frm  => stream_frm, --'-',

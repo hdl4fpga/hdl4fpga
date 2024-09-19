@@ -112,9 +112,12 @@ begin
 		src_clk  => stream_clk,
 		src_frm  => stream_frm,
 		src_irdy => stream_irdy,
+		src_mode => '1',
 		src_data => stream_data,
 
 		dst_clk  => ctlr_clk,
+		dst_frm  => fifo1_frm,
+		dst_mode => '1',
 		dst_irdy => fifo1_irdy,
 		dst_trdy => fifo1_trdy,
 		dst_data => fifo1_data);
@@ -122,14 +125,14 @@ begin
 	serdes_e : entity hdl4fpga.serlzr
 	generic map (
 		fifo_mode => false,
-		lsdfirst  => true)
+		lsdfirst  => false)
 	port map (
 		src_clk   => ctlr_clk,
-		src_frm   => fifo1_frm,
 		src_irdy  => fifo1_irdy,
 		src_trdy  => fifo1_trdy,
 		src_data  => fifo1_data,
 		dst_clk   => ctlr_clk,
+		dst_frm   => fifo1_frm,
 		dst_irdy  => fifo_irdy,
 		dst_trdy  => fifo_trdy,
 		dst_data  => fifo_data);
@@ -144,11 +147,14 @@ begin
 	port map (
 		src_clk  => ctlr_clk,
 		src_frm  => fifo1_frm,
+		src_mode => '1',
 		src_irdy => fifo_irdy,
 		src_trdy => fifo_trdy,
 		src_data => fifo_data,
 
 		dst_clk  => ctlr_clk,
+		dst_frm  => fifo1_frm,
+		dst_mode => '1',
 		dst_trdy => ctlr_do_dv,
 		dst_data => ctlr_do);
 
