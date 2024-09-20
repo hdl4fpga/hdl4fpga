@@ -88,7 +88,7 @@ begin
     				end if;
     			when s_stream =>
     				if stream_frm='0' then
-    					if level < 0 then 
+    					if signed(dma_len) < 0 then 
     						fifo1_frm <= '0';
     						state := s_init;
     					end if;

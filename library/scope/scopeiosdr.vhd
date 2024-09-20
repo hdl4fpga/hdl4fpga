@@ -563,10 +563,12 @@ begin
 						xxx := xxx rol 8;
 					end loop;
 				end if;
-				if capture_shot='1' then
+				if ctlr_inirdy='0' then
+					stream_frm <= '0';
+				elsif capture_shot='1' then
 					stream_frm <= '1';
-				elsif ctlr_inirdy='1' then
-					stream_frm <= '1';
+				-- elsif ctlr_inirdy='1' then
+					-- stream_frm <= '1';
 				elsif capture_end='1' then
 					stream_frm <= '0';
 				end if;
