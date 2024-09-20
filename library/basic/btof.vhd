@@ -212,7 +212,7 @@ begin
 		process (sll_frm)
 		begin
 			if rising_edge(sll_frm) then
-				report natural'image(max_width-to_integer(signed(sht)));
+				-- report natural'image(max_width-to_integer(signed(sht)));
 			end if;
 		end process;
 

@@ -698,9 +698,9 @@ begin
 			if input_ena='1' then
 				for i in 0 to inputs-1 loop
 					if unsigned(input_chno)=i then
-						assert false
-						report integer'image(i) & " : " & to_string(input_chno) & ": " & std_logic'image(input_ena)
-						severity WARNING;
+						-- assert false
+						-- report integer'image(i) & " : " & to_string(input_chno) & ": " & std_logic'image(input_ena)
+						-- severity WARNING;
 						input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;
 					end if;
 				end loop;
