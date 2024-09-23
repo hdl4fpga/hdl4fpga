@@ -372,17 +372,49 @@ begin
 	sync_b : block
 	begin
 
-		src2dst_p : process (dst_clk)
+		xxx_b : block
+			port (
+				src_frm  : in  std_logic;
+				src_clk  : in  std_logic;
+				src_data : in  std_logic_vector;
+				dst_frm  : in  std_logic;
+				dst_clk  : in  std_logic;
+				dst_data : in  std_logic_vector);
+			port map (
+				src_frm  => src_frm,     
+				src_clk  => src_clk,     				
+				src_data => std_logic_vector(wr_ptr),     
+				dst_frm  => dst_frm,     
+				dst_clk  => dst_clk,     
+				dst_data => wr_cmp);
+			signal req : std_logic;
+			signal rdy : std_logic;
 		begin
-			if rising_edge(dst_clk) then
-				wr_cmp <= bin2gray(wr_ptr);
-			end if;
-		end process;
+    		process (src_clk, dst_clk)
+    			variable gray : std_logic_vector(src_data'range);
+    		begin
+    			if rising_edge(src_clk) then
+					if (req xor rdy)='0' then
+						req <= not rdy;
+					else
+						gray := bin2gray(src_data);
+					end if;
+    			end if;
+    			if rising_edge(dst_clk) then
+					if (req xor rdy)='1' then
+						wr_cmp <= gray2bin(gray);
+						rdy <= req;
+					end if;
+    			end if;
+    		end process;
+		end block;
 
 		dst2src_p : process (src_clk)
+			variable xxx : std_logic_vector(rd_cntr'range);
 		begin
 			if rising_edge(src_clk) then
-				rd_cmp <= bin2gray(rd_cntr);
+				rd_cmp <= gray2bin(xxx);
+				xxx := bin2gray(std_logic_vector(rd_cntr));
 			end if;
 		end process;
 
