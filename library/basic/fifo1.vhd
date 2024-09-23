@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity fifo is
+entity fifo1 is
 	generic (
 		sync_read  : boolean := true;
 		debug      : boolean := false;
@@ -62,7 +62,7 @@ entity fifo is
 		dst_data   : buffer std_logic_vector);
 end;
 
-architecture def of fifo is
+architecture def of fifo1 is
 
 	constant addr_length : natural := unsigned_num_bits(max_depth)-1;
 
@@ -370,25 +370,44 @@ begin
 	end process;
 
 	sync_b : block
+		function bin2gray(
+			constant binary : std_logic_vector)
+			return std_logic_vector is
+			variable retval : unsigned(binary'range);
+		begin
+			retval := unsigned(binary);
+			retval := shift_right(reval,1);
+			retval := retval xor unsigned(binary);
+			return std_logic_vector(retval);
+		end;
+
+		function gray2bin (
+			constant gray : std_logic_vector)
+			return std_logic_vector is
+			variable retval : unsigned(binary'range);
+		begin
+			aux := '0';
+			for i in gray'range loop
+				retval(i) := retval(i) xor aux;
+				aux := retval(i);
+			end loop;
+			return retval;
+		end;
 	begin
 
-		src2dst_e : entity hdl4fpga.sync_transfer
-		port map (
-			src_clk    => src_clk,
-			src_frm    => src_frm,
-			src_data   => std_logic_vector(wr_ptr),
-			dst_frm    => dst_frm,
-			dst_clk    => dst_clk,
-			dst_data   => wr_cmp);
+		src2dst_p : process (dst_clk)
+		begin
+			if rising_edge(dst_clk) then
+				wr_cmp <= bin2gray(wr_ptr);
+			end if;
+		end process;
 
-		dst2src_e : entity hdl4fpga.sync_transfer
-		port map (
-			src_clk    => dst_clk,
-			src_frm    => dst_frm,
-			src_data   => std_logic_vector(rd_cntr),
-			dst_clk    => src_clk,
-			dst_frm    => src_frm,
-			dst_data   => rd_cmp);
+		dst2src_p : process (src_clk)
+		begin
+			if rising_edge(src_clk) then
+				rd_cmp <= bin2gray(rd_cntr);
+			end if;
+		end process;
 
 	end block;
 
