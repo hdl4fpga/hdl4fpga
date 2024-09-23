@@ -327,6 +327,14 @@ package base is
 		constant g : std_logic_vector)
 		return std_logic_vector;
 
+	function bin2gray(
+		constant binary : std_logic_vector)
+		return std_logic_vector;
+
+	function gray2bin (
+		constant gray : std_logic_vector)
+		return std_logic_vector;
+
 	function replace (
 		constant word : std_logic_vector;
 		constant pos  : natural;
@@ -1345,6 +1353,31 @@ package body base is
 			aux_m := aux_m sll 1;
 		end loop;
 		return std_logic_vector(aux_r);
+	end;
+
+	function bin2gray(
+		constant binary : std_logic_vector)
+		return std_logic_vector is
+		variable retval : unsigned(binary'range);
+	begin
+		retval := unsigned(binary);
+		retval := shift_right(retval,1);
+		retval := retval xor unsigned(binary);
+		return std_logic_vector(retval);
+	end;
+
+	function gray2bin (
+		constant gray : std_logic_vector)
+		return std_logic_vector is
+		variable retval : unsigned(gray'range);
+		variable aux : std_logic;
+	begin
+		aux := '0';
+		for i in gray'range loop
+			retval(i) := retval(i) xor aux;
+			aux := retval(i);
+		end loop;
+		return std_logic_vector(retval);
 	end;
 
 	function replace (

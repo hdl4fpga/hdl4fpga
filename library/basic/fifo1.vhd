@@ -370,29 +370,6 @@ begin
 	end process;
 
 	sync_b : block
-		function bin2gray(
-			constant binary : std_logic_vector)
-			return std_logic_vector is
-			variable retval : unsigned(binary'range);
-		begin
-			retval := unsigned(binary);
-			retval := shift_right(reval,1);
-			retval := retval xor unsigned(binary);
-			return std_logic_vector(retval);
-		end;
-
-		function gray2bin (
-			constant gray : std_logic_vector)
-			return std_logic_vector is
-			variable retval : unsigned(binary'range);
-		begin
-			aux := '0';
-			for i in gray'range loop
-				retval(i) := retval(i) xor aux;
-				aux := retval(i);
-			end loop;
-			return retval;
-		end;
 	begin
 
 		src2dst_p : process (dst_clk)
