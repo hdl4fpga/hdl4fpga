@@ -236,7 +236,7 @@ begin
 		-- payload_segments => (0 => snd_data'length),
 		-- payload   => snd_data)
 	port map (
-		rst     => rst,
+		rst     => '1', --rst,
 		usb_clk => usb_clk,
 		usb_dp  => usb_fpga_dp,
 		usb_dn  => usb_fpga_dn);
