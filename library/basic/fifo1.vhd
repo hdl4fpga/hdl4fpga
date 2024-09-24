@@ -40,30 +40,25 @@ architecture def of sync_fifo is
 	signal rdy : std_logic := '0';
 begin
 	process (src_clk, dst_clk)
-		variable gray0 : std_logic_vector(src_data'range);
-		variable gray1 : std_logic_vector(src_data'range);
+		type states is (s_ready, s_request);
+		variable state : states;
+		variable gray : std_logic_vector(src_data'range);
 	begin
 		if rising_edge(src_clk) then
 			case state is
-			when s_s0 =>
-			when s_s1 =>
+			when s_ready =>
+				if (req xor rdy)='0' then
+					gray  := bin2gray(src_data);
+					state := s_request;
+				end if;
+			when s_request =>
+				req <= not rdy;
+				state := s_ready;
 			end case;
-        	if (req xor rdy)='0' then
-        		req <= not rdy;
-        	end if;
-			if req='0' then
-				gray0 := bin2gray(src_data);
-			else
-				gray1 := bin2gray(src_data);
-			end if;
 		end if;
 		if rising_edge(dst_clk) then
 			if (req xor rdy)='1' then
-				if rdy='0' then
-					dst_data <= gray2bin(gray0);
-				else
-					dst_data <= gray2bin(gray1);
-				end if;
+				dst_data <= gray2bin(gray);
 				rdy <= req;
 			end if;
 		end if;
