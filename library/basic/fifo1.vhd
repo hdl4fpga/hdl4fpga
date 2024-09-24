@@ -357,11 +357,14 @@ begin
 				if src_mode='0' then
 					if async_mode then
 						wr_cntr <= unsigned(to_stdlogicvector(to_bitvector(rd_cmp)));
+						wr_ptr  <= unsigned(to_stdlogicvector(to_bitvector(rd_cmp)));
 					else
 						wr_cntr <= rd_cntr;
+						wr_ptr  <= rd_cntr;
 					end if;
 				else
 					wr_cntr <= to_unsigned(src_offset, wr_cntr'length);
+					wr_ptr  <= to_unsigned(src_offset, wr_cntr'length);
 				end if;
 			elsif rollback='1' then
 				wr_cntr  <= wr_ptr;

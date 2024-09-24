@@ -94,7 +94,7 @@ add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/src2dst_
 add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/src2dst_e/dst_clk
 add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/src2dst_e/dst_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {399709963370 fs} 0}
+WaveRestoreCursors {{Cursor 1} {301855503770 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 251
 configure wave -valuecolwidth 108
@@ -110,4 +110,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {399565920380 fs} {399976076640 fs}
+WaveRestoreZoom {196855035290 fs} {406855972250 fs}
