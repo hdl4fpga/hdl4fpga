@@ -83,13 +83,16 @@ add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/dst_irdy
 add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/wr_ptr
 add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/wr_cntr
 add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/wr_cmp
-add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/sync_b/src2dst_e/src_frm
-add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/sync_b/src2dst_e/dst_frm
-add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/sync_b/src2dst_e/wr_addr
-add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/sync_b/src2dst_e/rd_addr
 add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/rd_cntr
+add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/src2dst_e/req
+add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/src2dst_e/rdy
+add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/src2dst_e/src_clk
+add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/src2dst_e/src_data
+add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/src2dst_e/line__42/gray
+add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/src2dst_e/dst_clk
+add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/src2dst_e/dst_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {300122162000 fs} 0} {{Cursor 3} {486080082960 fs} 0}
+WaveRestoreCursors {{Cursor 1} {165863337110 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 251
 configure wave -valuecolwidth 108
@@ -105,4 +108,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {299971613140 fs} {300280255720 fs}
+WaveRestoreZoom {165843254130 fs} {166663566630 fs}

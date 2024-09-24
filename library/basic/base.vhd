@@ -1374,7 +1374,7 @@ package body base is
 	begin
 		aux := '0';
 		for i in gray'range loop
-			retval(i) := retval(i) xor aux;
+			retval(i) := gray(i) xor aux;
 			aux := retval(i);
 		end loop;
 		return std_logic_vector(retval);

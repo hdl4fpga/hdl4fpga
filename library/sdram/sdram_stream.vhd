@@ -101,7 +101,7 @@ begin
 		end if;
 	end process;
 
-	fifo1_e : entity hdl4fpga.fifo
+	fifo1_e : entity hdl4fpga.fifo1
 	generic map (
 		max_depth  => 4,
 		async_mode => true,

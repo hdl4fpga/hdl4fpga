@@ -23,6 +23,55 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+
+library hdl4fpga;
+use hdl4fpga.base.all;
+
+entity sync_fifo is
+	port (
+		src_clk  : in  std_logic;
+		src_data : in  std_logic_vector;
+		dst_clk  : in  std_logic;
+		dst_data : out std_logic_vector);
+end;
+
+architecture def of sync_fifo is
+	signal req : std_logic := '0';
+	signal rdy : std_logic := '0';
+begin
+	process (src_clk, dst_clk)
+		variable gray0 : std_logic_vector(src_data'range);
+		variable gray1 : std_logic_vector(src_data'range);
+	begin
+		if rising_edge(src_clk) then
+			case state is
+			when s_s0 =>
+			when s_s1 =>
+			end case;
+        	if (req xor rdy)='0' then
+        		req <= not rdy;
+        	end if;
+			if req='0' then
+				gray0 := bin2gray(src_data);
+			else
+				gray1 := bin2gray(src_data);
+			end if;
+		end if;
+		if rising_edge(dst_clk) then
+			if (req xor rdy)='1' then
+				if rdy='0' then
+					dst_data <= gray2bin(gray0);
+				else
+					dst_data <= gray2bin(gray1);
+				end if;
+				rdy <= req;
+			end if;
+		end if;
+	end process;
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
@@ -369,55 +418,18 @@ begin
 		end if;
 	end process;
 
-	sync_b : block
-	begin
+	src2dst_e : entity hdl4fpga.sync_fifo
+	port map (
+		src_clk  => src_clk,     				
+		src_data => std_logic_vector(wr_ptr),     
+		dst_clk  => dst_clk,     
+		dst_data => wr_cmp);
 
-		xxx_b : block
-			port (
-				src_frm  : in  std_logic;
-				src_clk  : in  std_logic;
-				src_data : in  std_logic_vector;
-				dst_frm  : in  std_logic;
-				dst_clk  : in  std_logic;
-				dst_data : in  std_logic_vector);
-			port map (
-				src_frm  => src_frm,     
-				src_clk  => src_clk,     				
-				src_data => std_logic_vector(wr_ptr),     
-				dst_frm  => dst_frm,     
-				dst_clk  => dst_clk,     
-				dst_data => wr_cmp);
-			signal req : std_logic;
-			signal rdy : std_logic;
-		begin
-    		process (src_clk, dst_clk)
-    			variable gray : std_logic_vector(src_data'range);
-    		begin
-    			if rising_edge(src_clk) then
-					if (req xor rdy)='0' then
-						req <= not rdy;
-					else
-						gray := bin2gray(src_data);
-					end if;
-    			end if;
-    			if rising_edge(dst_clk) then
-					if (req xor rdy)='1' then
-						wr_cmp <= gray2bin(gray);
-						rdy <= req;
-					end if;
-    			end if;
-    		end process;
-		end block;
-
-		dst2src_p : process (src_clk)
-			variable xxx : std_logic_vector(rd_cntr'range);
-		begin
-			if rising_edge(src_clk) then
-				rd_cmp <= gray2bin(xxx);
-				xxx := bin2gray(std_logic_vector(rd_cntr));
-			end if;
-		end process;
-
-	end block;
+	dst2src_e : entity hdl4fpga.sync_fifo
+	port map (
+		src_clk  => dst_clk,     				
+		src_data => std_logic_vector(rd_cntr),     
+		dst_clk  => src_clk,     
+		dst_data => rd_cmp);
 
 end;
