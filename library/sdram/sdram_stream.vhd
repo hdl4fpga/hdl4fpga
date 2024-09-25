@@ -137,7 +137,7 @@ begin
 		dst_trdy  => fifo_trdy,
 		dst_data  => fifo_data);
 
-	fifo_e : entity hdl4fpga.fifo
+	fifo_e : entity hdl4fpga.fifo1
 	generic map (
 		max_depth  => buffer_size,
 		async_mode => false,
