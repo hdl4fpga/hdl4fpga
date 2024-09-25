@@ -546,7 +546,7 @@ begin
 		signal stream_data : std_logic_vector(input_data'range);
 	begin
 
-		stream_frm <= '0', '1' after 110 us, '0' after 250 us, '1' after 300 us;
+		-- stream_frm <= '0', '1' after 110 us, '0' after 250 us, '1' after 300 us;
 		process (input_clk)
 			variable xxx : unsigned(0 to stream_data'length-1);
 		begin
@@ -565,13 +565,13 @@ begin
 						xxx := xxx rol 8;
 					end loop;
 				end if;
-				-- if ctlr_inirdy='0' then
-					-- stream_frm <= '0';
-				-- elsif capture_shot='1' then
-					-- stream_frm <= '1';
-				-- elsif capture_end='1' then
-					-- stream_frm <= '0';
-				-- end if;
+				if ctlr_inirdy='0' then
+					stream_frm <= '0';
+				elsif capture_shot='1' then
+					stream_frm <= '1';
+				elsif capture_end='1' then
+					stream_frm <= '0';
+				end if;
 			end if;
 		end process;
 

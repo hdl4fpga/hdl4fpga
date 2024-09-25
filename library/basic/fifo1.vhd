@@ -49,6 +49,7 @@ begin
 			when s_ready =>
 				if (req xor rdy)='0' then
 					gray  := bin2gray(src_data);
+					gray  := src_data;
 					state := s_request;
 				end if;
 			when s_request =>
@@ -59,6 +60,7 @@ begin
 		if rising_edge(dst_clk) then
 			if (req xor rdy)='1' then
 				dst_data <= gray2bin(gray);
+				dst_data <= gray;
 				rdy <= req;
 			end if;
 		end if;
