@@ -172,7 +172,6 @@ begin
 		src_data => stream_data,
 
 		dst_clk  => ctlr_clk,
-		dst_frm  => fifo1_frm,
 		dst_irdy => fifo1_irdy,
 		dst_trdy => fifo1_trdy,
 		dst_data => fifo1_data);
@@ -185,7 +184,7 @@ begin
 		src_clk   => ctlr_clk,
 		src_irdy  => fifo1_irdy,
 		src_trdy  => fifo1_trdy,
-		src_data  => x"0102030405060708090a0b0c0d",
+		src_data  => fifo1_data,
 		dst_clk   => ctlr_clk,
 		dst_frm   => fifo1_frm,
 		dst_irdy  => fifo_irdy,
@@ -201,14 +200,14 @@ begin
 		check_dov  => true)
 	port map (
 		src_clk  => ctlr_clk,
+		src_frm  => fifo1_frm,
 		src_irdy => fifo_irdy,
 		src_trdy => fifo_trdy,
 		src_data => fifo_data,
 
 		dst_clk  => ctlr_clk,
-		dst_frm  => fifo1_frm,
 		dst_trdy => ctlr_do_dv,
-		dst_data => xdata);
+		dst_data => ctlr_do);
 
 	process (ctlr_clk)
 		variable sync_wmrdy : std_logic;
@@ -240,19 +239,19 @@ begin
 		end if;
 	end process;
 
-	process (ctlr_clk)
-		variable xxx : unsigned(ctlr_do'range);
-		variable cntr : natural range 0 to 1024;
-	begin
-		if rising_edge(ctlr_clk) then
-			if fifo1_frm='0' then
-				xxx := (others => '0');
-				cntr := 0;
-			elsif ctlr_do_dv='1' then
-				xxx := xxx + 1;
-			end if;
-			ctlr_do <= std_logic_vector(xxx);
-		end if;
-	end process;
+	-- process (ctlr_clk)
+		-- variable xxx : unsigned(ctlr_do'range);
+		-- variable cntr : natural range 0 to 1024;
+	-- begin
+		-- if rising_edge(ctlr_clk) then
+			-- if fifo1_frm='0' then
+				-- xxx := (others => '0');
+				-- cntr := 0;
+			-- elsif ctlr_do_dv='1' then
+				-- xxx := xxx + 1;
+			-- end if;
+			-- ctlr_do <= std_logic_vector(xxx);
+		-- end if;
+	-- end process;
 
 end;

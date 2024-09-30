@@ -41,7 +41,8 @@ architecture def of sync_fifo is
 	signal rdy      : std_logic := '0';
 	signal src_addr : std_logic_vector(0 to 1) := (others => '0');
 	signal dst_addr : std_logic_vector(0 to 1) := (others => '0');
-	signal gray  : std_logic_vector(0 to 1) := (others => '0');
+	signal src2dst  : std_logic_vector(0 to 1) := (others => '0');
+	signal dst2src  : std_logic_vector(0 to 1) := (others => '0');
 begin
 	
 	mem_e : entity hdl4fpga.dpram
@@ -58,27 +59,21 @@ begin
 		rd_data => dst_data);
 
 	process (src_clk, dst_clk)
-		variable sync_rdy : std_logic;
 	begin
 		if rising_edge(src_clk) then
-			if (req xor sync_rdy)='1' then
-				gray     <= bin2gray(std_logic_vector(src_addr));
-				src_addr <= std_logic_vector(unsigned(src_addr) + 1);
-				req      <= not sync_rdy;
+			src2dst <= bin2gray(std_logic_vector(src_addr));
+			if dst2src=src2dst then
+				src2dst  <= src_addr;
+				src_addr <= bin2gray(std_logic_vector(unsigned(gray2bin(src_addr)) + 1));
 			end if;
-			sync_rdy := rdy;
 		end if;
 	end process;
 
 	process (dst_clk)
-		variable sync_req : std_logic;
 	begin
 		if rising_edge(dst_clk) then
-			if (rdy xor sync_req)='1' then
-				dst_addr <= gray2bin(gray);
-				rdy <= sync_req;
-			end if;
-			sync_req := req;
+			dst2src  <= dst_addr;
+			dst_addr <= src2dst;
 		end if;
 	end process;
 end;

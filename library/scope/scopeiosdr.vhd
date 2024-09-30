@@ -553,30 +553,23 @@ begin
 		process (input_clk)
 			variable xxx : unsigned(0 to stream_data'length-1);
 			variable cntr : unsigned(0 to 10);
+			variable inirdy : std_logic;
 		begin
 			if rising_edge(input_clk) then
-				-- xxx := (others => '0');
-				-- for i in 0 to xxx'length/8 loop
-					-- xxx(0 to 8-1) := to_unsigned(i, 8);
-					-- xxx := xxx rol 8;
-				-- end loop;
-				stream_data <= std_logic_vector(xxx);
-				stream_data <= x"0102030405060708090a0b0c0d";
 				if stream_frm='1' then
-					xxx := unsigned(stream_data);
 					if input_ena='1' then
+						xxx := unsigned(stream_data);
 						for i in 0 to xxx'length/8-1 loop
 							xxx(0 to 8-1) := xxx(0 to 8-1) + xxx'length/8;
 							xxx := xxx rol 8;
 						end loop;
 					end if;
 				else
-					for i in 0 to xxx'length/8 loop
-						xxx(0 to 8-1) := to_unsigned(i, 8);
-						xxx := xxx rol 8;
-					end loop;
+					xxx := x"000102030405060708090a0b0c";
 				end if;
-				if ctlr_inirdy='0' then
+				stream_data <= std_logic_vector(xxx);
+				-- stream_data <= x"000102030405060708090a0b0c";
+				if inirdy='0' then
 					stream_frm <= '0';
 					cntr := (others => '0');
 				elsif cntr(0)='0' then
@@ -587,6 +580,7 @@ begin
 				else
 					stream_frm <= '0';
 				end if;
+				inirdy := ctlr_inirdy;
 			end if;
 		end process;
 

@@ -40,8 +40,8 @@ LENGTH="${LENGTH:-${2}}"
 LENGTH="${LENGTH:-0}"
 LENGTH=`printf %06x $(( ${LENGTH} ))`
 LENGTH="${LENGTH: -6}"
-WIDTH="64"
-ORG="65"
+WIDTH="32"
+ORG="33"
 #$echo -n $ADDR ' : '
 data=`echo "1702${LENGTH}1603${ADDR}"|xxd -r -ps|./scripts/siocomm.sh |xxd -ps| tr -d '\n'`
 data=`echo $data|cut -b 15-`
