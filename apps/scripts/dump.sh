@@ -40,6 +40,8 @@ LENGTH="${LENGTH:-${2}}"
 LENGTH="${LENGTH:-0}"
 LENGTH=`printf %06x $(( ${LENGTH} ))`
 LENGTH="${LENGTH: -6}"
+WIDTH="64"
+ORG="65"
 #$echo -n $ADDR ' : '
 data=`echo "1702${LENGTH}1603${ADDR}"|xxd -r -ps|./scripts/siocomm.sh |xxd -ps| tr -d '\n'`
 data=`echo $data|cut -b 15-`
@@ -51,8 +53,8 @@ while [ "$data" != "" ] ; do
 	len=`expr 2 \* \( $len \+ 1 \)`
 	line=`echo -n $data|cut -b 1-$len|tr -d '\n'`
 	while [ "$line" != "" ] ; do
-		echo -n $line|cut -b 1-32
-	    line=`echo -n $line|cut -b 33-|tr -d '\n'`
+		echo -n $line|cut -b 1-${WIDTH}
+	    line=`echo -n $line|cut -b ${ORG}-|tr -d '\n'`
 	done
 	len=`expr  $len \+ 3 `
 	data=`echo -n $data|cut -b $len-`

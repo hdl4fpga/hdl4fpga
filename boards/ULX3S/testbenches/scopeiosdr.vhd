@@ -261,7 +261,7 @@ begin
 	down <= '0', '1' after 2.1 us, '0' after 3 us;
 	du_e : ulx3s
 	generic map (
-		debug => debug)
+		debug => true)
 	port map (
 		clk_25mhz  => xtal,
 		usb_fpga_dp => usb_fpga_dp,

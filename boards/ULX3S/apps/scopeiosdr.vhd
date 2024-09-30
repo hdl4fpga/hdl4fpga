@@ -100,7 +100,7 @@ architecture scopeiosdr of ulx3s is
 	signal input_ena     : std_logic;
 	signal input_sample  : std_logic_vector(13-1 downto 0);
 	constant vt_step     : real := 3.3/2.0**(input_sample'length-1); -- Volts
-	signal input_enas    : std_logic;
+	signal input_enas    : std_logic := '0';
 	signal input_samples : std_logic_vector(0 to inputs*input_sample'length-1);
 	signal tp            : std_logic_vector(1 to 32);
 
@@ -207,7 +207,7 @@ architecture scopeiosdr of ulx3s is
 	signal ctlr_clk      : std_logic;
 	signal sdrsys_rst    : std_logic;
 
-	constant sdram_params : sdramparams_record := sdramparams(sdram133MHz, clk25mhz_freq);
+	constant sdram_params : sdramparams_record := sdramparams(sdram200MHz, clk25mhz_freq);
 	
 	signal ctlrphy_rst   : std_logic;
 	signal ctlrphy_cke   : std_logic;
@@ -375,6 +375,7 @@ begin
 	led <= tp(1 to 8);
 	stactlr_e : entity hdl4fpga.scopeio_stactlr
 	generic map (
+		debug => debug,
 		layout => layout)
 	port map (
 		tp => tp,
@@ -439,6 +440,7 @@ begin
 
 		process(input_enas, input_clk)
 			variable cntr : unsigned(input_chni'range) := (others => '0');
+			variable xxx : unsigned(0 to 1) := (others => '0');
 		begin
 			if rising_edge(input_clk) then
 				if input_ena='1' then
@@ -453,6 +455,12 @@ begin
 						input_enas <= '0';
 					end if;
 					input_chni <= std_logic_vector(cntr);
+				else
+					input_enas <= '0';
+				end if;
+				cntr := cntr + 1;
+				if cntr="11" then
+					input_enas <= '1';
 				else
 					input_enas <= '0';
 				end if;
@@ -518,6 +526,7 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeiosdr
 	generic map (
+		debug => debug,
 		profile => 0,
 		sdram_tcp    => 1.0/sdram_freq,
 		mark         => MT48LC256MA27E ,

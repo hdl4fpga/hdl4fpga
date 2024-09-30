@@ -66,14 +66,69 @@ architecture def of sdram_stream is
 	signal fifo_irdy : std_logic;
 	signal fifo_trdy : std_logic;
 	signal fifo_data : std_logic_vector(ctlr_do'range);
+	signal xdata : std_logic_vector(ctlr_do'range);
 
 	signal wm_req : std_logic := '0';
 	signal wm_rdy : std_logic := '0';
 
 	constant xxx : natural := unsigned_num_bits(byte_lanes-1);
 	signal level : signed(0 to signed_num_bits(buffer_size)) := (others => '0');
+	signal sync_dmareq : std_logic := '0';
 begin
 
+	dma_p : process(dmacfg_clk)
+		type states is (s_init, s_ready, s_transfer);
+		variable state : states;
+		variable sync_wmreq  : std_logic := '0';
+		variable sync_dmardy : std_logic := '0';
+	begin
+		if rising_edge(dmacfg_clk) then
+			if ctlr_inirdy='0' then
+				wm_rdy <= sync_wmreq;
+				state := s_init;
+			else
+				case state is
+				when s_init =>
+					if stream_frm='1' then
+						if (sync_dmareq xor sync_dmardy)='0' then
+							if (dmacfg_req xor dmacfg_rdy)='0' then
+								dma_addr <= (dma_addr'range => '0');
+								dmacfg_req <= not dmacfg_rdy;
+								state := s_ready;
+							end if;
+						end if;
+					end if;
+				when s_ready =>
+					if stream_frm='1' then
+						if (wm_rdy xor sync_wmreq)='1' then
+							if (dmacfg_req xor dmacfg_rdy)='0' then
+								if (sync_dmareq xor sync_dmardy)='0' then
+									sync_dmareq <= not sync_dmardy;
+									state   := s_transfer;
+								end if;
+							end if;
+   						end if;
+					else
+						state := s_init;
+					end if;
+				when s_transfer =>
+					if (sync_dmareq xor sync_dmardy)='0' then
+						wm_rdy <= sync_wmreq;
+						if stream_frm='1' then
+   							dma_addr <= std_logic_vector(unsigned(dma_addr) + water_mark);
+							dmacfg_req <= not dmacfg_rdy;
+							state := s_ready;
+						else
+							state := s_init;
+						end if;
+					end if;
+				end case;
+			end if;
+			sync_dmardy := dma_rdy;
+			sync_wmreq  := wm_req;
+		end if;
+	end process;
+	
 	process (stream_frm, ctlr_clk)
 		type states is (s_init, s_stream);
 		variable state : states;
@@ -85,13 +140,15 @@ begin
 					if stream_frm='1' then
 						fifo1_frm <= '1';
 						state := s_stream;
+					else
+						fifo1_frm <= '0';
 					end if;
 				when s_stream =>
 					if stream_frm='0' then
-							fifo1_frm <= '0';
-							state := s_init;
-						if signed(dma_len) < 0 then 
-						end if;
+						fifo1_frm <= '0';
+						state := s_init;
+					else
+						fifo1_frm <= '1';
 					end if;
 				end case;
 			else
@@ -112,12 +169,10 @@ begin
 		src_clk  => stream_clk,
 		src_frm  => stream_frm,
 		src_irdy => stream_irdy,
-		src_mode => '1',
 		src_data => stream_data,
 
 		dst_clk  => ctlr_clk,
 		dst_frm  => fifo1_frm,
-		dst_mode => '1',
 		dst_irdy => fifo1_irdy,
 		dst_trdy => fifo1_trdy,
 		dst_data => fifo1_data);
@@ -130,7 +185,7 @@ begin
 		src_clk   => ctlr_clk,
 		src_irdy  => fifo1_irdy,
 		src_trdy  => fifo1_trdy,
-		src_data  => fifo1_data,
+		src_data  => x"0102030405060708090a0b0c0d",
 		dst_clk   => ctlr_clk,
 		dst_frm   => fifo1_frm,
 		dst_irdy  => fifo_irdy,
@@ -146,91 +201,58 @@ begin
 		check_dov  => true)
 	port map (
 		src_clk  => ctlr_clk,
-		src_frm  => fifo1_frm,
-		src_mode => '1',
 		src_irdy => fifo_irdy,
 		src_trdy => fifo_trdy,
 		src_data => fifo_data,
 
 		dst_clk  => ctlr_clk,
 		dst_frm  => fifo1_frm,
-		dst_mode => '1',
 		dst_trdy => ctlr_do_dv,
-		dst_data => ctlr_do);
+		dst_data => xdata);
 
-	dma_p : process(dmacfg_clk)
-		type states is (s_init, s_ready, s_transfer);
-		variable state : states;
-	begin
-		if rising_edge(dmacfg_clk) then
-			if ctlr_inirdy='0' then
-				wm_rdy <= wm_req;
-				state := s_init;
-			else
-				case state is
-				when s_init =>
-					if stream_frm='1' then
-						if (dmacfg_req xor dmacfg_rdy)='0' then
-							dma_addr <= (dma_addr'range => '0');
-							dmacfg_req <= not dmacfg_rdy;
-							state := s_ready;
-						end if;
-					end if;
-				when s_ready =>
-					if stream_frm='1' then
-						if (wm_rdy xor wm_req)='1' then
-							if (dmacfg_req xor dmacfg_rdy)='0' then
-								dma_req <= not dma_rdy;
-								state   := s_transfer;
-							end if;
-   						end if;
-					else
-						state := s_init;
-					end if;
-				when s_transfer =>
-					if (dma_req xor dma_rdy)='0' then
-						wm_rdy <= wm_req;
-						if stream_frm='1' then
-   							dma_addr <= std_logic_vector(unsigned(dma_addr) + water_mark);
-							dmacfg_req <= not dmacfg_rdy;
-							state := s_ready;
-						else
-							state := s_init;
-						end if;
-					end if;
-				end case;
-			end if;
-		end if;
-	end process;
-	
 	process (ctlr_clk)
+		variable sync_wmrdy : std_logic;
 	begin
 		if rising_edge(ctlr_clk) then
 			if ctlr_inirdy='1' then
-				if stream_frm='1' then
+				if fifo1_frm='1' then
 					dma_len  <= std_logic_vector(to_unsigned(water_mark-1, dma_len'length));
-					if level >= water_mark then
-						wm_req <= not wm_rdy;
-					end if;
-					if level >= water_mark then
-						if fifo_irdy='1' then
-							level <= level-water_mark+1;
-						else
-							level <= level-water_mark;
+					if level >= water_mark-1 then
+						if (wm_req xor sync_wmrdy)='0' then
+							wm_req <= not sync_wmrdy;
+							if fifo_irdy='1' then
+								level <= level-water_mark+1;
+							else
+								level <= level-water_mark;
+							end if;
 						end if;
 					elsif fifo_irdy='1' then
 						level <= level + 1;
 					end if;
-				-- elsif level >= 0 then
-					-- dma_len <= std_logic_vector(resize(level, dma_len'length));
-					-- level   <= (others => '1');
-					-- wm_req  <= not wm_rdy;
 				else
-					level <= (others => '0');
+					level <= (others => '1');
 				end if;
 			else
-				level <= (others => '0');
+				level <= (others => '1');
 			end if;
+			sync_wmrdy := wm_rdy;
+			dma_req <= sync_dmareq;
 		end if;
 	end process;
+
+	process (ctlr_clk)
+		variable xxx : unsigned(ctlr_do'range);
+		variable cntr : natural range 0 to 1024;
+	begin
+		if rising_edge(ctlr_clk) then
+			if fifo1_frm='0' then
+				xxx := (others => '0');
+				cntr := 0;
+			elsif ctlr_do_dv='1' then
+				xxx := xxx + 1;
+			end if;
+			ctlr_do <= std_logic_vector(xxx);
+		end if;
+	end process;
+
 end;

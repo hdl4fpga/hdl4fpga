@@ -37,6 +37,7 @@ use hdl4fpga.sdram_db.all;
 entity scopeiosdr is
 	generic (
 
+		debug : boolean := false;
 		profile      : natural;
 		sdram        : string := "{}";
 		timing_id    : videotiming_ids;
@@ -45,7 +46,7 @@ entity scopeiosdr is
 		mark         : sdram_chips;
 		fifo_size    : natural := 8*8192;
 		video_gear   : natural := 2;
-		intrp_trans  : boolean := true;
+		intrp_trans  : boolean := false;
 		red_length   : natural := 8;
 		green_length : natural := 8;
 		blue_length  : natural := 8;
@@ -546,13 +547,23 @@ begin
 		signal stream_data : std_logic_vector(input_data'range);
 	begin
 
-		-- stream_frm <= '0', '1' after 110 us, '0' after 250 us, '1' after 300 us;
+		-- xxx_g : if debug generate
+		-- stream_frm <= '0', '1' after 110 us; --, '0' after 250 us, '1' after 300 us;
+		-- end generate;
 		process (input_clk)
 			variable xxx : unsigned(0 to stream_data'length-1);
+			variable cntr : unsigned(0 to 10);
 		begin
 			if rising_edge(input_clk) then
+				-- xxx := (others => '0');
+				-- for i in 0 to xxx'length/8 loop
+					-- xxx(0 to 8-1) := to_unsigned(i, 8);
+					-- xxx := xxx rol 8;
+				-- end loop;
 				stream_data <= std_logic_vector(xxx);
+				stream_data <= x"0102030405060708090a0b0c0d";
 				if stream_frm='1' then
+					xxx := unsigned(stream_data);
 					if input_ena='1' then
 						for i in 0 to xxx'length/8-1 loop
 							xxx(0 to 8-1) := xxx(0 to 8-1) + xxx'length/8;
@@ -567,9 +578,13 @@ begin
 				end if;
 				if ctlr_inirdy='0' then
 					stream_frm <= '0';
-				elsif capture_shot='1' then
+					cntr := (others => '0');
+				elsif cntr(0)='0' then
 					stream_frm <= '1';
-				elsif capture_end='1' then
+					if input_ena='1' then
+						cntr := cntr + 1;
+					end if;
+				else
 					stream_frm <= '0';
 				end if;
 			end if;
@@ -1064,6 +1079,19 @@ begin
 			dev_do_dv <= gnt_dv and (dev_gnt'range => ctlr_do_dv(0));
 			dev_di_dv <= gnt_dv and (dev_gnt'range => ctlr_di_req);
 			ctlr_di   <= capture_ctlrdo when capture_gntdv='1' else (others => '-');
+-- 
+	-- process (ctlr_clk)
+		-- variable xxx : unsigned(ctlr_do'range);
+	-- begin
+		-- if rising_edge(ctlr_clk) then
+			-- if ctlr_frm='0' then
+				-- xxx := (others => '0');
+			-- elsif ctlr_di_dv='1' then
+				-- xxx := xxx + 1;
+			-- end if;
+			-- ctlr_di <= std_logic_vector(xxx);
+		-- end if;
+	-- end process;
 
 			dmadv_e : entity hdl4fpga.latency
 			generic map (

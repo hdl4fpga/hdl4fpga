@@ -23,6 +23,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
@@ -36,33 +37,48 @@ entity sync_fifo is
 end;
 
 architecture def of sync_fifo is
-	signal req : std_logic := '0';
-	signal rdy : std_logic := '0';
+	signal req      : std_logic := '0';
+	signal rdy      : std_logic := '0';
+	signal src_addr : std_logic_vector(0 to 1) := (others => '0');
+	signal dst_addr : std_logic_vector(0 to 1) := (others => '0');
+	signal gray  : std_logic_vector(0 to 1) := (others => '0');
 begin
+	
+	mem_e : entity hdl4fpga.dpram
+	generic map (
+		synchronous_rdaddr => false,
+		synchronous_rddata => false)
+	port map (
+		wr_clk  => src_clk,
+		wr_addr => src_addr,
+		wr_data => src_data,
+
+		rd_clk  => dst_clk,
+		rd_addr => dst_addr,
+		rd_data => dst_data);
+
 	process (src_clk, dst_clk)
-		type states is (s_ready, s_request);
-		variable state : states;
-		variable gray : std_logic_vector(src_data'range);
+		variable sync_rdy : std_logic;
 	begin
 		if rising_edge(src_clk) then
-			case state is
-			when s_ready =>
-				if (req xor rdy)='0' then
-					gray  := bin2gray(src_data);
-					gray  := src_data;
-					state := s_request;
-				end if;
-			when s_request =>
-				req <= not rdy;
-				state := s_ready;
-			end case;
-		end if;
-		if rising_edge(dst_clk) then
-			if (req xor rdy)='1' then
-				dst_data <= gray2bin(gray);
-				dst_data <= gray;
-				rdy <= req;
+			if (req xor sync_rdy)='1' then
+				gray     <= bin2gray(std_logic_vector(src_addr));
+				src_addr <= std_logic_vector(unsigned(src_addr) + 1);
+				req      <= not sync_rdy;
 			end if;
+			sync_rdy := rdy;
+		end if;
+	end process;
+
+	process (dst_clk)
+		variable sync_req : std_logic;
+	begin
+		if rising_edge(dst_clk) then
+			if (rdy xor sync_req)='1' then
+				dst_addr <= gray2bin(gray);
+				rdy <= sync_req;
+			end if;
+			sync_req := req;
 		end if;
 	end process;
 end;
