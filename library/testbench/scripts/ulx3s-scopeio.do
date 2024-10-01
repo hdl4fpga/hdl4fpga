@@ -35,6 +35,10 @@ add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/dma_rdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/scopeio_e/capture_b/dmactlr_b/dmactlr_e/dmargtr_dv
 add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/dma_p/state
+add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/src2dst_e/src_addr
+add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/src2dst_e/src2dst
+add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/src2dst_e/dst2src
+add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/src2dst_e/dst_addr
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -group scopeio_sdr /testbench/du_e/scopeio_e/ctlr_clk
 add wave -noupdate -group scopeio_sdr /testbench/du_e/scopeio_e/ctlr_rst
@@ -111,7 +115,7 @@ add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/src2dst_
 add wave -noupdate /testbench/du_e/scopeio_e/capture_b/stream_e/fifo1_e/src2dst_e/rdy
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {101703214460 fs} 0} {{Cursor 2} {1116482412060 fs} 0}
+WaveRestoreCursors {{Cursor 1} {109200876250 fs} 0} {{Cursor 2} {1116482412060 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 251
 configure wave -valuecolwidth 108
@@ -127,4 +131,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {101660162370 fs} {101772955350 fs}
+WaveRestoreZoom {109142773430 fs} {110045117190 fs}

@@ -545,6 +545,7 @@ begin
 
 		signal stream_frm : std_logic;
 		signal stream_data : std_logic_vector(input_data'range);
+		constant yyy : natural := 13;
 	begin
 
 		-- xxx_g : if debug generate
@@ -559,13 +560,16 @@ begin
 				if stream_frm='1' then
 					if input_ena='1' then
 						xxx := unsigned(stream_data);
-						for i in 0 to xxx'length/8-1 loop
-							xxx(0 to 8-1) := xxx(0 to 8-1) + xxx'length/8;
-							xxx := xxx rol 8;
+						for i in 0 to xxx'length/yyy-1 loop
+							xxx(0 to yyy-1) := xxx(0 to yyy-1) + xxx'length/yyy;
+							xxx := xxx rol yyy;
 						end loop;
 					end if;
 				else
-					xxx := x"000102030405060708090a0b0c";
+					for i in 0 to xxx'length/yyy-1 loop
+						xxx(0 to yyy-1) := to_unsigned(i,yyy);
+						xxx := xxx rol yyy;
+					end loop;
 				end if;
 				stream_data <= std_logic_vector(xxx);
 				-- stream_data <= x"000102030405060708090a0b0c";
