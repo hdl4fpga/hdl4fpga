@@ -13,7 +13,7 @@ else
 	LIBUSB_LIBRARY ?= -l$(LIBUSB_NAME)
 endif
 
-all : bin bin/rgb8topixel$(EXE) bin/format$(EXE) bin/bundle$(EXE) bin/siosend$(EXE) bin/memtest$(EXE) bin/usbtest$(EXE)
+all : bin bin/rgb8topixel$(EXE) bin/format$(EXE) bin/bundle$(EXE) bin/scopeio$(EXE) bin/siosend$(EXE) bin/memtest$(EXE) bin/usbtest$(EXE)
 
 bin :
 	mkdir bin
@@ -32,6 +32,9 @@ bin/usbtest$(EXE) : src/usbtest.c src/lfsr.c
 
 bin/siosend$(EXE) : src/hdlc.h src/hdlc.c src/siolib.h src/siolib.c src/siosend.c
 	gcc -O3 $(LIBUSB_INCLUDE) src/siolib.c src/hdlc.c src/siosend.c $(WSOCK) $(LIBUSB_LIBRARY) -o bin/siosend
+
+bin/scopeio$(EXE) : src/hdlc.h src/hdlc.c src/siolib.h src/siolib.c src/scopeio.c
+	gcc -O3 $(LIBUSB_INCLUDE) src/siolib.c src/hdlc.c src/scopeio.c $(WSOCK) $(LIBUSB_LIBRARY) -o bin/scopeio
 
 bin/memtest$(EXE) : src/lfsr.h src/lfsr.c src/hdlc.h src/hdlc.c src/siolib.h src/siolib.c src/memtest.c
 	gcc -O3 $(LIBUSB_INCLUDE) src/lfsr.c src/siolib.c src/hdlc.c src/memtest.c $(WSOCK) $(LIBUSB_LIBRARY) -o bin/memtest
