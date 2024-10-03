@@ -6,6 +6,7 @@
 	_setmode(_fileno(stdin), _O_BINARY);
 #endif
 
+#define BYTEWIDTH
 char buff[256];
 int main (int argc, char *argv[])
 {
