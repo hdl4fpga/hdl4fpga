@@ -46,7 +46,7 @@ entity scopeiosdr is
 		mark         : sdram_chips;
 		fifo_size    : natural := 8*8192;
 		video_gear   : natural := 2;
-		intrp_trans  : boolean := false;
+		intrp_trans  : boolean := true;
 		red_length   : natural := 8;
 		green_length : natural := 8;
 		blue_length  : natural := 8;
