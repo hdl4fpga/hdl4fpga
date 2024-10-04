@@ -440,7 +440,6 @@ begin
 
 		process(input_enas, input_clk)
 			variable cntr : unsigned(input_chni'range) := (others => '0');
-			variable xxx : unsigned(0 to 1) := (others => '0');
 		begin
 			if rising_edge(input_clk) then
 				if input_ena='1' then
@@ -455,12 +454,6 @@ begin
 						input_enas <= '0';
 					end if;
 					input_chni <= std_logic_vector(cntr);
-				else
-					input_enas <= '0';
-				end if;
-				cntr := cntr + 1;
-				if cntr="11" then
-					input_enas <= '1';
 				else
 					input_enas <= '0';
 				end if;
