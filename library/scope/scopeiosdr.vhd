@@ -207,6 +207,7 @@ entity scopeiosdr is
 				natural'image(2**17/(2**(2+3)*5**(0+3))) & "," & -- [14]
 				natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
 			"length : 16]."));
+	constant sample_length : natural := input_data'length/inputs;
 end;
 
 architecture beh of scopeiosdr is
@@ -545,13 +546,10 @@ begin
 
 		signal stream_frm : std_logic;
 		signal stream_data : std_logic_vector(input_data'range);
-		constant yyy : natural := 13;
 	begin
 
-		-- xxx_g : if debug generate
-		-- stream_frm <= '0', '1' after 110 us; --, '0' after 250 us, '1' after 300 us;
-		-- end generate;
 		process (input_clk)
+			constant sample_length : natural := 13;
 			variable xxx : unsigned(0 to stream_data'length-1);
 			variable cntr : unsigned(0 to 10);
 			variable inirdy : std_logic;
@@ -560,19 +558,18 @@ begin
 				if stream_frm='1' then
 					if input_ena='1' then
 						xxx := unsigned(stream_data);
-						for i in 0 to xxx'length/yyy-1 loop
-							xxx(0 to yyy-1) := xxx(0 to yyy-1) + xxx'length/yyy;
-							xxx := xxx rol yyy;
+						for i in 0 to xxx'length/sample_length-1 loop
+							xxx(0 to sample_length-1) := xxx(0 to sample_length-1) + xxx'length/sample_length;
+							xxx := xxx rol sample_length;
 						end loop;
 					end if;
 				else
-					for i in 0 to xxx'length/yyy-1 loop
-						xxx(0 to yyy-1) := to_unsigned(i,yyy);
-						xxx := xxx rol yyy;
+					for i in 0 to xxx'length/sample_length-1 loop
+						xxx(0 to sample_length-1) := to_unsigned(i,sample_length);
+						xxx := xxx rol sample_length;
 					end loop;
 				end if;
 				stream_data <= std_logic_vector(xxx);
-				-- stream_data <= x"000102030405060708090a0b0c";
 				if inirdy='0' then
 					stream_frm <= '0';
 					cntr := (others => '0');
@@ -593,7 +590,7 @@ begin
 			buffer_size => 32)
 		port map (
 			stream_clk  => input_clk,
-			stream_frm  => stream_frm, --'-',
+			stream_frm  => stream_frm,
 			stream_irdy => input_ena,
 			stream_trdy => open,
 			stream_data => stream_data,
@@ -1077,19 +1074,6 @@ begin
 			dev_do_dv <= gnt_dv and (dev_gnt'range => ctlr_do_dv(0));
 			dev_di_dv <= gnt_dv and (dev_gnt'range => ctlr_di_req);
 			ctlr_di   <= capture_ctlrdo when capture_gntdv='1' else (others => '-');
--- 
-	-- process (ctlr_clk)
-		-- variable xxx : unsigned(ctlr_do'range);
-	-- begin
-		-- if rising_edge(ctlr_clk) then
-			-- if ctlr_frm='0' then
-				-- xxx := (others => '0');
-			-- elsif ctlr_di_dv='1' then
-				-- xxx := xxx + 1;
-			-- end if;
-			-- ctlr_di <= std_logic_vector(xxx);
-		-- end if;
-	-- end process;
 
 			dmadv_e : entity hdl4fpga.latency
 			generic map (
