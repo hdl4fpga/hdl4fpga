@@ -548,6 +548,7 @@ begin
 		signal stream_data : std_logic_vector(input_data'range);
 	begin
 
+		-- stream_frm <= '0', '1' after 110 us, '0' after 150 us, '1' after 160 us;
 		process (input_clk)
 			constant sample_length : natural := 13;
 			variable xxx : unsigned(0 to stream_data'length-1);
@@ -570,6 +571,13 @@ begin
 					end loop;
 				end if;
 				stream_data <= std_logic_vector(xxx);
+				-- if inirdy='0' then
+					-- stream_frm <= '0';
+				-- elsif capture_shot='1' then
+					-- stream_frm <= '1';
+				-- elsif capture_end='1' then
+					-- stream_frm <= '0';
+				-- end if;
 				if inirdy='0' then
 					stream_frm <= '0';
 					cntr := (others => '0');
@@ -587,7 +595,7 @@ begin
 
 		stream_e : entity hdl4fpga.sdram_stream
 		generic map (
-			buffer_size => 32)
+			buffer_size => 256)
 		port map (
 			stream_clk  => input_clk,
 			stream_frm  => stream_frm,

@@ -538,7 +538,7 @@ begin
 		so_end      => so_end,
 		so_data     => so_data,
 		input_clk   => input_clk,
-		input_ena   => input_enas,
+		input_ena   => '1', --input_enas,
 		input_data  => input_samples,
 
 		ctlr_clk     => ctlr_clk,
