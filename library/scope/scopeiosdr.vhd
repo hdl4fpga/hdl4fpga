@@ -571,24 +571,24 @@ begin
 					end loop;
 				end if;
 				stream_data <= std_logic_vector(xxx);
-				-- if inirdy='0' then
-					-- stream_frm <= '0';
-				-- elsif capture_shot='1' then
-					-- stream_frm <= '1';
-				-- elsif capture_end='1' then
-					-- stream_frm <= '0';
-				-- end if;
 				if inirdy='0' then
 					stream_frm <= '0';
-					cntr := (others => '0');
-				elsif cntr(0)='0' then
+				elsif capture_shot='1' then
 					stream_frm <= '1';
-					if input_ena='1' then
-						cntr := cntr + 1;
-					end if;
-				else
+				elsif capture_end='1' then
 					stream_frm <= '0';
 				end if;
+				-- if inirdy='0' then
+					-- stream_frm <= '0';
+					-- cntr := (others => '0');
+				-- elsif cntr(0)='0' then
+					-- stream_frm <= '1';
+					-- if input_ena='1' then
+						-- cntr := cntr + 1;
+					-- end if;
+				-- else
+					-- stream_frm <= '0';
+				-- end if;
 				inirdy := ctlr_inirdy;
 			end if;
 		end process;

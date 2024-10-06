@@ -72,7 +72,7 @@ architecture def of sdram_stream is
 	signal wm_req : std_logic := '0';
 	signal wm_rdy : std_logic := '0';
 
-	signal level : signed(0 to signed_num_bits(buffer_size)) := (others => '0');
+	signal level : signed(0 to signed_num_bits(buffer_size)) := (others => '1');
 	signal sync_dmareq : std_logic := '0';
 begin
 
