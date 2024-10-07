@@ -18,6 +18,7 @@ int main (int argc, char *argv[])
 	data = 0;
 	acc  = 0;
 	int j = 0;
+	int n = 0;
 	while((c = getchar()) >= 0) {
 		length = getchar();
 		switch(c) {
@@ -33,10 +34,11 @@ int main (int argc, char *argv[])
 					sample = data;
 					sample >>= acc;
 					sample &= (1 << 13)-1;
+					if (!j) printf("%5d ",n++);
 					printf("%4d", sample);
 					j = ++j % 8;
 					if (j) {
-						printf(", ");
+						printf(" ");
 					} else {
 						printf("\n");
 					}

@@ -16,7 +16,7 @@ int main (int argc, char *argv[])
 	char *ptr;
 
 	setbuf(stdout, NULL);
-	for(int i = 0; i < 2; i++) {
+	for(int i = 0; i < 8; i++) {
 		ptr = buff+sizeof(short);
 		hton.word = htonl((i << 10));
     	*ptr++ = 0x17;
