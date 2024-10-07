@@ -571,6 +571,7 @@ begin
 					end loop;
 				end if;
 				stream_data <= std_logic_vector(xxx);
+				stream_data <= input_data;
 				if inirdy='0' then
 					stream_frm <= '0';
 				elsif capture_shot='1' then

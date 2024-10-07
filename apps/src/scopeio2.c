@@ -11,14 +11,14 @@ char buff[256];
 int main (int argc, char *argv[])
 {
 	int c; 
-	int sample;
+	unsigned int sample;
 	int acc;
 	int length;
 	int data;
 	data = 0;
 	acc  = 0;
+	int j = 0;
 	while((c = getchar()) >= 0) {
-					// printf("%2x\n", c);
 		length = getchar();
 		switch(c) {
 		case 0x18:
@@ -33,7 +33,13 @@ int main (int argc, char *argv[])
 					sample = data;
 					sample >>= acc;
 					sample &= (1 << 13)-1;
-					printf("%4d\n", sample);
+					printf("%4d", sample);
+					j = ++j % 8;
+					if (j) {
+						printf(", ");
+					} else {
+						printf("\n");
+					}
 				}
 			}
 			break;
