@@ -34,7 +34,7 @@ int main (int argc, char *argv[])
 					sample = data;
 					sample >>= acc;
 					sample &= (1 << 13)-1;
-					if (!j) printf("%5d ",n++);
+					if (!j) printf("%5f ",(n++)/1.024);
 					printf("%4d", sample);
 					j = ++j % 8;
 					if (j) {
