@@ -65,7 +65,7 @@ architecture scopeiosdr of ulx3s is
 
 	constant video_params : video_record := videoparam(video_mode, clk25mhz_freq);
 
-	constant video_gear  : natural      := 2;
+	constant video_gear  : natural := 2;
 	signal video_clk     : std_logic;
 	signal video_eclk    : std_logic;
 	signal video_shift_clk : std_logic;
