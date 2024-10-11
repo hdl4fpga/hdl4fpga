@@ -12,7 +12,7 @@
 char buff[256];
 
 const double vt_step = 3.3/(1<<(SAMPLE_WIDTH-1));
-const double freq = 1.024e6;
+const double freq = 1.024e6/4;
 const double unit = 1.0e-6;
 
 int main (int argc, char *argv[])
