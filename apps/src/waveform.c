@@ -41,8 +41,20 @@ int main (int argc, char *argv[])
 					sample = data;
 					sample >>= acc;
 					sample &= (1 << SAMPLE_WIDTH)-1;
-					if (!j) printf("%5f ",(n++)/(freq*unit));
-					printf("%4f", vt_step*sample);
+					if (!j) printf("%5f ",(8+n++)/(freq*unit));
+					switch(j) {
+						case 0:
+							printf("%4f", vt_step*sample+10.0);
+							break;
+						case 1:
+							printf("%4f", (vt_step*sample+1.0)*5.0);
+						case 2:
+							printf("%4f", vt_step*sample-5.0);
+						case 3:
+							printf("%4f", vt_step*sample-10.0);
+						default:
+							printf("%4f", vt_step*sample);
+					};
 					j = ++j % CHAR_WIDTH;
 					if (j) {
 						printf(" ");
