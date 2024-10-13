@@ -33,11 +33,13 @@ use hdl4fpga.app_profiles.all;
 use hdl4fpga.ecp5_profiles.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.scopeiopkg.all;
+use hdl4fpga.sdram_param.all;
+use hdl4fpga.sdram_db.all;
 
 library ecp5u;
 use ecp5u.components.all;
 
-architecture scopeio of ulx3s is
+architecture scopeiosdr of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
@@ -51,11 +53,19 @@ architecture scopeio of ulx3s is
 	-- constant sdram_speed  : sdram_speeds := sdram225MHz; 
 	--------------------------------------
 
+	constant adc1clkref_freq : real := 64.0e6;
+	constant adc1clki_div    : natural := 5;
+	constant adc1clkos_div   : natural := 32;
+	constant adc1clkos2_div  : natural := 25;
+	constant adc1clkos_freq  : real := adc1clkref_freq/real(adc1clki_div);
+	constant adc1clkos2_freq : real := (real(adc1clkos_div)*adc1clkref_freq)/(real(adc1clkos2_div)*real(adc1clki_div));
+	constant sdram_freq      : real := (real(adc1clkos_div)*adc1clkref_freq)/(real(3)*real(adc1clki_div));
+
 	constant usb_oversampling : natural := 3;
 
 	constant video_params : video_record := videoparam(video_mode, clk25mhz_freq);
 
-	constant video_gear  : natural      := 2;
+	constant video_gear  : natural := 2;
 	signal video_clk     : std_logic;
 	signal video_eclk    : std_logic;
 	signal video_shift_clk : std_logic;
@@ -90,7 +100,7 @@ architecture scopeio of ulx3s is
 	signal input_ena     : std_logic;
 	signal input_sample  : std_logic_vector(13-1 downto 0);
 	constant vt_step     : real := 3.3/2.0**(input_sample'length-1); -- Volts
-	signal input_enas    : std_logic;
+	signal input_enas    : std_logic := '0';
 	signal input_samples : std_logic_vector(0 to inputs*input_sample'length-1);
 	signal tp            : std_logic_vector(1 to 32);
 
@@ -178,6 +188,44 @@ architecture scopeio of ulx3s is
 			"   { text  : GP17,            " &
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff}]}");   -- vt(7)
+
+	constant sdram : string := compact(
+		"{" &
+		"   gear      : 1," &
+		"   bank_size : " & natural'image(sdram_ba'length) & "," &
+		"   addr_size : " & natural'image(sdram_a'length)  & "," &
+		"   coln_size : 9," &
+		"   word_size : " & natural'image(sdram_d'length)  & "," &
+		"   byte_size : " & natural'image(sdram_d'length/sdram_dqm'length) & "," &
+		"}");
+	constant gear          : natural := hdo(sdram)**".gear";
+	constant bank_size     : natural := hdo(sdram)**".bank_size";
+	constant addr_size     : natural := hdo(sdram)**".addr_size";
+	constant coln_size     : natural := hdo(sdram)**".coln_size";
+	constant word_size     : natural := hdo(sdram)**".word_size";
+	constant byte_size     : natural := hdo(sdram)**".byte_size";
+	signal ctlr_clk      : std_logic;
+	signal sdrsys_rst    : std_logic;
+
+	constant sdram_params : sdramparams_record := sdramparams(sdram200MHz, clk25mhz_freq);
+	
+	signal ctlrphy_rst   : std_logic;
+	signal ctlrphy_cke   : std_logic;
+	signal ctlrphy_cs    : std_logic;
+	signal ctlrphy_ras   : std_logic;
+	signal ctlrphy_cas   : std_logic;
+	signal ctlrphy_we    : std_logic;
+	signal ctlrphy_b     : std_logic_vector(sdram_ba'length-1 downto 0);
+	signal ctlrphy_a     : std_logic_vector(sdram_a'length-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
+	signal sdrphy_sti    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal sdram_dqs     : std_logic_vector(word_size/byte_size-1 downto 0);
+
 begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
@@ -327,6 +375,7 @@ begin
 	led <= tp(1 to 8);
 	stactlr_e : entity hdl4fpga.scopeio_stactlr
 	generic map (
+		debug => debug,
 		layout => layout)
 	port map (
 		tp => tp,
@@ -389,8 +438,8 @@ begin
 			max_input <= no_inputs;
 		end process;
 
-		process(input_clk)
-			variable cntr : unsigned(input_chni'range);
+		process(input_enas, input_clk)
+			variable cntr : unsigned(input_chni'range) := (others => '0');
 		begin
 			if rising_edge(input_clk) then
 				if input_ena='1' then
@@ -468,9 +517,14 @@ begin
 
 	end block;
 
-	scopeio_e : entity hdl4fpga.scopeio
+	scopeio_e : entity hdl4fpga.scopeiosdr
 	generic map (
-		videotiming_id => video_params.timing,
+		debug => debug,
+		profile => 0,
+		sdram_tcp    => 1.0/sdram_freq,
+		mark         => MT48LC256MA27E ,
+		timing_id => video_params.timing,
+		sdram     => sdram,
 		layout         => layout)
 	port map (
 		-- tp => tp,
@@ -478,16 +532,90 @@ begin
 		si_frm      => si_frm,
 		si_irdy     => si_irdy,
 		si_data     => si_data,
+		so_frm      => so_frm,
+		so_irdy     => so_irdy,
+		so_trdy     => so_trdy,
+		so_end      => so_end,
 		so_data     => so_data,
 		input_clk   => input_clk,
 		input_ena   => input_enas,
 		input_data  => input_samples,
+
+		ctlr_clk     => ctlr_clk,
+		ctlr_rst     => sdrsys_rst,
+		ctlr_bl      => "000",
+		ctlr_cl      => sdram_params.cl,
+
+		ctlrphy_rst  => ctlrphy_rst,
+		ctlrphy_cke  => ctlrphy_cke,
+		ctlrphy_cs   => ctlrphy_cs,
+		ctlrphy_ras  => ctlrphy_ras,
+		ctlrphy_cas  => ctlrphy_cas,
+		ctlrphy_we   => ctlrphy_we,
+		ctlrphy_b    => ctlrphy_b,
+		ctlrphy_a    => ctlrphy_a,
+		ctlrphy_dmo  => ctlrphy_dmo,
+		ctlrphy_dqi  => ctlrphy_dqi,
+		ctlrphy_dqt  => ctlrphy_dqt,
+		ctlrphy_dqo  => ctlrphy_dqo,
+		ctlrphy_sto  => ctlrphy_sto,
+		ctlrphy_sti  => ctlrphy_sti,
 		video_clk   => video_clk,
 		video_pixel => video_pixel,
 		video_hsync => video_hzsync,
 		video_vsync => video_vtsync,
 		video_vton  => video_vton,
 		video_blank => video_blank);
+
+	latsti_e : entity hdl4fpga.latency
+	generic map (
+		n => gear,
+		d => (0 to gear-1 => 0))
+	port map (
+		clk => ctlr_clk,
+		di  => ctlrphy_sto,
+		do  => sdrphy_sti);
+
+	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
+	generic map (
+		gear       => gear,
+		bank_size  => sdram_ba'length,
+		addr_size  => sdram_a'length,
+		word_size  => word_size,
+		byte_size  => byte_size,
+		wr_fifo    => false,
+		rd_fifo    => false,
+		bypass     => false)
+	port map (
+		sclk       => ctlr_clk,
+		rst        => sdrsys_rst,
+
+		sys_cs(0)  => ctlrphy_cs,
+		sys_cke(0) => ctlrphy_cke,
+		sys_ras(0) => ctlrphy_ras,
+		sys_cas(0) => ctlrphy_cas,
+		sys_we(0)  => ctlrphy_we,
+		sys_b      => ctlrphy_b,
+		sys_a      => ctlrphy_a,
+		sys_dmi    => ctlrphy_dmo,
+		sys_dqi    => ctlrphy_dqo,
+		sys_dqt    => ctlrphy_dqt,
+		sys_dqo    => ctlrphy_dqi,
+		sys_sto    => ctlrphy_sti,
+		sys_sti    => sdrphy_sti,
+
+		sdram_clk  => sdram_clk,
+		sdram_cke  => sdram_cke,
+		sdram_cs   => sdram_csn,
+		sdram_ras  => sdram_rasn,
+		sdram_cas  => sdram_casn,
+		sdram_we   => sdram_wen,
+		sdram_b    => sdram_ba,
+		sdram_a    => sdram_a,
+		sdram_dqs  => sdram_dqs,
+
+		sdram_dm   => sdram_dqm,
+		sdram_dq   => sdram_d);
 
 	-- HDMI/DVI VGA --
 	------------------
@@ -572,9 +700,9 @@ begin
 			if input_ena='1' then
 				for i in 0 to inputs-1 loop
 					if unsigned(input_chno)=i then
-						assert false
-						report integer'image(i) & " : " & to_string(input_chno) & ": " & std_logic'image(input_ena)
-						severity WARNING;
+						-- assert false
+						-- report integer'image(i) & " : " & to_string(input_chno) & ": " & std_logic'image(input_ena)
+						-- severity WARNING;
 						input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;
 					end if;
 				end loop;
@@ -628,6 +756,7 @@ begin
 
 		attribute FREQUENCY_PIN_CLKOS  of adc1_i : label is ftoa( adc1clkos_freq/1.0e6, 10);
 		attribute FREQUENCY_PIN_CLKOS2 of adc1_i : label is ftoa(adc1clkos2_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOS3 of adc1_i : label is ftoa(sdram_freq/1.0e6, 10);
 
 	begin
 
@@ -635,7 +764,8 @@ begin
 		report CR &
 			"MAX1112X" & CR &
 			"ADC1_CLKOS     : " & adc1_i'FREQUENCY_PIN_CLKOS  & " MHz " & CR &
-			"ADC1_CLKOS2    : " & adc1_i'FREQUENCY_PIN_CLKOS2 & " MHz "
+			"ADC1_CLKOS2    : " & adc1_i'FREQUENCY_PIN_CLKOS2 & " MHz " & CR &
+			"SDRAM_CLKOS3   : " & adc1_i'FREQUENCY_PIN_CLKOS3 & " MHz "
 		severity NOTE;
 
 		adc1_i : EHXPLLL
@@ -648,8 +778,8 @@ begin
 			FEEDBK_PATH      => "CLKOS",
 			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => adc1clkos_div-1,
 			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
-			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
-			CLKOP_ENABLE     => "DISABLED", CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
+			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => adc1clkos_div-1,
+			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
 			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
 			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
 			OUTDIVIDER_MUXD  => "DIVD",
@@ -659,7 +789,8 @@ begin
 
 			CLKI_DIV         => adc1clki_div,
 			CLKOS_DIV        => adc1clkos_div,
-			CLKOS2_DIV       => adc1clkos2_div)
+			CLKOS2_DIV       => adc1clkos2_div,
+			CLKOS3_DIV       => 3)
 		port map (
 			clki      => video_clk,
 			CLKFB     => adc1_clkos,
@@ -673,17 +804,20 @@ begin
 			ENCLKOS3  => '0',
 			CLKOS     => adc1_clkos,
 			CLKOS2    => adc1_clkos2,
+			CLKOS3    => ctlr_clk,
 			LOCK      => adc1_lock,
 			INTLOCK   => open,
 			REFCLK    => open,
 			CLKINTFB  => open);
 		
+		sdram_dqs <= (others => ctlr_clk);
 		adc_clk   <= adc1_clkos2;
 		input_clk <= adc1_clkos2;
+		sdrsys_rst <= not adc1_lock;
 
 		process (input_clk)
 			constant n    : natural := 16;
-			variable cntr : unsigned(0 to unsigned_num_bits(n-1)-1);
+			variable cntr : unsigned(0 to unsigned_num_bits(n-1)-1) := (others => '0');
 		begin
 			if rising_edge(input_clk) then
 				if input_lck='0' then
