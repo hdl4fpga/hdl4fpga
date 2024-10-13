@@ -28,7 +28,64 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity fifo is
+entity sync_fifo is
+	port (
+		src_clk  : in  std_logic;
+		src_data : in  std_logic_vector;
+		dst_clk  : in  std_logic;
+		dst_data : out std_logic_vector);
+end;
+
+architecture def of sync_fifo is
+	signal req      : std_logic := '0';
+	signal rdy      : std_logic := '0';
+	signal src_addr : std_logic_vector(0 to 1) := (others => '0');
+	signal dst_addr : std_logic_vector(0 to 1) := (others => '0');
+	signal src2dst  : std_logic_vector(0 to 1) := (others => '0');
+	signal dst2src  : std_logic_vector(0 to 1) := (others => '0');
+begin
+	
+	mem_e : entity hdl4fpga.dpram
+	generic map (
+		synchronous_rdaddr => false,
+		synchronous_rddata => false)
+	port map (
+		wr_clk  => src_clk,
+		wr_addr => src_addr,
+		wr_data => src_data,
+
+		rd_clk  => dst_clk,
+		rd_addr => dst_addr,
+		rd_data => dst_data);
+
+	process (src_clk, dst_clk)
+	begin
+		if rising_edge(src_clk) then
+			src2dst <= bin2gray(std_logic_vector(src_addr));
+			if dst2src=src2dst then
+				src2dst  <= src_addr;
+				src_addr <= bin2gray(std_logic_vector(unsigned(gray2bin(src_addr)) + 1));
+			end if;
+		end if;
+	end process;
+
+	process (dst_clk)
+	begin
+		if rising_edge(dst_clk) then
+			dst2src  <= dst_addr;
+			dst_addr <= src2dst;
+		end if;
+	end process;
+end;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library hdl4fpga;
+use hdl4fpga.base.all;
+
+entity fifo1 is
 	generic (
 		sync_read  : boolean := true;
 		debug      : boolean := false;
@@ -62,7 +119,7 @@ entity fifo is
 		dst_data   : buffer std_logic_vector);
 end;
 
-architecture def of fifo is
+architecture def of fifo1 is
 
 	constant addr_length : natural := unsigned_num_bits(max_depth)-1;
 
@@ -313,11 +370,14 @@ begin
 				if src_mode='0' then
 					if async_mode then
 						wr_cntr <= unsigned(to_stdlogicvector(to_bitvector(rd_cmp)));
+						wr_ptr  <= unsigned(to_stdlogicvector(to_bitvector(rd_cmp)));
 					else
 						wr_cntr <= rd_cntr;
+						wr_ptr  <= rd_cntr;
 					end if;
 				else
 					wr_cntr <= to_unsigned(src_offset, wr_cntr'length);
+					wr_ptr  <= to_unsigned(src_offset, wr_cntr'length);
 				end if;
 			elsif rollback='1' then
 				wr_cntr  <= wr_ptr;
@@ -369,27 +429,18 @@ begin
 		end if;
 	end process;
 
-	sync_b : block
-	begin
+	src2dst_e : entity hdl4fpga.sync_fifo
+	port map (
+		src_clk  => src_clk,     				
+		src_data => std_logic_vector(wr_ptr),     
+		dst_clk  => dst_clk,     
+		dst_data => wr_cmp);
 
-		src2dst_e : entity hdl4fpga.sync_transfer
-		port map (
-			src_clk    => src_clk,
-			src_frm    => src_frm,
-			src_data   => std_logic_vector(wr_ptr),
-			dst_frm    => dst_frm,
-			dst_clk    => dst_clk,
-			dst_data   => wr_cmp);
-
-		dst2src_e : entity hdl4fpga.sync_transfer
-		port map (
-			src_clk    => dst_clk,
-			src_frm    => dst_frm,
-			src_data   => std_logic_vector(rd_cntr),
-			dst_clk    => src_clk,
-			dst_frm    => src_frm,
-			dst_data   => rd_cmp);
-
-	end block;
+	dst2src_e : entity hdl4fpga.sync_fifo
+	port map (
+		src_clk  => dst_clk,     				
+		src_data => std_logic_vector(rd_cntr),     
+		dst_clk  => src_clk,     
+		dst_data => rd_cmp);
 
 end;
