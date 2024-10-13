@@ -7,6 +7,7 @@
 #endif
 
 #define CHAR_WIDTH    8
+#define CHANNELS      8
 #define SAMPLE_WIDTH 13
 
 char buff[256];
@@ -14,7 +15,7 @@ char buff[256];
 const double vt_step = 3.3/(1<<(SAMPLE_WIDTH-1));
 const double freq = 1.024e6/4;
 const double unit = 1.0e-6;
-
+// pulseview -I csv:column_formats=t,8a data.csv 
 int main (int argc, char *argv[])
 {
 	int acc  = 0;
@@ -25,6 +26,8 @@ int main (int argc, char *argv[])
 	unsigned int sample;
 	unsigned int length;
 	int c; 
+
+	printf("Time[us], GN14 (analog), GP14 (analog), GN15 (analog), GP15 (analog), GN16 (analog), GP16 (analog), GN17 (analog), GP17 (analog)\n");
 
 	while((c = getchar()) >= 0) {
 		if ((int)(length = getchar()) < 0) ;
@@ -41,23 +44,11 @@ int main (int argc, char *argv[])
 					sample = data;
 					sample >>= acc;
 					sample &= (1 << SAMPLE_WIDTH)-1;
-					if (!j) printf("%5f ",(8+n++)/(freq*unit));
-					switch(j) {
-						case 0:
-							printf("%4f", vt_step*sample+10.0);
-							break;
-						case 1:
-							printf("%4f", (vt_step*sample+1.0)*5.0);
-						case 2:
-							printf("%4f", vt_step*sample-5.0);
-						case 3:
-							printf("%4f", vt_step*sample-10.0);
-						default:
-							printf("%4f", vt_step*sample);
-					};
-					j = ++j % CHAR_WIDTH;
+					if (!j) printf("%f, ",(8+n++)/freq);
+					printf("%4f", vt_step*sample);
+					j = ++j % CHANNELS;
 					if (j) {
-						printf(" ");
+						printf(", ");
 					} else {
 						printf("\n");
 					}
@@ -70,5 +61,13 @@ int main (int argc, char *argv[])
 			}
 		}
 	}
+	while(j) {
+		printf("%d", j);
+		j = (++j) % CHANNELS;
+		if (j) {
+			printf(", ");
+		}
+	}
+
 	return 0;
 }

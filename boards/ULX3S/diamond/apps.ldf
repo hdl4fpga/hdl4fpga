@@ -1152,7 +1152,7 @@
             <Options/>
         </Source>
         <Source name="../apps/scopeio.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
+            <Options lib="work"/>
         </Source>
         <Source name="apps.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
