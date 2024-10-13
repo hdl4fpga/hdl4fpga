@@ -157,7 +157,7 @@ architecture ulx3s_scopeio of testbench is
 
 		x"1702_0000ff_1603_0000_0000";
 	constant req_data  : std_logic_vector :=
-		x"010008_1702_0000ff_1603_8000_0000";
+		x"010008_1702_000000_1603_8000_0000";
 
 	signal rst         : std_logic;
 	signal xtal        : std_logic := '0';
@@ -201,7 +201,7 @@ architecture ulx3s_scopeio of testbench is
 	signal down    : std_logic := '0';
 begin
 
-	rst      <= '1', '0' after 10 us;
+	rst      <= '1', '0' after 125 us;
 	xtal     <= not xtal after 20 ns;
 	uart_clk <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
 	usb_clk <= not usb_clk after 1 sec/(2.0*usb_freq);
@@ -231,10 +231,12 @@ begin
 		debug   => debug,
 		-- payload_segments => (0 => snd_data'length, 1 => req_data'length),
 		-- payload   => snd_data & req_data)
-		payload_segments => (0 => snd_data'length),
-		payload   => snd_data)
+		payload_segments => (0 => req_data'length),
+		payload   => req_data)
+		-- payload_segments => (0 => snd_data'length),
+		-- payload   => snd_data)
 	port map (
-		rst     => rst,
+		rst     => '1', --rst,
 		usb_clk => usb_clk,
 		usb_dp  => usb_fpga_dp,
 		usb_dn  => usb_fpga_dn);
@@ -259,7 +261,7 @@ begin
 	down <= '0', '1' after 2.1 us, '0' after 3 us;
 	du_e : ulx3s
 	generic map (
-		debug => debug)
+		debug => true)
 	port map (
 		clk_25mhz  => xtal,
 		usb_fpga_dp => usb_fpga_dp,

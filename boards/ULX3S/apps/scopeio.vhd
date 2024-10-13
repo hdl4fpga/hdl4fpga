@@ -39,7 +39,7 @@ use hdl4fpga.sdram_db.all;
 library ecp5u;
 use ecp5u.components.all;
 
-architecture scopeiosdr of ulx3s is
+architecture scopeio of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --

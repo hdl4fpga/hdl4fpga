@@ -83,8 +83,8 @@ HDL4FPGA__tmds_encoder__def = $(LIB_HDL4FPGA)/tmds_encoder/def.dat
 HDL4FPGA__tmds_encoder = $(LIB_HDL4FPGA)/tmds_encoder/_primary.dat
 HDL4FPGA__timer__def = $(LIB_HDL4FPGA)/timer/def.dat
 HDL4FPGA__timer = $(LIB_HDL4FPGA)/timer/_primary.dat
-HDL4FPGA__sync_transfer__def = $(LIB_HDL4FPGA)/sync_transfer/def.dat
-HDL4FPGA__sync_transfer = $(LIB_HDL4FPGA)/sync_transfer/_primary.dat
+HDL4FPGA__sync_fifo__def = $(LIB_HDL4FPGA)/sync_fifo/def.dat
+HDL4FPGA__sync_fifo = $(LIB_HDL4FPGA)/sync_fifo/_primary.dat
 HDL4FPGA__so_data__def = $(LIB_HDL4FPGA)/so_data/def.dat
 HDL4FPGA__so_data = $(LIB_HDL4FPGA)/so_data/_primary.dat
 HDL4FPGA__sio_udp__struct = $(LIB_HDL4FPGA)/sio_udp/struct.dat
@@ -268,8 +268,6 @@ HDL4FPGA__g4_phdata270__inference = $(LIB_HDL4FPGA)/g4_phdata270/inference.dat
 HDL4FPGA__g4_phdata270 = $(LIB_HDL4FPGA)/g4_phdata270/_primary.dat
 HDL4FPGA__g4_phdata__inference = $(LIB_HDL4FPGA)/g4_phdata/inference.dat
 HDL4FPGA__g4_phdata = $(LIB_HDL4FPGA)/g4_phdata/_primary.dat
-HDL4FPGA__fifo1__def = $(LIB_HDL4FPGA)/fifo1/def.dat
-HDL4FPGA__fifo1 = $(LIB_HDL4FPGA)/fifo1/_primary.dat
 HDL4FPGA__fifo__def = $(LIB_HDL4FPGA)/fifo/def.dat
 HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
 HDL4FPGA__ethpkg__body = $(LIB_HDL4FPGA)/ethpkg/body.dat
@@ -459,8 +457,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__tmds_encoder) \
     $(HDL4FPGA__timer__def) \
     $(HDL4FPGA__timer) \
-    $(HDL4FPGA__sync_transfer__def) \
-    $(HDL4FPGA__sync_transfer) \
+    $(HDL4FPGA__sync_fifo__def) \
+    $(HDL4FPGA__sync_fifo) \
     $(HDL4FPGA__so_data__def) \
     $(HDL4FPGA__so_data) \
     $(HDL4FPGA__sio_udp__struct) \
@@ -644,8 +642,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__g4_phdata270) \
     $(HDL4FPGA__g4_phdata__inference) \
     $(HDL4FPGA__g4_phdata) \
-    $(HDL4FPGA__fifo1__def) \
-    $(HDL4FPGA__fifo1) \
     $(HDL4FPGA__fifo__def) \
     $(HDL4FPGA__fifo) \
     $(HDL4FPGA__ethpkg__body) \
@@ -1293,25 +1289,6 @@ $(HDL4FPGA__ethpkg__body) : ../mii/ethpkg.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../mii/ethpkg.vhd
-
-$(HDL4FPGA__fifo) \
-$(HDL4FPGA__fifo__def) : ../basic/fifo.vhd \
-		$(HDL4FPGA__sync_transfer) \
-		$(HDL4FPGA__dpram) \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../basic/fifo.vhd
-
-$(HDL4FPGA__fifo1) \
-$(HDL4FPGA__fifo1__def) : ../basic/fifo1.vhd \
-		$(HDL4FPGA__dpram) \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../basic/fifo1.vhd
 
 $(HDL4FPGA__graphics) \
 $(HDL4FPGA__graphics__def) : ../video/graphics.vhd \
@@ -2365,14 +2342,16 @@ $(HDL4FPGA__so_data__def) : ../sio/so_data.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../sio/so_data.vhd
 
-$(HDL4FPGA__sync_transfer) \
-$(HDL4FPGA__sync_transfer__def) : ../basic/sync_transfer.vhd \
+$(HDL4FPGA__fifo) \
+$(HDL4FPGA__fifo__def) \
+$(HDL4FPGA__sync_fifo) \
+$(HDL4FPGA__sync_fifo__def) : ../basic/fifo.vhd \
 		$(HDL4FPGA__dpram) \
-		$(IEEE__numeric_std) \
 		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../basic/sync_transfer.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/fifo.vhd
 
 $(HDL4FPGA__timer) \
 $(HDL4FPGA__timer__def) : ../basic/timer.vhd \

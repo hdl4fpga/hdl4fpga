@@ -85,7 +85,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity fifo1 is
+entity fifo is
 	generic (
 		sync_read  : boolean := true;
 		debug      : boolean := false;
@@ -119,7 +119,7 @@ entity fifo1 is
 		dst_data   : buffer std_logic_vector);
 end;
 
-architecture def of fifo1 is
+architecture def of fifo is
 
 	constant addr_length : natural := unsigned_num_bits(max_depth)-1;
 
