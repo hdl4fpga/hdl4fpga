@@ -517,7 +517,7 @@ begin
 
 	end block;
 
-	scopeio_e : entity hdl4fpga.scopeiosdr
+	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		debug => debug,
 		profile => 0,

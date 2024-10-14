@@ -34,7 +34,7 @@ use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.sdram_param.all;
 use hdl4fpga.sdram_db.all;
 
-entity scopeiosdr is
+entity scopeio is
 	generic (
 
 		debug : boolean := false;
@@ -210,7 +210,7 @@ entity scopeiosdr is
 	constant sample_length : natural := input_data'length/inputs;
 end;
 
-architecture beh of scopeiosdr is
+architecture beh of scopeio is
 
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 	constant gainid_bits  : natural := unsigned_num_bits(vt_gains'length-1);

@@ -141,8 +141,6 @@ HDL4FPGA__sdram_db__body = $(LIB_HDL4FPGA)/sdram_db/body.dat
 HDL4FPGA__sdram_db = $(LIB_HDL4FPGA)/sdram_db/_primary.dat
 HDL4FPGA__sdram_ctlr__mix = $(LIB_HDL4FPGA)/sdram_ctlr/mix.dat
 HDL4FPGA__sdram_ctlr = $(LIB_HDL4FPGA)/sdram_ctlr/_primary.dat
-HDL4FPGA__scopeiosdr__beh = $(LIB_HDL4FPGA)/scopeiosdr/beh.dat
-HDL4FPGA__scopeiosdr = $(LIB_HDL4FPGA)/scopeiosdr/_primary.dat
 HDL4FPGA__scopeiopkg__body = $(LIB_HDL4FPGA)/scopeiopkg/body.dat
 HDL4FPGA__scopeiopkg = $(LIB_HDL4FPGA)/scopeiopkg/_primary.dat
 HDL4FPGA__scopeio_video__beh = $(LIB_HDL4FPGA)/scopeio_video/beh.dat
@@ -515,8 +513,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__sdram_db) \
     $(HDL4FPGA__sdram_ctlr__mix) \
     $(HDL4FPGA__sdram_ctlr) \
-    $(HDL4FPGA__scopeiosdr__beh) \
-    $(HDL4FPGA__scopeiosdr) \
     $(HDL4FPGA__scopeiopkg__body) \
     $(HDL4FPGA__scopeiopkg) \
     $(HDL4FPGA__scopeio_video__beh) \
@@ -1616,10 +1612,23 @@ $(HDL4FPGA__rom__def) : ../basic/rom.vhd \
 
 $(HDL4FPGA__scopeio) \
 $(HDL4FPGA__scopeio__beh) : ../scope/scopeio.vhd \
+		$(HDL4FPGA__sdram_ctlr) \
+		$(HDL4FPGA__dmactlr) \
+		$(HDL4FPGA__so_data) \
+		$(HDL4FPGA__latency) \
+		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__sio_dmahdsk) \
+		$(HDL4FPGA__fifo) \
+		$(HDL4FPGA__sio_rgtr) \
+		$(HDL4FPGA__txn_buffer) \
+		$(HDL4FPGA__sdram_stream) \
+		$(HDL4FPGA__dvi) \
 		$(HDL4FPGA__scopeio_video) \
 		$(HDL4FPGA__scopeio_amp) \
 		$(HDL4FPGA__scopeio_rgtrvtscale) \
 		$(HDL4FPGA__sio_sin) \
+		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__sdram_param) \
 		$(HDL4FPGA__scopeiopkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__hdo) \
@@ -2013,35 +2022,6 @@ $(HDL4FPGA__scopeiopkg__body) : ../scope/scopeiopkg.vhd \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
 	$(VCOM) -2002 -work hdl4fpga ../scope/scopeiopkg.vhd
-
-$(HDL4FPGA__scopeiosdr) \
-$(HDL4FPGA__scopeiosdr__beh) : ../scope/scopeiosdr.vhd \
-		$(HDL4FPGA__sdram_ctlr) \
-		$(HDL4FPGA__dmactlr) \
-		$(HDL4FPGA__so_data) \
-		$(HDL4FPGA__latency) \
-		$(HDL4FPGA__sio_mux) \
-		$(HDL4FPGA__sio_dmahdsk) \
-		$(HDL4FPGA__fifo) \
-		$(HDL4FPGA__sio_rgtr) \
-		$(HDL4FPGA__txn_buffer) \
-		$(HDL4FPGA__sdram_stream) \
-		$(HDL4FPGA__dvi) \
-		$(HDL4FPGA__scopeio_video) \
-		$(HDL4FPGA__scopeio_amp) \
-		$(HDL4FPGA__scopeio_rgtrvtscale) \
-		$(HDL4FPGA__sio_sin) \
-		$(HDL4FPGA__sdram_db) \
-		$(HDL4FPGA__sdram_param) \
-		$(HDL4FPGA__scopeiopkg) \
-		$(HDL4FPGA__videopkg) \
-		$(HDL4FPGA__hdo) \
-		$(HDL4FPGA__base) \
-		$(IEEE__math_real) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../scope/scopeiosdr.vhd
 
 $(HDL4FPGA__sdram_ctlr) \
 $(HDL4FPGA__sdram_ctlr__mix) : ../sdram/sdram_ctlr.vhd \
