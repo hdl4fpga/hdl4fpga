@@ -20,34 +20,35 @@ architecture scopeio of nuhs3adsp is
 	constant io_link  : io_comms := io_ipoe;
 	constant sys_per  : real := 50.0;
 
-	signal sys_clk    : std_logic;
-	signal sysclk_n   : std_logic;
-	signal video_clk    : std_logic;
-	signal videoclk_n   : std_logic;
-	signal video_hsync  : std_logic;
-	signal video_vsync  : std_logic;
-	signal video_vton    : std_logic;
-	signal video_pixel    : std_logic_vector(0 to 3*8-1);
-	signal video_blank  : std_logic;
+	signal sys_rst     : std_logic;
+	signal sys_clk     : std_logic;
+	signal sysclk_n    : std_logic;
+	signal video_clk   : std_logic;
+	signal videoclk_n  : std_logic;
+	signal video_hsync : std_logic;
+	signal video_vsync : std_logic;
+	signal video_vton  : std_logic;
+	signal video_pixel : std_logic_vector(0 to 3*8-1);
+	signal video_blank : std_logic;
 
-	constant inputs : natural := 2;
+	constant inputs    : natural := 2;
 	constant vt_step   : string := "1.220703125e-4"; --2.0V/2.0**14; -- real'image() does not work on Xilinx ISE
 	alias  input_sample is adc_da;
 	signal samples_doa : std_logic_vector(input_sample'length-1 downto 0);
 	signal samples_dib : std_logic_vector(input_sample'length-1 downto 0);
-	signal input_samples     : std_logic_vector(inputs*input_sample'length-1 downto 0);
+	signal input_samples : std_logic_vector(inputs*input_sample'length-1 downto 0);
 	signal adc_clk     : std_logic;
 	signal adcclk_n    : std_logic;
 
 	signal input_clk   : std_logic;
 
-	constant baudrate : natural := 115200;
+	constant baudrate  : natural := 115200;
 
-	signal uart_rxc  : std_logic;
-	signal uart_sin  : std_logic;
-	signal uart_ena  : std_logic;
-	signal uart_rxdv : std_logic;
-	signal uart_rxd  : std_logic_vector(8-1 downto 0);
+	signal uart_rxc    : std_logic;
+	signal uart_sin    : std_logic;
+	signal uart_ena    : std_logic;
+	signal uart_rxdv   : std_logic;
+	signal uart_rxd    : std_logic_vector(8-1 downto 0);
 
 	alias  sio_clk   is mii_txc;
 	signal si_frm    : std_logic;
@@ -223,6 +224,7 @@ architecture scopeio of nuhs3adsp is
 	signal ctlrphy_rlreq  : std_logic;
 	signal ctlrphy_rlrdy  : std_logic;
 
+
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk90      : std_logic;
 	signal ddr_clk       : std_logic_vector(0 downto 0);
@@ -238,6 +240,13 @@ begin
 	port map (
 		I => clk,
 		O => sys_clk);
+
+	process(sys_clk)
+	begin
+		if rising_edge(sys_clk) then
+			sys_rst <= not sw1;
+		end if;
+	end process;
 
 	adcdfs_i : dcm_sp
 	generic map(
@@ -485,6 +494,95 @@ begin
 		end process;
 
 	end generate;
+
+	sdrdcm_b : block
+		signal dfs_clkfx : std_logic;
+		signal dfs_lckd  : std_logic;
+		
+		signal dcm_rst   : std_logic;
+		signal dcm_clk0  : std_logic;
+		signal dcm_clk90 : std_logic;
+		signal dcm_lckd  : std_logic;
+
+	begin
+
+		dcmdfs_i : dcm_sp
+		generic map(
+			clk_feedback  => "NONE",
+			clkin_period  => clk_per*1.0e9,
+			clkdv_divide  => 2.0,
+			clkin_divide_by_2 => FALSE,
+			clkfx_divide  => sdram_params.dcm.dcm_div,
+			clkfx_multiply => sdram_params.dcm.dcm_mul,
+			clkout_phase_shift => "NONE",
+			deskew_adjust => "SYSTEM_SYNCHRONOUS",
+			dfs_frequency_mode => "HIGH",
+			duty_cycle_correction => TRUE,
+			factory_jf   => X"C080",
+			phase_shift  => 0,
+			startup_wait => FALSE)
+		port map (
+			dssen    => '0',
+			psclk    => '0',
+			psen     => '0',
+			psincdec => '0',
+	
+			rst      => sys_rst,
+			clkin    => sys_clk,
+			clkfb    => '0',
+			clkfx    => dfs_clkfx,
+			locked   => dfs_lckd);
+
+		process (sys_rst, sys_clk)
+		begin
+			if sys_rst='1' then
+				dcm_rst <= '1';
+			elsif rising_edge(sys_clk) then
+				dcm_rst <= not dfs_lckd;
+			end if;
+		end process;
+
+		dcmdll_i : dcm_sp
+		generic map(
+			clk_feedback  => "1X",
+			clkdv_divide  => 2.0,
+			clkfx_divide  => 1,
+			clkfx_multiply => 2,
+			clkin_divide_by_2 => FALSE,
+			clkin_period  => (real(sdram_params.dcm.dcm_div)*clk_per*1.0e9)/real( sdram_params.dcm.dcm_mul),
+			clkout_phase_shift => "NONE",
+			deskew_adjust => "SYSTEM_SYNCHRONOUS",
+			dfs_frequency_mode => "HIGH",
+			duty_cycle_correction => TRUE,
+			factory_jf    => x"C080",
+			phase_shift   => 0,
+			startup_wait  => FALSE)
+		port map (
+			dssen    => '0',
+			psclk    => '0',
+			psen     => '0',
+			psincdec => '0',
+	
+			rst      => dcm_rst,
+			clkin    => dfs_clkfx,
+			clkfb    => ddr_clk0,
+			clk0     => dcm_clk0,
+			clk90    => dcm_clk90,
+			locked   => dcm_lckd);
+
+		clk0_bufg_i : bufg
+		port map (
+			i => dcm_clk0,
+			o => ddr_clk0);
+	
+		clk90_bufg_i : bufg
+		port map (
+			i => dcm_clk90,
+			o => ddr_clk90);
+	
+		sdrsys_rst <= not dcm_lckd;
+
+	end block;
 
 	scopeio_e : entity hdl4fpga.scopeiosdr
 	generic map (
