@@ -156,7 +156,7 @@ begin
 	end process;
 
 	src1_irdy <= stream_frm and stream_irdy;
-	fifo_e : entity hdl4fpga.fifo
+	fifoa_e : entity hdl4fpga.fifo
 	generic map (
 		max_depth  => 4,
 		async_mode => true,
@@ -190,7 +190,7 @@ begin
 		dst_trdy  => fifo_trdy,
 		dst_data  => fifo_data);
 
-	fifo_e : entity hdl4fpga.fifo
+	fifob_e : entity hdl4fpga.fifo
 	generic map (
 		max_depth  => buffer_size,
 		async_mode => false,

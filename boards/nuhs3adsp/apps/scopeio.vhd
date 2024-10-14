@@ -3,9 +3,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-library unisim;
-use unisim.vcomponents.all;
-
 library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.profiles.all;
@@ -14,6 +11,9 @@ use hdl4fpga.ipoepkg.all;
 use hdl4fpga.sdram_db.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.app_profiles.all;
+
+library unisim;
+use unisim.vcomponents.all;
 
 architecture scopeio of nuhs3adsp is
 
@@ -153,17 +153,17 @@ architecture scopeio of nuhs3adsp is
 
 	type sdramparams_record is record
 		id  : sdram_speeds;
-		dcm : dcm_params;
+		cm : dcm_params;
 		cl  : std_logic_vector(0 to 3-1);
 	end record;
 
 	type sdramparams_vector is array (natural range <>) of sdramparams_record;
 	constant sdram_tab : sdramparams_vector := (
-		(id => sdram133MHz, dcm => (dcm_mul => 20, dcm_div => 3), cl => "010"),
-		(id => sdram145MHz, dcm => (dcm_mul => 29, dcm_div => 4), cl => "110"),
-		(id => sdram150MHz, dcm => (dcm_mul => 15, dcm_div => 2), cl => "110"),
-		(id => sdram166MHz, dcm => (dcm_mul => 25, dcm_div => 3), cl => "110"),
-		(id => sdram200MHz, dcm => (dcm_mul => 10, dcm_div => 1), cl => "011"));
+		(id => sdram133MHz, cm => (dcm_mul => 20, dcm_div => 3), cl => "010"),
+		(id => sdram145MHz, cm => (dcm_mul => 29, dcm_div => 4), cl => "110"),
+		(id => sdram150MHz, cm => (dcm_mul => 15, dcm_div => 2), cl => "110"),
+		(id => sdram166MHz, cm => (dcm_mul => 25, dcm_div => 3), cl => "110"),
+		(id => sdram200MHz, cm => (dcm_mul => 10, dcm_div => 1), cl => "011"));
 
 	function sdramparams (
 		constant id  : sdram_speeds)
@@ -185,7 +185,7 @@ architecture scopeio of nuhs3adsp is
 
 	constant sdram_speed  : sdram_speeds := sdram166MHz;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
-	constant sdram_tcp    : real := real(sdram_params.dcm.dcm_div)*clk_per/real(sdram_params.dcm.dcm_mul);
+	constant sdram_tcp    : real := real(sdram_params.cm.dcm_div)*clk_per/real(sdram_params.cm.dcm_mul);
 
 
 	constant gear         : natural := hdo(sdram)**".gear";
@@ -512,8 +512,8 @@ begin
 			clkin_period  => clk_per*1.0e9,
 			clkdv_divide  => 2.0,
 			clkin_divide_by_2 => FALSE,
-			clkfx_divide  => sdram_params.dcm.dcm_div,
-			clkfx_multiply => sdram_params.dcm.dcm_mul,
+			clkfx_divide  => sdram_params.cm.dcm_div,
+			clkfx_multiply => sdram_params.cm.dcm_mul,
 			clkout_phase_shift => "NONE",
 			deskew_adjust => "SYSTEM_SYNCHRONOUS",
 			dfs_frequency_mode => "HIGH",
@@ -549,7 +549,7 @@ begin
 			clkfx_divide  => 1,
 			clkfx_multiply => 2,
 			clkin_divide_by_2 => FALSE,
-			clkin_period  => (real(sdram_params.dcm.dcm_div)*clk_per*1.0e9)/real( sdram_params.dcm.dcm_mul),
+			clkin_period  => (real(sdram_params.cm.dcm_div)*clk_per*1.0e9)/real( sdram_params.cm.dcm_mul),
 			clkout_phase_shift => "NONE",
 			deskew_adjust => "SYSTEM_SYNCHRONOUS",
 			dfs_frequency_mode => "HIGH",
