@@ -511,7 +511,7 @@ begin
 
 		ctlr_clk     => ctlr_clk,
 		ctlr_rst     => sdrsys_rst,
-		ctlr_bl      => "000",
+		ctlr_bl      => "001",
 		ctlr_cl      => sdram_params.cl,
 
 		ctlrphy_rst  => ctlrphy_rst,
