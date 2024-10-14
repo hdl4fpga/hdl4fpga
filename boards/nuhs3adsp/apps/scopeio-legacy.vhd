@@ -11,7 +11,6 @@ use hdl4fpga.base.all;
 use hdl4fpga.profiles.all;
 use hdl4fpga.hdo.all;
 use hdl4fpga.ipoepkg.all;
-use hdl4fpga.sdram_db.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.app_profiles.all;
 
@@ -22,20 +21,19 @@ architecture scopeio of nuhs3adsp is
 
 	signal sys_clk    : std_logic;
 	signal sysclk_n   : std_logic;
-	signal video_clk    : std_logic;
-	signal videoclk_n   : std_logic;
-	signal video_hsync  : std_logic;
-	signal video_vsync  : std_logic;
-	signal video_vton    : std_logic;
-	signal video_pixel    : std_logic_vector(0 to 3*8-1);
-	signal video_blank  : std_logic;
+	signal vga_clk    : std_logic;
+	signal vgaclk_n   : std_logic;
+	signal vga_hsync  : std_logic;
+	signal vga_vsync  : std_logic;
+	signal vga_rgb    : std_logic_vector(0 to 3*8-1);
+	signal vga_blank  : std_logic;
 
 	constant inputs : natural := 2;
 	constant vt_step   : string := "1.220703125e-4"; --2.0V/2.0**14; -- real'image() does not work on Xilinx ISE
 	alias  input_sample is adc_da;
 	signal samples_doa : std_logic_vector(input_sample'length-1 downto 0);
 	signal samples_dib : std_logic_vector(input_sample'length-1 downto 0);
-	signal input_samples     : std_logic_vector(inputs*input_sample'length-1 downto 0);
+	signal samples     : std_logic_vector(inputs*input_sample'length-1 downto 0);
 	signal adc_clk     : std_logic;
 	signal adcclk_n    : std_logic;
 
@@ -134,104 +132,6 @@ architecture scopeio of nuhs3adsp is
 			"   { text  : J4,        " &
 			"     step  : " & vt_step & ","  &
 			"     color : 0xff_ff_ff_ff}]}");
-
-	constant sdram : string := compact(
-		"{" &
-		"   gear      : 2," &
-		"   bank_size : " & natural'image(ddr_ba'length) & "," &
-		"   addr_size : " & natural'image(ddr_a'length)  & "," &
-		"   coln_size : 9," &
-		"   word_size : " & natural'image(ddr_dq'length)  & "," &
-		"   byte_size : " & natural'image(ddr_dq'length/ddr_dm'length) & "," &
-		"}");
-
-	type dcm_params is record
-		dcm_mul : natural;
-		dcm_div : natural;
-	end record;
-
-	type sdramparams_record is record
-		id  : sdram_speeds;
-		dcm : dcm_params;
-		cl  : std_logic_vector(0 to 3-1);
-	end record;
-
-	type sdramparams_vector is array (natural range <>) of sdramparams_record;
-	constant sdram_tab : sdramparams_vector := (
-		(id => sdram133MHz, dcm => (dcm_mul => 20, dcm_div => 3), cl => "010"),
-		(id => sdram145MHz, dcm => (dcm_mul => 29, dcm_div => 4), cl => "110"),
-		(id => sdram150MHz, dcm => (dcm_mul => 15, dcm_div => 2), cl => "110"),
-		(id => sdram166MHz, dcm => (dcm_mul => 25, dcm_div => 3), cl => "110"),
-		(id => sdram200MHz, dcm => (dcm_mul => 10, dcm_div => 1), cl => "011"));
-
-	function sdramparams (
-		constant id  : sdram_speeds)
-		return sdramparams_record is
-		constant tab : sdramparams_vector := sdram_tab;
-	begin
-		for i in tab'range loop
-			if id=tab(i).id then
-				return tab(i);
-			end if;
-		end loop;
-
-		assert false 
-		report ">>>sdramparams<<< : sdram speed not enabled"
-		severity failure;
-
-		return tab(tab'left);
-	end;
-
-	constant sdram_speed  : sdram_speeds := sdram166MHz;
-	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
-	constant sdram_tcp    : real := real(sdram_params.dcm.dcm_div)*clk_per/real(sdram_params.dcm.dcm_mul);
-
-
-	constant gear         : natural := hdo(sdram)**".gear";
-	constant bank_size    : natural := hdo(sdram)**".bank_size";
-	constant addr_size    : natural := hdo(sdram)**".addr_size";
-	constant coln_size    : natural := hdo(sdram)**".coln_size";
-	constant word_size    : natural := hdo(sdram)**".word_size";
-	constant byte_size    : natural := hdo(sdram)**".byte_size";
-
-	signal ctlr_clk      : std_logic;
-	signal sdrsys_rst    : std_logic;
-
-	signal ctlrphy_rst    : std_logic;
-	signal ctlrphy_cke    : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_cs     : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_ras    : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_cas    : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_we     : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_odt    : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_b      : std_logic_vector((gear+1)/2*ddr_ba'length-1 downto 0);
-	signal ctlrphy_a      : std_logic_vector((gear+1)/2*ddr_a'length-1 downto 0);
-	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqsi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-
-	signal ctlrphy_wlreq  : std_logic;
-	signal ctlrphy_wlrdy  : std_logic;
-	signal ctlrphy_rlreq  : std_logic;
-	signal ctlrphy_rlrdy  : std_logic;
-
-	signal ddr_clk0       : std_logic;
-	signal ddr_clk90      : std_logic;
-	signal ddr_clk       : std_logic_vector(0 downto 0);
-	signal ddr_odt       : std_logic_vector(0 to 0);
-	signal sdram_cke     : std_logic_vector(0 to 0);
-	signal sdram_cs      : std_logic_vector(0 to 0);
-	signal ddr_lp_ck     : std_logic;
-	signal st_dqs_open   : std_logic;
-
 begin
 
 	clkin_ibufg : ibufg
@@ -291,7 +191,7 @@ begin
 		rst      => '0',
 		clkin    => sys_clk,
 		clkfb    => '0',
-		clkfx    => video_clk);
+		clkfx    => vga_clk);
 
 	miidfs_e : dcm_sp
 	generic map(
@@ -320,11 +220,11 @@ begin
 		clkfx    => mii_refclk);
 
 	process (input_clk)
-		variable adc_dab : std_logic_vector(input_samples'range);
+		variable adc_dab : std_logic_vector(samples'range);
 	begin
 		if rising_edge(input_clk) then
-			input_samples <= adc_dab xor ((1 => '1', 2 to input_sample'length => '0') & ((1 => '1', 2 to adc_db'length => '0')));
-			-- input_samples <= std_logic_vector(to_signed(2**13-1, input_sample'length) & to_signed(2**13, input_sample'length));
+			samples <= adc_dab xor ((1 => '1', 2 to input_sample'length => '0') & ((1 => '1', 2 to adc_db'length => '0')));
+			-- samples <= std_logic_vector(to_signed(2**13-1, input_sample'length) & to_signed(2**13, input_sample'length));
 			adc_dab := adc_da & adc_db;
 		end if;
 	end process;
@@ -486,138 +386,42 @@ begin
 
 	end generate;
 
-	scopeio_e : entity hdl4fpga.scopeiosdr
+	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		debug => debug,
-		profile   => 0,
-		sdram_tcp => sdram_tcp,
-		mark      => MT48LC256MA27E ,
-		timing_id => pclk150_00m1920x1080at60,
-		sdram     => sdram,
-		layout    => layout)
+		videotiming_id => display_tab(video_mode).timing_id,
+		layout         => layout)
 	port map (
-		-- tp => tp,
 		sio_clk     => sio_clk,
 		si_frm      => si_frm,
 		si_irdy     => si_irdy,
 		si_data     => si_data,
-		so_frm      => so_frm,
-		so_irdy     => so_irdy,
-		so_trdy     => so_trdy,
-		so_end      => so_end,
 		so_data     => so_data,
 		input_clk   => input_clk,
-		input_data  => input_samples,
+		input_data  => samples,
+		video_clk   => vga_clk,
+		video_pixel => vga_rgb,
+		video_hsync => vga_hsync,
+		video_vsync => vga_vsync,
+		video_blank => vga_blank);
 
-		ctlr_clk     => ctlr_clk,
-		ctlr_rst     => sdrsys_rst,
-		ctlr_bl      => "000",
-		ctlr_cl      => sdram_params.cl,
-
-		ctlrphy_rst  => ctlrphy_rst,
-		ctlrphy_cke  => ctlrphy_cke(0),
-		ctlrphy_cs   => ctlrphy_cs(0),
-		ctlrphy_ras  => ctlrphy_ras(0),
-		ctlrphy_cas  => ctlrphy_cas(0),
-		ctlrphy_we   => ctlrphy_we(0),
-		ctlrphy_b    => ctlrphy_b,
-		ctlrphy_a    => ctlrphy_a,
-		ctlrphy_dmo  => ctlrphy_dmo,
-		ctlrphy_dqi  => ctlrphy_dqi,
-		ctlrphy_dqt  => ctlrphy_dqt,
-		ctlrphy_dqo  => ctlrphy_dqo,
-		ctlrphy_sto  => ctlrphy_sto,
-		ctlrphy_sti  => ctlrphy_sti,
-		video_clk   => video_clk,
-		video_pixel => video_pixel,
-		video_hsync => video_hsync,
-		video_vsync => video_vsync,
-		video_vton  => video_vton,
-		video_blank => video_blank);
-
-	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
-	ctlrphy_rlreq <= to_stdulogic(to_bit(ctlrphy_rlrdy));
-
-	sdrphy_e : entity hdl4fpga.xc_sdrphy
-	generic map (
-		-- dqs_delay   => (0 to 0 => 0 ns),
-		-- dqi_delay   => (0 to 0 => 0 ns),
-		device      => xc3s,
-		bank_size   => ddr_ba'length,
-		addr_size   => ddr_a'length,
-		gear        => gear,
-		word_size   => word_size,
-		byte_size   => byte_size,
-		bypass      => true,
-		loopback    => true,
-		rd_fifo     => true,
-		rd_align    => true)
-	port map (
-		rst         => sdrsys_rst,
-		iod_clk     => ddr_clk0,
-		clk         => ddr_clk0,
-		clk_shift   => ddr_clk90,
-
-		phy_wlreq   => ctlrphy_wlreq,
-		phy_wlrdy   => ctlrphy_wlrdy,
-		phy_rlreq   => ctlrphy_rlreq,
-		phy_rlrdy   => ctlrphy_rlrdy,
-		sys_cke     => ctlrphy_cke,
-		sys_cs      => ctlrphy_cs,
-		sys_ras     => ctlrphy_ras,
-		sys_cas     => ctlrphy_cas,
-		sys_we      => ctlrphy_we,
-		sys_b       => ctlrphy_b,
-		sys_a       => ctlrphy_a,
-		sys_dqsi    => ctlrphy_dqso,
-		sys_dqst    => ctlrphy_dqst,
-		sys_dqso    => ctlrphy_dqsi,
-		sys_dmi     => ctlrphy_dmo,
-		sys_dmo     => ctlrphy_dmi,
-		sys_dqi     => ctlrphy_dqo,
-		sys_dqt     => ctlrphy_dqt,
-		sys_dqo     => ctlrphy_dqi,
-		sys_odt     => ctlrphy_odt,
-		sys_dqv     => ctlrphy_dqv,
-		sys_sti     => ctlrphy_sto,
-		sys_sto     => ctlrphy_sti,
-
-		sdram_sto(0)  => ddr_st_dqs,
-		sdram_sto(1)  => st_dqs_open,
-		sdram_sti(0)  => ddr_st_lp_dqs,
-		sdram_sti(1)  => ddr_st_lp_dqs,
-		sdram_clk     => ddr_clk,
-		sdram_cke     => sdram_cke,
-		sdram_cs      => sdram_cs,
-		sdram_odt     => ddr_odt,
-		sdram_ras     => ddr_ras,
-		sdram_cas     => ddr_cas,
-		sdram_we      => ddr_we,
-		sdram_b       => ddr_ba,
-		sdram_a       => ddr_a,
-
-		sdram_dm      => ddr_dm,
-		sdram_dq      => ddr_dq,
-		sdram_dqs     => ddr_dqs);
-
-	process (video_clk)
-		variable video_rgb1   : std_logic_vector(video_pixel'range);
-		variable video_hsync1 : std_logic;
-		variable video_vsync1 : std_logic;
-		variable video_blank1 : std_logic;
+	process (vga_clk)
+		variable vga_rgb1   : std_logic_vector(vga_rgb'range);
+		variable vga_hsync1 : std_logic;
+		variable vga_vsync1 : std_logic;
+		variable vga_blank1 : std_logic;
 	begin
-		if rising_edge(video_clk) then
-			red        <= multiplex(video_rgb1, std_logic_vector(to_unsigned(0,2)), 8);
-			green      <= multiplex(video_rgb1, std_logic_vector(to_unsigned(1,2)), 8);
-			blue       <= multiplex(video_rgb1, std_logic_vector(to_unsigned(2,2)), 8);
-			blankn     <= not video_blank1;
-			hsync      <= video_hsync1;
-			vsync      <= video_vsync1;
-			sync       <= not video_hsync1 and not video_vsync1;
-			video_rgb1   := video_pixel;
-			video_hsync1 := video_hsync;
-			video_vsync1 := video_vsync;
-			video_blank1 := video_blank;
+		if rising_edge(vga_clk) then
+			red        <= multiplex(vga_rgb1, std_logic_vector(to_unsigned(0,2)), 8);
+			green      <= multiplex(vga_rgb1, std_logic_vector(to_unsigned(1,2)), 8);
+			blue       <= multiplex(vga_rgb1, std_logic_vector(to_unsigned(2,2)), 8);
+			blankn     <= not vga_blank1;
+			hsync      <= vga_hsync1;
+			vsync      <= vga_vsync1;
+			sync       <= not vga_hsync1 and not vga_vsync1;
+			vga_rgb1   := vga_rgb;
+			vga_hsync1 := vga_hsync;
+			vga_vsync1 := vga_vsync;
+			vga_blank1 := vga_blank;
 		end if;
 	end process;
 	psave <= '1';
@@ -631,11 +435,11 @@ begin
 		d1 => '0',
 		q  => adc_clkab);
 
-	videoclk_n <= not video_clk;
+	vgaclk_n <= not vga_clk;
 	videodac_i: oddr2
 	port map (
-		c0   => video_clk,
-		c1  => videoclk_n,
+		c0   => vga_clk,
+		c1  => vgaclk_n,
 		ce  => '1',
 		d0  => '0',
 		d1  => '1',
