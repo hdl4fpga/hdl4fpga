@@ -546,6 +546,7 @@ begin
 
 		signal stream_frm : std_logic;
 		signal stream_data : std_logic_vector(input_data'range);
+		signal ba : std_logic_vector(0 to 0); -- Xilinx ISE required
 	begin
 
 		-- stream_frm <= '0', '1' after 110 us, '0' after 150 us, '1' after 160 us;
@@ -603,7 +604,7 @@ begin
 			stream_irdy => input_ena,
 			stream_trdy => open,
 			stream_data => stream_data,
-			base_addr   => (0 to 0 => '0'),
+			base_addr   => ba,
 			dmacfg_clk  => sio_clk,
 			dmacfg_req  => capturedmacfg_req,
 			dmacfg_rdy  => capturedmacfg_rdy,

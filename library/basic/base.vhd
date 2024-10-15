@@ -1303,10 +1303,10 @@ package body base is
 				retval_left(data'length-1 downto 0) := unsigned(data);
 			end loop;
 				return std_logic_vector(retval_right);
-			if right then
-			else
-				return std_logic_vector(retval_left);
-			end if;
+--			if right then
+--			else
+--				return std_logic_vector(retval_left);
+--			end if;
 		else
     		if right then
     			if data'length > size then

@@ -187,7 +187,6 @@ architecture scopeio of nuhs3adsp is
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := real(sdram_params.cm.dcm_div)*clk_per/real(sdram_params.cm.dcm_mul);
 
-
 	constant gear         : natural := hdo(sdram)**".gear";
 	constant bank_size    : natural := hdo(sdram)**".bank_size";
 	constant addr_size    : natural := hdo(sdram)**".addr_size";
@@ -223,7 +222,6 @@ architecture scopeio of nuhs3adsp is
 	signal ctlrphy_wlrdy  : std_logic;
 	signal ctlrphy_rlreq  : std_logic;
 	signal ctlrphy_rlrdy  : std_logic;
-
 
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk90      : std_logic;
@@ -586,10 +584,10 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		debug => debug,
-		profile   => 0,
+		debug     => debug,
+		profile   => 1,
 		sdram_tcp => sdram_tcp,
-		mark      => MT48LC256MA27E ,
+		mark      => MT46V256M6T,
 		timing_id => pclk150_00m1920x1080at60,
 		sdram     => sdram,
 		layout    => layout)
@@ -620,10 +618,14 @@ begin
 		ctlrphy_we   => ctlrphy_we(0),
 		ctlrphy_b    => ctlrphy_b,
 		ctlrphy_a    => ctlrphy_a,
+		ctlrphy_dqst => ctlrphy_dqst,
+		ctlrphy_dqso => ctlrphy_dqso,
+		ctlrphy_dmi  => ctlrphy_dmi,
 		ctlrphy_dmo  => ctlrphy_dmo,
 		ctlrphy_dqi  => ctlrphy_dqi,
 		ctlrphy_dqt  => ctlrphy_dqt,
 		ctlrphy_dqo  => ctlrphy_dqo,
+		ctlrphy_dqv  => ctlrphy_dqv,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
 		video_clk   => video_clk,
@@ -697,6 +699,17 @@ begin
 		sdram_dm      => ddr_dm,
 		sdram_dq      => ddr_dq,
 		sdram_dqs     => ddr_dqs);
+
+	ddr_clk_i : obufds
+	generic map (
+		iostandard => "DIFF_SSTL2_I")
+	port map (
+		i  => ddr_clk(0),
+		o  => ddr_ckp,
+		ob => ddr_ckn);
+
+	ddr_cke <= sdram_cke(0);
+	ddr_cs  <= sdram_cs(0);
 
 	process (video_clk)
 		variable video_rgb1   : std_logic_vector(video_pixel'range);
@@ -777,29 +790,5 @@ begin
 	lcd_rw   <= 'Z';
 	lcd_data <= (others => 'Z');
 	lcd_backlight <= 'Z';
-
-	-- DDR --
-	---------
-
-	ddr_clk_i : obufds
-	generic map (
-		iostandard => "DIFF_SSTL2_I")
-	port map (
-		i  => 'Z',
-		o  => ddr_ckp,
-		ob => ddr_ckn);
-
-
-	ddr_st_dqs <= 'Z';
-	ddr_cke    <= 'Z';
-	ddr_cs     <= 'Z';
-	ddr_ras    <= 'Z';
-	ddr_cas    <= 'Z';
-	ddr_we     <= 'Z';
-	ddr_ba     <= (others => 'Z');
-	ddr_a      <= (others => 'Z');
-	ddr_dm     <= (others => 'Z');
-	ddr_dqs    <= (others => 'Z');
-	ddr_dq     <= (others => 'Z');
 
 end;
