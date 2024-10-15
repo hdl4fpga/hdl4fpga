@@ -59,7 +59,8 @@ architecture mix of pgm_delay is
 	attribute dont_touch of d : signal is "true";
 	attribute keep  of d      : signal is "true";
 
-		attribute dont_touch     of xxx : label is "true";
+	attribute dont_touch     of lutn : label is "true";
+	attribute dont_touch     of lutp : label is "true";
 
 begin
 	d(n-1) <= '-';
@@ -77,10 +78,6 @@ begin
 			o  => d(i-1));
 	end generate;
 
-	xxx : block
-		attribute dont_touch     of lutn : label is "true";
-		attribute dont_touch     of lutp : label is "true";
-	begin
 	lutp : lut4
 	generic map (
 		init => x"00ca")
@@ -100,5 +97,4 @@ begin
 		i2 => ena(0),
 		i3 => '0',
 		o  => x_n);
-	end block;
 end;
