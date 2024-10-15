@@ -43,7 +43,6 @@ use hdl4fpga.base.all;
 
 architecture mix of pgm_delay is
 	constant ena             : std_logic_vector(n-1 downto 0) := (others => '1');
-	constant  blut           : string(1 to 2) := "FG";
 
 	attribute dont_touch     : string;
 	attribute keep           : string;
@@ -51,21 +50,21 @@ architecture mix of pgm_delay is
 
 	signal d : std_logic_vector(0 to n-1);
 
+	attribute dont_touch of xi : signal is "true";
+	-- attribute keep  of xi   : signal is "true";
+	attribute dont_touch of x_p : signal is "true";
+	attribute keep  of x_p   : signal is "true";
+	attribute dont_touch of x_n : signal is "true";
+	attribute keep  of x_n   : signal is "true";
 	attribute dont_touch of d : signal is "true";
 	attribute keep  of d      : signal is "true";
 
-		attribute dont_touch     of lutn : label is "true";
-		attribute keep           of lutn : label is "true";
-		attribute keep_hierarchy of lutn : label is "true";
-		attribute dont_touch     of lutp : label is "true";
-		attribute keep           of lutp : label is "true";
-		attribute keep_hierarchy of lutp : label is "true";
+		attribute dont_touch     of xxx : label is "true";
+
 begin
 	d(n-1) <= '-';
 	chain_g: for i in n-1 downto 1 generate
-		attribute dont_touch     of lut : label is "true";
-		attribute keep           of lut : label is "true";
-		attribute keep_hierarchy of lut : label is "true";
+		attribute dont_touch of lut : label is "true";
 	begin
 		lut : lut4
 		generic map (
@@ -78,6 +77,10 @@ begin
 			o  => d(i-1));
 	end generate;
 
+	xxx : block
+		attribute dont_touch     of lutn : label is "true";
+		attribute dont_touch     of lutp : label is "true";
+	begin
 	lutp : lut4
 	generic map (
 		init => x"00ca")
@@ -97,4 +100,5 @@ begin
 		i2 => ena(0),
 		i3 => '0',
 		o  => x_n);
+	end block;
 end;
