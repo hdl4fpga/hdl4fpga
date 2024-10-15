@@ -194,7 +194,6 @@ architecture scopeio of nuhs3adsp is
 	constant word_size    : natural := hdo(sdram)**".word_size";
 	constant byte_size    : natural := hdo(sdram)**".byte_size";
 
-	signal ctlr_clk      : std_logic;
 	signal sdrsys_rst    : std_logic;
 
 	signal ctlrphy_rst    : std_logic;
@@ -232,6 +231,7 @@ architecture scopeio of nuhs3adsp is
 	signal ddr_lp_ck     : std_logic;
 	signal st_dqs_open   : std_logic;
 
+	alias ctlr_clk is ddr_clk0;
 begin
 
 	clkin_ibufg : ibufg
