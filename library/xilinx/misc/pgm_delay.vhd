@@ -59,8 +59,13 @@ architecture mix of pgm_delay is
 	attribute dont_touch of d : signal is "true";
 	attribute keep  of d      : signal is "true";
 
-	attribute dont_touch     of lutn : label is "true";
 	attribute dont_touch     of lutp : label is "true";
+	attribute keep_hierarchy of lutp : label is "true";
+	attribute keep           of lutp : label is "true";
+
+	attribute dont_touch     of lutn : label is "true";
+	attribute keep_hierarchy of lutn : label is "true";
+	attribute keep           of lutn : label is "true";
 
 begin
 	d(n-1) <= '-';
