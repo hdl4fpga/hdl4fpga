@@ -121,6 +121,7 @@ WORK__testbench__mul_ser_tb = $(LIB_WORK)/testbench/mul_ser_tb.dat
 WORK__testbench__nuhs3adsp_scopeio = $(LIB_WORK)/testbench/nuhs3adsp_scopeio.dat
 WORK__testbench__s3estarter_graphics = $(LIB_WORK)/testbench/s3estarter_graphics.dat
 WORK__testbench__s3estarter_scopeio = $(LIB_WORK)/testbench/s3estarter_scopeio.dat
+WORK__testbench__arty_scopeio = $(LIB_WORK)/testbench/arty_scopeio.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__s3estarter_scopeio_structure_md = $(LIB_WORK)/s3estarter_scopeio_structure_md/_primary.dat
 WORK__s3estarter_scopeio_md = $(LIB_WORK)/s3estarter_scopeio_md/_primary.dat
@@ -164,6 +165,8 @@ WORK__dbdbbl_ser__beh = $(LIB_WORK)/dbdbbl_ser/beh.dat
 WORK__dbdbbl_ser = $(LIB_WORK)/dbdbbl_ser/_primary.dat
 WORK__dbdbbl_seq__def = $(LIB_WORK)/dbdbbl_seq/def.dat
 WORK__dbdbbl_seq = $(LIB_WORK)/dbdbbl_seq/_primary.dat
+WORK__arty_scopeio_structure_md = $(LIB_WORK)/arty_scopeio_structure_md/_primary.dat
+WORK__arty_scopeio_md = $(LIB_WORK)/arty_scopeio_md/_primary.dat
 WORK__arty_graphics_structure_md = $(LIB_WORK)/arty_graphics_structure_md/_primary.dat
 WORK__arty_graphics_md = $(LIB_WORK)/arty_graphics_md/_primary.dat
 WORK__arty__graphics = $(LIB_WORK)/arty/graphics.dat
@@ -216,6 +219,7 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__testbench__nuhs3adsp_scopeio) \
     $(WORK__testbench__s3estarter_graphics) \
     $(WORK__testbench__s3estarter_scopeio) \
+    $(WORK__testbench__arty_scopeio) \
     $(WORK__testbench) \
     $(WORK__s3estarter_scopeio_structure_md) \
     $(WORK__s3estarter_scopeio_md) \
@@ -259,6 +263,8 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__dbdbbl_ser) \
     $(WORK__dbdbbl_seq__def) \
     $(WORK__dbdbbl_seq) \
+    $(WORK__arty_scopeio_structure_md) \
+    $(WORK__arty_scopeio_md) \
     $(WORK__arty_graphics_structure_md) \
     $(WORK__arty_graphics_md) \
     $(WORK__arty__graphics) \
@@ -492,13 +498,28 @@ $(WORK__s3estarter__scopeio) : ../../boards/s3estarter/apps/scopeio.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  ../../boards/s3estarter/apps/scopeio.vhd
+	$(VCOM) -2002 ../../boards/s3estarter/apps/scopeio.vhd
 
 $(WORK__testbench) : /home/msagre/work/hdl4fpga/library/testbench/testbench.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 /home/msagre/work/hdl4fpga/library/testbench/testbench.vhd
+
+$(WORK__arty_scopeio_md) \
+$(WORK__arty_scopeio_structure_md) \
+$(WORK__testbench__arty_scopeio) : ../../boards/arty/testbenches/scopeio.vhd \
+		$(WORK__arty) \
+		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__ipoepkg) \
+		$(WORK__ipoe_tb) \
+		$(WORK__testbench) \
+		$(IEEE__std_logic_textio) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(HDL4FPGA__base) \
+		$(STD__textio)
+	$(VCOM) -2002  ../../boards/arty/testbenches/scopeio.vhd
 
 $(WORK__s3estarter_scopeio_md) \
 $(WORK__s3estarter_scopeio_structure_md) \

@@ -147,7 +147,7 @@ architecture scopeio of arty is
 
 	constant sdram : string := compact(
 		"{" &
-		"   gear      : 2," &
+		"   gear      : 4," &
 		"   bank_size : " & natural'image(ddr3_ba'length) & "," &
 		"   addr_size : " & natural'image(ddr3_a'length)  & "," &
 		"   coln_size : 9," &
@@ -691,8 +691,8 @@ begin
 		ctlrphy_ras  => ctlrphy_ras(0),
 		ctlrphy_cas  => ctlrphy_cas(0),
 		ctlrphy_we   => ctlrphy_we(0),
-		ctlrphy_b    => ctlrphy_b,
-		ctlrphy_a    => ctlrphy_a,
+		ctlrphy_b    => ddr_b,
+		ctlrphy_a    => ddr_a,
 		ctlrphy_dqst => ctlrphy_dqst,
 		ctlrphy_dqso => ctlrphy_dqso,
 		ctlrphy_dmi  => ctlrphy_dmi,
