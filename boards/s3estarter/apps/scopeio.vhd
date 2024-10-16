@@ -63,7 +63,7 @@ architecture scopeio of s3estarter is
 	signal spi_rst   : std_logic;
 	signal dac_sdi   : std_logic;
 	signal input_ena : std_logic;
-	signal vga_rgb   : std_logic_vector(3-1 downto 0);
+	signal video_pixel   : std_logic_vector(3-1 downto 0);
 
 	alias  sio_clk   is e_tx_clk;
 	signal si_frm    : std_logic;
@@ -723,28 +723,127 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		videotiming_id => videoparam(video_mode).timing,
-		layout         => layout)
+		debug     => debug,
+		profile   => 1,
+		sdram_tcp => sdram_tcp,
+		mark      => MT46V256M6T,
+		timing_id => pclk150_00m1920x1080at60,
+		sdram     => sdram,
+		layout    => layout)
 	port map (
+		-- tp => tp,
 		sio_clk     => sio_clk,
 		si_frm      => si_frm,
 		si_irdy     => si_irdy,
 		si_data     => si_data,
+		so_frm      => so_frm,
+		so_irdy     => so_irdy,
+		so_trdy     => so_trdy,
+		so_end      => so_end,
 		so_data     => so_data,
-		input_clk   => spi_clk,
-		input_data  => sample,
-		video_clk   => vga_clk,
-		video_pixel => vga_rgb,
+		input_clk   => input_clk,
+		input_data  => input_samples,
+
+		ctlr_clk     => ctlr_clk,
+		ctlr_rst     => sdrsys_rst,
+		ctlr_bl      => "001",
+		ctlr_cl      => sdram_params.cl,
+
+		ctlrphy_rst  => ctlrphy_rst,
+		ctlrphy_cke  => ctlrphy_cke(0),
+		ctlrphy_cs   => ctlrphy_cs(0),
+		ctlrphy_ras  => ctlrphy_ras(0),
+		ctlrphy_cas  => ctlrphy_cas(0),
+		ctlrphy_we   => ctlrphy_we(0),
+		ctlrphy_b    => ctlrphy_b,
+		ctlrphy_a    => ctlrphy_a,
+		ctlrphy_dqst => ctlrphy_dqst,
+		ctlrphy_dqso => ctlrphy_dqso,
+		ctlrphy_dmi  => ctlrphy_dmi,
+		ctlrphy_dmo  => ctlrphy_dmo,
+		ctlrphy_dqi  => ctlrphy_dqi,
+		ctlrphy_dqt  => ctlrphy_dqt,
+		ctlrphy_dqo  => ctlrphy_dqo,
+		ctlrphy_dqv  => ctlrphy_dqv,
+		ctlrphy_sto  => ctlrphy_sto,
+		ctlrphy_sti  => ctlrphy_sti,
+		video_clk   => video_clk,
+		video_pixel => video_pixel,
 		video_hsync => vga_hsync,
 		video_vsync => vga_vsync,
 		video_vton  => video_vton,
-		video_blank => open);
+		video_blank => video_blank);
 
 	-- vga_hsync <= '0';
 	-- vga_vsync <= '0';
-	vga_red   <= vga_rgb(2);
-	vga_green <= vga_rgb(1);
-	vga_blue  <= vga_rgb(0);
+	vga_red   <= video_pixel(2);
+	vga_green <= video_pixel(1);
+	vga_blue  <= video_pixel(0);
+
+	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
+	ctlrphy_rlreq <= to_stdulogic(to_bit(ctlrphy_rlrdy));
+
+	sdrphy_e : entity hdl4fpga.xc_sdrphy
+	generic map (
+		-- dqs_delay   => (0 to 0 => 0 ns),
+		-- dqi_delay   => (0 to 0 => 0 ns),
+		device      => xc3s,
+		bank_size   => ddr_ba'length,
+		addr_size   => ddr_a'length,
+		gear        => gear,
+		word_size   => word_size,
+		byte_size   => byte_size,
+		bypass      => true,
+		loopback    => true,
+		rd_fifo     => true,
+		rd_align    => true)
+	port map (
+		rst         => sdrsys_rst,
+		iod_clk     => ddr_clk0,
+		clk         => ddr_clk0,
+		clk_shift   => ddr_clk90,
+
+		phy_wlreq   => ctlrphy_wlreq,
+		phy_wlrdy   => ctlrphy_wlrdy,
+		phy_rlreq   => ctlrphy_rlreq,
+		phy_rlrdy   => ctlrphy_rlrdy,
+		sys_cke     => ctlrphy_cke,
+		sys_cs      => ctlrphy_cs,
+		sys_ras     => ctlrphy_ras,
+		sys_cas     => ctlrphy_cas,
+		sys_we      => ctlrphy_we,
+		sys_b       => ctlrphy_b,
+		sys_a       => ctlrphy_a,
+		sys_dqsi    => ctlrphy_dqso,
+		sys_dqst    => ctlrphy_dqst,
+		sys_dqso    => ctlrphy_dqsi,
+		sys_dmi     => ctlrphy_dmo,
+		sys_dmo     => ctlrphy_dmi,
+		sys_dqi     => ctlrphy_dqo,
+		sys_dqt     => ctlrphy_dqt,
+		sys_dqo     => ctlrphy_dqi,
+		sys_odt     => ctlrphy_odt,
+		sys_dqv     => ctlrphy_dqv,
+		sys_sti     => ctlrphy_sto,
+		sys_sto     => ctlrphy_sti,
+
+		sdram_sto(0)  => ddr_st_dqs,
+		sdram_sto(1)  => st_dqs_open,
+		sdram_sti(0)  => ddr_st_lp_dqs,
+		sdram_sti(1)  => ddr_st_lp_dqs,
+		sdram_clk     => ddr_clk,
+		sdram_cke     => sdram_cke,
+		sdram_cs      => sdram_cs,
+		sdram_odt     => ddr_odt,
+		sdram_ras     => ddr_ras,
+		sdram_cas     => ddr_cas,
+		sdram_we      => ddr_we,
+		sdram_b       => ddr_ba,
+		sdram_a       => ddr_a,
+
+		sdram_dm      => ddr_dm,
+		sdram_dq      => ddr_dq,
+		sdram_dqs     => ddr_dqs);
 
 	-- Ethernet Transceiver --
 	--------------------------

@@ -85,10 +85,10 @@ NET sys_clk   TNM_NET = FFS  FFS_sysclk;
 NET sys_clk   TNM_NET = RAMS RAMS_sysclk;
 NET video_clk TNM_NET = FFS  FFS_videoclk;
 NET video_clk TNM_NET = RAMS RAMS_videoclk;
-NET ddr_clk0      TNM_NET = FFS  FFS_clk0;
-NET ddr_clk0      TNM_NET = RAMS RAMS_clk0;
-NET ddr_clk90     TNM_NET = FFS  FFS_clk90;
-NET ddr_clk90     TNM_NET = RAMS RAMS_clk90;
+NET ddr_clk0  TNM_NET = FFS  FFS_clk0;
+NET ddr_clk0  TNM_NET = RAMS RAMS_clk0;
+NET ddr_clk90 TNM_NET = FFS  FFS_clk90;
+NET ddr_clk90 TNM_NET = RAMS RAMS_clk90;
 
 TIMESPEC TS_ddr2clk    = FROM FFS_clk0     TO FFS_sysclk   TIG;
 TIMESPEC TS_sys2ddr    = FROM FFS_sysclk   TO FFS_clk0     TIG;
@@ -111,22 +111,24 @@ TIMESPEC TS_ram2ff     = FROM RAMS_clk90   TO FFS_clk0     TIG;
 ## Data Byte 0 #
 ## ########### #
 #
-#INST "sdrphy_e/byte_g[0].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutn" LOC = SLICE_X2Y60;
-#INST "sdrphy_e/byte_g[0].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutn" BEL = G;
-#INST "sdrphy_e/byte_g[0].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutp" LOC = SLICE_X2Y60;
-#INST "sdrphy_e/byte_g[0].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutp" BEL = F;
-#
-## Data Byte 1 #
-## ########### #
-#
-#INST "sdrphy_e/byte_g[1].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutn" LOC = SLICE_X2Y82;
-#INST "sdrphy_e/byte_g[1].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutn" BEL = G;
-#INST "sdrphy_e/byte_g[1].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutp" LOC = SLICE_X2Y82;
-#INST "sdrphy_e/byte_g[1].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutp" BEL = F;
-#
-## NET "ddr_lp_ck" TNM_NET = ddr_lp_ck;
-## TIMESPEC TS_ddr_lp_ck = PERIOD "ddr_lp_ck" 6 ns HIGH 50%;
-## NET "ddr_lp_ck" CLOCK_DEDICATED_ROUTE = FALSE;
-#
-## NET "ddr_st_lp_dqs" OFFSET = IN 0.900 ns VALID 4.800 ns BEFORE ddr_lp_ck FALLING;
-## OFFSET = IN -0.450 ns VALID 1.900 ns BEFORE ddr_lp_ck FALLING;
+
+INST "sdrphy_e_byte_g[0].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutn" LOC = SLICE_X2Y60;
+INST "sdrphy_e_byte_g[0].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutn" BEL = G;
+INST "sdrphy_e_byte_g[0].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutp" LOC = SLICE_X2Y60;
+INST "sdrphy_e_byte_g[0].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutp" BEL = F;
+
+
+# Data Byte 1 #
+# ########### #
+
+INST "sdrphy_e_byte_g[1].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutn" LOC = SLICE_X2Y82;
+INST "sdrphy_e_byte_g[1].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutn" BEL = G;
+INST "sdrphy_e_byte_g[1].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutp" LOC = SLICE_X2Y82;
+INST "sdrphy_e_byte_g[1].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutp" BEL = F;
+
+# NET "ddr_lp_ck" TNM_NET = ddr_lp_ck;
+# TIMESPEC TS_ddr_lp_ck = PERIOD "ddr_lp_ck" 6 ns HIGH 50%;
+# NET "ddr_lp_ck" CLOCK_DEDICATED_ROUTE = FALSE;
+
+# NET "ddr_st_lp_dqs" OFFSET = IN 0.900 ns VALID 4.800 ns BEFORE ddr_lp_ck FALLING;
+# OFFSET = IN -0.450 ns VALID 1.900 ns BEFORE ddr_lp_ck FALLING;

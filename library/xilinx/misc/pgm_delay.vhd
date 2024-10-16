@@ -44,16 +44,12 @@ use hdl4fpga.base.all;
 architecture mix of pgm_delay is
 	constant ena             : std_logic_vector(n-1 downto 0) := (others => '1');
 
-	attribute dont_touch     : string;
 	attribute keep           : string;
-	attribute keep_hierarchy : string;
 
 	signal d : std_logic_vector(0 to n-1);
 
-	-- attribute keep  of xi   : signal is "true";
-	attribute keep of x_p : signal is "true";
-	attribute keep of x_n : signal is "true";
-	attribute keep of d   : signal is "true";
+	attribute keep of x_p  : signal is "true";
+	attribute keep of x_n  : signal is "true";
 	attribute keep of lutp : label is "true";
 	attribute keep of lutn : label is "true";
 
