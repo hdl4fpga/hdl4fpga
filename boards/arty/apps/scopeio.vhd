@@ -37,8 +37,8 @@ architecture scopeio of arty is
 
 	signal sys_clk         : std_logic;
 	signal video_clk       : std_logic;
-	signal video_hzsync    : std_logic;
-	signal video_vtsync    : std_logic;
+	signal video_hsync     : std_logic;
+	signal video_vsync     : std_logic;
 	signal video_vton      : std_logic;
 	signal video_blank     : std_logic;
 	signal video_pixel     : std_logic_vector(0 to 3-1);
@@ -143,6 +143,150 @@ architecture scopeio of arty is
 			"   { text  : 'A4', " &
 			"     step  : " & real'image(3.33*vt_step) & "," &
 			"     color : 0xff_00_ff_ff}]}");   -- vt(8)
+
+	constant sdram : string := compact(
+		"{" &
+		"   gear      : 2," &
+		"   bank_size : " & natural'image(sd_ba'length) & "," &
+		"   addr_size : " & natural'image(sd_a'length)  & "," &
+		"   coln_size : 9," &
+		"   word_size : " & natural'image(sd_dq'length)  & "," &
+		"   byte_size : " & natural'image(sd_dq'length/sd_dm'length) & "," &
+		"}");
+
+	type pll_params is record
+		clkfbout_mult_f : real;
+		divclk_divide   : natural;
+	end record;
+
+	type sdramparams_record is record
+		id  : sdram_speeds;
+		pll : pll_params;
+		cl  : std_logic_vector(0 to 3-1);
+		cwl : std_logic_vector(0 to 3-1);
+	end record;
+
+	type sdramparams_vector is array (natural range <>) of sdramparams_record;
+	constant sdram_tab : sdramparams_vector := (
+
+		------------------------------------------------------------------------
+		-- Frequency   -- 333 Mhz -- 350 Mhz -- 375 Mhz -- 400 Mhz -- 425 Mhz --
+		-- Multiply by --  10     --   7     --  15     --   4     --  17     --
+		-- Divide by   --   3     --   2     --   4     --   1     --   4     --
+		------------------------------------------------------------------------
+
+		(id => sdram333MHz, pll => (clkfbout_mult_f => 10.0, divclk_divide => 3), cl => "001", cwl => "000"),
+		(id => sdram350MHz, pll => (clkfbout_mult_f =>  7.0, divclk_divide => 2), cl => "010", cwl => "000"),
+		(id => sdram375MHz, pll => (clkfbout_mult_f => 15.0, divclk_divide => 4), cl => "010", cwl => "000"),
+		(id => sdram400MHz, pll => (clkfbout_mult_f =>  4.0, divclk_divide => 1), cl => "010", cwl => "000"),
+		(id => sdram425MHz, pll => (clkfbout_mult_f => 17.0, divclk_divide => 4), cl => "011", cwl => "001"),
+
+		------------------------------------------------------------------------
+		-- Frequency   -- 450 Mhz -- 475 Mhz -- 500 Mhz -- 525 Mhz -- 550 Mhz --
+		-- Multiply by --   9     --  19     --   5     --  21     --  22     --
+		-- Divide by   --   2     --   4     --   1     --   4     --   4     --
+		------------------------------------------------------------------------
+
+		(id => sdram450MHz, pll => (clkfbout_mult_f =>  9.0, divclk_divide => 2), cl => "011", cwl => "001"),
+		(id => sdram475MHz, pll => (clkfbout_mult_f => 19.0, divclk_divide => 4), cl => "011", cwl => "001"),
+		(id => sdram500MHz, pll => (clkfbout_mult_f =>  5.0, divclk_divide => 1), cl => "011", cwl => "001"),
+		(id => sdram525MHz, pll => (clkfbout_mult_f => 21.0, divclk_divide => 4), cl => "011", cwl => "001"),
+		(id => sdram550MHz, pll => (clkfbout_mult_f => 11.0, divclk_divide => 2), cl => "100", cwl => "010"),  -- latency 9
+		-- 
+		---------------------------------------
+		-- Frequency   -- 575 Mhz -- 600 Mhz --
+		-- Multiply by --  23     --   6     --
+		-- Divide by   --   4     --   1     --
+		---------------------------------------
+
+		(id => sdram575MHz, pll => (clkfbout_mult_f => 23.0, divclk_divide => 4), cl => "101", cwl => "010"),  -- latency 9
+		(id => sdram600MHz, pll => (clkfbout_mult_f =>  6.0, divclk_divide => 1), cl => "101", cwl => "010")); -- latency 9
+
+	function sdramparams (
+		constant id  : sdram_speeds)
+		return sdramparams_record is
+		constant tab : sdramparams_vector := sdram_tab;
+	begin
+		for i in tab'range loop
+			if id=tab(i).id then
+				return tab(i);
+			end if;
+		end loop;
+
+		assert false 
+		report ">>>sdramparams<<< : sdram speed not enabled"
+		severity failure;
+
+		return tab(tab'left);
+	end;
+
+	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
+	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
+	constant sdram_tcp    : real := (gclk100_per*real(sdram_params.pll.divclk_divide))/sdram_params.pll.clkfbout_mult_f; -- 1 ns /1ps
+
+	constant bank_size    : natural := ddr3_ba'length;
+	constant addr_size    : natural := ddr3_a'length;
+	constant coln_size    : natural := 10;
+	constant word_size    : natural := ddr3_dq'length;
+	constant byte_size    : natural := ddr3_dq'length/ddr3_dqs_p'length;
+	constant gear         : natural := 4;
+
+	signal ddr_clk0       : std_logic;
+	signal ddr_clk0x2     : std_logic;
+	signal ddr_clk90x2    : std_logic;
+	signal ddr_clk90      : std_logic;
+	signal sdrsys_rst     : std_logic;
+	signal sdrphy_rst0    : std_logic;
+	signal sdrphy_rst90   : std_logic;
+
+	signal iodctrl_rst    : std_logic;
+	signal iodctrl_clk    : std_logic;
+	signal iodctrl_rdy    : std_logic;
+
+	signal ctlrphy_frm    : std_logic;
+	signal ctlrphy_trdy   : std_logic;
+	signal ctlrphy_locked : std_logic;
+	signal ctlrphy_ini    : std_logic;
+	signal ctlrphy_rw     : std_logic;
+	signal ctlrphy_wlreq  : std_logic;
+	signal ctlrphy_wlrdy  : std_logic;
+	signal ctlrphy_rlreq  : std_logic;
+	signal ctlrphy_rlrdy  : std_logic;
+
+	signal ddr_b          : std_logic_vector(ddr3_ba'range);
+	signal ddr_a          : std_logic_vector(ddr3_a'range);
+	signal ddr_cke        : std_logic_vector(0 to 0);
+	signal ddr_cs         : std_logic_vector(0 to 0);
+	signal ddr_odt        : std_logic_vector(0 to 0);
+
+	signal ctlrphy_rst    : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_cke    : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_cs     : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_ras    : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_cas    : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_we     : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_odt    : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_cmd    : std_logic_vector(0 to 3-1);
+	signal ctlrphy_b      : std_logic_vector(gear/2*ddr3_ba'length-1 downto 0);
+	signal ctlrphy_a      : std_logic_vector(gear/2*ddr3_a'length-1 downto 0);
+	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+
+	signal ddr3_clk       : std_logic_vector(1-1 downto 0);
+	signal ddr3_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr3_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr3_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ddr3_dqo       : std_logic_vector(word_size-1 downto 0);
+	signal ddr3_dqt       : std_logic_vector(word_size-1 downto 0);
+
 begin
 
 	clkin_ibufg : ibufg
@@ -504,10 +648,181 @@ begin
 		input_data  => input_samples,
 		video_clk   => video_clk,
 		video_pixel => video_pixel,
-		video_hsync => video_hzsync,
-		video_vsync => video_vtsync,
+		video_hsync => video_hsync,
+		video_vsync => video_vsync,
 		video_vton  => video_vton,
 		video_blank => video_blank);
+
+	scopeio_e : entity hdl4fpga.scopeio
+	generic map (
+		debug     => debug,
+		profile   => 1,
+		sdram_tcp => sdram_tcp,
+		mark      => MT46V256M6T,
+		timing_id => pclk150_00m1920x1080at60,
+		sdram     => sdram,
+		layout    => layout)
+	port map (
+		-- tp => tp,
+		sio_clk     => sio_clk,
+		si_frm      => si_frm,
+		si_irdy     => si_irdy,
+		si_data     => si_data,
+		so_frm      => so_frm,
+		so_irdy     => so_irdy,
+		so_trdy     => so_trdy,
+		so_end      => so_end,
+		so_data     => so_data,
+		input_clk   => spi_clk,
+		input_data  => samples,
+
+		ctlr_clk     => ctlr_clk,
+		ctlr_rst     => sdrsys_rst,
+		ctlr_bl      => "001",
+		ctlr_cl      => sdram_params.cl,
+
+		ctlrphy_rst  => ctlrphy_rst,
+		ctlrphy_cke  => ctlrphy_cke(0),
+		ctlrphy_cs   => ctlrphy_cs(0),
+		ctlrphy_ras  => ctlrphy_ras(0),
+		ctlrphy_cas  => ctlrphy_cas(0),
+		ctlrphy_we   => ctlrphy_we(0),
+		ctlrphy_b    => ctlrphy_b,
+		ctlrphy_a    => ctlrphy_a,
+		ctlrphy_dqst => ctlrphy_dqst,
+		ctlrphy_dqso => ctlrphy_dqso,
+		ctlrphy_dmi  => ctlrphy_dmi,
+		ctlrphy_dmo  => ctlrphy_dmo,
+		ctlrphy_dqi  => ctlrphy_dqi,
+		ctlrphy_dqt  => ctlrphy_dqt,
+		ctlrphy_dqo  => ctlrphy_dqo,
+		ctlrphy_dqv  => ctlrphy_dqv,
+		ctlrphy_sto  => ctlrphy_sto,
+		ctlrphy_sti  => ctlrphy_sti,
+		video_clk   => video_clk,
+		video_pixel => video_pixel,
+		video_hsync => video_hsync,
+		video_vsync => video_vsync,
+		video_vton  => video_vton);
+
+	cgear_g : for i in 1 to gear/2-1 generate
+    	ctlrphy_rst(i) <= ctlrphy_rst(0);
+    	ctlrphy_cke(i) <= ctlrphy_cke(0);
+    	ctlrphy_cs(i)  <= ctlrphy_cs(0);
+    	ctlrphy_ras(i) <= '1';
+    	ctlrphy_cas(i) <= '1';
+    	ctlrphy_we(i)  <= '1';
+    	ctlrphy_odt(i) <= ctlrphy_odt(0);
+	end generate;
+
+	process (ddr_b)
+	begin
+		for i in ddr_b'range loop
+			for j in 0 to gear/2-1 loop
+				ctlrphy_b(i*gear/2+j) <= ddr_b(i);
+			end loop;
+		end loop;
+	end process;
+
+	process (ddr_a)
+	begin
+		for i in ddr_a'range loop
+			for j in 0 to gear/2-1 loop
+				ctlrphy_a(i*gear/2+j) <= ddr_a(i);
+			end loop;
+		end loop;
+	end process;
+
+	idelayctrl_i : idelayctrl
+	port map (
+		rst    => iodctrl_rst,
+		refclk => iodctrl_clk,
+		rdy    => iodctrl_rdy);
+
+	sdrphy_e : entity hdl4fpga.xc_sdrphy
+	generic map (
+		bank_size   => bank_size,
+		addr_size   => addr_size,
+		word_size   => word_size,
+		byte_size   => byte_size,
+		gear        => gear,
+		ba_latency  => 1,
+		device      => xc7a,
+		taps        => natural(floor(sdram_tcp/((gclk100_per/2.0)/(32.0*2.0))))-1,
+		dqs_highz   => false,
+		bufio       => bufiog,
+		bypass      => false,
+		wr_fifo     => true)
+		-- dqs_delay => (0 to 0 => 1.35 ns),
+		-- dqi_delay => (0 to 0 => 0 ns),
+	port map (
+
+		tp_sel      => sw(1 downto 0),
+		tp          => tp_sdrphy,
+
+		rst         => sdrphy_rst0,
+		rst_shift   => sdrphy_rst90,
+		iod_clk     => gclk100,
+		clk         => ddr_clk0,
+		clk_shift   => ddr_clk90,
+		clkx2       => ddr_clk0x2,
+		clkx2_shift => ddr_clk90x2,
+
+		phy_frm     => ctlrphy_frm,
+		phy_trdy    => ctlrphy_trdy,
+		phy_rw      => ctlrphy_rw,
+		phy_ini     => ctlrphy_ini,
+
+		phy_cmd     => ctlrphy_cmd,
+		phy_wlreq   => ctlrphy_wlreq,
+		phy_wlrdy   => ctlrphy_wlrdy,
+
+		phy_rlreq   => ctlrphy_rlreq,
+		phy_rlrdy   => ctlrphy_rlrdy,
+
+		phy_locked   => ctlrphy_locked,
+
+		sys_cke     => ctlrphy_cke,
+		sys_rst     => ctlrphy_rst,
+		sys_cs      => ctlrphy_cs,
+		sys_ras     => ctlrphy_ras,
+		sys_cas     => ctlrphy_cas,
+		sys_we      => ctlrphy_we,
+		sys_b       => ctlrphy_b,
+		sys_a       => ctlrphy_a,
+
+		sys_dqst    => ctlrphy_dqst,
+		sys_dqsi    => ctlrphy_dqso,
+		sys_dmi     => ctlrphy_dmo,
+		sys_dmo     => ctlrphy_dmi,
+		sys_dqo     => ctlrphy_dqi,
+		sys_dqv     => ctlrphy_dqv,
+		sys_dqt     => ctlrphy_dqt,
+		sys_dqi     => ctlrphy_dqo,
+		sys_odt     => ctlrphy_odt,
+		sys_sti     => ctlrphy_sto,
+		sys_sto     => ctlrphy_sti,
+
+		sdram_rst   => ddr3_reset,
+		sdram_clk   => ddr3_clk,
+		sdram_cke   => ddr_cke,
+		sdram_cs    => ddr_cs,
+		sdram_ras   => ddr3_ras,
+		sdram_cas   => ddr3_cas,
+		sdram_we    => ddr3_we,
+		sdram_b     => ddr3_ba,
+		sdram_a     => ddr3_a,
+		sdram_odt   => ddr_odt,
+		-- sdram_dm    => ddr3_dm,
+		sdram_dq    => ddr3_dq,
+		sdram_dqst  => ddr3_dqst,
+		sdram_dqs   => ddr3_dqsi,
+		sdram_dqso  => ddr3_dqso);
+
+	ddr3_cke <= ddr_cke(0);
+	ddr3_cs  <= ddr_cs(0);
+	ddr3_odt <= ddr_odt(0);
+	ddr3_dm <= (others => '0');
 
 	process (video_clk)
 	begin
@@ -515,8 +830,8 @@ begin
 			ja(1)  <= multiplex(video_pixel, std_logic_vector(to_unsigned(0,2)), 1)(0);
 			ja(2)  <= multiplex(video_pixel, std_logic_vector(to_unsigned(1,2)), 1)(0);
 			ja(3)  <= multiplex(video_pixel, std_logic_vector(to_unsigned(2,2)), 1)(0);
-			ja(4)  <= not video_hzsync;
-			ja(10) <= not video_vtsync;
+			ja(4)  <= not video_hsync;
+			ja(10) <= not video_vsync;
 		end if;
 	end process;
   
