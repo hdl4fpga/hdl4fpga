@@ -30,6 +30,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
+use hdl4fpga.sdram_db.all;
 use hdl4fpga.profiles.all;
 use hdl4fpga.app_profiles.all;
 
@@ -41,15 +42,16 @@ architecture scopeio of s3estarter is
 	constant baudrate : natural := 115200;
 	constant io_link  : io_comms := io_none;
 
+	signal sys_rst        : std_logic;
 	signal sys_clk    : std_logic;
-	signal vga_clk    : std_logic;
+	signal video_clk    : std_logic;
 	signal video_vton : std_logic;
 
 	constant sample_size : natural := 14;
 
 	constant inputs  : natural := 2;
 
-	signal sample    : std_logic_vector(inputs*sample_size-1 downto 0);
+	signal samples   : std_logic_vector(inputs*sample_size-1 downto 0);
 	signal spi_clk   : std_logic;
 	signal spiclk_rd : std_logic;
 	signal spiclk_fd : std_logic;
@@ -89,17 +91,17 @@ architecture scopeio of s3estarter is
 
 	type video_params is record
 		id     : video_modes;
-		cmn    : dcm_params;
+		cm     : dcm_params;
 		timing : videotiming_ids;
 	end record;
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,      timing => pclk_debug,               cmn => (dcm_mul =>  4, dcm_div => 2)),
-		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    cmn => (dcm_mul =>  2, dcm_div => 4)),
-		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    cmn => (dcm_mul =>  4, dcm_div => 5)),
-		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   cmn => (dcm_mul =>  3, dcm_div => 2)),
-		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, cmn => (dcm_mul =>  3, dcm_div => 1)));
+		(id => modedebug,      timing => pclk_debug,               cm => (dcm_mul =>  4, dcm_div => 2)),
+		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    cm => (dcm_mul =>  2, dcm_div => 4)),
+		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    cm => (dcm_mul =>  4, dcm_div => 5)),
+		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   cm => (dcm_mul =>  3, dcm_div => 2)),
+		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, cm => (dcm_mul =>  3, dcm_div => 1)));
 
 	function videoparam (
 		constant id  : video_modes)
@@ -190,12 +192,110 @@ architecture scopeio of s3estarter is
 			"   { text  : VINB,        " &
 			"     step  : " & vt_step & ","  &
 			"     color : 0xff_ff_ff_ff}]}");
+
+	constant sdram : string := compact(
+		"{" &
+		"   gear      : 2," &
+		"   bank_size : " & natural'image(sd_ba'length) & "," &
+		"   addr_size : " & natural'image(sd_a'length)  & "," &
+		"   coln_size : 9," &
+		"   word_size : " & natural'image(sd_dq'length)  & "," &
+		"   byte_size : " & natural'image(sd_dq'length/sd_dm'length) & "," &
+		"}");
+
+	type sdramparams_record is record
+		id  : sdram_speeds;
+		cm : dcm_params;
+		cl  : std_logic_vector(0 to 3-1);
+	end record;
+
+	type sdramparams_vector is array (natural range <>) of sdramparams_record;
+	constant sdram_tab : sdramparams_vector := (
+		(id => sdram133MHz, cm => (dcm_mul =>  8, dcm_div => 3), cl => "010"),
+		(id => sdram166MHz, cm => (dcm_mul => 10, dcm_div => 3), cl => "110"),
+		(id => sdram170MHz, cm => (dcm_mul => 17, dcm_div => 5), cl => "110"),
+		(id => sdram200MHz, cm => (dcm_mul =>  4, dcm_div => 1), cl => "011"));
+
+	function sdramparams (
+		constant id  : sdram_speeds)
+		return sdramparams_record is
+		constant tab : sdramparams_vector := sdram_tab;
+	begin
+		for i in tab'range loop
+			if id=tab(i).id then
+				return tab(i);
+			end if;
+		end loop;
+
+		assert false 
+		report ">>>sdramparams<<< : sdram speed not enabled"
+		severity failure;
+
+		return tab(tab'left);
+	end;
+
+	constant sdram_speed  : sdram_speeds := sdram166MHz;
+	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
+	constant sdram_tcp    : real := real(sdram_params.cm.dcm_div)*clk50hmz_per/real(sdram_params.cm.dcm_mul);
+
+	constant gear         : natural := hdo(sdram)**".gear";
+	constant bank_size    : natural := hdo(sdram)**".bank_size";
+	constant addr_size    : natural := hdo(sdram)**".addr_size";
+	constant coln_size    : natural := hdo(sdram)**".coln_size";
+	constant word_size    : natural := hdo(sdram)**".word_size";
+	constant byte_size    : natural := hdo(sdram)**".byte_size";
+
+	signal sdrsys_rst    : std_logic;
+
+	signal ctlrphy_rst    : std_logic;
+	signal ctlrphy_cke    : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_cs     : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_ras    : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_cas    : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_we     : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_odt    : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_b      : std_logic_vector((gear+1)/2*sd_ba'length-1 downto 0);
+	signal ctlrphy_a      : std_logic_vector((gear+1)/2*sd_a'length-1 downto 0);
+	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqsi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+
+	signal ctlrphy_wlreq  : std_logic;
+	signal ctlrphy_wlrdy  : std_logic;
+	signal ctlrphy_rlreq  : std_logic;
+	signal ctlrphy_rlrdy  : std_logic;
+
+	signal ddr_clk0       : std_logic;
+	signal ddr_clk90      : std_logic;
+	signal ddr_clk       : std_logic_vector(0 downto 0);
+	signal ddr_odt       : std_logic_vector(0 to 0);
+	signal sdram_cke     : std_logic_vector(0 to 0);
+	signal sdram_cs      : std_logic_vector(0 to 0);
+	signal ddr_lp_ck     : std_logic;
+	signal st_dqs_open   : std_logic;
+
+	alias ctlr_clk is ddr_clk0;
 begin
 
 	clkin_ibufg : ibufg
 	port map (
 		I => clk_50mhz,
 		O => sys_clk);
+
+	process(sys_clk)
+	begin
+		if rising_edge(sys_clk) then
+			sys_rst <= btn_north;
+		end if;
+	end process;
 
 	videodcm_b : if not debug generate
 		signal dcm_clkfb : std_logic;
@@ -211,10 +311,10 @@ begin
 		generic map(
 			clk_feedback   => "1x",
 			clkdv_divide   => 2.0,
-			clkfx_divide   => videoparam(video_mode).cmn.dcm_div,
-			clkfx_multiply => videoparam(video_mode).cmn.dcm_mul,
+			clkfx_divide   => videoparam(video_mode).cm.dcm_div,
+			clkfx_multiply => videoparam(video_mode).cm.dcm_mul,
 			clkin_divide_by_2 => false,
-			clkin_period   => sys_per*1.0e9,
+			clkin_period   => clk50hmz_per*1.0e9,
 			clkout_phase_shift => "none",
 			deskew_adjust  => "system_synchronous",
 			dfs_frequency_mode => "LOW",
@@ -230,7 +330,7 @@ begin
 			psincdec => '0',
 			clkfb    => dcm_clkfb,
 			clkin    => sys_clk,
-			clkfx    => vga_clk,
+			clkfx    => video_clk,
 			clkfx180 => open,
 			clk0     => dcm_clk0,
 			locked   => open,
@@ -238,6 +338,89 @@ begin
 			status   => open);
 
 	end generate;
+
+	sdrdcm_b : block
+		signal dfs_lckd  : std_logic;
+		signal dfs_clkfb : std_logic;
+		
+		signal dcm_rst   : std_logic;
+		signal dcm_clkin : std_logic;
+		signal dcm_clkfb : std_logic;
+		signal dcm_clk0  : std_logic;
+		signal dcm_clk90 : std_logic;
+		signal dcm_lckd  : std_logic;
+
+	begin
+
+		dcmdfs_i : dcm_sp
+		generic map(
+			clk_feedback   => "NONE",
+			clkin_period   => clk50hmz_per*1.0e9,
+			clkdv_divide   => 2.0,
+			clkin_divide_by_2 => FALSE,
+			clkfx_divide   => sdram_params.cm.dcm_div,
+			clkfx_multiply => sdram_params.cm.dcm_mul,
+			clkout_phase_shift => "NONE",
+			deskew_adjust  => "SYSTEM_SYNCHRONOUS",
+			dfs_frequency_mode => "HIGH",
+			duty_cycle_correction => TRUE,
+			factory_jf     => X"C080",
+			phase_shift    => 0,
+			startup_wait   => FALSE)
+		port map (
+			dssen    => '0',
+			psclk    => '0',
+			psen     => '0',
+			psincdec => '0',
+	
+			rst      => sys_rst,
+			clkin    => sys_clk,
+			clkfb    => '0',
+			clk0     => dfs_clkfb,
+			clkfx    => dcm_clkin,
+			locked   => dfs_lckd);
+	
+		dcmdll_i : dcm_sp
+		generic map(
+			clk_feedback   => "1X",
+			clkin_period   => (clk50hmz_per*real(sdram_params.cm.dcm_div))/real( sdram_params.cm.dcm_mul)*1.0e9,
+			clkdv_divide   => 2.0,
+			clkin_divide_by_2 => FALSE,
+			clkfx_divide   => 1,
+			clkfx_multiply => 2,
+			clkout_phase_shift => "NONE",
+			deskew_adjust => "SYSTEM_SYNCHRONOUS",
+			dfs_frequency_mode => "HIGH",
+			duty_cycle_correction => TRUE,
+			factory_jf    => x"C080",
+			phase_shift   => 0,
+			startup_wait  => FALSE)
+		port map (
+			dssen    => '0',
+			psclk    => '0',
+			psen     => '0',
+			psincdec => '0',
+	
+			rst      => '0',
+			clkin    => dcm_clkin,
+			clkfb    => ddr_clk0,
+			clk0     => dcm_clk0,
+			clk90    => dcm_clk90,
+			locked   => dcm_lckd);
+
+		clk0_bufg_i : bufg
+		port map (
+			i => dcm_clk0,
+			o => ddr_clk0);
+	
+		clk90_bufg_i : bufg
+		port map (
+			i => dcm_clk90,
+			o => ddr_clk90);
+	
+		sdrsys_rst <= not dcm_lckd;
+
+	end block;
 
 	spi_b: block
 		signal spiclk_n : std_logic;
@@ -333,7 +516,7 @@ begin
 			constant cycle      : natural := 34;
 			variable cntr       : unsigned(0 to 6) := (others => '0');
 			variable adin       : unsigned(32-1 downto 0);
-			variable aux        : unsigned(sample'range);
+			variable aux        : unsigned(samples'range);
 			variable dac_shr    : unsigned(0 to 30-1);
 			variable adcdac_sel : std_logic;
 			variable dac_data   : unsigned(0 to 12-1);
@@ -347,7 +530,7 @@ begin
 			elsif rising_edge(spi_clk) then
 				if cntr(0)='1' then
 					if adcdac_sel ='0' then
-						sample <= std_logic_vector(
+						samples <= std_logic_vector(
 							adin(1*16+sample_size-1 downto 1*16) &
 							adin(0*16+sample_size-1 downto 0*16));
 						input_ena <= not amp_spi;
@@ -741,8 +924,8 @@ begin
 		so_trdy     => so_trdy,
 		so_end      => so_end,
 		so_data     => so_data,
-		input_clk   => input_clk,
-		input_data  => input_samples,
+		input_clk   => spi_clk,
+		input_data  => samples,
 
 		ctlr_clk     => ctlr_clk,
 		ctlr_rst     => sdrsys_rst,
@@ -771,8 +954,7 @@ begin
 		video_pixel => video_pixel,
 		video_hsync => vga_hsync,
 		video_vsync => vga_vsync,
-		video_vton  => video_vton,
-		video_blank => video_blank);
+		video_vton  => video_vton);
 
 	-- vga_hsync <= '0';
 	-- vga_vsync <= '0';
@@ -788,13 +970,13 @@ begin
 		-- dqs_delay   => (0 to 0 => 0 ns),
 		-- dqi_delay   => (0 to 0 => 0 ns),
 		device      => xc3s,
-		bank_size   => ddr_ba'length,
-		addr_size   => ddr_a'length,
+		bank_size   => sd_ba'length,
+		addr_size   => sd_a'length,
 		gear        => gear,
 		word_size   => word_size,
 		byte_size   => byte_size,
+		loopback    => false,
 		bypass      => true,
-		loopback    => true,
 		rd_fifo     => true,
 		rd_align    => true)
 	port map (
@@ -827,23 +1009,19 @@ begin
 		sys_sti     => ctlrphy_sto,
 		sys_sto     => ctlrphy_sti,
 
-		sdram_sto(0)  => ddr_st_dqs,
-		sdram_sto(1)  => st_dqs_open,
-		sdram_sti(0)  => ddr_st_lp_dqs,
-		sdram_sti(1)  => ddr_st_lp_dqs,
 		sdram_clk     => ddr_clk,
 		sdram_cke     => sdram_cke,
 		sdram_cs      => sdram_cs,
 		sdram_odt     => ddr_odt,
-		sdram_ras     => ddr_ras,
-		sdram_cas     => ddr_cas,
-		sdram_we      => ddr_we,
-		sdram_b       => ddr_ba,
-		sdram_a       => ddr_a,
+		sdram_ras     => sd_ras,
+		sdram_cas     => sd_cas,
+		sdram_we      => sd_we,
+		sdram_b       => sd_ba,
+		sdram_a       => sd_a,
 
-		sdram_dm      => ddr_dm,
-		sdram_dq      => ddr_dq,
-		sdram_dqs     => ddr_dqs);
+		sdram_dm      => sd_dm,
+		sdram_dq      => sd_dq,
+		sdram_dqs     => sd_dqs);
 
 	-- Ethernet Transceiver --
 	--------------------------
@@ -856,7 +1034,7 @@ begin
 	-- DDR --
 	---------
 
-	ddr_clk_i : obufds
+	sd_clk_i : obufds
 	generic map (
 		iostandard => "DIFF_SSTL2_I")
 	port map (

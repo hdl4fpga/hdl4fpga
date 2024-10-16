@@ -215,7 +215,7 @@ begin
 
 	clkin_ibufg : ibufg
 	port map (
-		I => xtal ,
+		I => clk_50mhz,
 		O => sys_clk);
 
 	process(sys_clk)
