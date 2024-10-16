@@ -167,6 +167,7 @@ WORK__dbdbbl_seq = $(LIB_WORK)/dbdbbl_seq/_primary.dat
 WORK__arty_graphics_structure_md = $(LIB_WORK)/arty_graphics_structure_md/_primary.dat
 WORK__arty_graphics_md = $(LIB_WORK)/arty_graphics_md/_primary.dat
 WORK__arty__graphics = $(LIB_WORK)/arty/graphics.dat
+WORK__arty__scopeio = $(LIB_WORK)/arty/scopeio.dat
 WORK__arty = $(LIB_WORK)/arty/_primary.dat
 VCOM = vcom
 VLOG = vlog
@@ -261,12 +262,41 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__arty_graphics_structure_md) \
     $(WORK__arty_graphics_md) \
     $(WORK__arty__graphics) \
+    $(WORK__arty__scopeio) \
     $(WORK__arty)
 
 $(WORK__arty) : ../../boards/arty/common/arty.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 ../../boards/arty/common/arty.vhd
+
+$(WORK__arty__scopeio) : ../../boards/arty/apps/scopeio.vhd \
+		$(HDL4FPGA__rom) \
+		$(HDL4FPGA__xc_sdrphy) \
+		$(HDL4FPGA__scopeio) \
+		$(HDL4FPGA__scopeio_rgtrhzaxis) \
+		$(HDL4FPGA__sio_sin) \
+		$(HDL4FPGA__scopeio_stactlr) \
+		$(HDL4FPGA__desser) \
+		$(HDL4FPGA__sio_dayudp) \
+		$(HDL4FPGA__fifo) \
+		$(WORK__arty) \
+		$(HDL4FPGA__app_profiles) \
+		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__sdram_param) \
+		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__profiles) \
+		$(HDL4FPGA__hdo) \
+		$(HDL4FPGA__base) \
+		$(UNISIM__vcomponents) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002  ../../boards/arty/apps/scopeio.vhd
 
 $(WORK__arty__graphics) : ../../boards/arty/apps/graphics.vhd \
 		$(HDL4FPGA__ser_debug) \

@@ -11,6 +11,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
 use hdl4fpga.profiles.all;
 use hdl4fpga.ipoepkg.all;
+use hdl4fpga.sdram_db.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.app_profiles.all;
@@ -147,11 +148,11 @@ architecture scopeio of arty is
 	constant sdram : string := compact(
 		"{" &
 		"   gear      : 2," &
-		"   bank_size : " & natural'image(sd_ba'length) & "," &
-		"   addr_size : " & natural'image(sd_a'length)  & "," &
+		"   bank_size : " & natural'image(ddr3_ba'length) & "," &
+		"   addr_size : " & natural'image(ddr3_a'length)  & "," &
 		"   coln_size : 9," &
-		"   word_size : " & natural'image(sd_dq'length)  & "," &
-		"   byte_size : " & natural'image(sd_dq'length/sd_dm'length) & "," &
+		"   word_size : " & natural'image(ddr3_dq'length)  & "," &
+		"   byte_size : " & natural'image(ddr3_dq'length/ddr3_dm'length) & "," &
 		"}");
 
 	type pll_params is record
@@ -220,7 +221,7 @@ architecture scopeio of arty is
 		return tab(tab'left);
 	end;
 
-	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
+	constant sdram_speed  : sdram_speeds := sdram500MHz;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (gclk100_per*real(sdram_params.pll.divclk_divide))/sdram_params.pll.clkfbout_mult_f; -- 1 ns /1ps
 
@@ -287,6 +288,8 @@ architecture scopeio of arty is
 	signal ddr3_dqo       : std_logic_vector(word_size-1 downto 0);
 	signal ddr3_dqt       : std_logic_vector(word_size-1 downto 0);
 
+	constant bufiog     : boolean  := true;
+	signal tp_sdrphy      : std_logic_vector(1 to 32);
 begin
 
 	clkin_ibufg : ibufg
@@ -633,32 +636,32 @@ begin
 
 	end block;
 
-	scopeio_e : entity hdl4fpga.scopeio
-	generic map (
-		videotiming_id => pclk150_00m1920x1080at60,
-		layout         => layout)
-	port map (
-		sio_clk     => sio_clk,
-		si_frm      => si_frm,
-		si_irdy     => si_irdy,
-		si_data     => si_data,
-		so_data     => so_data,
-		input_clk   => input_clk,
-		input_ena   => input_ena,
-		input_data  => input_samples,
-		video_clk   => video_clk,
-		video_pixel => video_pixel,
-		video_hsync => video_hsync,
-		video_vsync => video_vsync,
-		video_vton  => video_vton,
-		video_blank => video_blank);
+	-- scopeio_e : entity hdl4fpga.scopeio
+	-- generic map (
+		-- videotiming_id => pclk150_00m1920x1080at60,
+		-- layout         => layout)
+	-- port map (
+		-- sio_clk     => sio_clk,
+		-- si_frm      => si_frm,
+		-- si_irdy     => si_irdy,
+		-- si_data     => si_data,
+		-- so_data     => so_data,
+		-- input_clk   => input_clk,
+		-- input_ena   => input_ena,
+		-- input_data  => input_samples,
+		-- video_clk   => video_clk,
+		-- video_pixel => video_pixel,
+		-- video_hsync => video_hsync,
+		-- video_vsync => video_vsync,
+		-- video_vton  => video_vton,
+		-- video_blank => video_blank);
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		debug     => debug,
 		profile   => 1,
 		sdram_tcp => sdram_tcp,
-		mark      => MT46V256M6T,
+		mark      => MT41K2G125,
 		timing_id => pclk150_00m1920x1080at60,
 		sdram     => sdram,
 		layout    => layout)
@@ -673,15 +676,16 @@ begin
 		so_trdy     => so_trdy,
 		so_end      => so_end,
 		so_data     => so_data,
-		input_clk   => spi_clk,
-		input_data  => samples,
+		input_clk   => input_clk,
+		input_ena   => input_ena,
+		input_data  => input_samples,
 
-		ctlr_clk     => ctlr_clk,
+		ctlr_clk     => ddr_clk0,
 		ctlr_rst     => sdrsys_rst,
 		ctlr_bl      => "001",
 		ctlr_cl      => sdram_params.cl,
 
-		ctlrphy_rst  => ctlrphy_rst,
+		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),
 		ctlrphy_ras  => ctlrphy_ras(0),
@@ -703,7 +707,8 @@ begin
 		video_pixel => video_pixel,
 		video_hsync => video_hsync,
 		video_vsync => video_vsync,
-		video_vton  => video_vton);
+		video_vton  => video_vton,
+		video_blank => video_blank);
 
 	cgear_g : for i in 1 to gear/2-1 generate
     	ctlrphy_rst(i) <= ctlrphy_rst(0);
