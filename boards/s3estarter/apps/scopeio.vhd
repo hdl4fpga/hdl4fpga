@@ -65,7 +65,7 @@ architecture scopeio of s3estarter is
 	signal spi_rst   : std_logic;
 	signal dac_sdi   : std_logic;
 	signal input_ena : std_logic;
-	signal video_pixel   : std_logic_vector(3-1 downto 0);
+	signal video_pixel   : std_logic_vector(24-1 downto 0);
 
 	alias  sio_clk   is e_tx_clk;
 	signal si_frm    : std_logic;
@@ -275,7 +275,7 @@ architecture scopeio of s3estarter is
 
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk90      : std_logic;
-	signal ddr_clk       : std_logic_vector(0 downto 0);
+	signal sd_clk       : std_logic_vector(0 downto 0);
 	signal ddr_odt       : std_logic_vector(0 to 0);
 	signal sdram_cke     : std_logic_vector(0 to 0);
 	signal sdram_cs      : std_logic_vector(0 to 0);
@@ -958,9 +958,9 @@ begin
 
 	-- vga_hsync <= '0';
 	-- vga_vsync <= '0';
-	vga_red   <= video_pixel(2);
-	vga_green <= video_pixel(1);
-	vga_blue  <= video_pixel(0);
+	vga_red   <= video_pixel(3*8-1);
+	vga_green <= video_pixel(2*8-1);
+	vga_blue  <= video_pixel(1*8-1);
 
 	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
 	ctlrphy_rlreq <= to_stdulogic(to_bit(ctlrphy_rlrdy));
@@ -1009,7 +1009,7 @@ begin
 		sys_sti     => ctlrphy_sto,
 		sys_sto     => ctlrphy_sti,
 
-		sdram_clk     => ddr_clk,
+		sdram_clk     => sd_clk,
 		sdram_cke     => sdram_cke,
 		sdram_cs      => sdram_cs,
 		sdram_odt     => ddr_odt,
@@ -1023,6 +1023,17 @@ begin
 		sdram_dq      => sd_dq,
 		sdram_dqs     => sd_dqs);
 
+	sdram_clk_i : obufds
+	generic map (
+		iostandard => "DIFF_SSTL2_I")
+	port map (
+		i  => sd_clk(0),
+		o  => sd_ck_p,
+		ob => sd_ck_n);
+
+	sd_cke <= sdram_cke(0);
+	sd_cs  <= sdram_cs(0);
+
 	-- Ethernet Transceiver --
 	--------------------------
 
@@ -1030,28 +1041,6 @@ begin
 	e_mdc  <= '0';
 	e_mdio <= 'Z';
 	e_txd_4 <= '0';
-
-	-- DDR --
-	---------
-
-	sd_clk_i : obufds
-	generic map (
-		iostandard => "DIFF_SSTL2_I")
-	port map (
-		i  => 'Z',
-		o  => sd_ck_p,
-		ob => sd_ck_n);
-
-	sd_cke    <= 'Z';
-	sd_cs     <= 'Z';
-	sd_ras    <= 'Z';
-	sd_cas    <= 'Z';
-	sd_we     <= 'Z';
-	sd_ba     <= (others => 'Z');
-	sd_a      <= (others => 'Z');
-	sd_dm     <= (others => 'Z');
-	sd_dqs    <= (others => 'Z');
-	sd_dq     <= (others => 'Z');
 
 	amp_shdn <= '0';
 	dac_clr <= '1';
