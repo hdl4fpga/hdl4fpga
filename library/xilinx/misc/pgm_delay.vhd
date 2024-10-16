@@ -51,14 +51,12 @@ architecture mix of pgm_delay is
 	signal d : std_logic_vector(0 to n-1);
 
 	-- attribute keep  of xi   : signal is "true";
-	-- attribute keep of x_p : signal is "true";
-	-- attribute keep of x_n : signal is "true";
-	-- attribute keep of d   : signal is "true";
+	attribute keep of x_p : signal is "true";
+	attribute keep of x_n : signal is "true";
+	attribute keep of d   : signal is "true";
 	attribute keep of lutp : label is "true";
 	attribute keep of lutn : label is "true";
 
-	attribute keep_hierarchy of lutp : label is "true";
-	attribute keep_hierarchy of lutn : label is "true";
 
 begin
 	d(n-1) <= '-';
