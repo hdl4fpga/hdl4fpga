@@ -42,7 +42,7 @@ architecture scopeio of arty is
 	signal video_vsync     : std_logic;
 	signal video_vton      : std_logic;
 	signal video_blank     : std_logic;
-	signal video_pixel     : std_logic_vector(0 to 3-1);
+	signal video_pixel     : std_logic_vector(24-1 downto 0);
 
 	signal sio_clk         : std_logic;
 	signal si_frm          : std_logic;
@@ -150,7 +150,7 @@ architecture scopeio of arty is
 		"   gear      : 4," &
 		"   bank_size : " & natural'image(ddr3_ba'length) & "," &
 		"   addr_size : " & natural'image(ddr3_a'length)  & "," &
-		"   coln_size : 9," &
+		"   coln_size : 10," &
 		"   word_size : " & natural'image(ddr3_dq'length)  & "," &
 		"   byte_size : " & natural'image(ddr3_dq'length/ddr3_dm'length) & "," &
 		"}");
@@ -636,31 +636,11 @@ begin
 
 	end block;
 
-	-- scopeio_e : entity hdl4fpga.scopeio
-	-- generic map (
-		-- videotiming_id => pclk150_00m1920x1080at60,
-		-- layout         => layout)
-	-- port map (
-		-- sio_clk     => sio_clk,
-		-- si_frm      => si_frm,
-		-- si_irdy     => si_irdy,
-		-- si_data     => si_data,
-		-- so_data     => so_data,
-		-- input_clk   => input_clk,
-		-- input_ena   => input_ena,
-		-- input_data  => input_samples,
-		-- video_clk   => video_clk,
-		-- video_pixel => video_pixel,
-		-- video_hsync => video_hsync,
-		-- video_vsync => video_vsync,
-		-- video_vton  => video_vton,
-		-- video_blank => video_blank);
-
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		debug     => debug,
 		profile   => 1,
-		sdram_tcp => sdram_tcp,
+		sdram_tcp => 2.0*sdram_tcp,
 		mark      => MT41K2G125,
 		timing_id => pclk150_00m1920x1080at60,
 		sdram     => sdram,
@@ -682,8 +662,11 @@ begin
 
 		ctlr_clk     => ddr_clk0,
 		ctlr_rst     => sdrsys_rst,
-		ctlr_bl      => "001",
+		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
+		ctlr_cwl     => sdram_params.cwl,
+		ctlr_rtt     => "001",
+		ctlr_cmd     => ctlrphy_cmd,
 
 		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
@@ -832,9 +815,9 @@ begin
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			ja(1)  <= multiplex(video_pixel, std_logic_vector(to_unsigned(0,2)), 1)(0);
-			ja(2)  <= multiplex(video_pixel, std_logic_vector(to_unsigned(1,2)), 1)(0);
-			ja(3)  <= multiplex(video_pixel, std_logic_vector(to_unsigned(2,2)), 1)(0);
+			ja(1)  <= video_pixel(3*8-1);
+			ja(2)  <= video_pixel(2*8-1);
+			ja(3)  <= video_pixel(1*8-1);
 			ja(4)  <= not video_hsync;
 			ja(10) <= not video_vsync;
 		end if;
