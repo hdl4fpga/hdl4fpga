@@ -28,232 +28,34 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga/hdo.all;
 use hdl4fpga.sdram_param.all;
 
 package sdram_db is
-	type sdram_chips is (
-		MT46V256M6T,
-		MT41J1G15E,
-		MT47H512M3,
-		MT41K2G125,
-		MT41K4G107,
-		MT41K8G125,
-		AS4CD3LC12,
-		MT48LC256MA27E);
+	constant timings : string := compact("{" &
+		"MT48LC256MA27E : {std : sdr,  tWR : " & real'image(14.0e-9+11.0e-9) & ", tRCD  : 15.0e-9, tRP : 15.0e-9, tMRD  : 15.0e-9, tRFC  : 66.0e-9, tREFI : " & real'image(64.0e-3/8192.0) & "}," & -- real/natural Serious Lattice diamond bug
+		"MT46V256M6T    : {std : ddr,  tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & "}," &
+		"MT47H512M3     : {std : ddr2, tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tRPA : 15.0e-9,  tRFC : 130.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : 400.0e-6}," &
+		"MT41J1G15E     : {std : ddr3, tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 15.00e-9, tRFC : 110.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(110.00e-9 + 10.0e-9) & "}," &  -- tMin : tRFC + 10 ns
+		"MT41K2G125     : {std : ddr3, tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 360.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(360.00e-9 + 10.0e-9) & "}," &  -- tMin : tRFC + 10 ns
+		"MT41K4G107     : {std : ddr3, tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 20.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}," &  -- tMin : tRFC + 10 ns
+		"MT41K8G125     : {std : ddr3, tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 20.00e-9, tRFC : 350.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(350.00e-9 + 10.0e-9) & "}," &  -- tMin : tRFC + 10 ns
+		"AS4CD3LC12     : {std : ddr3, tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & "; tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}}");   -- tMin : tRFC + 10 ns
 
-	type sdrmark_vector is array (sdram_chips) of sdram_standards;
+	constant sdram_latencies : string := compact("[" &
+		"sdr  : {tPreRST : 100.0e-6}," &
+		"ddr  : {tPreRST : 100.0e-6, cDLL : 200}," &
+		"ddr2 : {tPreRST : 200.0e-6, cDLL : 200, MRD : 2}," &
+		"ddr3 : {tPreRST : 200.0e-6, cDLL : 500, tPstRST : 500.0e-6, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 5}]");
 
-	constant sdrmark_tab : sdrmark_vector := (
-		MT48LC256MA27E => sdr,
-		MT46V256M6T    => ddr,
-		MT47H512M3     => ddr2,
-		MT41J1G15E     => ddr3,
-		MT41K2G125     => ddr3,
-		MT41K4G107     => ddr3,
-		MT41K8G125     => ddr3,
-		AS4CD3LC12     => ddr3);
-
-	type timing_record is record
-		mark  : sdram_chips;
-		param : sdram_parameters;
-		value : real;
-	end record;
-
-	timing_record;
-
-		MT48LC256MA27E : { 
-		    std     : sdr
-		    tWR     : 14.0e-9+11.0e-9,
-		    tRP     : 15.0e-9,
-		    tRCD    : 15.0e-9,
-		    tRFC    : 66.0e-9,
-		    tMRD    : 15.0e-9,
-		    tREFI   : 64.0e-3/8192.0 }, -- real/natural Serious Lattice diamond bug
-
-		MT46V256M6T : {
-		    std     : ddr
-		    tWR     :  15.0e-9,
-		    tRP     :  15.0e-9,
-		    tRCD    :  15.0e-9,
-		    tRFC    :  72.0e-9,
-		    tMRD    :  12.0e-9,
-		    tREFI   :  64.0e-3/8192.0},
-
-		MT47H512M3 : {
-		    std     : ddr2,
-		    tXPR    : 400.0e-6,
-		    tWR     :  15.0e-9,
-		    tRP     :  15.0e-9,
-		    tRCD    :  15.0e-9,
-		    tRFC    : 130.0e-9,
-		    tRPA    :  15.0e-9,
-		    tREFI   :  64.0e-3/8192.0},
-
-		MT41J1G15E : {
-		    std     : ddr3,
-		    tWR     :  15.00e-9,
-		    tRCD    :  13.91e-9,
-		    tRP     :  13.91e-9,
-		    tMRD    :  15.00e-9,
-		    tRFC    : 110.00e-9,
-		    tXPR    : 110.00e-9 + 10.0e-9,  -- tMin : tRFC + 10 ns
-		    tREFI   :  64.00e-3/8192.0},
-
-		MT41K2G125 : {
-		    std     : ddr3,
-		    tWR     :  15.00e-9,
-		    tRCD    :  13.75e-9,
-		    tRP     :  13.75e-9,
-		    tMRD    :  15.00e-9,
-		    tRFC    : 360.00e-9,
-		    tXPR    : 360.00e-9 + 10.0e-9,  -- tMin : tRFC + 10 ns
-		    tREFI   :  64.00e-3/8192.0},
-
-		MT41K4G107 : {
-		    std     : ddr3,
-		    tWR     :  15.00e-9,
-		    tRCD    :  13.91e-9,
-		    tRP     :  13.91e-9,
-		    tMRD    :  20.00e-9,
-		    tRFC    : 260.00e-9,
-		    tXPR    : 260.00e-9 + 10.0e-9,  -- tMin : tRFC + 10 ns
-		    tREFI   :  64.00e-3/8192.0},
-
-		MT41K8G125  : {
-		    std     : ddr3,
-		    tWR     :  15.00e-9,
-		    tRCD    :  13.75e-9,
-		    tRP     :  13.75e-9,
-		    tMRD    :  20.00e-9,
-		    tRFC    : 350.00e-9,
-		    tXPR    : 350.00e-9 + 10.0e-9,  -- tMin : tRFC + 10 ns
-		    tREFI   :  64.00e-3/8192.0)},
-
-		AS4CD3LC12  : {
-		    std     : ddr3,
-		    tWR     :  15.00e-9,
-		    tRCD    :  13.75e-9,
-		    tRP     :  13.75e-9,
-		    tMRD    :  15.00e-9,
-		    tRFC    : 260.00e-9,
-		    tXPR    : 260.00e-9 + 10.0e-9,  -- tMin : tRFC + 10 ns
-		    tREFI   :  64.00e-3/8192.0};
-
-	type latency_vector     is array (device_latencies) of integer;
-	constant sdram_latency_tab : sdram_latency_vector := 
-		ddr : {
-		    tPreRST : 100.0e-6,
-		    cDLL    : 200 },
-
-		ddr2 : {
-		    tPreRST : 200.0e-6,
-		    cDLL    : 200,
-		    MRD     :   2 },
-
-		ddr3 : {
-		    tPreRST : 200.00e-6,
-		    tPstRST : 500.00e-6,
-		    cDLL    : 500,
-		    ZQINIT  : 500,
-		    MRD     :   4,
-		    MODu    :  12,
-		    XPR     :   5};
-
-	constant xc3sg2_latencies : latency_vector := (
-		STRL   => -2,
-		DQSL   => -2,
-		DQSZL  => -2,
-		DQZL   => -2,
-		WWNL   => -2,
-		STRXL  =>  0,
-		DQSZXL =>  4,
-		DQSXL  =>  0,
-		DQZXL  =>  0,
-		WWNXL  =>  0,
-		WIDL   =>  2);
-
-	constant xc5vg4_latencies : latency_vector := (
-		STRL   =>  9,
-		DQSL   =>  2,
-		DQSZL  =>  2,
-		DQZL   => -1,
-		WWNL   => -3,
-		STRXL  =>  0,
-		DQSZXL =>  1,
-		DQSXL  =>  0,
-		DQZXL  =>  0,
-		WWNXL  =>  0,
-		WIDL   =>  4);
-
-	constant xc7vg4_latencies : latency_vector := (
-		STRL   =>  9,
-		DQSL   =>  1,
-		DQSZL  =>  1,
-		DQZL   => -1,
-		WWNL   => -1,
-		STRXL  =>  0,
-		DQSZXL =>  2,
-		DQSXL  =>  2,
-		DQZXL  =>  0,
-		WWNXL  =>  0,
-		WIDL   =>  4);
-
-	constant ecp3g4_latencies : latency_vector := (
-		STRL   => 0,
-		DQSL   => 0,
-		DQSZL  => 0,
-		DQZL   => 2,
-		WWNL   => 2,
-		STRXL  => 0,
-		DQSZXL => 2,
-		DQSXL  => 2,
-		DQZXL  => 0,
-		WWNXL  => 2,
-		WIDL   => 4);
-
-	constant ecp5g1_latencies : latency_vector := (
-		STRL   => 1,
-		DQSL   => 0,
-		DQSZL  => 0,
-		DQZL   => 0,
-		WWNL   => 0,
-		STRXL  => 0,
-		DQSZXL => 0,
-		DQSXL  => 0,
-		DQZXL  => 0,
-		WWNXL  => 0,
-		WIDL   => 1);
-
-	constant ecp5g4_latencies : latency_vector := (
-		STRL   =>  0,
-		DQSL   =>  4*1-2+2, -- ulx4ld
-		DQSZL  =>  4*1+0+2,
-		DQZL   =>  4*1+0+2,
-		WWNL   =>  4*1-4+2,
-		-- DQSL   =>  4*1-2+0, -- orangecrab
-		-- DQSZL  =>  4*1+0+0,
-		-- DQZL   =>  4*1+0+0,
-		-- WWNL   =>  4*1-4+0,
-		STRXL  =>  0,
-		DQSZXL =>  2,
-		DQSXL  =>  2,
-		DQZXL  =>  0,
-		WWNXL  =>  2,
-		WIDL   =>  4);
-
-	function sdrmark_standard (
-		constant mark : sdram_chips)
-		return sdram_standards;
-
-	function sdram_timing (
-		constant mark  : sdram_chips;
-		constant param : sdram_parameters)
-		return real;
-
-	function sdram_latency (
-		constant stdr : sdram_standards;
-		constant param : sdram_latencies)
-		return natural;
+	constant phy_latencies : string := compact("[" &
+		"xc3sg2 : { STRL : -2, DQSL : -2, DQSZL : -2, DQZL : -2, WWNL : -2, STRXL : 0, DQSZXL : 4, DQSXL : 0, DQZXL : 0, WWNXL : 0, WIDL : 2}," &
+		"xc5vg4 : { STRL :  9, DQSL :  2, DQSZL :  2, DQZL : -1, WWNL : -3, STRXL : 0, DQSZXL : 1, DQSXL : 0, DQZXL : 0, WWNXL : 0, WIDL : 4}," &
+		"xc7vg4 : { STRL :  9, DQSL :  1, DQSZL :  1, DQZL : -1, WWNL : -1, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 0, WIDL : 4}," &
+		"ecp3g4 : { STRL :  0, DQSL :  0, DQSZL :  0, DQZL :  2, WWNL :  2, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2, WIDL : 4}," &
+		"ecp5g1 : { STRL :  1, DQSL :  0, DQSZL :  0, DQZL :  0, WWNL :  0, STRXL : 0, DQSZXL : 0, DQSXL : 0, DQZXL : 0, WWNXL : 0, WIDL : 1}," &
+		"ulx4ld_ecp5g4     : { STRL : 0, DQSL : 4*1-2+2, DQSZL : 4*1+0+2, DQZL : 4*1+0+2, WWNL : 4*1-4+2, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2, WIDL : 4}," &
+		"orangecrab_ecp5g4 : { STRL : 0, DQSL : 4*1-2+0, DQSZL : 4*1+0+0, DQZL : 4*1+0+0, WWNL : 4*1-4+0, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2, WIDL : 4}]");
 
 	function sdram_schtab (
 		constant stdr      : sdram_standards;
@@ -266,7 +68,7 @@ package sdram_db is
 		constant latencies : natural_vector)
 		return natural_vector;
 
-	function to_sdrlatency (
+	function tmng2lat (
 		constant period : real;
 		constant mark   : sdram_chips;
 		constant param  : sdram_parameters)
@@ -276,75 +78,14 @@ end package;
 
 package body sdram_db is
 
-	function sdrmark_standard (
-		constant mark : sdram_chips)
-		return sdram_standards is
-	begin
-		return sdrmark_tab(mark);
-	end;
-
-	function sdram_timing (
-		constant mark  : sdram_chips;
-		constant param : sdram_parameters)
-		return real is
-	begin
-		for i in timing_tab'range loop
-			if timing_tab(i).mark = mark then
-				if timing_tab(i).param = param then
-					return timing_tab(i).value;
-				end if;
-			end if;
-		end loop;
-
-		assert false
-		report ">>>sdram_timing<<<"       & " : " & 
-			sdram_chips'image(mark)       & " : " &
-			sdram_parameters'image(param) & " : " &
-			"not found, returning 0.0"
-		severity warning;
-
-		return 0.0;
-	end;
-
-	function sdram_latency (
-		constant stdr : sdram_standards;
-		constant param : sdram_latencies)
-		return natural is
-	begin
-		for i in sdram_latency_tab'range loop
-			if sdram_latency_tab(i).stdr = stdr then
-				if sdram_latency_tab(i).param = param then
-					return sdram_latency_tab(i).value;
-				end if;
-			end if;
-		end loop;
-
-		assert false
-		report ">>> sdram_latency <<<"   & " : " & 
-			sdram_standards'image(stdr)  & " : " &
-			sdram_latencies'image(param) & " : " &
-			"not found, returning 0"
-		severity warning;
-
-		return 0;
-	end;
-
-	function to_sdrlatency (
+	function tmng2lat (
+		constant 
 		constant period : real;
-		constant mark   : sdram_chips;
-		constant param  : sdram_parameters)
+		constant param  : real)
 		return natural is
 		variable retval : natural;
 	begin
 		retval := natural(ceil(sdram_timing(mark, param)/period));
-
-		assert false
-		report "AC parameter of "         &
-			sdram_chips'image(mark)       & " named " &
-			sdram_parameters'image(param) & " is    " &
-			natural'image(retval)
-		severity note;
-
 		return retval;
 	end;
 
