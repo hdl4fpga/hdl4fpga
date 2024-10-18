@@ -27,161 +27,33 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.hdo.all;
 
 package sdram_param is
 
-	type sdram_parameters   is (tPreRST, tPstRST, tXPR, tWR, tRP, tRCD, tRFC, tMRD, tREFI, tRPA);
-	type sdram_latency_rgtr is (AL, CL, BL, WRL, CWL);
-	type sdram_latencies    is (cDLL, MRD, MODu, XPR, ZQINIT);
-	type device_latencies   is (STRL, DQSZL, DQSL, DQZL, WWNL, STRXL, DQSZXL, DQSXL, DQZXL, WWNXL, WIDL);
-	type sdram_standards    is (sdr, ddr, ddr2, ddr3);
 
-	type sdram_latency_record is record
-		stdr  : sdram_standards;
-		param : sdram_latencies;
-		value : natural;
-	end record;
-	type sdram_latency_vector is array (natural range <>) of sdram_latency_record;
-
-	constant code_size : natural := 3;
-	subtype code_t is std_logic_vector(0 to code_size-1);
-
-	type cfglat_record is record
-		stdr  : sdram_standards;
-		rgtr  : sdram_latency_rgtr;
-		lat   : natural;
-		code  : code_t;
-	end record;
-	type cfglat_vector is array (natural range <>) of cfglat_record;
-
-	constant cfglat_tab : cfglat_vector := (
-
-		-- stdr standard --
-		--------------------
-
-		-- SDR standard --
-		------------------
-
-		-- AL register --
-
-		(stdr => SDR, rgtr => AL,  lat =>  0*2, code => "000"),
-
-		-- CL register --
-
-		(stdr => SDR, rgtr => CL,  lat =>  1, code => "001"),
-		(stdr => SDR, rgtr => CL,  lat =>  2, code => "010"),
-		(stdr => SDR, rgtr => CL,  lat =>  3, code => "011"),
-
-		-- BL register --
-
-		(stdr => SDR, rgtr => BL,  lat =>  0, code => "000"),
-		(stdr => SDR, rgtr => BL,  lat =>  1, code => "001"),
-		(stdr => SDR, rgtr => BL,  lat =>  2, code => "010"),
-		(stdr => SDR, rgtr => BL,  lat =>  4, code => "011"),
-
-		-- CWL register --
-
-		(stdr => SDR, rgtr => CWL, lat =>  0, code => "000"),
-
-		-- DDR1 standard --
-		-------------------
-
-		-- AL register --
-
-		(stdr => ddr, rgtr => AL,  lat =>  0*2, code => "000"),
-
-		-- CL register --
-
-		(stdr => ddr, rgtr => CL,  lat =>  2*2, code => "010"),
-		(stdr => ddr, rgtr => CL,  lat =>  1*5, code => "110"),
-		(stdr => ddr, rgtr => CL,  lat =>  2*3, code => "011"),
-
-		-- BL register --
-
-		(stdr => ddr, rgtr => BL,  lat =>  2*1, code => "001"),
-		(stdr => ddr, rgtr => BL,  lat =>  2*2, code => "010"),
-		(stdr => ddr, rgtr => BL,  lat =>  2*4, code => "011"),
-
-		-- CWL register --
-
-		(stdr => ddr, rgtr => CWL, lat =>  2*1, code => "000"),
-
-		-- DDR2 standard --
-		-------------------
-
-		-- AL register --
-
-		(stdr => DDR2, rgtr => AL,  lat =>  0*2, code => "000"),
-		(stdr => DDR2, rgtr => AL,  lat =>  1*2, code => "001"),
-		(stdr => DDR2, rgtr => AL,  lat =>  2*2, code => "010"),
-		(stdr => DDR2, rgtr => AL,  lat =>  3*2, code => "011"),
-		(stdr => DDR2, rgtr => AL,  lat =>  4*2, code => "100"),
-		(stdr => DDR2, rgtr => AL,  lat =>  5*2, code => "101"),
-		(stdr => DDR2, rgtr => AL,  lat =>  6*2, code => "110"),
-
-		-- CL register --
-
-		(stdr => DDR2, rgtr => CL,  lat =>  3*2, code => "011"),
-		(stdr => DDR2, rgtr => CL,  lat =>  4*2, code => "100"),
-		(stdr => DDR2, rgtr => CL,  lat =>  5*2, code => "101"),
-		(stdr => DDR2, rgtr => CL,  lat =>  6*2, code => "110"),
-		(stdr => DDR2, rgtr => CL,  lat =>  7*2, code => "111"),
-
-		-- BL register --
-
-		(stdr => DDR2, rgtr => BL,  lat =>  2*2, code => "010"),
-		(stdr => DDR2, rgtr => BL,  lat =>  4*2, code => "011"),
-
-		-- WRL register --
-
-		(stdr => DDR2, rgtr => WRL, lat =>  2*2, code => "001"),
-		(stdr => DDR2, rgtr => WRL, lat =>  3*2, code => "010"),
-		(stdr => DDR2, rgtr => WRL, lat =>  4*2, code => "011"),
-		(stdr => DDR2, rgtr => WRL, lat =>  5*2, code => "100"),
-		(stdr => DDR2, rgtr => WRL, lat =>  6*2, code => "101"),
-		(stdr => DDR2, rgtr => WRL, lat =>  7*2, code => "110"),
-		(stdr => DDR2, rgtr => WRL, lat =>  8*2, code => "111"),
-
-		-- DDR3 standard --
-		-------------------
-
-		-- AL register --
-
-		(stdr => DDR3, rgtr => AL,  lat =>  0*2, code => "000"),
-		(stdr => DDR3, rgtr => AL,  lat =>  1*2, code => "001"),
-		(stdr => DDR3, rgtr => AL,  lat =>  2*2, code => "010"),
-
-		-- CL register --
-
-		(stdr => DDR3, rgtr => CL, lat =>  5*2, code => "001"),
-		(stdr => DDR3, rgtr => CL, lat =>  6*2, code => "010"),
-		(stdr => DDR3, rgtr => CL, lat =>  7*2, code => "011"),
-		(stdr => DDR3, rgtr => CL, lat =>  8*2, code => "100"),
-		(stdr => DDR3, rgtr => CL, lat =>  9*2, code => "101"),
-		(stdr => DDR3, rgtr => CL, lat => 10*2, code => "110"),
-		(stdr => DDR3, rgtr => CL, lat => 2*11, code => "111"),
-
-		-- BL register --
-
-		(stdr => DDR3, rgtr => BL, lat => 8, code => "000"),
-		(stdr => DDR3, rgtr => BL, lat => 8, code => "001"),
-		(stdr => DDR3, rgtr => BL, lat => 8, code => "010"),
-
-		-- WRL register --
-
-		(stdr => DDR3, rgtr => WRL, lat =>  5*2,  code => "001"),
-		(stdr => DDR3, rgtr => WRL, lat =>  6*2,  code => "010"),
-		(stdr => DDR3, rgtr => WRL, lat =>  7*2,  code => "011"),
-		(stdr => DDR3, rgtr => WRL, lat =>  8*2,  code => "100"),
-		(stdr => DDR3, rgtr => WRL, lat => 10*2, code => "101"),
-		(stdr => DDR3, rgtr => WRL, lat => 12*2, code => "110"),
-
-		-- CWL register --
-
-		(stdr => DDR3, rgtr => CWL, lat =>  5*2, code => "000"),
-		(stdr => DDR3, rgtr => CWL, lat =>  6*2, code => "001"),
-		(stdr => DDR3, rgtr => CWL, lat =>  7*2, code => "010"),
-		(stdr => DDR3, rgtr => CWL, lat =>  8*2, code => "011"));
+	constant : string := compact("{" &
+		"sdr : {" &
+		"    al  : { 000 : 0 }," &
+		"    cl  : { 001 : 1, 010 : 2, 011 : 3 }," &
+		"    bl  : { 000 : 0, 001 : 1, 010 : 2, '011' : 4 }," &
+		"    cwl : { 000 : 0 }}," &
+		"ddr : {" &
+		"    al  : {000, 0}" &
+		"    cl  : {010, 4, 110, 5, 011, 3}," &
+		"    bl  : {001, 2, 010, 4, 011, 8}," &
+		"    cwl : {000, 2}}," &
+		"ddr2 : {" &
+		"    al  : {000 : 0, 001 : 2, 010 :  4, 011 :  6, 100 :  8, 101 : 10, 110: 12}," &
+		"    cl  : {011 : 6, 100 : 8, 101 : 10, 110 : 12, 111 : 14}," &
+		"    bl  : {010 : 2, 011 : 8}," &
+		"    wrl : {001 : 4, 010 : 6, 011 : 8, 100 : 10, 101 : 12, 110 : 14, 111 : 16}}," &
+		"ddr3 : {" &
+		"    al  : { 000 :  0, 001 :  2, 010 :  4}," &
+		"    cl  : { 001 : 10, 010 : 12, 011 : 14, 100 : 16, 101 : 18, 110 : 20, 111 : 22}," &
+		"    bl  : { 000 :  8, 001 :  8, 010 :  8}," &
+		"    wrl : { 001 : 10, 010 : 12, 011 : 14, 100 : 16, 101 : 20, 110 : 24}," &
+		"    cwl : { 000 : 10, 001 : 12, 010 : 14, 011 : 16}}};");
 
 	type sdram_cmd is record
 		cs  : std_logic;
@@ -203,12 +75,6 @@ package sdram_param is
 	constant mpu_pre   : std_logic_vector(0 to 2) := "010";
 	constant mpu_aut   : std_logic_vector(0 to 2) := "001";
 	constant mpu_dcare : std_logic_vector(0 to 2) := "000";
-
-	function sdram_cnfglat (
-		constant stdr : sdram_standards;
-		constant rgtr  : sdram_latency_rgtr;
-		constant lat   : natural)
-		return std_logic_vector;
 
 	function sdram_query_size (
 		constant stdr : sdram_standards;
@@ -245,87 +111,16 @@ end package;
 
 package body sdram_param is
 
-	function sdram_cnfglat (
-		constant stdr : sdram_standards;
-		constant rgtr  : sdram_latency_rgtr;
-		constant lat   : natural)
+	function xxx (
+		constant std : string;
+		constant reg : string)
 		return std_logic_vector is
+		variable retval : unsigned(0 to 2**'length*width-1);
 	begin
-		for i in cfglat_tab'range loop
-			if cfglat_tab(i).stdr = stdr then
-				if cfglat_tab(i).rgtr = rgtr then
-					if cfglat_tab(i).lat = lat then
-						return cfglat_tab(i).code;
-					end if;
-				end if;
-			end if;
+		retval := (others => '0');
+		for i in 0 to 2**'length-1 loop
+			:= hdo(std)**("."&reg&"."&integer'image(i));
 		end loop;
-
-		assert false
-		report ">>>sdram_cfglat<<<" & " : " & 
-			sdram_standards'image(stdr) & " : " &
-			sdram_latency_rgtr'image(rgtr) & " : " &
-			natural'image(lat)    & " : " &
-			"not found"
-		severity failure;
-
-		return "XXX";
-
-	end;
-
-	function sdram_query_size (
-		constant stdr : sdram_standards;
-		constant rgtr  : sdram_latency_rgtr)
-		return natural is
-		variable val : natural := 0;
-	begin
-		for i in cfglat_tab'range loop
-			if cfglat_tab(i).stdr = stdr then
-				if cfglat_tab(i).rgtr = rgtr then
-					val := val + 1;
-				end if;
-			end if;
-		end loop;
-
-		assert val /= 0
-		report sdram_latency_rgtr'image(rgtr) & " : " & natural'image(val)
-		severity failure;
-
-		return val;
-	end;
-
-	function sdram_query_data (
-		constant stdr : sdram_standards;
-		constant rgtr : sdram_latency_rgtr)
-		return cfglat_vector is
-		constant query_size : natural := sdram_query_size(stdr, rgtr);
-		variable query_data : cfglat_vector (0 to query_size-1);
-		variable query_row  : natural := 0;
-	begin
-		for i in cfglat_tab'range loop
-			if cfglat_tab(i).stdr = stdr then
-				if cfglat_tab(i).rgtr = rgtr then
-					query_data(query_row) := cfglat_tab(i);
-					query_row := query_row + 1;
-				end if;
-			end if;
-		end loop;
-		return query_data;
-	end;
-
-	function sdram_latcod (
-		constant stdr : sdram_standards;
-		constant rgtr : sdram_latency_rgtr)
-		return std_logic_vector is
-		constant query_size : natural := sdram_query_size(stdr, rgtr);
-		constant query_data : cfglat_vector(0 to query_size-1) := sdram_query_data(stdr, rgtr);
-		variable latcode    : unsigned(0 to code_size*query_size-1);
-	begin
-		for i in query_data'reverse_range loop
-			latcode := latcode srl code_size;
-			latcode(code_t'range) := unsigned(query_data(i).code);
-		end loop;
-		return std_logic_vector(latcode);
 	end;
 
 	function sdram_selcwl (
