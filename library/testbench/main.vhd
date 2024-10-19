@@ -27,8 +27,8 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library hdl4fpga;
-use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.hdo.all;
+use hdl4fpga.sdram_param.all;
 
 entity main is
 end;
@@ -36,11 +36,11 @@ end;
 architecture def of main is
 begin
 	process 
+		constant xxxx : string := hdo(sdram_db)**".sdr.cl";
 		variable a : integer := 0;
 	begin
-		a := a -1;
-		a := a rem 4;
-		report CR & "VALUE : " & ''' & integer'image(a) & ''';
+		report "------------> "&string'(hdo(xxxx)**".'001'");
+		-- report hdo(xxxx);
 		wait;
 	end process;
 end;

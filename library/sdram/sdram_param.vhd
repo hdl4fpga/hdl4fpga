@@ -31,8 +31,7 @@ use hdl4fpga.hdo.all;
 
 package sdram_param is
 
-
-	constant : string := compact("{" &
+	constant sdram_db : string := compact("{" &
 		"sdr : {" &
 		"    al  : { 000 : 0 }," &
 		"    cl  : { 001 : 1, 010 : 2, 011 : 3 }," &
@@ -53,7 +52,7 @@ package sdram_param is
 		"    cl  : { 001 : 10, 010 : 12, 011 : 14, 100 : 16, 101 : 18, 110 : 20, 111 : 22}," &
 		"    bl  : { 000 :  8, 001 :  8, 010 :  8}," &
 		"    wrl : { 001 : 10, 010 : 12, 011 : 14, 100 : 16, 101 : 20, 110 : 24}," &
-		"    cwl : { 000 : 10, 001 : 12, 010 : 14, 011 : 16}}};");
+		"    cwl : { 000 : 10, 001 : 12, 010 : 14, 011 : 16}}}");
 
 	type sdram_cmd is record
 		cs  : std_logic;
@@ -76,109 +75,25 @@ package sdram_param is
 	constant mpu_aut   : std_logic_vector(0 to 2) := "001";
 	constant mpu_dcare : std_logic_vector(0 to 2) := "000";
 
-	function sdram_query_size (
-		constant stdr : sdram_standards;
-		constant rgtr  : sdram_latency_rgtr)
-		return natural;
-
-	function sdram_latcod (
-		constant stdr : sdram_standards;
-		constant rgtr : sdram_latency_rgtr)
-		return std_logic_vector;
-
-	function sdram_selcwl (
-		constant stdr : sdram_standards)
-		return sdram_latency_rgtr;
-
-	function sdram_lattab (
-		constant stdr : sdram_standards;
-		constant rgtr  : sdram_latency_rgtr)
+	function xxx (
+		constant table  : string;
+		constant key_length : natural)
 		return natural_vector;
-
-	function shuffle_vector (
-		constant data : std_logic_vector;
-		constant gear : natural;
-		constant size : natural)
-		return std_logic_vector;
-
-	function unshuffle_vector (
-		constant data : std_logic_vector;
-		constant gear : natural;
-		constant size : natural)
-		return std_logic_vector;
-
 end package;
 
 package body sdram_param is
 
 	function xxx (
-		constant std : string;
-		constant reg : string)
-		return std_logic_vector is
-		variable retval : unsigned(0 to 2**'length*width-1);
-	begin
-		retval := (others => '0');
-		for i in 0 to 2**'length-1 loop
-			:= hdo(std)**("."&reg&"."&integer'image(i));
-		end loop;
-	end;
-
-	function sdram_selcwl (
-		constant stdr : sdram_standards)
-		return sdram_latency_rgtr is
-	begin
-		if stdr = ddr2 then
-			return CL;
-		end if;
-		return CWL;
-	end;
-
-	function sdram_lattab (
-		constant stdr : sdram_standards;
-		constant rgtr : sdram_latency_rgtr)
+		constant table  : string;
+		constant key_length : natural)
 		return natural_vector is
-		constant query_size : natural := sdram_query_size(stdr, rgtr);
-		constant query_data : cfglat_vector(0 to query_size-1) := sdram_query_data(stdr, rgtr);
-		variable lattab     : natural_vector(0 to query_size-1);
+		variable retval : natural_vector(0 to 2**key_length-1);
 	begin
-		for i in lattab'range loop
-			lattab(i) := query_data(i).lat;
+		retval := (others => 0);
+		for i in 0 to 2**key_length-1 loop
+			retval(i) := hdo(table)**("."&to_string(to_unsigned(i,key_length))&"=0.");
 		end loop;
-		return lattab;
-	end;
-
-	function shuffle_vector (
-		constant data : std_logic_vector;
-		constant gear : natural;
-		constant size : natural) 
-		return std_logic_vector is
-		variable val : std_logic_vector(data'range);
-	begin	
-		for i in data'length/(gear*size)-1 downto 0 loop
-			for j in gear-1 downto 0 loop
-				for l in size-1 downto 0 loop
-					val((i*gear+j)*size+l) := data(j*(data'length/gear)+i*size+l);
-				end loop;
-			end loop;
-		end loop;
-		return val;
-	end;
-
-	function unshuffle_vector (
-		constant data : std_logic_vector;
-		constant gear : natural;
-		constant size : natural) 
-		return std_logic_vector is
-		variable val : std_logic_vector(data'range);
-	begin	
-		for i in data'length/(gear*size)-1 downto 0 loop
-			for j in gear-1 downto 0 loop
-				for l in size-1 downto 0 loop
-					val(j*(data'length/gear)+i*size+l) := data((i*gear+j)*size+l);
-				end loop;
-			end loop;
-		end loop;
-		return val;
+		return retval;
 	end;
 
 end package body;

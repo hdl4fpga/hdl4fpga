@@ -106,7 +106,7 @@ package body hdo is
 	constant log_parsetagvaluekey : natural := 2**5;
 	constant log_locatevalue      : natural := 2**6;
 	constant log_resolve          : natural := 2**7;
-	constant log                  : natural := log_parsetagvaluekey + log_resolve + log_locatevalue; --    + log_parsevalue ;
+	constant log                  : natural := log_parsetagvaluekey + log_resolve + log_locatevalue + log_parsekeytag + log_parsekey; --    + log_parsevalue ;
 
 	function isws (
 		constant char : character;
@@ -408,7 +408,8 @@ package body hdo is
 		constant hdo       : in    string;
 		variable hdo_index : inout natural;
 		variable offset    : inout natural;
-		variable length    : inout natural) is
+		variable length    : inout natural;
+		constant parse     : boolean := false) is
 		variable aphos     : boolean := false;
 		variable bkslh     : boolean := false;
 	begin
@@ -420,13 +421,18 @@ package body hdo is
 
 			if hdo(hdo_index)='\' then
 				bkslh := true;
-				hdo_index := hdo_index  + 1;
+				if parse then
+					hdo_index := hdo_index  + 1;
+				end if;
 				next;
 			elsif (hdo_index-offset)=0 then
 				if hdo(hdo_index)=''' then
 					aphos     := true;
-					hdo_index := hdo_index  + 1;
 					offset    := hdo_index;
+					hdo_index := hdo_index + 1;
+					if parse then
+						offset := offset + 1;
+					end if;
 					next;
 				end if;
 			end if;
@@ -435,6 +441,9 @@ package body hdo is
 					if hdo(hdo_index)=''' then
 						length    := hdo_index-offset;
 						hdo_index := hdo_index + 1;
+						if not parse then
+							length := length + 1;
+						end if;
 						assert (log/log_parsestring) mod 2=0 --|note
 							report LF & "parse_string => " & '"' & hdo(offset to offset+length-1) & '"' --|note
 							severity note; --|note
@@ -461,6 +470,21 @@ package body hdo is
 		assert (log/log_parsestring) mod 2=0 --|note
 			report LF & "parse_string => " & '"' & hdo(offset to offset+length-1) & '"' --|note
 			severity note; --|note
+	end;
+
+	function compare_string (
+		constant arg1 : string;
+		constant arg2 : string)
+		return boolean is
+		constant esc1 : string := escaped(arg1);
+		constant esc2 : string := escaped(arg2);
+	begin
+		if esc1'length=esc2'length then
+			if esc1=esc2 then
+				return true;
+			end if;
+		end if;
+		return false;
 	end;
 
 	procedure parse_natural (
@@ -511,7 +535,7 @@ package body hdo is
 			when '['|'{' =>
 				open_char := hdo(hdo_index);
 				hdo_index := hdo_index + 1;
-				parse_natural(hdo, hdo_index, offset, length);
+				parse_string(hdo, hdo_index, offset, length);
 
 				assert ((log/log_parsekeytag) mod 2=0) or length=0   --|note
 					report LF & "parse_keytag => [ is position" --|note
@@ -938,32 +962,26 @@ package body hdo is
 				report LF & "locate_value => hdo -> " & natural'image(value_offset) & ':' & natural'image(value_offset+value_length-1) & " " & '"' & hdo(value_offset to value_offset+value_length-1) & '"' --|note
 				severity note; --|note
 
-			if isdigit(key(key'left)) then
-				if to_natural(key) <= position then
+			if not isdigit(key(key'left)) then
+				assert ((log/log_locatevalue) mod 2=0) --|note
+					report LF &"locate_value => object request key " & key & " -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & ' ' & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' --|note
+					severity note; --|note
+
+				if compare_string(key, hdo(tag_offset to tag_offset+tag_length-1)) then
 					offset := tag_offset;
 					length := hdo_index-offset;
-
-					assert ((log/log_locatevalue) mod 2=0) --|note
-						report LF & "locate_value => object position -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & hdo(tag_offset to tag_offset+tag_length-1) --|note
-						severity note; --|note
-
-					exit;
 				end if;
-			elsif isalnum(key(key'left)) then
-				if tag_length/=0 then -- avoid synthesizes tools loop-warnings
-					assert ((log/log_locatevalue) mod 2=0) --|note
-						report LF &"locate_value => object request key " & key & " -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & ' ' & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' --|note
-						severity note; --|note
+			elsif to_natural(key) <= position then
+				offset := tag_offset;
+				length := hdo_index-offset;
 
-					if key'length=tag_length then
-						if key=hdo(tag_offset to tag_offset+tag_length-1) then
-							offset := tag_offset;
-							length := hdo_index-offset;
-							exit;
-						end if;
-					end if;
-				end if;
+				assert ((log/log_locatevalue) mod 2=0) --|note
+					report LF & "locate_value => object position -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & hdo(tag_offset to tag_offset+tag_length-1) --|note
+					severity note; --|note
+
+				exit;
 			end if;
+
 			assert ((log/log_locatevalue) mod 2=0) --|note
 				report LF & "locale_value => hdo_index end loop-> " & natural'image(hdo_index) & " '" &hdo(hdo_index) & "'" --|note
 				severity note; --|note
@@ -1042,7 +1060,7 @@ package body hdo is
 			keytag_offset,  keytag_length, 
 			default_offset, default_length);
 		assert ((log/log_resolve) mod 2=0)  --|note
-			report "resolve => keytag -> " & natural'image(keytag_offset) & ":" & natural'image(keytag_length) & ":" & '"' & hdo(keytag_offset to keytag_offset+keytag_length-1) & '"' & LF & --|note
+			report LF & "resolve => keytag -> " & natural'image(keytag_offset) & ":" & natural'image(keytag_length) & ":" & '"' & hdo(keytag_offset to keytag_offset+keytag_length-1) & '"' & LF & --|note
 			       "resolve => value  -> " & natural'image(value_offset)  & ":" & natural'image(value_length)  & ":" & '"' & hdo(value_offset  to value_offset+value_length-1)   & '"' & LF --|note
 			severity note; --|note
 		if keytag_length/=0 then
@@ -1053,7 +1071,7 @@ package body hdo is
 					exit;
 				end if;
 				assert ((log/log_resolve) mod 2=0) --|note
-					report "resolve => tag         -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & hdo(tag_offset to tag_offset+tag_length-1) & LF & --|note
+					report LF & "resolve => tag         -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & hdo(tag_offset to tag_offset+tag_length-1) & LF & --|note
 					       "resolve => hdo_index   -> " & natural'image(hdo_index) --|note
 					severity note; --|note
 				locate_value(hdo, value_offset, hdo(tag_offset to tag_offset+tag_length-1), tag1_offset, tag1_length, hdo_offset, hdo_length);
