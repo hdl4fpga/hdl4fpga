@@ -32,9 +32,11 @@ package hdo is
 		return string;
 
 	procedure resolve (
-		constant hdo           : in    string;
-		variable value_offset  : inout natural;
-		variable value_length  : inout natural);
+		constant hdo          : in    string;
+		variable value_offset : inout natural;
+		variable value_length : inout natural;
+		variable tag1_offset   : inout natural;
+		variable tag1_length   : inout natural);
 
 	function resolve (
 		constant hdo : string)
@@ -80,6 +82,10 @@ package hdo is
 		constant key : string)
 		return hdo;
 
+	function tag (
+		constant obj : hdo)
+		return string;
+
 	procedure escaped (
 		variable retval : inout string;
 		variable length : inout natural;
@@ -100,7 +106,7 @@ package body hdo is
 	constant log_parsetagvaluekey : natural := 2**5;
 	constant log_locatevalue      : natural := 2**6;
 	constant log_resolve          : natural := 2**7;
-	constant log                  : natural := log_parsekey + log_parsekeytag + log_parsetagvaluekey + log_resolve; -- + log_locatevalue    + log_parsevalue ;
+	constant log                  : natural := log_parsetagvaluekey + log_resolve + log_locatevalue + log_parsekeytag + log_parsekey; --    + log_parsevalue ;
 
 	function isws (
 		constant char : character;
@@ -402,7 +408,8 @@ package body hdo is
 		constant hdo       : in    string;
 		variable hdo_index : inout natural;
 		variable offset    : inout natural;
-		variable length    : inout natural) is
+		variable length    : inout natural;
+		constant parse     : boolean := false) is
 		variable aphos     : boolean := false;
 		variable bkslh     : boolean := false;
 	begin
@@ -414,13 +421,18 @@ package body hdo is
 
 			if hdo(hdo_index)='\' then
 				bkslh := true;
-				hdo_index := hdo_index  + 1;
+				if parse then
+					hdo_index := hdo_index  + 1;
+				end if;
 				next;
 			elsif (hdo_index-offset)=0 then
 				if hdo(hdo_index)=''' then
 					aphos     := true;
-					hdo_index := hdo_index  + 1;
 					offset    := hdo_index;
+					hdo_index := hdo_index + 1;
+					if parse then
+						offset := offset + 1;
+					end if;
 					next;
 				end if;
 			end if;
@@ -429,6 +441,9 @@ package body hdo is
 					if hdo(hdo_index)=''' then
 						length    := hdo_index-offset;
 						hdo_index := hdo_index + 1;
+						if not parse then
+							length := length + 1;
+						end if;
 						return;
 					else
 						hdo_index := hdo_index + 1;
@@ -449,6 +464,21 @@ package body hdo is
 			end if;
 		end loop;
 		length := hdo_index-offset;
+	end;
+
+	function compare_string (
+		constant arg1 : string;
+		constant arg2 : string)
+		return boolean is
+		constant esc1 : string := escaped(arg1);
+		constant esc2 : string := escaped(arg2);
+	begin
+		if esc1'length=esc2'length then
+			if esc1=esc2 then
+				return true;
+			end if;
+		end if;
+		return false;
 	end;
 
 	procedure parse_natural (
@@ -490,7 +520,7 @@ package body hdo is
 			when '['|'{' =>
 				open_char := hdo(hdo_index);
 				hdo_index := hdo_index + 1;
-				parse_natural(hdo, hdo_index, offset, length);
+				parse_string(hdo, hdo_index, offset, length);
 
 
 
@@ -719,11 +749,11 @@ package body hdo is
 	procedure locate_value (
 		constant hdo            : in    string;
 		variable hdo_index      : inout natural;
-		constant tag            : in    string;
+		constant key            : in    string;
+		variable tag_offset     : inout natural;
+		variable tag_length     : inout natural;
 		variable offset         : inout natural;
 		variable length         : inout natural) is
-		variable tag_offset     : natural;
-		variable tag_length     : natural;
 		variable key_offset     : natural;
 		variable key_length     : natural;
 		variable value_offset   : natural;
@@ -805,26 +835,20 @@ package body hdo is
 				default_offset, default_length);
 
 
-			if isdigit(tag(tag'left)) then
-				if to_natural(tag) <= position then
+			if not isdigit(key(key'left)) then
+
+				if compare_string(key, hdo(tag_offset to tag_offset+tag_length-1)) then
 					offset := tag_offset;
 					length := hdo_index-offset;
-
-
-					exit;
 				end if;
-			elsif isalnum(tag(tag'left)) then
-				if tag_length/=0 then -- avoid synthesizes tools loop-warnings
+			elsif to_natural(key) <= position then
+				offset := tag_offset;
+				length := hdo_index-offset;
 
-					if tag'length=tag_length then
-						if tag=hdo(tag_offset to tag_offset+tag_length-1) then
-							offset := tag_offset;
-							length := hdo_index-offset;
-							exit;
-						end if;
-					end if;
-				end if;
+
+				exit;
 			end if;
+
 		end loop;
 
 
@@ -866,7 +890,9 @@ package body hdo is
 	procedure resolve (
 		constant hdo           : in    string;
 		variable value_offset  : inout natural;
-		variable value_length  : inout natural) is
+		variable value_length  : inout natural;
+		variable tag1_offset   : inout natural;
+		variable tag1_length   : inout natural) is
 
 		variable hdo_index     : natural;
 		variable key_offset    : natural;
@@ -896,7 +922,7 @@ package body hdo is
 				if tag_length=0 then
 					exit;
 				end if;
-				locate_value(hdo, value_offset, hdo(tag_offset to tag_offset+tag_length-1), hdo_offset, hdo_length);
+				locate_value(hdo, value_offset, hdo(tag_offset to tag_offset+tag_length-1), tag1_offset, tag1_length, hdo_offset, hdo_length);
 				if hdo_length=0 then --| Xilinx ISE 14.7 warning complain
 					hdo_offset   := default_offset;
 					hdo_length   := default_length;
@@ -924,8 +950,10 @@ package body hdo is
 		return string is
 		variable hdo_offset : natural;
 		variable hdo_length : natural;
+		variable tag_offset : natural;
+		variable tag_length : natural;
 	begin
-		resolve (hdo, hdo_offset, hdo_length);
+		resolve (hdo, hdo_offset, hdo_length, tag_offset, tag_length);
 		return hdo(hdo_offset to hdo_offset+hdo_length-1);
 	end;
 
@@ -935,8 +963,10 @@ package body hdo is
         constant true_value : string := "true";
 		variable hdo_offset : natural;
 		variable hdo_length : natural;
+		variable tag_offset : natural;
+		variable tag_length : natural;
 	begin
-		resolve (hdo, hdo_offset, hdo_length);
+		resolve (hdo, hdo_offset, hdo_length, tag_offset, tag_length);
 		if hdo_length/=true_value'length then          -- avoid synthesizes tools length-warnings
 			return false;
         elsif hdo(hdo_offset to hdo_offset+hdo_length-1)/=true_value then
@@ -950,8 +980,10 @@ package body hdo is
 		return integer is
 		variable hdo_offset : natural;
 		variable hdo_length : natural;
+		variable tag_offset : natural;
+		variable tag_length : natural;
 	begin
-		resolve (hdo, hdo_offset, hdo_length);
+		resolve (hdo, hdo_offset, hdo_length, tag_offset, tag_length);
 		return to_natural(hdo(hdo_offset to hdo_offset+hdo_length-1));
 	end;
 
@@ -960,8 +992,10 @@ package body hdo is
 		return real is
 		variable hdo_offset : natural;
 		variable hdo_length : natural;
+		variable tag_offset : natural;
+		variable tag_length : natural;
 	begin
-		resolve (obj, hdo_offset, hdo_length);
+		resolve (obj, hdo_offset, hdo_length, tag_offset, tag_length);
 		return to_real(obj(hdo_offset to hdo_offset+hdo_length-1));
 	end;
 
@@ -970,8 +1004,10 @@ package body hdo is
 		return std_logic_vector is
 		variable hdo_offset : natural;
 		variable hdo_length : natural;
+		variable tag_offset : natural;
+		variable tag_length : natural;
 	begin
-		resolve (obj, hdo_offset, hdo_length);
+		resolve (obj, hdo_offset, hdo_length, tag_offset, tag_length);
 		return to_stdlogicvector(obj(hdo_offset to hdo_offset+hdo_length-1));
 	end;
 
@@ -1027,6 +1063,20 @@ package body hdo is
 		return hdo is
 	begin
 		return resolve(string(obj) & key);
+	end;
+
+	function tag (
+		constant obj : hdo)
+		return string is
+		variable hdo_offset : natural;
+		variable hdo_length : natural;
+		variable tag_offset : natural;
+		variable tag_length : natural;
+	begin
+		report LF & "Entre";
+		resolve (obj, hdo_offset, hdo_length, tag_offset, tag_length);
+		report LF &  obj(tag_offset to tag_offset+tag_length-1);
+		return obj(tag_offset to tag_offset+tag_length-1);
 	end;
 
 	procedure escaped (
