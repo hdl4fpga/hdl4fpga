@@ -32,15 +32,15 @@ use hdl4fpga/hdo.all;
 use hdl4fpga.sdram_param.all;
 
 package sdram_db is
-	constant timings : string := compact("{" &
-		"MT48LC256MA27E : {std : sdr,  tWR : " & real'image(14.0e-9+11.0e-9) & ", tRCD  : 15.0e-9, tRP : 15.0e-9, tMRD  : 15.0e-9, tRFC  : 66.0e-9, tREFI : " & real'image(64.0e-3/8192.0) & "}," & -- real/natural Serious Lattice diamond bug
-		"MT46V256M6T    : {std : ddr,  tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & "}," &
-		"MT47H512M3     : {std : ddr2, tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tRPA : 15.0e-9,  tRFC : 130.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : 400.0e-6}," &
-		"MT41J1G15E     : {std : ddr3, tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 15.00e-9, tRFC : 110.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(110.00e-9 + 10.0e-9) & "}," &  -- tMin : tRFC + 10 ns
-		"MT41K2G125     : {std : ddr3, tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 360.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(360.00e-9 + 10.0e-9) & "}," &  -- tMin : tRFC + 10 ns
-		"MT41K4G107     : {std : ddr3, tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 20.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}," &  -- tMin : tRFC + 10 ns
-		"MT41K8G125     : {std : ddr3, tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 20.00e-9, tRFC : 350.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(350.00e-9 + 10.0e-9) & "}," &  -- tMin : tRFC + 10 ns
-		"AS4CD3LC12     : {std : ddr3, tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & "; tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}}");   -- tMin : tRFC + 10 ns
+	constant sdram_chips : string := compact("{" &
+		"MT48LC256MA27E : {fmly : sdr,  tWR : " & real'image(14.0e-9+11.0e-9) & ", tRCD  : 15.0e-9, tRP : 15.0e-9, tMRD  : 15.0e-9, tRFC  : 66.0e-9, tREFI : " & real'image(64.0e-3/8192.0) & "}," & -- real/natural Serious Lattice diamond bug
+		"MT46V256M6T    : {fmly : ddr,  tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & "}," &
+		"MT47H512M3     : {fmly : ddr2, tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tRPA : 15.0e-9,  tRFC : 130.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : 400.0e-6}," &
+		"MT41J1G15E     : {fmly : ddr3, tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 15.00e-9, tRFC : 110.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(110.00e-9 + 10.0e-9) & "}," &  -- tMin : tRFC + 10 ns
+		"MT41K2G125     : {fmly : ddr3, tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 360.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(360.00e-9 + 10.0e-9) & "}," &  -- tMin : tRFC + 10 ns
+		"MT41K4G107     : {fmly : ddr3, tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 20.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}," &  -- tMin : tRFC + 10 ns
+		"MT41K8G125     : {fmly : ddr3, tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 20.00e-9, tRFC : 350.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(350.00e-9 + 10.0e-9) & "}," &  -- tMin : tRFC + 10 ns
+		"AS4CD3LC12     : {fmly : ddr3, tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & "; tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}}");   -- tMin : tRFC + 10 ns
 
 	constant sdram_latencies : string := compact("[" &
 		"sdr  : {tPreRST : 100.0e-6}," &

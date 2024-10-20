@@ -106,16 +106,18 @@ entity sdram_ctlr is
 		phy_sto     : out std_logic_vector(gear-1 downto 0);
 		phy_dqi     : in  std_logic_vector(gear*word_size-1 downto 0));
 
+	constant sdramchip_data : string         := hdo(sdramchips_db)**("."&sdramchip_id);
+	constant sdramfmly_id   : string         := hdo(sdramchip_data)**".fmly";
+	constant sdramfmly_data : string         := hdo(sdramfamiles_db)**("."&sdramfmly_id);
+	constant al_tab         : natural_vector := lattab(hdo(sdramfamily_data)**(".al", 8));
+	constant bl_tab         : natural_vector := lattab(hdo(sdramfamily_data)**(".bl", 8));
+	constant cl_tab         : natural_vector := lattab(hdo(sdramfamily_data)**(".cl", 8));
+	constant wr_ltab        : natural_vector := lattab(hdo(sdramfamily_data)**(".wrl={}.", 8));
+	constant cw_ltab        : natural_vector := lattab(hdo(sdramfamily_data)**(".cwl={}.", 8));
 
 end;
 
 architecture mix of sdram_ctlr is
-
-	constant stdr         : sdram_standards  := sdrmark_standard(chip);
-	constant bl_cod       : std_logic_vector := sdram_latcod(stdr, bl);
-	constant al_cod       : std_logic_vector := sdram_latcod(stdr, al);
-	constant cl_cod       : std_logic_vector := sdram_latcod(stdr, cl);
-	constant cwl_cod      : std_logic_vector := sdram_latcod(stdr, sdram_selcwl(stdr));
 
 	signal sdram_refi_rdy : std_logic;
 	signal sdram_refi_req : std_logic;

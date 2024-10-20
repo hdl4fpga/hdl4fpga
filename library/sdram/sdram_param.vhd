@@ -75,7 +75,7 @@ package sdram_param is
 	constant mpu_aut   : std_logic_vector(0 to 2) := "001";
 	constant mpu_dcare : std_logic_vector(0 to 2) := "000";
 
-	function xxx (
+	function lattab (
 		constant table  : string;
 		constant length : natural)
 		return natural_vector;
@@ -83,7 +83,7 @@ end package;
 
 package body sdram_param is
 
-	function xxx (
+	function lattab (
 		constant table  : string;
 		constant length : natural)
 		return natural_vector is

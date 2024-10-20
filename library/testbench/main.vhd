@@ -37,12 +37,14 @@ end;
 architecture def of main is
 begin
 	process 
-		constant xxxx : string := hdo(sdram_db)**".sdr.cl";
-		constant tab : natural_vector := xxx(xxxx, 8);
+		constant altab  : natural_vector := lattab(hdo(sdram_db)**".ddr3.al", 8);
+		constant bltab  : natural_vector := lattab(hdo(sdram_db)**".ddr3.bl", 8);
+		constant cltab  : natural_vector := lattab(hdo(sdram_db)**".ddr3.cl", 8);
+		constant wrltab : natural_vector := lattab(hdo(sdram_db)**".ddr3.wrl={}.", 8);
+		constant cwltab : natural_vector := lattab(hdo(sdram_db)**".ddr3.cwl={}.", 8);
+		constant xxxx : natural := max(natural_vector'(max(altab), max(bltab), max(cltab), max(wrltab), max(cwltab)));
 	begin
-		for i in tab'range loop
-			report natural'image(tab(i));
-		end loop;
+		report LF & natural'image(xxxx);
 		wait;
 	end process;
 end;
