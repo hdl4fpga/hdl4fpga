@@ -34,10 +34,9 @@ use hdl4fpga.sdram_db.all;
 entity sdram_init is
 	generic (
 		debug : boolean;
-		tcp           : real := 0.0;
-		chip          : sdram_chips;
-		ADDR_SIZE : natural := 13;
-		BANK_SIZE : natural := 3);
+		tcp   : real;
+		fmly  : string;
+		chip  : string);
 	port (
 		sdram_init_bl   : in  std_logic_vector;
 		sdram_init_bt   : in  std_logic_vector;
@@ -76,8 +75,8 @@ entity sdram_init is
 		sdram_init_ras : out std_logic;
 		sdram_init_cas : out std_logic;
 		sdram_init_we  : out std_logic;
-		sdram_init_a   : out std_logic_vector(ADDR_SIZE-1 downto 0);
-		sdram_init_b   : out std_logic_vector(BANK_SIZE-1 downto 0);
+		sdram_init_a   : out std_logic_vector;
+		sdram_init_b   : out std_logic_vector;
 		sdram_init_odt : out std_logic);
 
 
@@ -138,8 +137,6 @@ architecture def of sdram_init is
 		tddr3_dll,
 		tddr3_zqinit,
 		tddr3_ref);
-
-	constant stdr    : sdram_standards := sdrmark_standard(chip);
 
 	signal init_rdy  : std_logic;
 
@@ -331,7 +328,7 @@ begin
 			end case;
 		end;
 	
-		function ddr1_mrfile (
+		function ddr_mrfile (
 			constant sdram_mr_addr : ddrmr_addr;
 			constant sdram_mr_bl   : std_logic_vector;
 			constant sdram_mr_bt   : std_logic_vector;
@@ -493,7 +490,7 @@ begin
 		end;
 
 		function sdram_mrfile(
-			constant sdram_stdr    : sdram_standards;
+			constant sdram_fmly    : string;
 	
 			constant sdram_mr_addr : ddrmr_addr;
 			constant sdram_mr_srt  : std_logic_vector;
@@ -517,24 +514,21 @@ begin
 			constant sdram_mr_cwl  : std_logic_vector)
 			return std_logic_vector is
 		begin
-			case sdram_stdr is
-			when sdr =>
+			if sdram_fmly= "sdr" then
 				return sdram_mrfile(
 					sdram_mr_addr => sdram_mr_addr,
 					sdram_mr_bl   => sdram_mr_bl,
 					sdram_mr_bt   => sdram_mr_bt,
 					sdram_mr_cl   => sdram_mr_cl,
 					sdram_mr_wb   => sdram_mr_wb);
-	
-			when ddr =>
-				return ddr1_mrfile(
+			elsif sdram_fmly="ddr" then
+				return ddr_mrfile(
 					sdram_mr_addr => sdram_mr_addr,
 					sdram_mr_bl   => sdram_mr_bl,
 					sdram_mr_bt   => sdram_mr_bt,
 					sdram_mr_cl   => sdram_mr_cl,
 					sdram_mr_ods  => sdram_mr_ods);
-	
-			when ddr2 =>
+			elsif sdram_fmly="ddr2" then
 				return ddr2_mrfile(
 					sdram_mr_addr => sdram_mr_addr,
 					sdram_mr_srt  => sdram_mr_srt,
@@ -548,8 +542,7 @@ begin
 					sdram_mr_ocd  => sdram_mr_ocd,
 					sdram_mr_tdqs => sdram_mr_tdqs,
 					sdram_mr_rdqs => sdram_mr_rdqs);
-	
-			when others =>
+			elsif sdram_fmly="ddr3" then
 				return ddr3_mrfile(
 					sdram_mr_addr  => sdram_mr_addr,
 					sdram_mr_srt   => sdram_mr_srt,
@@ -568,7 +561,11 @@ begin
 					sdram_mr_asr   => sdram_mr_asr,
 					sdram_mr_pd    => sdram_mr_pd,
 					sdram_mr_cwl   => sdram_mr_cwl);
-			end case;
+			else
+				assert false
+				report "invalid family"
+				severity failure;
+			end if;
 		end;
 
 		variable mr_addr       : ddrmr_addr;
@@ -576,7 +573,7 @@ begin
 	begin
 		if rising_edge(sdram_init_clk) then
 			sdram_mr_data := std_logic_vector(resize(unsigned(sdram_mrfile(
-				sdram_stdr    => stdr,
+				sdram_stdr    => fmly,
 				sdram_mr_addr => mr_addr,
 				sdram_mr_srt  => sdram_init_srt,
 				sdram_mr_bl   => sdram_init_bl,
@@ -786,7 +783,7 @@ begin
 				odt => output(4));
 		end;
 
-		constant pgm : s_table := select_pgm(stdr);
+		constant pgm : s_table := select_pgm(fmly);
 		variable row : s_row;
 		variable sdram_init_pc : s_code;
 
@@ -899,7 +896,7 @@ begin
 				return (
 					(tsdr_rst,  to_sdrlatency(tcp, chip, tPreRST)/setif(debug, 100, 1)),
 					(tddr2_cke, to_sdrlatency(tcp, chip, tXPR)/setif(debug, 100, 1)),
-					(tddr2_mrd, sdram_latency(stdr, mrd)),
+					(tddr2_mrd, sdram_latency(fmly, mrd)),
 					(tddr2_rpa, to_sdrlatency(tcp, chip, tRPA)),
 					(tddr2_rfc, to_sdrlatency(tcp, chip, tRFC)),
 					(tddr2_dll, 200),
@@ -911,12 +908,12 @@ begin
 					(tddr3_rstrdy, to_sdrlatency(tCP, chip, tPstRST)/setif(debug, 100, 1)),
 					-- (tsdr_rst,  to_sdrlatency(tCP, chip, tPreRST)),
 					-- (tddr3_rstrdy, to_sdrlatency(tCP, chip, tPstRST)),
-					(tddr3_wlc, sdram_latency(stdr, MODu)),
+					(tddr3_wlc, sdram_latency(fmly, MODu)),
 					(tddr3_wldqsen, 25),
 					(tddr3_cke, to_sdrlatency(tCP, chip, tXPR)),
 					(tddr3_mrd, to_sdrlatency(tCP, chip, tMRD)),
-					(tddr3_mod, sdram_latency(stdr, MODu)),
-					(tddr3_dll, sdram_latency(stdr, cDLL)),
+					(tddr3_mod, sdram_latency(fmly, MODu)),
+					(tddr3_dll, sdram_latency(fmly, cDLL)),
 					(tddr3_zqinit, sdram_latency(DDR3, ZQINIT)),
 					-- (tddr3_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 13796)));
 					(tddr3_ref, setif(not debug, to_sdrlatency(tCP, chip, tREFI), 13885)));

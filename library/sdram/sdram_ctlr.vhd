@@ -165,8 +165,6 @@ begin
 	generic map (
 		debug            => debug,
 		tcp              => tcp,
-		addr_size        => phy_a'length,
-		bank_size        => phy_b'length,
 		chip             => chip)
 	port map (
 		sdram_init_al    => ctlr_al,
