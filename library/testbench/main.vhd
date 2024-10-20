@@ -28,6 +28,7 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.hdo.all;
+use hdl4fpga.base.all;
 use hdl4fpga.sdram_param.all;
 
 entity main is
@@ -37,10 +38,11 @@ architecture def of main is
 begin
 	process 
 		constant xxxx : string := hdo(sdram_db)**".sdr.cl";
-		variable a : integer := 0;
+		constant tab : natural_vector := xxx(xxxx, 8);
 	begin
-		report "------------> "&string'(hdo(xxxx)**".'001'");
-		-- report hdo(xxxx);
+		for i in tab'range loop
+			report natural'image(tab(i));
+		end loop;
 		wait;
 	end process;
 end;

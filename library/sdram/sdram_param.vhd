@@ -33,26 +33,26 @@ package sdram_param is
 
 	constant sdram_db : string := compact("{" &
 		"sdr : {" &
-		"    al  : { 000 : 0 }," &
-		"    cl  : { 001 : 1, 010 : 2, 011 : 3 }," &
-		"    bl  : { 000 : 0, 001 : 1, 010 : 2, '011' : 4 }," &
-		"    cwl : { 000 : 0 }}," &
+		"    al  : { '000' : 0 }," &
+		"    bl  : { '000' : 0, '001' : 1, '010' : 2, '011' : 4 }," &
+		"    cl  : { '001' : 1, '010' : 2, '011' : 3 }," &
+		"    cwl : { '000' : 0 }}," &
 		"ddr : {" &
-		"    al  : {000, 0}" &
-		"    cl  : {010, 4, 110, 5, 011, 3}," &
-		"    bl  : {001, 2, 010, 4, 011, 8}," &
-		"    cwl : {000, 2}}," &
+		"    al  : { '000' : 0}" &
+		"    bl  : { '001' : 2, '010' : 4, '011' : 8}," &
+		"    cl  : { '010' : 4, '110' : 5, '011' : 3}," &
+		"    cwl : { '000' : 2}}," &
 		"ddr2 : {" &
-		"    al  : {000 : 0, 001 : 2, 010 :  4, 011 :  6, 100 :  8, 101 : 10, 110: 12}," &
-		"    cl  : {011 : 6, 100 : 8, 101 : 10, 110 : 12, 111 : 14}," &
-		"    bl  : {010 : 2, 011 : 8}," &
-		"    wrl : {001 : 4, 010 : 6, 011 : 8, 100 : 10, 101 : 12, 110 : 14, 111 : 16}}," &
+		"    al  : { '000' : 0, '001' : 2, 010 :  4, 011 :  6, 100 :  8, 101 : 10, 110: 12}," &
+		"    bl  : { '010' : 2, '011' : 8}," &
+		"    cl  : { '011' : 6, '100' : 8, '101' : 10, '110' : 12, '111' : 14}," &
+		"    wrl : { '001' : 4, '010' : 6, '011' :  8, '100' : 10, '101' : 12, '110' : 14, '111' : 16}}," &
 		"ddr3 : {" &
-		"    al  : { 000 :  0, 001 :  2, 010 :  4}," &
-		"    cl  : { 001 : 10, 010 : 12, 011 : 14, 100 : 16, 101 : 18, 110 : 20, 111 : 22}," &
-		"    bl  : { 000 :  8, 001 :  8, 010 :  8}," &
-		"    wrl : { 001 : 10, 010 : 12, 011 : 14, 100 : 16, 101 : 20, 110 : 24}," &
-		"    cwl : { 000 : 10, 001 : 12, 010 : 14, 011 : 16}}}");
+		"    al  : { '000' :  0, '001' :  2, '010' :  4}," &
+		"    bl  : { '000' :  8, '001' :  8, '010' :  8}," &
+		"    cl  : { '001' : 10, '010' : 12, '011' : 14, '100' : 16, '101' : 18, '110' : 20, '111' : 22}," &
+		"    wrl : { '001' : 10, '010' : 12, '011' : 14, '100' : 16, '101' : 20, '110' : 24}," &
+		"    cwl : { '000' : 10, '001' : 12, '010' : 14, '011' : 16}}}");
 
 	type sdram_cmd is record
 		cs  : std_logic;
@@ -77,7 +77,7 @@ package sdram_param is
 
 	function xxx (
 		constant table  : string;
-		constant key_length : natural)
+		constant length : natural)
 		return natural_vector;
 end package;
 
@@ -85,13 +85,13 @@ package body sdram_param is
 
 	function xxx (
 		constant table  : string;
-		constant key_length : natural)
+		constant length : natural)
 		return natural_vector is
-		variable retval : natural_vector(0 to 2**key_length-1);
+		variable retval : natural_vector(0 to length-1);
 	begin
 		retval := (others => 0);
-		for i in 0 to 2**key_length-1 loop
-			retval(i) := hdo(table)**("."&to_string(to_unsigned(i,key_length))&"=0.");
+		for i in 0 to length-1 loop
+			retval(i) := hdo(table)**("."&"'"&to_string(to_unsigned(i,unsigned_num_bits(length-1)))&"'"&"=0.");
 		end loop;
 		return retval;
 	end;
