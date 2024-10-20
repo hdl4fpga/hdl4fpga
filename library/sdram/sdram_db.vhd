@@ -28,25 +28,55 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga/hdo.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.sdram_param.all;
 
 package sdram_db is
-	constant sdram_chips : string := compact("{" &
-		"MT48LC256MA27E : {fmly : sdr,  tWR : " & real'image(14.0e-9+11.0e-9) & ", tRCD  : 15.0e-9, tRP : 15.0e-9, tMRD  : 15.0e-9, tRFC  : 66.0e-9, tREFI : " & real'image(64.0e-3/8192.0) & "}," & -- real/natural Serious Lattice diamond bug
-		"MT46V256M6T    : {fmly : ddr,  tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & "}," &
-		"MT47H512M3     : {fmly : ddr2, tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tRPA : 15.0e-9,  tRFC : 130.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : 400.0e-6}," &
-		"MT41J1G15E     : {fmly : ddr3, tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 15.00e-9, tRFC : 110.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(110.00e-9 + 10.0e-9) & "}," &  -- tMin : tRFC + 10 ns
-		"MT41K2G125     : {fmly : ddr3, tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 360.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(360.00e-9 + 10.0e-9) & "}," &  -- tMin : tRFC + 10 ns
-		"MT41K4G107     : {fmly : ddr3, tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 20.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}," &  -- tMin : tRFC + 10 ns
-		"MT41K8G125     : {fmly : ddr3, tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 20.00e-9, tRFC : 350.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(350.00e-9 + 10.0e-9) & "}," &  -- tMin : tRFC + 10 ns
-		"AS4CD3LC12     : {fmly : ddr3, tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & "; tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}}");   -- tMin : tRFC + 10 ns
+	constant chips_db : string := compact("{" &
+		"MT48LC256MA27E : {fmly : sdr,  orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmgs : {tWR : " & real'image(14.0e-9+11.0e-9) & ", tRCD  : 15.0e-9, tRP : 15.0e-9, tMRD  : 15.0e-9, tRFC  : 66.0e-9, tREFI : " & real'image(64.0e-3/8192.0) & "}}," & -- real/natural Serious Lattice diamond bug
+		"MT46V256M6T    : {fmly : ddr,  orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmgs : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & "}}," &
+		"MT47H512M3     : {fmly : ddr2, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmgs : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tRPA : 15.0e-9,  tRFC : 130.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : 400.0e-6}}," &
+		"MT41J1G15E     : {fmly : ddr3, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmgs : {tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 15.00e-9, tRFC : 110.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(110.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
+		"MT41K2G125     : {fmly : ddr3, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmgs : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 360.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(360.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
+		"MT41K4G107     : {fmly : ddr3, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmgs : {tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 20.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
+		"MT41K8G125     : {fmly : ddr3, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmgs : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 20.00e-9, tRFC : 350.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(350.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
+		"AS4CD3LC12     : {fmly : ddr3, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmgs : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & "; tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}}}");  -- tMin : tRFC + 10 ns
 
-	constant sdram_latencies : string := compact("[" &
-		"sdr  : {tPreRST : 100.0e-6}," &
-		"ddr  : {tPreRST : 100.0e-6, cDLL : 200}," &
-		"ddr2 : {tPreRST : 200.0e-6, cDLL : 200, MRD : 2}," &
-		"ddr3 : {tPreRST : 200.0e-6, cDLL : 500, tPstRST : 500.0e-6, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 5}]");
+	constant families_db : string := compact("{" &
+		"sdr : {" &
+		"    al  : { '000' : 0 }," &
+		"    bl  : { '000' : 0, '001' : 1, '010' : 2, '011' : 4 }," &
+		"    cl  : { '001' : 1, '010' : 2, '011' : 3 }," &
+		"    cwl : { '000' : 0 }," &
+		"    tPreRST : 100.0e-6}," &
+		"ddr : {" &
+		"    al  : { '000' : 0}" &
+		"    bl  : { '001' : 2, '010' : 4, '011' : 8}," &
+		"    cl  : { '010' : 4, '110' : 5, '011' : 3}," &
+		"    cwl : { '000' : 2}," &
+		"    tPreRST : 100.0e-6," &
+		"    cDLL    : 200}," &
+		"ddr2 : {" &
+		"    al  : { '000' : 0, '001' : 2, 010 :  4, 011 :  6, 100 :  8, 101 : 10, 110: 12}," &
+		"    bl  : { '010' : 2, '011' : 8}," &
+		"    cl  : { '011' : 6, '100' : 8, '101' : 10, '110' : 12, '111' : 14}," &
+		"    wrl : { '001' : 4, '010' : 6, '011' :  8, '100' : 10, '101' : 12, '110' : 14, '111' : 16}," &
+		"    tPreRST : 200.0e-6," &
+		"    cDLL    : 200," &
+		"    MRD     :   2}," &
+		"ddr3 : {" &
+		"    al  : { '000' :  0, '001' :  2, '010' :  4}," &
+		"    bl  : { '000' :  8, '001' :  8, '010' :  8}," &
+		"    cl  : { '001' : 10, '010' : 12, '011' : 14, '100' : 16, '101' : 18, '110' : 20, '111' : 22}," &
+		"    wrl : { '001' : 10, '010' : 12, '011' : 14, '100' : 16, '101' : 20, '110' : 24}," &
+		"    cwl : { '000' : 10, '001' : 12, '010' : 14, '011' : 16}" &
+		"    tPreRST : 200.0e-6," &
+		"    tPstRST : 500.0e-6," &
+		"    cDLL    : 500,"      &
+		"    ZQINIT  : 500,"      &
+		"    MRD     : 4,"        &
+		"    MODu    : 12,"       &
+		"    XPR     : 5}}");
 
 	constant phy_latencies : string := compact("[" &
 		"xc3sg2 : { STRL : -2, DQSL : -2, DQSZL : -2, DQZL : -2, WWNL : -2, STRXL : 0, DQSZXL : 4, DQSXL : 0, DQZXL : 0, WWNXL : 0, WIDL : 2}," &
@@ -57,107 +87,124 @@ package sdram_db is
 		"ulx4ld_ecp5g4     : { STRL : 0, DQSL : 4*1-2+2, DQSZL : 4*1+0+2, DQZL : 4*1+0+2, WWNL : 4*1-4+2, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2, WIDL : 4}," &
 		"orangecrab_ecp5g4 : { STRL : 0, DQSL : 4*1-2+0, DQSZL : 4*1+0+0, DQZL : 4*1+0+0, WWNL : 4*1-4+0, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2, WIDL : 4}]");
 
-	function sdram_schtab (
-		constant stdr      : sdram_standards;
-		constant latencies : latency_vector;
-		constant tabid     : device_latencies)
+	function lattab (
+		constant table  : string;
+		constant length : natural)
 		return natural_vector;
-
-	function sdram_schtab (
-		constant latency   : integer;
-		constant latencies : natural_vector)
-		return natural_vector;
-
-	function tmng2lat (
-		constant period : real;
-		constant mark   : sdram_chips;
-		constant param  : sdram_parameters)
-		return natural;
+	-- function sdram_schtab (
+		-- constant stdr      : sdram_standards;
+		-- constant latencies : latency_vector;
+		-- constant tabid     : device_latencies)
+		-- return natural_vector;
+-- 
+	-- function sdram_schtab (
+		-- constant latency   : integer;
+		-- constant latencies : natural_vector)
+		-- return natural_vector;
+-- 
+	-- function tmng2lat (
+		-- constant period : real;
+		-- constant mark   : sdram_chips;
+		-- constant param  : sdram_parameters)
+		-- return natural;
 
 end package;
 
 package body sdram_db is
 
-	function tmng2lat (
-		constant 
-		constant period : real;
-		constant param  : real)
-		return natural is
-		variable retval : natural;
-	begin
-		retval := natural(ceil(sdram_timing(mark, param)/period));
-		return retval;
-	end;
-
-	function sdram_schtab (
-		constant stdr      : sdram_standards;
-		constant latencies : latency_vector;
-		constant tabid     : device_latencies)
+	function lattab (
+		constant table  : string;
+		constant length : natural)
 		return natural_vector is
-
-		constant cwlsel : sdram_latency_rgtr := sdram_selcwl(stdr);
-		constant cltab  : natural_vector := sdram_lattab(stdr, CL);
-		constant cwltab : natural_vector := sdram_lattab(stdr, cwlsel);
-
-		variable lat    : integer := latencies(tabid);
-		variable clval  : natural_vector(cltab'range);
-		variable cwlval : natural_vector(cwltab'range);
-
+		variable retval : natural_vector(0 to length-1);
 	begin
-		case tabid is
-		when WWNL =>
-			case stdr is
-			when sdr|ddr|ddr3 =>
-				for i in cwltab'range loop
-					cwlval(i) := cwltab(i) + lat;
-				end loop;
-				return cwlval;
-			when ddr2 =>
-				for i in cltab'range loop
-					clval(i) := cltab(i) + lat;
-				end loop;
-				return clval;
-			when others =>
-				return (0 to 0 => 0);
-			end case;
-		when STRL =>
-			for i in cltab'range loop
-				assert false
-				report " ******* " & natural'image(clval(i)) & " ******* " & integer'image(lat)
-				severity NOTE;
-				clval(i) := cltab(i) + lat;
-			end loop;
-			
-			return clval;
-		when DQSZL|DQSL|DQZL =>
-			if stdr=ddr2 then
-				lat := lat - 2;
-			end if;
-			for i in cwltab'range loop
-				cwlval(i) := cwltab(i) + lat;
-			end loop;
-			return cwlval;
-		when others =>
-			return (0 to 0 => 0);
-		end case;
-		return (0 to 0 => 0);
-	end;
-
-	function sdram_schtab (
-		constant latency   : integer;
-		constant latencies : natural_vector)
-		return natural_vector is
-		variable retval : natural_vector(latencies'range);
-	begin
-		retval := latencies;
-		for i in latencies'range loop
-			if retval(i)+latency < 0  then
-				retval(i) := 0;
-			else
-				retval(i) := retval(i) + latency;
-			end if;
+		retval := (others => 0);
+		for i in 0 to length-1 loop
+			retval(i) := hdo(table)**("."&"'"&to_string(to_unsigned(i,unsigned_num_bits(length-1)))&"'"&"=0.");
 		end loop;
 		return retval;
 	end;
+
+	-- function tmng2lat (
+		-- constant 
+		-- constant period : real;
+		-- constant param  : real)
+		-- return natural is
+		-- variable retval : natural;
+	-- begin
+		-- retval := natural(ceil(sdram_timing(mark, param)/period));
+		-- return retval;
+	-- end;
+-- 
+	-- function sdram_schtab (
+		-- constant stdr      : sdram_standards;
+		-- constant latencies : latency_vector;
+		-- constant tabid     : device_latencies)
+		-- return natural_vector is
+-- 
+		-- constant cwlsel : sdram_latency_rgtr := sdram_selcwl(stdr);
+		-- constant cltab  : natural_vector := sdram_lattab(stdr, CL);
+		-- constant cwltab : natural_vector := sdram_lattab(stdr, cwlsel);
+-- 
+		-- variable lat    : integer := latencies(tabid);
+		-- variable clval  : natural_vector(cltab'range);
+		-- variable cwlval : natural_vector(cwltab'range);
+-- 
+	-- begin
+		-- case tabid is
+		-- when WWNL =>
+			-- case stdr is
+			-- when sdr|ddr|ddr3 =>
+				-- for i in cwltab'range loop
+					-- cwlval(i) := cwltab(i) + lat;
+				-- end loop;
+				-- return cwlval;
+			-- when ddr2 =>
+				-- for i in cltab'range loop
+					-- clval(i) := cltab(i) + lat;
+				-- end loop;
+				-- return clval;
+			-- when others =>
+				-- return (0 to 0 => 0);
+			-- end case;
+		-- when STRL =>
+			-- for i in cltab'range loop
+				-- assert false
+				-- report " ******* " & natural'image(clval(i)) & " ******* " & integer'image(lat)
+				-- severity NOTE;
+				-- clval(i) := cltab(i) + lat;
+			-- end loop;
+			-- 
+			-- return clval;
+		-- when DQSZL|DQSL|DQZL =>
+			-- if stdr=ddr2 then
+				-- lat := lat - 2;
+			-- end if;
+			-- for i in cwltab'range loop
+				-- cwlval(i) := cwltab(i) + lat;
+			-- end loop;
+			-- return cwlval;
+		-- when others =>
+			-- return (0 to 0 => 0);
+		-- end case;
+		-- return (0 to 0 => 0);
+	-- end;
+-- 
+	-- function sdram_schtab (
+		-- constant latency   : integer;
+		-- constant latencies : natural_vector)
+		-- return natural_vector is
+		-- variable retval : natural_vector(latencies'range);
+	-- begin
+		-- retval := latencies;
+		-- for i in latencies'range loop
+			-- if retval(i)+latency < 0  then
+				-- retval(i) := 0;
+			-- else
+				-- retval(i) := retval(i) + latency;
+			-- end if;
+		-- end loop;
+		-- return retval;
+	-- end;
 
 end package body;

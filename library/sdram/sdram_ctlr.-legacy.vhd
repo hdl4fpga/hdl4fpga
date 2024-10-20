@@ -27,15 +27,22 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.hdo.all;
+use hdl4fpga.sdram_param.all;
 use hdl4fpga.sdram_db.all;
 
 entity sdram_ctlr is
 	generic (
 		debug       : boolean := false;
+
 		tcp         : real := 0.0;
-		sdram       : string;
-		phy         : string);
+		latencies   : latency_vector := (others => 0);
+		chip        : sdram_chips;
+
+		gear        : natural :=  2;
+		bank_size   : natural :=  2;
+		addr_size   : natural := 13;
+		word_size   : natural := 16;
+		byte_size   : natural :=  8);
 	port (
 		ctlr_alat   : out std_logic_vector(2 downto 0);
 		ctlr_blat   : out std_logic_vector(2 downto 0);
@@ -56,15 +63,15 @@ entity sdram_ctlr is
 		ctlr_fch    : out std_logic;
 		ctlr_cmd    : out std_logic_vector(0 to 2);
 		ctlr_rw     : in  std_logic;
-		ctlr_b      : in  std_logic_vector(hdo(sdram)**".orgz.addr.bank"-1 downto 0);
-		ctlr_a      : in  std_logic_vector(hdo(sdram)**".orgz.addr.row"-1  downto 0);
+		ctlr_b      : in  std_logic_vector(bank_size-1 downto 0);
+		ctlr_a      : in  std_logic_vector(addr_size-1 downto 0);
 		ctlr_di_dv  : in  std_logic;
 		ctlr_di_req : out std_logic;
-		ctlr_do_dv  : out std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dm"-1 downto 0);
+		ctlr_do_dv  : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
 		ctlr_act    : out std_logic;
-		ctlr_dm     : in  std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dm"-1 downto 0) := (others => '0');
-		ctlr_di     : in  std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dq"-1 downto 0);
-		ctlr_do     : out std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dq"-1 downto 0);
+		ctlr_dm     : in  std_logic_vector(gear*word_size/byte_size-1 downto 0) := (others => '0');
+		ctlr_di     : in  std_logic_vector(gear*word_size-1 downto 0);
+		ctlr_do     : out std_logic_vector(gear*word_size-1 downto 0);
 
 		ctlr_refreq : out std_logic;
 		phy_frm     : in  std_logic := '0';
@@ -81,34 +88,34 @@ entity sdram_ctlr is
 		phy_ras     : out std_logic;
 		phy_cas     : out std_logic;
 		phy_we      : out std_logic;
-		phy_b       : out std_logic_vector(hdo(sdram)**".orgz.addr.bank"-1 downto 0);
-		phy_a       : out std_logic_vector(hdo(sdram)**".orgz.addr.row"-1 downto 0);
+		phy_b       : out std_logic_vector(bank_size-1 downto 0);
+		phy_a       : out std_logic_vector(addr_size-1 downto 0);
 		phy_odt     : out std_logic;
 
-		phy_dmi     : in  std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dm"-1 downto 0);
-		phy_dmo     : out std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dm"-1 downto 0);
+		phy_dmi     : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		phy_dmo     : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
 
-		phy_dqso    : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
-		phy_dqst    : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
+		phy_dqso    : out std_logic_vector(gear-1 downto 0);
+		phy_dqst    : out std_logic_vector(gear-1 downto 0);
 
-		phy_dqt     : buffer std_logic_vector(hdo(phy)**".gear"-1 downto 0);
-		phy_dqv     : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
-		phy_dqo     : out std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dq"-1 downto 0);
+		phy_dqt     : buffer std_logic_vector(gear-1 downto 0);
+		phy_dqv     : out std_logic_vector(gear-1 downto 0);
+		phy_dqo     : out std_logic_vector(gear*word_size-1 downto 0);
 
-		phy_sti     : in  std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dm"-1 downto 0);
-		phy_sto     : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
-		phy_dqi     : in  std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dq"-1 downto 0));
+		phy_sti     : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		phy_sto     : out std_logic_vector(gear-1 downto 0);
+		phy_dqi     : in  std_logic_vector(gear*word_size-1 downto 0));
 
-	constant fmly      : string         := hdo(sdram)**".fmly";
-	constant fmly_data : string         := hdo(families_db)**("."&fmly);
-	constant al_tab    : natural_vector := lattab(hdo(fmly_data)**(".al"), 8);
-	constant bl_tab    : natural_vector := lattab(hdo(fmly_data)**(".bl"), 8);
-	constant cl_tab    : natural_vector := lattab(hdo(fmly_data)**(".cl"), 8);
-	constant wrl_tab   : natural_vector := lattab(hdo(fmly_data)**(".wrl={}.)"), 8);
-	constant cwl_tab   : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 8);
+
 end;
 
 architecture mix of sdram_ctlr is
+
+	constant stdr         : sdram_standards  := sdrmark_standard(chip);
+	constant bl_cod       : std_logic_vector := sdram_latcod(stdr, bl);
+	constant al_cod       : std_logic_vector := sdram_latcod(stdr, al);
+	constant cl_cod       : std_logic_vector := sdram_latcod(stdr, cl);
+	constant cwl_cod      : std_logic_vector := sdram_latcod(stdr, sdram_selcwl(stdr));
 
 	signal sdram_refi_rdy : std_logic;
 	signal sdram_refi_req : std_logic;
@@ -121,8 +128,8 @@ architecture mix of sdram_ctlr is
 	signal sdram_init_cas : std_logic;
 	signal sdram_init_we  : std_logic;
 	signal sdram_init_odt : std_logic;
-	signal sdram_init_a   : std_logic_vector(phy_a'range);
-	signal sdram_init_b   : std_logic_vector(phy_b'range);
+	signal sdram_init_a   : std_logic_vector(addr_size-1 downto 0);
+	signal sdram_init_b   : std_logic_vector(bank_size-1 downto 0);
 
 	signal sdram_pgm_frm  : std_logic;
 	signal sdram_pgm_rw   : std_logic;
@@ -139,14 +146,14 @@ architecture mix of sdram_ctlr is
 	signal sdram_mpu_wwin : std_logic;
 
 	signal sdram_sch_odt  : std_logic_vector(1-1 downto 0);
-	signal sdram_sch_wwn  : std_logic_vector(phy_dqso'range);
+	signal sdram_sch_wwn  : std_logic_vector(gear-1 downto 0);
 	signal sdram_sch_dqsz : std_logic_vector(sdram_sch_wwn'range);
 	signal sdram_sch_dqs  : std_logic_vector(sdram_sch_wwn'range);
 	signal sdram_sch_dqz  : std_logic_vector(sdram_sch_wwn'range);
 	signal sdram_sch_st   : std_logic_vector(sdram_sch_wwn'range);
 	signal sdram_sch_dmo  : std_logic_vector(sdram_sch_wwn'range);
 
-	signal rot_val        : std_logic_vector(unsigned_num_bits(phy_dqo'length-1)-1 downto 0);
+	signal rot_val        : std_logic_vector(unsigned_num_bits(gear*word_size-1)-1 downto 0);
 	signal rot_di         : std_logic_vector(ctlr_di'range);
 
 	signal sdram_cwl      : std_logic_vector(ctlr_cwl'range);
@@ -158,15 +165,15 @@ begin
 
 	sdram_pgm_frm  <= ctlr_frm when phy_inirdy='1' else phy_frm;
 	sdram_pgm_rw   <= ctlr_rw  when phy_inirdy='1' else phy_rw;
-	sdram_cwl      <= ctlr_cl  when fmly="ddr2"    else ctlr_cwl;
+	sdram_cwl      <= ctlr_cl  when stdr=ddr2      else ctlr_cwl;
 	sdram_init_req <= ctlr_rst;
 
 	sdram_init_e : entity hdl4fpga.sdram_init
 	generic map (
 		debug            => debug,
 		tcp              => tcp,
-		addr_size        => phy_a'length,
-		bank_size        => phy_b'length,
+		addr_size        => addr_size,
+		bank_size        => bank_size,
 		chip             => chip)
 	port map (
 		sdram_init_al    => ctlr_al,
@@ -215,7 +222,7 @@ begin
 		latencies       => latencies,
 		chip            => chip,
 
-		gear            => phy_dqso'length,
+		gear            => gear,
 		bl_cod          => bl_cod,
 		al_cod          => al_cod,
 		cl_cod          => cl_cod,
@@ -246,7 +253,7 @@ begin
 	generic map (
 		latencies => latencies,
 		chip      => chip,
-		gear      => phy_dqso'length,
+		gear      => gear,
 		cl_cod    => cl_cod,
 		cwl_cod   => cwl_cod)
 	port map (
@@ -334,8 +341,8 @@ begin
 		constant wwnl_tab : natural_vector := sdram_schtab(stdr, latencies, wwnl);
 	begin
 		rot_val <= sdram_rotval (
-			line_size => phy_dqo'length,
-			word_size => phy_dqo'length/phy_dqso'length,
+			line_size => gear*word_size,
+			word_size => word_size,
 			lat_val   => sdram_cwl,
 			lat_cod   => cwl_cod,
 			lat_tab   => wwnl_tab);

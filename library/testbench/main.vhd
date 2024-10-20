@@ -29,7 +29,7 @@ use ieee.math_real.all;
 library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_param.all;
+use hdl4fpga.sdram_db.all;
 
 entity main is
 end;
@@ -37,14 +37,21 @@ end;
 architecture def of main is
 begin
 	process 
-		constant altab  : natural_vector := lattab(hdo(sdram_db)**".ddr3.al", 8);
-		constant bltab  : natural_vector := lattab(hdo(sdram_db)**".ddr3.bl", 8);
-		constant cltab  : natural_vector := lattab(hdo(sdram_db)**".ddr3.cl", 8);
-		constant wrltab : natural_vector := lattab(hdo(sdram_db)**".ddr3.wrl={}.", 8);
-		constant cwltab : natural_vector := lattab(hdo(sdram_db)**".ddr3.cwl={}.", 8);
-		constant xxxx : natural := max(natural_vector'(max(altab), max(bltab), max(cltab), max(wrltab), max(cwltab)));
+	constant chip_id   : string := "MT47H512M3";
+	constant chip_data : string         := hdo(chips_db)**("."&chip_id);
+	constant fmly_id   : string         := hdo(chip_data)**".fmly";
+	constant fmly_data : string         := hdo(families_db)**("."&fmly_id);
+	constant al_tab    : natural_vector := lattab(hdo(fmly_data)**(".al"), 8);
+	constant bl_tab    : natural_vector := lattab(hdo(fmly_data)**(".bl"), 8);
+	constant cl_tab    : natural_vector := lattab(hdo(fmly_data)**(".cl"), 8);
+	constant wrl_tab   : natural_vector := lattab(hdo(fmly_data)**(".wrl={}.)"), 8);
+	constant cwl_tab   : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 8);
+	alias tab is al_tab;
+
 	begin
-		report LF & natural'image(xxxx);
+		for i in tab'range loop
+			report LF & natural'image(tab(i));
+		end loop;
 		wait;
 	end process;
 end;

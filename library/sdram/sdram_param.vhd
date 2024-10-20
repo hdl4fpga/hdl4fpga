@@ -75,25 +75,8 @@ package sdram_param is
 	constant mpu_aut   : std_logic_vector(0 to 2) := "001";
 	constant mpu_dcare : std_logic_vector(0 to 2) := "000";
 
-	function lattab (
-		constant table  : string;
-		constant length : natural)
-		return natural_vector;
 end package;
 
 package body sdram_param is
-
-	function lattab (
-		constant table  : string;
-		constant length : natural)
-		return natural_vector is
-		variable retval : natural_vector(0 to length-1);
-	begin
-		retval := (others => 0);
-		for i in 0 to length-1 loop
-			retval(i) := hdo(table)**("."&"'"&to_string(to_unsigned(i,unsigned_num_bits(length-1)))&"'"&"=0.");
-		end loop;
-		return retval;
-	end;
 
 end package body;
