@@ -33,50 +33,41 @@ use hdl4fpga.sdram_param.all;
 
 package sdram_db is
 	constant chips_db : string := compact("{" &
-		"MT48LC256MA27E : {fmly : sdr,  orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmgs : {tWR : " & real'image(14.0e-9+11.0e-9) & ", tRCD  : 15.0e-9, tRP : 15.0e-9, tMRD  : 15.0e-9, tRFC  : 66.0e-9, tREFI : " & real'image(64.0e-3/8192.0) & "}}," & -- real/natural Serious Lattice diamond bug
-		"MT46V256M6T    : {fmly : ddr,  orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmgs : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & "}}," &
-		"MT47H512M3     : {fmly : ddr2, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmgs : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tRPA : 15.0e-9,  tRFC : 130.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : 400.0e-6}}," &
-		"MT41J1G15E     : {fmly : ddr3, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmgs : {tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 15.00e-9, tRFC : 110.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(110.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
-		"MT41K2G125     : {fmly : ddr3, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmgs : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 360.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(360.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
-		"MT41K4G107     : {fmly : ddr3, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmgs : {tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 20.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
-		"MT41K8G125     : {fmly : ddr3, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmgs : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 20.00e-9, tRFC : 350.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(350.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
-		"AS4CD3LC12     : {fmly : ddr3, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmgs : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & "; tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}}}");  -- tMin : tRFC + 10 ns
+		"MT48LC256MA27E : {fmly : sdr,  orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmmg : {tWR : " & real'image(14.0e-9+11.0e-9) & ", tRCD  : 15.0e-9, tRP : 15.0e-9, tMRD  : 15.0e-9, tRFC  : 66.0e-9, tREFI : " & real'image(64.0e-3/8192.0) & "}}," & -- real/natural Serious Lattice diamond bug
+		"MT46V256M6T    : {fmly : ddr,  orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmmg : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & "}}," &
+		"MT47H512M3     : {fmly : ddr2, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmmg : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tRPA : 15.0e-9,  tRFC : 130.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : 400.0e-6}}," &
+		"MT41J1G15E     : {fmly : ddr3, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmmg : {tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 15.00e-9, tRFC : 110.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(110.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
+		"MT41K2G125     : {fmly : ddr3, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmmg : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 360.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(360.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
+		"MT41K4G107     : {fmly : ddr3, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmmg : {tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 20.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
+		"MT41K8G125     : {fmly : ddr3, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmmg : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 20.00e-9, tRFC : 350.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(350.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
+		"AS4CD3LC12     : {fmly : ddr3, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmmg : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & "; tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}}}");  -- tMin : tRFC + 10 ns
 
 	constant families_db : string := compact("{" &
 		"sdr : {" &
-		"    al  : { '000' : 0 }," &
-		"    bl  : { '000' : 0, '001' : 1, '010' : 2, '011' : 4 }," &
-		"    cl  : { '001' : 1, '010' : 2, '011' : 3 }," &
-		"    cwl : { '000' : 0 }," &
-		"    tPreRST : 100.0e-6}," &
+		"    al   : { '000' : 0 }," &
+		"    bl   : { '000' : 0, '001' : 1, '010' : 2, '011' : 4 }," &
+		"    cl   : { '001' : 1, '010' : 2, '011' : 3 }," &
+		"    cwl  : { '000' : 0 }," &
+		"    tmmg : { tPreRST : 100.0e-6, cDLL : 200}}");
 		"ddr : {" &
-		"    al  : { '000' : 0}" &
-		"    bl  : { '001' : 2, '010' : 4, '011' : 8}," &
-		"    cl  : { '010' : 4, '110' : 5, '011' : 3}," &
-		"    cwl : { '000' : 2}," &
-		"    tPreRST : 100.0e-6," &
-		"    cDLL    : 200}," &
+		"    al   : { '000' : 0}" &
+		"    bl   : { '001' : 2, '010' : 4, '011' : 8}," &
+		"    cl   : { '010' : 4, '110' : 5, '011' : 3}," &
+		"    cwl  : { '000' : 2}," &
+		"    tmmg : { tPreRST : 100.0e-6, cDLL : 200}}");
 		"ddr2 : {" &
-		"    al  : { '000' : 0, '001' : 2, 010 :  4, 011 :  6, 100 :  8, 101 : 10, 110: 12}," &
-		"    bl  : { '010' : 2, '011' : 8}," &
-		"    cl  : { '011' : 6, '100' : 8, '101' : 10, '110' : 12, '111' : 14}," &
-		"    wrl : { '001' : 4, '010' : 6, '011' :  8, '100' : 10, '101' : 12, '110' : 14, '111' : 16}," &
-		"    tPreRST : 200.0e-6," &
-		"    cDLL    : 200," &
-		"    MRD     :   2}," &
+		"    al   : { '000' : 0, '001' : 2, 010 :  4, 011 :  6, 100 :  8, 101 : 10, 110: 12}," &
+		"    bl   : { '010' : 2, '011' : 8}," &
+		"    cl   : { '011' : 6, '100' : 8, '101' : 10, '110' : 12, '111' : 14}," &
+		"    wrl  : { '001' : 4, '010' : 6, '011' :  8, '100' : 10, '101' : 12, '110' : 14, '111' : 16}," &
+		"    tmmg : { tPreRST : 200.0e-6, cDLL : 200, MRD : 2}}");
 		"ddr3 : {" &
-		"    al  : { '000' :  0, '001' :  2, '010' :  4}," &
-		"    bl  : { '000' :  8, '001' :  8, '010' :  8}," &
-		"    cl  : { '001' : 10, '010' : 12, '011' : 14, '100' : 16, '101' : 18, '110' : 20, '111' : 22}," &
-		"    wrl : { '001' : 10, '010' : 12, '011' : 14, '100' : 16, '101' : 20, '110' : 24}," &
-		"    cwl : { '000' : 10, '001' : 12, '010' : 14, '011' : 16}" &
-		"    tPreRST : 200.0e-6," &
-		"    tPstRST : 500.0e-6," &
-		"    cDLL    : 500,"      &
-		"    ZQINIT  : 500,"      &
-		"    MRD     : 4,"        &
-		"    MODu    : 12,"       &
-		"    XPR     : 5}}");
+		"    al   : { '000' :  0, '001' :  2, '010' :  4}," &
+		"    bl   : { '000' :  8, '001' :  8, '010' :  8}," &
+		"    cl   : { '001' : 10, '010' : 12, '011' : 14, '100' : 16, '101' : 18, '110' : 20, '111' : 22}," &
+		"    wrl  : { '001' : 10, '010' : 12, '011' : 14, '100' : 16, '101' : 20, '110' : 24}," &
+		"    cwl  : { '000' : 10, '001' : 12, '010' : 14, '011' : 16}" &
+		"    tmmg : { tPreRST : 200.0e-6, tPstRST : 500.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 5, WLDQSEN : 25}}}");
 
 	constant phy_latencies : string := compact("[" &
 		"xc3sg2 : { STRL : -2, DQSL : -2, DQSZL : -2, DQZL : -2, WWNL : -2, STRXL : 0, DQSZXL : 4, DQSXL : 0, DQZXL : 0, WWNXL : 0, WIDL : 2}," &

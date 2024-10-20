@@ -28,6 +28,7 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.sdram_param.all;
 use hdl4fpga.sdram_db.all;
 
@@ -35,8 +36,9 @@ entity sdram_init is
 	generic (
 		debug : boolean;
 		tcp   : real;
+		chiptmmg_data : string;
 		fmly  : string;
-		chip  : string);
+		fmlytmmg_data : string);
 	port (
 		sdram_init_bl   : in  std_logic_vector;
 		sdram_init_bt   : in  std_logic_vector;
@@ -79,9 +81,19 @@ entity sdram_init is
 		sdram_init_b   : out std_logic_vector;
 		sdram_init_odt : out std_logic);
 
-
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of sdram_init : entity is "compact";
+
+    constant PreRST    : natural := natural(ceil(hdo(fmlytmmg_data)**".tPreRST=0."/tcp));
+    constant PstRST    : natural := natural(ceil(hdo(fmlytmmg_data)**".tPstRST=0."/tcp));
+    constant cDLL      : natural := hdo(fmlytmmg_data)**".cDLL=0.";
+    constant ZQINIT    : natural := hdo(fmlytmmg_data)**".ZQINIT=0.";
+    constant MRD       : natural := hdo(fmlytmmg_data)**".MRD=0.";
+    constant MODu      : natural := hdo(fmlytmmg_data)**".MODu=0.";
+    constant XPR       : natural := hdo(fmlytmmg_data)**".XPR=0.";
+    constant WLDQSEN   : natural := hdo(fmlytmmg_data)**".WLDQSEN=0.";
+	constant REFi      : natural := natural(ceil(hdo(chiptmmg_data)**".tREFI"/tcp));
+
 end;
 
 architecture def of sdram_init is
@@ -110,33 +122,6 @@ architecture def of sdram_init is
 	constant ddr3mr_setmr3  : ddrmr_addr := "011";
 	constant ddr3mr_zqc     : ddrmr_addr := "100";
 	constant ddr3mr_enawl   : ddrmr_addr := "101";
-
-	type tids is (
-		tsdr_rst,
-
-		tddr_cke,
-		tddr_mrd,
-		tddr_rpa,
-		tddr_rfc,
-		tddr_dll,
-		tddr_ref,
-	
-		tddr2_cke,
-		tddr2_mrd,
-		tddr2_rpa,
-		tddr2_rfc,
-		tddr2_dll,
-		tddr2_ref,
-	
-		tddr3_wlc,
-		tddr3_wldqsen,
-		tddr3_rstrdy,
-		tddr3_cke,
-		tddr3_mrd,
-		tddr3_mod,
-		tddr3_dll,
-		tddr3_zqinit,
-		tddr3_ref);
 
 	signal init_rdy  : std_logic;
 
@@ -565,6 +550,7 @@ begin
 				assert false
 				report "invalid family"
 				severity failure;
+				return (0 to 0 => 'X');
 			end if;
 		end;
 
@@ -573,7 +559,7 @@ begin
 	begin
 		if rising_edge(sdram_init_clk) then
 			sdram_mr_data := std_logic_vector(resize(unsigned(sdram_mrfile(
-				sdram_stdr    => fmly,
+				sdram_fmly  => fmly,
 				sdram_mr_addr => mr_addr,
 				sdram_mr_srt  => sdram_init_srt,
 				sdram_mr_bl   => sdram_init_bl,
@@ -729,23 +715,35 @@ begin
 									--    ||||+--< odt
 									--    |||||
 									--    vvvvv
+		type s_row is record
+			state   : s_code;
+			state_n : s_code;
+			mask    : std_logic_vector(0 to 1-1);
+			input   : std_logic_vector(0 to 1-1);
+			output  : std_logic_vector(0 to 5-1);
+			cmd     : sdram_cmd;
+			mr      : ddrmr_addr;
+			bnk     : ddrmr_id;
+			tid     : tids;
+		end record;
+	
 		constant ddr3_pgm : s_table := (
-			(sc_rst,   sc3_rstrdy, "0", "0", "10000", sdram_nop, ddrmr_mrx,     sdram_mrx, tddr3_rstrdy),
-			(sc3_rstrdy, sc3_cke,  "0", "0", "11000", sdram_nop, ddrmr_mrx,     sdram_mrx, tddr3_cke),
-			(sc3_cke,  sc3_lmr2,   "0", "0", "11000", sdram_mrs, ddr3mr_setmr2, sdram_mr2, tddr3_mrd),
-			(sc3_lmr2, sc3_lmr3,   "0", "0", "11000", sdram_mrs, ddr3mr_setmr3, sdram_mr3, tddr3_mrd),
-			(sc3_lmr3, sc3_lmr1,   "0", "0", "11000", sdram_mrs, ddr3mr_setmr1, sdram_mr1, tddr3_mrd),
-			(sc3_lmr1, sc3_lmr0,   "0", "0", "11000", sdram_mrs, ddr3mr_setmr0, sdram_mr0, tddr3_mod),
-			(sc3_lmr0, sc3_zqi,    "0", "0", "11000", sdram_zqc, ddr3mr_zqc,    sdram_mrx, tddr3_zqinit),
-			(sc3_zqi,  sc3_wle,    "0", "0", "11000", sdram_mrs, ddr3mr_enawl,  sdram_mr1, tddr3_mod),
-			(sc3_wle,  sc3_wls,    "0", "0", "11001", sdram_nop, ddrmr_mrx,     sdram_mrx, tddr3_wldqsen),
-			(sc3_wls,  sc3_wlc,    "0", "0", "11011", sdram_nop, ddrmr_mrx,     sdram_mrx, tddr3_wlc),
-			(sc3_wlc,  sc3_wlc,    "1", "0", "11011", sdram_nop, ddrmr_mrx,     sdram_mrx, tddr3_wlc),
-			(sc3_wlc,  sc3_wlo,    "1", "1", "11010", sdram_nop, ddrmr_mrx,     sdram_mrx, tddr3_mrd),
-			(sc3_wlo,  sc3_wlf,    "0", "0", "11010", sdram_mrs, ddr3mr_setmr1, sdram_mr1, tddr3_mod),
-			(sc3_wlf,  sc3_wai,    "0", "0", "11110", sdram_nop, ddrmr_mrx,     sdram_mrx, tddr3_dll),
-			(sc3_wai,  sc_ref,     "0", "0", "11110", sdram_nop, ddrmr_mrx,     sdram_mrx, tddr3_ref),
-			(sc_ref,   sc_ref,     "0", "0", "11110", sdram_nop, ddrmr_mrx,     sdram_mrx, tddr3_ref));
+			(mask : 0, output : 10000, sdram_nop, ddrmr_mrx,     sdram_mrx, PstRST_id),
+			(mask : 0, output : 11000, sdram_nop, ddrmr_mrx,     sdram_mrx, XPR_id),
+			(mask : 0, output : 11000, sdram_mrs, ddr3mr_setmr2, sdram_mr2, MRD_id),
+			(mask : 0, output : 11000, sdram_mrs, ddr3mr_setmr3, sdram_mr3, MRD_id),
+			(mask : 0, output : 11000, sdram_mrs, ddr3mr_setmr1, sdram_mr1, MRD_id),
+			(mask : 0, output : 11000, sdram_mrs, ddr3mr_setmr0, sdram_mr0, MRD_id),
+			(mask : 0, output : 11000, sdram_zqc, ddr3mr_zqc,    sdram_mrx, ZQINIT_id),
+			(mask : 0, output : 11000, sdram_mrs, ddr3mr_enawl,  sdram_mr1, MOD_id),
+			(mask : 0, output : 11001, sdram_nop, ddrmr_mrx,     sdram_mrx, WLDQSEN_id),
+			(mask : 0, output : 11011, sdram_nop, ddrmr_mrx,     sdram_mrx, MODu_id),
+			(mask : 1, output : 11011, sdram_nop, ddrmr_mrx,     sdram_mrx, MODu_id),
+			(mask : 1, output : 11010, sdram_nop, ddrmr_mrx,     sdram_mrx, MRD_id),
+			(mask : 0, output : 11010, sdram_mrs, ddr3mr_setmr1, sdram_mr1, MOD_id),
+			(mask : 0, output : 11110, sdram_nop, ddrmr_mrx,     sdram_mrx, DLL_id),
+			(mask : 0, output : 11110, sdram_nop, ddrmr_mrx,     sdram_mrx, REFi_id),
+			(mask : 0, output : 11110, sdram_nop, ddrmr_mrx,     sdram_mrx, REFi_id));
 
 		function select_pgm (
 			constant sdram_stdr : sdram_standards)
@@ -879,6 +877,11 @@ begin
 			constant chip  : sdram_chips;
 			constant debug : boolean)
 			return timer_vector is
+					(tsdr_rst, to_sdrlatency(tCP, chip, tPreRST)/setif(debug, 20, 1)),
+					(tddr_cke, to_sdrlatency(tCP, chip, tXPR)),
+					(tddr_mrd, to_sdrlatency(tCP, chip, tMRD)),
+					(tddr_rpa, to_sdrlatency(tCP, chip, tRP)),
+					(tddr_rfc, to_sdrlatency(tCP, chip, tRFC)),
 		begin
 			case sdrmark_standard(chip) is
 			when sdr|ddr =>
