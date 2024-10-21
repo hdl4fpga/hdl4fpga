@@ -190,19 +190,13 @@ package sdram_param is
 		we  : std_logic;
 	end record;
 
-	constant sdram_nop : sdram_cmd := (cs => '0', ras => '1', cas => '1', we => '1');
-	constant sdram_mrs : sdram_cmd := (cs => '0', ras => '0', cas => '0', we => '0');
-	constant sdram_pre : sdram_cmd := (cs => '0', ras => '0', cas => '1', we => '0');
-	constant sdram_ref : sdram_cmd := (cs => '0', ras => '0', cas => '0', we => '1');
-	constant sdram_zqc : sdram_cmd := (cs => '0', ras => '1', cas => '1', we => '0');
-
-	constant mpu_nop   : std_logic_vector(0 to 2) := "111";
-	constant mpu_act   : std_logic_vector(0 to 2) := "011";
-	constant mpu_read  : std_logic_vector(0 to 2) := "101";
-	constant mpu_write : std_logic_vector(0 to 2) := "100";
-	constant mpu_pre   : std_logic_vector(0 to 2) := "010";
-	constant mpu_aut   : std_logic_vector(0 to 2) := "001";
-	constant mpu_dcare : std_logic_vector(0 to 2) := "000";
+	constant mpu_nop   : std_logic_vector := "111";
+	constant mpu_act   : std_logic_vector := "011";
+	constant mpu_read  : std_logic_vector := "101";
+	constant mpu_write : std_logic_vector := "100";
+	constant mpu_pre   : std_logic_vector := "010";
+	constant mpu_aut   : std_logic_vector := "001";
+	constant mpu_dcare : std_logic_vector := "000";
 
 	function sdram_cnfglat (
 		constant stdr : sdram_standards;
