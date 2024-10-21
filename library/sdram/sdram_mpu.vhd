@@ -84,7 +84,7 @@ architecture arch of sdram_mpu is
 	constant cas  : natural := 1;
 	constant we   : natural := 2;
 
-	signal lat_timer : natural range -1 to max(natural_vector'(max(cwl_tab), max(bl_tab), max(cl_tab), lrcd, lrfc, lrp)) := -1;
+	signal lat_timer : integer range -1 to max(natural_vector'(max(cwl_tab), max(bl_tab), max(cl_tab), lrcd, lrfc, lrp)) := -1;
 
 	type cmd_names is (c_nop, c_act, c_read, c_write, c_pre, c_aut, c_dcare);
 	signal cmd_name : cmd_names;
@@ -307,8 +307,10 @@ begin
 
 	sdram_mpu_act  <= setif(sdram_state=ddrs_act);
 	sdram_mpu_wri  <= setif(sdram_state=ddrs_write_cl or sdram_state=ddrs_write_bl);
-	sdram_mpu_trdy <= lat_timer(0) and sdram_rdy_ena;
-	sdram_mpu_fch  <= lat_timer(0) and sdram_rdy_fch;
+	sdram_mpu_trdy <= sdram_rdy_ena when lat_timer < 0 else '0';
+	sdram_mpu_fch  <= sdram_rdy_fch when lat_timer < 0 else '0';
+	-- sdram_mpu_trdy <= lat_timer(0) and sdram_rdy_ena;
+	-- sdram_mpu_fch  <= lat_timer(0) and sdram_rdy_fch;
 
 	debug : with sdram_state select
 	mpu_state <=

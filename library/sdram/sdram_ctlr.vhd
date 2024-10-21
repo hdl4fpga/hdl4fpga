@@ -99,7 +99,7 @@ entity sdram_ctlr is
 		phy_sto     : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
 		phy_dqi     : in  std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dq"-1 downto 0));
 
-	constant chiptmmg_data : string := hdo(sdram)**".tmng";
+	constant chiptmng_data : string := hdo(sdram)**".tmng";
 	constant fmly      : string         := hdo(sdram)**".fmly";
 	constant fmly_data : string         := hdo(families_db)**("."&fmly);
 	constant fmlytmng_data : string     := hdo(fmly_data)**(".tmng");
@@ -166,7 +166,7 @@ begin
 	sdram_init_e : entity hdl4fpga.sdram_init
 	generic map (
 		debug            => debug,
-		chiptmmg_data    => chiptmmg_data,
+		chiptmng_data    => chiptmng_data,
 		fmly             => fmly,
 		fmlytmng_data    => fmlytmng_data,
 		tcp              => tcp)
@@ -214,14 +214,12 @@ begin
 	sdram_mpu_e : entity hdl4fpga.sdram_mpu
 	generic map (
 		tcp             => tcp,
-		latencies       => latencies,
-		chip            => chip,
-
-		gear            => phy_dqso'length,
-		bl_cod          => bl_cod,
-		al_cod          => al_cod,
-		cl_cod          => cl_cod,
-		cwl_cod         => cwl_cod)
+		phy       => phy,
+		chiptmng_data => chiptmng_data,
+		al_tab          => al_tab,
+		bl_tab          => bl_tab,
+		cl_tab          => cl_tab,
+		cwl_tab         => cwl_tab)
 	port map (
 		sdram_mpu_bl    => ctlr_bl,
 		sdram_mpu_al    => ctlr_al,
