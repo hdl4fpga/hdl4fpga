@@ -78,6 +78,14 @@ package sdram_db is
 		"ulx4ld_ecp5g4     : { STRL : 0, DQSL : 4*1-2+2, DQSZL : 4*1+0+2, DQZL : 4*1+0+2, WWNL : 4*1-4+2, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2, WIDL : 4}," &
 		"orangecrab_ecp5g4 : { STRL : 0, DQSL : 4*1-2+0, DQSZL : 4*1+0+0, DQZL : 4*1+0+0, WWNL : 4*1-4+0, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2, WIDL : 4}]");
 
+	constant mpu_nop   : std_logic_vector(0 to 2) := "111";
+	constant mpu_act   : std_logic_vector(0 to 2) := "011";
+	constant mpu_read  : std_logic_vector(0 to 2) := "101";
+	constant mpu_write : std_logic_vector(0 to 2) := "100";
+	constant mpu_pre   : std_logic_vector(0 to 2) := "010";
+	constant mpu_aut   : std_logic_vector(0 to 2) := "001";
+	constant mpu_dcare : std_logic_vector(0 to 2) := "000";
+
 	function lattab (
 		constant table  : string;
 		constant length : natural)

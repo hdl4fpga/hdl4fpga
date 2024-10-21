@@ -33,19 +33,18 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_param.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.sdram_db.all;
 
 entity sdram_mpu is
 	generic (
 		tcp           : real := 0.0;
-		latencies     : latency_vector;
-		chip          : sdram_chips;
-		gear          : natural;
-		bl_cod        : std_logic_vector;
-		al_cod        : std_logic_vector;
-		cl_cod        : std_logic_vector;
-		cwl_cod       : std_logic_vector);
+		chiptmng_data : string;
+		phy : string;
+		al_tab        : natural_vector;
+		bl_tab        : natural_vector;
+		cl_tab        : natural_vector;
+		cwl_tab       : natural_vector);
 	port (
 		sdram_mpu_alat  : out std_logic_vector(2 downto 0);
 		sdram_mpu_blat  : out std_logic_vector;
@@ -70,61 +69,22 @@ entity sdram_mpu is
 		sdram_mpu_wri   : out std_logic;
 		sdram_mpu_wwin  : out std_logic);
 
+	constant tdqsz : real    := hdo(phy)**"tmng.DQSXL=0."*tcp; 
+	constant twr   : real    := hdo(chiptmng_data)**".tWR";
+	constant lwr   : natural := natural(ceil(twr+tdqsz)/tcp);
+	constant lrcd  : natural := natural(ceil(hdo(chiptmng_data)**".tRCD=0."/tcp));
+	constant lrfc  : natural := natural(ceil(hdo(chiptmng_data)**".tRFC=0."/tcp));
+	constant lrp   : natural := natural(ceil(hdo(chiptmng_data)**".tRP=0."/tcp));
+	constant gear  : natural := hdo(phy)**".gear";
 end;
 
 architecture arch of sdram_mpu is
-
-	constant stdr    : sdram_standards := sdrmark_standard(chip);
-
-	constant twr1     : real            := ceil((sdram_timing(chip, twr)+real(latencies(dqsxl))*tcp)/tcp);
-	constant lwr     : natural          := natural(twr1); -- Diamond 3.11.2.446 crashes when replace twr1 by its expression
-	constant lrcd    : natural          := to_sdrlatency(tcp, chip, trcd);
-	constant lrfc    : natural          := to_sdrlatency(tcp, chip, trfc);
-	constant lrp     : natural          := to_sdrlatency(tcp, chip, trp);
-	constant bl_tab  : natural_vector   := sdram_lattab(stdr, bl);
-	constant al_tab  : natural_vector   := sdram_lattab(stdr, al);
-	constant cl_tab  : natural_vector   := sdram_lattab(stdr, cl);
-	constant cwl_tab : natural_vector   := sdram_lattab(stdr, sdram_selcwl(stdr));
 
 	constant ras  : natural := 0;
 	constant cas  : natural := 1;
 	constant we   : natural := 2;
 
-	function timer_size (
-		constant lrcd : natural;
-		constant lrfc : natural;
-		constant lwr  : natural;
-		constant lrp  : natural;
-		constant bl_tab : natural_vector;
-		constant cl_tab : natural_vector;
-		constant cwl_tab : natural_vector)
-		return natural is
-		variable val : natural;
-		variable aux : natural;
-	begin
-		aux := max(lrcd,lrfc);
-		aux := max(aux, lrp);
-		for i in bl_tab'range loop
-			aux := max(aux, bl_tab(i));
-		end loop;
-		for i in cl_tab'range loop
-			aux := max(aux, cl_tab(i));
-		end loop;
-		for i in cwl_tab'range loop
-			aux := max(aux, cwl_tab(i)+lwr);
-		end loop;
-		val := 1;
-		aux := aux-2;
-		while (aux > 0) loop
-			aux := aux / 2;
-			val := val + 1;
-		end loop;
-		return val;
-	end;
-
-
-	constant lat_size : natural := timer_size(lrcd, lrfc, lwr, lrp, bl_tab, cl_tab, cwl_tab);
-	signal lat_timer : signed(0 to lat_size-1) := (others => '1');
+	signal lat_timer : natural range -1 to max(natural_vector'(max(cwl_tab), max(bl_tab), max(cl_tab), lrcd, lrfc, lrp)) := -1;
 
 	type cmd_names is (c_nop, c_act, c_read, c_write, c_pre, c_aut, c_dcare);
 	signal cmd_name : cmd_names;
@@ -238,114 +198,27 @@ architecture arch of sdram_mpu is
 		attribute fsm_encoding : string;
 		attribute fsm_encoding of sdram_state : signal is "compact";
 
-	function "+" (
+	function adjst (
 		constant tab : natural_vector;
-		constant off : natural)
+		constant lat : integer)
 		return natural_vector is
-		variable val : natural_vector(tab'range);
+		variable retval : natural_vector(tab'range);
 	begin
 		for i in tab'range loop
-			val(i) := tab(i) + off;
+			retval(i) := tab(i)*lat;
 		end loop;
-		return val;
+		return retval;
 	end;
 
-	function "-" (
-		constant off : natural;
-		constant tab : natural_vector)
-		return natural_vector is
-		variable val : natural_vector(tab'range);
-	begin
-		for i in tab'range loop
-			if off > tab(i) then
-				val(i) := off-tab(i);
-			else
-				val(i) := 0;
-			end if;
-		end loop;
-		return val;
-	end;
-
-	function "*" (
-		constant off : natural;
-		constant tab : natural_vector)
-		return natural_vector is
-		variable val : natural_vector(tab'range);
-	begin
-		for i in tab'range loop
-			val(i) := tab(i)*off;
-		end loop;
-		return val;
-	end;
-
-	function "/" (
-		constant tab : natural_vector;
-		constant off : natural)
-		return natural_vector is
-		variable val : natural_vector(tab'range);
-	begin
-		for i in tab'range loop
-			val(i) := tab(i)/off;
-		end loop;
-		return val;
-	end;
-
-	function select_lat (
-		constant lat_val : std_logic_vector;
-		constant lat_cod : std_logic_vector;
-		constant lat_tab : natural_vector;
-		constant lat_len : natural :=lat_timer'length)
-		return signed is
-		subtype latword is std_logic_vector(0 to lat_cod'length/lat_tab'length-1);
-		type latword_vector is array (natural range <>) of latword;
-
-		function to_latwordvector(
-			constant arg : std_logic_vector)
-			return latword_vector is
-			variable aux : unsigned(0 to arg'length-1);
-			variable val : latword_vector(0 to arg'length/latword'length-1);
-		begin
-			aux := unsigned(arg);
-			for i in val'range loop
-				val(i) := std_logic_vector(aux(latword'range));
-				aux := aux sll latword'length;
-			end loop;
-			return val;
-		end;
-
-		function select_latword (
-			constant lat_val : std_logic_vector;
-			constant lat_cod : latword_vector;
-			constant lat_tab : natural_vector)
-			return signed is
-			variable val : signed(0 to lat_len-1);
-		begin
-			val := (others => '-');
-			for i in lat_cod'range loop
-				if lat_cod(i)=lat_val then
-					val := to_signed((lat_tab(i)+gear-1)/gear-2, lat_len);
-					return val;
-				end if;
-			end loop;
-			assert false
-			report "select_latword : latency register '" & to_string(lat_val) & "' is invalid"
-			severity failure;
-			return val;
-		end;
-
-	begin
-		return select_latword(lat_val, to_latwordvector(lat_cod), lat_tab);
-	end;
-
+	constant aladj_tab : natural_vector := adjst(al_tab, (gear*lrcd+2*gear)-(gear/2));
 begin
 
-	-- sdram_mpu_alat <= std_logic_vector(to_unsigned(lrcd, sdram_mpu_alat'length));
-	sdram_mpu_alat <= std_logic_vector(select_lat(sdram_mpu_al, al_cod, (gear*lrcd+2*gear)-(gear/2)*al_tab, sdram_mpu_alat'length));
-	sdram_mpu_blat <= std_logic_vector(resize(unsigned(signed'(select_lat(sdram_mpu_bl, bl_cod, bl_tab))), sdram_mpu_blat'length));
+	sdram_mpu_alat <= std_logic_vector(to_unsigned(aladj_tab(to_integer(unsigned(sdram_mpu_al))), sdram_mpu_alat'length));
+	sdram_mpu_blat <= std_logic_vector(to_unsigned(bl_tab(to_integer(unsigned(sdram_mpu_bl))), sdram_mpu_blat'length));
 	sdram_mpu_p: process (sdram_mpu_clk)
 		variable state_set : boolean;
 		variable lat_id :lat_id ;
-		variable timer  : signed(lat_timer'range);
+		variable timer  : integer;
 	begin
 		if rising_edge(sdram_mpu_clk) then
 			if sdram_mpu_rst='0' then
@@ -355,9 +228,9 @@ begin
 					severity failure;
 
 
-				if lat_timer(0)='1' then
+				if lat_timer < 0 then
 					state_set     := false;
-					lat_timer     <= (others => '-');
+					-- lat_timer     <= (others => '-');
 					sdram_mpu_ras   <= '-';
 					sdram_mpu_cas   <= '-';
 					sdram_mpu_we    <= '-';
@@ -387,20 +260,20 @@ begin
 								timer  := lat_timer;
 								case lat_id is
 								when id_bl =>
-									timer := select_lat(sdram_mpu_bl, bl_cod, bl_tab);
+									timer := bl_tab(to_integer(unsigned(sdram_mpu_bl)));
 								when id_cl =>
-									timer := select_lat(sdram_mpu_cl, cl_cod, cl_tab);
+									timer := cl_tab(to_integer(unsigned(sdram_mpu_cl)));
 								when id_cwl =>
-									timer := select_lat(sdram_mpu_cwl, cwl_cod, cwl_tab+gear*lwr);
+									timer := cwl_tab(to_integer(unsigned(sdram_mpu_cwl)));
 								when id_rcd =>
 									-- timer := to_signed(lrcd-2, lat_timer'length);
-									timer := select_lat(sdram_mpu_al, al_cod, (gear*lrcd)-(gear/2)*al_tab, timer'length);
+									timer := aladj_tab(to_integer(unsigned(sdram_mpu_al)));
 								when id_rfc =>
-									timer := to_signed(lrfc-2, lat_timer'length);
+									timer := lrfc-2;
 								when id_rp =>
-									timer := to_signed(lrp-2, lat_timer'length);
+									timer := lrp-2;
 								when id_idle =>
-									timer := (others => '1');
+									timer := -1;
 								end case;
 								lat_timer <= timer;
 								exit;
@@ -426,7 +299,7 @@ begin
 				sdram_mpu_wwin  <= sdram_state_tab(0).sdram_wph;
 				sdram_rdy_ena   <= '1';
 				sdram_rdy_fch   <= '1';
-				lat_timer     <= (others => '1');
+				-- lat_timer     <= (others => '1');
 			end if;
 
 		end if;
