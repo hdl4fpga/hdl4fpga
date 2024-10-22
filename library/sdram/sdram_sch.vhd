@@ -86,28 +86,43 @@ architecture def of sdram_sch is
 			end loop;
 			return cwlval;
 		elsif latency="STRL" then
-			for i in cltab'range loop
-				clval(i) := cltab(i) + lat;
+			for i in cl_tab'range loop
+				clval(i) := cl_tab(i) + lat;
 			end loop;
 			return clval;
-		when DQSZL|DQSL|DQZL =>
-			for i in cwltab'range loop
-				cwlval(i) := cwltab(i)+lat;
+		elsif latency="DQSZL" or latency="DQSL" or latency="DQZL" then
+			for i in cwl_tab'range loop
+				cwlval(i) := cwl_tab(i)+lat;
 				if fmly="ddr2" then
 					cwlval(i) := cwl_tab(i)-2;
 				end if;
 			end loop;
 			return cwlval;
-		when others =>
-			return (0 to 0 => 0);
-		end case;
+		else
+		end if;
 		return (0 to 0 => 0);
+	end;
+
+	function sdram_schtab (
+		constant latencies : natural_vector;
+		constant latency   : integer)
+		return natural_vector is
+		variable retval : natural_vector(latencies'range);
+	begin
+		retval := latencies;
+		for i in latencies'range loop
+			if retval(i)+latency < 0  then
+				retval(i) := 0;
+			else
+				retval(i) := retval(i) + latency;
+			end if;
+		end loop;
+		return retval;
 	end;
 
 	function sdram_task (
 		constant gear    : natural;
 		constant lat_val : std_logic_vector;
-		constant lat_cod : std_logic_vector;
 		constant lat_tab : natural_vector;
 		constant lat_sch : std_logic_vector;
 		constant lat_ext : natural := 0;
@@ -117,37 +132,15 @@ architecture def of sdram_sch is
 		subtype word is std_logic_vector(0 to gear-1);
 		type word_vector is array (natural range <>) of word;
 
-		subtype latword is std_logic_vector(0 to lat_val'length-1);
-		type latword_vector is array (natural range <>) of latword;
-
-		function to_latwordvector(
-			constant arg : std_logic_vector)
-			return latword_vector is
-			variable aux : unsigned(0 to arg'length-1);
-			variable val : latword_vector(0 to arg'length/latword'length-1);
-		begin
-			aux := unsigned(arg);
-			for i in val'range loop
-				val(i) := std_logic_vector(aux(latword'range));
-				aux := aux sll latword'length;
-			end loop;
-			return val;
-		end;
-
 		function select_lat (
 			constant lat_val : std_logic_vector;
-			constant lat_cod : latword_vector;
 			constant lat_sch : word_vector)
 			return std_logic_vector is
 			variable val : word;
 		begin
 			val := (others => '-');
-			for i in 0 to lat_tab'length-1 loop
-				if lat_val = lat_cod(i) then
-					for j in word'range loop
-						val(j) := lat_sch(i)(j);
-					end loop;
-				end if;
+			for j in word'range loop
+				val(j) := lat_sch(to_integer(unsigned(lat_val)))(j);
 			end loop;
 			return val;
 		end;
@@ -197,8 +190,7 @@ architecture def of sdram_sch is
     		return pulses;
     	end;
 
-		constant lat_cod1 : latword_vector := to_latwordvector(lat_cod);
-		variable sel_sch : word_vector(lat_cod1'range);
+		variable sel_sch : word_vector(lat_tab'range);
 
 	begin
 		sel_sch := (others => (others => '-'));
@@ -210,19 +202,32 @@ architecture def of sdram_sch is
 				extension => lat_ext,
 				width     => lat_wid);
 		end loop;
-		return select_lat(lat_val, lat_cod1, sel_sch);
+		return select_lat(lat_val, sel_sch);
 	end;
 
-	constant stdr      : sdram_standards := sdrmark_standard(chip);
-	constant strl_tab  : natural_vector  := sdram_schtab(stdr, latencies, strl);
-	constant dozl_tab  : natural_vector  := sdram_schtab(-3, strl_tab);
-	constant dqszl_tab : natural_vector  := sdram_schtab(stdr, latencies, dqszl);
-	constant dqsol_tab : natural_vector  := sdram_schtab(stdr, latencies, dqsl);
-	constant dqzl_tab  : natural_vector  := sdram_schtab(stdr, latencies, dqzl);
-	constant wwnl_tab  : natural_vector  := sdram_schtab(stdr, latencies, wwnl);
+	constant strl_tab  : natural_vector  := sdram_schtab (fmly, "STRL");
+	constant dozl_tab  : natural_vector  := sdram_schtab (strl_tab, -3);
+	constant dqszl_tab : natural_vector  := sdram_schtab (fmly, "DQSZL");
+	constant dqsol_tab : natural_vector  := sdram_schtab (fmly, "DQSL");
+	constant dqzl_tab  : natural_vector  := sdram_schtab (fmly, "DQZL");
+	constant wwnl_tab  : natural_vector  := sdram_schtab (fmly, "WWNL");
 
 	signal wri_sr      : std_logic_vector(0 to delay_size-1);
 	signal rea_sr      : std_logic_vector(0 to delay_size-1);
+
+	constant STRL   : natural := hdo(phytmng_data)**".STRL";
+	constant DQSZL  : natural := hdo(phytmng_data)**".DQSZL";
+	constant DQSL   : natural := hdo(phytmng_data)**".DQSL";
+	constant DQZL   : natural := hdo(phytmng_data)**".DQZL";
+	constant WWNL   : natural := hdo(phytmng_data)**".WWNL";
+	constant STRXL  : natural := hdo(phytmng_data)**".STRXL";
+	constant DQSZX  : natural := hdo(phytmng_data)**".DQSZX";
+	constant DQSXL  : natural := hdo(phytmng_data)**".DQSXL";
+	constant DQSZXL : natural := hdo(phytmng_data)**".DQSZXL";
+	constant DQZXL  : natural := hdo(phytmng_data)**".DQZXL";
+	constant WNXL   : natural := hdo(phytmng_data)**".WNXL";
+	constant WWNXL  : natural := hdo(phytmng_data)**".WWNXL";
+	constant WIDL   : natural := hdo(phytmng_data)**".WIDL";
 
 begin
 	
@@ -239,63 +244,56 @@ begin
 	sdram_st <= sdram_task (
 		gear       => gear,
 		lat_val    => sys_cl,
-		lat_cod    => cl_cod,
 		lat_tab    => strl_tab,
-		lat_ext    => latencies(strxl),
-		lat_wid    => latencies(widl),
+		lat_ext    => strxl,
+		lat_wid    => widl,
 		lat_sch    => rea_sr);
 
 	sdram_dmo <= sdram_task (
 		gear       => gear,
 		lat_val    => sys_cl,
-		lat_cod    => cl_cod,
 		lat_tab    => dozl_tab, 
 		lat_ext    => 0,
-		lat_wid    => latencies(widl),
+		lat_wid    => widl,
 		lat_sch    => rea_sr);
 
 	sdram_dqsz <= sdram_task (
 		gear       => gear,
 		lat_val    => sys_cwl,
-		lat_cod    => cwl_cod,
 		lat_tab    => dqszl_tab,
-		lat_ext    => latencies(dqszxl),
-		lat_wid    => latencies(widl),
+		lat_ext    => dqszxl,
+		lat_wid    => widl,
 		lat_sch    => wri_sr);
 
 	sdram_dqs <= sdram_task (
 		gear       => gear,
 		lat_val    => sys_cwl,
-		lat_cod    => cwl_cod,
 		lat_tab    => dqsol_tab,
-		lat_ext    => latencies(dqsxl),
-		lat_wid    => latencies(widl),
+		lat_ext    => dqsxl,
+		lat_wid    => widl,
 		lat_sch    => wri_sr);
 
 	sdram_dqz <= sdram_task (
 		gear       => gear,
 		lat_val    => sys_cwl,
-		lat_cod    => cwl_cod,
 		lat_tab    => dqzl_tab,
-		lat_ext    => latencies(dqzxl),
-		lat_wid    => latencies(widl),
+		lat_ext    => dqzxl,
+		lat_wid    => widl,
 		lat_sch    => wri_sr);
 
 	sdram_wwn <= sdram_task (
 		gear       => gear,
 		lat_val    => sys_cwl,
-		lat_cod    => cwl_cod,
 		lat_tab    => wwnl_tab,
-		lat_ext    => latencies(wwnxl),
-		lat_wid    => latencies(widl),
+		lat_ext    => wwnxl,
+		lat_wid    => widl,
 		lat_sch    => wri_sr);
 
 	sdram_odt <= sdram_task (
 		gear       => gear_odt,
 		lat_val    => "000",
-		lat_cod    => "000",
 		lat_tab    => (0 to 0 => 0),
 		lat_ext    => 2*gear_odt,
-		lat_wid    => latencies(widl),
+		lat_wid    => widl,
 		lat_sch    => wri_sr);
 end;
