@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
-use hdl4fpga.sdram_db.all;
+use hdl4fpga.sdram.all;
 
 entity sdram_ctlr is
 	generic (
@@ -108,6 +108,7 @@ entity sdram_ctlr is
 	constant cl_tab    : natural_vector := lattab(hdo(fmly_data)**(".cl"), 8);
 	constant wrl_tab   : natural_vector := lattab(hdo(fmly_data)**(".wrl={}.)"), 8);
 	constant cwl_tab   : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 8);
+	constant wwnl_tab  : natural_vector := sdram_schtab(stdr, latencies, wwnl);
 end;
 
 architecture mix of sdram_ctlr is
@@ -330,7 +331,6 @@ begin
 			return std_logic_vector(val);
 		end;
 
-		constant wwnl_tab : natural_vector := sdram_schtab(stdr, latencies, wwnl);
 	begin
 		rot_val <= sdram_rotval (
 			line_size => phy_dqo'length,

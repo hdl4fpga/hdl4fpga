@@ -70,56 +70,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 architecture def of sdram_sch is
-	function sdram_schtab (
-		constant fmly    : string;
-		constant latency : string)
-		return natural_vector is
-
-		variable lat    : integer := hdo(phytmng_data)**("."&latency);
-		variable clval  : natural_vector(cl_tab'range);
-		variable cwlval : natural_vector(cwl_tab'range);
-
-	begin
-		if latency="WWNL" then
-			for i in cwl_tab'range loop
-				cwlval(i) := cwl_tab(i) + lat;
-			end loop;
-			return cwlval;
-		elsif latency="STRL" then
-			for i in cl_tab'range loop
-				clval(i) := cl_tab(i) + lat;
-			end loop;
-			return clval;
-		elsif latency="DQSZL" or latency="DQSL" or latency="DQZL" then
-			for i in cwl_tab'range loop
-				cwlval(i) := cwl_tab(i)+lat;
-				if fmly="ddr2" then
-					cwlval(i) := cwl_tab(i)-2;
-				end if;
-			end loop;
-			return cwlval;
-		else
-		end if;
-		return (0 to 0 => 0);
-	end;
-
-	function sdram_schtab (
-		constant latencies : natural_vector;
-		constant latency   : integer)
-		return natural_vector is
-		variable retval : natural_vector(latencies'range);
-	begin
-		retval := latencies;
-		for i in latencies'range loop
-			if retval(i)+latency < 0  then
-				retval(i) := 0;
-			else
-				retval(i) := retval(i) + latency;
-			end if;
-		end loop;
-		return retval;
-	end;
-
 	function sdram_task (
 		constant gear    : natural;
 		constant lat_val : std_logic_vector;
@@ -145,50 +95,50 @@ architecture def of sdram_sch is
 			return val;
 		end;
 
-    	function pulse_delay (
-    		constant phase     : std_logic_vector;
-    		constant latency   : natural := 0;
-    		constant extension : natural := 0;
-    		constant word_size : natural := 4;
-    		constant width     : natural := 1)
-    		return std_logic_vector is
+		function pulse_delay (
+			constant phase     : std_logic_vector;
+			constant latency   : natural := 0;
+			constant extension : natural := 0;
+			constant word_size : natural := 4;
+			constant width     : natural := 1)
+			return std_logic_vector is
 
-    		variable latency_mod : natural;
-    		variable latency_quo : natural;
-    		variable delay     : natural;
-    		variable pulse     : std_logic;
+			variable latency_mod : natural;
+			variable latency_quo : natural;
+			variable delay     : natural;
+			variable pulse     : std_logic;
 
-    		variable distance  : natural;
-    		variable width_quo : natural;
-    		variable width_mod : natural;
-    		variable tail      : natural;
-    		variable tail_quo  : natural;
-    		variable tail_mod  : natural;
-    		variable pulses    : std_logic_vector(0 to word_size-1);
-    	begin
+			variable distance  : natural;
+			variable width_quo : natural;
+			variable width_mod : natural;
+			variable tail      : natural;
+			variable tail_quo  : natural;
+			variable tail_mod  : natural;
+			variable pulses    : std_logic_vector(0 to word_size-1);
+		begin
 
-    		latency_mod := latency mod pulses'length;
-    		latency_quo := latency  /  pulses'length;
-    		for j in pulses'range loop
-    			distance  := (extension-j+pulses'length-1)/pulses'length;
-    			width_quo := (distance+width-1)/width;
-    			width_mod := (width_quo*width-distance) mod width;
+			latency_mod := latency mod pulses'length;
+			latency_quo := latency  /  pulses'length;
+			for j in pulses'range loop
+				distance  := (extension-j+pulses'length-1)/pulses'length;
+				width_quo := (distance+width-1)/width;
+				width_mod := (width_quo*width-distance) mod width;
 
-    			delay := latency_quo+(j+latency_mod)/pulses'length;
-    			pulse := phase(delay);
+				delay := latency_quo+(j+latency_mod)/pulses'length;
+				pulse := phase(delay);
 
-    			if width_quo /= 0 then
-    				tail_quo := width_mod  /  width_quo;
-    				tail_mod := width_mod mod width_quo;
-    				for l in 1 to width_quo loop
-    					tail  := tail_quo + (l*tail_mod) / width_quo;
-    					pulse := pulse or phase(delay+l*width-tail);
-    				end loop;
-    			end if;
-    			pulses((latency+j) mod pulses'length) := pulse;
-    		end loop;
-    		return pulses;
-    	end;
+				if width_quo /= 0 then
+					tail_quo := width_mod  /  width_quo;
+					tail_mod := width_mod mod width_quo;
+					for l in 1 to width_quo loop
+						tail  := tail_quo + (l*tail_mod) / width_quo;
+						pulse := pulse or phase(delay+l*width-tail);
+					end loop;
+				end if;
+				pulses((latency+j) mod pulses'length) := pulse;
+			end loop;
+			return pulses;
+		end;
 
 		variable sel_sch : word_vector(lat_tab'range);
 
@@ -205,27 +155,25 @@ architecture def of sdram_sch is
 		return select_lat(lat_val, sel_sch);
 	end;
 
-	constant strl_tab  : natural_vector  := sdram_schtab (fmly, "STRL");
+	constant strl_tab  : natural_vector  := sdram_schtab (fmly, phytmng_data, "STRL",  cl_tab, cwl_tab);
 	constant dozl_tab  : natural_vector  := sdram_schtab (strl_tab, -3);
-	constant dqszl_tab : natural_vector  := sdram_schtab (fmly, "DQSZL");
-	constant dqsol_tab : natural_vector  := sdram_schtab (fmly, "DQSL");
-	constant dqzl_tab  : natural_vector  := sdram_schtab (fmly, "DQZL");
-	constant wwnl_tab  : natural_vector  := sdram_schtab (fmly, "WWNL");
+	constant dqszl_tab : natural_vector  := sdram_schtab (fmly, phytmng_data, "DQSZL", cl_tab, cwl_tab);
+	constant dqsol_tab : natural_vector  := sdram_schtab (fmly, phytmng_data, "DQSL",  cl_tab, cwl_tab);
+	constant dqzl_tab  : natural_vector  := sdram_schtab (fmly, phytmng_data, "DQZL",  cl_tab, cwl_tab);
+	constant wwnl_tab  : natural_vector  := sdram_schtab (fmly, phytmng_data, "WWNL",  cl_tab, cwl_tab);
 
 	signal wri_sr      : std_logic_vector(0 to delay_size-1);
 	signal rea_sr      : std_logic_vector(0 to delay_size-1);
 
 	constant STRL   : natural := hdo(phytmng_data)**".STRL";
-	constant DQSZL  : natural := hdo(phytmng_data)**".DQSZL";
 	constant DQSL   : natural := hdo(phytmng_data)**".DQSL";
+	constant DQSZL  : natural := hdo(phytmng_data)**".DQSZL";
 	constant DQZL   : natural := hdo(phytmng_data)**".DQZL";
-	constant WWNL   : natural := hdo(phytmng_data)**".WWNL";
 	constant STRXL  : natural := hdo(phytmng_data)**".STRXL";
-	constant DQSZX  : natural := hdo(phytmng_data)**".DQSZX";
 	constant DQSXL  : natural := hdo(phytmng_data)**".DQSXL";
 	constant DQSZXL : natural := hdo(phytmng_data)**".DQSZXL";
 	constant DQZXL  : natural := hdo(phytmng_data)**".DQZXL";
-	constant WNXL   : natural := hdo(phytmng_data)**".WNXL";
+	constant WWNL   : natural := hdo(phytmng_data)**".WWNL";
 	constant WWNXL  : natural := hdo(phytmng_data)**".WWNXL";
 	constant WIDL   : natural := hdo(phytmng_data)**".WIDL";
 
