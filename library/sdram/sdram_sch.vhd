@@ -27,20 +27,18 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_param.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.sdram_db.all;
 
 entity sdram_sch is
 	generic (
-		latencies  : latency_vector;
-		chip       : sdram_chips;
+		phy  : string;
+		fmly : string;
 
 		delay_size : natural := 64;
-		gear       : natural;
-		cmmd_gear  : natural := 1;
 
-		cl_cod     : std_logic_vector;
-		cwl_cod    : std_logic_vector);
+		cl_tab     : natural_vector;
+		cwl_tab    : natural_vector);
 	port (
 		sys_clk    : in  std_logic;
 		sys_cl     : in  std_logic_vector;
@@ -48,17 +46,19 @@ entity sdram_sch is
 		sys_rea    : in  std_logic;
 		sys_wri    : in  std_logic;
 
-		sdram_st   : out std_logic_vector(gear-1 downto 0);
-		sdram_dmo  : out std_logic_vector(gear-1 downto 0);
+		sdram_st   : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
+		sdram_dmo  : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
 
-		sdram_dqsz : out std_logic_vector(gear-1 downto 0);
-		sdram_dqs  : out std_logic_vector(gear-1 downto 0);
+		sdram_dqsz : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
+		sdram_dqs  : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
 
-		sdram_dqz  : out std_logic_vector(gear-1 downto 0);
-		sdram_wwn  : out std_logic_vector(gear-1 downto 0);
+		sdram_dqz  : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
+		sdram_wwn  : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
 		sdram_odt  : out std_logic_vector(1-1    downto 0));
 
 	constant gear_odt : natural := sdram_odt'length;
+	constant phytmng_data : string := hdo(phy)**".tmng";
+	constant gear: natural := sdram_st'length;
 
 end;
 
@@ -70,6 +70,40 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 architecture def of sdram_sch is
+	function sdram_schtab (
+		constant fmly    : string;
+		constant latency : string)
+		return natural_vector is
+
+		variable lat    : integer := hdo(phytmng_data)**("."&latency);
+		variable clval  : natural_vector(cl_tab'range);
+		variable cwlval : natural_vector(cwl_tab'range);
+
+	begin
+		if latency="WWNL" then
+			for i in cwl_tab'range loop
+				cwlval(i) := cwl_tab(i) + lat;
+			end loop;
+			return cwlval;
+		elsif latency="STRL" then
+			for i in cltab'range loop
+				clval(i) := cltab(i) + lat;
+			end loop;
+			return clval;
+		when DQSZL|DQSL|DQZL =>
+			for i in cwltab'range loop
+				cwlval(i) := cwltab(i)+lat;
+				if fmly="ddr2" then
+					cwlval(i) := cwl_tab(i)-2;
+				end if;
+			end loop;
+			return cwlval;
+		when others =>
+			return (0 to 0 => 0);
+		end case;
+		return (0 to 0 => 0);
+	end;
+
 	function sdram_task (
 		constant gear    : natural;
 		constant lat_val : std_logic_vector;
