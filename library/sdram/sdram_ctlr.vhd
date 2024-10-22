@@ -28,7 +28,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
-use hdl4fpga.sdram.all;
+use hdl4fpga.sdrampkg.all;
 
 entity sdram_ctlr is
 	generic (
@@ -103,12 +103,12 @@ entity sdram_ctlr is
 	constant fmly      : string         := hdo(sdram)**".fmly";
 	constant fmly_data : string         := hdo(families_db)**("."&fmly);
 	constant fmlytmng_data : string     := hdo(fmly_data)**(".tmng");
+	constant phytmng_data : string := hdo(phy)**".tmng";
 	constant al_tab    : natural_vector := lattab(hdo(fmly_data)**(".al"), 8);
 	constant bl_tab    : natural_vector := lattab(hdo(fmly_data)**(".bl"), 8);
 	constant cl_tab    : natural_vector := lattab(hdo(fmly_data)**(".cl"), 8);
 	constant wrl_tab   : natural_vector := lattab(hdo(fmly_data)**(".wrl={}.)"), 8);
 	constant cwl_tab   : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 8);
-	constant wwnl_tab  : natural_vector := sdram_schtab(stdr, latencies, wwnl);
 end;
 
 architecture mix of sdram_ctlr is
@@ -270,7 +270,6 @@ begin
 			constant line_size : natural;
 			constant word_size : natural;
 			constant lat_val   : std_logic_vector;
-			constant lat_cod   : std_logic_vector;
 			constant lat_tab   : natural_vector)
 			return std_logic_vector is
 	
@@ -298,25 +297,18 @@ begin
 	
 			function select_lat (
 				constant lat_val : std_logic_vector;
-				constant lat_cod : latword_vector;
 				constant lat_sch : word_vector)
 				return std_logic_vector is
 				variable val : word;
 			begin
 				val := (others => '-');
-				for i in 0 to lat_tab'length-1 loop
-					if lat_val = lat_cod(i) then
-						for j in word'range loop
-							val(j) := lat_sch(i)(j);
-						end loop;
-					end if;
-				end loop;
+					for j in word'range loop
+						val(j) := lat_sch(to_integer(unsigned(lat_val)))(j);
+					end loop;
 				return val;
 			end;
 	
-			constant lc   : latword_vector := to_latwordvector(lat_cod);
-	
-			variable sel_sch : word_vector(lc'range);
+			variable sel_sch : word_vector(lat_tab'range);
 			variable val     : unsigned(unsigned_num_bits(LINE_SIZE-1)-1 downto 0) := (others => '0');
 			variable disp    : natural;
 	
@@ -326,17 +318,17 @@ begin
 				sel_sch(i) := std_logic_vector(to_unsigned(lat_tab(i) mod (LINE_SIZE/WORD_SIZE), word'length));
 			end loop;
 	
-			val(word'range) := unsigned(select_lat(lat_val, lc, sel_sch));
+			val(word'range) := unsigned(select_lat(lat_val, sel_sch));
 			val := val sll algn;
 			return std_logic_vector(val);
 		end;
 
+		constant wwnl_tab  : natural_vector := sdram_schtab (fmly, phytmng_data, "WWNL",  cl_tab, cwl_tab);
 	begin
 		rot_val <= sdram_rotval (
 			line_size => phy_dqo'length,
 			word_size => phy_dqo'length/phy_dqso'length,
 			lat_val   => sdram_cwl,
-			lat_cod   => cwl_cod,
 			lat_tab   => wwnl_tab);
 	end block;
 
@@ -370,7 +362,7 @@ begin
 
 	phy_dmo  <= 
 		(fill(not sdram_sch_wwn, phy_dmo'length, full => true) or ctlr_dm) and 
-		 fill(not sdram_sch_dmo, phy_dmo'length, full => true) when stdr=sdr else
+		 fill(not sdram_sch_dmo, phy_dmo'length, full => true) when fmly="sdr" else
 		ctlr_dm;
 	phy_dqt  <= not sdram_sch_dqz;
 	phy_dqso <= sdram_sch_dqs;

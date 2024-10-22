@@ -29,7 +29,7 @@ use ieee.math_real.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
-use hdl4fpga.sdram.all;
+use hdl4fpga.sdrampkg.all;
 
 entity sdram_init is
 	generic (
