@@ -30,9 +30,8 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
 use hdl4fpga.videopkg.all;
+use hdl4fpga.sdrampkg.all;
 use hdl4fpga.scopeiopkg.all;
-use hdl4fpga.sdram_param.all;
-use hdl4fpga.sdram_db.all;
 
 entity scopeio is
 	generic (
@@ -43,7 +42,7 @@ entity scopeio is
 		timing_id    : videotiming_ids;
 		layout       : string;
 		sdram_tcp    : real;
-		mark         : sdram_chips;
+		sdram_data   : string;
 		fifo_size    : natural := 8*8192;
 		video_gear   : natural := 2;
 		intrp_trans  : boolean := true;
@@ -1120,15 +1119,10 @@ begin
 			ctlr_di_dv <= ctlr_di_req;
 			sdrctlr_e : entity hdl4fpga.sdram_ctlr
 			generic map (
-				chip         => mark,
 				tcp          => sdram_tcp,
+				sdram_data         => sdram_data,
 
-				latencies => ecp5g1_latencies,
-				gear         => gear,
-				bank_size    => bank_size,
-				addr_size    => addr_size,
-				word_size    => word_size,
-				byte_size    => byte_size)
+				phy_data => "")
 			port map (
 				ctlr_alat    => ctlr_alat,
 				ctlr_blat    => ctlr_blat,

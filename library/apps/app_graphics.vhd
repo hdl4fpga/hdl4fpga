@@ -27,8 +27,6 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_param.all;
-use hdl4fpga.sdram_db.all;
 use hdl4fpga.videopkg.all;
 
 entity app_graphics is
@@ -39,8 +37,8 @@ entity app_graphics is
 		intrp_trans  : boolean := true;
 
 		sdram_tcp    : real;
-		phy_latencies : latency_vector := (others => 0);
-		mark         : sdram_chips;
+		phy_data     : string := "";
+		sdram_data   : string := "";
 		gear         : natural;
 		bank_size    : natural;
 		addr_size    : natural;
@@ -929,15 +927,10 @@ begin
 		sdrctlr_e : entity hdl4fpga.sdram_ctlr
 		generic map (
 			debug        => debug,
-			chip         => mark,
+			sdram_data   => sdram_data,
 			tcp          => sdram_tcp,
 
-			latencies    => phy_latencies,
-			gear         => gear,
-			bank_size    => bank_size,
-			addr_size    => addr_size,
-			word_size    => word_size,
-			byte_size    => byte_size)
+			phy_data    => phy_data)
 		port map (
 			ctlr_alat    => ctlr_alat,
 			ctlr_blat    => ctlr_blat,

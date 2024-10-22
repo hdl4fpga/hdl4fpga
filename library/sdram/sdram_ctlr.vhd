@@ -34,8 +34,8 @@ entity sdram_ctlr is
 	generic (
 		debug       : boolean := false;
 		tcp         : real := 0.0;
-		sdram       : string;
-		phy         : string);
+		sdram_data  : string;
+		phy_data         : string);
 	port (
 		ctlr_alat   : out std_logic_vector(2 downto 0);
 		ctlr_blat   : out std_logic_vector(2 downto 0);
@@ -56,15 +56,15 @@ entity sdram_ctlr is
 		ctlr_fch    : out std_logic;
 		ctlr_cmd    : out std_logic_vector(0 to 2);
 		ctlr_rw     : in  std_logic;
-		ctlr_b      : in  std_logic_vector(hdo(sdram)**".orgz.addr.bank"-1 downto 0);
-		ctlr_a      : in  std_logic_vector(hdo(sdram)**".orgz.addr.row"-1  downto 0);
+		ctlr_b      : in  std_logic_vector(hdo(sdram_data)**".orgz.addr.bank"-1 downto 0);
+		ctlr_a      : in  std_logic_vector(hdo(sdram_data)**".orgz.addr.row"-1  downto 0);
 		ctlr_di_dv  : in  std_logic;
 		ctlr_di_req : out std_logic;
-		ctlr_do_dv  : out std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dm"-1 downto 0);
+		ctlr_do_dv  : out std_logic_vector(hdo(phy_data)**".gear"*hdo(sdram_data)**".orgz.data.dm"-1 downto 0);
 		ctlr_act    : out std_logic;
-		ctlr_dm     : in  std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dm"-1 downto 0) := (others => '0');
-		ctlr_di     : in  std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dq"-1 downto 0);
-		ctlr_do     : out std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dq"-1 downto 0);
+		ctlr_dm     : in  std_logic_vector(hdo(phy_data)**".gear"*hdo(sdram_data)**".orgz.data.dm"-1 downto 0) := (others => '0');
+		ctlr_di     : in  std_logic_vector(hdo(phy_data)**".gear"*hdo(sdram_data)**".orgz.data.dq"-1 downto 0);
+		ctlr_do     : out std_logic_vector(hdo(phy_data)**".gear"*hdo(sdram_data)**".orgz.data.dq"-1 downto 0);
 
 		ctlr_refreq : out std_logic;
 		phy_frm     : in  std_logic := '0';
@@ -81,29 +81,29 @@ entity sdram_ctlr is
 		phy_ras     : out std_logic;
 		phy_cas     : out std_logic;
 		phy_we      : out std_logic;
-		phy_b       : out std_logic_vector(hdo(sdram)**".orgz.addr.bank"-1 downto 0);
-		phy_a       : out std_logic_vector(hdo(sdram)**".orgz.addr.row"-1 downto 0);
+		phy_b       : out std_logic_vector(hdo(sdram_data)**".orgz.addr.bank"-1 downto 0);
+		phy_a       : out std_logic_vector(hdo(sdram_data)**".orgz.addr.row"-1 downto 0);
 		phy_odt     : out std_logic;
 
-		phy_dmi     : in  std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dm"-1 downto 0);
-		phy_dmo     : out std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dm"-1 downto 0);
+		phy_dmi     : in  std_logic_vector(hdo(phy_data)**".gear"*hdo(sdram_data)**".orgz.data.dm"-1 downto 0);
+		phy_dmo     : out std_logic_vector(hdo(phy_data)**".gear"*hdo(sdram_data)**".orgz.data.dm"-1 downto 0);
 
-		phy_dqso    : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
-		phy_dqst    : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
+		phy_dqso    : out std_logic_vector(hdo(phy_data)**".gear"-1 downto 0);
+		phy_dqst    : out std_logic_vector(hdo(phy_data)**".gear"-1 downto 0);
 
-		phy_dqt     : buffer std_logic_vector(hdo(phy)**".gear"-1 downto 0);
-		phy_dqv     : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
-		phy_dqo     : out std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dq"-1 downto 0);
+		phy_dqt     : buffer std_logic_vector(hdo(phy_data)**".gear"-1 downto 0);
+		phy_dqv     : out std_logic_vector(hdo(phy_data)**".gear"-1 downto 0);
+		phy_dqo     : out std_logic_vector(hdo(phy_data)**".gear"*hdo(sdram_data)**".orgz.data.dq"-1 downto 0);
 
-		phy_sti     : in  std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dm"-1 downto 0);
-		phy_sto     : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
-		phy_dqi     : in  std_logic_vector(hdo(phy)**".gear"*hdo(sdram)**".orgz.data.dq"-1 downto 0));
+		phy_sti     : in  std_logic_vector(hdo(phy_data)**".gear"*hdo(sdram_data)**".orgz.data.dm"-1 downto 0);
+		phy_sto     : out std_logic_vector(hdo(phy_data)**".gear"-1 downto 0);
+		phy_dqi     : in  std_logic_vector(hdo(phy_data)**".gear"*hdo(sdram_data)**".orgz.data.dq"-1 downto 0));
 
-	constant chiptmng_data : string := hdo(sdram)**".tmng";
-	constant fmly      : string         := hdo(sdram)**".fmly";
+	constant chiptmng_data : string := hdo(sdram_data)**".tmng";
+	constant fmly      : string         := hdo(sdram_data)**".fmly";
 	constant fmly_data : string         := hdo(families_db)**("."&fmly);
 	constant fmlytmng_data : string     := hdo(fmly_data)**(".tmng");
-	constant phytmng_data : string := hdo(phy)**".tmng";
+	constant phytmng_data : string := hdo(phy_data)**".tmng";
 	constant al_tab    : natural_vector := lattab(hdo(fmly_data)**(".al"), 8);
 	constant bl_tab    : natural_vector := lattab(hdo(fmly_data)**(".bl"), 8);
 	constant cl_tab    : natural_vector := lattab(hdo(fmly_data)**(".cl"), 8);
@@ -215,7 +215,7 @@ begin
 	sdram_mpu_e : entity hdl4fpga.sdram_mpu
 	generic map (
 		tcp             => tcp,
-		phy       => phy,
+		phy       => phy_data,
 		chiptmng_data => chiptmng_data,
 		al_tab          => al_tab,
 		bl_tab          => bl_tab,
@@ -246,7 +246,7 @@ begin
 	sdram_sch_e : entity hdl4fpga.sdram_sch
 	generic map (
 		fmly => fmly,
-		phy => phy,
+		phy => phy_data,
 		cl_tab    => cl_tab,
 		cwl_tab   => cwl_tab)
 	port map (
