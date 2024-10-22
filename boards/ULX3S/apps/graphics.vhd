@@ -27,7 +27,8 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_db.all;
+use hdl4fpga.hdo.all;
+use hdl4fpga.sdrampkg.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.app_profiles.all;
@@ -386,8 +387,8 @@ begin
 		profile      => 0,
 
 		sdram_tcp    => sdram_tcp,
-		phy_latencies => ecp5g1_latencies,
-		mark         => MT48LC256MA27E ,
+		phy_data     => hdo(phy_db)**".ecp5g1",
+		sdram_data   => hdo(sdram_db)**".MT48LC256MA27E",
 		gear         => gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,

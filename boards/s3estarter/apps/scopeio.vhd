@@ -30,7 +30,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
-use hdl4fpga.sdram_db.all;
+use hdl4fpga.sdrampkg.all;
 use hdl4fpga.profiles.all;
 use hdl4fpga.app_profiles.all;
 
@@ -911,9 +911,9 @@ begin
 		debug     => debug,
 		profile   => 1,
 		sdram_tcp => sdram_tcp,
-		mark      => MT46V256M6T,
+		phy_data     => hdo(phy_db)**".ecp5g1",
+		sdram_data   => hdo(sdram_db)**".MT46V256M6T",
 		timing_id => pclk150_00m1920x1080at60,
-		sdram     => sdram,
 		layout    => layout)
 	port map (
 		-- tp => tp,

@@ -38,11 +38,11 @@ entity scopeio is
 
 		debug : boolean := false;
 		profile      : natural;
-		sdram        : string := "{}";
+		sdram_data   : string := "{}";
+		phy_data     : string := "{}";
 		timing_id    : videotiming_ids;
 		layout       : string;
 		sdram_tcp    : real;
-		sdram_data   : string;
 		fifo_size    : natural := 8*8192;
 		video_gear   : natural := 2;
 		intrp_trans  : boolean := true;
@@ -94,18 +94,18 @@ entity scopeio is
 		ctlrphy_cas   : buffer std_logic;
 		ctlrphy_we    : buffer std_logic;
 		ctlrphy_odt   : out std_logic;
-		ctlrphy_b     : out std_logic_vector(hdo(sdram)**".bank_size=1."-1 downto 0);
-		ctlrphy_a     : out std_logic_vector(hdo(sdram)**".addr_size=1."-1 downto 0);
-		ctlrphy_dqst  : out std_logic_vector(hdo(sdram)**".gear=1."-1 downto 0);
-		ctlrphy_dqso  : out std_logic_vector(hdo(sdram)**".gear=1."-1 downto 0);
-		ctlrphy_dmi   : in  std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size=1."/hdo(sdram)**".byte_size=1."-1 downto 0) := (others => '-');
-		ctlrphy_dmo   : out std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size=1."/hdo(sdram)**".byte_size=1."-1 downto 0);
-		ctlrphy_dqt   : out std_logic_vector(hdo(sdram)**".gear=1."-1 downto 0);
-		ctlrphy_dqi   : in  std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size=1."-1 downto 0) := (others => '-');
-		ctlrphy_dqo   : out std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size=1."-1 downto 0);
-		ctlrphy_dqv   : out std_logic_vector(hdo(sdram)**".gear=1."-1 downto 0);
-		ctlrphy_sto   : out std_logic_vector(hdo(sdram)**".gear=1."-1 downto 0);
-		ctlrphy_sti   : in  std_logic_vector(hdo(sdram)**".gear=1."*hdo(sdram)**".word_size=1."/hdo(sdram)**".byte_size=1."-1 downto 0) := (others => '-');
+		ctlrphy_b     : out std_logic_vector(hdo(sdram_data)**".bank_size=1."-1 downto 0);
+		ctlrphy_a     : out std_logic_vector(hdo(sdram_data)**".addr_size=1."-1 downto 0);
+		ctlrphy_dqst  : out std_logic_vector(hdo(sdram_data)**".gear=1."-1 downto 0);
+		ctlrphy_dqso  : out std_logic_vector(hdo(sdram_data)**".gear=1."-1 downto 0);
+		ctlrphy_dmi   : in  std_logic_vector(hdo(sdram_data)**".gear=1."*hdo(sdram_data)**".word_size=1."/hdo(sdram_data)**".byte_size=1."-1 downto 0) := (others => '-');
+		ctlrphy_dmo   : out std_logic_vector(hdo(sdram_data)**".gear=1."*hdo(sdram_data)**".word_size=1."/hdo(sdram_data)**".byte_size=1."-1 downto 0);
+		ctlrphy_dqt   : out std_logic_vector(hdo(sdram_data)**".gear=1."-1 downto 0);
+		ctlrphy_dqi   : in  std_logic_vector(hdo(sdram_data)**".gear=1."*hdo(sdram_data)**".word_size=1."-1 downto 0) := (others => '-');
+		ctlrphy_dqo   : out std_logic_vector(hdo(sdram_data)**".gear=1."*hdo(sdram_data)**".word_size=1."-1 downto 0);
+		ctlrphy_dqv   : out std_logic_vector(hdo(sdram_data)**".gear=1."-1 downto 0);
+		ctlrphy_sto   : out std_logic_vector(hdo(sdram_data)**".gear=1."-1 downto 0);
+		ctlrphy_sti   : in  std_logic_vector(hdo(sdram_data)**".gear=1."*hdo(sdram_data)**".word_size=1."/hdo(sdram_data)**".byte_size=1."-1 downto 0) := (others => '-');
 		video_clk     : in  std_logic;
 		video_shift_clk :  in std_logic := '-';
 		video_pixel   : buffer std_logic_vector;
@@ -140,13 +140,13 @@ entity scopeio is
 		3 => (ddro => 3, dmaio => 2, sodata => 1, adapter => 1)); -- NUHS3ADSP BOARD 166 MHz
 
 	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length));
-	constant gear          : natural := hdo(sdram)**".gear=1.";
-	constant bank_size     : natural := hdo(sdram)**".bank_size=1.";
-	constant addr_size     : natural := hdo(sdram)**".addr_size=1.";
-	constant coln_size     : natural := hdo(sdram)**".coln_size=1.";
+	constant gear          : natural := hdo(sdram_data)**".gear=1.";
+	constant bank_size     : natural := hdo(sdram_data)**".bank_size=1.";
+	constant addr_size     : natural := hdo(sdram_data)**".addr_size=1.";
+	constant coln_size     : natural := hdo(sdram_data)**".coln_size=1.";
 	constant coln_bits     : natural := coln_size-(unsigned_num_bits(gear)-1);
-	constant word_size     : natural := hdo(sdram)**".word_size=1.";
-	constant byte_size     : natural := hdo(sdram)**".byte_size=1.";
+	constant word_size     : natural := hdo(sdram_data)**".word_size=1.";
+	constant byte_size     : natural := hdo(sdram_data)**".byte_size=1.";
 	constant inputs        : natural := hdo(layout)**".inputs";
 	constant max_delay     : natural := hdo(layout)**".max_delay=16384.";
 	constant min_storage   : natural := hdo(layout)**".min_storage=256."; -- samples, storage size will be equal or larger than this

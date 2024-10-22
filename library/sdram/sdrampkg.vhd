@@ -31,7 +31,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
 
 package sdrampkg is
-	constant chips_db : string := compact("{" &
+	constant sdram_db : string := compact("{" &
 		"MT48LC256MA27E : {fmly : sdr,  orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmmg : {tWR : " & real'image(14.0e-9+11.0e-9) & ", tRCD  : 15.0e-9, tRP : 15.0e-9, tMRD  : 15.0e-9, tRFC  : 66.0e-9, tREFI : " & real'image(64.0e-3/8192.0) & "}}," & -- real/natural Serious Lattice diamond bug
 		"MT46V256M6T    : {fmly : ddr,  orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmmg : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & "}}," &
 		"MT47H512M3     : {fmly : ddr2, orgz : {addr : { bank : , row : col : }, data { dm : dq : }} }, tmmg : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tRPA : 15.0e-9,  tRFC : 130.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : 400.0e-6}}," &

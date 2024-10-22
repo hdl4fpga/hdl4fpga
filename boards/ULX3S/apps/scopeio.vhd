@@ -33,8 +33,7 @@ use hdl4fpga.app_profiles.all;
 use hdl4fpga.ecp5_profiles.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.scopeiopkg.all;
-use hdl4fpga.sdram_param.all;
-use hdl4fpga.sdram_db.all;
+use hdl4fpga.sdrampkg.all;
 
 library ecp5u;
 use ecp5u.components.all;
@@ -522,9 +521,9 @@ begin
 		debug => debug,
 		profile => 0,
 		sdram_tcp    => 1.0/sdram_freq,
-		mark         => MT48LC256MA27E ,
+		phy_data     => hdo(phy_db)**".ecp5g1",
+		sdram_data   => hdo(sdram_db)**".MT48LC256MA27E",
 		timing_id => video_params.timing,
-		sdram     => sdram,
 		layout         => layout)
 	port map (
 		-- tp => tp,

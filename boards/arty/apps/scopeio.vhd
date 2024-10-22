@@ -11,7 +11,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
 use hdl4fpga.profiles.all;
 use hdl4fpga.ipoepkg.all;
-use hdl4fpga.sdram_db.all;
+use hdl4fpga.sdrampkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.scopeiopkg.all;
 use hdl4fpga.app_profiles.all;
@@ -641,9 +641,9 @@ begin
 		debug     => debug,
 		profile   => 1,
 		sdram_tcp => 2.0*sdram_tcp,
-		mark      => MT41K2G125,
 		timing_id => pclk150_00m1920x1080at60,
-		sdram     => sdram,
+		phy_data     => hdo(phy_db)**".xc7vg4",
+		sdram_data   => hdo(sdram_db)**".MT41K2G125",
 		layout    => layout)
 	port map (
 		-- tp => tp,

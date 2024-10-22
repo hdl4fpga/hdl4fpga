@@ -291,8 +291,8 @@ begin
 		profile      => 0,
 
 		sdram_tcp    => sdram_tcp,
-		phy_data     => hdo(phy_db)**".ulx4ld_ecp5g4",
-		sdram_data   => hdo(phy_db)**".MT48LC256MA27E",
+		phy_data     => hdo(phy_db)**".ecp5g1",
+		sdram_data   => hdo(sdram_db)**".MT48LC256MA27E",
 		gear         => gear,
 		bank_size    => bank_size,
 		addr_size    => addr_size,

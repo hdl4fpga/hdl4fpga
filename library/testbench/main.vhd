@@ -29,7 +29,7 @@ use ieee.math_real.all;
 library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_db.all;
+use hdl4fpga.sdrampkg.all;
 
 entity main is
 end;
@@ -38,7 +38,7 @@ architecture def of main is
 begin
 	process 
 	constant chip_id   : string := "MT47H512M3";
-	constant chip_data : string         := hdo(chips_db)**("."&chip_id);
+	constant chip_data : string         := hdo(sdram_db)**("."&chip_id);
 	constant fmly_id   : string         := hdo(chip_data)**".fmly";
 	constant fmly_data : string         := hdo(families_db)**("."&fmly_id);
 	constant al_tab    : natural_vector := lattab(hdo(fmly_data)**(".al"), 8);

@@ -28,9 +28,9 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.profiles.all;
-use hdl4fpga.sdram_param.all;
-use hdl4fpga.sdram_db.all;
+use hdl4fpga.sdrampkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.app_profiles.all;
@@ -702,7 +702,8 @@ begin
 		debug        => debug,
 		profile      => 1,
 		sdram_tcp    => 2.0*sdram_tcp,
-		mark         => MT41K2G125,
+		phy_data     => hdo(phy_db)**".xc7vg4",
+		sdram_data   => hdo(sdram_db)**".MT41K2G125",
 		burst_length => 8,
 		gear         => gear,
 		bank_size    => bank_size,
@@ -710,18 +711,6 @@ begin
 		coln_size    => coln_size,
 		word_size    => word_size,
 		byte_size    => byte_size,
-		phy_latencies => (
-    		STRL   =>  9,
-    		DQSL   =>  1,
-    		DQSZL  =>  1,
-    		DQZL   => -1,
-    		WWNL   => -1,
-    		STRXL  =>  0,
-    		DQSZXL =>  2,
-    		DQSXL  =>  2,
-    		DQZXL  =>  0,
-    		WWNXL  =>  0,
-    		WIDL   =>  4),
 		dvid_fifo    => true,
 		timing_id    => videoparam(video_mode).timing,
 		video_gear   => video_gear,
