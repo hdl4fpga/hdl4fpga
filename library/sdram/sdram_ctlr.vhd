@@ -244,11 +244,10 @@ begin
 
 	sdram_sch_e : entity hdl4fpga.sdram_sch
 	generic map (
-		latencies => latencies,
-		chip      => chip,
-		gear      => phy_dqso'length,
-		cl_cod    => cl_cod,
-		cwl_cod   => cwl_cod)
+		fmly => fmly,
+		phy => phy,
+		cl_tab    => cl_tab,
+		cwl_tab   => cwl_tab)
 	port map (
 		sys_cl    => ctlr_cl,
 		sys_cwl   => sdram_cwl,
