@@ -49,9 +49,8 @@ HDL4FPGA__usbdev = $(LIB_HDL4FPGA)/usbdev/_primary.dat
 HDL4FPGA__usbfltr_sof = $(LIB_HDL4FPGA)/usbfltr_sof/_primary.dat
 HDL4FPGA__uart_rx = $(LIB_HDL4FPGA)/uart_rx/_primary.dat
 HDL4FPGA__ser_debug = $(LIB_HDL4FPGA)/ser_debug/_primary.dat
-HDL4FPGA__sdram_db = $(LIB_HDL4FPGA)/sdram_db/_primary.dat
+HDL4FPGA__sdrampkg = $(LIB_HDL4FPGA)/sdrampkg/_primary.dat
 IEEE__math_real = $(LIB_IEEE)/math_real/_primary.dat
-HDL4FPGA__sdram_param = $(LIB_HDL4FPGA)/sdram_param/_primary.dat
 HDL4FPGA__videopkg = $(LIB_HDL4FPGA)/videopkg/_primary.dat
 HDL4FPGA__app_profiles = $(LIB_HDL4FPGA)/app_profiles/_primary.dat
 HDL4FPGA__ecp5_profiles = $(LIB_HDL4FPGA)/ecp5_profiles/_primary.dat
@@ -290,8 +289,7 @@ $(WORK__arty__scopeio) : ../../boards/arty/apps/scopeio.vhd \
 		$(HDL4FPGA__app_profiles) \
 		$(HDL4FPGA__scopeiopkg) \
 		$(HDL4FPGA__videopkg) \
-		$(HDL4FPGA__sdram_param) \
-		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__profiles) \
@@ -321,8 +319,7 @@ $(WORK__arty__graphics) : ../../boards/arty/apps/graphics.vhd \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__videopkg) \
-		$(HDL4FPGA__sdram_db) \
-		$(HDL4FPGA__sdram_param) \
+		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__profiles) \
 		$(HDL4FPGA__base) \
 		$(IEEE__math_real) \
@@ -425,8 +422,7 @@ $(WORK__nuhs3adsp__scopeio) : ../../boards/nuhs3adsp/apps/scopeio.vhd \
 		$(UNISIM__vcomponents) \
 		$(HDL4FPGA__app_profiles) \
 		$(HDL4FPGA__videopkg) \
-		$(HDL4FPGA__sdram_param) \
-		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__hdo) \
@@ -460,8 +456,7 @@ $(WORK__orangecrab__graphics) : ../../boards/orangecrab/apps/graphics.vhd \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__sdram_db) \
-		$(HDL4FPGA__sdram_param) \
+		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
@@ -487,9 +482,8 @@ $(WORK__s3estarter__scopeio) : ../../boards/s3estarter/apps/scopeio.vhd \
 		$(UNISIM__vcomponents) \
 		$(HDL4FPGA__app_profiles) \
 		$(HDL4FPGA__profiles) \
-		$(HDL4FPGA__sdram_param) \
 		$(IEEE__math_real) \
-		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__videopkg) \
@@ -757,8 +751,7 @@ $(WORK__ulx3s__scopeio) : ../../boards/ULX3S/apps/scopeio.vhd \
 		$(WORK__ulx3s) \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
-		$(HDL4FPGA__sdram_db) \
-		$(HDL4FPGA__sdram_param) \
+		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__scopeiopkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__ecp5_profiles) \
@@ -791,9 +784,8 @@ $(WORK__ulx3s__graphics) : ../../boards/ULX3S/apps/graphics.vhd \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__sdram_param) \
 		$(IEEE__math_real) \
-		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -885,8 +877,7 @@ $(WORK__ulx4m_ld__graphics) : ../../boards/ULX4M_LD/apps/graphics.vhd \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__sdram_db) \
-		$(HDL4FPGA__sdram_param) \
+		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
@@ -917,9 +908,8 @@ $(WORK__ulx4m_ls__graphics) : ../../boards/ULX4M_LS/apps/graphics.vhd \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__sdram_param) \
 		$(IEEE__math_real) \
-		$(HDL4FPGA__sdram_db) \
+		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
