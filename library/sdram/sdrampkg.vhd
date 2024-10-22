@@ -68,7 +68,7 @@ package sdrampkg is
 		"    cwl  : { '000' : 10, '001' : 12, '010' : 14, '011' : 16}" &
 		"    tmmg : { tPreRST : 200.0e-6, tPstRST : 500.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 5, WLDQSEN : 25}}}");
 
-	constant phy_latencies : string := compact("[" &
+	constant phy_db : string := compact("[" &
 		"xc3sg2 : { STRL : -2, DQSL : -2, DQSZL : -2, DQZL : -2, WWNL : -2, STRXL : 0, DQSZXL : 4, DQSXL : 0, DQZXL : 0, WWNXL : 0, WIDL : 2}," &
 		"xc5vg4 : { STRL :  9, DQSL :  2, DQSZL :  2, DQZL : -1, WWNL : -3, STRXL : 0, DQSZXL : 1, DQSXL : 0, DQZXL : 0, WWNXL : 0, WIDL : 4}," &
 		"xc7vg4 : { STRL :  9, DQSL :  1, DQSZL :  1, DQZL : -1, WWNL : -1, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 0, WIDL : 4}," &
