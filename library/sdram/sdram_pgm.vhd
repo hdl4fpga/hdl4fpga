@@ -151,7 +151,7 @@ end;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_param.all;
+use hdl4fpga.sdrampkg.all;
 
 architecture registered of sdram_pgm is
 

@@ -27,8 +27,8 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.sdrampkg.all;
 use hdl4fpga.profiles.all;
-use hdl4fpga.sdram_param.all;
 
 entity xc_sdrphy is
 	generic (

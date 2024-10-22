@@ -29,7 +29,6 @@ use ieee.math_real.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
-use hdl4fpga.sdram_param.all;
 
 package sdrampkg is
 	constant chips_db : string := compact("{" &
@@ -104,6 +103,18 @@ package sdrampkg is
 		constant latency   : integer)
 		return natural_vector;
 
+	function shuffle_vector (
+		constant data : std_logic_vector;
+		constant gear : natural;
+		constant size : natural)
+		return std_logic_vector;
+
+	function unshuffle_vector (
+		constant data : std_logic_vector;
+		constant gear : natural;
+		constant size : natural)
+		return std_logic_vector;
+
 end package;
 
 package body sdrampkg is
@@ -172,6 +183,40 @@ package body sdrampkg is
 			end if;
 		end loop;
 		return retval;
+	end;
+
+	function shuffle_vector (
+		constant data : std_logic_vector;
+		constant gear : natural;
+		constant size : natural) 
+		return std_logic_vector is
+		variable val : std_logic_vector(data'range);
+	begin	
+		for i in data'length/(gear*size)-1 downto 0 loop
+			for j in gear-1 downto 0 loop
+				for l in size-1 downto 0 loop
+					val((i*gear+j)*size+l) := data(j*(data'length/gear)+i*size+l);
+				end loop;
+			end loop;
+		end loop;
+		return val;
+	end;
+
+	function unshuffle_vector (
+		constant data : std_logic_vector;
+		constant gear : natural;
+		constant size : natural) 
+		return std_logic_vector is
+		variable val : std_logic_vector(data'range);
+	begin	
+		for i in data'length/(gear*size)-1 downto 0 loop
+			for j in gear-1 downto 0 loop
+				for l in size-1 downto 0 loop
+					val(j*(data'length/gear)+i*size+l) := data((i*gear+j)*size+l);
+				end loop;
+			end loop;
+		end loop;
+		return val;
 	end;
 
 end package body;

@@ -62,13 +62,6 @@ entity sdram_sch is
 
 end;
 
-library hdl4fpga;
-use hdl4fpga.base.all;
-use hdl4fpga.sdram_param.all;
-
-library ieee;
-use ieee.std_logic_1164.all;
-
 architecture def of sdram_sch is
 	function sdram_task (
 		constant gear    : natural;

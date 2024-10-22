@@ -3,21 +3,21 @@
 # Define path to each library
 LIB_ECP5U = /opt/diamond/3.12/ispfpga/vhdl/data/ecp5u/mti/ecp5u
 LIB_STD = /opt/modeltech/linux_x86_64/../std
-LIB_IEEE = /opt/modeltech/linux_x86_64/../ieee
 LIB_UNISIM = /opt/Xilinx/14.7/ISE_DS/ISE/vhdl/mti_se/10.1b/lin64/unisim
 LIB_WORK = hdl4fpga
+LIB_IEEE = /opt/modeltech/linux_x86_64/../ieee
 LIB_HDL4FPGA = hdl4fpga
 
 # Define path to each design unit
 ECP5U__components = $(LIB_ECP5U)/components/_primary.dat
 IEEE__std_logic_arith = $(LIB_IEEE)/std_logic_arith/_primary.dat
-IEEE__math_real = $(LIB_IEEE)/math_real/_primary.dat
 IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
 IEEE__numeric_bit = $(LIB_IEEE)/numeric_bit/_primary.dat
 IEEE__std_logic_1164 = $(LIB_IEEE)/std_logic_1164/_primary.dat
 STD__textio = $(LIB_STD)/textio/_primary.dat
 IEEE__numeric_std = $(LIB_IEEE)/numeric_std/_primary.dat
 UNISIM__vcomponents = $(LIB_UNISIM)/vcomponents/_primary.dat
+IEEE__math_real = $(LIB_IEEE)/math_real/_primary.dat
 HDL4FPGA__xc_sdrphy__xilinx = $(LIB_HDL4FPGA)/xc_sdrphy/xilinx.dat
 HDL4FPGA__xc_sdrphy = $(LIB_HDL4FPGA)/xc_sdrphy/_primary.dat
 HDL4FPGA__xc_sdrdqphy__xilinx = $(LIB_HDL4FPGA)/xc_sdrdqphy/xilinx.dat
@@ -1096,6 +1096,9 @@ $(HDL4FPGA__dmacntr__def) : ../sdram/dmacntr.vhd \
 
 $(HDL4FPGA__dmactlr) \
 $(HDL4FPGA__dmactlr__def) : ../sdram/dmactlr.vhd \
+		$(HDL4FPGA__hdo) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__dmatrans) \
 		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__arbiter) \
@@ -1109,6 +1112,9 @@ $(HDL4FPGA__dmatrans) \
 $(HDL4FPGA__dmatrans__def) : ../sdram/dmatrans.vhd \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__dmacntr) \
+		$(HDL4FPGA__hdo) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -1212,6 +1218,9 @@ $(HDL4FPGA__ecp5_sdrphy) \
 $(HDL4FPGA__ecp5_sdrphy__ecp5) : ../latticesemi/ecp5/ecp5_sdrphy.vhd \
 		$(HDL4FPGA__ecp5_sdrdqphy) \
 		$(HDL4FPGA__ecp5_sdrbaphy) \
+		$(HDL4FPGA__hdo) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
@@ -2054,6 +2063,9 @@ $(HDL4FPGA__sdram_mpu__arch) : ../sdram/sdram_mpu.vhd \
 
 $(HDL4FPGA__sdram_pgm) \
 $(HDL4FPGA__sdram_pgm__registered) : ../sdram/sdram_pgm.vhd \
+		$(HDL4FPGA__hdo) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__sdrampkg) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
@@ -2065,10 +2077,10 @@ $(HDL4FPGA__sdram_sch__def) : ../sdram/sdram_sch.vhd \
 		$(IEEE__math_real) \
 		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__hdo) \
+		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
-		$(IEEE__std_logic_1164) \
-		$(HDL4FPGA__base)
+		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../sdram/sdram_sch.vhd
 
 $(HDL4FPGA__sdram_stream) \
@@ -2634,6 +2646,9 @@ $(HDL4FPGA__xc_sdrphy__xilinx) : ../xilinx/xc_sdrphy.vhd \
 		$(HDL4FPGA__xc_sdrbaphy) \
 		$(HDL4FPGA__ogbx) \
 		$(HDL4FPGA__profiles) \
+		$(HDL4FPGA__hdo) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__sdrampkg) \
 		$(UNISIM__vcomponents) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
