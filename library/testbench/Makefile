@@ -801,7 +801,9 @@ $(HDL4FPGA__adjsto__def) : ../xilinx/adjsto.vhd \
 
 $(HDL4FPGA__app_graphics) \
 $(HDL4FPGA__app_graphics__mix) : ../apps/app_graphics.vhd \
+		$(IEEE__math_real) \
 		$(HDL4FPGA__sdrampkg) \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__sdram_ctlr) \
 		$(HDL4FPGA__dmactlr) \
 		$(HDL4FPGA__dvi) \
@@ -816,8 +818,6 @@ $(HDL4FPGA__app_graphics__mix) : ../apps/app_graphics.vhd \
 		$(HDL4FPGA__txn_buffer) \
 		$(HDL4FPGA__sio_sin) \
 		$(HDL4FPGA__videopkg) \
-		$(IEEE__math_real) \
-		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -1166,13 +1166,11 @@ $(HDL4FPGA__ecp5_profiles__body) : ../apps/ecp5_profiles.vhd \
 
 $(HDL4FPGA__ecp5_sdrampll) \
 $(HDL4FPGA__ecp5_sdrampll__def) : ../apps/ecp5_sdrampll.vhd \
-		$(HDL4FPGA__sdrampkg) \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__ecp5_profiles) \
 		$(HDL4FPGA__app_profiles) \
-		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
@@ -1605,7 +1603,6 @@ $(HDL4FPGA__rom__def) : ../basic/rom.vhd \
 
 $(HDL4FPGA__scopeio) \
 $(HDL4FPGA__scopeio__beh) : ../scope/scopeio.vhd \
-		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__sdram_ctlr) \
 		$(HDL4FPGA__dmactlr) \
 		$(HDL4FPGA__so_data) \
@@ -1621,8 +1618,8 @@ $(HDL4FPGA__scopeio__beh) : ../scope/scopeio.vhd \
 		$(HDL4FPGA__scopeio_amp) \
 		$(HDL4FPGA__scopeio_rgtrvtscale) \
 		$(HDL4FPGA__sio_sin) \
-		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__base) \
