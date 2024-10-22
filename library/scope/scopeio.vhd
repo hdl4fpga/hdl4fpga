@@ -94,18 +94,18 @@ entity scopeio is
 		ctlrphy_cas   : buffer std_logic;
 		ctlrphy_we    : buffer std_logic;
 		ctlrphy_odt   : out std_logic;
-		ctlrphy_b     : out std_logic_vector(hdo(sdram_data)**".bank_size=1."-1 downto 0);
-		ctlrphy_a     : out std_logic_vector(hdo(sdram_data)**".addr_size=1."-1 downto 0);
-		ctlrphy_dqst  : out std_logic_vector(hdo(sdram_data)**".gear=1."-1 downto 0);
-		ctlrphy_dqso  : out std_logic_vector(hdo(sdram_data)**".gear=1."-1 downto 0);
-		ctlrphy_dmi   : in  std_logic_vector(hdo(sdram_data)**".gear=1."*hdo(sdram_data)**".word_size=1."/hdo(sdram_data)**".byte_size=1."-1 downto 0) := (others => '-');
-		ctlrphy_dmo   : out std_logic_vector(hdo(sdram_data)**".gear=1."*hdo(sdram_data)**".word_size=1."/hdo(sdram_data)**".byte_size=1."-1 downto 0);
-		ctlrphy_dqt   : out std_logic_vector(hdo(sdram_data)**".gear=1."-1 downto 0);
-		ctlrphy_dqi   : in  std_logic_vector(hdo(sdram_data)**".gear=1."*hdo(sdram_data)**".word_size=1."-1 downto 0) := (others => '-');
-		ctlrphy_dqo   : out std_logic_vector(hdo(sdram_data)**".gear=1."*hdo(sdram_data)**".word_size=1."-1 downto 0);
-		ctlrphy_dqv   : out std_logic_vector(hdo(sdram_data)**".gear=1."-1 downto 0);
-		ctlrphy_sto   : out std_logic_vector(hdo(sdram_data)**".gear=1."-1 downto 0);
-		ctlrphy_sti   : in  std_logic_vector(hdo(sdram_data)**".gear=1."*hdo(sdram_data)**".word_size=1."/hdo(sdram_data)**".byte_size=1."-1 downto 0) := (others => '-');
+		ctlrphy_b     : out std_logic_vector(hdo(sdram_data)**".orgz.addr.ba=1."-1 downto 0);
+		ctlrphy_a     : out std_logic_vector(hdo(sdram_data)**".orgz.addr.row=1."-1 downto 0);
+		ctlrphy_dqst  : out std_logic_vector(hdo(sdram_data)**".orgz.gear=1."-1 downto 0);
+		ctlrphy_dqso  : out std_logic_vector(hdo(sdram_data)**".orgz.gear=1."-1 downto 0);
+		ctlrphy_dmi   : in  std_logic_vector(hdo(sdram_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0) := (others => '-');
+		ctlrphy_dmo   : out std_logic_vector(hdo(sdram_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0);
+		ctlrphy_dqt   : out std_logic_vector(hdo(sdram_data)**".orgz.gear=1."-1 downto 0);
+		ctlrphy_dqi   : in  std_logic_vector(hdo(sdram_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dq=1."-1 downto 0) := (others => '-');
+		ctlrphy_dqo   : out std_logic_vector(hdo(sdram_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dq=1."-1 downto 0);
+		ctlrphy_dqv   : out std_logic_vector(hdo(sdram_data)**".orgz.gear=1."-1 downto 0);
+		ctlrphy_sto   : out std_logic_vector(hdo(sdram_data)**".orgz.gear=1."-1 downto 0);
+		ctlrphy_sti   : in  std_logic_vector(hdo(sdram_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0) := (others => '-');
 		video_clk     : in  std_logic;
 		video_shift_clk :  in std_logic := '-';
 		video_pixel   : buffer std_logic_vector;
@@ -140,13 +140,10 @@ entity scopeio is
 		3 => (ddro => 3, dmaio => 2, sodata => 1, adapter => 1)); -- NUHS3ADSP BOARD 166 MHz
 
 	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length));
-	constant gear          : natural := hdo(sdram_data)**".gear=1.";
-	constant bank_size     : natural := hdo(sdram_data)**".bank_size=1.";
-	constant addr_size     : natural := hdo(sdram_data)**".addr_size=1.";
-	constant coln_size     : natural := hdo(sdram_data)**".coln_size=1.";
+	constant gear          : natural := hdo(phy_data)**".orgz.gear=1.";
+	constant coln_size     : natural := hdo(sdram_data)**".orgz.col=1.";
 	constant coln_bits     : natural := coln_size-(unsigned_num_bits(gear)-1);
-	constant word_size     : natural := hdo(sdram_data)**".word_size=1.";
-	constant byte_size     : natural := hdo(sdram_data)**".byte_size=1.";
+	constant byte_size     : natural := ctlrphy_dqo'length/ctlrphy_dmo'length;
 	constant inputs        : natural := hdo(layout)**".inputs";
 	constant max_delay     : natural := hdo(layout)**".max_delay=16384.";
 	constant min_storage   : natural := hdo(layout)**".min_storage=256."; -- samples, storage size will be equal or larger than this
@@ -498,15 +495,15 @@ begin
 		signal ctlr_refreq    : std_logic;
 		signal ctlr_alat      : std_logic_vector(2 downto 0);
 		signal ctlr_blat      : std_logic_vector(2 downto 0);
-		signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
-		signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);
-		signal ctlr_di        : std_logic_vector(gear*word_size-1 downto 0);
-		signal ctlr_do        : std_logic_vector(gear*word_size-1 downto 0);
-		signal ctlr_do_dv     : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		signal ctlr_b         : std_logic_vector(ctlrphy_b'range);
+		signal ctlr_a         : std_logic_vector(ctlrphy_a'range);
+		signal ctlr_di        : std_logic_vector(ctlrphy_dqi'range);
+		signal ctlr_do        : std_logic_vector(ctlrphy_dqo'range);
+		signal ctlr_do_dv     : std_logic_vector(ctlrphy_dqv'range);
 		signal ctlr_di_dv     : std_logic;
 		signal ctlr_di_req    : std_logic;
 		signal ctlr_fch       : std_logic;
-		signal dmactlr_addr   : std_logic_vector(bank_size+addr_size+coln_bits-1 downto 0);
+		signal dmactlr_addr   : std_logic_vector(ctlrphy_b'length+ctlrphy_a'length+coln_bits-1 downto 0);
 		signal dmactlr_len    : std_logic_vector(dmactlr_addr'range);
 		signal base_addr      : std_logic_vector(dmactlr_addr'range) := (others => '0');
 
@@ -653,7 +650,7 @@ begin
 			signal debug_dmaio_req    : std_logic;
 			signal debug_dmaio_rdy    : std_logic;
 
-			constant word_bits    : natural := unsigned_num_bits(ctlr_di'length/byte_size)-1;
+			constant word_bits    : natural := unsigned_num_bits(ctlrphy_dmo'length)-1;
 			constant blword_bits  : natural := word_bits+unsigned_num_bits(setif(burst_length=0, gear, burst_length)/gear)-1;
 
 			signal status         : std_logic_vector(0 to 8-1);
@@ -1041,8 +1038,8 @@ begin
 			generic map (
 				burst_length => burst_length,
 				data_gear    => gear,
-				bank_size    => bank_size,
-				addr_size    => addr_size,
+				bank_size    => ctlrphy_b'length,
+				addr_size    => ctlrphy_a'length,
 				coln_size    => coln_size)
 			port map (
 				devcfg_clk   => sio_clk,
@@ -1148,7 +1145,7 @@ begin
 				ctlr_di_dv   => ctlr_di_dv,
 				ctlr_di_req  => ctlr_di_req,
 				ctlr_di      => ctlr_di,
-				ctlr_dm      => (0 to gear*word_size/byte_size-1 => '0'),
+				ctlr_dm      => (ctlrphy_dmi'range => '0'),
 				ctlr_do_dv   => ctlr_do_dv,
 				ctlr_do      => ctlr_do,
 				ctlr_refreq  => ctlr_refreq,
