@@ -141,7 +141,7 @@ entity scopeio is
 
 	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length));
 	constant gear          : natural := hdo(phy_data)**".orgz.gear=1.";
-	constant coln_size     : natural := hdo(sdram_data)**".orgz.col=1.";
+	constant coln_size     : natural := hdo(sdram_data)**".orgz.addr.col=1.";
 	constant coln_bits     : natural := coln_size-(unsigned_num_bits(gear)-1);
 	constant byte_size     : natural := ctlrphy_dqo'length/ctlrphy_dmo'length;
 	constant inputs        : natural := hdo(layout)**".inputs";
