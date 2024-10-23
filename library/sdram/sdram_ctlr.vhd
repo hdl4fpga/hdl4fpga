@@ -99,7 +99,7 @@ entity sdram_ctlr is
 		phy_sto     : out std_logic_vector(hdo(phy_data)**".orgz.gear"-1 downto 0);
 		phy_dqi     : in  std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(sdram_data)**".orgz.data.dq"-1 downto 0));
 
-	constant chiptmng_data : string := hdo(sdram_data)**".tmng";
+	constant sdramtmng_data : string := hdo(sdram_data)**".tmng";
 	constant fmly      : string         := hdo(sdram_data)**".fmly";
 	constant fmly_data : string         := hdo(families_db)**("."&fmly);
 	constant fmlytmng_data : string     := hdo(fmly_data)**(".tmng");
@@ -167,7 +167,7 @@ begin
 	sdram_init_e : entity hdl4fpga.sdram_init
 	generic map (
 		debug            => debug,
-		chiptmng_data    => chiptmng_data,
+		sdramtmng_data   => sdramtmng_data,
 		fmly             => fmly,
 		fmlytmng_data    => fmlytmng_data,
 		tcp              => tcp)
@@ -215,8 +215,8 @@ begin
 	sdram_mpu_e : entity hdl4fpga.sdram_mpu
 	generic map (
 		tcp             => tcp,
-		phy       => phy_data,
-		chiptmng_data => chiptmng_data,
+		phy_data        => phy_data,
+		sdramtmng_data  => sdramtmng_data,
 		al_tab          => al_tab,
 		bl_tab          => bl_tab,
 		cl_tab          => cl_tab,
@@ -243,27 +243,27 @@ begin
 		sdram_mpu_rwin  => sdram_mpu_rwin,
 		sdram_mpu_wwin  => sdram_mpu_wwin);
 
-	sdram_sch_e : entity hdl4fpga.sdram_sch
-	generic map (
-		fmly => fmly,
-		phy => phy_data,
-		cl_tab    => cl_tab,
-		cwl_tab   => cwl_tab)
-	port map (
-		sys_cl    => ctlr_cl,
-		sys_cwl   => sdram_cwl,
-		sys_clk   => ctlr_clk,
-		sys_rea   => sdram_mpu_rwin,
-		sys_wri   => sdram_mpu_wwin,
-
-		sdram_st  => sdram_sch_st,
-		sdram_dmo => sdram_sch_dmo,
-
-		sdram_dqsz => sdram_sch_dqsz,
-		sdram_dqs  => sdram_sch_dqs,
-		sdram_dqz  => sdram_sch_dqz,
-		sdram_odt  => sdram_sch_odt,
-		sdram_wwn  => sdram_sch_wwn);
+	-- sdram_sch_e : entity hdl4fpga.sdram_sch
+	-- generic map (
+		-- fmly    => fmly,
+		-- phy     => phy_data,
+		-- cl_tab  => cl_tab,
+		-- cwl_tab => cwl_tab)
+	-- port map (
+		-- sys_cl    => ctlr_cl,
+		-- sys_cwl   => sdram_cwl,
+		-- sys_clk   => ctlr_clk,
+		-- sys_rea   => sdram_mpu_rwin,
+		-- sys_wri   => sdram_mpu_wwin,
+-- 
+		-- sdram_st  => sdram_sch_st,
+		-- sdram_dmo => sdram_sch_dmo,
+-- 
+		-- sdram_dqsz => sdram_sch_dqsz,
+		-- sdram_dqs  => sdram_sch_dqs,
+		-- sdram_dqz  => sdram_sch_dqz,
+		-- sdram_odt  => sdram_sch_odt,
+		-- sdram_wwn  => sdram_sch_wwn);
 
 	sdram_rotval_b : block
 		function sdram_rotval (

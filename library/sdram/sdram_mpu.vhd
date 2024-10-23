@@ -69,13 +69,13 @@ entity sdram_mpu is
 		sdram_mpu_wri   : out std_logic;
 		sdram_mpu_wwin  : out std_logic);
 
-	constant tdqsz : real    := hdo(phy_data)**"tmng.DQSXL=0."*tcp; 
+	constant tdqsz : real    := hdo(phy_data)**".tmng.DQSXL=0."*tcp; 
 	constant twr   : real    := hdo(sdramtmng_data)**".tWR";
 	constant lwr   : natural := natural(ceil(twr+tdqsz)/tcp);
 	constant lrcd  : natural := natural(ceil(hdo(sdramtmng_data)**".tRCD=0."/tcp));
 	constant lrfc  : natural := natural(ceil(hdo(sdramtmng_data)**".tRFC=0."/tcp));
 	constant lrp   : natural := natural(ceil(hdo(sdramtmng_data)**".tRP=0."/tcp));
-	constant gear  : natural := hdo(phy_data)**".gear";
+	constant gear  : natural := hdo(phy_data)**".orgz.gear";
 end;
 
 architecture arch of sdram_mpu is

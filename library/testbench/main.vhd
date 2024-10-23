@@ -37,23 +37,46 @@ end;
 architecture def of main is
 begin
 	process 
-	constant chip_id   : string := "MT47H512M3";
-	constant sdram_data : string         := hdo(sdram_db)**("."&chip_id);
-	constant chiptmng_data : string := hdo(sdram_data)**".tmng";
+
+	constant phy_data : string := hdo(phy_db)**".ecp5g1";
+	constant phytmng_data : string := hdo(phy_data)**".tmng";
+
+	constant chip_id   : string := "MT48LC256MA27E";
+	constant sdram_data : string        := hdo(sdram_db)**("."&chip_id);
 	constant fmly      : string         := hdo(sdram_data)**".fmly";
 	constant fmly_data : string         := hdo(families_db)**("."&fmly);
-	-- constant fmlytmng_data : string     := hdo(fmly_data)**(".tmng");
-	-- constant phytmng_data : string := hdo(phy_data)**".tmng";
-	-- constant al_tab    : natural_vector := lattab(hdo(fmly_data)**(".al"), 8);
-	-- constant bl_tab    : natural_vector := lattab(hdo(fmly_data)**(".bl"), 8);
-	-- constant cl_tab    : natural_vector := lattab(hdo(fmly_data)**(".cl"), 8);
-	-- constant wrl_tab   : natural_vector := lattab(hdo(fmly_data)**(".wrl={}.)"), 8);
-	-- constant cwl_tab   : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 8);
 
-	-- alias tab is al_tab;
+	constant al_tab    : natural_vector := lattab(hdo(fmly_data)**(".al"), 8);
+	constant bl_tab    : natural_vector := lattab(hdo(fmly_data)**(".bl"), 8);
+	constant cl_tab    : natural_vector := lattab(hdo(fmly_data)**(".cl"), 8);
+	constant wrl_tab   : natural_vector := lattab(hdo(fmly_data)**(".wrl={}.)"), 8);
+	constant cwl_tab   : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 8);
+	constant wwnl_tab  : natural_vector := sdram_schtab (fmly, phytmng_data, "WWNL",  cl_tab, cwl_tab);
+	constant strl_tab  : natural_vector := sdram_schtab (fmly, phytmng_data, "STRL",  cl_tab, cwl_tab);
+	constant dozl_tab  : natural_vector := sdram_schtab (strl_tab, -3);
+	constant dqszl_tab : natural_vector := sdram_schtab (fmly, phytmng_data, "DQSZL", cl_tab, cwl_tab);
+	constant dqsol_tab : natural_vector := sdram_schtab (fmly, phytmng_data, "DQSL",  cl_tab, cwl_tab);
+	constant dqzl_tab  : natural_vector := sdram_schtab (fmly, phytmng_data, "DQZL",  cl_tab, cwl_tab);
 
+	constant STRL   : natural := hdo(phytmng_data)**".STRL";
+	constant DQSL   : natural := hdo(phytmng_data)**".DQSL";
+	constant DQSZL  : natural := hdo(phytmng_data)**".DQSZL";
+	constant DQZL   : natural := hdo(phytmng_data)**".DQZL";
+	constant STRXL  : natural := hdo(phytmng_data)**".STRXL";
+	constant DQSXL  : natural := hdo(phytmng_data)**".DQSXL";
+	constant DQSZXL : natural := hdo(phytmng_data)**".DQSZXL";
+	constant DQZXL  : natural := hdo(phytmng_data)**".DQZXL";
+	constant WWNL   : natural := hdo(phytmng_data)**".WWNL";
+	constant WWNXL  : natural := hdo(phytmng_data)**".WWNXL";
+	constant WIDL   : natural := hdo(phytmng_data)**".WIDL";
+
+	alias tab is wwnl_tab;
 	begin
-		report "pase";
+		report "***** " & natural'image(STRL);
+		-- for i in tab'range loop
+			-- report LF &
+			-- natural'image(tab(i)) & ", ";
+		-- end loop;
 		wait;
 	end process;
 end;
