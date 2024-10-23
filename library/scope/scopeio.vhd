@@ -96,16 +96,16 @@ entity scopeio is
 		ctlrphy_odt   : out std_logic;
 		ctlrphy_b     : out std_logic_vector(hdo(sdram_data)**".orgz.addr.ba=1."-1 downto 0);
 		ctlrphy_a     : out std_logic_vector(hdo(sdram_data)**".orgz.addr.row=1."-1 downto 0);
-		ctlrphy_dqst  : out std_logic_vector(hdo(sdram_data)**".orgz.gear=1."-1 downto 0);
-		ctlrphy_dqso  : out std_logic_vector(hdo(sdram_data)**".orgz.gear=1."-1 downto 0);
-		ctlrphy_dmi   : in  std_logic_vector(hdo(sdram_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0) := (others => '-');
-		ctlrphy_dmo   : out std_logic_vector(hdo(sdram_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0);
-		ctlrphy_dqt   : out std_logic_vector(hdo(sdram_data)**".orgz.gear=1."-1 downto 0);
-		ctlrphy_dqi   : in  std_logic_vector(hdo(sdram_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dq=1."-1 downto 0) := (others => '-');
-		ctlrphy_dqo   : out std_logic_vector(hdo(sdram_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dq=1."-1 downto 0);
-		ctlrphy_dqv   : out std_logic_vector(hdo(sdram_data)**".orgz.gear=1."-1 downto 0);
-		ctlrphy_sto   : out std_logic_vector(hdo(sdram_data)**".orgz.gear=1."-1 downto 0);
-		ctlrphy_sti   : in  std_logic_vector(hdo(sdram_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0) := (others => '-');
+		ctlrphy_dqst  : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
+		ctlrphy_dqso  : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
+		ctlrphy_dmi   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0) := (others => '-');
+		ctlrphy_dmo   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0);
+		ctlrphy_dqt   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
+		ctlrphy_dqi   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dq=1."-1 downto 0) := (others => '-');
+		ctlrphy_dqo   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dq=1."-1 downto 0);
+		ctlrphy_dqv   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
+		ctlrphy_sto   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
+		ctlrphy_sti   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0) := (others => '-');
 		video_clk     : in  std_logic;
 		video_shift_clk :  in std_logic := '-';
 		video_pixel   : buffer std_logic_vector;
@@ -1116,10 +1116,9 @@ begin
 			ctlr_di_dv <= ctlr_di_req;
 			sdrctlr_e : entity hdl4fpga.sdram_ctlr
 			generic map (
-				tcp          => sdram_tcp,
-				sdram_data         => sdram_data,
-
-				phy_data => "")
+				tcp        => sdram_tcp,
+				sdram_data => sdram_data,
+				phy_data   => phy_data)
 			port map (
 				ctlr_alat    => ctlr_alat,
 				ctlr_blat    => ctlr_blat,
