@@ -499,7 +499,7 @@ begin
 		signal ctlr_a         : std_logic_vector(ctlrphy_a'range);
 		signal ctlr_di        : std_logic_vector(ctlrphy_dqi'range);
 		signal ctlr_do        : std_logic_vector(ctlrphy_dqo'range);
-		signal ctlr_do_dv     : std_logic_vector(ctlrphy_dqv'range);
+		signal ctlr_do_dv     : std_logic_vector(ctlrphy_dmo'range);
 		signal ctlr_di_dv     : std_logic;
 		signal ctlr_di_req    : std_logic;
 		signal ctlr_fch       : std_logic;

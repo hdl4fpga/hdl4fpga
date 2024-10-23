@@ -38,20 +38,22 @@ architecture def of main is
 begin
 	process 
 	constant chip_id   : string := "MT47H512M3";
-	constant chip_data : string         := hdo(sdram_db)**("."&chip_id);
-	constant fmly_id   : string         := hdo(chip_data)**".fmly";
-	constant fmly_data : string         := hdo(families_db)**("."&fmly_id);
-	constant al_tab    : natural_vector := lattab(hdo(fmly_data)**(".al"), 8);
-	constant bl_tab    : natural_vector := lattab(hdo(fmly_data)**(".bl"), 8);
-	constant cl_tab    : natural_vector := lattab(hdo(fmly_data)**(".cl"), 8);
-	constant wrl_tab   : natural_vector := lattab(hdo(fmly_data)**(".wrl={}.)"), 8);
-	constant cwl_tab   : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 8);
-	alias tab is al_tab;
+	constant sdram_data : string         := hdo(sdram_db)**("."&chip_id);
+	constant chiptmng_data : string := hdo(sdram_data)**".tmng";
+	constant fmly      : string         := hdo(sdram_data)**".fmly";
+	constant fmly_data : string         := hdo(families_db)**("."&fmly);
+	-- constant fmlytmng_data : string     := hdo(fmly_data)**(".tmng");
+	-- constant phytmng_data : string := hdo(phy_data)**".tmng";
+	-- constant al_tab    : natural_vector := lattab(hdo(fmly_data)**(".al"), 8);
+	-- constant bl_tab    : natural_vector := lattab(hdo(fmly_data)**(".bl"), 8);
+	-- constant cl_tab    : natural_vector := lattab(hdo(fmly_data)**(".cl"), 8);
+	-- constant wrl_tab   : natural_vector := lattab(hdo(fmly_data)**(".wrl={}.)"), 8);
+	-- constant cwl_tab   : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 8);
+
+	-- alias tab is al_tab;
 
 	begin
-		for i in tab'range loop
-			report LF & natural'image(tab(i));
-		end loop;
+		report "pase";
 		wait;
 	end process;
 end;
