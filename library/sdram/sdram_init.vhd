@@ -39,9 +39,9 @@ entity sdram_init is
 		fmly  : string;
 		fmlytmng_data : string);
 	port (
-		sdram_init_bl   : in  std_logic_vector;
+		sdram_init_bl   : in  std_logic_vector(3-1 downto 0);
 		sdram_init_bt   : in  std_logic_vector;
-		sdram_init_cl   : in  std_logic_vector;
+		sdram_init_cl   : in  std_logic_vector(4-1 downto 0);
 		sdram_init_ods  : in  std_logic_vector;
 
 		sdram_init_wb   : in  std_logic_vector(1-1 downto 0) := (others => '0');
@@ -141,15 +141,16 @@ begin
 		constant zqc : std_logic_vector := "110";
 
 
-			--     +------< rst
-			--     |+-----< cke
-			--     ||+----< rdy
-			--     |||+---< wlq
-			--     ||||+--< odt
-			--     |||||
-			--     vvvvv
+			--           +------< rst
+			--           |+-----< cke
+			--           ||+----< rdy
+			--           |||+---< wlq
+			--           ||||+--< odt
+			--           |||||
+			--           vvvvv
 		constant sdram_init_data : std_logic_vector := 
 		--	1     3     6         1     3
+			nop & mrx & "10000" & "0" & PreRST_id &
 			nop & mrx & "11000" & "0" & XPR_id  &
 			pre & mrx & "11000" & "0" & RP_id   &
 			ref & mrx & "11000" & "0" & RFC_id  &
@@ -205,25 +206,47 @@ begin
 			nop & mrx & "11110" & "0" & DLL_id     &
 			nop & mrx & "11110" & "0" & REFi_id    &
 			nop & mrx & "11110" & "0" & REFi_id;
+
+		constant xxx : natural := nop'length+mrx'length+5+1+4;
+		-- signal sdram_mrdata : std_logic_vector (0 to 11*sdram_init_data'length/xxx-1);
+		signal sdram_mrdata : std_logic_vector (11-1 downto 0);
+		signal init_data : std_logic_vector(0 to nop'length+mrx'length+5+1+4-1);
+		signal step : natural range 0 to 2**4-1;
 	begin
 
+		init_data <= 
+			multiplex(sdram_init_data, step, init_data'length) when fmly="sdr"  else
+			multiplex(ddr_init_data,   step, init_data'length) when fmly="ddr"  else
+			multiplex(ddr2_init_data,  step, init_data'length) when fmly="ddr2" else
+			multiplex(ddr3_init_data,  step, init_data'length) when fmly="ddr3" else
+			(others => '-');
+
+		sdram_mrdata <= 
+			-- "-----------" &
+			"1----------"; -- &
+			-- "-----------" &
+		sdram_init_a(sdram_mrdata'range) <= sdram_mrdata;
 		process(sdram_init_clk)
 			variable cntr : natural range 0 to 2**4-1;
-			variable line : unsigned(0 to nop'length+mrx'length+6+1+4-1);
+			variable line : unsigned(0 to nop'length+mrx'length+5+1+4-1);
 			variable mask : std_logic;
 			variable mr_data : std_logic_vector(sdram_init_a'range);
 			variable dll : std_logic;
 			variable dll_ena : std_logic;
 			variable mr : std_logic_vector(0 to 1);
 		begin
+			if fmly="ddr" then
 			-- sdram 
-			-- resize(unsigned(sdram_init_cl(3-1 downto 0) "0" & sdram_init_bl(3-1 downto 0)), mr_data'length);
+				mr_data := std_logic_vector(
+					resize(unsigned(sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0)), mr_data'length));
 			-- ddr
-			mr_data := multiplex (std_logic_vector(
-				resize(unsigned(dll & "0" & sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0)), mr_data'length) &
-				resize(unsigned'(0 => dll_ena), mr_data'length)),
-				mr,
-				mr_data'length);
+			elsif fmly="ddr" then
+				mr_data := multiplex (std_logic_vector(
+					resize(unsigned(dll & "0" & sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0)), mr_data'length) &
+					resize(unsigned'(0 => dll_ena), mr_data'length)),
+					mr,
+					mr_data'length);
+			elsif fmly="ddr2" then
 			-- ddr2
 			mr_data := multiplex (std_logic_vector(
 				resize(unsigned(sdram_init_wr & dll & "0" & sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0)), mr_data'length) &
@@ -232,7 +255,7 @@ begin
 				unsigned'(mr_data'range => '0')),
 				mr,
 				mr_data'length);
-			-- ddr3
+			elsif fmly="ddr3" then
 			mr_data := multiplex (std_logic_vector(
 				resize(unsigned(sdram_init_pd   & sdram_init_wr   & dll & "0" & sdram_init_cl(4-1 downto 1) & "0" & sdram_init_cl(0) & sdram_init_bl(2-1 downto 0)), mr_data'length) &
 				resize(unsigned(sdram_init_rdqs & sdram_init_tdqs & "0" & sdram_init_rtt(2) & "0" & sdram_init_wl & sdram_init_rtt(1) & sdram_init_ods(1) & sdram_init_al(2-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & dll_ena), mr_data'length) &
@@ -240,51 +263,40 @@ begin
 				resize(unsigned(sdram_init_mpr  & sdram_init_mprrf), mr_data'length)),
 				mr,
 				mr_data'length);
+			end if;
 
 				---- A10 Precharge all
 			if rising_edge(sdram_init_clk) then
-				if sdram_init_req='1' then
-					cntr := 0;
-				elsif sdram_init_rdy='0' then
-					if timer_rdy='1' then
-						cntr := cntr + 1;
-					end if;
-				end if;
-
-				if fmly="sdr" then
-					line := unsigned(multiplex(sdram_init_data, cntr, line'length));
-				elsif fmly="ddr" then
-					line := unsigned(multiplex(ddr_init_data,   cntr, line'length));
-				elsif fmly="ddr2" then
-					line := unsigned(multiplex(ddr2_init_data,  cntr, line'length));
-				elsif fmly="ddr3" then
-					line := unsigned(multiplex(ddr3_init_data,  cntr, line'length));
-				else
-					line := (others => '-');
-				end if;
-
-				if timer_rdy='0' then
+				line := unsigned(init_data);
+				if (to_bit(timer_req) xor to_bit(timer_rdy))='1' then
 					line(nop'range) := unsigned(nop);
 				end if;
 				(sdram_init_ras, sdram_init_cas, sdram_init_we) <= std_logic_vector(line(0 to 3-1));
 				line := line sll 3;
-				(sdram_init_rst, sdram_init_rdy, sdram_init_cke, sdram_init_wlreq, sdram_init_odt) <= std_logic_vector(line(0 to 5-1));
-				line := line sll 5;
 				sdram_init_b <= std_logic_vector(resize(line(mrx'range), sdram_init_b'length));
 				line := line sll 3;
+				(sdram_init_rst, sdram_init_cke, sdram_init_rdy, sdram_init_wlreq, sdram_init_odt) <= std_logic_vector(line(0 to 5-1));
+				line := line sll 5;
 				mask := line(0);
 				line := line sll 1;
 				timer_sel <= std_logic_vector(line(0 to 4-1));
 				line := line sll 3;
 
+				if sdram_init_req='1' then
+					cntr := 0;
+					timer_req <= not to_stdulogic(to_bit(timer_rdy));
+				elsif sdram_init_rdy='0' then
+					if (to_bit(timer_req) xor to_bit(timer_rdy))='0' then
+						cntr := cntr + 1;
+						timer_req <= not to_stdulogic(to_bit(timer_rdy));
+					end if;
+				end if;
+
+				step <= cntr;
 			end if;
 		end process;
 	end block;
-
-	timer_req <=
-		'1' when sdram_init_req='1' else
-		'1' when timer_rdy='1' else
-		'0';
+	sdram_init_cs <= '0';
 
 	-----------------
 	--- SDR_TIMERs --

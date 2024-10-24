@@ -35,27 +35,30 @@ entity timer is
 		data : in  std_logic_vector;
 		clk  : in  std_logic;
 		req  : in  std_logic;
-		rdy  : out std_logic);
+		rdy  : buffer std_logic);
 end;
 
 architecture def of timer is
 
-	signal cy : std_logic_vector(slices'length downto 0) := (0 => '1', others => '0');
 	signal en : std_logic_vector(slices'length downto 0) := (0 => '1', others => '0');
 	signal q  : std_logic_vector(slices'length-1 downto 0);
 	constant slices0 : natural_vector(slices'length-1 downto 0) := slices;
+	signal cy : std_logic_vector(slices'length downto 0); 
 begin
 
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			for i in 0 to slices0'length-1 loop
-				if req='1' then
-					cy(i+1) <= '0';
-				elsif cy(slices0'length)='0' then
-					cy(i+1) <= q(i) and cy(i);
-				end if;
-			end loop;
+			if (to_bit(req) xor to_bit(rdy))='0' then
+				cy <= (0 =>'1', others => '0');
+			else
+				for i in 0 to slices0'length-1 loop
+					if cy(cy'left)='0' then
+						cy(i+1) <= q(i) and cy(i);
+					end if;
+				end loop;
+				rdy <= cy(cy'left) xnor req;
+			end if;
 		end if;
 	end process;
 	en <= cy(slices0'length downto 1) & not cy(slices0'length);
@@ -80,7 +83,7 @@ begin
 		begin
 			if rising_edge(clk) then
 				csize(slices0'length downto 1) := slices0;
-				if req='1' then
+				if (to_bit(req) xor to_bit(rdy))='0' then
 					cntr <= resize(shift_right(unsigned(data), csize(i)), size);
 				elsif en(i)='1' then
 					if cntr(0)='1' then
@@ -93,5 +96,4 @@ begin
 		end process;
 		q(i) <= cntr(0);
 	end generate;
-	rdy <= cy(slices0'length);
 end;

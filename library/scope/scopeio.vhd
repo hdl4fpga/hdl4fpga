@@ -1033,41 +1033,41 @@ begin
 			signal   dma_rdy    : std_logic_vector(dev_rdy'range);
 			signal   burst_ref  : std_logic;
 		begin
-			burst_ref <= ctlr_refreq when intrp_trans else '0';
-			dmactlr_e : entity hdl4fpga.dmactlr
-			generic map (
-				burst_length => burst_length,
-				data_gear    => gear,
-				bank_size    => ctlrphy_b'length,
-				addr_size    => ctlrphy_a'length,
-				coln_size    => coln_size)
-			port map (
-				devcfg_clk   => sio_clk,
-				devcfg_req   => dmacfg_req,
-				devcfg_rdy   => dmacfg_rdy,
-				dev_len      => dev_len,
-				dev_addr     => dev_addr,
-				dev_we       => dev_we,
-
-				dev_req      => dev_req,
-				dev_gnt      => dev_gnt,
-				dev_rdy      => dma_rdy,
-
-				ctlr_clk     => ctlr_clk,
-				ctlr_cl      => ctlr_cl,
-
-				ctlr_inirdy  => ctlr_inirdy,
-				ctlr_refreq  => burst_ref,
-
-				ctlr_frm     => ctlr_frm,
-				ctlr_trdy    => ctlr_trdy,
-				ctlr_fch     => ctlr_fch,
-				ctlr_cmd     => ctlr_cmd,
-				ctlr_rw      => ctlr_rw,
-				ctlr_alat    => ctlr_alat,
-				ctlr_blat    => ctlr_blat,
-				ctlr_b       => ctlr_b,
-				ctlr_a       => ctlr_a);
+			-- burst_ref <= ctlr_refreq when intrp_trans else '0';
+			-- dmactlr_e : entity hdl4fpga.dmactlr
+			-- generic map (
+				-- burst_length => burst_length,
+				-- data_gear    => gear,
+				-- bank_size    => ctlrphy_b'length,
+				-- addr_size    => ctlrphy_a'length,
+				-- coln_size    => coln_size)
+			-- port map (
+				-- devcfg_clk   => sio_clk,
+				-- devcfg_req   => dmacfg_req,
+				-- devcfg_rdy   => dmacfg_rdy,
+				-- dev_len      => dev_len,
+				-- dev_addr     => dev_addr,
+				-- dev_we       => dev_we,
+-- 
+				-- dev_req      => dev_req,
+				-- dev_gnt      => dev_gnt,
+				-- dev_rdy      => dma_rdy,
+-- 
+				-- ctlr_clk     => ctlr_clk,
+				-- ctlr_cl      => ctlr_cl,
+-- 
+				-- ctlr_inirdy  => ctlr_inirdy,
+				-- ctlr_refreq  => burst_ref,
+-- 
+				-- ctlr_frm     => ctlr_frm,
+				-- ctlr_trdy    => ctlr_trdy,
+				-- ctlr_fch     => ctlr_fch,
+				-- ctlr_cmd     => ctlr_cmd,
+				-- ctlr_rw      => ctlr_rw,
+				-- ctlr_alat    => ctlr_alat,
+				-- ctlr_blat    => ctlr_blat,
+				-- ctlr_b       => ctlr_b,
+				-- ctlr_a       => ctlr_a);
 
 			gntlat_e : entity hdl4fpga.latency
 			generic map (

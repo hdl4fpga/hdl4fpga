@@ -39,12 +39,13 @@ entity sdram_ctlr is
 	port (
 		ctlr_alat   : out std_logic_vector(2 downto 0);
 		ctlr_blat   : out std_logic_vector(2 downto 0);
-		ctlr_al     : in  std_logic_vector(3-1 downto 0) := (others => '0');
+		ctlr_al     : in  std_logic_vector := "0";
 		ctlr_bl     : in std_logic_vector(2 downto 0);
 		ctlr_cl     : in std_logic_vector;
 		ctlr_cwl    : in std_logic_vector(2 downto 0);
 		ctlr_wrl    : in std_logic_vector(2 downto 0);
-		ctlr_rtt    : in std_logic_vector := (0 to 0 => '-');
+		ctlr_rtt    : in std_logic_vector := "0";
+		ctlr_ods    : in std_logic_vector := "0";
 
 		ctlr_rst    : in  std_logic;
 		ctlr_clk    : in  std_logic;
@@ -157,6 +158,12 @@ architecture mix of sdram_ctlr is
 	signal sdram_mr_addr  : std_logic_vector(3-1 downto 0);
 	signal sdram_mr_data  : std_logic_vector(13-1 downto 0);
 
+	signal sdram_init_al  : std_logic_vector(3-1 downto 0);
+	signal sdram_init_bl  : std_logic_vector(3-1 downto 0);
+	signal sdram_init_cl  : std_logic_vector(4-1 downto 0);
+	signal sdram_init_ods : std_logic_vector(2-1 downto 0);
+	signal sdram_init_rtt : std_logic_vector(3-1 downto 0);
+
 begin
 
 	sdram_pgm_frm  <= ctlr_frm when phy_inirdy='1' else phy_frm;
@@ -164,6 +171,11 @@ begin
 	sdram_cwl      <= ctlr_cl  when fmly="ddr2"    else ctlr_cwl;
 	sdram_init_req <= ctlr_rst;
 
+	sdram_init_al  <= std_logic_vector(resize(unsigned(ctlr_al), sdram_init_al'length));
+	sdram_init_bl  <= std_logic_vector(resize(unsigned(ctlr_bl), sdram_init_bl'length));
+	sdram_init_cl  <= std_logic_vector(resize(unsigned(ctlr_cl), sdram_init_cl'length));
+	sdram_init_ods <= std_logic_vector(resize(unsigned(ctlr_ods), sdram_init_ods'length));
+	sdram_init_rtt <= std_logic_vector(resize(unsigned(ctlr_rtt), sdram_init_rtt'length));
 	sdram_init_e : entity hdl4fpga.sdram_init
 	generic map (
 		debug            => debug,
@@ -172,12 +184,12 @@ begin
 		fmlytmng_data    => fmlytmng_data,
 		tcp              => tcp)
 	port map (
-		sdram_init_al    => ctlr_al,
-		sdram_init_bl    => ctlr_bl,
-		sdram_init_cl    => ctlr_cl,
+		sdram_init_al    => sdram_init_al,
+		sdram_init_bl    => sdram_init_bl,
+		sdram_init_cl    => sdram_init_cl,
 		sdram_init_cwl   => sdram_cwl,
 		sdram_init_bt    => "0",
-		sdram_init_ods   => "0",
+		sdram_init_ods   => sdram_init_ods,
 		sdram_init_wr    => ctlr_wrl,
 		sdram_init_rtt   => ctlr_rtt,
 
