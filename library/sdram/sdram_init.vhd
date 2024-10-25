@@ -296,8 +296,19 @@ begin
 		end process;
 
 		process(sdram_init_clk)
-			type states is (s_init);
-			variable mask : std_logic;
+		begin
+			if rising_edge(sdram_init_clk) then
+				if sdram_init_req='0' then
+					if sdram_init_rdy='1' then
+						if (to_bit(timer_req) xor to_bit(timer_rdy))='0' then
+							sdram_refi_req <= not to_stdulogic(to_bit(sdram_refi_rdy));
+						end if;
+					end if;
+				end if;
+			end if;
+		end process;
+
+		process(sdram_init_clk)
 		begin
 			if rising_edge(sdram_init_clk) then
 				if sdram_init_req='0' then
