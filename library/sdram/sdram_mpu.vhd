@@ -198,22 +198,16 @@ architecture arch of sdram_mpu is
 		attribute fsm_encoding : string;
 		attribute fsm_encoding of sdram_state : signal is "compact";
 
-	function adjst (
-		constant tab : natural_vector;
-		constant lat : integer)
-		return natural_vector is
-		variable retval : natural_vector(tab'range);
+	function adjal_tab (
+		constant al : std_logic_vector)
+		return natural is
 	begin
-		for i in tab'range loop
-			retval(i) := tab(i)*lat;
-		end loop;
-		return retval;
+		return (gear*lrcd+2*gear)-(gear/2)*al_tab(to_integer(unsigned(al)));
 	end;
 
-	constant aladj_tab : natural_vector := adjst(al_tab, (gear*lrcd+2*gear)-(gear/2));
 begin
 
-	sdram_mpu_alat <= std_logic_vector(to_unsigned(aladj_tab(to_integer(unsigned(sdram_mpu_al))), sdram_mpu_alat'length));
+	sdram_mpu_alat <= std_logic_vector(to_unsigned(adjal_tab(sdram_mpu_al), sdram_mpu_alat'length));
 	sdram_mpu_blat <= std_logic_vector(to_unsigned(bl_tab(to_integer(unsigned(sdram_mpu_bl))), sdram_mpu_blat'length));
 	sdram_mpu_p: process (sdram_mpu_clk)
 		variable state_set : boolean;
@@ -267,7 +261,7 @@ begin
 									timer := cwl_tab(to_integer(unsigned(sdram_mpu_cwl)));
 								when id_rcd =>
 									-- timer := to_signed(lrcd-2, lat_timer'length);
-									timer := aladj_tab(to_integer(unsigned(sdram_mpu_al)));
+									timer := adjal_tab(sdram_mpu_al);
 								when id_rfc =>
 									timer := lrfc-2;
 								when id_rp =>
@@ -299,7 +293,7 @@ begin
 				sdram_mpu_wwin  <= sdram_state_tab(0).sdram_wph;
 				sdram_rdy_ena   <= '1';
 				sdram_rdy_fch   <= '1';
-				-- lat_timer     <= (others => '1');
+				lat_timer       <= -1;
 			end if;
 
 		end if;
