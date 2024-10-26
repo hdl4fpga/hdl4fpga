@@ -84,7 +84,7 @@ architecture arch of sdram_mpu is
 	constant cas  : natural := 1;
 	constant we   : natural := 2;
 
-	signal lat_timer : integer range -1 to max(natural_vector'(max(cwl_tab), max(bl_tab), max(cl_tab), lrcd, lrfc, lrp)) := -1;
+	signal lat_timer : integer range -2 to max(natural_vector'(max(cwl_tab), max(bl_tab), max(cl_tab), lrcd, lrfc, lrp)) := -1;
 
 	type cmd_names is (c_nop, c_act, c_read, c_write, c_pre, c_aut, c_dcare);
 	signal cmd_name : cmd_names;
@@ -198,17 +198,31 @@ architecture arch of sdram_mpu is
 		attribute fsm_encoding : string;
 		attribute fsm_encoding of sdram_state : signal is "compact";
 
+	function adjlat (
+		constant lat : natural)
+		return integer is
+	begin
+		return (lat+gear-1)/gear-2;
+	end;
+
+	function adjalat_tab (
+		constant al : std_logic_vector)
+		return natural is
+	begin
+		return adjlat((gear*lrcd+2*gear)-(gear/2)*al_tab(to_integer(unsigned(al))));
+	end;
+
 	function adjal_tab (
 		constant al : std_logic_vector)
 		return natural is
 	begin
-		return (gear*lrcd+2*gear)-(gear/2)*al_tab(to_integer(unsigned(al)));
+		return adjlat((gear*lrcd)-(gear/2)*al_tab(to_integer(unsigned(al))));
 	end;
 
 begin
 
-	sdram_mpu_alat <= std_logic_vector(to_unsigned(adjal_tab(sdram_mpu_al), sdram_mpu_alat'length));
-	sdram_mpu_blat <= std_logic_vector(to_unsigned(bl_tab(to_integer(unsigned(sdram_mpu_bl))), sdram_mpu_blat'length));
+	sdram_mpu_alat <= std_logic_vector(to_unsigned(adjalat_tab(sdram_mpu_al), sdram_mpu_alat'length));
+	sdram_mpu_blat <= std_logic_vector(to_unsigned(adjlat(bl_tab(to_integer(unsigned(sdram_mpu_bl)))), sdram_mpu_blat'length));
 	sdram_mpu_p: process (sdram_mpu_clk)
 		variable state_set : boolean;
 		variable lat_id :lat_id ;
@@ -224,7 +238,6 @@ begin
 
 				if lat_timer < 0 then
 					state_set     := false;
-					-- lat_timer     <= (others => '-');
 					sdram_mpu_ras   <= '-';
 					sdram_mpu_cas   <= '-';
 					sdram_mpu_we    <= '-';
@@ -254,11 +267,11 @@ begin
 								timer  := lat_timer;
 								case lat_id is
 								when id_bl =>
-									timer := bl_tab(to_integer(unsigned(sdram_mpu_bl)));
+									timer := adjlat(bl_tab(to_integer(unsigned(sdram_mpu_bl))));
 								when id_cl =>
-									timer := cl_tab(to_integer(unsigned(sdram_mpu_cl)));
+									timer := adjlat(cl_tab(to_integer(unsigned(sdram_mpu_cl))));
 								when id_cwl =>
-									timer := cwl_tab(to_integer(unsigned(sdram_mpu_cwl)));
+									timer := adjlat(cwl_tab(to_integer(unsigned(sdram_mpu_cwl))));
 								when id_rcd =>
 									-- timer := to_signed(lrcd-2, lat_timer'length);
 									timer := adjal_tab(sdram_mpu_al);
