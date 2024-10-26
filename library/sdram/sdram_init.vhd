@@ -83,18 +83,18 @@ entity sdram_init is
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of sdram_init : entity is "compact";
 
-	constant PreRST    : natural := natural(ceil(hdo(fmlytmng_data)**".tPreRST=0."/tcp));
-	constant RP        : natural := natural(ceil(hdo(sdramtmng_data)**".tRP=0."/tcp));
-	constant PstRST    : natural := natural(ceil(hdo(fmlytmng_data)**".tPstRST=0."/tcp));
+	constant PreRST    : natural := natural(ceil(real'(hdo(fmlytmng_data)**".tPreRST=0.")/tcp));
+	constant RP        : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRP=0.")/tcp));
+	constant PstRST    : natural := natural(ceil(real'(hdo(fmlytmng_data)**".tPstRST=0.")/tcp));
 	constant cDLL      : natural := hdo(fmlytmng_data)**".cDLL=0.";
-	constant RPA       : natural := natural(ceil(hdo(fmlytmng_data)**".tRPA=0."/tcp));
+	constant RPA       : natural := natural(ceil(real'(hdo(fmlytmng_data)**".tRPA=0.")/tcp));
 	constant ZQINIT    : natural := hdo(fmlytmng_data)**".ZQINIT=0.";
-	constant MRD       : natural := natural(ceil(hdo(sdramtmng_data)**".tMRD=0."/tcp));
+	constant MRD       : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tMRD=0.")/tcp));
 	constant MODu      : natural := hdo(fmlytmng_data)**".MODu=0.";
 	constant XPR       : natural := hdo(fmlytmng_data)**".XPR=0.";
 	constant WLDQSEN   : natural := hdo(fmlytmng_data)**".WLDQSEN=0.";
-	constant REFi      : natural := natural(ceil(hdo(sdramtmng_data)**".tREFI"/tcp));
-	constant RFC       : natural := natural(ceil(hdo(sdramtmng_data)**".tRFC"/tcp));
+	constant REFi      : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tREFI")/tcp));
+	constant RFC       : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRFC")/tcp));
 
 end;
 

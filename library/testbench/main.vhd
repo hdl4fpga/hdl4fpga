@@ -72,7 +72,8 @@ begin
 
 	alias tab is wwnl_tab;
 	begin
-		report "***** " & natural'image(STRL);
+		report "***** " & string'(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly")))));
+		-- report "***** " & string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly")));
 		-- for i in tab'range loop
 			-- report LF &
 			-- natural'image(tab(i)) & ", ";

@@ -69,12 +69,14 @@ entity scopeio is
 
 		ctlr_clk      : in  std_logic;
 		ctlr_rst      : in  std_logic;
-		ctlr_al       : in  std_logic_vector(3-1 downto 0) := (others => '0');
-		ctlr_bl       : in  std_logic_vector(0 to 3-1);
-		ctlr_cl       : in  std_logic_vector;
-		ctlr_cwl      : in  std_logic_vector(0 to 3-1) := "000";
-		ctlr_wrl      : in  std_logic_vector(0 to 3-1) := "101";
-		ctlr_rtt      : in  std_logic_vector(0 to 3-1) := (others => '-');
+		ctlr_al       : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.al=3."-1 downto 0) := (others => '0');
+		ctlr_bl       : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.bl=3."-1 downto 0);
+		ctlr_cl       : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.cl=3."-1 downto 0);
+		ctlr_cwl      : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.cwl=3."-1 downto 0) := (others => '0');
+		ctlr_wrl      : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.wrl=3."-1 downto 0) := (others => '0');
+		ctlr_rtt      : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.rtt=1."-1 downto 0) := (others => '0');
+		ctlr_ods      : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.ods=1."-1 downto 0) := (others => '0');
+
 		ctlr_cmd      : buffer std_logic_vector(0 to 3-1);
 		ctlr_inirdy   : buffer std_logic;
 
