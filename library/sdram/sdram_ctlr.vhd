@@ -171,11 +171,11 @@ begin
 	sdram_cwl      <= ctlr_cl  when fmly="ddr2"    else ctlr_cwl;
 	sdram_init_req <= ctlr_rst;
 
-	sdram_init_al  <= std_logic_vector(resize(unsigned(ctlr_al), sdram_init_al'length));
-	sdram_init_bl  <= std_logic_vector(resize(unsigned(ctlr_bl), sdram_init_bl'length));
-	sdram_init_cl  <= std_logic_vector(resize(unsigned(ctlr_cl), sdram_init_cl'length));
-	sdram_init_ods <= std_logic_vector(resize(unsigned(ctlr_ods), sdram_init_ods'length));
-	sdram_init_rtt <= std_logic_vector(resize(unsigned(ctlr_rtt), sdram_init_rtt'length));
+	sdram_init_al(ctlr_al'range)   <= ctlr_al;
+	sdram_init_bl(ctlr_bl'range)   <= ctlr_bl;
+	sdram_init_cl(ctlr_cl'range)   <= ctlr_cl;
+	sdram_init_ods(ctlr_ods'range) <= ctlr_ods;
+	sdram_init_rtt(ctlr_rtt'range) <= ctlr_rtt;
 	sdram_init_e : entity hdl4fpga.sdram_init
 	generic map (
 		debug            => debug,
