@@ -808,7 +808,7 @@
         </Source>
     </Implementation>
     <Implementation title="scopeio" dir="scopeio" description="scopeio" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.scopeiosdr" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.scopeio" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
@@ -1019,9 +1019,6 @@
         <Source name="../../../library/basic/fifo.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/basic/sync_transfer.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/sio/sio_flow.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -1079,16 +1076,10 @@
         <Source name="../../../library/sdram/sdram_ctlr.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdram/sdram_db.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/sdram/sdram_init.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/sdram/sdram_mpu.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/sdram/sdram_param.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/sdram/sdram_pgm.vhd" type="VHDL" type_short="VHDL">
@@ -1152,6 +1143,9 @@
             <Options lib="work"/>
         </Source>
         <Source name="../../../library/scope/scopeio.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/sdrampkg.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="apps.lpf" type="Logic Preference" type_short="LPF">

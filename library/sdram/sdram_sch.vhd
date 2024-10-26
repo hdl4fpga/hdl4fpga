@@ -32,7 +32,7 @@ use hdl4fpga.sdrampkg.all;
 
 entity sdram_sch is
 	generic (
-		phy  : string;
+		phy_data  : string;
 		fmly : string;
 
 		delay_size : natural := 64;
@@ -46,18 +46,18 @@ entity sdram_sch is
 		sys_rea    : in  std_logic;
 		sys_wri    : in  std_logic;
 
-		sdram_st   : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
-		sdram_dmo  : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
+		sdram_st   : out std_logic_vector(hdo(phy_data)**".orgz.gear"-1 downto 0);
+		sdram_dmo  : out std_logic_vector(hdo(phy_data)**".orgz.gear"-1 downto 0);
 
-		sdram_dqsz : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
-		sdram_dqs  : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
+		sdram_dqsz : out std_logic_vector(hdo(phy_data)**".orgz.gear"-1 downto 0);
+		sdram_dqs  : out std_logic_vector(hdo(phy_data)**".orgz.gear"-1 downto 0);
 
-		sdram_dqz  : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
-		sdram_wwn  : out std_logic_vector(hdo(phy)**".gear"-1 downto 0);
+		sdram_dqz  : out std_logic_vector(hdo(phy_data)**".orgz.gear"-1 downto 0);
+		sdram_wwn  : out std_logic_vector(hdo(phy_data)**".orgz.gear"-1 downto 0);
 		sdram_odt  : out std_logic_vector(1-1    downto 0));
 
 	constant gear_odt : natural := sdram_odt'length;
-	constant phytmng_data : string := hdo(phy)**".tmng";
+	constant phytmng_data : string := hdo(phy_data)**".tmng";
 	constant gear: natural := sdram_st'length;
 
 end;

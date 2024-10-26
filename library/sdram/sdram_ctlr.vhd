@@ -255,27 +255,27 @@ begin
 		sdram_mpu_rwin  => sdram_mpu_rwin,
 		sdram_mpu_wwin  => sdram_mpu_wwin);
 
-	-- sdram_sch_e : entity hdl4fpga.sdram_sch
-	-- generic map (
-		-- fmly    => fmly,
-		-- phy     => phy_data,
-		-- cl_tab  => cl_tab,
-		-- cwl_tab => cwl_tab)
-	-- port map (
-		-- sys_cl    => ctlr_cl,
-		-- sys_cwl   => sdram_cwl,
-		-- sys_clk   => ctlr_clk,
-		-- sys_rea   => sdram_mpu_rwin,
-		-- sys_wri   => sdram_mpu_wwin,
--- 
-		-- sdram_st  => sdram_sch_st,
-		-- sdram_dmo => sdram_sch_dmo,
--- 
-		-- sdram_dqsz => sdram_sch_dqsz,
-		-- sdram_dqs  => sdram_sch_dqs,
-		-- sdram_dqz  => sdram_sch_dqz,
-		-- sdram_odt  => sdram_sch_odt,
-		-- sdram_wwn  => sdram_sch_wwn);
+	sdram_sch_e : entity hdl4fpga.sdram_sch
+	generic map (
+		fmly    => fmly,
+		phy_data     => phy_data,
+		cl_tab  => cl_tab,
+		cwl_tab => cwl_tab)
+	port map (
+		sys_cl    => ctlr_cl,
+		sys_cwl   => sdram_cwl,
+		sys_clk   => ctlr_clk,
+		sys_rea   => sdram_mpu_rwin,
+		sys_wri   => sdram_mpu_wwin,
+
+		sdram_st  => sdram_sch_st,
+		sdram_dmo => sdram_sch_dmo,
+
+		sdram_dqsz => sdram_sch_dqsz,
+		sdram_dqs  => sdram_sch_dqs,
+		sdram_dqz  => sdram_sch_dqz,
+		sdram_odt  => sdram_sch_odt,
+		sdram_wwn  => sdram_sch_wwn);
 
 	sdram_rotval_b : block
 		function sdram_rotval (
@@ -288,24 +288,7 @@ begin
 			subtype word is std_logic_vector(unsigned_num_bits(line_size/word_size-1)-1 downto 0);
 			type word_vector is array(natural range <>) of word;
 	
-			subtype latword is std_logic_vector(0 to lat_val'length-1);
-			type latword_vector is array (natural range <>) of latword;
-	
 			constant algn : natural := unsigned_num_bits(word_size-1);
-	
-			function to_latwordvector(
-				constant arg : std_logic_vector)
-				return latword_vector is
-				variable aux : unsigned(0 to arg'length-1);
-				variable val : latword_vector(0 to arg'length/latword'length-1);
-			begin
-				aux := unsigned(arg);
-				for i in val'range loop
-					val(i) := std_logic_vector(aux(latword'range));
-					aux := aux sll latword'length;
-				end loop;
-				return val;
-			end;
 	
 			function select_lat (
 				constant lat_val : std_logic_vector;
@@ -321,7 +304,7 @@ begin
 			end;
 	
 			variable sel_sch : word_vector(lat_tab'range);
-			variable val     : unsigned(unsigned_num_bits(LINE_SIZE-1)-1 downto 0) := (others => '0');
+			variable val     : unsigned(unsigned_num_bits(line_size-1)-1 downto 0) := (others => '0');
 			variable disp    : natural;
 	
 		begin
