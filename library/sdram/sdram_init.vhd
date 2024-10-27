@@ -148,7 +148,7 @@ begin
 			--           ||||+--< odt
 			--           |||||
 			--           vvvvv
-		constant sdram_init_data : std_logic_vector := 
+		constant sdr_init_data : std_logic_vector := 
 		--	3     3     5         1     3
 			nop & mrx & "10000" & "0" & PreRST_id &
 			nop & mrx & "11000" & "0" & XPR_id  &
@@ -159,6 +159,7 @@ begin
 			nop & mrx & "11110" & "0" & REFi_id;
 	
 		constant ddr_init_data : std_logic_vector := 
+			nop & mrx & "10000" & "0" & PreRST_id &
 			nop & mrx & "11000" & "0" & XPR_id  &
 			pre & mrx & "11000" & "0" & RP_id   &
 			mrs & mr1 & "11000" & "0" & MRD_id  &
@@ -168,7 +169,6 @@ begin
 			ref & mrx & "11000" & "0" & RFC_id  &
 			mrs & mr0 & "11001" & "0" & MRD_id  &
 			nop & mrx & "11010" & "0" & DLL_id  &
-			nop & mrx & "11110" & "0" & REFi_id &
 			nop & mrx & "11110" & "0" & REFi_id;
 	
 		constant ddr2_init_data : std_logic_vector := 
@@ -207,8 +207,8 @@ begin
 			nop & mrx & "11110" & "0" & REFi_id;
 
 		constant xxx : natural := nop'length+mrx'length+5+1+4;
-		-- signal sdram_mrdata : std_logic_vector (0 to 11*sdram_init_data'length/xxx-1);
-		signal sdram_mrdata : std_logic_vector (11-1 downto 0);
+		signal sdr_mrdata : std_logic_vector (11-1 downto 0);
+		signal ddr_mrdata : std_logic_vector (11-1 downto 0);
 		signal init_data : std_logic_vector(0 to nop'length+mrx'length+5+1+4-1);
 		signal step : natural range 0 to 2**4-1;
 		signal latch : std_logic;
@@ -251,23 +251,38 @@ begin
 			-- nop & mrx & "11110" & "0" & REFi_id;
 	
 
-		sdram_mrdata <= multiplex(
+		sdr_mrdata <= multiplex(
 			"0----------" & -- PreRst 
 			"0----------" & -- nop 
-			"1----------" & -- pre 
+			"1----------" & -- pre all
 			"0----------" & -- ref 
 			"0----------" & -- ref 
 			"0000" & sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0)&
 			"0----------", -- REFi 
 			step,
-			sdram_mrdata'length);
+			sdr_mrdata'length);
+
+		ddr_mrdata <= multiplex(
+			"0----------" & -- PreRst 
+			"0----------" & -- nop 
+			"1----------" & -- pre all
+			"00000000000" & -- LMR Extended 
+			"0010" & sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0) & -- LM R0 RESET DLL
+			"1----------" & -- pre all
+			"0----------" & -- REFi 
+			"0----------" & -- REFi 
+			"0000" & sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0) & -- LMR0
+			"0----------" & -- wait DLL
+			"0----------",  -- REFi
+			step,
+			ddr_mrdata'length);
 
 
 		init_data <= 
-			multiplex(sdram_init_data, step, init_data'length) when fmly="sdr"  else
-			multiplex(ddr_init_data,   step, init_data'length) when fmly="ddr"  else
-			multiplex(ddr2_init_data,  step, init_data'length) when fmly="ddr2" else
-			multiplex(ddr3_init_data,  step, init_data'length) when fmly="ddr3" else
+			multiplex(sdr_init_data,  step, init_data'length) when fmly="sdr"  else
+			multiplex(ddr_init_data,  step, init_data'length) when fmly="ddr"  else
+			multiplex(ddr2_init_data, step, init_data'length) when fmly="ddr2" else
+			multiplex(ddr3_init_data, step, init_data'length) when fmly="ddr3" else
 			(others => '-');
 
 		timer_sel <= init_data((nop'length+mrx'length+5+1) to (nop'length+mrx'length+5+1)+4-1);
@@ -288,7 +303,12 @@ begin
     	            line := line sll 1;
     	            -- timer_sel <= std_logic_vector(line(0 to 4-1));
     	            line := line sll 3;
-					sdram_init_a(sdram_mrdata'range) <= sdram_mrdata;
+					sdram_init_a <= (sdram_init_a'range => '0');
+					if fmly="sdr" then
+						sdram_init_a(sdr_mrdata'range) <= sdr_mrdata;
+					elsif fmly="ddr" then
+						sdram_init_a(sdr_mrdata'range) <= ddr_mrdata;
+					end if;
 				else
 					(sdram_init_ras, sdram_init_cas, sdram_init_we) <= nop;
 				end if;
