@@ -71,8 +71,8 @@ package sdrampkg is
 
 	constant phy_db : string := compact("[" &
 		"ecp5g1 : { orgz : { gear : 1}, tmng : {STRL :  1, DQSL :  0, DQSZL :  0, DQZL :  0, WWNL :  0, STRXL : 0, DQSZXL : 0, DQSXL : 0, DQZXL : 0, WWNXL : 0, WIDL : 1}}," &
-		"ecp3g4 : { orgz : { gear : 4}, tmng : {STRL :  0, DQSL :  0, DQSZL :  0, DQZL :  2, WWNL :  2, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2, WIDL : 4}}," &
 		"xc3sg2 : { orgz : { gear : 2}, tmng : {STRL : -2, DQSL : -2, DQSZL : -2, DQZL : -2, WWNL : -2, STRXL : 0, DQSZXL : 4, DQSXL : 0, DQZXL : 0, WWNXL : 0, WIDL : 2}}," &
+		"ecp3g4 : { orgz : { gear : 4}, tmng : {STRL :  0, DQSL :  0, DQSZL :  0, DQZL :  2, WWNL :  2, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2, WIDL : 4}}," &
 		"xc5vg4 : { orgz : { gear : 4}, tmng : {STRL :  9, DQSL :  2, DQSZL :  2, DQZL : -1, WWNL : -3, STRXL : 0, DQSZXL : 1, DQSXL : 0, DQZXL : 0, WWNXL : 0, WIDL : 4}}," &
 		"xc7vg4 : { orgz : { gear : 4}, tmng : {STRL :  9, DQSL :  1, DQSZL :  1, DQZL : -1, WWNL : -1, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 0, WIDL : 4}}," &
 		"ulx4ld_ecp5g4     : { orgz : { gear : 4}, tmng : { STRL : 0, DQSL : 4*1-2+2, DQSZL : 4*1+0+2, DQZL : 4*1+0+2, WWNL : 4*1-4+2, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2, WIDL : 4}}," &
@@ -144,23 +144,39 @@ package body sdrampkg is
 		variable lat    : integer := hdo(phytmng_data)**("."&latency);
 		variable clval  : natural_vector(cl_tab'range);
 		variable cwlval : natural_vector(cwl_tab'range);
+		variable temp : integer;
 
 	begin
 		if latency="WWNL" then
 			for i in cwl_tab'range loop
-				cwlval(i) := cwl_tab(i) + lat;
+				temp := cwl_tab(i) + lat;
+				if temp < 0 then
+					cwlval(i) := 0;
+				else
+					cwlval(i) := temp;
+				end if;
 			end loop;
 			return cwlval;
 		elsif latency="STRL" then
 			for i in cl_tab'range loop
-				clval(i) := cl_tab(i) + lat;
+				temp := cl_tab(i) + lat;
+				if temp <0 then
+					clval(i) := 0;
+				else
+					clval(i) := temp;
+				end if;
 			end loop;
 			return clval;
 		elsif latency="DQSZL" or latency="DQSL" or latency="DQZL" then
 			for i in cwl_tab'range loop
-				cwlval(i) := cwl_tab(i)+lat;
+				temp := cwl_tab(i)+lat;
 				if fmly="ddr2" then
-					cwlval(i) := cwl_tab(i)-2;
+					temp := temp-2;
+				end if;
+				if temp < 0 then
+					cwlval(i) := 0;
+				else
+					cwlval(i) := temp;
 				end if;
 			end loop;
 			return cwlval;
@@ -173,14 +189,16 @@ package body sdrampkg is
 		constant latencies : natural_vector;
 		constant latency   : integer)
 		return natural_vector is
+		variable temp   : integer;
 		variable retval : natural_vector(latencies'range);
 	begin
 		retval := latencies;
 		for i in latencies'range loop
-			if retval(i)+latency < 0  then
+			temp := retval(i)+latency;
+			if temp < 0  then
 				retval(i) := 0;
 			else
-				retval(i) := retval(i) + latency;
+				retval(i) := temp;
 			end if;
 		end loop;
 		return retval;

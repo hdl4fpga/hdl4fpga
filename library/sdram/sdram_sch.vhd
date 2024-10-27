@@ -148,27 +148,27 @@ architecture def of sdram_sch is
 		return select_lat(lat_val, sel_sch);
 	end;
 
-	constant strl_tab  : natural_vector  := sdram_schtab (fmly, phytmng_data, "STRL",  cl_tab, cwl_tab);
-	constant dozl_tab  : natural_vector  := sdram_schtab (strl_tab, -3);
-	constant dqszl_tab : natural_vector  := sdram_schtab (fmly, phytmng_data, "DQSZL", cl_tab, cwl_tab);
-	constant dqsol_tab : natural_vector  := sdram_schtab (fmly, phytmng_data, "DQSL",  cl_tab, cwl_tab);
-	constant dqzl_tab  : natural_vector  := sdram_schtab (fmly, phytmng_data, "DQZL",  cl_tab, cwl_tab);
-	constant wwnl_tab  : natural_vector  := sdram_schtab (fmly, phytmng_data, "WWNL",  cl_tab, cwl_tab);
+	constant strl_tab  : natural_vector := sdram_schtab (fmly, phytmng_data, "STRL",  cl_tab, cwl_tab);
+	constant dozl_tab  : natural_vector := sdram_schtab (strl_tab, -3);
+	constant dqszl_tab : natural_vector := sdram_schtab (fmly, phytmng_data, "DQSZL", cl_tab, cwl_tab);
+	constant dqsol_tab : natural_vector := sdram_schtab (fmly, phytmng_data, "DQSL",  cl_tab, cwl_tab);
+	constant dqzl_tab  : natural_vector := sdram_schtab (fmly, phytmng_data, "DQZL",  cl_tab, cwl_tab);
+	constant wwnl_tab  : natural_vector := sdram_schtab (fmly, phytmng_data, "WWNL",  cl_tab, cwl_tab);
 
 	signal wri_sr      : std_logic_vector(0 to delay_size-1);
 	signal rea_sr      : std_logic_vector(0 to delay_size-1);
 
-	constant STRL   : natural := hdo(phytmng_data)**".STRL";
-	constant DQSL   : natural := hdo(phytmng_data)**".DQSL";
-	constant DQSZL  : natural := hdo(phytmng_data)**".DQSZL";
-	constant DQZL   : natural := hdo(phytmng_data)**".DQZL";
-	constant STRXL  : natural := hdo(phytmng_data)**".STRXL";
-	constant DQSXL  : natural := hdo(phytmng_data)**".DQSXL";
-	constant DQSZXL : natural := hdo(phytmng_data)**".DQSZXL";
-	constant DQZXL  : natural := hdo(phytmng_data)**".DQZXL";
-	constant WWNL   : natural := hdo(phytmng_data)**".WWNL";
-	constant WWNXL  : natural := hdo(phytmng_data)**".WWNXL";
-	constant WIDL   : natural := hdo(phytmng_data)**".WIDL";
+	constant STRL   : integer := hdo(phytmng_data)**".STRL";
+	constant DQSL   : integer := hdo(phytmng_data)**".DQSL";
+	constant DQSZL  : integer := hdo(phytmng_data)**".DQSZL";
+	constant DQZL   : integer := hdo(phytmng_data)**".DQZL";
+	constant STRXL  : integer := hdo(phytmng_data)**".STRXL";
+	constant DQSXL  : integer := hdo(phytmng_data)**".DQSXL";
+	constant DQSZXL : integer := hdo(phytmng_data)**".DQSZXL";
+	constant DQZXL  : integer := hdo(phytmng_data)**".DQZXL";
+	constant WWNL   : integer := hdo(phytmng_data)**".WWNL";
+	constant WWNXL  : integer := hdo(phytmng_data)**".WWNXL";
+	constant WIDL   : integer := hdo(phytmng_data)**".WIDL";
 
 begin
 	
@@ -182,6 +182,18 @@ begin
 		wri_sr(0) <= sys_wri;
 	end process;
 
+	process
+	begin
+		-- for i in strl_tab'range loop
+			-- report LF &
+			-- "***** " & integer'image(strl_tab(i));
+		-- end loop;
+		report LF & "***** " & integer'image(strl_tab(to_integer(unsigned(sys_cl))));
+		assert false
+		report "end"
+		severity failure;
+		wait;
+	end process;
 	sdram_st <= sdram_task (
 		gear       => gear,
 		lat_val    => sys_cl,
@@ -190,45 +202,45 @@ begin
 		lat_wid    => widl,
 		lat_sch    => rea_sr);
 
-	sdram_dmo <= sdram_task (
-		gear       => gear,
-		lat_val    => sys_cl,
-		lat_tab    => dozl_tab, 
-		lat_ext    => 0,
-		lat_wid    => widl,
-		lat_sch    => rea_sr);
+	-- sdram_dmo <= sdram_task (
+		-- gear       => gear,
+		-- lat_val    => sys_cl,
+		-- lat_tab    => dozl_tab, 
+		-- lat_ext    => 0,
+		-- lat_wid    => widl,
+		-- lat_sch    => rea_sr);
 
-	sdram_dqsz <= sdram_task (
-		gear       => gear,
-		lat_val    => sys_cwl,
-		lat_tab    => dqszl_tab,
-		lat_ext    => dqszxl,
-		lat_wid    => widl,
-		lat_sch    => wri_sr);
+	-- sdram_dqsz <= sdram_task (
+		-- gear       => gear,
+		-- lat_val    => sys_cwl,
+		-- lat_tab    => dqszl_tab,
+		-- lat_ext    => dqszxl,
+		-- lat_wid    => widl,
+		-- lat_sch    => wri_sr);
 
-	sdram_dqs <= sdram_task (
-		gear       => gear,
-		lat_val    => sys_cwl,
-		lat_tab    => dqsol_tab,
-		lat_ext    => dqsxl,
-		lat_wid    => widl,
-		lat_sch    => wri_sr);
+	-- sdram_dqs <= sdram_task (
+		-- gear       => gear,
+		-- lat_val    => sys_cwl,
+		-- lat_tab    => dqsol_tab,
+		-- lat_ext    => dqsxl,
+		-- lat_wid    => widl,
+		-- lat_sch    => wri_sr);
 
-	sdram_dqz <= sdram_task (
-		gear       => gear,
-		lat_val    => sys_cwl,
-		lat_tab    => dqzl_tab,
-		lat_ext    => dqzxl,
-		lat_wid    => widl,
-		lat_sch    => wri_sr);
+	-- sdram_dqz <= sdram_task (
+		-- gear       => gear,
+		-- lat_val    => sys_cwl,
+		-- lat_tab    => dqzl_tab,
+		-- lat_ext    => dqzxl,
+		-- lat_wid    => widl,
+		-- lat_sch    => wri_sr);
 
-	sdram_wwn <= sdram_task (
-		gear       => gear,
-		lat_val    => sys_cwl,
-		lat_tab    => wwnl_tab,
-		lat_ext    => wwnxl,
-		lat_wid    => widl,
-		lat_sch    => wri_sr);
+	-- sdram_wwn <= sdram_task (
+		-- gear       => gear,
+		-- lat_val    => sys_cwl,
+		-- lat_tab    => wwnl_tab,
+		-- lat_ext    => wwnxl,
+		-- lat_wid    => widl,
+		-- lat_sch    => wri_sr);
 
 	sdram_odt <= sdram_task (
 		gear       => gear_odt,
