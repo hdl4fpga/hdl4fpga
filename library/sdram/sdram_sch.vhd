@@ -197,7 +197,7 @@ begin
 		lat_ext    => 0,
 		lat_wid    => widl,
 		lat_sch    => rea_sr);
--- 
+
 	sdram_dqsz <= sdram_task (
 		gear       => gear,
 		lat_val    => sys_cwl,
@@ -205,7 +205,7 @@ begin
 		lat_ext    => dqszxl,
 		lat_wid    => widl,
 		lat_sch    => wri_sr);
--- 
+
 	sdram_dqs <= sdram_task (
 		gear       => gear,
 		lat_val    => sys_cwl,
@@ -213,7 +213,7 @@ begin
 		lat_ext    => dqsxl,
 		lat_wid    => widl,
 		lat_sch    => wri_sr);
--- 
+
 	sdram_dqz <= sdram_task (
 		gear       => gear,
 		lat_val    => sys_cwl,
@@ -221,7 +221,7 @@ begin
 		lat_ext    => dqzxl,
 		lat_wid    => widl,
 		lat_sch    => wri_sr);
--- 
+
 	sdram_wwn <= sdram_task (
 		gear       => gear,
 		lat_val    => sys_cwl,
