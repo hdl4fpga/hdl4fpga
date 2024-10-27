@@ -182,18 +182,6 @@ begin
 		wri_sr(0) <= sys_wri;
 	end process;
 
-	process
-	begin
-		-- for i in strl_tab'range loop
-			-- report LF &
-			-- "***** " & integer'image(strl_tab(i));
-		-- end loop;
-		report LF & "***** " & integer'image(strl_tab(to_integer(unsigned(sys_cl))));
-		assert false
-		report "end"
-		severity failure;
-		wait;
-	end process;
 	sdram_st <= sdram_task (
 		gear       => gear,
 		lat_val    => sys_cl,
@@ -202,45 +190,45 @@ begin
 		lat_wid    => widl,
 		lat_sch    => rea_sr);
 
-	-- sdram_dmo <= sdram_task (
-		-- gear       => gear,
-		-- lat_val    => sys_cl,
-		-- lat_tab    => dozl_tab, 
-		-- lat_ext    => 0,
-		-- lat_wid    => widl,
-		-- lat_sch    => rea_sr);
-
-	-- sdram_dqsz <= sdram_task (
-		-- gear       => gear,
-		-- lat_val    => sys_cwl,
-		-- lat_tab    => dqszl_tab,
-		-- lat_ext    => dqszxl,
-		-- lat_wid    => widl,
-		-- lat_sch    => wri_sr);
-
-	-- sdram_dqs <= sdram_task (
-		-- gear       => gear,
-		-- lat_val    => sys_cwl,
-		-- lat_tab    => dqsol_tab,
-		-- lat_ext    => dqsxl,
-		-- lat_wid    => widl,
-		-- lat_sch    => wri_sr);
-
-	-- sdram_dqz <= sdram_task (
-		-- gear       => gear,
-		-- lat_val    => sys_cwl,
-		-- lat_tab    => dqzl_tab,
-		-- lat_ext    => dqzxl,
-		-- lat_wid    => widl,
-		-- lat_sch    => wri_sr);
-
-	-- sdram_wwn <= sdram_task (
-		-- gear       => gear,
-		-- lat_val    => sys_cwl,
-		-- lat_tab    => wwnl_tab,
-		-- lat_ext    => wwnxl,
-		-- lat_wid    => widl,
-		-- lat_sch    => wri_sr);
+	sdram_dmo <= sdram_task (
+		gear       => gear,
+		lat_val    => sys_cl,
+		lat_tab    => dozl_tab, 
+		lat_ext    => 0,
+		lat_wid    => widl,
+		lat_sch    => rea_sr);
+-- 
+	sdram_dqsz <= sdram_task (
+		gear       => gear,
+		lat_val    => sys_cwl,
+		lat_tab    => dqszl_tab,
+		lat_ext    => dqszxl,
+		lat_wid    => widl,
+		lat_sch    => wri_sr);
+-- 
+	sdram_dqs <= sdram_task (
+		gear       => gear,
+		lat_val    => sys_cwl,
+		lat_tab    => dqsol_tab,
+		lat_ext    => dqsxl,
+		lat_wid    => widl,
+		lat_sch    => wri_sr);
+-- 
+	sdram_dqz <= sdram_task (
+		gear       => gear,
+		lat_val    => sys_cwl,
+		lat_tab    => dqzl_tab,
+		lat_ext    => dqzxl,
+		lat_wid    => widl,
+		lat_sch    => wri_sr);
+-- 
+	sdram_wwn <= sdram_task (
+		gear       => gear,
+		lat_val    => sys_cwl,
+		lat_tab    => wwnl_tab,
+		lat_ext    => wwnxl,
+		lat_wid    => widl,
+		lat_sch    => wri_sr);
 
 	sdram_odt <= sdram_task (
 		gear       => gear_odt,

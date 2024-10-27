@@ -284,7 +284,22 @@ configuration nuhs3adsp_scopeio_structure_md of testbench is
 		for all: nuhs3adsp
 			use entity work.nuhs3adsp(structure);
 		end for;
-		
+		for all: ddr_model
+			use entity micron.ddr_model
+			port map (
+				Clk   => clk_p,
+				Clk_n => clk_n,
+				Cke   => cke,
+				Cs_n  => cs_n,
+				Ras_n => ras_n,
+				Cas_n => cas_n,
+				We_n  => we_n,
+				Ba    => ba,
+				Addr  => addr,
+				Dm    => dm,
+				Dq    => dq,
+				Dqs   => dqs);
+		end for;
 	end for;
 end;
 
@@ -295,6 +310,21 @@ configuration nuhs3adsp_scopeio_md of testbench is
 		for all: nuhs3adsp
 			use entity work.nuhs3adsp(scopeio);
 		end for;
-
+		for all : ddr_model
+    		use entity micron.ddr_model
+    		port map (
+    			Clk   => clk_p,
+    			Clk_n => clk_n,
+    			Cke   => cke,
+    			Cs_n  => cs_n,
+    			Ras_n => ras_n,
+    			Cas_n => cas_n,
+    			We_n  => we_n,
+    			Ba    => ba,
+    			Addr  => addr,
+    			Dm    => dm,
+    			Dq    => dq,
+    			Dqs   => dqs);
+		end for;
 	end for;
 end;
