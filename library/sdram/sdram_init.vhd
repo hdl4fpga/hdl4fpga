@@ -216,15 +216,6 @@ begin
 		
 	begin
 
-			-- if fmly="ddr" then
-				-- mr_data := std_logic_vector(
-					-- resize(unsigned(sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0)), mr_data'length));
-			-- elsif fmly="ddr" then
-				-- mr_data := multiplex (std_logic_vector(
-					-- resize(unsigned(dll & "0" & sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0)), mr_data'length) &
-					-- resize(unsigned'(0 => dll_ena), mr_data'length)),
-					-- mr,
-					-- mr_data'length);
 			-- elsif fmly="ddr2" then
 			-- mr_data := multiplex (std_logic_vector(
 				-- resize(unsigned(sdram_init_wr & dll & "0" & sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0)), mr_data'length) &
@@ -252,21 +243,21 @@ begin
 	
 
 		sdr_mrdata <= multiplex(
-			"0----------" & -- PreRst 
-			"0----------" & -- nop 
-			"1----------" & -- pre all
-			"0----------" & -- ref 
-			"0----------" & -- ref 
-			"0000" & sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0)&
+			"0----------" & -- Pre RESET 
+			"0----------" & -- NOP 
+			"1----------" & -- Precharge all
+			"0----------" & -- Ref 
+			"0----------" & -- Ref 
+			"0000" & sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0) & LM R0
 			"0----------", -- REFi 
 			step,
 			sdr_mrdata'length);
 
 		ddr_mrdata <= multiplex(
-			"0----------" & -- PreRst 
-			"0----------" & -- nop 
-			"1----------" & -- pre all
-			"00000000000" & -- LMR Extended 
+			"0----------" & -- Pre RESET 
+			"0----------" & -- NOP 
+			"1----------" & -- Precharge all
+			"00000000000" & -- LM Extended Register
 			"0010" & sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0) & -- LM R0 RESET DLL
 			"1----------" & -- pre all
 			"0----------" & -- REFi 
