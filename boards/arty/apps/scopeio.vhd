@@ -758,6 +758,7 @@ begin
 		ctlr_cl      => sdram_params.cl,
 		ctlr_cwl     => sdram_params.cwl,
 		ctlr_rtt     => "001",
+		ctlr_ods     => "00",
 		ctlr_cmd     => ctlrphy_cmd,
 
 		ctlrphy_rst  => ctlrphy_rst(0),

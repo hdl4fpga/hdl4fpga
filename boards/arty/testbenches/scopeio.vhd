@@ -218,6 +218,24 @@ begin
 		ddr3_odt   => odt);
 
 	
+	mt_u : ddr3_model
+	port map (
+		rst_n   => rst_n,
+		Ck      => ddr_clk_p,
+		Ck_n    => ddr_clk_n,
+		Cke     => cke,
+		Cs_n    => cs_n,
+		Ras_n   => ras_n,
+		Cas_n   => cas_n,
+		We_n    => we_n,
+		Ba      => ba,
+		Addr    => addr,
+		Dm_tdqs => dm,
+		Dq      => dq,
+		Dqs     => dqs_p,
+		Dqs_n   => dqs_n,
+		tdqs_n  => tdqs_n,
+		Odt     => odt);
 end;
 
 library micron;

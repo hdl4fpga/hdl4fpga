@@ -61,13 +61,13 @@ package sdrampkg is
 		"    wrl  : { '001' : 4, '010' : 6, '011' :  8, '100' : 10, '101' : 12, '110' : 14, '111' : 16}," &
 		"    tmng : { tPreRST : 200.0e-6, cDLL : 200, MRD : 2}}" &
 		"ddr3 : {" &
-		"    length : {cl : 4, rtt : 3}," &
+		"    length : {cl : 4, rtt : 3, ods : 2}," &
 		"    al   : { '000' :  0, '001' :  2, '010' :  4}," &
 		"    bl   : { '000' :  8, '001' :  8, '010' :  8}," &
 		"    cl   : { '001' : 10, '010' : 12, '011' : 14, '100' : 16, '101' : 18, '110' : 20, '111' : 22}," &
 		"    wrl  : { '001' : 10, '010' : 12, '011' : 14, '100' : 16, '101' : 20, '110' : 24}," &
 		"    cwl  : { '000' : 10, '001' : 12, '010' : 14, '011' : 16}" &
-		"    tmng : { tPreRST : 10.0e-6, tPstRST : 20.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 5, WLDQSEN : 25}}}");
+		"    tmng : { tPreRST : 10.0e-6, tPstRST : 20.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 91, WLDQSEN : 25}}}");
 		-- "    tmng : { tPreRST : 200.0e-6, tPstRST : 500.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 5, WLDQSEN : 25}}}");
 
 	constant phy_db : string := compact("[" &
