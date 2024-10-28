@@ -290,8 +290,10 @@ architecture scopeio of arty is
 
 	constant bufiog     : boolean  := true;
 	signal tp_sdrphy      : std_logic_vector(1 to 32);
+	signal sys_rst : std_logic;
 begin
 
+	sys_rst <= '0';
 	clkin_ibufg : ibufg
 	port map (
 		I => gclk100,
@@ -358,15 +360,105 @@ begin
 			locked   => input_lck);
 	end block;
    
-		sio_clk <= eth_tx_clk;
-		process (sys_clk)
-			variable div : unsigned(0 to 1) := (others => '0');
+	sdrampll_b : block
+
+		signal ddr_clk0_mmce2    : std_logic;
+		signal ddr_clk90_mmce2   : std_logic;
+		signal ddr_clk0x2_mmce2  : std_logic;
+		signal ddr_clk90x2_mmce2 : std_logic;
+		signal clkfb             : std_logic;
+		signal locked            : std_logic;
+
+	begin
+
+		pll_i : mmcme2_base
+		generic map (
+			divclk_divide    => sdram_params.pll.divclk_divide,
+			clkfbout_mult_f  => 2.0*sdram_params.pll.clkfbout_mult_f,
+			clkin1_period    => gclk100_per*1.0e9,
+			clkout0_divide_f => real(gear/2),
+			clkout1_divide   => gear/2,
+			clkout1_phase    => 90.0+180.0,
+			clkout2_divide   => gear,
+			clkout3_divide   => gear,
+			clkout3_phase    => 90.0/real((gear/2))+270.0)
+		port map (
+			pwrdwn           => '0',
+			rst              => '0',
+			clkin1           => gclk100,
+			clkfbin          => clkfb,
+			clkfbout         => clkfb,
+			clkout0          => ddr_clk0x2_mmce2,
+			clkout1          => ddr_clk90x2_mmce2,
+			clkout2          => ddr_clk0_mmce2,
+			clkout3          => ddr_clk90_mmce2,
+			locked           => locked);
+
+		bufio_g : if bufiog generate
+    		ddr_clk0x2_bufg : bufio
+    		port map (
+    			i => ddr_clk0x2_mmce2,
+    			o => ddr_clk0x2);
+
+    		ddr_clk90x2_bufg : bufio
+    		port map (
+    			i => ddr_clk90x2_mmce2,
+    			o => ddr_clk90x2);
+		end generate;
+
+		bufg_g : if not bufiog generate
+    		ddr_clk0x2_bufg : bufg
+    		port map (
+    			i => ddr_clk0x2_mmce2,
+    			o => ddr_clk0x2);
+
+    		ddr_clk90x2_bufg : bufg
+    		port map (
+    			i => ddr_clk90x2_mmce2,
+    			o => ddr_clk90x2);
+		end generate;
+
+		ddr_clk0_bufg : bufg
+		port map (
+			i => ddr_clk0_mmce2,
+			o => ddr_clk0);
+
+		ddr_clk90_bufg : bufg
+		port map (
+			i => ddr_clk90_mmce2,
+			o => ddr_clk90);
+
+		sdrsys_rst <= not locked or sys_rst;
+
+		process(sdrsys_rst, ddr_clk0)
 		begin
-			if rising_edge(sys_clk) then
-				div := div + 1;
-				eth_ref_clk <= div(0);
+			if sdrsys_rst='1' then
+				sdrphy_rst0 <= '1';
+			elsif rising_edge(ddr_clk0) then
+				sdrphy_rst0 <= sdrsys_rst;
 			end if;
 		end process;
+
+		process(sdrsys_rst, ddr_clk90)
+		begin
+			if sdrsys_rst='1' then
+				sdrphy_rst90 <= '1';
+			elsif rising_edge(ddr_clk90) then
+				sdrphy_rst90 <= sdrsys_rst;
+			end if;
+		end process;
+
+	end block;
+
+	sio_clk <= eth_tx_clk;
+	process (sys_clk)
+		variable div : unsigned(0 to 1) := (others => '0');
+	begin
+		if rising_edge(sys_clk) then
+			div := div + 1;
+			eth_ref_clk <= div(0);
+		end if;
+	end process;
 
 	ipoe_e : if io_link=io_ipoe generate
 		signal mii_txd    : std_logic_vector(eth_txd'range);
