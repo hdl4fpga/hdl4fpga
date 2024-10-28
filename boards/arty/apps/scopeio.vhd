@@ -1163,8 +1163,4 @@ begin
 	ddr3_dq    <= (others => 'Z');
 	ddr3_odt   <= 'Z';
 
-	-- ddr_ck_i   : obufds  generic map ( iostandard => "DIFF_SSTL135") port map ( i => '0', o => ddr3_clk_p, ob => ddr3_clk_n);
-	-- ddr_dqs0_i : iobufds generic map ( iostandard => "DIFF_SSTL135") port map ( t => '1', i => '0', io => ddr3_dqs_p(0), iob => ddr3_dqs_n(0));
-	-- ddr_dqs1_i : iobufds generic map ( iostandard => "DIFF_SSTL135") port map ( t => '1', i => '0', io => ddr3_dqs_p(1), iob => ddr3_dqs_n(1));
-
 end;
