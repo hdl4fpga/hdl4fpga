@@ -904,6 +904,32 @@ begin
 	ddr3_odt <= ddr_odt(0);
 	ddr3_dm <= (others => '0');
 
+	ddrio_b : block
+	begin
+    	ddr_clk_g : for i in ddr3_clk'range generate
+    		ddr_ck_obufds : obufds
+    		generic map (
+    			iostandard => "DIFF_SSTL135")
+    		port map (
+    			i  => ddr3_clk(i),
+    			o  => ddr3_clk_p,
+    			ob => ddr3_clk_n);
+    	end generate;
+
+    	ddr_dqs_g : for i in ddr3_dqs_p'range generate
+    		dqsiobuf_i : iobufds
+    		generic map (
+    			iostandard => "DIFF_SSTL135")
+    		port map (
+    			t   => ddr3_dqst(i),
+    			i   => ddr3_dqso(i),
+    			o   => ddr3_dqsi(i),
+    			io  => ddr3_dqs_p(i),
+    			iob => ddr3_dqs_n(i));
+
+    	end generate;
+	end block;
+
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
@@ -1137,8 +1163,8 @@ begin
 	ddr3_dq    <= (others => 'Z');
 	ddr3_odt   <= 'Z';
 
-	ddr_ck_i   : obufds  generic map ( iostandard => "DIFF_SSTL135") port map ( i => '0', o => ddr3_clk_p, ob => ddr3_clk_n);
-	ddr_dqs0_i : iobufds generic map ( iostandard => "DIFF_SSTL135") port map ( t => '1', i => '0', io => ddr3_dqs_p(0), iob => ddr3_dqs_n(0));
-	ddr_dqs1_i : iobufds generic map ( iostandard => "DIFF_SSTL135") port map ( t => '1', i => '0', io => ddr3_dqs_p(1), iob => ddr3_dqs_n(1));
+	-- ddr_ck_i   : obufds  generic map ( iostandard => "DIFF_SSTL135") port map ( i => '0', o => ddr3_clk_p, ob => ddr3_clk_n);
+	-- ddr_dqs0_i : iobufds generic map ( iostandard => "DIFF_SSTL135") port map ( t => '1', i => '0', io => ddr3_dqs_p(0), iob => ddr3_dqs_n(0));
+	-- ddr_dqs1_i : iobufds generic map ( iostandard => "DIFF_SSTL135") port map ( t => '1', i => '0', io => ddr3_dqs_p(1), iob => ddr3_dqs_n(1));
 
 end;
