@@ -194,17 +194,17 @@ begin
 			nop & mrx & "10000" & "0" & PstRST_id  &
 			nop & mrx & "11000" & "0" & XPR_id     &
 			mrs & mr2 & "11000" & "0" & MRD_id     &
-                    
+					
 			mrs & mr3 & "11000" & "0" & MRD_id     &
 			mrs & mr1 & "11000" & "0" & MRD_id     &
 			mrs & mr0 & "11000" & "0" & MRD_id     &
 			zqc & mrx & "11000" & "0" & ZQINIT_id  &
-                    
+					
 			mrs & mr1 & "11000" & "0" & MODu_id    &
 			nop & mrx & "11011" & "0" & WLDQSEN_id &
-			mrs & mr1 & "11001" & "0" & MODu_id    &
-			nop & mrx & "11101" & "0" & DLL_id     &
-			nop & mrx & "11101" & "0" & REFi_id;
+			mrs & mr1 & "11000" & "0" & MODu_id    &
+			nop & mrx & "11100" & "0" & DLL_id     &
+			nop & mrx & "11100" & "0" & REFi_id;
 
 		signal sdr_mrdata  : std_logic_vector (11-1 downto 0);
 		signal ddr_mrdata  : std_logic_vector (11-1 downto 0);
@@ -275,6 +275,7 @@ begin
 			sdram_init_rdqs & sdram_init_tdqs & "0" & sdram_init_rtt(2) & "0" & "1" & sdram_init_rtt(1) & sdram_init_ods(1) & sdram_init_al(2-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- WL On
 			"0------------" &  -- 
 			sdram_init_rdqs & sdram_init_tdqs & "0" & sdram_init_rtt(2) & "0" & "0" & sdram_init_rtt(1) & sdram_init_ods(1) & sdram_init_al(2-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- WL Off
+			"0------------" &  -- 
 			"0------------",  -- 
 			step,
 			ddr3_mrdata'length);
@@ -287,33 +288,47 @@ begin
 			(others => '-');
 
 		timer_sel <= init_data((nop'length+mrx'length+5+1) to (nop'length+mrx'length+5+1)+4-1);
-		process(sdram_init_clk)
+		process(timer_sel, sdram_init_clk)
 			variable line : unsigned(0 to nop'length+mrx'length+5+1+4-1);
+			variable xxx : boolean;
 		begin
 			if rising_edge(sdram_init_clk) then
-				if (to_bit(timer_req) xor to_bit(timer_rdy))='0' then
-    	            line := unsigned(init_data);
-    	            (sdram_init_ras, sdram_init_cas, sdram_init_we) <= std_logic_vector(line(0 to 3-1));
-    	            line := line sll 3;
-    	            sdram_init_b <= std_logic_vector(resize(line(mrx'range), sdram_init_b'length));
-    	            line := line sll 3;
-    	            (sdram_init_rst, sdram_init_cke, sdram_init_rdy, sdram_init_odt) <= std_logic_vector(line(0 to 4-1));
-    	            line := line sll 5;
-    	            -- mask <= line(0);
-    	            line := line sll 1;
-    	            -- timer_sel <= std_logic_vector(line(0 to 4-1));
-    	            line := line sll 3;
-					sdram_init_a <= (sdram_init_a'range => '0');
-					if fmly="sdr" then
-						sdram_init_a(sdr_mrdata'range)  <= sdr_mrdata;
-					elsif fmly="ddr" then
-						sdram_init_a(ddr_mrdata'range)  <= ddr_mrdata;
-					elsif fmly="ddr3" then
-						sdram_init_a(ddr3_mrdata'range) <= ddr3_mrdata;
+				if fmly="ddr3" then
+					if (to_bit(sdram_init_wlreq) xor to_bit(sdram_init_wlrdy))='0' then
+						if init_wlreq='0' then
+							xxx := true;
+						else
+							xxx := false;
+						end if;
+					else
+						xxx := false;
 					end if;
 				else
-					(sdram_init_ras, sdram_init_cas, sdram_init_we) <= nop;
+					xxx := true;
 				end if;
+    			if xxx and (to_bit(timer_req) xor to_bit(timer_rdy))='0' then
+    				line := unsigned(init_data);
+    				(sdram_init_ras, sdram_init_cas, sdram_init_we) <= std_logic_vector(line(0 to 3-1));
+    				line := line sll 3;
+    				sdram_init_b <= std_logic_vector(resize(line(mrx'range), sdram_init_b'length));
+    				line := line sll 3;
+    				(sdram_init_rst, sdram_init_cke, sdram_init_rdy, sdram_init_odt) <= std_logic_vector(line(0 to 4-1));
+    				line := line sll 5;
+    				-- mask <= line(0);
+    				line := line sll 1;
+    				-- timer_sel <= std_logic_vector(line(0 to 4-1));
+    				line := line sll 3;
+    				sdram_init_a <= (sdram_init_a'range => '0');
+    				if fmly="sdr" then
+    					sdram_init_a(sdr_mrdata'range)  <= sdr_mrdata;
+    				elsif fmly="ddr" then
+    					sdram_init_a(ddr_mrdata'range)  <= ddr_mrdata;
+    				elsif fmly="ddr3" then
+    					sdram_init_a(ddr3_mrdata'range) <= ddr3_mrdata;
+    				end if;
+    			else
+    				(sdram_init_ras, sdram_init_cas, sdram_init_we) <= nop;
+    			end if;
 			end if;
 		end process;
 
@@ -337,12 +352,12 @@ begin
 					if (to_bit(timer_req) xor to_bit(timer_rdy))='0' then
 						if init_rdy='0' then
 							if fmly="ddr3" then
-								if init_wlreq='0' then
-									timer_req <= not to_stdulogic(to_bit(timer_rdy));
-									step <= step + 1;
-								elsif (to_bit(sdram_init_wlreq) xor to_bit(sdram_init_wlrdy))='0' then
-									timer_req <= not to_stdulogic(to_bit(timer_rdy));
-									if init_wlrdy='0' then
+								if (to_bit(sdram_init_wlreq) xor to_bit(sdram_init_wlrdy))='0' then
+									if init_wlreq='0' then
+										timer_req <= not to_stdulogic(to_bit(timer_rdy));
+										step <= step + 1;
+									else
+										timer_req <= not to_stdulogic(to_bit(timer_rdy));
 										sdram_init_wlreq <= not to_stdulogic(to_bit(sdram_init_wlrdy));
 										step <= step + 1;
 									end if;

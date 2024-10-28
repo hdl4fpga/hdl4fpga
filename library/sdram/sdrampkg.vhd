@@ -67,7 +67,7 @@ package sdrampkg is
 		"    cl   : { '001' : 10, '010' : 12, '011' : 14, '100' : 16, '101' : 18, '110' : 20, '111' : 22}," &
 		"    wrl  : { '001' : 10, '010' : 12, '011' : 14, '100' : 16, '101' : 20, '110' : 24}," &
 		"    cwl  : { '000' : 10, '001' : 12, '010' : 14, '011' : 16}" &
-		"    tmng : { tPreRST : 10.0e-6, tPstRST : 20.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 91, WLDQSEN : 25}}}");
+		"    tmng : { tPreRST : 1.0e-6, tPstRST : 2.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 91, WLDQSEN : 25}}}");
 		-- "    tmng : { tPreRST : 200.0e-6, tPstRST : 500.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 5, WLDQSEN : 25}}}");
 
 	constant phy_db : string := compact("[" &

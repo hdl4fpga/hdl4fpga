@@ -767,7 +767,7 @@ begin
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
 		ctlrphy_wlreq => ctlrphy_wlreq,
-		ctlrphy_wlrdy => '0', --ctlrphy_wlrdy,
+		ctlrphy_wlrdy => ctlrphy_wlrdy,
 		ctlrphy_rlreq => ctlrphy_rlreq,
 		ctlrphy_rlrdy => ctlrphy_rlrdy,
 
@@ -866,7 +866,7 @@ begin
 		phy_ini     => ctlrphy_ini,
 
 		phy_cmd     => ctlrphy_cmd,
-		phy_wlreq   => open, --ctlrphy_wlreq,
+		phy_wlreq   => ctlrphy_wlreq,
 		phy_wlrdy   => ctlrphy_wlrdy,
 
 		phy_rlreq   => ctlrphy_rlreq,
