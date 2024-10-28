@@ -755,6 +755,7 @@ begin
 		ctlrphy_trdy => ctlrphy_trdy,
 		ctlrphy_ini  => ctlrphy_ini,
 		ctlrphy_rw   => ctlrphy_rw,
+
 		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),

@@ -176,11 +176,11 @@ architecture scopeio of arty is
 		-- Divide by   --   3     --   2     --   4     --   1     --   4     --
 		------------------------------------------------------------------------
 
-		(id => sdram333MHz, pll => (clkfbout_mult_f => 10.0, divclk_divide => 3), cl => "0001", cwl => "000"),
-		(id => sdram350MHz, pll => (clkfbout_mult_f =>  7.0, divclk_divide => 2), cl => "0010", cwl => "000"),
-		(id => sdram375MHz, pll => (clkfbout_mult_f => 15.0, divclk_divide => 4), cl => "0010", cwl => "000"),
-		(id => sdram400MHz, pll => (clkfbout_mult_f =>  4.0, divclk_divide => 1), cl => "0010", cwl => "000"),
-		(id => sdram425MHz, pll => (clkfbout_mult_f => 17.0, divclk_divide => 4), cl => "0011", cwl => "001"),
+		(id => sdram333MHz, pll => (clkfbout_mult_f => 10.0, divclk_divide => 3), cl => "0010", cwl => "000"),
+		(id => sdram350MHz, pll => (clkfbout_mult_f =>  7.0, divclk_divide => 2), cl => "0100", cwl => "000"),
+		(id => sdram375MHz, pll => (clkfbout_mult_f => 15.0, divclk_divide => 4), cl => "0100", cwl => "000"),
+		(id => sdram400MHz, pll => (clkfbout_mult_f =>  4.0, divclk_divide => 1), cl => "0100", cwl => "000"),
+		(id => sdram425MHz, pll => (clkfbout_mult_f => 17.0, divclk_divide => 4), cl => "0110", cwl => "001"),
 
 		------------------------------------------------------------------------
 		-- Frequency   -- 450 Mhz -- 475 Mhz -- 500 Mhz -- 525 Mhz -- 550 Mhz --
@@ -188,11 +188,11 @@ architecture scopeio of arty is
 		-- Divide by   --   2     --   4     --   1     --   4     --   4     --
 		------------------------------------------------------------------------
 
-		(id => sdram450MHz, pll => (clkfbout_mult_f =>  9.0, divclk_divide => 2), cl => "0011", cwl => "001"),
-		(id => sdram475MHz, pll => (clkfbout_mult_f => 19.0, divclk_divide => 4), cl => "0011", cwl => "001"),
-		(id => sdram500MHz, pll => (clkfbout_mult_f =>  5.0, divclk_divide => 1), cl => "0011", cwl => "001"),
-		(id => sdram525MHz, pll => (clkfbout_mult_f => 21.0, divclk_divide => 4), cl => "0011", cwl => "001"),
-		(id => sdram550MHz, pll => (clkfbout_mult_f => 11.0, divclk_divide => 2), cl => "0100", cwl => "010"),  -- latency 9
+		(id => sdram450MHz, pll => (clkfbout_mult_f =>  9.0, divclk_divide => 2), cl => "0110", cwl => "001"),
+		(id => sdram475MHz, pll => (clkfbout_mult_f => 19.0, divclk_divide => 4), cl => "0110", cwl => "001"),
+		(id => sdram500MHz, pll => (clkfbout_mult_f =>  5.0, divclk_divide => 1), cl => "0110", cwl => "001"),
+		(id => sdram525MHz, pll => (clkfbout_mult_f => 21.0, divclk_divide => 4), cl => "0110", cwl => "001"),
+		(id => sdram550MHz, pll => (clkfbout_mult_f => 11.0, divclk_divide => 2), cl => "1000", cwl => "010"),  -- latency 9
 		-- 
 		---------------------------------------
 		-- Frequency   -- 575 Mhz -- 600 Mhz --
@@ -200,8 +200,8 @@ architecture scopeio of arty is
 		-- Divide by   --   4     --   1     --
 		---------------------------------------
 
-		(id => sdram575MHz, pll => (clkfbout_mult_f => 23.0, divclk_divide => 4), cl => "0101", cwl => "010"),  -- latency 9
-		(id => sdram600MHz, pll => (clkfbout_mult_f =>  6.0, divclk_divide => 1), cl => "0101", cwl => "010")); -- latency 9
+		(id => sdram575MHz, pll => (clkfbout_mult_f => 23.0, divclk_divide => 4), cl => "1010", cwl => "010"),  -- latency 9
+		(id => sdram600MHz, pll => (clkfbout_mult_f =>  6.0, divclk_divide => 1), cl => "1010", cwl => "010")); -- latency 9
 
 	function sdramparams (
 		constant id  : sdram_speeds)
@@ -752,14 +752,29 @@ begin
 		input_ena   => input_ena,
 		input_data  => input_samples,
 
+		video_clk   => video_clk,
+		video_pixel => video_pixel,
+		video_hsync => video_hsync,
+		video_vsync => video_vsync,
+		video_vton  => video_vton,
+		video_blank => video_blank,
+
 		ctlr_clk     => ddr_clk0,
 		ctlr_rst     => sdrsys_rst,
 		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
 		ctlr_cwl     => sdram_params.cwl,
 		ctlr_rtt     => "001",
-		ctlr_ods     => "00",
 		ctlr_cmd     => ctlrphy_cmd,
+		ctlrphy_wlreq => ctlrphy_wlreq,
+		ctlrphy_wlrdy => '0', --ctlrphy_wlrdy,
+		ctlrphy_rlreq => ctlrphy_rlreq,
+		ctlrphy_rlrdy => ctlrphy_rlrdy,
+
+		ctlrphy_irdy => ctlrphy_frm,
+		ctlrphy_trdy => ctlrphy_trdy,
+		ctlrphy_ini  => ctlrphy_ini,
+		ctlrphy_rw   => ctlrphy_rw,
 
 		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
@@ -767,6 +782,7 @@ begin
 		ctlrphy_ras  => ctlrphy_ras(0),
 		ctlrphy_cas  => ctlrphy_cas(0),
 		ctlrphy_we   => ctlrphy_we(0),
+		ctlrphy_odt  => ctlrphy_odt(0),
 		ctlrphy_b    => ddr_b,
 		ctlrphy_a    => ddr_a,
 		ctlrphy_dqst => ctlrphy_dqst,
@@ -776,15 +792,10 @@ begin
 		ctlrphy_dqi  => ctlrphy_dqi,
 		ctlrphy_dqt  => ctlrphy_dqt,
 		ctlrphy_dqo  => ctlrphy_dqo,
-		ctlrphy_dqv  => ctlrphy_dqv,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
-		video_clk   => video_clk,
-		video_pixel => video_pixel,
-		video_hsync => video_hsync,
-		video_vsync => video_vsync,
-		video_vton  => video_vton,
-		video_blank => video_blank);
+		ctlrphy_dqv  => ctlrphy_dqv);
+
 
 	cgear_g : for i in 1 to gear/2-1 generate
     	ctlrphy_rst(i) <= ctlrphy_rst(0);
@@ -855,7 +866,7 @@ begin
 		phy_ini     => ctlrphy_ini,
 
 		phy_cmd     => ctlrphy_cmd,
-		phy_wlreq   => ctlrphy_wlreq,
+		phy_wlreq   => open, --ctlrphy_wlreq,
 		phy_wlrdy   => ctlrphy_wlrdy,
 
 		phy_rlreq   => ctlrphy_rlreq,
