@@ -194,14 +194,17 @@ begin
 			nop & mrx & "10000" & "0" & PstRST_id  &
 			nop & mrx & "11000" & "0" & XPR_id     &
 			mrs & mr2 & "11000" & "0" & MRD_id     &
+
 			mrs & mr3 & "11000" & "0" & MRD_id     &
 			mrs & mr1 & "11000" & "0" & MRD_id     &
 			mrs & mr0 & "11000" & "0" & MRD_id     &
 			zqc & mrx & "11000" & "0" & ZQINIT_id  &
+
 			mrs & mr1 & "11000" & "0" & MODu_id    &
 			nop & mrx & "11001" & "0" & WLDQSEN_id &
 			nop & mrx & "11011" & "0" & MODu_id    &
 			nop & mrx & "11011" & "1" & MODu_id    &
+
 			nop & mrx & "11010" & "1" & MRD_id     &
 			mrs & mr1 & "11010" & "0" & MODu_id    &
 			nop & mrx & "11110" & "0" & DLL_id     &
@@ -210,7 +213,7 @@ begin
 		constant xxx : natural := nop'length+mrx'length+5+1+4;
 		signal sdr_mrdata  : std_logic_vector (11-1 downto 0);
 		signal ddr_mrdata  : std_logic_vector (11-1 downto 0);
-		signal ddr3_mrdata : std_logic_vector (12-1 downto 0);
+		signal ddr3_mrdata : std_logic_vector (13-1 downto 0);
 		signal init_data   : std_logic_vector(0 to nop'length+mrx'length+5+1+4-1);
 		alias init_rdy    is init_data(8);
 		alias init_wlreq    is init_data(9);
@@ -269,19 +272,21 @@ begin
 			"-------------" & -- Pre RESET 
 			"-------------" & -- Pst RESET 
 			"-------------" & -- NOP 
-			"--1----------" & -- Precharge all
 			"00" & sdram_init_drtt & sdram_init_srt & sdram_init_asr & sdram_init_cwl & b"000" & -- LMR 2
-			"00000000000" & sdram_init_mpr    & sdram_init_mprrf & --LMR 3
+			"00000000000"   & sdram_init_mpr & sdram_init_mprrf & --LMR 3
 			sdram_init_rdqs & sdram_init_tdqs & "0" & sdram_init_rtt(2) & "0" & "0" & sdram_init_rtt(1) & sdram_init_ods(1) & sdram_init_al(2-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '1' & -- LMR 1
 			sdram_init_pd   & sdram_init_wr   & "1" & "0" & sdram_init_cl(4-1 downto 1) & "0" & sdram_init_cl(0) & sdram_init_bl(2-1 downto 0) &
-			"-----------" & -- ZQINIT
-			sdram_init_rdqs & sdram_init_tdqs & "0" & sdram_init_rtt(2) & "0" & "1" & sdram_init_rtt(1) & sdram_init_ods(1) & sdram_init_al(2-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- LMR 1
-			"0000" & sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0) & -- LMR0
-			"0----------",  -- 
+			"-------------" & -- ZQINIT
+			sdram_init_rdqs & sdram_init_tdqs & "0" & sdram_init_rtt(2) & "0" & "1" & sdram_init_rtt(1) & sdram_init_ods(1) & sdram_init_al(2-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- WL On
+			"-------------" & -- WLDQ
+			sdram_init_rdqs & sdram_init_tdqs & "0" & sdram_init_rtt(2) & "0" & "1" & sdram_init_rtt(1) & sdram_init_ods(1) & sdram_init_al(2-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- WL Off
+			"0------------" &  -- 
+			"0------------" &  -- 
+			"0------------" &  -- 
+			"0------------" &  -- 
+			"0------------",  -- 
 			step,
-			ddr_mrdata'length);
-
-
+			ddr3_mrdata'length);
 
 		init_data <= 
 			multiplex(sdr_init_data,  step, init_data'length) when fmly="sdr"  else

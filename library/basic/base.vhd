@@ -1186,7 +1186,7 @@ package body base is
 		variable byte : std_logic_vector(0 to word'length/2**addr'length-1);
 	begin
 		assert word'length mod byte'length = 0
-			report "multiplex mod"
+			report "multiplex mod : word'length : addr'length" & natural'image(word'length) & ":" & natural'image(addr'length)
 			severity failure;
 
 		assert word'length mod 2**addr'length = 0
@@ -1256,7 +1256,7 @@ package body base is
 		variable retval : unsigned(0 to ((word'length+size-1)/size)*size-1);
 	begin
 		assert word'length mod size = 0
-			report "multiplex mod"
+			report "multiplex mod : word'length : size " & natural'image(word'length) & ":" & natural'image(size)
 			severity failure;
 
 		retval(0 to word'length-1) := unsigned(word);

@@ -32,11 +32,11 @@ use hdl4fpga.hdo.all;
 
 package sdrampkg is
 	constant sdram_db : string := compact("{" &
-		"MT48LC256MA27E : {fmly : sdr,  orgz : {addr : { ba : 2, row : 13, col : 9}, data : { dm : 2, dq : 16}}, tmng : {tWR : " & real'image(14.0e-9+11.0e-9) & ", tRCD  : 15.0e-9, tRP : 15.0e-9, tMRD  : 15.0e-9, tRFC  : 66.0e-9, tREFI : " & real'image(64.0e-3/8192.0) & "}}," & -- real/natural Serious Lattice diamond bug
-		"MT46V256M6T    : {fmly : ddr,  orgz : {addr : { ba : 2, row : 13, col : 9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & "}}," &
+		"MT48LC256MA27E : {fmly : sdr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : " & real'image(14.0e-9+11.0e-9) & ", tRCD  : 15.0e-9, tRP : 15.0e-9, tMRD  : 15.0e-9, tRFC  : 66.0e-9, tREFI : " & real'image(64.0e-3/8192.0) & "}}," & -- real/natural Serious Lattice diamond bug
+		"MT46V256M6T    : {fmly : ddr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & "}}," &
+		"MT41K2G125     : {fmly : ddr3, orgz : {addr : { ba : 3, row : 14, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 360.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(360.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
 		"MT47H512M3     : {fmly : ddr2, orgz : {addr : { ba : , row : col : }, data : { dm : dq : }}, tmng : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tRPA : 15.0e-9,  tRFC : 130.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : 400.0e-6}}," &
 		"MT41J1G15E     : {fmly : ddr3, orgz : {addr : { ba : , row : col : }, data : { dm : dq : }}, tmng : {tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 15.00e-9, tRFC : 110.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(110.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
-		"MT41K2G125     : {fmly : ddr3, orgz : {addr : { ba : , row : col : }, data : { dm : dq : }}, tmng : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 360.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(360.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
 		"MT41K4G107     : {fmly : ddr3, orgz : {addr : { ba : , row : col : }, data : { dm : dq : }}, tmng : {tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 20.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
 		"MT41K8G125     : {fmly : ddr3, orgz : {addr : { ba : , row : col : }, data : { dm : dq : }}, tmng : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 20.00e-9, tRFC : 350.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(350.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
 		"AS4CD3LC12     : {fmly : ddr3, orgz : {addr : { ba : , row : col : }, data : { dm : dq : }}, tmng : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & "; tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}}}");  -- tMin : tRFC + 10 ns
@@ -61,7 +61,7 @@ package sdrampkg is
 		"    wrl  : { '001' : 4, '010' : 6, '011' :  8, '100' : 10, '101' : 12, '110' : 14, '111' : 16}," &
 		"    tmng : { tPreRST : 200.0e-6, cDLL : 200, MRD : 2}}" &
 		"ddr3 : {" &
-		"    length : {cl : 4}," &
+		"    length : {cl : 4, rtt : 3}," &
 		"    al   : { '000' :  0, '001' :  2, '010' :  4}," &
 		"    bl   : { '000' :  8, '001' :  8, '010' :  8}," &
 		"    cl   : { '001' : 10, '010' : 12, '011' : 14, '100' : 16, '101' : 18, '110' : 20, '111' : 22}," &
