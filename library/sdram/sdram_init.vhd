@@ -190,7 +190,7 @@ begin
 			nop & mrx & "11100" & "0" & REFi_id;
 	
 		constant ddr3_init_data : std_logic_vector := 
-			nop & mrx & "10000" & "0" & PreRST_id  &
+			nop & mrx & "00000" & "0" & PreRST_id  &
 			nop & mrx & "10000" & "0" & PstRST_id  &
 			nop & mrx & "11000" & "0" & XPR_id     &
 			mrs & mr2 & "11000" & "0" & MRD_id     &
@@ -314,9 +314,11 @@ begin
     	            line := line sll 3;
 					sdram_init_a <= (sdram_init_a'range => '0');
 					if fmly="sdr" then
-						sdram_init_a(sdr_mrdata'range) <= sdr_mrdata;
+						sdram_init_a(sdr_mrdata'range)  <= sdr_mrdata;
 					elsif fmly="ddr" then
-						sdram_init_a(sdr_mrdata'range) <= ddr_mrdata;
+						sdram_init_a(ddr_mrdata'range)  <= ddr_mrdata;
+					elsif fmly="ddr3" then
+						sdram_init_a(ddr3_mrdata'range) <= ddr3_mrdata;
 					end if;
 				else
 					(sdram_init_ras, sdram_init_cas, sdram_init_we) <= nop;

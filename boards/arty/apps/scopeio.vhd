@@ -1151,16 +1151,4 @@ begin
 	eth_mdc  <= '0';
 	eth_mdio <= '0';
 
-	ddr3_reset <= 'Z';
-	ddr3_cke   <= 'Z';
-	ddr3_cs    <= 'Z';
-	ddr3_ras   <= 'Z';
-	ddr3_cas   <= 'Z';
-	ddr3_we    <= 'Z';
-	ddr3_ba    <= (others => '1');
-	ddr3_a     <= (others => '1');
-	ddr3_dm    <= (others => 'Z');
-	ddr3_dq    <= (others => 'Z');
-	ddr3_odt   <= 'Z';
-
 end;

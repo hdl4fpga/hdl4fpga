@@ -229,6 +229,26 @@ configuration arty_scopeio_structure_md of testbench is
 		end for;
 
 		
+		for all : ddr3_model
+			use entity micron.ddr3
+			port map (
+				rst_n   => rst_n,
+				Ck      => ck,
+				Ck_n    => ck_n,
+				Cke     => cke,
+				Cs_n    => cs_n,
+				Ras_n   => ras_n,
+				Cas_n   => cas_n,
+				We_n    => we_n,
+				Ba      => ba,
+				Addr    => addr,
+				Dm_tdqs => dm,
+				Dq      => dq,
+				Dqs     => dqs,
+				Dqs_n   => dqs_n,
+				tdqs_n  => tdqs_n,
+				Odt     => odt);
+		end for;
 	end for;
 end;
 
@@ -240,6 +260,26 @@ configuration arty_scopeio_md of testbench is
 			use entity work.arty(scopeio);
 		end for;
 
+		for all: ddr3_model
+			use entity micron.ddr3
+			port map (
+				rst_n   => rst_n,
+				Ck      => ck,
+				Ck_n    => ck_n,
+				Cke     => cke,
+				Cs_n    => cs_n,
+				Ras_n   => ras_n,
+				Cas_n   => cas_n,
+				We_n    => we_n,
+				Ba      => ba,
+				Addr    => addr,
+				Dm_tdqs => dm,
+				Dq      => dq,
+				Dqs     => dqs,
+				Dqs_n   => dqs_n,
+				tdqs_n  => tdqs_n,
+				Odt     => odt);
+		end for;
 
 	end for;
 end;
