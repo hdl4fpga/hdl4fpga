@@ -191,7 +191,7 @@ begin
 		sdram_init_bt    => "0",
 		sdram_init_ods   => sdram_init_ods,
 		sdram_init_wr    => ctlr_wrl,
-		sdram_init_rtt   => ctlr_rtt,
+		sdram_init_rtt   => sdram_init_rtt,
 
 		sdram_init_clk   => ctlr_clk,
 		sdram_init_req   => sdram_init_req,
