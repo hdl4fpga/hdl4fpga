@@ -184,9 +184,8 @@ begin
 			mrs & mr0 & "11000" & "0" & MRD_id  &
 			mrs & mr1 & "11000" & "0" & MRD_id  &
 			mrs & mr1 & "11000" & "0" & MRD_id  &
-			nop & mrx & "11000" & "0" & DLL_id  &
-			nop & mrx & "11111" & "0" & REFi_id &
-			nop & mrx & "11100" & "0" & REFi_id;
+			pre & mrx & "11000" & "0" & RPA_id  &
+			nop & mrx & "11110" & "0" & REFi_id;
 	
 		constant ddr3_init_data : std_logic_vector := 
 			nop & mrx & "00000" & "0" & PreRST_id  &
@@ -209,7 +208,7 @@ begin
 
 		signal sdr_mrdata  : std_logic_vector (11-1 downto 0);
 		signal ddr_mrdata  : std_logic_vector (11-1 downto 0);
-		signal ddr3_mrdata : std_logic_vector (13-1 downto 0);
+		signal ddr2_mrdata : std_logic_vector (13-1 downto 0);
 		signal ddr3_mrdata : std_logic_vector (13-1 downto 0);
 		signal init_data   : std_logic_vector(0 to nop'length+mrx'length+5+1+4-1);
 		alias  init_rdy   is init_data(8);
@@ -247,18 +246,20 @@ begin
 
 		ddr2_mrdata <= multiplex(
 			"-------------" & -- Pre RESET 
-			"-------------" & -- Pst RESET 
 			"-------------" & -- NOP 
+			"--1----------" & -- pre all
 			"00000" & sdram_init_srt(0) & "0000000" &-- Load EMR 2 
 			"0000000000000" & -- LOad EMR3
 			"0000000000000" & -- Enable Dll
 			"0000100000000" & -- Reset DLL
 			"--1----------" & -- pre all
-			sdram_init_pd  & sdram_init_wr(3-1 downto 0) & "1" & "0" & sdram_init_cl(3-1 downto 0) & sdram_init_bt & sdram_init_bl(3-1 downto 0) & -- LMR 0
+			"-------------" & -- REFi 
+			"-------------" & -- REFi 
+			sdram_init_pd  & sdram_init_wr(3-1 downto 0) & "0" & "0" & sdram_init_cl(3-1 downto 0) & sdram_init_bt & sdram_init_bl(3-1 downto 0) & -- LMR 0
 			"0" & sdram_init_rdqs & sdram_init_tdqs & "111" & sdram_init_rtt(1) & sdram_init_al(3-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- LEMR 
 			"0" & sdram_init_rdqs & sdram_init_tdqs & "000" & sdram_init_rtt(1) & sdram_init_al(3-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- LEMR 
-			"-------------" & -- REFi 
-			"-------------",  -- REFi 
+			"--1----------" & -- pre all
+			"-------------", -- REFi
 			step,
 			ddr2_mrdata'length);
 
