@@ -193,17 +193,19 @@ begin
 			nop & mrx & "00000" & "0" & PreRST_id  &
 			nop & mrx & "10000" & "0" & PstRST_id  &
 			nop & mrx & "11000" & "0" & XPR_id     &
+
 			mrs & mr2 & "11000" & "0" & MRD_id     &
-					
 			mrs & mr3 & "11000" & "0" & MRD_id     &
 			mrs & mr1 & "11000" & "0" & MRD_id     &
 			mrs & mr0 & "11000" & "0" & MRD_id     &
+
 			zqc & mrx & "11000" & "0" & ZQINIT_id  &
-					
+
 			mrs & mr1 & "11000" & "0" & MODu_id    &
 			nop & mrx & "11011" & "0" & WLDQSEN_id &
 			mrs & mr1 & "11000" & "0" & MODu_id    &
-			nop & mrx & "11100" & "0" & DLL_id     &
+
+			nop & mrx & "11000" & "0" & DLL_id     &
 			nop & mrx & "11100" & "0" & REFi_id;
 
 		signal sdr_mrdata  : std_logic_vector (11-1 downto 0);
@@ -213,7 +215,7 @@ begin
 		alias init_rdy   is init_data(8);
 		alias init_wlreq is init_data(10);
 		alias init_wlrdy is init_data(11);
-		signal step : natural range 0 to 2**4-1;
+		signal step : natural range 0 to 2**5-1;
 		
 	begin
 
@@ -225,15 +227,7 @@ begin
 				-- unsigned'(mr_data'range => '0')),
 				-- mr,
 				-- mr_data'length);
-			-- elsif fmly="ddr3" then
 			-- end if;
-			-- nop & mrx & "10000" & "0" & PreRST_id &
-			-- nop & mrx & "11000" & "0" & XPR_id  &
-			-- pre & mrx & "11000" & "0" & RP_id   &
-			-- ref & mrx & "11000" & "0" & RFC_id  &
-			-- ref & mrx & "11000" & "0" & RFC_id  &
-			-- mrs & mr0 & "11001" & "0" & MRD_id  &
-			-- nop & mrx & "11110" & "0" & REFi_id;
 	
 
 		sdr_mrdata <= multiplex(
@@ -263,20 +257,23 @@ begin
 			ddr_mrdata'length);
 
 		ddr3_mrdata <= multiplex(
-		--	 2109876543210
 			"-------------" & -- Pre RESET 
 			"-------------" & -- Pst RESET 
 			"-------------" & -- NOP 
+
 			"00" & sdram_init_drtt & sdram_init_srt & "0" & sdram_init_asr & sdram_init_cwl & b"000" & -- LMR 2
 			"0000000000"   & sdram_init_mpr & sdram_init_mprrf & --LMR 3
 			sdram_init_rdqs & sdram_init_tdqs & "0" & sdram_init_rtt(2) & "0" & "0" & sdram_init_rtt(1) & sdram_init_ods(1) & sdram_init_al(2-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '1' & -- LMR 1
-			sdram_init_pd   & sdram_init_wr   & "1" & "0" & sdram_init_cl(4-1 downto 1) & "0" & sdram_init_cl(0) & sdram_init_bl(2-1 downto 0) &
+			sdram_init_pd   & sdram_init_wr   & "1" & "0" & sdram_init_cl(4-1 downto 1) & "0" & sdram_init_cl(0) & sdram_init_bl(2-1 downto 0) & -- LMR 0
+
 			"--1----------" & -- ZQINIT
+
 			sdram_init_rdqs & sdram_init_tdqs & "0" & sdram_init_rtt(2) & "0" & "1" & sdram_init_rtt(1) & sdram_init_ods(1) & sdram_init_al(2-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- WL On
-			"0------------" &  -- 
+			"0------------" & -- WL procedure
 			sdram_init_rdqs & sdram_init_tdqs & "0" & sdram_init_rtt(2) & "0" & "0" & sdram_init_rtt(1) & sdram_init_ods(1) & sdram_init_al(2-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- WL Off
-			"0------------" &  -- 
-			"0------------",  -- 
+
+			"-------------" &  -- 
+			"-------------",  -- 
 			step,
 			ddr3_mrdata'length);
 
