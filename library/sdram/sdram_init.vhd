@@ -60,7 +60,6 @@ entity sdram_init is
 		sdram_init_wr   : in  std_logic_vector(3-1 downto 0) := (others => '0');
 		sdram_init_ddqs : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		sdram_init_rdqs : in  std_logic_vector(1-1 downto 0) := (others => '0');
-		sdram_init_ocd  : in  std_logic_vector(3-1 downto 0) := (others => '1');
 		sdram_init_pd   : in  std_logic_vector(1-1 downto 0) := (others => '0');
 
 		sdram_refi_rdy : in  std_logic;
@@ -211,6 +210,7 @@ begin
 		signal sdr_mrdata  : std_logic_vector (11-1 downto 0);
 		signal ddr_mrdata  : std_logic_vector (11-1 downto 0);
 		signal ddr3_mrdata : std_logic_vector (13-1 downto 0);
+		signal ddr3_mrdata : std_logic_vector (13-1 downto 0);
 		signal init_data   : std_logic_vector(0 to nop'length+mrx'length+5+1+4-1);
 		alias  init_rdy   is init_data(8);
 		alias  init_wlreq is init_data(10);
@@ -218,17 +218,6 @@ begin
 		signal step        : natural range 0 to 2**5-1;
 		
 	begin
-
-		-- elsif fmly="ddr2" then
-		-- mr_data := multiplex (std_logic_vector(
-			-- resize(unsigned(sdram_init_wr & dll & "0" & sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0)), mr_data'length) &
-			-- resize(unsigned(sdram_init_rdqs & sdram_init_ddqs & sdram_init_ocd & sdram_init_rtt(1) & sdram_init_al & sdram_init_rtt(0) & sdram_init_ods(0) & dll_ena), mr_data'length) &
-			-- resize(unsigned(sdram_init_srt & b"00_0000"), mr_data'length) &
-			-- unsigned'(mr_data'range => '0')),
-			-- mr,
-			-- mr_data'length);
-		-- end if;
-	
 
 		sdr_mrdata <= multiplex(
 			"-----------" & -- Pre RESET 
@@ -256,22 +245,35 @@ begin
 			step,
 			ddr_mrdata'length);
 
+		ddr2_mrdata <= multiplex(
+			"-------------" & -- Pre RESET 
+			"-------------" & -- Pst RESET 
+			"-------------" & -- NOP 
+			"00000" & sdram_init_srt(0) & "0000000" &-- Load EMR 2 
+			"0000000000000" & -- LOad EMR3
+			"0000000000000" & -- Enable Dll
+			"0000100000000" & -- Reset DLL
+			"--1----------" & -- pre all
+			sdram_init_pd  & sdram_init_wr(3-1 downto 0) & "1" & "0" & sdram_init_cl(3-1 downto 0) & sdram_init_bt & sdram_init_bl(3-1 downto 0) & -- LMR 0
+			"0" & sdram_init_rdqs & sdram_init_tdqs & "111" & sdram_init_rtt(1) & sdram_init_al(3-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- LEMR 
+			"0" & sdram_init_rdqs & sdram_init_tdqs & "000" & sdram_init_rtt(1) & sdram_init_al(3-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- LEMR 
+			"-------------" & -- REFi 
+			"-------------",  -- REFi 
+			step,
+			ddr2_mrdata'length);
+
 		ddr3_mrdata <= multiplex(
 			"-------------" & -- Pre RESET 
 			"-------------" & -- Pst RESET 
 			"-------------" & -- NOP 
-
-			"00" & sdram_init_drtt & sdram_init_srt & "0" & sdram_init_asr & sdram_init_cwl & b"000" & -- LMR 2
+			"00" & sdram_init_drtt & sdram_init_srt(0) & "0" & sdram_init_asr & sdram_init_cwl & b"000" & -- LMR 2
 			"0000000000"    & sdram_init_mpr   & sdram_init_mprrf & --LMR 3
 			sdram_init_rdqs & sdram_init_tdqs & "0" & sdram_init_rtt(2) & "0" & "0" & sdram_init_rtt(1) & sdram_init_ods(1) & sdram_init_al(2-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '1' & -- LMR 1
 			sdram_init_pd   & sdram_init_wr   & "1" & "0" & sdram_init_cl(4-1 downto 1) & sdram_init_bt & sdram_init_cl(0) & sdram_init_bl(2-1 downto 0) & -- LMR 0
-
 			"--1----------" & -- ZQINIT
-
 			sdram_init_rdqs & sdram_init_tdqs & "0" & sdram_init_rtt(2) & "0" & "1" & sdram_init_rtt(1) & sdram_init_ods(1) & sdram_init_al(2-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- WL On
 			"0------------" & -- WL procedure
 			sdram_init_rdqs & sdram_init_tdqs & "0" & sdram_init_rtt(2) & "0" & "0" & sdram_init_rtt(1) & sdram_init_ods(1) & sdram_init_al(2-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- WL Off
-
 			"-------------" & -- 
 			"-------------",  -- 
 			step,

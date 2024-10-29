@@ -35,7 +35,7 @@ entity sdram_ctlr is
 		debug       : boolean := false;
 		tcp         : real := 0.0;
 		sdram_data  : string;
-		phy_data         : string);
+		phy_data    : string);
 	port (
 		ctlr_alat   : out std_logic_vector(2 downto 0);
 		ctlr_blat   : out std_logic_vector(2 downto 0);
@@ -100,16 +100,17 @@ entity sdram_ctlr is
 		phy_sto     : out std_logic_vector(hdo(phy_data)**".orgz.gear"-1 downto 0);
 		phy_dqi     : in  std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(sdram_data)**".orgz.data.dq"-1 downto 0));
 
+	constant fmly           : string := hdo(sdram_data)**".fmly";
+	constant fmly_data      : string := hdo(families_db)**("."&fmly);
+	constant fmlytmng_data  : string := hdo(fmly_data)**(".tmng");
 	constant sdramtmng_data : string := hdo(sdram_data)**".tmng";
-	constant fmly      : string         := hdo(sdram_data)**".fmly";
-	constant fmly_data : string         := hdo(families_db)**("."&fmly);
-	constant fmlytmng_data : string     := hdo(fmly_data)**(".tmng");
-	constant phytmng_data : string := hdo(phy_data)**".tmng";
-	constant al_tab    : natural_vector := lattab(hdo(fmly_data)**(".al"), 8);
-	constant bl_tab    : natural_vector := lattab(hdo(fmly_data)**(".bl"), 8);
-	constant cl_tab    : natural_vector := lattab(hdo(fmly_data)**(".cl"), 8);
-	constant wrl_tab   : natural_vector := lattab(hdo(fmly_data)**(".wrl={}.)"), 8);
-	constant cwl_tab   : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 8);
+	constant phytmng_data   : string := hdo(phy_data)**".tmng";
+
+	constant al_tab         : natural_vector := lattab(hdo(fmly_data)**(".al"), 8);
+	constant bl_tab         : natural_vector := lattab(hdo(fmly_data)**(".bl"), 8);
+	constant cl_tab         : natural_vector := lattab(hdo(fmly_data)**(".cl"), 8);
+	constant wrl_tab        : natural_vector := lattab(hdo(fmly_data)**(".wrl={}.)"), 8);
+	constant cwl_tab        : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 8);
 end;
 
 architecture mix of sdram_ctlr is
@@ -176,6 +177,7 @@ begin
 	sdram_init_cl(ctlr_cl'range)   <= ctlr_cl;
 	sdram_init_ods(ctlr_ods'range) <= ctlr_ods;
 	sdram_init_rtt(ctlr_rtt'range) <= ctlr_rtt;
+
 	sdram_init_e : entity hdl4fpga.sdram_init
 	generic map (
 		debug            => debug,
