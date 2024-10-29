@@ -259,7 +259,7 @@ begin
 			"0" & sdram_init_rdqs & sdram_init_tdqs & "111" & sdram_init_rtt(1) & sdram_init_al(3-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- LEMR 
 			"0" & sdram_init_rdqs & sdram_init_tdqs & "000" & sdram_init_rtt(1) & sdram_init_al(3-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- LEMR 
 			"--1----------" & -- pre all
-			"-------------", -- REFi
+			"-------------",  -- REFi
 			step,
 			ddr2_mrdata'length);
 
