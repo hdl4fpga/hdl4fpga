@@ -212,22 +212,22 @@ begin
 		signal ddr_mrdata  : std_logic_vector (11-1 downto 0);
 		signal ddr3_mrdata : std_logic_vector (13-1 downto 0);
 		signal init_data   : std_logic_vector(0 to nop'length+mrx'length+5+1+4-1);
-		alias init_rdy   is init_data(8);
-		alias init_wlreq is init_data(10);
-		alias init_wlrdy is init_data(11);
-		signal step : natural range 0 to 2**5-1;
+		alias  init_rdy   is init_data(8);
+		alias  init_wlreq is init_data(10);
+		alias  init_wlrdy is init_data(11);
+		signal step        : natural range 0 to 2**5-1;
 		
 	begin
 
-			-- elsif fmly="ddr2" then
-			-- mr_data := multiplex (std_logic_vector(
-				-- resize(unsigned(sdram_init_wr & dll & "0" & sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0)), mr_data'length) &
-				-- resize(unsigned(sdram_init_rdqs & sdram_init_ddqs & sdram_init_ocd & sdram_init_rtt(1) & sdram_init_al & sdram_init_rtt(0) & sdram_init_ods(0) & dll_ena), mr_data'length) &
-				-- resize(unsigned(sdram_init_srt & b"00_0000"), mr_data'length) &
-				-- unsigned'(mr_data'range => '0')),
-				-- mr,
-				-- mr_data'length);
-			-- end if;
+		-- elsif fmly="ddr2" then
+		-- mr_data := multiplex (std_logic_vector(
+			-- resize(unsigned(sdram_init_wr & dll & "0" & sdram_init_cl(3-1 downto 0) & "0" & sdram_init_bl(3-1 downto 0)), mr_data'length) &
+			-- resize(unsigned(sdram_init_rdqs & sdram_init_ddqs & sdram_init_ocd & sdram_init_rtt(1) & sdram_init_al & sdram_init_rtt(0) & sdram_init_ods(0) & dll_ena), mr_data'length) &
+			-- resize(unsigned(sdram_init_srt & b"00_0000"), mr_data'length) &
+			-- unsigned'(mr_data'range => '0')),
+			-- mr,
+			-- mr_data'length);
+		-- end if;
 	
 
 		sdr_mrdata <= multiplex(
@@ -287,23 +287,23 @@ begin
 		timer_sel <= init_data((nop'length+mrx'length+5+1) to (nop'length+mrx'length+5+1)+4-1);
 		process(timer_sel, sdram_init_clk)
 			variable line : unsigned(0 to nop'length+mrx'length+5+1+4-1);
-			variable xxx : boolean;
+			variable ena : boolean;
 		begin
 			if rising_edge(sdram_init_clk) then
 				if fmly="ddr3" then
 					if (to_bit(sdram_init_wlreq) xor to_bit(sdram_init_wlrdy))='0' then
 						if init_wlreq='0' then
-							xxx := true;
+							ena := true;
 						else
-							xxx := false;
+							ena := false;
 						end if;
 					else
-						xxx := false;
+						ena := false;
 					end if;
 				else
-					xxx := true;
+					ena := true;
 				end if;
-    			if xxx and (to_bit(timer_req) xor to_bit(timer_rdy))='0' then
+    			if ena and (to_bit(timer_req) xor to_bit(timer_rdy))='0' then
     				line := unsigned(init_data);
     				(sdram_init_ras, sdram_init_cas, sdram_init_we) <= std_logic_vector(line(0 to 3-1));
     				line := line sll 3;
