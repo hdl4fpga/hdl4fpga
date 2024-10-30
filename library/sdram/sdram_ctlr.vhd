@@ -44,7 +44,7 @@ entity sdram_ctlr is
 		ctlr_cl     : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.cl=3."-1 downto 0);
 		ctlr_cwl    : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.cwl=3."-1 downto 0) := (others => '0');
 		ctlr_wrl    : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.wrl=3."-1 downto 0) := (others => '0');
-		ctlr_rtt    : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.rtt=1."-1 downto 0) := (others => '0');
+		ctlr_rtt    : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.rtt=2."-1 downto 0) := (others => '0');
 		ctlr_ods    : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.ods=1."-1 downto 0) := (others => '0');
 
 		ctlr_rst    : in  std_logic;

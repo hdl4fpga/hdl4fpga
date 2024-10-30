@@ -71,7 +71,7 @@ architecture graphics of ulx3s is
 
 	constant byte_size   : natural := sdram_d'length/sdram_dqm'length;
 	constant phy_data    : string  := hdo(phy_db)**".ecp5g1";
-	constant gear        : natural := hdo(phy_data)**".gear";
+	constant gear        : natural := hdo(phy_data)**".orgz.gear";
 	constant usb_oversampling : natural := 3;
 
 	signal ctlr_clk      : std_logic;

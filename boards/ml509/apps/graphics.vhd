@@ -165,8 +165,8 @@ architecture graphics of ml509 is
 	constant sdram_tcp    : real := (real(sdram_params.pll.divclk_divide)*userclk_per)/real(sdram_params.pll.clkfbout_mult);
 
 	constant byte_size   : natural := ddr2_d'length/ddr2_dm'length;
-	constant phy_data    : string  := hdo(phy_db)**".xc5g4";
-	constant gear        : natural := hdo(phy_data)**".gear";
+	constant phy_data    : string  := hdo(phy_db)**".xc5vg4";
+	constant gear        : natural := hdo(phy_data)**".orgz.gear";
 
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk90      : std_logic;
@@ -181,7 +181,7 @@ architecture graphics of ml509 is
 	signal ctlrphy_rw     : std_logic;
 
 	signal ddr_b          : std_logic_vector(ddr2_ba'range);
-	signal ddr_a          : std_logic_vector(ddr2_a'length-1 downto 0);
+	signal ddr_a          : std_logic_vector(ddr2_a'range);
 
 	signal ctlrphy_rst    : std_logic_vector(0 to gear/2-1);
 	signal ctlrphy_cke    : std_logic_vector(0 to gear/2-1);
@@ -615,9 +615,9 @@ begin
 		profile      => 1,
 		sdram_tcp    => 2.0*sdram_tcp,
 		sdram_data   => hdo(sdram_db)**".MT4HTF12864HZ",
+		phy_data     => phy_data,
 		burst_length => 8,
 
-		phy_data => phy_data,
 		timing_id    => videoparam(video_mode).timing,
 		red_length   => 8,
 		green_length => 8,
@@ -648,7 +648,7 @@ begin
 
 		ctlr_clk      => ddr_clk0,
 		ctlr_rst      => sdrphy_rst0,
-		ctlr_rtt      => "11-",
+		ctlr_rtt      => "11",
 		ctlr_al       => "000",
 		ctlr_bl       => "011", -- Busrt length 8
 		ctlr_cl       => sdram_params.cl,
@@ -720,6 +720,7 @@ begin
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
 		bank_size  => ddr2_ba'length,
+		addr_size  => ddr2_a'length,
 		word_size  => ddr2_d'length,
 		byte_size  => byte_size,
 		gear       => gear,

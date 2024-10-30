@@ -67,7 +67,7 @@ architecture graphics of ulx4m_ld is
 		(real(sdram_params.pll.clkos_div*sdram_params.pll.clkfb_div)*clk25mhz_freq);
 
 	constant phy_data    : string  := hdo(phy_db)**".ulx4ld_ecp5g4";
-	constant sdram_gear  : natural := hdo(phy_data)**".gear";
+	constant sdram_gear  : natural := hdo(phy_data)**".orgz.gear";
 	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
 	constant ba_latency  : natural := 1;
 	constant usb_oversampling : natural := 3;

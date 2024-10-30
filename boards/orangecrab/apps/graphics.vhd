@@ -64,7 +64,7 @@ architecture graphics of orangecrab is
 	constant sdram_tcp : real := 1.0/sdram_freq(sdram_params, clk48MHz_freq);
 
 	constant phy_data    : string  := hdo(phy_db)**".orangecrab_ecp5g4";
-	constant sdram_gear  : natural := hdo(phy_data)**".gear";
+	constant sdram_gear  : natural := hdo(phy_data)**".orgz.gear";
 	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
 	constant usb_oversampling : natural := 3;
 

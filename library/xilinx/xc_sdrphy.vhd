@@ -32,11 +32,11 @@ use hdl4fpga.profiles.all;
 
 entity xc_sdrphy is
 	generic (
-		bank_size   : natural := 2;
-		addr_size   : natural := 13;
-		word_size   : natural := 16;
-		byte_size   : natural := 8;
-		gear        : natural := 2;
+		bank_size   : natural;
+		addr_size   : natural;
+		word_size   : natural;
+		byte_size   : natural;
+		gear        : natural;
 
 		device      : fpga_devices;
 		ba_latency  : natural := 0;
