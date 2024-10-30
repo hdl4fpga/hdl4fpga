@@ -651,6 +651,7 @@ begin
 		ctlr_rtt      => "11",
 		ctlr_al       => "000",
 		ctlr_bl       => "011", -- Busrt length 8
+		ctlr_wrl      => "001", -- Write 8
 		ctlr_cl       => sdram_params.cl,
 		ctlr_cmd      => ctlrphy_cmd,
 		ctlrphy_ini   => ctlrphy_ini,

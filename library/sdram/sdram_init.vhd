@@ -171,8 +171,8 @@ begin
 			nop & mrx & "11101" & "0" & REFi_id;
 	
 		constant ddr2_init_data : std_logic_vector := 
-			nop & mrx & "10000" & "0" & PreRST_id  &
-			nop & mrx & "01000" & "0" & XPR_id  &
+			nop & mrx & "00000" & "0" & PreRST_id  &
+			nop & mrx & "11000" & "0" & XPR_id  &
 			pre & mrx & "11000" & "0" & RPA_id  &
 			mrs & mr2 & "11000" & "0" & MRD_id  &
 			mrs & mr3 & "11000" & "0" & MRD_id  &
@@ -323,6 +323,8 @@ begin
     					sdram_init_a(sdr_mrdata'range)  <= sdr_mrdata;
     				elsif fmly="ddr" then
     					sdram_init_a(ddr_mrdata'range)  <= ddr_mrdata;
+    				elsif fmly="ddr2" then
+    					sdram_init_a(ddr2_mrdata'range) <= ddr2_mrdata;
     				elsif fmly="ddr3" then
     					sdram_init_a(ddr3_mrdata'range) <= ddr3_mrdata;
     				end if;
