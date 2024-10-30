@@ -188,12 +188,10 @@ architecture scopeio of ulx3s is
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff}]}");   -- vt(7)
 
-	constant bank_size     : natural := sdram_ba'length;
-	constant addr_size     : natural := sdram_a'length; 
-	constant byte_size     : natural := sdram_d'length/sdram_dqm'length;
-
-	constant phy_data      : string  := hdo(phy_db)**".ecp5g1";
-	constant gear          : natural := hdo(phy_data)**".gear";
+	constant bank_size   : natural := sdram_ba'length;
+	constant addr_size   : natural := sdram_a'length; 
+	constant phy_data    : string  := hdo(phy_db)**".ecp5g1";
+	constant gear        : natural := hdo(phy_data)**".orgz.gear";
 
 	signal ctlr_clk      : std_logic;
 	signal sdrsys_rst    : std_logic;
@@ -573,7 +571,7 @@ begin
 		bank_size  => sdram_ba'length,
 		addr_size  => sdram_a'length,
 		word_size  => sdram_d'length,
-		byte_size  => byte_size,
+		byte_size  => sdram_d'length/sdram_dqm'length,
 		wr_fifo    => false,
 		rd_fifo    => false,
 		bypass     => false)
