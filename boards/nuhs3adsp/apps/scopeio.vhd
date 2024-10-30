@@ -136,16 +136,6 @@ architecture scopeio of nuhs3adsp is
 			"     step  : " & vt_step & ","  &
 			"     color : 0xff_ff_ff_ff}]}");
 
-	constant sdram : string := compact(
-		"{" &
-		"   gear      : 2," &
-		"   bank_size : " & natural'image(ddr_ba'length) & "," &
-		"   addr_size : " & natural'image(ddr_a'length)  & "," &
-		"   coln_size : 9," &
-		"   word_size : " & natural'image(ddr_dq'length)  & "," &
-		"   byte_size : " & natural'image(ddr_dq'length/ddr_dm'length) & "," &
-		"}");
-
 	type dcm_params is record
 		dcm_mul : natural;
 		dcm_div : natural;
