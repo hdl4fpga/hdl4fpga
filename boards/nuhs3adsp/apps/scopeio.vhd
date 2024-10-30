@@ -178,7 +178,7 @@ architecture scopeio of nuhs3adsp is
 	constant sdram_tcp    : real := real(sdram_params.cm.dcm_div)*clk_per/real(sdram_params.cm.dcm_mul);
 
 	constant phy_data     : string  := hdo(phy_db)**".xc3sg2";
-	constant gear         : natural := hdo(phy_db)**".gear";
+	constant gear         : natural := hdo(phy_data)**".orgz.gear";
 	constant byte_size    : natural := ddr_dq'length/ddr_dm'length;
 
 	signal sdrsys_rst     : std_logic;
@@ -574,8 +574,8 @@ begin
 		debug     => debug,
 		profile   => 1,
 		sdram_tcp => sdram_tcp,
-		phy_data     => hdo(phy_db)**".xc3sg2",
 		sdram_data   => hdo(sdram_db)**".MT46V256M6T",
+		phy_data     => phy_data,
 		timing_id => pclk150_00m1920x1080at60,
 		layout    => layout)
 	port map (
@@ -634,7 +634,7 @@ begin
 		addr_size   => ddr_a'length,
 		gear        => gear,
 		word_size   => ddr_dq'length,
-		byte_size   => byte_size,
+		byte_size   => ddr_dq'length/ddr_dm'length,
 		bypass      => true,
 		loopback    => true,
 		rd_fifo     => true,

@@ -408,8 +408,7 @@ package body hdo is
 		constant hdo       : in    string;
 		variable hdo_index : inout natural;
 		variable offset    : inout natural;
-		variable length    : inout natural;
-		constant parse     : boolean := false) is
+		variable length    : inout natural) is
 		variable aphos     : boolean := false;
 		variable bkslh     : boolean := false;
 	begin
@@ -421,30 +420,20 @@ package body hdo is
 
 			if hdo(hdo_index)='\' then
 				bkslh := true;
-				if parse then
-					hdo_index := hdo_index  + 1;
-				end if;
 				next;
 			elsif (hdo_index-offset)=0 then
 				if hdo(hdo_index)=''' then
 					aphos     := true;
 					offset    := hdo_index;
 					hdo_index := hdo_index + 1;
-					if parse then
-						offset := offset + 1;
-					end if;
 					next;
 				end if;
 			end if;
 			if not bkslh then
 				if aphos then
 					if hdo(hdo_index)=''' then
-						length    := hdo_index-offset;
 						hdo_index := hdo_index + 1;
-						if not parse then
-							length := length + 1;
-						end if;
-						return;
+						exit;
 					else
 						hdo_index := hdo_index + 1;
 					end if;
@@ -836,10 +825,11 @@ package body hdo is
 
 
 			if not isdigit(key(key'left)) then
-
-				if compare_string(key, hdo(tag_offset to tag_offset+tag_length-1)) then
-					offset := tag_offset;
-					length := hdo_index-offset;
+				if tag_length/=0 and key'length/=0 then 
+					if compare_string(key, hdo(tag_offset to tag_offset+tag_length-1)) then
+						offset := tag_offset;
+						length := hdo_index-offset;
+					end if;
 				end if;
 			elsif to_natural(key) <= position then
 				offset := tag_offset;

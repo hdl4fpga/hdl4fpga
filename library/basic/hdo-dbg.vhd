@@ -408,8 +408,7 @@ package body hdo is
 		constant hdo       : in    string;
 		variable hdo_index : inout natural;
 		variable offset    : inout natural;
-		variable length    : inout natural;
-		constant parse     : boolean := false) is
+		variable length    : inout natural) is
 		variable aphos     : boolean := false;
 		variable bkslh     : boolean := false;
 	begin
@@ -421,33 +420,23 @@ package body hdo is
 
 			if hdo(hdo_index)='\' then
 				bkslh := true;
-				if parse then
-					hdo_index := hdo_index  + 1;
-				end if;
 				next;
 			elsif (hdo_index-offset)=0 then
 				if hdo(hdo_index)=''' then
 					aphos     := true;
 					offset    := hdo_index;
 					hdo_index := hdo_index + 1;
-					if parse then
-						offset := offset + 1;
-					end if;
 					next;
 				end if;
 			end if;
 			if not bkslh then
 				if aphos then
 					if hdo(hdo_index)=''' then
-						length    := hdo_index-offset;
 						hdo_index := hdo_index + 1;
-						if not parse then
-							length := length + 1;
-						end if;
 						assert (log/log_parsestring) mod 2=0 --|note
 							report LF & "parse_string => " & '"' & hdo(offset to offset+length-1) & '"' --|note
 							severity note; --|note
-						return;
+						exit;
 					else
 						hdo_index := hdo_index + 1;
 					end if;
