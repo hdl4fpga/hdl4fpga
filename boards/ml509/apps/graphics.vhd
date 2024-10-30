@@ -30,7 +30,7 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.profiles.all;
 use hdl4fpga.app_profiles.all;
-use hdl4fpga.sdram_db.all;
+use hdl4fpga.sdrampkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
 
@@ -517,8 +517,7 @@ begin
 				dst_offset => 0,
 				src_offset => 2,
 				check_sov  => false,
-				check_dov  => true,
-				gray_code  => false)
+				check_dov  => true)
 			port map (
 				src_clk  => mii_rxc,
 				src_data => rxc_rxbus,
@@ -617,13 +616,6 @@ begin
 
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
-		bank_size    => bank_size,
-		addr_size    => addr_size,
-		coln_size    => coln_size,
-		word_size    => word_size,
-		byte_size    => byte_size,
-		gear         => gear,
-
 		ena_burstref => false,
 		debug => debug,
 		profile      => 1,

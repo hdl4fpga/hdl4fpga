@@ -27,6 +27,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.videopkg.all;
 
 entity app_graphics is
@@ -39,12 +40,6 @@ entity app_graphics is
 		sdram_tcp    : real;
 		phy_data     : string := "";
 		sdram_data   : string := "";
-		gear         : natural;
-		bank_size    : natural;
-		addr_size    : natural;
-		coln_size    : natural;
-		word_size    : natural;
-		byte_size    : natural;
 		burst_length : natural := 0;
 
 		timing_id    : videotiming_ids;
@@ -102,22 +97,24 @@ entity app_graphics is
 		ctlrphy_cas   : buffer std_logic;
 		ctlrphy_we    : buffer std_logic;
 		ctlrphy_odt   : out std_logic;
-		ctlrphy_b     : out std_logic_vector(bank_size-1 downto 0);
-		ctlrphy_a     : out std_logic_vector(addr_size-1 downto 0);
-		ctlrphy_dqst  : out std_logic_vector(gear-1 downto 0);
-		ctlrphy_dqso  : out std_logic_vector(gear-1 downto 0);
-		ctlrphy_dmi   : in  std_logic_vector(gear*word_size/byte_size-1 downto 0) := (others => '-');
-		ctlrphy_dmo   : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
-		ctlrphy_dqt   : out std_logic_vector(gear-1 downto 0);
-		ctlrphy_dqi   : in  std_logic_vector(gear*word_size-1 downto 0);
-		ctlrphy_dqo   : out std_logic_vector(gear*word_size-1 downto 0);
-		ctlrphy_dqv   : out std_logic_vector(gear-1 downto 0);
-		ctlrphy_sto   : out std_logic_vector(gear-1 downto 0);
-		ctlrphy_sti   : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		ctlrphy_b     : out std_logic_vector(hdo(sdram_data)**".orgz.addr.ba=1."-1 downto 0);
+		ctlrphy_a     : out std_logic_vector(hdo(sdram_data)**".orgz.addr.row=1."-1 downto 0);
+		ctlrphy_dqst  : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
+		ctlrphy_dqso  : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
+		ctlrphy_dmi   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0) := (others => '-');
+		ctlrphy_dmo   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0);
+		ctlrphy_dqt   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
+		ctlrphy_dqi   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dq=1."-1 downto 0) := (others => '-');
+		ctlrphy_dqo   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dq=1."-1 downto 0);
+		ctlrphy_dqv   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
+		ctlrphy_sto   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
+		ctlrphy_sti   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0) := (others => '-');
 		tp_sel        : in  std_logic_vector(0 to 4-1) := (others => '0');
 		tp            : out std_logic_vector(1 to 32));
 
 	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length));
+	constant gear          : natural := hdo(phy_data)**".orgz.gear=1.";
+	constant coln_size     : natural := hdo(sdram_data)**".orgz.addr.col=1.";
 
 end;
 
@@ -142,7 +139,8 @@ architecture mix of app_graphics is
 		3 => (ddro => 3, dmaio => 2, sodata => 1, adapter => 1)); -- NUHS3ADSP BOARD 166 MHz
 
 	constant coln_bits    : natural := coln_size-(unsigned_num_bits(gear)-1);
-	signal dmactlr_addr   : std_logic_vector(bank_size+addr_size+coln_bits-1 downto 0);
+	constant byte_size    : natural := ctlrphy_dqo'length/ctlrphy_dmo'length;
+	signal dmactlr_addr   : std_logic_vector(ctlrphy_b'length+ctlrphy_a'length+coln_bits-1 downto 0);
 	signal dmactlr_len    : std_logic_vector(dmactlr_addr'range);
 
 	signal dmacfgio_req   : std_logic;
@@ -160,11 +158,11 @@ architecture mix of app_graphics is
 	signal ctlr_refreq    : std_logic;
 	signal ctlr_alat      : std_logic_vector(2 downto 0);
 	signal ctlr_blat      : std_logic_vector(2 downto 0);
-	signal ctlr_b         : std_logic_vector(bank_size-1 downto 0);
-	signal ctlr_a         : std_logic_vector(addr_size-1 downto 0);
-	signal ctlr_di        : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlr_do        : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlr_do_dv     : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlr_b         : std_logic_vector(ctlrphy_b'length-1 downto 0);
+	signal ctlr_a         : std_logic_vector(ctlrphy_a'length-1 downto 0);
+	signal ctlr_di        : std_logic_vector(ctlrphy_dqi'range);
+	signal ctlr_do        : std_logic_vector(ctlrphy_dqi'range);
+	signal ctlr_do_dv     : std_logic_vector(ctlrphy_dmo'range);
 	signal ctlr_di_dv     : std_logic;
 	signal ctlr_di_req    : std_logic;
 
@@ -251,7 +249,7 @@ begin
 		signal debug_dmaio_req    : std_logic;
 		signal debug_dmaio_rdy    : std_logic;
 
-		constant word_bits    : natural := unsigned_num_bits(ctlr_di'length/byte_size)-1;
+		constant word_bits    : natural := unsigned_num_bits(ctlrphy_dmo'length)-1;
 		constant blword_bits  : natural := word_bits+unsigned_num_bits(setif(burst_length=0, gear, burst_length)/gear)-1;
 
 		signal status         : std_logic_vector(0 to 8-1);
@@ -850,8 +848,8 @@ begin
 		generic map (
 			burst_length => burst_length,
 			data_gear    => gear,
-			bank_size    => bank_size,
-			addr_size    => addr_size,
+			bank_size    => ctlrphy_b'length,
+			addr_size    => ctlrphy_a'length,
 			coln_size    => coln_size)
 		port map (
 			devcfg_clk   => sin_clk,
@@ -956,7 +954,7 @@ begin
 			ctlr_di_dv   => ctlr_di_dv,
 			ctlr_di_req  => ctlr_di_req,
 			ctlr_di      => ctlr_di,
-			ctlr_dm      => (0 to gear*word_size/byte_size-1 => '0'),
+			ctlr_dm      => (ctlrphy_dmi'range => '0'),
 			ctlr_do_dv   => ctlr_do_dv,
 			ctlr_do      => ctlr_do,
 			ctlr_refreq  => ctlr_refreq,
