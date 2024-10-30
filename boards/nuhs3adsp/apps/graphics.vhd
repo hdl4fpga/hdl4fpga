@@ -163,10 +163,8 @@ architecture graphics of nuhs3adsp is
 	constant sdram_tcp    : real := real(sdram_params.dcm.dcm_div)*clk_per/real(sdram_params.dcm.dcm_mul);
 
 
-	constant bank_size    : natural := ddr_ba'length;
-	constant addr_size    : natural := ddr_a'length;
-	constant word_size    : natural := ddr_dq'length;
 	constant byte_size    : natural := ddr_dq'length/ddr_dm'length;
+	constant phy_data   : string  := hdo(phy_db)**".ecp5g1";
 	constant gear         : natural := 2;
 
 	signal ddr_clk0       : std_logic;
@@ -183,16 +181,16 @@ architecture graphics of nuhs3adsp is
 	signal ctlrphy_b      : std_logic_vector((gear+1)/2*ddr_ba'length-1 downto 0);
 	signal ctlrphy_a      : std_logic_vector((gear+1)/2*ddr_a'length-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqsi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqsi   : std_logic_vector(gear*ddr_dqs'length-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*ddr_dqs'length-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*ddr_dqs'length-1 downto 0);
 	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*ddr_dqs'length-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*ddr_dqs'length-1 downto 0);
 	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*ddr_dqs'length-1 downto 0);
 
 	signal ctlrphy_wlreq  : std_logic;
 	signal ctlrphy_wlrdy  : std_logic;

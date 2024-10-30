@@ -187,14 +187,11 @@ architecture scopeio of nuhs3adsp is
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := real(sdram_params.cm.dcm_div)*clk_per/real(sdram_params.cm.dcm_mul);
 
-	constant gear         : natural := hdo(sdram)**".gear";
-	constant bank_size    : natural := hdo(sdram)**".bank_size";
-	constant addr_size    : natural := hdo(sdram)**".addr_size";
-	constant coln_size    : natural := hdo(sdram)**".coln_size";
-	constant word_size    : natural := hdo(sdram)**".word_size";
-	constant byte_size    : natural := hdo(sdram)**".byte_size";
+	constant phy_data     : string  := hdo(phy_db)**".xc3sg2";
+	constant gear         : natural := hdo(phy_db)**".gear";
+	constant byte_size    : natural := ddr_dq'length/ddr_dm'length;
 
-	signal sdrsys_rst    : std_logic;
+	signal sdrsys_rst     : std_logic;
 
 	signal ctlrphy_rst    : std_logic;
 	signal ctlrphy_cke    : std_logic_vector((gear+1)/2-1 downto 0);
@@ -206,16 +203,16 @@ architecture scopeio of nuhs3adsp is
 	signal ctlrphy_b      : std_logic_vector((gear+1)/2*ddr_ba'length-1 downto 0);
 	signal ctlrphy_a      : std_logic_vector((gear+1)/2*ddr_a'length-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqsi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqsi   : std_logic_vector(gear*ddr_dqs'length-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*ddr_dm'length-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*ddr_dm'length-1 downto 0);
 	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*ddr_dq'length-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*ddr_dq'length-1 downto 0);
 	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*ddr_dqs'length-1 downto 0);
 
 	signal ctlrphy_wlreq  : std_logic;
 	signal ctlrphy_wlrdy  : std_logic;
@@ -646,7 +643,7 @@ begin
 		bank_size   => ddr_ba'length,
 		addr_size   => ddr_a'length,
 		gear        => gear,
-		word_size   => word_size,
+		word_size   => ddr_dq'length,
 		byte_size   => byte_size,
 		bypass      => true,
 		loopback    => true,
