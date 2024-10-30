@@ -28,11 +28,12 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.profiles.all;
-use hdl4fpga.app_profiles.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.sdrampkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
+use hdl4fpga.profiles.all;
+use hdl4fpga.app_profiles.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -163,15 +164,9 @@ architecture graphics of ml509 is
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (real(sdram_params.pll.divclk_divide)*userclk_per)/real(sdram_params.pll.clkfbout_mult);
 
-	constant bank_size    : natural := ddr2_ba'length;
-	constant addr_size    : natural := ddr2_a'length;
-	constant word_size    : natural := ddr2_d'length;
-	constant byte_size    : natural := ddr2_d'length/ddr2_dm'length;
-	-- constant bank_size    : natural := 2;
-	-- constant addr_size    : natural := 13;
-	-- constant word_size    : natural := byte_size*8;
-	constant coln_size    : natural := 10;
-	constant gear         : natural := 4;
+	constant byte_size   : natural := ddr2_d'length/ddr2_dm'length;
+	constant phy_data    : string  := hdo(phy_db)**".xc5g4";
+	constant gear        : natural := hdo(phy_data)**".gear";
 
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk90      : std_logic;
@@ -185,8 +180,8 @@ architecture graphics of ml509 is
 	signal ctlrphy_ini    : std_logic;
 	signal ctlrphy_rw     : std_logic;
 
-	signal ddr_b          : std_logic_vector(bank_size-1 downto 0);
-	signal ddr_a          : std_logic_vector(addr_size-1 downto 0);
+	signal ddr_b          : std_logic_vector(ddr2_ba'range);
+	signal ddr_a          : std_logic_vector(ddr2_a'length-1 downto 0);
 
 	signal ctlrphy_rst    : std_logic_vector(0 to gear/2-1);
 	signal ctlrphy_cke    : std_logic_vector(0 to gear/2-1);
@@ -200,14 +195,14 @@ architecture graphics of ml509 is
 	signal ctlrphy_a      : std_logic_vector(gear/2*ddr_a'length-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*ddr2_dm'length-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*ddr2_dm'length-1 downto 0);
 	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*ddr2_d'length-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*ddr2_d'length-1 downto 0);
 	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*ddr2_dqs_p'length-1 downto 0);
 
 	signal ctlrphy_wlreq  : std_logic;
 	signal ctlrphy_wlrdy  : std_logic;
@@ -215,11 +210,11 @@ architecture graphics of ml509 is
 	signal ctlrphy_rlrdy  : std_logic;
 
 	signal ddr2_clk       : std_logic_vector(ddr2_clk_p'range);
-	signal ddr2_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr2_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr2_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr2_dqo       : std_logic_vector(word_size-1 downto 0);
-	signal ddr2_dqt       : std_logic_vector(word_size-1 downto 0);
+	signal ddr2_dqst      : std_logic_vector(ddr2_dqs_p'length-1 downto 0);
+	signal ddr2_dqso      : std_logic_vector(ddr2_dqs_p'length-1 downto 0);
+	signal ddr2_dqsi      : std_logic_vector(ddr2_dqs_p'length-1 downto 0);
+	signal ddr2_dqo       : std_logic_vector(ddr2_d'length-1 downto 0);
+	signal ddr2_dqt       : std_logic_vector(ddr2_d'length-1 downto 0);
 
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
@@ -616,14 +611,13 @@ begin
 
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
-		ena_burstref => false,
 		debug => debug,
 		profile      => 1,
 		sdram_tcp    => 2.0*sdram_tcp,
-		mark         => MT47H512M3,
+		sdram_data   => hdo(sdram_db)**".MT4HTF12864HZ",
 		burst_length => 8,
 
-		phy_latencies => xc5vg4_latencies,
+		phy_data => phy_data,
 		timing_id    => videoparam(video_mode).timing,
 		red_length   => 8,
 		green_length => 8,
@@ -725,9 +719,8 @@ begin
 	
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
-		bank_size  => bank_size,
-		addr_size  => addr_size,
-		word_size  => word_size,
+		bank_size  => ddr2_ba'length,
+		word_size  => ddr2_d'length,
 		byte_size  => byte_size,
 		gear       => gear,
 		ba_latency => 1,
@@ -783,12 +776,12 @@ begin
 		sdram_ras  => ddr2_ras,
 		sdram_cas  => ddr2_cas,
 		sdram_we   => ddr2_we,
-		sdram_b    => ddr2_ba(bank_size-1 downto 0),
-		sdram_a    => ddr2_a(addr_size-1 downto 0),
+		sdram_b    => ddr2_ba,
+		sdram_a    => ddr2_a,
 		sdram_odt  => ddr2_odt,
 
-		sdram_dm   => ddr2_dm(word_size/byte_size-1 downto 0),
-		sdram_dq   => ddr2_d(word_size-1 downto 0),
+		sdram_dm   => ddr2_dm(ddr2_dm'length-1 downto 0),
+		sdram_dq   => ddr2_d,
 		sdram_dqst => ddr2_dqst,
 		sdram_dqs  => ddr2_dqsi,
 		sdram_dqso => ddr2_dqso);
@@ -841,10 +834,6 @@ begin
 
 	ddrio_b : block
 	begin
-
-		ddr2_ba(ddr2_ba'left downto bank_size) <= (others => '0');
-		ddr2_a(ddr2_a'left downto addr_size)   <= (others => '0');
-
 		ddr_clk_g : for i in ddr2_clk'range generate
 			ddr_ck_obufds : obufds
 			generic map (
@@ -857,34 +846,16 @@ begin
 
 		ddr_dqs_g : for i in ddr2_dqs_p'range generate
 		begin
-
-			true_g : if i < word_size/byte_size generate
-				dqsiobuf_i : iobufds
-				generic map (
-					iostandard => "DIFF_SSTL18_II_DCI")
-				port map (
-					t   => ddr2_dqst(i),
-					i   => ddr2_dqso(i),
-					o   => ddr2_dqsi(i),
-					io  => ddr2_dqs_p(i),
-					iob => ddr2_dqs_n(i));
-			end generate;
-
-			false_g : if not (i < word_size/byte_size) generate
-				dqsiobuf_i : iobufds
-				generic map (
-					iostandard => "DIFF_SSTL18_II_DCI")
-				port map (
-					t   => '1',
-					i   => '-',
-					o   => open,
-					io  => ddr2_dqs_p(i),
-					iob => ddr2_dqs_n(i));
-			end generate;
-
+			dqsiobuf_i : iobufds
+			generic map (
+				iostandard => "DIFF_SSTL18_II_DCI")
+			port map (
+				t   => ddr2_dqst(i),
+				i   => ddr2_dqso(i),
+				o   => ddr2_dqsi(i),
+				io  => ddr2_dqs_p(i),
+				iob => ddr2_dqs_n(i));
 		end generate;
-
-		ddr2_d(ddr2_d'left downto word_size) <= (others => 'Z');
 
 	end block;
 
