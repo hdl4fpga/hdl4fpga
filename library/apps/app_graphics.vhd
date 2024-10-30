@@ -298,7 +298,6 @@ begin
 			dst_end  => meta_end,
 			dst_data => meta_data);
 
-
 		rx_b : block
 			signal ctlr_di_rdy: std_logic;
 		begin

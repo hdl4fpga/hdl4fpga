@@ -188,21 +188,13 @@ architecture scopeio of ulx3s is
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff}]}");   -- vt(7)
 
-	constant sdram : string := compact(
-		"{" &
-		"   gear      : 1," &
-		"   bank_size : " & natural'image(sdram_ba'length) & "," &
-		"   addr_size : " & natural'image(sdram_a'length)  & "," &
-		"   coln_size : 9," &
-		"   word_size : " & natural'image(sdram_d'length)  & "," &
-		"   byte_size : " & natural'image(sdram_d'length/sdram_dqm'length) & "," &
-		"}");
-	constant gear          : natural := hdo(sdram)**".gear";
-	constant bank_size     : natural := hdo(sdram)**".bank_size";
-	constant addr_size     : natural := hdo(sdram)**".addr_size";
-	constant coln_size     : natural := hdo(sdram)**".coln_size";
-	constant word_size     : natural := hdo(sdram)**".word_size";
-	constant byte_size     : natural := hdo(sdram)**".byte_size";
+	constant bank_size     : natural := sdram_ba'length;
+	constant addr_size     : natural := sdram_a'length; 
+	constant byte_size     : natural := sdram_d'length/sdram_dqm'length;
+
+	constant phy_data      : string  := hdo(phy_db)**".ecp5g1";
+	constant gear          : natural := hdo(phy_data)**".gear";
+
 	signal ctlr_clk      : std_logic;
 	signal sdrsys_rst    : std_logic;
 
@@ -216,14 +208,14 @@ architecture scopeio of ulx3s is
 	signal ctlrphy_we    : std_logic;
 	signal ctlrphy_b     : std_logic_vector(sdram_ba'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(sdram_a'length-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(gear*sdram_dqm'length-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(gear*sdram_d'length-1 downto 0);
 	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(gear*sdram_d'length-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
 	signal sdrphy_sti    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal sdram_dqs     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(gear*sdram_dqm'length-1 downto 0);
+	signal sdram_dqs     : std_logic_vector(sdram_dqm'length-1 downto 0);
 
 begin
 
@@ -521,7 +513,7 @@ begin
 		debug => debug,
 		profile => 0,
 		sdram_tcp    => 1.0/sdram_freq,
-		phy_data     => hdo(phy_db)**".ecp5g1",
+		phy_data     => phy_data,
 		sdram_data   => hdo(sdram_db)**".MT48LC256MA27E",
 		timing_id => video_params.timing,
 		layout         => layout)
@@ -580,7 +572,7 @@ begin
 		gear       => gear,
 		bank_size  => sdram_ba'length,
 		addr_size  => sdram_a'length,
-		word_size  => word_size,
+		word_size  => sdram_d'length,
 		byte_size  => byte_size,
 		wr_fifo    => false,
 		rd_fifo    => false,

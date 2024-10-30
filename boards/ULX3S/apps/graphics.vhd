@@ -73,8 +73,8 @@ architecture graphics of ulx3s is
 	constant addr_size   : natural := sdram_a'length;
 	constant word_size   : natural := sdram_d'length;
 	constant byte_size   : natural := sdram_d'length/sdram_dqm'length;
-	constant coln_size   : natural := 9;
-	constant gear        : natural := 1;
+	constant phy_data    : string  := hdo(phy_db)**".ecp5g1";
+	constant gear        : natural := hdo(phy_data)**".gear";
 	constant usb_oversampling : natural := 3;
 
 	signal ctlr_clk      : std_logic;
@@ -389,12 +389,6 @@ begin
 		sdram_tcp    => sdram_tcp,
 		phy_data     => hdo(phy_db)**".ecp5g1",
 		sdram_data   => hdo(sdram_db)**".MT48LC256MA27E",
-		gear         => gear,
-		bank_size    => bank_size,
-		addr_size    => addr_size,
-		coln_size    => coln_size,
-		word_size    => word_size,
-		byte_size    => byte_size,
 
 		timing_id    => video_params.timing,
 		video_gear   => video_gear,

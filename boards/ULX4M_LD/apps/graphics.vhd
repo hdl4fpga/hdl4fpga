@@ -72,7 +72,8 @@ architecture graphics of ulx4m_ld is
 	constant word_size   : natural := ddram_dq'length;
 	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
 	constant coln_size   : natural := 10;
-	constant sdram_gear  : natural := 4;
+	constant phy_data    : string  := hdo(phy_db)**".ulx4ld_ecp5g4";
+	constant sdram_gear  : natural := hdo(phy_data)**".gear";
 	constant usb_oversampling : natural := 3;
 
 	signal sys_rst       : std_logic;
@@ -379,14 +380,8 @@ begin
 		debug        => debug, -- true,
 		profile      => 2,
 		sdram_tcp    => 2.0*sdram_tcp,
-		phy_data     => hdo(phy_db)**".ulx4ld_ecp5g4",
+		phy_data     => phy_data,
 		sdram_data   => hdo(sdram_db)**".MT41K8G125",
-		gear         => sdram_gear,
-		bank_size    => bank_size,
-		addr_size    => addr_size,
-		coln_size    => coln_size,
-		word_size    => word_size,
-		byte_size    => byte_size,
 		burst_length => 8,
 
 		timing_id    => video_params.timing,
