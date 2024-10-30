@@ -167,7 +167,6 @@ architecture graphics of nuhs3adsp is
 	constant addr_size    : natural := ddr_a'length;
 	constant word_size    : natural := ddr_dq'length;
 	constant byte_size    : natural := ddr_dq'length/ddr_dm'length;
-	constant coln_size    : natural := 9;
 	constant gear         : natural := 2;
 
 	signal ddr_clk0       : std_logic;
@@ -578,11 +577,6 @@ begin
 		mark         => MT46V256M6T,
 		phy_latencies => xc3sg2_latencies,
 		gear         => gear,
-		bank_size    => bank_size,
-		addr_size    => addr_size,
-		coln_size    => coln_size,
-		word_size    => word_size,
-		byte_size    => byte_size,
 
 		burst_length => 2,
 		-- burst_length => 4,
@@ -651,7 +645,7 @@ begin
 		bank_size   => ddr_ba'length,
 		addr_size   => ddr_a'length,
 		gear        => gear,
-		word_size   => word_size,
+		word_size   => ddr_dq'length,
 		byte_size   => byte_size,
 		bypass      => true,
 		loopback    => true,

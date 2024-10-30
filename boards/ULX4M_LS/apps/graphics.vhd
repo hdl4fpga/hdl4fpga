@@ -60,9 +60,6 @@ architecture graphics of ulx4m_ls is
 		real(sdram_params.pll.clki_div*sdram_params.pll.clkop_div)/
 		(real(sdram_params.pll.clkfb_div*sdram_params.pll.clkos_div)*clk25mhz_freq);
 
-	constant bank_size  : natural := sdram_ba'length;
-	constant addr_size  : natural := sdram_a'length;
-	constant word_size  : natural := sdram_d'length;
 	constant byte_size  : natural := sdram_d'length/sdram_dqm'length;
 	constant coln_size  : natural := 9;
 	constant phy_data   : string  := hdo(phy_db)**".ecp5g1";
@@ -80,14 +77,14 @@ architecture graphics of ulx4m_ls is
 	signal ctlrphy_we   : std_logic;
 	signal ctlrphy_b    : std_logic_vector(sdram_ba'length-1 downto 0);
 	signal ctlrphy_a    : std_logic_vector(sdram_a'length-1 downto 0);
-	signal ctlrphy_dmo  : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqi  : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dmo  : std_logic_vector(gear*sdram_dqm'length-1 downto 0);
+	signal ctlrphy_dqi  : std_logic_vector(gear*sdram_d'length-1 downto 0);
 	signal ctlrphy_dqt  : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqo  : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqo  : std_logic_vector(gear*sdram_d'length-1 downto 0);
 	signal ctlrphy_sto  : std_logic_vector(gear-1 downto 0);
 	signal sdrphy_sti   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti  : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal sdram_dqs    : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti  : std_logic_vector(gear*sdram_dqm'length-1 downto 0);
+	signal sdram_dqs    : std_logic_vector(sdram_dqm'length-1 downto 0);
 
 	signal video_clk    : std_logic;
 	signal video_lck    : std_logic;
@@ -354,7 +351,7 @@ begin
 		gear       => gear,
 		bank_size  => sdram_ba'length,
 		addr_size  => sdram_a'length,
-		word_size  => word_size,
+		word_size  => sdram_d'length,
 		byte_size  => byte_size,
 		wr_fifo    => false,
 		rd_fifo    => false,

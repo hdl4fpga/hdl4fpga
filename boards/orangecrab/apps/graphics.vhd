@@ -63,12 +63,9 @@ architecture graphics of orangecrab is
 	
 	constant sdram_tcp : real := 1.0/sdram_freq(sdram_params, clk48MHz_freq);
 
-	constant bank_size   : natural := ddram_ba'length;
-	constant addr_size   : natural := ddram_a'length;
-	constant word_size   : natural := ddram_dq'length;
-	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
 	constant phy_data    : string  := hdo(phy_db)**".orangecrab_ecp5g4";
 	constant sdram_gear  : natural := hdo(phy_data)**".gear";
+	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
 	constant usb_oversampling : natural := 3;
 
 	signal sys_rst       : std_logic;
@@ -96,13 +93,13 @@ architecture graphics of orangecrab is
 	signal ctlrphy_a     : std_logic_vector(sdram_gear/2*ddram_a'length-1 downto 0);
 	signal ctlrphy_dqst  : std_logic_vector(sdram_gear-1 downto 0);
 	signal ctlrphy_dqso  : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(sdram_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(sdram_gear*ddram_dm'length-1 downto 0);
 	signal ctlrphy_dqt   : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(sdram_gear*word_size-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(sdram_gear*word_size-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(sdram_gear*ddram_dq'length-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(sdram_gear*ddram_dq'length-1 downto 0);
 	signal ctlrphy_dqv   : std_logic_vector(sdram_gear-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(sdram_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(sdram_gear*ddram_dm'length-1 downto 0);
 
 	signal sdr_b         : std_logic_vector(ddram_ba'range);
 	signal sdr_a         : std_logic_vector(ddram_a'length-1 downto 0);
@@ -384,7 +381,7 @@ begin
 		debug        => debug,
 		bank_size    => ddram_ba'length,
 		addr_size    => ddram_a'length,
-		word_size    => word_size,
+		word_size    => ddram_dq'length,
 		byte_size    => byte_size,
 		gear         => sdram_gear,
 		ba_latency   => ba_latency,
