@@ -583,7 +583,7 @@ begin
 
 		sdram_tcp    => 2.0*sdram_tcp,
 		-- mark         => MT41J1G15E,
-		mark         => MT41K8G125,
+		mark         => MT41J64M16-15E,
 		burst_length => 8,
 		gear         => gear,
 		bank_size    => bank_size,
