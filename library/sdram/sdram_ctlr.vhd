@@ -100,11 +100,12 @@ entity sdram_ctlr is
 		phy_sto     : out std_logic_vector(hdo(phy_data)**".orgz.gear"-1 downto 0);
 		phy_dqi     : in  std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(sdram_data)**".orgz.data.dq"-1 downto 0));
 
-	constant fmly           : string := hdo(sdram_data)**".fmly";
-	constant fmly_data      : string := hdo(families_db)**("."&fmly);
-	constant fmlytmng_data  : string := hdo(fmly_data)**(".tmng");
-	constant sdramtmng_data : string := hdo(sdram_data)**".tmng";
-	constant phytmng_data   : string := hdo(phy_data)**".tmng";
+	constant fmly           : string  := hdo(sdram_data)**".fmly";
+	constant fmly_data      : string  := hdo(families_db)**("."&fmly);
+	constant fmlytmng_data  : string  := hdo(fmly_data)**(".tmng");
+	constant sdramtmng_data : string  := hdo(sdram_data)**".tmng";
+	constant gear           : natural := hdo(phy_data)**".orgz.gear";
+	constant phytmng_data   : string  := hdo(phy_data)**".tmng";
 
 	constant al_tab         : natural_vector := lattab(hdo(fmly_data)**(".al"), 8);
 	constant bl_tab         : natural_vector := lattab(hdo(fmly_data)**(".bl"), 8);
@@ -181,6 +182,7 @@ begin
 	generic map (
 		debug            => debug,
 		sdramtmng_data   => sdramtmng_data,
+		gear             => gear,
 		fmly             => fmly,
 		fmly_data        => fmly_data,
 		tcp              => tcp)

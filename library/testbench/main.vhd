@@ -41,7 +41,7 @@ begin
 	constant phy_data : string := hdo(phy_db)**".ecp5g1";
 	constant phytmng_data : string := hdo(phy_data)**".tmng";
 
-	constant chip_id   : string := "MT4HTF12864HZ";
+	constant chip_id   : string := "MT41K2G125";
 	constant sdram_data : string        := hdo(sdram_db)**("."&chip_id);
 	constant fmly      : string         := hdo(sdram_data)**".fmly";
 	constant fmly_data : string         := hdo(families_db)**("."&fmly);
@@ -73,7 +73,8 @@ begin
 	constant obj : string := hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))));
 	alias tab is wwnl_tab;
 	begin
-		report "***** " & to_string(std_logic_vector'(hdo(obj)**".wrl['12']"));
+		report "***** " & to_string(std_logic_vector'(hdo(obj)**".wrl['8']"));
+		-- report "***** " & escaped(string'(hdo(obj)**".wrl['8']"));
 		-- report "***** " & string'(hdo(obj));
 		-- report "***** " & string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly")));
 		-- for i in tab'range loop

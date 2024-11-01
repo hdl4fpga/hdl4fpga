@@ -260,7 +260,7 @@ package body hdo is
 				when 'b'|'B' =>
 					return to_bin(value(value'left+2 to value'right), 1);
 				when others =>
-					return to_bin(value(value'left+1 to value'right), 1);
+					return to_bin(value(value'left  to value'right), 1);
 				end case;
 			else
 				return to_bin(value, 1);
