@@ -109,7 +109,6 @@ entity sdram_ctlr is
 	constant al_tab         : natural_vector := lattab(hdo(fmly_data)**(".al"), 8);
 	constant bl_tab         : natural_vector := lattab(hdo(fmly_data)**(".bl"), 8);
 	constant cl_tab         : natural_vector := lattab(hdo(fmly_data)**(".cl"), 8);
-	constant wrl_tab        : natural_vector := lattab(hdo(fmly_data)**(".wrl={}.)"), 8);
 	constant cwl_tab        : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 8);
 end;
 
