@@ -96,10 +96,10 @@ entity sdram_init is
 	constant REFi      : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tREFI")/tcp));
 	constant RFC       : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRFC")/tcp));
 
-	constant wrl       : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tWR")/tcp));
 	function init_wr  
 		return std_logic_vector is
 		variable retval : std_logic_vector(3-1 downto 0);
+		constant wrl    : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tWR")/tcp));
 	begin
 		if fmly="ddr2" then
 			retval := hdo(fmly_data)**(".wrl["&natural'image(wrl)&"]");
