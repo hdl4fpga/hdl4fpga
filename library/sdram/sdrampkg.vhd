@@ -46,7 +46,6 @@ package sdrampkg is
 		"    al   : { '000' : 0 }," &
 		"    bl   : { '000' : 0, '001' : 1, '010' : 2, '011' : 4 }," &
 		"    cl   : { '001' : 1, '010' : 2, '011' : 3 }," &
-		"    cwl  : { '000' : 0 }," &
 		"    tmng : { tPreRST : 100.0e-6, cDLL : 200}}" &
 		"ddr : {" &
 		"    al   : { '000' : 0}" &
@@ -59,6 +58,7 @@ package sdrampkg is
 		"    bl   : { '010' : 2, '011' : 8}," &
 		"    cl   : { '011' : 6, '100' : 8, '101' : 10, '110' : 12, '111' : 14}," &
 		"    wrl  : { '001' : 4, '010' : 6, '011' :  8, '100' : 10, '101' : 12, '110' : 14, '111' : 16}," &
+		"    cwl  : { '011' : 4, '100' : 6, '101' :  8, '110' : 10, '111' : 12}," &
 		"    tmng : { tPreRST : 200.0e-6, cDLL : 200, MRD : 2}}" &
 		-- "    tmng : { tPreRST : 2.0e-6, cDLL : 200, MRD : 2}}" &
 		"ddr3 : {" &
@@ -172,9 +172,6 @@ package body sdrampkg is
 		elsif latency="DQSZL" or latency="DQSL" or latency="DQZL" then
 			for i in cwl_tab'range loop
 				temp := cwl_tab(i)+lat;
-				if fmly="ddr2" then
-					temp := temp-2;
-				end if;
 				if temp < 0 then
 					cwlval(i) := 0;
 				else
