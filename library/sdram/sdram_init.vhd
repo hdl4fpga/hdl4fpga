@@ -111,8 +111,6 @@ entity sdram_init is
 		end if;
 		return retval;
 	end;
-
-	constant xxx : std_logic_vector := init_wr;
 end;
 
 architecture def of sdram_init is
