@@ -286,7 +286,6 @@ begin
 		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
 		ctlr_cwl     => sdram_params.cwl,
-		ctlr_wrl     => sdram_params.wrl,
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
 		ctlr_inirdy  => tp(1),

@@ -37,7 +37,7 @@ entity sdram_init is
 		tcp   : real;
 		sdramtmng_data : string;
 		fmly  : string;
-		fmlytmng_data : string);
+		fmly_data  : string);
 	port (
 		sdram_init_bl   : in  std_logic_vector(3-1 downto 0);
 		sdram_init_bt   : in  std_logic := '0';
@@ -57,7 +57,6 @@ entity sdram_init is
 		sdram_init_srt  : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		sdram_init_tdqs : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		sdram_init_wl   : in  std_logic_vector(1-1 downto 0) := (others => '0');
-		sdram_init_wr   : in  std_logic_vector(3-1 downto 0) := (others => '0');
 		sdram_init_ddqs : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		sdram_init_rdqs : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		sdram_init_pd   : in  std_logic_vector(1-1 downto 0) := (others => '0');
@@ -82,6 +81,8 @@ entity sdram_init is
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of sdram_init : entity is "compact";
 
+	constant fmlytmng_data : string := hdo(fmly_data)**".tmng";
+
 	constant PreRST    : natural := natural(ceil(real'(hdo(fmlytmng_data)**".tPreRST=0.")/tcp));
 	constant RP        : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRP=0.")/tcp));
 	constant PstRST    : natural := natural(ceil(real'(hdo(fmlytmng_data)**".tPstRST=0.")/tcp));
@@ -95,6 +96,8 @@ entity sdram_init is
 	constant REFi      : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tREFI")/tcp));
 	constant RFC       : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRFC")/tcp));
 
+	constant wrl       : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tWR")/tcp));
+	constant init_wr   : std_logic_vector(3-1 downto 0) := hdo(fmly_data)**(".wrl["&natural'image(wrl)&"]");
 end;
 
 architecture def of sdram_init is
@@ -255,7 +258,7 @@ begin
 			"--1----------" & -- pre all
 			"-------------" & -- REFi 
 			"-------------" & -- REFi 
-			sdram_init_pd  & sdram_init_wr(3-1 downto 0) & "0" & "0" & sdram_init_cl(3-1 downto 0) & sdram_init_bt & sdram_init_bl(3-1 downto 0) & -- LMR 0
+			sdram_init_pd  & init_wr(3-1 downto 0) & "0" & "0" & sdram_init_cl(3-1 downto 0) & sdram_init_bt & sdram_init_bl(3-1 downto 0) & -- LMR 0
 			"0" & sdram_init_rdqs & sdram_init_tdqs & "111" & sdram_init_rtt(1) & sdram_init_al(3-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- LEMR 
 			"0" & sdram_init_rdqs & sdram_init_tdqs & "000" & sdram_init_rtt(1) & sdram_init_al(3-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- LEMR 
 			"--1----------" & -- pre all
@@ -270,7 +273,7 @@ begin
 			"00" & sdram_init_drtt & sdram_init_srt(0) & "0" & sdram_init_asr & sdram_init_cwl & b"000" & -- LMR 2
 			"0000000000"    & sdram_init_mpr   & sdram_init_mprrf & --LMR 3
 			sdram_init_rdqs & sdram_init_tdqs & "0" & sdram_init_rtt(2) & "0" & "0" & sdram_init_rtt(1) & sdram_init_ods(1) & sdram_init_al(2-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '1' & -- LMR 1
-			sdram_init_pd   & sdram_init_wr   & "1" & "0" & sdram_init_cl(4-1 downto 1) & sdram_init_bt & sdram_init_cl(0) & sdram_init_bl(2-1 downto 0) & -- LMR 0
+			sdram_init_pd   & init_wr   & "1" & "0" & sdram_init_cl(4-1 downto 1) & sdram_init_bt & sdram_init_cl(0) & sdram_init_bl(2-1 downto 0) & -- LMR 0
 			"--1----------" & -- ZQINIT
 			sdram_init_rdqs & sdram_init_tdqs & "0" & sdram_init_rtt(2) & "0" & "1" & sdram_init_rtt(1) & sdram_init_ods(1) & sdram_init_al(2-1 downto 0) & sdram_init_rtt(0) & sdram_init_ods(0) & '0' & -- WL On
 			"0------------" & -- WL procedure

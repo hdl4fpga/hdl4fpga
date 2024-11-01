@@ -1170,7 +1170,7 @@ package body hdo is
 		variable tag_length : natural;
 	begin
 		resolve (obj, hdo_offset, hdo_length, tag_offset, tag_length);
-		return to_stdlogicvector(obj(hdo_offset to hdo_offset+hdo_length-1));
+		return to_stdlogicvector(escaped(obj(hdo_offset to hdo_offset+hdo_length-1)));
 	end;
 
 	function "**" (

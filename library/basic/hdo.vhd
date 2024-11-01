@@ -825,11 +825,10 @@ package body hdo is
 
 
 			if not isdigit(key(key'left)) then
-				if tag_length/=0 and key'length/=0 then 
-					if compare_string(key, hdo(tag_offset to tag_offset+tag_length-1)) then
-						offset := tag_offset;
-						length := hdo_index-offset;
-					end if;
+
+				if compare_string(key, hdo(tag_offset to tag_offset+tag_length-1)) then
+					offset := tag_offset;
+					length := hdo_index-offset;
 				end if;
 			elsif to_natural(key) <= position then
 				offset := tag_offset;
@@ -998,7 +997,7 @@ package body hdo is
 		variable tag_length : natural;
 	begin
 		resolve (obj, hdo_offset, hdo_length, tag_offset, tag_length);
-		return to_stdlogicvector(obj(hdo_offset to hdo_offset+hdo_length-1));
+		return to_stdlogicvector(escaped(obj(hdo_offset to hdo_offset+hdo_length-1)));
 	end;
 
 	function "**" (

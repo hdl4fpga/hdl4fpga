@@ -24,6 +24,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
@@ -43,7 +44,6 @@ entity sdram_ctlr is
 		ctlr_bl     : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.bl=3."-1 downto 0);
 		ctlr_cl     : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.cl=3."-1 downto 0);
 		ctlr_cwl    : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.cwl=3."-1 downto 0) := (others => '0');
-		ctlr_wrl    : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.wrl=3."-1 downto 0) := (others => '0');
 		ctlr_rtt    : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.rtt=2."-1 downto 0) := (others => '0');
 		ctlr_ods    : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.ods=1."-1 downto 0) := (others => '0');
 
@@ -182,7 +182,7 @@ begin
 		debug            => debug,
 		sdramtmng_data   => sdramtmng_data,
 		fmly             => fmly,
-		fmlytmng_data    => fmlytmng_data,
+		fmly_data        => fmly_data,
 		tcp              => tcp)
 	port map (
 		sdram_init_al    => sdram_init_al,
@@ -191,7 +191,6 @@ begin
 		sdram_init_cwl   => sdram_cwl,
 		sdram_init_bt    => '0',
 		sdram_init_ods   => sdram_init_ods,
-		sdram_init_wr    => ctlr_wrl,
 		sdram_init_rtt   => sdram_init_rtt,
 
 		sdram_init_clk   => ctlr_clk,
