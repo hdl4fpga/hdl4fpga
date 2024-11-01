@@ -97,7 +97,19 @@ entity sdram_init is
 	constant RFC       : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRFC")/tcp));
 
 	constant wrl       : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tWR")/tcp));
-	constant init_wr   : std_logic_vector(3-1 downto 0) := hdo(fmly_data)**(".wrl["&natural'image(wrl)&"]");
+	function init_wr  
+		return std_logic_vector is
+		variable retval : std_logic_vector(3-1 downto 0);
+	begin
+		if fmly="ddr2" then
+			retval := hdo(fmly_data)**(".wrl["&natural'image(wrl)&"]");
+		elsif fmly="ddr3" then
+			retval := hdo(fmly_data)**(".wrl["&natural'image(wrl)&"]");
+		else
+			retval := (others => '0');
+		end if;
+		return retval;
+	end;
 end;
 
 architecture def of sdram_init is
