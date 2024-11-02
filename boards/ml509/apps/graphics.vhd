@@ -164,9 +164,9 @@ architecture graphics of ml509 is
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (real(sdram_params.pll.divclk_divide)*userclk_per)/real(sdram_params.pll.clkfbout_mult);
 
-	constant byte_size   : natural := ddr2_d'length/ddr2_dm'length;
-	constant phy_data    : string  := hdo(phy_db)**".xc5vg4";
-	constant gear        : natural := hdo(phy_data)**".orgz.gear";
+	constant byte_size    : natural := ddr2_d'length/ddr2_dm'length;
+	constant phy_data     : string  := hdo(phy_db)**".xc5vg4";
+	constant gear         : natural := hdo(phy_data)**".orgz.gear";
 
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk90      : std_logic;
