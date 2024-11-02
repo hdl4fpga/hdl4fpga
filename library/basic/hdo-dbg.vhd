@@ -956,8 +956,8 @@ package body hdo is
 					report LF &"locate_value => object request key " & key & " -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & ' ' & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' --|note
 					severity note; --|note
 
-				if compare_string(key, hdo(tag_offset to tag_offset+tag_length-1)) then
-					if key'length/=0 and tag_length/=0 then
+				if tag_length/=0 then
+					if compare_string(key, hdo(tag_offset to tag_offset+tag_length-1)) then
 						offset := tag_offset;
 						length := hdo_index-offset;
 					end if;

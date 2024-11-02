@@ -825,7 +825,7 @@ package body hdo is
 
 
 			if not isdigit(key(key'left)) then
-				if key'length/=0 and tag_length/=0 then
+				if tag_length/=0 then
 					if compare_string(key, hdo(tag_offset to tag_offset+tag_length-1)) then
 						offset := tag_offset;
 						length := hdo_index-offset;

@@ -131,12 +131,24 @@ architecture def of sdram_init is
 	signal timer_rdy : std_logic;
 	signal timer_req : std_logic;
 
-	signal input     : std_logic_vector(0 to 0);
-
 	signal timer_sel : std_logic_vector(0 to  4-1);
 begin
 
-	input(0) <= sdram_init_wlrdy;
+	assert false
+	report LF &
+	    "sdram_init : PreRST  : " & natural'image(PreRST)&LF&
+	    "sdram_init : RP      : " & natural'image(RP)&LF&
+	    "sdram_init : PstRST  : " & natural'image(PstRST)&LF&
+	    "sdram_init : cDLL    : " & natural'image(cDLL)&LF&
+	    "sdram_init : RPA     : " & natural'image(RPA)&LF&
+	    "sdram_init : ZQINIT  : " & natural'image(ZQINIT)&LF&
+	    "sdram_init : MRD     : " & natural'image(MRD)&LF&
+	    "sdram_init : MODu    : " & natural'image(MODu)&LF&
+	    "sdram_init : XPR     : " & natural'image(XPR)&LF&
+	    "sdram_init : WLDQSEN : " & natural'image(WLDQSEN)&LF&
+	    "sdram_init : REFi    : " & natural'image(REFi)&LF&
+	    "sdram_init : RFC     : " & natural'image(RFC)&LF
+	severity note;
 
 	-----------------
 	-- DDR PROGRAM --
