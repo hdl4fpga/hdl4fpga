@@ -33,12 +33,12 @@ use hdl4fpga.sdrampkg.all;
 
 entity sdram_init is
 	generic (
-		debug : boolean;
-		tcp   : real;
+		debug          : boolean;
+		ctlr_tcp       : real;
 		sdramtmng_data : string;
-		gear  : natural;
-		fmly  : string;
-		fmly_data  : string);
+		gear           : natural;
+		fmly           : string;
+		fmly_data      : string);
 	port (
 		sdram_init_bl   : in  std_logic_vector(3-1 downto 0);
 		sdram_init_bt   : in  std_logic := '0';
@@ -84,20 +84,20 @@ entity sdram_init is
 
 	constant fmlytmng_data : string := hdo(fmly_data)**".tmng";
 
-	constant PreRST    : natural := natural(ceil(real'(hdo(fmlytmng_data)**".tPreRST=0.")/tcp));
-	constant RP        : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRP=0.")/tcp));
-	constant PstRST    : natural := natural(ceil(real'(hdo(fmlytmng_data)**".tPstRST=0.")/tcp));
+	constant PreRST    : natural := natural(ceil(real'(hdo(fmlytmng_data)**".tPreRST=0.")/ctlr_tcp));
+	constant RP        : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRP=0.")/ctlr_tcp));
+	constant PstRST    : natural := natural(ceil(real'(hdo(fmlytmng_data)**".tPstRST=0.")/ctlr_tcp));
 	constant cDLL      : natural := hdo(fmlytmng_data)**".cDLL=0.";
-	constant RPA       : natural := natural(ceil(real'(hdo(fmlytmng_data)**".tRPA=0.")/tcp));
+	constant RPA       : natural := natural(ceil(real'(hdo(fmlytmng_data)**".tRPA=0.")/ctlr_tcp));
 	constant ZQINIT    : natural := hdo(fmlytmng_data)**".ZQINIT=0.";
-	constant MRD       : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tMRD=0.")/tcp));
+	constant MRD       : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tMRD=0.")/ctlr_tcp));
 	constant MODu      : natural := hdo(fmlytmng_data)**".MODu=0.";
 	constant XPR       : natural := hdo(fmlytmng_data)**".XPR=0.";
 	constant WLDQSEN   : natural := hdo(fmlytmng_data)**".WLDQSEN=0.";
-	constant REFi      : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tREFI")/tcp));
-	constant RFC       : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRFC")/tcp));
+	constant REFi      : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tREFI")/ctlr_tcp));
+	constant RFC       : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRFC")/ctlr_tcp));
 
-	constant wrl       : natural := gear*natural(ceil(real'(hdo(sdramtmng_data)**".tWR")/tcp));
+	constant wrl       : natural := gear*natural(ceil(real'(hdo(sdramtmng_data)**".tWR")/ctlr_tcp));
 	function init_wr  
 		return std_logic_vector is
 		variable retval : std_logic_vector(3-1 downto 0);

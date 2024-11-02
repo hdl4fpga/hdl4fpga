@@ -1117,9 +1117,9 @@ begin
 			ctlr_di_dv <= ctlr_di_req;
 			sdrctlr_e : entity hdl4fpga.sdram_ctlr
 			generic map (
-				tcp        => sdram_tcp,
-				sdram_data => sdram_data,
-				phy_data   => phy_data)
+				ctlr_tcp     => sdram_tcp,
+				sdram_data   => sdram_data,
+				phy_data     => phy_data)
 			port map (
 				ctlr_alat    => ctlr_alat,
 				ctlr_blat    => ctlr_blat,

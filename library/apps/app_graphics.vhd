@@ -927,9 +927,9 @@ begin
 		generic map (
 			debug        => debug,
 			sdram_data   => sdram_data,
-			tcp          => sdram_tcp,
+			ctlr_tcp     => sdram_tcp,
 
-			phy_data    => phy_data)
+			phy_data     => phy_data)
 		port map (
 			ctlr_alat    => ctlr_alat,
 			ctlr_blat    => ctlr_blat,

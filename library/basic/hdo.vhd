@@ -825,10 +825,11 @@ package body hdo is
 
 
 			if not isdigit(key(key'left)) then
-
-				if compare_string(key, hdo(tag_offset to tag_offset+tag_length-1)) then
-					offset := tag_offset;
-					length := hdo_index-offset;
+				if key'length/=0 and tag_length/=0 then
+					if compare_string(key, hdo(tag_offset to tag_offset+tag_length-1)) then
+						offset := tag_offset;
+						length := hdo_index-offset;
+					end if;
 				end if;
 			elsif to_natural(key) <= position then
 				offset := tag_offset;

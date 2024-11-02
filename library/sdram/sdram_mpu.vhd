@@ -38,13 +38,13 @@ use hdl4fpga.sdrampkg.all;
 
 entity sdram_mpu is
 	generic (
-		tcp           : real := 0.0;
+		ctlr_tcp       : real;
 		sdramtmng_data : string;
-		phy_data : string;
-		al_tab        : natural_vector;
-		bl_tab        : natural_vector;
-		cl_tab        : natural_vector;
-		cwl_tab       : natural_vector);
+		phy_data       : string;
+		al_tab         : natural_vector;
+		bl_tab         : natural_vector;
+		cl_tab         : natural_vector;
+		cwl_tab        : natural_vector);
 	port (
 		sdram_mpu_alat  : out std_logic_vector(2 downto 0);
 		sdram_mpu_blat  : out std_logic_vector;
@@ -69,12 +69,12 @@ entity sdram_mpu is
 		sdram_mpu_wri   : out std_logic;
 		sdram_mpu_wwin  : out std_logic);
 
-	constant tdqsz : real    := real'(hdo(phy_data)**".tmng.DQSXL=0.")*tcp; 
+	constant tdqsz : real    := real'(hdo(phy_data)**".tmng.DQSXL=0.")*ctlr_tcp; 
 	constant twr   : real    := hdo(sdramtmng_data)**".tWR";
-	constant lwr   : natural := natural(ceil(twr+tdqsz)/tcp);
-	constant lrcd  : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRCD=0.")/tcp));
-	constant lrfc  : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRFC=0.")/tcp));
-	constant lrp   : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRP=0.")/tcp));
+	constant lwr   : natural := natural(ceil(twr+tdqsz)/ctlr_tcp);
+	constant lrcd  : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRCD=0.")/ctlr_tcp));
+	constant lrfc  : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRFC=0.")/ctlr_tcp));
+	constant lrp   : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRP=0.")/ctlr_tcp));
 	constant gear  : natural := hdo(phy_data)**".orgz.gear";
 end;
 

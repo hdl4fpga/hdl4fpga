@@ -34,7 +34,7 @@ use hdl4fpga.sdrampkg.all;
 entity sdram_ctlr is
 	generic (
 		debug       : boolean := false;
-		tcp         : real := 0.0;
+		ctlr_tcp    : real;
 		sdram_data  : string;
 		phy_data    : string);
 	port (
@@ -185,7 +185,7 @@ begin
 		gear             => gear,
 		fmly             => fmly,
 		fmly_data        => fmly_data,
-		tcp              => tcp)
+		ctlr_tcp         => ctlr_tcp)
 	port map (
 		sdram_init_al    => sdram_init_al,
 		sdram_init_bl    => sdram_init_bl,
@@ -228,7 +228,7 @@ begin
 
 	sdram_mpu_e : entity hdl4fpga.sdram_mpu
 	generic map (
-		tcp             => tcp,
+		ctlr_tcp        => ctlr_tcp,
 		phy_data        => phy_data,
 		sdramtmng_data  => sdramtmng_data,
 		al_tab          => al_tab,
