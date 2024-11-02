@@ -169,6 +169,7 @@ begin
 			nop & mrx & "11000" & "0" & XPR_id  &
 			pre & mrx & "11000" & "0" & RP_id   &
 			ref & mrx & "11000" & "0" & RFC_id  &
+
 			ref & mrx & "11000" & "0" & RFC_id  &
 			mrs & mr0 & "11010" & "0" & MRD_id  &
 			nop & mrx & "11101" & "0" & REFi_id;
@@ -178,10 +179,12 @@ begin
 			nop & mrx & "11000" & "0" & XPR_id  &
 			pre & mrx & "11000" & "0" & RP_id   &
 			mrs & mr1 & "11000" & "0" & MRD_id  &
+
 			mrs & mr0 & "11000" & "0" & MRD_id  &
 			pre & mrx & "11000" & "0" & RPA_id  &
 			ref & mrx & "11000" & "0" & RFC_id  &
 			ref & mrx & "11000" & "0" & RFC_id  &
+
 			mrs & mr0 & "11010" & "0" & MRD_id  &
 			nop & mrx & "11001" & "0" & DLL_id  &
 			nop & mrx & "11101" & "0" & REFi_id;
@@ -191,14 +194,17 @@ begin
 			nop & mrx & "11000" & "0" & XPR_id  &
 			pre & mrx & "11000" & "0" & RPA_id  &
 			mrs & mr2 & "11000" & "0" & MRD_id  &
+
 			mrs & mr3 & "11000" & "0" & MRD_id  &
 			mrs & mr1 & "11000" & "0" & MRD_id  &
 			mrs & mr0 & "11000" & "0" & MRD_id  &
 			pre & mrx & "11000" & "0" & RPA_id  &
+
 			ref & mrx & "11000" & "0" & RFC_id  &
 			ref & mrx & "11000" & "0" & RFC_id  &
 			mrs & mr0 & "11000" & "0" & MRD_id  &
 			mrs & mr1 & "11000" & "0" & MRD_id  &
+
 			mrs & mr1 & "11000" & "0" & MRD_id  &
 			pre & mrx & "11000" & "0" & RPA_id  &
 			nop & mrx & "11110" & "0" & REFi_id;
@@ -230,7 +236,7 @@ begin
 		alias  init_rdy   is init_data(8);
 		alias  init_wlreq is init_data(10);
 		alias  init_wlrdy is init_data(11);
-		signal step        : natural range 0 to 2**5-1;
+		signal step        : unsigned(0 to 4-1); -- range 0 to 2**5-1;
 		
 	begin
 
@@ -391,7 +397,7 @@ begin
 				else
 					sdram_init_wlreq <= '0';
 					timer_req <= '0';
-					step <= 0;
+					step <= (others => '0');
 				end if;
 			end if;
 		end process;
