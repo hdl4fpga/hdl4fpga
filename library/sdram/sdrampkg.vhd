@@ -34,7 +34,7 @@ package sdrampkg is
 	constant sdram_db : string := compact("{" &
 		"MT48LC256MA27E    : {fmly : sdr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : " & real'image(14.0e-9+11.0e-9) & ", tRCD  : 15.0e-9, tRP : 15.0e-9, tMRD  : 15.0e-9, tRFC  : 66.0e-9, tREFI : " & real'image(64.0e-3/8192.0) & "}}," & -- real/natural Serious Lattice diamond bug
 		"MT46V256M6T       : {fmly : ddr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & "}}," &
-		"MT41K2G125        : {fmly : ddr3, orgz : {addr : { ba : 3, row : 14, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 360.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(360.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
+		"MT41K128M16-125   : {fmly : ddr3, orgz : {addr : { ba : 3, row : 14, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 360.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(360.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
 		"MT4HTF12864HZ     : {fmly : ddr2, orgz : {addr : { ba : 3, row : 14, col :  9}, data : { dm : 8, dq : 64}}, tmng : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.0e-9,  tRPA : 15.0e-9,  tRFC : 130.0e-9,  tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : 400.0e-6}}," &
 		"MT41J64M16-15E    : {fmly : ddr3, orgz : {addr : { ba : 3, row : 13, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 15.00e-9, tRFC : 110.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(110.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
 		"MT41K256M16-107   : {fmly : ddr3, orgz : {addr : { ba : 3, row : 15, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 20.00e-9, tRFC : 260.00e-9, tREFI : " & real'image(64.0e-3/8192.0) & ", tXPR  : " & real'image(260.00e-9 + 10.0e-9) & "}}," &  -- tMin : tRFC + 10 ns
@@ -62,14 +62,14 @@ package sdrampkg is
 		"    tmng : { tPreRST : 200.0e-6, cDLL : 200, MRD : 2, tCAS : 12.5e-9}}" &
 		-- "    tmng : { tPreRST : 2.0e-6, cDLL : 200, MRD : 2}}" &
 		"ddr3 : {" &
-		"    length : {cl : 4, rtt : 3, ods : 2}," &
+		"    length : {bl : 2, cl : 4, rtt : 3, ods : 2}," &
 		"    al   : { '000' :  0, '001' :  2, '010' :  4}," &
-		"    bl   : { '000' :  8, '001' :  8, '010' :  8}," &
-		"    cl   : { '001' : 10, '010' : 12, '011' : 14, '100' : 16, '101' : 18, '110' : 20, '111' : 22}," &
+		"    bl   : { '00' :  8, '01' :  8, '10' :  8}," &
+		"    cl   : { '0010' : 10, '0100' : 12, '0110' : 14, '1000' : 16, '1010' : 18, '1100' : 20, '1110' : 22, '0001' : 24, '0011' : 26, '0101' : 28}," &
 		"    cwl  : { '000' : 10, '001' : 12, '010' : 14, '011' : 16}" &
 		"    wrl  : {  6 : '001',  8 : '001', 10 : '001', 12 : '010', 14 : '011', 16 : '100', 18 : '101', 20 : '101', 22 : '110', 24 : '110', 26: '111', 28 : '111', 30 : '000', 32 : '000'}," &
-		"    tmng : { tPreRST : 200.0e-6, tPstRST : 500.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 5, WLDQSEN : 25, tCAS : 13.125e-9}}}");
-		-- "    tmng : { tPreRST : 1.0e-6, tPstRST : 2.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 91, WLDQSEN : 25}}}");
+		-- "    tmng : { tPreRST : 200.0e-6, tPstRST : 500.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 5, WLDQSEN : 25, tCAS : 13.125e-9}}}");
+		"    tmng : { tPreRST : 1.0e-6, tPstRST : 2.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 91, WLDQSEN : 25}}}");
 
 	constant phy_db : string := compact("[" &
 		"ecp5g1 : { orgz : { gear : 1}, tmng : {STRL :  1, DQSL :  0, DQSZL :  0, DQZL :  0, WWNL :  0, STRXL : 0, DQSZXL : 0, DQSXL : 0, DQZXL : 0, WWNXL : 0, WIDL : 1}}," &

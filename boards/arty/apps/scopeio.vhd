@@ -22,7 +22,7 @@ architecture scopeio of arty is
 	--         Set profile here         --
 	constant io_link      : io_comms := io_none;
 	--------------------------------------
-	constant tsttab       : boolean := false;
+	constant tsttab       : boolean := true;
 
 	constant max_delay     : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
@@ -735,7 +735,8 @@ begin
 		sdram_tcp => 2.0*sdram_tcp,
 		timing_id => pclk150_00m1920x1080at60,
 		phy_data     => hdo(phy_db)**".xc7vg4",
-		sdram_data   => hdo(sdram_db)**".MT41K2G125",
+		sdram_data   => hdo(sdram_db)**".MT41K128M16-125",
+		burst_length => 8,
 		layout    => layout)
 	port map (
 		-- tp => tp,
@@ -761,7 +762,7 @@ begin
 
 		ctlr_clk      => ddr_clk0,
 		ctlr_rst      => sdrsys_rst,
-		ctlr_bl       => "000",
+		ctlr_bl       => "00",
 		ctlr_cl       => sdram_params.cl,
 		ctlr_cwl      => sdram_params.cwl,
 		ctlr_rtt      => "001",

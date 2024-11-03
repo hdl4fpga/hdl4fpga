@@ -461,15 +461,12 @@ begin
 	begin
 
 		assert false
-		report 
-			"timer_size is value " & natural'image(timer_size)
+		report LF & "timer_size is value " & natural'image(timer_size)
 		severity note;
 
 		assert false
-		report 
-			"stages      is value " & natural'image(stages)
+		report LF & "stages is value " & natural'image(stages)
 		severity note;
-
 
 		process (sdram_init_clk)
 			variable timer : natural; 
@@ -477,6 +474,7 @@ begin
 			variable data  : std_logic_vector(value'range);
 		begin
 			if rising_edge(sdram_init_clk) then
+				value <= data;
 				data  := (others => '-');
 				timer := timers(to_integer(unsigned(timer_sel)));
 				for j in stages-1 downto 0 loop
@@ -484,7 +482,6 @@ begin
 					data := std_logic_vector(unsigned(data) sll size);
 					data(size-1 downto 0) := std_logic_vector(to_unsigned(((2**size-1)+((timer-stages)/2**(slices(j)-j)) mod 2**(size-1)) mod 2**size, size));
 				end loop;
-				value <= data;
 			end if;
 		end process;
 	
