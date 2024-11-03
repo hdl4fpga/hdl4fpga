@@ -107,10 +107,10 @@ entity sdram_ctlr is
 	constant gear           : natural := hdo(phy_data)**".orgz.gear";
 	constant phytmng_data   : string  := hdo(phy_data)**".tmng";
 
-	constant al_tab         : natural_vector := lattab(hdo(fmly_data)**(".al"), 8);
-	constant bl_tab         : natural_vector := lattab(hdo(fmly_data)**(".bl"), 8);
-	constant cl_tab         : natural_vector := lattab(hdo(fmly_data)**(".cl"), 8);
-	constant cwl_tab        : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 8);
+	constant al_tab         : natural_vector := lattab(hdo(fmly_data)**(".al"), 2**ctlr_al'length-1);
+	constant bl_tab         : natural_vector := lattab(hdo(fmly_data)**(".bl"), 2**ctlr_bl'length-1);
+	constant cl_tab         : natural_vector := lattab(hdo(fmly_data)**(".cl"), 2**ctlr_cl'length-1);
+	constant cwl_tab        : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 2**ctlr_cwl'length-1);
 end;
 
 architecture mix of sdram_ctlr is
@@ -169,7 +169,7 @@ begin
 
 	sdram_pgm_frm  <= ctlr_frm when phy_inirdy='1' else phy_frm;
 	sdram_pgm_rw   <= ctlr_rw  when phy_inirdy='1' else phy_rw;
-	sdram_cwl      <= ctlr_cl  when fmly="ddr2"    else ctlr_cwl;
+	sdram_cwl      <= ctlr_cwl when fmly="ddr3"    else ctlr_cl when fmly="ddr2" else (others => '0');
 	sdram_init_req <= ctlr_rst;
 
 	sdram_init_al(ctlr_al'range)   <= ctlr_al;

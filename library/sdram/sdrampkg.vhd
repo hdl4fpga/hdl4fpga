@@ -50,12 +50,12 @@ package sdrampkg is
 		"ddr : {" &
 		"    al   : { '000' : 0}," &
 		"    bl   : { '001' : 2, '010' : 4, '011' : 8}," &
-		"    cl   : { '010' : 4, '110' : 5, '011' : 3}," &
+		"    cl   : { '010' : 4, '110' : 5, '011' : 6}," &
 		"    cwl  : { '000' : 2}," &
 		"    tmng : { tPreRST : 200.0e-6, cDLL : 200, tCAS : 15.0e-9}}" &
 		"ddr2 : {" &
 		"    al   : { '000' : 0, '001' : 2, '010' :  4, '011' :  6, '100' :  8, '101' : 10, '110' : 12}," &
-		"    bl   : { '010' : 2, '011' : 8}," &
+		"    bl   : { '010' : 4, '011' : 8}," &
 		"    cl   : { '011' : 6, '100' : 8, '101' : 10, '110' : 12, '111' : 14}," &
 		"    cwl  : { '011' : 4, '100' : 6, '101' :  8, '110' : 10, '111' : 12}," &
 		"    wrl  : { 4 : '001', 6 : '010', 8 : '011', 10 : '100', 12 : '101', 14 : '110', 16 : '111'}," &
@@ -90,7 +90,8 @@ package sdrampkg is
 
 	function lattab (
 		constant table  : string;
-		constant length : natural)
+		constant length : natural;
+		constant tabtag : string := "")
 		return natural_vector;
 
 	function sdram_schtab (
@@ -124,13 +125,16 @@ package body sdrampkg is
 
 	function lattab (
 		constant table  : string;
-		constant length : natural)
+		constant length : natural;
+		constant tabtag : string := "")
 		return natural_vector is
 		variable retval : natural_vector(0 to length-1);
 	begin
-		retval := (others => 0);
-		for i in 0 to length-1 loop
+		for i in retval'range loop
 			retval(i) := hdo(table)**("."&"'"&to_string(to_unsigned(i,unsigned_num_bits(length-1)))&"'"&"=0.");
+			assert false
+			report tabtag & " : " & natural'image(retval(i))
+			severity note;
 		end loop;
 		return retval;
 	end;
