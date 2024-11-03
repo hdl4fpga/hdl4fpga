@@ -39,8 +39,8 @@ entity sdram_stream is
 		stream_irdy : in  std_logic;
 		stream_trdy : out std_logic := '1';
 		stream_data : in  std_logic_vector;
-		base_addr   : in   std_logic_vector;
-		dmacfg_clk  : in   std_logic;
+		base_addr   : in  std_logic_vector;
+		dmacfg_clk  : in  std_logic;
 		dmacfg_req  : buffer std_logic := '0';
 		dmacfg_rdy  : in  std_logic;
 		dma_req     : buffer std_logic := '0';
@@ -181,6 +181,7 @@ begin
 		lsdfirst  => false)
 	port map (
 		src_clk   => ctlr_clk,
+		src_frm   => fifo1_frm,
 		src_irdy  => fifo1_irdy,
 		src_trdy  => fifo1_trdy,
 		src_data  => fifo1_data,

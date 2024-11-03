@@ -167,7 +167,7 @@ architecture nuhs3adsp_scopeio of testbench is
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
 		x"1702_00000f_1603_0000_0000";
 	constant req_data  : std_logic_vector :=
-		x"010008_1702_00000f_1603_8000_0000";
+		x"010008_1702_000000_1603_8000_0000";
 
 	signal rst        : std_logic;
 	signal clk        : std_logic := '0';
@@ -198,14 +198,14 @@ architecture nuhs3adsp_scopeio of testbench is
 
 begin
 
-	rst <= '0', '1' after 300 ns;
+	rst <= '0', '1' after 5 ns;
 	clk <= not clk after 25 ns;
 
     ipoetb_e : entity work.ipoe_tb
 	generic map (
 		delay1  => 1 us,
 		delay2  => 1 us,
-		snd_data => snd_data,
+		snd_data => req_data,
 		req_data => req_data)
 	port map (
 		mii_clk  => mii_refclk,
