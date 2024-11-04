@@ -193,7 +193,7 @@ begin
 		di(0) => mem_wena,
 		do(0) => wr_ena);
 
-	mem_raddr_p : process (video_frm, video_addr, downsampling, a0, time_offset, delay)
+	mem_raddr_p : process (video_frm, video_addr, video_offset, downsampling, a0, time_offset, delay)
 		variable vaddr : signed(video_addr'length downto 0);
 	begin
 		vaddr := signed(resize(unsigned(video_addr), vaddr'length))+video_offset;
