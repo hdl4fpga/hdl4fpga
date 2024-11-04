@@ -132,9 +132,9 @@ package body sdrampkg is
 	begin
 		for i in retval'range loop
 			retval(i) := hdo(table)**("."&"'"&to_string(to_unsigned(i,unsigned_num_bits(length-1)))&"'"&"=0.");
-			assert false
-			report tabtag & " : " & natural'image(retval(i))
-			severity note;
+			-- assert false
+			-- report tabtag & " : " & natural'image(retval(i))
+			-- severity note;
 		end loop;
 		return retval;
 	end;
