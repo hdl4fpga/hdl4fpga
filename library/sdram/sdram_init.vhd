@@ -439,6 +439,23 @@ begin
 		constant stages     : natural := unsigned_num_bits(max(timers))/4;
 		constant timer_size : natural := unsigned_num_bits(max(timers))+stages;
 	
+		function slices
+			return natural_vector is
+			variable val : natural_vector(stages downto 0);
+			variable quo : natural := timer_size mod stages;
+		begin
+			val(0) := 0;
+			for i in 1 to stages loop
+				val(i) := timer_size/stages + val(i-1);
+				if i*quo >= stages then
+					val(i) := val(i) + 1;
+					quo := quo - 1;
+				end if;
+
+			end loop;
+			return val;
+		end;
+
 		function timerbits 
 			return std_logic_vector is
 			variable size  : natural;
@@ -455,23 +472,6 @@ begin
 				retval(timer_size*i to timer_size*(i+1)-1) := value;
 			end loop;
 			return retval;
-		end;
-
-		function slices
-			return natural_vector is
-			variable val : natural_vector(stages downto 0);
-			variable quo : natural := timer_size mod stages;
-		begin
-			val(0) := 0;
-			for i in 1 to stages loop
-				val(i) := timer_size/stages + val(i-1);
-				if i*quo >= stages then
-					val(i) := val(i) + 1;
-					quo := quo - 1;
-				end if;
-
-			end loop;
-			return val;
 		end;
 
 		signal value : std_logic_vector(timer_size-1 downto 0);
