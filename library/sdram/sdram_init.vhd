@@ -459,7 +459,7 @@ begin
 		function timerbits 
 			return std_logic_vector is
 			variable size  : natural;
-			variable value  : std_logic_vector(value'range);
+			variable value  : std_logic_vector(timer_size-1 downto 0);
 			variable retval : std_logic_vector(0 to timer_size*timers'length-1);
 		begin
 			for i in timers'range loop
@@ -487,6 +487,7 @@ begin
 
 		mem_e : entity hdl4fpga.rom
 		generic map (
+			latency => 1,
 			bitrom => timerbits)
 		port map (
 			clk  => sdram_init_clk,
