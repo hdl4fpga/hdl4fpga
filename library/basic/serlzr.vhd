@@ -124,20 +124,38 @@ architecture def of serlzr  is
 			report CR & "UPDATED MASK1 : " & natural'image(mask1)
 			severity note;
 
-			while shft >= narrow_size loop
-				shft := shft - narrow_size;
+			-- while shft >= narrow_size loop
+				-- shft := shft - narrow_size;
+				-- mask0 := barrel_stage(mask0,shft, '0');
+				-- -- mask1 := barrel_stage(mask1,shft, '1');
+-- 
+				-- assert not debug_shft
+				-- report CR & "SHIFT ALUE : " & natural'image(shft)
+				-- severity note;
+-- 
+				-- assert not debug_mask
+				-- report CR & "UPDATED MASK0 : " & natural'image(mask0)
+				-- severity note;
+				-- assert not debug_mask
+				-- report CR & "UPDATED MASK1 : " & natural'image(mask1)
+				-- severity note;
+-- 
+			-- end loop;
+			for i in 0 to shft/narrow_size loop
+				exit when shft < narrow_size;
+				shft  := shft - narrow_size;
 				mask0 := barrel_stage(mask0,shft, '0');
 				-- mask1 := barrel_stage(mask1,shft, '1');
 
 				assert not debug_shft
-				report CR & "SHIFT ALUE : " & natural'image(shft)
+				report LF & "SHIFT ALUE : " & natural'image(shft)
 				severity note;
 
 				assert not debug_mask
-				report CR & "UPDATED MASK0 : " & natural'image(mask0)
+				report LF & "UPDATED MASK0 : " & natural'image(mask0)
 				severity note;
 				assert not debug_mask
-				report CR & "UPDATED MASK1 : " & natural'image(mask1)
+				report LF & "UPDATED MASK1 : " & natural'image(mask1)
 				severity note;
 
 			end loop;
@@ -221,7 +239,8 @@ begin
 				di  => rgtr,
 				do  => shfd);
 		
-			dst_data <= setif(lsdfirst,reverse(shfd(dst_data'length-1 downto 0)), shfd(dst_data'length-1 downto 0));
+			-- dst_data <= setif(lsdfirst,reverse(shfd(dst_data'length-1 downto 0)), shfd(dst_data'length-1 downto 0));
+			dst_data <= reverse(shfd(dst_data'length-1 downto 0)) when lsdfirst else shfd(dst_data'length-1 downto 0);
 		end generate;
 
 		mod0_g : if false and src_data'length mod dst_data'length = 0 generate 
