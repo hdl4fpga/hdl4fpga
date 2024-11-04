@@ -27,7 +27,8 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_db.all;
+use hdl4fpga.hdo.all;
+use hdl4fpga.sdrampkg.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.profiles.all;
@@ -92,19 +93,18 @@ architecture graphics of nuhs3adsp is
 
 	type video_params is record
 		id     : video_modes;
-		dcm    : dcm_params;
+		cm    : dcm_params;
 		timing : videotiming_ids;
 	end record;
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,      timing => pclk_debug,               dcm => (dcm_mul =>  4, dcm_div => 2)),
-		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    dcm => (dcm_mul =>  5, dcm_div => 4)),
-		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    dcm => (dcm_mul =>  2, dcm_div => 1)),
-		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   dcm => (dcm_mul => 15, dcm_div => 4)),
-		(id => mode900p24bpp,  timing => pclk108_00m1600x900at60,  dcm => (dcm_mul => 27, dcm_div => 5)),
-		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, dcm => (dcm_mul => 15, dcm_div => 2)),
-		(id => mode1080r24bpp, timing => pclk140_00m1920x1080at60, dcm => (dcm_mul =>  7, dcm_div => 1)));
+		(id => modedebug,      timing => pclk_debug,               cm => (dcm_mul =>  4, dcm_div => 2)),
+		(id => mode480p24bpp,  timing => pclk25_00m640x480at60,    cm => (dcm_mul =>  5, dcm_div => 4)),
+		(id => mode600p24bpp,  timing => pclk40_00m800x600at60,    cm => (dcm_mul =>  2, dcm_div => 1)),
+		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   cm => (dcm_mul => 15, dcm_div => 4)),
+		(id => mode900p24bpp,  timing => pclk108_00m1600x900at60,  cm => (dcm_mul => 27, dcm_div => 5)),
+		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, cm => (dcm_mul => 15, dcm_div => 2)));
 
 	function videoparam (
 		constant id  : video_modes)
@@ -128,17 +128,17 @@ architecture graphics of nuhs3adsp is
 
 	type sdramparams_record is record
 		id  : sdram_speeds;
-		dcm : dcm_params;
+		cm : dcm_params;
 		cl  : std_logic_vector(0 to 3-1);
 	end record;
 
 	type sdramparams_vector is array (natural range <>) of sdramparams_record;
 	constant sdram_tab : sdramparams_vector := (
-		(id => sdram133MHz, dcm => (dcm_mul => 20, dcm_div => 3), cl => "010"),
-		(id => sdram145MHz, dcm => (dcm_mul => 29, dcm_div => 4), cl => "110"),
-		(id => sdram150MHz, dcm => (dcm_mul => 15, dcm_div => 2), cl => "110"),
-		(id => sdram166MHz, dcm => (dcm_mul => 25, dcm_div => 3), cl => "110"),
-		(id => sdram200MHz, dcm => (dcm_mul => 10, dcm_div => 1), cl => "011"));
+		(id => sdram133MHz, cm => (dcm_mul => 20, dcm_div => 3), cl => "010"),
+		(id => sdram145MHz, cm => (dcm_mul => 29, dcm_div => 4), cl => "110"),
+		(id => sdram150MHz, cm => (dcm_mul => 15, dcm_div => 2), cl => "110"),
+		(id => sdram166MHz, cm => (dcm_mul => 25, dcm_div => 3), cl => "110"),
+		(id => sdram200MHz, cm => (dcm_mul => 10, dcm_div => 1), cl => "011"));
 
 	function sdramparams (
 		constant id  : sdram_speeds)
@@ -160,10 +160,10 @@ architecture graphics of nuhs3adsp is
 
 	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
-	constant sdram_tcp    : real := real(sdram_params.dcm.dcm_div)*clk_per/real(sdram_params.dcm.dcm_mul);
+	constant sdram_tcp    : real := real(sdram_params.cm.dcm_div)*clk_per/real(sdram_params.cm.dcm_mul);
 
 	constant phy_data     : string  := hdo(phy_db)**".xc3sg2";
-	constant gear         : natural := hdo(phy_db)**".gear";
+	constant gear         : natural := hdo(phy_data)**".orgz.gear";
 	constant byte_size    : natural := ddr_dq'length/ddr_dm'length;
 
 	signal ddr_clk0       : std_logic;
@@ -185,8 +185,8 @@ architecture graphics of nuhs3adsp is
 	signal ctlrphy_dmi    : std_logic_vector(gear*ddr_dm'length-1 downto 0);
 	signal ctlrphy_dmo    : std_logic_vector(gear*ddr_dm'length-1 downto 0);
 	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(gear*ddr_dm'length-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(gear*ddr_dm'length-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*ddr_dq'length-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*ddr_dq'length-1 downto 0);
 	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sti    : std_logic_vector(gear*ddr_dqs'length-1 downto 0);
@@ -257,8 +257,8 @@ begin
 		generic map(
 			clk_feedback   => "1x",
 			clkdv_divide   => 2.0,
-			clkfx_divide   => videoparam(video_mode).dcm.dcm_div,
-			clkfx_multiply => videoparam(video_mode).dcm.dcm_mul,
+			clkfx_divide   => videoparam(video_mode).cm.dcm_div,
+			clkfx_multiply => videoparam(video_mode).cm.dcm_mul,
 			clkin_divide_by_2 => false,
 			clkin_period   => clk_per*1.0e9,
 			clkout_phase_shift => "none",
@@ -310,8 +310,8 @@ begin
 			clkin_period  => clk_per*1.0e9,
 			clkdv_divide  => 2.0,
 			clkin_divide_by_2 => FALSE,
-			clkfx_divide  => sdram_params.dcm.dcm_div,
-			clkfx_multiply => sdram_params.dcm.dcm_mul,
+			clkfx_divide  => sdram_params.cm.dcm_div,
+			clkfx_multiply => sdram_params.cm.dcm_mul,
 			clkout_phase_shift => "NONE",
 			deskew_adjust => "SYSTEM_SYNCHRONOUS",
 			dfs_frequency_mode => "HIGH",
@@ -347,7 +347,7 @@ begin
 			clkfx_divide  => 1,
 			clkfx_multiply => 2,
 			clkin_divide_by_2 => FALSE,
-			clkin_period  => (real(sdram_params.dcm.dcm_div)*clk_per*1.0e9)/real( sdram_params.dcm.dcm_mul),
+			clkin_period  => (real(sdram_params.cm.dcm_div)*clk_per*1.0e9)/real( sdram_params.cm.dcm_mul),
 			clkout_phase_shift => "NONE",
 			deskew_adjust => "SYSTEM_SYNCHRONOUS",
 			dfs_frequency_mode => "HIGH",
@@ -486,8 +486,7 @@ begin
 				dst_offset => 0,
 				src_offset => 2,
 				check_sov  => false,
-				check_dov  => true,
-				gray_code  => false)
+				check_dov  => true)
 			port map (
 				src_clk  => mii_rxc,
 				src_data => rxc_rxbus,
@@ -568,13 +567,12 @@ begin
 
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
+		sdram_tcp => sdram_tcp,
+		sdram_data   => hdo(sdram_db)**".MT46V256M6T",
+		phy_data     => phy_data,
+
 		debug        => debug,
 		profile      => 1,
-		sdram_tcp    => sdram_tcp,
-		mark         => MT46V256M6T,
-		phy_latencies => xc3sg2_latencies,
-		gear         => gear,
-
 		burst_length => 2,
 		-- burst_length => 4,
 		-- burst_length => 8,
