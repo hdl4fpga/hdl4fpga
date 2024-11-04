@@ -456,8 +456,25 @@ begin
 			return val;
 		end;
 
-		signal value : std_logic_vector(timer_size-1 downto 0);
+		function timerbits 
+			return std_logic_vector is
+			variable size  : natural;
+			variable value  : std_logic_vector(value'range);
+			variable retval : std_logic_vector(0 to timer_size*timers'length-1);
+		begin
+			for i in timers'range loop
+				value  := (others => '-');
+				for j in stages-1 downto 0 loop
+					size := slices(j+1)-slices(j);
+					value := std_logic_vector(unsigned(value) sll size);
+					value(size-1 downto 0) := std_logic_vector(to_unsigned(((2**size-1)+((timers(i)-stages)/2**(slices(j)-j)) mod 2**(size-1)) mod 2**size, size));
+				end loop;
+				retval(timer_size*i to timer_size*(i+1)-1) := value;
+			end loop;
+			return retval;
+		end;
 
+		signal value : std_logic_vector(timer_size-1 downto 0);
 	begin
 
 		assert false
@@ -468,22 +485,13 @@ begin
 		report LF & "stages is value " & natural'image(stages)
 		severity note;
 
-		process (sdram_init_clk)
-			variable timer : natural; 
-			variable size  : natural;
-			variable data  : std_logic_vector(value'range);
-		begin
-			if rising_edge(sdram_init_clk) then
-				value <= data;
-				data  := (others => '-');
-				timer := timers(to_integer(unsigned(timer_sel)));
-				for j in stages-1 downto 0 loop
-					size := slices(j+1)-slices(j);
-					data := std_logic_vector(unsigned(data) sll size);
-					data(size-1 downto 0) := std_logic_vector(to_unsigned(((2**size-1)+((timer-stages)/2**(slices(j)-j)) mod 2**(size-1)) mod 2**size, size));
-				end loop;
-			end if;
-		end process;
+		mem_e : entity hdl4fpga.rom
+		generic map (
+			bitrom => timerbits)
+		port map (
+			clk  => sdram_init_clk,
+			addr => timer_sel,
+			data => value);
 	
 		timer_e : entity hdl4fpga.timer
 		generic map (
