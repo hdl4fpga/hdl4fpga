@@ -45,7 +45,8 @@ int main (int argc, char *argv[])
 					sample >>= acc;
 					sample &= (1 << SAMPLE_WIDTH)-1;
 					if (!j) printf("%f, ",(8+n++)/freq);
-					printf("%4f", vt_step*sample);
+					// printf("%4f", vt_step*sample);
+					printf("%d", sample);
 					j = ++j % CHANNELS;
 					if (j) {
 						printf(", ");
