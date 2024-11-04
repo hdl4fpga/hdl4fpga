@@ -125,24 +125,8 @@ architecture def of serlzr  is
 			severity note;
 
 			-- while shft >= narrow_size loop
-				-- shft := shft - narrow_size;
-				-- mask0 := barrel_stage(mask0,shft, '0');
-				-- -- mask1 := barrel_stage(mask1,shft, '1');
--- 
-				-- assert not debug_shft
-				-- report CR & "SHIFT ALUE : " & natural'image(shft)
-				-- severity note;
--- 
-				-- assert not debug_mask
-				-- report CR & "UPDATED MASK0 : " & natural'image(mask0)
-				-- severity note;
-				-- assert not debug_mask
-				-- report CR & "UPDATED MASK1 : " & natural'image(mask1)
-				-- severity note;
--- 
-			-- end loop;
-			for i in 0 to shft/narrow_size loop
-				exit when shft < narrow_size;
+			for i in 0 to shft/narrow_size loop -- to avoid
+				exit when shft < narrow_size;   -- warnings
 				shft  := shft - narrow_size;
 				mask0 := barrel_stage(mask0,shft, '0');
 				-- mask1 := barrel_stage(mask1,shft, '1');
