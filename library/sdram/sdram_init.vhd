@@ -487,8 +487,8 @@ begin
 
 		mem_e : entity hdl4fpga.rom
 		generic map (
-			latency => 1,
-			bitrom => timerbits)
+			bitrom  => timerbits,
+			latency => 2)
 		port map (
 			clk  => sdram_init_clk,
 			addr => timer_sel,
