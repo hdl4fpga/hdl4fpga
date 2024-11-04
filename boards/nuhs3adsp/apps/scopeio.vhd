@@ -574,7 +574,7 @@ begin
 		debug     => debug,
 		profile   => 1,
 		sdram_tcp => sdram_tcp,
-		sdram_data   => hdo(sdram_db)**".MT46V256M6T",
+		sdram_data   => hdo(sdram_db)**".MT46V16M16M-6T",
 		phy_data     => phy_data,
 		timing_id => pclk150_00m1920x1080at60,
 		layout    => layout)

@@ -234,16 +234,13 @@ architecture scopeio of s3estarter is
 		return tab(tab'left);
 	end;
 
+	constant phy_data     : string  := hdo(phy_db)**".xc3sg2";
+	constant gear         : natural := hdo(phy_data)**".orgz.gear";
+	constant byte_size    : natural := sd_dq'length/sd_dm'length;
+
 	constant sdram_speed  : sdram_speeds := sdram166MHz;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := real(sdram_params.cm.dcm_div)*clk50hmz_per/real(sdram_params.cm.dcm_mul);
-
-	constant gear         : natural := hdo(sdram)**".gear";
-	constant bank_size    : natural := hdo(sdram)**".bank_size";
-	constant addr_size    : natural := hdo(sdram)**".addr_size";
-	constant coln_size    : natural := hdo(sdram)**".coln_size";
-	constant word_size    : natural := hdo(sdram)**".word_size";
-	constant byte_size    : natural := hdo(sdram)**".byte_size";
 
 	signal sdrsys_rst    : std_logic;
 
@@ -257,16 +254,16 @@ architecture scopeio of s3estarter is
 	signal ctlrphy_b      : std_logic_vector((gear+1)/2*sd_ba'length-1 downto 0);
 	signal ctlrphy_a      : std_logic_vector((gear+1)/2*sd_a'length-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqsi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqsi   : std_logic_vector(gear*sd_dqs'length-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*sd_dm'length-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*sd_dm'length-1 downto 0);
 	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*sd_dq'length-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*sd_dq'length-1 downto 0);
 	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*sd_dqs'length-1 downto 0);
 
 	signal ctlrphy_wlreq  : std_logic;
 	signal ctlrphy_wlrdy  : std_logic;
@@ -908,13 +905,13 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		debug     => debug,
-		profile   => 1,
-		sdram_tcp => sdram_tcp,
-		phy_data     => hdo(phy_db)**".ecp5g1",
-		sdram_data   => hdo(sdram_db)**".MT46V256M6T",
-		timing_id => pclk150_00m1920x1080at60,
-		layout    => layout)
+		debug      => debug,
+		profile    => 1,
+		sdram_tcp  => sdram_tcp,
+		phy_data   => phy_data,
+		sdram_data => hdo(sdram_db)**".MT46V16M16M-6T",
+		timing_id  => pclk150_00m1920x1080at60,
+		layout     => layout)
 	port map (
 		-- tp => tp,
 		sio_clk     => sio_clk,
@@ -975,8 +972,8 @@ begin
 		bank_size   => sd_ba'length,
 		addr_size   => sd_a'length,
 		gear        => gear,
-		word_size   => word_size,
-		byte_size   => byte_size,
+		word_size   => sd_dq'length,
+		byte_size   => sd_dq'length/sd_dm'length,
 		loopback    => false,
 		bypass      => true,
 		rd_fifo     => true,

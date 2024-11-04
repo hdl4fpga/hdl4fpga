@@ -567,8 +567,8 @@ begin
 
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
-		sdram_tcp => sdram_tcp,
-		sdram_data   => hdo(sdram_db)**".MT46V256M6T",
+		sdram_tcp    => sdram_tcp,
+		sdram_data   => hdo(sdram_db)**".MT46V16M16M-6T",
 		phy_data     => phy_data,
 
 		debug        => debug,

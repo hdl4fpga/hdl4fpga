@@ -27,7 +27,8 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_db.all;
+use hdl4fpga.hdo.all;
+use hdl4fpga.sdrampkg.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.profiles.all;
@@ -136,16 +137,13 @@ architecture graphics of s3estarter is
 		return tab(tab'left);
 	end;
 
+	constant phy_data     : string  := hdo(phy_db)**".xc3sg2";
+	constant gear         : natural := hdo(phy_data)**".orgz.gear";
+	constant byte_size    : natural := sd_dq'length/sd_dm'length;
+
 	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := real(sdram_params.dcm.dcm_div)*sys_per/real(sdram_params.dcm.dcm_mul);
-
-	constant bank_size    : natural := sd_ba'length;
-	constant addr_size    : natural := sd_a'length;
-	constant word_size    : natural := sd_dq'length;
-	constant byte_size    : natural := sd_dq'length/sd_dm'length;
-	constant coln_size    : natural := 10;
-	constant gear         : natural := 2;
 
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk90      : std_logic;
@@ -160,17 +158,17 @@ architecture graphics of s3estarter is
 	signal ctlrphy_odt    : std_logic_vector((gear+1)/2-1 downto 0);
 	signal ctlrphy_b      : std_logic_vector((gear+1)/2*sd_ba'length-1 downto 0);
 	signal ctlrphy_a      : std_logic_vector((gear+1)/2*sd_a'length-1 downto 0);
-	signal ctlrphy_dqsi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqsi   : std_logic_vector(gear*sd_dqs'length-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*sd_dm'length-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*sd_dm'length-1 downto 0);
 	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*sd_dq'length-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*sd_dq'length-1 downto 0);
 	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*sd_dqs'length-1 downto 0);
 
 	signal ctlrphy_wlreq  : std_logic;
 	signal ctlrphy_wlrdy  : std_logic;
@@ -178,8 +176,8 @@ architecture graphics of s3estarter is
 	signal ctlrphy_rlrdy  : std_logic;
 
 	signal sd_clk         : std_logic_vector(0 downto 0);
-	signal sdram_dqst     : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal sdram_dqso     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_dqst     : std_logic_vector(sd_dqs'length-1 downto 0);
+	signal sdram_dqso     : std_logic_vector(sd_dqs'length-1 downto 0);
 	signal sdram_dqt      : std_logic_vector(sd_dq'range);
 	signal sdram_dqo      : std_logic_vector(sd_dq'range);
 
@@ -394,8 +392,7 @@ begin
 				dst_offset => 0,
 				src_offset => 2,
 				check_sov  => false,
-				check_dov  => true,
-				gray_code  => false)
+				check_dov  => true)
 			port map (
 				src_clk  => e_rx_clk,
 				src_data => rxc_rxbus,
@@ -496,18 +493,12 @@ begin
 
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
+		sdram_tcp    => sdram_tcp,
+		sdram_data   => hdo(sdram_db)**".MT46V16M16M-6T",
+		phy_data     => phy_data,
+
 		debug        => debug,
 		profile      => 1,
-		sdram_tcp    => sdram_tcp,
-		mark         => MT46V256M6T,
-		phy_latencies => xc3sg2_latencies,
-		gear         => gear,
-		bank_size    => bank_size,
-		addr_size    => addr_size,
-		coln_size    => coln_size,
-		word_size    => word_size,
-		byte_size    => byte_size,
-
 		burst_length => 2,
 		timing_id    => videoparam(video_mode).timing,
 		red_length   => 8,
@@ -564,12 +555,14 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
+		-- dqs_delay   => (0 to 0 => 0 ns),
+		-- dqi_delay   => (0 to 0 => 0 ns),
 		device      => xc3s,
 		bank_size   => sd_ba'length,
 		addr_size   => sd_a'length,
 		gear        => gear,
-		word_size   => word_size,
-		byte_size   => byte_size,
+		word_size   => sd_dq'length,
+		byte_size   => sd_dq'length/sd_dm'length,
 		loopback    => false,
 		bypass      => true,
 		rd_fifo     => true,
