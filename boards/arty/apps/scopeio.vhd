@@ -22,7 +22,7 @@ architecture scopeio of arty is
 	--         Set profile here         --
 	constant io_link      : io_comms := io_none;
 	--------------------------------------
-	constant tsttab       : boolean := true;
+	constant tsttab       : boolean := false;
 
 	constant max_delay     : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
@@ -969,6 +969,7 @@ begin
 
 		rom_e : entity hdl4fpga.rom
 		generic map (
+			latency => 2,
 			bitrom => sintab(size => 2**addr'length, resolution => input_sample'length))
 		port map (
 			addr => std_logic_vector(addr),
