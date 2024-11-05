@@ -385,7 +385,7 @@ begin
 
 		sdram_tcp    => sdram_tcp,
 		phy_data     => hdo(phy_db)**".ecp5g1",
-		sdram_data   => hdo(sdram_db)**".MT48LC256MA27E",
+		sdram_data   => hdo(sdram_db)**".MT48LC16M16MA2-7E",
 
 		timing_id    => video_params.timing,
 		video_gear   => video_gear,

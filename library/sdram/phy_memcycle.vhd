@@ -26,7 +26,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.sdram_param.all;
+use hdl4fpga.sdrampkg.all;
 
 entity phy_memcycle is
 	port (

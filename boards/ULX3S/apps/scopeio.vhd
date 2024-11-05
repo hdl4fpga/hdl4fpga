@@ -512,7 +512,7 @@ begin
 		profile => 0,
 		sdram_tcp    => 1.0/sdram_freq,
 		phy_data     => phy_data,
-		sdram_data   => hdo(sdram_db)**".MT48LC256MA27E",
+		sdram_data   => hdo(sdram_db)**".MT48LC16M16MA2-7E",
 		timing_id => video_params.timing,
 		layout         => layout)
 	port map (
