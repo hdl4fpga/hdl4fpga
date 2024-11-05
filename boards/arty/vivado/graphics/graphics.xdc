@@ -35,7 +35,7 @@ set_input_delay -clock dqso1 -max $ddr_qh [get_ports ddr3_dq[*] ]
 set_clock_groups -asynchronous -group { sdrampll_b.ddr_clk0_mmce2 } -group { sys_clk    }
 set_clock_groups -asynchronous -group { sdrampll_b.ddr_clk0_mmce2 } -group { eth_tx_clk }
 set_clock_groups -asynchronous -group { sdrampll_b.ddr_clk0_mmce2 } -group { videopll_b.pll_i_n_1 }
-set_clock_groups -asynchronous -group { eth_tx_clk } -group { ddr_clk0_mmce2 }
+set_clock_groups -asynchronous -group { eth_tx_clk } -group { sdrampll_b.ddr_clk0_mmce2 }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { video_clk }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { dd_clk }
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { eth_rx_clk }
