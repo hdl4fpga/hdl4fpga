@@ -164,7 +164,6 @@ architecture graphics of nuhs3adsp is
 
 	constant phy_data     : string  := hdo(phy_db)**".xc3sg2";
 	constant gear         : natural := hdo(phy_data)**".orgz.gear";
-	constant byte_size    : natural := ddr_dq'length/ddr_dm'length;
 
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk90      : std_logic;
@@ -639,9 +638,9 @@ begin
 		device      => xc3s,
 		bank_size   => ddr_ba'length,
 		addr_size   => ddr_a'length,
-		gear        => gear,
 		word_size   => ddr_dq'length,
-		byte_size   => byte_size,
+		byte_size   => ddr_dq'length/ddr_dm'length,
+		gear        => gear,
 		bypass      => true,
 		loopback    => true,
 		rd_fifo     => true,

@@ -75,15 +75,15 @@ architecture graphics of ml509 is
 
 	type video_params is record
 		id     : video_modes;
-		dcm    : dcm_params;
+		cm     : dcm_params;
 		timing : videotiming_ids;
 	end record;
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,     timing => pclk_debug,            dcm => (dcm_mul => 4, dcm_div => 2)),
-		(id => mode480p24bpp, timing => pclk25_00m640x480at60, dcm => (dcm_mul => 1, dcm_div => 4)),
-		(id => mode600p24bpp, timing => pclk40_00m800x600at60, dcm => (dcm_mul => 2, dcm_div => 5)));
+		(id => modedebug,     timing => pclk_debug,            cm => (dcm_mul => 4, dcm_div => 2)),
+		(id => mode480p24bpp, timing => pclk25_00m640x480at60, cm => (dcm_mul => 1, dcm_div => 4)),
+		(id => mode600p24bpp, timing => pclk40_00m800x600at60, cm => (dcm_mul => 2, dcm_div => 5)));
 
 	function videoparam (
 		constant id  : video_modes)
@@ -295,8 +295,8 @@ begin
 		generic map (
 			clk_feedback   => "NONE",
 			clkin_period   => userclk_per*1.0e9,
-			clkfx_divide   => videoparam(video_mode).dcm.dcm_div,
-			clkfx_multiply => videoparam(video_mode).dcm.dcm_mul,
+			clkfx_divide   => videoparam(video_mode).cm.dcm_div,
+			clkfx_multiply => videoparam(video_mode).cm.dcm_mul,
 			dfs_frequency_mode => "LOW")
 		port map (
 			rst    => sys_rst,

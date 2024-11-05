@@ -179,7 +179,6 @@ architecture scopeio of nuhs3adsp is
 
 	constant phy_data     : string  := hdo(phy_db)**".xc3sg2";
 	constant gear         : natural := hdo(phy_data)**".orgz.gear";
-	constant byte_size    : natural := ddr_dq'length/ddr_dm'length;
 
 	signal sdrsys_rst     : std_logic;
 

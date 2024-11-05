@@ -145,16 +145,6 @@ architecture scopeio of arty is
 			"     step  : " & real'image(3.33*vt_step) & "," &
 			"     color : 0xff_00_ff_ff}]}");   -- vt(8)
 
-	constant sdram : string := compact(
-		"{" &
-		"   gear      : 4," &
-		"   bank_size : " & natural'image(ddr3_ba'length) & "," &
-		"   addr_size : " & natural'image(ddr3_a'length)  & "," &
-		"   coln_size : 10," &
-		"   word_size : " & natural'image(ddr3_dq'length)  & "," &
-		"   byte_size : " & natural'image(ddr3_dq'length/ddr3_dm'length) & "," &
-		"}");
-
 	type pll_params is record
 		clkfbout_mult_f : real;
 		divclk_divide   : natural;
@@ -225,12 +215,8 @@ architecture scopeio of arty is
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (gclk100_per*real(sdram_params.pll.divclk_divide))/sdram_params.pll.clkfbout_mult_f; -- 1 ns /1ps
 
-	constant bank_size    : natural := ddr3_ba'length;
-	constant addr_size    : natural := ddr3_a'length;
-	constant coln_size    : natural := 10;
-	constant word_size    : natural := ddr3_dq'length;
-	constant byte_size    : natural := ddr3_dq'length/ddr3_dqs_p'length;
-	constant gear         : natural := 4;
+	constant phy_data     : string  := hdo(phy_db)**".xc7vg4";
+	constant gear         : natural := hdo(phy_data)**".orgz.gear";
 
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk0x2     : std_logic;
@@ -272,21 +258,21 @@ architecture scopeio of arty is
 	signal ctlrphy_a      : std_logic_vector(gear/2*ddr3_a'length-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*ddr3_dm'length-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*ddr3_dm'length-1 downto 0);
 	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*ddr3_dq'length-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*ddr3_dq'length-1 downto 0);
 	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*ddr3_dqs_p'length-1 downto 0);
 
 	signal ddr3_clk       : std_logic_vector(1-1 downto 0);
-	signal ddr3_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqo       : std_logic_vector(word_size-1 downto 0);
-	signal ddr3_dqt       : std_logic_vector(word_size-1 downto 0);
+	signal ddr3_dqst      : std_logic_vector(ddr3_dqs_p'length-1 downto 0);
+	signal ddr3_dqso      : std_logic_vector(ddr3_dqs_p'length-1 downto 0);
+	signal ddr3_dqsi      : std_logic_vector(ddr3_dqs_p'length-1 downto 0);
+	signal ddr3_dqo       : std_logic_vector(ddr3_dq'length-1 downto 0);
+	signal ddr3_dqt       : std_logic_vector(ddr3_dq'length-1 downto 0);
 
 	constant bufiog     : boolean  := true;
 	signal tp_sdrphy      : std_logic_vector(1 to 32);
@@ -730,11 +716,11 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		debug     => debug,
-		profile   => 1,
-		sdram_tcp => 2.0*sdram_tcp,
-		timing_id => pclk150_00m1920x1080at60,
-		phy_data     => hdo(phy_db)**".xc7vg4",
+		debug        => debug,
+		profile      => 1,
+		sdram_tcp    => 2.0*sdram_tcp,
+		timing_id    => pclk150_00m1920x1080at60,
+		phy_data     => phy_data,
 		sdram_data   => hdo(sdram_db)**".MT41K128M16-125",
 		burst_length => 8,
 		layout    => layout)
@@ -834,10 +820,10 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
-		bank_size   => bank_size,
-		addr_size   => addr_size,
-		word_size   => word_size,
-		byte_size   => byte_size,
+	    bank_size   => ddr3_ba'length,
+	    addr_size   => ddr3_a'length,
+	    word_size   => ddr3_dq'length,
+		byte_size   => ddr3_dq'length/ddr3_dm'length,
 		gear        => gear,
 		ba_latency  => 1,
 		device      => xc7a,

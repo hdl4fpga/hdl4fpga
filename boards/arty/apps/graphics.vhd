@@ -123,7 +123,7 @@ architecture graphics of arty is
 	type sdramparams_record is record
 		id  : sdram_speeds;
 		pll : pll_params;
-		cl  : std_logic_vector(0 to 3-1);
+		cl  : std_logic_vector(0 to 4-1);
 		cwl : std_logic_vector(0 to 3-1);
 	end record;
 
@@ -136,11 +136,11 @@ architecture graphics of arty is
 		-- Divide by   --   3     --   2     --   4     --   1     --   4     --
 		------------------------------------------------------------------------
 
-		(id => sdram333MHz, pll => (clkfbout_mult_f => 10.0, divclk_divide => 3), cl => "001", cwl => "000"),
-		(id => sdram350MHz, pll => (clkfbout_mult_f =>  7.0, divclk_divide => 2), cl => "010", cwl => "000"),
-		(id => sdram375MHz, pll => (clkfbout_mult_f => 15.0, divclk_divide => 4), cl => "010", cwl => "000"),
-		(id => sdram400MHz, pll => (clkfbout_mult_f =>  4.0, divclk_divide => 1), cl => "010", cwl => "000"),
-		(id => sdram425MHz, pll => (clkfbout_mult_f => 17.0, divclk_divide => 4), cl => "011", cwl => "001"),
+		(id => sdram333MHz, pll => (clkfbout_mult_f => 10.0, divclk_divide => 3), cl => "0010", cwl => "000"),
+		(id => sdram350MHz, pll => (clkfbout_mult_f =>  7.0, divclk_divide => 2), cl => "0100", cwl => "000"),
+		(id => sdram375MHz, pll => (clkfbout_mult_f => 15.0, divclk_divide => 4), cl => "0100", cwl => "000"),
+		(id => sdram400MHz, pll => (clkfbout_mult_f =>  4.0, divclk_divide => 1), cl => "0100", cwl => "000"),
+		(id => sdram425MHz, pll => (clkfbout_mult_f => 17.0, divclk_divide => 4), cl => "0110", cwl => "001"),
 
 		------------------------------------------------------------------------
 		-- Frequency   -- 450 Mhz -- 475 Mhz -- 500 Mhz -- 525 Mhz -- 550 Mhz --
@@ -148,11 +148,11 @@ architecture graphics of arty is
 		-- Divide by   --   2     --   4     --   1     --   4     --   4     --
 		------------------------------------------------------------------------
 
-		(id => sdram450MHz, pll => (clkfbout_mult_f =>  9.0, divclk_divide => 2), cl => "011", cwl => "001"),
-		(id => sdram475MHz, pll => (clkfbout_mult_f => 19.0, divclk_divide => 4), cl => "011", cwl => "001"),
-		(id => sdram500MHz, pll => (clkfbout_mult_f =>  5.0, divclk_divide => 1), cl => "011", cwl => "001"),
-		(id => sdram525MHz, pll => (clkfbout_mult_f => 21.0, divclk_divide => 4), cl => "011", cwl => "001"),
-		(id => sdram550MHz, pll => (clkfbout_mult_f => 11.0, divclk_divide => 2), cl => "100", cwl => "010"),  -- latency 9
+		(id => sdram450MHz, pll => (clkfbout_mult_f =>  9.0, divclk_divide => 2), cl => "0110", cwl => "001"),
+		(id => sdram475MHz, pll => (clkfbout_mult_f => 19.0, divclk_divide => 4), cl => "0110", cwl => "001"),
+		(id => sdram500MHz, pll => (clkfbout_mult_f =>  5.0, divclk_divide => 1), cl => "0110", cwl => "001"),
+		(id => sdram525MHz, pll => (clkfbout_mult_f => 21.0, divclk_divide => 4), cl => "0110", cwl => "001"),
+		(id => sdram550MHz, pll => (clkfbout_mult_f => 11.0, divclk_divide => 2), cl => "1000", cwl => "010"),  -- latency 9
 		-- 
 		---------------------------------------
 		-- Frequency   -- 575 Mhz -- 600 Mhz --
@@ -160,8 +160,8 @@ architecture graphics of arty is
 		-- Divide by   --   4     --   1     --
 		---------------------------------------
 
-		(id => sdram575MHz, pll => (clkfbout_mult_f => 23.0, divclk_divide => 4), cl => "101", cwl => "010"),  -- latency 9
-		(id => sdram600MHz, pll => (clkfbout_mult_f =>  6.0, divclk_divide => 1), cl => "101", cwl => "010")); -- latency 9
+		(id => sdram575MHz, pll => (clkfbout_mult_f => 23.0, divclk_divide => 4), cl => "1010", cwl => "010"),  -- latency 9
+		(id => sdram600MHz, pll => (clkfbout_mult_f =>  6.0, divclk_divide => 1), cl => "1010", cwl => "010")); -- latency 9
 
 	function sdramparams (
 		constant id  : sdram_speeds)
@@ -185,12 +185,8 @@ architecture graphics of arty is
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (gclk100_per*real(sdram_params.pll.divclk_divide))/sdram_params.pll.clkfbout_mult_f; -- 1 ns /1ps
 
-	constant bank_size    : natural := ddr3_ba'length;
-	constant addr_size    : natural := ddr3_a'length;
-	constant coln_size    : natural := 10;
-	constant word_size    : natural := ddr3_dq'length;
-	constant byte_size    : natural := ddr3_dq'length/ddr3_dqs_p'length;
-	constant gear         : natural := 4;
+	constant phy_data     : string  := hdo(phy_db)**".xc7vg4";
+	constant gear         : natural := hdo(phy_data)**".orgz.gear";
 
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk0x2     : std_logic;
@@ -232,21 +228,21 @@ architecture graphics of arty is
 	signal ctlrphy_a      : std_logic_vector(gear/2*ddr3_a'length-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*ddr3_dm'length-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*ddr3_dm'length-1 downto 0);
 	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*ddr3_dq'length-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*ddr3_dq'length-1 downto 0);
 	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*ddr3_dqs_p'length-1 downto 0);
 
 	signal ddr3_clk       : std_logic_vector(1-1 downto 0);
-	signal ddr3_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqo       : std_logic_vector(word_size-1 downto 0);
-	signal ddr3_dqt       : std_logic_vector(word_size-1 downto 0);
+	signal ddr3_dqst      : std_logic_vector(ddr3_dqs_p'length-1 downto 0);
+	signal ddr3_dqso      : std_logic_vector(ddr3_dqs_p'length-1 downto 0);
+	signal ddr3_dqsi      : std_logic_vector(ddr3_dqs_p'length-1 downto 0);
+	signal ddr3_dqo       : std_logic_vector(ddr3_dq'length-1 downto 0);
+	signal ddr3_dqt       : std_logic_vector(ddr3_dq'length-1 downto 0);
 
 	signal video_clk      : std_logic := '0';
 	signal video_lckd     : std_logic := '0';
@@ -703,7 +699,7 @@ begin
 		profile      => 1,
 		sdram_tcp    => 2.0*sdram_tcp,
 		phy_data     => hdo(phy_db)**".xc7vg4",
-		sdram_data   => hdo(sdram_db)**".MT41K2G125",
+		sdram_data   => hdo(sdram_db)**".MT41K128M16-125",
 		burst_length => 8,
 		dvid_fifo    => true,
 		timing_id    => videoparam(video_mode).timing,
@@ -734,7 +730,7 @@ begin
 
 		ctlr_clk     => ddr_clk0,
 		ctlr_rst     => sdrphy_rst0,
-		ctlr_bl      => "000",
+		ctlr_bl      => "00",
 		ctlr_cl      => sdram_params.cl,
 		ctlr_cwl     => sdram_params.cwl,
 		ctlr_rtt     => "001",
@@ -807,10 +803,10 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
-		bank_size   => bank_size,
-		addr_size   => addr_size,
-		word_size   => word_size,
-		byte_size   => byte_size,
+	    bank_size   => ddr3_ba'length,
+	    addr_size   => ddr3_a'length,
+	    word_size   => ddr3_dq'length,
+		byte_size   => ddr3_dq'length/ddr3_dqs_p'length,
 		gear        => gear,
 		ba_latency  => 1,
 		device      => xc7a,
