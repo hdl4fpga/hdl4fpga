@@ -193,16 +193,6 @@ architecture scopeio of s3estarter is
 			"     step  : " & vt_step & ","  &
 			"     color : 0xff_ff_ff_ff}]}");
 
-	constant sdram : string := compact(
-		"{" &
-		"   gear      : 2," &
-		"   bank_size : " & natural'image(sd_ba'length) & "," &
-		"   addr_size : " & natural'image(sd_a'length)  & "," &
-		"   coln_size : 9," &
-		"   word_size : " & natural'image(sd_dq'length)  & "," &
-		"   byte_size : " & natural'image(sd_dq'length/sd_dm'length) & "," &
-		"}");
-
 	type sdramparams_record is record
 		id  : sdram_speeds;
 		cm : dcm_params;
@@ -236,7 +226,6 @@ architecture scopeio of s3estarter is
 
 	constant phy_data     : string  := hdo(phy_db)**".xc3sg2";
 	constant gear         : natural := hdo(phy_data)**".orgz.gear";
-	constant byte_size    : natural := sd_dq'length/sd_dm'length;
 
 	constant sdram_speed  : sdram_speeds := sdram166MHz;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
@@ -971,9 +960,9 @@ begin
 		device      => xc3s,
 		bank_size   => sd_ba'length,
 		addr_size   => sd_a'length,
-		gear        => gear,
 		word_size   => sd_dq'length,
 		byte_size   => sd_dq'length/sd_dm'length,
+		gear        => gear,
 		loopback    => false,
 		bypass      => true,
 		rd_fifo     => true,

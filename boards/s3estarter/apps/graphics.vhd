@@ -85,7 +85,6 @@ architecture graphics of s3estarter is
 		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   dcm => (dcm_mul =>  3, dcm_div => 2)),
 		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, dcm => (dcm_mul =>  3, dcm_div => 1)));
 
-
 	function videoparam (
 		constant id  : video_modes)
 		return video_params is
@@ -139,7 +138,6 @@ architecture graphics of s3estarter is
 
 	constant phy_data     : string  := hdo(phy_db)**".xc3sg2";
 	constant gear         : natural := hdo(phy_data)**".orgz.gear";
-	constant byte_size    : natural := sd_dq'length/sd_dm'length;
 
 	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
@@ -560,9 +558,9 @@ begin
 		device      => xc3s,
 		bank_size   => sd_ba'length,
 		addr_size   => sd_a'length,
-		gear        => gear,
 		word_size   => sd_dq'length,
 		byte_size   => sd_dq'length/sd_dm'length,
+		gear        => gear,
 		loopback    => false,
 		bypass      => true,
 		rd_fifo     => true,
