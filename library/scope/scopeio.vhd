@@ -35,11 +35,10 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio is
 	generic (
-
-		debug : boolean := false;
+		debug        : boolean := false;
 		profile      : natural;
-		sdram_data   : string := "{}";
-		phy_data     : string := "{}";
+		sdram_data   : string := "none";
+		phy_data     : string := "none";
 		timing_id    : videotiming_ids;
 		layout       : string;
 		sdram_tcp    : real;
@@ -69,12 +68,12 @@ entity scopeio is
 
 		ctlr_clk      : in  std_logic;
 		ctlr_rst      : in  std_logic;
-		ctlr_al       : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.al=3."-1 downto 0) := (others => '0');
-		ctlr_bl       : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.bl=3."-1 downto 0);
-		ctlr_cl       : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.cl=3."-1 downto 0);
-		ctlr_cwl      : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.cwl=3."-1 downto 0) := (others => '0');
-		ctlr_rtt      : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.rtt=2."-1 downto 0) := (others => '0');
-		ctlr_ods      : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.ods=1."-1 downto 0) := (others => '0');
+		ctlr_al       : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly=sdr."))))**".length.al=3."-1 downto 0) := (others => '0');
+		ctlr_bl       : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly=sdr."))))**".length.bl=3."-1 downto 0) := (others => '0');
+		ctlr_cl       : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly=sdr."))))**".length.cl=3."-1 downto 0) := (others => '0');
+		ctlr_cwl      : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly=sdr."))))**".length.cwl=3."-1 downto 0) := (others => '0');
+		ctlr_rtt      : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly=sdr."))))**".length.rtt=2."-1 downto 0) := (others => '0');
+		ctlr_ods      : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly=sdr."))))**".length.ods=1."-1 downto 0) := (others => '0');
 
 		ctlr_cmd      : buffer std_logic_vector(0 to 3-1);
 		ctlr_inirdy   : buffer std_logic;
@@ -141,9 +140,6 @@ entity scopeio is
 		3 => (ddro => 3, dmaio => 2, sodata => 1, adapter => 1)); -- NUHS3ADSP BOARD 166 MHz
 
 	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length));
-	constant gear          : natural := hdo(phy_data)**".orgz.gear=1.";
-	constant coln_size     : natural := hdo(sdram_data)**".orgz.addr.col=1.";
-	constant coln_bits     : natural := coln_size-(unsigned_num_bits(gear)-1);
 	constant byte_size     : natural := ctlrphy_dqo'length/ctlrphy_dmo'length;
 	constant inputs        : natural := hdo(layout)**".inputs";
 	constant max_delay     : natural := hdo(layout)**".max_delay=16384.";
@@ -488,7 +484,10 @@ begin
 
 	end block;
 
-	capture_b : block
+	capture_g : if sdram_data/="none" and phy_data/="none" generate
+		constant gear          : natural := hdo(phy_data)**".orgz.gear=1.";
+		constant coln_size     : natural := hdo(sdram_data)**".orgz.addr.col=1.";
+		constant coln_bits     : natural := coln_size-(unsigned_num_bits(gear)-1);
 
 		signal ctlr_frm       : std_logic;
 		signal ctlr_trdy      : std_logic;
@@ -1188,5 +1187,5 @@ begin
 				do(0) => ctlr_inirdy);
 
 		end block;
-	end block;
+	end generate;
 end;

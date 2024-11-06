@@ -215,9 +215,21 @@ architecture scopeio of arty is
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (gclk100_per*real(sdram_params.pll.divclk_divide))/sdram_params.pll.clkfbout_mult_f; -- 1 ns /1ps
 
-	constant phy_data     : string  := hdo(phy_db)**".xc7vg4";
-	constant gear         : natural := hdo(phy_data)**".orgz.gear";
+	-- constant sdram_data   : string  := hdo(sdram_db)**".MT41K128M16-125";
+	-- constant phy_data     : string  := hdo(phy_db)**".xc7vg4";
+	constant sdram_data   : string  := "none";
+	constant phy_data     : string  := "none";
+	constant gear         : natural := hdo(phy_data)**".orgz.gear=1.";
+	constant bank_length  : natural := setif(sdram_data/="none", ddr3_ba'length,    1);
+	constant addr_length  : natural := setif(sdram_data/="none", ddr3_a'length,     1);
+	constant data_mask    : natural := setif(sdram_data/="none", ddr3_dm'length,    1);
+	constant data_length  : natural := setif(sdram_data/="none", ddr3_dq'length,    1);
+	constant dqs_length   : natural := setif(sdram_data/="none", ddr3_dqs_p'length, 1);
 
+	constant ctlr_bl      : std_logic_vector := setif(sdram_data/="none",std_logic_vector'("00"),"---");
+	constant ctlr_cl      : std_logic_vector := setif(sdram_data/="none",sdram_params.cl,  "---");
+	constant ctlr_cwl     : std_logic_vector := setif(sdram_data/="none",sdram_params.cwl, "---");
+	constant ctlr_rtt     : std_logic_vector := setif(sdram_data/="none",std_logic_vector'("001"), "--");
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk0x2     : std_logic;
 	signal ddr_clk90x2    : std_logic;
@@ -240,39 +252,39 @@ architecture scopeio of arty is
 	signal ctlrphy_rlreq  : std_logic;
 	signal ctlrphy_rlrdy  : std_logic;
 
-	signal ddr_b          : std_logic_vector(ddr3_ba'range);
-	signal ddr_a          : std_logic_vector(ddr3_a'range);
+	signal ddr_b          : std_logic_vector(bank_length-1 downto 0);
+	signal ddr_a          : std_logic_vector(addr_length-1 downto 0);
 	signal ddr_cke        : std_logic_vector(0 to 0);
 	signal ddr_cs         : std_logic_vector(0 to 0);
 	signal ddr_odt        : std_logic_vector(0 to 0);
 
-	signal ctlrphy_rst    : std_logic_vector(0 to gear/2-1);
-	signal ctlrphy_cke    : std_logic_vector(0 to gear/2-1);
-	signal ctlrphy_cs     : std_logic_vector(0 to gear/2-1);
-	signal ctlrphy_ras    : std_logic_vector(0 to gear/2-1);
-	signal ctlrphy_cas    : std_logic_vector(0 to gear/2-1);
-	signal ctlrphy_we     : std_logic_vector(0 to gear/2-1);
-	signal ctlrphy_odt    : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_rst    : std_logic_vector(0 to (gear+1)/2-1);
+	signal ctlrphy_cke    : std_logic_vector(0 to (gear+1)/2-1);
+	signal ctlrphy_cs     : std_logic_vector(0 to (gear+1)/2-1);
+	signal ctlrphy_ras    : std_logic_vector(0 to (gear+1)/2-1);
+	signal ctlrphy_cas    : std_logic_vector(0 to (gear+1)/2-1);
+	signal ctlrphy_we     : std_logic_vector(0 to (gear+1)/2-1);
+	signal ctlrphy_odt    : std_logic_vector(0 to (gear+1)/2-1);
 	signal ctlrphy_cmd    : std_logic_vector(0 to 3-1);
-	signal ctlrphy_b      : std_logic_vector(gear/2*ddr3_ba'length-1 downto 0);
-	signal ctlrphy_a      : std_logic_vector(gear/2*ddr3_a'length-1 downto 0);
+	signal ctlrphy_b      : std_logic_vector((gear+1)/2*bank_length-1 downto 0);
+	signal ctlrphy_a      : std_logic_vector((gear+1)/2*addr_length-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(gear*ddr3_dm'length-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(gear*ddr3_dm'length-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*data_mask-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*data_mask-1 downto 0);
 	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(gear*ddr3_dq'length-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(gear*ddr3_dq'length-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*data_length-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*data_length-1 downto 0);
 	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(gear*ddr3_dqs_p'length-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*dqs_length-1 downto 0);
 
 	signal ddr3_clk       : std_logic_vector(1-1 downto 0);
-	signal ddr3_dqst      : std_logic_vector(ddr3_dqs_p'length-1 downto 0);
-	signal ddr3_dqso      : std_logic_vector(ddr3_dqs_p'length-1 downto 0);
-	signal ddr3_dqsi      : std_logic_vector(ddr3_dqs_p'length-1 downto 0);
-	signal ddr3_dqo       : std_logic_vector(ddr3_dq'length-1 downto 0);
-	signal ddr3_dqt       : std_logic_vector(ddr3_dq'length-1 downto 0);
+	signal ddr3_dqst      : std_logic_vector(dqs_length-1 downto 0);
+	signal ddr3_dqso      : std_logic_vector(dqs_length-1 downto 0);
+	signal ddr3_dqsi      : std_logic_vector(dqs_length-1 downto 0);
+	signal ddr3_dqo       : std_logic_vector(data_length-1 downto 0);
+	signal ddr3_dqt       : std_logic_vector(data_length-1 downto 0);
 
 	constant bufiog     : boolean  := true;
 	signal tp_sdrphy      : std_logic_vector(1 to 32);
@@ -346,28 +358,7 @@ begin
 			locked   => input_lck);
 	end block;
    
-	iodctrl_b : block
-		signal clkfb  : std_logic;
-		signal locked : std_logic;
-	begin
-		pll_i :  plle2_base
-		generic map (
-			clkin1_period  => gclk100_per*1.0e9,
-			clkfbout_mult  => 12,
-			clkout0_divide => 6)
-		port map (
-			pwrdwn   => '0',
-			rst      => sys_rst,
-			clkin1   => gclk100,
-			clkfbin  => clkfb,
-			clkfbout => clkfb,
-			clkout0  => iodctrl_clk,
-			locked   => locked);
-		iodctrl_rst <= not locked;
-
-	end block;
-
-	sdrampll_b : block
+	sdrampll_g : if sdram_data/="none" and phy_data/="none" generate
 
 		signal ddr_clk0_mmce2    : std_logic;
 		signal ddr_clk90_mmce2   : std_logic;
@@ -377,6 +368,27 @@ begin
 		signal locked            : std_logic;
 
 	begin
+
+    	iodctrl_b : block
+    		signal clkfb  : std_logic;
+    		signal locked : std_logic;
+    	begin
+    		pll_i :  plle2_base
+    		generic map (
+    			clkin1_period  => gclk100_per*1.0e9,
+    			clkfbout_mult  => 12,
+    			clkout0_divide => 6)
+    		port map (
+    			pwrdwn   => '0',
+    			rst      => sys_rst,
+    			clkin1   => gclk100,
+    			clkfbin  => clkfb,
+    			clkfbout => clkfb,
+    			clkout0  => iodctrl_clk,
+    			locked   => locked);
+    		iodctrl_rst <= not locked;
+
+    	end block;
 
 		pll_i : mmcme2_base
 		generic map (
@@ -455,7 +467,7 @@ begin
 			end if;
 		end process;
 
-	end block;
+	end generate;
 
 	sio_clk <= eth_tx_clk;
 	process (sys_clk)
@@ -742,7 +754,7 @@ begin
 		sdram_tcp    => 2.0*sdram_tcp,
 		timing_id    => pclk150_00m1920x1080at60,
 		phy_data     => phy_data,
-		sdram_data   => hdo(sdram_db)**".MT41K128M16-125",
+		sdram_data   => sdram_data,
 		burst_length => 8,
 		layout    => layout)
 	port map (
@@ -769,10 +781,10 @@ begin
 
 		ctlr_clk      => ddr_clk0,
 		ctlr_rst      => sdrsys_rst,
-		ctlr_bl       => "00",
-		ctlr_cl       => sdram_params.cl,
-		ctlr_cwl      => sdram_params.cwl,
-		ctlr_rtt      => "001",
+		ctlr_bl       => ctlr_bl,
+		ctlr_cl       => ctlr_cl,
+		ctlr_cwl      => ctlr_cwl,
+		ctlr_rtt      => ctlr_rtt,
 		ctlr_cmd      => ctlrphy_cmd,
 		ctlrphy_wlreq => ctlrphy_wlreq,
 		ctlrphy_wlrdy => ctlrphy_wlrdy,
@@ -805,150 +817,152 @@ begin
 		ctlrphy_dqv  => ctlrphy_dqv);
 
 
-	cgear_g : for i in 1 to gear/2-1 generate
-    	ctlrphy_rst(i) <= ctlrphy_rst(0);
-    	ctlrphy_cke(i) <= ctlrphy_cke(0);
-    	ctlrphy_cs(i)  <= ctlrphy_cs(0);
-    	ctlrphy_ras(i) <= '1';
-    	ctlrphy_cas(i) <= '1';
-    	ctlrphy_we(i)  <= '1';
-    	ctlrphy_odt(i) <= ctlrphy_odt(0);
+	sdramphy_g : if sdram_data/="none" and phy_data/="none" generate
+    	cgear_g : for i in 1 to gear/2-1 generate
+        	ctlrphy_rst(i) <= ctlrphy_rst(0);
+        	ctlrphy_cke(i) <= ctlrphy_cke(0);
+        	ctlrphy_cs(i)  <= ctlrphy_cs(0);
+        	ctlrphy_ras(i) <= '1';
+        	ctlrphy_cas(i) <= '1';
+        	ctlrphy_we(i)  <= '1';
+        	ctlrphy_odt(i) <= ctlrphy_odt(0);
+    	end generate;
+
+    	process (ddr_b)
+    	begin
+    		for i in ddr_b'range loop
+    			for j in 0 to gear/2-1 loop
+    				ctlrphy_b(i*gear/2+j) <= ddr_b(i);
+    			end loop;
+    		end loop;
+    	end process;
+
+    	process (ddr_a)
+    	begin
+    		for i in ddr_a'range loop
+    			for j in 0 to gear/2-1 loop
+    				ctlrphy_a(i*gear/2+j) <= ddr_a(i);
+    			end loop;
+    		end loop;
+    	end process;
+
+    	idelayctrl_i : idelayctrl
+    	port map (
+    		rst    => iodctrl_rst,
+    		refclk => iodctrl_clk,
+    		rdy    => iodctrl_rdy);
+
+    	sdrphy_e : entity hdl4fpga.xc_sdrphy
+    	generic map (
+    	    bank_size   => ddr3_ba'length,
+    	    addr_size   => ddr3_a'length,
+    	    word_size   => ddr3_dq'length,
+    		byte_size   => ddr3_dq'length/ddr3_dm'length,
+    		gear        => gear,
+    		ba_latency  => 1,
+    		device      => xc7a,
+    		taps        => natural(floor(sdram_tcp/((gclk100_per/2.0)/(32.0*2.0))))-1,
+    		dqs_highz   => false,
+    		bufio       => bufiog,
+    		bypass      => false,
+    		wr_fifo     => true)
+    		-- dqs_delay => (0 to 0 => 1.35 ns),
+    		-- dqi_delay => (0 to 0 => 0 ns),
+    	port map (
+
+    		tp_sel      => sw(1 downto 0),
+    		tp          => tp_sdrphy,
+
+    		rst         => sdrphy_rst0,
+    		rst_shift   => sdrphy_rst90,
+    		iod_clk     => gclk100,
+    		clk         => ddr_clk0,
+    		clk_shift   => ddr_clk90,
+    		clkx2       => ddr_clk0x2,
+    		clkx2_shift => ddr_clk90x2,
+
+    		phy_frm     => ctlrphy_frm,
+    		phy_trdy    => ctlrphy_trdy,
+    		phy_rw      => ctlrphy_rw,
+    		phy_ini     => ctlrphy_ini,
+
+    		phy_cmd     => ctlrphy_cmd,
+    		phy_wlreq   => ctlrphy_wlreq,
+    		phy_wlrdy   => ctlrphy_wlrdy,
+
+    		phy_rlreq   => ctlrphy_rlreq,
+    		phy_rlrdy   => ctlrphy_rlrdy,
+
+    		phy_locked   => ctlrphy_locked,
+
+    		sys_cke     => ctlrphy_cke,
+    		sys_rst     => ctlrphy_rst,
+    		sys_cs      => ctlrphy_cs,
+    		sys_ras     => ctlrphy_ras,
+    		sys_cas     => ctlrphy_cas,
+    		sys_we      => ctlrphy_we,
+    		sys_b       => ctlrphy_b,
+    		sys_a       => ctlrphy_a,
+
+    		sys_dqst    => ctlrphy_dqst,
+    		sys_dqsi    => ctlrphy_dqso,
+    		sys_dmi     => ctlrphy_dmo,
+    		sys_dmo     => ctlrphy_dmi,
+    		sys_dqo     => ctlrphy_dqi,
+    		sys_dqv     => ctlrphy_dqv,
+    		sys_dqt     => ctlrphy_dqt,
+    		sys_dqi     => ctlrphy_dqo,
+    		sys_odt     => ctlrphy_odt,
+    		sys_sti     => ctlrphy_sto,
+    		sys_sto     => ctlrphy_sti,
+
+    		sdram_rst   => ddr3_reset,
+    		sdram_clk   => ddr3_clk,
+    		sdram_cke   => ddr_cke,
+    		sdram_cs    => ddr_cs,
+    		sdram_ras   => ddr3_ras,
+    		sdram_cas   => ddr3_cas,
+    		sdram_we    => ddr3_we,
+    		sdram_b     => ddr3_ba,
+    		sdram_a     => ddr3_a,
+    		sdram_odt   => ddr_odt,
+    		-- sdram_dm    => ddr3_dm,
+    		sdram_dq    => ddr3_dq,
+    		sdram_dqst  => ddr3_dqst,
+    		sdram_dqs   => ddr3_dqsi,
+    		sdram_dqso  => ddr3_dqso);
+
+    	ddr3_cke <= ddr_cke(0);
+    	ddr3_cs  <= ddr_cs(0);
+    	ddr3_odt <= ddr_odt(0);
+    	ddr3_dm <= (others => '0');
+
+    	ddrio_b : block
+    	begin
+        	ddr_clk_g : for i in ddr3_clk'range generate
+        		ddr_ck_obufds : obufds
+        		generic map (
+        			iostandard => "DIFF_SSTL135")
+        		port map (
+        			i  => ddr3_clk(i),
+        			o  => ddr3_clk_p,
+        			ob => ddr3_clk_n);
+        	end generate;
+
+        	ddr_dqs_g : for i in ddr3_dqs_p'range generate
+        		dqsiobuf_i : iobufds
+        		generic map (
+        			iostandard => "DIFF_SSTL135")
+        		port map (
+        			t   => ddr3_dqst(i),
+        			i   => ddr3_dqso(i),
+        			o   => ddr3_dqsi(i),
+        			io  => ddr3_dqs_p(i),
+        			iob => ddr3_dqs_n(i));
+
+        	end generate;
+    	end block;
 	end generate;
-
-	process (ddr_b)
-	begin
-		for i in ddr_b'range loop
-			for j in 0 to gear/2-1 loop
-				ctlrphy_b(i*gear/2+j) <= ddr_b(i);
-			end loop;
-		end loop;
-	end process;
-
-	process (ddr_a)
-	begin
-		for i in ddr_a'range loop
-			for j in 0 to gear/2-1 loop
-				ctlrphy_a(i*gear/2+j) <= ddr_a(i);
-			end loop;
-		end loop;
-	end process;
-
-	idelayctrl_i : idelayctrl
-	port map (
-		rst    => iodctrl_rst,
-		refclk => iodctrl_clk,
-		rdy    => iodctrl_rdy);
-
-	sdrphy_e : entity hdl4fpga.xc_sdrphy
-	generic map (
-	    bank_size   => ddr3_ba'length,
-	    addr_size   => ddr3_a'length,
-	    word_size   => ddr3_dq'length,
-		byte_size   => ddr3_dq'length/ddr3_dm'length,
-		gear        => gear,
-		ba_latency  => 1,
-		device      => xc7a,
-		taps        => natural(floor(sdram_tcp/((gclk100_per/2.0)/(32.0*2.0))))-1,
-		dqs_highz   => false,
-		bufio       => bufiog,
-		bypass      => false,
-		wr_fifo     => true)
-		-- dqs_delay => (0 to 0 => 1.35 ns),
-		-- dqi_delay => (0 to 0 => 0 ns),
-	port map (
-
-		tp_sel      => sw(1 downto 0),
-		tp          => tp_sdrphy,
-
-		rst         => sdrphy_rst0,
-		rst_shift   => sdrphy_rst90,
-		iod_clk     => gclk100,
-		clk         => ddr_clk0,
-		clk_shift   => ddr_clk90,
-		clkx2       => ddr_clk0x2,
-		clkx2_shift => ddr_clk90x2,
-
-		phy_frm     => ctlrphy_frm,
-		phy_trdy    => ctlrphy_trdy,
-		phy_rw      => ctlrphy_rw,
-		phy_ini     => ctlrphy_ini,
-
-		phy_cmd     => ctlrphy_cmd,
-		phy_wlreq   => ctlrphy_wlreq,
-		phy_wlrdy   => ctlrphy_wlrdy,
-
-		phy_rlreq   => ctlrphy_rlreq,
-		phy_rlrdy   => ctlrphy_rlrdy,
-
-		phy_locked   => ctlrphy_locked,
-
-		sys_cke     => ctlrphy_cke,
-		sys_rst     => ctlrphy_rst,
-		sys_cs      => ctlrphy_cs,
-		sys_ras     => ctlrphy_ras,
-		sys_cas     => ctlrphy_cas,
-		sys_we      => ctlrphy_we,
-		sys_b       => ctlrphy_b,
-		sys_a       => ctlrphy_a,
-
-		sys_dqst    => ctlrphy_dqst,
-		sys_dqsi    => ctlrphy_dqso,
-		sys_dmi     => ctlrphy_dmo,
-		sys_dmo     => ctlrphy_dmi,
-		sys_dqo     => ctlrphy_dqi,
-		sys_dqv     => ctlrphy_dqv,
-		sys_dqt     => ctlrphy_dqt,
-		sys_dqi     => ctlrphy_dqo,
-		sys_odt     => ctlrphy_odt,
-		sys_sti     => ctlrphy_sto,
-		sys_sto     => ctlrphy_sti,
-
-		sdram_rst   => ddr3_reset,
-		sdram_clk   => ddr3_clk,
-		sdram_cke   => ddr_cke,
-		sdram_cs    => ddr_cs,
-		sdram_ras   => ddr3_ras,
-		sdram_cas   => ddr3_cas,
-		sdram_we    => ddr3_we,
-		sdram_b     => ddr3_ba,
-		sdram_a     => ddr3_a,
-		sdram_odt   => ddr_odt,
-		-- sdram_dm    => ddr3_dm,
-		sdram_dq    => ddr3_dq,
-		sdram_dqst  => ddr3_dqst,
-		sdram_dqs   => ddr3_dqsi,
-		sdram_dqso  => ddr3_dqso);
-
-	ddr3_cke <= ddr_cke(0);
-	ddr3_cs  <= ddr_cs(0);
-	ddr3_odt <= ddr_odt(0);
-	ddr3_dm <= (others => '0');
-
-	ddrio_b : block
-	begin
-    	ddr_clk_g : for i in ddr3_clk'range generate
-    		ddr_ck_obufds : obufds
-    		generic map (
-    			iostandard => "DIFF_SSTL135")
-    		port map (
-    			i  => ddr3_clk(i),
-    			o  => ddr3_clk_p,
-    			ob => ddr3_clk_n);
-    	end generate;
-
-    	ddr_dqs_g : for i in ddr3_dqs_p'range generate
-    		dqsiobuf_i : iobufds
-    		generic map (
-    			iostandard => "DIFF_SSTL135")
-    		port map (
-    			t   => ddr3_dqst(i),
-    			i   => ddr3_dqso(i),
-    			o   => ddr3_dqsi(i),
-    			io  => ddr3_dqs_p(i),
-    			iob => ddr3_dqs_n(i));
-
-    	end generate;
-	end block;
 
 	process (video_clk)
 	begin

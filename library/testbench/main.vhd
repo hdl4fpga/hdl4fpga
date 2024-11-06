@@ -41,7 +41,7 @@ begin
 	constant phy_data : string := hdo(phy_db)**".ecp5g1";
 	constant phytmng_data : string := hdo(phy_data)**".tmng";
 
-	constant chip_id   : string := "MT41K2G125";
+	constant chip_id   : string := "MT41K128M16-125";
 	constant sdram_data : string        := hdo(sdram_db)**("."&chip_id);
 	constant fmly      : string         := hdo(sdram_data)**".fmly";
 	constant fmly_data : string         := hdo(families_db)**("."&fmly);
@@ -70,10 +70,14 @@ begin
 	constant WWNXL  : natural := hdo(phytmng_data)**".WWNXL";
 	constant WIDL   : natural := hdo(phytmng_data)**".WIDL";
 
-	constant obj : string := hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))));
+	-- constant obj : string := string'(hdo'("none")**".fmly=none.");
+	-- constant obj : string := hdo(families_db)**("."&string'(hdo'("none")**".fmly=none."));-- )); --**".length.al=3.";
+	-- constant obj : string := hdo(string'(hdo(families_db)**("."&string'(hdo'("none")**".fmly=sdr."))))**".length.al=3.";
+	constant obj : string := hdo'("none")**".length.al=3.";
 	alias tab is wwnl_tab;
 	begin
-		report "***** " & to_string(std_logic_vector'(hdo(obj)**".wrl['8']"));
+		report "***** " & obj;
+		-- report "***** " & string'(hdo(obj)**".wrl['8']=hole.");
 		-- report "***** " & escaped(string'(hdo(obj)**".wrl['8']"));
 		-- report "***** " & string'(hdo(obj));
 		-- report "***** " & string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly")));
