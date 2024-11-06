@@ -36,7 +36,6 @@ architecture scopeio of arty is
 	signal input_samples   : std_logic_vector(0 to inputs*input_sample'length-1);
 	signal input_maxchn    : std_logic_vector(4-1 downto 0);
 
-	signal sys_clk         : std_logic;
 	signal video_clk       : std_logic;
 	signal video_hsync     : std_logic;
 	signal video_vsync     : std_logic;
@@ -292,10 +291,6 @@ architecture scopeio of arty is
 begin
 
 	sys_rst <= '0';
-	clkin_ibufg : ibufg
-	port map (
-		I => gclk100,
-		O => sys_clk);
 
 	dcm_e : block
 		signal video_clkfb : std_logic;
@@ -318,7 +313,7 @@ begin
 		port map (
 			pwrdwn   => '0',
 			rst      => '0',
-			clkin1   => sys_clk,
+			clkin1   => gclk100,
 			clkfbin  => video_clkfb,
 			clkfbout => video_clkfb,
 			clkout0  => video_clk,
@@ -470,10 +465,10 @@ begin
 	end generate;
 
 	sio_clk <= eth_tx_clk;
-	process (sys_clk)
+	process (gclk100)
 		variable div : unsigned(0 to 1) := (others => '0');
 	begin
-		if rising_edge(sys_clk) then
+		if rising_edge(gclk100) then
 			div := div + 1;
 			eth_ref_clk <= div(0);
 		end if;
@@ -1209,11 +1204,11 @@ begin
 		end process;
 	end generate;
 
-	tp_cntr_p : process (sys_clk)
+	tp_cntr_p : process (gclk100)
 		constant n : natural := 0;
 		variable cntr : unsigned(0 to 22-1);
 	begin
-		if rising_edge(sys_clk) then
+		if rising_edge(gclk100) then
 			(jd(9), jd(8), jd(7), jc(1), jd(10), jd(4), jd(3), jd(2), jd(1)) <= std_logic_vector(cntr(0+n to 9+n-1));
 			cntr := cntr + 1;
 		end if;
