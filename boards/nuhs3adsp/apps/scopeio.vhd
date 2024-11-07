@@ -177,6 +177,7 @@ architecture scopeio of nuhs3adsp is
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (real(sdram_params.cm.dcm_div)*clk_per)/real(sdram_params.cm.dcm_mul);
 
+	constant sdram_data   : string  := hdo(sdram_db)**".MT46V16M16M-6T";
 	constant phy_data     : string  := hdo(phy_db)**".xc3sg2";
 	constant gear         : natural := hdo(phy_data)**".orgz.gear";
 
@@ -203,19 +204,12 @@ architecture scopeio of nuhs3adsp is
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sti    : std_logic_vector(gear*ddr_dqs'length-1 downto 0);
 
-	signal ctlrphy_wlreq  : std_logic;
-	signal ctlrphy_wlrdy  : std_logic;
-	signal ctlrphy_rlreq  : std_logic;
-	signal ctlrphy_rlrdy  : std_logic;
-
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk90      : std_logic;
-	signal ddr_clk       : std_logic_vector(0 downto 0);
-	signal ddr_odt       : std_logic_vector(0 to 0);
-	signal sdram_cke     : std_logic_vector(0 to 0);
-	signal sdram_cs      : std_logic_vector(0 to 0);
-	signal ddr_lp_ck     : std_logic;
-	signal st_dqs_open   : std_logic;
+	signal ddr_clk        : std_logic_vector(0 downto 0);
+	signal ddr_odt        : std_logic_vector(0 to 0);
+	signal ddr_lp_ck      : std_logic;
+	signal st_dqs_open    : std_logic;
 
 	alias ctlr_clk is ddr_clk0;
 begin
@@ -570,13 +564,13 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		debug     => debug,
-		profile   => 1,
-		sdram_tcp => sdram_tcp,
-		sdram_data   => hdo(sdram_db)**".MT46V16M16M-6T",
-		phy_data     => phy_data,
-		timing_id => pclk150_00m1920x1080at60,
-		layout    => layout)
+		debug       => debug,
+		profile     => 1,
+		sdram_tcp   => sdram_tcp,
+		sdram_data  => sdram_data,
+		phy_data    => phy_data,
+		timing_id   => pclk150_00m1920x1080at60,
+		layout      => layout)
 	port map (
 		-- tp => tp,
 		sio_clk     => sio_clk,
@@ -621,81 +615,113 @@ begin
 		video_vton  => video_vton,
 		video_blank => video_blank);
 
-	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
-	ctlrphy_rlreq <= to_stdulogic(to_bit(ctlrphy_rlrdy));
+	sdramphy_g : if sdram_data/="none" and phy_data/="none" generate
+		signal ctlrphy_wlreq : std_logic;
+		signal ctlrphy_wlrdy : std_logic;
+		signal ctlrphy_rlreq : std_logic;
+		signal ctlrphy_rlrdy : std_logic;
+		signal sdram_cke     : std_logic_vector(0 to 0);
+		signal sdram_cs      : std_logic_vector(0 to 0);
+	begin
+    	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
+    	ctlrphy_rlreq <= to_stdulogic(to_bit(ctlrphy_rlrdy));
 
-	sdrphy_e : entity hdl4fpga.xc_sdrphy
-	generic map (
-		-- dqs_delay   => (0 to 0 => 0 ns),
-		-- dqi_delay   => (0 to 0 => 0 ns),
-		device      => xc3s,
-		bank_size   => ddr_ba'length,
-		addr_size   => ddr_a'length,
-		gear        => gear,
-		word_size   => ddr_dq'length,
-		byte_size   => ddr_dq'length/ddr_dm'length,
-		bypass      => true,
-		loopback    => true,
-		rd_fifo     => true,
-		rd_align    => true)
-	port map (
-		rst         => sdrsys_rst,
-		iod_clk     => ddr_clk0,
-		clk         => ddr_clk0,
-		clk_shift   => ddr_clk90,
+    	sdrphy_e : entity hdl4fpga.xc_sdrphy
+    	generic map (
+    		-- dqs_delay   => (0 to 0 => 0 ns),
+    		-- dqi_delay   => (0 to 0 => 0 ns),
+    		device      => xc3s,
+    		bank_size   => ddr_ba'length,
+    		addr_size   => ddr_a'length,
+    		gear        => gear,
+    		word_size   => ddr_dq'length,
+    		byte_size   => ddr_dq'length/ddr_dm'length,
+    		bypass      => true,
+    		loopback    => true,
+    		rd_fifo     => true,
+    		rd_align    => true)
+    	port map (
+    		rst         => sdrsys_rst,
+    		iod_clk     => ddr_clk0,
+    		clk         => ddr_clk0,
+    		clk_shift   => ddr_clk90,
 
-		phy_wlreq   => ctlrphy_wlreq,
-		phy_wlrdy   => ctlrphy_wlrdy,
-		phy_rlreq   => ctlrphy_rlreq,
-		phy_rlrdy   => ctlrphy_rlrdy,
-		sys_cke     => ctlrphy_cke,
-		sys_cs      => ctlrphy_cs,
-		sys_ras     => ctlrphy_ras,
-		sys_cas     => ctlrphy_cas,
-		sys_we      => ctlrphy_we,
-		sys_b       => ctlrphy_b,
-		sys_a       => ctlrphy_a,
-		sys_dqsi    => ctlrphy_dqso,
-		sys_dqst    => ctlrphy_dqst,
-		sys_dqso    => ctlrphy_dqsi,
-		sys_dmi     => ctlrphy_dmo,
-		sys_dmo     => ctlrphy_dmi,
-		sys_dqi     => ctlrphy_dqo,
-		sys_dqt     => ctlrphy_dqt,
-		sys_dqo     => ctlrphy_dqi,
-		sys_odt     => ctlrphy_odt,
-		sys_dqv     => ctlrphy_dqv,
-		sys_sti     => ctlrphy_sto,
-		sys_sto     => ctlrphy_sti,
+    		phy_wlreq   => ctlrphy_wlreq,
+    		phy_wlrdy   => ctlrphy_wlrdy,
+    		phy_rlreq   => ctlrphy_rlreq,
+    		phy_rlrdy   => ctlrphy_rlrdy,
+    		sys_cke     => ctlrphy_cke,
+    		sys_cs      => ctlrphy_cs,
+    		sys_ras     => ctlrphy_ras,
+    		sys_cas     => ctlrphy_cas,
+    		sys_we      => ctlrphy_we,
+    		sys_b       => ctlrphy_b,
+    		sys_a       => ctlrphy_a,
+    		sys_dqsi    => ctlrphy_dqso,
+    		sys_dqst    => ctlrphy_dqst,
+    		sys_dqso    => ctlrphy_dqsi,
+    		sys_dmi     => ctlrphy_dmo,
+    		sys_dmo     => ctlrphy_dmi,
+    		sys_dqi     => ctlrphy_dqo,
+    		sys_dqt     => ctlrphy_dqt,
+    		sys_dqo     => ctlrphy_dqi,
+    		sys_odt     => ctlrphy_odt,
+    		sys_dqv     => ctlrphy_dqv,
+    		sys_sti     => ctlrphy_sto,
+    		sys_sto     => ctlrphy_sti,
 
-		sdram_sto(0)  => ddr_st_dqs,
-		sdram_sto(1)  => st_dqs_open,
-		sdram_sti(0)  => ddr_st_lp_dqs,
-		sdram_sti(1)  => ddr_st_lp_dqs,
-		sdram_clk     => ddr_clk,
-		sdram_cke     => sdram_cke,
-		sdram_cs      => sdram_cs,
-		sdram_odt     => ddr_odt,
-		sdram_ras     => ddr_ras,
-		sdram_cas     => ddr_cas,
-		sdram_we      => ddr_we,
-		sdram_b       => ddr_ba,
-		sdram_a       => ddr_a,
+    		sdram_sto(0)  => ddr_st_dqs,
+    		sdram_sto(1)  => st_dqs_open,
+    		sdram_sti(0)  => ddr_st_lp_dqs,
+    		sdram_sti(1)  => ddr_st_lp_dqs,
+    		sdram_clk     => ddr_clk,
+    		sdram_cke     => sdram_cke,
+    		sdram_cs      => sdram_cs,
+    		sdram_odt     => ddr_odt,
+    		sdram_ras     => ddr_ras,
+    		sdram_cas     => ddr_cas,
+    		sdram_we      => ddr_we,
+    		sdram_b       => ddr_ba,
+    		sdram_a       => ddr_a,
 
-		sdram_dm      => ddr_dm,
-		sdram_dq      => ddr_dq,
-		sdram_dqs     => ddr_dqs);
+    		sdram_dm      => ddr_dm,
+    		sdram_dq      => ddr_dq,
+    		sdram_dqs     => ddr_dqs);
 
-	ddr_clk_i : obufds
-	generic map (
-		iostandard => "DIFF_SSTL2_I")
-	port map (
-		i  => ddr_clk(0),
-		o  => ddr_ckp,
-		ob => ddr_ckn);
+    	ddr_cke <= sdram_cke(0);
+    	ddr_cs  <= sdram_cs(0);
 
-	ddr_cke <= sdram_cke(0);
-	ddr_cs  <= sdram_cs(0);
+    	ddr_clk_i : obufds
+    	generic map (
+    		iostandard => "DIFF_SSTL2_I")
+    	port map (
+    		i  => ddr_clk(0),
+    		o  => ddr_ckp,
+    		ob => ddr_ckn);
+	end generate;
+
+
+	nosdram_g : if sdram_data="none" or phy_data="none" generate
+		ddr_clk_i : obufds
+		generic map (
+			iostandard => "DIFF_SSTL2_I")
+		port map (
+			i  => 'Z',
+			o  => ddr_ckp,
+			ob => ddr_ckn);
+	
+			ddr_st_dqs <= 'Z';
+			ddr_cke    <= 'Z';
+			ddr_cs     <= '1';
+			ddr_ras    <= 'Z';
+			ddr_cas    <= 'Z';
+			ddr_we     <= 'Z';
+			ddr_ba     <= (others => 'Z');
+			ddr_a      <= (others => 'Z');
+			ddr_dm     <= (others => 'Z');
+			ddr_dqs    <= (others => 'Z');
+			ddr_dq     <= (others => 'Z');
+	end generate;
 
 	process (video_clk)
 		variable video_rgb1   : std_logic_vector(video_pixel'range);

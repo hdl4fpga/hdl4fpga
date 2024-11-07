@@ -226,7 +226,6 @@ begin
 	sdram_mpu_p: process (sdram_mpu_clk)
 		variable state_set : boolean;
 		variable lat_id :lat_id ;
-		variable timer  : integer;
 	begin
 		if rising_edge(sdram_mpu_clk) then
 			if sdram_mpu_rst='0' then
@@ -264,25 +263,23 @@ begin
 								sdram_rdy_fch  <= sdram_state_tab(i).sdram_fch;
 
 								lat_id := sdram_state_tab(i).sdram_lat;
-								timer  := lat_timer;
 								case lat_id is
 								when id_bl =>
-									timer := adjlat(bl_tab(to_integer(unsigned(sdram_mpu_bl))));
+									lat_timer <= adjlat(bl_tab(to_integer(unsigned(sdram_mpu_bl))));
 								when id_cl =>
-									timer := adjlat(cl_tab(to_integer(unsigned(sdram_mpu_cl))));
+									lat_timer <= adjlat(cl_tab(to_integer(unsigned(sdram_mpu_cl))));
 								when id_cwl =>
-									timer := adjlat(cwl_tab(to_integer(unsigned(sdram_mpu_cwl))));
+									lat_timer <= adjlat(cwl_tab(to_integer(unsigned(sdram_mpu_cwl))));
 								when id_rcd =>
-									-- timer := to_signed(lrcd-2, lat_timer'length);
-									timer := adjal_tab(sdram_mpu_al);
+									-- lat_timer = to_signed(lrcd-2, lat_timer'length);
+									lat_timer <= adjal_tab(sdram_mpu_al);
 								when id_rfc =>
-									timer := lrfc-2;
+									lat_timer <= lrfc-2;
 								when id_rp =>
-									timer := lrp-2;
+									lat_timer <= lrp-2;
 								when id_idle =>
-									timer := -1;
+									lat_timer <= -1;
 								end case;
-								lat_timer <= timer;
 								exit;
 							end if;
 						end if;

@@ -112,19 +112,19 @@ TIMESPEC TS_ram2ff     = FROM RAMS_clk90   TO FFS_clk0     TIG;
 ## ########### #
 #
 
-INST "sdrphy_e_byte_g[0].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutn" LOC = SLICE_X2Y60;
-INST "sdrphy_e_byte_g[0].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutn" BEL = G;
-INST "sdrphy_e_byte_g[0].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutp" LOC = SLICE_X2Y60;
-INST "sdrphy_e_byte_g[0].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutp" BEL = F;
+INST "sdramphy_g.sdrphy_e_byte_g[0].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutn" LOC = SLICE_X2Y60;
+INST "sdramphy_g.sdrphy_e_byte_g[0].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutn" BEL = G;
+INST "sdramphy_g.sdrphy_e_byte_g[0].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutp" LOC = SLICE_X2Y60;
+INST "sdramphy_g.sdrphy_e_byte_g[0].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutp" BEL = F;
 
 
 # Data Byte 1 #
 # ########### #
 
-INST "sdrphy_e_byte_g[1].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutn" LOC = SLICE_X2Y82;
-INST "sdrphy_e_byte_g[1].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutn" BEL = G;
-INST "sdrphy_e_byte_g[1].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutp" LOC = SLICE_X2Y82;
-INST "sdrphy_e_byte_g[1].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutp" BEL = F;
+INST "sdramphy_g.sdrphy_e_byte_g[1].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutn" LOC = SLICE_X2Y82;
+INST "sdramphy_g.sdrphy_e_byte_g[1].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutn" BEL = G;
+INST "sdramphy_g.sdrphy_e_byte_g[1].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutp" LOC = SLICE_X2Y82;
+INST "sdramphy_g.sdrphy_e_byte_g[1].sdrdqphy_i_dqsi_b.dqsidelay_i_xc3s_g.idelay_i_delayed_e_lutp" BEL = F;
 
 # NET "ddr_lp_ck" TNM_NET = ddr_lp_ck;
 # TIMESPEC TS_ddr_lp_ck = PERIOD "ddr_lp_ck" 6 ns HIGH 50%;

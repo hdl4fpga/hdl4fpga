@@ -188,10 +188,13 @@ architecture scopeio of ulx3s is
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff}]}");   -- vt(7)
 
-	constant bank_size   : natural := sdram_ba'length;
-	constant addr_size   : natural := sdram_a'length; 
+	constant sdram_data  : string  := hdo(sdram_db)**".MT48LC16M16MA2-7E";
 	constant phy_data    : string  := hdo(phy_db)**".ecp5g1";
-	constant gear        : natural := hdo(phy_data)**".orgz.gear";
+	constant gear        : natural := hdo(phy_data)**".orgz.gear=1.";
+	constant bank_length : natural := setif(sdram_data/="none", sdram_ba'length,  1);
+	constant addr_length : natural := setif(sdram_data/="none", sdram_a'length,   1);
+	constant data_mask   : natural := setif(sdram_data/="none", sdram_dqm'length, 1);
+	constant data_length : natural := setif(sdram_data/="none", sdram_d'length,   1);
 
 	signal ctlr_clk      : std_logic;
 	signal sdrsys_rst    : std_logic;
@@ -204,16 +207,16 @@ architecture scopeio of ulx3s is
 	signal ctlrphy_ras   : std_logic;
 	signal ctlrphy_cas   : std_logic;
 	signal ctlrphy_we    : std_logic;
-	signal ctlrphy_b     : std_logic_vector(sdram_ba'length-1 downto 0);
-	signal ctlrphy_a     : std_logic_vector(sdram_a'length-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(gear*sdram_dqm'length-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(gear*sdram_d'length-1 downto 0);
+	signal ctlrphy_b     : std_logic_vector(bank_length-1 downto 0);
+	signal ctlrphy_a     : std_logic_vector(addr_length-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(gear*data_mask-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(gear*data_length-1 downto 0);
 	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(gear*sdram_d'length-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(gear*data_length-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
 	signal sdrphy_sti    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(gear*sdram_dqm'length-1 downto 0);
-	signal sdram_dqs     : std_logic_vector(sdram_dqm'length-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(gear*data_mask-1 downto 0);
+	signal sdram_dqs     : std_logic_vector(data_mask-1 downto 0);
 
 begin
 
@@ -508,13 +511,13 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		debug => debug,
-		profile => 0,
-		sdram_tcp    => 1.0/sdram_freq,
-		phy_data     => phy_data,
-		sdram_data   => hdo(sdram_db)**".MT48LC16M16MA2-7E",
-		timing_id => video_params.timing,
-		layout         => layout)
+		debug      => debug,
+		profile    => 0,
+		sdram_tcp  => 1.0/sdram_freq,
+		sdram_data => sdram_data,
+		phy_data   => phy_data,
+		timing_id  => video_params.timing,
+		layout     => layout)
 	port map (
 		-- tp => tp,
 		sio_clk     => sio_clk,
@@ -565,46 +568,48 @@ begin
 		di  => ctlrphy_sto,
 		do  => sdrphy_sti);
 
-	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
-	generic map (
-		gear       => gear,
-		bank_size  => sdram_ba'length,
-		addr_size  => sdram_a'length,
-		word_size  => sdram_d'length,
-		byte_size  => sdram_d'length/sdram_dqm'length,
-		wr_fifo    => false,
-		rd_fifo    => false,
-		bypass     => false)
-	port map (
-		sclk       => ctlr_clk,
-		rst        => sdrsys_rst,
+	sdramphy_g : if sdram_data/="none" and phy_data/="none" generate
+    	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
+    	generic map (
+    		gear       => gear,
+    		bank_size  => sdram_ba'length,
+    		addr_size  => sdram_a'length,
+    		word_size  => sdram_d'length,
+    		byte_size  => sdram_d'length/sdram_dqm'length,
+    		wr_fifo    => false,
+    		rd_fifo    => false,
+    		bypass     => false)
+    	port map (
+    		sclk       => ctlr_clk,
+    		rst        => sdrsys_rst,
 
-		sys_cs(0)  => ctlrphy_cs,
-		sys_cke(0) => ctlrphy_cke,
-		sys_ras(0) => ctlrphy_ras,
-		sys_cas(0) => ctlrphy_cas,
-		sys_we(0)  => ctlrphy_we,
-		sys_b      => ctlrphy_b,
-		sys_a      => ctlrphy_a,
-		sys_dmi    => ctlrphy_dmo,
-		sys_dqi    => ctlrphy_dqo,
-		sys_dqt    => ctlrphy_dqt,
-		sys_dqo    => ctlrphy_dqi,
-		sys_sto    => ctlrphy_sti,
-		sys_sti    => sdrphy_sti,
+    		sys_cs(0)  => ctlrphy_cs,
+    		sys_cke(0) => ctlrphy_cke,
+    		sys_ras(0) => ctlrphy_ras,
+    		sys_cas(0) => ctlrphy_cas,
+    		sys_we(0)  => ctlrphy_we,
+    		sys_b      => ctlrphy_b,
+    		sys_a      => ctlrphy_a,
+    		sys_dmi    => ctlrphy_dmo,
+    		sys_dqi    => ctlrphy_dqo,
+    		sys_dqt    => ctlrphy_dqt,
+    		sys_dqo    => ctlrphy_dqi,
+    		sys_sto    => ctlrphy_sti,
+    		sys_sti    => sdrphy_sti,
 
-		sdram_clk  => sdram_clk,
-		sdram_cke  => sdram_cke,
-		sdram_cs   => sdram_csn,
-		sdram_ras  => sdram_rasn,
-		sdram_cas  => sdram_casn,
-		sdram_we   => sdram_wen,
-		sdram_b    => sdram_ba,
-		sdram_a    => sdram_a,
-		sdram_dqs  => sdram_dqs,
+    		sdram_clk  => sdram_clk,
+    		sdram_cke  => sdram_cke,
+    		sdram_cs   => sdram_csn,
+    		sdram_ras  => sdram_rasn,
+    		sdram_cas  => sdram_casn,
+    		sdram_we   => sdram_wen,
+    		sdram_b    => sdram_ba,
+    		sdram_a    => sdram_a,
+    		sdram_dqs  => sdram_dqs,
 
-		sdram_dm   => sdram_dqm,
-		sdram_dq   => sdram_d);
+    		sdram_dm   => sdram_dqm,
+    		sdram_dq   => sdram_d);
+	end generate;
 
 	-- HDMI/DVI VGA --
 	------------------

@@ -860,37 +860,6 @@ begin
 
 	end block;
 
-	serdebug_b : block
-		signal ser_irdy : std_logic;
-	begin
-		ser_irdy <= si_irdy and si_trdy and not si_end;
-		serdebug_e : entity hdl4fpga.ser_debug
-    	generic map (
-    		timing_id    => videoparam(mode600p24bpp).timing,
-    		red_length   => 1,
-    		green_length => 1,
-    		blue_length  => 1)
-    	port map (
-    		ser_clk      => sio_clk,
-    		ser_frm      => si_frm,
-			ser_irdy     => ser_irdy,
-    		ser_data     => si_data,
-
-    		video_clk    => video_clk,
-    		video_hzsync => dd_hs,
-    		video_vtsync => dd_vs,
-    		video_pixel  => dd_pixel);
-
-    	process (video_clk)
-    	begin
-    		if rising_edge(video_clk) then
-    			hs <= dd_hs;
-    			vs <= dd_vs;
-    			(red, green, blue) <= dd_pixel;
-    		end if;
-    	end process;
-	end block;
-
 	phy_txc_gtxclk_i : oddr
 	port map (
 		c  => gtx_clk,

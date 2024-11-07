@@ -214,10 +214,10 @@ architecture scopeio of arty is
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (gclk100_per*real(sdram_params.pll.divclk_divide))/sdram_params.pll.clkfbout_mult_f; -- 1 ns /1ps
 
-	constant sdram_data   : string  := hdo(sdram_db)**".MT41K128M16-125";
-	constant phy_data     : string  := hdo(phy_db)**".xc7vg4";
-	-- constant sdram_data   : string  := "none";
-	-- constant phy_data     : string  := "none";
+	-- constant sdram_data   : string  := hdo(sdram_db)**".MT41K128M16-125";
+	-- constant phy_data     : string  := hdo(phy_db)**".xc7vg4";
+	constant sdram_data   : string  := "none";
+	constant phy_data     : string  := "none";
 	constant gear         : natural := hdo(phy_data)**".orgz.gear=1.";
 	constant bank_length  : natural := setif(sdram_data/="none", ddr3_ba'length,    1);
 	constant addr_length  : natural := setif(sdram_data/="none", ddr3_a'length,     1);
@@ -612,27 +612,27 @@ begin
 
 	end generate;
 
-	-- stactlr_g : if io_link=io_none generate
-	stactlr_e : entity hdl4fpga.scopeio_stactlr
-	generic map (
-		debug  => debug,
-		layout => layout)
-	port map (
-		left    => btn(3),
-		up      => btn(2),
-		down    => btn(1),
-		right   => btn(0),
-		video_vton => video_vton,
-		sio_clk => sio_clk,
-		si_frm  => miilnk_frm,
-		si_irdy => miilnk_irdy,
-		si_trdy => miilnk_trdy,
-		si_data => miilnk_data,
-		so_frm  => iolink_frm,
-		so_irdy => iolink_irdy,
-		so_trdy => iolink_trdy,
-		so_data => iolink_data);
-	-- end generate;
+	stactlr_g : if io_link=io_none generate
+    	stactlr_e : entity hdl4fpga.scopeio_stactlr
+    	generic map (
+    		debug  => debug,
+    		layout => layout)
+    	port map (
+    		left    => btn(3),
+    		up      => btn(2),
+    		down    => btn(1),
+    		right   => btn(0),
+    		video_vton => video_vton,
+    		sio_clk => sio_clk,
+    		si_frm  => miilnk_frm,
+    		si_irdy => miilnk_irdy,
+    		si_trdy => miilnk_trdy,
+    		si_data => miilnk_data,
+    		so_frm  => iolink_frm,
+    		so_irdy => iolink_irdy,
+    		so_trdy => iolink_trdy,
+    		so_data => iolink_data);
+	end generate;
 
 	inputs_b : block
 		constant mux_sampling : natural := 10;
@@ -931,69 +931,66 @@ begin
 		ddr3_cs  <= ddr_cs(0);
 		ddr3_odt <= ddr_odt(0);
 		ddr3_dm <= (others => '0');
-	end generate;
 
-	ddr_clk_g : for i in ddr3_clk'range generate
-		signal clk : std_logic;
-	begin
-		process (ddr3_clk)
-		begin
-			if sdram_data="none" then
-				clk <= '0';
-			elsif phy_data="none"  then
-				clk <= '0';
-			elsif i < ddr3_dqst'length then
-				clk <= ddr3_clk(i);
-			else
-				clk <= '0';
-			end if;
-		end process;
-
-		ddr_ck_obufds : obufds
-		generic map (
-			iostandard => "DIFF_SSTL135")
-		port map (
-			i  => clk,
-			o  => ddr3_clk_p,
-			ob => ddr3_clk_n);
-	end generate;
-
-	ddr_dqs_g : for i in ddr3_dqs_p'range generate
-		signal dqst : std_logic;
-		signal dqso : std_logic;
-		signal dqsi : std_logic;
-	begin
-		process (ddr3_dqst, ddr3_dqso)
-		begin
-			if sdram_data="none" then
-				dqst <= '1';
-				dqso <= '0';
-			elsif phy_data="none"  then
-				dqst <= '1';
-				dqso <= '0';
-			elsif i < ddr3_dqst'length then
-				dqst <= ddr3_dqst(i);
-				dqso <= ddr3_dqso(i);
-			else
-				dqst <= '1';
-				dqso <= '0';
-			end if;
-		end process;
-
-		dqsi_g : if sdram_data/="none" and phy_data/="none" generate
-			ddr3_dqsi(i) <= dqsi;
+		ddr_clk_g : for i in ddr3_clk'range generate
+			ddr_ck_obufds : obufds
+			generic map (
+				iostandard => "DIFF_SSTL135")
+			port map (
+				i  => ddr3_clk(i),
+				o  => ddr3_clk_p,
+				ob => ddr3_clk_n);
 		end generate;
 
-		dqsiobuf_i : iobufds
-		generic map (
-			iostandard => "DIFF_SSTL135")
-		port map (
-			t   => dqst,
-			i   => dqso,
-			o   => dqsi,
-			io  => ddr3_dqs_p(i),
-			iob => ddr3_dqs_n(i));
+    	ddr_dqs_g : for i in ddr3_dqs_p'range generate
+    		dqsiobuf_i : iobufds
+    		generic map (
+    			iostandard => "DIFF_SSTL135")
+    		port map (
+    			t   => ddr3_dqst(i),
+    			i   => ddr3_dqso(i),
+    			o   => ddr3_dqsi(i),
+    			io  => ddr3_dqs_p(i),
+    			iob => ddr3_dqs_n(i));
+    	end generate;
 
+	end generate;
+
+	nosdram_g : if sdram_data="none" or phy_data="none" generate
+
+		ddr3_cs  <= '1';
+		ddr3_cke <= 'Z';
+		ddr3_odt <= 'Z';
+		ddr3_ras <= 'Z';
+		ddr3_cas <= 'Z';
+		ddr3_we  <= 'Z';
+		ddr3_ba  <= (others => 'Z');
+		ddr3_a   <= (others => 'Z');
+		ddr3_dm  <= (others => 'Z');
+		ddr3_dq  <= (others => 'Z');
+
+		ddr_clk_g : for i in ddr3_clk'range generate
+			ddr_ck_obufds : obufds
+			generic map (
+				iostandard => "DIFF_SSTL135")
+			port map (
+				i  => 'Z',
+				o  => ddr3_clk_p,
+				ob => ddr3_clk_n);
+    	end generate;
+
+    	ddr_dqs_g : for i in ddr3_dqs_p'range generate
+    		dqsiobuf_i : iobufds
+    		generic map (
+    			iostandard => "DIFF_SSTL135")
+    		port map (
+    			t   => '1',
+    			i   => 'Z',
+    			o   => open,
+    			io  => ddr3_dqs_p(i),
+    			iob => ddr3_dqs_n(i));
+
+    	end generate;
 	end generate;
 
 	process (video_clk)

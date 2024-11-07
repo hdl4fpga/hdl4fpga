@@ -458,7 +458,7 @@ begin
 
 		function timerbits 
 			return std_logic_vector is
-			variable size  : natural;
+			variable size   : natural;
 			variable value  : std_logic_vector(timer_size-1 downto 0);
 			variable retval : std_logic_vector(0 to timer_size*timers'length-1);
 		begin
