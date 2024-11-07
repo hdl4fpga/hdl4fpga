@@ -142,32 +142,6 @@ begin
 			end if;
 		end process;
 
---		process (input_clk)
---		begin
---			if rising_edge(input_clk) then
---				if downsample_dv='1' then
---					if vtoff='1' then
---						if downsample_oshot='1' then
---							noshot <= '0';
---						end if;
---					elsif edge='0' then
---						if downsample_oshot='1' then
---							noshot <= '0';
---						end if;
---					else
---						noshot <= not downsample_oshot and capture_end;
---					end if;
---
---					if vton='0' then
---						vtoff <= '0';
---					elsif vton='1' then
---						vtoff <= '1';
---					end if;
---					edge <= vtoff;
---				end if;
---			end if;
---		end process;
-
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
@@ -263,8 +237,7 @@ begin
 		inputs  => inputs,
 		factors => time_factors)
 	port map (
-		factor_id     => time_scale,
---		factor_id     => b"0000",  --Debug purpose
+		factor_id     => time_scale, -- b"0000",  --Debug purpose
 		input_clk     => input_clk,
 		input_dv      => triggersample_dv,
 		input_shot    => downsample_ishot,
@@ -286,7 +259,6 @@ begin
 		input_dv     => downsample_dv,
 		input_data   => downsample_data,
 		time_offset  => time_offset,
---		input_delay  => b"00_0000_0000_0000",  --Debug purpose
 
 		downsampling => downsampling,
 		video_clk    => video_clk,
