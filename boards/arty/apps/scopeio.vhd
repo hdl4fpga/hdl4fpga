@@ -214,10 +214,10 @@ architecture scopeio of arty is
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (gclk100_per*real(sdram_params.pll.divclk_divide))/sdram_params.pll.clkfbout_mult_f; -- 1 ns /1ps
 
-	-- constant sdram_data   : string  := hdo(sdram_db)**".MT41K128M16-125";
-	-- constant phy_data     : string  := hdo(phy_db)**".xc7vg4";
-	constant sdram_data   : string  := "none";
-	constant phy_data     : string  := "none";
+	constant sdram_data   : string  := hdo(sdram_db)**".MT41K128M16-125";
+	constant phy_data     : string  := hdo(phy_db)**".xc7vg4";
+	-- constant sdram_data   : string  := "none";
+	-- constant phy_data     : string  := "none";
 	constant gear         : natural := hdo(phy_data)**".orgz.gear=1.";
 	constant bank_length  : natural := setif(sdram_data/="none", ddr3_ba'length,    1);
 	constant addr_length  : natural := setif(sdram_data/="none", ddr3_a'length,     1);
