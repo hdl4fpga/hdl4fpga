@@ -285,9 +285,9 @@ architecture scopeio of arty is
 	signal ddr3_dqo       : std_logic_vector(data_length-1 downto 0);
 	signal ddr3_dqt       : std_logic_vector(data_length-1 downto 0);
 
-	constant bufiog     : boolean  := true;
+	constant bufiog       : boolean  := true;
 	signal tp_sdrphy      : std_logic_vector(1 to 32);
-	signal sys_rst : std_logic;
+	signal sys_rst        : std_logic;
 begin
 
 	sys_rst <= '0';
