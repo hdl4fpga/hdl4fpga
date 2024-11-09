@@ -188,6 +188,8 @@ architecture scopeio of ulx3s is
 			"     step  : " & real'image(vt_step) & "," &
 			"     color : 0xff_ff_ff_ff}]}");   -- vt(7)
 
+	-- constant sdram_data   : string  := "none";
+	-- constant phy_data     : string  := "none";
 	constant sdram_data  : string  := hdo(sdram_db)**".MT48LC16M16MA2-7E";
 	constant phy_data    : string  := hdo(phy_db)**".ecp5g1";
 	constant gear        : natural := hdo(phy_data)**".orgz.gear=1.";
@@ -609,6 +611,20 @@ begin
 
     		sdram_dm   => sdram_dqm,
     		sdram_dq   => sdram_d);
+	end generate;
+
+	sdramphy_g : if sdram_data/="none" and phy_data/="none" generate
+    	sdram_clk  <= 'Z';
+    	sdram_cke  <= 'Z';
+    	sdram_csn  <= '1';
+    	sdram_rasn <= 'Z';
+    	sdram_casn <= 'Z';
+    	sdram_wen  <= 'Z';
+    	sdram_ba   <= (others => 'Z');
+    	sdram_a    <= (others => 'Z');
+
+    	sdram_dqm  <= (others => 'Z');
+    	sdram_d    <= (others => 'Z');
 	end generate;
 
 	-- HDMI/DVI VGA --
