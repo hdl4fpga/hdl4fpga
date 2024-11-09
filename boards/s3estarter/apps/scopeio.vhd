@@ -224,8 +224,17 @@ architecture scopeio of s3estarter is
 		return tab(tab'left);
 	end;
 
+	-- constant sdram_data   : string  := "none";
+	-- constant phy_data     : string  := "none";
+	constant sdram_data   : string  := hdo(sdram_db)**".MT46V16M16M-6T";
 	constant phy_data     : string  := hdo(phy_db)**".xc3sg2";
-	constant gear         : natural := hdo(phy_data)**".orgz.gear";
+	constant gear         : natural := hdo(phy_data)**".orgz.gear=1.";
+	constant bank_length  : natural := setif(sdram_data/="none", sd_ba'length,  1);
+	constant addr_length  : natural := setif(sdram_data/="none", sd_a'length,   1);
+	constant data_mask    : natural := setif(sdram_data/="none", sd_dm'length,  1);
+	constant data_length  : natural := setif(sdram_data/="none", sd_dq'length,  1);
+	constant dqs_length   : natural := setif(sdram_data/="none", sd_dqs'length, 1);
+
 
 	constant sdram_speed  : sdram_speeds := sdram166MHz;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
@@ -240,31 +249,24 @@ architecture scopeio of s3estarter is
 	signal ctlrphy_cas    : std_logic_vector((gear+1)/2-1 downto 0);
 	signal ctlrphy_we     : std_logic_vector((gear+1)/2-1 downto 0);
 	signal ctlrphy_odt    : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_b      : std_logic_vector((gear+1)/2*sd_ba'length-1 downto 0);
-	signal ctlrphy_a      : std_logic_vector((gear+1)/2*sd_a'length-1 downto 0);
+	signal ctlrphy_b      : std_logic_vector((gear+1)/2*bank_length-1 downto 0);
+	signal ctlrphy_a      : std_logic_vector((gear+1)/2*addr_length-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqsi   : std_logic_vector(gear*sd_dqs'length-1 downto 0);
+	signal ctlrphy_dqsi   : std_logic_vector(gear*dqs_length-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(gear*sd_dm'length-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(gear*sd_dm'length-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*data_mask-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*data_mask-1 downto 0);
 	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(gear*sd_dq'length-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(gear*sd_dq'length-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*data_length-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*data_length-1 downto 0);
 	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(gear*sd_dqs'length-1 downto 0);
-
-	signal ctlrphy_wlreq  : std_logic;
-	signal ctlrphy_wlrdy  : std_logic;
-	signal ctlrphy_rlreq  : std_logic;
-	signal ctlrphy_rlrdy  : std_logic;
+	signal ctlrphy_sti    : std_logic_vector(gear*dqs_length-1 downto 0);
 
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk90      : std_logic;
 	signal sd_clk       : std_logic_vector(0 downto 0);
 	signal ddr_odt       : std_logic_vector(0 to 0);
-	signal sdram_cke     : std_logic_vector(0 to 0);
-	signal sdram_cs      : std_logic_vector(0 to 0);
 	signal ddr_lp_ck     : std_logic;
 	signal st_dqs_open   : std_logic;
 
@@ -897,8 +899,8 @@ begin
 		debug      => debug,
 		profile    => 1,
 		sdram_tcp  => sdram_tcp,
+		sdram_data => sdram_data,
 		phy_data   => phy_data,
-		sdram_data => hdo(sdram_db)**".MT46V16M16M-6T",
 		timing_id  => pclk150_00m1920x1080at60,
 		layout     => layout)
 	port map (
@@ -950,77 +952,108 @@ begin
 	vga_green <= video_pixel(2*8-1);
 	vga_blue  <= video_pixel(1*8-1);
 
-	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
-	ctlrphy_rlreq <= to_stdulogic(to_bit(ctlrphy_rlrdy));
+	sdramphy_g : if sdram_data/="none" and phy_data/="none" generate
+		signal ctlrphy_wlreq : std_logic;
+		signal ctlrphy_wlrdy : std_logic;
+		signal ctlrphy_rlreq : std_logic;
+		signal ctlrphy_rlrdy : std_logic;
+		signal sdram_cke     : std_logic_vector(0 to 0);
+		signal sdram_cs      : std_logic_vector(0 to 0);
+	begin
+    	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
+    	ctlrphy_rlreq <= to_stdulogic(to_bit(ctlrphy_rlrdy));
 
-	sdrphy_e : entity hdl4fpga.xc_sdrphy
-	generic map (
-		-- dqs_delay   => (0 to 0 => 0 ns),
-		-- dqi_delay   => (0 to 0 => 0 ns),
-		device      => xc3s,
-		bank_size   => sd_ba'length,
-		addr_size   => sd_a'length,
-		word_size   => sd_dq'length,
-		byte_size   => sd_dq'length/sd_dm'length,
-		gear        => gear,
-		loopback    => false,
-		bypass      => true,
-		rd_fifo     => true,
-		rd_align    => true)
-	port map (
-		rst         => sdrsys_rst,
-		iod_clk     => ddr_clk0,
-		clk         => ddr_clk0,
-		clk_shift   => ddr_clk90,
+    	sdrphy_e : entity hdl4fpga.xc_sdrphy
+    	generic map (
+    		-- dqs_delay   => (0 to 0 => 0 ns),
+    		-- dqi_delay   => (0 to 0 => 0 ns),
+    		device      => xc3s,
+    		bank_size   => sd_ba'length,
+    		addr_size   => sd_a'length,
+    		word_size   => sd_dq'length,
+    		byte_size   => sd_dq'length/sd_dm'length,
+    		gear        => gear,
+    		loopback    => false,
+    		bypass      => true,
+    		rd_fifo     => true,
+    		rd_align    => true)
+    	port map (
+    		rst         => sdrsys_rst,
+    		iod_clk     => ddr_clk0,
+    		clk         => ddr_clk0,
+    		clk_shift   => ddr_clk90,
 
-		phy_wlreq   => ctlrphy_wlreq,
-		phy_wlrdy   => ctlrphy_wlrdy,
-		phy_rlreq   => ctlrphy_rlreq,
-		phy_rlrdy   => ctlrphy_rlrdy,
-		sys_cke     => ctlrphy_cke,
-		sys_cs      => ctlrphy_cs,
-		sys_ras     => ctlrphy_ras,
-		sys_cas     => ctlrphy_cas,
-		sys_we      => ctlrphy_we,
-		sys_b       => ctlrphy_b,
-		sys_a       => ctlrphy_a,
-		sys_dqsi    => ctlrphy_dqso,
-		sys_dqst    => ctlrphy_dqst,
-		sys_dqso    => ctlrphy_dqsi,
-		sys_dmi     => ctlrphy_dmo,
-		sys_dmo     => ctlrphy_dmi,
-		sys_dqi     => ctlrphy_dqo,
-		sys_dqt     => ctlrphy_dqt,
-		sys_dqo     => ctlrphy_dqi,
-		sys_odt     => ctlrphy_odt,
-		sys_dqv     => ctlrphy_dqv,
-		sys_sti     => ctlrphy_sto,
-		sys_sto     => ctlrphy_sti,
+    		phy_wlreq   => ctlrphy_wlreq,
+    		phy_wlrdy   => ctlrphy_wlrdy,
+    		phy_rlreq   => ctlrphy_rlreq,
+    		phy_rlrdy   => ctlrphy_rlrdy,
+    		sys_cke     => ctlrphy_cke,
+    		sys_cs      => ctlrphy_cs,
+    		sys_ras     => ctlrphy_ras,
+    		sys_cas     => ctlrphy_cas,
+    		sys_we      => ctlrphy_we,
+    		sys_b       => ctlrphy_b,
+    		sys_a       => ctlrphy_a,
+    		sys_dqsi    => ctlrphy_dqso,
+    		sys_dqst    => ctlrphy_dqst,
+    		sys_dqso    => ctlrphy_dqsi,
+    		sys_dmi     => ctlrphy_dmo,
+    		sys_dmo     => ctlrphy_dmi,
+    		sys_dqi     => ctlrphy_dqo,
+    		sys_dqt     => ctlrphy_dqt,
+    		sys_dqo     => ctlrphy_dqi,
+    		sys_odt     => ctlrphy_odt,
+    		sys_dqv     => ctlrphy_dqv,
+    		sys_sti     => ctlrphy_sto,
+    		sys_sto     => ctlrphy_sti,
 
-		sdram_clk     => sd_clk,
-		sdram_cke     => sdram_cke,
-		sdram_cs      => sdram_cs,
-		sdram_odt     => ddr_odt,
-		sdram_ras     => sd_ras,
-		sdram_cas     => sd_cas,
-		sdram_we      => sd_we,
-		sdram_b       => sd_ba,
-		sdram_a       => sd_a,
+    		sdram_clk     => sd_clk,
+    		sdram_cke     => sdram_cke,
+    		sdram_cs      => sdram_cs,
+    		sdram_odt     => ddr_odt,
+    		sdram_ras     => sd_ras,
+    		sdram_cas     => sd_cas,
+    		sdram_we      => sd_we,
+    		sdram_b       => sd_ba,
+    		sdram_a       => sd_a,
 
-		sdram_dm      => sd_dm,
-		sdram_dq      => sd_dq,
-		sdram_dqs     => sd_dqs);
+    		sdram_dm      => sd_dm,
+    		sdram_dq      => sd_dq,
+    		sdram_dqs     => sd_dqs);
 
-	sdram_clk_i : obufds
-	generic map (
-		iostandard => "DIFF_SSTL2_I")
-	port map (
-		i  => sd_clk(0),
-		o  => sd_ck_p,
-		ob => sd_ck_n);
+    	sdram_clk_i : obufds
+    	generic map (
+    		iostandard => "DIFF_SSTL2_I")
+    	port map (
+    		i  => sd_clk(0),
+    		o  => sd_ck_p,
+    		ob => sd_ck_n);
 
-	sd_cke <= sdram_cke(0);
-	sd_cs  <= sdram_cs(0);
+    	sd_cke <= sdram_cke(0);
+    	sd_cs  <= sdram_cs(0);
+
+	end generate;
+
+	nosdram_g : if sdram_data="none" or phy_data="none" generate
+		ddr_clk_i : obufds
+		generic map (
+			iostandard => "DIFF_SSTL2_I")
+		port map (
+			i  => 'Z',
+			o  => sd_ck_p,
+			ob => sd_ck_n);
+
+		sd_cke    <= 'Z';
+		sd_cs     <= 'Z';
+		sd_ras    <= 'Z';
+		sd_cas    <= 'Z';
+		sd_we     <= 'Z';
+		sd_ba     <= (others => 'Z');
+		sd_a      <= (others => 'Z');
+		sd_dm     <= (others => 'Z');
+		sd_dqs    <= (others => 'Z');
+		sd_dq     <= (others => 'Z');
+	end generate;
 
 	-- Ethernet Transceiver --
 	--------------------------
