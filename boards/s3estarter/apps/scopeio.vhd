@@ -235,7 +235,6 @@ architecture scopeio of s3estarter is
 	constant data_length  : natural := setif(sdram_data/="none", sd_dq'length,  1);
 	constant dqs_length   : natural := setif(sdram_data/="none", sd_dqs'length, 1);
 
-
 	constant sdram_speed  : sdram_speeds := sdram166MHz;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := real(sdram_params.cm.dcm_div)*clk50hmz_per/real(sdram_params.cm.dcm_mul);
