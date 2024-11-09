@@ -124,7 +124,7 @@ architecture scopeio of s3estarter is
 	constant video_mode : video_modes := mode1080p24bpp;
 
 	constant vt_step : string := "0.000152587890625";  -- 2.5V/ 2.0**14 real'image() does not work on Xilinx ISE
-	constant layout : string := compact(
+	constant layout  : string := compact(
 			"{                             " &   
 			"   inputs          : " & natural'image(inputs) & ',' &
 			"   num_of_segments :   4,     " &
