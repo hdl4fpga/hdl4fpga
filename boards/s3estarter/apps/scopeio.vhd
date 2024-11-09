@@ -281,11 +281,11 @@ begin
 	end process;
 
 	videodcm_b : if not debug generate
-		signal dcm_clkfb : std_logic;
-		signal dcm_clk0  : std_logic;
-	begin
 
 		dcm_g : if sdram_data="none" or phy_data="none" generate
+			signal dcm_clkfb : std_logic;
+			signal dcm_clk0  : std_logic;
+		begin
 		    bug_i : bufg
 		    port map (
 		    	I => dcm_clk0,
