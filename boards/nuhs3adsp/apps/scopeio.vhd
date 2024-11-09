@@ -51,15 +51,15 @@ architecture scopeio of nuhs3adsp is
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
 
 	alias  sio_clk   is mii_txc;
-	signal si_frm    : std_logic;
-	signal si_irdy   : std_logic;
-	signal si_data   : std_logic_vector(mii_rxd'range);
+	signal si_frm      : std_logic;
+	signal si_irdy     : std_logic;
+	signal si_data     : std_logic_vector(mii_rxd'range);
 
-	signal so_frm    : std_logic;
-	signal so_irdy   : std_logic;
-	signal so_trdy   : std_logic;
-	signal so_end    : std_logic;
-	signal so_data   : std_logic_vector(mii_txd'range);
+	signal so_frm      : std_logic;
+	signal so_irdy     : std_logic;
+	signal so_trdy     : std_logic;
+	signal so_end      : std_logic;
+	signal so_data     : std_logic_vector(mii_txd'range);
 
 	type display_param is record
 		timing_id : videotiming_ids;
