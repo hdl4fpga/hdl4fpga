@@ -194,9 +194,9 @@ architecture scopeio of s3estarter is
 			"     color : 0xff_ff_ff_ff}]}");
 
 	type sdramparams_record is record
-		id  : sdram_speeds;
+		id : sdram_speeds;
 		cm : dcm_params;
-		cl  : std_logic_vector(0 to 3-1);
+		cl : std_logic_vector(0 to 3-1);
 	end record;
 
 	type sdramparams_vector is array (natural range <>) of sdramparams_record;
