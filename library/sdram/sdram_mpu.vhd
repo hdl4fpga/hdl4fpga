@@ -199,30 +199,49 @@ architecture arch of sdram_mpu is
 		attribute fsm_encoding of sdram_state : signal is "compact";
 
 	function adjlat (
-		constant lat : natural)
-		return integer is
+		constant tab : natural_vector)
+		return integer_vector is
+		variable retval : integer_vector(tab'range);
 	begin
-		return (lat+gear-1)/gear-2;
+		for i in tab'range loop
+			retval(i) := (tab(i)+gear-1)/gear-2;
+			-- return (lat+gear-1)/gear-2;
+		end loop;
+		return retval;
 	end;
 
-	function adjalat_tab (
-		constant al : std_logic_vector)
-		return natural is
+	function adjalat_tab 
+		return integer_vector is
+		variable retval : natural_vector(al_tab'range);
 	begin
-		return adjlat((gear*lrcd+2*gear)-(gear/2)*al_tab(to_integer(unsigned(al))));
+		for i in retval'range loop
+			retval(i) := (gear*lrcd+2*gear)-(gear/2)*al_tab(i);
+			-- return adjlat((gear*lrcd+2*gear)-(gear/2)*al_tab(to_integer(unsigned(al))));
+		end loop;
+		return adjlat(retval);
 	end;
 
-	function adjal_tab (
-		constant al : std_logic_vector)
-		return natural is
+	function adjal_tab
+		return integer_vector is
+		variable retval : natural_vector(al_tab'range);
 	begin
-		return adjlat((gear*lrcd)-(gear/2)*al_tab(to_integer(unsigned(al))));
+		for i in retval'range loop
+			retval(i) := (gear*lrcd)-(gear/2)*al_tab(i);
+			-- return adjlat((gear*lrcd)-(gear/2)*al_tab(to_integer(unsigned(al))));
+		end loop;
+		return adjlat(retval);
 	end;
+
+	constant adjdal_tab   : integer_vector := adjal_tab;
+	constant adjdbl_tab   : integer_vector := adjlat(bl_tab);
+	constant adjdcl_tab   : integer_vector := adjlat(cl_tab);
+	constant adjdcwl_tab  : integer_vector := adjlat(cwl_tab);
+	constant adjdalat_tab : integer_vector := adjalat_tab;
 
 begin
 
-	sdram_mpu_alat <= std_logic_vector(to_unsigned(adjalat_tab(sdram_mpu_al), sdram_mpu_alat'length));
-	sdram_mpu_blat <= std_logic_vector(to_unsigned(adjlat(bl_tab(to_integer(unsigned(sdram_mpu_bl)))), sdram_mpu_blat'length));
+	sdram_mpu_alat <= std_logic_vector(to_unsigned(adjdalat_tab(to_integer(unsigned(sdram_mpu_al))), sdram_mpu_alat'length));
+	sdram_mpu_blat <= std_logic_vector(to_unsigned(adjdbl_tab(to_integer(unsigned(sdram_mpu_bl))), sdram_mpu_blat'length));
 	sdram_mpu_p: process (sdram_mpu_clk)
 		variable state_set : boolean;
 		variable lat_id :lat_id ;
@@ -265,14 +284,14 @@ begin
 								lat_id := sdram_state_tab(i).sdram_lat;
 								case lat_id is
 								when id_bl =>
-									lat_timer <= adjlat(bl_tab(to_integer(unsigned(sdram_mpu_bl))));
+									lat_timer <= adjdbl_tab(to_integer(unsigned(sdram_mpu_bl)));
 								when id_cl =>
-									lat_timer <= adjlat(cl_tab(to_integer(unsigned(sdram_mpu_cl))));
+									lat_timer <= adjdcl_tab(to_integer(unsigned(sdram_mpu_cl)));
 								when id_cwl =>
-									lat_timer <= adjlat(cwl_tab(to_integer(unsigned(sdram_mpu_cwl))));
+									lat_timer <= adjdcwl_tab(to_integer(unsigned(sdram_mpu_cwl)));
 								when id_rcd =>
 									-- lat_timer = to_signed(lrcd-2, lat_timer'length);
-									lat_timer <= adjal_tab(sdram_mpu_al);
+									lat_timer <= adjdal_tab(to_integer(unsigned(sdram_mpu_al)));
 								when id_rfc =>
 									lat_timer <= lrfc-2;
 								when id_rp =>
