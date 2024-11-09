@@ -513,13 +513,13 @@ begin
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		debug      => debug,
-		profile    => 0,
-		sdram_tcp  => 1.0/sdram_freq,
-		sdram_data => sdram_data,
-		phy_data   => phy_data,
-		timing_id  => video_params.timing,
-		layout     => layout)
+		debug       => debug,
+		profile     => 0,
+		sdram_tcp   => 1.0/sdram_freq,
+		sdram_data  => sdram_data,
+		phy_data    => phy_data,
+		timing_id   => video_params.timing,
+		layout      => layout)
 	port map (
 		-- tp => tp,
 		sio_clk     => sio_clk,
@@ -613,7 +613,7 @@ begin
     		sdram_dq   => sdram_d);
 	end generate;
 
-	sdramphy_g : if sdram_data/="none" and phy_data/="none" generate
+	nosdram_g : if sdram_data="none" or phy_data="none" generate
     	sdram_clk  <= 'Z';
     	sdram_cke  <= 'Z';
     	sdram_csn  <= '1';
