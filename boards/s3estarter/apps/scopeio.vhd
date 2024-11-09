@@ -264,10 +264,6 @@ architecture scopeio of s3estarter is
 
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk90      : std_logic;
-	signal sd_clk       : std_logic_vector(0 downto 0);
-	signal ddr_odt       : std_logic_vector(0 to 0);
-	signal ddr_lp_ck     : std_logic;
-	signal st_dqs_open   : std_logic;
 
 	alias ctlr_clk is ddr_clk0;
 begin
@@ -958,6 +954,8 @@ begin
 		signal ctlrphy_rlrdy : std_logic;
 		signal sdram_cke     : std_logic_vector(0 to 0);
 		signal sdram_cs      : std_logic_vector(0 to 0);
+		signal ddr_odt       : std_logic_vector(0 to 0);
+		signal sd_clk        : std_logic_vector(0 downto 0);
 	begin
     	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
     	ctlrphy_rlreq <= to_stdulogic(to_bit(ctlrphy_rlrdy));

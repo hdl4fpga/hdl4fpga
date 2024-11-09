@@ -179,44 +179,41 @@ architecture scopeio of nuhs3adsp is
 
 	-- constant sdram_data   : string  := "none";
 	-- constant phy_data     : string  := "none";
-	constant sdram_data   : string  := hdo(sdram_db)**".MT46V16M16M-6T";
-	constant phy_data     : string  := hdo(phy_db)**".xc3sg2";
-	constant gear         : natural := hdo(phy_data)**".orgz.gear=1.";
-	constant bank_length  : natural := setif(sdram_data/="none", ddr_ba'length,    1);
-	constant addr_length  : natural := setif(sdram_data/="none", ddr_a'length,     1);
-	constant data_mask    : natural := setif(sdram_data/="none", ddr_dm'length,    1);
-	constant data_length  : natural := setif(sdram_data/="none", ddr_dq'length,    1);
-	constant dqs_length   : natural := setif(sdram_data/="none", ddr_dqs'length, 1);
+	constant sdram_data  : string  := hdo(sdram_db)**".MT46V16M16M-6T";
+	constant phy_data    : string  := hdo(phy_db)**".xc3sg2";
+	constant gear        : natural := hdo(phy_data)**".orgz.gear=1.";
+	constant bank_length : natural := setif(sdram_data/="none", ddr_ba'length,    1);
+	constant addr_length : natural := setif(sdram_data/="none", ddr_a'length,     1);
+	constant data_mask   : natural := setif(sdram_data/="none", ddr_dm'length,    1);
+	constant data_length : natural := setif(sdram_data/="none", ddr_dq'length,    1);
+	constant dqs_length  : natural := setif(sdram_data/="none", ddr_dqs'length, 1);
 
-	signal sdrsys_rst     : std_logic;
+	signal sdrsys_rst    : std_logic;
 
-	signal ctlrphy_rst    : std_logic;
-	signal ctlrphy_cke    : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_cs     : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_ras    : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_cas    : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_we     : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_odt    : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_b      : std_logic_vector((gear+1)/2*bank_length-1 downto 0);
-	signal ctlrphy_a      : std_logic_vector((gear+1)/2*addr_length-1 downto 0);
-	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqsi   : std_logic_vector(gear*dqs_length-1 downto 0);
-	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(gear*data_mask-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(gear*data_mask-1 downto 0);
-	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(gear*data_length-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(gear*data_length-1 downto 0);
-	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(gear*dqs_length-1 downto 0);
+	signal ctlrphy_rst   : std_logic;
+	signal ctlrphy_cke   : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_cs    : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_ras   : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_cas   : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_we    : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_odt   : std_logic_vector((gear+1)/2-1 downto 0);
+	signal ctlrphy_b     : std_logic_vector((gear+1)/2*bank_length-1 downto 0);
+	signal ctlrphy_a     : std_logic_vector((gear+1)/2*addr_length-1 downto 0);
+	signal ctlrphy_dqst  : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqsi  : std_logic_vector(gear*dqs_length-1 downto 0);
+	signal ctlrphy_dqso  : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dmi   : std_logic_vector(gear*data_mask-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(gear*data_mask-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(gear*data_length-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(gear*data_length-1 downto 0);
+	signal ctlrphy_dqv   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(gear*dqs_length-1 downto 0);
 
-	signal ddr_clk0       : std_logic;
-	signal ddr_clk90      : std_logic;
-	signal ddr_clk        : std_logic_vector(0 downto 0);
-	signal ddr_odt        : std_logic_vector(0 to 0);
-	signal ddr_lp_ck      : std_logic;
-	signal st_dqs_open    : std_logic;
+	signal ddr_clk0      : std_logic;
+	signal ddr_clk90     : std_logic;
+	signal ddr_clk       : std_logic_vector(0 downto 0);
 
 	alias ctlr_clk is ddr_clk0;
 begin
@@ -629,6 +626,8 @@ begin
 		signal ctlrphy_rlrdy : std_logic;
 		signal sdram_cke     : std_logic_vector(0 to 0);
 		signal sdram_cs      : std_logic_vector(0 to 0);
+		signal ddr_odt       : std_logic_vector(0 to 0);
+		signal st_dqs_open   : std_logic;
 	begin
     	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
     	ctlrphy_rlreq <= to_stdulogic(to_bit(ctlrphy_rlrdy));
