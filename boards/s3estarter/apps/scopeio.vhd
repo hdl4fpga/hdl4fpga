@@ -284,46 +284,51 @@ begin
 		signal dcm_clkfb : std_logic;
 		signal dcm_clk0  : std_logic;
 	begin
+
+		dcm_g : if sdram_data="none" or phy_data="none" generate
+		    bug_i : bufg
+		    port map (
+		    	I => dcm_clk0,
+		    	O => dcm_clkfb);
 	
-		bug_i : bufg
-		port map (
-			I => dcm_clk0,
-			O => dcm_clkfb);
-	
-		-- dcm_i : dcm
-		-- generic map(
-			-- clk_feedback   => "1x",
-			-- clkdv_divide   => 2.0,
-			-- clkfx_divide   => videoparam(video_mode).cm.dcm_div,
-			-- clkfx_multiply => videoparam(video_mode).cm.dcm_mul,
-			-- clkin_divide_by_2 => false,
-			-- clkin_period   => clk50hmz_per*1.0e9,
-			-- clkout_phase_shift => "none",
-			-- deskew_adjust  => "system_synchronous",
-			-- dfs_frequency_mode => "LOW",
-			-- duty_cycle_correction => true,
-			-- factory_jf   => x"c080",
-			-- phase_shift  => 0,
-			-- startup_wait => false)
-		-- port map (
-			-- rst      => '0',
-			-- dssen    => '0',
-			-- psclk    => '0',
-			-- psen     => '0',
-			-- psincdec => '0',
-			-- clkfb    => dcm_clkfb,
-			-- clkin    => sys_clk,
-			-- clkfx    => video_clk,
-			-- clkfx180 => open,
-			-- clk0     => dcm_clk0,
-			-- locked   => open,
-			-- psdone   => open,
-			-- status   => open);
-		-- video_clk <= sys_clk;
+		    dcm_i : dcm
+		    generic map(
+		    	clk_feedback   => "1x",
+		    	clkdv_divide   => 2.0,
+		    	clkfx_divide   => videoparam(video_mode).cm.dcm_div,
+		    	clkfx_multiply => videoparam(video_mode).cm.dcm_mul,
+		    	clkin_divide_by_2 => false,
+		    	clkin_period   => clk50hmz_per*1.0e9,
+		    	clkout_phase_shift => "none",
+		    	deskew_adjust  => "system_synchronous",
+		    	dfs_frequency_mode => "LOW",
+		    	duty_cycle_correction => true,
+		    	factory_jf   => x"c080",
+		    	phase_shift  => 0,
+		    	startup_wait => false)
+		    port map (
+		    	rst      => '0',
+		    	dssen    => '0',
+		    	psclk    => '0',
+		    	psen     => '0',
+		    	psincdec => '0',
+		    	clkfb    => dcm_clkfb,
+		    	clkin    => sys_clk,
+		    	clkfx    => video_clk,
+		    	clkfx180 => open,
+		    	clk0     => dcm_clk0,
+		    	locked   => open,
+		    	psdone   => open,
+		    	status   => open);
+		end generate;
+
+		nodcm_g : if sdram_data="none" or phy_data="none" generate
+			video_clk <= sys_clk;
+		end generate;
 
 	end generate;
 
-	sdrdcm_b : block
+	sdrdcm_b : if sdram_data/="none" and phy_data/="none" generate
 		signal dfs_lckd  : std_logic;
 		signal dfs_clkfb : std_logic;
 		
@@ -405,7 +410,7 @@ begin
 	
 		sdrsys_rst <= not dcm_lckd;
 
-	end block;
+	end generate;
 
 	spi_b: block
 		signal spiclk_n : std_logic;
