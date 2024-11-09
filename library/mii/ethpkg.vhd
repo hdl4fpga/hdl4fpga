@@ -83,8 +83,8 @@ package body ethpkg is
 		constant size  : natural)
 		return std_logic_vector is
 		variable retval : std_logic_vector(frame'range);
-		variable low    : natural range 0 to 2**ptr'length-1;
-		variable high   : natural range 0 to 2**ptr'length-1;
+		variable low    : natural range 0 to summation(frame);
+		variable high   : natural range 0 to summation(frame);
 	begin
 		retval := (others => '0');
 		low    := 0;
