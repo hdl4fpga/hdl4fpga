@@ -71,7 +71,7 @@ entity sdram_mpu is
 
 	constant tdqsz : real    := real'(hdo(phy_data)**".tmng.DQSXL=0.")*ctlr_tcp; 
 	constant twr   : real    := hdo(sdramtmng_data)**".tWR";
-	constant lwr   : natural := natural(ceil(twr+tdqsz)/ctlr_tcp);
+	constant lwr   : natural := natural(ceil((twr+tdqsz)/ctlr_tcp));
 	constant lrcd  : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRCD=0.")/ctlr_tcp));
 	constant lrfc  : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRFC=0.")/ctlr_tcp));
 	constant lrp   : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRP=0.")/ctlr_tcp));
@@ -232,10 +232,21 @@ architecture arch of sdram_mpu is
 		return adjlat(retval);
 	end;
 
+	function adjcwl_tab
+		return integer_vector is
+		variable retval : natural_vector(al_tab'range);
+	begin
+		for i in retval'range loop
+			retval(i) := cwl_tab(i)+gear*lwr;
+			-- return cwl_tab+gear*lwr;
+		end loop;
+		return adjlat(retval);
+	end;
+
 	constant adjdal_tab   : integer_vector := adjal_tab;
 	constant adjdbl_tab   : integer_vector := adjlat(bl_tab);
 	constant adjdcl_tab   : integer_vector := adjlat(cl_tab);
-	constant adjdcwl_tab  : integer_vector := adjlat(cwl_tab);
+	constant adjdcwl_tab  : integer_vector := adjcwl_tab;
 	constant adjdalat_tab : integer_vector := adjalat_tab;
 
 begin
