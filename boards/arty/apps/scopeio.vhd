@@ -22,7 +22,7 @@ architecture scopeio of arty is
 	--         Set profile here         --
 	constant io_link      : io_comms := io_ipoe;
 	--------------------------------------
-	constant tsttab       : boolean := true;
+	constant tsttab       : boolean := false;
 
 	constant max_delay     : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
