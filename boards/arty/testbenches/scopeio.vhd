@@ -41,6 +41,7 @@ architecture arty_scopeio of testbench is
 
 	component arty is
 		generic (
+			tsttab     : boolean := true;
 			debug      : boolean := false);
 		port (
 			btn        : in  std_logic_vector(4-1 downto 0) := (others => '0');
@@ -161,8 +162,8 @@ begin
 	xtal_p <= not xtal after 5 ns;
 	xtal_n <=     xtal after 5 ns;
 
-	btn <= 
-		x"1" after 1.00 us, x"1" after  1.1 us; 
+	btn <= x"0";
+		-- x"1" after 1.00 us, x"1" after  1.1 us; 
 	--	x"1" after 500 us, x"0" after  501 us;
 		-- x"2" after 4.00 us, x"0" after  4.1 us; 
 
@@ -180,6 +181,7 @@ begin
 
 	du_e : arty
 	generic map (
+		tsttab => true,
 		debug => false)
 	port map (
 		sw          => "0000",
