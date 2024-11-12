@@ -549,7 +549,7 @@ begin
 
 	end generate;
 
-	ipoe_e : if io_link=io_ipoe generate
+	ipoe_g : if io_link=io_ipoe generate
 
 		alias  mii_rxc    : std_logic is eth_rx_clk;
 		alias  mii_rxdv   : std_logic is eth_rx_dv;
