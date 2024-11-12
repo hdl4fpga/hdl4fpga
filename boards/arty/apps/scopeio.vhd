@@ -42,7 +42,6 @@ architecture scopeio of arty is
 	signal video_blank     : std_logic;
 	signal video_pixel     : std_logic_vector(24-1 downto 0);
 
-	signal sio_clk         : std_logic;
 	signal si_frm          : std_logic;
 	signal si_irdy         : std_logic;
 	signal si_data         : std_logic_vector(0 to setif(io_link=io_ipoe,eth_rxd'length,8)-1);
@@ -287,6 +286,7 @@ architecture scopeio of arty is
 	constant bufiog       : boolean  := true;
 	signal tp_sdrphy      : std_logic_vector(1 to 32);
 	signal sys_rst        : std_logic;
+	alias sio_clk is eth_tx_clk;
 begin
 
 	sys_rst <= '0';
@@ -463,7 +463,6 @@ begin
 
 	end generate;
 
-	sio_clk <= eth_tx_clk;
 	process (gclk100)
 		variable div : unsigned(0 to 1) := (others => '0');
 	begin
@@ -473,7 +472,7 @@ begin
 		end if;
 	end process;
 
-	ipoe_e : if io_link=io_ipoe generate
+	ipoe_g : if io_link=io_ipoe generate
 		signal mii_txd    : std_logic_vector(eth_txd'range);
 		signal mii_txen   : std_logic;
 		signal dhcpcd_req : std_logic := '0';

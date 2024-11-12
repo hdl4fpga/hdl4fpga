@@ -53,7 +53,6 @@ begin
 			elsif mii_irdy='1' then
 				if vld ='0' then
 					data := data(0) & unsigned(mii_data);
-
 					for i in mii_data'range loop
 						if (data(0) xnor data(1))='1' then
 							if cy='1' then
