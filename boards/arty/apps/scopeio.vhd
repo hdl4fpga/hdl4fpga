@@ -44,6 +44,7 @@ architecture scopeio of arty is
 
 	signal si_frm          : std_logic;
 	signal si_irdy         : std_logic;
+	signal si_trdy         : std_logic := '1';
 	signal si_data        : std_logic_vector(0 to 8-1);
 
 	signal so_frm          : std_logic;
@@ -473,6 +474,10 @@ begin
 	end process;
 
 	ipoe_g : if io_link=io_ipoe generate
+		alias  mii_rxc    : std_logic is eth_rx_clk;
+		alias  mii_rxdv   : std_logic is eth_rx_dv;
+		alias  mii_rxd    : std_logic_vector(eth_rxd'range) is eth_rxd;
+
 		signal mii_txd    : std_logic_vector(eth_txd'range);
 		signal mii_txen   : std_logic;
 		signal dhcpcd_req : std_logic := '0';
@@ -480,7 +485,7 @@ begin
 
 		signal miirx_frm  : std_logic;
 		signal miirx_irdy : std_logic;
-		signal miirx_data : std_logic_vector(eth_rxd'range);
+		signal miirx_data : std_logic_vector(mii_rxd'range);
 
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
@@ -536,9 +541,9 @@ begin
 				check_sov  => false,
 				check_dov  => true)
 			port map (
-				src_clk  => eth_rx_clk,
+				src_clk  => mii_rxc,
 				src_data => rxc_rxbus,
-				dst_clk  => eth_tx_clk,
+				dst_clk  => mii_rxc,
 				dst_irdy => dst_irdy,
 				dst_trdy => dst_trdy,
 				dst_data => txc_rxbus);
@@ -585,6 +590,7 @@ begin
 			so_clk     => sio_clk,
 			so_frm     => iolink_frm,
 			so_irdy    => iolink_irdy,
+			so_trdy    => iolink_trdy,
 			so_data    => iolink_data);
 
 		desser_e: entity hdl4fpga.desser
@@ -725,6 +731,7 @@ begin
 		si_frm  <= iolink_frm  when opacity_frm='0' else '1';
 		si_irdy <= iolink_irdy when opacity_frm='0' else '1';
 		si_data <= iolink_data when opacity_frm='0' else opacity_data;
+		iolink_trdy <= si_trdy;
 
 		process (input_clk)
 		begin
@@ -755,6 +762,7 @@ begin
 		sio_clk       => sio_clk,
 		si_frm        => si_frm,
 		si_irdy       => si_irdy,
+		si_trdy       => si_trdy,
 		si_data       => si_data,
 		so_frm        => so_frm,
 		so_irdy       => so_irdy,
