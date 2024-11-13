@@ -347,30 +347,25 @@ begin
 	end block;
 
 	ipoe_b : block
-
-		signal mii_txcfrm : std_ulogic;
-		signal mii_txcrxd : std_logic_vector(e_rxd'range);
-
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
 
 		signal miirx_frm  : std_logic;
 		signal miirx_irdy : std_logic;
-		signal miirx_trdy : std_logic;
-		signal miirx_data : std_logic_vector(0 to 8-1);
+		signal miirx_data : std_logic_vector(e_rxd'range);
 
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
 		signal miitx_trdy : std_logic;
 		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(miirx_data'range);
+		signal miitx_data : std_logic_vector(si_data'range);
 
 	begin
 
 		sync_b : block
 
-			signal rxc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
-			signal txc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
+			signal rxc_rxbus : std_logic_vector(0 to e_rxd'length);
+			signal txc_rxbus : std_logic_vector(0 to e_rxd'length);
 			signal dst_irdy  : std_logic;
 			signal dst_trdy  : std_logic;
 
@@ -403,24 +398,12 @@ begin
 			begin
 				if rising_edge(e_tx_clk) then
 					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
-					mii_txcfrm <= txc_rxbus(0);
-					mii_txcrxd <= txc_rxbus(1 to mii_txcrxd'length);
+					miirx_frm  <= txc_rxbus(0);
+					miirx_irdy <= txc_rxbus(0);
+					miirx_data <= txc_rxbus(1 to e_rxd'length);
 				end if;
 			end process;
 		end block;
-
-		serdes_e : entity hdl4fpga.serdes
-		port map (
-			serdes_clk => e_tx_clk,
-			serdes_frm => mii_txcfrm,
-			ser_irdy   => '1',
-			ser_trdy   => open,
-			ser_data   => mii_txcrxd,
-
-			des_frm    => miirx_frm,
-			des_irdy   => miirx_irdy,
-			des_trdy   => miirx_trdy,
-			des_data   => miirx_data);
 
 		dhcp_p : process(e_tx_clk)
 		begin
@@ -443,7 +426,7 @@ begin
 			dhcpcd_rdy => dhcpcd_rdy,
 			miirx_frm  => miirx_frm,
 			miirx_irdy => miirx_irdy,
-			miirx_trdy => miirx_trdy,
+			miirx_trdy => open,
 			miirx_data => miirx_data,
 
 			miitx_frm  => miitx_frm,

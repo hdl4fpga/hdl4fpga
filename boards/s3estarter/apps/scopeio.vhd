@@ -67,22 +67,21 @@ architecture scopeio of s3estarter is
 	signal input_ena : std_logic;
 	signal video_pixel   : std_logic_vector(24-1 downto 0);
 
-	alias  sio_clk   is e_tx_clk;
-	signal si_frm    : std_logic;
-	signal si_irdy   : std_logic;
-	signal si_data   : std_logic_vector(0 to setif(io_link=io_ipoe,e_rxd'length,8)-1);
-
 	constant max_delay   : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	signal hz_slider : std_logic_vector(hzoffset_bits-1 downto 0);
 	signal hz_scale  : std_logic_vector(4-1 downto 0);
 	signal hz_dv     : std_logic;
 
+	alias  sio_clk   is e_tx_clk;
+	signal si_frm    : std_logic;
+	signal si_irdy   : std_logic;
+	signal si_data   : std_logic_vector(0 to 8-1);
 	signal so_frm    : std_logic;
 	signal so_irdy   : std_logic;
 	signal so_trdy   : std_logic;
 	signal so_end    : std_logic;
-	signal so_data   : std_logic_vector(0 to setif(io_link=io_ipoe,e_txd'length,8)-1);
+	signal so_data   : std_logic_vector(0 to 8-1);
 
 	type dcm_params is record
 		dcm_mul : natural;
@@ -558,10 +557,7 @@ begin
 		end process;
 	end block;
 
-	ipoe_b : if io_link=io_ipoe generate
-		alias  mii_clk    is e_tx_clk;
-		signal txen       : std_logic;
-		signal txd        : std_logic_vector(e_txd'range);
+	ipoe_g : if io_link=io_ipoe generate
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
 
@@ -576,27 +572,6 @@ begin
 		signal miitx_data : std_logic_vector(si_data'range);
 
 	begin
-
-		dhcp_p : process(mii_clk)
-			type states is (s_request, s_wait);
-			variable state : states;
-		begin
-			if rising_edge(mii_clk) then
-				case state is
-				when s_request =>
-					if sw0='1' then
-						dhcpcd_req <= not dhcpcd_rdy;
-						state := s_wait;
-					end if;
-				when s_wait =>
-					if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-						if sw0='0' then
-							state := s_request;
-						end if;
-					end if;
-				end case;
-			end if;
-		end process;
 
 		sync_b : block
 
@@ -625,14 +600,14 @@ begin
 			port map (
 				src_clk  => e_rx_clk,
 				src_data => rxc_rxbus,
-				dst_clk  => mii_clk,
+				dst_clk  => e_tx_clk,
 				dst_irdy => dst_irdy,
 				dst_trdy => dst_trdy,
 				dst_data => txc_rxbus);
 
-			process (mii_clk)
+			process (e_tx_clk)
 			begin
-				if rising_edge(mii_clk) then
+				if rising_edge(e_tx_clk) then
 					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
 					miirx_frm  <= txc_rxbus(0);
 					miirx_irdy <= txc_rxbus(0);
@@ -640,6 +615,27 @@ begin
 				end if;
 			end process;
 		end block;
+
+		dhcp_p : process(e_tx_clk)
+			type states is (s_request, s_wait);
+			variable state : states;
+		begin
+			if rising_edge(e_tx_clk) then
+				case state is
+				when s_request =>
+					if sw0='1' then
+						dhcpcd_req <= not dhcpcd_rdy;
+						state := s_wait;
+					end if;
+				when s_wait =>
+					if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+						if sw0='0' then
+							state := s_request;
+						end if;
+					end if;
+				end case;
+			end if;
+		end process;
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
@@ -676,7 +672,7 @@ begin
 
 		desser_e: entity hdl4fpga.desser
 		port map (
-			desser_clk => mii_clk,
+			desser_clk => e_tx_clk,
 
 			des_frm    => miitx_frm,
 			des_irdy   => miitx_irdy,
@@ -684,16 +680,9 @@ begin
 			des_data   => miitx_data,
 
 			ser_irdy   => open,
-			ser_data   => txd);
+			ser_data   => e_txd);
 
-		txen <= miitx_frm and not miitx_end;
-		process (mii_clk)
-		begin
-			if rising_edge(mii_clk) then
-				e_txen <= txen;
-				e_txd  <= txd;
-			end if;
-		end process;
+		e_txen  <= miitx_frm and not miitx_end;
 
 	end generate;
 
