@@ -426,7 +426,6 @@ begin
 			end if;
 		end process;
 
-
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
 			my_mac        => x"00_40_00_01_02_03",
