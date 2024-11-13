@@ -406,13 +406,26 @@ begin
 		end block;
 
 		dhcp_p : process(e_tx_clk)
+			type states is (s_request, s_wait);
+			variable state : states;
 		begin
 			if rising_edge(e_tx_clk) then
-				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-			--		dhcpcd_req <= dhcpcd_rdy xor not sw0;
-				end if;
+				case state is
+				when s_request =>
+					if sw0='1' then
+						dhcpcd_req <= not dhcpcd_rdy;
+						state := s_wait;
+					end if;
+				when s_wait =>
+					if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+						if sw0='0' then
+							state := s_request;
+						end if;
+					end if;
+				end case;
 			end if;
 		end process;
+
 
 		udpdaisy_e : entity hdl4fpga.sio_dayudp
 		generic map (
