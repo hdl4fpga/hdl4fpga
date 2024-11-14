@@ -61,7 +61,7 @@ architecture def of sdram_stream is
 	signal fifo1_frm : std_logic;
 	signal src1_irdy : std_logic;
 	signal fifo1_irdy : std_logic;
-	signal fifo1_trdy : std_logic;
+	signal fifo1_trdy : std_logic := '1';
 	signal fifo1_data : std_logic_vector(stream_data'range);
 
 	signal fifo_irdy : std_logic;
