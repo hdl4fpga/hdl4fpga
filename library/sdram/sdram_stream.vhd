@@ -160,7 +160,7 @@ begin
 	generic map (
 		max_depth  => 4,
 		async_mode => true,
-		latency    => 0,
+		latency    => 1,
 		check_sov  => false,
 		check_dov  => true)
 	port map (

@@ -264,6 +264,7 @@ begin
 	end generate;
 
 	srcltdst_g : if src_data'length < dst_data'length generate
+		src_trdy <= '1';
 		fifoon_g : if fifo_mode generate 
 			signal fifo_rst  : std_logic;
 			signal fifo_irdy : std_logic;

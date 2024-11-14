@@ -173,7 +173,7 @@ architecture scopeio of nuhs3adsp is
 		return tab(tab'left);
 	end;
 
-	constant sdram_speed  : sdram_speeds := sdram166MHz;
+	constant sdram_speed  : sdram_speeds := sdram133MHz;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (real(sdram_params.cm.dcm_div)*clk_per)/real(sdram_params.cm.dcm_mul);
 
@@ -254,9 +254,12 @@ begin
 		rst      => '0',
 		clkin    => sys_clk,
 		clkfb    => '0',
-		clkfx    => adc_clk);
+		clkfx    => open);
+		-- clkfx    => adc_clk);
+	adc_clk <= sys_clk;
 	adcclk_n  <= not adc_clk;
 	input_clk <= not adc_clkout;
+	-- input_clk <= sys_clk; --not adc_clkout;
 
 	videodfs_i : dcm_sp
 	generic map(

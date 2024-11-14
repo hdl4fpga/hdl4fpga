@@ -252,7 +252,8 @@ architecture arch of sdram_mpu is
 begin
 
 	sdram_mpu_alat <= std_logic_vector(to_unsigned(adjdalat_tab(to_integer(unsigned(sdram_mpu_al))), sdram_mpu_alat'length));
-	sdram_mpu_blat <= std_logic_vector(to_unsigned(adjdbl_tab(to_integer(unsigned(sdram_mpu_bl))), sdram_mpu_blat'length));
+	sdram_mpu_blat <= std_logic_vector(to_signed(adjdbl_tab(to_integer(unsigned(sdram_mpu_bl))), sdram_mpu_blat'length));
+	-- sdram_mpu_blat <= std_logic_vector(resize(unsigned(signed'(select_lat(sdram_mpu_bl, bl_cod, bl_tab))), sdram_mpu_blat'length));
 	sdram_mpu_p: process (sdram_mpu_clk)
 		variable state_set : boolean;
 		variable lat_id :lat_id ;

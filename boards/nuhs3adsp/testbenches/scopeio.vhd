@@ -203,8 +203,8 @@ begin
 
     ipoetb_e : entity work.ipoe_tb
 	generic map (
-		delay1  => 1 us,
-		delay2  => 1 us,
+		delay1  => 12 us,
+		delay2  => 12 us,
 		snd_data => req_data,
 		req_data => req_data)
 	port map (
