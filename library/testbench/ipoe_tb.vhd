@@ -31,7 +31,7 @@ use hdl4fpga.ipoepkg.all;
 entity ipoe_tb is
 	generic (
 		ipaddress : std_logic_vector := aton("192.168.0.14");
-		delay1 : time := 36 us;
+		delay1 : time := 3 us;
 		delay2 : time := 10 us;
 		snd_data : std_logic_vector :=
 			x"01007e" &
@@ -99,8 +99,8 @@ begin
 		mii_frm1  => '0', -- arp
 		mii_frm2  => '0', --mii_req, -- ping
 		mii_frm3  => '0',
-		mii_frm4  => '0', -- mii_req, --mii_req, -- write
-		mii_frm5  => mii_req, --'0', -- mii_req1, -- read
+		mii_frm4  => mii_req, --'0', -- mii_req, --mii_req, -- write
+		mii_frm5  => mii_req1, -- read
 
 		mii_txc   => mii_clk,
 		mii_txen  => mii_txen,

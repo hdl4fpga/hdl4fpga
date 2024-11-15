@@ -220,7 +220,6 @@ architecture graphics of nuhs3adsp is
 
 	alias sio_clk        : std_logic is mii_txc;
 
-	signal mii_clk       : std_logic;
 	signal sys_rst       : std_logic;
 
 	signal mii_tp         : std_logic_vector(1 to 32);
@@ -421,7 +420,7 @@ begin
 		signal q : bit;
 	begin
 		q <= not q after 20 ns;
-		mii_clk <= to_stdulogic(q);
+		mii_refclk <= to_stdulogic(q);
 	end generate;
 
 	ipoe_b : block
@@ -613,8 +612,8 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
-		-- dqs_delay   => (0 to 0 => 0 ns),
-		-- dqi_delay   => (0 to 0 => 0 ns),
+		dqs_delay   => (0 to 0 => 0 ns),
+		dqi_delay   => (0 to 0 => 0 ns),
 		device      => xc3s,
 		bank_size   => ddr_ba'length,
 		addr_size   => ddr_a'length,
