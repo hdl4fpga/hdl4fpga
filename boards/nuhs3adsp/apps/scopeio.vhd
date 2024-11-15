@@ -173,14 +173,14 @@ architecture scopeio of nuhs3adsp is
 		return tab(tab'left);
 	end;
 
-	constant sdram_speed  : sdram_speeds := sdram133MHz;
+	constant sdram_speed  : sdram_speeds := sdram166MHz;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (real(sdram_params.cm.dcm_div)*clk_per)/real(sdram_params.cm.dcm_mul);
 
 	-- constant sdram_data   : string  := "none";
 	-- constant phy_data     : string  := "none";
-	constant sdram_data  : string  := hdo(sdram_db)**".MT46V16M16M-6T";
-	constant phy_data    : string  := hdo(phy_db)**".xc3sg2";
+	constant sdram_data  : string  := compact(hdo(sdram_db)**".MT46V16M16M-6T");
+	constant phy_data    : string  := compact(hdo(phy_db)**".xc3sg2");
 	constant gear        : natural := hdo(phy_data)**".orgz.gear=1.";
 	constant bank_length : natural := setif(sdram_data/="none", ddr_ba'length,    1);
 	constant addr_length : natural := setif(sdram_data/="none", ddr_a'length,     1);
@@ -254,12 +254,9 @@ begin
 		rst      => '0',
 		clkin    => sys_clk,
 		clkfb    => '0',
-		clkfx    => open);
-		-- clkfx    => adc_clk);
-	adc_clk <= sys_clk;
+		clkfx    => adc_clk);
 	adcclk_n  <= not adc_clk;
 	input_clk <= not adc_clkout;
-	-- input_clk <= sys_clk; --not adc_clkout;
 
 	videodfs_i : dcm_sp
 	generic map(
@@ -682,12 +679,13 @@ begin
     		sdram_b       => ddr_ba,
     		sdram_a       => ddr_a,
 
-    		sdram_dm      => ddr_dm,
+    		sdram_dm      => open, --ddr_dm,
     		sdram_dq      => ddr_dq,
     		sdram_dqs     => ddr_dqs);
 
     	ddr_cke <= sdram_cke(0);
     	ddr_cs  <= sdram_cs(0);
+		ddr_dm <= (others => '0');
 
     	ddr_clk_i : obufds
     	generic map (

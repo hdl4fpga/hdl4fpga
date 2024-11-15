@@ -206,7 +206,7 @@ architecture graphics of nuhs3adsp is
 	signal video_hs      : std_logic;
 	signal video_vs      : std_logic;
     signal video_blank   : std_logic;
-    signal video_pixel   : std_logic_vector(0 to 32-1);
+    signal video_pixel   : std_logic_vector(0 to 24-1);
 
 	signal si_frm        : std_logic;
 	signal si_irdy       : std_logic;
@@ -222,20 +222,14 @@ architecture graphics of nuhs3adsp is
 
 	signal mii_clk       : std_logic;
 	signal sys_rst       : std_logic;
-	signal clk_bufg      : std_logic;
 
 	signal mii_tp         : std_logic_vector(1 to 32);
 
 begin
 
-	clkin_ibufg : ibufg
-	port map (
-		I => clk ,
-		O => clk_bufg);
-
-	process(clk_bufg)
+	process(clk)
 	begin
-		if rising_edge(clk_bufg) then
+		if rising_edge(clk) then
 			sys_rst <= not sw1;
 		end if;
 	end process;
@@ -274,7 +268,7 @@ begin
 			psen     => '0',
 			psincdec => '0',
 			clkfb    => dcm_clkfb,
-			clkin    => clk_bufg,
+			clkin    => clk,
 			clkfx    => video_clk,
 			clkfx180 => open,
 			clk0     => dcm_clk0,
@@ -325,16 +319,16 @@ begin
 			psincdec => '0',
 	
 			rst      => sys_rst,
-			clkin    => clk_bufg,
+			clkin    => clk,
 			clkfb    => '0',
 			clkfx    => dfs_clkfx,
 			locked   => dfs_lckd);
 
-		process (sys_rst, clk_bufg)
+		process (sys_rst, clk)
 		begin
 			if sys_rst='1' then
 				dcm_rst <= '1';
-			elsif rising_edge(clk_bufg) then
+			elsif rising_edge(clk) then
 				dcm_rst <= not dfs_lckd;
 			end if;
 		end process;
@@ -385,7 +379,6 @@ begin
 	   signal clk0    : std_logic;
 	   signal clkfb   : std_logic;
 	   signal clkfx   : std_logic;
-	   signal clkfx_n : std_logic;
 	begin
 	
 		bug_i : bufg
@@ -415,26 +408,13 @@ begin
 			psen     => '0',
 			psincdec => '0',
 			clkfb    => clkfb,
-			clkin    => clk_bufg,
-			clkfx    => clkfx,
+			clkin    => clk,
+			clkfx    => mii_refclk,
 			clkfx180 => open,
 			clk0     => clk0,
 			locked   => open,
 			psdone   => open,
 			status   => open);
-
-		clkfx_n <= not clkfx;
-		clk_mii_i : oddr2
-		port map (
-			c0 => clkfx,
-			c1 => clkfx_n,
-			ce => '1',
-			r  => '0',
-			s  => '0',
-			d0 => '0',
-			d1 => '1',
-			q => mii_refclk);
-
 	end generate;
 
 	debug_g : if debug generate
@@ -718,7 +698,8 @@ begin
 			d0 => '0',
 			d1 => '1',
 			q => clk_videodac);
-
+-- 
+		-- clk_videodac <= video_clk;
     	process (video_clk)
     	begin
     		if rising_edge(video_clk) then
