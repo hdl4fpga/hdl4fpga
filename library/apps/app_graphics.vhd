@@ -36,7 +36,7 @@ entity app_graphics is
 		debug        : boolean := false;
 		profile      : natural;
 		fifo_size    : natural := 8*8192;
-		intrp_trans  : boolean := true;
+		intrp_trans  : boolean := false;
 
 		sdram_tcp    : real;
 		phy_data     : string := "";
@@ -783,26 +783,26 @@ begin
 		begin
 
 			dvid_blank <= video_blank;
-        	process (video_pixel)
-        		variable urgb  : unsigned(0 to 3*8-1);
-        		variable pixel : unsigned(0 to video_pixel'length-1);
-        	begin
-        		pixel := unsigned(video_pixel);
+			process (video_pixel)
+				variable urgb  : unsigned(0 to 3*8-1);
+				variable pixel : unsigned(0 to video_pixel'length-1);
+			begin
+				pixel := unsigned(video_pixel);
 
-        		urgb(0 to red_length-1)  := pixel(0 to red_length-1);
-        		urgb  := urgb rol 8;
-        		pixel := pixel sll red_length;
+				urgb(0 to red_length-1)  := pixel(0 to red_length-1);
+				urgb  := urgb rol 8;
+				pixel := pixel sll red_length;
 
-        		urgb(0 to green_length-1) := pixel(0 to green_length-1);
-        		urgb  := urgb rol 8;
-        		pixel := pixel sll green_length;
+				urgb(0 to green_length-1) := pixel(0 to green_length-1);
+				urgb  := urgb rol 8;
+				pixel := pixel sll green_length;
 
-        		urgb(0 to blue_length-1) := pixel(0 to blue_length-1);
-        		urgb  := urgb rol 8;
-        		pixel := pixel sll blue_length;
+				urgb(0 to blue_length-1) := pixel(0 to blue_length-1);
+				urgb  := urgb rol 8;
+				pixel := pixel sll blue_length;
 
-        		rgb <= std_logic_vector(urgb);
-        	end process;
+				rgb <= std_logic_vector(urgb);
+			end process;
 
 			dvi_e : entity hdl4fpga.dvi
 			generic map (
