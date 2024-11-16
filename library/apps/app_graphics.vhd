@@ -36,7 +36,7 @@ entity app_graphics is
 		debug        : boolean := false;
 		profile      : natural;
 		fifo_size    : natural := 8*8192;
-		intrp_trans  : boolean := false;
+		intrp_trans  : boolean := true;
 
 		sdram_tcp    : real;
 		phy_data     : string := "";
