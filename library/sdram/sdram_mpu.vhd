@@ -69,9 +69,10 @@ entity sdram_mpu is
 		sdram_mpu_wri   : out std_logic;
 		sdram_mpu_wwin  : out std_logic);
 
-	constant tdqsz : real    := real'(hdo(phy_data)**".tmng.DQSXL=0.")*ctlr_tcp; 
+	constant ldqsx : integer := hdo(phy_data)**".tmng.DQSXL=0."; 
+	constant tdqsx : real    := real(ldqsx)*ctlr_tcp; 
 	constant twr   : real    := hdo(sdramtmng_data)**".tWR";
-	constant lwr   : natural := natural(ceil((twr+tdqsz)/ctlr_tcp));
+	constant lwr   : natural := natural(ceil((twr+tdqsx)/ctlr_tcp));
 	constant lrcd  : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRCD=0.")/ctlr_tcp));
 	constant lrfc  : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRFC=0.")/ctlr_tcp));
 	constant lrp   : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRP=0.")/ctlr_tcp));
@@ -250,6 +251,15 @@ architecture arch of sdram_mpu is
 	constant adjdalat_tab : integer_vector := adjalat_tab;
 
 begin
+
+	assert false
+	report LF &
+	    "sdram_mpu : ldqsx : " & integer'image(ldqsx)&LF&
+	    "sdram_mpu : lwr   : " & natural'image(lwr)&LF&
+	    "sdram_mpu : lrcd  : " & natural'image(lrcd)&LF&
+	    "sdram_mpu : lrfc  : " & natural'image(lrfc)&LF&
+	    "sdram_mpu : lrp   : " & natural'image(lrp)&LF
+	severity note;
 
 	sdram_mpu_alat <= std_logic_vector(to_unsigned(adjdalat_tab(to_integer(unsigned(sdram_mpu_al))), sdram_mpu_alat'length));
 	sdram_mpu_blat <= std_logic_vector(to_signed(adjdbl_tab(to_integer(unsigned(sdram_mpu_bl))), sdram_mpu_blat'length));

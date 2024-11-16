@@ -32,8 +32,8 @@ use hdl4fpga.profiles.all;
 
 entity xc_sdrphy is
 	generic (
-		dqs_delay  : time_vector := (0 to 0 => 0 ns);
-		dqi_delay  : time_vector := (0 to 0 => 0 ns);
+		-- dqs_delay  : time_vector := (0 to 0 => 0 ns);
+		-- dqi_delay  : time_vector := (0 to 0 => 0 ns);
 		bank_size   : natural;
 		addr_size   : natural;
 		word_size   : natural;
@@ -373,8 +373,8 @@ begin
 
 		sdrdqphy_i : entity hdl4fpga.xc_sdrdqphy
 		generic map (
-			dqs_delay  => dqs_delay(i mod dqi_delay'length),
-			dqi_delay  => dqi_delay(i mod dqi_delay'length),
+			-- dqs_delay  => dqs_delay(i mod dqi_delay'length),
+			-- dqi_delay  => dqi_delay(i mod dqi_delay'length),
 
 			device    => device,
 			byteno    => i,

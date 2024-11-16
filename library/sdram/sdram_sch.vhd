@@ -85,6 +85,9 @@ architecture def of sdram_sch is
 			for j in word'range loop
 				val(j) := lat_sch(to_integer(unsigned(lat_val)))(j);
 			end loop;
+			assert lat_sch'length > to_integer(unsigned(lat_val))
+			report LF & "select_lat : " & natural'image(lat_sch'length) & ":" & to_string(lat_val)
+			severity failure;
 			return val;
 		end;
 
