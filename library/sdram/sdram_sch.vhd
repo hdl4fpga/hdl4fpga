@@ -85,9 +85,6 @@ architecture def of sdram_sch is
 			for j in word'range loop
 				val(j) := lat_sch(to_integer(unsigned(lat_val)))(j);
 			end loop;
-			assert lat_sch'length > to_integer(unsigned(lat_val))
-			report LF & "select_lat : " & natural'image(lat_sch'length) & ":" & to_string(lat_val)
-			severity failure;
 			return val;
 		end;
 
@@ -139,6 +136,10 @@ architecture def of sdram_sch is
 		variable sel_sch : word_vector(lat_tab'range);
 
 	begin
+		assert lat_tab'length >= 2**lat_val'length
+			report LF & "select_lat : " & natural'image(lat_tab'length) & ":" & to_string(lat_val)
+			severity failure;
+
 		sel_sch := (others => (others => '-'));
 		for i in 0 to lat_tab'length-1 loop
 			sel_sch(i) := pulse_delay (
@@ -157,6 +158,7 @@ architecture def of sdram_sch is
 	constant dqsol_tab : natural_vector := sdram_schtab (fmly, phytmng_data, "DQSL",  cl_tab, cwl_tab);
 	constant dqzl_tab  : natural_vector := sdram_schtab (fmly, phytmng_data, "DQZL",  cl_tab, cwl_tab);
 	constant wwnl_tab  : natural_vector := sdram_schtab (fmly, phytmng_data, "WWNL",  cl_tab, cwl_tab);
+	constant odtl_tab  : natural_vector(0 to 2-1) := (others => 0);
 
 	signal wri_sr      : std_logic_vector(0 to delay_size-1);
 	signal rea_sr      : std_logic_vector(0 to delay_size-1);
@@ -235,8 +237,8 @@ begin
 
 	sdram_odt <= sdram_task (
 		gear       => gear_odt,
-		lat_val    => "000",
-		lat_tab    => (0 to 0 => 0),
+		lat_val    => "0",
+		lat_tab    => odtl_tab,
 		lat_ext    => 2*gear_odt,
 		lat_wid    => widl,
 		lat_sch    => wri_sr);

@@ -107,10 +107,10 @@ entity sdram_ctlr is
 	constant gear           : natural := hdo(phy_data)**".orgz.gear";
 	constant phytmng_data   : string  := hdo(phy_data)**".tmng";
 
-	constant al_tab         : natural_vector := lattab(hdo(fmly_data)**(".al"), 2**ctlr_al'length-1);
-	constant bl_tab         : natural_vector := lattab(hdo(fmly_data)**(".bl"), 2**ctlr_bl'length-1);
-	constant cl_tab         : natural_vector := lattab(hdo(fmly_data)**(".cl"), 2**ctlr_cl'length-1);
-	constant cwl_tab        : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 2**ctlr_cwl'length-1);
+	constant al_tab         : natural_vector := lattab(hdo(fmly_data)**(".al"), 2**ctlr_al'length);
+	constant bl_tab         : natural_vector := lattab(hdo(fmly_data)**(".bl"), 2**ctlr_bl'length);
+	constant cl_tab         : natural_vector := lattab(hdo(fmly_data)**(".cl"), 2**ctlr_cl'length);
+	constant cwl_tab        : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 2**ctlr_cwl'length);
 end;
 
 architecture mix of sdram_ctlr is
@@ -259,10 +259,10 @@ begin
 
 	sdram_sch_e : entity hdl4fpga.sdram_sch
 	generic map (
-		fmly    => fmly,
-		phy_data     => phy_data,
-		cl_tab  => cl_tab,
-		cwl_tab => cwl_tab)
+		fmly     => fmly,
+		phy_data => phy_data,
+		cl_tab   => cl_tab,
+		cwl_tab  => cwl_tab)
 	port map (
 		sys_cl    => ctlr_cl,
 		sys_cwl   => sdram_cwl,
