@@ -32,7 +32,7 @@ use hdl4fpga.hdo.all;
 
 package sdrampkg is
 	constant sdram_db : string := compact("{" &
-		"MT48LC16M16MA2-7E : {fmly : sdr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 25.0e-9, tRCD  : 15.0e-9, tRP : 15.00e-9, tMRD  : 15.0e-9, tRFC :  66.0e-9,  tREFI : 7.8125e-6}}," & -- tWR = 14.0e-9+11.0e-9
+		"MT48LC16M16MA2-7E : {fmly : sdr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 25.0e-9, tRCD  : 15.0e-9, tRP : 15.00e-9, tMRD : 15.0e-9,  tRFC :  66.0e-9,  tREFI : 7.8125e-6}}," & -- tWR = 14.0e-9+11.0e-9
 		"MT46V16M16M-6T    : {fmly : ddr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.00e-9, tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : 7.8125e-6}}," &
 		"MT41K128M16-125   : {fmly : ddr3, orgz : {addr : { ba : 3, row : 14, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 360.00e-9, tREFI : 7.8125e-6, tXPR  : 370.00e-9}}," &  -- tMin : tRFC + 10 ns
 		"MT4HTF12864HZ     : {fmly : ddr2, orgz : {addr : { ba : 3, row : 14, col :  9}, data : { dm : 8, dq : 64}}, tmng : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.00e-9, tRPA : 15.0e-9,  tRFC : 130.0e-9,  tREFI : 7.8125e-6, tXPR  : 400.0e-6}}," &
@@ -74,12 +74,12 @@ package sdrampkg is
 
 	constant phy_db : string := compact("[" &
 		"ecp5g1 : { orgz : { gear : 1}, tmng : {STRL :  1, DQSL :  0, DQSZL :  0, DQZL :  0, WWNL :  0, STRXL : 0, DQSZXL : 0, DQSXL : 0, DQZXL : 0, WWNXL : 0, WIDL : 1}}," &
-		"xc3sg2 : { orgz : { gear : 2}, tmng : {STRL : -2, DQSL : -2, DQSZL : -2, DQZL : -2, WWNL : -2, STRXL : 0, DQSZXL : 4, DQSXL : 0, DQZXL : 0, WWNXL : 0, WIDL : 2}}," &
-		"ecp3g4 : { orgz : { gear : 4}, tmng : {STRL :  0, DQSL :  0, DQSZL :  0, DQZL :  2, WWNL :  2, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2, WIDL : 4}}," &
-		"xc5vg4 : { orgz : { gear : 4}, tmng : {STRL :  9, DQSL :  2, DQSZL :  2, DQZL : -1, WWNL : -3, STRXL : 0, DQSZXL : 1, DQSXL : 0, DQZXL : 0, WWNXL : 0, WIDL : 4}}," &
-		"xc7vg4 : { orgz : { gear : 4}, tmng : {STRL :  9, DQSL :  1, DQSZL :  1, DQZL : -1, WWNL : -1, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 0, WIDL : 4}}," &
-		"ulx4ld_ecp5g4     : { orgz : { gear : 4}, tmng : { STRL : 0, DQSL : 4*1-2+2, DQSZL : 4*1+0+2, DQZL : 4*1+0+2, WWNL : 4*1-4+2, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2, WIDL : 4}}," &
-		"orangecrab_ecp5g4 : { orgz : { gear : 4}, tmng : { STRL : 0, DQSL : 4*1-2+0, DQSZL : 4*1+0+0, DQZL : 4*1+0+0, WWNL : 4*1-4+0, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2, WIDL : 4}}]");
+		"xc3sg2 : { orgz : { gear : 2}, tmng : {STRL : -2, DQSL : -2, DQSZL : -2, DQZL : -2, WWNL : -2, STRXL : 0, DQSZXL : 4, DQSXL : 0, DQZXL : 0, WWNXL : 0, WIDL : 1}}," &
+		"ecp3g4 : { orgz : { gear : 4}, tmng : {STRL :  0, DQSL :  0, DQSZL :  0, DQZL :  2, WWNL :  2, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2, WIDL : 1}}," &
+		"xc5vg4 : { orgz : { gear : 4}, tmng : {STRL :  9, DQSL :  2, DQSZL :  2, DQZL : -1, WWNL : -3, STRXL : 0, DQSZXL : 1, DQSXL : 0, DQZXL : 0, WWNXL : 0, WIDL : 1}}," &
+		"xc7vg4 : { orgz : { gear : 4}, tmng : {STRL :  9, DQSL :  1, DQSZL :  1, DQZL : -1, WWNL : -1, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 0, WIDL : 1}}," &
+		"ulx4ld_ecp5g4     : { orgz : { gear : 4}, tmng : { STRL : 0, DQSL : 4*1-2+2, DQSZL : 4*1+0+2, DQZL : 4*1+0+2, WWNL : 4*1-4+2, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2, WIDL : 1}}," &
+		"orangecrab_ecp5g4 : { orgz : { gear : 4}, tmng : { STRL : 0, DQSL : 4*1-2+0, DQSZL : 4*1+0+0, DQZL : 4*1+0+0, WWNL : 4*1-4+0, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2, WIDL : 1}}]");
 
 	constant mpu_nop   : std_logic_vector(0 to 2) := "111";
 	constant mpu_act   : std_logic_vector(0 to 2) := "011";
@@ -151,7 +151,7 @@ package body sdrampkg is
 		variable lat    : integer := hdo(phytmng_data)**("."&latency);
 		variable clval  : natural_vector(cl_tab'range);
 		variable cwlval : natural_vector(cwl_tab'range);
-		variable temp : integer;
+		variable temp   : integer;
 
 	begin
 		if latency="WWNL" then
@@ -185,8 +185,8 @@ package body sdrampkg is
 			end loop;
 			return cwlval;
 		else
+			return (0 to 0 => 0);
 		end if;
-		return (0 to 0 => 0);
 	end;
 
 	function sdram_schtab (

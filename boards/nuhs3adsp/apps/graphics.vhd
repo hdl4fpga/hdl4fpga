@@ -668,7 +668,7 @@ begin
 		sdram_b       => ddr_ba,
 		sdram_a       => ddr_a,
 
-		sdram_dm      => ddr_dm,
+		sdram_dm      => open,
 		sdram_dq      => ddr_dq,
 		sdram_dqs     => ddr_dqs);
 
@@ -682,6 +682,7 @@ begin
 
 	ddr_cke <= sdram_cke(0);
 	ddr_cs  <= sdram_cs(0);
+	ddr_dm <= (others => '0');
 
 	videoio_b : block
 		signal videoclk_n : std_logic;

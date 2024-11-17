@@ -68,8 +68,8 @@ architecture def of sdram_sch is
 		constant lat_val : std_logic_vector;
 		constant lat_tab : natural_vector;
 		constant lat_sch : std_logic_vector;
-		constant lat_ext : natural := 0;
-		constant lat_wid : natural := 1)
+		constant lat_ext : natural;
+		constant lat_wid : natural)
 		return std_logic_vector is
 
 		subtype word is std_logic_vector(0 to gear-1);
@@ -177,6 +177,21 @@ architecture def of sdram_sch is
 
 begin
 	
+	assert false
+	report LF &
+	    "sdram_sch : STRL   " & integer'image(STRL)&LF&
+	    "sdram_sch : DQSL   " & integer'image(DQSL)&LF&
+	    "sdram_sch : DQSZL  " & integer'image(DQSZL)&LF&
+	    "sdram_sch : DQZL   " & integer'image(DQZL)&LF&
+	    "sdram_sch : STRXL  " & integer'image(STRXL)&LF&
+	    "sdram_sch : DQSXL  " & integer'image(DQSXL)&LF&
+	    "sdram_sch : DQSZXL " & integer'image(DQSZXL)&LF&
+	    "sdram_sch : DQZXL  " & integer'image(DQZXL)&LF&
+	    "sdram_sch : WWNL   " & integer'image(WWNL)&LF&
+	    "sdram_sch : WWNXL  " & integer'image(WWNXL)&LF&
+	    "sdram_sch : WIDL   " & integer'image(WIDL)&LF
+	severity note;
+
 	process (sys_wri, sys_rea, sys_clk)
 	begin
 		if rising_edge(sys_clk) then

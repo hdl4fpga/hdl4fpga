@@ -36,9 +36,10 @@ entity xc_sdrdqphy is
 	generic (
 		-- dqs_delay   : time := (1000 ns /450.0)*(4.5/4.0);
 		-- dqi_delay   : time := (1000 ns /450.0)*(4.5/4.0);
-		dqs_delay   : time := 4.4 ns ; --(1000 ns /450.0)*(4.5/4.0);
-		dqi_delay   : time := 4.4 ns ; --(1000 ns /450.0)*(4.5/4.0);
-
+		-- dqs_delay   : time := 4.4 ns ; --(1000 ns /450.0)*(4.5/4.0);
+		-- dqi_delay   : time := 4.4 ns ; --(1000 ns /450.0)*(4.5/4.0);
+		dqs_delay   : time := 1 ns ; --(1000 ns /450.0)*(4.5/4.0);
+		dqi_delay   : time := 0 ns ; --(1000 ns /450.0)*(4.5/4.0);
 		byteno      : natural;
 		device      : fpga_devices;
 		gear        : natural;

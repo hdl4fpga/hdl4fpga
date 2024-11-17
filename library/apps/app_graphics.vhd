@@ -170,9 +170,9 @@ architecture mix of app_graphics is
 
 	signal base_addr      : std_logic_vector(dmactlr_addr'range) := (others => '0');
 
-	signal dmacfgvideo_req : std_logic;
+	signal dmacfgvideo_req : std_logic := '0';
 	signal dmacfgvideo_rdy : std_logic;
-	signal dmavideo_req   : std_logic;
+	signal dmavideo_req   : std_logic := '0';
 	signal dmavideo_rdy   : std_logic;
 	signal dmavideo_len   : std_logic_vector(dmactlr_len'range);
 	signal dmavideo_addr  : std_logic_vector(dmactlr_addr'range);
@@ -753,7 +753,6 @@ begin
 		port map (
 			clk => video_clk,
 			di  => pixel,
-			-- di  => (pixel'range => '1'),
 			do  => video_pixel);
 
 		tosync_e : entity hdl4fpga.latency
@@ -774,7 +773,7 @@ begin
 		video_blank <= not video_hzon or not video_vton;
 
 		-- HDMI/DVI VGA --
-		------------------
+		----------------
 
 		dvi_b : block
 			signal dvid_blank : std_logic;
