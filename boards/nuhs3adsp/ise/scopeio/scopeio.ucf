@@ -34,10 +34,8 @@ NET "adc_clkout" TNM_NET = adc_clkout;
 OFFSET = IN -0.600 ns VALID 7.8125 ns BEFORE adc_clkout RISING;
 OFFSET = IN -0.600 ns VALID 7.8125 ns BEFORE adc_clkout RISING;
 
-NET "video_clk" TNM_NET = FFS  FFS_videoclk;
-NET "video_clk" TNM_NET = RAMS RAMS_videoclk;
-NET "adc_clk" TNM_NET = FFS  FFS_adcclk;
-NET "adc_clk" TNM_NET = RAMS RAMS_adcclk;
+NET "video_clk"  TNM_NET = FFS  FFS_videoclk;
+NET "video_clk"  TNM_NET = RAMS RAMS_videoclk;
 
 NET "ddr_dqs[0]" TNM_NET = dqs0;
 NET "ddr_dqs[0]" CLOCK_DEDICATED_ROUTE = false;

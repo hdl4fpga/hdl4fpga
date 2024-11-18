@@ -50,7 +50,7 @@ architecture scopeio of nuhs3adsp is
 	signal uart_rxdv   : std_logic;
 	signal uart_rxd    : std_logic_vector(8-1 downto 0);
 
-	alias  sio_clk   is mii_txc;
+	alias  sio_clk is mii_txc;
 	signal si_frm      : std_logic;
 	signal si_irdy     : std_logic;
 	signal si_data     : std_logic_vector(0 to 8-1);
@@ -173,7 +173,7 @@ architecture scopeio of nuhs3adsp is
 		return tab(tab'left);
 	end;
 
-	constant sdram_speed  : sdram_speeds := sdram166MHz;
+	constant sdram_speed  : sdram_speeds := sdram133MHz;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (real(sdram_params.cm.dcm_div)*clk_per)/real(sdram_params.cm.dcm_mul);
 
@@ -182,10 +182,10 @@ architecture scopeio of nuhs3adsp is
 	constant sdram_data  : string  := compact(hdo(sdram_db)**".MT46V16M16M-6T");
 	constant phy_data    : string  := compact(hdo(phy_db)**".xc3sg2");
 	constant gear        : natural := hdo(phy_data)**".orgz.gear=1.";
-	constant bank_length : natural := setif(sdram_data/="none", ddr_ba'length,    1);
-	constant addr_length : natural := setif(sdram_data/="none", ddr_a'length,     1);
-	constant data_mask   : natural := setif(sdram_data/="none", ddr_dm'length,    1);
-	constant data_length : natural := setif(sdram_data/="none", ddr_dq'length,    1);
+	constant bank_length : natural := setif(sdram_data/="none", ddr_ba'length,  1);
+	constant addr_length : natural := setif(sdram_data/="none", ddr_a'length,   1);
+	constant data_mask   : natural := setif(sdram_data/="none", ddr_dm'length,  1);
+	constant data_length : natural := setif(sdram_data/="none", ddr_dq'length,  1);
 	constant dqs_length  : natural := setif(sdram_data/="none", ddr_dqs'length, 1);
 
 	signal sdrsys_rst    : std_logic;
@@ -415,6 +415,7 @@ begin
 						end if;
 					end if;
 				end case;
+				dhcpcd_req <= dhcpcd_rdy;
 			end if;
 		end process;
 
@@ -470,7 +471,7 @@ begin
 		signal dfs_clkfx : std_logic;
 		signal dfs_lckd  : std_logic;
 		
-		signal dcm_rst   : std_logic;
+		signal dcm_rst   : std_logic := '1';
 		signal dcm_clk0  : std_logic;
 		signal dcm_clk90 : std_logic;
 		signal dcm_lckd  : std_logic;
@@ -565,7 +566,6 @@ begin
 		timing_id   => pclk150_00m1920x1080at60,
 		layout      => layout)
 	port map (
-		-- tp => tp,
 		sio_clk     => sio_clk,
 		si_frm      => si_frm,
 		si_irdy     => si_irdy,
@@ -752,7 +752,7 @@ begin
 	videoclk_n <= not video_clk;
 	videodac_i: oddr2
 	port map (
-		c0   => video_clk,
+		c0  => video_clk,
 		c1  => videoclk_n,
 		ce  => '1',
 		d0  => '0',

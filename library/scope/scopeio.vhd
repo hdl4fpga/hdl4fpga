@@ -526,15 +526,15 @@ begin
 		signal capture_ctlrdo   : std_logic_vector(ctlr_do'range);
 
 		signal dev_gnt        : std_logic_vector(0 to 2-1);
-		signal dmacfg_req     : std_logic_vector(0 to 2-1);
-		signal dmacfg_rdy     : std_logic_vector(0 to 2-1);
+		signal dmacfg_req     : std_logic_vector(0 to 2-1) := (others => '0');
+		signal dmacfg_rdy     : std_logic_vector(0 to 2-1) := (others => '0');
 		signal dev_di_dv      : std_logic_vector(dev_gnt'range);
 		signal dev_len        : std_logic_vector(0 to 2*dmactlr_len'length-1);
 		signal dev_addr       : std_logic_vector(0 to 2*dmactlr_addr'length-1);
 		signal dev_we         : std_logic_vector(0 to 2-1);
 
-		signal dev_req        : std_logic_vector(dev_gnt'range);
-		signal dev_rdy        : std_logic_vector(dev_gnt'range);
+		signal dev_req        : std_logic_vector(dev_gnt'range) := (others => '0');
+		signal dev_rdy        : std_logic_vector(dev_gnt'range) := (others => '0');
 		signal dma_do         : std_logic_vector(ctlr_do'range);
 		signal dma_do_dv      : std_logic_vector(dev_gnt'range);
 		alias  capturedev_di_dv : std_logic is dev_di_dv(0);
