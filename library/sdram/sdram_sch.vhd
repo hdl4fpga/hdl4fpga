@@ -173,7 +173,7 @@ architecture def of sdram_sch is
 	constant DQZXL  : integer := hdo(phytmng_data)**".DQZXL";
 	constant WWNL   : integer := hdo(phytmng_data)**".WWNL";
 	constant WWNXL  : integer := hdo(phytmng_data)**".WWNXL";
-	constant WIDL   : integer := hdo(phytmng_data)**".WIDL";
+	constant WIDL   : integer := 1;
 
 begin
 	
