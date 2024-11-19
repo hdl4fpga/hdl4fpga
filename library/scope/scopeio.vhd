@@ -140,74 +140,11 @@ entity scopeio is
 		2 => (ddro => 3, dmaio => 3, sodata => 3, adapter => 3),  -- ULX4M BOARD
 		3 => (ddro => 3, dmaio => 2, sodata => 1, adapter => 1)); -- NUHS3ADSP BOARD 166 MHz
 
-	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length));
-	constant byte_size     : natural := ctlrphy_dqo'length/ctlrphy_dmo'length;
-	constant inputs        : natural := hdo(layout)**".inputs";
-	constant max_delay     : natural := hdo(layout)**".max_delay=16384.";
-	constant min_storage   : natural := hdo(layout)**".min_storage=256."; -- samples, storage size will be equal or larger than this
-	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
-	constant grid_height   : natural := hdo(layout)**".grid.height";
-	constant grid_width    : natural := hdo(layout)**".grid.width";
-	constant grid_unit     : natural := hdo(layout)**".grid.unit=32.";
+	constant inputs : natural := hdo(layout)**".inputs";
 
-	function to_naturalvector (
-		constant object : string)
-		return natural_vector is
-		constant length : natural := hdo(object)**".length";
-		variable retval : natural_vector(0 to length-1);
-	begin
-		for i in 0 to length-1 loop
-			retval(i) := hdo(object)**("["&natural'image(i)&"]");
-		end loop;
-		return retval;
-	end;
-
-	constant time_factors : natural_vector := to_naturalvector(hdo(layout)**compact(".axis.horizontal.scales=" & 
-			"[" &
-				natural'image(2**(0+0)*5**(0+0)) & "," & -- [0]
-				natural'image(2**(0+0)*5**(0+0)) & "," & -- [1]
-				natural'image(2**(0+0)*5**(0+0)) & "," & -- [2]
-				natural'image(2**(0+0)*5**(0+0)) & "," & -- [3]
-				natural'image(2**(0+0)*5**(0+0)) & "," & -- [4]
-				natural'image(2**(1+0)*5**(0+0)) & "," & -- [5]
-				natural'image(2**(2+0)*5**(0+0)) & "," & -- [6]
-				natural'image(2**(0+0)*5**(1+0)) & "," & -- [7]
-				natural'image(2**(0+1)*5**(0+1)) & "," & -- [8]
-				natural'image(2**(1+1)*5**(0+1)) & "," & -- [9]
-				natural'image(2**(2+1)*5**(0+1)) & "," & -- [10]
-				natural'image(2**(0+1)*5**(1+1)) & "," & -- [11]
-				natural'image(2**(0+2)*5**(0+2)) & "," & -- [12]
-				natural'image(2**(1+2)*5**(0+2)) & "," & -- [13]
-				natural'image(2**(2+2)*5**(0+2)) & "," & -- [14]
-				natural'image(2**(0+2)*5**(1+2)) & "," & -- [15]
-			"length : 16]."));
-	constant vt_gains : natural_vector := to_naturalvector(hdo(layout)**compact(".axis.vertical.gains=" &
-			"[" &
-				natural'image(2**17/(2**(0+0)*5**(0+0))) & "," & -- [0]
-				natural'image(2**17/(2**(1+0)*5**(0+0))) & "," & -- [1]
-				natural'image(2**17/(2**(2+0)*5**(0+0))) & "," & -- [2]
-				natural'image(2**17/(2**(0+0)*5**(1+0))) & "," & -- [3]
-				natural'image(2**17/(2**(0+1)*5**(0+1))) & "," & -- [4]
-				natural'image(2**17/(2**(1+1)*5**(0+1))) & "," & -- [5]
-				natural'image(2**17/(2**(2+1)*5**(0+1))) & "," & -- [6]
-				natural'image(2**17/(2**(0+1)*5**(1+1))) & "," & -- [7]
-				natural'image(2**17/(2**(0+2)*5**(0+2))) & "," & -- [8]
-				natural'image(2**17/(2**(1+2)*5**(0+2))) & "," & -- [9]
-				natural'image(2**17/(2**(2+2)*5**(0+2))) & "," & -- [10]
-				natural'image(2**17/(2**(0+2)*5**(1+2))) & "," & -- [11]
-				natural'image(2**17/(2**(0+3)*5**(0+3))) & "," & -- [12]
-				natural'image(2**17/(2**(1+3)*5**(0+3))) & "," & -- [13]
-				natural'image(2**17/(2**(2+3)*5**(0+3))) & "," & -- [14]
-				natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
-			"length : 16]."));
-	constant sample_length : natural := input_data'length/inputs;
 end;
 
 architecture beh of scopeio is
-
-	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
-	constant gainid_bits  : natural := unsigned_num_bits(vt_gains'length-1);
 
 	constant rid_ack      : std_logic_vector := x"01";
 	constant rid_dmaaddr  : std_logic_vector := x"16";
@@ -228,31 +165,6 @@ architecture beh of scopeio is
 	signal data_frm       : std_logic;
 	signal data_irdy      : std_logic;
 	signal data_ptr       : std_logic_vector(8-1 downto 0);
-
-	signal ampsample_dv   : std_logic;
-	signal ampsample_data : std_logic_vector(0 to input_data'length-1);
-
-	constant capture_bits : natural := unsigned_num_bits(max(resolve(layout&".num_of_segments")*grid_width,min_storage)-1);
-	signal capture_shot   : std_logic;
-	signal capture_end    : std_logic;
-
-	signal video_addr     : std_logic_vector(0 to capture_bits-1);
-	signal video_frm      : std_logic;
-	signal video_dv       : std_logic;
-	signal video_data     : std_logic_vector(0 to 2*inputs*storage_word'length-1);
-
-
-	signal time_offset    : std_logic_vector(hzoffset_bits-1 downto 0);
-	signal time_scale     : std_logic_vector(4-1 downto 0);
-	signal time_dv          : std_logic;
-
-	signal trigger_freeze : std_logic;
-
-	signal gain_ena       : std_logic;
-	signal gain_dv        : std_logic;
-	signal gain_cid       : std_logic_vector(0 to chanid_bits-1);
-	signal gain_ids       : std_logic_vector(0 to inputs*gainid_bits-1);
-
 
 begin
 
@@ -279,213 +191,304 @@ begin
 		rgtr_data => rgtr_data);
 	rgtr_revs <= reverse(rgtr_data,8);
 
-	amp_b : block
+	waveform_g : if layout /= "none" generate
+		constant grid_height   : natural := hdo(layout)**".grid.height";
+		constant grid_width    : natural := hdo(layout)**".grid.width";
+		constant grid_unit     : natural := hdo(layout)**".grid.unit=32.";
+		constant min_storage   : natural := hdo(layout)**".min_storage=256."; -- samples, storage size will be equal or larger than this
+		constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
+		constant max_delay     : natural := hdo(layout)**".max_delay=16384.";
+		constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 
-		constant vt          : string := hdo(layout)**".vt";
-		constant vt_unit     : real := hdo(layout)**".axis.vertical.unit";
-		constant sample_size : natural := input_data'length/inputs;
-		signal chan_id       : std_logic_vector(0 to chanid_bits-1);
-		signal gain_id       : std_logic_vector(0 to gainid_bits-1);
-		signal output_ena    : std_logic_vector(0 to inputs-1);
-	begin
+    	function to_naturalvector (
+    		constant object : string)
+    		return natural_vector is
+    		constant length : natural := hdo(object)**".length";
+    		variable retval : natural_vector(0 to length-1);
+    	begin
+    		for i in 0 to length-1 loop
+    			retval(i) := hdo(object)**("["&natural'image(i)&"]");
+    		end loop;
+    		return retval;
+    	end;
 
-		vtscale_e : entity hdl4fpga.scopeio_rgtrvtscale
-		generic map (
-			rgtr      => false)
-		port map (
-			rgtr_clk  => sio_clk,
-			rgtr_dv   => rgtr_dv,
-			rgtr_id   => rgtr_id,
-			rgtr_data => rgtr_revs,
+    	constant time_factors : natural_vector := to_naturalvector(hdo(layout)**compact(".axis.horizontal.scales=" & 
+    			"[" &
+    				natural'image(2**(0+0)*5**(0+0)) & "," & -- [0]
+    				natural'image(2**(0+0)*5**(0+0)) & "," & -- [1]
+    				natural'image(2**(0+0)*5**(0+0)) & "," & -- [2]
+    				natural'image(2**(0+0)*5**(0+0)) & "," & -- [3]
+    				natural'image(2**(0+0)*5**(0+0)) & "," & -- [4]
+    				natural'image(2**(1+0)*5**(0+0)) & "," & -- [5]
+    				natural'image(2**(2+0)*5**(0+0)) & "," & -- [6]
+    				natural'image(2**(0+0)*5**(1+0)) & "," & -- [7]
+    				natural'image(2**(0+1)*5**(0+1)) & "," & -- [8]
+    				natural'image(2**(1+1)*5**(0+1)) & "," & -- [9]
+    				natural'image(2**(2+1)*5**(0+1)) & "," & -- [10]
+    				natural'image(2**(0+1)*5**(1+1)) & "," & -- [11]
+    				natural'image(2**(0+2)*5**(0+2)) & "," & -- [12]
+    				natural'image(2**(1+2)*5**(0+2)) & "," & -- [13]
+    				natural'image(2**(2+2)*5**(0+2)) & "," & -- [14]
+    				natural'image(2**(0+2)*5**(1+2)) & "," & -- [15]
+    			"length : 16]."));
+    	constant vt_gains : natural_vector := to_naturalvector(hdo(layout)**compact(".axis.vertical.gains=" &
+    			"[" &
+    				natural'image(2**17/(2**(0+0)*5**(0+0))) & "," & -- [0]
+    				natural'image(2**17/(2**(1+0)*5**(0+0))) & "," & -- [1]
+    				natural'image(2**17/(2**(2+0)*5**(0+0))) & "," & -- [2]
+    				natural'image(2**17/(2**(0+0)*5**(1+0))) & "," & -- [3]
+    				natural'image(2**17/(2**(0+1)*5**(0+1))) & "," & -- [4]
+    				natural'image(2**17/(2**(1+1)*5**(0+1))) & "," & -- [5]
+    				natural'image(2**17/(2**(2+1)*5**(0+1))) & "," & -- [6]
+    				natural'image(2**17/(2**(0+1)*5**(1+1))) & "," & -- [7]
+    				natural'image(2**17/(2**(0+2)*5**(0+2))) & "," & -- [8]
+    				natural'image(2**17/(2**(1+2)*5**(0+2))) & "," & -- [9]
+    				natural'image(2**17/(2**(2+2)*5**(0+2))) & "," & -- [10]
+    				natural'image(2**17/(2**(0+2)*5**(1+2))) & "," & -- [11]
+    				natural'image(2**17/(2**(0+3)*5**(0+3))) & "," & -- [12]
+    				natural'image(2**17/(2**(1+3)*5**(0+3))) & "," & -- [13]
+    				natural'image(2**17/(2**(2+3)*5**(0+3))) & "," & -- [14]
+    				natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
+    			"length : 16]."));
+    	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
+    	constant gainid_bits  : natural := unsigned_num_bits(vt_gains'length-1);
 
-			vtscale_ena => gain_ena,
-			vtscale_dv  => gain_dv,
-			vtchan_id  => chan_id,
-			vtscale_id  => gain_id);
-		
-		process(sio_clk)
-		begin
-			if rising_edge(sio_clk) then
-				if gain_ena='1' then
-					gain_cid <= chan_id;
-					if trigger_freeze='0' then
-						gain_ids <= replace(gain_ids, chan_id, gain_id);
-					end if;
-				end if;
-			end if;
-		end process;
+    	signal ampsample_dv   : std_logic;
+    	signal ampsample_data : std_logic_vector(0 to input_data'length-1);
 
-		amp_g : for i in 0 to inputs-1 generate
+    	constant capture_bits : natural := unsigned_num_bits(max(resolve(layout&".num_of_segments")*grid_width,min_storage)-1);
+    	signal capture_shot   : std_logic;
+    	signal capture_end    : std_logic;
 
-			function init_gains(
-				constant gains : natural_vector;
-				constant unit  : real;
-				constant step  : real)
-				return natural_vector is
-				constant df_gains  : natural_vector := (
-					 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
-					 4 => 2**17/(2**(0+1)*5**(0+1)),  5 => 2**17/(2**(1+1)*5**(0+1)),  6 => 2**17/(2**(2+1)*5**(0+1)),  7 => 2**17/(2**(0+1)*5**(1+1)),
-					 8 => 2**17/(2**(0+2)*5**(0+2)),  9 => 2**17/(2**(1+2)*5**(0+2)), 10 => 2**17/(2**(2+2)*5**(0+2)), 11 => 2**17/(2**(0+2)*5**(1+2)),
-					12 => 2**17/(2**(0+3)*5**(0+3)), 13 => 2**17/(2**(1+3)*5**(0+3)), 14 => 2**17/(2**(2+3)*5**(0+3)), 15 => 2**17/(2**(0+3)*5**(1+3)));
+    	signal video_addr     : std_logic_vector(0 to capture_bits-1);
+    	signal video_frm      : std_logic;
+    	signal video_dv       : std_logic;
+    	signal video_data     : std_logic_vector(0 to 2*inputs*storage_word'length-1);
 
-				constant k      : real := (real(grid_unit)*step)/unit;
-				variable retval : natural_vector(0 to setif(gains'length >0, gains'length, df_gains'length)-1);
 
-			begin
-				retval := df_gains;
-				if gains'length > 0 then
-					retval := gains;
-				end if;
+    	signal time_offset    : std_logic_vector(hzoffset_bits-1 downto 0);
+    	signal time_scale     : std_logic_vector(4-1 downto 0);
+    	signal time_dv          : std_logic;
 
-				assert k < 1.0
-					report "unit " & real'image(unit) & " : " & real'image(real(grid_unit)*step) & " unit should be increase"
-					severity FAILURE;
+    	signal trigger_freeze : std_logic;
 
-				if k > 0.0 then
-					for i in retval'range loop
-						retval(i) := natural(real(retval(i))*k);
-					end loop;
-				end if;
-
-				return retval;
-			end;
-
-			constant vt_step : real := hdo(vt)**("["&natural'image(i)&"].step");
-			constant gains  : natural_vector(vt_gains'range) := init_gains (
-				gains => vt_gains,
-				unit  => vt_unit,
-				step  => vt_step);
-
-			subtype sample_range is natural range i*sample_size to (i+1)*sample_size-1;
-
-			signal input_sample : std_logic_vector(0 to sample_size-1);
-			signal gain_id      : std_logic_vector(gainid_bits-1 downto 0);
-		begin
-
-			gain_id <= multiplex(gain_ids, i, gainid_bits);
-			input_sample <= multiplex(input_data, i, sample_size);
-			amp_e : entity hdl4fpga.scopeio_amp
-			generic map (
-				gains => gains)
-			port map (
-				input_clk     => input_clk,
-				input_dv      => input_ena,
-				input_sample  => input_sample,
-				gain_id       => gain_id,
-				output_dv     => output_ena(i),
-				output_sample => ampsample_data(sample_range));
-
-		end generate;
-
-		ampsample_dv <= output_ena(0);
-	end block;
-
-	scopeio_tds_e : scopeio_tds
-	generic map  (
-		inputs       => inputs,
-		storageword_size => storage_word'length,
-		time_factors => time_factors)
-	port map (
-		rgtr_clk     => sio_clk,
-		rgtr_dv      => rgtr_dv,
-		rgtr_id      => rgtr_id,
-		rgtr_data    => rgtr_revs,
-
-		input_clk    => input_clk,
-		input_dv     => ampsample_dv,
-		input_data   => ampsample_data,
-		time_scale   => time_scale,
-		time_offset  => time_offset,
-		trigger_freeze => trigger_freeze,
-		capture_shot => capture_shot,
-		capture_end  => capture_end,
-
-		video_clk    => video_clk,
-		video_addr   => video_addr,  
-		video_vton   => video_vton,  
-		video_frm    => video_frm,  
-		video_dv     => video_dv,  
-		video_data   => video_data);
-
-	scopeio_video_e : entity hdl4fpga.scopeio_video
-	generic map (
-		timing_id      => timing_id,
-		layout         => layout)
-	port map (
-		tp => tp,
-		rgtr_clk       => sio_clk,
-		rgtr_dv        => rgtr_dv,
-		rgtr_id        => rgtr_id,
-		rgtr_data      => rgtr_revs,
-
-		time_scale     => time_scale,
-		time_offset    => time_offset,
-										
-		video_addr     => video_addr,
-		video_frm      => video_frm,
-		video_data     => video_data,
-		video_dv       => video_dv,
-
-		video_clk      => video_clk,
-		video_pixel    => video_pixel,
-		extern_video   => extern_video,
-		extern_videohzsync => extern_videohzsync,
-		extern_videovtsync => extern_videovtsync,
-		extern_videoblankn => extern_videoblankn,
-		video_hsync    => video_hsync,
-		video_vsync    => video_vsync,
-		video_vton     => video_vton,
-		video_hzon     => video_hzon,
-		video_blank    => video_blank,
-		video_sync     => video_sync);
-
-	dviadapter_b : block
-		signal dvid_blank : std_logic;
-		signal rgb : std_logic_vector(0 to 3*8-1) := (others => '0');
+    	signal gain_ena       : std_logic;
+    	signal gain_dv        : std_logic;
+    	signal gain_cid       : std_logic_vector(0 to chanid_bits-1);
+    	signal gain_ids       : std_logic_vector(0 to inputs*gainid_bits-1);
 
 	begin
+    	amp_b : block
 
-		dvid_blank <= video_blank;
-		process (video_pixel)
-			variable urgb  : unsigned(0 to 3*8-1);
-			variable pixel : unsigned(0 to video_pixel'length-1);
-		begin
-			pixel := unsigned(video_pixel);
+    		constant vt          : string := hdo(layout)**".vt";
+    		constant vt_unit     : real := hdo(layout)**".axis.vertical.unit";
+    		constant sample_size : natural := input_data'length/inputs;
+    		signal chan_id       : std_logic_vector(0 to chanid_bits-1);
+    		signal gain_id       : std_logic_vector(0 to gainid_bits-1);
+    		signal output_ena    : std_logic_vector(0 to inputs-1);
+    	begin
 
-			urgb(0 to red_length-1)  := pixel(0 to red_length-1);
-			urgb  := urgb rol 8;
-			pixel := pixel sll red_length;
+    		vtscale_e : entity hdl4fpga.scopeio_rgtrvtscale
+    		generic map (
+    			rgtr      => false)
+    		port map (
+    			rgtr_clk  => sio_clk,
+    			rgtr_dv   => rgtr_dv,
+    			rgtr_id   => rgtr_id,
+    			rgtr_data => rgtr_revs,
 
-			urgb(0 to green_length-1) := pixel(0 to green_length-1);
-			urgb  := urgb rol 8;
-			pixel := pixel sll green_length;
+    			vtscale_ena => gain_ena,
+    			vtscale_dv  => gain_dv,
+    			vtchan_id  => chan_id,
+    			vtscale_id  => gain_id);
+    		
+    		process(sio_clk)
+    		begin
+    			if rising_edge(sio_clk) then
+    				if gain_ena='1' then
+    					gain_cid <= chan_id;
+    					if trigger_freeze='0' then
+    						gain_ids <= replace(gain_ids, chan_id, gain_id);
+    					end if;
+    				end if;
+    			end if;
+    		end process;
 
-			urgb(0 to blue_length-1) := pixel(0 to blue_length-1);
-			urgb  := urgb rol 8;
-			pixel := pixel sll blue_length;
+    		amp_g : for i in 0 to inputs-1 generate
 
-			rgb <= std_logic_vector(urgb);
-		end process;
+    			function init_gains(
+    				constant gains : natural_vector;
+    				constant unit  : real;
+    				constant step  : real)
+    				return natural_vector is
+    				constant df_gains  : natural_vector := (
+    					 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
+    					 4 => 2**17/(2**(0+1)*5**(0+1)),  5 => 2**17/(2**(1+1)*5**(0+1)),  6 => 2**17/(2**(2+1)*5**(0+1)),  7 => 2**17/(2**(0+1)*5**(1+1)),
+    					 8 => 2**17/(2**(0+2)*5**(0+2)),  9 => 2**17/(2**(1+2)*5**(0+2)), 10 => 2**17/(2**(2+2)*5**(0+2)), 11 => 2**17/(2**(0+2)*5**(1+2)),
+    					12 => 2**17/(2**(0+3)*5**(0+3)), 13 => 2**17/(2**(1+3)*5**(0+3)), 14 => 2**17/(2**(2+3)*5**(0+3)), 15 => 2**17/(2**(0+3)*5**(1+3)));
 
-		dvi_e : entity hdl4fpga.dvi
-		generic map (
-			fifo_mode => false, --dvid_fifo,
-			gear  => video_gear)
-		port map (
-			clk   => video_clk,
-			rgb   => rgb,
-			hsync => video_hsync,
-			vsync => video_vsync,
-			blank => dvid_blank,
-			cclk  => video_shift_clk,
-			chnc  => dvid_crgb(video_gear*4-1 downto video_gear*3),
-			chn2  => dvid_crgb(video_gear*3-1 downto video_gear*2),  
-			chn1  => dvid_crgb(video_gear*2-1 downto video_gear*1),  
-			chn0  => dvid_crgb(video_gear*1-1 downto video_gear*0));
+    				constant k      : real := (real(grid_unit)*step)/unit;
+    				variable retval : natural_vector(0 to setif(gains'length >0, gains'length, df_gains'length)-1);
 
-	end block;
+    			begin
+    				retval := df_gains;
+    				if gains'length > 0 then
+    					retval := gains;
+    				end if;
+
+    				assert k < 1.0
+    					report "unit " & real'image(unit) & " : " & real'image(real(grid_unit)*step) & " unit should be increase"
+    					severity FAILURE;
+
+    				if k > 0.0 then
+    					for i in retval'range loop
+    						retval(i) := natural(real(retval(i))*k);
+    					end loop;
+    				end if;
+
+    				return retval;
+    			end;
+
+    			constant vt_step : real := hdo(vt)**("["&natural'image(i)&"].step");
+    			constant gains  : natural_vector(vt_gains'range) := init_gains (
+    				gains => vt_gains,
+    				unit  => vt_unit,
+    				step  => vt_step);
+
+    			subtype sample_range is natural range i*sample_size to (i+1)*sample_size-1;
+
+    			signal input_sample : std_logic_vector(0 to sample_size-1);
+    			signal gain_id      : std_logic_vector(gainid_bits-1 downto 0);
+    		begin
+
+    			gain_id <= multiplex(gain_ids, i, gainid_bits);
+    			input_sample <= multiplex(input_data, i, sample_size);
+    			amp_e : entity hdl4fpga.scopeio_amp
+    			generic map (
+    				gains => gains)
+    			port map (
+    				input_clk     => input_clk,
+    				input_dv      => input_ena,
+    				input_sample  => input_sample,
+    				gain_id       => gain_id,
+    				output_dv     => output_ena(i),
+    				output_sample => ampsample_data(sample_range));
+
+    		end generate;
+
+    		ampsample_dv <= output_ena(0);
+    	end block;
+
+    	scopeio_tds_e : scopeio_tds
+    	generic map  (
+    		inputs       => inputs,
+    		storageword_size => storage_word'length,
+    		time_factors => time_factors)
+    	port map (
+    		rgtr_clk     => sio_clk,
+    		rgtr_dv      => rgtr_dv,
+    		rgtr_id      => rgtr_id,
+    		rgtr_data    => rgtr_revs,
+
+    		input_clk    => input_clk,
+    		input_dv     => ampsample_dv,
+    		input_data   => ampsample_data,
+    		time_scale   => time_scale,
+    		time_offset  => time_offset,
+    		trigger_freeze => trigger_freeze,
+    		capture_shot => capture_shot,
+    		capture_end  => capture_end,
+
+    		video_clk    => video_clk,
+    		video_addr   => video_addr,  
+    		video_vton   => video_vton,  
+    		video_frm    => video_frm,  
+    		video_dv     => video_dv,  
+    		video_data   => video_data);
+
+    	scopeio_video_e : entity hdl4fpga.scopeio_video
+    	generic map (
+    		timing_id      => timing_id,
+    		layout         => layout)
+    	port map (
+    		tp => tp,
+    		rgtr_clk       => sio_clk,
+    		rgtr_dv        => rgtr_dv,
+    		rgtr_id        => rgtr_id,
+    		rgtr_data      => rgtr_revs,
+
+    		time_scale     => time_scale,
+    		time_offset    => time_offset,
+    										
+    		video_addr     => video_addr,
+    		video_frm      => video_frm,
+    		video_data     => video_data,
+    		video_dv       => video_dv,
+
+    		video_clk      => video_clk,
+    		video_pixel    => video_pixel,
+    		extern_video   => extern_video,
+    		extern_videohzsync => extern_videohzsync,
+    		extern_videovtsync => extern_videovtsync,
+    		extern_videoblankn => extern_videoblankn,
+    		video_hsync    => video_hsync,
+    		video_vsync    => video_vsync,
+    		video_vton     => video_vton,
+    		video_hzon     => video_hzon,
+    		video_blank    => video_blank,
+    		video_sync     => video_sync);
+
+    	dviadapter_b : block
+    		signal dvid_blank : std_logic;
+    		signal rgb : std_logic_vector(0 to 3*8-1) := (others => '0');
+
+    	begin
+
+    		dvid_blank <= video_blank;
+    		process (video_pixel)
+    			variable urgb  : unsigned(0 to 3*8-1);
+    			variable pixel : unsigned(0 to video_pixel'length-1);
+    		begin
+    			pixel := unsigned(video_pixel);
+
+    			urgb(0 to red_length-1)  := pixel(0 to red_length-1);
+    			urgb  := urgb rol 8;
+    			pixel := pixel sll red_length;
+
+    			urgb(0 to green_length-1) := pixel(0 to green_length-1);
+    			urgb  := urgb rol 8;
+    			pixel := pixel sll green_length;
+
+    			urgb(0 to blue_length-1) := pixel(0 to blue_length-1);
+    			urgb  := urgb rol 8;
+    			pixel := pixel sll blue_length;
+
+    			rgb <= std_logic_vector(urgb);
+    		end process;
+
+    		dvi_e : entity hdl4fpga.dvi
+    		generic map (
+    			fifo_mode => false, --dvid_fifo,
+    			gear  => video_gear)
+    		port map (
+    			clk   => video_clk,
+    			rgb   => rgb,
+    			hsync => video_hsync,
+    			vsync => video_vsync,
+    			blank => dvid_blank,
+    			cclk  => video_shift_clk,
+    			chnc  => dvid_crgb(video_gear*4-1 downto video_gear*3),
+    			chn2  => dvid_crgb(video_gear*3-1 downto video_gear*2),  
+    			chn1  => dvid_crgb(video_gear*2-1 downto video_gear*1),  
+    			chn0  => dvid_crgb(video_gear*1-1 downto video_gear*0));
+
+    	end block;
+	end generate;
 
 	capture_g : if sdram_data/="none" and phy_data/="none" generate
+		constant sample_length : natural := input_data'length/inputs;
+		constant byte_size     : natural := ctlrphy_dqo'length/ctlrphy_dmo'length;
+
 		constant gear          : natural := hdo(phy_data)**".orgz.gear=1.";
 		constant coln_size     : natural := hdo(sdram_data)**".orgz.addr.col=1.";
 		constant coln_bits     : natural := coln_size-(unsigned_num_bits(gear)-1);
