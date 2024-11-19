@@ -173,7 +173,7 @@ architecture def of sdram_sch is
 	constant DQZXL  : integer := hdo(phytmng_data)**".DQZXL";
 	constant WWNL   : integer := hdo(phytmng_data)**".WWNL";
 	constant WWNXL  : integer := hdo(phytmng_data)**".WWNXL";
-	constant WIDL   : integer := 1;
+	constant WIDL   : integer := 1; -- Indicates the minimun number on consecutives 1 in the shift register. Depennds on BL and gears
 
 begin
 	
