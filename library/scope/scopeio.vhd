@@ -279,10 +279,10 @@ begin
 
 	begin
     	amp_b : block
-
     		constant vt          : string := hdo(layout)**".vt";
     		constant vt_unit     : real := hdo(layout)**".axis.vertical.unit";
     		constant sample_size : natural := input_data'length/inputs;
+
     		signal chan_id       : std_logic_vector(0 to chanid_bits-1);
     		signal gain_id       : std_logic_vector(0 to gainid_bits-1);
     		signal output_ena    : std_logic_vector(0 to inputs-1);
