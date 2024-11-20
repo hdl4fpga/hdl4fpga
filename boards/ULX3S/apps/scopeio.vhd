@@ -122,71 +122,72 @@ architecture scopeio of ulx3s is
 
 	constant layout      : string := compact(
 			"{                             " &   
-			"   inputs          : " & natural'image(inputs) & ',' &
-			"   num_of_segments :   3,     " &
-			"   display : {                " &
-			"       width  : 1280,         " &
-			"       height : 720},         " &
-			"   grid : {                   " &
-			"       width  : " & natural'image(32*32+1) & ',' &
-			"       height : " & natural'image( 6*32+1) & ',' &
-			"       color  : 0xff_ff_00_ff," &
-			"       background-color : 0xff_00_00_00}," &
-			"   axis : {                   " &
-			"       horizontal : {         " &
-			"           unit   : 31.25e-6, " &
-			"           color  : 0xff_00_00_00," &
-			"           background-color : 0xff_00_ff_ff}," &
-			"       vertical : {           " &
-			"           unit   : 50.00e-3, " &
-			"           width  : " & natural'image(6*8) & ','  &
-			"           color  : 0xff_00_00_00," &
-			"           background-color : 0xff_00_ff_ff}}," &
-			"   textbox : {                " &
-			"       width      : " & natural'image(6*32) & ','&
-			"       color      : 0xff_ff_00_ff," &
-			"       background-color : 0xff_00_00_00}," &
-			"   main : {                   " &
-			"       top        : 27,       " & 
-			"       bottom     :  0,       " & 
-			"       left       :  5,       " & 
-			"       right      :  0,       " & 
-			"       vertical   : 27,       " & 
-			"       horizontal :  1,       " &
-			"       background-color : 0xff_00_00_00}," &
-			"   segment : {                " &
-			"       top        : 1,        " &
-			"       left       : 1,        " &
-			"       right      : 1,        " &
-			"       bottom     : 1,        " &
-			"       vertical   : 1,        " &
-			"       horizontal : 1,        " &
-			"       background-color : 0xff_ff_ff_ff}," &
-			"  vt : [                      " &
-			"   { text  : GN14,            " &
-			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_00_ff_ff},  " & -- vt(0)
-			"   { text  : GP14,            " &
-			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_ff_ff},  " & -- vt(1)
-			"   { text  : GN15,            " &
-			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_00_ff_ff},  " & -- vt(2)
-			"   { text  : GP15,            " &
-			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_ff_ff},  " & -- vt(3)
-			"   { text  : GN16,            " &
-			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_00_ff_ff},  " & -- vt(4)
-			"   { text  : GP16,            " &
-			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_ff_ff},  " & -- vt(5)
-			"   { text  : GN17,            " &
-			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_00_ff_ff},  " & -- vt(6)
-			"   { text  : GP17,            " &
-			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_ff_ff}]}");   -- vt(7)
+			"    inputs          : " & natural'image(inputs) & ',' &
+			"    waveform        : { " &
+			"       num_of_segments :   3,     " &
+			"       display : {                " &
+			"           width  : 1280,         " &
+			"           height : 720},         " &
+			"       grid : {                   " &
+			"           width  : " & natural'image(32*32+1) & ',' &
+			"           height : " & natural'image( 6*32+1) & ',' &
+			"           color  : 0xff_ff_00_ff," &
+			"           background-color : 0xff_00_00_00}," &
+			"       axis : {                   " &
+			"           horizontal : {         " &
+			"               unit   : 31.25e-6, " &
+			"               color  : 0xff_00_00_00," &
+			"               background-color : 0xff_00_ff_ff}," &
+			"           vertical : {           " &
+			"               unit   : 50.00e-3, " &
+			"               width  : " & natural'image(6*8) & ','  &
+			"               color  : 0xff_00_00_00," &
+			"               background-color : 0xff_00_ff_ff}}," &
+			"       textbox : {                " &
+			"           width      : " & natural'image(6*32) & ','&
+			"           color      : 0xff_ff_00_ff," &
+			"           background-color : 0xff_00_00_00}," &
+			"       main : {                   " &
+			"           top        : 27,       " & 
+			"           bottom     :  0,       " & 
+			"           left       :  5,       " & 
+			"           right      :  0,       " & 
+			"           vertical   : 27,       " & 
+			"           horizontal :  1,       " &
+			"           background-color : 0xff_00_00_00}," &
+			"       segment : {                " &
+			"           top        : 1,        " &
+			"           left       : 1,        " &
+			"           right      : 1,        " &
+			"           bottom     : 1,        " &
+			"           vertical   : 1,        " &
+			"           horizontal : 1,        " &
+			"           background-color : 0xff_ff_ff_ff}," &
+			"    vt : [                      " &
+			"     { text  : GN14,            " &
+			"       step  : " & real'image(vt_step) & "," &
+			"       color : 0xff_00_ff_ff},  " & -- vt(0)
+			"     { text  : GP14,            " &
+			"       step  : " & real'image(vt_step) & "," &
+			"       color : 0xff_ff_ff_ff},  " & -- vt(1)
+			"     { text  : GN15,            " &
+			"       step  : " & real'image(vt_step) & "," &
+			"       color : 0xff_00_ff_ff},  " & -- vt(2)
+			"     { text  : GP15,            " &
+			"       step  : " & real'image(vt_step) & "," &
+			"       color : 0xff_ff_ff_ff},  " & -- vt(3)
+			"     { text  : GN16,            " &
+			"       step  : " & real'image(vt_step) & "," &
+			"       color : 0xff_00_ff_ff},  " & -- vt(4)
+			"     { text  : GP16,            " &
+			"       step  : " & real'image(vt_step) & "," &
+			"       color : 0xff_ff_ff_ff},  " & -- vt(5)
+			"     { text  : GN17,            " &
+			"       step  : " & real'image(vt_step) & "," &
+			"       color : 0xff_00_ff_ff},  " & -- vt(6)
+			"     { text  : GP17,            " &
+			"       step  : " & real'image(vt_step) & "," &
+			"       color : 0xff_ff_ff_ff}]}}");   -- vt(7)
 
 	-- constant sdram_data   : string  := "none";
 	-- constant phy_data     : string  := "none";

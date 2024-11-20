@@ -140,7 +140,8 @@ entity scopeio is
 		2 => (ddro => 3, dmaio => 3, sodata => 3, adapter => 3),  -- ULX4M BOARD
 		3 => (ddro => 3, dmaio => 2, sodata => 1, adapter => 1)); -- NUHS3ADSP BOARD 166 MHz
 
-	constant inputs : natural := hdo(layout)**".inputs";
+	constant inputs   : natural := hdo(layout)**".inputs";
+	constant waveform : string  := hdo(layout)**".waveform=none.";
 
 end;
 
@@ -191,13 +192,13 @@ begin
 		rgtr_data => rgtr_data);
 	rgtr_revs <= reverse(rgtr_data,8);
 
-	waveform_g : if layout /= "none" generate
-		constant grid_height   : natural := hdo(layout)**".grid.height";
-		constant grid_width    : natural := hdo(layout)**".grid.width";
-		constant grid_unit     : natural := hdo(layout)**".grid.unit=32.";
-		constant min_storage   : natural := hdo(layout)**".min_storage=256."; -- samples, storage size will be equal or larger than this
+	waveform_g : if waveform /= "none" generate
+		constant grid_height   : natural := hdo(waveform)**".grid.height";
+		constant grid_width    : natural := hdo(waveform)**".grid.width";
+		constant grid_unit     : natural := hdo(waveform)**".grid.unit=32.";
+		constant min_storage   : natural := hdo(waveform)**".min_storage=256."; -- samples, storage size will be equal or larger than this
 		constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
-		constant max_delay     : natural := hdo(layout)**".max_delay=16384.";
+		constant max_delay     : natural := hdo(waveform)**".max_delay=16384.";
 		constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 
     	function to_naturalvector (
@@ -212,7 +213,7 @@ begin
     		return retval;
     	end;
 
-    	constant time_factors : natural_vector := to_naturalvector(hdo(layout)**compact(".axis.horizontal.scales=" & 
+    	constant time_factors : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.horizontal.scales=" & 
     			"[" &
     				natural'image(2**(0+0)*5**(0+0)) & "," & -- [0]
     				natural'image(2**(0+0)*5**(0+0)) & "," & -- [1]
@@ -231,7 +232,7 @@ begin
     				natural'image(2**(2+2)*5**(0+2)) & "," & -- [14]
     				natural'image(2**(0+2)*5**(1+2)) & "," & -- [15]
     			"length : 16]."));
-    	constant vt_gains : natural_vector := to_naturalvector(hdo(layout)**compact(".axis.vertical.gains=" &
+    	constant vt_gains : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.vertical.gains=" &
     			"[" &
     				natural'image(2**17/(2**(0+0)*5**(0+0))) & "," & -- [0]
     				natural'image(2**17/(2**(1+0)*5**(0+0))) & "," & -- [1]
@@ -256,7 +257,7 @@ begin
     	signal ampsample_dv   : std_logic;
     	signal ampsample_data : std_logic_vector(0 to input_data'length-1);
 
-    	constant capture_bits : natural := unsigned_num_bits(max(resolve(layout&".num_of_segments")*grid_width,min_storage)-1);
+    	constant capture_bits : natural := unsigned_num_bits(max(resolve(waveform&".num_of_segments")*grid_width,min_storage)-1);
     	signal capture_shot   : std_logic;
     	signal capture_end    : std_logic;
 
@@ -279,8 +280,8 @@ begin
 
 	begin
     	amp_b : block
-    		constant vt          : string := hdo(layout)**".vt";
-    		constant vt_unit     : real := hdo(layout)**".axis.vertical.unit";
+    		constant vt          : string := hdo(waveform)**".vt";
+    		constant vt_unit     : real := hdo(waveform)**".axis.vertical.unit";
     		constant sample_size : natural := input_data'length/inputs;
 
     		signal chan_id       : std_logic_vector(0 to chanid_bits-1);
@@ -409,7 +410,7 @@ begin
     	scopeio_video_e : entity hdl4fpga.scopeio_video
     	generic map (
     		timing_id      => timing_id,
-    		layout         => layout)
+    		layout         => waveform)
     	port map (
     		tp => tp,
     		rgtr_clk       => sio_clk,
