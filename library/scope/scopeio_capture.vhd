@@ -78,6 +78,45 @@ architecture beh of scopeio_capture is
 
 begin
  
+	fifo_b : block
+
+		signal wr_ena  : std_logic;
+		signal wr_addr : unsigned(unsigned_num_bits(max_pretrigger-1)-1 downto 1) := (others => '0'); -- Debug purpose
+		signal rd_addr : unsigned(wr_addr'range);
+
+	begin
+
+		process (input_clk)
+		begin
+			if rising_edge(input_clk) then
+				if (capture_rdy xor capture_req)='1' then
+					wr_addr <= wr_addr + 1;
+				end if;
+			end if;
+		end process;
+
+		wr_ena <=(capture_rdy xor capture_req);
+		mem_e : entity hdl4fpga.dpram
+		generic map (
+			synchronous_rdaddr => true,
+			synchronous_rddata => true)
+		port map (
+			wr_clk  => input_clk,
+			wr_ena  => we_ena,
+			wr_addr => std_logic_vector(wr_addr),
+			wr_data => input_data,
+
+			rd_clk  => input_clk,
+			rd_addr => std_logic_vector(rd_addr),
+			rd_data => fifo_data);
+
+		rd_addr <= 
+			wr_addr when signed(delay) >= 0 else
+			wr_addr + resize(unsigned(shift_right(signed(delay)+1, 1)), rd_addr'length) when downsampling='0' else
+			wr_addr + resize(unsigned(shift_right(signed(delay), 0)), rd_addr'length);
+
+	end block;
+
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
@@ -85,61 +124,24 @@ begin
 				video_offset <= resize(signed(time_offset)-delay, video_offset'length);
 			elsif capture_shot='0' then
 				video_offset <= resize(signed(time_offset)-delay, video_offset'length);
-			elsif signed(time_offset) > -fifo_size then
-				delay <= signed(time_offset);
-				video_offset <= (others => '0');
-			else
-				delay <= to_signed(-(fifo_size-1), delay'length);
-				video_offset <= resize((fifo_size-1)+signed(time_offset), video_offset'length);
+			if (capture_rdy xor capture_req)='1' then
+				if signed(time_offset) > -fifo_size then
+					delay <= signed(time_offset);
+					video_offset <= (others => '0');
+				else
+					delay <= to_signed(-(fifo_size-1), delay'length);
+					video_offset <= resize((fifo_size-1)+signed(time_offset), video_offset'length);
+				end if;
 			end if;
 		end if;
 	end process;
 
-	fifo_b : block
-
-		signal addra   : unsigned(unsigned_num_bits(max_pretrigger-1)-1 downto 1) := (others => '0'); -- Debug purpose
-		signal addrb   : unsigned(addra'range);
-
-	begin
-
-		addra_p : process (input_clk)
-		begin
-			if rising_edge(input_clk) then
-				if input_dv='1' then
-					addra <= addra + 1;
-				end if;
-			end if;
-		end process;
-
-		addrb <= 
-			addra when signed(delay) >= 0 else
-			addra + resize(unsigned(shift_right(signed(delay)+1, 1)), addrb'length) when downsampling='0' else
-			addra + resize(unsigned(shift_right(signed(delay), 0)), addrb'length);
-
-		fifo_e : entity hdl4fpga.dpram
-		generic map (
-			synchronous_rdaddr => true,
-			synchronous_rddata => true)
-		port map (
-			wr_clk  => input_clk,
-			wr_ena  => input_dv,
-			wr_addr => std_logic_vector(addra),
-			wr_data => input_data,
-
-			rd_clk  => input_clk,
-			rd_addr => std_logic_vector(addrb),
-			rd_data => fifo_data);
-
-	end block;
-
 	process (input_clk)
 
 		impure function init_waddr(
-			constant delay        : signed;
-			constant downsampling : std_logic;
 			constant mem_size     : natural)
 			return unsigned is
-			variable retval : unsigned(mem_size+3-1 downto 0);
+			variable retval : unsigned(mem_raddr'lenth+3-1 downto 0);
 		begin
 			if delay >= 0 then
 				if downsampling='0' then
@@ -156,21 +158,23 @@ begin
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
-				if mem_waddr(mem_waddr'left)='0' then
-					mem_waddr <= mem_waddr + 1;
-				elsif mem_waddr(mem_waddr'left-1)='0' then
+				if (capture_rdy xor capture_req)='1' then
+					if mem_waddr(0)='0' then
+						mem_waddr <= mem_waddr + 1;
+						a0 <= capture_a0;
+					else
+						capture_rdy <= capture_req;
+						mem_waddr <= init_waddr(delay, downsampling, mem_raddr'length);
+						a0 <= '-';
+					end if;
+				else
 					mem_waddr <= init_waddr(delay, downsampling, mem_raddr'length);
 					a0 <= '-';
-				elsif capture_shot='1' then
-					mem_waddr <= mem_waddr + 1;
-					mem_waddr(mem_waddr'left) <= '0';
-					a0 <= capture_a0;
 				end if;
 			end if;
 		end if;
 	end process;
 
-	capture_end <= mem_waddr(mem_waddr'left);
 	mem_wena <= 
 	   input_dv and mem_waddr(mem_waddr'left-1) and mem_waddr(mem_waddr'left-2) when capture_end='0' else
 	   input_dv and mem_waddr(mem_waddr'left-1) and mem_waddr(mem_waddr'left-2) and capture_shot;
