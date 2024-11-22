@@ -171,7 +171,7 @@ architecture beh of scopeio is
 
 	signal trigger_req   : std_logic := '0';
 	signal trigger_rdy   : std_logic := '0';
-	signal triggers_rdy  : std_logic_vector(0 to 2-1);
+	signal captures_rdy  : std_logic_vector(0 to 2-1);
    	signal capture_req   : std_logic := '0';
    	signal capture_rdy   : std_logic := '0';
 
@@ -271,8 +271,8 @@ begin
     			else
 					case trigger_mode is
 					when free_mode|norm_mode =>
-						for i in triggers_rdy'range loop
-							if (triggers_rdy(i) xor capture_req)='0' then
+						for i in captures_rdy'range loop
+							if (captures_rdy(i) xor capture_req)='0' then
 								capture_rdy <= capture_req;
 							end if;
 						end loop;
@@ -486,7 +486,7 @@ begin
 			input_dv     => ampsample_dv,
 			input_data   => ampsample_data,
 			capture_req  => capture_req,
-			capture_rdy  => capture_rdy,
+			capture_rdy  => captures_rdy(0),
 			time_scale   => time_scale,
 			time_offset  => time_offset,
 			trigger_freeze => trigger_freeze,
