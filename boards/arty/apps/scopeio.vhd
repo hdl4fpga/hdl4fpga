@@ -1057,7 +1057,7 @@ begin
 
 	end generate;
 
-	xadcctlr_b : if not tsttab generate
+	xadcctlr_g : if not tsttab generate
 		signal rst     : std_logic;
 		signal di      : std_logic_vector(0 to 16-1);
 		signal dwe     : std_logic;

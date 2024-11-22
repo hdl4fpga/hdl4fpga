@@ -28,10 +28,11 @@ entity scopeio_btnctlr is
 		so_data : buffer std_logic_vector(0 to 8-1)); -- := (0 to 7 => '-'));
 
 	constant inputs        : natural := hdo(layout)**".inputs";
-	constant max_delay     : natural := hdo(layout)**".max_delay=16384.";
-	constant hz_unit       : real    := hdo(layout)**".axis.horizontal.unit";
-	constant vt_unit       : real    := hdo(layout)**".axis.vertical.unit";
-	constant grid_height   : natural := hdo(layout)**".grid.height";
+	constant waveform      : string  := hdo(layout)**".waveform";
+	constant max_delay     : natural := hdo(waveform)**".max_delay=16384.";
+	constant hz_unit       : real    := hdo(waveform)**".axis.horizontal.unit";
+	constant vt_unit       : real    := hdo(waveform)**".axis.vertical.unit";
+	constant grid_height   : natural := hdo(waveform)**".grid.height";
 
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);

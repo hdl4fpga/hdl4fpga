@@ -26,6 +26,7 @@ use ieee.std_logic_1164.all;
 
 entity ulx3s is
 	generic (
+		tsttab : boolean := true;
 		debug : boolean := false);
 	port (
 		clk_25mhz      : in    std_logic;

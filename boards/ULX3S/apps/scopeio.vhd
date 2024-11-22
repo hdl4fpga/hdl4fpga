@@ -705,21 +705,72 @@ begin
 
 	end generate;
 
-	process (input_clk)
+	synth_g : if tsttab generate
+		signal input_sample  : std_logic_vector(13-1 downto 0);
+		constant size : natural := 2**input_sample'length;
+
+		function sintab (
+			constant size       : natural;
+			constant resolution : natural := 16;
+			constant unipolar   : boolean := false)
+			return std_logic_vector  is
+			constant pi     : real := 4.0*arctan(1.0);
+			constant n : natural := 7;
+			constant n1 : natural := 8;
+			variable retval : std_logic_vector(0 to size*resolution-1);
+		begin
+			for i in 0 to size-1 loop
+				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer((2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i)/real(size))), resolution));
+				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(2**(resolution-2), resolution));
+			end loop;
+			retval(resolution*n to resolution*(n+1)-1) := std_logic_vector(to_signed(2**(resolution-1)-1, resolution));
+			retval(resolution*n1 to resolution*(n1+1)-1) := (others => '0');
+			return retval;
+		end;
+
+		signal addr : unsigned(0 to unsigned_num_bits(size-1)-1) := (others => '0');
+
 	begin
-		if rising_edge(input_clk) then
-			if input_ena='1' then
-				for i in 0 to inputs-1 loop
-					if unsigned(input_chno)=i then
-						-- assert false
-						-- report integer'image(i) & " : " & to_string(input_chno) & ": " & std_logic'image(input_ena)
-						-- severity WARNING;
-						input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;
-					end if;
-				end loop;
+		process (input_clk)
+		begin
+			if rising_edge(input_clk) then
+				if input_enas='1' then
+					addr <= addr + 1;
+				end if;
 			end if;
-		end if;
-	end process;
+		end process;
+
+		rom_e : entity hdl4fpga.rom
+		generic map (
+			latency => 2,
+			bitrom => sintab(size => 2**addr'length, resolution => input_sample'length))
+		port map (
+			clk => input_clk,
+			addr => std_logic_vector(addr),
+			data => input_sample);
+
+		-- input_ena <= '1';
+		input_samples(0*input_sample'length to (0+1)*input_sample'length-1) <= input_sample;
+
+	end generate;
+
+	max1112x_g : if not tsttab generate
+    	process (input_clk)
+    	begin
+    		if rising_edge(input_clk) then
+    			if input_ena='1' then
+    				for i in 0 to inputs-1 loop
+    					if unsigned(input_chno)=i then
+    						-- assert false
+    						-- report integer'image(i) & " : " & to_string(input_chno) & ": " & std_logic'image(input_ena)
+    						-- severity WARNING;
+    						input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;
+    					end if;
+    				end loop;
+    			end if;
+    		end if;
+    	end process;
+	end generate;
 
 	max1112x_b : block
 		port (
