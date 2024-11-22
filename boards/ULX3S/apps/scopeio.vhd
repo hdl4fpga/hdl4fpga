@@ -189,10 +189,10 @@ architecture scopeio of ulx3s is
 			"       step  : " & real'image(vt_step) & "," &
 			"       color : 0xff_ff_ff_ff}]}}");   -- vt(7)
 
-	-- constant sdram_data   : string  := "none";
-	-- constant phy_data     : string  := "none";
-	constant sdram_data  : string  := hdo(sdram_db)**".MT48LC16M16MA2-7E";
-	constant phy_data    : string  := hdo(phy_db)**".ecp5g1";
+	constant sdram_data   : string  := "none";
+	constant phy_data     : string  := "none";
+	-- constant sdram_data  : string  := hdo(sdram_db)**".MT48LC16M16MA2-7E";
+	-- constant phy_data    : string  := hdo(phy_db)**".ecp5g1";
 	constant gear        : natural := hdo(phy_data)**".orgz.gear=1.";
 	constant bank_length : natural := setif(sdram_data/="none", sdram_ba'length,  1);
 	constant addr_length : natural := setif(sdram_data/="none", sdram_a'length,   1);
@@ -433,6 +433,7 @@ begin
 			max_input <= no_inputs;
 		end process;
 
+	synth_g : if not tsttab generate
 		process(input_enas, input_clk)
 			variable cntr : unsigned(input_chni'range) := (others => '0');
 		begin
@@ -454,6 +455,7 @@ begin
 				end if;
 			end if;
 		end process;
+	end generate;
 
 		sio_sin_e : entity hdl4fpga.sio_sin
 		port map (
@@ -707,7 +709,7 @@ begin
 
 	synth_g : if tsttab generate
 		signal input_sample  : std_logic_vector(13-1 downto 0);
-		constant size : natural := 2**input_sample'length;
+		constant size : natural := 256; --2**input_sample'length;
 
 		function sintab (
 			constant size       : natural;
@@ -720,7 +722,7 @@ begin
 			variable retval : std_logic_vector(0 to size*resolution-1);
 		begin
 			for i in 0 to size-1 loop
-				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer((2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i)/real(size))), resolution));
+				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer((2.0**(resolution-6)-1.0)*sin(2.0*pi*real(i)/real(size))), resolution));
 				-- retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(2**(resolution-2), resolution));
 			end loop;
 			-- retval(resolution*n to resolution*(n+1)-1) := std_logic_vector(to_signed(2**(resolution-1)-1, resolution));
@@ -749,7 +751,7 @@ begin
 			addr => std_logic_vector(addr),
 			data => input_sample);
 
-		-- input_ena <= '1';
+		input_enas <= '1';
 		input_samples(0*input_sample'length to (0+1)*input_sample'length-1) <= input_sample;
 
 	end generate;
