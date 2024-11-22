@@ -90,7 +90,7 @@ begin
 		inputs  => inputs,
 		factors => time_factors)
 	port map (
-		factor_id     => x"7", --time_scale, -- b"0000",  --Debug purpose
+		factor_id     => x"0", --time_scale, -- b"0000",  --Debug purpose
 		input_clk     => input_clk,
 		capture_req   => capture_req,
 		capture_rdy   => capture_rdy,
@@ -98,26 +98,25 @@ begin
 		input_data    => resizedsample_data,
 		downsampling  => downsampling,
 		output_dv     => downsample_dv,
-		output_shot   => downsample_a0,
 		output_data   => downsample_data);
 
-	-- scopeio_capture_e : entity hdl4fpga.scopeio_capture
-	-- port map (
-		-- rgtr_clk     => rgtr_clk,
-		-- input_clk    => input_clk,
-		-- capture_req  => capture_req,
-		-- capture_rdy  => capture_rdy,
-		-- capture_a0   => downsample_a0,
-		-- input_dv     => downsample_dv,
-		-- input_data   => downsample_data,
-		-- time_offset  => time_offset,
--- 
-		-- downsampling => downsampling,
-		-- video_clk    => video_clk,
-		-- video_frm    => video_frm,
-		-- video_vton   => video_vton,
-		-- video_addr   => video_addr,
-		-- video_dv     => video_dv,
-		-- video_data   => video_data);
+	scopeio_capture_e : entity hdl4fpga.scopeio_capture
+	port map (
+		rgtr_clk     => rgtr_clk,
+		input_clk    => input_clk,
+		capture_req  => capture_req,
+		capture_rdy  => capture_rdy,
+		capture_a0   => downsample_a0,
+		input_dv     => downsample_dv,
+		input_data   => downsample_data,
+		time_offset  => time_offset,
+
+		downsampling => downsampling,
+		video_clk    => video_clk,
+		video_frm    => video_frm,
+		video_vton   => video_vton,
+		video_addr   => video_addr,
+		video_dv     => video_dv,
+		video_data   => video_data);
 
 end;

@@ -42,18 +42,20 @@ architecture beh of scopeio_downsampler is
 		variable retval : integer_vector(arg'range);
 	begin
 		for i in arg'range loop
-			retval(i) := arg(i)-2;
+			if arg(i)=1 then
+				retval(i) := arg(i)-1;
+			else
+				retval(i) := arg(i)-2;
+			end if;
 		end loop;
 		return retval;
 	end;
 
 	constant scaler_bits : natural := signed_num_bits(max(factors)-2);
 
-	signal factor    : std_logic_vector(0 to scaler_bits-1);
-	signal data_min  : signed(0 to output_data'length/2-1);
-	signal data_max  : signed(0 to output_data'length/2-1);
-	signal start     : std_logic;
-	signal a0        : std_logic;
+	signal factor   : std_logic_vector(0 to scaler_bits-1);
+	signal data_min : signed(0 to output_data'length/2-1);
+	signal data_max : signed(0 to output_data'length/2-1);
 
 begin
 
@@ -69,43 +71,27 @@ begin
 		downsampling <= '0';
 		for i in 1 to 2**factor_id'length-1 loop
 			if unsigned(factor_id)=i then
-				downsampling <= setif(factors(0)/=factors(i));
+				if factors(0)/=factors(i) then
+					downsampling <= '1';
+				end if;
 			end if;
 		end loop;
 	end process;
 
-	 process (input_clk)
+	process (input_clk)
 		variable scaler : unsigned(factor'range) := (others => '0'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
-				if scaler(0)='1' then
+				if (capture_rdy xor capture_req)='0' then
+					scaler := unsigned(factor);
+				elsif scaler(0)='1' then
 					scaler := unsigned(factor);
 				else
 					scaler := scaler - 1;
 				end if;
 			end if;
-			start <= scaler(0);
-		end if;
-	end process;
-
-	process (input_clk)
-	begin
-		if rising_edge(input_clk) then
-			if input_dv='1' then
-				if (capture_rdy xor capture_req)='1' then
-					a0 <= not a0;
-				else
-    				a0 <= '0';
-				end if;
-				if downsampling='0' then
-					output_dv <= a0;
-				else
-					output_dv <= scaler(0);
-				end if;
-			else
-				output_dv <= '0';
-			end if;
+			output_dv <= scaler(0);
 		end if;
 	end process;
 
@@ -122,32 +108,28 @@ begin
 			if rising_edge(input_clk) then
 				if input_dv='1' then
 					if downsampling='0' then
-						if a0='0' then
+						if output_dv='0' then
 							maxx <= sample;
 						else
 							minn <= sample;
 						end if;
-					else
-						if start='1' then
-							maxx <= hdl4fpga.base.max(min0, sample);
-							minn <= hdl4fpga.base.min(max0, sample);
-							max0 <= sample;
-							min0 <= sample;
-						else
-							if maxx < sample then
-								maxx <= sample;
-								max0 <= sample;
-							elsif max0 < sample then
-								max0 <= sample;
-							end if;
+					elsif output_dv='1' then
+						maxx <= hdl4fpga.base.max(min0, sample);
+						minn <= hdl4fpga.base.min(max0, sample);
+						max0 <= sample;
+						min0 <= sample;
+					elsif maxx < sample then
+						maxx <= sample;
+						max0 <= sample;
+					elsif max0 < sample then
+						max0 <= sample;
+					end if;
 
-							if minn > sample then
-								minn <= sample;
-								min0 <= sample;
-							elsif min0 > sample then
-								min0 <= sample;
-							end if;
-						end if;
+					if minn > sample then
+						minn <= sample;
+						min0 <= sample;
+					elsif min0 > sample then
+						min0 <= sample;
 					end if;
 				end if;
 			end if;

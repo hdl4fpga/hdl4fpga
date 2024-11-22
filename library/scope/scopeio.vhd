@@ -353,7 +353,8 @@ begin
 		signal video_addr     : std_logic_vector(0 to capture_bits-1);
 		signal video_frm      : std_logic;
 		signal video_dv       : std_logic;
-		signal video_data     : std_logic_vector(0 to 2*inputs*storage_word'length-1);
+		-- signal video_data     : std_logic_vector(0 to 2*inputs*storage_word'length-1);
+		signal video_data     : std_logic_vector(0 to 2*input_data'length-1);
 
 
 		signal time_offset    : std_logic_vector(hzoffset_bits-1 downto 0);
