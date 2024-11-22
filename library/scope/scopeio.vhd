@@ -203,7 +203,7 @@ begin
 	trigger_b : block
 		signal trigger_dv     : std_logic;
 		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0) := (others => '0');
-		signal trigger_level  : std_logic_vector(sample_length-1 downto 0) := std_logic_vector(to_unsigned(16, sample_length));
+		signal trigger_level  : std_logic_vector(sample_length-1 downto 0) := std_logic_vector(to_unsigned(2**(sample_length-2), sample_length));
 		signal trigger_slope  : std_logic := '1';
 		signal trigger_mode   : std_logic_vector(0 to 2-1) := "00";
 		alias trigger_freeze  is trigger_mode(0);
@@ -282,6 +282,10 @@ begin
     		end if;
     	end process;
 
+		tp(1) <= capture_rdy;
+		tp(2) <= not capture_rdy;
+		tp(3) <= capture_req;
+		tp(4) <= not capture_req;
 	end block;
 
 	waveform_g : if waveform /= "none" generate
@@ -504,7 +508,7 @@ begin
 			inputs         => inputs,
 			waveform       => waveform)
 		port map (
-			tp => tp,
+			-- tp => tp,
 			rgtr_clk       => sio_clk,
 			rgtr_dv        => rgtr_dv,
 			rgtr_id        => rgtr_id,

@@ -373,7 +373,7 @@ begin
 		debug => debug,
 		layout => layout)
 	port map (
-		tp => tp,
+		-- tp => tp,
         left    => left,
         up      => up,
         down    => down ,
@@ -522,7 +522,7 @@ begin
 		timing_id   => video_params.timing,
 		layout      => layout)
 	port map (
-		-- tp => tp,
+		tp => tp,
 		sio_clk     => sio_clk,
 		si_frm      => si_frm,
 		si_irdy     => si_irdy,
@@ -721,10 +721,10 @@ begin
 		begin
 			for i in 0 to size-1 loop
 				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer((2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i)/real(size))), resolution));
-				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(2**(resolution-2), resolution));
+				-- retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(2**(resolution-2), resolution));
 			end loop;
-			retval(resolution*n to resolution*(n+1)-1) := std_logic_vector(to_signed(2**(resolution-1)-1, resolution));
-			retval(resolution*n1 to resolution*(n1+1)-1) := (others => '0');
+			-- retval(resolution*n to resolution*(n+1)-1) := std_logic_vector(to_signed(2**(resolution-1)-1, resolution));
+			-- retval(resolution*n1 to resolution*(n1+1)-1) := (others => '0');
 			return retval;
 		end;
 
