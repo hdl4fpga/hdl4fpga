@@ -33,7 +33,7 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_layout is
 	generic (
-		layout       : string);
+		waveform     : string);
 	port (
 		video_clk    : in  std_logic;
 		video_vtcntr : in  std_logic_vector;
@@ -55,41 +55,41 @@ entity scopeio_layout is
 		vt_on        : out std_logic;
 		textbox_on   : out std_logic);
 
-	constant num_of_segments       : natural := hdo(layout)**".num_of_segments";
-	constant main_top              : natural := hdo(layout)**".main.top";
-	constant main_bottom           : natural := hdo(layout)**".main.bottom";
-	constant main_height           : natural := hdo(layout)**".display.height";
-	constant main_width            : natural := hdo(layout)**".display.width";
-	constant main_left             : natural := hdo(layout)**".main.left";
-	constant main_right            : natural := hdo(layout)**".main.right";
-	constant main_horizontal       : natural := hdo(layout)**".main.horizontal";
-	constant main_vertical         : natural := hdo(layout)**".main.vertical";
+	constant num_of_segments       : natural := hdo(waveform)**".num_of_segments";
+	constant main_top              : natural := hdo(waveform)**".main.top";
+	constant main_bottom           : natural := hdo(waveform)**".main.bottom";
+	constant main_height           : natural := hdo(waveform)**".display.height";
+	constant main_width            : natural := hdo(waveform)**".display.width";
+	constant main_left             : natural := hdo(waveform)**".main.left";
+	constant main_right            : natural := hdo(waveform)**".main.right";
+	constant main_horizontal       : natural := hdo(waveform)**".main.horizontal";
+	constant main_vertical         : natural := hdo(waveform)**".main.vertical";
 
-	constant segment_vertical      : natural := hdo(layout)**".segment.vertical";
-	constant segment_horizontal    : natural := hdo(layout)**".segment.horizontal";
-	constant segment_top           : natural := hdo(layout)**".segment.top";
-	constant segment_bottom        : natural := hdo(layout)**".segment.bottom";
-	constant segment_left          : natural := hdo(layout)**".segment.left";
-	constant segment_right         : natural := hdo(layout)**".segment.right";
+	constant segment_vertical      : natural := hdo(waveform)**".segment.vertical";
+	constant segment_horizontal    : natural := hdo(waveform)**".segment.horizontal";
+	constant segment_top           : natural := hdo(waveform)**".segment.top";
+	constant segment_bottom        : natural := hdo(waveform)**".segment.bottom";
+	constant segment_left          : natural := hdo(waveform)**".segment.left";
+	constant segment_right         : natural := hdo(waveform)**".segment.right";
 
-	constant grid_width            : natural := hdo(layout)**".grid.width";
-	constant grid_height           : natural := hdo(layout)**".grid.height";
-	constant grid_unit             : natural := hdo(layout)**".grid.unit=32.";
+	constant grid_width            : natural := hdo(waveform)**".grid.width";
+	constant grid_height           : natural := hdo(waveform)**".grid.height";
+	constant grid_unit             : natural := hdo(waveform)**".grid.unit=32.";
 
-	constant hzaxis_height         : natural := hdo(layout)**".axis.horizontal.height=8.";
-	constant vtaxis_width          : natural := hdo(layout)**".axis.vertical.width";
-	constant vtaxis_height         : natural := hdo(layout)**".grid.height";
-	constant vtaxis_tickrotate     : string  := hdo(layout)**".axis.vertical.rotate=ccw0.";
+	constant hzaxis_height         : natural := hdo(waveform)**".axis.horizontal.height=8.";
+	constant vtaxis_width          : natural := hdo(waveform)**".axis.vertical.width";
+	constant vtaxis_height         : natural := hdo(waveform)**".grid.height";
+	constant vtaxis_tickrotate     : string  := hdo(waveform)**".axis.vertical.rotate=ccw0.";
 
-	constant axishorizontal_inside : boolean := hdo(layout)**".axis.horizontal.inside=false.";
-	constant axishorizontal_height : natural := hzaxis_height; --         hdo(layout)**".axis.horizontal.height";
-	constant axisvertical_inside   : boolean := hdo(layout)**".axis.vertical.inside=false.";
-	constant axisvertical_width    : natural := hdo(layout)**".axis.vertical.width";
-	constant axis_fontsize         : natural := hdo(layout)**".axis.fontsize=8.";
+	constant axishorizontal_inside : boolean := hdo(waveform)**".axis.horizontal.inside=false.";
+	constant axishorizontal_height : natural := hzaxis_height; --         hdo(waveform)**".axis.horizontal.height";
+	constant axisvertical_inside   : boolean := hdo(waveform)**".axis.vertical.inside=false.";
+	constant axisvertical_width    : natural := hdo(waveform)**".axis.vertical.width";
+	constant axis_fontsize         : natural := hdo(waveform)**".axis.fontsize=8.";
 
-	constant textbox_width         : natural := hdo(layout)**".textbox.width";
-	constant textbox_height        : natural := hdo(layout)**".grid.height";
-	constant textbox_inside        : boolean := hdo(layout)**".textbox.inside=false.";
+	constant textbox_width         : natural := hdo(waveform)**".textbox.width";
+	constant textbox_height        : natural := hdo(waveform)**".grid.height";
+	constant textbox_inside        : boolean := hdo(waveform)**".textbox.inside=false.";
 
 	function is_postive(
 		constant val : natural)

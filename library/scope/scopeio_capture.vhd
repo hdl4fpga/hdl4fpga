@@ -74,13 +74,10 @@ architecture beh of scopeio_capture is
 begin
  
 	delayed_b : block
-
 		signal wr_ena  : std_logic;
 		signal wr_addr : unsigned(unsigned_num_bits(max_pretrigger-1)-1 downto 1) := (others => '0'); -- Debug purpose
 		signal rd_addr : unsigned(wr_addr'range);
-
 	begin
-
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
@@ -109,7 +106,6 @@ begin
 			wr_addr when signed(delay) >= 0 else
 			wr_addr + resize(unsigned(shift_right(signed(delay)+1, 1)), rd_addr'length) when downsampling='0' else
 			wr_addr + resize(unsigned(shift_right(signed(delay),   0)), rd_addr'length);
-
 	end block;
 
 	process (rgtr_clk)
@@ -130,7 +126,6 @@ begin
 	end process;
 
 	video_b : block
-
 		signal mem_raddr : signed(video_addr'length-1 downto 1);
 		signal mem_waddr : unsigned(video_addr'length+3-1 downto 1) := (others => '0');
 		signal mem_wena  : std_logic;

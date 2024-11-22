@@ -32,7 +32,8 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_marks is
 	generic (
-		layout    : string);
+		inputs    : natural;
+		waveform  : string);
 	port (
 		rgtr_clk  : in  std_logic;
 		rgtr_dv   : in  std_logic;
@@ -48,16 +49,15 @@ entity scopeio_marks is
 
 	constant bin_digits      : natural := 3;
 
-	constant inputs          : natural := hdo(layout)**".inputs";
-	constant max_delay       : natural := hdo(layout)**".max_delay=16384.";
-	constant num_of_segments : natural := hdo(layout)**".num_of_segments";
-	constant hz_unit         : real    := hdo(layout)**".axis.horizontal.unit";
-	constant vt_unit         : real    := hdo(layout)**".axis.vertical.unit";
-	constant vt_width        : natural := hdo(layout)**".axis.vertical.width";
-	constant font_size       : natural := hdo(layout)**".axis.fontsize=8.";
-	constant grid_width      : natural := hdo(layout)**".grid.width";
-	constant grid_height     : natural := hdo(layout)**".grid.height";
-	constant grid_unit       : natural := hdo(layout)**".grid.unit=32.";
+	constant max_delay       : natural := hdo(waveform)**".max_delay=16384.";
+	constant num_of_segments : natural := hdo(waveform)**".num_of_segments";
+	constant hz_unit         : real    := hdo(waveform)**".axis.horizontal.unit";
+	constant vt_unit         : real    := hdo(waveform)**".axis.vertical.unit";
+	constant vt_width        : natural := hdo(waveform)**".axis.vertical.width";
+	constant font_size       : natural := hdo(waveform)**".axis.fontsize=8.";
+	constant grid_width      : natural := hdo(waveform)**".grid.width";
+	constant grid_height     : natural := hdo(waveform)**".grid.height";
+	constant grid_unit       : natural := hdo(waveform)**".grid.unit=32.";
 
 	constant font_bits       : natural := unsigned_num_bits(font_size-1);
 	constant vt_bias         : natural := (grid_height/2)/grid_unit-1;

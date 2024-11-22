@@ -62,19 +62,19 @@ end;
 
 architecture mix of scopeio_tds is
 
-	-- subtype storage_word is std_logic_vector(storageword_size-1 downto 0);
+	subtype storage_word is std_logic_vector(storageword_size-1 downto 0);
 
 	signal triggersample_dv   : std_logic;
 	signal triggersample_data : std_logic_vector(input_data'range);
 
-	-- signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
-	signal resizedsample_data : std_logic_vector(input_data'range);
+	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
+	-- signal resizedsample_data : std_logic_vector(input_data'range);
 	signal downsample_ishot   : std_logic;
 	signal downsample_a0      : std_logic;
 	signal downsample_dv      : std_logic;
 	signal downsampling       : std_logic;
-	-- signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
-	signal downsample_data    : std_logic_vector(0 to 2*input_data'length-1);
+	signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
+	-- signal downsample_data    : std_logic_vector(0 to 2*input_data'length-1);
 
 begin
 
@@ -90,7 +90,7 @@ begin
 		inputs  => inputs,
 		factors => time_factors)
 	port map (
-		factor_id     => x"0", --time_scale, -- b"0000",  --Debug purpose
+		factor_id     => time_scale, -- b"0000",  --Debug purpose
 		input_clk     => input_clk,
 		capture_req   => capture_req,
 		capture_rdy   => capture_rdy,

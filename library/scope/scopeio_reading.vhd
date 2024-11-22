@@ -10,7 +10,8 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_reading is
 	generic (
-		layout    : string);
+		inputs    : natural;
+		waveform  : string);
 	port (
 		tp        : out std_logic_vector(1 to 32);
 		rgtr_clk  : in  std_logic;
@@ -24,16 +25,15 @@ entity scopeio_reading is
 		code_irdy : out std_logic := '0';
 		code_data : out ascii);
 
-	constant inputs        : natural := hdo(layout)**".inputs";
-	constant max_delay     : natural := hdo(layout)**".max_delay=16384.";
-	constant hz_unit       : real    := hdo(layout)**".axis.horizontal.unit";
-	constant vt_unit       : real    := hdo(layout)**".axis.vertical.unit";
-	constant grid_unit     : natural := hdo(layout)**".grid.unit=32.";
-	constant grid_height   : natural := hdo(layout)**".grid.height";
+	constant max_delay     : natural := hdo(waveform)**".max_delay=16384.";
+	constant hz_unit       : real    := hdo(waveform)**".axis.horizontal.unit";
+	constant vt_unit       : real    := hdo(waveform)**".axis.vertical.unit";
+	constant grid_unit     : natural := hdo(waveform)**".grid.unit=32.";
+	constant grid_height   : natural := hdo(waveform)**".grid.height";
 
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
-	constant vt_labels     : string  := hdo(layout)**".vt";
+	constant vt_labels     : string  := hdo(waveform)**".vt";
 	constant hz_label      : string  := "TIME";
 
 	constant vt_sfcnds     : natural_vector := get_significand1245(vt_unit);

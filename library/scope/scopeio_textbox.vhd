@@ -11,7 +11,8 @@ use hdl4fpga.cgafonts.all;
 
 entity scopeio_textbox is
 	generic(
-		layout        : string;
+		inputs        : natural;
+		waveform      : string;
 		latency       : natural;
 		font_bitrom   : std_logic_vector := psf1cp850x8x16;
 		font_height   : natural := 16);
@@ -32,11 +33,10 @@ entity scopeio_textbox is
 		text_bg       : out std_logic_vector;
 		text_fgon     : out std_logic);
 
-	constant inputs        : natural := hdo(layout)**".inputs";
-	constant font_width     : natural := hdo(layout)**".textbox.font_width=8.";
-	constant textbox_width  : natural := hdo(layout)**".textbox.width";
-	constant textbox_height : natural := hdo(layout)**".grid.height";
-	constant grid_height    : natural := hdo(layout)**".grid.height";
+	constant font_width     : natural := hdo(waveform)**".textbox.font_width=8.";
+	constant textbox_width  : natural := hdo(waveform)**".textbox.width";
+	constant textbox_height : natural := hdo(waveform)**".grid.height";
+	constant grid_height    : natural := hdo(waveform)**".grid.height";
 
 	constant chanid_bits    : natural := unsigned_num_bits(inputs-1);
 	constant cga_cols       : natural := textbox_width/font_width;
@@ -100,7 +100,8 @@ begin
 	tp(1 to focus_wid'length) <= focus_wid;
 	readings_e : entity hdl4fpga.scopeio_reading
 	generic map (
-		layout => layout)
+		inputs   => inputs,
+		waveform => waveform)
 	port map (
 		rgtr_clk  => rgtr_clk,
 		rgtr_dv   => rgtr_dv,
@@ -208,8 +209,7 @@ begin
 	end process;
 
 	widgets_b : block
-		constant inputs     : natural := hdo(layout)**".inputs";
-		constant vt_labels  : string  := hdo(layout)**".vt";
+		constant vt_labels  : string  := hdo(waveform)**".vt";
 		constant label_width : natural := max_textlength(vt_labels, inputs);
 
 		function top_borders
@@ -320,7 +320,6 @@ begin
 			function textbox_field (
 				constant width          : natural)
 				return natural_vector is
-				constant inputs         : natural := hdo(layout)**".inputs";
 				constant textbox_fields : string := compact (
 					"{"                                       &
 					"    horizontal : { top : 0, left : 0 }," &

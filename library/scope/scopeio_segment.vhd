@@ -11,7 +11,8 @@ entity scopeio_segment is
 	generic(
 		input_latency : natural;
 		latency       : natural;
-		layout        : string);
+		inputs        : natural;
+		waveform      : string);
 	port (
 		rgtr_clk      : in  std_logic;
 		rgtr_dv       : in  std_logic;
@@ -41,12 +42,11 @@ entity scopeio_segment is
 		trigger_dot   : out std_logic;
 		trace_dots    : out std_logic_vector);
 
-	constant inputs        : natural := hdo(layout)**".inputs";
-	constant axis_fontsize : natural := hdo(layout)**".axis.fontsize=8.";
-	constant grid_height   : natural := hdo(layout)**".grid.height";
+	constant axis_fontsize : natural := hdo(waveform)**".axis.fontsize=8.";
+	constant grid_height   : natural := hdo(waveform)**".grid.height";
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
-	constant vtaxis_tickrotate : string := hdo(layout)**".axis.vertical.rotate=ccw0.";
-	constant grid_unit     : natural := hdo(layout)**".grid.unit=32.";
+	constant vtaxis_tickrotate : string := hdo(waveform)**".axis.vertical.rotate=ccw0.";
+	constant grid_unit     : natural := hdo(waveform)**".grid.unit=32.";
 
 end;
 
@@ -123,7 +123,8 @@ begin
 	axis_e : entity hdl4fpga.scopeio_axis
 	generic map (
 		latency       => latency,
-		layout        => layout)
+		inputs        => inputs,
+		waveform      => waveform)
 	port map (
 		rgtr_clk      => rgtr_clk,
 		rgtr_dv       => rgtr_dv,

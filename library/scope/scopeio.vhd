@@ -353,8 +353,8 @@ begin
 		signal video_addr     : std_logic_vector(0 to capture_bits-1);
 		signal video_frm      : std_logic;
 		signal video_dv       : std_logic;
-		-- signal video_data     : std_logic_vector(0 to 2*inputs*storage_word'length-1);
-		signal video_data     : std_logic_vector(0 to 2*input_data'length-1);
+		signal video_data     : std_logic_vector(0 to 2*inputs*storage_word'length-1);
+		-- signal video_data     : std_logic_vector(0 to 2*input_data'length-1);
 
 
 		signal time_offset    : std_logic_vector(hzoffset_bits-1 downto 0);
@@ -460,7 +460,7 @@ begin
 					input_clk     => input_clk,
 					input_dv      => input_ena,
 					input_sample  => input_sample,
-					gain_id       => x"0", --gain_id,
+					gain_id       => gain_id,
 					output_dv     => output_ena(i),
 					output_sample => ampsample_data(sample_range));
 
@@ -481,10 +481,10 @@ begin
 			rgtr_data    => rgtr_revs,
 
 			input_clk    => input_clk,
-			input_dv     => input_ena,
-			input_data   => input_data,
-			-- input_dv     => ampsample_dv,
-			-- input_data   => ampsample_data,
+			-- input_dv     => input_ena,
+			-- input_data   => input_data,
+			input_dv     => ampsample_dv,
+			input_data   => ampsample_data,
 			capture_req  => capture_req,
 			capture_rdy  => capture_rdy,
 			time_scale   => time_scale,
@@ -498,37 +498,38 @@ begin
 			video_dv     => video_dv,  
 			video_data   => video_data);
 
-		-- scopeio_video_e : entity hdl4fpga.scopeio_video
-		-- generic map (
-			-- timing_id      => timing_id,
-			-- layout         => waveform)
-		-- port map (
-			-- tp => tp,
-			-- rgtr_clk       => sio_clk,
-			-- rgtr_dv        => rgtr_dv,
-			-- rgtr_id        => rgtr_id,
-			-- rgtr_data      => rgtr_revs,
--- 
-			-- time_scale     => time_scale,
-			-- time_offset    => time_offset,
-											-- 
-			-- video_addr     => video_addr,
-			-- video_frm      => video_frm,
-			-- video_data     => video_data,
-			-- video_dv       => video_dv,
--- 
-			-- video_clk      => video_clk,
-			-- video_pixel    => video_pixel,
-			-- extern_video   => extern_video,
-			-- extern_videohzsync => extern_videohzsync,
-			-- extern_videovtsync => extern_videovtsync,
-			-- extern_videoblankn => extern_videoblankn,
-			-- video_hsync    => video_hsync,
-			-- video_vsync    => video_vsync,
-			-- video_vton     => video_vton,
-			-- video_hzon     => video_hzon,
-			-- video_blank    => video_blank,
-			-- video_sync     => video_sync);
+		scopeio_video_e : entity hdl4fpga.scopeio_video
+		generic map (
+			timing_id      => timing_id,
+			inputs         => inputs,
+			waveform       => waveform)
+		port map (
+			tp => tp,
+			rgtr_clk       => sio_clk,
+			rgtr_dv        => rgtr_dv,
+			rgtr_id        => rgtr_id,
+			rgtr_data      => rgtr_revs,
+
+			time_scale     => time_scale,
+			time_offset    => time_offset,
+											
+			video_addr     => video_addr,
+			video_frm      => video_frm,
+			video_data     => video_data,
+			video_dv       => video_dv,
+
+			video_clk      => video_clk,
+			video_pixel    => video_pixel,
+			extern_video   => extern_video,
+			extern_videohzsync => extern_videohzsync,
+			extern_videovtsync => extern_videovtsync,
+			extern_videoblankn => extern_videoblankn,
+			video_hsync    => video_hsync,
+			video_vsync    => video_vsync,
+			video_vton     => video_vton,
+			video_hzon     => video_hzon,
+			video_blank    => video_blank,
+			video_sync     => video_sync);
 
 		dviadapter_b : block
 			signal dvid_blank : std_logic;

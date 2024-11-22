@@ -34,7 +34,8 @@ use hdl4fpga.scopeiopkg.all;
 entity scopeio_video is
 	generic (
 		timing_id          : videotiming_ids;
-		layout             : string);
+		inputs             : natural;
+		waveform           : string);
 	port (
 		tp                 : out std_logic_vector(1 to 32);
 		rgtr_clk           : in  std_logic;
@@ -64,13 +65,12 @@ entity scopeio_video is
 		video_blank        : out std_logic;
 		video_sync         : out std_logic);
 
-	constant inputs          : natural := hdo(layout)**".inputs";
-	constant num_of_segments : natural := hdo(layout)**".num_of_segments";
-	constant axis_fontsize   : natural := hdo(layout)**".axis.fontsize=8.";
-	constant main_width      : natural := hdo(layout)**".display.width";
-	constant main_height     : natural := hdo(layout)**".display.height";
-	constant textbox_width   : natural := hdo(layout)**".textbox.width";
-	constant grid_height     : natural := hdo(layout)**".grid.height";
+	constant num_of_segments : natural := hdo(waveform)**".num_of_segments";
+	constant axis_fontsize   : natural := hdo(waveform)**".axis.fontsize=8.";
+	constant main_width      : natural := hdo(waveform)**".display.width";
+	constant main_height     : natural := hdo(waveform)**".display.height";
+	constant textbox_width   : natural := hdo(waveform)**".textbox.width";
+	constant grid_height     : natural := hdo(waveform)**".grid.height";
 	constant chanid_bits     : natural := unsigned_num_bits(inputs-1);
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 
@@ -232,7 +232,7 @@ begin
 
 	scopeio_layout_e : entity hdl4fpga.scopeio_layout
 	generic map (
-		layout => layout)
+		waveform => waveform)
 	port map (
 		video_clk    => video_clk,
 		video_hzcntr => video_hzcntr,
@@ -258,7 +258,8 @@ begin
 		scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
 		generic map (
 			latency       => segmment_latency+input_latency,
-			layout        => layout)
+			inputs        => inputs,
+			waveform      => waveform)
 		port map (
 			tp => tp,
 			rgtr_clk      => rgtr_clk,
@@ -281,7 +282,8 @@ begin
 	generic map (
 		input_latency => input_latency,
 		latency       => segmment_latency+input_latency,
-		layout        => layout)
+		inputs        => inputs,
+		waveform      => waveform)
 	port map (
 		rgtr_clk      => rgtr_clk,
 		rgtr_dv       => rgtr_dv,
@@ -330,7 +332,8 @@ begin
 
 	scopeio_palette_e : entity hdl4fpga.scopeio_palette
 	generic map (
-		layout        => layout)
+		inputs         => inputs,
+		waveform       => waveform)
 	port map (
 		rgtr_clk       => rgtr_clk,
 		rgtr_dv        => rgtr_dv,

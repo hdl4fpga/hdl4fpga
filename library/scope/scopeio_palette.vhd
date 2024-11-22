@@ -9,7 +9,8 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_palette is
 	generic (
-		layout         : string);
+		inputs      : natural;
+		waveform    : string);
 	port (
 		rgtr_clk    : in  std_logic;
 		rgtr_dv     : in  std_logic;
@@ -37,17 +38,16 @@ entity scopeio_palette is
 		constant palette_size   : natural := pltid_order'length+trace_dots'length+1;
 		constant paletteid_size : natural := unsigned_num_bits(palette_size-1);
 
-		constant inputs                     : natural := hdo(layout)**".inputs";
-		constant grid_color                 : std_logic_vector := hdo(layout)**".grid.color";
-		constant grid_backgroundcolor       : std_logic_vector := hdo(layout)**".grid.background-color";
-		constant horizontal_color           : std_logic_vector := hdo(layout)**".axis.horizontal.color";
-		constant horizontal_backgroundcolor : std_logic_vector := hdo(layout)**".axis.horizontal.background-color";
-		constant vertical_color             : std_logic_vector := hdo(layout)**".axis.vertical.color";
-		constant vertical_backgroundcolor   : std_logic_vector := hdo(layout)**".axis.vertical.background-color";
-		constant textbox_color              : std_logic_vector := hdo(layout)**".textbox.color";
-		constant textbox_backgroundcolor    : std_logic_vector := hdo(layout)**".textbox.background-color";
-		constant segment_backgroundcolor    : std_logic_vector := hdo(layout)**".segment.background-color";
-		constant main_backgroundcolor       : std_logic_vector := hdo(layout)**".main.background-color";
+		constant grid_color                 : std_logic_vector := hdo(waveform)**".grid.color";
+		constant grid_backgroundcolor       : std_logic_vector := hdo(waveform)**".grid.background-color";
+		constant horizontal_color           : std_logic_vector := hdo(waveform)**".axis.horizontal.color";
+		constant horizontal_backgroundcolor : std_logic_vector := hdo(waveform)**".axis.horizontal.background-color";
+		constant vertical_color             : std_logic_vector := hdo(waveform)**".axis.vertical.color";
+		constant vertical_backgroundcolor   : std_logic_vector := hdo(waveform)**".axis.vertical.background-color";
+		constant textbox_color              : std_logic_vector := hdo(waveform)**".textbox.color";
+		constant textbox_backgroundcolor    : std_logic_vector := hdo(waveform)**".textbox.background-color";
+		constant segment_backgroundcolor    : std_logic_vector := hdo(waveform)**".segment.background-color";
+		constant main_backgroundcolor       : std_logic_vector := hdo(waveform)**".main.background-color";
 end;   
 
 architecture beh of scopeio_palette is
@@ -83,7 +83,7 @@ architecture beh of scopeio_palette is
 		variable traces : std_logic_vector(0 to inputs);
 	begin
 		for i in 0 to inputs-1 loop
-			traces(i) := opacity(hdo(layout)**(".vt[" & natural'image(i) & "].color"));
+			traces(i) := opacity(hdo(waveform)**(".vt[" & natural'image(i) & "].color"));
 		end loop;
 		return gui & traces;
 	end;
@@ -301,7 +301,7 @@ begin
     		variable traces : unsigned(0 to inputs*video_color'length-1);
     	begin
     		for i in 0 to inputs-1 loop
-    			traces(0 to video_color'length-1) := unsigned(color(hdo(layout)**(".vt[" & natural'image(i) & "].color")));
+    			traces(0 to video_color'length-1) := unsigned(color(hdo(waveform)**(".vt[" & natural'image(i) & "].color")));
     			traces := rotate_left(unsigned(traces), video_color'length);
     		end loop;
     		return gui & std_logic_vector(traces);
