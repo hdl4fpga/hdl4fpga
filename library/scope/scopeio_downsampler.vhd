@@ -12,13 +12,12 @@ entity scopeio_downsampler is
 	port (
 		factor_id    : in  std_logic_vector;
 		input_clk    : in  std_logic;
+		capture_rdy  : in  std_logic;
+		capture_req  : in  std_logic;
 		input_dv     : in  std_logic;
 		input_data   : in  std_logic_vector;
-		input_shot   : in  std_logic;
 		downsampling : buffer std_logic;
 		output_dv    : buffer std_logic;
-		output_shot  : buffer std_logic;
-		output_shota0 : out std_logic;
 		output_data  : out std_logic_vector);
 end;
 
@@ -75,8 +74,8 @@ begin
 		end loop;
 	end process;
 
-	shot_p : process (input_clk)
-		variable scaler : unsigned(factor'range); -- := (others => '0'); -- Debug purpose
+	 process (input_clk)
+		variable scaler : unsigned(factor'range) := (others => '0'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
@@ -85,34 +84,28 @@ begin
 				else
 					scaler := scaler - 1;
 				end if;
+			end if;
+			start <= scaler(0);
+		end if;
+	end process;
 
-				if downsampling='0' then
-					if a0='0' then 
-						output_shot <= input_shot;
-					elsif output_shot='0' then
-						output_shot <= input_shot;
-					end if;
+	process (input_clk)
+	begin
+		if rising_edge(input_clk) then
+			if input_dv='1' then
+				if (capture_rdy xor capture_req)='1' then
+					a0 <= not a0;
 				else
-					if start='1' then
-						output_shot <= input_shot;
-					elsif output_shot='0' then
-						output_shot <= input_shot;
-					end if;
-				end if;
-
-				if input_shot='1' then
-					output_shota0 <= a0;
+    				a0 <= '0';
 				end if;
 				if downsampling='0' then
 					output_dv <= a0;
 				else
 					output_dv <= scaler(0);
 				end if;
-				a0 <= not to_stdulogic(to_bit(a0));
 			else
 				output_dv <= '0';
 			end if;
-			start <= scaler(0);
 		end if;
 	end process;
 

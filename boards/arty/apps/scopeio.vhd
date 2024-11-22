@@ -74,74 +74,75 @@ architecture scopeio of arty is
 
 	constant layout : string := compact(
 			"{                             " &   
-			"   inputs          : " & natural'image(inputs) & ',' &
-			"   num_of_segments :   4,     " &
-			"   display : {                " &
-			"       width  : 1920,         " &
-			"       height : 1080},        " &
-			"   grid : {                   " &
-			"       width  : " & natural'image(50*32+1) & ',' &
-			"       height : " & natural'image( 8*32+1) & ',' &
-			"       color  : 0xff_ff_00_ff," &
-			"       background-color : 0xff_00_00_00}," &
-			"   axis : {                   " &
-			"       horizontal : {         " &
-			"           unit   : 31.25e-6, " &
-			"           color  : 0xff_00_00_00," &
-			"           background-color : 0xff_00_ff_ff}," &
-			"       vertical : {           " &
-			"           unit   : 2.0e-3, " &
-			"           width  : " & natural'image(6*8) & ','  &
-			"           color  : 0xff_00_00_00," &
-			"           background-color : 0xff_00_ff_ff}}," &
-			"   textbox : {                " &
-			"       width      : " & natural'image(33*8) & ','&
-			"       color      : 0xff_ff_00_ff," &
-			"       background-color : 0xff_00_00_00}," &
-			"   main : {                   " &
-			"       top        :  5,       " & 
-			"       left       :  1,       " & 
-			"       right      :  0,       " & 
-			"       bottom     :  0,       " & 
-			"       vertical   :  1,       " & 
-			"       horizontal :  1,       " &
-			"       background-color : 0xff_00_00_00}," &
-			"   segment : {                " &
-			"       top        : 1,        " &
-			"       left       : 1,        " &
-			"       right      : 1,        " &
-			"       bottom     : 1,        " &
-			"       vertical   : 0,        " &
-			"       horizontal : 1,        " &
-			"       background-color : 0xff_ff_ff_ff}," &
-			"  vt : [                      " &
-			"   { text  : 'V P+ V N-', " &  
-			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_00_ff_ff},  " & -- vt(0)
-			"   { text  : 'A6+  A7-', " &
-			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_ff_ff},  " & -- vt(1)
-			"   { text  : 'A8+  A9-', " &
-			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_00_ff_ff},  " & -- vt(2)
-			"   { text  : 'A10+ A11-', " &
-			"     step  : " & real'image(vt_step) & "," &
-			"     color : 0xff_ff_ff_ff},  " & -- vt(3)
-			"   { text  : 'A0', " &
-			"     step  : " & real'image(3.33*vt_step) & "," &
-			"     color : 0xff_00_ff_ff},  " & -- vt(4)
-			"   { text  : 'A1', " &
-			"     step  : " & real'image(3.33*vt_step) & "," &
-			"     color : 0xff_ff_ff_ff},  " & -- vt(5)
-			"   { text  : 'A2', " &
-			"     step  : " & real'image(3.33*vt_step) & "," &
-			"     color : 0xff_00_ff_ff},  " & -- vt(6)
-			"   { text  : 'A3', " &
-			"     step  : " & real'image(3.33*vt_step) & "," &
-			"     color : 0xff_ff_ff_ff},  " &  -- vt(7)
-			"   { text  : 'A4', " &
-			"     step  : " & real'image(3.33*vt_step) & "," &
-			"     color : 0xff_00_ff_ff}]}");   -- vt(8)
+			"    inputs   : " & natural'image(inputs) & ',' &
+			"    waveform : {" &
+			"        num_of_segments :   4,     " &
+			"        display : {                " &
+			"            width  : 1920,         " &
+			"            height : 1080},        " &
+			"        grid : {                   " &
+			"            width  : " & natural'image(50*32+1) & ',' &
+			"            height : " & natural'image( 8*32+1) & ',' &
+			"            color  : 0xff_ff_00_ff," &
+			"            background-color : 0xff_00_00_00}," &
+			"        axis : {                   " &
+			"            horizontal : {         " &
+			"                unit   : 31.25e-6, " &
+			"                color  : 0xff_00_00_00," &
+			"                background-color : 0xff_00_ff_ff}," &
+			"            vertical : {           " &
+			"                unit   : 2.0e-3, " &
+			"                width  : " & natural'image(6*8) & ','  &
+			"                color  : 0xff_00_00_00," &
+			"                background-color : 0xff_00_ff_ff}}," &
+			"        textbox : {                " &
+			"            width      : " & natural'image(33*8) & ','&
+			"            color      : 0xff_ff_00_ff," &
+			"            background-color : 0xff_00_00_00}," &
+			"        main : {                   " &
+			"            top        :  5,       " & 
+			"            left       :  1,       " & 
+			"            right      :  0,       " & 
+			"            bottom     :  0,       " & 
+			"            vertical   :  1,       " & 
+			"            horizontal :  1,       " &
+			"            background-color : 0xff_00_00_00}," &
+			"        segment : {                " &
+			"            top        : 1,        " &
+			"            left       : 1,        " &
+			"            right      : 1,        " &
+			"            bottom     : 1,        " &
+			"            vertical   : 0,        " &
+			"            horizontal : 1,        " &
+			"            background-color : 0xff_ff_ff_ff}," &
+			"       vt : [                      " &
+			"        { text  : 'V P+ V N-', " &  
+			"          step  : " & real'image(vt_step) & "," &
+			"          color : 0xff_00_ff_ff},  " & -- vt(0)
+			"        { text  : 'A6+  A7-', " &
+			"          step  : " & real'image(vt_step) & "," &
+			"          color : 0xff_ff_ff_ff},  " & -- vt(1)
+			"        { text  : 'A8+  A9-', " &
+			"          step  : " & real'image(vt_step) & "," &
+			"          color : 0xff_00_ff_ff},  " & -- vt(2)
+			"        { text  : 'A10+ A11-', " &
+			"          step  : " & real'image(vt_step) & "," &
+			"          color : 0xff_ff_ff_ff},  " & -- vt(3)
+			"        { text  : 'A0', " &
+			"          step  : " & real'image(3.33*vt_step) & "," &
+			"          color : 0xff_00_ff_ff},  " & -- vt(4)
+			"        { text  : 'A1', " &
+			"          step  : " & real'image(3.33*vt_step) & "," &
+			"          color : 0xff_ff_ff_ff},  " & -- vt(5)
+			"        { text  : 'A2', " &
+			"          step  : " & real'image(3.33*vt_step) & "," &
+			"          color : 0xff_00_ff_ff},  " & -- vt(6)
+			"        { text  : 'A3', " &
+			"          step  : " & real'image(3.33*vt_step) & "," &
+			"          color : 0xff_ff_ff_ff},  " &  -- vt(7)
+			"        { text  : 'A4', " &
+			"          step  : " & real'image(3.33*vt_step) & "," &
+			"          color : 0xff_00_ff_ff}]}}");   -- vt(8)
 
 	type pll_params is record
 		clkfbout_mult_f : real;
@@ -1011,7 +1012,7 @@ begin
 	end process;
   
 	synth_g : if tsttab generate
-		constant size : natural := 256;
+		constant size : natural := 2**input_sample'length;
 
 		function sintab (
 			constant size       : natural;
@@ -1019,15 +1020,20 @@ begin
 			constant unipolar   : boolean := false)
 			return std_logic_vector  is
 			constant pi     : real := 4.0*arctan(1.0);
+			constant n : natural := 7;
+			constant n1 : natural := 8;
 			variable retval : std_logic_vector(0 to size*resolution-1);
 		begin
 			for i in 0 to size-1 loop
 				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer((2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i)/real(size))), resolution));
+				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(2**(resolution-2), resolution));
 			end loop;
+			retval(resolution*n to resolution*(n+1)-1) := std_logic_vector(to_signed(2**(resolution-1)-1, resolution));
+			retval(resolution*n1 to resolution*(n1+1)-1) := (others => '0');
 			return retval;
 		end;
 
-		signal addr : unsigned(0 to unsigned_num_bits(size-1)-1);
+		signal addr : unsigned(0 to unsigned_num_bits(size-1)-1) := (others => '0');
 
 	begin
 		process (input_clk)
@@ -1042,6 +1048,7 @@ begin
 			latency => 2,
 			bitrom => sintab(size => 2**addr'length, resolution => input_sample'length))
 		port map (
+			clk => input_clk,
 			addr => std_logic_vector(addr),
 			data => input_sample);
 

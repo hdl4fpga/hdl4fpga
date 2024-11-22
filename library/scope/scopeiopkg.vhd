@@ -182,13 +182,13 @@ package scopeiopkg is
 			rgtr_data        : in  std_logic_vector;
 
 			input_clk        : in  std_logic;
+			capture_req      : in  std_logic;
+			capture_rdy      : buffer std_logic;
 			input_dv         : in  std_logic;
 			input_data       : in  std_logic_vector;
 			time_scale       : in  std_logic_vector;
 			time_offset      : in  std_logic_vector;
 			trigger_freeze   : buffer std_logic;
-			capture_shot     : buffer std_logic;
-			capture_end      : buffer std_logic;
 			video_clk        : in  std_logic;
 			video_vton       : in  std_logic;
 			video_frm        : in  std_logic;

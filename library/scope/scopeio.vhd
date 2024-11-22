@@ -169,11 +169,11 @@ architecture beh of scopeio is
 	signal data_irdy     : std_logic;
 	signal data_ptr      : std_logic_vector(8-1 downto 0);
 
-	signal trigger_req   : std_logic;
-	signal trigger_rdy   : std_logic;
+	signal trigger_req   : std_logic := '0';
+	signal trigger_rdy   : std_logic := '0';
 	signal triggers_rdy  : std_logic_vector(0 to 2-1);
-   	signal capture_req   : std_logic;
-   	signal capture_rdy   : std_logic;
+   	signal capture_req   : std_logic := '0';
+   	signal capture_rdy   : std_logic := '0';
 
 begin
 
@@ -201,23 +201,25 @@ begin
 	rgtr_revs <= reverse(rgtr_data,8);
 
 	trigger_b : block
-		signal trigger_dv         : std_logic;
-		signal trigger_slope      : std_logic;
-		signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
-		signal trigger_level      : std_logic_vector(sample_length-1 downto 0);
-		signal triggersample_dv   : std_logic;
+		signal trigger_dv     : std_logic;
+		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0) := (others => '0');
+		signal trigger_level  : std_logic_vector(sample_length-1 downto 0) := std_logic_vector(to_unsigned(16, sample_length));
+		signal trigger_slope  : std_logic := '1';
+		signal trigger_mode   : std_logic_vector(0 to 2-1) := "00";
+		alias trigger_freeze  is trigger_mode(0);
+		alias trigger_oneshot is trigger_mode(1);
+
 		signal trigger_shot       : std_logic;
+		signal triggersample_dv   : std_logic;
 		signal triggersample_data : std_logic_vector(input_data'range);
-		signal trigger_mode       : std_logic_vector(0 to 2-1);
 
 		constant free_mode : std_logic_vector := "00";
 		constant norm_mode : std_logic_vector := "01";
 		constant osht_mode : std_logic_vector := "10";
 		constant frez_mode : std_logic_vector := "11";
 
-		alias trigger_freeze  is trigger_mode(0);
-		alias trigger_oneshot is trigger_mode(1);
 		alias rgtr_clk        is sio_clk;
+		signal dummy : std_logic_vector(0 to 0);
 
 	begin
 		scopeio_rtgrtrigger_e : entity hdl4fpga.scopeio_rgtrtrigger
@@ -228,11 +230,11 @@ begin
 			rgtr_data       => rgtr_data,
 
 			trigger_dv      => trigger_dv,
-			trigger_freeze  => trigger_freeze,
-			trigger_chanid  => trigger_chanid,
-			trigger_level   => trigger_level,
-			trigger_oneshot => trigger_oneshot,
-			trigger_slope   => trigger_slope);
+			trigger_chanid  => dummy, -- trigger_chanid,
+			trigger_level   => dummy); -- trigger_level,
+			-- trigger_freeze  => trigger_freeze,
+			-- trigger_oneshot => trigger_oneshot,
+			-- trigger_slope   => trigger_slope);
 			
 		scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
 		generic map (
@@ -244,9 +246,6 @@ begin
 			trigger_chanid => trigger_chanid,
 			trigger_level  => trigger_level,
 			trigger_slope  => trigger_slope,
-	--		trigger_chanid => "0",             -- Debug purpose
-	--		trigger_level  => b"11_1110",      -- Debug purpose
-	--		trigger_slope  => '1',             -- Debug purpose
 			trigger_shot   => trigger_shot,
 			output_dv      => triggersample_dv,
 			output_data    => triggersample_data);
@@ -389,7 +388,7 @@ begin
 
 				vtscale_ena => gain_ena,
 				vtscale_dv  => gain_dv,
-				vtchan_id  => chan_id,
+				vtchan_id   => chan_id,
 				vtscale_id  => gain_id);
 			
 			process(sio_clk)
@@ -460,7 +459,7 @@ begin
 					input_clk     => input_clk,
 					input_dv      => input_ena,
 					input_sample  => input_sample,
-					gain_id       => gain_id,
+					gain_id       => x"0", --gain_id,
 					output_dv     => output_ena(i),
 					output_sample => ampsample_data(sample_range));
 
@@ -469,64 +468,66 @@ begin
 			ampsample_dv <= output_ena(0);
 		end block;
 
-		-- scopeio_tds_e : scopeio_tds
-		-- generic map  (
-			-- inputs       => inputs,
-			-- storageword_size => storage_word'length,
-			-- time_factors => time_factors)
-		-- port map (
-			-- rgtr_clk     => sio_clk,
-			-- rgtr_dv      => rgtr_dv,
-			-- rgtr_id      => rgtr_id,
-			-- rgtr_data    => rgtr_revs,
--- 
-			-- input_clk    => input_clk,
+		scopeio_tds_e : scopeio_tds
+		generic map  (
+			inputs       => inputs,
+			storageword_size => storage_word'length,
+			time_factors => time_factors)
+		port map (
+			rgtr_clk     => sio_clk,
+			rgtr_dv      => rgtr_dv,
+			rgtr_id      => rgtr_id,
+			rgtr_data    => rgtr_revs,
+
+			input_clk    => input_clk,
+			input_dv     => input_ena,
+			input_data   => input_data,
 			-- input_dv     => ampsample_dv,
 			-- input_data   => ampsample_data,
-			-- time_scale   => time_scale,
-			-- time_offset  => time_offset,
-			-- trigger_freeze => trigger_freeze,
-			-- capture_shot => capture_shot,
-			-- capture_end  => capture_end,
+			capture_req  => capture_req,
+			capture_rdy  => capture_rdy,
+			time_scale   => time_scale,
+			time_offset  => time_offset,
+			trigger_freeze => trigger_freeze,
+
+			video_clk    => video_clk,
+			video_addr   => video_addr,  
+			video_vton   => video_vton,  
+			video_frm    => video_frm,  
+			video_dv     => video_dv,  
+			video_data   => video_data);
+
+		-- scopeio_video_e : entity hdl4fpga.scopeio_video
+		-- generic map (
+			-- timing_id      => timing_id,
+			-- layout         => waveform)
+		-- port map (
+			-- tp => tp,
+			-- rgtr_clk       => sio_clk,
+			-- rgtr_dv        => rgtr_dv,
+			-- rgtr_id        => rgtr_id,
+			-- rgtr_data      => rgtr_revs,
 -- 
-			-- video_clk    => video_clk,
-			-- video_addr   => video_addr,  
-			-- video_vton   => video_vton,  
-			-- video_frm    => video_frm,  
-			-- video_dv     => video_dv,  
-			-- video_data   => video_data);
-
-		scopeio_video_e : entity hdl4fpga.scopeio_video
-		generic map (
-			timing_id      => timing_id,
-			layout         => waveform)
-		port map (
-			tp => tp,
-			rgtr_clk       => sio_clk,
-			rgtr_dv        => rgtr_dv,
-			rgtr_id        => rgtr_id,
-			rgtr_data      => rgtr_revs,
-
-			time_scale     => time_scale,
-			time_offset    => time_offset,
-											
-			video_addr     => video_addr,
-			video_frm      => video_frm,
-			video_data     => video_data,
-			video_dv       => video_dv,
-
-			video_clk      => video_clk,
-			video_pixel    => video_pixel,
-			extern_video   => extern_video,
-			extern_videohzsync => extern_videohzsync,
-			extern_videovtsync => extern_videovtsync,
-			extern_videoblankn => extern_videoblankn,
-			video_hsync    => video_hsync,
-			video_vsync    => video_vsync,
-			video_vton     => video_vton,
-			video_hzon     => video_hzon,
-			video_blank    => video_blank,
-			video_sync     => video_sync);
+			-- time_scale     => time_scale,
+			-- time_offset    => time_offset,
+											-- 
+			-- video_addr     => video_addr,
+			-- video_frm      => video_frm,
+			-- video_data     => video_data,
+			-- video_dv       => video_dv,
+-- 
+			-- video_clk      => video_clk,
+			-- video_pixel    => video_pixel,
+			-- extern_video   => extern_video,
+			-- extern_videohzsync => extern_videohzsync,
+			-- extern_videovtsync => extern_videovtsync,
+			-- extern_videoblankn => extern_videoblankn,
+			-- video_hsync    => video_hsync,
+			-- video_vsync    => video_vsync,
+			-- video_vton     => video_vton,
+			-- video_hzon     => video_hzon,
+			-- video_blank    => video_blank,
+			-- video_sync     => video_sync);
 
 		dviadapter_b : block
 			signal dvid_blank : std_logic;

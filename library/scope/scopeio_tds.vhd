@@ -41,13 +41,13 @@ entity scopeio_tds is
 		rgtr_data        : in  std_logic_vector;
 
 		input_clk        : in  std_logic;
+		capture_req      : in  std_logic;
+		capture_rdy      : buffer std_logic := '0';
 		input_dv         : in  std_logic;
 		input_data       : in  std_logic_vector;
 		time_scale       : in  std_logic_vector;
 		time_offset      : in  std_logic_vector;
 		trigger_freeze   : buffer std_logic;
-		capture_shot     : buffer std_logic;
-		capture_end      : buffer std_logic;
 
 		video_clk        : in  std_logic;
 		video_vton       : in  std_logic;
@@ -62,26 +62,19 @@ end;
 
 architecture mix of scopeio_tds is
 
-	subtype storage_word is std_logic_vector(storageword_size-1 downto 0);
+	-- subtype storage_word is std_logic_vector(storageword_size-1 downto 0);
 
 	signal triggersample_dv   : std_logic;
 	signal triggersample_data : std_logic_vector(input_data'range);
-	signal trigger_shot       : std_logic;
 
-	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
-	signal downsample_oshot   : std_logic;
+	-- signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
+	signal resizedsample_data : std_logic_vector(input_data'range);
 	signal downsample_ishot   : std_logic;
 	signal downsample_a0      : std_logic;
 	signal downsample_dv      : std_logic;
 	signal downsampling       : std_logic;
-	signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
-
-	signal trigger_dv         : std_logic;
-	signal trigger_mode       : std_logic_vector(0 to 2-1);
-	signal trigger_slope      : std_logic;
-	signal trigger_oneshot    : std_logic;
-	signal trigger_chanid     : std_logic_vector(chanid_bits-1 downto 0);
-	signal trigger_level      : std_logic_vector(storage_word'range);
+	-- signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
+	signal downsample_data    : std_logic_vector(0 to 2*input_data'length-1);
 
 begin
 
@@ -92,51 +85,39 @@ begin
 		input_data  => input_data,
 		output_data => resizedsample_data);
 
-		process (video_clk)
-		begin
-			if rising_edge(video_clk) then
-				if video_vton='1' then
-					vton <= '1';
-				elsif vtoff='1' then
-					vton <= '0';
-				end if;
-			end if;
-		end process;
-
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	generic map (
 		inputs  => inputs,
 		factors => time_factors)
 	port map (
-		factor_id     => time_scale, -- b"0000",  --Debug purpose
+		factor_id     => x"7", --time_scale, -- b"0000",  --Debug purpose
 		input_clk     => input_clk,
-		input_dv      => triggersample_dv,
-		input_shot    => downsample_ishot,
+		capture_req   => capture_req,
+		capture_rdy   => capture_rdy,
+		input_dv      => input_dv,
 		input_data    => resizedsample_data,
 		downsampling  => downsampling,
 		output_dv     => downsample_dv,
-		output_shot   => downsample_oshot,
-		output_shota0 => downsample_a0,
+		output_shot   => downsample_a0,
 		output_data   => downsample_data);
 
-	downsample_ishot <= capture_end and trigger_shot;
-	scopeio_capture_e : entity hdl4fpga.scopeio_capture
-	port map (
-		rgtr_clk     => rgtr_clk,
-		input_clk    => input_clk,
-		capture_shot => capture_shot,
-		capture_a0   => downsample_a0,
-		capture_end  => capture_end,
-		input_dv     => downsample_dv,
-		input_data   => downsample_data,
-		time_offset  => time_offset,
-
-		downsampling => downsampling,
-		video_clk    => video_clk,
-		video_frm    => video_frm,
-		video_vton   => video_vton,
-		video_addr   => video_addr,
-		video_dv     => video_dv,
-		video_data   => video_data);
+	-- scopeio_capture_e : entity hdl4fpga.scopeio_capture
+	-- port map (
+		-- rgtr_clk     => rgtr_clk,
+		-- input_clk    => input_clk,
+		-- capture_req  => capture_req,
+		-- capture_rdy  => capture_rdy,
+		-- capture_a0   => downsample_a0,
+		-- input_dv     => downsample_dv,
+		-- input_data   => downsample_data,
+		-- time_offset  => time_offset,
+-- 
+		-- downsampling => downsampling,
+		-- video_clk    => video_clk,
+		-- video_frm    => video_frm,
+		-- video_vton   => video_vton,
+		-- video_addr   => video_addr,
+		-- video_dv     => video_dv,
+		-- video_data   => video_data);
 
 end;
