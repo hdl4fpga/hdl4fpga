@@ -752,7 +752,13 @@ begin
 			data => input_sample);
 
 		input_enas <= '1';
-		input_samples(0*input_sample'length to (0+1)*input_sample'length-1) <= input_sample;
+		process (input_sample)
+			variable xxx : unsigned(input_samples'range);
+		begin
+			for i in 0 to inputs-1 loop
+				input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;
+			end loop;
+		end process;
 
 	end generate;
 

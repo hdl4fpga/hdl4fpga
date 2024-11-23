@@ -109,7 +109,7 @@ begin
 		begin
 			if rising_edge(input_clk) then
 				if (capture_rdy xor capture_req)='1' then
-					if input_dv='1' then
+					if input_dv='0' then
 						if wr_addr0='0' then
 							wr_addr <= wr_addr + 1;
 						else
@@ -137,7 +137,17 @@ begin
 			rd_clk  => video_clk,
 			rd_addr => rd_addr,
 			rd_data => mem_data);
-		video_data <= mem_data;
+		video_dv   <= video_frm;
+		process (video_clk)
+			variable xxx : unsigned(0 to 3*video_data'length/2-1);
+		begin
+			if rising_edge(video_clk) then
+				xxx(0 to video_data'length-1) := unsigned(mem_data);
+				xxx := xxx ror video_data'length/2;
+				video_data <= std_logic_vector(xxx(0 to video_data'length-1));
+
+			end if;
+		end process;
 
 
 	end block;

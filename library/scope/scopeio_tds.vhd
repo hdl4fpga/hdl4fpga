@@ -89,7 +89,7 @@ begin
 		inputs  => inputs,
 		factors => time_factors)
 	port map (
-		factor_id     => time_scale, -- b"0000",  --Debug purpose
+		factor_id     => b"0000",  --Debug purpose
 		input_clk     => input_clk,
 		capture_req   => capture_req,
 		capture_rdy   => capture_rdy,
