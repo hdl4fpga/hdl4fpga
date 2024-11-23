@@ -92,16 +92,20 @@ begin
 			rd_addr => std_logic_vector(rd_addr),
 			rd_data => rd_data);
 
-		rd_addr <= wr_addr+2;
+		rd_addr <= wr_addr+4;
 		process (input_clk)
-			constant delay_lsb : std_logic := '1';
+			constant delay_lsb : std_logic := '0';
 			variable shr : unsigned(0 to 3*input_data'length/2-1);
 		begin
 			if rising_edge(input_clk) then
-				if delay_lsb='1' then
-					shr(0 to input_data'length-1) := unsigned(rd_data);
-					shr := shr rol input_data'length/2;
-					dlyd_data <= std_logic_vector(shr(input_data'length to 3*input_data'length/2-1));
+				if downsampling='0' then
+					if delay_lsb='1' then
+						shr(0 to input_data'length-1) := unsigned(rd_data);
+						shr := shr rol input_data'length/2;
+						dlyd_data <= std_logic_vector(shr(input_data'length to 3*input_data'length-1));
+					else
+						dlyd_data <= rd_data;
+					end if;
 				else
 					dlyd_data <= rd_data;
 				end if;
@@ -150,22 +154,32 @@ begin
 			rd_addr => std_logic_vector(rd_addr),
 			rd_data => mem_data);
 
-		video_dv <= video_vton;
 		process (video_clk)
 			variable shr : unsigned(0 to 3*video_data'length/2-1);
 		begin
 			if rising_edge(video_clk) then
-				if downsampling='0' then
-					if videoaddr_lsb='0' then
-						shr(0 to video_data'length-1) := unsigned(mem_data);
+				if video_frm='1' then
+					if downsampling='0' then
+						if videoaddr_lsb='0' then
+							shr(0 to video_data'length-1) := unsigned(mem_data);
+						end if;
+						shr := shr rol video_data'length/2;
+						video_data <= std_logic_vector(shr(video_data'length/2 to 3*video_data'length/2-1));
+					else
+						video_data <= mem_data;
 					end if;
-					shr := shr rol video_data'length/2;
-					video_data <= std_logic_vector(shr(video_data'length/2 to 3*video_data'length/2-1));
-				else
-					video_data <= mem_data;
 				end if;
 			end if;
 		end process;
+		lat : entity hdl4fpga.latency 
+		generic map (
+			n => 1,
+			d => (0 to 0 => 4))
+		port map (
+			clk   => video_clk,
+			di(0) => video_frm,
+			do(0) => video_dv);
+
 	end block;
 
 end;
