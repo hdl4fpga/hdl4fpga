@@ -94,8 +94,8 @@ begin
 
 		rd_addr <= wr_addr+2;
 		process (input_clk)
+			constant delay_lsb : std_logic := '1';
 			variable shr : unsigned(0 to 3*input_data'length/2-1);
-			constant delay_lsb :std_logic := '1';
 		begin
 			if rising_edge(input_clk) then
 				if delay_lsb='1' then
