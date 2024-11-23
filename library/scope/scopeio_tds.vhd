@@ -91,8 +91,6 @@ begin
 	port map (
 		factor_id     => b"0000",  --Debug purpose
 		input_clk     => input_clk,
-		capture_req   => capture_req,
-		capture_rdy   => capture_rdy,
 		input_dv      => input_dv,
 		input_data    => resizedsample_data,
 		downsampling  => downsampling,

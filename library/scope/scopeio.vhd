@@ -203,7 +203,7 @@ begin
 	trigger_b : block
 		signal trigger_dv     : std_logic;
 		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0) := (others => '0');
-		signal trigger_level  : std_logic_vector(sample_length-1 downto 0) := std_logic_vector(to_unsigned(32, sample_length));
+		signal trigger_level  : std_logic_vector(sample_length-1 downto 0) := std_logic_vector(to_unsigned(1, sample_length));
 		-- signal trigger_level  : std_logic_vector(sample_length-1 downto 0) := (others => '0');
 		signal trigger_slope  : std_logic := '0';
 		signal trigger_mode   : std_logic_vector(0 to 2-1) := "00";
@@ -247,9 +247,7 @@ begin
 			trigger_chanid => trigger_chanid,
 			trigger_level  => trigger_level,
 			trigger_slope  => trigger_slope,
-			trigger_shot   => trigger_shot,
-			output_dv      => triggersample_dv,
-			output_data    => triggersample_data);
+			trigger_shot   => trigger_shot);
 
     	process (input_clk)
     	begin
@@ -464,7 +462,7 @@ begin
 				port map (
 					input_clk     => input_clk,
 					input_dv      => input_ena,
-					input_sample  => input_sample,
+					input_sample  => input_data,
 					gain_id       => gain_id,
 					output_dv     => output_ena(i),
 					output_sample => ampsample_data(sample_range));
@@ -486,12 +484,10 @@ begin
 			rgtr_data    => rgtr_revs,
 
 			input_clk    => input_clk,
-			input_dv     => input_ena,
-			input_data   => input_data,
-			-- input_dv     => ampsample_dv,
-			-- input_data   => ampsample_data,
 			capture_req  => capture_req,
 			capture_rdy  => captures_rdy(0),
+			input_dv     => ampsample_dv,
+			input_data   => ampsample_data,
 			time_scale   => time_scale,
 			time_offset  => (time_offset'range => '0'),
 			trigger_freeze => trigger_freeze,

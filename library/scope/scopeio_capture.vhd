@@ -67,18 +67,16 @@ begin
 		signal wr_ena  : std_logic;
 		signal wr_addr : unsigned(unsigned_num_bits(max_pretrigger-1)-1 downto 1) := (others => '0'); -- Debug purpose
 		signal rd_addr : unsigned(wr_addr'range) := (others => '0');
+		signal rd_data : std_logic_vector(dlyd_data'range);
 	begin
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
-				if (capture_rdy xor capture_req)='1' then
-					rd_addr <= rd_addr + 1;
-				end if;
+				wr_addr <= wr_addr + 1;
 			end if;
 		end process;
 
-		wr_ena  <=(capture_rdy xor capture_req);
-		wr_addr <= rd_addr;
+		wr_ena  <= '1'; --(capture_rdy xor capture_req);
 
 		mem_e : entity hdl4fpga.dpram
 		generic map (
@@ -92,21 +90,37 @@ begin
 
 			rd_clk  => input_clk,
 			rd_addr => std_logic_vector(rd_addr),
-			rd_data => dlyd_data);
+			rd_data => rd_data);
 
+		rd_addr <= wr_addr+2;
+		process (input_clk)
+			variable shr : unsigned(0 to 3*input_data'length/2-1);
+			constant delay_lsb :std_logic := '1';
+		begin
+			if rising_edge(input_clk) then
+				if delay_lsb='1' then
+					shr(0 to input_data'length-1) := unsigned(rd_data);
+					shr := shr rol input_data'length/2;
+					dlyd_data <= std_logic_vector(shr(input_data'length to 3*input_data'length/2-1));
+				else
+					dlyd_data <= rd_data;
+				end if;
+			end if;
+		end process;
 	end block;
 
 	video_b : block
-		signal wr_ena   : std_logic;
-		signal wr_addr  : unsigned(video_addr'length downto 1);
-		signal rd_addr  : unsigned(video_addr'length-1 downto 1);
-		alias  wr_addr0 is wr_addr(wr_addr'left);
+		signal wr_ena  : std_logic;
+		signal wr_addr : unsigned(video_addr'length   downto 1);
+		signal rd_addr : unsigned(video_addr'length-1 downto 1);
+		alias  wraddr_msb    is wr_addr(wr_addr'left);
+		alias  videoaddr_lsb is video_addr(video_addr'right);
 	begin
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
 				if (capture_rdy xor capture_req)='1' then
-					if wr_addr0='0' then
+					if wraddr_msb='0' then
 						if input_dv='0' then
 							wr_addr <= wr_addr + 1;
 						end if;
@@ -136,13 +150,13 @@ begin
 			rd_addr => std_logic_vector(rd_addr),
 			rd_data => mem_data);
 
-		video_dv <= video_frm;
+		video_dv <= video_vton;
 		process (video_clk)
 			variable shr : unsigned(0 to 3*video_data'length/2-1);
 		begin
 			if rising_edge(video_clk) then
 				if downsampling='0' then
-					if video_addr(video_addr'right)='0' then
+					if videoaddr_lsb='0' then
 						shr(0 to video_data'length-1) := unsigned(mem_data);
 					end if;
 					shr := shr rol video_data'length/2;

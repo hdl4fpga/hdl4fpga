@@ -15,9 +15,7 @@ entity scopeio_trigger is
 		trigger_chanid   : in  std_logic_vector;
 		trigger_slope    : in  std_logic;
 		trigger_level    : in  std_logic_vector;
-		trigger_shot     : out std_logic;
-		output_dv        : out std_logic;
-		output_data      : out std_logic_vector);
+		trigger_shot     : out std_logic);
 
 end;
 
@@ -42,16 +40,5 @@ begin
 			trigger_shot <= shot;
 		end if;
 	end process;
-	output_dv <= input_dv;
-
-	datalat_e : entity hdl4fpga.latency
-	generic map (
-		n => input_data'length,
-		d => (1 to input_data'length => 4))
-	port map (
-		clk => input_clk,
-		ena => input_dv,
-		di  => input_data,
-		do  => output_data);
 
 end;

@@ -12,8 +12,6 @@ entity scopeio_downsampler is
 	port (
 		factor_id    : in  std_logic_vector;
 		input_clk    : in  std_logic;
-		capture_rdy  : in  std_logic;
-		capture_req  : in  std_logic;
 		input_dv     : in  std_logic;
 		input_data   : in  std_logic_vector;
 		downsampling : buffer std_logic;
@@ -83,9 +81,7 @@ begin
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
-				if (capture_rdy xor capture_req)='0' then
-					scaler := unsigned(factor);
-				elsif scaler(0)='1' then
+				if scaler(0)='1' then
 					scaler := unsigned(factor);
 				else
 					scaler := scaler - 1;
