@@ -102,7 +102,7 @@ begin
 	video_b : block
 		signal wr_ena   : std_logic;
 		signal wr_addr  : unsigned(video_addr'length downto 1);
-		alias  rd_addr  : std_logic_vector(video_addr'length-1 downto 0) is video_addr;
+		signal rd_addr  : unsigned(video_addr'length-1 downto 1);
 		alias  wr_addr0 is wr_addr(wr_addr'left);
 	begin
 		process (input_clk)
@@ -123,28 +123,31 @@ begin
 			end if;
 		end process;
 
-		wr_ena <= (capture_rdy xor capture_req);
+		rd_addr <= resize(shift_right(unsigned(video_addr), 1), rd_addr'length);
+		wr_ena  <= (capture_rdy xor capture_req);
 		mem_e : entity hdl4fpga.dpram
 		generic map (
 			synchronous_rdaddr => true,
 			synchronous_rddata => true)
 		port map (
 			wr_clk  => input_clk,
-			wr_addr => std_logic_vector(wr_addr),
+			wr_addr => std_logic_vector(wr_addr(rd_addr'range)),
 			wr_ena  => wr_ena,
 			wr_data => dlyd_data,
 
 			rd_clk  => video_clk,
-			rd_addr => rd_addr,
+			rd_addr => std_logic_vector(rd_addr),
 			rd_data => mem_data);
 		video_dv   <= video_frm;
 		process (video_clk)
 			variable xxx : unsigned(0 to 3*video_data'length/2-1);
 		begin
 			if rising_edge(video_clk) then
-				xxx(0 to video_data'length-1) := unsigned(mem_data);
-				xxx := xxx ror video_data'length/2;
-				video_data <= std_logic_vector(xxx(0 to video_data'length-1));
+				if video_addr(video_addr'right)='0' then
+					xxx(0 to video_data'length-1) := unsigned(mem_data);
+				end if;
+				xxx := xxx rol video_data'length/2;
+				video_data <= std_logic_vector(xxx(video_data'length/2 to 3*video_data'length/2-1));
 
 			end if;
 		end process;

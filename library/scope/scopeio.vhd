@@ -203,9 +203,9 @@ begin
 	trigger_b : block
 		signal trigger_dv     : std_logic;
 		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0) := (others => '0');
-		-- signal trigger_level  : std_logic_vector(sample_length-1 downto 0) := std_logic_vector(to_unsigned(2**(sample_length-3), sample_length));
-		signal trigger_level  : std_logic_vector(sample_length-1 downto 0) := (others => '0');
-		signal trigger_slope  : std_logic := '1';
+		signal trigger_level  : std_logic_vector(sample_length-1 downto 0) := std_logic_vector(to_unsigned(32, sample_length));
+		-- signal trigger_level  : std_logic_vector(sample_length-1 downto 0) := (others => '0');
+		signal trigger_slope  : std_logic := '0';
 		signal trigger_mode   : std_logic_vector(0 to 2-1) := "00";
 		alias trigger_freeze  is trigger_mode(0);
 		alias trigger_oneshot is trigger_mode(1);
@@ -486,10 +486,10 @@ begin
 			rgtr_data    => rgtr_revs,
 
 			input_clk    => input_clk,
-			-- input_dv     => input_ena,
-			-- input_data   => input_data,
-			input_dv     => ampsample_dv,
-			input_data   => ampsample_data,
+			input_dv     => input_ena,
+			input_data   => input_data,
+			-- input_dv     => ampsample_dv,
+			-- input_data   => ampsample_data,
 			capture_req  => capture_req,
 			capture_rdy  => captures_rdy(0),
 			time_scale   => time_scale,

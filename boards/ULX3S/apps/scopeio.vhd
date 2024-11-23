@@ -91,7 +91,7 @@ architecture scopeio of ulx3s is
 	constant max_delay   : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 
-	constant inputs      : natural := 8;
+	constant inputs      : natural := 1;
 	signal input_clk     : std_logic;
 	signal input_lck     : std_logic;
 	signal input_chni    : std_logic_vector(4-1 downto 0);
@@ -368,26 +368,26 @@ begin
 
 	-- led <= (left, up, down, right) &tp(1 to 4);
 	led <= tp(1 to 8);
-	stactlr_e : entity hdl4fpga.scopeio_stactlr
-	generic map (
-		debug => debug,
-		layout => layout)
-	port map (
+	-- stactlr_e : entity hdl4fpga.scopeio_stactlr
+	-- generic map (
+		-- debug => debug,
+		-- layout => layout)
+	-- port map (
 		-- tp => tp,
-        left    => left,
-        up      => up,
-        down    => down ,
-        right   => right,
-		video_vton => video_vton,
-		sio_clk => sio_clk,
-		si_frm  => setup_frm,
-		si_irdy => setup_irdy,
-		si_trdy => setup_trdy,
-		si_data => setup_data,
-		so_frm  => iolink_frm,
-		so_irdy => iolink_irdy,
-		so_trdy => iolink_trdy,
-		so_data => iolink_data);
+        -- left    => left,
+        -- up      => up,
+        -- down    => down ,
+        -- right   => right,
+		-- video_vton => video_vton,
+		-- sio_clk => sio_clk,
+		-- si_frm  => setup_frm,
+		-- si_irdy => setup_irdy,
+		-- si_trdy => setup_trdy,
+		-- si_data => setup_data,
+		-- so_frm  => iolink_frm,
+		-- so_irdy => iolink_irdy,
+		-- so_trdy => iolink_trdy,
+		-- so_data => iolink_data);
 
 	inputs_b : block
 		constant mux_sampling : natural := 10;
@@ -723,7 +723,7 @@ begin
 		begin
 			for i in 0 to size-1 loop
 				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer((2.0**(resolution-6)-1.0)*sin(2.0*pi*real(i)/real(size))), resolution));
-				-- retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(2**(resolution-2), resolution));
+				-- retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(i, resolution));
 			end loop;
 			-- retval(resolution*n to resolution*(n+1)-1) := std_logic_vector(to_signed(2**(resolution-1)-1, resolution));
 			-- retval(resolution*n1 to resolution*(n1+1)-1) := (others => '0');
@@ -755,7 +755,7 @@ begin
 		process (input_sample)
 			variable xxx : unsigned(input_samples'range);
 		begin
-			for i in 0 to inputs-1 loop
+			for i in 0 to 1-1 loop
 				input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;
 			end loop;
 		end process;
