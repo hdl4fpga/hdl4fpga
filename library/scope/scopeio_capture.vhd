@@ -79,9 +79,6 @@ begin
 
 		wr_ena  <=(capture_rdy xor capture_req);
 		wr_addr <= rd_addr;
-			-- rd_addr when signed(delay) >= 0 else
-			-- rd_addr + resize(unsigned(shift_right(signed(delay)+1, 1)), rd_addr'length) when downsampling='0' else
-			-- rd_addr + resize(unsigned(shift_right(signed(delay),   0)), rd_addr'length);
 
 		mem_e : entity hdl4fpga.dpram
 		generic map (
@@ -138,21 +135,19 @@ begin
 			rd_clk  => video_clk,
 			rd_addr => std_logic_vector(rd_addr),
 			rd_data => mem_data);
-		video_dv   <= video_frm;
+
+		video_dv <= video_frm;
 		process (video_clk)
-			variable xxx : unsigned(0 to 3*video_data'length/2-1);
+			variable shr : unsigned(0 to 3*video_data'length/2-1);
 		begin
 			if rising_edge(video_clk) then
 				if video_addr(video_addr'right)='0' then
-					xxx(0 to video_data'length-1) := unsigned(mem_data);
+					shr(0 to video_data'length-1) := unsigned(mem_data);
 				end if;
-				xxx := xxx rol video_data'length/2;
-				video_data <= std_logic_vector(xxx(video_data'length/2 to 3*video_data'length/2-1));
-
+				shr := shr rol video_data'length/2;
+				video_data <= std_logic_vector(shr(video_data'length/2 to 3*video_data'length/2-1));
 			end if;
 		end process;
-
-
 	end block;
 
 end;
