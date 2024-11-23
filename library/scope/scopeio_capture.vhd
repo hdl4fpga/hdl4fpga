@@ -106,13 +106,13 @@ begin
 		begin
 			if rising_edge(input_clk) then
 				if (capture_rdy xor capture_req)='1' then
-					if input_dv='0' then
-						if wr_addr0='0' then
+					if wr_addr0='0' then
+						if input_dv='0' then
 							wr_addr <= wr_addr + 1;
-						else
-							capture_rdy <= capture_req;
-							wr_addr <= (others => '0');
 						end if;
+					elsif video_frm='0' then
+						capture_rdy <= capture_req;
+						wr_addr <= (others => '0');
 					end if;
 				else
 					wr_addr <= (others => '0');
@@ -141,11 +141,15 @@ begin
 			variable shr : unsigned(0 to 3*video_data'length/2-1);
 		begin
 			if rising_edge(video_clk) then
-				if video_addr(video_addr'right)='0' then
-					shr(0 to video_data'length-1) := unsigned(mem_data);
+				if downsampling='0' then
+					if video_addr(video_addr'right)='0' then
+						shr(0 to video_data'length-1) := unsigned(mem_data);
+					end if;
+					shr := shr rol video_data'length/2;
+					video_data <= std_logic_vector(shr(video_data'length/2 to 3*video_data'length/2-1));
+				else
+					video_data <= mem_data;
 				end if;
-				shr := shr rol video_data'length/2;
-				video_data <= std_logic_vector(shr(video_data'length/2 to 3*video_data'length/2-1));
 			end if;
 		end process;
 	end block;
