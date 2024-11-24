@@ -11,6 +11,8 @@ entity scopeio_downsampler is
 		factors : natural_vector);
 	port (
 		factor_id    : in  std_logic_vector;
+		capture_req  : in  std_logic;
+		capture_rdy  : in  std_logic := '0';
 		input_clk    : in  std_logic;
 		input_dv     : in  std_logic;
 		input_data   : in  std_logic_vector;
@@ -52,8 +54,8 @@ architecture beh of scopeio_downsampler is
 	constant scaler_bits : natural := signed_num_bits(max(factors)-2);
 
 	signal factor   : std_logic_vector(0 to scaler_bits-1);
-	signal data_min : signed(0 to output_data'length/2-1);
-	signal data_max : signed(0 to output_data'length/2-1);
+	signal data_min : std_logic_vector(0 to output_data'length/2-1);
+	signal data_max : std_logic_vector(0 to output_data'length/2-1);
 
 begin
 
@@ -100,40 +102,50 @@ begin
 	begin
 		sample <= signed(multiplex(input_data, i, sample'length));
 		process (input_clk)
+			type states is (s_init, s_run);
+			variable state : states;
 		begin
 			if rising_edge(input_clk) then
-				if input_dv='1' then
-					if downsampling='0' then
-						if output_dv='0' then
-							maxx <= sample;
-						else
-							minn <= sample;
-						end if;
-					elsif output_dv='1' then
-						maxx <= hdl4fpga.base.max(min0, sample);
-						minn <= hdl4fpga.base.min(max0, sample);
-						max0 <= sample;
-						min0 <= sample;
-					elsif maxx < sample then
-						maxx <= sample;
-						max0 <= sample;
-					elsif max0 < sample then
-						max0 <= sample;
-					end if;
+				if (capture_rdy xor capture_req)='1' then
+    				if input_dv='1' then
+    					if downsampling='0' then
+    						case state is
+    						when s_init =>
+    							maxx <= sample;
+    							minn <= sample;
+								state := s_run;
+    						when s_run => 
+    							maxx <= minn;
+    							minn <= sample;
+    						end case;
+    					elsif output_dv='1' then
+    						maxx <= hdl4fpga.base.max(min0, sample);
+    						minn <= hdl4fpga.base.min(max0, sample);
+    						max0 <= sample;
+    						min0 <= sample;
+    					elsif maxx < sample then
+    						maxx <= sample;
+    						max0 <= sample;
+    					elsif max0 < sample then
+    						max0 <= sample;
+    					end if;
 
-					if minn > sample then
-						minn <= sample;
-						min0 <= sample;
-					elsif min0 > sample then
-						min0 <= sample;
-					end if;
+    					if minn > sample then
+    						minn <= sample;
+    						min0 <= sample;
+    					elsif min0 > sample then
+    						min0 <= sample;
+    					end if;
+    				end if;
+				else
+					state := s_init;
 				end if;
 			end if;
 		end process;
-		data_max(i*sample'length to (i+1)*sample'length-1) <= maxx;
-		data_min(i*sample'length to (i+1)*sample'length-1) <= minn;
+		data_max(i*sample'length to (i+1)*sample'length-1) <= std_logic_vector(maxx);
+		data_min(i*sample'length to (i+1)*sample'length-1) <= std_logic_vector(minn);
 	end generate;
 
-	output_data <= std_logic_vector(data_max & data_min);
+	output_data <= data_max & data_min;
 
 end;

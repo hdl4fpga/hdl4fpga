@@ -64,8 +64,7 @@ architecture beh of scopeio_capture is
 begin
  
 	delayed_b : block
-		signal wr_ena  : std_logic;
-		signal wr_addr : unsigned(unsigned_num_bits(max_pretrigger-1)-1 downto 1) := (others => '0'); -- Debug purpose
+		signal wr_addr : unsigned(unsigned_num_bits(max_pretrigger-1)-1 downto 0) := (others => '0'); -- Debug purpose
 		signal rd_addr : unsigned(wr_addr'range) := (others => '0');
 		signal rd_data : std_logic_vector(dlyd_data'range);
 	begin
@@ -76,15 +75,12 @@ begin
 			end if;
 		end process;
 
-		wr_ena  <= '1'; --(capture_rdy xor capture_req);
-
 		mem_e : entity hdl4fpga.dpram
 		generic map (
 			synchronous_rdaddr => true,
 			synchronous_rddata => true)
 		port map (
 			wr_clk  => input_clk,
-			wr_ena  => wr_ena,
 			wr_addr => std_logic_vector(wr_addr),
 			wr_data => input_data,
 
@@ -92,7 +88,7 @@ begin
 			rd_addr => std_logic_vector(rd_addr),
 			rd_data => rd_data);
 
-		rd_addr <= wr_addr+4;
+		rd_addr <= wr_addr-10;
 		process (input_clk)
 			constant delay_lsb : std_logic := '0';
 			variable shr : unsigned(0 to 3*input_data'length/2-1);
@@ -138,7 +134,7 @@ begin
 			end if;
 		end process;
 
-		rd_addr <= resize(shift_right(unsigned(video_addr), 1), rd_addr'length);
+		rd_addr <= resize(shift_right(unsigned(video_addr)-20, 1), rd_addr'length);
 		wr_ena  <= (capture_rdy xor capture_req);
 		mem_e : entity hdl4fpga.dpram
 		generic map (

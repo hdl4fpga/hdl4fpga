@@ -113,9 +113,11 @@ architecture def of scopeio_btnctlr is
 			others         => 0);
 	begin
 		retval(3*(inputs-1)+wid_input) := retval(wid_input);
-		retval(wid_input) := wid_input+3;
-		retval(3*(inputs-1)+wid_inscale) := retval(wid_inscale);
-		retval(wid_inscale) := wid_inposition+3;
+		if inputs > 1 then 
+			retval(wid_input) := wid_input+3;
+			retval(3*(inputs-1)+wid_inscale) := retval(wid_inscale);
+			retval(wid_inscale) := wid_inposition+3;
+		end if;
 		for i in wid_inscale+1 to wid_inscale+3*(inputs-2) loop
 			retval(i) := retval(i-3) + 3;
 		end loop;

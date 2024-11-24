@@ -303,10 +303,10 @@ begin
 		signal setup_req : std_logic := '0';
 		signal setup_rdy : std_logic := '0';
 
-        signal setup_frm  : std_logic := '0';
-        signal setup_irdy : std_logic := '0';
-        signal setup_trdy : std_logic := '1';
-        signal setup_data : std_logic_vector(si_data'range);
+		signal setup_frm  : std_logic := '0';
+		signal setup_irdy : std_logic := '0';
+		signal setup_trdy : std_logic := '1';
+		signal setup_data : std_logic_vector(si_data'range);
 
 		signal data      : std_logic_vector(0 to 8-1);
 		constant bitdata : std_logic_vector := rid_hzaxis & x"02" & x"0" & x"4" & (0 to hzoffset_maxsize-1 => '0');
@@ -339,16 +339,16 @@ begin
 					addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
 				elsif (setup_rdy xor setup_req)='1' then
 					if so_trdy='1' then
-					    if addr(0)='0' then
-					    	setup_frm  <= '1';
-					    	setup_irdy <= '1';
-					    	addr <= addr - 1;
-					    else
-					    	setup_frm  <= '0';
-					    	setup_irdy <= '0';
-					    	setup_rdy  <= setup_req;
-					    	addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
-					    end if;
+						if addr(0)='0' then
+							setup_frm  <= '1';
+							setup_irdy <= '1';
+							addr <= addr - 1;
+						else
+							setup_frm  <= '0';
+							setup_irdy <= '0';
+							setup_rdy  <= setup_req;
+							addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
+						end if;
 					end if;
 				else
 					setup_frm  <= '0';
@@ -373,11 +373,10 @@ begin
 		-- debug => debug,
 		-- layout => layout)
 	-- port map (
-		-- tp => tp,
-        -- left    => left,
-        -- up      => up,
-        -- down    => down ,
-        -- right   => right,
+		-- left    => left,
+		-- up      => up,
+		-- down    => down ,
+		-- right   => right,
 		-- video_vton => video_vton,
 		-- sio_clk => sio_clk,
 		-- si_frm  => setup_frm,
@@ -389,6 +388,10 @@ begin
 		-- so_trdy => iolink_trdy,
 		-- so_data => iolink_data);
 
+	iolink_frm  <= setup_frm;
+	iolink_irdy <= setup_irdy;
+	setup_trdy  <= iolink_trdy;
+	iolink_data <= setup_data;
 	inputs_b : block
 		constant mux_sampling : natural := 10;
 
@@ -574,60 +577,60 @@ begin
 		do  => sdrphy_sti);
 
 	sdramphy_g : if sdram_data/="none" and phy_data/="none" generate
-    	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
-    	generic map (
-    		gear       => gear,
-    		bank_size  => sdram_ba'length,
-    		addr_size  => sdram_a'length,
-    		word_size  => sdram_d'length,
-    		byte_size  => sdram_d'length/sdram_dqm'length,
-    		wr_fifo    => false,
-    		rd_fifo    => false,
-    		bypass     => false)
-    	port map (
-    		sclk       => ctlr_clk,
-    		rst        => sdrsys_rst,
+		sdrphy_e : entity hdl4fpga.ecp5_sdrphy
+		generic map (
+			gear       => gear,
+			bank_size  => sdram_ba'length,
+			addr_size  => sdram_a'length,
+			word_size  => sdram_d'length,
+			byte_size  => sdram_d'length/sdram_dqm'length,
+			wr_fifo    => false,
+			rd_fifo    => false,
+			bypass     => false)
+		port map (
+			sclk       => ctlr_clk,
+			rst        => sdrsys_rst,
 
-    		sys_cs(0)  => ctlrphy_cs,
-    		sys_cke(0) => ctlrphy_cke,
-    		sys_ras(0) => ctlrphy_ras,
-    		sys_cas(0) => ctlrphy_cas,
-    		sys_we(0)  => ctlrphy_we,
-    		sys_b      => ctlrphy_b,
-    		sys_a      => ctlrphy_a,
-    		sys_dmi    => ctlrphy_dmo,
-    		sys_dqi    => ctlrphy_dqo,
-    		sys_dqt    => ctlrphy_dqt,
-    		sys_dqo    => ctlrphy_dqi,
-    		sys_sto    => ctlrphy_sti,
-    		sys_sti    => sdrphy_sti,
+			sys_cs(0)  => ctlrphy_cs,
+			sys_cke(0) => ctlrphy_cke,
+			sys_ras(0) => ctlrphy_ras,
+			sys_cas(0) => ctlrphy_cas,
+			sys_we(0)  => ctlrphy_we,
+			sys_b      => ctlrphy_b,
+			sys_a      => ctlrphy_a,
+			sys_dmi    => ctlrphy_dmo,
+			sys_dqi    => ctlrphy_dqo,
+			sys_dqt    => ctlrphy_dqt,
+			sys_dqo    => ctlrphy_dqi,
+			sys_sto    => ctlrphy_sti,
+			sys_sti    => sdrphy_sti,
 
-    		sdram_clk  => sdram_clk,
-    		sdram_cke  => sdram_cke,
-    		sdram_cs   => sdram_csn,
-    		sdram_ras  => sdram_rasn,
-    		sdram_cas  => sdram_casn,
-    		sdram_we   => sdram_wen,
-    		sdram_b    => sdram_ba,
-    		sdram_a    => sdram_a,
-    		sdram_dqs  => sdram_dqs,
+			sdram_clk  => sdram_clk,
+			sdram_cke  => sdram_cke,
+			sdram_cs   => sdram_csn,
+			sdram_ras  => sdram_rasn,
+			sdram_cas  => sdram_casn,
+			sdram_we   => sdram_wen,
+			sdram_b    => sdram_ba,
+			sdram_a    => sdram_a,
+			sdram_dqs  => sdram_dqs,
 
-    		sdram_dm   => sdram_dqm,
-    		sdram_dq   => sdram_d);
+			sdram_dm   => sdram_dqm,
+			sdram_dq   => sdram_d);
 	end generate;
 
 	nosdram_g : if sdram_data="none" or phy_data="none" generate
-    	sdram_clk  <= 'Z';
-    	sdram_cke  <= 'Z';
-    	sdram_csn  <= '1';
-    	sdram_rasn <= 'Z';
-    	sdram_casn <= 'Z';
-    	sdram_wen  <= 'Z';
-    	sdram_ba   <= (others => 'Z');
-    	sdram_a    <= (others => 'Z');
+		sdram_clk  <= 'Z';
+		sdram_cke  <= 'Z';
+		sdram_csn  <= '1';
+		sdram_rasn <= 'Z';
+		sdram_casn <= 'Z';
+		sdram_wen  <= 'Z';
+		sdram_ba   <= (others => 'Z');
+		sdram_a    <= (others => 'Z');
 
-    	sdram_dqm  <= (others => 'Z');
-    	sdram_d    <= (others => 'Z');
+		sdram_dqm  <= (others => 'Z');
+		sdram_d    <= (others => 'Z');
 	end generate;
 
 	-- HDMI/DVI VGA --
@@ -709,7 +712,7 @@ begin
 
 	synth_g : if tsttab generate
 		signal input_sample  : std_logic_vector(13-1 downto 0);
-		constant size : natural := 256; --2**input_sample'length;
+		constant size : natural := 128; --2**input_sample'length;
 
 		function sintab (
 			constant size       : natural;
@@ -723,7 +726,7 @@ begin
 		begin
 			for i in 0 to size-1 loop
 				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer((2.0**(resolution-6)-1.0)*sin(2.0*pi*real(i)/real(size))), resolution));
-				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(i, resolution));
+				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_unsigned(i, resolution));
 			end loop;
 			-- retval(resolution*n to resolution*(n+1)-1) := std_logic_vector(to_signed(2**(resolution-1)-1, resolution));
 			-- retval(resolution*n1 to resolution*(n1+1)-1) := (others => '0');
@@ -763,21 +766,21 @@ begin
 	end generate;
 
 	max1112x_g : if not tsttab generate
-    	process (input_clk)
-    	begin
-    		if rising_edge(input_clk) then
-    			if input_ena='1' then
-    				for i in 0 to inputs-1 loop
-    					if unsigned(input_chno)=i then
-    						-- assert false
-    						-- report integer'image(i) & " : " & to_string(input_chno) & ": " & std_logic'image(input_ena)
-    						-- severity WARNING;
-    						input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;
-    					end if;
-    				end loop;
-    			end if;
-    		end if;
-    	end process;
+		process (input_clk)
+		begin
+			if rising_edge(input_clk) then
+				if input_ena='1' then
+					for i in 0 to inputs-1 loop
+						if unsigned(input_chno)=i then
+							-- assert false
+							-- report integer'image(i) & " : " & to_string(input_chno) & ": " & std_logic'image(input_ena)
+							-- severity WARNING;
+							input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;
+						end if;
+					end loop;
+				end if;
+			end if;
+		end process;
 	end generate;
 
 	max1112x_b : block
