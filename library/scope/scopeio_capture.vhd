@@ -168,7 +168,7 @@ begin
 		lat_e : entity hdl4fpga.latency 
 		generic map (
 			n => 1,
-			d => (0 to 0 => 0))
+			d => (0 to 0 => 3))
 		port map (
 			clk   => video_clk,
 			di(0) => video_frm,
