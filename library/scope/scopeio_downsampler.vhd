@@ -102,44 +102,31 @@ begin
 	begin
 		sample <= signed(multiplex(input_data, i, sample'length));
 		process (input_clk)
-			type states is (s_init, s_run);
-			variable state : states;
 		begin
 			if rising_edge(input_clk) then
-				if (capture_rdy xor capture_req)='1' then
-    				if input_dv='1' then
-    					if downsampling='0' then
-    						case state is
-    						when s_init =>
-    							maxx <= sample;
-    							minn <= sample;
-								state := s_run;
-    						when s_run => 
-    							maxx <= minn;
-    							minn <= sample;
-    						end case;
-    					elsif output_dv='1' then
-    						maxx <= hdl4fpga.base.max(min0, sample);
-    						minn <= hdl4fpga.base.min(max0, sample);
-    						max0 <= sample;
-    						min0 <= sample;
-    					elsif maxx < sample then
-    						maxx <= sample;
-    						max0 <= sample;
-    					elsif max0 < sample then
-    						max0 <= sample;
-    					end if;
+   				if input_dv='1' then
+   					if downsampling='0' then
+   						maxx <= minn;
+   						minn <= sample;
+   					elsif output_dv='1' then
+   						maxx <= hdl4fpga.base.max(min0, sample);
+   						minn <= hdl4fpga.base.min(max0, sample);
+   						max0 <= sample;
+   						min0 <= sample;
+   					elsif maxx < sample then
+   						maxx <= sample;
+   						max0 <= sample;
+   					elsif max0 < sample then
+   						max0 <= sample;
+   					end if;
 
-    					if minn > sample then
-    						minn <= sample;
-    						min0 <= sample;
-    					elsif min0 > sample then
-    						min0 <= sample;
-    					end if;
-    				end if;
-				else
-					state := s_init;
-				end if;
+   					if minn > sample then
+   						minn <= sample;
+   						min0 <= sample;
+   					elsif min0 > sample then
+   						min0 <= sample;
+   					end if;
+   				end if;
 			end if;
 		end process;
 		data_max(i*sample'length to (i+1)*sample'length-1) <= std_logic_vector(maxx);
