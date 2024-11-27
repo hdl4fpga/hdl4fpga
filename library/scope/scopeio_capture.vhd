@@ -170,6 +170,7 @@ begin
 				end if;
 			end if;
 		end process;
+
 		lat_e : entity hdl4fpga.latency 
 		generic map (
 			n => 1,
@@ -178,7 +179,6 @@ begin
 			clk   => video_clk,
 			di(0) => video_frm,
 			do(0) => video_dv);
-
 	end block;
 
 end;
