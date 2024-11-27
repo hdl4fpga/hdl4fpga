@@ -41,8 +41,7 @@ entity scopeio_tds is
 		rgtr_data        : in  std_logic_vector;
 
 		input_clk        : in  std_logic;
-		capture_req      : in  std_logic;
-		capture_rdy      : buffer std_logic := '0';
+		trigger_shot     : in  std_logic;
 		input_dv         : in  std_logic;
 		input_data       : in  std_logic_vector;
 		time_scale       : in  std_logic_vector;
@@ -68,12 +67,10 @@ architecture mix of scopeio_tds is
 	signal triggersample_data : std_logic_vector(input_data'range);
 
 	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
-	-- signal resizedsample_data : std_logic_vector(input_data'range);
 	signal downsample_ishot   : std_logic;
 	signal downsample_dv      : std_logic;
 	signal downsampling       : std_logic;
 	signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
-	-- signal downsample_data    : std_logic_vector(0 to 2*input_data'length-1);
 
 begin
 
@@ -91,8 +88,6 @@ begin
 	port map (
 		factor_id     => b"0000",  --Debug purpose
 		input_clk     => input_clk,
-		capture_req   => capture_req,
-		capture_rdy   => capture_rdy,
 		input_dv      => input_dv,
 		input_data    => resizedsample_data,
 		downsampling  => downsampling,
@@ -103,8 +98,7 @@ begin
 	port map (
 		rgtr_clk     => rgtr_clk,
 		input_clk    => input_clk,
-		capture_req  => capture_req,
-		capture_rdy  => capture_rdy,
+		trigger_shot => trigger_shot,
 		downsampling => downsampling,
 		input_dv     => downsample_dv,
 		input_data   => downsample_data,

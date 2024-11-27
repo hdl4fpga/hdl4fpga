@@ -11,8 +11,6 @@ entity scopeio_downsampler is
 		factors : natural_vector);
 	port (
 		factor_id    : in  std_logic_vector;
-		capture_req  : in  std_logic;
-		capture_rdy  : in  std_logic := '0';
 		input_clk    : in  std_logic;
 		input_dv     : in  std_logic;
 		input_data   : in  std_logic_vector;
@@ -89,7 +87,11 @@ begin
 					scaler := scaler - 1;
 				end if;
 			end if;
-			output_dv <= scaler(0);
+			if downsampling='0' then
+				output_dv <= '1';
+			else
+			end if;
+				output_dv <= scaler(0);
 		end if;
 	end process;
 

@@ -712,7 +712,7 @@ begin
 
 	synth_g : if tsttab generate
 		signal input_sample  : std_logic_vector(13-1 downto 0);
-		constant size : natural := 128; --2**input_sample'length;
+		constant size : natural := 2**11; --2**input_sample'length;
 
 		function sintab (
 			constant size       : natural;
@@ -725,8 +725,11 @@ begin
 			variable retval : std_logic_vector(0 to size*resolution-1);
 		begin
 			for i in 0 to size-1 loop
-				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer((2.0**(resolution-6)-1.0)*sin(2.0*pi*real(i)/real(size))), resolution));
-				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_unsigned(i, resolution));
+				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_unsigned(127, resolution));
+				if i=0 then 
+					retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_unsigned(0, resolution));
+				end if;
+				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer((2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i)/real(size))), resolution));
 			end loop;
 			-- retval(resolution*n to resolution*(n+1)-1) := std_logic_vector(to_signed(2**(resolution-1)-1, resolution));
 			-- retval(resolution*n1 to resolution*(n1+1)-1) := (others => '0');

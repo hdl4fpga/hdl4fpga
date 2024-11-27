@@ -169,12 +169,7 @@ architecture beh of scopeio is
 	signal data_irdy     : std_logic;
 	signal data_ptr      : std_logic_vector(8-1 downto 0);
 
-	signal trigger_req   : std_logic := '0';
-	signal trigger_rdy   : std_logic := '0';
-	signal captures_rdy  : std_logic_vector(0 to 2-1);
-   	signal capture_req   : std_logic := '0';
-   	signal capture_rdy   : std_logic := '0';
-
+	signal trigger_shot  : std_logic;
 begin
 
 	assert inputs < max_inputs
@@ -210,7 +205,6 @@ begin
 		alias trigger_freeze  is trigger_mode(0);
 		alias trigger_oneshot is trigger_mode(1);
 
-		signal trigger_shot       : std_logic;
 		signal triggersample_dv   : std_logic;
 		signal triggersample_data : std_logic_vector(input_data'range);
 
@@ -249,42 +243,6 @@ begin
 			trigger_slope  => trigger_slope,
 			trigger_shot   => trigger_shot);
 
-    	process (input_clk)
-    	begin
-    		if rising_edge(input_clk) then
-    			if (capture_req xor capture_rdy)='0' then
-					case trigger_mode is
-					when free_mode =>
-						if trigger_shot='1' then
-							capture_req <= not capture_rdy;
-						elsif (trigger_rdy xor trigger_req)='1' then
-							capture_req <= not capture_rdy;
-							trigger_rdy <= trigger_req;
-						end if;
-					when norm_mode|osht_mode =>
-						if trigger_shot='1' then
-							capture_req <= not capture_rdy;
-						end if;
-					when others =>
-					end case;
-    			else
-					case trigger_mode is
-					when free_mode|norm_mode =>
-						for i in captures_rdy'range loop
-							if (captures_rdy(i) xor capture_req)='0' then
-								capture_rdy <= capture_req;
-							end if;
-						end loop;
-					when others =>
-					end case;
-    			end if; 
-    		end if;
-    	end process;
-
-		tp(1) <= capture_rdy;
-		tp(2) <= not capture_rdy;
-		tp(3) <= capture_req;
-		tp(4) <= not capture_req;
 	end block;
 
 	waveform_g : if waveform /= "none" generate
@@ -357,8 +315,6 @@ begin
 		signal video_frm      : std_logic;
 		signal video_dv       : std_logic;
 		signal video_data     : std_logic_vector(0 to 2*inputs*storage_word'length-1);
-		-- signal video_data     : std_logic_vector(0 to 2*input_data'length-1);
-
 
 		signal time_offset    : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal time_scale     : std_logic_vector(4-1 downto 0);
@@ -472,7 +428,7 @@ begin
 			ampsample_dv <= output_ena(0);
 		end block;
 
-		scopeio_tds_e : scopeio_tds
+		scopeio_tds_e : entity hdl4fpga.scopeio_tds
 		generic map  (
 			inputs       => inputs,
 			storageword_size => storage_word'length,
@@ -484,18 +440,14 @@ begin
 			rgtr_data    => rgtr_revs,
 
 			input_clk    => input_clk,
-			capture_req  => capture_req,
-			capture_rdy  => captures_rdy(0),
-			input_dv     => input_ena,
-			input_data   => input_data,
-			-- input_dv     => ampsample_dv,
-			-- input_data   => ampsample_data,
+			trigger_shot => trigger_shot,
+			input_dv     => ampsample_dv,
+			input_data   => ampsample_data,
 			time_scale   => time_scale,
 			time_offset  => (time_offset'range => '0'),
 			trigger_freeze => trigger_freeze,
 
 			video_clk    => video_clk,
-			-- video_addr   => video_addr(4 to capture_bits-1),  
 			video_addr   => video_addr,  
 			video_vton   => video_vton,  
 			video_frm    => video_frm,  

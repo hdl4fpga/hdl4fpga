@@ -78,10 +78,7 @@ end;
 
 architecture beh of scopeio_video is
 	
-	constant storageaddr_latency  : natural := 1;
-	constant storagebram_latency  : natural := 2;
-	constant vdata_latency        : natural := 1;
-	constant input_latency        : natural := storageaddr_latency+storagebram_latency+vdata_latency;
+	constant input_latency        : natural := 4;
 	constant mainrgtrin_latency   : natural := 1;
 	constant mainrgtrout_latency  : natural := 1;
 	constant mainrgtrio_latency   : natural := mainrgtrin_latency+mainrgtrout_latency;
@@ -148,17 +145,7 @@ architecture beh of scopeio_video is
 	signal sgmntbox_ena  : std_logic_vector(0 to num_of_segments-1);
 	signal pointer_dot   : std_logic;
 
-	signal vdv   : std_logic;
-	signal vdata : std_logic_vector(video_data'range);
 begin
-
-	process (video_clk)
-	begin
-		if rising_edge(video_clk) then
-			vdv   <= video_dv;
-			vdata <= video_data;
-		end if;
-	end process;
 
 	rgtrtrigger_e : entity hdl4fpga.scopeio_rgtrtrigger
 	port map (
@@ -301,8 +288,8 @@ begin
 		vt_on         => vt_on,
 		grid_on       => grid_on,
 
-		sample_dv     => vdv,
-		sample_data   => vdata,
+		sample_dv     => video_dv,
+		sample_data   => video_data,
 		trigger_chanid => trigger_chanid,
 		trigger_level => trigger_level,
 		grid_dot      => grid_dot,

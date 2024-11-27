@@ -176,8 +176,7 @@ begin
 	end block;
 
 	trace_b : block
-		constant drawvline_latency : natural := 2;
-		constant traceena_latency  : natural := 2;
+		constant drawvline_latency : natural := 2+1;
 
 		signal dots : std_logic_vector(0 to trace_dots'length-1);
 		signal vline : std_logic_vector(y'range);
@@ -198,9 +197,9 @@ begin
 		port map (
 			clk      => video_clk,
 			ena      => sample_dv,
+			ys       => sample_data,
 			vline    => vline,
 			offsets  => vt_offsets,
-			ys       => sample_data,
 			dots     => dots);
 
 		align_e :entity hdl4fpga.latency
