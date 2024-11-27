@@ -87,11 +87,7 @@ begin
 					scaler := scaler - 1;
 				end if;
 			end if;
-			if downsampling='0' then
-				output_dv <= '1';
-			else
-			end if;
-				output_dv <= scaler(0);
+			output_dv <= scaler(0);
 		end if;
 	end process;
 

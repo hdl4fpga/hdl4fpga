@@ -86,7 +86,7 @@ begin
 		inputs  => inputs,
 		factors => time_factors)
 	port map (
-		factor_id     => b"0000",  --Debug purpose
+		factor_id     => time_scale,  --Debug purpose
 		input_clk     => input_clk,
 		input_dv      => input_dv,
 		input_data    => resizedsample_data,
