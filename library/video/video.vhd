@@ -64,7 +64,7 @@ architecture def of box_edges is
 begin
 
 	process (video_clk)
-		variable div : std_logic_vector(video_div'length-1 downto 0) := (others => '0');
+		variable div : std_logic_vector(video_div'length-1 downto 0) := (others => '1');
 	begin
 		if rising_edge(video_clk) then
 			if video_ini='1' then
@@ -130,20 +130,6 @@ entity video_sync is
 end;
 
 architecture mix of video_sync is
-
-	signal hz_ini  : std_logic;
-	signal vt_ini  : std_logic;
-	signal hz_edge : std_logic;
-	signal vt_edge : std_logic;
-	signal hz_next : std_logic;
-	signal vt_next : std_logic;
-	signal hz_div  : std_logic_vector(2-1 downto 0);
-	signal vt_div  : std_logic_vector(2-1 downto 0);
-	signal hz_cntr : std_logic_vector(video_hzcntr'range) := (others => '0');
-	signal vt_cntr : std_logic_vector(video_vtcntr'range) := (others => '1');
-
-	signal extern_vton : std_logic;
-
 	function user_fallback (
 		timing_id : videotiming_ids;
 		modeline  : natural_vector)
@@ -156,6 +142,20 @@ architecture mix of video_sync is
 	end;
 
 	constant modeline_data : natural_vector := user_fallback(timing_id, modeline);
+
+	signal hz_ini  : std_logic;
+	signal vt_ini  : std_logic;
+	signal hz_edge : std_logic;
+	signal vt_edge : std_logic;
+	signal hz_next : std_logic;
+	signal vt_next : std_logic;
+	signal hz_div  : std_logic_vector(2-1 downto 0);
+	signal vt_div  : std_logic_vector(2-1 downto 0);
+	signal hz_cntr : std_logic_vector(video_hzcntr'range) := (others => '0');
+	signal vt_cntr : std_logic_vector(video_vtcntr'range) := std_logic_vector(to_unsigned(modeline_data(7-1), video_vtcntr'length)); --(others => '1');
+
+	signal extern_vton : std_logic;
+
 begin
 
 	hz_ini  <= hz_edge and setif(hz_div="11");
