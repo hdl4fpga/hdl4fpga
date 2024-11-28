@@ -444,6 +444,8 @@ begin
 			trigger_shot => trigger_shot,
 			input_dv     => ampsample_dv,
 			input_data   => ampsample_data,
+			-- input_dv     => input_ena,
+			-- input_data   => input_data,
 			time_scale   => time_scale,
 			time_offset  => (time_offset'range => '0'),
 			trigger_freeze => trigger_freeze,

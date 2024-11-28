@@ -74,10 +74,10 @@ begin
 			if rising_edge(input_clk) then
 				if input_dv='1' then
 					wr_addr <= wr_addr + 1;
-					rd_addr <= wr_addr;
 				end if;
 			end if;
 		end process;
+		rd_addr <= wr_addr;
 
 		mem_e : entity hdl4fpga.dpram
 		generic map (
@@ -123,7 +123,7 @@ begin
 
 	video_b : block
 		signal wr_ena  : std_logic;
-		signal wr_addr : unsigned(video_addr'length   downto 1);
+		signal wr_addr : unsigned(video_addr'length   downto 1) := (others => '0');
 		signal wr_data : std_logic_vector(input_data'range);
 		signal rd_addr : unsigned(video_addr'length-1 downto 1);
 		signal rd_data   : std_logic_vector(video_data'range);
