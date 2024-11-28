@@ -137,10 +137,10 @@ architecture mix of video_sync is
 	signal vt_edge : std_logic;
 	signal hz_next : std_logic;
 	signal vt_next : std_logic;
-	signal hz_div  : std_logic_vector(2-1 downto 0) := (others => '0');
-	signal vt_div  : std_logic_vector(2-1 downto 0) := (others => '0');
+	signal hz_div  : std_logic_vector(2-1 downto 0) := (others => '1');
+	signal vt_div  : std_logic_vector(2-1 downto 0) := (others => '1');
 	signal hz_cntr : std_logic_vector(video_hzcntr'range) := (others => '0');
-	signal vt_cntr : std_logic_vector(video_vtcntr'range) := (others => '0');
+	signal vt_cntr : std_logic_vector(video_vtcntr'range) := (others => '1');
 
 	signal extern_vton : std_logic;
 
@@ -374,9 +374,7 @@ begin
 			box_y <= std_logic_vector(y);
 		end if;
 	end process;
-end architecture;
-
-
+end;
 
 library ieee;
 use ieee.std_logic_1164.all;
