@@ -434,6 +434,7 @@ begin
 			storageword_size => storage_word'length,
 			time_factors => time_factors)
 		port map (
+			tp => tp,
 			rgtr_clk     => sio_clk,
 			rgtr_dv      => rgtr_dv,
 			rgtr_id      => rgtr_id,

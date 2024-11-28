@@ -35,25 +35,26 @@ entity scopeio_tds is
 		time_factors     : natural_vector;
 		storageword_size : natural);
 	port (
-		rgtr_clk         : in  std_logic;
-		rgtr_dv          : in  std_logic;
-		rgtr_id          : in  std_logic_vector(8-1 downto 0);
-		rgtr_data        : in  std_logic_vector;
+		tp             : out std_logic_vector(1 to 32);
+		rgtr_clk       : in  std_logic;
+		rgtr_dv        : in  std_logic;
+		rgtr_id        : in  std_logic_vector(8-1 downto 0);
+		rgtr_data      : in  std_logic_vector;
 
-		input_clk        : in  std_logic;
-		trigger_shot     : in  std_logic;
-		input_dv         : in  std_logic;
-		input_data       : in  std_logic_vector;
-		time_scale       : in  std_logic_vector;
-		time_offset      : in  std_logic_vector;
-		trigger_freeze   : buffer std_logic;
+		input_clk      : in  std_logic;
+		trigger_shot   : in  std_logic;
+		input_dv       : in  std_logic;
+		input_data     : in  std_logic_vector;
+		time_scale     : in  std_logic_vector;
+		time_offset    : in  std_logic_vector;
+		trigger_freeze : buffer std_logic;
 
-		video_clk        : in  std_logic;
-		video_vton       : in  std_logic;
-		video_frm        : in  std_logic;
-		video_addr       : in  std_logic_vector;
-		video_dv         : out std_logic;
-		video_data       : out std_logic_vector);
+		video_clk      : in  std_logic;
+		video_vton     : in  std_logic;
+		video_frm      : in  std_logic;
+		video_addr     : in  std_logic_vector;
+		video_dv       : out std_logic;
+		video_data     : out std_logic_vector);
 
 	constant chanid_bits : natural := unsigned_num_bits(inputs-1);
 
@@ -72,6 +73,9 @@ architecture mix of scopeio_tds is
 	signal downsampling       : std_logic;
 	signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
 
+	signal capture_req        : std_logic;
+	signal capture_rdy        : std_logic;
+
 begin
 
 	scopeio_resize_e : entity hdl4fpga.scopeio_resize
@@ -81,18 +85,22 @@ begin
 		input_data  => input_data,
 		output_data => resizedsample_data);
 
+	tp(1) <= downsampling;
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	generic map (
 		inputs  => inputs,
 		factors => time_factors)
 	port map (
-		factor_id     => time_scale,  --Debug purpose
-		input_clk     => input_clk,
-		input_dv      => input_dv,
-		input_data    => resizedsample_data,
-		downsampling  => downsampling,
-		output_dv     => downsample_dv,
-		output_data   => downsample_data);
+		factor_id    => time_scale,  --Debug purpose
+		input_clk    => input_clk,
+		input_dv     => input_dv,
+		input_data   => resizedsample_data,
+		trigger_shot => trigger_shot,
+		downsampling => downsampling,
+		capture_req  => capture_req,
+		capture_rdy  => capture_rdy,
+		output_dv    => downsample_dv,
+		output_data  => downsample_data);
 
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture
 	port map (
@@ -100,6 +108,8 @@ begin
 		input_clk    => input_clk,
 		trigger_shot => trigger_shot,
 		downsampling => downsampling,
+		capture_req  => capture_req,
+		capture_rdy  => capture_rdy,
 		input_dv     => downsample_dv,
 		input_data   => downsample_data,
 		time_offset  => time_offset,

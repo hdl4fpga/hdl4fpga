@@ -39,6 +39,8 @@ entity scopeio_capture is
 
 		input_dv     : in  std_logic := '1';
 		input_data   : in  std_logic_vector;
+		capture_req  : buffer  std_logic := '0';
+		capture_rdy  : buffer std_logic := '0';
 		trigger_shot : in  std_logic;
 		time_offset  : in  std_logic_vector;
 
@@ -56,9 +58,9 @@ architecture beh of scopeio_capture is
 	constant fifo_addrbits : natural := unsigned_num_bits(max_pretrigger-1);
 	constant fifo_size     : natural := 2**fifo_addrbits;
 
-	signal mem_data   : std_logic_vector(video_data'range);
-	signal dlyd_data  : std_logic_vector(video_data'range);
 	signal delay      : signed(time_offset'range);
+	signal dlyd_dv    : std_logic;
+	signal dlyd_data  : std_logic_vector(video_data'range);
 
 begin
  
@@ -70,7 +72,10 @@ begin
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
-				wr_addr <= wr_addr + 1;
+				if input_dv='1' then
+					wr_addr <= wr_addr + 1;
+					rd_addr <= wr_addr;
+				end if;
 			end if;
 		end process;
 
@@ -87,7 +92,15 @@ begin
 			rd_addr => std_logic_vector(rd_addr),
 			rd_data => rd_data);
 
-		rd_addr <= wr_addr;
+		lat_e : entity hdl4fpga.latency
+		generic map (
+			n => 1,
+			d => (0 to 0 => 2))
+		port map (
+			clk => input_clk,
+			di(0) => input_dv,
+			do(0) => dlyd_dv);
+
 		process (input_clk)
 			constant delay_lsb : std_logic := '0';
 			variable shr : unsigned(0 to 3*input_data'length/2-1);
@@ -113,31 +126,30 @@ begin
 		signal wr_addr : unsigned(video_addr'length   downto 1);
 		signal wr_data : std_logic_vector(input_data'range);
 		signal rd_addr : unsigned(video_addr'length-1 downto 1);
+		signal rd_data   : std_logic_vector(video_data'range);
 		alias  wraddr_msb    is wr_addr(wr_addr'left);
 		alias  videoaddr_lsb is video_addr(video_addr'right);
 	begin
 		process (input_clk)
-			variable capture_req : bit;
-			variable capture_rdy : bit;
 		begin
 			if rising_edge(input_clk) then
 				if (capture_rdy xor capture_req)='1' then
 					if wraddr_msb='0' then
-						if input_dv='1' then
+						if dlyd_dv='1' then
 							wr_addr <= wr_addr + 1;
 						end if;
 					elsif video_vton='1' then
-						capture_rdy := capture_req;
+						capture_rdy <= capture_req;
 					end if;
 				elsif video_vton='0' then
 					if trigger_shot='1' then
 						wr_addr <= (others => '0');
-						capture_req := not capture_rdy;
+						capture_req <= not capture_rdy;
 					end if;
 				end if;
 			end if;
 		end process;
-				wr_data <= dlyd_data;
+		wr_data <= dlyd_data;
 
 		rd_addr <= resize(shift_right(unsigned(video_addr), 1), rd_addr'length);
 		wr_ena  <= not wraddr_msb;
@@ -153,7 +165,7 @@ begin
 
 			rd_clk  => video_clk,
 			rd_addr => std_logic_vector(rd_addr),
-			rd_data => mem_data);
+			rd_data => rd_data);
 
 		process (video_clk)
 			variable shr : unsigned(0 to 3*video_data'length/2-1);
@@ -161,12 +173,12 @@ begin
 			if rising_edge(video_clk) then
 				if downsampling='0' then
 					if videoaddr_lsb='0' then
-						shr(0 to video_data'length-1) := unsigned(mem_data);
+						shr(0 to video_data'length-1) := unsigned(rd_data);
 					end if;
 					shr := shr rol video_data'length/2;
 					video_data <= std_logic_vector(shr(video_data'length/2 to 3*video_data'length/2-1));
 				else
-					video_data <= mem_data;
+					video_data <= rd_data;
 				end if;
 			end if;
 		end process;

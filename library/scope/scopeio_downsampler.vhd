@@ -14,6 +14,9 @@ entity scopeio_downsampler is
 		input_clk    : in  std_logic;
 		input_dv     : in  std_logic;
 		input_data   : in  std_logic_vector;
+		capture_req  : in  std_logic;
+		capture_rdy  : in  std_logic;
+		trigger_shot : in  std_logic;
 		downsampling : buffer std_logic;
 		output_dv    : buffer std_logic;
 		output_data  : out std_logic_vector);
@@ -87,7 +90,7 @@ begin
 					scaler := scaler - 1;
 				end if;
 			end if;
-			output_dv <= scaler(0);
+			output_dv <= scaler(0) and input_dv;
 		end if;
 	end process;
 
@@ -111,19 +114,21 @@ begin
    						minn <= hdl4fpga.base.min(max0, sample);
    						max0 <= sample;
    						min0 <= sample;
-   					elsif maxx < sample then
-   						maxx <= sample;
-   						max0 <= sample;
-   					elsif max0 < sample then
-   						max0 <= sample;
-   					end if;
+   					else
+						if maxx < sample then
+							maxx <= sample;
+							max0 <= sample;
+						elsif max0 < sample then
+							max0 <= sample;
+						end if;
 
-   					if minn > sample then
-   						minn <= sample;
-   						min0 <= sample;
-   					elsif min0 > sample then
-   						min0 <= sample;
-   					end if;
+						if minn > sample then
+							minn <= sample;
+							min0 <= sample;
+						elsif min0 > sample then
+							min0 <= sample;
+						end if;
+					end if;
    				end if;
 			end if;
 		end process;
