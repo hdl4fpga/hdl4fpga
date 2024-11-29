@@ -29,7 +29,7 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.scopeiopkg.all;
 
-entity scopeio_tds is
+entity scopeio_storage is
 	generic (
 		inputs           : natural;
 		time_factors     : natural_vector;
@@ -60,19 +60,13 @@ entity scopeio_tds is
 
 end;
 
-architecture mix of scopeio_tds is
+architecture mix of scopeio_storage is
 
 	subtype storage_word is std_logic_vector(storageword_size-1 downto 0);
-
-	signal triggersample_dv   : std_logic;
-	signal triggersample_data : std_logic_vector(input_data'range);
-
 	signal resizedsample_data : std_logic_vector(0 to inputs*storage_word'length-1);
-	signal downsample_ishot   : std_logic;
-	signal downsample_dv      : std_logic;
 	signal downsampling       : std_logic;
+	signal downsample_dv      : std_logic;
 	signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
-
 	signal capture_req        : std_logic;
 	signal capture_rdy        : std_logic;
 
@@ -91,8 +85,7 @@ begin
 		inputs  => inputs,
 		factors => time_factors)
 	port map (
-		-- factor_id    =>  x"5", --time_scale,  --Debug purpose
-		factor_id    => time_scale,  --Debug purpose
+		factor_id    => time_scale,
 		input_clk    => input_clk,
 		input_dv     => input_dv,
 		input_data   => resizedsample_data,

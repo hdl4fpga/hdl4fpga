@@ -428,7 +428,7 @@ begin
 			ampsample_dv <= output_ena(0);
 		end block;
 
-		scopeio_tds_e : entity hdl4fpga.scopeio_tds
+		scopeio_storage_e : entity hdl4fpga.scopeio_storage
 		generic map  (
 			inputs       => inputs,
 			storageword_size => storage_word'length,

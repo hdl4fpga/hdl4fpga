@@ -149,8 +149,8 @@ HDL4FPGA__scopeio_tracer__def = $(LIB_HDL4FPGA)/scopeio_tracer/def.dat
 HDL4FPGA__scopeio_tracer = $(LIB_HDL4FPGA)/scopeio_tracer/_primary.dat
 HDL4FPGA__scopeio_textbox__def = $(LIB_HDL4FPGA)/scopeio_textbox/def.dat
 HDL4FPGA__scopeio_textbox = $(LIB_HDL4FPGA)/scopeio_textbox/_primary.dat
-HDL4FPGA__scopeio_tds__mix = $(LIB_HDL4FPGA)/scopeio_tds/mix.dat
-HDL4FPGA__scopeio_tds = $(LIB_HDL4FPGA)/scopeio_tds/_primary.dat
+HDL4FPGA__scopeio_storage__mix = $(LIB_HDL4FPGA)/scopeio_storage/mix.dat
+HDL4FPGA__scopeio_storage = $(LIB_HDL4FPGA)/scopeio_storage/_primary.dat
 HDL4FPGA__scopeio_state__def = $(LIB_HDL4FPGA)/scopeio_state/def.dat
 HDL4FPGA__scopeio_state = $(LIB_HDL4FPGA)/scopeio_state/_primary.dat
 HDL4FPGA__scopeio_stactlr__def = $(LIB_HDL4FPGA)/scopeio_stactlr/def.dat
@@ -519,8 +519,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__scopeio_tracer) \
     $(HDL4FPGA__scopeio_textbox__def) \
     $(HDL4FPGA__scopeio_textbox) \
-    $(HDL4FPGA__scopeio_tds__mix) \
-    $(HDL4FPGA__scopeio_tds) \
+    $(HDL4FPGA__scopeio_storage__mix) \
+    $(HDL4FPGA__scopeio_storage) \
     $(HDL4FPGA__scopeio_state__def) \
     $(HDL4FPGA__scopeio_state) \
     $(HDL4FPGA__scopeio_stactlr__def) \
@@ -801,9 +801,6 @@ $(HDL4FPGA__adjsto__def) : ../xilinx/adjsto.vhd \
 
 $(HDL4FPGA__app_graphics) \
 $(HDL4FPGA__app_graphics__mix) : ../apps/app_graphics.vhd \
-		$(IEEE__math_real) \
-		$(HDL4FPGA__sdrampkg) \
-		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__sdram_ctlr) \
 		$(HDL4FPGA__dmactlr) \
 		$(HDL4FPGA__dvi) \
@@ -818,6 +815,9 @@ $(HDL4FPGA__app_graphics__mix) : ../apps/app_graphics.vhd \
 		$(HDL4FPGA__txn_buffer) \
 		$(HDL4FPGA__sio_sin) \
 		$(HDL4FPGA__videopkg) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__sdrampkg) \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -1624,8 +1624,11 @@ $(HDL4FPGA__scopeio__beh) : ../scope/scopeio.vhd \
 		$(HDL4FPGA__sdram_stream) \
 		$(HDL4FPGA__dvi) \
 		$(HDL4FPGA__scopeio_video) \
+		$(HDL4FPGA__scopeio_storage) \
 		$(HDL4FPGA__scopeio_amp) \
 		$(HDL4FPGA__scopeio_rgtrvtscale) \
+		$(HDL4FPGA__scopeio_trigger) \
+		$(HDL4FPGA__scopeio_rgtrtrigger) \
 		$(HDL4FPGA__sio_sin) \
 		$(HDL4FPGA__scopeiopkg) \
 		$(HDL4FPGA__sdrampkg) \
@@ -1928,13 +1931,11 @@ $(HDL4FPGA__scopeio_state__def) : ../scope/scopeio_state.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_state.vhd
 
-$(HDL4FPGA__scopeio_tds) \
-$(HDL4FPGA__scopeio_tds__mix) : ../scope/scopeio_tds.vhd \
+$(HDL4FPGA__scopeio_storage) \
+$(HDL4FPGA__scopeio_storage__mix) : ../scope/scopeio_storage.vhd \
 		$(HDL4FPGA__scopeio_capture) \
 		$(HDL4FPGA__scopeio_downsampler) \
 		$(HDL4FPGA__scopeio_resize) \
-		$(HDL4FPGA__scopeio_trigger) \
-		$(HDL4FPGA__scopeio_rgtrtrigger) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__hdo) \
 		$(IEEE__math_real) \
@@ -1943,7 +1944,7 @@ $(HDL4FPGA__scopeio_tds__mix) : ../scope/scopeio_tds.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_tds.vhd
+	$(VCOM) -2002 -work hdl4fpga ../scope/scopeio_storage.vhd
 
 $(HDL4FPGA__scopeio_textbox) \
 $(HDL4FPGA__scopeio_textbox__def) : ../scope/scopeio_textbox.vhd \
@@ -1978,7 +1979,6 @@ $(HDL4FPGA__scopeio_tracer__def) : ../scope/scopeio_tracer.vhd \
 
 $(HDL4FPGA__scopeio_trigger) \
 $(HDL4FPGA__scopeio_trigger__beh) : ../scope/scopeio_trigger.vhd \
-		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -2029,10 +2029,10 @@ $(HDL4FPGA__sdram_ctlr__mix) : ../sdram/sdram_ctlr.vhd \
 		$(HDL4FPGA__sdram_mpu) \
 		$(HDL4FPGA__sdram_pgm) \
 		$(HDL4FPGA__sdram_init) \
-		$(IEEE__math_real) \
 		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__base) \
+		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
@@ -2041,6 +2041,7 @@ $(HDL4FPGA__sdram_ctlr__mix) : ../sdram/sdram_ctlr.vhd \
 $(HDL4FPGA__sdram_init) \
 $(HDL4FPGA__sdram_init__def) : ../sdram/sdram_init.vhd \
 		$(HDL4FPGA__timer) \
+		$(HDL4FPGA__rom) \
 		$(HDL4FPGA__sdrampkg) \
 		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__base) \
