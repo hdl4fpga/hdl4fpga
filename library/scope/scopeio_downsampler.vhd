@@ -84,9 +84,9 @@ begin
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
-				if (capture_req xor capture_rdy)='0' and trigger_shot='1' then
+				if scaler(0)='1' then
 					scaler := unsigned(factor);
-				elsif scaler(0)='1' then
+				elsif (capture_req xor capture_rdy)='0' and trigger_shot='1' then
 					scaler := unsigned(factor);
 				else
 					scaler := scaler - 1;
