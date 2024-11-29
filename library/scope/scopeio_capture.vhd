@@ -39,7 +39,7 @@ entity scopeio_capture is
 
 		input_dv     : in  std_logic := '1';
 		input_data   : in  std_logic_vector;
-		capture_req  : buffer  std_logic := '0';
+		capture_req  : buffer std_logic := '0';
 		capture_rdy  : buffer std_logic := '0';
 		trigger_shot : in  std_logic;
 		time_offset  : in  std_logic_vector;
