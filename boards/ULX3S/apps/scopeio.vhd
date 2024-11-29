@@ -730,7 +730,7 @@ begin
 					retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_unsigned(0, resolution));
 				end if;
 				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer((2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i)/real(size))), resolution));
-				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(i mod 128, resolution));
+				-- retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(i mod 128, resolution));
 			end loop;
 			-- retval(resolution*n to resolution*(n+1)-1) := std_logic_vector(to_signed(2**(resolution-1)-1, resolution));
 			-- retval(resolution*n1 to resolution*(n1+1)-1) := (others => '0');
