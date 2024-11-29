@@ -71,7 +71,12 @@ begin
 				end if;
 			end if;
 		end process;
-		rd_addr <= wr_addr + shift_right(resize(signed(time_offset), rd_addr'length),1) when signed(time_offset) < 0 else wr_addr;
+
+		delay <= 
+			shift_right(signed(time_offset),1) when downsampling='0' else
+			shift_right(signed(time_offset),0);
+
+		rd_addr <= wr_addr + resize(delay, rd_addr'length) when signed(delay) < 0 else wr_addr;
 
 		mem_e : entity hdl4fpga.dpram
 		generic map (
