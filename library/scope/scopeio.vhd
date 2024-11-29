@@ -200,7 +200,7 @@ begin
 		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0) := (others => '0');
 		signal trigger_level  : std_logic_vector(sample_length-1 downto 0) := std_logic_vector(to_unsigned(1, sample_length));
 		-- signal trigger_level  : std_logic_vector(sample_length-1 downto 0) := (others => '0');
-		signal trigger_slope  : std_logic := '0';
+		signal trigger_slope  : std_logic := '1';
 		signal trigger_mode   : std_logic_vector(0 to 2-1) := "00";
 		alias trigger_freeze  is trigger_mode(0);
 		alias trigger_oneshot is trigger_mode(1);

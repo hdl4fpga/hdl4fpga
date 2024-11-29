@@ -92,7 +92,7 @@ begin
 			n => 1,
 			d => (0 to 0 => 2))
 		port map (
-			clk => input_clk,
+			clk   => input_clk,
 			di(0) => input_dv,
 			do(0) => dlyd_dv);
 
@@ -128,8 +128,8 @@ begin
 		alias  wraddr_msb    is wr_addr(wr_addr'left);
 		alias  videoaddr_lsb is video_addr(video_addr'right);
 	begin
+
 		process (input_clk)
-			variable sinc : std_logic;
 		begin
 			if rising_edge(input_clk) then
 				if (capture_rdy xor capture_req)='1' then
@@ -140,14 +140,10 @@ begin
 					elsif video_vton='1' then
 						capture_rdy <= capture_req;
 					end if;
-					sinc := '0';
 				elsif video_vton='0' then
-					if sinc='1' and dlyd_dv='0' then
+					if trigger_shot='1' then
 						wr_addr <= (others => '0');
 						capture_req <= not capture_rdy;
-					end if;
-					if trigger_shot='1' then
-						sinc := '1';
 					end if;
 				end if;
 			end if;
