@@ -410,7 +410,7 @@ begin
 				signal gain_id      : std_logic_vector(gainid_bits-1 downto 0);
 			begin
 
-				gain_id <= multiplex(gain_ids, i, gainid_bits);
+				gain_id <= x"6"; --multiplex(gain_ids, i, gainid_bits);
 				input_sample <= multiplex(input_data, i, sample_length);
 				amp_e : entity hdl4fpga.scopeio_amp
 				generic map (
@@ -442,10 +442,10 @@ begin
 
 			input_clk    => input_clk,
 			trigger_shot => trigger_shot,
-			input_dv     => ampsample_dv,
-			input_data   => ampsample_data,
-			-- input_dv     => input_ena,
-			-- input_data   => input_data,
+			-- input_dv     => ampsample_dv,
+			-- input_data   => ampsample_data,
+			input_dv     => input_ena,
+			input_data   => input_data,
 			time_scale   => time_scale,
 			time_offset  => (time_offset'range => '0'),
 			trigger_freeze => trigger_freeze,

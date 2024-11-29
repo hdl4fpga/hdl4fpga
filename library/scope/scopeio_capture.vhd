@@ -155,7 +155,9 @@ begin
 		end process;
 		wr_data <= dlyd_data;
 
-		rd_addr <= resize(shift_right(unsigned(video_addr), 1), rd_addr'length);
+		rd_addr <= 
+			resize(shift_right(unsigned(video_addr), 1), rd_addr'length) when downsampling='0' else
+			resize(shift_right(unsigned(video_addr), 0), rd_addr'length);
 		wr_ena  <= not wraddr_msb and dlyd_dv;
 		mem_e : entity hdl4fpga.dpram
 		generic map (
