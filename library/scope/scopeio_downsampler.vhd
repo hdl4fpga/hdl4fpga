@@ -14,9 +14,9 @@ entity scopeio_downsampler is
 		input_clk    : in  std_logic;
 		input_dv     : in  std_logic;
 		input_data   : in  std_logic_vector;
+		trigger_shot : in  std_logic;
 		capture_req  : in  std_logic;
 		capture_rdy  : in  std_logic;
-		trigger_shot : in  std_logic;
 		downsampling : buffer std_logic;
 		output_dv    : buffer std_logic;
 		output_data  : out std_logic_vector);

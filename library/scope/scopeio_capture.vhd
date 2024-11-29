@@ -53,11 +53,6 @@ entity scopeio_capture is
 end;
 
 architecture beh of scopeio_capture is
-
-	constant bram_latency  : natural := 2;
-	constant fifo_addrbits : natural := unsigned_num_bits(max_pretrigger-1);
-	constant fifo_size     : natural := 2**fifo_addrbits;
-
 	signal delay      : signed(time_offset'range);
 	signal dlyd_dv    : std_logic;
 	signal dlyd_data  : std_logic_vector(video_data'range);
@@ -68,7 +63,6 @@ begin
 		signal wr_addr : unsigned(unsigned_num_bits(max_pretrigger-1)-1 downto 0) := (others => '0'); -- Debug purpose
 		signal rd_addr : unsigned(wr_addr'range) := (others => '0');
 		signal rd_data : std_logic_vector(dlyd_data'range);
-		signal xxx : std_logic;
 	begin
 		process (input_clk)
 		begin
@@ -130,11 +124,13 @@ begin
 		signal wr_addr : unsigned(video_addr'length   downto 1) := (others => '1');
 		signal wr_data : std_logic_vector(input_data'range);
 		signal rd_addr : unsigned(video_addr'length-1 downto 1);
-		signal rd_data   : std_logic_vector(video_data'range);
+		signal rd_data : std_logic_vector(video_data'range);
+
 		alias  wraddr_msb    is wr_addr(wr_addr'left);
 		alias  videoaddr_lsb is video_addr(video_addr'right);
 	begin
 		process (input_clk)
+			variable sinc : std_logic;
 		begin
 			if rising_edge(input_clk) then
 				if (capture_rdy xor capture_req)='1' then
@@ -145,20 +141,21 @@ begin
 					elsif video_vton='1' then
 						capture_rdy <= capture_req;
 					end if;
+					sinc := '0';
 				elsif video_vton='0' then
-					if trigger_shot='1' then
+					if sinc='1' and dlyd_dv='0' then
 						wr_addr <= (others => '0');
 						capture_req <= not capture_rdy;
+					end if;
+					if trigger_shot='1' then
+						sinc := '1';
 					end if;
 				end if;
 			end if;
 		end process;
-		wr_data <= dlyd_data;
 
-		rd_addr <= 
-			resize(shift_right(unsigned(video_addr), 1), rd_addr'length) when downsampling='0' else
-			resize(shift_right(unsigned(video_addr), 0), rd_addr'length);
 		wr_ena  <= not wraddr_msb and dlyd_dv;
+		wr_data <= dlyd_data;
 		mem_e : entity hdl4fpga.dpram
 		generic map (
 			synchronous_rdaddr => true,
@@ -172,6 +169,10 @@ begin
 			rd_clk  => video_clk,
 			rd_addr => std_logic_vector(rd_addr),
 			rd_data => rd_data);
+
+		rd_addr <= 
+			resize(shift_right(unsigned(video_addr), 1), rd_addr'length) when downsampling='0' else
+			resize(shift_right(unsigned(video_addr), 0), rd_addr'length);
 
 		process (video_clk)
 			variable shr : unsigned(0 to 3*video_data'length/2-1);
@@ -197,6 +198,7 @@ begin
 			clk   => video_clk,
 			di(0) => video_frm,
 			do(0) => video_dv);
+
 	end block;
 
 end;
