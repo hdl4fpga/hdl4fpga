@@ -68,6 +68,7 @@ begin
 		signal wr_addr : unsigned(unsigned_num_bits(max_pretrigger-1)-1 downto 0) := (others => '0'); -- Debug purpose
 		signal rd_addr : unsigned(wr_addr'range) := (others => '0');
 		signal rd_data : std_logic_vector(dlyd_data'range);
+		signal xxx : std_logic;
 	begin
 		process (input_clk)
 		begin
@@ -85,6 +86,7 @@ begin
 			synchronous_rddata => true)
 		port map (
 			wr_clk  => input_clk,
+			wr_ena  => input_dv,
 			wr_addr => std_logic_vector(wr_addr),
 			wr_data => input_data,
 
@@ -106,24 +108,26 @@ begin
 			variable shr : unsigned(0 to 3*input_data'length/2-1);
 		begin
 			if rising_edge(input_clk) then
-				if downsampling='0' then
-					if delay_lsb='0' then
-						shr(0 to input_data'length-1) := unsigned(rd_data);
-						shr := shr rol input_data'length/2;
-						dlyd_data <= std_logic_vector(shr(input_data'length/2 to 3*input_data'length/2-1));
-					else
-						dlyd_data <= rd_data;
-					end if;
-				else
-					dlyd_data <= rd_data;
-				end if;
+   				if downsampling='0' then
+   					if delay_lsb='0' then
+						if dlyd_dv='1' then
+							shr(0 to input_data'length-1) := unsigned(rd_data);
+						end if;
+   						shr := shr rol input_data'length/2;
+   						dlyd_data <= std_logic_vector(shr(input_data'length/2 to 3*input_data'length/2-1));
+   					else
+   						dlyd_data <= rd_data;
+   					end if;
+   				elsif dlyd_dv='1' then
+   					dlyd_data <= rd_data;
+   				end if;
 			end if;
 		end process;
 	end block;
 
 	video_b : block
 		signal wr_ena  : std_logic;
-		signal wr_addr : unsigned(video_addr'length   downto 1) := (others => '0');
+		signal wr_addr : unsigned(video_addr'length   downto 1) := (others => '1');
 		signal wr_data : std_logic_vector(input_data'range);
 		signal rd_addr : unsigned(video_addr'length-1 downto 1);
 		signal rd_data   : std_logic_vector(video_data'range);
@@ -152,7 +156,7 @@ begin
 		wr_data <= dlyd_data;
 
 		rd_addr <= resize(shift_right(unsigned(video_addr), 1), rd_addr'length);
-		wr_ena  <= not wraddr_msb;
+		wr_ena  <= not wraddr_msb and dlyd_dv;
 		mem_e : entity hdl4fpga.dpram
 		generic map (
 			synchronous_rdaddr => true,
