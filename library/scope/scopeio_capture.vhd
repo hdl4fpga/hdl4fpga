@@ -59,8 +59,8 @@ architecture beh of scopeio_capture is
 begin
  
 	delayed_b : block
-		signal wr_addr : unsigned(unsigned_num_bits(max_pretrigger-1)-1 downto 0) := (others => '0'); -- Debug purpose
-		signal rd_addr : unsigned(wr_addr'range) := (others => '0');
+		signal wr_addr : signed(unsigned_num_bits(max_pretrigger-1)-1 downto 0) := (others => '0'); -- Debug purpose
+		signal rd_addr : signed(wr_addr'range) := (others => '0');
 		signal rd_data : std_logic_vector(dlyd_data'range);
 	begin
 		process (input_clk)
@@ -71,7 +71,7 @@ begin
 				end if;
 			end if;
 		end process;
-		rd_addr <= wr_addr;
+		rd_addr <= wr_addr + shift_right(resize(signed(time_offset), rd_addr'length),1) when signed(time_offset) < 0 else wr_addr;
 
 		mem_e : entity hdl4fpga.dpram
 		generic map (
@@ -98,11 +98,12 @@ begin
 
 		process (input_clk)
 			constant delay_lsb : std_logic := '0';
+			alias timeoffset_lsb is time_offset(time_offset'right);
 			variable shr : unsigned(0 to 3*input_data'length/2-1);
 		begin
 			if rising_edge(input_clk) then
    				if downsampling='0' then
-   					if delay_lsb='0' then
+   					if timeoffset_lsb='0' then
 						if dlyd_dv='1' then
 							shr(0 to input_data'length-1) := unsigned(rd_data);
 						end if;
