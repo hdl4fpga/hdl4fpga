@@ -36,11 +36,6 @@ entity scopeio_storage is
 		storageword_size : natural);
 	port (
 		tp             : out std_logic_vector(1 to 32);
-		rgtr_clk       : in  std_logic;
-		rgtr_dv        : in  std_logic;
-		rgtr_id        : in  std_logic_vector(8-1 downto 0);
-		rgtr_data      : in  std_logic_vector;
-
 		input_clk      : in  std_logic;
 		trigger_shot   : in  std_logic;
 		input_dv       : in  std_logic;
@@ -55,9 +50,6 @@ entity scopeio_storage is
 		video_addr     : in  std_logic_vector;
 		video_dv       : out std_logic;
 		video_data     : out std_logic_vector);
-
-	constant chanid_bits : natural := unsigned_num_bits(inputs-1);
-
 end;
 
 architecture mix of scopeio_storage is
@@ -98,7 +90,6 @@ begin
 
 	scopeio_capture_e : entity hdl4fpga.scopeio_capture
 	port map (
-		rgtr_clk     => rgtr_clk,
 		input_clk    => input_clk,
 		trigger_shot => trigger_shot,
 		downsampling => downsampling,

@@ -33,7 +33,6 @@ entity scopeio_capture is
 	generic (
 		max_pretrigger : natural := 1024);
 	port (
-		rgtr_clk     : in  std_logic;
 		input_clk    : in  std_logic;
 		downsampling : in  std_logic := '0';
 
