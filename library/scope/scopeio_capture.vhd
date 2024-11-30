@@ -31,7 +31,7 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_capture is
 	generic (
-		max_pretrigger : natural := 1024);
+		max_pretrigger : natural := 64);
 	port (
 		input_clk    : in  std_logic;
 		downsampling : in  std_logic := '0';
@@ -175,6 +175,7 @@ begin
 			resize(shift_right(unsigned(video_addr), 1), rd_addr'length) when downsampling='0' else
 			resize(shift_right(unsigned(video_addr), 0), rd_addr'length);
 
+		-- video_offset <= resize(signed(time_offset)-delay, video_offset'length);
 		process (video_clk)
 			variable shr : unsigned(0 to 3*video_data'length/2-1);
 		begin

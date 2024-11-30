@@ -730,11 +730,12 @@ begin
 				if i mod 128=0 then 
 					retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_unsigned(2**(resolution-1)-1, resolution));
 				end if;
-				if i=size/2 then
-					retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer((2.0**(resolution-1)-1.0)), resolution));
+				if i=0 then
+					retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer(
+						(2.0**(resolution-1)-2.0)*2.0*pi*4.0/real(size)*64.0), resolution));
 				else
 					retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer(
-						(2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i-size/2)*4.0/real(size))*64.0/(real(i-size/2))
+						(2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i)*4.0/real(size))*64.0/(real(i))
 						), resolution));
 				-- retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(i mod 128, resolution));
 				end if;
