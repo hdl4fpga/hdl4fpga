@@ -30,8 +30,6 @@ use hdl4fpga.base.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_capture is
-	generic (
-		max_pretrigger : natural := 64);
 	port (
 		input_clk    : in  std_logic;
 		downsampling : in  std_logic := '0';
@@ -53,12 +51,11 @@ end;
 
 architecture beh of scopeio_capture is
 	signal wr_ena  : std_logic;
-	signal wr_addr : unsigned(video_addr'length-1 downto 1) := to_unsigned(0, video_addr'length-1);
+	signal wr_addr : signed(video_addr'length-1 downto 1) := to_signed(0, video_addr'length-1);
 	signal wr_data : std_logic_vector(input_data'range);
-	signal rd_addr : unsigned(wr_addr'range);
+	signal rd_addr : signed(wr_addr'range);
 	signal rd_data : std_logic_vector(video_data'range);
-	signal video_base   : unsigned(rd_addr'range);
-	signal video_offset : unsigned(rd_addr'range);
+	signal video_offset : signed(rd_addr'range);
 
 	alias  delay_msb    is wr_addr(wr_addr'left);
 begin
@@ -72,7 +69,7 @@ begin
 				end if;
 			elsif video_vton='0' then
 				if trigger_shot='1' then
-					video_offset <= unsigned(wr_addr);
+					video_offset <= wr_addr+resize(shift_right(signed(time_offset),1),wr_addr'length);
 					capture_req  <= not capture_rdy;
 				end if;
 			end if;
@@ -105,11 +102,11 @@ begin
 		rd_data => rd_data);
 
 	rd_addr <= 
-		resize(shift_right(video_addr, 1), rd_addr'length)+video_offset when downsampling='0' else
-		resize(shift_right(video_addr, 0), rd_addr'length)+video_offset;
+		signed(resize(shift_right(unsigned(video_addr), 1), rd_addr'length))+video_offset when downsampling='0' else
+		signed(resize(shift_right(unsigned(video_addr), 0), rd_addr'length))+video_offset;
 
 	process (video_clk)
-		alias  videoaddr_lsb is video_addr(video_base'right);
+		alias  videoaddr_lsb is video_addr(video_addr'right);
 		variable shr : unsigned(0 to 3*video_data'length/2-1);
 	begin
 		if rising_edge(video_clk) then
