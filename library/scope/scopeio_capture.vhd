@@ -52,9 +52,9 @@ entity scopeio_capture is
 end;
 
 architecture beh of scopeio_capture is
-	signal delay      : signed(time_offset'range);
 	signal dlyd_dv    : std_logic;
 	signal dlyd_data  : std_logic_vector(video_data'range);
+	signal delay      : signed(time_offset'range);
 
 begin
  
@@ -76,7 +76,7 @@ begin
 			shift_right(signed(time_offset),1) when downsampling='0' else
 			shift_right(signed(time_offset),0);
 
-		rd_addr <= wr_addr + resize(delay, rd_addr'length) when signed(delay) < 0 else wr_addr;
+		rd_addr <= wr_addr + resize(delay, rd_addr'length);
 
 		mem_e : entity hdl4fpga.dpram
 		generic map (

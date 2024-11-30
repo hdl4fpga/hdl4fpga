@@ -440,7 +440,6 @@ begin
 			input_dv     => ampsample_dv,
 			input_data   => ampsample_data,
 			time_scale   => time_scale,
-			-- time_offset  => (time_offset'range => '0'),
 			time_offset  => time_offset,
 			trigger_freeze => trigger_freeze,
 

@@ -723,14 +723,21 @@ begin
 			constant n : natural := 7;
 			constant n1 : natural := 8;
 			variable retval : std_logic_vector(0 to size*resolution-1);
+			variable val : real;
 		begin
 			for i in 0 to size-1 loop
 				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_unsigned(2**(resolution-1), resolution));
 				if i mod 128=0 then 
 					retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_unsigned(2**(resolution-1)-1, resolution));
 				end if;
-				retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer((2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i)/real(size))), resolution));
+				if i=size/2 then
+					retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer((2.0**(resolution-1)-1.0)), resolution));
+				else
+					retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer(
+						(2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i-size/2)*4.0/real(size))*64.0/(real(i-size/2))
+						), resolution));
 				-- retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(i mod 128, resolution));
+				end if;
 			end loop;
 			-- retval(resolution*n to resolution*(n+1)-1) := std_logic_vector(to_signed(2**(resolution-1)-1, resolution));
 			-- retval(resolution*n1 to resolution*(n1+1)-1) := (others => '0');
