@@ -200,7 +200,7 @@ begin
 		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0) := (others => '0');
 		signal trigger_level  : std_logic_vector(sample_length-1 downto 0) := std_logic_vector(to_unsigned(2390, sample_length));
 		-- signal trigger_level  : std_logic_vector(sample_length-1 downto 0) := (others => '0');
-		signal trigger_slope  : std_logic := '1';
+		signal trigger_slope  : std_logic := '0';
 		signal trigger_mode   : std_logic_vector(0 to 2-1) := "00";
 		alias trigger_freeze  is trigger_mode(0);
 		alias trigger_oneshot is trigger_mode(1);
@@ -317,6 +317,7 @@ begin
 		signal video_data     : std_logic_vector(0 to 2*inputs*storage_word'length-1);
 
 		signal time_offset    : std_logic_vector(hzoffset_bits-1 downto 0);
+		signal time_offset1    : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal time_scale     : std_logic_vector(4-1 downto 0);
 		signal time_dv          : std_logic;
 
@@ -419,7 +420,7 @@ begin
 					input_clk     => input_clk,
 					input_dv      => input_ena,
 					input_sample  => input_data,
-					gain_id       => gain_id,
+					gain_id       => x"5", --gain_id,
 					output_dv     => output_ena(i),
 					output_sample => ampsample_data(sample_range));
 
@@ -427,7 +428,7 @@ begin
 
 			ampsample_dv <= output_ena(0);
 		end block;
-
+time_offset1 <= std_logic_vector(to_signed(4, time_offset'length));
 		scopeio_storage_e : entity hdl4fpga.scopeio_storage
 		generic map  (
 			inputs       => inputs,
@@ -440,7 +441,7 @@ begin
 			input_dv     => ampsample_dv,
 			input_data   => ampsample_data,
 			time_scale   => time_scale,
-			time_offset  => time_offset,
+			time_offset  => time_offset1,
 			trigger_freeze => trigger_freeze,
 
 			video_clk    => video_clk,
