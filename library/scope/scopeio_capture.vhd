@@ -53,23 +53,35 @@ architecture beh of scopeio_capture is
 	signal wr_ena  : std_logic;
 	signal wr_addr : signed(video_addr'length-1 downto 1) := to_signed(0, video_addr'length-1);
 	signal wr_data : std_logic_vector(input_data'range);
-	signal rd_addr : signed(wr_addr'range);
+	signal rd_addr : signed(video_addr'length-1 downto 1);
 	signal rd_data : std_logic_vector(video_data'range);
-	signal video_offset : signed(rd_addr'range);
-
-	alias  delay_msb    is wr_addr(wr_addr'left);
+	signal video_offset : signed(wr_addr'range);
 begin
 
 	process (input_clk)
+		variable delay : signed(time_offset'range);
+		alias delay_lsbs is delay(video_addr'length-1 downto 0);
+		alias delay_msbs is delay(delay'left downto delay_lsbs'left+1);
 	begin
 		if rising_edge(input_clk) then
 			if (capture_rdy xor capture_req)='1' then
-				if wr_addr = video_offset then
-					capture_rdy <= capture_req;
+				if input_dv='1' then
+					if delay_msbs < 0 then
+						if wr_addr = video_offset then
+							capture_rdy <= capture_req;
+						end if;
+					else
+						delay := delay-1;
+					end if;
 				end if;
 			elsif video_vton='0' then
 				if trigger_shot='1' then
-					video_offset <= wr_addr+resize(shift_right(signed(time_offset),1),wr_addr'length);
+					delay := signed(time_offset);
+					if downsampling='0' then 
+						video_offset <= wr_addr+resize(shift_right(delay,1) ,wr_addr'length);
+					else
+						video_offset <= wr_addr+resize(shift_right(delay,0) ,wr_addr'length);
+					end if;
 					capture_req  <= not capture_rdy;
 				end if;
 			end if;
@@ -102,8 +114,8 @@ begin
 		rd_data => rd_data);
 
 	rd_addr <= 
-		signed(resize(shift_right(unsigned(video_addr), 1), rd_addr'length))+video_offset when downsampling='0' else
-		signed(resize(shift_right(unsigned(video_addr), 0), rd_addr'length))+video_offset;
+		signed(resize(shift_right(unsigned(video_addr), 1), rd_addr'length))+video_offset(rd_addr'range) when downsampling='0' else
+		signed(resize(shift_right(unsigned(video_addr), 0), rd_addr'length))+video_offset(rd_addr'range);
 
 	process (video_clk)
 		alias  videoaddr_lsb is video_addr(video_addr'right);
