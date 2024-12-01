@@ -121,7 +121,7 @@ begin
     				if input_dv='1' then
 						if wraddr_msb='1' then
     						capture_rdy <= capture_req;
-						elsif delay < 0 then
+						elsif delay <= 0 then
 							wr_addr <= wr_addr + 1;
 						end if;
     					if delay >= 0 then
