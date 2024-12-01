@@ -60,7 +60,7 @@ begin
  
 	delayed_b : block
 		signal wr_addr : signed(unsigned_num_bits(max_pretrigger-1)-1 downto 0) := (others => '0'); -- Debug purpose
-		signal rd_addr : signed(wr_addr'range) := (others => '0');
+		signal rd_addr : signed(wr_addr'range);
 	begin
 
 		process (input_clk)
@@ -76,7 +76,7 @@ begin
 			shift_right(signed(time_offset),1) when downsampling='0' else
 			shift_right(signed(time_offset),0);
 
-		rd_addr <= wr_addr - resize(delay, rd_addr'length) when signed(time_offset) < 0 else wr_addr;
+		rd_addr <= wr_addr + resize(delay, rd_addr'length) when signed(time_offset) < 0 else wr_addr;
 
 		mem_e : entity hdl4fpga.dpram
 		generic map (

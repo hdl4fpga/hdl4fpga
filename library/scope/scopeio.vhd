@@ -428,7 +428,7 @@ begin
 
 			ampsample_dv <= output_ena(0);
 		end block;
-		time_offset1 <= std_logic_vector(to_signed(0, time_offset'length));
+		time_offset1 <= std_logic_vector(to_signed(-40, time_offset'length));
 		scopeio_storage_e : entity hdl4fpga.scopeio_storage
 		generic map  (
 			inputs       => inputs,
@@ -441,7 +441,7 @@ begin
 			input_dv     => ampsample_dv,
 			input_data   => ampsample_data,
 			time_scale   => time_scale,
-			time_offset  => time_offset1,
+			time_offset  => time_offset,
 			trigger_freeze => trigger_freeze,
 
 			video_clk    => video_clk,
