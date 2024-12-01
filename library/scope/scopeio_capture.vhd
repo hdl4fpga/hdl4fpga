@@ -76,7 +76,7 @@ begin
 			shift_right(signed(time_offset),1) when downsampling='0' else
 			shift_right(signed(time_offset),0);
 
-		rd_addr <= wr_addr + resize(delay, rd_addr'length);
+		rd_addr <= wr_addr - resize(delay, rd_addr'length) when signed(time_offset) < 0 else wr_addr;
 
 		mem_e : entity hdl4fpga.dpram
 		generic map (
@@ -105,50 +105,40 @@ begin
 
 	video_b : block
 		signal wr_ena  : std_logic;
-		signal wr_addr : signed(video_addr'length-1   downto 1) := (others => '1');
+		signal wr_addr : signed(video_addr'length   downto 1) := (others => '1');
 		signal rd_addr : unsigned(video_addr'length-1 downto 1);
 		signal rd_data : std_logic_vector(video_data'range);
 		signal video_offset : signed(wr_addr'range);
+		alias  wraddr_msb  is wr_addr(wr_addr'left);
 	begin
 
     	process (input_clk)
     		constant fifo_length : natural := 2**rd_addr'length;
-    		variable delay : integer range -2**(time_offset'length-1) to 2**(time_offset'length-1)-1;
+    		variable delay : signed(time_offset'range);
     	begin
     		if rising_edge(input_clk) then
     			if (capture_rdy xor capture_req)='1' then
     				if input_dv='1' then
-    					if delay < 0 then
+						if wraddr_msb='1' then
     						capture_rdy <= capture_req;
-						else
-							if delay >= fifo_length-1 then
-								video_offset <= wr_addr;
-							end if;
+						elsif delay < 0 then
+							wr_addr <= wr_addr + 1;
+						end if;
+    					if delay >= 0 then
 							delay := delay-1;
     					end if;
     				end if;
     			elsif video_vton='0' then
     				if trigger_shot='1' then
-    					delay := to_integer(signed(time_offset));
-						if signed(time_offset) < 0 then
-							delay := fifo_length-1;
-						end if;
+    					delay := signed(time_offset);
+						wr_addr <= (others => '0');
     					capture_req <= not capture_rdy;
     				end if;
     			end if;
     		end if;
     	end process;
 
-		process (input_clk)
-		begin
-			if rising_edge(input_clk) then
-				if input_dv='1' then
-					wr_addr <= wr_addr + 1;
-				end if;
-			end if;
-		end process;
-
-		wr_ena  <= dlyd_dv and (capture_rdy xor capture_req);
+		wr_ena  <= dlyd_dv and not wraddr_msb;
 		mem_e : entity hdl4fpga.dpram
 		generic map (
 			synchronous_rdaddr => true,
@@ -198,11 +188,11 @@ begin
 end;
 
 architecture no_delayfifo of scopeio_capture is
-	signal wr_ena  : std_logic;
-	signal wr_addr : signed(video_addr'length-1 downto 1) := to_signed(0, video_addr'length-1);
-	signal wr_data : std_logic_vector(input_data'range);
-	signal rd_addr : signed(video_addr'length-1 downto 1);
-	signal rd_data : std_logic_vector(video_data'range);
+	signal wr_ena       : std_logic;
+	signal wr_addr      : signed(video_addr'length-1 downto 1) := to_signed(0, video_addr'length-1);
+	signal wr_data      : std_logic_vector(input_data'range);
+	signal rd_addr      : signed(video_addr'length-1 downto 1);
+	signal rd_data      : std_logic_vector(video_data'range);
 	signal video_offset : signed(wr_addr'range);
 begin
 
