@@ -420,7 +420,7 @@ begin
 					input_clk     => input_clk,
 					input_dv      => input_ena,
 					input_sample  => input_data,
-					gain_id       => x"5", --gain_id,
+					gain_id       => gain_id,
 					output_dv     => output_ena(i),
 					output_sample => ampsample_data(sample_range));
 
