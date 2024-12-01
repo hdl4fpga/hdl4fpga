@@ -130,7 +130,11 @@ begin
     				end if;
     			elsif video_vton='0' then
     				if trigger_shot='1' then
-    					delay := signed(time_offset);
+						if downsampling='0' then
+							delay := shift_right(signed(time_offset),1);
+						else
+							delay := shift_right(signed(time_offset),0);
+						end if;
 						wr_addr <= (others => '0');
     					capture_req <= not capture_rdy;
     				end if;
