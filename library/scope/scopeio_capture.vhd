@@ -163,11 +163,12 @@ begin
 
 		process (video_clk)
 			variable shr : unsigned(0 to 3*video_data'length/2-1);
-			alias  videoaddr_lsb is video_addr(video_addr'right);
+			alias videoaddr_lsb  is video_addr(video_addr'right);
+			alias timeoffset_lsb is time_offset(time_offset'right);
 		begin
 			if rising_edge(video_clk) then
 				if downsampling='0' then
-					if videoaddr_lsb='0' then
+					if videoaddr_lsb/=timeoffset_lsb then
 						shr(0 to video_data'length-1) := unsigned(rd_data);
 					end if;
 					shr := shr rol video_data'length/2;
