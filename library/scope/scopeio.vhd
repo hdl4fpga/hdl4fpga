@@ -214,7 +214,6 @@ begin
 		constant frez_mode : std_logic_vector := "11";
 
 		alias rgtr_clk        is sio_clk;
-		signal dummy : std_logic_vector(0 to 0);
 
 	begin
 		scopeio_rtgrtrigger_e : entity hdl4fpga.scopeio_rgtrtrigger
@@ -225,11 +224,11 @@ begin
 			rgtr_data       => rgtr_data,
 
 			trigger_dv      => trigger_dv,
-			trigger_chanid  => dummy, -- trigger_chanid,
-			trigger_level   => dummy); -- trigger_level,
-			-- trigger_freeze  => trigger_freeze,
-			-- trigger_oneshot => trigger_oneshot,
-			-- trigger_slope   => trigger_slope);
+			trigger_chanid  => trigger_chanid,
+			trigger_level   => trigger_level,
+			trigger_freeze  => trigger_freeze,
+			trigger_oneshot => trigger_oneshot,
+			trigger_slope   => trigger_slope);
 			
 		scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
 		generic map (
@@ -238,11 +237,13 @@ begin
 			input_clk      => input_clk,
 			input_dv       => input_ena,
 			input_data     => input_data,
-			trigger_chanid => trigger_chanid,
+			trigger_chanid => "0", --trigger_chanid,
 			trigger_level  => trigger_level,
 			trigger_slope  => trigger_slope,
 			trigger_shot   => trigger_shot);
 
+			tp(1) <= not trigger_shot;
+			tp(2) <= trigger_shot;
 	end block;
 
 	waveform_g : if waveform /= "none" generate
@@ -435,7 +436,7 @@ begin
 			storageword_size => storage_word'length,
 			time_factors => time_factors)
 		port map (
-			tp => tp,
+			-- tp => tp,
 			input_clk    => input_clk,
 			trigger_shot => trigger_shot,
 			input_dv     => ampsample_dv,
