@@ -88,7 +88,7 @@ begin
 		output_dv    => downsample_dv,
 		output_data  => downsample_data);
 
-	scopeio_capture_e : entity hdl4fpga.scopeio_capture
+	scopeio_capture_e : entity hdl4fpga.scopeio_capture(delayfifo)
 	port map (
 		input_clk    => input_clk,
 		trigger_shot => trigger_shot,

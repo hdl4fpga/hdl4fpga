@@ -105,7 +105,7 @@ begin
 
 	video_b : block
 		signal wr_ena  : std_logic;
-		signal wr_addr : signed(video_addr'length   downto 1) := (others => '1');
+		signal wr_addr : signed(video_addr'length-1   downto 1) := (others => '1');
 		signal rd_addr : unsigned(video_addr'length-1 downto 1);
 		signal rd_data : std_logic_vector(video_data'range);
 		signal video_offset : signed(wr_addr'range);
@@ -119,20 +119,19 @@ begin
     			if (capture_rdy xor capture_req)='1' then
     				if input_dv='1' then
     					if delay < 0 then
-							wr_addr <= (others => '0');
     						capture_rdy <= capture_req;
-    					else
-    						if delay >= fifo_length then
-    						end if;
-    						delay := delay-1;
+						else
+							if delay >= fifo_length-1 then
+								video_offset <= wr_addr;
+							end if;
+							delay := delay-1;
     					end if;
     				end if;
     			elsif video_vton='0' then
     				if trigger_shot='1' then
     					delay := to_integer(signed(time_offset));
 						if signed(time_offset) < 0 then
-							wr_addr <= (others => '0');
-							delay   := fifo_length-1;
+							delay := fifo_length-1;
 						end if;
     					capture_req <= not capture_rdy;
     				end if;
