@@ -59,17 +59,20 @@ architecture beh of scopeio_capture is
 begin
 
 	process (input_clk)
-		variable delay : signed(time_offset'range);
+		constant fifo_length : natural := 2**rd_data'length;
+		variable delay  : signed(time_offset'range);
+		variable offset : signed(video_offset'range);
 		alias delay_lsbs is delay(video_addr'length-1 downto 0);
 		alias delay_msbs is delay(delay'left downto delay_lsbs'left+1);
 	begin
 		if rising_edge(input_clk) then
 			if (capture_rdy xor capture_req)='1' then
 				if input_dv='1' then
-					if delay_msbs < 0 then
-						if wr_addr = video_offset then
-							capture_rdy <= capture_req;
-						end if;
+					if delay_msbs = 1 then
+						offset := wr_addr;
+					elsif delay < 0 then
+						video_offset := offset;
+						capture_rdy <= capture_req;
 					else
 						delay := delay-1;
 					end if;
@@ -78,10 +81,12 @@ begin
 				if trigger_shot='1' then
 					delay := signed(time_offset);
 					if downsampling='0' then 
-						video_offset <= wr_addr+resize(shift_right(delay,1) ,wr_addr'length);
+						offset := wr_addr+resize(shift_right(delay,1) ,wr_addr'length);
 					else
-						video_offset <= wr_addr+resize(shift_right(delay,0) ,wr_addr'length);
+						offset := wr_addr+resize(shift_right(delay,0) ,wr_addr'length);
 					end if;
+					offset := wr_addr + offset;;
+					delay  := delay   + fifo_length;
 					capture_req  <= not capture_rdy;
 				end if;
 			end if;
