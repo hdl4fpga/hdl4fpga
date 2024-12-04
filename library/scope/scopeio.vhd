@@ -221,7 +221,7 @@ begin
 			rgtr_clk        => rgtr_clk,
 			rgtr_dv         => rgtr_dv,
 			rgtr_id         => rgtr_id,
-			rgtr_data       => rgtr_data,
+			rgtr_data       => rgtr_revs,
 
 			trigger_dv      => trigger_dv,
 			trigger_chanid  => trigger_chanid,
@@ -237,13 +237,12 @@ begin
 			input_clk      => input_clk,
 			input_dv       => input_ena,
 			input_data     => input_data,
-			trigger_chanid => "0", --trigger_chanid,
+			trigger_chanid => trigger_chanid,
 			trigger_level  => trigger_level,
 			trigger_slope  => trigger_slope,
 			trigger_shot   => trigger_shot);
 
-			tp(1) <= not trigger_shot;
-			tp(2) <= trigger_shot;
+			tp(1 to trigger_level'length) <= trigger_level;
 	end block;
 
 	waveform_g : if waveform /= "none" generate
