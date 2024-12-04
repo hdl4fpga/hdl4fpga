@@ -266,44 +266,8 @@ begin
 			return retval;
 		end;
 
-		constant time_factors : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.horizontal.scales=" & 
-				"[" &
-					natural'image(2**(0+0)*5**(0+0)) & "," & -- [0]
-					natural'image(2**(0+0)*5**(0+0)) & "," & -- [1]
-					natural'image(2**(0+0)*5**(0+0)) & "," & -- [2]
-					natural'image(2**(0+0)*5**(0+0)) & "," & -- [3]
-					natural'image(2**(0+0)*5**(0+0)) & "," & -- [4]
-					natural'image(2**(1+0)*5**(0+0)) & "," & -- [5]
-					natural'image(2**(2+0)*5**(0+0)) & "," & -- [6]
-					natural'image(2**(0+0)*5**(1+0)) & "," & -- [7]
-					natural'image(2**(0+1)*5**(0+1)) & "," & -- [8]
-					natural'image(2**(1+1)*5**(0+1)) & "," & -- [9]
-					natural'image(2**(2+1)*5**(0+1)) & "," & -- [10]
-					natural'image(2**(0+1)*5**(1+1)) & "," & -- [11]
-					natural'image(2**(0+2)*5**(0+2)) & "," & -- [12]
-					natural'image(2**(1+2)*5**(0+2)) & "," & -- [13]
-					natural'image(2**(2+2)*5**(0+2)) & "," & -- [14]
-					natural'image(2**(0+2)*5**(1+2)) & "," & -- [15]
-				"length : 16]."));
-		constant vt_gains : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.vertical.gains=" &
-				"[" &
-					natural'image(2**17/(2**(0+0)*5**(0+0))) & "," & -- [0]
-					natural'image(2**17/(2**(1+0)*5**(0+0))) & "," & -- [1]
-					natural'image(2**17/(2**(2+0)*5**(0+0))) & "," & -- [2]
-					natural'image(2**17/(2**(0+0)*5**(1+0))) & "," & -- [3]
-					natural'image(2**17/(2**(0+1)*5**(0+1))) & "," & -- [4]
-					natural'image(2**17/(2**(1+1)*5**(0+1))) & "," & -- [5]
-					natural'image(2**17/(2**(2+1)*5**(0+1))) & "," & -- [6]
-					natural'image(2**17/(2**(0+1)*5**(1+1))) & "," & -- [7]
-					natural'image(2**17/(2**(0+2)*5**(0+2))) & "," & -- [8]
-					natural'image(2**17/(2**(1+2)*5**(0+2))) & "," & -- [9]
-					natural'image(2**17/(2**(2+2)*5**(0+2))) & "," & -- [10]
-					natural'image(2**17/(2**(0+2)*5**(1+2))) & "," & -- [11]
-					natural'image(2**17/(2**(0+3)*5**(0+3))) & "," & -- [12]
-					natural'image(2**17/(2**(1+3)*5**(0+3))) & "," & -- [13]
-					natural'image(2**17/(2**(2+3)*5**(0+3))) & "," & -- [14]
-					natural'image(2**17/(2**(0+3)*5**(1+3))) & "," & -- [15]
-				"length : 16]."));
+		constant time_factors : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.horizontal.scales=" & dflt_hzscale));
+		constant vt_gains     : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.vertical.gains=" & dlft_vtscale));
 		subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 		constant gainid_bits  : natural := unsigned_num_bits(vt_gains'length-1);
 

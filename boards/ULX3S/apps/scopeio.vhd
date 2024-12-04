@@ -120,6 +120,26 @@ architecture scopeio of ulx3s is
 
 	signal adc_clk       : std_logic;
 
+	constant time_factors : string := compact( 
+		"[" &
+			natural'image(2**(0+0)*5**(0+0)) & "," & -- [0]
+			natural'image(2**(0+0)*5**(0+0)) & "," & -- [1]
+			natural'image(2**(0+0)*5**(0+0)) & "," & -- [2]
+			natural'image(2**(0+0)*5**(0+0)) & "," & -- [3]
+			natural'image(2**(0+0)*5**(0+0)) & "," & -- [4]
+			natural'image(2**(1+0)*5**(0+0)) & "," & -- [5]
+			natural'image(2**(2+0)*5**(0+0)) & "," & -- [6]
+			natural'image(2**(0+0)*5**(1+0)) & "," & -- [7]
+			natural'image(2**(0+1)*5**(0+1)) & "," & -- [8]
+			natural'image(2**(1+1)*5**(0+1)) & "," & -- [9]
+			natural'image(2**(2+1)*5**(0+1)) & "," & -- [10]
+			natural'image(2**(0+1)*5**(1+1)) & "," & -- [11]
+			natural'image(2**(0+2)*5**(0+2)) & "," & -- [12]
+			natural'image(2**(1+2)*5**(0+2)) & "," & -- [13]
+			natural'image(2**(2+2)*5**(0+2)) & "," & -- [14]
+			natural'image(2**(0+2)*5**(1+2)) & "," & -- [15]
+		"length : 16].");
+
 	constant layout      : string := compact(
 			"{                             " &   
 			"    inputs          : " & natural'image(inputs) & ',' &
@@ -136,6 +156,7 @@ architecture scopeio of ulx3s is
 			"       axis : {                   " &
 			"           horizontal : {         " &
 			"               unit   : 31.25e-6, " &
+			"               scales : " & time_factors &"," &
 			"               color  : 0xff_00_00_00," &
 			"               background-color : 0xff_00_ff_ff}," &
 			"           vertical : {           " &
