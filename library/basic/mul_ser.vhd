@@ -36,6 +36,7 @@ entity mul_ser is
 		ena  : in  std_logic := '1';
 		req  : in  std_logic;
 		rdy  : buffer std_logic;
+		comp : in std_logic := '0';
 		a    : in  std_logic_vector;
 		b    : in  std_logic_vector;
 		s    : buffer std_logic_vector);
@@ -48,15 +49,18 @@ begin
 		type states is (s_init, s_mul);
 		variable state : states;
 		variable cntr : unsigned(0 to unsigned_num_bits(b'length-3));
-		variable acc  : unsigned(0 to a'length);
-		variable p    : unsigned(0 to a'length+b'length-1);
+		variable uacc : unsigned(0 to a'length);
+		variable up   : unsigned(0 to a'length+b'length-1);
+		variable sacc : signed(0 to a'length);
+		variable sp   : signed(0 to a'length+b'length-1);
 	begin
 		if rising_edge(clk) then
 			if (to_bit(req) xor to_bit(rdy))='1' then
 				if ena='1' then
 					case state is
 					when s_init =>
-						p     := resize(unsigned(b), p'length);
+						up    := unsigned(resize(unsigned(b), up'length));
+						sp    :=   signed(resize(unsigned(b), up'length));
 						cntr  := to_unsigned(b'length-3, cntr'length);
 						state := s_mul;
 					when s_mul =>
@@ -67,18 +71,31 @@ begin
 							state := s_init;
 						end if;
 					end case;
-					if p(p'right)='0' then
-						acc := (others => '0');
+					if up(up'right)='0' then
+						uacc := (others => '0');
+						sacc := (others => '0');
 					else
-						acc := resize(unsigned(a), acc'length);
+						uacc := resize(unsigned(a), uacc'length);
+						sacc := resize(  signed(a), uacc'length);
 					end if;
-					acc := acc + resize(p(0 to a'length-1), acc'length);
-					p   := shift_right(p, 1);
-					p(acc'range) := acc;
+					uacc := uacc + resize(up(0 to a'length-1), uacc'length);
+					up   := shift_right(up, 1);
+					up(uacc'range) := uacc;
+					sacc := sacc + resize(sp(0 to a'length-1), uacc'length);
+					sp   := shift_right(sp, 1);
+					sp(uacc'range) := sacc;
 					if not lsb then
-						s <= std_logic_vector(resize(p(0 to hdl4fpga.base.min(s'length,p'length)-1), s'length));
+						if comp='0' then
+							s <= std_logic_vector(resize(up(0 to hdl4fpga.base.min(s'length,up'length)-1), s'length));
+						else
+							s <= std_logic_vector(resize(sp(0 to hdl4fpga.base.min(s'length,sp'length)-1), s'length));
+						end if;
 					else
-						s <= std_logic_vector(resize(p, s'length));
+						if comp='0' then
+							s <= std_logic_vector(resize(up, s'length));
+						else
+							s <= std_logic_vector(resize(sp, s'length));
+						end if;
 					end if;
 				end if;
 			else

@@ -163,13 +163,21 @@ architecture beh of scopeio is
 	signal rgtr_dv       : std_logic;
 	signal rgtr_data     : std_logic_vector(0 to 32-1);
 	-- signal rgtr_data     : std_logic_vector(0 to max(32,ctlrphy_dqi'length)-1);
-	signal rgtr_revs     : std_logic_vector(rgtr_data'length-1 downto 0);	-- Xilinx ISE does'nt allow to use reverse_range
+	signal rgtr_revs     : std_logic_vector(rgtr_data'length-1 downto 0);	-- Xilinx ISE doesn't allow to use reverse_range
 	-- signal rgtr_revs     : std_logic_vector(rgtr_data'reverse_range);
 	signal data_frm      : std_logic;
 	signal data_irdy     : std_logic;
 	signal data_ptr      : std_logic_vector(8-1 downto 0);
 
 	signal trigger_shot  : std_logic;
+	signal trigger_dv     : std_logic;
+	signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
+	signal trigger_level  : std_logic_vector(sample_length-1 downto 0);
+	signal trigger_slope  : std_logic;
+	signal trigger_mode   : std_logic_vector(0 to 2-1);
+	alias trigger_freeze  is trigger_mode(0);
+	alias trigger_oneshot is trigger_mode(1);
+
 begin
 
 	assert inputs < max_inputs
@@ -196,15 +204,6 @@ begin
 	rgtr_revs <= reverse(rgtr_data,8);
 
 	trigger_b : block
-		signal trigger_dv     : std_logic;
-		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0) := (others => '0');
-		signal trigger_level  : std_logic_vector(sample_length-1 downto 0) := std_logic_vector(to_unsigned(2390, sample_length));
-		-- signal trigger_level  : std_logic_vector(sample_length-1 downto 0) := (others => '0');
-		signal trigger_slope  : std_logic := '0';
-		signal trigger_mode   : std_logic_vector(0 to 2-1) := "00";
-		alias trigger_freeze  is trigger_mode(0);
-		alias trigger_oneshot is trigger_mode(1);
-
 		signal triggersample_dv   : std_logic;
 		signal triggersample_data : std_logic_vector(input_data'range);
 
@@ -281,25 +280,66 @@ begin
 		signal video_data     : std_logic_vector(0 to 2*inputs*storage_word'length-1);
 
 		signal time_offset    : std_logic_vector(hzoffset_bits-1 downto 0);
-		signal time_offset1    : std_logic_vector(hzoffset_bits-1 downto 0);
 		signal time_scale     : std_logic_vector(4-1 downto 0);
 		signal time_dv          : std_logic;
-
-		signal trigger_freeze : std_logic;
 
 		signal gain_ena       : std_logic;
 		signal gain_dv        : std_logic;
 		signal gain_cid       : std_logic_vector(0 to chanid_bits-1);
 		signal gain_ids       : std_logic_vector(0 to inputs*gainid_bits-1);
+		signal video_trigger  : std_logic_vector(storage_word'range);
 
 	begin
-		amp_b : block
-			constant vt          : string := hdo(waveform)**".vt";
-			constant vt_unit     : real := hdo(waveform)**".axis.vertical.unit";
+		
+		videotrigger_b : block
+			signal req  : std_logic := '1';
+			signal rdy  : std_logic := '0';
+			signal gain : std_logic_vector(0 to 18-1);
+			signal gain_id : std_logic_vector(0 to gainid_bits-1);
+			signal amp  : std_logic_vector(0 to trigger_level'length);
+		begin
 
-			signal chan_id       : std_logic_vector(0 to chanid_bits-1);
-			signal gain_id       : std_logic_vector(0 to gainid_bits-1);
-			signal output_ena    : std_logic_vector(0 to inputs-1);
+			process(sio_clk)
+			begin
+				if rising_edge(sio_clk) then
+					if (req xor rdy)='0' then
+						if trigger_dv='1' then
+							req <= not rdy;
+						elsif gain_dv='1' then
+							req <= not rdy;
+						end if;
+					end if;
+				end if;
+			end process;
+
+			gain_id <= multiplex(gain_ids, trigger_chanid, gainid_bits);
+			gain <= std_logic_vector(to_unsigned(vt_gains(to_integer(unsigned(gain_id))), gain'length));
+			mul_e : entity hdl4fpga.mul_ser
+			port map (
+				comp => '1',
+				clk  => sio_clk,
+				req  => req,
+				rdy  => rdy,
+				a    => trigger_level,
+				b    => gain,
+				s    => amp);
+
+        	resize_e : entity hdl4fpga.scopeio_resize
+        	generic map (
+        		inputs => 1)
+        	port map (
+        		input_data  => amp(1 to amp'right),
+        		output_data => video_trigger);
+
+		end block;
+
+		amp_b : block
+			constant vt       : string := hdo(waveform)**".vt";
+			constant vt_unit  : real := hdo(waveform)**".axis.vertical.unit";
+
+			signal chan_id    : std_logic_vector(0 to chanid_bits-1);
+			signal gain_id    : std_logic_vector(0 to gainid_bits-1);
+			signal output_ena : std_logic_vector(0 to inputs-1);
 		begin
 
 			vtscale_e : entity hdl4fpga.scopeio_rgtrvtscale
@@ -330,28 +370,17 @@ begin
 
 			amp_g : for i in 0 to inputs-1 generate
 
-				function init_gains(
-					constant gains : natural_vector;
-					constant unit  : real;
-					constant step  : real)
-					return natural_vector is
-					constant df_gains  : natural_vector := (
-						 0 => 2**17/(2**(0+0)*5**(0+0)),  1 => 2**17/(2**(1+0)*5**(0+0)),  2 => 2**17/(2**(2+0)*5**(0+0)),  3 => 2**17/(2**(0+0)*5**(1+0)),
-						 4 => 2**17/(2**(0+1)*5**(0+1)),  5 => 2**17/(2**(1+1)*5**(0+1)),  6 => 2**17/(2**(2+1)*5**(0+1)),  7 => 2**17/(2**(0+1)*5**(1+1)),
-						 8 => 2**17/(2**(0+2)*5**(0+2)),  9 => 2**17/(2**(1+2)*5**(0+2)), 10 => 2**17/(2**(2+2)*5**(0+2)), 11 => 2**17/(2**(0+2)*5**(1+2)),
-						12 => 2**17/(2**(0+3)*5**(0+3)), 13 => 2**17/(2**(1+3)*5**(0+3)), 14 => 2**17/(2**(2+3)*5**(0+3)), 15 => 2**17/(2**(0+3)*5**(1+3)));
+				constant vt_step : real := hdo(vt)**("["&natural'image(i)&"].step");
 
-					constant k      : real := (real(grid_unit)*step)/unit;
-					variable retval : natural_vector(0 to setif(gains'length >0, gains'length, df_gains'length)-1);
+				function init_gains
+					return natural_vector is
+					constant k      : real := (real(grid_unit)*vt_step)/vt_unit;
+					variable retval : natural_vector(0 to vt_gains'length-1);
 
 				begin
-					retval := df_gains;
-					if gains'length > 0 then
-						retval := gains;
-					end if;
-
+					retval := vt_gains;
 					assert k < 1.0
-						report "unit " & real'image(unit) & " : " & real'image(real(grid_unit)*step) & " unit should be increase"
+						report "unit " & real'image(vt_unit) & " : " & real'image(real(grid_unit)*vt_step) & " unit should be increase"
 						severity FAILURE;
 
 					if k > 0.0 then
@@ -363,11 +392,7 @@ begin
 					return retval;
 				end;
 
-				constant vt_step : real := hdo(vt)**("["&natural'image(i)&"].step");
-				constant gains  : natural_vector(vt_gains'range) := init_gains (
-					gains => vt_gains,
-					unit  => vt_unit,
-					step  => vt_step);
+				constant gains  : natural_vector(vt_gains'range) := init_gains;
 
 				subtype sample_range is natural range i*sample_length to (i+1)*sample_length-1;
 
@@ -392,14 +417,13 @@ begin
 
 			ampsample_dv <= output_ena(0);
 		end block;
-		time_offset1 <= std_logic_vector(to_signed(2, time_offset'length));
+
 		scopeio_storage_e : entity hdl4fpga.scopeio_storage
 		generic map  (
 			inputs       => inputs,
 			storageword_size => storage_word'length,
 			time_factors => time_factors)
 		port map (
-			-- tp => tp,
 			input_clk    => input_clk,
 			trigger_shot => trigger_shot,
 			input_dv     => ampsample_dv,
@@ -429,6 +453,11 @@ begin
 
 			time_scale     => time_scale,
 			time_offset    => time_offset,
+
+			trigger_slope   => trigger_slope,
+			trigger_freeze  => trigger_freeze,
+			trigger_chanid  => trigger_chanid,
+			trigger_level   => video_trigger,
 											
 			video_addr     => video_addr,
 			video_frm      => video_frm,

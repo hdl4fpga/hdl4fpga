@@ -46,6 +46,11 @@ entity scopeio_video is
 		time_scale         : buffer std_logic_vector;
 		time_offset        : buffer std_logic_vector;
 
+		trigger_slope      : in  std_logic;
+		trigger_freeze     : in  std_logic;
+		trigger_chanid     : in  std_logic_vector;
+		trigger_level      : in  std_logic_vector;
+
 		video_addr         : out std_logic_vector;
 		video_frm          : out std_logic;
 		video_data         : in  std_logic_vector;
@@ -100,12 +105,6 @@ architecture beh of scopeio_video is
 
 	signal scope_color   : std_logic_vector(video_pixel'length-1 downto 0);
 
-	signal trigger_ena    : std_logic;
-	signal trigger_freeze : std_logic;
-	signal trigger_slope  : std_logic;
-	signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
-	signal trigger_level  : std_logic_vector(storage_word'range);
-
 	signal hz_ena        : std_logic;
 	signal hz_dv         : std_logic;
 	signal hz_scale      : std_logic_vector(4-1 downto 0);
@@ -146,19 +145,6 @@ architecture beh of scopeio_video is
 	signal pointer_dot   : std_logic;
 
 begin
-
-	rgtrtrigger_e : entity hdl4fpga.scopeio_rgtrtrigger
-	port map (
-		rgtr_clk       => rgtr_clk,
-		rgtr_dv        => rgtr_dv,
-		rgtr_id        => rgtr_id,
-		rgtr_data      => rgtr_data,
-
-		trigger_ena    => trigger_ena,
-		trigger_slope  => trigger_slope,
-		trigger_freeze => trigger_freeze,
-		trigger_chanid => trigger_chanid,
-		trigger_level  => trigger_level);
 
 	rgtrhzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
 	generic map (

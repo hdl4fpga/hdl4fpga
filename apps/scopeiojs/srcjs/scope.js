@@ -34,16 +34,23 @@ function onClick(e) {
 	sendCommand.call(this, e);
 }
 
+var gaintab = [0];
 function sendCommand(e) {
+	const gains = [1, 2, 4, 5, 10, 20, 40, 50, 100, 200, 400, 5000, 1000, 2000, 4000, 5000];
 	var param = this.id.split(':');
 
 	switch(param[0]) {
 	case 'gain':
 		console.log(this.id);
 		console.log(this.value);
+    	if (this.gaintab === 'undefined') {
+    		this.gaintab = [];
+    		this.gaintab[param[1]] = 
+    	}
 		sendRegister(registers.gain, {
 			gain   : this.value,
 			chanid : param[1] } );
+		gaintab[param[1]] = this.value;
 		break;
 	case 'offset':
 		sendRegister(registers.vtaxis, {
@@ -73,8 +80,10 @@ function sendCommand(e) {
 			chanid  : param[1] });
 		break;
 	case 'level':
+		console.log("*******" + gaintab[param[1]])
 		sendRegister(registers.trigger, { 
-			level   : this.trigger.level.value,
+			level   : this.trigger.level.value * gains[gaintab[param[1]]],
+			// level   : this.trigger.level.value,
 			slope   : (this.trigger.slope.value === "negative") ? 1 : 0,
 			freeze  : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "freeze") ? 1 : 0,
 			oneshot : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "normal") ? 1 : 0,

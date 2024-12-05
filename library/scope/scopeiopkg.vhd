@@ -148,7 +148,7 @@ package scopeiopkg is
 	constant trigger_level_id   : natural := 3;
 	constant trigger_chanid_id  : natural := 4;
 
-	constant triggerlevel_maxsize : natural := 9;
+	constant triggerlevel_maxsize : natural := 16;
 	constant trigger_bf : natural_vector := (
 		trigger_freeze_id  => 1,
 		trigger_oneshot_id => 1,
