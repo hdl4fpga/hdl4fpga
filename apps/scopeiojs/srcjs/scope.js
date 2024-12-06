@@ -74,8 +74,7 @@ function sendCommand(e) {
 			chanid  : param[1] });
 		break;
 	case 'level':
-		console.log("*******" + gainid_tab[param[1]])
-		if (gainid_tab[param[1]] === 'undefined') {
+		if (typeof gainid_tab[param[1]] === 'undefined') {
 			gainid_tab[param[1]] = 0;
 		}
 		sendRegister(registers.trigger, { 
