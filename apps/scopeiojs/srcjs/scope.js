@@ -55,9 +55,12 @@ function sendCommand(e) {
 	case 'normal' :
 	case 'one shot' :
 	case 'freeze' :
+		if (typeof gainid_tab[param[1]] === 'undefined') {
+			gainid_tab[param[1]] = 0;
+		}
 		this.trigger.mode.value = param[0];
 		sendRegister(registers.trigger, { 
-			level   : this.trigger.level.value,
+			level   : this.trigger.level.value * gains[gainid_tab[param[1]]],
 			slope   : (this.trigger.slope.value === "negative") ? 1 : 0,
 			freeze  : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "freeze") ? 1 : 0,
 			oneshot : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "normal") ? 1 : 0,
@@ -65,9 +68,12 @@ function sendCommand(e) {
 		break;
 	case 'positive':
 	case 'negative':
+		if (typeof gainid_tab[param[1]] === 'undefined') {
+			gainid_tab[param[1]] = 0;
+		}
 		this.trigger.slope.value = param[0];
 		sendRegister(registers.trigger, { 
-			level   : this.trigger.level.value,
+			level   : this.trigger.level.value * gains[gainid_tab[param[1]]],
 			slope   : (this.trigger.slope.value === "negative") ? 1 : 0,
 			freeze  : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "freeze") ? 1 : 0,
 			oneshot : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "normal") ? 1 : 0,

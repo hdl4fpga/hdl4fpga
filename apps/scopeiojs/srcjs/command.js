@@ -48,6 +48,7 @@ function alignValues (reg, data) {
 			for (var i = 0; i < reg[key]; i++) {
 				if (bitOffs == 0)
 					buffer.unshift(0);
+				// console.log("key-> "+key)
 				buffer[0] |= ((data[key]) & (1 << (reg[key]-i-1))) ? (1 << (byteSize-1-bitOffs)) : 0;
 				bitOffs   += 1;
 				bitOffs   %= byteSize;

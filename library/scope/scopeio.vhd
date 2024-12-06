@@ -251,6 +251,8 @@ begin
 		constant min_storage   : natural := hdo(waveform)**".min_storage=256."; -- samples, storage size will be equal or larger than this
 		constant max_delay     : natural := hdo(waveform)**".max_delay=16384.";
 		constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
+		constant vt       : string := hdo(waveform)**".vt";
+		constant vt_unit  : real := hdo(waveform)**".axis.vertical.unit";
 
 		function to_naturalvector (
 			constant object : string)
@@ -292,50 +294,89 @@ begin
 	begin
 		
 		videotrigger_b : block
-			signal req  : std_logic := '1';
-			signal rdy  : std_logic := '0';
-			signal gain : std_logic_vector(0 to 18-1);
-			signal gain_id : std_logic_vector(0 to gainid_bits-1);
-			signal amp  : std_logic_vector(0 to trigger_level'length);
+			function input_gains
+				return natural_vector is
+				variable retval : natural_vector(0 to inputs-1);
+			begin
+				for i in retval'range loop
+					retval(i) := natural((2.0**(sample_length-1)*real(grid_unit)*real'(hdo(vt)**("["&natural'image(i)&"].step")))/vt_unit);
+				end loop;
+				return retval;
+			end;
+
+			signal anlg_req     : std_logic := '1';
+			signal anlg_rdy     : std_logic := '0';
+			signal analog_gain  : std_logic_vector(0 to sample_length-1);
+			signal trigger_gain : std_logic_vector(0 to sample_length);
+
+			signal digi_req     : std_logic := '1';
+			signal digi_rdy     : std_logic := '0';
+			signal digi_gainid  : std_logic_vector(0 to gainid_bits-1);
+			signal digi_gain    : std_logic_vector(0 to 18-1);
+			signal trigger_amp  : std_logic_vector(0 to sample_length);
+
 		begin
 
 			process(sio_clk)
+				type states is (s_anlg, s_digi);
+				variable state : states;
 			begin
 				if rising_edge(sio_clk) then
-					if (req xor rdy)='0' then
-						if trigger_dv='1' then
-							req <= not rdy;
-						elsif gain_dv='1' then
-							req <= not rdy;
+					case state is
+					when s_anlg =>
+						if (anlg_req xor anlg_rdy)='0' then
+							if (digi_req xor digi_rdy)='0' then
+								if trigger_dv='1' then
+									anlg_req <= not anlg_rdy;
+									state := s_digi;
+								elsif gain_dv='1' then
+									anlg_req <= not anlg_rdy;
+									state := s_digi;
+								end if;
+							end if;
 						end if;
-					end if;
+					when s_digi =>
+						if (anlg_req xor anlg_rdy)='0' then
+							digi_req <= not digi_rdy;
+							state := s_anlg;
+						end if;
+					end case;
 				end if;
 			end process;
 
-			gain_id <= multiplex(gain_ids, trigger_chanid, gainid_bits);
-			gain <= std_logic_vector(to_unsigned(vt_gains(to_integer(unsigned(gain_id))), gain'length));
-			mul_e : entity hdl4fpga.mul_ser
+			analog_gain <= std_logic_vector(to_unsigned(input_gains(to_integer(unsigned(trigger_chanid))), sample_length));
+			analoggain_e : entity hdl4fpga.mul_ser
 			port map (
 				comp => '1',
 				clk  => sio_clk,
-				req  => req,
-				rdy  => rdy,
+				req  => anlg_req,
+				rdy  => anlg_rdy,
 				a    => trigger_level,
-				b    => gain,
-				s    => amp);
+				b    => analog_gain,
+				s    => trigger_gain);
+
+			digi_gainid <= multiplex(gain_ids, trigger_chanid, gainid_bits);
+			digi_gain <= std_logic_vector(to_unsigned(vt_gains(to_integer(unsigned(digi_gainid))), digi_gain'length));
+			digitalgain_e : entity hdl4fpga.mul_ser
+			port map (
+				comp => '1',
+				clk  => sio_clk,
+				req  => digi_req,
+				rdy  => digi_rdy,
+				a    => trigger_gain(1 to sample_length),
+				b    => digi_gain,
+				s    => trigger_amp);
 
         	resize_e : entity hdl4fpga.scopeio_resize
         	generic map (
         		inputs => 1)
         	port map (
-        		input_data  => amp(1 to amp'right),
+        		input_data  => trigger_amp(1 to sample_length),
         		output_data => video_trigger);
 
 		end block;
 
 		amp_b : block
-			constant vt       : string := hdo(waveform)**".vt";
-			constant vt_unit  : real := hdo(waveform)**".axis.vertical.unit";
 
 			signal chan_id    : std_logic_vector(0 to chanid_bits-1);
 			signal gain_id    : std_logic_vector(0 to gainid_bits-1);
