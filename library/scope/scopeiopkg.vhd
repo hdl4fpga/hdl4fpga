@@ -94,6 +94,16 @@ package scopeiopkg is
 	constant chanid_maxsize : natural := unsigned_num_bits(max_inputs-1);
 
 	function bitfield (
+		constant rgtr  : std_logic_vector;
+		constant field : string)
+		return std_logic;
+
+	function bitfield (
+		constant rgtr  : std_logic_vector;
+		constant field : string)
+		return   std_logic_vector;
+
+	function bitfield (
 		constant bf_rgtr   : std_logic_vector;
 		constant bf_id     : natural;
 		constant bf_dscptr : natural_vector)
@@ -147,6 +157,15 @@ package scopeiopkg is
 	constant trigger_slope_id   : natural := 2;
 	constant trigger_level_id   : natural := 3;
 	constant trigger_chanid_id  : natural := 4;
+
+	constant trigger_fields : string := compact(
+		"{" &
+		"    freeze  : {offset  0, length :  1}," &
+		"    oneshot : {offset  1, length :  1}," &
+		"    slope   : {offset  2, length :  1}," &
+		"    level   : {offset  3, length : 16}," &
+		"    chanid  : {offset 19, length : " & natural'image(chanid_maxsize) & "}"  &
+		"}");
 
 	constant triggerlevel_maxsize : natural := 16;
 	constant trigger_bf : natural_vector := (
@@ -394,6 +413,29 @@ package body scopeiopkg is
 			unit1245 := unit1245 * 10.0;
 		end loop;
 		return retval;
+	end;
+
+	function bitfield (
+		constant rgtr  : std_logic_vector;
+		constant field : string)
+		return   std_logic_vector is
+		constant offset : natural := hdo(field)**".offset";
+		constant length : natural := hdo(field)**".length";
+	begin
+		if rgtr'ascending then
+			return rgtr(offset+length-1 downto offset);
+		else
+			return rgtr(offset to offset+length-1);
+		end if;
+	end;
+
+	function bitfield (
+		constant rgtr  : std_logic_vector;
+		constant field : string)
+		return   std_logic is
+		constant offset : natural := hdo(field)**".offset";
+	begin
+		return rgtr(offset);
 	end;
 
 	function bitfield (
