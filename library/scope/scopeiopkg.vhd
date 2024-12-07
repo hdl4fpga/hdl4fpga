@@ -160,20 +160,12 @@ package scopeiopkg is
 
 	constant trigger_fields : string := compact(
 		"{" &
-		"    freeze  : {offset  0, length :  1}," &
-		"    oneshot : {offset  1, length :  1}," &
-		"    slope   : {offset  2, length :  1}," &
-		"    level   : {offset  3, length : 16}," &
-		"    chanid  : {offset 19, length : " & natural'image(chanid_maxsize) & "}"  &
+		"    freeze  : {offset :  0, length :  1}," &
+		"    oneshot : {offset :  1, length :  1}," &
+		"    slope   : {offset :  2, length :  1}," &
+		"    level   : {offset :  3, length : 16}," &
+		"    chanid  : {offset : 19, length : " & natural'image(chanid_maxsize) & "}"  &
 		"}");
-
-	constant triggerlevel_maxsize : natural := 16;
-	constant trigger_bf : natural_vector := (
-		trigger_freeze_id  => 1,
-		trigger_oneshot_id => 1,
-		trigger_slope_id   => 1,
-		trigger_level_id   => triggerlevel_maxsize,
-		trigger_chanid_id  => chanid_maxsize);
 
 	constant gainid_maxsize : natural := 4;
 
@@ -423,9 +415,9 @@ package body scopeiopkg is
 		constant length : natural := hdo(field)**".length";
 	begin
 		if rgtr'ascending then
-			return rgtr(offset+length-1 downto offset);
-		else
 			return rgtr(offset to offset+length-1);
+		else
+			return rgtr(offset+length-1 downto offset);
 		end if;
 	end;
 

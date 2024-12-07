@@ -150,15 +150,13 @@ begin
 		tbl_vtoffset;
 
 	trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
-	generic map (
-		rgtr      => false)
 	port map (
 		rgtr_clk  => rgtr_clk,
 		rgtr_dv   => rgtr_dv,
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
 
-		trigger_ena     => trigger_ena,
+		trigger_dv      => trigger_ena,
 		trigger_chanid  => rqtd_tgrcid,
 		trigger_slope   => rqtd_tgrslope,
 		trigger_oneshot => rqtd_tgroneshot,

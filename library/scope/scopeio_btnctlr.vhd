@@ -33,6 +33,7 @@ entity scopeio_btnctlr is
 	constant hz_unit       : real    := hdo(waveform)**".axis.horizontal.unit";
 	constant vt_unit       : real    := hdo(waveform)**".axis.vertical.unit";
 	constant grid_height   : natural := hdo(waveform)**".grid.height";
+	constant triggerlevel_maxsize : natural := hdo(trigger_fields)**".level.length";
 
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);

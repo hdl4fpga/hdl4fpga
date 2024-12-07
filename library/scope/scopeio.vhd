@@ -212,7 +212,12 @@ begin
 		constant osht_mode : std_logic_vector := "10";
 		constant frez_mode : std_logic_vector := "11";
 
-		alias rgtr_clk        is sio_clk;
+		alias rgtr_clk is sio_clk;
+		signal slope   : std_logic;
+		signal oneshot : std_logic;
+		signal freeze  : std_logic;
+		signal level   : std_logic_vector(trigger_level'range);
+		signal chanid  : std_logic_vector(trigger_chanid'range);
 
 	begin
 		scopeio_rtgrtrigger_e : entity hdl4fpga.scopeio_rgtrtrigger
@@ -223,11 +228,11 @@ begin
 			rgtr_data       => rgtr_revs,
 
 			trigger_dv      => trigger_dv,
-			trigger_chanid  => trigger_chanid,
-			trigger_level   => trigger_level,
-			trigger_freeze  => trigger_freeze,
-			trigger_oneshot => trigger_oneshot,
-			trigger_slope   => trigger_slope);
+			trigger_chanid  => chanid,
+			trigger_level   => level,
+			trigger_freeze  => freeze,
+			trigger_oneshot => oneshot,
+			trigger_slope   => slope);
 			
 		scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
 		generic map (
@@ -241,7 +246,20 @@ begin
 			trigger_slope  => trigger_slope,
 			trigger_shot   => trigger_shot);
 
-			tp(1 to trigger_level'length) <= trigger_level;
+		process (rgtr_clk)
+		begin
+			if rising_edge(rgtr_clk) then
+				if trigger_dv='1' then
+					trigger_chanid  <= chanid;
+					trigger_level   <= level;
+					trigger_slope   <= slope;
+					trigger_oneshot <= oneshot;
+					trigger_freeze  <= freeze;
+				end if;
+			end if;
+		end process;
+
+		tp(1 to trigger_level'length) <= trigger_level;
 	end block;
 
 	waveform_g : if waveform /= "none" generate
