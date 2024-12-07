@@ -449,7 +449,7 @@ begin
 				port map (
 					input_clk     => input_clk,
 					input_dv      => input_ena,
-					input_sample  => input_data,
+					input_sample  => input_sample,
 					gain_id       => gain_id,
 					output_dv     => output_ena(i),
 					output_sample => ampsample_data(sample_range));

@@ -40,6 +40,7 @@ use ecp5u.components.all;
 
 architecture scopeio of ulx3s is
 
+	constant tsttab : boolean := false;
 	--------------------------------------
 	--     Set your profile here        --
 	constant io_link      : io_comms     := io_usb;
@@ -91,7 +92,7 @@ architecture scopeio of ulx3s is
 	constant max_delay   : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 
-	constant inputs      : natural := 1;
+	constant inputs      : natural := 8;
 	signal input_clk     : std_logic;
 	signal input_lck     : std_logic;
 	signal input_chni    : std_logic_vector(4-1 downto 0);
@@ -789,7 +790,6 @@ begin
 
 		input_enas <= '1';
 		process (input_sample)
-			variable xxx : unsigned(input_samples'range);
 		begin
 			for i in 0 to 1-1 loop
 				input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;

@@ -30,8 +30,7 @@ use hdl4fpga.base.all;
 
 entity scopeio_amp is
 	generic (
-		gains : natural_vector;
-		lat : natural := 0);
+		gains : natural_vector);
 	port (
 		input_clk     : in  std_logic;
 		input_dv      : in  std_logic;
