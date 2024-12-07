@@ -20,17 +20,14 @@ entity scopeio_rgtrtrigger is
 		trigger_chanid  : buffer std_logic_vector;
 		trigger_level   : buffer std_logic_vector;
 		trigger_slope   : out std_logic);
-
 end;
 
 architecture def of scopeio_rgtrtrigger is
 begin
-
 	trigger_dv      <= rgtr_dv when rgtr_id=rid_trigger else '0';
 	trigger_freeze  <= bitfield(rgtr_data, hdo(trigger_fields)**".freeze");
 	trigger_slope   <= bitfield(rgtr_data, hdo(trigger_fields)**".slope");
 	trigger_oneshot <= bitfield(rgtr_data, hdo(trigger_fields)**".oneshot");
 	trigger_level   <= std_logic_vector(resize(unsigned(std_logic_vector'(bitfield(rgtr_data, hdo(trigger_fields)**".level"))),  trigger_level'length));
 	trigger_chanid  <= std_logic_vector(resize(unsigned(std_logic_vector'(bitfield(rgtr_data, hdo(trigger_fields)**".chanid"))), trigger_chanid'length));
-
 end;
