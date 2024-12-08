@@ -66,7 +66,16 @@ architecture def of scopeio_segment is
 	constant vtstep_bits   : natural := setif(vtaxis_tickrotate="ccw0", division_bits, vttick_bits);
 	constant vtheight_bits : natural := unsigned_num_bits((vt_height-1)-1);
 
+	signal video_trigger  : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
+
 begin
+
+   	resize_e : entity hdl4fpga.scopeio_resize
+   	generic map (
+  		inputs => 1)
+   	port map (
+  		input_data  => trigger_level,
+   		output_data => video_trigger);
 
 	rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtoffset
 	generic map (
@@ -143,7 +152,7 @@ begin
 
 	trigger_b : block 
 		signal offset : unsigned(vt_offsets'length/inputs-1 downto 0);
-		signal row  : unsigned(trigger_level'range);
+		signal row  : unsigned(video_trigger'range);
 		signal ena  : std_logic;
 		signal hdot : std_logic;
 	begin
@@ -154,7 +163,7 @@ begin
 			end if;
 		end process;
 
-		row <= resize(unsigned(-signed(trigger_level))+offset, row'length);
+		row <= resize(unsigned(-signed(video_trigger))+offset, row'length);
 		ena <= grid_on when resize(unsigned(y), row'length)=row else '0';
 
 		hline_e : entity hdl4fpga.draw_line

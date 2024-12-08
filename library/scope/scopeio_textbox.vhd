@@ -11,27 +11,28 @@ use hdl4fpga.cgafonts.all;
 
 entity scopeio_textbox is
 	generic(
-		inputs        : natural;
-		waveform      : string;
-		latency       : natural;
-		font_bitrom   : std_logic_vector := psf1cp850x8x16;
-		font_height   : natural := 16);
+		inputs          : natural;
+		sample_length   : natural;
+		waveform        : string;
+		latency         : natural;
+		font_bitrom     : std_logic_vector := psf1cp850x8x16;
+		font_height     : natural := 16);
 	port (
-		tp            : out std_logic_vector(1 to 32);
-		rgtr_clk      : in  std_logic;
-		rgtr_dv       : in  std_logic;
-		rgtr_id       : in  std_logic_vector(8-1 downto 0);
-		rgtr_data     : in  std_logic_vector;
+		tp              : out std_logic_vector(1 to 32);
+		rgtr_clk        : in  std_logic;
+		rgtr_dv         : in  std_logic;
+		rgtr_id         : in  std_logic_vector(8-1 downto 0);
+		rgtr_data       : in  std_logic_vector;
 
-		video_clk     : in  std_logic;
-		video_hcntr   : in  std_logic_vector;
-		video_vcntr   : in  std_logic_vector;
-		video_vton    : in  std_logic;
-		sgmntbox_ena  : in  std_logic_vector;
-		text_on       : in  std_logic := '1';
-		text_fg       : out std_logic_vector;
-		text_bg       : out std_logic_vector;
-		text_fgon     : out std_logic);
+		video_clk       : in  std_logic;
+		video_hcntr     : in  std_logic_vector;
+		video_vcntr     : in  std_logic_vector;
+		video_vton      : in  std_logic;
+		sgmntbox_ena    : in  std_logic_vector;
+		text_on         : in  std_logic := '1';
+		text_fg         : out std_logic_vector;
+		text_bg         : out std_logic_vector;
+		text_fgon       : out std_logic);
 
 	constant font_width     : natural := hdo(waveform)**".textbox.font_width=8.";
 	constant textbox_width  : natural := hdo(waveform)**".textbox.width";
@@ -55,7 +56,7 @@ architecture def of scopeio_textbox is
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
 	constant textwidth_bits  : natural := unsigned_num_bits(textbox_width-1);
 
-	signal trigger_chanid :  std_logic_vector(chanid_bits-1 downto 0);
+	-- signal trigger_chanid :  std_logic_vector(chanid_bits-1 downto 0);
 	signal code_frm  : std_logic;
 	signal code_irdy : std_logic;
 	signal code_data : ascii;
@@ -98,21 +99,6 @@ begin
 	focus_wid <= wid(focus_wid'range);
 
 	tp(1 to focus_wid'length) <= focus_wid;
-	readings_e : entity hdl4fpga.scopeio_reading
-	generic map (
-		inputs   => inputs,
-		waveform => waveform)
-	port map (
-		rgtr_clk  => rgtr_clk,
-		rgtr_dv   => rgtr_dv,
-		rgtr_id   => rgtr_id,
-		rgtr_data => rgtr_data,
-		trigger_chanid => trigger_chanid,
-		video_row => video_row,
-		code_frm  => code_frm,
-		code_irdy => code_irdy,
-		code_data => code_data);
-
 	process (rgtr_clk)
 		type states is (s_init, s_run);
 		variable state : states;

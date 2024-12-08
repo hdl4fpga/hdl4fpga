@@ -272,18 +272,6 @@ begin
 		constant vt       : string := hdo(waveform)**".vt";
 		constant vt_unit  : real := hdo(waveform)**".axis.vertical.unit";
 
-		function to_naturalvector (
-			constant object : string)
-			return natural_vector is
-			constant length : natural := hdo(object)**".length";
-			variable retval : natural_vector(0 to length-1);
-		begin
-			for i in 0 to length-1 loop
-				retval(i) := hdo(object)**("["&natural'image(i)&"]");
-			end loop;
-			return retval;
-		end;
-
 		constant time_factors : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.horizontal.scales=" & dflt_hzscale));
 		constant vt_gains     : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.vertical.gains=" & dlft_vtscale));
 		subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
@@ -307,93 +295,9 @@ begin
 		signal gain_dv        : std_logic;
 		signal gain_cid       : std_logic_vector(0 to chanid_bits-1);
 		signal gain_ids       : std_logic_vector(0 to inputs*gainid_bits-1);
-		signal video_trigger  : std_logic_vector(storage_word'range);
 
 	begin
 		
-		videotrigger_b : block
-			function input_gains
-				return natural_vector is
-				variable retval : natural_vector(0 to inputs-1);
-			begin
-				for i in retval'range loop
-					retval(i) := natural((2.0**(sample_length-1)*real(grid_unit)*real'(hdo(vt)**("["&natural'image(i)&"].step")))/vt_unit);
-				end loop;
-				return retval;
-			end;
-
-			signal anlg_req     : std_logic := '1';
-			signal anlg_rdy     : std_logic := '0';
-			signal analog_gain  : std_logic_vector(0 to sample_length-1);
-			signal trigger_gain : std_logic_vector(0 to sample_length);
-
-			signal digi_req     : std_logic := '1';
-			signal digi_rdy     : std_logic := '0';
-			signal digi_gainid  : std_logic_vector(0 to gainid_bits-1);
-			signal digi_gain    : std_logic_vector(0 to 18-1);
-			signal trigger_amp  : std_logic_vector(0 to sample_length);
-
-		begin
-
-			process(sio_clk)
-				type states is (s_anlg, s_digi);
-				variable state : states;
-			begin
-				if rising_edge(sio_clk) then
-					case state is
-					when s_anlg =>
-						if (anlg_req xor anlg_rdy)='0' then
-							if (digi_req xor digi_rdy)='0' then
-								if trigger_dv='1' then
-									anlg_req <= not anlg_rdy;
-									state := s_digi;
-								elsif gain_dv='1' then
-									anlg_req <= not anlg_rdy;
-									state := s_digi;
-								end if;
-							end if;
-						end if;
-					when s_digi =>
-						if (anlg_req xor anlg_rdy)='0' then
-							digi_req <= not digi_rdy;
-							state := s_anlg;
-						end if;
-					end case;
-				end if;
-			end process;
-
-			analog_gain <= std_logic_vector(to_unsigned(input_gains(to_integer(unsigned(trigger_chanid))), sample_length));
-			analoggain_e : entity hdl4fpga.mul_ser
-			port map (
-				comp => '1',
-				clk  => sio_clk,
-				req  => anlg_req,
-				rdy  => anlg_rdy,
-				a    => trigger_level,
-				b    => analog_gain,
-				s    => trigger_gain);
-
-			digi_gainid <= multiplex(gain_ids, trigger_chanid, gainid_bits);
-			digi_gain <= std_logic_vector(to_unsigned(vt_gains(to_integer(unsigned(digi_gainid))), digi_gain'length));
-			digitalgain_e : entity hdl4fpga.mul_ser
-			port map (
-				comp => '1',
-				clk  => sio_clk,
-				req  => digi_req,
-				rdy  => digi_rdy,
-				a    => trigger_gain(1 to sample_length),
-				b    => digi_gain,
-				s    => trigger_amp);
-
-        	resize_e : entity hdl4fpga.scopeio_resize
-        	generic map (
-        		inputs => 1)
-        	port map (
-        		input_data  => trigger_amp(1 to sample_length),
-        		output_data => video_trigger);
-
-		end block;
-
 		amp_b : block
 
 			signal chan_id    : std_logic_vector(0 to chanid_bits-1);
@@ -480,6 +384,7 @@ begin
 		scopeio_storage_e : entity hdl4fpga.scopeio_storage
 		generic map  (
 			inputs       => inputs,
+			sample_length => sample_length,
 			storageword_size => storage_word'length,
 			time_factors => time_factors)
 		port map (
@@ -516,7 +421,7 @@ begin
 			trigger_slope   => trigger_slope,
 			trigger_freeze  => trigger_freeze,
 			trigger_chanid  => trigger_chanid,
-			trigger_level   => video_trigger,
+			trigger_level   => trigger_level,
 											
 			video_addr     => video_addr,
 			video_frm      => video_frm,

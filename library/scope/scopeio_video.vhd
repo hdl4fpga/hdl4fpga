@@ -35,6 +35,7 @@ entity scopeio_video is
 	generic (
 		timing_id          : videotiming_ids;
 		inputs             : natural;
+		sample_length      : natural;
 		waveform           : string);
 	port (
 		tp                 : out std_logic_vector(1 to 32);
@@ -46,10 +47,6 @@ entity scopeio_video is
 		time_scale         : buffer std_logic_vector;
 		time_offset        : buffer std_logic_vector;
 
-		trigger_slope      : in  std_logic;
-		trigger_freeze     : in  std_logic;
-		trigger_chanid     : in  std_logic_vector;
-		trigger_level      : in  std_logic_vector;
 
 		video_addr         : out std_logic_vector;
 		video_frm          : out std_logic;
@@ -118,32 +115,38 @@ architecture beh of scopeio_video is
 	constant mainwidth_bits  : natural  := unsigned_num_bits(main_width-1);
 	constant mainheight_bits : natural := unsigned_num_bits(main_height-1);
 
-	signal x             : std_logic_vector(mainwidth_bits-1  downto 0);
-	signal y             : std_logic_vector(mainheight_bits-1 downto 0);
-	signal textbox_x     : std_logic_vector(mainwidth_bits-1  downto 0);
-	signal textbox_y     : std_logic_vector(mainheight_bits-1 downto 0);
-	signal sgmntbox_on   : std_logic;
-	signal grid_on       : std_logic;
-	signal hz_on         : std_logic;
-	signal vt_on         : std_logic;
-	signal text_on       : std_logic;
+	signal x              : std_logic_vector(mainwidth_bits-1  downto 0);
+	signal y              : std_logic_vector(mainheight_bits-1 downto 0);
+	signal textbox_x      : std_logic_vector(mainwidth_bits-1  downto 0);
+	signal textbox_y      : std_logic_vector(mainheight_bits-1 downto 0);
+	signal sgmntbox_on    : std_logic;
+	signal grid_on        : std_logic;
+	signal hz_on          : std_logic;
+	signal vt_on          : std_logic;
+	signal text_on        : std_logic;
 
-	signal trigger_dot   : std_logic;
-	signal trace_dots    : std_logic_vector(0 to inputs-1);
-	signal grid_dot      : std_logic;
-	signal grid_bgon     : std_logic;
-	signal hz_dot        : std_logic;
-	signal hz_bgon       : std_logic;
-	signal vt_dot        : std_logic;
-	signal vt_bgon       : std_logic;
-	signal text_fgon     : std_logic;
-	signal text_bgon     : std_logic;
-	signal text_fg       : std_logic_vector(0 to unsigned_num_bits(pltid_order'length+inputs+1-1)-1);
-	signal text_bg       : std_logic_vector(text_fg'range);
-	signal sgmntbox_bgon : std_logic;
-	signal sgmntbox_ena  : std_logic_vector(0 to num_of_segments-1);
-	signal pointer_dot   : std_logic;
+	signal trigger_dot    : std_logic;
+	signal trace_dots     : std_logic_vector(0 to inputs-1);
+	signal grid_dot       : std_logic;
+	signal grid_bgon      : std_logic;
+	signal hz_dot         : std_logic;
+	signal hz_bgon        : std_logic;
+	signal vt_dot         : std_logic;
+	signal vt_bgon        : std_logic;
+	signal text_fgon      : std_logic;
+	signal text_bgon      : std_logic;
+	signal text_fg        : std_logic_vector(0 to unsigned_num_bits(pltid_order'length+inputs+1-1)-1);
+	signal text_bg        : std_logic_vector(text_fg'range);
+	signal sgmntbox_bgon  : std_logic;
+	signal sgmntbox_ena   : std_logic_vector(0 to num_of_segments-1);
+	signal pointer_dot    : std_logic;
 
+	signal trigger_level  : std_logic_vector(0 to sample_length-1);
+	signal vt_scalecid    : std_logic_vector(chanid_bits-1 downto 0);
+	signal vt_scaleid     : std_logic_vector(4-1 downto 0);
+	signal vt_cid         : std_logic_vector(chanid_bits-1 downto 0);
+	signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
+	signal trigger_freeze : std_logic;
 begin
 
 	rgtrhzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
@@ -203,6 +206,141 @@ begin
 		di(2) => video_vld,
 		do    => video_io);
 
+	state_b : block
+	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
+	signal vt_scalecid    : std_logic_vector(chanid_bits-1 downto 0);
+	signal vt_scaleid     : std_logic_vector(4-1 downto 0);
+	signal vt_cid         : std_logic_vector(chanid_bits-1 downto 0);
+	signal vt_offsetcid   : std_logic_vector(vt_cid'range);
+	signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
+
+	signal trigger_ena    : std_logic;
+	signal trigger_freeze : std_logic;
+	signal trigger_slope  : std_logic;
+	signal trigger_oneshot : std_logic;
+	signal trigger_level  : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
+	signal vts_chanid     : std_logic_vector(vt_cid'range);
+	signal vt_chanid      : std_logic_vector(vt_cid'range);
+	signal hz_scaleid     : std_logic_vector(4-1 downto 0);
+	signal hz_offset      : std_logic_vector(hzoffset_bits-1 downto 0);
+
+	begin
+		vt_cid <= 
+			vt_offsetcid   when vtoffset_ena='1' else 
+			vt_scalecid    when vtscale_ena='1'  else
+			vts_chanid     when (vtstup_rdy xor vtstup_req)='1' else
+			vt_chanid      when (vtwdt_rdy xor vtwdt_req)='1' else
+			trigger_chanid when trigger_ena='1'  else
+			trigger_chanid when (tgrref_rdy xor tgrref_req)='1'  else
+			(others => '-');
+
+    	state_e : entity hdl4fpga.scopeio_state
+    	port map (
+    		rgtr_clk        => rgtr_clk,
+    		rgtr_dv         => rgtr_dv,
+    		rgtr_id         => rgtr_id,
+    		rgtr_data       => rgtr_data,
+
+    		hz_ena          => hz_ena,
+    		hz_scaleid      => hz_scaleid,
+    		hz_offset       => hz_offset,
+    		chan_id         => vt_cid,
+    		vtscale_ena     => vtscale_ena,
+    		vt_scalecid     => vt_scalecid,
+    		vt_scaleid      => vt_scaleid,
+    		vtoffset_ena    => vtoffset_ena,
+    		vt_offsetcid    => vt_offsetcid,
+    		vt_offset       => vt_offset,
+    				  
+    		trigger_ena     => trigger_ena,
+    		trigger_chanid  => trigger_chanid,
+    		trigger_slope   => trigger_slope,
+    		trigger_oneshot => trigger_oneshot,
+    		trigger_freeze  => trigger_freeze,
+    		trigger_level   => trigger_level);
+
+    	xxx_b : block
+    		constant vt       : string := hdo(waveform)**".vt";
+    		constant vt_unit  : real := hdo(waveform)**".axis.vertical.unit";
+    		constant vt_gains     : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.vertical.gains=" & dlft_vtscale));
+    		constant gainid_bits  : natural := unsigned_num_bits(vt_gains'length-1);
+
+    		function input_gains
+    			return natural_vector is
+    			variable retval : natural_vector(0 to inputs-1);
+    		begin
+    			for i in retval'range loop
+    				retval(i) := natural((2.0**(sample_length-1)*real(grid_unit)*real'(hdo(vt)**("["&natural'image(i)&"].step")))/vt_unit);
+    			end loop;
+    			return retval;
+    		end;
+
+    		signal anlg_req     : std_logic := '1';
+    		signal anlg_rdy     : std_logic := '0';
+    		signal analog_gain  : std_logic_vector(0 to sample_length-1);
+    		signal trigger_gain : std_logic_vector(0 to sample_length);
+
+    		signal digi_req     : std_logic := '1';
+    		signal digi_rdy     : std_logic := '0';
+    		signal digi_gainid  : std_logic_vector(0 to gainid_bits-1);
+    		signal digi_gain    : std_logic_vector(0 to 18-1);
+    		signal trigger_amp  : std_logic_vector(0 to sample_length);
+
+    	begin
+
+    		process(rgtr_clk)
+    			type states is (s_anlg, s_digi);
+    			variable state : states;
+    		begin
+    			if rising_edge(rgtr_clk) then
+    				case state is
+    				when s_anlg =>
+    					if (anlg_req xor anlg_rdy)='0' then
+    						if (digi_req xor digi_rdy)='0' then
+    							if trigger_dv='1' then
+    								anlg_req <= not anlg_rdy;
+    								state := s_digi;
+    							elsif gain_dv='1' then
+    								anlg_req <= not anlg_rdy;
+    								state := s_digi;
+    							end if;
+    						end if;
+    					end if;
+    				when s_digi =>
+    					if (anlg_req xor anlg_rdy)='0' then
+    						digi_req <= not digi_rdy;
+    						state := s_anlg;
+    					end if;
+    				end case;
+    			end if;
+    		end process;
+
+    		analog_gain <= std_logic_vector(to_unsigned(input_gains(to_integer(unsigned(trigger_chanid))), sample_length));
+    		analoggain_e : entity hdl4fpga.mul_ser
+    		port map (
+    			comp => '1',
+    			clk  => rgtr_clk,
+    			req  => anlg_req,
+    			rdy  => anlg_rdy,
+    			a    => trigger_level,
+    			b    => analog_gain,
+    			s    => trigger_gain);
+
+    		digi_gainid <= multiplex(gain_ids, trigger_chanid, gainid_bits);
+    		digi_gain <= std_logic_vector(to_unsigned(vt_gains(to_integer(unsigned(digi_gainid))), digi_gain'length));
+    		digitalgain_e : entity hdl4fpga.mul_ser
+    		port map (
+    			comp => '1',
+    			clk  => rgtr_clk,
+    			req  => digi_req,
+    			rdy  => digi_rdy,
+    			a    => trigger_gain(1 to sample_length),
+    			b    => digi_gain,
+    			s    => trigger_amp);
+
+    	end block;
+	end block;
+
 	scopeio_layout_e : entity hdl4fpga.scopeio_layout
 	generic map (
 		waveform => waveform)
@@ -228,10 +366,43 @@ begin
 		textbox_on   => text_on);
 
 	textbox_g : if textbox_width/=0 generate
+	begin
+
+    	readings_e : entity hdl4fpga.scopeio_reading
+    	generic map (
+    		inputs          => inputs,
+    		waveform        => waveform)
+    	port map (
+    		clk             => rgtr_clk,
+    		vtscale_req     => vtscale_req,
+    		vtscale_rdy     => vtscale_rdy,
+    		vt_cid          => vt_cid,
+    		vt_scalecid     => vt_scalecid,
+    		vt_scaleid      => vt_scaleid,
+      
+    		vtoffset_req    => vtoffset_req,
+    		vtoffset_rdy    => vtoffset_rdy,
+    		vt_offsetcid    => vt_offsetcid,
+    		vt_offset       => vt_offset,
+      
+    		trigger_req     => trigger_req,
+    		trigger_rdy     => trigger_rdy,
+    		trigger_chanid  => trigger_chanid,
+    		trigger_freeze  => trigger_freeze,
+    		trigger_slope   => trigger_slope,
+    		trigger_oneshot => trigger_oneshot,
+    		trigger_level   => trigger_level,
+
+    		video_row       => video_row,
+    		code_frm        => code_frm,
+    		code_irdy       => code_irdy,
+    		code_data       => code_data);
+
 		scopeio_texbox_e : entity hdl4fpga.scopeio_textbox
 		generic map (
 			latency       => segmment_latency+input_latency,
 			inputs        => inputs,
+			sample_length => sample_length,
 			waveform      => waveform)
 		port map (
 			tp => tp,
@@ -239,6 +410,7 @@ begin
 			rgtr_dv       => rgtr_dv,
 			rgtr_id       => rgtr_id,
 			rgtr_data     => rgtr_data,
+			trigger_level => trigger_level,
 
 			video_clk     => video_clk,
 			video_hcntr   => textbox_x,

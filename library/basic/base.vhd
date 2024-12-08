@@ -99,6 +99,10 @@ package base is
 		constant arg : unsigned)
 		return string;
 
+	function to_naturalvector (
+		constant object : string)
+		return natural_vector;
+
 	function textalign (
 		constant text   : string;
 		constant width  : natural;
@@ -405,6 +409,7 @@ library ieee;
 use ieee.math_real.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 
 package body base is
 
@@ -706,6 +711,18 @@ package body base is
 		return string is
 	begin
 		return to_string(std_logic_vector(arg));
+	end;
+
+	function to_naturalvector (
+		constant object : string)
+		return natural_vector is
+		constant length : natural := hdo(object)**".length";
+		variable retval : natural_vector(0 to length-1);
+	begin
+		for i in 0 to length-1 loop
+			retval(i) := hdo(object)**("["&natural'image(i)&"]");
+		end loop;
+		return retval;
 	end;
 
 	function textalign (
