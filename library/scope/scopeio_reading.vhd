@@ -15,15 +15,10 @@ entity scopeio_reading is
 	port (
 		clk             : in  std_logic;
 		tp              : out std_logic_vector(1 to 32);
-		vtscale_req     : in  std_logic;
-		vtscale_rdy     : buffer std_logic;
+		vt_req          : in  std_logic;
+		vt_rdy          : buffer std_logic;
 		vt_cid          : in  std_logic_vector;
-		vt_scalecid     : in  std_logic_vector;
 		vt_scaleid      : in  std_logic_vector(4-1 downto 0);
-
-		vtoffset_req    : in  std_logic;
-		vtoffset_rdy    : buffer std_logic;
-		vt_offsetcid    : in  std_logic_vector;
 		vt_offset       : in  std_logic_vector;
 
 		trigger_req     : in  std_logic;
@@ -220,42 +215,17 @@ begin
 	begin
 		if rising_edge(clk) then
 			if (txt_req xor txt_rdy)='0' then
-				if (vtscale_rdy xor vtscale_req)='1' then
-					scaleid     := to_integer(unsigned(vt_scaleid));
-					vt_sht      <= to_signed(vt_shts(scaleid), btod_sht'length);
-					vt_dec      <= to_signed(vt_pnts(scaleid), btod_dec'length);
-					vt_scale    <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-					vt_uid      <= (inputs+1)+scaleid;
-					vt_wdtid    <= to_integer(unsigned(vt_scalecid));
-					vt_wdtrow   <= resize(unsigned(vt_scalecid), vt_wdtrow'length)+2;
-					vt_chanid   <= vt_scalecid;
-					vtwdt_req   <= not vtwdt_rdy;
-					vtscale_rdy <= vtscale_req;
-
-					-- tgrref_req <= not tgrref_rdy;
-				elsif (vtoffset_rdy xor vtoffset_req)='1' then
-					scaleid      := to_integer(unsigned(vt_scaleid));
-					vt_sht       <= to_signed(vt_shts(scaleid), btod_sht'length);
-					vt_dec       <= to_signed(vt_pnts(scaleid), btod_dec'length);
-					vt_scale     <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-					vt_wdtid     <= to_integer(unsigned(vt_offsetcid));
-					vt_uid       <= (inputs+1)+scaleid;
-					vt_wdtrow    <= resize(unsigned(vt_offsetcid), vt_wdtrow'length)+2;
-					vt_chanid    <= vt_offsetcid;
-					vtwdt_req    <= not vtwdt_rdy;
-					vtoffset_rdy <= vtoffset_req;
-					
-					-- tgrref_req   <= not tgrref_rdy;
-				elsif (vtstup_rdy xor vtstup_req)='1' then
-					scaleid    := to_integer(unsigned(vt_scaleid));
-					vt_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
-					vt_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
-					vt_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-					vt_wdtid   <= chan;
-					vt_uid     <= (inputs+1)+scaleid;
-					vt_wdtrow  <= to_unsigned(chan, vt_wdtrow'length)+2;
-					vtwdt_req  <= not vtwdt_rdy;
-					vtstup_rdy <= vtstup_req;
+				if (vt_rdy xor vt_req)='1' then
+					scaleid   := to_integer(unsigned(vt_scaleid));
+					vt_sht    <= to_signed(vt_shts(scaleid), btod_sht'length);
+					vt_dec    <= to_signed(vt_pnts(scaleid), btod_dec'length);
+					vt_scale  <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
+					vt_uid    <= (inputs+1)+scaleid;
+					vt_wdtid  <= to_integer(unsigned(vt_cid));
+					vt_wdtrow <= resize(unsigned(vt_cid), vt_wdtrow'length)+2;
+					vt_chanid <= vt_cid;
+					vtwdt_req <= not vtwdt_rdy;
+					vt_rdy    <= vt_req;
 				end if;
 			end if;
 		end if;
@@ -279,26 +249,6 @@ begin
 					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
 					tgrwdt_req  <= not tgrwdt_rdy;
 					trigger_rdy <= trigger_req;
-				-- elsif (tgrref_rdy xor tgrref_req)='1' then
-					-- if (vtwdt_rdy xor vtwdt_req)='0' then
-						-- scaleid    := to_integer(unsigned(vt_scaleid));
-						-- tgr_sht    <= to_signed(vt_shts(scaleid), btod_sht'length);
-						-- tgr_dec    <= to_signed(vt_pnts(scaleid), btod_dec'length);
-						-- tgr_scale  <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-						-- tgr_wdtid  <= inputs+1;
-						-- tgr_wdtrow <= to_unsigned(1, tgr_wdtrow'length);
-						-- tgrwdt_req <= not tgrwdt_rdy;
-						-- tgrref_rdy <= tgrref_req;
-					-- end if;
-				-- elsif (tgrstup_rdy xor tgrstup_req)='1' then
-					-- scaleid    := to_integer(unsigned(vt_scaleid));
-					-- tgr_sht    <= to_signed(vt_shts(scaleid), btod_sht'length);
-					-- tgr_dec    <= to_signed(vt_pnts(scaleid), btod_dec'length);
-					-- tgr_scale  <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-					-- tgr_wdtid  <= inputs+1;
-					-- tgr_wdtrow <= to_unsigned(1, tgr_wdtrow'length);
-					-- tgrwdt_req <= not tgrwdt_rdy;
-					-- tgrstup_rdy <= tgrstup_req;
 				end if;
 			end if;
 		end if;
@@ -610,6 +560,86 @@ begin
 			end case;
 		end if;
 	end process;
+
+    	xxx_b : block
+    		constant vt       : string := hdo(waveform)**".vt";
+    		constant vt_unit  : real := hdo(waveform)**".axis.vertical.unit";
+    		constant vt_gains     : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.vertical.gains=" & dlft_vtscale));
+    		constant gainid_bits  : natural := unsigned_num_bits(vt_gains'length-1);
+
+    		function input_gains
+    			return natural_vector is
+    			variable retval : natural_vector(0 to inputs-1);
+    		begin
+    			for i in retval'range loop
+    				retval(i) := natural((2.0**(trigger_level'length-1)*real(grid_unit)*real'(hdo(vt)**("["&natural'image(i)&"].step")))/vt_unit);
+    			end loop;
+    			return retval;
+    		end;
+
+    		signal anlg_req     : std_logic := '1';
+    		signal anlg_rdy     : std_logic := '0';
+    		signal analog_gain  : std_logic_vector(0 to trigger_level'length-1);
+    		signal trigger_gain : std_logic_vector(0 to trigger_level'length);
+
+    		signal digi_req     : std_logic := '1';
+    		signal digi_rdy     : std_logic := '0';
+    		signal digi_gainid  : std_logic_vector(0 to gainid_bits-1);
+    		signal digi_gain    : std_logic_vector(0 to 18-1);
+    		signal trigger_amp  : std_logic_vector(0 to trigger_level'length);
+
+    	begin
+
+    		process(clk)
+    			type states is (s_anlg, s_digi);
+    			variable state : states;
+    		begin
+    			if rising_edge(clk) then
+    				case state is
+    				when s_anlg =>
+    					if (anlg_req xor anlg_rdy)='0' then
+    						if (digi_req xor digi_rdy)='0' then
+    							if (trigger_rdy xor trigger_req)='1' then
+    								anlg_req <= not anlg_rdy;
+    								state := s_digi;
+    							elsif (vt_rdy xor vt_req)='1' then
+    								anlg_req <= not anlg_rdy;
+    								state := s_digi;
+    							end if;
+    						end if;
+    					end if;
+    				when s_digi =>
+    					if (anlg_req xor anlg_rdy)='0' then
+    						digi_req <= not digi_rdy;
+    						state := s_anlg;
+    					end if;
+    				end case;
+    			end if;
+    		end process;
+
+    		analog_gain <= std_logic_vector(to_unsigned(input_gains(to_integer(unsigned(trigger_chanid))), trigger_level'length));
+    		analoggain_e : entity hdl4fpga.mul_ser
+    		port map (
+    			comp => '1',
+    			clk  => clk,
+    			req  => anlg_req,
+    			rdy  => anlg_rdy,
+    			a    => trigger_level,
+    			b    => analog_gain,
+    			s    => trigger_gain);
+
+    		digi_gainid <= multiplex(gain_ids, trigger_chanid, gainid_bits);
+    		digi_gain <= std_logic_vector(to_unsigned(vt_gains(to_integer(unsigned(digi_gainid))), digi_gain'length));
+    		digitalgain_e : entity hdl4fpga.mul_ser
+    		port map (
+    			comp => '1',
+    			clk  => clk,
+    			req  => digi_req,
+    			rdy  => digi_rdy,
+    			a    => trigger_gain(1 to trigger_level'length),
+    			b    => digi_gain,
+    			s    => trigger_amp);
+    	end block;
 
 	trigger_p : process (tgrwdt_rdy,clk)
 		type states is (s_label, s_offset, s_unit, s_slope, s_mode, s_wait);

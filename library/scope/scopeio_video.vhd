@@ -232,6 +232,17 @@ begin
 
 	state_b : block
     	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
+		constant grid_unit     : natural := hdo(waveform)**".grid.unit=32.";
+
+		signal setup_rdy  : std_logic;
+		signal setup_req  : std_logic;
+		signal vtsetup_rdy  : std_logic;
+		signal vtsetup_req  : std_logic;
+		signal tgrsetup_rdy : std_logic;
+		signal tgrsetup_req : std_logic;
+		signal hzsetup_rdy  : std_logic;
+		signal hzsetup_req  : std_logic;
+    	signal setup_cid          : std_logic_vector(chanid_bits-1 downto 0);
 
     	signal vtscale_ena     : std_logic;
     	signal vt_scalecid     : std_logic_vector(chanid_bits-1 downto 0);
@@ -252,14 +263,13 @@ begin
 		signal hz_scaleid      : std_logic_vector(4-1 downto 0);
 		signal hz_offset       : std_logic_vector(hzoffset_bits-1 downto 0);
 
-		signal vtscale_rdy  : std_logic;
-		signal vtscale_req  : std_logic;
-		signal vtoffset_rdy : std_logic;
-		signal vtoffset_req : std_logic;
-		signal vtsetup_rdy : std_logic;
-		signal vtsetup_req : std_logic;
-		signal trigger_rdy : std_logic;
-		signal trigger_req : std_logic;
+		signal vt_rdy  : std_logic;
+		signal vt_req  : std_logic;
+		signal tgr_rdy : std_logic;
+		signal tgr_req : std_logic;
+		signal hz_rdy  : std_logic;
+		signal hz_req  : std_logic;
+
 	begin
 
     	state_e : entity hdl4fpga.scopeio_state
@@ -295,29 +305,27 @@ begin
 				case state is
 				when s_idle =>
 					if (setup_rdy xor setup_req)='1' then
-						if (vtsetup_req xor vtsetup_rdy)='0' then
-							setup_cid <= std_logic_vector(to_unsigned(inputs-1, setup_cid'length));
-							vt_req <= not vt_rdy;
-							state := s_vtsetup;
-						end if;
+						setup_cid <= std_logic_vector(to_unsigned(inputs-1, setup_cid'length));
+						vtsetup_req <= not vtsetup_rdy;
+						state := s_vtsetup;
 					end if;
 				when s_vtsetup =>
-					if (vt_req xor vt_rdy)='0' then
+					if (vtsetup_req xor vtsetup_rdy)='0' then
 						if unsigned(setup_cid )> 0 then
 							setup_cid <= std_logic_vector(unsigned(setup_cid)-1) ;
-							vt_req <= not vt_rdy;
+							vtsetup_req <= not vtsetup_rdy;
 						else
-							trigger_req <= not trigger_rdy;
+							tgrsetup_req <= not tgrsetup_rdy;
 							state := s_tgrsetup;
 						end if;
 					end if;
 				when s_tgrsetup =>
-					if (trigger_req xor trigger_rdy)='0' then
-						hz_req <= not hz_rdy;
+					if (tgrsetup_req xor tgrsetup_rdy)='0' then
+						hzsetup_req <= not hzsetup_rdy;
 						state := s_hzsetup;
 					end if;
 				when s_hzsetup =>
-					if (hz_req xor hz_rdy)='0' then
+					if (hzsetup_req xor hzsetup_rdy)='0' then
 						setup_rdy <= setup_req;
 						state := s_idle;
 					end if;
@@ -326,120 +334,48 @@ begin
 		end process;
 
 		process (rgtr_clk)
-			type states is (s_idle, s_vtscale, s_vtoffset, s_trigger);
+			type states is (s_rdy, s_vtreq, s_tgrreq);
 			variable state : states;
-			variable chan : integer -1 to inputs-1;
 		begin
 			if rising_edge(rgtr_clk) then
 				case state is
-				when s_idle =>
+				when s_rdy =>
 					if vtscale_ena='1' then
 						vt_cid <= vt_scalecid;
 						vt_req <= not vt_rdy;
-						state := s_vtscale;
+						state := s_vtreq;
 					elsif vtoffset_ena='1' then
 						vt_cid <= vt_offsetcid;
 						vt_req <= not vt_rdy;
-						state := s_vtoffset;
+						state := s_vtreq;
 					elsif trigger_ena='1' then
-						trigger_req <= not trigger_rdy;
+						tgr_req <= not tgr_rdy;
 						vt_cid <= trigger_chanid;
+						state := s_tgrreq;
 					elsif (vtsetup_rdy xor vtsetup_req)='1' then
 						vt_cid <= setup_cid;
-						vtscale_req <= not vtscale_rdy;
-						state := s_vtsetup;
+						vt_req <= not vt_rdy;
+						state := s_vtreq;
+					elsif (tgrsetup_rdy xor tgrsetup_req)='1' then
+						vt_cid <= trigger_chanid;
+						tgr_req <= not tgr_rdy;
+						state := s_tgrreq;
 					else
 						vt_cid <= (others => '-');
 					end if;
-				when s_trigger =>
-					if (tgrscale_req xor tgrscale_rdy)='0' then
-						vtsetup_rdy <= vtsetup_req;
-						state := s_idle;
+				when s_vtreq =>
+					if (vt_req xor vt_rdy)='0' then
+						tgr_req <= not tgr_rdy;
+						state := s_tgrreq;
+					end if;
+				when s_tgrreq =>
+					if (tgr_req xor tgr_rdy)='0' then
+						state := s_rdy;
 					end if;
 				end case;
 			end if;
 		end process;
 
-    	xxx_b : block
-    		constant vt       : string := hdo(waveform)**".vt";
-    		constant vt_unit  : real := hdo(waveform)**".axis.vertical.unit";
-    		constant vt_gains     : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.vertical.gains=" & dlft_vtscale));
-    		constant gainid_bits  : natural := unsigned_num_bits(vt_gains'length-1);
-
-    		function input_gains
-    			return natural_vector is
-    			variable retval : natural_vector(0 to inputs-1);
-    		begin
-    			for i in retval'range loop
-    				retval(i) := natural((2.0**(sample_length-1)*real(grid_unit)*real'(hdo(vt)**("["&natural'image(i)&"].step")))/vt_unit);
-    			end loop;
-    			return retval;
-    		end;
-
-    		signal anlg_req     : std_logic := '1';
-    		signal anlg_rdy     : std_logic := '0';
-    		signal analog_gain  : std_logic_vector(0 to sample_length-1);
-    		signal trigger_gain : std_logic_vector(0 to sample_length);
-
-    		signal digi_req     : std_logic := '1';
-    		signal digi_rdy     : std_logic := '0';
-    		signal digi_gainid  : std_logic_vector(0 to gainid_bits-1);
-    		signal digi_gain    : std_logic_vector(0 to 18-1);
-    		signal trigger_amp  : std_logic_vector(0 to sample_length);
-
-    	begin
-
-    		process(rgtr_clk)
-    			type states is (s_anlg, s_digi);
-    			variable state : states;
-    		begin
-    			if rising_edge(rgtr_clk) then
-    				case state is
-    				when s_anlg =>
-    					if (anlg_req xor anlg_rdy)='0' then
-    						if (digi_req xor digi_rdy)='0' then
-    							if trigger_dv='1' then
-    								anlg_req <= not anlg_rdy;
-    								state := s_digi;
-    							elsif gain_dv='1' then
-    								anlg_req <= not anlg_rdy;
-    								state := s_digi;
-    							end if;
-    						end if;
-    					end if;
-    				when s_digi =>
-    					if (anlg_req xor anlg_rdy)='0' then
-    						digi_req <= not digi_rdy;
-    						state := s_anlg;
-    					end if;
-    				end case;
-    			end if;
-    		end process;
-
-    		analog_gain <= std_logic_vector(to_unsigned(input_gains(to_integer(unsigned(trigger_chanid))), sample_length));
-    		analoggain_e : entity hdl4fpga.mul_ser
-    		port map (
-    			comp => '1',
-    			clk  => rgtr_clk,
-    			req  => anlg_req,
-    			rdy  => anlg_rdy,
-    			a    => trigger_level,
-    			b    => analog_gain,
-    			s    => trigger_gain);
-
-    		digi_gainid <= multiplex(gain_ids, trigger_chanid, gainid_bits);
-    		digi_gain <= std_logic_vector(to_unsigned(vt_gains(to_integer(unsigned(digi_gainid))), digi_gain'length));
-    		digitalgain_e : entity hdl4fpga.mul_ser
-    		port map (
-    			comp => '1',
-    			clk  => rgtr_clk,
-    			req  => digi_req,
-    			rdy  => digi_rdy,
-    			a    => trigger_gain(1 to sample_length),
-    			b    => digi_gain,
-    			s    => trigger_amp);
-
-    	end block;
 	end block;
 
 	textbox_g : if textbox_width/=0 generate
@@ -462,8 +398,8 @@ begin
     		vt_offsetcid    => vt_offsetcid,
     		vt_offset       => vt_offset,
       
-    		trigger_req     => trigger_req,
-    		trigger_rdy     => trigger_rdy,
+    		trigger_req     => tgr_req,
+    		trigger_rdy     => tgr_rdy,
     		trigger_chanid  => trigger_chanid,
     		trigger_freeze  => trigger_freeze,
     		trigger_slope   => trigger_slope,
