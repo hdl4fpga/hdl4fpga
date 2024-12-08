@@ -505,7 +505,7 @@ begin
 					wdt_id     <= vt_wdtid;
 					wdt_row    <= vt_wdtrow;
 					vtwdt_rdy  <= vtwdt_req;
-					txt_req    <= not txt_req;
+					txt_req    <= not txt_rdy;
 				elsif (tgrwdt_req xor tgrwdt_rdy)='1' then
 					btod_sht   <= tgr_sht;
 					btod_dec   <= tgr_dec;
@@ -514,7 +514,7 @@ begin
 					wdt_id     <= tgr_wdtid;
 					wdt_row    <= tgr_wdtrow;
 					tgrwdt_rdy <= tgrwdt_req;
-					txt_req    <= not txt_req;
+					txt_req    <= not txt_rdy;
 				elsif (hzwdt_req xor hzwdt_rdy)='1' then
 					btod_sht   <= hz_sht;
 					btod_dec   <= hz_dec;
@@ -523,7 +523,7 @@ begin
 					wdt_id     <= hz_wdtid;
 					wdt_row    <= hz_wdtrow;
 					hzwdt_rdy  <= hzwdt_req;
-					txt_req    <= not txt_req;
+					txt_req    <= not txt_rdy;
 				end if;
 			end if;
 		end if;

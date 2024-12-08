@@ -206,33 +206,61 @@ begin
 		di(2) => video_vld,
 		do    => video_io);
 
+	scopeio_layout_e : entity hdl4fpga.scopeio_layout
+	generic map (
+		waveform => waveform)
+	port map (
+		video_clk    => video_clk,
+		video_hzcntr => video_hzcntr,
+		video_vtcntr => video_vtcntr,
+		video_hzon   => video_hzon,
+		video_vton   => video_vton,
+
+		hz_segment   => hz_segment,
+		x            => x,
+		y            => y,
+		textbox_x    => textbox_x,
+		textbox_y    => textbox_y,
+		sgmntbox_on  => sgmntbox_on,
+		sgmntbox_ena => sgmntbox_ena,
+		video_addr   => video_addr,
+		video_frm    => video_frm,
+		grid_on      => grid_on,
+		hz_on        => hz_on,
+		vt_on        => vt_on,
+		textbox_on   => text_on);
+
 	state_b : block
-	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-	signal vt_scalecid    : std_logic_vector(chanid_bits-1 downto 0);
-	signal vt_scaleid     : std_logic_vector(4-1 downto 0);
-	signal vt_cid         : std_logic_vector(chanid_bits-1 downto 0);
-	signal vt_offsetcid   : std_logic_vector(vt_cid'range);
-	signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
+    	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 
-	signal trigger_ena    : std_logic;
-	signal trigger_freeze : std_logic;
-	signal trigger_slope  : std_logic;
-	signal trigger_oneshot : std_logic;
-	signal trigger_level  : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
-	signal vts_chanid     : std_logic_vector(vt_cid'range);
-	signal vt_chanid      : std_logic_vector(vt_cid'range);
-	signal hz_scaleid     : std_logic_vector(4-1 downto 0);
-	signal hz_offset      : std_logic_vector(hzoffset_bits-1 downto 0);
+    	signal vtscale_ena     : std_logic;
+    	signal vt_scalecid     : std_logic_vector(chanid_bits-1 downto 0);
+    	signal vt_scaleid      : std_logic_vector(4-1 downto 0);
+    	signal vt_cid          : std_logic_vector(chanid_bits-1 downto 0);
+    	signal vtoffset_ena    : std_logic;
+    	signal vt_offsetcid    : std_logic_vector(vt_cid'range);
+    	signal vt_offset       : std_logic_vector((5+8)-1 downto 0);
 
+    	signal trigger_ena     : std_logic;
+    	signal trigger_freeze  : std_logic;
+    	signal trigger_slope   : std_logic;
+    	signal trigger_oneshot : std_logic;
+		signal trigger_level   : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
+
+		signal vts_chanid      : std_logic_vector(vt_cid'range);
+		signal vt_chanid       : std_logic_vector(vt_cid'range);
+		signal hz_scaleid      : std_logic_vector(4-1 downto 0);
+		signal hz_offset       : std_logic_vector(hzoffset_bits-1 downto 0);
+
+		signal vtscale_rdy  : std_logic;
+		signal vtscale_req  : std_logic;
+		signal vtoffset_rdy : std_logic;
+		signal vtoffset_req : std_logic;
+		signal vtsetup_rdy : std_logic;
+		signal vtsetup_req : std_logic;
+		signal trigger_rdy : std_logic;
+		signal trigger_req : std_logic;
 	begin
-		vt_cid <= 
-			vt_offsetcid   when vtoffset_ena='1' else 
-			vt_scalecid    when vtscale_ena='1'  else
-			vts_chanid     when (vtstup_rdy xor vtstup_req)='1' else
-			vt_chanid      when (vtwdt_rdy xor vtwdt_req)='1' else
-			trigger_chanid when trigger_ena='1'  else
-			trigger_chanid when (tgrref_rdy xor tgrref_req)='1'  else
-			(others => '-');
 
     	state_e : entity hdl4fpga.scopeio_state
     	port map (
@@ -258,6 +286,79 @@ begin
     		trigger_oneshot => trigger_oneshot,
     		trigger_freeze  => trigger_freeze,
     		trigger_level   => trigger_level);
+
+		process (rgtr_clk)
+			type states is (s_idle, s_vtsetup, s_tgrsetup, s_hzsetup);
+			variable state : states;
+		begin
+			if rising_edge(rgtr_clk) then
+				case state is
+				when s_idle =>
+					if (setup_rdy xor setup_req)='1' then
+						if (vtsetup_req xor vtsetup_rdy)='0' then
+							setup_cid <= std_logic_vector(to_unsigned(inputs-1, setup_cid'length));
+							vt_req <= not vt_rdy;
+							state := s_vtsetup;
+						end if;
+					end if;
+				when s_vtsetup =>
+					if (vt_req xor vt_rdy)='0' then
+						if unsigned(setup_cid )> 0 then
+							setup_cid <= std_logic_vector(unsigned(setup_cid)-1) ;
+							vt_req <= not vt_rdy;
+						else
+							trigger_req <= not trigger_rdy;
+							state := s_tgrsetup;
+						end if;
+					end if;
+				when s_tgrsetup =>
+					if (trigger_req xor trigger_rdy)='0' then
+						hz_req <= not hz_rdy;
+						state := s_hzsetup;
+					end if;
+				when s_hzsetup =>
+					if (hz_req xor hz_rdy)='0' then
+						setup_rdy <= setup_req;
+						state := s_idle;
+					end if;
+				end case;
+			end if;
+		end process;
+
+		process (rgtr_clk)
+			type states is (s_idle, s_vtscale, s_vtoffset, s_trigger);
+			variable state : states;
+			variable chan : integer -1 to inputs-1;
+		begin
+			if rising_edge(rgtr_clk) then
+				case state is
+				when s_idle =>
+					if vtscale_ena='1' then
+						vt_cid <= vt_scalecid;
+						vt_req <= not vt_rdy;
+						state := s_vtscale;
+					elsif vtoffset_ena='1' then
+						vt_cid <= vt_offsetcid;
+						vt_req <= not vt_rdy;
+						state := s_vtoffset;
+					elsif trigger_ena='1' then
+						trigger_req <= not trigger_rdy;
+						vt_cid <= trigger_chanid;
+					elsif (vtsetup_rdy xor vtsetup_req)='1' then
+						vt_cid <= setup_cid;
+						vtscale_req <= not vtscale_rdy;
+						state := s_vtsetup;
+					else
+						vt_cid <= (others => '-');
+					end if;
+				when s_trigger =>
+					if (tgrscale_req xor tgrscale_rdy)='0' then
+						vtsetup_rdy <= vtsetup_req;
+						state := s_idle;
+					end if;
+				end case;
+			end if;
+		end process;
 
     	xxx_b : block
     		constant vt       : string := hdo(waveform)**".vt";
@@ -340,30 +441,6 @@ begin
 
     	end block;
 	end block;
-
-	scopeio_layout_e : entity hdl4fpga.scopeio_layout
-	generic map (
-		waveform => waveform)
-	port map (
-		video_clk    => video_clk,
-		video_hzcntr => video_hzcntr,
-		video_vtcntr => video_vtcntr,
-		video_hzon   => video_hzon,
-		video_vton   => video_vton,
-
-		hz_segment   => hz_segment,
-		x            => x,
-		y            => y,
-		textbox_x    => textbox_x,
-		textbox_y    => textbox_y,
-		sgmntbox_on  => sgmntbox_on,
-		sgmntbox_ena => sgmntbox_ena,
-		video_addr   => video_addr,
-		video_frm    => video_frm,
-		grid_on      => grid_on,
-		hz_on        => hz_on,
-		vt_on        => vt_on,
-		textbox_on   => text_on);
 
 	textbox_g : if textbox_width/=0 generate
 	begin
