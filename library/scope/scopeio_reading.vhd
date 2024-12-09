@@ -243,7 +243,6 @@ begin
 					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					tgr_offset  <= signed(trigger_level);
 					tgr_slope   <= trigger_slope;
-					tgr_freeze  <= trigger_freeze;
 					tgr_oneshot <= trigger_oneshot;
 					tgr_wdtid   <= inputs+1;
 					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
@@ -560,86 +559,6 @@ begin
 			end case;
 		end if;
 	end process;
-
-    	xxx_b : block
-    		constant vt       : string := hdo(waveform)**".vt";
-    		constant vt_unit  : real := hdo(waveform)**".axis.vertical.unit";
-    		constant vt_gains     : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.vertical.gains=" & dlft_vtscale));
-    		constant gainid_bits  : natural := unsigned_num_bits(vt_gains'length-1);
-
-    		function input_gains
-    			return natural_vector is
-    			variable retval : natural_vector(0 to inputs-1);
-    		begin
-    			for i in retval'range loop
-    				retval(i) := natural((2.0**(trigger_level'length-1)*real(grid_unit)*real'(hdo(vt)**("["&natural'image(i)&"].step")))/vt_unit);
-    			end loop;
-    			return retval;
-    		end;
-
-    		signal anlg_req     : std_logic := '1';
-    		signal anlg_rdy     : std_logic := '0';
-    		signal analog_gain  : std_logic_vector(0 to trigger_level'length-1);
-    		signal trigger_gain : std_logic_vector(0 to trigger_level'length);
-
-    		signal digi_req     : std_logic := '1';
-    		signal digi_rdy     : std_logic := '0';
-    		signal digi_gainid  : std_logic_vector(0 to gainid_bits-1);
-    		signal digi_gain    : std_logic_vector(0 to 18-1);
-    		signal trigger_amp  : std_logic_vector(0 to trigger_level'length);
-
-    	begin
-
-    		process(clk)
-    			type states is (s_anlg, s_digi);
-    			variable state : states;
-    		begin
-    			if rising_edge(clk) then
-    				case state is
-    				when s_anlg =>
-    					if (anlg_req xor anlg_rdy)='0' then
-    						if (digi_req xor digi_rdy)='0' then
-    							if (trigger_rdy xor trigger_req)='1' then
-    								anlg_req <= not anlg_rdy;
-    								state := s_digi;
-    							elsif (vt_rdy xor vt_req)='1' then
-    								anlg_req <= not anlg_rdy;
-    								state := s_digi;
-    							end if;
-    						end if;
-    					end if;
-    				when s_digi =>
-    					if (anlg_req xor anlg_rdy)='0' then
-    						digi_req <= not digi_rdy;
-    						state := s_anlg;
-    					end if;
-    				end case;
-    			end if;
-    		end process;
-
-    		analog_gain <= std_logic_vector(to_unsigned(input_gains(to_integer(unsigned(trigger_chanid))), trigger_level'length));
-    		analoggain_e : entity hdl4fpga.mul_ser
-    		port map (
-    			comp => '1',
-    			clk  => clk,
-    			req  => anlg_req,
-    			rdy  => anlg_rdy,
-    			a    => trigger_level,
-    			b    => analog_gain,
-    			s    => trigger_gain);
-
-    		digi_gainid <= multiplex(gain_ids, trigger_chanid, gainid_bits);
-    		digi_gain <= std_logic_vector(to_unsigned(vt_gains(to_integer(unsigned(digi_gainid))), digi_gain'length));
-    		digitalgain_e : entity hdl4fpga.mul_ser
-    		port map (
-    			comp => '1',
-    			clk  => clk,
-    			req  => digi_req,
-    			rdy  => digi_rdy,
-    			a    => trigger_gain(1 to trigger_level'length),
-    			b    => digi_gain,
-    			s    => trigger_amp);
-    	end block;
 
 	trigger_p : process (tgrwdt_rdy,clk)
 		type states is (s_label, s_offset, s_unit, s_slope, s_mode, s_wait);

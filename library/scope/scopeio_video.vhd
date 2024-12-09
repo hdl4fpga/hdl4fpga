@@ -139,14 +139,20 @@ architecture beh of scopeio_video is
 	signal text_bg        : std_logic_vector(text_fg'range);
 	signal sgmntbox_bgon  : std_logic;
 	signal sgmntbox_ena   : std_logic_vector(0 to num_of_segments-1);
-	signal pointer_dot    : std_logic;
 
+		signal vt_rdy  : std_logic;
+		signal vt_req  : std_logic;
+		signal tgr_rdy : std_logic;
+		signal tgr_req : std_logic;
 	signal trigger_level  : std_logic_vector(0 to sample_length-1);
 	signal vt_scalecid    : std_logic_vector(chanid_bits-1 downto 0);
 	signal vt_scaleid     : std_logic_vector(4-1 downto 0);
+	signal vt_offset       : std_logic_vector((5+8)-1 downto 0);
 	signal vt_cid         : std_logic_vector(chanid_bits-1 downto 0);
 	signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
 	signal trigger_freeze : std_logic;
+    signal trigger_slope   : std_logic;
+	signal trigger_oneshot : std_logic;
 begin
 
 	rgtrhzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
@@ -250,23 +256,17 @@ begin
     	signal vt_cid          : std_logic_vector(chanid_bits-1 downto 0);
     	signal vtoffset_ena    : std_logic;
     	signal vt_offsetcid    : std_logic_vector(vt_cid'range);
-    	signal vt_offset       : std_logic_vector((5+8)-1 downto 0);
 
     	signal trigger_ena     : std_logic;
     	signal trigger_freeze  : std_logic;
-    	signal trigger_slope   : std_logic;
-    	signal trigger_oneshot : std_logic;
 		signal trigger_level   : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
+		signal trigger_upd     : std_logic;
 
 		signal vts_chanid      : std_logic_vector(vt_cid'range);
 		signal vt_chanid       : std_logic_vector(vt_cid'range);
 		signal hz_scaleid      : std_logic_vector(4-1 downto 0);
 		signal hz_offset       : std_logic_vector(hzoffset_bits-1 downto 0);
 
-		signal vt_rdy  : std_logic;
-		signal vt_req  : std_logic;
-		signal tgr_rdy : std_logic;
-		signal tgr_req : std_logic;
 		signal hz_rdy  : std_logic;
 		signal hz_req  : std_logic;
 
@@ -296,6 +296,86 @@ begin
     		trigger_oneshot => trigger_oneshot,
     		trigger_freeze  => trigger_freeze,
     		trigger_level   => trigger_level);
+
+    	videotrigger_b : block
+    		constant vt       : string := hdo(waveform)**".vt";
+    		constant vt_unit  : real := hdo(waveform)**".axis.vertical.unit";
+    		constant vt_gains     : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.vertical.gains=" & dlft_vtscale));
+    		constant gainid_bits  : natural := unsigned_num_bits(vt_gains'length-1);
+
+    		function input_gains
+    			return natural_vector is
+    			variable retval : natural_vector(0 to inputs-1);
+    		begin
+    			for i in retval'range loop
+    				retval(i) := natural((2.0**(trigger_level'length-1)*real(grid_unit)*real'(hdo(vt)**("["&natural'image(i)&"].step")))/vt_unit);
+    			end loop;
+    			return retval;
+    		end;
+
+    		signal anlg_req     : std_logic := '1';
+    		signal anlg_rdy     : std_logic := '0';
+    		signal analog_gain  : std_logic_vector(0 to trigger_level'length-1);
+    		signal trigger_gain : std_logic_vector(0 to trigger_level'length);
+
+    		signal digi_req     : std_logic := '1';
+    		signal digi_rdy     : std_logic := '0';
+    		signal digi_gain    : std_logic_vector(0 to 18-1);
+    		signal trigger_amp  : std_logic_vector(0 to trigger_level'length);
+
+    	begin
+
+    		process(rgtr_clk)
+    			type states is (s_anlg, s_digi);
+    			variable state : states;
+    		begin
+    			if rising_edge(rgtr_clk) then
+    				case state is
+    				when s_anlg =>
+    					if (anlg_req xor anlg_rdy)='0' then
+    						if (digi_req xor digi_rdy)='0' then
+    							if trigger_ena='1' then
+    								anlg_req <= not anlg_rdy;
+    								state := s_digi;
+    							elsif (vt_rdy xor vt_req)='1' then
+    								anlg_req <= not anlg_rdy;
+    								state := s_digi;
+    							end if;
+    						end if;
+    					end if;
+						trigger_upd <= '0';
+    				when s_digi =>
+    					if (anlg_req xor anlg_rdy)='0' then
+    						digi_req <= not digi_rdy;
+							trigger_upd <= '1';
+    						state := s_anlg;
+    					end if;
+    				end case;
+    			end if;
+    		end process;
+
+    		analog_gain <= std_logic_vector(to_unsigned(input_gains(to_integer(unsigned(trigger_chanid))), trigger_level'length));
+    		analoggain_e : entity hdl4fpga.mul_ser
+    		port map (
+    			comp => '1',
+    			clk  => rgtr_clk,
+    			req  => anlg_req,
+    			rdy  => anlg_rdy,
+    			a    => trigger_level,
+    			b    => analog_gain,
+    			s    => trigger_gain);
+
+    		digi_gain <= std_logic_vector(to_unsigned(vt_gains(to_integer(unsigned(vt_scaleid))), digi_gain'length));
+    		digitalgain_e : entity hdl4fpga.mul_ser
+    		port map (
+    			comp => '1',
+    			clk  => rgtr_clk,
+    			req  => digi_req,
+    			rdy  => digi_rdy,
+    			a    => trigger_gain(1 to trigger_level'length),
+    			b    => digi_gain,
+    			s    => trigger_amp);
+    	end block;
 
 		process (rgtr_clk)
 			type states is (s_idle, s_vtsetup, s_tgrsetup, s_hzsetup);
@@ -348,7 +428,7 @@ begin
 						vt_cid <= vt_offsetcid;
 						vt_req <= not vt_rdy;
 						state := s_vtreq;
-					elsif trigger_ena='1' then
+					elsif trigger_upd='1' then
 						tgr_req <= not tgr_rdy;
 						vt_cid <= trigger_chanid;
 						state := s_tgrreq;
@@ -361,7 +441,7 @@ begin
 						tgr_req <= not tgr_rdy;
 						state := s_tgrreq;
 					else
-						vt_cid <= (others => '-');
+						vt_cid <= trigger_chanid;
 					end if;
 				when s_vtreq =>
 					if (vt_req xor vt_rdy)='0' then
@@ -387,15 +467,11 @@ begin
     		waveform        => waveform)
     	port map (
     		clk             => rgtr_clk,
-    		vtscale_req     => vtscale_req,
-    		vtscale_rdy     => vtscale_rdy,
+    		vt_req          => vt_req,
+    		vt_rdy          => vt_rdy,
     		vt_cid          => vt_cid,
-    		vt_scalecid     => vt_scalecid,
     		vt_scaleid      => vt_scaleid,
       
-    		vtoffset_req    => vtoffset_req,
-    		vtoffset_rdy    => vtoffset_rdy,
-    		vt_offsetcid    => vt_offsetcid,
     		vt_offset       => vt_offset,
       
     		trigger_req     => tgr_req,
@@ -423,7 +499,6 @@ begin
 			rgtr_dv       => rgtr_dv,
 			rgtr_id       => rgtr_id,
 			rgtr_data     => rgtr_data,
-			trigger_level => trigger_level,
 
 			video_clk     => video_clk,
 			video_hcntr   => textbox_x,
