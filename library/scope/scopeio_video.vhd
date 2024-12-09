@@ -151,10 +151,10 @@ architecture beh of scopeio_video is
 	signal trigger_freeze  : std_logic;
     signal trigger_slope   : std_logic;
 	signal trigger_oneshot : std_logic;
-	signal trigger_level   : std_logic_vector(0 to hdo(trigger_fields)**".level"-1);
+	signal trigger_level   : std_logic_vector(0 to hdo(trigger_fields)**".level.length"-1);
 	signal code_frm        : std_logic;
 	signal code_irdy       : std_logic;
-	signal code_data       : std_logic_vector(0 downto 8-1);
+	signal code_data       : std_logic_vector(0 to 8-1);
 	signal wid : std_logic_vector(0 to 6-1);
 begin
 
@@ -171,7 +171,6 @@ begin
 		hz_dv     => hz_dv,
 		hz_scale  => hz_scale,
 		hz_offset => hz_slider);
-	-- tp(1 to 8) <= std_logic_vector(resize(unsigned(hz_slider),8));
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
@@ -305,13 +304,14 @@ begin
     		constant vt_unit  : real := hdo(waveform)**".axis.vertical.unit";
     		constant vt_gains     : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.vertical.gains=" & dlft_vtscale));
     		constant gainid_bits  : natural := unsigned_num_bits(vt_gains'length-1);
+			constant xxx : natural := (2**(trigger_level'length-1));
 
     		function input_gains
     			return natural_vector is
     			variable retval : natural_vector(0 to inputs-1);
     		begin
     			for i in retval'range loop
-    				retval(i) := natural((2.0**(trigger_level'length-1)*real(grid_unit)*real'(hdo(vt)**("["&natural'image(i)&"].step")))/vt_unit);
+    				retval(i) := natural(real(xxx*grid_unit)*real'(hdo(vt)**("["&natural'image(i)&"].step"))/vt_unit);
     			end loop;
     			return retval;
     		end;
@@ -470,6 +470,7 @@ begin
     		inputs          => inputs,
     		waveform        => waveform)
     	port map (
+			tp => tp,
     		clk             => rgtr_clk,
     		vt_req          => vt_req,
     		vt_rdy          => vt_rdy,
@@ -497,7 +498,6 @@ begin
 			inputs        => inputs,
 			waveform      => waveform)
 		port map (
-			tp => tp,
 			rgtr_clk      => rgtr_clk,
 			rgtr_dv       => rgtr_dv,
 			rgtr_id       => rgtr_id,

@@ -259,7 +259,7 @@ begin
 			end if;
 		end process;
 
-		tp(1 to trigger_level'length) <= trigger_level;
+		-- tp(1 to trigger_level'length) <= trigger_level;
 	end block;
 
 	waveform_g : if waveform /= "none" generate
@@ -408,7 +408,7 @@ begin
 			inputs         => inputs,
 			waveform       => waveform)
 		port map (
-			-- tp => tp,
+			tp => tp,
 			rgtr_clk       => sio_clk,
 			rgtr_dv        => rgtr_dv,
 			rgtr_id        => rgtr_id,

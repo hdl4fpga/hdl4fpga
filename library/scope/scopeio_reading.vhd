@@ -13,8 +13,8 @@ entity scopeio_reading is
 		inputs    : natural;
 		waveform  : string);
 	port (
+		tp : out std_logic_vector(1 to 32);
 		clk             : in  std_logic;
-		tp              : out std_logic_vector(1 to 32);
 		vt_req          : in  std_logic;
 		vt_rdy          : buffer std_logic;
 		vt_cid          : in  std_logic_vector;
@@ -32,7 +32,7 @@ entity scopeio_reading is
 		wid             : out std_logic_vector;
 		code_frm        : out std_logic := '0';
 		code_irdy       : out std_logic := '0';
-		code_data       : out std_logic_vector(0 downto 8-1));
+		code_data       : out std_logic_vector(0 to 8-1));
 
 	constant max_delay     : natural := hdo(waveform)**".max_delay=16384.";
 	constant hz_unit       : real    := hdo(waveform)**".axis.horizontal.unit";
@@ -168,11 +168,11 @@ begin
 	startup_p : process (chan, clk)
 		type states is (s_vt, s_tgr, s_hz);
 		variable state : states;
-		variable statup_req : std_logic := '1';
-		variable statup_rdy : std_logic := '0';
+		variable setup_req : std_logic := '1';
+		variable setup_rdy : std_logic := '0';
 	begin
 		if rising_edge(clk) then
-			if (statup_rdy xor statup_req)='1' then
+			if (setup_rdy xor setup_req)='1' then
 				if (txt_req xor txt_rdy)='0' then
 					case state is
 					when s_vt =>
@@ -198,7 +198,7 @@ begin
 					when s_hz =>
 						if (hzstup_rdy xor hzstup_req)='0' then
 							state := s_vt;
-    						statup_rdy := statup_req;
+    						setup_rdy := setup_req;
 						end if;
 					end case;
 				end if;
@@ -206,9 +206,17 @@ begin
 				state := s_vt;
 				chan <= inputs-1;
 			end if;
+			-- tp(1) <= setup_rdy;
+			-- tp(2) <= setup_req;
 			vts_chanid <= std_logic_vector(to_unsigned(chan mod inputs, vts_chanid'length));
 		end if;
 	end process;
+	 tp(1) <= vt_rdy;
+	 tp(2) <= vt_req;
+	--  tp(3) <= hz_rdy;
+	--  tp(4) <= hz_req;
+	 tp(5) <= trigger_rdy;
+	 tp(6) <= trigger_req;
 
 	vt_p : process (clk)
 		variable scaleid : natural range 0 to vt_shts'length-1;
@@ -454,6 +462,7 @@ begin
 					offset     <= resize(signed(vt_offset), offset'length);
 					wdt_id     <= vt_wdtid;
 					wdt_row    <= vt_wdtrow;
+					wid        <= std_logic_vector(to_unsigned(wid_input+3*vt_wdtid, wid'length));
 					vtwdt_rdy  <= vtwdt_req;
 					txt_req    <= not txt_rdy;
 				elsif (tgrwdt_req xor tgrwdt_rdy)='1' then
@@ -463,6 +472,7 @@ begin
 					offset     <= resize(tgr_offset, offset'length);
 					wdt_id     <= tgr_wdtid;
 					wdt_row    <= tgr_wdtrow;
+					wid        <= std_logic_vector(to_unsigned(wid_trigger, wid'length));
 					tgrwdt_rdy <= tgrwdt_req;
 					txt_req    <= not txt_rdy;
 				elsif (hzwdt_req xor hzwdt_rdy)='1' then
@@ -472,6 +482,7 @@ begin
 					offset     <= resize(signed(hz_offset), offset'length);
 					wdt_id     <= hz_wdtid;
 					wdt_row    <= hz_wdtrow;
+					wid        <= std_logic_vector(to_unsigned(wid_time, wid'length));
 					hzwdt_rdy  <= hzwdt_req;
 					txt_req    <= not txt_rdy;
 				end if;
