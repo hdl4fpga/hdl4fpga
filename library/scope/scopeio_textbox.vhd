@@ -12,7 +12,6 @@ use hdl4fpga.cgafonts.all;
 entity scopeio_textbox is
 	generic(
 		inputs          : natural;
-		sample_length   : natural;
 		waveform        : string;
 		latency         : natural;
 		font_bitrom     : std_logic_vector := psf1cp850x8x16;
@@ -24,6 +23,10 @@ entity scopeio_textbox is
 		rgtr_id         : in  std_logic_vector(8-1 downto 0);
 		rgtr_data       : in  std_logic_vector;
 
+		code_frm        : in  std_logic;
+		code_irdy       : in  std_logic;
+		code_data       : in  std_logic_vector(8-1 downto 0);
+		wdt_id          : in  std_logic_vector;
 		video_clk       : in  std_logic;
 		video_hcntr     : in  std_logic_vector;
 		video_vcntr     : in  std_logic_vector;
@@ -57,12 +60,9 @@ architecture def of scopeio_textbox is
 	constant textwidth_bits  : natural := unsigned_num_bits(textbox_width-1);
 
 	-- signal trigger_chanid :  std_logic_vector(chanid_bits-1 downto 0);
-	signal code_frm  : std_logic;
-	signal code_irdy : std_logic;
-	signal code_data : ascii;
 	signal cga_we    : std_logic := '0';
 	signal cga_addr  : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
-	signal cga_data  : ascii;
+	signal cga_data  : std_logic_vector(code_data'range);
 
 	signal fg_color  : std_logic_vector(text_fg'range);
 	signal bg_color  : std_logic_vector(text_bg'range);
@@ -74,7 +74,6 @@ architecture def of scopeio_textbox is
 
 	signal video_row : std_logic_vector(0 to cgarows_bits-1);
 	signal focus_wid : std_logic_vector(6-1 downto 0);
-	signal wid       : std_logic_vector(8-1 downto 0);
 
 
 begin
@@ -88,15 +87,19 @@ begin
 		"textbox mem  " & natural'image(2**cga_addr'length) 
 		severity note;
 
-	focus_e : entity hdl4fpga.scopeio_rgtrfocus
-	port map (
-		rgtr_clk  => rgtr_clk,
-		rgtr_dv   => rgtr_dv,
-		rgtr_id   => rgtr_id,
-		rgtr_data => rgtr_data,
-
-		focus_wid => wid);
-	focus_wid <= wid(focus_wid'range);
+	focus_b : block
+		signal wid : std_logic_vector(8-1 downto 0);
+	begin
+		focus_e : entity hdl4fpga.scopeio_rgtrfocus
+		port map (
+			rgtr_clk  => rgtr_clk,
+			rgtr_dv   => rgtr_dv,
+			rgtr_id   => rgtr_id,
+			rgtr_data => rgtr_data,
+	
+			focus_wid => wid);
+		focus_wid <= wid(focus_wid'range);
+	end block;
 
 	tp(1 to focus_wid'length) <= focus_wid;
 	process (rgtr_clk)
@@ -178,7 +181,7 @@ begin
     				else
     					cntr  := 30-1;
     					state := s_bg;
-    					blink <= '1' and wid(wid'left);
+    					blink <= '1' and focus_wid(focus_wid'left);
     				end if;
     			when s_bg =>
     				if cntr >=0 then 
@@ -288,6 +291,8 @@ begin
 		signal y : std_logic;
 		signal s : std_logic;
 	begin
+
+		video_row <= std_logic_vector(to_unsigned(top_tab(to_integer(unsigned(wdt_id))), video_row'length));
 
 		top    <= top_tab(to_integer(unsigned(focus_wid)));
 		left   <= left_tab(to_integer(unsigned(focus_wid)));

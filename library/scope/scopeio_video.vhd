@@ -35,7 +35,6 @@ entity scopeio_video is
 	generic (
 		timing_id          : videotiming_ids;
 		inputs             : natural;
-		sample_length      : natural;
 		waveform           : string);
 	port (
 		tp                 : out std_logic_vector(1 to 32);
@@ -144,15 +143,19 @@ architecture beh of scopeio_video is
 		signal vt_req  : std_logic;
 		signal tgr_rdy : std_logic;
 		signal tgr_req : std_logic;
-	signal trigger_level  : std_logic_vector(0 to sample_length-1);
-	signal vt_scalecid    : std_logic_vector(chanid_bits-1 downto 0);
-	signal vt_scaleid     : std_logic_vector(4-1 downto 0);
+	signal vt_scalecid     : std_logic_vector(chanid_bits-1 downto 0);
+	signal vt_scaleid      : std_logic_vector(4-1 downto 0);
 	signal vt_offset       : std_logic_vector((5+8)-1 downto 0);
-	signal vt_cid         : std_logic_vector(chanid_bits-1 downto 0);
-	signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
-	signal trigger_freeze : std_logic;
+	signal vt_cid          : std_logic_vector(chanid_bits-1 downto 0);
+	signal trigger_chanid  : std_logic_vector(chanid_bits-1 downto 0);
+	signal trigger_freeze  : std_logic;
     signal trigger_slope   : std_logic;
 	signal trigger_oneshot : std_logic;
+	signal trigger_level   : std_logic_vector(0 to hdo(trigger_fields)**".level"-1);
+	signal code_frm        : std_logic;
+	signal code_irdy       : std_logic;
+	signal code_data       : std_logic_vector(0 downto 8-1);
+	signal wid : std_logic_vector(0 to 6-1);
 begin
 
 	rgtrhzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
@@ -459,6 +462,7 @@ begin
 	end block;
 
 	textbox_g : if textbox_width/=0 generate
+		signal wid : std_logic_vector(0 to 6-1);
 	begin
 
     	readings_e : entity hdl4fpga.scopeio_reading
@@ -482,7 +486,7 @@ begin
     		trigger_oneshot => trigger_oneshot,
     		trigger_level   => trigger_level,
 
-    		video_row       => video_row,
+    		wid             => wid,
     		code_frm        => code_frm,
     		code_irdy       => code_irdy,
     		code_data       => code_data);
@@ -491,7 +495,6 @@ begin
 		generic map (
 			latency       => segmment_latency+input_latency,
 			inputs        => inputs,
-			sample_length => sample_length,
 			waveform      => waveform)
 		port map (
 			tp => tp,
@@ -500,6 +503,10 @@ begin
 			rgtr_id       => rgtr_id,
 			rgtr_data     => rgtr_data,
 
+    		wdt_id             => wid,
+    		code_frm        => code_frm,
+    		code_irdy       => code_irdy,
+    		code_data       => code_data,
 			video_clk     => video_clk,
 			video_hcntr   => textbox_x,
 			video_vcntr   => textbox_y,

@@ -29,10 +29,10 @@ entity scopeio_reading is
 		trigger_oneshot : in  std_logic;
 		trigger_level   : in  std_logic_vector;
 
+		wid             : out std_logic_vector;
 		code_frm        : out std_logic := '0';
-		video_row       : out std_logic_vector;
 		code_irdy       : out std_logic := '0';
-		code_data       : out ascii);
+		code_data       : out std_logic_vector(0 downto 8-1));
 
 	constant max_delay     : natural := hdo(waveform)**".max_delay=16384.";
 	constant hz_unit       : real    := hdo(waveform)**".axis.horizontal.unit";
@@ -243,6 +243,7 @@ begin
 					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					tgr_offset  <= signed(trigger_level);
 					tgr_slope   <= trigger_slope;
+					tgr_freeze  <= trigger_freeze;
 					tgr_oneshot <= trigger_oneshot;
 					tgr_wdtid   <= inputs+1;
 					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
@@ -477,7 +478,6 @@ begin
 			end if;
 		end if;
 	end process;
-	video_row <= std_logic_vector(resize(wdt_row, video_row'length));
 
 	process (tgr_wdtid,clk)
 		type states is (s_rdy, s_req);

@@ -384,7 +384,6 @@ begin
 		scopeio_storage_e : entity hdl4fpga.scopeio_storage
 		generic map  (
 			inputs       => inputs,
-			sample_length => sample_length,
 			storageword_size => storage_word'length,
 			time_factors => time_factors)
 		port map (
@@ -418,11 +417,6 @@ begin
 			time_scale     => time_scale,
 			time_offset    => time_offset,
 
-			trigger_slope   => trigger_slope,
-			trigger_freeze  => trigger_freeze,
-			trigger_chanid  => trigger_chanid,
-			trigger_level   => trigger_level,
-											
 			video_addr     => video_addr,
 			video_frm      => video_frm,
 			video_data     => video_data,
