@@ -59,7 +59,6 @@ architecture def of scopeio_textbox is
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
 	constant textwidth_bits  : natural := unsigned_num_bits(textbox_width-1);
 
-	-- signal trigger_chanid :  std_logic_vector(chanid_bits-1 downto 0);
 	signal cga_we    : std_logic := '0';
 	signal cga_addr  : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
 	signal cga_data  : std_logic_vector(code_data'range);
@@ -74,7 +73,6 @@ architecture def of scopeio_textbox is
 
 	signal video_row : std_logic_vector(0 to cgarows_bits-1);
 	signal focus_wid : std_logic_vector(6-1 downto 0);
-
 
 begin
 
