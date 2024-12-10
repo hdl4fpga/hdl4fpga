@@ -156,73 +156,14 @@ architecture def of scopeio_reading is
 	constant tgr_id  : natural := 1;
 
 	signal sign : std_logic;
-	signal vtstup_req  : std_logic := '0';
-	signal vtstup_rdy  : std_logic := '0';
-	signal tgrstup_req : std_logic := '0';
-	signal tgrstup_rdy : std_logic := '0';
-	signal hzstup_req  : std_logic := '0';
-	signal hzstup_rdy  : std_logic := '0';
-	signal chan : integer range -1 to inputs-1 := inputs-1;
 begin
 
-	startup_p : process (chan, clk)
-		type states is (s_vt, s_tgr, s_hz);
-		variable state : states;
-		variable setup_req : std_logic := '1';
-		variable setup_rdy : std_logic := '0';
-	begin
-		if rising_edge(clk) then
-			if (setup_rdy xor setup_req)='1' then
-				if (txt_req xor txt_rdy)='0' then
-					case state is
-					when s_vt =>
-    					if (vtwdt_rdy xor vtwdt_req)='0' then
-    						if (vtstup_req xor vtstup_rdy)='0' then
-    							if chan >= 0 then
-    								vtstup_req <= not vtstup_rdy;
-    							else
-									tgrstup_req <= not tgrstup_rdy;
-    								state := s_tgr;
-    							end if;
-							else
-    							chan <= chan - 1;
-    						end if;
-    					end if;
-					when s_tgr => 
-    					if (tgrwdt_rdy xor tgrwdt_req)='0' then
-							if (tgrstup_rdy xor tgrstup_req)='0' then
-								hzstup_req <= not hzstup_rdy;
-								state := s_hz;
-							end if;
-						end if;
-					when s_hz =>
-						if (hzstup_rdy xor hzstup_req)='0' then
-							state := s_vt;
-    						setup_rdy := setup_req;
-						end if;
-					end case;
-				end if;
-			else
-				state := s_vt;
-				chan <= inputs-1;
-			end if;
-        	tp(1) <= vtwdt_rdy;
-        	tp(2) <= vtwdt_req;
-        	tp(3) <= hzstup_rdy;
-        	tp(4) <= hzstup_req;
-        	tp(5) <= tgrwdt_rdy;
-        	tp(6) <= tgrwdt_req;
-			tp(7) <= setup_rdy;
-			tp(2) <= setup_req;
-			vts_chanid <= std_logic_vector(to_unsigned(chan mod inputs, vts_chanid'length));
-		end if;
-	end process;
-	--  tp(1) <= vt_rdy;
-	--  tp(2) <= vt_req;
-	--  tp(3) <= hz_rdy;
-	--  tp(4) <= hz_req;
-	--  tp(5) <= trigger_rdy;
-	--  tp(6) <= trigger_req;
+	 tp(1) <= vt_rdy;
+	 tp(2) <= vt_req;
+	 tp(3) <= hz_rdy;
+	 tp(4) <= hz_req;
+	 tp(5) <= trigger_rdy;
+	 tp(6) <= trigger_req;
 
 	vt_p : process (clk)
 		variable scaleid : natural range 0 to vt_shts'length-1;
@@ -283,16 +224,6 @@ begin
 					hz_wdtid   <= inputs+0;
 					hz_rdy     <= hz_req;
 					hzwdt_req  <= not hzwdt_rdy;
-				elsif (hzstup_rdy xor hzstup_req)='1' then
-					timeid     := to_integer(unsigned(hz_scaleid));
-					hz_sht     <= to_signed(hz_shts(timeid), btod_sht'length);
-					hz_dec     <= to_signed(hz_pnts(timeid), btod_dec'length);
-					hz_scale   <= to_unsigned(hz_sfcnds(timeid mod 4), hz_scale'length);
-					hz_wdtrow  <= to_unsigned(0, hz_wdtrow'length);
-					hz_uid     <= (inputs+1+vt_pfxs'length)+timeid;
-					hz_wdtid   <= inputs+0;
-					hzwdt_req  <= not hzwdt_rdy;
-					hzstup_rdy <= hzstup_req;
 				end if;
 			end if;
 		end if;
