@@ -206,8 +206,8 @@ begin
 				state := s_vt;
 				chan <= inputs-1;
 			end if;
-			-- tp(1) <= setup_rdy;
-			-- tp(2) <= setup_req;
+			tp(7) <= setup_rdy;
+			tp(8) <= setup_req;
 			vts_chanid <= std_logic_vector(to_unsigned(chan mod inputs, vts_chanid'length));
 		end if;
 	end process;
