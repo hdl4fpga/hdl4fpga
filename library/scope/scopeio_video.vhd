@@ -448,7 +448,7 @@ begin
 						tgr_req <= not tgr_rdy;
 						state := s_tgrreq;
 					else
-						vt_cid <= trigger_chanid;
+						-- vt_cid <= trigger_chanid;
 					end if;
 				when s_vtreq =>
 					if (vt_req xor vt_rdy)='0' then
