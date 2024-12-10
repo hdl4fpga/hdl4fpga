@@ -141,6 +141,8 @@ architecture beh of scopeio_video is
 
 		signal vt_rdy  : std_logic;
 		signal vt_req  : std_logic;
+		signal hz_rdy  : std_logic;
+		signal hz_req  : std_logic;
 		signal tgr_rdy : std_logic;
 		signal tgr_req : std_logic;
 	signal vt_scalecid     : std_logic_vector(chanid_bits-1 downto 0);
@@ -156,29 +158,34 @@ architecture beh of scopeio_video is
 	signal code_irdy       : std_logic;
 	signal code_data       : std_logic_vector(0 to 8-1);
 	signal wid : std_logic_vector(0 to 6-1);
+		signal hz_scaleid      : std_logic_vector(4-1 downto 0);
+	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
+		signal hz_offset       : std_logic_vector(hzoffset_bits-1 downto 0);
 begin
 
-	rgtrhzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
-	generic map (
-		rgtr      => false)
-	port map (
-		rgtr_clk  => rgtr_clk,
-		rgtr_dv   => rgtr_dv,
-		rgtr_id   => rgtr_id,
-		rgtr_data => rgtr_data,
-
-		hz_ena    => hz_ena,
-		hz_dv     => hz_dv,
-		hz_scale  => hz_scale,
-		hz_offset => hz_slider);
+	-- rgtrhzaxis_e : entity hdl4fpga.scopeio_rgtrhzaxis
+	-- generic map (
+		-- rgtr      => false)
+	-- port map (
+		-- rgtr_clk  => rgtr_clk,
+		-- rgtr_dv   => rgtr_dv,
+		-- rgtr_id   => rgtr_id,
+		-- rgtr_data => rgtr_data,
+-- 
+		-- hz_ena    => hz_ena,
+		-- hz_dv     => hz_dv,
+		-- hz_scale  => hz_scale,
+		-- hz_offset => hz_slider);
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
 			if hz_ena='1' then
 				if trigger_freeze='0' then
-					time_scale <= hz_scale;
+					-- time_scale <= hz_scale;
+					time_scale <= hz_scaleid;
 				end if;
-				time_offset <= hz_slider;
+				-- time_offset <= hz_slider;
+				time_offset <= hz_offset;
 			end if;
 		end if;
 	end process;
@@ -266,11 +273,7 @@ begin
 
 		signal vts_chanid      : std_logic_vector(vt_cid'range);
 		signal vt_chanid       : std_logic_vector(vt_cid'range);
-		signal hz_scaleid      : std_logic_vector(4-1 downto 0);
-		signal hz_offset       : std_logic_vector(hzoffset_bits-1 downto 0);
 
-		signal hz_rdy  : std_logic;
-		signal hz_req  : std_logic;
 
 	begin
 
@@ -459,6 +462,19 @@ begin
 			end if;
 		end process;
 
+		process (rgtr_clk)
+			type states is (s_rdy, s_req);
+			variable state : states;
+		begin
+			if rising_edge(rgtr_clk) then
+				if (hz_req xor hz_rdy)='0' then
+					if hz_ena='1' then
+						hz_req <= not hz_rdy;
+					end if;
+				end if;
+			end if;
+		end process;
+
 	end block;
 
 	textbox_g : if textbox_width/=0 generate
@@ -474,6 +490,10 @@ begin
     		clk             => rgtr_clk,
     		vt_req          => vt_req,
     		vt_rdy          => vt_rdy,
+    		hz_req          => hz_req,
+    		hz_rdy          => hz_rdy,
+			hz_scaleid      => hz_scaleid,
+			hz_offset       => hz_offset,
     		vt_cid          => vt_cid,
     		vt_scaleid      => vt_scaleid,
       

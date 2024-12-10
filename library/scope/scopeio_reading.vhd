@@ -17,6 +17,10 @@ entity scopeio_reading is
 		clk             : in  std_logic;
 		vt_req          : in  std_logic;
 		vt_rdy          : buffer std_logic;
+		hz_req          : in  std_logic;
+		hz_rdy          : buffer std_logic;
+		hz_scaleid      : in  std_logic_vector;
+		hz_offset       : in  std_logic_vector;
 		vt_cid          : in  std_logic_vector;
 		vt_scaleid      : in  std_logic_vector(4-1 downto 0);
 		vt_offset       : in  std_logic_vector;
@@ -40,7 +44,6 @@ entity scopeio_reading is
 	constant grid_unit     : natural := hdo(waveform)**".grid.unit=32.";
 	constant grid_height   : natural := hdo(waveform)**".grid.height";
 
-	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 	constant vt_labels     : string  := hdo(waveform)**".vt";
 	constant hz_label      : string  := "TIME";
@@ -66,9 +69,6 @@ end;
 
 architecture def of scopeio_reading is
 
-	signal hz_ena         : std_logic;
-	signal hz_scaleid     : std_logic_vector(4-1 downto 0);
-	signal hz_offset      : std_logic_vector(hzoffset_bits-1 downto 0);
 
 	signal trigger_ena    : std_logic;
 	signal txt_req        : std_logic := '0';
@@ -213,8 +213,8 @@ begin
 	end process;
 	 tp(1) <= vt_rdy;
 	 tp(2) <= vt_req;
-	--  tp(3) <= hz_rdy;
-	--  tp(4) <= hz_req;
+	 tp(3) <= hz_rdy;
+	 tp(4) <= hz_req;
 	 tp(5) <= trigger_rdy;
 	 tp(6) <= trigger_req;
 
@@ -262,12 +262,12 @@ begin
 		end if;
 	end process;
 
-	hz_p : process (hz_ena, clk)
+	hz_p : process (clk)
 		variable timeid  : natural range 0 to hz_shts'length-1;
 	begin
 		if rising_edge(clk) then
 			if (txt_req xor txt_rdy)='0' then
-				if hz_ena='1' then
+				if (hz_rdy xor hz_req)='1' then
 					timeid     := to_integer(unsigned(hz_scaleid));
 					hz_sht     <= to_signed(hz_shts(timeid), btod_sht'length);
 					hz_dec     <= to_signed(hz_pnts(timeid), btod_dec'length);
@@ -275,6 +275,7 @@ begin
 					hz_wdtrow  <= to_unsigned(0, hz_wdtrow'length);
 					hz_uid     <= (inputs+1+vt_pfxs'length)+timeid;
 					hz_wdtid   <= inputs+0;
+					hz_rdy     <= hz_req;
 					hzwdt_req  <= not hzwdt_rdy;
 				elsif (hzstup_rdy xor hzstup_req)='1' then
 					timeid     := to_integer(unsigned(hz_scaleid));
