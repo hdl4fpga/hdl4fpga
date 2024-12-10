@@ -487,7 +487,7 @@ begin
 			inputs          => inputs,
 			waveform        => waveform)
 		port map (
-			tp => tp,
+			-- tp => tp,
 			clk             => rgtr_clk,
 			vt_req          => vt_req,
 			vt_rdy          => vt_rdy,
@@ -519,6 +519,7 @@ begin
 			inputs        => inputs,
 			waveform      => waveform)
 		port map (
+			tp => tp,
 			rgtr_clk      => rgtr_clk,
 			rgtr_dv       => rgtr_dv,
 			rgtr_id       => rgtr_id,
