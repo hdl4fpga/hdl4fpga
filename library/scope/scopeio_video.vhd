@@ -380,7 +380,7 @@ begin
 			port map (
 				input_data => trigger_amp(1 to trigger_amp'right),
 				output_data => video_trigger);
-			tp(1 to 8) <= video_trigger(0 to 8-1);
+			-- tp(1 to 8) <= video_trigger(0 to 8-1);
 			
 		end block;
 
@@ -487,7 +487,7 @@ begin
 			inputs          => inputs,
 			waveform        => waveform)
 		port map (
-			-- tp => tp,
+			tp => tp,
 			clk             => rgtr_clk,
 			vt_req          => vt_req,
 			vt_rdy          => vt_rdy,

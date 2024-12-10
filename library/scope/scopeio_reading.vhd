@@ -156,12 +156,12 @@ architecture def of scopeio_reading is
 	constant tgr_id  : natural := 1;
 
 	signal sign : std_logic;
-	signal vtstup_req : bit := '0';
-	signal vtstup_rdy : bit := '0';
-	signal tgrstup_req : bit := '0';
-	signal tgrstup_rdy : bit := '0';
-	signal hzstup_req : bit := '0';
-	signal hzstup_rdy : bit := '0';
+	signal vtstup_req  : std_logic := '0';
+	signal vtstup_rdy  : std_logic := '0';
+	signal tgrstup_req : std_logic := '0';
+	signal tgrstup_rdy : std_logic := '0';
+	signal hzstup_req  : std_logic := '0';
+	signal hzstup_rdy  : std_logic := '0';
 	signal chan : integer range -1 to inputs-1 := inputs-1;
 begin
 
@@ -206,17 +206,23 @@ begin
 				state := s_vt;
 				chan <= inputs-1;
 			end if;
+        	tp(1) <= vtwdt_rdy;
+        	tp(2) <= vtwdt_req;
+        	tp(3) <= hzstup_rdy;
+        	tp(4) <= hzstup_req;
+        	tp(5) <= tgrwdt_rdy;
+        	tp(6) <= tgrwdt_req;
 			tp(7) <= setup_rdy;
-			tp(8) <= setup_req;
+			tp(2) <= setup_req;
 			vts_chanid <= std_logic_vector(to_unsigned(chan mod inputs, vts_chanid'length));
 		end if;
 	end process;
-	 tp(1) <= vt_rdy;
-	 tp(2) <= vt_req;
-	 tp(3) <= hz_rdy;
-	 tp(4) <= hz_req;
-	 tp(5) <= trigger_rdy;
-	 tp(6) <= trigger_req;
+	--  tp(1) <= vt_rdy;
+	--  tp(2) <= vt_req;
+	--  tp(3) <= hz_rdy;
+	--  tp(4) <= hz_req;
+	--  tp(5) <= trigger_rdy;
+	--  tp(6) <= trigger_req;
 
 	vt_p : process (clk)
 		variable scaleid : natural range 0 to vt_shts'length-1;
