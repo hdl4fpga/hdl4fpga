@@ -154,7 +154,8 @@ architecture beh of scopeio_video is
 	signal trigger_freeze  : std_logic;
 	signal trigger_slope   : std_logic;
 	signal trigger_oneshot : std_logic;
-	signal trigger_level   : std_logic_vector(0 to sample_length-1);
+	-- signal trigger_level   : std_logic_vector(0 to sample_length-1);
+	signal trigger_level : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 	signal code_frm        : std_logic;
 	signal code_irdy       : std_logic;
 	signal code_data       : std_logic_vector(0 to 8-1);
@@ -226,30 +227,24 @@ begin
 		constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 		constant grid_unit     : natural := hdo(waveform)**".grid.unit=32.";
 
-		signal setup_rdy     : std_logic;
-		signal setup_req     : std_logic;
-		signal vtsetup_rdy   : std_logic;
-		signal vtsetup_req   : std_logic;
-		signal tgrsetup_rdy  : std_logic;
-		signal tgrsetup_req  : std_logic;
-		signal hzsetup_rdy   : std_logic;
-		signal hzsetup_req   : std_logic;
-		signal setup_cid     : std_logic_vector(chanid_bits-1 downto 0);
+		signal setup_rdy    : std_logic;
+		signal setup_req    : std_logic;
+		signal vtsetup_rdy  : std_logic;
+		signal vtsetup_req  : std_logic;
+		signal tgrsetup_rdy : std_logic;
+		signal tgrsetup_req : std_logic;
+		signal hzsetup_rdy  : std_logic;
+		signal hzsetup_req  : std_logic;
+		signal setup_cid    : std_logic_vector(chanid_bits-1 downto 0);
 
-		signal vtscale_ena   : std_logic;
-		signal vt_scalecid   : std_logic_vector(chanid_bits-1 downto 0);
-		signal vt_scaleid    : std_logic_vector(4-1 downto 0);
-		signal vt_cid        : std_logic_vector(chanid_bits-1 downto 0);
-		signal vtoffset_ena  : std_logic;
-		signal vt_offsetcid  : std_logic_vector(vt_cid'range);
+		signal vtscale_ena  : std_logic;
+		signal vt_scalecid  : std_logic_vector(chanid_bits-1 downto 0);
+		signal vtoffset_ena : std_logic;
+		signal vt_offsetcid : std_logic_vector(vt_cid'range);
+		signal vt_cid       : std_logic_vector(chanid_bits-1 downto 0);
 
-		signal trigger_ena   : std_logic;
-		signal trigger_freeze: std_logic;
-		signal trigger_level : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
-		signal trigger_upd   : std_logic;
-
-		signal vts_chanid    : std_logic_vector(vt_cid'range);
-		signal vt_chanid     : std_logic_vector(vt_cid'range);
+		signal trigger_ena  : std_logic;
+		signal trigger_upd  : std_logic;
 
 	begin
 

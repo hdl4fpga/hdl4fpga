@@ -16,7 +16,7 @@ entity scopeio_reading is
 		tp : out std_logic_vector(1 to 32);
 		clk             : in  std_logic;
 		vt_req          : in  std_logic;
-		vt_rdy          : buffer std_logic;
+		vt_rdy          : buffer std_logic := '0';
 		hz_req          : in  std_logic;
 		hz_rdy          : buffer std_logic;
 		hz_scaleid      : in  std_logic_vector;
@@ -90,8 +90,6 @@ architecture def of scopeio_reading is
 	signal vtwdt_req      : std_logic := '0';
 	signal vtwdt_rdy      : std_logic := '0';
 	signal vt_uid         : natural;
-	signal vt_chanid      : std_logic_vector(vt_cid'range);
-	signal vts_chanid     : std_logic_vector(vt_cid'range);
 
 	signal tgr_sht        : signed(4-1 downto 0);
 	signal tgr_dec        : signed(4-1 downto 0);
@@ -161,7 +159,7 @@ begin
 	 tp(5) <= trigger_rdy;
 	 tp(6) <= trigger_req;
 
-	vt_p : process (clk)
+	vt_p : process (vt_rdy, clk)
 		variable scaleid : natural range 0 to vt_shts'length-1;
 	begin
 		if rising_edge(clk) then
@@ -173,15 +171,15 @@ begin
 					vt_scale  <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_uid    <= (inputs+1)+scaleid;
 					vt_wdtid  <= to_integer(unsigned(vt_cid));
-					vt_chanid <= vt_cid;
 					vtwdt_req <= not vtwdt_rdy;
 					vt_rdy    <= vt_req;
 				end if;
 			end if;
 		end if;
 	end process;
+	-- vtwdt_req <= '0', '1' after 1 us;
 
-	tgr_p : process (clk)
+	tgr_p : process (txt_req, clk)
 		variable scaleid : natural range 0 to vt_shts'length-1;
 	begin
 		if rising_edge(clk) then
@@ -203,7 +201,7 @@ begin
 		end if;
 	end process;
 
-	hz_p : process (clk)
+	hz_p : process (hz_rdy, clk)
 		variable timeid  : natural range 0 to hz_shts'length-1;
 	begin
 		if rising_edge(clk) then
@@ -382,7 +380,7 @@ begin
 
 	end block;
 
-	process (clk)
+	process (txt_rdy, clk)
 	begin
 		if rising_edge(clk) then
 			if (txt_req xor txt_rdy)='0' then
@@ -418,7 +416,7 @@ begin
 		end if;
 	end process;
 
-	process (tgr_wdtid,clk)
+	process (axis_req,clk)
 		type states is (s_rdy, s_req);
 		variable state : states;
 	begin
@@ -678,7 +676,7 @@ port map (
 	code_frm => btod_frm,
 	code     => btod_code);
 
-code_frm  <= txt_req xor txt_rdy;
+	code_frm  <= txt_req xor txt_rdy;
 	code_irdy <= (btod_frm and (btod_req xor btod_rdy)) or str_frm;
 	code_data <= multiplex(btod_code & str_code, str_frm);
 
