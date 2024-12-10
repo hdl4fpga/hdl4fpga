@@ -154,8 +154,8 @@ architecture beh of scopeio_video is
 	signal trigger_freeze  : std_logic;
 	signal trigger_slope   : std_logic;
 	signal trigger_oneshot : std_logic;
-	-- signal trigger_level   : std_logic_vector(0 to sample_length-1);
-	signal trigger_level : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
+	signal trigger_level   : std_logic_vector(0 to sample_length-1);
+	-- signal trigger_level : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 	signal code_frm        : std_logic;
 	signal code_irdy       : std_logic;
 	signal code_data       : std_logic_vector(0 to 8-1);
@@ -502,7 +502,7 @@ begin
 			trigger_freeze  => trigger_freeze,
 			trigger_slope   => trigger_slope,
 			trigger_oneshot => trigger_oneshot,
-			trigger_level   => trigger_gain(0 to 8),
+			trigger_level   => trigger_gain(trigger_gain'right-8 to trigger_gain'right),
 
 			wid             => wid,
 			code_frm        => code_frm,
