@@ -80,7 +80,6 @@ architecture def of scopeio_reading is
 	signal str_rdy        : bit;
 	subtype wdtid_range is natural range 0 to (inputs+2)-1;
 	signal wdt_id         : wdtid_range;
-	signal wdt_row        : unsigned(0 to unsigned_num_bits(inputs+2-1)-1) := (others => '0');
 
 	signal btod_sht       : signed(4-1 downto 0);
 	signal btod_dec       : signed(4-1 downto 0);
@@ -88,7 +87,6 @@ architecture def of scopeio_reading is
 	signal vt_dec         : signed(4-1 downto 0);
 	signal vt_scale       : unsigned(scale'range);
 	signal vt_wdtid       : wdtid_range;
-	signal vt_wdtrow      : unsigned(wdt_row'range);
 	signal vtwdt_req      : std_logic := '0';
 	signal vtwdt_rdy      : std_logic := '0';
 	signal vt_uid         : natural;
@@ -103,7 +101,6 @@ architecture def of scopeio_reading is
 	signal tgr_freeze     : std_logic;
 	signal tgr_oneshot    : std_logic;
 	signal tgr_wdtid      : wdtid_range;
-	signal tgr_wdtrow     : unsigned(wdt_row'range);
 	signal tgrwdt_req     : std_logic;
 	signal tgrwdt_rdy     : std_logic;
 
@@ -111,7 +108,6 @@ architecture def of scopeio_reading is
 	signal hz_dec         : signed(4-1 downto 0);
 	signal hz_scale       : unsigned(scale'range);
 	signal hz_wdtid       : wdtid_range;
-	signal hz_wdtrow      : unsigned(wdt_row'range);
 	signal hzwdt_req      : std_logic := '0';
 	signal hzwdt_rdy      : std_logic := '0';
 	signal hz_uid         : natural;
@@ -399,7 +395,6 @@ begin
 					scale      <= vt_scale;
 					offset     <= resize(signed(vt_offset), offset'length);
 					wdt_id     <= vt_wdtid;
-					wdt_row    <= vt_wdtrow;
 					wid        <= std_logic_vector(to_unsigned(wid_input+3*vt_wdtid, wid'length));
 					vtwdt_rdy  <= vtwdt_req;
 					txt_req    <= not txt_rdy;
@@ -409,7 +404,6 @@ begin
 					scale      <= tgr_scale;
 					offset     <= resize(tgr_offset, offset'length);
 					wdt_id     <= tgr_wdtid;
-					wdt_row    <= tgr_wdtrow;
 					wid        <= std_logic_vector(to_unsigned(wid_trigger, wid'length));
 					tgrwdt_rdy <= tgrwdt_req;
 					txt_req    <= not txt_rdy;
@@ -419,7 +413,6 @@ begin
 					scale      <= hz_scale;
 					offset     <= resize(signed(hz_offset), offset'length);
 					wdt_id     <= hz_wdtid;
-					wdt_row    <= hz_wdtrow;
 					wid        <= std_logic_vector(to_unsigned(wid_time, wid'length));
 					hzwdt_rdy  <= hzwdt_req;
 					txt_req    <= not txt_rdy;
