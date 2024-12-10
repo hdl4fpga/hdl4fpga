@@ -446,249 +446,249 @@ begin
 			when s_req =>
 				if (axis_req xor axis_rdy)='0' then
 					if (tgr_req xor tgr_rdy)='0' then
-						txt_rdy <= txt_req;
-						state   := s_rdy;
-					end if;
+					txt_rdy <= txt_req;
+					state   := s_rdy;
 				end if;
-			end case;
-		end if;
-	end process;
+			end if;
+		end case;
+	end if;
+end process;
 
-	axis_p : process (clk, mul_rdy)
-		alias btod_req is btod_reqs(axis_id);
-		alias btod_rdy is btod_rdys(axis_id);
-		alias mul_req  is mul_reqs(axis_id);
-		alias mul_rdy  is mul_rdys(axis_id);
-		alias str_req  is str_reqs(axis_id);
-		alias str_rdy  is str_rdys(axis_id);
-		alias str_id   is str_ids(axis_id);
-		type states is (s_label, s_offset, s_unit, s_scale, s_wait);
-		variable state : states;
-	begin
-		if rising_edge(clk) then
-			case state is
-			when s_label =>
-				bs(axis_id)<= offset;
-				if (axis_rdy xor axis_req)='1' then
-					mul_req  <= not mul_rdy;
-					str_req  <= not str_rdy;
-					str_id   <= wdt_id;
-					state    := s_offset;
-				end if;
-			when s_offset =>
-				if (mul_req xor mul_rdy)='0' then
-					btod_req <= not to_stdulogic(to_bit(btod_rdy));
-					state   := s_unit;
-				end if;
-			when s_unit =>
-				bs(axis_id)<= to_signed(grid_unit, b'length);
-				if (to_bit(btod_req) xor to_bit(btod_rdy))='0' then
-					str_req <= not str_rdy;
-					case wdt_id is
-					when inputs =>
-						str_id  <= hz_uid;
-					when others =>
-						str_id  <= vt_uid;
-					end case;
-					mul_req <= not mul_rdy;
-					state   := s_scale;
-				end if;
-			when s_scale =>
-				if (str_req xor str_rdy)='0' then
-					if (mul_req xor mul_rdy)='0' then
-						btod_req <= not btod_rdy;
-						state    := s_wait;
-					end if;
-				end if;
-			when s_wait =>
-				if (btod_req xor btod_rdy)='0' then
-					axis_rdy <= axis_req;
-					state    := s_label;
-				end if;
-			end case;
-		end if;
-	end process;
-
-	trigger_p : process (tgrwdt_rdy,clk)
-		type states is (s_label, s_offset, s_unit, s_slope, s_mode, s_wait);
-		variable state : states;
-		alias btod_req  is btod_reqs(tgr_id);
-		alias btod_rdy  is btod_rdys(tgr_id);
-		alias mul_req   is mul_reqs(tgr_id);
-		alias mul_rdy   is mul_rdys(tgr_id);
-		alias str_req   is str_reqs(tgr_id);
-		alias str_rdy   is str_rdys(tgr_id);
-		alias str_id    is str_ids(tgr_id);
-		variable trigger_mode : std_logic_vector(0 to 2-1);
-	begin
-		if rising_edge(clk) then
-			case state is
-			when s_label =>
-				bs(tgr_id)<= resize(signed(tgr_offset), offset'length);
-				if (tgr_rdy xor tgr_req)='1' then
-					mul_req <= not mul_rdy;
-					str_req <= not str_rdy;
-					str_id  <= to_integer(unsigned(trigger_chanid));
-					state   := s_offset;
-				end if;
-			when s_offset =>
+axis_p : process (clk, mul_rdy)
+	alias btod_req is btod_reqs(axis_id);
+	alias btod_rdy is btod_rdys(axis_id);
+	alias mul_req  is mul_reqs(axis_id);
+	alias mul_rdy  is mul_rdys(axis_id);
+	alias str_req  is str_reqs(axis_id);
+	alias str_rdy  is str_rdys(axis_id);
+	alias str_id   is str_ids(axis_id);
+	type states is (s_label, s_offset, s_unit, s_scale, s_wait);
+	variable state : states;
+begin
+	if rising_edge(clk) then
+		case state is
+		when s_label =>
+			bs(axis_id)<= offset;
+			if (axis_rdy xor axis_req)='1' then
+				mul_req  <= not mul_rdy;
+				str_req  <= not str_rdy;
+				str_id   <= wdt_id;
+				state    := s_offset;
+			end if;
+		when s_offset =>
+			if (mul_req xor mul_rdy)='0' then
+				btod_req <= not to_stdulogic(to_bit(btod_rdy));
+				state   := s_unit;
+			end if;
+		when s_unit =>
+			bs(axis_id)<= to_signed(grid_unit, b'length);
+			if (to_bit(btod_req) xor to_bit(btod_rdy))='0' then
+				str_req <= not str_rdy;
+				case wdt_id is
+				when inputs =>
+					str_id  <= hz_uid;
+				when others =>
+					str_id  <= vt_uid;
+				end case;
+				mul_req <= not mul_rdy;
+				state   := s_scale;
+			end if;
+		when s_scale =>
+			if (str_req xor str_rdy)='0' then
 				if (mul_req xor mul_rdy)='0' then
 					btod_req <= not btod_rdy;
-					state    := s_unit;
+					state    := s_wait;
 				end if;
-			when s_unit =>
-				if (btod_req xor btod_rdy)='0' then
-					str_id  <= (inputs+1)+to_integer(unsigned(vt_scaleid));
+			end if;
+		when s_wait =>
+			if (btod_req xor btod_rdy)='0' then
+				axis_rdy <= axis_req;
+				state    := s_label;
+			end if;
+		end case;
+	end if;
+end process;
+
+trigger_p : process (tgrwdt_rdy,clk)
+	type states is (s_label, s_offset, s_unit, s_slope, s_mode, s_wait);
+	variable state : states;
+	alias btod_req  is btod_reqs(tgr_id);
+	alias btod_rdy  is btod_rdys(tgr_id);
+	alias mul_req   is mul_reqs(tgr_id);
+	alias mul_rdy   is mul_rdys(tgr_id);
+	alias str_req   is str_reqs(tgr_id);
+	alias str_rdy   is str_rdys(tgr_id);
+	alias str_id    is str_ids(tgr_id);
+	variable trigger_mode : std_logic_vector(0 to 2-1);
+begin
+	if rising_edge(clk) then
+		case state is
+		when s_label =>
+			bs(tgr_id)<= resize(signed(tgr_offset), offset'length);
+			if (tgr_rdy xor tgr_req)='1' then
+				mul_req <= not mul_rdy;
+				str_req <= not str_rdy;
+				str_id  <= to_integer(unsigned(trigger_chanid));
+				state   := s_offset;
+			end if;
+		when s_offset =>
+			if (mul_req xor mul_rdy)='0' then
+				btod_req <= not btod_rdy;
+				state    := s_unit;
+			end if;
+		when s_unit =>
+			if (btod_req xor btod_rdy)='0' then
+				str_id  <= (inputs+1)+to_integer(unsigned(vt_scaleid));
+				str_req <= not str_rdy;
+				state   := s_slope;
+			end if;
+		when s_slope =>
+			if (str_req xor str_rdy)='0' then
+				if tgr_slope='0' then
+					str_id <= up_id;
+				else
+					str_id <= dn_id;
+				end if;
+				str_req <= not str_rdy;
+				state := s_mode;
+			end if;
+		when s_mode =>
+			if (str_req xor str_rdy)='0' then
+
+				trigger_mode := (tgr_freeze, tgr_oneshot);
+				case trigger_mode is
+				when "00" =>
+					str_id <= free_id;
+				when "01" =>
+					str_id <= norm_id;
+				when "10" =>
+					str_id <= freeze_id;
+				when "11" =>
+					str_id <= oneshot_id;
+				when others =>
+					report "invalid mode";
+				end case;
+				str_req <= not str_rdy;
+				state := s_wait;
+			end if;
+		when s_wait =>
+			if (str_req xor str_rdy)='0' then
+				tgr_rdy  <= tgr_req;
+				state    := s_label;
+			end if;
+		end case;
+	end if;
+end process;
+
+strreq_p : process (hzwdt_rdy,clk)
+	type states is (s_rdy, s_req);
+	variable state : states;
+	variable id   : natural range 0 to str_reqs'length-1;
+begin
+	if rising_edge(clk) then
+		case state is
+		when s_rdy =>
+			for i in str_reqs'range loop
+				if (str_rdys(i) xor str_reqs(i))='1' then
+					id := i;
+					str_id  <= str_ids(i);
 					str_req <= not str_rdy;
-					state   := s_slope;
+					state := s_req;
+					exit;
 				end if;
-			when s_slope =>
-				if (str_req xor str_rdy)='0' then
-					if tgr_slope='0' then
-						str_id <= up_id;
-					else
-						str_id <= dn_id;
+			end loop;
+		when s_req =>
+			if (str_req xor str_rdy)='0' then
+				str_rdys(id) <= str_reqs(id);
+				state := s_rdy;
+			end if;
+		end case;
+	end if;
+end process;
+
+btodreq_p : process (vtwdt_rdy,clk)
+	type states is (s_rdy, s_req);
+	variable state : states;
+	variable id : natural range 0 to btod_reqs'length-1;
+begin
+	if rising_edge(clk) then
+		case state is
+		when s_rdy =>
+			for i in btod_reqs'range loop
+				if (btod_rdys(i) xor btod_reqs(i))='1' then
+					id := i;
+					btod_req <= not to_stdulogic(to_bit(btod_rdy));
+					state := s_req;
+					exit;
+				end if;
+			end loop;
+		when s_req =>
+			if (btod_req xor btod_rdy)='0' then
+				btod_rdys(id) <= btod_reqs(id);
+				state := s_rdy;
+			end if;
+		end case;
+	end if;
+end process;
+
+mulreq_p : process (vtwdt_req,clk)
+	type states is (s_rdy, s_req);
+	variable state : states;
+	variable id    : natural range 0 to mul_reqs'length-1;
+begin
+	if rising_edge(clk) then
+		case state is
+		when s_rdy =>
+			for i in mul_reqs'range loop
+				if (mul_rdys(i) xor mul_reqs(i))='1' then
+					sign <= bs(i)(0);
+					if bs(i) >= 0 then
+						b <=  bs(i);
+					else 
+						b <= -bs(i);
 					end if;
-					str_req <= not str_rdy;
-					state := s_mode;
+					id := i;
+					mul_req <= not to_stdulogic(to_bit(mul_rdy));
+					state := s_req;
+					exit;
 				end if;
-			when s_mode =>
-				if (str_req xor str_rdy)='0' then
+			end loop;
+		when s_req =>
+			if (mul_req xor mul_rdy)='0' then
+				mul_rdys(id) <= mul_reqs(id);
+				state := s_rdy;
+			end if;
+		end case;
+	end if;
+end process;
 
-					trigger_mode := (tgr_freeze, tgr_oneshot);
-					case trigger_mode is
-					when "00" =>
-						str_id <= free_id;
-					when "01" =>
-						str_id <= norm_id;
-					when "10" =>
-						str_id <= freeze_id;
-					when "11" =>
-						str_id <= oneshot_id;
-					when others =>
-						report "invalid mode";
-					end case;
-					str_req <= not str_rdy;
-					state := s_wait;
-				end if;
-			when s_wait =>
-				if (str_req xor str_rdy)='0' then
-					tgr_rdy  <= tgr_req;
-					state    := s_label;
-				end if;
-			end case;
-		end if;
-	end process;
+mul_ser_e : entity hdl4fpga.mul_ser
+generic map (
+	lsb => true)
+port map (
+	clk => clk,
+	req => mul_req,
+	rdy => mul_rdy,
+	a   => std_logic_vector(scale),
+	b   => std_logic_vector(b(1 to b'right)),
+	s   => binary);
 
-	strreq_p : process (hzwdt_rdy,clk)
-		type states is (s_rdy, s_req);
-		variable state : states;
-		variable id   : natural range 0 to str_reqs'length-1;
-	begin
-		if rising_edge(clk) then
-			case state is
-			when s_rdy =>
-				for i in str_reqs'range loop
-					if (str_rdys(i) xor str_reqs(i))='1' then
-						id := i;
-						str_id  <= str_ids(i);
-						str_req <= not str_rdy;
-						state := s_req;
-						exit;
-					end if;
-				end loop;
-			when s_req =>
-				if (str_req xor str_rdy)='0' then
-					str_rdys(id) <= str_reqs(id);
-					state := s_rdy;
-				end if;
-			end case;
-		end if;
-	end process;
+btod_e : entity hdl4fpga.btof
+port map (
+	clk      => clk,
+	btof_req => btod_req,
+	btof_rdy => btod_rdy,
+	sht      => std_logic_vector(btod_sht),
+	dec      => std_logic_vector(btod_dec),
+	left     => '0',
+	width    => x"7",
+	exp      => b"101",
+	neg      => sign,
+	bin      => binary,
+	code_frm => btod_frm,
+	code     => btod_code);
 
-	btodreq_p : process (vtwdt_rdy,clk)
-		type states is (s_rdy, s_req);
-		variable state : states;
-		variable id : natural range 0 to btod_reqs'length-1;
-	begin
-		if rising_edge(clk) then
-			case state is
-			when s_rdy =>
-				for i in btod_reqs'range loop
-					if (btod_rdys(i) xor btod_reqs(i))='1' then
-						id := i;
-						btod_req <= not to_stdulogic(to_bit(btod_rdy));
-						state := s_req;
-						exit;
-					end if;
-				end loop;
-			when s_req =>
-				if (btod_req xor btod_rdy)='0' then
-					btod_rdys(id) <= btod_reqs(id);
-					state := s_rdy;
-				end if;
-			end case;
-		end if;
-	end process;
-
-	mulreq_p : process (vtwdt_req,clk)
-		type states is (s_rdy, s_req);
-		variable state : states;
-		variable id    : natural range 0 to mul_reqs'length-1;
-	begin
-		if rising_edge(clk) then
-			case state is
-			when s_rdy =>
-				for i in mul_reqs'range loop
-					if (mul_rdys(i) xor mul_reqs(i))='1' then
-						sign <= bs(i)(0);
-						if bs(i) >= 0 then
-							b <=  bs(i);
-						else 
-							b <= -bs(i);
-						end if;
-						id := i;
-						mul_req <= not to_stdulogic(to_bit(mul_rdy));
-						state := s_req;
-						exit;
-					end if;
-				end loop;
-			when s_req =>
-				if (mul_req xor mul_rdy)='0' then
-					mul_rdys(id) <= mul_reqs(id);
-					state := s_rdy;
-				end if;
-			end case;
-		end if;
-	end process;
-
-	mul_ser_e : entity hdl4fpga.mul_ser
-	generic map (
-		lsb => true)
-	port map (
-		clk => clk,
-		req => mul_req,
-		rdy => mul_rdy,
-		a   => std_logic_vector(scale),
-		b   => std_logic_vector(b(1 to b'right)),
-		s   => binary);
-
-	btod_e : entity hdl4fpga.btof
-	port map (
-		clk      => clk,
-		btof_req => btod_req,
-		btof_rdy => btod_rdy,
-		sht      => std_logic_vector(btod_sht),
-		dec      => std_logic_vector(btod_dec),
-		left     => '0',
-		width    => x"7",
-		exp      => b"101",
-		neg      => sign,
-		bin      => binary,
-		code_frm => btod_frm,
-		code     => btod_code);
-
-	code_frm  <= txt_req xor txt_rdy;
+code_frm  <= txt_req xor txt_rdy;
 	code_irdy <= (btod_frm and (btod_req xor btod_rdy)) or str_frm;
 	code_data <= multiplex(btod_code & str_code, str_frm);
 
