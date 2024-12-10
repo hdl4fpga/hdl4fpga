@@ -173,7 +173,6 @@ begin
 					vt_scale  <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_uid    <= (inputs+1)+scaleid;
 					vt_wdtid  <= to_integer(unsigned(vt_cid));
-					vt_wdtrow <= resize(unsigned(vt_cid), vt_wdtrow'length)+2;
 					vt_chanid <= vt_cid;
 					vtwdt_req <= not vtwdt_rdy;
 					vt_rdy    <= vt_req;
@@ -197,7 +196,6 @@ begin
 					tgr_freeze  <= trigger_freeze;
 					tgr_oneshot <= trigger_oneshot;
 					tgr_wdtid   <= inputs+1;
-					tgr_wdtrow  <= to_unsigned(1, tgr_wdtrow'length);
 					tgrwdt_req  <= not tgrwdt_rdy;
 					trigger_rdy <= trigger_req;
 				end if;
@@ -215,7 +213,6 @@ begin
 					hz_sht     <= to_signed(hz_shts(timeid), btod_sht'length);
 					hz_dec     <= to_signed(hz_pnts(timeid), btod_dec'length);
 					hz_scale   <= to_unsigned(hz_sfcnds(timeid mod 4), hz_scale'length);
-					hz_wdtrow  <= to_unsigned(0, hz_wdtrow'length);
 					hz_uid     <= (inputs+1+vt_pfxs'length)+timeid;
 					hz_wdtid   <= inputs+0;
 					hz_rdy     <= hz_req;
