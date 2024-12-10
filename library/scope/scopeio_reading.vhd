@@ -177,7 +177,6 @@ begin
 			end if;
 		end if;
 	end process;
-	-- vtwdt_req <= '0', '1' after 1 us;
 
 	tgr_p : process (txt_req, clk)
 		variable scaleid : natural range 0 to vt_shts'length-1;

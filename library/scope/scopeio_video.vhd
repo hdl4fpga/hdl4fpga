@@ -241,7 +241,6 @@ begin
 		signal vt_scalecid  : std_logic_vector(chanid_bits-1 downto 0);
 		signal vtoffset_ena : std_logic;
 		signal vt_offsetcid : std_logic_vector(vt_cid'range);
-		signal vt_cid       : std_logic_vector(chanid_bits-1 downto 0);
 
 		signal trigger_ena  : std_logic;
 		signal trigger_upd  : std_logic;
@@ -443,17 +442,19 @@ begin
 						tgr_req <= not tgr_rdy;
 						state := s_tgrreq;
 					else
-						-- vt_cid <= trigger_chanid;
+						vt_cid <= (others => '-');
 					end if;
 				when s_vtreq =>
 					if (vt_req xor vt_rdy)='0' then
 						tgr_req <= not tgr_rdy;
+						vt_cid <= trigger_chanid;
 						state := s_tgrreq;
 					end if;
 				when s_tgrreq =>
 					if (tgr_req xor tgr_rdy)='0' then
 						state := s_rdy;
 					end if;
+					vt_cid <= (others => '-');
 				end case;
 			end if;
 		end process;
