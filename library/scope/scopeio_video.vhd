@@ -228,12 +228,12 @@ begin
 
 		signal setup_req    : std_logic := '1';
 		signal setup_rdy    : std_logic := '0';
-		signal vtsetup_rdy  : std_logic;
 		signal vtsetup_req  : std_logic;
-		signal tgrsetup_rdy : std_logic;
+		signal vtsetup_rdy  : std_logic;
 		signal tgrsetup_req : std_logic;
-		signal hzsetup_rdy  : std_logic;
+		signal tgrsetup_rdy : std_logic;
 		signal hzsetup_req  : std_logic;
+		signal hzsetup_rdy  : std_logic;
 		signal setup_cid    : std_logic_vector(chanid_bits-1 downto 0);
 
 		signal vtscale_ena  : std_logic;
@@ -378,6 +378,8 @@ begin
 			
 		end block;
 
+		tp(1) <= setup_req;
+		tp(2) <= setup_rdy;
 		process (rgtr_clk)
 			type states is (s_idle, s_vtsetup, s_tgrsetup, s_hzsetup);
 			variable state : states;
@@ -435,10 +437,12 @@ begin
 						state := s_tgrreq;
 					elsif (vtsetup_rdy xor vtsetup_req)='1' then
 						vt_cid <= setup_cid;
+						vtsetup_rdy <= vtsetup_req;
 						vt_req <= not vt_rdy;
 						state := s_vtreq;
 					elsif (tgrsetup_rdy xor tgrsetup_req)='1' then
 						vt_cid <= trigger_chanid;
+						tgrsetup_rdy <= tgrsetup_req;
 						tgr_req <= not tgr_rdy;
 						state := s_tgrreq;
 					else
@@ -466,6 +470,9 @@ begin
 			if rising_edge(rgtr_clk) then
 				if (hz_req xor hz_rdy)='0' then
 					if hz_ena='1' then
+						hz_req <= not hz_rdy;
+					elsif (hzsetup_rdy xor hzsetup_req)='1' then
+						hzsetup_rdy <= hzsetup_req;
 						hz_req <= not hz_rdy;
 					end if;
 				end if;
@@ -515,7 +522,7 @@ begin
 			inputs        => inputs,
 			waveform      => waveform)
 		port map (
-			tp => tp,
+			-- tp => tp,
 			rgtr_clk      => rgtr_clk,
 			rgtr_dv       => rgtr_dv,
 			rgtr_id       => rgtr_id,
