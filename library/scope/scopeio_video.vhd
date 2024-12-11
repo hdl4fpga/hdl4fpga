@@ -156,7 +156,6 @@ architecture beh of scopeio_video is
 	signal trigger_slope   : std_logic;
 	signal trigger_oneshot : std_logic;
 	signal trigger_level   : std_logic_vector(0 to sample_length-1);
-	-- signal trigger_level : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 	signal code_frm        : std_logic;
 	signal code_irdy       : std_logic;
 	signal code_data       : std_logic_vector(0 to 8-1);
@@ -165,7 +164,6 @@ architecture beh of scopeio_video is
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 	signal hz_offset       : std_logic_vector(hzoffset_bits-1 downto 0);
 	signal video_trigger   : std_logic_vector(0 to storage_word'length-1);
-	signal trigger_gain : std_logic_vector(0 to trigger_level'length);
 
 begin
 
@@ -290,14 +288,14 @@ begin
 			constant vt_unit     : real := hdo(waveform)**".axis.vertical.unit";
 			constant vt_gains    : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.vertical.gains=" & dlft_vtscale));
 			constant gainid_bits : natural := unsigned_num_bits(vt_gains'length-1);
-			constant xxx         : natural := (2**(trigger_level'length-1));
+			constant k           : natural := 2**(trigger_level'length-1);
 
 			function input_gains
 				return natural_vector is
 				variable retval : natural_vector(0 to inputs-1);
 			begin
 				for i in retval'range loop
-					retval(i) := natural(ceil(real(xxx*grid_unit)*real'(hdo(vt)**("["&natural'image(i)&"].step"))/vt_unit));
+					retval(i) := natural(ceil(real(k*grid_unit)*real'(hdo(vt)**("["&natural'image(i)&"].step"))/vt_unit));
 				end loop;
 				return retval;
 			end;
@@ -310,6 +308,7 @@ begin
 			signal digi_rdy     : std_logic := '0';
 			signal digi_gain    : std_logic_vector(0 to 18-1);
 			signal trigger_amp  : std_logic_vector(0 to trigger_level'length);
+			signal trigger_gain : std_logic_vector(0 to trigger_level'length);
 
 		begin
 
@@ -503,7 +502,7 @@ begin
 			trigger_freeze  => trigger_freeze,
 			trigger_slope   => trigger_slope,
 			trigger_oneshot => trigger_oneshot,
-			trigger_level   => video_trigger, --trigger_gain(trigger_gain'right-8 to trigger_gain'right),
+			trigger_level   => video_trigger,
 
 			wid             => wid,
 			code_frm        => code_frm,
