@@ -155,7 +155,7 @@ architecture beh of scopeio_video is
 	signal trigger_freeze  : std_logic;
 	signal trigger_slope   : std_logic;
 	signal trigger_oneshot : std_logic;
-	signal trigger_level   : std_logic_vector(0 to sample_length-1);
+	signal trigger_level   : std_logic_vector(sample_length-1 downto 0);
 	signal code_frm        : std_logic;
 	signal code_irdy       : std_logic;
 	signal code_data       : std_logic_vector(0 to 8-1);
@@ -376,11 +376,13 @@ begin
 				input_data => trigger_amp(1 to trigger_amp'right),
 				output_data => video_trigger);
 			-- tp(1 to 8) <= video_trigger(0 to 8-1);
+			-- tp(1 to trigger_level'length) <= trigger_level;
+			tp(1 to trigger_chanid'length) <= trigger_chanid;
 			
 		end block;
 
-		tp(1) <= setup_req;
-		tp(2) <= setup_rdy;
+		-- tp(1) <= setup_req;
+		-- tp(2) <= setup_rdy;
 		process (setup_req, rgtr_clk)
 			type states is (s_idle, s_vtsetup, s_tgrsetup, s_hzsetup);
 			variable state : states;
