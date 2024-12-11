@@ -296,7 +296,7 @@ begin
 				variable retval : natural_vector(0 to inputs-1);
 			begin
 				for i in retval'range loop
-					retval(i) := natural(real(xxx*grid_unit)*real'(hdo(vt)**("["&natural'image(i)&"].step"))/vt_unit);
+					retval(i) := natural(ceil(real(xxx*grid_unit)*real'(hdo(vt)**("["&natural'image(i)&"].step"))/vt_unit));
 				end loop;
 				return retval;
 			end;
@@ -502,7 +502,7 @@ begin
 			trigger_freeze  => trigger_freeze,
 			trigger_slope   => trigger_slope,
 			trigger_oneshot => trigger_oneshot,
-			trigger_level   => trigger_gain(trigger_gain'right-8 to trigger_gain'right),
+			trigger_level   => video_trigger, --trigger_gain(trigger_gain'right-8 to trigger_gain'right),
 
 			wid             => wid,
 			code_frm        => code_frm,
