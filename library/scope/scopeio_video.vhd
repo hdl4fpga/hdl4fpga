@@ -141,12 +141,12 @@ architecture beh of scopeio_video is
 	signal sgmntbox_bgon  : std_logic;
 	signal sgmntbox_ena   : std_logic_vector(0 to num_of_segments-1);
 
-	signal vt_rdy          : std_logic;
-	signal vt_req          : std_logic;
-	signal hz_rdy          : std_logic;
-	signal hz_req          : std_logic;
-	signal tgr_rdy         : std_logic;
-	signal tgr_req         : std_logic;
+	signal vt_rdy          : std_logic := '0';
+	signal vt_req          : std_logic := '0';
+	signal hz_rdy          : std_logic := '0';
+	signal hz_req          : std_logic := '0';
+	signal tgr_rdy         : std_logic := '0';
+	signal tgr_req         : std_logic := '0';
 	signal vt_scalecid     : std_logic_vector(chanid_bits-1 downto 0);
 	signal vt_scaleid      : std_logic_vector(4-1 downto 0);
 	signal vt_offset       : std_logic_vector((5+8)-1 downto 0);
@@ -228,12 +228,12 @@ begin
 
 		signal setup_req    : std_logic := '1';
 		signal setup_rdy    : std_logic := '0';
-		signal vtsetup_req  : std_logic;
-		signal vtsetup_rdy  : std_logic;
-		signal tgrsetup_req : std_logic;
-		signal tgrsetup_rdy : std_logic;
-		signal hzsetup_req  : std_logic;
-		signal hzsetup_rdy  : std_logic;
+		signal vtsetup_req  : std_logic := '0';
+		signal vtsetup_rdy  : std_logic := '0';
+		signal tgrsetup_req : std_logic := '0';
+		signal tgrsetup_rdy : std_logic := '0';
+		signal hzsetup_req  : std_logic := '0';
+		signal hzsetup_rdy  : std_logic := '0';
 		signal setup_cid    : std_logic_vector(chanid_bits-1 downto 0);
 
 		signal vtscale_ena  : std_logic;
@@ -246,6 +246,7 @@ begin
 
 	begin
 
+		-- setup_req <= '0', '1' after 1 us;
 		state_e : entity hdl4fpga.scopeio_state
 		port map (
 			rgtr_clk        => rgtr_clk,
@@ -380,7 +381,7 @@ begin
 
 		tp(1) <= setup_req;
 		tp(2) <= setup_rdy;
-		process (rgtr_clk)
+		process (setup_req, rgtr_clk)
 			type states is (s_idle, s_vtsetup, s_tgrsetup, s_hzsetup);
 			variable state : states;
 		begin
@@ -416,7 +417,7 @@ begin
 			end if;
 		end process;
 
-		process (rgtr_clk)
+		process (vtscale_ena, rgtr_clk)
 			type states is (s_rdy, s_vtreq, s_tgrreq);
 			variable state : states;
 		begin

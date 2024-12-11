@@ -18,7 +18,7 @@ entity scopeio_reading is
 		vt_req          : in  std_logic;
 		vt_rdy          : buffer std_logic := '0';
 		hz_req          : in  std_logic;
-		hz_rdy          : buffer std_logic;
+		hz_rdy          : buffer std_logic :='0';
 		hz_scaleid      : in  std_logic_vector;
 		hz_offset       : in  std_logic_vector;
 		vt_cid          : in  std_logic_vector;
@@ -26,7 +26,7 @@ entity scopeio_reading is
 		vt_offset       : in  std_logic_vector;
 
 		trigger_req     : in  std_logic;
-		trigger_rdy     : buffer std_logic;
+		trigger_rdy     : buffer std_logic := '0';
 		trigger_chanid  : in  std_logic_vector;
 		trigger_freeze  : in  std_logic;
 		trigger_slope   : in  std_logic;
