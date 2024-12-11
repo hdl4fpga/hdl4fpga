@@ -234,18 +234,6 @@ begin
 			trigger_oneshot => oneshot,
 			trigger_slope   => slope);
 			
-		scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
-		generic map (
-			inputs => inputs)
-		port map (
-			input_clk      => input_clk,
-			input_dv       => input_ena,
-			input_data     => input_data,
-			trigger_chanid => trigger_chanid,
-			trigger_level  => trigger_level,
-			trigger_slope  => trigger_slope,
-			trigger_shot   => trigger_shot);
-
 		process (rgtr_clk)
 		begin
 			if rising_edge(rgtr_clk) then
@@ -258,6 +246,18 @@ begin
 				end if;
 			end if;
 		end process;
+
+		scopeio_trigger_e : entity hdl4fpga.scopeio_trigger
+		generic map (
+			inputs => inputs)
+		port map (
+			input_clk      => input_clk,
+			input_dv       => input_ena,
+			input_data     => input_data,
+			trigger_chanid => trigger_chanid,
+			trigger_level  => trigger_level,
+			trigger_slope  => trigger_slope,
+			trigger_shot   => trigger_shot);
 
 		-- tp(1 to trigger_level'length) <= trigger_level;
 	end block;
@@ -666,7 +666,7 @@ begin
 				debug => false,
 				m => 8)
 			port map (
-				tp => tp_meta,
+				-- tp => tp_meta,
 				src_clk  => sio_clk,
 				src_frm  => rgtr_frm,
 				src_irdy => metaram_irdy,

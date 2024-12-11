@@ -40,7 +40,7 @@ use ecp5u.components.all;
 
 architecture scopeio of ulx3s is
 
-	constant tsttab : boolean := false;
+	constant tsttab : boolean := true;
 	--------------------------------------
 	--     Set your profile here        --
 	constant io_link      : io_comms     := io_usb;
@@ -390,30 +390,30 @@ begin
 
 	-- led <= (left, up, down, right) &tp(1 to 4);
 	led <= tp(1 to 8);
-	-- stactlr_e : entity hdl4fpga.scopeio_stactlr
-	-- generic map (
-		-- debug => debug,
-		-- layout => layout)
-	-- port map (
-		-- left    => left,
-		-- up      => up,
-		-- down    => down ,
-		-- right   => right,
-		-- video_vton => video_vton,
-		-- sio_clk => sio_clk,
-		-- si_frm  => setup_frm,
-		-- si_irdy => setup_irdy,
-		-- si_trdy => setup_trdy,
-		-- si_data => setup_data,
-		-- so_frm  => iolink_frm,
-		-- so_irdy => iolink_irdy,
-		-- so_trdy => iolink_trdy,
-		-- so_data => iolink_data);
-
-	iolink_frm  <= setup_frm;
-	iolink_irdy <= setup_irdy;
-	setup_trdy  <= iolink_trdy;
-	iolink_data <= setup_data;
+	stactlr_e : entity hdl4fpga.scopeio_stactlr
+	generic map (
+		debug => debug,
+		layout => layout)
+	port map (
+		left    => left,
+		up      => up,
+		down    => down ,
+		right   => right,
+		video_vton => video_vton,
+		sio_clk => sio_clk,
+		si_frm  => setup_frm,
+		si_irdy => setup_irdy,
+		si_trdy => setup_trdy,
+		si_data => setup_data,
+		so_frm  => iolink_frm,
+		so_irdy => iolink_irdy,
+		so_trdy => iolink_trdy,
+		so_data => iolink_data);
+-- 
+	-- iolink_frm  <= setup_frm;
+	-- iolink_irdy <= setup_irdy;
+	-- setup_trdy  <= iolink_trdy;
+	-- iolink_data <= setup_data;
 	inputs_b : block
 		constant mux_sampling : natural := 10;
 
@@ -458,7 +458,7 @@ begin
 			max_input <= no_inputs;
 		end process;
 
-	synth_g : if not tsttab generate
+	-- synth_g : if not tsttab generate
 		process(input_enas, input_clk)
 			variable cntr : unsigned(input_chni'range) := (others => '0');
 		begin
@@ -480,7 +480,7 @@ begin
 				end if;
 			end if;
 		end process;
-	end generate;
+	-- end generate;
 
 		sio_sin_e : entity hdl4fpga.sio_sin
 		port map (
@@ -788,7 +788,7 @@ begin
 			addr => std_logic_vector(addr),
 			data => input_sample);
 
-		input_enas <= '1';
+		-- input_enas <= '1';
 		process (input_sample)
 		begin
 			for i in 0 to 1-1 loop

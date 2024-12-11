@@ -174,8 +174,8 @@ begin
 		if trigger_ena='1' then
 			trigger_chanid <= rqtd_tgrcid;
 		else
-		end if;
 			trigger_chanid <= cid;
+		end if;
 	end process;
 
 	rqtd_tgrdata <= rqtd_tgrlevel & rqtd_tgrslope & rqtd_tgroneshot & rqtd_tgrfreeze;

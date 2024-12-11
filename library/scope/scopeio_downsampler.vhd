@@ -79,7 +79,7 @@ begin
 		end loop;
 	end process;
 
-	process (input_clk)
+	process (input_dv, input_clk)
 		variable scaler : unsigned(factor'range) := (others => '0'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
@@ -92,8 +92,8 @@ begin
 					scaler := scaler - 1;
 				end if;
 			end if;
-			output_dv <= scaler(0) and input_dv;
 		end if;
+		output_dv <= scaler(0) and input_dv;
 	end process;
 
 	compress_g : for i in 0 to inputs-1 generate
