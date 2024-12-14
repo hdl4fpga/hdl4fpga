@@ -73,6 +73,7 @@ architecture def of scopeio_textbox is
 
 	signal video_row : std_logic_vector(0 to cgarows_bits-1);
 	signal focus_wid : std_logic_vector(6-1 downto 0);
+	signal blinkit   : std_logic;
 
 begin
 
@@ -97,6 +98,7 @@ begin
 	
 			focus_wid => wid);
 		focus_wid <= wid(focus_wid'range);
+		blinkit <= wid(wid'left);
 	end block;
 
 	tp(1 to focus_wid'length) <= focus_wid;
@@ -180,7 +182,7 @@ begin
     				else
     					cntr  := 30-1;
     					state := s_bg;
-    					blink <= '1' and focus_wid(focus_wid'left);
+    					blink <= '1' and blinkit;
     				end if;
     			when s_bg =>
     				if cntr >=0 then 
