@@ -99,8 +99,8 @@ begin
 		focus_wid <= wid(focus_wid'range);
 	end block;
 
-	-- tp(1 to focus_wid'length) <= focus_wid;
-	tp(1 to wdt_id'length) <= wdt_id;
+	tp(1 to focus_wid'length) <= focus_wid;
+	-- tp(1 to wdt_id'length) <= wdt_id;
 	process (rgtr_clk)
 		type states is (s_init, s_run);
 		variable state : states;

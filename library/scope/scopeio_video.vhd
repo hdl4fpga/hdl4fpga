@@ -472,7 +472,7 @@ begin
 				input_data => trigger_amp(1 to trigger_amp'right),
 				output_data => video_trigger);
 			-- tp(1 to 8) <= video_trigger(0 to 8-1);
-			tp(1 to trigger_level'length) <= trigger_level;
+			-- tp(1 to trigger_level'length) <= trigger_level;
 			-- tp(1 to trigger_chanid'length) <= trigger_chanid;
 			
 		end block;
@@ -520,7 +520,7 @@ begin
 			inputs        => inputs,
 			waveform      => waveform)
 		port map (
-			-- tp => tp,
+			tp => tp,
 			rgtr_clk      => rgtr_clk,
 			rgtr_dv       => rgtr_dv,
 			rgtr_id       => rgtr_id,
