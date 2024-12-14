@@ -259,7 +259,6 @@ begin
 			trigger_slope  => trigger_slope,
 			trigger_shot   => trigger_shot);
 
-		-- tp(1 to trigger_level'length) <= trigger_level;
 	end block;
 
 	waveform_g : if waveform /= "none" generate

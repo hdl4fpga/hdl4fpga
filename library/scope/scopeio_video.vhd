@@ -72,7 +72,7 @@ entity scopeio_video is
 	constant axis_fontsize   : natural := hdo(waveform)**".axis.fontsize=8.";
 	constant main_width      : natural := hdo(waveform)**".display.width";
 	constant main_height     : natural := hdo(waveform)**".display.height";
-	constant textbox_width   : natural := hdo(waveform)**".textbox.width";
+	constant textbox_width   : natural := hdo(waveform)**".textbox.width=0.";
 	constant grid_height     : natural := hdo(waveform)**".grid.height";
 	constant chanid_bits     : natural := unsigned_num_bits(inputs-1);
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);

@@ -40,7 +40,7 @@ use ecp5u.components.all;
 
 architecture scopeio of ulx3s is
 
-	constant tsttab : boolean := true;
+	constant tsttab : boolean := false;
 	--------------------------------------
 	--     Set your profile here        --
 	constant io_link      : io_comms     := io_usb;
@@ -300,93 +300,93 @@ begin
 			so_data   => usblnk_data);
 	end generate;
 
-	setup_b : block
-		port (
-			sio_clk : in  std_logic;
-			si_frm  : in  std_logic;
-			si_irdy : in  std_logic := '1';
-			si_trdy : out std_logic;
-			si_data : in  std_logic_vector;
-			so_frm  : out std_logic;
-			so_irdy : out std_logic;
-			so_trdy : in  std_logic := '1';
-			so_data : out std_logic_vector);
-		port map (
-			sio_clk => sio_clk,
-			si_frm  => usblnk_frm,
-			si_irdy => usblnk_irdy,
-			si_trdy => usblnk_trdy,
-			si_data => usblnk_data,
-			so_frm  => setup_frm,
-			so_irdy => setup_irdy,
-			so_trdy => setup_trdy,
-			so_data => setup_data);
-			
-		signal setup_req : std_logic := '0';
-		signal setup_rdy : std_logic := '0';
-
-		signal setup_frm  : std_logic := '0';
-		signal setup_irdy : std_logic := '0';
-		signal setup_trdy : std_logic := '1';
-		signal setup_data : std_logic_vector(si_data'range);
-
-		signal data      : std_logic_vector(0 to 8-1);
-		constant bitdata : std_logic_vector := rid_hzaxis & x"02" & x"0" & x"4" & (0 to hzoffset_maxsize-1 => '0');
-		constant bitrom_length : natural := data'length*((bitdata'length+data'length-1)/data'length);
-		constant bitrom  : std_logic_vector := std_logic_vector(resize(reverse(unsigned(bitdata)), bitrom_length));
-		constant addr_length : natural := unsigned_num_bits((bitdata'length+data'length-1)/data'length-1);
-		signal  addr     : unsigned(0 to addr_length) := to_unsigned(bitrom'length/data'length-1, addr_length+1);
-
-	begin
-
-		mem_e : entity hdl4fpga.rom 
-		generic map (
-			bitrom => bitrom)
-		port map (
-			clk  => sio_clk,
-			addr => std_logic_vector(addr(1 to addr'right)),
-			data => data);
-			
-		process(setup_rdy, sio_clk)
-		begin
-			if rising_edge(sio_clk) then
-				if video_lck='0' then
-					setup_frm  <= '0';
-					setup_irdy <= '0';
-					addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
-					setup_req <= not setup_rdy;
-				elsif si_frm='1' then 
-					setup_frm  <= '0';
-					setup_irdy <= '0';
-					addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
-				elsif (setup_rdy xor setup_req)='1' then
-					if so_trdy='1' then
-						if addr(0)='0' then
-							setup_frm  <= '1';
-							setup_irdy <= '1';
-							addr <= addr - 1;
-						else
-							setup_frm  <= '0';
-							setup_irdy <= '0';
-							setup_rdy  <= setup_req;
-							addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
-						end if;
-					end if;
-				else
-					setup_frm  <= '0';
-					setup_irdy <= '0';
-					addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
-				end if;
-				setup_data <= data;
-			end if;
-		end process;
-
-		so_frm  <= si_frm  when si_frm='1' else setup_frm;
-		so_irdy <= si_irdy when si_frm='1' else setup_irdy;
-		si_trdy <= so_trdy when setup_frm='0' else '0';
-		so_data <= si_data when si_frm='1' else setup_data;
-
-	end block;
+	-- setup_b : block
+		-- port (
+			-- sio_clk : in  std_logic;
+			-- si_frm  : in  std_logic;
+			-- si_irdy : in  std_logic := '1';
+			-- si_trdy : out std_logic;
+			-- si_data : in  std_logic_vector;
+			-- so_frm  : out std_logic;
+			-- so_irdy : out std_logic;
+			-- so_trdy : in  std_logic := '1';
+			-- so_data : out std_logic_vector);
+		-- port map (
+			-- sio_clk => sio_clk,
+			-- si_frm  => usblnk_frm,
+			-- si_irdy => usblnk_irdy,
+			-- si_trdy => usblnk_trdy,
+			-- si_data => usblnk_data,
+			-- so_frm  => setup_frm,
+			-- so_irdy => setup_irdy,
+			-- so_trdy => setup_trdy,
+			-- so_data => setup_data);
+			-- 
+		-- signal setup_req : std_logic := '0';
+		-- signal setup_rdy : std_logic := '0';
+-- 
+		-- signal setup_frm  : std_logic := '0';
+		-- signal setup_irdy : std_logic := '0';
+		-- signal setup_trdy : std_logic := '1';
+		-- signal setup_data : std_logic_vector(si_data'range);
+-- 
+		-- signal data      : std_logic_vector(0 to 8-1);
+		-- constant bitdata : std_logic_vector := rid_hzaxis & x"02" & x"0" & x"4" & (0 to hzoffset_maxsize-1 => '0');
+		-- constant bitrom_length : natural := data'length*((bitdata'length+data'length-1)/data'length);
+		-- constant bitrom  : std_logic_vector := std_logic_vector(resize(reverse(unsigned(bitdata)), bitrom_length));
+		-- constant addr_length : natural := unsigned_num_bits((bitdata'length+data'length-1)/data'length-1);
+		-- signal  addr     : unsigned(0 to addr_length) := to_unsigned(bitrom'length/data'length-1, addr_length+1);
+-- 
+	-- begin
+-- 
+		-- mem_e : entity hdl4fpga.rom 
+		-- generic map (
+			-- bitrom => bitrom)
+		-- port map (
+			-- clk  => sio_clk,
+			-- addr => std_logic_vector(addr(1 to addr'right)),
+			-- data => data);
+			-- 
+		-- process(setup_rdy, sio_clk)
+		-- begin
+			-- if rising_edge(sio_clk) then
+				-- if video_lck='0' then
+					-- setup_frm  <= '0';
+					-- setup_irdy <= '0';
+					-- addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
+					-- setup_req <= not setup_rdy;
+				-- elsif si_frm='1' then 
+					-- setup_frm  <= '0';
+					-- setup_irdy <= '0';
+					-- addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
+				-- elsif (setup_rdy xor setup_req)='1' then
+					-- if so_trdy='1' then
+						-- if addr(0)='0' then
+							-- setup_frm  <= '1';
+							-- setup_irdy <= '1';
+							-- addr <= addr - 1;
+						-- else
+							-- setup_frm  <= '0';
+							-- setup_irdy <= '0';
+							-- setup_rdy  <= setup_req;
+							-- addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
+						-- end if;
+					-- end if;
+				-- else
+					-- setup_frm  <= '0';
+					-- setup_irdy <= '0';
+					-- addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
+				-- end if;
+				-- setup_data <= data;
+			-- end if;
+		-- end process;
+-- 
+		-- so_frm  <= si_frm  when si_frm='1' else setup_frm;
+		-- so_irdy <= si_irdy when si_frm='1' else setup_irdy;
+		-- si_trdy <= so_trdy when setup_frm='0' else '0';
+		-- so_data <= si_data when si_frm='1' else setup_data;
+-- 
+	-- end block;
 
 	led <= tp(1 to 8);
 	stactlr_e : entity hdl4fpga.scopeio_stactlr

@@ -87,7 +87,7 @@ entity scopeio_layout is
 	constant axisvertical_width    : natural := hdo(waveform)**".axis.vertical.width";
 	constant axis_fontsize         : natural := hdo(waveform)**".axis.fontsize=8.";
 
-	constant textbox_width         : natural := hdo(waveform)**".textbox.width";
+	constant textbox_width         : natural := hdo(waveform)**".textbox.width=0.";
 	constant textbox_height        : natural := hdo(waveform)**".grid.height";
 	constant textbox_inside        : boolean := hdo(waveform)**".textbox.inside=false.";
 

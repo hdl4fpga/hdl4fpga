@@ -145,8 +145,8 @@ begin
 							delay := delay-1;
     					end if;
     				end if;
-    			elsif video_vton='0' then
-    			-- else
+    			-- elsif video_vton='0' then
+    			else
     				if trigger_shot='1' then
 						if downsampling='0' then
 							delay := shift_right(signed(time_offset),1);
