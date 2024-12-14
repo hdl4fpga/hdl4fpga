@@ -68,6 +68,11 @@ begin
 			if rising_edge(input_clk) then
 				if input_dv='1' then
 					wr_addr <= wr_addr + 1;
+					if signed(time_offset) < 0  then
+					    rd_addr <= wr_addr + resize(delay, rd_addr'length);
+					else 
+						rd_addr <= wr_addr;
+					end if;
 				end if;
 			end if;
 		end process;
@@ -76,7 +81,19 @@ begin
 			shift_right(signed(time_offset),1) when downsampling='0' else
 			shift_right(signed(time_offset),0);
 
-		rd_addr <= wr_addr + resize(delay, rd_addr'length) when signed(time_offset) < 0 else wr_addr;
+		-- rd_addr <= wr_addr + resize(delay, rd_addr'length) when signed(time_offset) < 0 else wr_addr;
+		process (input_clk)
+		begin
+			if rising_edge(input_clk) then
+				if input_dv='1' then
+					if signed(time_offset) < 0  then
+					    rd_addr <= wr_addr + resize(delay, rd_addr'length);
+					else 
+						rd_addr <= wr_addr;
+					end if;
+				end if;
+			end if;
+		end process;
 
 		mem_e : entity hdl4fpga.dpram
 		generic map (
@@ -95,7 +112,7 @@ begin
 		lat_e : entity hdl4fpga.latency
 		generic map (
 			n => 1,
-			d => (0 to 0 => 2))
+			d => (0 to 0 => 3))
 		port map (
 			clk   => input_clk,
 			di(0) => input_dv,
@@ -118,7 +135,7 @@ begin
     	begin
     		if rising_edge(input_clk) then
     			if (capture_rdy xor capture_req)='1' then
-    				if input_dv='1' then
+    				if dlyd_dv='1' then
 						if wraddr_msb='1' then
     						capture_rdy <= capture_req;
 						elsif delay <= 0 then
@@ -129,6 +146,7 @@ begin
     					end if;
     				end if;
     			elsif video_vton='0' then
+    			-- else
     				if trigger_shot='1' then
 						if downsampling='0' then
 							delay := shift_right(signed(time_offset),1);

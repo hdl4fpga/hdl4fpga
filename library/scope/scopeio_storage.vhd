@@ -71,7 +71,6 @@ begin
 		input_data  => input_data,
 		output_data => resizedsample_data);
 
-	tp(1) <= downsampling;
 	downsampler_e : entity hdl4fpga.scopeio_downsampler
 	generic map (
 		inputs  => inputs,

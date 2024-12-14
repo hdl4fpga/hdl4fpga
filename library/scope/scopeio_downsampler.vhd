@@ -55,6 +55,7 @@ architecture beh of scopeio_downsampler is
 	constant scaler_bits : natural := signed_num_bits(max(factors)-2);
 
 	signal factor   : std_logic_vector(0 to scaler_bits-1);
+	signal init     : std_logic;
 	signal data_min : std_logic_vector(0 to output_data'length/2-1);
 	signal data_max : std_logic_vector(0 to output_data'length/2-1);
 
@@ -67,16 +68,19 @@ begin
 		addr => factor_id,
 		data => factor);
 
-	downsampleron_p: process (factor_id)
+	-- downsampleron_p: process (factor_id) -- LatticeDiamond makes strange things, replaces by synchronous 
+	downsampleron_p: process (input_clk)
 	begin
-		downsampling <= '0';
-		for i in 1 to 2**factor_id'length-1 loop
-			if unsigned(factor_id)=i then
-				if factors(0)/=factors(i) then
-					downsampling <= '1';
+		if rising_edge(input_clk) then
+			downsampling <= '1';
+			for i in 0 to 2**factor_id'length-1 loop
+				if unsigned(factor_id)=i then
+					if factors(0)=factors(i) then
+						downsampling <= '0';
+					end if;
 				end if;
-			end if;
-		end loop;
+			end loop;
+		end if;
 	end process;
 
 	process (input_dv, input_clk)
@@ -92,9 +96,10 @@ begin
 					scaler := scaler - 1;
 				end if;
 			end if;
+			init <= scaler(0);
 		end if;
-		output_dv <= scaler(0) and input_dv;
 	end process;
+	output_dv <= init and input_dv;
 
 	compress_g : for i in 0 to inputs-1 generate
 		signal sample : signed(0 to input_data'length/inputs-1);
@@ -104,6 +109,7 @@ begin
 		signal min0   : signed(sample'range);
 	begin
 		sample <= signed(multiplex(input_data, i, sample'length));
+
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
@@ -111,7 +117,7 @@ begin
    					if downsampling='0' then
    						maxx <= minn;
    						minn <= sample;
-   					elsif output_dv='1' then
+   					elsif init='1' then
    						maxx <= hdl4fpga.base.max(min0, sample);
    						minn <= hdl4fpga.base.min(max0, sample);
    						max0 <= sample;
@@ -134,6 +140,7 @@ begin
    				end if;
 			end if;
 		end process;
+
 		data_max(i*sample'length to (i+1)*sample'length-1) <= std_logic_vector(maxx);
 		data_min(i*sample'length to (i+1)*sample'length-1) <= std_logic_vector(minn);
 	end generate;

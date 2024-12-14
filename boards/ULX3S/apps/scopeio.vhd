@@ -388,7 +388,6 @@ begin
 
 	end block;
 
-	-- led <= (left, up, down, right) &tp(1 to 4);
 	led <= tp(1 to 8);
 	stactlr_e : entity hdl4fpga.scopeio_stactlr
 	generic map (
@@ -409,11 +408,16 @@ begin
 		so_irdy => iolink_irdy,
 		so_trdy => iolink_trdy,
 		so_data => iolink_data);
--- 
+
 	-- iolink_frm  <= setup_frm;
 	-- iolink_irdy <= setup_irdy;
 	-- setup_trdy  <= iolink_trdy;
 	-- iolink_data <= setup_data;
+
+	-- iolink_frm  <= usblnk_frm;
+	-- iolink_irdy <= usblnk_irdy;
+	-- usblnk_trdy  <= iolink_trdy;
+	-- iolink_data <= usblnk_data;
 	inputs_b : block
 		constant mux_sampling : natural := 10;
 
@@ -458,7 +462,6 @@ begin
 			max_input <= no_inputs;
 		end process;
 
-	-- synth_g : if not tsttab generate
 		process(input_enas, input_clk)
 			variable cntr : unsigned(input_chni'range) := (others => '0');
 		begin
@@ -480,7 +483,6 @@ begin
 				end if;
 			end if;
 		end process;
-	-- end generate;
 
 		sio_sin_e : entity hdl4fpga.sio_sin
 		port map (
@@ -736,34 +738,38 @@ begin
 		signal input_sample  : std_logic_vector(13-1 downto 0);
 		constant size : natural := 2**11; --2**input_sample'length;
 
-		function sintab (
+		function funtab (
 			constant size       : natural;
 			constant resolution : natural := 16;
 			constant unipolar   : boolean := false)
 			return std_logic_vector  is
+			type ftypes is (f_glitch, f_sin, f_sync);
+			constant ftype  : ftypes := f_sync;
 			constant pi     : real := 4.0*arctan(1.0);
-			constant n : natural := 7;
-			constant n1 : natural := 8;
+			constant center : natural := size/2;
 			variable retval : std_logic_vector(0 to size*resolution-1);
-			variable val : real;
-			constant xxx : natural := size/2;
 		begin
 			for i in 0 to size-1 loop
-				-- retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_unsigned(2**(resolution-1), resolution));
-				-- if i mod 128=0 then 
-					-- retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_unsigned(2**(resolution-1)-1, resolution));
-				-- end if;
-				if i=xxx then
+				case ftype is
+				when f_sync => 
+					if i=center then
+						retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer(
+							(2.0**(resolution-1)-2.0)*2.0*pi*4.0/real(size)*64.0), resolution));
+					else
+						retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer(
+							(2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i-center)*4.0/real(size))*64.0/(real(i-center))
+							), resolution));
+					end if;
+				when f_sin => 
 					retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer(
-						(2.0**(resolution-1)-2.0)*2.0*pi*4.0/real(size)*64.0), resolution));
-				else
-					retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer(
-						(2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i-xxx)*4.0/real(size))*64.0/(real(i-xxx))
-						), resolution));
-				end if;
+						(2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i)/real(size))) , resolution));
+				when f_glitch =>
+					retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_unsigned(2**(resolution-1), resolution));
+					if i mod 128=0 then 
+						retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_unsigned(2**(resolution-1)-1, resolution));
+					end if;
+				end case;
 			end loop;
-			-- retval(resolution*n to resolution*(n+1)-1) := std_logic_vector(to_signed(2**(resolution-1)-1, resolution));
-			-- retval(resolution*n1 to resolution*(n1+1)-1) := (others => '0');
 			return retval;
 		end;
 
@@ -782,18 +788,17 @@ begin
 		rom_e : entity hdl4fpga.rom
 		generic map (
 			latency => 2,
-			bitrom => sintab(size => 2**addr'length, resolution => input_sample'length))
+			bitrom => funtab(size => 2**addr'length, resolution => input_sample'length))
 		port map (
 			clk => input_clk,
 			addr => std_logic_vector(addr),
 			data => input_sample);
 
-		-- input_enas <= '1';
 		process (input_sample)
+			constant i : natural := 0;
 		begin
-			for i in 0 to 1-1 loop
-				input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;
-			end loop;
+			input_samples <= (others => '0');
+			input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;
 		end process;
 
 	end generate;

@@ -36,8 +36,8 @@ begin
 				ge     := setif(sample >= signed(trigger_level));
 				edge   := not trigger_slope;
 				sample := signed(multiplex(input_data, trigger_chanid, sample'length));
+				trigger_shot <= shot;
 			end if;
-			trigger_shot <= shot;
 		end if;
 	end process;
 
