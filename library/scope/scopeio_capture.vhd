@@ -41,6 +41,7 @@ entity scopeio_capture is
 		input_data   : in  std_logic_vector;
 		capture_req  : buffer std_logic := '0';
 		capture_rdy  : buffer std_logic := '0';
+		trigger_mode : in  std_logic_vector(0 to 2-1) := "00";
 		trigger_shot : in  std_logic;
 		time_offset  : in  std_logic_vector;
 
@@ -133,17 +134,32 @@ begin
 							discard := discard-1;
     					end if;
     				end if;
-    			-- elsif video_vton='0' then
     			else
-    				if trigger_shot='1' then
-						if downsampling='0' then
-							discard := delay;
-						else
-							discard := delay;
+					case trigger_mode is
+					when "00" =>
+						if trigger_shot='1' then
+							if downsampling='0' then
+								discard := delay;
+							else
+								discard := delay;
+							end if;
+							wr_addr <= (others => '0');
+							capture_req <= not capture_rdy;
 						end if;
-						wr_addr <= (others => '0');
-    					capture_req <= not capture_rdy;
-    				end if;
+					when "01" =>
+						if video_vton='0' then
+    						if trigger_shot='1' then
+    							if downsampling='0' then
+    								discard := delay;
+    							else
+    								discard := delay;
+    							end if;
+    							wr_addr <= (others => '0');
+    							capture_req <= not capture_rdy;
+    						end if;
+						end if;
+					when others =>
+					end case;
     			end if;
     		end if;
     	end process;

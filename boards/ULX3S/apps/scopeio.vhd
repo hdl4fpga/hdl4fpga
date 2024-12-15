@@ -40,7 +40,7 @@ use ecp5u.components.all;
 
 architecture scopeio of ulx3s is
 
-	constant tsttab : boolean := false;
+	constant tsttab : boolean := true;
 	--------------------------------------
 	--     Set your profile here        --
 	constant io_link      : io_comms     := io_usb;

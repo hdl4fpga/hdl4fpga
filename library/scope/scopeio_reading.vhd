@@ -38,37 +38,36 @@ entity scopeio_reading is
 		code_irdy       : out std_logic := '0';
 		code_data       : out std_logic_vector(0 to 8-1));
 
-	constant max_delay     : natural := hdo(waveform)**".max_delay=16384.";
-	constant hz_unit       : real    := hdo(waveform)**".axis.horizontal.unit";
-	constant vt_unit       : real    := hdo(waveform)**".axis.vertical.unit";
-	constant grid_unit     : natural := hdo(waveform)**".grid.unit=32.";
-	constant grid_height   : natural := hdo(waveform)**".grid.height";
+	constant max_delay    : natural := hdo(waveform)**".max_delay=16384.";
+	constant hz_unit      : real    := hdo(waveform)**".axis.horizontal.unit";
+	constant vt_unit      : real    := hdo(waveform)**".axis.vertical.unit";
+	constant grid_unit    : natural := hdo(waveform)**".grid.unit=32.";
+	constant grid_height  : natural := hdo(waveform)**".grid.height";
 
-	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
-	constant vt_labels     : string  := hdo(waveform)**".vt";
-	constant hz_label      : string  := "TIME";
+	constant chanid_bits  : natural := unsigned_num_bits(inputs-1);
+	constant vt_labels    : string  := hdo(waveform)**".vt";
+	constant hz_label     : string  := "TIME";
 
-	constant vt_sfcnds     : natural_vector := get_significand1245(vt_unit);
-	constant vt_shts       : integer_vector := get_shr1245(vt_unit);
-	constant vt_pnts       : integer_vector := get_characteristic1245(vt_unit);
-	constant vt_pfxs       : string         := get_prefix1235(vt_unit);
+	constant vt_sfcnds    : natural_vector := get_significand1245(vt_unit);
+	constant vt_shts      : integer_vector := get_shr1245(vt_unit);
+	constant vt_pnts      : integer_vector := get_characteristic1245(vt_unit);
+	constant vt_pfxs      : string         := get_prefix1235(vt_unit);
 
-	constant hz_sfcnds     : natural_vector := get_significand1245(hz_unit);
-	constant hz_shts       : integer_vector := get_shr1245(hz_unit);
-	constant hz_pnts       : integer_vector := get_characteristic1245(hz_unit);
-	constant hz_pfxs       : string         := get_prefix1235(hz_unit);
+	constant hz_sfcnds    : natural_vector := get_significand1245(hz_unit);
+	constant hz_shts      : integer_vector := get_shr1245(hz_unit);
+	constant hz_pnts      : integer_vector := get_characteristic1245(hz_unit);
+	constant hz_pfxs      : string         := get_prefix1235(hz_unit);
 
-	constant sfcnd_length  : natural := max(unsigned_num_bits(max(vt_sfcnds)), unsigned_num_bits(max(hz_sfcnds)));
+	constant sfcnd_length : natural := max(unsigned_num_bits(max(vt_sfcnds)), unsigned_num_bits(max(hz_sfcnds)));
 
-	constant bin_digits    : natural := 3;
-	constant bcd_width     : natural := 8;
-	constant bcd_length    : natural := 4;
-	constant bcd_digits    : natural := 1;
+	constant bin_digits   : natural := 3;
+	constant bcd_width    : natural := 8;
+	constant bcd_length   : natural := 4;
+	constant bcd_digits   : natural := 1;
 
 end;
 
 architecture def of scopeio_reading is
-
 
 	signal trigger_ena    : std_logic;
 	signal txt_req        : std_logic := '0';

@@ -96,6 +96,7 @@ begin
 	port map (
 		input_clk    => input_clk,
 		trigger_shot => trigger_shot,
+		trigger_mode => trigger_mode,
 		downsampling => downsampling,
 		ups          => ups,
 		capture_req  => capture_req,
