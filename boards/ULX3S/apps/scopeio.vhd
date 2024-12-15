@@ -388,6 +388,11 @@ begin
 -- 
 	-- end block;
 
+	setup_frm   <= usblnk_frm;
+	setup_irdy  <= usblnk_irdy;
+	usblnk_trdy <= setup_trdy;
+	setup_data  <= usblnk_data;
+
 	led <= tp(1 to 8);
 	stactlr_e : entity hdl4fpga.scopeio_stactlr
 	generic map (

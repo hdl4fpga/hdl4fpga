@@ -35,6 +35,7 @@ entity scopeio_capture is
 	port (
 		input_clk    : in  std_logic;
 		downsampling : in  std_logic := '0';
+		ups          : in  std_logic;
 
 		input_dv     : in  std_logic := '1';
 		input_data   : in  std_logic_vector;
@@ -58,34 +59,21 @@ architecture delayfifo of scopeio_capture is
 
 begin
  
+	delay <= 
+		shift_right(signed(time_offset)+2,1) when downsampling='0' else
+		shift_right(signed(time_offset)+2,0);
+
 	delayed_b : block
 		signal wr_addr : signed(unsigned_num_bits(max_pretrigger-1)-1 downto 0) := (others => '0'); -- Debug purpose
 		signal rd_addr : signed(wr_addr'range);
 	begin
-
-		process (input_clk)
-		begin
-			if rising_edge(input_clk) then
-				if input_dv='1' then
-					wr_addr <= wr_addr + 1;
-					if signed(time_offset) < 0  then
-					    rd_addr <= wr_addr + resize(delay, rd_addr'length);
-					else 
-						rd_addr <= wr_addr;
-					end if;
-				end if;
-			end if;
-		end process;
-
-		delay <= 
-			shift_right(signed(time_offset),1) when downsampling='0' else
-			shift_right(signed(time_offset),0);
 
 		-- rd_addr <= wr_addr + resize(delay, rd_addr'length) when signed(time_offset) < 0 else wr_addr;
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
 				if input_dv='1' then
+					wr_addr <= wr_addr + 1;
 					if signed(time_offset) < 0  then
 					    rd_addr <= wr_addr + resize(delay, rd_addr'length);
 					else 
@@ -131,27 +119,27 @@ begin
 
     	process (input_clk)
     		constant fifo_length : natural := 2**rd_addr'length;
-    		variable delay : signed(time_offset'range);
+    		variable discard : signed(time_offset'range);
     	begin
     		if rising_edge(input_clk) then
     			if (capture_rdy xor capture_req)='1' then
     				if dlyd_dv='1' then
 						if wraddr_msb='1' then
     						capture_rdy <= capture_req;
-						elsif delay <= 0 then
+						elsif discard <= 0 then
 							wr_addr <= wr_addr + 1;
 						end if;
-    					if delay >= 0 then
-							delay := delay-1;
+    					if discard >= 0 then
+							discard := discard-1;
     					end if;
     				end if;
     			-- elsif video_vton='0' then
     			else
     				if trigger_shot='1' then
 						if downsampling='0' then
-							delay := shift_right(signed(time_offset),1);
+							discard := delay;
 						else
-							delay := shift_right(signed(time_offset),0);
+							discard := delay;
 						end if;
 						wr_addr <= (others => '0');
     					capture_req <= not capture_rdy;
@@ -186,7 +174,7 @@ begin
 		begin
 			if rising_edge(video_clk) then
 				if downsampling='0' then
-					if videoaddr_lsb/=timeoffset_lsb then
+					if videoaddr_lsb/=(timeoffset_lsb xor ups) then
 						shr(0 to video_data'length-1) := unsigned(rd_data);
 					end if;
 					shr := shr rol video_data'length/2;

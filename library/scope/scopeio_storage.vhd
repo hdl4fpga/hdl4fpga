@@ -42,7 +42,7 @@ entity scopeio_storage is
 		input_data     : in  std_logic_vector;
 		time_scale     : in  std_logic_vector;
 		time_offset    : in  std_logic_vector;
-		trigger_freeze : buffer std_logic;
+		trigger_mode   : in  std_logic_vector(0 to 2-1) := "00";
 
 		video_clk      : in  std_logic;
 		video_vton     : in  std_logic;
@@ -50,6 +50,9 @@ entity scopeio_storage is
 		video_addr     : in  std_logic_vector;
 		video_dv       : out std_logic;
 		video_data     : out std_logic_vector);
+
+	alias trigger_freeze  is trigger_mode(0);
+	alias trigger_oneshot is trigger_mode(1);
 end;
 
 architecture mix of scopeio_storage is
@@ -61,6 +64,7 @@ architecture mix of scopeio_storage is
 	signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
 	signal capture_req        : std_logic;
 	signal capture_rdy        : std_logic;
+	signal ups                : std_logic;
 
 begin
 
@@ -82,6 +86,7 @@ begin
 		input_data   => resizedsample_data,
 		trigger_shot => trigger_shot,
 		downsampling => downsampling,
+		ups          => ups,
 		capture_req  => capture_req,
 		capture_rdy  => capture_rdy,
 		output_dv    => downsample_dv,
@@ -92,6 +97,7 @@ begin
 		input_clk    => input_clk,
 		trigger_shot => trigger_shot,
 		downsampling => downsampling,
+		ups          => ups,
 		capture_req  => capture_req,
 		capture_rdy  => capture_rdy,
 		input_dv     => downsample_dv,

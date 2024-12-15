@@ -393,7 +393,7 @@ begin
 			input_data   => ampsample_data,
 			time_scale   => time_scale,
 			time_offset  => time_offset,
-			trigger_freeze => trigger_freeze,
+			trigger_mode => trigger_mode,
 
 			video_clk    => video_clk,
 			video_addr   => video_addr,  
