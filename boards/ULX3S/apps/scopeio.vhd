@@ -750,6 +750,7 @@ begin
 			return std_logic_vector  is
 			type ftypes is (f_glitch, f_sin, f_sync);
 			constant ftype  : ftypes := f_sync;
+			constant cycles : real := 4.5;
 			constant pi     : real := 4.0*arctan(1.0);
 			constant center : natural := size/2;
 			variable retval : std_logic_vector(0 to size*resolution-1);
@@ -759,10 +760,10 @@ begin
 				when f_sync => 
 					if i=center then
 						retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer(
-							(2.0**(resolution-1)-2.0)*2.0*pi*4.0/real(size)*64.0), resolution));
+							(2.0**(resolution-1)-2.0)*2.0*pi*cycles/real(size)*64.0), resolution));
 					else
 						retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer(
-							(2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i-center)*4.0/real(size))*64.0/(real(i-center))
+							(2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i-center)*cycles/real(size))*64.0/(real(i-center))
 							), resolution));
 					end if;
 				when f_sin => 

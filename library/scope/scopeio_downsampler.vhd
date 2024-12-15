@@ -97,9 +97,9 @@ begin
 				else
 					scaler := scaler - 1;
 				end if;
-				if (capture_req xor capture_rdy)='0' and trigger_shot='1' then
+				-- if (capture_req xor capture_rdy)='0' and trigger_shot='1' then
 					-- ups <= scaler(0);
-				end if;
+				-- end if;
 			end if;
 			init <= scaler(0);
 		end if;
