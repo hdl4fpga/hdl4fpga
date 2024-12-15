@@ -62,8 +62,8 @@ architecture delayfifo of scopeio_capture is
 begin
  
 	delay <= 
-		shift_right(signed(time_offset)+bram_latency+1) when downsampling='0' else
-		shift_right(signed(time_offset)+bram_latency+0);
+		shift_right(signed(time_offset)+bram_latency,1) when downsampling='0' else
+		shift_right(signed(time_offset)+bram_latency,0);
 
 	delayed_b : block
 		signal wr_addr : signed(unsigned_num_bits(max_pretrigger-1)-1 downto 0) := (others => '0'); -- Debug purpose
@@ -102,7 +102,7 @@ begin
 		lat_e : entity hdl4fpga.latency
 		generic map (
 			n => 1,
-			d => (0 to 0 => bram_latency+1)
+			d => (0 to 0 => bram_latency+1))
 		port map (
 			clk   => input_clk,
 			di(0) => input_dv,
