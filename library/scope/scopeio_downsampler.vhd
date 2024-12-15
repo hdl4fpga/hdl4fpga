@@ -19,7 +19,7 @@ entity scopeio_downsampler is
 		capture_rdy  : in  std_logic;
 		downsampling : buffer std_logic;
 		
-		ups          : out std_logic;
+		ups          : out std_logic := '0';
 		output_dv    : buffer std_logic;
 		output_data  : out std_logic_vector);
 end;
@@ -99,7 +99,6 @@ begin
 				end if;
 				if (capture_req xor capture_rdy)='0' and trigger_shot='1' then
 					-- ups <= scaler(0);
-					ups <= '0';
 				end if;
 			end if;
 			init <= scaler(0);

@@ -35,7 +35,7 @@ entity scopeio_capture is
 	port (
 		input_clk    : in  std_logic;
 		downsampling : in  std_logic := '0';
-		ups          : in  std_logic;
+		ups          : in  std_logic := '0';
 
 		input_dv     : in  std_logic := '1';
 		input_data   : in  std_logic_vector;
