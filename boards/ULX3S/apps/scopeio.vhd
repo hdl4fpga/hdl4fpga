@@ -40,7 +40,7 @@ use ecp5u.components.all;
 
 architecture scopeio of ulx3s is
 
-	constant tsttab : boolean := true;
+	constant tsttab : boolean := false;
 	--------------------------------------
 	--     Set your profile here        --
 	constant io_link      : io_comms     := io_usb;
@@ -749,7 +749,7 @@ begin
 			constant unipolar   : boolean := false)
 			return std_logic_vector  is
 			type ftypes is (f_glitch, f_sin, f_sync);
-			constant ftype  : ftypes := f_sync;
+			constant ftype  : ftypes := f_sin;
 			constant cycles : real := 4.5;
 			constant pi     : real := 4.0*arctan(1.0);
 			constant center : natural := size/2;
