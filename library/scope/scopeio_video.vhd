@@ -226,7 +226,7 @@ begin
 		constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 		constant grid_unit     : natural := hdo(waveform)**".grid.unit=32.";
 
-		signal setup_req    : std_logic := '0';
+		signal setup_req    : std_logic := '1';
 		signal setup_rdy    : std_logic := '0';
 		signal vtsetup_req  : std_logic := '0';
 		signal vtsetup_rdy  : std_logic := '0';
