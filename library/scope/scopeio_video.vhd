@@ -353,7 +353,7 @@ begin
 						tgr_req <= not tgr_rdy;
 						state := s_tgrreq;
 					else
-						vt_cid <= (others => '-');
+						-- vt_cid <= (others => '-');
 					end if;
 				when s_vtreq =>
 					if (vt_req xor vt_rdy)='0' then
@@ -363,7 +363,9 @@ begin
 					end if;
 				when s_tgrreq =>
 					if (tgr_req xor tgr_rdy)='0' then
-						state := s_rdy;
+						if (trigger_req xor trigger_rdy)='0' then
+							state := s_rdy;
+						end if;
 					end if;
 					-- vt_cid <= (others => '-');
 				end case;
