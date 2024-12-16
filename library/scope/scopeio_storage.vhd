@@ -64,7 +64,6 @@ architecture mix of scopeio_storage is
 	signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
 	signal capture_req        : std_logic;
 	signal capture_rdy        : std_logic;
-	-- signal ups                : std_logic;
 
 begin
 
@@ -86,7 +85,6 @@ begin
 		input_data   => resizedsample_data,
 		trigger_shot => trigger_shot,
 		downsampling => downsampling,
-		-- ups          => ups,
 		capture_req  => capture_req,
 		capture_rdy  => capture_rdy,
 		output_dv    => downsample_dv,
@@ -98,7 +96,6 @@ begin
 		trigger_shot => trigger_shot,
 		trigger_mode => trigger_mode,
 		downsampling => downsampling,
-		-- ups          => ups,
 		capture_req  => capture_req,
 		capture_rdy  => capture_rdy,
 		input_dv     => downsample_dv,

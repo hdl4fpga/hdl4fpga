@@ -35,7 +35,6 @@ entity scopeio_capture is
 	port (
 		input_clk    : in  std_logic;
 		downsampling : in  std_logic := '0';
-		ups          : in  std_logic := '0';
 
 		input_dv     : in  std_logic := '1';
 		input_data   : in  std_logic_vector;
@@ -58,6 +57,7 @@ architecture delayfifo of scopeio_capture is
 	signal dlyd_dv    : std_logic;
 	signal dlyd_data  : std_logic_vector(video_data'range);
 	signal delay      : signed(time_offset'range);
+	signal ups        : std_logic := '0';
 
 begin
  
@@ -145,6 +145,7 @@ begin
 								discard := delay;
 							end if;
 							wr_addr <= (others => '0');
+							ups <= dlyd_dv;
 							capture_req <= not capture_rdy;
 						end if;
 					when "01" => -- NORM
@@ -155,6 +156,7 @@ begin
     							else
     								discard := delay;
     							end if;
+								ups <= dlyd_dv;
     							wr_addr <= (others => '0');
     							capture_req <= not capture_rdy;
     						end if;
