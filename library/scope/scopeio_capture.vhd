@@ -57,7 +57,7 @@ architecture delayfifo of scopeio_capture is
 	signal dlyd_dv    : std_logic;
 	signal dlyd_data  : std_logic_vector(video_data'range);
 	signal delay      : signed(time_offset'range);
-	signal ups        : std_logic := '0';
+	signal odd        : std_logic := '0';
 
 begin
  
@@ -145,7 +145,7 @@ begin
 								discard := delay;
 							end if;
 							wr_addr <= (others => '0');
-							ups <= dlyd_dv;
+							odd <= dlyd_dv;
 							capture_req <= not capture_rdy;
 						end if;
 					when "01" => -- NORM
@@ -156,7 +156,7 @@ begin
     							else
     								discard := delay;
     							end if;
-								ups <= dlyd_dv;
+								odd <= dlyd_dv;
     							wr_addr <= (others => '0');
     							capture_req <= not capture_rdy;
     						end if;
@@ -193,7 +193,7 @@ begin
 		begin
 			if rising_edge(video_clk) then
 				if downsampling='0' then
-					if videoaddr_lsb/=(timeoffset_lsb xor ups) then
+					if videoaddr_lsb/=(timeoffset_lsb xor odd) then
 						shr(0 to video_data'length-1) := unsigned(rd_data);
 					end if;
 					shr := shr rol video_data'length/2;
