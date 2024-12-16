@@ -70,7 +70,6 @@ begin
 		signal rd_addr : signed(wr_addr'range);
 	begin
 
-		-- rd_addr <= wr_addr + resize(delay, rd_addr'length) when signed(time_offset) < 0 else wr_addr;
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
@@ -117,6 +116,8 @@ begin
 		signal rd_data : std_logic_vector(video_data'range);
 		signal video_offset : signed(wr_addr'range);
 		alias  wraddr_msb  is wr_addr(wr_addr'left);
+		signal frm_req : std_logic;
+		signal frm_rdy : std_logic;
 	begin
 
     	process (input_clk)
@@ -127,6 +128,7 @@ begin
     			if (capture_rdy xor capture_req)='1' then
     				if dlyd_dv='1' then
 						if wraddr_msb='1' then
+							frm_req <= not frm_rdy;
     						capture_rdy <= capture_req;
 						elsif discard <= 0 then
 							wr_addr <= wr_addr + 1;
@@ -136,31 +138,34 @@ begin
     					end if;
     				end if;
     			else
+					if downsampling='0' then
+						discard := delay;
+					else
+						discard := delay;
+					end if;
+
 					case trigger_mode is
 					when "00" => -- NORM+FREE
-						if trigger_shot='1' then
-							if downsampling='0' then
-								discard := delay;
+						if (frm_req xor frm_rdy)='0' then
+							if video_vton='0' then
+								if trigger_shot='1' then
+									wr_addr <= (others => '0');
+									capture_req <= not capture_rdy;
+								end if;
 							else
-								discard := delay;
+								wr_addr <= (others => '0');
+								capture_req <= not capture_rdy;
 							end if;
-							wr_addr <= (others => '0');
-							odd <= dlyd_dv;
-							capture_req <= not capture_rdy;
 						end if;
+						odd <= dlyd_dv;
 					when "01" => -- NORM
-						if video_vton='0' then
-    						if trigger_shot='1' then
-    							if downsampling='0' then
-    								discard := delay;
-    							else
-    								discard := delay;
-    							end if;
-								odd <= dlyd_dv;
-    							wr_addr <= (others => '0');
-    							capture_req <= not capture_rdy;
-    						end if;
-						end if;
+						if (frm_req xor frm_rdy)='0' then
+							if trigger_shot='1' then
+								wr_addr <= (others => '0');
+								capture_req <= not capture_rdy;
+							end if;
+    					end if;
+						odd <= dlyd_dv;
 					when others =>
 					end case;
     			end if;
@@ -201,6 +206,31 @@ begin
 				else
 					video_data <= rd_data;
 				end if;
+			end if;
+		end process;
+
+		process (video_clk)
+			type states is (s_idle, s_videooff, s_videoon);
+			variable state : states;
+		begin
+			if rising_edge(video_clk) then
+				case state is
+				when s_idle =>
+					if (frm_rdy xor frm_req)='1' then
+						if video_vton='0' then
+							state := s_videooff;
+						end if;
+					end if;
+				when s_videooff =>
+					if video_vton='1' then
+						state := s_videoon;
+					end if;
+				when s_videoon =>
+					if video_vton='0' then
+						frm_rdy <= frm_req;
+						state := s_idle;
+					end if;
+				end case;
 			end if;
 		end process;
 
