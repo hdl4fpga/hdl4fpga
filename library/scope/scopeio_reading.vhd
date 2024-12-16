@@ -98,6 +98,7 @@ architecture def of scopeio_reading is
 	signal tgr_freeze     : std_logic;
 	signal tgr_oneshot    : std_logic;
 	signal tgr_wdtid      : wdtid_range;
+	signal tgr_uid        : natural;
 	signal tgrwdt_req     : std_logic;
 	signal tgrwdt_rdy     : std_logic;
 
@@ -192,6 +193,7 @@ begin
 					tgr_freeze  <= trigger_freeze;
 					tgr_oneshot <= trigger_oneshot;
 					tgr_wdtid   <= inputs+1;
+					tgr_uid     <= (inputs+1)+scaleid;
 					tgrwdt_req  <= not tgrwdt_rdy;
 					trigger_rdy <= trigger_req;
 				end if;
@@ -524,7 +526,7 @@ begin
 			end if;
 		when s_unit =>
 			if (btod_req xor btod_rdy)='0' then
-				str_id  <= (inputs+1)+to_integer(unsigned(vt_scaleid));
+				str_id  <= tgr_uid;
 				str_req <= not str_rdy;
 				state   := s_slope;
 			end if;
