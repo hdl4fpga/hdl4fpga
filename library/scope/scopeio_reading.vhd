@@ -99,8 +99,8 @@ architecture def of scopeio_reading is
 	signal tgr_oneshot    : std_logic;
 	signal tgr_wdtid      : wdtid_range;
 	signal tgr_uid        : natural;
-	signal tgrwdt_req     : std_logic;
-	signal tgrwdt_rdy     : std_logic;
+	signal tgrwdt_req     : std_logic := '0';
+	signal tgrwdt_rdy     : std_logic := '0';
 
 	signal hz_sht         : signed(4-1 downto 0);
 	signal hz_dec         : signed(4-1 downto 0);
@@ -670,7 +670,7 @@ port map (
 	sht      => std_logic_vector(btod_sht),
 	dec      => std_logic_vector(btod_dec),
 	left     => '0',
-	width    => x"7",
+	width    => x"8",
 	exp      => b"101",
 	neg      => sign,
 	bin      => binary,
