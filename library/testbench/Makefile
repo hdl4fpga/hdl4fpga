@@ -881,6 +881,7 @@ $(HDL4FPGA__barrel__beh) : ../basic/barrel.vhd \
 
 $(HDL4FPGA__base) \
 $(HDL4FPGA__base__body) : ../basic/base.vhd \
+		$(HDL4FPGA__hdo) \
 		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -1773,7 +1774,6 @@ $(HDL4FPGA__scopeio_reading__def) : ../scope/scopeio_reading.vhd \
 		$(HDL4FPGA__btof) \
 		$(HDL4FPGA__mul_ser) \
 		$(HDL4FPGA__rom) \
-		$(HDL4FPGA__scopeio_state) \
 		$(HDL4FPGA__videopkg) \
 		$(IEEE__math_real) \
 		$(HDL4FPGA__scopeiopkg) \
@@ -1847,9 +1847,9 @@ $(HDL4FPGA__scopeio_rgtrpalette__def) : ../scope/scopeio_rgtrpalette.vhd \
 $(HDL4FPGA__scopeio_rgtrtrigger) \
 $(HDL4FPGA__scopeio_rgtrtrigger__def) : ../scope/scopeio_rgtrtrigger.vhd \
 		$(HDL4FPGA__videopkg) \
-		$(HDL4FPGA__hdo) \
 		$(IEEE__math_real) \
 		$(HDL4FPGA__scopeiopkg) \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -1894,6 +1894,7 @@ $(HDL4FPGA__scopeio_segment__def) : ../scope/scopeio_segment.vhd \
 		$(HDL4FPGA__scopeio_axis) \
 		$(HDL4FPGA__scopeio_grid) \
 		$(HDL4FPGA__scopeio_rgtrvtoffset) \
+		$(HDL4FPGA__scopeio_resize) \
 		$(HDL4FPGA__videopkg) \
 		$(IEEE__math_real) \
 		$(HDL4FPGA__scopeiopkg) \
@@ -1953,7 +1954,6 @@ $(HDL4FPGA__scopeio_textbox) \
 $(HDL4FPGA__scopeio_textbox__def) : ../scope/scopeio_textbox.vhd \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__cgaram) \
-		$(HDL4FPGA__scopeio_reading) \
 		$(HDL4FPGA__scopeio_rgtrfocus) \
 		$(HDL4FPGA__bcdfonts) \
 		$(HDL4FPGA__cp850x8x16x128to255) \
@@ -1999,16 +1999,18 @@ $(HDL4FPGA__scopeio_video__beh) : ../scope/scopeio_video.vhd \
 		$(HDL4FPGA__cp850x8x8x0to127) \
 		$(HDL4FPGA__cgafonts) \
 		$(HDL4FPGA__scopeio_textbox) \
+		$(HDL4FPGA__scopeio_reading) \
+		$(HDL4FPGA__scopeio_resize) \
+		$(HDL4FPGA__mul_ser) \
+		$(HDL4FPGA__scopeio_state) \
 		$(HDL4FPGA__scopeio_layout) \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__video_sync) \
-		$(HDL4FPGA__scopeio_rgtrhzaxis) \
-		$(HDL4FPGA__scopeio_rgtrtrigger) \
-		$(IEEE__math_real) \
 		$(HDL4FPGA__scopeiopkg) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__base) \
+		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)

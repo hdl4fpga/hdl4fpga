@@ -42,7 +42,6 @@ entity scopeio_reading is
 	constant hz_unit      : real    := hdo(waveform)**".axis.horizontal.unit";
 	constant vt_unit      : real    := hdo(waveform)**".axis.vertical.unit";
 	constant grid_unit    : natural := hdo(waveform)**".grid.unit=32.";
-	constant grid_height  : natural := hdo(waveform)**".grid.height";
 
 	constant chanid_bits  : natural := unsigned_num_bits(inputs-1);
 	constant vt_labels    : string  := hdo(waveform)**".vt";
@@ -52,6 +51,7 @@ entity scopeio_reading is
 	constant vt_shts      : integer_vector := get_shr1245(vt_unit);
 	constant vt_pnts      : integer_vector := get_characteristic1245(vt_unit);
 	constant vt_pfxs      : string         := get_prefix1235(vt_unit);
+	constant tgr_sfcnd    : natural        := hdo(significand(vt_unit/real(grid_unit)))**".sgfc";
 
 	constant hz_sfcnds    : natural_vector := get_significand1245(hz_unit);
 	constant hz_shts      : integer_vector := get_shr1245(hz_unit);
@@ -185,10 +185,9 @@ begin
 			if (txt_req xor txt_rdy)='0' then
 				if (trigger_rdy xor trigger_req)='1' then
 					scaleid     := to_integer(unsigned(vt_scaleid));
-					tgr_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
-					tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
-					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
-					tgr_scale   <= to_unsigned(vt_sfcnds(0), vt_scale'length);
+					tgr_sht     <= x"0";
+					tgr_dec     <= x"0";
+					tgr_scale   <= to_unsigned(tgr_sfcnd, vt_scale'length);
 					tgr_offset  <= signed(trigger_level);
 					tgr_slope   <= trigger_slope;
 					tgr_freeze  <= trigger_freeze;

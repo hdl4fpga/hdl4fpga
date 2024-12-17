@@ -30,6 +30,7 @@ library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.sdrampkg.all;
+use hdl4fpga.scopeiopkg.all;
 
 entity main is
 end;
@@ -73,10 +74,14 @@ begin
 	-- constant obj : string := string'(hdo'("none")**".fmly=none.");
 	-- constant obj : string := hdo(families_db)**("."&string'(hdo'("none")**".fmly=none."));-- )); --**".length.al=3.";
 	-- constant obj : string := hdo(string'(hdo(families_db)**("."&string'(hdo'("none")**".fmly=sdr."))))**".length.al=3.";
+
 	constant obj : string := hdo'("none")**".length.al=3.";
 	alias tab is wwnl_tab;
+		constant grid_height : natural := 32;
+		constant vt_unit : real := 50.0e-3;
+		-- constant xxx : string := hdo(significand(vt_unit/real(grid_height))).;
 	begin
-		report "***** " & obj;
+		-- report "***** " & xxx;
 		-- report "***** " & string'(hdo(obj)**".wrl['8']=hole.");
 		-- report "***** " & escaped(string'(hdo(obj)**".wrl['8']"));
 		-- report "***** " & string'(hdo(obj));
