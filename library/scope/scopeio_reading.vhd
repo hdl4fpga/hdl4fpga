@@ -73,7 +73,7 @@ architecture def of scopeio_reading is
 	signal txt_req        : std_logic := '0';
 	signal txt_rdy        : std_logic := '0';
 	signal scale          : unsigned(0 to sfcnd_length-1);
-	signal offset         : signed(0 to max(vt_offset'length, hz_offset'length)-1);
+	signal offset         : signed(0 to max(max(vt_offset'length, hz_offset'length), trigger_level'length)-1);
 
 	signal str_req        : bit;
 	signal str_rdy        : bit;
@@ -188,6 +188,7 @@ begin
 					tgr_sht     <= to_signed(vt_shts(scaleid), btod_sht'length);
 					tgr_dec     <= to_signed(vt_pnts(scaleid), btod_dec'length);
 					tgr_scale   <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
+					tgr_scale   <= to_unsigned(vt_sfcnds(0), vt_scale'length);
 					tgr_offset  <= signed(trigger_level);
 					tgr_slope   <= trigger_slope;
 					tgr_freeze  <= trigger_freeze;

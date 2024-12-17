@@ -509,7 +509,7 @@ begin
 			trigger_freeze  => trigger_freeze,
 			trigger_slope   => trigger_slope,
 			trigger_oneshot => trigger_oneshot,
-			trigger_level   => video_trigger,
+			trigger_level   => trigger_level,
 
 			wid             => wid,
 			code_frm        => code_frm,
