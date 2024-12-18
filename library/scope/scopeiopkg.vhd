@@ -300,9 +300,13 @@ package body scopeiopkg is
 		pow10 := 1.0;
 		sgfc  := unt;
 		loop
-			if abs(sgfc-round(sgfc)) > 4.0e-9 then
+			assert not debug
+				report real'image(sgfc) & "  -> " & real'image(abs((sgfc-round(sgfc))/sgfc))
+				severity note;
+
+			if abs((sgfc-round(sgfc))/sgfc) > 4.0e-9 then
 				dec10 := dec10 + 1;
-				sgfc  := sgfc  / tenth;
+				sgfc  := sgfc  *10.0; --/ tenth;
 			else
 				exit;
 			end if;
@@ -310,7 +314,7 @@ package body scopeiopkg is
 
 		exp10 := 0;
 		pow10 := 1.0;
-		while (1.0-unt) > 4.0e-9 loop
+		while ((1.0-unt)/unt) > 4.0e-9 loop
 			exp10 := exp10 + 1;
 			pow10 := pow10 * tenth;
 			unt   := unt   / tenth;

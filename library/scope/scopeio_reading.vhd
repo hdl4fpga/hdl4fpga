@@ -51,14 +51,16 @@ entity scopeio_reading is
 	constant vt_shts      : integer_vector := get_shr1245(vt_unit);
 	constant vt_pnts      : integer_vector := get_characteristic1245(vt_unit);
 	constant vt_pfxs      : string         := get_prefix1235(vt_unit);
-	constant tgr_sfcnd    : natural        := hdo(significand(vt_unit/real(grid_unit)))**".sgfc";
+	constant vt_step      : real           := real'(hdo(waveform)**".vt[0].step")*32.0;
+	-- constant tgr_sfcnd    : natural        := hdo(significand(vt_unit/real(grid_unit)))**".sgfc";
+	constant tgr_sfcnd    : natural        := hdo(significand(vt_step))**".sgfc";
 
 	constant hz_sfcnds    : natural_vector := get_significand1245(hz_unit);
 	constant hz_shts      : integer_vector := get_shr1245(hz_unit);
 	constant hz_pnts      : integer_vector := get_characteristic1245(hz_unit);
 	constant hz_pfxs      : string         := get_prefix1235(hz_unit);
 
-	constant sfcnd_length : natural := max(unsigned_num_bits(max(vt_sfcnds)), unsigned_num_bits(max(hz_sfcnds)));
+	constant sfcnd_length : natural := max(unsigned_num_bits(tgr_sfcnd),max(unsigned_num_bits(max(vt_sfcnds)), unsigned_num_bits(max(hz_sfcnds))));
 
 	constant bin_digits   : natural := 3;
 	constant bcd_width    : natural := 8;
@@ -82,8 +84,10 @@ architecture def of scopeio_reading is
 
 	signal btod_sht       : signed(4-1 downto 0);
 	signal btod_dec       : signed(4-1 downto 0);
+	signal btod_wth       : signed(4-1 downto 0);
 	signal vt_sht         : signed(4-1 downto 0);
 	signal vt_dec         : signed(4-1 downto 0);
+	signal vt_wth         : signed(4-1 downto 0);
 	signal vt_scale       : unsigned(scale'range);
 	signal vt_wdtid       : wdtid_range;
 	signal vtwdt_req      : std_logic := '0';
@@ -92,6 +96,7 @@ architecture def of scopeio_reading is
 
 	signal tgr_sht        : signed(4-1 downto 0);
 	signal tgr_dec        : signed(4-1 downto 0);
+	signal tgr_wth        : signed(4-1 downto 0);
 	signal tgr_scale      : unsigned(scale'range);
 	signal tgr_offset     : signed(trigger_level'range);
 	signal tgr_slope      : std_logic;
@@ -168,6 +173,7 @@ begin
 					scaleid   := to_integer(unsigned(vt_scaleid));
 					vt_sht    <= to_signed(vt_shts(scaleid), btod_sht'length);
 					vt_dec    <= to_signed(vt_pnts(scaleid), btod_dec'length);
+					vt_wth    <= x"7";
 					vt_scale  <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_uid    <= (inputs+1)+scaleid;
 					vt_wdtid  <= to_integer(unsigned(vt_cid));
@@ -185,8 +191,9 @@ begin
 			if (txt_req xor txt_rdy)='0' then
 				if (trigger_rdy xor trigger_req)='1' then
 					scaleid     := to_integer(unsigned(vt_scaleid));
-					tgr_sht     <= x"0";
-					tgr_dec     <= x"0";
+					tgr_sht     <= x"f";
+					tgr_dec     <= x"2";
+					tgr_wth     <= x"f";
 					tgr_scale   <= to_unsigned(tgr_sfcnd, vt_scale'length);
 					tgr_offset  <= signed(trigger_level);
 					tgr_slope   <= trigger_slope;
@@ -387,6 +394,7 @@ begin
 				if (vtwdt_req xor vtwdt_rdy)='1' then
 					btod_sht   <= vt_sht;
 					btod_dec   <= vt_dec;
+					btod_wth   <= x"7";
 					scale      <= vt_scale;
 					offset     <= resize(signed(vt_offset), offset'length);
 					wdt_id     <= vt_wdtid;
@@ -396,6 +404,7 @@ begin
 				elsif (tgrwdt_req xor tgrwdt_rdy)='1' then
 					btod_sht   <= tgr_sht;
 					btod_dec   <= tgr_dec;
+					btod_wth   <= x"8";
 					scale      <= tgr_scale;
 					offset     <= resize(tgr_offset, offset'length);
 					wdt_id     <= tgr_wdtid;
@@ -405,6 +414,7 @@ begin
 				elsif (hzwdt_req xor hzwdt_rdy)='1' then
 					btod_sht   <= hz_sht;
 					btod_dec   <= hz_dec;
+					btod_wth   <= x"7";
 					scale      <= hz_scale;
 					offset     <= resize(signed(hz_offset), offset'length);
 					wdt_id     <= hz_wdtid;
