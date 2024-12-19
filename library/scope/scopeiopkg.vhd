@@ -284,6 +284,7 @@ package body scopeiopkg is
 		variable pnt     : integer;
 		variable rnd     : natural; --Lattice Diamond fix
 
+		variable prec : natural;
 	begin
 		assert unit > 0.0 
 			report "unit <= 0.0"
@@ -299,6 +300,7 @@ package body scopeiopkg is
 		dec10 := 0;
 		pow10 := 1.0;
 		sgfc  := unt;
+		prec := 0;
 		loop
 			assert not debug
 				report real'image(sgfc) & "  -> " & real'image(abs((sgfc-round(sgfc))/sgfc))
@@ -306,7 +308,13 @@ package body scopeiopkg is
 
 			if abs((sgfc-round(sgfc))/sgfc) > 4.0e-9 then
 				dec10 := dec10 + 1;
-				sgfc  := sgfc  *10.0; --/ tenth;
+				sgfc  := sgfc*10.0; --/ tenth;
+				if sgfc >= 1.0 then
+					prec := prec + 1;
+				end if;
+				if prec >= 5 then
+					exit;
+				end if;
 			else
 				exit;
 			end if;
