@@ -406,11 +406,11 @@ begin
 				return retval;
 			end;
 
-			signal anlg_req     : std_logic := '1';
+			signal anlg_req     : std_logic := '0';
 			signal anlg_rdy     : std_logic := '0';
 			signal analog_gain  : std_logic_vector(0 to trigger_level'length-1);
 
-			signal digi_req     : std_logic := '1';
+			signal digi_req     : std_logic := '0';
 			signal digi_rdy     : std_logic := '0';
 			signal digi_gain    : std_logic_vector(0 to 18-1);
 			signal trigger_amp  : std_logic_vector(0 to trigger_level'length);
@@ -445,8 +445,11 @@ begin
 					end case;
 				end if;
 			end process;
+			-- anlg_req <= '0', '1' after 1 us;
+			-- digi_req <= '0', '1' after 1.5 us;
 
 			analog_gain <= std_logic_vector(to_unsigned(input_gains(to_integer(unsigned(trigger_chanid))), trigger_level'length));
+			-- analog_gain <= std_logic_vector(to_unsigned(input_gains(0), trigger_level'length));
 			analoggain_e : entity hdl4fpga.mul_ser
 			port map (
 				comp => '1',
@@ -454,10 +457,12 @@ begin
 				req  => anlg_req,
 				rdy  => anlg_rdy,
 				a    => trigger_level,
+				-- a    => b"0_0000_0000_1000",
 				b    => analog_gain,
 				s    => trigger_gain);
 
 			digi_gain <= std_logic_vector(to_unsigned(vt_gains(to_integer(unsigned(vt_scaleid))), digi_gain'length));
+			-- digi_gain <= std_logic_vector(to_unsigned(vt_gains(0), digi_gain'length));
 			digitalgain_e : entity hdl4fpga.mul_ser
 			port map (
 				comp => '1',

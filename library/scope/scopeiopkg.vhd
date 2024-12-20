@@ -192,13 +192,12 @@ package scopeiopkg is
 	constant var_vtoffsetid   : natural := 8;
 
 	function significand (
-		constant unit  : real;
-		constant debug : boolean := false)
+		constant unit : real;
+		constant prec : natural := 4)
 		return string;
 
 	function get_significand1245 (
-		constant unit  : real;
-		constant debug : boolean := false)
+		constant unit  : real)
 		return natural_vector;
 
 	function get_shr1245 (
@@ -268,8 +267,8 @@ end;
 package body scopeiopkg is
 
 	function significand (
-		constant unit  : real;
-		constant debug : boolean := false)
+		constant unit : real;
+		constant prec : natural := 4)
 		return string is
 		constant tenth   : real := 1.0/10.0;
 		constant prefixes: string := " munp";
@@ -284,7 +283,7 @@ package body scopeiopkg is
 		variable pnt     : integer;
 		variable rnd     : natural; --Lattice Diamond fix
 
-		variable prec : natural;
+		variable digit : natural;
 	begin
 		assert unit > 0.0 
 			report "unit <= 0.0"
@@ -300,19 +299,17 @@ package body scopeiopkg is
 		dec10 := 0;
 		pow10 := 1.0;
 		sgfc  := unt;
-		prec := 0;
+		digit := 0;
 		loop
-			assert not debug
-				report real'image(sgfc) & "  -> " & real'image(abs((sgfc-round(sgfc))/sgfc))
-				severity note;
+			-- report real'image(sgfc) & "  -> " & real'image(abs((sgfc-round(sgfc))/sgfc))
 
 			if abs((sgfc-round(sgfc))/sgfc) > 4.0e-9 then
 				dec10 := dec10 + 1;
 				sgfc  := sgfc*10.0; --/ tenth;
 				if sgfc >= 1.0 then
-					prec := prec + 1;
+					digit := digit + 1;
 				end if;
-				if prec >= 5 then
+				if digit >= prec then
 					exit;
 				end if;
 			else
@@ -351,19 +348,15 @@ package body scopeiopkg is
 	end;
 
 	function get_significand1245 (
-		constant unit  : real;
-		constant debug : boolean := false)
+		constant unit  : real)
 		return natural_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
 		variable retval : natural_vector(0 to 4-1);
 	begin
 
 		for i in coefs'range loop
-			retval(i) := hdo(significand(unit*coefs(i), debug))**".sgfc";
+			retval(i) := hdo(significand(unit*coefs(i)))**".sgfc";
 		end loop;
-		assert not debug
-		report "here"
-		severity failure;
 		return retval;
 	end;
 

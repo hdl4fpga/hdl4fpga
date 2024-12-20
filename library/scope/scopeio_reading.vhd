@@ -192,7 +192,7 @@ begin
 				if (trigger_rdy xor trigger_req)='1' then
 					scaleid     := to_integer(unsigned(vt_scaleid));
 					tgr_sht     <= x"f";
-					tgr_dec     <= x"2";
+					tgr_dec     <= x"1";
 					tgr_wth     <= x"f";
 					tgr_scale   <= to_unsigned(tgr_sfcnd, vt_scale'length);
 					tgr_offset  <= signed(trigger_level);
