@@ -51,9 +51,8 @@ entity scopeio_reading is
 	constant vt_shts      : integer_vector := get_shr1245(vt_unit);
 	constant vt_pnts      : integer_vector := get_characteristic1245(vt_unit);
 	constant vt_pfxs      : string         := get_prefix1235(vt_unit);
-	constant vt_step      : real           := real'(hdo(waveform)**".vt[0].step")*32.0;
-	-- constant tgr_sfcnd    : natural        := hdo(significand(vt_unit/real(grid_unit)))**".sgfc";
-	constant tgr_sfcnd    : natural        := hdo(significand(vt_step))**".sgfc";
+	constant vt_step      : real           := hdo(waveform)**".vt[0].step";
+	constant tgr_sfcnd    : natural        := hdo(significand(vt_step))**".sgfc"*32.0;
 
 	constant hz_sfcnds    : natural_vector := get_significand1245(hz_unit);
 	constant hz_shts      : integer_vector := get_shr1245(hz_unit);
