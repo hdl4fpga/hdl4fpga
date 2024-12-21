@@ -309,7 +309,7 @@ package body scopeiopkg is
 				if sgfc >= 1.0 then
 					digit := digit + 1;
 				end if;
-				if digit >= prec then
+				if digit >= 4 then
 					exit;
 				end if;
 			else

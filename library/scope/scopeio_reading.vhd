@@ -52,7 +52,7 @@ entity scopeio_reading is
 	constant vt_pnts      : integer_vector := get_characteristic1245(vt_unit);
 	constant vt_pfxs      : string         := get_prefix1235(vt_unit);
 	constant vt_step      : real           := hdo(waveform)**".vt[0].step";
-	constant tgr_sfcnd    : natural        := hdo(significand(vt_step))**".sgfc"*32.0;
+	constant tgr_sfcnd    : natural        := hdo(significand(vt_step*32.0))**".sgfc";
 
 	constant hz_sfcnds    : natural_vector := get_significand1245(hz_unit);
 	constant hz_shts      : integer_vector := get_shr1245(hz_unit);
@@ -83,7 +83,7 @@ architecture def of scopeio_reading is
 
 	signal btod_sht       : signed(4-1 downto 0);
 	signal btod_dec       : signed(4-1 downto 0);
-	signal btod_wth       : signed(4-1 downto 0);
+	signal btod_wth       : std_logic_vector(4-1 downto 0);
 	signal vt_sht         : signed(4-1 downto 0);
 	signal vt_dec         : signed(4-1 downto 0);
 	signal vt_wth         : signed(4-1 downto 0);
@@ -403,7 +403,7 @@ begin
 				elsif (tgrwdt_req xor tgrwdt_rdy)='1' then
 					btod_sht   <= tgr_sht;
 					btod_dec   <= tgr_dec;
-					btod_wth   <= x"8";
+					btod_wth   <= x"a";
 					scale      <= tgr_scale;
 					offset     <= resize(tgr_offset, offset'length);
 					wdt_id     <= tgr_wdtid;
@@ -678,7 +678,7 @@ port map (
 	sht      => std_logic_vector(btod_sht),
 	dec      => std_logic_vector(btod_dec),
 	left     => '0',
-	width    => x"8",
+	width    => btod_wth,
 	exp      => b"101",
 	neg      => sign,
 	bin      => binary,

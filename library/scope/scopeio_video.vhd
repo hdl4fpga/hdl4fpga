@@ -371,8 +371,8 @@ begin
 				end case;
 			end if;
 		end process;
-
 		-- trigger_req <= '0', '1' after 40 us;
+
 		process (rgtr_clk)
 			type states is (s_rdy, s_req);
 			variable state : states;
@@ -445,11 +445,8 @@ begin
 					end case;
 				end if;
 			end process;
-			-- anlg_req <= '0', '1' after 1 us;
-			-- digi_req <= '0', '1' after 1.5 us;
 
 			analog_gain <= std_logic_vector(to_unsigned(input_gains(to_integer(unsigned(trigger_chanid))), trigger_level'length));
-			-- analog_gain <= std_logic_vector(to_unsigned(input_gains(0), trigger_level'length));
 			analoggain_e : entity hdl4fpga.mul_ser
 			port map (
 				comp => '1',
@@ -462,7 +459,6 @@ begin
 				s    => trigger_gain);
 
 			digi_gain <= std_logic_vector(to_unsigned(vt_gains(to_integer(unsigned(vt_scaleid))), digi_gain'length));
-			-- digi_gain <= std_logic_vector(to_unsigned(vt_gains(0), digi_gain'length));
 			digitalgain_e : entity hdl4fpga.mul_ser
 			port map (
 				comp => '1',
