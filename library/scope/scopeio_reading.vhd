@@ -190,16 +190,16 @@ begin
 			if (txt_req xor txt_rdy)='0' then
 				if (trigger_rdy xor trigger_req)='1' then
 					scaleid     := to_integer(unsigned(vt_scaleid));
-					tgr_sht     <= x"f";
-					tgr_dec     <= x"1";
-					tgr_wth     <= x"f";
+					tgr_sht     <= x"1"; --to_signed(vt_shts(0), btod_sht'length);
+					tgr_dec     <= x"2"; --to_signed(vt_pnts(0), btod_dec'length);
+					tgr_wth     <= x"7";
 					tgr_scale   <= to_unsigned(tgr_sfcnd, vt_scale'length);
 					tgr_offset  <= signed(trigger_level);
 					tgr_slope   <= trigger_slope;
 					tgr_freeze  <= trigger_freeze;
 					tgr_oneshot <= trigger_oneshot;
 					tgr_wdtid   <= inputs+1;
-					tgr_uid     <= (inputs+1)+scaleid;
+					tgr_uid     <= (inputs+1);
 					tgrwdt_req  <= not tgrwdt_rdy;
 					trigger_rdy <= trigger_req;
 				end if;
@@ -403,7 +403,7 @@ begin
 				elsif (tgrwdt_req xor tgrwdt_rdy)='1' then
 					btod_sht   <= tgr_sht;
 					btod_dec   <= tgr_dec;
-					btod_wth   <= x"a";
+					btod_wth   <= x"7";
 					scale      <= tgr_scale;
 					offset     <= resize(tgr_offset, offset'length);
 					wdt_id     <= tgr_wdtid;
