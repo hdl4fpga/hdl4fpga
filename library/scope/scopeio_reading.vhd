@@ -2,6 +2,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
@@ -38,6 +39,16 @@ entity scopeio_reading is
 		code_irdy       : out std_logic := '0';
 		code_data       : out std_logic_vector(0 to 8-1));
 
+	function vt_steps 
+		return real_vector is
+		variable retval : real_vector(0 to inputs-1);
+	begin
+		for i in 0 to inputs-1 loop
+			retval(i) := hdo(waveform)**(".vt["& natural'image(i) & "].step");
+		end loop;
+		return retval;
+	end;
+
 	constant max_delay    : natural := hdo(waveform)**".max_delay=16384.";
 	constant hz_unit      : real    := hdo(waveform)**".axis.horizontal.unit";
 	constant vt_unit      : real    := hdo(waveform)**".axis.vertical.unit";
@@ -51,8 +62,10 @@ entity scopeio_reading is
 	constant vt_shts      : integer_vector := get_shr1245(vt_unit);
 	constant vt_pnts      : integer_vector := get_characteristic1245(vt_unit);
 	constant vt_pfxs      : string         := get_prefix1235(vt_unit);
-	constant vt_step      : real           := hdo(waveform)**".vt[0].step";
+	constant vt_step      : real           := vt_steps(0);
 	constant tgr_sfcnd    : natural        := hdo(significand(vt_step*32.0))**".sgfc";
+	constant tgr_shts     : integer_vector := (0 => hdo(significand(vt_step*32.0))**".shr");
+	constant tgr_pnts     : integer_vector := (0 => hdo(significand(vt_step*32.0))**".pnt");
 
 	constant hz_sfcnds    : natural_vector := get_significand1245(hz_unit);
 	constant hz_shts      : integer_vector := get_shr1245(hz_unit);
@@ -185,13 +198,36 @@ begin
 
 	tgr_p : process (txt_req, clk)
 		variable scaleid : natural range 0 to vt_shts'length-1;
+
+		function xxx 
+			(constant step : real)
+			return integer_vector is
+			variable val  : real;
+			variable unit : integer;
+		begin
+			val  := step;
+			unit := 0;
+			for i in 0 to 4-1 loop
+				exit when abs(vt_step) >= 1.0;
+				unit := unit - 1;
+				val  := val  * 1.0e3;
+			end loop;
+
+			for i in 0 to 4-1 loop
+				exit when abs(vt_step) < 1.0;
+				val := val / 1.0e3;
+				unit := unit + 1;
+			end loop;
+			return(0 => 0);
+		end;
+
 	begin
 		if rising_edge(clk) then
 			if (txt_req xor txt_rdy)='0' then
 				if (trigger_rdy xor trigger_req)='1' then
 					scaleid     := to_integer(unsigned(vt_scaleid));
-					tgr_sht     <= x"1"; --to_signed(vt_shts(0), btod_sht'length);
-					tgr_dec     <= x"2"; --to_signed(vt_pnts(0), btod_dec'length);
+					tgr_sht <= to_signed(tgr_shts(0), btod_sht'length);
+					tgr_dec <= to_signed(tgr_pnts(0), btod_dec'length);
 					tgr_wth     <= x"7";
 					tgr_scale   <= to_unsigned(tgr_sfcnd, vt_scale'length);
 					tgr_offset  <= signed(trigger_level);
