@@ -78,13 +78,14 @@ begin
 	constant obj : string := hdo'("none")**".length.al=3.";
 	alias tab is wwnl_tab;
 		constant grid_height : natural := 32;
-		constant vt_step : real := 3.3/(2**13);
+		constant vt_step : real := 3.3/(2**12);
 		constant vt_unit : real := 0.05;
-		constant xxx : string:= hdo(significand(32.0*vt_step*1000.0)); --**".sgfc";
-		constant yyy : string:= hdo(significand(vt_unit)); --**".sgfc";
+		-- constant xxx : string:= hdo(significand2(32.0*vt_step*1000.0)); --**".sgfc";
+		constant yyy : string:= hdo(significand2(vt_step)); --**".sgfc";
+		constant xxx : string:= hdo(significand2(vt_unit)); --**".sgfc";
 	begin
 		report xxx;
-		report yyy;
+		-- report yyy;
 		-- report "***** " & string'(hdo(obj)**".wrl['8']=hole.");
 		-- report "***** " & escaped(string'(hdo(obj)**".wrl['8']"));
 		-- report "***** " & string'(hdo(obj));
