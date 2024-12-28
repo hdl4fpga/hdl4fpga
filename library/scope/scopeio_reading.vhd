@@ -64,8 +64,10 @@ entity scopeio_reading is
 	constant vt_pfxs      : string         := get_prefix1235(vt_unit);
 	constant vt_step      : real           := vt_steps(0);
 	constant tgr_sfcnd    : natural        := hdo(significand(vt_step*32.0))**".sgfc";
-	constant tgr_shts     : integer_vector := (0 => hdo(significand(vt_step*32.0))**".shr");
-	constant tgr_pnts     : integer_vector := (0 => hdo(significand(vt_step*32.0))**".pnt");
+	-- constant tgr_shts     : integer_vector := get_shr1245(2.0*vt_unit); --(0 => hdo(significand(vt_step*32.0))**".shr");
+	-- constant tgr_pnts     : integer_vector := get_characteristic1245(32.0*vt_unit); --(0 => hdo(significand(vt_step*32.0))**".pnt");
+	constant tgr_shts     : integer_vector := (0 => hdo(significand(vt_step*32.0, pfx => 3))**".shr");
+	constant tgr_pnts     : integer_vector := (0 => hdo(significand(vt_step*32.0, pfx => 3))**".pnt");
 
 	constant hz_sfcnds    : natural_vector := get_significand1245(hz_unit);
 	constant hz_shts      : integer_vector := get_shr1245(hz_unit);
@@ -226,8 +228,9 @@ begin
 			if (txt_req xor txt_rdy)='0' then
 				if (trigger_rdy xor trigger_req)='1' then
 					scaleid     := to_integer(unsigned(vt_scaleid));
-					tgr_sht <= to_signed(tgr_shts(0), btod_sht'length);
-					tgr_dec <= to_signed(tgr_pnts(0), btod_dec'length);
+					scaleid     := 1;
+					tgr_sht     <= to_signed(vt_shts(scaleid)+3, btod_sht'length);
+					tgr_dec     <= to_signed(vt_pnts(scaleid)+3, btod_dec'length);
 					tgr_wth     <= x"7";
 					tgr_scale   <= to_unsigned(tgr_sfcnd, vt_scale'length);
 					tgr_offset  <= signed(trigger_level);
@@ -235,7 +238,7 @@ begin
 					tgr_freeze  <= trigger_freeze;
 					tgr_oneshot <= trigger_oneshot;
 					tgr_wdtid   <= inputs+1;
-					tgr_uid     <= (inputs+1);
+					tgr_uid     <= (inputs+1)+scaleid;
 					tgrwdt_req  <= not tgrwdt_rdy;
 					trigger_rdy <= trigger_req;
 				end if;

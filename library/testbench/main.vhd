@@ -79,10 +79,12 @@ begin
 	alias tab is wwnl_tab;
 		constant grid_height : natural := 32;
 		constant vt_step : real := 3.3/(2**13);
-		variable xxx : natural;
+		constant vt_unit : real := 0.05;
+		constant xxx : string:= hdo(significand(32.0*vt_step*1000.0)); --**".sgfc";
+		constant yyy : string:= hdo(significand(vt_unit)); --**".sgfc";
 	begin
-		xxx := hdo(significand(vt_step*32.0))**".sgfc";
-		report "***** ++++++" & natural'image(xxx);
+		report xxx;
+		report yyy;
 		-- report "***** " & string'(hdo(obj)**".wrl['8']=hole.");
 		-- report "***** " & escaped(string'(hdo(obj)**".wrl['8']"));
 		-- report "***** " & string'(hdo(obj));

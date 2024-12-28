@@ -371,7 +371,7 @@ begin
 				end case;
 			end if;
 		end process;
-		-- trigger_req <= '0', '1' after 40 us;
+		trigger_req <= '0', '1' after 40 us;
 
 		process (rgtr_clk)
 			type states is (s_rdy, s_req);
@@ -439,7 +439,7 @@ begin
 					when s_digi =>
 						if (digi_req xor digi_rdy)='0' then
 							tgr_rdy <= tgr_req;
-							trigger_req <= not trigger_rdy;
+							-- trigger_req <= not trigger_rdy;
 							state := s_rdy;
 						end if;
 					end case;
@@ -454,7 +454,6 @@ begin
 				req  => anlg_req,
 				rdy  => anlg_rdy,
 				a    => trigger_level,
-				-- a    => b"0_0000_0000_1000",
 				b    => analog_gain,
 				s    => trigger_gain);
 
@@ -511,8 +510,8 @@ begin
 			trigger_freeze  => trigger_freeze,
 			trigger_slope   => trigger_slope,
 			trigger_oneshot => trigger_oneshot,
-			trigger_level   => trigger_level,
-			-- trigger_level   => b"0_0000_0000_0010",
+			-- trigger_level   => trigger_level,
+			trigger_level   => b"0_0000_0000_0010",
 
 			wid             => wid,
 			code_frm        => code_frm,
