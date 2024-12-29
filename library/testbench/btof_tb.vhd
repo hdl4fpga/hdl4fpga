@@ -26,6 +26,8 @@ use ieee.std_logic_1164.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.hdo.all;
+use hdl4fpga.scopeiopkg.all;
 
 architecture btof_tb of testbench is
 	signal clk      : std_logic := '0';
@@ -38,27 +40,37 @@ architecture btof_tb of testbench is
 
 	signal btof_ack : std_logic;
 
+	constant grid_height : natural := 32;
+	constant vt_step : real := 3.3/(2**12);
+	constant vt_unit : real := 0.05;
+	constant yyy : string:= hdo(significand2(vt_step)); --**".sgfc";
+	constant xxx : string:= hdo(significand2(vt_step*32.0)); --**".sgfc";
+	-- constant xxx : string:= hdo(significand2(vt_unit)); --**".sgfc";
+	constant exp : integer := hdo(xxx)**".exp";
+	constant len : natural := hdo(xxx)**".len";
+
+	signal sht : std_logic_vector(0 to 4-1);
+	signal dec : std_logic_vector(0 to 4-1);
 begin
 
+	sht <= std_logic_vector(to_signed((exp+len), sht'length));
+	dec <= std_logic_vector(signed(sht)+1);
 	btof_ack <= (btof_rdy xor btof_req);
 	process 
-		variable xxx : unsigned(0 to 8*8-1);
-		variable yyy : natural;
+		variable str : unsigned(0 to 8*8-1);
 	begin
 		if rising_edge(clk) then
 			if (to_bit(btof_rdy) xor to_bit(btof_req))='0' then
-				xxx := unsigned(std_logic_vector'(to_ascii("        ")));
-				-- bin <= std_logic_vector(to_unsigned(yyy,bin'length));
-				bin <= std_logic_vector(to_unsigned(3125,bin'length));
-				-- yyy := yyy + 18;
+				str := unsigned(std_logic_vector'(to_ascii("        ")));
+				bin <= std_logic_vector(to_unsigned(hdo(xxx)**".sfgc",bin'length));
 				btof_req <= not to_stdulogic(to_bit(btof_rdy));
 			elsif code_frm='1' then
-				xxx(0 to 8-1) := unsigned(code);
-				xxx := xxx rol 8;
+				str(0 to 8-1) := unsigned(code);
+				str := str rol 8;
 			end if;
 		end if;
 		if falling_edge(code_frm) then
-			report "======>  '" & string'(to_ascii(std_logic_vector(xxx))) & ''';
+			report "======>  '" & string'(to_ascii(std_logic_vector(str))) & ''';
 			-- wait;
 		end if;
 		clk <= not clk after 0.5 ns;
@@ -72,10 +84,10 @@ begin
    		btof_rdy => btof_rdy,
 		width    => x"8",
 		left     => '0',
-		sht      => x"1",
-		dec      => x"2",
-		exp      => b"000",
-		neg      => '1',
+		sht      => sht,
+		dec      => dec,
+		exp      => b"101",
+		neg      => '0',
 		bin      => bin, 
    		code_frm => code_frm,
    		code     => code);
