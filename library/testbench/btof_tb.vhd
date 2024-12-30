@@ -46,15 +46,17 @@ architecture btof_tb of testbench is
 	constant yyy : string:= hdo(significand2(vt_step)); --**".sgfc";
 	constant xxx : string:= hdo(significand2(vt_step*32.0)); --**".sgfc";
 	-- constant xxx : string:= hdo(significand2(vt_unit)); --**".sgfc";
-	constant exp : integer := hdo(xxx)**".exp";
-	constant len : natural := hdo(xxx)**".len";
+	constant sfgc : natural := hdo(xxx)**".sfgc";
+	constant exp  : integer := hdo(xxx)**".exp";
+	constant len  : natural := hdo(xxx)**".len";
+	constant pfx  : natural := 3;
 
 	signal sht : std_logic_vector(0 to 4-1);
 	signal dec : std_logic_vector(0 to 4-1);
 begin
-
-	sht <= std_logic_vector(to_signed((exp+len), sht'length));
-	dec <= std_logic_vector(signed(sht)+1);
+-- la cantidad de digitos 2 y 5, el largo 1 y 4
+	sht <= std_logic_vector(to_signed((exp+len+1)-pfx+len, sht'length));
+	dec <= std_logic_vector(to_signed(-exp-pfx, sht'length));
 	btof_ack <= (btof_rdy xor btof_req);
 	process 
 		variable str : unsigned(0 to 8*8-1);
