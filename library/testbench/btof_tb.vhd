@@ -49,8 +49,8 @@ architecture btof_tb of testbench is
 	constant sfgc : natural := hdo(xxx)**".sfgc";
 	constant exp  : integer := hdo(xxx)**".exp";
 	constant len  : natural := hdo(xxx)**".len";
-	constant pfx  : natural := 6;
-	constant prc  : natural := 3;
+	constant pfx  : natural := 6; -- m u n p
+	constant prc  : natural := 1; -- 0.xxx
 
 	signal sht : std_logic_vector(0 to 4-1);
 	signal dec : std_logic_vector(0 to 4-1);
