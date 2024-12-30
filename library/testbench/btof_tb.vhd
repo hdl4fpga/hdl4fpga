@@ -50,12 +50,13 @@ architecture btof_tb of testbench is
 	constant exp  : integer := hdo(xxx)**".exp";
 	constant len  : natural := hdo(xxx)**".len";
 	constant pfx  : natural := 6;
+	constant prc  : natural := 3;
 
 	signal sht : std_logic_vector(0 to 4-1);
 	signal dec : std_logic_vector(0 to 4-1);
 begin
 -- la cantidad de digitos 2 y 5, el largo 1 y 4
-	sht <= std_logic_vector(to_signed((exp+len+1)-pfx+len, sht'length));
+	sht <= std_logic_vector(to_signed((exp+len+1)-pfx+len-(prc-1), sht'length));
 	dec <= std_logic_vector(to_signed(-exp-pfx, sht'length));
 	btof_ack <= (btof_rdy xor btof_req);
 	process 
@@ -84,7 +85,7 @@ begin
    		clk      => clk,
    		btof_req => btof_req,
    		btof_rdy => btof_rdy,
-		width    => x"8",
+		width    => x"9",
 		left     => '0',
 		sht      => sht,
 		dec      => dec,
