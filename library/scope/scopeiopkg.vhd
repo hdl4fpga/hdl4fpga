@@ -305,7 +305,7 @@ package body scopeiopkg is
 
 	end;
 
-	function xxx (
+	function shtdec (
 		constant sgfc : string;
 		constant pfx  : integer;
 		constant prc : natural)
