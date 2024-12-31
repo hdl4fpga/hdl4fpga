@@ -60,14 +60,14 @@ entity scopeio_reading is
 
 	constant vt_sfcnds    : natural_vector := get_significand1245(vt_unit);
 	constant vt_shts      : integer_vector := get_shr1245(vt_unit);
-	constant vt_pnts      : integer_vector := get_characteristic1245(vt_unit);
+	constant vt_decs      : integer_vector := get_characteristic1245(vt_unit);
 	constant vt_pfxs      : string         := get_prefix1235(vt_unit);
 	constant vt_step      : real           := vt_steps(0);
 	constant tgr_sfcnd    : natural        := hdo(significand(vt_step*32.0))**".sgfc";
 	-- constant tgr_shts     : integer_vector := get_shr1245(2.0*vt_unit); --(0 => hdo(significand(vt_step*32.0))**".shr");
 	-- constant tgr_pnts     : integer_vector := get_characteristic1245(32.0*vt_unit); --(0 => hdo(significand(vt_step*32.0))**".pnt");
-	constant tgr_shts     : integer_vector := (0 => hdo(significand(vt_step*32.0, pfx => 3))**".shr");
-	constant tgr_pnts     : integer_vector := (0 => hdo(significand(vt_step*32.0, pfx => 3))**".pnt");
+	-- constant tgr_shts     : integer_vector := (0 => hdo(significand(vt_step*32.0, pfx => 3))**".shr");
+	-- constant tgr_pnts     : integer_vector := (0 => hdo(significand(vt_step*32.0, pfx => 3))**".pnt");
 
 	constant hz_sfcnds    : natural_vector := get_significand1245(hz_unit);
 	constant hz_shts      : integer_vector := get_shr1245(hz_unit);
@@ -186,7 +186,7 @@ begin
 				if (vt_rdy xor vt_req)='1' then
 					scaleid   := to_integer(unsigned(vt_scaleid));
 					vt_sht    <= to_signed(vt_shts(scaleid), btod_sht'length);
-					vt_dec    <= to_signed(vt_pnts(scaleid), btod_dec'length);
+					vt_dec    <= to_signed(vt_decs(scaleid), btod_dec'length);
 					vt_wth    <= x"7";
 					vt_scale  <= to_unsigned(vt_sfcnds(scaleid mod 4), vt_scale'length);
 					vt_uid    <= (inputs+1)+scaleid;
@@ -230,7 +230,7 @@ begin
 					scaleid     := to_integer(unsigned(vt_scaleid));
 					scaleid     := 1;
 					tgr_sht     <= to_signed(vt_shts(scaleid)+3, btod_sht'length);
-					tgr_dec     <= to_signed(vt_pnts(scaleid)+3, btod_dec'length);
+					tgr_dec     <= to_signed(vt_decs(scaleid)+3, btod_dec'length);
 					tgr_wth     <= x"7";
 					tgr_scale   <= to_unsigned(tgr_sfcnd, vt_scale'length);
 					tgr_offset  <= signed(trigger_level);

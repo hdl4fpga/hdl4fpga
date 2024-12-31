@@ -192,17 +192,7 @@ package scopeiopkg is
 	constant var_vtoffsetid   : natural := 8;
 
 	function significand (
-		constant unit : real;
-		constant prec : natural := 4;
-		constant pfx  : natural := 0)
-		return string;
-
-	function significand2 (
 		constant unit : real)
-		return string;
-
-	function format (
-		constant significand : string)
 		return string;
 
 	function get_significand1245 (
@@ -275,7 +265,7 @@ end;
 
 package body scopeiopkg is
 
-	function significand2 (
+	function significand (
 		constant unit : real)
 		return string is
 		variable sgfc : real;
@@ -315,100 +305,19 @@ package body scopeiopkg is
 
 	end;
 
-	function format (
-		constant significand : string)
+	function xxx (
+		constant sgfc : string;
+		constant pfx  : integer;
+		constant prc : natural)
 		return string is
-		constant exp : integer := hdo(significand)**".exp";
-		constant len : integer := hdo(significand)**".len";
+		constant exp  : integer := hdo(sgfc)**".exp";
+		constant len  : natural := hdo(sgfc)**".len";
 	begin
 		return compact(
-			""
-		);
-	end;
-
-	function significand (
-		constant unit : real;
-		constant prec : natural := 4;
-		constant pfx  : natural := 0)
-		return string is
-		constant tenth   : real := 1.0/10.0;
-		constant prefixes: string := " munp";
-		variable prefix  : integer;
-		variable pfxdec  : integer;
-		variable exp10   : integer;
-		variable dec10   : integer;
-		variable pow10   : real;
-		variable sgfc    : real;
-		variable unt     : real;
-		variable shr     : integer;
-		variable pnt     : integer;
-		variable rnd     : natural; --Lattice Diamond fix
-
-		variable digit : natural;
-	begin
-		assert unit > 0.0 
-			report "unit <= 0.0"
-			severity failure;
-
-		unt := unit;
-		pfxdec := 1;
-		while unt >= 1.0 loop
-			unt := unt / 1.0e3;
-			pfxdec := pfxdec - 1;
-		end loop;
-
-		dec10 := 0;
-		pow10 := 1.0;
-		sgfc  := unt;
-		digit := 0;
-		loop
-			-- report real'image(sgfc) & "  -> " & real'image(abs((sgfc-round(sgfc))/sgfc))
-
-			if abs((sgfc-round(sgfc))/sgfc) > 4.0e-9 then
-				dec10 := dec10 + 1;
-				sgfc  := sgfc*10.0; --/ tenth;
-				if sgfc >= 1.0 then
-					digit := digit + 1;
-				end if;
-				if digit >= 4 then
-					exit;
-				end if;
-			else
-				exit;
-			end if;
-		end loop;
-
-		exp10 := 0;
-		pow10 := 1.0;
-		while ((1.0-unt)/unt) > 4.0e-9 loop
-			exp10 := exp10 + 1;
-			pow10 := pow10 * tenth;
-			unt   := unt   / tenth;
-		end loop;
-
-		rnd := natural(round(sgfc)); --Lattice Diamond fix
-
-		if pfx=0 then
-			prefix := ((3-(exp10 mod 3)) mod 3)+exp10;
-		else
-		end if;
-		shr    := -2+dec10-exp10;
-		pnt    := dec10-prefix;
-		-- report CR &
-			-- "unit   => " & real'image(unit)      & CR &
-			-- "sgfc   => " & integer'image(rnd)    & CR &
-			-- "exp10  => " & integer'image(exp10)  & CR &
-			-- "dec10  => " & integer'image(dec10)  & CR &
-			-- "prefix => " & integer'image(prefix) & CR &
-			-- "unit   => " & prefixes(prefix/3+pfxdec)    & CR &
-			-- "shr    => " & integer'image(-2+dec10-exp10) & CR &
-			-- "pnt    => " & integer'image(dec10-prefix);
-
-		return compact(
-			"{ sgfc:" & integer'image(rnd) & "," & 
-			"  shr:"  & integer'image(shr) & "," & 
-			"  pnt:"  & integer'image(pnt) & "," & 
-			"  pfx:"  & '\' & prefixes(prefix/3+pfxdec) & "}");
+			"{" &
+			"    sht : " & integer'image((exp+len+1)-pfx+len-(prc-1)) & "," &
+			"    dec : " & integer'image(-exp-pfx) & 
+			"}");
 	end;
 
 	function get_significand1245 (
@@ -452,7 +361,7 @@ package body scopeiopkg is
 		unit1245 := unit;
 		for i in 0 to 4-1 loop
 			for j in coefs'range loop
-				retval(4*i+j) := hdo(significand(unit1245*coefs(j)))**".pnt";
+				retval(4*i+j) := hdo(significand(unit1245*coefs(j)))**".dec";
 			end loop;
 			unit1245 := unit1245 * 10.0;
 		end loop;
