@@ -305,19 +305,25 @@ package body scopeiopkg is
 
 	end;
 
-	function shtdec (
+	function sht (
 		constant sgfc : string;
 		constant pfx  : integer;
-		constant prc : natural)
-		return string is
+		constant prc  : natural)
+		return integer is
 		constant exp  : integer := hdo(sgfc)**".exp";
 		constant len  : natural := hdo(sgfc)**".len";
 	begin
-		return compact(
-			"{" &
-			"    sht : " & integer'image((exp+len+1)-pfx+len-(prc-1)) & "," &
-			"    dec : " & integer'image(-exp-pfx) & 
-			"}");
+		return (exp+len+1)-pfx+len-(prc-1);
+	end;
+
+	function dec (
+		constant sgfc : string;
+		constant pfx  : integer;
+		constant prc : natural)
+		return integer is
+		constant exp  : integer := hdo(sgfc)**".exp";
+	begin
+		return -exp-pfx;
 	end;
 
 	function get_significand1245 (
