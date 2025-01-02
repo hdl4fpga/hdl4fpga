@@ -306,22 +306,20 @@ package body scopeiopkg is
 	end;
 
 	function sht (
-		constant sgfc : string;
+		constant exp  : integer;
+		constant len  : natural;
 		constant pfx  : integer;
 		constant prc  : natural)
 		return integer is
-		constant exp  : integer := hdo(sgfc)**".exp";
-		constant len  : natural := hdo(sgfc)**".len";
 	begin
 		return (exp+len+1)-pfx+len-(prc-1);
 	end;
 
 	function dec (
-		constant sgfc : string;
-		constant pfx  : integer;
+		constant exp : integer;
+		constant pfx : integer;
 		constant prc : natural)
 		return integer is
-		constant exp  : integer := hdo(sgfc)**".exp";
 	begin
 		return -exp-pfx;
 	end;
