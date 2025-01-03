@@ -315,30 +315,13 @@ package body scopeiopkg is
 		return (exp+len+1)-pfx+len-(prc-1);
 	end;
 
-	procedure shtdec (
-		variable sht  : out integer;
-		variable dec  : out integer;
-		constant sfgc : in  string)
-	is
-		constant len : natural := hdo(sfgc)**".len";
-		constant exp : integer := hdo(sfgc)**".exp";
-		variable pfx : integer := -exp+len-1;
-		variable prc : integer := pfx;
+	function dec (
+		constant exp : integer;
+		constant pfx : integer;
+		constant prc : natural)
+		return integer is
 	begin
-		if pfx < 0 then
-			pfx := 3*((pfx-(3-1))/3);
-		else
-			pfx := 3*((pfx+(3-1))/3);
-		end if;
-		if prc-pfx=0 then
-			prc := 2;
-		elsif prc-pfx=1 then
-			prc := 1;
-		else
-			prc := 0;
-		end if;
-		sht := (exp+len+1)-pfx+len-(prc-1);
-		dec := -exp-pfx;
+		return -exp-pfx;
 	end;
 
 	function get_significand1245 (
@@ -354,30 +337,10 @@ package body scopeiopkg is
 		return retval;
 	end;
 
-	function get_shrdec1245 (
+	function get_explen1245 (
 		constant unit   : real)
 		return integer_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
-		variable unit1245 : real;
-		variable retval : integer_vector(0 to 2*4*4-1);
-	begin
-		unit1245 := unit;
-		for i in 0 to 4-1 loop
-			for j in coefs'range loop
-				-- retval(4*i+j) := hdo(significand(unit1245*coefs(j)))**".shr";
-				shtdec(retval(2*(4*i+j)+0), retval(2*(4*i+j)+1), hdo(significand(unit1245*coefs(j))));
-			end loop;
-			unit1245 := unit1245 * 10.0;
-		end loop;
-		return retval;
-	end;
-
-	function get_shr1245 (
-		constant unit   : real)
-		return integer_vector is
-		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
-		variable shr  : integer;
-		variable dec  : integer;
 		variable unit1245 : real;
 		variable retval : integer_vector(0 to 4*4-1);
 	begin
@@ -385,14 +348,14 @@ package body scopeiopkg is
 		unit1245 := unit;
 		for i in 0 to 4-1 loop
 			for j in coefs'range loop
-				retval(4*i+j) := hdo(significand(unit1245*coefs(j)))**".shr";
+				retval(4*i+j) := hdo(significand(unit1245*coefs(j)))**".len";
 			end loop;
 			unit1245 := unit1245 * 10.0;
 		end loop;
 		return retval;
 	end;
 
-	function get_characteristic1245 (
+	function get_exp1245 (
 		constant unit   : real)
 		return integer_vector is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
