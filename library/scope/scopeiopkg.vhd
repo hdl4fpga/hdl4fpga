@@ -343,6 +343,9 @@ package body scopeiopkg is
 		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
 		variable unit1245 : real;
 		variable retval : integer_vector(0 to 4*4-1);
+		procedure explen (
+			variable exp : 
+		)
 	begin
 
 		unit1245 := unit;
