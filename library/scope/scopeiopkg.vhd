@@ -344,8 +344,12 @@ package body scopeiopkg is
 		variable unit1245 : real;
 		variable retval : integer_vector(0 to 4*4-1);
 		procedure explen (
-			variable exp : 
-		)
+			variable exp  : out integer;
+			variable len  : out natural;
+			constant sgfc : in string)
+		is
+			exp := hdo(sgfc);
+		end;
 	begin
 
 		unit1245 := unit;
