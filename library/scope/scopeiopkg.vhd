@@ -367,6 +367,17 @@ package body scopeiopkg is
 		return retval;
 	end;
 
+	function get_shtdec1245 (
+		constant explen : integer_vector;
+		return integer_vector is
+		variable exp : integer;
+		variable len : integer;
+		variable retval : integer_vector(0 to 2*(4*4)-1);
+	begin
+		sht <= std_logic_vector(to_signed((exp+len+1)-pfx+len-(prc-1), sht'length));
+		dec <= std_logic_vector(to_signed(-exp-pfx, sht'length));
+	end;
+
 	function get_prefix1235 (
 		constant unit : real)
 		return string is
