@@ -340,39 +340,27 @@ package body scopeiopkg is
 	function get_explen1245 (
 		constant unit   : real)
 		return integer_vector is
-		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
-		variable unit1245 : real;
-		variable retval : integer_vector(0 to 4*4-1);
 		procedure explen (
 			variable exp  : out integer;
 			variable len  : out natural;
 			constant sgfc : in string)
 		is
-			exp := hdo(sgfc);
+		begin
+			exp := hdo(sgfc)**".exp";
+			len := hdo(sgfc)**".len";
 		end;
-	begin
-
-		unit1245 := unit;
-		for i in 0 to 4-1 loop
-			for j in coefs'range loop
-				retval(4*i+j) := hdo(significand(unit1245*coefs(j)))**".len";
-			end loop;
-			unit1245 := unit1245 * 10.0;
-		end loop;
-		return retval;
-	end;
-
-	function get_exp1245 (
-		constant unit   : real)
-		return integer_vector is
-		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
+		variable exp : integer;
+		variable len : integer;
 		variable unit1245 : real;
-		variable retval : integer_vector(0 to 4*4-1);
+		variable retval : integer_vector(0 to 2*(4*4)-1);
+		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
 	begin
+
 		unit1245 := unit;
 		for i in 0 to 4-1 loop
 			for j in coefs'range loop
-				retval(4*i+j) := hdo(significand(unit1245*coefs(j)))**".dec";
+				explen(exp, len, hdo(significand(unit1245*coefs(j))));
+				retval(2*(4*i+j) to 2*(4*i+j+1)-1) := (exp, len);
 			end loop;
 			unit1245 := unit1245 * 10.0;
 		end loop;
