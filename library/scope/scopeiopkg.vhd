@@ -299,7 +299,7 @@ package body scopeiopkg is
 			end if;
 		end loop;
 		return compact(
-			"{ sfgc : " &  natural'image(natural(round(sgfc))) & "," &
+			"{ sgfc : " &  natural'image(natural(round(sgfc))) & "," &
 			"  exp  : " &  integer'image(exp) & "," &
 			"  len  : " &  integer'image(len) & "}");
 
@@ -368,14 +368,40 @@ package body scopeiopkg is
 	end;
 
 	function get_shtdec1245 (
-		constant explen : integer_vector;
+		constant explen : integer_vector)
 		return integer_vector is
 		variable exp : integer;
 		variable len : integer;
+		variable pfx : integer;
+		variable prc : integer;
 		variable retval : integer_vector(0 to 2*(4*4)-1);
+		variable xxx : real;
+		variable sgfc : natural;
+		variable sht : integer;
+		variable dec : integer;
 	begin
-		sht <= std_logic_vector(to_signed((exp+len+1)-pfx+len-(prc-1), sht'length));
-		dec <= std_logic_vector(to_signed(-exp-pfx, sht'length));
+		pfx := exp+(len-1);
+		if pfx < 0 then
+			pfx := pfx - 2;
+			pfx := pfx / 3;
+			pfx := pfx * 3;
+		else
+			pfx := pfx + 2;
+			pfx := pfx / 3;
+			pfx := pfx * 3;
+		end if;
+		xxx := real(sgfc)*10.0**pfx;
+		if xxx < 10.0 then
+			prc := 2;
+		elsif xxx < 100.0 then
+			prc := 1;
+		else
+			prc := 0;
+		end if;
+
+		sht := (exp+len+1)-pfx+len-(prc-1);
+		dec := -exp-pfx;
+		return retval;
 	end;
 
 	function get_prefix1235 (

@@ -46,7 +46,7 @@ architecture btof_tb of testbench is
 	constant yyy : string:= hdo(significand2(vt_step)); --**".sgfc";
 	constant xxx : string:= hdo(significand2(vt_step*32.0)); --**".sgfc";
 	-- constant xxx : string:= hdo(significand2(vt_unit)); --**".sgfc";
-	constant sfgc : natural := hdo(xxx)**".sfgc";
+	constant sgfc : natural := hdo(xxx)**".sgfc";
 	constant exp  : integer := hdo(xxx)**".exp";
 	constant len  : natural := hdo(xxx)**".len";
 	constant pfx  : natural := 6; -- m u n p
@@ -65,7 +65,7 @@ begin
 		if rising_edge(clk) then
 			if (to_bit(btof_rdy) xor to_bit(btof_req))='0' then
 				str := unsigned(std_logic_vector'(to_ascii("        ")));
-				bin <= std_logic_vector(to_unsigned(hdo(xxx)**".sfgc",bin'length));
+				bin <= std_logic_vector(to_unsigned(hdo(xxx)**".sgfc",bin'length));
 				btof_req <= not to_stdulogic(to_bit(btof_rdy));
 			elsif code_frm='1' then
 				str(0 to 8-1) := unsigned(code);
