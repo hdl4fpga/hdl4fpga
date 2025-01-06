@@ -404,6 +404,43 @@ package body scopeiopkg is
 		return retval;
 	end;
 
+	function get_pfxprc1245 (
+		constant explen : integer_vector)
+		return integer_vector is
+		variable exp : integer;
+		variable len : integer;
+		variable sgfc : natural;
+		variable aux : real;
+		variable pfx : integer;
+		variable prc : integer;
+		variable retval : integer_vector(0 to 2*(4*4)-1);
+	begin
+		for i in 0 to 4-1 loop
+				pfx := exp+(len-1);
+				if pfx < 0 then
+					pfx := pfx - 2;
+					pfx := pfx / 3;
+					pfx := pfx * 3;
+				else
+					pfx := pfx + 2;
+					pfx := pfx / 3;
+					pfx := pfx * 3;
+				end if;
+				aux := real(sgfc)*10.0**pfx;
+				if aux < 10.0 then
+					prc := 2;
+				elsif aux < 100.0 then
+					prc := 1;
+				else
+					prc := 0;
+				end if;
+				retval(2*(4*i+j) to 2*(4*i+j+1)-1) := (exp, len);
+			unit1245 := unit1245 * 10.0;
+			end loop;
+
+		return retval;
+	end;
+
 	function get_prefix1235 (
 		constant unit : real)
 		return string is
