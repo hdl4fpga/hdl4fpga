@@ -196,20 +196,8 @@ package scopeiopkg is
 		return string;
 
 	function get_significand1245 (
-		constant unit  : real)
+		constant unit : real)
 		return natural_vector;
-
-	function get_shr1245 (
-		constant unit : real)
-		return integer_vector;
-
-	function get_characteristic1245 (
-		constant unit : real)
-		return integer_vector;
-
-	function get_prefix1235 (
-		constant unit : real)
-		return string;
 
 	function replace (
 		constant word : std_logic_vector;
@@ -367,53 +355,13 @@ package body scopeiopkg is
 		return retval;
 	end;
 
-	function get_shtdec1245 (
-		constant explen : integer_vector)
-		constant pfxprc : integer_vector)
-		return integer_vector is
-		variable exp : integer;
-		variable len : integer;
-		variable pfx : integer;
-		variable prc : integer;
-		variable retval : integer_vector(0 to 2*(4*4)-1);
-		variable xxx : real;
-		variable sgfc : natural;
-		variable sht : integer;
-		variable dec : integer;
-	begin
-		for i in 0 to 4*4-1 loop
-		pfx := exp+(len-1);
-		if pfx < 0 then
-			pfx := pfx - 2;
-			pfx := pfx / 3;
-			pfx := pfx * 3;
-		else
-			pfx := pfx + 2;
-			pfx := pfx / 3;
-			pfx := pfx * 3;
-		end if;
-		xxx := real(sgfc)*10.0**pfx;
-		if xxx < 10.0 then
-			prc := 2;
-		elsif xxx < 100.0 then
-			prc := 1;
-		else
-			prc := 0;
-		end if;
-
-		sht := (exp+len+1)-pfx+len-(prc-1);
-		dec := -exp-pfx;
-		return retval;
-	end;
-
 	function get_pfxprc1245 (
 		constant sgfc   : natural_vector;
 		constant explen : integer_vector)
 		return integer_vector is
+		variable aux : real;
 		variable exp : integer;
 		variable len : integer;
-		variable sgfc : natural;
-		variable aux : real;
 		variable pfx : integer;
 		variable prc : integer;
 		variable retval : integer_vector(0 to 2*(4*4)-1);
@@ -444,19 +392,24 @@ package body scopeiopkg is
 		return retval;
 	end;
 
-	function get_prefix1235 (
-		constant unit : real)
-		return string is
-		constant coefs  : real_vector(0 to 4-1) := (1.0, 2.0, 4.0, 5.0);
-		variable unit1245 : real;
-		variable retval : string (1 to 4*4);
+	function get_shtdec1245 (
+		constant explen : integer_vector;
+		constant pfxprc : integer_vector)
+		return integer_vector is
+		variable exp : integer;
+		variable len : integer;
+		variable pfx : integer;
+		variable prc : integer;
+		variable sht : integer;
+		variable dec : integer;
+		variable retval : integer_vector(0 to 2*(4*4)-1);
 	begin
-		unit1245 := unit;
-		for i in 0 to 4-1 loop
-			for j in coefs'range loop
-				retval(4*i+j+1) := hdo(significand(unit1245*coefs(j)))**".pfx";
-			end loop;
-			unit1245 := unit1245 * 10.0;
+		for i in 0 to 4*4-1 loop
+			(exp,len) := explen(2*(4*4*i) to 2*(4*4*i+1)-1);
+			(pfx,prc) := pfxprc(2*(4*4*i) to 2*(4*4*i+1)-1);
+			sht := (exp+len+1)-pfx+len-(prc-1);
+			dec := -exp-pfx;
+			retval(2*(4*4*i) to 2*(4*4*i+1)-1) := (sht, dec);
 		end loop;
 		return retval;
 	end;
