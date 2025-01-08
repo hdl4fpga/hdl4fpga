@@ -199,6 +199,20 @@ package scopeiopkg is
 		constant unit : real)
 		return natural_vector;
 
+	function get_explen1245 (
+		constant unit: real)
+		return integer_vector;
+
+	function get_pfxprc1245 (
+		constant sgfc   : natural_vector;
+		constant explen : integer_vector)
+		return integer_vector;
+
+	function get_shtdec1245 (
+		constant explen : integer_vector;
+		constant pfxprc : integer_vector)
+		return integer_vector;
+
 	function replace (
 		constant word : std_logic_vector;
 		constant addr : std_logic_vector;
@@ -326,7 +340,7 @@ package body scopeiopkg is
 	end;
 
 	function get_explen1245 (
-		constant unit   : real)
+		constant unit : real)
 		return integer_vector is
 		procedure explen (
 			variable exp  : out integer;

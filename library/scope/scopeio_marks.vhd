@@ -69,15 +69,21 @@ entity scopeio_marks is
 
 	constant chanid_bits     : natural := unsigned_num_bits(inputs-1);
 	constant vt_sfcnds       : natural_vector := get_significand1245(vt_unit);
-	constant vt_shts         : integer_vector := get_shr1245(vt_unit);
-	constant vt_pnts         : integer_vector := get_characteristic1245(vt_unit);
-	constant vt_pfxs         : string         := get_prefix1235(vt_unit);
+	constant vt_explen       : integer_vector := get_explen1245(vt_unit);
+	constant vt_pfxprc       : integer_vector := get_pfxprc1245(vt_sfcnds, vt_explen);
+	constant vt_shtdec       : integer_vector := get_shtdec1245(vt_explen, vt_pfxprc);
+	-- constant vt_shts         : integer_vector := get_shr1245(vt_unit);
+	-- constant vt_pnts         : integer_vector := get_characteristic1245(vt_unit);
+	-- constant vt_pfxs         : string         := get_prefix1235(vt_unit);
 
 	constant hzoffset_bits   : natural := unsigned_num_bits(max_delay-1);
 	constant hz_sfcnds       : natural_vector := get_significand1245(hz_unit);
-	constant hz_shts         : integer_vector := get_shr1245(hz_unit);
-	constant hz_pnts         : integer_vector := get_characteristic1245(hz_unit);
-	constant hz_pfxs         : string         := get_prefix1235(hz_unit);
+	constant hz_explen       : integer_vector := get_explen1245(hz_unit);
+	constant hz_pfxprc       : integer_vector := get_pfxprc1245(hz_sfcnds, hz_explen);
+	constant hz_shtdec       : integer_vector := get_shtdec1245(hz_explen, hz_pfxprc);
+	-- constant hz_shts         : integer_vector := get_shr1245(hz_unit);
+	-- constant hz_pnts         : integer_vector := get_characteristic1245(hz_unit);
+	-- constant hz_pfxs         : string         := get_prefix1235(hz_unit);
 
 	constant sfcnd_length    : natural := max(unsigned_num_bits(max(vt_sfcnds)), unsigned_num_bits(2*max(hz_sfcnds)));
 
@@ -210,8 +216,10 @@ begin
 
 	process (rgtr_clk, rgtr_dv)
 		variable sfcnd   : unsigned(sfcnd_length-1 downto 0);
-		variable scaleid : natural range 0 to vt_shts'length-1;
-		variable timeid  : natural range 0 to hz_shts'length-1;
+		-- variable scaleid : natural range 0 to vt_shts'length-1;
+		-- variable timeid  : natural range 0 to hz_shts'length-1;
+		variable scaleid : natural range 0 to vt_shtdec'length/2-1;
+		variable timeid  : natural range 0 to hz_shtdec'length/2-1;
 	begin
 		if rising_edge(rgtr_clk) then
 			if (mark_req xor mark_rdy)='0' then
@@ -222,8 +230,10 @@ begin
 						scaleid := to_integer(unsigned(tbl_scaleid));
 					end if;
 					sfcnd      := to_unsigned(vt_sfcnds(scaleid mod 4), sfcnd'length);
-					btod_sht   <= to_signed(vt_shts(scaleid), btod_sht'length);
-					btod_dec   <= to_signed(vt_pnts(scaleid), btod_dec'length);
+					-- btod_sht   <= to_signed(vt_shts(scaleid), btod_sht'length);
+					-- btod_dec   <= to_signed(vt_pnts(scaleid), btod_dec'length);
+					btod_sht   <= to_signed(vt_shtdec(2*scaleid+0), btod_sht'length);
+					btod_dec   <= to_signed(vt_shtdec(2*scaleid+1), btod_dec'length);
 					btod_left  <= '0';
 					btod_width <= std_logic_vector(to_unsigned(vt_width/font_size, btod_width'length));
 					mark_event <= vt_event;
@@ -238,8 +248,10 @@ begin
 				elsif hz_ena='1' then
 					timeid     := to_integer(unsigned(hz_scaleid));
 					sfcnd      := to_unsigned(hz_sfcnds(timeid mod 4), sfcnd'length);
-					btod_sht   <= to_signed(hz_shts(timeid), btod_sht'length);
-					btod_dec   <= to_signed(hz_pnts(timeid), btod_dec'length);
+					-- btod_sht   <= to_signed(hz_shts(timeid), btod_sht'length);
+					-- btod_dec   <= to_signed(hz_pnts(timeid), btod_dec'length);
+					btod_sht   <= to_signed(hz_shtdec(2*timeid+0), btod_sht'length);
+					btod_dec   <= to_signed(hz_shtdec(2*timeid+1), btod_dec'length);
 					btod_left  <= '1';
 					btod_width <= x"8";
 					mark_event <= hz_event;
