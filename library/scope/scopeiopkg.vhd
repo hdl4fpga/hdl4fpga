@@ -418,7 +418,7 @@ package body scopeiopkg is
 		variable dec : integer;
 		variable retval : integer_vector(explen'range);
 	begin
-		for i in 0 to 4*4-1 loop
+		for i in 0 to explen'length/2-1 loop
 			(exp,len) := explen(2*i to 2*(i+1)-1);
 			(pfx,prc) := pfxprc(2*i to 2*(i+1)-1);
 			sht := (exp+len+1)-pfx+len-(prc-1);
