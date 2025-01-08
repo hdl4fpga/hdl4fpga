@@ -43,8 +43,8 @@ architecture btof_tb of testbench is
 	constant grid_height : natural := 32;
 	constant vt_step : real := 3.3/(2**12);
 	constant vt_unit : real := 0.05;
-	constant yyy : string:= hdo(significand2(vt_step)); --**".sgfc";
-	constant xxx : string:= hdo(significand2(vt_step*32.0)); --**".sgfc";
+	constant yyy : string:= hdo(significand(vt_step)); --**".sgfc";
+	constant xxx : string:= hdo(significand(vt_step*32.0)); --**".sgfc";
 	-- constant xxx : string:= hdo(significand2(vt_unit)); --**".sgfc";
 	constant sgfc : natural := hdo(xxx)**".sgfc";
 	constant exp  : integer := hdo(xxx)**".exp";

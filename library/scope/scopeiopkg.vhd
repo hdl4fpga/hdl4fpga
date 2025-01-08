@@ -378,10 +378,10 @@ package body scopeiopkg is
 		variable len : integer;
 		variable pfx : integer;
 		variable prc : integer;
-		variable retval : integer_vector(0 to 2*(4*4)-1);
+		variable retval : integer_vector(explen'range);
 	begin
-		for i in 0 to 4*4-1 loop
-			(exp,len) := explen(2*(4*4*i) to 2*(4*4*i+1)-1);
+		for i in 0 to explen'length/2-1 loop
+			(exp,len) := explen(2*i to 2*(i+1)-1);
 			pfx := exp+(len-1);
 			if pfx < 0 then
 				pfx := pfx - 2;
@@ -400,7 +400,7 @@ package body scopeiopkg is
 			else
 				prc := 0;
 			end if;
-			retval(2*(4*4*i) to 2*(4*4*i+1)-1) := (pfx, prc);
+			retval(2*i to 2*(i+1)-1) := (pfx, prc);
 		end loop;
 
 		return retval;
@@ -416,14 +416,14 @@ package body scopeiopkg is
 		variable prc : integer;
 		variable sht : integer;
 		variable dec : integer;
-		variable retval : integer_vector(0 to 2*(4*4)-1);
+		variable retval : integer_vector(explen'range);
 	begin
 		for i in 0 to 4*4-1 loop
-			(exp,len) := explen(2*(4*4*i) to 2*(4*4*i+1)-1);
-			(pfx,prc) := pfxprc(2*(4*4*i) to 2*(4*4*i+1)-1);
+			(exp,len) := explen(2*i to 2*(i+1)-1);
+			(pfx,prc) := pfxprc(2*i to 2*(i+1)-1);
 			sht := (exp+len+1)-pfx+len-(prc-1);
 			dec := -exp-pfx;
-			retval(2*(4*4*i) to 2*(4*4*i+1)-1) := (sht, dec);
+			retval(2*i to 2*(i+1)-1) := (sht, dec);
 		end loop;
 		return retval;
 	end;
