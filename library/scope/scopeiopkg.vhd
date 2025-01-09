@@ -408,7 +408,7 @@ package body scopeiopkg is
 			else
 				prc := 0;
 			end if;
-			report LF & "-> " & natural'image(i) & ", exp :" & integer'image(exp) & ", pfx : " & integer'image(pfx) & ", len : " & natural'image(len) & ", prc :" & natural'image(prc) & ", " & natural'image(natural(aux));
+			-- report LF & "-> " & natural'image(i) & ", exp :" & integer'image(exp) & ", pfx : " & integer'image(pfx) & ", len : " & natural'image(len) & ", prc :" & natural'image(prc) & ", " & natural'image(natural(aux));
 			retval(2*i to 2*(i+1)-1) := (pfx, prc);
 		end loop;
 
