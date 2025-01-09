@@ -277,6 +277,7 @@ package body scopeiopkg is
 		variable sgfc : real;
 		variable exp  : integer;
 		variable len  : natural;
+		variable aux  : natural;
 	begin
 		assert unit > 0.0 
 			report "unit <= 0.0"
@@ -304,8 +305,9 @@ package body scopeiopkg is
 				exit;
 			end if;
 		end loop;
+		aux := natural(round(sgfc));
 		return compact(
-			"{ sgfc : " &  natural'image(natural(round(sgfc))) & "," &
+			"{ sgfc : " &  natural'image(aux) & "," &
 			"  exp  : " &  integer'image(exp) & "," &
 			"  len  : " &  integer'image(len) & "}");
 
