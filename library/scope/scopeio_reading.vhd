@@ -64,8 +64,8 @@ entity scopeio_reading is
 	constant vt_pfxprc    : integer_vector := get_pfxprc1245(vt_sfcnds, vt_explen);
 	constant vt_shtdec    : integer_vector := get_shtdec1245(vt_explen, vt_pfxprc);
 	constant vt_pfxs      : string         := get_prefix1235(vt_pfxprc);
-	constant tgr_sfcnd    : natural        := hdo(significand(vt_step*32.0))**".sgfc";
-	constant tgr_explen   : integer_vector := get_explen1245(vt_step*32.0);
+	constant tgr_sfcnd    : natural        := hdo(significand(vt_step*real(grid_unit)))**".sgfc";
+	constant tgr_explen   : integer_vector := get_explen1245(vt_step*real(grid_unit));
 	constant tgr_shtdec   : integer_vector := get_shtdec1245(tgr_explen, vt_pfxprc);
 
 	constant hz_sfcnds    : natural_vector := get_significand1245(hz_unit);

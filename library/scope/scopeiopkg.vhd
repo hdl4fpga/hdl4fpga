@@ -415,14 +415,15 @@ package body scopeiopkg is
 		return string is
 		constant symbols : string := "num ";
 		variable pfx     : integer;
-		variable retval  : string(1 to pfxprc'length/2-1);
+		variable retval  : string(1 to pfxprc'length/2);
 	begin
 		for i in 0 to pfxprc'length/2-1 loop
+			pfx := pfxprc(2*i);
 			assert pfx mod 3 = 0 
 				report "prefix not multiplo of 3"
 				severity failure;
-			pfx := pfxprc(2*i)/3;
-			retval(i) := symbols(pfx+symbols'length);
+			pfx := pfx/3;
+			retval(i+1) := symbols(pfx+symbols'length);
 		end loop;
 		return retval;
 	end;
