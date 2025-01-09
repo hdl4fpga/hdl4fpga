@@ -199,30 +199,7 @@ begin
 	end process;
 
 	tgr_p : process (txt_req, clk)
-		variable scaleid : natural range 0 to vt_shtdec'length/2-1;
-
-		function xxx 
-			(constant step : real)
-			return integer_vector is
-			variable val  : real;
-			variable unit : integer;
-		begin
-			val  := step;
-			unit := 0;
-			for i in 0 to 4-1 loop
-				exit when abs(vt_step) >= 1.0;
-				unit := unit - 1;
-				val  := val  * 1.0e3;
-			end loop;
-
-			for i in 0 to 4-1 loop
-				exit when abs(vt_step) < 1.0;
-				val := val / 1.0e3;
-				unit := unit + 1;
-			end loop;
-			return(0 => 0);
-		end;
-
+		variable scaleid : natural range 0 to tgr_shtdec'length/2-1;
 	begin
 		if rising_edge(clk) then
 			if (txt_req xor txt_rdy)='0' then

@@ -510,8 +510,8 @@ begin
 			trigger_freeze  => trigger_freeze,
 			trigger_slope   => trigger_slope,
 			trigger_oneshot => trigger_oneshot,
-			-- trigger_level   => trigger_level,
-			trigger_level   => b"0_0000_0000_0010",
+			trigger_level   => trigger_level,
+			-- trigger_level   => b"0_0000_0000_0010",
 
 			wid             => wid,
 			code_frm        => code_frm,
