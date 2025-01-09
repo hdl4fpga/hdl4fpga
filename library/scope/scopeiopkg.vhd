@@ -388,11 +388,11 @@ package body scopeiopkg is
 				pfx := pfx / 3;
 				pfx := pfx * 3;
 			else
-				pfx := pfx + 2;
 				pfx := pfx / 3;
 				pfx := pfx * 3;
 			end if;
-			aux := real(sgfc(i mod 4))*10.0**pfx;
+			aux := real(sgfc(i mod 4));
+			aux := aux*10.0**(exp-pfx+len-1);
 			if aux < 10.0 then
 				prc := 2;
 			elsif aux < 100.0 then
@@ -421,8 +421,8 @@ package body scopeiopkg is
 		for i in 0 to explen'length/2-1 loop
 			(exp,len) := explen(2*i to 2*(i+1)-1);
 			(pfx,prc) := pfxprc(2*i to 2*(i+1)-1);
-			sht := (exp+len+1)-pfx+len-(prc-1);
-			dec := -exp-pfx;
+			sht := pfx-exp-prc;
+			dec := sht+prc;
 			retval(2*i to 2*(i+1)-1) := (sht, dec);
 		end loop;
 		return retval;

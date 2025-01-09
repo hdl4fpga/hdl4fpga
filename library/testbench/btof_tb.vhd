@@ -42,22 +42,26 @@ architecture btof_tb of testbench is
 
 	constant grid_height : natural := 32;
 	constant vt_step : real := 3.3/(2**12);
-	constant vt_unit : real := 0.05;
+	constant vt_unit : real := 0.005;
 	constant yyy : string:= hdo(significand(vt_step)); --**".sgfc";
-	constant xxx : string:= hdo(significand(vt_step*32.0)); --**".sgfc";
-	-- constant xxx : string:= hdo(significand2(vt_unit)); --**".sgfc";
+	-- constant xxx : string:= hdo(significand(vt_step*32.0)); --**".sgfc";
+	constant xxx : string:= hdo(significand(vt_unit*100.0)); --**".sgfc";
 	constant sgfc : natural := hdo(xxx)**".sgfc";
 	constant exp  : integer := hdo(xxx)**".exp";
 	constant len  : natural := hdo(xxx)**".len";
-	constant pfx  : natural := 6; -- m u n p
+	signal  pfx  : integer := -3; -- m u n p
 	constant prc  : natural := 1; -- 0.xxx
 
-	signal sht : std_logic_vector(0 to 4-1);
-	signal dec : std_logic_vector(0 to 4-1);
+	signal sht : signed(0 to 4-1);
+	signal dec : signed(0 to 4-1);
 begin
+	pfx <= 3*((exp+(len-1)-2)/3);
 -- la cantidad de digitos 2 y 5, el largo 1 y 4
-	sht <= std_logic_vector(to_signed((exp+len+1)-pfx+len-(prc-1), sht'length));
-	dec <= std_logic_vector(to_signed(-exp-pfx, sht'length));
+	-- sht <= x"b"; --std_logic_vector(to_signed((exp+len+1)+pfx+len-(prc-1), sht'length));
+	-- sht <= to_signed(-prc+pfx-(exp+(len-1)), sht'length);
+	sht <= to_signed(pfx-exp-prc, sht'length);
+	dec <= sht+prc;
+	-- dec <= sht;
 	btof_ack <= (btof_rdy xor btof_req);
 	process 
 		variable str : unsigned(0 to 8*8-1);
@@ -87,8 +91,8 @@ begin
    		btof_rdy => btof_rdy,
 		width    => x"9",
 		left     => '0',
-		sht      => sht,
-		dec      => dec,
+		sht      => std_logic_vector(sht),
+		dec      => std_logic_vector(dec),
 		exp      => b"101",
 		neg      => '0',
 		bin      => bin, 
