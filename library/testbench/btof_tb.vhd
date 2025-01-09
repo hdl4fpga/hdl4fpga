@@ -42,7 +42,7 @@ architecture btof_tb of testbench is
 
 	constant grid_height : natural := 32;
 	constant vt_step : real := 3.3/(2**12);
-	constant vt_unit : real := 0.005;
+	constant vt_unit : real := 0.05;
 	constant yyy : string:= hdo(significand(vt_step)); --**".sgfc";
 	constant xxx : string:= hdo(significand(vt_step*32.0)); --**".sgfc";
 	-- constant xxx : string:= hdo(significand(vt_unit*100.0)); --**".sgfc";
@@ -52,6 +52,9 @@ architecture btof_tb of testbench is
 	signal  pfx  : integer := -3; -- m u n p
 	constant prc  : natural := 1; -- 0.xxx
 
+	constant vt_sfcnds    : natural_vector := get_significand1245(vt_unit);
+	constant vt_explen    : integer_vector := get_explen1245(vt_unit);
+	constant vt_pfxprc    : integer_vector := get_pfxprc1245(vt_sfcnds, vt_explen);
 	signal sht : signed(0 to 4-1);
 	signal dec : signed(0 to 4-1);
 begin

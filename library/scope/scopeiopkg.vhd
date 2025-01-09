@@ -400,7 +400,7 @@ package body scopeiopkg is
 				pfx := pfx * 3;
 			end if;
 			aux := real(sgfc(i mod 4));
-			aux := aux*10.0**(exp-pfx+len-1);
+			aux := aux*10.0**(exp-pfx);
 			if aux < 10.0 then
 				prc := 2;
 			elsif aux < 100.0 then
@@ -408,6 +408,7 @@ package body scopeiopkg is
 			else
 				prc := 0;
 			end if;
+			report LF & "-> " & natural'image(i) & ", exp :" & integer'image(exp) & ", pfx : " & integer'image(pfx) & ", len : " & natural'image(len) & ", prc :" & natural'image(prc) & ", " & natural'image(natural(aux));
 			retval(2*i to 2*(i+1)-1) := (pfx, prc);
 		end loop;
 
