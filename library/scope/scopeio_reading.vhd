@@ -58,12 +58,12 @@ entity scopeio_reading is
 	constant vt_labels    : string  := hdo(waveform)**".vt";
 	constant hz_label     : string  := "TIME";
 
-	constant vt_pfxs      : string         := "m"; --get_prefix1235(vt_unit);
 	constant vt_step      : real           := vt_steps(0);
 	constant vt_sfcnds    : natural_vector := get_significand1245(vt_unit);
 	constant vt_explen    : integer_vector := get_explen1245(vt_unit);
 	constant vt_pfxprc    : integer_vector := get_pfxprc1245(vt_sfcnds, vt_explen);
 	constant vt_shtdec    : integer_vector := get_shtdec1245(vt_explen, vt_pfxprc);
+	constant vt_pfxs      : string         := get_prefix1235(vt_pfxprc);
 	constant tgr_sfcnd    : natural        := hdo(significand(vt_step*32.0))**".sgfc";
 	constant tgr_explen   : integer_vector := get_explen1245(vt_step*32.0);
 	constant tgr_shtdec   : integer_vector := get_shtdec1245(tgr_explen, vt_pfxprc);
@@ -72,7 +72,7 @@ entity scopeio_reading is
 	constant hz_explen    : integer_vector := get_explen1245(hz_unit);
 	constant hz_pfxprc    : integer_vector := get_pfxprc1245(hz_sfcnds, hz_explen);
 	constant hz_shtdec    : integer_vector := get_shtdec1245(hz_explen, hz_pfxprc);
-	constant hz_pfxs      : string         := "m"; --get_prefix1235(hz_unit);
+	constant hz_pfxs      : string         := get_prefix1235(hz_pfxprc);
 
 	constant sfcnd_length : natural := max(unsigned_num_bits(tgr_sfcnd),max(unsigned_num_bits(max(vt_sfcnds)), unsigned_num_bits(max(hz_sfcnds))));
 

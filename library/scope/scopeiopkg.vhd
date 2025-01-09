@@ -208,6 +208,10 @@ package scopeiopkg is
 		constant explen : integer_vector)
 		return integer_vector;
 
+	function get_prefix1235(
+		constant pfxprc : integer_vector)
+		return string;
+
 	function get_shtdec1245 (
 		constant explen : integer_vector;
 		constant pfxprc : integer_vector)
@@ -403,6 +407,23 @@ package body scopeiopkg is
 			retval(2*i to 2*(i+1)-1) := (pfx, prc);
 		end loop;
 
+		return retval;
+	end;
+
+	function get_prefix1235(
+		constant pfxprc : integer_vector)
+		return string is
+		constant symbols : string := "num ";
+		variable pfx     : integer;
+		variable retval  : string(1 to pfxprc'length/2-1);
+	begin
+		for i in 0 to pfxprc'length/2-1 loop
+			assert pfx mod 3 = 0 
+				report "prefix not multiplo of 3"
+				severity failure;
+			pfx := pfxprc(2*i)/3;
+			retval(i) := symbols(pfx+symbols'length);
+		end loop;
 		return retval;
 	end;
 
