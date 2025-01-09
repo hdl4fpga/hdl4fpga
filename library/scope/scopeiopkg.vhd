@@ -348,6 +348,7 @@ package body scopeiopkg is
 	function get_explen1245 (
 		constant unit : real)
 		return integer_vector is
+
 		procedure explen (
 			variable exp  : out integer;
 			variable len  : out natural;
@@ -357,6 +358,7 @@ package body scopeiopkg is
 			exp := hdo(sgfc)**".exp";
 			len := hdo(sgfc)**".len";
 		end;
+
 		variable exp : integer;
 		variable len : integer;
 		variable unit1245 : real;

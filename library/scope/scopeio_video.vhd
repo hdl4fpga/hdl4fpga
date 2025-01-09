@@ -371,7 +371,7 @@ begin
 				end case;
 			end if;
 		end process;
-		trigger_req <= '0', '1' after 40 us;
+		-- trigger_req <= '0', '1' after 40 us;
 
 		process (rgtr_clk)
 			type states is (s_rdy, s_req);
@@ -439,7 +439,7 @@ begin
 					when s_digi =>
 						if (digi_req xor digi_rdy)='0' then
 							tgr_rdy <= tgr_req;
-							-- trigger_req <= not trigger_rdy;
+							trigger_req <= not trigger_rdy;
 							state := s_rdy;
 						end if;
 					end case;

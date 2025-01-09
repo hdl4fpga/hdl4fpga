@@ -64,9 +64,24 @@ entity scopeio_reading is
 	constant vt_pfxprc    : integer_vector := get_pfxprc1245(vt_sfcnds, vt_explen);
 	constant vt_shtdec    : integer_vector := get_shtdec1245(vt_explen, vt_pfxprc);
 	constant vt_pfxs      : string         := get_prefix1235(vt_pfxprc);
+
+	function tgr_explen (
+		constant unit : real)
+		return integer_vector is
+		constant sgfc : string := hdo(significand(unit));
+		constant exp : integer := hdo(sgfc)**".exp";
+		constant len : natural := hdo(sgfc)**".len";
+		variable retval : integer_vector(0 to 2*4*4-1);
+	begin
+		for i in 0 to retval'length/2-1 loop
+			retval(2*i to 2*(i+1)-1) := (exp, len);
+		end loop;
+		return retval;
+	end;
+
 	constant tgr_sfcnd    : natural        := hdo(significand(vt_step*real(grid_unit)))**".sgfc";
-	constant tgr_explen   : integer_vector := get_explen1245(vt_step*real(grid_unit));
-	constant tgr_shtdec   : integer_vector := get_shtdec1245(tgr_explen, vt_pfxprc);
+	-- constant tgr_explen   : integer_vector := get_explen1245(vt_step*real(grid_unit));
+	constant tgr_shtdec   : integer_vector := get_shtdec1245(tgr_explen(vt_step*real(grid_unit)), vt_pfxprc);
 
 	constant hz_sfcnds    : natural_vector := get_significand1245(hz_unit);
 	constant hz_explen    : integer_vector := get_explen1245(hz_unit);
@@ -205,7 +220,6 @@ begin
 			if (txt_req xor txt_rdy)='0' then
 				if (trigger_rdy xor trigger_req)='1' then
 					scaleid     := to_integer(unsigned(vt_scaleid));
-					scaleid     := 1;
 					tgr_sht     <= to_signed(tgr_shtdec(2*scaleid+0), btod_sht'length);
 					tgr_dec     <= to_signed(tgr_shtdec(2*scaleid+1), btod_dec'length);
 					tgr_wth     <= x"7";
