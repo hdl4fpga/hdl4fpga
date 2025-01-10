@@ -546,50 +546,63 @@ begin
 		signal ba : std_logic_vector(0 to 0); -- Xilinx ISE required
 	begin
 
-		-- stream_frm <= '0', '1' after 110 us, '0' after 150 us, '1' after 160 us;
-		process (input_clk)
-			variable xxx : unsigned(0 to stream_data'length-1);
-			variable cntr : unsigned(0 to 10);
-			variable inirdy : std_logic;
-		begin
-			if rising_edge(input_clk) then
-				if stream_frm='1' then
-					if input_ena='1' then
-						xxx := unsigned(stream_data);
-						for i in 0 to xxx'length/sample_length-1 loop
-							xxx(0 to sample_length-1) := xxx(0 to sample_length-1) + xxx'length/sample_length;
-							xxx := xxx rol sample_length;
+		tst_g : if false generate
+			tst_p : process (input_clk)
+				variable data  : unsigned(0 to stream_data'length-1);
+				variable cntr : unsigned(0 to 10);
+				variable inirdy : std_logic;
+			begin
+				if rising_edge(input_clk) then
+					if stream_frm='1' then
+						if input_ena='1' then
+							data := unsigned(stream_data);
+							for i in 0 to data'length/sample_length-1 loop
+								data(0 to sample_length-1) := data(0 to sample_length-1) + data'length/sample_length;
+								data := data rol sample_length;
+							end loop;
+						end if;
+					else
+						for i in 0 to data'length/sample_length-1 loop
+							data(0 to sample_length-1) := to_unsigned(i,sample_length);
+							data := data rol sample_length;
 						end loop;
 					end if;
-				else
-					for i in 0 to xxx'length/sample_length-1 loop
-						xxx(0 to sample_length-1) := to_unsigned(i,sample_length);
-						xxx := xxx rol sample_length;
-					end loop;
+					stream_data <= std_logic_vector(data);
+					if inirdy='0' then
+						stream_frm <= '0';
+						cntr := (others => '0');
+					elsif cntr(0)='0' then
+						stream_frm <= '1';
+						if input_ena='1' then
+							cntr := cntr + 1;
+						end if;
+					else
+						stream_frm <= '0';
+					end if;
+					inirdy := ctlr_inirdy;
 				end if;
-				stream_data <= std_logic_vector(xxx);
-				stream_data <= input_data;
-				-- if inirdy='0' then
-					-- stream_frm <= '0';
-				-- elsif capture_shot='1' then
-					-- stream_frm <= '1';
-				-- elsif capture_end='1' then
-					-- stream_frm <= '0';
-				-- end if;
-				-- if inirdy='0' then
-					-- stream_frm <= '0';
-					-- cntr := (others => '0');
-				-- elsif cntr(0)='0' then
-					-- stream_frm <= '1';
-					-- if input_ena='1' then
-						-- cntr := cntr + 1;
-					-- end if;
-				-- else
-					-- stream_frm <= '0';
-				-- end if;
-				inirdy := ctlr_inirdy;
-			end if;
-		end process;
+			end process;
+		end generate;
+
+		cap_g : if true genereta
+			process (input_clk)
+				variable data : unsigned(0 to stream_data'length-1);
+				variable cntr   : unsigned(0 to 10);
+				variable inirdy : std_logic;
+			begin
+				if rising_edge(input_clk) then
+					stream_data <= input_data;
+					if inirdy='0' then
+						stream_frm <= '0';
+					elsif capture_shot='1' then
+						stream_frm <= '1';
+					elsif capture_end='1' then
+						stream_frm <= '0';
+					end if;
+					inirdy := ctlr_inirdy;
+				end if;
+			end process;
+		end generate;
 
 		stream_e : entity hdl4fpga.sdram_stream
 		generic map (
