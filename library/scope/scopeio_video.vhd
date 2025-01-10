@@ -371,7 +371,6 @@ begin
 				end case;
 			end if;
 		end process;
-		-- trigger_req <= '0', '1' after 40 us;
 
 		process (rgtr_clk)
 			type states is (s_rdy, s_req);
