@@ -584,17 +584,16 @@ begin
 			end process;
 		end generate;
 
-		cap_g : if true genereta
+		cap_g : if true generate
 			process (input_clk)
-				variable data : unsigned(0 to stream_data'length-1);
-				variable cntr   : unsigned(0 to 10);
+				variable data    : unsigned(0 to stream_data'length-1);
 				variable inirdy : std_logic;
 			begin
 				if rising_edge(input_clk) then
 					stream_data <= input_data;
 					if inirdy='0' then
 						stream_frm <= '0';
-					elsif capture_shot='1' then
+					elsif trigger_shot='1' then
 						stream_frm <= '1';
 					elsif capture_end='1' then
 						stream_frm <= '0';
@@ -669,7 +668,6 @@ begin
 			signal status         : std_logic_vector(0 to 8-1);
 			alias  status_rw      : std_logic is status(status'right);
 
-			signal tp_meta        : std_logic_vector(tp'range);
 		begin
 
 			metaram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
@@ -679,7 +677,6 @@ begin
 				debug => false,
 				m => 8)
 			port map (
-				-- tp => tp_meta,
 				src_clk  => sio_clk,
 				src_frm  => rgtr_frm,
 				src_irdy => metaram_irdy,
