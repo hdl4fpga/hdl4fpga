@@ -149,27 +149,27 @@ end;
 
 architecture beh of scopeio is
 
-	constant rid_ack     : std_logic_vector := x"01";
-	constant rid_dmaaddr : std_logic_vector := x"16";
-	constant rid_dmalen  : std_logic_vector := x"17";
-	constant rid_dmadata : std_logic_vector := x"18";
+	constant rid_ack      : std_logic_vector := x"01";
+	constant rid_dmaaddr  : std_logic_vector := x"16";
+	constant rid_dmalen   : std_logic_vector := x"17";
+	constant rid_dmadata  : std_logic_vector := x"18";
 
-	signal rgtr_frm      : std_logic;
-	signal rgtr_irdy     : std_logic;
-	signal rgtr_idv      : std_logic;
-	signal rgtr_id       : std_logic_vector(8-1 downto 0);
-	signal rgtr_lv       : std_logic;
-	signal rgtr_len      : std_logic_vector(8-1 downto 0);
-	signal rgtr_dv       : std_logic;
-	signal rgtr_data     : std_logic_vector(0 to 32-1);
-	-- signal rgtr_data     : std_logic_vector(0 to max(32,ctlrphy_dqi'length)-1);
-	signal rgtr_revs     : std_logic_vector(rgtr_data'length-1 downto 0);	-- Xilinx ISE doesn't allow to use reverse_range
-	-- signal rgtr_revs     : std_logic_vector(rgtr_data'reverse_range);
-	signal data_frm      : std_logic;
-	signal data_irdy     : std_logic;
-	signal data_ptr      : std_logic_vector(8-1 downto 0);
+	signal rgtr_frm       : std_logic;
+	signal rgtr_irdy      : std_logic;
+	signal rgtr_idv       : std_logic;
+	signal rgtr_id        : std_logic_vector(8-1 downto 0);
+	signal rgtr_lv        : std_logic;
+	signal rgtr_len       : std_logic_vector(8-1 downto 0);
+	signal rgtr_dv        : std_logic;
+	signal rgtr_data      : std_logic_vector(0 to 32-1);
+	-- signal rgtr_data      : std_logic_vector(0 to max(32,ctlrphy_dqi'length)-1);
+	signal rgtr_revs      : std_logic_vector(rgtr_data'length-1 downto 0);	-- Xilinx ISE doesn't allow to use reverse_range
+	-- signal rgtr_revs      : std_logic_vector(rgtr_data'reverse_range);
+	signal data_frm       : std_logic;
+	signal data_irdy      : std_logic;
+	signal data_ptr       : std_logic_vector(8-1 downto 0);
 
-	signal trigger_shot  : std_logic;
+	signal trigger_shot   : std_logic;
 	signal trigger_dv     : std_logic;
 	signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
 	signal trigger_level  : std_logic_vector(sample_length-1 downto 0);
@@ -268,32 +268,32 @@ begin
 		constant min_storage   : natural := hdo(waveform)**".min_storage=256."; -- samples, storage size will be equal or larger than this
 		constant max_delay     : natural := hdo(waveform)**".max_delay=16384.";
 		constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-		constant vt       : string := hdo(waveform)**".vt";
-		constant vt_unit  : real := hdo(waveform)**".axis.vertical.unit";
+		constant vt            : string := hdo(waveform)**".vt";
+		constant vt_unit       : real := hdo(waveform)**".axis.vertical.unit";
 
-		constant time_factors : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.horizontal.scales=" & dflt_hzscale));
-		constant vt_gains     : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.vertical.gains=" & dlft_vtscale));
+		constant time_factors  : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.horizontal.scales=" & dflt_hzscale));
+		constant vt_gains      : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.vertical.gains=" & dlft_vtscale));
 		subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
-		constant gainid_bits  : natural := unsigned_num_bits(vt_gains'length-1);
+		constant gainid_bits   : natural := unsigned_num_bits(vt_gains'length-1);
 
-		signal ampsample_dv   : std_logic;
-		signal ampsample_data : std_logic_vector(0 to input_data'length-1);
+		signal ampsample_dv    : std_logic;
+		signal ampsample_data  : std_logic_vector(0 to input_data'length-1);
 
-		constant capture_bits : natural := unsigned_num_bits(max(resolve(waveform&".num_of_segments")*grid_width,min_storage)-1);
+		constant capture_bits  : natural := unsigned_num_bits(max(resolve(waveform&".num_of_segments")*grid_width,min_storage)-1);
 
-		signal video_addr     : std_logic_vector(0 to capture_bits-1);
-		signal video_frm      : std_logic;
-		signal video_dv       : std_logic;
-		signal video_data     : std_logic_vector(0 to 2*inputs*storage_word'length-1);
+		signal video_addr      : std_logic_vector(0 to capture_bits-1);
+		signal video_frm       : std_logic;
+		signal video_dv        : std_logic;
+		signal video_data      : std_logic_vector(0 to 2*inputs*storage_word'length-1);
 
-		signal time_offset    : std_logic_vector(hzoffset_bits-1 downto 0);
-		signal time_scale     : std_logic_vector(4-1 downto 0);
-		signal time_dv          : std_logic;
+		signal time_offset     : std_logic_vector(hzoffset_bits-1 downto 0);
+		signal time_scale      : std_logic_vector(4-1 downto 0);
+		signal time_dv         : std_logic;
 
-		signal gain_ena       : std_logic;
-		signal gain_dv        : std_logic;
-		signal gain_cid       : std_logic_vector(0 to chanid_bits-1);
-		signal gain_ids       : std_logic_vector(0 to inputs*gainid_bits-1);
+		signal gain_ena        : std_logic;
+		signal gain_dv         : std_logic;
+		signal gain_cid        : std_logic_vector(0 to chanid_bits-1);
+		signal gain_ids        : std_logic_vector(0 to inputs*gainid_bits-1);
 
 	begin
 		
@@ -386,7 +386,6 @@ begin
 			storageword_size => storage_word'length,
 			time_factors => time_factors)
 		port map (
-			-- tp => tp,
 			input_clk    => input_clk,
 			trigger_shot => trigger_shot,
 			input_dv     => ampsample_dv,
@@ -404,12 +403,12 @@ begin
 
 		scopeio_video_e : entity hdl4fpga.scopeio_video
 		generic map (
-			sample_length => sample_length,
+			sample_length  => sample_length,
 			timing_id      => timing_id,
 			inputs         => inputs,
 			waveform       => waveform)
 		port map (
-			tp => tp,
+			tp             => tp,
 			rgtr_clk       => sio_clk,
 			rgtr_dv        => rgtr_dv,
 			rgtr_id        => rgtr_id,
@@ -484,11 +483,11 @@ begin
 	end generate;
 
 	capture_g : if sdram_data/="none" and phy_data/="none" generate
-		constant byte_size     : natural := ctlrphy_dqo'length/ctlrphy_dmo'length;
+		constant byte_size    : natural := ctlrphy_dqo'length/ctlrphy_dmo'length;
 
-		constant gear          : natural := hdo(phy_data)**".orgz.gear=1.";
-		constant coln_size     : natural := hdo(sdram_data)**".orgz.addr.col=1.";
-		constant coln_bits     : natural := coln_size-(unsigned_num_bits(gear)-1);
+		constant gear         : natural := hdo(phy_data)**".orgz.gear=1.";
+		constant coln_size    : natural := hdo(sdram_data)**".orgz.addr.col=1.";
+		constant coln_bits    : natural := coln_size-(unsigned_num_bits(gear)-1);
 
 		signal ctlr_frm       : std_logic;
 		signal ctlr_trdy      : std_logic;

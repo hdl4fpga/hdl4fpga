@@ -236,8 +236,8 @@ begin
 		signal hzsetup_rdy  : std_logic := '0';
 		signal setup_cid    : std_logic_vector(chanid_bits-1 downto 0);
 
-		signal tgr_rdy     : std_logic := '0';
-		signal tgr_req     : std_logic := '0';
+		signal tgr_rdy      : std_logic := '0';
+		signal tgr_req      : std_logic := '0';
 		signal vtscale_ena  : std_logic;
 		signal vt_scalecid  : std_logic_vector(chanid_bits-1 downto 0);
 		signal vtoffset_ena : std_logic;

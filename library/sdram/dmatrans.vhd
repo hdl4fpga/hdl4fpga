@@ -212,8 +212,8 @@ begin
 						cntr := resize(unsigned(ctlr_alat)-2, cntr'length);
 					end if;
 					assert unsigned(ctlr_alat) >= 2
-					report ">>>dmatrans<<< : ctlr_alat " & to_string(ctlr_alat) & " lower than 2"
-					severity failure;
+						report ">>>dmatrans<<< : ctlr_alat " & to_string(ctlr_alat) & " lower than 2"
+						severity failure;
 				when bursting =>
 					if cntr(0)='0' then
 						cntr := cntr - 1;
