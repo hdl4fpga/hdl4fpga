@@ -399,7 +399,7 @@ package body scopeiopkg is
 				pfx := pfx / 3;
 				pfx := pfx * 3;
 			end if;
-			aux := real(sgfc(i mod 4));
+			aux := real(sgfc(i mod sgfc'length));
 			aux := aux*10.0**(exp-pfx);
 			if aux < 10.0 then
 				prc := 2;
