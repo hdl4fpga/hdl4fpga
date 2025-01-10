@@ -34,8 +34,8 @@ entity dmatrans is
 	generic (
 		burst_length   : natural := 0;
 		data_gear      : natural;
-		bank_size      : natural;
-		addr_size      : natural;
+		-- bank_size      : natural;
+		-- addr_size      : natural;
 		coln_size      : natural);
 	port (
 		tp             : out std_logic_vector(1 to 32);
@@ -258,6 +258,8 @@ begin
 			row     => row,
 			col     => col,
 			col_eoc => ceoc);
+		dmatrans_taddr <= taddr;
+		dmatrans_tlen  <= tlen;
 
 		process (dmatrans_clk)
 		begin

@@ -32,8 +32,8 @@ entity dmactlr is
 	generic (
 		data_gear    : natural;
 		burst_length : natural := 0;
-		bank_size    : natural;
-		addr_size    : natural;
+		-- bank_size    : natural;
+		-- addr_size    : natural;
 		coln_size    : natural);
 	port (
 
@@ -212,8 +212,8 @@ begin
 	generic map (
 		data_gear     => data_gear,
 		burst_length  => burst_length,
-		bank_size     => bank_size,
-		addr_size     => addr_size,
+		-- bank_size     => bank_size,
+		-- addr_size     => addr_size,
 		coln_size     => coln_size)
 	port map (
 		tp             => tp,

@@ -68,8 +68,8 @@ architecture def of dmacntr is
 begin
 
 	assert iaddr'length=addr_q'length
-	report "no anda"
-	severity failure;
+		report "it won't work"
+		severity failure;
 	ena_addr <= not len_eoc and ena;
 	addr_e : entity hdl4fpga.cntrcs
 	generic map (

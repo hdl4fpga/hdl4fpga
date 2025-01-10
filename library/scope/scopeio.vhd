@@ -583,24 +583,24 @@ begin
 			end process;
 		end generate;
 
-		cap_g : if true generate
-			process (input_clk)
-				variable data    : unsigned(0 to stream_data'length-1);
-				variable inirdy : std_logic;
-			begin
-				if rising_edge(input_clk) then
-					stream_data <= input_data;
-					if inirdy='0' then
-						stream_frm <= '0';
-					elsif trigger_shot='1' then
-						stream_frm <= '1';
-					elsif capture_end='1' then
-						stream_frm <= '0';
-					end if;
-					inirdy := ctlr_inirdy;
-				end if;
-			end process;
-		end generate;
+		-- cap_g : if true generate
+			-- process (input_clk)
+				-- variable data    : unsigned(0 to stream_data'length-1);
+				-- variable inirdy : std_logic;
+			-- begin
+				-- if rising_edge(input_clk) then
+					-- stream_data <= input_data;
+					-- if inirdy='0' then
+						-- stream_frm <= '0';
+					-- elsif trigger_shot='1' then
+						-- stream_frm <= '1';
+					-- elsif capture_end='1' then
+						-- stream_frm <= '0';
+					-- end if;
+					-- inirdy := ctlr_inirdy;
+				-- end if;
+			-- end process;
+		-- end generate;
 
 		stream_e : entity hdl4fpga.sdram_stream
 		generic map (
@@ -1047,8 +1047,8 @@ begin
 			generic map (
 				burst_length => burst_length,
 				data_gear    => gear,
-				bank_size    => ctlrphy_b'length,
-				addr_size    => ctlrphy_a'length,
+				-- bank_size    => ctlrphy_b'length,
+				-- addr_size    => ctlrphy_a'length,
 				coln_size    => coln_size)
 			port map (
 				devcfg_clk   => sio_clk,

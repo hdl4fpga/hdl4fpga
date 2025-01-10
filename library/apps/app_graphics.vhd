@@ -848,8 +848,8 @@ begin
 		generic map (
 			burst_length => burst_length,
 			data_gear    => gear,
-			bank_size    => ctlrphy_b'length,
-			addr_size    => ctlrphy_a'length,
+			-- bank_size    => ctlrphy_b'length,
+			-- addr_size    => ctlrphy_a'length,
 			coln_size    => coln_size)
 		port map (
 			devcfg_clk   => sin_clk,
