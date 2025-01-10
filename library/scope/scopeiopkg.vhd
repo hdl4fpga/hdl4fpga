@@ -310,7 +310,6 @@ package body scopeiopkg is
 			"{ sgfc : " &  natural'image(aux) & "," &
 			"  exp  : " &  integer'image(exp) & "," &
 			"  len  : " &  integer'image(len) & "}");
-
 	end;
 
 	function get_significand1245 (
