@@ -608,7 +608,7 @@ begin
 			dma_rdy     => capturedma_rdy,
 			dma_len     => capturedma_len,
 			dma_addr    => capturedma_addr,
-			ctlr_inirdy => ctlr_inirdy, --'1', --ctlr_inirdy,
+			ctlr_inirdy => ctlr_inirdy,
 			ctlr_clk    => ctlr_clk,
 			ctlr_do_dv  => capturedev_di_dv,
 			ctlr_do     => capture_ctlrdo);
@@ -631,7 +631,7 @@ begin
 			signal datactlr_irdy  : std_logic;
 			signal dmaaddr_irdy   : std_logic;
 			signal dmaaddr_trdy   : std_logic;
-			signal dmaio_irdy    : std_logic;
+			signal dmaio_irdy     : std_logic;
 			signal dmaio_trdy     : std_logic;
 			signal dmaio_next     : std_logic;
 			signal dmaioaddr_irdy : std_logic;

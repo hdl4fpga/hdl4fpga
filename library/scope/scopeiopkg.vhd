@@ -305,31 +305,12 @@ package body scopeiopkg is
 				exit;
 			end if;
 		end loop;
-		aux := natural(round(sgfc));
+		aux := natural(round(sgfc)); -- Requiered by Latticesemi Diamond
 		return compact(
 			"{ sgfc : " &  natural'image(aux) & "," &
 			"  exp  : " &  integer'image(exp) & "," &
 			"  len  : " &  integer'image(len) & "}");
 
-	end;
-
-	function sht (
-		constant exp  : integer;
-		constant len  : natural;
-		constant pfx  : integer;
-		constant prc  : natural)
-		return integer is
-	begin
-		return (exp+len+1)-pfx+len-(prc-1);
-	end;
-
-	function dec (
-		constant exp : integer;
-		constant pfx : integer;
-		constant prc : natural)
-		return integer is
-	begin
-		return -exp-pfx;
 	end;
 
 	function get_significand1245 (
