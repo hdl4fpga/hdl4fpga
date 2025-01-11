@@ -175,8 +175,8 @@ architecture beh of scopeio is
 	signal trigger_level  : std_logic_vector(sample_length-1 downto 0);
 	signal trigger_slope  : std_logic;
 	signal trigger_mode   : std_logic_vector(0 to 2-1);
-	signal capture_req    : std_logic;
-	signal capture_rdy    : std_logic;
+	signal capture_req    : std_logic := '0';
+	signal capture_rdy    : std_logic := '0';
 	alias trigger_freeze  is trigger_mode(0);
 	alias trigger_oneshot is trigger_mode(1);
 
@@ -601,7 +601,6 @@ begin
 				variable inirdy : std_logic;
 			begin
 				if rising_edge(input_clk) then
-					stream_data <= input_data;
 					if inirdy='0' then
 						stream_frm <= '0';
 						state := s_rdy;
@@ -630,6 +629,7 @@ begin
 					inirdy := ctlr_inirdy;
 				end if;
 			end process;
+			stream_data <= input_data;
 		end generate;
 
 		stream_e : entity hdl4fpga.sdram_stream
