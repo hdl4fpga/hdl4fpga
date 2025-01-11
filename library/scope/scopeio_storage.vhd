@@ -43,6 +43,8 @@ entity scopeio_storage is
 		time_scale     : in  std_logic_vector;
 		time_offset    : in  std_logic_vector;
 		trigger_mode   : in  std_logic_vector(0 to 2-1) := "00";
+		capture_req    : buffer std_logic;
+		capture_rdy    : buffer std_logic;
 
 		video_clk      : in  std_logic;
 		video_vton     : in  std_logic;
@@ -62,8 +64,6 @@ architecture mix of scopeio_storage is
 	signal downsampling       : std_logic;
 	signal downsample_dv      : std_logic;
 	signal downsample_data    : std_logic_vector(0 to 2*resizedsample_data'length-1);
-	signal capture_req        : std_logic;
-	signal capture_rdy        : std_logic;
 
 begin
 

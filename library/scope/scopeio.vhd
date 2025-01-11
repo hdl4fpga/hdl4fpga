@@ -175,6 +175,8 @@ architecture beh of scopeio is
 	signal trigger_level  : std_logic_vector(sample_length-1 downto 0);
 	signal trigger_slope  : std_logic;
 	signal trigger_mode   : std_logic_vector(0 to 2-1);
+	signal capture_req    : std_logic;
+	signal capture_rdy    : std_logic;
 	alias trigger_freeze  is trigger_mode(0);
 	alias trigger_oneshot is trigger_mode(1);
 
@@ -393,6 +395,8 @@ begin
 			time_scale   => time_scale,
 			time_offset  => time_offset,
 			trigger_mode => trigger_mode,
+			capture_req  => capture_req,
+			capture_rdy  => capture_rdy,
 
 			video_clk    => video_clk,
 			video_addr   => video_addr,  
@@ -604,16 +608,23 @@ begin
 					else
 						case state is
 						when s_rdy =>
-							stream_frm <= '1';
-							state := s_req;
+							if (capture_rdy xor capture_req)='1' then
+								stream_frm <= '1';
+								state := s_tgr;
+							end if;
 						when s_req =>
 							if trigger_shot='1' then
 								caddr <= dma_caddr;
 								state := s_tgr;
+							elsif (capture_req xor capture_rdy)='0' then
+								stream_frm <= '0';
+								state := s_rdy;
 							end if;
 						when s_tgr =>
-							stream_frm <= '0';
-							state := s_rdy;
+							if (capture_req xor capture_rdy)='0' then
+								stream_frm <= '0';
+								state := s_rdy;
+							end if;
 						end case;
 					end if;
 					inirdy := ctlr_inirdy;
