@@ -32,8 +32,8 @@ entity dmactlr is
 	generic (
 		data_gear    : natural;
 		burst_length : natural := 0;
-		-- bank_size    : natural;
-		-- addr_size    : natural;
+		bank_size    : natural;
+		addr_size    : natural;
 		coln_size    : natural);
 	port (
 
@@ -44,6 +44,7 @@ entity dmactlr is
 		dev_len      : in  std_logic_vector;
 		dev_addr     : in  std_logic_vector;
 		dev_we       : in  std_logic_vector;
+		dev_caddr    : out std_logic_vector(bank_size+addr_size+coln_size-1 downto 0);
 
 		dev_req      : in  std_logic_vector;
 		dev_gnt      : buffer std_logic_vector;
@@ -63,8 +64,8 @@ entity dmactlr is
 		ctlr_fch     : in  std_logic;
 		ctlr_cmd     : in  std_logic_vector(0 to 3-1);
 		ctlr_rw      : out std_logic;
-		ctlr_b       : out std_logic_vector;
-		ctlr_a       : out std_logic_vector);
+		ctlr_b       : out std_logic_vector(bank_size-1 downto 0);
+		ctlr_a       : out std_logic_vector(addr_size-1 downto 0));
 
 end;
 
