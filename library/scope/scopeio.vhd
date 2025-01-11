@@ -531,6 +531,8 @@ begin
 		signal dev_len        : std_logic_vector(0 to 2*dmactlr_len'length-1);
 		signal dev_addr       : std_logic_vector(0 to 2*dmactlr_addr'length-1);
 		signal dev_we         : std_logic_vector(0 to 2-1);
+		signal dma_clen       : std_logic_vector(dmactlr_len'range);
+		signal dma_caddr      : std_logic_vector(dmactlr_addr'range);
 
 		signal dev_req        : std_logic_vector(dev_gnt'range) := (others => '0');
 		signal dev_rdy        : std_logic_vector(dev_gnt'range) := (others => '0');
@@ -543,10 +545,11 @@ begin
 		signal stream_frm : std_logic;
 		signal stream_data : std_logic_vector(input_data'range);
 		signal ba : std_logic_vector(0 to 0); -- Xilinx ISE required
+		constant test : boolean := false;
 	begin
 
-		tst_g : if false generate
-			tst_p : process (input_clk)
+		tst_g : if test generate
+			ptrn_p : process (input_clk)
 				variable data  : unsigned(0 to stream_data'length-1);
 				variable cntr : unsigned(0 to 10);
 				variable inirdy : std_logic;
@@ -583,24 +586,40 @@ begin
 			end process;
 		end generate;
 
-		-- cap_g : if true generate
-			-- process (input_clk)
-				-- variable data    : unsigned(0 to stream_data'length-1);
-				-- variable inirdy : std_logic;
-			-- begin
-				-- if rising_edge(input_clk) then
-					-- stream_data <= input_data;
-					-- if inirdy='0' then
-						-- stream_frm <= '0';
-					-- elsif trigger_shot='1' then
-						-- stream_frm <= '1';
-					-- elsif capture_end='1' then
-						-- stream_frm <= '0';
-					-- end if;
-					-- inirdy := ctlr_inirdy;
-				-- end if;
-			-- end process;
-		-- end generate;
+		cap_g : if not test generate
+			signal caddr : std_logic_vector(dma_caddr'range);
+		begin
+			process (input_clk)
+				type states is (s_rdy, s_req, s_tgr);
+				variable state : states;
+
+				variable data    : unsigned(0 to stream_data'length-1);
+				variable inirdy : std_logic;
+			begin
+				if rising_edge(input_clk) then
+					stream_data <= input_data;
+					if inirdy='0' then
+						stream_frm <= '0';
+						state := s_rdy;
+					else
+						case state is
+						when s_rdy =>
+							stream_frm <= '1';
+							state := s_req;
+						when s_req =>
+							if trigger_shot='1' then
+								caddr <= dma_caddr;
+								state := s_tgr;
+							end if;
+						when s_tgr =>
+							stream_frm <= '0';
+							state := s_rdy;
+						end case;
+					end if;
+					inirdy := ctlr_inirdy;
+				end if;
+			end process;
+		end generate;
 
 		stream_e : entity hdl4fpga.sdram_stream
 		generic map (
@@ -1047,8 +1066,8 @@ begin
 			generic map (
 				burst_length => burst_length,
 				data_gear    => gear,
-				-- bank_size    => ctlrphy_b'length,
-				-- addr_size    => ctlrphy_a'length,
+				bank_size    => ctlrphy_b'length,
+				addr_size    => ctlrphy_a'length,
 				coln_size    => coln_size)
 			port map (
 				devcfg_clk   => sio_clk,
@@ -1057,6 +1076,8 @@ begin
 				dev_len      => dev_len,
 				dev_addr     => dev_addr,
 				dev_we       => dev_we,
+				dma_clen     => dma_clen,
+				dma_caddr    => dma_caddr,
 
 				dev_req      => dev_req,
 				dev_gnt      => dev_gnt,
