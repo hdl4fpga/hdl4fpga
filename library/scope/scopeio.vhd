@@ -56,7 +56,6 @@ entity scopeio is
 		si_irdy       : in  std_logic := '0';
 		si_trdy       : out std_logic := '1';
 		si_data       : in  std_logic_vector;
-		so_clk        : in  std_logic := '-';
 		so_frm        : buffer std_logic;
 		so_irdy       : buffer std_logic;
 		so_trdy       : in  std_logic := '0';
