@@ -633,7 +633,7 @@ begin
 
 		stream_e : entity hdl4fpga.sdram_stream
 		generic map (
-			buffer_size => 256)
+			buffer_size => 1024)
 		port map (
 			stream_clk  => input_clk,
 			stream_frm  => stream_frm,

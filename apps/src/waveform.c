@@ -13,7 +13,7 @@
 char buff[256];
 
 const double vt_step = 3.3/(1<<(SAMPLE_WIDTH-1));
-const double freq = 1.024e6;
+const double freq = 1.024e6/8;
 const double unit = 1.0e-6;
 // pulseview -I csv:column_formats=t,8a data.csv 
 int main (int argc, char *argv[])
@@ -46,7 +46,7 @@ int main (int argc, char *argv[])
 					sample &= (1 << SAMPLE_WIDTH)-1;
 					if (!j) printf("%f, ",(8+n++)/freq);
 					// printf("%4f", vt_step*sample);
-					printf("%d", sample);
+					printf("%5d", sample);
 					j = ++j % CHANNELS;
 					if (j) {
 						printf(", ");
