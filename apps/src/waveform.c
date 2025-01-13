@@ -13,7 +13,7 @@
 char buff[256];
 
 const double vt_step = 3.3/(1<<(SAMPLE_WIDTH-1));
-const double freq = 1.024e6/8;
+const double freq = 1.024e6/10;
 const double unit = 1.0e-6;
 // pulseview -I csv:column_formats=t,8a data.csv 
 int main (int argc, char *argv[])
