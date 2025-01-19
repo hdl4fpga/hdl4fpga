@@ -46,6 +46,7 @@ int main (int argc, char *argv[])
 	nooutput = 0;
 
 	setvbuf(stderr, NULL, _IONBF, 0);
+	setvbuf(stdout, NULL, _IONBF, 0);
 	int c;
 	bool log;
 	bool h;
