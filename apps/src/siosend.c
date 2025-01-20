@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include <stdbool.h>
 #include "siolib.h"
 
@@ -114,6 +115,7 @@ int main (int argc, char *argv[])
 			fprintf (stderr, "\tNo-packet-size mode\n");
 		}
 
+	fcntl(fileno(stdin), F_SETFL, fcntl(fileno(stdin), F_GETFL) & ~O_NONBLOCK);
 #ifdef _WIN32
 	_setmode(_fileno(stdin), _O_BINARY);
 #endif
@@ -129,12 +131,16 @@ int main (int argc, char *argv[])
 			fprintf (stderr, ">>> READING PACKET <<<\n");
 		}
 		if (pktmd) {
-			if (n = fread(&length, sizeof(unsigned short), 1, stdin) > 0) {
+			if ((n = fread(&length, sizeof(unsigned short), 1, stdin)) > 0) {
 				if (log) {
 					fprintf (stderr, "Packet length %d\n", length);
 				}
 				totaldata += n;
-			} else break;
+			} else if (n < 0) {
+				break;
+			} else {
+				break;
+			}
 		}
 
 		if ((n = fread(buffer, sizeof(unsigned char), length, stdin)) > 0) {
@@ -158,7 +164,7 @@ int main (int argc, char *argv[])
 			queue_in = sio_request(buffer, length);
 			sio_dump (stdout, queue_in);
 			delete_queue(queue_in);
-		} else {
+		} else  {
 			if(log) fprintf(stderr, "eof %d\n", feof(stdin));
 			break;
 		}
