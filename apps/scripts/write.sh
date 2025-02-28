@@ -44,3 +44,4 @@ echo  "${DATA}"|xxd -r -ps|./scripts/siocomm.sh |xxd -ps| tr -d '\n'
 
 
 
+

@@ -48,3 +48,4 @@ magick - -resize %width% -size %width% rgb:- | .\bin\rgb8topixel -f %pixel%|.\bi
 
 
 
+
