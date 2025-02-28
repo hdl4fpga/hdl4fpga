@@ -47,3 +47,4 @@ if "%pktmd%"=="PKT" (
 magick - -resize %width% -size %width% rgb:- | .\bin\rgb8topixel -f %pixel%|.\bin\format -b %bsize%|.\bin\bundle -b %baddr% %popt% 
 
 
+

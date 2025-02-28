@@ -34,3 +34,4 @@ stty -F  "${TTY}" "${SPEED}" cs8 raw -echo -cstopb -parenb -onlcr -ocrnl -onlcr 
 
 
 
+

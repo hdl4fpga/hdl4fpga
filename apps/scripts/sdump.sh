@@ -24,3 +24,4 @@ HOST=kit ADDR="$1" LENGTH=0x3ff ./scripts/dump.sh
 
 
 
+

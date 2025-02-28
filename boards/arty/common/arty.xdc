@@ -114,3 +114,4 @@ set_property -dict { PACKAGE_PIN G2  IOSTANDARD LVCMOS18 } [get_ports { jd[10] }
 
 
 
+

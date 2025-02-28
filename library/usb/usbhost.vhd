@@ -215,12 +215,6 @@ begin
 		rqst_txd  => rqst_txd);
 
 	usbrqst_e : entity hdl4fpga.usbhostrqst
-	generic map (
-		device_dscptr    => device_dscptr,
-		config_dscptr    => config_dscptr,  
-		interface_dscptr => interface_dscptr,
-		endpoint_dscptr  => endpoint_dscptr,
-		string_dscptr    => string_dscptr)
 	port map (
 		clk       => clk,
 		cken      => cken,
@@ -245,5 +239,4 @@ begin
 		txd       => rqst_txd);
 
 end;
-
 

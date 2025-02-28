@@ -80,3 +80,4 @@ paletteControl.prototype.mousewheel = function (callback) {
 
 
 
+

@@ -26,3 +26,4 @@ set_input_delay -clock eth_rx_clk 0.0 [get_ports [list eth_rx_dv eth_rxd[*]] ]
 set_clock_groups -asynchronous -group { eth_tx_clk } -group { eth_rx_clk }
 
 
+

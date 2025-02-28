@@ -72,3 +72,4 @@ set_false_path -from [ get_pins sdrphy_e/*/*/ram*/RAM*/CLK ] -to [ get_pins sdrp
 set_false_path -from [ get_pins sdrphy_e/*/*/ram*/RAM*/CLK ] -to [ get_pins sdrphy_e/*/*/*/*/WE ]
 
 
+

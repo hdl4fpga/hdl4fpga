@@ -29,3 +29,4 @@ echo "1902${BADDR}"|xxd -r -ps|./scripts/siocomm.sh|xxd -ps| tr -d '\n'
 
 
 
+
