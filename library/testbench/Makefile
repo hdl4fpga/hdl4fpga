@@ -1775,10 +1775,10 @@ $(HDL4FPGA__scopeio_reading__def) : ../scope/scopeio_reading.vhd \
 		$(HDL4FPGA__mul_ser) \
 		$(HDL4FPGA__rom) \
 		$(HDL4FPGA__videopkg) \
-		$(IEEE__math_real) \
 		$(HDL4FPGA__scopeiopkg) \
 		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__base) \
+		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
