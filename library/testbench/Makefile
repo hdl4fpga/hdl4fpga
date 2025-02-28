@@ -55,8 +55,11 @@ HDL4FPGA__usbphy_rx__def = $(LIB_HDL4FPGA)/usbphy_rx/def.dat
 HDL4FPGA__usbphy_rx = $(LIB_HDL4FPGA)/usbphy_rx/_primary.dat
 HDL4FPGA__usbphy__def = $(LIB_HDL4FPGA)/usbphy/def.dat
 HDL4FPGA__usbphy = $(LIB_HDL4FPGA)/usbphy/_primary.dat
+HDL4FPGA__usbhostrqst__def = $(LIB_HDL4FPGA)/usbhostrqst/def.dat
+HDL4FPGA__usbhostrqst = $(LIB_HDL4FPGA)/usbhostrqst/_primary.dat
 HDL4FPGA__usbhostflow__def = $(LIB_HDL4FPGA)/usbhostflow/def.dat
 HDL4FPGA__usbhostflow = $(LIB_HDL4FPGA)/usbhostflow/_primary.dat
+HDL4FPGA__usbhost = $(LIB_HDL4FPGA)/usbhost/_primary.dat
 HDL4FPGA__usbfltr_sof__def = $(LIB_HDL4FPGA)/usbfltr_sof/def.dat
 HDL4FPGA__usbfltr_sof = $(LIB_HDL4FPGA)/usbfltr_sof/_primary.dat
 HDL4FPGA__usbdevrqst__def = $(LIB_HDL4FPGA)/usbdevrqst/def.dat
@@ -428,8 +431,11 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__usbphy_rx) \
     $(HDL4FPGA__usbphy__def) \
     $(HDL4FPGA__usbphy) \
+    $(HDL4FPGA__usbhostrqst__def) \
+    $(HDL4FPGA__usbhostrqst) \
     $(HDL4FPGA__usbhostflow__def) \
     $(HDL4FPGA__usbhostflow) \
+    $(HDL4FPGA__usbhost) \
     $(HDL4FPGA__usbfltr_sof__def) \
     $(HDL4FPGA__usbfltr_sof) \
     $(HDL4FPGA__usbdevrqst__def) \
@@ -2476,6 +2482,14 @@ $(HDL4FPGA__usbfltr_sof__def) : ../usb/usbfltr_sof.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../usb/usbfltr_sof.vhd
 
+$(HDL4FPGA__usbhost) : ../usb/usbhost.vhd \
+		$(HDL4FPGA__usbpkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../usb/usbhost.vhd
+
 $(HDL4FPGA__usbhostflow) \
 $(HDL4FPGA__usbhostflow__def) : ../usb/usbhostflow.vhd \
 		$(HDL4FPGA__usbpkg) \
@@ -2485,6 +2499,15 @@ $(HDL4FPGA__usbhostflow__def) : ../usb/usbhostflow.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../usb/usbhostflow.vhd
+
+$(HDL4FPGA__usbhostrqst) \
+$(HDL4FPGA__usbhostrqst__def) : ../usb/usbhostrqst.vhd \
+		$(HDL4FPGA__usbpkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../usb/usbhostrqst.vhd
 
 $(HDL4FPGA__usbphy) \
 $(HDL4FPGA__usbphy__def) : ../usb/usbphy.vhd \

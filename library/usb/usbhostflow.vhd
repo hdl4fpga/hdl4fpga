@@ -54,8 +54,8 @@ entity usbhostflow is
 		txbs      : in  std_logic;
 		txd       : buffer std_logic;
 
-		token_req   : buffer std_logic;
-		token_rdy   : in std_logic;
+		token_req   : buffer bit;
+		token_rdy   : in bit;
 		rqst_req    : buffer bit;
 		rqst_rdy    : in  bit;
 		rqstin_req  : buffer  bit;

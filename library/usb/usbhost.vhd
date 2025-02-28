@@ -93,6 +93,9 @@ architecture def of usbhost is
 	signal rqstack_req : bit;
 	signal rqstack_rdy : bit;
 
+	signal token_req : bit;
+	signal token_rdy : bit;
+
 	signal tkdata    : std_logic_vector(0 to 11-1);
 
 	signal tp_phy    : std_logic_vector(1 to 32);
@@ -170,6 +173,8 @@ begin
 
 		clk       => clk,
 		cken      => cken,
+		token_req => token_req,
+		token_rdy => token_rdy,
 
 		rx_req    => rx_req,
 		rx_rdy    => rx_rdy,
@@ -218,6 +223,9 @@ begin
 	port map (
 		clk       => clk,
 		cken      => cken,
+
+		token_req => token_req,
+		token_rdy => token_rdy,
 
 		dev_addr  => dev_addr,
 		dev_cfgd  => dev_cfgd,
