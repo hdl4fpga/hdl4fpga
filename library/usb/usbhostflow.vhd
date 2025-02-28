@@ -129,44 +129,34 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				case state IS
-				when s_idle =>
-					if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
-						if (token_rdy xor token_req)='1' then
-							txpid  <= tk_setup;
-							ddata  <= data0;
-							ddatai <= data0;
-							ddatao <= data0;
-							cntr   := tkdata'length-2;
-							tx_req <= not tx_rdy;
-							state  := s_token;
-						elsif (in_rdy xor in_req)='1' then
-							case tkdata(dev_endp'range) is
-							when (dev_endp'range => '0') =>
-								txpid  <= ddata;
-							when others =>
-								txpid  <= ddatai;
-							end case;
-							tx_req  <= not tx_rdy;
-							if txen='0' then
-								status_req <= not status_rdy;
-							end if;
-							in_rdy <= in_req;
-						elsif (acktx_rdy xor acktx_req)='1' then
-							txpid   <= hs_ack;
-							tx_req  <= not to_stdulogic(to_bit(tx_rdy));
-							acktx_rdy <= acktx_req;
-						end if;
+				if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
+					if (token_rdy xor token_req)='1' then
+						txpid  <= tk_setup;
+						ddata  <= data0;
+						ddatai <= data0;
+						ddatao <= data0;
+						cntr   := tkdata'length-2;
+						tx_req <= not tx_rdy;
 					end if;
-				when s_token =>
-					if txbs='0' then
-						if cntr >= 0 then
-							cntr := cntr - 1;
-						else
-							token_rdy <= token_req;
+					if (in_rdy xor in_req)='1' then
+						case tkdata(dev_endp'range) is
+						when (dev_endp'range => '0') =>
+							txpid  <= ddata;
+						when others =>
+							txpid  <= ddatai;
+						end case;
+						tx_req  <= not tx_rdy;
+						if txen='0' then
+							status_req <= not status_rdy;
 						end if;
+						in_rdy <= in_req;
 					end if;
-				end case;
+					if (acktx_rdy xor acktx_req)='1' then
+						txpid   <= hs_ack;
+						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
+						acktx_rdy <= acktx_req;
+					end if;
+				end if;
 			end if;
 		end if;
 	end process;
@@ -290,13 +280,11 @@ begin
 	end process;
 
 	txen <= 
-		token_txen  when (token_rdy xor token_req)='1' else
 		buffer_txen when txbuffer else
 		rqst_txen   when (ctlr_rdy xor ctlr_req)='1' else
 		dev_txen;
 		
 	txd <= 
-		token_txd  when (token_rdy xor token_req)='1' else
 		buffer_txd when txbuffer else
 		rqst_txd   when (ctlr_rdy xor ctlr_req)='1' else
 		dev_txd;
