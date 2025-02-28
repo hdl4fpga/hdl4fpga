@@ -224,6 +224,8 @@ begin
 		clk       => clk,
 		cken      => cken,
 
+		setup_req => setup_req,
+		setup_rdy => setup_rdy,
 		token_req => token_req,
 		token_rdy => token_rdy,
 

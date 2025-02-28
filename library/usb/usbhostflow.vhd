@@ -58,8 +58,8 @@ entity usbhostflow is
 		token_rdy   : in bit;
 		rqst_req    : buffer bit;
 		rqst_rdy    : in  bit;
-		rqstin_req  : buffer  bit;
-		rqstin_rdy  : in  bit;
+		rqstin_req  : in  bit;
+		rqstin_rdy  : buffer  bit;
 		rqstack_req : buffer  bit;
 		rqstack_rdy : in  bit;
 
