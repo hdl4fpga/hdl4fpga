@@ -1,25 +1,23 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -28,9 +26,9 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.profiles.all;
-use hdl4fpga.sdram_param.all;
-use hdl4fpga.sdram_db.all;
+use hdl4fpga.sdrampkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.app_profiles.all;
@@ -123,7 +121,7 @@ architecture graphics of arty is
 	type sdramparams_record is record
 		id  : sdram_speeds;
 		pll : pll_params;
-		cl  : std_logic_vector(0 to 3-1);
+		cl  : std_logic_vector(0 to 4-1);
 		cwl : std_logic_vector(0 to 3-1);
 	end record;
 
@@ -136,11 +134,11 @@ architecture graphics of arty is
 		-- Divide by   --   3     --   2     --   4     --   1     --   4     --
 		------------------------------------------------------------------------
 
-		(id => sdram333MHz, pll => (clkfbout_mult_f => 10.0, divclk_divide => 3), cl => "001", cwl => "000"),
-		(id => sdram350MHz, pll => (clkfbout_mult_f =>  7.0, divclk_divide => 2), cl => "010", cwl => "000"),
-		(id => sdram375MHz, pll => (clkfbout_mult_f => 15.0, divclk_divide => 4), cl => "010", cwl => "000"),
-		(id => sdram400MHz, pll => (clkfbout_mult_f =>  4.0, divclk_divide => 1), cl => "010", cwl => "000"),
-		(id => sdram425MHz, pll => (clkfbout_mult_f => 17.0, divclk_divide => 4), cl => "011", cwl => "001"),
+		(id => sdram333MHz, pll => (clkfbout_mult_f => 10.0, divclk_divide => 3), cl => "0010", cwl => "000"),
+		(id => sdram350MHz, pll => (clkfbout_mult_f =>  7.0, divclk_divide => 2), cl => "0100", cwl => "000"),
+		(id => sdram375MHz, pll => (clkfbout_mult_f => 15.0, divclk_divide => 4), cl => "0100", cwl => "000"),
+		(id => sdram400MHz, pll => (clkfbout_mult_f =>  4.0, divclk_divide => 1), cl => "0100", cwl => "000"),
+		(id => sdram425MHz, pll => (clkfbout_mult_f => 17.0, divclk_divide => 4), cl => "0110", cwl => "001"),
 
 		------------------------------------------------------------------------
 		-- Frequency   -- 450 Mhz -- 475 Mhz -- 500 Mhz -- 525 Mhz -- 550 Mhz --
@@ -148,11 +146,11 @@ architecture graphics of arty is
 		-- Divide by   --   2     --   4     --   1     --   4     --   4     --
 		------------------------------------------------------------------------
 
-		(id => sdram450MHz, pll => (clkfbout_mult_f =>  9.0, divclk_divide => 2), cl => "011", cwl => "001"),
-		(id => sdram475MHz, pll => (clkfbout_mult_f => 19.0, divclk_divide => 4), cl => "011", cwl => "001"),
-		(id => sdram500MHz, pll => (clkfbout_mult_f =>  5.0, divclk_divide => 1), cl => "011", cwl => "001"),
-		(id => sdram525MHz, pll => (clkfbout_mult_f => 21.0, divclk_divide => 4), cl => "011", cwl => "001"),
-		(id => sdram550MHz, pll => (clkfbout_mult_f => 11.0, divclk_divide => 2), cl => "100", cwl => "010"),  -- latency 9
+		(id => sdram450MHz, pll => (clkfbout_mult_f =>  9.0, divclk_divide => 2), cl => "0110", cwl => "001"),
+		(id => sdram475MHz, pll => (clkfbout_mult_f => 19.0, divclk_divide => 4), cl => "0110", cwl => "001"),
+		(id => sdram500MHz, pll => (clkfbout_mult_f =>  5.0, divclk_divide => 1), cl => "0110", cwl => "001"),
+		(id => sdram525MHz, pll => (clkfbout_mult_f => 21.0, divclk_divide => 4), cl => "0110", cwl => "001"),
+		(id => sdram550MHz, pll => (clkfbout_mult_f => 11.0, divclk_divide => 2), cl => "1000", cwl => "010"),  -- latency 9
 		-- 
 		---------------------------------------
 		-- Frequency   -- 575 Mhz -- 600 Mhz --
@@ -160,8 +158,8 @@ architecture graphics of arty is
 		-- Divide by   --   4     --   1     --
 		---------------------------------------
 
-		(id => sdram575MHz, pll => (clkfbout_mult_f => 23.0, divclk_divide => 4), cl => "101", cwl => "010"),  -- latency 9
-		(id => sdram600MHz, pll => (clkfbout_mult_f =>  6.0, divclk_divide => 1), cl => "101", cwl => "010")); -- latency 9
+		(id => sdram575MHz, pll => (clkfbout_mult_f => 23.0, divclk_divide => 4), cl => "1010", cwl => "010"),  -- latency 9
+		(id => sdram600MHz, pll => (clkfbout_mult_f =>  6.0, divclk_divide => 1), cl => "1010", cwl => "010")); -- latency 9
 
 	function sdramparams (
 		constant id  : sdram_speeds)
@@ -185,12 +183,8 @@ architecture graphics of arty is
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (gclk100_per*real(sdram_params.pll.divclk_divide))/sdram_params.pll.clkfbout_mult_f; -- 1 ns /1ps
 
-	constant bank_size    : natural := ddr3_ba'length;
-	constant addr_size    : natural := ddr3_a'length;
-	constant coln_size    : natural := 10;
-	constant word_size    : natural := ddr3_dq'length;
-	constant byte_size    : natural := ddr3_dq'length/ddr3_dqs_p'length;
-	constant gear         : natural := 4;
+	constant phy_data     : string  := hdo(phy_db)**".xc7vg4";
+	constant gear         : natural := hdo(phy_data)**".orgz.gear";
 
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk0x2     : std_logic;
@@ -232,21 +226,21 @@ architecture graphics of arty is
 	signal ctlrphy_a      : std_logic_vector(gear/2*ddr3_a'length-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*ddr3_dm'length-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*ddr3_dm'length-1 downto 0);
 	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*ddr3_dq'length-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*ddr3_dq'length-1 downto 0);
 	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*ddr3_dqs_p'length-1 downto 0);
 
 	signal ddr3_clk       : std_logic_vector(1-1 downto 0);
-	signal ddr3_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr3_dqo       : std_logic_vector(word_size-1 downto 0);
-	signal ddr3_dqt       : std_logic_vector(word_size-1 downto 0);
+	signal ddr3_dqst      : std_logic_vector(ddr3_dqs_p'length-1 downto 0);
+	signal ddr3_dqso      : std_logic_vector(ddr3_dqs_p'length-1 downto 0);
+	signal ddr3_dqsi      : std_logic_vector(ddr3_dqs_p'length-1 downto 0);
+	signal ddr3_dqo       : std_logic_vector(ddr3_dq'length-1 downto 0);
+	signal ddr3_dqt       : std_logic_vector(ddr3_dq'length-1 downto 0);
 
 	signal video_clk      : std_logic := '0';
 	signal video_lckd     : std_logic := '0';
@@ -553,7 +547,7 @@ begin
 
 	end generate;
 
-	ipoe_e : if io_link=io_ipoe generate
+	ipoe_g : if io_link=io_ipoe generate
 
 		alias  mii_rxc    : std_logic is eth_rx_clk;
 		alias  mii_rxdv   : std_logic is eth_rx_dv;
@@ -620,8 +614,7 @@ begin
 				dst_offset => 0,
 				src_offset => 2,
 				check_sov  => false,
-				check_dov  => true,
-				gray_code  => false)
+				check_dov  => true)
 			port map (
 				src_clk  => mii_rxc,
 				src_data => rxc_rxbus,
@@ -703,26 +696,9 @@ begin
 		debug        => debug,
 		profile      => 1,
 		sdram_tcp    => 2.0*sdram_tcp,
-		mark         => MT41K2G125,
+		phy_data     => hdo(phy_db)**".xc7vg4",
+		sdram_data   => hdo(sdram_db)**".MT41K128M16-125",
 		burst_length => 8,
-		gear         => gear,
-		bank_size    => bank_size,
-		addr_size    => addr_size,
-		coln_size    => coln_size,
-		word_size    => word_size,
-		byte_size    => byte_size,
-		phy_latencies => (
-    		STRL   =>  9,
-    		DQSL   =>  1,
-    		DQSZL  =>  1,
-    		DQZL   => -1,
-    		WWNL   => -1,
-    		STRXL  =>  0,
-    		DQSZXL =>  2,
-    		DQSXL  =>  2,
-    		DQZXL  =>  0,
-    		WWNXL  =>  0,
-    		WIDL   =>  4),
 		dvid_fifo    => true,
 		timing_id    => videoparam(video_mode).timing,
 		video_gear   => video_gear,
@@ -752,7 +728,7 @@ begin
 
 		ctlr_clk     => ddr_clk0,
 		ctlr_rst     => sdrphy_rst0,
-		ctlr_bl      => "000",
+		ctlr_bl      => "00",
 		ctlr_cl      => sdram_params.cl,
 		ctlr_cwl     => sdram_params.cwl,
 		ctlr_rtt     => "001",
@@ -767,6 +743,7 @@ begin
 		ctlrphy_trdy => ctlrphy_trdy,
 		ctlrphy_ini  => ctlrphy_ini,
 		ctlrphy_rw   => ctlrphy_rw,
+
 		ctlrphy_rst  => ctlrphy_rst(0),
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),
@@ -824,10 +801,10 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
-		bank_size   => bank_size,
-		addr_size   => addr_size,
-		word_size   => word_size,
-		byte_size   => byte_size,
+	    bank_size   => ddr3_ba'length,
+	    addr_size   => ddr3_a'length,
+	    word_size   => ddr3_dq'length,
+		byte_size   => ddr3_dq'length/ddr3_dqs_p'length,
 		gear        => gear,
 		ba_latency  => 1,
 		device      => xc7a,

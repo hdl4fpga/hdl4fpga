@@ -1,25 +1,23 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 use std.textio.all;
 
@@ -41,6 +39,7 @@ architecture arty_scopeio of testbench is
 
 	component arty is
 		generic (
+			tsttab     : boolean := true;
 			debug      : boolean := false);
 		port (
 			btn        : in  std_logic_vector(4-1 downto 0) := (others => '0');
@@ -151,7 +150,7 @@ architecture arty_scopeio of testbench is
 	signal xtal_n     : std_logic := '0';
 	signal xtal_p     : std_logic := '0';
 
-	signal btn0       : std_logic;
+	signal btn        : std_logic_vector(4-1 downto 0) := (others => '0');
 
 begin
 
@@ -161,10 +160,14 @@ begin
 	xtal_p <= not xtal after 5 ns;
 	xtal_n <=     xtal after 5 ns;
 
-	btn0   <= '1', '1' after 2 us;
+	btn <= x"0";
+		-- x"1" after 1.00 us, x"1" after  1.1 us; 
+	--	x"1" after 500 us, x"0" after  501 us;
+		-- x"2" after 4.00 us, x"0" after  4.1 us; 
 
     ipoetb_e : entity work.ipoe_tb
 	generic map (
+		delay1 => 38 us,
 		snd_data => snd_data,
 		req_data => req_data)
 	port map (
@@ -177,10 +180,12 @@ begin
 
 	du_e : arty
 	generic map (
-		debug => true)
+		tsttab => true,
+		debug => false)
 	port map (
 		sw          => "0000",
 
+		btn         => btn,
 		gclk100     => xtal,
 		eth_rstn    => open,
 		eth_ref_clk => mii_refclk,
@@ -213,6 +218,7 @@ begin
 		ddr3_dm    => dm,
 		ddr3_odt   => odt);
 
+	
 	mt_u : ddr3_model
 	port map (
 		rst_n   => rst_n,
@@ -241,6 +247,7 @@ configuration arty_scopeio_structure_md of testbench is
 			use entity work.arty(structure);
 		end for;
 
+		
 		for all : ddr3_model
 			use entity micron.ddr3
 			port map (
@@ -292,5 +299,7 @@ configuration arty_scopeio_md of testbench is
 				tdqs_n  => tdqs_n,
 				Odt     => odt);
 		end for;
+
 	end for;
 end;
+

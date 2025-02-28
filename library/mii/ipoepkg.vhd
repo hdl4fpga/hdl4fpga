@@ -1,25 +1,23 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -153,6 +151,13 @@ package ipoepkg is
 	function aton (
 		constant ipa : string)
 		return std_logic_vector;
+
+	function udp_checksummed(
+		constant src  : std_logic_vector(0 to 32-1);
+		constant dst  : std_logic_vector(0 to 32-1);
+		constant udp  : std_logic_vector)
+		return std_logic_vector;
+
 end;
 
 package body ipoepkg is
@@ -181,5 +186,53 @@ package body ipoepkg is
 		return std_logic_vector(retval);
 	end;
 
+	function udp_checksummed(
+		constant src  : std_logic_vector(0 to 32-1);
+		constant dst  : std_logic_vector(0 to 32-1);
+		constant udp  : std_logic_vector)
+		return std_logic_vector is
+
+    	function oneschecksum (
+    		constant data : std_logic_vector;
+    		constant size : natural)
+    		return std_logic_vector is
+    		constant n        : natural := (data'length+size-1)/size;
+    		variable aux      : unsigned(0 to n*size-1);
+    		variable checksum : unsigned(0 to size);
+    		variable retval   : std_logic_vector(0 to size-1);
+    	begin
+    		aux := (others => '0');
+    		aux(0 to data'length-1) := unsigned(data);
+    		checksum := ('0', others => '1');
+    		for i in 0 to n-1 loop
+    			checksum := checksum + resize(aux(0 to size-1), checksum'length);
+    			if checksum(0)='1' then
+    				checksum := checksum + to_unsigned(1, checksum'length); -- Xilinx's bug
+    			end if;
+    			checksum(0) := '0';
+    			aux := aux sll size;
+    		end loop;
+    		return std_logic_vector(checksum(1 to size));
+    	end;
+
+		variable len : unsigned(0 to 16-1);
+		variable aux : unsigned(0 to udp'length+src'length+32+dst'length-1) := (others => '0');
+	begin
+		aux(0 to udp'length-1) := unsigned(udp);
+		len := aux(32 to 48-1);
+		aux := aux rol udp'length;
+		aux(src'range) := unsigned(src);
+		aux := aux rol src'length;
+		aux(dst'range) := unsigned(dst);
+		aux := aux rol dst'length;
+		aux( 0 to 16-1) := x"0011";
+		aux(16 to 32-1) := len;
+		aux := aux rol 32;
+
+		aux(48 to 64-1) := unsigned(oneschecksum(not std_logic_vector(aux), 16));
+		return std_logic_vector(aux(0 to udp'length-1));
+	end;
+
 end;
+
 

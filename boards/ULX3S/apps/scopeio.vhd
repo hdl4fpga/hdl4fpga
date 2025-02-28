@@ -1,25 +1,23 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -28,18 +26,19 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.jso.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.app_profiles.all;
 use hdl4fpga.ecp5_profiles.all;
 use hdl4fpga.videopkg.all;
-use hdl4fpga.textboxpkg.all;
 use hdl4fpga.scopeiopkg.all;
+use hdl4fpga.sdrampkg.all;
 
 library ecp5u;
 use ecp5u.components.all;
 
 architecture scopeio of ulx3s is
 
+	constant tsttab : boolean := false;
 	--------------------------------------
 	--     Set your profile here        --
 	constant io_link      : io_comms     := io_usb;
@@ -52,11 +51,19 @@ architecture scopeio of ulx3s is
 	-- constant sdram_speed  : sdram_speeds := sdram225MHz; 
 	--------------------------------------
 
+	constant adc1clkref_freq : real := 64.0e6;
+	constant adc1clki_div    : natural := 5;
+	constant adc1clkos_div   : natural := 32;
+	constant adc1clkos2_div  : natural := 25;
+	constant adc1clkos_freq  : real := adc1clkref_freq/real(adc1clki_div);
+	constant adc1clkos2_freq : real := (real(adc1clkos_div)*adc1clkref_freq)/(real(adc1clkos2_div)*real(adc1clki_div));
+	constant sdram_freq      : real := (real(adc1clkos_div)*adc1clkref_freq)/(real(3)*real(adc1clki_div));
+
 	constant usb_oversampling : natural := 3;
 
 	constant video_params : video_record := videoparam(video_mode, clk25mhz_freq);
 
-	constant video_gear  : natural      := 2;
+	constant video_gear  : natural := 2;
 	signal video_clk     : std_logic;
 	signal video_eclk    : std_logic;
 	signal video_shift_clk : std_logic;
@@ -64,6 +71,7 @@ architecture scopeio of ulx3s is
 	signal video_lck     : std_logic;
 	signal video_hzsync  : std_logic;
 	signal video_vtsync  : std_logic;
+	signal video_vton    : std_logic;
 	signal video_blank   : std_logic;
 	signal video_pixel   : std_logic_vector(0 to 24-1);
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
@@ -89,94 +97,150 @@ architecture scopeio of ulx3s is
 	signal input_chno    : std_logic_vector(4-1 downto 0);
 	signal input_ena     : std_logic;
 	signal input_sample  : std_logic_vector(13-1 downto 0);
-	constant vt_step     : real := 3.3e3*milli/2.0**(input_sample'length-1); -- Volts
-	signal input_enas    : std_logic;
+	constant vt_step     : real := 3.3/2.0**(input_sample'length-1); -- Volts
+	signal input_enas    : std_logic := '0';
 	signal input_samples : std_logic_vector(0 to inputs*input_sample'length-1);
 	signal tp            : std_logic_vector(1 to 32);
 
-	signal usb_frm       : std_logic;
-	signal usb_irdy      : std_logic;
-	signal usb_trdy      : std_logic := '1';
-	signal usb_data      : std_logic_vector(si_data'range);
+	signal usblnk_frm    : std_logic;
+	signal usblnk_irdy   : std_logic;
+	signal usblnk_trdy   : std_logic := '1';
+	signal usblnk_data   : std_logic_vector(si_data'range);
 
+	signal setup_frm    : std_logic;
+	signal setup_irdy   : std_logic;
+	signal setup_trdy   : std_logic := '1';
+	signal setup_data   : std_logic_vector(si_data'range);
+
+	signal iolink_frm    : std_logic;
+	signal iolink_irdy   : std_logic;
+	signal iolink_trdy   : std_logic;
+	signal iolink_data   : std_logic_vector(si_data'range);
 
 	signal adc_clk       : std_logic;
 
-	constant layout      : string := 
-            "{                             " &   
-            "   inputs  : 8,               " &
-            "   num_of_segments : 3,       " &
-            "   display : {                " &
-            "       width  : 1280,         " &
-            "       height : 720},         " &
-            "   grid : {                   " &
-            "       unit   : 32,           " &
-            "       width  :               " & natural'image(31*32+1) & ',' &
-            "       height :               " & natural'image( 6*32+1) & ',' &
-            "       color  : 0xff_ff_00_00, " &
-            "       background-color : 0xff_00_00_00}," &
-            "   axis : {                   " &
-            "       fontsize   : 8,        " &
-            "       horizontal : {         " &
-            "           unit   : 31.25e-6, " &
-            "           height : 8,        " &
-            "           inside : false,    " &
-            "           color  : 0xff_ff_ff_ff," &
-            "           background-color : 0xff_00_00_ff}," &
-            "       vertical : {           " &
-            "           unit   : 50.00e-3," &
-            "           width  :           " & natural'image(6*8) & ','  &
-            "           rotate : ccw0,     " &
-            "           inside : false,    " &
-            "           color  : 0xff_ff_ff_ff," &
-            "           background-color : 0xff_00_00_ff}}," &
-            "   textbox : {                " &
-            "       font_width :  8,       " &
-            "       width      :           " & natural'image(32*6+1) & ','&
-            "       inside     : false,    " &
-            "       color      : 0xff_ff_ff_ff," &
-            "       background-color : 0xff_00_00_00}," &
-            "   main : {                   " &
-            "       top        : 23,       " & 
-            "       left       :  3,       " & 
-            "       right      :  0,       " & 
-            "       bottom     :  0,       " & 
-            "       vertical   : 16,       " & 
-            "       horizontal :  0,       " &
-            "       background-color : 0xff_00_00_00}," &
-            "   segment : {                " &
-            "       top        : 1,        " &
-            "       left       : 1,        " &
-            "       right      : 1,        " &
-            "       bottom     : 1,        " &
-            "       vertical   : 0,        " &
-            "       horizontal : 1,        " &
-            "       background-color : 0xff_00_00_00}," &
-            "  vt : [                      " &
-            "   { label : GN14,            " &
-            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
-            "     color : 0xff_ff_ff_ff},  " &
-            "   { label : GP14,            " &
-            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
-            "     color : 0xff_ff_ff_00},  " & -- vt(1)
-            "   { label : GN15,            " &
-            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
-            "     color : 0xff_ff_00_ff},  " & -- vt(2)
-            "   { label : GP15,            " &
-            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
-            "     color : 0xff_ff_00_00},  " & -- vt(3)
-            "   { label : GN16,            " &
-            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
-            "     color : 0xff_00_ff_ff},  " & -- vt(4)
-            "   { label : GP16,            " &
-            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
-            "     color : 0xff_00_ff_00},  " & -- vt(5)
-            "   { label : GN17,            " &
-            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
-            "     color : 0xff_00_00_ff},  " & -- vt(6)
-            "   { label : GP17,            " &
-            "     step  : '" & real'image(3.3/2.0**(input_sample'length-1)) & "'," &
-            "     color : 0xff_ff_ff_ff}]}";   -- vt(7)
+	constant time_factors : string := compact( 
+		"[" &
+			natural'image(2**(0+0)*5**(0+0)) & "," & -- [0]
+			natural'image(2**(0+0)*5**(0+0)) & "," & -- [1]
+			natural'image(2**(0+0)*5**(0+0)) & "," & -- [2]
+			natural'image(2**(0+0)*5**(0+0)) & "," & -- [3]
+			natural'image(2**(0+0)*5**(0+0)) & "," & -- [4]
+			natural'image(2**(1+0)*5**(0+0)) & "," & -- [5]
+			natural'image(2**(2+0)*5**(0+0)) & "," & -- [6]
+			natural'image(2**(0+0)*5**(1+0)) & "," & -- [7]
+			natural'image(2**(0+1)*5**(0+1)) & "," & -- [8]
+			natural'image(2**(1+1)*5**(0+1)) & "," & -- [9]
+			natural'image(2**(2+1)*5**(0+1)) & "," & -- [10]
+			natural'image(2**(0+1)*5**(1+1)) & "," & -- [11]
+			natural'image(2**(0+2)*5**(0+2)) & "," & -- [12]
+			natural'image(2**(1+2)*5**(0+2)) & "," & -- [13]
+			natural'image(2**(2+2)*5**(0+2)) & "," & -- [14]
+			natural'image(2**(0+2)*5**(1+2)) & "," & -- [15]
+		"length : 16].");
+
+	constant layout      : string := compact(
+			"{                             " &   
+			"    inputs          : " & natural'image(inputs) & ',' &
+			"    waveform        : { " &
+			"       num_of_segments :   3,     " &
+			"       display : {                " &
+			"           width  : 1280,         " &
+			"           height : 720},         " &
+			"       grid : {                   " &
+			"           width  : " & natural'image(32*32+1) & ',' &
+			"           height : " & natural'image( 6*32+1) & ',' &
+			"           color  : 0xff_ff_00_ff," &
+			"           background-color : 0xff_00_00_00}," &
+			"       axis : {                   " &
+			"           horizontal : {         " &
+			"               unit   : 31.25e-6, " &
+			"               scales : " & time_factors &"," &
+			"               color  : 0xff_00_00_00," &
+			"               background-color : 0xff_00_ff_ff}," &
+			"           vertical : {           " &
+			"               unit   : 50.00e-3, " &
+			"               width  : " & natural'image(6*8) & ','  &
+			"               color  : 0xff_00_00_00," &
+			"               background-color : 0xff_00_ff_ff}}," &
+			"       textbox : {                " &
+			"           width      : " & natural'image(6*32) & ','&
+			"           color      : 0xff_ff_00_ff," &
+			"           background-color : 0xff_00_00_00}," &
+			"       main : {                   " &
+			"           top        : 27,       " & 
+			"           bottom     :  0,       " & 
+			"           left       :  5,       " & 
+			"           right      :  0,       " & 
+			"           vertical   : 27,       " & 
+			"           horizontal :  1,       " &
+			"           background-color : 0xff_00_00_00}," &
+			"       segment : {                " &
+			"           top        : 1,        " &
+			"           left       : 1,        " &
+			"           right      : 1,        " &
+			"           bottom     : 1,        " &
+			"           vertical   : 1,        " &
+			"           horizontal : 1,        " &
+			"           background-color : 0xff_ff_ff_ff}," &
+			"    vt : [                      " &
+			"     { text  : GN14,            " &
+			"       step  : " & real'image(vt_step) & "," &
+			"       color : 0xff_00_ff_ff},  " & -- vt(0)
+			"     { text  : GP14,            " &
+			"       step  : " & real'image(vt_step) & "," &
+			"       color : 0xff_ff_ff_ff},  " & -- vt(1)
+			"     { text  : GN15,            " &
+			"       step  : " & real'image(vt_step) & "," &
+			"       color : 0xff_00_ff_ff},  " & -- vt(2)
+			"     { text  : GP15,            " &
+			"       step  : " & real'image(vt_step) & "," &
+			"       color : 0xff_ff_ff_ff},  " & -- vt(3)
+			"     { text  : GN16,            " &
+			"       step  : " & real'image(vt_step) & "," &
+			"       color : 0xff_00_ff_ff},  " & -- vt(4)
+			"     { text  : GP16,            " &
+			"       step  : " & real'image(vt_step) & "," &
+			"       color : 0xff_ff_ff_ff},  " & -- vt(5)
+			"     { text  : GN17,            " &
+			"       step  : " & real'image(vt_step) & "," &
+			"       color : 0xff_00_ff_ff},  " & -- vt(6)
+			"     { text  : GP17,            " &
+			"       step  : " & real'image(vt_step) & "," &
+			"       color : 0xff_ff_ff_ff}]}}");   -- vt(7)
+
+	-- constant sdram_data   : string  := "none";
+	-- constant phy_data     : string  := "none";
+	constant sdram_data  : string  := hdo(sdram_db)**".MT48LC16M16MA2-7E";
+	constant phy_data    : string  := hdo(phy_db)**".ecp5g1";
+	constant gear        : natural := hdo(phy_data)**".orgz.gear=1.";
+	constant bank_length : natural := setif(sdram_data/="none", sdram_ba'length,  1);
+	constant addr_length : natural := setif(sdram_data/="none", sdram_a'length,   1);
+	constant data_mask   : natural := setif(sdram_data/="none", sdram_dqm'length, 1);
+	constant data_length : natural := setif(sdram_data/="none", sdram_d'length,   1);
+
+	signal ctlr_clk      : std_logic;
+	signal sdrsys_rst    : std_logic;
+
+	constant sdram_params : sdramparams_record := sdramparams(sdram200MHz, clk25mhz_freq);
+	
+	signal ctlrphy_rst   : std_logic;
+	signal ctlrphy_cke   : std_logic;
+	signal ctlrphy_cs    : std_logic;
+	signal ctlrphy_ras   : std_logic;
+	signal ctlrphy_cas   : std_logic;
+	signal ctlrphy_we    : std_logic;
+	signal ctlrphy_b     : std_logic_vector(bank_length-1 downto 0);
+	signal ctlrphy_a     : std_logic_vector(addr_length-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(gear*data_mask-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(gear*data_length-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(gear*data_length-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
+	signal sdrphy_sti    : std_logic_vector(gear-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(gear*data_mask-1 downto 0);
+	signal sdram_dqs     : std_logic_vector(data_mask-1 downto 0);
+
 begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
@@ -187,7 +251,6 @@ begin
 		default_gear => video_gear,
 		video_params => video_params)
 	port map (
-		clk_rst     => right,
 		clk_ref     => clk_25mhz,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
@@ -196,7 +259,6 @@ begin
 		video_lck   => video_lck);
 
 	usb_g : if io_link=io_usb generate
-		signal tp : std_logic_vector(1 to 32);
 		signal usb_cken : std_logic;
 		signal fltr_en : std_logic;
 		signal fltr_bs : std_logic;
@@ -211,7 +273,6 @@ begin
 		usb_fpga_bd_dp <= 'Z';
 		usb_fpga_bd_dn <= 'Z';
 
-		sio_clk  <= videoio_clk;
 
 		-- led(7) <= tp(4);
 
@@ -219,7 +280,6 @@ begin
 		generic map (
 			usb_oversampling => usb_oversampling)
 		port map (
-			tp        => tp,
 			usb_clk   => videoio_clk,
 			usb_cken  => usb_cken,
 			usb_dp    => usb_fpga_dp,
@@ -232,59 +292,188 @@ begin
 			si_end    => so_end,
 			si_data   => so_data,
 	
-			so_frm    => usb_frm,
-			so_irdy   => usb_irdy,
-			so_trdy   => usb_trdy,
-			so_data   => usb_data);
+			so_frm    => usblnk_frm,
+			so_irdy   => usblnk_irdy,
+			so_trdy   => usblnk_trdy,
+			so_data   => usblnk_data);
 	end generate;
 
-	assert io_link=io_usb
-	report "unsupported implementation "
-	severity FAILURE;
+	setup_b : block
+		port (
+			sio_clk : in  std_logic;
+			si_frm  : in  std_logic;
+			si_irdy : in  std_logic := '1';
+			si_trdy : out std_logic;
+			si_data : in  std_logic_vector;
+			so_frm  : out std_logic;
+			so_irdy : out std_logic;
+			so_trdy : in  std_logic := '1';
+			so_data : out std_logic_vector);
+		port map (
+			sio_clk => sio_clk,
+			si_frm  => usblnk_frm,
+			si_irdy => usblnk_irdy,
+			si_trdy => usblnk_trdy,
+			si_data => usblnk_data,
+			so_frm  => setup_frm,
+			so_irdy => setup_irdy,
+			so_trdy => setup_trdy,
+			so_data => setup_data);
+			
+		signal setup_req : std_logic := '0';
+		signal setup_rdy : std_logic := '0';
 
+		signal setup_frm  : std_logic := '0';
+		signal setup_irdy : std_logic := '0';
+		signal setup_trdy : std_logic := '1';
+		signal setup_data : std_logic_vector(si_data'range);
+
+		signal data      : std_logic_vector(0 to 8-1);
+		constant bitdata : std_logic_vector := rid_hzaxis & x"02" & x"0" & x"4" & (0 to hzoffset_maxsize-1 => '0');
+		constant bitrom_length : natural := data'length*((bitdata'length+data'length-1)/data'length);
+		constant bitrom  : std_logic_vector := std_logic_vector(resize(reverse(unsigned(bitdata)), bitrom_length));
+		constant addr_length : natural := unsigned_num_bits((bitdata'length+data'length-1)/data'length-1);
+		signal  addr     : unsigned(0 to addr_length) := to_unsigned(bitrom'length/data'length-1, addr_length+1);
+
+	begin
+
+		mem_e : entity hdl4fpga.rom 
+		generic map (
+			bitrom => bitrom)
+		port map (
+			clk  => sio_clk,
+			addr => std_logic_vector(addr(1 to addr'right)),
+			data => data);
+			
+		process(setup_rdy, sio_clk)
+		begin
+			if rising_edge(sio_clk) then
+				if video_lck='0' then
+					setup_frm  <= '0';
+					setup_irdy <= '0';
+					addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
+					setup_req <= not setup_rdy;
+				elsif si_frm='1' then 
+					setup_frm  <= '0';
+					setup_irdy <= '0';
+					addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
+				elsif (setup_rdy xor setup_req)='1' then
+					if so_trdy='1' then
+						if addr(0)='0' then
+							setup_frm  <= '1';
+							setup_irdy <= '1';
+							addr <= addr - 1;
+						else
+							setup_frm  <= '0';
+							setup_irdy <= '0';
+							setup_rdy  <= setup_req;
+							addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
+						end if;
+					end if;
+				else
+					setup_frm  <= '0';
+					setup_irdy <= '0';
+					addr <= to_unsigned(bitrom'length/data'length-1, addr'length);
+				end if;
+				setup_data <= data;
+			end if;
+		end process;
+
+		so_frm  <= si_frm  when si_frm='1' else setup_frm;
+		so_irdy <= si_irdy when si_frm='1' else setup_irdy;
+		si_trdy <= so_trdy when setup_frm='0' else '0';
+		so_data <= si_data when si_frm='1' else setup_data;
+
+	end block;
+-- 
+	-- setup_frm   <= usblnk_frm;
+	-- setup_irdy  <= usblnk_irdy;
+	-- usblnk_trdy <= setup_trdy;
+	-- setup_data  <= usblnk_data;
+
+	led <= tp(1 to 8);
+	stactlr_e : entity hdl4fpga.scopeio_stactlr
+	generic map (
+		debug => debug,
+		layout => layout)
+	port map (
+		left    => left,
+		up      => up,
+		down    => down ,
+		right   => right,
+		video_vton => video_vton,
+		sio_clk => sio_clk,
+		si_frm  => setup_frm,
+		si_irdy => setup_irdy,
+		si_trdy => setup_trdy,
+		si_data => setup_data,
+		so_frm  => iolink_frm,
+		so_irdy => iolink_irdy,
+		so_trdy => iolink_trdy,
+		so_data => iolink_data);
+
+	-- iolink_frm  <= setup_frm;
+	-- iolink_irdy <= setup_irdy;
+	-- setup_trdy  <= iolink_trdy;
+	-- iolink_data <= setup_data;
+
+	-- iolink_frm  <= usblnk_frm;
+	-- iolink_irdy <= usblnk_irdy;
+	-- usblnk_trdy  <= iolink_trdy;
+	-- iolink_data <= usblnk_data;
 	inputs_b : block
-		signal rgtr_id   : std_logic_vector(8-1 downto 0);
-		signal rgtr_dv   : std_logic;
-		signal rgtr_data : std_logic_vector(0 to 32-1);
-		signal rgtr_revs : std_logic_vector(rgtr_data'reverse_range);
+		constant mux_sampling : natural := 10;
 
-		signal hz_dv      : std_logic;
-		signal hz_scale   : std_logic_vector(4-1 downto 0);
-		signal hz_slider  : std_logic_vector(hzoffset_bits-1 downto 0);
-		signal input_max  : natural range 0 to inputs-1;
-		signal opacity    : unsigned(0 to inputs-1);
+		signal rgtr_id      : std_logic_vector(8-1 downto 0);
+		signal rgtr_dv      : std_logic;
+		signal rgtr_trdy    : std_logic;
+		signal rgtr_data    : std_logic_vector(0 to 32-1);
+		signal rgtr_revs    : std_logic_vector(rgtr_data'reverse_range);
+
+		signal hz_dv        : std_logic;
+		signal hz_scale     : std_logic_vector(4-1 downto 0);
+		signal hz_slider    : std_logic_vector(hzoffset_bits-1 downto 0);
+		signal max_input    : natural range 0 to mux_sampling-1;
+		signal opacity      : unsigned(0 to inputs-1);
 		signal opacity_frm  : std_logic;
 		signal opacity_data : std_logic_vector(si_data'range);
 
 	begin
 
 		process (hz_scale)
+			variable no_inputs : natural range 0 to mux_sampling-1;
 		begin
 			case hz_scale is
 			when x"0" =>
-				opacity   <= b"1000_0000";
-				input_max <= 1-1;
+				no_inputs := hdl4fpga.base.min(inputs-1, 1-1);
 			when x"1" =>
-				opacity   <= b"1100_0000";
-				input_max <= 2-1;
+				no_inputs := hdl4fpga.base.min(inputs-1, 2-1);
 			when x"2" =>
-				opacity   <= b"1111_0000";
-				input_max <= 4-1;
+				no_inputs := hdl4fpga.base.min(inputs-1, 4-1);
+			when x"3" =>
+				no_inputs := hdl4fpga.base.min(inputs-1, 5-1);
 			when others =>
-				opacity   <= b"1111_1111";
-				input_max <= 8-1;
+				no_inputs := 10-1;
 			end case;
+			for i in opacity'range loop
+				if i <= no_inputs then
+					opacity(i) <= '1';
+				else
+					opacity(i) <= '0';
+				end if;
+			end loop;
+			max_input <= no_inputs;
 		end process;
 
-		process(input_clk)
+		process(input_enas, input_clk)
 			variable cntr : unsigned(input_chni'range) := (others => '0');
 		begin
 			if rising_edge(input_clk) then
 				if input_ena='1' then
-					if cntr >= input_max then
+					if cntr >= max_input then
 						cntr := (others => '0');
 						input_enas <= '1';
-					elsif cntr >= opacity'length-1 then
+					elsif cntr >= mux_sampling-1 then 
 						cntr := (others => '0');
 						input_enas <= '1';
 					else
@@ -301,11 +490,13 @@ begin
 		sio_sin_e : entity hdl4fpga.sio_sin
 		port map (
 			sin_clk   => sio_clk,
-			sin_frm   => usb_frm,
-			sin_irdy  => usb_irdy,
-			sin_data  => usb_data,
+			sin_frm   => iolink_frm,
+			sin_irdy  => iolink_irdy,
+			sin_trdy  => iolink_trdy,
+			sin_data  => iolink_data,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
+			rgtr_trdy => rgtr_trdy,
 			rgtr_data => rgtr_data);
 		rgtr_revs <= reverse(rgtr_data,8);
 
@@ -318,7 +509,7 @@ begin
 
 			hz_dv     => hz_dv,
 			hz_scale  => hz_scale,
-			hz_slider => hz_slider);
+			hz_offset => hz_slider);
 
 		process (opacity, sio_clk)
 			variable data : unsigned(0 to inputs*32-1);
@@ -331,7 +522,9 @@ begin
 					cntr := (others => '0');
 				end if;
 				if cntr < (data'length+opacity_data'length-1)/opacity_data'length then
-					opacity_frm <= not usb_frm;
+					if opacity_frm='0' then
+						opacity_frm <= not iolink_frm;
+					end if;
 				else
 					opacity_frm <= '0';
 				end if;
@@ -344,48 +537,128 @@ begin
 			opacity_data <= multiplex(reverse(std_logic_vector(data),8), std_logic_vector(cntr), opacity_data'length);
 		end process;
 
-		si_frm  <= usb_frm  when opacity_frm='0' else '1';
-		si_irdy <= usb_irdy when opacity_frm='0' else '1';
-		si_data <= usb_data when opacity_frm='0' else opacity_data;
+		rgtr_trdy <= '1' when opacity_frm='0' else '0';
+		si_frm  <= iolink_frm  when opacity_frm='0' else '1';
+		si_irdy <= iolink_irdy when opacity_frm='0' else '1';
+		si_data <= iolink_data when opacity_frm='0' else opacity_data;
 
 	end block;
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
-		videotiming_id   => video_params.timing,
-		vt_steps         => (0 to inputs-1 => vt_step),
-		inputs           => inputs,
-		input_names      => (
-			text(id => "vt(0).text", content => "GN14"),
-			text(id => "vt(1).text", content => "GP14"),
-			text(id => "vt(2).text", content => "GN15"),
-			text(id => "vt(3).text", content => "GP15"),
-			text(id => "vt(4).text", content => "GN16"),
-			text(id => "vt(5).text", content => "GP16"),
-			text(id => "vt(6).text", content => "GN17"),
-			text(id => "vt(7).text", content => "GP17")),
-		layout           =>  layout,
-		hz_factors       => (
-			 0 => 2**(0+0)*5**(0+0),  1 => 2**(0+0)*5**(0+0),  2 => 2**(0+0)*5**(0+0),  3 => 2**(0+0)*5**(0+0),
-			 4 => 2**(0+0)*5**(0+0),  5 => 2**(1+0)*5**(0+0),  6 => 2**(2+0)*5**(0+0),  7 => 2**(0+0)*5**(1+0),
-			 8 => 2**(0+1)*5**(0+1),  9 => 2**(1+1)*5**(0+1), 10 => 2**(2+1)*5**(0+1), 11 => 2**(0+1)*5**(1+1),
-			12 => 2**(0+2)*5**(0+2), 13 => 2**(1+2)*5**(0+2), 14 => 2**(2+2)*5**(0+2), 15 => 2**(0+2)*5**(1+2)))
-
+		debug       => debug,
+		profile     => 0,
+		sdram_tcp   => 1.0/sdram_freq,
+		sdram_data  => sdram_data,
+		phy_data    => phy_data,
+		timing_id   => video_params.timing,
+		layout      => layout)
 	port map (
-		tp          => tp,
+		tp => tp,
 		sio_clk     => sio_clk,
 		si_frm      => si_frm,
 		si_irdy     => si_irdy,
 		si_data     => si_data,
+		so_frm      => so_frm,
+		so_irdy     => so_irdy,
+		so_trdy     => so_trdy,
+		so_end      => so_end,
 		so_data     => so_data,
 		input_clk   => input_clk,
 		input_ena   => input_enas,
 		input_data  => input_samples,
+
+		ctlr_clk     => ctlr_clk,
+		ctlr_rst     => sdrsys_rst,
+		ctlr_bl      => "000",
+		ctlr_cl      => sdram_params.cl,
+
+		ctlrphy_rst  => ctlrphy_rst,
+		ctlrphy_cke  => ctlrphy_cke,
+		ctlrphy_cs   => ctlrphy_cs,
+		ctlrphy_ras  => ctlrphy_ras,
+		ctlrphy_cas  => ctlrphy_cas,
+		ctlrphy_we   => ctlrphy_we,
+		ctlrphy_b    => ctlrphy_b,
+		ctlrphy_a    => ctlrphy_a,
+		ctlrphy_dmo  => ctlrphy_dmo,
+		ctlrphy_dqi  => ctlrphy_dqi,
+		ctlrphy_dqt  => ctlrphy_dqt,
+		ctlrphy_dqo  => ctlrphy_dqo,
+		ctlrphy_sto  => ctlrphy_sto,
+		ctlrphy_sti  => ctlrphy_sti,
 		video_clk   => video_clk,
 		video_pixel => video_pixel,
 		video_hsync => video_hzsync,
 		video_vsync => video_vtsync,
+		video_vton  => video_vton,
 		video_blank => video_blank);
+
+	latsti_e : entity hdl4fpga.latency
+	generic map (
+		n => gear,
+		d => (0 to gear-1 => 0))
+	port map (
+		clk => ctlr_clk,
+		di  => ctlrphy_sto,
+		do  => sdrphy_sti);
+
+	sdramphy_g : if sdram_data/="none" and phy_data/="none" generate
+		sdrphy_e : entity hdl4fpga.ecp5_sdrphy
+		generic map (
+			gear       => gear,
+			bank_size  => sdram_ba'length,
+			addr_size  => sdram_a'length,
+			word_size  => sdram_d'length,
+			byte_size  => sdram_d'length/sdram_dqm'length,
+			wr_fifo    => false,
+			rd_fifo    => false,
+			bypass     => false)
+		port map (
+			sclk       => ctlr_clk,
+			rst        => sdrsys_rst,
+
+			sys_cs(0)  => ctlrphy_cs,
+			sys_cke(0) => ctlrphy_cke,
+			sys_ras(0) => ctlrphy_ras,
+			sys_cas(0) => ctlrphy_cas,
+			sys_we(0)  => ctlrphy_we,
+			sys_b      => ctlrphy_b,
+			sys_a      => ctlrphy_a,
+			sys_dmi    => ctlrphy_dmo,
+			sys_dqi    => ctlrphy_dqo,
+			sys_dqt    => ctlrphy_dqt,
+			sys_dqo    => ctlrphy_dqi,
+			sys_sto    => ctlrphy_sti,
+			sys_sti    => sdrphy_sti,
+
+			sdram_clk  => sdram_clk,
+			sdram_cke  => sdram_cke,
+			sdram_cs   => sdram_csn,
+			sdram_ras  => sdram_rasn,
+			sdram_cas  => sdram_casn,
+			sdram_we   => sdram_wen,
+			sdram_b    => sdram_ba,
+			sdram_a    => sdram_a,
+			sdram_dqs  => sdram_dqs,
+
+			sdram_dm   => sdram_dqm,
+			sdram_dq   => sdram_d);
+	end generate;
+
+	nosdram_g : if sdram_data="none" or phy_data="none" generate
+		sdram_clk  <= 'Z';
+		sdram_cke  <= 'Z';
+		sdram_csn  <= '1';
+		sdram_rasn <= 'Z';
+		sdram_casn <= 'Z';
+		sdram_wen  <= 'Z';
+		sdram_ba   <= (others => 'Z');
+		sdram_a    <= (others => 'Z');
+
+		sdram_dqm  <= (others => 'Z');
+		sdram_d    <= (others => 'Z');
+	end generate;
 
 	-- HDMI/DVI VGA --
 	------------------
@@ -464,21 +737,93 @@ begin
 
 	end generate;
 
-	process (input_clk)
-	begin
-		if rising_edge(input_clk) then
-			if input_ena='1' then
-				for i in 0 to inputs-1 loop
-					if unsigned(input_chno)=i then
-						assert false
-						report integer'image(i) & " : " & to_string(input_chno) & ": " & std_logic'image(input_ena)
-						severity WARNING;
-						input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;
+	synth_g : if tsttab generate
+		signal input_sample  : std_logic_vector(13-1 downto 0);
+		constant size : natural := 2**11; --2**input_sample'length;
+
+		function funtab (
+			constant size       : natural;
+			constant resolution : natural := 16;
+			constant unipolar   : boolean := false)
+			return std_logic_vector  is
+			type ftypes is (f_glitch, f_sin, f_sync);
+			constant ftype  : ftypes := f_sin;
+			constant cycles : real := 4.5;
+			constant pi     : real := 4.0*arctan(1.0);
+			constant center : natural := size/2;
+			variable retval : std_logic_vector(0 to size*resolution-1);
+		begin
+			for i in 0 to size-1 loop
+				case ftype is
+				when f_sync => 
+					if i=center then
+						retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer(
+							(2.0**(resolution-1)-2.0)*2.0*pi*cycles/real(size)*64.0), resolution));
+					else
+						retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer(
+							(2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i-center)*cycles/real(size))*64.0/(real(i-center))
+							), resolution));
 					end if;
-				end loop;
+				when f_sin => 
+					retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_signed(integer(
+						(2.0**(resolution-1)-1.0)*sin(2.0*pi*real(i)/real(size))) , resolution));
+				when f_glitch =>
+					retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_unsigned(2**(resolution-1), resolution));
+					if i mod 128=0 then 
+						retval(resolution*i to resolution*(i+1)-1) := std_logic_vector(to_unsigned(2**(resolution-1)-1, resolution));
+					end if;
+				end case;
+			end loop;
+			return retval;
+		end;
+
+		signal addr : unsigned(0 to unsigned_num_bits(size-1)-1) := (others => '0');
+
+	begin
+		process (input_clk)
+		begin
+			if rising_edge(input_clk) then
+				if input_enas='1' then
+					addr <= addr + 1;
+				end if;
 			end if;
-		end if;
-	end process;
+		end process;
+
+		rom_e : entity hdl4fpga.rom
+		generic map (
+			latency => 2,
+			bitrom => funtab(size => 2**addr'length, resolution => input_sample'length))
+		port map (
+			clk => input_clk,
+			addr => std_logic_vector(addr),
+			data => input_sample);
+
+		process (input_sample)
+			constant i : natural := 0;
+		begin
+			input_samples <= (others => '0');
+			input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;
+		end process;
+
+	end generate;
+
+	max1112x_g : if not tsttab generate
+		process (input_clk)
+		begin
+			if rising_edge(input_clk) then
+				if input_ena='1' then
+					for i in 0 to inputs-1 loop
+						if unsigned(input_chno)=i then
+							-- assert false
+							-- report integer'image(i) & " : " & to_string(input_chno) & ": " & std_logic'image(input_ena)
+							-- severity WARNING;
+							input_samples(i*input_sample'length to (i+1)*input_sample'length-1) <= input_sample;
+						end if;
+					end loop;
+				end if;
+			end if;
+		end process;
+	end generate;
 
 	max1112x_b : block
 		port (
@@ -526,6 +871,7 @@ begin
 
 		attribute FREQUENCY_PIN_CLKOS  of adc1_i : label is ftoa( adc1clkos_freq/1.0e6, 10);
 		attribute FREQUENCY_PIN_CLKOS2 of adc1_i : label is ftoa(adc1clkos2_freq/1.0e6, 10);
+		attribute FREQUENCY_PIN_CLKOS3 of adc1_i : label is ftoa(sdram_freq/1.0e6, 10);
 
 	begin
 
@@ -533,7 +879,8 @@ begin
 		report CR &
 			"MAX1112X" & CR &
 			"ADC1_CLKOS     : " & adc1_i'FREQUENCY_PIN_CLKOS  & " MHz " & CR &
-			"ADC1_CLKOS2    : " & adc1_i'FREQUENCY_PIN_CLKOS2 & " MHz "
+			"ADC1_CLKOS2    : " & adc1_i'FREQUENCY_PIN_CLKOS2 & " MHz " & CR &
+			"SDRAM_CLKOS3   : " & adc1_i'FREQUENCY_PIN_CLKOS3 & " MHz "
 		severity NOTE;
 
 		adc1_i : EHXPLLL
@@ -546,8 +893,8 @@ begin
 			FEEDBK_PATH      => "CLKOS",
 			CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => adc1clkos_div-1,
 			CLKOS2_ENABLE    => "ENABLED",  CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
-			CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
-			CLKOP_ENABLE     => "DISABLED", CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
+			CLKOS3_ENABLE    => "ENABLED",  CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => adc1clkos_div-1,
+			CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
 			CLKOS_TRIM_DELAY =>  0,         CLKOS_TRIM_POL => "FALLING",
 			CLKOP_TRIM_DELAY =>  0,         CLKOP_TRIM_POL => "FALLING",
 			OUTDIVIDER_MUXD  => "DIVD",
@@ -557,7 +904,8 @@ begin
 
 			CLKI_DIV         => adc1clki_div,
 			CLKOS_DIV        => adc1clkos_div,
-			CLKOS2_DIV       => adc1clkos2_div)
+			CLKOS2_DIV       => adc1clkos2_div,
+			CLKOS3_DIV       => 3)
 		port map (
 			clki      => video_clk,
 			CLKFB     => adc1_clkos,
@@ -571,17 +919,20 @@ begin
 			ENCLKOS3  => '0',
 			CLKOS     => adc1_clkos,
 			CLKOS2    => adc1_clkos2,
+			CLKOS3    => ctlr_clk,
 			LOCK      => adc1_lock,
 			INTLOCK   => open,
 			REFCLK    => open,
 			CLKINTFB  => open);
 		
+		sdram_dqs <= (others => ctlr_clk);
 		adc_clk   <= adc1_clkos2;
 		input_clk <= adc1_clkos2;
+		sdrsys_rst <= not adc1_lock;
 
 		process (input_clk)
 			constant n    : natural := 16;
-			variable cntr : unsigned(0 to unsigned_num_bits(n-1)-1);
+			variable cntr : unsigned(0 to unsigned_num_bits(n-1)-1) := (others => '0');
 		begin
 			if rising_edge(input_clk) then
 				if input_lck='0' then

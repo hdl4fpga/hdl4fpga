@@ -1,25 +1,23 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -35,27 +33,30 @@ entity timer is
 		data : in  std_logic_vector;
 		clk  : in  std_logic;
 		req  : in  std_logic;
-		rdy  : out std_logic);
+		rdy  : buffer std_logic);
 end;
 
 architecture def of timer is
 
-	signal cy : std_logic_vector(slices'length downto 0) := (0 => '1', others => '0');
 	signal en : std_logic_vector(slices'length downto 0) := (0 => '1', others => '0');
 	signal q  : std_logic_vector(slices'length-1 downto 0);
 	constant slices0 : natural_vector(slices'length-1 downto 0) := slices;
+	signal cy : std_logic_vector(slices'length downto 0); 
 begin
 
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			for i in 0 to slices0'length-1 loop
-				if req='1' then
-					cy(i+1) <= '0';
-				elsif cy(slices0'length)='0' then
-					cy(i+1) <= q(i) and cy(i);
-				end if;
-			end loop;
+			if (to_bit(req) xor to_bit(rdy))='0' then
+				cy <= (0 =>'1', others => '0');
+			else
+				for i in 0 to slices0'length-1 loop
+					if cy(cy'left)='0' then
+						cy(i+1) <= q(i) and cy(i);
+					end if;
+				end loop;
+				rdy <= cy(cy'left) xnor req;
+			end if;
 		end if;
 	end process;
 	en <= cy(slices0'length downto 1) & not cy(slices0'length);
@@ -80,7 +81,7 @@ begin
 		begin
 			if rising_edge(clk) then
 				csize(slices0'length downto 1) := slices0;
-				if req='1' then
+				if (to_bit(req) xor to_bit(rdy))='0' then
 					cntr <= resize(shift_right(unsigned(data), csize(i)), size);
 				elsif en(i)='1' then
 					if cntr(0)='1' then
@@ -93,5 +94,5 @@ begin
 		end process;
 		q(i) <= cntr(0);
 	end generate;
-	rdy <= cy(slices0'length);
 end;
+

@@ -1,30 +1,23 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
-
-
--- !! !!!!!!!!!!!!!!!!!!! !! --
--- !! tRAS is not checked !! --
--- !! !!!!!!!!!!!!!!!!!!! !! --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -33,19 +26,18 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_param.all;
-use hdl4fpga.sdram_db.all;
+use hdl4fpga.hdo.all;
+use hdl4fpga.sdrampkg.all;
 
 entity sdram_mpu is
 	generic (
-		tcp           : real := 0.0;
-		latencies     : latency_vector;
-		chip          : sdram_chips;
-		gear          : natural;
-		bl_cod        : std_logic_vector;
-		al_cod        : std_logic_vector;
-		cl_cod        : std_logic_vector;
-		cwl_cod       : std_logic_vector);
+		ctlr_tcp       : real;
+		sdramtmng_data : string;
+		phy_data       : string;
+		al_tab         : natural_vector;
+		bl_tab         : natural_vector;
+		cl_tab         : natural_vector;
+		cwl_tab        : natural_vector);
 	port (
 		sdram_mpu_alat  : out std_logic_vector(2 downto 0);
 		sdram_mpu_blat  : out std_logic_vector;
@@ -70,61 +62,23 @@ entity sdram_mpu is
 		sdram_mpu_wri   : out std_logic;
 		sdram_mpu_wwin  : out std_logic);
 
+	constant ldqsx : integer := hdo(phy_data)**".tmng.DQSXL=0."; 
+	constant tdqsx : real    := real(ldqsx)*ctlr_tcp; 
+	constant twr   : real    := hdo(sdramtmng_data)**".tWR";
+	constant lwr   : natural := natural(ceil((twr+tdqsx)/ctlr_tcp));
+	constant lrcd  : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRCD=0.")/ctlr_tcp));
+	constant lrfc  : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRFC=0.")/ctlr_tcp));
+	constant lrp   : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRP=0.")/ctlr_tcp));
+	constant gear  : natural := hdo(phy_data)**".orgz.gear";
 end;
 
 architecture arch of sdram_mpu is
-
-	constant stdr    : sdram_standards := sdrmark_standard(chip);
-
-	constant twr1     : real            := ceil((sdram_timing(chip, twr)+real(latencies(dqsxl))*tcp)/tcp);
-	constant lwr     : natural          := natural(twr1); -- Diamond 3.11.2.446 crashes when replace twr1 by its expression
-	constant lrcd    : natural          := to_sdrlatency(tcp, chip, trcd);
-	constant lrfc    : natural          := to_sdrlatency(tcp, chip, trfc);
-	constant lrp     : natural          := to_sdrlatency(tcp, chip, trp);
-	constant bl_tab  : natural_vector   := sdram_lattab(stdr, bl);
-	constant al_tab  : natural_vector   := sdram_lattab(stdr, al);
-	constant cl_tab  : natural_vector   := sdram_lattab(stdr, cl);
-	constant cwl_tab : natural_vector   := sdram_lattab(stdr, sdram_selcwl(stdr));
 
 	constant ras  : natural := 0;
 	constant cas  : natural := 1;
 	constant we   : natural := 2;
 
-	function timer_size (
-		constant lrcd : natural;
-		constant lrfc : natural;
-		constant lwr  : natural;
-		constant lrp  : natural;
-		constant bl_tab : natural_vector;
-		constant cl_tab : natural_vector;
-		constant cwl_tab : natural_vector)
-		return natural is
-		variable val : natural;
-		variable aux : natural;
-	begin
-		aux := max(lrcd,lrfc);
-		aux := max(aux, lrp);
-		for i in bl_tab'range loop
-			aux := max(aux, bl_tab(i));
-		end loop;
-		for i in cl_tab'range loop
-			aux := max(aux, cl_tab(i));
-		end loop;
-		for i in cwl_tab'range loop
-			aux := max(aux, cwl_tab(i)+lwr);
-		end loop;
-		val := 1;
-		aux := aux-2;
-		while (aux > 0) loop
-			aux := aux / 2;
-			val := val + 1;
-		end loop;
-		return val;
-	end;
-
-
-	constant lat_size : natural := timer_size(lrcd, lrfc, lwr, lrp, bl_tab, cl_tab, cwl_tab);
-	signal lat_timer : signed(0 to lat_size-1) := (others => '1');
+	signal lat_timer : integer range -2 to max(natural_vector'(max(cwl_tab), max(bl_tab), max(cl_tab), lrcd, lrfc, lrp)) := -1;
 
 	type cmd_names is (c_nop, c_act, c_read, c_write, c_pre, c_aut, c_dcare);
 	signal cmd_name : cmd_names;
@@ -238,114 +192,74 @@ architecture arch of sdram_mpu is
 		attribute fsm_encoding : string;
 		attribute fsm_encoding of sdram_state : signal is "compact";
 
-	function "+" (
-		constant tab : natural_vector;
-		constant off : natural)
-		return natural_vector is
-		variable val : natural_vector(tab'range);
-	begin
-		for i in tab'range loop
-			val(i) := tab(i) + off;
-		end loop;
-		return val;
-	end;
-
-	function "-" (
-		constant off : natural;
+	function adjlat (
 		constant tab : natural_vector)
-		return natural_vector is
-		variable val : natural_vector(tab'range);
+		return integer_vector is
+		variable retval : integer_vector(tab'range);
 	begin
 		for i in tab'range loop
-			if off > tab(i) then
-				val(i) := off-tab(i);
-			else
-				val(i) := 0;
-			end if;
+			retval(i) := (tab(i)+gear-1)/gear-2;
+			-- return (lat+gear-1)/gear-2;
 		end loop;
-		return val;
+		return retval;
 	end;
 
-	function "*" (
-		constant off : natural;
-		constant tab : natural_vector)
-		return natural_vector is
-		variable val : natural_vector(tab'range);
+	function adjalat_tab 
+		return integer_vector is
+		variable retval : natural_vector(al_tab'range);
 	begin
-		for i in tab'range loop
-			val(i) := tab(i)*off;
+		for i in retval'range loop
+			retval(i) := (gear*lrcd+2*gear)-(gear/2)*al_tab(i);
+			-- return adjlat((gear*lrcd+2*gear)-(gear/2)*al_tab(to_integer(unsigned(al))));
 		end loop;
-		return val;
+		return adjlat(retval);
 	end;
 
-	function "/" (
-		constant tab : natural_vector;
-		constant off : natural)
-		return natural_vector is
-		variable val : natural_vector(tab'range);
+	function adjal_tab
+		return integer_vector is
+		variable retval : natural_vector(al_tab'range);
 	begin
-		for i in tab'range loop
-			val(i) := tab(i)/off;
+		for i in retval'range loop
+			retval(i) := (gear*lrcd)-(gear/2)*al_tab(i);
+			-- return adjlat((gear*lrcd)-(gear/2)*al_tab(to_integer(unsigned(al))));
 		end loop;
-		return val;
+		return adjlat(retval);
 	end;
 
-	function select_lat (
-		constant lat_val : std_logic_vector;
-		constant lat_cod : std_logic_vector;
-		constant lat_tab : natural_vector;
-		constant lat_len : natural :=lat_timer'length)
-		return signed is
-		subtype latword is std_logic_vector(0 to lat_cod'length/lat_tab'length-1);
-		type latword_vector is array (natural range <>) of latword;
-
-		function to_latwordvector(
-			constant arg : std_logic_vector)
-			return latword_vector is
-			variable aux : unsigned(0 to arg'length-1);
-			variable val : latword_vector(0 to arg'length/latword'length-1);
-		begin
-			aux := unsigned(arg);
-			for i in val'range loop
-				val(i) := std_logic_vector(aux(latword'range));
-				aux := aux sll latword'length;
-			end loop;
-			return val;
-		end;
-
-		function select_latword (
-			constant lat_val : std_logic_vector;
-			constant lat_cod : latword_vector;
-			constant lat_tab : natural_vector)
-			return signed is
-			variable val : signed(0 to lat_len-1);
-		begin
-			val := (others => '-');
-			for i in lat_cod'range loop
-				if lat_cod(i)=lat_val then
-					val := to_signed((lat_tab(i)+gear-1)/gear-2, lat_len);
-					return val;
-				end if;
-			end loop;
-			assert false
-			report "select_latword : latency register '" & to_string(lat_val) & "' is invalid"
-			severity failure;
-			return val;
-		end;
-
+	function adjcwl_tab
+		return integer_vector is
+		variable retval : natural_vector(al_tab'range);
 	begin
-		return select_latword(lat_val, to_latwordvector(lat_cod), lat_tab);
+		for i in retval'range loop
+			retval(i) := cwl_tab(i)+gear*lwr;
+			-- return cwl_tab+gear*lwr;
+		end loop;
+		return adjlat(retval);
 	end;
+
+	constant adjdal_tab   : integer_vector := adjal_tab;
+	constant adjdbl_tab   : integer_vector := adjlat(bl_tab);
+	constant adjdcl_tab   : integer_vector := adjlat(cl_tab);
+	constant adjdcwl_tab  : integer_vector := adjcwl_tab;
+	constant adjdalat_tab : integer_vector := adjalat_tab;
 
 begin
 
-	-- sdram_mpu_alat <= std_logic_vector(to_unsigned(lrcd, sdram_mpu_alat'length));
-	sdram_mpu_alat <= std_logic_vector(select_lat(sdram_mpu_al, al_cod, (gear*lrcd+2*gear)-(gear/2)*al_tab, sdram_mpu_alat'length));
-	sdram_mpu_blat <= std_logic_vector(resize(unsigned(signed'(select_lat(sdram_mpu_bl, bl_cod, bl_tab))), sdram_mpu_blat'length));
+	assert false
+	report LF &
+	    "sdram_mpu : ldqsx : " & integer'image(ldqsx)&LF&
+	    "sdram_mpu : lwr   : " & natural'image(lwr)&LF&
+	    "sdram_mpu : lrcd  : " & natural'image(lrcd)&LF&
+	    "sdram_mpu : lrfc  : " & natural'image(lrfc)&LF&
+	    "sdram_mpu : lrp   : " & natural'image(lrp)&LF
+	severity note;
+
+	sdram_mpu_alat <= std_logic_vector(to_unsigned(adjdalat_tab(to_integer(unsigned(sdram_mpu_al))), sdram_mpu_alat'length));
+	sdram_mpu_blat <= std_logic_vector(to_signed(adjdbl_tab(to_integer(unsigned(sdram_mpu_bl))), sdram_mpu_blat'length));
+	-- sdram_mpu_blat <= std_logic_vector(resize(unsigned(signed'(select_lat(sdram_mpu_bl, bl_cod, bl_tab))), sdram_mpu_blat'length));
 	sdram_mpu_p: process (sdram_mpu_clk)
 		variable state_set : boolean;
 		variable lat_id :lat_id ;
-		variable timer  : signed(lat_timer'range);
 	begin
 		if rising_edge(sdram_mpu_clk) then
 			if sdram_mpu_rst='0' then
@@ -355,9 +269,8 @@ begin
 					severity failure;
 
 
-				if lat_timer(0)='1' then
+				if lat_timer < 0 then
 					state_set     := false;
-					lat_timer     <= (others => '-');
 					sdram_mpu_ras   <= '-';
 					sdram_mpu_cas   <= '-';
 					sdram_mpu_we    <= '-';
@@ -384,25 +297,23 @@ begin
 								sdram_rdy_fch  <= sdram_state_tab(i).sdram_fch;
 
 								lat_id := sdram_state_tab(i).sdram_lat;
-								timer  := lat_timer;
 								case lat_id is
 								when id_bl =>
-									timer := select_lat(sdram_mpu_bl, bl_cod, bl_tab);
+									lat_timer <= adjdbl_tab(to_integer(unsigned(sdram_mpu_bl)));
 								when id_cl =>
-									timer := select_lat(sdram_mpu_cl, cl_cod, cl_tab);
+									lat_timer <= adjdcl_tab(to_integer(unsigned(sdram_mpu_cl)));
 								when id_cwl =>
-									timer := select_lat(sdram_mpu_cwl, cwl_cod, cwl_tab+gear*lwr);
+									lat_timer <= adjdcwl_tab(to_integer(unsigned(sdram_mpu_cwl)));
 								when id_rcd =>
-									-- timer := to_signed(lrcd-2, lat_timer'length);
-									timer := select_lat(sdram_mpu_al, al_cod, (gear*lrcd)-(gear/2)*al_tab, timer'length);
+									-- lat_timer = to_signed(lrcd-2, lat_timer'length);
+									lat_timer <= adjdal_tab(to_integer(unsigned(sdram_mpu_al)));
 								when id_rfc =>
-									timer := to_signed(lrfc-2, lat_timer'length);
+									lat_timer <= lrfc-2;
 								when id_rp =>
-									timer := to_signed(lrp-2, lat_timer'length);
+									lat_timer <= lrp-2;
 								when id_idle =>
-									timer := (others => '1');
+									lat_timer <= -1;
 								end case;
-								lat_timer <= timer;
 								exit;
 							end if;
 						end if;
@@ -426,7 +337,7 @@ begin
 				sdram_mpu_wwin  <= sdram_state_tab(0).sdram_wph;
 				sdram_rdy_ena   <= '1';
 				sdram_rdy_fch   <= '1';
-				lat_timer     <= (others => '1');
+				lat_timer       <= -1;
 			end if;
 
 		end if;
@@ -434,8 +345,10 @@ begin
 
 	sdram_mpu_act  <= setif(sdram_state=ddrs_act);
 	sdram_mpu_wri  <= setif(sdram_state=ddrs_write_cl or sdram_state=ddrs_write_bl);
-	sdram_mpu_trdy <= lat_timer(0) and sdram_rdy_ena;
-	sdram_mpu_fch  <= lat_timer(0) and sdram_rdy_fch;
+	sdram_mpu_trdy <= sdram_rdy_ena when lat_timer < 0 else '0';
+	sdram_mpu_fch  <= sdram_rdy_fch when lat_timer < 0 else '0';
+	-- sdram_mpu_trdy <= lat_timer(0) and sdram_rdy_ena;
+	-- sdram_mpu_fch  <= lat_timer(0) and sdram_rdy_fch;
 
 	debug : with sdram_state select
 	mpu_state <=
@@ -458,3 +371,4 @@ begin
 		c_dcare when others;
 
 end;
+

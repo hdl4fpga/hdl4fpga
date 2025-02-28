@@ -1,50 +1,50 @@
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_segment is
 	generic(
 		input_latency : natural;
 		latency       : natural;
-		layout        : string;
-		inputs        : natural);
+		inputs        : natural;
+		waveform      : string);
 	port (
 		rgtr_clk      : in  std_logic;
 		rgtr_dv       : in  std_logic;
 		rgtr_id       : in  std_logic_vector(8-1 downto 0);
 		rgtr_data     : in  std_logic_vector;
 
-		btof_binfrm   : buffer std_logic;
-		btof_binirdy  : out std_logic;
-		btof_bintrdy  : in  std_logic;
-		btof_bindi    : out std_logic_vector;
-		btof_binneg   : out std_logic;
-		btof_binexp   : out std_logic;
-		btof_bcdunit  : out std_logic_vector;
-		btof_bcdwidth : out std_logic_vector;
-		btof_bcdprec  : out std_logic_vector;
-		btof_bcdsign  : out std_logic;
-		btof_bcdalign : out std_logic;
-		btof_bcdirdy  : buffer  std_logic;
-		btof_bcdtrdy  : in  std_logic;
-		btof_bcdend   : in  std_logic;
-		btof_bcddo    : in  std_logic_vector;
-
-		hz_dv         : in  std_logic;
-		hz_scale      : in  std_logic_vector;
-		hz_base       : in  std_logic_vector;
 		hz_offset     : in  std_logic_vector;
-
-		gain_dv       : in  std_logic;
-		gain_cid      : in  std_logic_vector;
-		gain_ids      : in  std_logic_vector;
+		hz_segment    : in  std_logic_vector;
 
 		trigger_chanid : in std_logic_vector;
-		trigger_level  : in  std_logic_vector;
+		trigger_level  : in std_logic_vector;
 
 		video_clk     : in  std_logic;
 		x             : in  std_logic_vector;
@@ -63,36 +63,44 @@ entity scopeio_segment is
 		trigger_dot   : out std_logic;
 		trace_dots    : out std_logic_vector);
 
+	constant axis_fontsize : natural := hdo(waveform)**".axis.fontsize=8.";
+	constant grid_height   : natural := hdo(waveform)**".grid.height";
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
+	constant vtaxis_tickrotate : string := hdo(waveform)**".axis.vertical.rotate=ccw0.";
+	constant grid_unit     : natural := hdo(waveform)**".grid.unit=32.";
+
 end;
 
 architecture def of scopeio_segment is
 
 	signal vt_ena          : std_logic;
-	signal vt_dv           : std_logic;
 	signal vt_offsets      : std_logic_vector(inputs*(5+8)-1 downto 0);
 	signal vt_offset       : std_logic_vector(vt_offsets'length/inputs-1 downto 0);
 	signal vt_chanid       : std_logic_vector(chanid_maxsize-1 downto 0);
 
-	constant division_size : natural := grid_unit(layout);
-	constant font_size     : natural := axis_fontsize(layout);
-	constant vt_height     : natural := grid_height(layout);
+	constant division_size : natural := grid_unit;
+	constant font_size     : natural := axis_fontsize;
+	constant vt_height     : natural := grid_height;
 
 	constant division_bits : natural := unsigned_num_bits(division_size-1);
 	constant vttick_bits   : natural := unsigned_num_bits(8*font_size-1);
-	constant vtstep_bits   : natural := setif(vtaxis_tickrotate(layout)="ccw0", division_bits, vttick_bits);
+	constant vtstep_bits   : natural := setif(vtaxis_tickrotate="ccw0", division_bits, vttick_bits);
 	constant vtheight_bits : natural := unsigned_num_bits((vt_height-1)-1);
 
-
-	signal axis_dv      : std_logic;
-	signal axis_sel     : std_logic;
-	signal axis_scale   : std_logic_vector(4-1 downto 0);
-	signal axis_base    : std_logic_vector(max(hz_base'length, vtheight_bits-(vtstep_bits+axisy_backscale))-1 downto 0);
-
+	signal video_trigger  : std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 
 begin
 
-	rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
+   	resize_e : entity hdl4fpga.scopeio_resize
+   	generic map (
+  		inputs => 1)
+   	port map (
+  		input_data  => trigger_level,
+   		output_data => video_trigger);
+
+	rgtrvtaxis_e : entity hdl4fpga.scopeio_rgtrvtoffset
+	generic map (
+		rgtr      => false)
 	port map (
 		rgtr_clk  => rgtr_clk,
 		rgtr_dv   => rgtr_dv,
@@ -100,14 +108,15 @@ begin
 		rgtr_data => rgtr_data,
 
 		vt_ena    => vt_ena,
-		vt_dv     => vt_dv,
 		vt_chanid => vt_chanid,
 		vt_offset => vt_offset);
 
 	process (rgtr_clk)
 	begin
 		if rising_edge(rgtr_clk) then
-			vt_offsets <= byte2word(vt_offsets, vt_chanid, vt_offset);
+			if vt_ena='1' then
+				vt_offsets <= replace(vt_offsets, vt_chanid, vt_offset);
+			end if;
 		end if;
 	end process;
 
@@ -141,80 +150,30 @@ begin
 			dot  => grid_dot);
 	end block;
 
-	axis_b : block
-		constant bias : natural := (vt_height/2) mod 2**vtstep_bits;
-		signal vt_scale : std_logic_vector(gain_ids'length/inputs-1 downto 0);
-		signal g_offset : std_logic_vector(vt_offset'range);
-		signal v_offset : std_logic_vector(vt_offset'range);
-		signal v_sel    : std_logic;
-		signal v_dv     : std_logic;
-	begin
-		process (rgtr_clk)
-		begin
-			if rising_edge(rgtr_clk) then
-			end if;
-		end process;
-		v_sel      <= gain_dv or vt_dv;
-		v_dv       <= gain_dv or vt_dv;
-		axis_sel   <= v_sel;
-		axis_dv    <= v_dv or hz_dv;
-		vt_scale   <= multiplex(gain_ids, gain_cid, vt_scale'length);
-		axis_scale <= multiplex(hz_scale & std_logic_vector(resize(unsigned(vt_scale), axis_scale'length)), axis_sel);
+	axis_e : entity hdl4fpga.scopeio_axis
+	generic map (
+		latency       => latency,
+		inputs        => inputs,
+		waveform      => waveform)
+	port map (
+		rgtr_clk      => rgtr_clk,
+		rgtr_dv       => rgtr_dv,
+		rgtr_id       => rgtr_id,
+		rgtr_data     => rgtr_data,
 
-		g_offset <= multiplex(vt_offsets, gain_cid, vt_offset'length);
-		v_offset <= std_logic_vector(unsigned(std_logic_vector'(multiplex(vt_offset & g_offset, gain_dv))) - bias);
+		video_clk     => video_clk,
+		hz_segment    => hz_segment,
+		video_hcntr   => x,
+		video_hzon    => hz_on,
+		video_hzdot   => hz_dot,
 
-		process (axis_sel, hz_base, v_offset)
-			variable vt_base : std_logic_vector(v_offset'range);
-		begin
-			vt_base   := std_logic_vector(shift_right(signed(v_offset), vtstep_bits+axisy_backscale));
-			axis_base <= multiplex(hz_base & vt_base(axis_base'range), axis_sel);
-		end process;
-
-		axis_e : entity hdl4fpga.scopeio_axis
-		generic map (
-			latency       => latency,
-			layout        => layout)
-		port map (
-			clk           => rgtr_clk,
-
-			axis_dv       => axis_dv,
-			axis_sel      => axis_sel,
-			axis_base     => axis_base,
-			axis_scale    => axis_scale,
-
-			btof_binfrm   => btof_binfrm,
-			btof_binirdy  => btof_binirdy,
-			btof_bintrdy  => btof_bintrdy,
-			btof_bindi    => btof_bindi,
-			btof_binneg   => btof_binneg,
-			btof_binexp   => btof_binexp,
-			btof_bcdwidth => btof_bcdwidth,
-			btof_bcdprec  => btof_bcdprec,
-			btof_bcdunit  => btof_bcdunit,
-			btof_bcdsign  => btof_bcdsign,
-			btof_bcdalign => btof_bcdalign,
-			btof_bcdirdy  => btof_bcdirdy,
-			btof_bcdtrdy  => btof_bcdtrdy,
-			btof_bcdend   => btof_bcdend,
-			btof_bcddo    => btof_bcddo,
-
-			video_clk     => video_clk,
-			video_hcntr   => x,
-			video_vcntr   => y,
-
-			hz_offset     => hz_offset,
-			video_hzon    => hz_on,
-			video_hzdot   => hz_dot,
-
-			vt_offset     => v_offset(vtstep_bits+axisy_backscale-1 downto 0),
-			video_vton    => vt_on,
-			video_vtdot   => vt_dot);
-	end block;
+		video_vcntr   => y,
+		video_vton    => vt_on,
+		video_vtdot   => vt_dot);
 
 	trigger_b : block 
 		signal offset : unsigned(vt_offsets'length/inputs-1 downto 0);
-		signal row  : unsigned(trigger_level'range);
+		signal row  : unsigned(video_trigger'range);
 		signal ena  : std_logic;
 		signal hdot : std_logic;
 	begin
@@ -225,7 +184,7 @@ begin
 			end if;
 		end process;
 
-		row <= resize(unsigned(trigger_level)+offset, row'length);
+		row <= resize(unsigned(-signed(video_trigger))+offset, row'length);
 		ena <= grid_on when resize(unsigned(y), row'length)=row else '0';
 
 		hline_e : entity hdl4fpga.draw_line
@@ -247,8 +206,7 @@ begin
 	end block;
 
 	trace_b : block
-		constant drawvline_latency : natural := 2;
-		constant traceena_latency  : natural := 2;
+		constant drawvline_latency : natural := 2+1;
 
 		signal dots : std_logic_vector(0 to trace_dots'length-1);
 		signal vline : std_logic_vector(y'range);
@@ -269,9 +227,9 @@ begin
 		port map (
 			clk      => video_clk,
 			ena      => sample_dv,
+			ys       => sample_data,
 			vline    => vline,
 			offsets  => vt_offsets,
-			ys       => sample_data,
 			dots     => dots);
 
 		align_e :entity hdl4fpga.latency
@@ -286,3 +244,4 @@ begin
 	end block;
 
 end;
+

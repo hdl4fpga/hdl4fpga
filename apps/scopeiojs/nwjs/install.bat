@@ -1,28 +1,29 @@
-@REM Author(s):                                                                
-@REM   Miguel Angel Sagreras                                                   
-@REM                                                                           
-@REM Copyright (C) 2015                                                        
-@REM    Miguel Angel Sagreras                                                  
-@REM                                                                           
-@REM This source file may be used and distributed without restriction provided 
-@REM that this copyright statement is not removed from the file and that any   
-@REM derivative work contains  the original copyright notice and the associated
-@REM disclaimer.                                                               
-@REM                                                                           
-@REM This source file is free software; you can redistribute it and/or modify  
-@REM it under the terms of the GNU General Public License as published by the  
-@REM Free Software Foundation, either version 3 of the License, or (at your    
-@REM option) any later version.                                                
-@REM                                                                           
-@REM This source is distributed in the hope that it will be useful, but WITHOUT
-@REM ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or     
-@REM FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for  
-@REM more details at http://www.gnu.org/licenses/.                             
+@REM Copyright (c) <2015> <Miguel Angel Sagreras>                                    
+@REM                                                                                 
+@REM Permission is hereby granted, free of charge, to any person obtaining a copy of 
+@REM this software and associated documentation files (the "Software"), to deal in   
+@REM the Software without restriction, including without limitation the rights to    
+@REM use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   
+@REM of the Software, and to permit persons to whom the Software is furnished to do  
+@REM so, subject to the following conditions:                                        
+@REM                                                                                 
+@REM The above copyright notice and this permission notice shall be included in all  
+@REM copies or substantial portions of the Software.                                 
+@REM                                                                                 
+@REM THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    
+@REM IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        
+@REM FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     
+@REM AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          
+@REM LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   
+@REM OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   
+@REM SOFTWARE.                                                                       
+@REM                                                                                 
+
 @SET PYTHON=C:\Python27\python.exe
 @SET PATH=C:\Python27;%PATH%
 DEL package-lock.json
 CALL npm install nw-gyp
-CALL npm install nw --nwjs_build_type=sdk
+CALL npm install --save-dev "nw@sdk"
 CALL npm view nw version > nwjs.ver
 CALL npm install ----msvs_version=2019
 CALL npm install serialport

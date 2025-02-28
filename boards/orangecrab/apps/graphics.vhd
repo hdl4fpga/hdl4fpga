@@ -1,25 +1,23 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -28,8 +26,8 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_param.all;
-use hdl4fpga.sdram_db.all;
+use hdl4fpga.hdo.all;
+use hdl4fpga.sdrampkg.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.app_profiles.all;
@@ -63,12 +61,9 @@ architecture graphics of orangecrab is
 	
 	constant sdram_tcp : real := 1.0/sdram_freq(sdram_params, clk48MHz_freq);
 
-	constant bank_size   : natural := ddram_ba'length;
-	constant addr_size   : natural := ddram_a'length;
-	constant word_size   : natural := ddram_dq'length;
+	constant phy_data    : string  := hdo(phy_db)**".orangecrab_ecp5g4";
+	constant sdram_gear  : natural := hdo(phy_data)**".orgz.gear";
 	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
-	constant coln_size   : natural := 10;
-	constant sdram_gear  : natural := 4;
 	constant usb_oversampling : natural := 3;
 
 	signal sys_rst       : std_logic;
@@ -96,13 +91,13 @@ architecture graphics of orangecrab is
 	signal ctlrphy_a     : std_logic_vector(sdram_gear/2*ddram_a'length-1 downto 0);
 	signal ctlrphy_dqst  : std_logic_vector(sdram_gear-1 downto 0);
 	signal ctlrphy_dqso  : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(sdram_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(sdram_gear*ddram_dm'length-1 downto 0);
 	signal ctlrphy_dqt   : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(sdram_gear*word_size-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(sdram_gear*word_size-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(sdram_gear*ddram_dq'length-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(sdram_gear*ddram_dq'length-1 downto 0);
 	signal ctlrphy_dqv   : std_logic_vector(sdram_gear-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(sdram_gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(sdram_gear*ddram_dm'length-1 downto 0);
 
 	signal sdr_b         : std_logic_vector(ddram_ba'range);
 	signal sdr_a         : std_logic_vector(ddram_a'length-1 downto 0);
@@ -255,27 +250,9 @@ begin
 	generic map (
 		debug        => debug,
 		profile      => 2,
-		phy_latencies => (
-			STRL   => 0,
-			DQSL   => 4*ba_latency-2+0,
-			DQSZL  => 4*ba_latency+0+0,
-			DQZL   => 4*ba_latency+0+0,
-			WWNL   => 4*ba_latency-4+0,
-			STRXL  => 0,
-			DQSZXL => 2,
-			DQSXL  => 2,
-			DQZXL  => 0,
-			WWNXL  => 2,
-			WIDL   => 4),
 		sdram_tcp    => 2.0*sdram_tcp,
-		-- mark         => MT41K8G107,
-		mark         => MT41K8G125,
-		gear         => sdram_gear,
-		bank_size    => bank_size,
-		addr_size    => addr_size,
-		coln_size    => coln_size,
-		word_size    => word_size,
-		byte_size    => byte_size,
+		phy_data     => phy_data,
+		sdram_data   => hdo(sdram_db)**".MT41K8G125",
 		burst_length => 8,
 
 		timing_id    => video_params.timing,
@@ -307,7 +284,6 @@ begin
 		ctlr_bl      => "000",
 		ctlr_cl      => sdram_params.cl,
 		ctlr_cwl     => sdram_params.cwl,
-		ctlr_wrl     => sdram_params.wrl,
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
 		ctlr_inirdy  => tp(1),
@@ -402,7 +378,7 @@ begin
 		debug        => debug,
 		bank_size    => ddram_ba'length,
 		addr_size    => ddram_a'length,
-		word_size    => word_size,
+		word_size    => ddram_dq'length,
 		byte_size    => byte_size,
 		gear         => sdram_gear,
 		ba_latency   => ba_latency,
@@ -499,3 +475,4 @@ begin
 	tp(4) <= ctlrphy_ini;
 
 end;
+

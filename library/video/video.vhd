@@ -1,25 +1,23 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -48,10 +46,23 @@ architecture def of box_edges is
 --	signal wr_addr : std_logic_vector(rd_addr'range);
 --	signal wr_data : std_logic_vector(rd_data'range);
 
+	function to_bitrom (
+		constant data : natural_vector;
+		constant size : natural)
+		return std_logic_vector is
+		alias    dataa  : natural_vector(0 to data'length-1) is data;
+		variable retval : unsigned(0 to data'length*size-1);
+	begin
+		for i in dataa'range loop
+			retval(i*size to (i+1)*size-1) := to_unsigned(dataa(i), size);
+		end loop;
+		return std_logic_vector(retval);
+	end;
+
 begin
 
 	process (video_clk)
-		variable div : std_logic_vector(video_div'length-1 downto 0) := (others => '0');
+		variable div : std_logic_vector(video_div'length-1 downto 0) := (others => '1');
 	begin
 		if rising_edge(video_clk) then
 			if video_ini='1' then
@@ -101,9 +112,7 @@ entity video_sync is
 		timing_id : videotiming_ids;
 		modeline  : natural_vector(0 to 9-1) := (others => 0);
 		width     : natural := 0;
-		height    : natural := 0;
-		fps       : real    := 0.0;
-		pclk      : real    := 0.0);
+		height    : natural := 0);
 	port (
 		video_clk     : in std_logic;
 		extern_video  : in  std_logic := '0';
@@ -119,20 +128,6 @@ entity video_sync is
 end;
 
 architecture mix of video_sync is
-
-	signal hz_ini  : std_logic;
-	signal vt_ini  : std_logic;
-	signal hz_edge : std_logic;
-	signal vt_edge : std_logic;
-	signal hz_next : std_logic;
-	signal vt_next : std_logic;
-	signal hz_div  : std_logic_vector(2-1 downto 0) := (others => '0');
-	signal vt_div  : std_logic_vector(2-1 downto 0) := (others => '0');
-	signal hz_cntr : std_logic_vector(video_hzcntr'range) := (others => '0');
-	signal vt_cntr : std_logic_vector(video_vtcntr'range) := (others => '0');
-
-	signal extern_vton : std_logic;
-
 	function user_fallback (
 		timing_id : videotiming_ids;
 		modeline  : natural_vector)
@@ -145,6 +140,20 @@ architecture mix of video_sync is
 	end;
 
 	constant modeline_data : natural_vector := user_fallback(timing_id, modeline);
+
+	signal hz_ini  : std_logic;
+	signal vt_ini  : std_logic;
+	signal hz_edge : std_logic;
+	signal vt_edge : std_logic;
+	signal hz_next : std_logic;
+	signal vt_next : std_logic;
+	signal hz_div  : std_logic_vector(2-1 downto 0);
+	signal vt_div  : std_logic_vector(2-1 downto 0);
+	signal hz_cntr : std_logic_vector(video_hzcntr'range) := (others => '0');
+	signal vt_cntr : std_logic_vector(video_vtcntr'range) := std_logic_vector(to_unsigned(modeline_data(7-1), video_vtcntr'length)); --(others => '1');
+
+	signal extern_vton : std_logic;
+
 begin
 
 	hz_ini  <= hz_edge and setif(hz_div="11");
@@ -363,9 +372,7 @@ begin
 			box_y <= std_logic_vector(y);
 		end if;
 	end process;
-end architecture;
-
-
+end;
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -436,3 +443,4 @@ begin
 
 	dot <= ((lt1 xor lt2) or eq2 or eq1) and don;
 end;
+

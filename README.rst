@@ -11,3 +11,15 @@ Goals
 
 - Portability
 - Small footprint
+
+Branches
+--------
+
+**dev** : https://github.com/hdl4fpga/hdl4fpga/tree/dev
+ Development code: mostly broken. Merged to snapshot when working
+
+**snapshot** : https://github.com/hdl4fpga/hdl4fpga
+ Unstable working code from the development branch
+
+**legacy** : https://github.com/hdl4fpga/hdl4fpga/tree/legacy
+ Very mature code

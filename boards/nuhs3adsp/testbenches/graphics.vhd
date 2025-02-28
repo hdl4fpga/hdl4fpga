@@ -1,25 +1,23 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 library hdl4fpga;
 use hdl4fpga.base.all;
@@ -36,7 +34,7 @@ architecture nuhs3adsp_graphics of testbench is
 
 	component nuhs3adsp is
 		generic (
-			debug : boolean := true);
+			debug : boolean := false);
 		port (
 			clk : in std_logic;
 			sw1 : in std_logic := '1';
@@ -158,9 +156,9 @@ architecture nuhs3adsp_graphics of testbench is
 		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_00000f_1603_0000_0000";
+		x"1702_000003_1603_0000_0000";
 	constant req_data  : std_logic_vector :=
-		x"010008_1702_00000f_1603_8000_0000";
+		x"010008_1702_000003_1603_8000_0000";
 
 	constant baudrate : natural := 1e6;
 
@@ -197,6 +195,7 @@ begin
 
     ipoetb_e : entity work.ipoe_tb
 	generic map (
+		delay1 => 210 us,
 		snd_data => snd_data,
 		req_data => req_data)
 	port map (
@@ -300,7 +299,7 @@ configuration nuhs3adsp_graphics_md of testbench is
 		for all : nuhs3adsp
 			use entity work.nuhs3adsp(graphics);
 		end for;
-			for all : ddr_model
+		for all : ddr_model
 			use entity micron.ddr_model
 			port map (
 				Clk   => clk_p,
@@ -319,3 +318,4 @@ configuration nuhs3adsp_graphics_md of testbench is
 		end for;
 	end for;
 end;
+

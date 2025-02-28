@@ -1,1 +1,1 @@
-vsim -c -voptargs=+acc work.nuhs3adsp_graphics_md
+vsim work.testbench(hdo_tb) -c -do run -all ; quit

@@ -1,26 +1,23 @@
-
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -28,14 +25,14 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_param.all;
+use hdl4fpga.sdrampkg.all;
 
 entity dmatrans is
 	generic (
 		burst_length   : natural := 0;
 		data_gear      : natural;
-		bank_size      : natural;
-		addr_size      : natural;
+		-- bank_size      : natural;
+		-- addr_size      : natural;
 		coln_size      : natural);
 	port (
 		tp             : out std_logic_vector(1 to 32);
@@ -212,8 +209,8 @@ begin
 						cntr := resize(unsigned(ctlr_alat)-2, cntr'length);
 					end if;
 					assert unsigned(ctlr_alat) >= 2
-					report ">>>dmatrans<<< : ctlr_alat " & to_string(ctlr_alat) & " lower than 2"
-					severity failure;
+						report ">>>dmatrans<<< : ctlr_alat " & to_string(ctlr_alat) & " lower than 2"
+						severity failure;
 				when bursting =>
 					if cntr(0)='0' then
 						cntr := cntr - 1;
@@ -258,6 +255,8 @@ begin
 			row     => row,
 			col     => col,
 			col_eoc => ceoc);
+		dmatrans_taddr <= taddr;
+		dmatrans_tlen  <= tlen;
 
 		process (dmatrans_clk)
 		begin
@@ -276,8 +275,7 @@ begin
 			sync_read => false, 
 			latency   => 1, -- RCD latency greater than 2
 			check_sov => false,
-			check_dov => true,
-			gray_code => false)
+			check_dov => true)
 		port map (
 			src_clk   => dmatrans_clk,
 			src_irdy  => ena,
@@ -347,3 +345,4 @@ begin
 		std_logic_vector(shift_left(resize(unsigned(ddrdma_col), ctlr_a'length), burst_bits));
 
 end;
+

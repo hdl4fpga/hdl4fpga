@@ -1,25 +1,80 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library hdl4fpga;
+use hdl4fpga.base.all;
+
+entity sync_fifo is
+	port (
+		src_clk  : in  std_logic;
+		src_data : in  std_logic_vector;
+		dst_clk  : in  std_logic;
+		dst_data : out std_logic_vector);
+end;
+
+architecture def of sync_fifo is
+	signal req      : std_logic := '0';
+	signal rdy      : std_logic := '0';
+	signal src_addr : std_logic_vector(0 to 1) := (others => '0');
+	signal dst_addr : std_logic_vector(0 to 1) := (others => '0');
+	signal src2dst  : std_logic_vector(0 to 1) := (others => '0');
+	signal dst2src  : std_logic_vector(0 to 1) := (others => '0');
+begin
+	
+	mem_e : entity hdl4fpga.dpram
+	generic map (
+		synchronous_rdaddr => false,
+		synchronous_rddata => false)
+	port map (
+		wr_clk  => src_clk,
+		wr_addr => src_addr,
+		wr_data => src_data,
+
+		rd_clk  => dst_clk,
+		rd_addr => dst_addr,
+		rd_data => dst_data);
+
+	process (src_clk, dst_clk)
+	begin
+		if rising_edge(src_clk) then
+			src2dst <= bin2gray(std_logic_vector(src_addr));
+			if dst2src=src2dst then
+				src2dst  <= src_addr;
+				src_addr <= bin2gray(std_logic_vector(unsigned(gray2bin(src_addr)) + 1));
+			end if;
+		end if;
+	end process;
+
+	process (dst_clk)
+	begin
+		if rising_edge(dst_clk) then
+			dst2src  <= dst_addr;
+			dst_addr <= src2dst;
+		end if;
+	end process;
+end;
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -39,8 +94,7 @@ entity fifo is
 		dst_offset : natural := 0;
 		src_offset : natural := 0;
 		check_sov  : boolean := false;
-		check_dov  : boolean := false;
-		gray_code  : boolean := false);
+		check_dov  : boolean := false);
 	port (
 		src_clk    : in  std_logic;
 		src_mode   : in  std_logic := '0';
@@ -314,11 +368,14 @@ begin
 				if src_mode='0' then
 					if async_mode then
 						wr_cntr <= unsigned(to_stdlogicvector(to_bitvector(rd_cmp)));
+						wr_ptr  <= unsigned(to_stdlogicvector(to_bitvector(rd_cmp)));
 					else
 						wr_cntr <= rd_cntr;
+						wr_ptr  <= rd_cntr;
 					end if;
 				else
 					wr_cntr <= to_unsigned(src_offset, wr_cntr'length);
+					wr_ptr  <= to_unsigned(src_offset, wr_cntr'length);
 				end if;
 			elsif rollback='1' then
 				wr_cntr  <= wr_ptr;
@@ -327,14 +384,7 @@ begin
 				succ := wr_cntr;
 				if src_irdy='1' then
 					if src_trdy='1' or not check_sov then
-						if gray_code and addr_length > 1 then
-							if wr_cntr(1 to addr_length)=to_unsigned(2**(addr_length-1), addr_length) then
-								succ(0) := not succ(0);
-							end if;
-							succ(1 to addr_length) := unsigned(inc(gray(succ(1 to addr_length))));
-						else
-							succ := succ + 1;
-						end if;
+						succ := succ + 1;
 					end if;
 					if src_trdy='0' and not check_sov then
 						overflow <= '1';
@@ -370,41 +420,26 @@ begin
 			else
 				if feed_ena='1' then
 					if dst_irdy1='1' or not check_dov then
-						if gray_code and addr_length > 1 then
-							if rd_cntr(1 to addr_length)=to_unsigned(2**(addr_length-1), addr_length) then
-								rd_cntr(0) <= not rd_cntr(0);
-							end if;
-							rd_cntr(1 to addr_length) <= unsigned(inc(gray(rd_cntr(1 to addr_length))));
-						else
-							rd_cntr <= rd_cntr + 1;
-						end if;
+						rd_cntr <= rd_cntr + 1;
 					end if;
 				end if;
 			end if;
 		end if;
 	end process;
 
-	sync_b : block
-	begin
+	src2dst_e : entity hdl4fpga.sync_fifo
+	port map (
+		src_clk  => src_clk,     				
+		src_data => std_logic_vector(wr_ptr),     
+		dst_clk  => dst_clk,     
+		dst_data => wr_cmp);
 
-		src2dst_e : entity hdl4fpga.sync_transfer
-		port map (
-			src_clk    => src_clk,
-			src_frm    => src_frm,
-			src_data   => std_logic_vector(wr_ptr),
-			dst_frm    => dst_frm,
-			dst_clk    => dst_clk,
-			dst_data   => wr_cmp);
-
-		dst2src_e : entity hdl4fpga.sync_transfer
-		port map (
-			src_clk    => dst_clk,
-			src_frm    => dst_frm,
-			src_data   => std_logic_vector(rd_cntr),
-			dst_clk    => src_clk,
-			dst_frm    => src_frm,
-			dst_data   => rd_cmp);
-
-	end block;
+	dst2src_e : entity hdl4fpga.sync_fifo
+	port map (
+		src_clk  => dst_clk,     				
+		src_data => std_logic_vector(rd_cntr),     
+		dst_clk  => src_clk,     
+		dst_data => rd_cmp);
 
 end;
+

@@ -1,25 +1,23 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -31,7 +29,7 @@ use hdl4fpga.ipoepkg.all;
 entity ipoe_tb is
 	generic (
 		ipaddress : std_logic_vector := aton("192.168.0.14");
-		delay1 : time := 36 us;
+		delay1 : time := 3 us;
 		delay2 : time := 10 us;
 		snd_data : std_logic_vector :=
 			x"01007e" &
@@ -65,6 +63,7 @@ architecture def of ipoe_tb is
 begin
 
 	process
+		constant max : natural := 1;
 	begin
 		req  <= '0';
 		wait for delay1;
@@ -77,7 +76,7 @@ begin
 					wait for delay2;
 				end if;
 			else
-				if segment > 1 then
+				if segment > max then
 					wait;
 				end if;
 				req <= '1';
@@ -98,8 +97,8 @@ begin
 		mii_frm1  => '0', -- arp
 		mii_frm2  => '0', --mii_req, -- ping
 		mii_frm3  => '0',
-		mii_frm4  => mii_req, --mii_req, -- write
-		mii_frm5  => mii_req1, -- read
+		mii_frm4  => '0', -- mii_req, --mii_req, -- write
+		mii_frm5  => mii_req, --mii_req1, -- read
 
 		mii_txc   => mii_clk,
 		mii_txen  => mii_txen,
@@ -117,3 +116,4 @@ begin
 		mii_data   => mii_rxd);
 
 end;
+

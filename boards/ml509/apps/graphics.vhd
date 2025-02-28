@@ -1,25 +1,23 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -28,11 +26,12 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.profiles.all;
-use hdl4fpga.app_profiles.all;
-use hdl4fpga.sdram_db.all;
+use hdl4fpga.hdo.all;
+use hdl4fpga.sdrampkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
+use hdl4fpga.profiles.all;
+use hdl4fpga.app_profiles.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -74,15 +73,15 @@ architecture graphics of ml509 is
 
 	type video_params is record
 		id     : video_modes;
-		dcm    : dcm_params;
+		cm     : dcm_params;
 		timing : videotiming_ids;
 	end record;
 
 	type videoparams_vector is array (natural range <>) of video_params;
 	constant video_tab : videoparams_vector := (
-		(id => modedebug,     timing => pclk_debug,            dcm => (dcm_mul => 4, dcm_div => 2)),
-		(id => mode480p24bpp, timing => pclk25_00m640x480at60, dcm => (dcm_mul => 1, dcm_div => 4)),
-		(id => mode600p24bpp, timing => pclk40_00m800x600at60, dcm => (dcm_mul => 2, dcm_div => 5)));
+		(id => modedebug,     timing => pclk_debug,            cm => (dcm_mul => 4, dcm_div => 2)),
+		(id => mode480p24bpp, timing => pclk25_00m640x480at60, cm => (dcm_mul => 1, dcm_div => 4)),
+		(id => mode600p24bpp, timing => pclk40_00m800x600at60, cm => (dcm_mul => 2, dcm_div => 5)));
 
 	function videoparam (
 		constant id  : video_modes)
@@ -163,15 +162,9 @@ architecture graphics of ml509 is
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := (real(sdram_params.pll.divclk_divide)*userclk_per)/real(sdram_params.pll.clkfbout_mult);
 
-	constant bank_size    : natural := ddr2_ba'length;
-	constant addr_size    : natural := ddr2_a'length;
-	constant word_size    : natural := ddr2_d'length;
 	constant byte_size    : natural := ddr2_d'length/ddr2_dm'length;
-	-- constant bank_size    : natural := 2;
-	-- constant addr_size    : natural := 13;
-	-- constant word_size    : natural := byte_size*8;
-	constant coln_size    : natural := 10;
-	constant gear         : natural := 4;
+	constant phy_data     : string  := hdo(phy_db)**".xc5vg4";
+	constant gear         : natural := hdo(phy_data)**".orgz.gear";
 
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk90      : std_logic;
@@ -185,8 +178,8 @@ architecture graphics of ml509 is
 	signal ctlrphy_ini    : std_logic;
 	signal ctlrphy_rw     : std_logic;
 
-	signal ddr_b          : std_logic_vector(bank_size-1 downto 0);
-	signal ddr_a          : std_logic_vector(addr_size-1 downto 0);
+	signal ddr_b          : std_logic_vector(ddr2_ba'range);
+	signal ddr_a          : std_logic_vector(ddr2_a'range);
 
 	signal ctlrphy_rst    : std_logic_vector(0 to gear/2-1);
 	signal ctlrphy_cke    : std_logic_vector(0 to gear/2-1);
@@ -200,14 +193,14 @@ architecture graphics of ml509 is
 	signal ctlrphy_a      : std_logic_vector(gear/2*ddr_a'length-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*ddr2_dm'length-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*ddr2_dm'length-1 downto 0);
 	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*ddr2_d'length-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*ddr2_d'length-1 downto 0);
 	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*ddr2_dqs_p'length-1 downto 0);
 
 	signal ctlrphy_wlreq  : std_logic;
 	signal ctlrphy_wlrdy  : std_logic;
@@ -215,11 +208,11 @@ architecture graphics of ml509 is
 	signal ctlrphy_rlrdy  : std_logic;
 
 	signal ddr2_clk       : std_logic_vector(ddr2_clk_p'range);
-	signal ddr2_dqst      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr2_dqso      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr2_dqsi      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddr2_dqo       : std_logic_vector(word_size-1 downto 0);
-	signal ddr2_dqt       : std_logic_vector(word_size-1 downto 0);
+	signal ddr2_dqst      : std_logic_vector(ddr2_dqs_p'length-1 downto 0);
+	signal ddr2_dqso      : std_logic_vector(ddr2_dqs_p'length-1 downto 0);
+	signal ddr2_dqsi      : std_logic_vector(ddr2_dqs_p'length-1 downto 0);
+	signal ddr2_dqo       : std_logic_vector(ddr2_d'length-1 downto 0);
+	signal ddr2_dqt       : std_logic_vector(ddr2_d'length-1 downto 0);
 
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
@@ -300,8 +293,8 @@ begin
 		generic map (
 			clk_feedback   => "NONE",
 			clkin_period   => userclk_per*1.0e9,
-			clkfx_divide   => videoparam(video_mode).dcm.dcm_div,
-			clkfx_multiply => videoparam(video_mode).dcm.dcm_mul,
+			clkfx_divide   => videoparam(video_mode).cm.dcm_div,
+			clkfx_multiply => videoparam(video_mode).cm.dcm_mul,
 			dfs_frequency_mode => "LOW")
 		port map (
 			rst    => sys_rst,
@@ -517,8 +510,7 @@ begin
 				dst_offset => 0,
 				src_offset => 2,
 				check_sov  => false,
-				check_dov  => true,
-				gray_code  => false)
+				check_dov  => true)
 			port map (
 				src_clk  => mii_rxc,
 				src_data => rxc_rxbus,
@@ -617,21 +609,13 @@ begin
 
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
-		bank_size    => bank_size,
-		addr_size    => addr_size,
-		coln_size    => coln_size,
-		word_size    => word_size,
-		byte_size    => byte_size,
-		gear         => gear,
-
-		ena_burstref => false,
 		debug => debug,
 		profile      => 1,
 		sdram_tcp    => 2.0*sdram_tcp,
-		mark         => MT47H512M3,
+		sdram_data   => hdo(sdram_db)**".MT4HTF12864HZ",
+		phy_data     => phy_data,
 		burst_length => 8,
 
-		phy_latencies => xc5vg4_latencies,
 		timing_id    => videoparam(video_mode).timing,
 		red_length   => 8,
 		green_length => 8,
@@ -662,7 +646,7 @@ begin
 
 		ctlr_clk      => ddr_clk0,
 		ctlr_rst      => sdrphy_rst0,
-		ctlr_rtt      => "11-",
+		ctlr_rtt      => "11",
 		ctlr_al       => "000",
 		ctlr_bl       => "011", -- Busrt length 8
 		ctlr_cl       => sdram_params.cl,
@@ -733,9 +717,9 @@ begin
 	
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
-		bank_size  => bank_size,
-		addr_size  => addr_size,
-		word_size  => word_size,
+		bank_size  => ddr2_ba'length,
+		addr_size  => ddr2_a'length,
+		word_size  => ddr2_d'length,
 		byte_size  => byte_size,
 		gear       => gear,
 		ba_latency => 1,
@@ -791,12 +775,12 @@ begin
 		sdram_ras  => ddr2_ras,
 		sdram_cas  => ddr2_cas,
 		sdram_we   => ddr2_we,
-		sdram_b    => ddr2_ba(bank_size-1 downto 0),
-		sdram_a    => ddr2_a(addr_size-1 downto 0),
+		sdram_b    => ddr2_ba,
+		sdram_a    => ddr2_a,
 		sdram_odt  => ddr2_odt,
 
-		sdram_dm   => ddr2_dm(word_size/byte_size-1 downto 0),
-		sdram_dq   => ddr2_d(word_size-1 downto 0),
+		sdram_dm   => ddr2_dm(ddr2_dm'length-1 downto 0),
+		sdram_dq   => ddr2_d,
 		sdram_dqst => ddr2_dqst,
 		sdram_dqs  => ddr2_dqsi,
 		sdram_dqso => ddr2_dqso);
@@ -849,10 +833,6 @@ begin
 
 	ddrio_b : block
 	begin
-
-		ddr2_ba(ddr2_ba'left downto bank_size) <= (others => '0');
-		ddr2_a(ddr2_a'left downto addr_size)   <= (others => '0');
-
 		ddr_clk_g : for i in ddr2_clk'range generate
 			ddr_ck_obufds : obufds
 			generic map (
@@ -865,66 +845,17 @@ begin
 
 		ddr_dqs_g : for i in ddr2_dqs_p'range generate
 		begin
-
-			true_g : if i < word_size/byte_size generate
-				dqsiobuf_i : iobufds
-				generic map (
-					iostandard => "DIFF_SSTL18_II_DCI")
-				port map (
-					t   => ddr2_dqst(i),
-					i   => ddr2_dqso(i),
-					o   => ddr2_dqsi(i),
-					io  => ddr2_dqs_p(i),
-					iob => ddr2_dqs_n(i));
-			end generate;
-
-			false_g : if not (i < word_size/byte_size) generate
-				dqsiobuf_i : iobufds
-				generic map (
-					iostandard => "DIFF_SSTL18_II_DCI")
-				port map (
-					t   => '1',
-					i   => '-',
-					o   => open,
-					io  => ddr2_dqs_p(i),
-					iob => ddr2_dqs_n(i));
-			end generate;
-
+			dqsiobuf_i : iobufds
+			generic map (
+				iostandard => "DIFF_SSTL18_II_DCI")
+			port map (
+				t   => ddr2_dqst(i),
+				i   => ddr2_dqso(i),
+				o   => ddr2_dqsi(i),
+				io  => ddr2_dqs_p(i),
+				iob => ddr2_dqs_n(i));
 		end generate;
 
-		ddr2_d(ddr2_d'left downto word_size) <= (others => 'Z');
-
-	end block;
-
-	serdebug_b : block
-		signal ser_irdy : std_logic;
-	begin
-		ser_irdy <= si_irdy and si_trdy and not si_end;
-		serdebug_e : entity hdl4fpga.ser_debug
-    	generic map (
-    		timing_id    => videoparam(mode600p24bpp).timing,
-    		red_length   => 1,
-    		green_length => 1,
-    		blue_length  => 1)
-    	port map (
-    		ser_clk      => sio_clk,
-    		ser_frm      => si_frm,
-			ser_irdy     => ser_irdy,
-    		ser_data     => si_data,
-
-    		video_clk    => video_clk,
-    		video_hzsync => dd_hs,
-    		video_vtsync => dd_vs,
-    		video_pixel  => dd_pixel);
-
-    	process (video_clk)
-    	begin
-    		if rising_edge(video_clk) then
-    			hs <= dd_hs;
-    			vs <= dd_vs;
-    			(red, green, blue) <= dd_pixel;
-    		end if;
-    	end process;
 	end block;
 
 	phy_txc_gtxclk_i : oddr

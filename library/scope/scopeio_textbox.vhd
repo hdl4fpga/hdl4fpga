@@ -1,594 +1,167 @@
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.jso.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.scopeiopkg.all;
-use hdl4fpga.textboxpkg.all;
 use hdl4fpga.cgafonts.all;
 
 entity scopeio_textbox is
 	generic(
-		inputs        : natural;
-		input_names   : tag_vector;
-		layout        : string;
-		latency       : natural;
-		max_delay     : natural;
-		font_bitrom   : std_logic_vector := psf1cp850x8x16;
-		font_height   : natural := 16);
+		inputs          : natural;
+		waveform        : string;
+		latency         : natural;
+		font_bitrom     : std_logic_vector := psf1cp850x8x16;
+		font_height     : natural := 16);
 	port (
-		rgtr_clk      : in  std_logic;
-		rgtr_dv       : in  std_logic;
-		rgtr_id       : in  std_logic_vector(8-1 downto 0);
-		rgtr_data     : in  std_logic_vector;
+		tp              : out std_logic_vector(1 to 32);
+		rgtr_clk        : in  std_logic;
+		rgtr_dv         : in  std_logic;
+		rgtr_id         : in  std_logic_vector(8-1 downto 0);
+		rgtr_data       : in  std_logic_vector;
 
-		gain_ena      : in  std_logic;
-		gain_dv       : in  std_logic;
-		gain_cid      : in  std_logic_vector;
-		gain_ids      : in  std_logic_vector;
+		code_frm        : in  std_logic;
+		code_irdy       : in  std_logic;
+		code_data       : in  std_logic_vector(8-1 downto 0);
+		wdt_id          : in  std_logic_vector;
+		video_clk       : in  std_logic;
+		video_hcntr     : in  std_logic_vector;
+		video_vcntr     : in  std_logic_vector;
+		video_vton      : in  std_logic;
+		sgmntbox_ena    : in  std_logic_vector;
+		text_on         : in  std_logic := '1';
+		text_fg         : out std_logic_vector;
+		text_bg         : out std_logic_vector;
+		text_fgon       : out std_logic);
 
-		time_ena      : in  std_logic;
-		time_scale    : in  std_logic_vector;
-		time_offset   : in  std_logic_vector;
+	constant font_width     : natural := hdo(waveform)**".textbox.font_width=8.";
+	constant textbox_width  : natural := hdo(waveform)**".textbox.width";
+	constant textbox_height : natural := hdo(waveform)**".grid.height";
+	constant grid_height    : natural := hdo(waveform)**".grid.height";
 
-		btof_binfrm   : buffer std_logic;
-		btof_binirdy  : out std_logic;
-		btof_bintrdy  : in  std_logic;
-		btof_bindi    : out std_logic_vector;
-		btof_binneg   : out std_logic;
-		btof_binexp   : out std_logic;
-		btof_bcdwidth : out std_logic_vector;
-		btof_bcdprec  : out std_logic_vector;
-		btof_bcdunit  : out std_logic_vector;
-		btof_bcdsign  : out std_logic;
-		btof_bcdalign : out std_logic;
-		btof_bcdirdy  : buffer std_logic;
-		btof_bcdtrdy  : in  std_logic;
-		btof_bcdend   : in  std_logic;
-		btof_bcddo    : in  std_logic_vector;
+	constant chanid_bits    : natural := unsigned_num_bits(inputs-1);
+	constant cga_cols       : natural := textbox_width/font_width;
+	constant cga_rows       : natural := textbox_height/font_height;
+	constant cga_size       : natural := cga_rows*cga_cols;
+	constant cgarows_bits   : natural := unsigned_num_bits(cga_rows-1);
+	constant cgacols_bits   : natural := unsigned_num_bits(cga_cols-1);
 
-		video_clk     : in  std_logic;
-		video_hcntr   : in  std_logic_vector;
-		video_vcntr   : in  std_logic_vector;
-		sgmntbox_ena  : in  std_logic_vector;
-		text_on       : in  std_logic := '1';
-		text_fg       : out std_logic_vector;
-		text_bg       : out std_logic_vector;
-		text_fgon     : out std_logic);
-
-	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
-	constant font_width    : natural := jso(layout)**".textbox.font_width";
-
-	constant hz_unit : real := jso(layout)**".axis.horizontal.unit";
-	constant vt_unit : real := jso(layout)**".axis.vertical.unit";
 end;
 
 architecture def of scopeio_textbox is
+	constant cga_latency    : natural := 4;
+	constant color_latency  : natural := 1;
 
-	subtype ascii is std_logic_vector(8-1 downto 0);
-	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height(layout))-1 downto 0);
-	constant division_bits : natural := unsigned_num_bits(grid_unit(layout)-1);
-	constant cgaadapter_latency : natural := 4;
+	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
+	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
+	constant textwidth_bits  : natural := unsigned_num_bits(textbox_width-1);
 
-	constant fontwidth_bits  : natural    := unsigned_num_bits(font_width-1);
-	constant fontheight_bits  : natural    := unsigned_num_bits(font_height-1);
-	constant textwidth_bits : natural := unsigned_num_bits(textbox_width(layout)-1);
-	constant cga_cols    : natural    := textbox_width(layout)/font_width;
-	constant cga_rows    : natural    := textbox_height(layout)/font_height;
-	constant cga_size    : natural    := (textbox_width(layout)/font_width)*(textbox_height(layout)/font_height);
+	signal cga_we    : std_logic := '0';
+	signal cga_addr  : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
+	signal cga_data  : std_logic_vector(code_data'range);
 
-	constant tags : tag_vector := render_tags(
-		analogreadings(
-			style  => styles(
-				width(cga_cols) & alignment(right_alignment) &
-				text_palette(pltid_textfg) & bg_palette(pltid_textbg)),
-			input_names => input_names,
-	   		inputs => inputs));
+	signal fg_color  : std_logic_vector(text_fg'range);
+	signal bg_color  : std_logic_vector(text_bg'range);
 
-	constant cga_bitrom  : std_logic_vector := to_ascii(render_content(
-		analogreadings(
-			style  => styles(width(cga_cols) & alignment(right_alignment)),
-			input_names => input_names,
-			inputs => inputs),
-		cga_size));
+	signal video_on  : std_logic;
+	signal video_addr: std_logic_vector(cga_addr'range);
+	signal video_dot : std_logic;
+	signal blink     : std_logic;
 
-	function addr_attr (
-		constant table : attr_table;
-		constant addr  : std_logic_vector)
-		return natural
-	is
-		variable retval : natural;
-	begin
-		retval := 0; --table(table'left).attr;
-		for i in table'range loop
-			if unsigned(addr) >= table(i).addr then
-				-- report "*****************  " & itoa(table(i).attr);
-				retval := table(i).attr;
-			end if;
-		end loop;
-		return retval;
-	end;
+	signal video_row : std_logic_vector(0 to cgarows_bits-1);
+	signal focus_wid : std_logic_vector(6-1 downto 0);
+	signal blinkit   : std_logic;
 
-	signal cgaaddr_init  : std_logic;
-	signal cga_av        : std_logic;
-	signal cgabcd_req    : std_logic_vector(0 to 4+5-1);
-	signal cgabcd_frm    : std_logic_vector(cgabcd_req'range);
-	signal cgabcd_end    : std_logic;
-	signal cgachr_req    : std_logic_vector(0 to 5-1);
-	signal cgachr_frm    : std_logic_vector(cgachr_req'range);
-	signal cgachr_end    : std_logic;
-	signal cga_req       : std_logic_vector(0 to cgabcd_req'length+cgachr_req'length-1);
-	signal cga_frm       : std_logic_vector(cga_req'range);
-	signal cga_we        : std_logic;
-	signal cga_on        : std_logic;
-	signal cga_addr      : unsigned(unsigned_num_bits(cga_size-1)-1 downto 0);
-	signal cga_code      : ascii;
-	signal video_addr    : std_logic_vector(cga_addr'range);
-	signal char_dot      : std_logic;
-
-	signal frac          : signed(0 to 4*4-1);
-	signal exp           : signed(btof_bindi'range);
-	signal scale         : std_logic_vector(0 to 2-1) := "00";
-
-	signal vtdiv_memaddr : std_logic_vector(cga_addr'range);
-	signal vtoffset_memaddr : std_logic_vector(cga_addr'range);
-	signal vtmag_memaddr : std_logic_vector(cga_addr'range);
-
-	signal bcd_type      : std_logic;
-	signal bcd_binvalue  : std_logic_vector(frac'range);
-	signal bcd_expvalue  : integer;                      -- Xilnx's ISE workaround data type;
-	signal bcd_sign      : std_logic_vector(0 to 0);     -- Xilnx's ISE workaround data type;
-	signal bcd_precvalue : integer;                      -- Xilnx's ISE workaround data type;
-	signal bcd_unitvalue : integer;                      -- Xilnx's ISE workaround data type;
-	signal bcd_width     : natural;                      -- Xilnx's ISE workaround data type;
-	signal bcd_alignment : std_logic_vector(0 to 0);
-	signal bcd_memaddr   : std_logic_vector(cga_addr'range);
-
-	signal chr_value     : ascii;
-	signal chr_memaddr   : std_logic_vector(cga_addr'range);
-
-	signal tag_memaddr   : std_logic_vector(cga_addr'range);
-
-	signal textfg       : std_logic_vector(text_fg'range);
-	signal textbg       : std_logic_vector(text_bg'range);
 begin
 
-	rgtr_b : block
+	assert false
+		report CR &
+		"font width " & natural'image(fontwidth_bits) & CR &
+		"textbox rows " & natural'image(cga_rows) & CR &
+		"textbox cols " & natural'image(cga_cols) & CR &
+		"textbox size " & natural'image(cga_size) & CR &
+		"textbox mem  " & natural'image(2**cga_addr'length) 
+		severity note;
 
-		signal myip_ena       : std_logic;
-		signal myip_dv        : std_logic;
-		signal myip_num1      : std_logic_vector(8-1 downto 0);
-		signal myip_num2      : std_logic_vector(8-1 downto 0);
-		signal myip_num3      : std_logic_vector(8-1 downto 0);
-		signal myip_num4      : std_logic_vector(8-1 downto 0);
-
-		signal trigger_ena    : std_logic;
-		signal trigger_freeze : std_logic;
-		signal trigger_slope  : std_logic;
-		signal trigger_chanid : std_logic_vector(chanid_bits-1 downto 0);
-		signal trigger_level  : std_logic_vector(storage_word'range);
-		signal tgr_exp        : integer;
-
-		signal chan_id        : std_logic_vector(chanid_maxsize-1 downto 0);
-		signal vt_exp         : integer;
-		signal vt_dv          : std_logic;
-		signal vt_ena         : std_logic;
-		signal vt_offset      : std_logic_vector((5+8)-1 downto 0);
-		signal vt_offsets     : std_logic_vector(0 to inputs*vt_offset'length-1);
-		signal vt_chanid      : std_logic_vector(chan_id'range);
-		signal vt_scale       : std_logic_vector(4-1 downto 0);
-		signal tgr_scale      : std_logic_vector(4-1 downto 0);
-
-		signal hz_exp         : integer;
-
-		function get_multps (
-			constant floats : siofloat_vector)
-			return natural_vector is
-			constant precs : natural_vector := get_precs(floats);
-			variable point : natural;
-			variable multp : natural;
-			variable rval  : natural_vector(0 to 16-1);
-		begin
-			for i in floats'range loop
-				rval(i) := floats(i).multp + (precs(i) / 3);
-			end loop;
-			for i in 1 to 4-1 loop
-				for j in 0 to 4-1 loop
-					rval(4*i+j) := 
-						(3*floats(j).multp+floats(j).point+i)/3 + 
-						precs(4*i+j) / 3;
-				end loop;
-			end loop;
-			return rval;
-		end;
-
-		constant hz_float1245  : siofloat_vector := get_float1245(hz_unit*1.0e15);
-		constant hz_precs      : natural_vector := get_precs(hz_float1245);
-		constant hz_units      : integer_vector := get_units(hz_float1245);
-		constant hz_multps     : natural_vector := get_multps(hz_float1245);
-
-		constant hzfrac_length : natural := max(unsigned_num_bits(hz_float1245(0).frac),5);
-		signal   hz_frac       : unsigned(0 to hzfrac_length-1);
-		signal   hz_scalevalue : natural;
-		signal   hz_multp      : std_logic_vector(0 to 3-1);
-
-		constant vt_float1245  : siofloat_vector := get_float1245(vt_unit*1.0e15);
-		constant vt_precs      : natural_vector := get_precs(vt_float1245);
-		constant vt_units      : integer_vector := get_units(vt_float1245);
-		constant vt_multps     : natural_vector := get_multps(vt_float1245);
-
-		constant vtfrac_length : natural := max(unsigned_num_bits(vt_float1245(0).frac),5);
-		signal   vt_frac       : unsigned(0 to vtfrac_length-1);
-		signal   tgr_frac      : unsigned(0 to vtfrac_length-1);
-		signal   vt_scalevalue : natural;
-		signal   vt_multp      : std_logic_vector(0 to 3-1);
-		signal   tgr_multp     : std_logic_vector(0 to 3-1);
-
+	focus_b : block
+		signal wid : std_logic_vector(8-1 downto 0);
 	begin
-
-		myip4_e : entity hdl4fpga.scopeio_rgtrmyip
+		focus_e : entity hdl4fpga.scopeio_rgtrfocus
 		port map (
 			rgtr_clk  => rgtr_clk,
 			rgtr_dv   => rgtr_dv,
 			rgtr_id   => rgtr_id,
 			rgtr_data => rgtr_data,
-
-			ip4_ena   => myip_ena,
-			ip4_dv    => myip_dv,
-			ip4_num1  => myip_num1,
-			ip4_num2  => myip_num2,
-			ip4_num3  => myip_num3,
-			ip4_num4  => myip_num4);
-
-		trigger_e : entity hdl4fpga.scopeio_rgtrtrigger
-		port map (
-			rgtr_clk       => rgtr_clk,
-			rgtr_dv        => rgtr_dv,
-			rgtr_id        => rgtr_id,
-			rgtr_data      => rgtr_data,
-
-			trigger_ena    => trigger_ena,
-			trigger_slope  => trigger_slope,
-			trigger_freeze => trigger_freeze,
-			trigger_chanid => trigger_chanid,
-			trigger_level  => trigger_level);
-
-		rgtrvtaxis_b : block
-			signal offset : std_logic_vector(vt_offset'range);
-			signal chanid : std_logic_vector(vt_chanid'range);
-		begin
-			vtaxis_e : entity hdl4fpga.scopeio_rgtrvtaxis
-			generic map (
-				rgtr      => false)
-			port map (
-				rgtr_clk  => rgtr_clk,
-				rgtr_dv   => rgtr_dv,
-				rgtr_id   => rgtr_id,
-				rgtr_data => rgtr_data,
-				vt_dv     => vt_dv,
-				vt_ena    => vt_ena,
-				vt_chanid => chanid,
-				vt_offset => offset);
-
-			vtoffsets_p : process(rgtr_clk)
-			begin
-				if rising_edge(rgtr_clk) then
-					if vt_ena='1' then
-						vt_chanid  <= chanid;
-						vt_offsets <= byte2word(vt_offsets, chanid, offset);
-					end if;
-				end if;
-			end process;
-		end block;
-
-		chainid_p : process (rgtr_clk)
-		begin
-			if rising_edge(rgtr_clk) then
-				if vt_dv='1' then
-					chan_id <= vt_chanid;
-				elsif gain_dv='1' then
-					chan_id <= std_logic_vector(resize(unsigned(gain_cid),chan_id'length));
-				end if;
-			end if;
-		end process;
-		vt_offset <= multiplex(vt_offsets, chan_id,        vt_offset'length);
-		vt_scale  <= multiplex(gain_ids,   chan_id,        vt_scale'length);
-		tgr_scale <= multiplex(gain_ids,   trigger_chanid, tgr_scale'length);
-
-		process (rgtr_clk)
-			variable bcd_req  : std_logic_vector(cgabcd_req'range);
-			variable char_req : std_logic_vector(cgachr_req'range);
-		begin
-			if rising_edge(rgtr_clk) then
-				bcd_req := cgabcd_req or (
-					0 => myip_ena,
-					1 => myip_ena,
-					2 => myip_ena,
-					3 => myip_ena,
-					4 => time_ena,
-					5 => time_ena,
-					6 => trigger_ena or vt_dv or gain_ena,
-					7 => vt_dv or gain_ena,
-					8 => gain_ena);
-				cgabcd_req <= bcd_req and not (cgabcd_frm and (cgabcd_frm'range => cgabcd_end));
-
-				char_req := cgachr_req or (
-					0 => time_ena,
-					1 => trigger_ena,
-					2 => trigger_ena,
-					3 => trigger_ena or vt_dv or gain_ena,
-					4 => gain_ena);
-				cgachr_req <= char_req and not (cgachr_frm and (cgachr_frm'range => cgachr_end));
-			end if;
-		end process;
-		bcd_type <= setif(cgabcd_req/=(cgabcd_req'range => '0'));
-
-		cga_req <= cgabcd_req & cgachr_req;
-		cga_arbiter_e : entity hdl4fpga.arbiter
-		port map (
-			clk => rgtr_clk,
-			req => cga_req,
-			gnt => cga_frm);
-		cgabcd_frm  <= cga_frm(0 to cgabcd_frm'length-1);
-		cgachr_frm <= cga_frm(cgabcd_frm'length to cgachr_frm'length+cgabcd_frm'length-1);
-
-		bcd_width <= wirebus (natural_vector'(
-			width(tagbyid(tags, "ip4.num1"    )),
-			width(tagbyid(tags, "ip4.num2"    )),
-			width(tagbyid(tags, "ip4.num3"    )),
-			width(tagbyid(tags, "ip4.num4"    )),
-			width(tagbyid(tags, "hz.offset"   )),
-			width(tagbyid(tags, "hz.div"      )),
-			width(tagbyid(tags, "tgr.level"   )),
-			width(tagbyid(tags, "vt(0).offset")),
-			width(tagbyid(tags, "vt(0).div"   ))),
-			cgabcd_frm);
-
-		vtoffsetmemaddr_p : process (chan_id)
-		begin
-			vtoffset_memaddr <= (others => '-');
-			for i in 0 to inputs-1 loop
-				if i=to_integer(unsigned(chan_id)) then
-					vtoffset_memaddr <= memaddr(tagbyid(tags, "vt(" & itoa(i)  & ").offset"), vtoffset_memaddr'length);
-				end if;
-			end loop;
-		end process;
-
-		vtdivmemaddr_p : process (chan_id)
-		begin
-			vtdiv_memaddr <= (others => '-');
-			for i in 0 to inputs-1 loop
-				if i=to_integer(unsigned(chan_id)) then
-					vtdiv_memaddr <= memaddr(tagbyid(tags, "vt(" & itoa(i)  & ").div"), vtdiv_memaddr'length);
-				end if;
-			end loop;
-		end process;
-
-		vtmagmemaddr_p: process (chan_id)
-		begin
-			vtmag_memaddr <= (others => '-');
-			for i in 0 to inputs-1 loop
-				if i=to_integer(unsigned(chan_id)) then
-					vtmag_memaddr <= memaddr(tagbyid(tags, "vt(" & itoa(i)  & ").mag"), vtmag_memaddr'length);
-				end if;
-			end loop;
-		end process;
-
-		hz_frac  <= to_unsigned(hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).frac, hz_frac'length);
-		vt_frac  <= to_unsigned(vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac,   vt_frac'length);
-		tgr_frac <= to_unsigned(vt_float1245(to_integer(unsigned(tgr_scale(2-1 downto 0)))).frac,  tgr_frac'length);
-
-		hz_exp  <= hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).exp;
-		vt_exp  <= vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).exp;
-		tgr_exp <= vt_float1245(to_integer(unsigned(tgr_scale(2-1 downto 0)))).exp;
-
-		hz_scalevalue <= hz_float1245(to_integer(unsigned(time_scale(2-1 downto 0)))).frac;
-		vt_scalevalue <= vt_float1245(to_integer(unsigned(vt_scale(2-1 downto 0)))).frac;
-
-		bcd_binvalue <= wirebus(
-			std_logic_vector(resize(unsigned(myip_num1),      bcd_binvalue'length))  &
-			std_logic_vector(resize(unsigned(myip_num2),      bcd_binvalue'length))  &
-			std_logic_vector(resize(unsigned(myip_num3),      bcd_binvalue'length))  &
-			std_logic_vector(resize(unsigned(myip_num4),      bcd_binvalue'length))  &
-			std_logic_vector(resize(mul(signed(time_offset), hz_frac),   bcd_binvalue'length))      &
-			std_logic_vector(to_unsigned(hz_scalevalue,                  bcd_binvalue'length))      &
-			std_logic_vector(resize(mul(-signed(trigger_level), tgr_frac), bcd_binvalue'length))      &
-			std_logic_vector(resize(mul(signed(vt_offset), vt_frac),     bcd_binvalue'length))      &
-			std_logic_vector(to_unsigned(vt_scalevalue,                  bcd_binvalue'length)),
-			cgabcd_frm);
-				 	
-		bcd_expvalue <= wirebus(integer_vector'(
-			0, 0, 0, 0,
-			hz_exp-division_bits,
-			hz_exp,
-			tgr_exp-division_bits,
-			vt_exp-division_bits,
-			vt_exp),
-			cgabcd_frm);
-				 	
-		bcd_unitvalue <= wirebus(integer_vector'(
-			0, 0, 0, 0,
-			hz_units(to_integer(unsigned(time_scale))),
-			hz_units(to_integer(unsigned(time_scale))),
-			vt_units(to_integer(unsigned(tgr_scale))), 
-			vt_units(to_integer(unsigned(vt_scale))),
-			vt_units(to_integer(unsigned(vt_scale)))),
-			cgabcd_frm);
-
-		bcd_precvalue <= wirebus(integer_vector'(
-			0, 0, 0, 0,
-			-hz_precs(to_integer(unsigned(time_scale))),
-			-hz_precs(to_integer(unsigned(time_scale))),
-			-vt_precs(to_integer(unsigned(tgr_scale))),  
-			-vt_precs(to_integer(unsigned(vt_scale))),  
-			-vt_precs(to_integer(unsigned(vt_scale)))),  
-			cgabcd_frm);
-
-		bcd_sign <= wirebus(std_logic_vector'(
-			'0',
-			'0',
-			'0',
-			'0',
-			'1',
-			'1',
-			'1',
-			'1',
-			'1'),
-			cgabcd_frm);
-
-		bcd_alignment <= wirebus (std_logic_vector'(
-			setif(left_alignment=alignment(tagbyid(tags, "ip4.num1"    ))),
-			setif(left_alignment=alignment(tagbyid(tags, "ip4.num2"    ))),
-			setif(left_alignment=alignment(tagbyid(tags, "ip4.num3"    ))),
-			setif(left_alignment=alignment(tagbyid(tags, "ip4.num4"    ))),
-			setif(left_alignment=alignment(tagbyid(tags, "hz.offset"   ))),
-			setif(left_alignment=alignment(tagbyid(tags, "hz.div"      ))),
-			setif(left_alignment=alignment(tagbyid(tags, "tgr.level"   ))),
-			setif(left_alignment=alignment(tagbyid(tags, "vt(0).offset"))),
-			setif(left_alignment=alignment(tagbyid(tags, "vt(0).div"   )))),
-			cgabcd_frm);
-		btof_bcdalign <= bcd_alignment(0);
-
-		bcd_memaddr <= wirebus (
-			memaddr(tagbyid(tags, "ip4.num1"),  bcd_memaddr'length) &
-			memaddr(tagbyid(tags, "ip4.num2"),  bcd_memaddr'length) &
-			memaddr(tagbyid(tags, "ip4.num3"),  bcd_memaddr'length) &
-			memaddr(tagbyid(tags, "ip4.num4"),  bcd_memaddr'length) &
-			memaddr(tagbyid(tags, "hz.offset"), bcd_memaddr'length) &
-			memaddr(tagbyid(tags, "hz.div"   ), bcd_memaddr'length) &
-			memaddr(tagbyid(tags, "tgr.level"), bcd_memaddr'length) &
-			vtoffset_memaddr                                        &
-			vtdiv_memaddr,
-			cgabcd_frm);
-
-		hz_multp  <= std_logic_vector(to_unsigned(hz_multps(to_integer(unsigned(time_scale))), hz_multp'length));
-		vt_multp  <= std_logic_vector(to_unsigned(vt_multps(to_integer(unsigned(vt_scale))),   vt_multp'length));
-		tgr_multp <= std_logic_vector(to_unsigned(vt_multps(to_integer(unsigned(tgr_scale))),  tgr_multp'length));
-
-		chr_value <= wirebus(
-			std_logic_vector'(multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), hz_multp,       ascii'length)) &
-			std_logic_vector'(multiplex(x"1819",                                trigger_slope))                 &
-			std_logic_vector'(multiplex(to_ascii(" *"),                         trigger_freeze))                &
-			std_logic_vector'(multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), tgr_multp,      ascii'length)) &
-			std_logic_vector'(multiplex(to_ascii("fpn") & x"e6" &to_ascii("m "), vt_multp,       ascii'length)),
-			cgachr_frm);
-
-		chr_memaddr <= wirebus (
-			memaddr(tagbyid(tags, "hz.mag"),     chr_memaddr'length) &
-			memaddr(tagbyid(tags, "tgr.edge"),   chr_memaddr'length) &
-			memaddr(tagbyid(tags, "tgr.freeze"), chr_memaddr'length) &
-			memaddr(tagbyid(tags, "tgr.mag"),    chr_memaddr'length) &
-			vtmag_memaddr,
-			cgachr_frm);
-
-		tag_memaddr <= wirebus (
-			memaddr(tagbyid(tags, "ip4.num1"),   tag_memaddr'length) &
-			memaddr(tagbyid(tags, "ip4.num2"),   tag_memaddr'length) &
-			memaddr(tagbyid(tags, "ip4.num3"),   tag_memaddr'length) &
-			memaddr(tagbyid(tags, "ip4.num4"),   tag_memaddr'length) &
-			memaddr(tagbyid(tags, "hz.offset"),  tag_memaddr'length) &
-			memaddr(tagbyid(tags, "hz.div"   ),  tag_memaddr'length) &
-			memaddr(tagbyid(tags, "tgr.level"),  tag_memaddr'length) &
-			vtoffset_memaddr                                         &
-			vtdiv_memaddr                                            &
-
-			memaddr(tagbyid(tags, "hz.mag"),     tag_memaddr'length) &
-			memaddr(tagbyid(tags, "tgr.edge"),   tag_memaddr'length) &
-			memaddr(tagbyid(tags, "tgr.freeze"), tag_memaddr'length) &
-			memaddr(tagbyid(tags, "tgr.mag"),    tag_memaddr'length) &
-			vtmag_memaddr,
-			cga_frm);
-
+	
+			focus_wid => wid);
+		focus_wid <= wid(focus_wid'range);
+		blinkit <= wid(wid'left);
 	end block;
 
-	cgabcd_end <= btof_binfrm and btof_bcdtrdy and btof_bcdend;
-	frmbcd_p : process (rgtr_clk)
+	tp(1 to focus_wid'length) <= focus_wid;
+	-- tp(1 to wdt_id'length) <= wdt_id;
+	process (rgtr_clk)
+		type states is (s_init, s_run);
+		variable state : states;
 	begin
 		if rising_edge(rgtr_clk) then
-			if btof_binfrm='1' then
-				if btof_bcdtrdy='1' then
-					if btof_bcdend='1' then
-						btof_binfrm  <= '0';
+			case state is
+			when s_init =>
+				cga_addr <= mul(unsigned(video_row), cga_cols, cga_addr'length);
+				if code_frm='1' then
+					cga_we <= code_irdy;
+					if code_irdy='1' then
+						state := s_run;
 					end if;
+				else
+					cga_we <= '0';
 				end if;
-			elsif cgabcd_frm/=(cgabcd_frm'range => '0') then
-				btof_binfrm   <= '1';
-				btof_bcdsign  <= bcd_sign(0);
-				btof_bcdprec  <= std_logic_vector(to_signed(bcd_precvalue, btof_bcdprec'length));
-				btof_bcdunit  <= std_logic_vector(to_signed(bcd_unitvalue, btof_bcdunit'length));
-				btof_bcdwidth <= std_logic_vector(to_unsigned(bcd_width,   btof_bcdwidth'length));
-
-				frac <= signed(bcd_binvalue);
-				exp  <= to_signed(bcd_expvalue, exp'length);
-			end if;
+			when s_run =>
+				if code_irdy='1' then
+					cga_addr <= cga_addr + 1;
+				end if;
+				if code_frm='1' then
+					cga_we <= code_irdy;
+				else
+					cga_we <= '0';
+					state := s_init;
+				end if;
+			end case;
+			cga_data <= code_data;
 		end if;
 	end process;
-	btof_bcdirdy <= btof_binfrm;
-
-	scopeio_float2btof_e : entity hdl4fpga.scopeio_float2btof
-	port map (
-		clk      => rgtr_clk,
-		frac     => frac,
-		exp      => exp,
-		bin_frm  => btof_binfrm,
-		bin_irdy => btof_binirdy,
-		bin_trdy => btof_bintrdy,
-		bin_neg  => btof_binneg,
-		bin_exp  => btof_binexp,
-		bin_di   => btof_bindi);
-
-	frmchar_p :
-	cgachr_end <= setif(cga_we='1' and cgachr_frm/=(cgachr_frm'range => '0'));
-
-	cga_addr_p : process (rgtr_clk)
-	begin
-		if rising_edge(rgtr_clk) then
-			if cga_frm=(cga_frm'range => '0') then
-				cgaaddr_init <= '1';
-				cga_addr <= (others => '-');
-				cga_av   <= '0';
-			elsif cgaaddr_init='1' then
-				cgaaddr_init <= '0';
-				cga_av   <= '1';
-				cga_addr <= unsigned(tag_memaddr);
-			elsif cga_we='1' then
-				cga_addr <= cga_addr + 1;
-			end if;
-		end if;
-	end process;
-
-	process (video_clk)
-		variable addr : std_logic_vector(video_addr'range);
-	begin
-		if rising_edge(video_clk) then
-			textfg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_textpalette), addr), textfg'length));
-			textbg <= std_logic_vector(to_unsigned(addr_attr(tagattr_tab(tags, key_bgpalette),   addr), textbg'length));
-			addr := video_addr;
-		end if;
-	end process;
-
-	cga_we <=
-		cga_av when btof_binfrm='1' and btof_bcdtrdy='1'  else
-		cga_av when cgachr_frm/=(cgachr_frm'range => '0') else
-		'0';
-
-	cga_code <= multiplex(
-		multiplex(to_ascii("0123456789 .+-  "), btof_bcddo, ascii'length) &
-		chr_value,
-		not bcd_type);
 
 	video_addr <= std_logic_vector(resize(
-		mul(unsigned(video_vcntr) srl fontheight_bits, textbox_width(layout)/font_width) +
+		mul(unsigned(video_vcntr) srl fontheight_bits, cga_cols) +
 		(unsigned(video_hcntr(textwidth_bits-1 downto 0)) srl fontwidth_bits),
 		video_addr'length));
+	video_on <= text_on and sgmntbox_ena(0);
 
-	cga_on <= text_on and sgmntbox_ena(0);
 	cgaram_e : entity hdl4fpga.cgaram
 	generic map (
-		cga_bitrom   => cga_bitrom,
 		font_bitrom  => font_bitrom,
 		font_height  => font_height,
 		font_width   => font_width)
@@ -596,39 +169,244 @@ begin
 		cga_clk      => rgtr_clk,
 		cga_we       => cga_we,
 		cga_addr     => std_logic_vector(cga_addr),
-		cga_data     => cga_code,
+		cga_data     => cga_data,
 
 		video_clk    => video_clk,
 		video_addr   => video_addr,
 		font_hcntr   => video_hcntr(unsigned_num_bits(font_width-1)-1 downto 0),
 		font_vcntr   => video_vcntr(unsigned_num_bits(font_height-1)-1 downto 0),
-		video_on     => cga_on,
-		video_dot    => char_dot);
+		video_on     => video_on,
+		video_dot    => video_dot);
 
 	lat_e : entity hdl4fpga.latency
 	generic map (
 		n => 1,
-		d => (0 => latency-cgaadapter_latency))
+		d => (0 => latency-cga_latency))
 	port map (
-		clk => video_clk,
-		di(0) => char_dot,
+		clk   => video_clk,
+		di(0) => video_dot,
 		do(0) => text_fgon);
+
+	blink_p : process (rgtr_clk)
+		type states is (s_fg, s_bg);
+		variable state : states;
+		variable cntr : integer range -1 to 31;
+		variable edge : std_logic;
+	begin
+		if rising_edge(rgtr_clk) then
+			if (edge and not video_vton)='1' then
+    			case state is
+    			when s_fg =>
+    				if cntr >=0 then 
+    					cntr := cntr - 1;
+    				else
+    					cntr  := 30-1;
+    					state := s_bg;
+    					blink <= '1' and blinkit;
+    				end if;
+    			when s_bg =>
+    				if cntr >=0 then 
+    					cntr := cntr - 1;
+    				else
+    					cntr  := 30-1;
+    					state := s_fg;
+    					blink <= '0';
+    				end if;
+    			end case;
+			end if;
+			edge := video_vton;
+		end if;
+	end process;
+
+	widgets_b : block
+		constant vt_labels  : string  := hdo(waveform)**".vt";
+		constant label_width : natural := max_textlength(vt_labels, inputs);
+
+		function top_borders
+			return natural_vector is
+			variable table : natural_vector(0 to wid_inscale+3*(inputs-1));
+		begin
+			table(0 to wid_static) := (
+				wid_time       => 0,
+				wid_trigger    => 1,
+				wid_tmposition => 0,
+				wid_tmscale    => 0,
+				wid_tgchannel  => 1,
+				wid_tgposition => 1,
+				wid_tgslope    => 1,
+				wid_tgmode     => 1,
+				wid_input      => 2,
+				wid_inposition => 2,
+				wid_inscale    => 2);
+			for i in wid_static+1 to table'right loop
+				table(i) := table(i-3) + 1;
+			end loop;
+			return table;
+		end;
+
+		function width_borders
+			return natural_vector is
+			variable table : natural_vector(0 to wid_inscale+3*(inputs-1));
+		begin
+			table(0 to wid_static) := (
+				wid_time       => cga_cols,
+				wid_trigger    => cga_cols,
+				wid_tmposition => 7,
+				wid_tmscale    => 7,
+				wid_tgchannel  => label_width,
+				wid_tgposition => 7,
+				wid_tgslope    => 1,
+				wid_tgmode     => 4,
+				wid_input      => cga_cols,
+				wid_inposition => 7,
+				wid_inscale    => 7);
+			for i in wid_static+1 to table'right loop
+				table(i) := table(i-3);
+			end loop;
+			return table;
+		end;
+
+		function left_borders
+			return natural_vector is
+			variable table : natural_vector(0 to wid_inscale+3*(inputs-1));
+		begin
+			table(wid_time)       := 0;
+			table(wid_trigger)    := 0;
+			table(wid_tmposition) := 4;
+			table(wid_tmscale)    := table(wid_tmposition)+3+width_borders(wid_tmposition);
+			table(wid_tgchannel)  := 0;
+			table(wid_tgposition) := label_width;
+			table(wid_tgslope)    := table(wid_tgposition)+4+width_borders(wid_tgposition);
+			table(wid_tgmode)     := table(wid_tgslope)+2;
+			table(wid_input)      := 0;
+			table(wid_inposition) := table(wid_tgposition);
+			table(wid_inscale)    := table(wid_inposition)+3+width_borders(wid_inposition);
+			for i in wid_static+1 to table'right loop
+				case (i-wid_input) mod 3 is
+				when 0 =>
+					table(i) := table(i-3);
+				when 1 =>
+					table(i) := table(wid_inposition);
+				when 2 =>
+					table(i) := table(i-1)+3+width_borders(wid_inposition);
+				when others =>
+				end case;
+			end loop;
+			return table;
+		end;
+
+		constant top_tab    : natural_vector(0 to wid_inscale+3*(inputs-1)) := top_borders;
+		constant left_tab   : natural_vector(0 to wid_inscale+3*(inputs-1)) := left_borders;
+		constant height_tab : natural_vector(0 to wid_inscale+3*(inputs-1)) := (others => 1);
+		constant width_tab  : natural_vector(0 to wid_inscale+3*(inputs-1)) := width_borders;
+
+		signal left   : natural range 0 to cga_cols-1;
+		signal right  : natural range 0 to cga_cols;
+		signal width  : natural range 0 to cga_cols;
+		signal height : natural range 0 to cga_rows;
+		signal top    : natural range 0 to cga_rows-1;
+		signal bottom : natural range 0 to cga_rows;
+		signal row    : natural range 0 to 2**cgarows_bits-1;
+		signal col    : natural range 0 to 2**cgacols_bits-1;
+		signal x : std_logic;
+		signal y : std_logic;
+		signal s : std_logic;
+	begin
+
+		video_row <= std_logic_vector(to_unsigned(top_tab(to_integer(unsigned(wdt_id))), video_row'length));
+
+		top    <= top_tab(to_integer(unsigned(focus_wid)));
+		left   <= left_tab(to_integer(unsigned(focus_wid)));
+		width  <= width_tab(to_integer(unsigned(focus_wid)));
+		height <= height_tab(to_integer(unsigned(focus_wid)));
+		right  <= left + width;
+		bottom <= top  + height;
+		row <= to_integer(shift_right(unsigned(video_vcntr), fontheight_bits)) mod 2**cgarows_bits;
+		col <= to_integer(shift_right(unsigned(video_hcntr), fontwidth_bits)) mod 2**cgacols_bits;
+
+		x <= ('1' xor blink) when left <= col and col < right  else '0';
+		y <= ('1' xor blink) when top  <= row and row < bottom else '0';
+		s <= (x and y);
+
+		process (video_clk)
+			function textbox_field (
+				constant width          : natural)
+				return natural_vector is
+				constant textbox_fields : string := compact (
+					"{"                                       &
+					"    horizontal : { top : 0, left : 0 }," &
+					"    trigger    : { top : 1, left : 0 }," &
+					"    inputs     : { top : 2, left : 0 }"  &
+					"}");
+
+				constant wdt_horizontal : string  := hdo(textbox_fields)**".horizontal";
+				constant wdt_trigger    : string  := hdo(textbox_fields)**".trigger";
+				constant wdt_inputs     : string  := hdo(textbox_fields)**".inputs";
+				constant wdtinputs_top  : natural := hdo(wdt_inputs)**".top";
+				constant wdtinputs_left : natural := hdo(wdt_inputs)**".left";
+				variable retval         : natural_vector(0 to 2+inputs-1);
+			begin
+				retval(0) := hdo(wdt_horizontal)**".top"*width;
+				retval(0) := hdo(wdt_horizontal)**".left" + retval(0);
+				retval(1) := hdo(wdt_trigger)**".top"*width;
+				retval(1) := hdo(wdt_trigger)**".left" + retval(1);
+				for i in 0 to inputs-1 loop
+					retval(i+2) := (wdtinputs_top+i)*width;
+					retval(i+2) := wdtinputs_left + retval(i+2);
+				end loop;
+				return retval;
+			end;
+
+			constant input_labels : natural := 2;
+			constant field_addr : natural_vector := textbox_field(cga_cols);
+			variable addr       : std_logic_vector(video_addr'range);
+			variable bg_id      : natural range 0 to 2**fg_color'length-1;
+			variable field_id   : natural range 0 to 2**fg_color'length-1;
+		begin
+			if rising_edge(video_clk) then
+				if sgmntbox_ena(0)='0' then
+					fg_color <= std_logic_vector(to_unsigned(field_id, fg_color'length));
+					bg_color <= std_logic_vector(to_unsigned(bg_id,    bg_color'length));
+				elsif s='0' then
+					fg_color <= std_logic_vector(to_unsigned(field_id, fg_color'length));
+					bg_color <= std_logic_vector(to_unsigned(bg_id,    bg_color'length));
+				else
+					fg_color <= std_logic_vector(to_unsigned(bg_id,    fg_color'length));
+					bg_color <= std_logic_vector(to_unsigned(field_id, bg_color'length));
+				end if;
+				if video_on='1' then
+					field_id := pltid_textfg;
+					for i in field_addr'range loop
+						if unsigned(addr) < (field_addr(i)+cga_cols) then
+							if i >= input_labels then 
+								field_id := (i-input_labels)+pltid_order'length;
+							end if;
+							exit;
+						end if;
+					end loop;
+					bg_id := pltid_textbg;
+				end if;
+				addr := video_addr;
+			end if;
+		end process;
+
+	end block;
 
 	latfg_e : entity hdl4fpga.latency
 	generic map (
-		n =>  text_fg'length,
-		d => (0 to text_fg'length-1 => latency-cgaadapter_latency+2))
+		n  =>  text_fg'length,
+		d  => (0 to text_fg'length-1 => latency-color_latency))
 	port map (
 		clk => video_clk,
-		di => textfg,
-		do => text_fg);
-
+		di  => fg_color,
+		do  => text_fg);
 	latbg_e : entity hdl4fpga.latency
 	generic map (
-		n => text_bg'length,
-		d => (0 to text_bg'length-1 => latency-cgaadapter_latency+2))
+		n  => text_bg'length,
+		d  => (0 to text_bg'length-1 => latency-color_latency))
 	port map (
 		clk => video_clk,
-		di => textbg,
-		do => text_bg);
+		di  => bg_color,
+		do  => text_bg);
 end;
+

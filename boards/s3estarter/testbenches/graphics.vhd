@@ -1,25 +1,23 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 library hdl4fpga;
 use hdl4fpga.base.all;
@@ -38,21 +36,14 @@ architecture s3estarter_graphics of testbench is
 		generic (
 			debug : boolean);
 		port (
-			xtal       : in std_logic := '0';
+			clk_50mhz  : in std_logic := '0';
 			sw0        : in std_logic := '1';
 			btn_west   : in std_logic := '1';
 
 			--------------
 			-- switches --
 
-			led0 : out std_logic := '0';
-			led1 : out std_logic := '0';
-			led2 : out std_logic := '0';
-			led3 : out std_logic := '0';
-			led4 : out std_logic := '0';
-			led5 : out std_logic := '0';
-			led6 : out std_logic := '0';
-			led7 : out std_logic := '0';
+			led : out std_logic_vector(8-1 downto 0) := (others => '0');
 
 			------------------------------
 			-- MII ethernet Transceiver --
@@ -157,7 +148,7 @@ architecture s3estarter_graphics of testbench is
 	constant baudrate : natural := 1e6;
 
 	signal rst        : std_logic;
-	signal xtal       : std_logic := '0';
+	signal clk        : std_logic := '0';
 
 	signal dq         : std_logic_vector (data_bits - 1 downto 0) := (others => 'Z');
 	signal dqs        : std_logic_vector (1 downto 0) := "00";
@@ -180,8 +171,8 @@ architecture s3estarter_graphics of testbench is
 
 begin
 
-	xtal <= not xtal after 10 ns;
-	rst  <= '0', '1' after 300 ns;
+	clk <= not clk after 10 ns;
+	rst <= '0', '1' after 300 ns;
 
 	mii_refclk <= not mii_refclk after 20 ns;
 
@@ -202,7 +193,7 @@ begin
 		debug => true)
 	port map (
 		btn_west => rst,
-		xtal     => xtal,
+		clk_50mhz => clk,
 
 		spi_miso => '-',
 		amp_dout => '-',
@@ -246,7 +237,7 @@ end;
 
 library micron;
 
-configuration s3estarter_structure_md of testbench is
+configuration s3estarter_graphics_structure_md of testbench is
 	for s3estarter_graphics
 		for all : s3estarter
 			use entity work.s3estarter(structure);
@@ -296,3 +287,4 @@ configuration s3estarter_graphics_md of testbench is
 		end for;
 	end for;
 end;
+

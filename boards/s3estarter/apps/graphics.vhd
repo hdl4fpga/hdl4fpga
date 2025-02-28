@@ -1,25 +1,23 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -27,7 +25,8 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_db.all;
+use hdl4fpga.hdo.all;
+use hdl4fpga.sdrampkg.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.profiles.all;
@@ -84,7 +83,6 @@ architecture graphics of s3estarter is
 		(id => mode720p24bpp,  timing => pclk75_00m1280x720at60,   dcm => (dcm_mul =>  3, dcm_div => 2)),
 		(id => mode1080p24bpp, timing => pclk150_00m1920x1080at60, dcm => (dcm_mul =>  3, dcm_div => 1)));
 
-
 	function videoparam (
 		constant id  : video_modes)
 		return video_params is
@@ -136,16 +134,12 @@ architecture graphics of s3estarter is
 		return tab(tab'left);
 	end;
 
+	constant phy_data     : string  := hdo(phy_db)**".xc3sg2";
+	constant gear         : natural := hdo(phy_data)**".orgz.gear";
+
 	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
 	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
 	constant sdram_tcp    : real := real(sdram_params.dcm.dcm_div)*sys_per/real(sdram_params.dcm.dcm_mul);
-
-	constant bank_size    : natural := sd_ba'length;
-	constant addr_size    : natural := sd_a'length;
-	constant word_size    : natural := sd_dq'length;
-	constant byte_size    : natural := sd_dq'length/sd_dm'length;
-	constant coln_size    : natural := 10;
-	constant gear         : natural := 2;
 
 	signal ddr_clk0       : std_logic;
 	signal ddr_clk90      : std_logic;
@@ -160,17 +154,17 @@ architecture graphics of s3estarter is
 	signal ctlrphy_odt    : std_logic_vector((gear+1)/2-1 downto 0);
 	signal ctlrphy_b      : std_logic_vector((gear+1)/2*sd_ba'length-1 downto 0);
 	signal ctlrphy_a      : std_logic_vector((gear+1)/2*sd_a'length-1 downto 0);
-	signal ctlrphy_dqsi   : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_dqsi   : std_logic_vector(gear*sd_dqs'length-1 downto 0);
 	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(gear*sd_dm'length-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(gear*sd_dm'length-1 downto 0);
 	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(gear*sd_dq'length-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(gear*sd_dq'length-1 downto 0);
 	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
 	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(gear*word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(gear*sd_dqs'length-1 downto 0);
 
 	signal ctlrphy_wlreq  : std_logic;
 	signal ctlrphy_wlrdy  : std_logic;
@@ -178,8 +172,8 @@ architecture graphics of s3estarter is
 	signal ctlrphy_rlrdy  : std_logic;
 
 	signal sd_clk         : std_logic_vector(0 downto 0);
-	signal sdram_dqst     : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal sdram_dqso     : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal sdram_dqst     : std_logic_vector(sd_dqs'length-1 downto 0);
+	signal sdram_dqso     : std_logic_vector(sd_dqs'length-1 downto 0);
 	signal sdram_dqt      : std_logic_vector(sd_dq'range);
 	signal sdram_dqo      : std_logic_vector(sd_dq'range);
 
@@ -215,7 +209,7 @@ begin
 
 	clkin_ibufg : ibufg
 	port map (
-		I => xtal ,
+		I => clk_50mhz,
 		O => sys_clk);
 
 	process(sys_clk)
@@ -351,30 +345,25 @@ begin
 	end block;
 
 	ipoe_b : block
-
-		signal mii_txcfrm : std_ulogic;
-		signal mii_txcrxd : std_logic_vector(e_rxd'range);
-
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
 
 		signal miirx_frm  : std_logic;
 		signal miirx_irdy : std_logic;
-		signal miirx_trdy : std_logic;
-		signal miirx_data : std_logic_vector(0 to 8-1);
+		signal miirx_data : std_logic_vector(e_rxd'range);
 
 		signal miitx_frm  : std_logic;
 		signal miitx_irdy : std_logic;
 		signal miitx_trdy : std_logic;
 		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(miirx_data'range);
+		signal miitx_data : std_logic_vector(si_data'range);
 
 	begin
 
 		sync_b : block
 
-			signal rxc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
-			signal txc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
+			signal rxc_rxbus : std_logic_vector(0 to e_rxd'length);
+			signal txc_rxbus : std_logic_vector(0 to e_rxd'length);
 			signal dst_irdy  : std_logic;
 			signal dst_trdy  : std_logic;
 
@@ -394,8 +383,7 @@ begin
 				dst_offset => 0,
 				src_offset => 2,
 				check_sov  => false,
-				check_dov  => true,
-				gray_code  => false)
+				check_dov  => true)
 			port map (
 				src_clk  => e_rx_clk,
 				src_data => rxc_rxbus,
@@ -408,31 +396,31 @@ begin
 			begin
 				if rising_edge(e_tx_clk) then
 					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
-					mii_txcfrm <= txc_rxbus(0);
-					mii_txcrxd <= txc_rxbus(1 to mii_txcrxd'length);
+					miirx_frm  <= txc_rxbus(0);
+					miirx_irdy <= txc_rxbus(0);
+					miirx_data <= txc_rxbus(1 to e_rxd'length);
 				end if;
 			end process;
 		end block;
 
-		serdes_e : entity hdl4fpga.serdes
-		port map (
-			serdes_clk => e_tx_clk,
-			serdes_frm => mii_txcfrm,
-			ser_irdy   => '1',
-			ser_trdy   => open,
-			ser_data   => mii_txcrxd,
-
-			des_frm    => miirx_frm,
-			des_irdy   => miirx_irdy,
-			des_trdy   => miirx_trdy,
-			des_data   => miirx_data);
-
 		dhcp_p : process(e_tx_clk)
+			type states is (s_request, s_wait);
+			variable state : states;
 		begin
 			if rising_edge(e_tx_clk) then
-				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-			--		dhcpcd_req <= dhcpcd_rdy xor not sw0;
-				end if;
+				case state is
+				when s_request =>
+					if sw0='1' then
+						dhcpcd_req <= not dhcpcd_rdy;
+						state := s_wait;
+					end if;
+				when s_wait =>
+					if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+						if sw0='0' then
+							state := s_request;
+						end if;
+					end if;
+				end case;
 			end if;
 		end process;
 
@@ -448,7 +436,7 @@ begin
 			dhcpcd_rdy => dhcpcd_rdy,
 			miirx_frm  => miirx_frm,
 			miirx_irdy => miirx_irdy,
-			miirx_trdy => miirx_trdy,
+			miirx_trdy => open,
 			miirx_data => miirx_data,
 
 			miitx_frm  => miitx_frm,
@@ -496,18 +484,12 @@ begin
 
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
+		sdram_tcp    => sdram_tcp,
+		sdram_data   => hdo(sdram_db)**".MT46V16M16M-6T",
+		phy_data     => phy_data,
+
 		debug        => debug,
 		profile      => 1,
-		sdram_tcp    => sdram_tcp,
-		mark         => MT46V256M6T,
-		phy_latencies => xc3sg2_latencies,
-		gear         => gear,
-		bank_size    => bank_size,
-		addr_size    => addr_size,
-		coln_size    => coln_size,
-		word_size    => word_size,
-		byte_size    => byte_size,
-
 		burst_length => 2,
 		timing_id    => videoparam(video_mode).timing,
 		red_length   => 8,
@@ -564,12 +546,14 @@ begin
 
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
+		-- dqs_delay   => (0 to 0 => 0 ns),
+		-- dqi_delay   => (0 to 0 => 0 ns),
 		device      => xc3s,
 		bank_size   => sd_ba'length,
 		addr_size   => sd_a'length,
+		word_size   => sd_dq'length,
+		byte_size   => sd_dq'length/sd_dm'length,
 		gear        => gear,
-		word_size   => word_size,
-		byte_size   => byte_size,
 		loopback    => false,
 		bypass      => true,
 		rd_fifo     => true,
@@ -687,3 +671,4 @@ begin
 	spi_ss_b    <= 'Z';
 
 end;
+

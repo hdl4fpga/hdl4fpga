@@ -1,26 +1,23 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---   Nicolas Alvarez                                                          --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -29,23 +26,17 @@ entity s3estarter is
 	generic (
 		debug     : boolean := false);
 	port (
-		xtal      : in std_logic := '0';
+		clk_50mhz : in std_logic := '0';
 		sw0       : in std_logic := '0';
 		btn_north : in std_logic := '0';
 		btn_east  : in std_logic := '0';
 		btn_west  : in std_logic := '0';
+		btn_south : in std_logic := '0';
 
 		--------------
 		-- switches --
 
-		led0 : out std_logic := '0';
-		led1 : out std_logic := '0';
-		led2 : out std_logic := '0';
-		led3 : out std_logic := '0';
-		led4 : out std_logic := '0';
-		led5 : out std_logic := '0';
-		led6 : out std_logic := '0';
-		led7 : out std_logic := '0';
+		led : out std_logic_vector(8-1 downto 0) := (others => '0');
 
 		-----------------
 		-- Rotary shat --
@@ -135,8 +126,17 @@ entity s3estarter is
 		rs232_dce_rxd : in  std_logic := 'Z';
 		rs232_dce_txd : out std_logic := 'Z');
 
-	constant xtal_per : real := 20.0e-9;
-	constant sys_per  : real := xtal_per;
+	constant clk50hmz_per : real := 20.0e-9;
+	constant sys_per  : real := clk50hmz_per;
+
+	alias led0 is led(0);
+	alias led1 is led(1);
+	alias led2 is led(2);
+	alias led3 is led(3);
+	alias led4 is led(4);
+	alias led5 is led(5);
+	alias led6 is led(6);
+	alias led7 is led(7);
 
 	attribute loc        : string;
 	attribute iostandard : string;
@@ -147,62 +147,34 @@ entity s3estarter is
 	attribute pulldown   : string;
 	attribute pullup     : string;
 
-	attribute loc of xtal              : signal is "C9";
+	attribute loc of clk_50mhz         : signal is "C9";
 	attribute loc of sw0               : signal is "L13";
 	attribute loc of btn_north         : signal is "V4";
 	attribute loc of btn_east          : signal is "H3";
 	attribute loc of btn_west          : signal is "D18";
+	attribute loc of btn_south         : signal is "K17";
 
-	attribute iostandard of xtal       : signal is "LVCMOS33";
+	attribute iostandard of clk_50mhz  : signal is "LVCMOS33";
 	attribute iostandard of sw0        : signal is "LVCMOS33";
 	attribute iostandard of btn_north  : signal is "LVCMOS33";
 	attribute iostandard of btn_east   : signal is "LVCMOS33";
 	attribute iostandard of btn_west   : signal is "LVCMOS33";
+	attribute iostandard of btn_south  : signal is "LVCMOS33";
 
-	attribute pulldown   of xtal       : signal is "YES";
+	attribute pulldown   of clk_50mhz  : signal is "YES";
 	attribute pulldown   of sw0        : signal is "YES";
 	attribute pulldown   of btn_north  : signal is "YES";
 	attribute pulldown   of btn_east   : signal is "YES";
 	attribute pulldown   of btn_west   : signal is "YES";
+	attribute pulldown   of btn_south  : signal is "YES";
 
-	attribute drive      of xtal       : signal is "4";
-	attribute slew       of xtal       : signal is "fast";
+	attribute drive      of clk_50mhz  : signal is "4";
+	attribute slew       of clk_50mhz  : signal is "fast";
 
-	attribute loc        of led0       : signal is "F12";
-	attribute loc        of led1       : signal is "E12";
-	attribute loc        of led2       : signal is "E11";
-	attribute loc        of led3       : signal is "F11";
-	attribute loc        of led4       : signal is "C11";
-	attribute loc        of led5       : signal is "D11";
-	attribute loc        of led6       : signal is "E9";
-	attribute loc        of led7       : signal is "F9";
-
-	attribute iostandard of led0       : signal is "LVCMOS25";
-	attribute iostandard of led1       : signal is "LVCMOS25";
-	attribute iostandard of led2       : signal is "LVCMOS25";
-	attribute iostandard of led3       : signal is "LVCMOS25";
-	attribute iostandard of led4       : signal is "LVCMOS25";
-	attribute iostandard of led5       : signal is "LVCMOS25";
-	attribute iostandard of led6       : signal is "LVCMOS25";
-	attribute iostandard of led7       : signal is "LVCMOS25";
-
-	attribute drive      of led0       : signal is "8";
-	attribute drive      of led1       : signal is "8";
-	attribute drive      of led2       : signal is "8";
-	attribute drive      of led3       : signal is "8";
-	attribute drive      of led4       : signal is "8";
-	attribute drive      of led5       : signal is "8";
-	attribute drive      of led6       : signal is "8";
-	attribute drive      of led7       : signal is "8";
-
-	attribute slew       of led0       : signal is "fast";
-	attribute slew       of led1       : signal is "fast";
-	attribute slew       of led2       : signal is "fast";
-	attribute slew       of led3       : signal is "fast";
-	attribute slew       of led4       : signal is "fast";
-	attribute slew       of led5       : signal is "fast";
-	attribute slew       of led6       : signal is "fast";
-	attribute slew       of led7       : signal is "fast";
+	attribute loc        of led : signal is "F9 E9 D11 C11 F11 E11 E12 F12";
+	attribute iostandard of led : signal is "LVCMOS25";
+	attribute drive      of led : signal is "8";
+	attribute slew       of led : signal is "fast";
 
 	attribute loc        of rot_a      : signal is "K18";
 	attribute loc        of rot_b      : signal is "G18";
@@ -388,3 +360,4 @@ entity s3estarter is
 	attribute slew of rs232_dce_txd : signal is "slow";
 
 end;
+

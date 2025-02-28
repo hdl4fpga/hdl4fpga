@@ -1,26 +1,23 @@
-//                                                                            //
-// Author(s):                                                                 //
-//   Miguel Angel Sagreras                                                    //
-//                                                                            //
-// Copyright (C) 2015                                                         //
-//    Miguel Angel Sagreras                                                   //
-//                                                                            //
-// This source file may be used and distributed without restriction provided  //
-// that this copyright statement is not removed from the file and that any    //
-// derivative work contains  the original copyright notice and the associated //
-// disclaimer.                                                                //
-//                                                                            //
-// This source file is free software; you can redistribute it and/or modify   //
-// it under the terms of the GNU General Public License as published by the   //
-// Free Software Foundation, either version 3 of the License, or (at your     //
-// option) any later version.                                                 //
-//                                                                            //
-// This source is distributed in the hope that it will be useful, but WITHOUT //
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      //
-// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   //
-// more details at http://www.gnu.org/licenses/.                              //
-//                                                                            //
-
+// Copyright (c) <2015> <Miguel Angel Sagreras>                                    //
+//                                                                                 //
+// Permission is hereby granted, free of charge, to any person obtaining a copy of //
+// this software and associated documentation files (the "Software"), to deal in   //
+// the Software without restriction, including without limitation the rights to    //
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   //
+// of the Software, and to permit persons to whom the Software is furnished to do  //
+// so, subject to the following conditions:                                        //
+//                                                                                 //
+// The above copyright notice and this permission notice shall be included in all  //
+// copies or substantial portions of the Software.                                 //
+//                                                                                 //
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    //
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        //
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     //
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          //
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   //
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   //
+// SOFTWARE.                                                                       //
+//                                                                                 //
 
 function mouseWheel (e) {
 	if (typeof this.value !== 'undefined') {
@@ -34,16 +31,17 @@ function onClick(e) {
 	sendCommand.call(this, e);
 }
 
+const gains = [1, 2, 4, 5, 10, 20, 40, 50, 100, 200, 400, 5000, 1000, 2000, 4000, 5000];
+var gainid_tab = [];
 function sendCommand(e) {
 	var param = this.id.split(':');
 
 	switch(param[0]) {
 	case 'gain':
-		console.log(this.id);
-		console.log(this.value);
 		sendRegister(registers.gain, {
 			gain   : this.value,
 			chanid : param[1] } );
+		gainid_tab[param[1]] = this.value;
 		break;
 	case 'offset':
 		sendRegister(registers.vtaxis, {
@@ -54,9 +52,12 @@ function sendCommand(e) {
 	case 'normal' :
 	case 'one shot' :
 	case 'freeze' :
+		if (typeof gainid_tab[param[1]] === 'undefined') {
+			gainid_tab[param[1]] = 0;
+		}
 		this.trigger.mode.value = param[0];
 		sendRegister(registers.trigger, { 
-			level   : this.trigger.level.value,
+			level   : this.trigger.level.value * gains[gainid_tab[param[1]]],
 			slope   : (this.trigger.slope.value === "negative") ? 1 : 0,
 			freeze  : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "freeze") ? 1 : 0,
 			oneshot : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "normal") ? 1 : 0,
@@ -64,17 +65,23 @@ function sendCommand(e) {
 		break;
 	case 'positive':
 	case 'negative':
+		if (typeof gainid_tab[param[1]] === 'undefined') {
+			gainid_tab[param[1]] = 0;
+		}
 		this.trigger.slope.value = param[0];
 		sendRegister(registers.trigger, { 
-			level   : this.trigger.level.value,
+			level   : this.trigger.level.value * gains[gainid_tab[param[1]]],
 			slope   : (this.trigger.slope.value === "negative") ? 1 : 0,
 			freeze  : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "freeze") ? 1 : 0,
 			oneshot : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "normal") ? 1 : 0,
 			chanid  : param[1] });
 		break;
 	case 'level':
+		if (typeof gainid_tab[param[1]] === 'undefined') {
+			gainid_tab[param[1]] = 0;
+		}
 		sendRegister(registers.trigger, { 
-			level   : this.trigger.level.value,
+			level   : this.trigger.level.value * gains[gainid_tab[param[1]]],
 			slope   : (this.trigger.slope.value === "negative") ? 1 : 0,
 			freeze  : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "freeze") ? 1 : 0,
 			oneshot : (this.trigger.mode.value  === "one shot" || this.trigger.mode.value === "normal") ? 1 : 0,
@@ -230,3 +237,4 @@ window.addEventListener("load", function() {
 	generate();
 
 });
+

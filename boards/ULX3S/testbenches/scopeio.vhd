@@ -1,25 +1,23 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 library hdl4fpga;
 use hdl4fpga.base.all;
@@ -50,10 +48,10 @@ architecture ulx3s_scopeio of testbench is
 			btn_pwr_n      : in  std_logic := 'U';
 			fire1          : in  std_logic := 'U';
 			fire2          : in  std_logic := 'U';
-			up             : in  std_logic := 'U';
-			down           : in  std_logic := 'U';
-			left           : in  std_logic := 'U';
-			right          : in  std_logic := 'U';
+			up             : in  std_logic := '0';
+			down           : in  std_logic := '0';
+			left           : in  std_logic := '0';
+			right          : in  std_logic := '0';
 
 			led            : out   std_logic_vector(8-1 downto 0);
 			sw             : in    std_logic_vector(4-1 downto 0) := (others => '-');
@@ -157,7 +155,7 @@ architecture ulx3s_scopeio of testbench is
 
 		x"1702_0000ff_1603_0000_0000";
 	constant req_data  : std_logic_vector :=
-		x"010008_1702_0000ff_1603_8000_0000";
+		x"010008_1702_000000_1603_8000_0000";
 
 	signal rst         : std_logic;
 	signal xtal        : std_logic := '0';
@@ -197,9 +195,11 @@ architecture ulx3s_scopeio of testbench is
 
 	signal adc_mosi    : std_logic;
 	signal adc_miso    : std_logic;
+	signal up    : std_logic := '0';
+	signal down    : std_logic := '0';
 begin
 
-	rst      <= '1', '0' after 10 us;
+	rst      <= '1', '0' after 125 us;
 	xtal     <= not xtal after 20 ns;
 	uart_clk <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
 	usb_clk <= not usb_clk after 1 sec/(2.0*usb_freq);
@@ -229,8 +229,10 @@ begin
 		debug   => debug,
 		-- payload_segments => (0 => snd_data'length, 1 => req_data'length),
 		-- payload   => snd_data & req_data)
-		payload_segments => (0 => snd_data'length),
-		payload   => snd_data)
+		payload_segments => (0 => req_data'length),
+		payload   => req_data)
+		-- payload_segments => (0 => snd_data'length),
+		-- payload   => snd_data)
 	port map (
 		rst     => rst,
 		usb_clk => usb_clk,
@@ -253,16 +255,19 @@ begin
 		mii_txd   => mii_txd); 
 
 	adc_miso <= adc_mosi;
+	up   <= '0', '1' after 1 us, '0' after 2 us;
+	down <= '0', '1' after 2.1 us, '0' after 3 us;
 	du_e : ulx3s
 	generic map (
-		debug => debug)
+		debug => true)
 	port map (
 		clk_25mhz  => xtal,
 		usb_fpga_dp => usb_fpga_dp,
 		usb_fpga_dn => usb_fpga_dn,
 		ftdi_txd   => ftdi_txd,
 		ftdi_rxd   => ftdi_rxd,
-		up         => '0',
+		up         => up,
+		down       => down,
 		fire1      => fire1,
 		fire2      => fire2,
 		gp         => gp,
@@ -341,3 +346,4 @@ configuration ulx3s_scopeio_md of testbench is
 		end for;
 	end for;
 end;
+

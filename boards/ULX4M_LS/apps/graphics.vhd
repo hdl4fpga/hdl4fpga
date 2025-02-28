@@ -1,25 +1,23 @@
---                                                                            --
--- Author(s):                                                                 --
---   Miguel Angel Sagreras                                                    --
---                                                                            --
--- Copyright (C) 2015                                                         --
---    Miguel Angel Sagreras                                                   --
---                                                                            --
--- This source file may be used and distributed without restriction provided  --
--- that this copyright statement is not removed from the file and that any    --
--- derivative work contains  the original copyright notice and the associated --
--- disclaimer.                                                                --
---                                                                            --
--- This source file is free software; you can redistribute it and/or modify   --
--- it under the terms of the GNU General Public License as published by the   --
--- Free Software Foundation, either version 3 of the License, or (at your     --
--- option) any later version.                                                 --
---                                                                            --
--- This source is distributed in the hope that it will be useful, but WITHOUT --
--- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or      --
--- FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for   --
--- more details at http://www.gnu.org/licenses/.                              --
---                                                                            --
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -27,7 +25,8 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.sdram_db.all;
+use hdl4fpga.hdo.all;
+use hdl4fpga.sdrampkg.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.app_profiles.all;
@@ -59,12 +58,10 @@ architecture graphics of ulx4m_ls is
 		real(sdram_params.pll.clki_div*sdram_params.pll.clkop_div)/
 		(real(sdram_params.pll.clkfb_div*sdram_params.pll.clkos_div)*clk25mhz_freq);
 
-	constant bank_size  : natural := sdram_ba'length;
-	constant addr_size  : natural := sdram_a'length;
-	constant word_size  : natural := sdram_d'length;
 	constant byte_size  : natural := sdram_d'length/sdram_dqm'length;
 	constant coln_size  : natural := 9;
-	constant gear       : natural := 1;
+	constant phy_data   : string  := hdo(phy_db)**".ecp5g1";
+	constant gear       : natural := hdo(phy_data)**".orgz.gear";
 	constant usb_oversampling : natural := 3;
 
 	signal ctlr_clk     : std_logic;
@@ -78,14 +75,14 @@ architecture graphics of ulx4m_ls is
 	signal ctlrphy_we   : std_logic;
 	signal ctlrphy_b    : std_logic_vector(sdram_ba'length-1 downto 0);
 	signal ctlrphy_a    : std_logic_vector(sdram_a'length-1 downto 0);
-	signal ctlrphy_dmo  : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal ctlrphy_dqi  : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dmo  : std_logic_vector(gear*sdram_dqm'length-1 downto 0);
+	signal ctlrphy_dqi  : std_logic_vector(gear*sdram_d'length-1 downto 0);
 	signal ctlrphy_dqt  : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqo  : std_logic_vector(gear*word_size-1 downto 0);
+	signal ctlrphy_dqo  : std_logic_vector(gear*sdram_d'length-1 downto 0);
 	signal ctlrphy_sto  : std_logic_vector(gear-1 downto 0);
 	signal sdrphy_sti   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti  : std_logic_vector(gear*word_size/byte_size-1 downto 0);
-	signal sdram_dqs    : std_logic_vector(word_size/byte_size-1 downto 0);
+	signal ctlrphy_sti  : std_logic_vector(gear*sdram_dqm'length-1 downto 0);
+	signal sdram_dqs    : std_logic_vector(sdram_dqm'length-1 downto 0);
 
 	signal video_clk    : std_logic;
 	signal video_lck    : std_logic;
@@ -290,14 +287,8 @@ begin
 		profile      => 0,
 
 		sdram_tcp    => sdram_tcp,
-		phy_latencies => ecp5g1_latencies,
-		mark         => MT48LC256MA27E ,
-		gear         => gear,
-		bank_size    => bank_size,
-		addr_size    => addr_size,
-		coln_size    => coln_size,
-		word_size    => word_size,
-		byte_size    => byte_size,
+		phy_data     => hdo(phy_db)**".ecp5g1",
+		sdram_data   => hdo(sdram_db)**".MT48LC256MA27E",
 
 		timing_id    => video_params.timing,
 		video_gear   => video_gear,
@@ -358,7 +349,7 @@ begin
 		gear       => gear,
 		bank_size  => sdram_ba'length,
 		addr_size  => sdram_a'length,
-		word_size  => word_size,
+		word_size  => sdram_d'length,
 		byte_size  => byte_size,
 		wr_fifo    => false,
 		rd_fifo    => false,

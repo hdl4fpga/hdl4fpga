@@ -1,3 +1,24 @@
+-- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
+--                                                                                 --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy of --
+-- this software and associated documentation files (the "Software"), to deal in   --
+-- the Software without restriction, including without limitation the rights to    --
+-- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
+-- of the Software, and to permit persons to whom the Software is furnished to do  --
+-- so, subject to the following conditions:                                        --
+--                                                                                 --
+-- The above copyright notice and this permission notice shall be included in all  --
+-- copies or substantial portions of the Software.                                 --
+--                                                                                 --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
+-- SOFTWARE.                                                                       --
+--                                                                                 --
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -14,15 +35,29 @@ entity scopeio_downsampler is
 		input_clk    : in  std_logic;
 		input_dv     : in  std_logic;
 		input_data   : in  std_logic_vector;
-		input_shot   : in  std_logic;
+		trigger_shot : in  std_logic;
+		capture_req  : in  std_logic;
+		capture_rdy  : in  std_logic;
 		downsampling : buffer std_logic;
+		
 		output_dv    : buffer std_logic;
-		output_shot  : buffer std_logic;
-		output_shota0 : out std_logic;
 		output_data  : out std_logic_vector);
 end;
 
 architecture beh of scopeio_downsampler is
+
+	function to_bitrom (
+		constant data : integer_vector;
+		constant size : natural)
+		return std_logic_vector is
+		alias    dataa  : integer_vector(0 to data'length-1) is data;
+		variable retval : signed(0 to data'length*size-1);
+	begin
+		for i in dataa'range loop
+			retval(i*size to (i+1)*size-1) := to_signed(dataa(i), size);
+		end loop;
+		return std_logic_vector(retval);
+	end;
 
 	function adjust (
 		constant arg : natural_vector)
@@ -30,18 +65,21 @@ architecture beh of scopeio_downsampler is
 		variable retval : integer_vector(arg'range);
 	begin
 		for i in arg'range loop
-			retval(i) := arg(i)-2;
+			if arg(i)=1 then
+				retval(i) := arg(i)-1;
+			else
+				retval(i) := arg(i)-2;
+			end if;
 		end loop;
 		return retval;
 	end;
 
 	constant scaler_bits : natural := signed_num_bits(max(factors)-2);
 
-	signal factor    : std_logic_vector(0 to scaler_bits-1);
-	signal data_min  : signed(0 to output_data'length/2-1);
-	signal data_max  : signed(0 to output_data'length/2-1);
-	signal start     : std_logic;
-	signal a0        : std_logic;
+	signal factor   : std_logic_vector(0 to scaler_bits-1);
+	signal init     : std_logic;
+	signal data_min : std_logic_vector(0 to output_data'length/2-1);
+	signal data_max : std_logic_vector(0 to output_data'length/2-1);
 
 begin
 
@@ -52,56 +90,38 @@ begin
 		addr => factor_id,
 		data => factor);
 
-	downsampleron_p: process (factor_id)
+	-- downsampleron_p: process (factor_id) -- LatticeDiamond makes strange things, replaces by synchronous 
+	downsampleron_p: process (input_clk)
 	begin
-		downsampling <= '0';
-		for i in 1 to 2**factor_id'length-1 loop
-			if unsigned(factor_id)=i then
-				downsampling <= setif(factors(0)/=factors(i));
-			end if;
-		end loop;
+		if rising_edge(input_clk) then
+			downsampling <= '1';
+			for i in 0 to 2**factor_id'length-1 loop
+				if unsigned(factor_id)=i then
+					if factors(0)=factors(i) then
+						downsampling <= '0';
+					end if;
+				end if;
+			end loop;
+		end if;
 	end process;
 
-	shot_p : process (input_clk)
-		variable scaler : unsigned(factor'range); -- := (others => '0'); -- Debug purpose
+	process (input_dv, input_clk)
+		variable scaler : unsigned(factor'range) := (others => '0'); -- Debug purpose
 	begin
 		if rising_edge(input_clk) then
 			if input_dv='1' then
 				if scaler(0)='1' then
 					scaler := unsigned(factor);
+				-- elsif (capture_req xor capture_rdy)='0' and trigger_shot='1' and downsampling='1' then
+					-- scaler := unsigned(factor);
 				else
 					scaler := scaler - 1;
 				end if;
-
-				if downsampling='0' then
-					if a0='0' then 
-						output_shot <= input_shot;
-					elsif output_shot='0' then
-						output_shot <= input_shot;
-					end if;
-				else
-					if start='1' then
-						output_shot <= input_shot;
-					elsif output_shot='0' then
-						output_shot <= input_shot;
-					end if;
-				end if;
-
-				if input_shot='1' then
-					output_shota0 <= a0;
-				end if;
-				if downsampling='0' then
-					output_dv <= a0;
-				else
-					output_dv <= scaler(0);
-				end if;
-				a0 <= not to_stdulogic(to_bit(a0));
-			else
-				output_dv <= '0';
 			end if;
-			start <= scaler(0);
+			init <= scaler(0);
 		end if;
 	end process;
+	output_dv <= init and input_dv;
 
 	compress_g : for i in 0 to inputs-1 generate
 		signal sample : signed(0 to input_data'length/inputs-1);
@@ -111,45 +131,43 @@ begin
 		signal min0   : signed(sample'range);
 	begin
 		sample <= signed(multiplex(input_data, i, sample'length));
+
 		process (input_clk)
 		begin
 			if rising_edge(input_clk) then
-				if input_dv='1' then
-					if downsampling='0' then
-						if a0='0' then
+   				if input_dv='1' then
+   					if downsampling='0' then
+   						maxx <= minn;
+   						minn <= sample;
+   					elsif init='1' then
+   						maxx <= hdl4fpga.base.max(min0, sample);
+   						minn <= hdl4fpga.base.min(max0, sample);
+   						max0 <= sample;
+   						min0 <= sample;
+   					else
+						if maxx < sample then
 							maxx <= sample;
-						else
-							minn <= sample;
-						end if;
-					else
-						if start='1' then
-							maxx <= hdl4fpga.base.max(min0, sample);
-							minn <= hdl4fpga.base.min(max0, sample);
 							max0 <= sample;
-							min0 <= sample;
-						else
-							if maxx < sample then
-								maxx <= sample;
-								max0 <= sample;
-							elsif max0 < sample then
-								max0 <= sample;
-							end if;
+						elsif max0 < sample then
+							max0 <= sample;
+						end if;
 
-							if minn > sample then
-								minn <= sample;
-								min0 <= sample;
-							elsif min0 > sample then
-								min0 <= sample;
-							end if;
+						if minn > sample then
+							minn <= sample;
+							min0 <= sample;
+						elsif min0 > sample then
+							min0 <= sample;
 						end if;
 					end if;
-				end if;
+   				end if;
 			end if;
 		end process;
-		data_max(i*sample'length to (i+1)*sample'length-1) <= maxx;
-		data_min(i*sample'length to (i+1)*sample'length-1) <= minn;
+
+		data_max(i*sample'length to (i+1)*sample'length-1) <= std_logic_vector(maxx);
+		data_min(i*sample'length to (i+1)*sample'length-1) <= std_logic_vector(minn);
 	end generate;
 
-	output_data <= std_logic_vector(data_max & data_min);
+	output_data <= data_max & data_min;
 
 end;
+
