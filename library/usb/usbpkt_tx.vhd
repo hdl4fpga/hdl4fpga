@@ -33,6 +33,7 @@ entity usbpkt_tx is
 		clk       : in  std_logic;
 		cken      : in  std_logic;
 
+		tkdata    : in  std_logic_vector(0 to 11-1);
 		tx_req    : in  std_logic;
 		tx_rdy    : buffer std_logic;
 
@@ -51,16 +52,23 @@ architecture def of usbpkt_tx is
 begin
 	process (pkt_txen, phy_txbs, pkt_txd, data, clk)
 		type states is (s_idle, s_pid, s_token, s_data);
-		variable state : states;
-		variable pid   : unsigned(8-1 downto 0);
-		variable cntr  : natural range 0 to pid'length-1;
+		variable state  : states;
+		constant pid_length : natural := 8;
+		variable shr  : unsigned(pid_length+tkdata'length-1 downto 0);
+		variable cntr : natural range 0 to shr'length-1;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				case state is
 				when s_idle =>
-					pid  := unsigned(not pkt_txpid) & unsigned(pkt_txpid);
-					cntr := pid'length-1;
+					shr := unsigned(not pkt_txpid) & unsigned(pkt_txpid) & tkdata;
+					case pkt_txpid is
+					when tk_setup|tk_in|tk_out|tk_sof =>
+						cntr := shr'length-1;
+					when others =>
+						cntr := pid_length'length-1;
+					when others =>
+					end case;
 					if (to_bit(tx_req) xor to_bit(tx_rdy))='1' then
 						if phy_txbs='0' then
 							state := s_pid;
@@ -69,7 +77,7 @@ begin
 				when s_pid =>
 					if cntr > 0 then
 						if phy_txbs='0' then
-							pid  := pid ror 1;
+							shr  := shr ror 1;
 							cntr := cntr - 1;
 						end if;
 					else
@@ -80,7 +88,7 @@ begin
 							state := s_data;
 						when hs_ack|hs_nack|hs_stall =>
 							if phy_txbs='0' then
-							tx_rdy <= to_stdulogic(to_bit(tx_req));
+								tx_rdy <= to_stdulogic(to_bit(tx_req));
 								state := s_idle;
 							end if;
 						when others =>
@@ -97,7 +105,7 @@ begin
 						end if;
 					end if;
 				end case;
-				data <= pid(0);
+				data <= shr(0);
 			end if;
 		end if;
 
