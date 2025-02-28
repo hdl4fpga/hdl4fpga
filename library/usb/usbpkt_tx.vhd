@@ -33,7 +33,7 @@ entity usbpkt_tx is
 		clk       : in  std_logic;
 		cken      : in  std_logic;
 
-		tkdata    : in  std_logic_vector(0 to 11-1);
+		tkdata    : in  std_logic_vector(0 to 11-1) := (others => '-');
 		tx_req    : in  std_logic;
 		tx_rdy    : buffer std_logic;
 
@@ -61,13 +61,12 @@ begin
 			if cken='1' then
 				case state is
 				when s_idle =>
-					shr := unsigned(not pkt_txpid) & unsigned(pkt_txpid) & tkdata;
+					shr := unsigned(not pkt_txpid) & unsigned(pkt_txpid) & unsigned(tkdata);
 					case pkt_txpid is
 					when tk_setup|tk_in|tk_out|tk_sof =>
 						cntr := shr'length-1;
 					when others =>
-						cntr := pid_length'length-1;
-					when others =>
+						cntr := pid_length-1;
 					end case;
 					if (to_bit(tx_req) xor to_bit(tx_rdy))='1' then
 						if phy_txbs='0' then
