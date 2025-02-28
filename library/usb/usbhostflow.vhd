@@ -173,7 +173,7 @@ begin
     				case rxpid is
     				when data0|data1 =>
 						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
-						   tkdata(dev_addr'range) = dev_addr then
+							tkdata(dev_addr'range) = dev_addr then
 							if rxerr='0' then
 								case tkdata(dev_endp'range) is
 								when (dev_endp'range => '0') =>

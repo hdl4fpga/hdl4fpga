@@ -42,9 +42,9 @@ entity usbpkt_tx is
 		pkt_txbs  : out std_logic;
 		pkt_txd   : in  std_logic :='-';
 
-		phy_txen : out std_logic;
-		phy_txbs : in  std_logic;
-		phy_txd  : out std_logic);
+		phy_txen  : out std_logic;
+		phy_txbs  : in  std_logic;
+		phy_txd   : out std_logic);
 end;
 
 architecture def of usbpkt_tx is
