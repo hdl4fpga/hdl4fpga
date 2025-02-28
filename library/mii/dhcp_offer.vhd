@@ -70,9 +70,3 @@ begin
 	dhcpyia_irdy <= dhcp_irdy and dhcpyia_frm;
 
 end;
-
-
-
-
-
-

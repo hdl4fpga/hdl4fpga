@@ -83,8 +83,3 @@ begin
 	end generate;
 
 end;
-
-
-
-
-

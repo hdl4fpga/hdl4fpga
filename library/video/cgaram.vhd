@@ -137,8 +137,3 @@ begin
 	video_dot <= char_dot and char_on;
 
 end;
-
-
-
-
-

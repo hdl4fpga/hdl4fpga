@@ -121,8 +121,3 @@ begin
 	q <= aliasq; -- Workaround Lattice Diamond 3.11 cannot deal with VHDL alias
 
 end;
-
-
-
-
-

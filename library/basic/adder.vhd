@@ -153,7 +153,3 @@ begin
 		s    => s_ser,
 		co   => co);
 end;
-
-
-
-

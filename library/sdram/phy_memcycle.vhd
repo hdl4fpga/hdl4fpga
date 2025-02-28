@@ -107,8 +107,3 @@ begin
 	end process;
 
 end;
-
-
-
-
-

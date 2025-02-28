@@ -108,8 +108,3 @@ begin
 		video_data   => video_data);
 
 end;
-
-
-
-
-

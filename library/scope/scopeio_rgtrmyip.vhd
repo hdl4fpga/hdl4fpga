@@ -82,8 +82,3 @@ begin
 
 	ip4_ena <= dv;
 end;
-
-
-
-
-

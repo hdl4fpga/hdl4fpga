@@ -256,8 +256,3 @@ begin
 		lat_wid    => widl,
 		lat_sch    => wri_sr);
 end;
-
-
-
-
-

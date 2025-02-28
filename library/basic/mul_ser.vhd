@@ -103,7 +103,3 @@ begin
 	end process;
 
 end;	
-
-
-
-

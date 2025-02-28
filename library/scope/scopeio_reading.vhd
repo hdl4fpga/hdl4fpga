@@ -740,8 +740,3 @@ port map (
 	code_data <= multiplex(btod_code & str_code, str_frm);
 
 end;
-
-
-
-
-

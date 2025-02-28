@@ -141,7 +141,3 @@ begin
 	chn2 <= sred;
 
 end;
-
-
-
-

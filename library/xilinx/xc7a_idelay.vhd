@@ -58,7 +58,3 @@ begin
 		ldpipeen   => '0',
 		datain     => '0');
 end;
-
-
-
-

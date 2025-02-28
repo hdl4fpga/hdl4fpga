@@ -105,8 +105,3 @@ entity ulx4m_ld is
 	alias hdmi1_gpdi  : std_logic_vector(4-1 downto 0) is gpdi_d(8-1 downto 4);
 
 end;
-
-
-
-
-

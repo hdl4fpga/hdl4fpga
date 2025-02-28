@@ -164,8 +164,3 @@ begin
 		(ipv4sawr_data'range => '-');
 
 end;
-
-
-
-
-

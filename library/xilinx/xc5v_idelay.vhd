@@ -84,7 +84,3 @@ begin
 		idatain => idatain,
 		dataout => dataout);
 end;
-
-
-
-

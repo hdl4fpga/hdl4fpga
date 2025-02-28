@@ -143,8 +143,3 @@ entity ulx3s is
 	constant clk25mhz_freq : real := 25.0e6;
 
 end;
-
-
-
-
-

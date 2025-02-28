@@ -117,9 +117,3 @@ begin
 	   pl_trdy    when pl_frm='1'    else
 	   '1';
 end;
-
-
-
-
-
-

@@ -180,7 +180,3 @@ begin
 		txdn => dn);
 
 end;
-
-
-
-

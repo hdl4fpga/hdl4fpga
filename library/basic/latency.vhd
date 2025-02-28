@@ -63,8 +63,3 @@ begin
 		do(j) <= q(0);
 	end generate;
 end;
-
-
-
-
-

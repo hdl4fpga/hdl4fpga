@@ -409,8 +409,3 @@ begin
 		di  => bg_color,
 		do  => text_bg);
 end;
-
-
-
-
-

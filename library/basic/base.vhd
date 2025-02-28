@@ -1524,8 +1524,3 @@ package body base is
 	end function;
 
 end;
-
-
-
-
-

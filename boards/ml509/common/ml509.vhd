@@ -176,7 +176,3 @@ entity ml509 is
 	attribute loc of dvi_h          : signal is "AM12";
 
 end;
-
-
-
-

@@ -168,8 +168,3 @@ package body ethpkg is
 	end;
 
 end;
-
-
-
-
-

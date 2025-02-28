@@ -1271,8 +1271,3 @@ begin
 	eth_mdio <= '0';
 
 end;
-
-
-
-
-

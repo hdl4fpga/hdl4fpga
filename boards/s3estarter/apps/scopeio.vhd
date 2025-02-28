@@ -1070,8 +1070,3 @@ begin
 	rs232_dte_txd <= 'Z';
 	rs232_dce_txd <= 'Z';
 end;
-
-
-
-
-

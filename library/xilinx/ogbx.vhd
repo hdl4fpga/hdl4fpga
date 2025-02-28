@@ -206,8 +206,3 @@ begin
 	end generate;
 
 end;
-
-
-
-
-

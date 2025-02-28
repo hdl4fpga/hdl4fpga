@@ -99,8 +99,3 @@ begin
 	end process;
 
 end;
-
-
-
-
-

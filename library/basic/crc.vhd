@@ -66,9 +66,3 @@ begin
 	trdy <= frm;
 
 end;
-
-
-
-
-
-

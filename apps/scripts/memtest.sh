@@ -46,8 +46,3 @@ if [ "$HOST" == "" ] ; then
 else
 	(eval "exec ./bin/memtest -h ${HOST} ${LOG} ${STDOUT} ${@}")
 fi
-
-
-
-
-

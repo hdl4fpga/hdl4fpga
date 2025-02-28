@@ -29,8 +29,3 @@ buffer[0] = i;
 com.write(buffer);
 }
 //com.write(String.fromCharCode(0xc1));
-
-
-
-
-

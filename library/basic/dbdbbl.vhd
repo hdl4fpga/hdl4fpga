@@ -545,8 +545,3 @@ begin
 		bin  => ser_bin,
 		bcd  => bcd);
 end;
-
-
-
-
-

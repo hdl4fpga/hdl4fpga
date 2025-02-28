@@ -80,8 +80,3 @@ begin
 		do(0) => dot);
 
 end;
-
-
-
-
-

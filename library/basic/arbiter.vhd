@@ -86,8 +86,3 @@ begin
 	idle <= setif(gnt=(gnt'range => '0'));
 
 end;
-
-
-
-
-

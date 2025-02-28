@@ -186,7 +186,3 @@ begin
 
 	avail    <= tx_irdy and not tx_trdy;
 end;
-
-
-
-

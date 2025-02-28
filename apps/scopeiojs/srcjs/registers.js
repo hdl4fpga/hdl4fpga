@@ -53,9 +53,3 @@ const colorTab = [
 	'ff00ff',
 	'ffff00',
 	'ffffff' ];
-
-
-
-
-
-

@@ -155,7 +155,3 @@ begin
 		dhcppkt_data                 when  dhcppkt_ena='1' else
 		(dhcpdscb_data'range => '0');
 end;
-
-
-
-

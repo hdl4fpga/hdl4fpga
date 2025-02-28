@@ -1227,8 +1227,3 @@ begin
 		end block;
 	end generate;
 end;
-
-
-
-
-

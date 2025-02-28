@@ -471,8 +471,3 @@ begin
 	end generate;
 
 end;
-
-
-
-
-

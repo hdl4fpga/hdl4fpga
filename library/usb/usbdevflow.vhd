@@ -419,7 +419,3 @@ begin
 	tp(10) <= to_stdulogic(stus_rdy);
 
 end;
-
-
-
-

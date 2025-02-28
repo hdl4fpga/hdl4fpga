@@ -97,8 +97,3 @@ begin
 	end generate;
 
 end;
-
-
-
-
-

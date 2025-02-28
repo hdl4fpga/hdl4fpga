@@ -90,7 +90,3 @@ begin
 	end process;
 
 end;
-
-
-
-

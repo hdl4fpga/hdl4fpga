@@ -344,8 +344,3 @@ begin
 		ddr_dq  => dq);
 
 end;
-
-
-
-
-

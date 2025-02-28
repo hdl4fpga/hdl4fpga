@@ -66,7 +66,3 @@ entity orangecrab is
     alias gpio_sda   : std_logic is gpio(7);
     alias gpio_scl   : std_logic is gpio(8);
 end;
-
-
-
-

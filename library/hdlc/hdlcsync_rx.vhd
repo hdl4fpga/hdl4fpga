@@ -105,8 +105,3 @@ begin
 	hdlcrx_irdy <= hdlcrx_frm and uartrx_irdy and setif(uartrx_data/=esc);
 
 end;
-
-
-
-
-

@@ -263,8 +263,3 @@ begin
 		std_logic_vector(avrge(1 to delay'length));
 
 end;
-
-
-
-
-

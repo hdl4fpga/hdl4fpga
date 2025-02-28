@@ -60,8 +60,3 @@ begin
 	output_dv <= input_dv;
 
 end;
-
-
-
-
-

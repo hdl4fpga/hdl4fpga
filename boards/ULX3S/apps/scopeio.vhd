@@ -1026,7 +1026,3 @@ begin
 	end process;
 
 end;
-
-
-
-

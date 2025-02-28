@@ -312,8 +312,3 @@ begin
 	eth_mdc  <= '0';
 	eth_mdio <= '0';
 end;
-
-
-
-
-

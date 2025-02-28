@@ -105,8 +105,3 @@ begin
 	end process;
 
 end;
-
-
-
-
-

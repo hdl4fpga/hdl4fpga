@@ -121,7 +121,3 @@ begin
 	ncrc16 <= not crc16;
 
 end;
-
-
-
-

@@ -28,8 +28,3 @@ npm install usb
 rm -rf nodesrv.js comm.js
 ln ../srcjs/nodesrv.js 
 ln ../srcjs/comm.js 
-
-
-
-
-

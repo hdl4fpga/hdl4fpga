@@ -36,7 +36,3 @@ if defined tty (
 		.\bin\siosend.exe -p 1>nul
 	)
 )
-
-
-
-

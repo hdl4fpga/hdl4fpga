@@ -164,8 +164,3 @@ begin
 		ser_data   => so_data);
 
 end;
-
-
-
-
-

@@ -426,8 +426,3 @@ begin
 			q       => sdr_dqso);
 	end block;
 end;
-
-
-
-
-

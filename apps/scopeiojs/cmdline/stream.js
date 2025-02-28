@@ -81,8 +81,3 @@ for (var i = 0; fb.byteLength-i >= (3*256/4); i += 3*256/4) {
 //	commjs.send(memlen);
 
 }
-
-
-
-
-

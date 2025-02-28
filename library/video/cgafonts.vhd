@@ -66,9 +66,3 @@ package body cgafonts is
 		return retval;
 	end;
 end;
-
-
-
-
-
-

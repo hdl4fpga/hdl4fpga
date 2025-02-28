@@ -167,7 +167,3 @@ begin
 	udp_end <= pl_end;
 
 end;
-
-
-
-

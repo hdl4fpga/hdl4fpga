@@ -127,10 +127,3 @@ begin
 		o => dfs_clk);
 
 end;
-
-
-
-
-
-
-

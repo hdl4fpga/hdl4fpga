@@ -234,9 +234,3 @@ package body ipoepkg is
 	end;
 
 end;
-
-
-
-
-
-

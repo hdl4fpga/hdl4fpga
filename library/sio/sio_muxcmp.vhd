@@ -84,8 +84,3 @@ begin
 	so_last <= sio_last(0);
 	so_end  <= sio_end(0);
 end;
-
-
-
-
-

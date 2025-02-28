@@ -102,9 +102,3 @@ begin
 		crc_rem    => fcs_rem);
 
 end;
-
-
-
-
-
-

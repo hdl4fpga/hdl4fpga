@@ -64,8 +64,3 @@ begin
 	end generate;
 
 end;
-
-
-
-
-

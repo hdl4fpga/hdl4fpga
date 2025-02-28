@@ -161,7 +161,3 @@ begin
 	
 	mii_txen <= miitx_frm and not miitx_end;
 end;
-
-
-
-

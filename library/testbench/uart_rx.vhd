@@ -112,8 +112,3 @@ begin
 	end process;
 
 end;
-
-
-
-
-

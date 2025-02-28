@@ -90,7 +90,3 @@ begin
 		dqso <= (others => dataout);
 	end generate;
 end;
-
-
-
-

@@ -243,8 +243,3 @@ begin
 	dma_clen  <= std_logic_vector(resize(unsigned(dmatrans_tlen),  dma_clen 'length));
 
 end;
-
-
-
-
-

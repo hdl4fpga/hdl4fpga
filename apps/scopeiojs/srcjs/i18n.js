@@ -60,8 +60,3 @@ function setLang(l) {
 function getLang(l) {
 	return lang;
 }
-
-
-
-
-

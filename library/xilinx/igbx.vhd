@@ -183,8 +183,3 @@ begin
 	end generate;
 
 end;
-
-
-
-
-

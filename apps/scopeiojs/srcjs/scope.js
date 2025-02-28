@@ -237,8 +237,3 @@ window.addEventListener("load", function() {
 	generate();
 
 });
-
-
-
-
-

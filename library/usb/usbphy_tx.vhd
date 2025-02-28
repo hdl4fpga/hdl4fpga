@@ -130,7 +130,3 @@ begin
 	tp(1) <= txen;
 
 end;
-
-
-
-

@@ -116,8 +116,3 @@ begin
 		s3s_segment_dp <= not segment_dp;
 		rs232_txd <= '1';
 end;
-
-
-
-
-

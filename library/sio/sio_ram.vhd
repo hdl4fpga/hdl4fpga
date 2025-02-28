@@ -143,8 +143,3 @@ begin
 		rd_addr(0);
 
 end;
-
-
-
-
-

@@ -131,7 +131,3 @@ begin
 		so_data => so_data);
 
 end;
-
-
-
-

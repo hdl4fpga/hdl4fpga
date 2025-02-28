@@ -97,8 +97,3 @@ begin
 		do  => hdlcrx_data);
 
 end;
-
-
-
-
-

@@ -42,7 +42,3 @@ POPD
 DEL nwjs.ver
 MKLINK /D html  ..\html 
 MKLINK /D srcjs ..\srcjs
-
-
-
-

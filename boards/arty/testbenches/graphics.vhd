@@ -292,8 +292,3 @@ configuration arty_graphics_md of testbench is
 		end for;
 	end for;
 end;
-
-
-
-
-

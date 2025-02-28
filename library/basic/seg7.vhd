@@ -150,8 +150,3 @@ begin
 
 	display_turnon <= display_ena;
 end;
-
-
-
-
-

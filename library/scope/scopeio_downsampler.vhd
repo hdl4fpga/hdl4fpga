@@ -170,8 +170,3 @@ begin
 	output_data <= data_max & data_min;
 
 end;
-
-
-
-
-

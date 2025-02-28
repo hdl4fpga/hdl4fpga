@@ -58,9 +58,3 @@ function setCommOption(option)
 {
 	return rpcScopeIO( "setCommOption", { option : option } );
 }
-
-
-
-
-
-

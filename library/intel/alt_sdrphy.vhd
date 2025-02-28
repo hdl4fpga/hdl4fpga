@@ -572,8 +572,3 @@ begin
 
 	sys_dqo <= to_stdlogicvector(sdqo);
 end;
-
-
-
-
-

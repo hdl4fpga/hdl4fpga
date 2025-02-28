@@ -71,7 +71,3 @@ function alignValues (reg, data) {
 function sendRegister(reg, values) {
 	send(alignValues(reg, values));
 }
-
-
-
-

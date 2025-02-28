@@ -326,8 +326,3 @@ configuration nuhs3adsp_scopeio_md of testbench is
 		end for;
 	end for;
 end;
-
-
-
-
-

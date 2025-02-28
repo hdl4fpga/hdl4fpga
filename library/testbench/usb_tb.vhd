@@ -375,8 +375,3 @@ begin
 		rxd  => usb_rxd);
 
 end;
-
-
-
-
-

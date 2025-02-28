@@ -73,8 +73,3 @@ begin
 	font_dot <= multiplex(font_line, font_col);
 	char_dot <= font_dot(0);
 end;
-
-
-
-
-

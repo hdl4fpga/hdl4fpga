@@ -396,8 +396,3 @@ entity nuhs3adsp is
 --	attribute nodelay of ddr_dq  : signal is "true";
 
 end;
-
-
-
-
-

@@ -125,8 +125,3 @@ architecture uart_tx of s3starter is
 	vga_vsync    <= 'Z';
 
 end;
-
-
-
-
-

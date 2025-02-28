@@ -199,7 +199,3 @@ begin
 	do0 <= ram0(to_integer(cntr));
 
 end;
-
-
-
-

@@ -31,4 +31,3 @@ typedef unsigned short u16;
 
 u16 reverse(register u16 num, register int len);
 u16 pppfcs16(register u16 fcs, register unsigned char *cp, register int len);
-

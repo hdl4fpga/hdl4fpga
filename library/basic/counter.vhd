@@ -89,8 +89,3 @@ begin
 	end generate;
 	co <= q;
 end;
-
-
-
-
-

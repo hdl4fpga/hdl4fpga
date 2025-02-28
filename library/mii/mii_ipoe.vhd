@@ -641,8 +641,3 @@ begin
 		fifo_data;
 
 end;
-
-
-
-
-

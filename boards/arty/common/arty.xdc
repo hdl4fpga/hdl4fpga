@@ -111,8 +111,3 @@ set_property -dict { PACKAGE_PIN E2  IOSTANDARD LVCMOS18 } [get_ports { jd[7] }]
 set_property -dict { PACKAGE_PIN D2  IOSTANDARD LVCMOS18 } [get_ports { jd[8] }];
 set_property -dict { PACKAGE_PIN H2  IOSTANDARD LVCMOS18 } [get_ports { jd[9] }];
 set_property -dict { PACKAGE_PIN G2  IOSTANDARD LVCMOS18 } [get_ports { jd[10] }];
-
-
-
-
-

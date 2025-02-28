@@ -603,7 +603,3 @@ begin
 	end process;
 
 end;
-
-
-
-

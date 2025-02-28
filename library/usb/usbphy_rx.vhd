@@ -168,7 +168,3 @@ begin
 	end process;
 
 end;
-
-
-
-

@@ -311,8 +311,3 @@ begin
 		chn1  => dvid_crgb(video_gear*2-1 downto video_gear*1),  
 		chn0  => dvid_crgb(video_gear*1-1 downto video_gear*0));
 end;
-
-
-
-
-

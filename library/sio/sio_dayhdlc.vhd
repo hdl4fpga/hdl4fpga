@@ -110,8 +110,3 @@ begin
 	so_data <= si_data when sio_addr/='0' else sohdlc_data;
 
 end;
-
-
-
-
-

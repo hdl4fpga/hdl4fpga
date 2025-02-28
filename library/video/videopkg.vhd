@@ -104,8 +104,3 @@ package body videopkg is
 	end;
 
 end;
-
-
-
-
-

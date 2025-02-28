@@ -302,8 +302,3 @@ configuration arty_scopeio_md of testbench is
 
 	end for;
 end;
-
-
-
-
-

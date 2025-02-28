@@ -70,8 +70,3 @@ begin
 		mii_pre <= mii_frm and vld;
 	end process;
 end;
-
-
-
-
-

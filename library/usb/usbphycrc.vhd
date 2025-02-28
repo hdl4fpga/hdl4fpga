@@ -270,7 +270,3 @@ begin
 	phy_txd  <= txd      when txen='1' else not crcd;
 
 end;
-
-
-
-

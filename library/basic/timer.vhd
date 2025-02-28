@@ -95,8 +95,3 @@ begin
 		q(i) <= cntr(0);
 	end generate;
 end;
-
-
-
-
-

@@ -59,9 +59,3 @@ begin
 
 	tpa_frm  <= arp_frm and frame_decode(frm_ptr, reverse(arp4_frame), arp_data'length, arp_tpa);
 end;
-
-
-
-
-
-

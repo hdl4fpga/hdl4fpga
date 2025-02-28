@@ -92,8 +92,3 @@ entity ulx4m_ls is
 	constant clk25mhz_freq : real := 25.0e6;
 
 end;
-
-
-
-
-

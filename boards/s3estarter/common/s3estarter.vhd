@@ -360,8 +360,3 @@ entity s3estarter is
 	attribute slew of rs232_dce_txd : signal is "slow";
 
 end;
-
-
-
-
-

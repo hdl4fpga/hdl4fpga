@@ -81,7 +81,3 @@ package usbpkg is
     	endpoint  => x"05");
 	
 end;
-
-
-
-

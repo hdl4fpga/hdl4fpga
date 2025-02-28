@@ -342,9 +342,3 @@ exports.openUSB       = openUSB;
 }
 catch(e) {
 }
-
-
-
-
-
-

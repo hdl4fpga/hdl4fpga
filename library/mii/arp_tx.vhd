@@ -132,8 +132,3 @@ begin
 	arp_end    <= frm_ptr(0);
 
 end;
-
-
-
-
-

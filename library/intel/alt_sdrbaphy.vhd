@@ -174,7 +174,3 @@ begin
 		q         => sdram_a);
 
 end;
-
-
-
-

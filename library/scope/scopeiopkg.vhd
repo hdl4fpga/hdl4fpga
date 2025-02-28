@@ -529,8 +529,3 @@ package body scopeiopkg is
 	end;
 
 end;
-
-
-
-
-

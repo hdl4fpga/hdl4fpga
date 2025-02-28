@@ -172,8 +172,3 @@ begin
 		fcs_vld     => hdlcfcsrx_vld);
 
 end;
-
-
-
-
-

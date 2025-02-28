@@ -112,8 +112,3 @@ entity ecp3versa is
 	alias seg_dp : std_logic is seg(14);
 
 end;
-
-
-
-
-

@@ -65,7 +65,3 @@ begin
 		dvid_crgb   => open);
 
 end;
-
-
-
-

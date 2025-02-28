@@ -202,8 +202,3 @@ begin
 	end process;
 
 end;
-
-
-
-
-

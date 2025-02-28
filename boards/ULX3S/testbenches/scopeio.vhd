@@ -346,8 +346,3 @@ configuration ulx3s_scopeio_md of testbench is
 		end for;
 	end for;
 end;
-
-
-
-
-

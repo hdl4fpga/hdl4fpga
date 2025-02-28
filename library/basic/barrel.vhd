@@ -61,8 +61,3 @@ begin
 		do <= std_logic_vector(aux);
 	end process;
 end;
-
-
-
-
-

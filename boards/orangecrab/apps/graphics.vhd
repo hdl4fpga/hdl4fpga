@@ -475,8 +475,3 @@ begin
 	tp(4) <= ctlrphy_ini;
 
 end;
-
-
-
-
-

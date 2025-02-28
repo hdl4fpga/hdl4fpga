@@ -63,8 +63,3 @@ begin
 	end process;
 
 end;
-
-
-
-
-

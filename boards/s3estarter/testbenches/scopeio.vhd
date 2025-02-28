@@ -287,8 +287,3 @@ configuration s3estarter_scopeio_md of testbench is
 		end for;
 	end for;
 end;
-
-
-
-
-

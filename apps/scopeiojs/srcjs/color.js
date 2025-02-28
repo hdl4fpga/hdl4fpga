@@ -76,9 +76,3 @@ paletteControl.prototype.mousewheel = function (callback) {
 	this.inputControl['palette'].addEventListener("wheel", callback, false);
 	this.inputControl['color'].addEventListener("wheel", callback, false);
 }
-
-
-
-
-
-

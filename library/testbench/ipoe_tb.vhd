@@ -116,8 +116,3 @@ begin
 		mii_data   => mii_rxd);
 
 end;
-
-
-
-
-

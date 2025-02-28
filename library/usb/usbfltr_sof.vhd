@@ -99,8 +99,3 @@ begin
 	fltr_d  <= sof_d  when fltr_on='1' else phy_d;
 
 end;
-
-
-
-
-

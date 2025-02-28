@@ -416,9 +416,3 @@ vtControl.prototype.mousewheel = function (callback) {
 		inputControl[key].addEventListener("wheel", callback, false);
 	});
 }
-
-
-
-
-
-

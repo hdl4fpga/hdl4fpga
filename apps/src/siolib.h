@@ -118,4 +118,3 @@ int sio2raw(char *buffer, char unsigned rgtr_id, const char unsigned *siobuf, si
 int raw2sio(char *siobuf, char unsigned rgtr_id, const char *buffer, size_t size);
 
 #endif
-

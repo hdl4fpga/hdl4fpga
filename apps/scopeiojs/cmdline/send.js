@@ -69,9 +69,3 @@ process.stdin.on('data', function(chunk) {
 	if (data.length > 0) 
 		console.log("length %d, data left %s", data.length, data);
 });
-
-
-
-
-
-

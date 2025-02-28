@@ -103,9 +103,3 @@ begin
 	udpcksm_irdy <= udp_irdy and udpcksm_frm;
 	udppl_irdy   <= udp_irdy and udppl_frm;
 end;
-
-
-
-
-
-

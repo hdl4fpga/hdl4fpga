@@ -85,8 +85,3 @@ entity nexys2 is
 	attribute loc of vga_vsync      : signal is "U3";
 
 end;
-
-
-
-
-

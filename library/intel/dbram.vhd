@@ -65,7 +65,3 @@ begin
 		-- wr_addr => wa,
 		-- wr_data => di);
 end;
-
-
-
-

@@ -285,8 +285,3 @@ begin
 		icmp_data => icmptx_data);
 
 end;
-
-
-
-
-

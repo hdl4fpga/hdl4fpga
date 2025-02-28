@@ -130,8 +130,3 @@ begin
 	ddr_clk0  <= clks(ddr);
 
 end;
-
-
-
-
-

@@ -290,8 +290,3 @@ begin
 	mii_txd  <= miirx_data;
 
 end;
-
-
-
-
-

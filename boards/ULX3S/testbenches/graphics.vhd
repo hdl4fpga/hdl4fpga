@@ -334,8 +334,3 @@ configuration ulx3s_graphics_md of testbench is
 		end for;
 	end for;
 end;
-
-
-
-
-

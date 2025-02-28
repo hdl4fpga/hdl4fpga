@@ -303,8 +303,3 @@ begin
 	end generate;
 
 end;
-
-
-
-
-

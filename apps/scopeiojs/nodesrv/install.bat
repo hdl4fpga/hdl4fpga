@@ -28,8 +28,3 @@ DEL /F /Q nodesrv.js 2> NUL
 DEL /F /Q comm.js 2> NUL
 MKLINK /H nodesrv.js ..\srcjs\nodesrv.js 
 MKLINK /H comm.js    ..\srcjs\comm.js 
-
-
-
-
-

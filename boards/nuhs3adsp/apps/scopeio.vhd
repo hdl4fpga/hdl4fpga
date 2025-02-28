@@ -821,8 +821,3 @@ begin
 	lcd_backlight <= 'Z';
 
 end;
-
-
-
-
-

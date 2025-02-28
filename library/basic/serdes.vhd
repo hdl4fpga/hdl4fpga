@@ -149,8 +149,3 @@ begin
 	des_frm  <= serdes_frm                       when not rgtr else rgtr_frm;
 	des_irdy <= serdes_frm and ser_irdy and stop when not rgtr else rgtr_irdy;
 end;
-
-
-
-
-

@@ -517,8 +517,3 @@ begin
 	end process;
 
 end;
-
-
-
-
-

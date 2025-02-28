@@ -57,8 +57,3 @@ while [ "$data" != "" ] ; do
 	data=`echo -n $data|cut -b $len-`
 done
 echo
-
-
-
-
-

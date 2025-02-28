@@ -257,8 +257,3 @@ begin
 
 	adc_clkab <= 'Z';
 end;
-
-
-
-
-

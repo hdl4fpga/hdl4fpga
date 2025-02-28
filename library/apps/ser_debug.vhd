@@ -122,8 +122,3 @@ begin
 		chn0  => dvid_crgb(video_gear*1-1 downto video_gear*0));
 
 end;
-
-
-
-
-

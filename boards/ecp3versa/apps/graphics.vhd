@@ -875,8 +875,3 @@ begin
 	phy1_rst <= '1';
 
 end;
-
-
-
-
-

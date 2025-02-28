@@ -219,8 +219,3 @@ begin
 		tx_data => tx_data);
 
 end;
-
-
-
-
-

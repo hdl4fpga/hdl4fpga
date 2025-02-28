@@ -116,8 +116,3 @@ entity arty is
 	constant gclk100_freq : real := 1.0/(gclk100_per);
 
 end;
-
-
-
-
-

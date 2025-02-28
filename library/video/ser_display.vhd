@@ -172,8 +172,3 @@ begin
 		do(2) => video_vs);
 
 end;
-
-
-
-
-

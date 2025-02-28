@@ -82,9 +82,3 @@ begin
 	pl_irdy        <= ipv4_irdy and pl_frm;
 
 end;
-
-
-
-
-
-

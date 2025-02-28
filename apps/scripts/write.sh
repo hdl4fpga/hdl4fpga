@@ -40,8 +40,3 @@ LENGTH=`printf %06x 0x${LEN}`
 DATA=`echo -n "18${LEN}${2}1702${LENGTH}1603${ADDR}"`
 echo $ADDR':'$LENGTH ' : ' "${DATA}"
 echo  "${DATA}"|xxd -r -ps|./scripts/siocomm.sh |xxd -ps| tr -d '\n'
-
-
-
-
-

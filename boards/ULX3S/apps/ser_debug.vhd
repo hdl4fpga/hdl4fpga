@@ -318,8 +318,3 @@ begin
 	end generate;
 
 end;
-
-
-
-
-

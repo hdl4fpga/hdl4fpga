@@ -1071,9 +1071,3 @@ package bcdfonts is
 
 	
 end;
-
-
-
-
-
-

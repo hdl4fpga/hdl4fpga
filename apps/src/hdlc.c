@@ -127,9 +127,3 @@ void tryfcs16(cp, len)
     if ( trialfcs == PPPGOODFCS16 )
         printf("Good FCS\n");
 }
-
-
-
-
-
-

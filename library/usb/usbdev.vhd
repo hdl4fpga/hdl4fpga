@@ -297,7 +297,3 @@ begin
 		txd       => rqst_txd);
 
 end;
-
-
-
-

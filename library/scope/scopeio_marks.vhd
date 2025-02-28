@@ -373,7 +373,3 @@ begin
 		rd_data => vt_mark);
 
 end;
-
-
-
-

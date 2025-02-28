@@ -64,8 +64,3 @@ begin
 	fcs_vld <= setif(crc=not fcs_rem);
 
 end;
-
-
-
-
-

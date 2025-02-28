@@ -73,8 +73,3 @@ begin
 		multiplex(rdata, mux_sel, so_data'length);
 
 end;
-
-
-
-
-

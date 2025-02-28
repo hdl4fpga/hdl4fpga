@@ -58,8 +58,3 @@ else
 		(eval "exec ${DEVFD}<>${TTY} ./bin/siosend  ${LOG} ${@}")
 	fi
 fi
-
-
-
-
-

@@ -78,8 +78,3 @@ begin
 	end generate;
 
 end;
-
-
-
-
-

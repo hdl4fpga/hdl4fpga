@@ -45,7 +45,3 @@ begin
 		x_p => dqso_p,
 		x_n => dqso_n);
 end;
-
-
-
-

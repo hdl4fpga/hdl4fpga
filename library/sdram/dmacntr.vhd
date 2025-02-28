@@ -107,8 +107,3 @@ begin
 	len_eoc <= cntr_eoc(4);
 
 end;
-
-
-
-
-

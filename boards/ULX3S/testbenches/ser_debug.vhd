@@ -178,8 +178,3 @@ begin
 		ftdi_txd  => ftdi_txd);
 
 end;
-
-
-
-
-

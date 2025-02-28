@@ -937,8 +937,3 @@ begin
 
 	sys_sto <= (others => sto(sto'left)) when rd_align else sto;
 end;
-
-
-
-
-

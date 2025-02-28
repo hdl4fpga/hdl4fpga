@@ -174,7 +174,3 @@ begin
 	end process;
 
 end;
-
-
-
-

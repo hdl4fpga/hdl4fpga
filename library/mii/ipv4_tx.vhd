@@ -234,7 +234,3 @@ begin
 	    pl_end;
 
 end;
-
-
-
-

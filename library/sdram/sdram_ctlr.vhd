@@ -366,7 +366,3 @@ begin
 	phy_dqv  <= sdram_sch_wwn;
 
 end;
-
-
-
-

@@ -69,7 +69,3 @@ begin
 			dataout => dataout);
 	end generate;
 end;
-
-
-
-

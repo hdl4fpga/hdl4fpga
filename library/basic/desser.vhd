@@ -83,9 +83,3 @@ begin
 	des_trdy <= ser_trdy and mux_ena;
 
 end;
-
-
-
-
-
-

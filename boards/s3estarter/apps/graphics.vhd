@@ -671,8 +671,3 @@ begin
 	spi_ss_b    <= 'Z';
 
 end;
-
-
-
-
-

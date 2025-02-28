@@ -120,8 +120,3 @@ entity s3starter is
 
 
 end;
-
-
-
-
-

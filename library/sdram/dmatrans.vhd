@@ -345,8 +345,3 @@ begin
 		std_logic_vector(shift_left(resize(unsigned(ddrdma_col), ctlr_a'length), burst_bits));
 
 end;
-
-
-
-
-

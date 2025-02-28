@@ -896,7 +896,3 @@ begin
 	iic_scl_video <= 'Z';
 
 end;
-
-
-
-

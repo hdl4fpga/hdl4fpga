@@ -294,7 +294,3 @@ begin
 		q    => nodelay_sdram_a);
 
 end;
-
-
-
-

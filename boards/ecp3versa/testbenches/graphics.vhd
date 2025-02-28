@@ -296,8 +296,3 @@ configuration ecp3versa_graphic_md of testbench is
 		end for;
 	end for;
 end;
-
-
-
-
-

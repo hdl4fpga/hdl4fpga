@@ -35,7 +35,3 @@ set_clock_groups -asynchronous -group { sdrampll_g.ddr_clk0_mmce2 }  -group { sy
 set_clock_groups -asynchronous -group { sdrampll_g.ddr_clk90_mmce2 } -group { sys_clk }
 set_clock_groups -asynchronous -group { sys_clk } -group { sdrampll_g.ddr_clk0_mmce2 } 
 set_clock_groups -asynchronous -group { sys_clk } -group { sdrampll_g.ddr_clk90_mmce2 }
-
-
-
-

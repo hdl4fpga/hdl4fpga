@@ -443,8 +443,3 @@ begin
 
 	dot <= ((lt1 xor lt2) or eq2 or eq1) and don;
 end;
-
-
-
-
-

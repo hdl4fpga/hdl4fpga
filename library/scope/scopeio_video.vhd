@@ -629,8 +629,3 @@ begin
 	video_sync  <= not video_io(1) and not video_io(0);
 
 end;
-
-
-
-
-

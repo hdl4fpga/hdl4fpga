@@ -265,7 +265,3 @@ begin
 	sys_sto  <= sys_sti;
 
 end;
-
-
-
-

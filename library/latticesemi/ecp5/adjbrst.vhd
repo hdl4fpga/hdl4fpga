@@ -137,7 +137,3 @@ begin
 		lat  <= std_logic_vector(temp(lat'range));
 	end process;
 end;
-
-
-
-

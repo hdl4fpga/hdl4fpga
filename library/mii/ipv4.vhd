@@ -678,8 +678,3 @@ begin
 
 	plrx_data <= udpplrx_data;
 end;
-
-
-
-
-

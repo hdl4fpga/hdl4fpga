@@ -118,8 +118,3 @@ commWidget.prototype.uartOnChange =  function (e) {
 		path     : uart, 
 		baudRate : parseInt(baudrate) });
 }
-
-
-
-
-

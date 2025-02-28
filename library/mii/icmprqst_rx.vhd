@@ -75,9 +75,3 @@ begin
 	icmppl_irdy   <= icmp_irdy and icmppl_frm;
 
 end;
-
-
-
-
-
-

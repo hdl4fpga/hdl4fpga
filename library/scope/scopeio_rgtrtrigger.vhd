@@ -52,8 +52,3 @@ begin
 	trigger_level   <= std_logic_vector(resize(unsigned(std_logic_vector'(bitfield(rgtr_data, hdo(trigger_fields)**".level"))),  trigger_level'length));
 	trigger_chanid  <= std_logic_vector(resize(unsigned(std_logic_vector'(bitfield(rgtr_data, hdo(trigger_fields)**".chanid"))), trigger_chanid'length));
 end;
-
-
-
-
-

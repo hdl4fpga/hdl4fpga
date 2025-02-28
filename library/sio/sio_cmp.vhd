@@ -58,8 +58,3 @@ begin
 	si_equ   <= setif(si1_data=si2_data) and cy; 
 
 end;
-
-
-
-
-

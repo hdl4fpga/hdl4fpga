@@ -72,7 +72,3 @@ begin
 		rxd  => rxd,
 		rx   => txr);
 end;
-
-
-
-

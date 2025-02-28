@@ -372,7 +372,3 @@ begin
 
 	sys_dqo <= unshuffle_vector(dqo, gear => gear, size => byte_size);
 end;
-
-
-
-

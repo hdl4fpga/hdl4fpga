@@ -329,7 +329,3 @@ begin
 	tp(3) <= to_stdulogic(rqst_reqs(get_descriptor));
 	tp(4) <= to_stdulogic(rqst_rdys(get_descriptor));
 end;
-
-
-
-

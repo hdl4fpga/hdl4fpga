@@ -65,8 +65,3 @@ begin
 	focus_ena <= dv;
 
 end;
-
-
-
-
-

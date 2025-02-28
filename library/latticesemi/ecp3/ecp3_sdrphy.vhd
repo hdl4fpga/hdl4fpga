@@ -484,8 +484,3 @@ begin
 	phy_dmo  <= to_stdlogicvector(sdmo);
 	phy_dqo  <= to_stdlogicvector(sdqo);
 end;
-
-
-
-
-

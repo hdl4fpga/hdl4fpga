@@ -270,8 +270,3 @@ configuration ulx4mls_graphics_md of testbench is
 		end for;
 	end for;
 end;
-
-
-
-
-

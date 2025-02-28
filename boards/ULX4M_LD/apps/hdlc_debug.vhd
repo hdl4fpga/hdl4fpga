@@ -305,8 +305,3 @@ begin
 	end generate;
 
 end;
-
-
-
-
-

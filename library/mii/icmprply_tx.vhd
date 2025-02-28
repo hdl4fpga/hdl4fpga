@@ -76,9 +76,3 @@ begin
 	icmp_end  <= pl_end;
 
 end;
-
-
-
-
-
-

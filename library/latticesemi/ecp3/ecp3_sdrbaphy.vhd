@@ -143,8 +143,3 @@ begin
 		q    => sdr_rst);
 
 end;
-
-
-
-
-

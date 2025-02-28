@@ -371,8 +371,3 @@ begin
 		c_dcare when others;
 
 end;
-
-
-
-
-

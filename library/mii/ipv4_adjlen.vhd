@@ -79,7 +79,3 @@ begin
 
 	so_data <= so_sum;
 end;
-
-
-
-

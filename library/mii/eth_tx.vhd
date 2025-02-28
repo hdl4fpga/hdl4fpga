@@ -205,9 +205,3 @@ begin
 	mii_end <= fcs_end;
 
 end;
-
-
-
-
-
-

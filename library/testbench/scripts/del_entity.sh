@@ -41,7 +41,3 @@ while read line ; do
         ;;
     esac
 done
-
-
-
-

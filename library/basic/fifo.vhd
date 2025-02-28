@@ -442,8 +442,3 @@ begin
 		dst_data => rd_cmp);
 
 end;
-
-
-
-
-
