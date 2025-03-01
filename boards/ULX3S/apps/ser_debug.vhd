@@ -122,22 +122,65 @@ begin
 		txen <= rxdv;
 		rxbs <= txbs;
 		txd  <= rxd;
-		usbphy_e : entity hdl4fpga.usbdev
-		generic map (
-			oversampling => usb_oversampling)
-		port map (
-			tp   => tp,
-			dp   => usb_fpga_dp,
-			dn   => usb_fpga_dn,
-			clk  => videoio_clk,
-			dev_cfgd => cfgd,
-			cken => cken,
-			txen => txen, 
-			txbs => txbs,
-			txd  => txd,
-			rxdv => rxdv, 
-			rxbs => rxbs,
-			rxd  => rxd);
+
+		usbdev_g : if false generate
+    		usbdev_e : entity hdl4fpga.usbdev
+    		generic map (
+    			oversampling => usb_oversampling)
+    		port map (
+    			tp   => tp,
+    			dp   => usb_fpga_dp,
+    			dn   => usb_fpga_dn,
+    			clk  => videoio_clk,
+    			dev_cfgd => cfgd,
+    			cken => cken,
+    			txen => txen, 
+    			txbs => txbs,
+    			txd  => txd,
+    			rxdv => rxdv, 
+    			rxbs => rxbs,
+    			rxd  => rxd);
+		end generate;
+			
+		usbhost_g : if true generate
+			signal setup_req : std_logic := '0';
+			signal setup_rdy : std_logic := '0';
+		begin
+			process (videoio_clk)
+				variable rst : bit;
+				variable ena : bit;
+			begin
+				if rising_edge(videoio_clk) then
+					if left='1' then
+						ena := '1';
+					elsif fire1='1' then
+						if ena='1' then
+							setup_req <= not setup_rdy;
+						end if;
+						ena := '0';
+					end if;
+				end if;
+			end process;
+
+    		usbhost_e : entity hdl4fpga.usbhost
+    		generic map (
+    			oversampling => usb_oversampling)
+    		port map (
+    			tp   => tp,
+    			dp   => usb_fpga_dp,
+    			dn   => usb_fpga_dn,
+    			clk  => videoio_clk,
+    			dev_cfgd => cfgd,
+				setup_rdy => setup_rdy,
+				setup_req => setup_req,
+    			cken => cken,
+    			txen => txen, 
+    			txbs => txbs,
+    			txd  => txd,
+    			rxdv => rxdv, 
+    			rxbs => rxbs,
+    			rxd  => rxd);
+		end generate;
 			
 		fltr_on <= not up;
 		usbfltrsof_e : entity hdl4fpga.usbfltr_sof
