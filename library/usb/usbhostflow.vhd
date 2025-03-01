@@ -54,8 +54,10 @@ entity usbhostflow is
 		txbs      : in  std_logic;
 		txd       : buffer std_logic;
 
-		token_req   : buffer bit;
-		token_rdy   : in bit;
+		tksetup_req : in bit;
+		tksetup_rdy : buffer bit;
+		tkin_req : in  bit;
+		tkin_rdy : buffer bit;
 		rqst_req    : buffer bit;
 		rqst_rdy    : in  bit;
 		rqstin_req  : in  bit;
@@ -130,13 +132,14 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
-					if (token_rdy xor token_req)='1' then
+					if (tksetup_rdy xor tksetup_req)='1' then
 						txpid  <= tk_setup;
 						ddata  <= data0;
 						ddatai <= data0;
 						ddatao <= data0;
 						cntr   := tkdata'length-2;
 						tx_req <= not tx_rdy;
+						tksetup_rdy <= tksetup_req; 
 					end if;
 					if (in_rdy xor in_req)='1' then
 						case tkdata(dev_endp'range) is

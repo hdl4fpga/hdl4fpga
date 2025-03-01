@@ -93,8 +93,10 @@ architecture def of usbhost is
 	signal rqstack_req : bit;
 	signal rqstack_rdy : bit;
 
-	signal token_req : bit;
-	signal token_rdy : bit;
+	signal tksetup_req : bit;
+	signal tksetup_rdy : bit;
+	signal tkin_req    : bit;
+	signal tkin_rdy    : bit;
 
 	signal tkdata    : std_logic_vector(0 to 11-1);
 
@@ -173,8 +175,10 @@ begin
 
 		clk       => clk,
 		cken      => cken,
-		token_req => token_req,
-		token_rdy => token_rdy,
+		tksetup_req => tksetup_req,
+		tksetup_rdy => tksetup_rdy,
+		tkin_req => tkin_req,
+		tkin_rdy => tkin_rdy,
 
 		rx_req    => rx_req,
 		rx_rdy    => rx_rdy,
@@ -226,8 +230,10 @@ begin
 
 		setup_req => setup_req,
 		setup_rdy => setup_rdy,
-		token_req => token_req,
-		token_rdy => token_rdy,
+		tksetup_req => tksetup_req,
+		tksetup_rdy => tksetup_rdy,
+		tkin_req => tkin_req,
+		tkin_rdy => tkin_rdy,
 
 		dev_addr  => dev_addr,
 		dev_cfgd  => dev_cfgd,

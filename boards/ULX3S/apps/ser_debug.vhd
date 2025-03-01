@@ -171,8 +171,8 @@ begin
     			dn   => usb_fpga_dn,
     			clk  => videoio_clk,
     			dev_cfgd => cfgd,
-				setup_rdy => setup_rdy,
 				setup_req => setup_req,
+				setup_rdy => setup_rdy,
     			cken => cken,
     			txen => txen, 
     			txbs => txbs,
@@ -182,7 +182,7 @@ begin
     			rxd  => rxd);
 		end generate;
 			
-		fltr_on <= not up;
+		fltr_on <= '0'; --not up;
 		usbfltrsof_e : entity hdl4fpga.usbfltr_sof
 		port map (
 			usb_clk  => videoio_clk,

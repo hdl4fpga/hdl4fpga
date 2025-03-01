@@ -51,7 +51,7 @@ architecture def of usbpkt_tx is
 	signal data : std_logic;
 begin
 	process (pkt_txen, phy_txbs, pkt_txd, data, clk)
-		type states is (s_idle, s_pid, s_token, s_data);
+		type states is (s_idle, s_pid, s_data);
 		variable state  : states;
 		constant pid_length : natural := 8;
 		variable shr  : unsigned(pid_length+tkdata'length-1 downto 0);
@@ -61,14 +61,14 @@ begin
 			if cken='1' then
 				case state is
 				when s_idle =>
-					shr := unsigned(not pkt_txpid) & unsigned(pkt_txpid) & unsigned(tkdata);
+					shr :=  unsigned(reverse(tkdata)) & unsigned(not pkt_txpid) & unsigned(pkt_txpid);
 					case pkt_txpid is
 					when tk_setup|tk_in|tk_out|tk_sof =>
 						cntr := shr'length-1;
 					when others =>
 						cntr := pid_length-1;
 					end case;
-					if (to_bit(tx_req) xor to_bit(tx_rdy))='1' then
+					if (tx_req xor tx_rdy)='1' then
 						if phy_txbs='0' then
 							state := s_pid;
 						end if;
@@ -82,20 +82,18 @@ begin
 					else
 						case pkt_txpid is
 						when tk_setup|tk_in|tk_out|tk_sof =>
-							state := s_token;
+							tx_rdy <= tx_req;
+							state  := s_idle;
 						when data0|data1 =>
 							state := s_data;
 						when hs_ack|hs_nack|hs_stall =>
 							if phy_txbs='0' then
-								tx_rdy <= to_stdulogic(to_bit(tx_req));
+								tx_rdy <= tx_req;
 								state := s_idle;
 							end if;
 						when others =>
 						end case;
 					end if;
-				when s_token =>
-					tx_rdy <= to_stdulogic(to_bit(tx_req));
-					state  := s_idle;
 				when s_data =>
 					if phy_txbs='0' then
 						if pkt_txen='0' then
