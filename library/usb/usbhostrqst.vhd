@@ -127,12 +127,12 @@ begin
 					when s_data =>
 						if rxpidv='0' then
 							if (rqstdata_req xor rqstdata_rdy)='0' then
-								reply_req <= not reply_rdy;
+								rqst_rdy <= rqst_req;
+								-- reply_req <= not reply_rdy;
 								state := s_reply;
 							end if;
 						end if;
 					when s_reply =>
-								rqst_rdy <= rqst_req;
 						if (reply_rdy xor reply_req)='0' then
 							rqst_rdy <= rqst_req;
 						end if;
