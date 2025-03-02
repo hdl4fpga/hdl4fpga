@@ -37,8 +37,8 @@ entity usbhostrqst is
 		setup_rdy : buffer std_logic;
 		tksetup_req : buffer bit;
 		tksetup_rdy : in  bit;
-		tkin_req : buffer bit;
-		tkin_rdy : in  bit;
+		tkin_req  : buffer bit;
+		tkin_rdy  : in  bit;
 		dev_addr  : out std_logic_vector(0 to 7-1);
 		dev_cfgd  : out std_logic;
 		rqst_req  : in  bit;
@@ -90,28 +90,49 @@ architecture def of usbhostrqst is
 begin
 
 	setup_p : process (cken, clk)
-		type states is (s_idle, s_tksetup, s_data, s_ack, s_reply);
+		type states is (s_idle, s_rqstsetup);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (setup_rdy xor setup_req)='1' then
-					case state is
-					when s_idle =>
+   				case state is
+   				when s_idle =>
+					if (setup_rdy xor setup_req)='1' then
 						tksetup_req <= not tksetup_rdy;
-						state := s_tksetup;
-					when s_tksetup =>
-						if (tksetup_req xor tksetup_rdy)='0' then
-							getdescriptor_req <= not getdescriptor_req;
-							state := s_data;
-						end if;
-					when s_data =>
-						if(in_req xor in_rdy)='0' then
+						state := s_rqstsetup;
+					end if;
+   				when s_rqstsetup =>
+					if (tksetup_req xor tksetup_rdy)='0' then
+						if (rqst_rdy xor rqst_req)='0' then
 							setup_rdy <= setup_req;
 							state := s_idle;
 						end if;
-					when s_ack =>
+					end if;
+				end case;
+			end if;
+		end if;
+	end process;
+
+	rqstsetup_p : process (cken, clk)
+		type states is (s_idle, s_data, s_reply);
+		variable state : states;
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (rqst_rdy xor rqst_req)='1' then
+					case state is
+					when s_idle =>
+						rqstdata_req <= not rqstdata_rdy;
+						state := s_data;
+					when s_data =>
+						if rxpidv='0' then
+							if (rqstdata_req xor rqstdata_rdy)='0' then
+								reply_req <= not reply_rdy;
+								state := s_reply;
+							end if;
+						end if;
 					when s_reply =>
+								rqst_rdy <= rqst_req;
 						if (reply_rdy xor reply_req)='0' then
 							rqst_rdy <= rqst_req;
 						end if;
@@ -123,7 +144,55 @@ begin
 		end if;
 	end process;
 
-	getdescriptor_p : process (getdescriptor_rdy, clk)
+	request_p : process (rqst_req, clk)
+		type states is (s_idle, s_rqst);
+		variable state : states;
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (rqst_req xor rqst_rdy)='1' then
+					case state is
+					when s_idle =>
+						if (rqstdata_rdy xor rqstdata_req)='1' then
+							-- for i in request_ids'range loop
+								-- if request(4-1 downto 0)=request_ids(i) then
+									-- rqst_reqs(i) <= not rqst_rdys(i);
+									-- state := s_rqst;
+									-- exit;
+								-- end if;
+								-- if i=request_ids'right then
+									-- rqstdata_rdy <= rqstdata_req;
+								-- end if;
+								-- assert i/=request_ids'right 
+									-- report requests'image(i) 
+									-- severity error;
+							-- end loop;
+							getdescriptor_req <= not getdescriptor_rdy;
+							state := s_rqst;
+						end if;
+					when s_rqst =>
+						-- for i in request_ids'range loop
+							-- if (rqst_rdys(i) xor rqst_reqs(i))='1' then
+								-- exit;
+							-- end if;
+							-- if i=request_ids'right then
+								-- rqstdata_rdy <= rqstdata_req;
+								-- state := s_idle;
+							-- end if;
+						-- end loop;
+						if (getdescriptor_rdy xor getdescriptor_req)='0' then
+							rqstdata_rdy <= rqstdata_req;
+							state := s_idle;
+						end if;
+					end case;
+				else
+					state := s_idle;
+				end if;
+			end if;
+		end if;
+	end process;
+
+	getdescriptor_p : process (clk)
 		type states is (s_idle, s_data);
 		variable state : states;
 		constant descriptor_data   : std_logic_vector := reverse(x"8006000200004000",8);
@@ -137,6 +206,7 @@ begin
 					when s_idle => 
 						descriptor_addr   := 0;
 						descriptor_length := descriptor_data'length-1;
+						state := s_data;
 					when s_data =>
 						if descriptor_length >= 0 then
 							if txbs='0' then

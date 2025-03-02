@@ -144,7 +144,6 @@ begin
 		rxpidv   => phy_rxpidv,
 		rxdv     => phy_rxdv,
 		rxpid    => phy_rxpid,
-		tkdata   => tkdata,
 		rxbs     => phy_rxbs,
 		rxd      => phy_rxd,
 		phyerr   => phyerr,
@@ -159,6 +158,7 @@ begin
 	
 		tx_req    => tx_req,
 		tx_rdy    => tx_rdy,
+		tkdata   => tkdata,
 
 		pkt_txpid => pkt_txpid,
 		pkt_txen  => pkt_txen,

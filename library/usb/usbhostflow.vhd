@@ -42,7 +42,7 @@ entity usbhostflow is
 		rxdv      : in  std_logic;
 		rxbs      : in  std_logic;
 		rxd       : in  std_logic;
-		tkdata    : in  std_logic_vector(0 to 11-1);
+		tkdata    : buffer std_logic_vector(0 to 11-1);
 		phyerr    : in  std_logic;
 		crcerr    : in  std_logic;
 		tkerr     : in  std_logic;
@@ -73,7 +73,7 @@ entity usbhostflow is
 		dev_rxbs  : inout std_logic;
 		dev_rxd   : out std_logic;
 		dev_addr  : in  std_logic_vector(0 to 7-1);
-		dev_endp  : out std_logic_vector(7 to 11-1);
+		dev_endp  : in  std_logic_vector(7 to 11-1);
 		dev_cfgd  : in  std_logic;
 
 		rqst_rxdv : out std_logic;
@@ -127,19 +127,24 @@ begin
 	hosttodev_p : process (clk)
 		type states is (s_idle, s_bulk);
 		variable state : states;
-		variable cntr  : natural range -1 to unsigned_num_bits(tkdata'length)-2;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
+				if (tx_rdy xor tx_req)='0' then
 					if (tksetup_rdy xor tksetup_req)='1' then
 						txpid  <= tk_setup;
 						ddata  <= data0;
 						ddatai <= data0;
 						ddatao <= data0;
-						cntr   := tkdata'length-2;
+						rqst_req <= not rqst_rdy;
+						ctlr_req <= not ctlr_rdy;
 						tx_req <= not tx_rdy;
 						tksetup_rdy <= tksetup_req; 
+					end if;
+					if (tkin_rdy xor tkin_req)='1' then
+						txpid  <= tk_in;
+						tx_req <= not tx_rdy;
+						tkin_rdy <= tkin_req; 
 					end if;
 					if (in_rdy xor in_req)='1' then
 						case tkdata(dev_endp'range) is
@@ -166,7 +171,9 @@ begin
 
 	rxerr <= phyerr or tkerr or crcerr;
 
-	dev_endp <= tkdata(dev_endp'range);
+	tkdata(dev_endp'range) <= dev_endp;
+	tkdata(dev_addr'range) <= dev_addr;
+
 	devtohost_p : process (cken, clk)
 		constant tbit : std_logic_vector(data0'range) := b"1000";
 	begin
@@ -175,42 +182,33 @@ begin
 				if (rx_rdy xor rx_req)='1' then
     				case rxpid is
     				when data0|data1 =>
-						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
-							tkdata(dev_addr'range) = dev_addr then
-							if rxerr='0' then
-								case tkdata(dev_endp'range) is
-								when (dev_endp'range => '0') =>
-									ddata  <= ddata  xor tbit;
-								when others =>
-									ddatao <= ddatao xor tbit;
-								end case;
-								if (setup_rdy xor setup_req)='1' then
-									acktx_req <= not acktx_rdy; 
-								elsif (out_rdy xor out_req)='1' then
-									acktx_req <= not acktx_rdy; 
-								end if;
-								out_rdy   <= out_req;
-								setup_rdy <= setup_req;
+						if rxerr='0' then
+							case tkdata(dev_endp'range) is
+							when (dev_endp'range => '0') =>
+								ddata  <= ddata  xor tbit;
+							when others =>
+								ddatao <= ddatao xor tbit;
+							end case;
+							if (setup_rdy xor setup_req)='1' then
+								acktx_req <= not acktx_rdy; 
+							elsif (out_rdy xor out_req)='1' then
+								acktx_req <= not acktx_rdy; 
 							end if;
+							out_rdy   <= out_req;
+							setup_rdy <= setup_req;
 						end if;
     				when hs_ack =>
-						if tkdata(dev_addr'range)=(dev_addr'range => '0') or
-						   tkdata(dev_addr'range)=dev_addr then
-							if tkdata(dev_endp'range)=(dev_endp'range => '0') then
-								rqstack_req <= not rqstack_rdy;
-							end if;
-						end if;
+						rqstack_req <= not rqstack_rdy;
 						ackrx_req <= not ackrx_rdy;
 						if (status_rdy xor status_req)='1' then
 							ctlr_rdy <= ctlr_req;
 						end if;
 						status_rdy <= status_req;
-						case tkdata(dev_endp'range) is
-						when (dev_endp'range => '0') =>
+						if dev_endp=(dev_endp'range => '0') then
 							ddata <= ddata xor tbit;
-						when others =>
+						else
 							ddatai <= ddatai xor tbit;
-						end case;
+						end if;
     				when others =>
     				end case;
 				end if;
