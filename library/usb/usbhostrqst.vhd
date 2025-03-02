@@ -219,6 +219,7 @@ begin
 							getdescriptor_rdy <= getdescriptor_req;
 							state := s_idle;
 						end if;
+						in_rdy  <= in_req;
 						ack_rdy <= ack_req;
 					end case;
 				else
