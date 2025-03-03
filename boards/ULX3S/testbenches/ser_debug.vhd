@@ -142,6 +142,7 @@ architecture ulx3s_serdebug of testbench is
 
 	signal rst   : std_logic;
 	signal xtal  : std_logic := '0';
+	signal fire1 : std_logic;
 
 	alias  mii_refclk : std_logic is gn(12);
 	alias  mii_txen   : std_logic is gp(12);
@@ -170,9 +171,11 @@ begin
 		mii_txen  => mii_txen,
 		mii_txd   => mii_txd); 
 
+	fire1 <= '0', '1' after 1 us;
 	du_e : ulx3s
 	port map (
 		clk_25mhz => xtal,
+		fire1 => fire1,
 		gp         => gp,
 		gn         => gn,
 		ftdi_txd  => ftdi_txd);

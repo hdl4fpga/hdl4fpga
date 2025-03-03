@@ -41,8 +41,8 @@ entity usbhost is
 		clk  : in  std_logic;
 		cken : buffer std_logic;
 
-		dev_addr : buffer std_logic_vector(0 to 7-1);
-		dev_endp : buffer std_logic_vector(0 to 4-1);
+		dev_addr : in std_logic_vector(0 to 7-1) := (others => '0');
+		dev_endp : in std_logic_vector(0 to 4-1) := (others => '0');
 		dev_cfgd : buffer std_logic;
 		setup_req : in std_logic;
 		setup_rdy : buffer std_logic;
@@ -169,7 +169,7 @@ begin
 		phy_txbs  => phy_txbs,
 		phy_txd   => phy_txd);
 
-	usbdevflow_e : entity hdl4fpga.usbhostflow
+	usbflow_e : entity hdl4fpga.usbhostflow
 	port map (
 		tp        => tp_rqst,
 

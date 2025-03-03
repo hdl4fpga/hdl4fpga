@@ -35,7 +35,7 @@ entity usbpkt_tx is
 
 		tkdata    : in  std_logic_vector(0 to 11-1) := (others => '-');
 		tx_req    : in  std_logic;
-		tx_rdy    : buffer std_logic;
+		tx_rdy    : buffer std_logic := '0';
 
 		pkt_txpid : in  std_logic_vector(4-1 downto 0);
 		pkt_txen  : in  std_logic :='0';

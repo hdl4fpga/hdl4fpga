@@ -112,8 +112,6 @@ begin
 
 		signal tp   : std_logic_vector(1 to 32);
 	begin
-		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
-		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 		usb_fpga_dp    <= 'Z';-- when up='0' else '0';
 		usb_fpga_dn    <= 'Z';-- when up='0' else '0';
 		usb_fpga_bd_dp <= 'Z';
@@ -124,6 +122,8 @@ begin
 		txd  <= rxd;
 
 		usbdev_g : if false generate
+			usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
+			usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
     		usbdev_e : entity hdl4fpga.usbdev
     		generic map (
     			oversampling => usb_oversampling)
@@ -148,10 +148,10 @@ begin
 		begin
 			process (videoio_clk)
 				variable rst : bit;
-				variable ena : bit;
+				variable ena : bit := '1';
 			begin
 				if rising_edge(videoio_clk) then
-					if left='1' then
+					if fire2='1' then
 						ena := '1';
 					elsif fire1='1' then
 						if ena='1' then
@@ -162,6 +162,8 @@ begin
 				end if;
 			end process;
 
+			usb_fpga_pu_dp <= '0'; -- D+ pullup for USB1.1 host mode
+			usb_fpga_pu_dn <= '0'; -- D- no pullup for USB1.1 host mode
     		usbhost_e : entity hdl4fpga.usbhost
     		generic map (
     			oversampling => usb_oversampling)
@@ -180,9 +182,13 @@ begin
     			rxdv => rxdv, 
     			rxbs => rxbs,
     			rxd  => rxd);
+			led(0) <= usb_fpga_dp;
+			led(1) <= usb_fpga_dn;
+			led(6) <= not usb_fpga_dp;
+			-- led(7) <= not usb_fpga_dn;
 		end generate;
 			
-		fltr_on <= '0'; --not up;
+		fltr_on <= not up;
 		usbfltrsof_e : entity hdl4fpga.usbfltr_sof
 		port map (
 			usb_clk  => videoio_clk,
@@ -200,9 +206,9 @@ begin
 		ser_irdy    <= not fltr_bs;
 		ser_data(0) <= fltr_d;
 
-		led(4) <= tp(4);
-		led(3) <= tp(5);
-		led(2) <= cfgd;
+		-- led(4) <= tp(4);
+		-- led(3) <= tp(5);
+		-- led(2) <= cfgd;
 	end generate;
 
 	hdlc_g : if io_link=io_hdlc generate
@@ -315,8 +321,8 @@ begin
 		begin
 			if rising_edge(rmii_crsdv) then
 				q := not q;
-				led(6) <= q;
-				led(7) <= not q;
+				-- led(6) <= q;
+				-- led(7) <= not q;
 			end if;
 		end process;
 
@@ -325,8 +331,8 @@ begin
 		begin
 			if rising_edge(rmii_nintclk) then
 				q := not q;
-				led(0) <= q;
-				led(1) <= not q;
+				-- led(0) <= q;
+				-- led(1) <= not q;
 			end if;
 		end process;
 

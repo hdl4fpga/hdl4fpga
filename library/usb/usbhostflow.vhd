@@ -47,7 +47,7 @@ entity usbhostflow is
 		crcerr    : in  std_logic;
 		tkerr     : in  std_logic;
 
-		tx_req    : buffer std_logic;
+		tx_req    : buffer std_logic := '0';
 		tx_rdy    : in  std_logic;
 		txpid     : out std_logic_vector(4-1 downto 0);
 		txen      : buffer std_logic;
@@ -60,8 +60,8 @@ entity usbhostflow is
 		tkin_rdy : buffer bit;
 		rqst_req    : buffer bit;
 		rqst_rdy    : in  bit;
-		rqstin_req  : in  bit;
-		rqstin_rdy  : buffer  bit;
+		rqstin_req  : buffer  bit;
+		rqstin_rdy  : in  bit;
 		rqstack_req : buffer  bit;
 		rqstack_rdy : in  bit;
 
@@ -131,39 +131,46 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (tx_rdy xor tx_req)='0' then
-					if (tksetup_rdy xor tksetup_req)='1' then
-						txpid  <= tk_setup;
-						ddata  <= data0;
-						ddatai <= data0;
-						ddatao <= data0;
-						rqst_req <= not rqst_rdy;
-						ctlr_req <= not ctlr_rdy;
-						tx_req <= not tx_rdy;
-						tksetup_rdy <= tksetup_req; 
-					end if;
-					if (tkin_rdy xor tkin_req)='1' then
-						txpid  <= tk_in;
-						tx_req <= not tx_rdy;
-						tkin_rdy <= tkin_req; 
-					end if;
-					if (in_rdy xor in_req)='1' then
+					case state is
+					when s_idle =>
+						if (tksetup_rdy xor tksetup_req)='1' then
+							txpid  <= tk_setup;
+							ddata  <= data0;
+							ddatai <= data0;
+							ddatao <= data0;
+							rqst_req <= not rqst_rdy;
+							ctlr_req <= not ctlr_rdy;
+							tx_req   <= not tx_rdy;
+							rqstin_req <= not rqstin_rdy;
+							tksetup_rdy <= tksetup_req; 
+							state := s_bulk;
+						end if;
+						if (tkin_rdy xor tkin_req)='1' then
+							txpid  <= tk_in;
+							tx_req <= not tx_rdy;
+							tkin_rdy <= tkin_req; 
+							rqstin_req <= not rqstin_rdy;
+							state := s_bulk;
+						end if;
+						if (acktx_rdy xor acktx_req)='1' then
+							txpid   <= hs_ack;
+							tx_req  <= not to_stdulogic(to_bit(tx_rdy));
+							acktx_rdy <= acktx_req;
+						end if;
+					when s_bulk =>
+						in_req <= not in_rdy;
 						case tkdata(dev_endp'range) is
 						when (dev_endp'range => '0') =>
 							txpid  <= ddata;
 						when others =>
 							txpid  <= ddatai;
 						end case;
-						tx_req  <= not tx_rdy;
+						tx_req <= not tx_rdy;
 						if txen='0' then
 							status_req <= not status_rdy;
 						end if;
-						in_rdy <= in_req;
-					end if;
-					if (acktx_rdy xor acktx_req)='1' then
-						txpid   <= hs_ack;
-						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
-						acktx_rdy <= acktx_req;
-					end if;
+						state := s_idle;
+					end case;
 				end if;
 			end if;
 		end if;
@@ -183,12 +190,12 @@ begin
     				case rxpid is
     				when data0|data1 =>
 						if rxerr='0' then
-							case tkdata(dev_endp'range) is
-							when (dev_endp'range => '0') =>
-								ddata  <= ddata  xor tbit;
-							when others =>
-								ddatao <= ddatao xor tbit;
-							end case;
+							-- case tkdata(dev_endp'range) is
+							-- when (dev_endp'range => '0') =>
+								-- ddata  <= ddata  xor tbit;
+							-- when others =>
+								-- ddatao <= ddatao xor tbit;
+							-- end case;
 							if (setup_rdy xor setup_req)='1' then
 								acktx_req <= not acktx_rdy; 
 							elsif (out_rdy xor out_req)='1' then
@@ -204,11 +211,11 @@ begin
 							ctlr_rdy <= ctlr_req;
 						end if;
 						status_rdy <= status_req;
-						if dev_endp=(dev_endp'range => '0') then
-							ddata <= ddata xor tbit;
-						else
-							ddatai <= ddatai xor tbit;
-						end if;
+						-- if dev_endp=(dev_endp'range => '0') then
+							-- ddata <= ddata xor tbit;
+						-- else
+							-- ddatai <= ddatai xor tbit;
+						-- end if;
     				when others =>
     				end case;
 				end if;
@@ -236,8 +243,8 @@ begin
 					pin  := (others => '0');
 					pout := (others => '0');
 					ackrx_rdy <= ackrx_req;
-				elsif (in_rdy xor in_req)='1' then
-					pout := (others => '0');
+				-- elsif (in_rdy xor in_req)='1' then
+					-- pout := (others => '0');
 				elsif pout(byte_range) /= pin(byte_range) then
 					if txbs='0' then
 						pout := pout + 1;
