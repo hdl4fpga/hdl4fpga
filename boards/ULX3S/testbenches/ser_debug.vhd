@@ -1,23 +1,23 @@
--- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
---                                                                                 --
--- Permission is hereby granted, free of charge, to any person obtaining a copy of --
--- this software and associated documentation files (the "Software"), to deal in   --
--- the Software without restriction, including without limitation the rights to    --
--- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
--- of the Software, and to permit persons to whom the Software is furnished to do  --
--- so, subject to the following conditions:                                        --
---                                                                                 --
--- The above copyright notice and this permission notice shall be included in all  --
--- copies or substantial portions of the Software.                                 --
---                                                                                 --
--- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
--- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
--- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
--- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
--- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
--- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
--- SOFTWARE.                                                                       --
---                                                                                 --
+-- Copyright (c) 2015 Miguel Angel Sagreras                                       --
+--                                                                                --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy   --
+-- of this software and associated documentation files (the "Software"), to deal  --
+-- in the Software without restriction, including without limitation the rights   --
+-- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell      --
+-- copies of the Software, and to permit persons to whom the Software is          --
+-- furnished to do so, subject to the following conditions:                       --
+--                                                                                --
+-- The above copyright notice and this permission notice shall be included in all --
+-- copies or substantial portions of the Software.                                --
+--                                                                                --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,       --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE    --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER         --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  --
+-- SOFTWARE.                                                                      --
+--                                                                                --
 
 library hdl4fpga;
 use hdl4fpga.base.all;
@@ -142,6 +142,7 @@ architecture ulx3s_serdebug of testbench is
 
 	signal rst   : std_logic;
 	signal xtal  : std_logic := '0';
+	signal fire1 : std_logic;
 
 	alias  mii_refclk : std_logic is gn(12);
 	alias  mii_txen   : std_logic is gp(12);
@@ -170,12 +171,13 @@ begin
 		mii_txen  => mii_txen,
 		mii_txd   => mii_txd); 
 
+	fire1 <= '0', '1' after 1 us;
 	du_e : ulx3s
 	port map (
 		clk_25mhz => xtal,
+		fire1 => fire1,
 		gp         => gp,
 		gn         => gn,
 		ftdi_txd  => ftdi_txd);
 
 end;
-

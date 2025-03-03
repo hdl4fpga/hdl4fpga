@@ -27,65 +27,11 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.usbpkg.all;
 
-entity usbdev is
+entity usbhost is
    	generic (
 		oversampling  : natural := 0;
 		watermark     : natural := 0;
-		bit_stuffing  : natural := 6;
-		device_dscptr : std_logic_vector := (
-			reverse(x"12")    & -- bLength
-			reverse(decriptortypes_ids(device)) & -- bDescriptorType
-			reverse(x"0110")  & -- bcdUSB
-			reverse(x"00")    & -- bDeviceClass
-			reverse(x"00")    & -- bDeviceSubClass
-			reverse(x"00")    & -- bDeviceProtocol
-			reverse(x"40")    & -- bMaxPacketSize0
-			reverse(x"1234")  & -- idVendor
-			reverse(x"abcd")  & -- idProduct
-			reverse(x"0100")  & -- bcdDevice
-			reverse(x"01")    & -- iManufacturer
-			reverse(x"00")    & -- iProduct
-			reverse(x"00")    & -- iSerialNumber
-			reverse(x"01"));    -- bNumConfigurations
-		config_dscptr : std_logic_vector := (
-			reverse(x"09")    & -- bLength
-			reverse(decriptortypes_ids(config)) & -- bDescriptorType
-			reverse(x"0020")  & -- wTotalLength
-			reverse(x"01")    & -- bNumInterfaces
-			reverse(x"01")    & -- bConfigurationValue
-			reverse(x"00")    & -- iConfiguration
-			reverse(x"c0")    & -- bmAttribute
-			reverse(x"32"));    -- MaxPower
-		string_dscptr : std_logic_vector := (
-			reverse(x"04")    & 
-			reverse(decriptortypes_ids(hdl4fpga.usbpkg.string)) & -- bDescriptorType
-			reverse(x"0409")  &
-			reverse(x"12")    & 
-			reverse(decriptortypes_ids(hdl4fpga.usbpkg.string)) & -- bDescriptorType
-			reverse(to_utf16("HDL4FPGA"),16));
-		interface_dscptr : std_logic_vector := (
-			reverse(x"09")    & -- bLength
-			reverse(decriptortypes_ids(interface)) & -- bDescriptorType
-			reverse(x"00")    & -- bInterfaceNumber
-			reverse(x"00")    & -- bAlternateSetting
-			reverse(x"02")    & -- bNumEndpoints
-			reverse(x"00")    & -- bInterfaceClass
-			reverse(x"00")    & -- bInterfaceSubClass
-			reverse(x"00")    & -- bIntefaceProtocol
-			reverse(x"00"));    -- iInterface
-		endpoint_dscptr : std_logic_vector := (
-			reverse(x"07")    & -- bLength
-			reverse(decriptortypes_ids(endpoint)) & -- bDescriptorType
-			reverse(x"01")    & -- bEndpointAddress
-			reverse(x"02")    & -- bmAttibutes
-			reverse(x"0040")  & -- wMaxPacketSize
-			reverse(x"00")    & -- bInterval
-			reverse(x"07")    & -- bLength
-			reverse(decriptortypes_ids(endpoint)) & -- bDescriptorType
-			reverse(x"81")    & -- bEndpointAddress
-			reverse(x"02")    & -- bmAttibutes
-			reverse(x"0040")  & -- wMaxPacketSize
-			reverse(x"00")));   -- Interval
+		bit_stuffing  : natural := 6);
 	port (
 		tp   : out std_logic_vector(1 to 32);
 
@@ -95,9 +41,11 @@ entity usbdev is
 		clk  : in  std_logic;
 		cken : buffer std_logic;
 
-		dev_addr : buffer std_logic_vector(0 to 7-1);
-		dev_endp : buffer std_logic_vector(0 to 4-1);
+		dev_addr : in std_logic_vector(0 to 7-1) := (others => '0');
+		dev_endp : in std_logic_vector(0 to 4-1) := (others => '0');
 		dev_cfgd : buffer std_logic;
+		setup_req : in std_logic;
+		setup_rdy : buffer std_logic;
 
 		txen : in  std_logic := '-';
 		txbs : out std_logic;
@@ -108,7 +56,7 @@ entity usbdev is
 		rxd  : out std_logic);
 end;
 
-architecture def of usbdev is
+architecture def of usbhost is
 	signal tx_req    : std_logic := '0';
 	signal tx_rdy    : std_logic := '0';
 	signal pkt_txpid : std_logic_vector(4-1 downto 0);
@@ -144,6 +92,11 @@ architecture def of usbdev is
 	signal rqstin_rdy  : bit;
 	signal rqstack_req : bit;
 	signal rqstack_rdy : bit;
+
+	signal tksetup_req : bit;
+	signal tksetup_rdy : bit;
+	signal tkin_req    : bit;
+	signal tkin_rdy    : bit;
 
 	signal tkdata    : std_logic_vector(0 to 11-1);
 
@@ -191,7 +144,6 @@ begin
 		rxpidv   => phy_rxpidv,
 		rxdv     => phy_rxdv,
 		rxpid    => phy_rxpid,
-		tkdata   => tkdata,
 		rxbs     => phy_rxbs,
 		rxd      => phy_rxd,
 		phyerr   => phyerr,
@@ -206,6 +158,7 @@ begin
 	
 		tx_req    => tx_req,
 		tx_rdy    => tx_rdy,
+		tkdata   => tkdata,
 
 		pkt_txpid => pkt_txpid,
 		pkt_txen  => pkt_txen,
@@ -216,12 +169,16 @@ begin
 		phy_txbs  => phy_txbs,
 		phy_txd   => phy_txd);
 
-	usbdevflow_e : entity hdl4fpga.usbdevflow
+	usbflow_e : entity hdl4fpga.usbhostflow
 	port map (
 		tp        => tp_rqst,
 
 		clk       => clk,
 		cken      => cken,
+		tksetup_req => tksetup_req,
+		tksetup_rdy => tksetup_rdy,
+		tkin_req => tkin_req,
+		tkin_rdy => tkin_rdy,
 
 		rx_req    => rx_req,
 		rx_rdy    => rx_rdy,
@@ -266,16 +223,17 @@ begin
 		rqst_txbs => rqst_txbs,
 		rqst_txd  => rqst_txd);
 
-	usbrqst_e : entity hdl4fpga.usbdevrqst
-	generic map (
-		device_dscptr    => device_dscptr,
-		config_dscptr    => config_dscptr,  
-		interface_dscptr => interface_dscptr,
-		endpoint_dscptr  => endpoint_dscptr,
-		string_dscptr    => string_dscptr)
+	usbrqst_e : entity hdl4fpga.usbhostrqst
 	port map (
 		clk       => clk,
 		cken      => cken,
+
+		setup_req => setup_req,
+		setup_rdy => setup_rdy,
+		tksetup_req => tksetup_req,
+		tksetup_rdy => tksetup_rdy,
+		tkin_req => tkin_req,
+		tkin_rdy => tkin_rdy,
 
 		dev_addr  => dev_addr,
 		dev_cfgd  => dev_cfgd,

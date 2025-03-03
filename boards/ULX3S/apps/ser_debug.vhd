@@ -1,23 +1,23 @@
--- Copyright (c) <2015> <Miguel Angel Sagreras>                                    --
---                                                                                 --
--- Permission is hereby granted, free of charge, to any person obtaining a copy of --
--- this software and associated documentation files (the "Software"), to deal in   --
--- the Software without restriction, including without limitation the rights to    --
--- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   --
--- of the Software, and to permit persons to whom the Software is furnished to do  --
--- so, subject to the following conditions:                                        --
---                                                                                 --
--- The above copyright notice and this permission notice shall be included in all  --
--- copies or substantial portions of the Software.                                 --
---                                                                                 --
--- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    --
--- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        --
--- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     --
--- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          --
--- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   --
--- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   --
--- SOFTWARE.                                                                       --
---                                                                                 --
+-- Copyright (c) 2015 Miguel Angel Sagreras                                       --
+--                                                                                --
+-- Permission is hereby granted, free of charge, to any person obtaining a copy   --
+-- of this software and associated documentation files (the "Software"), to deal  --
+-- in the Software without restriction, including without limitation the rights   --
+-- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell      --
+-- copies of the Software, and to permit persons to whom the Software is          --
+-- furnished to do so, subject to the following conditions:                       --
+--                                                                                --
+-- The above copyright notice and this permission notice shall be included in all --
+-- copies or substantial portions of the Software.                                --
+--                                                                                --
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     --
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,       --
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE    --
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER         --
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  --
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  --
+-- SOFTWARE.                                                                      --
+--                                                                                --
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -112,8 +112,6 @@ begin
 
 		signal tp   : std_logic_vector(1 to 32);
 	begin
-		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
-		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 		usb_fpga_dp    <= 'Z';-- when up='0' else '0';
 		usb_fpga_dn    <= 'Z';-- when up='0' else '0';
 		usb_fpga_bd_dp <= 'Z';
@@ -122,24 +120,85 @@ begin
 		txen <= rxdv;
 		rxbs <= txbs;
 		txd  <= rxd;
-		usbphy_e : entity hdl4fpga.usbdev
-		generic map (
-			oversampling => usb_oversampling)
-		port map (
-			tp   => tp,
-			dp   => usb_fpga_dp,
-			dn   => usb_fpga_dn,
-			clk  => videoio_clk,
-			dev_cfgd => cfgd,
-			cken => cken,
-			txen => txen, 
-			txbs => txbs,
-			txd  => txd,
-			rxdv => rxdv, 
-			rxbs => rxbs,
-			rxd  => rxd);
+
+		usbdev_g : if false generate
+			usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
+			usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
+    		usbdev_e : entity hdl4fpga.usbdev
+    		generic map (
+    			oversampling => usb_oversampling)
+    		port map (
+    			tp   => tp,
+    			dp   => usb_fpga_dp,
+    			dn   => usb_fpga_dn,
+    			clk  => videoio_clk,
+    			dev_cfgd => cfgd,
+    			cken => cken,
+    			txen => txen, 
+    			txbs => txbs,
+    			txd  => txd,
+    			rxdv => rxdv, 
+    			rxbs => rxbs,
+    			rxd  => rxd);
+		end generate;
 			
-		fltr_on <= not up;
+		usbhost_g : if true generate
+			signal setup_req : std_logic := '0';
+			signal setup_rdy : std_logic := '0';
+		begin
+			process (videoio_clk)
+				variable rst : bit;
+				variable ena : bit := '1';
+			begin
+				if rising_edge(videoio_clk) then
+					if fire2='1' then
+						ena := '1';
+					elsif fire1='1' then
+						if ena='1' then
+							setup_req <= not setup_rdy;
+						end if;
+						ena := '0';
+					end if;
+				end if;
+			end process;
+
+			usb_fpga_pu_dp <= '0'; -- D+ pullup for USB1.1 host mode
+			usb_fpga_pu_dn <= '0'; -- D- no pullup for USB1.1 host mode
+    		usbhost_e : entity hdl4fpga.usbhost
+    		generic map (
+    			oversampling => usb_oversampling)
+    		port map (
+    			tp   => tp,
+    			dp   => usb_fpga_dp,
+    			dn   => usb_fpga_dn,
+    			clk  => videoio_clk,
+    			dev_cfgd => cfgd,
+				setup_req => setup_req,
+				setup_rdy => setup_rdy,
+    			cken => cken,
+    			txen => txen, 
+    			txbs => txbs,
+    			txd  => txd,
+    			rxdv => rxdv, 
+    			rxbs => rxbs,
+    			rxd  => rxd);
+			led(0) <= usb_fpga_dp;
+			led(1) <= usb_fpga_dn;
+			led(6) <= not usb_fpga_dp;
+			-- led(7) <= not usb_fpga_dn;
+		end generate;
+			
+		process (videoio_clk)
+		begin
+			if rising_edge(videoio_clk) then
+				if up='1' then
+					fltr_on <= '1';
+				elsif down='1' then
+					fltr_on <= '0';
+				end if;
+			end if;
+		end process;
+
 		usbfltrsof_e : entity hdl4fpga.usbfltr_sof
 		port map (
 			usb_clk  => videoio_clk,
@@ -157,9 +216,9 @@ begin
 		ser_irdy    <= not fltr_bs;
 		ser_data(0) <= fltr_d;
 
-		led(4) <= tp(4);
-		led(3) <= tp(5);
-		led(2) <= cfgd;
+		-- led(4) <= tp(4);
+		-- led(3) <= tp(5);
+		-- led(2) <= cfgd;
 	end generate;
 
 	hdlc_g : if io_link=io_hdlc generate
@@ -272,8 +331,8 @@ begin
 		begin
 			if rising_edge(rmii_crsdv) then
 				q := not q;
-				led(6) <= q;
-				led(7) <= not q;
+				-- led(6) <= q;
+				-- led(7) <= not q;
 			end if;
 		end process;
 
@@ -282,8 +341,8 @@ begin
 		begin
 			if rising_edge(rmii_nintclk) then
 				q := not q;
-				led(0) <= q;
-				led(1) <= not q;
+				-- led(0) <= q;
+				-- led(1) <= not q;
 			end if;
 		end process;
 
@@ -318,4 +377,3 @@ begin
 	end generate;
 
 end;
-

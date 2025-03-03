@@ -1,23 +1,23 @@
-# Copyright (c) <2015> <Miguel Angel Sagreras>                                    #
-#                                                                                 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy of #
-# this software and associated documentation files (the "Software"), to deal in   #
-# the Software without restriction, including without limitation the rights to    #
-# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies   #
-# of the Software, and to permit persons to whom the Software is furnished to do  #
-# so, subject to the following conditions:                                        #
-#                                                                                 #
-# The above copyright notice and this permission notice shall be included in all  #
-# copies or substantial portions of the Software.                                 #
-#                                                                                 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR i    #
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        #
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     #
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          #
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   #
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   #
-# SOFTWARE.                                                                       #
-#                                                                                 #
+# Copyright (c) 2015 Miguel Angel Sagreras                                       #
+#                                                                                #
+# Permission is hereby granted, free of charge, to any person obtaining a copy   #
+# of this software and associated documentation files (the "Software"), to deal  #
+# in the Software without restriction, including without limitation the rights   #
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell      #
+# copies of the Software, and to permit persons to whom the Software is          #
+# furnished to do so, subject to the following conditions:                       #
+#                                                                                #
+# The above copyright notice and this permission notice shall be included in all #
+# copies or substantial portions of the Software.                                #
+#                                                                                #
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,       #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE    #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER         #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  #
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  #
+# SOFTWARE.                                                                      #
+#                                                                                #
 
 create_clock -name sys_clk    -period 10 -waveform { 0.0  5.0 } [ get_ports gclk100    ]
 
@@ -111,4 +111,3 @@ set_property -dict { PACKAGE_PIN E2  IOSTANDARD LVCMOS18 } [get_ports { jd[7] }]
 set_property -dict { PACKAGE_PIN D2  IOSTANDARD LVCMOS18 } [get_ports { jd[8] }];
 set_property -dict { PACKAGE_PIN H2  IOSTANDARD LVCMOS18 } [get_ports { jd[9] }];
 set_property -dict { PACKAGE_PIN G2  IOSTANDARD LVCMOS18 } [get_ports { jd[10] }];
-

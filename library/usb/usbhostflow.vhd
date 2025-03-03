@@ -27,7 +27,7 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.usbpkg.all;
 
-entity usbdevflow is
+entity usbhostflow is
 	generic (
 		rxbuffer  : boolean := true;
 		txbuffer  : boolean := true);
@@ -42,18 +42,22 @@ entity usbdevflow is
 		rxdv      : in  std_logic;
 		rxbs      : in  std_logic;
 		rxd       : in  std_logic;
-		tkdata    : in  std_logic_vector(0 to 11-1);
+		tkdata    : buffer std_logic_vector(11-1 downto 0);
 		phyerr    : in  std_logic;
 		crcerr    : in  std_logic;
 		tkerr     : in  std_logic;
 
-		tx_req    : buffer std_logic;
+		tx_req    : buffer std_logic := '0';
 		tx_rdy    : in  std_logic;
 		txpid     : out std_logic_vector(4-1 downto 0);
 		txen      : buffer std_logic;
 		txbs      : in  std_logic;
 		txd       : buffer std_logic;
 
+		tksetup_req : in bit;
+		tksetup_rdy : buffer bit;
+		tkin_req : in  bit;
+		tkin_rdy : buffer bit;
 		rqst_req    : buffer bit;
 		rqst_rdy    : in  bit;
 		rqstin_req  : buffer  bit;
@@ -68,8 +72,8 @@ entity usbdevflow is
 		dev_rxdv  : out std_logic;
 		dev_rxbs  : inout std_logic;
 		dev_rxd   : out std_logic;
-		dev_addr  : in  std_logic_vector(0 to 7-1);
-		dev_endp  : out std_logic_vector(7 to 11-1);
+		dev_addr  : in  std_logic_vector(7-1 downto 0);
+		dev_endp  : in  std_logic_vector(11-1 downto 7);
 		dev_cfgd  : in  std_logic;
 
 		rqst_rxdv : out std_logic;
@@ -80,7 +84,7 @@ entity usbdevflow is
 		rqst_txd  : in  std_logic);
 end;
 
-architecture def of usbdevflow is
+architecture def of usbhostflow is
 
 	signal requesttype : std_logic_vector( 8-1 downto 0);
 	signal value       : std_logic_vector(16-1 downto 0);
@@ -89,8 +93,8 @@ architecture def of usbdevflow is
 
 	signal ctlr_req    : bit;
 	signal ctlr_rdy    : bit;
-	signal stus_req    : bit;
-	signal stus_rdy    : bit;
+	signal status_req  : bit;
+	signal status_rdy  : bit;
 	signal setup_req   : bit;
 	signal setup_rdy   : bit;
 	signal out_req     : bit;
@@ -117,120 +121,131 @@ architecture def of usbdevflow is
 	signal ddatai      : std_logic_vector(data0'range);
 
 	signal rxerr       : std_logic;
+	signal sof_number  : unsigned(tkdata'range);
+
+	signal tksof_req  : bit;
+	signal tksof_rdy  : bit;
 
 begin
 
-	rxerr <= phyerr or tkerr or crcerr;
-
-	dev_endp <= tkdata(dev_endp'range);
-	hosttodev_p : process (cken, clk)
-		constant tbit : std_logic_vector(data0'range) := b"1000";
+	softimer_p : process(tksof_req ,clk)
+		constant max_count: natural := natural(12.0e6*1.0e-3);
+		variable timer : integer range -1 to max_count;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (rx_rdy xor rx_req)='1' then
-    				case rxpid is
-    				when tk_setup =>
-						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
-						   tkdata(dev_addr'range) = dev_addr then
-							if (setup_req xor setup_rdy)='0' then
-								ddata     <= data0;
-								ddatai    <= data0;
-								ddatao    <= data0;
-								rqst_req  <= not rqst_rdy;
-								ctlr_req  <= not ctlr_rdy;
-							end if;
-							setup_req <= not setup_rdy;
-    					end if;
-    				when tk_in =>
-						if tkdata(dev_addr'range)=(dev_addr'range => '0') or
-						   tkdata(dev_addr'range)=dev_addr then
-							if (in_req xor in_rdy)='0' then
-								if tkdata(dev_endp'range)=(dev_endp'range => '0') then
-									if not txbuffer then
-										rqstin_req <= not rqstin_rdy;
-									end if;
-								end if;
-							end if;
-							in_req <= not in_rdy;
-    					end if;
-    				when tk_out=>
-						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
-							tkdata(dev_addr'range) = dev_addr then
-							out_req <= not out_rdy;
-    					end if;
-    				when data0|data1 =>
-						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
-						   tkdata(dev_addr'range) = dev_addr then
-							if rxerr='0' then
-								case tkdata(dev_endp'range) is
-								when (dev_endp'range => '0') =>
-									ddata  <= ddata  xor tbit;
-								when others =>
-									ddatao <= ddatao xor tbit;
-								end case;
-								if (setup_rdy xor setup_req)='1' then
-									acktx_req <= not acktx_rdy; 
-								elsif (out_rdy xor out_req)='1' then
-									acktx_req <= not acktx_rdy; 
-								end if;
-								out_rdy   <= out_req;
-								setup_rdy <= setup_req;
-							end if;
-						end if;
-    				when hs_ack =>
-						if tkdata(dev_addr'range)=(dev_addr'range => '0') or
-						   tkdata(dev_addr'range)=dev_addr then
-							if tkdata(dev_endp'range)=(dev_endp'range => '0') then
-								rqstack_req <= not rqstack_rdy;
-							end if;
-						end if;
-						ackrx_req <= not ackrx_rdy;
-						if (stus_rdy xor stus_req)='1' then
-							ctlr_rdy <= ctlr_req;
-						end if;
-						stus_rdy <= stus_req;
-						case tkdata(dev_endp'range) is
-						when (dev_endp'range => '0') =>
-							ddata <= ddata xor tbit;
-						when others =>
-							ddatai <= ddatai xor tbit;
-						end case;
-    				when others =>
-    				end case;
+				if timer < 0 then
+					timer      := max_count;
+					sof_number <= sof_number + 1;
+					tksof_req  <= not tksof_rdy;
+				else
+					timer := timer - 1;
 				end if;
-				rx_rdy <= to_stdulogic(to_bit(rx_req));
 			end if;
 		end if;
 	end process;
 
-	devtohost_p : process (clk)
+	hosttodev_p : process (clk)
 		type states is (s_idle, s_bulk);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
-					if (in_rdy xor in_req)='1' then
+				if (tx_rdy xor tx_req)='0' then
+					case state is
+					when s_idle =>
+						if (tksof_rdy xor tksof_req)='1' then
+							txpid  <= tk_sof;
+							tkdata <= to_stdlogicvector(bit_vector(sof_number));
+							tksof_rdy <= tksof_req;
+							tx_req <= not tx_rdy;
+						elsif (tksetup_rdy xor tksetup_req)='1' then
+							txpid  <= tk_setup;
+							ddata  <= data0;
+							ddatai <= data0;
+							ddatao <= data0;
+							tkdata(dev_endp'range) <= dev_endp;
+							tkdata(dev_addr'range) <= dev_addr;
+							rqst_req    <= not rqst_rdy;
+							ctlr_req    <= not ctlr_rdy;
+							rqstin_req  <= not rqstin_rdy;
+							tksetup_rdy <= tksetup_req; 
+							tx_req      <= not tx_rdy;
+							state := s_bulk;
+						elsif (tkin_rdy xor tkin_req)='1' then
+							txpid  <= tk_in;
+							tx_req <= not tx_rdy;
+							tkin_rdy <= tkin_req; 
+							rqstin_req <= not rqstin_rdy;
+							tkdata(dev_endp'range) <= dev_endp;
+							tkdata(dev_addr'range) <= dev_addr;
+							state := s_bulk;
+						elsif (acktx_rdy xor acktx_req)='1' then
+							txpid   <= hs_ack;
+							tx_req  <= not to_stdulogic(to_bit(tx_rdy));
+							acktx_rdy <= acktx_req;
+						end if;
+					when s_bulk =>
+						in_req <= not in_rdy;
 						case tkdata(dev_endp'range) is
 						when (dev_endp'range => '0') =>
 							txpid  <= ddata;
 						when others =>
 							txpid  <= ddatai;
 						end case;
-						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
+						tx_req <= not tx_rdy;
 						if txen='0' then
-							stus_req <= not stus_rdy;
+							status_req <= not status_rdy;
 						end if;
-						in_rdy <= in_req;
-					end if;
-					if (acktx_rdy xor acktx_req)='1' then
-							txpid   <= hs_ack;
-							tx_req  <= not to_stdulogic(to_bit(tx_rdy));
-						-- end if;
-						acktx_rdy <= acktx_req;
-					end if;
+						state := s_idle;
+					end case;
 				end if;
+			end if;
+		end if;
+	end process;
+
+	rxerr <= phyerr or tkerr or crcerr;
+
+
+	devtohost_p : process (cken, clk)
+		constant tbit : std_logic_vector(data0'range) := b"1000";
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (rx_rdy xor rx_req)='1' then
+    				case rxpid is
+    				when data0|data1 =>
+						if rxerr='0' then
+							-- case tkdata(dev_endp'range) is
+							-- when (dev_endp'range => '0') =>
+								-- ddata  <= ddata  xor tbit;
+							-- when others =>
+								-- ddatao <= ddatao xor tbit;
+							-- end case;
+							if (setup_rdy xor setup_req)='1' then
+								acktx_req <= not acktx_rdy; 
+							elsif (out_rdy xor out_req)='1' then
+								acktx_req <= not acktx_rdy; 
+							end if;
+							out_rdy   <= out_req;
+							setup_rdy <= setup_req;
+						end if;
+    				when hs_ack =>
+						rqstack_req <= not rqstack_rdy;
+						ackrx_req <= not ackrx_rdy;
+						if (status_rdy xor status_req)='1' then
+							ctlr_rdy <= ctlr_req;
+						end if;
+						status_rdy <= status_req;
+						-- if dev_endp=(dev_endp'range => '0') then
+							-- ddata <= ddata xor tbit;
+						-- else
+							-- ddatai <= ddatai xor tbit;
+						-- end if;
+    				when others =>
+    				end case;
+				end if;
+				rx_rdy <= rx_req;
 			end if;
 		end if;
 	end process;
@@ -254,8 +269,8 @@ begin
 					pin  := (others => '0');
 					pout := (others => '0');
 					ackrx_rdy <= ackrx_req;
-				elsif (in_rdy xor in_req)='1' then
-					pout := (others => '0');
+				-- elsif (in_rdy xor in_req)='1' then
+					-- pout := (others => '0');
 				elsif pout(byte_range) /= pin(byte_range) then
 					if txbs='0' then
 						pout := pout + 1;
@@ -407,15 +422,4 @@ begin
 		clpcrc_rxbs when tkdata(dev_addr'range)=dev_addr and tkdata(dev_endp'range)/=(dev_endp'range => '0') else
 		'1';
 		
-	tp(1)  <= to_stdulogic(setup_req);
-	tp(2)  <= to_stdulogic(setup_rdy);
-	tp(3)  <= to_stdulogic(out_req);
-	tp(4)  <= to_stdulogic(out_rdy);
-	tp(5)  <= to_stdulogic(in_req);
-	tp(6)  <= to_stdulogic(in_rdy);
-	tp(7)  <= to_stdulogic(ackrx_req);
-	tp(8)  <= to_stdulogic(ackrx_rdy);
-	tp(9)  <= to_stdulogic(stus_req);
-	tp(10) <= to_stdulogic(stus_rdy);
-
 end;
