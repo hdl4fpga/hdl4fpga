@@ -105,7 +105,7 @@ begin
 		signal rxbs : std_logic;
 		signal rxd  : std_logic;
 
-		signal fltr_on : std_logic;
+		signal fltr_on : std_logic := '1';
 		signal fltr_en : std_logic;
 		signal fltr_bs : std_logic;
 		signal fltr_d  : std_logic;
