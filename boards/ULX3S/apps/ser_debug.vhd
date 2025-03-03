@@ -121,7 +121,7 @@ begin
 		rxbs <= txbs;
 		txd  <= rxd;
 
-		usbdev_g : if false generate
+		usbdev_g : if true generate
 			usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 			usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
     		usbdev_e : entity hdl4fpga.usbdev
@@ -142,7 +142,7 @@ begin
     			rxd  => rxd);
 		end generate;
 			
-		usbhost_g : if true generate
+		usbhost_g : if false generate
 			signal setup_req : std_logic := '0';
 			signal setup_rdy : std_logic := '0';
 		begin

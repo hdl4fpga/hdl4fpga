@@ -61,7 +61,7 @@ begin
 			if cken='1' then
 				case state is
 				when s_idle =>
-					shr :=  unsigned(reverse(tkdata)) & unsigned(not pkt_txpid) & unsigned(pkt_txpid);
+					shr :=  unsigned(tkdata) & unsigned(not pkt_txpid) & unsigned(pkt_txpid);
 					case pkt_txpid is
 					when tk_setup|tk_in|tk_out|tk_sof =>
 						cntr := shr'length-1;
