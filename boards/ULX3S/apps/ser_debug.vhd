@@ -121,7 +121,7 @@ begin
 		rxbs <= txbs;
 		txd  <= rxd;
 
-		usbdev_g : if true generate
+		usbdev_g : if false generate
 			usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 			usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
     		usbdev_e : entity hdl4fpga.usbdev
@@ -142,7 +142,7 @@ begin
     			rxd  => rxd);
 		end generate;
 			
-		usbhost_g : if false generate
+		usbhost_g : if true generate
 			signal setup_req : std_logic := '0';
 			signal setup_rdy : std_logic := '0';
 		begin
@@ -188,7 +188,17 @@ begin
 			-- led(7) <= not usb_fpga_dn;
 		end generate;
 			
-		fltr_on <= not up;
+		process (videoio_clk)
+		begin
+			if rising_edge(videoio_clk) then
+				if up='1' then
+					fltr_on <= '1';
+				elsif down='1' then
+					fltr_on <= '0';
+				end if;
+			end if;
+		end process;
+
 		usbfltrsof_e : entity hdl4fpga.usbfltr_sof
 		port map (
 			usb_clk  => videoio_clk,

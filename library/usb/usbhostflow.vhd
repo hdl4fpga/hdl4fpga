@@ -42,7 +42,7 @@ entity usbhostflow is
 		rxdv      : in  std_logic;
 		rxbs      : in  std_logic;
 		rxd       : in  std_logic;
-		tkdata    : buffer std_logic_vector(0 to 11-1);
+		tkdata    : buffer std_logic_vector(11-1 downto 0);
 		phyerr    : in  std_logic;
 		crcerr    : in  std_logic;
 		tkerr     : in  std_logic;
@@ -72,8 +72,8 @@ entity usbhostflow is
 		dev_rxdv  : out std_logic;
 		dev_rxbs  : inout std_logic;
 		dev_rxd   : out std_logic;
-		dev_addr  : in  std_logic_vector(0 to 7-1);
-		dev_endp  : in  std_logic_vector(7 to 11-1);
+		dev_addr  : in  std_logic_vector(7-1 downto 0);
+		dev_endp  : in  std_logic_vector(11-1 downto 7);
 		dev_cfgd  : in  std_logic;
 
 		rqst_rxdv : out std_logic;
@@ -121,8 +121,29 @@ architecture def of usbhostflow is
 	signal ddatai      : std_logic_vector(data0'range);
 
 	signal rxerr       : std_logic;
+	signal sof_number  : unsigned(tkdata'range);
+
+	signal tksof_req  : bit;
+	signal tksof_rdy  : bit;
 
 begin
+
+	softimer_p : process(tksof_req ,clk)
+		constant max_count: natural := natural(12.0e6*1.0e-3);
+		variable timer : integer range -1 to max_count;
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if timer < 0 then
+					timer      := max_count;
+					sof_number <= sof_number + 1;
+					tksof_req  <= not tksof_rdy;
+				else
+					timer := timer - 1;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	hosttodev_p : process (clk)
 		type states is (s_idle, s_bulk);
@@ -133,26 +154,33 @@ begin
 				if (tx_rdy xor tx_req)='0' then
 					case state is
 					when s_idle =>
-						if (tksetup_rdy xor tksetup_req)='1' then
+						if (tksof_rdy xor tksof_req)='1' then
+							txpid  <= tk_sof;
+							tkdata <= to_stdlogicvector(bit_vector(sof_number));
+							tksof_rdy <= tksof_req;
+							tx_req <= not tx_rdy;
+						elsif (tksetup_rdy xor tksetup_req)='1' then
 							txpid  <= tk_setup;
 							ddata  <= data0;
 							ddatai <= data0;
 							ddatao <= data0;
-							rqst_req <= not rqst_rdy;
-							ctlr_req <= not ctlr_rdy;
-							tx_req   <= not tx_rdy;
-							rqstin_req <= not rqstin_rdy;
+							tkdata(dev_endp'range) <= dev_endp;
+							tkdata(dev_addr'range) <= dev_addr;
+							rqst_req    <= not rqst_rdy;
+							ctlr_req    <= not ctlr_rdy;
+							rqstin_req  <= not rqstin_rdy;
 							tksetup_rdy <= tksetup_req; 
+							tx_req      <= not tx_rdy;
 							state := s_bulk;
-						end if;
-						if (tkin_rdy xor tkin_req)='1' then
+						elsif (tkin_rdy xor tkin_req)='1' then
 							txpid  <= tk_in;
 							tx_req <= not tx_rdy;
 							tkin_rdy <= tkin_req; 
 							rqstin_req <= not rqstin_rdy;
+							tkdata(dev_endp'range) <= dev_endp;
+							tkdata(dev_addr'range) <= dev_addr;
 							state := s_bulk;
-						end if;
-						if (acktx_rdy xor acktx_req)='1' then
+						elsif (acktx_rdy xor acktx_req)='1' then
 							txpid   <= hs_ack;
 							tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 							acktx_rdy <= acktx_req;
@@ -178,8 +206,6 @@ begin
 
 	rxerr <= phyerr or tkerr or crcerr;
 
-	tkdata(dev_endp'range) <= dev_endp;
-	tkdata(dev_addr'range) <= dev_addr;
 
 	devtohost_p : process (cken, clk)
 		constant tbit : std_logic_vector(data0'range) := b"1000";
