@@ -32,8 +32,8 @@ entity usbpkt_rx is
 		clk    : in  std_logic;
 		cken   : in  std_logic;
 
-		rx_req : buffer std_logic;
-		rx_rdy : in  std_logic;
+		rx_req : buffer std_logic := '0';
+		rx_rdy : in  std_logic := '0';
 
 		tkdata : out std_logic_vector(0 to 11-1);
 		rxpidv : in  std_logic;

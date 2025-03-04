@@ -147,17 +147,16 @@ begin
 			signal setup_rdy : std_logic := '0';
 		begin
 			process (videoio_clk)
-				variable rst : bit;
-				variable ena : bit := '1';
+				variable ena : bit := '0';
 			begin
 				if rising_edge(videoio_clk) then
-					if fire2='1' then
-						ena := '1';
-					elsif fire1='1' then
+					if fire1='1' then
 						if ena='1' then
 							setup_req <= not setup_rdy;
 						end if;
 						ena := '0';
+					elsif fire2='1' then
+						ena := '1';
 					end if;
 				end if;
 			end process;
@@ -176,8 +175,8 @@ begin
     			cken => cken,
 				setup_req => setup_req,
 				setup_rdy => setup_rdy);
-			led(0) <= usb_fpga_dp;
-			led(1) <= usb_fpga_dn;
+			led(0) <= setup_req; --usb_fpga_dp;
+			led(1) <= setup_rdy; --usb_fpga_dn;
 			-- led(7) <= not usb_fpga_dn;
 			led(7 downto 4) <= tp(4 to 7);
 		end generate;

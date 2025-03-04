@@ -40,7 +40,7 @@ entity usbhostflow is
 		flush_rdy : buffer std_logic := '0';
 
 		rx_req    : in  std_logic;
-		rx_rdy    : buffer std_logic;
+		rx_rdy    : buffer std_logic :=  '0';
 		rxpid     : in  std_logic_vector(4-1 downto 0);
 		rxdv      : in  std_logic;
 		rxbs      : in  std_logic;
@@ -144,7 +144,6 @@ begin
 				if (tx_rdy xor tx_req)='0' then
 					case state is
 					when s_idle =>
-						ackrx_rdy <= ackrx_req;
 						if (tksof_rdy xor tksof_req)='1' then
 							txpid  <= tk_sof;
 							tkdata <= to_stdlogicvector(bit_vector(sof_cntr));
@@ -159,7 +158,6 @@ begin
 							tkdata(dev_addr'range) <= dev_addr;
 							tx_req  <= not tx_rdy;
 							in_req <= not in_rdy;
-							-- tksetup_rdy <= tksetup_req; 
 							state := s_bulk;
 						elsif (tkin_rdy xor tkin_req)='1' then
 							txpid  <= tk_in;
@@ -185,10 +183,11 @@ begin
 						tx_req <= not tx_rdy;
 						state := s_ack;
 					when s_ack =>
-						if (tksof_rdy xor tksof_req)='1' then
-							state := s_idle;
-						elsif (ackrx_rdy xor ackrx_req)='1' then
+						if (ackrx_rdy xor ackrx_req)='1' then
 							tksetup_rdy <= tksetup_req; 
+							ackrx_rdy   <= ackrx_req;
+							state := s_idle;
+						elsif (tksof_rdy xor tksof_req)='1' then
 							state := s_idle;
 						end if;
 					end case;
@@ -198,6 +197,7 @@ begin
 	end process;
 
 	tp(1) <= to_stdulogic(ackrx_rdy);
+	tp(2) <= to_stdulogic(ackrx_req);
 	rxerr <= phyerr or tkerr or crcerr;
 
 	devtohost_p : process (cken, clk)
@@ -218,6 +218,7 @@ begin
 					when others =>
 					end case;
 				end if;
+				rx_rdy <= rx_req;
 			end if;
 		end if;
 	end process;
