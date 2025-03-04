@@ -162,6 +162,7 @@ begin
 				end if;
 			end process;
 
+			-- setup_req <= '0', '1' after 1 us, '0' after 22 us;
 			usb_fpga_pu_dp <= '0'; -- D+ pullup for USB1.1 host mode
 			usb_fpga_pu_dn <= '0'; -- D- no pullup for USB1.1 host mode
     		usbhost_e : entity hdl4fpga.usbhostdvr

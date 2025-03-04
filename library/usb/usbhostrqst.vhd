@@ -41,10 +41,11 @@ entity usbhostrqst is
 		dev_addr  : out std_logic_vector(7-1 downto 0);
 		dev_endp  : out std_logic_vector(11-1 downto 7);
 		dev_ack   : in  std_logic := '1';
-		tksetup_req : buffer std_logic;
-		tksetup_rdy : in  std_logic;
+		tksetup_req : buffer std_logic := '0';
+		tksetup_rdy : in  std_logic := '0';
 		tkin_req  : buffer std_logic;
 		tkin_rdy  : in  std_logic;
+		sof_tick  : in  std_logic;
 
 		rxdv      : in  std_logic := '-';
 		rxbs      : in  std_logic := '-';
@@ -88,6 +89,7 @@ begin
 				when s_tksetup =>
 					if (tksetup_req xor tksetup_rdy)='0' then
 						setup_rdy <= setup_req;
+						state := s_idle;
 					end if;
 				end case;
 			end if;
@@ -99,7 +101,7 @@ begin
 		variable state : states;
 		constant descriptor_data   : std_logic_vector := reverse(x"8006000100004000",8);
 		variable descriptor_addr   : natural range 0 to descriptor_data'length;
-		variable descriptor_length : unsigned(0 to unsigned_num_bits(descriptor_data'length-1));
+		variable descriptor_length : unsigned(0 to unsigned_num_bits(descriptor_data'length-1)) := (others => '1');
 		alias txdis is descriptor_length(0);
 	begin
 		if rising_edge(clk) then

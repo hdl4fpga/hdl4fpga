@@ -57,14 +57,13 @@ entity usbhostflow is
 		txbs      : in  std_logic;
 		txd       : buffer std_logic;
 
-		tksof_req  : buffer std_logic := '0';
-		tksof_rdy  : buffer std_logic := '0';
 		tksetup_req : in std_logic := '0';
 		tksetup_rdy : buffer std_logic := '0';
-		tkin_req   : in  std_logic;
+		tkin_req   : in  std_logic := '0';
 		tkin_rdy   : buffer std_logic;
 
 		sof_fmf   : buffer std_logic_vector(11-1 downto 0);
+		sof_tick  : out std_logic;
 
 		dev_ack   : buffer std_logic;
 		dev_txen  : in  std_logic;
@@ -109,7 +108,10 @@ architecture def of usbhostflow is
 
 	signal rxerr       : std_logic;
 	signal sof_cntr    : unsigned(tkdata'range);
-
+	signal tksof_req   : bit;
+	signal tksof_rdy   : bit;
+	signal in_req   : bit;
+	signal in_rdy   : bit;
 
 begin
 
@@ -122,8 +124,10 @@ begin
 				if timer < 0 then
 					timer     := max_count;
 					sof_cntr  <= sof_cntr + 1;
+					sof_tick  <= '1';
 					tksof_req <= not tksof_rdy;
 				else
+					sof_tick  <= '0';
 					timer := timer - 1;
 				end if;
 			end if;
@@ -131,8 +135,8 @@ begin
 	end process;
 	sof_fmf <= to_stdlogicvector(bit_vector(sof_cntr));
 
-	hosttodev_p : process (clk)
-		type states is (s_idle, s_bulk);
+	hosttodev_p : process (tkin_rdy, clk)
+		type states is (s_idle, s_bulk, s_ack);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
@@ -140,6 +144,7 @@ begin
 				if (tx_rdy xor tx_req)='0' then
 					case state is
 					when s_idle =>
+						ackrx_rdy <= ackrx_req;
 						if (tksof_rdy xor tksof_req)='1' then
 							txpid  <= tk_sof;
 							tkdata <= to_stdlogicvector(bit_vector(sof_cntr));
@@ -153,7 +158,8 @@ begin
 							tkdata(dev_endp'range) <= dev_endp;
 							tkdata(dev_addr'range) <= dev_addr;
 							tx_req  <= not tx_rdy;
-							tksetup_rdy <= tksetup_req; 
+							in_req <= not in_rdy;
+							-- tksetup_rdy <= tksetup_req; 
 							state := s_bulk;
 						elsif (tkin_rdy xor tkin_req)='1' then
 							txpid  <= tk_in;
@@ -161,6 +167,7 @@ begin
 							tkdata(dev_addr'range) <= dev_addr;
 							tx_req <= not tx_rdy;
 							tkin_rdy <= tkin_req; 
+							in_req <= not in_rdy;
 							state := s_bulk;
 						elsif (acktx_rdy xor acktx_req)='1' then
 							acktx_rdy <= acktx_req;
@@ -168,6 +175,7 @@ begin
 							tx_req <= not tx_rdy;
 						end if;
 					when s_bulk =>
+						ackrx_rdy <= ackrx_req;
 						case tkdata(dev_endp'range) is
 						when (dev_endp'range => '0') =>
 							txpid  <= ddata;
@@ -175,7 +183,11 @@ begin
 							txpid  <= ddatai;
 						end case;
 						tx_req <= not tx_rdy;
-						if txen='0' then
+						state := s_ack;
+					when s_ack =>
+						if (tksof_rdy xor tksof_req)='1' then
+							state := s_idle;
+						elsif (ackrx_rdy xor ackrx_req)='1' then
 							tksetup_rdy <= tksetup_req; 
 							state := s_idle;
 						end if;
@@ -202,13 +214,10 @@ begin
 							out_rdy <= out_req;
 						end if;
 					when hs_ack =>
-						ackrx_req  <= not ackrx_rdy;
+						ackrx_req <= not ackrx_rdy;
 					when others =>
 					end case;
-				else
-					ackrx_rdy <= ackrx_req;
 				end if;
-				rx_rdy <= rx_req;
 			end if;
 		end if;
 	end process;
@@ -231,7 +240,10 @@ begin
 					flush_rdy <= flush_req;
 				elsif dev_ack='1' then
 					pin  := (others => '0');
+					pout := pin;
+				elsif (in_rdy xor in_req)='1' then
 					pout := (others => '0');
+					in_rdy <= in_req;
 				elsif pout(byte_range) /= pin(byte_range) then
 					if txbs='0' then
 						pout := pout + 1;
