@@ -164,7 +164,7 @@ begin
 
 			usb_fpga_pu_dp <= '0'; -- D+ pullup for USB1.1 host mode
 			usb_fpga_pu_dn <= '0'; -- D- no pullup for USB1.1 host mode
-    		usbhost_e : entity hdl4fpga.usbhost
+    		usbhost_e : entity hdl4fpga.usbhostdvr
     		generic map (
     			oversampling => usb_oversampling)
     		port map (
@@ -174,13 +174,7 @@ begin
     			clk  => videoio_clk,
     			cken => cken,
 				setup_req => setup_req,
-				setup_rdy => setup_rdy,
-    			txen => txen, 
-    			txbs => txbs,
-    			txd  => txd,
-    			rxdv => rxdv, 
-    			rxbs => rxbs,
-    			rxd  => rxd);
+				setup_rdy => setup_rdy);
 			led(0) <= usb_fpga_dp;
 			led(1) <= usb_fpga_dn;
 			-- led(7) <= not usb_fpga_dn;

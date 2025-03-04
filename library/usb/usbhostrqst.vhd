@@ -35,13 +35,11 @@ entity usbhostrqst is
 
 		setup_req : in  std_logic;
 		setup_rdy : buffer std_logic := '0';
-		flushrx_req : buffer  bit := '0';
-		flushrx_rdy : in bit := '0';
-		flushtx_req : buffer  bit := '0';
-		flushtx_rdy : in bit := '0';
+		flush_req : buffer  std_logic := '0';
+		flush_rdy : in std_logic := '0';
 
-		dev_addr  : buffer std_logic_vector(7-1 downto 0);
-		dev_endp  : buffer std_logic_vector(11-1 downto 7);
+		dev_addr  : out std_logic_vector(7-1 downto 0);
+		dev_endp  : out std_logic_vector(11-1 downto 7);
 		dev_ack   : in  std_logic := '1';
 		tksetup_req : buffer std_logic;
 		tksetup_rdy : in  std_logic;
@@ -64,7 +62,7 @@ architecture def of usbhostrqst is
 begin
 
 	setup_p : process (cken, clk)
-		type states is (s_idle, s_flush, s_config);
+		type states is (s_idle, s_flush, s_config, s_tksetup);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
@@ -72,16 +70,25 @@ begin
    				case state is
    				when s_idle =>
 					if (setup_rdy xor setup_req)='1' then
-						flushrx_req <= not flushrx_rdy;
-						flushtx_req <= not flushtx_rdy;
+						flush_req <= not flush_rdy;
 						state := s_flush;
 					end if;
    				when s_flush =>
-					if (flushrx_req xor flushrx_rdy)='0' and (flushtx_req xor flushtx_rdy)='0' then
+					if (flush_req xor flush_rdy)='0' then
+						config_req <= not config_rdy;
 						state := s_config;
 					end if;
 				when s_config =>
-					setup_rdy <= setup_req;
+					if (config_req xor config_rdy)='0' then
+						dev_addr <= (others => '0');
+						dev_endp <= (others => '0');
+						tksetup_req <= not tksetup_rdy;
+						state := s_tksetup;
+					end if;
+				when s_tksetup =>
+					if (tksetup_req xor tksetup_rdy)='0' then
+						setup_rdy <= setup_req;
+					end if;
 				end case;
 			end if;
 		end if;

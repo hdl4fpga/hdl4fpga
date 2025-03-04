@@ -41,8 +41,8 @@ entity usbhost is
 		clk  : in  std_logic;
 		cken : buffer std_logic;
 
-		setup_req : in std_logic := '0';
-		setup_rdy : buffer std_logic := '0';
+		flush_req : in std_logic := '0';
+		flush_rdy : buffer std_logic := '0';
 
 		dev_addr    : in std_logic_vector(0 to 7-1) := (others => '0');
 		dev_endp    : in std_logic_vector(0 to 4-1) := (others => '0');
@@ -163,6 +163,8 @@ begin
 
 		clk       => clk,
 		cken      => cken,
+		flush_req => flush_req,
+		flush_rdy => flush_rdy,
 		tksetup_req => tksetup_req,
 		tksetup_rdy => tksetup_rdy,
 		tkin_req  => tkin_req,
@@ -232,6 +234,8 @@ architecture def of usbhostdvr is
 	signal dev_addr    : std_logic_vector(7-1 downto 0);
 	signal dev_endp    : std_logic_vector(4-1 downto 0);
 	signal dev_ack     : std_logic;
+	signal flush_req   : std_logic;
+	signal flush_rdy   : std_logic;
 	signal tksetup_req : std_logic;
 	signal tksetup_rdy : std_logic;
 	signal tkin_req    : std_logic;
@@ -257,8 +261,10 @@ begin
 		dn   => dn,
 		clk  => clk,
 		cken => cken,
-		setup_req => setup_req,
-		setup_rdy => setup_rdy,
+		flush_req => flush_req,
+		flush_rdy => flush_rdy,
+		tksetup_req => tksetup_req,
+		tksetup_rdy => tksetup_rdy,
 		txen => dev_txen, 
 		txbs => dev_txbs,
 		txd  => dev_txd,
@@ -266,13 +272,15 @@ begin
 		rxbs => dev_rxbs,
 		rxd  => dev_rxd);
 
-	hostdvr_e : entity hdl4fpga.usbhostrqst
+	rqstdvr_e : entity hdl4fpga.usbhostrqst
 	port map (
 		clk       => clk,
 		cken      => cken,
 
 		setup_req => setup_req,
 		setup_rdy => setup_rdy,
+		flush_req => flush_req,
+		flush_rdy => flush_rdy,
 		tksetup_req => tksetup_req,
 		tksetup_rdy => tksetup_rdy,
 		tkin_req => tkin_req,

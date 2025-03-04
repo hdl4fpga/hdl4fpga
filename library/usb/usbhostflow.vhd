@@ -36,10 +36,8 @@ entity usbhostflow is
 		clk       : in  std_logic;
 		cken      : in  std_logic;
 
-		flushrx_req : in  bit := '0';
-		flushrx_rdy : buffer bit := '0';
-		flushtx_req : in  bit := '0';
-		flushtx_rdy : buffer bit := '0';
+		flush_req : in  std_logic := '0';
+		flush_rdy : buffer std_logic := '0';
 
 		rx_req    : in  std_logic;
 		rx_rdy    : buffer std_logic;
@@ -53,16 +51,16 @@ entity usbhostflow is
 		tkerr     : in  std_logic;
 
 		tx_req    : buffer std_logic := '0';
-		tx_rdy    : in  std_logic;
+		tx_rdy    : in  std_logic := '0';
 		txpid     : out std_logic_vector(4-1 downto 0);
 		txen      : buffer std_logic;
 		txbs      : in  std_logic;
 		txd       : buffer std_logic;
 
-		tksof_req  : buffer std_logic;
-		tksof_rdy  : buffer std_logic;
-		tksetup_req : in std_logic;
-		tksetup_rdy : buffer std_logic;
+		tksof_req  : buffer std_logic := '0';
+		tksof_rdy  : buffer std_logic := '0';
+		tksetup_req : in std_logic := '0';
+		tksetup_rdy : buffer std_logic := '0';
 		tkin_req   : in  std_logic;
 		tkin_rdy   : buffer std_logic;
 
@@ -88,8 +86,6 @@ architecture def of usbhostflow is
 	signal index       : std_logic_vector(16-1 downto 0);
 	signal length      : std_logic_vector(16-1 downto 0);
 
-	signal status_req  : bit;
-	signal status_rdy  : bit;
 	signal out_req     : bit;
 	signal out_rdy     : bit;
 	signal acktx_rdy   : bit;
@@ -124,9 +120,9 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if timer < 0 then
-					timer      := max_count;
-					sof_cntr <= sof_cntr + 1;
-					tksof_req  <= not tksof_rdy;
+					timer     := max_count;
+					sof_cntr  <= sof_cntr + 1;
+					tksof_req <= not tksof_rdy;
 				else
 					timer := timer - 1;
 				end if;
@@ -180,9 +176,9 @@ begin
 						end case;
 						tx_req <= not tx_rdy;
 						if txen='0' then
-							status_req <= not status_rdy;
+							tksetup_rdy <= tksetup_req; 
+							state := s_idle;
 						end if;
-						state := s_idle;
 					end case;
 				end if;
 			end if;
@@ -207,7 +203,6 @@ begin
 						end if;
 					when hs_ack =>
 						ackrx_req  <= not ackrx_rdy;
-						status_rdy <= status_req;
 					when others =>
 					end case;
 				else
@@ -230,10 +225,10 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (flushtx_rdy xor flushtx_req)='1' then
+				if (flush_rdy xor flush_req)='1' then
 					pin  := (others => '0');
 					pout := pin;
-					flushtx_rdy <= flushtx_req;
+					flush_rdy <= flush_req;
 				elsif dev_ack='1' then
 					pin  := (others => '0');
 					pout := (others => '0');
@@ -317,10 +312,9 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (flushrx_rdy xor flushrx_req)='1' then
+				if (flush_rdy xor flush_req)='1' then
 					pout := pin;
 					prty := pin;
-					flushrx_rdy <= flushrx_req;
 				elsif pout=prty then
 					if (out_rdy xor out_req)='0' then
 						if rxerr='1' then
