@@ -172,10 +172,9 @@ begin
     			dp   => usb_fpga_dp,
     			dn   => usb_fpga_dn,
     			clk  => videoio_clk,
-    			dev_cfgd => cfgd,
+    			cken => cken,
 				setup_req => setup_req,
 				setup_rdy => setup_rdy,
-    			cken => cken,
     			txen => txen, 
     			txbs => txbs,
     			txd  => txd,
@@ -184,8 +183,8 @@ begin
     			rxd  => rxd);
 			led(0) <= usb_fpga_dp;
 			led(1) <= usb_fpga_dn;
-			led(6) <= not usb_fpga_dp;
 			-- led(7) <= not usb_fpga_dn;
+			led(7 downto 4) <= tp(4 to 7);
 		end generate;
 			
 		process (videoio_clk)
