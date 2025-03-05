@@ -24,6 +24,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.usbpkg.all;
 
@@ -97,9 +98,52 @@ begin
 	end process;
 
 	config_p : process (clk)
+
+		function xxx (
+			constant description : string)
+			return std_logic_vector is
+
+			procedure append (
+				variable mem : inout std_logic_vector;
+				variable scc : inout natural;
+				variable pos : in  natural;
+				constant val : in  string) is
+				procedure copy (
+					variable mem : inout std_logic_vector;
+					variable scc : out natural;
+					variable pos : in  natural;
+					constant val : in  string) is
+					constant bin : std_logic_vector := to_stdlogicvector(val);
+				begin
+					mem(pos to pos+bin'length-1) := bin;
+					scc := pos+bin'length;
+				end;
+			begin
+				if val/="" then
+					copy(mem, scc, pos, val);
+				else
+					scc := pos;
+				end if;
+			end;
+			variable bin : std_logic_vector(0 to description'length*4-1);
+			variable pos : natural;
+			variable scc : natural;
+		begin
+			pos := bin'left;
+			for i in 0 to description'right-description'left loop
+				append(bin, scc, pos, hdo(description)**("["& natural'image(i) &"]="));
+				exit when scc=pos;
+				pos := scc;
+			end loop;
+			if pos > bin'left then 
+				return bin(0 to pos-1);
+			end if;
+			return "";
+		end;
+
 		type states is (s_idle, s_data);
 		variable state : states;
-		constant descriptor_data   : std_logic_vector := reverse(x"8006000100004000",8);
+		constant descriptor_data   : std_logic_vector := xxx("[0xad, 0x0123456, 0x789]");
 		variable descriptor_addr   : natural range 0 to descriptor_data'length;
 		variable descriptor_length : unsigned(0 to unsigned_num_bits(descriptor_data'length-1)) := (others => '1');
 		alias txdis is descriptor_length(0);

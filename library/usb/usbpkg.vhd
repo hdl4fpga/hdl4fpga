@@ -69,14 +69,14 @@ package usbpkg is
 	type decriptor_types is (
 		device, 
 		config, 
-		string, 
+		str   , 
 		interface, 
 		endpoint);
 	type decriptortypes_vector is array(decriptor_types) of std_logic_vector(8-1 downto 0);
 	constant decriptortypes_ids : decriptortypes_vector := (
     	device    => x"01",
     	config    => x"02",
-    	string    => x"03",
+    	str       => x"03",
     	interface => x"04",
     	endpoint  => x"05");
 	

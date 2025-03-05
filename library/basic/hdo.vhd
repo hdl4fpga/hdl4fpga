@@ -33,8 +33,8 @@ package hdo is
 		constant hdo          : in    string;
 		variable value_offset : inout natural;
 		variable value_length : inout natural;
-		variable tag1_offset   : inout natural;
-		variable tag1_length   : inout natural);
+		variable tag1_offset  : inout natural;
+		variable tag1_length  : inout natural);
 
 	function resolve (
 		constant hdo : string)
@@ -92,6 +92,10 @@ package hdo is
 	function escaped (
 		constant obj : string)
 		return string;
+
+	function to_stdlogicvector (
+		constant value : string)
+		return std_logic_vector;
 end;
 
 package body hdo is
@@ -514,7 +518,7 @@ package body hdo is
 				if length=0 then
 					parse_string(hdo, hdo_index, offset, length);
 
-					assert false
+					assert false --|
 						report LF & "parse_keytag -> invalid key : " & hdo(hdo_index to hdo'right)  --|
 						severity failure; --|
 				end if;
@@ -524,7 +528,7 @@ package body hdo is
 				case hdo(hdo_index) is
 				when ']' => 
 					if open_char/='[' then --| Xilinx ISE 14.7 warning complain
-						assert false
+						assert false --|
 							report LF & "parse_keytag => wrong close key " & ''' & open_char & ''' & " " & ''' & hdo(hdo_index) & ''' --|
 							severity failure; --|
 					end if; --|
@@ -533,7 +537,7 @@ package body hdo is
 				when '}' => 
 
 					if open_char/='{' then --| Xilinx ISE 14.7 warning complain
-						assert false
+						assert false --|
 							report LF & "parse_keytag => wrong close key " & ''' & open_char & ''' & " " & ''' & hdo(hdo_index) & ''' --|
 							severity failure; --|
 					end if; --|
@@ -823,6 +827,7 @@ package body hdo is
 
 
 			if not isdigit(key(key'left)) then
+
 				if tag_length/=0 then
 					if compare_string(key, hdo(tag_offset to tag_offset+tag_length-1)) then
 						offset := tag_offset;
