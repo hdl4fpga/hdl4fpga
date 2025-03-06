@@ -134,35 +134,29 @@ package body usbpkg is
 
 		constant max_length : natural := max_segments;
 		variable data : std_logic_vector(0 to description'length*4-1);
-		variable pos : natural;
-		variable scc : natural;
-		variable length : string(1 to 1024);
-		variable length_pos : positive;
-		variable length_scc : positive;
-		variable offset : string(1 to 1024);
-		variable offset_pos : positive;
-		variable offset_scc : positive;
+		variable pos  : natural;
+		variable scc  : natural;
+		variable segment : string(1 to 1024);
+		variable segment_pos : positive;
+		variable segment_scc : positive;
 	begin
 		pos := data'left;
-		offset_pos := offset'left;
-		length_pos := length'left;
+		segment_pos := segment'left;
 		for i in 0 to description'right-description'left loop
-			append(data, scc, pos, hdo(description)**("["& natural'image(i) &"]="));
+			append(data, scc, pos, hdo(description)**("["& natural'image(i) &"].data="));
 			if scc=pos then
-				offset_pos := offset_pos - 1;
-				-- length_pos := length_pos - 1;
+				segment_pos := segment_pos - 1;
 				exit;
 			end if;
-			copy(offset, offset_pos, offset_pos, natural'image(pos)&",");
-			copy(offset, offset_pos, offset_pos, natural'image(scc-pos)&",");
-			-- copy(length, length_pos, length_pos, natural'image(scc-pos)&",");
+			copy(segment, segment_pos, segment_pos, natural'image(pos)&",");
+			copy(segment, segment_pos, segment_pos, natural'image(scc-pos)&",");
 			pos := scc;
 		end loop;
 		if pos > data'left then 
 			return compact(
 				"{" &
 				"    data:0x"&to_string(data(0 to pos-1), 16) & "," &
-				offset(1 to offset_pos-1) &
+				"    segment:[" & segment(1 to segment_pos-1) & "]" &
 				"}"
 				);
 		end if;
