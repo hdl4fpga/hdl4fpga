@@ -134,11 +134,15 @@ package body usbpkg is
 			end if;
 		end;
 
-		function ()
+		function (
+			constant offsets : natural_vector;
+			constant offset_num_bits : natural;
+			constant lengths : natural_vector;
+			constant length_num_bits : natural);
 			return std_logic_vector is
-			variable retval : unsigned(0 to )
+			variable retval : unsigned(0 to (offset_num_bits+length_num_bits))
 		begin
-			for i in 0 to n-1 loop
+			for i in 0 to -1 loop
 				mem(0 to offset_num_bits+length_num_bits-1) := to_unsigned(offsets(i),offset_num_bits)&to_unsigned(lengths(i),length_num_bits);
 				mem := mem srl offset_num_bits+length_num_bits;
 			end loop;
