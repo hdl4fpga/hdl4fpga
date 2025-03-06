@@ -40,32 +40,32 @@ package usbpkg is
 	constant hs_stall  : std_logic_vector := x"e";
 
 	type requests is (
-    	-- get_status,
-    	-- clear_status,
-    	-- set_feature,
-    	set_address,
-    	get_descriptor,
-    	-- set_descriptor,
-    	-- get_configuration,
-    	set_configuration);
-    	-- get_interface,
-    	-- set_interface,
-    	-- synch_frame);
+		-- get_status,
+		-- clear_status,
+		-- set_feature,
+		set_address,
+		get_descriptor,
+		-- set_descriptor,
+		-- get_configuration,
+		set_configuration);
+		-- get_interface,
+		-- set_interface,
+		-- synch_frame);
 
 	type bit_requests is array(requests) of bit;
 	type requestid_vector is array(requests) of std_logic_vector(4-1 downto 0);
 	constant request_ids : requestid_vector := (
-	    -- get_status        => x"0",
-	    -- clear_status      => x"1",
-	    -- set_feature       => x"3",
-	    set_address       => x"5",
-	    get_descriptor    => x"6",
-	    -- set_descriptor    => x"7",
-	    -- get_configuration => x"8",
-	    set_configuration => x"9");
-	    -- get_interface     => x"a",
-	    -- set_interface     => x"b",
-	    -- synch_frame       => x"c");
+		-- get_status        => x"0",
+		-- clear_status      => x"1",
+		-- set_feature       => x"3",
+		set_address       => x"5",
+		get_descriptor    => x"6",
+		-- set_descriptor    => x"7",
+		-- get_configuration => x"8",
+		set_configuration => x"9");
+		-- get_interface     => x"a",
+		-- set_interface     => x"b",
+		-- synch_frame       => x"c");
 
 	type decriptor_types is (
 		device, 
@@ -75,13 +75,13 @@ package usbpkg is
 		endpoint);
 	type decriptortypes_vector is array(decriptor_types) of std_logic_vector(8-1 downto 0);
 	constant decriptortypes_ids : decriptortypes_vector := (
-    	device    => x"01",
-    	config    => x"02",
-    	str       => x"03",
-    	interface => x"04",
-    	endpoint  => x"05");
+		device    => x"01",
+		config    => x"02",
+		str       => x"03",
+		interface => x"04",
+		endpoint  => x"05");
 	
-	function segments (
+	function segment (
 		constant description  : string;
 		constant max_segments : natural := 64)
 		return string;
@@ -90,7 +90,77 @@ end;
 
 package body usbpkg is
 	
-	function segments (
+	function to_hdo (
+		constant val : natural_vector;
+		constant max_length : natural := 1024)
+		return string is
+
+		procedure copy (
+			variable obj : inout string;
+			variable scc : inout natural;
+			variable pos : in  natural;
+			constant val : in  integer) is
+			constant cvt : string := integer'image(val)&',';
+		begin
+			obj(pos to pos+cvt'length-1) := cvt;
+			scc := pos+cvt'length;
+		end;
+		variable obj : string(1 to max_length);
+		variable pos : natural;
+	begin
+		pos := obj'left;
+		for i in 0 to val'length-1 loop
+			copy(obj, pos, pos, val(i));
+		end loop;
+		pos := pos - 1;
+		return "["&obj(1 to pos-1)&"]";
+	end;
+
+	function xxx (
+		constant description  : string;
+		constant max_segments : natural := 64)
+		return string is
+
+		procedure get (
+			variable value       : out natural;
+			variable valid       : out boolean;
+			constant description : in string) is
+		begin
+			if description'length < 1 then
+				valid := false;
+			else
+				valid := true;
+				value := hdl4fpga.hdo.to_integer(escaped(description));
+			end if;
+		end;
+
+		function ()
+			return std_logic_vector is
+			variable retval : unsigned(0 to )
+		begin
+			for i in 0 to n-1 loop
+				mem(0 to offset_num_bits+length_num_bits-1) := to_unsigned(offsets(i),offset_num_bits)&to_unsigned(lengths(i),length_num_bits);
+				mem := mem srl offset_num_bits+length_num_bits;
+			end loop;
+		end;
+
+		variable lengths : natural_vector(0 to max_segments-1);
+		variable offsets : natural_vector(0 to max_segments-1);
+		variable length_num_bits : natural;
+		variable offset_num_bits : natural;
+		variable valid   : boolean;
+		variable n       : natural;
+	begin
+		for i in 0 to max_segments-1 loop
+			n := i;
+			get(lengths(i), valid, hdo(description)**("["&natural'image(i)&"]="));
+			exit when not valid;
+		end loop;
+		length_num_bits := unsigned_num_bits(max(lengths(0 to n-1)));
+		offset_num_bits := unsigned_num_bits(max(offsets(0 to n-1)));
+	end;
+
+	function segment (
 		constant description  : string;
 		constant max_segments : natural := 64)
 		return string is
@@ -107,30 +177,30 @@ package body usbpkg is
 			end if;
    		end;
 
-    	procedure append (
-    		variable mem : inout std_logic_vector;
-    		variable scc : inout natural;
-    		variable pos : in  natural;
-    		constant val : in  string) is
+		procedure append (
+			variable mem : inout std_logic_vector;
+			variable scc : inout natural;
+			variable pos : in  natural;
+			constant val : in  string) is
 
-    		procedure copy (
-    			variable mem : inout std_logic_vector;
-    			variable scc : out natural;
-    			variable pos : in  natural;
-    			constant val : in  string) is
-    			constant bin : std_logic_vector := to_stdlogicvector(val);
-    		begin
-    			mem(pos to pos+bin'length-1) := bin;
-    			scc := pos+bin'length;
-    		end;
+			procedure copy (
+				variable mem : inout std_logic_vector;
+				variable scc : out natural;
+				variable pos : in  natural;
+				constant val : in  string) is
+				constant bin : std_logic_vector := to_stdlogicvector(val);
+			begin
+				mem(pos to pos+bin'length-1) := bin;
+				scc := pos+bin'length;
+			end;
 
-    	begin
-    		if val'length > 0 then
-    			copy(mem, scc, pos, val);
-    		else
-    			scc := pos;
-    		end if;
-    	end;
+		begin
+			if val'length > 0 then
+				copy(mem, scc, pos, val);
+			else
+				scc := pos;
+			end if;
+		end;
 
 		constant max_length : natural := max_segments;
 		variable data : std_logic_vector(0 to description'length*4-1);

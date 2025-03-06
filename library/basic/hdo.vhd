@@ -80,6 +80,10 @@ package hdo is
 		constant key : string)
 		return hdo;
 
+	function to_integer (
+		constant value : string)
+		return integer;
+
 	function tag (
 		constant obj : hdo)
 		return string;
@@ -181,7 +185,7 @@ package body hdo is
 		end case;
 	end;
 
-	function to_natural (
+	function to_integer (
 		constant value : string;
 		constant base  : natural) 
 		return integer is
@@ -275,7 +279,7 @@ package body hdo is
 		end if;
 	end;
 
-	function to_natural (
+	function to_integer (
 		constant value : string)
 		return integer is
 		variable retval : integer;
@@ -284,17 +288,17 @@ package body hdo is
 			if value(value'left)='0' then
 				case value(value'left+1) is
 				when 'x'|'X' =>
-					return to_natural(value(value'left+2 to value'right), 16);
+					return to_integer(value(value'left+2 to value'right), 16);
 				when 'b'|'B' =>
-					return to_natural(value(value'left+2 to value'right), 2);
+					return to_integer(value(value'left+2 to value'right), 2);
 				when others =>
-					return to_natural(value(value'left+1 to value'right), 10);
+					return to_integer(value(value'left+1 to value'right), 10);
 				end case;
 			else
-				return to_natural(value, 10);
+				return to_integer(value, 10);
 			end if;
 		else
-			return to_natural(value, 10);
+			return to_integer(value, 10);
 		end if;
 	end;
 
@@ -834,7 +838,7 @@ package body hdo is
 						length := hdo_index-offset;
 					end if;
 				end if;
-			elsif to_natural(key) <= position then
+			elsif to_integer(key) <= position then
 				offset := tag_offset;
 				length := hdo_index-offset;
 
@@ -977,7 +981,7 @@ package body hdo is
 		variable tag_length : natural;
 	begin
 		resolve (hdo, hdo_offset, hdo_length, tag_offset, tag_length);
-		return to_natural(hdo(hdo_offset to hdo_offset+hdo_length-1));
+		return to_integer(hdo(hdo_offset to hdo_offset+hdo_length-1));
 	end;
 
 	function resolve (

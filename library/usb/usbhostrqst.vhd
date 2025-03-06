@@ -59,6 +59,7 @@ entity usbhostrqst is
 end;
 
 architecture def of usbhostrqst is
+	constant test : string := segment("[{data : 0x8006000100004000}]");
 	signal config_req : bit;
 	signal config_rdy : bit;
 begin
@@ -101,7 +102,6 @@ begin
 
 		type states is (s_idle, s_data);
 		variable state : states;
-		constant test   : string := segments("[{data : 0x8006000100004000}]");
 		constant descriptor_data   : std_logic_vector := reverse(hdo(test)**".data",8);
 		variable descriptor_addr   : natural range 0 to descriptor_data'length;
 		variable descriptor_length : unsigned(0 to unsigned_num_bits(descriptor_data'length-1)) := (others => '1');
