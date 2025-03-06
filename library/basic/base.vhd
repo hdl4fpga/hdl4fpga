@@ -90,11 +90,13 @@ package base is
 		return std_logic_vector;
 
 	function to_string (
-		constant arg : std_logic_vector)
+		constant arg  : std_logic_vector;
+		constant base : natural := 2)
 		return string;
 
 	function to_string (
-		constant arg : unsigned)
+		constant arg : unsigned;
+		constant base : natural := 2)
 		return string;
 
 	function to_naturalvector (
@@ -687,28 +689,28 @@ package body base is
 	end;
 
 	function to_string(
-		constant arg : std_logic_vector)
+		constant arg  : std_logic_vector;
+		constant base : natural := 2)
 		return string is
+		constant count  : natural := unsigned_num_bits(base-1);
+		constant table  : string := "0123456789abcdef";
 		variable aux    : unsigned(0 to arg'length-1);
-		variable retval : string(1 to arg'length);
+		variable retval : string(1 to (arg'length+count-1)/count);
 	begin
 		aux := unsigned(arg);
 		for i in retval'range loop
-			if aux(0)='1' then
-				retval(i) := '1';
-			else
-				retval(i) := '0';
-			end if;
-			aux := aux sll 1;
+			retval(i) := table(to_integer(aux(0 to count-1))+1);
+			aux := aux sll count;
 		end loop;
 		return retval;
 	end;
 
 	function to_string(
-		constant arg : unsigned)
+		constant arg  : unsigned;
+		constant base : natural := 2)
 		return string is
 	begin
-		return to_string(std_logic_vector(arg));
+		return to_string(std_logic_vector(arg), base);
 	end;
 
 	function to_naturalvector (

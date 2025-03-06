@@ -23,6 +23,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 
 package usbpkg is
@@ -80,4 +81,92 @@ package usbpkg is
     	interface => x"04",
     	endpoint  => x"05");
 	
+	function segments (
+		constant description  : string;
+		constant max_segments : natural := 64)
+		return string;
+
+end;
+
+package body usbpkg is
+	
+	function segments (
+		constant description  : string;
+		constant max_segments : natural := 64)
+		return string is
+
+   		procedure copy (
+   			variable dst : inout string;
+   			variable scc : inout natural;
+   			variable pos : in  natural;
+   			constant src : in  string) is
+   		begin
+			if src'length > 0 then 
+				dst(pos to pos+src'length-1) := src;
+				scc := pos+src'length;
+			end if;
+   		end;
+
+    	procedure append (
+    		variable mem : inout std_logic_vector;
+    		variable scc : inout natural;
+    		variable pos : in  natural;
+    		constant val : in  string) is
+
+    		procedure copy (
+    			variable mem : inout std_logic_vector;
+    			variable scc : out natural;
+    			variable pos : in  natural;
+    			constant val : in  string) is
+    			constant bin : std_logic_vector := to_stdlogicvector(val);
+    		begin
+    			mem(pos to pos+bin'length-1) := bin;
+    			scc := pos+bin'length;
+    		end;
+
+    	begin
+    		if val'length > 0 then
+    			copy(mem, scc, pos, val);
+    		else
+    			scc := pos;
+    		end if;
+    	end;
+
+		constant max_length : natural := max_segments;
+		variable data : std_logic_vector(0 to description'length*4-1);
+		variable pos : natural;
+		variable scc : natural;
+		variable length : string(1 to 1024);
+		variable length_pos : positive;
+		variable length_scc : positive;
+		variable offset : string(1 to 1024);
+		variable offset_pos : positive;
+		variable offset_scc : positive;
+	begin
+		pos := data'left;
+		offset_pos := offset'left;
+		length_pos := length'left;
+		for i in 0 to description'right-description'left loop
+			append(data, scc, pos, hdo(description)**("["& natural'image(i) &"]="));
+			if scc=pos then
+				offset_pos := offset_pos - 1;
+				-- length_pos := length_pos - 1;
+				exit;
+			end if;
+			copy(offset, offset_pos, offset_pos, natural'image(pos)&",");
+			copy(offset, offset_pos, offset_pos, natural'image(scc-pos)&",");
+			-- copy(length, length_pos, length_pos, natural'image(scc-pos)&",");
+			pos := scc;
+		end loop;
+		if pos > data'left then 
+			return compact(
+				"{" &
+				"    data:0x"&to_string(data(0 to pos-1), 16) & "," &
+				offset(1 to offset_pos-1) &
+				"}"
+				);
+		end if;
+		return "";
+	end;
+
 end;
