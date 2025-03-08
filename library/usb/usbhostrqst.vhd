@@ -59,7 +59,13 @@ entity usbhostrqst is
 end;
 
 architecture def of usbhostrqst is
-	constant test   : string := segment_map("[{content:0x8006000100004000},{content:0xffff},{content:0xffff}]");
+	constant test   : string := segment_map(
+		"["&
+			"{content:0x8006000100004000}," & 
+			"{content:0xffff},"             &
+			"{content:0xffff}"              & 
+		"]");
+
 	constant table  : string := segment_table(hdo(test)**".table");
 	constant bitrom : string := hdo(table)**".content";
 	signal segment_id        : std_logic_vector(0 to hdo(table)**".address"-1) := (others => '0');
