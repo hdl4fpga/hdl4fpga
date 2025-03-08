@@ -21,6 +21,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.hdo.all;
@@ -82,46 +83,58 @@ package usbpkg is
 		endpoint  => x"05");
 	
 	function segment (
+		constant description  : string)
+		return string;
+
+	function segment_table (
 		constant description  : string;
 		constant max_segments : natural := 64)
 		return string;
-
 end;
 
 package body usbpkg is
 	
+	procedure copy (
+		variable dst : inout string;
+		variable pos : inout positive;
+		constant src : in    string) is
+	begin
+		dst(pos to pos+src'length-1) := src;
+		pos := pos+src'length;
+	end;
+
+	procedure copy (
+		variable dst : inout string;
+		variable pos : inout  natural;
+		constant val : in  integer) is
+		constant cvt : string := integer'image(val)&',';
+	begin
+		dst(pos to pos+cvt'length-1) := cvt;
+		pos := pos+cvt'length;
+	end;
+
 	function to_hdo (
 		constant val : natural_vector;
 		constant max_length : natural := 1024)
 		return string is
 
-		procedure copy (
-			variable obj : inout string;
-			variable scc : inout natural;
-			variable pos : in  natural;
-			constant val : in  integer) is
-			constant cvt : string := integer'image(val)&',';
-		begin
-			obj(pos to pos+cvt'length-1) := cvt;
-			scc := pos+cvt'length;
-		end;
 		variable obj : string(1 to max_length);
 		variable pos : natural;
 	begin
 		pos := obj'left;
 		for i in 0 to val'length-1 loop
-			copy(obj, pos, pos, val(i));
+			copy(obj, pos, val(i));
 		end loop;
 		pos := pos - 1;
 		return "["&obj(1 to pos-1)&"]";
 	end;
 
-	function xxx (
+	function segment_table (
 		constant description  : string;
 		constant max_segments : natural := 64)
 		return string is
 
-		procedure get (
+		procedure get_value (
 			variable value       : out natural;
 			variable valid       : out boolean;
 			constant description : in string) is
@@ -130,22 +143,28 @@ package body usbpkg is
 				valid := false;
 			else
 				valid := true;
-				value := hdl4fpga.hdo.to_integer(escaped(description));
+				value := hdl4fpga.hdo.to_integer(description);
 			end if;
 		end;
 
-		function (
+		function table_content (
 			constant offsets : natural_vector;
 			constant offset_num_bits : natural;
 			constant lengths : natural_vector;
-			constant length_num_bits : natural);
+			constant length_num_bits : natural)
 			return std_logic_vector is
-			variable retval : unsigned(0 to (offset_num_bits+length_num_bits))
+			variable content : unsigned(0 to (offset_num_bits+length_num_bits)*offsets'length);
 		begin
-			for i in 0 to -1 loop
-				mem(0 to offset_num_bits+length_num_bits-1) := to_unsigned(offsets(i),offset_num_bits)&to_unsigned(lengths(i),length_num_bits);
-				mem := mem srl offset_num_bits+length_num_bits;
+			assert offsets'length=lengths'length
+				report "segment_table() : offsets'length -> (" & natural'image(offsets'length) & ") /= " & "lengths'length -> (" & natural'image(lengths'length) & ")"
+				severity failure;
+			for i in offsets'range loop
+				content := content srl offset_num_bits;
+				content(0 to offset_num_bits-1) := to_unsigned(offsets(i), offset_num_bits);
+				content := content srl length_num_bits;
+				content(0 to length_num_bits-1) := to_unsigned(lengths(i), length_num_bits);
 			end loop;
+			return std_logic_vector(content);
 		end;
 
 		variable lengths : natural_vector(0 to max_segments-1);
@@ -154,19 +173,36 @@ package body usbpkg is
 		variable offset_num_bits : natural;
 		variable valid   : boolean;
 		variable n       : natural;
+		variable address : natural;
+		variable num_bits : natural;
+		variable retval : string(1 to 2048);
+		variable pos : positive;
 	begin
 		for i in 0 to max_segments-1 loop
 			n := i;
-			get(lengths(i), valid, hdo(description)**("["&natural'image(i)&"]="));
+			get_value(lengths(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][0]=")));
+			get_value(offsets(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][1]=")));
 			exit when not valid;
 		end loop;
 		length_num_bits := unsigned_num_bits(max(lengths(0 to n-1)));
 		offset_num_bits := unsigned_num_bits(max(offsets(0 to n-1)));
+		if n > 1 then 
+			address := unsigned_num_bits(n-1);
+		else
+			address := 0;
+		end if;
+		num_bits := offset_num_bits+length_num_bits;
+		return
+			"{" &
+			-- "content:0b1010101010101010," &
+			"content:" & to_string(table_content(offsets(0 to n-1), offset_num_bits, lengths(0 to n-1), length_num_bits)) & "," &
+			"address:" & natural'image(address) & "," &
+			"data:" & natural'image(num_bits) &
+			"}";
 	end;
 
 	function segment (
-		constant description  : string;
-		constant max_segments : natural := 64)
+		constant description  : string)
 		return string is
 
    		procedure copy (
@@ -206,35 +242,33 @@ package body usbpkg is
 			end if;
 		end;
 
-		constant max_length : natural := max_segments;
-		variable data : std_logic_vector(0 to description'length*4-1);
+		variable content : std_logic_vector(0 to description'length*4-1);
 		variable pos  : natural;
 		variable scc  : natural;
 		variable segment : string(1 to 1024);
 		variable segment_pos : positive;
-		variable segment_scc : positive;
 	begin
-		pos := data'left;
+		pos := content'left;
 		segment_pos := segment'left;
 		for i in 0 to description'right-description'left loop
-			append(data, scc, pos, hdo(description)**("["& natural'image(i) &"].data="));
+			append(content, scc, pos, hdo(description)**("["& natural'image(i) &"].content="));
 			if scc=pos then
 				segment_pos := segment_pos - 1;
 				exit;
 			end if;
+			segment(segment_pos) := '[';
+			segment_pos := segment_pos + 1;
 			copy(segment, segment_pos, segment_pos, natural'image(pos)&",");
-			copy(segment, segment_pos, segment_pos, natural'image(scc-pos)&",");
+			copy(segment, segment_pos, segment_pos, natural'image(scc-pos)&"],");
 			pos := scc;
 		end loop;
-		if pos > data'left then 
-			return compact(
+			return
 				"{" &
-				"    data:0x"&to_string(data(0 to pos-1), 16) & "," &
-				"    segment:[" & segment(1 to segment_pos-1) & "]" &
-				"}"
-				);
-		end if;
-		return "";
+				"content:0x"&to_string(content(0 to pos-1), 16) & "," &
+				"segment:[" & segment(1 to segment_pos-1) & "]" &
+				"}";
+				
+		-- return "";
 	end;
 
 end;

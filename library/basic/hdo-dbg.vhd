@@ -31,9 +31,9 @@ package hdo is
 
 	procedure resolve (
 		constant hdo          : in    string;
-		variable value_offset : inout natural;
+		variable value_offset : inout positive;
 		variable value_length : inout natural;
-		variable tag1_offset  : inout natural;
+		variable tag1_offset  : inout positive;
 		variable tag1_length  : inout natural);
 
 	function resolve (
@@ -384,7 +384,7 @@ package body hdo is
 	
 	function skipws (
 		constant hdo       : in string;
-		constant hdo_index : in natural)
+		constant hdo_index : in positive)
 		return positive is
 		variable retval : natural;
 	begin
@@ -398,7 +398,7 @@ package body hdo is
 
 	procedure skipws (
 		constant hdo       : in    string;
-		variable hdo_index : inout natural) is
+		variable hdo_index : inout positive) is
 	begin
 		for i in hdo'range loop
 			if i >= hdo_index then 
@@ -412,8 +412,8 @@ package body hdo is
 
 	procedure parse_string (
 		constant hdo       : in    string;
-		variable hdo_index : inout natural;
-		variable offset    : inout natural;
+		variable hdo_index : inout positive;
+		variable offset    : inout positive;
 		variable length    : inout natural) is
 		variable aphos     : boolean := false;
 		variable bkslh     : boolean := false;
@@ -484,8 +484,8 @@ package body hdo is
 
 	procedure parse_natural (
 		constant hdo       : in    string;
-		variable hdo_index : inout natural;
-		variable offset    : inout natural;
+		variable hdo_index : inout positive;
+		variable offset    : inout positive;
 		variable length    : inout natural) is
 	begin
 		skipws(hdo, hdo_index);
@@ -507,8 +507,8 @@ package body hdo is
 
 	procedure parse_keytag (
 		constant hdo       : in    string;
-		variable hdo_index : inout natural;
-		variable offset    : inout natural;
+		variable hdo_index : inout positive;
+		variable offset    : inout positive;
 		variable length    : inout natural) is
 		variable open_char : character;
 	begin
@@ -541,7 +541,6 @@ package body hdo is
 					severity note; --|note
 
 				if length=0 then
-					parse_string(hdo, hdo_index, offset, length);
 
 					assert false --|
 						report LF & "parse_keytag -> invalid key : " & hdo(hdo_index to hdo'right)  --|
@@ -612,9 +611,9 @@ package body hdo is
 	procedure parse_key (
 		constant hdo        : in    string;
 		variable hdo_index  : inout natural;
-		variable offset     : inout natural;
+		variable offset     : inout positive;
 		variable length     : inout natural) is
-		variable tag_offset : natural;
+		variable tag_offset : positive;
 		variable tag_length : natural;
 	begin
 		skipws(hdo, hdo_index);
@@ -622,7 +621,7 @@ package body hdo is
 		assert ((log/log_parsekey) mod 2=0) --|note
 			report LF & "parse_key => hdo : " & '"' & hdo(hdo_index to hdo'right)  & '"'--|note
 			severity note; --|note
-		loop
+		for i in hdo'range loop
 			parse_keytag(hdo, hdo_index, tag_offset, tag_length);
 			assert ((log/log_parsekey) mod 2=0) --|note
 				report LF & "parse_key => tag -> " & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' --|note
@@ -639,8 +638,8 @@ package body hdo is
 
 	procedure parse_value (
 		constant hdo       : in    string;
-		variable hdo_index : inout natural;
-		variable offset    : inout natural;
+		variable hdo_index : inout positive;
+		variable offset    : inout positive;
 		variable length    : inout natural) is
 		variable hdo_stack : string(1 to 32);
 		variable hdo_stptr : positive := hdo_stack'left;
@@ -730,13 +729,13 @@ package body hdo is
 
 	procedure parse_tagvaluekey (
 		constant hdo          : string;  -- Xilinx ISE bug left and right are not sent according slice
-		variable hdo_index    : inout natural;
-		constant hdo_right    : natural; -- Xilinx ISE bug. left and right are not sent according slice
-		variable tag_offset   : inout natural;
+		variable hdo_index    : inout positive;
+		constant hdo_right    : positive; -- Xilinx ISE bug. left and right are not sent according slice
+		variable tag_offset   : inout positive;
 		variable tag_length   : inout natural;
-		variable value_offset : inout natural;
+		variable value_offset : inout positive;
 		variable value_length : inout natural;
-		variable key_offset   : inout natural;
+		variable key_offset   : inout positive;
 		variable key_length   : inout natural) is
 	begin
 		assert ((log/log_parsetagvaluekey) mod 2=0) --|note
@@ -807,15 +806,15 @@ package body hdo is
 		
 	procedure parse_tagvaluekeydefault (
 		constant hdo            : in    string; -- Xilinx ISE bug left and right are not sent according slice
-		variable hdo_index      : inout natural;
-		constant hdo_right      : in    natural; -- Xilinx ISE bug. left and right are not sent according slice
-		variable tag_offset     : inout natural;
+		variable hdo_index      : inout positive;
+		constant hdo_right      : in    positive; -- Xilinx ISE bug. left and right are not sent according slice
+		variable tag_offset     : inout positive;
 		variable tag_length     : inout natural;
-		variable value_offset   : inout natural;
+		variable value_offset   : inout positive;
 		variable value_length   : inout natural;
-		variable key_offset     : inout natural;
+		variable key_offset     : inout positive;
 		variable key_length     : inout natural;
-		variable default_offset : inout natural;
+		variable default_offset : inout positive;
 		variable default_length : inout natural) is
 	begin
 		parse_tagvaluekey(
@@ -840,17 +839,17 @@ package body hdo is
 
 	procedure locate_value (
 		constant hdo            : in    string;
-		variable hdo_index      : inout natural;
+		variable hdo_index      : inout positive;
 		constant key            : in    string;
-		variable tag_offset     : inout natural;
+		variable tag_offset     : inout positive;
 		variable tag_length     : inout natural;
-		variable offset         : inout natural;
+		variable offset         : inout positive;
 		variable length         : inout natural) is
-		variable key_offset     : natural;
+		variable key_offset     : positive;
 		variable key_length     : natural;
-		variable value_offset   : natural;
+		variable value_offset   : positive;
 		variable value_length   : natural;
-		variable default_offset : natural;
+		variable default_offset : positive;
 		variable default_length : natural;
 		variable position       : natural;
 		variable open_char      : character;
@@ -1030,23 +1029,23 @@ package body hdo is
 
 	procedure resolve (
 		constant hdo           : in    string;
-		variable value_offset  : inout natural;
+		variable value_offset  : inout positive;
 		variable value_length  : inout natural;
-		variable tag1_offset   : inout natural;
+		variable tag1_offset   : inout positive;
 		variable tag1_length   : inout natural) is
 
-		variable hdo_index     : natural;
-		variable key_offset    : natural;
+		variable hdo_index     : positive;
+		variable key_offset    : positive;
 		variable key_length    : natural;
-		variable keytag_offset : natural;
+		variable keytag_offset : positive;
 		variable keytag_length : natural;
-		variable keytag_index  : natural;
+		variable keytag_index  : positive;
 
-		variable hdo_offset    : natural;
+		variable hdo_offset    : positive;
 		variable hdo_length    : natural;
-		variable tag_offset    : natural;
+		variable tag_offset    : positive;
 		variable tag_length    : natural;
-		variable default_offset    : natural;
+		variable default_offset    : positive;
 		variable default_length    : natural;
 	begin
 		hdo_index := hdo'left;
@@ -1118,22 +1117,26 @@ package body hdo is
 	function resolve (
 		constant hdo : string)
 		return string is
-		variable hdo_offset : natural;
+		variable hdo_offset : positive;
 		variable hdo_length : natural;
-		variable tag_offset : natural;
+		variable tag_offset : positive;
 		variable tag_length : natural;
 	begin
 		resolve (hdo, hdo_offset, hdo_length, tag_offset, tag_length);
-		return hdo(hdo_offset to hdo_offset+hdo_length-1);
+		if hdo_length/=0 then
+			return hdo(hdo_offset to hdo_offset+hdo_length-1);
+		else
+			return "";
+		end if;
 	end;
 
 	function resolve (
 		constant hdo : string)
 		return boolean is
         constant true_value : string := "true";
-		variable hdo_offset : natural;
+		variable hdo_offset : positive;
 		variable hdo_length : natural;
-		variable tag_offset : natural;
+		variable tag_offset : positive;
 		variable tag_length : natural;
 	begin
 		resolve (hdo, hdo_offset, hdo_length, tag_offset, tag_length);
@@ -1148,9 +1151,9 @@ package body hdo is
 	function resolve (
 		constant hdo : string)
 		return integer is
-		variable hdo_offset : natural;
+		variable hdo_offset : positive;
 		variable hdo_length : natural;
-		variable tag_offset : natural;
+		variable tag_offset : positive;
 		variable tag_length : natural;
 	begin
 		resolve (hdo, hdo_offset, hdo_length, tag_offset, tag_length);
@@ -1160,9 +1163,9 @@ package body hdo is
 	function resolve (
 		constant obj : string)
 		return real is
-		variable hdo_offset : natural;
+		variable hdo_offset : positive;
 		variable hdo_length : natural;
-		variable tag_offset : natural;
+		variable tag_offset : positive;
 		variable tag_length : natural;
 	begin
 		resolve (obj, hdo_offset, hdo_length, tag_offset, tag_length);
@@ -1172,9 +1175,9 @@ package body hdo is
 	function resolve (
 		constant obj : string)
 		return std_logic_vector is
-		variable hdo_offset : natural;
+		variable hdo_offset : positive;
 		variable hdo_length : natural;
-		variable tag_offset : natural;
+		variable tag_offset : positive;
 		variable tag_length : natural;
 	begin
 		resolve (obj, hdo_offset, hdo_length, tag_offset, tag_length);
@@ -1238,9 +1241,9 @@ package body hdo is
 	function tag (
 		constant obj : hdo)
 		return string is
-		variable hdo_offset : natural;
+		variable hdo_offset : positive;
 		variable hdo_length : natural;
-		variable tag_offset : natural;
+		variable tag_offset : positive;
 		variable tag_length : natural;
 	begin
 		report LF & "Entre";

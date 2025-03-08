@@ -59,7 +59,15 @@ entity usbhostrqst is
 end;
 
 architecture def of usbhostrqst is
-	constant test : string := segment("[{data : 0x8006000100004000}]");
+	constant xxx : string := "[{content:0x8006000100004000},{content:0xffff},{content:0xffff}]";
+	constant test : string := segment(xxx);
+	constant test1 : string := segment_table(hdo(test)**".segment");
+	constant test2 : string := "{content:1010000001000010000000010000000000010000000,address:2,data:14}";
+	-- constant test1 : string(1 to test2'length) := test2;
+	constant bitrom : string := hdo(test1);
+	constant bitrom1 : string := resolve(test1&".content");
+	-- signal addr : std_logic_vector(0 to hdo(test1)**".address"-1);
+	-- signal data : std_logic_vector(0 to hdo(test1)**".data"-1);
 	signal config_req : bit;
 	signal config_rdy : bit;
 begin
@@ -98,11 +106,17 @@ begin
 		end if;
 	end process;
 
+	-- xxx_i : entity hdl4fpga.rom
+	-- generic map (
+		-- bitrom => reverse(hdo(test1)**".content",8))
+	-- port map (
+		-- addr => addr,
+		-- data => data);
 	config_p : process (clk)
 
 		type states is (s_idle, s_data);
 		variable state : states;
-		constant descriptor_data   : std_logic_vector := reverse(hdo(test)**".data",8);
+		constant descriptor_data   : std_logic_vector := reverse(hdo(test)**".content",8);
 		variable descriptor_addr   : natural range 0 to descriptor_data'length;
 		variable descriptor_length : unsigned(0 to unsigned_num_bits(descriptor_data'length-1)) := (others => '1');
 		alias txdis is descriptor_length(0);
