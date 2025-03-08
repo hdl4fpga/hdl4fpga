@@ -185,7 +185,8 @@ package body usbpkg is
 			exit when not valid;
 		end loop;
 		length_num_bits := unsigned_num_bits(max(lengths(0 to n-1)));
-		offset_num_bits := unsigned_num_bits(max(offsets(0 to n-1)));
+		offset_num_bits := unsigned_num_bits(offsets(n-1)+lengths(n-1)-1);
+		report "============================== " & natural'image(offset_num_bits);
 		if n > 1 then 
 			address := unsigned_num_bits(n-1);
 		else
