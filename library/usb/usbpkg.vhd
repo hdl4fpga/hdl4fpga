@@ -157,13 +157,14 @@ package body usbpkg is
 			variable content : unsigned(0 to (offset_num_bits+length_num_bits)*offsets'length-1);
 		begin
 			assert offsets'length=lengths'length
-				report "segment_table() : offsets'length -> (" & natural'image(offsets'length) & ") /= " & "lengths'length -> (" & natural'image(lengths'length) & ")"
+				report "segment_table() : offsets'length => (" & natural'image(offsets'length) & ") /= " & "lengths'length -> (" & natural'image(lengths'length) & ")"
 				severity failure;
+
 			for i in offsets'range loop
-				content := content srl offset_num_bits;
 				content(0 to offset_num_bits-1) := to_unsigned(offsets(i), offset_num_bits);
-				content := content srl length_num_bits;
-				content(0 to length_num_bits-1) := to_unsigned(lengths(i), length_num_bits);
+				content := content rol offset_num_bits;
+				content(0 to length_num_bits-1) := to_unsigned(lengths(i)-1, length_num_bits);
+				content := content rol length_num_bits;
 			end loop;
 			return std_logic_vector(content);
 		end;
@@ -180,13 +181,17 @@ package body usbpkg is
 	begin
 		for i in 0 to max_segments-1 loop
 			n := i;
-			get_value(lengths(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][0]=")));
-			get_value(offsets(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][1]=")));
+			get_value(offsets(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][0]=")));
+			get_value(lengths(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][1]=")));
 			exit when not valid;
 		end loop;
-		length_num_bits := unsigned_num_bits(max(lengths(0 to n-1)));
+		length_num_bits := unsigned_num_bits(max(lengths(0 to n-1))-1);
 		offset_num_bits := unsigned_num_bits(offsets(n-1)+lengths(n-1)-1);
-		report "============================== " & natural'image(offset_num_bits);
+
+		assert true 
+			report "segment_table() : length_num_bits -> " & natural'image(length_num_bits)
+			severity note;
+
 		if n > 1 then 
 			address := unsigned_num_bits(n-1);
 		else
@@ -275,8 +280,8 @@ package body usbpkg is
 			-- severity failure;
 		return
 			"{" &
-			"content:0x"&to_string(content(0 to pos-1), 16) & "," &
-			"table:[" & table(1 to table_pos-1) & "]" &
+				"content:0x" & to_string(content(0 to pos-1), 16) & "," &
+				"table:["    & table(1 to table_pos-1) & "]"      &
 			"}";
 	end;
 

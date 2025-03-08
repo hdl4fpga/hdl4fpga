@@ -541,7 +541,6 @@ package body hdo is
 					severity note; --|note
 
 				if length=0 then
-
 					assert false --|
 						report LF & "parse_keytag -> invalid key : " & hdo(hdo_index to hdo'right)  --|
 						severity failure; --|

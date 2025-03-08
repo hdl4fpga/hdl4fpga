@@ -62,13 +62,14 @@ architecture def of usbhostrqst is
 	constant test   : string := segment_map("[{content:0x8006000100004000},{content:0xffff},{content:0xffff}]");
 	constant table  : string := segment_table(hdo(test)**".table");
 	constant bitrom : string := hdo(table)**".content";
-	signal segment_id        : std_logic_vector(0 to hdo(table)**".address"-1);
+	signal segment_id        : std_logic_vector(0 to hdo(table)**".address"-1) := (others => '0');
 	signal segment_data      : std_logic_vector(0 to hdo(table)**".data"-1);
 	signal segment_offset    : std_logic_vector(natural'(hdo(table)**".offset.left") to natural'(hdo(table)**".offset.right"));
 	signal segment_length    : std_logic_vector(natural'(hdo(table)**".length.left") to natural'(hdo(table)**".length.right"));
 	signal descriptor_length : unsigned(0 to segment_length'length);
 	signal descriptor_addr   : unsigned(segment_offset'range);
 	signal descriptor_data   : std_logic_vector(0 to 0);
+	alias txdis is descriptor_length(descriptor_length'left);
 
 	signal config_req : bit;
 	signal config_rdy : bit;
@@ -110,7 +111,7 @@ begin
 
 	segmenttable_i : entity hdl4fpga.rom
 	generic map (
-		bitrom => reverse(hdo(table)**".content",8))
+		bitrom => hdo(table)**".content")
 	port map (
 		addr => segment_id,
 		data => segment_data);
@@ -127,7 +128,6 @@ begin
 	config_p : process (clk)
 		type states is (s_idle, s_data);
 		variable state : states;
-		alias txdis is descriptor_length(descriptor_length'left);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then

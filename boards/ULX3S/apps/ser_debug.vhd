@@ -147,7 +147,7 @@ begin
 			signal setup_rdy : std_logic := '0';
 		begin
 			process (videoio_clk)
-				variable ena : bit := '0';
+				variable ena : bit := '1';
 			begin
 				if rising_edge(videoio_clk) then
 					if fire1='1' then
