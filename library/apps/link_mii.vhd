@@ -83,7 +83,7 @@ begin
    			last_rxd := mii_rxdv;
    		end if;
 		if rmii then
-       		rmii : if mii_rxdv='1' then
+       		rmii_l: if mii_rxdv='1' then
        			rxdv <= '1';
        		elsif last_rxd='1' then
        			rxdv <= '1';

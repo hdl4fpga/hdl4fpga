@@ -82,8 +82,9 @@ package usbpkg is
 		interface => x"04",
 		endpoint  => x"05");
 	
-	function segment (
-		constant description  : string)
+	function segment_map (
+		constant description : string;
+		constant max_length  : natural := 1024)
 		return string;
 
 	function segment_table (
@@ -153,7 +154,7 @@ package body usbpkg is
 			constant lengths : natural_vector;
 			constant length_num_bits : natural)
 			return std_logic_vector is
-			variable content : unsigned(0 to (offset_num_bits+length_num_bits)*offsets'length);
+			variable content : unsigned(0 to (offset_num_bits+length_num_bits)*offsets'length-1);
 		begin
 			assert offsets'length=lengths'length
 				report "segment_table() : offsets'length -> (" & natural'image(offsets'length) & ") /= " & "lengths'length -> (" & natural'image(lengths'length) & ")"
@@ -175,7 +176,6 @@ package body usbpkg is
 		variable n       : natural;
 		variable address : natural;
 		variable num_bits : natural;
-		variable retval : string(1 to 2048);
 		variable pos : positive;
 	begin
 		for i in 0 to max_segments-1 loop
@@ -194,15 +194,15 @@ package body usbpkg is
 		num_bits := offset_num_bits+length_num_bits;
 		return
 			"{" &
-			-- "content:0b1010101010101010," &
 			"content:" & to_string(table_content(offsets(0 to n-1), offset_num_bits, lengths(0 to n-1), length_num_bits)) & "," &
 			"address:" & natural'image(address) & "," &
 			"data:" & natural'image(num_bits) &
 			"}";
 	end;
 
-	function segment (
-		constant description  : string)
+	function segment_map (
+		constant description : string;
+		constant max_length  : natural := 1024)
 		return string is
 
    		procedure copy (
@@ -245,30 +245,31 @@ package body usbpkg is
 		variable content : std_logic_vector(0 to description'length*4-1);
 		variable pos  : natural;
 		variable scc  : natural;
-		variable segment : string(1 to 1024);
-		variable segment_pos : positive;
+		variable table : string(1 to max_length);
+		variable table_pos : positive;
 	begin
 		pos := content'left;
-		segment_pos := segment'left;
+		table_pos := table'left;
 		for i in 0 to description'right-description'left loop
 			append(content, scc, pos, hdo(description)**("["& natural'image(i) &"].content="));
 			if scc=pos then
-				segment_pos := segment_pos - 1;
+				table_pos := table_pos - 1;
 				exit;
 			end if;
-			segment(segment_pos) := '[';
-			segment_pos := segment_pos + 1;
-			copy(segment, segment_pos, segment_pos, natural'image(pos)&",");
-			copy(segment, segment_pos, segment_pos, natural'image(scc-pos)&"],");
+			table(table_pos) := '[';
+			table_pos := table_pos + 1;
+			copy(table, table_pos, table_pos, natural'image(pos)&",");
+			copy(table, table_pos, table_pos, natural'image(scc-pos)&"],");
 			pos := scc;
 		end loop;
-			return
-				"{" &
-				"content:0x"&to_string(content(0 to pos-1), 16) & "," &
-				"segment:[" & segment(1 to segment_pos-1) & "]" &
-				"}";
-				
-		-- return "";
+		-- assert false
+			-- report "segment_map() : " 
+			-- severity failure;
+		return
+			"{" &
+			"content:0x"&to_string(content(0 to pos-1), 16) & "," &
+			"table:[" & table(1 to table_pos-1) & "]" &
+			"}";
 	end;
 
 end;

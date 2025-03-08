@@ -59,15 +59,11 @@ entity usbhostrqst is
 end;
 
 architecture def of usbhostrqst is
-	constant xxx : string := "[{content:0x8006000100004000},{content:0xffff},{content:0xffff}]";
-	constant test : string := segment(xxx);
-	constant test1 : string := segment_table(hdo(test)**".segment");
-	constant test2 : string := "{content:1010000001000010000000010000000000010000000,address:2,data:14}";
-	-- constant test1 : string(1 to test2'length) := test2;
-	constant bitrom : string := hdo(test1);
-	constant bitrom1 : string := resolve(test1&".content");
-	-- signal addr : std_logic_vector(0 to hdo(test1)**".address"-1);
-	-- signal data : std_logic_vector(0 to hdo(test1)**".data"-1);
+	constant test   : string := segment_map("[{content:0x8006000100004000},{content:0xffff},{content:0xffff}]");
+	constant table  : string := segment_table(hdo(test)**".table");
+	constant bitrom : string := hdo(table)**".content";
+	signal addr : std_logic_vector(0 to hdo(table)**".address"-1);
+	signal data : std_logic_vector(0 to hdo(table)**".data"-1);
 	signal config_req : bit;
 	signal config_rdy : bit;
 begin
@@ -106,12 +102,13 @@ begin
 		end if;
 	end process;
 
-	-- xxx_i : entity hdl4fpga.rom
-	-- generic map (
-		-- bitrom => reverse(hdo(test1)**".content",8))
-	-- port map (
-		-- addr => addr,
-		-- data => data);
+	xxx_i : entity hdl4fpga.rom
+	generic map (
+		bitrom => reverse(hdo(table)**".content",8))
+	port map (
+		addr => addr,
+		data => data);
+
 	config_p : process (clk)
 
 		type states is (s_idle, s_data);

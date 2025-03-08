@@ -840,7 +840,8 @@ package body hdo is
 	procedure locate_value (
 		constant hdo            : in    string;
 		variable hdo_index      : inout positive;
-		constant key            : in    string;
+		constant key_left       : in    positive;
+		constant key_right      : in    positive;
 		variable tag_offset     : inout positive;
 		variable tag_length     : inout natural;
 		variable offset         : inout positive;
@@ -956,18 +957,19 @@ package body hdo is
 				report LF & "locate_value => hdo -> " & natural'image(value_offset) & ':' & natural'image(value_offset+value_length-1) & " " & '"' & hdo(value_offset to value_offset+value_length-1) & '"' --|note
 				severity note; --|note
 
-			if not isdigit(key(key'left)) then
+			-- if not isdigit(key(key'left)) then
+			if not isdigit(hdo(key_left)) then
 				assert ((log/log_locatevalue) mod 2=0) --|note
-					report LF &"locate_value => object request key " & key & " -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & ' ' & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' --|note
+					report LF &"locate_value => object request key " & hdo(key_left to key_right) & " -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & ' ' & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' --|note
 					severity note; --|note
 
 				if tag_length/=0 then
-					if compare_string(key, hdo(tag_offset to tag_offset+tag_length-1)) then
+					if compare_string(hdo(key_left to key_right), hdo(tag_offset to tag_offset+tag_length-1)) then
 						offset := tag_offset;
 						length := hdo_index-offset;
 					end if;
 				end if;
-			elsif to_integer(key) <= position then
+			elsif to_integer(hdo(key_left to key_right)) <= position then
 				offset := tag_offset;
 				length := hdo_index-offset;
 
@@ -1067,10 +1069,11 @@ package body hdo is
 					exit;
 				end if;
 				assert ((log/log_resolve) mod 2=0) --|note
-					report LF & "resolve => tag         -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & hdo(tag_offset to tag_offset+tag_length-1) & LF & --|note
-					       "resolve => hdo_index   -> " & natural'image(hdo_index) --|note
+					report LF &  --|note
+						"resolve => tag         -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & hdo(tag_offset to tag_offset+tag_length-1) & LF & --|note
+						"resolve => hdo_index   -> " & natural'image(hdo_index) --|note
 					severity note; --|note
-				locate_value(hdo, value_offset, hdo(tag_offset to tag_offset+tag_length-1), tag1_offset, tag1_length, hdo_offset, hdo_length);
+				locate_value(hdo, value_offset, tag_offset, tag_offset+tag_length-1 , tag1_offset, tag1_length, hdo_offset, hdo_length);
 				if hdo_length=0 then --| Xilinx ISE 14.7 warning complain
 					assert false --|note
 						report LF & "resolve => invalid key -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' & LF --|note

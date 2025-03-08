@@ -158,8 +158,8 @@ architecture def of serlzr  is
 begin 
 
 	assert not debug_mm
-	report CR & "(MAX => " & natural'image(mm(0)) & ", MASK0 => " & to_string((to_unsigned(mm(1), shf'length))) & ", MASK1 => " & to_string((to_unsigned(mm(2), shf'length))) & ")"
-	severity note;
+		report CR & "(MAX => " & natural'image(mm(0)) & ", MASK0 => " & hdl4fpga.base.to_string((to_unsigned(mm(1), shf'length))) & ", MASK1 => " & hdl4fpga.base.to_string((to_unsigned(mm(2), shf'length))) & ")"
+		severity note;
 
 	srcgtdst_g : if src_data'length > dst_data'length generate
 		signal fifo_trdy : std_logic;
