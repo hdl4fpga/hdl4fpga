@@ -194,10 +194,17 @@ package body usbpkg is
 		num_bits := offset_num_bits+length_num_bits;
 		return
 			"{" &
-			"content:" & to_string(table_content(offsets(0 to n-1), offset_num_bits, lengths(0 to n-1), length_num_bits)) & "," &
-			"address:" & natural'image(address) & "," &
-			"data:" & natural'image(num_bits) &
-			"}";
+				"content:" & to_string(table_content(offsets(0 to n-1), offset_num_bits, lengths(0 to n-1), length_num_bits)) & "," &
+				"address:" & natural'image(address)  & "," &
+				"data:"    & natural'image(num_bits) & "," &
+				"offset:{"   &
+					"left:"  & natural'image(0) & "," &
+					"right:" & natural'image(offset_num_bits-1) & "," &
+					"},"     &
+				"length:{"   &
+					"left:"  & natural'image(offset_num_bits)   & "," &
+					"right:" & natural'image(num_bits-1) & ","  &
+					"}}";
 	end;
 
 	function segment_map (

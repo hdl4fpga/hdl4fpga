@@ -62,8 +62,10 @@ architecture def of usbhostrqst is
 	constant test   : string := segment_map("[{content:0x8006000100004000},{content:0xffff},{content:0xffff}]");
 	constant table  : string := segment_table(hdo(test)**".table");
 	constant bitrom : string := hdo(table)**".content";
-	signal addr : std_logic_vector(0 to hdo(table)**".address"-1);
-	signal data : std_logic_vector(0 to hdo(table)**".data"-1);
+	signal segment_id     : std_logic_vector(0 to hdo(table)**".address"-1);
+	signal segment_data   : std_logic_vector(0 to hdo(table)**".data"-1);
+	signal segment_offset : std_logic_vector(natural'(hdo(table)**".offset.left") to natural'(hdo(table)**".offset.right")-1);
+	signal segment_length : std_logic_vector(natural'(hdo(table)**".length.left") to natural'(hdo(table)**".length.right")-1);
 	signal config_req : bit;
 	signal config_rdy : bit;
 begin
@@ -102,12 +104,19 @@ begin
 		end if;
 	end process;
 
-	xxx_i : entity hdl4fpga.rom
+	segmenttable_i : entity hdl4fpga.rom
 	generic map (
 		bitrom => reverse(hdo(table)**".content",8))
 	port map (
-		addr => addr,
-		data => data);
+		addr => segment_id,
+		data => segment_data);
+
+	-- segmenttable_i : entity hdl4fpga.rom
+	-- generic map (
+		-- bitrom => reverse(hdo(test)**".content",8))
+	-- port map (
+		-- addr => segment_id,
+		-- data => segment_addr);
 
 	config_p : process (clk)
 
