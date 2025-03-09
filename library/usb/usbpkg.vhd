@@ -37,7 +37,7 @@ package usbpkg is
 	constant data1     : std_logic_vector := x"b";
 
 	constant hs_ack    : std_logic_vector := x"2";
-	constant hs_nack   : std_logic_vector := x"a";
+	constant hs_nak    : std_logic_vector := x"a";
 	constant hs_stall  : std_logic_vector := x"e";
 
 	type requests is (

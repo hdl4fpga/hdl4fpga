@@ -44,7 +44,7 @@ entity usbhostrqst is
 		dev_ack   : in  std_logic := '1';
 		tksetup_req : buffer std_logic := '0';
 		tksetup_rdy : in  std_logic := '0';
-		tkin_req  : buffer std_logic;
+		tkin_req  : buffer std_logic := '0';
 		tkin_rdy  : in  std_logic;
 		sof_tick  : in  std_logic;
 
@@ -61,9 +61,7 @@ end;
 architecture def of usbhostrqst is
 	constant test   : string := segment_map(
 		"["&
-			"{content:0x8006000100004000}," & 
-			"{content:0xffff},"             &
-			"{content:0xffff}"              & 
+			"{content:0x8006000100004000}" & 
 		"]");
 
 	constant table  : string := segment_table(hdo(test)**".table");
@@ -77,12 +75,14 @@ architecture def of usbhostrqst is
 	signal descriptor_data   : std_logic_vector(0 to 0);
 	alias txdis is descriptor_length(descriptor_length'left);
 
-	signal config_req : bit;
-	signal config_rdy : bit;
+	signal send_req   : bit;
+	signal send_rdy   : bit;
+	signal descriptor_req : bit;
+	signal descriptor_rdy : bit;
 begin
 
 	setup_p : process (cken, clk)
-		type states is (s_idle, s_flush, s_config, s_tksetup);
+		type states is (s_idle, s_flush, s_request, s_in);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
@@ -95,18 +95,19 @@ begin
 					end if;
    				when s_flush =>
 					if (flush_req xor flush_rdy)='0' then
-						config_req <= not config_rdy;
-						state := s_config;
+						descriptor_req <= not descriptor_rdy;
+						tksetup_req    <= not tksetup_rdy;
+						state := s_request;
 					end if;
-				when s_config =>
-					if (config_req xor config_rdy)='0' then
+				when s_request =>
+					if (descriptor_req xor descriptor_rdy)='0' then
 						dev_addr <= (others => '0');
 						dev_endp <= (others => '0');
-						tksetup_req <= not tksetup_rdy;
-						state := s_tksetup;
+						tkin_req <= not tkin_rdy;
+						state := s_in;
 					end if;
-				when s_tksetup =>
-					if (tksetup_req xor tksetup_rdy)='0' then
+				when s_in =>
+					if (tkin_req xor tkin_rdy)='0' then
 						setup_rdy <= setup_req;
 						state := s_idle;
 					end if;
@@ -131,31 +132,53 @@ begin
 		addr => std_logic_vector(descriptor_addr),
 		data => descriptor_data);
 
-	config_p : process (clk)
+	descriptor_p : process (clk)
+		type states is (s_idle, s_send);
+		variable state : states;
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (descriptor_rdy xor descriptor_req)='1' then
+					case state is
+					when s_idle => 
+						segment_id <= (others => '0');
+						send_req <= not send_rdy;
+						state := s_send;
+					when s_send =>
+						if (send_rdy xor send_req)='0' then
+							descriptor_rdy <= descriptor_req;
+							state := s_idle;
+						end if;
+					end case;
+				else
+					state := s_idle;
+				end if;
+			end if;
+		end if;
+	end process;
+
+	send_p : process (clk)
 		type states is (s_idle, s_data);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (config_rdy xor config_req)='1' then
-					case state is
-					when s_idle => 
-						descriptor_addr   <= unsigned(segment_offset);
-						descriptor_length <= resize(unsigned(segment_length), descriptor_length'length);
-						state := s_data;
-					when s_data =>
-						if txdis='0' then
-							if txbs='0' then
-								descriptor_addr   <= descriptor_addr   + 1;
-								descriptor_length <= descriptor_length - 1;
-							end if;
-						elsif dev_ack='1' then
-							config_rdy <= config_req;
-							-- state := s_idle;
+				if (send_rdy xor send_req)='1' then
+    				case state is
+    				when s_idle => 
+    					descriptor_addr   <= unsigned(segment_offset);
+    					descriptor_length <= resize(unsigned(segment_length), descriptor_length'length);
+    					state := s_data;
+    				when s_data =>
+    					if txdis='0' then
+    						if txbs='0' then
+    							descriptor_addr   <= descriptor_addr   + 1;
+    							descriptor_length <= descriptor_length - 1;
+    						end if;
 						else
-							config_rdy <= config_req;
-						end if;
-					end case;
+    						send_rdy <= send_req;
+    					end if;
+    				end case;
 				else
 					descriptor_length <= (others => '1');
 					state := s_idle;

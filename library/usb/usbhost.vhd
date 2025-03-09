@@ -49,8 +49,8 @@ entity usbhost is
 		dev_ack     : out std_logic;
 		tksetup_req : in std_logic := '0';
 		tksetup_rdy : buffer std_logic := '0';
-		tkin_req    : in std_logic := '0';
-		tkin_rdy    : buffer std_logic;
+		tkin_req    : in std_logic;
+		tkin_rdy    : buffer std_logic :='0';
 		sof_tick    : out std_logic;
 
 
@@ -268,6 +268,8 @@ begin
 		flush_rdy => flush_rdy,
 		tksetup_req => tksetup_req,
 		tksetup_rdy => tksetup_rdy,
+		tkin_req => tkin_req,
+		tkin_rdy => tkin_rdy,
 		sof_tick  => sof_tick,
 		txen => dev_txen, 
 		txbs => dev_txbs,
