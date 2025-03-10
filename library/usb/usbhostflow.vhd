@@ -138,7 +138,7 @@ begin
 	sof_fmf <= to_stdlogicvector(bit_vector(sof_cntr));
 
 	hosttodev_p : process (tkin_rdy, clk)
-		type states is (s_idle, s_bulk, s_ack, s_nak);
+		type states is (s_idle, s_out, s_ack, s_nak);
 		variable state : states;
 		variable tick_cntr : unsigned(0 to 1);
 	begin
@@ -165,7 +165,7 @@ begin
 								tkdata(dev_addr'range) <= dev_addr;
 								tx_req  <= not tx_rdy;
 								out_req <= not out_rdy;
-								state := s_bulk;
+								state := s_out;
 							elsif (tkin_rdy xor tkin_req)='1' then
 								txpid  <= tk_in;
 								tkdata(dev_endp'range) <= dev_endp;
@@ -180,7 +180,17 @@ begin
 								tx_req <= not tx_rdy;
 							end if;
 							tick_cntr := (others => '0');
-						when s_bulk =>
+						when s_out =>
+							ackrx_rdy <= ackrx_req;
+							case tkdata(dev_endp'range) is
+							when (dev_endp'range => '0') =>
+								txpid  <= ddata;
+							when others =>
+								txpid  <= ddatai;
+							end case;
+							tx_req <= not tx_rdy;
+							state := s_ack;
+						when s_in =>
 							ackrx_rdy <= ackrx_req;
 							case tkdata(dev_endp'range) is
 							when (dev_endp'range => '0') =>
@@ -198,9 +208,6 @@ begin
 								ackrx_rdy   <= ackrx_req;
 								state := s_idle;
 							end if;
-								-- tksetup_rdy <= tksetup_req; 
-								-- ackrx_rdy   <= ackrx_req;
-								-- state := s_idle;
 						when s_nak =>
 							if (acktx_rdy xor acktx_req)='1' then
 								tkin_rdy <= tkin_req; 
