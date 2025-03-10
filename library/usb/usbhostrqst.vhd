@@ -61,7 +61,14 @@ end;
 architecture def of usbhostrqst is
 	constant test   : string := segment_map(
 		"["&
-			"{content:0x8006000100004000}" & 
+			"{content:0x" & -- Hexadecimal format
+				"80"      & -- GET_CONFIGURATION
+				"06"      & -- GET_DESCRIPTOR
+				"00"      & -- Descriptor index 
+				"01"      & -- Descriptor type -> DEVICE
+				"0000"    & -- Offset 
+				"4000"    & -- Length 64 bytes
+			"}"           & 
 		"]");
 
 	constant table  : string := segment_table(hdo(test)**".table");
