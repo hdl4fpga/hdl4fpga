@@ -101,15 +101,6 @@ architecture def of ecp5_videopll is
 	signal clkos2 : std_logic;
 
 begin
-	assert false
-	report CR &
-		"VIDEO CLK   FREQUENCY : " &       ftoa(video_freq/1.0e6, 6) & " MHz" & CR &
-		"VIDEO CLKOP FREQUENCY : " & ftoa(video_clkop_freq/1.0e6, 6) & " MHz" & CR &
-		"CLKOP  : " & pll_i'FREQUENCY_PIN_CLKOP  & " MHz "  & CR &
-		"CLKOS  : " & pll_i'FREQUENCY_PIN_CLKOS  & " MHz "  & CR &
-		"CLKOS2 : " & pll_i'FREQUENCY_PIN_CLKOS2 & " MHz "  & CR &
-		"CLKOS3 : " & pll_i'FREQUENCY_PIN_CLKOS3 & " MHz "
-	severity NOTE;
 
 	pll_i : EHXPLLL
 	generic map (
@@ -157,6 +148,15 @@ begin
 		INTLOCK   => open,
 		REFCLK    => open,
 		CLKINTFB  => open);
+	assert false
+	report CR &
+		"VIDEO CLK   FREQUENCY : " &       ftoa(video_freq/1.0e6, 6) & " MHz" & CR &
+		"VIDEO CLKOP FREQUENCY : " & ftoa(video_clkop_freq/1.0e6, 6) & " MHz" & CR &
+		"CLKOP  : " & pll_i'FREQUENCY_PIN_CLKOP  & " MHz "  & CR &
+		"CLKOS  : " & pll_i'FREQUENCY_PIN_CLKOS  & " MHz "  & CR &
+		"CLKOS2 : " & pll_i'FREQUENCY_PIN_CLKOS2 & " MHz "  & CR &
+		"CLKOS3 : " & pll_i'FREQUENCY_PIN_CLKOS3 & " MHz "
+	severity NOTE;
 
 	gbx2_g : if gear=2 generate
 		video_phyrst    <= not video_lck;

@@ -41,11 +41,18 @@ entity usbhost is
 		clk  : in  std_logic;
 		cken : buffer std_logic;
 
-		dev_addr : in std_logic_vector(0 to 7-1) := (others => '0');
-		dev_endp : in std_logic_vector(0 to 4-1) := (others => '0');
-		dev_cfgd : buffer std_logic;
-		setup_req : in std_logic;
-		setup_rdy : buffer std_logic;
+		flush_req : in std_logic := '0';
+		flush_rdy : buffer std_logic := '0';
+
+		dev_addr    : in std_logic_vector(0 to 7-1) := (others => '0');
+		dev_endp    : in std_logic_vector(0 to 4-1) := (others => '0');
+		dev_ack     : out std_logic;
+		tksetup_req : in std_logic := '0';
+		tksetup_rdy : buffer std_logic := '0';
+		tkin_req    : in std_logic;
+		tkin_rdy    : buffer std_logic :='0';
+		sof_tick    : out std_logic;
+
 
 		txen : in  std_logic := '-';
 		txbs : out std_logic;
@@ -75,28 +82,10 @@ architecture def of usbhost is
 	signal phy_rxpidv : std_logic;
 	signal phy_rxd   : std_logic;
 
-	signal rqst_rxdv : std_logic;
-	signal rqst_rxbs : std_logic;
-	signal rqst_rxd  : std_logic;
-	signal rqst_txen : std_logic;
-	signal rqst_txbs : std_logic;
-	signal rqst_txd  : std_logic;
 
 	signal phyerr    : std_logic;
 	signal tkerr     : std_logic;
 	signal crcerr    : std_logic;
-
-	signal rqst_req    : bit;
-	signal rqst_rdy    : bit;
-	signal rqstin_req  : bit;
-	signal rqstin_rdy  : bit;
-	signal rqstack_req : bit;
-	signal rqstack_rdy : bit;
-
-	signal tksetup_req : bit;
-	signal tksetup_rdy : bit;
-	signal tkin_req    : bit;
-	signal tkin_rdy    : bit;
 
 	signal tkdata    : std_logic_vector(0 to 11-1);
 
@@ -107,7 +96,7 @@ architecture def of usbhost is
 begin
 
 	tp(1 to 3) <= tp_phy (1 to 3);
-	tp(4 to 5) <= tp_rqst(11 to 12);
+	tp(4 to 7) <= tp_rqst(1 to 4);
   	usbphycrc_e : entity hdl4fpga.usbphycrc
    	generic map (
 		oversampling => oversampling,
@@ -175,10 +164,13 @@ begin
 
 		clk       => clk,
 		cken      => cken,
+		flush_req => flush_req,
+		flush_rdy => flush_rdy,
 		tksetup_req => tksetup_req,
 		tksetup_rdy => tksetup_rdy,
-		tkin_req => tkin_req,
-		tkin_rdy => tkin_rdy,
+		tkin_req  => tkin_req,
+		tkin_rdy  => tkin_rdy,
+		sof_tick  => sof_tick,
 
 		rx_req    => rx_req,
 		rx_rdy    => rx_rdy,
@@ -190,10 +182,6 @@ begin
 		phyerr    => phyerr,
 		tkerr     => tkerr,
 		crcerr    => crcerr,
-		rqstin_req  => rqstin_req,
-		rqstin_rdy  => rqstin_rdy,
-		rqstack_req => rqstack_req,
-		rqstack_rdy => rqstack_rdy,
 
 		tx_req    => tx_req,
 		tx_rdy    => tx_rdy,
@@ -203,6 +191,8 @@ begin
 		txbs      => pkt_txbs,
 		txd       => pkt_txd,
 
+		dev_ack   => dev_ack,
+
 		dev_txen  => txen,
 		dev_txbs  => txbs,
 		dev_txd   => txd,
@@ -211,47 +201,106 @@ begin
 		dev_rxbs  => rxbs,
 		dev_rxd   => rxd,
 		dev_addr  => dev_addr,
-		dev_endp  => dev_endp,
-		dev_cfgd  => dev_cfgd,
+		dev_endp  => dev_endp);
+end;
 
-		rqst_req  => rqst_req,
-		rqst_rdy  => rqst_rdy,
-		rqst_rxdv => rqst_rxdv,
-		rqst_rxbs => rqst_rxbs,
-		rqst_rxd  => rqst_rxd,
-		rqst_txen => rqst_txen,
-		rqst_txbs => rqst_txbs,
-		rqst_txd  => rqst_txd);
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
-	usbrqst_e : entity hdl4fpga.usbhostrqst
+library hdl4fpga;
+use hdl4fpga.base.all;
+use hdl4fpga.usbpkg.all;
+
+entity usbhostdvr is
+   	generic (
+		oversampling  : natural := 0;
+		watermark     : natural := 0;
+		bit_stuffing  : natural := 6);
+	port (
+		tp   : out std_logic_vector(1 to 32);
+
+		dp   : inout std_logic := 'Z';
+		dn   : inout std_logic := 'Z';
+
+		clk  : in  std_logic;
+		cken : buffer std_logic;
+
+		setup_req : in std_logic := '0';
+		setup_rdy : buffer std_logic := '0');
+
+end;
+
+architecture def of usbhostdvr is
+
+	signal dev_addr    : std_logic_vector(7-1 downto 0);
+	signal dev_endp    : std_logic_vector(4-1 downto 0);
+	signal dev_ack     : std_logic;
+	signal flush_req   : std_logic;
+	signal flush_rdy   : std_logic;
+	signal tksetup_req : std_logic;
+	signal tksetup_rdy : std_logic;
+	signal tkin_req    : std_logic;
+	signal tkin_rdy    : std_logic;
+	signal sof_tick    : std_logic;
+
+	signal dev_txen : std_logic;
+	signal dev_txbs : std_logic;
+	signal dev_txd  : std_logic;
+
+	signal dev_rxdv : std_logic;
+	signal dev_rxbs : std_logic;
+	signal dev_rxd  : std_logic;
+begin
+
+	usbhost_e : entity hdl4fpga.usbhost
+	generic map (
+		oversampling  => oversampling,
+		watermark     => watermark,
+		bit_stuffing  => bit_stuffing)
+	port map (
+		tp   => tp,
+		dp   => dp,
+		dn   => dn,
+		clk  => clk,
+		cken => cken,
+		flush_req => flush_req,
+		flush_rdy => flush_rdy,
+		tksetup_req => tksetup_req,
+		tksetup_rdy => tksetup_rdy,
+		tkin_req => tkin_req,
+		tkin_rdy => tkin_rdy,
+		sof_tick  => sof_tick,
+		txen => dev_txen, 
+		txbs => dev_txbs,
+		txd  => dev_txd,
+		rxdv => dev_rxdv, 
+		rxbs => dev_rxbs,
+		rxd  => dev_rxd);
+
+	rqstdvr_e : entity hdl4fpga.usbhostrqst
 	port map (
 		clk       => clk,
 		cken      => cken,
 
 		setup_req => setup_req,
 		setup_rdy => setup_rdy,
+		flush_req => flush_req,
+		flush_rdy => flush_rdy,
 		tksetup_req => tksetup_req,
 		tksetup_rdy => tksetup_rdy,
 		tkin_req => tkin_req,
 		tkin_rdy => tkin_rdy,
+		sof_tick  => sof_tick,
 
+		dev_ack   => dev_ack,
 		dev_addr  => dev_addr,
-		dev_cfgd  => dev_cfgd,
-		rqst_req  => rqst_req,
-		rqst_rdy  => rqst_rdy,
-		in_req    => rqstin_req,
-		in_rdy    => rqstin_rdy,
-		ack_req   => rqstack_req,
-		ack_rdy   => rqstack_rdy,
-		phyerr    => phyerr,
-		tkerr     => tkerr,
-		crcerr    => crcerr,
 
-		rxpidv    => rqst_rxdv,
-		rxbs      => rqst_rxbs,
-		rxd       => rqst_rxd,
-		txen      => rqst_txen,
-		txbs      => rqst_txbs,
-		txd       => rqst_txd);
+		rxdv      => dev_rxdv,
+		rxbs      => dev_rxbs,
+		rxd       => dev_rxd,
+		txen      => dev_txen,
+		txbs      => dev_txbs,
+		txd       => dev_txd);
 
 end;

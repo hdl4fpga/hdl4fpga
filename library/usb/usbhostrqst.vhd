@@ -24,6 +24,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.usbpkg.all;
 
@@ -35,27 +36,22 @@ entity usbhostrqst is
 
 		setup_req : in  std_logic;
 		setup_rdy : buffer std_logic := '0';
-		tksetup_req : buffer bit;
-		tksetup_rdy : in  bit;
-		tkin_req  : buffer bit;
-		tkin_rdy  : in  bit;
-		dev_addr  : in std_logic_vector(0 to 7-1);
-		dev_cfgd  : out std_logic;
-		rqst_req  : in  bit;
-		rqst_rdy  : buffer bit;
+		flush_req : buffer  std_logic := '0';
+		flush_rdy : in std_logic := '0';
 
-		rxpidv    : in  std_logic := '-';
-		rxpid     : in  std_logic_vector(4-1 downto 0) := (others => '0');
+		dev_addr  : out std_logic_vector(7-1 downto 0);
+		dev_endp  : out std_logic_vector(11-1 downto 7);
+		dev_ack   : in  std_logic := '1';
+		tksetup_req : buffer std_logic := '0';
+		tksetup_rdy : in  std_logic := '0';
+		tkin_req  : buffer std_logic := '0';
+		tkin_rdy  : in  std_logic;
+		sof_tick  : in  std_logic;
+
+		rxdv      : in  std_logic := '-';
 		rxbs      : in  std_logic := '-';
 		rxd       : in  std_logic := '-';
 
-		in_req    : in  bit;
-		in_rdy    : buffer  bit;
-		ack_req   : in  bit;
-		ack_rdy   : buffer  bit;
-		phyerr    : in  std_logic;
-		tkerr     : in  std_logic;
-		crcerr    : in  std_logic;
 		txen      : out std_logic;
 		txbs      : in  std_logic;
 		txd       : out std_logic);
@@ -63,34 +59,37 @@ entity usbhostrqst is
 end;
 
 architecture def of usbhostrqst is
+	constant test   : string := segment_map(
+		"["&
+			"{content:0x" & -- Hexadecimal format
+				"80"      & -- GET_CONFIGURATION
+				"06"      & -- GET_DESCRIPTOR
+				"00"      & -- Descriptor index 
+				"01"      & -- Descriptor type -> DEVICE
+				"0000"    & -- Offset 
+				"4000"    & -- Length 64 bytes
+			"}"           & 
+		"]");
 
-	signal requesttype : std_logic_vector( 8-1 downto 0);
-	signal request   : std_logic_vector( 8-1 downto 0);
-	signal value     : std_logic_vector(16-1 downto 0);
-	signal index     : std_logic_vector(16-1 downto 0);
-	signal length    : unsigned(16-1 downto 0);
+	constant table  : string := segment_table(hdo(test)**".table");
+	constant bitrom : string := hdo(table)**".content";
+	signal segment_id        : std_logic_vector(0 to hdo(table)**".address"-1) := (others => '0');
+	signal segment_data      : std_logic_vector(0 to hdo(table)**".data"-1);
+	signal segment_offset    : std_logic_vector(natural'(hdo(table)**".offset.left") to natural'(hdo(table)**".offset.right"));
+	signal segment_length    : std_logic_vector(natural'(hdo(table)**".length.left") to natural'(hdo(table)**".length.right"));
+	signal descriptor_length : unsigned(0 to segment_length'length);
+	signal descriptor_addr   : unsigned(segment_offset'range);
+	signal descriptor_data   : std_logic_vector(0 to 0);
+	alias txdis is descriptor_length(descriptor_length'left);
 
-	signal rqst_rdys : bit_requests;
-	signal rqst_reqs : bit_requests;
-
-	alias setaddress_rdy    is rqst_rdys(set_address);
-	alias setaddress_req    is rqst_reqs(set_address);
-	alias getdescriptor_rdy is rqst_rdys(get_descriptor);
-	alias getdescriptor_req is rqst_reqs(get_descriptor);
-	alias setconfiguration_rdy is rqst_rdys(set_configuration);
-	alias setconfiguration_req is rqst_reqs(set_configuration);
-
-	signal descriptor_txen : std_logic;
-	signal descriptor_txd  : std_logic;
-	signal rqstdata_req    : bit;
-	signal rqstdata_rdy    : bit;
-	signal reply_rdy       : bit;
-	signal reply_req       : bit;
-
+	signal send_req   : bit;
+	signal send_rdy   : bit;
+	signal descriptor_req : bit;
+	signal descriptor_rdy : bit;
 begin
 
 	setup_p : process (cken, clk)
-		type states is (s_idle, s_rqstsetup);
+		type states is (s_idle, s_flush, s_request, s_in);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
@@ -98,90 +97,63 @@ begin
    				case state is
    				when s_idle =>
 					if (setup_rdy xor setup_req)='1' then
-						tksetup_req <= not tksetup_rdy;
-						state := s_rqstsetup;
+						flush_req <= not flush_rdy;
+						state := s_flush;
 					end if;
-   				when s_rqstsetup =>
-					if (tksetup_req xor tksetup_rdy)='0' then
-						if (rqst_rdy xor rqst_req)='0' then
-							setup_rdy <= setup_req;
-							state := s_idle;
-						end if;
+   				when s_flush =>
+					if (flush_req xor flush_rdy)='0' then
+						descriptor_req <= not descriptor_rdy;
+						tksetup_req    <= not tksetup_rdy;
+						state := s_request;
+					end if;
+				when s_request =>
+					if (descriptor_req xor descriptor_rdy)='0' then
+						dev_addr <= (others => '0');
+						dev_endp <= (others => '0');
+						tkin_req <= not tkin_rdy;
+						state := s_in;
+					end if;
+				when s_in =>
+					if (tkin_req xor tkin_rdy)='0' then
+						setup_rdy <= setup_req;
+						state := s_idle;
 					end if;
 				end case;
 			end if;
 		end if;
 	end process;
 
-	rqstsetup_p : process (clk)
-		type states is (s_idle, s_data, s_reply);
-		variable state : states;
-	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				if (rqst_rdy xor rqst_req)='1' then
-					case state is
-					when s_idle =>
-						rqstdata_req <= not rqstdata_rdy;
-						state := s_data;
-					when s_data =>
-						if rxpidv='0' then
-							if (rqstdata_req xor rqstdata_rdy)='0' then
-								rqst_rdy <= rqst_req;
-								-- reply_req <= not reply_rdy;
-								state := s_reply;
-							end if;
-						end if;
-					when s_reply =>
-						if (reply_rdy xor reply_req)='0' then
-							rqst_rdy <= rqst_req;
-						end if;
-					end case;
-				else
-					state := s_idle;
-				end if;
-			end if;
-		end if;
-	end process;
+	segmenttable_i : entity hdl4fpga.rom
+	generic map (
+		bitrom => hdo(table)**".content")
+	port map (
+		addr => segment_id,
+		data => segment_data);
+	segment_offset <= segment_data(segment_offset'range);
+	segment_length <= segment_data(segment_length'range);
 
-	request_p : process (rqst_req, clk)
-		type states is (s_idle, s_rqst);
+	segmentcontent_i : entity hdl4fpga.rom
+	generic map (
+		bitrom => reverse(hdo(test)**".content",8))
+	port map (
+		addr => std_logic_vector(descriptor_addr),
+		data => descriptor_data);
+
+	descriptor_p : process (clk)
+		type states is (s_idle, s_send);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (rqst_req xor rqst_rdy)='1' then
+				if (descriptor_rdy xor descriptor_req)='1' then
 					case state is
-					when s_idle =>
-						if (rqstdata_rdy xor rqstdata_req)='1' then
-							-- for i in request_ids'range loop
-								-- if request(4-1 downto 0)=request_ids(i) then
-									-- rqst_reqs(i) <= not rqst_rdys(i);
-									-- state := s_rqst;
-									-- exit;
-								-- end if;
-								-- if i=request_ids'right then
-									-- rqstdata_rdy <= rqstdata_req;
-								-- end if;
-								-- assert i/=request_ids'right 
-									-- report requests'image(i) 
-									-- severity error;
-							-- end loop;
-							getdescriptor_req <= not getdescriptor_rdy;
-							state := s_rqst;
-						end if;
-					when s_rqst =>
-						-- for i in request_ids'range loop
-							-- if (rqst_rdys(i) xor rqst_reqs(i))='1' then
-								-- exit;
-							-- end if;
-							-- if i=request_ids'right then
-								-- rqstdata_rdy <= rqstdata_req;
-								-- state := s_idle;
-							-- end if;
-						-- end loop;
-						if (getdescriptor_rdy xor getdescriptor_req)='0' then
-							rqstdata_rdy <= rqstdata_req;
+					when s_idle => 
+						segment_id <= (others => '0');
+						send_req <= not send_rdy;
+						state := s_send;
+					when s_send =>
+						if (send_rdy xor send_req)='0' then
+							descriptor_rdy <= descriptor_req;
 							state := s_idle;
 						end if;
 					end case;
@@ -192,56 +164,36 @@ begin
 		end if;
 	end process;
 
-	getdescriptor_p : process (clk)
+	send_p : process (clk)
 		type states is (s_idle, s_data);
 		variable state : states;
-		constant descriptor_data   : std_logic_vector := reverse(x"8006000100004000",8);
-		variable descriptor_addr   : natural range 0 to descriptor_data'length;
-		variable descriptor_length : unsigned(0 to unsigned_num_bits(descriptor_data'length-1));
-		alias txdis is descriptor_length(0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (getdescriptor_rdy xor getdescriptor_req)='1' then
-					case state is
-					when s_idle => 
-						descriptor_addr   := 0;
-						descriptor_length := to_unsigned(descriptor_data'length-1, descriptor_length'length);
-						state := s_data;
-					when s_data =>
-						if txdis='0' then
-							if txbs='0' then
-								descriptor_addr   := descriptor_addr   + 1;
-								descriptor_length := descriptor_length - 1;
-							end if;
-						elsif (in_rdy xor in_req)='1' then
-							getdescriptor_rdy <= getdescriptor_req;
-							-- state := s_idle;
-						elsif (ack_rdy xor ack_req)='1' then
-							getdescriptor_rdy <= getdescriptor_req;
-							-- state := s_idle;
+				if (send_rdy xor send_req)='1' then
+    				case state is
+    				when s_idle => 
+    					descriptor_addr   <= unsigned(segment_offset);
+    					descriptor_length <= resize(unsigned(segment_length), descriptor_length'length);
+    					state := s_data;
+    				when s_data =>
+    					if txdis='0' then
+    						if txbs='0' then
+    							descriptor_addr   <= descriptor_addr   + 1;
+    							descriptor_length <= descriptor_length - 1;
+    						end if;
 						else
-							getdescriptor_rdy <= getdescriptor_req;
-						end if;
-						in_rdy  <= in_req;
-						ack_rdy <= ack_req;
-					end case;
+    						send_rdy <= send_req;
+    					end if;
+    				end case;
 				else
-					descriptor_length := (others => '1');
+					descriptor_length <= (others => '1');
 					state := s_idle;
 				end if;
 			end if;
 		end if;
-		descriptor_txen <= not txdis;
-		descriptor_txd  <= descriptor_data(descriptor_addr mod descriptor_data'length);
+		txen <= not txdis;
+		txd  <= descriptor_data(0);
 	end process;
 
-	(txen, txd) <= 
-		std_logic_vector'(descriptor_txen, descriptor_txd); -- when request(4-1 downto 0)=request_ids(get_descriptor) else
-		-- std_logic_vector'('0', '-');
-
-	tp(1) <= to_stdulogic(rqst_reqs(set_address));
-	tp(2) <= to_stdulogic(rqst_rdys(set_address));
-	tp(3) <= to_stdulogic(rqst_reqs(get_descriptor));
-	tp(4) <= to_stdulogic(rqst_rdys(get_descriptor));
 end;

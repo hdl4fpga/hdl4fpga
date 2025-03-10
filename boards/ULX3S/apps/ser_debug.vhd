@@ -105,7 +105,7 @@ begin
 		signal rxbs : std_logic;
 		signal rxd  : std_logic;
 
-		signal fltr_on : std_logic;
+		signal fltr_on : std_logic := '1';
 		signal fltr_en : std_logic;
 		signal fltr_bs : std_logic;
 		signal fltr_d  : std_logic;
@@ -147,24 +147,23 @@ begin
 			signal setup_rdy : std_logic := '0';
 		begin
 			process (videoio_clk)
-				variable rst : bit;
 				variable ena : bit := '1';
 			begin
 				if rising_edge(videoio_clk) then
-					if fire2='1' then
-						ena := '1';
-					elsif fire1='1' then
+					if fire1='1' then
 						if ena='1' then
 							setup_req <= not setup_rdy;
 						end if;
 						ena := '0';
+					elsif fire2='1' then
+						ena := '1';
 					end if;
 				end if;
 			end process;
 
 			usb_fpga_pu_dp <= '0'; -- D+ pullup for USB1.1 host mode
 			usb_fpga_pu_dn <= '0'; -- D- no pullup for USB1.1 host mode
-    		usbhost_e : entity hdl4fpga.usbhost
+    		usbhost_e : entity hdl4fpga.usbhostdvr
     		generic map (
     			oversampling => usb_oversampling)
     		port map (
@@ -172,20 +171,12 @@ begin
     			dp   => usb_fpga_dp,
     			dn   => usb_fpga_dn,
     			clk  => videoio_clk,
-    			dev_cfgd => cfgd,
-				setup_req => setup_req,
-				setup_rdy => setup_rdy,
     			cken => cken,
-    			txen => txen, 
-    			txbs => txbs,
-    			txd  => txd,
-    			rxdv => rxdv, 
-    			rxbs => rxbs,
-    			rxd  => rxd);
+				setup_req => setup_req,
+				setup_rdy => setup_rdy);
 			led(0) <= usb_fpga_dp;
 			led(1) <= usb_fpga_dn;
-			led(6) <= not usb_fpga_dp;
-			-- led(7) <= not usb_fpga_dn;
+			led(7 downto 4) <= tp(4 to 7);
 		end generate;
 			
 		process (videoio_clk)

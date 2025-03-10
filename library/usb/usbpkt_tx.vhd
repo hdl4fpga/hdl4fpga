@@ -86,7 +86,7 @@ begin
 							state  := s_idle;
 						when data0|data1 =>
 							state := s_data;
-						when hs_ack|hs_nack|hs_stall =>
+						when hs_ack|hs_nak|hs_stall =>
 							if phy_txbs='0' then
 								tx_rdy <= tx_req;
 								state := s_idle;
