@@ -96,21 +96,21 @@ architecture def of usbhostrqst is
 	constant descriptors : string := 
 		"{"                            &
 			"device:{"                 &
-				"bLength:8,"           &
-				"bDescriptorType:8,"   &
-				"bcdUSB:16,"           &
-				"bDeviceClass:8,"      &
-				"bDeviceSubClass:8,"   &
-				"bDeviceProtocol:8,"   &
-				"bMaxPacketSize0:8,"   &
-				"idVendor:16,"         &
-				"idProduct:16,"        &
-				"bcdDevice:16,"        &
-				"idProduct:16,"        &
-				"iManufacturer:8,"     &
-				"iProduct:8,"          &
-				"iSerialNumber:8,"     &
-				"bNumConfigurations:8" &
+				"bLength:1,"           &
+				"bDescriptorType:1,"   &
+				"bcdUSB:2,"            &
+				"bDeviceClass:1,"      &
+				"bDeviceSubClass:1,"   &
+				"bDeviceProtocol:1,"   &
+				"bMaxPacketSize0:1,"   &
+				"idVendor:2,"          &
+				"idProduct:2,"         &
+				"bcdDevice:2,"         &
+				"idProduct:2,"         &
+				"iManufacturer:1,"     &
+				"iProduct:1,"          &
+				"iSerialNumber:1,"     &
+				"bNumConfigurations:1" &
 			"}"                        &
 		"}";
 

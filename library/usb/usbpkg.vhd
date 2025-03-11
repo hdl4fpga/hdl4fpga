@@ -114,39 +114,60 @@ package body usbpkg is
 		pos := pos+cvt'length;
 	end;
 
-	function to_hdo (
-		constant val : natural_vector;
-		constant max_length : natural := 1024)
-		return string is
-
-		variable obj : string(1 to max_length);
-		variable pos : natural;
+	procedure get_value (
+		variable value       : out natural;
+		variable valid       : out boolean;
+		constant description : in string) is
 	begin
-		pos := obj'left;
-		for i in 0 to val'length-1 loop
-			copy(obj, pos, val(i));
+		if description'length < 1 then
+			valid := false;
+		else
+			valid := true;
+			value := hdl4fpga.hdo.to_integer(description);
+		end if;
+	end;
+
+	function xxx (
+		constant descriptor   : string;
+		constant max_length   : natural := 1024;
+		constant max_segments : natural := 64)
+		return std_logic_vector is
+		variable value : natural;
+		variable valid : boolean;
+		variable n : natural;
+		variable length  : natural;
+		variable offsets : natural_vector(0 to max_segments-1);
+		variable retval  : std_logic_vector(0 to max_length-1);
+		variable num_bits : natural;
+	begin
+		for i in 0 to max_segments-1 loop
+			n := i;
+			if i > 0 then
+				offsets(i) := offsets(i-1) + length;
+			else
+				offsets(i) := 0;
+			end if;
+			get_value(length, valid, escaped(hdo(descriptor)**("["&natural'image(i)&"]=")));
+			exit when not valid;
 		end loop;
-		pos := pos - 1;
-		return "["&obj(1 to pos-1)&"]";
+		num_bits := unsigned_num_bits(offsets(n-1));
+		retval := (others => '0');
+		for i in 0 to 2**num_bits-1 loop
+			for j in 0 to n-1 loop
+				if offsets(j) <= i and i < offsets(j+1) then
+					retval(i*num_bits+j) := '1';
+				else
+					retval(i*num_bits+j) := '0';
+				end if;
+			end loop;
+		end loop;
+		return retval(0 to 2**num_bits*n-1);
 	end;
 
 	function segment_table (
 		constant description  : string;
 		constant max_segments : natural := 64)
 		return string is
-
-		procedure get_value (
-			variable value       : out natural;
-			variable valid       : out boolean;
-			constant description : in string) is
-		begin
-			if description'length < 1 then
-				valid := false;
-			else
-				valid := true;
-				value := hdl4fpga.hdo.to_integer(description);
-			end if;
-		end;
 
 		function table_content (
 			constant offsets : natural_vector;
@@ -284,5 +305,21 @@ package body usbpkg is
 				"table:["    & table(1 to table_pos-1) & "]"      &
 			"}";
 	end;
+
+	-- function to_hdo (
+		-- constant val : natural_vector;
+		-- constant max_length : natural := 1024)
+		-- return string is
+-- 
+		-- variable obj : string(1 to max_length);
+		-- variable pos : natural;
+	-- begin
+		-- pos := obj'left;
+		-- for i in 0 to val'length-1 loop
+			-- copy(obj, pos, val(i));
+		-- end loop;
+		-- pos := pos - 1;
+		-- return "["&obj(1 to pos-1)&"]";
+	-- end;
 
 end;
