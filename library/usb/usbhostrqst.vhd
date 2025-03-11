@@ -72,7 +72,7 @@ architecture def of usbhostrqst is
 			"{content:0x" & -- Hexadecimal format
 				"00"      & -- Host to Device
 				"05"      & -- SET_ADDRESS
-				"0a00"    & 
+				"0a00"    & -- Address
 				"0000"    & -- Offset 
 				"4000"    & -- Length 64 bytes
 			"}"           & 
