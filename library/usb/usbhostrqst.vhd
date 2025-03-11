@@ -93,6 +93,10 @@ architecture def of usbhostrqst is
 	signal send_rdy   : bit;
 	signal descriptor_req : bit;
 	signal descriptor_rdy : bit;
+	constant descriptors : string := 
+		"{"            &
+			"device:{" &
+				
 begin
 
 	setup_p : process (cken, clk)
