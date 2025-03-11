@@ -62,10 +62,17 @@ architecture def of usbhostrqst is
 	constant test   : string := segment_map(
 		"["&
 			"{content:0x" & -- Hexadecimal format
-				"80"      & -- GET_CONFIGURATION
+				"80"      & -- Device to Host
 				"06"      & -- GET_DESCRIPTOR
 				"00"      & -- Descriptor index 
 				"01"      & -- Descriptor type -> DEVICE
+				"0000"    & -- Offset 
+				"4000"    & -- Length 64 bytes
+			"},"          & 
+			"{content:0x" & -- Hexadecimal format
+				"00"      & -- Host to Device
+				"05"      & -- SET_ADDRESS
+				"0a00"    & 
 				"0000"    & -- Offset 
 				"4000"    & -- Length 64 bytes
 			"}"           & 
@@ -89,7 +96,7 @@ architecture def of usbhostrqst is
 begin
 
 	setup_p : process (cken, clk)
-		type states is (s_idle, s_flush, s_request, s_in);
+		type states is (s_idle, s_flush, s_request, s_in0, s_in1, s_in2);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
@@ -111,9 +118,19 @@ begin
 						dev_addr <= (others => '0');
 						dev_endp <= (others => '0');
 						tkin_req <= not tkin_rdy;
-						state := s_in;
+						state := s_in0;
 					end if;
-				when s_in =>
+				when s_in0 =>
+					if (tkin_req xor tkin_rdy)='0' then
+						tkin_req <= not tkin_rdy;
+						state := s_in1;
+					end if;
+				when s_in1 =>
+					if (tkin_req xor tkin_rdy)='0' then
+						tkin_req <= not tkin_rdy;
+						state := s_in2;
+					end if;
+				when s_in2 =>
 					if (tkin_req xor tkin_rdy)='0' then
 						setup_rdy <= setup_req;
 						state := s_idle;

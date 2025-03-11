@@ -190,16 +190,6 @@ begin
 							end case;
 							tx_req <= not tx_rdy;
 							state := s_ack;
-						when s_in =>
-							ackrx_rdy <= ackrx_req;
-							case tkdata(dev_endp'range) is
-							when (dev_endp'range => '0') =>
-								txpid  <= ddata;
-							when others =>
-								txpid  <= ddatai;
-							end case;
-							tx_req <= not tx_rdy;
-							state := s_ack;
 						when s_ack =>
 							if tick_cntr(0)='1' then
 								state := s_idle;
