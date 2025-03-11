@@ -94,8 +94,26 @@ architecture def of usbhostrqst is
 	signal descriptor_req : bit;
 	signal descriptor_rdy : bit;
 	constant descriptors : string := 
-		"{"            &
-			"device:{" &
+		"{"                            &
+			"device:{"                 &
+				"bLength:8,"           &
+				"bDescriptorType:8,"   &
+				"bcdUSB:16,"           &
+				"bDeviceClass:8,"      &
+				"bDeviceSubClass:8,"   &
+				"bDeviceProtocol:8,"   &
+				"bMaxPacketSize0:8,"   &
+				"idVendor:16,"         &
+				"idProduct:16,"        &
+				"bcdDevice:16,"        &
+				"idProduct:16,"        &
+				"iManufacturer:8,"     &
+				"iProduct:8,"          &
+				"iSerialNumber:8,"     &
+				"bNumConfigurations:8" &
+			"}"                        &
+		"}";
+
 				
 begin
 
