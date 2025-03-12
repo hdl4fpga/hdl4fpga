@@ -251,15 +251,18 @@ architecture def of usbhostdvr is
 	signal dev_rxdv : std_logic;
 	signal dev_rxbs : std_logic;
 	signal dev_rxd  : std_logic;
+	signal tp1 : std_logic_vector(1 to 32);
+	signal tp2 : std_logic_vector(1 to 32);
 begin
 
+	tp <= tp2(1 to 8) & tp1(1 to 24);
 	usbhost_e : entity hdl4fpga.usbhost
 	generic map (
 		oversampling  => oversampling,
 		watermark     => watermark,
 		bit_stuffing  => bit_stuffing)
 	port map (
-		tp   => tp,
+		tp   => tp2,
 		dp   => dp,
 		dn   => dn,
 		clk  => clk,
@@ -280,6 +283,7 @@ begin
 
 	rqstdvr_e : entity hdl4fpga.usbhostrqst
 	port map (
+		tp   => tp1,
 		clk       => clk,
 		cken      => cken,
 
