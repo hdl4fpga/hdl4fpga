@@ -114,6 +114,7 @@ architecture def of usbhostrqst is
 			"}"                        &
 		"}";
 
+	constant aaa : std_logic_vector := xxx(hdo(decriptors)**"")
 				
 begin
 
