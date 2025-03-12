@@ -91,6 +91,12 @@ package usbpkg is
 		constant description  : string;
 		constant max_segments : natural := 64)
 		return string;
+
+	function xxx (
+		constant descriptor   : string;
+		constant max_length   : natural := 1024;
+		constant max_segments : natural := 64)
+		return std_logic_vector;
 end;
 
 package body usbpkg is
@@ -155,9 +161,9 @@ package body usbpkg is
 		for i in 0 to 2**num_bits-1 loop
 			for j in 0 to n-1 loop
 				if offsets(j) <= i and i < offsets(j+1) then
-					retval(i*num_bits+j) := '1';
+					retval(i*n+j) := '1';
 				else
-					retval(i*num_bits+j) := '0';
+					retval(i*n+j) := '0';
 				end if;
 			end loop;
 		end loop;

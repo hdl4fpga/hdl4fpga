@@ -114,13 +114,16 @@ architecture def of usbhostrqst is
 			"}"                        &
 		"}";
 
-	constant aaa : std_logic_vector := xxx(hdo(decriptors)**"")
+	constant aaa : std_logic_vector := xxx(hdo(descriptors)**".device");
 				
 begin
 
 	setup_p : process (cken, clk)
-		type states is (s_idle, s_flush, s_request, s_in0, s_in1, s_in2);
-		variable state : states;
+		type states is (s_idle, s_flush, s_request, s_in);
+		variable state   : states;
+		variable cntr    : unsigned(0 to 8+3-1);
+		variable bLength : unsigned(0 to 8-1);
+		variable enas : std_logic_vector(0 to 15-1);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -140,25 +143,30 @@ begin
 					if (descriptor_req xor descriptor_rdy)='0' then
 						dev_addr <= (others => '0');
 						dev_endp <= (others => '0');
+						blength  := (others => '1');
+						cntr     := (others => '0');
 						tkin_req <= not tkin_rdy;
-						state := s_in0;
+						state    := s_in;
 					end if;
-				when s_in0 =>
+				when s_in =>
 					if (tkin_req xor tkin_rdy)='0' then
-						tkin_req <= not tkin_rdy;
-						state := s_in1;
-					end if;
-				when s_in1 =>
-					if (tkin_req xor tkin_rdy)='0' then
-						tkin_req <= not tkin_rdy;
-						state := s_in2;
-					end if;
-				when s_in2 =>
-					if (tkin_req xor tkin_rdy)='0' then
-						setup_rdy <= setup_req;
-						state := s_idle;
+						if cntr(0 to 8-1) < blength then
+							tkin_req <= not tkin_rdy;
+							state := s_in;
+						else
+							state := s_idle;
+						end if;
 					end if;
 				end case;
+				enas := multiplex(aaa, std_logic_vector(cntr(0 to 8-1)), 15);
+				if rxbs='0' then
+					if rxdv='1' then
+						if enas(0)='1' then
+							blength := blength srl 1;
+							blength(0) := rxd;
+						end if;
+					end if;
+				end if;
 			end if;
 		end if;
 	end process;
