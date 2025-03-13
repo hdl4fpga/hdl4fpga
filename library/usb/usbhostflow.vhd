@@ -220,6 +220,7 @@ begin
 			end if;
 		end if;
 	end process;
+	dev_acktx <= to_stdulogic(acktx_req xor acktx_rdy);
 
 	tp(1) <= to_stdulogic(ackrx_rdy);
 	tp(2) <= to_stdulogic(ackrx_req);

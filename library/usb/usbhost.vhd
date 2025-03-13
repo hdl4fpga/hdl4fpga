@@ -277,6 +277,8 @@ begin
 		tkin_req => tkin_req,
 		tkin_rdy => tkin_rdy,
 		sof_tick  => sof_tick,
+		dev_ackrx => dev_ackrx,
+		dev_acktx => dev_acktx,
 		txen => dev_txen, 
 		txbs => dev_txbs,
 		txd  => dev_txd,

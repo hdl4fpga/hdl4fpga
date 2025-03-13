@@ -115,16 +115,14 @@ architecture def of usbhostrqst is
 			"}"                        &
 		"}";
 
-	constant aaa : std_logic_vector := xxx(hdo(descriptors)**".device");
+	signal device_req : bit;
+	signal device_rdy : bit;
 				
 begin
 
 	setup_p : process (cken, clk)
 		type states is (s_idle, s_flush, s_request, s_in);
-		variable state   : states;
-		variable cntr    : unsigned(0 to 8+3-1);
-		variable bLength : unsigned(0 to 8-1);
-		variable enas : std_logic_vector(0 to 15-1);
+		variable state : states;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -142,35 +140,56 @@ begin
 					end if;
 				when s_request =>
 					if (descriptor_req xor descriptor_rdy)='0' then
-						dev_addr <= (others => '0');
-						dev_endp <= (others => '0');
-						blength  := (others => '1');
-						cntr     := (others => '0');
-						tkin_req <= not tkin_rdy;
-						state    := s_in;
+						dev_addr   <= (others => '0');
+						dev_endp   <= (others => '0');
+						device_req <= not device_req;
+						tkin_req   <= not tkin_rdy;
+						state      := s_in;
 					end if;
 				when s_in =>
-					enas := multiplex(aaa, std_logic_vector(cntr(3 to 8-1)), 15);
-					if rxdv='1' then
-						cntr := cntr + 1;
-						if enas(0)='1' then
-							blength := blength srl 1;
-							blength(0) := rxd;
-						end if;
-					elsif (tkin_req xor tkin_rdy)='0' then
-						if cntr(0 to 8-1) < (blength-2) then
-							tkin_req <= not tkin_rdy;
-							-- setup_rdy <= setup_req;
-							state := s_in;
-						else
-							setup_rdy <= setup_req;
-							state := s_idle;
+					if (tkin_req xor tkin_rdy)='0' then
+						if rxdv='0' then
+    						if (device_rdy xor device_req)='1' then
+    							tkin_req <= not tkin_rdy;
+    						else
+    							setup_rdy <= setup_req;
+    							state := s_idle;
+    						end if;
 						end if;
 					end if;
 				end case;
 			end if;
-	tp(1 to 8) <= std_logic_vector(cntr(0 to 8-1));
-	-- tp(1 to 8) <= std_logic_vector(blength);
+		end if;
+	end process;
+
+	device_p : process (cken, clk)
+		constant aaa : std_logic_vector := xxx(hdo(descriptors)**".device");
+		variable cntr    : unsigned(0 to 8+3-1);
+		variable bLength : unsigned(0 to 8-1);
+		variable enas    : std_logic_vector(0 to 15-1);
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (device_rdy xor device_req)='1' then
+					if rxdv='1' then
+						enas := multiplex(aaa, std_logic_vector(cntr(3 to 8-1)), 15);
+						if rxbs='0' then
+							if enas(0)='1' then
+								blength := blength srl 1;
+								blength(0) := rxd;
+							end if;
+							cntr := cntr + 1;
+						end if;
+						if cntr(0 to 8-1) >= blength then
+							device_rdy <= device_req;
+						end if;
+					end if;
+					tp(1 to 8) <= std_logic_vector(cntr(0 to 8-1));
+				else
+					blength := (others => '1');
+					cntr    := (others => '0');
+				end if;
+			end if;
 		end if;
 	end process;
 

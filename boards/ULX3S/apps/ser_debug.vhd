@@ -183,10 +183,9 @@ begin
 		process (videoio_clk)
 		begin
 			if rising_edge(videoio_clk) then
-				if down='1' then
-					fltr_on <= '0';
-				end if;
 				if up='1' then
+					fltr_on <= '0';
+				elsif down='1' then
 					fltr_on <= '1';
 				end if;
 			end if;
