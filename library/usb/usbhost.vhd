@@ -46,7 +46,8 @@ entity usbhost is
 
 		dev_addr    : in std_logic_vector(0 to 7-1) := (others => '0');
 		dev_endp    : in std_logic_vector(0 to 4-1) := (others => '0');
-		dev_ack     : out std_logic;
+		dev_ackrx   : out std_logic;
+		dev_acktx   : out std_logic;
 		tksetup_req : in std_logic := '0';
 		tksetup_rdy : buffer std_logic := '0';
 		tkin_req    : in std_logic;
@@ -191,7 +192,8 @@ begin
 		txbs      => pkt_txbs,
 		txd       => pkt_txd,
 
-		dev_ack   => dev_ack,
+		dev_ackrx => dev_ackrx,
+		dev_acktx => dev_acktx,
 
 		dev_txen  => txen,
 		dev_txbs  => txbs,
@@ -235,7 +237,8 @@ architecture def of usbhostdvr is
 
 	signal dev_addr    : std_logic_vector(7-1 downto 0);
 	signal dev_endp    : std_logic_vector(4-1 downto 0);
-	signal dev_ack     : std_logic;
+	signal dev_ackrx   : std_logic;
+	signal dev_acktx   : std_logic;
 	signal flush_req   : std_logic;
 	signal flush_rdy   : std_logic;
 	signal tksetup_req : std_logic;
@@ -297,7 +300,8 @@ begin
 		tkin_rdy => tkin_rdy,
 		sof_tick  => sof_tick,
 
-		dev_ack   => dev_ack,
+		dev_ackrx => dev_ackrx,
+		dev_acktx => dev_acktx,
 		dev_addr  => dev_addr,
 
 		rxdv      => dev_rxdv,

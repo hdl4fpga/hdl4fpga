@@ -41,7 +41,8 @@ entity usbhostrqst is
 
 		dev_addr  : out std_logic_vector(7-1 downto 0);
 		dev_endp  : out std_logic_vector(11-1 downto 7);
-		dev_ack   : in  std_logic := '1';
+		dev_ackrx   : in  std_logic := '1';
+		dev_acktx   : in  std_logic := '1';
 		tksetup_req : buffer std_logic := '0';
 		tksetup_rdy : in  std_logic := '0';
 		tkin_req  : buffer std_logic := '0';
@@ -149,8 +150,15 @@ begin
 						state    := s_in;
 					end if;
 				when s_in =>
-					if (tkin_req xor tkin_rdy)='0' then
-						if cntr(0 to 8-1) < (blength-3) then
+					enas := multiplex(aaa, std_logic_vector(cntr(3 to 8-1)), 15);
+					if rxdv='1' then
+						cntr := cntr + 1;
+						if enas(0)='1' then
+							blength := blength srl 1;
+							blength(0) := rxd;
+						end if;
+					elsif (tkin_req xor tkin_rdy)='0' then
+						if cntr(0 to 8-1) < (blength-2) then
 							tkin_req <= not tkin_rdy;
 							-- setup_rdy <= setup_req;
 							state := s_in;
@@ -159,21 +167,10 @@ begin
 							state := s_idle;
 						end if;
 					end if;
-
-					enas := multiplex(aaa, std_logic_vector(cntr(3 to 8-1)), 15);
-					if rxbs='0' then
-						if rxdv='1' then
-							cntr := cntr + 1;
-							if enas(0)='1' then
-								blength := blength srl 1;
-								blength(0) := rxd;
-							end if;
-						end if;
-					end if;
 				end case;
 			end if;
 	tp(1 to 8) <= std_logic_vector(cntr(0 to 8-1));
-	tp(1 to 8) <= std_logic_vector(blength);
+	-- tp(1 to 8) <= std_logic_vector(blength);
 		end if;
 	end process;
 

@@ -65,7 +65,8 @@ entity usbhostflow is
 		sof_fmf   : buffer std_logic_vector(11-1 downto 0);
 		sof_tick  : out std_logic;
 
-		dev_ack   : buffer std_logic;
+		dev_ackrx : out std_logic;
+		dev_acktx : out std_logic;
 		dev_txen  : in  std_logic;
 		dev_txbs  : out std_logic;
 		dev_txd   : in  std_logic;
@@ -95,6 +96,8 @@ architecture def of usbhostflow is
 	signal ackrx_req   : bit;
 	signal nak_rdy   : bit;
 	signal nak_req   : bit;
+	signal stall_rdy   : bit;
+	signal stall_req   : bit;
 
 	signal buffer_txen : std_logic;
 	signal buffer_txbs : std_logic;
@@ -138,7 +141,7 @@ begin
 	sof_fmf <= to_stdlogicvector(bit_vector(sof_cntr));
 
 	hosttodev_p : process (tkin_rdy, clk)
-		type states is (s_idle, s_out, s_ack, s_nak);
+		type states is (s_idle, s_out, s_ack, s_nak, s_stall);
 		variable state : states;
 		variable tick_cntr : unsigned(0 to 1);
 	begin
@@ -198,7 +201,7 @@ begin
 								ackrx_rdy   <= ackrx_req;
 								state := s_idle;
 							end if;
-						when s_nak =>
+						when s_nak|s_stall =>
 							if (acktx_rdy xor acktx_req)='1' then
 								tkin_rdy <= tkin_req; 
 								state := s_idle;
@@ -246,7 +249,7 @@ begin
 			end if;
 		end if;
 	end process;
-	dev_ack <= to_stdulogic(ackrx_req xor ackrx_rdy);
+	dev_ackrx <= to_stdulogic(ackrx_req xor ackrx_rdy);
 
 	txbuffer_p : process (acktx_rdy, clk)
 		variable mem  : std_logic_vector(0 to 64*8-1);
@@ -263,7 +266,7 @@ begin
 					pin  := (others => '0');
 					pout := pin;
 					flush_rdy <= flush_req;
-				elsif dev_ack='1' then
+				elsif (ackrx_req xor ackrx_rdy)='1' then
 					pin  := (others => '0');
 					pout := pin;
 				elsif (out_rdy xor out_req)='1' then

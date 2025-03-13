@@ -174,7 +174,7 @@ begin
     			cken => cken,
 				setup_req => setup_req,
 				setup_rdy => setup_rdy);
-			-- led <= tp(9 to 16);
+			led <= tp(9 to 16);
 			-- led(0) <= setup_rdy; --usb_fpga_dp;
 			-- led(1) <= setup_req; --usb_fpga_dn;
 			-- led(7 downto 4) <= tp(4 to 7);
