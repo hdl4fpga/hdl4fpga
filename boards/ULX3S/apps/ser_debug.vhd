@@ -105,7 +105,7 @@ begin
 		signal rxbs : std_logic;
 		signal rxd  : std_logic;
 
-		signal fltr_on : std_logic := '1';
+		signal fltr_on : std_logic;
 		signal fltr_en : std_logic;
 		signal fltr_bs : std_logic;
 		signal fltr_d  : std_logic;
@@ -174,16 +174,17 @@ begin
     			cken => cken,
 				setup_req => setup_req,
 				setup_rdy => setup_rdy);
-			led(0) <= setup_rdy; --usb_fpga_dp;
-			led(1) <= setup_req; --usb_fpga_dn;
-			led(7 downto 4) <= tp(4 to 7);
+			led <= tp(9 to 16);
+			-- led(0) <= setup_rdy; --usb_fpga_dp;
+			-- led(1) <= setup_req; --usb_fpga_dn;
+			-- led(7 downto 4) <= tp(4 to 7);
 		end generate;
 			
 		process (videoio_clk)
 		begin
 			if rising_edge(videoio_clk) then
 				if up='1' then
-					fltr_on <= '1';
+					fltr_on <= '0';
 				elsif down='1' then
 					fltr_on <= '1';
 				end if;

@@ -41,7 +41,8 @@ entity usbhostrqst is
 
 		dev_addr  : out std_logic_vector(7-1 downto 0);
 		dev_endp  : out std_logic_vector(11-1 downto 7);
-		dev_ack   : in  std_logic := '1';
+		dev_ackrx   : in  std_logic := '1';
+		dev_acktx   : in  std_logic := '1';
 		tksetup_req : buffer std_logic := '0';
 		tksetup_rdy : in  std_logic := '0';
 		tkin_req  : buffer std_logic := '0';
@@ -62,10 +63,17 @@ architecture def of usbhostrqst is
 	constant test   : string := segment_map(
 		"["&
 			"{content:0x" & -- Hexadecimal format
-				"80"      & -- GET_CONFIGURATION
+				"80"      & -- Device to Host
 				"06"      & -- GET_DESCRIPTOR
 				"00"      & -- Descriptor index 
 				"01"      & -- Descriptor type -> DEVICE
+				"0000"    & -- Offset 
+				"4000"    & -- Length 64 bytes
+			"},"          & 
+			"{content:0x" & -- Hexadecimal format
+				"00"      & -- Host to Device
+				"05"      & -- SET_ADDRESS
+				"0a00"    & -- Address
 				"0000"    & -- Offset 
 				"4000"    & -- Length 64 bytes
 			"}"           & 
@@ -86,6 +94,30 @@ architecture def of usbhostrqst is
 	signal send_rdy   : bit;
 	signal descriptor_req : bit;
 	signal descriptor_rdy : bit;
+	constant descriptors : string := 
+		"{"                            &
+			"device:{"                 &
+				"bLength:1,"           &
+				"bDescriptorType:1,"   &
+				"bcdUSB:2,"            &
+				"bDeviceClass:1,"      &
+				"bDeviceSubClass:1,"   &
+				"bDeviceProtocol:1,"   &
+				"bMaxPacketSize0:1,"   &
+				"idVendor:2,"          &
+				"idProduct:2,"         &
+				"bcdDevice:2,"         &
+				"idProduct:2,"         &
+				"iManufacturer:1,"     &
+				"iProduct:1,"          &
+				"iSerialNumber:1,"     &
+				"bNumConfigurations:1" &
+			"}"                        &
+		"}";
+
+	signal device_req : bit;
+	signal device_rdy : bit;
+				
 begin
 
 	setup_p : process (cken, clk)
@@ -108,17 +140,55 @@ begin
 					end if;
 				when s_request =>
 					if (descriptor_req xor descriptor_rdy)='0' then
-						dev_addr <= (others => '0');
-						dev_endp <= (others => '0');
-						tkin_req <= not tkin_rdy;
-						state := s_in;
+						dev_addr   <= (others => '0');
+						dev_endp   <= (others => '0');
+						device_req <= not device_req;
+						tkin_req   <= not tkin_rdy;
+						state      := s_in;
 					end if;
 				when s_in =>
 					if (tkin_req xor tkin_rdy)='0' then
-						setup_rdy <= setup_req;
-						state := s_idle;
+						if rxdv='0' then
+    						if (device_rdy xor device_req)='1' then
+    							tkin_req <= not tkin_rdy;
+    						else
+    							setup_rdy <= setup_req;
+    							state := s_idle;
+    						end if;
+						end if;
 					end if;
 				end case;
+			end if;
+		end if;
+	end process;
+
+	device_p : process (cken, clk)
+		constant aaa : std_logic_vector := xxx(hdo(descriptors)**".device");
+		variable cntr    : unsigned(0 to 8+3-1);
+		variable bLength : unsigned(0 to 8-1);
+		variable enas    : std_logic_vector(0 to 15-1);
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (device_rdy xor device_req)='1' then
+					if rxdv='1' then
+						enas := multiplex(aaa, std_logic_vector(cntr(3 to 8-1)), 15);
+						if rxbs='0' then
+							if enas(0)='1' then
+								blength := blength srl 1;
+								blength(0) := rxd;
+							end if;
+							cntr := cntr + 1;
+						end if;
+						if cntr(0 to 8-1) >= blength then
+							device_rdy <= device_req;
+						end if;
+					end if;
+					tp(1 to 8) <= std_logic_vector(cntr(0 to 8-1));
+				else
+					blength := (others => '1');
+					cntr    := (others => '0');
+				end if;
 			end if;
 		end if;
 	end process;
