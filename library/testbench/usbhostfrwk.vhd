@@ -93,6 +93,7 @@ begin
 			variable delay  : out natural;
 			constant data   : in string;
 			constant i      : in natural) is
+
 		begin
 
 		end;
