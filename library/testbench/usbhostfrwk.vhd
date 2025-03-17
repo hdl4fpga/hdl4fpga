@@ -75,8 +75,8 @@ begin
 			setup_rdy => setup_rdy);
 
 		rx_p : process (rxbs, clk)
-			variable shr : unsigned(0 to 128-1);
-			variable msb : unsigned(0 to 128-1);
+			variable shr : unsigned(0 to (64+3)*8-1);
+			variable msb : unsigned(shr'range);
 			variable dv1 : std_logic;
 			variable cntr : natural;
 		begin
@@ -113,58 +113,60 @@ begin
 		signal rxbs : std_logic;
 		signal rxd  : std_logic;
 		signal idle : std_logic;
-		constant xxx : string := 
+		constant testdata : string := 
 			"[" &
 				"[0xd2, 4]," &
 				"[0x4b12011001000000403412cdab000101000001, 4]" &
 			"]";
 
-		procedure zzz (
-			variable packet  : inout std_logic_vector;
-			variable length  : inout natural;
-			variable delay   : out natural;
-			constant data    : in  string;
-			constant index   : in  natural) is
-			constant e       : string := hdo(data)**("[" & natural'image(index) & "]=[0]");
-			constant bin     : std_logic_vector := reverse(hdo(e)**"[0]",8);
+		procedure get_packet (
+			signal   packet : inout std_logic_vector;
+			variable length : inout natural;
+			variable delay  : out   natural;
+			constant data   : in    string;
+			constant index  : in    natural) is
+			constant e      : string := hdo(data)**("[" & natural'image(index) & "]=[0]");
+			constant bin    : std_logic_vector := reverse(hdo(e)**"[0]",8);
 		begin
 			if e="[0]" then 
 				length := 0;
 			else
 				length := bin'length;
 				delay  := hdo(e)**"[1]";
-				packet(0 to bin'length-1) := bin;
+				packet <= bin & (bin'length to packet'length-1 => '-');
 			end if;
 		end;
+
+		signal packet : std_logic_vector(0 to (64+3)*8-1);
+		signal i      : natural;
+		signal j      : natural;
 	begin
 
-		rst <= '1', '0' after 15.0 us;
+		rst <= '1', '0' after 0.5 us;
 		process 
-			variable i     : natural;
-			variable j     : natural;
-			variable packet : std_logic_vector(0 to (64+3)*8-1);
 			variable length : natural;
 			variable delay  : natural;
 		begin
 			if rising_edge(clk) then
 				if rst='1' then
-					txen  <= '0';
-					i     := 0;
-					j     := 0;
-					zzz(packet, length, delay, xxx, i);
+					txen   <= '0';
+					i      <= 0;
+					j      <= 0;
+					length := 0;
 				elsif j < length then
 					if txbs='0' then
 						txd  <= packet(j);
 						txen <= '1';
-						j := j + 1;
+						j <= j + 1;
 					end if;
 				elsif txbs='0' then
 					txen <= '0';
 					if idle='1' then
+						get_packet(packet, length, delay, testdata, i);
 						if length/=0 then
 							wait for delay*1 us;
-							i     := i + 1;
-							zzz(packet, length, delay, xxx, i);
+							j <= 0;
+							i <= i + 1;
 						else
 							wait;
 						end if;

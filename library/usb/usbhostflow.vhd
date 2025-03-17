@@ -61,6 +61,8 @@ entity usbhostflow is
 		tksetup_rdy : buffer std_logic := '0';
 		tkin_req   : in  std_logic;
 		tkin_rdy   : buffer std_logic := '0';
+		tkout_req   : in  std_logic;
+		tkout_rdy   : buffer std_logic := '0';
 
 		sof_fmf   : buffer std_logic_vector(11-1 downto 0);
 		sof_tick  : out std_logic;
@@ -81,9 +83,6 @@ end;
 
 architecture def of usbhostflow is
 
-	signal requesttype : std_logic_vector( 8-1 downto 0);
-	signal value       : std_logic_vector(16-1 downto 0);
-	signal index       : std_logic_vector(16-1 downto 0);
 	signal length      : std_logic_vector(16-1 downto 0);
 
 	signal in_req     : bit;
@@ -144,6 +143,7 @@ begin
 		type states is (s_idle, s_out, s_ack, s_nak, s_stall);
 		variable state : states;
 		variable tick_cntr : unsigned(0 to 1);
+		constant tbit : std_logic_vector(data0'range) := b"1000";
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -169,6 +169,13 @@ begin
 								tx_req  <= not tx_rdy;
 								out_req <= not out_rdy;
 								state := s_out;
+							elsif (tkout_rdy xor tkout_req)='1' then
+								txpid  <= tk_setup;
+								tkdata(dev_endp'range) <= dev_endp;
+								tkdata(dev_addr'range) <= dev_addr;
+								tx_req  <= not tx_rdy;
+								out_req <= not out_rdy;
+								state := s_out;
 							elsif (tkin_rdy xor tkin_req)='1' then
 								txpid  <= tk_in;
 								tkdata(dev_endp'range) <= dev_endp;
@@ -188,8 +195,10 @@ begin
 							case tkdata(dev_endp'range) is
 							when (dev_endp'range => '0') =>
 								txpid  <= ddata;
+								ddata  <= ddata  xor tbit;
 							when others =>
 								txpid  <= ddatai;
+								ddatai <= ddatai xor tbit;
 							end case;
 							tx_req <= not tx_rdy;
 							state := s_ack;
@@ -341,7 +350,7 @@ begin
 		end if;
 	end process;
 
-	rxbuffer_p : process (clk)
+	rxbuffer_p : process (ackrx_rdy, clk)
 		variable mem  : std_logic_vector(0 to 64*2**3-1);
 		subtype  mem_range is natural range 1 to unsigned_num_bits(mem'length-1);
 		subtype  byte_range is natural range 1 to unsigned_num_bits(mem'length-1)-3;

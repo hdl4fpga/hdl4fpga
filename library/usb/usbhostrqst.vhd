@@ -47,6 +47,8 @@ entity usbhostrqst is
 		tksetup_rdy : in  std_logic := '0';
 		tkin_req  : buffer std_logic := '0';
 		tkin_rdy  : in  std_logic;
+		tkout_req  : buffer std_logic := '0';
+		tkout_rdy  : in  std_logic;
 		sof_tick  : in  std_logic;
 
 		rxdv      : in  std_logic := '-';
@@ -121,7 +123,7 @@ architecture def of usbhostrqst is
 begin
 
 	setup_p : process (cken, clk)
-		type states is (s_idle, s_flush, s_request, s_in);
+		type states is (s_idle, s_flush, s_request, s_in, s_out);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
@@ -152,17 +154,22 @@ begin
     						if (device_rdy xor device_req)='1' then
     							tkin_req <= not tkin_rdy;
     						else
-    							setup_rdy <= setup_req;
-    							state := s_idle;
+    							tkout_req <= not tkout_rdy;
+    							state := s_out;
     						end if;
 						end if;
+					end if;
+				when s_out =>
+					if (tkout_req xor tkout_rdy)='0' then
+    					setup_rdy <= setup_req;
+						state := s_idle;
 					end if;
 				end case;
 			end if;
 		end if;
 	end process;
 
-	device_p : process (cken, clk)
+	device_p : process (device_rdy, clk)
 		constant aaa : std_logic_vector := xxx(hdo(descriptors)**".device");
 		variable cntr    : unsigned(0 to 8+3-1);
 		variable bLength : unsigned(0 to 8-1);
