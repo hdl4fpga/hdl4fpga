@@ -271,6 +271,8 @@ package body hdo is
 			else
 				return to_bin(value, 1);
 			end if;
+		elsif value'length > 0 then
+			return to_bin(value(value'left to value'right), 1);
 		else
 			assert false --|
 				report LF & "value'range is nul" --|
@@ -733,7 +735,8 @@ package body hdo is
 			if hdo'right >= hdo_index then
 				if hdo(hdo_index)='=' then
 					default_offset := hdo_index+1;
-					default_length := hdo_right-hdo_index;
+					-- report "*********   " & natural'image(hdo_right) & " ->  " & natural'image(hdo_index);
+					default_length := hdo'right-hdo_index;
 				end if;
 			end if;
 		end if;

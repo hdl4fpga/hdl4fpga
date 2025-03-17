@@ -47,6 +47,10 @@ begin
 		signal setup_rdy : std_logic;
 		signal setup_req : std_logic;
 
+		signal tp : std_logic_vector(1 to 32);
+		alias rxdv   is  tp(1);
+		alias rxbs   is  tp(2);
+		alias rxd    is  tp(3);
 	begin
 		rst <= '0' after 0.500 us;
 
@@ -62,12 +66,38 @@ begin
 	   	generic map (
 	   		oversampling => oversampling)
 		port map (
+			tp => tp,
 			dp        => dp,
 			dn        => dn,
 			clk       => clk,
 			cken      => cken,
 			setup_req => setup_req,
 			setup_rdy => setup_rdy);
+
+		rx_p : process (rxbs, clk)
+			variable shr : unsigned(0 to 128-1);
+			variable msb : unsigned(0 to 128-1);
+			variable dv1 : std_logic;
+			variable cntr : natural;
+		begin
+			if rising_edge(clk) then
+				if cken='1' then
+					if (rxdv and not rxbs)='1' then
+						if dv1='0' then
+							cntr := 0;
+							shr := (others => '-');
+						end if;
+						shr(0) := rxd;
+						shr := shr rol 1;
+						cntr := cntr + 1;
+					end if;
+					dv1 := rxdv;
+				end if;
+				if cntr /= 0 then
+				msb := reverse(shr ror cntr,8);
+				end if;
+			end if;
+		end process;
 
 	end block;
 
@@ -84,46 +114,57 @@ begin
 		signal rxd  : std_logic;
 		signal idle : std_logic;
 		constant xxx : string := 
-			"[";
-				"[]"
+			"[" &
+				"[0xd2, 4]," &
+				"[0x4b12011001000000403412cdab000101000001, 4]" &
 			"]";
-		procedure (
-			variable packet : inout std_logic_vector;
-			variable length : inout natural;
-			variable delay  : out natural;
-			constant data   : in string;
-			constant i      : in natural) is
 
+		procedure zzz (
+			variable packet  : inout std_logic_vector;
+			variable length  : inout natural;
+			variable delay   : out natural;
+			constant data    : in  string;
+			constant index   : in  natural) is
+			constant e       : string := hdo(data)**("[" & natural'image(index) & "]=[0]");
+			constant bin     : std_logic_vector := reverse(hdo(e)**"[0]",8);
 		begin
-
+			if e="[0]" then 
+				length := 0;
+			else
+				length := bin'length;
+				delay  := hdo(e)**"[1]";
+				packet(0 to bin'length-1) := bin;
+			end if;
 		end;
 	begin
 
-		rst <= '1', '0' after 0.500 us;
+		rst <= '1', '0' after 15.0 us;
 		process 
 			variable i     : natural;
 			variable j     : natural;
-			variable right : natural;
+			variable packet : std_logic_vector(0 to (64+3)*8-1);
+			variable length : natural;
+			variable delay  : natural;
 		begin
 			if rising_edge(clk) then
 				if rst='1' then
 					txen  <= '0';
 					i     := 0;
 					j     := 0;
-					right := 0;
-				elsif j < right then
-						if txbs='0' then
-							txd  <= data(j);
-							txen <= '1';
-							j := j + 1;
-						end if;
+					zzz(packet, length, delay, xxx, i);
+				elsif j < length then
+					if txbs='0' then
+						txd  <= packet(j);
+						txen <= '1';
+						j := j + 1;
+					end if;
 				elsif txbs='0' then
 					txen <= '0';
 					if idle='1' then
-						if i < delays'length then
-							wait for delays(i);
-							right := right + length(i);
+						if length/=0 then
+							wait for delay*1 us;
 							i     := i + 1;
+							zzz(packet, length, delay, xxx, i);
 						else
 							wait;
 						end if;
@@ -142,7 +183,7 @@ begin
 			clk  => clk,
 			cken => cken,
 
-			txen => '0', --txen,
+			txen => txen,
 			txbs => txbs,
 			txd  => txd,
 
