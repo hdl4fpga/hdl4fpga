@@ -64,14 +64,14 @@ end;
 architecture def of usbhostrqst is
 	constant test   : string := segment_map(
 		"["&
-			-- "{content:0x" & -- Hexadecimal format
-				-- "80"      & -- Device to Host
-				-- "06"      & -- GET_DESCRIPTOR
-				-- "00"      & -- Descriptor index 
-				-- "01"      & -- Descriptor type -> DEVICE
-				-- "0000"    & -- Offset 
-				-- "4000"    & -- Length 64 bytes
-			-- "},"          & 
+			"{content:0x" & -- Hexadecimal format
+				"80"      & -- Device to Host
+				"06"      & -- GET_DESCRIPTOR
+				"00"      & -- Descriptor index 
+				"01"      & -- Descriptor type -> DEVICE
+				"0000"    & -- Offset 
+				"4000"    & -- Length 64 bytes
+			"},"          & 
 			"{content:0x" & -- Hexadecimal format
 				"00"      & -- Host to Device
 				"05"      & -- SET_ADDRESS

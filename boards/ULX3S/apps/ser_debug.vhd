@@ -150,7 +150,9 @@ begin
 				variable ena : bit := '1';
 			begin
 				if rising_edge(videoio_clk) then
-					if fire1='1' then
+					if left='1' then
+						setup_req <= setup_rdy;
+					elsif fire1='1' then
 						if ena='1' then
 							setup_req <= not setup_rdy;
 						end if;
@@ -161,8 +163,8 @@ begin
 				end if;
 			end process;
 
-			usb_fpga_pu_dp <= '0'; -- D+ pullup for USB1.1 host mode
-			usb_fpga_pu_dn <= '0'; -- D- no pullup for USB1.1 host mode
+			usb_fpga_pu_dp <= 'Z' when left='0' else '0'; -- D+ pullup for USB1.1 host mode
+			usb_fpga_pu_dn <= 'Z' when left='0' else '0'; -- D- no pullup for USB1.1 host mode
     		usbhost_e : entity hdl4fpga.usbhostdvr
     		generic map (
     			oversampling => usb_oversampling)
