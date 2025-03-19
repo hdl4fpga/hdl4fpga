@@ -170,7 +170,7 @@ begin
 								out_req <= not out_rdy;
 								state := s_out;
 							elsif (tkout_rdy xor tkout_req)='1' then
-								txpid  <= tk_setup;
+								txpid  <= tk_out;
 								tkdata(dev_endp'range) <= dev_endp;
 								tkdata(dev_addr'range) <= dev_addr;
 								tx_req  <= not tx_rdy;
@@ -207,6 +207,7 @@ begin
 								state := s_idle;
 							elsif (ackrx_rdy xor ackrx_req)='1' then
 								tksetup_rdy <= tksetup_req; 
+								tkout_rdy <= tkout_req; 
 								ackrx_rdy   <= ackrx_req;
 								state := s_idle;
 							end if;

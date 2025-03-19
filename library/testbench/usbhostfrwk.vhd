@@ -115,8 +115,8 @@ begin
 		signal idle : std_logic;
 		constant testdata : string := 
 			"[" &
-				"[0xd2, 4]," &
-				"[0x4b12011001000000403412cdab000101000001, 4]" &
+				"[0xd2, 12]" &
+				-- "[0x4b12011001000000403412cdab000101000001, 4]" &
 			"]";
 
 		procedure get_packet (

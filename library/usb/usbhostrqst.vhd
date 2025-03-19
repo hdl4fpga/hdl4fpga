@@ -64,14 +64,14 @@ end;
 architecture def of usbhostrqst is
 	constant test   : string := segment_map(
 		"["&
-			"{content:0x" & -- Hexadecimal format
-				"80"      & -- Device to Host
-				"06"      & -- GET_DESCRIPTOR
-				"00"      & -- Descriptor index 
-				"01"      & -- Descriptor type -> DEVICE
-				"0000"    & -- Offset 
-				"4000"    & -- Length 64 bytes
-			"},"          & 
+			-- "{content:0x" & -- Hexadecimal format
+				-- "80"      & -- Device to Host
+				-- "06"      & -- GET_DESCRIPTOR
+				-- "00"      & -- Descriptor index 
+				-- "01"      & -- Descriptor type -> DEVICE
+				-- "0000"    & -- Offset 
+				-- "4000"    & -- Length 64 bytes
+			-- "},"          & 
 			"{content:0x" & -- Hexadecimal format
 				"00"      & -- Host to Device
 				"05"      & -- SET_ADDRESS
@@ -81,10 +81,12 @@ architecture def of usbhostrqst is
 			"}"           & 
 		"]");
 
-	constant table  : string := segment_table(hdo(test)**".table");
+	constant test1  : string := hdo(test)**".table";
+	constant table  : string := segment_table(test1);
 	constant bitrom : string := hdo(table)**".content";
 	signal segment_id        : std_logic_vector(0 to hdo(table)**".address"-1) := (others => '0');
 	signal segment_data      : std_logic_vector(0 to hdo(table)**".data"-1);
+	signal segment_dir       : std_logic_vector(natural'(hdo(table)**".dir.left")    to natural'(hdo(table)**".dir.right"));
 	signal segment_offset    : std_logic_vector(natural'(hdo(table)**".offset.left") to natural'(hdo(table)**".offset.right"));
 	signal segment_length    : std_logic_vector(natural'(hdo(table)**".length.left") to natural'(hdo(table)**".length.right"));
 	signal descriptor_length : unsigned(0 to segment_length'length);
@@ -123,7 +125,7 @@ architecture def of usbhostrqst is
 begin
 
 	setup_p : process (cken, clk)
-		type states is (s_idle, s_flush, s_request, s_in, s_out);
+		type states is (s_idle, s_flush, s_request, s_in, s_stin, s_out, s_stout);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
@@ -145,8 +147,18 @@ begin
 						dev_addr   <= (others => '0');
 						dev_endp   <= (others => '0');
 						device_req <= not device_req;
-						tkin_req   <= not tkin_rdy;
-						state      := s_in;
+						if segment_dir(0)='1' then
+							tkin_req <= not tkin_rdy;
+							state   := s_in;
+						else
+							if false then
+								tkout_req <= not tkout_rdy;
+								state := s_out;
+							else
+    							tkin_req <= not tkin_rdy;
+								state := s_stout;
+							end if;
+						end if;
 					end if;
 				when s_in =>
 					if (tkin_req xor tkin_rdy)='0' then
@@ -155,12 +167,26 @@ begin
     							tkin_req <= not tkin_rdy;
     						else
     							tkout_req <= not tkout_rdy;
-    							state := s_out;
+    							state := s_stin;
     						end if;
 						end if;
 					end if;
+				when s_stin =>
+					if (tkout_req xor tkout_rdy)='0' then
+    					setup_rdy <= setup_req;
+						state := s_idle;
+					end if;
 				when s_out =>
 					if (tkout_req xor tkout_rdy)='0' then
+						if txdis='1' then
+    						tkin_req <= not tkin_rdy;
+    						state := s_stout;
+						else
+    						tkout_req <= not tkout_rdy;
+						end if;
+					end if;
+				when s_stout =>
+					if (tkin_req xor tkin_rdy)='0' then
     					setup_rdy <= setup_req;
 						state := s_idle;
 					end if;
@@ -206,6 +232,7 @@ begin
 	port map (
 		addr => segment_id,
 		data => segment_data);
+	segment_dir    <= segment_data(segment_dir'range);
 	segment_offset <= segment_data(segment_offset'range);
 	segment_length <= segment_data(segment_length'range);
 
