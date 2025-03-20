@@ -96,8 +96,8 @@ architecture def of usbhostrqst is
 
 	signal send_req   : bit;
 	signal send_rdy   : bit;
-	signal descriptor_req : bit;
-	signal descriptor_rdy : bit;
+	signal rqst_req : bit;
+	signal rqst_rdy : bit;
 	constant descriptors : string := 
 		"{"                            &
 			"device:{"                 &
@@ -125,7 +125,7 @@ architecture def of usbhostrqst is
 begin
 
 	setup_p : process (cken, clk)
-		type states is (s_idle, s_flush, s_request, s_in, s_stin, s_out, s_stout);
+		type states is (s_idle, s_flush, s_rqst);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
@@ -138,12 +138,34 @@ begin
 					end if;
    				when s_flush =>
 					if (flush_req xor flush_rdy)='0' then
-						descriptor_req <= not descriptor_rdy;
-						tksetup_req    <= not tksetup_rdy;
-						state := s_request;
+						rqst_req <= not rqst_rdy;
+						state := s_rqst;
 					end if;
-				when s_request =>
-					if (descriptor_req xor descriptor_rdy)='0' then
+				when s_rqst =>
+					if (rqst_req xor rqst_rdy)='0' then
+    					setup_rdy <= setup_req;
+						state := s_idle;
+					end if;
+				end case;
+			end if;
+		end if;
+	end process;
+
+						segment_id <= (others => '0');
+	rqst_p : process (cken, clk)
+		type states is (s_idle, s_setup, s_in, s_stin, s_out, s_stout);
+		variable state : states;
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+   				case state is
+   				when s_idle =>
+					if (rqst_rdy xor rqst_req)='1' then
+						flush_req <= not flush_rdy;
+						state := s_setup;
+					end if;
+				when s_setup =>
+					if (send_req xor send_rdy)='0' then
 						dev_addr   <= (others => '0');
 						dev_endp   <= (others => '0');
 						device_req <= not device_req;
@@ -173,7 +195,7 @@ begin
 					end if;
 				when s_stin =>
 					if (tkout_req xor tkout_rdy)='0' then
-    					setup_rdy <= setup_req;
+    					rqst_rdy <= rqst_req;
 						state := s_idle;
 					end if;
 				when s_out =>
@@ -187,7 +209,7 @@ begin
 					end if;
 				when s_stout =>
 					if (tkin_req xor tkin_rdy)='0' then
-    					setup_rdy <= setup_req;
+    					rqst_rdy <= rqst_req;
 						state := s_idle;
 					end if;
 				end case;
@@ -242,31 +264,6 @@ begin
 	port map (
 		addr => std_logic_vector(descriptor_addr),
 		data => descriptor_data);
-
-	descriptor_p : process (clk)
-		type states is (s_idle, s_send);
-		variable state : states;
-	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				if (descriptor_rdy xor descriptor_req)='1' then
-					case state is
-					when s_idle => 
-						segment_id <= (others => '0');
-						send_req <= not send_rdy;
-						state := s_send;
-					when s_send =>
-						if (send_rdy xor send_req)='0' then
-							descriptor_rdy <= descriptor_req;
-							state := s_idle;
-						end if;
-					end case;
-				else
-					state := s_idle;
-				end if;
-			end if;
-		end if;
-	end process;
 
 	send_p : process (clk)
 		type states is (s_idle, s_data);
