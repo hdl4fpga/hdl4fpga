@@ -162,6 +162,7 @@ begin
    				when s_idle =>
 					if (rqst_rdy xor rqst_req)='1' then
 						tksetup_req <= not tksetup_rdy;
+						send_req <= not send_rdy;
 						state := s_setup;
 					end if;
 				when s_setup =>
