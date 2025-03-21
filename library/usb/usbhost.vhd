@@ -52,6 +52,8 @@ entity usbhost is
 		tksetup_rdy : buffer std_logic := '0';
 		tkin_req    : in std_logic;
 		tkin_rdy    : buffer std_logic :='0';
+		tkout_req   : in std_logic;
+		tkout_rdy   : buffer std_logic :='0';
 		sof_tick    : out std_logic;
 
 
@@ -171,6 +173,8 @@ begin
 		tksetup_rdy => tksetup_rdy,
 		tkin_req  => tkin_req,
 		tkin_rdy  => tkin_rdy,
+		tkout_req  => tkout_req,
+		tkout_rdy  => tkout_rdy,
 		sof_tick  => sof_tick,
 
 		rx_req    => rx_req,
@@ -244,6 +248,8 @@ architecture def of usbhostdvr is
 	signal tksetup_req : std_logic;
 	signal tksetup_rdy : std_logic;
 	signal tkin_req    : std_logic;
+	signal tkout_req   : std_logic;
+	signal tkout_rdy   : std_logic;
 	signal tkin_rdy    : std_logic;
 	signal sof_tick    : std_logic;
 
@@ -252,13 +258,14 @@ architecture def of usbhostdvr is
 	signal dev_txd  : std_logic;
 
 	signal dev_rxdv : std_logic;
-	signal dev_rxbs : std_logic;
+	signal dev_rxbs : std_logic := '0';
 	signal dev_rxd  : std_logic;
 	signal tp1 : std_logic_vector(1 to 32);
 	signal tp2 : std_logic_vector(1 to 32);
 begin
 
 	tp <= tp2(1 to 8) & tp1(1 to 24);
+	dev_rxbs <= '0';
 	usbhost_e : entity hdl4fpga.usbhost
 	generic map (
 		oversampling  => oversampling,
@@ -276,6 +283,8 @@ begin
 		tksetup_rdy => tksetup_rdy,
 		tkin_req => tkin_req,
 		tkin_rdy => tkin_rdy,
+		tkout_req => tkout_req,
+		tkout_rdy => tkout_rdy,
 		sof_tick  => sof_tick,
 		dev_ackrx => dev_ackrx,
 		dev_acktx => dev_acktx,
@@ -300,6 +309,8 @@ begin
 		tksetup_rdy => tksetup_rdy,
 		tkin_req => tkin_req,
 		tkin_rdy => tkin_rdy,
+		tkout_req => tkout_req,
+		tkout_rdy => tkout_rdy,
 		sof_tick  => sof_tick,
 
 		dev_ackrx => dev_ackrx,

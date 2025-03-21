@@ -133,6 +133,20 @@ package body usbpkg is
 		end if;
 	end;
 
+	procedure get_value (
+		variable value       : out std_logic;
+		variable valid       : out boolean;
+		constant description : in string) is
+		constant escval : string := escaped(description);
+	begin
+		if description'length < 1 then
+			valid := false;
+		else
+			valid := true;
+			value := hdl4fpga.hdo.to_stdulogic(escval(1));
+		end if;
+	end;
+
 	function xxx (
 		constant descriptor   : string;
 		constant max_length   : natural := 1024;
@@ -179,15 +193,19 @@ package body usbpkg is
 			constant offsets : natural_vector;
 			constant offset_num_bits : natural;
 			constant lengths : natural_vector;
-			constant length_num_bits : natural)
+			constant length_num_bits : natural;
+			constant dirs    : std_logic_vector;
+			constant dir_num_bits : natural)
 			return std_logic_vector is
-			variable content : unsigned(0 to (offset_num_bits+length_num_bits)*offsets'length-1);
+			variable content : unsigned(0 to (dir_num_bits+offset_num_bits+length_num_bits)*offsets'length-1);
 		begin
 			assert offsets'length=lengths'length
 				report "segment_table() : offsets'length => (" & natural'image(offsets'length) & ") /= " & "lengths'length -> (" & natural'image(lengths'length) & ")"
 				severity failure;
 
 			for i in offsets'range loop
+				content(0 to dir_num_bits-1) := unsigned(dirs(i to i+dir_num_bits-1));
+				content := content rol dir_num_bits;
 				content(0 to offset_num_bits-1) := to_unsigned(offsets(i), offset_num_bits);
 				content := content rol offset_num_bits;
 				content(0 to length_num_bits-1) := to_unsigned(lengths(i)-1, length_num_bits);
@@ -198,18 +216,26 @@ package body usbpkg is
 
 		variable lengths : natural_vector(0 to max_segments-1);
 		variable offsets : natural_vector(0 to max_segments-1);
+		variable dirs : std_logic_vector(0 to max_segments-1);
 		variable length_num_bits : natural;
 		variable offset_num_bits : natural;
+		constant dir_num_bits    : natural := 1;
 		variable valid   : boolean;
 		variable n       : natural;
 		variable address : natural;
 		variable num_bits : natural;
-		variable pos : positive;
+		variable dir_left     : natural;
+		variable dir_right    : natural;
+		variable offset_left  : natural;
+		variable offset_right : natural;
+		variable length_left  : natural;
+		variable length_right : natural;
 	begin
 		for i in 0 to max_segments-1 loop
 			n := i;
 			get_value(offsets(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][0]=")));
 			get_value(lengths(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][1]=")));
+			get_value(dirs(i),    valid, escaped(hdo(description)**("["&natural'image(i)&"][2]=")));
 			exit when not valid;
 		end loop;
 		length_num_bits := unsigned_num_bits(max(lengths(0 to n-1))-1);
@@ -219,24 +245,30 @@ package body usbpkg is
 			report "segment_table() : length_num_bits -> " & natural'image(length_num_bits)
 			severity note;
 
-		if n > 1 then 
-			address := unsigned_num_bits(n-1);
-		else
-			address := 0;
-		end if;
-		num_bits := offset_num_bits+length_num_bits;
+		address := unsigned_num_bits(n-1);
+		num_bits := dir_num_bits+offset_num_bits+length_num_bits;
+		dir_left     := 0;
+		dir_right    := dir_num_bits-1;
+		offset_left  := dir_right+1;
+		offset_right := offset_left+offset_num_bits-1;
+		length_left  := offset_right+1;
+		length_right := length_left+length_num_bits-1;
 		return
 			"{" &
-				"content:" & to_string(table_content(offsets(0 to n-1), offset_num_bits, lengths(0 to n-1), length_num_bits)) & "," &
-				"address:" & natural'image(address)  & "," &
-				"data:"    & natural'image(num_bits) & "," &
+				"content:"   & to_string(table_content(offsets(0 to n-1), offset_num_bits, lengths(0 to n-1), length_num_bits, dirs(0 to n-1), dir_num_bits)) & "," &
+				"address:"   & natural'image(address)      & "," &
+				"data:"      & natural'image(num_bits)     & "," &
+				"dir:{"      &
+					"left:"  & natural'image(dir_left)     & "," &
+					"right:" & natural'image(dir_right)    & "," &
+					"},"     &
 				"offset:{"   &
-					"left:"  & natural'image(0) & "," &
-					"right:" & natural'image(offset_num_bits-1) & "," &
+					"left:"  & natural'image(offset_left)  & "," &
+					"right:" & natural'image(offset_right) & "," &
 					"},"     &
 				"length:{"   &
-					"left:"  & natural'image(offset_num_bits)   & "," &
-					"right:" & natural'image(num_bits-1) & ","  &
+					"left:"  & natural'image(length_left)  & "," &
+					"right:" & natural'image(length_right) & ","  &
 					"}}";
 	end;
 
@@ -287,9 +319,11 @@ package body usbpkg is
 		variable scc  : natural;
 		variable table : string(1 to max_length);
 		variable table_pos : positive;
+		variable n : natural;
 	begin
 		pos := content'left;
 		table_pos := table'left;
+		n := 0;
 		for i in 0 to description'right-description'left loop
 			append(content, scc, pos, hdo(description)**("["& natural'image(i) &"].content="));
 			if scc=pos then
@@ -299,8 +333,10 @@ package body usbpkg is
 			table(table_pos) := '[';
 			table_pos := table_pos + 1;
 			copy(table, table_pos, table_pos, natural'image(pos)&",");
-			copy(table, table_pos, table_pos, natural'image(scc-pos)&"],");
+			copy(table, table_pos, table_pos, natural'image(scc-pos)&",");
+			copy(table, table_pos, table_pos, std_logic'image(content(pos))&"],");
 			pos := scc;
+			n := n + 1;
 		end loop;
 		-- assert false
 			-- report "segment_map() : " 
@@ -308,6 +344,7 @@ package body usbpkg is
 		return
 			"{" &
 				"content:0x" & to_string(content(0 to pos-1), 16) & "," &
+				"length:"    & natural'image(n)                   & "," &
 				"table:["    & table(1 to table_pos-1) & "]"      &
 			"}";
 	end;

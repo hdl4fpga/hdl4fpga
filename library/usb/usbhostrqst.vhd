@@ -47,6 +47,8 @@ entity usbhostrqst is
 		tksetup_rdy : in  std_logic := '0';
 		tkin_req  : buffer std_logic := '0';
 		tkin_rdy  : in  std_logic;
+		tkout_req  : buffer std_logic := '0';
+		tkout_rdy  : in  std_logic;
 		sof_tick  : in  std_logic;
 
 		rxdv      : in  std_logic := '-';
@@ -69,7 +71,8 @@ architecture def of usbhostrqst is
 				"01"      & -- Descriptor type -> DEVICE
 				"0000"    & -- Offset 
 				"4000"    & -- Length 64 bytes
-			"},"          & 
+			"}"           & 
+			","           &
 			"{content:0x" & -- Hexadecimal format
 				"00"      & -- Host to Device
 				"05"      & -- SET_ADDRESS
@@ -79,10 +82,13 @@ architecture def of usbhostrqst is
 			"}"           & 
 		"]");
 
-	constant table  : string := segment_table(hdo(test)**".table");
+	constant table_length : natural := hdo(test)**".length";
+	constant test1  : string := hdo(test)**".table";
+	constant table  : string := segment_table(test1);
 	constant bitrom : string := hdo(table)**".content";
-	signal segment_id        : std_logic_vector(0 to hdo(table)**".address"-1) := (others => '0');
+	signal segment_id        : unsigned(0 to hdo(table)**".address"-1) := (others => '0');
 	signal segment_data      : std_logic_vector(0 to hdo(table)**".data"-1);
+	signal segment_dir       : std_logic_vector(natural'(hdo(table)**".dir.left")    to natural'(hdo(table)**".dir.right"));
 	signal segment_offset    : std_logic_vector(natural'(hdo(table)**".offset.left") to natural'(hdo(table)**".offset.right"));
 	signal segment_length    : std_logic_vector(natural'(hdo(table)**".length.left") to natural'(hdo(table)**".length.right"));
 	signal descriptor_length : unsigned(0 to segment_length'length);
@@ -92,8 +98,8 @@ architecture def of usbhostrqst is
 
 	signal send_req   : bit;
 	signal send_rdy   : bit;
-	signal descriptor_req : bit;
-	signal descriptor_rdy : bit;
+	signal rqst_req : bit;
+	signal rqst_rdy : bit;
 	constant descriptors : string := 
 		"{"                            &
 			"device:{"                 &
@@ -121,40 +127,33 @@ architecture def of usbhostrqst is
 begin
 
 	setup_p : process (cken, clk)
-		type states is (s_idle, s_flush, s_request, s_in);
+		type states is (s_idle, s_flush, s_rqst);
 		variable state : states;
+
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
    				case state is
    				when s_idle =>
 					if (setup_rdy xor setup_req)='1' then
+						segment_id <= (others => '0');
 						flush_req <= not flush_rdy;
 						state := s_flush;
 					end if;
    				when s_flush =>
 					if (flush_req xor flush_rdy)='0' then
-						descriptor_req <= not descriptor_rdy;
-						tksetup_req    <= not tksetup_rdy;
-						state := s_request;
+						segment_id <= (others => '0');
+						rqst_req <= not rqst_rdy;
+						state := s_rqst;
 					end if;
-				when s_request =>
-					if (descriptor_req xor descriptor_rdy)='0' then
-						dev_addr   <= (others => '0');
-						dev_endp   <= (others => '0');
-						device_req <= not device_req;
-						tkin_req   <= not tkin_rdy;
-						state      := s_in;
-					end if;
-				when s_in =>
-					if (tkin_req xor tkin_rdy)='0' then
-						if rxdv='0' then
-    						if (device_rdy xor device_req)='1' then
-    							tkin_req <= not tkin_rdy;
-    						else
-    							setup_rdy <= setup_req;
-    							state := s_idle;
-    						end if;
+				when s_rqst =>
+					if (rqst_req xor rqst_rdy)='0' then
+						if segment_id < table_length-1 then
+							segment_id <= segment_id + 1;
+							rqst_req <= not rqst_rdy;
+						else
+							setup_rdy <= setup_req;
+							state := s_idle;
 						end if;
 					end if;
 				end case;
@@ -162,7 +161,73 @@ begin
 		end if;
 	end process;
 
-	device_p : process (cken, clk)
+	rqst_p : process (rqst_rdy, clk)
+		type states is (s_idle, s_setup, s_in, s_stin, s_out, s_stout);
+		variable state : states;
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+   				case state is
+   				when s_idle =>
+					if (rqst_rdy xor rqst_req)='1' then
+						tksetup_req <= not tksetup_rdy;
+						send_req <= not send_rdy;
+						state := s_setup;
+					end if;
+				when s_setup =>
+					if (send_req xor send_rdy)='0' then
+						dev_addr   <= (others => '0');
+						dev_endp   <= (others => '0');
+						device_req <= not device_req;
+						if segment_dir(0)='1' then
+							tkin_req <= not tkin_rdy;
+							state   := s_in;
+						else
+							if false then
+								tkout_req <= not tkout_rdy;
+								state := s_out;
+							else
+    							tkin_req <= not tkin_rdy;
+								state := s_stout;
+							end if;
+						end if;
+					end if;
+				when s_in =>
+					if (tkin_req xor tkin_rdy)='0' then
+						if rxdv='0' then
+    						if (device_rdy xor device_req)='1' then
+    							tkin_req <= not tkin_rdy;
+    						else
+    							tkout_req <= not tkout_rdy;
+    							state := s_stin;
+    						end if;
+						end if;
+					end if;
+				when s_stin =>
+					if (tkout_req xor tkout_rdy)='0' then
+    					rqst_rdy <= rqst_req;
+						state := s_idle;
+					end if;
+				when s_out =>
+					if (tkout_req xor tkout_rdy)='0' then
+						if txdis='1' then
+    						tkin_req <= not tkin_rdy;
+    						state := s_stout;
+						else
+    						tkout_req <= not tkout_rdy;
+						end if;
+					end if;
+				when s_stout =>
+					if (tkin_req xor tkin_rdy)='0' then
+    					rqst_rdy <= rqst_req;
+						state := s_idle;
+					end if;
+				end case;
+			end if;
+		end if;
+	end process;
+
+	device_p : process (device_rdy, clk)
 		constant aaa : std_logic_vector := xxx(hdo(descriptors)**".device");
 		variable cntr    : unsigned(0 to 8+3-1);
 		variable bLength : unsigned(0 to 8-1);
@@ -197,8 +262,9 @@ begin
 	generic map (
 		bitrom => hdo(table)**".content")
 	port map (
-		addr => segment_id,
+		addr => std_logic_vector(segment_id),
 		data => segment_data);
+	segment_dir    <= segment_data(segment_dir'range);
 	segment_offset <= segment_data(segment_offset'range);
 	segment_length <= segment_data(segment_length'range);
 
@@ -208,31 +274,6 @@ begin
 	port map (
 		addr => std_logic_vector(descriptor_addr),
 		data => descriptor_data);
-
-	descriptor_p : process (clk)
-		type states is (s_idle, s_send);
-		variable state : states;
-	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				if (descriptor_rdy xor descriptor_req)='1' then
-					case state is
-					when s_idle => 
-						segment_id <= (others => '0');
-						send_req <= not send_rdy;
-						state := s_send;
-					when s_send =>
-						if (send_rdy xor send_req)='0' then
-							descriptor_rdy <= descriptor_req;
-							state := s_idle;
-						end if;
-					end case;
-				else
-					state := s_idle;
-				end if;
-			end if;
-		end if;
-	end process;
 
 	send_p : process (clk)
 		type states is (s_idle, s_data);

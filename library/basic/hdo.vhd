@@ -68,6 +68,11 @@ package hdo is
 	function "**" (
 		constant obj : hdo;
 		constant key : string)
+		return std_ulogic;
+
+	function "**" (
+		constant obj : hdo;
+		constant key : string)
 		return std_logic_vector;
 
 	function "**" (
@@ -96,6 +101,10 @@ package hdo is
 	function escaped (
 		constant obj : string)
 		return string;
+
+	function to_stdulogic (
+		constant value : character)
+		return std_ulogic;
 
 	function to_stdlogicvector (
 		constant value : string)
@@ -221,6 +230,17 @@ package body hdo is
 		return sign*retval;
 	end;
 
+	function to_stdulogic (
+		constant value : character)
+		return std_ulogic is
+	begin
+		if value='1' then
+			return '1';
+		else
+			return '0';
+		end if;
+	end;
+
 	function to_stdlogicvector (
 		constant value : string)
 		return std_logic_vector is
@@ -271,6 +291,8 @@ package body hdo is
 			else
 				return to_bin(value, 1);
 			end if;
+		elsif value'length > 0 then
+			return to_bin(value(value'left to value'right), 1);
 		else
 			assert false --|
 				report LF & "value'range is nul" --|
@@ -733,7 +755,8 @@ package body hdo is
 			if hdo'right >= hdo_index then
 				if hdo(hdo_index)='=' then
 					default_offset := hdo_index+1;
-					default_length := hdo_right-hdo_index;
+					-- default_length := hdo_right-hdo_index;
+					default_length := hdo'right-hdo_index;
 				end if;
 			end if;
 		end if;
@@ -1036,6 +1059,22 @@ package body hdo is
 		return real is
 	begin
 		return resolve(string(obj) & key);
+	end;
+
+	function "**" (
+		constant obj : hdo;
+		constant key : string)
+		return std_ulogic is
+		constant value : string := escaped(resolve(string(obj) & key));
+	begin
+		if value'length > 0 then
+			if value(value'left)='1' then
+				return '1';
+			else
+				return '0';
+			end if;
+		end if;
+		return 'X';
 	end;
 
 	function "**" (
