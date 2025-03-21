@@ -80,6 +80,15 @@ architecture def of usbhostrqst is
 				"0000"    & -- Offset 
 				"4000"    & -- Length 64 bytes
 			"}"           & 
+			","           &
+			"{content:0x" & -- Hexadecimal format
+				"80"      & -- Device to Host
+				"06"      & -- GET_DESCRIPTOR
+				"00"      & -- Descriptor index 
+				"02"      & -- Descriptor type -> DEVICE
+				"0000"    & -- Offset 
+				"4000"    & -- Length 64 bytes
+			"}"           & 
 		"]");
 
 	constant table_length : natural := hdo(test)**".length";
@@ -136,24 +145,29 @@ begin
    				case state is
    				when s_idle =>
 					if (setup_rdy xor setup_req)='1' then
-						segment_id <= (others => '0');
-						flush_req <= not flush_rdy;
-						state := s_flush;
+						flush_req  <= not flush_rdy;
+						state      := s_flush;
 					end if;
    				when s_flush =>
 					if (flush_req xor flush_rdy)='0' then
+						dev_addr   <= (others => '0');
+								dev_addr <= b"000_1010";
+						dev_endp   <= (others => '0');
 						segment_id <= (others => '0');
-						rqst_req <= not rqst_rdy;
-						state := s_rqst;
+						rqst_req   <= not rqst_rdy;
+						state      := s_rqst;
 					end if;
 				when s_rqst =>
 					if (rqst_req xor rqst_rdy)='0' then
 						if segment_id < table_length-1 then
+							if segment_id=1 then
+								dev_addr <= b"000_1010";
+							end if;
 							segment_id <= segment_id + 1;
-							rqst_req <= not rqst_rdy;
+							rqst_req   <= not rqst_rdy;
 						else
 							setup_rdy <= setup_req;
-							state := s_idle;
+							state     := s_idle;
 						end if;
 					end if;
 				end case;
@@ -176,8 +190,6 @@ begin
 					end if;
 				when s_setup =>
 					if (send_req xor send_rdy)='0' then
-						dev_addr   <= (others => '0');
-						dev_endp   <= (others => '0');
 						device_req <= not device_req;
 						if segment_dir(0)='1' then
 							tkin_req <= not tkin_rdy;
