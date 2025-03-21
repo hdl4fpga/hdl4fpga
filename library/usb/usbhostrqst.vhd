@@ -109,6 +109,14 @@ architecture def of usbhostrqst is
 	signal send_rdy   : bit;
 	signal rqst_req : bit;
 	signal rqst_rdy : bit;
+	constant request : string := 
+		"{" &
+			"bmRequestTYpe:1," &
+			"bRequest:1,"      &
+			"wValue:2,"        &
+			"wLength:2"        &
+		"}";
+
 	constant descriptors : string := 
 		"{"                            &
 			"device:{"                 &
@@ -133,6 +141,8 @@ architecture def of usbhostrqst is
 	signal device_req : bit;
 	signal device_rdy : bit;
 				
+	signal addr_val : std_logic_vector(dev_addr'range);
+
 begin
 
 	setup_p : process (cken, clk)
@@ -151,7 +161,7 @@ begin
    				when s_flush =>
 					if (flush_req xor flush_rdy)='0' then
 						dev_addr   <= (others => '0');
-								dev_addr <= b"000_1010";
+						dev_addr   <= (others => '0');
 						dev_endp   <= (others => '0');
 						segment_id <= (others => '0');
 						rqst_req   <= not rqst_rdy;
@@ -290,20 +300,41 @@ begin
 	send_p : process (clk)
 		type states is (s_idle, s_data);
 		variable state : states;
+		variable cntr  : unsigned(0 to 3+3);
+		constant aaa : std_logic_vector := xxx(hdo(request));
+		alias ena_bRequest is enas(1);
+		alias ena_wValue   is enas(2);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
+				enas := multiplex(aaa, std_logic_vector(cntr(3 to 8-1)), 15);
 				if (send_rdy xor send_req)='1' then
     				case state is
     				when s_idle => 
     					descriptor_addr   <= unsigned(segment_offset);
     					descriptor_length <= resize(unsigned(segment_length), descriptor_length'length);
+						cntr  := (others => '0');
     					state := s_data;
     				when s_data =>
     					if txdis='0' then
     						if txbs='0' then
     							descriptor_addr   <= descriptor_addr   + 1;
     							descriptor_length <= descriptor_length - 1;
+								if cntr(0)='0' then
+									if ena_wValue='1' then
+										wValue    := wValue srl 1;
+										wValue(0) := txd;
+									end if;
+									if ena_bRequest='1' then
+										bRequest    := bRequest srl 1;
+										bRequest(0) := txd;
+									end if;
+								else
+									if bRequest=SET_ADDRESS then
+										addr_val := std_logic_vector'(wValue(addr_val'range));
+									end if;
+								end if;
+								cntr := cntr + 1;
     						end if;
 						else
     						send_rdy <= send_req;
