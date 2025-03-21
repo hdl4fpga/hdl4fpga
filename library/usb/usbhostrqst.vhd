@@ -171,7 +171,7 @@ begin
 					if (rqst_req xor rqst_rdy)='0' then
 						if segment_id < table_length-1 then
 							if segment_id=1 then
-								dev_addr <= b"000_1010";
+								dev_addr <= addr_val;
 							end if;
 							segment_id <= segment_id + 1;
 							rqst_req   <= not rqst_rdy;
