@@ -71,7 +71,8 @@ architecture def of usbhostrqst is
 				"01"      & -- Descriptor type -> DEVICE
 				"0000"    & -- Offset 
 				"4000"    & -- Length 64 bytes
-			"},"          & 
+			"}"           & 
+			","           &
 			"{content:0x" & -- Hexadecimal format
 				"00"      & -- Host to Device
 				"05"      & -- SET_ADDRESS
@@ -81,10 +82,11 @@ architecture def of usbhostrqst is
 			"}"           & 
 		"]");
 
+	constant table_length : natural := hdo(test)**".length";
 	constant test1  : string := hdo(test)**".table";
 	constant table  : string := segment_table(test1);
 	constant bitrom : string := hdo(table)**".content";
-	signal segment_id        : std_logic_vector(0 to hdo(table)**".address"-1) := (others => '0');
+	signal segment_id        : unsigned(0 to hdo(table)**".address"-1) := (others => '0');
 	signal segment_data      : std_logic_vector(0 to hdo(table)**".data"-1);
 	signal segment_dir       : std_logic_vector(natural'(hdo(table)**".dir.left")    to natural'(hdo(table)**".dir.right"));
 	signal segment_offset    : std_logic_vector(natural'(hdo(table)**".offset.left") to natural'(hdo(table)**".offset.right"));
@@ -127,25 +129,32 @@ begin
 	setup_p : process (cken, clk)
 		type states is (s_idle, s_flush, s_rqst);
 		variable state : states;
+
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
    				case state is
    				when s_idle =>
 					if (setup_rdy xor setup_req)='1' then
+						segment_id <= (others => '0');
 						flush_req <= not flush_rdy;
 						state := s_flush;
 					end if;
    				when s_flush =>
 					if (flush_req xor flush_rdy)='0' then
-						rqst_req <= not rqst_rdy;
 						segment_id <= (others => '0');
+						rqst_req <= not rqst_rdy;
 						state := s_rqst;
 					end if;
 				when s_rqst =>
 					if (rqst_req xor rqst_rdy)='0' then
-    					setup_rdy <= setup_req;
-						state := s_idle;
+						if segment_id < table_length-1 then
+							segment_id <= segment_id + 1;
+							rqst_req <= not rqst_rdy;
+						else
+							setup_rdy <= setup_req;
+							state := s_idle;
+						end if;
 					end if;
 				end case;
 			end if;
@@ -253,7 +262,7 @@ begin
 	generic map (
 		bitrom => hdo(table)**".content")
 	port map (
-		addr => segment_id,
+		addr => std_logic_vector(segment_id),
 		data => segment_data);
 	segment_dir    <= segment_data(segment_dir'range);
 	segment_offset <= segment_data(segment_offset'range);

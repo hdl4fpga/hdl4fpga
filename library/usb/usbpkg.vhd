@@ -245,11 +245,7 @@ package body usbpkg is
 			report "segment_table() : length_num_bits -> " & natural'image(length_num_bits)
 			severity note;
 
-		if n > 1 then 
-			address := unsigned_num_bits(n-1);
-		else
-			address := 0;
-		end if;
+		address := unsigned_num_bits(n-1);
 		num_bits := dir_num_bits+offset_num_bits+length_num_bits;
 		dir_left     := 0;
 		dir_right    := dir_num_bits-1;
@@ -262,7 +258,7 @@ package body usbpkg is
 				"content:"   & to_string(table_content(offsets(0 to n-1), offset_num_bits, lengths(0 to n-1), length_num_bits, dirs(0 to n-1), dir_num_bits)) & "," &
 				"address:"   & natural'image(address)      & "," &
 				"data:"      & natural'image(num_bits)     & "," &
-				"dir:{"   &
+				"dir:{"      &
 					"left:"  & natural'image(dir_left)     & "," &
 					"right:" & natural'image(dir_right)    & "," &
 					"},"     &
@@ -323,9 +319,11 @@ package body usbpkg is
 		variable scc  : natural;
 		variable table : string(1 to max_length);
 		variable table_pos : positive;
+		variable n : natural;
 	begin
 		pos := content'left;
 		table_pos := table'left;
+		n := 0;
 		for i in 0 to description'right-description'left loop
 			append(content, scc, pos, hdo(description)**("["& natural'image(i) &"].content="));
 			if scc=pos then
@@ -338,6 +336,7 @@ package body usbpkg is
 			copy(table, table_pos, table_pos, natural'image(scc-pos)&",");
 			copy(table, table_pos, table_pos, std_logic'image(content(pos))&"],");
 			pos := scc;
+			n := n + 1;
 		end loop;
 		-- assert false
 			-- report "segment_map() : " 
@@ -345,6 +344,7 @@ package body usbpkg is
 		return
 			"{" &
 				"content:0x" & to_string(content(0 to pos-1), 16) & "," &
+				"length:"    & natural'image(n)                   & "," &
 				"table:["    & table(1 to table_pos-1) & "]"      &
 			"}";
 	end;
