@@ -139,6 +139,7 @@ begin
    				when s_flush =>
 					if (flush_req xor flush_rdy)='0' then
 						rqst_req <= not rqst_rdy;
+						segment_id <= (others => '0');
 						state := s_rqst;
 					end if;
 				when s_rqst =>
@@ -151,8 +152,7 @@ begin
 		end if;
 	end process;
 
-						segment_id <= (others => '0');
-	rqst_p : process (cken, clk)
+	rqst_p : process (rqst_rdy, clk)
 		type states is (s_idle, s_setup, s_in, s_stin, s_out, s_stout);
 		variable state : states;
 	begin
@@ -161,7 +161,7 @@ begin
    				case state is
    				when s_idle =>
 					if (rqst_rdy xor rqst_req)='1' then
-						flush_req <= not flush_rdy;
+						tksetup_req <= not tksetup_rdy;
 						state := s_setup;
 					end if;
 				when s_setup =>
