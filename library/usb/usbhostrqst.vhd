@@ -163,7 +163,7 @@ begin
 					dev_addr   <= (others => '0');
 					dev_endp   <= (others => '0');
 					segment_id <= (others => '0');
-					addr_val <= x"000a";
+					addr_val  <= x"000a";
 					if (flush_req xor flush_rdy)='0' then
 						rqst_req   <= not rqst_rdy;
 						state      := s_rqst;
@@ -177,6 +177,8 @@ begin
 							setup_rdy <= setup_req;
 							state     := s_idle;
 						end if;
+					elsif segment_id=2 then
+						dev_addr <= b"000_0101";
 					end if;
 				end case;
 			end if;
@@ -299,9 +301,9 @@ begin
 		type states is (s_idle, s_data);
 		variable state : states;
 		variable cntr  : unsigned(0 to 3+3);
-		constant aaa : std_logic_vector := xxx(hdo(request));
-		variable enas : std_logic_vector(0 to 4-1);
-		variable wValue : unsigned(16-1 downto 0);
+		constant aaa   : std_logic_vector := xxx(hdo(request));
+		variable enas  : std_logic_vector(0 to 4-1);
+		variable wValue   : unsigned(16-1 downto 0);
 		variable bRequest : unsigned(8-1 downto 0);
 		alias ena_bRequest is enas(1);
 		alias ena_wValue   is enas(2);
