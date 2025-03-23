@@ -141,7 +141,7 @@ architecture def of usbhostrqst is
 	signal device_req : bit;
 	signal device_rdy : bit;
 				
-	signal addr_val : std_logic_vector(dev_addr'range);
+	signal addr_val : std_logic_vector(16-1 downto 0);
 
 begin
 
@@ -159,20 +159,18 @@ begin
 						state      := s_flush;
 					end if;
    				when s_flush =>
+					dev_addr   <= (others => '0');
+					dev_addr   <= (others => '0');
+					dev_endp   <= (others => '0');
+					segment_id <= (others => '0');
+					addr_val <= x"000a";
 					if (flush_req xor flush_rdy)='0' then
-						dev_addr   <= (others => '0');
-						dev_addr   <= (others => '0');
-						dev_endp   <= (others => '0');
-						segment_id <= (others => '0');
 						rqst_req   <= not rqst_rdy;
 						state      := s_rqst;
 					end if;
 				when s_rqst =>
 					if (rqst_req xor rqst_rdy)='0' then
 						if segment_id < table_length then
-							if segment_id=1 then
-								dev_addr <= addr_val;
-							end if;
 							segment_id <= segment_id + 1;
 							rqst_req   <= not rqst_rdy;
 						else
@@ -303,8 +301,8 @@ begin
 		variable cntr  : unsigned(0 to 3+3);
 		constant aaa : std_logic_vector := xxx(hdo(request));
 		variable enas : std_logic_vector(0 to 4-1);
-		variable wValue : unsigned(0 to 16-1);
-		variable bRequest : unsigned(0 to 8-1);
+		variable wValue : unsigned(16-1 downto 0);
+		variable bRequest : unsigned(8-1 downto 0);
 		alias ena_bRequest is enas(1);
 		alias ena_wValue   is enas(2);
 	begin
@@ -316,6 +314,7 @@ begin
     				when s_idle => 
     					descriptor_addr   <= unsigned(segment_offset);
     					descriptor_length <= resize(unsigned(segment_length), descriptor_length'length);
+						wValue := resize(unsigned(addr_val), wValue'length);
 						cntr  := (others => '0');
     					state := s_data;
     				when s_data =>
@@ -324,13 +323,9 @@ begin
     							descriptor_addr   <= descriptor_addr   + 1;
     							descriptor_length <= descriptor_length - 1;
 								if cntr(0)='0' then
-									if ena_wValue='1' then
-										wValue    := wValue srl 1;
-										wValue(0) := descriptor_data(0);
-									end if;
 									if ena_bRequest='1' then
-										bRequest    := bRequest srl 1;
 										bRequest(0) := descriptor_data(0);
+										bRequest    := bRequest ror 1;
 									end if;
 									cntr := cntr + 1;
 								end if;
@@ -343,15 +338,22 @@ begin
 					descriptor_length <= (others => '1');
 					state := s_idle;
 				end if;
-				if cntr(0)='0' then
-					if bRequest=unsigned(set_address) then
-						addr_val <= std_logic_vector(resize(wValue,addr_val'length));
-					end if;
-				end if;
+    			txen <= not txdis;
+    			if ena_wValue='1' then  
+    				case bRequest(4-1 downto 0) is
+    				when unsigned(set_address) =>
+    					if txdis='0' then
+    						txd <= wValue(0);
+    						wValue := wValue ror 1;
+    					end if;
+    				when others =>
+    					txd <= descriptor_data(0);
+    				end case;
+    			else
+    				txd <= descriptor_data(0);
+    			end if;
 			end if;
 		end if;
-		txen <= not txdis;
-		txd  <= descriptor_data(0);
 	end process;
 
 end;
