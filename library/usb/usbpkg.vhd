@@ -40,47 +40,15 @@ package usbpkg is
 	constant hs_nak    : std_logic_vector := x"a";
 	constant hs_stall  : std_logic_vector := x"e";
 
-	type requests is (
-		-- get_status,
-		-- clear_status,
-		-- set_feature,
-		set_address,
-		get_descriptor,
-		-- set_descriptor,
-		-- get_configuration,
-		set_configuration);
-		-- get_interface,
-		-- set_interface,
-		-- synch_frame);
+	constant set_address       : std_logic_vector := x"5";
+	constant get_descriptor    : std_logic_vector := x"6";
+	constant set_configuration : std_logic_vector := x"9";
 
-	type bit_requests is array(requests) of bit;
-	type requestid_vector is array(requests) of std_logic_vector(4-1 downto 0);
-	constant request_ids : requestid_vector := (
-		-- get_status        => x"0",
-		-- clear_status      => x"1",
-		-- set_feature       => x"3",
-		set_address       => x"5",
-		get_descriptor    => x"6",
-		-- set_descriptor    => x"7",
-		-- get_configuration => x"8",
-		set_configuration => x"9");
-		-- get_interface     => x"a",
-		-- set_interface     => x"b",
-		-- synch_frame       => x"c");
-
-	type decriptor_types is (
-		device, 
-		config, 
-		str   , 
-		interface, 
-		endpoint);
-	type decriptortypes_vector is array(decriptor_types) of std_logic_vector(8-1 downto 0);
-	constant decriptortypes_ids : decriptortypes_vector := (
-		device    => x"01",
-		config    => x"02",
-		str       => x"03",
-		interface => x"04",
-		endpoint  => x"05");
+	constant device    : std_logic_vector := x"01";
+	constant config    : std_logic_vector := x"02";
+	constant str       : std_logic_vector := x"03";
+	constant interface : std_logic_vector := x"04";
+	constant endpoint  : std_logic_vector := x"05";
 	
 	function segment_map (
 		constant description : string;

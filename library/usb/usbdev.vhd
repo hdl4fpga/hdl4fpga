@@ -34,7 +34,7 @@ entity usbdev is
 		bit_stuffing  : natural := 6;
 		device_dscptr : std_logic_vector := (
 			reverse(x"12")    & -- bLength
-			reverse(decriptortypes_ids(device)) & -- bDescriptorType
+			reverse(device) & -- bDescriptorType
 			reverse(x"0110")  & -- bcdUSB
 			reverse(x"00")    & -- bDeviceClass
 			reverse(x"00")    & -- bDeviceSubClass
@@ -49,7 +49,7 @@ entity usbdev is
 			reverse(x"01"));    -- bNumConfigurations
 		config_dscptr : std_logic_vector := (
 			reverse(x"09")    & -- bLength
-			reverse(decriptortypes_ids(config)) & -- bDescriptorType
+			reverse(config) & -- bDescriptorType
 			reverse(x"0020")  & -- wTotalLength
 			reverse(x"01")    & -- bNumInterfaces
 			reverse(x"01")    & -- bConfigurationValue
@@ -58,14 +58,14 @@ entity usbdev is
 			reverse(x"32"));    -- MaxPower
 		string_dscptr : std_logic_vector := (
 			reverse(x"04")    & 
-			reverse(decriptortypes_ids(hdl4fpga.usbpkg.str)) & -- bDescriptorType
+			reverse(hdl4fpga.usbpkg.str) & -- bDescriptorType
 			reverse(x"0409")  &
 			reverse(x"12")    & 
-			reverse(decriptortypes_ids(hdl4fpga.usbpkg.str)) & -- bDescriptorType
+			reverse(hdl4fpga.usbpkg.str) & -- bDescriptorType
 			reverse(to_utf16("HDL4FPGA"),16));
 		interface_dscptr : std_logic_vector := (
 			reverse(x"09")    & -- bLength
-			reverse(decriptortypes_ids(interface)) & -- bDescriptorType
+			reverse(interface) & -- bDescriptorType
 			reverse(x"00")    & -- bInterfaceNumber
 			reverse(x"00")    & -- bAlternateSetting
 			reverse(x"02")    & -- bNumEndpoints
@@ -75,13 +75,13 @@ entity usbdev is
 			reverse(x"00"));    -- iInterface
 		endpoint_dscptr : std_logic_vector := (
 			reverse(x"07")    & -- bLength
-			reverse(decriptortypes_ids(endpoint)) & -- bDescriptorType
+			reverse(endpoint) & -- bDescriptorType
 			reverse(x"01")    & -- bEndpointAddress
 			reverse(x"02")    & -- bmAttibutes
 			reverse(x"0040")  & -- wMaxPacketSize
 			reverse(x"00")    & -- bInterval
 			reverse(x"07")    & -- bLength
-			reverse(decriptortypes_ids(endpoint)) & -- bDescriptorType
+			reverse(endpoint) & -- bDescriptorType
 			reverse(x"81")    & -- bEndpointAddress
 			reverse(x"02")    & -- bmAttibutes
 			reverse(x"0040")  & -- wMaxPacketSize

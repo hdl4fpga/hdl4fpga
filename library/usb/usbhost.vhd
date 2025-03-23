@@ -272,28 +272,30 @@ begin
 		watermark     => watermark,
 		bit_stuffing  => bit_stuffing)
 	port map (
-		tp   => tp2,
-		dp   => dp,
-		dn   => dn,
-		clk  => clk,
-		cken => cken,
+		tp        => tp2,
+		dp        => dp,
+		dn        => dn,
+		clk       => clk,
+		cken      => cken,
 		flush_req => flush_req,
 		flush_rdy => flush_rdy,
 		tksetup_req => tksetup_req,
 		tksetup_rdy => tksetup_rdy,
-		tkin_req => tkin_req,
-		tkin_rdy => tkin_rdy,
+		tkin_req  => tkin_req,
+		tkin_rdy  => tkin_rdy,
 		tkout_req => tkout_req,
 		tkout_rdy => tkout_rdy,
 		sof_tick  => sof_tick,
 		dev_ackrx => dev_ackrx,
 		dev_acktx => dev_acktx,
-		txen => dev_txen, 
-		txbs => dev_txbs,
-		txd  => dev_txd,
-		rxdv => dev_rxdv, 
-		rxbs => dev_rxbs,
-		rxd  => dev_rxd);
+		dev_addr  => dev_addr,
+		dev_endp  => dev_endp,
+		txen      => dev_txen, 
+		txbs      => dev_txbs,
+		txd       => dev_txd,
+		rxdv      => dev_rxdv, 
+		rxbs      => dev_rxbs,
+		rxd       => dev_rxd);
 
 	rqstdvr_e : entity hdl4fpga.usbhostrqst
 	port map (
@@ -316,6 +318,7 @@ begin
 		dev_ackrx => dev_ackrx,
 		dev_acktx => dev_acktx,
 		dev_addr  => dev_addr,
+		dev_endp  => dev_endp,
 
 		rxdv      => dev_rxdv,
 		rxbs      => dev_rxbs,

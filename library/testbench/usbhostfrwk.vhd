@@ -115,16 +115,16 @@ begin
 		signal idle : std_logic;
 		constant testdata : string := 
 			"[" &
-				"[0xd2, 7]," &
-				"[0x4b12011001000000403412cdab000101000001, 4]," &
-				"[0xd2, 20]" &
-				-- "[0x4b0000, 20]" &
+				"[0xd2]," &
+				"[0x4b12011001000000403412cdab000101000001]," &
+				"[0xd2]," &
+				"[0xd2]," &
+				"[0x4b]" &
 			"]";
 
 		procedure get_packet (
 			signal   packet : inout std_logic_vector;
 			variable length : inout natural;
-			variable delay  : out   natural;
 			constant data   : in    string;
 			constant index  : in    natural) is
 			constant e      : string := hdo(data)**("[" & natural'image(index) & "]=[0]");
@@ -134,7 +134,6 @@ begin
 				length := 0;
 			else
 				length := bin'length;
-				delay  := hdo(e)**"[1]";
 				packet <= bin & (bin'length to packet'length-1 => '-');
 			end if;
 		end;
@@ -147,7 +146,6 @@ begin
 		rst <= '1', '0' after 0.5 us;
 		process 
 			variable length : natural;
-			variable delay  : natural;
 		begin
 			if rising_edge(clk) then
 				if rst='1' then
@@ -164,9 +162,16 @@ begin
 				elsif txbs='0' then
 					txen <= '0';
 					if idle='1' then
-						get_packet(packet, length, delay, testdata, i);
+						get_packet(packet, length, testdata, i);
 						if length/=0 then
-							wait for delay*1 us;
+							loop
+								if idle='1' then
+									wait for 15 us;
+									exit when idle='1';
+								else
+									wait on clk;
+								end if;
+							end loop;
 							j <= 0;
 							i <= i + 1;
 						else
