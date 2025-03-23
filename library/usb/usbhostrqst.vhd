@@ -200,7 +200,7 @@ begin
 					end if;
 				when s_setup =>
 					if (send_req xor send_rdy)='0' then
-						device_req <= not device_req;
+						device_req <= not device_rdy;
 						if segment_dir(0)='1' then
 							tkin_req <= not tkin_rdy;
 							state   := s_in;
