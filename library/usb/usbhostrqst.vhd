@@ -207,7 +207,7 @@ begin
 								tkout_req <= not tkout_rdy;
 								state := s_out;
 							else
-    							tkin_req <= not tkin_rdy;
+								tkin_req <= not tkin_rdy;
 								state := s_stout;
 							end if;
 						end if;
@@ -215,31 +215,31 @@ begin
 				when s_in =>
 					if (tkin_req xor tkin_rdy)='0' then
 						if rxdv='0' then
-    						if (device_rdy xor device_req)='1' then
-    							tkin_req <= not tkin_rdy;
-    						else
-    							tkout_req <= not tkout_rdy;
-    							state := s_stin;
-    						end if;
+							if (device_rdy xor device_req)='1' then
+								tkin_req <= not tkin_rdy;
+							else
+								tkout_req <= not tkout_rdy;
+								state := s_stin;
+							end if;
 						end if;
 					end if;
 				when s_stin =>
 					if (tkout_req xor tkout_rdy)='0' then
-    					rqst_rdy <= rqst_req;
+						rqst_rdy <= rqst_req;
 						state := s_idle;
 					end if;
 				when s_out =>
 					if (tkout_req xor tkout_rdy)='0' then
 						if txdis='1' then
-    						tkin_req <= not tkin_rdy;
-    						state := s_stout;
+							tkin_req <= not tkin_rdy;
+							state := s_stout;
 						else
-    						tkout_req <= not tkout_rdy;
+							tkout_req <= not tkout_rdy;
 						end if;
 					end if;
 				when s_stout =>
 					if (tkin_req xor tkin_rdy)='0' then
-    					rqst_rdy <= rqst_req;
+						rqst_rdy <= rqst_req;
 						state := s_idle;
 					end if;
 				end case;
@@ -310,18 +310,18 @@ begin
 			if cken='1' then
 				enas := multiplex(aaa, std_logic_vector(cntr(0 to 4-1)), 4);
 				if (send_rdy xor send_req)='1' then
-    				case state is
-    				when s_idle => 
-    					descriptor_addr   <= unsigned(segment_offset);
-    					descriptor_length <= resize(unsigned(segment_length), descriptor_length'length);
+					case state is
+					when s_idle => 
+						descriptor_addr   <= unsigned(segment_offset);
+						descriptor_length <= resize(unsigned(segment_length), descriptor_length'length);
 						wValue := resize(unsigned(addr_val), wValue'length);
-						cntr  := (others => '0');
-    					state := s_data;
-    				when s_data =>
-    					if txdis='0' then
-    						if txbs='0' then
-    							descriptor_addr   <= descriptor_addr   + 1;
-    							descriptor_length <= descriptor_length - 1;
+						cntr   := (others => '0');
+						state  := s_data;
+					when s_data =>
+						if txdis='0' then
+							if txbs='0' then
+								descriptor_addr   <= descriptor_addr   + 1;
+								descriptor_length <= descriptor_length - 1;
 								if cntr(0)='0' then
 									if ena_bRequest='1' then
 										bRequest(0) := descriptor_data(0);
@@ -329,29 +329,29 @@ begin
 									end if;
 									cntr := cntr + 1;
 								end if;
-    						end if;
+							end if;
 						else
-    						send_rdy <= send_req;
-    					end if;
-    				end case;
+							send_rdy <= send_req;
+						end if;
+					end case;
 				else
 					descriptor_length <= (others => '1');
 					state := s_idle;
 				end if;
-    			txen <= not txdis;
-    			if ena_wValue='1' then  
-    				case bRequest(4-1 downto 0) is
-    				when unsigned(set_address) =>
-    					if txdis='0' then
-    						txd <= wValue(0);
-    						wValue := wValue ror 1;
-    					end if;
-    				when others =>
-    					txd <= descriptor_data(0);
-    				end case;
-    			else
-    				txd <= descriptor_data(0);
-    			end if;
+				txen <= not txdis;
+				if ena_wValue='1' then  
+					case bRequest(4-1 downto 0) is
+					when unsigned(set_address) =>
+						if txdis='0' then
+							txd <= wValue(0);
+							wValue := wValue ror 1;
+						end if;
+					when others =>
+						txd <= descriptor_data(0);
+					end case;
+				else
+					txd <= descriptor_data(0);
+				end if;
 			end if;
 		end if;
 	end process;
