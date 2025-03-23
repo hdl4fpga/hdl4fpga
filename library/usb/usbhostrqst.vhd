@@ -169,7 +169,7 @@ begin
 					end if;
 				when s_rqst =>
 					if (rqst_req xor rqst_rdy)='0' then
-						if segment_id < table_length-1 then
+						if segment_id < table_length then
 							if segment_id=1 then
 								dev_addr <= addr_val;
 							end if;
@@ -302,12 +302,15 @@ begin
 		variable state : states;
 		variable cntr  : unsigned(0 to 3+3);
 		constant aaa : std_logic_vector := xxx(hdo(request));
+		variable enas : std_logic_vector(0 to 4-1);
+		variable wValue : unsigned(0 to 16-1);
+		variable bRequest : unsigned(0 to 8-1);
 		alias ena_bRequest is enas(1);
 		alias ena_wValue   is enas(2);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				enas := multiplex(aaa, std_logic_vector(cntr(3 to 8-1)), 15);
+				enas := multiplex(aaa, std_logic_vector(cntr(0 to 4-1)), 4);
 				if (send_rdy xor send_req)='1' then
     				case state is
     				when s_idle => 
@@ -323,18 +326,14 @@ begin
 								if cntr(0)='0' then
 									if ena_wValue='1' then
 										wValue    := wValue srl 1;
-										wValue(0) := txd;
+										wValue(0) := descriptor_data(0);
 									end if;
 									if ena_bRequest='1' then
 										bRequest    := bRequest srl 1;
-										bRequest(0) := txd;
+										bRequest(0) := descriptor_data(0);
 									end if;
-								else
-									if bRequest=SET_ADDRESS then
-										addr_val := std_logic_vector'(wValue(addr_val'range));
-									end if;
+									cntr := cntr + 1;
 								end if;
-								cntr := cntr + 1;
     						end if;
 						else
     						send_rdy <= send_req;
@@ -343,6 +342,11 @@ begin
 				else
 					descriptor_length <= (others => '1');
 					state := s_idle;
+				end if;
+				if cntr(0)='0' then
+					if bRequest=unsigned(set_address) then
+						addr_val <= std_logic_vector(resize(wValue,addr_val'length));
+					end if;
 				end if;
 			end if;
 		end if;

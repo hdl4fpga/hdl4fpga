@@ -60,6 +60,41 @@ entity usbdevrqst is
 		txbs      : in  std_logic;
 		txd       : out std_logic);
 
+	type requests is (
+		-- get_status,
+		-- clear_status,
+		-- set_feature,
+		set_address,
+		get_descriptor,
+		-- set_descriptor,
+		-- get_configuration,
+		set_configuration);
+		-- get_interface,
+		-- set_interface,
+		-- synch_frame);
+
+	type bit_requests is array(requests) of bit;
+	type requestid_vector is array(requests) of std_logic_vector(4-1 downto 0);
+	constant request_ids : requestid_vector := (
+		-- get_status        => x"0",
+		-- clear_status      => x"1",
+		-- set_feature       => x"3",
+		set_address       => x"5",
+		get_descriptor    => x"6",
+		-- set_descriptor    => x"7",
+		-- get_configuration => x"8",
+		set_configuration => x"9");
+		-- get_interface     => x"a",
+		-- set_interface     => x"b",
+		-- synch_frame       => x"c");
+
+	type decriptor_types is (
+		device, 
+		config, 
+		str   , 
+		interface, 
+		endpoint);
+	type decriptortypes_vector is array(decriptor_types) of std_logic_vector(8-1 downto 0);
 end;
 
 architecture def of usbdevrqst is
