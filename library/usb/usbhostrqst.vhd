@@ -170,7 +170,7 @@ begin
 					end if;
 				when s_rqst =>
 					if (rqst_req xor rqst_rdy)='0' then
-						if segment_id < table_length then
+						if segment_id < table_length-1 then
 							segment_id <= segment_id + 1;
 							rqst_req   <= not rqst_rdy;
 						else
@@ -178,7 +178,7 @@ begin
 							state     := s_idle;
 						end if;
 					elsif segment_id=2 then
-						dev_addr <= b"000_0101";
+						dev_addr <= addr_val(dev_addr'range);
 					end if;
 				end case;
 			end if;
