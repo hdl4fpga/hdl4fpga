@@ -59,10 +59,12 @@ entity usbhostflow is
 
 		tksetup_req : in std_logic := '0';
 		tksetup_rdy : buffer std_logic := '0';
-		tkin_req   : in  std_logic;
-		tkin_rdy   : buffer std_logic := '0';
+		tkin_req    : in  std_logic;
+		tkin_rdy    : buffer std_logic := '0';
 		tkout_req   : in  std_logic;
 		tkout_rdy   : buffer std_logic := '0';
+		tkstall_req : buffer std_logic := '0';
+		tkstall_rdy : in  std_logic := '0';
 
 		sof_fmf   : buffer std_logic_vector(11-1 downto 0);
 		sof_tick  : out std_logic;
@@ -85,18 +87,16 @@ architecture def of usbhostflow is
 
 	signal length      : std_logic_vector(16-1 downto 0);
 
-	signal in_req     : bit;
-	signal in_rdy     : bit;
-	signal out_req    : bit;
-	signal out_rdy    : bit;
+	signal in_req      : bit;
+	signal in_rdy      : bit;
+	signal out_req     : bit;
+	signal out_rdy     : bit;
 	signal acktx_rdy   : bit;
 	signal acktx_req   : bit;
 	signal ackrx_rdy   : bit;
 	signal ackrx_req   : bit;
-	signal nak_rdy   : bit;
-	signal nak_req   : bit;
-	signal stall_rdy   : bit;
-	signal stall_req   : bit;
+	signal nak_rdy     : bit;
+	signal nak_req     : bit;
 
 	signal buffer_txen : std_logic;
 	signal buffer_txbs : std_logic;
@@ -140,14 +140,22 @@ begin
 	sof_fmf <= to_stdlogicvector(bit_vector(sof_cntr));
 
 	hosttodev_p : process (tkin_rdy, clk)
-		type states is (s_idle, s_out, s_ack, s_nak, s_stall);
+		type states is (s_idle, s_out, s_ack, s_nak);
 		variable state : states;
 		variable tick_cntr : unsigned(0 to 1);
 		constant tbit : std_logic_vector(data0'range) := b"1000";
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (tx_rdy xor tx_req)='0' then
+				if (tkstall_rdy xor tkstall_req)='1' then
+					tksetup_rdy <= tksetup_req; 
+					tkout_rdy   <= tkout_req; 
+					tkin_rdy    <= tkin_req; 
+					ackrx_rdy   <= ackrx_req;
+					acktx_rdy   <= acktx_req;
+					nak_rdy     <= nak_req; 
+					state := s_idle;
+				elsif (tx_req xor tx_rdy)='0' then
 					if (tksof_rdy xor tksof_req)='1' then
 						txpid  <= tk_sof;
 						tkdata <= to_stdlogicvector(bit_vector(sof_cntr));
@@ -211,13 +219,13 @@ begin
 								ackrx_rdy   <= ackrx_req;
 								state := s_idle;
 							end if;
-						when s_nak|s_stall =>
+						when s_nak =>
 							if (acktx_rdy xor acktx_req)='1' then
 								tkin_rdy <= tkin_req; 
 								state := s_idle;
 							elsif (nak_rdy xor nak_req)='1' then
 								if tick_cntr(0)='1' then
-									nak_rdy  <= nak_req; 
+									nak_rdy <= nak_req; 
 									state := s_idle;
 								end if;
 							elsif tick_cntr(0)='1' then
@@ -253,6 +261,8 @@ begin
 						ackrx_req <= not ackrx_rdy;
 					when hs_nak =>
 						nak_req <= not nak_rdy;
+					when hs_stall =>
+						tkstall_req <= not tkstall_rdy;
 					when others =>
 					end case;
 				end if;
