@@ -50,6 +50,8 @@ entity usbhost is
 		dev_acktx   : out std_logic;
 		tksetup_req : in std_logic := '0';
 		tksetup_rdy : buffer std_logic := '0';
+		tkstall_req : buffer std_logic := '0';
+		tkstall_rdy : in  std_logic;
 		tkin_req    : in std_logic;
 		tkin_rdy    : buffer std_logic :='0';
 		tkout_req   : in std_logic;
@@ -171,6 +173,8 @@ begin
 		flush_rdy => flush_rdy,
 		tksetup_req => tksetup_req,
 		tksetup_rdy => tksetup_rdy,
+		tkstall_req => tkstall_req,
+		tkstall_rdy => tkstall_rdy,
 		tkin_req  => tkin_req,
 		tkin_rdy  => tkin_rdy,
 		tkout_req  => tkout_req,
@@ -247,6 +251,8 @@ architecture def of usbhostdvr is
 	signal flush_rdy   : std_logic;
 	signal tksetup_req : std_logic;
 	signal tksetup_rdy : std_logic;
+	signal tkstall_req : std_logic;
+	signal tkstall_rdy : std_logic;
 	signal tkin_req    : std_logic;
 	signal tkout_req   : std_logic;
 	signal tkout_rdy   : std_logic;
@@ -281,6 +287,8 @@ begin
 		flush_rdy => flush_rdy,
 		tksetup_req => tksetup_req,
 		tksetup_rdy => tksetup_rdy,
+		tkstall_req => tkstall_req,
+		tkstall_rdy => tkstall_rdy,
 		tkin_req  => tkin_req,
 		tkin_rdy  => tkin_rdy,
 		tkout_req => tkout_req,
@@ -309,6 +317,8 @@ begin
 		flush_rdy => flush_rdy,
 		tksetup_req => tksetup_req,
 		tksetup_rdy => tksetup_rdy,
+		tkstall_req => tkstall_req,
+		tkstall_rdy => tkstall_rdy,
 		tkin_req => tkin_req,
 		tkin_rdy => tkin_rdy,
 		tkout_req => tkout_req,

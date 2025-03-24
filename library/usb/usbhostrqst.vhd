@@ -45,6 +45,8 @@ entity usbhostrqst is
 		dev_acktx   : in  std_logic := '1';
 		tksetup_req : buffer std_logic := '0';
 		tksetup_rdy : in  std_logic := '0';
+		tkstall_req : in  std_logic := '0';
+		tkstall_rdy : buffer std_logic := '0';
 		tkin_req  : buffer std_logic := '0';
 		tkin_rdy  : in  std_logic;
 		tkout_req  : buffer std_logic := '0';
@@ -85,7 +87,16 @@ architecture def of usbhostrqst is
 				"80"      & -- Device to Host
 				"06"      & -- GET_DESCRIPTOR
 				"00"      & -- Descriptor index 
-				"02"      & -- Descriptor type -> DEVICE
+				"02"      & -- Descriptor type -> CONFIGURATION
+				"0000"    & -- Offset 
+				"4000"    & -- Length 64 bytes
+			"}"           & 
+			","           &
+			"{content:0x" & -- Hexadecimal format
+				"80"      & -- Device to Host
+				"06"      & -- GET_DESCRIPTOR
+				"00"      & -- Descriptor index 
+				"04"      & -- Descriptor type -> INTERFACE
 				"0000"    & -- Offset 
 				"4000"    & -- Length 64 bytes
 			"}"           & 
@@ -152,35 +163,42 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-   				case state is
-   				when s_idle =>
-					if (setup_rdy xor setup_req)='1' then
-						flush_req  <= not flush_rdy;
-						state      := s_flush;
-					end if;
-   				when s_flush =>
-					dev_addr   <= (others => '0');
-					dev_addr   <= (others => '0');
-					dev_endp   <= (others => '0');
-					segment_id <= (others => '0');
-					addr_val  <= x"000a";
-					if (flush_req xor flush_rdy)='0' then
-						rqst_req   <= not rqst_rdy;
-						state      := s_rqst;
-					end if;
-				when s_rqst =>
-					if (rqst_req xor rqst_rdy)='0' then
-						if segment_id < table_length-1 then
-							segment_id <= segment_id + 1;
-							rqst_req   <= not rqst_rdy;
-						else
-							setup_rdy <= setup_req;
-							state     := s_idle;
+				if (tkstall_rdy xor tkstall_req)='0' then
+					case state is
+	   				when s_idle =>
+						if (setup_rdy xor setup_req)='1' then
+							tkstall_rdy <= tkstall_req;
+							flush_req   <= not flush_rdy;
+							state      := s_flush;
 						end if;
-					elsif segment_id=2 then
-						dev_addr <= addr_val(dev_addr'range);
-					end if;
-				end case;
+					when s_flush =>
+						dev_addr   <= (others => '0');
+						dev_addr   <= (others => '0');
+						dev_endp   <= (others => '0');
+						segment_id <= (others => '0');
+						addr_val  <= x"000a";
+						if (flush_req xor flush_rdy)='0' then
+							rqst_req   <= not rqst_rdy;
+							state      := s_rqst;
+						end if;
+					when s_rqst =>
+						if (rqst_req xor rqst_rdy)='0' then
+							if segment_id < table_length-1 then
+								segment_id <= segment_id + 1;
+								rqst_req   <= not rqst_rdy;
+							else
+								setup_rdy <= setup_req;
+								state     := s_idle;
+							end if;
+						elsif segment_id=2 then
+							dev_addr <= addr_val(dev_addr'range);
+						end if;
+					end case;
+				else
+					setup_rdy <= setup_req;
+					tkstall_rdy <= tkstall_req;
+					state := s_idle;
+				end if;
 			end if;
 		end if;
 	end process;
@@ -191,60 +209,65 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-   				case state is
-   				when s_idle =>
-					if (rqst_rdy xor rqst_req)='1' then
-						tksetup_req <= not tksetup_rdy;
-						send_req <= not send_rdy;
-						state := s_setup;
-					end if;
-				when s_setup =>
-					if (send_req xor send_rdy)='0' then
-						device_req <= not device_rdy;
-						if segment_dir(0)='1' then
-							tkin_req <= not tkin_rdy;
-							state   := s_in;
-						else
-							if false then
-								tkout_req <= not tkout_rdy;
-								state := s_out;
+				if (tkstall_req xor tkstall_rdy)='0' then
+					case state is
+					when s_idle =>
+						if (rqst_rdy xor rqst_req)='1' then
+							tksetup_req <= not tksetup_rdy;
+							send_req <= not send_rdy;
+							state := s_setup;
+						end if;
+					when s_setup =>
+						if (send_req xor send_rdy)='0' then
+							device_req <= not device_rdy;
+							if segment_dir(0)='1' then
+								tkin_req <= not tkin_rdy;
+								state   := s_in;
 							else
+								if false then
+									tkout_req <= not tkout_rdy;
+									state := s_out;
+								else
+									tkin_req <= not tkin_rdy;
+									state := s_stout;
+								end if;
+							end if;
+						end if;
+					when s_in =>
+						if (tkin_req xor tkin_rdy)='0' then
+							if rxdv='0' then
+								if (device_rdy xor device_req)='1' then
+									tkin_req <= not tkin_rdy;
+								else
+									tkout_req <= not tkout_rdy;
+									state := s_stin;
+								end if;
+							end if;
+						end if;
+					when s_stin =>
+						if (tkout_req xor tkout_rdy)='0' then
+							rqst_rdy <= rqst_req;
+							state := s_idle;
+						end if;
+					when s_out =>
+						if (tkout_req xor tkout_rdy)='0' then
+							if txdis='1' then
 								tkin_req <= not tkin_rdy;
 								state := s_stout;
-							end if;
-						end if;
-					end if;
-				when s_in =>
-					if (tkin_req xor tkin_rdy)='0' then
-						if rxdv='0' then
-							if (device_rdy xor device_req)='1' then
-								tkin_req <= not tkin_rdy;
 							else
 								tkout_req <= not tkout_rdy;
-								state := s_stin;
 							end if;
 						end if;
-					end if;
-				when s_stin =>
-					if (tkout_req xor tkout_rdy)='0' then
-						rqst_rdy <= rqst_req;
-						state := s_idle;
-					end if;
-				when s_out =>
-					if (tkout_req xor tkout_rdy)='0' then
-						if txdis='1' then
-							tkin_req <= not tkin_rdy;
-							state := s_stout;
-						else
-							tkout_req <= not tkout_rdy;
+					when s_stout =>
+						if (tkin_req xor tkin_rdy)='0' then
+							rqst_rdy <= rqst_req;
+							state := s_idle;
 						end if;
-					end if;
-				when s_stout =>
-					if (tkin_req xor tkin_rdy)='0' then
-						rqst_rdy <= rqst_req;
-						state := s_idle;
-					end if;
-				end case;
+					end case;
+				else
+					rqst_rdy <= rqst_req;
+					state := s_idle;
+				end if;
 			end if;
 		end if;
 	end process;
