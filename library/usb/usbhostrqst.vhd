@@ -275,8 +275,10 @@ begin
 	device_p : process (device_rdy, clk)
 		constant aaa : std_logic_vector := xxx(hdo(descriptors)**".device");
 		variable cntr    : unsigned(0 to 8+3-1);
-		variable bLength : unsigned(0 to 8-1);
 		variable enas    : std_logic_vector(0 to 15-1);
+		variable bLength : unsigned(8-1 downto 0);
+		variable bDescriptorType : unsigned(8-1 downto 0);
+		variable wTotalLength : unsigned(16-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -285,8 +287,14 @@ begin
 						enas := multiplex(aaa, std_logic_vector(cntr(3 to 8-1)), 15);
 						if rxbs='0' then
 							if enas(0)='1' then
-								blength := blength srl 1;
 								blength(0) := rxd;
+								blength := blength ror 1;
+							elsif enas(1)='1' then
+								bDescriptorType(0) := rxd;
+								bDescriptorType := bDescriptorType ror 1;
+							elsif enas(2)='1' then
+								wTotalLength(0) := rxd;
+								wTotalLength := wTotalLength ror 1;
 							end if;
 							cntr := cntr + 1;
 						end if;
