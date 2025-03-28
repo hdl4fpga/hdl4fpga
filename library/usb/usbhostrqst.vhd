@@ -152,7 +152,10 @@ architecture def of usbhostrqst is
 	signal device_req : bit;
 	signal device_rdy : bit;
 				
-	signal addr_val : std_logic_vector(16-1 downto 0);
+	signal addr_val        : std_logic_vector(16-1 downto 0);
+	signal bLength         : std_logic_vector(8-1 downto 0);
+	signal bDescriptorType : std_logic_vector(8-1 downto 0);
+	signal wTotalLength : std_logic_vector(16-1 downto 0);
 
 begin
 
@@ -273,38 +276,40 @@ begin
 	end process;
 
 	device_p : process (device_rdy, clk)
-		constant aaa : std_logic_vector := xxx(hdo(descriptors)**".device");
-		variable cntr    : unsigned(0 to 8+3-1);
-		variable enas    : std_logic_vector(0 to 15-1);
-		variable bLength : unsigned(8-1 downto 0);
-		variable bDescriptorType : unsigned(8-1 downto 0);
-		variable wTotalLength : unsigned(16-1 downto 0);
+		constant aaa  : std_logic_vector := xxx(hdo(descriptors)**".device");
+		variable cntr : unsigned(0 to 8+3-1);
+		variable enas : std_logic_vector(0 to 15-1);
+		variable word : unsigned(16-1 downto 0);
+		variable byte : unsigned(8-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (device_rdy xor device_req)='1' then
+					enas := multiplex(aaa, std_logic_vector(cntr(3 to 8-1)), 15);
 					if rxdv='1' then
-						enas := multiplex(aaa, std_logic_vector(cntr(3 to 8-1)), 15);
 						if rxbs='0' then
+							word(0) := rxd;
+							word    := word ror 1;
+							byte(0) := rxd;
+							byte    := byte ror 1;
 							if enas(0)='1' then
-								blength(0) := rxd;
-								blength := blength ror 1;
+								blength <= std_logic_vector(byte);
 							elsif enas(1)='1' then
-								bDescriptorType(0) := rxd;
-								bDescriptorType := bDescriptorType ror 1;
+								bDescriptorType <= std_logic_vector(byte);
 							elsif enas(2)='1' then
-								wTotalLength(0) := rxd;
-								wTotalLength := wTotalLength ror 1;
+								wTotalLength <= std_logic_vector(word);
 							end if;
 							cntr := cntr + 1;
 						end if;
-						if cntr(0 to 8-1) >= blength then
-							device_rdy <= device_req;
+						if enas(0)='0' then
+							if cntr(0 to 8-1) >= unsigned(blength) then
+								device_rdy <= device_req;
+							end if;
 						end if;
 					end if;
 					tp(1 to 8) <= std_logic_vector(cntr(0 to 8-1));
 				else
-					blength := (others => '1');
+					blength <= (others => '1');
 					cntr    := (others => '0');
 				end if;
 			end if;
