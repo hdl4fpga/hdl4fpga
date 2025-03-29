@@ -279,11 +279,11 @@ begin
 		constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo(descriptors)**".device");
 		variable cntr   : unsigned(0 to 8+3-1);
 		variable enas   : std_logic_vector(0 to 15-1);
-		variable word   : unsigned(16-1 downto 0);
-		variable byte   : unsigned(8-1 downto 0);
 		alias ena_bLength         is enas(0);
 		alias ena_bDescriptorType is enas(1);
 		alias ena_wTotalLength    is enas(2);
+		variable word   : unsigned(16-1 downto 0);
+		variable byte   : unsigned(8-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -354,14 +354,14 @@ begin
 
 	send_p : process (clk)
 		type states is (s_idle, s_data);
-		variable state  : states;
-		constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo(request));
-		variable cntr   : unsigned(0 to 3+3);
-		variable enas  : std_logic_vector(0 to 4-1);
-		variable wValue   : unsigned(16-1 downto 0);
-		variable bRequest : unsigned(8-1 downto 0);
+		variable state    : states;
+		constant enatab   : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo(request));
+		variable cntr     : unsigned(0 to 3+3);
+		variable enas     : std_logic_vector(0 to 4-1);
 		alias ena_bRequest is enas(1);
 		alias ena_wValue   is enas(2);
+		variable wValue   : unsigned(16-1 downto 0);
+		variable bRequest : unsigned(8-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
