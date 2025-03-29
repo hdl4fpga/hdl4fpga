@@ -281,6 +281,9 @@ begin
 		variable enas : std_logic_vector(0 to 15-1);
 		variable word : unsigned(16-1 downto 0);
 		variable byte : unsigned(8-1 downto 0);
+		alias ena_bLength      is enas(0);
+		alias ena_bDescriptorType is enas(1);
+		alias ena_wTotalLength is enas(2);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -292,14 +295,14 @@ begin
 							word    := word ror 1;
 							byte(0) := rxd;
 							byte    := byte ror 1;
-							if enas(0)='1' then
+							if ena_bLength='1' then
 								blength <= std_logic_vector(byte);
-							elsif enas(1)='1' then
+							elsif ena_bDescriptorType='1' then
 								bDescriptorType <= std_logic_vector(byte);
 							else
 								case bDescriptorType is 
 								when config =>
-									if enas(2)='1' then
+									if ena_wTotalLength='1' then
 										wTotalLength <= std_logic_vector(word);
 									end if;
 								when others =>
@@ -307,21 +310,21 @@ begin
 							end if;
 							cntr := cntr + 1;
 						end if;
-						case bDescriptorType is 
-						when config =>
-							if enas(2)='0' then
-								if cntr(0 to 8-1) >= unsigned(wTotalLength) then
-									wTotalLength <= std_logic_vector(word);
-									device_rdy <= device_req;
+						if (ena_bLength or ena_bDescriptorType)='0' then
+							case bDescriptorType is 
+							when config =>
+								if ena_wTotalLength='0' then
+									if cntr(0 to 8-1) >= unsigned(wTotalLength) then
+										wTotalLength <= std_logic_vector(word);
+										device_rdy <= device_req;
+									end if;
 								end if;
-							end if;
-						when others =>
-							if enas(0)='0' then
+							when others =>
 								if cntr(0 to 8-1) >= unsigned(blength) then
 									device_rdy <= device_req;
 								end if;
-							end if;
-						end case;
+							end case;
+						end if;
 					end if;
 					tp(1 to 8) <= std_logic_vector(cntr(0 to 8-1));
 				else
