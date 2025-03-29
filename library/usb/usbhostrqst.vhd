@@ -303,15 +303,25 @@ begin
 										wTotalLength <= std_logic_vector(word);
 									end if;
 								when others =>
-								end case
+								end case;
 							end if;
 							cntr := cntr + 1;
 						end if;
-						if enas(0)='0' then
-							if cntr(0 to 8-1) >= unsigned(blength) then
-								device_rdy <= device_req;
+						case bDescriptorType is 
+						when config =>
+							if enas(2)='0' then
+								if cntr(0 to 8-1) >= unsigned(wTotalLength) then
+									wTotalLength <= std_logic_vector(word);
+									device_rdy <= device_req;
+								end if;
 							end if;
-						end if;
+						when others =>
+							if enas(0)='0' then
+								if cntr(0 to 8-1) >= unsigned(blength) then
+									device_rdy <= device_req;
+								end if;
+							end if;
+						end case;
 					end if;
 					tp(1 to 8) <= std_logic_vector(cntr(0 to 8-1));
 				else
