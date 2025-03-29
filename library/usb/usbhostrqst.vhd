@@ -292,14 +292,14 @@ begin
 							word    := word ror 1;
 							byte(0) := rxd;
 							byte    := byte ror 1;
-							if enas(0)='1' then
+							if enas(0)='0' then
 								blength <= std_logic_vector(byte);
 							elsif enas(1)='1' then
 								bDescriptorType <= std_logic_vector(byte);
 							end if;
-							case is 
+							case bDescriptorType is 
 							when config =>
-								if enas(2)='1' then
+								if enas(2)='0' then
 									wTotalLength <= std_logic_vector(word);
 								end if;
 							when others =>
