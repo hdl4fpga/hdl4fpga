@@ -60,7 +60,7 @@ package usbpkg is
 		constant max_segments : natural := 64)
 		return string;
 
-	function xxx (
+	function decoder (
 		constant descriptor   : string;
 		constant max_length   : natural := 1024;
 		constant max_segments : natural := 64)
@@ -115,7 +115,7 @@ package body usbpkg is
 		end if;
 	end;
 
-	function xxx (
+	function decoder (
 		constant descriptor   : string;
 		constant max_length   : natural := 1024;
 		constant max_segments : natural := 64)
