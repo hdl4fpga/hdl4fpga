@@ -153,9 +153,9 @@ architecture def of usbhostrqst is
 	signal device_rdy : bit;
 				
 	signal addr_val        : std_logic_vector(16-1 downto 0);
-	signal bLength         : std_logic_vector(8-1 downto 0);
-	signal bDescriptorType : std_logic_vector(8-1 downto 0);
-	signal wTotalLength : std_logic_vector(16-1 downto 0);
+	signal bLength         : std_logic_vector( 8-1 downto 0);
+	signal bDescriptorType : std_logic_vector( 8-1 downto 0);
+	signal wTotalLength    : std_logic_vector(16-1 downto 0);
 
 begin
 
