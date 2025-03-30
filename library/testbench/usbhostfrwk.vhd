@@ -33,6 +33,7 @@ architecture usbhostfrwk of testbench is
 	signal   dp       : std_logic;
 	signal   dn       : std_logic;
 
+	signal msb : std_logic_vector(0 to (64+3)*8-1);
 begin
 
 	usb_clk <= not usb_clk after 1 sec/(2.0*usb_freq);
@@ -75,8 +76,7 @@ begin
 			setup_rdy => setup_rdy);
 
 		rx_p : process (rxbs, clk)
-			variable shr : unsigned(0 to (64+3)*8-1);
-			variable msb : unsigned(shr'range);
+			variable shr : unsigned(msb'range);
 			variable dv1 : std_logic;
 			variable cntr : natural;
 		begin
@@ -94,7 +94,7 @@ begin
 					dv1 := rxdv;
 				end if;
 				if cntr /= 0 then
-				msb := reverse(shr ror cntr,8);
+				msb <= std_logic_vector(reverse(shr ror cntr,8));
 				end if;
 			end if;
 		end process;
@@ -163,22 +163,22 @@ begin
 					end if;
 				elsif txbs='0' then
 					txen <= '0';
-					if idle='1' then
-						get_packet(packet, length, testdata, i);
-						if length/=0 then
-							loop
-								if idle='1' then
-									wait for 15 us;
-									exit when idle='1';
-								else
-									wait on clk;
-								end if;
-							end loop;
-							j <= 0;
-							i <= i + 1;
-						else
-							wait;
-						end if;
+					get_packet(packet, length, testdata, i);
+					if length/=0 then
+						loop 
+							wait on idle until idle='1';
+							if msb(0 to 16-1)=x"80c3" then
+								exit;
+							elsif msb(0 to 16-1)=x"804b" then
+								exit;
+							elsif msb(0 to 16-1)=x"8069" then
+								exit;
+							end if;
+						end loop;
+						j <= 0;
+						i <= i + 1;
+					else
+						wait;
 					end if;
 				end if;
 			end if;
@@ -204,8 +204,8 @@ begin
 
 		rx_p : process (clk)
 			variable cntr : natural := 0;
-			variable shr  : std_logic_vector(0 to 128-1);
-			variable msb  : std_logic_vector(shr'range);
+			variable msb  : std_logic_vector(0 to 128-1);
+			variable shr  : std_logic_vector(msb'range);
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
