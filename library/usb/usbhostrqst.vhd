@@ -328,7 +328,9 @@ begin
 					end if;
 					tp(1 to 8) <= std_logic_vector(cntr(0 to 8-1));
 				else
-					blength <= (others => '1');
+					blength         <= (others => '-');
+					bDescriptorType <= (others => '-');
+					wTotalLength    <= (others => '-');
 					cntr    := (others => '0');
 				end if;
 			end if;
