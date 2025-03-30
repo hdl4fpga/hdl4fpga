@@ -288,7 +288,7 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (device_rdy xor device_req)='1' then
-					enas := multiplex(enatab, std_logic_vector(cntr(3 to 8-1)), enas'length);
+					enas := multiplex(enatab, std_logic_vector(cntr(0 to 8-1)), enas'length);
 					if rxdv='1' then
 						if rxbs='0' then
 							word(0) := rxd;
