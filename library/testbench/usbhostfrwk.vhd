@@ -48,7 +48,6 @@ begin
 
 	begin
 		rst <= '0' after 0.500 us;
-
 		with oversampling select
 		clk <= 
 			not clk after 1 sec/((2.0*usb_freq)*(50.00e6/usb_freq)) when 4,
@@ -126,8 +125,8 @@ begin
 		signal packet : std_logic_vector(0 to (64+3)*8-1);
 	begin
 
-		clk <= not clk after 1 sec/(3.0*2.0*usb_freq);
 		rst <= '1', '0' after 0.5 us;
+		clk <= not clk after 1 sec/(real(oversampling)*2.0*usb_freq);
 		process 
 			variable i      : natural;
 			variable j      : natural;
@@ -143,12 +142,12 @@ begin
 					if txbs='0' then
 						txen <= '1';
 						txd  <= packet(j);
-						j := j + 1;
+						j    := j + 1;
 					end if;
 				elsif txbs='0' then
 					txen <= '0';
 					get_packet(packet, length, testdata, i);
-					if length/=0 then
+					if length /= 0 then
 						loop 
 							wait on idle until idle='1';
 							if   msb(0 to 8-1)=x"c3" then
@@ -190,9 +189,9 @@ begin
 			rxbs => rxbs,
 			rxd  => rxd);
 
-    	rx_p : process (phy_bs, clk)
-    		variable shr : unsigned(msb'range);
-    		variable dv1 : std_logic;
+    	phy_p : process (phy_bs, clk)
+    		variable shr  : unsigned(msb'range);
+    		variable dv1  : std_logic;
     		variable cntr : natural;
     	begin
     		if rising_edge(clk) then
