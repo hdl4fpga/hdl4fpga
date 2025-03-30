@@ -288,7 +288,7 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (device_rdy xor device_req)='1' then
-					enas := multiplex(enatab, std_logic_vector(cntr(0 to 8-1)), enas'length);
+					enas := multiplex(enatab, std_logic_vector(cntr srl 3), enas'length);
 					if rxdv='1' then
 						if rxbs='0' then
 							word(0) := rxd;
@@ -315,13 +315,13 @@ begin
 						case bDescriptorType is 
 						when config =>
 							if ena_wTotalLength='0' then
-								if cntr(0 to 8-1) >= unsigned(wTotalLength) then
+								if (cntr srl 3) >= unsigned(wTotalLength) then
 									wTotalLength <= std_logic_vector(word);
 									device_rdy <= device_req;
 								end if;
 							end if;
 						when others =>
-							if cntr(0 to 8-1) >= unsigned(blength) then
+							if (cntr srl 3) >= unsigned(blength) then
 								device_rdy <= device_req;
 							end if;
 						end case;
@@ -365,7 +365,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				enas := multiplex(enatab, std_logic_vector(cntr(0 to 4-1)), enas'length);
+				enas := multiplex(enatab, std_logic_vector(cntr srl 3), enas'length);
 				if (send_rdy xor send_req)='1' then
 					case state is
 					when s_idle => 
