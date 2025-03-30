@@ -39,6 +39,10 @@ entity usbphy is
 		clk   : in  std_logic;
 		cken  : buffer std_logic;
 
+		phy_dv : out std_logic;
+		phy_bs : out std_logic;
+		phy_d  : out std_logic;
+
 		txen  : in  std_logic := '0';
 		txbs  : buffer std_logic;
 		txd   : in  std_logic := '-';
@@ -60,6 +64,9 @@ architecture def of usbphy is
 
 	signal tx_tp : std_logic_vector(tp'range);
 	signal echo : std_logic;
+	signal phy_txdv : std_logic;
+	signal phy_txbs : std_logic;
+	signal phy_txd  : std_logic;
 begin
 
 	process (clk)
@@ -74,6 +81,10 @@ begin
 			end if;
 		end if;
 	end process;
+
+	phy_dv <= '1'      when phy_txdv='1' else rxdv when echo='0' else '0';
+	phy_bs <= phy_txbs when phy_txdv='1' else rxbs;
+	phy_d  <= phy_txd  when phy_txdv='1' else rxd;
 
 	tp(1) <= '1'      when tx_tp(1)='1' else rxdv when echo='0' else '0';
 	tp(2) <= tx_tp(2) when tx_tp(1)='1' else rxbs;
@@ -173,6 +184,9 @@ begin
 		tp   => tx_tp,
 		clk  => clk,
 		cken => cken,
+		phy_dv => phy_txdv,
+		phy_bs => phy_txbs,
+		phy_d  => phy_txd,
 		txen => txen,
 		txbs => txbs,
 		txd  => txd,

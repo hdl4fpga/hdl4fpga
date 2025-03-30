@@ -331,7 +331,7 @@ begin
 					blength         <= (others => '-');
 					bDescriptorType <= (others => '-');
 					wTotalLength    <= (others => '-');
-					cntr    := (others => '0');
+					cntr            := (others => '0');
 				end if;
 			end if;
 		end if;

@@ -38,6 +38,9 @@ entity usbhost is
 		dp   : inout std_logic := 'Z';
 		dn   : inout std_logic := 'Z';
 
+		phy_dv : out std_logic;
+		phy_bs : out std_logic;
+		phy_d  : out std_logic;
 		clk  : in  std_logic;
 		cken : buffer std_logic;
 
@@ -113,6 +116,9 @@ begin
 		dn       => dn,
 		clk      => clk,
 		cken     => cken,
+		phy_dv   => phy_dv,
+		phy_bs   => phy_bs,
+		phy_d    => phy_d,
 
 		txen     => phy_txen,
 		txbs     => phy_txbs,
@@ -232,6 +238,9 @@ entity usbhostdvr is
 
 		dp   : inout std_logic := 'Z';
 		dn   : inout std_logic := 'Z';
+		phy_dv : out std_logic;
+		phy_bs : out std_logic;
+		phy_d  : out std_logic;
 
 		clk  : in  std_logic;
 		cken : buffer std_logic;
@@ -283,6 +292,9 @@ begin
 		dn        => dn,
 		clk       => clk,
 		cken      => cken,
+		phy_dv   => phy_dv,
+		phy_bs   => phy_bs,
+		phy_d    => phy_d,
 		flush_req => flush_req,
 		flush_rdy => flush_rdy,
 		tksetup_req => tksetup_req,

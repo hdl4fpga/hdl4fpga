@@ -32,7 +32,10 @@ entity usbphy_tx is
 	port (
 		tp   : out std_logic_vector(1 to 32);
 		clk  : in  std_logic;
-		cken : in std_logic := '1';
+		cken : in  std_logic := '1';
+		phy_dv : out std_logic;
+		phy_bs : out std_logic;
+		phy_d  : out std_logic;
 		txen : in  std_logic;
 		txd  : in  std_logic;
 		txbs : buffer std_logic;
@@ -114,6 +117,8 @@ begin
 				end case;
 
 				rdata := reverse(data);
+				phy_bs <= txbs;
+				phy_d  <= data(0);
 				tp(2) <= txbs;
 				tp(3) <= data(0);
 			end if;
@@ -128,5 +133,6 @@ begin
 		end if;
 	end process;
 	tp(1) <= txen;
+	phy_dv <= txen;
 
 end;
