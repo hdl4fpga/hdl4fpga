@@ -310,21 +310,21 @@ begin
 							end if;
 							cntr := cntr + 1;
 						end if;
-						if (ena_bLength or ena_bDescriptorType)='0' then
-							case bDescriptorType is 
-							when config =>
-								if ena_wTotalLength='0' then
-									if cntr(0 to 8-1) >= unsigned(wTotalLength) then
-										wTotalLength <= std_logic_vector(word);
-										device_rdy <= device_req;
-									end if;
-								end if;
-							when others =>
-								if cntr(0 to 8-1) >= unsigned(blength) then
+					end if;
+					if (ena_bLength or ena_bDescriptorType)='0' then
+						case bDescriptorType is 
+						when config =>
+							if ena_wTotalLength='0' then
+								if cntr(0 to 8-1) >= unsigned(wTotalLength) then
+									wTotalLength <= std_logic_vector(word);
 									device_rdy <= device_req;
 								end if;
-							end case;
-						end if;
+							end if;
+						when others =>
+							if cntr(0 to 8-1) >= unsigned(blength) then
+								device_rdy <= device_req;
+							end if;
+						end case;
 					end if;
 					tp(1 to 8) <= std_logic_vector(cntr(0 to 8-1));
 				else
