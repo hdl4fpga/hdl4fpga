@@ -60,8 +60,8 @@ package usbpkg is
 		constant max_segments : natural := 64)
 		return string;
 
-	function xxx (
-		constant descriptor   : string;
+	function decoder (
+		constant object       : string;
 		constant max_length   : natural := 1024;
 		constant max_segments : natural := 64)
 		return std_logic_vector;
@@ -115,8 +115,8 @@ package body usbpkg is
 		end if;
 	end;
 
-	function xxx (
-		constant descriptor   : string;
+	function decoder (
+		constant object       : string;
 		constant max_length   : natural := 1024;
 		constant max_segments : natural := 64)
 		return std_logic_vector is
@@ -135,7 +135,7 @@ package body usbpkg is
 			else
 				offsets(i) := 0;
 			end if;
-			get_value(length, valid, escaped(hdo(descriptor)**("["&natural'image(i)&"]=")));
+			get_value(length, valid, escaped(hdo(object)**("["&natural'image(i)&"]=")));
 			exit when not valid;
 		end loop;
 		num_bits := unsigned_num_bits(offsets(n-1));

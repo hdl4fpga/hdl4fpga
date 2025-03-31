@@ -128,31 +128,13 @@ architecture def of usbhostrqst is
 			"wLength:2"        &
 		"}";
 
-	constant descriptors : string := 
-		"{"                            &
-			"device:{"                 &
-				"bLength:1,"           &
-				"bDescriptorType:1,"   &
-				"bcdUSB:2,"            &
-				"bDeviceClass:1,"      &
-				"bDeviceSubClass:1,"   &
-				"bDeviceProtocol:1,"   &
-				"bMaxPacketSize0:1,"   &
-				"idVendor:2,"          &
-				"idProduct:2,"         &
-				"bcdDevice:2,"         &
-				"idProduct:2,"         &
-				"iManufacturer:1,"     &
-				"iProduct:1,"          &
-				"iSerialNumber:1,"     &
-				"bNumConfigurations:1" &
-			"}"                        &
-		"}";
-
 	signal device_req : bit;
 	signal device_rdy : bit;
 				
-	signal addr_val : std_logic_vector(16-1 downto 0);
+	signal addr_val        : std_logic_vector(16-1 downto 0);
+	signal bLength         : std_logic_vector( 8-1 downto 0);
+	signal bDescriptorType : std_logic_vector( 8-1 downto 0);
+	signal wTotalLength    : std_logic_vector(16-1 downto 0);
 
 begin
 
@@ -273,31 +255,68 @@ begin
 	end process;
 
 	device_p : process (device_rdy, clk)
-		constant aaa : std_logic_vector := xxx(hdo(descriptors)**".device");
-		variable cntr    : unsigned(0 to 8+3-1);
-		variable bLength : unsigned(0 to 8-1);
-		variable enas    : std_logic_vector(0 to 15-1);
+		constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo'(
+			"{"                        &
+				"bLength:1,"           &
+				"bDescriptorType:1,"   &
+				"wTotalLength:2"       &
+			"}"));
+
+		variable cntr : unsigned(0 to 8+3-1);
+		variable enas : std_logic_vector(0 to 3-1);
+		alias ena_bLength         is enas(0);
+		alias ena_bDescriptorType is enas(1);
+		alias ena_wTotalLength    is enas(2);
+		variable word : unsigned(16-1 downto 0);
+		variable byte : unsigned(8-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (device_rdy xor device_req)='1' then
+					enas := multiplex(enatab, std_logic_vector(cntr srl 3), enas'length);
 					if rxdv='1' then
-						enas := multiplex(aaa, std_logic_vector(cntr(3 to 8-1)), 15);
 						if rxbs='0' then
-							if enas(0)='1' then
-								blength := blength srl 1;
-								blength(0) := rxd;
+							word(0) := rxd;
+							word    := word ror 1;
+							byte(0) := rxd;
+							byte    := byte ror 1;
+							if ena_bLength='1' then
+								blength <= std_logic_vector(byte);
+							elsif ena_bDescriptorType='1' then
+								bDescriptorType <= std_logic_vector(byte);
+							else
+								case bDescriptorType is 
+								when config =>
+									if ena_wTotalLength='1' then
+										wTotalLength <= std_logic_vector(word);
+									end if;
+								when others =>
+								end case;
 							end if;
 							cntr := cntr + 1;
 						end if;
-						if cntr(0 to 8-1) >= blength then
-							device_rdy <= device_req;
-						end if;
+					end if;
+					if (ena_bLength or ena_bDescriptorType)='0' then
+						case bDescriptorType is 
+						when config =>
+							if ena_wTotalLength='0' then
+								if (cntr srl 3) >= unsigned(wTotalLength) then
+									wTotalLength <= std_logic_vector(word);
+									device_rdy <= device_req;
+								end if;
+							end if;
+						when others =>
+							if (cntr srl 3) >= unsigned(blength) then
+								device_rdy <= device_req;
+							end if;
+						end case;
 					end if;
 					tp(1 to 8) <= std_logic_vector(cntr(0 to 8-1));
 				else
-					blength := (others => '1');
-					cntr    := (others => '0');
+					blength         <= (others => '-');
+					bDescriptorType <= (others => '-');
+					wTotalLength    <= (others => '-');
+					cntr            := (others => '0');
 				end if;
 			end if;
 		end if;
@@ -322,18 +341,18 @@ begin
 
 	send_p : process (clk)
 		type states is (s_idle, s_data);
-		variable state : states;
-		variable cntr  : unsigned(0 to 3+3);
-		constant aaa   : std_logic_vector := xxx(hdo(request));
-		variable enas  : std_logic_vector(0 to 4-1);
-		variable wValue   : unsigned(16-1 downto 0);
-		variable bRequest : unsigned(8-1 downto 0);
+		variable state    : states;
+		constant enatab   : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo(request));
+		variable cntr     : unsigned(0 to 3+3);
+		variable enas     : std_logic_vector(0 to 4-1);
 		alias ena_bRequest is enas(1);
 		alias ena_wValue   is enas(2);
+		variable wValue   : unsigned(16-1 downto 0);
+		variable bRequest : unsigned(8-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				enas := multiplex(aaa, std_logic_vector(cntr(0 to 4-1)), 4);
+				enas := multiplex(enatab, std_logic_vector(cntr srl 3), enas'length);
 				if (send_rdy xor send_req)='1' then
 					case state is
 					when s_idle => 

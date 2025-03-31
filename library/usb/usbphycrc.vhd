@@ -40,6 +40,10 @@ entity usbphycrc is
 		clk    : in  std_logic;
 		cken   : buffer std_logic;
 
+		phy_dv   : out std_logic;
+		phy_bs   : out std_logic;
+		phy_d    : out std_logic;
+
 		txen   : in  std_logic;
 		txbs   : buffer std_logic;
 		txd    : in  std_logic;
@@ -105,6 +109,9 @@ begin
 		cken  => cken,
 		idle  => idle,
 
+		phy_dv=> phy_dv,
+		phy_bs=> phy_bs,
+		phy_d => phy_d,
 		txen  => phy_txen,
 		txbs  => phy_txbs,
 		txd   => phy_txd,

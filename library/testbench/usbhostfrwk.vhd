@@ -29,13 +29,12 @@ use hdl4fpga.hdo.all;
 
 architecture usbhostfrwk of testbench is
 	constant usb_freq : real      := 12.0e6;
-	signal   usb_clk  : std_logic := '0';
 	signal   dp       : std_logic;
 	signal   dn       : std_logic;
 
+	signal msb : std_logic_vector(0 to (64+3)*8-1);
 begin
 
-	usb_clk <= not usb_clk after 1 sec/(2.0*usb_freq);
 	dp <= 'H';
 	dn <= 'L';
 
@@ -47,13 +46,8 @@ begin
 		signal setup_rdy : std_logic;
 		signal setup_req : std_logic;
 
-		signal tp : std_logic_vector(1 to 32);
-		alias rxdv   is  tp(1);
-		alias rxbs   is  tp(2);
-		alias rxd    is  tp(3);
 	begin
 		rst <= '0' after 0.500 us;
-
 		with oversampling select
 		clk <= 
 			not clk after 1 sec/((2.0*usb_freq)*(50.00e6/usb_freq)) when 4,
@@ -66,7 +60,6 @@ begin
 	   	generic map (
 	   		oversampling => oversampling)
 		port map (
-			tp => tp,
 			dp        => dp,
 			dn        => dn,
 			clk       => clk,
@@ -74,37 +67,12 @@ begin
 			setup_req => setup_req,
 			setup_rdy => setup_rdy);
 
-		rx_p : process (rxbs, clk)
-			variable shr : unsigned(0 to (64+3)*8-1);
-			variable msb : unsigned(shr'range);
-			variable dv1 : std_logic;
-			variable cntr : natural;
-		begin
-			if rising_edge(clk) then
-				if cken='1' then
-					if (rxdv and not rxbs)='1' then
-						if dv1='0' then
-							cntr := 0;
-							shr := (others => '-');
-						end if;
-						shr(0) := rxd;
-						shr := shr rol 1;
-						cntr := cntr + 1;
-					end if;
-					dv1 := rxdv;
-				end if;
-				if cntr /= 0 then
-				msb := reverse(shr ror cntr,8);
-				end if;
-			end if;
-		end process;
-
 	end block;
 
-	dev_b : block
-		signal tp   : std_logic_vector(1 to 32);
+	testpattern_b : block
+		constant oversampling : natural := 3;
 		signal rst  : std_logic;
-		alias  clk  is usb_clk;
+		signal clk  : std_logic := '0';
 		signal cken : std_logic;
 		signal txen : std_logic := '0';
 		signal txbs : std_logic;
@@ -113,6 +81,9 @@ begin
 		signal rxbs : std_logic;
 		signal rxd  : std_logic;
 		signal idle : std_logic;
+		signal phy_dv : std_logic;
+		signal phy_bs : std_logic;
+		signal phy_d  : std_logic;
 		constant testdata : string := 
 			"[" &
 				"[0xd2]," &
@@ -121,7 +92,18 @@ begin
 				"[0xd2]," &
 				"[0x4b]," &
 				"[0xd2]," &
-				"[0x4b09021001000000403412cdab000101000001]," &
+				"[0x4b09028000000000403412cdab00010100000101]," &
+				"[0x4b09021001000000403412cdab00010100000101]," &
+				"[0x4b09021001000000403412cdab00010100000101]," &
+				"[0x4b09021001000000403412cdab00010100000101]," &
+				"[0x4b09021001000000403412cdab00010100000101]," &
+				"[0x4b09021001000000403412cdab00010100000101]," &
+				"[0x4b09021001000000403412cdab00010100000101]," &
+				"[0x4b09021001000000403412cdab00010100000101]," &
+				"[0x4b09021001000000403412cdab00010100000101]," &
+				"[0x4b09021001000000403412cdab00010100000101]," &
+				"[0x4b09021001000000403412cdab00010100000101]," &
+				"[0x4b09021001000000403412cdab00010100000101]" &
 			"]";
 
 		procedure get_packet (
@@ -141,58 +123,63 @@ begin
 		end;
 
 		signal packet : std_logic_vector(0 to (64+3)*8-1);
-		signal i      : natural;
-		signal j      : natural;
 	begin
 
 		rst <= '1', '0' after 0.5 us;
+		clk <= not clk after 1 sec/(real(oversampling)*2.0*usb_freq);
 		process 
+			variable i      : natural;
+			variable j      : natural;
 			variable length : natural;
 		begin
-			if rising_edge(clk) then
+			if rising_edge(clk) and cken='1' then
 				if rst='1' then
 					txen   <= '0';
-					i      <= 0;
-					j      <= 0;
 					length := 0;
+					i      := 0;
+					j      := 0;
 				elsif j < length then
 					if txbs='0' then
-						txd  <= packet(j);
 						txen <= '1';
-						j <= j + 1;
+						txd  <= packet(j);
+						j    := j + 1;
 					end if;
 				elsif txbs='0' then
 					txen <= '0';
-					if idle='1' then
-						get_packet(packet, length, testdata, i);
-						if length/=0 then
-							loop
-								if idle='1' then
-									wait for 15 us;
-									exit when idle='1';
-								else
-									wait on clk;
-								end if;
-							end loop;
-							j <= 0;
-							i <= i + 1;
-						else
-							wait;
-						end if;
+					get_packet(packet, length, testdata, i);
+					if length /= 0 then
+						loop 
+							wait on idle until idle='1';
+							if   msb(0 to 8-1)=x"c3" then
+								exit;
+							elsif msb(0 to 8-1)=x"4b" then
+								exit;
+							elsif msb(0 to 8-1)=x"69" then
+								exit;
+							end if;
+						end loop;
+						j := 0;
+						i := i + 1;
+					else
+						wait;
 					end if;
 				end if;
 			end if;
 			wait on clk;
 		end process;
 
-	  	dev_e : entity hdl4fpga.usbphycrc
+	  	usbphy_e : entity hdl4fpga.usbphycrc
+	   	generic map (
+	   		oversampling => oversampling)
 		port map (
-			tp   => tp,
 			dp   => dp,
 			dn   => dn,
 			idle => idle,
 			clk  => clk,
 			cken => cken,
+			phy_dv => phy_dv,
+			phy_bs => phy_bs,
+			phy_d  => phy_d,
 
 			txen => txen,
 			txbs => txbs,
@@ -202,23 +189,29 @@ begin
 			rxbs => rxbs,
 			rxd  => rxd);
 
-		rx_p : process (clk)
-			variable cntr : natural := 0;
-			variable shr  : std_logic_vector(0 to 128-1);
-			variable msb  : std_logic_vector(shr'range);
-		begin
-			if rising_edge(clk) then
-				if cken='1' then
-					if (rxdv and not rxbs)='1' then
-						if cntr < shr'length then
-							shr(cntr) := rxd;
-							cntr := cntr + 1;
-						end if;
-					end if;
-				end if;
-				msb := reverse(shr,8);
-			end if;
-		end process;
+    	phy_p : process (phy_bs, clk)
+    		variable shr  : unsigned(msb'range);
+    		variable dv1  : std_logic;
+    		variable cntr : natural;
+    	begin
+    		if rising_edge(clk) then
+    			if cken='1' then
+    				if (phy_dv and not phy_bs)='1' then
+    					if dv1='0' then
+    						cntr := 0;
+    						shr := (others => '-');
+    					end if;
+    					shr(0) := phy_d;
+    					shr := shr rol 1;
+    					cntr := cntr + 1;
+    				end if;
+    				dv1 := phy_dv;
+    			end if;
+    			if cntr /= 0 then
+    				msb <= std_logic_vector(reverse(shr ror cntr,8));
+    			end if;
+    		end if;
+    	end process;
 
 	end block;
 

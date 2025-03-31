@@ -1250,7 +1250,7 @@ package body base is
 		assert word'length mod size = 0
 			report "multiplex mod"
 			severity failure;
-		return multiplex(fill(data => word, size => size*(2**addr'length), right => true), addr);
+		return multiplex(fill(data => word, size => size*(2**addr'length), right => true, value => '0'), addr);
 	end;
 
 	function multiplex (
@@ -1262,7 +1262,7 @@ package body base is
 		assert word'length mod size = 0
 			report "multiplex mod"
 			severity failure;
-		return multiplex(fill(data => word, size => size*(2**addr'length), right => true), std_logic_vector(addr));
+		return multiplex(fill(data => word, size => size*(2**addr'length), right => true, value => '0'), std_logic_vector(addr));
 	end;
 
 	function multiplex (
