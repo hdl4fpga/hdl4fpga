@@ -128,27 +128,6 @@ architecture def of usbhostrqst is
 			"wLength:2"        &
 		"}";
 
-	constant descriptors : string := 
-		"{"                            &
-			"device:{"                 &
-				"bLength:1,"           &
-				"bDescriptorType:1,"   &
-				"bcdUSB:2,"            &
-				"bDeviceClass:1,"      &
-				"bDeviceSubClass:1,"   &
-				"bDeviceProtocol:1,"   &
-				"bMaxPacketSize0:1,"   &
-				"idVendor:2,"          &
-				"idProduct:2,"         &
-				"bcdDevice:2,"         &
-				"idProduct:2,"         &
-				"iManufacturer:1,"     &
-				"iProduct:1,"          &
-				"iSerialNumber:1,"     &
-				"bNumConfigurations:1" &
-			"}"                        &
-		"}";
-
 	signal device_req : bit;
 	signal device_rdy : bit;
 				
@@ -276,14 +255,20 @@ begin
 	end process;
 
 	device_p : process (device_rdy, clk)
-		constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo(descriptors)**".device");
-		variable cntr   : unsigned(0 to 8+3-1);
-		variable enas   : std_logic_vector(0 to 15-1);
+		constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo'(
+			"{"                        &
+				"bLength:1,"           &
+				"bDescriptorType:1,"   &
+				"wTotalLength:2"       &
+			"}"));
+
+		variable cntr : unsigned(0 to 8+3-1);
+		variable enas : std_logic_vector(0 to 3-1);
 		alias ena_bLength         is enas(0);
 		alias ena_bDescriptorType is enas(1);
 		alias ena_wTotalLength    is enas(2);
-		variable word   : unsigned(16-1 downto 0);
-		variable byte   : unsigned(8-1 downto 0);
+		variable word : unsigned(16-1 downto 0);
+		variable byte : unsigned(8-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
