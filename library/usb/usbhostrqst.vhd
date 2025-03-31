@@ -262,13 +262,14 @@ begin
 				"wTotalLength:2"       &
 			"}"));
 
-		variable cntr : unsigned(0 to 8+3-1);
+		variable cntr : unsigned(8+3-1 downto 0);
 		variable enas : std_logic_vector(0 to 3-1);
 		alias ena_bLength         is enas(0);
 		alias ena_bDescriptorType is enas(1);
 		alias ena_wTotalLength    is enas(2);
 		variable word : unsigned(16-1 downto 0);
-		variable byte : unsigned(8-1 downto 0);
+		variable byte : unsigned( 8-1 downto 0);
+		variable addr : unsigned(16-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -310,6 +311,9 @@ begin
 								device_rdy <= device_req;
 							end if;
 						end case;
+					end if;
+					if unsigned(blength)+addr >= cntr srl 3 then
+						addr := cntr srl 3;
 					end if;
 					tp(1 to 8) <= std_logic_vector(cntr(0 to 8-1));
 				else
