@@ -356,7 +356,6 @@ begin
 							end if;
 						end case;
 					end if;
-					-- tp(1 to 8) <= std_logic_vector(cntr(0 to 8-1));
 				else
 					blength         <= (others => '-');
 					bDescriptorType <= (others => '-');
