@@ -256,10 +256,9 @@ begin
 
 	descriptors_p : process (device_rdy, clk)
 		constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo'(
-			"{"                        &
-				"bLength:1,"           &
-				"bDescriptorType:1,"   &
-				"wTotalLength:2"       &
+			"{"                     &
+				"bLength:1,"        &
+				"bDescriptorType:1" &
 			"}"));
 
 		variable cntr : unsigned(8+3-1 downto 0);
