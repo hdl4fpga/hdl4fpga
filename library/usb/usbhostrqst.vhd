@@ -254,7 +254,52 @@ begin
 		end if;
 	end process;
 
-	device_p : process (device_rdy, clk)
+	descriptors_p : process (device_req, clk)
+		constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo'(
+			"{"                     &
+				"bLength:1,"        &
+				"bDescriptorType:1" &
+			"}"));
+
+		variable cntr : unsigned(8+3-1 downto 0);
+		variable enas : std_logic_vector(0 to 2-1);
+		alias ena_bLength         is enas(0);
+		alias ena_bDescriptorType is enas(1);
+		variable byte : unsigned( 8-1 downto 0);
+		variable bLength         : unsigned( 8-1 downto 0);
+		variable bDescriptorType : unsigned( 8-1 downto 0);
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (device_rdy xor device_req)='1' then
+					enas := multiplex(enatab, std_logic_vector(cntr srl 3), enas'length);
+					if rxdv='1' then
+						if rxbs='0' then
+							byte(0) := rxd;
+							byte    := byte ror 1;
+							if ena_bLength='1' then
+								blength := byte;
+							elsif ena_bDescriptorType='1' then
+								bDescriptorType := byte;
+							end if;
+							cntr := cntr + 1;
+						end if;
+					end if;
+					if (ena_bLength or ena_bDescriptorType)='0' then
+						if (cntr srl 3) >= blength then
+							cntr := (others => '0');
+						end if;
+					end if;
+				else
+					blength         := (others => '-');
+					bDescriptorType := (others => '-');
+					cntr            := (others => '0');
+				end if;
+			end if;
+		end if;
+	end process;
+
+	configuration_p : process (device_rdy, clk)
 		constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo'(
 			"{"                        &
 				"bLength:1,"           &
@@ -269,7 +314,6 @@ begin
 		alias ena_wTotalLength    is enas(2);
 		variable word : unsigned(16-1 downto 0);
 		variable byte : unsigned( 8-1 downto 0);
-		variable addr : unsigned(16-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -312,10 +356,6 @@ begin
 							end if;
 						end case;
 					end if;
-					if unsigned(blength)+addr >= cntr srl 3 then
-						addr := cntr srl 3;
-					end if;
-					tp(1 to 8) <= std_logic_vector(cntr(0 to 8-1));
 				else
 					blength         <= (others => '-');
 					bDescriptorType <= (others => '-');
