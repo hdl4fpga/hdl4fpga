@@ -64,7 +64,7 @@ entity usbhostrqst is
 end;
 
 architecture def of usbhostrqst is
-	constant test   : string := segment_map(
+	constant test : string := segment_map(
 		"["&
 			"{content:0x" & -- Hexadecimal format
 				"80"      & -- Device to Host
@@ -72,13 +72,13 @@ architecture def of usbhostrqst is
 				"00"      & -- Descriptor index 
 				"01"      & -- Descriptor type -> DEVICE
 				"0000"    & -- Offset 
-				"4000"    & -- Length 64 bytes
+				"ffff"    & -- Length 64 bytes
 			"}"           & 
 			","           &
 			"{content:0x" & -- Hexadecimal format
 				"00"      & -- Host to Device
 				"05"      & -- SET_ADDRESS
-				"0a00"    & -- Address
+				"----"    & -- Address
 				"0000"    & -- Offset 
 				"0000"    & -- Length 64 bytes
 			"}"           & 
@@ -89,16 +89,7 @@ architecture def of usbhostrqst is
 				"00"      & -- Descriptor index 
 				"02"      & -- Descriptor type -> CONFIGURATION
 				"0000"    & -- Offset 
-				"4000"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"80"      & -- Device to Host
-				"06"      & -- GET_DESCRIPTOR
-				"00"      & -- Descriptor index 
-				"04"      & -- Descriptor type -> INTERFACE
-				"0000"    & -- Offset 
-				"4000"    & -- Length 64 bytes
+				"ffff"    & -- Length 64 bytes
 			"}"           & 
 		"]");
 
