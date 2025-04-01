@@ -254,7 +254,7 @@ begin
 		end if;
 	end process;
 
-	descriptors_p : process (device_rdy, clk)
+	descriptors_p : process (device_req, clk)
 		constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo'(
 			"{"                     &
 				"bLength:1,"        &
@@ -262,10 +262,9 @@ begin
 			"}"));
 
 		variable cntr : unsigned(8+3-1 downto 0);
-		variable enas : std_logic_vector(0 to 3-1);
+		variable enas : std_logic_vector(0 to 2-1);
 		alias ena_bLength         is enas(0);
 		alias ena_bDescriptorType is enas(1);
-		alias ena_wTotalLength    is enas(2);
 		variable byte : unsigned( 8-1 downto 0);
 		variable bLength         : unsigned( 8-1 downto 0);
 		variable bDescriptorType : unsigned( 8-1 downto 0);
@@ -288,11 +287,9 @@ begin
 					end if;
 					if (ena_bLength or ena_bDescriptorType)='0' then
 						if (cntr srl 3) >= blength then
-							-- device_rdy <= device_req;
 							cntr := (others => '0');
 						end if;
 					end if;
-					tp(1 to 8) <= std_logic_vector(cntr(0 to 8-1));
 				else
 					blength         := (others => '-');
 					bDescriptorType := (others => '-');
@@ -359,7 +356,7 @@ begin
 							end if;
 						end case;
 					end if;
-					tp(1 to 8) <= std_logic_vector(cntr(0 to 8-1));
+					-- tp(1 to 8) <= std_logic_vector(cntr(0 to 8-1));
 				else
 					blength         <= (others => '-');
 					bDescriptorType <= (others => '-');
