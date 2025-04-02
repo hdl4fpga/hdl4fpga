@@ -132,7 +132,6 @@ begin
 	setup_p : process (cken, clk)
 		type states is (s_idle, s_flush, s_rqst);
 		variable state : states;
-
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
