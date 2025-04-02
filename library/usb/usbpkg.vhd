@@ -306,9 +306,6 @@ package body usbpkg is
 			pos := scc;
 			n := n + 1;
 		end loop;
-		-- assert false
-			-- report "segment_map() : " 
-			-- severity failure;
 		return
 			"{" &
 				"content:0x" & to_string(content(0 to pos-1), 16) & "," &
