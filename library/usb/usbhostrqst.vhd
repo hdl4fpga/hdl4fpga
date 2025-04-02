@@ -30,36 +30,36 @@ use hdl4fpga.usbpkg.all;
 
 entity usbhostrqst is
 	port (
-		tp        : out std_logic_vector(1 to 32) := (others => '0');
-		clk       : in  std_logic;
-		cken      : in  std_logic;
+		tp          : out std_logic_vector(1 to 32) := (others => '0');
+		clk         : in  std_logic;
+		cken        : in  std_logic;
 
-		setup_req : in  std_logic;
-		setup_rdy : buffer std_logic := '0';
-		flush_req : buffer  std_logic := '0';
-		flush_rdy : in std_logic := '0';
+		setup_req   : in  std_logic;
+		setup_rdy   : buffer std_logic := '0';
+		flush_req   : buffer  std_logic := '0';
+		flush_rdy   : in std_logic := '0';
 
-		dev_addr  : out std_logic_vector(7-1 downto 0);
-		dev_endp  : out std_logic_vector(11-1 downto 7);
+		dev_addr    : out std_logic_vector(7-1 downto 0);
+		dev_endp    : out std_logic_vector(11-1 downto 7);
 		dev_ackrx   : in  std_logic := '1';
 		dev_acktx   : in  std_logic := '1';
 		tksetup_req : buffer std_logic := '0';
 		tksetup_rdy : in  std_logic := '0';
 		tkstall_req : in  std_logic := '0';
 		tkstall_rdy : buffer std_logic := '0';
-		tkin_req  : buffer std_logic := '0';
-		tkin_rdy  : in  std_logic;
-		tkout_req  : buffer std_logic := '0';
-		tkout_rdy  : in  std_logic;
-		sof_tick  : in  std_logic;
+		tkin_req    : buffer std_logic := '0';
+		tkin_rdy    : in  std_logic;
+		tkout_req   : buffer std_logic := '0';
+		tkout_rdy   : in  std_logic;
+		sof_tick    : in  std_logic;
 
-		rxdv      : in  std_logic := '-';
-		rxbs      : in  std_logic := '-';
-		rxd       : in  std_logic := '-';
+		rxdv        : in  std_logic := '-';
+		rxbs        : in  std_logic := '-';
+		rxd         : in  std_logic := '-';
 
-		txen      : out std_logic;
-		txbs      : in  std_logic;
-		txd       : out std_logic);
+		txen        : out std_logic;
+		txbs        : in  std_logic;
+		txd         : out std_logic);
 
 end;
 
