@@ -698,7 +698,11 @@ package body base is
 		alias aux : std_logic_vector(0 to arg'length-1) is arg;
 	begin
 		for i in retval'range loop
-			retval(i) := table(to_integer(unsigned(aux((i-1)*log2base to i*log2base-1)))+1);
+			if aux((i-1)*log2base to i*log2base-1)=(0 to log2base-1 => '-') then
+				retval(i) := '-';
+			else
+				retval(i) := table(to_integer(unsigned(aux((i-1)*log2base to i*log2base-1)))+1);
+			end if;
 		end loop;
 		return retval;
 	end;
