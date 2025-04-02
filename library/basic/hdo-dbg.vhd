@@ -23,6 +23,7 @@ use std.textio.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 package hdo is
 	function compact (
@@ -122,6 +123,22 @@ package body hdo is
 	constant log_locatevalue      : natural := 2**6;
 	constant log_resolve          : natural := 2**7;
 	constant log                  : natural := log_parsetagvaluekey + log_resolve + log_locatevalue + log_parsekeytag + log_parsekey; --    + log_parsevalue ;
+
+	function unsigned_num_bits (
+		arg: natural)
+		return natural is
+		variable nbits: natural;
+		variable n: natural;
+	begin
+		n := arg;
+		nbits := 1;
+		for i in 0 to n loop          -- to avoid synthesizes tools loop-warnings
+			exit when n < 2;          -- to avoid synthesizes tools loop-warnings
+			nbits := nbits+1;
+			n := n / 2;
+		end loop;
+		return nbits;
+	end;
 
 	function isws (
 		constant char : character;
@@ -242,18 +259,37 @@ package body hdo is
 	end;
 
 	function to_stdlogicvector (
+		constant char : character;
+		constant base : natural)
+		return std_logic_vector is
+		constant log2base : natural := unsigned_num_bits(base-1);
+	begin
+		case char is
+		when '-' =>
+			return (0 to log2base-1 => '-');
+		when 'Z' =>
+			return (0 to log2base-1 => 'Z');
+		when 'X' =>
+			return (0 to log2base-1 => 'X');
+		when others =>
+			return std_logic_vector(to_unsigned(to_integer(char), log2base));
+		end case;
+	end;
+
+	function to_stdlogicvector (
 		constant value : string)
 		return std_logic_vector is
 
 		function to_bin(
-			constant value    : string;
-			constant log2base : natural)
+			constant value : string;
+			constant base  : natural)
 			return std_logic_vector is
+			constant log2base : natural := unsigned_num_bits(base-1);
 			variable n        : natural;
 			variable retval   : std_logic_vector(0 to log2base*value'length-1);
 		begin
 			n := value'left;
-			for i in retval'range loop
+			for i in value'range loop
 				for l in value'range loop -- avoid synthesizes tools loop-warnings
 					exit when value(n)/='_'; -- avoid synthesizes tools loop-warnings
 
@@ -262,16 +298,9 @@ package body hdo is
 						return retval(0 to i-1);
 					end if;
 				end loop;
-				if (to_integer(value(n))/2**((log2base-1)-i mod log2base)) mod 2=0 then
-					retval(i) := '0';
-				else
-					retval(i) := '1';
-				end if;
-				if i mod log2base = log2base-1 then
-					n := n + 1;
-				end if;
+				retval(i*log2base to (i+1)*log2base-1) := to_stdlogicvector(value(n), base);
 				if n > value'right then
-					return retval(0 to i);
+					return retval(0 to i*log2base-1);
 				end if;
 			end loop;
 			return retval;
@@ -282,14 +311,14 @@ package body hdo is
 			if value(value'left)='0' then
 				case value(value'left+1) is
 				when 'x'|'X' =>
-					return to_bin(value(value'left+2 to value'right), 4);
+					return to_bin(value(value'left+2 to value'right), 16);
 				when 'b'|'B' =>
-					return to_bin(value(value'left+2 to value'right), 1);
+					return to_bin(value(value'left+2 to value'right),  2);
 				when others =>
-					return to_bin(value(value'left  to value'right), 1);
+					return to_bin(value(value'left   to value'right),  2);
 				end case;
 			else
-				return to_bin(value, 1);
+				return to_bin(value, 2);
 			end if;
 		elsif value'length > 0 then
 			return to_bin(value(value'left to value'right), 1);
