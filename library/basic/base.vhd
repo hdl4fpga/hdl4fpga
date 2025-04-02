@@ -692,15 +692,13 @@ package body base is
 		constant arg  : std_logic_vector;
 		constant base : natural := 2)
 		return string is
-		constant count  : natural := unsigned_num_bits(base-1);
+		constant log2base  : natural := unsigned_num_bits(base-1);
 		constant table  : string := "0123456789abcdef";
-		variable aux    : unsigned(0 to arg'length-1);
-		variable retval : string(1 to (arg'length+count-1)/count);
+		variable retval : string(1 to (arg'length+log2base-1)/log2base);
+		alias aux : std_logic_vector(0 to arg'length-1) is arg;
 	begin
-		aux := unsigned(arg);
 		for i in retval'range loop
-			retval(i) := table(to_integer(aux(0 to count-1))+1);
-			aux := aux sll count;
+			retval(i) := table(to_integer(unsigned(aux((i-1)*log2base to i*log2base-1)))+1);
 		end loop;
 		return retval;
 	end;

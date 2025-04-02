@@ -282,7 +282,7 @@ whole_library :     $(WORK__usb_tb__def) \
 $(WORK__arty) : ../../boards/arty/common/arty.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/arty/common/arty.vhd
+	$(VCOM) -93 ../../boards/arty/common/arty.vhd
 
 $(WORK__arty__scopeio) : ../../boards/arty/apps/scopeio.vhd \
 		$(HDL4FPGA__rom) \
@@ -309,7 +309,7 @@ $(WORK__arty__scopeio) : ../../boards/arty/apps/scopeio.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/arty/apps/scopeio.vhd
+	$(VCOM) -93 ../../boards/arty/apps/scopeio.vhd
 
 $(WORK__arty__graphics) : ../../boards/arty/apps/graphics.vhd \
 		$(HDL4FPGA__ser_debug) \
@@ -336,7 +336,7 @@ $(WORK__arty__graphics) : ../../boards/arty/apps/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/arty/apps/graphics.vhd
+	$(VCOM) -93 ../../boards/arty/apps/graphics.vhd
 
 $(WORK__dbdbbl_seq) \
 $(WORK__dbdbbl_seq__def) \
@@ -360,12 +360,12 @@ $(WORK__dbdbblsrl_ser__beh) : ../basic/dbdbbl.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../basic/dbdbbl.vhd
+	$(VCOM) -93 ../basic/dbdbbl.vhd
 
 $(WORK__ecp3versa) : ../../boards/ecp3versa/common/ecp3versa.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ecp3versa/common/ecp3versa.vhd
+	$(VCOM) -93 ../../boards/ecp3versa/common/ecp3versa.vhd
 
 $(WORK__hdlc_tb) \
 $(WORK__hdlc_tb__def) : hdlc_tb.vhd \
@@ -378,13 +378,13 @@ $(WORK__hdlc_tb__def) : hdlc_tb.vhd \
 		$(HDL4FPGA__base) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 hdlc_tb.vhd
+	$(VCOM) -93 hdlc_tb.vhd
 
 $(WORK__hdo) \
 $(WORK__hdo__body) : ../basic/hdo-dbg.vhd \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
-	$(VCOM) -2002 ../basic/hdo-dbg.vhd
+	$(VCOM) -93 ../basic/hdo-dbg.vhd
 
 $(WORK__ipoe_tb) \
 $(WORK__ipoe_tb__def) : ipoe_tb.vhd \
@@ -396,7 +396,7 @@ $(WORK__ipoe_tb__def) : ipoe_tb.vhd \
 		$(HDL4FPGA__base) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ipoe_tb.vhd
+	$(VCOM) -93 ipoe_tb.vhd
 
 $(WORK__main) \
 $(WORK__main__def) : main.vhd \
@@ -409,13 +409,13 @@ $(WORK__main__def) : main.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 main.vhd
+	$(VCOM) -93 main.vhd
 
 $(WORK__ml509) : ../../boards/ml509/common/ml509.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ml509/common/ml509.vhd
+	$(VCOM) -93 ../../boards/ml509/common/ml509.vhd
 
 $(WORK__ml509__graphics) : ../../boards/ml509/apps/graphics.vhd \
 		$(HDL4FPGA__xc_sdrphy) \
@@ -437,12 +437,12 @@ $(WORK__ml509__graphics) : ../../boards/ml509/apps/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ml509/apps/graphics.vhd
+	$(VCOM) -93 ../../boards/ml509/apps/graphics.vhd
 
 $(WORK__nuhs3adsp) : ../../boards/nuhs3adsp/common/nuhs3adsp.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/nuhs3adsp/common/nuhs3adsp.vhd
+	$(VCOM) -93 ../../boards/nuhs3adsp/common/nuhs3adsp.vhd
 
 $(WORK__nuhs3adsp__scopeio) : ../../boards/nuhs3adsp/apps/scopeio.vhd \
 		$(HDL4FPGA__xc_sdrphy) \
@@ -465,7 +465,7 @@ $(WORK__nuhs3adsp__scopeio) : ../../boards/nuhs3adsp/apps/scopeio.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/nuhs3adsp/apps/scopeio.vhd
+	$(VCOM) -93 ../../boards/nuhs3adsp/apps/scopeio.vhd
 
 $(WORK__nuhs3adsp__graphics) : ../../boards/nuhs3adsp/apps/graphics.vhd \
 		$(HDL4FPGA__xc_sdrphy) \
@@ -487,14 +487,14 @@ $(WORK__nuhs3adsp__graphics) : ../../boards/nuhs3adsp/apps/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/nuhs3adsp/apps/graphics.vhd
+	$(VCOM) -93 ../../boards/nuhs3adsp/apps/graphics.vhd
 
 $(WORK__orangecrab) : ../../boards/orangecrab/common/orangecrab.vhd \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/orangecrab/common/orangecrab.vhd
+	$(VCOM) -93 ../../boards/orangecrab/common/orangecrab.vhd
 
 $(WORK__orangecrab__graphics) : ../../boards/orangecrab/apps/graphics.vhd \
 		$(HDL4FPGA__ecp5_sdrphy) \
@@ -518,12 +518,12 @@ $(WORK__orangecrab__graphics) : ../../boards/orangecrab/apps/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/orangecrab/apps/graphics.vhd
+	$(VCOM) -93 ../../boards/orangecrab/apps/graphics.vhd
 
 $(WORK__s3estarter) : ../../boards/s3estarter/common/s3estarter.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/s3estarter/common/s3estarter.vhd
+	$(VCOM) -93 ../../boards/s3estarter/common/s3estarter.vhd
 
 $(WORK__s3estarter__scopeio) : ../../boards/s3estarter/apps/scopeio.vhd \
 		$(HDL4FPGA__xc_sdrphy) \
@@ -548,7 +548,7 @@ $(WORK__s3estarter__scopeio) : ../../boards/s3estarter/apps/scopeio.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/s3estarter/apps/scopeio.vhd
+	$(VCOM) -93 ../../boards/s3estarter/apps/scopeio.vhd
 
 $(WORK__s3estarter__graphics) : ../../boards/s3estarter/apps/graphics.vhd \
 		$(HDL4FPGA__xc_sdrphy) \
@@ -570,13 +570,13 @@ $(WORK__s3estarter__graphics) : ../../boards/s3estarter/apps/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/s3estarter/apps/graphics.vhd
+	$(VCOM) -93 ../../boards/s3estarter/apps/graphics.vhd
 
 $(WORK__testbench) : /home/msagre/work/hdl4fpga/library/testbench/testbench.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/library/testbench/testbench.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/library/testbench/testbench.vhd
 
 $(WORK__testbench__usbhostfrwk) : usbhostfrwk.vhd \
 		$(HDL4FPGA__usbphycrc) \
@@ -588,7 +588,7 @@ $(WORK__testbench__usbhostfrwk) : usbhostfrwk.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002  usbhostfrwk.vhd
+	$(VCOM) -93  usbhostfrwk.vhd
 
 $(WORK__testbench__usbfrwk) : /home/msagre/work/hdl4fpga/library/testbench/usbfrwk.vhd \
 		$(HDL4FPGA__usbdev) \
@@ -600,7 +600,7 @@ $(WORK__testbench__usbfrwk) : /home/msagre/work/hdl4fpga/library/testbench/usbfr
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/library/testbench/usbfrwk.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/library/testbench/usbfrwk.vhd
 
 $(WORK__testbench__ulx3s_serdebug) : ../../boards/ULX3S/testbenches/ser_debug.vhd \
 		$(HDL4FPGA__ethpkg) \
@@ -612,7 +612,7 @@ $(WORK__testbench__ulx3s_serdebug) : ../../boards/ULX3S/testbenches/ser_debug.vh
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
-	$(VCOM) -2002 ../../boards/ULX3S/testbenches/ser_debug.vhd
+	$(VCOM) -93 ../../boards/ULX3S/testbenches/ser_debug.vhd
 
 $(WORK__nuhs3adsp_scopeio_md) \
 $(WORK__nuhs3adsp_scopeio_structure_md) \
@@ -629,7 +629,7 @@ $(WORK__testbench__nuhs3adsp_scopeio) : /home/msagre/work/hdl4fpga/boards/nuhs3a
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base) \
 		$(STD__textio)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/boards/nuhs3adsp/testbenches/scopeio.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/boards/nuhs3adsp/testbenches/scopeio.vhd
 
 $(WORK__ml509_graphics_md) \
 $(WORK__ml509_graphics_structure_md) \
@@ -646,7 +646,7 @@ $(WORK__testbench__ml509_graphics) : /home/msagre/work/hdl4fpga/boards/ml509/tes
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base) \
 		$(STD__textio)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/boards/ml509/testbenches/graphics.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/boards/ml509/testbenches/graphics.vhd
 
 $(WORK__arty_scopeio_md) \
 $(WORK__arty_scopeio_structure_md) \
@@ -663,7 +663,7 @@ $(WORK__testbench__arty_scopeio) : ../../boards/arty/testbenches/scopeio.vhd \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base) \
 		$(STD__textio)
-	$(VCOM) -2002 ../../boards/arty/testbenches/scopeio.vhd
+	$(VCOM) -93 ../../boards/arty/testbenches/scopeio.vhd
 
 $(WORK__s3estarter_scopeio_md) \
 $(WORK__s3estarter_scopeio_structure_md) \
@@ -679,7 +679,7 @@ $(WORK__testbench__s3estarter_scopeio) : ../../boards/s3estarter/testbenches/sco
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
-	$(VCOM) -2002 ../../boards/s3estarter/testbenches/scopeio.vhd
+	$(VCOM) -93 ../../boards/s3estarter/testbenches/scopeio.vhd
 
 $(WORK__s3estarter_graphics_md) \
 $(WORK__s3estarter_graphics_structure_md) \
@@ -695,7 +695,7 @@ $(WORK__testbench__s3estarter_graphics) : /home/msagre/work/hdl4fpga/boards/s3es
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/boards/s3estarter/testbenches/graphics.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/boards/s3estarter/testbenches/graphics.vhd
 
 $(WORK__arty_graphics_md) \
 $(WORK__arty_graphics_structure_md) \
@@ -712,7 +712,7 @@ $(WORK__testbench__arty_graphics) : /home/msagre/work/hdl4fpga/boards/arty/testb
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base) \
 		$(STD__textio)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/boards/arty/testbenches/graphics.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/boards/arty/testbenches/graphics.vhd
 
 $(WORK__ecp3versa_graphic_md) \
 $(WORK__ecp3versa_graphic_structure_md) \
@@ -728,7 +728,7 @@ $(WORK__testbench__ecp3versa_graphics) : /home/msagre/work/hdl4fpga/boards/ecp3v
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/boards/ecp3versa/testbenches/graphics.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/boards/ecp3versa/testbenches/graphics.vhd
 
 $(WORK__nuhs3adsp_graphic_structure_md) \
 $(WORK__nuhs3adsp_graphics_md) \
@@ -744,7 +744,7 @@ $(WORK__testbench__nuhs3adsp_graphics) : /home/msagre/work/hdl4fpga/boards/nuhs3
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/boards/nuhs3adsp/testbenches/graphics.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/boards/nuhs3adsp/testbenches/graphics.vhd
 
 $(WORK__testbench__serlzr) : /home/msagre/work/hdl4fpga/library/testbench/serlzr.vhd \
 		$(HDL4FPGA__serlzr) \
@@ -753,7 +753,7 @@ $(WORK__testbench__serlzr) : /home/msagre/work/hdl4fpga/library/testbench/serlzr
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/library/testbench/serlzr.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/library/testbench/serlzr.vhd
 
 $(WORK__orangecrab_graphics_md) \
 $(WORK__orangecrab_graphics_structure_md) \
@@ -771,7 +771,7 @@ $(WORK__testbench__orangecrab_graphics) : /home/msagre/work/hdl4fpga/boards/oran
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/boards/orangecrab/testbenches/graphics.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/boards/orangecrab/testbenches/graphics.vhd
 
 $(WORK__testbench__hdo_tb) : /home/msagre/work/hdl4fpga/library/testbench/hdo_tb.vhd \
 		$(WORK__testbench) \
@@ -780,7 +780,7 @@ $(WORK__testbench__hdo_tb) : /home/msagre/work/hdl4fpga/library/testbench/hdo_tb
 		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/library/testbench/hdo_tb.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/library/testbench/hdo_tb.vhd
 
 $(WORK__testbench__mul_ser_tb) : /home/msagre/work/hdl4fpga/library/testbench/mul_ser_tb.vhd \
 		$(HDL4FPGA__dbdbbl_seq) \
@@ -790,7 +790,7 @@ $(WORK__testbench__mul_ser_tb) : /home/msagre/work/hdl4fpga/library/testbench/mu
 		$(HDL4FPGA__base) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/library/testbench/mul_ser_tb.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/library/testbench/mul_ser_tb.vhd
 
 $(WORK__testbench__btof_tb) : /home/msagre/work/hdl4fpga/library/testbench/btof_tb.vhd \
 		$(HDL4FPGA__btof) \
@@ -803,7 +803,7 @@ $(WORK__testbench__btof_tb) : /home/msagre/work/hdl4fpga/library/testbench/btof_
 		$(HDL4FPGA__base) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/library/testbench/btof_tb.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/library/testbench/btof_tb.vhd
 
 $(WORK__testbench__dbdbbl_seq_tb) \
 $(WORK__testbench__dbdbblsrlser_tb) \
@@ -820,7 +820,7 @@ $(WORK__testbench__dbdbbl_tb) : /home/msagre/work/hdl4fpga/library/testbench/dbd
 		$(HDL4FPGA__base) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/library/testbench/dbdbbl_tb.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/library/testbench/dbdbbl_tb.vhd
 
 $(WORK__testbench__bcd_adder_tb) : /home/msagre/work/hdl4fpga/library/testbench/bcd_adder_tb.vhd \
 		$(HDL4FPGA__bcd_adder) \
@@ -828,12 +828,12 @@ $(WORK__testbench__bcd_adder_tb) : /home/msagre/work/hdl4fpga/library/testbench/
 		$(WORK__testbench) \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/library/testbench/bcd_adder_tb.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/library/testbench/bcd_adder_tb.vhd
 
 $(WORK__ulx3s) : ../../boards/ULX3S/common/ulx3s.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ULX3S/common/ulx3s.vhd
+	$(VCOM) -93 ../../boards/ULX3S/common/ulx3s.vhd
 
 $(WORK__ulx3s__ser_debug) : ../../boards/ULX3S/apps/ser_debug.vhd \
 		$(HDL4FPGA__ser_debug) \
@@ -859,7 +859,7 @@ $(WORK__ulx3s__ser_debug) : ../../boards/ULX3S/apps/ser_debug.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ULX3S/apps/ser_debug.vhd
+	$(VCOM) -93 ../../boards/ULX3S/apps/ser_debug.vhd
 
 $(WORK__ulx3s__scopeio) : ../../boards/ULX3S/apps/scopeio.vhd \
 		$(HDL4FPGA__ecp5_ogbx) \
@@ -887,7 +887,7 @@ $(WORK__ulx3s__scopeio) : ../../boards/ULX3S/apps/scopeio.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ULX3S/apps/scopeio.vhd
+	$(VCOM) -93 ../../boards/ULX3S/apps/scopeio.vhd
 
 $(WORK__ulx3s__graphics) : ../../boards/ULX3S/apps/graphics.vhd \
 		$(HDL4FPGA__ser_debug) \
@@ -916,7 +916,7 @@ $(WORK__ulx3s__graphics) : ../../boards/ULX3S/apps/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ULX3S/apps/graphics.vhd
+	$(VCOM) -93 ../../boards/ULX3S/apps/graphics.vhd
 
 $(WORK__testbench__ulx3s_graphics) \
 $(WORK__ulx3s_graphics_md) \
@@ -934,7 +934,7 @@ $(WORK__ulx3s_graphics_structure_md) : /home/msagre/work/hdl4fpga/boards/ULX3S/t
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(WORK__testbench)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/boards/ULX3S/testbenches/graphics.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/boards/ULX3S/testbenches/graphics.vhd
 
 $(WORK__testbench__ulx3s_scopeio) \
 $(WORK__ulx3s_scopeio_md) \
@@ -952,14 +952,14 @@ $(WORK__ulx3s_scopeio_structure_md) : /home/msagre/work/hdl4fpga/boards/ULX3S/te
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(WORK__testbench)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/boards/ULX3S/testbenches/scopeio.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/boards/ULX3S/testbenches/scopeio.vhd
 
 $(WORK__ulx4m_ld) : ../../boards/ULX4M_LD/common/ulx4m_ld.vhd \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ULX4M_LD/common/ulx4m_ld.vhd
+	$(VCOM) -93 ../../boards/ULX4M_LD/common/ulx4m_ld.vhd
 
 $(WORK__ulx4m_ld__graphics) : ../../boards/ULX4M_LD/apps/graphics.vhd \
 		$(HDL4FPGA__ecp5_ogbx) \
@@ -986,12 +986,12 @@ $(WORK__ulx4m_ld__graphics) : ../../boards/ULX4M_LD/apps/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ULX4M_LD/apps/graphics.vhd
+	$(VCOM) -93 ../../boards/ULX4M_LD/apps/graphics.vhd
 
 $(WORK__ulx4m_ls) : ../../boards/ULX4M_LS/common/ulx4m_ls.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ULX4M_LS/common/ulx4m_ls.vhd
+	$(VCOM) -93 ../../boards/ULX4M_LS/common/ulx4m_ls.vhd
 
 $(WORK__ulx4m_ls__graphics) : ../../boards/ULX4M_LS/apps/graphics.vhd \
 		$(HDL4FPGA__ecp5_ogbx) \
@@ -1018,7 +1018,7 @@ $(WORK__ulx4m_ls__graphics) : ../../boards/ULX4M_LS/apps/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 ../../boards/ULX4M_LS/apps/graphics.vhd
+	$(VCOM) -93 ../../boards/ULX4M_LS/apps/graphics.vhd
 
 $(WORK__testbench__ulx4mld_graphics) \
 $(WORK__ulx4mld_graphics_md) \
@@ -1038,7 +1038,7 @@ $(WORK__ulx4mld_graphics_structure_md) : /home/msagre/work/hdl4fpga/boards/ULX4M
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(WORK__testbench)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/boards/ULX4M_LD/testbenches/graphics.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/boards/ULX4M_LD/testbenches/graphics.vhd
 
 $(WORK__testbench__ulx4mls_graphics) \
 $(WORK__ulx4mls_graphics_md) \
@@ -1055,7 +1055,7 @@ $(WORK__ulx4mls_graphics_structure_md) : /home/msagre/work/hdl4fpga/boards/ULX4M
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(WORK__testbench)
-	$(VCOM) -2002 /home/msagre/work/hdl4fpga/boards/ULX4M_LS/testbenches/graphics.vhd
+	$(VCOM) -93 /home/msagre/work/hdl4fpga/boards/ULX4M_LS/testbenches/graphics.vhd
 
 $(WORK__usb_tb) \
 $(WORK__usb_tb__def) : usb_tb.vhd \
@@ -1068,5 +1068,5 @@ $(WORK__usb_tb__def) : usb_tb.vhd \
 		$(HDL4FPGA__base) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 usb_tb.vhd
+	$(VCOM) -93 usb_tb.vhd
 

@@ -54,8 +54,8 @@ architecture arty_graphics of testbench is
 			eth_crs    : in  std_logic;
 			eth_col    : in  std_logic;
 			eth_tx_clk : in  std_logic;
-			eth_tx_en  : out std_logic;
-			eth_txd    : out std_logic_vector(0 to 4-1);
+			eth_tx_en  : buffer std_logic;
+			eth_txd    : buffer std_logic_vector(0 to 4-1);
 			eth_rx_clk : in  std_logic;
 			eth_rxerr  : in  std_logic;
 			eth_rx_dv  : in  std_logic;
