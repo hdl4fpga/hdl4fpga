@@ -204,9 +204,9 @@ package body hdo is
 		when 'a'|'b'|'c'|'d'|'e'|'f' =>
 			return character'pos(char)-character'pos('A')+10;
 		when others =>
-			assert false --|
-			report LF & "wrong digit " & character'image(char) --|
-			severity failure; --|
+			assert false 
+			report LF & "wrong digit " & character'image(char)
+			severity failure;
 			return -1;
 		end case;
 	end;
@@ -289,18 +289,19 @@ package body hdo is
 			variable retval   : std_logic_vector(0 to log2base*value'length-1);
 		begin
 			n := value'left;
-			for i in value'range loop
+			for i in 0 to value'length-1 loop
 				for l in value'range loop -- avoid synthesizes tools loop-warnings
 					exit when value(n)/='_'; -- avoid synthesizes tools loop-warnings
 
 					n := n + 1;
 					if n > value'right then
-						return retval(0 to i-1);
+						return retval(0 to i*log2base-1);
 					end if;
 				end loop;
 				retval(i*log2base to (i+1)*log2base-1) := to_stdlogicvector(value(n), base);
+				n := n + 1;
 				if n > value'right then
-					return retval(0 to i*log2base-1);
+					return retval(0 to (i+1)*log2base-1);
 				end if;
 			end loop;
 			return retval;
@@ -321,7 +322,7 @@ package body hdo is
 				return to_bin(value, 2);
 			end if;
 		elsif value'length > 0 then
-			return to_bin(value(value'left to value'right), 1);
+			return to_bin(value(value'left to value'right), 2);
 		else
 			assert false --|
 				report LF & "value'range is nul" --|
@@ -341,7 +342,7 @@ package body hdo is
 				when 'x'|'X' =>
 					return to_integer(value(value'left+2 to value'right), 16);
 				when 'b'|'B' =>
-					return to_integer(value(value'left+2 to value'right), 2);
+					return to_integer(value(value'left+2 to value'right),  2);
 				when others =>
 					return to_integer(value(value'left+1 to value'right), 10);
 				end case;
@@ -1125,7 +1126,7 @@ package body hdo is
 						"resolve => hdo_index   -> " & natural'image(hdo_index) --|note
 					severity note; --|note
 				locate_value(hdo, value_offset, tag_offset, tag_offset+tag_length-1 , tag1_offset, tag1_length, hdo_offset, hdo_length);
-				if hdo_length=0 then --| Xilinx ISE 14.7 warning complain
+				if hdo_length=0 then -- Xilinx ISE 14.7 assert statement warning complain
 					assert false --|note
 						report LF & "resolve => invalid key -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' & LF --|note
 						severity note; --|note
@@ -1136,7 +1137,7 @@ package body hdo is
 					hdo_length   := default_length;
 					value_offset := default_offset;
 					exit;
-				end if; --|
+				end if;
 				assert ((log/log_resolve) mod 2=0) --|note
 					report LF & --|note
 						"resolve => key   -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ' ' & '"' & hdo(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|note

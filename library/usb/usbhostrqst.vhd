@@ -80,7 +80,7 @@ architecture def of usbhostrqst is
 				"05"      & -- SET_ADDRESS
 				"----"    & -- Address
 				"0000"    & -- Offset 
-				"0000"    & -- Length 64 bytes
+				"ffff"    & -- Length 64 bytes
 			"}"           & 
 			","           &
 			"{content:0x" & -- Hexadecimal format
