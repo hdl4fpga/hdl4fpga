@@ -119,8 +119,8 @@ architecture def of usbhostrqst is
 			"wLength:2"        &
 		"}";
 
-	signal device_req : bit;
-	signal device_rdy : bit;
+	signal rply_req : bit;
+	signal rply_rdy : bit;
 				
 	signal addr_val        : std_logic_vector(16-1 downto 0);
 	signal bLength         : std_logic_vector( 8-1 downto 0);
@@ -191,7 +191,7 @@ begin
 						end if;
 					when s_setup =>
 						if (send_req xor send_rdy)='0' then
-							device_req <= not device_rdy;
+							rply_req <= not rply_rdy;
 							if segment_dir(0)='1' then
 								tkin_req <= not tkin_rdy;
 								state   := s_in;
@@ -208,7 +208,7 @@ begin
 					when s_in =>
 						if (tkin_req xor tkin_rdy)='0' then
 							if rxdv='0' then
-								if (device_rdy xor device_req)='1' then
+								if (rply_rdy xor rply_req)='1' then
 									tkin_req <= not tkin_rdy;
 								else
 									tkout_req <= not tkout_rdy;
@@ -244,7 +244,7 @@ begin
 		end if;
 	end process;
 
-	descriptors_p : process (device_req, clk)
+	descriptors_p : process (rply_req, clk)
 		constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo'(
 			"{"                     &
 				"bLength:1,"        &
@@ -261,7 +261,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (device_rdy xor device_req)='1' then
+				if (rply_rdy xor rply_req)='1' then
 					enas := multiplex(enatab, std_logic_vector(cntr srl 3), enas'length);
 					if rxdv='1' then
 						if rxbs='0' then
@@ -289,7 +289,7 @@ begin
 		end if;
 	end process;
 
-	configuration_p : process (device_rdy, clk)
+	configuration_p : process (rply_rdy, clk)
 		constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo'(
 			"{"                        &
 				"bLength:1,"           &
@@ -307,7 +307,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (device_rdy xor device_req)='1' then
+				if (rply_rdy xor rply_req)='1' then
 					enas := multiplex(enatab, std_logic_vector(cntr srl 3), enas'length);
 					if rxdv='1' then
 						if rxbs='0' then
@@ -337,12 +337,12 @@ begin
 							if ena_wTotalLength='0' then
 								if (cntr srl 3) >= unsigned(wTotalLength) then
 									wTotalLength <= std_logic_vector(word);
-									device_rdy <= device_req;
+									rply_rdy <= rply_req;
 								end if;
 							end if;
 						when others =>
 							if (cntr srl 3) >= unsigned(blength) then
-								device_rdy <= device_req;
+								rply_rdy <= rply_req;
 							end if;
 						end case;
 					end if;
