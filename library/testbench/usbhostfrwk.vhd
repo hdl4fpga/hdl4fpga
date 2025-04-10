@@ -55,7 +55,7 @@ begin
 			not clk after 1 sec/((2.0*usb_freq)*(12.00e6/usb_freq)) when others; --*0.975;
 
 		setup_req <= '0', '1' after 1 us;
-		setup_rdy <= '0';
+		-- setup_rdy <= '0';
 	   	usbhost_e : entity hdl4fpga.usbhostdvr
 	   	generic map (
 	   		oversampling => oversampling)

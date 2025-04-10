@@ -40,9 +40,10 @@ entity usbphycrc is
 		clk    : in  std_logic;
 		cken   : buffer std_logic;
 
-		phy_dv   : out std_logic;
-		phy_bs   : out std_logic;
-		phy_d    : out std_logic;
+		phy_rst : in  std_logic := '0';
+		phy_dv  : out std_logic;
+		phy_bs  : out std_logic;
+		phy_d   : out std_logic;
 
 		txen   : in  std_logic;
 		txbs   : buffer std_logic;
@@ -102,24 +103,25 @@ begin
 		watermark    => watermark,
 		bit_stuffing => bit_stuffing)
 	port map (
-		tp    => tp,
-		dp    => dp,
-		dn    => dn,
-		clk   => clk,
-		cken  => cken,
-		idle  => idle,
+		tp      => tp,
+		dp      => dp,
+		dn      => dn,
+		clk     => clk,
+		cken    => cken,
+		idle    => idle,
 
-		phy_dv=> phy_dv,
-		phy_bs=> phy_bs,
-		phy_d => phy_d,
-		txen  => phy_txen,
-		txbs  => phy_txbs,
-		txd   => phy_txd,
+		phy_rst => phy_rst,
+		phy_dv  => phy_dv,
+		phy_bs  => phy_bs,
+		phy_d   => phy_d,
+		txen    => phy_txen,
+		txbs    => phy_txbs,
+		txd     => phy_txd,
 
-		rxdv  => phy_rxdv,
-		rxbs  => phy_rxbs,
-		rxd   => phy_rxd,
-		rxerr => phy_rxerr);
+		rxdv    => phy_rxdv,
+		rxbs    => phy_rxbs,
+		rxd     => phy_rxd,
+		rxerr   => phy_rxerr);
 
 	crcdv <= 
 		crcact_tx when     txen='1' else 

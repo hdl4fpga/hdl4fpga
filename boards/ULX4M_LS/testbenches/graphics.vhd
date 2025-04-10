@@ -173,11 +173,11 @@ begin
 		req_data => req_data)
 	port map (
 		mii_clk  => mii_refclk,
-		mii_rxdv => mii_txen,
-		mii_rxd  => mii_txd,
+		mii_rxdv => mii_rxdv,
+		mii_rxd  => mii_rxd,
 
-		mii_txen => mii_rxdv,
-		mii_txd  => mii_rxd);
+		mii_txen => mii_txen,
+		mii_txd  => mii_txd);
 
 	du_e : ulx4m_ls
 	generic map (

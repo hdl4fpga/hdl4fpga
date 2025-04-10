@@ -30,41 +30,42 @@ use hdl4fpga.usbpkg.all;
 
 entity usbhostrqst is
 	port (
-		tp        : out std_logic_vector(1 to 32) := (others => '0');
-		clk       : in  std_logic;
-		cken      : in  std_logic;
+		tp          : out std_logic_vector(1 to 32) := (others => '0');
+		clk         : in  std_logic;
+		cken        : in  std_logic;
 
-		setup_req : in  std_logic;
-		setup_rdy : buffer std_logic := '0';
-		flush_req : buffer  std_logic := '0';
-		flush_rdy : in std_logic := '0';
+		setup_req   : in  std_logic;
+		setup_rdy   : buffer std_logic := '0';
+		flush_req   : buffer  std_logic := '0';
+		flush_rdy   : in std_logic := '0';
+		phy_rst     : out std_logic;
 
-		dev_addr  : out std_logic_vector(7-1 downto 0);
-		dev_endp  : out std_logic_vector(11-1 downto 7);
+		dev_addr    : out std_logic_vector(7-1 downto 0);
+		dev_endp    : out std_logic_vector(11-1 downto 7);
 		dev_ackrx   : in  std_logic := '1';
 		dev_acktx   : in  std_logic := '1';
 		tksetup_req : buffer std_logic := '0';
 		tksetup_rdy : in  std_logic := '0';
 		tkstall_req : in  std_logic := '0';
 		tkstall_rdy : buffer std_logic := '0';
-		tkin_req  : buffer std_logic := '0';
-		tkin_rdy  : in  std_logic;
-		tkout_req  : buffer std_logic := '0';
-		tkout_rdy  : in  std_logic;
-		sof_tick  : in  std_logic;
+		tkin_req    : buffer std_logic := '0';
+		tkin_rdy    : in  std_logic;
+		tkout_req   : buffer std_logic := '0';
+		tkout_rdy   : in  std_logic;
+		sof_tick    : in  std_logic;
 
-		rxdv      : in  std_logic := '-';
-		rxbs      : in  std_logic := '-';
-		rxd       : in  std_logic := '-';
+		rxdv        : in  std_logic := '-';
+		rxbs        : in  std_logic := '-';
+		rxd         : in  std_logic := '-';
 
-		txen      : out std_logic;
-		txbs      : in  std_logic;
-		txd       : out std_logic);
+		txen        : out std_logic;
+		txbs        : in  std_logic;
+		txd         : out std_logic);
 
 end;
 
 architecture def of usbhostrqst is
-	constant test   : string := segment_map(
+	constant test : string := segment_map(
 		"["&
 			"{content:0x" & -- Hexadecimal format
 				"80"      & -- Device to Host
@@ -72,13 +73,13 @@ architecture def of usbhostrqst is
 				"00"      & -- Descriptor index 
 				"01"      & -- Descriptor type -> DEVICE
 				"0000"    & -- Offset 
-				"4000"    & -- Length 64 bytes
+				"ffff"    & -- Length 64 bytes
 			"}"           & 
 			","           &
 			"{content:0x" & -- Hexadecimal format
 				"00"      & -- Host to Device
 				"05"      & -- SET_ADDRESS
-				"0a00"    & -- Address
+				"----"    & -- Address
 				"0000"    & -- Offset 
 				"0000"    & -- Length 64 bytes
 			"}"           & 
@@ -89,16 +90,7 @@ architecture def of usbhostrqst is
 				"00"      & -- Descriptor index 
 				"02"      & -- Descriptor type -> CONFIGURATION
 				"0000"    & -- Offset 
-				"4000"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"80"      & -- Device to Host
-				"06"      & -- GET_DESCRIPTOR
-				"00"      & -- Descriptor index 
-				"04"      & -- Descriptor type -> INTERFACE
-				"0000"    & -- Offset 
-				"4000"    & -- Length 64 bytes
+				"ffff"    & -- Length 64 bytes
 			"}"           & 
 		"]");
 
@@ -128,8 +120,8 @@ architecture def of usbhostrqst is
 			"wLength:2"        &
 		"}";
 
-	signal device_req : bit;
-	signal device_rdy : bit;
+	signal rply_req : bit;
+	signal rply_rdy : bit;
 				
 	signal addr_val        : std_logic_vector(16-1 downto 0);
 	signal bLength         : std_logic_vector( 8-1 downto 0);
@@ -141,7 +133,7 @@ begin
 	setup_p : process (cken, clk)
 		type states is (s_idle, s_flush, s_rqst);
 		variable state : states;
-
+		variable timer : integer range -1 to 63;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -149,9 +141,12 @@ begin
 					case state is
 	   				when s_idle =>
 						if (setup_rdy xor setup_req)='1' then
+							timer       := 63;
+							addr_val    <= x"0000";
 							tkstall_rdy <= tkstall_req;
 							flush_req   <= not flush_rdy;
-							state      := s_flush;
+							phy_rst     <= '1';
+							state       := s_flush;
 						end if;
 					when s_flush =>
 						dev_addr   <= (others => '0');
@@ -159,9 +154,14 @@ begin
 						dev_endp   <= (others => '0');
 						segment_id <= (others => '0');
 						addr_val  <= x"000a";
-						if (flush_req xor flush_rdy)='0' then
-							rqst_req   <= not rqst_rdy;
-							state      := s_rqst;
+						if timer < 0 then
+							if (flush_req xor flush_rdy)='0' then
+								phy_rst   <= '0';
+								rqst_req  <= not rqst_rdy;
+								state     := s_rqst;
+							end if;
+						elsif sof_tick='1' then
+							timer := timer - 1;
 						end if;
 					when s_rqst =>
 						if (rqst_req xor rqst_rdy)='0' then
@@ -201,7 +201,7 @@ begin
 						end if;
 					when s_setup =>
 						if (send_req xor send_rdy)='0' then
-							device_req <= not device_rdy;
+							rply_req <= not rply_rdy;
 							if segment_dir(0)='1' then
 								tkin_req <= not tkin_rdy;
 								state   := s_in;
@@ -218,7 +218,7 @@ begin
 					when s_in =>
 						if (tkin_req xor tkin_rdy)='0' then
 							if rxdv='0' then
-								if (device_rdy xor device_req)='1' then
+								if (rply_rdy xor rply_req)='1' then
 									tkin_req <= not tkin_rdy;
 								else
 									tkout_req <= not tkout_rdy;
@@ -254,7 +254,7 @@ begin
 		end if;
 	end process;
 
-	descriptors_p : process (device_req, clk)
+	descriptors_p : process (rply_req, clk)
 		constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo'(
 			"{"                     &
 				"bLength:1,"        &
@@ -271,7 +271,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (device_rdy xor device_req)='1' then
+				if (rply_rdy xor rply_req)='1' then
 					enas := multiplex(enatab, std_logic_vector(cntr srl 3), enas'length);
 					if rxdv='1' then
 						if rxbs='0' then
@@ -299,7 +299,7 @@ begin
 		end if;
 	end process;
 
-	configuration_p : process (device_rdy, clk)
+	configuration_p : process (rply_rdy, clk)
 		constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo'(
 			"{"                        &
 				"bLength:1,"           &
@@ -317,7 +317,7 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (device_rdy xor device_req)='1' then
+				if (rply_rdy xor rply_req)='1' then
 					enas := multiplex(enatab, std_logic_vector(cntr srl 3), enas'length);
 					if rxdv='1' then
 						if rxbs='0' then
@@ -347,12 +347,12 @@ begin
 							if ena_wTotalLength='0' then
 								if (cntr srl 3) >= unsigned(wTotalLength) then
 									wTotalLength <= std_logic_vector(word);
-									device_rdy <= device_req;
+									rply_rdy <= rply_req;
 								end if;
 							end if;
 						when others =>
 							if (cntr srl 3) >= unsigned(blength) then
-								device_rdy <= device_req;
+								rply_rdy <= rply_req;
 							end if;
 						end case;
 					end if;

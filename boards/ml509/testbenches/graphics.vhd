@@ -105,8 +105,8 @@ architecture ml509_graphics of testbench is
 	
 			phy_txc_gtxclk : out std_logic;
 			phy_txclk      : in std_logic;
-			phy_txctl_txen : out std_logic;
-			phy_txd        : out std_logic_vector(0 to 8-1);
+			phy_txctl_txen : buffer std_logic;
+			phy_txd        : buffer std_logic_vector(0 to 8-1);
 			phy_txer       : out std_logic;
 
 			user_clk       : in std_logic);
