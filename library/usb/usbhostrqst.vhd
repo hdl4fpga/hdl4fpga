@@ -38,6 +38,7 @@ entity usbhostrqst is
 		setup_rdy   : buffer std_logic := '0';
 		flush_req   : buffer  std_logic := '0';
 		flush_rdy   : in std_logic := '0';
+		phy_rst     : out std_logic;
 
 		dev_addr    : out std_logic_vector(7-1 downto 0);
 		dev_endp    : out std_logic_vector(11-1 downto 7);
@@ -132,6 +133,7 @@ begin
 	setup_p : process (cken, clk)
 		type states is (s_idle, s_flush, s_rqst);
 		variable state : states;
+		variable timer : integer range -1 to 63;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -139,9 +141,12 @@ begin
 					case state is
 	   				when s_idle =>
 						if (setup_rdy xor setup_req)='1' then
+							timer       := 63;
+							addr_val    <= x"0000";
 							tkstall_rdy <= tkstall_req;
 							flush_req   <= not flush_rdy;
-							state      := s_flush;
+							phy_rst     <= '1';
+							state       := s_flush;
 						end if;
 					when s_flush =>
 						dev_addr   <= (others => '0');
@@ -149,9 +154,14 @@ begin
 						dev_endp   <= (others => '0');
 						segment_id <= (others => '0');
 						addr_val  <= x"000a";
-						if (flush_req xor flush_rdy)='0' then
-							rqst_req   <= not rqst_rdy;
-							state      := s_rqst;
+						if timer < 0 then
+							if (flush_req xor flush_rdy)='0' then
+								phy_rst   <= '0';
+								rqst_req  <= not rqst_rdy;
+								state     := s_rqst;
+							end if;
+						elsif sof_tick='1' then
+							timer := timer - 1;
 						end if;
 					when s_rqst =>
 						if (rqst_req xor rqst_rdy)='0' then

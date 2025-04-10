@@ -32,6 +32,7 @@ entity usbpkt_tx is
 		tp        : out std_logic_vector(1 to 32):= (others => '0');
 		clk       : in  std_logic;
 		cken      : in  std_logic;
+		phy_rst   : in  std_logic := '0';
 
 		tkdata    : in  std_logic_vector(0 to 11-1) := (others => '-');
 		tx_req    : in  std_logic;
@@ -59,50 +60,55 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				case state is
-				when s_idle =>
-					shr :=  unsigned(tkdata) & unsigned(not pkt_txpid) & unsigned(pkt_txpid);
-					case pkt_txpid is
-					when tk_setup|tk_in|tk_out|tk_sof =>
-						cntr := shr'length-1;
-					when others =>
-						cntr := pid_length-1;
-					end case;
-					if (tx_req xor tx_rdy)='1' then
-						if phy_txbs='0' then
-							state := s_pid;
-						end if;
-					end if;
-				when s_pid =>
-					if cntr > 0 then
-						if phy_txbs='0' then
-							shr  := shr ror 1;
-							cntr := cntr - 1;
-						end if;
-					else
-						case pkt_txpid is
-						when tk_setup|tk_in|tk_out|tk_sof =>
-							tx_rdy <= tx_req;
-							state  := s_idle;
-						when data0|data1 =>
-							state := s_data;
-						when hs_ack|hs_nak|hs_stall =>
-							if phy_txbs='0' then
-								tx_rdy <= tx_req;
-								state := s_idle;
-							end if;
-						when others =>
-						end case;
-					end if;
-				when s_data =>
-					if phy_txbs='0' then
-						if pkt_txen='0' then
-							tx_rdy <= to_stdulogic(to_bit(tx_req));
-							state  := s_idle;
-						end if;
-					end if;
-				end case;
-				data <= shr(0);
+				if phy_rst='0' then
+				    case state is
+				    when s_idle =>
+				    	shr :=  unsigned(tkdata) & unsigned(not pkt_txpid) & unsigned(pkt_txpid);
+				    	case pkt_txpid is
+				    	when tk_setup|tk_in|tk_out|tk_sof =>
+				    		cntr := shr'length-1;
+				    	when others =>
+				    		cntr := pid_length-1;
+				    	end case;
+				    	if (tx_rdy xor tx_req)='1' then
+				    		if phy_txbs='0' then
+				    			state := s_pid;
+				    		end if;
+				    	end if;
+				    when s_pid =>
+				    	if cntr > 0 then
+				    		if phy_txbs='0' then
+				    			shr  := shr ror 1;
+				    			cntr := cntr - 1;
+				    		end if;
+				    	else
+				    		case pkt_txpid is
+				    		when tk_setup|tk_in|tk_out|tk_sof =>
+				    			tx_rdy <= tx_req;
+				    			state  := s_idle;
+				    		when data0|data1 =>
+				    			state := s_data;
+				    		when hs_ack|hs_nak|hs_stall =>
+				    			if phy_txbs='0' then
+				    				tx_rdy <= tx_req;
+				    				state := s_idle;
+				    			end if;
+				    		when others =>
+				    		end case;
+				    	end if;
+				    when s_data =>
+				    	if phy_txbs='0' then
+				    		if pkt_txen='0' then
+				    			tx_rdy <= tx_req;
+				    			state  := s_idle;
+				    		end if;
+				    	end if;
+				    end case;
+				    data <= shr(0);
+				else
+				    state  := s_idle;
+				    tx_rdy <= tx_req;
+				end if;
 			end if;
 		end if;
 

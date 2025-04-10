@@ -144,6 +144,7 @@ begin
 		variable state : states;
 		variable tick_cntr : unsigned(0 to 1);
 		constant tbit : std_logic_vector(data0'range) := b"1000";
+		variable retries : integer range -1 to 3;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -154,13 +155,13 @@ begin
 					ackrx_rdy   <= ackrx_req;
 					acktx_rdy   <= acktx_req;
 					nak_rdy     <= nak_req; 
-					state := s_idle;
+					state       := s_idle;
 				elsif (tx_req xor tx_rdy)='0' then
 					if (tksof_rdy xor tksof_req)='1' then
 						txpid  <= tk_sof;
 						tkdata <= to_stdlogicvector(bit_vector(sof_cntr));
 						tksof_rdy <= tksof_req;
-						tx_req <= not tx_rdy;
+						tx_req    <= not tx_rdy;
 						if tick_cntr(0)='0' then
 							tick_cntr := tick_cntr + 1;
 						end if;
@@ -168,15 +169,18 @@ begin
 						case state is
 						when s_idle =>
 							if (tksetup_rdy xor tksetup_req)='1' then
-								ddata  <= data0;
-								ddatai <= data0;
-								ddatao <= data0;
-								txpid  <= tk_setup;
-								tkdata(dev_endp'range) <= dev_endp;
-								tkdata(dev_addr'range) <= dev_addr;
-								tx_req  <= not tx_rdy;
-								out_req <= not out_rdy;
-								state := s_out;
+								if retries < 0 then
+								else
+    								ddata  <= data0;
+    								ddatai <= data0;
+    								ddatao <= data0;
+    								txpid  <= tk_setup;
+    								tkdata(dev_endp'range) <= dev_endp;
+    								tkdata(dev_addr'range) <= dev_addr;
+    								tx_req  <= not tx_rdy;
+    								out_req <= not out_rdy;
+    								state := s_out;
+								end if;
 							elsif (tkout_rdy xor tkout_req)='1' then
 								txpid  <= tk_out;
 								tkdata(dev_endp'range) <= dev_endp;
@@ -196,6 +200,8 @@ begin
 								acktx_rdy <= acktx_req;
 								txpid  <= hs_ack;
 								tx_req <= not tx_rdy;
+							else
+								retries := 3;
 							end if;
 							tick_cntr := (others => '0');
 						when s_out =>
@@ -212,12 +218,16 @@ begin
 							state := s_ack;
 						when s_ack =>
 							if tick_cntr(0)='1' then
+								if retries >= 0 then
+									retries := retries - 1;
+								end if;
 								state := s_idle;
 							elsif (ackrx_rdy xor ackrx_req)='1' then
 								tksetup_rdy <= tksetup_req; 
-								tkout_rdy <= tkout_req; 
+								tkout_rdy   <= tkout_req; 
 								ackrx_rdy   <= ackrx_req;
-								state := s_idle;
+								retries     := 3;
+								state       := s_idle;
 							end if;
 						when s_nak =>
 							if (acktx_rdy xor acktx_req)='1' then

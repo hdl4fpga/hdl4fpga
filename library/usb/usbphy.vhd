@@ -39,6 +39,7 @@ entity usbphy is
 		clk   : in  std_logic;
 		cken  : buffer std_logic;
 
+		phy_rst : in  std_logic := '0';
 		phy_dv : out std_logic;
 		phy_bs : out std_logic;
 		phy_d  : out std_logic;
@@ -184,6 +185,7 @@ begin
 		tp   => tx_tp,
 		clk  => clk,
 		cken => cken,
+		phy_rst => phy_rst,
 		phy_dv => phy_txdv,
 		phy_bs => phy_txbs,
 		phy_d  => phy_txd,
