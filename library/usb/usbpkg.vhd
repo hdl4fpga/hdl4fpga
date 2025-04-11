@@ -40,11 +40,13 @@ package usbpkg is
 	constant hs_nak    : std_logic_vector := x"a";
 	constant hs_stall  : std_logic_vector := x"e";
 
-	constant clear_feture      : std_logic_vector := x"1";
+	constant clear_feature     : std_logic_vector := x"1";
+	constant set_feature       : std_logic_vector := x"3";
 	constant set_address       : std_logic_vector := x"5";
 	constant get_descriptor    : std_logic_vector := x"6";
 	constant set_configuration : std_logic_vector := x"9";
 
+	constant hub_port_reset : std_logic_vector := x"4";
 	constant device    : std_logic_vector := x"01";
 	constant config    : std_logic_vector := x"02";
 	constant str       : std_logic_vector := x"03";
