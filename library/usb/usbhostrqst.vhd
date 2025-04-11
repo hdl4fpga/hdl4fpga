@@ -110,6 +110,15 @@ architecture def of usbhostrqst is
 				"0100"    & -- Offset 
 				"0000"    & -- Length 64 bytes
 			"}"           & 
+			","           &
+			"{content:0x" & -- Hexadecimal format
+				"a3"      & -- Device to Host
+				"00"      & -- GET_DESCRIPTOR
+				"00"      & -- Descriptor index 
+				"00"      & -- Descriptor type -> DEVICE
+				"0100"    & -- Offset 
+				"0400"    & -- Length 64 bytes
+			"}"           & 
 		"]");
 
 	constant table_length : natural := hdo(test)**".length";
@@ -192,8 +201,8 @@ begin
 							end if;
 						elsif segment_id=2 then
 							dev_addr <= addr_val(dev_addr'range);
-						-- elsif segment_id=4 then
-							-- dev_addr <= (others => '0');
+						elsif segment_id=6 then
+							dev_addr <= (others => '0');
 						end if;
 					end case;
 				else
