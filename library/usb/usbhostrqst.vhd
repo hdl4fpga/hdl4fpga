@@ -92,6 +92,24 @@ architecture def of usbhostrqst is
 				"0000"    & -- Offset 
 				"ffff"    & -- Length 64 bytes
 			"}"           & 
+			","           &
+			"{content:0x" & -- Hexadecimal format
+				"a0"      & -- Device to Host, Class 
+				"06"      & -- GET_DESCRIPTOR
+				"00"      & -- Descriptor index 
+				"29"      & -- Descriptor type -> HUB
+				"0000"    & -- Offset 
+				"ffff"    & -- Length 64 bytes
+			"}"           & 
+			","           &
+			"{content:0x" & -- Hexadecimal format
+				"80"      & -- Device to Host
+				"06"      & -- GET_DESCRIPTOR
+				"00"      & -- Descriptor index 
+				"01"      & -- Descriptor type -> DEVICE
+				"0000"    & -- Offset 
+				"ffff"    & -- Length 64 bytes
+			"}"           & 
 		"]");
 
 	constant table_length : natural := hdo(test)**".length";
@@ -142,7 +160,7 @@ begin
 	   				when s_idle =>
 						if (setup_rdy xor setup_req)='1' then
 							timer       := 63;
-							addr_val    <= x"0000";
+							-- addr_val    <= x"0000";
 							tkstall_rdy <= tkstall_req;
 							flush_req   <= not flush_rdy;
 							phy_rst     <= '1';
@@ -153,7 +171,7 @@ begin
 						dev_addr   <= (others => '0');
 						dev_endp   <= (others => '0');
 						segment_id <= (others => '0');
-						addr_val  <= x"000a";
+						addr_val   <= x"000a";
 						if timer < 0 then
 							if (flush_req xor flush_rdy)='0' then
 								phy_rst   <= '0';
@@ -174,6 +192,8 @@ begin
 							end if;
 						elsif segment_id=2 then
 							dev_addr <= addr_val(dev_addr'range);
+						elsif segment_id=4 then
+							dev_addr <= (others => '0');
 						end if;
 					end case;
 				else
