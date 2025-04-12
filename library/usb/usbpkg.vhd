@@ -48,7 +48,11 @@ package usbpkg is
 	constant get_descriptor    : std_logic_vector := x"6";
 	constant set_configuration : std_logic_vector := x"9";
 
-	constant hub_port_reset : std_logic_vector := x"4";
+	constant hubclass_port_connection : std_logic_vector := x"0";
+	constant hubclass_port_enable     : std_logic_vector := x"1";
+	constant hubclass_port_reset      : std_logic_vector := x"4";
+	constant hubclass_port_power      : std_logic_vector := x"8";
+
 	constant device    : std_logic_vector := x"01";
 	constant config    : std_logic_vector := x"02";
 	constant str       : std_logic_vector := x"03";
