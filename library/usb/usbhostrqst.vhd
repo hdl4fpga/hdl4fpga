@@ -92,6 +92,75 @@ architecture def of usbhostrqst is
 				"0000"    & -- Offset 
 				"ffff"    & -- Length 64 bytes
 			"}"           & 
+			","           &
+			"{content:0x" & -- segment_id=2, addr=10
+				"00"      & -- Host to Device
+				"09"      & -- SET_CONFIGURATION
+				"0100"    & -- Configuration 1
+				"0000"    & -- Offset
+				"0000"    & -- Length 0 bytes
+			"}"           &
+			","           &
+			"{content:0x" & -- Hexadecimal format
+				"a0"      & -- Device to Host, Class 
+				"06"      & -- GET_DESCRIPTOR
+				"00"      & -- Descriptor index 
+				"29"      & -- Descriptor type -> HUB
+				"0000"    & -- Offset 
+				"ffff"    & -- Length 64 bytes
+			"}"           & 
+			","           &
+			"{content:0x" & -- Hexadecimal format
+				"23"      & -- Device to Host
+				"03"      & -- GET_DESCRIPTOR
+				"04"      & -- Descriptor index 
+				"00"      & -- Descriptor type -> DEVICE
+				"0100"    & -- Offset 
+				"0000"    & -- Length 64 bytes
+			"}"           & 
+			","           &
+			"{content:0x" & -- Hexadecimal format
+				"23"      & -- Device to Host
+				"03"      & -- GET_DESCRIPTOR
+				"08"      & -- Descriptor index 
+				"00"      & -- Descriptor type -> DEVICE
+				"0100"    & -- Offset 
+				"0000"    & -- Length 64 bytes
+			"}"           & 
+			","           &
+			"{content:0x" & -- Hexadecimal format
+				"23"      & -- Device to Host
+				"03"      & -- GET_DESCRIPTOR
+				"04"      & -- Descriptor index 
+				"00"      & -- Descriptor type -> DEVICE
+				"0100"    & -- Offset 
+				"0000"    & -- Length 64 bytes
+			"}"           & 
+			","           &
+			"{content:0x" & -- Hexadecimal format
+				"a0"      & -- Device to Host
+				"00"      & 
+				"0000"    &
+				"0000"    & -- Offset 
+				"0400"    & -- Length 64 bytes
+			"}"           & 
+			","           &
+			"{content:0x" & -- Hexadecimal format
+				"a3"      & -- Device to Host
+				"00"      & 
+				"0000"    &
+				"0100"    & -- Offset 
+				"0400"    & -- Length 64 bytes
+			"}"           & 
+			","           &
+			"{content:0x" & -- Hexadecimal format
+				"80"      & -- Device to Host
+				"06"      & -- GET_DESCRIPTOR
+				"00"      & -- Descriptor index 
+				"01"      & -- Descriptor type -> DEVICE
+				"0000"    & -- Offset 
+				"ffff"    & -- Length 64 bytes
+			"}"           & 
 		"]");
 
 	constant table_length : natural := hdo(test)**".length";
@@ -133,7 +202,8 @@ begin
 	setup_p : process (cken, clk)
 		type states is (s_idle, s_flush, s_rqst);
 		variable state : states;
-		variable timer : integer range -1 to 63;
+		constant n : natural := 11;
+		variable timer : integer range -1 to 2**n-1;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -142,7 +212,7 @@ begin
 	   				when s_idle =>
 						if (setup_rdy xor setup_req)='1' then
 							timer       := 63;
-							addr_val    <= x"0000";
+							-- addr_val    <= x"0000";
 							tkstall_rdy <= tkstall_req;
 							flush_req   <= not flush_rdy;
 							phy_rst     <= '1';
@@ -153,11 +223,12 @@ begin
 						dev_addr   <= (others => '0');
 						dev_endp   <= (others => '0');
 						segment_id <= (others => '0');
-						addr_val  <= x"000a";
+						addr_val   <= x"000a";
 						if timer < 0 then
 							if (flush_req xor flush_rdy)='0' then
 								phy_rst   <= '0';
 								rqst_req  <= not rqst_rdy;
+								timer     := 2**n-1;
 								state     := s_rqst;
 							end if;
 						elsif sof_tick='1' then
@@ -166,14 +237,23 @@ begin
 					when s_rqst =>
 						if (rqst_req xor rqst_rdy)='0' then
 							if segment_id < table_length-1 then
-								segment_id <= segment_id + 1;
-								rqst_req   <= not rqst_rdy;
+								if segment_id >= 5 and timer >= 0 then
+									if sof_tick='1' then
+										timer := timer - 1;
+									end if;
+								else
+									segment_id <= segment_id + 1;
+									timer      := 2**n-1;
+									rqst_req   <= not rqst_rdy;
+								end if;
 							else
 								setup_rdy <= setup_req;
 								state     := s_idle;
 							end if;
 						elsif segment_id=2 then
 							dev_addr <= addr_val(dev_addr'range);
+						elsif segment_id=10 then
+							dev_addr <= (others => '0');
 						end if;
 					end case;
 				else
