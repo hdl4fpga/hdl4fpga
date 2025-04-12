@@ -161,6 +161,23 @@ architecture def of usbhostrqst is
 				"0000"    & -- Offset 
 				"ffff"    & -- Length 64 bytes
 			"}"           & 
+			","           &
+			"{content:0x" & -- Hexadecimal format
+				"00"      & -- Host to Device
+				"05"      & -- SET_ADDRESS
+				"----"    & -- Address
+				"0000"    & -- Offset 
+				"0000"    & -- Length 64 bytes
+			"}"           & 
+			","           &
+			"{content:0x" & -- Hexadecimal format
+				"80"      & -- Device to Host
+				"06"      & -- GET_DESCRIPTOR
+				"00"      & -- Descriptor index 
+				"02"      & -- Descriptor type -> CONFIGURATION
+				"0000"    & -- Offset 
+				"ffff"    & -- Length 64 bytes
+			"}"           & 
 		"]");
 
 	constant table_length : natural := hdo(test)**".length";
@@ -242,6 +259,9 @@ begin
 										timer := timer - 1;
 									end if;
 								else
+									if segment_id=10 then
+										addr_val <= std_logic_vector(unsigned(addr_val) + 1);
+									end if;
 									segment_id <= segment_id + 1;
 									timer      := 2**n-1;
 									rqst_req   <= not rqst_rdy;
@@ -254,6 +274,10 @@ begin
 							dev_addr <= addr_val(dev_addr'range);
 						elsif segment_id=10 then
 							dev_addr <= (others => '0');
+						elsif segment_id=11 then
+							dev_addr <= (others => '0');
+						elsif segment_id=12 then
+							dev_addr <= addr_val(dev_addr'range);
 						end if;
 					end case;
 				else
