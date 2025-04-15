@@ -1163,7 +1163,7 @@ package body hdo is
 			default_offset, default_length);
 		assert ((log/log_resolve) mod 2=0) --|note
 			report LF & --|note
-				"sali resolve => tag   -> " & natural'image(tag_offset)   & ":" & natural'image(tag_length)   & ' ' & '"' & obj(tag1_offset   to tag1_offset+tag1_length-1)     & '"' & LF & --|note
+				"exit resolve => tag   -> " & natural'image(tag_offset)   & ":" & natural'image(tag_length)   & ' ' & '"' & obj(tag1_offset   to tag1_offset+tag1_length-1)     & '"' & LF & --|note
 				"resolve => value -> " & natural'image(value_offset) & ":" & natural'image(value_length) & ' ' & '"' & obj(value_offset to value_offset+value_length-1) & '"' & LF & --|note
 				"resolve => key   -> " & natural'image(key_offset)   & ":" & natural'image(key_length)   & ' ' & '"' & obj(key_offset   to key_offset+key_length-1)     & '"' & LF --|note
 			severity note; --|note
