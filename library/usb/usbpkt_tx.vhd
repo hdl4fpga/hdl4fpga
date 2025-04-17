@@ -91,7 +91,7 @@ begin
 				    		when hs_ack|hs_nak|hs_stall =>
 				    			if phy_txbs='0' then
 				    				tx_rdy <= tx_req;
-				    				state := s_idle;
+				    				state  := s_idle;
 				    			end if;
 				    		when others =>
 				    		end case;
