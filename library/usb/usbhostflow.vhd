@@ -63,6 +63,8 @@ entity usbhostflow is
 		tkin_rdy    : buffer std_logic := '0';
 		tkout_req   : in  std_logic;
 		tkout_rdy   : buffer std_logic := '0';
+		tknak_req   : buffer std_logic;
+		tknak_rdy   : in std_logic;
 		tkstall_req : buffer std_logic := '0';
 		tkstall_rdy : in  std_logic := '0';
 
@@ -95,8 +97,6 @@ architecture def of usbhostflow is
 	signal acktx_req   : bit;
 	signal ackrx_rdy   : bit;
 	signal ackrx_req   : bit;
-	signal nak_rdy     : bit;
-	signal nak_req     : bit;
 
 	signal buffer_txen : std_logic;
 	signal buffer_txbs : std_logic;
@@ -154,7 +154,6 @@ begin
 					tkin_rdy    <= tkin_req; 
 					ackrx_rdy   <= ackrx_req;
 					acktx_rdy   <= acktx_req;
-					nak_rdy     <= nak_req; 
 					state       := s_idle;
 				elsif (tx_req xor tx_rdy)='0' then
 					if (tksof_rdy xor tksof_req)='1' then
@@ -194,7 +193,6 @@ begin
 								tkdata(dev_addr'range) <= dev_addr;
 								tx_req  <= not tx_rdy;
 								in_req  <= not in_rdy;
-								nak_rdy <= nak_req; 
 								state   := s_nak;
 							elsif (acktx_rdy xor acktx_req)='1' then
 								acktx_rdy <= acktx_req;
@@ -233,13 +231,8 @@ begin
 							if (acktx_rdy xor acktx_req)='1' then
 								tkin_rdy <= tkin_req; 
 								state := s_idle;
-							elsif (nak_rdy xor nak_req)='1' then
-								if tick_cntr(0)='1' then
-									nak_rdy <= nak_req; 
-									state := s_idle;
-								end if;
-							elsif tick_cntr(0)='1' then
-								nak_rdy  <= nak_req; 
+							elsif (tknak_rdy xor tknak_req)='1' then
+								tkin_rdy <= tkin_req; 
 								state := s_idle;
 							end if;
 						end case;
@@ -270,7 +263,7 @@ begin
 					when hs_ack =>
 						ackrx_req <= not ackrx_rdy;
 					when hs_nak =>
-						nak_req <= not nak_rdy;
+						tknak_req <= not tknak_rdy;
 					when hs_stall =>
 						tkstall_req <= not tkstall_rdy;
 					when others =>

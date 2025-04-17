@@ -48,6 +48,8 @@ entity usbhostrqst is
 		tksetup_rdy : in  std_logic := '0';
 		tkstall_req : in  std_logic := '0';
 		tkstall_rdy : buffer std_logic := '0';
+		tknak_req   : in std_logic;
+		tknak_rdy   : buffer std_logic;
 		tkin_req    : buffer std_logic := '0';
 		tkin_rdy    : in  std_logic;
 		tkout_req   : buffer std_logic := '0';
