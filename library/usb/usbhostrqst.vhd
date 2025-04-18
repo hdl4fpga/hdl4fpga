@@ -317,6 +317,7 @@ begin
 									state := s_out;
 								else
 									tkin_req <= not tkin_rdy;
+									tknak_rdy <= tknak_req;
 									state := s_stout;
 								end if;
 							end if;
