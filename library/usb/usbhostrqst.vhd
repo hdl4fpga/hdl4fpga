@@ -302,7 +302,7 @@ begin
 					when s_idle =>
 						if (rqst_rdy xor rqst_req)='1' then
 							tksetup_req <= not tksetup_rdy;
-							send_req <= not send_rdy;
+							send_req    <= not send_rdy;
 							state := s_setup;
 						end if;
 					when s_setup =>
@@ -310,6 +310,7 @@ begin
 							rply_req <= not rply_rdy;
 							if segment_dir(0)='1' then
 								tkin_req <= not tkin_rdy;
+								tknak_rdy <= tknak_req;
 								state   := s_in;
 							else
 								if false then
@@ -325,7 +326,10 @@ begin
 					when s_in =>
 						if (tkin_req xor tkin_rdy)='0' then
 							if rxdv='0' then
-								if (rply_rdy xor rply_req)='1' then
+								if (tknak_rdy xor tknak_req)='1' then
+									tknak_rdy <= tknak_req;
+									tkin_req <= not tkin_rdy;
+								elsif (rply_rdy xor rply_req)='1' then
 									tkin_req <= not tkin_rdy;
 								else
 									tkout_req <= not tkout_rdy;
