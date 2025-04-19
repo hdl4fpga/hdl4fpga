@@ -355,8 +355,15 @@ begin
 						end if;
 					when s_stout =>
 						if (tkin_req xor tkin_rdy)='0' then
-							rqst_rdy <= rqst_req;
-							state := s_idle;
+							if (tknak_rdy xor tknak_req)='1' then
+								if sof_tick='1' then
+									tknak_rdy <= tknak_req;
+									tkin_req  <= not tkin_rdy;
+								end if;
+							else
+								rqst_rdy <= rqst_req;
+								state := s_idle;
+							end if;
 						end if;
 					end case;
 				else
