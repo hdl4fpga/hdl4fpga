@@ -327,8 +327,10 @@ begin
 						if (tkin_req xor tkin_rdy)='0' then
 							if rxdv='0' then
 								if (tknak_rdy xor tknak_req)='1' then
-									tknak_rdy <= tknak_req;
-									tkin_req <= not tkin_rdy;
+									if sof_tick='1' then
+										tknak_rdy <= tknak_req;
+										tkin_req  <= not tkin_rdy;
+									end if;
 								elsif (rply_rdy xor rply_req)='1' then
 									tkin_req <= not tkin_rdy;
 								else
