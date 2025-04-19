@@ -303,23 +303,23 @@ begin
 						if (rqst_rdy xor rqst_req)='1' then
 							tksetup_req <= not tksetup_rdy;
 							send_req    <= not send_rdy;
-							state := s_setup;
+							state       := s_setup;
 						end if;
 					when s_setup =>
 						if (send_req xor send_rdy)='0' then
 							rply_req <= not rply_rdy;
 							if segment_dir(0)='1' then
-								tkin_req <= not tkin_rdy;
+								tkin_req  <= not tkin_rdy;
 								tknak_rdy <= tknak_req;
-								state   := s_in;
+								state     := s_in;
 							else
 								if false then
 									tkout_req <= not tkout_rdy;
-									state := s_out;
+									state     := s_out;
 								else
-									tkin_req <= not tkin_rdy;
+									tkin_req  <= not tkin_rdy;
 									tknak_rdy <= tknak_req;
-									state := s_stout;
+									state     := s_stout;
 								end if;
 							end if;
 						end if;
@@ -335,20 +335,20 @@ begin
 									tkin_req <= not tkin_rdy;
 								else
 									tkout_req <= not tkout_rdy;
-									state := s_stin;
+									state     := s_stin;
 								end if;
 							end if;
 						end if;
 					when s_stin =>
 						if (tkout_req xor tkout_rdy)='0' then
 							rqst_rdy <= rqst_req;
-							state := s_idle;
+							state    := s_idle;
 						end if;
 					when s_out =>
 						if (tkout_req xor tkout_rdy)='0' then
 							if txdis='1' then
 								tkin_req <= not tkin_rdy;
-								state := s_stout;
+								state    := s_stout;
 							else
 								tkout_req <= not tkout_rdy;
 							end if;
@@ -362,13 +362,13 @@ begin
 								end if;
 							else
 								rqst_rdy <= rqst_req;
-								state := s_idle;
+								state    := s_idle;
 							end if;
 						end if;
 					end case;
 				else
 					rqst_rdy <= rqst_req;
-					state := s_idle;
+					state    := s_idle;
 				end if;
 			end if;
 		end if;
