@@ -69,7 +69,7 @@ entity usbhostflow is
 		tkstall_rdy : in  std_logic := '0';
 
 		sof_fmf   : buffer std_logic_vector(11-1 downto 0);
-		sof_tick  : out std_logic;
+		sof_tick  : buffer std_logic;
 
 		dev_ackrx : out std_logic;
 		dev_acktx : out std_logic;
@@ -140,10 +140,11 @@ begin
 	sof_fmf <= to_stdlogicvector(bit_vector(sof_cntr));
 
 	hosttodev_p : process (tkin_rdy, clk)
-		type states is (s_idle, s_out, s_ack, s_nak);
+		type states is (s_start, s_out, s_ack, s_nak);
 		variable state : states;
 		variable tick_cntr : unsigned(0 to 1);
 		constant tbit : std_logic_vector(data0'range) := b"1000";
+		variable tick : std_logic;
 		variable retries : integer range -1 to 3;
 	begin
 		if rising_edge(clk) then
@@ -154,7 +155,7 @@ begin
 					tkin_rdy    <= tkin_req; 
 					ackrx_rdy   <= ackrx_req;
 					acktx_rdy   <= acktx_req;
-					state       := s_idle;
+					state       := s_start;
 				elsif (tx_req xor tx_rdy)='0' then
 					if (tksof_rdy xor tksof_req)='1' then
 						txpid  <= tk_sof;
@@ -164,21 +165,22 @@ begin
 						if tick_cntr(0)='0' then
 							tick_cntr := tick_cntr + 1;
 						end if;
+						tick := '1';
 					else
 						case state is
-						when s_idle =>
+						when s_start =>
 							if (tksetup_rdy xor tksetup_req)='1' then
 								if retries < 0 then
 								else
-    								ddata  <= data0;
-    								ddatai <= data0;
-    								ddatao <= data0;
-    								txpid  <= tk_setup;
-    								tkdata(dev_endp'range) <= dev_endp;
-    								tkdata(dev_addr'range) <= dev_addr;
-    								tx_req  <= not tx_rdy;
-    								out_req <= not out_rdy;
-    								state := s_out;
+									ddata  <= data0;
+									ddatai <= data0;
+									ddatao <= data0;
+									txpid  <= tk_setup;
+									tkdata(dev_endp'range) <= dev_endp;
+									tkdata(dev_addr'range) <= dev_addr;
+									tx_req  <= not tx_rdy;
+									out_req <= not out_rdy;
+									state := s_out;
 								end if;
 							elsif (tkout_rdy xor tkout_req)='1' then
 								txpid  <= tk_out;
@@ -219,23 +221,28 @@ begin
 								if retries >= 0 then
 									retries := retries - 1;
 								end if;
-								state := s_idle;
+								state := s_start;
 							elsif (ackrx_rdy xor ackrx_req)='1' then
 								tksetup_rdy <= tksetup_req; 
 								tkout_rdy   <= tkout_req; 
 								ackrx_rdy   <= ackrx_req;
 								retries     := 3;
-								state       := s_idle;
+								state       := s_start;
 							end if;
 						when s_nak =>
 							if (acktx_rdy xor acktx_req)='1' then
 								tkin_rdy <= tkin_req; 
-								state := s_idle;
+								state := s_start;
 							elsif (tknak_rdy xor tknak_req)='1' then
 								tkin_rdy <= tkin_req; 
-								state := s_idle;
+								state := s_start;
+							elsif tick='1' then
+								if rxdv='0' then
+									state := s_start;
+								end if;
 							end if;
 						end case;
+						tick := '0';
 					end if;
 				end if;
 			end if;
@@ -261,9 +268,9 @@ begin
 							in_rdy <= in_req;
 						end if;
 					when hs_ack =>
-						ackrx_req <= not ackrx_rdy;
+						ackrx_req   <= not ackrx_rdy;
 					when hs_nak =>
-						tknak_req <= not tknak_rdy;
+						tknak_req   <= not tknak_rdy;
 					when hs_stall =>
 						tkstall_req <= not tkstall_rdy;
 					when others =>
