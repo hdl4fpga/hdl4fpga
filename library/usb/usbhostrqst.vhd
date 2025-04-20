@@ -301,16 +301,18 @@ begin
 				if (tkstall_req xor tkstall_rdy)='0' then
 					case state is
 					when s_idle =>
-						if pending='1' then
-							if sof_tick='1' then
-								pending := '0';
-								state := s_setup;
+						if (rqst_rdy xor rqst_req)='1' then
+							if pending='1' then
+								if sof_tick='1' then
+									pending := '0';
+									state := s_setup;
+								end if;
+							else
+								tksetup_req <= not tksetup_rdy;
+								send_req    <= not send_rdy;
+								pending     := '0';
+								state       := s_setup;
 							end if;
-						elsif (rqst_rdy xor rqst_req)='1' then
-							tksetup_req <= not tksetup_rdy;
-							send_req    <= not send_rdy;
-							pending     := '0';
-							state       := s_setup;
 						end if;
 					when s_setup =>
 						if (send_req xor send_rdy)='0' then
