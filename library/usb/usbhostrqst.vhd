@@ -215,6 +215,7 @@ architecture def of usbhostrqst is
 	signal bLength         : std_logic_vector( 8-1 downto 0);
 	signal bDescriptorType : std_logic_vector( 8-1 downto 0);
 	signal wTotalLength    : std_logic_vector(16-1 downto 0);
+	signal pending         : std_logic;
 
 begin
 
@@ -254,7 +255,9 @@ begin
 							timer := timer - 1;
 						end if;
 					when s_rqst =>
-						if (rqst_req xor rqst_rdy)='0' then
+						if pending='1' then
+							rqst_req <= not rqst_rdy;
+						elsif (rqst_req xor rqst_rdy)='0' then
 							if segment_id < table_length-1 then
 								if segment_id >= 5 and timer >= 0 then
 									if sof_tick='1' then
@@ -294,7 +297,6 @@ begin
 	setup_p : process (rqst_rdy, clk)
 		type states is (s_idle, s_setup, s_in, s_statusin, s_statusout);
 		variable state   : states;
-		variable pending : std_logic;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -304,13 +306,13 @@ begin
 						if (rqst_rdy xor rqst_req)='1' then
 							if pending='1' then
 								if sof_tick='1' then
-									pending := '0';
-									state := s_setup;
+									pending <= '0';
+									state   := s_setup;
 								end if;
 							else
 								tksetup_req <= not tksetup_rdy;
 								send_req    <= not send_rdy;
-								pending     := '0';
+								pending     <= '0';
 								state       := s_setup;
 							end if;
 						end if;
@@ -329,8 +331,9 @@ begin
 						if (tkin_req xor tkin_rdy)='0' then
 							if rxdv='0' then
 								if (tknak_rdy xor tknak_req)='1' then
+									pending   <= '1';
 									tknak_rdy <= tknak_req;
-									pending   := '1';
+									rqst_rdy  <= rqst_req;
 									state     := s_idle;
 								elsif (rply_rdy xor rply_req)='1' then
 									tkin_req <= not tkin_rdy;
@@ -348,8 +351,9 @@ begin
 					when s_statusout =>
 						if (tkin_req xor tkin_rdy)='0' then
 							if (tknak_rdy xor tknak_req)='1' then
+								pending   <= '1';
 								tknak_rdy <= tknak_req;
-								pending   := '1';
+								rqst_rdy  <= rqst_req;
 								state     := s_idle;
 							else
 								rqst_rdy <= rqst_req;
