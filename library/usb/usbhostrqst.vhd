@@ -218,7 +218,7 @@ architecture def of usbhostrqst is
 
 begin
 
-	setup_p : process (cken, clk)
+	init_p : process (cken, clk)
 		type states is (s_idle, s_flush, s_rqst);
 		variable state : states;
 		constant n : natural := 11;
@@ -291,8 +291,8 @@ begin
 		end if;
 	end process;
 
-	rqst_p : process (rqst_rdy, clk)
-		type states is (s_idle, s_setup, s_in, s_stin, s_out, s_stout);
+	setup_p : process (rqst_rdy, clk)
+		type states is (s_idle, s_setup, s_in, s_statusin, s_statusout);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
@@ -300,8 +300,14 @@ begin
 				if (tkstall_req xor tkstall_rdy)='0' then
 					case state is
 					when s_idle =>
-						if (rqst_rdy xor rqst_req)='1' then
+						if (tknak_rdy xor tknak_req)='1' then
+							if sof_tick='1' then
+								tknak_rdy <= tknak_req;
+								state := s_setup;
+							end if;
+						elsif (rqst_rdy xor rqst_req)='1' then
 							tksetup_req <= not tksetup_rdy;
+							tknak_rdy   <= tknak_req;
 							send_req    <= not send_rdy;
 							state       := s_setup;
 						end if;
@@ -309,57 +315,35 @@ begin
 						if (send_req xor send_rdy)='0' then
 							rply_req <= not rply_rdy;
 							if segment_dir(0)='1' then
-								tkin_req  <= not tkin_rdy;
-								tknak_rdy <= tknak_req;
-								state     := s_in;
+								tkin_req <= not tkin_rdy;
+								state    := s_in;
 							else
-								if false then
-									tkout_req <= not tkout_rdy;
-									state     := s_out;
-								else
-									tkin_req  <= not tkin_rdy;
-									tknak_rdy <= tknak_req;
-									state     := s_stout;
-								end if;
+								tkin_req <= not tkin_rdy;
+								state    := s_statusout;
 							end if;
 						end if;
 					when s_in =>
 						if (tkin_req xor tkin_rdy)='0' then
 							if rxdv='0' then
 								if (tknak_rdy xor tknak_req)='1' then
-									if sof_tick='1' then
-										tknak_rdy <= tknak_req;
-										tkin_req  <= not tkin_rdy;
-									end if;
+									state    := s_idle;
 								elsif (rply_rdy xor rply_req)='1' then
 									tkin_req <= not tkin_rdy;
 								else
 									tkout_req <= not tkout_rdy;
-									state     := s_stin;
+									state     := s_statusin;
 								end if;
 							end if;
 						end if;
-					when s_stin =>
+					when s_statusin =>
 						if (tkout_req xor tkout_rdy)='0' then
 							rqst_rdy <= rqst_req;
 							state    := s_idle;
 						end if;
-					when s_out =>
-						if (tkout_req xor tkout_rdy)='0' then
-							if txdis='1' then
-								tkin_req <= not tkin_rdy;
-								state    := s_stout;
-							else
-								tkout_req <= not tkout_rdy;
-							end if;
-						end if;
-					when s_stout =>
+					when s_statusout =>
 						if (tkin_req xor tkin_rdy)='0' then
 							if (tknak_rdy xor tknak_req)='1' then
-								if sof_tick='1' then
-									tknak_rdy <= tknak_req;
-									tkin_req  <= not tkin_rdy;
-								end if;
+								state    := s_idle;
 							else
 								rqst_rdy <= rqst_req;
 								state    := s_idle;
