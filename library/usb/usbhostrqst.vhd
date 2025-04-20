@@ -293,22 +293,23 @@ begin
 
 	setup_p : process (rqst_rdy, clk)
 		type states is (s_idle, s_setup, s_in, s_statusin, s_statusout);
-		variable state : states;
+		variable state   : states;
+		variable pending : std_logic;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (tkstall_req xor tkstall_rdy)='0' then
 					case state is
 					when s_idle =>
-						if (tknak_rdy xor tknak_req)='1' then
+						if pending='1' then
 							if sof_tick='1' then
-								tknak_rdy <= tknak_req;
+								pending := '0';
 								state := s_setup;
 							end if;
 						elsif (rqst_rdy xor rqst_req)='1' then
 							tksetup_req <= not tksetup_rdy;
-							tknak_rdy   <= tknak_req;
 							send_req    <= not send_rdy;
+							pending     := '0';
 							state       := s_setup;
 						end if;
 					when s_setup =>
@@ -326,7 +327,9 @@ begin
 						if (tkin_req xor tkin_rdy)='0' then
 							if rxdv='0' then
 								if (tknak_rdy xor tknak_req)='1' then
-									state    := s_idle;
+									tknak_rdy <= tknak_req;
+									pending   := '1';
+									state     := s_idle;
 								elsif (rply_rdy xor rply_req)='1' then
 									tkin_req <= not tkin_rdy;
 								else
@@ -343,7 +346,9 @@ begin
 					when s_statusout =>
 						if (tkin_req xor tkin_rdy)='0' then
 							if (tknak_rdy xor tknak_req)='1' then
-								state    := s_idle;
+								tknak_rdy <= tknak_req;
+								pending   := '1';
+								state     := s_idle;
 							else
 								rqst_rdy <= rqst_req;
 								state    := s_idle;
