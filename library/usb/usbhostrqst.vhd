@@ -256,7 +256,9 @@ begin
 						end if;
 					when s_rqst =>
 						if pending='1' then
-							rqst_req <= not rqst_rdy;
+							if sof_tick='1' then
+								rqst_req <= not rqst_rdy;
+							end if;
 						elsif (rqst_req xor rqst_rdy)='0' then
 							if segment_id < table_length-1 then
 								if segment_id >= 5 and timer >= 0 then
@@ -305,10 +307,8 @@ begin
 					when s_idle =>
 						if (rqst_rdy xor rqst_req)='1' then
 							if pending='1' then
-								if sof_tick='1' then
-									pending <= '0';
-									state   := s_setup;
-								end if;
+								pending <= '0';
+								state   := s_setup;
 							else
 								tksetup_req <= not tksetup_rdy;
 								send_req    <= not send_rdy;
