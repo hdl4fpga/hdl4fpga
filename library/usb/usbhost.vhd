@@ -251,8 +251,8 @@ entity usbhostdvr is
 		clk  : in  std_logic;
 		cken : buffer std_logic;
 
-		setup_req : in std_logic := '0';
-		setup_rdy : buffer std_logic := '0');
+		init_req : in std_logic := '0';
+		init_rdy : buffer std_logic := '0');
 
 end;
 
@@ -336,8 +336,8 @@ begin
 		cken      => cken,
 		phy_rst   => phy_rst,
 
-		setup_req => setup_req,
-		setup_rdy => setup_rdy,
+		init_req => init_req,
+		init_rdy => init_rdy,
 		flush_req => flush_req,
 		flush_rdy => flush_rdy,
 		tksetup_req => tksetup_req,

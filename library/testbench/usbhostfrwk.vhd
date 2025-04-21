@@ -40,11 +40,11 @@ begin
 
 	host_b : block
 		constant oversampling : natural := 3;
-		signal rst       : std_logic;
-		signal clk       : std_logic := '0';
-		signal cken      : std_logic;
-		signal setup_rdy : std_logic;
-		signal setup_req : std_logic;
+		signal rst      : std_logic;
+		signal clk      : std_logic := '0';
+		signal cken     : std_logic;
+		signal init_rdy : std_logic;
+		signal init_req : std_logic;
 
 	begin
 		rst <= '0' after 0.500 us;
@@ -54,8 +54,8 @@ begin
 			not clk after 1 sec/((2.0*usb_freq)*(36.36e6/usb_freq)) when 3,
 			not clk after 1 sec/((2.0*usb_freq)*(12.00e6/usb_freq)) when others; --*0.975;
 
-		setup_req <= '0', '1' after 1 us;
-		-- setup_rdy <= '0';
+		init_req <= '0', '1' after 1 us;
+		-- init_rdy <= '0';
 	   	usbhost_e : entity hdl4fpga.usbhostdvr
 	   	generic map (
 	   		oversampling => oversampling)
@@ -64,8 +64,8 @@ begin
 			dn        => dn,
 			clk       => clk,
 			cken      => cken,
-			setup_req => setup_req,
-			setup_rdy => setup_rdy);
+			init_req => init_req,
+			init_rdy => init_rdy);
 
 	end block;
 
