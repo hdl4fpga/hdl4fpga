@@ -67,6 +67,12 @@ entity usbhostrqst is
 end;
 
 architecture def of usbhostrqst is
+	signal bmRequestType : std_logic_vector( 8-1 downto 0) := x"80";
+	signal bRequest      : std_logic_vector( 8-1 downto 0) := x"06";
+	signal wValue        : std_logic_vector(16-1 downto 0) := x"0100";
+	signal wIndex        : std_logic_vector(16-1 downto 0) := x"0000";
+	signal wLength       : std_logic_vector(16-1 downto 0) := x"ffff";
+
 	constant test : string := segment_map(
 		"["&
 			"{content:0x" & -- Hexadecimal format
@@ -187,13 +193,6 @@ architecture def of usbhostrqst is
 	constant table  : string := segment_table(test1);
 	constant bitrom : string := hdo(table)**".content";
 	signal segment_id        : unsigned(0 to hdo(table)**".address"-1) := (others => '0');
-	signal segment_data      : std_logic_vector(0 to hdo(table)**".data"-1);
-	signal segment_dir       : std_logic_vector(natural'(hdo(table)**".dir.left")    to natural'(hdo(table)**".dir.right"));
-	signal segment_offset    : std_logic_vector(natural'(hdo(table)**".offset.left") to natural'(hdo(table)**".offset.right"));
-	signal segment_length    : std_logic_vector(natural'(hdo(table)**".length.left") to natural'(hdo(table)**".length.right"));
-	signal descriptor_length : unsigned(0 to segment_length'length);
-	signal descriptor_addr   : unsigned(segment_offset'range);
-	signal descriptor_data   : std_logic_vector(0 to 0);
 
 	signal rqst_req   : bit;
 	signal rqst_rdy   : bit;
@@ -223,7 +222,6 @@ begin
 	   				when s_idle =>
 						if (init_rdy xor init_req)='1' then
 							timer       := 63;
-							-- addr_val    <= x"0000";
 							tkstall_rdy <= tkstall_req;
 							flush_req   <= not flush_rdy;
 							phy_rst     <= '1';
@@ -310,7 +308,7 @@ begin
 					when s_setup =>
 						if (rqst_req xor rqst_rdy)='0' then
 							rply_req <= not rply_rdy;
-							if segment_dir(0)='1' then
+							if bmRequestType(bmRequestType'left)='1' then
 								tkin_req <= not tkin_rdy;
 								state    := s_in;
 							else
@@ -360,28 +358,7 @@ begin
 		end if;
 	end process;
 
-	segmenttable_i : entity hdl4fpga.rom
-	generic map (
-		bitrom => hdo(table)**".content")
-	port map (
-		addr => std_logic_vector(segment_id),
-		data => segment_data);
-	segment_dir    <= segment_data(segment_dir'range);
-	segment_offset <= segment_data(segment_offset'range);
-	segment_length <= segment_data(segment_length'range);
-
-	segmentcontent_i : entity hdl4fpga.rom
-	generic map (
-		bitrom => reverse(hdo(test)**".content",8))
-	port map (
-		addr => std_logic_vector(descriptor_addr),
-		data => descriptor_data);
-
 	request_p : process (clk)
-		variable bmRequestType : std_logic_vector( 8-1 downto 0);
-		variable bRequest      : std_logic_vector( 8-1 downto 0);
-		variable wValue        : std_logic_vector(16-1 downto 0);
-		variable wLength       : std_logic_vector(16-1 downto 0);
 		variable cntr : unsigned(0 to 3+3);
 	begin
 		if rising_edge(clk) then
@@ -389,7 +366,7 @@ begin
 				if (rqst_rdy xor rqst_req)='1' then
 					if cntr(0)='0' then
 						if txbs='0' then
-							txd  <= multiplex(reverse(wLength & wValue & bRequest & bmRequestType), std_logic_vector(cntr));
+							txd  <= multiplex(reverse(wLength & wIndex & wValue & bRequest & bmRequestType), std_logic_vector(cntr));
 							cntr := cntr + 1;
 						end if;
 					else
@@ -398,10 +375,10 @@ begin
 				else
 					cntr := (others => '0');
 				end if;
+				txen <= to_stdulogic(rqst_rdy xor rqst_req);
 			end if;
 		end if;
 	end process;
-	txen <= to_stdulogic(rqst_rdy xor rqst_req);
 
 	descriptors_p : process (rply_req, clk)
 		constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo'(
