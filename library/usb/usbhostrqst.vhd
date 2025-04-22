@@ -416,7 +416,7 @@ begin
 		variable bLength         : unsigned( 8-1 downto 0);
 		variable bDescriptorType : unsigned( 8-1 downto 0);
 		variable wTotalLength    : unsigned(16-1 downto 0);
-		variable cntr            : natural range 0 to 2**(8+3);
+		variable cntr            : natural range 0 to 32;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -429,32 +429,25 @@ begin
 							elsif cntr < 16 then
 								bDescriptorType(0) := rxd;
 								bDescriptorType := bDescriptorType ror 1;
-							else
-								case std_logic_vector(bDescriptorType) is 
-								when config =>
-									if cntr < 32 then
-										wTotalLength(0) := rxd;
-										wTotalLength :=  wTotalLength ror 1;
-									end if;
-								when others =>
-								end case;
+							elsif cntr < 32 then
+								if bDescriptorType=unsigned(config) then
+									wTotalLength(0) := rxd;
+									wTotalLength :=  wTotalLength ror 1;
+								end if;
 							end if;
 							cntr := cntr + 1;
 						end if;
 					end if;
 					if cntr >=16 then
-						case std_logic_vector(bDescriptorType) is 
-						when config =>
+						if bDescriptorType=unsigned(config) then
 							if cntr >= 32 then
 								if cntr/8 >= wTotalLength then
 									rply_rdy <= rply_req;
 								end if;
 							end if;
-						when others =>
-							if cntr/8 >= blength then
-								rply_rdy <= rply_req;
-							end if;
-						end case;
+						elsif cntr/8 >= blength then
+							rply_rdy <= rply_req;
+						end if;
 					end if;
 				else
 					cntr := 0;
