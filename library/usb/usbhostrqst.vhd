@@ -399,6 +399,9 @@ begin
 					end if;
 					if cntr >= 8 then
 						if cntr/8 >= unsigned(bLength) then
+							case bDescriptorType is
+							when others =>
+							end case;
 							cntr := 0 ;
 						end if;
 					end if;
