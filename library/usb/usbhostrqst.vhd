@@ -441,7 +441,7 @@ begin
 					if cntr >=16 then
 						if bDescriptorType=unsigned(config) then
 							if cntr >= 32 then
-								if (cntr srl 3) >= wTotalLength then
+								if cntr/8 >= wTotalLength then
 									rply_rdy <= rply_req;
 								end if;
 							end if;
