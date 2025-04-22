@@ -285,79 +285,6 @@ begin
 		end if;
 	end process;
 
-	setup_p : process (setup_rdy, clk)
-		type states is (s_idle, s_setup, s_in, s_statusin, s_statusout);
-		variable state   : states;
-	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				if (tkstall_req xor tkstall_rdy)='0' then
-					case state is
-					when s_idle =>
-						if (setup_rdy xor setup_req)='1' then
-							if pending='1' then
-								pending <= '0';
-								state   := s_setup;
-							else
-								tksetup_req <= not tksetup_rdy;
-								rqst_req    <= not rqst_rdy;
-								pending     <= '0';
-								state       := s_setup;
-							end if;
-						end if;
-					when s_setup =>
-						if (rqst_req xor rqst_rdy)='0' then
-							rply_req <= not rply_rdy;
-							if bmRequestType(bmRequestType'left)='1' then
-								tkin_req <= not tkin_rdy;
-								state    := s_in;
-							else
-								tkin_req <= not tkin_rdy;
-								state    := s_statusout;
-							end if;
-						end if;
-					when s_in =>
-						if (tkin_req xor tkin_rdy)='0' then
-							if rxdv='0' then
-								if (tknak_rdy xor tknak_req)='1' then
-									pending   <= '1';
-									tknak_rdy <= tknak_req;
-									setup_rdy  <= setup_req;
-									state     := s_idle;
-								elsif (rply_rdy xor rply_req)='1' then
-									tkin_req <= not tkin_rdy;
-								else
-									tkout_req <= not tkout_rdy;
-									state     := s_statusin;
-								end if;
-							end if;
-						end if;
-					when s_statusin =>
-						if (tkout_req xor tkout_rdy)='0' then
-							setup_rdy <= setup_req;
-							state    := s_idle;
-						end if;
-					when s_statusout =>
-						if (tkin_req xor tkin_rdy)='0' then
-							if (tknak_rdy xor tknak_req)='1' then
-								pending   <= '1';
-								tknak_rdy <= tknak_req;
-								setup_rdy  <= setup_req;
-								state     := s_idle;
-							else
-								setup_rdy <= setup_req;
-								state    := s_idle;
-							end if;
-						end if;
-					end case;
-				else
-					setup_rdy <= setup_req;
-					state    := s_idle;
-				end if;
-			end if;
-		end if;
-	end process;
-
 	request_p : process (clk)
 		variable cntr : unsigned(0 to 3+3);
 	begin
@@ -451,6 +378,79 @@ begin
 					end if;
 				else
 					cntr := 0;
+				end if;
+			end if;
+		end if;
+	end process;
+
+	setup_p : process (setup_rdy, clk)
+		type states is (s_idle, s_setup, s_in, s_statusin, s_statusout);
+		variable state   : states;
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (tkstall_req xor tkstall_rdy)='0' then
+					case state is
+					when s_idle =>
+						if (setup_rdy xor setup_req)='1' then
+							if pending='1' then
+								pending <= '0';
+								state   := s_setup;
+							else
+								tksetup_req <= not tksetup_rdy;
+								rqst_req    <= not rqst_rdy;
+								pending     <= '0';
+								state       := s_setup;
+							end if;
+						end if;
+					when s_setup =>
+						if (rqst_req xor rqst_rdy)='0' then
+							rply_req <= not rply_rdy;
+							if bmRequestType(bmRequestType'left)='1' then
+								tkin_req <= not tkin_rdy;
+								state    := s_in;
+							else
+								tkin_req <= not tkin_rdy;
+								state    := s_statusout;
+							end if;
+						end if;
+					when s_in =>
+						if (tkin_req xor tkin_rdy)='0' then
+							if rxdv='0' then
+								if (tknak_rdy xor tknak_req)='1' then
+									pending   <= '1';
+									tknak_rdy <= tknak_req;
+									setup_rdy  <= setup_req;
+									state     := s_idle;
+								elsif (rply_rdy xor rply_req)='1' then
+									tkin_req <= not tkin_rdy;
+								else
+									tkout_req <= not tkout_rdy;
+									state     := s_statusin;
+								end if;
+							end if;
+						end if;
+					when s_statusin =>
+						if (tkout_req xor tkout_rdy)='0' then
+							setup_rdy <= setup_req;
+							state    := s_idle;
+						end if;
+					when s_statusout =>
+						if (tkin_req xor tkin_rdy)='0' then
+							if (tknak_rdy xor tknak_req)='1' then
+								pending   <= '1';
+								tknak_rdy <= tknak_req;
+								setup_rdy  <= setup_req;
+								state     := s_idle;
+							else
+								setup_rdy <= setup_req;
+								state    := s_idle;
+							end if;
+						end if;
+					end case;
+				else
+					setup_rdy <= setup_req;
+					state    := s_idle;
 				end if;
 			end if;
 		end if;
