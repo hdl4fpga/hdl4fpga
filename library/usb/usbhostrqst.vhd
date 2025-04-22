@@ -383,31 +383,23 @@ begin
 	descriptors_p : process (rply_req, clk)
 		variable rgtr : std_logic_vector(0 to 16*8-1);
 		variable cntr : natural range 0 to rgtr'length;
-		variable cfg_cntr        : natural range 0 to 2*10*8;
 		variable bLength         : std_logic_vector( 8-1 downto 0);
 		variable bDescriptorType : std_logic_vector( 8-1 downto 0);
-		variable wTotalLength    : std_logic_vector(16-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (rply_rdy xor rply_req)='1' then
-					if cfg_cntr >= 16 then
-						if bDescriptorType=config then
-								if cntr / 8 >= unsigned(wTotalLength) then
-									rply_rdy <= rply_req;
-								end if;
-							end if;
-						end if;
-							if cntr / 8 >= unsigned(blength) then
-								rply_rdy <= rply_req;
-							end if;
-					end if;
-					if cntr < rgtr'length then
-						if rxdv='1' then
+					if rxdv='1' then
+						if cntr < rgtr'length then
 							rgtr(cntr) := rxd;
-							if rxbs='1' then
-								cntr := cntr + 1;
-							end if;
+						end if;
+						if rxbs='1' then
+							cntr := cntr + 1;
+						end if;
+					end if;
+					if cntr >= 8 then
+						if cntr/8 >= unsigned(bLength) then
+							cntr := 0 ;
 						end if;
 					end if;
 				else
@@ -417,71 +409,55 @@ begin
 		end if;
 	end process;
 
-	-- configuration_p : process (rply_rdy, clk)
-		-- constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo'(
-			-- "{"                        &
-				-- "bLength:1,"           &
-				-- "bDescriptorType:1,"   &
-				-- "wTotalLength:2"       &
-			-- "}"));
--- 
-		-- variable cntr : unsigned(8+3-1 downto 0);
-		-- variable enas : std_logic_vector(0 to 3-1);
-		-- alias ena_bLength         is enas(0);
-		-- alias ena_bDescriptorType is enas(1);
-		-- alias ena_wTotalLength    is enas(2);
-		-- variable word : unsigned(16-1 downto 0);
-		-- variable byte : unsigned( 8-1 downto 0);
-	-- begin
-		-- if rising_edge(clk) then
-			-- if cken='1' then
-				-- if (rply_rdy xor rply_req)='1' then
-					-- enas := multiplex(enatab, std_logic_vector(cntr srl 3), enas'length);
-					-- if rxdv='1' then
-						-- if rxbs='0' then
-							-- word(0) := rxd;
-							-- word    := word ror 1;
-							-- byte(0) := rxd;
-							-- byte    := byte ror 1;
-							-- if ena_bLength='1' then
-								-- blength <= std_logic_vector(byte);
-							-- elsif ena_bDescriptorType='1' then
-								-- bDescriptorType <= std_logic_vector(byte);
-							-- else
-								-- case bDescriptorType is 
-								-- when config =>
-									-- if ena_wTotalLength='1' then
-										-- wTotalLength <= std_logic_vector(word);
-									-- end if;
-								-- when others =>
-								-- end case;
-							-- end if;
-							-- cntr := cntr + 1;
-						-- end if;
-					-- end if;
-					-- if (ena_bLength or ena_bDescriptorType)='0' then
-						-- case bDescriptorType is 
-						-- when config =>
-							-- if ena_wTotalLength='0' then
-								-- if (cntr srl 3) >= unsigned(wTotalLength) then
-									-- wTotalLength <= std_logic_vector(word);
-									-- rply_rdy <= rply_req;
-								-- end if;
-							-- end if;
-						-- when others =>
-							-- if (cntr srl 3) >= unsigned(blength) then
-								-- rply_rdy <= rply_req;
-							-- end if;
-						-- end case;
-					-- end if;
-				-- else
-					-- blength         <= (others => '-');
-					-- bDescriptorType <= (others => '-');
-					-- wTotalLength    <= (others => '-');
-					-- cntr            := (others => '0');
-				-- end if;
-			-- end if;
-		-- end if;
-	-- end process;
+	config_p : process (rply_rdy, clk)
+		variable bLength         : unsigned( 8-1 downto 0);
+		variable bDescriptorType : unsigned( 8-1 downto 0);
+		variable wTotalLength    : unsigned(16-1 downto 0);
+		variable cntr            : natural range 0 to 2**(8+3);
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (rply_rdy xor rply_req)='1' then
+					if rxdv='1' then
+						if rxbs='0' then
+							if cntr < 8 then
+								blength(0) := rxd;
+								blength := blength ror 1;
+							elsif cntr < 16 then
+								bDescriptorType(0) := rxd;
+								bDescriptorType := bDescriptorType ror 1;
+							else
+								case std_logic_vector(bDescriptorType) is 
+								when config =>
+									if cntr < 32 then
+										wTotalLength(0) := rxd;
+										wTotalLength :=  wTotalLength ror 1;
+									end if;
+								when others =>
+								end case;
+							end if;
+							cntr := cntr + 1;
+						end if;
+					end if;
+					if cntr >=16 then
+						case std_logic_vector(bDescriptorType) is 
+						when config =>
+							if cntr >= 32 then
+								if cntr/8 >= wTotalLength then
+									rply_rdy <= rply_req;
+								end if;
+							end if;
+						when others =>
+							if cntr/8 >= blength then
+								rply_rdy <= rply_req;
+							end if;
+						end case;
+					end if;
+				else
+					cntr := 0;
+				end if;
+			end if;
+		end if;
+	end process;
 
 end;
