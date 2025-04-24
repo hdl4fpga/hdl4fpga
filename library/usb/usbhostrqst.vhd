@@ -272,7 +272,7 @@ begin
 							dev_addr      <= addr(dev_addr'range);
     						bmRequestType <= x"80";
     						bRequest      <= x"06";
-    						wValue        <= addr;
+    						wValue        <= x"0200";
     						wIndex        <= x"0000";
     						wLength       <= x"ffff";
     					when s_setconfiguration =>
