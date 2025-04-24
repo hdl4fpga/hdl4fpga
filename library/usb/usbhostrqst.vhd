@@ -191,8 +191,8 @@ architecture def of usbhostrqst is
 
 	signal rqst_req  : bit;
 	signal rqst_rdy  : bit;
-	signal setup_req : bit;
-	signal setup_rdy : bit;
+	signal ctlr_req : bit;
+	signal ctlr_rdy : bit;
 	signal rply_req  : bit;
 	signal rply_rdy  : bit;
 				
@@ -201,7 +201,7 @@ architecture def of usbhostrqst is
 begin
 
 	init_p : process (cken, clk)
-		type states is (s_start, s_reseted, s_rqst);
+		type states is (s_start, s_reseted, s_rqst, s_idle);
 		variable state : states;
 		constant n : natural := 11;
 		variable timer : integer range -1 to 2**n-1;
@@ -227,7 +227,7 @@ begin
 						end if;
 					when s_reseted =>
 						if (flush_req xor flush_rdy)='0' then
-							setup_req <= not setup_rdy;
+							ctlr_req <= not ctlr_rdy;
 							state := s_rqst;
 						end if;
 						dev_addr  <= (others => '0');
@@ -242,15 +242,76 @@ begin
 					when s_rqst =>
 						if pending='1' then
 							if sof_tick='1' then
-								setup_req <= not setup_rdy;
+								ctlr_req <= not ctlr_rdy;
 							end if;
-						elsif (setup_req xor setup_rdy)='0' then
+						elsif (ctlr_req xor ctlr_rdy)='0' then
+							bmRequestType <=  x"00";
+							bRequest      <=  x"05";
+							wValue        <=  x"000a";
+							wIndex        <=  x"0000";
+							wLength       <=  x"0000";
+							ctlr_req <= not ctlr_rdy;
+							state := s_idle;
+						end if;
+					when s_idle =>
+						if pending='1' then
+							if sof_tick='1' then
+								ctlr_req <= not ctlr_rdy;
+							end if;
+						elsif (ctlr_req xor ctlr_rdy)='0' then
 						end if;
 					end case;
 				else
 					init_rdy <= init_req;
 					tkstall_rdy <= tkstall_req;
 					state := s_start;
+				end if;
+			end if;
+		end if;
+	end process;
+
+	setup_p : process (clk)
+		type sequence is (s_setaddress, s_getdescriptor, s_setconfiguration);
+		variable seq : sequence;
+		constant addr : std_logic_vector := x"000a";
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (setup_req xor setup_rdy)='1' then
+    				if pending='1' then
+    					if sof_tick='1' then
+    						ctlr_req <= not ctlr_rdy;
+    					end if;
+    				elsif (ctlr_req xor ctlr_rdy)='0' then
+    					case seq is
+    					when s_setaddress =>
+    						bmRequestType <= x"00";
+    						bRequest      <= x"05";
+    						wValue        <= addr;
+    						wIndex        <= x"0000";
+    						wLength       <= x"0000";
+    					when s_getdescriptor =>
+    						bmRequestType <= x"80";
+    						bRequest      <= x"06";
+    						wValue        <= addr;
+    						wIndex        <= x"0000";
+    						wLength       <= x"ffff";
+    					when s_setconfiguration =>
+    						bmRequestType <= x"00";
+    						bRequest      <= x"09";
+    						wValue        <= x"0100";
+    						wIndex        <= x"0000";
+    						wLength       <= x"0000";
+    					end case;
+    					if seq /= sequence'right then
+    						seq := seq'succ;
+    						ctlr_req <= not ctlr_rdy;
+    					else
+    						setup_rdy <= setup_req;
+    					end if;
+    				end if;
+				else
+    				seq := s_setaddress;
 				end if;
 			end if;
 		end if;
@@ -358,7 +419,7 @@ begin
 		end if;
 	end process;
 
-	setup_p : process (setup_rdy, clk)
+	ctlr_p : process (ctlr_rdy, clk)
 		type states is (s_idle, s_setup, s_in, s_statusin, s_statusout);
 		variable state   : states;
 	begin
@@ -367,7 +428,7 @@ begin
 				if (tkstall_req xor tkstall_rdy)='0' then
 					case state is
 					when s_idle =>
-						if (setup_rdy xor setup_req)='1' then
+						if (ctlr_rdy xor ctlr_req)='1' then
 							if pending='1' then
 								pending <= '0';
 								state   := s_setup;
@@ -395,7 +456,7 @@ begin
 								if (tknak_rdy xor tknak_req)='1' then
 									pending   <= '1';
 									tknak_rdy <= tknak_req;
-									setup_rdy  <= setup_req;
+									ctlr_rdy  <= ctlr_req;
 									state     := s_idle;
 								elsif (rply_rdy xor rply_req)='1' then
 									tkin_req <= not tkin_rdy;
@@ -407,7 +468,7 @@ begin
 						end if;
 					when s_statusin =>
 						if (tkout_req xor tkout_rdy)='0' then
-							setup_rdy <= setup_req;
+							ctlr_rdy <= ctlr_req;
 							state    := s_idle;
 						end if;
 					when s_statusout =>
@@ -415,16 +476,16 @@ begin
 							if (tknak_rdy xor tknak_req)='1' then
 								pending   <= '1';
 								tknak_rdy <= tknak_req;
-								setup_rdy  <= setup_req;
+								ctlr_rdy  <= ctlr_req;
 								state     := s_idle;
 							else
-								setup_rdy <= setup_req;
+								ctlr_rdy <= ctlr_req;
 								state    := s_idle;
 							end if;
 						end if;
 					end case;
 				else
-					setup_rdy <= setup_req;
+					ctlr_rdy <= ctlr_req;
 					state    := s_idle;
 				end if;
 			end if;
