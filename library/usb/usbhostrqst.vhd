@@ -213,7 +213,7 @@ begin
 	   				when s_start =>
 						if (init_rdy xor init_req)='1' then
 							tkstall_rdy <= tkstall_req;
-							if timer < 0  then
+							if timer < 0 then
 								flush_req <= not flush_rdy;
 								phy_rst <= '0';
 								state   := s_reseted;
@@ -233,13 +233,11 @@ begin
 						dev_addr  <= (others => '0');
 						dev_addr  <= (others => '0');
 						dev_endp  <= (others => '0');
-						rqst_rgtr <= x"ffff" & x"0000" & x"0100" & x"06" & x"80"; --(x"80", x"06", x"0100", x"0000", x"ffff");
-
-						-- bmRequestType <=  x"80";
-						-- bRequest      <=  x"06";
-						-- wValue        <=  x"0100";
-						-- wIndex        <=  x"0000";
-						-- wLength       <=  x"ffff";
+						bmRequestType <=  x"80";
+						bRequest      <=  x"06";
+						wValue        <=  x"0100";
+						wIndex        <=  x"0000";
+						wLength       <=  x"ffff";
 
 					when s_rqst =>
 						if pending='1' then
