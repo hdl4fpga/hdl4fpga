@@ -248,7 +248,7 @@ begin
 	setup_p : process (clk)
 		type sequence is (s_setaddress, s_getdescriptor, s_setconfiguration);
 		variable seq : sequence;
-		constant addr : std_logic_vector := x"000a";
+		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
