@@ -38,7 +38,7 @@ entity usbhostrqst is
 		init_rdy    : buffer std_logic := '0';
 		flush_req   : buffer  std_logic := '0';
 		flush_rdy   : in std_logic := '0';
-		phy_rst     : out std_logic;
+		phy_rst     : buffer std_logic;
 
 		dev_addr    : out std_logic_vector(7-1 downto 0);
 		dev_endp    : out std_logic_vector(11-1 downto 7);
@@ -191,80 +191,55 @@ architecture def of usbhostrqst is
 
 	signal rqst_req  : bit;
 	signal rqst_rdy  : bit;
-	signal ctlr_req : bit;
-	signal ctlr_rdy : bit;
+	signal ctlr_req  : bit;
+	signal ctlr_rdy  : bit;
 	signal rply_req  : bit;
 	signal rply_rdy  : bit;
+	signal setup_req : bit;
+	signal setup_rdy : bit;
 				
 	signal pending   : std_logic;
 
 begin
 
 	init_p : process (cken, clk)
-		type states is (s_start, s_reseted, s_rqst, s_idle);
+		type states is (s_init, s_setup);
 		variable state : states;
-		constant n : natural := 11;
-		variable timer : integer range -1 to 2**n-1;
+		variable timer : integer range -1 to 2**6-1;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (tkstall_rdy xor tkstall_req)='0' then
-					case state is
-	   				when s_start =>
-						if (init_rdy xor init_req)='1' then
-							tkstall_rdy <= tkstall_req;
+					if (init_rdy xor init_req)='1' then
+						case state is
+						when s_init =>
 							if timer < 0 then
-								flush_req <= not flush_rdy;
 								phy_rst <= '0';
-								state   := s_reseted;
+								if (flush_req xor flush_rdy)='0' then
+									setup_req <= not setup_rdy;
+									state     := s_setup;
+								end if;
 							elsif sof_tick='1' then
+								if phy_rst='0' then
+									flush_req <= not flush_rdy;
+								end if;
 								phy_rst <= '1';
 								timer   := timer - 1;
 							end if;
-						else
-							phy_rst <= '0';
-							timer   := 63;
-						end if;
-					when s_reseted =>
-						if (flush_req xor flush_rdy)='0' then
-							ctlr_req <= not ctlr_rdy;
-							state := s_rqst;
-						end if;
-						dev_addr  <= (others => '0');
-						dev_addr  <= (others => '0');
-						dev_endp  <= (others => '0');
-						bmRequestType <=  x"80";
-						bRequest      <=  x"06";
-						wValue        <=  x"0100";
-						wIndex        <=  x"0000";
-						wLength       <=  x"ffff";
-
-					when s_rqst =>
-						if pending='1' then
-							if sof_tick='1' then
-								ctlr_req <= not ctlr_rdy;
+						when s_setup =>
+							if (setup_req xor setup_rdy)='0' then
+								init_rdy <= init_req;
 							end if;
-						elsif (ctlr_req xor ctlr_rdy)='0' then
-							bmRequestType <=  x"00";
-							bRequest      <=  x"05";
-							wValue        <=  x"000a";
-							wIndex        <=  x"0000";
-							wLength       <=  x"0000";
-							ctlr_req <= not ctlr_rdy;
-							state := s_idle;
-						end if;
-					when s_idle =>
-						if pending='1' then
-							if sof_tick='1' then
-								ctlr_req <= not ctlr_rdy;
-							end if;
-						elsif (ctlr_req xor ctlr_rdy)='0' then
-						end if;
-					end case;
+						end case;
+					else
+						phy_rst <= '0';
+						timer   := 63;
+						state   := s_init;
+					end if;
 				else
-					init_rdy <= init_req;
+					init_rdy    <= init_req;
 					tkstall_rdy <= tkstall_req;
-					state := s_start;
+					state       := s_init;
 				end if;
 			end if;
 		end if;
@@ -283,20 +258,25 @@ begin
     						ctlr_req <= not ctlr_rdy;
     					end if;
     				elsif (ctlr_req xor ctlr_rdy)='0' then
+						dev_addr  <= (others => '0');
+						dev_endp  <= (others => '0');
     					case seq is
     					when s_setaddress =>
+							dev_addr      <= (others => '0');
     						bmRequestType <= x"00";
     						bRequest      <= x"05";
     						wValue        <= addr;
     						wIndex        <= x"0000";
     						wLength       <= x"0000";
     					when s_getdescriptor =>
+							dev_addr      <= addr(dev_addr'range);
     						bmRequestType <= x"80";
     						bRequest      <= x"06";
     						wValue        <= addr;
     						wIndex        <= x"0000";
     						wLength       <= x"ffff";
     					when s_setconfiguration =>
+							dev_addr      <= addr(dev_addr'range);
     						bmRequestType <= x"00";
     						bRequest      <= x"09";
     						wValue        <= x"0100";
@@ -304,7 +284,7 @@ begin
     						wLength       <= x"0000";
     					end case;
     					if seq /= sequence'right then
-    						seq := seq'succ;
+    						seq := sequence'succ(seq);
     						ctlr_req <= not ctlr_rdy;
     					else
     						setup_rdy <= setup_req;
