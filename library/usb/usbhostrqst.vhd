@@ -67,11 +67,12 @@ entity usbhostrqst is
 end;
 
 architecture def of usbhostrqst is
-	signal bmRequestType : std_logic_vector( 8-1 downto 0) := x"80";
-	signal bRequest      : std_logic_vector( 8-1 downto 0) := x"06";
-	signal wValue        : std_logic_vector(16-1 downto 0) := x"0100";
-	signal wIndex        : std_logic_vector(16-1 downto 0) := x"0000";
-	signal wLength       : std_logic_vector(16-1 downto 0) := x"ffff";
+	signal rqst_rgtr     : std_logic_vector(64-1 downto 0);
+	alias  bmRequestType : std_logic_vector( 8-1 downto 0) is rqst_rgtr( 8-1 downto  0);
+	alias  bRequest      : std_logic_vector( 8-1 downto 0) is rqst_rgtr(16-1 downto  8);
+	alias  wValue        : std_logic_vector(16-1 downto 0) is rqst_rgtr(32-1 downto 16);
+	alias  wIndex        : std_logic_vector(16-1 downto 0) is rqst_rgtr(48-1 downto 32);
+	alias  wLength       : std_logic_vector(16-1 downto 0) is rqst_rgtr(64-1 downto 48);
 
 	constant test : string := segment_map(
 		"["&
@@ -188,29 +189,19 @@ architecture def of usbhostrqst is
 			"}"           & 
 		"]");
 
-	constant table_length : natural := hdo(test)**".length";
-	constant test1  : string := hdo(test)**".table";
-	constant table  : string := segment_table(test1);
-	constant bitrom : string := hdo(table)**".content";
-	signal segment_id        : unsigned(0 to hdo(table)**".address"-1) := (others => '0');
-
-	signal rqst_req   : bit;
-	signal rqst_rdy   : bit;
+	signal rqst_req  : bit;
+	signal rqst_rdy  : bit;
 	signal setup_req : bit;
 	signal setup_rdy : bit;
-	signal rply_req : bit;
-	signal rply_rdy : bit;
+	signal rply_req  : bit;
+	signal rply_rdy  : bit;
 				
-	signal addr_val        : std_logic_vector(16-1 downto 0);
-	signal bLength         : std_logic_vector( 8-1 downto 0);
-	signal bDescriptorType : std_logic_vector( 8-1 downto 0);
-	signal wTotalLength    : std_logic_vector(16-1 downto 0);
-	signal pending         : std_logic;
+	signal pending   : std_logic;
 
 begin
 
 	init_p : process (cken, clk)
-		type states is (s_idle, s_flush, s_rqst);
+		type states is (s_start, s_reseted, s_rqst);
 		variable state : states;
 		constant n : natural := 11;
 		variable timer : integer range -1 to 2**n-1;
@@ -219,67 +210,49 @@ begin
 			if cken='1' then
 				if (tkstall_rdy xor tkstall_req)='0' then
 					case state is
-	   				when s_idle =>
+	   				when s_start =>
 						if (init_rdy xor init_req)='1' then
-							timer       := 63;
 							tkstall_rdy <= tkstall_req;
-							flush_req   <= not flush_rdy;
-							phy_rst     <= '1';
-							state       := s_flush;
-						end if;
-					when s_flush =>
-						dev_addr   <= (others => '0');
-						dev_addr   <= (others => '0');
-						dev_endp   <= (others => '0');
-						segment_id <= (others => '0');
-						addr_val   <= x"000a";
-						if timer < 0 then
-							if (flush_req xor flush_rdy)='0' then
-								phy_rst   <= '0';
-								setup_req  <= not setup_rdy;
-								timer     := 2**n-1;
-								state     := s_rqst;
+							if timer < 0  then
+								flush_req <= not flush_rdy;
+								phy_rst <= '0';
+								state   := s_reseted;
+							elsif sof_tick='1' then
+								phy_rst <= '1';
+								timer   := timer - 1;
 							end if;
-						elsif sof_tick='1' then
-							timer := timer - 1;
+						else
+							phy_rst <= '0';
+							timer   := 63;
 						end if;
+					when s_reseted =>
+						if (flush_req xor flush_rdy)='0' then
+							setup_req <= not setup_rdy;
+							state := s_rqst;
+						end if;
+						dev_addr  <= (others => '0');
+						dev_addr  <= (others => '0');
+						dev_endp  <= (others => '0');
+						rqst_rgtr <= x"ffff" & x"0000" & x"0100" & x"06" & x"80"; --(x"80", x"06", x"0100", x"0000", x"ffff");
+
+						-- bmRequestType <=  x"80";
+						-- bRequest      <=  x"06";
+						-- wValue        <=  x"0100";
+						-- wIndex        <=  x"0000";
+						-- wLength       <=  x"ffff";
+
 					when s_rqst =>
 						if pending='1' then
 							if sof_tick='1' then
 								setup_req <= not setup_rdy;
 							end if;
 						elsif (setup_req xor setup_rdy)='0' then
-							if segment_id < table_length-1 then
-								if segment_id >= 5 and timer >= 0 then
-									if sof_tick='1' then
-										timer := timer - 1;
-									end if;
-								else
-									if segment_id=10 then
-										addr_val <= std_logic_vector(unsigned(addr_val) + 1);
-									end if;
-									segment_id <= segment_id + 1;
-									timer      := 2**n-1;
-									setup_req   <= not setup_rdy;
-								end if;
-							else
-								init_rdy <= init_req;
-								state     := s_idle;
-							end if;
-						elsif segment_id=2 then
-							dev_addr <= addr_val(dev_addr'range);
-						elsif segment_id=10 then
-							dev_addr <= (others => '0');
-						elsif segment_id=11 then
-							dev_addr <= (others => '0');
-						elsif segment_id=12 then
-							dev_addr <= addr_val(dev_addr'range);
 						end if;
 					end case;
 				else
 					init_rdy <= init_req;
 					tkstall_rdy <= tkstall_req;
-					state := s_idle;
+					state := s_start;
 				end if;
 			end if;
 		end if;
@@ -343,7 +316,7 @@ begin
 		variable bLength         : unsigned( 8-1 downto 0);
 		variable bDescriptorType : unsigned( 8-1 downto 0);
 		variable wTotalLength    : unsigned(16-1 downto 0);
-		variable cntr            : natural range 0 to 32;
+		variable cntr            : natural range 0 to 512*8;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -362,13 +335,17 @@ begin
 									wTotalLength :=  wTotalLength ror 1;
 								end if;
 							end if;
-							cntr := cntr + 1;
+							if cntr < 512*8 then 
+								cntr := cntr + 1;
+							end if;
 						end if;
 					end if;
 					if cntr >=16 then
 						if bDescriptorType=unsigned(config) then
 							if cntr >= 32 then
 								if cntr/8 >= wTotalLength then
+									rply_rdy <= rply_req;
+								elsif cntr >= 512*8 then 
 									rply_rdy <= rply_req;
 								end if;
 							end if;
