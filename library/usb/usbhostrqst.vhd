@@ -246,8 +246,8 @@ begin
 	end process;
 
 	setup_p : process (clk)
-		type sequence is (s_setaddress, s_getdescriptor, s_setconfiguration);
-		variable seq : sequence;
+		type steps is (s_setaddress, s_getdescriptor, s_setconfiguration, s_stop);
+		variable step : steps;
 		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
 	begin
 		if rising_edge(clk) then
@@ -260,7 +260,7 @@ begin
     				elsif (ctlr_req xor ctlr_rdy)='0' then
 						dev_addr  <= (others => '0');
 						dev_endp  <= (others => '0');
-    					case seq is
+    					case step is
     					when s_setaddress =>
 							dev_addr      <= (others => '0');
     						bmRequestType <= x"00";
@@ -268,6 +268,8 @@ begin
     						wValue        <= addr;
     						wIndex        <= x"0000";
     						wLength       <= x"0000";
+							ctlr_req <= not ctlr_rdy;
+							step := s_getdescriptor;
     					when s_getdescriptor =>
 							dev_addr      <= addr(dev_addr'range);
     						bmRequestType <= x"80";
@@ -275,23 +277,24 @@ begin
     						wValue        <= x"0200";
     						wIndex        <= x"0000";
     						wLength       <= x"ffff";
+							ctlr_req <= not ctlr_rdy;
+							step := s_setconfiguration;
     					when s_setconfiguration =>
 							dev_addr      <= addr(dev_addr'range);
     						bmRequestType <= x"00";
     						bRequest      <= x"09";
-    						wValue        <= x"0100";
+    						wValue        <= x"0001";
     						wIndex        <= x"0000";
     						wLength       <= x"0000";
-    					end case;
-    					if seq /= sequence'right then
-    						seq := sequence'succ(seq);
-    						ctlr_req <= not ctlr_rdy;
-    					else
+							ctlr_req <= not ctlr_rdy;
+							step := s_stop;
+						when s_stop =>
     						setup_rdy <= setup_req;
-    					end if;
+							step := s_setaddress;
+    					end case;
     				end if;
 				else
-    				seq := s_setaddress;
+    				step := s_setaddress;
 				end if;
 			end if;
 		end if;
