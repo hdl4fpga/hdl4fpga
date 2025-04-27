@@ -245,15 +245,8 @@ begin
 		end if;
 	end process;
 
-			","           &
-			","           &
-			","           &
-			","           &
-			","           &
-
 	hub_p : process (clk)
-		type steps is (s_getdescriptor, s_setconfiguration, s_stop);
-		variable step : steps;
+		variable step : natural range 0 to 5;
 		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
 	begin
 		if rising_edge(clk) then
@@ -261,71 +254,53 @@ begin
 				if (setup_req xor setup_rdy)='1' then
     				if pending='1' then
     					if sof_tick='1' then
-    						ctlr_req <= not ctlr_rdy;
+    						-- ctlr_req <= not ctlr_rdy;
     					end if;
     				elsif (ctlr_req xor ctlr_rdy)='0' then
 						dev_addr  <= (others => '0');
 						dev_endp  <= (others => '0');
     					case step is
-    					when s_getdescriptor =>
+    					when 0 =>
 							dev_addr      <= addr(dev_addr'range);
     						bmRequestType <= x"a0";
     						bRequest      <= x"06";
     						wValue        <= x"2900";
     						wIndex        <= x"0000";
     						wLength       <= x"ffff";
-							ctlr_req <= not ctlr_rdy;
-							step := s_setconfiguration;
-    					when s_setfeature =>
+							-- ctlr_req <= not ctlr_rdy;
+    					when 1 =>
 							dev_addr      <= addr(dev_addr'range);
     						bmRequestType <= x"23";
     						bRequest      <= x"03";
     						wValue        <= x"0004";
-    						wIndex        <= x"0100";
+    						wIndex        <= x"0001";
     						wLength       <= x"ffff";
-							ctlr_req <= not ctlr_rdy;
-    					when s_setconfiguration =>
-			"{content:0x" & -- Hexadecimal format
-				"23"      & -- Device to Host
-				"03"      & -- GET_DESCRIPTOR
-				"08"      & -- Descriptor index 
-				"00"      & -- Descriptor type -> DEVICE
-				"0100"    & -- Offset 
-				"0000"    & -- Length 64 bytes
-			"}"           & 
-							step := s_stop;
-    					when s_setconfiguration =>
-			"{content:0x" & -- Hexadecimal format
-				"23"      & -- Device to Host
-				"03"      & -- GET_DESCRIPTOR
-				"04"      & -- Descriptor index 
-				"00"      & -- Descriptor type -> DEVICE
-				"0100"    & -- Offset 
-				"0000"    & -- Length 64 bytes
-			"}"           & 
-    					when s_setconfiguration =>
-			"{content:0x" & -- Hexadecimal format
-				"a0"      & -- Device to Host
-				"00"      & 
-				"0000"    &
-				"0000"    & -- Offset 
-				"0400"    & -- Length 64 bytes
-			"}"           & 
-    					when s_setconfiguration =>
-			"{content:0x" & -- Hexadecimal format
-				"a3"      & -- Device to Host
-				"00"      & 
-				"0000"    &
-				"0100"    & -- Offset 
-				"0400"    & -- Length 64 bytes
-			"}"           & 
-						when s_stop =>
-    						setup_rdy <= setup_req;
-							step := s_setaddress;
+							-- ctlr_req <= not ctlr_rdy;
+    					when 2 =>
+							dev_addr      <= addr(dev_addr'range);
+							bmRequestType <= x"23";
+							bRequest      <= x"03";
+							wValue        <= x"0008";
+							wIndex        <= x"0001";
+							wLength       <= x"0000";
+    					when 3 =>
+							dev_addr      <= addr(dev_addr'range);
+							bmRequestType <= x"23";
+							bRequest      <= x"03";
+							wValue        <= x"0004";
+							wIndex        <= x"0001";
+							wLength       <= x"0000";
+    					when 4 =>
+							bmRequestType <= x"a0";
+							bRequest      <= x"00";
+							wValue        <= x"0000";
+							wIndex        <= x"0000";
+							wLength       <= x"0004";
+    					when 5 =>
+    						-- setup_rdy <= setup_req;
     					end case;
     				end if;
 				else
-    				step := s_setaddress;
 				end if;
 			end if;
 		end if;
