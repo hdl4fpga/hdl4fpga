@@ -67,8 +67,8 @@ entity usbhostrqst is
 end;
 
 architecture def of usbhostrqst is
-	signal hub_rgtr   : std_logic_vector(64-1 downto 0);
-	signal setup_rgtr : std_logic_vector(64-1 downto 0);
+	signal hub_rgtr   : std_logic_vector(11+64-1 downto 0);
+	signal setup_rgtr : std_logic_vector(11+64-1 downto 0);
 
 	constant test : string := segment_map(
 		"["&
@@ -249,6 +249,8 @@ begin
     	alias  wValue        : std_logic_vector(16-1 downto 0) is hub_rgtr(32-1 downto 16);
     	alias  wIndex        : std_logic_vector(16-1 downto 0) is hub_rgtr(48-1 downto 32);
     	alias  wLength       : std_logic_vector(16-1 downto 0) is hub_rgtr(64-1 downto 48);
+    	alias  dev_addr      : std_logic_vector( 7-1 downto 0) is hub_rgtr( 7+64-1 downto 0+64);
+    	alias  dev_endp      : std_logic_vector(11-1 downto 7) is hub_rgtr(11+64-1 downto 7+64);
 
 		variable step : natural range 0 to 5;
 		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
@@ -312,6 +314,8 @@ begin
     	alias  wValue        : std_logic_vector(16-1 downto 0) is setup_rgtr(32-1 downto 16);
     	alias  wIndex        : std_logic_vector(16-1 downto 0) is setup_rgtr(48-1 downto 32);
     	alias  wLength       : std_logic_vector(16-1 downto 0) is setup_rgtr(64-1 downto 48);
+    	alias  dev_addr      : std_logic_vector( 7-1 downto 0) is setup_rgtr( 7+64-1 downto 0+64);
+    	alias  dev_endp      : std_logic_vector(11-1 downto 7) is setup_rgtr(11+64-1 downto 7+64);
 		type steps is (s_setaddress, s_getdescriptor, s_setconfiguration, s_stop);
 		variable step : steps;
 		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
@@ -449,12 +453,14 @@ begin
 	end process;
 
 	ctlr_b : block
-		signal ctlr_rgtr     : std_logic_vector(64-1 downto 0);
+		signal ctlr_rgtr     : std_logic_vector(11+64-1 downto 0);
     	alias  bmRequestType : std_logic_vector( 8-1 downto 0) is ctlr_rgtr( 8-1 downto  0);
     	alias  bRequest      : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
     	alias  wValue        : std_logic_vector(16-1 downto 0) is ctlr_rgtr(32-1 downto 16);
     	alias  wIndex        : std_logic_vector(16-1 downto 0) is ctlr_rgtr(48-1 downto 32);
     	alias  wLength       : std_logic_vector(16-1 downto 0) is ctlr_rgtr(64-1 downto 48);
+    	alias  addr          : std_logic_vector( 7-1 downto 0) is ctlr_rgtr( 7+64-1 downto 0+64);
+    	alias  endp          : std_logic_vector(11-1 downto 7) is ctlr_rgtr(11+64-1 downto 7+64);
 	begin
 
     	ctlrarbiter_b : block
@@ -514,6 +520,8 @@ begin
     		end process;
     	end block;
 
+		dev_addr <= addr;
+		dev_endp <= endp;
     	ctlr_p : process (ctlr_rdy, clk)
     		type states is (s_idle, s_setup, s_in, s_statusin, s_statusout);
     		variable state   : states;
@@ -588,6 +596,7 @@ begin
     	end process;
 
     	request_p : process (clk)
+			alias rqst is ctlr_rgtr(64-1 downto 0);
     		variable cntr : unsigned(0 to 3+3);
     	begin
     		if rising_edge(clk) then
@@ -595,7 +604,7 @@ begin
     				if (rqst_rdy xor rqst_req)='1' then
     					if cntr(0)='0' then
     						if txbs='0' then
-    							txd  <= multiplex(reverse(wLength & wIndex & wValue & bRequest & bmRequestType), std_logic_vector(cntr));
+    							txd  <= multiplex(reverse(rqst), std_logic_vector(cntr));
     							cntr := cntr + 1;
     						end if;
     					else
