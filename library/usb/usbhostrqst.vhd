@@ -263,11 +263,8 @@ begin
     						ctlr_req <= not ctlr_rdy;
     					end if;
     				elsif (ctlr_req xor ctlr_rdy)='0' then
-						dev_addr  <= (others => '0');
-						dev_endp  <= (others => '0');
     					case step is
     					when 0 =>
-							dev_addr      <= addr(dev_addr'range);
     						bmRequestType <= x"a0";
     						bRequest      <= x"06";
     						wValue        <= x"2900";
@@ -275,7 +272,6 @@ begin
     						wLength       <= x"ffff";
 							ctlr_req <= not ctlr_rdy;
     					when 1 =>
-							dev_addr      <= addr(dev_addr'range);
     						bmRequestType <= x"23";
     						bRequest      <= x"03";
     						wValue        <= x"0004";
@@ -283,14 +279,12 @@ begin
     						wLength       <= x"ffff";
 							ctlr_req <= not ctlr_rdy;
     					when 2 =>
-							dev_addr      <= addr(dev_addr'range);
 							bmRequestType <= x"23";
 							bRequest      <= x"03";
 							wValue        <= x"0008";
 							wIndex        <= x"0001";
 							wLength       <= x"0000";
     					when 3 =>
-							dev_addr      <= addr(dev_addr'range);
 							bmRequestType <= x"23";
 							bRequest      <= x"03";
 							wValue        <= x"0004";
@@ -487,7 +481,8 @@ begin
     			di(0*ctlr_rgtr'length to 1*ctlr_rgtr'length-1) => setup_rgtr,
     			di(1*ctlr_rgtr'length to 2*ctlr_rgtr'length-1) => hub_rgtr,
     			req  => ctlr_req,
-    			rdy  => ctlr_rdy);
+    			rdy  => ctlr_rdy,
+				do   => ctlr_rgtr);
     	begin
 
     		arbiter_p : process (clk)
@@ -502,7 +497,7 @@ begin
     						for i in reqs'range loop
     							if (rdys(i) xor reqs(i))='1' then
     								id  := i;
-    								do  <= di(i*n to i*n-1);
+    								do  <= di(i*m to (i+1)*m-1);
     								req <= not rdy;
     								state := s_req;
     								exit;
