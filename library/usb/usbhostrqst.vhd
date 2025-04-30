@@ -231,7 +231,7 @@ begin
 						end case;
 					else
 						phy_rst <= '0';
-						timer   := 63;
+						timer   := 0;
 						state   := s_init;
 					end if;
 				else
@@ -261,7 +261,7 @@ begin
 			if cken='1' then
 						dev_addr  <= (others => '0');
 						dev_endp  <= (others => '0');
-				if (setup_req xor setup_rdy)='1' then
+				if (setup_req xor setup_rdy)='1' and false then
     				if pending='1' then
     					if sof_tick='1' then
     						ctlr_req <= not ctlr_rdy;
