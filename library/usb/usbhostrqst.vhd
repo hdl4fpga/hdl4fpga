@@ -195,6 +195,8 @@ architecture def of usbhostrqst is
 	signal rply_rdy  : bit;
 	signal setup_req : bit;
 	signal setup_rdy : bit;
+	signal hub_req : bit;
+	signal hub_rdy : bit;
 				
 	signal pending   : bit;
 
@@ -262,7 +264,7 @@ begin
 			if cken='1' then
 						dev_addr  <= (others => '0');
 						dev_endp  <= (others => '0');
-				if (setup_req xor setup_rdy)='1' and false then
+				if (hub_req xor hub_rdy)='1' then
     				if pending='1' then
     					if sof_tick='1' then
     						ctlr_req <= not ctlr_rdy;
@@ -302,7 +304,7 @@ begin
 							wIndex        <= x"0000";
 							wLength       <= x"0004";
     					when 5 =>
-    						-- setup_rdy <= setup_req;
+    						-- hub_rdy <= hub_req;
     					end case;
     				end if;
 				else
