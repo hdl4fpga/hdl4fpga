@@ -67,8 +67,8 @@ entity usbhostrqst is
 end;
 
 architecture def of usbhostrqst is
-	signal hub_rgtr   : std_logic_vector(11+64-1 downto 0);
 	signal setup_rgtr : std_logic_vector(11+64-1 downto 0);
+	signal hub_rgtr   : std_logic_vector(11+64-1 downto 0);
 
 	constant test : string := segment_map(
 		"["&
@@ -187,16 +187,16 @@ architecture def of usbhostrqst is
 
 	signal rqst_req  : bit;
 	signal rqst_rdy  : bit;
-	signal ctlr_req  : std_ulogic;
-	signal ctlr_rdy  : std_ulogic;
-	signal ctlr_reqs : std_logic_vector(0 to 2-1);
-	signal ctlr_rdys : std_logic_vector(ctlr_reqs'range);
+	signal ctlr_req  : std_ulogic := '0';
+	signal ctlr_rdy  : std_ulogic := '0';
+	signal ctlr_reqs : std_logic_vector(0 to 2-1) := (others => '0');
+	signal ctlr_rdys : std_logic_vector(ctlr_reqs'range) := (others => '0');
 	signal rply_req  : bit;
 	signal rply_rdy  : bit;
 	signal setup_req : bit;
 	signal setup_rdy : bit;
 				
-	signal pending   : std_logic;
+	signal pending   : bit;
 
 begin
 
@@ -231,7 +231,7 @@ begin
 						end case;
 					else
 						phy_rst <= '0';
-						timer   := 63;
+						timer   := -1;
 						state   := s_init;
 					end if;
 				else
@@ -259,6 +259,8 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
+						dev_addr  <= (others => '0');
+						dev_endp  <= (others => '0');
 				if (setup_req xor setup_rdy)='1' then
     				if pending='1' then
     					if sof_tick='1' then
@@ -324,14 +326,14 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
+						dev_addr  <= (others => '0');
+						dev_endp  <= (others => '0');
 				if (setup_req xor setup_rdy)='1' then
     				if pending='1' then
     					if sof_tick='1' then
     						ctlr_req <= not ctlr_rdy;
     					end if;
     				elsif (ctlr_req xor ctlr_rdy)='0' then
-						dev_addr  <= (others => '0');
-						dev_endp  <= (others => '0');
     					case step is
     					when s_setaddress =>
 							dev_addr      <= (others => '0');
@@ -343,7 +345,7 @@ begin
 							ctlr_req <= not ctlr_rdy;
 							step := s_getdescriptor;
     					when s_getdescriptor =>
-							dev_addr      <= addr(dev_addr'range);
+							-- dev_addr      <= addr(dev_addr'range);
     						bmRequestType <= x"80";
     						bRequest      <= x"06";
     						wValue        <= x"0200";
@@ -352,7 +354,7 @@ begin
 							ctlr_req <= not ctlr_rdy;
 							step := s_setconfiguration;
     					when s_setconfiguration =>
-							dev_addr      <= addr(dev_addr'range);
+							-- dev_addr      <= addr(dev_addr'range);
     						bmRequestType <= x"00";
     						bRequest      <= x"09";
     						wValue        <= x"0001";
@@ -474,7 +476,7 @@ begin
     			clk  : in std_ulogic;
     			ena  : in std_ulogic := '1';
     			reqs : in std_logic_vector(0 to n-1);
-    			rdys : buffer std_logic_vector(0 to n-1);
+    			rdys : buffer std_logic_vector(0 to n-1) := (others => '0');
     			di   : in std_logic_vector(0 to n*m-1);
     			req  : buffer std_ulogic;
     			rdy  : in std_ulogic;
@@ -537,9 +539,9 @@ begin
     								state   := s_setup;
     							else
     								tksetup_req <= not tksetup_rdy;
-    								rqst_req    <= not rqst_rdy;
-    								pending     <= '0';
-    								state       := s_setup;
+    								rqst_req <= not rqst_rdy;
+    								pending  <= '0';
+    								state    := s_setup;
     							end if;
     						end if;
     					when s_setup =>
