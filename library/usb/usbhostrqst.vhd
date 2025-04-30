@@ -231,7 +231,7 @@ begin
 						end case;
 					else
 						phy_rst <= '0';
-						timer   := -1;
+						timer   := 63;
 						state   := s_init;
 					end if;
 				else
