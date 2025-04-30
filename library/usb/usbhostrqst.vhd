@@ -231,7 +231,8 @@ begin
 						end case;
 					else
 						phy_rst <= '0';
-						timer   := 0;
+						-- timer   := 0;
+						timer   := 63;
 						state   := s_init;
 					end if;
 				else
@@ -326,8 +327,6 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-						dev_addr  <= (others => '0');
-						dev_endp  <= (others => '0');
 				if (setup_req xor setup_rdy)='1' then
     				if pending='1' then
     					if sof_tick='1' then
@@ -345,7 +344,7 @@ begin
 							ctlr_req <= not ctlr_rdy;
 							step := s_getdescriptor;
     					when s_getdescriptor =>
-							-- dev_addr      <= addr(dev_addr'range);
+							dev_addr      <= addr(dev_addr'range);
     						bmRequestType <= x"80";
     						bRequest      <= x"06";
     						wValue        <= x"0200";
@@ -354,7 +353,7 @@ begin
 							ctlr_req <= not ctlr_rdy;
 							step := s_setconfiguration;
     					when s_setconfiguration =>
-							-- dev_addr      <= addr(dev_addr'range);
+							dev_addr      <= addr(dev_addr'range);
     						bmRequestType <= x"00";
     						bRequest      <= x"09";
     						wValue        <= x"0001";
@@ -368,6 +367,8 @@ begin
     					end case;
     				end if;
 				else
+					dev_addr <= (others => '0');
+					dev_endp <= (others => '0');
     				step := s_setaddress;
 				end if;
 			end if;
