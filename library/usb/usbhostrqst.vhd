@@ -247,13 +247,13 @@ begin
 	end process;
 
 	hub_p : process (clk)
-		alias  bmRequestType : std_logic_vector( 8-1 downto 0) is hub_rgtr( 8-1 downto  0);
-		alias  bRequest      : std_logic_vector( 8-1 downto 0) is hub_rgtr(16-1 downto  8);
-		alias  wValue        : std_logic_vector(16-1 downto 0) is hub_rgtr(32-1 downto 16);
-		alias  wIndex        : std_logic_vector(16-1 downto 0) is hub_rgtr(48-1 downto 32);
-		alias  wLength       : std_logic_vector(16-1 downto 0) is hub_rgtr(64-1 downto 48);
-		alias  dev_addr      : std_logic_vector( 7-1 downto 0) is hub_rgtr( 7+64-1 downto 0+64);
-		alias  dev_endp      : std_logic_vector(11-1 downto 7) is hub_rgtr(11+64-1 downto 7+64);
+    	alias  bmRequestType : std_logic_vector( 8-1 downto 0) is hub_rgtr( 8-1 downto  0);
+    	alias  bRequest      : std_logic_vector( 8-1 downto 0) is hub_rgtr(16-1 downto  8);
+    	alias  wValue        : std_logic_vector(16-1 downto 0) is hub_rgtr(32-1 downto 16);
+    	alias  wIndex        : std_logic_vector(16-1 downto 0) is hub_rgtr(48-1 downto 32);
+    	alias  wLength       : std_logic_vector(16-1 downto 0) is hub_rgtr(64-1 downto 48);
+    	alias  dev_addr      : std_logic_vector( 7-1 downto 0) is hub_rgtr( 7+64-1 downto 0+64);
+    	alias  dev_endp      : std_logic_vector(11-1 downto 7) is hub_rgtr(11+64-1 downto 7+64);
 
 		variable step : natural range 0 to 5;
 		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
@@ -265,80 +265,62 @@ begin
 				dev_addr  <= (others => '0');
 				dev_endp  <= (others => '0');
 				if (hub_req xor hub_rdy)='1' then
-					if pending='1' then
-						if sof_tick='1' then
+    				if pending='1' then
+    					if sof_tick='1' then
+    						ctlr_req <= not ctlr_rdy;
+    					end if;
+    				elsif (ctlr_req xor ctlr_rdy)='0' then
+    					case step is
+    					when 0 =>
+    						bmRequestType <= x"a0";
+    						bRequest      <= x"06";
+    						wValue        <= x"2900";
+    						wIndex        <= x"0000";
+    						wLength       <= x"ffff";
 							ctlr_req <= not ctlr_rdy;
-						end if;
-					elsif (ctlr_req xor ctlr_rdy)='0' then
-						case step is
-						when 0 =>
-							bmRequestType <= x"a0";
-							bRequest      <= x"06";
-							wValue        <= x"2900";
-							wIndex        <= x"0000";
-							wLength       <= x"ffff";
+    					when 1 =>
+    						bmRequestType <= x"23";
+    						bRequest      <= x"03";
+    						wValue        <= x"0004";
+    						wIndex        <= x"0001";
+    						wLength       <= x"ffff";
 							ctlr_req <= not ctlr_rdy;
-						when 1 =>
-							bmRequestType <= x"23";
-							bRequest      <= x"03";
-							wValue        <= x"0004";
-							wIndex        <= x"0001";
-							wLength       <= x"ffff";
-							ctlr_req <= not ctlr_rdy;
-						when 2 =>
+    					when 2 =>
 							bmRequestType <= x"23";
 							bRequest      <= x"03";
 							wValue        <= x"0008";
 							wIndex        <= x"0001";
 							wLength       <= x"0000";
-						when 3 =>
+    					when 3 =>
 							bmRequestType <= x"23";
 							bRequest      <= x"03";
 							wValue        <= x"0004";
 							wIndex        <= x"0001";
 							wLength       <= x"0000";
-						when 4 =>
+    					when 4 =>
 							bmRequestType <= x"a0";
 							bRequest      <= x"00";
 							wValue        <= x"0000";
 							wIndex        <= x"0000";
 							wLength       <= x"0004";
-						when 5 =>
-							-- hub_rdy <= hub_req;
-						end case;
-					end if;
+    					when 5 =>
+    						-- hub_rdy <= hub_req;
+    					end case;
+    				end if;
 				else
 				end if;
 			end if;
 		end if;
 	end process;
 	
-	-- setup_b : block
-	-- begin
-		-- devmux_e : entity hdl4fpga.devmux
-		-- generic map (
-			-- n => ctlr_reqs'length,
-			-- m => ctlr_rgtr'length)
-		-- port map (
-			-- clk  => clk,
-			-- ena  => cken,
-			-- reqs => ctlr_reqs,
-			-- rdys => ctlr_rdys,
-			-- di(0*ctlr_rgtr'length to 1*ctlr_rgtr'length-1) => setup_rgtr,
-			-- di(1*ctlr_rgtr'length to 2*ctlr_rgtr'length-1) => hub_rgtr,
-			-- req  => ctlr_req,
-			-- rdy  => ctlr_rdy,
-			-- do   => ctlr_rgtr);
-	-- end block;
-
 	setup_p : process (clk)
-		alias  bmRequestType : std_logic_vector( 8-1 downto 0) is setup_rgtr( 8-1 downto  0);
-		alias  bRequest      : std_logic_vector( 8-1 downto 0) is setup_rgtr(16-1 downto  8);
-		alias  wValue        : std_logic_vector(16-1 downto 0) is setup_rgtr(32-1 downto 16);
-		alias  wIndex        : std_logic_vector(16-1 downto 0) is setup_rgtr(48-1 downto 32);
-		alias  wLength       : std_logic_vector(16-1 downto 0) is setup_rgtr(64-1 downto 48);
-		alias  dev_addr      : std_logic_vector( 7-1 downto 0) is setup_rgtr( 7+64-1 downto 0+64);
-		alias  dev_endp      : std_logic_vector(11-1 downto 7) is setup_rgtr(11+64-1 downto 7+64);
+    	alias  bmRequestType : std_logic_vector( 8-1 downto 0) is setup_rgtr( 8-1 downto  0);
+    	alias  bRequest      : std_logic_vector( 8-1 downto 0) is setup_rgtr(16-1 downto  8);
+    	alias  wValue        : std_logic_vector(16-1 downto 0) is setup_rgtr(32-1 downto 16);
+    	alias  wIndex        : std_logic_vector(16-1 downto 0) is setup_rgtr(48-1 downto 32);
+    	alias  wLength       : std_logic_vector(16-1 downto 0) is setup_rgtr(64-1 downto 48);
+    	alias  dev_addr      : std_logic_vector( 7-1 downto 0) is setup_rgtr( 7+64-1 downto 0+64);
+    	alias  dev_endp      : std_logic_vector(11-1 downto 7) is setup_rgtr(11+64-1 downto 7+64);
 		type steps is (s_setaddress, s_getdescriptor, s_setconfiguration, s_stop);
 		variable step : steps;
 		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
@@ -348,48 +330,48 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (setup_req xor setup_rdy)='1' then
-					if pending='1' then
-						if sof_tick='1' then
-							ctlr_req <= not ctlr_rdy;
-						end if;
-					elsif (ctlr_req xor ctlr_rdy)='0' then
-						case step is
-						when s_setaddress =>
+    				if pending='1' then
+    					if sof_tick='1' then
+    						ctlr_req <= not ctlr_rdy;
+    					end if;
+    				elsif (ctlr_req xor ctlr_rdy)='0' then
+    					case step is
+    					when s_setaddress =>
 							dev_addr      <= (others => '0');
-							bmRequestType <= x"00";
-							bRequest      <= x"05";
-							wValue        <= addr;
-							wIndex        <= x"0000";
-							wLength       <= x"0000";
+    						bmRequestType <= x"00";
+    						bRequest      <= x"05";
+    						wValue        <= addr;
+    						wIndex        <= x"0000";
+    						wLength       <= x"0000";
 							ctlr_req <= not ctlr_rdy;
 							step := s_getdescriptor;
-						when s_getdescriptor =>
+    					when s_getdescriptor =>
 							dev_addr      <= addr(dev_addr'range);
-							bmRequestType <= x"80";
-							bRequest      <= x"06";
-							wValue        <= x"0200";
-							wIndex        <= x"0000";
-							wLength       <= x"ffff";
+    						bmRequestType <= x"80";
+    						bRequest      <= x"06";
+    						wValue        <= x"0200";
+    						wIndex        <= x"0000";
+    						wLength       <= x"ffff";
 							ctlr_req <= not ctlr_rdy;
 							step := s_setconfiguration;
-						when s_setconfiguration =>
+    					when s_setconfiguration =>
 							dev_addr      <= addr(dev_addr'range);
-							bmRequestType <= x"00";
-							bRequest      <= x"09";
-							wValue        <= x"0001";
-							wIndex        <= x"0000";
-							wLength       <= x"0000";
+    						bmRequestType <= x"00";
+    						bRequest      <= x"09";
+    						wValue        <= x"0001";
+    						wIndex        <= x"0000";
+    						wLength       <= x"0000";
 							ctlr_req <= not ctlr_rdy;
 							step := s_stop;
 						when s_stop =>
-							setup_rdy <= setup_req;
+    						setup_rdy <= setup_req;
 							step := s_setaddress;
-						end case;
-					end if;
+    					end case;
+    				end if;
 				else
 					dev_addr <= (others => '0');
 					dev_endp <= (others => '0');
-					step := s_setaddress;
+    				step := s_setaddress;
 				end if;
 			end if;
 		end if;
@@ -477,16 +459,16 @@ begin
 
 	ctlr_b : block
 		signal ctlr_rgtr     : std_logic_vector(11+64-1 downto 0);
-		alias  bmRequestType : std_logic_vector( 8-1 downto 0) is ctlr_rgtr( 8-1 downto  0);
-		alias  bRequest      : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
-		alias  wValue        : std_logic_vector(16-1 downto 0) is ctlr_rgtr(32-1 downto 16);
-		alias  wIndex        : std_logic_vector(16-1 downto 0) is ctlr_rgtr(48-1 downto 32);
-		alias  wLength       : std_logic_vector(16-1 downto 0) is ctlr_rgtr(64-1 downto 48);
-		alias  addr          : std_logic_vector( 7-1 downto 0) is ctlr_rgtr( 7+64-1 downto 0+64);
-		alias  endp          : std_logic_vector(11-1 downto 7) is ctlr_rgtr(11+64-1 downto 7+64);
+    	alias  bmRequestType : std_logic_vector( 8-1 downto 0) is ctlr_rgtr( 8-1 downto  0);
+    	alias  bRequest      : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
+    	alias  wValue        : std_logic_vector(16-1 downto 0) is ctlr_rgtr(32-1 downto 16);
+    	alias  wIndex        : std_logic_vector(16-1 downto 0) is ctlr_rgtr(48-1 downto 32);
+    	alias  wLength       : std_logic_vector(16-1 downto 0) is ctlr_rgtr(64-1 downto 48);
+    	alias  addr          : std_logic_vector( 7-1 downto 0) is ctlr_rgtr( 7+64-1 downto 0+64);
+    	alias  endp          : std_logic_vector(11-1 downto 7) is ctlr_rgtr(11+64-1 downto 7+64);
 	begin
 
-		devmux_e : entity hdl4fpga.devmux
+    	devmux_e : entity hdl4fpga.devmux
    		generic map (
    			n => ctlr_reqs'length,
    			m => ctlr_rgtr'length)
@@ -503,101 +485,101 @@ begin
 
 		dev_addr <= addr;
 		dev_endp <= endp;
-		ctlr_p : process (ctlr_rdy, clk)
-			type states is (s_idle, s_setup, s_in, s_statusin, s_statusout);
-			variable state   : states;
-		begin
-			if rising_edge(clk) then
-				if cken='1' then
-					if (tkstall_req xor tkstall_rdy)='0' then
-						case state is
-						when s_idle =>
-							if (ctlr_rdy xor ctlr_req)='1' then
-								if pending='1' then
-									pending <= '0';
-									state   := s_setup;
-								else
-									tksetup_req <= not tksetup_rdy;
-									rqst_req <= not rqst_rdy;
-									pending  <= '0';
-									state    := s_setup;
-								end if;
-							end if;
-						when s_setup =>
-							if (rqst_req xor rqst_rdy)='0' then
-								rply_req <= not rply_rdy;
-								if bmRequestType(bmRequestType'left)='1' then
-									tkin_req <= not tkin_rdy;
-									state    := s_in;
-								else
-									tkin_req <= not tkin_rdy;
-									state    := s_statusout;
-								end if;
-							end if;
-						when s_in =>
-							if (tkin_req xor tkin_rdy)='0' then
-								if rxdv='0' then
-									if (tknak_rdy xor tknak_req)='1' then
-										pending   <= '1';
-										tknak_rdy <= tknak_req;
-										ctlr_rdy  <= ctlr_req;
-										state     := s_idle;
-									elsif (rply_rdy xor rply_req)='1' then
-										tkin_req <= not tkin_rdy;
-									else
-										tkout_req <= not tkout_rdy;
-										state     := s_statusin;
-									end if;
-								end if;
-							end if;
-						when s_statusin =>
-							if (tkout_req xor tkout_rdy)='0' then
-								ctlr_rdy <= ctlr_req;
-								state    := s_idle;
-							end if;
-						when s_statusout =>
-							if (tkin_req xor tkin_rdy)='0' then
-								if (tknak_rdy xor tknak_req)='1' then
-									pending   <= '1';
-									tknak_rdy <= tknak_req;
-									ctlr_rdy  <= ctlr_req;
-									state     := s_idle;
-								else
-									ctlr_rdy <= ctlr_req;
-									state    := s_idle;
-								end if;
-							end if;
-						end case;
-					else
-						ctlr_rdy <= ctlr_req;
-						state    := s_idle;
-					end if;
-				end if;
-			end if;
-		end process;
+    	ctlr_p : process (ctlr_rdy, clk)
+    		type states is (s_idle, s_setup, s_in, s_statusin, s_statusout);
+    		variable state   : states;
+    	begin
+    		if rising_edge(clk) then
+    			if cken='1' then
+    				if (tkstall_req xor tkstall_rdy)='0' then
+    					case state is
+    					when s_idle =>
+    						if (ctlr_rdy xor ctlr_req)='1' then
+    							if pending='1' then
+    								pending <= '0';
+    								state   := s_setup;
+    							else
+    								tksetup_req <= not tksetup_rdy;
+    								rqst_req <= not rqst_rdy;
+    								pending  <= '0';
+    								state    := s_setup;
+    							end if;
+    						end if;
+    					when s_setup =>
+    						if (rqst_req xor rqst_rdy)='0' then
+    							rply_req <= not rply_rdy;
+    							if bmRequestType(bmRequestType'left)='1' then
+    								tkin_req <= not tkin_rdy;
+    								state    := s_in;
+    							else
+    								tkin_req <= not tkin_rdy;
+    								state    := s_statusout;
+    							end if;
+    						end if;
+    					when s_in =>
+    						if (tkin_req xor tkin_rdy)='0' then
+    							if rxdv='0' then
+    								if (tknak_rdy xor tknak_req)='1' then
+    									pending   <= '1';
+    									tknak_rdy <= tknak_req;
+    									ctlr_rdy  <= ctlr_req;
+    									state     := s_idle;
+    								elsif (rply_rdy xor rply_req)='1' then
+    									tkin_req <= not tkin_rdy;
+    								else
+    									tkout_req <= not tkout_rdy;
+    									state     := s_statusin;
+    								end if;
+    							end if;
+    						end if;
+    					when s_statusin =>
+    						if (tkout_req xor tkout_rdy)='0' then
+    							ctlr_rdy <= ctlr_req;
+    							state    := s_idle;
+    						end if;
+    					when s_statusout =>
+    						if (tkin_req xor tkin_rdy)='0' then
+    							if (tknak_rdy xor tknak_req)='1' then
+    								pending   <= '1';
+    								tknak_rdy <= tknak_req;
+    								ctlr_rdy  <= ctlr_req;
+    								state     := s_idle;
+    							else
+    								ctlr_rdy <= ctlr_req;
+    								state    := s_idle;
+    							end if;
+    						end if;
+    					end case;
+    				else
+    					ctlr_rdy <= ctlr_req;
+    					state    := s_idle;
+    				end if;
+    			end if;
+    		end if;
+    	end process;
 
-		request_p : process (clk)
+    	request_p : process (clk)
 			alias rqst is ctlr_rgtr(64-1 downto 0);
-			variable cntr : unsigned(0 to 3+3);
-		begin
-			if rising_edge(clk) then
-				if cken='1' then
-					if (rqst_rdy xor rqst_req)='1' then
-						if cntr(0)='0' then
-							if txbs='0' then
-								txd  <= multiplex(reverse(rqst), std_logic_vector(cntr));
-								cntr := cntr + 1;
-							end if;
-						else
-							rqst_rdy <= rqst_req;
-						end if;
-					else
-						cntr := (others => '0');
-					end if;
-					txen <= to_stdulogic(rqst_rdy xor rqst_req);
-				end if;
-			end if;
-		end process;
+    		variable cntr : unsigned(0 to 3+3);
+    	begin
+    		if rising_edge(clk) then
+    			if cken='1' then
+    				if (rqst_rdy xor rqst_req)='1' then
+    					if cntr(0)='0' then
+    						if txbs='0' then
+    							txd  <= multiplex(reverse(rqst), std_logic_vector(cntr));
+    							cntr := cntr + 1;
+    						end if;
+    					else
+    						rqst_rdy <= rqst_req;
+    					end if;
+    				else
+    					cntr := (others => '0');
+    				end if;
+    				txen <= to_stdulogic(rqst_rdy xor rqst_req);
+    			end if;
+    		end if;
+    	end process;
 	end block;
 
 end;
