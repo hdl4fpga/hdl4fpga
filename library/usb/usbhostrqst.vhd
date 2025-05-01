@@ -346,12 +346,12 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (setup_req xor setup_rdy)='1' then
-					if pending='1' then
-						if sof_tick='1' then
-							ctlr_req <= not ctlr_rdy;
-						end if;
-					elsif (ctlr_req xor ctlr_rdy)='0' then
+				if pending='1' then
+					if sof_tick='1' then
+						ctlr_req <= not ctlr_rdy;
+					end if;
+				elsif (setup_req xor setup_rdy)='1' then
+					if (ctlr_req xor ctlr_rdy)='0' then
 						case step is
 						when s_setaddress =>
 							dev_addr      <= (others => '0');
@@ -380,9 +380,9 @@ begin
 							wLength       <= x"0000";
 							ctlr_req <= not ctlr_rdy;
 							step := s_idle;
-						when s_idle =>
 							setup_rdy <= setup_req;
 							step := s_setaddress;
+						when s_idle =>
 						end case;
 					end if;
 				else
