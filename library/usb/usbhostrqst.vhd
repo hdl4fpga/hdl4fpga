@@ -338,7 +338,7 @@ begin
 		alias  wLength       : std_logic_vector(16-1 downto 0) is setup_rgtr(64-1 downto 48);
 		alias  dev_addr      : std_logic_vector( 7-1 downto 0) is setup_rgtr( 7+64-1 downto 0+64);
 		alias  dev_endp      : std_logic_vector(11-1 downto 7) is setup_rgtr(11+64-1 downto 7+64);
-		type steps is (s_setaddress, s_getdescriptor, s_setconfiguration, s_stop);
+		type steps is (s_setaddress, s_getdescriptor, s_setconfiguration, s_idle);
 		variable step : steps;
 		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
 		alias ctlr_req is ctlr_reqs(0);
@@ -379,8 +379,8 @@ begin
 							wIndex        <= x"0000";
 							wLength       <= x"0000";
 							ctlr_req <= not ctlr_rdy;
-							step := s_stop;
-						when s_stop =>
+							step := s_idle;
+						when s_idle =>
 							setup_rdy <= setup_req;
 							step := s_setaddress;
 						end case;
