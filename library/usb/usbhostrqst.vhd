@@ -360,7 +360,6 @@ begin
 							wValue        <= addr;
 							wIndex        <= x"0000";
 							wLength       <= x"0000";
-							ctlr_req <= not ctlr_rdy;
 							step := s_getdescriptor;
 						when s_getdescriptor =>
 							dev_addr      <= addr(dev_addr'range);
@@ -369,7 +368,6 @@ begin
 							wValue        <= x"0200";
 							wIndex        <= x"0000";
 							wLength       <= x"ffff";
-							ctlr_req <= not ctlr_rdy;
 							step := s_setconfiguration;
 						when s_setconfiguration =>
 							dev_addr      <= addr(dev_addr'range);
@@ -378,16 +376,12 @@ begin
 							wValue        <= x"0001";
 							wIndex        <= x"0000";
 							wLength       <= x"0000";
-							ctlr_req <= not ctlr_rdy;
-							step := s_idle;
 							setup_rdy <= setup_req;
 							step := s_setaddress;
-						when s_idle =>
 						end case;
+						ctlr_req <= not ctlr_rdy;
 					end if;
 				else
-					dev_addr <= (others => '0');
-					dev_endp <= (others => '0');
 					step := s_setaddress;
 				end if;
 			end if;

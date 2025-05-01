@@ -31,6 +31,7 @@ entity devmux is
 		ena  : in std_ulogic := '1';
 		reqs : in std_logic_vector(0 to n-1);
 		rdys : buffer std_logic_vector(0 to n-1) := (others => '0');
+		gntd : out  std_logic_vector(0 to n-1);
 		di   : in std_logic_vector(0 to n*m-1) := (others => '-');
 		req  : buffer std_ulogic;
 		rdy  : in std_ulogic;
@@ -48,9 +49,11 @@ begin
 			if ena='1' then
 				case state is
 				when s_rdy =>
+					gntd <= (others => '0');
 					for i in reqs'range loop
 						if (rdys(i) xor reqs(i))='1' then
 							id  <= i;
+							gntd(i) <= '1';
 							req <= not rdy;
 							state := s_req;
 							exit;
