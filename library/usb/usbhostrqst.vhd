@@ -191,6 +191,7 @@ architecture def of usbhostrqst is
 	signal ctlr_rdy   : std_ulogic := '0';
 	signal ctlr_reqs  : std_logic_vector(0 to 2-1) := (others => '0');
 	signal ctlr_rdys  : std_logic_vector(ctlr_reqs'range) := (others => '0');
+	signal ctlr_gntd  : std_logic_vector(ctlr_reqs'range);
 	signal rply_req   : std_ulogic;
 	signal rply_rdy   : std_ulogic;
 	signal setup_req  : std_ulogic;
@@ -463,7 +464,6 @@ begin
 	end process;
 
 	ctlr_b : block
-		signal ctlr_gntd     : std_logic_vector(ctlr_reqs'range);
 		signal ctlr_rgtr     : std_logic_vector(11+64-1 downto 0);
 		alias  bmRequestType : std_logic_vector( 8-1 downto 0) is ctlr_rgtr( 8-1 downto  0);
 		alias  bRequest      : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
