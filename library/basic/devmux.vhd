@@ -61,6 +61,7 @@ begin
 					end loop;
 				when s_req =>
 					if (req xor rdy)='0' then
+						gntd <= (others => '0');
 						rdys(id) <= reqs(id);
 						state    := s_rdy;
 					end if;

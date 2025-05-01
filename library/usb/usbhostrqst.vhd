@@ -67,8 +67,8 @@ entity usbhostrqst is
 end;
 
 architecture def of usbhostrqst is
-	signal setup_rgtr : std_logic_vector(11+64-1 downto 0);
-	signal hub_rgtr   : std_logic_vector(11+64-1 downto 0);
+	signal setup_rgtr : std_logic_vector(11+64 downto 0);
+	signal hub_rgtr   : std_logic_vector(11+64 downto 0);
 
 	constant test : string := segment_map(
 		"["&
@@ -191,7 +191,7 @@ architecture def of usbhostrqst is
 	signal ctlr_rdy   : std_ulogic := '0';
 	signal ctlr_reqs  : std_logic_vector(0 to 2-1) := (others => '0');
 	signal ctlr_rdys  : std_logic_vector(ctlr_reqs'range) := (others => '0');
-	signal ctlr_gntd  : std_logic_vector(ctlr_reqs'range);
+	signal ctlr_gntds : std_logic_vector(ctlr_reqs'range);
 	signal rply_req   : std_ulogic;
 	signal rply_rdy   : std_ulogic;
 	signal setup_req  : std_ulogic;
@@ -201,7 +201,7 @@ architecture def of usbhostrqst is
 	signal hub_req    : std_ulogic;
 	signal hub_rdy    : std_ulogic;
 				
-	signal pending    : std_ulogic := '0';
+	signal ctlr_nak   : std_ulogic := '0';
 
 begin
 
@@ -259,6 +259,7 @@ begin
 		alias  wLength       : std_logic_vector(16-1 downto 0) is hub_rgtr(64-1 downto 48);
 		alias  dev_addr      : std_logic_vector( 7-1 downto 0) is hub_rgtr( 7+64-1 downto 0+64);
 		alias  dev_endp      : std_logic_vector(11-1 downto 7) is hub_rgtr(11+64-1 downto 7+64);
+		alias  pending       : std_ulogic is hub_rgtr(11+64);
 
 		type steps is (s_getdescriptor, s_portpower, s_portreset, s_getstatus);
 		variable step : steps;
@@ -267,6 +268,7 @@ begin
 		alias setup_rdy is setup_rdys(1);
 		alias ctlr_req  is ctlr_reqs(1);
 		alias ctlr_rdy  is ctlr_rdys(1);
+		alias ctlr_gntd is ctlr_gntds(1);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -333,11 +335,14 @@ begin
 		alias  wLength       : std_logic_vector(16-1 downto 0) is setup_rgtr(64-1 downto 48);
 		alias  dev_addr      : std_logic_vector( 7-1 downto 0) is setup_rgtr( 7+64-1 downto 0+64);
 		alias  dev_endp      : std_logic_vector(11-1 downto 7) is setup_rgtr(11+64-1 downto 7+64);
+		alias  pending       : std_ulogic is setup_rgtr(11+64);
+
 		type steps is (s_setaddress, s_getdescriptor, s_setconfiguration);
 		variable step : steps;
 		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
-		alias ctlr_req is ctlr_reqs(0);
-		alias ctlr_rdy is ctlr_rdys(0);
+		alias ctlr_req  is ctlr_reqs(0);
+		alias ctlr_rdy  is ctlr_rdys(0);
+		alias ctlr_gntd is ctlr_gntds(0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -378,6 +383,9 @@ begin
 					end if;
 				else
 					step := s_setaddress;
+				end if;
+				if ctlr_gntd='1' then
+					pending <= ctlr_nak;
 				end if;
 			end if;
 		end if;
@@ -464,7 +472,7 @@ begin
 	end process;
 
 	ctlr_b : block
-		signal ctlr_rgtr     : std_logic_vector(11+64-1 downto 0);
+		signal ctlr_rgtr     : std_logic_vector(11+64 downto 0);
 		alias  bmRequestType : std_logic_vector( 8-1 downto 0) is ctlr_rgtr( 8-1 downto  0);
 		alias  bRequest      : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
 		alias  wValue        : std_logic_vector(16-1 downto 0) is ctlr_rgtr(32-1 downto 16);
@@ -472,6 +480,7 @@ begin
 		alias  wLength       : std_logic_vector(16-1 downto 0) is ctlr_rgtr(64-1 downto 48);
 		alias  addr          : std_logic_vector( 7-1 downto 0) is ctlr_rgtr( 7+64-1 downto 0+64);
 		alias  endp          : std_logic_vector(11-1 downto 7) is ctlr_rgtr(11+64-1 downto 7+64);
+		alias  pending       : std_ulogic is ctlr_rgtr(11+64);
 	begin
 
 		devmux_e : entity hdl4fpga.devmux
@@ -487,14 +496,14 @@ begin
 			di(1*ctlr_rgtr'length to 2*ctlr_rgtr'length-1) => hub_rgtr,
 			req  => ctlr_req,
 			rdy  => ctlr_rdy,
-			gntd => ctlr_gntd,
+			gntd => ctlr_gntds,
 			do   => ctlr_rgtr);
 
 		dev_addr <= addr;
 		dev_endp <= endp;
 		ctlr_p : process (ctlr_rdy, clk)
 			type states is (s_idle, s_setup, s_in, s_statusin, s_statusout);
-			variable state   : states;
+			variable state : states;
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
@@ -503,12 +512,11 @@ begin
 						when s_idle =>
 							if (ctlr_rdy xor ctlr_req)='1' then
 								if pending='1' then
-									pending <= '0';
+									ctlr_nak <= '0';
 									state   := s_setup;
 								else
 									tksetup_req <= not tksetup_rdy;
 									rqst_req <= not rqst_rdy;
-									pending  <= '0';
 									state    := s_setup;
 								end if;
 							end if;
@@ -527,7 +535,7 @@ begin
 							if (tkin_req xor tkin_rdy)='0' then
 								if rxdv='0' then
 									if (tknak_rdy xor tknak_req)='1' then
-										pending   <= '1';
+										ctlr_nak  <= '1';
 										tknak_rdy <= tknak_req;
 										ctlr_rdy  <= ctlr_req;
 										state     := s_idle;
@@ -547,7 +555,7 @@ begin
 						when s_statusout =>
 							if (tkin_req xor tkin_rdy)='0' then
 								if (tknak_rdy xor tknak_req)='1' then
-									pending   <= '1';
+									ctlr_nak  <= '1';
 									tknak_rdy <= tknak_req;
 									ctlr_rdy  <= ctlr_req;
 									state     := s_idle;
