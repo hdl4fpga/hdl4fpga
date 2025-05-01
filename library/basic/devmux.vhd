@@ -25,13 +25,13 @@ use ieee.std_logic_1164.all;
 entity devmux is
 	generic (
 		n    : natural;
-		m    : natural);
+		m    : natural := 1);
 	port (
 		clk  : in std_ulogic;
 		ena  : in std_ulogic := '1';
 		reqs : in std_logic_vector(0 to n-1);
 		rdys : buffer std_logic_vector(0 to n-1) := (others => '0');
-		di   : in std_logic_vector(0 to n*m-1);
+		di   : in std_logic_vector(0 to n*m-1) := (others => '-');
 		req  : buffer std_ulogic;
 		rdy  : in std_ulogic;
 		do   : out std_logic_vector(0 to m-1));
