@@ -259,61 +259,55 @@ begin
 		alias  dev_addr      : std_logic_vector( 7-1 downto 0) is hub_rgtr( 7+64-1 downto 0+64);
 		alias  dev_endp      : std_logic_vector(11-1 downto 7) is hub_rgtr(11+64-1 downto 7+64);
 
-		variable step : natural range 0 to 5;
+		type steps is (s_getdescriptor, s_portpower, s_portreset, s_getstatus);
+		variable step : steps;
 		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
 		alias setup_req is setup_reqs(1);
 		alias setup_rdy is setup_rdys(1);
-		alias ctlr_req is ctlr_reqs(1);
-		alias ctlr_rdy is ctlr_rdys(1);
+		alias ctlr_req  is ctlr_reqs(1);
+		alias ctlr_rdy  is ctlr_rdys(1);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				dev_addr  <= (others => '0');
 				dev_endp  <= (others => '0');
-				if (hub_req xor hub_rdy)='1' then
-					if pending='1' then
-						if sof_tick='1' then
-							ctlr_req <= not ctlr_rdy;
-						end if;
-					elsif (ctlr_req xor ctlr_rdy)='0' then
+				if pending='1' then
+					if sof_tick='1' then
+						ctlr_req <= not ctlr_rdy;
+					end if;
+				elsif (hub_req xor hub_rdy)='1' then
+					if (ctlr_req xor ctlr_rdy)='0' then
 						case step is
-						when 0 =>
+						when s_getdescriptor =>
 							bmRequestType <= x"a0";
 							bRequest      <= x"06";
 							wValue        <= x"2900";
 							wIndex        <= x"0000";
 							wLength       <= x"ffff";
-							ctlr_req <= not ctlr_rdy;
-						when 1 =>
-							bmRequestType <= x"23";
-							bRequest      <= x"03";
-							wValue        <= x"0004";
-							wIndex        <= x"0001";
-							wLength       <= x"ffff";
-							ctlr_req <= not ctlr_rdy;
-						when 2 =>
+							step := s_portpower;
+						when s_portpower =>
 							bmRequestType <= x"23";
 							bRequest      <= x"03";
 							wValue        <= x"0008";
 							wIndex        <= x"0001";
 							wLength       <= x"0000";
-						when 3 =>
+							step := s_portreset;
+						when s_portreset =>
 							bmRequestType <= x"23";
 							bRequest      <= x"03";
 							wValue        <= x"0004";
 							wIndex        <= x"0001";
 							wLength       <= x"0000";
-						when 4 =>
+							step := s_getstatus;
+						when s_getstatus =>
 							bmRequestType <= x"a0";
 							bRequest      <= x"00";
 							wValue        <= x"0000";
 							wIndex        <= x"0000";
 							wLength       <= x"0004";
-						when 5 =>
-							-- hub_rdy <= hub_req;
 						end case;
+						ctlr_req <= not ctlr_rdy;
 					end if;
-				else
 				end if;
 			end if;
 		end if;
@@ -338,7 +332,7 @@ begin
 		alias  wLength       : std_logic_vector(16-1 downto 0) is setup_rgtr(64-1 downto 48);
 		alias  dev_addr      : std_logic_vector( 7-1 downto 0) is setup_rgtr( 7+64-1 downto 0+64);
 		alias  dev_endp      : std_logic_vector(11-1 downto 7) is setup_rgtr(11+64-1 downto 7+64);
-		type steps is (s_setaddress, s_getdescriptor, s_setconfiguration, s_idle);
+		type steps is (s_setaddress, s_getdescriptor, s_setconfiguration);
 		variable step : steps;
 		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
 		alias ctlr_req is ctlr_reqs(0);
@@ -469,6 +463,7 @@ begin
 	end process;
 
 	ctlr_b : block
+		signal ctlr_gntd     : std_logic_vector(ctlr_reqs'range);
 		signal ctlr_rgtr     : std_logic_vector(11+64-1 downto 0);
 		alias  bmRequestType : std_logic_vector( 8-1 downto 0) is ctlr_rgtr( 8-1 downto  0);
 		alias  bRequest      : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
@@ -492,6 +487,7 @@ begin
 			di(1*ctlr_rgtr'length to 2*ctlr_rgtr'length-1) => hub_rgtr,
 			req  => ctlr_req,
 			rdy  => ctlr_rdy,
+			gntd => ctlr_gntd,
 			do   => ctlr_rgtr);
 
 		dev_addr <= addr;
