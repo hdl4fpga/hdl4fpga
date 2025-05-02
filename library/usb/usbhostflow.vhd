@@ -21,7 +21,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_bit.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
@@ -63,8 +63,8 @@ entity usbhostflow is
 		tkin_rdy    : buffer std_logic := '0';
 		tkout_req   : in  std_logic;
 		tkout_rdy   : buffer std_logic := '0';
-		tknak_req   : buffer std_logic;
-		tknak_rdy   : in std_logic;
+		tknak_req   : buffer std_logic := '0';
+		tknak_rdy   : in std_logic := '0';
 		tkstall_req : buffer std_logic := '0';
 		tkstall_rdy : in  std_logic := '0';
 
@@ -89,14 +89,14 @@ architecture def of usbhostflow is
 
 	signal length      : std_logic_vector(16-1 downto 0);
 
-	signal in_req      : bit;
-	signal in_rdy      : bit;
-	signal out_req     : bit;
-	signal out_rdy     : bit;
-	signal acktx_rdy   : bit;
-	signal acktx_req   : bit;
-	signal ackrx_rdy   : bit;
-	signal ackrx_req   : bit;
+	signal in_req      : std_ulogic := '0';
+	signal in_rdy      : std_ulogic := '0';
+	signal out_req     : std_ulogic := '0';
+	signal out_rdy     : std_ulogic := '0';
+	signal acktx_rdy   : std_ulogic := '0';
+	signal acktx_req   : std_ulogic := '0';
+	signal ackrx_rdy   : std_ulogic := '0';
+	signal ackrx_req   : std_ulogic := '0';
 
 	signal buffer_txen : std_logic;
 	signal buffer_txbs : std_logic;
@@ -113,9 +113,9 @@ architecture def of usbhostflow is
 	signal ddatai      : std_logic_vector(data0'range);
 
 	signal rxerr       : std_logic;
-	signal sof_cntr    : unsigned(tkdata'range);
-	signal tksof_req   : bit;
-	signal tksof_rdy   : bit;
+	signal sof_cntr    : natural range 0 to 2**tkdata'length-1; --unsigned(tkdata'range);
+	signal tksof_req   : std_ulogic := '0';
+	signal tksof_rdy   : std_ulogic := '0';
 
 begin
 
@@ -127,9 +127,10 @@ begin
 			if cken='1' then
 				if timer < 0 then
 					timer     := max_count;
-					sof_cntr  <= sof_cntr + 1;
+					sof_cntr  <= (sof_cntr + 1) mod 2**tkdata'length;
 					sof_tick  <= '1';
 					tksof_req <= not tksof_rdy;
+					-- tksof_req <= tksof_rdy;
 				else
 					sof_tick  <= '0';
 					timer := timer - 1;
@@ -137,7 +138,7 @@ begin
 			end if;
 		end if;
 	end process;
-	sof_fmf <= to_stdlogicvector(bit_vector(sof_cntr));
+	sof_fmf <= std_logic_vector(to_unsigned(sof_cntr, sof_fmf'length));
 
 	hosttodev_p : process (tkin_rdy, clk)
 		type states is (s_start, s_out, s_ack, s_nak);
@@ -159,7 +160,8 @@ begin
 				elsif (tx_req xor tx_rdy)='0' then
 					if (tksof_rdy xor tksof_req)='1' then
 						txpid  <= tk_sof;
-						tkdata <= to_stdlogicvector(bit_vector(sof_cntr));
+						tkdata <= std_logic_vector(to_unsigned(sof_cntr, tkdata'length));
+						-- tkdata <= to_stdlogicvector(bit_vector(sof_cntr));
 						tksof_rdy <= tksof_req;
 						tx_req    <= not tx_rdy;
 						if tick_cntr(0)='0' then
@@ -248,10 +250,10 @@ begin
 			end if;
 		end if;
 	end process;
-	dev_acktx <= to_stdulogic(acktx_req xor acktx_rdy);
+	dev_acktx <= acktx_req xor acktx_rdy;
 
-	tp(1) <= to_stdulogic(ackrx_rdy);
-	tp(2) <= to_stdulogic(ackrx_req);
+	tp(1) <= ackrx_rdy;
+	tp(2) <= ackrx_req;
 	rxerr <= phyerr or tkerr or crcerr;
 
 	devtohost_p : process (cken, clk)
@@ -280,7 +282,7 @@ begin
 			end if;
 		end if;
 	end process;
-	dev_ackrx <= to_stdulogic(ackrx_req xor ackrx_rdy);
+	dev_ackrx <= ackrx_req xor ackrx_rdy;
 
 	txbuffer_p : process (acktx_rdy, clk)
 		variable mem  : std_logic_vector(0 to 64*8-1);
@@ -359,12 +361,12 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if rxbs='0' then
-					clpcrc_rxdv <= to_stdulogic(slr_rxdv(0) and to_bit(rxdv));
-					slr_rxdv(0) := to_bit(rxdv);
+					clpcrc_rxdv <= slr_rxdv(0) and rxdv;
+					slr_rxdv(0) := rxdv;
 					slr_rxdv := slr_rxdv rol 1;
 
-					clpcrc_rxd <= to_stdulogic(slr_rxd(0));
-					slr_rxd(0) := to_bit(rxd);
+					clpcrc_rxd <= slr_rxd(0);
+					slr_rxd(0) := rxd;
 					slr_rxd := slr_rxd rol 1;
 				end if;
 			end if;

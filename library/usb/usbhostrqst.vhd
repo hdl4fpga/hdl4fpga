@@ -31,159 +31,44 @@ use hdl4fpga.usbpkg.all;
 entity usbhostrqst is
 	port (
 		tp          : out std_logic_vector(1 to 32) := (others => '0');
-		clk         : in  std_logic;
-		cken        : in  std_logic;
+		clk         : in  std_ulogic;
+		cken        : in  std_ulogic;
 
-		init_req    : in  std_logic;
-		init_rdy    : buffer std_logic := '0';
-		flush_req   : buffer  std_logic := '0';
-		flush_rdy   : in std_logic := '0';
-		phy_rst     : buffer std_logic;
+		init_req    : in  std_ulogic;
+		init_rdy    : buffer std_ulogic := '0';
+		flush_req   : buffer  std_ulogic := '0';
+		flush_rdy   : in std_ulogic := '0';
+		phy_rst     : buffer std_ulogic;
 
 		dev_addr    : out std_logic_vector(7-1 downto 0);
 		dev_endp    : out std_logic_vector(11-1 downto 7);
-		dev_ackrx   : in  std_logic := '1';
-		dev_acktx   : in  std_logic := '1';
-		tksetup_req : buffer std_logic := '0';
-		tksetup_rdy : in  std_logic := '0';
-		tkstall_req : in  std_logic := '0';
-		tkstall_rdy : buffer std_logic := '0';
-		tknak_req   : in std_logic;
-		tknak_rdy   : buffer std_logic;
-		tkin_req    : buffer std_logic := '0';
-		tkin_rdy    : in  std_logic;
-		tkout_req   : buffer std_logic := '0';
-		tkout_rdy   : in  std_logic;
-		sof_tick    : in  std_logic;
+		dev_ackrx   : in  std_ulogic := '1';
+		dev_acktx   : in  std_ulogic := '1';
+		tksetup_req : buffer std_ulogic := '0';
+		tksetup_rdy : in  std_ulogic := '0';
+		tkstall_req : in  std_ulogic := '0';
+		tkstall_rdy : buffer std_ulogic := '0';
+		tknak_req   : in std_ulogic := '0';
+		tknak_rdy   : buffer std_ulogic := '0';
+		tkin_req    : buffer std_ulogic := '0';
+		tkin_rdy    : in  std_ulogic;
+		tkout_req   : buffer std_ulogic := '0';
+		tkout_rdy   : in  std_ulogic;
+		sof_tick    : in  std_ulogic;
 
-		rxdv        : in  std_logic := '-';
-		rxbs        : in  std_logic := '-';
-		rxd         : in  std_logic := '-';
+		rxdv        : in  std_ulogic := '-';
+		rxbs        : in  std_ulogic := '-';
+		rxd         : in  std_ulogic := '-';
 
-		txen        : out std_logic;
-		txbs        : in  std_logic;
-		txd         : out std_logic);
+		txen        : out std_ulogic;
+		txbs        : in  std_ulogic;
+		txd         : out std_ulogic);
 
 end;
 
 architecture def of usbhostrqst is
-	signal setup_rgtr : std_logic_vector(11+64 downto 0);
-	signal hub_rgtr   : std_logic_vector(11+64 downto 0);
-
-	constant test : string := segment_map(
-		"["&
-			"{content:0x" & -- Hexadecimal format
-				"80"      & -- Device to Host
-				"06"      & -- GET_DESCRIPTOR
-				"00"      & -- Descriptor index 
-				"01"      & -- Descriptor type -> DEVICE
-				"0000"    & -- Offset 
-				"ffff"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"00"      & -- Host to Device
-				"05"      & -- SET_ADDRESS
-				"----"    & -- Address
-				"0000"    & -- Offset 
-				"0000"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"80"      & -- Device to Host
-				"06"      & -- GET_DESCRIPTOR
-				"00"      & -- Descriptor index 
-				"02"      & -- Descriptor type -> CONFIGURATION
-				"0000"    & -- Offset 
-				"ffff"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- segment_id=2, addr=10
-				"00"      & -- Host to Device
-				"09"      & -- SET_CONFIGURATION
-				"0100"    & -- Configuration 1
-				"0000"    & -- Offset
-				"0000"    & -- Length 0 bytes
-			"}"           &
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"a0"      & -- Device to Host, Class 
-				"06"      & -- GET_DESCRIPTOR
-				"00"      & -- Descriptor index 
-				"29"      & -- Descriptor type -> HUB
-				"0000"    & -- Offset 
-				"ffff"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"23"      & -- Device to Host
-				"03"      & -- GET_DESCRIPTOR
-				"04"      & -- Descriptor index 
-				"00"      & -- Descriptor type -> DEVICE
-				"0100"    & -- Offset 
-				"0000"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"23"      & -- Device to Host
-				"03"      & -- GET_DESCRIPTOR
-				"08"      & -- Descriptor index 
-				"00"      & -- Descriptor type -> DEVICE
-				"0100"    & -- Offset 
-				"0000"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"23"      & -- Device to Host
-				"03"      & -- GET_DESCRIPTOR
-				"04"      & -- Descriptor index 
-				"00"      & -- Descriptor type -> DEVICE
-				"0100"    & -- Offset 
-				"0000"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"a0"      & -- Device to Host
-				"00"      & 
-				"0000"    &
-				"0000"    & -- Offset 
-				"0400"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"a3"      & -- Device to Host
-				"00"      & 
-				"0000"    &
-				"0100"    & -- Offset 
-				"0400"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"80"      & -- Device to Host
-				"06"      & -- GET_DESCRIPTOR
-				"00"      & -- Descriptor index 
-				"01"      & -- Descriptor type -> DEVICE
-				"0000"    & -- Offset 
-				"ffff"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"00"      & -- Host to Device
-				"05"      & -- SET_ADDRESS
-				"----"    & -- Address
-				"0000"    & -- Offset 
-				"0000"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"80"      & -- Device to Host
-				"06"      & -- GET_DESCRIPTOR
-				"00"      & -- Descriptor index 
-				"02"      & -- Descriptor type -> CONFIGURATION
-				"0000"    & -- Offset 
-				"ffff"    & -- Length 64 bytes
-			"}"           & 
-		"]");
+	signal setup_rgtr : std_logic_vector(11+64 downto 0) := (others => '0');
+	signal hub_rgtr   : std_logic_vector(11+64 downto 0) := (others => '0');
 
 	signal rqst_req   : std_ulogic := '0';
 	signal rqst_rdy   : std_ulogic := '0';
@@ -192,14 +77,14 @@ architecture def of usbhostrqst is
 	signal ctlr_reqs  : std_logic_vector(0 to 2-1) := (others => '0');
 	signal ctlr_rdys  : std_logic_vector(ctlr_reqs'range) := (others => '0');
 	signal ctlr_gntds : std_logic_vector(ctlr_reqs'range);
-	signal rply_req   : std_ulogic;
-	signal rply_rdy   : std_ulogic;
-	signal setup_req  : std_ulogic;
-	signal setup_rdy  : std_ulogic;
-	signal setup_reqs : std_logic_vector(0 to 2-1);
-	signal setup_rdys : std_logic_vector(0 to 2-1);
-	signal hub_req    : std_ulogic;
-	signal hub_rdy    : std_ulogic;
+	signal rply_req   : std_ulogic := '0';
+	signal rply_rdy   : std_ulogic := '0';
+	signal setup_req  : std_ulogic := '0';
+	signal setup_rdy  : std_ulogic := '0';
+	signal setup_reqs : std_logic_vector(0 to 2-1) := (others => '0');
+	signal setup_rdys : std_logic_vector(0 to 2-1) := (others => '0');
+	signal hub_req    : std_ulogic := '0';
+	signal hub_rdy    : std_ulogic := '0';
 				
 	signal ctlr_nak   : std_ulogic := '0';
 
@@ -233,12 +118,13 @@ begin
 							end if;
 						when s_setup =>
 							if (setup_req xor setup_rdy)='0' then
+								hub_req <= not hub_rdy;
 								init_rdy <= init_req;
 							end if;
 						end case;
 					else
 						phy_rst <= '0';
-						-- timer   := 0;
+						timer   := 0;
 						timer   := 63;
 						state   := s_init;
 					end if;
@@ -251,7 +137,7 @@ begin
 		end if;
 	end process;
 
-	hub_p : process (clk)
+	hub_p : process (clk, ctlr_gntds)
 		alias  bmRequestType : std_logic_vector( 8-1 downto 0) is hub_rgtr( 8-1 downto  0);
 		alias  bRequest      : std_logic_vector( 8-1 downto 0) is hub_rgtr(16-1 downto  8);
 		alias  wValue        : std_logic_vector(16-1 downto 0) is hub_rgtr(32-1 downto 16);
@@ -261,7 +147,7 @@ begin
 		alias  dev_endp      : std_logic_vector(11-1 downto 7) is hub_rgtr(11+64-1 downto 7+64);
 		alias  pending       : std_ulogic is hub_rgtr(11+64);
 
-		type steps is (s_getdescriptor, s_portpower, s_portreset, s_getstatus);
+		type steps is (s_getdescriptor, s_portpower, s_portreset, s_getstatus, s_ready);
 		variable step : steps;
 		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
 		alias setup_req is setup_reqs(1);
@@ -272,14 +158,14 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				dev_addr  <= (others => '0');
+				dev_addr  <= addr(dev_addr'range);
 				dev_endp  <= (others => '0');
-				if pending='1' then
-					if sof_tick='1' then
-						ctlr_req <= not ctlr_rdy;
-					end if;
-				elsif (hub_req xor hub_rdy)='1' then
-					if (ctlr_req xor ctlr_rdy)='0' then
+				if (hub_req xor hub_rdy)='1' then
+					if pending='1' then
+						if sof_tick='1' then
+							ctlr_req <= not ctlr_rdy;
+						end if;
+					elsif (ctlr_req xor ctlr_rdy)='0' then
 						case step is
 						when s_getdescriptor =>
 							bmRequestType <= x"a0";
@@ -287,6 +173,7 @@ begin
 							wValue        <= x"2900";
 							wIndex        <= x"0000";
 							wLength       <= x"ffff";
+							ctlr_req <= not ctlr_rdy;
 							step := s_portpower;
 						when s_portpower =>
 							bmRequestType <= x"23";
@@ -301,6 +188,7 @@ begin
 							wValue        <= x"0004";
 							wIndex        <= x"0001";
 							wLength       <= x"0000";
+							ctlr_req <= not ctlr_rdy;
 							step := s_getstatus;
 						when s_getstatus =>
 							bmRequestType <= x"a0";
@@ -308,9 +196,20 @@ begin
 							wValue        <= x"0000";
 							wIndex        <= x"0000";
 							wLength       <= x"0004";
+							ctlr_req <= not ctlr_rdy;
+							step := s_ready;
+						when s_ready =>
+							hub_rgtr <= (others => '-');
+							step := s_getdescriptor;
+							hub_rdy <= hub_req;
 						end case;
-						ctlr_req <= not ctlr_rdy;
 					end if;
+				else
+					hub_rgtr <= (others => '-');
+					step := s_getdescriptor;
+				end if;
+				if ctlr_gntd='1' then
+					pending <= ctlr_nak;
 				end if;
 			end if;
 		end if;
@@ -327,7 +226,7 @@ begin
 			req  => setup_req,
 			rdy  => setup_rdy);
 
-	setup_p : process (clk)
+	setup_p : process (clk, setup_rgtr)
 		alias  bmRequestType : std_logic_vector( 8-1 downto 0) is setup_rgtr( 8-1 downto  0);
 		alias  bRequest      : std_logic_vector( 8-1 downto 0) is setup_rgtr(16-1 downto  8);
 		alias  wValue        : std_logic_vector(16-1 downto 0) is setup_rgtr(32-1 downto 16);
@@ -337,7 +236,7 @@ begin
 		alias  dev_endp      : std_logic_vector(11-1 downto 7) is setup_rgtr(11+64-1 downto 7+64);
 		alias  pending       : std_ulogic is setup_rgtr(11+64);
 
-		type steps is (s_setaddress, s_getdescriptor, s_setconfiguration);
+		type steps is (s_setaddress, s_getdescriptor, s_setconfiguration, s_ready);
 		variable step : steps;
 		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
 		alias ctlr_req  is ctlr_reqs(0);
@@ -346,20 +245,22 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if pending='1' then
-					if sof_tick='1' then
-						ctlr_req <= not ctlr_rdy;
-					end if;
-				elsif (setup_req xor setup_rdy)='1' then
-					if (ctlr_req xor ctlr_rdy)='0' then
+				if (setup_req xor setup_rdy)='1' then
+					if pending='1' then
+						if sof_tick='1' then
+							ctlr_req <= not ctlr_rdy;
+						end if;
+					elsif (ctlr_req xor ctlr_rdy)='0' then
 						case step is
 						when s_setaddress =>
 							dev_addr      <= (others => '0');
+							dev_endp      <= (others => '0');
 							bmRequestType <= x"00";
 							bRequest      <= x"05";
 							wValue        <= addr;
 							wIndex        <= x"0000";
 							wLength       <= x"0000";
+							ctlr_req <= not ctlr_rdy;
 							step := s_getdescriptor;
 						when s_getdescriptor =>
 							dev_addr      <= addr(dev_addr'range);
@@ -368,6 +269,7 @@ begin
 							wValue        <= x"0200";
 							wIndex        <= x"0000";
 							wLength       <= x"ffff";
+							ctlr_req <= not ctlr_rdy;
 							step := s_setconfiguration;
 						when s_setconfiguration =>
 							dev_addr      <= addr(dev_addr'range);
@@ -376,12 +278,16 @@ begin
 							wValue        <= x"0001";
 							wIndex        <= x"0000";
 							wLength       <= x"0000";
+							ctlr_req <= not ctlr_rdy;
+							step := s_ready;
+						when s_ready =>
+							setup_rgtr <= (others => '-');
 							setup_rdy <= setup_req;
 							step := s_setaddress;
 						end case;
-						ctlr_req <= not ctlr_rdy;
 					end if;
 				else
+					setup_rgtr <= (others => '-');
 					step := s_setaddress;
 				end if;
 				if ctlr_gntd='1' then
@@ -504,6 +410,7 @@ begin
 		ctlr_p : process (ctlr_rdy, clk)
 			type states is (s_idle, s_setup, s_in, s_statusin, s_statusout);
 			variable state : states;
+			variable retries : natural range 0 to 8;
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
@@ -520,6 +427,7 @@ begin
 									state    := s_setup;
 								end if;
 							end if;
+							retries := 0;
 						when s_setup =>
 							if (rqst_req xor rqst_rdy)='0' then
 								rply_req <= not rply_rdy;
