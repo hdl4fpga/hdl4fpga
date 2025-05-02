@@ -155,6 +155,8 @@ begin
 		alias ctlr_req  is ctlr_reqs(1);
 		alias ctlr_rdy  is ctlr_rdys(1);
 		alias ctlr_gntd is ctlr_gntds(1);
+		constant max_count : natural := 2**12;
+		variable timer : natural range 0 to max_count;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -181,6 +183,8 @@ begin
 							wValue        <= x"0008";
 							wIndex        <= x"0001";
 							wLength       <= x"0000";
+							timer := 0;
+							-- ctlr_req <= not ctlr_rdy;
 							step := s_portreset;
 						when s_portreset =>
 							bmRequestType <= x"23";
@@ -188,16 +192,29 @@ begin
 							wValue        <= x"0004";
 							wIndex        <= x"0001";
 							wLength       <= x"0000";
-							ctlr_req <= not ctlr_rdy;
-							step := s_getstatus;
+							if timer < max_count then 
+								if sof_tick='1' then
+									timer := timer + 1;
+								end if;
+							else
+								timer := 0;
+								ctlr_req <= not ctlr_rdy;
+								step := s_getstatus;
+							end if;
 						when s_getstatus =>
 							bmRequestType <= x"a0";
 							bRequest      <= x"00";
 							wValue        <= x"0000";
 							wIndex        <= x"0000";
 							wLength       <= x"0004";
-							ctlr_req <= not ctlr_rdy;
-							step := s_ready;
+							if timer < max_count then 
+								if sof_tick='1' then
+									timer := timer + 1;
+								end if;
+							else
+								ctlr_req <= not ctlr_rdy;
+								step := s_ready;
+							end if;
 						when s_ready =>
 							hub_rgtr <= (others => '-');
 							step := s_getdescriptor;
