@@ -310,6 +310,7 @@ begin
 	end process;
 
 	descriptors_p : process (rply_req, clk)
+		alias  bRequest          : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
 		variable rgtr : std_logic_vector(0 to 16*8-1);
 		variable cntr : natural range 0 to rgtr'length;
 		variable bLength         : std_logic_vector( 8-1 downto 0);
@@ -318,25 +319,30 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (rply_rdy xor rply_req)='1' then
-					if rxdv='1' then
-						if cntr < rgtr'length then
-							rgtr(cntr) := rxd;
-						end if;
-						if rxbs='1' then
-							cntr := cntr + 1;
-						end if;
-					end if;
-					if cntr >= 8 then
-						if cntr/8 >= unsigned(bLength) then
-							case bDescriptorType is
-							when others =>
-							end case;
-							cntr := 0 ;
-						end if;
-					end if;
-				else
-					cntr := 0;
-				end if;
+					case bRequest is
+					when get_descriptor => 
+    					if rxdv='1' then
+    						if cntr < rgtr'length then
+    							rgtr(cntr) := rxd;
+    						end if;
+    						if rxbs='1' then
+    							cntr := cntr + 1;
+    						end if;
+    					end if;
+    					if cntr >= 8 then
+    						if cntr/8 >= unsigned(bLength) then
+    							case bDescriptorType is
+    							when others =>
+    							end case;
+    							cntr := 0 ;
+    						end if;
+    					end if;
+					when others =>
+						cntr := 0;
+					end case;
+   				else
+   					cntr := 0;
+   				end if;
 			end if;
 		end if;
 	end process;
@@ -385,6 +391,8 @@ begin
     							rply_rdy <= rply_req;
     						end if;
     					end if;
+					when get_status =>
+    					rply_rdy <= rply_req;
 					when others =>
     					rply_rdy <= rply_req;
 					end case;
