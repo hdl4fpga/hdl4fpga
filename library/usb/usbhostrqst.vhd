@@ -155,7 +155,7 @@ begin
 		alias ctlr_req  is ctlr_reqs(1);
 		alias ctlr_rdy  is ctlr_rdys(1);
 		alias ctlr_gntd is ctlr_gntds(1);
-		constant max_count : natural := 2**10;
+		constant max_count : natural := 2**12;
 		variable timer : natural range 0 to max_count;
 	begin
 		if rising_edge(clk) then
@@ -198,7 +198,8 @@ begin
 								end if;
 							else
 								ctlr_req <= not ctlr_rdy;
-								step := s_ready;
+								timer := 0;
+								-- step := s_ready;
 							end if;
 						when s_ready =>
 							hub_rgtr <= (others => '-');
