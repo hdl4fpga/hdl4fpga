@@ -67,8 +67,9 @@ entity usbhostrqst is
 end;
 
 architecture def of usbhostrqst is
-	signal setup_rgtr : std_logic_vector(11+64 downto 0) := (others => '0');
-	signal hub_rgtr   : std_logic_vector(11+64 downto 0) := (others => '0');
+	signal ctlr_rgtr  : std_logic_vector(11+64 downto 0);
+	signal setup_rgtr : std_logic_vector(ctlr_rgtr'range) := (others => '0');
+	signal hub_rgtr   : std_logic_vector(ctlr_rgtr'range) := (others => '0');
 
 	signal rqst_req   : std_ulogic := '0';
 	signal rqst_rdy   : std_ulogic := '0';
@@ -147,7 +148,7 @@ begin
 		alias  dev_endp      : std_logic_vector(11-1 downto 7) is hub_rgtr(11+64-1 downto 7+64);
 		alias  pending       : std_ulogic is hub_rgtr(11+64);
 
-		type steps is (s_getdescriptor, s_portpower, s_getstatus, s_ready);
+		type steps is (s_getdescriptor, s_portpower, s_portreset, s_getstatus, s_ready);
 		variable step : steps;
 		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
 		alias setup_req is setup_reqs(1);
@@ -171,7 +172,7 @@ begin
 						case step is
 						when s_getdescriptor =>
 							bmRequestType <= x"a0";
-							bRequest      <= x"06";
+							bRequest      <= get_descriptor;
 							wValue        <= x"2900";
 							wIndex        <= x"0000";
 							wLength       <= x"ffff";
@@ -179,18 +180,26 @@ begin
 							step := s_portpower;
 						when s_portpower =>
 							bmRequestType <= x"23";
-							bRequest      <= x"03";
-							wValue        <= x"0008";
-							wIndex        <= x"0001";
+							bRequest      <= set_feature;
+							wValue        <= hub_port_power;
+							wIndex        <= x"0002";
 							wLength       <= x"0000";
 							timer := 0;
+							ctlr_req <= not ctlr_rdy;
+							step := s_portreset;
+						when s_portreset =>
+							bmRequestType <= x"23";
+							bRequest      <= set_feature;
+							wValue        <= hub_port_reset;
+							wIndex        <= x"0002";
+							wLength       <= x"0000";
 							ctlr_req <= not ctlr_rdy;
 							step := s_getstatus;
 						when s_getstatus =>
 							bmRequestType <= x"a3";
-							bRequest      <= x"00";
+							bRequest      <= get_status;
 							wValue        <= x"0000";
-							wIndex        <= x"0001";
+							wIndex        <= x"0002";
 							wLength       <= x"0004";
 							if timer < max_count then 
 								if sof_tick='1' then
@@ -199,7 +208,7 @@ begin
 							else
 								ctlr_req <= not ctlr_rdy;
 								timer := 0;
-								-- step := s_ready;
+								step := s_portreset;
 							end if;
 						when s_ready =>
 							hub_rgtr <= (others => '-');
@@ -259,7 +268,7 @@ begin
 							dev_addr      <= (others => '0');
 							dev_endp      <= (others => '0');
 							bmRequestType <= x"00";
-							bRequest      <= x"05";
+							bRequest      <= set_address;
 							wValue        <= addr;
 							wIndex        <= x"0000";
 							wLength       <= x"0000";
@@ -268,7 +277,7 @@ begin
 						when s_getdescriptor =>
 							dev_addr      <= addr(dev_addr'range);
 							bmRequestType <= x"80";
-							bRequest      <= x"06";
+							bRequest      <= get_descriptor;
 							wValue        <= x"0200";
 							wIndex        <= x"0000";
 							wLength       <= x"ffff";
@@ -277,7 +286,7 @@ begin
 						when s_setconfiguration =>
 							dev_addr      <= addr(dev_addr'range);
 							bmRequestType <= x"00";
-							bRequest      <= x"09";
+							bRequest      <= set_configuration;
 							wValue        <= x"0001";
 							wIndex        <= x"0000";
 							wLength       <= x"0000";
@@ -333,6 +342,7 @@ begin
 	end process;
 
 	config_p : process (rply_rdy, clk)
+		alias  bRequest          : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
 		variable bLength         : unsigned( 8-1 downto 0);
 		variable bDescriptorType : unsigned( 8-1 downto 0);
 		variable wTotalLength    : unsigned(16-1 downto 0);
@@ -341,38 +351,43 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (rply_rdy xor rply_req)='1' then
-					if rxdv='1' then
-						if rxbs='0' then
-							if cntr < 8 then
-								blength(0) := rxd;
-								blength := blength ror 1;
-							elsif cntr < 16 then
-								bDescriptorType(0) := rxd;
-								bDescriptorType := bDescriptorType ror 1;
-							elsif cntr < 32 then
-								if bDescriptorType=unsigned(config) then
-									wTotalLength(0) := rxd;
-									wTotalLength :=  wTotalLength ror 1;
-								end if;
-							end if;
-							if cntr < 512*8 then 
-								cntr := cntr + 1;
-							end if;
-						end if;
-					end if;
-					if cntr >=16 then
-						if bDescriptorType=unsigned(config) then
-							if cntr >= 32 then
-								if cntr/8 >= wTotalLength then
-									rply_rdy <= rply_req;
-								elsif cntr >= 512*8 then 
-									rply_rdy <= rply_req;
-								end if;
-							end if;
-						elsif cntr/8 >= blength then
-							rply_rdy <= rply_req;
-						end if;
-					end if;
+					case bRequest is
+					when get_descriptor => 
+    					if rxdv='1' then
+    						if rxbs='0' then
+    							if cntr < 8 then
+    								blength(0) := rxd;
+    								blength := blength ror 1;
+    							elsif cntr < 16 then
+    								bDescriptorType(0) := rxd;
+    								bDescriptorType := bDescriptorType ror 1;
+    							elsif cntr < 32 then
+    								if bDescriptorType=unsigned(config) then
+    									wTotalLength(0) := rxd;
+    									wTotalLength :=  wTotalLength ror 1;
+    								end if;
+    							end if;
+    							if cntr < 512*8 then 
+    								cntr := cntr + 1;
+    							end if;
+    						end if;
+    					end if;
+    					if cntr >=16 then
+    						if bDescriptorType=unsigned(config) then
+    							if cntr >= 32 then
+    								if cntr/8 >= wTotalLength then
+    									rply_rdy <= rply_req;
+    								elsif cntr >= 512*8 then 
+    									rply_rdy <= rply_req;
+    								end if;
+    							end if;
+    						elsif cntr/8 >= blength then
+    							rply_rdy <= rply_req;
+    						end if;
+    					end if;
+					when others =>
+    					rply_rdy <= rply_req;
+					end case;
 				else
 					cntr := 0;
 				end if;
@@ -381,7 +396,6 @@ begin
 	end process;
 
 	ctlr_b : block
-		signal ctlr_rgtr     : std_logic_vector(11+64 downto 0);
 		alias  bmRequestType : std_logic_vector( 8-1 downto 0) is ctlr_rgtr( 8-1 downto  0);
 		alias  bRequest      : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
 		alias  wValue        : std_logic_vector(16-1 downto 0) is ctlr_rgtr(32-1 downto 16);
