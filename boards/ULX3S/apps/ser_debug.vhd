@@ -143,18 +143,18 @@ begin
 		end generate;
 			
 		usbhost_g : if true generate
-			signal setup_req : std_logic := '0';
-			signal setup_rdy : std_logic := '0';
+			signal init_req : std_logic := '0';
+			signal init_rdy : std_logic := '0';
 		begin
 			process (videoio_clk)
 				variable ena : bit := '1';
 			begin
 				if rising_edge(videoio_clk) then
 					if left='1' then
-						setup_req <= setup_rdy;
+						init_req <= init_rdy;
 					elsif fire1='1' then
 						if ena='1' then
-							setup_req <= not setup_rdy;
+							init_req <= not init_rdy;
 						end if;
 						ena := '0';
 					elsif fire2='1' then
@@ -174,11 +174,11 @@ begin
     			dn   => usb_fpga_dn,
     			clk  => videoio_clk,
     			cken => cken,
-				setup_req => setup_req,
-				setup_rdy => setup_rdy);
+				init_req => init_req,
+				init_rdy => init_rdy);
 			led <= tp(9 to 16);
-			-- led(0) <= setup_rdy; --usb_fpga_dp;
-			-- led(1) <= setup_req; --usb_fpga_dn;
+			-- led(0) <= init_rdy; --usb_fpga_dp;
+			-- led(1) <= init_req; --usb_fpga_dn;
 			-- led(7 downto 4) <= tp(4 to 7);
 		end generate;
 			

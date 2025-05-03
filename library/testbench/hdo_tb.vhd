@@ -26,7 +26,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-library hdl4fpga;
 use work.hdo.all;
 
 architecture hdo_tb of testbench is

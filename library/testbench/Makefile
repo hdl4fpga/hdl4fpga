@@ -46,6 +46,7 @@ HDL4FPGA__usbpkt_tx__def = $(LIB_HDL4FPGA)/usbpkt_tx/def.dat
 HDL4FPGA__usbpkt_tx = $(LIB_HDL4FPGA)/usbpkt_tx/_primary.dat
 HDL4FPGA__usbpkt_rx__def = $(LIB_HDL4FPGA)/usbpkt_rx/def.dat
 HDL4FPGA__usbpkt_rx = $(LIB_HDL4FPGA)/usbpkt_rx/_primary.dat
+HDL4FPGA__usbpkg__body = $(LIB_HDL4FPGA)/usbpkg/body.dat
 HDL4FPGA__usbpkg = $(LIB_HDL4FPGA)/usbpkg/_primary.dat
 HDL4FPGA__usbphycrc__def = $(LIB_HDL4FPGA)/usbphycrc/def.dat
 HDL4FPGA__usbphycrc = $(LIB_HDL4FPGA)/usbphycrc/_primary.dat
@@ -59,6 +60,8 @@ HDL4FPGA__usbhostrqst__def = $(LIB_HDL4FPGA)/usbhostrqst/def.dat
 HDL4FPGA__usbhostrqst = $(LIB_HDL4FPGA)/usbhostrqst/_primary.dat
 HDL4FPGA__usbhostflow__def = $(LIB_HDL4FPGA)/usbhostflow/def.dat
 HDL4FPGA__usbhostflow = $(LIB_HDL4FPGA)/usbhostflow/_primary.dat
+HDL4FPGA__usbhostdvr__def = $(LIB_HDL4FPGA)/usbhostdvr/def.dat
+HDL4FPGA__usbhostdvr = $(LIB_HDL4FPGA)/usbhostdvr/_primary.dat
 HDL4FPGA__usbhost__def = $(LIB_HDL4FPGA)/usbhost/def.dat
 HDL4FPGA__usbhost = $(LIB_HDL4FPGA)/usbhost/_primary.dat
 HDL4FPGA__usbfltr_sof__def = $(LIB_HDL4FPGA)/usbfltr_sof/def.dat
@@ -323,6 +326,8 @@ HDL4FPGA__dhcpc_dscb__def = $(LIB_HDL4FPGA)/dhcpc_dscb/def.dat
 HDL4FPGA__dhcpc_dscb = $(LIB_HDL4FPGA)/dhcpc_dscb/_primary.dat
 HDL4FPGA__dfs2dfs__behavioral = $(LIB_HDL4FPGA)/dfs2dfs/behavioral.dat
 HDL4FPGA__dfs2dfs = $(LIB_HDL4FPGA)/dfs2dfs/_primary.dat
+HDL4FPGA__devmux__def = $(LIB_HDL4FPGA)/devmux/def.dat
+HDL4FPGA__devmux = $(LIB_HDL4FPGA)/devmux/_primary.dat
 HDL4FPGA__desser__mux = $(LIB_HDL4FPGA)/desser/mux.dat
 HDL4FPGA__desser = $(LIB_HDL4FPGA)/desser/_primary.dat
 HDL4FPGA__dbdbblsrl_ser__beh = $(LIB_HDL4FPGA)/dbdbblsrl_ser/beh.dat
@@ -423,6 +428,7 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__usbpkt_tx) \
     $(HDL4FPGA__usbpkt_rx__def) \
     $(HDL4FPGA__usbpkt_rx) \
+    $(HDL4FPGA__usbpkg__body) \
     $(HDL4FPGA__usbpkg) \
     $(HDL4FPGA__usbphycrc__def) \
     $(HDL4FPGA__usbphycrc) \
@@ -436,6 +442,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__usbhostrqst) \
     $(HDL4FPGA__usbhostflow__def) \
     $(HDL4FPGA__usbhostflow) \
+    $(HDL4FPGA__usbhostdvr__def) \
+    $(HDL4FPGA__usbhostdvr) \
     $(HDL4FPGA__usbhost__def) \
     $(HDL4FPGA__usbhost) \
     $(HDL4FPGA__usbfltr_sof__def) \
@@ -700,6 +708,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__dhcpc_dscb) \
     $(HDL4FPGA__dfs2dfs__behavioral) \
     $(HDL4FPGA__dfs2dfs) \
+    $(HDL4FPGA__devmux__def) \
+    $(HDL4FPGA__devmux) \
     $(HDL4FPGA__desser__mux) \
     $(HDL4FPGA__desser) \
     $(HDL4FPGA__dbdbblsrl_ser__beh) \
@@ -840,7 +850,7 @@ $(HDL4FPGA__app_graphics__mix) : ../apps/app_graphics.vhd \
 
 $(HDL4FPGA__app_profiles) \
 $(HDL4FPGA__app_profiles__body) : ../apps/app_profiles.vhd
-	$(VCOM) -93 -work hdl4fpga ../apps/app_profiles.vhd
+	$(VCOM) -2002 -work hdl4fpga ../apps/app_profiles.vhd
 
 $(HDL4FPGA__arbiter) \
 $(HDL4FPGA__arbiter__mix) : ../basic/arbiter.vhd \
@@ -889,7 +899,7 @@ $(HDL4FPGA__barrel__beh) : ../basic/barrel.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../basic/barrel.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/barrel.vhd
 
 $(HDL4FPGA__base) \
 $(HDL4FPGA__base__body) : ../basic/base.vhd \
@@ -905,12 +915,12 @@ $(HDL4FPGA__bcd_adder__def) : ../basic/bcd_adder.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../basic/bcd_adder.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/bcd_adder.vhd
 
 $(HDL4FPGA__bcdfonts) : ../video/fonts/bcdfonts.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../video/fonts/bcdfonts.vhd
+	$(VCOM) -2002 -work hdl4fpga ../video/fonts/bcdfonts.vhd
 
 $(HDL4FPGA__btof) \
 $(HDL4FPGA__btof__def) : ../basic/btof.vhd \
@@ -966,7 +976,7 @@ $(HDL4FPGA__cgafonts__body) : ../video/cgafonts.vhd \
 		$(HDL4FPGA__cp850x8x8x0to127) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../video/cgafonts.vhd
+	$(VCOM) -2002 -work hdl4fpga ../video/cgafonts.vhd
 
 $(HDL4FPGA__cgaram) \
 $(HDL4FPGA__cgaram__struct) : ../video/cgaram.vhd \
@@ -996,22 +1006,22 @@ $(HDL4FPGA__cntrcs__def) : ../basic/cntrcs.vhd \
 $(HDL4FPGA__cp850x8x16x0to127) : ../video/fonts/cp850x8x16x0to127.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../video/fonts/cp850x8x16x0to127.vhd
+	$(VCOM) -2002 -work hdl4fpga ../video/fonts/cp850x8x16x0to127.vhd
 
 $(HDL4FPGA__cp850x8x16x128to255) : ../video/fonts/cp850x8x16x128to255.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../video/fonts/cp850x8x16x128to255.vhd
+	$(VCOM) -2002 -work hdl4fpga ../video/fonts/cp850x8x16x128to255.vhd
 
 $(HDL4FPGA__cp850x8x8x0to127) : ../video/fonts/cp850x8x8x0to127.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../video/fonts/cp850x8x8x0to127.vhd
+	$(VCOM) -2002 -work hdl4fpga ../video/fonts/cp850x8x8x0to127.vhd
 
 $(HDL4FPGA__cp850x8x8x128to255) : ../video/fonts/cp850x8x8x128to255.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../video/fonts/cp850x8x8x128to255.vhd
+	$(VCOM) -2002 -work hdl4fpga ../video/fonts/cp850x8x8x128to255.vhd
 
 $(HDL4FPGA__crc) \
 $(HDL4FPGA__crc__def) : ../basic/crc.vhd \
@@ -1049,13 +1059,23 @@ $(HDL4FPGA__desser__mux) : ../basic/desser.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../basic/desser.vhd
 
+$(HDL4FPGA__devmux) \
+$(HDL4FPGA__devmux__def) : ../basic/devmux.vhd \
+		$(HDL4FPGA__usbpkg) \
+		$(HDL4FPGA__base) \
+		$(HDL4FPGA__hdo) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -2002 -work hdl4fpga ../basic/devmux.vhd
+
 $(HDL4FPGA__dfs2dfs) \
 $(HDL4FPGA__dfs2dfs__behavioral) : ../xilinx/dfs2dfs.vhd \
 		$(UNISIM__vcomponents) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../xilinx/dfs2dfs.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/dfs2dfs.vhd
 
 $(HDL4FPGA__dhcpc_dscb) \
 $(HDL4FPGA__dhcpc_dscb__def) : ../mii/dhcp_dscb.vhd \
@@ -1163,7 +1183,7 @@ $(HDL4FPGA__ecp5_igbx__beh) : ../latticesemi/ecp5/ecp5_igbx.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(ECP5U__components)
-	$(VCOM) -93 -work hdl4fpga ../latticesemi/ecp5/ecp5_igbx.vhd
+	$(VCOM) -2002 -work hdl4fpga ../latticesemi/ecp5/ecp5_igbx.vhd
 
 $(HDL4FPGA__ecp5_ogbx) \
 $(HDL4FPGA__ecp5_ogbx__beh) : ../latticesemi/ecp5/ecp5_ogbx.vhd \
@@ -1377,6 +1397,7 @@ $(HDL4FPGA__hdlcsync_tx__def) : ../hdlc/hdlcsync_tx.vhd \
 
 $(HDL4FPGA__hdo) \
 $(HDL4FPGA__hdo__body) : ../basic/hdo.vhd \
+		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
 	$(VCOM) -93 -work hdl4fpga ../basic/hdo.vhd
@@ -1424,7 +1445,7 @@ $(HDL4FPGA__igbx__beh) : ../xilinx/igbx.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents)
-	$(VCOM) -93 -work hdl4fpga ../xilinx/igbx.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/igbx.vhd
 
 $(HDL4FPGA__ipoepkg) \
 $(HDL4FPGA__ipoepkg__body) : ../mii/ipoepkg.vhd \
@@ -1585,7 +1606,7 @@ $(HDL4FPGA__ogbx__beh) : ../xilinx/ogbx.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents)
-	$(VCOM) -93 -work hdl4fpga ../xilinx/ogbx.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/ogbx.vhd
 
 $(HDL4FPGA__pgm_delay) \
 $(HDL4FPGA__pgm_delay__mix) : ../xilinx/misc/pgm_delay.vhd \
@@ -1605,17 +1626,17 @@ $(HDL4FPGA__phdata__inference) : ../xilinx/phdata.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../xilinx/phdata.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/phdata.vhd
 
 $(HDL4FPGA__phy_iofifo) \
 $(HDL4FPGA__phy_iofifo__mix) : ../sdram/phy_iofifo.vhd \
 		$(IEEE__numeric_bit) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../sdram/phy_iofifo.vhd
+	$(VCOM) -2002 -work hdl4fpga ../sdram/phy_iofifo.vhd
 
 $(HDL4FPGA__profiles) : ../basic/profiles.vhd
-	$(VCOM) -93 -work hdl4fpga ../basic/profiles.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/profiles.vhd
 
 $(HDL4FPGA__rom) \
 $(HDL4FPGA__rom__def) : ../basic/rom.vhd \
@@ -2129,7 +2150,7 @@ $(HDL4FPGA__seg7__mixed) : ../basic/seg7.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../basic/seg7.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/seg7.vhd
 
 $(HDL4FPGA__ser_debug) \
 $(HDL4FPGA__ser_debug__def) : ../apps/ser_debug.vhd \
@@ -2218,6 +2239,7 @@ $(HDL4FPGA__sio_dayusb) \
 $(HDL4FPGA__sio_dayusb__beh) : ../sio/sio_dayusb.vhd \
 		$(HDL4FPGA__sio_hdlc) \
 		$(HDL4FPGA__serlzr) \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__usbdev) \
 		$(HDL4FPGA__base) \
@@ -2367,7 +2389,7 @@ $(HDL4FPGA__tx_manchester__def) : ../mii/manchester.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../mii/manchester.vhd
+	$(VCOM) -2002 -work hdl4fpga ../mii/manchester.vhd
 
 $(HDL4FPGA__txn_buffer) \
 $(HDL4FPGA__txn_buffer__def) : ../basic/txn_buffer.vhd \
@@ -2450,6 +2472,7 @@ $(HDL4FPGA__usbdev__def) : ../usb/usbdev.vhd \
 		$(HDL4FPGA__usbpkt_tx) \
 		$(HDL4FPGA__usbpkt_rx) \
 		$(HDL4FPGA__usbphycrc) \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -2459,6 +2482,7 @@ $(HDL4FPGA__usbdev__def) : ../usb/usbdev.vhd \
 
 $(HDL4FPGA__usbdevflow) \
 $(HDL4FPGA__usbdevflow__def) : ../usb/usbdevflow.vhd \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__usbpkg) \
 		$(IEEE__numeric_std) \
 		$(HDL4FPGA__base) \
@@ -2469,6 +2493,7 @@ $(HDL4FPGA__usbdevflow__def) : ../usb/usbdevflow.vhd \
 
 $(HDL4FPGA__usbdevrqst) \
 $(HDL4FPGA__usbdevrqst__def) : ../usb/usbdevrqst.vhd \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -2485,13 +2510,16 @@ $(HDL4FPGA__usbfltr_sof__def) : ../usb/usbfltr_sof.vhd \
 	$(VCOM) -93 -work hdl4fpga ../usb/usbfltr_sof.vhd
 
 $(HDL4FPGA__usbhost) \
-$(HDL4FPGA__usbhost__def) : ../usb/usbhost.vhd \
-		$(HDL4FPGA__usbhostrqst) \
+$(HDL4FPGA__usbhost__def) \
+$(HDL4FPGA__usbhostdvr) \
+$(HDL4FPGA__usbhostdvr__def) : ../usb/usbhost.vhd \
 		$(IEEE__numeric_bit) \
 		$(HDL4FPGA__usbhostflow) \
 		$(HDL4FPGA__usbpkt_tx) \
 		$(HDL4FPGA__usbpkt_rx) \
 		$(HDL4FPGA__usbphycrc) \
+		$(HDL4FPGA__usbhostrqst) \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -2501,6 +2529,7 @@ $(HDL4FPGA__usbhost__def) : ../usb/usbhost.vhd \
 
 $(HDL4FPGA__usbhostflow) \
 $(HDL4FPGA__usbhostflow__def) : ../usb/usbhostflow.vhd \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__usbpkg) \
 		$(IEEE__numeric_std) \
 		$(HDL4FPGA__base) \
@@ -2511,8 +2540,10 @@ $(HDL4FPGA__usbhostflow__def) : ../usb/usbhostflow.vhd \
 
 $(HDL4FPGA__usbhostrqst) \
 $(HDL4FPGA__usbhostrqst__def) : ../usb/usbhostrqst.vhd \
+		$(HDL4FPGA__devmux) \
 		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__base) \
+		$(HDL4FPGA__hdo) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
@@ -2550,6 +2581,7 @@ $(HDL4FPGA__usbphycrc) \
 $(HDL4FPGA__usbphycrc__def) : ../usb/usbphycrc.vhd \
 		$(HDL4FPGA__usbcrc) \
 		$(HDL4FPGA__usbphy) \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -2557,15 +2589,18 @@ $(HDL4FPGA__usbphycrc__def) : ../usb/usbphycrc.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../usb/usbphycrc.vhd
 
-$(HDL4FPGA__usbpkg) : ../usb/usbpkg.vhd \
-		$(IEEE__numeric_std) \
+$(HDL4FPGA__usbpkg) \
+$(HDL4FPGA__usbpkg__body) : ../usb/usbpkg.vhd \
 		$(HDL4FPGA__base) \
+		$(HDL4FPGA__hdo) \
+		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../usb/usbpkg.vhd
 
 $(HDL4FPGA__usbpkt_rx) \
 $(HDL4FPGA__usbpkt_rx__def) : ../usb/usbpkt_rx.vhd \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -2575,6 +2610,7 @@ $(HDL4FPGA__usbpkt_rx__def) : ../usb/usbpkt_rx.vhd \
 
 $(HDL4FPGA__usbpkt_tx) \
 $(HDL4FPGA__usbpkt_tx__def) : ../usb/usbpkt_tx.vhd \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -2634,7 +2670,7 @@ $(HDL4FPGA__xc7a_idelay__def) : ../xilinx/xc7a_idelay.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents)
-	$(VCOM) -93 -work hdl4fpga ../xilinx/xc7a_idelay.vhd
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc7a_idelay.vhd
 
 $(HDL4FPGA__xc_dqsdelay) \
 $(HDL4FPGA__xc_dqsdelay__xilinx) : ../xilinx/xc_dqsdelay.vhd \

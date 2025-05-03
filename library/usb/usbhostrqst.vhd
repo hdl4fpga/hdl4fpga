@@ -31,521 +31,480 @@ use hdl4fpga.usbpkg.all;
 entity usbhostrqst is
 	port (
 		tp          : out std_logic_vector(1 to 32) := (others => '0');
-		clk         : in  std_logic;
-		cken        : in  std_logic;
+		clk         : in  std_ulogic;
+		cken        : in  std_ulogic;
 
-		setup_req   : in  std_logic;
-		setup_rdy   : buffer std_logic := '0';
-		flush_req   : buffer  std_logic := '0';
-		flush_rdy   : in std_logic := '0';
-		phy_rst     : out std_logic;
+		init_req    : in  std_ulogic;
+		init_rdy    : buffer std_ulogic := '0';
+		flush_req   : buffer  std_ulogic := '0';
+		flush_rdy   : in std_ulogic := '0';
+		phy_rst     : buffer std_ulogic;
 
 		dev_addr    : out std_logic_vector(7-1 downto 0);
 		dev_endp    : out std_logic_vector(11-1 downto 7);
-		dev_ackrx   : in  std_logic := '1';
-		dev_acktx   : in  std_logic := '1';
-		tksetup_req : buffer std_logic := '0';
-		tksetup_rdy : in  std_logic := '0';
-		tkstall_req : in  std_logic := '0';
-		tkstall_rdy : buffer std_logic := '0';
-		tkin_req    : buffer std_logic := '0';
-		tkin_rdy    : in  std_logic;
-		tkout_req   : buffer std_logic := '0';
-		tkout_rdy   : in  std_logic;
-		sof_tick    : in  std_logic;
+		dev_ackrx   : in  std_ulogic := '1';
+		dev_acktx   : in  std_ulogic := '1';
+		tksetup_req : buffer std_ulogic := '0';
+		tksetup_rdy : in  std_ulogic := '0';
+		tkstall_req : in  std_ulogic := '0';
+		tkstall_rdy : buffer std_ulogic := '0';
+		tknak_req   : in std_ulogic := '0';
+		tknak_rdy   : buffer std_ulogic := '0';
+		tkin_req    : buffer std_ulogic := '0';
+		tkin_rdy    : in  std_ulogic;
+		tkout_req   : buffer std_ulogic := '0';
+		tkout_rdy   : in  std_ulogic;
+		sof_tick    : in  std_ulogic;
 
-		rxdv        : in  std_logic := '-';
-		rxbs        : in  std_logic := '-';
-		rxd         : in  std_logic := '-';
+		rxdv        : in  std_ulogic := '-';
+		rxbs        : in  std_ulogic := '-';
+		rxd         : in  std_ulogic := '-';
 
-		txen        : out std_logic;
-		txbs        : in  std_logic;
-		txd         : out std_logic);
+		txen        : out std_ulogic;
+		txbs        : in  std_ulogic;
+		txd         : out std_ulogic);
 
 end;
 
 architecture def of usbhostrqst is
-	constant test : string := segment_map(
-		"["&
-			"{content:0x" & -- Hexadecimal format
-				"80"      & -- Device to Host
-				"06"      & -- GET_DESCRIPTOR
-				"00"      & -- Descriptor index 
-				"01"      & -- Descriptor type -> DEVICE
-				"0000"    & -- Offset 
-				"ffff"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"00"      & -- Host to Device
-				"05"      & -- SET_ADDRESS
-				"----"    & -- Address
-				"0000"    & -- Offset 
-				"0000"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"80"      & -- Device to Host
-				"06"      & -- GET_DESCRIPTOR
-				"00"      & -- Descriptor index 
-				"02"      & -- Descriptor type -> CONFIGURATION
-				"0000"    & -- Offset 
-				"ffff"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- segment_id=2, addr=10
-				"00"      & -- Host to Device
-				"09"      & -- SET_CONFIGURATION
-				"0100"    & -- Configuration 1
-				"0000"    & -- Offset
-				"0000"    & -- Length 0 bytes
-			"}"           &
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"a0"      & -- Device to Host, Class 
-				"06"      & -- GET_DESCRIPTOR
-				"00"      & -- Descriptor index 
-				"29"      & -- Descriptor type -> HUB
-				"0000"    & -- Offset 
-				"ffff"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"23"      & -- Device to Host
-				"03"      & -- GET_DESCRIPTOR
-				"04"      & -- Descriptor index 
-				"00"      & -- Descriptor type -> DEVICE
-				"0100"    & -- Offset 
-				"0000"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"23"      & -- Device to Host
-				"03"      & -- GET_DESCRIPTOR
-				"08"      & -- Descriptor index 
-				"00"      & -- Descriptor type -> DEVICE
-				"0100"    & -- Offset 
-				"0000"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"23"      & -- Device to Host
-				"03"      & -- GET_DESCRIPTOR
-				"04"      & -- Descriptor index 
-				"00"      & -- Descriptor type -> DEVICE
-				"0100"    & -- Offset 
-				"0000"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"a0"      & -- Device to Host
-				"00"      & 
-				"0000"    &
-				"0000"    & -- Offset 
-				"0400"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"a3"      & -- Device to Host
-				"00"      & 
-				"0000"    &
-				"0100"    & -- Offset 
-				"0400"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"80"      & -- Device to Host
-				"06"      & -- GET_DESCRIPTOR
-				"00"      & -- Descriptor index 
-				"01"      & -- Descriptor type -> DEVICE
-				"0000"    & -- Offset 
-				"ffff"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"00"      & -- Host to Device
-				"05"      & -- SET_ADDRESS
-				"----"    & -- Address
-				"0000"    & -- Offset 
-				"0000"    & -- Length 64 bytes
-			"}"           & 
-			","           &
-			"{content:0x" & -- Hexadecimal format
-				"80"      & -- Device to Host
-				"06"      & -- GET_DESCRIPTOR
-				"00"      & -- Descriptor index 
-				"02"      & -- Descriptor type -> CONFIGURATION
-				"0000"    & -- Offset 
-				"ffff"    & -- Length 64 bytes
-			"}"           & 
-		"]");
+	signal setup_rgtr : std_logic_vector(11+64 downto 0) := (others => '0');
+	signal hub_rgtr   : std_logic_vector(11+64 downto 0) := (others => '0');
 
-	constant table_length : natural := hdo(test)**".length";
-	constant test1  : string := hdo(test)**".table";
-	constant table  : string := segment_table(test1);
-	constant bitrom : string := hdo(table)**".content";
-	signal segment_id        : unsigned(0 to hdo(table)**".address"-1) := (others => '0');
-	signal segment_data      : std_logic_vector(0 to hdo(table)**".data"-1);
-	signal segment_dir       : std_logic_vector(natural'(hdo(table)**".dir.left")    to natural'(hdo(table)**".dir.right"));
-	signal segment_offset    : std_logic_vector(natural'(hdo(table)**".offset.left") to natural'(hdo(table)**".offset.right"));
-	signal segment_length    : std_logic_vector(natural'(hdo(table)**".length.left") to natural'(hdo(table)**".length.right"));
-	signal descriptor_length : unsigned(0 to segment_length'length);
-	signal descriptor_addr   : unsigned(segment_offset'range);
-	signal descriptor_data   : std_logic_vector(0 to 0);
-	alias txdis is descriptor_length(descriptor_length'left);
-
-	signal send_req   : bit;
-	signal send_rdy   : bit;
-	signal rqst_req : bit;
-	signal rqst_rdy : bit;
-	constant request : string := 
-		"{" &
-			"bmRequestTYpe:1," &
-			"bRequest:1,"      &
-			"wValue:2,"        &
-			"wLength:2"        &
-		"}";
-
-	signal rply_req : bit;
-	signal rply_rdy : bit;
+	signal rqst_req   : std_ulogic := '0';
+	signal rqst_rdy   : std_ulogic := '0';
+	signal ctlr_req   : std_ulogic := '0';
+	signal ctlr_rdy   : std_ulogic := '0';
+	signal ctlr_reqs  : std_logic_vector(0 to 2-1) := (others => '0');
+	signal ctlr_rdys  : std_logic_vector(ctlr_reqs'range) := (others => '0');
+	signal ctlr_gntds : std_logic_vector(ctlr_reqs'range);
+	signal rply_req   : std_ulogic := '0';
+	signal rply_rdy   : std_ulogic := '0';
+	signal setup_req  : std_ulogic := '0';
+	signal setup_rdy  : std_ulogic := '0';
+	signal setup_reqs : std_logic_vector(0 to 2-1) := (others => '0');
+	signal setup_rdys : std_logic_vector(0 to 2-1) := (others => '0');
+	signal hub_req    : std_ulogic := '0';
+	signal hub_rdy    : std_ulogic := '0';
 				
-	signal addr_val        : std_logic_vector(16-1 downto 0);
-	signal bLength         : std_logic_vector( 8-1 downto 0);
-	signal bDescriptorType : std_logic_vector( 8-1 downto 0);
-	signal wTotalLength    : std_logic_vector(16-1 downto 0);
+	signal ctlr_nak   : std_ulogic := '0';
 
 begin
 
-	setup_p : process (cken, clk)
-		type states is (s_idle, s_flush, s_rqst);
+	init_p : process (cken, clk)
+		type states is (s_init, s_setup);
 		variable state : states;
-		constant n : natural := 11;
-		variable timer : integer range -1 to 2**n-1;
+		variable timer : integer range -1 to 2**6-1;
+		alias setup_req is setup_reqs(0);
+		alias setup_rdy is setup_rdys(0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (tkstall_rdy xor tkstall_req)='0' then
-					case state is
-	   				when s_idle =>
-						if (setup_rdy xor setup_req)='1' then
-							timer       := 63;
-							-- addr_val    <= x"0000";
-							tkstall_rdy <= tkstall_req;
-							flush_req   <= not flush_rdy;
-							phy_rst     <= '1';
-							state       := s_flush;
-						end if;
-					when s_flush =>
-						dev_addr   <= (others => '0');
-						dev_addr   <= (others => '0');
-						dev_endp   <= (others => '0');
-						segment_id <= (others => '0');
-						addr_val   <= x"000a";
-						if timer < 0 then
-							if (flush_req xor flush_rdy)='0' then
-								phy_rst   <= '0';
-								rqst_req  <= not rqst_rdy;
-								timer     := 2**n-1;
-								state     := s_rqst;
-							end if;
-						elsif sof_tick='1' then
-							timer := timer - 1;
-						end if;
-					when s_rqst =>
-						if (rqst_req xor rqst_rdy)='0' then
-							if segment_id < table_length-1 then
-								if segment_id >= 5 and timer >= 0 then
-									if sof_tick='1' then
-										timer := timer - 1;
-									end if;
-								else
-									if segment_id=10 then
-										addr_val <= std_logic_vector(unsigned(addr_val) + 1);
-									end if;
-									segment_id <= segment_id + 1;
-									timer      := 2**n-1;
-									rqst_req   <= not rqst_rdy;
+					if (init_rdy xor init_req)='1' then
+						case state is
+						when s_init =>
+							if timer < 0 then
+								phy_rst <= '0';
+								if (flush_req xor flush_rdy)='0' then
+									setup_req <= not setup_rdy;
+									state     := s_setup;
 								end if;
-							else
-								setup_rdy <= setup_req;
-								state     := s_idle;
+							elsif sof_tick='1' then
+								if phy_rst='0' then
+									flush_req <= not flush_rdy;
+								end if;
+								phy_rst <= '1';
+								timer   := timer - 1;
 							end if;
-						elsif segment_id=2 then
-							dev_addr <= addr_val(dev_addr'range);
-						elsif segment_id=10 then
-							dev_addr <= (others => '0');
-						elsif segment_id=11 then
-							dev_addr <= (others => '0');
-						elsif segment_id=12 then
-							dev_addr <= addr_val(dev_addr'range);
-						end if;
-					end case;
+						when s_setup =>
+							if (setup_req xor setup_rdy)='0' then
+								hub_req <= not hub_rdy;
+								init_rdy <= init_req;
+							end if;
+						end case;
+					else
+						phy_rst <= '0';
+						timer   := 0;
+						timer   := 63;
+						state   := s_init;
+					end if;
 				else
-					setup_rdy <= setup_req;
+					init_rdy    <= init_req;
 					tkstall_rdy <= tkstall_req;
-					state := s_idle;
+					state       := s_init;
 				end if;
 			end if;
 		end if;
 	end process;
 
-	rqst_p : process (rqst_rdy, clk)
-		type states is (s_idle, s_setup, s_in, s_stin, s_out, s_stout);
-		variable state : states;
+	hub_p : process (clk, ctlr_gntds)
+		alias  bmRequestType : std_logic_vector( 8-1 downto 0) is hub_rgtr( 8-1 downto  0);
+		alias  bRequest      : std_logic_vector( 8-1 downto 0) is hub_rgtr(16-1 downto  8);
+		alias  wValue        : std_logic_vector(16-1 downto 0) is hub_rgtr(32-1 downto 16);
+		alias  wIndex        : std_logic_vector(16-1 downto 0) is hub_rgtr(48-1 downto 32);
+		alias  wLength       : std_logic_vector(16-1 downto 0) is hub_rgtr(64-1 downto 48);
+		alias  dev_addr      : std_logic_vector( 7-1 downto 0) is hub_rgtr( 7+64-1 downto 0+64);
+		alias  dev_endp      : std_logic_vector(11-1 downto 7) is hub_rgtr(11+64-1 downto 7+64);
+		alias  pending       : std_ulogic is hub_rgtr(11+64);
+
+		type steps is (s_getdescriptor, s_portpower, s_getstatus, s_ready);
+		variable step : steps;
+		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
+		alias setup_req is setup_reqs(1);
+		alias setup_rdy is setup_rdys(1);
+		alias ctlr_req  is ctlr_reqs(1);
+		alias ctlr_rdy  is ctlr_rdys(1);
+		alias ctlr_gntd is ctlr_gntds(1);
+		constant max_count : natural := 2**10;
+		variable timer : natural range 0 to max_count;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if (tkstall_req xor tkstall_rdy)='0' then
-					case state is
-					when s_idle =>
-						if (rqst_rdy xor rqst_req)='1' then
-							tksetup_req <= not tksetup_rdy;
-							send_req <= not send_rdy;
-							state := s_setup;
+				dev_addr  <= addr(dev_addr'range);
+				dev_endp  <= (others => '0');
+				if (hub_req xor hub_rdy)='1' then
+					if pending='1' then
+						if sof_tick='1' then
+							ctlr_req <= not ctlr_rdy;
 						end if;
-					when s_setup =>
-						if (send_req xor send_rdy)='0' then
-							rply_req <= not rply_rdy;
-							if segment_dir(0)='1' then
-								tkin_req <= not tkin_rdy;
-								state   := s_in;
-							else
-								if false then
-									tkout_req <= not tkout_rdy;
-									state := s_out;
-								else
-									tkin_req <= not tkin_rdy;
-									state := s_stout;
+					elsif (ctlr_req xor ctlr_rdy)='0' then
+						case step is
+						when s_getdescriptor =>
+							bmRequestType <= x"a0";
+							bRequest      <= x"06";
+							wValue        <= x"2900";
+							wIndex        <= x"0000";
+							wLength       <= x"ffff";
+							ctlr_req <= not ctlr_rdy;
+							step := s_portpower;
+						when s_portpower =>
+							bmRequestType <= x"23";
+							bRequest      <= x"03";
+							wValue        <= x"0008";
+							wIndex        <= x"0001";
+							wLength       <= x"0000";
+							timer := 0;
+							ctlr_req <= not ctlr_rdy;
+							step := s_getstatus;
+						when s_getstatus =>
+							bmRequestType <= x"a3";
+							bRequest      <= x"00";
+							wValue        <= x"0000";
+							wIndex        <= x"0001";
+							wLength       <= x"0004";
+							if timer < max_count then 
+								if sof_tick='1' then
+									timer := timer + 1;
 								end if;
-							end if;
-						end if;
-					when s_in =>
-						if (tkin_req xor tkin_rdy)='0' then
-							if rxdv='0' then
-								if (rply_rdy xor rply_req)='1' then
-									tkin_req <= not tkin_rdy;
-								else
-									tkout_req <= not tkout_rdy;
-									state := s_stin;
-								end if;
-							end if;
-						end if;
-					when s_stin =>
-						if (tkout_req xor tkout_rdy)='0' then
-							rqst_rdy <= rqst_req;
-							state := s_idle;
-						end if;
-					when s_out =>
-						if (tkout_req xor tkout_rdy)='0' then
-							if txdis='1' then
-								tkin_req <= not tkin_rdy;
-								state := s_stout;
 							else
-								tkout_req <= not tkout_rdy;
+								ctlr_req <= not ctlr_rdy;
+								step := s_ready;
 							end if;
-						end if;
-					when s_stout =>
-						if (tkin_req xor tkin_rdy)='0' then
-							rqst_rdy <= rqst_req;
-							state := s_idle;
-						end if;
-					end case;
+						when s_ready =>
+							hub_rgtr <= (others => '-');
+							step := s_getdescriptor;
+							hub_rdy <= hub_req;
+						end case;
+					end if;
 				else
-					rqst_rdy <= rqst_req;
-					state := s_idle;
+					hub_rgtr <= (others => '-');
+					step := s_getdescriptor;
+				end if;
+				if ctlr_gntd='1' then
+					pending <= ctlr_nak;
+				end if;
+			end if;
+		end if;
+	end process;
+	
+   	setupmux_e : entity hdl4fpga.devmux
+		generic map (
+			n => ctlr_reqs'length)
+		port map (
+			clk  => clk,
+			ena  => cken,
+			reqs => setup_reqs,
+			rdys => setup_rdys,
+			req  => setup_req,
+			rdy  => setup_rdy);
+
+	setup_p : process (clk, setup_rgtr)
+		alias  bmRequestType : std_logic_vector( 8-1 downto 0) is setup_rgtr( 8-1 downto  0);
+		alias  bRequest      : std_logic_vector( 8-1 downto 0) is setup_rgtr(16-1 downto  8);
+		alias  wValue        : std_logic_vector(16-1 downto 0) is setup_rgtr(32-1 downto 16);
+		alias  wIndex        : std_logic_vector(16-1 downto 0) is setup_rgtr(48-1 downto 32);
+		alias  wLength       : std_logic_vector(16-1 downto 0) is setup_rgtr(64-1 downto 48);
+		alias  dev_addr      : std_logic_vector( 7-1 downto 0) is setup_rgtr( 7+64-1 downto 0+64);
+		alias  dev_endp      : std_logic_vector(11-1 downto 7) is setup_rgtr(11+64-1 downto 7+64);
+		alias  pending       : std_ulogic is setup_rgtr(11+64);
+
+		type steps is (s_setaddress, s_getdescriptor, s_setconfiguration, s_ready);
+		variable step : steps;
+		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
+		alias ctlr_req  is ctlr_reqs(0);
+		alias ctlr_rdy  is ctlr_rdys(0);
+		alias ctlr_gntd is ctlr_gntds(0);
+	begin
+		if rising_edge(clk) then
+			if cken='1' then
+				if (setup_req xor setup_rdy)='1' then
+					if pending='1' then
+						if sof_tick='1' then
+							ctlr_req <= not ctlr_rdy;
+						end if;
+					elsif (ctlr_req xor ctlr_rdy)='0' then
+						case step is
+						when s_setaddress =>
+							dev_addr      <= (others => '0');
+							dev_endp      <= (others => '0');
+							bmRequestType <= x"00";
+							bRequest      <= x"05";
+							wValue        <= addr;
+							wIndex        <= x"0000";
+							wLength       <= x"0000";
+							ctlr_req <= not ctlr_rdy;
+							step := s_getdescriptor;
+						when s_getdescriptor =>
+							dev_addr      <= addr(dev_addr'range);
+							bmRequestType <= x"80";
+							bRequest      <= x"06";
+							wValue        <= x"0200";
+							wIndex        <= x"0000";
+							wLength       <= x"ffff";
+							ctlr_req <= not ctlr_rdy;
+							step := s_setconfiguration;
+						when s_setconfiguration =>
+							dev_addr      <= addr(dev_addr'range);
+							bmRequestType <= x"00";
+							bRequest      <= x"09";
+							wValue        <= x"0001";
+							wIndex        <= x"0000";
+							wLength       <= x"0000";
+							ctlr_req <= not ctlr_rdy;
+							step := s_ready;
+						when s_ready =>
+							setup_rgtr <= (others => '-');
+							setup_rdy <= setup_req;
+							step := s_setaddress;
+						end case;
+					end if;
+				else
+					setup_rgtr <= (others => '-');
+					step := s_setaddress;
+				end if;
+				if ctlr_gntd='1' then
+					pending <= ctlr_nak;
 				end if;
 			end if;
 		end if;
 	end process;
 
 	descriptors_p : process (rply_req, clk)
-		constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo'(
-			"{"                     &
-				"bLength:1,"        &
-				"bDescriptorType:1" &
-			"}"));
-
-		variable cntr : unsigned(8+3-1 downto 0);
-		variable enas : std_logic_vector(0 to 2-1);
-		alias ena_bLength         is enas(0);
-		alias ena_bDescriptorType is enas(1);
-		variable byte : unsigned( 8-1 downto 0);
-		variable bLength         : unsigned( 8-1 downto 0);
-		variable bDescriptorType : unsigned( 8-1 downto 0);
+		variable rgtr : std_logic_vector(0 to 16*8-1);
+		variable cntr : natural range 0 to rgtr'length;
+		variable bLength         : std_logic_vector( 8-1 downto 0);
+		variable bDescriptorType : std_logic_vector( 8-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (rply_rdy xor rply_req)='1' then
-					enas := multiplex(enatab, std_logic_vector(cntr srl 3), enas'length);
 					if rxdv='1' then
-						if rxbs='0' then
-							byte(0) := rxd;
-							byte    := byte ror 1;
-							if ena_bLength='1' then
-								blength := byte;
-							elsif ena_bDescriptorType='1' then
-								bDescriptorType := byte;
-							end if;
+						if cntr < rgtr'length then
+							rgtr(cntr) := rxd;
+						end if;
+						if rxbs='1' then
 							cntr := cntr + 1;
 						end if;
 					end if;
-					if (ena_bLength or ena_bDescriptorType)='0' then
-						if (cntr srl 3) >= blength then
-							cntr := (others => '0');
+					if cntr >= 8 then
+						if cntr/8 >= unsigned(bLength) then
+							case bDescriptorType is
+							when others =>
+							end case;
+							cntr := 0 ;
 						end if;
 					end if;
 				else
-					blength         := (others => '-');
-					bDescriptorType := (others => '-');
-					cntr            := (others => '0');
+					cntr := 0;
 				end if;
 			end if;
 		end if;
 	end process;
 
-	configuration_p : process (rply_rdy, clk)
-		constant enatab : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo'(
-			"{"                        &
-				"bLength:1,"           &
-				"bDescriptorType:1,"   &
-				"wTotalLength:2"       &
-			"}"));
-
-		variable cntr : unsigned(8+3-1 downto 0);
-		variable enas : std_logic_vector(0 to 3-1);
-		alias ena_bLength         is enas(0);
-		alias ena_bDescriptorType is enas(1);
-		alias ena_wTotalLength    is enas(2);
-		variable word : unsigned(16-1 downto 0);
-		variable byte : unsigned( 8-1 downto 0);
+	config_p : process (rply_rdy, clk)
+		variable bLength         : unsigned( 8-1 downto 0);
+		variable bDescriptorType : unsigned( 8-1 downto 0);
+		variable wTotalLength    : unsigned(16-1 downto 0);
+		variable cntr            : natural range 0 to 512*8;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (rply_rdy xor rply_req)='1' then
-					enas := multiplex(enatab, std_logic_vector(cntr srl 3), enas'length);
 					if rxdv='1' then
 						if rxbs='0' then
-							word(0) := rxd;
-							word    := word ror 1;
-							byte(0) := rxd;
-							byte    := byte ror 1;
-							if ena_bLength='1' then
-								blength <= std_logic_vector(byte);
-							elsif ena_bDescriptorType='1' then
-								bDescriptorType <= std_logic_vector(byte);
-							else
-								case bDescriptorType is 
-								when config =>
-									if ena_wTotalLength='1' then
-										wTotalLength <= std_logic_vector(word);
-									end if;
-								when others =>
-								end case;
+							if cntr < 8 then
+								blength(0) := rxd;
+								blength := blength ror 1;
+							elsif cntr < 16 then
+								bDescriptorType(0) := rxd;
+								bDescriptorType := bDescriptorType ror 1;
+							elsif cntr < 32 then
+								if bDescriptorType=unsigned(config) then
+									wTotalLength(0) := rxd;
+									wTotalLength :=  wTotalLength ror 1;
+								end if;
 							end if;
-							cntr := cntr + 1;
+							if cntr < 512*8 then 
+								cntr := cntr + 1;
+							end if;
 						end if;
 					end if;
-					if (ena_bLength or ena_bDescriptorType)='0' then
-						case bDescriptorType is 
-						when config =>
-							if ena_wTotalLength='0' then
-								if (cntr srl 3) >= unsigned(wTotalLength) then
-									wTotalLength <= std_logic_vector(word);
+					if cntr >=16 then
+						if bDescriptorType=unsigned(config) then
+							if cntr >= 32 then
+								if cntr/8 >= wTotalLength then
+									rply_rdy <= rply_req;
+								elsif cntr >= 512*8 then 
 									rply_rdy <= rply_req;
 								end if;
 							end if;
-						when others =>
-							if (cntr srl 3) >= unsigned(blength) then
-								rply_rdy <= rply_req;
-							end if;
-						end case;
+						elsif cntr/8 >= blength then
+							rply_rdy <= rply_req;
+						end if;
 					end if;
 				else
-					blength         <= (others => '-');
-					bDescriptorType <= (others => '-');
-					wTotalLength    <= (others => '-');
-					cntr            := (others => '0');
+					cntr := 0;
 				end if;
 			end if;
 		end if;
 	end process;
 
-	segmenttable_i : entity hdl4fpga.rom
-	generic map (
-		bitrom => hdo(table)**".content")
-	port map (
-		addr => std_logic_vector(segment_id),
-		data => segment_data);
-	segment_dir    <= segment_data(segment_dir'range);
-	segment_offset <= segment_data(segment_offset'range);
-	segment_length <= segment_data(segment_length'range);
-
-	segmentcontent_i : entity hdl4fpga.rom
-	generic map (
-		bitrom => reverse(hdo(test)**".content",8))
-	port map (
-		addr => std_logic_vector(descriptor_addr),
-		data => descriptor_data);
-
-	send_p : process (clk)
-		type states is (s_idle, s_data);
-		variable state    : states;
-		constant enatab   : std_logic_vector := hdl4fpga.usbpkg.decoder(hdo(request));
-		variable cntr     : unsigned(0 to 3+3);
-		variable enas     : std_logic_vector(0 to 4-1);
-		alias ena_bRequest is enas(1);
-		alias ena_wValue   is enas(2);
-		variable wValue   : unsigned(16-1 downto 0);
-		variable bRequest : unsigned(8-1 downto 0);
+	ctlr_b : block
+		signal ctlr_rgtr     : std_logic_vector(11+64 downto 0);
+		alias  bmRequestType : std_logic_vector( 8-1 downto 0) is ctlr_rgtr( 8-1 downto  0);
+		alias  bRequest      : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
+		alias  wValue        : std_logic_vector(16-1 downto 0) is ctlr_rgtr(32-1 downto 16);
+		alias  wIndex        : std_logic_vector(16-1 downto 0) is ctlr_rgtr(48-1 downto 32);
+		alias  wLength       : std_logic_vector(16-1 downto 0) is ctlr_rgtr(64-1 downto 48);
+		alias  addr          : std_logic_vector( 7-1 downto 0) is ctlr_rgtr( 7+64-1 downto 0+64);
+		alias  endp          : std_logic_vector(11-1 downto 7) is ctlr_rgtr(11+64-1 downto 7+64);
+		alias  pending       : std_ulogic is ctlr_rgtr(11+64);
 	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				enas := multiplex(enatab, std_logic_vector(cntr srl 3), enas'length);
-				if (send_rdy xor send_req)='1' then
-					case state is
-					when s_idle => 
-						descriptor_addr   <= unsigned(segment_offset);
-						descriptor_length <= resize(unsigned(segment_length), descriptor_length'length);
-						wValue := resize(unsigned(addr_val), wValue'length);
-						cntr   := (others => '0');
-						state  := s_data;
-					when s_data =>
-						if txdis='0' then
-							if txbs='0' then
-								descriptor_addr   <= descriptor_addr   + 1;
-								descriptor_length <= descriptor_length - 1;
-								if cntr(0)='0' then
-									if ena_bRequest='1' then
-										bRequest(0) := descriptor_data(0);
-										bRequest    := bRequest ror 1;
-									end if;
-									cntr := cntr + 1;
+
+		devmux_e : entity hdl4fpga.devmux
+		generic map (
+			n => ctlr_reqs'length,
+			m => ctlr_rgtr'length)
+		port map (
+			clk  => clk,
+			ena  => cken,
+			reqs => ctlr_reqs,
+			rdys => ctlr_rdys,
+			di(0*ctlr_rgtr'length to 1*ctlr_rgtr'length-1) => setup_rgtr,
+			di(1*ctlr_rgtr'length to 2*ctlr_rgtr'length-1) => hub_rgtr,
+			req  => ctlr_req,
+			rdy  => ctlr_rdy,
+			gntd => ctlr_gntds,
+			do   => ctlr_rgtr);
+
+		dev_addr <= addr;
+		dev_endp <= endp;
+		ctlr_p : process (ctlr_rdy, clk)
+			type states is (s_idle, s_setup, s_in, s_statusin, s_statusout);
+			variable state : states;
+			variable retries : natural range 0 to 8;
+		begin
+			if rising_edge(clk) then
+				if cken='1' then
+					if (tkstall_req xor tkstall_rdy)='0' then
+						case state is
+						when s_idle =>
+							if (ctlr_rdy xor ctlr_req)='1' then
+								if pending='1' then
+									ctlr_nak <= '0';
+									state   := s_setup;
+								else
+									tksetup_req <= not tksetup_rdy;
+									rqst_req <= not rqst_rdy;
+									state    := s_setup;
 								end if;
 							end if;
-						else
-							send_rdy <= send_req;
-						end if;
-					end case;
-				else
-					descriptor_length <= (others => '1');
-					state := s_idle;
-				end if;
-				txen <= not txdis;
-				if ena_wValue='1' then  
-					case bRequest(4-1 downto 0) is
-					when unsigned(set_address) =>
-						if txdis='0' then
-							txd <= wValue(0);
-							wValue := wValue ror 1;
-						end if;
-					when others =>
-						txd <= descriptor_data(0);
-					end case;
-				else
-					txd <= descriptor_data(0);
+							retries := 0;
+						when s_setup =>
+							if (rqst_req xor rqst_rdy)='0' then
+								rply_req <= not rply_rdy;
+								if bmRequestType(bmRequestType'left)='1' then
+									tkin_req <= not tkin_rdy;
+									state    := s_in;
+								else
+									tkin_req <= not tkin_rdy;
+									state    := s_statusout;
+								end if;
+							end if;
+						when s_in =>
+							if (tkin_req xor tkin_rdy)='0' then
+								if rxdv='0' then
+									if (tknak_rdy xor tknak_req)='1' then
+										ctlr_nak  <= '1';
+										tknak_rdy <= tknak_req;
+										ctlr_rdy  <= ctlr_req;
+										state     := s_idle;
+									elsif (rply_rdy xor rply_req)='1' then
+										tkin_req <= not tkin_rdy;
+									else
+										tkout_req <= not tkout_rdy;
+										state     := s_statusin;
+									end if;
+								end if;
+							end if;
+						when s_statusin =>
+							if (tkout_req xor tkout_rdy)='0' then
+								ctlr_rdy <= ctlr_req;
+								state    := s_idle;
+							end if;
+						when s_statusout =>
+							if (tkin_req xor tkin_rdy)='0' then
+								if (tknak_rdy xor tknak_req)='1' then
+									ctlr_nak  <= '1';
+									tknak_rdy <= tknak_req;
+									ctlr_rdy  <= ctlr_req;
+									state     := s_idle;
+								else
+									ctlr_rdy <= ctlr_req;
+									state    := s_idle;
+								end if;
+							end if;
+						end case;
+					else
+						ctlr_rdy <= ctlr_req;
+						state    := s_idle;
+					end if;
 				end if;
 			end if;
-		end if;
-	end process;
+		end process;
+
+		request_p : process (clk)
+			alias rqst is ctlr_rgtr(64-1 downto 0);
+			variable cntr : unsigned(0 to 3+3);
+		begin
+			if rising_edge(clk) then
+				if cken='1' then
+					if (rqst_rdy xor rqst_req)='1' then
+						if cntr(0)='0' then
+							if txbs='0' then
+								txd  <= multiplex(reverse(rqst), std_logic_vector(cntr));
+								cntr := cntr + 1;
+							end if;
+						else
+							rqst_rdy <= rqst_req;
+						end if;
+					else
+						cntr := (others => '0');
+					end if;
+					txen <= rqst_rdy xor rqst_req;
+				end if;
+			end if;
+		end process;
+	end block;
 
 end;
