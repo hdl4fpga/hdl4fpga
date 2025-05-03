@@ -147,7 +147,7 @@ begin
 		alias  dev_endp      : std_logic_vector(11-1 downto 7) is hub_rgtr(11+64-1 downto 7+64);
 		alias  pending       : std_ulogic is hub_rgtr(11+64);
 
-		type steps is (s_getdescriptor, s_portpower, s_portreset, s_getstatus, s_ready);
+		type steps is (s_getdescriptor, s_portpower, s_getstatus, s_ready);
 		variable step : steps;
 		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
 		alias setup_req is setup_reqs(1);
@@ -177,37 +177,15 @@ begin
 							wLength       <= x"ffff";
 							ctlr_req <= not ctlr_rdy;
 							step := s_portpower;
-							timer := 0;
 						when s_portpower =>
 							bmRequestType <= x"23";
 							bRequest      <= x"03";
 							wValue        <= x"0008";
 							wIndex        <= x"0001";
 							wLength       <= x"0000";
-							if timer < max_count then 
-								if sof_tick='1' then
-									timer := timer + 1;
-								end if;
-							else
-								timer := 0;
-								ctlr_req <= not ctlr_rdy;
-								step := s_portreset;
-							end if;
-						when s_portreset =>
-							bmRequestType <= x"23";
-							bRequest      <= x"03";
-							wValue        <= x"0004";
-							wIndex        <= x"0001";
-							wLength       <= x"0000";
-							if timer < max_count then 
-								if sof_tick='1' then
-									timer := timer + 1;
-								end if;
-							else
-								timer := 0;
-								ctlr_req <= not ctlr_rdy;
-								step := s_getstatus;
-							end if;
+							timer := 0;
+							ctlr_req <= not ctlr_rdy;
+							step := s_getstatus;
 						when s_getstatus =>
 							bmRequestType <= x"a3";
 							bRequest      <= x"00";
