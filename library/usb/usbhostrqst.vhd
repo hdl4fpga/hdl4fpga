@@ -310,11 +310,11 @@ begin
 	end process;
 
 	descriptors_p : process (rply_req, clk)
-		alias  bRequest          : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
-		variable rgtr : std_logic_vector(0 to 16*8-1);
-		variable cntr : natural range 0 to rgtr'length;
-		variable bLength         : std_logic_vector( 8-1 downto 0);
+		variable rgtr    : std_logic_vector(0 to 16*8-1);
+		variable cntr    : natural range 0 to rgtr'length;
+		variable bLength : std_logic_vector( 8-1 downto 0);
 		variable bDescriptorType : std_logic_vector( 8-1 downto 0);
+		alias bRequest : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
