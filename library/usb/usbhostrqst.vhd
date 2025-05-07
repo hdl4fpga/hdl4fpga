@@ -70,6 +70,7 @@ architecture def of usbhostrqst is
 	signal ctlr_rgtr  : std_logic_vector(11+64 downto 0);
 	signal setup_rgtr : std_logic_vector(ctlr_rgtr'range) := (others => '0');
 	signal hub_rgtr   : std_logic_vector(ctlr_rgtr'range) := (others => '0');
+	signal rqst_rgtr  : std_logic_vector(16*8-1 downto 0);
 
 	signal rqst_req   : std_ulogic := '0';
 	signal rqst_rdy   : std_ulogic := '0';
@@ -147,6 +148,8 @@ begin
 		alias  dev_addr      : std_logic_vector( 7-1 downto 0) is hub_rgtr( 7+64-1 downto 0+64);
 		alias  dev_endp      : std_logic_vector(11-1 downto 7) is hub_rgtr(11+64-1 downto 7+64);
 		alias  pending       : std_ulogic is hub_rgtr(11+64);
+		alias  wPortStatus   : std_logic_vector(16-1 downto 0) is rqst_rgtr(16-1 downto  0);
+		alias  wPortChange   : std_logic_vector(16-1 downto 0) is rqst_rgtr(32-1 downto 16);
 
 		type steps is (s_getdescriptor, s_portpower, s_portreset, s_getstatus, s_ready);
 		variable step : steps;
@@ -310,20 +313,19 @@ begin
 	end process;
 
 	descriptors_p : process (rply_req, clk)
-		variable rgtr    : std_logic_vector(0 to 16*8-1);
-		variable cntr    : natural range 0 to rgtr'length;
+		alias bRequest : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
+		variable cntr    : natural range 0 to rqst_rgtr'length;
 		variable bLength : std_logic_vector( 8-1 downto 0);
 		variable bDescriptorType : std_logic_vector( 8-1 downto 0);
-		alias bRequest : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (rply_rdy xor rply_req)='1' then
 					case bRequest is
-					when get_descriptor => 
+					when get_descriptor|get_status => 
     					if rxdv='1' then
-    						if cntr < rgtr'length then
-    							rgtr(cntr) := rxd;
+    						if cntr < rqst_rgtr'length then
+    							rqst_rgtr(cntr) <= rxd;
     						end if;
     						if rxbs='1' then
     							cntr := cntr + 1;
@@ -391,10 +393,10 @@ begin
     							rply_rdy <= rply_req;
     						end if;
     					end if;
-					when get_status =>
-    					rply_rdy <= rply_req;
 					when others =>
-    					rply_rdy <= rply_req;
+						if rxdv='0' then
+							rply_rdy <= rply_req;
+						end if;
 					end case;
 				else
 					cntr := 0;
