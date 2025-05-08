@@ -196,8 +196,7 @@ begin
 							wLength  <= x"0000";
 							portn    := ports - 1;
 							ctlr_req <= not ctlr_rdy;
-							step := s_portreset;
-								step := s_ready;
+							step := s_portpower;
 						when s_portpower =>
 							bmRequestType <= x"23";
 							bRequest <= set_feature;
