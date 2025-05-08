@@ -139,6 +139,8 @@ begin
 		end if;
 	end process;
 
+	hub_b : block
+	begin
 	hub_p : process (clk, ctlr_gntds)
 		alias bmRequestType : std_logic_vector( 8-1 downto 0) is hub_rgtr( 8-1 downto  0);
 		alias bRequest      : std_logic_vector( 8-1 downto 0) is hub_rgtr(16-1 downto  8);
@@ -222,6 +224,7 @@ begin
 							bRequest      <= get_status;
 							wValue        <= x"0000";
 							wIndex        <= x"0002";
+							wIndex        <= std_logic_vector(to_unsigned(ports, wIndex'length));
 							wLength       <= x"0004";
 							if timer < max_count then 
 								if sof_tick='1' then
@@ -231,7 +234,6 @@ begin
 								ctlr_req <= not ctlr_rdy;
 								timer := 0;
 								step := s_portreset;
-								step := s_ready;
 							end if;
 						when s_ready =>
 							hub_rgtr <= (others => '-');
@@ -249,6 +251,7 @@ begin
 			end if;
 		end if;
 	end process;
+	end block;
 	
    	setupmux_e : entity hdl4fpga.devmux
 		generic map (
