@@ -140,18 +140,22 @@ begin
 	end process;
 
 	hub_p : process (clk, ctlr_gntds)
-		alias  bmRequestType : std_logic_vector( 8-1 downto 0) is hub_rgtr( 8-1 downto  0);
-		alias  bRequest      : std_logic_vector( 8-1 downto 0) is hub_rgtr(16-1 downto  8);
-		alias  wValue        : std_logic_vector(16-1 downto 0) is hub_rgtr(32-1 downto 16);
-		alias  wIndex        : std_logic_vector(16-1 downto 0) is hub_rgtr(48-1 downto 32);
-		alias  wLength       : std_logic_vector(16-1 downto 0) is hub_rgtr(64-1 downto 48);
-		alias  dev_addr      : std_logic_vector( 7-1 downto 0) is hub_rgtr( 7+64-1 downto 0+64);
-		alias  dev_endp      : std_logic_vector(11-1 downto 7) is hub_rgtr(11+64-1 downto 7+64);
-		alias  pending       : std_ulogic is hub_rgtr(11+64);
-		alias  wPortStatus   : std_logic_vector(16-1 downto 0) is rqst_rgtr(16-1 downto  0);
-		alias  wPortChange   : std_logic_vector(16-1 downto 0) is rqst_rgtr(32-1 downto 16);
+		alias bmRequestType : std_logic_vector( 8-1 downto 0) is hub_rgtr( 8-1 downto  0);
+		alias bRequest      : std_logic_vector( 8-1 downto 0) is hub_rgtr(16-1 downto  8);
+		alias wValue        : std_logic_vector(16-1 downto 0) is hub_rgtr(32-1 downto 16);
+		alias wIndex        : std_logic_vector(16-1 downto 0) is hub_rgtr(48-1 downto 32);
+		alias wLength       : std_logic_vector(16-1 downto 0) is hub_rgtr(64-1 downto 48);
+		alias dev_addr      : std_logic_vector( 7-1 downto 0) is hub_rgtr( 7+64-1 downto 0+64);
+		alias dev_endp      : std_logic_vector(11-1 downto 7) is hub_rgtr(11+64-1 downto 7+64);
+		alias pending       : std_ulogic is hub_rgtr(11+64);
+		alias wPortStatus   : std_logic_vector(16-1 downto 0) is rqst_rgtr(16-1 downto  0);
+		alias wPortChange   : std_logic_vector(16-1 downto 0) is rqst_rgtr(32-1 downto 16);
+		alias bNbrPorts     : std_logic_vector( 8-1 downto 0) is rqst_rgtr(24-1 downto 16);
+		alias ccs is wPortStatus(0);
+		alias pes is wPortStatus(1);
+		alias nbIndex       : std_logic_vector( 4-1 downto 0) is wIndex(4-1 downto 0);
 
-		type steps is (s_getdescriptor, s_portpower, s_portreset, s_getstatus, s_ready);
+		type steps is (s_getdescriptor, s_poweron, s_portpower, s_portreset, s_getstatus, s_ready);
 		variable step : steps;
 		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
 		alias setup_req is setup_reqs(1);
@@ -161,6 +165,8 @@ begin
 		alias ctlr_gntd is ctlr_gntds(1);
 		constant max_count : natural := 2**12;
 		variable timer : natural range 0 to max_count;
+		variable ports  : natural range 0 to 15;
+		variable portn : natural range 0 to 15;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -180,21 +186,35 @@ begin
 							wIndex        <= x"0000";
 							wLength       <= x"ffff";
 							ctlr_req <= not ctlr_rdy;
-							step := s_portpower;
-						when s_portpower =>
+							step := s_poweron;
+						when s_poweron =>
+							ports    := to_integer(unsigned(bNbrPorts));
 							bmRequestType <= x"23";
-							bRequest      <= set_feature;
-							wValue        <= hub_port_power;
-							wIndex        <= x"0002";
-							wLength       <= x"0000";
-							timer := 0;
+							bRequest <= set_feature;
+							wValue   <= hub_port_power;
+							wIndex   <= std_logic_vector(resize(unsigned(bNbrPorts), wIndex'length));
+							wLength  <= x"0000";
+							portn    := ports - 1;
 							ctlr_req <= not ctlr_rdy;
 							step := s_portreset;
+								step := s_ready;
+						when s_portpower =>
+							bmRequestType <= x"23";
+							bRequest <= set_feature;
+							wValue   <= hub_port_power;
+							wIndex   <= std_logic_vector(to_unsigned(portn, wIndex'length));
+							wLength  <= x"0000";
+							portn    := portn - 1;
+							if portn=0 then
+								timer := 0;
+								step := s_portreset;
+							end if;
+							ctlr_req <= not ctlr_rdy;
 						when s_portreset =>
 							bmRequestType <= x"23";
 							bRequest      <= set_feature;
 							wValue        <= hub_port_reset;
-							wIndex        <= x"0002";
+							wIndex        <= std_logic_vector(to_unsigned(ports, wIndex'length));
 							wLength       <= x"0000";
 							ctlr_req <= not ctlr_rdy;
 							step := s_getstatus;
@@ -212,6 +232,7 @@ begin
 								ctlr_req <= not ctlr_rdy;
 								timer := 0;
 								step := s_portreset;
+								step := s_ready;
 							end if;
 						when s_ready =>
 							hub_rgtr <= (others => '-');
@@ -314,9 +335,8 @@ begin
 
 	descriptors_p : process (rply_req, clk)
 		alias bRequest : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
+		variable bLength : unsigned( 8-1 downto 0);
 		variable cntr    : natural range 0 to rqst_rgtr'length;
-		variable bLength : std_logic_vector( 8-1 downto 0);
-		variable bDescriptorType : std_logic_vector( 8-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -327,18 +347,25 @@ begin
     						if cntr < rqst_rgtr'length then
     							rqst_rgtr(cntr) <= rxd;
     						end if;
-    						if rxbs='1' then
-    							cntr := cntr + 1;
+    						if rxbs='0' then
+								if cntr < 8 then
+									blength(0) := rxd;
+									blength := blength ror 1;
+								end if;
+								if cntr < rqst_rgtr'length then
+									cntr := cntr + 1;
+								end if;
     						end if;
     					end if;
-    					if cntr >= 8 then
-    						if cntr/8 >= unsigned(bLength) then
-    							case bDescriptorType is
-    							when others =>
-    							end case;
-    							cntr := 0 ;
-    						end if;
-    					end if;
+						case bRequest is
+						when get_descriptor =>
+							if cntr >= 8 then
+								if cntr/8 >= unsigned(bLength) then
+									cntr := 0;
+								end if;
+							end if;
+						when others =>
+						end case;
 					when others =>
 						cntr := 0;
 					end case;
