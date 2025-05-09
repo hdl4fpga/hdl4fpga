@@ -231,7 +231,6 @@ begin
 								end if;
 								if portno < nbrports then
 									portno := portno + 1;
-									portno := 1;
 								else
 									portno := 1;
 								end if;
