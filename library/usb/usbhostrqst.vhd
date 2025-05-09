@@ -338,9 +338,9 @@ begin
 	end process;
 
 	descriptors_p : process (rply_req, clk)
-		alias bRequest : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
+		alias bRequest   : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
 		variable bLength : unsigned( 8-1 downto 0);
-		variable cntr    : natural range 0 to 256*8;
+		variable cntr    : natural range 0 to (2**bLength'length-1)*8;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -378,15 +378,12 @@ begin
 	end process;
 
 	config_p : process (rply_rdy, clk)
-		alias  bRequest : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
-		alias  wLength  : std_logic_vector(16-1 downto 0) is ctlr_rgtr(64-1 downto 48);
-
+		alias bRequest        : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
+		alias wLength         : std_logic_vector(16-1 downto 0) is ctlr_rgtr(64-1 downto 48);
 		alias bLength         : std_logic_vector( 8-1 downto 0) is rqst_rgtr( 8-1 downto  0);
 		alias bDescriptorType : std_logic_vector( 8-1 downto 0) is rqst_rgtr(16-1 downto  8);
 		alias wTotalLength    : std_logic_vector(16-1 downto 0) is rqst_rgtr(32-1 downto 16);
-		-- variable bLength         : unsigned( 8-1 downto 0);
-		-- variable bDescriptorType : unsigned( 8-1 downto 0);
-		-- variable wTotalLength    : unsigned(16-1 downto 0);
+
 		variable cntr : natural range 0 to rqst_rgtr'length;
 	begin
 		if rising_edge(clk) then
