@@ -234,7 +234,12 @@ begin
 								tp(1 to 8) <= wPortStatus(8-1 downto 0);
 								timer := 0;
 								case std_logic_vector'(pes, ccs) is
+								when "00"|"10" =>
+									flags(portno) := '0';
+									portno := next_port;
+									step   := s_getstatus;
 								when "01" =>
+									flags(portno) := '0';
 									bmRequestType <= x"23";
 									bRequest <= set_feature;
 									wValue   <= hub_port_reset;
