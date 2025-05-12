@@ -248,9 +248,9 @@ begin
 										setup_req <= not setup_rdy; 
 										flags(portno) := '1';
 									elsif (setup_req xor setup_rdy)='0' then
-										-- portno := next_port;
-										-- step   := s_getstatus;
 									end if;
+										portno := next_port;
+										step   := s_getstatus;
 								when others =>
 									portno := next_port;
 									step   := s_getstatus;
