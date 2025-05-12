@@ -247,6 +247,8 @@ begin
 									if flags(portno)='0' then
 										-- setup_req <= not setup_rdy; 
 										flags(portno) := '1';
+									else
+										portno := next_port;
 									end if;
 								when others =>
 									portno := next_port;
