@@ -169,8 +169,19 @@ begin
 			constant addr : std_logic_vector(16-1 downto 0) := x"000a";
 			constant max_count : natural := 2**12;
 			variable timer    : natural range 0 to max_count;
-			variable nbrports : natural range 1 to 15;
-			variable portno   : natural range 1 to 15;
+			constant max_nbrports : natural := 15;
+			variable nbrports : natural range 1 to max_nbrports;
+			variable portno   : natural range 1 to max_nbrports;
+			impure function next_port 
+				return natural is
+			begin
+				if portno < nbrports then
+					return portno + 1;
+				else
+					return 1;
+				end if;
+			end;
+			variable flags    : std_ulogic_vector(1 to max_nbrports);
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
@@ -185,10 +196,11 @@ begin
 							case step is
 							when s_getdescriptor =>
 								bmRequestType <= x"a0";
-								bRequest      <= get_descriptor;
-								wValue        <= x"2900";
-								wIndex        <= x"0000";
-								wLength       <= x"ffff";
+								bRequest <= get_descriptor;
+								wValue   <= x"2900";
+								wIndex   <= x"0000";
+								wLength  <= x"ffff";
+								portno   := 1;
 								ctlr_req <= not ctlr_rdy;
 								step := s_poweron;
 							when s_poweron =>
@@ -199,10 +211,9 @@ begin
 								wLength  <= x"0000";
 								nbrports := to_integer(unsigned(bNbrPorts));
 								ctlr_req <= not ctlr_rdy;
-								if portno < nbrports then
-									portno := portno + 1;
-								else
-									portno := 1;
+								flags(portno) := '0';
+								portno := next_port;
+								if portno=1 then 
 									step := s_getstatus;
 								end if;
 							when s_getstatus =>
@@ -221,25 +232,33 @@ begin
 								end if;
 							when s_resetport =>
 								tp(1 to 8) <= wPortStatus(8-1 downto 0);
-								if (ccs and not pes)='1' then
+								timer := 0;
+								case std_logic_vector'(pes, ccs) is
+								when "01" =>
 									bmRequestType <= x"23";
 									bRequest <= set_feature;
 									wValue   <= hub_port_reset;
 									wIndex   <= std_logic_vector(to_unsigned(portno, wIndex'length));
 									wLength  <= x"0000";
+									portno   := next_port;
 									ctlr_req <= not ctlr_rdy;
-								end if;
-								if portno < nbrports then
-									portno := portno + 1;
-								else
-									portno := 1;
-								end if;
-								timer := 0;
-								step := s_getstatus;
+									step     := s_getstatus;
+								when "11" =>
+									if flags(portno)='0' then
+										setup_req <= not setup_rdy; 
+										flags(portno) := '1';
+									elsif (setup_req xor setup_rdy)='0' then
+										-- portno := next_port;
+										-- step   := s_getstatus;
+									end if;
+								when others =>
+									portno := next_port;
+									step   := s_getstatus;
+								end case;
 							when s_ready =>
 								hub_rgtr <= (others => '-');
-								step := s_getdescriptor;
-								hub_rdy <= hub_req;
+								step     := s_getdescriptor;
+								hub_rdy  <= hub_req;
 							end case;
 						end if;
 					else
@@ -278,7 +297,7 @@ begin
 
 		type steps is (s_setaddress, s_getdescriptor, s_setconfiguration, s_ready);
 		variable step : steps;
-		constant addr : std_logic_vector(16-1 downto 0) := x"000a";
+		variable addr : unsigned(16-1 downto 0) := x"000a";
 		alias ctlr_req  is ctlr_reqs(0);
 		alias ctlr_rdy  is ctlr_rdys(0);
 		alias ctlr_gntd is ctlr_gntds(0);
@@ -297,13 +316,13 @@ begin
 							dev_endp      <= (others => '0');
 							bmRequestType <= x"00";
 							bRequest      <= set_address;
-							wValue        <= addr;
+							wValue        <= std_logic_vector(addr);
 							wIndex        <= x"0000";
 							wLength       <= x"0000";
 							ctlr_req <= not ctlr_rdy;
 							step := s_getdescriptor;
 						when s_getdescriptor =>
-							dev_addr      <= addr(dev_addr'range);
+							dev_addr      <= std_logic_vector(addr(dev_addr'range));
 							bmRequestType <= x"80";
 							bRequest      <= get_descriptor;
 							wValue        <= x"0200";
@@ -312,7 +331,7 @@ begin
 							ctlr_req <= not ctlr_rdy;
 							step := s_setconfiguration;
 						when s_setconfiguration =>
-							dev_addr      <= addr(dev_addr'range);
+							dev_addr      <= std_logic_vector(addr(dev_addr'range));
 							bmRequestType <= x"00";
 							bRequest      <= set_configuration;
 							wValue        <= x"0001";
@@ -323,6 +342,7 @@ begin
 						when s_ready =>
 							setup_rgtr <= (others => '-');
 							setup_rdy <= setup_req;
+							addr := addr + 1;
 							step := s_setaddress;
 						end case;
 					end if;
