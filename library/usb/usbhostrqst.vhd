@@ -299,9 +299,11 @@ begin
 	begin
 
 		hid_p : process (clk, ctlr_gntds)
-			type steps is (s_getdescriptor, s_ready);
+			type steps is (s_setprotocol, s_getreport, s_ready);
 			variable step : steps;
 			constant addr : std_logic_vector(16-1 downto 0) := x"000a";
+			constant max_count : natural := 2**12;
+			variable timer    : natural range 0 to max_count;
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
@@ -314,23 +316,37 @@ begin
 							end if;
 						elsif (ctlr_req xor ctlr_rdy)='0' then
 							case step is
-							when s_getdescriptor =>
+							when s_setprotocol =>
 								bmRequestType <= x"21";
-								bRequest <= get_descriptor;
-								wValue   <= x"2900";
-								wIndex   <= x"0000";
-								wLength  <= x"ffff";
+								bRequest <= set_protocol;
+								wValue   <= x"0000";
+								wIndex   <= x"0001";
+								wLength  <= x"0000";
 								ctlr_req <= not ctlr_rdy;
-								step := s_ready;
+								step := s_getreport;
+							when s_getreport =>
+								bmRequestType <= x"a1";
+								bRequest <= get_report;
+								wValue   <= x"0100";
+								wIndex   <= x"0000";
+								wLength  <= x"0008";
+								if timer < max_count then
+									if sof_tick='1' then
+										timer := timer + 1;
+									end if;
+								else
+									ctlr_req <= not ctlr_rdy;
+								end if;
+								-- step := s_ready;
 							when s_ready =>
 								hid_rgtr <= (others => '-');
-								step     := s_getdescriptor;
+								step     := s_getreport;
 								hid_rdy  <= hid_req;
 							end case;
 						end if;
 					else
 						hid_rgtr <= (others => '-');
-						step := s_getdescriptor;
+						step := s_setprotocol;
 					end if;
 					if ctlr_gntd='1' then
 						pending <= ctlr_nak;
@@ -342,7 +358,7 @@ begin
 	
    	setupmux_e : entity hdl4fpga.devmux
 		generic map (
-			n => ctlr_reqs'length)
+			n => setup_reqs'length)
 		port map (
 			clk  => clk,
 			ena  => cken,
@@ -361,7 +377,7 @@ begin
 		alias  dev_endp      : std_logic_vector(11-1 downto 7) is setup_rgtr(11+64-1 downto 7+64);
 		alias  pending       : std_ulogic is setup_rgtr(11+64);
 
-		type steps is (s_setaddress, s_getdescriptor, s_setconfiguration, s_ready);
+		type steps is (s_getdevice, s_setaddress, s_getconfiguration, s_setconfiguration, s_ready);
 		variable step : steps;
 		variable addr : unsigned(16-1 downto 0) := x"000a";
 		alias ctlr_req  is ctlr_reqs(0);
@@ -377,6 +393,16 @@ begin
 						end if;
 					elsif (ctlr_req xor ctlr_rdy)='0' then
 						case step is
+						when s_getdevice =>
+							dev_addr      <= (others => '0');
+							dev_endp      <= (others => '0');
+							bmRequestType <= x"80";
+							bRequest      <= get_descriptor;
+							wValue        <= x"0100";
+							wIndex        <= x"0000";
+							wLength       <= x"ffff";
+							ctlr_req <= not ctlr_rdy;
+							step := s_setaddress;
 						when s_setaddress =>
 							dev_addr      <= (others => '0');
 							dev_endp      <= (others => '0');
@@ -386,8 +412,8 @@ begin
 							wIndex        <= x"0000";
 							wLength       <= x"0000";
 							ctlr_req <= not ctlr_rdy;
-							step := s_getdescriptor;
-						when s_getdescriptor =>
+							step := s_getconfiguration;
+						when s_getconfiguration =>
 							dev_addr      <= std_logic_vector(addr(dev_addr'range));
 							bmRequestType <= x"80";
 							bRequest      <= get_descriptor;
@@ -409,12 +435,12 @@ begin
 							setup_rgtr <= (others => '-');
 							setup_rdy <= setup_req;
 							addr := addr + 1;
-							step := s_setaddress;
+							step := s_getdevice;
 						end case;
 					end if;
 				else
 					setup_rgtr <= (others => '-');
-					step := s_setaddress;
+					step := s_getdevice;
 				end if;
 				if ctlr_gntd='1' then
 					pending <= ctlr_nak;
