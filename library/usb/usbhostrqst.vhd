@@ -331,18 +331,21 @@ begin
 								bmRequestType <= x"a1";
 								bRequest <= get_report;
 								wValue   <= x"0100";
-								wIndex   <= x"0000";
-								wLength  <= x"0008";
+								wIndex   <= x"0000"; -- interface 0
+								wIndex   <= x"0001"; -- interface 1
+								-- wLength  <= x"0008"; -- keyboard
+								wLength  <= x"0003"; -- mouse
 								if timer < max_count then
 									if sof_tick='1' then
 										timer := timer + 1;
 									end if;
-								elsif tries < 15 then
+								-- elsif tries < 15 then
+								else
 									timer := 0;
 									tries := tries + 1;
 									ctlr_req <= not ctlr_rdy;
-								else
-									step := s_ready;
+								-- else
+									-- step := s_ready;
 								end if;
 							when s_ready =>
 								hid_rgtr <= (others => '-');
