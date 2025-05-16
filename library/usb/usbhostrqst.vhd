@@ -302,8 +302,9 @@ begin
 			type steps is (s_setprotocol, s_getreport, s_ready);
 			variable step : steps;
 			constant addr : std_logic_vector(16-1 downto 0) := x"000a";
-			constant max_count : natural := 2**12;
+			constant max_count : natural := 2**11;
 			variable timer    : natural range 0 to max_count;
+			variable tries : natural range 0 to 16;
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
@@ -324,6 +325,8 @@ begin
 								wLength  <= x"0000";
 								ctlr_req <= not ctlr_rdy;
 								step := s_getreport;
+								tries := 0;
+								timer := 0;
 							when s_getreport =>
 								bmRequestType <= x"a1";
 								bRequest <= get_report;
@@ -334,10 +337,13 @@ begin
 									if sof_tick='1' then
 										timer := timer + 1;
 									end if;
-								else
+								elsif tries < 15 then
+									timer := 0;
+									tries := tries + 1;
 									ctlr_req <= not ctlr_rdy;
+								else
+									step := s_ready;
 								end if;
-								-- step := s_ready;
 							when s_ready =>
 								hid_rgtr <= (others => '-');
 								step     := s_getreport;
