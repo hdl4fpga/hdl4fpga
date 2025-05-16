@@ -332,7 +332,7 @@ begin
 								bRequest <= get_report;
 								wValue   <= x"0100";
 								wIndex   <= x"0000"; -- interface 0
-								wIndex   <= x"0001"; -- interface 1
+								-- wIndex   <= x"0001"; -- interface 1
 								-- wLength  <= x"0008"; -- keyboard
 								wLength  <= x"0003"; -- mouse
 								if timer < max_count then
