@@ -315,7 +315,7 @@ begin
 						elsif (ctlr_req xor ctlr_rdy)='0' then
 							case step is
 							when s_getdescriptor =>
-								bmRequestType <= x"00";
+								bmRequestType <= x"21";
 								bRequest <= get_descriptor;
 								wValue   <= x"2900";
 								wIndex   <= x"0000";
