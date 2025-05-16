@@ -48,6 +48,14 @@ package usbpkg is
 	constant get_descriptor    : std_logic_vector := x"06";
 	constant set_configuration : std_logic_vector := x"09";
 
+	-- hid device
+	constant get_report        : std_logic_vector := x"01";
+	constant get_idle          : std_logic_vector := x"02";
+	constant get_protocol      : std_logic_vector := x"03";
+	constant set_report        : std_logic_vector := x"09";
+	constant set_idle          : std_logic_vector := x"0a";
+	constant set_protocol      : std_logic_vector := x"0b";
+
 	constant hub_port_power    : std_logic_vector := x"0008";
 	constant hub_port_reset    : std_logic_vector := x"0004";
 

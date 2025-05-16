@@ -70,13 +70,14 @@ architecture def of usbhostrqst is
 	signal ctlr_rgtr  : std_logic_vector(11+64 downto 0);
 	signal setup_rgtr : std_logic_vector(ctlr_rgtr'range) := (others => '0');
 	signal hub_rgtr   : std_logic_vector(ctlr_rgtr'range) := (others => '0');
+	signal hid_rgtr   : std_logic_vector(ctlr_rgtr'range) := (others => '0');
 	signal rqst_rgtr  : std_logic_vector(256*8-1 downto 0);
 
 	signal rqst_req   : std_ulogic := '0';
 	signal rqst_rdy   : std_ulogic := '0';
 	signal ctlr_req   : std_ulogic := '0';
 	signal ctlr_rdy   : std_ulogic := '0';
-	signal ctlr_reqs  : std_logic_vector(0 to 2-1) := (others => '0');
+	signal ctlr_reqs  : std_logic_vector(0 to 3-1) := (others => '0');
 	signal ctlr_rdys  : std_logic_vector(ctlr_reqs'range) := (others => '0');
 	signal ctlr_gntds : std_logic_vector(ctlr_reqs'range);
 	signal rply_req   : std_ulogic := '0';
@@ -87,6 +88,8 @@ architecture def of usbhostrqst is
 	signal setup_rdys : std_logic_vector(0 to 2-1) := (others => '0');
 	signal hub_req    : std_ulogic := '0';
 	signal hub_rdy    : std_ulogic := '0';
+	signal hid_req    : std_ulogic := '0';
+	signal hid_rdy    : std_ulogic := '0';
 				
 	signal ctlr_nak   : std_ulogic := '0';
 
@@ -120,7 +123,7 @@ begin
 							end if;
 						when s_setup =>
 							if (setup_req xor setup_rdy)='0' then
-								hub_req <= not hub_rdy;
+								hid_req <= not hid_rdy;
 								init_rdy <= init_req;
 							end if;
 						end case;
@@ -279,9 +282,83 @@ begin
 		end process;
 	end block;
 	
+	hid_b : block
+		alias bmRequestType : std_logic_vector( 8-1 downto 0) is hid_rgtr(    8-1 downto  0);
+		alias bRequest      : std_logic_vector( 8-1 downto 0) is hid_rgtr(   16-1 downto  8);
+		alias wValue        : std_logic_vector(16-1 downto 0) is hid_rgtr(   32-1 downto 16);
+		alias wIndex        : std_logic_vector(16-1 downto 0) is hid_rgtr(   48-1 downto 32);
+		alias wLength       : std_logic_vector(16-1 downto 0) is hid_rgtr(   64-1 downto 48);
+		alias dev_addr      : std_logic_vector( 7-1 downto 0) is hid_rgtr( 7+64-1 downto 0+64);
+		alias dev_endp      : std_logic_vector(11-1 downto 7) is hid_rgtr(11+64-1 downto 7+64);
+		alias pending       : std_ulogic is hid_rgtr(11+64);
+
+		alias ctlr_req  is ctlr_reqs(2);
+		alias ctlr_rdy  is ctlr_rdys(2);
+		alias ctlr_gntd is ctlr_gntds(2);
+
+	begin
+
+		hid_p : process (clk, ctlr_gntds)
+			type steps is (s_setprotocol, s_getreport, s_ready);
+			variable step : steps;
+			constant addr : std_logic_vector(16-1 downto 0) := x"000a";
+			constant max_count : natural := 2**12;
+			variable timer    : natural range 0 to max_count;
+		begin
+			if rising_edge(clk) then
+				if cken='1' then
+					dev_addr  <= addr(dev_addr'range);
+					dev_endp  <= (others => '0');
+					if (hid_req xor hid_rdy)='1' then
+						if pending='1' then
+							if sof_tick='1' then
+								ctlr_req <= not ctlr_rdy;
+							end if;
+						elsif (ctlr_req xor ctlr_rdy)='0' then
+							case step is
+							when s_setprotocol =>
+								bmRequestType <= x"21";
+								bRequest <= set_protocol;
+								wValue   <= x"0000";
+								wIndex   <= x"0001";
+								wLength  <= x"0000";
+								ctlr_req <= not ctlr_rdy;
+								step := s_getreport;
+							when s_getreport =>
+								bmRequestType <= x"a1";
+								bRequest <= get_report;
+								wValue   <= x"0100";
+								wIndex   <= x"0000";
+								wLength  <= x"0008";
+								if timer < max_count then
+									if sof_tick='1' then
+										timer := timer + 1;
+									end if;
+								else
+									ctlr_req <= not ctlr_rdy;
+								end if;
+								-- step := s_ready;
+							when s_ready =>
+								hid_rgtr <= (others => '-');
+								step     := s_getreport;
+								hid_rdy  <= hid_req;
+							end case;
+						end if;
+					else
+						hid_rgtr <= (others => '-');
+						step := s_setprotocol;
+					end if;
+					if ctlr_gntd='1' then
+						pending <= ctlr_nak;
+					end if;
+				end if;
+			end if;
+		end process;
+	end block;
+	
    	setupmux_e : entity hdl4fpga.devmux
 		generic map (
-			n => ctlr_reqs'length)
+			n => setup_reqs'length)
 		port map (
 			clk  => clk,
 			ena  => cken,
@@ -300,7 +377,7 @@ begin
 		alias  dev_endp      : std_logic_vector(11-1 downto 7) is setup_rgtr(11+64-1 downto 7+64);
 		alias  pending       : std_ulogic is setup_rgtr(11+64);
 
-		type steps is (s_setaddress, s_getdescriptor, s_setconfiguration, s_ready);
+		type steps is (s_getdevice, s_setaddress, s_getconfiguration, s_setconfiguration, s_ready);
 		variable step : steps;
 		variable addr : unsigned(16-1 downto 0) := x"000a";
 		alias ctlr_req  is ctlr_reqs(0);
@@ -316,6 +393,16 @@ begin
 						end if;
 					elsif (ctlr_req xor ctlr_rdy)='0' then
 						case step is
+						when s_getdevice =>
+							dev_addr      <= (others => '0');
+							dev_endp      <= (others => '0');
+							bmRequestType <= x"80";
+							bRequest      <= get_descriptor;
+							wValue        <= x"0100";
+							wIndex        <= x"0000";
+							wLength       <= x"ffff";
+							ctlr_req <= not ctlr_rdy;
+							step := s_setaddress;
 						when s_setaddress =>
 							dev_addr      <= (others => '0');
 							dev_endp      <= (others => '0');
@@ -325,8 +412,8 @@ begin
 							wIndex        <= x"0000";
 							wLength       <= x"0000";
 							ctlr_req <= not ctlr_rdy;
-							step := s_getdescriptor;
-						when s_getdescriptor =>
+							step := s_getconfiguration;
+						when s_getconfiguration =>
 							dev_addr      <= std_logic_vector(addr(dev_addr'range));
 							bmRequestType <= x"80";
 							bRequest      <= get_descriptor;
@@ -348,12 +435,12 @@ begin
 							setup_rgtr <= (others => '-');
 							setup_rdy <= setup_req;
 							addr := addr + 1;
-							step := s_setaddress;
+							step := s_getdevice;
 						end case;
 					end if;
 				else
 					setup_rgtr <= (others => '-');
-					step := s_setaddress;
+					step := s_getdevice;
 				end if;
 				if ctlr_gntd='1' then
 					pending <= ctlr_nak;
@@ -473,6 +560,7 @@ begin
 			rdys => ctlr_rdys,
 			di(0*ctlr_rgtr'length to 1*ctlr_rgtr'length-1) => setup_rgtr,
 			di(1*ctlr_rgtr'length to 2*ctlr_rgtr'length-1) => hub_rgtr,
+			di(2*ctlr_rgtr'length to 3*ctlr_rgtr'length-1) => hid_rgtr,
 			req  => ctlr_req,
 			rdy  => ctlr_rdy,
 			gntd => ctlr_gntds,
