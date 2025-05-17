@@ -293,6 +293,8 @@ begin
 		alias dev_endp      : std_logic_vector(11-1 downto 7) is hid_rgtr(11+64-1 downto 7+64);
 		alias pending       : std_ulogic is hid_rgtr(11+64);
 
+		alias bInterfaceNumber : std_logic_vector(8-1 downto 0) is descriptor_rgtr(3*8-1 downto 2*8);
+		alias bInterfaceClass  : std_logic_vector(8-1 downto 0) is descriptor_rgtr(6*8-1 downto 5*8);
 		alias ctlr_req  is ctlr_reqs(2);
 		alias ctlr_rdy  is ctlr_rdys(2);
 		alias ctlr_gntd is ctlr_gntds(2);
@@ -463,11 +465,11 @@ begin
 		constant max_count : natural := 256*8;
 		variable cntr    : natural range 0 to max_count;
 		alias bLength            : std_logic_vector(8-1 downto 0) is descriptor_rgtr(1*8-1 downto 0*8);
-		alias bDescriptorType    : std_logic_vector(8-1 downto 0) is descriptor_rgtr(2*8-1 downto 1*8);
+		alias bDescriptorType    : std_logic_vector(8-1 downto 0) is descriptor_rgtr(16-1 downto  8);
 		alias bInterfaceNumber   : std_logic_vector(8-1 downto 0) is descriptor_rgtr(3*8-1 downto 2*8);
 		alias bInterfaceClass    : std_logic_vector(8-1 downto 0) is descriptor_rgtr(6*8-1 downto 5*8);
 		alias bInterfaceProtocol : std_logic_vector(8-1 downto 0) is descriptor_rgtr(8*8-1 downto 7*8);
-		alias bRequest           : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
+		alias bRequest           : std_logic_vector(8-1 downto 0) is ctlr_rgtr(16-1 downto 8);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -480,6 +482,22 @@ begin
 								if cntr/8 >= unsigned(bLength) then
 									cntr := 0;
 								end if;
+							end if;
+							if cntr=0 then
+								case bDescriptorType is
+								when interface =>
+									case bInterfaceClass is
+									when class_hid =>
+										case bInterfaceProtocol is
+										when keyboard_protocol =>
+										when mouse_protocol =>
+										when others =>
+										end case;
+									when others =>
+									end case;
+								when endpoint =>
+								when others =>
+								end case;
 							end if;
 						when others =>
 						end case;
