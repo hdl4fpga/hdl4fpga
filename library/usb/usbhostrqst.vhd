@@ -93,6 +93,11 @@ architecture def of usbhostrqst is
 				
 	signal ctlr_nak   : std_ulogic := '0';
 
+	signal keyboard_interface : natural range 0 to 15;
+	signal mouse_interface    : natural range 0 to 15;
+	signal keyboard_present : std_logic;
+	signal mouse_present    : std_logic;
+
 begin
 
 	init_p : process (cken, clk)
@@ -308,6 +313,7 @@ begin
 			constant max_count : natural := 2**11;
 			variable timer    : natural range 0 to max_count;
 			variable tries : natural range 0 to 16;
+			variable toggle : std_logic;
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
@@ -334,10 +340,27 @@ begin
 								bmRequestType <= x"a1";
 								bRequest <= get_report;
 								wValue   <= x"0100";
-								wIndex   <= x"0000"; -- interface 0
-								-- wIndex   <= x"0001"; -- interface 1
-								-- wLength  <= x"0008"; -- keyboard
-								wLength  <= x"0003"; -- mouse
+								if toggle='0' then
+									if keyboard_present='1' then
+										wIndex  <= std_logic_vector(to_unsigned(keyboard_interface, wIndex'length));
+										wLength <= x"0008";
+										toggle  := '1';
+									elsif mouse_present='1' then
+										wIndex  <= std_logic_vector(to_unsigned(mouse_interface, wIndex'length));
+										wLength <= x"0003";
+									end if;
+								else
+									if mouse_present='1' then
+										wIndex  <= std_logic_vector(to_unsigned(mouse_interface, wIndex'length));
+										wLength <= x"0003";
+										toggle  := '0';
+									elsif keyboard_present='1' then
+										wIndex  <= std_logic_vector(to_unsigned(keyboard_interface, wIndex'length));
+										wLength <= x"0008";
+									end if;
+								end if;
+								-- wIndex   <= x"0000"; -- set the intreface here to test
+								-- wLength  <= x"0008"; -- set the size packet here to test
 								if timer < max_count then
 									if sof_tick='1' then
 										timer := timer + 1;
@@ -358,6 +381,7 @@ begin
 						end if;
 					else
 						hid_rgtr <= (others => '-');
+						toggle := '0';
 						step := s_setprotocol;
 					end if;
 					if ctlr_gntd='1' then
@@ -470,37 +494,13 @@ begin
 		alias bInterfaceClass    : std_logic_vector(8-1 downto 0) is descriptor_rgtr(6*8-1 downto 5*8);
 		alias bInterfaceProtocol : std_logic_vector(8-1 downto 0) is descriptor_rgtr(8*8-1 downto 7*8);
 		alias bRequest           : std_logic_vector(8-1 downto 0) is ctlr_rgtr(16-1 downto 8);
+		variable interface_no    : natural range 0 to 15;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (rply_rdy xor rply_req)='1' then
 					case bRequest is
 					when get_descriptor|get_status => 
-						case bRequest is
-						when get_descriptor =>
-							if cntr >= 8 then
-								if cntr/8 >= unsigned(bLength) then
-									cntr := 0;
-								end if;
-							end if;
-							if cntr=0 then
-								case bDescriptorType is
-								when interface =>
-									case bInterfaceClass is
-									when class_hid =>
-										case bInterfaceProtocol is
-										when keyboard_protocol =>
-										when mouse_protocol =>
-										when others =>
-										end case;
-									when others =>
-									end case;
-								when endpoint =>
-								when others =>
-								end case;
-							end if;
-						when others =>
-						end case;
 						if rxdv='1' then
 							if rxbs='0' then
 								if cntr < descriptor_rgtr'length then
@@ -512,10 +512,39 @@ begin
 							end if;
 						end if;
 
+						case bRequest is
+						when get_descriptor =>
+							if cntr >= 8 then
+								if cntr/8 >= unsigned(bLength) then
+									case bDescriptorType is
+									when interface =>
+										case bInterfaceClass is
+										when class_hid =>
+											case bInterfaceProtocol is
+											when keyboard_protocol =>
+												keyboard_interface <= interface_no;
+												keyboard_present <= '1';
+											when mouse_protocol =>
+												mouse_present <= '1';
+												mouse_interface <= interface_no;
+											when others =>
+											end case;
+										when others =>
+										end case;
+										interface_no := interface_no + 1;
+									when endpoint =>
+									when others =>
+									end case;
+									cntr := 0;
+								end if;
+							end if;
+						when others =>
+						end case;
 					when others =>
 						cntr := 0;
 					end case;
    				else
+					interface_no     := 0;
    					cntr := 0;
    				end if;
 			end if;
