@@ -71,7 +71,7 @@ architecture def of usbhostrqst is
 	signal setup_rgtr : std_logic_vector(ctlr_rgtr'range) := (others => '0');
 	signal hub_rgtr   : std_logic_vector(ctlr_rgtr'range) := (others => '0');
 	signal hid_rgtr   : std_logic_vector(ctlr_rgtr'range) := (others => '0');
-	signal rqst_rgtr  : std_logic_vector(256*8-1 downto 0);
+	signal descriptor_rgtr  : std_logic_vector(256*8-1 downto 0);
 
 	signal rqst_req   : std_ulogic := '0';
 	signal rqst_rdy   : std_ulogic := '0';
@@ -152,9 +152,10 @@ begin
 		alias dev_endp      : std_logic_vector(11-1 downto 7) is hub_rgtr(11+64-1 downto 7+64);
 		alias pending       : std_ulogic is hub_rgtr(11+64);
 
-		alias wPortStatus   : std_logic_vector(16-1 downto 0) is rqst_rgtr(16-1 downto  0);
-		alias wPortChange   : std_logic_vector(16-1 downto 0) is rqst_rgtr(32-1 downto 16);
-		alias bNbrPorts     : std_logic_vector( 8-1 downto 0) is rqst_rgtr(24-1 downto 16);
+		alias bNbrPorts     : std_logic_vector( 8-1 downto 0) is descriptor_rgtr(24-1 downto 16);
+		alias wPortStatus   : std_logic_vector(16-1 downto 0) is descriptor_rgtr(16-1 downto  0);
+		alias wPortChange   : std_logic_vector(16-1 downto 0) is descriptor_rgtr(32-1 downto 16);
+
 		alias ccs       is wPortStatus(0);
 		alias pes       is wPortStatus(1);
 
@@ -292,6 +293,8 @@ begin
 		alias dev_endp      : std_logic_vector(11-1 downto 7) is hid_rgtr(11+64-1 downto 7+64);
 		alias pending       : std_ulogic is hid_rgtr(11+64);
 
+		alias bInterfaceNumber : std_logic_vector(8-1 downto 0) is descriptor_rgtr(3*8-1 downto 2*8);
+		alias bInterfaceClass  : std_logic_vector(8-1 downto 0) is descriptor_rgtr(6*8-1 downto 5*8);
 		alias ctlr_req  is ctlr_reqs(2);
 		alias ctlr_rdy  is ctlr_rdys(2);
 		alias ctlr_gntd is ctlr_gntds(2);
@@ -302,8 +305,9 @@ begin
 			type steps is (s_setprotocol, s_getreport, s_ready);
 			variable step : steps;
 			constant addr : std_logic_vector(16-1 downto 0) := x"000a";
-			constant max_count : natural := 2**12;
+			constant max_count : natural := 2**11;
 			variable timer    : natural range 0 to max_count;
+			variable tries : natural range 0 to 16;
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
@@ -324,20 +328,28 @@ begin
 								wLength  <= x"0000";
 								ctlr_req <= not ctlr_rdy;
 								step := s_getreport;
+								tries := 0;
+								timer := 0;
 							when s_getreport =>
 								bmRequestType <= x"a1";
 								bRequest <= get_report;
 								wValue   <= x"0100";
-								wIndex   <= x"0000";
-								wLength  <= x"0008";
+								wIndex   <= x"0000"; -- interface 0
+								-- wIndex   <= x"0001"; -- interface 1
+								-- wLength  <= x"0008"; -- keyboard
+								wLength  <= x"0003"; -- mouse
 								if timer < max_count then
 									if sof_tick='1' then
 										timer := timer + 1;
 									end if;
+								-- elsif tries < 15 then
 								else
+									timer := 0;
+									tries := tries + 1;
 									ctlr_req <= not ctlr_rdy;
+								-- else
+									-- step := s_ready;
 								end if;
-								-- step := s_ready;
 							when s_ready =>
 								hid_rgtr <= (others => '-');
 								step     := s_getreport;
@@ -450,26 +462,20 @@ begin
 	end process;
 
 	descriptors_p : process (rply_req, clk)
-		alias bRequest   : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
-		variable bLength : unsigned( 8-1 downto 0);
-		variable cntr    : natural range 0 to (2**bLength'length-1)*8;
+		constant max_count : natural := 256*8;
+		variable cntr    : natural range 0 to max_count;
+		alias bLength            : std_logic_vector(8-1 downto 0) is descriptor_rgtr(1*8-1 downto 0*8);
+		alias bDescriptorType    : std_logic_vector(8-1 downto 0) is descriptor_rgtr(16-1 downto  8);
+		alias bInterfaceNumber   : std_logic_vector(8-1 downto 0) is descriptor_rgtr(3*8-1 downto 2*8);
+		alias bInterfaceClass    : std_logic_vector(8-1 downto 0) is descriptor_rgtr(6*8-1 downto 5*8);
+		alias bInterfaceProtocol : std_logic_vector(8-1 downto 0) is descriptor_rgtr(8*8-1 downto 7*8);
+		alias bRequest           : std_logic_vector(8-1 downto 0) is ctlr_rgtr(16-1 downto 8);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (rply_rdy xor rply_req)='1' then
 					case bRequest is
 					when get_descriptor|get_status => 
-						if rxdv='1' then
-							if rxbs='0' then
-								if cntr < 8 then
-									blength(0) := rxd;
-									blength := blength ror 1;
-								end if;
-								if cntr < rqst_rgtr'length then
-									cntr := cntr + 1;
-								end if;
-							end if;
-						end if;
 						case bRequest is
 						when get_descriptor =>
 							if cntr >= 8 then
@@ -477,8 +483,35 @@ begin
 									cntr := 0;
 								end if;
 							end if;
+							if cntr=0 then
+								case bDescriptorType is
+								when interface =>
+									case bInterfaceClass is
+									when class_hid =>
+										case bInterfaceProtocol is
+										when keyboard_protocol =>
+										when mouse_protocol =>
+										when others =>
+										end case;
+									when others =>
+									end case;
+								when endpoint =>
+								when others =>
+								end case;
+							end if;
 						when others =>
 						end case;
+						if rxdv='1' then
+							if rxbs='0' then
+								if cntr < descriptor_rgtr'length then
+									descriptor_rgtr(cntr) <= rxd;
+								end if;
+								if cntr < max_count then
+									cntr := cntr + 1;
+								end if;
+							end if;
+						end if;
+
 					when others =>
 						cntr := 0;
 					end case;
@@ -490,23 +523,26 @@ begin
 	end process;
 
 	config_p : process (rply_rdy, clk)
+		variable cnfg_rgtr    : std_logic_vector(32-1 downto 0);
 		alias bRequest        : std_logic_vector( 8-1 downto 0) is ctlr_rgtr(16-1 downto  8);
 		alias wLength         : std_logic_vector(16-1 downto 0) is ctlr_rgtr(64-1 downto 48);
-		alias bLength         : std_logic_vector( 8-1 downto 0) is rqst_rgtr( 8-1 downto  0);
-		alias bDescriptorType : std_logic_vector( 8-1 downto 0) is rqst_rgtr(16-1 downto  8);
-		alias wTotalLength    : std_logic_vector(16-1 downto 0) is rqst_rgtr(32-1 downto 16);
+		alias bLength         : std_logic_vector( 8-1 downto 0) is cnfg_rgtr( 8-1 downto  0);
+		alias bDescriptorType : std_logic_vector( 8-1 downto 0) is cnfg_rgtr(16-1 downto  8);
+		alias wTotalLength    : std_logic_vector(16-1 downto 0) is cnfg_rgtr(32-1 downto 16);
 
-		variable cntr : natural range 0 to rqst_rgtr'length;
+		constant max_count : natural := 256*8;
+		variable cntr : natural range 0 to max_count;
+
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (rply_rdy xor rply_req)='1' then
 					if rxdv='1' then
-						if cntr < rqst_rgtr'length then
-							rqst_rgtr(cntr) <= rxd;
+						if cntr < cnfg_rgtr'length then
+							cnfg_rgtr(cntr) := rxd;
 						end if;
 						if rxbs='0' then
-							if cntr < rqst_rgtr'length then 
+							if cntr < max_count then 
 								cntr := cntr + 1;
 							end if;
 						end if;
@@ -518,7 +554,7 @@ begin
 								if cntr >= 32 then
 									if cntr/8 >= unsigned(wTotalLength) then
 										rply_rdy <= rply_req;
-									elsif cntr >= rqst_rgtr'length then 
+									elsif cntr >= max_count then 
 										rply_rdy <= rply_req;
 									end if;
 								end if;
