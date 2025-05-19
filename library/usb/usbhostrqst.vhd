@@ -296,7 +296,7 @@ begin
 		alias wIndex        : std_logic_vector(16-1 downto 0) is hid_rgtr(   48-1 downto 32);
 		alias wLength       : std_logic_vector(16-1 downto 0) is hid_rgtr(   64-1 downto 48);
 		alias dev_addr      : std_logic_vector( 7-1 downto 0) is hid_rgtr( 7+64-1 downto 0+64);
-		alias dev_endp      : std_logic_vector(11-1 downto 7) is hid_rgtr(11+64-1 downto 7+64);
+		alias dev_endp      : std_logic_vector( 4-1 downto 0) is hid_rgtr(11+64-1 downto 7+64);
 		alias pending       : std_ulogic is hid_rgtr(11+64);
 
 		alias bInterfaceNumber : std_logic_vector(8-1 downto 0) is descriptor_rgtr(3*8-1 downto 2*8);
@@ -312,12 +312,13 @@ begin
 	begin
 
 		hdi_table : block
-			signal wr_ena : std_logic;
-			signal wr_data : std_logic_vector(0 to 0);
-			signal rd_data : std_logic_vector(0 to 0);
+			signal wr_ena  : std_logic;
+			signal wr_data : std_logic_vector(dev_addr'length+dev_class'length+interface_no'length-1 downto 0);
+			signal rd_data : std_logic_vector(wr_data'range);
 		begin
+
 			wr_ena  <= cken and '1';
-			wr_data <= dev_addr & std_logic_vector(interface_no) & dev_class;
+			wr_data <= dev_addr & dev_class & std_logic_vector(interface_no);
 			hiddata_e : entity hdl4fpga.dpram
 			port map (
 				wr_clk  => clk,
@@ -326,8 +327,17 @@ begin
 				wr_data => wr_data,
 				rd_addr => std_logic_vector(hid_next),
 				rd_data => rd_data);
-			dev_addr     <= rd_data(0 to 0);
-			dev_class    <= rd_data(0 to 0);
+
+			process (rd_data)
+				variable shr : unsigned(rd_data'range);
+			begin 
+				shr := unsigned(rd_data);
+				dev_class <= std_logic_vector(shr(dev_class'range));
+				shr := shr srl dev_class'length;
+				dev_addr <= std_logic_vector(shr(dev_addr'range));
+			end process;
+			dev_endp <= (others => '0');
+
 		end block;
 
 		hid_p : process (clk, ctlr_gntds)
@@ -340,8 +350,6 @@ begin
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
-					dev_endp <= (others => '0');
-					dev_addr <= addr(dev_addr'range);
 					if (hid_req xor hid_rdy)='1' then
 						if pending='1' then
 							if sof_tick='1' then
