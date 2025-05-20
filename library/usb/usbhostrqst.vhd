@@ -307,8 +307,8 @@ begin
 
 		signal dev_class : std_logic_vector(8-1 downto 0);
 
-		signal hid_length : unsigned(4-1 downto 0);
-		signal hid_next   : unsigned(4-1 downto 0);
+		signal hid_last : unsigned(4-1 downto 0);
+		signal hid_next : unsigned(4-1 downto 0);
 	begin
 
 		hdi_table : block
@@ -378,7 +378,11 @@ begin
 									end if;
 								else
 									timer := 0;
-									hid_next <= hid_next + 1;
+									if hid_next < hid_last then
+										hid_next <= hid_next + 1;
+									else
+										hid_next <= 0;
+									end if;
 									ctlr_req <= not ctlr_rdy;
 								end if;
 							end case;
