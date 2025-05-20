@@ -323,7 +323,7 @@ begin
 			port map (
 				wr_clk  => clk,
 				wr_ena  => wr_ena,
-				wr_addr => std_logic_vector(hid_length),
+				wr_addr => std_logic_vector(hid_last),
 				wr_data => wr_data,
 				rd_addr => std_logic_vector(hid_next),
 				rd_data => rd_data);
@@ -341,12 +341,10 @@ begin
 		end block;
 
 		hid_p : process (clk, ctlr_gntds)
-			type states is (s_setprotocol, s_getreport);
-			variable state : states;
 			constant addr : std_logic_vector(16-1 downto 0) := x"000a";
 			constant max_count : natural := 2**11;
-			variable timer     : natural range 0 to max_count;
-			variable toggle    : std_logic;
+			variable timer : natural range 0 to max_count;
+			variable xxxx  : std_ulogic := '0';
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
@@ -356,41 +354,42 @@ begin
 								ctlr_req <= not ctlr_rdy;
 							end if;
 						elsif (ctlr_req xor ctlr_rdy)='0' then
-							case state is
-							when s_setprotocol =>
-								bmRequestType <= x"21";
-								bRequest <= set_protocol;
-								wValue   <= x"0000";
-								wIndex   <= x"0001";
-								wLength  <= x"0000";
-								ctlr_req <= not ctlr_rdy;
-								timer := 0;
-								state := s_getreport;
-							when s_getreport =>
-								bmRequestType <= x"a1";
-								bRequest <= get_report;
-								wValue   <= x"0100";
-								-- wIndex   <= x"0000"; -- set the intreface here to test
-								-- wLength  <= x"0008"; -- set the size packet here to test
-								if timer < max_count then
-									if sof_tick='1' then
-										timer := timer + 1;
-									end if;
-								else
-									timer := 0;
-									if hid_next < hid_last then
-										hid_next <= hid_next + 1;
-									else
-										hid_next <= 0;
-									end if;
-									ctlr_req <= not ctlr_rdy;
-								end if;
-							end case;
+							bmRequestType <= x"21";
+							bRequest <= set_protocol;
+							wValue   <= x"0000";
+							wIndex   <= x"0001";
+							wLength  <= x"0000";
+							ctlr_req <= not ctlr_rdy;
 						end if;
-					else
-						hid_rgtr <= (others => '-');
-						toggle   := '0';
-						state    := s_setprotocol;
+					end if;
+					if ctlr_gntd='1' then
+						pending <= ctlr_nak;
+					end if;
+				end if;
+				if cken='1' then
+					if (hid_req xor hid_rdy)='1' then
+						if pending='1' then
+							if sof_tick='1' then
+								ctlr_req <= not ctlr_rdy;
+							end if;
+						elsif (ctlr_req xor ctlr_rdy)='0' then
+							bmRequestType <= x"a1";
+							bRequest <= get_report;
+							wValue   <= x"0100";
+							if timer < max_count then
+								if sof_tick='1' then
+									timer := timer + 1;
+								end if;
+							else
+								if hid_next < hid_last then
+									hid_next <= hid_next + 1;
+								else
+									hid_next <= (others => '0');
+								end if;
+								timer := 0;
+								ctlr_req <= not ctlr_rdy;
+							end if;
+						end if;
 					end if;
 					if ctlr_gntd='1' then
 						pending <= ctlr_nak;
