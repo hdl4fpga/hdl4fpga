@@ -17,12 +17,12 @@
 -- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  --
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  --
 -- SOFTWARE.                                                                      --
---                                                                                --
+--                                                                                -	
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-
+:when
 library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
