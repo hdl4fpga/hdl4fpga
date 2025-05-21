@@ -22,7 +22,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-:when
+
 library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
@@ -338,16 +338,6 @@ begin
 			dev_endp <= (others => '0');
 
 		end block;
-
-		hid_p : process (clk, ctlr_gntds)
-			constant addr : std_logic_vector(16-1 downto 0) := x"000a";
-			constant max_count : natural := 2**11;
-			variable timer : natural range 0 to max_count;
-			variable xxxx  : std_ulogic := '0';
-		begin
-			if rising_edge(clk) then
-				if cken='1' then
-	begin
 
 		hid_p : process (clk, ctlr_gntds)
 			type steps is (s_setprotocol, s_getreport, s_ready);
