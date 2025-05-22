@@ -341,7 +341,7 @@ begin
 		end block;
 
 		hid_p : process (clk, ctlr_gntds)
-			type steps is (s_setprotocol, s_getreport, s_ready);
+			type steps is (s_setprotocol, s_getreport, s_pending);
 			variable step : steps;
 			constant addr : std_logic_vector(16-1 downto 0) := x"000a";
 			constant max_count : natural := 2**11;
@@ -374,24 +374,13 @@ begin
 								bmRequestType <= x"a1";
 								bRequest <= get_report;
 								wValue   <= x"0100";
-								if toggle='0' then
-									if keyboard_present='1' then
-										wIndex  <= std_logic_vector(to_unsigned(keyboard_interface, wIndex'length));
-										wLength <= x"0008";
-										toggle  := '1';
-									elsif mouse_present='1' then
-										wIndex  <= std_logic_vector(to_unsigned(mouse_interface, wIndex'length));
-										wLength <= x"0003";
-									end if;
-								else
-									if mouse_present='1' then
-										wIndex  <= std_logic_vector(to_unsigned(mouse_interface, wIndex'length));
-										wLength <= x"0003";
-										toggle  := '0';
-									elsif keyboard_present='1' then
-										wIndex  <= std_logic_vector(to_unsigned(keyboard_interface, wIndex'length));
-										wLength <= x"0008";
-									end if;
+								if mouse_present='1' then
+									wIndex  <= std_logic_vector(to_unsigned(mouse_interface, wIndex'length));
+									wLength <= x"0003";
+									toggle  := '0';
+								elsif keyboard_present='1' then
+									wIndex  <= std_logic_vector(to_unsigned(keyboard_interface, wIndex'length));
+									wLength <= x"0008";
 								end if;
 								-- wIndex   <= x"0000"; -- set the intreface here to test
 								-- wLength  <= x"0008"; -- set the size packet here to test
