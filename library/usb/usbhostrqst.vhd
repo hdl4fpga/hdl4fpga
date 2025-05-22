@@ -384,7 +384,6 @@ begin
 									when others =>
 									end case;
 								end if;
-								step := s_pending;
 								if timer < max_count then
 									if sof_tick='1' then
 										timer := timer + 1;
