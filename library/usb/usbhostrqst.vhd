@@ -394,9 +394,9 @@ begin
 									tries := tries + 1;
 									ctlr_req <= not ctlr_rdy;
 								-- else
-									-- step := s_ready;
+									-- step := s_pending;
 								end if;
-							when s_ready =>
+							when s_pending =>
 								hid_rgtr <= (others => '-');
 								step     := s_getreport;
 								hid_rdy  <= hid_req;
