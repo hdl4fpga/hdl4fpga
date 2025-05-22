@@ -93,8 +93,9 @@ architecture def of usbhostrqst is
 				
 	signal ctlr_nak   : std_ulogic := '0';
 
-	signal keyboard_interface : natural range 0 to 15;
-	signal mouse_interface    : natural range 0 to 15;
+	signal interface_no    : unsigned(4-1 downto 0);
+	signal keyboard_interface : unsigned(4-1 downto 0);
+	signal mouse_interface    : unsigned(4-1 downto 0);
 	signal keyboard_present : std_logic;
 	signal mouse_present    : std_logic;
 
@@ -527,7 +528,6 @@ begin
 		alias bInterfaceClass    : std_logic_vector(8-1 downto 0) is descriptor_rgtr(6*8-1 downto 5*8);
 		alias bInterfaceProtocol : std_logic_vector(8-1 downto 0) is descriptor_rgtr(8*8-1 downto 7*8);
 		alias bRequest           : std_logic_vector(8-1 downto 0) is ctlr_rgtr(16-1 downto 8);
-		variable interface_no    : natural range 0 to 15;
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -564,7 +564,7 @@ begin
 											end case;
 										when others =>
 										end case;
-										interface_no := interface_no + 1;
+										interface_no <= interface_no + 1;
 									when endpoint =>
 									when others =>
 									end case;
@@ -577,7 +577,7 @@ begin
 						cntr := 0;
 					end case;
    				else
-					interface_no     := 0;
+					interface_no <= (others => '0');
    					cntr := 0;
    				end if;
 			end if;
