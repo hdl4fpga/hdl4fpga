@@ -350,12 +350,11 @@ begin
 			variable step : steps;
 			constant addr : std_logic_vector(16-1 downto 0) := x"000a";
 			constant max_count : natural := 2**11;
-			variable timer    : natural range 0 to max_count;
+			variable timer : natural range 0 to max_count;
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
-					dev_addr  <= addr(dev_addr'range);
-					dev_endp  <= (others => '0');
+					hid_addr  <= addr(dev_addr'range);
 					if (ctlr_req xor ctlr_rdy)='0' then
 						if pending='1' then
 							if sof_tick='1' then
