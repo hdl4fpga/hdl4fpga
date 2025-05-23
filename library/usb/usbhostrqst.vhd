@@ -357,51 +357,53 @@ begin
 				if cken='1' then
 					hid_addr  <= addr(dev_addr'range);
 					if (ctlr_req xor ctlr_rdy)='0' then
-						if pending='1' then
-							if sof_tick='1' then
+						case step is
+						when s_poll =>
+							if (hid_req xor hid_rdy)='1' then
+								bmRequestType <= x"21";
+								bRequest <= set_protocol;
+								wValue   <= x"0000";
+								wIndex   <= x"0001";
+								wLength  <= x"0000";
 								ctlr_req <= not ctlr_rdy;
+								step := s_pending;
+							else
+								bmRequestType <= x"a1";
+								bRequest <= get_report;
+								wValue   <= x"0100";
+								case hid_protocol is
+								when keyboard_protocol =>
+									wIndex  <= std_logic_vector(resize(unsigned(hid_interface), wIndex'length));
+									wLength <= x"0008";
+								when mouse_protocol =>
+									wIndex  <= std_logic_vector(resize(unsigned(hid_interface), wIndex'length));
+									wLength <= x"0003";
+								when others =>
+								end case;
 							end if;
-						else
-							case step is
-							when s_poll =>
-								if (hid_req xor hid_rdy)='1' then
-									bmRequestType <= x"21";
-									bRequest <= set_protocol;
-									wValue   <= x"0000";
-									wIndex   <= x"0001";
-									wLength  <= x"0000";
-								else
-									bmRequestType <= x"a1";
-									bRequest <= get_report;
-									wValue   <= x"0100";
-									case hid_protocol is
-									when keyboard_protocol =>
-										wIndex  <= std_logic_vector(resize(unsigned(hid_interface), wIndex'length));
-										wLength <= x"0008";
-									when mouse_protocol =>
-										wIndex  <= std_logic_vector(resize(unsigned(hid_interface), wIndex'length));
-										wLength <= x"0003";
-									when others =>
-									end case;
+							if timer < max_count then
+								if sof_tick='1' then
+									timer := timer + 1;
 								end if;
-								if timer < max_count then
-									if sof_tick='1' then
-										timer := timer + 1;
-									end if;
-								else
-									timer := 0;
+							else
+								timer := 0;
+								ctlr_req <= not ctlr_rdy;
+								step := s_pending;
+							end if;
+						when s_pending =>
+							if pending='1' then
+								if sof_tick='1' then
 									ctlr_req <= not ctlr_rdy;
-									step := s_pending;
 								end if;
-							when s_pending =>
+							else
 								case bRequest is
 								when set_protocol =>
 									hid_rdy <= hid_req;
 								when others =>
 								end case;
 								step := s_poll;
-							end case;
-						end if;
+							end if;
+						end case;
 					else
 						hid_rgtr <= (others => '-');
 						step := s_poll;
