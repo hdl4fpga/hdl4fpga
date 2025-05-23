@@ -97,6 +97,7 @@ architecture def of usbhostrqst is
 	signal keyboard_interface : unsigned(4-1 downto 0);
 	signal mouse_interface    : unsigned(4-1 downto 0);
 	signal InterfaceProtocol  : std_logic_vector(8-1 downto 0);
+	signal hid_length   : unsigned(4-1 downto 0);
 
 begin
 
@@ -311,7 +312,6 @@ begin
 		signal hid_class    : std_logic_vector(dev_class'range);
 		signal hid_protocol : std_logic_vector(bInterfaceProtocol'range);
 		signal hid_interface : std_logic_vector( 4-1 downto 0);
-		signal hid_length   : unsigned(4-1 downto 0);
 		signal hid_next     : unsigned(4-1 downto 0);
 
 	begin
@@ -322,7 +322,7 @@ begin
 			signal rd_data : std_logic_vector(wr_data'range);
 		begin
 
-			wr_ena  <= cken and '1';
+			-- wr_ena  <= '1';
 			wr_data <= hid_addr & hid_class & std_logic_vector(interface_no);
 			hiddata_e : entity hdl4fpga.dpram
 			port map (
@@ -340,6 +340,7 @@ begin
 				dev_class <= std_logic_vector(shr(dev_class'range));
 				shr := shr srl dev_class'length;
 				dev_addr <= std_logic_vector(shr(dev_addr'range));
+				shr := shr srl dev_addr'length;
 			end process;
 			dev_endp <= (others => '0');
 
@@ -543,8 +544,10 @@ begin
 											case bInterfaceProtocol is
 											when keyboard_protocol =>
 												interface_no <= interface_no + 1;
+												hid_length <= hid_length + 1;
 											when mouse_protocol =>
 												interface_no <= interface_no + 1;
+												hid_length <= hid_length + 1;
 											when others =>
 											end case;
 											interfaceProtocol <= bInterfaceProtocol;
