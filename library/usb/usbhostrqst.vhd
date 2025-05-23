@@ -93,11 +93,11 @@ architecture def of usbhostrqst is
 				
 	signal ctlr_nak   : std_ulogic := '0';
 
-	signal interface_no       : unsigned(4-1 downto 0);
 	signal keyboard_interface : unsigned(4-1 downto 0);
 	signal mouse_interface    : unsigned(4-1 downto 0);
 	signal InterfaceProtocol  : std_logic_vector(8-1 downto 0);
 	signal hid_length   : unsigned(4-1 downto 0) := (others => '0');
+	signal hid_interface : std_logic_vector( 4-1 downto 0);
 
 begin
 
@@ -241,7 +241,6 @@ begin
 									step := s_resetport;
 								end if;
 							when s_resetport =>
-								tp(1 to 8) <= wPortStatus(8-1 downto 0);
 								timer := 0;
 								case std_logic_vector'(pes, ccs) is
 								when "00"|"10" =>
@@ -306,28 +305,27 @@ begin
 		alias ctlr_rdy  is ctlr_rdys(2);
 		alias ctlr_gntd is ctlr_gntds(2);
 
-		signal dev_class  : std_logic_vector(8-1 downto 0);
+		signal dev_class     : std_logic_vector(8-1 downto 0);
+		signal interface : unsigned(hid_interface'range);
 
 		signal hid_addr     : std_logic_vector(dev_addr'range);
 		signal hid_class    : std_logic_vector(dev_class'range);
 		signal hid_protocol : std_logic_vector(bInterfaceProtocol'range);
-		signal hid_interface : std_logic_vector( 4-1 downto 0);
-		signal hid_next     : unsigned(4-1 downto 0);
+		signal hid_next     : unsigned(4-1 downto 0) := (others => '0');
 
 	begin
 
 		hdi_table : block
-			signal wr_ena  : std_logic;
-			signal wr_data : std_logic_vector(dev_addr'length+dev_class'length+interface_no'length-1 downto 0);
+			constant addr : std_logic_vector(16-1 downto 0) := x"000a";
+			signal wr_data : std_logic_vector(dev_addr'length+dev_class'length+hid_interface'length-1 downto 0);
 			signal rd_data : std_logic_vector(wr_data'range);
 		begin
 
-			-- wr_ena  <= '1';
-			wr_data <= hid_addr & hid_class & std_logic_vector(interface_no);
+			hid_addr <= addr(dev_addr'range);
+			wr_data <= hid_addr & hid_class & hid_interface;
 			hiddata_e : entity hdl4fpga.dpram
 			port map (
 				wr_clk  => clk,
-				wr_ena  => wr_ena,
 				wr_addr => std_logic_vector(hid_length),
 				wr_data => wr_data,
 				rd_addr => std_logic_vector(hid_next),
@@ -337,6 +335,8 @@ begin
 				variable shr : unsigned(rd_data'range);
 			begin 
 				shr := unsigned(rd_data);
+				interface <= shr(interface'range);
+				shr := shr srl interface'length;
 				dev_class <= std_logic_vector(shr(dev_class'range));
 				shr := shr srl dev_class'length;
 				dev_addr <= std_logic_vector(shr(dev_addr'range));
@@ -346,16 +346,15 @@ begin
 
 		end block;
 
+		tp(1 to 8) <= std_logic_vector(interface) & std_logic_vector(hid_next);
 		hid_p : process (clk, ctlr_gntds)
 			type steps is (s_poll, s_pending);
 			variable step : steps;
-			constant addr : std_logic_vector(16-1 downto 0) := x"000a";
 			constant max_count : natural := 2**11;
 			variable timer : natural range 0 to max_count;
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
-					hid_addr  <= addr(dev_addr'range);
 					if (ctlr_req xor ctlr_rdy)='0' then
 						case step is
 						when s_poll =>
@@ -365,18 +364,25 @@ begin
 								wValue   <= x"0000";
 								wIndex   <= x"0001";
 								wLength  <= x"0000";
-								ctlr_req <= not ctlr_rdy;
-								step := s_pending;
+								if timer < max_count then
+									if sof_tick='1' then
+										timer := timer + 1;
+									end if;
+								else
+									timer := 0;
+									ctlr_req <= not ctlr_rdy;
+									step := s_pending;
+								end if;
 							elsif 0 < hid_length then
 								bmRequestType <= x"a1";
 								bRequest <= get_report;
 								wValue   <= x"0100";
 								case hid_protocol is
 								when keyboard_protocol =>
-									wIndex  <= std_logic_vector(resize(unsigned(hid_interface), wIndex'length));
+									wIndex  <= std_logic_vector(resize(interface, wIndex'length));
 									wLength <= x"0008";
 								when mouse_protocol =>
-									wIndex  <= std_logic_vector(resize(unsigned(hid_interface), wIndex'length));
+									wIndex  <= std_logic_vector(resize(interface, wIndex'length));
 									wLength <= x"0003";
 								when others =>
 								end case;
@@ -387,6 +393,7 @@ begin
 								else
 									timer := 0;
 									ctlr_req <= not ctlr_rdy;
+									hid_next <= hid_next + 1;
 									step := s_pending;
 								end if;
 							end if;
@@ -401,12 +408,12 @@ begin
 									hid_rdy <= hid_req;
 								when others =>
 								end case;
+								if hid_next >= hid_length then
+									hid_next <= (others => '0');
+								end if;
 								step := s_poll;
 							end if;
 						end case;
-					else
-						hid_rgtr <= (others => '-');
-						step := s_poll;
 					end if;
 					if ctlr_gntd='1' then
 						pending <= ctlr_nak;
@@ -518,6 +525,7 @@ begin
 		alias bInterfaceClass    : std_logic_vector(8-1 downto 0) is descriptor_rgtr(6*8-1 downto 5*8);
 		alias bInterfaceProtocol : std_logic_vector(8-1 downto 0) is descriptor_rgtr(8*8-1 downto 7*8);
 		alias bRequest           : std_logic_vector(8-1 downto 0) is ctlr_rgtr(16-1 downto 8);
+		variable interface_no    : unsigned(hid_interface'range);
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
@@ -545,16 +553,17 @@ begin
 										when class_hid =>
 											case bInterfaceProtocol is
 											when keyboard_protocol =>
-												interface_no <= interface_no + 1;
+												hid_interface <= std_logic_vector(interface_no);
 												hid_length <= hid_length + 1;
 											when mouse_protocol =>
-												interface_no <= interface_no + 1;
+												hid_interface <= std_logic_vector(interface_no);
 												hid_length <= hid_length + 1;
 											when others =>
 											end case;
 											interfaceProtocol <= bInterfaceProtocol;
 										when others =>
 										end case;
+										interface_no := interface_no + 1;
 									when endpoint =>
 									when others =>
 									end case;
@@ -567,7 +576,7 @@ begin
 						cntr := 0;
 					end case;
    				else
-					interface_no <= (others => '0');
+					interface_no := (others => '0');
    					cntr := 0;
    				end if;
 			end if;
