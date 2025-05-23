@@ -367,7 +367,7 @@ begin
 								wLength  <= x"0000";
 								ctlr_req <= not ctlr_rdy;
 								step := s_pending;
-							else
+							elsif 0 < hid_length then
 								bmRequestType <= x"a1";
 								bRequest <= get_report;
 								wValue   <= x"0100";
@@ -380,15 +380,15 @@ begin
 									wLength <= x"0003";
 								when others =>
 								end case;
-							end if;
-							if timer < max_count then
-								if sof_tick='1' then
-									timer := timer + 1;
+								if timer < max_count then
+									if sof_tick='1' then
+										timer := timer + 1;
+									end if;
+								else
+									timer := 0;
+									ctlr_req <= not ctlr_rdy;
+									step := s_pending;
 								end if;
-							else
-								timer := 0;
-								ctlr_req <= not ctlr_rdy;
-								step := s_pending;
 							end if;
 						when s_pending =>
 							if pending='1' then
