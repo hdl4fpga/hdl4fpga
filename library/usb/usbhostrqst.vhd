@@ -97,7 +97,7 @@ architecture def of usbhostrqst is
 	signal keyboard_interface : unsigned(4-1 downto 0);
 	signal mouse_interface    : unsigned(4-1 downto 0);
 	signal InterfaceProtocol  : std_logic_vector(8-1 downto 0);
-	signal hid_length   : unsigned(4-1 downto 0);
+	signal hid_length   : unsigned(4-1 downto 0) := (others => '0');
 
 begin
 
