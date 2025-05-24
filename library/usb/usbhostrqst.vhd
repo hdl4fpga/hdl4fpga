@@ -307,11 +307,9 @@ begin
 		alias ctlr_rdy  is ctlr_rdys(2);
 		alias ctlr_gntd is ctlr_gntds(2);
 
-		signal dev_class     : std_logic_vector(8-1 downto 0);
 		signal interface : unsigned(hid_interface'range);
 
 		signal hid_addr     : std_logic_vector(dev_addr'range);
-		signal hid_class    : std_logic_vector(dev_class'range);
 		signal hid_next     : unsigned(4-1 downto 0) := (others => '0');
 
 		signal protocol : unsigned(hid_protocol'range);
@@ -319,12 +317,12 @@ begin
 
 		hdi_table : block
 			constant addr : std_logic_vector(16-1 downto 0) := x"000a";
-			signal wr_data : std_logic_vector(dev_addr'length+dev_class'length+hid_protocol'length+hid_interface'length-1 downto 0);
+			signal wr_data : std_logic_vector(dev_addr'length+hid_protocol'length+hid_interface'length-1 downto 0);
 			signal rd_data : std_logic_vector(wr_data'range);
 		begin
 
 			hid_addr <= addr(dev_addr'range);
-			wr_data <= hid_addr & hid_class & hid_protocol & hid_interface;
+			wr_data <= hid_addr & hid_protocol & hid_interface;
 			hiddata_e : entity hdl4fpga.dpram
 			port map (
 				wr_clk  => clk,
@@ -342,10 +340,7 @@ begin
 				shr := shr srl interface'length;
 				protocol <= shr(protocol'range);
 				shr := shr srl protocol'length;
-				dev_class <= std_logic_vector(shr(dev_class'range));
-				shr := shr srl dev_class'length;
 				dev_addr <= std_logic_vector(shr(dev_addr'range));
-				-- dev_addr <= addr(dev_addr'range);
 				shr := shr srl dev_addr'length;
 			end process;
 			dev_endp <= (others => '0');
