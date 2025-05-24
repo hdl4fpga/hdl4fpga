@@ -93,8 +93,7 @@ architecture def of usbhostrqst is
 				
 	signal ctlr_nak   : std_ulogic := '0';
 
-	signal keyboard_interface : unsigned(4-1 downto 0);
-	signal mouse_interface    : unsigned(4-1 downto 0);
+	signal DeviceClass  : std_logic_vector(8-1 downto 0);
 	signal InterfaceProtocol  : std_logic_vector(8-1 downto 0);
 	signal hid_length   : unsigned(4-1 downto 0) := (others => '0');
 	signal hid_we  : std_logic;
@@ -131,7 +130,12 @@ begin
 							end if;
 						when s_setup =>
 							if (setup_req xor setup_rdy)='0' then
-								hid_req <= not hid_rdy;
+								case DeviceClass is
+								when DeviceClass_hub =>
+									hub_req <= not hub_rdy;
+								when others => 
+									hid_req <= not hid_rdy;
+								end case;
 								init_rdy <= init_req;
 							end if;
 						end case;
@@ -382,10 +386,10 @@ begin
 								bRequest <= get_report;
 								wValue   <= x"0100";
 								case std_logic_vector(protocol) is
-								when keyboard_protocol =>
+								when Protocol_keyboard =>
 									wIndex  <= std_logic_vector(resize(interface, wIndex'length));
 									wLength <= x"0008";
-								when mouse_protocol =>
+								when Protocol_mouse =>
 									wIndex  <= std_logic_vector(resize(interface, wIndex'length));
 									wLength <= x"0003";
 								when others =>
@@ -525,11 +529,12 @@ begin
 		constant max_count : natural := 256*8;
 		variable cntr    : natural range 0 to max_count;
 		alias bLength            : std_logic_vector(8-1 downto 0) is descriptor_rgtr(1*8-1 downto 0*8);
-		alias bDescriptorType    : std_logic_vector(8-1 downto 0) is descriptor_rgtr(16-1 downto  8);
+		alias bDescriptorType    : std_logic_vector(8-1 downto 0) is descriptor_rgtr(2*8-1 downto 1*8);
+		alias bDeviceClass       : std_logic_vector(8-1 downto 0) is descriptor_rgtr(5*8-1 downto 4*8);
 		alias bInterfaceNumber   : std_logic_vector(8-1 downto 0) is descriptor_rgtr(3*8-1 downto 2*8);
 		alias bInterfaceClass    : std_logic_vector(8-1 downto 0) is descriptor_rgtr(6*8-1 downto 5*8);
 		alias bInterfaceProtocol : std_logic_vector(8-1 downto 0) is descriptor_rgtr(8*8-1 downto 7*8);
-		alias bRequest           : std_logic_vector(8-1 downto 0) is ctlr_rgtr(16-1 downto 8);
+		alias bRequest           : std_logic_vector(8-1 downto 0) is ctlr_rgtr(2*8-1 downto 8);
 		variable interface_no    : unsigned(hid_interface'range);
 	begin
 		if rising_edge(clk) then
@@ -554,21 +559,23 @@ begin
 							if cntr >= 8 then
 								if cntr/8 >= unsigned(bLength) then
 									case bDescriptorType is
+									when device =>
+										DeviceClass <= bDeviceClass;
 									when interface =>
 										case bInterfaceClass is
-										when class_hid =>
+										when interfaceclass_hid =>
 											case bInterfaceProtocol is
-											when keyboard_protocol =>
+											when Protocol_keyboard =>
 												hid_protocol  <= bInterfaceProtocol;
 												hid_interface <= std_logic_vector(interface_no);
 												hid_we <= '1';
-											when mouse_protocol =>
+											when Protocol_mouse =>
 												hid_protocol  <= bInterfaceProtocol;
 												hid_interface <= std_logic_vector(interface_no);
 												hid_we <= '1';
 											when others =>
 											end case;
-											interfaceProtocol <= bInterfaceProtocol;
+											InterfaceProtocol <= bInterfaceProtocol;
 										when others =>
 										end case;
 										interface_no := interface_no + 1;

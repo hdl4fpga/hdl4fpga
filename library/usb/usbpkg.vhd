@@ -48,9 +48,11 @@ package usbpkg is
 	constant get_descriptor    : std_logic_vector := x"06";
 	constant set_configuration : std_logic_vector := x"09";
 
-	constant class_hid         : std_logic_vector := x"03";
-	constant keyboard_protocol : std_logic_vector := x"01";
-	constant mouse_protocol    : std_logic_vector := x"02";
+	constant DeviceClass_hub   : std_logic_vector := x"09";
+	constant InterfaceClass_hid : std_logic_vector := x"03";
+	constant Protocol_keyboard : std_logic_vector := x"01";
+	constant Protocol_mouse    : std_logic_vector := x"02";
+
 	-- hid device
 	constant get_report        : std_logic_vector := x"01";
 	constant get_idle          : std_logic_vector := x"02";
