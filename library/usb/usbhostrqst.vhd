@@ -97,7 +97,9 @@ architecture def of usbhostrqst is
 	signal mouse_interface    : unsigned(4-1 downto 0);
 	signal InterfaceProtocol  : std_logic_vector(8-1 downto 0);
 	signal hid_length   : unsigned(4-1 downto 0) := (others => '0');
+	signal hid_we  : std_logic;
 	signal hid_interface : std_logic_vector( 4-1 downto 0);
+	signal hid_protocol : std_logic_vector(8-1 downto 0);
 
 begin
 
@@ -310,23 +312,24 @@ begin
 
 		signal hid_addr     : std_logic_vector(dev_addr'range);
 		signal hid_class    : std_logic_vector(dev_class'range);
-		signal hid_protocol : std_logic_vector(bInterfaceProtocol'range);
 		signal hid_next     : unsigned(4-1 downto 0) := (others => '0');
 
+		signal protocol : unsigned(hid_protocol'range);
 	begin
 
 		hdi_table : block
 			constant addr : std_logic_vector(16-1 downto 0) := x"000a";
-			signal wr_data : std_logic_vector(dev_addr'length+dev_class'length+hid_interface'length-1 downto 0);
+			signal wr_data : std_logic_vector(dev_addr'length+dev_class'length+hid_protocol'length+hid_interface'length-1 downto 0);
 			signal rd_data : std_logic_vector(wr_data'range);
 		begin
 
 			hid_addr <= addr(dev_addr'range);
-			wr_data <= hid_addr & hid_class & hid_interface;
+			wr_data <= hid_addr & hid_class & hid_protocol & hid_interface;
 			hiddata_e : entity hdl4fpga.dpram
 			port map (
 				wr_clk  => clk,
 				wr_addr => std_logic_vector(hid_length),
+				wr_ena  => hid_we,
 				wr_data => wr_data,
 				rd_addr => std_logic_vector(hid_next),
 				rd_data => rd_data);
@@ -337,16 +340,19 @@ begin
 				shr := unsigned(rd_data);
 				interface <= shr(interface'range);
 				shr := shr srl interface'length;
+				protocol <= shr(protocol'range);
+				shr := shr srl protocol'length;
 				dev_class <= std_logic_vector(shr(dev_class'range));
 				shr := shr srl dev_class'length;
 				dev_addr <= std_logic_vector(shr(dev_addr'range));
+				-- dev_addr <= addr(dev_addr'range);
 				shr := shr srl dev_addr'length;
 			end process;
 			dev_endp <= (others => '0');
 
 		end block;
 
-		tp(1 to 8) <= std_logic_vector(interface) & std_logic_vector(hid_next);
+		tp(1 to 8) <= std_logic_vector(hid_next) & std_logic_vector(interface);
 		hid_p : process (clk, ctlr_gntds)
 			type steps is (s_poll, s_pending);
 			variable step : steps;
@@ -377,7 +383,7 @@ begin
 								bmRequestType <= x"a1";
 								bRequest <= get_report;
 								wValue   <= x"0100";
-								case hid_protocol is
+								case std_logic_vector(protocol) is
 								when keyboard_protocol =>
 									wIndex  <= std_logic_vector(resize(interface, wIndex'length));
 									wLength <= x"0008";
@@ -393,7 +399,6 @@ begin
 								else
 									timer := 0;
 									ctlr_req <= not ctlr_rdy;
-									hid_next <= hid_next + 1;
 									step := s_pending;
 								end if;
 							end if;
@@ -408,7 +413,9 @@ begin
 									hid_rdy <= hid_req;
 								when others =>
 								end case;
-								if hid_next >= hid_length then
+								if hid_next+1 < hid_length then
+									hid_next <= hid_next + 1;
+								else
 									hid_next <= (others => '0');
 								end if;
 								step := s_poll;
@@ -529,6 +536,10 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
+				if hid_we='1' then
+					hid_length <= hid_length + 1;
+				end if;
+				hid_we <= '0';
 				if (rply_rdy xor rply_req)='1' then
 					case bRequest is
 					when get_descriptor|get_status => 
@@ -553,11 +564,13 @@ begin
 										when class_hid =>
 											case bInterfaceProtocol is
 											when keyboard_protocol =>
+												hid_protocol  <= bInterfaceProtocol;
 												hid_interface <= std_logic_vector(interface_no);
-												hid_length <= hid_length + 1;
+												hid_we <= '1';
 											when mouse_protocol =>
+												hid_protocol  <= bInterfaceProtocol;
 												hid_interface <= std_logic_vector(interface_no);
-												hid_length <= hid_length + 1;
+												hid_we <= '1';
 											when others =>
 											end case;
 											interfaceProtocol <= bInterfaceProtocol;
