@@ -356,6 +356,9 @@ begin
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
+					if hid_we='1' then
+						hid_length <= hid_length + 1;
+					end if;
 					if (ctlr_req xor ctlr_rdy)='0' then
 						case step is
 						when s_poll =>
@@ -531,9 +534,6 @@ begin
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
-				if hid_we='1' then
-					hid_length <= hid_length + 1;
-				end if;
 				hid_we <= '0';
 				if (rply_rdy xor rply_req)='1' then
 					case bRequest is
