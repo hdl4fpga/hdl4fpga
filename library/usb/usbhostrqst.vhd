@@ -226,6 +226,7 @@ begin
 								wIndex   <= std_logic_vector(to_unsigned(portno, wIndex'length));
 								wLength  <= x"0000";
 								nbrports := to_integer(unsigned(bNbrPorts));
+								nbrports := 1;
 								ctlr_req <= not ctlr_rdy;
 								flags(portno) := '0';
 								portno := next_port;
@@ -320,7 +321,7 @@ begin
 	begin
 
 		hdi_table : block
-			constant addr : std_logic_vector(16-1 downto 0) := x"000a";
+			constant addr : std_logic_vector(16-1 downto 0) := x"000b";
 			signal wr_data : std_logic_vector(dev_addr'length+hid_protocol'length+hid_interface'length-1 downto 0);
 			signal rd_data : std_logic_vector(wr_data'range);
 		begin
