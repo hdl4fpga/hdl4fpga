@@ -129,8 +129,10 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (rx_rdy xor rx_req)='1' then
-    				case rxpid is
-    				when tk_setup =>
+					if rxpid=tk_setup then
+					-- This is because GHDL. The worst vhdl compiler ever
+    				-- case rxpid is
+    				-- when tk_setup =>
 						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
 						   tkdata(dev_addr'range) = dev_addr then
 							if (setup_req xor setup_rdy)='0' then
@@ -142,7 +144,8 @@ begin
 							end if;
 							setup_req <= not setup_rdy;
     					end if;
-    				when tk_in =>
+					elsif rxpid=tk_in then
+    				-- when tk_in =>
 						if tkdata(dev_addr'range)=(dev_addr'range => '0') or
 						   tkdata(dev_addr'range)=dev_addr then
 							if (in_req xor in_rdy)='0' then
@@ -154,21 +157,29 @@ begin
 							end if;
 							in_req <= not in_rdy;
     					end if;
-    				when tk_out=>
+					elsif rxpid=tk_out then
+    				-- when tk_out=>
 						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
 							tkdata(dev_addr'range) = dev_addr then
 							out_req <= not out_rdy;
     					end if;
-    				when data0|data1 =>
+					elsif rxpid=data0 or
+					      rxpid=data1 then
+    				-- when data0|data1 =>
 						if tkdata(dev_addr'range) = (dev_addr'range => '0') or
 						   tkdata(dev_addr'range) = dev_addr then
 							if rxerr='0' then
-								case tkdata(dev_endp'range) is
-								when (dev_endp'range => '0') =>
+								if tkdata(dev_endp'range)=(dev_endp'range => '0') then
 									ddata  <= ddata  xor tbit;
-								when others =>
+								else
 									ddatao <= ddatao xor tbit;
-								end case;
+								end if;
+								-- case tkdata(dev_endp'range) is
+								-- when (dev_endp'range => '0') =>
+									-- ddata  <= ddata  xor tbit;
+								-- when others =>
+									-- ddatao <= ddatao xor tbit;
+								-- end case;
 								if (setup_rdy xor setup_req)='1' then
 									acktx_req <= not acktx_rdy; 
 								elsif (out_rdy xor out_req)='1' then
@@ -178,7 +189,8 @@ begin
 								setup_rdy <= setup_req;
 							end if;
 						end if;
-    				when hs_ack =>
+					elsif rxpid=hs_ack then
+    				-- when hs_ack =>
 						if tkdata(dev_addr'range)=(dev_addr'range => '0') or
 						   tkdata(dev_addr'range)=dev_addr then
 							if tkdata(dev_endp'range)=(dev_endp'range => '0') then
@@ -190,14 +202,21 @@ begin
 							ctlr_rdy <= ctlr_req;
 						end if;
 						stus_rdy <= stus_req;
-						case tkdata(dev_endp'range) is
-						when (dev_endp'range => '0') =>
-							ddata <= ddata xor tbit;
-						when others =>
+						if tkdata(dev_endp'range)=(dev_endp'range => '0') then
+							ddata  <= ddata  xor tbit;
+						else
 							ddatai <= ddatai xor tbit;
-						end case;
-    				when others =>
-    				end case;
+						end if;
+						-- case tkdata(dev_endp'range) is
+						-- when (dev_endp'range => '0') =>
+							-- ddata <= ddata xor tbit;
+						-- when others =>
+							-- ddatai <= ddatai xor tbit;
+						-- end case;
+					else
+    				-- when others =>
+					end if;
+    				-- end case;
 				end if;
 				rx_rdy <= to_stdulogic(to_bit(rx_req));
 			end if;
@@ -212,12 +231,17 @@ begin
 			if cken='1' then
 				if (to_bit(tx_rdy) xor to_bit(tx_req))='0' then
 					if (in_rdy xor in_req)='1' then
-						case tkdata(dev_endp'range) is
-						when (dev_endp'range => '0') =>
+						if tkdata(dev_endp'range)=(dev_endp'range => '0') then
 							txpid  <= ddata;
-						when others =>
+						else
 							txpid  <= ddatai;
-						end case;
+						end if;
+						-- case tkdata(dev_endp'range) is
+						-- when (dev_endp'range => '0') =>
+							-- txpid  <= ddata;
+						-- when others =>
+							-- txpid  <= ddatai;
+						-- end case;
 						tx_req  <= not to_stdulogic(to_bit(tx_rdy));
 						if txen='0' then
 							stus_req <= not stus_rdy;

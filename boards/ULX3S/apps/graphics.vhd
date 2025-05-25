@@ -182,7 +182,7 @@ begin
 		end generate;
 		led(7) <= video_lck;
 
-		hdlc_e : entity hdl4fpga.hdlc_link
+		hdlc_e : entity hdl4fpga.link_hdlc
 		generic map (
 			uart_freq => uart_freq,
 			baudrate  => baudrate,
