@@ -99,7 +99,7 @@ architecture def of dvi is
 	alias sgreen is spixel(2*gear-1 downto 1*gear);
 	alias sblue  is spixel(1*gear-1 downto 0*gear);
 
-	constant dvi_clk : unsigned(10-1 downto 0) := b"0000011111";
+	constant dvi_clk : std_logic_vector(10-1 downto 0) := b"0000011111";
 begin
 
 	dvisubpxl_e : entity hdl4fpga.dvi_subpxl
@@ -119,7 +119,7 @@ begin
 	port map (
 		src_clk  => clk,
 		src_frm  => '1',
-		src_data => std_logic_vector(dvi_clk),
+		src_data => dvi_clk,
 		dst_clk  => cclk,
 		dst_data => chnc);
 

@@ -145,12 +145,16 @@ begin
 
 		subtype addr_range is natural range 1 to addr_length;
 
+		signal waddr   : std_logic_vector(addr_range);  -- Ghdl annoyance
 		signal wdata   : std_logic_vector(0 to src_data'length-1);
+		signal raddr   : std_logic_vector(addr_range);  -- Ghdl annoyance
 		signal rdata   : std_logic_vector(0 to src_data'length-1);
 		signal dst_ini : std_logic;
 
 	begin
 
+		waddr <= std_logic_vector(wr_cntr(addr_range)); -- GHDL annoyance
+		raddr <= std_logic_vector(rd_cntr(addr_range)); -- GHDL annoyance
 		wdata <= src_data;
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
@@ -160,11 +164,11 @@ begin
 		port map (
 			wr_clk  => src_clk,
 			wr_ena  => wr_ena,
-			wr_addr => std_logic_vector(wr_cntr(addr_range)),
+			wr_addr => waddr,
 			wr_data => wdata,
 
 			rd_clk  => dst_clk,
-			rd_addr => std_logic_vector(rd_cntr(addr_range)),
+			rd_addr => raddr,
 			rd_data => rdata);
 
 		src_trdy <=
@@ -427,18 +431,25 @@ begin
 		end if;
 	end process;
 
-	src2dst_e : entity hdl4fpga.sync_fifo
-	port map (
-		src_clk  => src_clk,     				
-		src_data => std_logic_vector(wr_ptr),     
-		dst_clk  => dst_clk,     
-		dst_data => wr_cmp);
-
-	dst2src_e : entity hdl4fpga.sync_fifo
-	port map (
-		src_clk  => dst_clk,     				
-		src_data => std_logic_vector(rd_cntr),     
-		dst_clk  => src_clk,     
-		dst_data => rd_cmp);
+	sync_b : block
+		signal wptr : std_logic_vector(wr_ptr'range); -- GHDL annoyance
+		signal rptr : std_logic_vector(rd_cntr'range); -- GHDL annoyance
+	begin
+		wptr <= std_logic_vector(wr_ptr);  -- GHDL annoyance
+		src2dst_e : entity hdl4fpga.sync_fifo
+		port map (
+			src_clk  => src_clk,     				
+			src_data => wptr,     
+			dst_clk  => dst_clk,     
+			dst_data => wr_cmp);
+	
+		rptr <= std_logic_vector(rd_cntr);  -- GHDL annoyance
+		dst2src_e : entity hdl4fpga.sync_fifo
+		port map (
+			src_clk  => dst_clk,     				
+			src_data => rptr,     
+			dst_clk  => src_clk,     
+			dst_data => rd_cmp);
+	end block;
 
 end;

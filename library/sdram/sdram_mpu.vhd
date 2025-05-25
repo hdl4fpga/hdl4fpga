@@ -90,13 +90,13 @@ architecture arch of sdram_mpu is
 
 	signal sdram_state : ddrs_states;
 
-	type lat_id is (id_idle, id_rcd, id_rfc, id_rp, id_bl, id_cl, id_cwl);
+	type lat_ids is (id_idle, id_rcd, id_rfc, id_rp, id_bl, id_cl, id_cwl);
 	type sdram_state_word is record
 		sdram_state   : ddrs_states;
 		sdram_state_n : ddrs_states;
 		sdram_cmi     : std_logic_vector(0 to 2);
 		sdram_cmo     : std_logic_vector(0 to 2);
-		sdram_lat     : lat_id;
+		sdram_lat     : lat_ids;
 		sdram_cen     : std_logic;
 		sdram_rea     : std_logic;
 		sdram_rph     : std_logic;
@@ -259,7 +259,7 @@ begin
 	-- sdram_mpu_blat <= std_logic_vector(resize(unsigned(signed'(select_lat(sdram_mpu_bl, bl_cod, bl_tab))), sdram_mpu_blat'length));
 	sdram_mpu_p: process (sdram_mpu_clk)
 		variable state_set : boolean;
-		variable lat_id :lat_id ;
+		variable lat_id : lat_ids;
 	begin
 		if rising_edge(sdram_mpu_clk) then
 			if sdram_mpu_rst='0' then

@@ -60,7 +60,7 @@ architecture def of ecp5_sdrampll is
 		real(sdram_params.pll.clkfb_div)*clkref_freq/
 		real(sdram_params.pll.clki_div);
 
-	constant sdram_freq  : real := sdram_freq(sdram_params,clkref_freq);
+	constant sdram_freq  : real := hdl4fpga.ecp5_profiles.sdram_freq(sdram_params,clkref_freq); -- GHDL annoyance
 
 	attribute FREQUENCY_PIN_CLKOS of pll_i : label is ftoa(clkos_freq/1.0e6, 10);
 	attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(setif(sdram_freq < 400.0e6, sdram_freq/1.0e6, 400.0), 10);
