@@ -112,11 +112,18 @@ begin
 		signal co : std_logic;
 		signal data : std_logic_vector(icmprx_data'range);
 		signal adj_data : std_logic_vector(icmprx_data'range);
+		constant mux_data : std_logic_vector := icmptype_rqst & icmpcode_rqst;
 	begin
+
+		-- This is because GHDL. The worst vhdl compiler ever
+		-- Exception TYPES.INTERNAL_ERROR raised
+		-- Exception information:
+		-- raised TYPES.INTERNAL_ERROR : vhdl-errors.adb:30
 
 		mux_e : entity hdl4fpga.sio_mux
 		port map (
-			mux_data => icmptype_rqst & icmpcode_rqst,
+			-- mux_data => icmptype_rqst & icmpcode_rqst,
+			mux_data => mux_data,
 			sio_clk  => mii_clk,
 			sio_frm  => dll_frm,
 			sio_irdy => icmpcksmrx_irdy,

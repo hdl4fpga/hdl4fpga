@@ -199,6 +199,7 @@ architecture def of ipv4 is
 
 	signal ipv4sanll_vld    : std_logic := '0';
 
+	constant ipv4_protos  : std_logic_vector :=  reverse(ipv4proto_icmp,8) & reverse(ipv4proto_udp,8);
 begin
 
 	plrx_frm  <= ipv4rx_frm;
@@ -253,7 +254,7 @@ begin
 
 		nll_e : entity hdl4fpga.sio_muxcmp
 		port map (
-			mux_data  => reverse(x"00_00_00_00",8),
+			mux_data  => x"00000000",
 			sio_clk   => mii_clk,
 			sio_frm   => ipv4sawr_frm,
 			sio_irdy  => ipv4sawr_irdy,
@@ -277,7 +278,7 @@ begin
 
 		bcst_e : entity hdl4fpga.sio_muxcmp
 		port map (
-			mux_data  => reverse(x"ff_ff_ff_ff",8),
+			mux_data  => x"ffffffff",
 			sio_clk   => mii_clk,
 			sio_frm   => ipv4sa_frm,
 			sio_irdy  => ipv4sa_irdy,
@@ -547,11 +548,17 @@ begin
 		ipv4_end       => ipv4tx_end,
 		ipv4_data      => ipv4tx_data);
 
+	-- This is because GHDL. The worst vhdl compiler ever
+	-- Exception TYPES.INTERNAL_ERROR raised
+	-- Exception information:
+	-- raised TYPES.INTERNAL_ERROR : vhdl-errors.adb:30
+
 	proto_e : entity hdl4fpga.sio_muxcmp
 	generic map (
 		n => 2)
 	port map (
-		mux_data  => reverse(ipv4proto_icmp,8) & reverse(ipv4proto_udp,8),
+		-- mux_data  => reverse(ipv4proto_icmp,8) & reverse(ipv4proto_udp,8),
+		mux_data  => ipv4_protos,
         sio_clk   => mii_clk,
         sio_frm   => ipv4rx_frm,
 		sio_irdy  => ipv4protorx_irdy,

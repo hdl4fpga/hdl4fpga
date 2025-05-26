@@ -96,20 +96,30 @@ begin
 		'1' when wr_addr>=(mem_length+si_data'length-1)/si_data'length else
 		'0';
 
-	mem_e : entity hdl4fpga.dpram 
-	generic map (
-		synchronous_rdaddr => false,
-		synchronous_rddata => false,
-		bitrom => mem_data)
-	port map (
-		wr_clk  => si_clk,
-		wr_ena  => wr_ena,
-		wr_addr => std_logic_vector(wr_addr(addr_range)),
-		wr_data => si_data,
-
-		rd_clk  => so_clk,
-		rd_addr => std_logic_vector(rd_addr(addr_range)),
-		rd_data => so_data);
+	mem_b : block
+		signal waddr : std_logic_vector(addr_range);
+		signal raddr : std_logic_vector(addr_range);
+	begin
+		-- This is because GHDL. The worst vhdl compiler ever
+		waddr <= std_logic_vector(wr_addr(addr_range));
+		raddr <= std_logic_vector(rd_addr(addr_range));
+		mem_e : entity hdl4fpga.dpram 
+		generic map (
+			synchronous_rdaddr => false,
+			synchronous_rddata => false,
+			bitrom => mem_data)
+		port map (
+			wr_clk  => si_clk,
+			wr_ena  => wr_ena,
+			wr_addr => waddr,
+			-- wr_addr => std_logic_vector(wr_addr(addr_range)),
+			wr_data => si_data,
+	
+			rd_clk  => so_clk,
+			rd_addr => raddr,
+			-- rd_addr => std_logic_vector(rd_addr(addr_range)),
+			rd_data => so_data);
+	end block;
 
 	process(so_clk)
 	begin

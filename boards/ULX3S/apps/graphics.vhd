@@ -534,7 +534,8 @@ begin
 				eclk      => video_eclk,
 				sclk      => video_shift_clk,
 				d         => crgb,
-				q         => gp(9 to 13-1));
+				-- q         => gp(9 to 13-1));
+				q         => gp(13-1 downto 9));
 
 			wifi_en   <= '0';
 		end generate;
