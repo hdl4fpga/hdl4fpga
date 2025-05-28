@@ -496,7 +496,7 @@ begin
 							bRequest      <= get_descriptor;
 							wValue        <= x"0200";
 							wIndex        <= x"0000";
-							wLength       <= x"ffff";
+							wLength       <= x"7fff";
 							ctlr_req <= not ctlr_rdy;
 							step := s_setconfiguration;
 						when s_setconfiguration =>
