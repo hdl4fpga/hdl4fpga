@@ -352,7 +352,7 @@ begin
 
 		end block;
 
-		tp(1 to 8) <= std_logic_vector(hid_next) & std_logic_vector(interface);
+		tp(1 to 8) <= std_logic_vector(hid_length) & std_logic_vector(interface);
 		hid_p : process (clk, ctlr_gntds)
 			type steps is (s_poll, s_pending);
 			variable step : steps;

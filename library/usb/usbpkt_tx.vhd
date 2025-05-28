@@ -61,53 +61,64 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if phy_rst='0' then
-				    case state is
-				    when s_idle =>
-				    	shr :=  unsigned(tkdata) & unsigned(not pkt_txpid) & unsigned(pkt_txpid);
-				    	case pkt_txpid is
-				    	when tk_setup|tk_in|tk_out|tk_sof =>
-				    		cntr := shr'length-1;
-				    	when others =>
-				    		cntr := pid_length-1;
-				    	end case;
-				    	if (tx_rdy xor tx_req)='1' then
-				    		if phy_txbs='0' then
-				    			state := s_pid;
-				    		end if;
-				    	end if;
-				    when s_pid =>
-				    	if cntr > 0 then
-				    		if phy_txbs='0' then
-				    			shr  := shr ror 1;
-				    			cntr := cntr - 1;
-				    		end if;
-				    	else
-				    		case pkt_txpid is
-				    		when tk_setup|tk_in|tk_out|tk_sof =>
-				    			tx_rdy <= tx_req;
-				    			state  := s_idle;
-				    		when data0|data1 =>
-				    			state := s_data;
-				    		when hs_ack|hs_nak|hs_stall =>
-				    			if phy_txbs='0' then
-				    				tx_rdy <= tx_req;
-				    				state  := s_idle;
-				    			end if;
-				    		when others =>
-				    		end case;
-				    	end if;
-				    when s_data =>
-				    	if phy_txbs='0' then
-				    		if pkt_txen='0' then
-				    			tx_rdy <= tx_req;
-				    			state  := s_idle;
-				    		end if;
-				    	end if;
-				    end case;
-				    data <= shr(0);
+					case state is
+					when s_idle =>
+						shr :=  unsigned(tkdata) & unsigned(not pkt_txpid) & unsigned(pkt_txpid);
+
+						-- This is because GHDL. The worst vhdl compiler ever
+						if pkt_txpid=tk_setup or  -- case pkt_txpid is
+						   pkt_txpid=tk_in    or  -- when tk_setup|tk_in|tk_out|tk_sof =>
+						   pkt_txpid=tk_out   or  --	 cntr := shr'length-1;
+						   pkt_txpid=tk_sof then  -- when others =>
+							cntr := shr'length-1; --	 cntr := pid_length-1;              n
+						else                      -- end case;
+							cntr := pid_length-1;
+						end if;
+
+						if (tx_rdy xor tx_req)='1' then
+							if phy_txbs='0' then
+								state := s_pid;
+							end if;
+						end if;
+					when s_pid =>
+						if cntr > 0 then
+							if phy_txbs='0' then
+								shr  := shr ror 1;
+								cntr := cntr - 1;
+							end if;
+						else
+							-- This is because GHDL. The worst vhdl compiler ever
+							-- The leadershit of that project sucks
+							if pkt_txpid=tk_setup or      -- case pkt_txpid is
+							   pkt_txpid=tk_in    or      -- when tk_setup|tk_in|tk_out|tk_sof =>
+							   pkt_txpid=tk_out   or      --     tx_rdy <= tx_req;
+							   pkt_txpid=tk_sof then      --     state  := s_idle;
+								tx_rdy <= tx_req;         -- when data0|data1 =>
+								state  := s_idle;         -- 	   state := s_data;
+							elsif pkt_txpid=data0 or      -- when hs_ack|hs_nak|hs_stall =>
+							      pkt_txpid=data1 then	  --     if phy_txbs='0' then
+								state := s_data;          --         tx_rdy <= tx_req;
+							elsif pkt_txpid=hs_ack or     --         state  := s_idle;                  
+								  pkt_txpid=hs_nak or     --     end if;
+								  pkt_txpid=hs_stall then -- when others =>
+								if phy_txbs='0' then      -- end case;
+									tx_rdy <= tx_req;
+									state  := s_idle;
+								end if;
+							end if;
+						end if;
+					when s_data =>
+						if phy_txbs='0' then
+							if pkt_txen='0' then
+								tx_rdy <= tx_req;
+								state  := s_idle;
+							end if;
+						end if;
+					end case;
+					data <= shr(0);
 				else
-				    state  := s_idle;
-				    tx_rdy <= tx_req;
+					state  := s_idle;
+					tx_rdy <= tx_req;
 				end if;
 			end if;
 		end if;

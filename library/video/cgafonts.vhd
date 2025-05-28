@@ -33,7 +33,7 @@ package cgafonts is
 
 	constant psf1cp850x8x8  : std_logic_vector(0 to 256*8*8-1)  := psf1cp850x8x8x0to127  & psf1cp850x8x8x128to255;
 	constant psf1cp850x8x16 : std_logic_vector(0 to 256*8*16-1) := psf1cp850x8x16x0to127 & psf1cp850x8x16x128to255;
-	constant psf1hex8x16    : std_logic_vector(0 to 16*8*16-1)  := psf1hex8x16 ;
+	constant psf1hex8x16    : std_logic_vector(0 to 16*8*16-1)  := hdl4fpga.bcdfonts.psf1hex8x16;
 
 	constant psf1bcd4x4     : std_logic_vector(0 to 16*4*4-1)   := hdl4fpga.bcdfonts.psf1bcd4x4;
 	constant psf1bcd8x8     : std_logic_vector(0 to 16*8*8-1)   := hdl4fpga.bcdfonts.psf1bcd8x8;

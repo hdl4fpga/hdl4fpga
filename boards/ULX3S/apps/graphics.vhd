@@ -182,7 +182,7 @@ begin
 		end generate;
 		led(7) <= video_lck;
 
-		hdlc_e : entity hdl4fpga.hdlc_link
+		hdlc_e : entity hdl4fpga.link_hdlc
 		generic map (
 			uart_freq => uart_freq,
 			baudrate  => baudrate,
@@ -534,7 +534,8 @@ begin
 				eclk      => video_eclk,
 				sclk      => video_shift_clk,
 				d         => crgb,
-				q         => gp(9 to 13-1));
+				-- q         => gp(9 to 13-1));
+				q         => gp(13-1 downto 9));
 
 			wifi_en   <= '0';
 		end generate;

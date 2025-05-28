@@ -71,7 +71,7 @@ entity sdram_ctlr is
 		phy_rw      : in  std_logic := '-';
 		phy_inirdy  : in  std_logic := '1';
 		phy_wlrdy   : in  std_logic := '-';
-		phy_wlreq   : out std_logic;
+		phy_wlreq   : buffer std_logic;
 		phy_rlreq   : out std_logic;
 		phy_rlrdy   : in  std_logic := '1';
 		phy_rst     : out std_logic;

@@ -290,7 +290,13 @@ begin
 		tx_irdy <= wirebus(acktx_irdy & si_irdy, gnt);
 		tx_end  <= wirebus(acktx_end  & si_end,  gnt);
 		tx_data <= wirebus(acktx_data & si_data, gnt);
-		(0 => acktx_trdy, 1 => si_trdy) <= gnt and (gnt'range => tx_trdy);
+		-- GHDL bug : translate_signal_target_array_aggr: cannot handle IIR_KIND_CHOICE_BY_EXPRESSION
+        -- GHDL release: 5.0.1 (tarball) [Dunoon edition]
+        -- Compiled with GNAT Version: 14.2.1 20250301
+        -- Target: x86_64-pc-linux-gnu
+		-- (0 => acktx_trdy, 1 => si_trdy) <= gnt and (gnt'range => tx_trdy);
+		acktx_trdy <= gnt(0) and tx_trdy;
+		si_trdy    <= gnt(1) and tx_trdy;
 
 	end block;
 

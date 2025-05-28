@@ -32,7 +32,7 @@ use hdl4fpga.ecp5_profiles.all;
 library ecp5u;
 use ecp5u.components.all;
 
-entity hdlc_link is
+entity link_hdlc is
 	generic (
 		uart_freq : real;
 		baudrate : natural;
@@ -54,7 +54,7 @@ entity hdlc_link is
 		uart_sout : out std_logic);
 end;
 
-architecture def of hdlc_link is
+architecture def of link_hdlc is
 
 	signal uart_rxdv  : std_logic;
 	signal uart_rxd   : std_logic_vector(0 to 8-1);

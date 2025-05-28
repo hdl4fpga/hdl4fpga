@@ -243,7 +243,7 @@ package body usbpkg is
 		length_right := length_left+length_num_bits-1;
 		return
 			"{" &
-				"content:"   & to_string(table_content(offsets(0 to n-1), offset_num_bits, lengths(0 to n-1), length_num_bits, dirs(0 to n-1), dir_num_bits)) & "," &
+				"content:"   & hdl4fpga.base.to_string(table_content(offsets(0 to n-1), offset_num_bits, lengths(0 to n-1), length_num_bits, dirs(0 to n-1), dir_num_bits)) & "," &
 				"address:"   & natural'image(address)      & "," &
 				"data:"      & natural'image(num_bits)     & "," &
 				"dir:{"      &

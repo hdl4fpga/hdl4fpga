@@ -152,20 +152,27 @@ begin
 
 	end block;
 
-	cgamem_e : entity hdl4fpga.dpram
-	generic map (
-		synchronous_rdaddr => true,
-		synchronous_rddata => true,
-		bitrom => cga_bitrom)
-	port map (
-		wr_clk  => cga_clk,
-		wr_ena  => cga_we,
-		wr_addr => cga_addr,
-		wr_data => cga_data,
+	cgamem_b : block
+    	signal rd_addr : std_logic_vector(char_addr'left downto char_addr'length-cga_addr'length);
+	begin 
+		-- GHDL annoyance:
+    	rd_addr <= std_logic_vector(char_addr(char_addr'left downto char_addr'length-cga_addr'length));
+    	cgamem_e : entity hdl4fpga.dpram
+    	generic map (
+    		synchronous_rdaddr => true,
+    		synchronous_rddata => true,
+    		bitrom => cga_bitrom)
+    	port map (
+    		wr_clk  => cga_clk,
+    		wr_ena  => cga_we,
+    		wr_addr => cga_addr,
+    		wr_data => cga_data,
 
-		rd_clk  => video_clk,
-		rd_addr => std_logic_vector(char_addr(char_addr'left downto char_addr'length-cga_addr'length)),
-		rd_data => cga_codes);
+    		rd_clk  => video_clk,
+    		-- rd_addr => std_logic_vector(char_addr(char_addr'left downto char_addr'length-cga_addr'length)),
+    		rd_addr => rd_addr,
+    		rd_data => cga_codes);
+	end block;
 
 	muxcode_g : if char_addr'length > cga_addr'length generate
 		signal sel : std_logic_vector(char_addr'length-cga_addr'length-1 downto 0);
