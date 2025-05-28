@@ -143,7 +143,7 @@ begin
 	hosttodev_p : process (tkin_rdy, clk)
 		type states is (s_start, s_out, s_ack, s_nak);
 		variable state : states;
-		variable tick_cntr : unsigned(0 to 10);
+		variable tick_cntr : unsigned(0 to 1);
 		constant tbit : std_logic_vector(data0'range) := b"1000";
 		variable tick : std_logic;
 		variable retries : integer range -1 to 3;
