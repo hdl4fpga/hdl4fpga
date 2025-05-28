@@ -477,7 +477,7 @@ begin
 							bRequest      <= get_descriptor;
 							wValue        <= x"0100";
 							wIndex        <= x"0000";
-							wLength       <= x"ffff";
+							wLength       <= x"0012";
 							ctlr_req <= not ctlr_rdy;
 							step := s_setaddress;
 						when s_setaddress =>
