@@ -124,22 +124,22 @@ begin
 		usbdev_g : if false generate
 			usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 			usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
-    		usbdev_e : entity hdl4fpga.usbdev
-    		generic map (
-    			oversampling => usb_oversampling)
-    		port map (
-    			tp   => tp,
-    			dp   => usb_fpga_dp,
-    			dn   => usb_fpga_dn,
-    			clk  => videoio_clk,
-    			dev_cfgd => cfgd,
-    			cken => cken,
-    			txen => txen, 
-    			txbs => txbs,
-    			txd  => txd,
-    			rxdv => rxdv, 
-    			rxbs => rxbs,
-    			rxd  => rxd);
+			usbdev_e : entity hdl4fpga.usbdev
+			generic map (
+				oversampling => usb_oversampling)
+			port map (
+				tp   => tp,
+				dp   => usb_fpga_dp,
+				dn   => usb_fpga_dn,
+				clk  => videoio_clk,
+				dev_cfgd => cfgd,
+				cken => cken,
+				txen => txen, 
+				txbs => txbs,
+				txd  => txd,
+				rxdv => rxdv, 
+				rxbs => rxbs,
+				rxd  => rxd);
 		end generate;
 			
 		usbhost_g : if true generate
@@ -165,50 +165,64 @@ begin
 
 			usb_fpga_pu_dp <= 'Z' when left='0' else '0'; -- D+ pullup for USB1.1 host mode
 			usb_fpga_pu_dn <= 'Z' when left='0' else '0'; -- D- no pullup for USB1.1 host mode
-    		usbhost_e : entity hdl4fpga.usbhostdvr
-    		generic map (
-    			oversampling => usb_oversampling)
-    		port map (
-    			tp   => tp,
-    			dp   => usb_fpga_dp,
-    			dn   => usb_fpga_dn,
-    			clk  => videoio_clk,
-    			cken => cken,
+			usbhost_e : entity hdl4fpga.usbhostdvr
+			generic map (
+				oversampling => usb_oversampling)
+			port map (
+				dp   => usb_fpga_dp,
+				dn   => usb_fpga_dn,
+				clk  => videoio_clk,
+				cken => cken,
 				init_req => init_req,
 				init_rdy => init_rdy);
 			led <= tp(9 to 16);
-			-- led(0) <= init_rdy; --usb_fpga_dp;
-			-- led(1) <= init_req; --usb_fpga_dn;
-			-- led(7 downto 4) <= tp(4 to 7);
 		end generate;
 			
-		process (videoio_clk)
+		monitor_b : block 
+			signal tp : std_logic_vector(1 to 32);
+			signal cken : std_logic;
 		begin
-			if rising_edge(videoio_clk) then
-				if up='1' then
-					fltr_on <= '0';
-				elsif down='1' then
-					fltr_on <= '1';
-				end if;
-			end if;
-		end process;
 
-		usbfltrsof_e : entity hdl4fpga.usbfltr_sof
-		port map (
-			usb_clk  => videoio_clk,
-			usb_cken => cken,
-			phy_en   => tp(1),
-			phy_bs   => tp(2),
-			phy_d    => tp(3),
-			fltr_on  => fltr_on,
-			fltr_en  => fltr_en,
-			fltr_bs  => fltr_bs,
-			fltr_d   => fltr_d);
+			--tp(1 to 3) <= tp_phy (1 to 3);
+    		usbphy_e : entity hdl4fpga.usbphy
+    	   	generic map (
+				-- monitor => true,
+    			oversampling => usb_oversampling)
+    		port map (
+    			tp    => tp,
+    			dp    => usb_fpga_dp,
+    			dn    => usb_fpga_dn,
+    			clk   => videoio_clk,
+    			cken  => cken);
 
-		ser_clk     <= videoio_clk;
-		ser_frm     <= fltr_en; 
-		ser_irdy    <= not fltr_bs;
-		ser_data(0) <= fltr_d;
+    		process (videoio_clk)
+    		begin
+    			if rising_edge(videoio_clk) then
+    				if up='1' then
+    					fltr_on <= '0';
+    				elsif down='1' then
+    					fltr_on <= '1';
+    				end if;
+    			end if;
+    		end process;
+
+    		usbfltrsof_e : entity hdl4fpga.usbfltr_sof
+    		port map (
+    			usb_clk  => videoio_clk,
+    			usb_cken => cken,
+    			phy_en   => tp(1),
+    			phy_bs   => tp(2),
+    			phy_d    => tp(3),
+    			fltr_on  => fltr_on,
+    			fltr_en  => fltr_en,
+    			fltr_bs  => fltr_bs,
+    			fltr_d   => fltr_d);
+
+    			ser_clk     <= videoio_clk;
+    			ser_frm     <= fltr_en; 
+    			ser_irdy    <= not fltr_bs;
+    			ser_data(0) <= fltr_d;
+		end block;
 
 		-- led(4) <= tp(4);
 		-- led(3) <= tp(5);
