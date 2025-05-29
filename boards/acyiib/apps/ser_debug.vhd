@@ -30,6 +30,17 @@ use hdl4fpga.app_profiles.all;
 use hdl4fpga.ecp5_profiles.all;
 
 architecture ser_debug of acyiib is
+	alias usb_fpga_dp    is bank1(3);
+	alias usb_fpga_dn    is bank1(4);
+	alias usb_fpga_bd_dp is bank1(5);
+	alias usb_fpga_bd_dn is bank1(6);
+	alias usb_fpga_pu_dp is bank1(7);
+	alias usb_fpga_pu_dn is bank1(8);
+	alias left           is bank1(9);
+	alias fire1          is bank1(10);
+	alias fire2          is bank1(11);
+	alias up             is bank1(12);
+	alias down           is bank1(13);
 
 	constant usb_oversampling : natural := 3;
 	constant io_link : io_comms := io_usb;
@@ -38,7 +49,7 @@ architecture ser_debug of acyiib is
 	constant video_params : video_record := videoparam(
 		video_modes'VAL(setif(debug,
 			video_modes'POS(video_mode),
-			video_modes'POS(video_mode))), clk25mhz_freq);
+			video_modes'POS(video_mode))), osc50mhz_freq);
 
 	signal video_pixel   : std_logic_vector(0 to setif(
 		video_params.pixel=rgb565, 16, setif(
@@ -83,19 +94,19 @@ begin
 
 	sys_rst <= '0';
 
-	videopll_e : entity hdl4fpga.ecp5_videopll
-	generic map (
-		io_link      => io_link,
-		clkio_freq   => 12.0e6*real(usb_oversampling),
-		clkref_freq  => clk25mhz_freq,
-		default_gear => 2,
-		video_params => video_params)
-	port map (
-		clk_ref     => clk_25mhz,
-		video_clk   => video_clk,
-		videoio_clk => videoio_clk,
-		video_shift_clk => video_shift_clk,
-		video_lck   => video_lck);
+	-- videopll_e : entity hdl4fpga.ecp5_videopll
+	-- generic map (
+		-- io_link      => io_link,
+		-- clkio_freq   => 12.0e6*real(usb_oversampling),
+		-- clkref_freq  => osc50mhz_freq,
+		-- default_gear => 2,
+		-- video_params => video_params)
+	-- port map (
+		-- clk_ref     => osc_50mhz,
+		-- video_clk   => video_clk,
+		-- videoio_clk => videoio_clk,
+		-- video_shift_clk => video_shift_clk,
+		-- video_lck   => video_lck);
 
 		usb_fpga_dp    <= 'Z';-- when up='0' else '0';
 		usb_fpga_dn    <= 'Z';-- when up='0' else '0';
