@@ -3,6 +3,8 @@ if [ !  -e work ] ; then
 	mkdir work
 fi
 
+pushd ../../../library/ghdl && ./hdl4fpga.sh  && ./ecp5sh  
+popd
 for file in \
 "../common/ulx3s.vhd" \
 "../apps/graphics.vhd" \
