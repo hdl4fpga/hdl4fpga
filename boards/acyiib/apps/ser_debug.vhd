@@ -27,7 +27,10 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.app_profiles.all;
-use hdl4fpga.ecp5_profiles.all;
+-- use hdl4fpga.ecp5_profiles.all;
+
+library altera_mf;
+use altera_mf.altera_mf_components.all;
 
 architecture ser_debug of acyiib is
 	alias usb_fpga_dp    is bank1(3);
