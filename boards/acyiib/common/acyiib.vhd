@@ -25,6 +25,6 @@ entity acyiib is
 		"127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144";
 
 	alias osc_50mhz is bank1(17);
-	constant osc50mhz_freq : real := 50.0e6;
+	constant osc50mhz_freq : real := 25.0e6;
 
 end;

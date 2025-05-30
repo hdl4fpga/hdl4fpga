@@ -41,6 +41,7 @@ architecture ser_debug of acyiib is
 	alias fire2          is bank1(11);
 	alias up             is bank1(12);
 	alias down           is bank1(13);
+	alias gpdi_d         is bank1(14 to 17);
 
 	constant usb_oversampling : natural := 3;
 	constant io_link : io_comms := io_usb;
@@ -239,13 +240,13 @@ begin
 	ddr_g : for i in gpdi_d'range generate
 		signal q : std_logic;
 	begin
-		oddr_i : oddrx1f
-		port map(
-			sclk => video_shift_clk,
-			rst  => '0',
-			d0   => dvid_crgb(2*i),
-			d1   => dvid_crgb(2*i+1),
-			q    => gpdi_d(i));
+		-- oddr_i : oddrx1f
+		-- port map(
+			-- sclk => video_shift_clk,
+			-- rst  => '0',
+			-- d0   => dvid_crgb(2*i),
+			-- d1   => dvid_crgb(2*i+1),
+			-- q    => gpdi_d(i));
 	end generate;
 
 end;
