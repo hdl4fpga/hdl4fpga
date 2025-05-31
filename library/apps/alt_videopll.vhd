@@ -46,8 +46,6 @@ entity alt_videopll is
 		videoio_clk  : out std_logic;
 		video_clk    : out std_logic;
 		video_shift_clk : out std_logic;
-		video_eclk   : out std_logic;
-		video_phyrst : buffer std_logic;
 		video_lck    : buffer std_logic);
 
 	constant gear  : natural := setif(default_gear=0,video_params.gear, default_gear);
@@ -55,10 +53,9 @@ entity alt_videopll is
 end;
 
 architecture def of alt_videopll is
-	constant c2_div : natural := setif(io_link=io_hdlc, 
-		video_params.pll.c2_div,
-		natural((real(video_params.pll.clkos_div)*clkref_freq)/
-		(real(video_params.pll.clki_div)*clkio_freq)));
+	constant c2 : natural := setif(io_link=io_hdlc, 
+		video_params.pll.c2,
+		natural(clkref_freq*real(video_params.pll.m)/(2.0*real(video_params.pll.n)*clkio_freq)));
 
 	signal clkop  : std_logic;
 	signal clkos  : std_logic;
@@ -77,42 +74,26 @@ begin
 		c2_high => video_params.pll.c2,
 		c2_low  => video_params.pll.c2,
 
-		m_initial    => 1,
-		m_ph         => 0,
-		c0_initial   => 1,
-		c0_mode      => "even",
-		c0_ph        => 0,
-		clk0_counter => "c0",
-		c1_initial   => 1,
-		c1_mode      => "even",
-		c1_ph        => 0,
-		clk1_counter => "c1",
-		c2_initial   => 1,
-		c2_mode      => "even",
-		c2_ph        => 0,
-		clk2_counter => "c2"
-
-		valid_lock_multiplier => 1,
-		vco_post_scale => 1,
 		compensate_clock => "CLK0",
+		gate_lock_signal => "NO",
 		inclk0_input_frequency => 20000,
-		inclk1_input_frequency => 25000,
 		intended_device_family => "Cyclone II",
 		invalid_lock_multiplier => 5,
-		gate_lock_signal => "NO",
-		lpm_hint => "CBX_MODULE_PREFIX=altpll1",
+		lpm_hint => "CBX_MODULE_PREFIX=alt_videopll",
 		lpm_type => "altpll",
+		m_initial => 1,
+		m_ph => 0,
 		operation_mode => "NORMAL",
 		port_activeclock => "PORT_UNUSED",
-		port_areset  => "PORT_USED",
+		port_areset => "PORT_USED",
 		port_clkbad0 => "PORT_UNUSED",
 		port_clkbad1 => "PORT_UNUSED",
 		port_clkloss => "PORT_UNUSED",
-		port_clkswitch => "PORT_USED",
+		port_clkswitch => "PORT_UNUSED",
 		port_configupdate => "PORT_UNUSED",
 		port_fbin => "PORT_UNUSED",
 		port_inclk0 => "PORT_USED",
-		port_inclk1 => "PORT_USED",
+		port_inclk1 => "PORT_UNUSED",
 		port_locked => "PORT_USED",
 		port_pfdena => "PORT_UNUSED",
 		port_phasecounterselect => "PORT_UNUSED",
@@ -129,7 +110,7 @@ begin
 		port_scanread => "PORT_UNUSED",
 		port_scanwrite => "PORT_UNUSED",
 		port_clk0 => "PORT_USED",
-		port_clk1 => "PORT_UNUSED",
+		port_clk1 => "PORT_USED",
 		port_clk2 => "PORT_USED",
 		port_clk3 => "PORT_UNUSED",
 		port_clk4 => "PORT_UNUSED",
@@ -144,14 +125,27 @@ begin
 		port_extclk1 => "PORT_UNUSED",
 		port_extclk2 => "PORT_UNUSED",
 		port_extclk3 => "PORT_UNUSED",
-		primary_clock => "inclk0",
-	)
+		valid_lock_multiplier => 1,
+		vco_post_scale => 1,
+		c0_initial => 1,
+		c0_mode => "even",
+		c0_ph => 0,
+		c1_initial => 1,
+		c1_mode => "even",
+		c1_ph => 0,
+		c2_initial => 1,
+		c2_mode => "even",
+		c2_ph => 0,
+		clk0_counter => "c0",
+		clk1_counter => "c1",
+		clk2_counter => "c2")
 	port map (
-		areset => areset,
-		clkswitch => clkswitch,
-		inclk => sub_wire5,
-		locked => sub_wire0,
-		clk => sub_wire1
-	);
+		areset   => clk_rst,
+		inclk(0) => clk_ref,
+		inclk(1) => open,
+		locked   => video_lck,
+		clk(0)   => video_clk,
+		clk(1)   => video_shift_clk,
+		clk(2)   => videoio_clk);
 
 end;

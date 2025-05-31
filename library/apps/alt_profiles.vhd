@@ -29,11 +29,11 @@ use hdl4fpga.app_profiles.all;
 package alt_profiles is
 
 	type pll_record is record
-		m     : natural;
-		n     : natural;
-		c0_pw : natural;
-		c1_pw : natural;
-		c2_pw : natural;
+		m  : natural;
+		n  : natural;
+		c0 : natural;
+		c1 : natural;
+		c2 : natural;
 	end record;
 
 	type video_record is record
@@ -55,15 +55,15 @@ end package;
 
 package body alt_profiles is
 
-	-- video_clk       = (clk_ref*m/(2*n*c0_pw)
-	-- video_shift_clk = (clk_ref*m/(2*n*c1_pw)
-	-- videoio_clk     = (clk_ref*m/(2*n*c2_p)
-	-- c0_pw      = clkop_div*video_ratio
+	-- c0              = clkop_div*video_ratio
+	-- video_clk       = (clk_ref*m/(2*n*c0)
+	-- video_shift_clk = (clk_ref*m/(2*n*c1)
+	-- videoio_clk     = (clk_ref*m/(2*n*c2)
 	constant acyiibvideo_tab : videoparams_vector := (
-		-- (id => modedebug,        pll => (m => 25, clkop_div => 5, n => 1, c0_pw => video_ratio*5, c2_pw => 16), gear => 2, pixel => rgb888, timing => pclk_debug),
-		(id => modedebug,     pll => (m => 80, c1_pw => 1, n => 3, c0_pw => video_ratio*1, c2_pw => 17), gear => 2, pixel => rgb888, timing => pclk_debug),
-		(id => mode600p16bpp, pll => (m => 16, c1_pw => 2, n => 1, c0_pw => video_ratio*2, c2_pw => 10), gear => 2, pixel => rgb565, timing => pclk40_00m800x600at60),
-		(id => mode600p24bpp, pll => (m => 16, c1_pw => 2, n => 1, c0_pw => video_ratio*2, c2_pw => 10), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60));
+		-- (id => modedebug,        pll => (m => 25, clkop_div => 5, n => 1, c0 => video_ratio*5, c2 => 16), gear => 2, pixel => rgb888, timing => pclk_debug),
+		(id => modedebug,     pll => (m => 80, c1 => 1, n => 3, c0 => video_ratio*1, c2 => 17), gear => 2, pixel => rgb888, timing => pclk_debug),
+		(id => mode600p16bpp, pll => (m => 16, c1 => 2, n => 1, c0 => video_ratio*2, c2 => 10), gear => 2, pixel => rgb565, timing => pclk40_00m800x600at60),
+		(id => mode600p24bpp, pll => (m => 16, c1 => 2, n => 1, c0 => video_ratio*2, c2 => 10), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60));
 
 	function videoparam (
 		constant video_id : video_modes;

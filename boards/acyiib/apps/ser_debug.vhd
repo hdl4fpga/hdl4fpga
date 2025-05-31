@@ -27,7 +27,7 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.app_profiles.all;
--- use hdl4fpga.ecp5_profiles.all;
+use hdl4fpga.alt_profiles.all;
 
 library altera_mf;
 use altera_mf.altera_mf_components.all;
@@ -240,10 +240,9 @@ begin
 		video_pixel     => video_pixel,
 		dvid_crgb       => dvid_crgb);
 
-	ddr_g : for i in gpdi_d'range generate
 		oddr_i : altddio_out
 		generic map (
-			width   => 1,
+			width   => gpdi_d'length,
 			extend_oe_disable => "OFF",
 			invert_output => "OFF",
 			power_up_high => "OFF",
@@ -252,11 +251,15 @@ begin
 			lpm_type => "altddio_out",
 			intended_device_family => "Cyclone II")
 		port map (
-			datain_h => dvid_crgb(2*i to d*i),
-			datain_l => dvid_crgb(2*i+1 to 2*i+i),
-			outclock => outclock,
-			outclocken => outclocken,
-			dataout => gpdi_d(i to i));
-	end generate;
-
+			datain_h(0) => dvid_crgb(2*0+0),
+			datain_l(0) => dvid_crgb(2*0+1),
+			datain_h(1) => dvid_crgb(2*1+0),
+			datain_l(1) => dvid_crgb(2*1+1),
+			datain_h(2) => dvid_crgb(2*2+0),
+			datain_l(2) => dvid_crgb(2*2+1),
+			datain_h(3) => dvid_crgb(2*3+0),
+			datain_l(3) => dvid_crgb(2*3+1),
+			outclock => video_shift_clk,
+			outclocken => '1',
+			dataout => gpdi_d);
 end;
