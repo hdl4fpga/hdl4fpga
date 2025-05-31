@@ -241,15 +241,22 @@ begin
 		dvid_crgb       => dvid_crgb);
 
 	ddr_g : for i in gpdi_d'range generate
-		signal q : std_logic;
-	begin
-		-- oddr_i : oddrx1f
-		-- port map(
-			-- sclk => video_shift_clk,
-			-- rst  => '0',
-			-- d0   => dvid_crgb(2*i),
-			-- d1   => dvid_crgb(2*i+1),
-			-- q    => gpdi_d(i));
+		oddr_i : altddio_out
+		generic map (
+			width   => 1,
+			extend_oe_disable => "OFF",
+			invert_output => "OFF",
+			power_up_high => "OFF",
+			oe_reg   => "UNREGISTERED",
+			lpm_hint => "UNUSED",
+			lpm_type => "altddio_out",
+			intended_device_family => "Cyclone II")
+		port map (
+			datain_h => dvid_crgb(2*i to d*i),
+			datain_l => dvid_crgb(2*i+1 to 2*i+i),
+			outclock => outclock,
+			outclocken => outclocken,
+			dataout => gpdi_d(i to i));
 	end generate;
 
 end;

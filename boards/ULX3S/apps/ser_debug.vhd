@@ -373,8 +373,6 @@ begin
 		dvid_crgb       => dvid_crgb);
 
 	ddr_g : for i in gpdi_d'range generate
-		signal q : std_logic;
-	begin
 		oddr_i : oddrx1f
 		port map(
 			sclk => video_shift_clk,
