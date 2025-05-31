@@ -38,7 +38,6 @@ entity alt_videopll is
 		io_link      : io_comms := io_hdlc;
 		clkio_freq   : real := 36.0e6;
 		clkref_freq  : real;
-		default_gear : natural := 0;
 		video_params : video_record);
 	port (
 		clk_rst      : in std_logic := '0';
@@ -47,8 +46,6 @@ entity alt_videopll is
 		video_clk    : out std_logic;
 		video_shift_clk : out std_logic;
 		video_lck    : buffer std_logic);
-
-	constant gear  : natural := setif(default_gear=0,video_params.gear, default_gear);
 
 end;
 

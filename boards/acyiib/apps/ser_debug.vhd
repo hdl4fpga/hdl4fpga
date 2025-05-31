@@ -98,19 +98,18 @@ begin
 
 	sys_rst <= '0';
 
-	-- videopll_e : entity hdl4fpga.ecp5_videopll
-	-- generic map (
-		-- io_link      => io_link,
-		-- clkio_freq   => 12.0e6*real(usb_oversampling),
-		-- clkref_freq  => osc50mhz_freq,
-		-- default_gear => 2,
-		-- video_params => video_params)
-	-- port map (
-		-- clk_ref     => osc_50mhz,
-		-- video_clk   => video_clk,
-		-- videoio_clk => videoio_clk,
-		-- video_shift_clk => video_shift_clk,
-		-- video_lck   => video_lck);
+	videopll_e : entity hdl4fpga.alt_videopll
+	generic map (
+		io_link      => io_link,
+		clkio_freq   => 12.0e6*real(usb_oversampling),
+		clkref_freq  => osc50mhz_freq,
+		video_params => video_params)
+	port map (
+		clk_ref     => osc_50mhz,
+		video_clk   => video_clk,
+		videoio_clk => videoio_clk,
+		video_shift_clk => video_shift_clk,
+		video_lck   => video_lck);
 
 		usb_fpga_dp    <= 'Z';-- when up='0' else '0';
 		usb_fpga_dn    <= 'Z';-- when up='0' else '0';
