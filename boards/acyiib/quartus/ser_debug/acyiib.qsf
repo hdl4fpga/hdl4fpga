@@ -49,15 +49,22 @@ set_global_assignment -name DEVICE_FILTER_PACKAGE TQFP
 set_global_assignment -name DEVICE_FILTER_PIN_COUNT 144
 set_global_assignment -name DEVICE_FILTER_SPEED_GRADE 8
 set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 1
-set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim (VHDL)"
+set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (VHDL)"
 set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 
-set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
-set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
-set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name EDA_USER_COMPILED_SIMULATION_LIBRARY_DIRECTORY /home/msagre/altera -section_id eda_simulation
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
+set_global_assignment -name OPTIMIZE_HOLD_TIMING "IO PATHS AND MINIMUM TPD PATHS"
+set_global_assignment -name OPTIMIZE_MULTI_CORNER_TIMING ON
+set_global_assignment -name OPTIMIZE_POWER_DURING_FITTING "EXTRA EFFORT"
+set_global_assignment -name FITTER_EFFORT "STANDARD FIT"
+set_global_assignment -name OPTIMIZE_IOC_REGISTER_PLACEMENT_FOR_TIMING "PACK ALL IO REGISTERS"
+set_global_assignment -name CYCLONEII_OPTIMIZATION_TECHNIQUE SPEED
+set_global_assignment -name SYNTH_TIMING_DRIVEN_SYNTHESIS OFF
+set_global_assignment -name VHDL_FILE ../../../../library/video/videopkg.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../apps/usbdev.vhd
 set_global_assignment -name VHDL_FILE ../../../../library/apps/alt_profiles.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/apps/alt_videopll.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/barrel.vhd -library hdl4fpga
@@ -65,27 +72,8 @@ set_global_assignment -name VHDL_FILE ../../../../library/sdram/phy_iofifo.vhd -
 set_global_assignment -name VHDL_FILE ../../../../library/basic/serdes.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/rom.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/latency.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/video/fonts/cp850x8x16x128to255.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/video/fonts/cp850x8x16x0to127.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/video/fonts/cp850x8x8x128to255.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/video/fonts/cp850x8x8x0to127.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/video/fonts/bcdfonts.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/video/dvi.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/video/cgaram.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/video/cgafonts.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/video/cga_rom.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/video/cga_adapter.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/video/ser_display.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/video/tmds_encoder.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/video/video.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/apps/ser_debug.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/usb/usbhost.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/basic/devmux.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/dpram.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/usb/usbhostrqst.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/usb/usbhostflow.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/apps/app_profiles.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/apps/ecp5_profiles.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/usb/usbpkt_tx.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/usb/usbpkt_rx.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/usb/usbpkg.vhd -library hdl4fpga
@@ -93,15 +81,13 @@ set_global_assignment -name VHDL_FILE ../../../../library/usb/usbphycrc.vhd -lib
 set_global_assignment -name VHDL_FILE ../../../../library/usb/usbphy_tx.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/usb/usbphy_rx.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/usb/usbphy.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/usb/usbfltr_sof.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/usb/usbdevrqst.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/usb/usbdevflow.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/usb/usbdev.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/usb/usbcrc.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/base.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/hdo.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../../../library/video/videopkg.vhd -library hdl4fpga
-set_global_assignment -name VHDL_FILE ../../common/acyiib.vhd
-set_global_assignment -name VHDL_FILE ../../apps/ser_debug.vhd
-set_global_assignment -name VHDL_FILE ../../../../library/basic/serlzr.vhd -library hdl4fpga
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

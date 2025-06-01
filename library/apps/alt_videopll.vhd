@@ -145,8 +145,8 @@ begin
 		c0_low  => video_params.pll.c0,
 		c1_high => video_params.pll.c1,
 		c1_low  => video_params.pll.c1,
-		c2_high => video_params.pll.c2,
-		c2_low  => video_params.pll.c2,
+		c2_high => c2,
+		c2_low  => c2,
 
 		compensate_clock => "CLK0",
 		gate_lock_signal => "NO",
