@@ -152,7 +152,7 @@ architecture def of usbdev is
 	signal tp_rqst   : std_logic_vector(1 to 32);
 	signal tp_pkt    : std_logic_vector(1 to 32);
 
-	constant description : string := compact("{" &
+	constant descriptors : string := compact("{" &
 		"device:{"                          &
 			"bLength             :0x12,"    &
 			"bDescriptorType     :0x01,"    &

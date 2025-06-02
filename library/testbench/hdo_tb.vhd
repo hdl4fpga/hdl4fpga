@@ -32,65 +32,64 @@ architecture hdo_tb of testbench is
     constant inputs    : natural := 2;
 	constant max_delay : natural := 2**14;
 	constant vt_step   : real := 1.0/2.0**16; -- Volts
-	constant test      : string := compact(
-			"{                             " &   
-			"   inputs          : " & natural'image(inputs) & ',' &
-			"   max_delay       : " & natural'image(max_delay)  & ',' &
-			"   min_storage     : 256,     " & -- samples, storage size will be equal or larger than this
-			"   num_of_segments :   3,     " &
-			"   display : {                " &
-			"       width  : 1280,         " &
-			"       height : 720},         " &
-			"   grid : {                   " &
-			"       unit   : 32,           " &
-			"       width  : " & natural'image(31*32+1) & ',' &
-			"       height : " & natural'image( 6*32+1) & ',' &
-			"       color  : 0xff_ff_00_00," &
-			"       background-color : 0xff_00_00_00}," &
-			"   axis : {                   " &
-			"       fontsize   : 8,        " &
-			"       horizontal : {         " &
-			"           unit   : 31.25e-6, " &
-			"           height : 8,        " &
-			"           inside : false,    " &
-			"           color  : 0xff_ff_ff_ff," &
-			"           background-color : 0xff_00_00_ff}," &
-			"       vertical : {           " &
-			"           unit   : 500.00e-6, " &
-			"           width  : " & natural'image(6*8) & ','  &
-			"           rotate : ccw0,     " &
-			"           inside : false,    " &
-			"           color  : 0xff_ff_ff_ff," &
-			"           background-color : 0xff_00_00_ff}}," &
-			"   textbox : {                " &
-			"       font_width :  8,       " &
-			"       width      : " & natural'image(32*4+1) & ','&
-			"       inside     : false,    " &
-			"       color      : 0xff_ff_ff_ff," &
-			"       background-color : 0xff_00_00_00}," &
-			"   main : {                   " &
-			"       top        : 23,       " & 
-			"       left       :  3,       " & 
-			"       right      :  0,       " & 
-			"       bottom     :  0,       " & 
-			"       vertical   : 16,       " & 
-			"       horizontal :  0,       " &
-			"       background-color : 0xff_00_00_00}," &
-			"   segment : {                " &
-			"       top        : 1,        " &
-			"       left       : 1,        " &
-			"       right      : 1,        " &
-			"       bottom     : 1,        " &
-			"       vertical   : 0,        " &
-			"       horizontal : 1,        " &
-			"       background-color : 0xff_00_00_00}," &
-			"  vt : [                      " &
-			"   { text  : J3,        " &
-			"     step  : " & real'image(vt_step) & ","  &
-			"     color : 0xff_00_ff_ff},  " &
-			"   { text  : J4,        " &
-			"     step  : " & real'image(vt_step) & ","  &
-			"     color : 0xff_ff_ff_ff}]}");
+	constant test : string := compact("{" &
+		"device:{"                          &
+			"bLength             :0x12,"    &
+			"bDescriptorType     :0x01,"    &
+			"bcdUSB              :0x0110,"  &
+			"bDeviceClass        :0x00,"    &
+			"bDeviceSubClass     :0x00,"    &
+			"bDeviceProtocol     :0x00,"    &
+			"bMaxPacketSize0     :0x40,"    &
+			"idVendor            :0x1234,"  &
+			"idProduct           :0xabcd,"  &
+			"bcdDevice           :0x0100,"  &
+			"iManufacturer       :0x01,"    &
+			"iProduct            :0x00,"    &
+			"iSerialNumber       :0x00,"    &
+			"bNumConfigurations  :0x01},"   &
+		"configurations:[{"                          &
+			"bLength             :0x09,"    &
+			"bDescriptorType     :0x02,"    &
+			"wTotalLength        :0x0020,"  &
+			"bNumInterfaces      :0x01,"    &
+			"bConfigurationValue :0x01,"    &
+			"iConfiguration      :0x00,"    &
+			"bmAttribute         :0xc0,"    &
+			"MaxPower            :0x32,"    &
+			"interfaces:[{"                 &
+				"bLength            :0x09," &
+				"bDescriptorType    :0x04," &
+				"bInterfaceNumber   :0x00," &
+				"bAlternateSetting  :0x00," &
+				"bNumEndpoints      :0x02," &
+				"bInterfaceClass    :0x00," &
+				"bInterfaceSubClass :0x00," &
+				"bIntefaceProtocol  :0x00," &
+				"iInterface         :0x00," &
+				"endpoints:[{"              &
+					"bLength          :0x07,"      &
+					"bDescriptorType  :0x05,"      &
+					"bEndpointAddress :0x01,"      &
+					"bmAttibutes      :0x02,"      &
+					"wMaxPacketSize   :0x0040,"    &
+					"bInterval        :0x00},"     &
+					"{"                            &
+					"bLength          :0x07,"      &
+					"bDescriptorType  :0x05,"      &
+					"bEndpointAddress :0x81,"      &
+					"bmAttibutes      :0x02,"      &
+					"wMaxPacketSize   :0x0040,"    &
+					"Interval         :0x00}]}]}]," &
+		"strings:{"                       &
+			"bLength             :0x04," &
+			"bDescriptorType     :0x03," &
+			"wLANGID:["                  &
+				"0x0409],"               &
+			"unicodes:[{"                &
+				"bLength            :0x12," & 
+				"bDescriptorType    :0x03," &
+				"bstring            :HDL4FPGA}]}}");
 
     function to_string (
         constant value : std_logic_vector)
@@ -112,10 +111,26 @@ architecture hdo_tb of testbench is
 
 begin
     process 
-		constant obj : string := compact(hdo(test))**".vt";
+		-- constant obj : string := compact(hdo(test))**".config.interfaces[0].endpoints[0].bEndpointAddress";
+		-- constant obj : string := compact(hdo(test))**".configurations[0].interfaces[0].endpoints[0].bEndpointAddress";
+		constant obj : string := compact(hdo(test))**".configurations[0]";
+		constant ubskeys : string := "{" &
+			"device:["        &
+				"bLength,         bDescriptorType,    bcdUSB,        bDeviceClass, bDeviceSubClass,"        &
+				"bDeviceProtocol, bMaxPacketSize0,    idVendor,      idProduct,    bcdDevice,"              &
+				"iManufacturer,   iProduct,           iSerialNumber, bNumConfigurations],"                  &
+			"configuration:[" &
+				"bLength,         bDescriptorType,    wTotalLength,  bNumInterfaces, bConfigurationValue,"  &
+				"iConfiguration,  bmAttribute,        MaxPower],"                                           &
+			"interface:["     &
+				"bLength,         bDescriptorType,    bInterfaceNumber,  bAlternateSetting, bNumEndpoints," &
+				"bInterfaceClass, bInterfaceSubClass, bIntefaceProtocol, iInterface],"                      &
+			"endpoints:["     &
+				"bLength,         bDescriptorType,    bEndpointAddress,  bmAttibutes, wMaxPacketSize, bInterval]}";
     begin
         -- report LF & '"' & string'(hdo(obj)**"[1].text1=ffff.") & '"';
-        report LF & '"' & work.hdo.tag(hdo(obj)&"[1][0]") & '"';
+        -- report LF & '"' & work.hdo.tag(hdo(obj)&"[1][0]") & '"';
+        report LF & '"' & obj & '"';
         wait;
     end process;
 end;
