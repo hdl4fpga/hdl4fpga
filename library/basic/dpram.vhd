@@ -30,6 +30,9 @@ entity dpram is
 	generic (
 		synchronous_rdaddr : boolean := false;
 		synchronous_rddata : boolean := false;
+		synchronous_wraddr : boolean := false;
+		synchronous_wrdata : boolean := false;
+		synchronous_wrena  : boolean := false;
 		bitrom : std_logic_vector := (0 to 0 => '-'));
 	port (
 		rd_clk  : in  std_logic := '-';
@@ -72,6 +75,9 @@ architecture def of dpram is
 
 	signal async_rdaddr : std_logic_vector(rd_addr'range);
 	signal async_rddata : std_logic_vector(rd_data'range);
+	signal async_wraddr : std_logic_vector(wr_addr'range);
+	signal async_wrdata : std_logic_vector(wr_data'range);
+	signal async_wrena  : std_logic;
 	signal ram : word_vector(0 to 2**wr_addr'length-1) := init_ram(bitrom, 2**wr_addr'length);
 
 begin
@@ -103,24 +109,65 @@ begin
 		async_rddata <= ram(to_integer(unsigned(async_rdaddr)));
 	end process;
 		
-	rddata_p : process (async_rddata, rd_clk)
-	begin
-		if synchronous_rddata then
+	sync_rddata_g : if synchronous_rddata generate
+		rddata_p : process (rd_clk)
+		begin
 			if rising_edge(rd_clk) then
 				if rd_ena='1' then
 					rd_data <= async_rddata;
 				end if;
 			end if;
-		else
-			rd_data <= async_rddata;
-		end if;
-	end process;
+		end process;
+	end generate;
+
+	async_rddata_g : if not synchronous_rddata generate
+		rd_data <= async_rddata;
+	end generate;
+
+	sync_wraddr_g : if synchronous_wraddr generate
+		sync_p : process (wr_clk)
+		begin
+			if rising_edge(wr_clk) then
+				async_wraddr <= wr_addr;
+			end if;
+		end process;
+	end generate;
+
+	async_wraddr_g : if not synchronous_wraddr generate
+		async_wraddr <= wr_addr;
+	end generate;
+
+	sync_wrdata : if synchronous_wrdata generate
+		sync_p : process (wr_clk)
+		begin
+			if rising_edge(wr_clk) then
+				async_wrdata <= wr_data;
+			end if;
+		end process;
+	end generate;
+
+	async_wrdata_g : if not synchronous_wrdata generate
+		async_wrdata <= wr_data;
+	end generate;
+
+	sync_wrena : if synchronous_wrena generate
+		sync_p : process (wr_clk)
+		begin
+			if rising_edge(wr_clk) then
+				async_wrena <= wr_ena;
+			end if;
+		end process;
+	end generate;
+
+	async_wrena_g : if not synchronous_wrena generate
+		async_wrena <= wr_ena;
+	end generate;
 
 	wrdata_p : process (wr_clk)
 	begin
 		if rising_edge(wr_clk) then
-			if wr_ena='1' then
-				ram(to_integer(unsigned(wr_addr))) <= wr_data;
+			if async_wrena='1' then
+				ram(to_integer(unsigned(async_wraddr))) <= async_wrdata;
 			end if;
 		end if;
 	end process;
