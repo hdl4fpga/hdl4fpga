@@ -266,6 +266,7 @@ begin
 		signal alt_rdaddr : std_logic_vector(alt_wraddr'range);
 		signal alt_rddata : std_logic_vector(alt_wrdata'range);
 	begin
+		-- Required for Altera Cyclone II MK4 architecture
 		mem_e : entity hdl4fpga.dpram
 		port map (
 			wr_clk  => clk,
@@ -393,9 +394,8 @@ begin
 		signal alt_rdaddr : std_logic_vector(alt_wraddr'range);
 		signal alt_rddata : std_logic_vector(alt_wrdata'range);
 	begin
+		-- Required for Altera Cyclone II MK4 architecture
 		mem_e : entity hdl4fpga.dpram
-		generic map (
-			synchronous_rddata => true)
 		port map (
 			wr_clk  => clk,
 			wr_ena  => alt_wrena,
@@ -405,7 +405,7 @@ begin
 			rd_ena  => alt_rdena,
 			rd_addr => alt_rdaddr,
 			rd_data => alt_rddata);
-		-- buffer_rxd <= alt_rddata(0);
+		buffer_rxd <= alt_rddata(0);
 
     	rxbuffer_p : process (rqst_req, clk)
     		variable mem  : std_logic_vector(0 to 64*2**3-1);
@@ -413,6 +413,7 @@ begin
     		subtype  byte_range is natural range 1 to unsigned_num_bits(mem'length-1)-3;
     		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1)) := (others => '0');
     		variable pout : unsigned(pin'range) := (others => '0');
+    		variable pout0 : unsigned(pin'range) := (others => '0');
     		variable prty : unsigned(pout'range) := (others => '0');
     		variable we   : std_logic;
     		variable din  : std_logic;
@@ -434,14 +435,16 @@ begin
 
     				if pout/=prty then
     					if buffer_rxbs='0' then
-    						buffer_rxd <= mem(to_integer(pout(mem_range)));
-    						alt_rdaddr <= std_logic_vector(pout(mem_range));
-    						pout := pout + 1;
+    						-- buffer_rxd <= mem(to_integer(pout(mem_range)));
+    						-- alt_rdaddr <= std_logic_vector(pout(mem_range));
+							pout0 := pout;
+    						pout  := pout + 1;
     						buffer_rxdv <= '1';
     					end if;
     				else
     					buffer_rxdv <= '0';
     				end if;
+    				alt_rdaddr <= std_logic_vector(pout0(mem_range));
 
     				alt_wrena  <= we;
     				alt_wraddr <= std_logic_vector(pin(mem_range));
