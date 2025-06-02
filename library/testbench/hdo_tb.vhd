@@ -113,7 +113,8 @@ begin
     process 
 		-- constant obj : string := compact(hdo(test))**".config.interfaces[0].endpoints[0].bEndpointAddress";
 		-- constant obj : string := compact(hdo(test))**".configurations[0].interfaces[0].endpoints[0].bEndpointAddress";
-		constant obj : string := compact(hdo(test))**".configurations[0]";
+		-- constant obj : string := compact(hdo(test))**".configurations[0].interfaces[0].endpoints[1]";
+		constant obj : string := compact(hdo(test))**".strings";
 		constant ubskeys : string := "{" &
 			"device:["        &
 				"bLength,         bDescriptorType,    bcdUSB,        bDeviceClass, bDeviceSubClass,"        &
