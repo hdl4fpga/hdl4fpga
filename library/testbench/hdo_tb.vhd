@@ -128,10 +128,27 @@ begin
 				"bInterfaceClass, bInterfaceSubClass, bIntefaceProtocol, iInterface],"                      &
 			"endpoints:["     &
 				"bLength,         bDescriptorType,    bEndpointAddress,  bmAttibutes, wMaxPacketSize, bInterval]}";
+
+		function check (
+			constant obj : string)
+			return boolean is
+		begin
+			if obj="" then
+				return false;
+			else
+				report LF & obj;
+				return true;
+			end if;
+		end;
+			
+		variable i : natural;
     begin
+		while check(hdo(ubskeys)**(".device["& natural'image(i) &"]=")) loop
+			i := i + 1;
+		end loop;
         -- report LF & '"' & string'(hdo(obj)**"[1].text1=ffff.") & '"';
         -- report LF & '"' & work.hdo.tag(hdo(obj)&"[1][0]") & '"';
-        report LF & '"' & obj & '"';
+        -- report LF & '"' & obj & '"';
         wait;
     end process;
 end;
