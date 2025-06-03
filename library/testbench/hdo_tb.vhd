@@ -129,6 +129,15 @@ begin
 			"endpoints:["     &
 				"bLength,         bDescriptorType,    bEndpointAddress,  bmAttibutes, wMaxPacketSize, bInterval]}";
 
+		procedure rep (
+			constant obj : string) 
+		is
+		begin
+			if obj/="" then
+				report LF & obj;
+			end if;
+		end;
+			
 		function check (
 			constant obj : string)
 			return boolean is
@@ -141,9 +150,25 @@ begin
 			end if;
 		end;
 			
+		procedure get_value (
+			variable value  : out string;
+			variable length : out natural;
+			constant key    : in  string)
+			return boolean is
+		begin
+			if key="" then
+				return false;
+			else
+				report LF & obj;
+				return true;
+			end if;
+		end;
+			
 		variable i : natural;
+		variable length : natural;
+		variable value  : string(1 to 256);
     begin
-		while check(hdo(ubskeys)**(".device["& natural'image(i) &"]=")) loop
+		while get_value(hdo(ubskeys)**(".device["& natural'image(i) &"]=")) loop
 			i := i + 1;
 		end loop;
         -- report LF & '"' & string'(hdo(obj)**"[1].text1=ffff.") & '"';
