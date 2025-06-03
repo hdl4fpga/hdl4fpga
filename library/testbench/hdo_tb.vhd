@@ -114,7 +114,7 @@ begin
 		-- constant obj : string := compact(hdo(test))**".config.interfaces[0].endpoints[0].bEndpointAddress";
 		-- constant obj : string := compact(hdo(test))**".configurations[0].interfaces[0].endpoints[0].bEndpointAddress";
 		-- constant obj : string := compact(hdo(test))**".configurations[0].interfaces[0].endpoints[1]";
-		constant obj : string := compact(hdo(test))**".strings";
+		-- constant obj : string := compact(hdo(test))**".strings";
 		constant ubskeys : string := "{" &
 			"device:["        &
 				"bLength,         bDescriptorType,    bcdUSB,        bDeviceClass, bDeviceSubClass,"        &
@@ -153,20 +153,23 @@ begin
 			end if;
 		end;
 			
-		variable i : natural;
 		variable key_length : natural;
 		variable val_length : natural;
 		variable key : string(1 to 256);
 		variable val : string(1 to 256);
+		variable i : natural;
+		variable j : natural;
+		constant xxx : string := tag(hdo(test)&"[0]");
     begin
-		loop
-			get_value(key, key_length, hdo(ubskeys)**(".device["& natural'image(i) &"]="));
-			exit when key_length=0;
-			get_value(val, val_length, hdo(test)**(".device"&"."&key(1 to key_length)&"="));
-			exit when val_length=0;
-			report LF & key(1 to key_length) & ":" & val(1 to val_length);
-			i := i + 1;
-		end loop;
+		-- loop
+			-- get_value(key, key_length, hdo(ubskeys)**(".device["&natural'image(i)&"]="));
+			-- exit when key_length=0;
+			-- get_value(val, val_length, hdo(test)**(".device"&"."&key(1 to key_length)&"="));
+			-- exit when val_length=0;
+			-- report LF & key(1 to key_length) & ":" & val(1 to val_length);
+			-- i := i + 1;
+		-- end loop;
+		-- report LF & xxx;
         -- report LF & '"' & string'(hdo(obj)**"[1].text1=ffff.") & '"';
         -- report LF & '"' & work.hdo.tag(hdo(obj)&"[1][0]") & '"';
         -- report LF & '"' & obj & '"';

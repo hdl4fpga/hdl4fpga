@@ -804,12 +804,21 @@ package body hdo is
 				value_offset := obj_index;
 				value_length := obj'right-obj_index+1; 
 				parse_value(obj, obj_index, value_offset, value_length);
-				assert ((log/log_parsetagvaluekey) mod 2=0) --|note
-					report LF & --|note
-						"parse_tagvaluekey => no tag" & LF & --|note
-						"parse_tagvaluekey => value          -> " & '"' & obj(value_offset to value_offset+value_length-1) & '"' & LF & --|note
-						"parse_tagvaluekey => obj(obj_index) -> " & natural'image(obj_index) & ':' & character'image(obj(obj_index)) --|note
-					severity note; --|note
+				if obj_index > obj'right then --|note
+					assert ((log/log_parsetagvaluekey) mod 2=0) --|note
+						report LF & --|note
+							"parse_tagvaluekey => no tag" & LF & --|note
+							"parse_tagvaluekey => value          -> " & '"' & obj(value_offset to value_offset+value_length-1) & '"' & LF & --|note
+							"parse_tagvaluekey => obj(obj_index) -> " & natural'image(obj_index) & ':' & "EOF" --|note
+						severity note; --|note
+				else --|note
+					assert ((log/log_parsetagvaluekey) mod 2=0) --|note
+						report LF & --|note
+							"parse_tagvaluekey => no tag" & LF & --|note
+							"parse_tagvaluekey => value          -> " & '"' & obj(value_offset to value_offset+value_length-1) & '"' & LF & --|note
+							"parse_tagvaluekey => obj(obj_index) -> " & natural'image(obj_index) & ':' & character'image(obj(obj_index)) --|note
+						severity note; --|note
+				end if; --|note
 			elsif obj(obj_index)/=':' then
 				assert ((log/log_parsetagvaluekey) mod 2=0) --|note
 					report LF & --|note
@@ -1103,6 +1112,7 @@ package body hdo is
 		variable default_length    : natural;
 	begin
 		obj_index := obj'left;
+
 		parse_tagvaluekeydefault(
 			obj, obj_index, obj'right,
 			tag_offset,     tag_length, 
