@@ -27,63 +27,63 @@ use ieee.numeric_std.all;
 
 package hdo is
 	function compact (
-		constant obj : string)
+		constant object : string)
 		return string;
 
 	procedure resolve (
-		constant obj          : in    string;
+		constant object          : in    string;
 		variable value_offset : inout positive;
 		variable value_length : inout natural;
 		variable tag1_offset  : inout positive;
 		variable tag1_length  : inout natural);
 
 	function resolve (
-		constant obj : string)
+		constant object : string)
 		return string;
 
 	function resolve (
-		constant obj : string)
+		constant object : string)
 		return integer;
 
 	function resolve (
-		constant obj : string)
+		constant object : string)
 		return boolean;
 
 	subtype hdo is string;
 
 	function "**" (
-		constant obj : hdo;
-		constant key : string)
+		constant object : hdo;
+		constant path : string)
 		return boolean;
 
 	function "**" (
-		constant obj : hdo;
-		constant key : string)
+		constant object : hdo;
+		constant path : string)
 		return integer;
 
 	function "**" (
-		constant obj : hdo;
-		constant key : string)
+		constant object : hdo;
+		constant path : string)
 		return real;
 
 	function "**" (
-		constant obj : hdo;
-		constant key : string)
+		constant object : hdo;
+		constant path : string)
 		return std_ulogic;
 
 	function "**" (
-		constant obj : hdo;
-		constant key : string)
+		constant object : hdo;
+		constant path : string)
 		return std_logic_vector;
 
 	function "**" (
-		constant obj : hdo;
-		constant key : string)
+		constant object : hdo;
+		constant path : string)
 		return character;
 
 	function "**" (
-		constant obj : hdo;
-		constant key : string)
+		constant object : hdo;
+		constant path : string)
 		return hdo;
 
 	function to_integer (
@@ -91,16 +91,16 @@ package hdo is
 		return integer;
 
 	function tag (
-		constant obj : hdo)
+		constant object : hdo)
 		return string;
 
 	procedure escaped (
 		variable retval : inout string;
 		variable length : inout natural;
-		constant obj    : in    string);
+		constant object    : in    string);
 
 	function escaped (
-		constant obj : string)
+		constant object : string)
 		return string;
 
 	function to_stdulogic (
@@ -116,13 +116,58 @@ package body hdo is
 
 	constant log_parsestring      : natural := 2**0;
 	constant log_parsenatural     : natural := 2**1;
-	constant log_parsekeytag      : natural := 2**2;
-	constant log_parsekey         : natural := 2**3;
+	constant log_parsedomain      : natural := 2**2;
+	constant log_parsepath         : natural := 2**3;
 	constant log_parsevalue       : natural := 2**4;
-	constant log_parsetagvaluekey : natural := 2**5;
+	constant log_parsetagvaluepath : natural := 2**5;
 	constant log_locatevalue      : natural := 2**6;
 	constant log_resolve          : natural := 2**7;
-	constant log                  : natural := log_parsetagvaluekey + log_resolve + log_locatevalue + log_parsekeytag + log_parsekey; --    + log_parsevalue ;
+	constant log_flags                  : natural := log_parsetagvaluepath; -- + log_resolve + log_locatevalue + log_parsedomain + log_parsepath; --    + log_parsevalue ;
+	-- constant log_flags                  : natural := log_resolve; -- + log_locatevalue + log_parsedomain + log_parsepath; --    + log_parsevalue ;
+	-- constant log_flags                  : natural := log_locatevalue; -- + log_parsedomain + log_parsepath; --    + log_parsevalue ;
+
+	function max (
+		constant arg1 : natural;
+		constant arg2 : natural)
+		return natural is
+	begin
+		if arg1 > arg2 then
+			return arg1;
+		else
+			return arg2;
+		end if;
+	end;
+
+	function logg (
+		constant fname : string;
+		constant msg   : string)
+		return string is
+
+		function format (
+			constant arg   : string;
+			constant width : natural) 
+			return string is
+			variable formatted : string(1 to max(width,1));
+			variable j : positive;
+		begin
+			if width > 0 then
+				j := fname'left;
+				for i in 1 to width loop
+					if j <= arg'right then
+						formatted(i) := fname(j);
+						j := j + 1;
+					else
+						formatted(i) := ' ';
+					end if;
+				end loop;
+				return formatted;
+			else
+				return arg;
+			end if;
+		end;
+	begin
+		return format(fname, 20) & " # " & format(msg, 10);
+	end;
 
 	function unsigned_num_bits (
 		arg: natural)
@@ -290,7 +335,7 @@ package body hdo is
 		begin
 			n := value'left;
 			for i in 0 to value'length-1 loop
-				for l in value'range loop -- avoid synthesizes tools loop-warnings
+				for l in value'range loop    -- avoid synthesizes tools loop-warnings
 					exit when value(n)/='_'; -- avoid synthesizes tools loop-warnings
 
 					n := n + 1;
@@ -435,87 +480,87 @@ package body hdo is
 	end;
 	
 	function skipws (
-		constant obj       : in string;
-		constant obj_index : in positive)
+		constant object : in string;
+		constant cursor : in positive)
 		return positive is
 		variable retval : natural;
 	begin
-		for i in obj_index to obj'right loop
-			if not isws(obj(i)) then
+		for i in cursor to object'right loop
+			if not isws(object(i)) then
 				return i;
 			end if;
 		end loop;
-		return obj'right+1;
+		return object'right+1;
 	end;
 
 	procedure skipws (
-		constant obj       : in    string;
-		variable obj_index : inout positive) is
+		constant object : in string;
+		variable cursor : inout positive) is
 	begin
-		for i in obj'range loop
-			if i >= obj_index then 
-				if not isws(obj(i)) then
+		for i in object'range loop
+			if i >= cursor then 
+				if not isws(object(i)) then
 					exit;
 				end if;
-				obj_index := obj_index + 1;
+				cursor := cursor + 1;
 			end if;
 		end loop;
 	end;
 
 	procedure parse_string (
-		constant obj       : in    string;
-		variable obj_index : inout positive;
-		variable offset    : inout positive;
-		variable length    : inout natural) is
-		variable aphos     : boolean := false;
-		variable bkslh     : boolean := false;
+		constant object : in  string;
+		variable cursor : inout positive;
+		variable offset : inout positive;
+		variable length : inout natural) is
+		variable aphos  : boolean := false;
+		variable bkslh  : boolean := false;
 	begin
 
-		skipws(obj, obj_index);
-		offset := obj_index;
-		for l in obj'range loop -- avoid synthesizes tools loop-warnings
-			exit when obj_index > obj'right; -- avoid synthesizes tools loop-warnings
+		skipws(object, cursor);
+		offset := cursor;
+		for l in object'range loop -- avoid synthesizes tools loop-warnings
+			exit when cursor > object'right; -- avoid synthesizes tools loop-warnings
 
-			if obj(obj_index)='\' then
+			if object(cursor)='\' then
 				bkslh := true;
 				next;
-			elsif (obj_index-offset)=0 then
-				if obj(obj_index)=''' then
-					aphos     := true;
-					offset    := obj_index;
-					obj_index := obj_index + 1;
+			elsif (cursor-offset)=0 then
+				if object(cursor)=''' then
+					aphos  := true;
+					offset := cursor;
+					cursor := cursor + 1;
 					next;
 				end if;
 			end if;
 			if not bkslh then
 				if aphos then
-					if obj(obj_index)=''' then
-						obj_index := obj_index + 1;
-						assert (log/log_parsestring) mod 2=0 --|note
-							report LF & "parse_string => " & '"' & obj(offset to offset+length-1) & '"' --|note
+					if object(cursor)=''' then
+						cursor := cursor + 1;
+						assert (log_flags/log_parsestring) mod 2=0 --|note
+							report LF & logg("parse_string", "") & '"' & object(offset to offset+length-1) & '"' --|note
 							severity note; --|note
 						exit;
 					else
-						obj_index := obj_index + 1;
+						cursor := cursor + 1;
 					end if;
-				elsif isalnum(obj(obj_index)) then
-					obj_index := obj_index + 1;
+				elsif isalnum(object(cursor)) then
+					cursor := cursor + 1;
 				else
-					case obj(obj_index) is
+					case object(cursor) is
 					when '-'|'_' =>
-						obj_index := obj_index + 1;
+						cursor := cursor + 1;
 					when others =>
 						exit;
 					end case;
 				end if;
 			else
-				obj_index := obj_index + 1;
+				cursor := cursor + 1;
 				bkslh := false;
 			end if;
 		end loop;
-		length := obj_index-offset;
-		assert (log/log_parsestring) mod 2=0 --|note
-			report LF & "parse_string => " & '"' & obj(offset to offset+length-1) & '"' --|note
+		length := cursor-offset;
+		assert (log_flags/log_parsestring) mod 2=0 --|note
+			report LF & "parse_string # " & '"' & object(offset to offset+length-1) & '"' --|note
 			severity note; --|note
 	end;
 
@@ -535,161 +580,161 @@ package body hdo is
 	end;
 
 	procedure parse_natural (
-		constant obj       : in    string;
-		variable obj_index : inout positive;
-		variable offset    : inout positive;
-		variable length    : inout natural) is
+		constant object    : in   string;
+		variable cursor : inout positive;
+		variable offset : inout positive;
+		variable length : inout natural) is
 	begin
-		skipws(obj, obj_index);
-		offset := obj_index;
-		for l in obj'range loop -- avoid synthesizes tools loop-warnings
-			exit when obj_index > obj'right; -- avoid synthesizes tools loop-warnings
+		skipws(object, cursor);
+		offset := cursor;
+		for l in object'range loop -- avoid synthesizes tools loop-warnings
+			exit when cursor > object'right; -- avoid synthesizes tools loop-warnings
 
-			if isalnum(obj(obj_index)) then
-				obj_index := obj_index + 1;
+			if isalnum(object(cursor)) then
+				cursor := cursor + 1;
 			else
 				exit;
 			end if;
 		end loop;
-		length := obj_index-offset;
-		assert (log/log_parsenatural) mod 2=0 --|note
-			report "LF & parse_string => " & '"' & obj(offset to offset+length-1) & '"' --|note
+		length := cursor-offset;
+		assert (log_flags/log_parsenatural) mod 2=0 --|note
+			report "LF & parse_string # " & '"' & object(offset to offset+length-1) & '"' --|note
 			severity note; --|note
 	end;
 
-	procedure parse_keytag (
-		constant obj       : in    string;
-		variable obj_index : inout positive;
+	procedure parse_domain (
+		constant object       : in    string;
+		variable cursor : inout positive;
 		variable offset    : inout positive;
 		variable length    : inout natural) is
 		variable open_char : character;
 	begin
-		skipws(obj, obj_index);
+		skipws(object, cursor);
 
-		assert ((log/log_parsekeytag) mod 2=0) --|note
-			report LF & "parse_keytag => obj_index -> " & natural'image(obj_index) --|note
+		assert ((log_flags/log_parsedomain) mod 2=0) --|note
+			report LF & "parse_domain # cursor % " & natural'image(cursor) --|note
 			severity note; --|note
 
-		assert ((log/log_parsekeytag) mod 2=0) or obj_index > obj'right --|note
-			report LF & "parse_keytag => obj_index -> " & natural'image(obj_index) & " -> " & ''' & obj(obj_index) & ''' --|note
+		assert ((log_flags/log_parsedomain) mod 2=0) or cursor > object'right --|note
+			report LF & "parse_domain # cursor % " & natural'image(cursor) & " -> " & ''' & object(cursor) & ''' --|note
 			severity note; --|note
 
 		length := 0;
-		for l in obj'range loop -- avoid synthesizes tools loop-warnings
-			exit when obj_index > obj'right; -- avoid synthesizes tools loop-warnings
+		for l in object'range loop -- avoid synthesizes tools loop-warnings
+			exit when cursor > object'right; -- avoid synthesizes tools loop-warnings
 
-			case obj(obj_index) is
+			case object(cursor) is
 			when '['|'{' =>
-				open_char := obj(obj_index);
-				obj_index := obj_index + 1;
-				parse_string(obj, obj_index, offset, length);
+				open_char := object(cursor);
+				cursor := cursor + 1;
+				parse_string(object, cursor, offset, length);
 
-				assert ((log/log_parsekeytag) mod 2=0) or length=0   --|note
-					report LF & "parse_keytag => [ is position" --|note
+				assert ((log_flags/log_parsedomain) mod 2=0) or length=0   --|note
+					report LF & "parse_domain # [ is position" --|note
 					severity note; --|note
 
-				assert ((log/log_parsekeytag) mod 2=0) or length/=0  --|note
-					report LF & "parse_keytag  => [ is string"  --|note
+				assert ((log_flags/log_parsedomain) mod 2=0) or length/=0  --|note
+					report LF & "parse_domain  # [ is string"  --|note
 					severity note; --|note
 
 				if length=0 then
 					assert false --|
-						report LF & "parse_keytag -> invalid key : " & obj(obj_index to obj'right)  --|
+						report LF & "parse_domain # invalid path : " & object(cursor to object'right)  --|
 						severity failure; --|
 				end if;
 
-				assert ((log/log_parsekeytag) mod 2=0) --|note
-					report LF & "parse_keytag => " & natural'image(obj_index) & "->" & ''' & obj(obj_index) & ''' --|note
+				assert ((log_flags/log_parsedomain) mod 2=0) --|note
+					report LF & "parse_domain # " & natural'image(cursor) & "->" & ''' & object(cursor) & ''' --|note
 					severity note; --|note
 
-				skipws(obj, obj_index);
-				case obj(obj_index) is
+				skipws(object, cursor);
+				case object(cursor) is
 				when ']' => 
 					if open_char/='[' then --| Xilinx ISE 14.7 warning complain
 						assert false --|
-							report LF & "parse_keytag => wrong close key " & ''' & open_char & ''' & " " & ''' & obj(obj_index) & ''' --|
+							report LF & "parse_domain # wrong close path " & ''' & open_char & ''' & " " & ''' & object(cursor) & ''' --|
 							severity failure; --|
 					end if; --|
 
-					assert ((log/log_parsekeytag) mod 2=0) --|note
-						report LF & "parse_keytag => ]" --|note
+					assert ((log_flags/log_parsedomain) mod 2=0) --|note
+						report LF & "parse_domain # ]" --|note
 						severity note; --|note
-					obj_index := obj_index + 1;
+					cursor := cursor + 1;
 				when '}' => 
 
 					if open_char/='{' then --| Xilinx ISE 14.7 warning complain
 						assert false --|
-							report LF & "parse_keytag => wrong close key " & ''' & open_char & ''' & " " & ''' & obj(obj_index) & ''' --|
+							report LF & "parse_domain # wrong close path " & ''' & open_char & ''' & " " & ''' & object(cursor) & ''' --|
 							severity failure; --|
 					end if; --|
 
-					assert ((log/log_parsekeytag) mod 2=0) --|note
-						report LF & "parse_keytag => }" --|note
+					assert ((log_flags/log_parsedomain) mod 2=0) --|note
+						report LF & "parse_domain # }" --|note
 						severity note; --|note
 
-					obj_index := obj_index + 1;
+					cursor := cursor + 1;
 				when others =>
 					assert false --|
-						report LF & "parse_keytag => wrong token -> " & obj(obj_index) & " @ " & obj --|
+						report LF & "parse_domain # wrong token % " & object(cursor) & " @ " & object --|
 						severity failure; --|
 				end case;
 				exit;
 			when '.' =>
-				obj_index := obj_index + 1;
-				skipws(obj, obj_index);
-				parse_string(obj, obj_index, offset, length);
+				cursor := cursor + 1;
+				skipws(object, cursor);
+				parse_string(object, cursor, offset, length);
 				if length=0 then --|note Xilinx ISE 14.7 warning complain
 					assert false --|note
-						report LF & "parse_keytag => null key : " & obj(obj_index to obj'right) --|note
+						report LF & "parse_domain # null path : " & object(cursor to object'right) --|note
 						severity note; --|note
 				end if; --|note
-				obj_index := offset+length;
+				cursor := offset+length;
 				exit;
 			when others =>
 				length := 0;
-				assert ((log/log_parsekeytag) mod 2=0) --|note
-					report LF & "parse_keytag => null" --|note
+				assert ((log_flags/log_parsedomain) mod 2=0) --|note
+					report LF & "parse_domain # null" --|note
 					severity note; --|note
 				exit;
 			end case;
 		end loop;
 
-		assert ((log/log_parsekeytag) mod 2=0) or obj_index > obj'right --|note
-			report LF & "parse_keytag => key -> " & '"' & obj(offset to offset+length-1) & '"' & ' ' & integer'image(offset) & ':' & integer'image(length) --|note
+		assert ((log_flags/log_parsedomain) mod 2=0) or cursor > object'right --|note
+			report LF & "parse_domain # path % " & '"' & object(offset to offset+length-1) & '"' & ' ' & integer'image(offset) & ':' & integer'image(length) --|note
 			severity note; --|note
 	end;
 
-	procedure parse_key (
-		constant obj        : in    string;
-		variable obj_index  : inout natural;
+	procedure parse_path (
+		constant object        : in    string;
+		variable cursor  : inout natural;
 		variable offset     : inout positive;
 		variable length     : inout natural) is
 		variable tag_offset : positive;
 		variable tag_length : natural;
 	begin
-		skipws(obj, obj_index);
-		offset := obj_index;
-		assert ((log/log_parsekey) mod 2=0) --|note
-			report LF & "parse_key => obj : " & '"' & obj(obj_index to obj'right)  & '"'--|note
+		skipws(object, cursor);
+		offset := cursor;
+		assert ((log_flags/log_parsepath) mod 2=0) --|note
+			report LF & "parse_path # object : " & '"' & object(cursor to object'right)  & '"'--|note
 			severity note; --|note
-		for i in obj'range loop
-			parse_keytag(obj, obj_index, tag_offset, tag_length);
-			assert ((log/log_parsekey) mod 2=0) --|note
-				report LF & "parse_key => tag -> " & '"' & obj(tag_offset to tag_offset+tag_length-1) & '"' --|note
+		for i in object'range loop
+			parse_domain(object, cursor, tag_offset, tag_length);
+			assert ((log_flags/log_parsepath) mod 2=0) --|note
+				report LF & "parse_path # tag % " & '"' & object(tag_offset to tag_offset+tag_length-1) & '"' --|note
 				severity note; --|note
 			if tag_length=0 then
-				length := obj_index-offset;
+				length := cursor-offset;
 				exit;
 			end if;
 		end loop;
-		assert ((log/log_parsekey) mod 2=0) --|note
-			report LF & "parse_key => " & '"' & obj(offset to offset+length-1) & '"' --|note
+		assert ((log_flags/log_parsepath) mod 2=0) --|note
+			report LF & "parse_path # " & '"' & object(offset to offset+length-1) & '"' --|note
 			severity note; --|note
 	end;
 
 	procedure parse_value (
-		constant obj       : in    string;
-		variable obj_index : inout positive;
+		constant object       : in    string;
+		variable cursor : inout positive;
 		variable offset    : inout positive;
 		variable length    : inout natural) is
 		variable obj_stack : string(1 to 32);
@@ -712,21 +757,21 @@ package body hdo is
 		variable bkslh  : boolean := false;
 		variable list   : boolean := false;
 	begin
-		skipws(obj, obj_index);
-		offset := obj_index;
-		for i in offset to obj'right loop
+		skipws(object, cursor);
+		offset := cursor;
+		for i in offset to object'right loop
 			if not aphos and not bkslh then
-				case obj(obj_index) is
+				case object(cursor) is
 				when '['|'{' =>
 					if obj_stptr=obj_stack'left then 
-						if offset=obj_index then
+						if offset=cursor then
 							list := true;
-							assert ((log/log_parsevalue) mod 2=0) --|note
-								report LF & "parse_value => list" --|note
+							assert ((log_flags/log_parsevalue) mod 2=0) --|note
+								report LF & "parse_value # list" --|note
 								severity note; --|note
 						end if;
 					end if;
-					push(obj_stptr, obj(obj_index));
+					push(obj_stptr, object(cursor));
 				when ',' =>
 					if obj_stptr=obj_stack'left then
 						exit;
@@ -735,7 +780,7 @@ package body hdo is
 					if obj_stptr/=obj_stack'left then
 						if obj_stack(obj_stptr-1)/='[' then --| Xilinx ISE 14.7 warning complain
 							assert false --|
-							report LF & "parse_value => close key " & obj_stack(obj_stptr-1) & obj(obj_index) --|
+							report LF & "parse_value # close path " & obj_stack(obj_stptr-1) & object(cursor) --|
 							severity failure; --|
 						end if; --|
 						pop(obj_stptr);
@@ -746,7 +791,7 @@ package body hdo is
 					if obj_stptr/=obj_stack'left then
 						if obj_stack(obj_stptr-1)/='{' then --| Xilinx ISE 14.7 warning complain
 							assert false --|
-							report LF & "parse_value => close key " & obj_stack(obj_stptr-1) & obj(obj_index) --|
+							report LF & "parse_value # close path " & obj_stack(obj_stptr-1) & object(cursor) --|
 							severity failure; --|
 						end if; --|
 						pop(obj_stptr);
@@ -757,158 +802,154 @@ package body hdo is
 				end case;
 			end if;
 			if not bkslh then
-				if obj(obj_index)='\' then
+				if object(cursor)='\' then
 					bkslh := true;
-				elsif obj(obj_index)=''' then
+				elsif object(cursor)=''' then
 					aphos := not aphos;
 				end if;
 			else
 				bkslh := false;
 			end if;
-			obj_index := obj_index + 1;
+			cursor := cursor + 1;
 			if list then
 				if obj_stptr=obj_stack'left then
 					exit;
 				end if;
 			end if;
 		end loop;
-		length := obj_index-offset;
-		assert ((log/log_parsevalue) mod 2=0) --|note
-			report LF & "parse_value => value -> " &  obj(offset to offset+length-1) --|note
+		length := cursor-offset;
+		assert ((log_flags/log_parsevalue) mod 2=0) --|note
+			report LF & "parse_value # value % " &  object(offset to offset+length-1) --|note
 			severity note; --|note
 	end;
 
-	procedure parse_tagvaluekey (
-		constant obj          : string;  -- Xilinx ISE bug left and right are not sent according slice
-		variable obj_index    : inout positive;
-		constant obj_right    : positive; -- Xilinx ISE bug. left and right are not sent according slice
+	procedure parse_tagvaluepath (
+		constant object       : string;  -- Xilinx ISE bug left and right are not sent according slice
+		variable cursor       : inout positive;
 		variable tag_offset   : inout positive;
 		variable tag_length   : inout natural;
 		variable value_offset : inout positive;
 		variable value_length : inout natural;
-		variable key_offset   : inout positive;
-		variable key_length   : inout natural) is
+		variable path_offset  : inout positive;
+		variable path_length  : inout natural) is
 	begin
-		assert ((log/log_parsetagvaluekey) mod 2=0) --|note
-			report LF & "parse_tagvaluekey => obj -> " & '"' & obj(obj_index to obj'right) & '"' & --|note
-			       LF & "parse_tagvaluekey => obj_index -> " & '"' & natural'image(obj_index) & '"' & --|note
-			       LF & "parse_tagvaluekey => obj_right -> " & '"' & natural'image(obj_right) & '"' --|note
+		assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
+			report LF & "parse_tagvaluepath # object % "       & '"' & object(cursor to object'right) & '"' & --|note
+			       LF & "parse_tagvaluepath # cursor % " & '"' & natural'image(cursor)    & '"'   --|note
 			severity note; --|note
-		parse_string(obj, obj_index, value_offset, value_length);
-		skipws(obj, obj_index);
+		parse_string(object, cursor, value_offset, value_length);
+		skipws(object, cursor);
 		tag_offset := value_offset;
 		tag_length := 0;
-		if obj_index <= obj'right then
+		if cursor <= object'right then
 			if value_length=0 then
 				tag_length   := 0;
-				value_offset := obj_index;
-				value_length := obj'right-obj_index+1; 
-				parse_value(obj, obj_index, value_offset, value_length);
-				if obj_index > obj'right then --|note
-					assert ((log/log_parsetagvaluekey) mod 2=0) --|note
+				value_offset := cursor;
+				value_length := object'right-cursor+1; 
+				parse_value(object, cursor, value_offset, value_length);
+				if cursor > object'right then --|note
+					assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
 						report LF & --|note
-							"parse_tagvaluekey => no tag" & LF & --|note
-							"parse_tagvaluekey => value          -> " & '"' & obj(value_offset to value_offset+value_length-1) & '"' & LF & --|note
-							"parse_tagvaluekey => obj(obj_index) -> " & natural'image(obj_index) & ':' & "EOF" --|note
+							"parse_tagvaluepath # no tag" & LF & --|note
+							"parse_tagvaluepath # value          % " & '"' & object(value_offset to value_offset+value_length-1) & '"' & LF & --|note
+							"parse_tagvaluepath # object(cursor) % " & natural'image(cursor) & ':' & "EOF" --|note
 						severity note; --|note
 				else --|note
-					assert ((log/log_parsetagvaluekey) mod 2=0) --|note
+					assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
 						report LF & --|note
-							"parse_tagvaluekey => no tag" & LF & --|note
-							"parse_tagvaluekey => value          -> " & '"' & obj(value_offset to value_offset+value_length-1) & '"' & LF & --|note
-							"parse_tagvaluekey => obj(obj_index) -> " & natural'image(obj_index) & ':' & character'image(obj(obj_index)) --|note
+							"parse_tagvaluepath # no tag" & LF & --|note
+							"parse_tagvaluepath # value          % " & '"' & object(value_offset to value_offset+value_length-1) & '"' & LF & --|note
+							"parse_tagvaluepath # object(cursor) % " & natural'image(cursor) & ':' & character'image(object(cursor)) --|note
 						severity note; --|note
 				end if; --|note
-			elsif obj(obj_index)/=':' then
-				assert ((log/log_parsetagvaluekey) mod 2=0) --|note
+			elsif object(cursor)/=':' then
+				assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
 					report LF & --|note
-						"parse_tagvaluekey => tag token not found" & LF & --|note
-						"parse_tagvaluekey => value     -> " & '"' & obj(value_offset to value_offset+value_length-1) & '"' & LF & --|note
-						"parse_tagvaluekey => obj_index -> " & natural'image(obj_index) & ':' & character'image(obj(obj_index)) --|note
+						"parse_tagvaluepath # tag token not found" & LF & --|note
+						"parse_tagvaluepath # value  : " & '"' & object(value_offset to value_offset+value_length-1) & '"' & LF & --|note
+						"parse_tagvaluepath # cursor : " & natural'image(cursor) & " : " & character'image(object(cursor)) --|note
 					severity note; --|note
 				tag_length   := 0;
 				tag_offset   := value_offset;
 			else
 				tag_offset   := value_offset;
 				tag_length   := value_length;
-				obj_index    := obj_index + 1;
-				value_offset := obj_index;
-				value_length := obj'right-obj_index+1; 
-				skipws(obj, obj_index);
-				parse_value(obj, obj_index, value_offset, value_length);
-				assert ((log/log_parsetagvaluekey) mod 2=0) --|note
+				cursor    := cursor + 1;
+				value_offset := cursor;
+				value_length := object'right-cursor+1; 
+				skipws(object, cursor);
+				parse_value(object, cursor, value_offset, value_length);
+				assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
 					report LF & --|note
-						"parse_tagvaluekey => tag   -> " & '"' & obj(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|note
-						"parse_tagvaluekey => value -> " & '"' & obj(value_offset to value_offset+value_length-1) & '"'  --|note
+						"parse_tagvaluepath # tag   % " & '"' & object(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|note
+						"parse_tagvaluepath # value % " & '"' & object(value_offset to value_offset+value_length-1) & '"'  --|note
 					severity note; --|note
-				assert ((log/log_parsetagvaluekey) mod 2=0) or obj_index <= obj'right --|note
-					report LF & "parse_tagvaluekey => obj_index passed end of the obj -> " & natural'image(obj_index) --|note
+				assert ((log_flags/log_parsetagvaluepath) mod 2=0) or cursor <= object'right --|note
+					report LF & "parse_tagvaluepath # cursor passed end of the object % " & natural'image(cursor) --|note
 					severity note; --|note
-				assert ((log/log_parsetagvaluekey) mod 2=0) or obj_index > obj'right --|note
-					report LF & "parse_tagvaluekey => obj(obj_index) -> " & natural'image(obj_index) & ':' & character'image(obj(obj_index)) --|note
+				assert ((log_flags/log_parsetagvaluepath) mod 2=0) or cursor > object'right --|note
+					report LF & "parse_tagvaluepath # object(cursor) % " & natural'image(cursor) & ':' & character'image(object(cursor)) --|note
 					severity note; --|note
 			end if;
 		else
-			assert ((log/log_parsetagvaluekey) mod 2=0) --|note
+			assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
 				report LF & --|note
-					"parse_tagvaluekey => string value -> " & '"' & obj(value_offset to value_offset+value_length-1) & '"' & LF & --|note
-					"parse_tagvaluekey => obj_index passed end of the obj -> " & natural'image(obj_index) --|note
+					"parse_tagvaluepath # string value % " & '"' & object(value_offset to value_offset+value_length-1) & '"' & LF & --|note
+					"parse_tagvaluepath # cursor passed end of the object % " & natural'image(cursor) --|note
 				severity note; --|note
 		end if;
-		skipws(obj, obj_index);
-		parse_key(obj, obj_index, key_offset, key_length);
-		assert ((log/log_parsetagvaluekey) mod 2=0) --|note
+		skipws(object, cursor);
+		parse_path(object, cursor, path_offset, path_length);
+		assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
 			report LF & --|note
-				"parse_tagvaluekey => key       -> " & '"' & obj(key_offset to key_offset+key_length-1) & '"' & LF & --|note
-				"parse_tagvaluekey => obj_index -> " & natural'image(obj_index) --|note
+				"parse_tagvaluepath # path       % " & '"' & object(path_offset to path_offset+path_length-1) & '"' & LF & --|note
+				"parse_tagvaluepath # cursor % " & natural'image(cursor) --|note
 			severity note; --|note
 	end;
 		
-	procedure parse_tagvaluekeydefault (
-		constant obj            : in    string; -- Xilinx ISE bug left and right are not sent according slice
-		variable obj_index      : inout positive;
-		constant obj_right      : in    positive; -- Xilinx ISE bug. left and right are not sent according slice
+	procedure parse_tagvaluepathdefault (
+		constant object            : in    string; -- Xilinx ISE bug left and right are not sent according slice
+		variable cursor      : inout positive;
 		variable tag_offset     : inout positive;
 		variable tag_length     : inout natural;
 		variable value_offset   : inout positive;
 		variable value_length   : inout natural;
-		variable key_offset     : inout positive;
-		variable key_length     : inout natural;
+		variable path_offset     : inout positive;
+		variable path_length     : inout natural;
 		variable default_offset : inout positive;
 		variable default_length : inout natural) is
 	begin
-		parse_tagvaluekey(
-			obj, obj_index, obj_right, 
+		parse_tagvaluepath(
+			object, cursor,
 			tag_offset,   tag_length, 
 			value_offset, value_length, 
-			key_offset,   key_length);
+			path_offset,   path_length);
 
-		-- skipws(obj, obj_index);
-		if key_length/=0 then
-			if obj'right >= obj_index then
-				if obj(obj_index)='=' then
-					default_offset := obj_index+1;
-					-- default_length := obj_right-obj_index;
-					default_length := obj'right-obj_index;
-					assert false --|note
-					report LF & "parse_tagvaluekeydefault => default " & natural'image(default_offset) & ':' & natural'image(default_length) & " -> " & obj(default_offset to default_offset+default_length-1) --|note
-					severity note; --|note
+		skipws(object, cursor);
+		if path_length/=0 then
+			if object'right >= cursor then
+				if object(cursor)='=' then
+					default_offset := cursor+1;
+					default_length := object'right-cursor;
+					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                                                                                                                                                                 --|note
+						report LF & "parse_tagvaluepathdefault # default % " & natural'image(default_offset) & ':' & natural'image(default_length) & " " & '"' & object(default_offset to default_offset+default_length-1) & '"' --|note
+						severity note;                                                                                                                                                                                          --|note
 				end if;
 			end if;
 		end if;
 	end;
 
 	procedure locate_value (
-		constant obj            : in    string;
-		variable obj_index      : inout positive;
-		constant key_left       : in    positive;
-		constant key_right      : in    positive;
+		constant object         : in    string;
+		variable cursor         : inout positive;
+		constant path_left       : in    positive;
+		constant path_right      : in    positive;
 		variable tag_offset     : inout positive;
 		variable tag_length     : inout natural;
 		variable offset         : inout positive;
 		variable length         : inout natural) is
-		variable key_offset     : positive;
-		variable key_length     : natural;
+		variable path_offset     : positive;
+		variable path_length     : natural;
 		variable value_offset   : positive;
 		variable value_length   : natural;
 		variable default_offset : positive;
@@ -918,149 +959,156 @@ package body hdo is
 		variable opened         : boolean;
 	begin
 
-		assert ((log/log_locatevalue) mod 2=0) --|note
-			report LF & "locate_value => vvvvvvvvvvvvvvvvvvvv" --|note
+		assert ((log_flags/log_locatevalue) mod 2=0) --|note
+			report LF 
+				& logg("locate_value", "vvvvvvvvvvvvvvvvvvvv") & LF --|note
+			    & logg("locate_value", "object") & natural'image(cursor) & ':' & natural'image(object'right) & " " & '"' & object(cursor to object'right) & '"' --|note
 			severity note; --|note
 
-		assert ((log/log_locatevalue) mod 2=0) --|note
-			report LF & "locate_value => obj -> " & natural'image(obj_index) & ':' & natural'image(obj'right) & " " & '"' & obj(obj_index to obj'right) & '"' --|note
-			severity note; --|note
-
-		parse_tagvaluekeydefault(
-			obj, obj_index,  obj'right,
+		parse_tagvaluepathdefault(
+			object,         cursor,
 			tag_offset,     tag_length, 
 			value_offset,   value_length, 
-			key_offset,     key_length, 
+			path_offset,     path_length, 
 			default_offset, default_length);
 
-		obj_index := value_offset;
-		offset    := tag_offset;
-		length    := 0;
-		position  := 0;
-		opened    := false;
+		cursor   := value_offset;
+		offset   := tag_offset;
+		length   := 0;
+		position := 0;
+		opened   := false;
 
-		for l in obj'range loop -- avoid synthesizes tools loop-warnings
-			exit when obj_index > obj'right; -- avoid synthesizes tools loop-warnings
+		for l in object'range loop -- avoid synthesizes tools loop-warnings
+			exit when cursor > object'right; -- avoid synthesizes tools loop-warnings
 		
-			assert ((log/log_locatevalue) mod 2=0) --|note
-				report LF & "locale_value.loop => obj(obj_index) -> " & natural'image(obj_index) & ':' & character'image(obj(obj_index)) --|note
+			assert ((log_flags/log_locatevalue) mod 2=0) --|note
+				report LF
+					 & logg("locate_value", "cursor") & natural'image(cursor) & ':' & character'image(object(cursor)) --|note
 				severity note; --|note
 
-			skipws(obj, obj_index);
-			case obj(obj_index) is
+			skipws(object, cursor);
+			case object(cursor) is
 			when '['|'{' =>
-				assert ((log/log_locatevalue) mod 2=0) --|note
-					report LF & "locate_value => start -> " & natural'image(obj_index) & ':' & character'image(obj(obj_index)) --|note
+				assert ((log_flags/log_locatevalue) mod 2=0) --|note
+					report LF
+						& logg("locate_value", "open") & natural'image(cursor) & ':' & character'image(object(cursor)) --|note
 					severity note; --|note
 
-				open_char := obj(obj_index);
+				open_char := object(cursor);
 				opened    := true;
-				obj_index := obj_index + 1;
+				cursor := cursor + 1;
 			when ',' =>
-				assert ((log/log_locatevalue) mod 2=0) --|note
-					report LF & "locate_value => next position -> [" & natural'image(position+1) & "] -> " & natural'image(obj_index) & ':' & character'image(obj(obj_index)) --|note
-					severity note; --|note
+				assert ((log_flags/log_locatevalue) mod 2=0)                                                                                                                  --|note
+					report LF 
+						& logg("locate_value", "position") & natural'image(position) & " : " & character'image(object(cursor)) --|note
+					severity note;                                                                                                                                      --|note
 
 				position  := position + 1;
-				obj_index := obj_index + 1;
+				cursor := cursor + 1;
 			when ']' =>
 				if not opened then
-					assert false --|note
-						report LF & "locate_value => close " & character'image(obj(obj_index)) & " key at " & natural'image(obj_index) --|note
-						severity note; --|note
+					assert false                                                                                                    --|note
+						report LF 
+							& logg("locate_value", "close") & character'image(object(cursor)) & " path at " & natural'image(cursor) --|note
+						severity note;                                                                                              --|note
 
 					return;
 				end if;
-				if open_char/='[' then --| Xilinx ISE 14.7 warning complain
-					assert false --| Xilinx ISE 14.7 warning complain
-						report LF &  "locate_value => wrong close key at " & natural'image(obj_index) & " open with  " & ''' & open_char & ''' & " close by " & character'image(obj(obj_index)) & " -> " & obj(obj_index to obj'right) --|
+				if open_char/='[' then    --| Xilinx ISE 14.7 warning complain
+					assert false          --| Xilinx ISE 14.7 warning complain
+						report LF         --|
+							& "@locate_value : wrong close path at " & natural'image(cursor) & " opened by " & character'image(open_char) & " closed by " & character'image(object(cursor)) & " : " & object(cursor to object'right) --|
 						severity failure; --|
-				end if; --|
+				end if;                   --|
 
-				assert ((log/log_locatevalue) mod 2=0) --|note
-					report LF &  "locate_value => close -> " & natural'image(obj_index) & ':' & character'image(obj(obj_index)) --|note
-					severity note; --|note
+				assert ((log_flags/log_locatevalue) mod 2=0)                                                                   --|note
+					report LF                                                                                            --|note
+						& logg("locate_value", "close") & natural'image(cursor) & " : " & character'image(object(cursor)) --|note
+					severity note;                                                                                       --|note
 
-				opened    := false;
-				obj_index := obj_index + 1;
+				opened := false;
+				cursor := cursor + 1;
 				exit;
 			when '}' =>
 				if not opened then
-					assert false --|note
-						report LF & "locate_value => close " & character'image(obj(obj_index)) & " key at " & natural'image(obj_index) --|note
-						severity note; --|note
+					assert false                                                                                                   --|note
+						report LF                                                                                                  --|note
+							& logg("locate_value", "close") & character'image(object(cursor)) & " path at " & natural'image(cursor) --|note
+						severity note;                                                                                             --|note
 					return;
 				end if;
-				if open_char/='{' then --| Xilinx ISE 14.7 warning complain
-					assert false --| Xilinx ISE 14.7 warning complain
-						report LF & "locate_value => wrong close key at " & natural'image(obj_index) & " open with  " & ''' & open_char & ''' & " close by " & character'image(obj(obj_index)) & LF & obj(obj_index to obj'right) --|
+				if open_char/='{' then    --| Xilinx ISE 14.7 warning complain
+					assert false          --| Xilinx ISE 14.7 warning complain
+						report LF 
+							& "@locate_value wrong close path at " & natural'image(cursor) & " opened by " & character'image(open_char) & " close by " & character'image(object(cursor)) & LF & object(cursor to object'right) --|
 						severity failure; --|
-				end if; --|
+				end if;                   --|
 
-				assert ((log/log_locatevalue) mod 2=0) --|note
-					report LF & "locate_value => close -> " & natural'image(obj_index) & ':' & character'image(obj(obj_index)) --|note
-					severity note; --|note
+				assert ((log_flags/log_locatevalue) mod 2=0)                                                               --|note
+					report LF                                                                                        --|note
+						& logg("locate_value", "close") & natural'image(cursor) & ':' & character'image(object(cursor)) --|note
+					severity note;                                                                                   --|note
 
-				opened    := false;
-				obj_index := obj_index + 1;
+				opened := false;
+				cursor := cursor + 1;
 				exit;
 			when others =>
 			end case;
 
-			parse_tagvaluekeydefault(
-				obj, obj_index, obj'right,
+			parse_tagvaluepathdefault(
+				object,         cursor,
 				tag_offset,     tag_length, 
 				value_offset,   value_length, 
-				key_offset,     key_length, 
+				path_offset,     path_length, 
 				default_offset, default_length);
 
-			assert ((log/log_locatevalue) mod 2=0) --|note
-				report LF & "locate_value => obj -> " & natural'image(value_offset) & ':' & natural'image(value_offset+value_length-1) & " " & '"' & obj(value_offset to value_offset+value_length-1) & '"' --|note
-				severity note; --|note
+			assert ((log_flags/log_locatevalue) mod 2=0) --|note
+				report LF 
+					& logg("locale_value", "object") & natural'image(value_offset) & ':' & natural'image(value_offset+value_length-1) & " " & '"' & object(value_offset to value_offset+value_length-1) & '"' --|note
+				severity note;                     --|note
 
-			-- if not isdigit(key(key'left)) then
-			if not isdigit(obj(key_left)) then
-				assert ((log/log_locatevalue) mod 2=0) --|note
-					report LF &"locate_value => object request key " & obj(key_left to key_right) & " -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & ' ' & '"' & obj(tag_offset to tag_offset+tag_length-1) & '"' --|note
+			if not isdigit(object(path_left)) then
+				assert ((log_flags/log_locatevalue) mod 2=0) --|note
+					report LF
+						 & logg("locale_value", "object request path ") & object(path_left to path_right) & " % " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & ' ' & '"' & object(tag_offset to tag_offset+tag_length-1) & '"' --|note
 					severity note; --|note
 
 				if tag_length/=0 then
-					if compare_string(obj(key_left to key_right), obj(tag_offset to tag_offset+tag_length-1)) then
+					if compare_string(object(path_left to path_right), object(tag_offset to tag_offset+tag_length-1)) then
 						offset := tag_offset;
-						length := obj_index-offset;
+						length := cursor-offset;
 					end if;
 				end if;
-			elsif to_integer(obj(key_left to key_right)) <= position then
+			elsif to_integer(object(path_left to path_right)) <= position then
 				offset := tag_offset;
-				length := obj_index-offset;
+				length := cursor-offset;
 
-				assert ((log/log_locatevalue) mod 2=0) --|note
-					report LF & "locate_value => object position -> " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & obj(tag_offset to tag_offset+tag_length-1) --|note
+				assert ((log_flags/log_locatevalue) mod 2=0) --|note
+					report LF 
+						& logg("locale_value","object position") & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & " " & '"' & object(tag_offset to tag_offset+tag_length-1) & '"' --|note
 					severity note; --|note
 
 				exit;
 			end if;
 
-			assert ((log/log_locatevalue) mod 2=0) --|note
-				report LF & "locale_value => obj_index end loop-> " & natural'image(obj_index) & " '" &obj(obj_index) & "'" --|note
+			assert ((log_flags/log_locatevalue) mod 2=0) --|note
+				report LF 
+					& logg("locale_value","cursor end loop") & natural'image(cursor) & " " & ''' &object(cursor) & ''' --|note
 				severity note; --|note
 		end loop;
 
-		assert ((log/log_locatevalue) mod 2=0) --|note
-			report LF &  --|note
-				"locate_value => tag   -> " & natural'image(tag_offset)   & ':' & natural'image(tag_offset+tag_length-1) & '"' & obj(tag_offset   to tag_offset+tag_length-1) & '"' & LF &  --|note
-				"locate_value -> value -> " & natural'image(value_offset) & ':' & natural'image(obj_index-1)             & '"' & obj(value_offset to obj_index-1) & '"' --|note
-			severity note; --|note
-
-		assert ((log/log_locatevalue) mod 2=0) --|note
-			report LF & "locate_value => ^^^^^^^^^^^^^^^^^^^^" --|note
+		assert ((log_flags/log_locatevalue) mod 2=0) --|note
+			report LF --|note
+				& logg("locale_value","tag") & natural'image(tag_offset)   & ':' & natural'image(tag_offset+tag_length-1) & " " & '"' & object(tag_offset   to tag_offset+tag_length-1) & '"' & LF --|note
+				& logg("locale_value","value") & natural'image(value_offset) & ':' & natural'image(cursor-1)                & " " & '"' & object(value_offset to cursor-1)                & '"' & LF --|note
+				& logg("locale_value","^^^^^^^^^^^^^^^^^^^^") --|note
 			severity note; --|note
 	end;
 
 	function compact (
-		constant obj : string)
+		constant object : string)
 		return string is
-		variable retval : string(1 to obj'length);
+		variable retval : string(1 to object'length);
 		variable escape : boolean;
 		variable bkslh  : boolean;
 		variable n      : positive;
@@ -1068,22 +1116,22 @@ package body hdo is
 		bkslh  := false;
 		escape := false;
 		n      := retval'left;
-		for i in obj'range loop
+		for i in object'range loop
 			if bkslh then
-				retval(n) := obj(i);
+				retval(n) := object(i);
 				n := n + 1;
 			elsif escape then
-				retval(n) := obj(i);
+				retval(n) := object(i);
 				n := n + 1;
-			elsif not isws(obj(i)) then
-				retval(n) := obj(i);
+			elsif not isws(object(i)) then
+				retval(n) := object(i);
 				n := n + 1;
 			end if;
 			if bkslh then
 				bkslh := false;
-			elsif obj(i)='\' then
+			elsif object(i)='\' then
 				bkslh := true;
-			elsif obj(i)=''' or obj(i)='"' then
+			elsif object(i)=''' or object(i)='"' then
 				escape := not escape;
 			end if;
 		end loop;
@@ -1091,112 +1139,115 @@ package body hdo is
 	end;
 
 	procedure resolve (
-		constant obj           : in    string;
-		variable value_offset  : inout positive;
-		variable value_length  : inout natural;
-		variable tag1_offset   : inout positive;
-		variable tag1_length   : inout natural) is
+		constant object         : in    string;
+		variable value_offset   : inout positive;
+		variable value_length   : inout natural;
+		variable tag1_offset    : inout positive;
+		variable tag1_length    : inout natural) is
 
-		variable obj_index     : positive;
-		variable key_offset    : positive;
-		variable key_length    : natural;
-		variable keytag_offset : positive;
-		variable keytag_length : natural;
-		variable keytag_index  : positive;
+		variable cursor         : positive;
+		variable path_offset     : positive;
+		variable path_length     : natural;
+		variable domain_offset  : positive;
+		variable domain_length  : natural;
+		variable domain_index   : positive;
 
-		variable obj_offset    : positive;
-		variable obj_length    : natural;
-		variable tag_offset    : positive;
-		variable tag_length    : natural;
-		variable default_offset    : positive;
-		variable default_length    : natural;
+		variable obj_offset     : positive;
+		variable obj_length     : natural;
+		variable tag_offset     : positive;
+		variable tag_length     : natural;
+		variable default_offset : positive;
+		variable default_length : natural;
 	begin
-		obj_index := obj'left;
+		cursor := object'left;
 
-		parse_tagvaluekeydefault(
-			obj, obj_index, obj'right,
+		parse_tagvaluepathdefault(
+			object,         cursor,
 			tag_offset,     tag_length, 
 			value_offset,   value_length, 
-			keytag_offset,  keytag_length, 
+			domain_offset,  domain_length, 
 			default_offset, default_length);
-		assert ((log/log_resolve) mod 2=0)  --|note
-			report LF & "resolve => keytag -> " & natural'image(keytag_offset) & ":" & natural'image(keytag_length) & ":" & '"' & obj(keytag_offset to keytag_offset+keytag_length-1) & '"' & LF & --|note
-			       "resolve => value  -> " & natural'image(value_offset)  & ":" & natural'image(value_length)  & ":" & '"' & obj(value_offset  to value_offset+value_length-1)   & '"' & LF --|note
+		assert ((log_flags/log_resolve) mod 2=0)  --|note
+			report LF 
+				& logg("resolve", "domain") & natural'image(domain_offset) & ":" & natural'image(domain_length) & ":" & '"' & object(domain_offset to domain_offset+domain_length-1) & '"' & LF --|note
+				& logg("resolve", "value")  & natural'image(value_offset)  & ":" & natural'image(value_length)  & ":" & '"' & object(value_offset  to value_offset+value_length-1)   & '"' & LF --|note
 			severity note; --|note
-		if keytag_length/=0 then
-			keytag_index := keytag_offset;
-			for i in obj'range loop -- avoid synthesizes tools loop-warnings
-				parse_keytag(obj, keytag_index, tag_offset, tag_length);
+		if domain_length/=0 then
+			domain_index := domain_offset;
+			for i in object'range loop -- avoid synthesizes tools loop-warnings
+				parse_domain(object, domain_index, tag_offset, tag_length);
 				if tag_length=0 then
 					exit;
 				end if;
-				assert ((log/log_resolve) mod 2=0) --|note
-					report LF &  --|note
-						"resolve => tag         -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & obj(tag_offset to tag_offset+tag_length-1) & LF & --|note
-						"resolve => obj_index   -> " & natural'image(obj_index) --|note
-					severity note; --|note
-				locate_value(obj, value_offset, tag_offset, tag_offset+tag_length-1 , tag1_offset, tag1_length, obj_offset, obj_length);
-				if obj_length=0 then -- Xilinx ISE 14.7 assert statement warning complain
-					assert false --|note
-						report LF & "resolve => invalid key -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & obj(tag_offset to tag_offset+tag_length-1) & '"' & LF --|note
-						severity note; --|note
-					assert false --|note
-						report LF & "resolve => default_offset -> " & natural'image(default_offset) & ":" & natural'image(default_offset+default_length-1) & ":" & '"' & obj(default_offset to default_offset+default_length-1) & '"' & LF --|note
-						severity note; --|note
+				assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                       --|note
+					report LF                                                                                                                                                            --|note 
+						& logg("resolve", "tag   ") & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & object(tag_offset to tag_offset+tag_length-1) & '"' & LF --|note
+						& logg("resolve", "cursor") & natural'image(cursor)                                                                                                              --|note
+					severity note;                                                                                                                                                       --|note
+				locate_value(object, value_offset, tag_offset, tag_offset+tag_length-1, tag1_offset, tag1_length, obj_offset, obj_length);
+				if obj_length=0 then 
+					assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                                                                      --|note
+						report LF                                                                                                                                                                                                           --|note
+							& logg("resolve", "invalid path   %") & natural'image(tag_offset)     & ":" & natural'image(tag_length) & ":" & '"' & object(tag_offset to tag_offset+tag_length-1) & '"'                                       --|note
+							& logg("resolve", "default_offset %") & natural'image(default_offset) & ":" & natural'image(default_offset+default_length-1) & ":" & '"' & object(default_offset to default_offset+default_length-1) & '"' & LF --|note
+						severity note;                                                                                                                                                                                                      --|note
+					cursor := default_offset;
 					obj_offset   := default_offset;
 					obj_length   := default_length;
 					value_offset := default_offset;
+					value_length := default_length;
 					exit;
 				end if;
-				assert ((log/log_resolve) mod 2=0) --|note
-					report LF & --|note
-						"resolve => key   -> " & natural'image(tag_offset) & ":" & natural'image(tag_length) & ' ' & '"' & obj(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|note
-						"resolve => value -> " & natural'image(obj_offset) & ":" & natural'image(obj_length) & ' ' & '"' & obj(obj_offset to obj_offset+obj_length-1) & '"' --|note
-					severity note; --|note
+				assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                --|note
+					report LF &                                                                                                                                                         --|note
+						logg("resolve", "path")  & natural'image(tag_offset) & ":" & natural'image(tag_length) & ' ' & '"' & object(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|note
+						logg("resolve", "value") & natural'image(obj_offset) & ":" & natural'image(obj_length) & ' ' & '"' & object(obj_offset to obj_offset+obj_length-1) & '"'        --|note
+					severity note;                                                                                                                                                      --|note
 				value_offset := obj_offset;
-				-- resolve(obj(obj_offset to obj_offset+obj_length-1), obj_offset, obj_length);
+				-- resolve(object(obj_offset to obj_offset+obj_length-1), obj_offset, obj_length);
 			end loop;
 		else
-			obj_offset := obj'left;
-			obj_length := obj'length;
+			cursor :=  object'left;
 		end if;
-		obj_index := obj_offset;
-		assert ((log/log_resolve) mod 2=0) --|note
-			report LF & --|note
-				"resolve => tag   -> " & natural'image(tag_offset)   & ":" & natural'image(tag_length)   & ' ' & '"' & obj(tag_offset   to tag_offset+tag_length-1)     & '"' & LF --|note
-			severity note; --|note
-		parse_tagvaluekeydefault(
-			obj, obj_index, obj_offset+obj_length-1,
+		assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                                      --|note
+			report LF &                                                                                                                                                                               --|note
+				logg("resolve", "tag")     & natural'image(tag_offset)     & ":" & natural'image(tag_length)     & ' ' & '"' & object(tag_offset     to tag_offset+tag_length-1)         & '"' & LF & --|note
+				logg("resolve", "default") & natural'image(default_offset) & ":" & natural'image(default_length) & ' ' & '"' & object(default_offset to default_offset+default_length-1) & '"' & LF   --|note
+			severity note;                                                                                                                                                                            --|note
+		
+		parse_tagvaluepathdefault(
+			object,         cursor,
 			tag_offset,     tag_length, 
 			value_offset,   value_length, 
-			keytag_offset,  keytag_length,
+			domain_offset,  domain_length,
 			default_offset, default_length);
-		assert ((log/log_resolve) mod 2=0) --|note
+		assert ((log_flags/log_resolve) mod 2=0) --|note
 			report LF & --|note
-				"exit resolve => tag   -> " & natural'image(tag_offset)   & ":" & natural'image(tag_length)   & ' ' & '"' & obj(tag1_offset   to tag1_offset+tag1_length-1)     & '"' & LF & --|note
-				"resolve => value -> " & natural'image(value_offset) & ":" & natural'image(value_length) & ' ' & '"' & obj(value_offset to value_offset+value_length-1) & '"' & LF & --|note
-				"resolve => key   -> " & natural'image(key_offset)   & ":" & natural'image(key_length)   & ' ' & '"' & obj(key_offset   to key_offset+key_length-1)     & '"' & LF --|note
+				logg("resolve", "tag")    & natural'image(tag_offset)   & ":" & natural'image(tag_length)      & ' ' & '"' & object(tag1_offset  to tag1_offset+tag1_length-1)   & '"' & LF & --|note
+				logg("resolve", "cursor") & natural'image(cursor)       & '"' & object(cursor to object'right) & '"' & LF  &                                                                  --|note
+				logg("resolve", "value")  & natural'image(value_offset) & ":" & natural'image(value_length)    & ' ' & '"' & object(value_offset to value_offset+value_length-1) & '"' & LF & --|note
+				logg("resolve", "path")   & natural'image(path_offset)  & ":" & natural'image(path_length)     & ' ' & '"' & object(path_offset  to path_offset+path_length-1)   & '"' & LF   --|note
 			severity note; --|note
 	end;
 
 	function resolve (
-		constant obj : string)
+		constant object : string)
 		return string is
 		variable obj_offset : positive;
 		variable obj_length : natural;
 		variable tag_offset : positive;
 		variable tag_length : natural;
 	begin
-		resolve (obj, obj_offset, obj_length, tag_offset, tag_length);
+		resolve (object, obj_offset, obj_length, tag_offset, tag_length);
 		if obj_length/=0 then
-			return obj(obj_offset to obj_offset+obj_length-1);
+			return object(obj_offset to obj_offset+obj_length-1);
 		else
 			return "";
 		end if;
 	end;
 
 	function resolve (
-		constant obj : string)
+		constant object : string)
 		return boolean is
         constant true_value : string := "true";
 		variable obj_offset : positive;
@@ -1204,82 +1255,82 @@ package body hdo is
 		variable tag_offset : positive;
 		variable tag_length : natural;
 	begin
-		resolve (obj, obj_offset, obj_length, tag_offset, tag_length);
+		resolve (object, obj_offset, obj_length, tag_offset, tag_length);
 		if obj_length/=true_value'length then          -- avoid synthesizes tools length-warnings
 			return false;
-        elsif obj(obj_offset to obj_offset+obj_length-1)/=true_value then
+        elsif object(obj_offset to obj_offset+obj_length-1)/=true_value then
 			return false;
 		end if;
 		return true;
 	end;
 
 	function resolve (
-		constant obj : string)
+		constant object : string)
 		return integer is
 		variable obj_offset : positive;
 		variable obj_length : natural;
 		variable tag_offset : positive;
 		variable tag_length : natural;
 	begin
-		resolve (obj, obj_offset, obj_length, tag_offset, tag_length);
-		return to_integer(obj(obj_offset to obj_offset+obj_length-1));
+		resolve (object, obj_offset, obj_length, tag_offset, tag_length);
+		return to_integer(object(obj_offset to obj_offset+obj_length-1));
 	end;
 
 	function resolve (
-		constant obj : string)
+		constant object : string)
 		return real is
 		variable obj_offset : positive;
 		variable obj_length : natural;
 		variable tag_offset : positive;
 		variable tag_length : natural;
 	begin
-		resolve (obj, obj_offset, obj_length, tag_offset, tag_length);
-		return to_real(obj(obj_offset to obj_offset+obj_length-1));
+		resolve (object, obj_offset, obj_length, tag_offset, tag_length);
+		return to_real(object(obj_offset to obj_offset+obj_length-1));
 	end;
 
 	function resolve (
-		constant obj : string)
+		constant object : string)
 		return std_logic_vector is
 		variable obj_offset : positive;
 		variable obj_length : natural;
 		variable tag_offset : positive;
 		variable tag_length : natural;
 	begin
-		resolve (obj, obj_offset, obj_length, tag_offset, tag_length);
-		return to_stdlogicvector(escaped(obj(obj_offset to obj_offset+obj_length-1)));
+		resolve (object, obj_offset, obj_length, tag_offset, tag_length);
+		return to_stdlogicvector(escaped(object(obj_offset to obj_offset+obj_length-1)));
 	end;
 
 	function "**" (
-		constant obj : hdo;
-		constant key : string)
+		constant object : hdo;
+		constant path : string)
 		return boolean is
 	begin
-		return resolve(string(obj) & key);
+		return resolve(string(object) & path);
 	end;
 
 	function "**" (
-		constant obj : hdo;
-		constant key : string)
+		constant object : hdo;
+		constant path : string)
 		return integer is
 		variable retval : integer;
 	begin
-		retval := resolve(string(obj) & key);
+		retval := resolve(string(object) & path);
 		return retval;
 	end;
 
 	function "**" (
-		constant obj : hdo;
-		constant key : string)
+		constant object : hdo;
+		constant path : string)
 		return real is
 	begin
-		return resolve(string(obj) & key);
+		return resolve(string(object) & path);
 	end;
 
 	function "**" (
-		constant obj : hdo;
-		constant key : string)
+		constant object : hdo;
+		constant path : string)
 		return std_ulogic is
-		constant value : string := escaped(resolve(string(obj) & key));
+		constant value : string := escaped(resolve(string(object) & path));
 	begin
 		if value'length > 0 then
 			if value(value'left)='1' then
@@ -1292,18 +1343,18 @@ package body hdo is
 	end;
 
 	function "**" (
-		constant obj : hdo;
-		constant key : string)
+		constant object : hdo;
+		constant path : string)
 		return std_logic_vector is
 	begin
-		return resolve(string(obj) & key);
+		return resolve(string(object) & path);
 	end;
 
 	function "**" (
-		constant obj : hdo;
-		constant key : string)
+		constant object : hdo;
+		constant path : string)
 		return character is
-		constant retval : string := resolve(string(obj) & key);
+		constant retval : string := resolve(string(object) & path);
 	begin
 		if retval(retval'left)='\' then
 			return retval(retval'left+1);
@@ -1312,68 +1363,68 @@ package body hdo is
 	end;
 
 	function "**" (
-		constant obj : hdo;
-		constant key : string)
+		constant object : hdo;
+		constant path : string)
 		return hdo is
 	begin
-		return resolve(string(obj) & key);
+		return resolve(string(object) & path);
 	end;
 
 	function tag (
-		constant obj : hdo)
+		constant object : hdo)
 		return string is
 		variable obj_offset : positive;
 		variable obj_length : natural;
 		variable tag_offset : positive;
 		variable tag_length : natural;
 	begin
+		resolve (object, obj_offset, obj_length, tag_offset, tag_length);
 		report LF & "Entre";
-		resolve (obj, obj_offset, obj_length, tag_offset, tag_length);
-		report LF &  obj(tag_offset to tag_offset+tag_length-1);
-		return obj(tag_offset to tag_offset+tag_length-1);
+		report LF &  '"' & object(tag_offset to tag_offset+tag_length-1) & '"';
+		return object(tag_offset to tag_offset+tag_length-1);
 	end;
 
 	procedure escaped (
 		variable retval : inout string;
 		variable length : inout natural;
-		constant obj    : in    string) is
+		constant object    : in    string) is
 		variable escape : boolean;
 		variable bkslh  : boolean;
 	begin
 		length := 0;
 		escape := false;
 		bkslh  := false;
-		for i in obj'range loop
+		for i in object'range loop
 			if bkslh then
-				retval(retval'left+length) := obj(i);
+				retval(retval'left+length) := object(i);
 				length := length + 1;
 			elsif escape then
-				if not (obj(i)=''' or obj(i)='"' or obj(i)='\') then
-					retval(retval'left+length) := obj(i);
+				if not (object(i)=''' or object(i)='"' or object(i)='\') then
+					retval(retval'left+length) := object(i);
 					length := length + 1;
 				end if;
-			elsif not (obj(i)=''' or obj(i)='"' or obj(i)='\' or isws(obj(i))) then
-				retval(retval'left+length) := obj(i);
+			elsif not (object(i)=''' or object(i)='"' or object(i)='\' or isws(object(i))) then
+				retval(retval'left+length) := object(i);
 				length := length + 1;
 			end if;
 			if bkslh then
 				bkslh := false;
-			elsif obj(i)='\' then
+			elsif object(i)='\' then
 				bkslh := true;
-			elsif obj(i)=''' or obj(i)='"' then
+			elsif object(i)=''' or object(i)='"' then
 				escape := not escape;
 			end if;
 		end loop;
 	end;
 
 	function escaped (
-		constant obj : string)
+		constant object : string)
 		return string is
 		variable length : natural;
-		variable retval : string(1 to obj'length);
+		variable retval : string(1 to object'length);
 		variable escape : boolean;
 	begin
-		escaped(retval, length, obj);
+		escaped(retval, length, object);
 		if length/=0 then
 			return retval(retval'left to retval'left+length-1);
 		else
