@@ -114,6 +114,39 @@ end;
 
 package body hdo is
 
+	function compact (
+		constant object : string)
+		return string is
+		variable retval : string(1 to object'length);
+		variable escape : boolean;
+		variable bkslh  : boolean;
+		variable n      : positive;
+	begin
+		bkslh  := false;
+		escape := false;
+		n      := retval'left;
+		for i in object'range loop
+			if bkslh then
+				retval(n) := object(i);
+				n := n + 1;
+			elsif escape then
+				retval(n) := object(i);
+				n := n + 1;
+			elsif not isws(object(i)) then
+				retval(n) := object(i);
+				n := n + 1;
+			end if;
+			if bkslh then
+				bkslh := false;
+			elsif object(i)='\' then
+				bkslh := true;
+			elsif object(i)=''' or object(i)='"' then
+				escape := not escape;
+			end if;
+		end loop;
+		return retval(1 to n-1);
+	end;
+
 	constant log_parsestring      : natural := 2**0;
 	constant log_parsenatural     : natural := 2**1;
 	constant log_parsedomain      : natural := 2**2;
@@ -1120,10 +1153,10 @@ package body hdo is
 				severity note;                                                                                                                                                                               --|note
 
 			if not isdigit(object(path_left)) then
-				assert ((log_flags/log_locatevalue) mod 2=0)                                                                                                                                                                                                  --|note
-					report LF                                                                                                                                                                                                                                 --|note
-						 & log("locale_value", "object request path ") & object(path_left to path_right) & " % " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & ' ' & '"' & object(tag_offset to tag_offset+tag_length-1) & '"' --|note
-					severity note;                                                                                                                                                                                                                            --|note
+				assert ((log_flags/log_locatevalue) mod 2=0)                                                                                      --|note
+					report LF                                                                                                                     --|note
+						 & "object request path " & xxx(object, path_left, path_right-path_left) & " " & xxx(object, tag_offset, tag_length) & LF --|note
+					severity note;                                                                                                                --|note
 
 				if tag_length/=0 then
 					if compare_string(object(path_left to path_right), object(tag_offset to tag_offset+tag_length-1)) then
@@ -1155,39 +1188,6 @@ package body hdo is
 				& "value" & xxx(object(value_offset, cursor-value_offset) & LF --|note
 				& "^^^^^^^^^^^^^^^^^^^^")                                      --|note
 			severity note;                                                                                                                                                                          --|note
-	end;
-
-	function compact (
-		constant object : string)
-		return string is
-		variable retval : string(1 to object'length);
-		variable escape : boolean;
-		variable bkslh  : boolean;
-		variable n      : positive;
-	begin
-		bkslh  := false;
-		escape := false;
-		n      := retval'left;
-		for i in object'range loop
-			if bkslh then
-				retval(n) := object(i);
-				n := n + 1;
-			elsif escape then
-				retval(n) := object(i);
-				n := n + 1;
-			elsif not isws(object(i)) then
-				retval(n) := object(i);
-				n := n + 1;
-			end if;
-			if bkslh then
-				bkslh := false;
-			elsif object(i)='\' then
-				bkslh := true;
-			elsif object(i)=''' or object(i)='"' then
-				escape := not escape;
-			end if;
-		end loop;
-		return retval(1 to n-1);
 	end;
 
 	procedure resolve (
