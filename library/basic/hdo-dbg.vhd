@@ -1274,11 +1274,10 @@ package body hdo is
 			domain_offset,  domain_length,
 			default_offset, default_length);
 		assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                             --|note
-			report LF &                                                                                                                                                                      --|note
-				log("resolve", "tag")    & natural'image(tag_offset)   & ":" & natural'image(tag_length)      & ' ' & '"' & object(tag1_offset  to tag1_offset+tag1_length-1)   & '"' & LF & --|note
-				log("resolve", "cursor") & natural'image(cursor)       & '"' & object(cursor to object'right) & '"' & LF  &                                                                  --|note
-				log("resolve", "value")  & natural'image(value_offset) & ":" & natural'image(value_length)    & ' ' & '"' & object(value_offset to value_offset+value_length-1) & '"' & LF & --|note
-				log("resolve", "path")   & natural'image(path_offset)  & ":" & natural'image(path_length)     & ' ' & '"' & object(path_offset  to path_offset+path_length-1)   & '"' & LF   --|note
+			report LF                                                   --|note
+				& "tag"    & xxx(object,tag1_offset,  tag1_length-1)   & LF --|note
+				& "value"  & xxx(object,value_offset, value_length-1)  & LF --|note
+				& "path"   & xxx(object,path_offset,  path_length-1)   & LF --|note
 			severity note;                                                                                                                                                                   --|note
 	end;
 
