@@ -138,33 +138,64 @@ package body hdo is
 		end if;
 	end;
 
-	function logg (
+	function format (
+		constant arg   : string;
+		constant width : natural) 
+		return string is
+		variable formatted : string(1 to max(width,1));
+		variable j : positive;
+	begin
+		if width > 0 then
+			j := arg'left;
+			for i in 1 to width loop
+				if j <= arg'right then
+					formatted(i) := arg(j);
+					j := j + 1;
+				else
+					formatted(i) := ' ';
+				end if;
+			end loop;
+			return formatted;
+		else
+			return arg;
+		end if;
+	end;
+
+	function xxx(
+		constant offset : positive;
+		constant length : natural;
+		constant arg    : string)
+		return string is
+		constant separator : string := " ... ";
+		variable content   : string(1 to 50);
+		variable j : positive;
+	begin
+		content := (others => ' ');
+		if length > content'length then
+			j := arg'left;
+			for i in 1 to (content'length-separator'length)/2 loop
+				content(i) := arg(j);
+				j := j + 1;
+			end loop;
+			for i in separator'range loop
+				content(j) := separator(i);
+				j := j + 1;
+			end loop;
+			j := arg'right;
+			for i in content'length downto (content'length+separator'length)/2+1 loop
+				content(i) := arg(j);
+				j := j - 1;
+			end loop;
+		else
+			content := format(arg(offset to offset+length-1), 50);
+		end if;
+		return '(' & positive'image(offset) & " to " & positive'image(offset+length-1) & ')' & content;
+	end;
+
+	function log (
 		constant fname : string;
 		constant msg   : string)
 		return string is
-
-		function format (
-			constant arg   : string;
-			constant width : natural) 
-			return string is
-			variable formatted : string(1 to max(width,1));
-			variable j : positive;
-		begin
-			if width > 0 then
-				j := fname'left;
-				for i in 1 to width loop
-					if j <= arg'right then
-						formatted(i) := fname(j);
-						j := j + 1;
-					else
-						formatted(i) := ' ';
-					end if;
-				end loop;
-				return formatted;
-			else
-				return arg;
-			end if;
-		end;
 	begin
 		return format(fname, 20) & " # " & format(msg, 10);
 	end;
@@ -250,8 +281,8 @@ package body hdo is
 			return character'pos(char)-character'pos('A')+10;
 		when others =>
 			assert false 
-			report LF & "wrong digit " & character'image(char)
-			severity failure;
+				report LF & "wrong digit " & character'image(char)
+				severity failure;
 			return -1;
 		end case;
 	end;
@@ -537,7 +568,7 @@ package body hdo is
 					if object(cursor)=''' then
 						cursor := cursor + 1;
 						assert (log_flags/log_parsestring) mod 2=0 --|note
-							report LF & logg("parse_string", "") & '"' & object(offset to offset+length-1) & '"' --|note
+							report LF & log("parse_string", "") & '"' & object(offset to offset+length-1) & '"' --|note
 							severity note; --|note
 						exit;
 					else
@@ -833,10 +864,11 @@ package body hdo is
 		variable path_offset  : inout positive;
 		variable path_length  : inout natural) is
 	begin
-		assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
-			report LF & "parse_tagvaluepath # object % "       & '"' & object(cursor to object'right) & '"' & --|note
-			       LF & "parse_tagvaluepath # cursor % " & '"' & natural'image(cursor)    & '"'   --|note
-			severity note; --|note
+		assert ((log_flags/log_parsetagvaluepath) mod 2=0)                                      --|note
+			report LF                                                                           --|note
+				& log("parse_tagvaluepath", "object") &  xxx(cursor, object'right-cursor+1, object) & LF --|note
+			severity note;                                                                      --|note
+
 		parse_string(object, cursor, value_offset, value_length);
 		skipws(object, cursor);
 		tag_offset := value_offset;
@@ -851,14 +883,14 @@ package body hdo is
 					assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
 						report LF & --|note
 							"parse_tagvaluepath # no tag" & LF & --|note
-							"parse_tagvaluepath # value          % " & '"' & object(value_offset to value_offset+value_length-1) & '"' & LF & --|note
+							log("parse_tagvaluepath","value") & xxx(value_offset, value_length, object) & LF & --|note
 							"parse_tagvaluepath # object(cursor) % " & natural'image(cursor) & ':' & "EOF" --|note
 						severity note; --|note
 				else --|note
 					assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
 						report LF & --|note
 							"parse_tagvaluepath # no tag" & LF & --|note
-							"parse_tagvaluepath # value          % " & '"' & object(value_offset to value_offset+value_length-1) & '"' & LF & --|note
+							log("parse_tagvaluepath","value") & xxx(value_offset, value_length, object) & LF & --|note
 							"parse_tagvaluepath # object(cursor) % " & natural'image(cursor) & ':' & character'image(object(cursor)) --|note
 						severity note; --|note
 				end if; --|note
@@ -881,7 +913,7 @@ package body hdo is
 				parse_value(object, cursor, value_offset, value_length);
 				assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
 					report LF & --|note
-						"parse_tagvaluepath # tag   % " & '"' & object(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|note
+						"parse_tagvaluepath # tag   % " & '"' & xxx(tag_offset, tag_length, object) & '"' & LF & --|note
 						"parse_tagvaluepath # value % " & '"' & object(value_offset to value_offset+value_length-1) & '"'  --|note
 					severity note; --|note
 				assert ((log_flags/log_parsetagvaluepath) mod 2=0) or cursor <= object'right --|note
@@ -961,8 +993,8 @@ package body hdo is
 
 		assert ((log_flags/log_locatevalue) mod 2=0) --|note
 			report LF 
-				& logg("locate_value", "vvvvvvvvvvvvvvvvvvvv") & LF --|note
-			    & logg("locate_value", "object") & natural'image(cursor) & ':' & natural'image(object'right) & " " & '"' & object(cursor to object'right) & '"' --|note
+				& log("locate_value", "vvvvvvvvvvvvvvvvvvvv") & LF --|note
+			    & log("locate_value", "object") & natural'image(cursor) & ':' & natural'image(object'right) & " " & '"' & object(cursor to object'right) & '"' --|note
 			severity note; --|note
 
 		parse_tagvaluepathdefault(
@@ -978,52 +1010,51 @@ package body hdo is
 		position := 0;
 		opened   := false;
 
-		for l in object'range loop -- avoid synthesizes tools loop-warnings
-			exit when cursor > object'right; -- avoid synthesizes tools loop-warnings
+		for l in object'range loop           -- Avoid synthesizes tools loop-warnings
+			exit when cursor > object'right; -- Avoid synthesizes tools loop-warnings
 		
-			assert ((log_flags/log_locatevalue) mod 2=0) --|note
-				report LF
-					 & logg("locate_value", "cursor") & natural'image(cursor) & ':' & character'image(object(cursor)) --|note
-				severity note; --|note
+			assert ((log_flags/log_locatevalue) mod 2=0)                                                             --|note
+				report LF                                                                                            --|note
+					 & log("locate_value", "cursor") & natural'image(cursor) & ':' & character'image(object(cursor)) --|note
+				severity note;                                                                                       --|note
 
 			skipws(object, cursor);
 			case object(cursor) is
 			when '['|'{' =>
-				assert ((log_flags/log_locatevalue) mod 2=0) --|note
-					report LF
-						& logg("locate_value", "open") & natural'image(cursor) & ':' & character'image(object(cursor)) --|note
-					severity note; --|note
+				assert ((log_flags/log_locatevalue) mod 2=0)                                                          --|note
+					report LF                                                                                         --|note
+						& log("locate_value", "open") & natural'image(cursor) & ':' & character'image(object(cursor)) --|note
+					severity note;                                                                                    --|note
 
 				open_char := object(cursor);
 				opened    := true;
 				cursor := cursor + 1;
 			when ',' =>
-				assert ((log_flags/log_locatevalue) mod 2=0)                                                                                                                  --|note
-					report LF 
-						& logg("locate_value", "position") & natural'image(position) & " : " & character'image(object(cursor)) --|note
-					severity note;                                                                                                                                      --|note
+				assert ((log_flags/log_locatevalue) mod 2=0)                                                                  --|note
+					report LF                                                                                                 --|note
+						& log("locate_value", "position") & natural'image(position) & " : " & character'image(object(cursor)) --|note
+					severity note;                                                                                            --|note
 
 				position  := position + 1;
 				cursor := cursor + 1;
 			when ']' =>
 				if not opened then
-					assert false                                                                                                    --|note
-						report LF 
-							& logg("locate_value", "close") & character'image(object(cursor)) & " path at " & natural'image(cursor) --|note
-						severity note;                                                                                              --|note
-
+					assert false                                                                                                   --|note
+						report LF                                                                                                  --|note
+							& log("locate_value", "close") & character'image(object(cursor)) & " path at " & natural'image(cursor) --|note
+						severity note;                                                                                             --|note
 					return;
 				end if;
-				if open_char/='[' then    --| Xilinx ISE 14.7 warning complain
-					assert false          --| Xilinx ISE 14.7 warning complain
-						report LF         --|
+				if open_char/='[' then
+					assert false
+						report LF
 							& "@locate_value : wrong close path at " & natural'image(cursor) & " opened by " & character'image(open_char) & " closed by " & character'image(object(cursor)) & " : " & object(cursor to object'right) --|
-						severity failure; --|
-				end if;                   --|
+						severity failure;
+				end if;
 
-				assert ((log_flags/log_locatevalue) mod 2=0)                                                                   --|note
+				assert ((log_flags/log_locatevalue) mod 2=0)                                                             --|note
 					report LF                                                                                            --|note
-						& logg("locate_value", "close") & natural'image(cursor) & " : " & character'image(object(cursor)) --|note
+						& log("locate_value", "close") & natural'image(cursor) & " : " & character'image(object(cursor)) --|note
 					severity note;                                                                                       --|note
 
 				opened := false;
@@ -1033,21 +1064,21 @@ package body hdo is
 				if not opened then
 					assert false                                                                                                   --|note
 						report LF                                                                                                  --|note
-							& logg("locate_value", "close") & character'image(object(cursor)) & " path at " & natural'image(cursor) --|note
+							& log("locate_value", "close") & character'image(object(cursor)) & " path at " & natural'image(cursor) --|note
 						severity note;                                                                                             --|note
 					return;
 				end if;
-				if open_char/='{' then    --| Xilinx ISE 14.7 warning complain
-					assert false          --| Xilinx ISE 14.7 warning complain
-						report LF 
-							& "@locate_value wrong close path at " & natural'image(cursor) & " opened by " & character'image(open_char) & " close by " & character'image(object(cursor)) & LF & object(cursor to object'right) --|
-						severity failure; --|
-				end if;                   --|
+				if open_char/='{' then
+					assert false
+						report LF
+							& "@locate_value wrong close path at " & natural'image(cursor) & " opened by " & character'image(open_char) & " close by " & character'image(object(cursor)) & LF & object(cursor to object'right)
+						severity failure;
+				end if;
 
-				assert ((log_flags/log_locatevalue) mod 2=0)                                                               --|note
-					report LF                                                                                        --|note
-						& logg("locate_value", "close") & natural'image(cursor) & ':' & character'image(object(cursor)) --|note
-					severity note;                                                                                   --|note
+				assert ((log_flags/log_locatevalue) mod 2=0)                                                           --|note
+					report LF                                                                                          --|note
+						& log("locate_value", "close") & natural'image(cursor) & ':' & character'image(object(cursor)) --|note
+					severity note;                                                                                     --|note
 
 				opened := false;
 				cursor := cursor + 1;
@@ -1059,19 +1090,19 @@ package body hdo is
 				object,         cursor,
 				tag_offset,     tag_length, 
 				value_offset,   value_length, 
-				path_offset,     path_length, 
+				path_offset,    path_length, 
 				default_offset, default_length);
 
-			assert ((log_flags/log_locatevalue) mod 2=0) --|note
-				report LF 
-					& logg("locale_value", "object") & natural'image(value_offset) & ':' & natural'image(value_offset+value_length-1) & " " & '"' & object(value_offset to value_offset+value_length-1) & '"' --|note
-				severity note;                     --|note
+			assert ((log_flags/log_locatevalue) mod 2=0)                                                                                                                                                     --|note
+				report LF                                                                                                                                                                                    --|note
+					& log("locale_value", "object") & natural'image(value_offset) & ':' & natural'image(value_offset+value_length-1) & " " & '"' & object(value_offset to value_offset+value_length-1) & '"' --|note
+				severity note;                                                                                                                                                                               --|note
 
 			if not isdigit(object(path_left)) then
-				assert ((log_flags/log_locatevalue) mod 2=0) --|note
-					report LF
-						 & logg("locale_value", "object request path ") & object(path_left to path_right) & " % " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & ' ' & '"' & object(tag_offset to tag_offset+tag_length-1) & '"' --|note
-					severity note; --|note
+				assert ((log_flags/log_locatevalue) mod 2=0)                                                                                                                                                                                                  --|note
+					report LF                                                                                                                                                                                                                                 --|note
+						 & log("locale_value", "object request path ") & object(path_left to path_right) & " % " & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & ' ' & '"' & object(tag_offset to tag_offset+tag_length-1) & '"' --|note
+					severity note;                                                                                                                                                                                                                            --|note
 
 				if tag_length/=0 then
 					if compare_string(object(path_left to path_right), object(tag_offset to tag_offset+tag_length-1)) then
@@ -1083,26 +1114,26 @@ package body hdo is
 				offset := tag_offset;
 				length := cursor-offset;
 
-				assert ((log_flags/log_locatevalue) mod 2=0) --|note
-					report LF 
-						& logg("locale_value","object position") & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & " " & '"' & object(tag_offset to tag_offset+tag_length-1) & '"' --|note
-					severity note; --|note
+				assert ((log_flags/log_locatevalue) mod 2=0)                                                                                                                                                 --|note
+					report LF                                                                                                                                                                                --|note
+						& log("locale_value","object position") & natural'image(tag_offset) & ':' & natural'image(tag_offset+tag_length-1) & " " & '"' & object(tag_offset to tag_offset+tag_length-1) & '"' --|note
+					severity note;                                                                                                                                                                           --|note
 
 				exit;
 			end if;
 
-			assert ((log_flags/log_locatevalue) mod 2=0) --|note
-				report LF 
-					& logg("locale_value","cursor end loop") & natural'image(cursor) & " " & ''' &object(cursor) & ''' --|note
-				severity note; --|note
+			assert ((log_flags/log_locatevalue) mod 2=0)                                                              --|note
+				report LF                                                                                             --|note
+					& log("locale_value","cursor end loop") & natural'image(cursor) & " " & ''' &object(cursor) & ''' --|note
+				severity note;                                                                                        --|note
 		end loop;
 
-		assert ((log_flags/log_locatevalue) mod 2=0) --|note
-			report LF --|note
-				& logg("locale_value","tag") & natural'image(tag_offset)   & ':' & natural'image(tag_offset+tag_length-1) & " " & '"' & object(tag_offset   to tag_offset+tag_length-1) & '"' & LF --|note
-				& logg("locale_value","value") & natural'image(value_offset) & ':' & natural'image(cursor-1)                & " " & '"' & object(value_offset to cursor-1)                & '"' & LF --|note
-				& logg("locale_value","^^^^^^^^^^^^^^^^^^^^") --|note
-			severity note; --|note
+		assert ((log_flags/log_locatevalue) mod 2=0)                                                                                                                                                --|note
+			report LF                                                                                                                                                                               --|note
+				& log("locale_value","tag")   & natural'image(tag_offset)   & ':' & natural'image(tag_offset+tag_length-1) & " " & '"' & object(tag_offset   to tag_offset+tag_length-1) & '"' & LF --|note
+				& log("locale_value","value") & natural'image(value_offset) & ':' & natural'image(cursor-1)                & " " & '"' & object(value_offset to cursor-1)                & '"' & LF --|note
+				& log("locale_value","^^^^^^^^^^^^^^^^^^^^")                                                                                                                                        --|note
+			severity note;                                                                                                                                                                          --|note
 	end;
 
 	function compact (
@@ -1169,8 +1200,8 @@ package body hdo is
 			default_offset, default_length);
 		assert ((log_flags/log_resolve) mod 2=0)  --|note
 			report LF 
-				& logg("resolve", "domain") & natural'image(domain_offset) & ":" & natural'image(domain_length) & ":" & '"' & object(domain_offset to domain_offset+domain_length-1) & '"' & LF --|note
-				& logg("resolve", "value")  & natural'image(value_offset)  & ":" & natural'image(value_length)  & ":" & '"' & object(value_offset  to value_offset+value_length-1)   & '"' & LF --|note
+				& log("resolve", "domain") & natural'image(domain_offset) & ":" & natural'image(domain_length) & ":" & '"' & object(domain_offset to domain_offset+domain_length-1) & '"' & LF --|note
+				& log("resolve", "value")  & natural'image(value_offset)  & ":" & natural'image(value_length)  & ":" & '"' & object(value_offset  to value_offset+value_length-1)   & '"' & LF --|note
 			severity note; --|note
 		if domain_length/=0 then
 			domain_index := domain_offset;
@@ -1179,18 +1210,18 @@ package body hdo is
 				if tag_length=0 then
 					exit;
 				end if;
-				assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                       --|note
-					report LF                                                                                                                                                            --|note 
-						& logg("resolve", "tag   ") & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & object(tag_offset to tag_offset+tag_length-1) & '"' & LF --|note
-						& logg("resolve", "cursor") & natural'image(cursor)                                                                                                              --|note
-					severity note;                                                                                                                                                       --|note
+				assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                --|note
+					report LF                                                                                                                                                           --|note 
+						& log("resolve", "tag   ") & natural'image(tag_offset) & ":" & natural'image(tag_length) & ":" & '"' & object(tag_offset to tag_offset+tag_length-1) & '"' & LF --|note
+						& log("resolve", "cursor") & natural'image(cursor)                                                                                                              --|note
+					severity note;                                                                                                                                                      --|note
 				locate_value(object, value_offset, tag_offset, tag_offset+tag_length-1, tag1_offset, tag1_length, obj_offset, obj_length);
 				if obj_length=0 then 
-					assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                                                                      --|note
-						report LF                                                                                                                                                                                                           --|note
-							& logg("resolve", "invalid path   %") & natural'image(tag_offset)     & ":" & natural'image(tag_length) & ":" & '"' & object(tag_offset to tag_offset+tag_length-1) & '"'                                       --|note
-							& logg("resolve", "default_offset %") & natural'image(default_offset) & ":" & natural'image(default_offset+default_length-1) & ":" & '"' & object(default_offset to default_offset+default_length-1) & '"' & LF --|note
-						severity note;                                                                                                                                                                                                      --|note
+					assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                                                               --|note
+						report LF                                                                                                                                                                                                          --|note
+							& log("resolve", "invalid path   %") & natural'image(tag_offset)     & ":" & natural'image(tag_length) & ":" & '"' & object(tag_offset to tag_offset+tag_length-1) & '"'                                       --|note
+							& log("resolve", "default_offset %") & natural'image(default_offset) & ":" & natural'image(default_offset+default_length-1) & ":" & '"' & object(default_offset to default_offset+default_length-1) & '"' & LF --|note
+						severity note;                                                                                                                                                                                                     --|note
 					cursor := default_offset;
 					obj_offset   := default_offset;
 					obj_length   := default_length;
@@ -1198,22 +1229,22 @@ package body hdo is
 					value_length := default_length;
 					exit;
 				end if;
-				assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                --|note
-					report LF &                                                                                                                                                         --|note
-						logg("resolve", "path")  & natural'image(tag_offset) & ":" & natural'image(tag_length) & ' ' & '"' & object(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|note
-						logg("resolve", "value") & natural'image(obj_offset) & ":" & natural'image(obj_length) & ' ' & '"' & object(obj_offset to obj_offset+obj_length-1) & '"'        --|note
-					severity note;                                                                                                                                                      --|note
+				assert ((log_flags/log_resolve) mod 2=0)                                                                                                                               --|note
+					report LF &                                                                                                                                                        --|note
+						log("resolve", "path")  & natural'image(tag_offset) & ":" & natural'image(tag_length) & ' ' & '"' & object(tag_offset to tag_offset+tag_length-1) & '"' & LF & --|note
+						log("resolve", "value") & natural'image(obj_offset) & ":" & natural'image(obj_length) & ' ' & '"' & object(obj_offset to obj_offset+obj_length-1) & '"'        --|note
+					severity note;                                                                                                                                                     --|note
 				value_offset := obj_offset;
 				-- resolve(object(obj_offset to obj_offset+obj_length-1), obj_offset, obj_length);
 			end loop;
 		else
 			cursor :=  object'left;
 		end if;
-		assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                                      --|note
-			report LF &                                                                                                                                                                               --|note
-				logg("resolve", "tag")     & natural'image(tag_offset)     & ":" & natural'image(tag_length)     & ' ' & '"' & object(tag_offset     to tag_offset+tag_length-1)         & '"' & LF & --|note
-				logg("resolve", "default") & natural'image(default_offset) & ":" & natural'image(default_length) & ' ' & '"' & object(default_offset to default_offset+default_length-1) & '"' & LF   --|note
-			severity note;                                                                                                                                                                            --|note
+		assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                                     --|note
+			report LF &                                                                                                                                                                              --|note
+				log("resolve", "tag")     & natural'image(tag_offset)     & ":" & natural'image(tag_length)     & ' ' & '"' & object(tag_offset     to tag_offset+tag_length-1)         & '"' & LF & --|note
+				log("resolve", "default") & natural'image(default_offset) & ":" & natural'image(default_length) & ' ' & '"' & object(default_offset to default_offset+default_length-1) & '"' & LF   --|note
+			severity note;                                                                                                                                                                           --|note
 		
 		parse_tagvaluepathdefault(
 			object,         cursor,
@@ -1221,13 +1252,13 @@ package body hdo is
 			value_offset,   value_length, 
 			domain_offset,  domain_length,
 			default_offset, default_length);
-		assert ((log_flags/log_resolve) mod 2=0) --|note
-			report LF & --|note
-				logg("resolve", "tag")    & natural'image(tag_offset)   & ":" & natural'image(tag_length)      & ' ' & '"' & object(tag1_offset  to tag1_offset+tag1_length-1)   & '"' & LF & --|note
-				logg("resolve", "cursor") & natural'image(cursor)       & '"' & object(cursor to object'right) & '"' & LF  &                                                                  --|note
-				logg("resolve", "value")  & natural'image(value_offset) & ":" & natural'image(value_length)    & ' ' & '"' & object(value_offset to value_offset+value_length-1) & '"' & LF & --|note
-				logg("resolve", "path")   & natural'image(path_offset)  & ":" & natural'image(path_length)     & ' ' & '"' & object(path_offset  to path_offset+path_length-1)   & '"' & LF   --|note
-			severity note; --|note
+		assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                             --|note
+			report LF &                                                                                                                                                                      --|note
+				log("resolve", "tag")    & natural'image(tag_offset)   & ":" & natural'image(tag_length)      & ' ' & '"' & object(tag1_offset  to tag1_offset+tag1_length-1)   & '"' & LF & --|note
+				log("resolve", "cursor") & natural'image(cursor)       & '"' & object(cursor to object'right) & '"' & LF  &                                                                  --|note
+				log("resolve", "value")  & natural'image(value_offset) & ":" & natural'image(value_length)    & ' ' & '"' & object(value_offset to value_offset+value_length-1) & '"' & LF & --|note
+				log("resolve", "path")   & natural'image(path_offset)  & ":" & natural'image(path_length)     & ' ' & '"' & object(path_offset  to path_offset+path_length-1)   & '"' & LF   --|note
+			severity note;                                                                                                                                                                   --|note
 	end;
 
 	function resolve (
