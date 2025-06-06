@@ -1263,8 +1263,8 @@ package body hdo is
 		end if;
 		assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                                     --|note
 			report LF &                                                                                                                                                                              --|note
-				log("resolve", "tag")     & natural'image(tag_offset)     & ":" & natural'image(tag_length)     & ' ' & '"' & object(tag_offset     to tag_offset+tag_length-1)         & '"' & LF & --|note
-				log("resolve", "default") & natural'image(default_offset) & ":" & natural'image(default_length) & ' ' & '"' & object(default_offset to default_offset+default_length-1) & '"' & LF   --|note
+				"tag"     & xxx(object,tag_offset, tag_length)         & LF & --|note
+				"default" & xxx(object,default_offset, default_length) & LF   --|note
 			severity note;                                                                                                                                                                           --|note
 		
 		parse_tagvaluepathdefault(
