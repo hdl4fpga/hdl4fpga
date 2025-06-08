@@ -168,7 +168,7 @@ package body hdo is
 	constant log_parsetagvaluepath : natural := 2**5;
 	constant log_locatevalue       : natural := 2**6;
 	constant log_resolve           : natural := 2**7;
-	constant log_flags             : natural := log_parsedomain + log_parsepath + log_locatevalue; --    + log_parsevalue ;
+	constant log_flags             : natural := log_resolve + log_parsedomain + log_parsepath + log_locatevalue; --    + log_parsevalue ;
 	-- constant log_flags                  : natural := log_parsetagvaluepath; -- + log_resolve + log_locatevalue + log_parsedomain + log_parsepath; --    + log_parsevalue ;
 	-- constant log_flags                  : natural := log_resolve; -- + log_locatevalue + log_parsedomain + log_parsepath; --    + log_parsevalue ;
 	-- constant log_flags                  : natural := log_locatevalue; -- + log_parsedomain + log_parsepath; --    + log_parsevalue ;
@@ -664,12 +664,14 @@ package body hdo is
 		end if;
 	end;
 
-	type fid is (fid_locatevalue, fid_parsepath, fid_parsedomain);
+	type fid is (fid_resolve, fid_locatevalue, fid_parsepath, fid_parsedomain);
 	function fname (
 		constant id : fid)
 		return string is
 	begin
 		case id is
+		when fid_resolve =>
+			return "resolve";
 		when fid_locatevalue =>
 			return "locatevalue";
 		when fid_parsepath =>
@@ -823,7 +825,7 @@ package body hdo is
     		assert ((log_flags/log_parsedomain) mod 2=0)                         --|note
     			report LF                                                        --|note
     				& log(fid_parsedomain, "domain " & xxx(object, offset, length)) & LF --|note
-    				& log(fid_parsedomain, "exit") & LF --|note
+    				& log(fid_parsedomain, "exit") --|note
     			severity note;                                                   --|note
 			level := level - 1;
     	end;
@@ -841,14 +843,14 @@ package body hdo is
     		offset := cursor;
     		assert ((log_flags/log_parsepath) mod 2=0)                    --|note
     			report LF                                                 --|note
-    				& log(fid_parsepath, "path : " & xxx(object, cursor)) & LF --|note
+    				& log(fid_parsepath, "path : " & xxx(object, cursor)) --|note
     			severity note;                                            --|note
 
     		for i in object'range loop
     			parse_domain(object, cursor, tag_offset, tag_length);
     			assert ((log_flags/log_parsepath) mod 2=0)                                --|note
     				report LF                                                             --|note
-    					& log(fid_parsepath, "domain " & xxx(object,tag_offset, tag_length)) & LF --|note
+    					& log(fid_parsepath, "domain " & xxx(object,tag_offset, tag_length)) --|note
     				severity note;                                                        --|note
 
     			if tag_length=0 then
@@ -858,7 +860,7 @@ package body hdo is
     		end loop;
     		assert ((log_flags/log_parsepath) mod 2=0)                       --|note
     			report LF                                                    --|note
-    				& log(fid_parsepath, "" & '"' & xxx(object,offset,length)) & LF --|note
+    				& log(fid_parsepath, "" & '"' & xxx(object,offset,length)) --|note
     			severity note;                                               --|note
 			level := level - 1;
     	end;
@@ -1247,10 +1249,10 @@ package body hdo is
 
 		assert ((log_flags/log_resolve) mod 2=0)                               --|note
 			report LF                                                          --|note
-				& "tag"     & xxx(object, tag_offset,     tag_length)     & LF --|note
-				& "path"    & xxx(object, path_offset,    path_length)    & LF --|note
-				& "value"   & xxx(object, value_offset,   value_length)   & LF --|note
-				& "default" & xxx(object, default_offset, default_length) & LF --|note
+				& log(fid_resolve, "tag"     & xxx(object, tag_offset,     tag_length))   & LF --|note
+				& log(fid_resolve, "path"    & xxx(object, path_offset,    path_length))  & LF --|note
+				& log(fid_resolve, "value"   & xxx(object, value_offset,   value_length)) & LF --|note
+				& log(fid_resolve, "default" & xxx(object, default_offset, default_length)) --|note
 			severity note;                                                     --|note
 
 		cursor := value_offset;
@@ -1263,8 +1265,7 @@ package body hdo is
 				end if;
 				assert ((log_flags/log_resolve) mod 2=0)                    --|note
 					report LF                                               --|note 
-						& "tag   " & xxx(object,domain_offset, domain_length) & LF --|note
-						& "cursor" & natural'image(cursor)                  --|note
+						& "domain" & xxx(object,domain_offset, domain_length) --|note
 					severity note;                                          --|note
 				locate_value(object, cursor, domain_offset, domain_length, tag_offset, tag_length, obj_offset, obj_length);
 				if obj_length=0 then 
