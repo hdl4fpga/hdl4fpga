@@ -628,7 +628,7 @@ package body hdo is
 		end if;
 	end;
 
-	function xxx(
+	function xxx (
 		constant arg    : string;
 		constant offset : positive;
 		constant length : natural)
@@ -639,19 +639,22 @@ package body hdo is
 	begin
 		content := (others => ' ');
 		if length > content'length-2 then
-			j := arg'left;
-			for i in 1 to (content'length-separator'length)/2 loop
+			j := offset;
+			content(content'left) := '"';
+			for i in content'left+1 to (content'length-separator'length)/2 loop
 				content(i) := arg(j);
 				j := j + 1;
 			end loop;
+			j := (content'length-separator'length)/2;
 			for i in separator'range loop
-				content(j) := separator(i);
 				j := j + 1;
+				content(j) := separator(i);
 			end loop;
-			j := arg'right;
-			for i in content'length downto (content'length+separator'length)/2+1 loop
-				content(i) := arg(j);
+			j := offset+length;
+			content(content'right) := '"';
+			for i in content'right-1 downto (content'length+separator'length)/2+1 loop
 				j := j - 1;
+				content(i) := arg(j);
 			end loop;
 			return '(' & positive'image(offset) & " to " & positive'image(offset+length-1) & ')' & '=' & content;
 		else
@@ -664,26 +667,7 @@ package body hdo is
 		end if;
 	end;
 
-	type fid is (fid_resolve, fid_locatevalue, fid_parsepath, fid_parsedomain);
-	function fname (
-		constant id : fid)
-		return string is
-	begin
-		case id is
-		when fid_resolve =>
-			return "resolve";
-		when fid_locatevalue =>
-			return "locatevalue";
-		when fid_parsepath =>
-			return "parsepath";
-		when fid_parsedomain =>
-			return "parsedomian";
-		when others =>
-			return "";
-		end case;
-	end;
-
-	function xxx(
+	function xxx (
 		constant arg    : string;
 		constant offset : positive)
 		return string is
@@ -691,12 +675,12 @@ package body hdo is
 		return xxx(arg, offset, arg'right-offset+1);
 	end;
 
-	function yyy(
+	function yyy (
 		constant arg    : string;
 		constant offset : positive)
 		return string is
 	begin
-		return '(' & positive'image(offset) & ')' & character'image(arg(offset));
+		return '(' & positive'image(offset) & ')' & "=" & character'image(arg(offset));
 	end;
 
 	procedure resolve (
@@ -719,13 +703,39 @@ package body hdo is
 		variable default_length : natural;
 
 		variable level : positive;
+
+    	type fid is (fid_resolve, fid_locatevalue, fid_parsepath, fid_parsedomain, fid_parsevalue);
+    	function fname (
+    		constant id : fid)
+    		return string is
+    	begin
+    		case id is
+    		when fid_resolve =>
+    			return "resolve";
+    		when fid_locatevalue =>
+    			return "locatevalue";
+    		when fid_parsepath =>
+    			return "parsepath";
+    		when fid_parsedomain =>
+    			return "parsedomain";
+    		when fid_parsevalue =>
+    			return "parsevalue";
+    		when others =>
+    			return "";
+    		end case;
+    	end;
+
 		impure function log (
 			constant fid : fid;
 			constant msg : string)
 			return string is
-			variable xxx : string(1 to 10) := (others => ' ');
+			variable indentation : string(1 to 10) := (others => ' ');
 		begin
-			return format(xxx(1 to level)&"@"&fname(fid), 15) & " # " & format(msg, 40);
+			if level > 1 then
+				return indentation(1 to level-1)&format("@"&fname(fid), 15) & " # " & format(msg, 80);
+			else
+				return format("@"&fname(fid), 15) & " # " & format(msg, 80);
+			end if;
 		end;
 
     	procedure parse_domain (
@@ -843,14 +853,14 @@ package body hdo is
     		offset := cursor;
     		assert ((log_flags/log_parsepath) mod 2=0)                    --|note
     			report LF                                                 --|note
-    				& log(fid_parsepath, "path : " & xxx(object, cursor)) --|note
+    				& log(fid_parsepath, "path" & xxx(object, cursor)) --|note
     			severity note;                                            --|note
 
     		for i in object'range loop
     			parse_domain(object, cursor, tag_offset, tag_length);
     			assert ((log_flags/log_parsepath) mod 2=0)                                --|note
     				report LF                                                             --|note
-    					& log(fid_parsepath, "domain " & xxx(object,tag_offset, tag_length)) --|note
+    					& log(fid_parsepath, "domain" & xxx(object,tag_offset, tag_length)) --|note
     				severity note;                                                        --|note
 
     			if tag_length=0 then
@@ -860,7 +870,7 @@ package body hdo is
     		end loop;
     		assert ((log_flags/log_parsepath) mod 2=0)                       --|note
     			report LF                                                    --|note
-    				& log(fid_parsepath, "" & '"' & xxx(object,offset,length)) --|note
+    				& log(fid_parsepath, "path" & xxx(object,offset,length)) --|note
     			severity note;                                               --|note
 			level := level - 1;
     	end;
@@ -971,7 +981,7 @@ package body hdo is
     	begin
     		assert ((log_flags/log_parsetagvaluepath) mod 2=0)                    --|note
     			report LF                                                         --|note
-    				& "object " & xxx(object, cursor, object'right-cursor+1) & LF --|note
+    				& "object " & xxx(object, cursor, object'right-cursor+1) --|note
     			severity note;                                                    --|note
 
     		parse_string(object, cursor, value_offset, value_length);
@@ -1093,7 +1103,6 @@ package body hdo is
 			level := level + 1;
     		assert ((log_flags/log_locatevalue) mod 2=0)  --|note
     			report LF                                 --|note
-    				& "vvvvvvvvvvvvvvvvvvvv" & LF         --|note
     				& log(fid_locatevalue, "object" & xxx(object, cursor)) & LF --|note
     			severity note;                            --|note
 
@@ -1113,35 +1122,30 @@ package body hdo is
     		for l in object'range loop           -- Avoid synthesizes tools loop-warnings
     			exit when cursor > object'right; -- Avoid synthesizes tools loop-warnings
     		
-    			assert ((log_flags/log_locatevalue) mod 2=0) --|note
-    				report LF                                --|note
-    					 & log(fid_locatevalue, "cursor" & yyy(object,cursor))     --|note
-    				severity note;                           --|note
+    			assert ((log_flags/log_locatevalue) mod 2=0)        --|note
+    				report LF                                       --|note
+    					& log(fid_locatevalue, "position " & natural'image(position)) --|note
+    				severity note;                                  --|note
 
     			skipws(object, cursor);
     			case object(cursor) is
     			when '['|'{' =>
     				assert ((log_flags/log_locatevalue) mod 2=0) --|note
     					report LF                                --|note
-    						& log(fid_locatevalue, "open" & yyy(object,cursor)) & LF   --|note
+    						& log(fid_locatevalue, "open" & yyy(object,cursor))   --|note
     					severity note;                           --|note
 
     				open_char := object(cursor);
     				opened    := true;
     				cursor := cursor + 1;
     			when ',' =>
-    				assert ((log_flags/log_locatevalue) mod 2=0)        --|note
-    					report LF                                       --|note
-    						& log(fid_locatevalue, "position" & natural'image(position)) & LF --|note
-    					severity note;                                  --|note
-
     				position := position + 1;
     				cursor   := cursor + 1;
     			when ']' =>
     				if not opened then
     					assert false                                 --|note
     						report LF                                --|note
-    							& log(fid_locatevalue, "close" & yyy(object, cursor)) & LF --|note
+    							& log(fid_locatevalue, "close" & yyy(object, cursor)) --|note
     						severity note;                           --|note
     					return;
     				end if;
@@ -1154,7 +1158,7 @@ package body hdo is
 
     				assert ((log_flags/log_locatevalue) mod 2=0)  --|note
     					report LF                                 --|note
-    						& log(fid_locatevalue, "close" & yyy(object, cursor))  & LF --|note
+    						& log(fid_locatevalue, "close" & yyy(object, cursor)) --|note
     					severity note;                            --|note
 
     				opened := false;
@@ -1164,7 +1168,7 @@ package body hdo is
     				if not opened then
     					assert false                                          --|note
     						report LF                                         --|note
-    							& log(fid_locatevalue, "close path at " & yyy(object, cursor)) & LF --|note
+    							& log(fid_locatevalue, "close path at " & yyy(object, cursor)) --|note
     						severity note;                                    --|note
     					return;
     				end if;
@@ -1177,7 +1181,7 @@ package body hdo is
 
     				assert ((log_flags/log_locatevalue) mod 2=0) --|note
     					report LF                                --|note
-    						& log(fid_locatevalue, "close" & yyy(object, cursor)) & LF --|note
+    						& log(fid_locatevalue, "close" & yyy(object, cursor)) --|note
     					severity note;                           --|note
 
     				opened := false;
@@ -1195,13 +1199,13 @@ package body hdo is
 
     			assert ((log_flags/log_locatevalue) mod 2=0)                                                                                                                                                     --|note
     				report LF                                                                                                                                                                                    --|note
-    					& log(fid_locatevalue, "object " & xxx(object, value_offset, value_length)) & LF --|note
+    					& log(fid_locatevalue, "object " & xxx(object, value_offset, value_length)) --|note
     				severity note;                                                                                                                                                                               --|note
 
     			if not isdigit(object(domain_offset)) then
     				assert ((log_flags/log_locatevalue) mod 2=0)                                                                                      --|note
     					report LF                                                                                                                     --|note
-    						 & log(fid_locatevalue, "object requested path " & xxx(object, domain_offset, domain_length) & " " & xxx(object, tag_offset, tag_length)) & LF --|note
+    						 & log(fid_locatevalue, "object requested path " & xxx(object, domain_offset, domain_length) & " " & xxx(object, tag_offset, tag_length)) --|note
     					severity note;                                                                                                                --|note
 
     				if tag_length/=0 then
@@ -1216,7 +1220,7 @@ package body hdo is
 
     				assert ((log_flags/log_locatevalue) mod 2=0)                           --|note
     					report LF                                                          --|note
-    						& log(fid_locatevalue, "object position" & xxx(object, tag_offset, tag_length)) & LF --|note
+    						& log(fid_locatevalue, "object position" & xxx(object, tag_offset, tag_length)) --|note
     					severity note;                                                     --|note
 
     				exit;
@@ -1224,7 +1228,7 @@ package body hdo is
 
     			assert ((log_flags/log_locatevalue) mod 2=0)          --|note
     				report LF                                         --|note
-    					& log(fid_locatevalue, "cursor end loop" & yyy(object,cursor)) & LF --|note
+    					& log(fid_locatevalue, "cursor end loop" & yyy(object,cursor)) --|note
     				severity note;                                    --|note
     		end loop;
 
@@ -1265,7 +1269,7 @@ package body hdo is
 				end if;
 				assert ((log_flags/log_resolve) mod 2=0)                    --|note
 					report LF                                               --|note 
-						& "domain" & xxx(object,domain_offset, domain_length) --|note
+						& log(fid_resolve, "domain" & xxx(object,domain_offset, domain_length)) --|note
 					severity note;                                          --|note
 				locate_value(object, cursor, domain_offset, domain_length, tag_offset, tag_length, obj_offset, obj_length);
 				if obj_length=0 then 
