@@ -148,7 +148,6 @@ begin
 			constant escobj : string := escaped(obj);
 		begin
 			length := escobj'length;
-			report LF & "get_value : " & escobj & " length : " & natural'image(escobj'length);
 			if escobj'length > 0 then
 				value(1 to escobj'length) := escobj;
 			end if;
@@ -164,8 +163,8 @@ begin
 		i := 0;
 		loop
 			-- get_value(key, key_length, tag("="));
-			get_value(key, key_length, tag(hdo(test)&"["&natural'image(1)&"].ppp=  "));
-			report LF & natural'image(key_length) & "  ------";
+			-- get_value(key, key_length, tag(hdo(test)&"["&natural'image(1)&"].ppp=  "));
+			get_value(key, key_length, tag("hhhhh : "& hdo(test)&"["&natural'image(1)&"].ppp=  "));
 			exit when key_length=0;
 			if false and key(1 to key_length)="device" then
 				report LF & key(1 to key_length);
@@ -179,7 +178,6 @@ begin
 					j := j + 1;
 				end loop;
 			end if;
-			report LF & natural'image(i) & "  ------";
 			i := i + 1;
 		end loop;
 		-- report LF & xxx;
