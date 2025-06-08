@@ -742,7 +742,7 @@ package body hdo is
 
     			assert (log_flags/log_parsedomain) mod 2=0     --|note
     				report LF                                  --|note
-    					& log(fid_parsedomain, "path " & xxx(object, cursor)) & LF --|note
+    					& log(fid_parsedomain, "path " & xxx(object, cursor)) --|note
     				severity note;                             --|note
 
     			case object(cursor) is
@@ -751,10 +751,10 @@ package body hdo is
     				cursor    := cursor + 1;
     				parse_string(object, cursor, offset, length);
 
-    				assert ((log_flags/log_parsedomain) mod 2=0)                                   --|note
-    					report LF                                                                  --|note
-    						& log(fid_parsedomain, "position : " & xxx(object, offset, length)) & LF --|note
-    					severity note;                                                             --|note
+    				assert ((log_flags/log_parsedomain) mod 2=0)                                --|note
+    					report LF                                                               --|note
+    						& log(fid_parsedomain, "position : " & xxx(object, offset, length)) --|note
+    					severity note;                                                          --|note
 
     				if length=0 then
     					assert false
@@ -773,7 +773,7 @@ package body hdo is
 
     					assert ((log_flags/log_parsedomain) mod 2=0)              --|note
     						report LF                                             --|note
-    							& log(fid_parsedomain, "closing character " & yyy(object, cursor)) & LF --|note
+    							& log(fid_parsedomain, "closing character " & yyy(object, cursor)) --|note
     						severity note;                                        --|note
 
     					cursor := cursor + 1;
@@ -787,7 +787,7 @@ package body hdo is
 
     					assert ((log_flags/log_parsedomain) mod 2=0)              --|note
     						report LF                                             --|note
-    							& log(fid_parsedomain, "closing character " & yyy(object, cursor)) & LF --|note
+    							& log(fid_parsedomain, "closing character " & yyy(object, cursor)) --|note
     						severity note;                                        --|note
 
     					cursor := cursor + 1;
@@ -805,7 +805,7 @@ package body hdo is
     				if length=0 then                                                       --|note
     					assert false                                                       --|note
     						report LF                                                      --|note
-    							& log(fid_parsedomain, "null path : " & xxx(object, cursor)) & LF --|note
+    							& log(fid_parsedomain, "null path : " & xxx(object, cursor)) --|note
     						severity note;                                                 --|note
     				end if;                                                                --|note
     				cursor := offset+length;
@@ -814,7 +814,7 @@ package body hdo is
     				length := 0;
     				assert ((log_flags/log_parsedomain) mod 2=0) --|note
     					report LF                                --|note
-    						& log(fid_parsedomain, "null") & LF         --|note
+    						& log(fid_parsedomain, "null")       --|note
     					severity note;                           --|note
     				exit;
     			end case;
