@@ -166,6 +166,7 @@ package body hdo is
 	constant log_parsepath         : natural := 2**3;
 	constant log_parsevalue        : natural := 2**4;
 	constant log_parsetagvaluepath : natural := 2**5;
+	constant log_parsetagvaluepathdefault : natural := 2**8;
 	constant log_locatevalue       : natural := 2**6;
 	constant log_resolve           : natural := 2**7;
 	constant log_flags             : natural := log_resolve + log_parsedomain + log_parsepath + log_locatevalue + log_parsevalue + log_parsetagvaluepath;
@@ -723,43 +724,35 @@ package body hdo is
 		variable default_offset : positive;
 		variable default_length : natural;
 
-		variable level : positive;
+		variable level : natural := 0;
 
-    	type fid is (fid_resolve, fid_tagvaluepathdefault, fid_tagvaluepath, fid_locatevalue, fid_parsepath, fid_parsedomain, fid_parsevalue);
-    	function fname (
-    		constant id : fid)
-    		return string is
-    	begin
-    		case id is
-    		when fid_resolve =>
-    			return "resolve";
-    		when fid_tagvaluepathdefault =>
-    			return "tagvaluepathdefault";
-    		when fid_tagvaluepath =>
-    			return "tagvaluepath";
-    		when fid_locatevalue =>
-    			return "locatevalue";
-    		when fid_parsepath =>
-    			return "parsepath";
-    		when fid_parsedomain =>
-    			return "parsedomain";
-    		when fid_parsevalue =>
-    			return "parsevalue";
-    		when others =>
-    			return "";
-    		end case;
-    	end;
-
-		impure function log (
-			constant fid : fid;
+		variable zzz : character := ' ';
+		impure function indent (
 			constant msg : string)
 			return string is
-			variable indentation : string(1 to 10) := (others => ' ');
+			variable indentation : string(1 to 40) := (others => ' ');
 		begin
-			if level > 1 then
-				return format(indentation(1 to 2*(level-1))&"@"&fname(fid), 15) & " # " & format(msg, 80);
+			if msg'length > 0 then
+				if msg(msg'left)='@' then
+					level := level + 1;
+				elsif msg(msg'left)='#' then
+					level := level - 1;
+				end if;
+			end if;
+			if zzz='@' then
+				level := level + 1;
+			elsif zzz='#' then
+				level := level - 1;
+			end if;
+			if msg'length > 0 then 
+				zzz := msg(msg'left);
 			else
-				return format("@"&fname(fid), 20) & " # " & format(msg, 80);
+				zzz := ' ';
+			end if;
+			if level > 1 then
+				return format(indentation(1 to 2*(level-1)) & msg, 80);
+			else
+				return format(msg, 80);
 			end if;
 		end;
 
@@ -772,14 +765,16 @@ package body hdo is
     	begin
     		skipws(object, cursor);
 
-			level := level + 1;
+    		assert (log_flags/log_parsedomain) mod 2=0     --|note
+    			report LF & indent("@parsedomain") --|note
+    			severity note;                             --|note
+
     		length := 0;
     		for l in object'range loop           -- Avoid synthesizes tools loop-warnings
     			exit when cursor > object'right; -- Avoid synthesizes tools loop-warnings
 
     			assert (log_flags/log_parsedomain) mod 2=0     --|note
-    				report LF                                  --|note
-    					& log(fid_parsedomain, xxx("path", object, cursor)) --|note
+    				report LF & indent(xxx("path", object, cursor)) --|note
     				severity note;                             --|note
 
     			case object(cursor) is
@@ -790,12 +785,12 @@ package body hdo is
 
     				assert ((log_flags/log_parsedomain) mod 2=0)                            --|note
     					report LF                                                           --|note
-    						& log(fid_parsedomain, xxx("position", object, offset, length)) --|note
+    						& indent(xxx("position", object, offset, length)) --|note
     					severity note;                                                      --|note
 
     				if length=0 then
     					assert false
-    						report log(fid_parsedomain, "invalid path : " & xxx(object,cursor))
+    						report indent("invalid path : " & xxx(object,cursor))
     						severity failure;
     				end if;
 
@@ -804,13 +799,13 @@ package body hdo is
     				when ']' => 
     					if open_char/='[' then -- Xilinx ISE 14.7 warning complain
     						assert false                                                                                             
-    							report log(fid_parsedomain, "wrong closing character " & yyy(object, cursor) & " opened by " & character'image(open_char))
+    							report "@parsedomain : " & "wrong closing character " & yyy(object, cursor) & " opened by " & character'image(open_char)
     							severity failure;                                                                                       
     					end if;                                                                                                        
 
     					assert ((log_flags/log_parsedomain) mod 2=0)              --|note
     						report LF                                             --|note
-    							& log(fid_parsedomain, "closing character " & yyy(object, cursor)) --|note
+    							& indent("closing character " & yyy(object, cursor)) --|note
     						severity note;                                        --|note
 
     					cursor := cursor + 1;
@@ -818,20 +813,20 @@ package body hdo is
 
     					if open_char/='{' then -- Xilinx ISE 14.7 warning complain
     						assert false
-    							report log(fid_parsedomain, "wrong closing character " & yyy(object, cursor) & " opened by " & character'image(open_char))
+    							report indent("wrong closing character " & yyy(object, cursor) & " opened by " & character'image(open_char))
     							severity failure; 
     					end if;
 
     					assert ((log_flags/log_parsedomain) mod 2=0)              --|note
     						report LF                                             --|note
-    							& log(fid_parsedomain, "closing character " & yyy(object, cursor)) --|note
+    							& indent("closing character " & yyy(object, cursor)) --|note
     						severity note;                                        --|note
 
     					cursor := cursor + 1;
 
     				when others =>
     					assert false
-    						report log(fid_parsedomain, "wrong token : " & yyy(object, cursor))
+    						report indent("wrong token : " & yyy(object, cursor))
     						severity failure;
     				end case;
     				exit;
@@ -842,7 +837,7 @@ package body hdo is
     				if length=0 then                                                       --|note
     					assert false                                                       --|note
     						report LF                                                      --|note
-    							& log(fid_parsedomain, "null path : " & xxx(object, cursor)) --|note
+    							& indent("null path : " & xxx(object, cursor)) --|note
     						severity note;                                                 --|note
     				end if;                                                                --|note
     				cursor := offset+length;
@@ -851,7 +846,7 @@ package body hdo is
     				length := 0;
     				assert ((log_flags/log_parsedomain) mod 2=0) --|note
     					report LF                                --|note
-    						& log(fid_parsedomain, "null")       --|note
+    						& indent("null")       --|note
     					severity note;                           --|note
     				exit;
     			end case;
@@ -859,10 +854,12 @@ package body hdo is
 
     		assert ((log_flags/log_parsedomain) mod 2=0)                         --|note
     			report LF                                                        --|note
-    				& log(fid_parsedomain, "domain " & xxx(object, offset, length)) & LF --|note
-    				& log(fid_parsedomain, "exit") --|note
+    				& indent("domain " & xxx(object, offset, length)) & LF --|note
+    				& indent("exit") --|note
     			severity note;                                                   --|note
-			level := level - 1;
+    		assert (log_flags/log_parsedomain) mod 2=0     --|note
+    			report LF & indent("#parsedomain") --|note
+    			severity note;                             --|note
     	end;
 
     	procedure parse_path (
@@ -873,19 +870,22 @@ package body hdo is
     		variable tag_offset : positive;
     		variable tag_length : natural;
     	begin
-			level := level + 1;
+			assert ((log_flags/log_parsepath) mod 2=0)                               --|note
+				report LF                                                          --|note
+					& indent("@parsepath") --|note
+				severity note;                                                     --|note
     		skipws(object, cursor);
     		offset := cursor;
     		assert ((log_flags/log_parsepath) mod 2=0)                    --|note
     			report LF                                                 --|note
-    				& log(fid_parsepath, "path" & xxx(object, cursor)) --|note
+    				& indent("path" & xxx(object, cursor)) --|note
     			severity note;                                            --|note
 
     		for i in object'range loop
     			parse_domain(object, cursor, tag_offset, tag_length);
     			assert ((log_flags/log_parsepath) mod 2=0)                                --|note
     				report LF                                                             --|note
-    					& log(fid_parsepath, "domain" & xxx(object,tag_offset, tag_length)) --|note
+    					& indent("domain" & xxx(object,tag_offset, tag_length)) --|note
     				severity note;                                                        --|note
 
     			if tag_length=0 then
@@ -895,9 +895,12 @@ package body hdo is
     		end loop;
     		assert ((log_flags/log_parsepath) mod 2=0)                       --|note
     			report LF                                                    --|note
-    				& log(fid_parsepath, "path" & xxx(object,offset,length)) --|note
+    				& indent("path" & xxx(object,offset,length)) --|note
     			severity note;                                               --|note
-			level := level - 1;
+			assert ((log_flags/log_parsepath) mod 2=0)                               --|note
+				report LF                                                          --|note
+					& indent("#") --|note
+				severity note;                                                     --|note
     	end;
 
     	procedure parse_value (
@@ -925,7 +928,10 @@ package body hdo is
     		variable bkslh  : boolean := false;
     		variable list   : boolean := false;
     	begin
-			level := level + 1;
+			assert ((log_flags/log_parsevalue) mod 2=0)                               --|note
+				report LF                                                          --|note
+					& indent("@parsevalue") --|note
+				severity note;                                                     --|note
     		skipws(object, cursor);
     		offset := cursor;
     		for i in offset to object'right loop
@@ -988,9 +994,12 @@ package body hdo is
     		length := cursor-offset;
     		assert ((log_flags/log_parsevalue) mod 2=0) --|note
     			report LF
-					 & log(fid_parsevalue, xxx("value", object,offset,length)) --|note
+					 & indent(xxx("value", object,offset,length)) --|note
     			severity note; --|note
-			level := level - 1;
+			assert ((log_flags/log_parsevalue) mod 2=0)                               --|note
+				report LF                                                          --|note
+					& indent("#") --|note
+				severity note;                                                     --|note
     	end;
 
     	procedure parse_tagvaluepath (
@@ -1003,10 +1012,14 @@ package body hdo is
     		variable path_offset  : inout positive;
     		variable path_length  : inout natural) is
     	begin
-			level := level + 1;
     		assert ((log_flags/log_parsetagvaluepath) mod 2=0)                    --|note
     			report LF                                                         --|note
-    				& log(fid_tagvaluepath, xxx("object",object, cursor, object'right-cursor+1)) --|note
+    				& indent("@tagvaluepath")--|note
+    			severity note;                                                    --|note
+
+    		assert ((log_flags/log_parsetagvaluepath) mod 2=0)                    --|note
+    			report LF                                                         --|note
+    				& indent(xxx("object",object, cursor, object'right-cursor+1)) --|note
     			severity note;                                                    --|note
 
     		parse_string(object, cursor, value_offset, value_length);
@@ -1022,18 +1035,18 @@ package body hdo is
     				if cursor > object'right then                                         --|note
     					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                --|note
     						report LF                                                     --|note
-    							& log(fid_tagvaluepath, xxx("value",object, value_offset, value_length)) --|note
+    							& indent(xxx("value",object, value_offset, value_length)) --|note
     						severity note;                                                --|note
     				else                                                                  --|note
     					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                --|note
     						report LF                                                   --|note
-    							& log(fid_tagvaluepath, xxx("value",object, value_offset, value_length)) --|note
+    							& indent(xxx("value",object, value_offset, value_length)) --|note
     						severity note;                                                --|note
     				end if;                                                               --|note
     			elsif object(cursor)/=':' then
     				assert ((log_flags/log_parsetagvaluepath) mod 2=0)                  --|note
     					report LF                                                       --|note
-    						& log(fid_tagvaluepath, xxx("value", object, value_offset, value_length)) --|note
+    						& indent(xxx("value", object, value_offset, value_length)) --|note
     					severity note;                                                  --|note
     				tag_length   := 0;
     				tag_offset   := value_offset;
@@ -1047,23 +1060,26 @@ package body hdo is
     				parse_value(object, cursor, value_offset, value_length);
     				assert ((log_flags/log_parsetagvaluepath) mod 2=0)                  --|note
     					report LF                                                       --|note
-    						& log(fid_tagvaluepath, xxx("tag",   object, tag_offset,   tag_length)) & LF --|note
-    						& log(fid_tagvaluepath, xxx("value", object, value_offset, value_length)) --|note
+    						& indent(xxx("tag",   object, tag_offset,   tag_length)) & LF --|note
+    						& indent(xxx("value", object, value_offset, value_length)) --|note
     					severity note;                                                  --|note
     			end if;
     		else
     			assert ((log_flags/log_parsetagvaluepath) mod 2=0)                       --|note
     				report LF                                                            --|note
-    					& log(fid_tagvaluepath, xxx("string", object, value_offset, value_length)) --|note
+    					& indent(xxx("string", object, value_offset, value_length)) --|note
     				severity note;                                                       --|note
     		end if;
     		skipws(object, cursor);
     		parse_path(object, cursor, path_offset, path_length);
     		assert ((log_flags/log_parsetagvaluepath) mod 2=0)              --|note
     			report LF                                                   --|note
-    				& log(fid_tagvaluepath, xxx("path", object,path_offset, path_length)) --|not
+    				& indent(xxx("path", object,path_offset, path_length)) --|not
     			severity note;                                              --|note
-			level := level - 1;
+			assert ((log_flags/log_parsetagvaluepath) mod 2=0)                               --|note
+				report LF                                                          --|note
+					& indent("#parsetagvaluepath") --|note
+				severity note;                                                     --|note
     	end;
     		
     	procedure parse_tagvaluepathdefault (
@@ -1078,7 +1094,10 @@ package body hdo is
     		variable default_offset : inout positive;
     		variable default_length : inout natural) is
     	begin
-			level := level + 1;
+			assert ((log_flags/log_parsetagvaluepathdefault) mod 2=0)                               --|note
+				report LF                                                          --|note
+					& indent("@tagvaluepathdefault") --|note
+				severity note;                                                     --|note
     		parse_tagvaluepath(
     			object,       cursor,
     			tag_offset,   tag_length, 
@@ -1091,14 +1110,17 @@ package body hdo is
     				if object(cursor)='=' then
     					default_offset := cursor+1;
     					default_length := object'right-cursor;
-    					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                       --|note
+    					assert ((log_flags/log_parsetagvaluepathdefault) mod 2=0)                       --|note
     						report LF                                                            --|note
-    							& log(fid_tagvaluepathdefault, xxx("default", object,default_offset,default_length)) --|note
+    							& indent(xxx("default", object,default_offset,default_length)) --|note
     						severity note;                                                       --|note
     				end if;
     			end if;
     		end if;
-			level := level - 1;
+			assert ((log_flags/log_parsetagvaluepathdefault) mod 2=0)                               --|note
+				report LF                                                          --|note
+					& indent("#tagvaluepathdefault") --|note
+				severity note;                                                     --|note
     	end;
 
     	procedure locate_value (
@@ -1121,10 +1143,14 @@ package body hdo is
     		variable opened         : boolean;
     	begin
 
-			level := level + 1;
+			assert ((log_flags/log_locatevalue) mod 2=0)                               --|note
+				report LF                                                          --|note
+					& indent("@locatevalue") --|note
+				severity note;                                                     --|note
+	
     		assert ((log_flags/log_locatevalue) mod 2=0)  --|note
     			report LF                                 --|note
-    				& log(fid_locatevalue, "object" & xxx(object, cursor)) --|note
+    				& indent("object" & xxx(object, cursor)) --|note
     			severity note;                            --|note
 
     		parse_tagvaluepathdefault(
@@ -1148,7 +1174,7 @@ package body hdo is
     			when '['|'{' =>
     				assert ((log_flags/log_locatevalue) mod 2=0) --|note
     					report LF                                --|note
-    						& log(fid_locatevalue, "open" & yyy(object,cursor))   --|note
+    						& indent("open" & yyy(object,cursor))   --|note
     					severity note;                           --|note
 
     				open_char := object(cursor);
@@ -1161,20 +1187,20 @@ package body hdo is
     				if not opened then
     					assert false                                 --|note
     						report LF                                --|note
-    							& log(fid_locatevalue, "close" & yyy(object, cursor)) --|note
+    							& indent("close" & yyy(object, cursor)) --|note
     						severity note;                           --|note
     					return;
     				end if;
     				if open_char/='[' then
     					assert false
     						report LF
-    							& log(fid_locatevalue, "wrong close path at " & natural'image(cursor) & " opened by " & character'image(open_char) & " closed by " & yyy(object, cursor))
+    							& indent("wrong close path at " & natural'image(cursor) & " opened by " & character'image(open_char) & " closed by " & yyy(object, cursor))
     						severity failure;
     				end if;
 
     				assert ((log_flags/log_locatevalue) mod 2=0)  --|note
     					report LF                                 --|note
-    						& log(fid_locatevalue, "close" & yyy(object, cursor)) --|note
+    						& indent("close" & yyy(object, cursor)) --|note
     					severity note;                            --|note
 
     				opened := false;
@@ -1184,20 +1210,20 @@ package body hdo is
     				if not opened then
     					assert false                                          --|note
     						report LF                                         --|note
-    							& log(fid_locatevalue, "close path at " & yyy(object, cursor)) --|note
+    							& indent("close path at " & yyy(object, cursor)) --|note
     						severity note;                                    --|note
     					return;
     				end if;
     				if open_char/='{' then
     					assert false
     						report LF
-    							& log(fid_locatevalue, "wrong close path at " & yyy(object, cursor) & " opened by " & character'image(open_char)) & LF
+    							& indent("wrong close path at " & yyy(object, cursor) & " opened by " & character'image(open_char)) & LF
     						severity failure;
     				end if;
 
     				assert ((log_flags/log_locatevalue) mod 2=0) --|note
     					report LF                                --|note
-    						& log(fid_locatevalue, "close" & yyy(object, cursor)) --|note
+    						& indent("close" & yyy(object, cursor)) --|note
     					severity note;                           --|note
 
     				opened := false;
@@ -1215,13 +1241,13 @@ package body hdo is
 
     			assert ((log_flags/log_locatevalue) mod 2=0)        --|note
     				report LF                                       --|note
-    					& log(fid_locatevalue, "[" & natural'image(position) & "]=" & xxx(object, value_offset, value_length)) --|note
+    					& indent("[" & natural'image(position) & "]=" & xxx(object, value_offset, value_length)) --|note
     				severity note;                                  --|note
 
     			if not isdigit(object(domain_offset)) then
     				assert ((log_flags/log_locatevalue) mod 2=0)                                                                                      --|note
     					report LF                                                                                                                     --|note
-    						 & log(fid_locatevalue, "object requested path " & xxx(object, domain_offset, domain_length) & " " & xxx(object, tag_offset, tag_length)) --|note
+    						 & indent("object requested path " & xxx(object, domain_offset, domain_length) & " " & xxx(object, tag_offset, tag_length)) --|note
     					severity note;                                                                                                                --|note
 
     				if tag_length/=0 then
@@ -1236,7 +1262,7 @@ package body hdo is
 
     				assert ((log_flags/log_locatevalue) mod 2=0)                           --|note
     					report LF                                                          --|note
-    						& log(fid_locatevalue, "object position" & xxx(object, tag_offset, tag_length)) --|note
+    						& indent("object position" & xxx(object, tag_offset, tag_length)) --|note
     					severity note;                                                     --|note
 
     				exit;
@@ -1244,24 +1270,27 @@ package body hdo is
 
     			assert ((log_flags/log_locatevalue) mod 2=0)          --|note
     				report LF                                         --|note
-    					& log(fid_locatevalue, "cursor end loop" & yyy(object,cursor)) --|note
+    					& indent("cursor end loop" & yyy(object,cursor)) --|note
     				severity note;                                    --|note
     		end loop;
 
-    		assert ((log_flags/log_locatevalue) mod 2=0)                           --|note
-    			report LF                                                          --|note
-    				& log(fid_locatevalue, "tag"   & xxx(object,tag_offset,   tag_length)) & LF          --|note
-    				& log(fid_locatevalue, "value" & xxx(object,value_offset, cursor-value_offset)) & LF --|note
-    				& log(fid_locatevalue, "^^^^^^^^^^^^^^^^^^^^")                                     --|note
+    		assert ((log_flags/log_locatevalue) mod 2=0)                              --|note
+    			report LF                                                             --|note
+    				& indent("tag"   & xxx(object,tag_offset,   tag_length)) & LF     --|note
+    				& indent("value" & xxx(object,value_offset, cursor-value_offset)) --|note
     			severity note;                                                                                                                                                                          --|note
-			level := level - 1;
+
+			assert ((log_flags/log_locatevalue) mod 2=0) --|note
+				report LF & indent("#locatevalue")       --|note
+				severity note;                           --|note
+	
     	end;
 
 	begin
 
 		assert ((log_flags/log_resolve) mod 2=0)                               --|note
 			report LF                                                          --|note
-				& log(fid_resolve, "") --|note
+				& indent("@resolve") --|note
 			severity note;                                                     --|note
 
 		cursor := object'left;
@@ -1274,10 +1303,10 @@ package body hdo is
 
 		assert ((log_flags/log_resolve) mod 2=0)                               --|note
 			report LF                                                          --|note
-				& log(fid_resolve, "tag"     & xxx(object, tag_offset,     tag_length))   & LF --|note
-				& log(fid_resolve, "path"    & xxx(object, path_offset,    path_length))  & LF --|note
-				& log(fid_resolve, "value"   & xxx(object, value_offset,   value_length)) & LF --|note
-				& log(fid_resolve, "default" & xxx(object, default_offset, default_length)) --|note
+				& indent("tag"     & xxx(object, tag_offset,     tag_length))   & LF --|note
+				& indent("path"    & xxx(object, path_offset,    path_length))  & LF --|note
+				& indent("value"   & xxx(object, value_offset,   value_length)) & LF --|note
+				& indent("default" & xxx(object, default_offset, default_length)) --|note
 			severity note;                                                     --|note
 
 		cursor := value_offset;
@@ -1288,14 +1317,14 @@ package body hdo is
 				exit when domain_length=0;
 				assert ((log_flags/log_resolve) mod 2=0)                    --|note
 					report LF                                               --|note 
-						& log(fid_resolve, "domain" & xxx(object,domain_offset, domain_length)) --|note
+						& indent("domain" & xxx(object,domain_offset, domain_length)) --|note
 					severity note;                                          --|note
 				locate_value(object, cursor, domain_offset, domain_length, tag_offset, tag_length, obj_offset, obj_length);
 				if obj_length=0 then 
 					assert ((log_flags/log_resolve) mod 2=0)                                                    --|note
 						report LF                                                                               --|note
-							& log(fid_resolve, "invalid path  " & xxx(object,domain_offset,domain_length)) & LF --|note
-							& log(fid_resolve, "default_offset" & xxx(object,default_offset,default_length))    --|note
+							& indent("invalid path  " & xxx(object,domain_offset,domain_length)) & LF --|note
+							& indent("default_offset" & xxx(object,default_offset,default_length))    --|note
 						severity note;                                                                          --|note
 					cursor       := default_offset;
 					obj_offset   := default_offset;
@@ -1306,8 +1335,8 @@ package body hdo is
 				end if;
 				assert ((log_flags/log_resolve) mod 2=0)                   --|note
 					report LF                                              --|note
-						& log(fid_resolve, xxx("path", object,domain_offset,domain_length)) & LF --|note
-						& log(fid_resolve, xxx("value",object,obj_offset,obj_length))      --|note
+						& indent(xxx("path", object,domain_offset,domain_length)) & LF --|note
+						& indent(xxx("value",object,obj_offset,obj_length))      --|note
 					severity note;                                         --|note
 				cursor := obj_offset;
 				-- resolve(object(obj_offset to obj_offset+obj_length-1), obj_offset, obj_length);
@@ -1317,8 +1346,8 @@ package body hdo is
 		end if;
 		assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                                     --|note
 			report LF &                                                                                                                                                                              --|note
-				log(fid_resolve, xxx("tag"    , object, domain_offset,  domain_length)) & LF & --|note
-				log(fid_resolve, xxx("default", object, default_offset, default_length))   --|note
+				indent(xxx("tag"    , object, domain_offset,  domain_length)) & LF & --|note
+				indent(xxx("default", object, default_offset, default_length))   --|note
 			severity note;                                                                                                                                                                           --|note
 		
 		parse_tagvaluepathdefault(
@@ -1329,9 +1358,13 @@ package body hdo is
 			default_offset, default_length);
 		assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                             --|note
 			report LF                                                   --|note
-				& log(fid_resolve, xxx("tag",   object, tag_offset,  tag_length))   & LF --|note
-				& log(fid_resolve, xxx("value", object,value_offset, value_length))  & LF --|note
+				& indent(xxx("tag",   object, tag_offset,  tag_length))   & LF --|note
+				& indent(xxx("value", object,value_offset, value_length))  & LF --|note
 			severity note;                                                                                                                                                                   --|note
+		assert ((log_flags/log_resolve) mod 2=0)                               --|note
+			report LF                                                          --|note
+				& indent("#") --|note
+			severity note;                                                     --|note
 	end;
 
 	impure function resolve (
