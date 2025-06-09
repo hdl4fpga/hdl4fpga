@@ -857,9 +857,10 @@ package body hdo is
     				& indent("domain " & xxx(object, offset, length)) & LF --|note
     				& indent("exit") --|note
     			severity note;                                                   --|note
-    		assert (log_flags/log_parsedomain) mod 2=0     --|note
-    			report LF & indent("#parsedomain") --|note
-    			severity note;                             --|note
+
+    		assert (log_flags/log_parsedomain) mod 2=0 --|note
+    			report LF & indent("#parsedomain")     --|note
+    			severity note;                         --|note
     	end;
 
     	procedure parse_path (
@@ -897,10 +898,10 @@ package body hdo is
     			report LF                                                    --|note
     				& indent("path" & xxx(object,offset,length)) --|note
     			severity note;                                               --|note
-			assert ((log_flags/log_parsepath) mod 2=0)                               --|note
-				report LF                                                          --|note
-					& indent("#") --|note
-				severity note;                                                     --|note
+
+			assert ((log_flags/log_parsepath) mod 2=0) --|note
+				report LF & indent("#parsepath")       --|note
+				severity note;                         --|note
     	end;
 
     	procedure parse_value (
@@ -996,10 +997,10 @@ package body hdo is
     			report LF
 					 & indent(xxx("value", object,offset,length)) --|note
     			severity note; --|note
-			assert ((log_flags/log_parsevalue) mod 2=0)                               --|note
-				report LF                                                          --|note
-					& indent("#") --|note
-				severity note;                                                     --|note
+
+			assert ((log_flags/log_parsevalue) mod 2=0) --|note
+				report LF & indent("#parsevalue")       --|note
+				severity note;                          --|note
     	end;
 
     	procedure parse_tagvaluepath (
@@ -1076,10 +1077,10 @@ package body hdo is
     			report LF                                                   --|note
     				& indent(xxx("path", object,path_offset, path_length)) --|not
     			severity note;                                              --|note
-			assert ((log_flags/log_parsetagvaluepath) mod 2=0)                               --|note
-				report LF                                                          --|note
-					& indent("#parsetagvaluepath") --|note
-				severity note;                                                     --|note
+
+			assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
+				report LF & indent("#parsetagvaluepath")       --|note
+				severity note;                                 --|note
     	end;
     		
     	procedure parse_tagvaluepathdefault (
@@ -1110,17 +1111,17 @@ package body hdo is
     				if object(cursor)='=' then
     					default_offset := cursor+1;
     					default_length := object'right-cursor;
-    					assert ((log_flags/log_parsetagvaluepathdefault) mod 2=0)                       --|note
-    						report LF                                                            --|note
+    					assert ((log_flags/log_parsetagvaluepathdefault) mod 2=0)              --|note
+    						report LF                                                          --|note
     							& indent(xxx("default", object,default_offset,default_length)) --|note
-    						severity note;                                                       --|note
+    						severity note;                                                     --|note
     				end if;
     			end if;
     		end if;
-			assert ((log_flags/log_parsetagvaluepathdefault) mod 2=0)                               --|note
-				report LF                                                          --|note
-					& indent("#tagvaluepathdefault") --|note
-				severity note;                                                     --|note
+
+			assert ((log_flags/log_parsetagvaluepathdefault) mod 2=0) --|note
+				report LF & indent("#tagvaluepathdefault")            --|note
+				severity note;                                        --|note
     	end;
 
     	procedure locate_value (
@@ -1357,14 +1358,14 @@ package body hdo is
 			path_offset,    path_length,
 			default_offset, default_length);
 		assert ((log_flags/log_resolve) mod 2=0)                                                                                                                                             --|note
-			report LF                                                   --|note
-				& indent(xxx("tag",   object, tag_offset,  tag_length))   & LF --|note
-				& indent(xxx("value", object,value_offset, value_length))  & LF --|note
+			report LF                                                        --|note
+				& indent(xxx("tag",   object, tag_offset,  tag_length)) & LF --|note
+				& indent(xxx("value", object,value_offset, value_length))    --|note
 			severity note;                                                                                                                                                                   --|note
-		assert ((log_flags/log_resolve) mod 2=0)                               --|note
-			report LF                                                          --|note
-				& indent("#") --|note
-			severity note;                                                     --|note
+
+		assert ((log_flags/log_resolve) mod 2=0) --|note
+			report LF & indent("#resolve")       --|note
+			severity note;                       --|note
 	end;
 
 	impure function resolve (
