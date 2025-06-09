@@ -164,7 +164,7 @@ begin
 		loop
 			-- get_value(key, key_length, tag("="));
 			-- get_value(key, key_length, tag(hdo(test)&"["&natural'image(1)&"].ppp=  "));
-			get_value(key, key_length, tag("hhhhh : "& hdo(test)&"["&natural'image(1)&"].ppp=  "));
+			get_value(key, key_length, tag("hhhhh : "& hdo(test)&"["&natural'image(2)&"].ppp=  "));
 			exit when key_length=0;
 			if false and key(1 to key_length)="device" then
 				report LF & key(1 to key_length);
