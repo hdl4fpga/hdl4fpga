@@ -618,9 +618,9 @@ package body hdo is
 			end if;
 		end loop;
 		length := cursor-offset;
-		assert (log_flags/log_parsestring) mod 2=0                 --|note
+		assert (log_flags/log_parsestring) mod 2=0                --|note
 			report "@parse_string : " & xxx(object,offset,length) --|note
-			severity note;                                         --|note
+			severity note;                                        --|note
 	end;
 
 	function compare_string (
