@@ -169,10 +169,7 @@ package body hdo is
 	constant log_parsetagvaluepathdefault : natural := 2**8;
 	constant log_locatevalue       : natural := 2**6;
 	constant log_resolve           : natural := 2**7;
-	-- constant log_flags             : natural := log_resolve + log_parsedomain + log_parsepath + log_locatevalue + log_parsevalue + log_parsetagvaluepath;
-	constant log_flags             : natural := 511;
-	-- constant log_flags                  : natural := log_parsetagvaluepath; -- + log_resolve + log_locatevalue + log_parsedomain + log_parsepath; --    + log_parsevalue ;
-	-- constant log_flags                  : natural := log_resolve; -- + log_locatevalue + log_parsedomain + log_parsepath; --    + log_parsevalue ;
+	constant log_flags             : natural := 511-log_parsestring;
 	-- constant log_flags                  : natural := log_locatevalue; -- + log_parsedomain + log_parsepath; --    + log_parsevalue ;
 
 	function unsigned_num_bits (
@@ -749,7 +746,7 @@ package body hdo is
 				zzz := ' ';
 			end if;
 			if level > 1 then
-				return format(indentation(1 to 2*(level-1)) & msg, 80);
+				return format(indentation(1 to 2*(level-1)) & msg, 100);
 			else
 				return format(msg, 80);
 			end if;
