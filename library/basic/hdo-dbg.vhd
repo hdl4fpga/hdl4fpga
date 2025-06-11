@@ -1184,18 +1184,18 @@ package body hdo is
     						severity failure;
     				end if;
 
-    				assert ((log_flags/log_locatevalue) mod 2=0)    --|note
+    				assert ((log_flags/log_locatevalue) mod 2=0)      --|note
     					report indent("close" & at(object, position)) --|note
-    					severity note;                              --|note
+    					severity note;                                --|note
 
-    				opened := false;
+    				opened   := false;
     				position := position + 1;
     				exit;
     			when others =>
     			end case;
 
     			parse_tagvaluepathdefault(
-    				object,         position,
+    				object,           position,
     				tag_position,     tag_length, 
     				value_position,   value_length, 
     				path_position,    path_length, 
@@ -1226,9 +1226,9 @@ package body hdo is
     				exit;
     			end if;
 
-    			assert ((log_flags/log_locatevalue) mod 2=0)             --|note
+    			assert ((log_flags/log_locatevalue) mod 2=0)                 --|note
     				report indent("position end loop" & at(object,position)) --|note
-    				severity note;                                       --|note
+    				severity note;                                           --|note
     		end loop;
 
     		assert ((log_flags/log_locatevalue) mod 2=0)                    --|note
